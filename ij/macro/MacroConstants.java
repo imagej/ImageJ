@@ -63,19 +63,22 @@ public interface MacroConstants {
 		GET_RESULT=1017, GET_COUNT=1018, GET_NUMBER=1019, NIMAGES=1020, NSLICES=1021,
 		LENGTH_OF=1022, NRESULTS=1023, GET_ID=1024, BIT_DEPTH=1025, SELECTION_TYPE=1026, ATAN=1027, IS_OPEN=1028, 
 		IS_ACTIVE=1029, INDEX_OF=1030, LAST_INDEX_OF=1031, CHAR_CODE_AT=1032, GET_BOOLEAN=1033,
-		STARTS_WITH=1034, ENDS_WITH=1035, ATAN2=1036, IS_NAN=1037, GET_ZOOM=1038, PARSE_INT=1039, PARSE_FLOAT=1040;
+		STARTS_WITH=1034, ENDS_WITH=1035, ATAN2=1036, IS_NAN=1037, GET_ZOOM=1038, PARSE_INT=1039, PARSE_FLOAT=1040,
+		IS_KEY_DOWN=1041;
 	static final String[] numericFunctions = { "getPixel", "abs", "cos", "exp", "floor", "log", "maxOf", "minOf", "pow",
 		"round", "sin", "sqrt", "tan", "getTime", "getWidth", "getHeight", "random",
 		"getResult", "getResultsCount", "getNumber", "nImages", "nSlices", 
 		"lengthOf", "nResults", "getImageID", "bitDepth", "selectionType", "atan", "isOpen",
 		"isActive", "indexOf", "lastIndexOf", "charCodeAt", "getBoolean",
-		"startsWith", "endsWith", "atan2", "isNaN", "getZoom", "parseInt", "parseFloat"};
+		"startsWith", "endsWith", "atan2", "isNaN", "getZoom", "parseInt", "parseFloat",
+		"isKeyDown"};
 	static final int[] numericFunctionIDs = {GET_PIXEL, ABS, COS, EXP, FLOOR, LOG, MAX_OF, MIN_OF, POW,
 		ROUND, SIN, SQRT, TAN, GET_TIME, GET_WIDTH, GET_HEIGHT, RANDOM,
 		GET_RESULT, GET_COUNT, GET_NUMBER, NIMAGES, NSLICES,
 		LENGTH_OF, NRESULTS, GET_ID, BIT_DEPTH, SELECTION_TYPE, ATAN, IS_OPEN, 
 		IS_ACTIVE, INDEX_OF, LAST_INDEX_OF, CHAR_CODE_AT, GET_BOOLEAN,
-		STARTS_WITH, ENDS_WITH, ATAN2, IS_NAN, GET_ZOOM, PARSE_INT, PARSE_FLOAT};
+		STARTS_WITH, ENDS_WITH, ATAN2, IS_NAN, GET_ZOOM, PARSE_INT, PARSE_FLOAT,
+		IS_KEY_DOWN};
 
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,

@@ -327,7 +327,7 @@ public class FileOpener {
 		   error("Offset is negative.", fi, offset, length);
 		   return false;
 		}
-		if (fi.fileType==FileInfo.BITMAP)
+		if (fi.fileType==FileInfo.BITMAP || fi.compression!=FileInfo.COMPRESSION_NONE)
 			return true;
 		length = f.length();
 		long size = fi.width*fi.height*fi.getBytesPerPixel();

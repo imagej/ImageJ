@@ -407,9 +407,12 @@ public class TiffDecoder {
 						fi.fileType = FileInfo.RGB_PLANAR;
 					break;
 				case COMPRESSION:
-					if (value==5) // LZW compression is handled
+					if (value==5) { // LZW compression is handled
+						int bpp = fi.getBytesPerPixel();
+						if (bpp==2 || bpp==6)
+							error("ImageJ cannot open 16-bit or 48-bit LZW compressed TIFFs");
 						fi.compression = FileInfo.LZW;
-					else if (value!=1 && value!=7) {
+					} else if (value!=1 && value!=7) {
 						// don't abort with Spot camera compressed (7) thumbnails
 						// otherwise, this is an unknown compression type
 						fi.compression = FileInfo.COMPRESSION_UNKNOWN;

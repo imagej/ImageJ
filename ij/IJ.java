@@ -826,11 +826,11 @@ public class IJ {
 		if (imp==null)
 			error("Macro Error", "Image "+id+" not found or no images are open.");
 		String title = imp.getTitle();
-		ImageWindow win = imp.getWindow();
-		if (win==null && Interpreter.isBatchMode()) {
+		if (Interpreter.isBatchMode()) {
             WindowManager.setTempCurrentImage(imp);
             WindowManager.setWindow(null);
 		} else {
+			ImageWindow win = imp.getWindow();
 			win.toFront();
 			WindowManager.setWindow(win);
 			long start = System.currentTimeMillis();
@@ -1128,7 +1128,12 @@ public class IJ {
 		and <code>height</code> specify the width and height of the image in pixels.  
 		<code>Depth</code> specifies the number of stack slices. */
 	public static void newImage(String title, String type, int width, int height, int depth) {
-		createImage(title, type, width, height, depth).show();
+		ImagePlus imp = createImage(title, type, width, height, depth);
+		if (imp!=null) {
+			macroRunning = true;
+			imp.show();
+			macroRunning = false;
+		}
 	}
 
 	/** Returns true if the <code>Esc</code> key was pressed since the

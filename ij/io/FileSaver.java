@@ -276,9 +276,20 @@ public class FileSaver {
 	}
 	
 	/** Save the image as raw data using the specified path. */
+	/** Save the image as raw data using the specified path. */
 	public boolean saveAsRaw(String path) {
 		fi.nImages = 1;
+		boolean signed16Bit = false;
+		short[] pixels = null;
+		int n = 0;
 		try {
+			signed16Bit = imp.getCalibration().isSigned16Bit();
+			if (signed16Bit) {
+				pixels = (short[])imp.getProcessor().getPixels();
+				n = imp.getWidth()*imp.getHeight();
+				for (int i=0; i<n; i++)
+					pixels[i] = (short)(pixels[i]-32768);
+			}
 			ImageWriter file = new ImageWriter(fi);
 			OutputStream out = new BufferedOutputStream(new FileOutputStream(path));
 			file.write(out);
@@ -287,6 +298,10 @@ public class FileSaver {
 		catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		}
+		if (signed16Bit) {
+			for (int i=0; i<n; i++)
+			pixels[i] = (short)(pixels[i]+32768);
 		}
 		updateImp(fi, fi.RAW);
 		return true;
@@ -296,7 +311,20 @@ public class FileSaver {
 	public boolean saveAsRawStack(String path) {
 		if (fi.nImages==1)
 			{IJ.write("This is not a stack"); return false;}
+		boolean signed16Bit = false;
+		Object[] stack = null;
+		int n = 0;
 		try {
+			signed16Bit = imp.getCalibration().isSigned16Bit();
+			if (signed16Bit) {
+				stack = (Object[])fi.pixels;
+				n = imp.getWidth()*imp.getHeight();
+				for (int slice=0; slice<fi.nImages; slice++) {
+					short[] pixels = (short[])stack[slice];
+					for (int i=0; i<n; i++)
+						pixels[i] = (short)(pixels[i]-32768);
+				}
+			}
 			ImageWriter file = new ImageWriter(fi);
 			OutputStream out = new BufferedOutputStream(new FileOutputStream(path));
 			file.write(out);
@@ -305,6 +333,13 @@ public class FileSaver {
 		catch (IOException e) {
 			showErrorMessage(e);
 			return false;
+		}
+		if (signed16Bit) {
+			for (int slice=0; slice<fi.nImages; slice++) {
+				short[] pixels = (short[])stack[slice];
+				for (int i=0; i<n; i++)
+					pixels[i] = (short)(pixels[i]+32768);
+			}
 		}
 		updateImp(fi, fi.RAW);
 		return true;

@@ -158,6 +158,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_ZOOM: value = getZoom(); break;
 			case PARSE_FLOAT: value = parseDouble(getStringArg()); break;
 			case PARSE_INT: value = parseInt(); break;
+			case IS_KEY_DOWN: value=isKeyDown(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -1592,7 +1593,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (tok!=WORD) return false;
 		Variable v = interp.lookupVariable(nextToken>>16);
 		if (v==null) return false;
-		return v.getType()==Variable.STRING;
+		int type = v.getType();
+		if (type!=Variable.ARRAY)
+			return v.getType()==Variable.STRING;
+		Variable[] array = v.getArray();
+		if (array.length==0) return false;
+		return array[0].getType()==Variable.STRING;
 	}
 
 	void exit() {
@@ -1853,10 +1859,12 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setLocation() {
+		int x = (int)getFirstArg();
+		int y = (int)getLastArg();
 		ImagePlus imp = getImage();
 		ImageWindow win =imp.getWindow();
 		if (win!=null)
-			win.setLocation((int)getFirstArg(), (int)getLastArg());
+			win.setLocation(x, y);
 	}
 	
 	void setSlice() {
@@ -1878,6 +1886,7 @@ public class Functions implements MacroConstants, Measurements {
 		int height = (int)getNextArg();
 		int depth = (int)getLastArg();
 		IJ.newImage(title, type, width, height, depth);
+		resetImage();
 	}
 
 	void saveAs() {
@@ -1966,6 +1975,16 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.getRightParen();
 		IJ.log(s);
+	}
+	
+	double isKeyDown() {
+		double value = 0.0;
+		String key = getStringArg().toLowerCase(Locale.US);
+		if (key.indexOf("alt")!=-1) value = IJ.altKeyDown()==true?1.0:0.0;
+		else if (key.indexOf("shift")!=-1) value = IJ.shiftKeyDown()==true?1.0:0.0;
+		else if (key.indexOf("space")!=-1) value = IJ.spaceBarDown()==true?1.0:0.0;
+		else interp.error("Invalid key");
+		return value;
 	}
 
 } // class Functions

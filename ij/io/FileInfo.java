@@ -123,6 +123,7 @@ public class FileInfo {
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
 			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
+			case RGB48: return 6;
 			default: return 0;
 		}
 	}
@@ -139,7 +140,8 @@ public class FileInfo {
 			+ ", offset=" + (longOffset>0?longOffset:offset)
 			+ ", whiteZero=" + (whiteIsZero?"t":"f")
 			+ ", Intel=" + (intelByteOrder?"t":"f")
-			+ ", lutSize=" + lutSize;
+			+ ", lutSize=" + lutSize
+			+ ", compression=" + compression;
     }
     
     private String getType() {
