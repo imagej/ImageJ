@@ -214,7 +214,7 @@ public class MedianCut {
 		}
 		cube.rmin = rmin; cube.rmax = rmax;
 		cube.gmin = gmin; cube.gmax = gmax;
-		cube.gmin = gmin; cube.gmax = gmax;
+		cube.bmin = bmin; cube.bmax = bmax;
 	}
 
 

@@ -56,7 +56,7 @@ public class Functions implements MacroConstants, Measurements {
 			case BEEP: interp.getParens(); IJ.beep(); break;
 			case RESET_MIN_MAX: interp.getParens(); IJ.resetMinAndMax(); resetImage(); break;
 			case RESET_THRESHOLD: interp.getParens(); IJ.resetThreshold(); resetImage(); break;
-			case PRINT: IJ.log(getStringArg()); break;
+			case PRINT: print(); break;
 			case WRITE: IJ.write(getStringArg()); break;
 			case DO_WAND: IJ.doWand((int)getFirstArg(), (int)getLastArg()); resetImage(); break;
 			case SET_MIN_MAX: IJ.setMinAndMax(getFirstArg(), getLastArg()); resetImage(); break;
@@ -178,6 +178,8 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_IMAGE_INFO: str = getInfo(false); break;			
 			case GET_DIRECTORY: str = getDirectory(); break;
 			case GET_ARGUMENT: interp.getParens(); str=interp.argument!=null?interp.argument:""; break;
+			case TO_LOWER_CASE: str = getStringArg().toLowerCase(Locale.US); break;
+			case TO_UPPER_CASE: str = getStringArg().toUpperCase(Locale.US); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -1950,6 +1952,20 @@ public class Functions implements MacroConstants, Measurements {
 			n = NaN;
 		}
 		return n;			
+	}
+
+	void print() {
+		String s = getFirstString();
+		if (interp.nextNonEolToken()==',') {
+			StringBuffer sb = new StringBuffer(s);
+			do {
+				sb.append(" ");
+				sb.append(getNextString());
+			} while (interp.nextNonEolToken()==',');
+			s = sb.toString();
+		}
+		interp.getRightParen();
+		IJ.log(s);
 	}
 
 } // class Functions

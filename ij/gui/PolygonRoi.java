@@ -17,7 +17,7 @@ public class PolygonRoi extends Roi {
 	protected int splinePoints = 200;
     Rectangle clip;
 	
-	private double angle1=-1.0, degrees=-1.0;
+	private double angle1, degrees=Double.NaN;
 	private int xClipMin, yClipMin, xClipMax, yClipMax;
 
 	long mouseUpTime = 0;
@@ -194,7 +194,7 @@ public class PolygonRoi extends Roi {
 			return;
 		}
         drawRubberBand(ox, oy);
-		degrees = -1;
+		degrees = Double.NaN;
 		double len = -1;
 		if (nPoints>1) {
 			int x1 = xp[nPoints-2];
@@ -219,7 +219,7 @@ public class PolygonRoi extends Roi {
 			}
 		}
 		String length = len!=-1?", length=" + IJ.d2s(len):"";
-		String angle = degrees!=-1?", angle=" + IJ.d2s(degrees):"";
+		String angle = !Double.isNaN(degrees)?", angle=" + IJ.d2s(degrees):"";
 		IJ.showStatus(imp.getLocationAsString(ox,oy) + length + angle);
 	}
 

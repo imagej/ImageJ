@@ -26,6 +26,8 @@ public class Interpreter implements MacroConstants {
 	boolean statusUpdated;
 	boolean showingProgress;
 	boolean keysSet;
+	boolean checkingType;
+	int prefixValue;
 	
 	Variable[] stack;
 	int topOfStack = -1;
@@ -641,7 +643,9 @@ public class Interpreter implements MacroConstants {
 		int savePC = pc;
 		getToken(); //"="
 		getToken(); //the variable
+		checkingType = true;
 		int index = getIndex();
+		checkingType = false;
 		pc = savePC-1;
 		getToken();
 		Variable[] array = v.getArray();
@@ -700,10 +704,10 @@ public class Interpreter implements MacroConstants {
 		getToken(); // the function
 		boolean simpleAssignment = isSimpleFunctionCall(true);
 		pc = savePC;
-		getToken();		
 		if (!simpleAssignment)
 			getAssignmentExpression();
 		else {
+			getToken();		
 			Variable v1 = lookupVariable(tokenAddress);
 			if (v1==null)
 				v1 = push(tokenAddress, 0.0, null, this);
@@ -1169,31 +1173,32 @@ public class Interpreter implements MacroConstants {
 				} else if (next=='.') {
 					value = getArrayLength(v);
 					next = nextToken();
-				} else
+				} else {
+					if (prefixValue!=0 && !checkingType) {
+						v.setValue(v.getValue()+prefixValue);
+						prefixValue = 0;
+					}
 					value = v.getValue();
+				}
 				if (!(next==PLUS_PLUS || next==MINUS_MINUS))
 					break;
 				getToken();
 				if (token==PLUS_PLUS)
-					v.setValue(v.getValue()+1);
+					v.setValue(v.getValue()+(checkingType?0:1));
 				else
-					v.setValue(v.getValue()-1);
+					v.setValue(v.getValue()-(checkingType?0:1));
 				break;
 			case (int)'(':
 				value = getLogicalExpression();
 				getRightParen();
 				break;
 			case PLUS_PLUS:
+				prefixValue = 1;
 				value = getFactor();
-				value++;
-				//if (v!=null)
-				//	v.setValue(value);
 				break;
 			case MINUS_MINUS:
+				prefixValue = -1;
 				value = getFactor();
-				value--;
-				//if (v!=null)
-				//	v.setValue(value);
 				break;
 			case '!':
 				value = getFactor();

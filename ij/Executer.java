@@ -58,7 +58,7 @@ public class Executer implements Runnable {
 			if (Recorder.record) {
 				Recorder.setCommand(command);
 				runCommand(command, imp);
-				Recorder.saveCommand();
+				if (command!=null) Recorder.saveCommand();
 			} else
 				runCommand(command, imp);
 		} catch(Throwable e) {
@@ -182,22 +182,33 @@ public class Executer implements Runnable {
 	
 	void close(ImagePlus imp) {
 		Frame frame = WindowManager.getFrontWindow();
-		if (frame!=null && (frame instanceof PlugInFrame))
+		if (frame==null || (Interpreter.isBatchMode() && frame instanceof ImageWindow))
+			closeImage(imp);
+		else if (frame instanceof PlugInFrame)
 			((PlugInFrame)frame).close();
-		else if (frame!=null && (frame instanceof TextWindow))
+		else if (frame instanceof TextWindow)
 			((TextWindow)frame).close();
-		else if (imp==null)
+		else
+			closeImage(imp);
+	}
+
+	void closeImage(ImagePlus imp) {
+		if (imp==null) {
 			IJ.noImage();
-		else {
-			ImageWindow win = imp.getWindow();
-			if (win!=null)
-				win.close();
-			else if (IJ.macroRunning() || Interpreter.isBatchMode()) {
-				WindowManager.setTempCurrentImage(null);
-				ImagePlus imp2 = Interpreter.getBatchModeImage(imp.getID());
-				if (imp==imp2)
-					Interpreter.removeBatchModeImage(imp);
-			}
+			return;
+		}
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			imp.changes = false;
+			win.close();
+		} else {
+			WindowManager.setTempCurrentImage(null);
+			imp.killRoi(); //save any ROI so it can be restored later
+			Interpreter.removeBatchModeImage(imp);
+		}
+		if (Recorder.record) {
+			Recorder.record("close");
+			command = null;
 		}
 	}
 

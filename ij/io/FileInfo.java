@@ -81,11 +81,9 @@ public class FileInfo {
     public int gapBetweenImages;
     public boolean whiteIsZero;
     public boolean intelByteOrder;
-		// CTR CHANGES BEGIN
-		public int compression;
+	public int compression;
     public int[] stripOffsets; // used for LZW decompression
     public int[] stripLengths; // used for LZW decompression
-		// CTR CHANGES END
 	public int lutSize;
 	public byte[] reds;
 	public byte[] greens;
@@ -115,9 +113,7 @@ public class FileInfo {
     	directory = "";
     	url = "";
 	    nImages = 1;
-			// CTR CHANGES BEGIN
-			compression = COMPRESSION_NONE;
-			// CTR CHANGES END
+		compression = COMPRESSION_NONE;
     }
     
 	/** Returns the number of bytes used per pixel. */

@@ -1,4 +1,5 @@
 package ij.gui;
+import ij.macro.Interpreter;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -15,7 +16,7 @@ public class ProgressBar extends Canvas {
 	private int count;
 	private boolean showBar;
 	private boolean negativeProgress;
-	private static boolean autoHide;
+	private static boolean macroMode;
 	
 	private Color barColor = Color.gray;
 	private Color fillColor = new Color(204,204,255);
@@ -31,10 +32,6 @@ public class ProgressBar extends Canvas {
 		y = 5;
 		width = canvasWidth - 8;
 		height = canvasHeight - 7;
-		showBar = false;
-		negativeProgress = false;
-		count = 0;
-		percent = 0.0;
 	}
 		
     void fill3DRect(Graphics g, int x, int y, int width, int height) {
@@ -53,11 +50,13 @@ public class ProgressBar extends Canvas {
 		The bar is erased if <code>currentValue&gt;=finalValue</code>. 
 		Does nothing if the ImageJ window is not present. */
 	public void show(int currentValue, int finalValue) {
-		if (currentValue>=finalValue)
+		if (currentValue>=finalValue) {
 			showBar = false;
-		else {
+			macroMode = false;
+		} else {
 			percent = Math.min((currentValue+1)/(double)finalValue, 1.0);
 			showBar = true;
+			if (Interpreter.isBatchMode()) macroMode = true;
 		}
 		repaint();
 	}
@@ -67,6 +66,12 @@ public class ProgressBar extends Canvas {
 		is less than 30 milliseconds. It is erased when show
 		is passed a percent value >= 1.0. */
 	public void show(double percent) {
+		if (macroMode) {
+			if (percent>=1.0 && !Interpreter.isBatchMode())
+				macroMode = false;
+			else
+				return;
+		}
 		count++;
     	if (count==1) {
 			//ij.IJ.log("");

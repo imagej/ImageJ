@@ -613,9 +613,10 @@ class DicomDecoder {
 				break;
 			case SQ:
 				value = "";
-				if (tag!=ICON_IMAGE_SEQUENCE)
+				boolean privateTag = ((tag>>16)&1)!=0;
+				if (tag!=ICON_IMAGE_SEQUENCE && !privateTag)
 					break;
-				// else fall through and skip icon image sequence
+				// else fall through and skip icon image sequence or private sequence
 			default:
 				long skipCount = (long)elementLength;
 				while (skipCount > 0) skipCount -= f.skip(skipCount);

@@ -207,12 +207,13 @@ public class FileSaver {
 	/** Save the image in JPEG format using the specified path. */
 	public boolean saveAsJpeg(String path) {
 		Object jpegWriter = null;
+		ImagePlus tempImage = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(imp);
 		if (IJ.isJava2())
 			IJ.runPlugIn("ij.plugin.JpegWriter", path);
 		else
 			IJ.runPlugIn("Jpeg_Writer", path);		
-		WindowManager.setTempCurrentImage(null);
+		WindowManager.setTempCurrentImage(tempImage);
 		if (!(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
 			updateImp(fi, fi.GIF_OR_JPG);
 		return true;
@@ -230,9 +231,10 @@ public class FileSaver {
 
 	/** Save the image in BMP format using the specified path. */
 	public boolean saveAsBmp(String path) {
+		ImagePlus tempImage = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(imp);
 		IJ.runPlugIn("ij.plugin.BMP_Writer", path);
-		WindowManager.setTempCurrentImage(null);
+		WindowManager.setTempCurrentImage(tempImage);
 		return true;
 	}
 
@@ -254,9 +256,10 @@ public class FileSaver {
 	/** Save the image in PNG format using the specified path. 
 		Requires Java 1,4 or later. */
 	public boolean saveAsPng(String path) {
+		ImagePlus tempImage = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(imp);
 		IJ.runPlugIn("ij.plugin.PNG_Writer", path);
-		WindowManager.setTempCurrentImage(null);
+		WindowManager.setTempCurrentImage(tempImage);
 		return true;
 	}
 

@@ -242,6 +242,11 @@ public class WindowManager {
 		tempCurrentImage = imp;
     }
     
+	/** Returns <code>tempCurrentImage</code>, which may be null. */
+	public static ImagePlus getTempCurrentImage() {
+		return tempCurrentImage;
+	}
+
     /** Returns the frame with the specified title or null if a frame with that 
     	title is not found. */
     public static Frame getFrame(String title) {

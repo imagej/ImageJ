@@ -90,9 +90,10 @@ public class Opener {
 		is not in one of the supported formats. */
 	public void open(String path) {
 		IJ.showStatus("Opening: " + path);
+		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
 		if (imp!=null)
-			imp.show();
+			imp.show(IJ.d2s((System.currentTimeMillis()-start)/1000.0,3)+" seconds");
 		else {
 			switch (fileType) {
 				case LUT:

@@ -65,6 +65,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		if (itemCount>baseCount)
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
+		if (pgm.hasVars() && pgm.getGlobals()==null)
+			new Interpreter().saveGlobals(pgm);
 		for (int i=0; i<code.length; i++) {
 			token = code[i]&0xffff;
 			if (token==MACRO) {
@@ -100,8 +102,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();
 		}
-		if (pgm.hasVars() && pgm.getGlobals()==null)
-			new Interpreter().saveGlobals(pgm);
 		this.instance = nShortcuts>0?this:null;
 		if (shortcutsInUse!=null && text!=null)
 			IJ.showMessage("Install Macros", (inUseCount==1?"This keyboard shortcut is":"These keyboard shortcuts are")

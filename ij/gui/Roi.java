@@ -662,43 +662,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Returns the angle in degrees between the specified line and a horizontal line. */
 	public double getAngle(int x1, int y1, int x2, int y2) {
-		final int q1=0, q2orq3=2, q4=3; //quadrant
-		int quadrant;
 		double dx = x2-x1;
 		double dy = y1-y2;
-		double angle;
-
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			dx *= cal.pixelWidth;
 			dy *= cal.pixelHeight;
 		}
-		
-		if (dx!=0.0)
-			angle = Math.atan(dy/dx);
-		else {
-			if (dy>=0.0)
-				angle = Math.PI/2.0;
-			else
-				angle = -Math.PI/2.0;
-		}
-		angle = (180.0/Math.PI)*angle;
-		if (dx>=0.0 && dy>=0.0)
-			quadrant = q1;
-		else if (dx<0.0)
-			quadrant = q2orq3;
-		else
-			quadrant = q4;
-		switch (quadrant) {
-			case q1: 
-				break;
-			case q2orq3: 
-				angle = angle+180.0;
-				break;
-			case q4: 
-				angle = angle+360.0;
-		}
-		return angle;
+		return (180.0/Math.PI)*Math.atan2(dy, dx);
 	}
 	
 	/** Returns the color used for drawing ROI outlines. */

@@ -79,11 +79,14 @@ public interface MacroConstants {
 
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,
-		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008, GET_ARGUMENT=2009, GET_IMAGE_INFO=2010;
+		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008, GET_ARGUMENT=2009, GET_IMAGE_INFO=2010,
+		TO_LOWER_CASE=2011, TO_UPPER_CASE=2012;
 	static final String[] stringFunctions = {"d2s", "toHex", "toBinary", "getTitle", "getString", "substring",
-		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo"};
+		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo", 
+		"toLowerCase", "toUpperCase"};
 	static final int[] stringFunctionIDs = {D2S, TO_HEX, TO_BINARY, GET_TITLE, GET_STRING, SUBSTRING,
-		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO};
+		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO,
+		TO_LOWER_CASE, TO_UPPER_CASE};
 
 	// Array functions
 	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003;

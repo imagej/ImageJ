@@ -522,76 +522,128 @@ public class ImageReader {
 		}
 	}
 
-/**
+  /**
  * Utility method for decoding an LZW-compressed image strip. 
  * Adapted from the TIFF 6.0 Specification:
  * http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf (page 61)
  * @author Curtis Rueden (ctrueden at wisc.edu)
  */
-  public byte[] lzwUncompress(byte[] input) throws IOException {
-    if (input == null || input.length == 0)
-      return input;
-
-    byte[][] symbolTable = null;
-    int bitsToRead = 9;
-    int nextSymbol = 258;
-    int code;
-    int oldCode = -1;
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    BitBuffer bb = new BitBuffer(new ByteArrayInputStream(input));
-
-    while (true) {
-      code = bb.getBits(bitsToRead);
-      if (code == EOI_CODE || code == -1)
-        break;
-      if (code == CLEAR_CODE) {
-        // initialize symbol table
-        symbolTable = new byte[4096][];
-        for (int i = 0; i < 256; i++) {
-          symbolTable[i] = new byte[] { (byte) i };
-        }
-        nextSymbol = 258;
-        bitsToRead = 9;
-        code = bb.getBits(bitsToRead);
-        if (code == EOI_CODE || code == -1)
-          break;
-        out.write(symbolTable[code]);
-        oldCode = code;
-      }
-      else {
-        if (code < nextSymbol) {
-          // code is in table
-          out.write(symbolTable[code]);
-
-          // add string to table
-          ByteArrayOutputStream symbol = new ByteArrayOutputStream();
-          symbol.write(symbolTable[oldCode]);
-          symbol.write(symbolTable[code][0]);
-          symbolTable[nextSymbol] = symbol.toByteArray();
-
-          oldCode = code;
-          nextSymbol++;
-        }
-        else {
-          // out of table
-          ByteArrayOutputStream symbol = new ByteArrayOutputStream();
-          symbol.write(symbolTable[oldCode]);
-          symbol.write(symbolTable[oldCode][0]);
-          byte[] outString = symbol.toByteArray();
-
-          out.write(outString);
-          symbolTable[nextSymbol] = outString;
-
-          oldCode = code;
-          nextSymbol++;
-        }
-        if (nextSymbol == 511) { bitsToRead = 10; }
-        if (nextSymbol == 1023) { bitsToRead = 11; }
-        if (nextSymbol == 2047) { bitsToRead = 12; }
-      }
-    }
-    return out.toByteArray();
-  }
+	public byte[] lzwUncompress(byte[] input) {
+		if (input == null || input.length == 0)
+			return input;
+		byte[][] symbolTable = new byte[4096][1];
+		int bitsToRead = 9;
+		int nextSymbol = 258;
+		int code;
+		int oldCode = -1;
+		ByteVector out = new ByteVector(8192);
+		BitBuffer bb = new BitBuffer(input);
+		byte[] byteBuffer1 = new byte[16];
+		byte[] byteBuffer2 = new byte[16];
+		
+		while (true) {
+			code = bb.getBits(bitsToRead);
+			if (code == EOI_CODE || code == -1)
+				break;
+			if (code == CLEAR_CODE) {
+				// initialize symbol table
+				for (int i = 0; i < 256; i++)
+					symbolTable[i][0] = (byte)i;
+				nextSymbol = 258;
+				bitsToRead = 9;
+				code = bb.getBits(bitsToRead);
+				if (code == EOI_CODE || code == -1)
+					break;
+				out.add(symbolTable[code]);
+				oldCode = code;
+			} else {
+				if (code < nextSymbol) {
+					// code is in table
+					out.add(symbolTable[code]);
+					// add string to table
+					ByteVector symbol = new ByteVector(byteBuffer1);
+					symbol.add(symbolTable[oldCode]);
+					symbol.add(symbolTable[code][0]);
+					symbolTable[nextSymbol] = symbol.toByteArray(); //**
+					oldCode = code;
+					nextSymbol++;
+				} else {
+					// out of table
+					ByteVector symbol = new ByteVector(byteBuffer2);
+					symbol.add(symbolTable[oldCode]);
+					symbol.add(symbolTable[oldCode][0]);
+					byte[] outString = symbol.toByteArray();
+					out.add(outString);
+					symbolTable[nextSymbol] = outString; //**
+					oldCode = code;
+					nextSymbol++;
+				}
+				if (nextSymbol == 511) { bitsToRead = 10; }
+				if (nextSymbol == 1023) { bitsToRead = 11; }
+				if (nextSymbol == 2047) { bitsToRead = 12; }
+			}
+		}
+		return out.toByteArray();
+	}
  
+}
+
+/** A growable array of bytes. */
+class ByteVector {
+	private byte[] data;
+	private int size;
+
+	public ByteVector() {
+		data = new byte[10];
+		size = 0;
+	}
+
+	public ByteVector(int initialSize) {
+		data = new byte[initialSize];
+		size = 0;
+	}
+
+	public ByteVector(byte[] byteBuffer) {
+		data = byteBuffer;
+		size = 0;
+	}
+
+	public void add(byte x) {
+		if (size>=data.length) {
+			doubleCapacity();
+			add(x);
+		} else
+			data[size++] = x;
+	}
+
+	public int size() {
+		return size;
+	}
+
+	public void add(byte[] array) {
+		int length = array.length;
+		while (data.length-size<length)
+	    	doubleCapacity();
+		System.arraycopy(array, 0, data, size, length);
+		size += length;
+    }
+
+	void doubleCapacity() {
+		//IJ.log("double: "+data.length*2);
+		byte[] tmp = new byte[data.length*2 + 1];
+		System.arraycopy(data, 0, tmp, 0, data.length);
+		data = tmp;
+	}
+
+	public void clear() {
+		size = 0;
+	}
+
+	public byte[] toByteArray() {
+		byte[] bytes = new byte[size];
+		System.arraycopy(data, 0, bytes, 0, size);
+		return bytes;
+	}
+
 }
 

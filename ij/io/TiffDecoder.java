@@ -3,12 +3,10 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
-// CTR CHANGES BEGIN
 /**
-Decodes multi-image TIFF files. Handles uncompressed
-and 8-bit LZW-compressed image stacks.
+Decodes single and multi-image TIFF files. LZW decompression
+code contributed by Curtis Rueden.
 */
-// CTR CHANGES END
 public class TiffDecoder {
 
 	// tags
@@ -315,16 +313,15 @@ public class TiffDecoder {
 				case IMAGE_LENGTH: 
 					fi.height = value;
 					break;
-        // CTR CHANGES START
-				case STRIP_OFFSETS: 
+ 				case STRIP_OFFSETS: 
 					if (count==1)
 						fi.stripOffsets = new int[] {value};
 					else {
 						int saveLoc = in.getFilePointer();
 						in.seek(value);
-            fi.stripOffsets = new int[count];
-            for (int c=0; c<count; c++) {
-              fi.stripOffsets[c] = getInt();
+						fi.stripOffsets = new int[count];
+						for (int c=0; c<count; c++) {
+							fi.stripOffsets[c] = getInt();
 							if (c > 0 && fi.stripOffsets[c] < fi.stripOffsets[c - 1])
 								error("Images not in order");
 						}
@@ -332,20 +329,19 @@ public class TiffDecoder {
 					}
 					fi.offset = count > 0 ? fi.stripOffsets[0] : value;
 					break;
-        case STRIP_BYTE_COUNT:
-          if (count==1)
-            fi.stripLengths = new int[] {value};
-          else {
+				case STRIP_BYTE_COUNT:
+					if (count==1)
+						fi.stripLengths = new int[] {value};
+					else {
 						int saveLoc = in.getFilePointer();
 						in.seek(value);
-            fi.stripLengths = new int[count];
-            for (int c=0; c<count; c++)
-              fi.stripLengths[c] = getInt();
+						fi.stripLengths = new int[count];
+						for (int c=0; c<count; c++)
+							fi.stripLengths[c] = getInt();
 						in.seek(saveLoc);
-          }
-          break;
-        // CTR CHANGES END
-				case PHOTO_INTERP:
+					}
+					break;
+ 				case PHOTO_INTERP:
 					fi.whiteIsZero = value==0;
 					break;
 				case BITS_PER_SAMPLE:
