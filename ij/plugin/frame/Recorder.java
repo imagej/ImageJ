@@ -247,7 +247,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	}
 
 	static void appendNewImage() {
-		String options = getCommandOptions();
+		String options = getCommandOptions() + " ";
 		String title = Macro.getValue(options, "name", "Untitled");
 		String type = Macro.getValue(options, "type", "8-bit");
 		String fill = Macro.getValue(options, "fill", "");

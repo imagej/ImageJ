@@ -497,6 +497,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				break;
 			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
 			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:
+			case Toolbar.SPARE7:
 				Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool

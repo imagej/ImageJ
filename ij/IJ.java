@@ -953,9 +953,10 @@ public class IJ {
 		else
 			w.autoOutline(x, y, (int)t1, (int)ip.getMaxThreshold());
 		if (w.npoints>0) {
+			Roi previousRoi = img.getRoi();
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
 			img.setRoi(roi);
-			if (shiftKeyDown() || altKeyDown())
+			if (previousRoi!=null && (shiftKeyDown() || altKeyDown()))
 				roi.addOrSubtract(); 
 		}
 		return w.npoints;
@@ -1047,6 +1048,7 @@ public class IJ {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats, or if it is not found. */
 	public static void open(String path) {
+		if (ij==null && Menus.getCommands()==null) init();
 		Opener o = new Opener();
 		macroRunning = true;
 		if (path==null || path.equals(""))		
@@ -1064,7 +1066,7 @@ public class IJ {
 		if (dotLoc!=-1)
 			saveAs(path.substring(dotLoc+1), path);
 		else
-			error("File name extension required");
+			error("The save() macro function requires a file name extension.\n \n"+path);
 	}
 
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 

@@ -33,6 +33,15 @@ public class FloatStatistics extends ImageStatistics {
 			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&CENTER_OF_MASS)!=0)
 			getCenterOfMass(ip, minThreshold, maxThreshold);
+		if ((mOptions&MEDIAN)!=0) {
+			if (Double.isInfinite(binSize)||Double.isNaN(binSize))
+				median = 0.0;
+			else {
+				calculateMedian(histogram, 0, null);
+				median = histMin + median*binSize;
+				if (binSize!=1.0) median += binSize/2.0; 
+			}       	
+		}
 	}
 
 	void getStatistics(ImageProcessor ip, double minThreshold, double maxThreshold) {

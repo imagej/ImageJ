@@ -459,7 +459,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			win = new ImageWindow(this);   // replaces this window
 		else if (dimensionsChanged && !stackSizeChanged)
             win.updateImage(this);
-        else if (!(win instanceof StackWindow))
+        else if (stackSize>1 && !(win instanceof StackWindow))
 			win = new StackWindow(this);   // replaces this window
 		else
 			repaintWindow();
@@ -932,7 +932,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 				break;
 			case Toolbar.POINT:
 				roi = new PointRoi(x, y, this);
-				if (Prefs.pointAutoMeasure) IJ.doCommand("Measure");
+				if (Prefs.pointAutoMeasure || Prefs.pointAutoNextSlice) IJ.run("Measure");
+				if (Prefs.pointAutoNextSlice && getStackSize()>1) {
+					IJ.run("Next Slice [>]");
+					killRoi();
+				}
 				break;
 		}
 	}

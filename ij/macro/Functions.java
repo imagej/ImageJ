@@ -15,6 +15,7 @@ import java.awt.image.*;
 import java.util.*;
 import java.io.File;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.*;
 
 /** This class implements the built-in macro functions. */
 public class Functions implements MacroConstants, Measurements {
@@ -125,7 +126,10 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_AUTO_THRESHOLD: setAutoThreshold(); break;
 			case RENAME: IJ.run("Rename...", "title=["+getStringArg()+"]"); break;
 			case FILL_RECT: fillRect(); break;
-			case GET_STATISTICS: getStatistics(); break;
+			case GET_STATISTICS: getStatistics(true); break;
+			case GET_RAW_STATISTICS: getStatistics(false); break;
+			case FLOOD_FILL: floodFill(); break;
+			case RESTORE_PREVIOUS_TOOL: restorePreviousTool(); break;
 		}
 	}
 	
@@ -134,7 +138,7 @@ public class Functions implements MacroConstants, Measurements {
 		switch (type) {
 			case GET_PIXEL: value = getPixel(); break;
 			case ABS: case COS: case EXP: case FLOOR: case LOG: case ROUND: 
-			case SIN: case SQRT: case TAN: case ATAN:
+			case SIN: case SQRT: case TAN: case ATAN: case ASIN: case ACOS:
 				value = math(type);
 				break;
 			case MAX_OF: case MIN_OF: case POW: case ATAN2: value=math2(type); break;
@@ -165,6 +169,7 @@ public class Functions implements MacroConstants, Measurements {
 			case IS_KEY_DOWN: value=isKeyDown(); break;
 			case GET_SLICE_NUMBER: interp.getParens(); value=getImage().getCurrentSlice(); break;
 			case SCREEN_WIDTH: case SCREEN_HEIGHT: value = getScreenDimension(type); break;
+			case CALIBRATE: value = getImage().getCalibration().getCValue(getArg()); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -190,6 +195,7 @@ public class Functions implements MacroConstants, Measurements {
 			case RUN_MACRO: str = runMacro(false); break;
 			case EVAL: str = runMacro(true); break;
 			case TO_STRING: str = getStringArg(); break;
+			case REPLACE: str = replace(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -224,6 +230,8 @@ public class Functions implements MacroConstants, Measurements {
 			case SQRT: return Math.sqrt(arg);
 			case TAN: return Math.tan(arg);
 			case ATAN: return Math.atan(arg);
+			case ASIN: return Math.asin(arg);
+			case ACOS: return Math.acos(arg);
 			default: return 0.0;
 		}
 	}
@@ -984,8 +992,13 @@ public class Functions implements MacroConstants, Measurements {
 	
 	Variable[] split() {
 		String s1 = getFirstString();
-		String s2 = getLastString();
-		StringTokenizer t = s2.equals("")?new StringTokenizer(s1):new StringTokenizer(s1, s2);
+		String s2 = null;
+		if (interp.nextToken()==')')
+			interp.getRightParen();
+		else
+			s2 = getLastString();
+		if (s1==null) return null;
+		StringTokenizer t = s2==null||s2.equals("")?new StringTokenizer(s1):new StringTokenizer(s1, s2);
 		int tokens = t.countTokens();
 		String[] strings;
 		if (tokens>0) {
@@ -1486,7 +1499,8 @@ public class Functions implements MacroConstants, Measurements {
 	void showPlot() {
 		if (plot!=null) {
 			PlotWindow plotWindow = plot.show();
-			plotID = plotWindow.getImagePlus().getID();
+			if (plotWindow!=null)
+				plotID = plotWindow.getImagePlus().getID();
 		}
 		plot = null;
 		interp.getParens();			
@@ -1739,6 +1753,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			IJ.open(path);
 		}
+		resetImage();
 	}
 	
 	void roiManager() {
@@ -2059,9 +2074,9 @@ public class Functions implements MacroConstants, Measurements {
 			return screen.height;
 	}
 
-	void getStatistics() {
+	void getStatistics(boolean calibrated) {
 		Variable count = getFirstVariable();
-		Variable mean=null, min=null, max=null, std=null, mode=null, x=null, y=null;
+		Variable mean=null, min=null, max=null, std=null, hist=null;
 		int params = AREA+MEAN+MIN_MAX;
 		interp.getToken();
 		int arg = 1;
@@ -2072,29 +2087,74 @@ public class Functions implements MacroConstants, Measurements {
 				case 3: min = getVariable(); break;
 				case 4: max = getVariable(); break;
 				case 5: std = getVariable(); params += STD_DEV; break;
-				case 6: mode = getVariable(); params += MODE; break;
-				case 7: x= getVariable(); params += CENTROID; break;
-				case 8: y = getVariable(); break;
+				case 6: hist = getArrayVariable(); break;
 				default: interp.error("')' expected");
 			}
 			interp.getToken();
 		}
 		if (interp.token!=')') interp.error("')' expected");
 		resetImage();
-		ImageStatistics stats = ImageStatistics.getStatistics(getProcessor(), params, null);
-		count.setValue(stats.pixelCount);
+		ImagePlus imp = getImage();
+		Calibration cal = calibrated?imp.getCalibration():null;
+		ImageProcessor ip = getProcessor();
+		ip.setRoi(imp.getRoi());
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, params, cal);
+		if (calibrated)
+			count.setValue(stats.area);
+		else
+			count.setValue(stats.pixelCount);
 		if (mean!=null) mean.setValue(stats.mean);
 		if (min!=null) min.setValue(stats.min);
 		if (max!=null) max.setValue(stats.max);
 		if (std!=null) std.setValue(stats.stdDev);
-		if (mode!=null) mode.setValue(stats.dmode);
-		if (x!=null) x.setValue(stats.xCentroid);
-		if (y!=null) y.setValue(stats.yCentroid);
+		if (hist!=null) {
+			boolean is16bit = !calibrated && ip instanceof ShortProcessor;
+			int[] histogram = is16bit?stats.histogram16:stats.histogram;
+		    int bins = is16bit?(int)(stats.max+1):histogram.length;
+			Variable[] array = new Variable[bins];
+			int hmax = is16bit?(int)stats.max:255;
+			for (int i=0; i<=hmax; i++)
+				array[i] = new Variable(histogram[i]);
+			hist.setArray(array);
+		}
 	}
-
+	
+	String replace() {
+		String s1 = getFirstString();
+		String s2 = getNextString();
+		String s3 = getLastString();
+		if (s2.length()==1 && s3.length()==1)
+			return s1.replace(s2.charAt(0), s3.charAt(0));
+		else if (IJ.isJava14()) {
+			try {
+				// Call replaceAll() using reflection so this class can be compiled with Java 1.3
+				Class StringClass = s1.getClass();
+				Method replaceAll = StringClass.getDeclaredMethod("replaceAll", new Class[] {String.class, String.class});
+				Object arglist[]=new Object[2]; arglist[0]=s2; arglist[1]=s3;
+ 				return (String)replaceAll.invoke(s1, arglist);
+			} catch (Exception e) {
+				interp.error("Regular expression error:\n \n"+e);
+			}
+		} else
+			interp.error("Java 1.4 or later required for multi-character replace");
+		return null;
+	}
+	
+	void floodFill() {
+		int x = (int)getFirstArg();
+		int y = (int)getLastArg();
+		ImageProcessor ip = getProcessor();
+		if (!colorSet) setForegroundColor(ip);
+		FloodFiller ff = new FloodFiller(ip);
+		ff.fill(x, y);
+		updateAndDraw(imp);
+	}
+	
+	void restorePreviousTool() {
+		interp.getParens();
+		Toolbar tb = Toolbar.getInstance();
+		if (tb!=null) tb.restorePreviousTool();
+	}
+	
 } // class Functions
-
-
-
-
 

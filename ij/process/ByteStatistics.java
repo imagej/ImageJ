@@ -40,6 +40,8 @@ public class ByteStatistics extends ImageStatistics {
 			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&CENTER_OF_MASS)!=0)
 			getCenterOfMass(ip, minThreshold, maxThreshold, cTable);
+		if ((mOptions&MEDIAN)!=0)
+			calculateMedian(histogram, 0, cal);
 	}
 
 	void getCalibratedStatistics(int minThreshold, int maxThreshold, float[] cTable) {

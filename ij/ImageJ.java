@@ -28,7 +28,7 @@ offer your changes to me so I can possibly add them to the "official" version.
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.34h";
+	public static final String VERSION = "1.34j";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -366,7 +366,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh()) {
-			IJ.wait(1); // needed for 1.4.1 on OS X
+			IJ.wait(10); // needed for 1.4 on OS X
 			this.setMenuBar(Menus.getMenuBar());
 		}
 	}

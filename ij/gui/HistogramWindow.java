@@ -265,7 +265,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	String d2s(double d) {
-		if ((int)d==d)
+		if (d==Double.MAX_VALUE||d==-Double.MAX_VALUE)
+			return "0";
+		else if (Double.isNaN(d))
+			return("NaN");
+		else if (Double.isInfinite(d))
+			return("Infinity");
+		else if ((int)d==d)
 			return IJ.d2s(d,0);
 		else
 			return IJ.d2s(d,decimalPlaces);

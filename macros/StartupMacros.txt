@@ -1,0 +1,144 @@
+//  This is a set of tools similar to the pencil, paintbrush and 
+//  eraser tools in NIH Image. The pencil and paintbrush draw
+//  in the current foreground color and the eraser draws in the
+//  current background color. Hold down the alt key to have the
+//  pencil and paintbrush draw in the background color. The 
+//  foreground and background colors can be set by double-
+//  clicking on the eye dropper tool.  Double-click on a tool icon 
+//  to set the drawing width.
+//
+// Rename as "StartupMacros.txt" and move to the macros folder 
+// to have these tools automatically loaded when ImageJ starts.
+//
+// The icons were contributed by Tony Collins.
+
+  var pencilWidth=1, brushWidth=10, eraserWidth=10, leftClick=16, alt=8;
+  var sprayCanWidth=75, sprayCanDotSize=1, sprayCanRate=8;
+
+
+macro "Unused Tool-1 - " {}  // leave slot between text tool and magnifying glass unused
+macro "Unused Tool-2 - " {}  // leave slot between dropper and pencil unused
+ 
+ macro "Pencil Tool - C037L494fL4990L90b0Lc1c3L82a4Lb58bL7c4fDb4L5a5dL6b6cD7b" {
+        getCursorLoc(x, y, z, flags);
+        if (flags&alt!=0)
+              setColorToBackgound();
+        draw(pencilWidth);
+   }
+
+   macro "Paintbrush Tool - C037F6036F3699CfffD71F4771D5eD7eD9e" {
+        getCursorLoc(x, y, z, flags);
+        if (flags&alt!=0)
+              setColorToBackgound();
+        draw(brushWidth);
+   }
+
+   macro "Eraser Tool - C037R0aa4 P0a61f1aa0Pbef5f1" { 
+        setColorToBackgound();
+        draw(eraserWidth);
+   }
+
+    macro "Flood Fill Tool -C037B21P085373b75d0L4d1aL3135L4050L6166D57D77D68La5adLb6bcD09D94" {
+        requires("1.34j");
+        setupUndo();
+        getCursorLoc(x, y, z, flags);
+        floodFill(x, y);
+    }
+
+   macro 'Spray Can Tool-C037D20D22D24D41D43D62D82Da2L93b3D84Dc4L75d5L757f Ld5dfLa7d7LabdbLa9d9LacdcLa7ac' {
+         setLineWidth(sprayCanDotSize);
+         radius=sprayCanWidth/2; radius2=radius*radius;
+         start = getTime();
+         autoUpdate(false);
+         n = 10*(10-sprayCanRate);
+         print(n);
+         while (true) {
+            getCursorLoc(x, y, z, flags);
+            if (flags&16==0) exit();
+            x2 = (random()-0.5)*sprayCanWidth;
+            y2 = (random()-0.5)*sprayCanWidth;
+            if (x2*x2+y2*y2<radius2) {
+                x += x2;
+                y += y2;
+                drawLine(x, y, x, y);
+                if (getTime()>start+50) {
+                    updateDisplay();
+                    start = getTime();
+                 }
+            }
+          
+            for (i=0; i<n; i++);
+        }
+   }
+
+   function draw(width) {
+        requires("1.32g");
+        setupUndo(); // requires 1.32g
+        getCursorLoc(x, y, z, flags);
+        setLineWidth(width);
+        moveTo(x,y);
+        x2=-1; y2=-1;
+        while (true) {
+            getCursorLoc(x, y, z, flags);
+            if (flags&leftClick==0) exit();
+            if (x!=x2 || y!=y2)
+                lineTo(x,y);
+            x2=x; y2 =y;
+            wait(10);
+        }
+   }
+
+   function setColorToBackgound() {
+       savep = getPixel(0, 0);
+       makeRectangle(0, 0, 1, 1);
+       run("Clear");
+       background = getPixel(0, 0);
+       run("Select None");
+       setPixel(0, 0, savep);
+       setColor( background);
+   }
+
+  // ImageJ runs this macro when user double-clicks on the pencil tool icon
+  macro 'Pencil Tool Options...' {
+       pencilWidth = getNumber("Pencil Width (pixels):", pencilWidth);
+  }
+
+  // ImageJ runs this macro when user double-clicks on the paint brush tool icon
+  macro 'Paintbrush Tool Options...' {
+      brushWidth = getNumber("Brush Width (pixels):", brushWidth);
+  }
+
+  // ImageJ runs this macro when user double-clicks on the eraser tool icon
+  macro 'Eraser Tool Options...' {
+      eraserWidth = getNumber("Eraser Width (pixels):", eraserWidth);
+  }
+
+  // ImageJ runs this macro when user double-clicks on the spay can tool icon
+  macro 'Spray Can Tool Options' {
+    sprayCanWidth = getNumber("Spray Width (pixels):", sprayCanWidth);
+    sprayCanDotSize = getNumber("Dot Size (pixels):", sprayCanDotSize);
+    sprayCanRate = getNumber("Flow Rate (1-10):", sprayCanRate);
+    if (sprayCanRate<1) sprayCanRate = 1;
+    if (sprayCanRate>10) sprayCanRate = 10;
+ }
+
+// ****************** Example action tool *****************************
+
+    macro "Action Tool - C059o3399" {
+    }
+
+   // not called if restorePreviousTool() called in "Action Tool Selected"
+   macro "Action Tool Options" {
+         requires("1.34j");
+         restorePreviousTool();
+         print("User double-clicked on the action icon");
+    }
+
+    macro "Action Tool Selected" {
+        requires("1.34j");
+        restorePreviousTool();
+        print("User clicked on the tool icon");
+    }
+
+
+

@@ -5,6 +5,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.filter.Analyzer;
 import java.awt.event.KeyEvent;
 
 /** This class represents selection consisting of one or more points. */
@@ -62,6 +63,7 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	public void drawPixels(ImageProcessor ip) {
+		ip.setLineWidth(Analyzer.markWidth);
 		for (int i=0; i<nPoints; i++) {
 			ip.moveTo(x+xp[i], y+yp[i]);
 			ip.lineTo(x+xp[i], y+yp[i]);

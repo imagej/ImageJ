@@ -21,7 +21,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
-		INTEGRATED_DENSITY,LIMIT,LABELS,INVERT_Y};
+		INTEGRATED_DENSITY,MEDIAN,LIMIT,LABELS,INVERT_Y};
 
 	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,POINTS=4;
 	private static int mode = AREAS;
@@ -99,8 +99,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		String target = tImp!=null?tImp.getTitle():NONE;
 		
  		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
-		String[] labels = new String[13];
-		boolean[] states = new boolean[13];
+		String[] labels = new String[14];
+		boolean[] states = new boolean[14];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
 		labels[1]="Mean Gray Value"; states[1]=(systemMeasurements&MEAN)!=0;
 		labels[2]="Standard Deviation"; states[2]=(systemMeasurements&STD_DEV)!=0;
@@ -114,6 +114,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[10]="Circularity"; states[10]=(systemMeasurements&CIRCULARITY)!=0;
 		labels[11]="Feret's Diameter"; states[11]=(systemMeasurements&FERET)!=0;
 		labels[12]="Integrated Density"; states[12]=(systemMeasurements&INTEGRATED_DENSITY)!=0;
+		labels[13]="Median"; states[13]=(systemMeasurements&MEDIAN)!=0;
 		gd.addCheckboxGroup(7, 2, labels, states);
 		labels = new String[3];
 		states = new boolean[3];
@@ -385,6 +386,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.FERET, roi!=null?roi.getFeretsDiameter():0.0);
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			rt.addValue(ResultsTable.INTEGRATED_DENSITY,stats.area*stats.mean);
+		if ((measurements&MEDIAN)!=0) rt.addValue(ResultsTable.MEDIAN, stats.median);
 	}
 	
 	// Update centroid and center of mass y-coordinate
@@ -599,6 +601,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.FERET);
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			add2(ResultsTable.FERET);
+		if ((measurements&MEDIAN)!=0)
+			add2(ResultsTable.MEDIAN);
 	}
 
 	private void add2(int column) {

@@ -13,6 +13,7 @@ public class ImageStatistics implements Measurements {
 	public double min;
 	public double max;
 	public double mean;
+	public double median;
 	public double stdDev;
 	public double xCentroid;
 	public double yCentroid;
@@ -27,6 +28,8 @@ public class ImageStatistics implements Measurements {
 	public double minor;
 	/** Angle in degrees of fitted ellipse */
 	public double angle;
+	/** 65536 element histogram (16-bit images only) */
+	public int[] histogram16;
 	
 	public double histMin;
 	public double histMax;
@@ -168,6 +171,17 @@ public class ImageStatistics implements Measurements {
 	public void drawEllipse(ImageProcessor ip) {
 		if (ef!=null)
 			ef.drawEllipse(ip);
+	}
+	
+	void calculateMedian(int[] hist, int start, Calibration cal) {
+		//ij.IJ.log("calculateMedian: "+histMin+"  "+hist.length+"  "+pixelCount);
+		double sum = 0;
+		int i = start-1;
+		double halfCount = pixelCount/2.0;
+		do {
+			sum += hist[++i];
+		} while (sum<=halfCount && i<255);
+		median = cal!=null?cal.getCValue(i):i;
 	}
 	
 }

@@ -22,8 +22,8 @@ popup10=-
 popup11=Rename...
 
 # Plugins installed in the File/Import submenu
-import01="Raw...",ij.plugin.Raw
-import02="Image Sequence...",ij.plugin.FolderOpener
+import01="Image Sequence...",ij.plugin.FolderOpener
+import02="Raw...",ij.plugin.Raw
 import03="LUT... ",ij.plugin.LutLoader
 import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader

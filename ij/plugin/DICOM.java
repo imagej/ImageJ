@@ -53,7 +53,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 		String fileName = od.getFileName();
 		if (fileName==null)
 			return;
-		IJ.showStatus("Opening: " + directory + fileName);
+		//IJ.showStatus("Opening: " + directory + fileName);
 		DicomDecoder dd = new DicomDecoder(directory, fileName);
 		FileInfo fi = null;
 		try {fi = dd.getFileInfo();}
@@ -568,6 +568,7 @@ class DicomDecoder {
 
 	void addInfo(int tag, String value) throws IOException {
 		String info = getHeaderInfo(tag, value);
+		if (inSequence && info!=null && vr!=SQ) info = ">" + info;
 		if (info!=null &&  tag!=ITEM) {
 			int group = tag>>>16;
 			//if (group!=previousGroup && (previousInfo!=null&&previousInfo.indexOf("Sequence:")==-1))

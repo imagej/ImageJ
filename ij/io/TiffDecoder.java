@@ -141,7 +141,7 @@ public class TiffDecoder {
 	
 	byte[] getString(int count, int offset) throws IOException {
 		count--; // skip null byte at end of string
-		if (count==0)
+		if (count<=0)
 			return null;
 		byte[] bytes = new byte[count];
 		int saveLoc = in.getFilePointer();
@@ -409,8 +409,8 @@ public class TiffDecoder {
 				case COMPRESSION:
 					if (value==5) { // LZW compression is handled
 						int bpp = fi.getBytesPerPixel();
-						if (bpp==2 || bpp==6)
-							error("ImageJ cannot open 16-bit or 48-bit LZW compressed TIFFs");
+						if (bpp==6)
+							error("ImageJ cannot open 48-bit LZW compressed TIFFs");
 						fi.compression = FileInfo.LZW;
 					} else if (value!=1 && value!=7) {
 						// don't abort with Spot camera compressed (7) thumbnails
@@ -421,7 +421,7 @@ public class TiffDecoder {
 					}
 					break;
 				case PREDICTOR:
-					if (value==2 && fi.compression==FileInfo.LZW) 
+					if (value==2 && fi.compression==FileInfo.LZW)
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
 					break;
 				case COLOR_MAP: 

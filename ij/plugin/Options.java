@@ -90,7 +90,8 @@ public class Options implements PlugIn {
 	void pointToolOptions() {
 		GenericDialog gd = new GenericDialog("Point Tool");
 		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
-		gd.addCheckbox("Auto Measure Mode", Prefs.pointAutoMeasure);
+		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
+		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -98,6 +99,8 @@ public class Options implements PlugIn {
 		if (width<0) width = 0;
 		Analyzer.markWidth = width;
 		Prefs.pointAutoMeasure = gd.getNextBoolean();
+		Prefs.pointAutoNextSlice = gd.getNextBoolean();
+		if (Prefs.pointAutoNextSlice) Prefs.pointAutoMeasure = true;
 		return;
 	}
 

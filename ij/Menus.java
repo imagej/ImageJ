@@ -616,9 +616,37 @@ public class Menus {
 			}
 		}
     	catch (Exception e) {}
-    	return null;
+		return autoGenerateConfigFile(jar);
 	}
 	
+    /** Creates a configuration file for JAR/ZIP files that do not have one. */
+	InputStream autoGenerateConfigFile(String jar) {
+		StringBuffer sb = null;
+		try {
+			ZipFile jarFile = new ZipFile(jar);
+			Enumeration entries = jarFile.entries();
+			while (entries.hasMoreElements()) {
+				ZipEntry entry = (ZipEntry) entries.nextElement();
+				String name = entry.getName();
+				//IJ.log(name);
+				if (name.endsWith(".class") && name.indexOf("_")>0 && name.indexOf("$")==-1
+				&& name.indexOf("/")==-1 && !name.startsWith("_")) {
+					if (sb==null) sb = new StringBuffer();
+					String className = name.substring(0, name.length()-6);
+					//className = className.replace('/', '.');
+					name = className.replace('_', ' ');
+					sb.append("Plugins, \""+name+"\", "+className+"\n");
+				}
+			}
+		}
+    	catch (Exception e) {}
+		//IJ.log(""+(sb!=null?sb.toString():"null"));
+		if (sb==null)
+			return null;
+		else
+    		return new ByteArrayInputStream(sb.toString().getBytes());
+	}
+
 	/** Returns a list of the plugins with directory names removed. */
 	String[] getStrippedPlugins(String[] plugins) {
 		String[] plugins2 = new String[plugins.length];
@@ -963,20 +991,22 @@ public class Menus {
 		int first = WINDOW_MENU_ITEMS;
 		int last = window.getItemCount()-1;
 		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last+" "+oldLabel+" "+newLabel);
-		for (int i=first; i<=last; i++) {
-			MenuItem item = window.getItem(i);
-			//IJ.write(i+" "+item.getLabel()+" "+newLabel);
-			String label = item.getLabel();
-			if (item!=null && label.startsWith(oldLabel)) {
-				if (label.endsWith("K")) {
-					int index = label.lastIndexOf(' ');
-					if (index>-1)
-						newLabel += label.substring(index, label.length());
+		try {  // workaround for Linux/Java 5.0/bug
+			for (int i=first; i<=last; i++) {
+				MenuItem item = window.getItem(i);
+				//IJ.write(i+" "+item.getLabel()+" "+newLabel);
+				String label = item.getLabel();
+				if (item!=null && label.startsWith(oldLabel)) {
+					if (label.endsWith("K")) {
+						int index = label.lastIndexOf(' ');
+						if (index>-1)
+							newLabel += label.substring(index, label.length());
+					}
+					item.setLabel(newLabel);
+					return;
 				}
-				item.setLabel(newLabel);
-				return;
 			}
-		}
+		} catch (NullPointerException e) {}
 	}
 	
 	/** Adds a file path to the beginning of the File/Open Recent submenu. */

@@ -48,7 +48,7 @@ public class Duplicater implements PlugInFilter {
 					imp2.setProperty("Info", label);
 			}
 		}
-		imp.killRoi();
+		//imp.killRoi();
 		imp2.show();
 	}
                 

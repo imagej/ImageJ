@@ -26,8 +26,6 @@ public class Thresholder implements PlugIn, Measurements {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{IJ.noImage(); return;}
-		//if (imp.getType()==ImagePlus.COLOR_RGB)
-		//	{IJ.error("RGB images are not supported."); return;}
 		if (imp.getStackSize()==1) {
 			Undo.setup(Undo.COMPOUND_FILTER, imp);
 			applyThreshold(imp);

@@ -40,8 +40,7 @@ public class Info implements PlugInFilter {
 		if (infoProperty!=null)
 			return infoProperty + "\n------------------------\n" + info;
 		else
-			return info;
-		
+			return info;		
 	}
 
 	String getInfo(ImagePlus imp, ImageProcessor ip) {

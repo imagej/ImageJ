@@ -29,7 +29,7 @@ public class Opener {
 	private static int fileType;
 	private boolean error;
 	private boolean isRGB48;
-
+	private boolean silentMode;
 
 	public Opener() {
 	}
@@ -90,7 +90,7 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
-		IJ.showStatus("Opening: " + path);
+		if (!silentMode) IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
 		if (imp!=null) {
@@ -657,6 +657,11 @@ public class Opener {
 			ImagePlus imp3 = new ImagePlus("Blue-"+imp.getTitle(), stack3);
 			imp3.getProcessor().resetMinAndMax();
 			imp3.show();
+	}
+	
+	/** The "Opening: path" status message is not displayed in silent mode. */
+	public void setSilentMode(boolean mode) {
+		silentMode = mode;
 	}
 
 }

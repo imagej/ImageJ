@@ -147,12 +147,9 @@ public class SurfacePlotter implements PlugIn {
 		double min = ip.getMin();
 		double max = ip.getMax();
 				
-		if(invertedLut)
-			ip.invert();
-		if(whiteBackground)
-			ip.invert();		
-		if (smooth)
-			ip.smooth();
+		if(invertedLut) ip.invert();
+		if(whiteBackground) ip.invert();
+		if (smooth) ip.smooth();
 
 		x = new int[width+2];
 		y = new int[width+2];
@@ -286,10 +283,17 @@ public class SurfacePlotter implements PlugIn {
 			min = img.getProcessor().getMin();
 			max = img.getProcessor().getMax();
 		}
+		//IJ.log("");
+		//IJ.log(min+"  "+max+"  "+cal.getCValue((int)min)+"  "+cal.getCValue((int)max));
+		//ip2.putPixelValue(0,0,0);
+		//boolean zeroIsBlack
+		//IJ.log(ip2.getPixelValue(+"  "+max+"  "+cal.getCValue((int)min)+"  "+cal.getCValue((int)max));
 		if (cal.calibrated()) {
 			min = cal.getCValue((int)min);
 			max = cal.getCValue((int)max);
 		}
+		//if (invertedPixelValues)
+		//	{double t=max; max=min; min=t;}
 		ip2.setAntialiasedText(true);
 		s = String.valueOf( (double) Math.round(max*10)/10);
 		w =  ip.getFontMetrics().stringWidth(s);

@@ -15,7 +15,7 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 	private int width, height;
 	private boolean rawBits;
 	private String tifName="";
-	private	String dir = Prefs.getHomeDir()+"/";
+	private	String dir;
 	
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("ZIP/TIFF Reader...", arg);
@@ -24,6 +24,8 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 		if (name==null)
 			return;
 		String path = directory + name;
+		dir = Prefs.getHomeDir();
+		if (dir==null) dir = ""; else dir = dir+"/";
 		
 		IJ.showStatus("Opening: " + path);
 		ImagePlus imp;

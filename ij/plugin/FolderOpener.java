@@ -96,7 +96,9 @@ public class FolderOpener implements PlugIn {
 					continue;
 				if ((counter++%increment)!=0)
 					continue;
-				ImagePlus imp = new Opener().openImage(directory, list[i]);
+				Opener opener = new Opener();
+				opener.setSilentMode(true);
+				ImagePlus imp = opener.openImage(directory, list[i]);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();

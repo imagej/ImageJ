@@ -27,6 +27,8 @@ public class ColorStatistics extends ImageStatistics {
 			getCentroid(ip);
 		if ((mOptions&CENTER_OF_MASS)!=0)
 			getCenterOfMass(ip);
+		if ((mOptions&MEDIAN)!=0)
+			calculateMedian(histogram, 0, cal);
 	}
 
 	void getCenterOfMass(ImageProcessor ip) {

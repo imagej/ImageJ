@@ -91,6 +91,8 @@ public class ImageReader {
 	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
+		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+			return readCompressed16bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		short[] pixels = new short[nPixels];
@@ -137,6 +139,56 @@ public class ImageReader {
 		return pixels;
 	}
 	
+	short[] readCompressed16bitImage(InputStream in) throws IOException {
+		short[] pixels = new short[nPixels];
+		int base = 0;
+		short last = 0;
+		for (int k=0; k<fi.stripOffsets.length; k++) {
+			if (k > 0) {
+				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
+				if (skip > 0) in.skip(skip);
+			}
+			byte[] byteArray = new byte[fi.stripLengths[k]];
+			int read = 0, left = byteArray.length;
+			while (left > 0) {
+				int r = in.read(byteArray, read, left);
+				if (r == -1) {eofError(); break;}
+				read += r;
+				left -= r;
+			}
+			byteArray = lzwUncompress(byteArray);
+			int pixelsRead = byteArray.length/bytesPerPixel;
+			if (fi.intelByteOrder) {
+				if (fi.fileType==FileInfo.GRAY16_SIGNED)
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)((((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff))+32768);
+				else
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)(((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
+			} else {
+				if (fi.fileType==FileInfo.GRAY16_SIGNED)
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)((((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff))+32768);
+				else
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
+			}
+			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+				// CTR: 16-bit differencing expands the bytes into 16-bit words,
+				// takes the difference, then repacks the results into two bytes again.
+				// I believe doing the differencing here will work, but I did not have
+				// any 16-bit or 48-bit LZW TIFFs with differencing, so this code is
+				// untested.
+				for (int b=base+1; b<(base+pixelsRead); b++) {
+					pixels[b] += last;
+					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
+				}
+			base += pixelsRead;
+			IJ.showProgress(k+1, fi.stripOffsets.length);
+		}
+		return pixels;
+	}
+
 	float[] read32bitImage(InputStream in) throws IOException {
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];

@@ -106,6 +106,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
     private int beginningCount;
 	private Rectangle r;
 	private ImageProcessor mask;
+	private double totalArea;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -288,6 +289,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (r==null) {
 			r = ip.getRoi();
 			mask = ip.getMask();
+			if (displaySummary) {
+				if (mask!=null)
+					totalArea = ImageStatistics.getStatistics(ip, AREA, calibration).area;
+				else
+					totalArea = r.width*calibration.pixelWidth*r.height*calibration.pixelHeight;
+			}
 		}
 		if (r.width<width || r.height<height || mask!=null)
 			eraseOutsideRoi(ip, r, mask);
@@ -362,8 +369,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Calibration cal = imp.getCalibration();
 			String total = "\t"+IJ.d2s(sum,places);
 			String average = "\t"+IJ.d2s(sum/particleCount,places);
-			double imageArea = imp.getWidth()*cal.pixelWidth*imp.getHeight()*cal.pixelHeight;
-			String fraction = "\t"+IJ.d2s(sum*100.0/imageArea,1);
+			String fraction = "\t"+IJ.d2s(sum*100.0/totalArea,1);
 			aLine = label+"\t"+particleCount+total+average+fraction;
 		} else
 			aLine = label+"\t"+particleCount;
@@ -467,10 +473,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
 		Rectangle r = roi.getBounds();
 		if (r.width>1 && r.height>1) {
-                    PolygonRoi proi = (PolygonRoi)roi;
-                    pf.setPolygon(proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
-                    ip2.setMask(pf.getMask(r.width, r.height));
-                }
+			PolygonRoi proi = (PolygonRoi)roi;
+			pf.setPolygon(proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
+			ip2.setMask(pf.getMask(r.width, r.height));
+		}
 		ip2.setRoi(r);
 		ip.setValue(fillColor);
 		ImageStatistics stats = getStatistics(ip2, measurements, calibration);
@@ -611,7 +617,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			s += "Total Area: "+total+" "+unit+"^2\n";
 			String average = IJ.d2s(sum/totalCount,places);
 			s += "Average Size: "+IJ.d2s(sum/totalCount,places)+" "+unit+"^2\n";
-			double totalArea = imp.getWidth()*cal.pixelWidth*imp.getHeight()*cal.pixelHeight;
 			if (processStack) totalArea *= imp.getStackSize();
 			String fraction = IJ.d2s(sum*100.0/totalArea,1);
 			s += "Area Fraction: "+fraction+"%";

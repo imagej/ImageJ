@@ -26,6 +26,7 @@ public class ShortStatistics extends ImageStatistics {
 		else
 			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}
 		int[] hist = ip.getHistogram(); // 65536 bin histogram
+		histogram16 =hist;
 		float[] cTable = cal!=null?cal.getCTable():null;
 		getRawMinAndMax(hist, minThreshold, maxThreshold);
 		histMin = min;
@@ -39,9 +40,10 @@ public class ShortStatistics extends ImageStatistics {
 			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&CENTER_OF_MASS)!=0)
 			getCenterOfMass(ip, minThreshold, maxThreshold);
-		if ((mOptions&MIN_MAX)!=0 && cTable!=null) {
+		if ((mOptions&MIN_MAX)!=0 && cTable!=null)
 			getCalibratedMinAndMax(hist, (int)min, (int)max, cTable);
-		}
+		if ((mOptions&MEDIAN)!=0)
+			calculateMedian(hist, (int)histMin, cal);
 	}
 
 	void getRawMinAndMax(int[] hist, int minThreshold, int maxThreshold) {

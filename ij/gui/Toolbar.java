@@ -30,10 +30,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int SPARE4 = 17;
 	public static final int SPARE5 = 18;
 	public static final int SPARE6 = 19;
+	public static final int SPARE7 = 20;
 	//public static final int NONE = 100;
 
-	private static final int NUM_TOOLS = 20;
-	private static final int N_SPARES = 6;
+	private static final int NUM_TOOLS = 21;
 	private static final int SIZE = 22;
 	private static final int OFFSET = 3;
 		
@@ -112,7 +112,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		int y = OFFSET;
 		if (down[tool]) { x++; y++;}
 		this.g = g;
-		if (tool>=SPARE1 && tool<=SPARE6 && icons[tool]!=null) {
+		if (tool>=SPARE1 && tool<=SPARE7 && icons[tool]!=null) {
 			drawIcon(g, icons[tool], x, y);
 			return;
 		}
@@ -282,7 +282,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void showMessage(int tool) {
-		if (tool>=SPARE1 && tool<=SPARE6 && names[tool]!=null) {
+		if (tool>=SPARE1 && tool<=SPARE7 && names[tool]!=null) {
 			IJ.showStatus(names[tool]);
 			return;
 		}
@@ -361,7 +361,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void setTool(int tool) {
 		if (tool==current || tool<0 || tool>=NUM_TOOLS)
 			return;
-		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE6)) && names[tool]==null)
+		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE7)) && names[tool]==null)
 			names[tool] = "Spare tool"; // enable tool
 		setTool2(tool);
 	}
@@ -369,7 +369,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private void setTool2(int tool) {
 		if (tool==current || tool<0 || tool>=NUM_TOOLS)
 			return;
-		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE6)) && names[tool]==null)
+		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE7)) && names[tool]==null)
 			return;
 		current = tool;
 		down[current] = true;
@@ -505,8 +505,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
+	public void restorePreviousTool() {
+		setTool2(mpPrevious);
+	}
+	
 	boolean isMacroTool(int tool) {
-		return tool>=SPARE1 && tool<=SPARE6 && names[tool]!=null && macroInstaller!=null;
+		return tool>=SPARE1 && tool<=SPARE7 && names[tool]!=null && macroInstaller!=null;
 	}
 	
 	public void mouseReleased(MouseEvent e) {}
@@ -544,7 +548,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (names[SPARE1]==null)
 			tool = SPARE1;
 		if (tool==-1) {
-			for (int i=SPARE2; i<=SPARE6; i++) {
+			for (int i=SPARE2; i<=SPARE7; i++) {
 				if (names[i]==null) {
 					tool = i;
 					break;

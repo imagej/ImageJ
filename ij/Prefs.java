@@ -61,6 +61,8 @@ public class Prefs {
 	public static boolean blackCanvas;
 	/** Point tool auto-measure mode. */
 	public static boolean pointAutoMeasure;
+	/** Point tool auto-next slice mode (not saved in IJ_Prefs). */
+	public static boolean pointAutoNextSlice;
 	/** Require control or command key for keybaord shortcuts. */
 	public static boolean requireControlKey;
 	/** Open 8-bit images with inverting LUT so 0 is white and 255 is black. */

@@ -1,0 +1,25 @@
+// This macro demonstrates how to pass numeric 
+// arguments to another macro called by runMacro()
+
+  requires("1.34g");
+  rgb = split(getArgument());
+  if (lengthOf(rgb)!=3)
+      exit("Call using 'runMacro(\"RGB2HSV\", \"red green blue\")'");
+  R = parseFloat(rgb[0]);
+  G = parseFloat(rgb[1]);
+  B = parseFloat(rgb[2]);
+  // do calculations
+  H=0.1; S=0.2; V=0.3;
+  return toString(H+" "+S+" "+V);
+  exit;
+
+  // This is an example that shows how to call this macro
+  R=128; G=242; B=250;
+  hsv = split(runMacro("RGB2HSV", R+" "+G+" "+B));
+  H = parseFloat(hsv[0]);
+  S = parseFloat(hsv[1]);
+  V = parseFloat(hsv[2]);
+  print("H="+H+", S="+S+", V="+V)
+
+
+  

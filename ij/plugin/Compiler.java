@@ -99,7 +99,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		String fileName, directory;
 	 	if (path.equals("")) {
 			if (dir==null)
-				dir = Menus.getPlugInsPath();
+				dir = Prefs.getHomeDir();
 			OpenDialog od = new OpenDialog(msg, dir, name);
 			directory = od.getDirectory();
 			fileName = od.getFileName();

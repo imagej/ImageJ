@@ -74,7 +74,11 @@ public class Macro_Runner implements PlugIn {
     	added if <code>name</code> does not have an extension. */
 	public String runMacroFile(String name, String arg) {
         boolean fullPath = name.startsWith("/") || name.indexOf(":\\")==1;
-        if (!fullPath) name = Menus.getMacrosPath() + name;
+        if (!fullPath) {
+        	String macrosDir = Menus.getMacrosPath();
+        	if (macrosDir!=null)
+        		name = Menus.getMacrosPath() + name;
+        }
         if (name.indexOf(".")==-1) name = name + ".txt";
 		File file = new File(name);
 		int size = (int)file.length();
