@@ -174,13 +174,14 @@ public class ImageStatistics implements Measurements {
 	}
 	
 	void calculateMedian(int[] hist, int start, Calibration cal) {
-		//ij.IJ.log("calculateMedian: "+histMin+"  "+hist.length+"  "+pixelCount);
+		//ij.IJ.log("calculateMedian: "+start+"  "+hist.length+"  "+pixelCount);
 		double sum = 0;
 		int i = start-1;
 		double halfCount = pixelCount/2.0;
+		int max = hist.length==65536?65535:255;
 		do {
 			sum += hist[++i];
-		} while (sum<=halfCount && i<255);
+		} while (sum<=halfCount && i<max);
 		median = cal!=null?cal.getCValue(i):i;
 	}
 	

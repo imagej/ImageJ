@@ -23,7 +23,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	int slice2;
 	boolean canceled;
 	boolean macro;
-	//boolean altKeyDown;
+	boolean ignoreInterrupts;
 
 	public RoiManager() {
 		super("ROI Manager");
@@ -101,7 +101,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getStateChange()==ItemEvent.SELECTED
-		&& WindowManager.getCurrentImage()!=null) {
+		&& WindowManager.getCurrentImage()!=null && !ignoreInterrupts) {
 			int index = 0;
             try {index = Integer.parseInt(e.getItem().toString());}
             catch (NumberFormatException ex) {}
@@ -636,6 +636,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
 			instance = null;	
 		}
+		ignoreInterrupts = false;
 	}
 	
 	/** Returns a reference to the ROI Manager
@@ -672,6 +673,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			draw();
 		else if (cmd.equals("combine"))
 			combine();
+		else if (cmd.equals("deselect"))
+			select(-1);
+		else if (cmd.equals("reset"))
+			list.removeAll();
 		else
 			ok = false;
 		macro = false;
@@ -701,6 +706,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return ok;
 		}
 		return false;
+	}
+	
+	public void select(int index) {
+			ignoreInterrupts = true;
+			int n = list.getItemCount();
+			for (int i=0; i<n; i++)
+				if (list.isSelected(i)) list.deselect(i);
+			if (index>=0 && index<n) {
+				list.select(index);
+				restore(index, true);	
+				IJ.wait(10);
+			}
 	}
 	
     /** Overrides PlugInFrame.close(). */

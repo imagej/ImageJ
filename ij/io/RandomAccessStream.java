@@ -77,9 +77,11 @@ public final class RandomAccessStream extends InputStream {
     }
 
     public final void readFully(byte[] bytes) throws IOException {
- 		//if (ij.IJ.debugMode) ij.IJ.log("readFully: "+bytes.length);
+        readFully(bytes, bytes.length);
+    }
+
+    public final void readFully(byte[] bytes, int len) throws IOException {
    		int read = 0;
-    	int len = bytes.length;
         do {
             int l = read(bytes, read, len - read);
             if(l < 0) break;

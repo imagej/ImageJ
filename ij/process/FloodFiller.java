@@ -3,8 +3,11 @@ import ij.*;
 import ij.gui.Toolbar;
 
 
-/** This class does flood filling, used by the Analyze Particles command
-and the floodFill() macro function. */
+/**	This class, which does flood filling, is used by the floodFill() macro function and
+	will be used by the particle analyzer in a future version of ImageJ.
+	The Wikipedia at "http://en.wikipedia.org/wiki/Flood_fill" has a good 
+	description of the algorithm used here as well as examples in C and Java. 
+*/
 public class FloodFiller {
 
 	int maxStackSize = 500; // will be increased as needed

@@ -25,10 +25,17 @@ public class FolderOpener implements PlugIn {
 		String name = od.getFileName();
 		if (name==null)
 			return;
-
-		String[] list = new File(directory).list();
+		String[] list = (new File(directory)).list();
 		if (list==null)
 			return;
+		String title = directory;
+		if (title.endsWith(File.separator))
+			title = title.substring(0, title.length()-1);
+		int index = title.lastIndexOf(File.separatorChar);
+		if (index!=-1) title = title.substring(index + 1);
+		if (title.endsWith(":"))
+			title = title.substring(0, title.length()-1);
+		
 		IJ.register(FolderOpener.class);
 		ij.util.StringSorter.sort(list);
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
@@ -43,7 +50,8 @@ public class FolderOpener implements PlugIn {
 			for (int i=0; i<list.length; i++) {
 				if (list[i].endsWith(".txt"))
 					continue;
-				ImagePlus imp = new Opener().openImage(directory, list[i]);
+				IJ.redirectErrorMessages();
+				ImagePlus imp = (new Opener()).openImage(directory, list[i]);
 				if (imp!=null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
@@ -98,6 +106,7 @@ public class FolderOpener implements PlugIn {
 					continue;
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
+				IJ.redirectErrorMessages();
 				ImagePlus imp = opener.openImage(directory, list[i]);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
@@ -137,9 +146,9 @@ public class FolderOpener implements PlugIn {
 					}
 				}
 				if (imp.getWidth()!=width || imp.getHeight()!=height)
-					IJ.log(list[i] + ": wrong dimensions");
+					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
 				else if (bitDepth2!=bitDepth) {
-					IJ.log(list[i] + ": wrong bit depth, "+bitDepth+" expected, "+bitDepth2+" found");
+					IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
 				} else {
 					count = stack.getSize()+1;
 					IJ.showStatus(count+"/"+n);
@@ -167,7 +176,9 @@ public class FolderOpener implements PlugIn {
 			if (stack!=null) stack.trim();
 		}
 		if (stack!=null && stack.getSize()>0) {
-			ImagePlus imp2 = new ImagePlus("Stack", stack);
+			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0)
+				stack = (new DICOM_Sorter()).sort(stack);
+			ImagePlus imp2 = new ImagePlus(title, stack);
 			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
 				imp2.getProcessor().setMinAndMax(min, max);
 			imp2.setFileInfo(fi); // saves FileInfo of the first image

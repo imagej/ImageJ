@@ -851,7 +851,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 				ip.resetMinAndMax();
 				IJ.showStatus(index+": min="+ip.getMin()+", max="+ip.getMax());
 			}
-	    	updateAndRepaintWindow();
+			if (!Interpreter.isBatchMode())
+				updateAndRepaintWindow();
 		}
 	}
 

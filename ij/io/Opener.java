@@ -488,7 +488,7 @@ public class Opener {
 			return null;
 		ImagePlus imp = null;
 		if (IJ.debugMode) // dump tiff tags
-			IJ.log(info[0].info);
+			IJ.log(info[0].debugInfo);
 		if (info.length>1) { // try to open as stack
 			imp = openTiffStack(info);
 			if (imp!=null)

@@ -28,7 +28,7 @@ offer your changes to me so I can possibly add them to the "official" version.
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.34j";
+	public static final String VERSION = "1.34k";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -103,11 +103,6 @@ public class ImageJ extends Frame implements ActionListener,
 		pack();
 		setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
 		show();
-		//if (IJ.isMacOSX()) { // hack needed for window to display correctly Mac OS X
-		//	setLocation(loc.x+1, loc.y+1);
-		//	setLocation(loc.x, loc.y);			
-		//	pack(); 
-		//}
 		if (err1!=null)
 			IJ.error(err1);
 		if (err2!=null)

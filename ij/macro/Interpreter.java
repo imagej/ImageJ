@@ -229,7 +229,8 @@ public class Interpreter implements MacroConstants {
 			case STRING_CONSTANT:
 			case '(': 
 				putTokenBack();
-				IJ.log(getString());
+				String s = getString();
+				if (!s.equals("NaN")) IJ.log(s);
 				return;
 			case EOF: break;
 			default:
@@ -504,6 +505,7 @@ public class Interpreter implements MacroConstants {
 		switch (token) {
 			case PREDEFINED_FUNCTION: case USER_FUNCTION: case VAR:
 			case WORD: case '(': case PLUS_PLUS: case RETURN:
+			case NUMERIC_FUNCTION: case STRING_FUNCTION:
 				skipSimpleStatement();
 				break;
 			case IF:

@@ -169,6 +169,17 @@ public class ImageStack {
 		return nSlices;
 	}
 
+	/** Returns the slice labels as an array of Strings. Note
+		that the size of the returned array may be greater than
+		the number of slices currently in the stack. Returns null
+		if the stack is empty or the label of the first slice is null.  */
+	public String[] getSliceLabels() {
+		if (nSlices==0 || label[0]==null)
+			return null;
+		else
+			return label;
+	}
+	
 	/** Returns the label of the specified slice, were 1<=n<=nslices.
 		Returns null if the slice does not have a label. For DICOM
 		and FITS stacks, labels may contain header information. */

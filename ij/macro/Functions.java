@@ -115,7 +115,6 @@ public class Functions implements MacroConstants, Measurements {
 			case RESTORE_SETTINGS: restoreSettings(); break;
 			case SET_KEY_DOWN: setKeyDown(); break;
 			case OPEN: open(); break;
-			case ROI_MANAGER: roiManager(); break;
 			case SET_FONT: setFont(); break;
 			case GET_MIN_AND_MAX: getMinAndMax(); break;
 			case CLOSE: close(); break;
@@ -130,6 +129,8 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_RAW_STATISTICS: getStatistics(false); break;
 			case FLOOD_FILL: floodFill(); break;
 			case RESTORE_PREVIOUS_TOOL: restorePreviousTool(); break;
+			case SET_VOXEL_SIZE: setVoxelSize(); break;
+			case GET_LOCATION_AND_SIZE: getLocationAndSize(); break;
 		}
 	}
 	
@@ -170,6 +171,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_SLICE_NUMBER: interp.getParens(); value=getImage().getCurrentSlice(); break;
 			case SCREEN_WIDTH: case SCREEN_HEIGHT: value = getScreenDimension(type); break;
 			case CALIBRATE: value = getImage().getCalibration().getCValue(getArg()); break;
+			case ROI_MANAGER: value = roiManager(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -668,8 +670,8 @@ public class Functions implements MacroConstants, Measurements {
 					ip.resetRoi();
 					ip.fill();
 				} else {
-					ip.setRoi(roi.getBounds());
-					ip.fill(imp.getMask());
+					ip.setRoi(roi);
+					ip.fill(ip.getMask());
 				}
 				updateAndDraw(imp);
 				break;
@@ -1756,13 +1758,18 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 	}
 	
-	void roiManager() {
+	double roiManager() {
 		String cmd = getFirstString();
 		cmd = cmd.toLowerCase();
 		String path = null;
+		int index=0;
+		double count=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save");
+		boolean select = cmd.equals("select");
 		if (twoArgCommand)
 			path = getLastString();
+		else if (select)
+			index = (int)getLastArg();
 		else
 			interp.getRightParen();
 		Frame frame = WindowManager.getFrame("ROI Manager");
@@ -1774,10 +1781,17 @@ public class Functions implements MacroConstants, Measurements {
 		RoiManager rm = (RoiManager)frame;
 		if (twoArgCommand)
 			rm.runCommand(cmd, path);
+		else if (select) {
+			int n = rm.getList().getItemCount();
+			checkIndex(index, 0, n-1);
+			rm.select(index);
+		} else if (cmd.equals("count"))
+			count = rm.getList().getItemCount();
 		else {
 			if (!rm.runCommand(cmd))
 				interp.error("Invalid ROI Manager command");
-		}			
+		}
+		return count;			
 	}
 	
 	void setFont() {
@@ -2156,5 +2170,39 @@ public class Functions implements MacroConstants, Measurements {
 		if (tb!=null) tb.restorePreviousTool();
 	}
 	
+	void setVoxelSize() {
+		double width = getFirstArg();
+		double height = getNextArg();
+		double depth = getNextArg();
+		String unit = getLastString();
+		resetImage();
+		ImagePlus imp = getImage();
+		Calibration cal = imp.getCalibration();
+		cal.pixelWidth = width;
+		cal.pixelHeight = height;
+		cal.pixelDepth = depth;
+		cal.setUnit(unit);
+		imp.repaintWindow();
+	}
+
+	void getLocationAndSize() {
+		Variable v1 = getFirstVariable();
+		Variable v2 = getNextVariable();
+		Variable v3 = getNextVariable();
+		Variable v4 = getLastVariable();
+		ImagePlus imp = getImage();
+		int x=0, y=0, w=0, h=0;
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			Point loc = win.getLocation();
+			Dimension size = win.getSize();
+			x=loc.x; y=loc.y; w=size.width; h=size.height;
+		}
+		v1.setValue(x);
+		v2.setValue(y);
+		v3.setValue(w);
+		v4.setValue(h);
+	}
+
 } // class Functions
 

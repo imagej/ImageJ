@@ -63,6 +63,9 @@ public class FileSaver {
 		String path = getPath("TIFF", ".tif");
 		if (path==null)
 			return false;
+		Object info = imp.getProperty("Info");
+		if (info!=null && (info instanceof String))
+			fi.info = (String)info;
 		if (imp.getStackSize()==1)
 			return saveAsTiff(path);
 		else
@@ -94,6 +97,7 @@ public class FileSaver {
 		if (fi.pixels==null && imp.getStack().isVirtual())
 			{IJ.error("Save As Tiff", "Virtual stacks not supported."); return false;}
 		fi.description = getDescriptionString();
+		fi.sliceLabels = imp.getStack().getSliceLabels();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -130,6 +134,10 @@ public class FileSaver {
 		if (!name.endsWith(".tif"))
 			name = name+".tif";
 		fi.description = getDescriptionString();
+		Object info = imp.getProperty("Info");
+		if (info!=null && (info instanceof String))
+			fi.info = (String)info;
+		fi.sliceLabels = imp.getStack().getSliceLabels();
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));

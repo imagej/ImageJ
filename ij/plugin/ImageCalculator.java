@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.plugin.filter.*;
 import ij.measure.Calibration;
 
+/** This plugin implements the Process/Image Calculator command. */
 public class ImageCalculator implements PlugIn {
 
 	private static int operator;
@@ -208,7 +209,7 @@ public class ImageCalculator implements PlugIn {
 			stack2 = null;
 			return null;
 		}
-		ImagePlus img3 = new ImagePlus("Result", stack2);
+		ImagePlus img3 = new ImagePlus("Result of "+img1.getShortTitle(), stack2);
 		img3.setCalibration(cal);
 		return img3;
 	}

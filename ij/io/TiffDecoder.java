@@ -1,4 +1,5 @@
 package ij.io;
+import ij.util.Tools;
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -34,8 +35,8 @@ public class TiffDecoder {
 	public static final int METAMORPH2 = 33629;
 	public static final int IPLAB = 34122;
 	public static final int NIH_IMAGE_HDR = 43314;
-	public static final int IMAGEJ_META_DATA = 50838; // private tag registered with Adobe
-	public static final int IMAGEJ_META_DATA_COUNTS = 50839; // private tag registered with Adobe
+	public static final int META_DATA_BYTE_COUNTS = 50838; // private tag registered with Adobe
+	public static final int META_DATA = 50839; // private tag registered with Adobe
 	
 	//constants
 	static final int UNSIGNED = 1;
@@ -54,6 +55,7 @@ public class TiffDecoder {
 	private boolean littleEndian;
 	private String dInfo;
 	private int ifdCount;
+	private int[] metaDataCounts;
 		
 	public TiffDecoder(String directory, String name) {
 		this.directory = directory;
@@ -155,12 +157,22 @@ public class TiffDecoder {
 		saves spatial and density calibration data in this string. For
 		stacks, it also saves the number of images to avoid having to
 		decode an IFD for each image. */
-	public void decodeImageDescription(byte[] description, FileInfo fi) {
+	public void saveImageDescription(byte[] description, FileInfo fi) {
 		if (description.length<7)
 			return;
 		if (ij.IJ.debugMode)
 			ij.IJ.log("Image Description: " + new String(description).replace('\n',' '));
-		fi.description = new String(description);
+        String id = new String(description);
+		fi.description = id;
+        int index1 = id.indexOf("images=");
+        if (index1>0) {
+            int index2 = id.indexOf("\n", index1);
+            if (index2>0) {
+                String images = id.substring(index1+7,index2);
+                int n = (int)Tools.parseDouble(images, 0.0);
+                if (n>1) fi.nImages = n;
+            }
+        }
 	}
 
 	void decodeNIHImageHeader(int offset, FileInfo fi) throws IOException {
@@ -268,6 +280,8 @@ public class TiffDecoder {
 			case COLOR_MAP: name="ColorMap"; break; 
 			case SAMPLE_FORMAT: name="SampleFormat"; break; 
 			case NIH_IMAGE_HDR: name="NIHImageHeader"; break; 
+			case META_DATA_BYTE_COUNTS: name="MetaDataByteCounts"; break; 
+			case META_DATA: name="MetaData"; break; 
 			default: name="???"; break;
 		}
 		String cs = (count==1)?"":", count=" + count;
@@ -303,7 +317,7 @@ public class TiffDecoder {
 			fieldType = getShort();
 			count = getInt();
 			value = getValue(fieldType, count);
-			if (debugMode) dumpTag(tag, count, value, fi);
+			if (debugMode && ifdCount<10) dumpTag(tag, count, value, fi);
 			//ij.IJ.write(i+"/"+nEntries+" "+tag + ", count=" + count + ", value=" + value);
 			//if (tag==0) return null;
 			switch (tag) {
@@ -437,7 +451,7 @@ public class TiffDecoder {
 				case IMAGE_DESCRIPTION: 
 					if (ifdCount==1) {
 						byte[] s = getString(count,value);
-						if (s!=null) decodeImageDescription(s,fi);
+						if (s!=null) saveImageDescription(s,fi);
 					}
 					break;
 				case METAMORPH1: case METAMORPH2:
@@ -455,6 +469,17 @@ public class TiffDecoder {
 					if (count==256)
 						decodeNIHImageHeader(value, fi);
 					break;
+ 				case META_DATA_BYTE_COUNTS: 
+					int saveLoc = in.getFilePointer();
+					in.seek(value);
+					metaDataCounts = new int[count];
+					for (int c=0; c<count; c++)
+						metaDataCounts[c] = getInt();
+					in.seek(saveLoc);
+					break;
+ 				case META_DATA: 
+ 					getMetaData(value, fi);
+ 					break;
 				default:
 			}
 		}
@@ -463,10 +488,70 @@ public class TiffDecoder {
 		fi.directory = directory;
 		if (url!=null)
 			fi.url = url;
-		if (debugMode) dInfo += "    offset=" + fi.offset + "\n";
 		return fi;
 	}
 
+	void getMetaData(int loc, FileInfo fi) throws IOException {
+		if (metaDataCounts==null || metaDataCounts.length==0)
+			return;
+		int maxTypes = 10;
+		int saveLoc = in.getFilePointer();
+		in.seek(loc);
+		int n = metaDataCounts.length;
+		int hdrSize = metaDataCounts[0];
+		if (hdrSize<12 || hdrSize>804)
+			{in.seek(saveLoc); return;}
+		int magicNumber = getInt();
+		if (magicNumber!=0x494a494a)  // "IJIJ"
+			{in.seek(saveLoc); return;}
+		int nTypes = (hdrSize-4)/8;
+		int[] types = new int[nTypes];
+		int[] counts = new int[nTypes];
+		for (int i=0; i<nTypes; i++) {
+			types[i] = getInt();
+			counts[i] = getInt();
+		}
+		int start = 1;
+		for (int i=0; i<nTypes; i++) {
+			if (types[i]==0x696e666f)  // "info"
+				getInfoProperty(start, start+counts[i]-1, fi);
+			else if (types[i]==0x6c61626c)  // "labl"
+				getSliceLabels(start, start+counts[i]-1, fi);
+			else
+				break;
+			start += counts[i];
+		}
+		in.seek(saveLoc);
+	}
+
+	void getInfoProperty(int first, int last, FileInfo fi) throws IOException {
+		int len = metaDataCounts[first];
+	    byte[] buffer = new byte[len];
+		in.readFully(buffer, len);
+		len /= 2;
+		char[] chars = new char[len];
+		for (int j=0, k=0; j<len; j++)
+			chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+		fi.info = new String(chars);
+	}
+
+	void getSliceLabels(int first, int last, FileInfo fi) throws IOException {
+		fi.sliceLabels = new String[last-first+1];
+	    int index = 0;
+	    byte[] buffer = new byte[metaDataCounts[first]];
+		for (int i=first; i<=last; i++) {
+			int len = metaDataCounts[i];
+            if (len>buffer.length)
+                buffer = new byte[len];
+            in.readFully(buffer, len);
+            len /= 2;
+			char[] chars = new char[len];
+			for (int j=0, k=0; j<len; j++)
+                chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+			fi.sliceLabels[index++] = new String(chars);
+			//ij.IJ.log(i+"  "+fi.sliceLabels[i-1]+"  "+len);
+		}
+	}
 
 	void error(String message) throws IOException {
 		if (in!=null) in.close();
@@ -498,7 +583,7 @@ public class TiffDecoder {
 			if (fi!=null)
 				info.addElement(fi);
 			ifdOffset = getInt();
-			if (debugMode) dInfo += "  nextIFD=" + ifdOffset + "\n";
+			if (debugMode && ifdCount<10) dInfo += "  nextIFD=" + ifdOffset + "\n";
 			if (fi!=null) {
 				if (fi.nImages>1) // ignore extra IFDs in ImageJ and NIH Image stacks
 					ifdOffset = 0;
@@ -512,7 +597,7 @@ public class TiffDecoder {
 		} else {
 			FileInfo[] fi = new FileInfo[info.size()];
 			info.copyInto((Object[])fi);
-			if (debugMode) fi[0].info = dInfo;
+			if (debugMode) fi[0].debugInfo = dInfo;
 			if (url!=null) {
 				in.seek(0);
 				fi[0].inputStream = in;

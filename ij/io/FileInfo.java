@@ -89,6 +89,8 @@ public class FileInfo {
 	public byte[] greens;
 	public byte[] blues;
 	public Object pixels;	
+	public String debugInfo;
+	public String[] sliceLabels;
 	public String info;
 	InputStream inputStream;
 	

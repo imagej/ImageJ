@@ -40,6 +40,7 @@ public class IJ {
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
 	private static boolean escapePressed;
+	private static boolean redirectErrorMessages;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -120,6 +121,7 @@ public class IJ {
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {log("Unable to load plugin, possibly \nbecause it is not public.");}
+		redirectErrorMessages = false;
 		return thePlugIn;
 	}
 	       
@@ -267,6 +269,7 @@ public class IJ {
 		}
 		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {IJ.error("Unable to load plugin, possibly \nbecause it is not public.");}
+		redirectErrorMessages = false;
 		return thePlugIn;
 	} 
 
@@ -458,6 +461,11 @@ public class IJ {
 	/**	Displays a message in a dialog box with the specified title.
 		Writes the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
+		if (redirectErrorMessages) {
+			IJ.log(title + ": " + msg);
+			redirectErrorMessages = false;
+			return;
+		}
 		if (ij!=null) {
 			if (msg.startsWith("<html>") && isJava2())
 				new HTMLDialog(title, msg);
@@ -471,10 +479,7 @@ public class IJ {
 		macro is running, it is aborted. Writes to the Java console
 		if the ImageJ window is not present.*/
 	public static void error(String msg) {
-		if (ij!=null)
-			new MessageDialog(ij, "ImageJ", msg);
-		else
-			System.out.println(msg);
+		showMessage("ImageJ", msg);
 		Macro.abort();
 	}
 	
@@ -1174,6 +1179,11 @@ public class IJ {
 		an ImageJ command in a separate thread. */
 	public static void resetEscape() {
 		escapePressed = false;
+	}
+	
+	/** Causes IJ.error() and IJ.showMessage() output to be temporarily redirected to the "Log" window. */
+	public static void redirectErrorMessages() {
+		redirectErrorMessages = true;
 	}
 	
 	static void abort() {

@@ -56,7 +56,7 @@ public class Printer implements PlugInFilter, Printable {
 		PrinterJob pj = PrinterJob.getPrinterJob();
 		pj.setPrintable(this);
 		//pj.pageDialog(pj.defaultPage());
-		if (pj.printDialog()) {
+		if (IJ.macroRunning() || pj.printDialog()) {
 			imp.startTiming();
 			try {pj.print(); }
 			catch (PrinterException e) {

@@ -104,6 +104,8 @@ public class FileOpener {
 		}
 		imp.setFileInfo(fi);
 		setCalibration(imp);
+		if (fi.info!=null)
+			imp.setProperty("Info", fi.info);
 		if (show) imp.show();
 		IJ.showProgress(1.0);
 		return imp;
@@ -139,7 +141,13 @@ public class FileOpener {
 		IJ.showProgress(1.0);
 		if (stack.getSize()==0)
 			return null;
+		if (fi.sliceLabels!=null && fi.sliceLabels.length<=stack.getSize()) {
+			for (int i=0; i<fi.sliceLabels.length; i++)
+				stack.setSliceLabel(fi.sliceLabels[i], i+1);
+		}
 		ImagePlus imp = new ImagePlus(fi.fileName, stack);
+		if (fi.info!=null)
+			imp.setProperty("Info", fi.info);
 		if (show) imp.show();
 		imp.setFileInfo(fi);
 		setCalibration(imp);
