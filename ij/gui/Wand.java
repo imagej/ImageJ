@@ -117,7 +117,9 @@ public class Wand {
 		'startX' and 'startY' are somewhere inside the area. The
 		boundary points are stored in the public xpoints and ypoints
 		fields. A 16 entry lookup table is used to determine the
-		direction at each step of the tracing process. */
+		direction at each step of the tracing process. Note that
+		the four argument version [autoOutline(x, y, lower, upper)]
+		works more reliably. */
 	public void autoOutline(int startX, int startY) {
 		int x = startX;
 		int y = startY;
@@ -139,8 +141,10 @@ public class Wand {
 	}
 		
 	/** Traces an object defined by lower and upper threshold values. The
-		boundary points are stored in the public xpoints and ypoints fields.*/
+		boundary points are stored in the public xpoints and ypoints fields.
+		This verson works more reliably than autoOutline(x, y). */
 	public void autoOutline(int startX, int startY, double lower, double upper) {
+		//IJ.log(startX+"  "+startY+"  "+lower+"  "+upper);
 		npoints = 0;
 		int x = startX;
 		int y = startY;

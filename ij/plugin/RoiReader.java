@@ -27,7 +27,7 @@ public class RoiReader implements PlugIn {
 			String msg = e.getMessage();
 			if (msg==null || msg.equals(""))
 				msg = ""+e;
-			IJ.showMessage("ROI Reader", msg);
+			IJ.error("ROI Reader", msg);
 		}
 	}
 

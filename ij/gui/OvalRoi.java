@@ -97,10 +97,8 @@ public class OvalRoi extends Roi {
 	}
 
 	/** Draws an outline of this OvalRoi on the image. */
-	public void drawPixels() {
-		if (imp==null) return;
+	public void drawPixels(ImageProcessor ip) {
 		Polygon p = getPolygon();
-		ImageProcessor ip = imp.getProcessor();
 		ip.drawPolygon(p);
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
@@ -160,7 +158,7 @@ public class OvalRoi extends Roi {
 	}
 
 	public ImageProcessor getMask() {
-		if (cachedMask!=null)
+		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
 		ImageProcessor mask = new ByteProcessor(width, height);
 		double a=width/2.0, b=height/2.0;

@@ -19,7 +19,8 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 		//setBackground(Color.white);
 		if (ij!=null) {
 			Image img = ij.getIconImage();
-			if (img!=null) setIconImage(img);
+			if (img!=null)
+				try {setIconImage(img);} catch (Exception e) {}
 		}
 		if (IJ.debugMode) IJ.log("opening "+title);
 	}
@@ -41,7 +42,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 
     public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-			IJ.wait(1); // needed for 1.4.1 on OS X
+			IJ.wait(10); // needed for 1.4.1 on OS X
 			setMenuBar(Menus.getMenuBar());
 		}
 		WindowManager.setWindow(this);

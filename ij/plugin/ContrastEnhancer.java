@@ -15,6 +15,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	static boolean equalize;
 	static boolean normalize;
 	static boolean processStack;
+	static boolean useStackHistogram;
 	static double saturated = 0.5;
 
 	public void run(String arg) {
@@ -43,8 +44,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (bitDepth!=24)
 			gd.addCheckbox("Normalize", normalize);
 		gd.addCheckbox("Equalize Histogram", equalize);
-		if (stackSize>1)
-			gd.addCheckbox("Process Entire Stack", processStack);
+		if (stackSize>1) {
+			gd.addCheckbox("Normalize_All "+stackSize+" Slices", processStack);
+			gd.addCheckbox("Use Stack Histogram", useStackHistogram);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -55,6 +58,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			normalize = false;		
 		equalize = gd.getNextBoolean();
 		processStack = stackSize>1?gd.getNextBoolean():false;
+		useStackHistogram = stackSize>1?gd.getNextBoolean():false;
 		if (saturated<0.0) saturated = 0.0;
 		if (saturated>100.0) saturated = 100;
 		if (processStack)
@@ -63,19 +67,32 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	}
  
 	public void stretchHistogram(ImagePlus imp, double saturated) {
+		ImageStatistics stats = null;
+		if (useStackHistogram)
+			stats = new StackStatistics(imp);
 		if (processStack) {
 			ImageStack stack = imp.getStack();
 			for (int i=1; i<=stackSize; i++) {
 				IJ.showProgress(i, stackSize);
 				ImageProcessor ip = stack.getProcessor(i);
-				stretchHistogram(ip, saturated);
+				if (!useStackHistogram)
+					stats = ImageStatistics.getStatistics(ip, MIN_MAX, null);
+				stretchHistogram(ip, saturated, stats);
 			}
-		} else
-			stretchHistogram(imp.getProcessor(), saturated);
+		} else {
+			ImageProcessor ip = imp.getProcessor();
+			if (stats==null)
+				stats = ImageStatistics.getStatistics(ip, MIN_MAX, null);
+			stretchHistogram(ip, saturated, stats);
+		}
 	}
 
 	public void stretchHistogram(ImageProcessor ip, double saturated) {
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, MIN_MAX, null);
+		useStackHistogram = false;
+		stretchHistogram(new ImagePlus("", ip), saturated);
+	}
+
+	public void stretchHistogram(ImageProcessor ip, double saturated, ImageStatistics stats) {
 		int hmin, hmax;
 		int threshold;
 		int[] histogram = stats.histogram;		

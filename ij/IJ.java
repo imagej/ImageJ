@@ -7,6 +7,7 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
+import ij.macro.Interpreter;
 import java.awt.event.*;
 import java.text.*;
 import java.util.Locale;	
@@ -38,6 +39,7 @@ public class IJ {
 	private static PluginClassLoader classLoader;
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
+	private static boolean escapePressed;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -60,6 +62,30 @@ public class IJ {
 		return ij;
 	}
 	
+	/** Runs the macro contained in the string <code>macro</code>.
+		Returns any string value returned by the macro, or null. */
+	public static String runMacro(String macro) {
+		return runMacro(macro, "");
+	}
+
+	/** Runs the macro contained in the string <code>macro</code>.
+		The optional string argument can be retrieved in the
+		called macro using the getArgument() macro function. 
+		Returns any string value returned by the macro, or null. */
+	public static String runMacro(String macro, String arg) {
+		Macro_Runner mr = new Macro_Runner();
+		return mr.runMacro(macro, arg);
+	}
+
+	/** Runs the specified macro file. The optional 
+		string argument can be retrieved in the called 
+		macro using the getArgument() macro function. 
+		Returns any string value returned by the macro or null. */
+	public static String runMacroFile(String path, String arg) {
+		Macro_Runner mr = new Macro_Runner();
+		return mr.runMacroFile(path, arg);
+	}
+
 	/** Runs the specified plugin and returns a reference to it. */
 	public static Object runPlugIn(String className, String arg) {
 		return runPlugIn("", className, arg);
@@ -139,18 +165,16 @@ public class IJ {
 		ImageStack stack = null;
 		if (slices>1)
 			stack = imp.getStack();
-		ImageProcessor mask = null;
 		float[] cTable = imp.getCalibration().getCTable();
+		ImageProcessor mask = imp.getMask();
 		if (slices==1 || !doesStacks) {
 			ip = imp.getProcessor();
-			mask = imp.getMask();
 			if ((capabilities&PlugInFilter.NO_UNDO)!=0)
 				Undo.reset();
 			else {
 				Undo.setup(Undo.FILTER, imp);
 				ip.snapshot();
 			}
-			//ip.setMask(mask);
 			ip.setCalibrationTable(cTable);
 			((PlugInFilter)theFilter).run(ip);
 			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
@@ -162,9 +186,8 @@ public class IJ {
 			int currentSlice = imp.getCurrentSlice();
 			Rectangle r = null;
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi.getType()<Roi.LINE)
+			if (roi!=null && roi.isArea())
 				r = roi.getBounds();
-			mask = imp.getMask();
 			ip = imp.getProcessor();
 			double minThreshold = ip.getMinThreshold();
 			double maxThreshold = ip.getMaxThreshold();
@@ -175,19 +198,18 @@ public class IJ {
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 			boolean doGarbageCollection = IJ.isWindows() && !IJ.isJava2();
+			ip.setMask(mask);
+			ip.setRoi(r);
+			ip.setCalibrationTable(cTable);
+			IJ.resetEscape();
 			for (int i=1; i<=n; i++) {
 				ip.setPixels(stack.getPixels(i));
-				ip.setMask(mask);
-				ip.setRoi(r);
-				ip.setCalibrationTable(cTable);
-				if (doMasking)
-					ip.snapshot();
+				if (doMasking) ip.snapshot();
 				((PlugInFilter)theFilter).run(ip);
-				if (doMasking)
-					ip.reset(mask);
-				if (doGarbageCollection && (i%10==0))
-					System.gc();
-				IJ.showProgress((double)i/n);
+				if (doMasking) ip.reset(ip.getMask());
+				if (doGarbageCollection && (i%10==0)) System.gc();
+				IJ.showProgress(i, n);
+				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}
 			if (roi!=null)
 				imp.setRoi(roi);
@@ -201,8 +223,10 @@ public class IJ {
 	 		imp.updateAndDraw();
 	 	}
 		ImageWindow win = imp.getWindow();
-		if (win!=null)
+		if (win!=null) {
 			win.running = false;
+			win.running2 = false;
+		}
 		imp.unlock();
 	}
         
@@ -316,10 +340,10 @@ public class IJ {
 		if (ij!=null) ij.showStatus(s);
 	}
 
-	/** Displays a line of text in the "Results" window. Uses
-		System.out.println if ImageJ is not present. */
+	/** Displays a line of text in the "Results" window. Writes to
+		System.out.println if the "ImageJ" frame is not present. */
 	public static void write(String s) {
-		if (textPanel==null)
+		if (textPanel==null && ij!=null)
 			showResults();
 		if (textPanel!=null)
 				textPanel.append(s);
@@ -334,8 +358,8 @@ public class IJ {
 			textPanel.addKeyListener(ij);
 	}
 
-	/** Displays a line of text in the "Log" window. Uses
-		System.out.println if ImageJ is not present. */
+	/** Displays a line of text in the "Log" window. Writes to
+		System.out.println if the "ImageJ" frame is not present. */
 	public static synchronized void log(String s) {
 		if (logPanel==null && ij!=null) {
 			TextWindow logWindow = new TextWindow("Log", "", 300, 200);
@@ -351,12 +375,15 @@ public class IJ {
 	}
 
 	/** Clears the "Results" window and sets the column headings to
-		those in the tab-delimited 'headings' String. */
+		those in the tab-delimited 'headings' String. Writes to
+		System.out.println if the "ImageJ" frame is not present.*/
 	public static void setColumnHeadings(String headings) {
-		if (textPanel==null)
+		if (textPanel==null && ij!=null)
 			showResults();
 		if (textPanel!=null)
 			textPanel.setColumnHeadings(headings);
+		else
+			System.out.println(headings);
 	}
 
 	/** Returns true if the "Results" window is open. */
@@ -379,8 +406,7 @@ public class IJ {
     
     /**Displays a "no images are open" dialog box.*/
 	public static void noImage() {
-		showMessage("No Image", "There are no images open.");
-		Macro.abort();
+		error("No Image", "There are no images open.");
 	}
 
 	/** Displays an "out of memory" message to the "Log" window. */
@@ -418,6 +444,12 @@ public class IJ {
 		if (progressBar!=null) progressBar.show(currentIndex, finalIndex);
 	}
 
+	/** Displays a message in a dialog box titled "Message".
+		Writes the Java console if ImageJ is not present. */
+	public static void showMessage(String msg) {
+		showMessage("Message", msg);
+	}
+
 	/**	Displays a message in a dialog box with the specified title.
 		Writes the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
@@ -430,14 +462,9 @@ public class IJ {
 			System.out.println(msg);
 	}
 
-	/** Displays a message in a dialog box titled "Message".
-		Writes the Java console if ImageJ is not present. */
-	public static void showMessage(String msg) {
-		showMessage("Message", msg);
-	}
-
-	/** Displays a message in a dialog box titled "ImageJ". Writes
-		to the Java console if the ImageJ window is not present. */
+	/** Displays a message in a dialog box titled "ImageJ". If a 
+		macro is running, it is aborted. Writes to the Java console
+		if the ImageJ window is not present.*/
 	public static void error(String msg) {
 		if (ij!=null)
 			new MessageDialog(ij, "ImageJ", msg);
@@ -446,8 +473,16 @@ public class IJ {
 		Macro.abort();
 	}
 	
+	/**	Displays a message in a dialog box with the specified title.
+		If a macro is running, it is aborted. Writes to the Java  
+		console if ImageJ is not present. */
+	public static void error(String title, String msg) {
+		showMessage(title, msg);
+		Macro.abort();
+	}
+
 	/** Displays a message in a dialog box with the specified title.
-	   Returns false if the user pressed "Cancel". */
+		Returns false if the user pressed "Cancel". */
 	public static boolean showMessageWithCancel(String title, String msg) {
 		GenericDialog gd = new GenericDialog(title);
 		gd.addMessage(msg);
@@ -496,11 +531,13 @@ public class IJ {
 		java.awt.Toolkit.getDefaultToolkit().beep();
 	}
 	
+	/**	Runs the garbage collector and returns a string something
+		like "64K of 256MB (25%)" that shows how much of 
+		the  available memory is in use. This is the string
+		displayed when the user clicks in the status bar. */
 	public static String freeMemory() {
 		System.gc();
-		long freeMem = Runtime.getRuntime().freeMemory();
-		long totMem = Runtime.getRuntime().totalMemory();
-		long inUse = (int)(totMem-freeMem);
+		long inUse = currentMemory();
 		String inUseStr = inUse<10000*1024?inUse/1024L+"K":inUse/1048576L+"MB";
 		String maxStr="";
 		long max = maxMemory();
@@ -511,6 +548,13 @@ public class IJ {
 		return  inUseStr + maxStr;
 	}
 	
+	/** Returns the amount of memory currently being used by ImageJ. */
+	public static long currentMemory() {
+		long freeMem = Runtime.getRuntime().freeMemory();
+		long totMem = Runtime.getRuntime().totalMemory();
+		return totMem-freeMem;
+	}
+
 	/** Returns the maximum amount of memory available to ImageJ or
 		zero if ImageJ is unable to determine this limit. */
 	public static long maxMemory() {
@@ -553,7 +597,7 @@ public class IJ {
 
 	/** Converts a number to a rounded formatted string.
 		The 'decimalPlaces' argument specifies the number of
-		digits to the right of the decimal point. */
+		digits to the right of the decimal point (0-9). */
 	public static String d2s(double n, int decimalPlaces) {
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
@@ -564,6 +608,8 @@ public class IJ {
 		double rounded = whole/Math.pow(10, decimalPlaces);
 		if (negative)
 			rounded = -rounded;
+		if (decimalPlaces<0) decimalPlaces = 0;
+		if (decimalPlaces>9) decimalPlaces = 9;
 		if (decimalPlaces!=dfDigits)
 			switch (decimalPlaces) {
 				case 0: df.applyPattern("0"); dfDigits=0; break;
@@ -575,13 +621,15 @@ public class IJ {
 				case 6: df.applyPattern("0.000000"); dfDigits=6; break;
 				case 7: df.applyPattern("0.0000000"); dfDigits=7; break;
 				case 8: df.applyPattern("0.00000000"); dfDigits=8; break;
+				case 9: df.applyPattern("0.000000000"); dfDigits=9; break;
 			}
 		String s = df.format(rounded);
 		return s;
 	}
 
 	/** Adds the specified class to a Vector to keep it from being garbage
-	collected, which would cause the classes static fields to be reset. */
+	collected, which would cause the classes static fields to be reset. 
+	Probably not needed with Java 1.2 or later. */
 	public static void register(Class c) {
 		if (ij!=null) ij.register(c);
 	}
@@ -613,6 +661,11 @@ public class IJ {
 				spaceDown=true;
 				ImageWindow win = WindowManager.getCurrentWindow();
 				if (win!=null) win.getCanvas().setCursor(-1,-1,-1, -1);
+				break;
+			}
+			case KeyEvent.VK_ESCAPE: {
+				//IJ.log("setKeyDown: esc");
+				escapePressed = true;
 				break;
 			}
 		}
@@ -708,8 +761,12 @@ public class IJ {
 	public static void makeRectangle(int x, int y, int width, int height) {
 		if (width<=0 || height<0)
 			getImage().killRoi();
-		else
-			getImage().setRoi(x, y, width, height);
+		else {
+			ImagePlus img = getImage();
+			img.setRoi(x, y, width, height);
+			//if (shiftKeyDown() || altKeyDown())
+			//	img.getRoi().addOrSubtract(); 
+		}
 	}
 	
 	/** Creates an elliptical selection. Removes any existing 
@@ -717,8 +774,12 @@ public class IJ {
 	public static void makeOval(int x, int y, int width, int height) {
 		if (width<=0 || height<0)
 			getImage().killRoi();
-		else
-			getImage().setRoi(new OvalRoi(x, y, width, height));
+		else {
+			ImagePlus img = getImage();
+			img.setRoi(new OvalRoi(x, y, width, height));
+			//if (shiftKeyDown() || altKeyDown())
+			//	img.getRoi().addOrSubtract(); 
+		}
 	}
 	
 	/** Creates a straight line selection. */
@@ -730,6 +791,8 @@ public class IJ {
 	/** Sets the minimum and maximum displayed pixel values. */
 	public static void setMinAndMax(double min, double max) {
 		ImagePlus img = getImage();
+		if (img.getCalibration().isSigned16Bit())
+			{min+=32768; max+=32768;}
 		img.getProcessor().setMinAndMax(min, max);
 		img.updateAndDraw();
 	}
@@ -760,13 +823,14 @@ public class IJ {
 		For IDs greater than zero, activates the Nth image. */
 	public static void selectWindow(int id) {
 		ImagePlus imp = WindowManager.getImage(id);
-		if (imp==null) {
-			showMessage("Macro Error", "Image "+id+" not found or no images are open.");
-			abort();
-		}
+		if (imp==null)
+			error("Macro Error", "Image "+id+" not found or no images are open.");
 		String title = imp.getTitle();
 		ImageWindow win = imp.getWindow();
-		if (win!=null) {
+		if (win==null && Interpreter.isBatchMode()) {
+            WindowManager.setTempCurrentImage(imp);
+            WindowManager.setWindow(null);
+		} else {
 			win.toFront();
 			WindowManager.setWindow(win);
 			long start = System.currentTimeMillis();
@@ -806,8 +870,7 @@ public class IJ {
 			}
 			wait(10);
 		}
-		showMessage("Macro Error", "No window with the title \""+title+"\" found.");
-		abort();
+		error("Macro Error", "No window with the title \""+title+"\" found.");
 	}
 	
 	static void selectWindow(Frame frame) {
@@ -868,7 +931,7 @@ public class IJ {
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
 			img.setRoi(roi);
 			if (shiftKeyDown() || altKeyDown())
-				roi.modifyRoi(); 
+				roi.addOrSubtract(); 
 		}
 		return w.npoints;
 	}
@@ -945,6 +1008,125 @@ public class IJ {
 			if (dir==null) Macro.abort();
 			return dir;
 		}
+	}
+	
+	/** Displays a file open dialog box and then opens the tiff, dicom, 
+		fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
+		the user. Displays an error message if the selected file is not
+		in one of the supported formats, or if it is not found. */
+	public static void open() {
+		open(null);
+	}
+
+	/** Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
+		roi, or text file. Displays an error message if the specified file
+		is not in one of the supported formats, or if it is not found. */
+	public static void open(String path) {
+		Opener o = new Opener();
+		macroRunning = true;
+		if (path==null || path.equals(""))		
+			o.open();
+		else
+			o.open(path);
+		macroRunning = false;
+	}
+	
+	public static void save(String path) {
+		int dotLoc = path.lastIndexOf('.');
+		if (dotLoc!=-1)
+			saveAs(path.substring(dotLoc+1), path);
+		else
+			error("File name extension required");
+	}
+
+	public static void saveAs(String format, String path) {
+		if (format==null || path==null) return;
+		format = format.toLowerCase(Locale.US);
+		if (format.indexOf("tif")!=-1) {
+			path = updateExtension(path, ".tif");
+			format = "Tiff...";
+		} else if (format.indexOf("jpeg")!=-1  || format.indexOf("jpg")!=-1) {
+			path = updateExtension(path, ".jpg");
+			format = "Jpeg...";
+		} else if (format.indexOf("gif")!=-1) {
+			path = updateExtension(path, ".gif");
+			format = "Gif...";
+		} else if (format.indexOf("text image")!=-1) {
+			path = updateExtension(path, ".txt");
+			format = "Text Image...";
+		} else if (format.indexOf("text")!=-1 || format.indexOf("txt")!=-1) {
+			path = updateExtension(path, ".txt");
+			format = "Text...";
+		} else if (format.indexOf("zip")!=-1) {
+			path = updateExtension(path, ".zip");
+			format = "ZIP...";
+		} else if (format.indexOf("raw")!=-1) {
+			path = updateExtension(path, ".raw");
+			format = "Raw Data...";
+		} else if (format.indexOf("avi")!=-1) {
+			path = updateExtension(path, ".avi");
+			format = "AVI... ";
+		} else if (format.indexOf("bmp")!=-1) {
+			path = updateExtension(path, ".bmp");
+			format = "BMP...";
+		} else if (format.indexOf("lut")!=-1) {
+			path = updateExtension(path, ".lut");
+			format = "LUT...";
+		} else if (format.indexOf("measurements")!=-1) {
+			path = updateExtension(path, ".txt");
+			format = "Measurements...";
+		} else if (format.indexOf("selection")!=-1 || format.indexOf("roi")!=-1) {
+			path = updateExtension(path, ".roi");
+			format = "Selection...";
+		} else if (format.indexOf("xy")!=-1 || format.indexOf("coordinates")!=-1) {
+			path = updateExtension(path, ".txt");
+			format = "XY Coordinates...";
+		} else
+			error("Unrecognized format: "+format);
+		run(format, "save=["+path+"]");
+	}
+
+	static String updateExtension(String path, String extension) {
+		int dotIndex = path.lastIndexOf(".");
+		if (dotIndex>=0)
+			path = path.substring(0, dotIndex) + extension;
+		else
+			path += extension;
+		return path;
+	}
+
+	public static ImagePlus createImage(String title, String type, int width, int height, int depth) {
+		type = type.toLowerCase(Locale.US);
+		int bitDepth = 8;
+		if (type.indexOf("16")!=-1) bitDepth = 16;
+		if (type.indexOf("rgb")!=-1) bitDepth = 24;
+		if (type.indexOf("32")!=-1) bitDepth = 32;
+		int options = 0;
+		if (type.indexOf("white")!=-1)
+			options = NewImage.FILL_WHITE;
+		else if (type.indexOf("black")!=-1)
+			options = NewImage.FILL_BLACK;
+		else if (type.indexOf("ramp")!=-1)
+			options = NewImage.FILL_RAMP;
+		options += NewImage.CHECK_AVAILABLE_MEMORY;
+		return NewImage.createImage(title, width, height, depth, bitDepth, options);
+	}
+
+	public static void newImage(String title, String type, int width, int height, int depth) {
+		createImage(title, type, width, height, depth).show();
+	}
+
+	/** Returns true if the <code>Esc</code> key was pressed since the
+		last ImageJ command started to execute or since resetEscape() was called. */
+	public static boolean escapePressed() {
+		return escapePressed;
+	}
+
+	/** This method sets the <code>Esc</code> key to the "up" position.
+		The Executer class calls this method when it runs 
+		an ImageJ command in a separate thread. */
+	public static void resetEscape() {
+		escapePressed = false;
 	}
 	
 	static void abort() {

@@ -4,6 +4,7 @@ import java.util.*;
 import java.applet.*;
 import java.net.URL;
 import java.awt.Color;
+import java.awt.Font;
 import java.applet.Applet;
 import ij.io.*;
 import ij.util.Tools;
@@ -36,7 +37,8 @@ public class Prefs {
     public static final String KEY_PREFIX = ".";
  
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
-		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNWEIGHTED=64, BLACK_CANVAS=128;  
+		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNUSED=64, BLACK_CANVAS=128, WEIGHTED=256, 
+		AUTO_MEASURE=512, REQUIRE_CONTROL=1024, USE_INVERTING_LUT=2048;  
     public static final String OPTIONS = "prefs.options";
 
 	/** file.separator system property */
@@ -53,10 +55,16 @@ public class Prefs {
 	public static boolean blackBackground;
 	/** Use JFileChooser instead of FileDialog to open and save files. */
 	public static boolean useJFileChooser;
-	/** Color to grayscale conversion is not weighted if the variable is true. */
-	public static boolean unweightedColor;
+	/** Color to grayscale conversion is weighted (0.299, 0.587, 0.114) if the variable is true. */
+	public static boolean weightedColor;
 	/** Use black image border. */
 	public static boolean blackCanvas;
+	/** Point tool auto-measure mode. */
+	public static boolean pointAutoMeasure;
+	/** Require control or command key for keybaord shortcuts. */
+	public static boolean requireControlKey;
+	/** Open 8-bit images with inverting LUT so 0 is white and 255 is black. */
+	public static boolean useInvertingLut;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -270,17 +278,22 @@ public class Prefs {
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		blackBackground = (options&BLACK_BACKGROUND)!=0;
 		useJFileChooser = (options&JFILE_CHOOSER)!=0;
-		unweightedColor = (options&UNWEIGHTED)!=0;
-		if (unweightedColor)
-			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
+		weightedColor = (options&WEIGHTED)!=0;
+		if (weightedColor)
+			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
 		blackCanvas = (options&BLACK_CANVAS)!=0;
+		pointAutoMeasure = (options&AUTO_MEASURE)!=0;
+		requireControlKey = (options&REQUIRE_CONTROL)!=0;
+		useInvertingLut = (options&USE_INVERTING_LUT)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
 		int options = (usePointerCursor?USE_POINTER:0) + (antialiasedText?ANTIALIASING:0)
 			+ (interpolateScaledImages?INTERPOLATE:0) + (open100Percent?ONE_HUNDRED_PERCENT:0)
 			+ (blackBackground?BLACK_BACKGROUND:0) + (useJFileChooser?JFILE_CHOOSER:0)
-			+ (unweightedColor?UNWEIGHTED:0) + (blackCanvas?BLACK_CANVAS:0);
+			+ (blackCanvas?BLACK_CANVAS:0) + (weightedColor?WEIGHTED:0) 
+			+ (pointAutoMeasure?AUTO_MEASURE:0) + (requireControlKey?REQUIRE_CONTROL:0)
+			+ (useInvertingLut?USE_INVERTING_LUT:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 
@@ -350,7 +363,7 @@ public class Prefs {
 		while (e.hasMoreElements()) {
 			String key = (String) e.nextElement();
 			if (key.indexOf(KEY_PREFIX) == 0)
-				prefs.put(key, ijPrefs.getProperty(key));
+				prefs.put(key, escapeBackSlashes(ijPrefs.getProperty(key)));
 		}
 	}
 
@@ -370,7 +383,9 @@ public class Prefs {
 		pw.close();
 	}
 
-	static String escapeBackSlashes (String s) {
+	static String escapeBackSlashes(String s) {
+		if (s.indexOf('\\')==-1)
+			return s;
 		StringBuffer sb = new StringBuffer(s.length()+10);
 		char[] chars = s.toCharArray();
 		for (int i=0; i<chars.length; i++) {

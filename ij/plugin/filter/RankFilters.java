@@ -6,6 +6,7 @@ import ij.plugin.ContrastEnhancer;
 import java.awt.*;
 import java.util.*;
 
+/** This plugin implements the Median, Mean, Minimum, Maximum, Variance and Despeckle commands. */
 public class RankFilters implements PlugInFilter {
 
         public static final int MEDIAN=0, MEAN=1, MIN=2, MAX=3, VARIANCE=4, DESPECKLE=5;
@@ -17,7 +18,6 @@ public class RankFilters implements PlugInFilter {
         int kw, kh;
         int slice;
         boolean canceled;
-        ImageWindow win;
         private static final String[] typeStrings = {"Median","Mean","Minimum","Maximum","Variance","Median"};
         boolean isLineRoi;
         
@@ -45,10 +45,9 @@ public class RankFilters implements PlugInFilter {
                 slice = 0;
                 canceled = false;
                 if (imp!=null) {
-                        win = imp.getWindow();
-                        win.running = true;
+                        IJ.resetEscape();
 						Roi roi = imp.getRoi();
-						isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
+						isLineRoi= roi!=null && roi.isLine();
                 }
                 title = typeStrings[filterType];
                 IJ.showStatus(title+", radius="+radius+" (esc to abort)");
@@ -62,7 +61,7 @@ public class RankFilters implements PlugInFilter {
                 if (canceled)
                         return;
                 slice++;
-                if (win!=null && win.running!=true)
+                if (IJ.escapePressed())
                         {canceled=true; IJ.beep(); return;}
 
 				if (isLineRoi)
@@ -82,8 +81,11 @@ public class RankFilters implements PlugInFilter {
 			float[] kernel = new float[radius*2+1];
 			for (int i=0; i<kernel.length; i++)
 				kernel[i] = 1f;
+			ImageProcessor mask = ip.getMask();
+			if (mask!=null) ip.snapshot();
 			ip.convolve(kernel, kernel.length, 1);
 			ip.convolve(kernel, 1, kernel.length);
+			if (mask!=null) ip.reset(mask);
 		}
     
      	void showMasks() {
@@ -166,8 +168,10 @@ public class RankFilters implements PlugInFilter {
                 }
                 ip.setCalibrationTable(null);
                 ImageProcessor ip2 = ip.convertToFloat();
-                ip2.setRoi(ip.getRoi());
-                ip2.setMask(ip.getMask());
+                if (imp!=null)
+                	ip2.setRoi(imp.getRoi());
+                else
+                	ip2.setRoi(ip.getRoi());
                 rankFloat(ip2, radius, rankType);
                 convertBack(ip2, ip, type);
         }
@@ -175,8 +179,7 @@ public class RankFilters implements PlugInFilter {
         public void rankRGB(ImageProcessor ip, double radius, int rankType) {
                 int width = ip.getWidth();
                 int height = ip.getHeight();
-                Rectangle roi = ip.getRoi();
-                ImageProcessor mask = ip.getMask();
+                Roi roi = imp!=null?imp.getRoi():new Roi(ip.getRoi());
                 int size = width*height;
                 if (slice==1) IJ.showStatus(title+" (red)");
                 byte[] r = new byte[size];
@@ -187,20 +190,20 @@ public class RankFilters implements PlugInFilter {
                 ImageProcessor gip = new ByteProcessor(width, height, g, null);
                 ImageProcessor bip = new ByteProcessor(width, height, b, null);
                 ImageProcessor ip2 = rip.convertToFloat();
-                ip2.setRoi(roi); ip2.setMask(mask);
+                ip2.setRoi(roi);
                 rankFloat(ip2, radius, rankType);
                 boolean scale = filterType==VARIANCE;
                 if (canceled) return;
                 ImageProcessor r2 = ip2.convertToByte(scale);
                 if (slice==1) IJ.showStatus(title+" (green)");
                 ip2 = gip.convertToFloat();
-                ip2.setRoi(roi); ip2.setMask(mask);
+                ip2.setRoi(roi); 
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
                 ImageProcessor g2 = ip2.convertToByte(scale);
                 if (slice==1) IJ.showStatus(title+" (blue)");
                 ip2 = bip.convertToFloat();
-                ip2.setRoi(roi); ip2.setMask(mask);
+                ip2.setRoi(roi); 
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
                 ImageProcessor b2 = ip2.convertToByte(scale);
@@ -212,16 +215,16 @@ public class RankFilters implements PlugInFilter {
                 int height = ip.getHeight();
 				Rectangle r = ip.getRoi();
 				boolean isRoi = r.width!=width||r.height!=height;
-				boolean nonRectRoi = isRoi && ip.getMask()!=null;
+				boolean nonRectRoi = ip.getMask()!=null;
 				int x1=0, y1=0, x2=width-1, y2=height-1;
         		if (isRoi) {
         			x1 = r.x;
         			y1 = r.y;
         			x2 = x1 + r.width - 1;
         			y2 = y1 + r.height - 1;
-					if (nonRectRoi)
-						ip.snapshot();
         		}
+        		if (nonRectRoi)
+					ip.snapshot();
         		int kw = ((int)(radius+0.5))*2 + 1;
                 int kh = kw;
                 int[] mask = createCircularMask(kw,radius);
@@ -243,7 +246,7 @@ public class RankFilters implements PlugInFilter {
                 for(int y=y1; y<=y2; y++) {
                         if (y%progress ==0) {
                                 IJ.showProgress((double)y/height);
-                                canceled = win!=null && !win.running;
+                                canceled = IJ.escapePressed();
                                 if (canceled)
                                         break;
                         }

@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.filter.*;
+import ij.measure.Calibration;
 
 public class ImageCalculator implements PlugIn {
 
@@ -53,16 +54,18 @@ public class ImageCalculator implements PlugIn {
 		int index2 = gd.getNextChoiceIndex();
 		//String resultTitle = gd.getNextString();
 		createWindow = gd.getNextBoolean();
-		floatResult = gd.getNextBoolean();
-		if (floatResult)
-			createWindow = true;
+		floatResult = gd.getNextBoolean();		
 		title2 = titles[index2];
 		ImagePlus img1 = WindowManager.getImage(wList[index1]);
 		ImagePlus img2 = WindowManager.getImage(wList[index2]);
+		if (img1.getCalibration().isSigned16Bit() || img2.getCalibration().isSigned16Bit())
+			floatResult = true;
+		if (floatResult)
+			createWindow = true;
 		int size1 = img1.getStackSize();
 		int size2 = img2.getStackSize();
 		if (size1>1 && size2>1 && size1!=size2) {
-			IJ.showMessage("Image Calculator", "Both stacks must have the same number of slices.");
+			IJ.error("Image Calculator", "Both stacks must have the same number of slices.");
 			return;
 		}
 		if (size1>1 && (size2==1||size1==size2)) {
@@ -82,11 +85,11 @@ public class ImageCalculator implements PlugIn {
 		if (createWindow) {
 			img1 = duplicateStack(img1);
 			if (img1==null) {
-				IJ.showMessage("Calculator", "Out of memory");
+				IJ.error("Calculator", "Out of memory");
 				return;
 			}
 			img1.show();
-		}			
+		}
 		int mode = getBlitterMode();
 		ImageWindow win = img1.getWindow();
 		if (win!=null)
@@ -94,6 +97,8 @@ public class ImageCalculator implements PlugIn {
 		Undo.reset();
 		ImageStack stack1 = img1.getStack();
 		StackProcessor sp = new StackProcessor(stack1, img1.getProcessor());
+		Calibration cal2 = img2.getCalibration();
+		img2.getProcessor().setCalibrationTable(cal2.getCTable());
 		try {
 			if (img2.getStackSize()==1)
 				sp.copyBits(img2.getProcessor(), 0, 0, mode);
@@ -115,14 +120,20 @@ public class ImageCalculator implements PlugIn {
 		int mode = getBlitterMode();
 		ImageProcessor ip1 = img1.getProcessor();
 		ImageProcessor ip2 = img2.getProcessor();
+		Calibration cal1 = img1.getCalibration();
+		Calibration cal2 = img2.getCalibration();
 		if (createWindow)
-			ip1 = createNewImage(ip1, ip2);
+			ip1 = createNewImage(ip1, ip2, cal1);
 		else {
 			ImageWindow win = img1.getWindow();
 			if (win!=null)
 				WindowManager.setCurrentWindow(win);
 			ip1.snapshot();
 			Undo.setup(Undo.FILTER, img1);
+		}
+		if (floatResult) {
+			ip2.setCalibrationTable(cal2.getCTable());
+			ip2 = ip2.convertToFloat();
 		}
 		try {
 			ip1.copyBits(ip2, 0, 0, mode);
@@ -133,17 +144,20 @@ public class ImageCalculator implements PlugIn {
 		}
 		if (!(ip1 instanceof ByteProcessor))
 			ip1.resetMinAndMax();
-		if (createWindow)
-			new ImagePlus("Result of "+img1.getShortTitle(), ip1).show();
-		else
+		if (createWindow) {
+			ImagePlus img3 = new ImagePlus("Result of "+img1.getShortTitle(), ip1);
+			img3.setCalibration(cal1);
+			img3.show();
+		} else
 			img1.updateAndDraw();
 	}
 
-	ImageProcessor createNewImage(ImageProcessor ip1, ImageProcessor ip2) {
+	ImageProcessor createNewImage(ImageProcessor ip1, ImageProcessor ip2, Calibration cal) {
 		int width = Math.min(ip1.getWidth(), ip2.getWidth());
 		int height = Math.min(ip1.getHeight(), ip2.getHeight());
 		ImageProcessor ip3 = ip1.createProcessor(width, height);
 		if (floatResult) {
+			ip1.setCalibrationTable(cal.getCTable());
 			ip1 = ip1.convertToFloat();
 			ip3 = ip3.convertToFloat();
 		}
@@ -171,6 +185,7 @@ public class ImageCalculator implements PlugIn {
 	}
 	
 	ImagePlus duplicateStack(ImagePlus img1) {
+		Calibration cal = img1.getCalibration();
 		ImageStack stack1 = img1.getStack();
 		int width = stack1.getWidth();
 		int height = stack1.getHeight();
@@ -181,8 +196,10 @@ public class ImageCalculator implements PlugIn {
 				ImageProcessor ip1 = stack1.getProcessor(i);
 				ip1.resetRoi(); 
 				ImageProcessor ip2 = ip1.crop();
-				if (floatResult)
-					ip2 = ip2.convertToFloat(); 
+				if (floatResult) {
+					ip2.setCalibrationTable(cal.getCTable());
+					ip2 = ip2.convertToFloat();
+				} 
 				stack2.addSlice(stack1.getSliceLabel(i), ip2);
 			}
 		}
@@ -191,7 +208,9 @@ public class ImageCalculator implements PlugIn {
 			stack2 = null;
 			return null;
 		}
-		return new ImagePlus("Result", stack2);
+		ImagePlus img3 = new ImagePlus("Result", stack2);
+		img3.setCalibration(cal);
+		return img3;
 	}
 
 }

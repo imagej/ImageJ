@@ -208,7 +208,7 @@ public class ImageMath implements PlugInFilter {
 			return gd.getNextString();
 	}
 
-	/** Set non-thresolded pixels in a float image to NaN. */
+	/** Set non-thresholded pixels in a float image to NaN. */
 	void setBackgroundToNaN(ImageProcessor ip) {
 		if (first) {
 			lower = ip.getMinThreshold();

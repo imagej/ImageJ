@@ -1,6 +1,7 @@
 package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.util.*;
 import ij.gui.*;
@@ -19,20 +20,19 @@ public class WindowManager {
 
 	/** Makes the specified image active. */
 	public synchronized static void setCurrentWindow(ImageWindow win) {
+		if (win==null || win.isClosed() || win.getImagePlus()==null)
+			return;
 		setWindow(win);
 		tempCurrentImage = null;
-		if (win==currentWindow || win==null || imageList.size()==0)
+		if (win==currentWindow || imageList.size()==0)
 			return;
-		//if (IJ.debugMode && win!=null)
-		//	IJ.write(win.getImagePlus().getTitle()+": setCurrentWindow (previous="+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
+		//IJ.log(win.getImagePlus().getTitle()+", previous="+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
 		if (currentWindow!=null) {
 			// free up pixel buffers AWT Image resources used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
 			if (imp!=null && imp.lockSilently()) {
 				imp.trimProcessor();
 				Image img = imp.getImage();
-				//if (img!=null)
-				//	img.flush();
 				if (!Converter.newWindowCreated)
 					imp.saveRoi();
 				Converter.newWindowCreated = false;
@@ -40,10 +40,7 @@ public class WindowManager {
 			}
 		}
 		Undo.reset();
-		if (!win.isClosed() && win.getImagePlus()!=null)
-			currentWindow = win;
-		else
-			currentWindow = null;
+		currentWindow = win;
 		Menus.updateMenus();
 	}
 	
@@ -59,18 +56,35 @@ public class WindowManager {
 
 	/** Returns the active ImagePlus. */
 	public synchronized static ImagePlus getCurrentImage() {
-		//if (IJ.debugMode) IJ.write("ImageWindow.getCurrentImage");
+		//IJ.log("getCurrentImage: "+tempCurrentImage+"  "+currentWindow);
 		if (tempCurrentImage!=null)
 			return tempCurrentImage;
 		else if (currentWindow!=null)
 			return currentWindow.getImagePlus();
-		else
+		else if (frontWindow!=null && (frontWindow instanceof ImageWindow))
+			return ((ImageWindow)frontWindow).getImagePlus();
+		else 	if (imageList.size()>0) {	
+			ImageWindow win = (ImageWindow)imageList.elementAt(imageList.size()-1);
+			return win.getImagePlus();
+		} else
 			return null;
 	}
 
-	/** Returns the number of open images. */
+	/** Returns the number of open image windows. */
 	public static int getWindowCount() {
-		return imageList.size();
+		int count = imageList.size();
+		if (count==0 && tempCurrentImage!=null)
+			count = 1;
+		return count;
+	}
+
+	/** Returns the number of open images. */
+	public static int getImageCount() {
+		int count = imageList.size();
+		count += Interpreter.getBatchModeImageCount();
+		if (count==0 && tempCurrentImage!=null)
+			count = 1;
+		return count;
 	}
 
 	/** Returns the front most window or null. */
@@ -82,11 +96,16 @@ public class WindowManager {
 		null if no windows are open. */
 	public synchronized static int[] getIDList() {
 		int nWindows = imageList.size();
-		if (nWindows==0)
+		int[] batchModeImages = Interpreter.getBatchModeImageIDs();
+		int nBatchImages = batchModeImages.length;
+		if ((nWindows+nBatchImages)==0)
 			return null;
-		int[] list = new int[nWindows];
-		for (int i=0; i<nWindows; i++) {
-			ImageWindow win = (ImageWindow)imageList.elementAt(i);
+		int[] list = new int[nWindows+nBatchImages];
+		for (int i=0; i<nBatchImages; i++)
+			list[i] = batchModeImages[i];
+		int index = 0;
+		for (int i=nBatchImages; i<nBatchImages+nWindows; i++) {
+			ImageWindow win = (ImageWindow)imageList.elementAt(index++);
 			list[i] = win.getImagePlus().getID();
 		}
 		return list;
@@ -100,6 +119,10 @@ public class WindowManager {
 		//if (IJ.debugMode) IJ.write("ImageWindow.getImage");
 		if (imageID==0)
 			return null;
+		if (imageID<0) {
+			ImagePlus imp2 = Interpreter.getBatchModeImage(imageID);
+			if (imp2!=null) return imp2;
+		}
 		int nImages = imageList.size();
 		if (nImages==0)
 			return null;

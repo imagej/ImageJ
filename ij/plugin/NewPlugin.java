@@ -35,14 +35,11 @@ public class NewPlugin implements PlugIn {
 			return;
 		if (name.endsWith(".java"))
 			name = name.substring(0, name.length()-5);
-		if (name.endsWith("_"))
-			name = name.substring(0, name.length()-1);
-		if (!(name.endsWith(".txt") || name.endsWith(".macro")))
+		//if (name.endsWith("_"))
+		//	name = name.substring(0, name.length()-1);
+		if (!(name.endsWith(".txt")))
 			name += ".txt";
-		String text = "";
-		text += "  macro \"Hello\" {\n";
-		text += "      print(\"Hello world!\");\n";
-		text += "  }";
+		String text = "  print(\"Hello world!\");\n";
 		ed.create(name, text);
 	}
 
@@ -116,7 +113,7 @@ public class NewPlugin implements PlugIn {
 	}
 	
 	public boolean showDialog() {
-		GenericDialog gd = new GenericDialog("New Plugin...");
+		GenericDialog gd = new GenericDialog("New...");
 		gd.addStringField("Name:", name, 16);
 		gd.addChoice("Type:", types, types[type]);
 		gd.showDialog();

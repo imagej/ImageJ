@@ -2,12 +2,15 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import java.awt.*;
 import ij.measure.*;
 import ij.plugin.filter.RGBStackSplitter;
+import ij.util.Tools;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
 /** Implements the Image/Stacks/Reslice command. */
-public class Slicer implements PlugIn {
+public class Slicer implements PlugIn, TextListener {
 
 	private static final String[] starts = {"Top", "Left", "Bottom", "Right"};
 	private static String startAt = starts[0];
@@ -15,10 +18,13 @@ public class Slicer implements PlugIn {
 	private static boolean flip;
 	private double outputZSpacing = 1.0;
 	private int outputSlices = 1;
-	private ImageWindow win;
 	private boolean noRoi;
 	private boolean rgb;
 	private Polygon irregularLine;
+    private Vector fields;
+    private Label message;
+	private ImagePlus imp;
+	private double gx1, gy1, gx2, gy2, gLength;
 	
 	// Variables used by getIrregularProfile and doIrregularSetup
 	private int n;
@@ -33,64 +39,38 @@ public class Slicer implements PlugIn {
 	private double[] dy;
 
 	public void run(String arg) {
-		ImagePlus imp = WindowManager.getCurrentImage();
+		imp = WindowManager.getCurrentImage();
 		if (imp==null) {
 			IJ.noImage();
 			return;
 		}
 		int stackSize = imp.getStackSize();
 		if (stackSize<2) {
-			IJ.showMessage("Reslicer", "Stack required");
+			IJ.error("Reslicer", "Stack required");
 			return;
 		}
 		if (!showDialog(imp))
 			return; 	
-		IJ.showStatus("Reslice... (press esc to abort)");
-		win = imp.getWindow();
-		if (win!=null) win.running = true;
 		long startTime = System.currentTimeMillis();
 		ImagePlus imp2 = null;
 		rgb = imp.getType()==ImagePlus.COLOR_RGB;
 		imp2 = reslice(imp);
 		if (imp2==null)
 			return;
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
 		imp2.setCalibration(imp.getCalibration());
 		Calibration cal = imp2.getCalibration();
 		cal.pixelDepth = outputZSpacing*cal.pixelWidth;
+		if (!rgb) imp2.getProcessor().setMinAndMax(min, max);
 		imp2.show();
 		if (noRoi)
 			imp.killRoi();
 		else
 		   imp.draw();
-		if (win!=null) win.running = false;
 		IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");
 	}
-
-	/*
-	public ImagePlus resliceRGB(ImagePlus imp) {
-		Roi roi = imp.getRoi();
-		RGBStackSplitter splitter = new RGBStackSplitter();
-		splitter.split(imp.getStack(), true);
-		IJ.showStatus("Slicer: RGB split");
-		ImagePlus red = new ImagePlus("Red", splitter.red);
-		ImagePlus green = new ImagePlus("Green", splitter.green);
-		ImagePlus blue = new ImagePlus("Blue", splitter.blue);
-		red.setRoi(roi); green.setRoi(roi); blue.setRoi(roi);
-		Calibration cal = imp.getCalibration();
-		red.setCalibration(cal); green.setCalibration(cal); blue.setCalibration(cal);
-		IJ.showStatus("Slicer: reslicing red");
-		red = reslice(red);
-		IJ.showStatus("Slicer: reslicing green");
-		green = reslice(green);
-		IJ.showStatus("Slicer: reslicing blue");
-		blue = reslice(blue);
-		int w = red.getWidth(), h = red.getHeight(), d = red.getStackSize();
-		RGBStackMerge merge = new RGBStackMerge();
-		IJ.showStatus("Slicer: RGB merge");
-		ImageStack stack = merge.mergeStacks(w, h, d, red.getStack(), green.getStack(), blue.getStack(), true);
-		return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
-	}
-	*/
 
 	public ImagePlus reslice(ImagePlus imp) {
 		Roi roi = imp.getRoi();
@@ -98,11 +78,12 @@ public class Slicer implements PlugIn {
 		if (roi==null || roiType==Roi.RECTANGLE || roiType==Roi.LINE)
 			return resliceRectOrLine(imp);
 		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
-			String status = imp.getStack().isVirtual()?"":null;
+			 String status = imp.getStack().isVirtual()?"":null;
+			 IJ.showStatus("Reslice...");
 			 ImageProcessor ip2 = getSlice(imp, 0.0, 0.0, 0.0, 0.0, status);
 			 return new ImagePlus("Reslice of  "+imp.getShortTitle(), ip2);
 		} else {
-			IJ.showMessage("Reslice...", "Line or rectangular selection required");
+			IJ.error("Reslice...", "Line or rectangular selection required");
 			return null;
 		}
 	}
@@ -115,6 +96,8 @@ public class Slicer implements PlugIn {
 		double outputSpacing = cal.pixelDepth;
 		Roi roi = imp.getRoi();
 		boolean line = roi!=null && roi.getType()==Roi.LINE;
+		if (line)
+			saveLineInfo(roi);
 		GenericDialog gd = new GenericDialog("Reslice");
 		gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3);
 		gd.addNumericField("Output Z Spacing ("+units+"):", outputSpacing, 3);
@@ -124,21 +107,36 @@ public class Slicer implements PlugIn {
 		   gd.addChoice("Start At:", starts, startAt);
 		gd.addCheckbox("Flip Vertically", flip);
 		gd.addCheckbox("Rotate 90 Degrees", rotate);
+		gd.addMessage(getSize(cal.pixelDepth,outputSpacing,outputSlices)+"          ");
+        fields = gd.getNumericFields();
+        for (int i=0; i<fields.size(); i++)
+            ((TextField)fields.elementAt(i)).addTextListener(this);
+        message = (Label)gd.getMessage();
 		gd.showDialog();
 		if(gd.wasCanceled())
 			return false;
 		cal.pixelDepth = gd.getNextNumber();
 		if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
 		outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
-		if (line)
+		if (line) {
 			outputSlices = (int)gd.getNextNumber();
-		else
+			imp.setRoi(roi);
+		} else
 			startAt = gd.getNextChoice();
 		flip = gd.getNextBoolean();
 		rotate = gd.getNextBoolean();
 		return true;
 	}
 
+	void saveLineInfo(Roi roi) {
+		Line line = (Line)roi;
+		gx1 = line.x1;
+		gy1 = line.y1;
+		gx2 = line.x2;
+		gy2 = line.y2;
+		gLength = line.getRawLength();
+	}
+	
 	ImagePlus resliceRectOrLine(ImagePlus imp) {
 		double x1 = 0.0;
 		double y1 = 0.0;
@@ -204,30 +202,48 @@ public class Slicer implements PlugIn {
 			return null;
 
 		if (outputSlices==0) {
-		   IJ.showMessage("Reslicer", "Output Z spacing ("+IJ.d2s(outputZSpacing,0)+" pixels) is too large.");
+		   IJ.error("Reslicer", "Output Z spacing ("+IJ.d2s(outputZSpacing,0)+" pixels) is too large.");
 		   return null;
 		}
-		ImageStack stack=null;
 		boolean virtualStack = imp.getStack().isVirtual();
 		String status = null;
+		ImagePlus imp2 = null;
+		ImageStack stack2 = null;
+		IJ.resetEscape();
 		for (int i=0; i<outputSlices; i++)	{
 			if (virtualStack)
 				status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
 			ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
 			drawLine(x1, y1, x2, y2, imp);
-			if (stack==null)
-				stack = new ImageStack(ip.getWidth(), ip.getHeight());
-			//if (IJ.debugMode) IJ.log("Slicer: "+i+" "+ip.getWidth()+"x"+ip.getHeight());
-			stack.addSlice(null, ip);
+			if (stack2==null) {
+				stack2 = createOutputStack(imp, ip);
+				if (stack2==null || stack2.getSize()<outputSlices) return null; // out of memory
+			}
+			stack2.setPixels(ip.getPixels(), i+1);
 			x1 += xInc;
 			x2 += xInc;
 			y1 += yInc;
 			y2 += yInc;
-			if (win!=null && !win.running)
+   			if (IJ.escapePressed())
 				{IJ.beep(); imp.draw(); return null;}
 		}
-		
-		return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
+		return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack2);
+	}
+	
+	ImageStack createOutputStack(ImagePlus imp, ImageProcessor ip) {
+		int bitDepth = imp.getBitDepth();
+		int w2=ip.getWidth(), h2=ip.getHeight(), d2=outputSlices;
+		int flags = NewImage.FILL_BLACK + NewImage.CHECK_AVAILABLE_MEMORY;
+		ImagePlus imp2 = NewImage.createImage("temp", w2, h2, d2, bitDepth, flags);
+		if (imp2!=null && imp2.getStackSize()==d2)
+			IJ.showStatus("Reslice... (press 'Esc' to abort)");
+		if (imp2==null)
+			return null;
+		else {
+			ImageStack stack2 = imp2.getStack();
+			stack2.setColorModel(ip.getColorModel());
+			return stack2;
+		}
 	}
 
    ImageProcessor getSlice(ImagePlus imp, double x1, double y1, double x2, double y2, String status) {
@@ -398,4 +414,79 @@ public class Slicer implements PlugIn {
 		g.drawLine(ic.screenX((int)(x1+0.5)), ic.screenY((int)(y1+0.5)), ic.screenX((int)(x2+0.5)), ic.screenY((int)(y2+0.5)));
 	}
 
+    public void textValueChanged(TextEvent e) {
+        double inSpacing = Tools.parseDouble(((TextField)fields.elementAt(0)).getText(),0.0);
+        double outSpacing = Tools.parseDouble(((TextField)fields.elementAt(1)).getText(),0.0);
+        int count = 0;
+        boolean lineSelection = fields.size()==3;
+        if (lineSelection) {
+        	count = (int)Tools.parseDouble(((TextField)fields.elementAt(2)).getText(), 0.0);
+        	if (count>0) makePolygon(count, outSpacing);
+        }
+        String size = getSize(inSpacing, outSpacing, count);
+        message.setText(size);
+    }
+    
+    String getSize(double inSpacing, double outSpacing, int count) {
+        int size = getOutputStackSize(inSpacing, outSpacing, count);
+       	int mem = getAvailableMemory();
+        String available = mem!=-1?" ("+mem+"MB)":"";
+        if (message!=null)
+        	message.setForeground(mem!=-1&&size>mem?Color.red:Color.black);
+        if (size>0)
+        	return size+"MB"+available;
+        else
+        	return "<1MB"+available;
+    }
+
+    void makePolygon(int count, double outSpacing) {
+        int[] x = new int[4];
+        int[] y = new int[4];
+        x[0] = (int)gx1;
+        y[0] = (int)gy1;
+        x[1] = (int)gx2;
+        y[1] = (int)gy2;
+		double dx = gx2 - gx1;
+		double dy = gy2 - gy1;
+		double nrm = Math.sqrt(dx*dx + dy*dy)/outSpacing;
+		double xInc = -(dy/nrm);
+		double yInc = (dx/nrm);
+        x[2] = x[1] + (int)(xInc*count);
+        y[2] = y[1] + (int)(yInc*count);
+        x[3] = x[0] + (int)(xInc*count);
+        y[3] = y[0] + (int)(yInc*count);
+        imp.setRoi(new PolygonRoi(x, y, 4, PolygonRoi.FREEROI));
+    }
+    
+    int getOutputStackSize(double inSpacing, double outSpacing, int count) {
+		Roi roi = imp.getRoi();
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		if (roi!=null) {
+			Rectangle r = roi.getBounds();
+			width = r.width;
+			width = r.height;
+		}
+		int type = roi!=null?roi.getType():0;
+		int stackSize = imp.getStackSize();
+		double size = 0.0;
+		if (type==Roi.RECTANGLE) {
+			size = width*height*stackSize;
+			if (outSpacing>0) size /= outSpacing;
+		} else
+			size = gLength*count*stackSize;
+		Calibration cal = imp.getCalibration();
+		double zSpacing = inSpacing/cal.pixelWidth;
+		if (zSpacing!=0.0 && zSpacing!=1.0)
+			size *= zSpacing;
+		return (int)Math.round(size/1048576.0);
+    }
+
+	int getAvailableMemory() {
+			long max = IJ.maxMemory();
+			if (max==0) return -1;
+			long inUse = IJ.currentMemory();
+			long available = max - inUse;
+			return (int)((available+524288L)/1048576L);
+	}
 }

@@ -11,12 +11,14 @@ from "KickAss Java Programming" by Tonny Espeset.
 */
 public class ByteProcessor extends ImageProcessor {
 
+	static final int ERODE=10, DILATE=11;
 	protected byte[] pixels;
 	protected byte[] snapshotPixels;
 	private int bgColor = 255; //white
 	private int min=0, max=255;
 	private boolean brokenNewPixels = ij.IJ.isMacintosh()&&!ij.IJ.isJava2()
 		|| System.getProperty("java.version").startsWith("1.4");
+    private int binaryCount, binaryBackground;
 
 	/**Creates a ByteProcessor from an 8-bit, indexed color AWT Image. */
 	public ByteProcessor(Image img) {
@@ -234,10 +236,11 @@ public class ByteProcessor extends ImageProcessor {
 		nothing if (x,y) is outside the image boundary.
 		Values outside the range 0-255 are clipped. */
 	public void putPixel(int x, int y, int value) {
-		if (x>=0 && x<width && y>=0 && y<height)
+		if (x>=0 && x<width && y>=0 && y<height) {
 			if (value>255) value = 255;
 			if (value<0) value = 0;
 			pixels[y*width + x] = (byte)value;
+		}
 	}
 
 	/** Draws a pixel in the current foreground color. */
@@ -431,7 +434,8 @@ public class ByteProcessor extends ImageProcessor {
         int[] values = new int[10];
         if (type==MEDIAN_FILTER) values = new int[10];
         int rowOffset = width;
-        int count = 0;
+        int count;
+        int binaryForeground = 255 - binaryBackground;
 		for (int y=yMin; y<=yMax; y++) {
 			offset = xMin + y * width;
 			p2 = pixels2[offset-rowOffset-1]&0xff;
@@ -486,6 +490,44 @@ public class ByteProcessor extends ImageProcessor {
 						if (p8>sum) sum = p8;
 						if (p9>sum) sum = p9;
 						break;
+					case ERODE:
+						if (p5==binaryBackground)
+							sum = binaryBackground;
+						else {
+							count = 0;
+							if (p1==binaryBackground) count++;
+							if (p2==binaryBackground) count++;
+							if (p3==binaryBackground) count++;
+							if (p4==binaryBackground) count++;
+							if (p6==binaryBackground) count++;
+							if (p7==binaryBackground) count++;
+							if (p8==binaryBackground) count++;
+							if (p9==binaryBackground) count++;							
+							if (count>=binaryCount)
+								sum = binaryBackground;
+							else
+							sum = binaryForeground;
+						}
+						break;
+					case DILATE:
+						if (p5==binaryForeground)
+							sum = binaryForeground;
+						else {
+							count = 0;
+							if (p1==binaryForeground) count++;
+							if (p2==binaryForeground) count++;
+							if (p3==binaryForeground) count++;
+							if (p4==binaryForeground) count++;
+							if (p6==binaryForeground) count++;
+							if (p7==binaryForeground) count++;
+							if (p8==binaryForeground) count++;
+							if (p9==binaryForeground) count++;							
+							if (count>=binaryCount)
+								sum = binaryForeground;
+							else
+								sum = binaryBackground;
+						}
+						break;
 				}
 				
 				pixels[offset++] = (byte)sum;
@@ -493,7 +535,118 @@ public class ByteProcessor extends ImageProcessor {
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
+        if (xMin==1) filterEdge(type, pixels2, roiHeight, roiX, roiY, 0, 1);
+        if (yMin==1) filterEdge(type, pixels2, roiWidth, roiX, roiY, 1, 0);
+        if (xMax==width-2) filterEdge(type, pixels2, roiHeight, width-1, roiY, 0, 1);
+        if (yMax==height-2) filterEdge(type, pixels2, roiWidth, roiX, height-1, 1, 0);
 		hideProgress();
+	}
+
+	void filterEdge(int type, byte[] pixels2, int n, int x, int y, int xinc, int yinc) {
+		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
+        int sum=0, sum1, sum2;
+        int count;
+        int binaryForeground = 255 - binaryBackground;
+		int bg = binaryBackground;
+		for (int i=0; i<n; i++) {
+            if (type==ERODE || type==DILATE) {
+                p1=getEdgePixel0(pixels2,bg,x-1,y-1); p2=getEdgePixel0(pixels2,bg,x,y-1); p3=getEdgePixel0(pixels2,bg,x+1,y-1);
+                p4=getEdgePixel0(pixels2,bg,x-1,y); p5=getEdgePixel0(pixels2,bg,x,y); p6=getEdgePixel0(pixels2,bg,x+1,y);
+                p7=getEdgePixel0(pixels2,bg,x-1,y+1); p8=getEdgePixel0(pixels2,bg,x,y+1); p9=getEdgePixel0(pixels2,bg,x+1,y+1);
+            } else {
+                p1=getEdgePixel(pixels2,x-1,y-1); p2=getEdgePixel(pixels2,x,y-1); p3=getEdgePixel(pixels2,x+1,y-1);
+                p4=getEdgePixel(pixels2,x-1,y); p5=getEdgePixel(pixels2,x,y); p6=getEdgePixel(pixels2,x+1,y);
+                p7=getEdgePixel(pixels2,x-1,y+1); p8=getEdgePixel(pixels2,x,y+1); p9=getEdgePixel(pixels2,x+1,y+1);
+            }
+            switch (type) {
+                case BLUR_MORE:
+                    sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9)/9;
+                    break;
+                case FIND_EDGES: // 3x3 Sobel filter
+                    sum1 = p1 + 2*p2 + p3 - p7 - 2*p8 - p9;
+                    sum2 = p1  + 2*p4 + p7 - p3 - 2*p6 - p9;
+                    sum = (int)Math.sqrt(sum1*sum1 + sum2*sum2);
+                    if (sum> 255) sum = 255;
+                    break;
+                case MIN:
+                    sum = p5;
+                    if (p1<sum) sum = p1;
+                    if (p2<sum) sum = p2;
+                    if (p3<sum) sum = p3;
+                    if (p4<sum) sum = p4;
+                    if (p6<sum) sum = p6;
+                    if (p7<sum) sum = p7;
+                    if (p8<sum) sum = p8;
+                    if (p9<sum) sum = p9;
+                    break;
+                case MAX:
+                    sum = p5;
+                    if (p1>sum) sum = p1;
+                    if (p2>sum) sum = p2;
+                    if (p3>sum) sum = p3;
+                    if (p4>sum) sum = p4;
+                    if (p6>sum) sum = p6;
+                    if (p7>sum) sum = p7;
+                    if (p8>sum) sum = p8;
+                    if (p9>sum) sum = p9;
+                    break;
+				case ERODE:
+					if (p5==binaryBackground)
+						sum = binaryBackground;
+					else {
+						count = 0;
+						if (p1==binaryBackground) count++;
+						if (p2==binaryBackground) count++;
+						if (p3==binaryBackground) count++;
+						if (p4==binaryBackground) count++;
+						if (p6==binaryBackground) count++;
+						if (p7==binaryBackground) count++;
+						if (p8==binaryBackground) count++;
+						if (p9==binaryBackground) count++;							
+						if (count>=binaryCount)
+							sum = binaryBackground;
+						else
+						sum = binaryForeground;
+					}
+					break;
+				case DILATE:
+					if (p5==binaryForeground)
+						sum = binaryForeground;
+					else {
+						count = 0;
+						if (p1==binaryForeground) count++;
+						if (p2==binaryForeground) count++;
+						if (p3==binaryForeground) count++;
+						if (p4==binaryForeground) count++;
+						if (p6==binaryForeground) count++;
+						if (p7==binaryForeground) count++;
+						if (p8==binaryForeground) count++;
+						if (p9==binaryForeground) count++;							
+						if (count>=binaryCount)
+							sum = binaryForeground;
+						else
+							sum = binaryBackground;
+					}
+					break;
+            }
+            pixels[x+y*width] = (byte)sum;
+            x+=xinc; y+=yinc;
+        }
+    }
+
+	final int getEdgePixel(byte[] pixels2, int x, int y) {
+		if (x<=0) x = 0;
+		if (x>=width) x = width-1;
+		if (y<=0) y = 0;
+		if (y>=height) y = height-1;
+		return pixels2[x+y*width]&255;
+	}
+
+	final int getEdgePixel0(byte[] pixels2, int background, int x, int y) {
+		if (x<0 || x>width-1 || y<0 || y>height-1)
+            return background;
+        else
+            return pixels2[x+y*width]&255;
 	}
 
 	public void erode() {
@@ -508,6 +661,18 @@ public class ByteProcessor extends ImageProcessor {
 			filter(MAX);
 		else
 			filter(MIN);
+	}
+
+	public void erode(int count, int background) {
+        binaryCount = count;
+        binaryBackground = background;
+        filter(ERODE);
+	}
+
+	public void dilate(int count, int background) {
+        binaryCount = count;
+        binaryBackground = background;
+        filter(DILATE);
 	}
 
 	public void outline() {

@@ -7,60 +7,67 @@ import ij.io.*;
 import ij.process.*;
 
 /**
-     This plugin opens PGM (portable graymap) format images.
-
-     The portable graymap format is a lowest  common  denominator
-     grayscale file format.  The definition is as follows:
-
-     - A "magic number" for identifying the  file  type.   A  pgm
-       file's magic number is the two characters "P2".
-     - Whitespace (blanks, TABs, CRs, LFs).
-     - A width, formatted as ASCII characters in decimal.
-     - Whitespace.
-     - A height, again in ASCII decimal.
-     - Whitespace.
-     - The maximum gray value, again in ASCII decimal.
-     - Whitespace.
-     - Width * height gray values, each in ASCII decimal, between
-       0  and  the  specified  maximum  value,  separated by whi-
-       tespace, starting at the top-left corner of  the  graymap,
-       proceeding  in normal English reading order.  A value of 0
-       means black, and the maximum value means white.
-     - Characters from a "#" to the next end-of-line are  ignored
-       (comments).
-     - No line should be longer than 70 characters.
-
-     Here is an example of a small graymap in this format:
-     P2
-     # feep.pgm
-     24 7
-     15
-     0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-     0  3  3  3  3  0  0  7  7  7  7  0  0 11 11 11 11  0  0 15 15 15 15  0
-     0  3  0  0  0  0  0  7  0  0  0  0  0 11  0  0  0  0  0 15  0  0 15  0
-     0  3  3  3  0  0  0  7  7  7  0  0  0 11 11 11  0  0  0 15 15 15 15  0
-     0  3  0  0  0  0  0  7  0  0  0  0  0 11  0  0  0  0  0 15  0  0  0  0
-     0  3  0  0  0  0  0  7  7  7  7  0  0 11 11 11 11  0  0 15  0  0  0  0
-     0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-
-     There is a  PGM variant that stores the pixel data as raw bytes:
-
-     -The "magic number" is "P5" instead of "P2".
-     -The gray values are stored as plain bytes, instead of ASCII decimal.
-     -No whitespace is allowed in the grays section, and only a single
-     character of whitespace (typically a newline) is allowed after the maxval.
-     -The files are smaller and many times faster to read and write.
-
-*/
+	 This plugin opens PGM (portable graymap) format images.
+	 
+	 The portable graymap format is a lowest  common  denominator
+	 grayscale file format.  The definition is as follows:
+	 
+	 - A "magic number" for identifying the  file  type.   A  pgm
+	 file's magic number is the two characters "P2".
+	 - Whitespace (blanks, TABs, CRs, LFs).
+	 - A width, formatted as ASCII characters in decimal.
+	 - Whitespace.
+	 - A height, again in ASCII decimal.
+	 - Whitespace.
+	 - The maximum gray value, again in ASCII decimal.
+	 - Whitespace.
+	 - Width * height gray values, each in ASCII decimal, between
+	 0  and  the  specified  maximum  value,  separated by whi-
+	 tespace, starting at the top-left corner of  the  graymap,
+	 proceeding  in normal English reading order.  A value of 0
+	 means black, and the maximum value means white.
+	 - Characters from a "#" to the next end-of-line are  ignored
+	 (comments).
+	 - No line should be longer than 70 characters.
+	 
+	 Here is an example of a small graymap in this format:
+	 P2
+	 # feep.pgm
+	 24 7
+	 15
+	 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+	 0  3  3  3  3  0  0  7  7  7  7  0  0 11 11 11 11  0  0 15 15 15 15  0
+	 0  3  0  0  0  0  0  7  0  0  0  0  0 11  0  0  0  0  0 15  0  0 15  0
+	 0  3  3  3  0  0  0  7  7  7  0  0  0 11 11 11  0  0  0 15 15 15 15  0
+	 0  3  0  0  0  0  0  7  0  0  0  0  0 11  0  0  0  0  0 15  0  0  0  0
+	 0  3  0  0  0  0  0  7  7  7  7  0  0 11 11 11 11  0  0 15  0  0  0  0
+	 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+	 
+	 There is a  PGM variant that stores the pixel data as raw bytes:
+	 
+	 -The "magic number" is "P5" instead of "P2".
+	 -The gray values are stored as plain bytes, instead of ASCII decimal.
+	 -No whitespace is allowed in the grays section, and only a single
+	 character of whitespace (typically a newline) is allowed after the maxval.
+	 -The files are smaller and many times faster to read and write.
+	 
+	 Kai Barthel Nov 16 2004:
+	 Extended to support PPM (portable pixmap) format images (24 bits only).
+	 -The "magic numbers" are "P6" (raw) "P3" (ASCII).
+	 
+ 
+ */
 
 public class PGM_Reader extends ImagePlus implements PlugIn {
 
 	private int width, height;
 	private boolean rawBits;
 	private boolean sixteenBits;
+	private boolean isColor;
+	private int maxValue;
 	
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("PGM Reader...", arg);
+		OpenDialog od = new OpenDialog("PGM/PPM Reader...", arg);
 		String directory = od.getDirectory();
 		String name = od.getFileName();
 		if (name==null)
@@ -74,7 +81,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		}
 		catch (IOException e) {
 			String msg = e.getMessage();
-			IJ.showMessage("PGM Reader", msg.equals("")?""+e:msg);
+			IJ.showMessage("PGM/PPM Reader", msg.equals("")?""+e:msg);
 			return;
 		}
 
@@ -101,31 +108,74 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 			else
 				return open16bitAsciiImage(tok, width, height);
 		else {
-			byte[] pixels = new byte[width*height];
-			ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
-			if (rawBits)
-				openRawImage(is, width*height, pixels);
-			else
-				openAsciiImage(tok, width*height, pixels);
-			return ip;
+			if (!isColor) {
+				byte[] pixels = new byte[width*height];
+				ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
+				if (rawBits) 
+					openRawImage(is, width*height, pixels);
+				else
+					openAsciiImage(tok, width*height, pixels);
+				
+				for (int i = 0; i < pixels.length; i++) {
+					pixels[i] = (byte) (0xff & (255 * (int)(0xff & pixels[i]) / maxValue)); 
+				}
+				return ip;
+			}
+			else {
+				int[] pixels = new int[width*height];
+				byte[] bytePixels = new byte[3*width*height];
+				ImageProcessor ip = new ColorProcessor(width, height, pixels);
+				if (rawBits)
+					openRawImage(is, 3*width*height, bytePixels);
+				else
+					openAsciiImage(tok, 3*width*height, bytePixels);
+				
+				for (int i = 0; i < width*height; i++ ) {
+					int r = (int)(0xff & bytePixels[i*3  ]);  
+					int g = (int)(0xff & bytePixels[i*3+1]);
+					int b = (int)(0xff & bytePixels[i*3+2]);
+					
+					r = (r*255/maxValue) << 16;
+					g = (g*255/maxValue) <<  8;
+					b = (b*255/maxValue);
+					pixels[i] = 0xFF000000 | r | g | b;
+				}
+				return ip;
+			}
 		}
 	}
 
 	public void openHeader(StreamTokenizer tok) throws IOException {
 		String magicNumber = getWord(tok);
-		if (magicNumber.equals("P5"))
+		if (magicNumber.equals("P2")) {
+			rawBits = false;
+			isColor = false;
+		}
+		else if (magicNumber.equals("P5")) {
 			rawBits = true;
-		else if (!magicNumber.equals("P2"))
-			throw new IOException("PGM files must start with \"P2\" or \"P5\"");
+			isColor = false;
+		}
+		else if (magicNumber.equals("P3")) {
+			rawBits = false;
+			isColor = true;
+		}
+		else if (magicNumber.equals("P6")) {
+			rawBits = true;
+			isColor = true;
+		}
+		else 
+			throw new IOException("PGM files must start with \"P2\" or \"P3\" or \"P5\" or \"P6\"");
 		width = getInt(tok);
 		height = getInt(tok);
-		int maxValue = getInt(tok);
+		maxValue = getInt(tok);
 		if (width==-1 || height==-1 || maxValue==-1)
 			throw new IOException("Error opening PGM header..");
 		if(maxValue > 255)
 			sixteenBits = true;
 		else
 			sixteenBits = false;
+		if (sixteenBits && isColor)
+				throw new IOException("16 bit color ppm is not supported");
 		String msg = "The maximum gray value is larger than ";
 		if (sixteenBits && maxValue>65535)
 			throw new IOException(msg + "65535.");

@@ -286,15 +286,15 @@ public class CalibrationBar implements PlugInFilter {
             	if (min<0) min = 0;
             	if (max>255) max = 255;
             }
-            if (cal.calibrated()) {
-                min = cal.getCValue((int)min);
-                max = cal.getCValue((int)max);
-            }
-
-            if (!decimalPlacesChanged && decimalPlaces==0 && (int)max!=max)
-                decimalPlaces = 2;
 
             double grayLabel = min + (max-min)/(numLabels-1) * i;
+            if (cal.calibrated()) {
+				grayLabel = cal.getCValue(grayLabel);
+				double cmin = cal.getCValue(min);
+				double cmax = cal.getCValue(max);
+            	if (!decimalPlacesChanged && decimalPlaces==0 && ((int)cmax!=cmax||(int)cmin!=cmin))
+                	decimalPlaces = 2;
+			}
 
             if (active)
                 ip.drawString(d2s(grayLabel), x + 5, yLabel + fontHeight/2);

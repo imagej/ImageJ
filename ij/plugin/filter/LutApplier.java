@@ -36,7 +36,7 @@ public class LutApplier implements PlugInFilter {
 		min = (int)ip.getMin();
 		max = (int)ip.getMax();
 		if (min==0 && max==255) {
-				IJ.showMessage("Apply LUT", "The display range must first be updated\n"
+				IJ.error("Apply LUT", "The display range must first be updated\n"
                 +"using Image>Adjust>Brightness/Contrast\n"
                 +"or threshold levels defined using\n"
                 +"Image>Adjust>Threshold.");

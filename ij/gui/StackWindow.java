@@ -44,7 +44,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
-		if (!running){
+		if (!running2){
 			slice = sliceSelector.getValue();
 			notify();
 		}

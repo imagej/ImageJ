@@ -115,7 +115,7 @@ public class Converter implements PlugIn {
 	}
 
 	void unsupportedConversion(ImagePlus imp) {
-		IJ.showMessage("Converter",
+		IJ.error("Converter",
 			"Supported Conversions:\n" +
 			" \n" +
 			"8-bit -> 16-bit*\n" +

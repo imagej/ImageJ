@@ -13,7 +13,7 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.text.*;
 import ij.macro.Interpreter;
-import ij.plugin.frame.Editor;
+import ij.io.Opener;
 
 /**
 This frame is the main ImageJ class.
@@ -28,8 +28,10 @@ offer your changes to me so I can possibly add them to the "official" version.
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.32j";
+	public static final String VERSION = "1.33u";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
+	/** SansSerif, 12-point, plain font. */
+	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
@@ -75,6 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
 		statusLine = new Label();
+		statusLine.setFont(SansSerif12);
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
 		statusBar.add("Center", statusLine);
@@ -128,7 +131,7 @@ public class ImageJ extends Frame implements ActionListener,
 		try {img = createImage((ImageProducer)url.getContent());}
 		catch(Exception e) {}
 		if (img!=null)
-			setIconImage(img);
+			try {setIconImage(img);} catch (Exception e) {}
 	}
 	
 	public Point getPreferredLocation() {
@@ -190,6 +193,10 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			if (item.getParent()==Menus.openRecentMenu) {
+				new ImageOpener(cmd); // open image in separate thread
+				return;
+			}
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
@@ -236,6 +243,7 @@ public class ImageJ extends Frame implements ActionListener,
 		boolean shift = (flags & e.SHIFT_MASK) != 0;
 		boolean control = (flags & e.CTRL_MASK) != 0;
 		boolean alt = (flags & e.ALT_MASK) != 0;
+		boolean meta = (flags & e.META_MASK) != 0;
 		String c = "";
 		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
@@ -255,17 +263,47 @@ public class ImageJ extends Frame implements ActionListener,
 			}
 		}
         		
-		Hashtable shortcuts = Menus.getShortcuts();
-		if (shift)
-			c = (String)shortcuts.get(new Integer(keyCode+200));
-		else
-			c = (String)shortcuts.get(new Integer(keyCode));
+		// Handle one character macro shortcuts
+		if (!control && !meta) {
+			Hashtable macroShortcuts = Menus.getMacroShortcuts();
+			if (macroShortcuts.size()>0) {
+				if (shift)
+					c = (String)macroShortcuts.get(new Integer(keyCode+200));
+				else
+					c = (String)macroShortcuts.get(new Integer(keyCode));
+				if (c!=null) {
+						MacroInstaller.doShortcut(c);
+						return;
+				}
+			}
+		}
+
+		if (!Prefs.requireControlKey || control || meta) {
+			Hashtable shortcuts = Menus.getShortcuts();
+			if (shift)
+				c = (String)shortcuts.get(new Integer(keyCode+200));
+			else
+				c = (String)shortcuts.get(new Integer(keyCode));
+		}
 		
-		if (c==null)
+		if (c==null) {
+			switch (keyChar) {
+				case '<': c="Previous Slice [<]"; break;
+				case '>': c="Next Slice [>]"; break;
+				case '+': case '=': c="In"; break;
+				case '-': c="Out"; break;
+				case '/': c="Reslice [/]..."; break;
+				default:
+			}
+		}
+
+		if (c==null) {
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
 				case KeyEvent.VK_BACK_SPACE: c="Clear"; hotkey=true; break; // delete
-				case KeyEvent.VK_EQUALS: case 0xbb: c="Start Animation [=]"; break;
+				case KeyEvent.VK_BACK_SLASH: c="Start Animation"; break;
+				case KeyEvent.VK_EQUALS: c="In"; break;
+				case KeyEvent.VK_MINUS: c="Out"; break;
 				case KeyEvent.VK_SLASH: case 0xbf: c="Reslice [/]..."; break;
 				case KeyEvent.VK_COMMA: case 0xbc: c="Previous Slice [<]"; break;
 				case KeyEvent.VK_PERIOD: case 0xbe: c="Next Slice [>]"; break;
@@ -279,8 +317,13 @@ public class ImageJ extends Frame implements ActionListener,
 						roi.nudge(keyCode);
 					return;
 				case KeyEvent.VK_ESCAPE:
-					if (imp!=null)
-						imp.getWindow().running = false;
+					if (imp!=null) {
+						ImageWindow win = imp.getWindow();
+						if (win!=null) {
+							win.running = false;
+							win.running2 = false;
+						}
+					}
 					Macro.abort();
 					Interpreter.abort();
 					if (Interpreter.getInstance()!=null)
@@ -289,6 +332,8 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_ENTER: this.toFront(); return;
 				default: break;
 			}
+		}
+		
 		if (c!=null && !c.equals("")) {
 			if (c.equals("Fill"))
 				hotkey = true;
@@ -403,5 +448,38 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 	}
 
-
 } //class ImageJ
+
+
+/** Opens, in a separate thread, files selected from the File/Open Recent submenu.*/
+class ImageOpener implements Runnable {
+	private String path;
+
+	ImageOpener(String path) {
+		this.path = path;
+		Thread thread = new Thread(this, "ImageOpener");
+		thread.start();
+	}
+
+	/** Open the file and move the path to top of the submenu. */
+	public void run() {
+		Opener o = new Opener();
+		o.open(path);
+		Menu menu = Menus.openRecentMenu;
+		int n = menu.getItemCount();
+		int index = 0;
+		for (int i=0; i<n; i++) {
+			if (menu.getItem(i).getLabel().equals(path)) {
+				index = i;
+				break;
+			}
+		}
+		if (index>0) {
+			MenuItem item = menu.getItem(index);
+			menu.remove(index);
+			menu.insert(item, 0);
+		}
+	}
+
+} //ImageOpener
+

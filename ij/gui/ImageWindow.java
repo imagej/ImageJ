@@ -18,7 +18,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	protected ImageCanvas ic;
 	private double initialMagnification = 1;
 	private int newWidth, newHeight;
-	protected static ImagePlus clipboard;
 	protected boolean closed;
 		
 	private static final int XINC = 8;
@@ -34,9 +33,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	
     private int textGap = centerOnScreen?0:TEXT_GAP;
 	
+	/** This variable is set false if presses the escape key or closes the window. */
+	public boolean running;
+	
 	/** This variable is set false if the user clicks in this
 		window, presses the escape key, or closes the window. */
-	public boolean running;
+	public boolean running2;
 	
     public ImageWindow(ImagePlus imp) {
     	this(imp, new ImageCanvas(imp));
@@ -64,7 +66,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		WindowManager.addWindow(this);
 		imp.setWindow(this);
 		if (previousWindow!=null) {
-			setLocationAndSize();
+			setLocationAndSize(false);
 			Point loc = previousWindow.getLocation();
 			setLocation(loc.x, loc.y);
 			show();
@@ -77,10 +79,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				imp.unlock();
 			WindowManager.setCurrentWindow(this);
 		} else {
-			setLocationAndSize();
+			setLocationAndSize(false);
 			if (ij!=null && !IJ.isMacintosh()) {
 				Image img = ij.getIconImage();
-				if (img!=null) setIconImage(img);
+				if (img!=null) 
+					try {setIconImage(img);} catch (Exception e) {}
 			}
 			if (centerOnScreen) {
 				GUI.center(this);
@@ -95,7 +98,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
      }
 
     
-	private void setLocationAndSize() {
+	private void setLocationAndSize(boolean updating) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		if (WindowManager.getWindowCount()<=1)
@@ -140,7 +143,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		}
 		if (y+height*mag>screenHeight)
 			y = ybase;
-		setLocation(x, y);
+        if (!updating) setLocation(x, y);
 		if (Prefs.open100Percent && ic.getMagnification()<1.0) {
 			while(ic.getMagnification()<1.0)
 				ic.zoomIn(0, 0);
@@ -175,7 +178,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     		String label = stack.getShortSliceLabel(currentSlice);
     		if (label!=null && label.length()>0)
     			s += " (" + label + ")";
-			if ((this instanceof StackWindow) && running) {
+			if ((this instanceof StackWindow) && running2) {
 				g.drawString(s, 5, insets.top+TEXT_GAP);
 				return;
 			}
@@ -233,8 +236,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	/** Removes this window from the window list and disposes of it.
 		Returns false if the user cancels the "save changes" dialog. */
 	public boolean close() {
-		boolean isRunning = running;
-		running = false;
+		boolean isRunning = running || running2;
+		running = running2 = false;
 		if (isRunning) IJ.wait(500);
 		ImageJ ij = IJ.getInstance();
 		if (imp.changes && IJ.getApplet()==null && !IJ.macroRunning() && ij!=null) {
@@ -269,13 +272,23 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		repaint();
 	}
 	
+	public void updateImage(ImagePlus imp) {
+        if (imp!=this.imp)
+            throw new IllegalArgumentException("imp!=this.imp");
+		this.imp = imp;
+        ic.updateImage(imp);
+        setLocationAndSize(true);
+        pack();
+		repaint();
+	}
+
 	public ImageCanvas getCanvas() {
 		return ic;
 	}
 	
 
 	static ImagePlus getClipboard() {
-		return clipboard;
+		return ImagePlus.getClipboard();
 	}
 	
 	/** Has this window been closed? */
@@ -312,6 +325,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		} else {
 			setVisible(false);
 			dispose();
+			WindowManager.removeWindow(this);
 		}
 	}
 	
@@ -325,94 +339,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	/** Copies the current ROI to the clipboard. The entire
 	    image is copied if there is no ROI. */
 	public void copy(boolean cut) {
-		Roi roi = imp.getRoi();
-		String msg = (cut)?"Cut":"Copy";
-		IJ.showStatus(msg+ "ing...");
-		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor ip2 = ip.crop();
-		clipboard = new ImagePlus("Clipboard", ip2);
-		if (roi!=null && roi.getType()!=Roi.RECTANGLE)
-			clipboard.setRoi((Roi)roi.clone());
-		if (cut) {
-			ip.snapshot();
-	 		ip.setColor(Toolbar.getBackgroundColor());
-			ip.fill();
-			if (roi!=null && roi.getType()!=Roi.RECTANGLE)
-				ip.reset(imp.getMask());
-			imp.setColor(Toolbar.getForegroundColor());
-			Undo.setup(Undo.FILTER, imp);
-			imp.updateAndDraw();
-		}
-		int bytesPerPixel = 1;
-		switch (clipboard.getType()) {
-			case ImagePlus.GRAY16: bytesPerPixel = 2; break;
-			case ImagePlus.GRAY32: case ImagePlus.COLOR_RGB: bytesPerPixel = 4;
-		}
-		IJ.showStatus(msg + ": " + (clipboard.getWidth()*clipboard.getHeight()*bytesPerPixel)/1024 + "k");
+		imp.copy(cut);
     }
                 
 
 	public void paste() {
-		//if (IJ.macroRunning())
-		//	IJ.wait(500);
-		if (clipboard==null)
-			return;
-		int cType = clipboard.getType();
-		int iType = imp.getType();
-		
-		boolean sameType = false;
-		if ((cType==ImagePlus.GRAY8|cType==ImagePlus.COLOR_256)&&(iType==ImagePlus.GRAY8|iType==ImagePlus.COLOR_256)) sameType = true;
-		else if ((cType==ImagePlus.COLOR_RGB|cType==ImagePlus.GRAY8|cType==ImagePlus.COLOR_256)&&iType==ImagePlus.COLOR_RGB) sameType = true;
-		else if (cType==ImagePlus.GRAY16&&iType==ImagePlus.GRAY16) sameType = true;
-		else if (cType==ImagePlus.GRAY32&&iType==ImagePlus.GRAY32) sameType = true;
-		if (!sameType) {
-			IJ.error("Images must be the same type to paste.");
-			return;
-		}
-        int w = clipboard.getWidth();
-        int h = clipboard.getHeight();
-		if (w>imp.getWidth() || h>imp.getHeight()) {
-			IJ.error("Image is too large to paste.");
-			return;
-		}
-		Roi roi = imp.getRoi();
-		Rectangle r = null;
-		if (roi!=null)
-			r = roi.getBounds();
-		if (r==null || (r!=null && (w!=r.width || h!=r.height))) {
-			// create a new roi centered on visible part of image
-			Rectangle srcRect = ic.getSrcRect();
-			int xCenter = srcRect.x + srcRect.width/2;
-			int yCenter = srcRect.y + srcRect.height/2;
-			Roi cRoi = clipboard.getRoi();
-			if (cRoi!=null && cRoi.getType()!=Roi.RECTANGLE) {
-				cRoi.setImage(imp);
-				cRoi.setLocation(xCenter-w/2, yCenter-h/2);
-				imp.setRoi(cRoi);
-			} else
-				imp.setRoi(xCenter-w/2, yCenter-h/2, w, h);
-			roi = imp.getRoi();
-		}
-		if (IJ.macroRunning()) {
-			//non-interactive paste
-			int pasteMode = Roi.getCurrentPasteMode();
-			boolean nonRect = roi.getType()!=Roi.RECTANGLE;
-			ImageProcessor ip = imp.getProcessor();
-			if (nonRect) ip.snapshot();
-			r = roi.getBounds();
-			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
-			if (nonRect)
-				ip.reset(imp.getMask());
-			imp.updateAndDraw();
-			imp.killRoi();
-		} else {
-			roi.startPaste(clipboard);
-			Undo.setup(Undo.PASTE, imp);
-		}
-		imp.changes = true;
-		//Image img = clipboard.getImage();
-		//ImagePlus imp2 = new ImagePlus("Clipboard", img);
-		//imp2.show();
+		imp.paste();
     }
                 
     /** This method is called by ImageCanvas.mouseMoved(MouseEvent). 

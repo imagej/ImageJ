@@ -8,6 +8,7 @@ import java.awt.datatransfer.*;
 import ij.*;
 import ij.plugin.filter.Analyzer;
 import ij.io.SaveDialog;
+import ij.measure.ResultsTable;
 
 
 /**
@@ -292,15 +293,21 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		keyListener = listener;
 	}
 	
-	public void keyPressed (KeyEvent e) {
-		boolean cutCopyOK = (e.isControlDown()||e.isMetaDown())
-			&& selStart!=-1 && selEnd!=-1;
-		if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_C)
-			copySelection();
-		else if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_X) 
-			{if (copySelection()>0) clearSelection();}
-		else if (keyListener!=null)
+	public void keyPressed(KeyEvent e) {
+		//boolean cutCopyOK = (e.isControlDown()||e.isMetaDown())
+		//	&& selStart!=-1 && selEnd!=-1;
+		//if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_C)
+		//	copySelection();
+		//else if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_X) 
+		//	{if (copySelection()>0) clearSelection();}
+		//else if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_A) 
+		//	selectAll();
+		//else if (keyListener!=null)
+		//	keyListener.keyPressed(e);
+		int key = e.getKeyCode();
+		if (keyListener!=null && key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
+		
 	}
 	
 	public void keyReleased (KeyEvent e) {}
@@ -420,6 +427,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				vData.removeElementAt(selStart);
 				iRowCount--;
 			}
+			if (IJ.isResultsWindow() && IJ.getTextPanel()==this) {
+				ResultsTable rt = ResultsTable.getResultsTable();
+				for (int i=0; i<count; i++)
+					rt.deleteRow(selStart);
+				rt.show("Results");
+			}
 		}
 		selStart=-1; selEnd=-1; selOrigin=-1; selLine=-1; 
 		adjustVScroll();
@@ -506,9 +519,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		return iRowCount;
 	}
 
-	/** Returns the number of lines of text in this TextPanel. 
-		The argument must be greater than or equal to zero and
-		less than the value returned by getLineCount(). */
+	/** Returns the specified line as a string. The argument
+		must be greater than or equal to zero and less than 
+		the value returned by getLineCount(). */
 	public String getLine(int index) {
 		if (index<0 || index>=iRowCount)
 			throw new IllegalArgumentException("index out of range: "+index);

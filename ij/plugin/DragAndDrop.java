@@ -30,8 +30,10 @@ public class DragAndDrop implements PlugIn, DropTargetListener {
 			if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 				Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
 				Iterator iterator = ((List)data).iterator();
+				//IJ.log("drop");
 				while(iterator.hasNext()) {
 					File file = (File)iterator.next();
+					//IJ.log("dopen: "+file.getAbsolutePath());
 					new Opener().open(file.getAbsolutePath());
 				}
 			}

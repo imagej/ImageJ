@@ -83,10 +83,7 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Renders the text on the image. */
-	public void drawPixels() {
-		if (imp==null)
-			return;
-		ImageProcessor ip = imp.getProcessor();
+	public void drawPixels(ImageProcessor ip) {
 		Font font = new Font(name, style, size);
 		ip.setFont(font);
 		ip.setAntialiasedText(true);

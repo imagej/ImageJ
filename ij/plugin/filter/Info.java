@@ -84,13 +84,13 @@ public class Info implements PlugInFilter {
 	    		else
 	    			lut = "grayscale " + lut;
 	    		if (imp.isInvertedLut())
-	    			lut = "inverted " + lut;
+	    			lut = "inverting " + lut;
 	    		s += "(" + lut + ")\n";
 	    		break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
-					ShortProcessor sp = (ShortProcessor)imp.getProcessor(); 
-	    			s += "Bits per pixel: 16 (unsigned short)\n";
+	    			String sign = cal.isSigned16Bit()?"signed":"unsigned";
+	    			s += "Bits per pixel: 16 ("+sign+")\n";
 	    		} else
 	    			s += "Bits per pixel: 32 (float)\n";
 				s += "Display range: ";
@@ -109,18 +109,26 @@ public class Info implements PlugInFilter {
 	    		s += "Bits per pixel: 32 (RGB)\n";
 	    		break;
     	}
-		double interval = cal.frameInterval;
-    	if (nSlices>1 && interval!=0.0) {
-			String label = interval>0.0?"Frames: ":"Slices: ";
-			s += label + nSlices + " (" + imp.getCurrentSlice() + ")\n";
+		double interval = cal.frameInterval;		
+    	if (nSlices>1) {
+    		ImageStack stack = imp.getStack();
+    		int slice = imp.getCurrentSlice();
+    		String number = slice + "/" + nSlices;
+    		String label = stack.getShortSliceLabel(slice);
+    		if (label!=null && label.length()>0)
+    			label = " (" + label + ")";
+    		else
+    			label = "";
 			if (interval>0.0) {
+				s += "Frame: " + number + label + "\n";
 				if (interval<1.0) {
 					double rate = 1.0/interval;
 					String sRate = Math.abs(rate-Math.round(rate))<0.00001?IJ.d2s(rate,0):IJ.d2s(rate,5);
 					s += "Frame rate: " + sRate + " fps\n";
 				} else
 					s += "Frame interval: " + IJ.d2s(interval,5) + " seconds\n";
-			}
+			} else
+				s += "Slice: " + number + label + "\n";
 		}
 
 		if (ip.getMinThreshold()==ip.NO_THRESHOLD)
@@ -136,8 +144,9 @@ public class Info implements PlugInFilter {
 			}
 			s += "Threshold: "+IJ.d2s(lower,dp)+"-"+IJ.d2s(upper,dp)+"\n";
 		}
-		ImageCanvas ic = imp.getWindow().getCanvas();
-    	double mag = ic.getMagnification();
+		ImageWindow win = imp.getWindow();
+		ImageCanvas ic = win!=null?win.getCanvas():null;
+    	double mag = ic!=null?ic.getMagnification():1.0;
     	if (mag!=1.0)
 			s += "Magnification: " + mag + "\n";
 			

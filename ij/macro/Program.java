@@ -11,16 +11,28 @@ public class Program implements MacroConstants {
 	int stLoc = -1;
 	int symTabLoc;
 	Symbol[] table = new Symbol[maxSymbols];
+    static Symbol[] systemTable;
 	int[] code = new int[maxProgramSize];
 	Variable[] globals;
 	boolean hasVars;
 
 	public Program() {
-		addKeywords();
-		addFunctions();
-		addNumericFunctions();
-		addStringFunctions();
-		addArrayFunctions();
+		if (systemTable!=null) {
+			stLoc = systemTable.length - 1;
+			for (int i=0; i<=stLoc; i++)
+			table[i] = systemTable[i];
+		} else {
+			//IJ.log("make table");
+			addKeywords();
+			addFunctions();
+			addNumericFunctions();
+			addStringFunctions();
+			addArrayFunctions();
+			systemTable = new Symbol[stLoc+1];
+			for (int i=0; i<=stLoc; i++)
+				systemTable[i] = table[i];
+			IJ.register(Program.class);
+		}
 	}
 	
 	public int[] getCode() {
@@ -80,19 +92,17 @@ public class Program implements MacroConstants {
 
 	/** Looks up a word in the symbol table. Returns null if the word is not found. */
 	Symbol lookupWord(String str) {
-		Symbol symbol = null;
+        //IJ.log("lookupWord: "+str);
+		Symbol symbol;
 		String symStr;
-		for (int i=0; i<maxSymbols; i++) {
+		for (int i=0; i<=stLoc; i++) {
 			symbol = table[i];
-			if (symbol==null)
-				break;
-			symStr = symbol.str;
-			if (symStr!=null && symbol.type!=STRING_CONSTANT && str.equals(symStr)) {
+			if (symbol.type!=STRING_CONSTANT && str.equals(symbol.str)) {
 				symTabLoc = i;
-				break;
+				return symbol;
 			}
 		}
-		return symbol;
+		return null;
 	}
 
 	void saveGlobals(Interpreter interp) {

@@ -3,17 +3,23 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.util.Tools;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
 /** This plugin implements ImageJ's Resize command. */
-public class Resizer implements PlugInFilter {
+public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 	ImagePlus imp;
 	private boolean crop;
-    private static int newWidth = 100;
-    private static int newHeight = 100;
+    private static int newWidth;
+    private static int newHeight;
     private static boolean constrain = true;
     private static boolean interpolate = true;
-
+    private Vector fields, checkboxes;
+	private double origWidth, origHeight;
+	private boolean sizeToHeight;
+ 
 	public int setup(String arg, ImagePlus imp) {
 		crop = arg.equals("crop");
 		this.imp = imp;
@@ -26,23 +32,36 @@ public class Resizer implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.getType()>=Roi.LINE && roi.getType()<=Roi.FREELINE) {
+		if (roi!=null && roi.isLine()) {
 			IJ.error("The Crop and Adjust->Size commands\ndo not work with line selections.");
 			return;
 		}
-		boolean sizeToHeight=false;
+		Rectangle r = ip.getRoi();
+		origWidth = r.width;;
+		origHeight = r.height;
+		sizeToHeight=false;
 		if (crop) {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
 			newHeight = bounds.height;
 			interpolate = false;
 		} else {
+			if (newWidth==0 || newHeight==0) {
+				newWidth = (int)origWidth/2;
+				newHeight = (int)origHeight/2;
+			}
+			if (constrain) newHeight = (int)(newWidth*(origHeight/origWidth));
 			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
 			gd.addNumericField("Width (pixels):", newWidth, 0);
 			gd.addNumericField("Height (pixels):", newHeight, 0);
 			gd.addCheckbox("Constrain Aspect Ratio", constrain);
 			gd.addCheckbox("Interpolate", interpolate);
 			gd.addMessage("NOTE: Undo is not available");
+			fields = gd.getNumericFields();
+			for (int i=0; i<fields.size(); i++)
+				((TextField)fields.elementAt(i)).addTextListener(this);
+			checkboxes = gd.getCheckboxes();
+			((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
@@ -54,19 +73,17 @@ public class Resizer implements PlugInFilter {
 			}
 			constrain = gd.getNextBoolean();
 			interpolate = gd.getNextBoolean();
-			sizeToHeight = constrain && newWidth==0;
+			if (constrain && newWidth==0)
+				sizeToHeight = true;
 			if (newWidth<=0.0 && !constrain)  newWidth = 50;
 			if (newHeight<=0.0) newHeight = 50;
 		}
 		
-		Rectangle r = ip.getRoi();
-		double oldWidth = r.width;;
-		double oldHeight = r.height;
 		if (!crop && constrain) {
 			if (sizeToHeight)
-				newWidth = (int)(newHeight*(oldWidth/oldHeight));
+				newWidth = (int)(newHeight*(origWidth/origHeight));
 			else
-				newHeight = (int)(newWidth*(oldHeight/oldWidth));
+				newHeight = (int)(newWidth*(origHeight/origWidth));
 		}
 		ip.setInterpolate(interpolate);
     	
@@ -82,8 +99,8 @@ public class Resizer implements PlugInFilter {
 	    		imp.hide();
 	    		Calibration cal = imp.getCalibration();
 	    		if (cal.scaled()) {
-    				cal.pixelWidth *= oldWidth/newWidth;
-    				cal.pixelHeight *= oldHeight/newHeight;
+    				cal.pixelWidth *= origWidth/newWidth;
+    				cal.pixelHeight *= origHeight/newHeight;
     				imp.setCalibration(cal);
     			}
 	    		imp.setStack(null, s2);
@@ -96,6 +113,46 @@ public class Resizer implements PlugInFilter {
 		} catch(OutOfMemoryError o) {
 			IJ.outOfMemory("Resize");
 		}
+	}
+
+    public void textValueChanged(TextEvent e) {
+    	TextField widthField = (TextField)fields.elementAt(0);
+    	TextField heightField = (TextField)fields.elementAt(1);
+        int width = (int)Tools.parseDouble(widthField.getText(),-99);
+        int height = (int)Tools.parseDouble(heightField.getText(),-99);
+        if (width==-99 || height==-99)
+        	return;
+        if (constrain) {
+        	if (width!=newWidth) {
+         		sizeToHeight = false;
+        		newWidth = width;
+				updateFields();
+         	} else if (height!=newHeight) {
+         		sizeToHeight = true;
+        		newHeight = height;
+				updateFields();
+			}
+        }
+    }
+    
+    void updateFields() {
+		if (sizeToHeight) {
+			newWidth = (int)(newHeight*(origWidth/origHeight));
+			TextField widthField = (TextField)fields.elementAt(0);
+			widthField.setText(""+newWidth);
+		} else {
+			newHeight = (int)(newWidth*(origHeight/origWidth));
+			TextField heightField = (TextField)fields.elementAt(1);
+			heightField.setText(""+newHeight);
+		}
+   }
+
+	public void itemStateChanged(ItemEvent e) {
+		Checkbox cb = (Checkbox)checkboxes.elementAt(0);
+        boolean newConstrain = cb.getState();
+        if (newConstrain && newConstrain!=constrain)
+        	updateFields();
+        constrain = newConstrain;
 	}
 
 }

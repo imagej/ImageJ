@@ -91,7 +91,7 @@ public class ScaleBar implements PlugIn {
         if (mag<1.0 && barHeightInPixels<defaultBarHeight/mag)
             barHeightInPixels = (int)(defaultBarHeight/mag);
         imp.getProcessor().snapshot();
-        updateScalebar();
+        if (!IJ.macroRunning()) updateScalebar();
         GenericDialog gd = new BarDialog("Scale Bar");
         gd.addNumericField("Width in "+units+": ", barWidth, digits);
         gd.addNumericField("Height in pixels: ", barHeightInPixels, 0);
@@ -117,7 +117,8 @@ public class ScaleBar implements PlugIn {
         hideText = gd.getNextBoolean();
         if (stackSize>1)
         	labelAll = gd.getNextBoolean();
-        return true;
+        if (IJ.macroRunning()) updateScalebar();
+         return true;
     }
 
     void drawScaleBar(ImagePlus imp) {

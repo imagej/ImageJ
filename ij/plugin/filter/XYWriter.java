@@ -23,7 +23,7 @@ public class XYWriter implements PlugInFilter {
 		try {
 			saveXYCoordinates(imp);
 		} catch (IllegalArgumentException e) {
-			IJ.showMessage("XYWriter", e.getMessage());
+			IJ.error("XYWriter", e.getMessage());
 		}
 	}
 
@@ -46,7 +46,7 @@ public class XYWriter implements PlugInFilter {
 			pw = new PrintWriter(bos);
 		}
 		catch (IOException e) {
-			IJ.showMessage("XYWriter", ""+e);
+			IJ.error("XYWriter", ""+e);
 			return;
 		}
 		

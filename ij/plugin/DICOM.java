@@ -61,28 +61,42 @@ public class DICOM extends ImagePlus implements PlugIn {
 			String msg = e.getMessage();
 			IJ.showStatus("");
 			if (msg.indexOf("EOF")<0&&showErrors) {
-				IJ.showMessage("DicomDecoder", msg);
+				IJ.error("DicomDecoder", msg);
 				return;
 			} else if (!dd.dicmFound()&&showErrors) {
 				msg = "This does not appear to be a valid\n"
 				+ "DICOM file. It does not have the\n"
 				+ "characters 'DICM' at offset 128.";
-				IJ.showMessage("DicomDecoder", msg);
+				IJ.error("DicomDecoder", msg);
 				return;
 			}
 		}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
+			ImageProcessor ip = imp.getProcessor();
+			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+				//if (dd.rescaleSlope!=0.0&&dd.rescaleSlope!=1.0) 
+				//	ip.multiply(dd.rescaleSlope);
+				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
+					ip.add(dd.rescaleIntercept);
+			} else {
+				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0) {
+					double[] coeff = new double[2];
+					coeff[0] = dd.rescaleIntercept;
+					coeff[1] = dd.rescaleSlope;
+ 					imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+ 				}
+			}
 			if (fi.fileType==FileInfo.GRAY16_SIGNED && imp.getStackSize()==1)
 				convertToUnsigned(imp, fi);
 			if (dd.windowWidth>0.0) {
-				ImageProcessor ip = imp.getProcessor();
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
-				if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-					min += 32768.0;
-					max += 32768.0;
+				Calibration cal = imp.getCalibration();
+				if (cal.getCValue(0)!=0) {
+					min -= cal.getCValue(0);
+					max -= cal.getCValue(0);
 				}
 				ip.setMinAndMax(min, max);
 				if (IJ.debugMode) IJ.log("window: "+min+"-"+max);
@@ -96,7 +110,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			setFileInfo(fi); // needed for revert
 			if (arg.equals("")) show();
 		} else if (showErrors)
-			IJ.showMessage("DicomDecoder","Unable to decode DICOM header.");
+			IJ.error("DicomDecoder","Unable to decode DICOM header.");
 		IJ.showStatus("");
 	}
 
@@ -156,10 +170,13 @@ class DicomDecoder {
 	private static final int PIXEL_SPACING = 0x00280030;
 	private static final int BITS_ALLOCATED = 0x00280100;
 	private static final int WINDOW_CENTER = 0x00281050;
-	private static final int WINDOW_WIDTH = 0x00281051;
+	private static final int WINDOW_WIDTH = 0x00281051;	
+	private static final int RESCALE_INTERCEPT = 0x00281052;
+	private static final int RESCALE_SLOPE = 0x00281053;
 	private static final int RED_PALETTE = 0x00281201;
 	private static final int GREEN_PALETTE = 0x00281202;
 	private static final int BLUE_PALETTE = 0x00281203;
+	private static final int ITEM = 0xFFFEE000;
 	private static final int PIXEL_DATA = 0x7FE00010;
 
 	private static final int AE=0x4145, AS=0x4153, AT=0x4154, CS=0x4353, DA=0x4441, DS=0x4453, DT=0x4454,
@@ -187,6 +204,7 @@ class DicomDecoder {
  	private boolean oddLocations;  // one or more tags at odd locations
  	private boolean bigEndianTransferSyntax = false;
 	double windowCenter, windowWidth;
+	double rescaleIntercept, rescaleSlope;
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -311,6 +329,7 @@ class DicomDecoder {
 		// This is a sort of bracket that encloses a sequence of elements.
 		if (elementLength==-1)
  			elementLength = 0;
+ 		//IJ.log("getNextTag: "+tag+" "+elementLength);
 		return tag;
 	}
   
@@ -441,13 +460,27 @@ class DicomDecoder {
 					break;
 				case WINDOW_CENTER:
 					String center = getString(elementLength);
+					int index = center.indexOf('\\');
+					if (index!=-1) center = center.substring(index+1);
 					windowCenter = s2d(center);
 					addInfo(tag, center);
 					break;
 				case WINDOW_WIDTH:
 					String width = getString(elementLength);
+					index = width.indexOf('\\');
+					if (index!=-1) width = width.substring(index+1);
 					windowWidth = s2d(width);
 					addInfo(tag, width);
+					break;
+				case RESCALE_INTERCEPT:
+					String intercept = getString(elementLength);
+					rescaleIntercept = s2d(intercept);
+					addInfo(tag, intercept);
+					break;
+				case RESCALE_SLOPE:
+					String slop = getString(elementLength);
+					rescaleSlope = s2d(slop);
+					addInfo(tag, slop);
 					break;
 				case RED_PALETTE:
 					fi.reds = getLut(elementLength);
@@ -525,7 +558,7 @@ class DicomDecoder {
 
 	void addInfo(int tag, String value) throws IOException {
 		String info = getHeaderInfo(tag, value);
-		if (info!=null) {
+		if (info!=null &&  tag!=ITEM) {
 			int group = tag>>>16;
 			if (group!=previousGroup) dicomInfo.append("\n");
 			previousGroup = group;
@@ -558,6 +591,8 @@ class DicomDecoder {
 				vr = (id.charAt(0)<<8) + id.charAt(1);
 			id = id.substring(2);
 		}
+		if (tag==ITEM)
+			return id!=null?id+":":null;
 		if (value!=null)
 			return id+": "+value;
 		switch (vr) {
@@ -575,13 +610,18 @@ class DicomDecoder {
 						value += Integer.toString(getShort())+" ";
 				}
 				break;
+			case SQ:
+				value = "";
+				break;
 			default:
 				long skipCount = (long)elementLength;
 				while (skipCount > 0) skipCount -= f.skip(skipCount);
 				location += elementLength;
 				value = "";
 		}
-		if (id==null)
+		if (value!=null && id==null && !value.equals(""))
+			return "---: "+value;
+		else if (id==null)
 			return null;
 		else
 			return id+": "+value;
@@ -663,6 +703,8 @@ class DicomDictionary {
 		"00020002=UIMedia Storage SOP Class UID", 
 		"00020003=UIMedia Storage SOP Inst UID",
 		"00020010=UITransfer Syntax UID",
+		"00020012=UIImplementation Class UID",
+		"00020013=SHImplementation Version Name",
 		
 		"00080005=CSSpecific Character Set",
 		"00080008=CSImage Type",
@@ -779,6 +821,9 @@ class DicomDictionary {
 		"00180070=ISCounts Accumulated",
 		"00180071=CSAcquisition Termination Condition",
 		"00180072=DSEffective Series Duration",
+		"00180073=CSAcquisition Start Condition",
+		"00180074=ISAcquisition Start Condition Data",
+		"00180075=ISAcquisition Termination Condition Data",
 		"00180080=DSRepetition Time",
 		"00180081=DSEcho Time",
 		"00180082=DSInversion Time",
@@ -825,6 +870,8 @@ class DicomDictionary {
 		"00181072=TMRadionuclide Start Time",
 		"00181073=TMRadionuclide Stop Time",
 		"00181074=DSRadionuclide Total Dose",
+		"00181075=DSRadionuclide Half Life",
+		"00181076=DSRadionuclide Positron Fraction",
 		"00181080=CSBeat Rejection Flag",
 		"00181081=ISLow R-R Value",
 		"00181082=ISHigh R-R Value",
@@ -1092,6 +1139,9 @@ class DicomDictionary {
 		"00283004=LOMadality LUT Type",
 		"00283006=USLUT Data",
 		"00283010=SQVOI LUT Sequence",
+		"30020011=DSImage Plane Pixel Spacing",
+		"30020022=DSRadiation Machine SAD",
+		"30020026=DSRT IMAGE SID",
 
 		"7FE00010=OXPixel Data",
 

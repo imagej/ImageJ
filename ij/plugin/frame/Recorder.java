@@ -96,6 +96,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		textArea.append(method+"(\""+arg+"\");\n");
 	}
 
+	public static void record(String method, String arg1, String arg2) {
+		if (textArea==null) return;
+		if (arg1.equals("Save")) arg2 = fixPath(arg2);
+		textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
+	}
+
 	public static void record(String method, int a1) {
 		if (textArea==null) return;
 		textArea.append(method+"("+a1+");\n");
@@ -135,8 +141,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	}
 	
 	public static void recordOption(String key, String value) {
+		if (key==null) return;
 		key = trimKey(key);
 		value = addQuotes(value);
+		checkForDuplicate(key+"=", value);
 		if (commandOptions==null)
 			commandOptions = key+"="+value;
 		else
@@ -149,6 +157,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
+		checkForDuplicate(key+"=", path);
 		if (commandOptions==null)
 			commandOptions = key+"="+path;
 		else
@@ -157,14 +166,26 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	}
 
 	public static void recordOption(String key) {
+		if (key==null) return;
 		if (commandOptions==null && key.equals(" "))
 			commandOptions = " ";
 		else {
 			key = trimKey(key);
+			checkForDuplicate(" "+key, "");
 			if (commandOptions==null)
 				commandOptions = key;
 			else
 				commandOptions += " "+key;
+		}
+	}
+	
+	static void checkForDuplicate(String key, String value) {
+		if (commandOptions!=null && commandName!=null && commandOptions.indexOf(key)!=-1 && (value.equals("") || commandOptions.indexOf(value)==-1)) {
+			if (key.endsWith("=")) key = key.substring(0, key.length()-1);
+			IJ.showMessage("Recorder", "Duplicate keyword\n \n" 
+				+"  Command: " + "\"" + commandName +"\"\n"
+				+"  Keyword: " + "\"" + key +"\"\n"
+				+"  Value: " + value);
 		}
 	}
 	
@@ -182,20 +203,80 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	/** Writes the current command and options to the Recorder window. */
 	public static void saveCommand() {
 		if (commandName!=null) {
-			if (commandOptions!=null)
-				textArea.append("run(\""+commandName+"\", \""+commandOptions+"\");\n");
-			else
-				textArea.append("run(\""+commandName+"\");\n");
+			if (commandOptions!=null) {
+				if (commandName.equals("Open..."))
+					textArea.append("open(\""+strip(commandOptions)+"\");\n");
+				else if (isSaveAs()) {
+							if (commandName.endsWith("..."))
+									commandName= commandName.substring(0, commandName.length()-3);
+							String path = strip(commandOptions);
+							textArea.append("saveAs(\""+commandName+"\", \""+path+"\");\n");
+				} else if (commandName.equals("New..."))
+					appendNewImage();
+				else if (commandName.equals("Set Slice..."))
+					textArea.append("setSlice("+strip(commandOptions)+");\n");
+				else if (commandName.equals("Rename..."))
+					textArea.append("rename(\""+strip(commandOptions)+"\");\n");
+				else 
+					textArea.append("run(\""+commandName+"\", \""+commandOptions+"\");\n");
+			} else {
+				if (commandName.equals("Threshold..."))
+					textArea.append("//run(\""+commandName+"\");\n");
+				else
+					textArea.append("run(\""+commandName+"\");\n");
+			}
 		}
 		commandName = null;
 		commandOptions = null;
+	}
+	
+	static boolean isSaveAs() {
+		return commandName.equals("Tiff...")
+			|| commandName.equals("Gif...")
+			|| commandName.equals("Jpeg...")
+			|| commandName.equals("Text Image...")
+			|| commandName.equals("ZIP...")
+			|| commandName.equals("Raw Data...")
+			|| commandName.equals("AVI... ")
+			|| commandName.equals("BMP...")
+			|| commandName.equals("LUT...")
+			|| commandName.equals("Selection...")
+			|| commandName.equals("XY Coordinates...")
+			|| commandName.equals("Measurements...")
+			|| commandName.equals("Text... ");
+	}
+
+	static void appendNewImage() {
+		String options = getCommandOptions();
+		String title = Macro.getValue(options, "name", "Untitled");
+		String type = Macro.getValue(options, "type", "8-bit");
+		String fill = Macro.getValue(options, "fill", "");
+		if (!fill.equals("")) type = type +" " + fill;
+		int width = (int)Tools.parseDouble(Macro.getValue(options, "width", "512"));
+		int height = (int)Tools.parseDouble(Macro.getValue(options, "height", "512"));
+		int depth= (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
+		textArea.append("newImage(\""+title+"\", "+"\""+type+"\", "+width+", "+height+", "+depth+");\n");
+	}
+
+	static String strip(String value) {
+		int index = value.indexOf('=');
+		if (index>=0)
+			value = value.substring(index+1);
+		if (value.startsWith("["))
+			value = value.substring(1, value.length()-1);
+		return value;
 	}
 
 	static String addQuotes(String value) {
 		int index = value.indexOf(' ');
 		if (index>-1)
-			value = "'"+value+"'";
+			value = "["+value+"]";
 		return value;
+	}
+	
+	/** Use by GenericDialog to determine if any options have been recorded. */
+	static public String getCommandOptions() {
+		return commandOptions;
 	}
 
 	void createMacro() {

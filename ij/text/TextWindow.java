@@ -43,11 +43,12 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		textPanel.setColumnHeadings(headings);
 		if (data!=null && !data.equals(""))
 			textPanel.append(data);
+		addKeyListener(textPanel);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
 			Image img = ij.getIconImage();
-			if (img!=null) setIconImage(img);
-			addKeyListener(ij);
+			if (img!=null)
+				try {setIconImage(img);} catch (Exception e) {}
 		}
  		addFocusListener(this);
  		addMenuBar();
@@ -84,11 +85,11 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		m.addActionListener(this);
 		mb.add(m);
 		m = new Menu("Edit");
-		m.add(new MenuItem("Cut"/*, new MenuShortcut(KeyEvent.VK_X)*/));
-		m.add(new MenuItem("Copy"/*, new MenuShortcut(KeyEvent.VK_C)*/));
+		m.add(new MenuItem("Cut", new MenuShortcut(KeyEvent.VK_X)));
+		m.add(new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C)));
 		m.add(new MenuItem("Copy All"));
 		m.add(new MenuItem("Clear"));
-		m.add(new MenuItem("Select All"/*, new MenuShortcut(KeyEvent.VK_A)*/));
+		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
 		if (getTitle().equals("Results")) {
 			m.addSeparator();
 			m.add(new MenuItem("Clear Results"));

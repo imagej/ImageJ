@@ -2,12 +2,12 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.Calibration;
+import ij.measure.*;
 import java.awt.*;
 
 
 /** This plugin implements the commands in the Edit/Section submenu. */
-public class Selection implements PlugIn {
+public class Selection implements PlugIn, Measurements {
 	ImagePlus imp;
 	float[] kernel = {1f, 1f, 1f, 1f, 1f};
 	float[] kernel3 = {1f, 1f, 1f};
@@ -38,11 +38,11 @@ public class Selection implements PlugIn {
 	void fitSpline() {
 		Roi roi = imp.getRoi();
 		if (roi==null)
-			{IJ.showMessage("Spline", "Selection required"); return;}
+			{IJ.error("Spline", "Selection required"); return;}
 		int type = roi.getType();
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
-			{IJ.showMessage("Spline", "Polygon or polyline selection required"); return;}
+			{IJ.error("Spline", "Polygon or polyline selection required"); return;}
 		PolygonRoi p = (PolygonRoi)roi;
 		double length = getLength(p);
 		if (!segmentedSelection)
@@ -143,8 +143,18 @@ public class Selection implements PlugIn {
 	void drawEllipse(ImagePlus imp) {
 		IJ.showStatus("Fitting ellipse");
 		Roi roi = imp.getRoi();
+		if (roi==null)
+			{IJ.error("Fit Ellipse", "Selection required"); return;}
+		if (roi.isLine())
+			{IJ.error("Fit Ellipse", "\"Fit Ellipse\" does not work with line selections"); return;}
 		ImageProcessor ip = imp.getProcessor();
-		ImageStatistics stats = imp.getStatistics();
+		ImageStatistics stats;
+		if (roi.getType()==Roi.COMPOSITE)
+			stats = imp.getStatistics();
+		else {
+			ip.setRoi(roi.getPolygon());
+			stats = ImageStatistics.getStatistics(ip, AREA+MEAN+MODE+MIN_MAX, null);
+		}
 		EllipseFitter ef = new EllipseFitter();
 		ef.fit(ip, stats);
 		ef.makeRoi(ip);
@@ -155,8 +165,8 @@ public class Selection implements PlugIn {
 	void convexHull(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		int type = roi!=null?roi.getType():-1;
-		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON))
-			{IJ.showMessage("Convex Hull", "Polygonal selection required"); return;}
+		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON||type==Roi.POINT))
+			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
 		imp.setRoi(makeConvexHull(imp, (PolygonRoi)roi));
 	}
 
@@ -225,8 +235,8 @@ public class Selection implements PlugIn {
 	
 	void createMask(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (roi==null || !roi.isArea())
-			{IJ.showMessage("Create Mask", "Area selection required"); return;}
+		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT))
+			{IJ.error("Create Mask", "Area selection required"); return;}
 		ImagePlus maskImp = null;
 		Frame frame = WindowManager.getFrame("Mask");
 		if (frame!=null && (frame instanceof ImageWindow))
@@ -246,10 +256,10 @@ public class Selection implements PlugIn {
 
 	void invert(ImagePlus imp) {
 		if (!IJ.isJava2())
-			{IJ.showMessage("Inverse", "Java 1.2 or later required"); return;}
+			{IJ.error("Inverse", "Java 1.2 or later required"); return;}
 		Roi roi = imp.getRoi();
 		if (roi==null || !roi.isArea())
-			{IJ.showMessage("Inverse", "Area selection required"); return;}
+			{IJ.error("Inverse", "Area selection required"); return;}
 		ShapeRoi s1, s2;
 		if (roi instanceof ShapeRoi)
 			s1 = (ShapeRoi)roi;

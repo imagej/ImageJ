@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
+import ij.util.Tools;
 import java.awt.Rectangle;
 
 /** Implements the Image/Stack/Plot Z-axis Profile command. */
@@ -13,17 +14,17 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		return DOES_ALL+NO_CHANGES+ROI_REQUIRED;
+		return DOES_ALL+NO_CHANGES;
 	}
 
 	public void run(ImageProcessor ip) {
 		if (imp.getStackSize()<2) {
-			IJ.showMessage("ZAxisProfiler", "This command requires a stack.");
+			IJ.error("ZAxisProfiler", "This command requires a stack.");
 			return;
 		}
 		Roi roi = imp.getRoi();
-		if (roi.getType()>=Roi.LINE) {
-			IJ.showMessage("ZAxisProfiler", "This command does not work with line selections.");
+		if (roi!=null && roi.isLine()) {
+			IJ.error("ZAxisProfiler", "This command does not work with line selections.");
 			return;
 		}
 		double minThreshold = ip.getMinThreshold();
@@ -33,8 +34,21 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			float[] x = new float[y.length];
 			for (int i=0; i<x.length; i++)
 				x[i] = i+1;
-			Rectangle r = imp.getRoi().getBounds();
-			new PlotWindow(imp.getTitle()+"-"+r.x+"-"+r.y, "Slice", "Mean", x, y).draw();
+			String title;
+			if (roi!=null) {
+				Rectangle r = imp.getRoi().getBounds();
+				title = imp.getTitle()+"-"+r.x+"-"+r.y;
+			} else
+				title = imp.getTitle()+"-0-0";
+			PlotWindow pw = new PlotWindow(title, "Slice", "Mean", x, y);
+			double ymin = ProfilePlot.getFixedMin();
+			double ymax= ProfilePlot.getFixedMax();
+			if (!(ymin==0.0 && ymax==0.0)) {
+				double[] a = Tools.getMinMax(x);
+				double xmin=a[0]; double xmax=a[1];
+				pw.setLimits(xmin, xmax, ymin, ymax);
+			}
+			pw.draw();
 		}			
 	}
 		
@@ -42,8 +56,6 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		ImageStack stack = imp.getStack();
 		int size = stack.getSize();
 		float[] values = new float[size];
-		ImageProcessor mask = imp.getMask();
-		Rectangle r = imp.getRoi().getBounds();
 		Calibration cal = imp.getCalibration();
 		Analyzer analyzer = new Analyzer(imp);
 		int measurements = analyzer.getMeasurements();
@@ -60,8 +72,7 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			ImageProcessor ip = stack.getProcessor(i);
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
-			ip.setMask(mask);
-			ip.setRoi(r);
+			ip.setRoi(roi);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, cal);
 			analyzer.saveResults(stats, roi);
 			if (showResults)			

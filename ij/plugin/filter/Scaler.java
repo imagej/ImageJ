@@ -3,10 +3,13 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.util.Tools;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
 /** This plugin implements the Edit/Scale command. */
-public class Scaler implements PlugInFilter {
+public class Scaler implements PlugInFilter, TextListener {
     private ImagePlus imp;
     private static double xscale = 0.5;
     private static double yscale = 0.5;
@@ -14,6 +17,8 @@ public class Scaler implements PlugInFilter {
     private static boolean interpolate = true;
     private static boolean processStack = true;
     private static String title = "Untitled";
+    private Vector fields;
+    private boolean duplicateScale = true;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -108,6 +113,9 @@ public class Scaler implements PlugInFilter {
 		GenericDialog gd = new GenericDialog("Scale");
 		gd.addNumericField("X Scale (0.05-25):", xscale, 2);
 		gd.addNumericField("Y Scale (0.05-25):", yscale, 2);
+		fields = gd.getNumericFields();
+		for (int i=0; i<fields.size(); i++)
+			((TextField)fields.elementAt(i)).addTextListener(this);
 		gd.addCheckbox("Interpolate", interpolate);
 		if (isStack)
 			gd.addCheckbox("Process Entire Stack", processStack);
@@ -132,6 +140,24 @@ public class Scaler implements PlugInFilter {
 		newWindow = gd.getNextBoolean();
 		title = gd.getNextString();
 		return true;
+	}
+
+	public void textValueChanged(TextEvent e) {
+		TextField xField = (TextField)fields.elementAt(0);
+		TextField yField = (TextField)fields.elementAt(1);
+		String newXText = xField.getText()	;
+		double newXScale = Tools.parseDouble(newXText,-99);
+		String newYText = yField.getText()	;
+		double newYScale = Tools.parseDouble(newYText,-99);
+		if (newXScale==-99 || newYScale==-99) return;
+		if (newYScale!=xscale) 
+			duplicateScale = false;
+		if (duplicateScale && newXScale!=xscale) {
+			if (newXScale!=-99)
+				yField.setText(""+newXText);
+		}
+		xscale = newXScale;
+		yscale = newYScale;
 	}
 
 }

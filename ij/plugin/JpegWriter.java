@@ -44,7 +44,7 @@ public class JpegWriter implements PlugIn {
             f.close();
         }
         catch (Exception e) {
-           IJ.showMessage("Jpeg Writer", ""+e);
+           IJ.error("Jpeg Writer", ""+e);
         }
     }
 

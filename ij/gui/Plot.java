@@ -8,6 +8,7 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.plugin.filter.Analyzer;
+import ij.macro.Interpreter;
 
 
 /** This class is an image that line graphs can be drawn on. */
@@ -55,7 +56,7 @@ public class Plot {
 	private Font font = new Font("Helvetica", Font.PLAIN, 12);
 	private boolean fixedYScale;
 	private static int options;
-	private int lineWidth = Line.getWidth();
+	private int lineWidth = 1; // Line.getWidth();
 	private boolean realNumbers;
 	private int markSize = 5;
 	private ImageProcessor ip;
@@ -99,6 +100,7 @@ public class Plot {
 		this.yMin = yMin;
 		this.yMax = yMax;
 		fixedYScale = true;
+		if (initialized) setScale();
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
@@ -260,6 +262,10 @@ public class Plot {
 			frameHeight = plotHeight;
 		}
 		frame = new Rectangle(LEFT_MARGIN, TOP_MARGIN, frameWidth, frameHeight);
+		setScale();
+	}
+
+	void setScale() {
 		if ((xMax-xMin)==0.0)
 			xScale = 1.0;
 		else
@@ -424,6 +430,16 @@ public class Plot {
 	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow. */
 	public PlotWindow show() {
 		draw();
+		if (Prefs.useInvertingLut && (ip instanceof ByteProcessor) && !Interpreter.isBatchMode() && IJ.getInstance()!=null) {
+			ip.invertLut();
+			ip.invert();
+		}
+		if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
+			ImagePlus imp = new ImagePlus(title, ip);
+			WindowManager.setTempCurrentImage(imp);
+			Interpreter.addBatchModeImage(imp);
+			return null;
+		}
 		return new PlotWindow(this);
 	}
 	

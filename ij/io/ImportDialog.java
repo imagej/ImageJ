@@ -9,6 +9,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.util.StringSorter;
 import ij.plugin.frame.Recorder;
+import ij.measure.Calibration;
 
 
 /** This is a dialog box used to imports raw 8, 16, 24 and 32-bit images. */
@@ -118,8 +119,15 @@ public class ImportDialog {
 		}
 		if (stack!=null) {
 			imp = new ImagePlus("Imported Stack", stack);
-			if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
+			if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
 				imp.getProcessor().setMinAndMax(min, max);
+                Calibration cal = imp.getCalibration();
+                if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+                    double[] coeff = new double[2];
+                    coeff[0] = -32768.0;
+                    coeff[1] = 1.0;
+                    cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+                }
 			imp.show();
 		}
 	}

@@ -20,7 +20,6 @@ public class Convolver implements PlugInFilter, ActionListener {
 	int slice = 1;
 	boolean canceled;
 	float[] kernel;
-	ImageWindow win;
 	boolean isLineRoi;
 	Button open, save;
 	GenericDialog gd;
@@ -34,21 +33,20 @@ public class Convolver implements PlugInFilter, ActionListener {
 		canceled = false;
 		if (imp==null)
 			{IJ.noImage(); return DONE;}
+		IJ.resetEscape();
 		Roi roi = imp.getRoi();
-		isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
+		isLineRoi= roi!=null && roi.isLine();
 		kernel = getKernel();
 		if (kernel==null)
 			return DONE;
 		if ((kw&1)==0) {
-			IJ.showMessage("Convolver","The kernel must be square and have an\n"
+			IJ.error("Convolver","The kernel must be square and have an\n"
 				+"odd width. This kernel is "+kw+"x"+kh+".");
 			return DONE;
 		}
 		int flags = IJ.setupDialog(imp, DOES_ALL);
 		if ((flags&DONE)!=0)
 			return DONE;
-		win = imp.getWindow();
-		win.running = true;
 		IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
 		imp.startTiming();
 		return flags;
@@ -57,8 +55,6 @@ public class Convolver implements PlugInFilter, ActionListener {
 	public void run(ImageProcessor ip) {
 		if (canceled)
 			return;
-		if (win.running!=true)
-			{canceled=true; return;}
 		if (isLineRoi)
 			ip.resetRoi();
 		convolve(ip, kernel, kw, kh);
@@ -66,10 +62,9 @@ public class Convolver implements PlugInFilter, ActionListener {
 			IJ.showStatus("Convolve: "+slice+"/"+imp.getStackSize());
 		if (slice==imp.getStackSize()) {
 			ip.resetMinAndMax();
-			//if (createSelection)
-			//	imp.setRoi(kw/2,kh/2,imp.getWidth()-(kw/2)*2, imp.getHeight()-(kh/2)*2);
 		}
 		slice++;
+		if (canceled) Undo.undo();
 	}
 	
 	float[] getKernel() {
@@ -120,7 +115,8 @@ public class Convolver implements PlugInFilter, ActionListener {
 			return 0.0;
 	}
 
-	public void convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
+	public boolean convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
+		if (canceled) return false;
 		if ((kw&1)!=1 || (kh&1)!=1)
 			throw new IllegalArgumentException("Kernel width or height not odd");
 		int type;
@@ -134,12 +130,12 @@ public class Convolver implements PlugInFilter, ActionListener {
 			type = RGB;
 		if (type==RGB) {
 			convolveRGB(ip, kernel, kw, kh);
-			return;
+			return !canceled;
 		}
 		ip.setCalibrationTable(null);
 		ImageProcessor ip2 = ip.convertToFloat();
-		ip2.setRoi(ip.getRoi());
 		ip2.setMask(ip.getMask());
+		ip2.setRoi(ip.getRoi());
 		convolveFloat(ip2, kernel, kw, kh);
 		switch (type) {
 			case BYTE:
@@ -157,6 +153,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 			case FLOAT:
 				break;
 		}
+		return !canceled;
 	}
 	
 	public void setNormalize(boolean normalizeKernel) {
@@ -179,28 +176,32 @@ public class Convolver implements PlugInFilter, ActionListener {
 		ImageProcessor bip = new ByteProcessor(width, height, b, null);
 		Rectangle rect = ip.getRoi();
 		ImageProcessor ip2 = rip.convertToFloat();
-        ip2.setRoi(roi); ip2.setMask(mask);
+        ip2.setMask(mask); ip2.setRoi(roi); 
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor r2 = ip2.convertToByte(false);
 		if (slice==1) IJ.showStatus("Convolve (green)");
 		ip2 = gip.convertToFloat();
-        ip2.setRoi(roi); ip2.setMask(mask);
+        ip2.setMask(mask); ip2.setRoi(roi); 
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor g2 = ip2.convertToByte(false);
 		ip2 = bip.convertToFloat();
-        ip2.setRoi(roi); ip2.setMask(mask);
+        ip2.setMask(mask); ip2.setRoi(roi); 
 		if (slice==1) IJ.showStatus("Convolve (blue)");
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor b2 = ip2.convertToByte(false);
 		((ColorProcessor)ip).setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
 	}
 
-	public void convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
+	/** Convolves the image <code>ip</code> with a kernel of width 
+		<code>kw</code> and height <code>kh</code>. Returns false if 
+		the user cancels the operation by pressing 'Esc'. */
+	public boolean convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
+		if (canceled) return false;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
 		boolean isRoi = r.width!=width||r.height!=height;
-		boolean nonRectRoi = isRoi && ip.getMask()!=null;
+		boolean nonRectRoi = ip.getMask()!=null;
 		if (nonRectRoi)
 			ip.snapshot();
 		int x1 = r.x;
@@ -230,7 +231,15 @@ public class Convolver implements PlugInFilter, ActionListener {
 		int xedge = width-uc;
 		int yedge = height-vc;
 		for(int y=y1; y<y2; y++) {
-			if (y%progress ==0) IJ.showProgress((double)y/height);
+			if (y%progress==0) {
+				IJ.showProgress((double)y/height);
+				if (IJ.escapePressed()) {
+					canceled=true; 
+					IJ.beep(); 
+   					IJ.showProgress(1.0);
+					return false;
+				}
+			}
 			for(int x=x1; x<x2; x++) {
 				sum = 0.0;
 				i = 0;
@@ -250,6 +259,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 		if (nonRectRoi)
 			ip.reset(ip.getMask());
    		IJ.showProgress(1.0);
+   		return true;
    	 }
 
 	private float getPixel(int x, int y, float[] pixels, int width, int height) {
@@ -302,7 +312,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		if ((width&1)!=1 || width!=height) {
-			IJ.showMessage("Convolver", "Kernel must be square and have an odd width");
+			IJ.error("Convolver", "Kernel must be square and have an odd width");
 			return;
 		}
 		StringBuffer sb = new StringBuffer();

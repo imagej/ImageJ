@@ -38,6 +38,8 @@ public class PolygonRoi extends Roi {
 			this.type = FREELINE;
 		else if (type==ANGLE)
 			this.type = ANGLE;
+		else if (type==POINT)
+			this.type = POINT;
 		else
 			throw new IllegalArgumentException("Invalid type");
 		maxPoints = nPoints;
@@ -138,8 +140,7 @@ public class PolygonRoi extends Roi {
             {updateFullWindow = false; imp.draw();}
 	}
 
-	public void drawPixels() {
-		ImageProcessor ip = imp.getProcessor();
+	public void drawPixels(ImageProcessor ip) {
 		if (xSpline!=null) {
 			ip.moveTo(x+xSpline[0], y+ySpline[0]);
 			for (int i=1; i<splinePoints; i++)
@@ -163,6 +164,7 @@ public class PolygonRoi extends Roi {
 
 
 	protected void updatePolygon() {
+		if (ic==null) return;
 		Rectangle srcRect = ic.getSrcRect();
 		if (ic.getMagnification()==1.0 && srcRect.x==0 && srcRect.y==0) {
 			for (int i=0; i<nPoints; i++) {
@@ -257,9 +259,9 @@ public class PolygonRoi extends Roi {
 		y = r.y;
 		width = r.width;
 		height = r.height;
-		if ((nPoints<2) || (!(type==FREELINE||type==POLYLINE||type==ANGLE) && (nPoints<3||width==0||height==0))) {
+		if (nPoints<2 || (!(type==FREELINE||type==POLYLINE||type==ANGLE) && (nPoints<3||width==0||height==0))) {
 			if (imp!=null) imp.killRoi();
-			return;
+			if (type!=POINT) return;
 		}
         for (int i=0; i<nPoints; i++) {
             xp[i] = xp[i]-x;
@@ -269,7 +271,7 @@ public class PolygonRoi extends Roi {
 		if (imp!=null && !(type==TRACED_ROI))
 			imp.draw(x-5, y-5, width+10, height+10);
 		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
-		modifyRoi();
+		if (type!=POINT) modifyRoi();
 	}
 	
     protected void moveHandle(int ox, int oy) {
@@ -361,11 +363,91 @@ public class PolygonRoi extends Roi {
    protected void mouseDownInHandle(int handle, int sx, int sy) {
         if (state==CONSTRUCTING)
             return;
+		int ox=ic.offScreenX(sx), oy=ic.offScreenY(sy);
+		if (IJ.altKeyDown() && !(nPoints<=3 && type!=POINT)) {
+			deleteHandle(ox, oy); 
+			return;
+		} else if (IJ.shiftKeyDown() && type!=POINT) {
+			addHandle(ox, oy); 
+			return;
+		}
 		state = MOVING_HANDLE;
 		activeHandle = handle;
-		int ox=ic.offScreenX(sx), oy=ic.offScreenY(sy);
 		int m = (int)(10.0/ic.getMagnification());
 		xClipMin=ox-m; yClipMin=oy-m; xClipMax=ox+m; yClipMax=oy+m;
+	}
+
+	void deleteHandle(int ox, int oy) {
+		if (imp==null) return;
+		if (nPoints<=1)
+			{imp.killRoi(); return;}
+		boolean splineFit = xSpline != null;
+		xSpline = null;
+		Polygon points = getPolygon();
+		modState = NO_MODS;
+		if (previousRoi!=null) previousRoi.modState = NO_MODS;
+		int pointToDelete = getClosestPoint(ox, oy, points);
+		Polygon points2 = new Polygon();
+		for (int i=0; i<points.npoints; i++) {
+			if (i!=pointToDelete)
+				points2.addPoint(points.xpoints[i], points.ypoints[i]);
+		}
+		if (type==POINT)
+			imp.setRoi(new PointRoi(points2.xpoints, points2.ypoints, points2.npoints));
+		else {
+			imp.setRoi(new PolygonRoi(points2, type));
+			if (splineFit) 
+				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
+		}
+	}
+	
+	void addHandle(int ox, int oy) {
+		if (imp==null || type==ANGLE) return;
+		boolean splineFit = xSpline != null;
+		xSpline = null;
+		Polygon points = getPolygon();
+		int n = points.npoints;
+		modState = NO_MODS;
+		if (previousRoi!=null) previousRoi.modState = NO_MODS;
+		int pointToDuplicate = getClosestPoint(ox, oy, points);
+		Polygon points2 = new Polygon();
+		for (int i2=0; i2<n; i2++) {
+			if (i2==pointToDuplicate) {
+				int i1 = i2-1;
+				if (i1==-1) i1 = isLine()?i2:n-1;
+				int i3 = i2+1;
+				if (i3==n) i3 = isLine()?i2:0;
+				int x1 = points.xpoints[i1]  + 2*(points.xpoints[i2] - points.xpoints[i1])/3;
+				int y1 = points.ypoints[i1] + 2*(points.ypoints[i2] - points.ypoints[i1])/3;
+				int x2 = points.xpoints[i2] + (points.xpoints[i3] - points.xpoints[i2])/3;
+				int y2 = points.ypoints[i2] + (points.ypoints[i3] - points.ypoints[i2])/3;
+				points2.addPoint(x1, y1);
+				points2.addPoint(x2, y2);
+			} else
+				points2.addPoint(points.xpoints[i2], points.ypoints[i2]);
+		}
+		if (type==POINT)
+			imp.setRoi(new PointRoi(points2.xpoints, points2.ypoints, points2.npoints));
+		else {
+			imp.setRoi(new PolygonRoi(points2, type));
+			if (splineFit) 
+				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
+		}
+	}
+
+	int getClosestPoint(int x, int y, Polygon points) {
+		int index = 0;
+		double distance = Double.MAX_VALUE;
+		for (int i=0; i<points.npoints; i++) {
+			double dx = points.xpoints[i] - x;
+			double dy = points.ypoints[i] - y;
+			double distance2 = Math.sqrt(dx*dx+dy*dy);
+			if (distance2<distance) {
+				distance = distance2;
+				index = i;
+			}
+		}
+		return index;
 	}
 
 	public void fitSpline(int evaluationPoints) {
@@ -512,7 +594,7 @@ public class PolygonRoi extends Roi {
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
-		if (!(xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)||clipboard!=null)
+		if (!(xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE||type==POINT)||clipboard!=null)
 		   return -1;
 		int size = HANDLE_SIZE+5;
 		int halfSize = size/2;
@@ -539,7 +621,7 @@ public class PolygonRoi extends Roi {
 	//}
 
 	public ImageProcessor getMask() {
-		if (cachedMask!=null)
+		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
 		PolygonFiller pf = new PolygonFiller();
 		if (xSpline!=null)

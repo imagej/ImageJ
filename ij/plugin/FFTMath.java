@@ -80,11 +80,11 @@ public class FFTMath implements PlugIn {
        	 		h2 = new FHT(ip2);
        	}
         if (!h1.powerOf2Size()) {
-        	IJ.showMessage("FFT Math", "Images must be a power of 2 size (256x256, 512x512, etc.)");
+        	IJ.error("FFT Math", "Images must be a power of 2 size (256x256, 512x512, etc.)");
         	return;
         }
         if (imp1.getWidth()!=imp2.getWidth()) {
-        	IJ.showMessage("FFT Math", "Images must be the same size");
+        	IJ.error("FFT Math", "Images must be the same size");
         	return;
         }
 		if (fht1==null) {

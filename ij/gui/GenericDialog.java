@@ -217,6 +217,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	* @param defaultValue	the initial state
 	*/
     public void addCheckbox(String label, boolean defaultValue) {
+    	String label2 = label;
+   		if (label2.indexOf('_')!=-1)
+   			label2 = label2.replace('_', ' ');
     	if (checkbox==null) {
     		checkbox = new Vector(4);
 			c.insets = new Insets(15, 20, 0, 0);
@@ -225,7 +228,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		Checkbox cb = new Checkbox(label);
+		Checkbox cb = new Checkbox(label2);
 		grid.setConstraints(cb, c);
 		cb.setState(defaultValue);
 		cb.addItemListener(this);
@@ -485,11 +488,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 				errorMessage = "\""+theText+"\" is an invalid number";
 				value = 0.0;
                 if (macro) {
-                    IJ.showMessage("Macro Error", "Numeric value expected in run() function\n \n"
+                    IJ.error("Macro Error", "Numeric value expected in run() function\n \n"
                         +"   Dialog: \""+getTitle()+"\"\n"
                         +"   Label: \""+label+"\"\n"
                         +"   Value: \""+theText+"\"");
-                    Macro.abort();
                 }
 			}
 		}
@@ -517,7 +519,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		if (label!=null) {
 			if (cb.getState()) // checked
 				Recorder.recordOption(label);
-			else  // unchecked
+			else if (Recorder.getCommandOptions()==null)
 				Recorder.recordOption(" ");
 		}
 	}
@@ -611,11 +613,8 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			String item = Macro.getValue(macroOptions, label, oldItem);
 			thisChoice.select(item);
 			index = thisChoice.getSelectedIndex();
-			if (index==oldIndex && !item.equals(oldItem)) {
-				IJ.showMessage(getTitle(), "\""+item+"\" is not a valid choice for \""+label+"\"");
-				Macro.abort();
-			}
-
+			if (index==oldIndex && !item.equals(oldItem))
+				IJ.error(getTitle(), "\""+item+"\" is not a valid choice for \""+label+"\"");
 		}	
 		if (Recorder.record)
 			recordOption(thisChoice, thisChoice.getSelectedItem());
@@ -728,6 +727,12 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
   	/** Returns a reference to textArea2. */
   	public TextArea getTextArea2() {
   		return textArea2;
+  	}
+  	
+  	/** Returns a reference to the Label or MultiLineLabel created
+  		by addMessage(), or null if addMessage() was not called. */
+  	public Component getMessage() {
+  		return theLabel;
   	}
 
 	protected void setup() {

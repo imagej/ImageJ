@@ -42,7 +42,8 @@ public class Transformer implements PlugInFilter {
 	    		s2 = sp.rotateLeft();
 	    	Calibration cal1 = imp.getCalibration();
 	    	imp.changes = false;
-	    	imp.getWindow().close();
+	    	ImageWindow win = imp.getWindow();
+	    	if (win!=null) win.close();
 	    	ImagePlus imp2 = new ImagePlus(imp.getTitle(), s2);
 	    	imp2.setCalibration(cal1);
 	    	Calibration cal2 = imp2.getCalibration();

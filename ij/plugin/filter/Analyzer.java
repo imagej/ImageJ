@@ -21,9 +21,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
-		LIMIT,LABELS,INVERT_Y};
+		INTEGRATED_DENSITY,LIMIT,LABELS,INVERT_Y};
 
-	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,MARK_AND_COUNT=4;
+	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,POINTS=4;
 	private static int mode = AREAS;
 	private static final String MEASUREMENTS = "measurements";
 	private static final String MARK_WIDTH = "mark.width";
@@ -32,13 +32,14 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static boolean unsavedMeasurements;
 	public static Color darkBlue = new Color(0,0,160);
 	private static int systemMeasurements = Prefs.getInt(MEASUREMENTS,AREA+MEAN+MIN_MAX);
-	public static int markWidth = Prefs.getInt(MARK_WIDTH,3);
+	public static int markWidth = Prefs.getInt(MARK_WIDTH,0);
 	public static int precision = Prefs.getInt(PRECISION,3);
 	private static float[] umeans = new float[MAX_STANDARDS];
 	private static ResultsTable systemRT = new ResultsTable();
 	private static int redirectTarget;
 	private static String redirectTitle = "";
 	static int firstParticle, lastParticle;
+	private static boolean summarized;
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -98,8 +99,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		String target = tImp!=null?tImp.getTitle():NONE;
 		
  		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
-		String[] labels = new String[12];
-		boolean[] states = new boolean[12];
+		String[] labels = new String[13];
+		boolean[] states = new boolean[13];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
 		labels[1]="Mean Gray Value"; states[1]=(systemMeasurements&MEAN)!=0;
 		labels[2]="Standard Deviation"; states[2]=(systemMeasurements&STD_DEV)!=0;
@@ -112,7 +113,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[9]="Fit Ellipse"; states[9]=(systemMeasurements&ELLIPSE)!=0;
 		labels[10]="Circularity"; states[10]=(systemMeasurements&CIRCULARITY)!=0;
 		labels[11]="Feret's Diameter"; states[11]=(systemMeasurements&FERET)!=0;
-		gd.addCheckboxGroup(6, 2, labels, states);
+		labels[12]="Integrated Density"; states[12]=(systemMeasurements&INTEGRATED_DENSITY)!=0;
+		gd.addCheckboxGroup(7, 2, labels, states);
 		labels = new String[3];
 		states = new boolean[3];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
@@ -121,7 +123,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		gd.addCheckboxGroup(2, 2, labels, states);
 		gd.addMessage("");
         gd.addChoice("Redirect To:", titles, target);
-		gd.addNumericField("Decimal Places:", precision, 0);
+		gd.addNumericField("Decimal Places (0-9):", precision, 0, 2, "");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -130,7 +132,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		redirectTarget = index==0?0:wList[index-1];
 		redirectTitle = titles[index];
 		int prec = (int)gd.getNextNumber();
-		if (prec>=0 && prec<=8 && prec!=precision) {
+		if (prec<0) prec = 0;
+		if (prec>9) prec = 9;
+		if (prec!=precision) {
 			precision = prec;
 			rt.setPrecision(precision);
 			if (mode==AREAS && IJ.isResultsWindow()) {
@@ -170,16 +174,17 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measure() {
 		firstParticle = lastParticle = 0;
-		if (Toolbar.getToolId()==Toolbar.CROSSHAIR) {
-			markAndCount();
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.getType()==Roi.POINT) {
+			measurePoint(roi);
 			return;
 		}
-		Roi roi = imp.getRoi();
-		if (roi!=null && roi.getType()>=Roi.LINE) {
-			if (roi.getType()==Roi.ANGLE)
-				measureAngle(roi);
-			else
-				measureLength(roi);
+		if (roi!=null && roi.isLine()) {
+			measureLength(roi);
+			return;
+		}
+		if (roi!=null && roi.getType()==Roi.ANGLE) {
+			measureAngle(roi);
 			return;
 		}
 		if (mode!=AREAS) {
@@ -210,14 +215,14 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public static ImagePlus getRedirectImage(ImagePlus currentImage) {
 		ImagePlus rImp = WindowManager.getImage(redirectTarget);
 		if (rImp==null) {
-			IJ.showMessage("Analyzer", "Redirect image (\""+redirectTitle+"\")\n"
+			IJ.error("Analyzer", "Redirect image (\""+redirectTitle+"\")\n"
 				+ "not found.");
 			redirectTarget = 0;
 			Macro.abort();
 			return null;
 		}
 		if (rImp.getWidth()!=currentImage.getWidth() || rImp.getHeight()!=currentImage.getHeight()) {
-			IJ.showMessage("Analyzer", "Redirect image (\""+redirectTitle+"\") \n"
+			IJ.error("Analyzer", "Redirect image (\""+redirectTitle+"\") \n"
 				+ "is not the same size as the current image.");
 			Macro.abort();
 			return null;
@@ -230,50 +235,42 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (redirectImp==null)
 			return null;
 		ImageProcessor ip = redirectImp.getProcessor();
-		if (roi!=null) {
-			ip.setRoi(roi.getBounds());
-			ip.setMask(imp.getMask());
-		} else
-			ip.resetRoi();
+		ip.setRoi(roi);
 		return ImageStatistics.getStatistics(ip, measurements, redirectImp.getCalibration());
 	}
 	
-	void markAndCount() {
-		if (imp.getTitle().equals("Colors"))
-			return;
-		int x=-1, y=-1;
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			Point p = win.getCanvas().getCursorLoc();
-			x = p.x;
-			y = p.y;
-		}
-		imp.killRoi();
-		if (mode!=MARK_AND_COUNT) {
+	void measurePoint(Roi roi) {
+		if (mode!=POINTS) {
 			if (!resetCounter())
 				return;
 			//IJ.setColumnHeadings(" \tX\tY\tValue");		
-			mode = MARK_AND_COUNT;
+			mode = POINTS;
 		}
-		incrementCounter();
+		Polygon p = roi.getPolygon();
 		ImageProcessor ip = imp.getProcessor();
 		Calibration cal = imp.getCalibration();
 		ip.setCalibrationTable(cal.getCTable());
-		double value = ip.getPixelValue(x,y);
-		if (markWidth>0) {
-			ip.setColor(Toolbar.getForegroundColor());
-			ip.setLineWidth(markWidth);
-			ip.moveTo(x,y);
-			ip.lineTo(x,y);
-			imp.updateAndDraw();
-			ip.setLineWidth(Line.getWidth());
+		for (int i=0; i<p.npoints; i++) {
+			incrementCounter();
+			int x = p.xpoints[i];
+			int y = p.ypoints[i];
+			double value = ip.getPixelValue(x,y);
+			if (markWidth>0) {
+				ip.setColor(Toolbar.getForegroundColor());
+				ip.setLineWidth(markWidth);
+				ip.moveTo(x,y);
+				ip.lineTo(x,y);
+				imp.updateAndDraw();
+				ip.setLineWidth(Line.getWidth());
+			}
+			if ((measurements&LABELS)!=0)
+				rt.addLabel("Label", getFileName());
+			rt.addValue("X", cal.getX(x));
+			rt.addValue("Y", cal.getY(updateY(y,imp.getHeight())));
+			rt.addValue("Z", cal.getZ(imp.getCurrentSlice()-1));
+			rt.addValue("Value", value);
+			displayResults();
 		}
-		if ((measurements&LABELS)!=0)
-			rt.addLabel("Label", getFileName());
-		rt.addValue("X", cal.getX(x));
-		rt.addValue("Y", cal.getY(updateY(y,imp.getHeight())));
-		rt.addValue("Value", value);
-		displayResults();
 		//IJ.write(rt.getCounter()+"\t"+n(cal.getX(x))+n(cal.getY(y))+n(value));
 	}
 	
@@ -309,6 +306,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&LABELS)!=0)
 			rt.addLabel("Label", getFileName());
 		rt.addValue("Length", roi.getLength());
+		if (roi.getType()==Roi.LINE) {
+			Line l = (Line)roi;
+			rt.addValue("Angle", roi.getAngle(l.x1, l.y1, l.x2, l.y2));
+		}
 		boolean moreParams = (measurements&MEAN)!=0||(measurements&STD_DEV)!=0||(measurements&MODE)!=0||(measurements&MIN_MAX)!=0;
 		if (moreParams) {
 			ProfilePlot profile = new ProfilePlot(imp);
@@ -382,6 +383,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&FERET)!=0)
 			rt.addValue(ResultsTable.FERET, roi!=null?roi.getFeretsDiameter():0.0);
+		if ((measurements&INTEGRATED_DENSITY)!=0)
+			rt.addValue(ResultsTable.INTEGRATED_DENSITY,stats.area*stats.mean);
 	}
 	
 	// Update centroid and center of mass y-coordinate
@@ -492,6 +495,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		rt = systemRT;
 		if (rt.getCounter()==0)
 			return;
+		if (summarized)
+			rt.show("Results");
 		measurements = systemMeasurements;
 		min = new StringBuffer(100);
 		max = new StringBuffer(100);
@@ -507,10 +512,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			mean.append("\t");
 			sd.append("\t");
 		}
-		if (mode==MARK_AND_COUNT) 
+		if (mode==POINTS) 
 			summarizePoints(rt);
 		else if (mode==LENGTHS) 
-			add2(rt.getColumnIndex("Length"));
+			summarizeLengths(rt);
 		else if (mode==ANGLES) 
 			add2(rt.getColumnIndex("Angle"));
 		else
@@ -530,15 +535,34 @@ public class Analyzer implements PlugInFilter, Measurements {
 		mean = null;		
 		sd = null;		
 		min = null;		
-		max = null;		
+		max = null;
+		summarized = true;		
 	}
 	
 	void summarizePoints(ResultsTable rt) {
 		add2(rt.getColumnIndex("X"));
 		add2(rt.getColumnIndex("Y"));
+		add2(rt.getColumnIndex("Z"));
 		add2(rt.getColumnIndex("Value"));
 	}
 
+	void summarizeLengths(ResultsTable rt) {
+		int index = rt.getColumnIndex("Mean");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("StdDev");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("Mode");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("Min");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("Max");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("Angle");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("Length");
+		if (rt.columnExists(index)) add2(index);
+	}
+	
 	void summarizeAreas() {
 		if ((measurements&AREA)!=0) add2(ResultsTable.AREA);
 		if ((measurements&MEAN)!=0) add2(ResultsTable.MEAN);
@@ -572,6 +596,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&CIRCULARITY)!=0)
 			add2(ResultsTable.CIRCULARITY);
 		if ((measurements&FERET)!=0)
+			add2(ResultsTable.FERET);
+		if ((measurements&INTEGRATED_DENSITY)!=0)
 			add2(ResultsTable.FERET);
 	}
 
@@ -624,6 +650,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			tp.selectAll();
 			tp.clearSelection();
 		}
+		summarized = false;		
 		return true;
 	}
 	

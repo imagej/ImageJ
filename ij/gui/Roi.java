@@ -14,13 +14,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
 	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, 
-		POLYLINE=6, FREELINE=7, ANGLE=8, COMPOSITE=9; // Types
+		POLYLINE=6, FREELINE=7, ANGLE=8, COMPOSITE=9, POINT=10; // Types
 	public static final int HANDLE_SIZE = 5; 
 	public static final int NOT_PASTING = -1; 
 	
+	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
+		
 	int startX, startY, x, y, width, height;
 	int activeHandle;
 	int state;
+	int modState = NO_MODS;
 	
 	public static Roi previousRoi;
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
@@ -69,6 +72,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 	
+	/** Creates a new rectangular Roi. */
+	public Roi(Rectangle r) {
+		this(r.x, r.y, r.width, r.height);
+	}
+
 	/** Starts the process of creating a user-defined rectangular Roi. */
 	public Roi(int x, int y, ImagePlus imp) {
 		setImage(imp);
@@ -263,7 +271,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	void move(int xNew, int yNew) {
 		x += xNew - startX;
 		y += yNew - startY;
-		if (type!=RECTANGLE || clipboard==null) {
+		if (clipboard==null) {
 			if (x<0) x=0; if (y<0) y=0;
 			if ((x+width)>xMax) x = xMax-width;
 			if ((y+height)>yMax) y = yMax-height;
@@ -412,7 +420,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	void drawPreviousRoi(Graphics g) {
-		if (previousRoi!=null && previousRoi!=this && ic.roiModState!=ImageCanvas.NO_MODS) {
+		if (previousRoi!=null && previousRoi!=this && previousRoi.modState!=NO_MODS) {
+			if (type!=POINT && previousRoi.getType()==POINT && previousRoi.modState!=SUBTRACT_FROM_ROI)
+				return;
 			previousRoi.setImage(imp);
 			previousRoi.draw(g);
 		}		
@@ -443,8 +453,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	public void drawPixels() {
+		if (imp!=null)
+			drawPixels(imp.getProcessor());	
+	}
+
+	public void drawPixels(ImageProcessor ip) {
 		endPaste();
-		imp.getProcessor().drawRect(x, y, width, height);
+		ip.drawRect(x, y, width, height);
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
 	}
@@ -509,10 +524,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		modifyRoi();
 	}
 
-    public void modifyRoi() {
-		//IJ.log("modifyRoi: "+ic+(ic!=null?""+ic.roiModState:"")+" "+previousRoi);
-    	if (ic==null || ic.roiModState==ImageCanvas.NO_MODS || previousRoi==null)
+    void modifyRoi() {
+    	if (previousRoi==null || previousRoi.modState==NO_MODS)
     		return;
+		//IJ.log("modifyRoi: "+ type+"  "+modState+" "+previousRoi.type+"  "+previousRoi.modState);
+    	if (type==POINT || previousRoi.getType()==POINT) {
+    		if (type==POINT && previousRoi.getType()==POINT)
+    			addPoint();
+    		else if (isArea() && previousRoi.getType()==POINT && previousRoi.modState==SUBTRACT_FROM_ROI)
+    			subtractPoints();
+    		return;
+    	}
         ShapeRoi s1  = null;
         ShapeRoi s2 = null;
         if (previousRoi instanceof ShapeRoi)
@@ -523,12 +545,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
             s2 = (ShapeRoi)this;
         else
             s2 = new ShapeRoi(this);
-        if (ic.roiModState==ImageCanvas.ADD_TO_ROI)
+        if (previousRoi.modState==ADD_TO_ROI)
         	s1.or(s2);
         else
         	s1.not(s2);
-		ic.roiModState = ImageCanvas.NO_MODS;
+		previousRoi.modState = NO_MODS;
 		Roi[] rois = s1.getRois();
+		if (rois.length==0) return;
 		int type2 = rois[0].getType();
 		//IJ.log(rois.length+" "+type2);
 		if (rois.length==1 && (type2==POLYGON||type2==FREEROI))
@@ -537,9 +560,45 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			imp.setRoi(s1);
     }
     
+    void addPoint() {
+		if (!(type==POINT && previousRoi.getType()==POINT)) {
+			modState = NO_MODS;
+			imp.draw();
+			return;
+		}
+		previousRoi.modState = NO_MODS;
+		PointRoi p1 = (PointRoi)previousRoi;
+		Rectangle r = getBounds();
+		imp.setRoi(p1.addPoint(r.x, r.y));
+    }
+    
+    void subtractPoints() {
+		previousRoi.modState = NO_MODS;
+		PointRoi p1 = (PointRoi)previousRoi;
+		PointRoi p2 = p1.subtractPoints(this);
+		if (p2!=null)
+			imp.setRoi(p1.subtractPoints(this));
+		else
+			imp.killRoi();
+    }
+
+    /** Called by IJ.doWand(), IJ.makeRectangle(), IJ.makeOval() and the
+    	makeSelection() macro function when the shift or alt key is down to
+    	to add to or subtract from an existing selection. */
+    public void addOrSubtract() {
+    	if (!IJ.isJava2() || previousRoi==null) return;
+    	if (IJ.shiftKeyDown())
+			previousRoi.modState = ADD_TO_ROI;
+		else if (IJ.altKeyDown())
+			previousRoi.modState = SUBTRACT_FROM_ROI;
+		else
+			previousRoi.modState = NO_MODS;
+    	modifyRoi();
+    }
+
 	protected void showStatus() {
 		String value;
-		if (state!=CONSTRUCTING && type==RECTANGLE && width<=25 && height<=25) {
+		if (state!=CONSTRUCTING && (type==RECTANGLE||type==POINT) && width<=25 && height<=25) {
 			ImageProcessor ip = imp.getProcessor();
 			double v = ip.getPixelValue(x,y);
 			int digits = (imp.getType()==ImagePlus.GRAY8||imp.getType()==ImagePlus.GRAY16)?0:2;
@@ -559,33 +618,35 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return null;
 	}
 	
-	void startPaste(ImagePlus clipboard) {
+	public void startPaste(ImagePlus clipboard) {
 		IJ.showStatus("Pasting...");
 		this.clipboard = clipboard;
 		imp.getProcessor().snapshot();
-		updateClipRect(); //v1.24e
+		updateClipRect();
 		if (IJ.debugMode) IJ.log("startPaste: "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 	}
 	
 	void updatePaste() {
 		if (clipboard!=null) {
+			imp.getMask();
 			ImageProcessor ip = imp.getProcessor();
 			ip.reset();
 			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
-			if (type!=RECTANGLE) //v1.24e
-				ip.reset(imp.getMask());
+			if (type!=RECTANGLE)
+				ip.reset(ip.getMask());
 			ic.setImageUpdated();
 		}
 	}
 
 	public void endPaste() {
 		if (clipboard!=null) {
+			imp.getMask();
 			ImageProcessor ip = imp.getProcessor();
 			if (pasteMode!=Blitter.COPY) ip.reset();
 			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
-			if (type!=RECTANGLE) //v1.24e
-				ip.reset(imp.getMask());
+			if (type!=RECTANGLE)
+				ip.reset(ip.getMask());
 			ip.snapshot();
 			clipboard = null;
 			imp.updateAndDraw();
@@ -702,7 +763,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Returns true if this is a line selection. */
-    boolean isLine() {
+    public boolean isLine() {
         return type>=LINE && type<=FREELINE;
     }
 
@@ -719,13 +780,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			case LINE: s="Straight Line"; break;
 			case OVAL: s="Oval"; break;
 			case COMPOSITE: s = "Composite"; break;
+			case POINT: s = "Point"; break;
 			default: s="Rectangle"; break;
 		}
 		return s;
 	}
 
 	public String toString() {
-		return ("Roi: type="+type+", x="+x+", y="+y+", width="+width+", height="+height);
+		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}
 
 }

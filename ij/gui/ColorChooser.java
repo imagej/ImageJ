@@ -54,6 +54,9 @@ public class ColorChooser implements TextListener, AdjustmentListener {
         int red = (int)Tools.parseDouble(((TextField)colors.elementAt(0)).getText());
         int green = (int)Tools.parseDouble(((TextField)colors.elementAt(1)).getText());
         int blue = (int)Tools.parseDouble(((TextField)colors.elementAt(2)).getText());
+        if (red<0) red=0; if (red>255) red=255;
+        if (green<0) green=0; if (green>255) green=255;
+        if (blue<0) blue=0; if (blue>255) blue=255;
         panel.setColor(new Color(red, green, blue));
         panel.repaint();
     }

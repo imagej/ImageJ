@@ -3,13 +3,18 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.Editor;
+import ij.plugin.frame.RoiManager;
 import ij.text.*;
+import ij.io.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
 import java.io.File;
+import java.awt.event.KeyEvent;
 
 /** This class implements the built-in macro functions. */
 public class Functions implements MacroConstants, Measurements {
@@ -24,6 +29,19 @@ public class Functions implements MacroConstants, Measurements {
     Plot plot;
     static int plotID;
     int justification = ImageProcessor.LEFT_JUSTIFY;
+    
+    boolean saveSettingsCalled;
+	boolean usePointerCursor, hideProcessStackDialog;
+	float divideByZeroValue;
+    int jpegQuality;
+    int lineWidth;
+    boolean doScaling;
+    boolean weightedColor;
+    double[] weights;
+	boolean interpolateScaledImages, open100Percent, blackCanvas;
+	boolean antialiasedText, useJFileChooser,debugMode;
+	Color foregroundColor, backgroundColor, roiColor;
+	boolean pointAutoMeasure, requireControlKey, useInvertingLut;
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -68,9 +86,9 @@ public class Functions implements MacroConstants, Measurements {
 			case SNAPSHOT: case RESET: case FILL: doIPMethod(type); break;
 			case SET_LINE_WIDTH: getProcessor().setLineWidth((int)getArg()); break;
 			case CHANGE_VALUES: changeValues(); break;
-			case SELECT_IMAGE: IJ.selectWindow((int)getArg()); resetImage(); break;
+			case SELECT_IMAGE: selectImage(); break;
 			case EXIT: exit(); break;
-			case SET_LOCATION: getImage().getWindow().setLocation((int)getFirstArg(), (int)getLastArg()); break;
+			case SET_LOCATION: setLocation(); break;
 			case GET_CURSOR_LOC: getCursorLoc(); break;
 			case GET_LINE: getLine(); break;
 			case GET_VOXEL_SIZE: getVoxelSize(); break;
@@ -83,13 +101,27 @@ public class Functions implements MacroConstants, Measurements {
 			case MAKE_SELECTION: makeSelection(); break;
 			case SET_RESULT: setResult(); break;
 			case UPDATE_RESULTS: updateResults(); break;
-			case SET_BATCH_MODE: interp.batchMode = getBooleanArg(); break;
+			case SET_BATCH_MODE: setBatchMode(); break;
 			case PLOT: doPlot(); break;
 			case SET_JUSTIFICATION: setJustification(); break;
 			case SET_Z_COORDINATE: setZCoordinate(); break;
 			case GET_THRESHOLD: getThreshold(); break;
 			case GET_PIXEL_SIZE: getPixelSize(); break;
 			case SETUP_UNDO: interp.getParens(); Undo.setup(Undo.TRANSFORM, getImage()); break;
+			case SAVE_SETTINGS: saveSettings(); break;
+			case RESTORE_SETTINGS: restoreSettings(); break;
+			case SET_KEY_DOWN: setKeyDown(); break;
+			case OPEN: open(); break;
+			case ROI_MANAGER: roiManager(); break;
+			case SET_FONT: setFont(); break;
+			case GET_MIN_AND_MAX: getMinAndMax(); break;
+			case CLOSE: close(); break;
+			case SET_SLICE: setSlice(); break;
+			case NEW_IMAGE: newImage(); break;
+			case SAVE: IJ.save(getStringArg()); break;
+			case SAVE_AS: saveAs(); break;
+			case SET_AUTO_THRESHOLD: setAutoThreshold(); break;
+			case RENAME: IJ.run("Rename...", "title=["+getStringArg()+"]"); break;
 		}
 	}
 	
@@ -101,7 +133,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SIN: case SQRT: case TAN: case ATAN:
 				value = math(type);
 				break;
-			case MAX_OF: case MIN_OF: case POW: value=math2(type); break;
+			case MAX_OF: case MIN_OF: case POW: case ATAN2: value=math2(type); break;
 			case GET_TIME: interp.getParens(); value=System.currentTimeMillis(); break;
 			case GET_WIDTH: interp.getParens(); value=getImage().getWidth(); break;
 			case GET_HEIGHT: interp.getParens(); value=getImage().getHeight(); break;
@@ -122,6 +154,10 @@ public class Functions implements MacroConstants, Measurements {
 			case CHAR_CODE_AT: value=getFirstString().charAt((int)getLastArg()); break;
 			case GET_BOOLEAN: value=getBoolean(); break;
 			case STARTS_WITH: case ENDS_WITH: value = startsWithEndsWith(type); break;
+			case IS_NAN: value = Double.isNaN(getArg())?1:0; break;
+			case GET_ZOOM: value = getZoom(); break;
+			case PARSE_FLOAT: value = parseDouble(getStringArg()); break;
+			case PARSE_INT: value = parseInt(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -138,8 +174,10 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_STRING: str = getStringDialog(); break;
 			case SUBSTRING: str = substring(); break;
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
-			case GET_INFO: str = getInfo(); break;			
+			case GET_INFO: str = getInfo(true); break;			
+			case GET_IMAGE_INFO: str = getInfo(false); break;			
 			case GET_DIRECTORY: str = getDirectory(); break;
+			case GET_ARGUMENT: interp.getParens(); str=interp.argument!=null?interp.argument:""; break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -185,6 +223,7 @@ public class Functions implements MacroConstants, Measurements {
 			case MIN_OF: return Math.min(a1, a2);
 			case MAX_OF: return Math.max(a1, a2);
 			case POW: return Math.pow(a1, a2);
+			case ATAN2: return Math.atan2(a1, a2);
 			default: return 0.0;
 		}
 	}
@@ -479,7 +518,7 @@ public class Functions implements MacroConstants, Measurements {
 	ImagePlus getImage() {
 		if (imp==null)
 			imp = IJ.getImage();
-		if (imp.getWindow()==null)
+		if (imp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode())
 			throw new RuntimeException("Macro canceled");			
 		return imp;
 	}
@@ -631,6 +670,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
+		ip.setJustification(justification);
 		ip.drawString(str, x, y);
 		updateAndDraw(imp);
 	}
@@ -642,8 +682,6 @@ public class Functions implements MacroConstants, Measurements {
 			just = ImageProcessor.CENTER_JUSTIFY;
 		else if (str.equals("right"))
 			just = ImageProcessor.RIGHT_JUSTIFY;
-		if (ip!=null)
-			getProcessor().setJustification(just);
 		justification = just;
 	}
 
@@ -659,9 +697,8 @@ public class Functions implements MacroConstants, Measurements {
 			ip.resetRoi();
 			roi = null;
 		} else {
-			ip.setRoi(roi.getBounds());
-			mask = imp.getMask();
-			ip.setMask(mask);
+			ip.setRoi(roi);
+			mask = ip.getMask();
 			if (mask!=null) ip.snapshot();
 		}
 		int xmin=0, ymin=0, xmax=imp.getWidth(), ymax=imp.getHeight();
@@ -731,7 +768,12 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getComma();
 		int row = (int)interp.getExpression();
 		interp.getComma();
-		double value = interp.getExpression();		
+		double value = 0.0;
+		String label = null;
+		if (column.equals("Label"))
+			label = getString();
+		else
+			value = interp.getExpression();		
 		interp.getRightParen();
 		ResultsTable rt = Analyzer.getResultsTable();
 		if (row<0 || row>rt.getCounter())
@@ -739,7 +781,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (row==rt.getCounter())
 			rt.incrementCounter();
 		try {
-			rt.setValue(column, row, value);
+			if (label!=null)
+				rt.setLabel(label, row);
+			else
+				rt.setValue(column, row, value);
 		} catch (Exception e) {
 			interp.error(""+e.getMessage());
 		}
@@ -840,17 +885,17 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	double getStackSize() {
-		if (interp.nextToken()=='(') interp.getParens();
+		interp.getParens();
 		return getImage().getStackSize();
 	}
 	
 	double getImageCount() {
-		if (interp.nextToken()=='(') interp.getParens();
-		return WindowManager.getWindowCount();
+		interp.getParens();
+		return WindowManager.getImageCount();
 	}
 	
 	double getResultsCount() {
-		if (interp.nextToken()=='(') interp.getParens();
+		interp.getParens();
 		return Analyzer.getResultsTable().getCounter();
 	}
 
@@ -876,7 +921,7 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] getProfile() {
 		interp.getParens();
 		ImagePlus imp = getImage();
-		ProfilePlot pp = new ProfilePlot(imp, false);
+		ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
 		double[] array = pp.getProfile();
 		if (array==null)
 			{interp.done=true; return null;}
@@ -927,17 +972,36 @@ public class Functions implements MacroConstants, Measurements {
 		String[] list = f.list();
 		if (list==null)
 			return new Variable[0];
-    	Variable[] array = new Variable[list.length];
     	File f2;
+    	int hidden = 0;
     	for (int i=0; i<list.length; i++) {
-    		f2 = new File(dir, list[i]);
-    		if (f2.isDirectory())
-    			list[i] = list[i] + "/";
-    		array[i] = new Variable(0, 0.0, list[i]);
+    		if (list[i].startsWith(".")) {
+    			list[i] = null;
+    			hidden++;
+    		} else {
+    			f2 = new File(dir, list[i]);
+    			if (f2.isDirectory())
+    				list[i] = list[i] + "/";
+    		}
     	}
+    	int n = list.length-hidden;
+		if (n<=0)
+			return new Variable[0];
+    	if (hidden>0) {
+			String[] list2 = new String[n];
+			int j = 0;
+			for (int i=0; i<list.length; i++) {
+				if (list[i]!=null)
+					list2[j++] = list[i];
+			}
+			list = list2;
+		}
+    	Variable[] array = new Variable[n];
+    	for (int i=0; i<n; i++)
+    		array[i] = new Variable(0, 0.0, list[i]);
     	return array;
 	}
-
+	
 	Variable[] initNewArray() {
 		Vector vector = new Vector();
 		int size = 0;
@@ -974,9 +1038,9 @@ public class Functions implements MacroConstants, Measurements {
     	return new String(chars, 0, count);
 	}
 
-	public String getInfo() {
+	public String getInfo(boolean frontWindow) {
 		interp.getParens();
-		Frame frame = WindowManager.getFrontWindow();
+		Frame frame = frontWindow?WindowManager.getFrontWindow():null;
 		if (frame!=null && frame instanceof TextWindow) {
 			TextPanel tp = ((TextWindow)frame).getTextPanel();
 			return tp.getText();			
@@ -1062,13 +1126,13 @@ public class Functions implements MacroConstants, Measurements {
 		Variable flags = getLastVariable();
 		ImagePlus imp = getImage();
 		ImageWindow win = imp.getWindow();
+		if (win==null) return;
 		ImageCanvas ic = win.getCanvas();
 		Point p = ic.getCursorLoc();
 		x.setValue(p.x);
 		y.setValue(p.y);
 		z.setValue(imp.getCurrentSlice()-1);
 		flags.setValue(ic.getModifiers());
-		
 	}
 	
 	void getLine() {
@@ -1114,8 +1178,18 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			values = getArrayVariable();
 		Variable counts = getNextArrayVariable();
-		int nBins = (int)getLastArg();
+		interp.getComma();
+		int nBins = (int)interp.getExpression();
 		ImagePlus imp = getImage();
+		double histMin=0.0, histMax=0.0;
+		boolean setMinMax = false;
+		if (interp.nextToken()==',') {
+			histMin = getNextArg();
+			histMax = getLastArg();
+			if (imp.getBitDepth()!=32) interp.error("32-bit image required to set min and max");
+			setMinMax = true;
+		} else 
+			interp.getRightParen();
 		int bitDepth = imp.getBitDepth();
 		if (((bitDepth==8||bitDepth==24) && nBins!=256) || (bitDepth==16 && !(nBins==256||nBins==65536)))
 			interp.error("Bin count ("+nBins+") must be 256 for byte and RGB images, \nor 256 or 65536 for 16-bit images");
@@ -1129,7 +1203,11 @@ public class Functions implements MacroConstants, Measurements {
 				counts.setArray(new Variable(hist).getArray());
 			return;
 		}
-		ImageStatistics stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, nBins);
+		ImageStatistics stats;
+		if (setMinMax)
+			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, nBins, histMin, histMax);
+		else
+			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, nBins);
 		if (values!=null) {
 			Calibration cal = imp.getCalibration();
 			double[] array = new double[nBins];
@@ -1246,9 +1324,11 @@ public class Functions implements MacroConstants, Measurements {
 			}
 			if (type.indexOf("angle")!=-1)
 				roiType = Roi.ANGLE;
+			if (type.indexOf("point")!=-1)
+				roiType = Roi.POINT;
 		} else {
 			roiType = (int)interp.getExpression();
-			if (roiType<0 || roiType>=Roi.COMPOSITE || roiType==Roi.LINE)
+			if (roiType<0 || roiType==Roi.COMPOSITE || roiType==Roi.LINE)
 				interp.error("Invalid selection type ("+roiType+")");
 			if (roiType==Roi.RECTANGLE) roiType = Roi.POLYGON;		
 			if (roiType==Roi.OVAL) roiType = Roi.FREEROI;		
@@ -1267,7 +1347,17 @@ public class Functions implements MacroConstants, Measurements {
 			xcoord[i] = (int)x[i];
 			ycoord[i] = (int)y[i];
 		}
-		imp.setRoi(new PolygonRoi(xcoord, ycoord, n, roiType));
+		Roi roi = null;
+		if (roiType==Roi.POINT)
+			roi = new PointRoi(xcoord, ycoord, n);
+		else
+			roi = new PolygonRoi(xcoord, ycoord, n, roiType);
+		imp.setRoi(roi);
+		if (roiType==Roi.POLYGON || roiType==Roi.FREEROI) {
+			roi = imp.getRoi();
+			if (roi!=null && (IJ.shiftKeyDown()||IJ.altKeyDown()))
+				roi.addOrSubtract(); 
+		}
 		updateNeeded = false;
 	}
 
@@ -1511,8 +1601,7 @@ public class Functions implements MacroConstants, Measurements {
 				msg = getString();
 			interp.getRightParen();
 		}
-		IJ.showStatus("");
-		IJ.showProgress(1.0);
+		interp.finishUp();
 		if (msg!=null)
 			IJ.showMessage("Macro", msg);
 		throw new RuntimeException("Macro canceled");
@@ -1531,6 +1620,338 @@ public class Functions implements MacroConstants, Measurements {
 		interp.showingProgress = true; 	
 	}
 	
+	void saveSettings() {
+		interp.getParens();
+		usePointerCursor = Prefs.usePointerCursor;
+		hideProcessStackDialog = IJ.hideProcessStackDialog;
+		divideByZeroValue = FloatBlitter.divideByZeroValue;
+		jpegQuality = JpegWriter.getQuality();
+		lineWidth = Line.getWidth();
+		doScaling = ImageConverter.getDoScaling();
+		weightedColor = Prefs.weightedColor;
+		weights = ColorProcessor.getWeightingFactors();
+		interpolateScaledImages = Prefs.interpolateScaledImages;
+		open100Percent = Prefs.open100Percent;
+		blackCanvas = Prefs.blackCanvas;
+		antialiasedText = Prefs.antialiasedText;
+		useJFileChooser = Prefs.useJFileChooser;
+		debugMode = IJ.debugMode;
+		foregroundColor =Toolbar.getForegroundColor();
+		backgroundColor =Toolbar.getBackgroundColor();
+		roiColor = Roi.getColor();
+		pointAutoMeasure = Prefs.pointAutoMeasure;
+		requireControlKey = Prefs.requireControlKey;
+		useInvertingLut = Prefs.useInvertingLut;
+		saveSettingsCalled = true;
+	}
+	
+	void restoreSettings() {
+		interp.getParens();
+		if (!saveSettingsCalled)
+			interp.error("saveSettings() not called");
+		Prefs.usePointerCursor = usePointerCursor;
+		IJ.hideProcessStackDialog = hideProcessStackDialog;
+		FloatBlitter.divideByZeroValue = divideByZeroValue;
+		JpegWriter.setQuality(jpegQuality);
+		Line.setWidth(lineWidth);
+		ImageConverter.setDoScaling(doScaling);
+		if (weightedColor!=Prefs.weightedColor) {
+			ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);
+			Prefs.weightedColor = !(weights[0]==1d/3d && weights[1]==1d/3d && weights[2]==1d/3d);
+		}
+		Prefs.interpolateScaledImages = interpolateScaledImages;
+		Prefs.open100Percent = open100Percent;
+		Prefs.blackCanvas = blackCanvas;
+		Prefs.antialiasedText = antialiasedText;
+		Prefs.useJFileChooser = useJFileChooser;
+		IJ.debugMode = debugMode;
+		Toolbar.setForegroundColor(foregroundColor);
+		Toolbar.setBackgroundColor(backgroundColor);
+		Roi.setColor(roiColor);
+	}
+	
+	void setKeyDown() {
+		String key = getStringArg();
+		key = key.toLowerCase(Locale.US);
+		if (key.indexOf("alt")!=-1)
+			IJ.setKeyDown(KeyEvent.VK_ALT);
+		else 
+			IJ.setKeyUp(KeyEvent.VK_ALT);
+		if (key.indexOf("shift")!=-1)
+			IJ.setKeyDown(KeyEvent.VK_SHIFT);
+		else
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);		
+		if (key.equals("space"))
+			IJ.setKeyDown(KeyEvent.VK_SPACE);
+		else
+			IJ.setKeyUp(KeyEvent.VK_SPACE);
+		interp.keysSet = true;
+	}
+	
+	void open() {
+		interp.getLeftParen();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			IJ.open();
+		} else {
+			String path = getString();
+			interp.getRightParen();
+			IJ.open(path);
+		}
+	}
+	
+	void roiManager() {
+		String cmd = getFirstString();
+		cmd = cmd.toLowerCase();
+		String path = null;
+		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save");
+		if (twoArgCommand)
+			path = getLastString();
+		else
+			interp.getRightParen();
+		Frame frame = WindowManager.getFrame("ROI Manager");
+		if (frame==null)
+			IJ.run("ROI Manager...");
+		frame = WindowManager.getFrame("ROI Manager");
+		if (frame==null || !(frame instanceof RoiManager))
+			interp.error("ROI Manager not found");
+		RoiManager rm = (RoiManager)frame;
+		if (twoArgCommand)
+			rm.runCommand(cmd, path);
+		else {
+			if (!rm.runCommand(cmd))
+				interp.error("Invalid ROI Manager command");
+		}			
+	}
+	
+	void setFont() {
+		String name = getFirstString();
+		int size = (int)getNextArg();
+		int style = 0;
+		if (interp.nextToken()==',') {
+			String styles = getLastString().toLowerCase();
+			if (styles.indexOf("bold")!=-1) style += Font.BOLD;
+			if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
+		} else
+			interp.getRightParen();
+		ImageProcessor ip = getProcessor();
+		Font font = new Font(name, style, size);
+		ip.setFont(font);
+	}
+
+	void getMinAndMax() {
+		Variable min = getFirstVariable();
+		Variable max = getLastVariable();
+		ImagePlus imp = getImage();
+		ImageProcessor ip = imp.getProcessor();
+		double v1 = ip.getMin();
+		double v2 = ip.getMax();
+		if (imp.getCalibration().isSigned16Bit())
+			{v1-=32768; v2-=32768;}
+		min.setValue(v1);
+		max.setValue(v2);
+	}
+	
+	void selectImage() {
+        interp.getLeftParen();
+		if (isStringArg()) {
+			selectImage(getString());
+			interp.getRightParen();
+		} else {
+			int id = (int)interp.getExpression();
+			interp.getRightParen();
+			if (Interpreter.isBatchMode()) {
+				ImagePlus imp = null;
+				if (Interpreter.imageTable!=null)
+					imp = (ImagePlus)Interpreter.imageTable.get(new Integer(id));
+				if (imp==null) 
+					IJ.selectWindow(id);
+				else
+					WindowManager.setTempCurrentImage(imp);
+			} else
+				IJ.selectWindow(id);
+		}
+		resetImage();
+	}
+	
+	void selectImage(String title) {
+		if (Interpreter.isBatchMode()) {
+			if (Interpreter.imageTable!=null) {
+				for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
+					ImagePlus imp = (ImagePlus)en.nextElement();
+					if (imp!=null) {
+						if (imp.getTitle().equals(title)) {
+							WindowManager.setTempCurrentImage(imp);
+							return;
+						}
+					}
+				}
+			}
+			selectWindowManagerImage(title);
+		} else
+			selectWindowManagerImage(title);
+	}
+	
+	void notFound(String title) {
+		interp.error(title+" not found");
+	}
+
+	void selectWindowManagerImage(String title) {
+		long start = System.currentTimeMillis();
+		while (System.currentTimeMillis()-start<4000) { // 4 sec timeout
+			int[] wList = WindowManager.getIDList();
+			int len = wList!=null?wList.length:0;
+			for (int i=0; i<len; i++) {
+				ImagePlus imp = WindowManager.getImage(wList[i]);
+				if (imp!=null) {
+					if (imp.getTitle().equals(title)) {
+						IJ.selectWindow(imp.getID());
+						return;
+					}
+				}
+			}
+			IJ.wait(10);
+		}
+		notFound(title);
+	}
+
+	void close() {
+		interp.getParens();
+		ImagePlus imp = getImage();
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			imp.changes = false;
+			win.close();
+		} else {
+			WindowManager.setTempCurrentImage(null);
+			imp.killRoi(); //save any ROI so it can be restored later
+			interp.removeBatchModeImage(imp);
+		}
+		resetImage();
+	}
+	
+	void setBatchMode() {
+		boolean b =getBooleanArg();
+		boolean imagesOpen = interp.imageTable!=null&& interp.imageTable.size()>=1;
+		interp.setBatchMode(b);
+		if (!b) {
+			resetImage();
+			ImagePlus imp2 = null;
+			if (imagesOpen) {
+				imp2 = WindowManager.getCurrentImage();
+				//IJ.log("setBatchMode: "+imp2);
+				if (imp2!=null) {
+					imp2.show();
+					Roi roi = imp2.getRoi();
+					if (roi!=null) imp2.setRoi(roi);
+				}
+			}
+			WindowManager.setTempCurrentImage(null);
+		}
+	}
+	
+	void setLocation() {
+		ImagePlus imp = getImage();
+		ImageWindow win =imp.getWindow();
+		if (win!=null)
+			win.setLocation((int)getFirstArg(), (int)getLastArg());
+	}
+	
+	void setSlice() {
+		int n = (int)getArg();
+		ImagePlus imp = getImage();
+		int nSlices = imp.getStackSize();
+		if (n==1 && nSlices==1)
+			return;
+		else if (n<1 || n>nSlices)
+			interp.error("Argument must be >=1 and <="+nSlices);
+		else
+			imp.setSlice(n);
+	}
+	
+	void newImage() {
+		String title = getFirstString();
+		String type = getNextString();
+		int width = (int)getNextArg();
+		int height = (int)getNextArg();
+		int depth = (int)getLastArg();
+		IJ.newImage(title, type, width, height, depth);
+	}
+
+	void saveAs() {
+		String format = getFirstString();
+		String path = getLastString();
+		IJ.saveAs(format, path);
+	}
+
+	double getZoom() {
+		interp.getParens();
+		ImagePlus imp = getImage();
+		ImageWindow win = imp.getWindow();
+		return win!=null?win.getCanvas().getMagnification():1.0;
+	}
+	
+	void setAutoThreshold() {
+		interp.getParens();
+		ImagePlus imp = getImage();
+		ImageProcessor ip = getProcessor();
+		double min=0.0, max=0.0;
+		boolean notByteData = !(ip instanceof ByteProcessor);
+		if (notByteData) {
+			ip.resetMinAndMax();
+			min = ip.getMin(); max = ip.getMax();
+			ip = new ByteProcessor(ip.createImage());
+		}
+		ip.setRoi(imp.getRoi());
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
+		int threshold = ip.getAutoThreshold(stats.histogram);
+		double lower, upper;
+		if ((stats.max-stats.dmode)>(stats.dmode-stats.min)) {
+			lower = threshold;
+			upper = stats.max;
+		} else {
+			lower = stats.min;
+			upper = threshold;
+		}
+		if (notByteData) {
+			if (max>min) {
+				lower = min + (lower/255.0)*(max-min);
+				upper = min + (upper/255.0)*(max-min);
+			} else
+				lower = ImageProcessor.NO_THRESHOLD;
+		}
+		IJ.setThreshold(lower, upper);
+		resetImage();
+	}
+	
+	double parseDouble(String s) {
+			s = s.trim();
+			if (s.indexOf(' ')!=-1) s = s.substring(0, s.indexOf(' '));
+			return Tools.parseDouble(s);
+	}
+	
+	double parseInt() {
+		String s = getFirstString();
+		int radix = 10;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			radix = (int)interp.getExpression();
+			if (radix<2||radix>36) radix = 10;
+		}
+		interp.getRightParen();
+		double n;
+		try {
+			if (radix==10) {
+				n = parseDouble(s);
+				if (!Double.isNaN(n)) n = Math.round(n);
+			} else
+				n = Integer.parseInt(s, radix);
+		} catch (NumberFormatException e) {
+			n = NaN;
+		}
+		return n;			
+	}
+
 } // class Functions
 
 

@@ -24,11 +24,24 @@ public class FileSaver {
 		fi = imp.getFileInfo();
 	}
 
-	/** Resaves the image. Calls saveAsTiff() if this is a new image or if
-		the image was loaded using a URL. Returns false if saveAsTiff() is
+	/** Resaves the image. Calls saveAsTiff() if this is a new image, not a TIFF, a 
+		stack or if the image was loaded using a URL. Returns false if saveAsTiff() is
 		called and the user selects cancel in the file save dialog box. */
 	public boolean save() {
-		//if (imp.getURL()!=null)
+		FileInfo ofi = null;
+		if (imp!=null) ofi = imp.getOriginalFileInfo();
+		if (ofi!=null && ofi.fileFormat==FileInfo.TIFF && imp.getStackSize()==1 && ofi.nImages==1 && (ofi.url==null||ofi.url.equals(""))) {
+            name = imp.getTitle();
+            directory = ofi.directory;
+			String path = directory+name;
+			File f = new File(path);
+			if (!IJ.macroRunning() && f!=null && f.exists()) {
+				if (!IJ.showMessageWithCancel("Save as TIFF", "The file "+ofi.fileName+" already exists.\nDo you want to replace it?"))
+					return false;
+			}
+			IJ.showStatus("Saving "+path);
+		    return saveAsTiff(path);
+		} else
 			return saveAsTiff();
 	}
 	
@@ -79,7 +92,7 @@ public class FileSaver {
 		if (fi.nImages==1)
 			{IJ.error("This is not a stack"); return false;}
 		if (fi.pixels==null && imp.getStack().isVirtual())
-			{IJ.showMessage("Save As Tiff", "Virtual stacks not supported."); return false;}
+			{IJ.error("Save As Tiff", "Virtual stacks not supported."); return false;}
 		fi.description = getDescriptionString();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
@@ -228,7 +241,7 @@ public class FileSaver {
 		java 1.4 or later. */
 	public boolean saveAsPng() {
 		if (!IJ.isJava14()) {
-			IJ.showMessage("Save As PNG", "Java 1.4 or later required");
+			IJ.error("Save As PNG", "Java 1.4 or later required");
 			return false;
 		}
 		String path = getPath("PNG", ".png");

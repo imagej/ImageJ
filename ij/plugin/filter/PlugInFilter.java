@@ -22,7 +22,7 @@ public interface PlugInFilter {
 	public int DOES_8G = 1;
 	/** Set this flag if the filter handles 8-bit indexed color images. */
 	public int DOES_8C = 2;
-	/** Set this flag if the filter handles short images. */
+	/** Set this flag if the filter handles 16-bit images. */
 	public int DOES_16 = 4;
 	/** Set this flag if the filter handles float images. */
 	public int DOES_32 = 8;

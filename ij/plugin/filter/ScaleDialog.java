@@ -90,11 +90,15 @@ public class ScaleDialog implements PlugInFilter {
 				return;
 			for (int i=0; i<list.length; i++) {
 				ImagePlus imp2 = WindowManager.getImage(list[i]);
-				if (imp2!=null)
-					imp2.getWindow().repaint();
+				if (imp2!=null) {
+					ImageWindow win = imp2.getWindow();
+					if (win!=null) win.repaint();
+				}
 			}
-		} else
-			imp.getWindow().repaint();
+		} else {
+			ImageWindow win = imp.getWindow();
+			if (win!=null) win.repaint();
+		}
 	}
 
 }

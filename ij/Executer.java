@@ -12,6 +12,7 @@ import ij.gui.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.frame.*;
+import ij.macro.Interpreter;
 
 /** Runs menu commands in a separate thread.*/
 public class Executer implements Runnable {
@@ -42,8 +43,8 @@ public class Executer implements Runnable {
 			if (!(cmd.equals("Undo")||cmd.equals("Close")))
 				previousCommand = cmd;
 		}
-			
 		ij = IJ.getInstance();
+		IJ.resetEscape();
 		thread = new Thread(this, cmd);
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
 		thread.start();
@@ -80,6 +81,7 @@ public class Executer implements Runnable {
 					s = Tools.fixNewLines(s);
 				}
 				new TextWindow("Exception", s, 350, 250);
+				if (ij==null) IJ.wait(10000);
 			}
 		}
 	}
@@ -119,9 +121,10 @@ public class Executer implements Runnable {
 			ij.toFront();
 		else if (cmd.equals("Put Behind [tab]"))
 			WindowManager.putBehind();
-		else if (cmd.equals("Quit"))
-			IJ.getInstance().quit();
-		else {
+		else if (cmd.equals("Quit")) {
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null) ij.quit();
+		} else {
 			Hashtable table = Menus.getCommands();
 			String plugIn = (String)table.get(cmd);
 			if (plugIn!=null)
@@ -133,23 +136,19 @@ public class Executer implements Runnable {
 
    /** Run commands that process images. */
     public void runImageCommand(String cmd, ImagePlus imp) {
-    
-    	ImageWindow win = null;
-    	
+        ImageWindow win = null;
     	if (imp!=null) {
 			if (!imp.lock())
 				return;   // exit if image is in use
-    		win = imp.getWindow();
     	}
-
 		if (cmd.equals("Revert"))
-			{if (win!=null) imp.revert(); else IJ.noImage();}
+			{if (imp!=null) imp.revert(); else IJ.noImage();}
 		else if (cmd.equals("Save"))
-			{if (win!=null) new FileSaver(imp).save(); else IJ.noImage();}
+			{if (imp!=null) new FileSaver(imp).save(); else IJ.noImage();}
 		else if (cmd.equals("Paste"))
-			{if (win!=null) win.paste(); else IJ.noImage();}
+			{if (imp!=null) imp.paste(); else IJ.noImage();}
 		else if (cmd.equals("Undo"))
-			{if (win!=null) Undo.undo(); else IJ.noImage();}
+			{if (imp!=null) Undo.undo(); else IJ.noImage();}
 		else
 	 		IJ.error("Unrecognized command: " + cmd);
 		if (imp!=null)
@@ -178,7 +177,7 @@ public class Executer implements Runnable {
 	 		IJ.noImage();
 	 		return;
 	 	} else
-	 		imp.getWindow().copy(cut);
+	 		imp.copy(cut);
 	}
 	
 	void close(ImagePlus imp) {
@@ -193,8 +192,12 @@ public class Executer implements Runnable {
 			ImageWindow win = imp.getWindow();
 			if (win!=null)
 				win.close();
-			else if (IJ.macroRunning())
-					WindowManager.setTempCurrentImage(null);
+			else if (IJ.macroRunning() || Interpreter.isBatchMode()) {
+				WindowManager.setTempCurrentImage(null);
+				ImagePlus imp2 = Interpreter.getBatchModeImage(imp.getID());
+				if (imp==imp2)
+					Interpreter.removeBatchModeImage(imp);
+			}
 		}
 	}
 

@@ -58,7 +58,7 @@ public class RGBStackMerge implements PlugIn {
             }
         }
         if (width==0) {
-            IJ.error("There must be at least one 8-bit or RGB source stack.");
+            IJ.error("There must be at least one source image or stack.");
             return;
         }
         for (int i=0; i<3; i++) {
@@ -68,12 +68,12 @@ public class RGBStackMerge implements PlugIn {
                     IJ.error("The source stacks must all have the same number of slices.");
                     return;
                 }
-                if (!(img.getType()==ImagePlus.GRAY8||img.getType()==ImagePlus.COLOR_RGB)) {
-                    IJ.error("The source stacks must be 8-bit grayscale or RGB.");
-                    return;
-                }
+                //if (!(img.getType()==ImagePlus.GRAY8||img.getType()==ImagePlus.COLOR_RGB)) {
+                //    IJ.error("The source stacks must be 8-bit grayscale or RGB.");
+                //    return;
+                //}
                 if (img.getWidth()!=width || image[i].getHeight()!=height) {
-                    IJ.error("The source stacks must have the same width and height.");
+                    IJ.error("The source images or stacks must have the same width and height.");
                     return;
                 }
             }
@@ -106,9 +106,9 @@ public class RGBStackMerge implements PlugIn {
         int slice = 1;
         blank = new byte[w*h];
         byte[] redPixels, greenPixels, bluePixels;
-            boolean invertedRed = red!=null?red.getProcessor(1).isInvertedLut():false;
-            boolean invertedGreen = green!=null?green.getProcessor(1).isInvertedLut():false;
-            boolean invertedBlue = blue!=null?blue.getProcessor(1).isInvertedLut():false;
+        boolean invertedRed = red!=null?red.getProcessor(1).isInvertedLut():false;
+        boolean invertedGreen = green!=null?green.getProcessor(1).isInvertedLut():false;
+        boolean invertedBlue = blue!=null?blue.getProcessor(1).isInvertedLut():false;
         try {
             for (int i=1; i<=d; i++) {
             cp = new ColorProcessor(w, h);
@@ -144,9 +144,16 @@ public class RGBStackMerge implements PlugIn {
      byte[] getPixels(ImageStack stack, int slice, int color) {
          if (stack==null)
             return blank;
-        if (stack.getPixels(slice) instanceof byte[])
-            return (byte[])stack.getPixels(slice);
-        else {
+        Object pixels = stack.getPixels(slice);
+        if (!(pixels instanceof int[])) {
+        	if (pixels instanceof byte[])
+            	return (byte[])pixels;
+            else {
+            	ImageProcessor ip = stack.getProcessor(slice);
+            	ip = ip.convertToByte(true);
+            	return (byte[])ip.getPixels();
+            }
+        } else { //RGB
             byte[] r,g,b;
             int size = stack.getWidth()*stack.getHeight();
             r = new byte[size];
@@ -172,5 +179,4 @@ public class RGBStackMerge implements PlugIn {
     }
 
 }
-
 

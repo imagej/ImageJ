@@ -17,7 +17,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int LINE = 4;
 	public static final int POLYLINE = 5;
 	public static final int FREELINE = 6;
-	public static final int CROSSHAIR = 7;
+	public static final int POINT = 7, CROSSHAIR = 7;
 	public static final int WAND = 8;
 	public static final int TEXT = 9;
 	public static final int SPARE1 = 10;
@@ -146,7 +146,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				xOffset = x+1; yOffset = y+4;
 				m(0,1); d(2,3); d(4,3); d(7,0); d(8,0); d(10,4); d(14,8); d(15,8);
 				return;
-			case CROSSHAIR:
+			case POINT:
 				xOffset = x; yOffset = y;
 				m(1,8); d(6,8); d(6,6); d(10,6); d(10,10); d(6,10); d(6,9);
 				m(8,1); d(8,5); m(11,8); d(15,8); m(8,11); d(8,15);
@@ -308,8 +308,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case FREELINE:
 				IJ.showStatus("Freehand line selections");
 				return;
-			case CROSSHAIR:
-				IJ.showStatus("Crosshair (mark and count) tool");
+			case POINT:
+				IJ.showStatus("Point selections");
 				return;
 			case WAND:
 				IJ.showStatus("Wand (tracing) tool");
@@ -422,11 +422,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	static void updateColors() {
-		Toolbar tb = getInstance();
-		Graphics g = tb.getGraphics();
-		tb.drawButton(g, DROPPER);
-		tb.drawButton(g, CROSSHAIR);
-		g.dispose();
+		if (IJ.getInstance()!=null) {
+			Toolbar tb = getInstance();
+			Graphics g = tb.getGraphics();
+			tb.drawButton(g, DROPPER);
+			tb.drawButton(g, POINT);
+			g.dispose();
+		}
 	}
 	
 	// Returns the toolbar position index of the specified tool
@@ -450,16 +452,21 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
  		int newTool = 0;
-		for (int i=0; i<NUM_TOOLS; i++)
+		for (int i=0; i<NUM_TOOLS; i++) {
 			if (x>i*SIZE && x<i*SIZE+SIZE)
 				newTool = toolID(i);
+		}
 		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=500;
  		mouseDownTime = System.currentTimeMillis();
 		if (!doubleClick) {
+			if (isMacroTool(newTool)) {
+				String name = names[newTool].endsWith(" ")?names[newTool]:names[newTool]+" ";
+				macroInstaller.runMacroTool(name+"Selected");
+			}
 			mpPrevious = current;
 			setTool2(newTool);
 		} else {
-			if (current>=SPARE1 && current<=SPARE6 && names[current]!=null && macroInstaller!=null) {
+			if (isMacroTool(current)) {
 				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
 				macroInstaller.runMacroTool(name+"Options");
 				return;
@@ -471,17 +478,20 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					setTool2(mpPrevious);
 					break;
 				case MAGNIFIER:
-					if (imp!=null) imp.getWindow().getCanvas().unzoom();
+					if (imp!=null) {
+						ImageWindow win = imp.getWindow();
+						if (win!=null) win.getCanvas().unzoom();
+					}
 					break;
 				case POLYGON:
 					if (imp!=null) IJ.doCommand("Calibrate...");
 					setTool2(mpPrevious);
 					break;
 				case LINE: case POLYLINE: case FREELINE:
-					IJ.doCommand("Line Width...");
+					IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
 					break;
-				case CROSSHAIR:
-					IJ.doCommand("Crosshair...");
+				case POINT:
+					IJ.doCommand("Point Tool...");
 					break;
 				case TEXT:
 					IJ.doCommand("Fonts...");
@@ -493,6 +503,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				default:
 			}
 		}
+	}
+	
+	boolean isMacroTool(int tool) {
+		return tool>=SPARE1 && tool<=SPARE6 && names[tool]!=null && macroInstaller!=null;
 	}
 	
 	public void mouseReleased(MouseEvent e) {}

@@ -70,6 +70,9 @@ public class ShapeRoi extends Roi{
 	 * If <strong><code>true</code></strong> then (sub)path will be parsed into a {@link ij.gui.Roi#ANGLE};
 	 * else, into a {@link ij.gui.Roi#POLYLINE}. */
 	private boolean forceAngle = false;
+	
+	private Vector savedRois;
+
 
 	/**********************************************************************************/
 	/***                               Constructors                                ****/
@@ -243,7 +246,7 @@ public class ShapeRoi extends Roi{
 	 * @return A java.awt.geom.* object that inherits from java.awt.Shape interface.
 	 *
 	 */
-	private Shape roiToShape(Roi roi) { //wsr
+	private Shape roiToShape(Roi roi) {
 		Shape shape = null;
 		Rectangle r = roi.getBounds();
 		int[] xCoords = null;
@@ -251,7 +254,8 @@ public class ShapeRoi extends Roi{
 		int nCoords = 0;
 		switch(roi.getType()) {
 			case Roi.LINE:
-				shape = new Line2D.Double ((double)(((Line)roi).x1), (double)(((Line)roi).y1), (double)(((Line)roi).x2), (double)(((Line)roi).y2) );
+				Line line = (Line)roi;				
+				shape = new Line2D.Double ((double)(line.x1-r.x), (double)(line.y1-r.y), (double)(line.x2-r.x), (double)(line.y2-r.y) );
 				break;
 			case Roi.RECTANGLE:
 				shape = new Rectangle2D.Double(0.0, 0.0, (double)r.width, (double)r.height);
@@ -277,7 +281,8 @@ public class ShapeRoi extends Roi{
 				yCoords = ((PolygonRoi)roi).getYCoordinates();
 				shape = new GeneralPath(GeneralPath.WIND_EVEN_ODD,nCoords);
 				((GeneralPath)shape).moveTo((float)xCoords[0], (float)yCoords[0]);
-				for (int i=1; i<nCoords; i++) ((GeneralPath)shape).lineTo((float)xCoords[i],(float)yCoords[i]);
+				for (int i=1; i<nCoords; i++)
+					((GeneralPath)shape).lineTo((float)xCoords[i],(float)yCoords[i]);
 				((GeneralPath)shape).closePath();
 				break;
 			case Roi.POLYLINE: case Roi.FREELINE: case Roi.ANGLE:
@@ -286,7 +291,8 @@ public class ShapeRoi extends Roi{
 				yCoords = ((PolygonRoi)roi).getYCoordinates();
 				shape = new GeneralPath(GeneralPath.WIND_NON_ZERO,nCoords);
 				((GeneralPath)shape).moveTo((float)xCoords[0], (float)yCoords[0]);
-				for (int i=1; i<nCoords; i++) ((GeneralPath)shape).lineTo((float)xCoords[i],(float)yCoords[i]);
+				for (int i=1; i<nCoords; i++)
+					((GeneralPath)shape).lineTo((float)xCoords[i],(float)yCoords[i]);
 				break;
 			case Roi.COMPOSITE: shape = ShapeRoi.cloneShape(((ShapeRoi)roi).getShape()); break;
 			default: type = NO_TYPE; break;
@@ -300,7 +306,7 @@ public class ShapeRoi extends Roi{
 			this.height = bounds.height;
 			this.startX = x;
 			this.startY = y;
-            //IJ.log("RoiToShape: "+x+" "+y+" "+width+" "+height+" "+bounds);
+			//IJ.log("RoiToShape: "+x+" "+y+" "+width+" "+height+" "+bounds);
 		}
 		return shape;
 	}
@@ -355,6 +361,13 @@ public class ShapeRoi extends Roi{
 		return -1;
 	}
 
+	/** Saves an Roi so it can be retrieved later using getRois(). */
+	void saveRoi(Roi roi) {
+		if (savedRois==null)
+			savedRois = new Vector();
+		savedRois.addElement(roi);
+	}
+
 	/**Converts a Shape into Roi object(s).
 	 * <br>This method parses the shape into (possibly more than one) Roi objects 
 	 * and returns them in an array.
@@ -398,6 +411,8 @@ public class ShapeRoi extends Roi{
 	 */
 	public Roi[] getRois () {
 		if(shape==null) return new Roi[0];
+		if (savedRois!=null)
+			return getSavedRois();
 		Vector rois = new Vector();
 		if(shape instanceof Rectangle2D.Double) {
 			Roi r = new Roi((int)((Rectangle2D.Double)shape).getX(), (int)((Rectangle2D.Double)shape).getY(), (int)((Rectangle2D.Double)shape).getWidth(), (int)((Rectangle2D.Double)shape).getHeight());
@@ -419,6 +434,12 @@ public class ShapeRoi extends Roi{
 		}
 		Roi[] array = new Roi[rois.size()];
 		rois.copyInto((Roi[])array);
+		return array;
+	}
+	
+	Roi[] getSavedRois () {
+		Roi[] array = new Roi[savedRois.size()];
+		savedRois.copyInto((Roi[])array);
 		return array;
 	}
 
@@ -730,6 +751,8 @@ public class ShapeRoi extends Roi{
 		coordinates and SEG_CUBICTO segments include six coordinates. */
 	public float[] getShapeAsArray() {
 		if(shape==null) return null;
+		//if (savedRois!=null)
+		//	return getSavedRoisAsArray();
 		PathIterator pIt = shape.getPathIterator(new AffineTransform());
 		Vector h = new Vector(); // handles
 		Vector s = new Vector(); // segment types
@@ -773,6 +796,49 @@ public class ShapeRoi extends Roi{
 		System.arraycopy(result, 0, result2, 0, result2.length);
 		return result2;
 	}
+
+	/*
+	float[] getSavedRoisAsArray() {
+		int n = savedRois.length;
+		Polygon[] polygons = new Polygon[n];
+		for (int i=0; i<n; i++) {
+			
+		}
+		float[] result = new float[7*s.size()];
+		for (int i=0; i<savedRois.length; i++) {
+			switch(segType) {
+				case PathIterator.SEG_MOVETO: case PathIterator.SEG_LINETO:
+					result[index++] = segType;
+					p = (Point2D.Double)h.elementAt(j++);
+					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
+					break;
+				case PathIterator.SEG_QUADTO:
+					result[index++] = segType;
+					p = (Point2D.Double)h.elementAt(j++);
+					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
+					p = (Point2D.Double)h.elementAt(j++);
+					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
+					break;
+				case PathIterator.SEG_CUBICTO:
+					result[index++] = segType;
+					p = (Point2D.Double)h.elementAt(j++);
+					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
+					p = (Point2D.Double)h.elementAt(j++);
+					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
+					p = (Point2D.Double)h.elementAt(j++);
+					result[index++]=(float)p.getX()+x; result[index++]=(float)p.getY()+y;
+					break;
+				case PathIterator.SEG_CLOSE:
+					result[index++] = segType;
+					break;
+				default: break;
+			}
+		}
+		float[] result2 = new float[index];
+		System.arraycopy(result, 0, result2, 0, result2.length);
+		return result2;
+	}
+	*/
 
 	/**Parses the geometry of this ROI's shape by means of the shape's PathIterator 
 	 * and returns several convenience parameters in the arguments.
@@ -946,41 +1012,32 @@ public class ShapeRoi extends Roi{
 		g.setColor(ROIColor);
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
-		aTx.setTransform(mag,0.0,0.0,mag,-r.x*mag,-r.y*mag);
+		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
         aTx.translate(x, y); //wsr
-        //IJ.log("draw:"+x+"  "+y);
-		//((Graphics2D)g).transform(aTx); //wsr
-		((Graphics2D)g).draw(aTx.createTransformedShape(shape)); //wsr
-        /* //wsr
-		if(state!=CONSTRUCTING && clipboard==null) {
-			PathIterator pIter;
-			if(flatten) pIter = getFlatteningPathIterator(shape, flatness);
-			else pIter = shape.getPathIterator(new AffineTransform());
-			Vector handles = new Vector();
-			parsePath(pIter, null, null, null, handles);
-			if(handles==null || handles.size()==0) return;
-			int size2 = HANDLE_SIZE/2;
-			int cnt=0;
-			for(Enumeration e = handles.elements(); e.hasMoreElements();)
-			{
-				Point2D.Double pt = (Point2D.Double)e.nextElement();
-				cnt++;
-				int hx = (int)pt.getX();
-				int hy = (int)pt.getY();
-				drawHandle(g, hx-size2, hy-size2);
+		((Graphics2D)g).draw(aTx.createTransformedShape(shape));
+		//if (savedRois!=null) drawLines(g);
+		showStatus();
+		if (updateFullWindow) 
+			{updateFullWindow = false; imp.draw();}
+	}
+	
+	void drawLines(Graphics g) {
+		Roi[] rois = getRois();
+		//IJ.log("drawLines: "+rois.length);
+		for (int i=0; i<rois.length; i++) {
+			int type = rois[i].getType();
+			if (type==Roi.LINE) {
+				Line line = (Line)rois[i];
+				g.drawLine(ic.screenX(line.x1), ic.screenX(line.x1), ic.screenX(line.x2), ic.screenY(line.y2));
 			}
 		}
-        */
-		showStatus();
-		if (updateFullWindow) { updateFullWindow = false; imp.draw(); }
 	}
 
 	/**Draws the shape of this object onto the associated ImagePlus.
 	 * <br> This method will always draw a flattened version of the actual shape (i.e., all curve segments
 	 * will be approximated by line segments).
 	 */
-	public void drawPixels() {
-		ImageProcessor ip = imp.getProcessor();
+	public void drawPixels(ImageProcessor ip) {
 		PathIterator pIter = getFlatteningPathIterator(shape,flatness);
 		double[] coords;
 		double x0 = Double.NaN;
@@ -1018,7 +1075,8 @@ public class ShapeRoi extends Roi{
 		set to white (255) and pixels "outside" the mask set to black (0). */
 	public ImageProcessor getMask() {
 		if(shape==null) return null;
-        if (cachedMask!=null) return cachedMask;
+		if (cachedMask!=null && cachedMask.getPixels()!=null)
+			return cachedMask;
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		Graphics2D g2d = bi.createGraphics();
 		g2d.setColor(Color.white);
@@ -1070,13 +1128,11 @@ public class ShapeRoi extends Roi{
 	 */
 	boolean setShape(Shape rhs) {
 		boolean result = true;
-		if (rhs==null) {IJ.write("rhs null!"); return false;}
-		if(shape.equals(rhs)) {IJ.write("shouldn't set it to itself"); return false;}
+		if (rhs==null) {IJ.log("rhs null!"); return false;}
+		if(shape.equals(rhs)) {IJ.log("shouldn't set it to itself"); return false;}
 		shape = rhs;
 		type = Roi.COMPOSITE;
 		Rectangle rect = shape.getBounds();
-		//x = rect.x;  //wsr
-		//y = rect.y;
 		width = rect.width;
 		height = rect.height;
 		return true;

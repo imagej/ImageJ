@@ -13,7 +13,7 @@ public class MessageDialog extends Dialog implements ActionListener {
         setLayout(new BorderLayout());
         if (message==null) message = "";
 	    label = new MultiLineLabel(message);
-		label.setFont(new Font("Dialog", Font.PLAIN, 12));
+		label.setFont(new Font("SansSerif", Font.PLAIN, 12));
         Panel panel = new Panel();
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 15));
         panel.add(label);

@@ -26,7 +26,8 @@ public class RGBStackSplitter implements PlugInFilter {
         split(imp.getStack(), true);
         String title = imp.getTitle();
         Calibration cal = imp.getCalibration();
-        imp.hide();
+        if (!IJ.altKeyDown())
+        	imp.hide();
         ImagePlus rImp = new ImagePlus(title+" (red)",red);
         rImp.setCalibration(cal);
         rImp.show();

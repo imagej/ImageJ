@@ -29,6 +29,13 @@ public class CommandLister implements PlugIn {
 	public void listShortcuts() {
 		Hashtable shortcuts = Menus.getShortcuts();
 		Vector v = new Vector();
+		addShortcutsToVector(shortcuts, v);
+		Hashtable macroShortcuts = Menus.getMacroShortcuts();
+		addShortcutsToVector(macroShortcuts, v);
+		showList("Keyboard Shortcuts", "Hot Key\tCommand", v);
+	}
+	
+	void addShortcutsToVector(Hashtable shortcuts, Vector v) {
 		for (Enumeration en=shortcuts.keys(); en.hasMoreElements();) {
 			Integer key = (Integer)en.nextElement();
 			int keyCode = key.intValue();
@@ -50,9 +57,8 @@ public class CommandLister implements PlugIn {
 				shortcut = " " + shortcut; 
 			v.addElement(shortcut+"\t"+(String)shortcuts.get(key));
 		}
-		showList("Keyboard Shortcuts", "Hot Key\tCommand", v);
 	}
-	
+
 	void showList(String title, String headings, Vector v) {
 		String[] list = new String[v.size()];
 		v.copyInto((String[])list);

@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.32
+# Version 1.33
 
 # Popup Menu
 popup01=Undo
@@ -18,6 +18,8 @@ popup06=-
 popup07=Clear
 popup08=Fill
 popup09=Draw
+popup10=-
+popup11=Rename...
 
 # Plugins installed in the File/Import submenu
 import01="Raw...",ij.plugin.Raw
@@ -57,13 +59,14 @@ selection05="Fit Ellipse",ij.plugin.Selection("ellipse")
 selection06="Convex Hull",ij.plugin.Selection("hull")
 selection07="Create Mask",ij.plugin.Selection("mask")
 selection08="Make Inverse",ij.plugin.Selection("inverse")
+selection09="Specify...",ij.plugin.filter.SpecifyROI
 
 # Plugins installed in the Edit/Options submenu
-options01="Line Width...",ij.plugin.Options("width")
+options01="Line Width...",ij.plugin.Options("line")
 options02="JPEG Quality...",ij.plugin.Options("quality")
 options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
-options05="Crosshair...",ij.plugin.Options("cross")
+options05="Point Tool...",ij.plugin.Options("point")
 options06="Colors...",ij.plugin.Colors
 options07="Image...",ij.plugin.Options("image")
 options08="Conversions...",ij.plugin.Options("conv")
@@ -101,7 +104,7 @@ stacks11="Z Project...",ij.plugin.ZProjector
 stacks12="3D Project...",ij.plugin.filter.Projector
 stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
 stacks14=-
-stacks15="Start Animation [=]",ij.plugin.Animator("start")
+stacks15="Start Animation[\\]",ij.plugin.Animator("start")
 stacks16="Stop Animation",ij.plugin.Animator("stop")
 stacks17="Animation Options...",ij.plugin.Animator("options")
 
@@ -111,6 +114,13 @@ rotate02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
 rotate03="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 rotate04="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
 rotate05="Arbitrarily...",ij.plugin.filter.Rotator
+
+# Plugins installed in the Image/Zoom submenu
+zoom01="In[+]",ij.plugin.Zoom("in")
+zoom02="Out[-]",ij.plugin.Zoom("out")
+zoom03="View 100%",ij.plugin.Zoom("100%")
+zoom04="Original Scale",ij.plugin.Zoom("orig")
+zoom05="To Selection",ij.plugin.Zoom("to")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Fire",ij.plugin.LutLoader("fire")
@@ -282,7 +292,7 @@ open07="Cell Colony (31K)",ij.plugin.URLOpener("Cell_Colony.jpg")
 open08="Ceretec Sagittals (12K)",ij.plugin.URLOpener("cer-sag.gif")
 open09="Clown (14K)",ij.plugin.URLOpener("clown.jpg")
 open10="Diatoms (60K)",ij.plugin.URLOpener("Diatoms.jpg")
-open11="Dot Blots (30K)",ij.plugin.URLOpener("Dot_Blots.jpg")
+open11="Dot Blot (7K)",ij.plugin.URLOpener("Dot_Blot.jpg")
 open12="Embryos (42K)",ij.plugin.URLOpener("embryos.jpg")
 open13="Enhance Me (25K)",ij.plugin.URLOpener("enhance-me.gif")
 open14="Fibroblast Cell Nucleus (17K)",ij.plugin.URLOpener("Fibroblast_Cell_Nucleus.jpg")

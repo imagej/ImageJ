@@ -9,8 +9,11 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 
-/** Adjusts brightness and contrast of the active image. This class is
-	multi-threaded to provide a more responsive user interface. */
+/** This plugin implements the Brightness/Contrast, Window/level and
+	Color Balance commands, all in the Image/Adjust sub-menu. It 
+	allows the user to interactively adjust the brightness  and
+	contrast of the active image. It is multi-threaded to 
+	provide a more  responsive user interface. */
 public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	ActionListener, AdjustmentListener, ItemListener {
 
@@ -24,10 +27,10 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		
 	int minSliderValue=-1, maxSliderValue=-1, brightnessValue=-1, contrastValue=-1;
 	int sliderRange = 256;
-	boolean doAutoAdjust,doReset,doSet,doApplyLut,doThreshold,doUpdate;
+	boolean doAutoAdjust,doReset,doSet,doApplyLut;
 	
 	Panel panel, tPanel;
-	Button autoB, resetB, setB, applyB, threshB, updateB;
+	Button autoB, resetB, setB, applyB;
 	int previousImageID;
 	int previousType;
 	Object previousSnapshot;
@@ -53,6 +56,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	public ContrastAdjuster() {
 		super("B&C");
+		if (IJ.isMacOSX()) setResizable(false);
 	}
 	
 	public void run(String arg) {
@@ -188,16 +192,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		applyB.addActionListener(this);
 		applyB.addKeyListener(ij);
 		panel.add(applyB);
-		if (!windowLevel && !balance) {
-			threshB = new TrimmedButton("Thresh",trim);
-			threshB.addActionListener(this);
-			threshB.addKeyListener(ij);
-			panel.add(threshB);
-			updateB = new TrimmedButton("Update",trim);
-			updateB.addActionListener(this);
-			updateB.addKeyListener(ij);
-			panel.add(updateB);
-		}
 		c.gridy = y++;
 		c.insets = new Insets(8, 5, 10, 5);
 		gridbag.setConstraints(panel, c);
@@ -215,9 +209,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 		
 	void addLabel(String text, Label label2) {
+		if (label2==null&&IJ.isMacOSX()) text += "    ";
 		panel = new Panel();
 		c.gridy = y++;
-		c.insets = new Insets(0, 10, 0, 0);
+		int bottomInset = IJ.isMacOSX() && IJ.isJava14()?4:0;
+		c.insets = new Insets(0, 10, bottomInset, 0);
 		gridbag.setConstraints(panel, c);
         panel.setLayout(new FlowLayout(label2==null?FlowLayout.CENTER:FlowLayout.LEFT, 0, 0));
 		Label label= new TrimmedLabel(text);
@@ -266,10 +262,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			doSet = true;
 		else if (b==applyB)
 			doApplyLut = true;
-		else if (b==threshB)
-			doThreshold = true;
-		else if (b==updateB)
-			doUpdate = true;
 		notify();
 	}
 	
@@ -475,18 +467,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			Recorder.record("resetMinAndMax");
 	}
 
-	void update(ImagePlus imp, ImageProcessor ip) {
-		if (previousMin==0.0 && previousMax==0.0 || imp.getType()!=previousType)
-			IJ.beep();
-		else {
-			min = previousMin;
-			max = previousMax;
-			setMinAndMax(ip, min, max);
-			updateScrollBars(null);
-			plotHistogram(imp);
-		}
-	}
-
 	void plotHistogram(ImagePlus imp) {
 		ImageStatistics stats;
 		if (balance && (channels==4 || channels==2 || channels==1) && imp.getType()==ImagePlus.COLOR_RGB) {
@@ -582,15 +562,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		imp.setSlice(current);
 		imp.changes = true;
-	}
-
-	void threshold(ImagePlus imp, ImageProcessor ip) {
-		int threshold = (int)((defaultMax-defaultMin)/2.0);
-		min = threshold;
-		max = threshold;
-		setMinAndMax(ip, min, max);
-		setThreshold(ip);
-		updateScrollBars(null);
 	}
 
 	void setThreshold(ImageProcessor ip) {
@@ -735,25 +706,20 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		else if (doAutoAdjust) action = AUTO;
 		else if (doSet) action = SET;
 		else if (doApplyLut) action = APPLY;
-		else if (doThreshold) action = THRESHOLD;
-		else if (doUpdate) action = UPDATE;
 		else if (minSliderValue>=0) action = MIN;
 		else if (maxSliderValue>=0) action = MAX;
 		else if (brightnessValue>=0) action = BRIGHTNESS;
 		else if (contrastValue>=0) action = CONTRAST;
 		else return;
 		minSliderValue = maxSliderValue = brightnessValue = contrastValue = -1;
-		doReset = doAutoAdjust = doSet = doApplyLut = doThreshold = doUpdate = false;
+		doReset = doAutoAdjust = doSet = doApplyLut = false;
 		imp = WindowManager.getCurrentImage();
 		if (imp==null) {
 			IJ.beep();
 			IJ.showStatus("No image");
 			return;
 		}
-		if (action!=UPDATE)
-			ip = setup(imp);
-		else
-			ip = imp.getProcessor();
+		ip = imp.getProcessor();
 		if (RGBImage && !imp.lock())
 			{imp=null; return;}
 		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
@@ -762,8 +728,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			case AUTO: autoAdjust(imp, ip); break;
 			case SET: if (windowLevel) setWindowLevel(imp, ip); else setMinAndMax(imp, ip); break;
 			case APPLY: apply(imp, ip); break;
-			case THRESHOLD: threshold(imp, ip); break;
-			case UPDATE: update(imp, ip); break;
 			case MIN: adjustMin(imp, ip, minvalue); break;
 			case MAX: adjustMax(imp, ip, maxvalue); break;
 			case BRIGHTNESS: adjustBrightness(imp, ip, bvalue); break;
@@ -791,7 +755,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 
 	public void windowActivated(WindowEvent e) {
-		//windowActivated(e);
+		super.windowActivated(e);
 		setup();
 		WindowManager.setWindow(this);
 	}
@@ -902,7 +866,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 					osg.drawLine(i, HEIGHT, i, HEIGHT - ((int)(HEIGHT * histogram[i])/hmax));
 				osg.dispose();
 			}
-			g.drawImage(os, 0, 0, this);
+			if (os!=null) g.drawImage(os, 0, 0, this);
 		} else {
 			g.setColor(Color.white);
 			g.fillRect(0, 0, WIDTH, HEIGHT);

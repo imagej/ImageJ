@@ -68,6 +68,7 @@ public class FileOpener {
 				break;
 			case FileInfo.GRAY16_SIGNED:
 			case FileInfo.GRAY16_UNSIGNED:
+			case FileInfo.GRAY12_UNSIGNED:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
 	    		ip = new ShortProcessor(width, height, (short[])pixels, cm);
@@ -218,6 +219,7 @@ public class FileOpener {
 				break;
 			case FileInfo.GRAY16_SIGNED:
 			case FileInfo.GRAY16_UNSIGNED:
+			case FileInfo.GRAY12_UNSIGNED:
 	    		ip = new ShortProcessor(width, height, (short[])pixels, cm);
         		imp.setProcessor(null, ip);
 				break;
@@ -339,7 +341,7 @@ public class FileOpener {
 	}
 
 	static void error(String msg, FileInfo fi, long offset, long length) {
-		IJ.showMessage("FileOpener", "FileInfo parameter error. \n"
+		IJ.error("FileOpener", "FileInfo parameter error. \n"
 			+msg + "\n \n"
 			+"  Width: " + fi.width + "\n"
 			+"  Height: " + fi.height + "\n"
@@ -362,7 +364,8 @@ public class FileOpener {
 			is.close();
 		}
 		catch (Exception e) {
-			IJ.log("FileOpener.readPixels(): " + e);
+			if (!"Macro canceled".equals(e.getMessage()))
+				IJ.error("FileOpener.readPixels" , ""+e);
 		}
 		return pixels;
 	}

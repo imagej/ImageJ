@@ -66,6 +66,7 @@ public class MacroRunner implements Runnable {
 			else
 				new Interpreter().runMacro(pgm, address, name);
 		} catch(Throwable e) {
+			Interpreter.abort();
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
 			ImagePlus imp = WindowManager.getCurrentImage();

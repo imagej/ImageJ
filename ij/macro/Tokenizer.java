@@ -15,7 +15,7 @@ public class Tokenizer implements MacroConstants {
 
     /** Uses a StreamTokenizer to convert an ImageJ macro file into a token stream. */
     public Program tokenize(String program) {
-        IJ.showStatus("tokenizing");
+        //IJ.showStatus("tokenizing");
         st = new StreamTokenizer(new StringReader(program));
         st.eolIsSignificant(true);
         st.ordinaryChar('-');

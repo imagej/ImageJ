@@ -227,12 +227,16 @@ public class ShortProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Stores the specified real value at (x,y). Does
-		nothing if (x,y) is outside the image boundary.
-		Values outside the range 0-65535 are clipped.
+	/** Stores the specified real value at (x,y). Does nothing
+		if (x,y) is outside the image boundary. Values outside 
+		the range 0-65535 (-32768-32767 for signed images)
+		are clipped. Support for signed values requires a calibration
+		table, which is set up automatically with PlugInFilters.
 	*/
 	public void putPixelValue(int x, int y, double value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
+			if (cTable!=null&&cTable[0]==-32768f) // signed image
+				value += 32768.0;
 			if (value>65535.0)
 				value = 65535.0;
 			else if (value<0.0)
@@ -247,6 +251,10 @@ public class ShortProcessor extends ImageProcessor {
 			putPixel(x, y, fgColor);
 	}
 
+	/** Returns the value of the pixel at (x,y) as a float. For signed
+		images, returns a signed value if a calibration table has
+		been set using setCalibraionTable() (this is done automatically 
+		in PlugInFilters). */
 	public float getPixelValue(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			if (cTable==null)
@@ -324,23 +332,27 @@ public class ShortProcessor extends ImageProcessor {
 		int v1, v2;
 		double range = max-min;
 		boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
+		int offset = cTable!=null&&cTable[0]==-32768f?32768:0; // signed images have 32768 offset
+		int min2 = min - offset;
+		int max2 = max - offset;
+		int fgColor2 = fgColor - offset;
 		
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				v1 = pixels[i]&0xffff;
+				v1 = (pixels[i]&0xffff) - offset;
 				switch(op) {
 					case INVERT:
-						v2 = max - (v1 - min);
+						v2 = max2 - (v1 - min2);
 						break;
 					case FILL:
-						v2 = fgColor;
+						v2 = fgColor2;
 						break;
 					case ADD:
 						v2 = v1 + (int)value;
 						break;
 					case MULT:
-						v2 = (int)Math.round(v1 * value);
+						v2 = (int)Math.round(v1*value);
 						break;
 					case AND:
 						v2 = v1 & (int)value;
@@ -352,16 +364,16 @@ public class ShortProcessor extends ImageProcessor {
 						v2 = v1 ^ (int)value;
 						break;
 					case GAMMA:
-						if (range<=0.0 || v1==min)
+						if (range<=0.0 || v1==min2)
 							v2 = v1;
 						else					
-							v2 = (int)(Math.exp(value*Math.log((v1-min)/range))*range+min);
+							v2 = (int)(Math.exp(value*Math.log((v1-min2)/range))*range+min2);
 						break;
 					case LOG:
 						if (v1<=0)
 							v2 = 0;
 						else 
-							v2 = (int)(Math.log(v1)*(max/Math.log(max)));
+							v2 = (int)(Math.log(v1)*(max2/Math.log(max2)));
 						break;
 					case SQR:
 							v2 = v1*v1;
@@ -384,6 +396,7 @@ public class ShortProcessor extends ImageProcessor {
 					 default:
 					 	v2 = v1;
 				}
+				v2 += offset;
 				if (v2 < 0)
 					v2 = 0;
 				if (v2 > 65535)

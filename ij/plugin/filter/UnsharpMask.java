@@ -12,7 +12,6 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 	private ImagePlus imp;
 	private int slice;
 	private boolean canceled;
-	private ImageWindow win;
 	private static double radius = 2;
 	private static double weight = 0.6;
 	private boolean isLineRoi;
@@ -21,10 +20,9 @@ public class UnsharpMask implements PlugInFilter, Measurements {
  		IJ.register(UnsharpMask.class);
 		this.imp = imp;
 		if (imp!=null) {
-			win = imp.getWindow();
-			win.running = true;
+			IJ.resetEscape();
 			Roi roi = imp.getRoi();
-			isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
+			isLineRoi= roi!=null && roi.isLine();
 		}
 		if (imp!=null && !showDialog())
 			return DONE;
@@ -35,12 +33,11 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 	public void run(ImageProcessor ip) {
 		if (canceled)
 			return;
-		if (win.running!=true)
-			{canceled=true; IJ.beep(); return;}
 		slice++;
 		if (isLineRoi)
 			ip.resetRoi();
 		sharpen(ip, radius, weight);
+		if (canceled) Undo.undo();
 	}
 	
 	void showStatus(String msg) {
@@ -68,18 +65,26 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 			showStatus("converting to float");
 			ip2 = ip2.convertToFloat();
 		}
+		if (abort()) return;
 		showStatus("getting statistics");
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, MIN_MAX, null);
+		if (abort()) return;
 		double min = stats.min;
 		double max = stats.max;
 		showStatus("Gaussian blur");
 		ImageProcessor mask = ip2.duplicate();
-		new GaussianBlur().blur(mask, radius);
+		if (abort()) return;
+		GaussianBlur gb = new GaussianBlur();
+		if (!gb.blur(mask, radius))
+			{canceled=true; IJ.beep(); return;}
 		showStatus("Subtracting blurred mask");
 		mask.multiply(weight);
+		if (abort()) return;
 		//new ImagePlus("", mask).show();
 		ip2.copyBits(mask,0,0,Blitter.SUBTRACT);
+		if (abort()) return;
 		ip2.multiply(1.0/(1.0-weight));
+		if (abort()) return;
 		if (!(ip2 instanceof ColorProcessor)) {
 			ip2.min(min);
 			ip2.max(max);
@@ -94,7 +99,7 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 			case 8: ip3 = ip2.convertToByte(scale); break;
 			case 16: ip3 = ip2.convertToShort(scale); break;
 			case 24: 
-				ip3 = nonRectRoi?ip.crop():ip;
+				ip3 = nonRectRoi||isRoi?ip.crop():ip;
 				((ColorProcessor)ip3).setBrightness((FloatProcessor)ip2); 
 				break;				
 			case 32: ip3 = ip2; break;
@@ -102,6 +107,15 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 		ip.insert(ip3, rect.x, rect.y);
 		if (nonRectRoi)
 			ip.reset(ip.getMask());
+	}
+	
+	boolean abort() {
+		if (IJ.escapePressed()) {
+			canceled=true; 
+			IJ.beep(); 
+			return true;
+		} else
+			return false;
 	}
 	
 	public boolean showDialog() {

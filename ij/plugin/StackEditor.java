@@ -53,14 +53,9 @@ public class StackEditor implements PlugIn {
 		ImageStack stack = imp.getStack();
 		int n = imp.getCurrentSlice();
  		stack.deleteSlice(n);
-		if (stack.getSize()==1) {
-			imp.setProcessor(null, stack.getProcessor(1));
-			new ImageWindow(imp);
-		} else {
-			imp.setStack(null, stack);
- 			if (n--<1) n = 1;
-			imp.setSlice(n);
-		}
+		imp.setStack(null, stack);
+ 		if (n--<1) n = 1;
+		imp.setSlice(n);
 		imp.unlock();
 	}
 
@@ -70,7 +65,7 @@ public class StackEditor implements PlugIn {
 			IJ.error("No images are open.");
 			return;
 		}
-		
+
 		int count = 0;
 		ImagePlus[] image = new ImagePlus[wList.length];
 		for (int i=0; i<wList.length; i++) {
@@ -108,9 +103,13 @@ public class StackEditor implements PlugIn {
 			ImageProcessor ip = image[i].getProcessor();
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();
-			stack.addSlice(null, ip);
+            String label = image[i].getTitle();
+            String info = (String)image[i].getProperty("Info");
+            if (info!=null) label += "\n" + info;
+            stack.addSlice(label, ip);
 			image[i].changes = false;
-			image[i].getWindow().close();
+			ImageWindow win = image[i].getWindow();
+			if (win!=null) win.close();
 		}
 		ImagePlus imp = new ImagePlus("Stack", stack);
 		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)

@@ -38,7 +38,7 @@ public class ProfilePlot {
 			return;
 		}
 		int roiType = roi.getType();
-		if (!(roiType==Roi.LINE || roiType==Roi.POLYLINE || roiType==Roi.FREELINE || roiType==Roi.RECTANGLE)) {
+		if (!(roi.isLine() || roiType==Roi.RECTANGLE)) {
 			IJ.error("Line or rectangular selection required.");
 			return;
 		}

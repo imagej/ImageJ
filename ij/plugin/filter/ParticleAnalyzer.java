@@ -1,6 +1,6 @@
 package ij.plugin.filter;
 import java.awt.*;
-import java.awt.image.IndexColorModel; 
+import java.awt.image.IndexColorModel;
 import java.util.Properties;
 import ij.*;
 import ij.gui.*;
@@ -31,7 +31,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Obsolete */
 	public static final int SHOW_SUMMARY = 2;
 	
-	/** Display and image containg outlines of measured paticles. */
+	/** Display image containing outlines of measured paticles. */
 	public static final int SHOW_OUTLINES = 4;
 	
 	/** Do not measure particles touching edge of image. */
@@ -51,6 +51,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	/** Display a summaru. */
 	public static final int DISPLAY_SUMMARY = 256;
+
+	/** Do not display particle outline image. */
+	public static final int SHOW_NONE = 512;
 
 	static final String OPTIONS = "ap.options";
 	static final String BINS = "ap.bins";
@@ -101,6 +104,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private PolygonFiller pf;
     private Roi saveRoi;
     private int beginningCount;
+	private Rectangle r;
+	private ImageProcessor mask;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -210,6 +215,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			options |= DISPLAY_SUMMARY; else options &= ~DISPLAY_SUMMARY;
 		staticOptions = options;
 		options |= SHOW_PROGRESS;
+		if ((options&DISPLAY_SUMMARY)!=0 || (options&SHOW_SIZE_DISTRIBUTION)!=0)
+			Analyzer.setMeasurements(Analyzer.getMeasurements()|AREA);
 		return true;
 	}
 
@@ -231,6 +238,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
 		if ((options&SHOW_OUTLINES)!=0)
 			showChoice = OUTLINES;
+		if ((options&SHOW_NONE)!=0)
+			showChoice = NOTHING;
 		ip.snapshot();
 		ip.setProgressBar(null);
 		if (Analyzer.isRedirectImage()) {
@@ -276,8 +285,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		byte[] pixels = null;
 		if (ip instanceof ByteProcessor)
 			pixels = (byte[])ip.getPixels();
-		Rectangle r = ip.getRoi();
-		ImageProcessor mask = ip.getMask();
+		if (r==null) {
+			r = ip.getRoi();
+			mask = ip.getMask();
+		}
 		if (r.width<width || r.height<height || mask!=null)
 			eraseOutsideRoi(ip, r, mask);
 		minX=r.x; maxX=r.x+r.width; minY=r.y; maxY=r.y+r.height;
@@ -306,6 +317,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			for (int x=r.x; x<(r.x+r.width); x++) {
 				if (pixels!=null)
 					value = pixels[offset+x]&255;
+				else if (imageType==SHORT)
+					value = ip.getPixel(x, y);
 				else
 					value = ip.getPixelValue(x, y);
 				if (value>=level1 && value<=level2)
@@ -325,24 +338,47 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		imp.killRoi();
 		ip.resetRoi();
 		ip.reset();
-		if (processStack && IJ.getInstance()!=null) {
-			String aLine = slice+"\t"+particleCount;
-			if (tw==null) {
-				String title = "Counts of "+imp.getTitle();
-				String headings = "Slice\tCount";
-				tw = new TextWindow(title, headings, aLine, 180, 360);
-			} else
-				tw.append(aLine);
-		}
+		if (displaySummary && processStack && IJ.getInstance()!=null)
+			updateSliceSummary();
 		totalCount += particleCount;
 		if (!canceled)
 			showResults();
 		return true;
 	}
 	
+	void updateSliceSummary() {
+		float[] areas = rt.getColumn(ResultsTable.AREA);
+		String label = imp.getStack().getShortSliceLabel(slice);
+		label = label!=null&&!label.equals("")?label:""+slice;
+		String aLine;
+		if (areas!=null) {
+			double sum = 0.0;
+			int start = areas.length-particleCount;
+			if (start<0)
+				return;
+			for (int i=start; i<areas.length; i++)
+				sum += areas[i];
+			int places = Analyzer.getPrecision();
+			Calibration cal = imp.getCalibration();
+			String total = "\t"+IJ.d2s(sum,places);
+			String average = "\t"+IJ.d2s(sum/particleCount,places);
+			double imageArea = imp.getWidth()*cal.pixelWidth*imp.getHeight()*cal.pixelHeight;
+			String fraction = "\t"+IJ.d2s(sum*100.0/imageArea,1);
+			aLine = label+"\t"+particleCount+total+average+fraction;
+		} else
+			aLine = label+"\t"+particleCount;
+		if (tw==null) {
+			String title = "Summary of "+imp.getTitle();
+			String headings = "Slice\tCount\tTotal Area\tAverage Size\tArea Fraction";
+			tw = new TextWindow(title, headings, aLine, 180, 360);
+		} else
+			tw.append(aLine);
+	}
+
 	void eraseOutsideRoi(ImageProcessor ip, Rectangle r, ImageProcessor mask) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
+		ip.setRoi(r);
 		ip.setValue(fillColor);		
 		if (mask!=null) {
 			mask = mask.duplicate();
@@ -376,7 +412,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (t1==ip.NO_THRESHOLD) {
 			ImageStatistics stats = imp.getStatistics();
 			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
-				IJ.showMessage("Particle Analyzer",
+				IJ.error("Particle Analyzer",
 					"A thresholded image or an 8-bit binary image is\n"
 					+"required. Refer to Image->Adjust->Threshold\n"
 					+"or to Process->Binary->Threshold.");
@@ -560,6 +596,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			s += IJ.d2s(level1,2)+"-"+IJ.d2s(level2,2)+"\n";
 		s += "Count: " + totalCount+"\n";
 		float[] areas = rt.getColumn(ResultsTable.AREA);
+		String aLine;
 		if (areas!=null) {
 			double sum = 0.0;
 			int start = areas.length-totalCount;
@@ -570,12 +607,22 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			int places = Analyzer.getPrecision();
 			Calibration cal = imp.getCalibration();
 			String unit = cal.getUnit();
-			s += "Total Area: "+IJ.d2s(sum,places)+" "+unit+"^2\n";
+			String total = IJ.d2s(sum,places);
+			s += "Total Area: "+total+" "+unit+"^2\n";
+			String average = IJ.d2s(sum/totalCount,places);
 			s += "Average Size: "+IJ.d2s(sum/totalCount,places)+" "+unit+"^2\n";
-			double totalArea = imp.getWidth()*cal.pixelWidth*imp.getHeight()*cal.pixelHeight*imp.getStackSize();
-			s += "Area Fraction: "+IJ.d2s(sum*100.0/totalArea,1)+"%";
-		}
-		new TextWindow("Summary of "+imp.getTitle(), s, 300, 200);
+			double totalArea = imp.getWidth()*cal.pixelWidth*imp.getHeight()*cal.pixelHeight;
+			if (processStack) totalArea *= imp.getStackSize();
+			String fraction = IJ.d2s(sum*100.0/totalArea,1);
+			s += "Area Fraction: "+fraction+"%";
+			aLine = " "+"\t"+totalCount+"\t"+total+"\t"+average+"\t"+fraction;
+		} else
+			aLine = " "+"\t"+totalCount;			
+		if (tw!=null) {
+			tw.append("");
+			tw.append(aLine);
+		} else
+			new TextWindow("Summary of "+imp.getTitle(), s, 300, 200);
 	}
 
 	int getColumnID(String name) {

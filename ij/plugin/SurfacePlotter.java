@@ -43,7 +43,7 @@ public class SurfacePlotter implements PlugIn {
 		if (img==null)
 			{IJ.noImage(); return;}
 		if (img.getType()==ImagePlus.COLOR_RGB)
-			{IJ.showMessage("Surface Plotter", "Grayscale or pseudo-color image required"); return;}
+			{IJ.error("Surface Plotter", "Grayscale or pseudo-color image required"); return;}
 		invertedLut = img.getProcessor().isInvertedLut();
 		if (firstTime) {
 			if (invertedLut)
@@ -74,7 +74,8 @@ public class SurfacePlotter implements PlugIn {
 				IJ.showStatus("Drawing slice " + i + "..." + " (" + (100*(i-1)/stackSource.getSize()) + "% done)");
 				ip = stackSource.getProcessor(i);
 				plot = makeSurfacePlot(ip);
-				if (plots.getWindow().isClosed()) break;
+				ImageWindow win = plots.getWindow();
+				if (win!=null && win.isClosed()) break;
 				stack.setPixels(plot.getPixels(), i);
 				plots.setSlice(i);
 			}

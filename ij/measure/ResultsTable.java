@@ -20,12 +20,12 @@ public class ResultsTable {
 	public static final int AREA=0, MEAN=1, STD_DEV=2, MODE=3, MIN=4, MAX=5,
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
 		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
-		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19;
+		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19, INTEGRATED_DENSITY=20;
 
 	private String[] headings = new String[MAX_COLUMNS];
 	private String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
-		"Circ.", "Feret"};
+		"Circ.", "Feret", "IntDen"};
 	private int counter;
 	private float[][] columns = new float[MAX_COLUMNS][];
 	private String[] rowLabels;
@@ -108,6 +108,20 @@ public class ResultsTable {
 		rowLabels[counter-1] = label;
 		if (columnHeading!=null)
 			rowLabelHeading = columnHeading;
+	}
+	
+	/** Adds a label to the beginning of the specified row, 
+		or updates an existing lable, where 0<=row<counter.
+		After labels are added or modified, call <code>show()</code>
+		to update the window displaying the table. */
+	public void setLabel(String label, int row) {
+		if (row<0||row>=counter)
+			throw new IllegalArgumentException("row>=counter");
+		if (rowLabels==null)
+			rowLabels = new String[maxRows];
+		if (rowLabelHeading.equals(""))
+			rowLabelHeading = "Label";
+		rowLabels[row] = label;
 	}
 	
 	/** Set the row label column to null. */
@@ -196,7 +210,7 @@ public class ResultsTable {
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0<=row<counter. If the specified column does 
+		where 0&lt;=row&lt;counter. If the specified column does 
 		not exist, it is created. When adding columns, 
 		<code>show()</code> must be called to update the 
 		window that displays the table.*/
@@ -211,7 +225,7 @@ public class ResultsTable {
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0<=column<MAX_COLUMNS and 0<=row<counter. */
+		where 0&lt;=column&lt;MAX_COLUMNS and 0<=row<counter. */
 	public void setValue(int column, int row, double value) {
 		if ((column<0) || (column>=MAX_COLUMNS))
 			throw new IllegalArgumentException("Column out of range: "+column);
@@ -292,6 +306,24 @@ public class ResultsTable {
 		return s+"\t";
 	}
 		
+	/** Deletes the specified row. */
+	public synchronized void deleteRow(int row) {
+		if (counter==0 || row>counter-1) return;
+		if (counter==1)
+			{reset(); return;}
+		if (rowLabels!=null) {
+			for (int i=row; i<counter-1; i++)
+				rowLabels[i] = rowLabels[i+1];
+		}
+		for (int i=0; i<MAX_COLUMNS; i++) {
+			if (columns[i]!=null) {
+				for (int j=row; j<counter-1; j++)
+					columns[i][j] = columns[i][j+1];
+			}
+		}
+		counter--;
+	}
+	
 	/** Clears all the columns and sets the counter to zero. */
 	public synchronized void reset() {
 		counter = 0;
@@ -304,8 +336,9 @@ public class ResultsTable {
 				headings[i] = null;
 		}
 		lastColumn = -1;
+		rowLabels = null;
 	}
-	
+
 	/** Displays the contents of this ResultsTable in a window with the specified title. 
 		Opens a new window if there is no open text window with this title. */
 	public void show(String windowTitle) {

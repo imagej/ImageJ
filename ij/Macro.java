@@ -96,20 +96,32 @@ public class Macro {
 			if (index<0) return defaultValue;
 		} while (index!=0&&options.charAt(index-1)!=' ');
 		options = options.substring(index+key.length(), options.length());
-		if (options.startsWith("'")) {
+		if (options.charAt(0)=='\'') {
 			index = options.indexOf("'",1);
 			if (index<0)
 				return defaultValue;
 			else
 				return options.substring(1, index);
+		} else if (options.charAt(0)=='[') {
+			index = options.indexOf("]",1);
+			if (index<0)
+				return defaultValue;
+			else
+				return options.substring(1, index);
 		} else {
+			//if (options.indexOf('=')==-1) {
+			//	options = options.trim();
+			//	IJ.log("getValue: "+key+"  |"+options+"|");
+			//	if (options.length()>0)
+			//		return options;
+			//	else
+			//		return defaultValue;
+			//}
 			index = options.indexOf(" ");
 			if (index<0)
 				return defaultValue;
-			else {
-				//IJ.write("  "+options.substring(0, index));
+			else
 				return options.substring(0, index);
-			}
 		}
 	}
 	

@@ -326,9 +326,10 @@ public class Calibration {
  	
  	/** Returns true if this is a signed 16-bit image. */
  	public boolean isSigned16Bit() {
-		return bitDepth==16 && cTable!=null && cTable[0]==-32768;
+		return (bitDepth==16 && function>=STRAIGHT_LINE && function<=LOG2 && coefficients!=null
+			&& coefficients[0]==-32768.0 && coefficients[1]==1.0);
  	}
- 
+
     public String toString() {
     	return
     		"w=" + pixelWidth

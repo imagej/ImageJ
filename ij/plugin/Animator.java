@@ -26,7 +26,7 @@ public class Animator implements PlugIn {
 		if (nSlices<2)
 			{IJ.error("Stack required."); return;}
 		ImageWindow win = imp.getWindow();
-		if (!(win instanceof StackWindow))
+		if (win==null || !(win instanceof StackWindow))
 			return;
 		swin = (StackWindow)win;
 		ImageStack stack = imp.getStack();
@@ -43,7 +43,7 @@ public class Animator implements PlugIn {
 			return;
 		}
 
-		if (swin.running) // "stop", "next" and "previous" all stop animation
+		if (swin.running2) // "stop", "next" and "previous" all stop animation
 			stopAnimation();
 
 		if (arg.equals("stop")) {
@@ -67,23 +67,23 @@ public class Animator implements PlugIn {
 	}
 
 	void stopAnimation() {
-		swin.running = false;
+		swin.running2 = false;
 		IJ.wait(500+(int)(1000.0/animationSpeed));
 		imp.unlock(); 
 	}
 
 	void startAnimation() {
-		if (swin.running)
+		if (swin.running2)
 			{stopAnimation(); return;}
 		imp.unlock(); // so users can adjust brightness/contrast/threshold
-		swin.running = true;
+		swin.running2 = true;
 		long time, nextTime=System.currentTimeMillis();
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		int sliceIncrement = 1;
 		Calibration cal = imp.getCalibration();
 		if (cal.frameInterval!=0.0)
 			animationSpeed = 1.0/cal.frameInterval;
-		while (swin.running) {
+		while (swin.running2) {
 			time = System.currentTimeMillis();
 			if (time<nextTime)
 				IJ.wait((int)(nextTime-time));
@@ -109,7 +109,7 @@ public class Animator implements PlugIn {
 	}
 
 	void doOptions() {
-		boolean start = !swin.running;
+		boolean start = !swin.running2;
 		boolean saveOscillate = oscillate;
 		Calibration cal = imp.getCalibration();
 		if (cal.frameInterval!=0.0)
@@ -130,7 +130,7 @@ public class Animator implements PlugIn {
 		animationSpeed = speed;
 		if (animationSpeed!=0.0)
 			cal.frameInterval = 1.0/animationSpeed;
-		if (start && !swin.running)
+		if (start && !swin.running2)
 			startAnimation();
 	}
 	

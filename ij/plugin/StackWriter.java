@@ -20,7 +20,7 @@ public class StackWriter implements PlugIn {
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null || (imp!=null && imp.getStackSize()<2)) {
-			IJ.showMessage("Stack Writer", "This command requires a stack.");
+			IJ.error("Stack Writer", "This command requires a stack.");
 			return;
 		}
 		int stackSize = imp.getStackSize();
@@ -49,7 +49,7 @@ public class StackWriter implements PlugIn {
 		if (ndigits>8) ndigits = 8;
 		int maxImages = (int)Math.pow(10,ndigits);
 		if (stackSize>maxImages && !useLabels) {
-			IJ.showMessage("Stack Writer", "More than " + ndigits
+			IJ.error("Stack Writer", "More than " + ndigits
 				+" digits are required to generate \nunique file names for "+stackSize+" images.");
 			return;			
 		}

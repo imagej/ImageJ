@@ -95,11 +95,11 @@ public class ZProjector implements PlugIn {
 
 		//  Make sure input image is a stack.
 		if(imp.getStackSize()==1) {
-	    	IJ.showMessage("ZProjection", "Stack required"); 
+	    	IJ.error("ZProjection", "Stack required"); 
 	    	return; 
 		}
 	
-		//  Check for inverted LUT.
+		//  Check for inverting LUT.
 		if(imp.getProcessor().isInvertedLut()) {
 	    	if (!IJ.showMessageWithCancel("ZProjection", lutMessage))
 	    		return; 
@@ -121,7 +121,7 @@ public class ZProjector implements PlugIn {
 		method = gd.getNextChoiceIndex(); 
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
 			if(method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
-	    		IJ.showMessage("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
+	    		IJ.error("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
 	    		imp.unlock(); 
 	    		return; 
 			}

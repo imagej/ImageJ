@@ -201,11 +201,11 @@ public class FractalBoxCounter implements PlugInFilter {
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);
 		ymax = Math.max(ymax, a[1]);
-		PlotWindow pw = new PlotWindow("Plot", "log(box size)", "log(count)", px, py);
-		pw.setLimits(xmin,xmax,ymin,ymax);
-		pw.addPoints(sizes, boxCountSums, PlotWindow.CIRCLE);
-		pw.addLabel(0.8, 0.2, label);
-		pw.draw();				
+		Plot plot = new Plot("Plot", "log(box size)", "log(count)", px, py);
+		plot.setLimits(xmin,xmax,ymin,ymax);
+		plot.addPoints(sizes, boxCountSums, PlotWindow.CIRCLE);
+		plot.addLabel(0.8, 0.2, label);
+		plot.show();				
 		IJ.write("");
 		IJ.write(label);
 	}

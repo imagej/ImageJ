@@ -13,12 +13,12 @@ public class Options implements PlugIn {
  	public void run(String arg) {
 		if (arg.equals("misc"))
 			{miscOptions(); return;}
-		else if (arg.equals("width"))
+		else if (arg.equals("line"))
 			{lineWidth(); return;}
 		else if (arg.equals("quality"))
 			{jpegQuality(); return;}
-		else if (arg.equals("cross"))
-			{cross(); return;}
+		else if (arg.equals("point"))
+			{pointToolOptions(); return;}
 		else if (arg.equals("conv"))
 			{conversions(); return;}
 		else if (arg.equals("image"))
@@ -27,12 +27,14 @@ public class Options implements PlugIn {
 				
 	// Miscellaneous Options
 	void miscOptions() {
+		String key = IJ.isMacintosh()?"Command":"Control";
 		GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
 		gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
 		gd.addCheckbox("Antialiased Text", Prefs.antialiasedText);
 		gd.addCheckbox("Open/Save Using JFileChooser", Prefs.useJFileChooser);
+		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Debug Mode", IJ.debugMode);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -57,6 +59,7 @@ public class Options implements PlugIn {
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
 		Prefs.antialiasedText = gd.getNextBoolean();
 		Prefs.useJFileChooser = gd.getNextBoolean();
+		Prefs.requireControlKey = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 
 		if (!IJ.isJava2())
@@ -71,6 +74,8 @@ public class Options implements PlugIn {
 		if (imp!=null && imp.isProcessor()) {
 			ImageProcessor ip = imp.getProcessor();
 			ip.setLineWidth(Line.getWidth());
+            Roi roi = imp.getRoi();
+            if (roi!=null && roi.isLine()) imp.draw();
 		}
 	}
 
@@ -82,28 +87,39 @@ public class Options implements PlugIn {
 	}
 
 	// Cross hair mark width
-	void cross() {
-		int width = (int)IJ.getNumber("Mark Width:", Analyzer.markWidth);
-		if (width==IJ.CANCELED) return;
+	void pointToolOptions() {
+		GenericDialog gd = new GenericDialog("Point Tool");
+		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
+		gd.addCheckbox("Auto Measure Mode", Prefs.pointAutoMeasure);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		int width = (int)gd.getNextNumber();
+		if (width<0) width = 0;
 		Analyzer.markWidth = width;
+		Prefs.pointAutoMeasure = gd.getNextBoolean();
 		return;
 	}
 
 	// Conversion Options
 	void conversions() {
 		double[] weights = ColorProcessor.getWeightingFactors();
-		boolean unweighted = weights[0]==1d/3d && weights[1]==1d/3d && weights[2]==1d/3d;
+		boolean weighted = !(weights[0]==1d/3d && weights[1]==1d/3d && weights[2]==1d/3d);
+		//boolean weighted = !(Math.abs(weights[0]-1d/3d)<0.0001 && Math.abs(weights[1]-1d/3d)<0.0001 && Math.abs(weights[2]-1d/3d)<0.0001);
 		GenericDialog gd = new GenericDialog("Conversion Options");
 		gd.addCheckbox("Scale When Converting", ImageConverter.getDoScaling());
-		gd.addCheckbox("Unweighted RGB to Grayscale Conversion", unweighted);
+		String prompt = "Weighted RGB Conversions";
+		if (weighted)
+			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + ","+ IJ.d2s(weights[2]) + ")";
+		gd.addCheckbox(prompt, weighted);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		ImageConverter.setDoScaling(gd.getNextBoolean());
-		Prefs.unweightedColor = gd.getNextBoolean();
-		if (Prefs.unweightedColor)
+		Prefs.weightedColor = gd.getNextBoolean();
+		if (!Prefs.weightedColor)
 			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
-		else if (unweighted)
+		else if (Prefs.weightedColor && !weighted)
 			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
 		return;
 	}
@@ -113,12 +129,14 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Interpolate Images <100%", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
 		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
+		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;			
 		boolean interpolate = gd.getNextBoolean();
 		Prefs.open100Percent = gd.getNextBoolean();
 		boolean blackCanvas = gd.getNextBoolean();
+		boolean useInvertingLut = gd.getNextBoolean();
 		if (interpolate!=Prefs.interpolateScaledImages) {
 			Prefs.interpolateScaledImages = interpolate;
 			ImagePlus imp = WindowManager.getCurrentImage();
@@ -142,6 +160,32 @@ public class Options implements PlugIn {
 				}
 			}
 		}
+		if (useInvertingLut!=Prefs.useInvertingLut) {
+			invertLuts(useInvertingLut);
+			Prefs.useInvertingLut = useInvertingLut;
+		}
+	}
+	
+	void invertLuts(boolean useInvertingLut) {
+		int[] list = WindowManager.getIDList();
+		if (list==null) return;
+		for (int i=0; i<list.length; i++) {
+			ImagePlus imp = WindowManager.getImage(list[i]);
+			if (imp==null) return;
+			ImageProcessor ip = imp.getProcessor();
+			if (useInvertingLut != ip.isInvertedLut() && !ip.isColorLut()) {
+				ip.invertLut();
+				int nImages = imp.getStackSize();
+				if (nImages==1)
+					ip.invert();
+				else {
+					ImageStack stack2 = imp.getStack();
+					for (int slice=1; slice<=nImages; slice++)
+						stack2.getProcessor(slice).invert();
+					stack2.setColorModel(ip.getColorModel());
+				}
+			}
+		}
 	}
 
-}
+} // class Options

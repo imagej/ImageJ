@@ -1,0 +1,13 @@
+    macro "Sample Tool - C0a0L18f8L818f" {
+        print("User clicked on the image using the tool");
+    }
+
+   macro "Sample Tool Options" {
+       print("User double-clicked on the tool icon");
+   }
+
+    // requires ImageJ 1.33i or later
+    macro "Sample Tool Selected" {
+        print("User clicked on the tool icon");
+    }
+

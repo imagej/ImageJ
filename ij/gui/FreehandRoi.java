@@ -14,6 +14,7 @@ public class FreehandRoi extends PolygonRoi {
 			type = FREEROI;
 		else
 			type = FREELINE;
+		if (nPoints==2) nPoints--;
 	}
 
 	protected void grow(int ox, int oy) {
@@ -21,7 +22,7 @@ public class FreehandRoi extends PolygonRoi {
 		if (oy<0) oy = 0;
 		if (ox>xMax) ox = xMax;
 		if (oy>yMax) oy = yMax;
-		if  (ox!=xp[nPoints-1] || oy!=yp[nPoints-1]) {
+		if (ox!=xp[nPoints-1]+x || oy!=yp[nPoints-1]+y) {
 			xp[nPoints] = ox-x;
 			yp[nPoints] = oy-y;
 			nPoints++;

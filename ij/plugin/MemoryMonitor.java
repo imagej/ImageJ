@@ -82,14 +82,8 @@ public class MemoryMonitor implements PlugIn {
 		ip.drawString(s);
 	}
 
-	long memoryInUse() {
-		long freeMem = Runtime.getRuntime().freeMemory();
-		long totMem = Runtime.getRuntime().totalMemory();
-		return  totMem-freeMem;
-	}
-
 	void updatePixels() {
-		long used = memoryInUse();
+		long used = IJ.currentMemory();
 		if (frames%10==0) value=used;
 		if (used>0.9*max) max*=2;
 		mem[index++] = (float)used;

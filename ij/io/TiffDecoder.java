@@ -328,20 +328,22 @@ public class TiffDecoder {
 							else if (value==16) {
 								fi.fileType = FileInfo.GRAY16_UNSIGNED;
 								fi.intelByteOrder = littleEndian;
-							}
-							else if (value==32) {
+							} else if (value==32) {
 								fi.fileType = FileInfo.GRAY32_INT;
+								fi.intelByteOrder = littleEndian;
+							} else if (value==12) {
+								fi.fileType = FileInfo.GRAY12_UNSIGNED;
 								fi.intelByteOrder = littleEndian;
 							} else if (value==1)
 								fi.fileType = FileInfo.BITMAP;
 							else
-								throw new IOException("Unsupported BitsPerSample: " + value);
+								error("Unsupported BitsPerSample: " + value);
 						} else if (count==3) {
 							int saveLoc = in.getFilePointer();
 							in.seek(value);
 							int bitDepth = getShort();
 							if (!(bitDepth==8||bitDepth==16))
-								throw new IOException("ImageJ can only open 8 and 16 bit/channel RGB images");
+								error("ImageJ can only open 8 and 16 bit/channel RGB images");
 							if (bitDepth==16) {
 								fi.intelByteOrder = littleEndian;
 								fi.fileType = FileInfo.RGB48;
@@ -356,7 +358,7 @@ public class TiffDecoder {
 						String msg = "Unsupported SamplesPerPixel: " + value;
 						if (value==4)
 							msg += " \n \n" + "ImageJ cannot open CMYK and RGB+alpha TIFFs";
-						throw new IOException(msg);
+						error(msg);
 					}
 					break;
 				case X_RESOLUTION:
@@ -377,13 +379,13 @@ public class TiffDecoder {
 					break;
 				case PLANAR_CONFIGURATION:
 					if (value==2 && fi.fileType==FileInfo.RGB48)
-							throw new IOException("ImageJ cannot open planar 48-bit RGB images");
+							error("ImageJ cannot open planar 48-bit RGB images");
 					if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
 					break;
 				case COMPRESSION:
 					if (value!=1 && value!=7) // don't abort with Spot camera compressed (7) thumbnails
-						throw new IOException("ImageJ cannot open compressed TIFF files ("+value+")");
+						error("ImageJ cannot open compressed TIFF files ("+value+")");
 					break;
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)
@@ -429,6 +431,11 @@ public class TiffDecoder {
 	}
 
 
+	void error(String message) throws IOException {
+		if (in!=null) in.close();
+		throw new IOException(message);
+	}
+	
 	public void enableDebugging() {
 		debugMode = true;
 	}
@@ -455,8 +462,12 @@ public class TiffDecoder {
 				info.addElement(fi);
 			ifdOffset = getInt();
 			if (debugMode) dInfo += "  nextIFD=" + ifdOffset + "\n";
-			if (fi!=null && fi.nImages>1) // ignore extra IFDs in ImageJ and NIH Image stacks
-				ifdOffset = 0;
+			if (fi!=null) {
+				if (fi.nImages>1) // ignore extra IFDs in ImageJ and NIH Image stacks
+					ifdOffset = 0;
+				if (fi.fileType==FileInfo.RGB48) // can't open 48-bit RGB stacks
+					ifdOffset = 0;
+			}
 		}
 		if (info.size()==0) {
 			in.close();

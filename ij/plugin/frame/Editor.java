@@ -32,7 +32,7 @@ TextListener, ClipboardOwner, MacroConstants {
 	private Menu macrosMenu;
 	private int nMacros;
 	private Program pgm;
-	private boolean firstEvent = true;
+	private int eventCount;
 	private String shortcutsInUse;
 	private int inUseCount;
 	private int nShortcuts;
@@ -54,25 +54,26 @@ TextListener, ClipboardOwner, MacroConstants {
 		mb.add(m);
 		
 		m = new Menu("Edit");
-		String key = IJ.isMacintosh()?" = Cmd ":" = Ctrl+";
+		String key = IJ.isMacintosh()?"  Cmd ":"  Ctrl+";
 		MenuItem item = new MenuItem("Undo"+key+"Z");
 		item.setEnabled(false);
 		m.add(item);
 		m.addSeparator();
 		boolean shortcutsBroken = IJ.isWindows()
-			&& System.getProperty("java.version").indexOf("1.1.8")>=0;
+			&& (System.getProperty("java.version").indexOf("1.1.8")>=0
+			||System.getProperty("java.version").indexOf("1.5.")>=0);
 		if (shortcutsBroken)
-			item = new MenuItem("Cut");
+			item = new MenuItem("Cut  Ctrl+X");
 		else
 			item = new MenuItem("Cut",new MenuShortcut(KeyEvent.VK_X));
 		m.add(item);
 		if (shortcutsBroken)
-			item = new MenuItem("Copy");
+			item = new MenuItem("Copy  Ctrl+C");
 		else
 			item = new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C));
 		m.add(item);
 		if (shortcutsBroken)
-			item = new MenuItem("Paste");
+			item = new MenuItem("Paste  Ctrl+V");
 		else
 			item = new MenuItem("Paste",new MenuShortcut(KeyEvent.VK_V));
 		m.add(item);
@@ -80,6 +81,8 @@ TextListener, ClipboardOwner, MacroConstants {
 		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
 		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.add(new MenuItem("Go to Line...", new MenuShortcut(KeyEvent.VK_L)));
+		m.addSeparator();
+		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
 		m.add(new MenuItem("Zap Gremlins"));
 		m.addActionListener(this);
 		mb.add(m);
@@ -89,13 +92,13 @@ TextListener, ClipboardOwner, MacroConstants {
 		ta = new TextArea(16, 60);
 		ta.addTextListener(this);
 		//ta.setBackground(Color.white);
-		if (IJ.isMacOSX())
+		if (IJ.isMacOSX() && !IJ.isJava14())
 			ta.setFont(new Font("SansSerif",Font.PLAIN,12));
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
 		positionWindow();
-		display("Test.java", "");
+		//display("Test.java", "");
 		IJ.register(Editor.class);
 	}
 			
@@ -121,6 +124,7 @@ TextListener, ClipboardOwner, MacroConstants {
 	
 	public void create(String name, String text) {
 		ta.append(text);
+		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
 		if (name.endsWith(".txt")) {
@@ -137,7 +141,9 @@ TextListener, ClipboardOwner, MacroConstants {
 			if (text.indexOf("macro ")!=-1)
 				installMacros(text, false);				
 		}
-		show();
+		if (IJ.getInstance()!=null)
+			show();
+		WindowManager.setWindow(this);
 		changes = false;
 	}
 
@@ -150,7 +156,7 @@ TextListener, ClipboardOwner, MacroConstants {
 		installer = new MacroInstaller();
 		installer.setFileName(getTitle());
 		int nShortcuts = installer.install(text, macrosMenu);
-		if (installInPluginsMenu || nShortcuts>0)
+		if (text.indexOf("AutoRun")==-1 && (installInPluginsMenu || nShortcuts>0))
 			installer.install(null);
 	}
 		
@@ -200,7 +206,9 @@ TextListener, ClipboardOwner, MacroConstants {
 		ta.setCaretPosition(0);
 		setWindowTitle(title);
 		changes = false;
-		show();
+		if (IJ.getInstance()!=null)
+			show();
+		WindowManager.setWindow(this);
 	}
 
 	void save() {
@@ -373,7 +381,7 @@ TextListener, ClipboardOwner, MacroConstants {
 		}
 		int start = ta.getSelectionStart( );
 		int end = ta.getSelectionEnd( );
-		ta.replaceRange(s, start, end); 
+		ta.replaceRange(s, start, end);
 		if (IJ.isMacOSX())
 			ta.setCaretPosition(start+s.length());
 	}
@@ -393,14 +401,16 @@ TextListener, ClipboardOwner, MacroConstants {
 				installMacros(ta.getText(), true);
 		else if ("Print...".equals(what))
 			print();
-		else if("Paste".equals(what))
+		else if (what.startsWith("Paste"))
 			paste();
-		else if ("Copy".equals (what))
+		else if (what.startsWith("Copy"))
 			copy();
-		else if ("Cut".equals(what))
+		else if (what.startsWith("Cut"))
 		   cut();
 		else if ("Save As...".equals(what))
 			saveAs();
+		else if ("Select All".equals(what))
+			selectAll();
 		else if ("Find...".equals(what))
 			find(null);
 		else if ("Find Next".equals(what))
@@ -416,14 +426,16 @@ TextListener, ClipboardOwner, MacroConstants {
 	}
 
 	public void textValueChanged(TextEvent evt) {
-		if (firstEvent)  // first textValueChanged event may be bogus
-			firstEvent = false;
-		else
+		// first few textValueChanged events may be bogus
+		eventCount++;
+		if (eventCount>2 || !IJ.isMacOSX() && eventCount>1)
 			changes = true;
+		if (IJ.isMacOSX()) // screen update bug work around
+			ta.setCaretPosition(ta.getCaretPosition());
 	}
 
 	/** Override windowActivated in PlugInFrame to
-		prevent Mac meno bar from being installed. */
+		prevent Mac menu bar from being installed. */
 	public void windowActivated(WindowEvent e) {
 		WindowManager.setWindow(this);
 	}
@@ -561,6 +573,10 @@ TextListener, ClipboardOwner, MacroConstants {
 			IJ.showMessage("Zap Gremlins", "No invalid characters found");
 	}
 
+	void selectAll() {
+		ta.selectAll();
+	}
+
 	void convertToPlugin() {
 		if (!getTitle().endsWith(".txt")) return;
 		String text = ta.getText();
@@ -580,6 +596,8 @@ TextListener, ClipboardOwner, MacroConstants {
 			line = st.nextToken();
 			if (line!=null && line.length()>3) {
 				sb.append("\t\tIJ.");
+				if (line.startsWith("//run"))
+					line = line.substring(2);
 				sb.append(line);
 				sb.append('\n');
 			}
@@ -594,6 +612,10 @@ TextListener, ClipboardOwner, MacroConstants {
 		ed.setTitle(title);
 	}
 	
+	public void setFont(Font font) {
+		ta.setFont(font);
+	}
+
 	public static void setDefaultDirectory(String defaultDirectory) {
 		defaultDir = defaultDirectory;
 	}

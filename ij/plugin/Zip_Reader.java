@@ -7,8 +7,8 @@ import ij.*;
 import ij.io.*;
 import ij.process.*;
 
-/** This plugin opens a single TIFF image or stack contained in a ZIP archive. */
-
+/** This plugin opens a single TIFF image or stack contained in a ZIP archive
+	or a ZIPed collection of ".roi" files created by the ROI manager. */
 public class Zip_Reader extends ImagePlus implements PlugIn {
 
 	private static final String TEMP_NAME = "temp.tif";
@@ -31,7 +31,7 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 			imp = openZip(path);
 		}
 		catch (Exception e) {
-			IJ.showMessage("ZIP Reader", e.getMessage());
+			IJ.error("ZIP Reader", e.getMessage());
 			return;
 		}
 		if (imp!=null) {
@@ -62,8 +62,14 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 		if (entry==null)
 			return null;
 		String name = entry.getName();
-		if (!name.endsWith(".tif"))
-			throw new IOException("This ZIP archive does not appear to contain a TIFF file");
+		if (name.endsWith(".roi")) {
+			out.close(); in.close();
+			IJ.runMacro("roiManager(\"Open\", getArgument());", path);
+			return null;
+		} else if (!name.endsWith(".tif")) {
+			out.close(); in.close();
+			throw new IOException("This ZIP archive does not appear to contain a TIFF file or ROIs");
+		}
 		while ((len = in.read(buf)) > 0)
 			out.write(buf, 0, len);
 		out.close();

@@ -25,6 +25,29 @@ public class ColorStatistics extends ImageStatistics {
 			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip);
+		if ((mOptions&CENTER_OF_MASS)!=0)
+			getCenterOfMass(ip);
+	}
+
+	void getCenterOfMass(ImageProcessor ip) {
+		byte[] mask = ip.getMaskArray();
+		int i, mi;
+		double v, dv, count=0.0, xsum=0.0, ysum=0.0;
+		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
+			i = y*width + rx;
+			mi = my*rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null || mask[mi++]!=0) {
+					v = ip.getPixelValue(x, y);
+					count += v;
+					xsum += x*v;
+					ysum += y*v;
+				}
+				i++;
+			}
+		}
+		xCenterOfMass = (xsum/count+0.5)*pw;
+		yCenterOfMass = (ysum/count+0.5)*ph;
 	}
 
 }

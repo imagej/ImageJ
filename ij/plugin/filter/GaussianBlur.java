@@ -13,7 +13,6 @@ public class GaussianBlur implements PlugInFilter {
 	private ImagePlus imp;
 	private boolean canceled;
 	private int slice;
-	private ImageWindow win;
 	private boolean isLineRoi;
 	private boolean isAreaRoi;
 	private boolean displayKernel;
@@ -23,10 +22,9 @@ public class GaussianBlur implements PlugInFilter {
  		IJ.register(GaussianBlur.class);
 		this.imp = imp;
 		if (imp!=null) {
-			win = imp.getWindow();
-			win.running = true;
+			IJ.resetEscape();
 			Roi roi = imp.getRoi();
-			isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
+			isLineRoi= roi!=null && roi.isLine();
 			isAreaRoi = roi!=null && !isLineRoi;
 		}
 		if (imp!=null && !showDialog())
@@ -38,8 +36,6 @@ public class GaussianBlur implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		if (canceled)
 			return;
-		if (win.running!=true)
-			{canceled=true; IJ.beep(); return;}
 		slice++;
 		if (slice==1) {
 			if (imp.getType()==ImagePlus.GRAY32 && !isAreaRoi && imp.getStackSize()==1) {
@@ -53,9 +49,10 @@ public class GaussianBlur implements PlugInFilter {
 		if (isLineRoi)
 			ip.resetRoi();
 		blur(ip, radius);
+		if (canceled) Undo.undo();
 	}
 	
-    public void blur(ImageProcessor ip, double radius) {
+    public boolean blur(ImageProcessor ip, double radius) {
 		Rectangle rect = ip.getRoi();
 		ImageProcessor ip2 = ip;
 		boolean isRoi = rect.width!=ip.getWidth()||rect.height!=ip.getHeight();
@@ -90,7 +87,7 @@ public class GaussianBlur implements PlugInFilter {
 					ip2.reset(ip.getMask());
 				if (isRoi)
 					ip.insert(ip2, rect.x, rect.y);
-				return;
+				return !canceled;
 		}
 		ip2.setCalibrationTable(null);
         ip2 = ip2.convertToFloat();
@@ -113,12 +110,17 @@ public class GaussianBlur implements PlugInFilter {
         }
 		if (nonRectRoi)
 			ip.reset(ip.getMask());
+		return !canceled;
     }
 
 	void blurFloat(ImageProcessor ip, float[] kernel) {
-		new Convolver().convolve(ip, kernel, kernel.length, 1);
+		if (canceled) return;
+		Convolver c = new Convolver();
+		if (!c.convolve(ip, kernel, kernel.length, 1))
+			{canceled=true; return;}
 		ip.snapshot();
-		new Convolver().convolve(ip, kernel,1, kernel.length);
+		if (!c.convolve(ip, kernel,1, kernel.length))
+			{canceled=true; return;}
 	}
 	
     public void blurRGB(ImageProcessor ip, float[] kernel) {

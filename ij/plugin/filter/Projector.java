@@ -50,6 +50,7 @@ public class Projector implements PlugInFilter {
 	int[] sumBuffer;
 	boolean isRGB;
 	String label = "";
+	boolean done;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -66,8 +67,9 @@ public class Projector implements PlugInFilter {
 			return;
 		imp.startTiming();
 		isRGB = imp.getType()==ImagePlus.COLOR_RGB;
-		if (interpolate && sliceInterval!=1.0) {
+		if (interpolate && sliceInterval>1.0) {
 			imp = zScale(imp);
+			if (imp==null) return;
 			sliceInterval = 1.0;
 		}
 		if (isRGB)
@@ -88,7 +90,7 @@ public class Projector implements PlugInFilter {
 		gd.addChoice("Projection Method:", methodList, methodList[projectionMethod]);
 		gd.addChoice("Axis of Rotation:", axisList, axisList[axisOfRotation]);
 		//gd.addMessage("");
-		gd.addNumericField("Slice Spacing ("+cal.getUnits()+"):",cal.pixelDepth,1); 
+		gd.addNumericField("Slice Spacing ("+cal.getUnits()+"):",cal.pixelDepth,2); 
 
 		gd.addNumericField("Initial Angle (0-359 degrees):", initAngle, 0);
 		gd.addNumericField("Total Rotation (0-359 degrees):", totalAngle, 0);
@@ -98,7 +100,7 @@ public class Projector implements PlugInFilter {
 		gd.addNumericField("Opacity (0-100%):", opacity, 0);
 		gd.addNumericField("Surface Depth-Cueing (0-100%):", 100-depthCueSurf, 0);
 		gd.addNumericField("Interior Depth-Cueing (0-100%):", 100-depthCueInt, 0);
-		gd.addCheckbox("Interpolate When Slice Spacing > 1.0", interpolate);
+		gd.addCheckbox("Interpolate", interpolate);
 		//gd.addCheckbox("Debug Mode:", debugMode);
 
 		gd.showDialog();
@@ -130,18 +132,21 @@ public class Projector implements PlugInFilter {
         ImagePlus green = new ImagePlus("Green", splitter.green);
         ImagePlus blue = new ImagePlus("Blue", splitter.blue);
         Calibration cal = imp.getCalibration();
+        Roi roi = imp.getRoi();
+        if (roi!=null)
+        	{red.setRoi(roi); green.setRoi(roi); blue.setRoi(roi);}
         red.setCalibration(cal); green.setCalibration(cal); blue.setCalibration(cal);
         label = "Red: ";
         red = doProjections(red);
-        if (red==null) return;
+        if (red==null || done) return;
         red.hide();
         label = "Green: ";
         green = doProjections(green);
-        if (green==null) return;
+        if (green==null || done) return;
         green.hide();
         label = "Blue: ";
         blue = doProjections(blue);
-        if (blue==null) return;
+        if (blue==null || done) return;
         blue.hide();
         int w = red.getWidth(), h = red.getHeight(), d = red.getStackSize();
         RGBStackMerge merge = new RGBStackMerge();
@@ -221,7 +226,7 @@ public class Projector implements PlugInFilter {
 			if (images!=null)
 				for (int i=0; i<images.length; i++) images[i]=null;
 			stack2 = null;
-			IJ.showMessage("Projector - Out of Memory",
+			IJ.error("Projector - Out of Memory",
 				"To use less memory, use a rectanguar\n"
 				+"selection,  reduce \"Total Rotation\",\n"
 				+"and/or increase \"Angle Increment\"."
@@ -229,12 +234,12 @@ public class Projector implements PlugInFilter {
 			return null;
 		}
 		ImagePlus projections = new ImagePlus("Projections of "+imp.getShortTitle(), stack2);
+		projections.setCalibration(imp.getCalibration());
 		projections.show();
 		
-		ImageWindow win = imp.getWindow();
-		if (win!=null)
-			win.running = true;
+		IJ.resetEscape();
 		theta = initAngle;
+		IJ.resetEscape();
 		for (n=0; n<nProjections; n++) {
 			IJ.showStatus(n+"/"+nProjections);
 			IJ.showProgress((double)n/nProjections);
@@ -302,11 +307,13 @@ public class Projector implements PlugInFilter {
 			}
 
 			theta = (theta + angleInc)%360;
-			if (projections.getWindow()==null)   // is "Projections" window still open?
-				break;
+			if (projections.getWindow()==null && IJ.getInstance()!=null)   // is "Projections" window still open?
+				{done=true; break;}
+			if (IJ.escapePressed())
+				{done=true; break;}
 			projections.setSlice(n+1);
-   			if (win!=null && win.running!=true)
-				break;
+   			if (IJ.escapePressed())
+				{IJ.beep(); break;}
  		} //end for all projections
  		IJ.showProgress(1.0);
  
@@ -671,43 +678,51 @@ public class Projector implements PlugInFilter {
 		int depth1 = stack1.getSize();
 		ImagePlus imp2 = null;
 		String title = imp.getTitle();
-		int width = imp.getWidth();
-		int height = imp.getHeight();
+		ImageProcessor ip = imp.getProcessor();
+		ColorModel cm = ip.getColorModel();
+		int width1 = imp.getWidth();
+		int height1 = imp.getHeight();
+		Rectangle r = ip.getRoi();
+		int width2 = r.width;
+		int height2 = r.height;
 		int depth2 = (int)(stack1.getSize()*sliceInterval+0.5);
-		if (isRGB)
-			imp2 = NewImage.createRGBImage(title, width, height, depth2, NewImage.FILL_BLACK);
-		else
-			imp2 = NewImage.createByteImage(title, width, height, depth2, NewImage.FILL_BLACK);
+		imp2 = NewImage.createImage(title, width2, height2, depth2, isRGB?24:8, NewImage.FILL_BLACK);
+		if (imp2==null || depth2!=imp2.getStackSize()) return null;
 		ImageStack stack2 = imp2.getStack();
-		ImageProcessor xzPlane1 = imp.getProcessor().createProcessor(width, depth1);
+		ImageProcessor xzPlane1 = ip.createProcessor(width2, depth1);
 		xzPlane1.setInterpolate(true);
 		ImageProcessor xzPlane2;		
-		int[] line = new int[width];
-		for (int y=0; y<height; y++) {
+		int[] line = new int[width2];
+		for (int y=0; y<height2; y++) {
 			for (int z=0; z<depth1; z++) {
 				if (isRGB)
-					getRGBRow(stack1, y, z, width, line);
+					getRGBRow(stack1, r.x, r.y+y, z, width1, width2, line);
 				else
-					getByteRow(stack1, y, z, width, line);
-				xzPlane1.putRow(0, z, line, width);
+					getByteRow(stack1, r.x, r.y+y, z, width1, width2, line);
+				xzPlane1.putRow(0, z, line, width2);
 			}
-			xzPlane2 = xzPlane1.resize(width, depth2);
+			//if (y==r.y) new ImagePlus("xzPlane", xzPlane1).show();
+			xzPlane2 = xzPlane1.resize(width2, depth2);
 			for (int z=0; z<depth2; z++) {
-				xzPlane2.getRow(0, z, line, width);
+				xzPlane2.getRow(0, z, line, width2);
 				if (isRGB)
-					putRGBRow(stack2, y, z, width, line);
+					putRGBRow(stack2, y, z, width2, line);
 				else
-					putByteRow(stack2, y, z, width, line);
+					putByteRow(stack2, y, z, width2, line);
 			}
+			IJ.showProgress(y, height2-1);
 		}
 		//imp2.show();
+		//imp2.setCalibration(imp.getCalibration());
+		ImageProcessor ip2 = imp2.getProcessor();
+		ip2.setColorModel(cm);
 		return imp2;
 	}
 
-	public void getByteRow(ImageStack stack, int y, int z, int width, int[] line) {
+	public void getByteRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {
 		byte[] pixels = (byte[])stack.getPixels(z+1);
-		int j = y*width;
-		for (int i=0; i<width; i++)
+		int j = x + y*width1;
+		for (int i=0; i<width2; i++)
 			line[i] = pixels[j++]&255;
 	}
 
@@ -718,10 +733,10 @@ public class Projector implements PlugInFilter {
 			pixels[j++] = (byte)line[i];
 	}
 
-	public void getRGBRow(ImageStack stack, int y, int z, int width, int[] line) {
+	public void getRGBRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {
 		int[] pixels = (int[])stack.getPixels(z+1);
-		int j = y*width;
-		for (int i=0; i<width; i++)
+		int j = x + y*width1;
+		for (int i=0; i<width2; i++)
 			line[i] = pixels[j++];
 	}
 

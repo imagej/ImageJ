@@ -8,26 +8,29 @@ import java.io.*;
 
 /** Opens and runs a macro file. */
 public class Macro_Runner implements PlugIn {
-
+	
 	/** Opens and runs the specified macro file on the current thread. Displays a
 		file open dialog if <code>name</code> is an empty string. Loads the
 		macro from a JAR file in the plugins folder if <code>name</code> starts
 		with "JAR:". Otherwise, loads the specified macro from the plugins folder
 		or subfolder. */
 	public void run(String name) {
+		Thread thread = Thread.currentThread();
+		String threadName = thread.getName();
+		if (!threadName.endsWith("Macro$"))
+			thread.setName(threadName+"Macro$");
 		String path = null;
 		if (name.equals("")) {
 			OpenDialog od = new OpenDialog("Run Macro...", path);
 			String directory = od.getDirectory();
 			name = od.getFileName();
 			if (name!=null)
-				runMacro(new File(directory+name));
+				runMacroFile(directory+name, null);
 		} else if (name.startsWith("JAR:"))
 			runMacroFromJar(name);
 		else {
 			path = Menus.getPlugInsPath() + name;
-			File file = new File(path);
-			runMacro(file);
+			runMacroFile(path, null);
 		}
 	}
         
@@ -62,38 +65,46 @@ public class Macro_Runner implements PlugIn {
             IJ.showMessage("Macro Runner", msg);
         }
 		if (macro!=null)
-			runMacro(macro);
+			runMacro(macro, null);
     }
 
-	void runMacro(File file) {
+    /** Opens and runs the specified macro file on the current thread.*/
+	public String runMacroFile(String path, String arg) {
+		File file = new File(path);
 		int size = (int)file.length();
 		if (size<=0)
-			return;
+			return null;
 		try {
 			byte[] buffer = new byte[size];
 			FileInputStream in = new FileInputStream(file);
 			in.read(buffer, 0, size);
 			String macro = new String(buffer, 0, size, "ISO8859_1");
 			in.close();
-			runMacro(macro);
+			return runMacro(macro, arg);
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());
-			return;
+			return null;
 		}
 	}
 
-	void runMacro(String macro) {
+    /** Opens and runs the specified macro on the current thread. Macros can
+    	retrieve the optional string argument by calling the getArgument() macro function. 
+    	Returns the String value returned by the macro or null if the macro does not
+    	return a value. */
+	public String runMacro(String macro, String arg) {
 		try {
-			new Interpreter().run(macro);
+			Interpreter interp = new Interpreter();
+			return interp.run(macro, arg);
 		} catch(Throwable e) {
+			Interpreter.abort();
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) imp.unlock();
 			String msg = e.getMessage();
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals("Macro canceled"))
-				return;
+				return null;
 			CharArrayWriter caw = new CharArrayWriter();
 			PrintWriter pw = new PrintWriter(caw);
 			e.printStackTrace(pw);
@@ -104,6 +115,7 @@ public class Macro_Runner implements PlugIn {
 			if (!(s.indexOf("NullPointerException")>=0 && s.indexOf("ij.process")>=0))
 				new TextWindow("Exception", s, 350, 250);
 		}
+		return null;
 	}
 
 }

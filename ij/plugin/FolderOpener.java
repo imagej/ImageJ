@@ -7,6 +7,7 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.Calibration;
 
 /** Opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
@@ -31,11 +32,13 @@ public class FolderOpener implements PlugIn {
 		IJ.register(FolderOpener.class);
 		ij.util.StringSorter.sort(list);
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
-		int width=0,height=0,type=0;
+		int width=0,height=0,bitDepth=0;
 		ImageStack stack = null;
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
-		
+		Calibration cal = null;
+		boolean allSameCalibration = true;
+		IJ.resetEscape();		
 		try {
 			for (int i=0; i<list.length; i++) {
 				if (list[i].endsWith(".txt"))
@@ -44,7 +47,7 @@ public class FolderOpener implements PlugIn {
 				if (imp!=null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
-					type = imp.getType();
+					bitDepth = imp.getBitDepth();
 					fi = imp.getOriginalFileInfo();
 					if (!showDialog(imp, list))
 						return;
@@ -52,10 +55,33 @@ public class FolderOpener implements PlugIn {
 				}
 			}
 			if (width==0) {
-				IJ.showMessage("Import Sequence", "This folder does not appear to contain any TIFF,\n"
+				IJ.error("Import Sequence", "This folder does not appear to contain any TIFF,\n"
 				+ "JPEG, BMP, DICOM, GIF, FITS or PGM files.");
 				return;
 			}
+
+			if (filter!=null && (filter.equals("") || filter.equals("*")))
+				filter = null;
+			if (filter!=null) {
+				int filteredImages = 0;
+  				for (int i=0; i<list.length; i++) {
+ 					if (list[i].indexOf(filter)>=0)
+ 						filteredImages++;
+ 					else
+ 						list[i] = null;
+ 				}
+  				if (filteredImages==0) {
+  					IJ.error("None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
+  					return;
+  				}
+  				String[] list2 = new String[filteredImages];
+  				int j = 0;
+  				for (int i=0; i<list.length; i++) {
+ 					if (list[i]!=null)
+ 						list2[j++] = list[i];
+ 				}
+  				list = list2;
+  			}
 
 			if (n<1)
 				n = list.length;
@@ -63,28 +89,10 @@ public class FolderOpener implements PlugIn {
 				start = 1;
 			if (start+n-1>list.length)
 				n = list.length-start+1;
-			int filteredImages = n;
-			if (filter!=null && (filter.equals("") || filter.equals("*")))
-				filter = null;
-			if (filter!=null) {
-				filteredImages = 0;
-  				for (int i=start-1; i<start-1+n; i++) {
- 					if (list[i].indexOf(filter)>=0)
- 						filteredImages++;
- 				}
-  				if (filteredImages==0) {
-  					IJ.error("None of the "+n+" files contain\n the string '"+filter+"' in their name.");
-  					return;
-  				}
-  			}
-  			n = filteredImages;
-  			
 			int count = 0;
 			int counter = 0;
 			for (int i=start-1; i<list.length; i++) {
 				if (list[i].endsWith(".txt"))
-					continue;
-				if (filter!=null && (list[i].indexOf(filter)<0))
 					continue;
 				if ((counter++%increment)!=0)
 					continue;
@@ -92,7 +100,10 @@ public class FolderOpener implements PlugIn {
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
-					type = imp.getType();
+					bitDepth = imp.getBitDepth();
+					cal = imp.getCalibration();
+					if (convertToRGB) bitDepth = 24;
+					if (convertToGrayscale) bitDepth = 8;
 					ColorModel cm = imp.getProcessor().getColorModel();
 					if (scale<100.0)						
 						stack = new ImageStack((int)(width*scale/100.0), (int)(height*scale/100.0), cm);
@@ -103,24 +114,41 @@ public class FolderOpener implements PlugIn {
 				if (imp==null) {
 					if (!list[i].startsWith("."))
 						IJ.log(list[i] + ": unable to open");
-				} else if (imp.getWidth()!=width || imp.getHeight()!=height)
+					continue;
+				}
+				ImageProcessor ip = imp.getProcessor();
+				int bitDepth2 = imp.getBitDepth();
+				if (convertToRGB) {
+					ip = ip.convertToRGB();
+					bitDepth2 = 24;
+				} else if(convertToGrayscale) {
+					ip = ip.convertToByte(true);
+					bitDepth2 = 8;
+				}
+				if (bitDepth2!=bitDepth) {
+					if (bitDepth==8) {
+						ip = ip.convertToByte(true);
+						bitDepth2 = 8;
+					} else if (bitDepth==24) {
+						ip = ip.convertToRGB();
+						bitDepth2 = 24;
+					}
+				}
+				if (imp.getWidth()!=width || imp.getHeight()!=height)
 					IJ.log(list[i] + ": wrong dimensions");
-				else if (imp.getType()!=type)
-					IJ.log(list[i] + ": wrong type");
-				else {
+				else if (bitDepth2!=bitDepth) {
+					IJ.log(list[i] + ": wrong bit depth, "+bitDepth+" expected, "+bitDepth2+" found");
+				} else {
 					count = stack.getSize()+1;
 					IJ.showStatus(count+"/"+n);
-					IJ.showProgress((double)count/n);
-					ImageProcessor ip = imp.getProcessor();
-					if (convertToRGB)
-						ip = ip.convertToRGB();
-					else if(convertToGrayscale)
-						ip = ip.convertToByte(true);
+					IJ.showProgress(count, n);
 					if (scale<100.0)
 						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
 					String label = imp.getTitle();
+					if (imp.getCalibration().pixelWidth!=cal.pixelWidth)
+						allSameCalibration = false;
 					String info = (String)imp.getProperty("Info");
 					if (info!=null)
 						label += "\n" + info;
@@ -128,6 +156,8 @@ public class FolderOpener implements PlugIn {
 				}
 				if (count>=n)
 					break;
+				if (IJ.escapePressed())
+					{IJ.beep(); break;}
 				//System.gc();
 			}
 		} catch(OutOfMemoryError e) {
@@ -139,6 +169,8 @@ public class FolderOpener implements PlugIn {
 			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
 				imp2.getProcessor().setMinAndMax(min, max);
 			imp2.setFileInfo(fi); // saves FileInfo of the first image
+			if (allSameCalibration)
+				imp2.setCalibration(cal); // use calibration from first image
 			if (imp2.getStackSize()==1 && info1!=null)
 				imp2.setProperty("Info", info1);
 			imp2.show();
@@ -181,7 +213,6 @@ class FolderOpenerDialog extends GenericDialog {
 	ImagePlus imp;
 	int fileCount;
  	boolean eightBits, rgb;
- 	String saveFilter = "";
  	String[] list;
 
 	public FolderOpenerDialog(String title, ImagePlus imp, String[] list) {
@@ -248,14 +279,12 @@ class FolderOpenerDialog extends GenericDialog {
  		String filter = tf.getText();
 		// IJ.write(nImages+" "+startingImage);
  		if (!filter.equals("") && !filter.equals("*")) {
- 			int n2 = n;
- 			n = 0;
- 			for (int i=start-1; i<start-1+n2; i++)
- 				if (list[i].indexOf(filter)>=0) {
- 					n++;
- 					//IJ.write(n+" "+list[i]);
-				}
-   			saveFilter = filter;
+ 			int n2 = 0;
+ 			for (int i=0; i<list.length; i++) {
+ 				if (list[i].indexOf(filter)>=0)
+ 					n2++;
+			}
+			if (n2<n) n = n2;
  		}
 		switch (imp.getType()) {
 			case ImagePlus.GRAY16:

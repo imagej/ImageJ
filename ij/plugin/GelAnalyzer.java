@@ -135,11 +135,12 @@ public class GelAnalyzer implements PlugIn {
 
 
 	void selectFirstLane(Rectangle rect) {
-		if (rect.height<=rect.width)
+		if (rect.width/rect.height>=2 || IJ.altKeyDown())
 			isVertical = false;
 		else
 			isVertical = true;
 			
+		/*
 		if ( (isVertical && (rect.height/rect.width)<2 ) || (!isVertical && (rect.width/rect.height)<2 ) ) {
 			GenericDialog gd = new GenericDialog("Lane Orientation");
 			String[] orientations = {"Vertical","Horizontal"};
@@ -154,8 +155,9 @@ public class GelAnalyzer implements PlugIn {
 			else
 				isVertical=false;
 		}
+		*/
 
-		IJ.showStatus("Lane 1 selected");
+		IJ.showStatus("Lane 1 selected ("+(isVertical?"vertical":"horizontal")+" lanes)");
 		firstRect = rect;
 		nLanes = 1;
 		if(isVertical)
@@ -185,6 +187,15 @@ public class GelAnalyzer implements PlugIn {
 			x[nLanes] = rect.y;
 		if (outlineLanes)
 			outlineLane(x[nLanes]);
+		else {
+			if (isVertical && rect.y!=firstRect.y) {
+				rect.y = firstRect.y;
+				gel.setRoi(rect);
+			} else if (!isVertical && rect.x!=firstRect.x) {
+				rect.x = firstRect.x;
+				gel.setRoi(rect);
+			}
+		}
 	}
 
 	void outlineLane(int x) {

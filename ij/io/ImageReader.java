@@ -277,6 +277,25 @@ public class ImageReader {
 		return stack;
 	}
 
+	short[] read12bitImage(InputStream in) throws IOException {
+		int nBytes = (int)(nPixels*1.5);
+		if ((nPixels&1)==1) nBytes++; // add 1 if odd
+		byte[] buffer = new byte[nBytes];
+		short[] pixels = new short[nPixels];
+		int totalRead = 0;
+		int count, actuallyRead;		
+		DataInputStream dis = new DataInputStream(in);
+		dis.readFully(buffer);
+		int i = 0;
+		int j = 0;
+		for (int index=0; index<buffer.length/3; index++) {
+			pixels[j++] = (short)(((buffer[i]&0xff)*16) + ((buffer[i+1]>>4)&0xf));
+			pixels[j++] = (short)(((buffer[i+1]&0xf)*256) + (buffer[i+2]&0xff));
+			i += 3;
+		}
+		return pixels;
+	}
+
 	void skip(InputStream in) throws IOException {
 		if (skipCount>0) {
 			long bytesRead = 0;
@@ -348,6 +367,10 @@ public class ImageReader {
 					bytesPerPixel = 6;
 					skip(in);
 					return (Object)readRGB48(in);
+				case FileInfo.GRAY12_UNSIGNED:
+					skip(in);
+					short[] data = read12bitImage(in);
+					return (Object)data;
 				default:
 					return null;
 			}

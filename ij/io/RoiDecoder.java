@@ -28,26 +28,41 @@ import java.net.*;
 /** Decodes an ImageJ, NIH Image or Scion Image ROI. */
 public class RoiDecoder {
 
-	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9;
+	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9, point=10;
 	private byte[] data;
 	private String path;
+	private InputStream is;
+	private String name;
+	private int size;
 
+	/** Constructs an RoiDecoder using a file path. */
 	public RoiDecoder(String path) {
 		this.path = path;
 	}
 
+	/** Constructs an RoiDecoder using a byte array. */
+	public RoiDecoder(byte[] bytes, String name) {
+		is = new ByteArrayInputStream(bytes);	
+		this.name = name;
+		this.size = bytes.length;
+	}
+
 	/** Returns the ROI. */
 	public Roi getRoi() throws IOException {
-		File f = new File(path);
-		int size = (int)f.length();
-		if (size>500000)
-			throw new IOException("This is not an ImageJ ROI");
-		FileInputStream fis = new FileInputStream(path);
+		if (path!=null) {
+			File f = new File(path);
+			size = (int)f.length();
+			if (size>500000)
+				throw new IOException("This is not an ImageJ ROI");
+			name = f.getName();
+			is = new FileInputStream(path);
+		}
 		data = new byte[size];
 
 		int total = 0;
 		while (total<size)
-			total += fis.read(data, total, size-total);
+			total += is.read(data, total, size-total);
+		is.close();
 		if (getByte(0)!=73 || getByte(1)!=111)  //"Iout"
 			throw new IOException("This is not an ImageJ ROI");
 		int type = getByte(6);
@@ -79,7 +94,7 @@ public class RoiDecoder {
 			roi = new Line(x1, y1, x2, y2);		
 			//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
 			break;
-		case polygon: case freehand: case traced: case polyline: case freeline: case angle:
+		case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
 				//IJ.write("type: "+type);
 				//IJ.write("n: "+n);
 				//IJ.write("rect: "+left+","+top+" "+width+" "+height);
@@ -97,6 +112,10 @@ public class RoiDecoder {
 					x[i] = left+xtmp;
 					y[i] = top+ytmp;
 					//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
+				}
+				if (type==point) {
+					roi = new PointRoi(x, y, n);
+					break;
 				}
 				int roiType;
 				if (type==polygon)
@@ -118,7 +137,6 @@ public class RoiDecoder {
 		default:
 			throw new IOException("Unrecognized ROI type: "+type);
 		}
-		String name = f.getName();
 		if (name.endsWith(".roi"))
 			name = name.substring(0, name.length()-4);
 		roi.setName(name);

@@ -28,7 +28,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
  			{IJ.noImage(); return DONE;}
  		stackSize = imp.getStackSize();
 		if (imp.getProperty("FHT")!=null) {
-			IJ.showMessage("FFT Custom Filter", "Ordinary (non-FFT) image required");
+			IJ.error("FFT Custom Filter", "Ordinary (non-FFT) image required");
 			return DONE;
 		}
 		else
@@ -70,8 +70,8 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 		}
 		int bitDepth = fht.originalBitDepth>0?fht.originalBitDepth:imp.getBitDepth();
 		switch (bitDepth) {
-			case 8: ip2 = ip2.convertToByte(false); break;
-			case 16: ip2 = ip2.convertToShort(false); break;
+			case 8: ip2 = ip2.convertToByte(true); break;
+			case 16: ip2 = ip2.convertToShort(true); break;
 			case 24:
 				showStatus("Setting brightness");
 				fht.rgb.setBrightness((FloatProcessor)ip2);
@@ -144,7 +144,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 	ImageProcessor getFilter(int size) {
 		int[] wList = WindowManager.getIDList();
 		if (wList==null || wList.length<2) {
-			IJ.showMessage("FFT", "A filter (as an open image) is required.");
+			IJ.error("FFT", "A filter (as an open image) is required.");
 			return null;
 		}
 		String[] titles = new String[wList.length];
@@ -166,16 +166,16 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 			processStack = gd.getNextBoolean();
 		ImagePlus filterImp = WindowManager.getImage(wList[filterIndex]);
 		if (filterImp==imp) {
-			IJ.showMessage("FFT", "The filter cannot be the same as the image being filtered.");
+			IJ.error("FFT", "The filter cannot be the same as the image being filtered.");
 			return null;
 		}		
 		if (filterImp.getStackSize()>1) {
-			IJ.showMessage("FFT", "The filter cannot be a stack.");
+			IJ.error("FFT", "The filter cannot be a stack.");
 			return null;
 		}		
 		ImageProcessor filter = filterImp.getProcessor();		
 		if (filter.getWidth()>size || filter.getHeight()>size) {
-			IJ.showMessage("FFT", "Filter cannot be larger than "+size+"x"+size);
+			IJ.error("FFT", "Filter cannot be larger than "+size+"x"+size);
 			done = true;
 			return null;
 		}

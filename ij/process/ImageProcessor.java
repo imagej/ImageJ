@@ -69,6 +69,7 @@ public abstract class ImageProcessor extends Object {
 	protected Color drawingColor = Color.black;
 	protected int clipXMin, clipXMax, clipYMin, clipYMax; // clip rect used by drawTo, drawLine, drawDot and drawPixel 
 	protected int justification = LEFT_JUSTIFY;
+	protected int lutUpdateMode;
 
 		
 	protected void showProgress(double percentDone) {
@@ -155,9 +156,17 @@ public abstract class ImageProcessor extends Object {
 
 	/** Returns the LUT index that's the best match for this color. */
 	public int getBestIndex(Color c) {
+    	IndexColorModel icm;
 		if (cm==null)
 			makeDefaultColorModel();
-    	IndexColorModel icm = (IndexColorModel)cm;
+		if (minThreshold!=NO_THRESHOLD) {
+			double saveMin = getMinThreshold(); 
+			double saveMax = getMaxThreshold();
+			resetThreshold();
+			icm = (IndexColorModel)cm;
+			setThreshold(saveMin, saveMax, lutUpdateMode);
+		} else
+    		icm = (IndexColorModel)cm;
 		int mapSize = icm.getMapSize();
 		byte[] rLUT = new byte[mapSize];
     	byte[] gLUT = new byte[mapSize];
@@ -189,7 +198,8 @@ public abstract class ImageProcessor extends Object {
 	protected boolean inversionTested = false;
 	protected boolean invertedLut;
 	
-	/** Returns true if this image uses an inverted LUT. */
+	/** Returns true if this image uses an inverting LUT
+		that displays zero as white and 255 as black. */
 	public boolean isInvertedLut() {
 		if (inversionTested)
 			return invertedLut;
@@ -308,6 +318,7 @@ public abstract class ImageProcessor extends Object {
 			return;
 		this.minThreshold = minThreshold;
 		this.maxThreshold = maxThreshold;
+		lutUpdateMode = lutUpdate;
 
 		if (minThreshold==NO_THRESHOLD) {
 			resetThreshold();
@@ -993,7 +1004,7 @@ public abstract class ImageProcessor extends Object {
 		
 	/** Returns a string containing information about this ImageProcessor. */
 	public String toString() {
-		return ("width="+width+", height="+height+", min="+getMin()+", max="+getMax()+", v="+getPixel(0,0));
+		return ("ip[width="+width+", height="+height+", min="+getMin()+", max="+getMax()+"]");
 	}
 
 	/** Fills the image or ROI with the current fill/draw value. */
@@ -1013,6 +1024,11 @@ public abstract class ImageProcessor extends Object {
 		images. RGB and float processors do not do calibration. */
 	public void setCalibrationTable(float[] cTable) {
 		this.cTable = cTable;
+	}
+
+	/** Returns the calibration table or null. */
+	public float[] getCalibrationTable() {
+		return cTable;
 	}
 
 	/** Set the number of bins to be used for histograms of float images. */

@@ -57,23 +57,33 @@ public class Filler implements PlugInFilter, Measurements {
 	}
 
 	boolean isLineSelection() {
-		return roi!=null && roi.getType()>=Roi.LINE && roi.getType()<=Roi.FREELINE;
+		return roi!=null && roi.isLine();
+	}
+	
+	boolean isStraightLine() {
+		return roi!=null && roi.getType()==Roi.LINE;
 	}
 	
 	public void clear(ImageProcessor ip) {
 	 	ip.setColor(Toolbar.getBackgroundColor());
-		if (isLineSelection())
-			roi.drawPixels();
-		else
+		if (isLineSelection()) {
+			if (isStraightLine() && Line.getWidth()>1)
+				ip.fillPolygon(roi.getPolygon());
+			else
+				roi.drawPixels();
+		} else
 	 		ip.fill(); // fill with background color
 		ip.setColor(Toolbar.getForegroundColor());
 	}
 		
 	public void fill(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
-		if (isLineSelection())
-			roi.drawPixels();
-		else
+		if (isLineSelection()) {
+			if (isStraightLine() && Line.getWidth()>1)
+				ip.fillPolygon(roi.getPolygon());
+			else
+				roi.drawPixels();
+		} else
 	 		ip.fill(); // fill with foreground color
 	}
 	 			 		
@@ -86,14 +96,24 @@ public class Filler implements PlugInFilter, Measurements {
 
 	public void label(ImageProcessor ip) {
 		if (Analyzer.getCounter()==0) {
-			IJ.showMessage("Label", "Measurement counter is zero");
+			IJ.error("Label", "Measurement counter is zero");
 			return;
 		}
 		if (Analyzer.firstParticle<Analyzer.lastParticle)
 			drawParticleLabels(ip);
 		else {
 			ip.setColor(Toolbar.getForegroundColor());
-			roi.drawPixels();
+			ImageWindow win = imp.getWindow();
+			if (win!=null) {
+				double mag = win.getCanvas().getMagnification();
+				if (mag<1.0) {
+					int lineWidth = 1;
+					lineWidth = (int)(lineWidth/mag);
+					ip.setLineWidth(lineWidth);
+				}
+			}
+			roi.drawPixels(ip);
+			ip.setLineWidth(1);
 			drawLabel(ip);
 		}
 	}
@@ -106,7 +126,7 @@ public class Filler implements PlugInFilter, Measurements {
 		if (count==0 || first>=count || last>=count)
 			return;
 		if (!rt.columnExists(ResultsTable.X_CENTROID)) {
-			IJ.showMessage("Label", "\"Centroids\" required to label particles");
+			IJ.error("Label", "\"Centroids\" required to label particles");
 			return;
 		}
 		for (int i=first; i<=last; i++) {
@@ -129,12 +149,20 @@ public class Filler implements PlugInFilter, Measurements {
 			foreground = Color.black;
 			background = Color.white;
 		}
-		int size = r.width>50&&r.height>50?12:9;
+		int size = 9;
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			double mag = win.getCanvas().getMagnification();
+			if (mag<1.0)
+				size /= mag;
+		}
+		if (size==9 && r.width>50 && r.height>50)
+			size = 12;
 		ip.setFont(new Font("SansSerif", Font.PLAIN, size));
 		String label = "" + count;
 		int w =  ip.getStringWidth(label);
 		int x = r.x + r.width/2 - w/2;
-		int y = r.y + r.height/2 + 6;
+		int y = r.y + r.height/2 + Math.max(size/2,6);
 		FontMetrics metrics = ip.getFontMetrics();
 		int h =  metrics.getHeight();
 		ip.setColor(background);
@@ -170,7 +198,7 @@ public class Filler implements PlugInFilter, Measurements {
  		ip.fill();
  		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
  		ip.fill();
- 		ip.resetRoi();
+ 		ip.setRoi(r); // restore original ROI
  		if (sliceCount==stackSize) {
 			ip.setColor(Toolbar.getForegroundColor());
 			Roi roi = imp.getRoi();
@@ -181,7 +209,7 @@ public class Filler implements PlugInFilter, Measurements {
 	}
 
 	public void makeMask(ImageProcessor ip, Rectangle r) {
- 		mask = imp.getMask();
+ 		mask = ip.getMask();
  		if (mask==null) {
  			mask = new ByteProcessor(r.width, r.height);
  			mask.invert();

@@ -42,6 +42,8 @@ public class Menus {
 	public static final int NOT_INSTALLED = -4;
 	public static final int COMMAND_NOT_FOUND = -5;
 	
+	public static final int MAX_OPEN_RECENT_ITEMS = 15;
+	
 	private static MenuBar mbar;
 	private static CheckboxMenuItem gray8Item,gray16Item,gray32Item,
 			color256Item,colorRGBItem,RGBStackItem,HSBStackItem;
@@ -55,9 +57,10 @@ public class Menus {
 		aboutMenu, filtersMenu, toolsMenu, utilitiesMenu, macrosMenu, optionsMenu;
 	private static Hashtable pluginsTable;
 	
-	static Menu window;
+	static Menu window, openRecentMenu;
 	int nPlugins, nMacros;
 	private static Hashtable shortcuts = new Hashtable();
+	private static Hashtable macroShortcuts;
 	private static Vector pluginsPrefs = new Vector(); // commands saved in IJ_Prefs
 	static int windowMenuItems2; // non-image windows listed in Window menu + separator
 	private static String error;
@@ -84,6 +87,7 @@ public class Menus {
 		addItem(file, "New...", KeyEvent.VK_N, false);
 		addItem(file, "Open...", KeyEvent.VK_O, false);
 		addSubMenu(file, "Open Samples");
+		addOpenRecentSubMenu(file);
 		importMenu = addSubMenu(file, "Import");
 		file.addSeparator();
 		addItem(file, "Close", KeyEvent.VK_W, false);
@@ -138,6 +142,7 @@ public class Menus {
 		addPlugInItem(image, "Rename...", "ij.plugin.SimpleCommands(\"rename\")", 0, false);
 		addPlugInItem(image, "Scale...", "ij.plugin.filter.Scaler", KeyEvent.VK_E, false);
 		addSubMenu(image, "Rotate");
+		addSubMenu(image, "Zoom");
 		image.addSeparator();
 		addSubMenu(image, "Lookup Tables");
 		
@@ -208,6 +213,18 @@ public class Menus {
 		return error;
 	}
 	
+	void addOpenRecentSubMenu(Menu menu) {
+		openRecentMenu = new Menu("Open Recent");
+ 		for (int i=0; i<MAX_OPEN_RECENT_ITEMS; i++) {
+			String path = Prefs.getString("recent" + (i/10)%10 + i%10);
+			if (path==null) break;
+			MenuItem item = new MenuItem(path);
+			openRecentMenu.add(item);
+			item.addActionListener(ij);
+		}
+		menu.add(openRecentMenu);
+	}
+
 	void addItem(Menu menu, String label, int shortcut, boolean shift) {
 		if (menu==null)
 			return;
@@ -295,7 +312,7 @@ public class Menus {
 		if (keyCode>=KeyEvent.VK_F1 && keyCode<=KeyEvent.VK_F12) {
 			shortcuts.put(new Integer(keyCode),command);
 			keyCode = 0;
-		} else if (keyCode>200) {
+		} else if (keyCode>=265 && keyCode<=290) {
 			keyCode -= 200;
 			shift = true;
 		}
@@ -862,6 +879,13 @@ public class Menus {
 		return shortcuts;
 	}
         
+	/** Returns the hashtable that associates keyboard shortcuts with macros. The keys
+		in the hashtable are Integer keycodes, or keycode+200 for uppercase. */
+	public static Hashtable getMacroShortcuts() {
+		if (macroShortcuts==null) macroShortcuts = new Hashtable();
+		return macroShortcuts;
+	}
+        
 	/** Returns the hashtable that associates menu names with menus. */
 	//public static Hashtable getMenus() {
 	//	return menusTable;
@@ -946,6 +970,19 @@ public class Menus {
 		}
 	}
 	
+	/** Adds a file path to the beginning of the File/Open Recent submenu. */
+	public static synchronized void addOpenRecentItem(String path) {
+		if (ij==null) return;
+		int count = openRecentMenu.getItemCount();
+		if (count>0 && openRecentMenu.getItem(0).getLabel().equals(path))
+			return;
+		if (count==MAX_OPEN_RECENT_ITEMS)
+			openRecentMenu.remove(MAX_OPEN_RECENT_ITEMS-1);
+		MenuItem item = new MenuItem(path);
+		openRecentMenu.insert(item, 0);
+		item.addActionListener(ij);
+	}
+
 	public static PopupMenu getPopupMenu() {
 		return popup;
 	}
@@ -1000,7 +1037,7 @@ public class Menus {
 			shortcuts.put(new Integer(code),command);
 			int keyCode = code;
 			boolean shift = false;
-			if (keyCode>200) {
+			if (keyCode>=265 && keyCode<=290) {
 				keyCode -= 200;
 				shift = true;
 			}
@@ -1043,19 +1080,32 @@ public class Menus {
 	public static int convertShortcutToCode(String shortcut) {
 		int code = 0;
 		int len = shortcut.length();
-		if (len==2 && shortcut.startsWith("F")) {
+		if (len==2 && shortcut.charAt(0)=='F') {
 			code = KeyEvent.VK_F1+(int)shortcut.charAt(1)-49;
 			if (code>=KeyEvent.VK_F1 && code<=KeyEvent.VK_F9)
 				return code;
 			else
 				return 0;
 		}
-		if (len==3 && shortcut.startsWith("F")) {
+		if (len==3 && shortcut.charAt(0)=='F') {
 			code = KeyEvent.VK_F10+(int)shortcut.charAt(2)-48;
 			if (code>=KeyEvent.VK_F10 && code<=KeyEvent.VK_F12)
 				return code;
 			else
 				return 0;
+		}
+		if (len==2 && shortcut.charAt(0)=='N') { // numeric keypad
+			code = KeyEvent.VK_NUMPAD0+(int)shortcut.charAt(1)-48;
+			if (code>=KeyEvent.VK_NUMPAD0 && code<=KeyEvent.VK_NUMPAD9)
+				return code;
+			switch (shortcut.charAt(1)) {
+				case '/': return KeyEvent.VK_DIVIDE;
+				case '*': return KeyEvent.VK_MULTIPLY;
+				case '-': return KeyEvent.VK_SUBTRACT;
+				case '+': return KeyEvent.VK_ADD;
+				case '.': return KeyEvent.VK_DECIMAL;
+				default: return 0;
+			}
 		}
 		if (len!=1)
 			return 0;
@@ -1066,6 +1116,14 @@ public class Menus {
 			code = KeyEvent.VK_A+c-97;
 		else if (c>=48&&c<=57) //0-9
 			code = KeyEvent.VK_0+c-48;
+		else {
+			switch (c) {
+				case 43: code = KeyEvent.VK_PLUS; break;
+				case 45: code = KeyEvent.VK_MINUS; break;
+				case 92: code = KeyEvent.VK_BACK_SLASH; break;
+				default: return 0;
+			}
+		}
 		return code;
 	}
 	
@@ -1106,8 +1164,16 @@ public class Menus {
 		int index = 0;
 		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {
 			String key = "plugin" + (index/10)%10 + index%10;
-			prefs.put(key, (String)en.nextElement());
+			String value = (String)en.nextElement();
+			prefs.put(key, Prefs.escapeBackSlashes(value));
 			index++;
+		}
+		int n = openRecentMenu.getItemCount();
+		for (int i=0; i<n; i++) {
+			String key = ""+i;
+			if (key.length()==1) key = "0"+key;
+			key = "recent"+key;
+			prefs.put(key, Prefs.escapeBackSlashes(openRecentMenu.getItem(i).getLabel()));
 		}
 	}
 

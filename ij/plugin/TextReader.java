@@ -57,7 +57,7 @@ public class TextReader implements PlugIn {
             String msg = e.getMessage();
             if (msg==null || msg.equals(""))
                 msg = ""+e;
-            IJ.showMessage("TextReader", msg);
+            IJ.error("TextReader", msg);
             ip = null;
         }
         return ip;

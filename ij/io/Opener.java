@@ -27,6 +27,7 @@ public class Opener {
 		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d"};
 	private static String defaultDirectory = null;
 	private static int fileType;
+	private boolean error;
 
 
 	public Opener() {
@@ -41,8 +42,12 @@ public class Opener {
 		OpenDialog od = new OpenDialog("Open", "");
 		String directory = od.getDirectory();
 		String name = od.getFileName();
-		if (name!=null)
-			open(directory+name);
+		if (name!=null) {
+			String path = directory+name;
+			error = false;
+			open(path);
+			if (!error) Menus.addOpenRecentItem(path);
+		}
 	}
 
 	/** Displays a JFileChooser and then opens the tiff, dicom, 
@@ -120,8 +125,8 @@ public class Opener {
 						+"ZIP, LUT, ROI or text format, or it was not found.";
 					if (path!=null && path.length()<=64)
 						msg += " \n  \n   "+path;
-					IJ.showMessage("Opener", msg);
-					Macro.abort();
+					IJ.error("Opener", msg);
+					error = true;
 					break;
 			}
 		}
@@ -188,14 +193,12 @@ public class Opener {
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
 	pgm, gif or jpeg. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String path) {
-		Opener o = new Opener();
+		if (path==null || path.equals("")) return null;
 		ImagePlus img = null;
-		if (path==null || path.equals(""))
-			img = null;
-		else if (path.indexOf("://")>0)
-			img = o.openURL(path);
+		if (path.indexOf("://")>0)
+			img = openURL(path);
 		else
-			img = o.openImage(getDir(path), getName(path));
+			img = openImage(getDir(path), getName(path));
 		return img;
 	}
 
@@ -231,7 +234,7 @@ public class Opener {
     		String msg = e.getMessage();
     		if (msg==null || msg.equals(""))
     			msg = "" + e;	
-			IJ.showMessage("Open URL",msg + "\n \n" + url);
+			IJ.error("Open URL",msg + "\n \n" + url);
 			return null;
 	   	} 
 	}
@@ -379,6 +382,10 @@ public class Opener {
 			Object pixels;
 			int skip = fi.offset;
 			int imageSize = fi.width*fi.height*fi.getBytesPerPixel();
+			if (info[0].fileType==FileInfo.GRAY12_UNSIGNED) {
+				imageSize = (int)(fi.width*fi.height*1.5);
+				if ((imageSize&1)==1) imageSize++; // add 1 if odd
+			}
 			int loc = 0;
 			try {
 				InputStream is = createInputStream(fi);
@@ -392,11 +399,7 @@ public class Opener {
 						skip = info[i+1].offset-loc;
 						if (skip<0) throw new IOException("Images are not in order");
 					}
-					if (fi.fileType==fi.GRAY16_UNSIGNED)
-						stack.addUnsignedShortSlice(null, pixels);
-					else
-						stack.addSlice(null, pixels);
-					
+					stack.addSlice(null, pixels);					
 					IJ.showProgress((double)i/info.length);
 				}
 				is.close();
@@ -412,6 +415,12 @@ public class Opener {
 			IJ.showProgress(1.0);
 			if (stack.getSize()==0)
 				return null;
+			if (fi.fileType==FileInfo.GRAY16_UNSIGNED||fi.fileType==FileInfo.GRAY12_UNSIGNED
+			||fi.fileType==FileInfo.GRAY32_FLOAT) {
+				ImageProcessor ip = stack.getProcessor(1);
+				ip.resetMinAndMax();
+				stack.update(ip);
+			}
 			if (fi.whiteIsZero)
 				new StackProcessor(stack, stack.getProcessor(1)).invert();
 			ImagePlus imp = new ImagePlus(fi.fileName, stack);
@@ -432,7 +441,7 @@ public class Opener {
 		catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null||msg.equals("")) msg = ""+e;
-			IJ.showMessage("TiffDecoder", msg);
+			IJ.error("TiffDecoder", msg);
 			return null;
 		}
 		if (info==null)
@@ -449,10 +458,10 @@ public class Opener {
 			if (IJ.debugMode) td.enableDebugging();
 			info = td.getTiffInfo();
 		} catch (FileNotFoundException e) {
-			IJ.showMessage("TiffDecoder", "File not found: "+e.getMessage());
+			IJ.error("TiffDecoder", "File not found: "+e.getMessage());
 			return null;
 		} catch (Exception e) {
-			IJ.showMessage("TiffDecoder", ""+e);
+			IJ.error("TiffDecoder", ""+e);
 			return null;
 		}
 		return openTiff2(info);
@@ -491,7 +500,7 @@ public class Opener {
 		}
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.open(false);
-		IJ.showStatus("");
+		//IJ.showStatus("");
 		return imp;
 	}
 	
@@ -501,7 +510,7 @@ public class Opener {
 		RoiDecoder rd = new RoiDecoder(path);
 		try {roi = rd.getRoi();}
 		catch (IOException e) {
-			IJ.showMessage("RoiDecoder", e.getMessage());
+			IJ.error("RoiDecoder", e.getMessage());
 			return null;
 		}
 		return roi;
@@ -548,13 +557,14 @@ public class Opener {
 		if (b0==71 && b1==73 && b2==70 && b3==56)
 			return GIF;
 
+		name = name.toLowerCase(Locale.US);
+
 		 // DICOM ("DICM" at offset 128)
-		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77) {
+		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77 || name.endsWith(".dcm")) {
 			return DICOM;
 		}
 
  		// ACR/NEMA with first tag = 00002,00xx or 00008,00xx
-		name = name.toLowerCase(Locale.US);
  		if ((b0==8||b0==2) && b1==0 && b3==0 && !name.endsWith(".spe")) 	
   			 	return DICOM;
 
@@ -562,8 +572,8 @@ public class Opener {
 		if (b0==83 && b1==73 && b2==77 && b3==80)
 			return FITS;
 			
-		// PGM ("P2" or "P5")
-		if (b0==80&&(b1==50||b1==53)&&(b2==10||b2==13||b2==32||b2==9))
+		// PGM ("P2", "P5", "P3" or "P6")
+		if (b0==80&&(b1==50||b1==53||b1==51||b1==54)&&(b2==10||b2==13||b2==32||b2==9))
 			return PGM;
 
 		// Lookup table

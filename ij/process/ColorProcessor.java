@@ -17,8 +17,9 @@ public class ColorProcessor extends ImageProcessor {
 	private int min=0, max=255;
 	
 	// Weighting factors used by getPixelValue(), getHistogram() and convertToByte().
-	// For unweighted conversions, check "Unweighted Color Conversion" in <i>Edit/Options/Conversions</i>.
-	private static double rWeight=0.299, gWeight=0.587,	bWeight=0.114; 
+	// Enable "Weighted RGB Conversion" in <i>Edit/Options/Conversions</i>
+	// to use 0.299, 0.587 and 0.114.
+	private static double rWeight=1d/3d, gWeight=1d/3d,	bWeight=1d/3d; 
 
 	/**Creates a ColorProcessor from an AWT Image. */
 	public ColorProcessor(Image img) {
@@ -273,9 +274,10 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Converts the specified pixel to grayscale using
-		the formula g=r/3+g/3+b/3 and returns it as a float. 
-		Call setWeightingFactors() for weighted conversions. */
+	/** Converts the specified pixel to grayscale using the
+		formula g=(r+g+b)/3 and returns it as a float. 
+		Call setWeightingFactors() to specify different conversion
+		factors. */
 	public float getPixelValue(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			int c = pixels[y*width+x];
@@ -1002,8 +1004,8 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Sets the weighting factors used by getPixelValue(), getHistogram()
 		and convertToByte() to do color conversions. The default values are
-		0.299, 0.587 and 0.114. Check "Unweighted Color Conversions" in
-		<i>Edit/Options/Conversions</i> to use 1/3, 1/3 and 1/3. */
+		1/3, 1/3 and 1/3. Check "Weighted RGB Conversions" in
+		<i>Edit/Options/Conversions</i> to use 0.299, 0.587 and 0.114. */
 	public static void setWeightingFactors(double rFactor, double gFactor, double bFactor) {
 		rWeight = rFactor;
 		gWeight = gFactor;

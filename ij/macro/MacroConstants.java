@@ -13,11 +13,11 @@ public interface MacroConstants {
 
 	// Keywords
 	static final String[] keywords = {"macro", "var", "if", "else", "while", "do", "for", "function",
-		"return", "true", "false", "PI"};
+		"return", "true", "false", "PI", "NaN"};
 	public static final int MACRO=200, VAR=201, IF=202, ELSE=203, WHILE=204, DO=205, FOR=206, FUNCTION=207,
-		RETURN=208, TRUE=209, FALSE=210, PI=211;
+		RETURN=208, TRUE=209, FALSE=210, PI=211, NaN=212;;
 	static final int[] keywordIDs = {MACRO, VAR, IF, ELSE, WHILE, DO, FOR, FUNCTION,
-		RETURN, TRUE, FALSE, PI};
+		RETURN, TRUE, FALSE, PI, NaN};
 
 	// Functions that don't return a value
 	static final int RUN=300, INVERT=301, SELECT=302, WAIT=303, BEEP=304, RESET_MIN_MAX=305, RESET_THRESHOLD=306,
@@ -29,7 +29,9 @@ public interface MacroConstants {
 		SET_LOCATION=341, GET_CURSOR_LOC=342, GET_LINE=343, GET_VOXEL_SIZE=344, GET_HISTOGRAM=345, GET_STATISTICS=346,
 		GET_BOUNDING_RECT=347, GET_LUT=348, SET_LUT=349, GET_COORDINATES=350, SHOW_MESSAGE_WITH_CANCEL=351,
 		MAKE_SELECTION=352, SET_RESULT=353, UPDATE_RESULTS=354, SET_BATCH_MODE=355, PLOT=356, SET_JUSTIFICATION=357,
-		SET_Z_COORDINATE=358, GET_THRESHOLD=359, GET_PIXEL_SIZE=360, SETUP_UNDO=361;
+		SET_Z_COORDINATE=358, GET_THRESHOLD=359, GET_PIXEL_SIZE=360, SETUP_UNDO=361, SAVE_SETTINGS=362, RESTORE_SETTINGS=363,
+		SET_KEY_DOWN=364, OPEN=365, ROI_MANAGER=366, SET_FONT=367, GET_MIN_AND_MAX=368, CLOSE=369, SET_SLICE=370,
+		NEW_IMAGE=371, SAVE_AS=372, SAVE=373, SET_AUTO_THRESHOLD=374, RENAME=375;
 	static final String[] functions = {"run","invert","selectWindow","wait", "beep", "resetMinAndMax", "resetThreshold",
 		"print", "write", "doWand", "setMinAndMax", "setThreshold", "setTool",
 		"setForegroundColor", "setBackgroundColor", "makeLine", "makeOval", "makeRectangle",
@@ -39,7 +41,9 @@ public interface MacroConstants {
 		"setLocation", "getCursorLoc", "getLine", "getVoxelSize", "getHistogram", "getStatistics",
 		"getBoundingRect", "getLut", "setLut", "getSelectionCoordinates", "showMessageWithCancel",
 		"makeSelection", "setResult", "updateResults", "setBatchMode", "Plot", "setJustification",
-		"setZCoordinate", "getThreshold", "getPixelSize", "setupUndo"};
+		"setZCoordinate", "getThreshold", "getPixelSize", "setupUndo", "saveSettings", "restoreSettings",
+		"setKeyDown", "open", "roiManager", "setFont", "getMinAndMax", "close", "setSlice",
+		"newImage", "saveAs", "save", "setAutoThreshold", "rename"};
 	static final int[] functionIDs = {RUN, INVERT, SELECT, WAIT, BEEP, RESET_MIN_MAX, RESET_THRESHOLD,
 		PRINT, WRITE,	 DO_WAND, SET_MIN_MAX, SET_THRESHOLD, SET_TOOL,
 		SET_FOREGROUND, SET_BACKGROUND, MAKE_LINE, MAKE_OVAL, MAKE_RECTANGLE,
@@ -49,7 +53,9 @@ public interface MacroConstants {
 		SET_LOCATION, GET_CURSOR_LOC, GET_LINE, GET_VOXEL_SIZE, GET_HISTOGRAM, GET_STATISTICS,
 		GET_BOUNDING_RECT, GET_LUT, SET_LUT, GET_COORDINATES, SHOW_MESSAGE_WITH_CANCEL,
 		MAKE_SELECTION, SET_RESULT, UPDATE_RESULTS, SET_BATCH_MODE, PLOT, SET_JUSTIFICATION,
-		SET_Z_COORDINATE, GET_THRESHOLD, GET_PIXEL_SIZE, SETUP_UNDO};
+		SET_Z_COORDINATE, GET_THRESHOLD, GET_PIXEL_SIZE, SETUP_UNDO, SAVE_SETTINGS, RESTORE_SETTINGS,
+		SET_KEY_DOWN, OPEN, ROI_MANAGER, SET_FONT, GET_MIN_AND_MAX, CLOSE, SET_SLICE,
+		NEW_IMAGE, SAVE_AS, SAVE, SET_AUTO_THRESHOLD, RENAME};
 
 	// Numeric functions
 	static final int GET_PIXEL=1000, ABS=1001, COS=1002, EXP=1003, FLOOR=1004, LOG=1005, MAX_OF=1006, MIN_OF=1007, POW=1008,
@@ -57,27 +63,27 @@ public interface MacroConstants {
 		GET_RESULT=1017, GET_COUNT=1018, GET_NUMBER=1019, NIMAGES=1020, NSLICES=1021,
 		LENGTH_OF=1022, NRESULTS=1023, GET_ID=1024, BIT_DEPTH=1025, SELECTION_TYPE=1026, ATAN=1027, IS_OPEN=1028, 
 		IS_ACTIVE=1029, INDEX_OF=1030, LAST_INDEX_OF=1031, CHAR_CODE_AT=1032, GET_BOOLEAN=1033,
-		STARTS_WITH=1034, ENDS_WITH=1035;
+		STARTS_WITH=1034, ENDS_WITH=1035, ATAN2=1036, IS_NAN=1037, GET_ZOOM=1038, PARSE_INT=1039, PARSE_FLOAT=1040;
 	static final String[] numericFunctions = { "getPixel", "abs", "cos", "exp", "floor", "log", "maxOf", "minOf", "pow",
 		"round", "sin", "sqrt", "tan", "getTime", "getWidth", "getHeight", "random",
 		"getResult", "getResultsCount", "getNumber", "nImages", "nSlices", 
 		"lengthOf", "nResults", "getImageID", "bitDepth", "selectionType", "atan", "isOpen",
 		"isActive", "indexOf", "lastIndexOf", "charCodeAt", "getBoolean",
-		"startsWith", "endsWith"};
+		"startsWith", "endsWith", "atan2", "isNaN", "getZoom", "parseInt", "parseFloat"};
 	static final int[] numericFunctionIDs = {GET_PIXEL, ABS, COS, EXP, FLOOR, LOG, MAX_OF, MIN_OF, POW,
 		ROUND, SIN, SQRT, TAN, GET_TIME, GET_WIDTH, GET_HEIGHT, RANDOM,
 		GET_RESULT, GET_COUNT, GET_NUMBER, NIMAGES, NSLICES,
 		LENGTH_OF, NRESULTS, GET_ID, BIT_DEPTH, SELECTION_TYPE, ATAN, IS_OPEN, 
 		IS_ACTIVE, INDEX_OF, LAST_INDEX_OF, CHAR_CODE_AT, GET_BOOLEAN,
-		STARTS_WITH, ENDS_WITH};
+		STARTS_WITH, ENDS_WITH, ATAN2, IS_NAN, GET_ZOOM, PARSE_INT, PARSE_FLOAT};
 
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,
-		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008;
+		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008, GET_ARGUMENT=2009, GET_IMAGE_INFO=2010;
 	static final String[] stringFunctions = {"d2s", "toHex", "toBinary", "getTitle", "getString", "substring",
-		"fromCharCode", "getInfo", "getDirectory"};
+		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo"};
 	static final int[] stringFunctionIDs = {D2S, TO_HEX, TO_BINARY, GET_TITLE, GET_STRING, SUBSTRING,
-		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY};
+		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO};
 
 	// Array functions
 	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003;

@@ -218,8 +218,9 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (type==ImagePlus.COLOR_RGB)
 			return null;
 		ip = imp.getProcessor();
-		boolean minMaxChange = false;
-		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
+		boolean minMaxChange = false;		
+        boolean not8Bits = type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32;
+		if (not8Bits) {
 			if (ip.getMin()!=previousMin || ip.getMax()!=previousMax)
 				minMaxChange = true;
 	 		previousMin = ip.getMin();
@@ -227,6 +228,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 		int id = imp.getID();
 		if (minMaxChange || id!=previousImageID || type!=previousImageType) {
+            //IJ.log(minMaxChange +"  "+ (id!=previousImageID)+"  "+(type!=previousImageType));
+            if (not8Bits && minMaxChange) {
+                ip.resetMinAndMax();
+                imp.updateAndDraw();
+            }
 			invertedLut = imp.isInvertedLut();
 			minThreshold = ip.getMinThreshold();
 			maxThreshold = ip.getMaxThreshold();
@@ -263,6 +269,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			minThreshold = stats.min;
 			maxThreshold = threshold;
 		}
+		if (Recorder.record)
+			Recorder.record("setAutoThreshold");
 	}
 	
 	/** Scales threshold levels in the range 0-255 to the actual levels. */
@@ -448,19 +456,25 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 				gd.addCheckbox("Set Background Pixels to NaN", backgroundToNaN);
 				gd.showDialog();
 				if (gd.wasCanceled()) {
- 					IJ.run("Threshold");
+ 					runThresholdCommand();
 					return;
 				}
 				backgroundToNaN = gd.getNextBoolean();
 				if (backgroundToNaN)
  					IJ.run("NaN Background");
  				else
- 					IJ.run("Threshold");
+ 					runThresholdCommand();
  			} else
- 				IJ.run("Threshold");
+ 				runThresholdCommand();
  		} catch (Exception e)
  			{/* do nothing */}
  		//close();
+ 	}
+ 	
+ 	void runThresholdCommand() {
+		Recorder.recordInMacros = true;
+ 		IJ.run("Threshold");
+		Recorder.recordInMacros = false;
  	}
 	
 	static final int RESET=0, AUTO=1, HIST=2, APPLY=3, STATE_CHANGE=4, MIN_THRESHOLD=5, MAX_THRESHOLD=6, SET=7;
@@ -507,7 +521,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (ip==null) {
 			imp.unlock();
 			IJ.beep();
-			IJ.showStatus("RGB images cannot be thresolded");
+			IJ.showStatus("RGB images cannot be thresholded");
 			return;
 		}
 		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
@@ -584,11 +598,9 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			double min = ip.getMin();
 			double max = ip.getMax();
 			ip.setMinAndMax(min, max);
-			Rectangle r = ip.getRoi();
 			ip = new ByteProcessor(ip.createImage());
-			ip.setRoi(r);
 		}
-		ip.setMask(imp.getMask());
+		ip.setRoi(imp.getRoi());
 		ImageStatistics stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
 		int maxCount2 = 0;
 		histogram = stats.histogram;

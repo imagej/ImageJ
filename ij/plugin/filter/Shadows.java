@@ -20,9 +20,8 @@ public class Shadows implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 		if (arg.equals("demo")) {
-			ImageWindow win = imp.getWindow();
-			win.running = true;
-			while (win.running) {
+			IJ.resetEscape();
+			while (!IJ.escapePressed()) {
 				north(ip); imp.updateAndDraw(); ip.reset();
 				northeast(ip); imp.updateAndDraw(); ip.reset();
 				east(ip); imp.updateAndDraw(); ip.reset();

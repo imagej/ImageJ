@@ -54,7 +54,7 @@ public class BMP_Writer implements PlugIn {
             String msg = e.getMessage();
             if (msg==null || msg.equals(""))
                 msg = ""+e;
-            IJ.showMessage("BMP Writer", "An error occured writing the file.\n \n" + msg);
+            IJ.error("BMP Writer", "An error occured writing the file.\n \n" + msg);
         }
         IJ.showProgress(1);
         IJ.showStatus("");

@@ -21,7 +21,7 @@ public class TextWriter implements PlugIn {
 			TextPanel tp = ((TextWindow)frame).getTextPanel();
 			tp.saveAs("");
 		} else
-			IJ.showMessage("Save As Text", "This command requires a TextWindow such as\n"
+			IJ.error("Save As Text", "This command requires a TextWindow such as\n"
 				+ "the \"Log\" window or an \"Info for...\" window.");
 	}
 	

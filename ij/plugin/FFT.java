@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.ContrastEnhancer;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.util.*;
 
@@ -38,7 +39,7 @@ public class FFT implements  PlugIn, Measurements {
 		stackSize = imp.getStackSize();
 		boolean inverse;
 		if (fht==null && arg.equals("inverse")) {
-			IJ.showMessage("FFT", "Frequency domain image required");
+			IJ.error("FFT", "Frequency domain image required");
 			return;
 		}
 		if (fht!=null) {
@@ -77,7 +78,7 @@ public class FFT implements  PlugIn, Measurements {
 			case 24:
 				showStatus("Setting brightness");
 				if (fht.rgb==null || ip2==null) {
-					IJ.showMessage("FFT", "Unable to set brightness");
+					IJ.error("FFT", "Unable to set brightness");
 					return;
 				}
 				ColorProcessor rgb = (ColorProcessor)fht.rgb.duplicate();
@@ -92,7 +93,10 @@ public class FFT implements  PlugIn, Measurements {
 		String title = imp.getTitle();
 		if (title.startsWith("FFT of "))
 			title = title.substring(7, title.length());
-		new ImagePlus("Inverse FFT of "+title, ip2).show();
+		ImagePlus imp2 = new ImagePlus("Inverse FFT of "+title, ip2);
+		if (imp2.getWidth()==imp.getWidth())
+			imp2.setCalibration(imp.getCalibration());
+		imp2.show();
 	}
 
 	public void doForewardTransform(FHT fht, ImageProcessor ip) {
@@ -103,6 +107,7 @@ public class FFT implements  PlugIn, Measurements {
 		ImagePlus imp2 = new ImagePlus("FFT of "+imp.getTitle(), ps);
 		imp2.show();
 		imp2.setProperty("FHT", fht);
+		imp2.setCalibration(imp.getCalibration());
 	}
 	
 	FHT newFHT(ImageProcessor ip) {
@@ -196,7 +201,7 @@ public class FFT implements  PlugIn, Measurements {
 	public void redisplayPowerSpectrum() {
 		FHT fht = (FHT)imp.getProperty("FHT");
 		if (fht==null)
-			{IJ.showMessage("FFT", "Frequency domain image required"); return;}
+			{IJ.error("FFT", "Frequency domain image required"); return;}
 		ImageProcessor ps = fht.getPowerSpectrum();
 		imp.setProcessor(null, ps);
 	}

@@ -39,7 +39,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
 		super(NewImage.createByteImage("Histogram of "+imp.getShortTitle(), WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
-		showHistogram(imp, nBins, 0.0, 0.0);
+		showHistogram(imp, 256, 0.0, 0.0);
 	}
 
 	/** Displays a histogram using the specified title and number of bins. 
@@ -57,6 +57,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		showHistogram(imp, bins, histMin, histMax);
 	}
 
+	/** Displays a histogram using the specified title and ImageStatistics. */
+	public HistogramWindow(String title, ImagePlus imp, ImageStatistics stats) {
+		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		//IJ.log("HistogramWindow: "+stats.histMin+"  "+stats.histMax+"  "+stats.nBins);
+		showHistogram(imp, stats);
+	}
+
 	/** Draws the histogram using the specified title and number of bins.
 		Currently, the number of bins must be 256 expect for 32 bit images. */
 	public void showHistogram(ImagePlus imp, int bins) {
@@ -67,11 +74,18 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		Currently, the number of bins must be 256 and the histogram range range must be 
 		the same as the image range expect for 32 bit images. */
 	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
+		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
+		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins, histMin, histMax);
+		showHistogram(imp, stats);
+	}
+
+	/** Draws the histogram using the specified title and ImageStatistics. */
+	public void showHistogram(ImagePlus imp, ImageStatistics stats) {
 		setup();
+		this.stats = stats;
 		cal = imp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		imp.getMask();
-		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins, histMin, histMax);
 		histogram = stats.histogram;
 		if (limitToThreshold && histogram.length==256) {
 			ImageProcessor ip = imp.getProcessor();

@@ -84,8 +84,10 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void showErrors(String s) {
-		if (errors==null || !errors.isVisible())
+		if (errors==null || !errors.isVisible()) {
 			errors = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+			errors.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		}
 		if (errors!=null)
 			errors.display("Errors", s);
 		IJ.showStatus("done (errors)");
@@ -167,6 +169,7 @@ class PlugInExecuter implements Runnable {
 	public void run() {
 		try {
 			ImageJ ij = IJ.getInstance();
+			IJ.resetEscape();
 			if (ij!=null) ij.runUserPlugIn(plugin, plugin, "", true);
 		} catch(Throwable e) {
 			IJ.showStatus("");

@@ -1,5 +1,4 @@
 package ij.gui;
-
 import java.awt.*;
 import java.awt.image.*;
 import ij.*;
@@ -13,6 +12,7 @@ public class Line extends Roi {
 	public int x1, y1, x2, y2;	// the line
 	private int x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private static int lineWidth = 1;
+	private int xHandleOffset, yHandleOffset;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen coordinates. */
@@ -57,10 +57,31 @@ public class Line extends Roi {
 		width=Math.abs(x2R-x1R); height=Math.abs(y2R-y1R);
 		if (width<1) width=1; if (height<1) height=1;
 		updateClipRect();
-		if (imp!=null)
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (imp!=null) {
+			if (lineWidth==1)
+				imp.draw(clipX, clipY, clipWidth, clipHeight);
+			else
+				imp.draw();
+		}
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
+	}
+
+	void move(int xNew, int yNew) {
+		x += xNew - startX;
+		y += yNew - startY;
+		clipboard=null;
+		startX = xNew;
+		startY = yNew;
+		if (lineWidth==1) {
+			updateClipRect();
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
+		} else
+			imp.draw();
+		oldX = x;
+		oldY = y;
+		oldWidth = width;
+		oldHeight=height;
 	}
 
 	protected void moveHandle(int ox, int oy) {
@@ -72,6 +93,10 @@ public class Line extends Roi {
 				int dx = ox-(x1+(x2-x1)/2);
 				int dy = oy-(y1+(y2-y1)/2);
 				x1+=dx; y1+=dy; x2+=dx; y2+=dy;
+				if (lineWidth>1) {
+					x1+=xHandleOffset; y1+=yHandleOffset; 
+					x2+=xHandleOffset; y2+=yHandleOffset;
+				}
 				break;
 		}
 		if (constrain) {
@@ -88,7 +113,10 @@ public class Line extends Roi {
 		x2R=x2-x; y2R=y2-y;
 		width=Math.abs(x2R-x1R); height=Math.abs(y2R-y1R);
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (lineWidth==1)
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
+		else
+			imp.draw();
 		oldX = x;
 		oldY = y;
 		oldWidth = width;
@@ -98,7 +126,8 @@ public class Line extends Roi {
 	protected void mouseDownInHandle(int handle, int sx, int sy) {
 		state = MOVING_HANDLE;
 		activeHandle = handle;
-		ic.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+		if (lineWidth<=3)
+			ic.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	}
 
 	/** Draws this line in the image. */
@@ -111,7 +140,16 @@ public class Line extends Roi {
 		int sy2 = ic.screenY(y2);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
-		g.drawLine(sx1, sy1, sx2, sy2);
+		if (lineWidth==1)
+			g.drawLine(sx1, sy1, sx2, sy2);
+		else {
+			Polygon p = getPolygon();
+			g.drawLine(ic.screenX(p.xpoints[0]), ic.screenY(p.ypoints[0]), ic.screenX(p.xpoints[1]), ic.screenY(p.ypoints[1]));
+			g.drawLine(ic.screenX(p.xpoints[1]), ic.screenY(p.ypoints[1]), ic.screenX(p.xpoints[2]), ic.screenY(p.ypoints[2]));
+			g.drawLine(ic.screenX(p.xpoints[2]), ic.screenY(p.ypoints[2]), ic.screenX(p.xpoints[3]), ic.screenY(p.ypoints[3]));
+			g.drawLine(ic.screenX(p.xpoints[3]), ic.screenY(p.ypoints[3]), ic.screenX(p.xpoints[0]), ic.screenY(p.ypoints[0]));
+			//updateFullWindow = true;
+		}
 		if (state!=CONSTRUCTING) {
 			int size2 = HANDLE_SIZE/2;
 			if (ic!=null) mag = ic.getMagnification();
@@ -119,7 +157,8 @@ public class Line extends Roi {
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 	   }
-		IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle(x1,y1,x2,y2)) + ", length=" + IJ.d2s(getLength()));
+		if (state!=NORMAL)
+			IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle(x1,y1,x2,y2)) + ", length=" + IJ.d2s(getLength()));
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
 	}
@@ -138,27 +177,107 @@ public class Line extends Roi {
 
 	/** Returns the pixel values along this line. */
 	public double[] getPixels() {
-		ImageProcessor ip = imp.getProcessor();
-		double[] line = ip.getLine(x1, y1, x2, y2);
-		return line;
+			double[] profile;
+			ImageProcessor ip = imp.getProcessor();
+			if (lineWidth==1)
+				profile = ip.getLine(x1, y1, x2, y2);
+			else {
+				ImageProcessor ip2 = rotateWideLine(ip);
+				int width = ip2.getWidth();
+				int height = ip2.getHeight();
+				profile = new double[width];
+				double[] aLine;
+				ip2.setInterpolate(false);
+				for (int y=0; y<height; y++) {
+					aLine = ip2.getLine(0, y, width-1, y);
+					for (int i=0; i<width; i++)
+						profile[i] += aLine[i];
+				}
+				for (int i=0; i<width; i++)
+					profile[i] /= height;
+			}
+			return profile;
+	}
+	
+	ImageProcessor rotateWideLine(ImageProcessor ip) {
+		int width = (int)Math.round(getRawLength());
+		int height = lineWidth;
+		ImageProcessor ip2 = new FloatProcessor(width, height);
+		double angle = Math.atan2(y1-y2, x2-x1);
+		double srcWidth = (double)ip.getWidth();
+		double srcHeight = (double)ip.getHeight();
+		Polygon p = getPolygon();
+		int sxbase = p.xpoints[1];
+		int sybase = p.ypoints[1];
+		double r, theta, sx, sy;
+		for (int dy=0; dy<height; dy++) {
+			for (int dx=0; dx<width; dx++) {
+				r = Math.sqrt(dx*dx+dy*dy);
+				theta = Math.atan2(dy, dx);
+				theta += angle;
+				sx = sxbase + r*Math.cos(theta);
+				sy = sybase - r*Math.sin(theta);
+				//if (dy==height/2 && dx==width/2) IJ.log(""+angle+"  "+dx+"  "+dy+"  "+sx+"  "+sy+"  "+r +"  "+"  "+theta+"  "+sy);
+				if (sx>srcWidth || sy>srcHeight || sy<0.0 || sx<0.0 )
+					ip2.putPixelValue(dx, dy, 0.0);
+				else
+					ip2.putPixelValue(dx, dy, ip.getInterpolatedPixel(sx, sy));
+			}
+		}
+		if (IJ.altKeyDown()) {
+			ip2.resetMinAndMax();
+			new ImagePlus("Rotated Line", ip2).show();
+		}
+		return ip2;
 	}
 
-	public void drawPixels() {
-		ImageProcessor ip = imp.getProcessor();
-		ip.moveTo(x1, y1);
-		ip.lineTo(x2, y2);
-		if (Line.getWidth()>1)
+	public Polygon getPolygon() {
+		Polygon p = new Polygon();
+		if (lineWidth==1) {
+			p.addPoint(x1, y1);
+			p.addPoint(x2, y2);
+		} else {
+			double angle = Math.atan2(y1-y2, x2-x1);
+			double width2 = lineWidth/2.0;
+			double p1x = x1 + Math.cos(angle+Math.PI/2d)*width2;
+			double p1y = y1 - Math.sin(angle+Math.PI/2d)*width2;
+			double p2x = x1 + Math.cos(angle-Math.PI/2d)*width2;
+			double p2y = y1 - Math.sin(angle-Math.PI/2d)*width2;
+			double p3x = x2 + Math.cos(angle-Math.PI/2d)*width2;
+			double p3y = y2 - Math.sin(angle-Math.PI/2d)*width2;
+			double p4x = x2 + Math.cos(angle+Math.PI/2d)*width2;
+			double p4y = y2 - Math.sin(angle+Math.PI/2d)*width2;
+			p.addPoint((int)Math.round(p1x), (int)Math.round(p1y));
+			p.addPoint((int)Math.round(p2x), (int)Math.round(p2y));
+			p.addPoint((int)Math.round(p3x), (int)Math.round(p3y));
+			p.addPoint((int)Math.round(p4x), (int)Math.round(p4y));
+		}
+		return p;
+	}
+
+	public void drawPixels(ImageProcessor ip) {
+		ip.setLineWidth(1);
+		if (lineWidth==1) {
+			ip.moveTo(x1, y1);
+			ip.lineTo(x2, y2);
+		} else {
+			ip.drawPolygon(getPolygon());
 			updateFullWindow = true;
+		}
 	}
 
 	public boolean contains(int x, int y) {
-		return false;
+		if (lineWidth>1)
+			return getPolygon().contains(x, y);
+		else
+			return false;
 	}
 		
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
 		int size = HANDLE_SIZE+5;
+		if (lineWidth>1) size += (int)Math.log(lineWidth);
 		int halfSize = size/2;
 		int sx1 = ic.screenX(x+x1R) - halfSize;
 		int sy1 = ic.screenY(y+y1R) - halfSize;
@@ -178,7 +297,7 @@ public class Line extends Roi {
 
 	public static void setWidth(int w) {
 		if (w<1) w = 1;
-		if (w>99) w = 99;
+		if (w>200) w = 200;
 		lineWidth = w;
 	}
 	

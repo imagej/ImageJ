@@ -64,6 +64,7 @@ public class Memory implements PlugIn {
 	}
 
 	public long getMemorySetting() {
+		if (IJ.getApplet()!=null) return 0L;
 		long max = 0L;
 		if (IJ.isMacOSX()) {
 			max = getMemorySetting("ImageJ.app/Contents/Info.plist");

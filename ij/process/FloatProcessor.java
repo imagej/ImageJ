@@ -238,6 +238,7 @@ public class FloatProcessor extends ImageProcessor {
 			pixels[y*width + x] = (float)value;
 	}
 
+	/** Returns the value of the pixel at (x,y) as a float. */
 	public float getPixelValue(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width + x];
@@ -532,7 +533,7 @@ public class FloatProcessor extends ImageProcessor {
 						if (xs>=xlimit) xs = xlimit2;
 						if (ys<0.0) ys = 0.0;			
 						if (ys>=ylimit) ys = ylimit2;
-				  		pixels[index++] = (float)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
+				  		pixels[index++] = (float)getInterpolatedPixel(xs, ys, pixels2);
 				  	} else {
 				  		ixs = (int)(xs+0.5);
 				  		iys = (int)(ys+0.5);

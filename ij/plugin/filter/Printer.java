@@ -4,18 +4,22 @@ import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
 import java.util.Properties;
+import java.awt.print.*;
 
-/** This plugin implements the Page Setup and Print commands. */
-public class Printer implements PlugInFilter {
-    private ImagePlus imp;
-    private static double scaling = 100.0;
-    private static boolean drawBorder;
-    private static boolean center = true;
-    private static boolean label;
-    private static boolean printSelection;
-	private static Properties printPrefs = new Properties();
+/** This plugin implements the File/Page Setup and File/Print commands. */
+public class Printer implements PlugInFilter, Printable {
+	private ImagePlus imp;
+	private static double scaling = 100.0;
+	private static boolean drawBorder;
+	private static boolean center = true;
+	private static boolean label;
+	private static boolean printSelection;
+	private static boolean rotate;
+	private static int fontSize = 12;
 
 	public int setup(String arg, ImagePlus imp) {
+		if (!IJ.isJava2())
+			{IJ.error("Print", "Printing requires Java 1.2 or later"); return DONE;}
 		if (arg.equals("setup"))
 			{pageSetup(); return DONE;}
 		this.imp = imp;
@@ -24,16 +28,18 @@ public class Printer implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
+		//pageSetup();
 		print(imp);
 	}
 	
 	void pageSetup() {
 		GenericDialog gd = new GenericDialog("Page Setup");
-		gd.addNumericField("Scaling (5-500%):", scaling, 0);
+		gd.addNumericField("Scale:", scaling, 0, 3, "%");
 		gd.addCheckbox("Draw Border", drawBorder);
 		gd.addCheckbox("Center on Page", center);
 		gd.addCheckbox("Print Title", label);
 		gd.addCheckbox("Selection Only", printSelection);
+		gd.addCheckbox("Rotate 90"+IJ.degreeSymbol, rotate);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -43,77 +49,71 @@ public class Printer implements PlugInFilter {
 		center = gd.getNextBoolean();
 		label = gd.getNextBoolean();
 		printSelection = gd.getNextBoolean();
+		rotate = gd.getNextBoolean();
 	}
 
 	void print(ImagePlus imp) {
-		ImageWindow win = imp.getWindow();
-		if (win==null)
-			return;
-		ImageCanvas ic = win.getCanvas();
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		PrintJob job = toolkit.getPrintJob(win, imp.getTitle(), printPrefs);
-		if (job==null)
-			return;
-		imp.startTiming();
-		Graphics g = job.getGraphics();
-		if (g==null)
-			return;
-		Dimension pageSize = job.getPageDimension();
-		if (IJ.debugMode) IJ.log("pageSize: "+pageSize);
-		double scale = scaling/100.0;
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		Roi roi = imp.getRoi();
-		boolean crop = false;
-		if (printSelection && roi!=null && roi.isArea()) {
-			Rectangle r = roi.getBounds();
-			width = r.width;
-			height = r.height;
-			crop = true;
-		}
-		int printWidth = (int)(width*scale);
-		int printHeight = (int)(height*scale);
-		int margin = 20;
-		int labelHeight = 0;
-		int maxWidth = pageSize.width-margin*2;
-		int maxHeight = pageSize.height-(margin+labelHeight)*2;
-		g.setColor(Color.black);
-		if (label) {
-			labelHeight = 15;
-			g.setFont(new Font("SanSerif", Font.PLAIN, 12));
-			g.drawString(imp.getTitle(), margin+5, margin+labelHeight-3);
-		}
-		ImageProcessor ip = imp.getProcessor();
-		if (crop)
-			ip = ip.crop();
-		if (width>maxWidth || height>maxHeight) {
-			// scale to fit page
-			double hscale = (double)maxWidth/width;
-			double vscale = (double)maxHeight/height;
-			if (hscale<=vscale)
-				scale = hscale;
-			else
-				scale = vscale;
-			printWidth = (int)(width*scale);
-			printHeight = (int)(height*scale);
-			if (System.getProperty("os.name").startsWith("Windows") && System.getProperty("java.version").startsWith("1.3.1")) {
-				// workaround for Windows/Java 1.3.1 printing bug
-				ip.setInterpolate(true);
-				ip = ip.resize(printWidth, printHeight);
+		PrinterJob pj = PrinterJob.getPrinterJob();
+		pj.setPrintable(this);
+		//pj.pageDialog(pj.defaultPage());
+		if (pj.printDialog()) {
+			imp.startTiming();
+			try {pj.print(); }
+			catch (PrinterException e) {
+				IJ.log(""+e);
 			}
 		}
+	}
+	
+	public int print(Graphics g, PageFormat pf, int pageIndex) {
+		if (pageIndex != 0) return NO_SUCH_PAGE;
+		ImageProcessor ip = imp.getProcessor();
+		Roi roi = imp.getRoi();
+		if (printSelection && roi!=null && roi.isArea() )
+			ip = ip.crop();
+		if (rotate)
+			ip = ip.rotateLeft();
+		//new ImagePlus("ip", ip.duplicate()).show();
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		int margin = 0;
+		if (drawBorder) margin = 1;
+		double scale = scaling/100.0;
+		int dstWidth = (int)(width*scale);
+		int dstHeight = (int)(height*scale);
+		int pageX = (int)pf.getImageableX();
+		int pageY = (int)pf.getImageableY();
+		int dstX = pageX+margin;
+		int dstY = pageY+margin;
 		Image img = ip.createImage();
-		if (center && width<maxWidth && height<maxHeight)
-			g.translate((pageSize.width-width)/2, labelHeight+(pageSize.height-height)/2);
-		else
-			g.translate(margin, margin+labelHeight);
+		double pageWidth = pf.getImageableWidth()-2*margin;
+		double pageHeight = pf.getImageableHeight()-2*margin;		if (label && pageWidth-dstWidth<fontSize+5) {
+			dstY += fontSize+5;
+			pageHeight -= fontSize+5;
+		}	
+		if (dstWidth>pageWidth || dstHeight>pageHeight) {
+			// scale to fit page
+			double hscale = pageWidth/dstWidth;
+			double vscale = pageHeight/dstHeight;
+			double scale2 = hscale<=vscale?hscale:vscale;
+			dstWidth = (int)(dstWidth*scale2);
+			dstHeight = (int)(dstHeight*scale2);
+		} else if (center) {
+			dstX += (pageWidth-dstWidth)/2;
+			dstY += (pageHeight-dstHeight)/2;
+		}
+		g.drawImage(img, 
+			dstX, dstY, dstX+dstWidth, dstY+dstHeight,
+			0, 0, width, height, 
+			null);
 		if (drawBorder)
-			g.drawRect(-1, -1, (int)(printWidth)+1, (int)(printHeight)+1);
-		//g.setClip(0, 0, pageSize.width, pageSize.height);
-		//IJ.log(width+" "+height+" "+printWidth+" "+printHeight+" "+pageSize.width+" "+pageSize.height);
-		g.drawImage(img, 0, 0, printWidth, printHeight, null);
-		g.dispose();
-		job.end();
+			g.drawRect(dstX-1, dstY-1, dstWidth+1, dstHeight+1);
+		if (label) {
+			g.setFont(new Font("SanSerif", Font.PLAIN, fontSize));
+			g.setColor(Color.black);
+			g.drawString(imp.getTitle(), pageX+5, pageY+fontSize);
+		}
+		return PAGE_EXISTS;
 	}
 
 }

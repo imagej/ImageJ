@@ -21,6 +21,7 @@ public class ImageStack {
 	private double min=Double.MAX_VALUE;
 	private double max;
 	private ImageProcessor ip;
+	private float[] cTable;
 	
 	/** Creates a new, empty image stack. */
 	public ImageStack(int width, int height) {
@@ -127,11 +128,15 @@ public class ImageStack {
 		return(this.roi);
 	}
 	
-	/** Updates this stack so its attributes, such as min and max
-		displayed value, are the same as 'ip'. */
+	/** Updates this stack so its attributes, such as min, max,
+		calibration table and color model, are the same as 'ip'. */
 	public void update(ImageProcessor ip) {
-		min = ip.getMin();
-		max = ip.getMax();
+		if (ip!=null) {
+			min = ip.getMin();
+			max = ip.getMax();
+			cTable = ip.getCalibrationTable();
+			cm = ip.getColorModel();
+		}
 	}
 	
 	/** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
@@ -213,6 +218,8 @@ public class ImageStack {
 		ip.setPixels(stack[n-1]);
 		if (min!=Double.MAX_VALUE && ip!=null && !(ip instanceof ColorProcessor))
 			ip.setMinAndMax(min, max);
+		if (cTable!=null)
+			ip.setCalibrationTable(cTable);
 		return ip;
 	}
 	

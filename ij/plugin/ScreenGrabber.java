@@ -7,7 +7,7 @@ public class ScreenGrabber implements PlugIn {
     
     public void run(String arg) {
         if (!IJ.isJava2()) {
-            IJ.showMessage("Screen Grabber", "Java 1.3 or later required");
+            IJ.error("Screen Grabber", "Java 1.3 or later required");
             return;
         }
         try {

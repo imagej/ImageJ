@@ -77,11 +77,17 @@ public class MultiLineLabel extends Canvas {
     public void paint(Graphics g) {
         int x, y;
         Dimension d = this.getSize();
+		if (ij.IJ.isJava2()) setAntialiasedText(g);
         y = line_ascent + (d.height - num_lines * line_height)/2;
         for(int i = 0; i < num_lines; i++, y += line_height) {
             x = margin_width;
             g.drawString(lines[i], x, y);
         }
     }
+
+	void setAntialiasedText(Graphics g) {
+			Graphics2D g2d = (Graphics2D)g;
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	}
 
 }

@@ -10,8 +10,9 @@ public class Binary implements PlugInFilter {
 	String arg;
 	ImagePlus imp;
 	static int iterations = 1;
+	static int count = 1;
 	static boolean blackBackground = Prefs.blackBackground;
-	int foreground;
+	int foreground, background;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -37,6 +38,10 @@ public class Binary implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
+		foreground = blackBackground?255:0;
+		if (ip.isInvertedLut())
+			foreground = 255 - foreground;
+        background = 255 - foreground;
 		if (arg.equals("erode")) erode(ip);
 		else if (arg.equals("dilate")) dilate(ip);
 		else if (arg.equals("open")) open(ip);
@@ -47,41 +52,28 @@ public class Binary implements PlugInFilter {
 
 		
 	void erode(ImageProcessor ip) {
-		boolean edgePixels = hasEdgePixels(ip);
-		//IJ.log("erode: "+edgePixels);
-		ImageProcessor ip2 = expand(ip, edgePixels);
 		for (int i=0; i<iterations; i++)
-			if (blackBackground) ip2.dilate(); else ip2.erode();
-		ip = shrink(ip, ip2, edgePixels);
+			((ByteProcessor)ip).erode(count, background);
 	}
 	
 	void dilate(ImageProcessor ip) {
-		boolean edgePixels = hasEdgePixels(ip);
-		ImageProcessor ip2 = expand(ip, edgePixels);
 		for (int i=0; i<iterations; i++)
-			if (blackBackground) ip2.erode(); else ip2.dilate();
-		ip = shrink(ip, ip2, edgePixels);
+			((ByteProcessor)ip).dilate(count, background);
 	}
 	
 
 	void open(ImageProcessor ip) {
-		boolean edgePixels = hasEdgePixels(ip);
-		ImageProcessor ip2 = expand(ip, edgePixels);
 		for (int i=0; i<iterations; i++)
-			if (blackBackground) ip2.dilate(); else ip2.erode();
+			((ByteProcessor)ip).erode(count, background);
 		for (int i=0; i<iterations; i++)
-			if (blackBackground) ip2.erode(); else ip2.dilate();
-		ip = shrink(ip, ip2, edgePixels);
+			((ByteProcessor)ip).dilate(count, background);
 	}
 	
 	void close(ImageProcessor ip) {
-		boolean edgePixels = hasEdgePixels(ip);
-		ImageProcessor ip2 = expand(ip, edgePixels);
 		for (int i=0; i<iterations; i++)
-			if (blackBackground) ip2.erode(); else ip2.dilate();
+			((ByteProcessor)ip).dilate(count, background);
 		for (int i=0; i<iterations; i++)
-			if (blackBackground) ip2.dilate(); else ip2.erode();
-		ip = shrink(ip, ip2, edgePixels);
+			((ByteProcessor)ip).erode(count, background);
 	}
 	
 	void outline(ImageProcessor ip) {
@@ -101,7 +93,8 @@ public class Binary implements PlugInFilter {
 		
 	void showDialog() {
 		GenericDialog gd = new GenericDialog("Binary Options");
-		gd.addNumericField("Iterations (1-25):", iterations, 0);
+		gd.addNumericField("Iterations (1-25):", iterations, 0, 3, "");
+		gd.addNumericField("Count (1-8):", count, 0, 3, "");
 		gd.addCheckbox("Black Background", blackBackground);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
@@ -110,12 +103,12 @@ public class Binary implements PlugInFilter {
 		if (n>25) n = 25;
 		if (n<1) n = 1;
 		iterations = n;
+		count = (int)gd.getNextNumber();
+        if (count<1) count = 1;
+        if (count>8) count = 8;
 	}
 	
 	boolean hasEdgePixels(ImageProcessor ip) {
-		foreground = blackBackground?255:0;
-		if (ip.isInvertedLut())
-			foreground = 255 - foreground;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		boolean edgePixels = false;
@@ -146,7 +139,7 @@ public class Binary implements PlugInFilter {
 				ip2.fill();
 			}
 			ip2.insert(ip, 1, 1);
-			//new ImagePlus("ip2", ip2).show();
+            //new ImagePlus("ip2", ip2).show();
 			return ip2;
 		} else
 			return ip;

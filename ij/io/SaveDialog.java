@@ -14,6 +14,7 @@ public class SaveDialog {
 	private String dir;
 	private String name;
 	private String title;
+	private String ext;
 	
 	/** Displays a file save dialog with 'title' as the 
 		title, 'defaultName' as the initial file name, and
@@ -21,6 +22,7 @@ public class SaveDialog {
 	*/
 	public SaveDialog(String title, String defaultName, String extension) {
 		this.title = title;
+		ext = extension;
 		if (isMacro())
 			return;
 		String defaultDir = OpenDialog.getDefaultDirectory();
@@ -38,6 +40,7 @@ public class SaveDialog {
 		default directory and file name and extension. */
 	public SaveDialog(String title, String defaultDir, String defaultName, String extension) {
 		this.title = title;
+		ext = extension;
 		if (isMacro())
 			return;
 		defaultName = addExtension(defaultName, extension);
@@ -54,6 +57,9 @@ public class SaveDialog {
 			String path = Macro.getValue(macroOptions, title, null);
 			if (path==null)
 				path = Macro.getValue(macroOptions, "path", null);
+			//if (path==null && oneRunArg) {
+			//	path = macroOptions;
+			//}
 			if (path!=null) {
 				Opener o = new Opener();
 				dir = o.getDir(path);
@@ -92,8 +98,8 @@ public class SaveDialog {
 		File f = fc.getSelectedFile();
 		if(f.exists()) {
 			int ret = JOptionPane.showConfirmDialog (fc,
-				"The file "+ f.getName() + " already exists, \nwould you like to overwrite it?",
-				"Overwrite?",
+				"The file "+ f.getName() + " already exists. \nWould you like to replace it?",
+				"Replace?",
 				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 			if (ret!=JOptionPane.OK_OPTION) f = null;
 		}
@@ -131,8 +137,14 @@ public class SaveDialog {
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
-		if (Recorder.record)
+		if (Recorder.record) {
 			Recorder.recordPath(title, dir+name);
+			//String cmd = Recorder.getCommandName();
+			//if (cmd.endsWith("..."))
+			//	cmd = cmd.substring(0, cmd.length()-3);
+			//Recorder.record("saveAs", cmd, dir+name);
+			//Recorder.setCommand(null);
+		}
 		return name;
 	}
 	

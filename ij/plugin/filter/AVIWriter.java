@@ -44,7 +44,7 @@ public class AVIWriter implements PlugInFilter {
             writeImage(imp);
             IJ.showStatus("");
         } catch (IOException e) {
-            IJ.showMessage("AVI Writer", "An error occured writing the file.\n \n" + e);
+            IJ.error("AVI Writer", "An error occured writing the file.\n \n" + e);
         }
         IJ.showStatus("");
     }
@@ -101,6 +101,7 @@ public class AVIWriter implements PlugInFilter {
         String fileDir = sd.getDirectory();
         file = new File(fileDir + fileName);
         raFile = new RandomAccessFile(file, "rw");
+        raFile.setLength(0);
         imp.startTiming();
         writeString("RIFF"); // signature
         saveFileSize = raFile.getFilePointer();
@@ -279,7 +280,8 @@ public class AVIWriter implements PlugInFilter {
         bufferWrite = new byte[bytesPerPixel*xDim*yDim];
         
          for (z = 0; z < zDim; z++) {
-              IJ.showProgress((double)z /zDim);
+              IJ.showProgress(z, zDim);
+              if ((z%10)==0) IJ.showStatus("AVI...: "+z+"/"+zDim);
               raFile.write(dataSignature);
               savedbLength[z] = raFile.getFilePointer();
               writeInt(bytesPerPixel*xDim*yDim); // Write the data length
