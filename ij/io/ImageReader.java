@@ -7,6 +7,9 @@ import ij.*;  //??
 	images from a stream or URL. */
 public class ImageReader {
 
+	private static final int CLEAR_CODE = 256;
+	private static final int EOI_CODE = 257;
+
     private FileInfo fi;
     private int width, height;
     private long skipCount;
@@ -30,20 +33,53 @@ public class ImageReader {
 	}
 
 	byte[] read8bitImage(InputStream in) throws IOException {
-		byte[] pixels;
-		int totalRead = 0;
-		pixels = new byte[nPixels];
+		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+			return readCompressed8bitImage(in);
+		byte[] pixels = new byte[nPixels];
+		// assume contiguous strips
 		int count, actuallyRead;
-
-		while (totalRead<byteCount) {
-			if (totalRead+bufferSize>byteCount)
-				count = byteCount-totalRead;
-			else
-				count = bufferSize;
-			actuallyRead = in.read(pixels, totalRead, count);
-			if (actuallyRead==-1) {eofError(); break;}
-			totalRead += actuallyRead;
-			showProgress((double)totalRead/byteCount);
+		int totalRead = 0;
+	  	while (totalRead<byteCount) {
+	  		if (totalRead+bufferSize>byteCount)
+	  			count = byteCount-totalRead;
+  			else
+  				count = bufferSize;
+  			actuallyRead = in.read(pixels, totalRead, count);
+  			if (actuallyRead==-1) {eofError(); break;}
+  			totalRead += actuallyRead;
+  			showProgress((double)totalRead/byteCount);
+  		}
+		return pixels;
+	}
+	
+	byte[] readCompressed8bitImage(InputStream in) throws IOException {
+		byte[] pixels = new byte[nPixels];
+		int current = 0;
+		byte last = 0;
+		for (int i=0; i<fi.stripOffsets.length; i++) {
+			if (i > 0) {
+				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
+				if (skip > 0) in.skip(skip);
+			}
+			byte[] byteArray = new byte[fi.stripLengths[i]];
+			int read = 0, left = byteArray.length;
+			while (left > 0) {
+				int r = in.read(byteArray, read, left);
+				if (r == -1) {eofError(); break;}
+				read += r;
+				left -= r;
+			}
+			byteArray = lzwUncompress(byteArray);
+			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+				for (int b=0; b<byteArray.length; b++) {
+					byteArray[b] += last;
+					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
+				}
+			int length = byteArray.length;
+			if (length>pixels.length) length = pixels.length;
+			System.arraycopy(byteArray, 0, pixels, current, length);
+			current += byteArray.length;
+			IJ.showProgress(i+1, fi.stripOffsets.length);
 		}
 		return pixels;
 	}
@@ -152,6 +188,8 @@ public class ImageReader {
 	}
 	
 	int[] readChunkyRGB(InputStream in) throws IOException {
+		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+			return readCompressedChunkyRGB(in);
 		int pixelsRead;
 		bufferSize = 24*width;
 		byte[] buffer = new byte[bufferSize];
@@ -188,6 +226,58 @@ public class ImageReader {
 					pixels[i] = 0xff000000 | (r<<16) | (g<<8) | b;
 			}
 			base += pixelsRead;
+		}
+		return pixels;
+	}
+
+	int[] readCompressedChunkyRGB(InputStream in) throws IOException {
+		int[] pixels = new int[nPixels];
+		int base = 0;
+		int lastRed=0, lastGreen=0, lastBlue=0;
+		int nextByte;
+		int red=0, green=0, blue=0;
+		boolean bgr = fi.fileType==FileInfo.BGR;
+		boolean differencing = fi.compression == FileInfo.LZW_WITH_DIFFERENCING;
+		for (int i=0; i<fi.stripOffsets.length; i++) {
+			if (i > 0) {
+				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
+				if (skip > 0) in.skip(skip);
+			}
+			byte[] byteArray = new byte[fi.stripLengths[i]];
+			int read = 0, left = byteArray.length;
+			while (left > 0) {
+				int r = in.read(byteArray, read, left);
+				if (r == -1) {eofError(); break;}
+				read += r;
+				left -= r;
+			}
+			byteArray = lzwUncompress(byteArray);
+			int k = 0;
+			int pixelsRead = byteArray.length/bytesPerPixel;
+			for (int j=base; j<(base+pixelsRead); j++) {
+				if (bytesPerPixel==4) k++; // ignore alfa byte
+				if (differencing) {
+					nextByte = byteArray[k++];
+					red = (nextByte + lastRed)&255;
+					lastRed = j%fi.width==fi.width-1?0:red;
+					nextByte = byteArray[k++];
+					green = (nextByte + lastGreen)&255;
+					lastGreen = j%fi.width==fi.width-1?0:green;
+					nextByte = byteArray[k++];
+					blue = (nextByte + lastBlue)&255;
+					lastBlue = j%fi.width==fi.width-1?0:blue;
+				} else {
+					red = byteArray[k++]&0xff;
+					green = byteArray[k++]&0xff;
+					blue = byteArray[k++]&0xff;
+				}
+				if (bgr)
+					pixels[j] = 0xff000000 | (blue<<16) | (green<<8) | red;
+				else
+					pixels[j] = 0xff000000 | (red<<16) | (green<<8) | blue;
+			}
+			base += pixelsRead;
+			IJ.showProgress(i+1, fi.stripOffsets.length);
 		}
 		return pixels;
 	}
@@ -431,6 +521,77 @@ public class ImageReader {
 			}
 		}
 	}
-	
+
+/**
+ * Utility method for decoding an LZW-compressed image strip. 
+ * Adapted from the TIFF 6.0 Specification:
+ * http://partners.adobe.com/asn/developer/pdfs/tn/TIFF6.pdf (page 61)
+ * @author Curtis Rueden (ctrueden at wisc.edu)
+ */
+  public byte[] lzwUncompress(byte[] input) throws IOException {
+    if (input == null || input.length == 0)
+      return input;
+
+    byte[][] symbolTable = null;
+    int bitsToRead = 9;
+    int nextSymbol = 258;
+    int code;
+    int oldCode = -1;
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    BitBuffer bb = new BitBuffer(new ByteArrayInputStream(input));
+
+    while (true) {
+      code = bb.getBits(bitsToRead);
+      if (code == EOI_CODE || code == -1)
+        break;
+      if (code == CLEAR_CODE) {
+        // initialize symbol table
+        symbolTable = new byte[4096][];
+        for (int i = 0; i < 256; i++) {
+          symbolTable[i] = new byte[] { (byte) i };
+        }
+        nextSymbol = 258;
+        bitsToRead = 9;
+        code = bb.getBits(bitsToRead);
+        if (code == EOI_CODE || code == -1)
+          break;
+        out.write(symbolTable[code]);
+        oldCode = code;
+      }
+      else {
+        if (code < nextSymbol) {
+          // code is in table
+          out.write(symbolTable[code]);
+
+          // add string to table
+          ByteArrayOutputStream symbol = new ByteArrayOutputStream();
+          symbol.write(symbolTable[oldCode]);
+          symbol.write(symbolTable[code][0]);
+          symbolTable[nextSymbol] = symbol.toByteArray();
+
+          oldCode = code;
+          nextSymbol++;
+        }
+        else {
+          // out of table
+          ByteArrayOutputStream symbol = new ByteArrayOutputStream();
+          symbol.write(symbolTable[oldCode]);
+          symbol.write(symbolTable[oldCode][0]);
+          byte[] outString = symbol.toByteArray();
+
+          out.write(outString);
+          symbolTable[nextSymbol] = outString;
+
+          oldCode = code;
+          nextSymbol++;
+        }
+        if (nextSymbol == 511) { bitsToRead = 10; }
+        if (nextSymbol == 1023) { bitsToRead = 11; }
+        if (nextSymbol == 2047) { bitsToRead = 12; }
+      }
+    }
+    return out.toByteArray();
+  }
+ 
 }
 

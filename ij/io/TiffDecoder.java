@@ -3,7 +3,12 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
-/** Decodes uncompressed, multi-image TIFF files. */
+// CTR CHANGES BEGIN
+/**
+Decodes multi-image TIFF files. Handles uncompressed
+and 8-bit LZW-compressed image stacks.
+*/
+// CTR CHANGES END
 public class TiffDecoder {
 
 	// tags
@@ -24,6 +29,7 @@ public class TiffDecoder {
 	public static final int RESOLUTION_UNIT = 296;
 	public static final int SOFTWARE = 305;
 	public static final int DATE_TIME = 306;
+	public static final int PREDICTOR = 317;
 	public static final int COLOR_MAP = 320;
 	public static final int SAMPLE_FORMAT = 339;
 	public static final int METAMORPH1 = 33628;
@@ -260,6 +266,7 @@ public class TiffDecoder {
 			case DATE_TIME: name="DateTime"; break;
 			case PLANAR_CONFIGURATION: name="PlanarConfiguration"; break;
 			case COMPRESSION: name="Compression"; break; 
+			case PREDICTOR: name="Predictor"; break; 
 			case COLOR_MAP: name="ColorMap"; break; 
 			case SAMPLE_FORMAT: name="SampleFormat"; break; 
 			case NIH_IMAGE_HDR: name="NIHImageHeader"; break; 
@@ -308,16 +315,36 @@ public class TiffDecoder {
 				case IMAGE_LENGTH: 
 					fi.height = value;
 					break;
+        // CTR CHANGES START
 				case STRIP_OFFSETS: 
 					if (count==1)
-						fi.offset = value;
+						fi.stripOffsets = new int[] {value};
 					else {
 						int saveLoc = in.getFilePointer();
 						in.seek(value);
-						fi.offset = getInt(); // Assumes contiguous strips
+            fi.stripOffsets = new int[count];
+            for (int c=0; c<count; c++) {
+              fi.stripOffsets[c] = getInt();
+							if (c > 0 && fi.stripOffsets[c] < fi.stripOffsets[c - 1])
+								error("Images not in order");
+						}
 						in.seek(saveLoc);
 					}
+					fi.offset = count > 0 ? fi.stripOffsets[0] : value;
 					break;
+        case STRIP_BYTE_COUNT:
+          if (count==1)
+            fi.stripLengths = new int[] {value};
+          else {
+						int saveLoc = in.getFilePointer();
+						in.seek(value);
+            fi.stripLengths = new int[count];
+            for (int c=0; c<count; c++)
+              fi.stripLengths[c] = getInt();
+						in.seek(saveLoc);
+          }
+          break;
+        // CTR CHANGES END
 				case PHOTO_INTERP:
 					fi.whiteIsZero = value==0;
 					break;
@@ -384,8 +411,19 @@ public class TiffDecoder {
 						fi.fileType = FileInfo.RGB_PLANAR;
 					break;
 				case COMPRESSION:
-					if (value!=1 && value!=7) // don't abort with Spot camera compressed (7) thumbnails
-						error("ImageJ cannot open compressed TIFF files ("+value+")");
+					if (value==5) // LZW compression is handled
+						fi.compression = FileInfo.LZW;
+					else if (value!=1 && value!=7) {
+						// don't abort with Spot camera compressed (7) thumbnails
+						// otherwise, this is an unknown compression type
+						fi.compression = FileInfo.COMPRESSION_UNKNOWN;
+						error("ImageJ cannot open TIFF files " +
+							"compressed in this fashion ("+value+")");
+					}
+					break;
+				case PREDICTOR:
+					if (value==2 && fi.compression==FileInfo.LZW) 
+						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
 					break;
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)

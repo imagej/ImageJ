@@ -176,6 +176,7 @@ class DicomDecoder {
 	private static final int RED_PALETTE = 0x00281201;
 	private static final int GREEN_PALETTE = 0x00281202;
 	private static final int BLUE_PALETTE = 0x00281203;
+	private static final int ICON_IMAGE_SEQUENCE = 0x00880200;
 	private static final int ITEM = 0xFFFEE000;
 	private static final int PIXEL_DATA = 0x7FE00010;
 
@@ -612,7 +613,9 @@ class DicomDecoder {
 				break;
 			case SQ:
 				value = "";
-				break;
+				if (tag!=ICON_IMAGE_SEQUENCE)
+					break;
+				// else fall through and skip icon image sequence
 			default:
 				long skipCount = (long)elementLength;
 				while (skipCount > 0) skipCount -= f.skip(skipCount);

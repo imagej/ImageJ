@@ -1031,6 +1031,9 @@ public class IJ {
 		macroRunning = false;
 	}
 	
+	
+	/** Saves an image, lookup table, selection or text window to the specified file path. 
+		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".lut", ".roi" or ".txt".  */
 	public static void save(String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1)
@@ -1039,7 +1042,11 @@ public class IJ {
 			error("File name extension required");
 	}
 
-	public static void saveAs(String format, String path) {
+	/* Saves the active image, lookup table, selection, measurement results, selection XY 
+		coordinates or text window to the specified file path. The format argument must be "tiff", 
+		"jpeg", "gif", "zip", "raw", "avi", "bmp", "text image", "lut", "selection", "measurements", 
+		"xy Coordinates" or "text".  */
+ 	public static void saveAs(String format, String path) {
 		if (format==null || path==null) return;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {

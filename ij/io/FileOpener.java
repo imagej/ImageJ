@@ -364,8 +364,13 @@ public class FileOpener {
 			is.close();
 		}
 		catch (Exception e) {
-			if (!"Macro canceled".equals(e.getMessage()))
-				IJ.error("FileOpener.readPixels" , ""+e);
+			//if (!"Macro canceled".equals(e.getMessage()))
+			//	IJ.error("FileOpener.readPixels" , ""+e);
+			CharArrayWriter caw = new CharArrayWriter();
+			PrintWriter pw = new PrintWriter(caw);
+			e.printStackTrace(pw);
+			String s = caw.toString();
+			new ij.text.TextWindow("Exception", s, 350, 250);
 		}
 		return pixels;
 	}

@@ -531,7 +531,7 @@ public class EDM implements PlugInFilter {
 			} while (count>0);
 		if (debug)
 			movie.addSlice("level "+level, ip1.duplicate());
-		if (win.running!=true)
+		if (win!=null && win.running!=true)
 			{canceled=true; IJ.beep(); break;}
 		}
 		if (!canceled)
