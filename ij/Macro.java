@@ -13,6 +13,8 @@ import java.util.Locale;
 /** The class contains static methods that perform macro operations. */
 public class Macro {
 
+	public static final String MACRO_CANCELED = "Macro canceled";
+
 	//public static boolean record;
 	private static String currentOptions;
 	static boolean abort;
@@ -68,7 +70,7 @@ public class Macro {
 		abort = true;
 		//IJ.log("Abort: "+Thread.currentThread().getName());
         if (Thread.currentThread().getName().endsWith("Macro$"))
-           throw new RuntimeException("Macro canceled");
+           throw new RuntimeException(MACRO_CANCELED);
 	}
 
 	/** If a command started using run(name, options) is running, 

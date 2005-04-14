@@ -130,8 +130,8 @@ public class Filler implements PlugInFilter, Measurements {
 			return;
 		}
 		for (int i=first; i<=last; i++) {
-			int x = (int)rt.getValue(ResultsTable.X_CENTROID, i);		
-			int y = (int)rt.getValue(ResultsTable.Y_CENTROID, i);		
+			int x = (int)rt.getValueAsDouble(ResultsTable.X_CENTROID, i);		
+			int y = (int)rt.getValueAsDouble(ResultsTable.Y_CENTROID, i);		
 			drawLabel(ip, i+1, new Rectangle(x,y,0,0));
 		}
 	}

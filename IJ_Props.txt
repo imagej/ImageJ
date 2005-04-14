@@ -261,7 +261,7 @@ shortcuts03="Remove...",ij.plugin.Hotkeys("remove")
 shortcuts04=-
 
 # Plugins installed in the Plugins/Utilities submenu
-utilities01="Control Panel...[P]",ij.plugin.ControlPanel
+utilities01="Control Panel...",ij.plugin.ControlPanel
 utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="List Commands...",ij.plugin.CommandLister
 utilities04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")

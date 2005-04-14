@@ -1077,9 +1077,11 @@ public class IJ {
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 
 		coordinates or text window to the specified file path. The format argument must be "tiff", 
 		"jpeg", "gif", "zip", "raw", "avi", "bmp", "text image", "lut", "selection", "measurements", 
-		"xy Coordinates" or "text".  */
+		"xy Coordinates" or "text".  If <code>path</code> is null or an emply string, a file
+		save dialog is displayed. */
  	public static void saveAs(String format, String path) {
-		if (format==null || path==null) return;
+		if (format==null) return;
+		if (path!=null && path.length()==0) path = null;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {
 			path = updateExtension(path, ".tif");
@@ -1122,10 +1124,14 @@ public class IJ {
 			format = "XY Coordinates...";
 		} else
 			error("Unrecognized format: "+format);
-		run(format, "save=["+path+"]");
+		if (path==null)
+			run(format);
+		else
+			run(format, "save=["+path+"]");
 	}
 
 	static String updateExtension(String path, String extension) {
+		if (path==null) return null;
 		int dotIndex = path.lastIndexOf(".");
 		if (dotIndex>=0)
 			path = path.substring(0, dotIndex) + extension;
@@ -1187,7 +1193,7 @@ public class IJ {
 	}
 	
 	static void abort() {
-		throw new RuntimeException("Macro canceled");
+		throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
 }

@@ -546,7 +546,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (imp==null)
 			imp = IJ.getImage();
 		if (imp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode())
-			throw new RuntimeException("Macro canceled");			
+			throw new RuntimeException(Macro.MACRO_CANCELED);			
 		return imp;
 	}
 	
@@ -808,7 +808,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (!rt.columnExists(col))
 			return Double.NaN;
 		else
-   			return rt.getValue(col, row);
+   			return rt.getValueAsDouble(col, row);
 	}
 
 	void setResult() {
@@ -1661,7 +1661,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.finishUp();
 		if (msg!=null)
 			IJ.showMessage("Macro", msg);
-		throw new RuntimeException("Macro canceled");
+		throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
 	void showProgress() {
@@ -1944,7 +1944,11 @@ public class Functions implements MacroConstants, Measurements {
 
 	void saveAs() {
 		String format = getFirstString();
-		String path = getLastString();
+		String path =  null;
+		if (interp.nextNonEolToken()==',')
+			path = getLastString();
+		else
+			interp.getRightParen();
 		IJ.saveAs(format, path);
 	}
 
@@ -1989,6 +1993,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	double parseDouble(String s) {
+			if (s==null) return 0.0;
 			s = s.trim();
 			if (s.indexOf(' ')!=-1) s = s.substring(0, s.indexOf(' '));
 			return Tools.parseDouble(s);

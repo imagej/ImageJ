@@ -252,7 +252,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	*/
     public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues) {
     	Panel panel = new Panel();
-    	panel.setLayout(new GridLayout(rows,columns,10,0));
+    	panel.setLayout(new GridLayout(rows,columns, 5, 0));
     	int startCBIndex = cbIndex;
     	int i1 = 0;
     	int[] index = new int[labels.length];
@@ -262,8 +262,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     	for (int row=0; row<rows; row++) {
 			for (int col=0; col<columns; col++) {
 				int i2 = col*rows+row;
-				if (i2>=labels.length)
-					break;
+				if (i2>=labels.length) break;
 				index[i1] = i2;
 				Checkbox cb = new Checkbox(labels[i1]);
 				checkbox.addElement(cb);

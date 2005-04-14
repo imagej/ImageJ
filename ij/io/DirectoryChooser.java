@@ -35,7 +35,9 @@ import javax.swing.filechooser.*;
 		if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
 			File dir = chooser.getCurrentDirectory();
 			File file = chooser.getSelectedFile();
-			directory = dir.getPath()+File.separator;
+			directory = dir.getPath();
+			if (!directory.endsWith(File.separator))
+				directory += File.separator;
 			defaultDir = directory;
 			directory += file.getName()+File.separator;
 		}

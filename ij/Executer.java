@@ -68,7 +68,7 @@ public class Executer implements Runnable {
 			String msg = e.getMessage();
 			if (e instanceof OutOfMemoryError)
 				IJ.outOfMemory(command);
-			else if (e instanceof RuntimeException && msg!=null && msg.equals("Macro canceled"))
+			else if (e instanceof RuntimeException && msg!=null && msg.equals(Macro.MACRO_CANCELED))
 				; //do nothing
 			else {
 				CharArrayWriter caw = new CharArrayWriter();

@@ -295,6 +295,19 @@ public class FileOpener {
 					ip.setMinAndMax(displayMin, displayMax);
 			}
 		}
+		
+		int stackSize = imp.getStackSize();
+		if (stackSize>1) {
+			int channels = (int)getDouble(props,"channels");
+			int depth = (int)getDouble(props,"depth");
+			int frames = (int)getDouble(props,"frames");
+			if (channels==0) channels = 1;
+			if (depth==0) depth = 1;
+			if (frames==0) frames = 1;
+			//IJ.log("setCalibration: "+channels+"  "+depth+"  "+frames);
+			if (channels*depth*frames==stackSize)
+				imp.setDimensions(channels, depth, frames);
+		}
 	}
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
@@ -372,13 +385,13 @@ public class FileOpener {
 			is.close();
 		}
 		catch (Exception e) {
-			//if (!"Macro canceled".equals(e.getMessage()))
-			//	IJ.error("FileOpener.readPixels" , ""+e);
-			CharArrayWriter caw = new CharArrayWriter();
-			PrintWriter pw = new PrintWriter(caw);
-			e.printStackTrace(pw);
-			String s = caw.toString();
-			new ij.text.TextWindow("Exception", s, 350, 250);
+			if (!Macro.MACRO_CANCELED.equals(e.getMessage())) {
+				CharArrayWriter caw = new CharArrayWriter();
+				PrintWriter pw = new PrintWriter(caw);
+				e.printStackTrace(pw);
+				String s = caw.toString();
+				new ij.text.TextWindow("Exception", s, 350, 250);
+			}
 		}
 		return pixels;
 	}

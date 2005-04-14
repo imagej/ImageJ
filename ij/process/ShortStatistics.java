@@ -38,8 +38,8 @@ public class ShortStatistics extends ImageStatistics {
 			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip, minThreshold, maxThreshold);
-		if ((mOptions&CENTER_OF_MASS)!=0)
-			getCenterOfMass(ip, minThreshold, maxThreshold);
+		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)
+			calculateMoments(ip, minThreshold, maxThreshold, cTable);
 		if ((mOptions&MIN_MAX)!=0 && cTable!=null)
 			getCalibratedMinAndMax(hist, (int)min, (int)max, cTable);
 		if ((mOptions&MEDIAN)!=0)
@@ -137,19 +137,24 @@ public class ShortStatistics extends ImageStatistics {
 		yCentroid = ((double)ysum/count+0.5)*ph;
 	}
 
-	void getCenterOfMass(ImageProcessor ip,  int minThreshold, int maxThreshold) {
+	void calculateMoments(ImageProcessor ip,  int minThreshold, int maxThreshold, float[] cTable) {
 		short[] pixels = (short[])ip.getPixels();
 		byte[] mask = ip.getMaskArray();
-		int i, mi, v;
-		double dv, count=0.0, xsum=0.0, ysum=0.0;
+		int i, mi, iv;
+		double v, v2, sum1=0.0, sum2=0.0, sum3=0.0, sum4=0.0, xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]!=0) {
-					v = pixels[i]&0xffff;
-					if (v>=minThreshold&&v<=maxThreshold) {
-						count += v;
+					iv = pixels[i]&0xffff;
+					if (iv>=minThreshold&&iv<=maxThreshold) {
+						v = cTable!=null?cTable[iv]:iv;
+						v2 = v*v;
+						sum1 += v;
+						sum2 += v2;
+						sum3 += v*v2;
+						sum4 += v2*v2;
 						xsum += x*v;
 						ysum += y*v;
 					}
@@ -157,8 +162,13 @@ public class ShortStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCenterOfMass = (xsum/count+0.5)*pw;
-		yCenterOfMass = (ysum/count+0.5)*ph;
+	    double mean2 = mean*mean;
+	    double variance = sum2/pixelCount - mean2;
+	    double sDeviation = Math.sqrt(variance);
+	    skewness = ((sum3 - 3.0*mean*sum2)/pixelCount + 2.0*mean*mean2)/(variance*sDeviation);
+	    kurtosis = (((sum4 - 4.0*mean*sum3 + 6.0*mean2*sum2)/pixelCount - 3.0*mean2*mean2)/(variance*variance)-3.0);
+		xCenterOfMass = (xsum/sum1+0.5)*pw;
+		yCenterOfMass = (ysum/sum1+0.5)*ph;
 	}
 
 	void getCalibratedMinAndMax(int[] hist, int minValue, int maxValue, float[] cTable) {

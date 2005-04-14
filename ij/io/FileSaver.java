@@ -455,6 +455,15 @@ public class FileSaver {
 		sb.append("ImageJ="+ImageJ.VERSION+"\n");
 		if (fi.nImages>1)
 			sb.append("images="+fi.nImages+"\n");
+		int channels = imp.getNChannels();
+		if (channels>1)
+			sb.append("channels="+channels+"\n");
+		int depth = imp.getDepth();
+		if (depth>1)
+			sb.append("depth="+depth+"\n");
+		int frames = imp.getNFrames();
+		if (frames>1)
+			sb.append("frames="+frames+"\n");
 		if (fi.unit!=null)
 			sb.append("unit="+fi.unit+"\n");
 		if (fi.valueUnit!=null) {

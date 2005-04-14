@@ -101,7 +101,7 @@ public class AVIWriter implements PlugInFilter {
         String fileDir = sd.getDirectory();
         file = new File(fileDir + fileName);
         raFile = new RandomAccessFile(file, "rw");
-        raFile.setLength(0);
+        if (IJ.isJava2()) raFile.setLength(0);
         imp.startTiming();
         writeString("RIFF"); // signature
         saveFileSize = raFile.getFilePointer();

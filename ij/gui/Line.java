@@ -221,7 +221,7 @@ public class Line extends Roi {
 				if (sx>srcWidth || sy>srcHeight || sy<0.0 || sx<0.0 )
 					ip2.putPixelValue(dx, dy, 0.0);
 				else
-					ip2.putPixelValue(dx, dy, ip.getInterpolatedPixel(sx, sy));
+					ip2.putPixelValue(dx, dy, ip.getInterpolatedValue(sx, sy));
 			}
 		}
 		if (IJ.altKeyDown()) {

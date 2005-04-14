@@ -7,10 +7,10 @@ import ij.io.*;
 import ij.process.*;
 
 /**
-	 This plugin opens PGM (portable graymap) format images.
+	 This plugin opens PxM format images.
 	 
-	 The portable graymap format is a lowest  common  denominator
-	 grayscale file format.  The definition is as follows:
+	 The portable graymap format is a lowest common denominator
+	 grayscale file format. The definition is as follows:
 	 
 	 - A "magic number" for identifying the  file  type.   A  pgm
 	 file's magic number is the two characters "P2".
@@ -22,12 +22,11 @@ import ij.process.*;
 	 - The maximum gray value, again in ASCII decimal.
 	 - Whitespace.
 	 - Width * height gray values, each in ASCII decimal, between
-	 0  and  the  specified  maximum  value,  separated by whi-
-	 tespace, starting at the top-left corner of  the  graymap,
-	 proceeding  in normal English reading order.  A value of 0
+	 0 and the specified maximum value, separated by whi-
+	 tespace, starting at the top-left corner of the graymap,
+	 proceeding in normal English reading order. A value of 0
 	 means black, and the maximum value means white.
-	 - Characters from a "#" to the next end-of-line are  ignored
-	 (comments).
+	 - Characters from a "#" to the next end-of-line are ignored (comments).
 	 - No line should be longer than 70 characters.
 	 
 	 Here is an example of a small graymap in this format:
@@ -54,8 +53,10 @@ import ij.process.*;
 	 Kai Barthel Nov 16 2004:
 	 Extended to support PPM (portable pixmap) format images (24 bits only).
 	 -The "magic numbers" are "P6" (raw) "P3" (ASCII).
-	 
  
+ 	Ulf Dittmer April 2005:
+	Extended to support PBM (bitmap) images (P1 and P4)
+
  */
 
 public class PGM_Reader extends ImagePlus implements PlugIn {
@@ -64,16 +65,17 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 	private boolean rawBits;
 	private boolean sixteenBits;
 	private boolean isColor;
+	private boolean isBlackWhite;
 	private int maxValue;
-	
+
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("PGM/PPM Reader...", arg);
+		OpenDialog od = new OpenDialog("PBM/PGM/PPM Reader...", arg);
 		String directory = od.getDirectory();
 		String name = od.getFileName();
 		if (name==null)
 			return;
 		String path = directory + name;
-		
+
 		IJ.showStatus("Opening: " + path);
 		ImageProcessor ip;
 		try {
@@ -81,7 +83,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		}
 		catch (IOException e) {
 			String msg = e.getMessage();
-			IJ.showMessage("PGM/PPM Reader", msg.equals("")?""+e:msg);
+			IJ.showMessage("PBM/PGM/PPM Reader", msg.equals("")?""+e:msg);
 			return;
 		}
 
@@ -115,9 +117,19 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 					openRawImage(is, width*height, pixels);
 				else
 					openAsciiImage(tok, width*height, pixels);
-				
-				for (int i = 0; i < pixels.length; i++) {
-					pixels[i] = (byte) (0xff & (255 * (int)(0xff & pixels[i]) / maxValue)); 
+
+				for (int i = pixels.length-1; i>=0; i--) {
+					if (isBlackWhite) {
+						if (rawBits) {
+							if (i < (pixels.length/8)) {
+								for (int bit=7; bit>=0; bit--) {
+									pixels[8*i+7-bit] = (byte) ((pixels[i]&((int)Math.pow(2,bit)))==0 ? 255 : 0); 
+								}
+							}
+						} else
+							pixels[i] = (byte) (pixels[i]==0 ? 255 : 0); 
+					} else
+						pixels[i] = (byte) (0xff & (255 * (int)(0xff & pixels[i]) / maxValue)); 
 				}
 				return ip;
 			}
@@ -129,12 +141,12 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 					openRawImage(is, 3*width*height, bytePixels);
 				else
 					openAsciiImage(tok, 3*width*height, bytePixels);
-				
+
 				for (int i = 0; i < width*height; i++ ) {
 					int r = (int)(0xff & bytePixels[i*3  ]);  
 					int g = (int)(0xff & bytePixels[i*3+1]);
 					int b = (int)(0xff & bytePixels[i*3+2]);
-					
+
 					r = (r*255/maxValue) << 16;
 					g = (g*255/maxValue) <<  8;
 					b = (b*255/maxValue);
@@ -145,40 +157,61 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		}
 	}
 
-	public void openHeader(StreamTokenizer tok) throws IOException {
+	public void openHeader (StreamTokenizer tok) throws IOException {
 		String magicNumber = getWord(tok);
-		if (magicNumber.equals("P2")) {
+		if (magicNumber.equals("P1")) {
 			rawBits = false;
 			isColor = false;
+			isBlackWhite = true;
+		}
+		else if (magicNumber.equals("P4")) {
+			rawBits = true;
+			isColor = false;
+			isBlackWhite = true;
+		}
+		else if (magicNumber.equals("P2")) {
+			rawBits = false;
+			isColor = false;
+			isBlackWhite = false;
 		}
 		else if (magicNumber.equals("P5")) {
 			rawBits = true;
 			isColor = false;
+			isBlackWhite = false;
 		}
 		else if (magicNumber.equals("P3")) {
 			rawBits = false;
 			isColor = true;
+			isBlackWhite = false;
 		}
 		else if (magicNumber.equals("P6")) {
 			rawBits = true;
 			isColor = true;
+			isBlackWhite = false;
 		}
 		else 
-			throw new IOException("PGM files must start with \"P2\" or \"P3\" or \"P5\" or \"P6\"");
+			throw new IOException("PxM files must start with \"P1\" or \"P2\" or \"P3\" or \"P4\" or \"P5\" or \"P6\"");
+
 		width = getInt(tok);
 		height = getInt(tok);
-		maxValue = getInt(tok);
-		if (width==-1 || height==-1 || maxValue==-1)
-			throw new IOException("Error opening PGM header..");
-		if(maxValue > 255)
-			sixteenBits = true;
-		else
-			sixteenBits = false;
-		if (sixteenBits && isColor)
-				throw new IOException("16 bit color ppm is not supported");
-		String msg = "The maximum gray value is larger than ";
+		if (width==-1 || height==-1)
+			throw new IOException("Error opening PxM header..");
+
+		if (! isBlackWhite) {
+			maxValue = getInt(tok);
+			if (maxValue==-1)
+				throw new IOException("Error opening PxM header..");
+			if(maxValue > 255)
+				sixteenBits = true;
+			else
+				sixteenBits = false;
+			if (sixteenBits && isColor)
+					throw new IOException("16 bit color ppm is not supported");
+		} else
+			maxValue = 255;
+
 		if (sixteenBits && maxValue>65535)
-			throw new IOException(msg + "65535.");
+			throw new IOException("The maximum gray value is larger than 65535.");
 	}
 
 	public void openAsciiImage(StreamTokenizer tok, int size, byte[] pixels) throws IOException {
@@ -211,7 +244,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 			pixels[i] = (short)(((bytes[j]&0xff)<<8) | (bytes[j+1]&0xff)); //big endian
 		return new ShortProcessor(width, height, pixels, null);
    	}
-	
+
 	public ImageProcessor open16bitAsciiImage(StreamTokenizer tok,
 	int width, int height) throws IOException {
 		int i = 0;
@@ -228,7 +261,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		IJ.showProgress(1.0);
 		return new ShortProcessor(width, height, pixels, null);
 	}
-	
+
 	String getWord(StreamTokenizer tok) throws IOException {
 		while (tok.nextToken() != tok.TT_EOF) {
 			if (tok.ttype==tok.TT_WORD)

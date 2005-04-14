@@ -230,7 +230,7 @@ public class Interpreter implements MacroConstants {
 			case '(': 
 				putTokenBack();
 				String s = getString();
-				if (!s.equals("NaN")) IJ.log(s);
+				if (s!=null && !s.equals("NaN")) IJ.log(s);
 				return;
 			case EOF: break;
 			default:
@@ -1006,7 +1006,7 @@ public class Interpreter implements MacroConstants {
 		if (showMessage) {
 			String line = getErrorLine();
 			IJ.showMessage("Macro Error", message+" in line "+lineNumber+".\n \n"+line);
-			throw new RuntimeException("Macro canceled");
+			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
 		done = true;
 	}

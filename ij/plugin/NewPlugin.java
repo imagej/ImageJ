@@ -39,8 +39,7 @@ public class NewPlugin implements PlugIn {
 		//	name = name.substring(0, name.length()-1);
 		if (!(name.endsWith(".txt")))
 			name += ".txt";
-		String text = "  print(\"Hello world!\");\n";
-		ed.create(name, text);
+		ed.create(name, "");
 	}
 
 	public void createPlugin(String name, int type, String methods) {

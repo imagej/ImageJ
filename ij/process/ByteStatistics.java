@@ -38,8 +38,8 @@ public class ByteStatistics extends ImageStatistics {
 			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip, minThreshold, maxThreshold);
-		if ((mOptions&CENTER_OF_MASS)!=0)
-			getCenterOfMass(ip, minThreshold, maxThreshold, cTable);
+		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)
+			calculateMoments(ip, minThreshold, maxThreshold, cTable);
 		if ((mOptions&MEDIAN)!=0)
 			calculateMedian(histogram, 0, cal);
 	}
@@ -102,11 +102,11 @@ public class ByteStatistics extends ImageStatistics {
 		yCentroid = ((double)ysum/count+0.5)*ph;
 	}
 
-	void getCenterOfMass(ImageProcessor ip,  int minThreshold, int maxThreshold, float[] cTable) {
+	void calculateMoments(ImageProcessor ip,  int minThreshold, int maxThreshold, float[] cTable) {
 		byte[] pixels = (byte[])ip.getPixels();
 		byte[] mask = ip.getMaskArray();
 		int v, i, mi;
-		double dv, count=0.0, xsum=0.0, ysum=0.0;
+		double dv, dv2, sum1=0.0, sum2=0.0, sum3=0.0, sum4=0.0, xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
@@ -115,7 +115,11 @@ public class ByteStatistics extends ImageStatistics {
 					v = pixels[i]&255;
 					if (v>=minThreshold&&v<=maxThreshold) {
 						dv = ((cTable!=null)?cTable[v]:v)+Double.MIN_VALUE;
-						count += dv;
+						dv2 = dv*dv;
+						sum1 += dv;
+						sum2 += dv2;
+						sum3 += dv*dv2;
+						sum4 += dv2*dv2;
 						xsum += x*dv;
 						ysum += y*dv;
 					}
@@ -123,8 +127,13 @@ public class ByteStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCenterOfMass = (xsum/count+0.5)*pw;
-		yCenterOfMass = (ysum/count+0.5)*ph;
+	    double mean2 = mean*mean;
+	    double variance = sum2/pixelCount - mean2;
+	    double sDeviation = Math.sqrt(variance);
+	    skewness = ((sum3 - 3.0*mean*sum2)/pixelCount + 2.0*mean*mean2)/(variance*sDeviation);
+	    kurtosis = (((sum4 - 4.0*mean*sum3 + 6.0*mean2*sum2)/pixelCount - 3.0*mean2*mean2)/(variance*variance)-3.0);
+		xCenterOfMass = (xsum/sum1+0.5)*pw;
+		yCenterOfMass = (ysum/sum1+0.5)*ph;
 	}
 	
 	void getCalibratedMinAndMax(int minThreshold, int maxThreshold, float[] cTable) {

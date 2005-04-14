@@ -133,7 +133,7 @@ public class Menus {
 		image.addSeparator();
 		addSubMenu(image, "Adjust");
 		addPlugInItem(image, "Show Info...", "ij.plugin.filter.Info", KeyEvent.VK_I, false);
-		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", 0, false);
+		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", KeyEvent.VK_P, true);
 		//addSubMenu(image, "Benchmarks");
 		addSubMenu(image, "Color");
 		addSubMenu(image, "Stacks");

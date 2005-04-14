@@ -17,7 +17,7 @@ public class ByteProcessor extends ImageProcessor {
 	private int bgColor = 255; //white
 	private int min=0, max=255;
 	private boolean brokenNewPixels = ij.IJ.isMacintosh()&&!ij.IJ.isJava2()
-		|| System.getProperty("java.version").startsWith("1.4");
+		|| ij.IJ.isJava14();
     private int binaryCount, binaryBackground;
 
 	/**Creates a ByteProcessor from an 8-bit, indexed color AWT Image. */

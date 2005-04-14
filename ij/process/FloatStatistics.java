@@ -31,8 +31,8 @@ public class FloatStatistics extends ImageStatistics {
 			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip, minThreshold, maxThreshold);
-		if ((mOptions&CENTER_OF_MASS)!=0)
-			getCenterOfMass(ip, minThreshold, maxThreshold);
+		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)
+			calculateMoments(ip, minThreshold, maxThreshold);
 		if ((mOptions&MEDIAN)!=0) {
 			if (Double.isInfinite(binSize)||Double.isNaN(binSize))
 				median = 0.0;
@@ -127,11 +127,11 @@ public class FloatStatistics extends ImageStatistics {
         	dmode += binSize/2.0;        	
 	}
 
-	void getCenterOfMass(ImageProcessor ip, double minThreshold, double maxThreshold) {
+	void calculateMoments(ImageProcessor ip, double minThreshold, double maxThreshold) {
 		float[] pixels = (float[])ip.getPixels();
 		byte[] mask = ip.getMaskArray();
 		int i, mi;
-		double v, count=0.0, xsum=0.0, ysum=0.0;
+		double v, v2, sum1=0.0, sum2=0.0, sum3=0.0, sum4=0.0, xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
@@ -139,7 +139,11 @@ public class FloatStatistics extends ImageStatistics {
 				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i]+Double.MIN_VALUE;
 					if (v>=minThreshold && v<=maxThreshold) {
-						count += v;
+						v2 = v*v;
+						sum1 += v;
+						sum2 += v2;
+						sum3 += v*v2;
+						sum4 += v2*v2;
 						xsum += x*v;
 						ysum += y*v;
 					}
@@ -147,8 +151,13 @@ public class FloatStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCenterOfMass = (xsum/count+0.5)*pw;
-		yCenterOfMass = (ysum/count+0.5)*ph;
+	    double mean2 = mean*mean;
+	    double variance = sum2/pixelCount - mean2;
+	    double sDeviation = Math.sqrt(variance);
+	    skewness = ((sum3 - 3.0*mean*sum2)/pixelCount + 2.0*mean*mean2)/(variance*sDeviation);
+	    kurtosis = (((sum4 - 4.0*mean*sum3 + 6.0*mean2*sum2)/pixelCount - 3.0*mean2*mean2)/(variance*variance)-3.0);
+		xCenterOfMass = (xsum/sum1+0.5)*pw;
+		yCenterOfMass = (ysum/sum1+0.5)*ph;
 	}
 
 	void getCentroid(ImageProcessor ip, double minThreshold, double maxThreshold) {

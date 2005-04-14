@@ -169,6 +169,8 @@ public class Projector implements PlugInFilter {
 		stack = imp.getStack();
 		if ((angleInc==0) && (totalAngle!=0))
 			angleInc = 5;
+		boolean negInc = angleInc<0;
+		if (negInc) angleInc = -angleInc;
 		angle = 0;
 		nProjections = 0;
 		if (angleInc==0)
@@ -183,6 +185,7 @@ public class Projector implements PlugInFilter {
 			nProjections--;
 		if (nProjections<=0)
 			nProjections = 1;
+		if (negInc) angleInc = -angleInc;
 
 		ImageProcessor ip = imp.getProcessor();
 		Rectangle r = ip.getRoi();

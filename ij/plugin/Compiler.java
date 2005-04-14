@@ -177,7 +177,7 @@ class PlugInExecuter implements Runnable {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) imp.unlock();
 			String msg = e.getMessage();
-			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals("Macro canceled"))
+			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
 				return;
 			CharArrayWriter caw = new CharArrayWriter();
 			PrintWriter pw = new PrintWriter(caw);

@@ -49,11 +49,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Record starting coordinates so outline can be recreated later using doWand(x,y). */
 	public static final int RECORD_STARTS = 128;
 
-	/** Display a summaru. */
+	/** Display a summary. */
 	public static final int DISPLAY_SUMMARY = 256;
 
 	/** Do not display particle outline image. */
 	public static final int SHOW_NONE = 512;
+
+	/** Flood fill to ignore interior holes. */
+	public static final int FLOOD_FILL = 1024;
 
 	static final String OPTIONS = "ap.options";
 	static final String BINS = "ap.bins";
@@ -74,7 +77,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected int slice;
 	protected boolean processStack;
 	protected boolean showResults,excludeEdgeParticles,showSizeDistribution,
-		resetCounter,showProgress, recordStarts, displaySummary;
+		resetCounter,showProgress, recordStarts, displaySummary, floodFill;
 		
 	private double level1, level2;
 	private int minSize;
@@ -107,6 +110,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private Rectangle r;
 	private ImageProcessor mask;
 	private double totalArea;
+	private FloodFiller ff;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -175,14 +179,18 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		gd.addNumericField("Maximum Size (pixels):", maxSize, 0);
 		gd.addNumericField("Bins (2-256):", sizeBins, 0);
 		gd.addChoice("Show:", showStrings, showStrings[showChoice]);
-		gd.addCheckbox("Display Results", (options&SHOW_RESULTS)!=0);
-		//gd.addCheckbox("Display Summary", (options&SHOW_SUMMARY)!=0);
-		//gd.addCheckbox("Show Outlines", (options&SHOW_OUTLINES)!=0);
-		gd.addCheckbox("Exclude Edge Particles", (options&EXCLUDE_EDGE_PARTICLES)!=0);
-		gd.addCheckbox("Size Distribution", (options&SHOW_SIZE_DISTRIBUTION)!=0);
-		gd.addCheckbox("Clear Results Table", (options&CLEAR_WORKSHEET)!=0);
-		gd.addCheckbox("Record Starts", (options&RECORD_STARTS)!=0);
-		gd.addCheckbox("Summarize", (options&DISPLAY_SUMMARY)!=0);
+		
+		String[] labels = new String[7];
+		boolean[] states = new boolean[14];
+		labels[0]="Display Results"; states[0] = (options&SHOW_RESULTS)!=0;
+		labels[1]="Exclude on Edges"; states[1]=(options&EXCLUDE_EDGE_PARTICLES)!=0;
+		labels[2]="Clear Results"; states[2]=(options&CLEAR_WORKSHEET)!=0;
+		labels[3]="Flood Fill"; states[3]=(options&FLOOD_FILL)!=0;
+		labels[4]="Summarize"; states[4]=(options&DISPLAY_SUMMARY)!=0;
+		labels[5]="Record Starts"; states[5]=(options&RECORD_STARTS)!=0;
+		labels[6]="Size Distribution"; states[6]=(options&SHOW_SIZE_DISTRIBUTION)!=0;
+		gd.addCheckboxGroup(4, 2, labels, states);
+
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -200,20 +208,18 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		showChoice = gd.getNextChoiceIndex();
 		if (gd.getNextBoolean())
 			options |= SHOW_RESULTS; else options &= ~SHOW_RESULTS;
-		//if (gd.getNextBoolean())
-		//	options |= SHOW_SUMMARY; else options &= ~SHOW_SUMMARY;
-		//if (gd.getNextBoolean())
-		//	options |= SHOW_OUTLINES; else options &= ~SHOW_OUTLINES;
 		if (gd.getNextBoolean())
 			options |= EXCLUDE_EDGE_PARTICLES; else options &= ~EXCLUDE_EDGE_PARTICLES;
 		if (gd.getNextBoolean())
-			options |= SHOW_SIZE_DISTRIBUTION; else options &= ~SHOW_SIZE_DISTRIBUTION;
-		if (gd.getNextBoolean())
 			options |= CLEAR_WORKSHEET; else options &= ~CLEAR_WORKSHEET;
+		if (gd.getNextBoolean())
+			options |= FLOOD_FILL; else options &= ~FLOOD_FILL;
+		if (gd.getNextBoolean())
+			options |= DISPLAY_SUMMARY; else options &= ~DISPLAY_SUMMARY;
 		if (gd.getNextBoolean())
 			options |= RECORD_STARTS; else options &= ~RECORD_STARTS;
 		if (gd.getNextBoolean())
-			options |= DISPLAY_SUMMARY; else options &= ~DISPLAY_SUMMARY;
+			options |= SHOW_SIZE_DISTRIBUTION; else options &= ~SHOW_SIZE_DISTRIBUTION;
 		staticOptions = options;
 		options |= SHOW_PROGRESS;
 		if ((options&DISPLAY_SUMMARY)!=0 || (options&SHOW_SIZE_DISTRIBUTION)!=0)
@@ -235,6 +241,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		showSizeDistribution = (options&SHOW_SIZE_DISTRIBUTION)!=0;
 		resetCounter = (options&CLEAR_WORKSHEET)!=0;
 		showProgress = (options&SHOW_PROGRESS)!=0;
+		floodFill = (options&FLOOD_FILL)!=0;
 		recordStarts = (options&RECORD_STARTS)!=0;
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
 		if ((options&SHOW_OUTLINES)!=0)
@@ -318,6 +325,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		particleCount = 0;
 		wand = new Wand(ip);
 		pf = new PolygonFiller();
+		if (floodFill) {
+            ImageProcessor ipf = ip.duplicate();
+            ipf.setValue(fillColor);
+            ff = new FloodFiller(ipf);
+        }
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -464,7 +476,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		return true;
 	}
 	
-	void analyzeParticle(int x, int y,ImagePlus imp, ImageProcessor ip) {
+	void analyzeParticle(int x, int y, ImagePlus imp, ImageProcessor ip) {
 		//Wand wand = new Wand(ip);
 		ImageProcessor ip2 = redirectIP!=null?redirectIP:ip;
 		wand.autoOutline(x,y, level1, level2);
@@ -476,6 +488,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			PolygonRoi proi = (PolygonRoi)roi;
 			pf.setPolygon(proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
 			ip2.setMask(pf.getMask(r.width, r.height));
+			if (floodFill) ff.particleAnalyzerFill(x,y, level1, level2, ip2.getMask(), r);
 		}
 		ip2.setRoi(r);
 		ip.setValue(fillColor);

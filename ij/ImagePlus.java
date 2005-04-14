@@ -69,6 +69,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private FileInfo fileInfo;
 	protected int width;
 	protected int height;
+	private int depth = 1;
+	private int nChannels = 1;
+	private int nFrames = 1;
 	private int imageType = GRAY8;
 	private ImageStack stack;
 	private int currentSlice;
@@ -653,6 +656,40 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
+	/** Sets the 3rd, 4th and 5th dimensions, where 
+	<code>nChannels</code>*<code>depth</code>*<code>nFrames</code> 
+	must be the same as the stack size. */
+	public void setDimensions(int nChannels, int depth, int nFrames) {
+		if (nChannels*depth*nFrames!=getStackSize())
+			throw new IllegalArgumentException("channels*depth*frames!=stackSize");
+		this.nChannels = nChannels;
+		this.depth = depth;
+		this.nFrames = nFrames;
+		//IJ.log("setDimensions: "+ nChannels+"  "+depth+"  "+nFrames);
+	}
+
+	/** Returns the number of channels. */
+	public int getNChannels() {
+		return nChannels;
+	}
+
+	/** Returns the image depth (number of z-slices). */
+	public int getDepth() {
+		//IJ.log("getDepth: "+ nChannels+"  "+depth+"  "+nFrames);
+		int stackSize = getStackSize();
+		if (depth==1 && nFrames*nChannels!=stackSize) {
+			depth = stackSize;
+			nChannels = 1;
+			nFrames = 1;
+		}
+		return depth;
+	}
+
+	/** Returns the number of frames (time-points). */
+	public int getNFrames() {
+		return nFrames;
+	}
+
 	/** Returns the current image type (ImagePlus.GRAY8, ImagePlus.GRAY16,
 		ImagePlus.GRAY32, ImagePlus.COLOR_256 or ImagePlus.COLOR_RGB).
 		@see #getBitDepth

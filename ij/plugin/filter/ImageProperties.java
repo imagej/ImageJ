@@ -2,18 +2,24 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Locale;
+import java.util.*;
 import ij.measure.Calibration;
 
-public class ImageProperties implements PlugInFilter {
+public class ImageProperties implements PlugInFilter, TextListener {
 	ImagePlus imp;
 	static final int NANOMETER=0, MICROMETER=1, MILLIMETER=2, CENTIMETER=3,
 		 METER=4, KILOMETER=5, INCH=6, FOOT=7, MILE=8, PIXEL=9, OTHER_UNIT=10;
 	int oldUnitIndex;
 	double oldUnitsPerCm;
 	double oldScale;
+	Vector nfields, sfields;
+	boolean duplicatePixelWidth = true;
+	String calUnit;
+	double calPixelWidth, calPixelHeight;
+
 
 
 	public int setup(String arg, ImagePlus imp) {
@@ -29,19 +35,57 @@ public class ImageProperties implements PlugInFilter {
 		Calibration cal = imp.getCalibration();
 		oldUnitIndex = getUnitIndex(cal.getUnit());
 		oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
-		GenericDialog gd = new ImagePropertiesDialog(imp.getTitle(), this);
+		int stackSize = imp.getStackSize();
+		int channels = imp.getNChannels();
+		int depth = imp.getDepth();
+		int frames = imp.getNFrames();
+		GenericDialog gd = new GenericDialog(imp.getTitle());
+		gd.addNumericField("Width:", imp.getWidth(), 0);
+		gd.addNumericField("Height:", imp.getHeight(), 0);
+		gd.addNumericField("Channels:", channels, 0);
+		gd.addNumericField("Depth (z-slices):", depth, 0);
+		gd.addNumericField("Frames (time-points):", frames, 0);
+		gd.addMessage("");
 		gd.addStringField("Unit of Length:", cal.getUnit());
 		oldScale = cal.pixelWidth!=0?1.0/cal.pixelWidth:0;
-		gd.addNumericField("Pixels/Unit:", oldScale, (int)oldScale==oldScale?0:3);
-		int stackSize = imp.getStackSize();
-		if (stackSize>1) {
-			gd.addMessage("");
-			gd.addNumericField("Slice Spacing:", cal.pixelDepth, (int)cal.pixelDepth==cal.pixelDepth?0:3);
-			double fps = cal.frameInterval>0.0?1/cal.frameInterval:0.0;
-			gd.addNumericField("Frames per Second:", fps, (int)fps==fps?0:2);		}
+		//gd.addNumericField("Pixels/Unit:", oldScale, (int)oldScale==oldScale?0:3);
+		//gd.addMessage("");
+		gd.addNumericField("Pixel_Width:", cal.pixelWidth, 4);
+		gd.addNumericField("Pixel_Height:", cal.pixelHeight, 4);
+		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 4);
+		gd.addMessage("");
+		double fps = cal.frameInterval>0.0?1/cal.frameInterval:0.0;
+		gd.addNumericField("Frames/Second:", fps, (int)fps==fps?0:2);
+		nfields = gd.getNumericFields();
+        for (int i=0; i<nfields.size(); i++)
+            ((TextField)nfields.elementAt(i)).addTextListener(this);
+        sfields = gd.getStringFields();
+        for (int i=0; i<sfields.size(); i++)
+            ((TextField)sfields.elementAt(i)).addTextListener(this);
+		calUnit = cal.getUnit();
+		calPixelWidth = cal.pixelWidth;
+		calPixelHeight = cal.pixelHeight;
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+ 		double width = gd.getNextNumber();
+ 		double height = gd.getNextNumber();
+ 		channels = (int)gd.getNextNumber();
+ 		if (channels<1) channels = 1;
+ 		depth = (int)gd.getNextNumber();
+ 		if (depth<1) depth = 1;
+ 		frames = (int)gd.getNextNumber();
+ 		if (frames<1) frames = 1;
+ 		if (width!=imp.getWidth() || height!=imp.getHeight()) {
+ 			IJ.error("Properties", "Use Image>Adjust>Size to change the image size.");
+ 			return;
+ 		}
+ 		if (channels*depth*frames==stackSize)
+ 			imp.setDimensions(channels, depth, frames);
+ 		else
+ 			IJ.error("Properties", "The product of channels ("+channels+"), depth ("+depth
+ 				+")\n and frames ("+frames+") must equal the stack size ("+stackSize+").");
+
 		String unit = gd.getNextString();
         if (unit.equals("um"))
             unit = IJ.micronSymbol + "m";
@@ -49,32 +93,31 @@ public class ImageProperties implements PlugInFilter {
             unit = "" + IJ.micronSymbol;
         else if (unit.equals("A"))
         	unit = ""+IJ.angstromSymbol;
- 		double resolution = gd.getNextNumber();
-		if (unit.equals("")||unit.equalsIgnoreCase("pixel")
-		||unit.equalsIgnoreCase("none")||resolution==0.0) {
+ 		double pixelWidth = gd.getNextNumber();
+ 		double pixelHeight = gd.getNextNumber();
+ 		double pixelDepth = gd.getNextNumber();
+		if (unit.equals("") || unit.equalsIgnoreCase("none") || pixelWidth==0.0) {
 			cal.setUnit(null);
 			cal.pixelWidth = 1.0;
 			cal.pixelHeight = 1.0;
 		} else {
 			cal.setUnit(unit);
-			cal.pixelWidth = 1.0/resolution;
-			cal.pixelHeight = 1.0/resolution;
+			cal.pixelWidth = pixelWidth;
+			cal.pixelHeight = pixelHeight;
+			cal.pixelDepth = pixelDepth;
 		}
-		if (stackSize>1) {
-			double spacing = gd.getNextNumber();
-			double fps = gd.getNextNumber();
-			cal.pixelDepth = spacing;
-			if (fps!=0.0)
-				cal.frameInterval = 1.0/fps;
-			else
-				cal.frameInterval = 0.0;
-		}
+
+		fps = gd.getNextNumber();
+		if (fps!=0.0)
+			cal.frameInterval = 1.0/fps;
+		else
+			cal.frameInterval = 0.0;
 		imp.repaintWindow();
 	}
 	
 	double getNewScale(String newUnit) {
-		if (oldUnitsPerCm==0.0)
-			return 0.0;
+		//IJ.log("getNewScale: "+newUnit);
+		if (oldUnitsPerCm==0.0) return 0.0;
 		double newScale = 0.0;
 		int newUnitIndex = getUnitIndex(newUnit);
 		if (newUnitIndex!=oldUnitIndex) {
@@ -125,28 +168,50 @@ public class ImageProperties implements PlugInFilter {
 		}
 	}
 
-}
-
-class ImagePropertiesDialog extends GenericDialog {
-	ImageProperties iprops;
-	
-	public ImagePropertiesDialog(String title, ImageProperties iprops) {
-		super(title);
-		this.iprops = iprops;
-	}
-
    	public void textValueChanged(TextEvent e) {
- 		TextField unitField = (TextField)stringField.elementAt(0);
- 		if (e.getSource()!=unitField)
-   			return;
+		//IJ.log("textValueChanged");
+       TextField widthField  = (TextField)nfields.elementAt(0);
+        int width = (int)Tools.parseDouble(widthField.getText(),-99);
+        //if (width!=imp.getWidth()) widthField.setText(IJ.d2s(imp.getWidth(),0));
+        
+       TextField heightField  = (TextField)nfields.elementAt(1);
+        int height = (int)Tools.parseDouble(heightField.getText(),-99);
+        //if (height!=imp.getHeight()) heightField.setText(IJ.d2s(imp.getHeight(),0));
+        
+        int channels = (int)Tools.parseDouble(((TextField)nfields.elementAt(2)).getText(),-99);
+        int depth = (int)Tools.parseDouble(((TextField)nfields.elementAt(3)).getText(),-99);
+        int frames = (int)Tools.parseDouble(((TextField)nfields.elementAt(4)).getText(),-99);
+        
+
+        TextField pixelWidthField  = (TextField)nfields.elementAt(5);
+		String newWidthText = pixelWidthField.getText()	;
+		double newPixelWidth = Tools.parseDouble(newWidthText,-99);
+        TextField pixelHeightField  = (TextField)nfields.elementAt(6);
+		String newHeightText = pixelHeightField.getText()	;
+		double newPixelHeight = Tools.parseDouble(newHeightText,-99);
+		if (newPixelWidth!=-99 && newPixelHeight!=-99) {
+			if (newPixelHeight!=calPixelHeight) duplicatePixelWidth = false;
+			if (duplicatePixelWidth && newPixelWidth!=calPixelWidth) 
+				if (newPixelWidth!=-99) {
+					pixelHeightField.setText(newWidthText);
+					calPixelHeight = Tools.parseDouble(newWidthText,-99);
+				}
+		}
+		calPixelWidth = newPixelWidth;
+		calPixelHeight = newPixelHeight;
+  		TextField unitField = (TextField)sfields.elementAt(0);
  		String newUnit = unitField.getText();
-  		TextField ppuField = (TextField)numberField.elementAt(0);
-   		double newScale = iprops.getNewScale(newUnit);
-  		if (newScale!=0.0) {
-  			ppuField.setText(((int)newScale)==newScale?IJ.d2s(newScale,0):IJ.d2s(newScale,2));
-  			iprops.oldUnitIndex = iprops.getUnitIndex(newUnit);
-			iprops.oldUnitsPerCm = iprops.getUnitsPerCm(iprops.oldUnitIndex);
-			iprops.oldScale = newScale;;
+ 		if (!newUnit.equals(calUnit)) {
+			double newScale = getNewScale(newUnit);
+			if (newScale!=0.0) {
+				//ppuField.setText(((int)newScale)==newScale?IJ.d2s(newScale,0):IJ.d2s(newScale,2));
+				pixelWidthField.setText(IJ.d2s(1/newScale,4));
+				pixelHeightField.setText(IJ.d2s(1/newScale,4));
+				oldUnitIndex = getUnitIndex(newUnit);
+				oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
+				oldScale = newScale;;
+			}
+			calUnit = newUnit;
 		}
  	}
 

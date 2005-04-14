@@ -15,6 +15,8 @@ public class ImageStatistics implements Measurements {
 	public double mean;
 	public double median;
 	public double stdDev;
+	public double skewness;
+	public double kurtosis;
 	public double xCentroid;
 	public double yCentroid;
 	public double xCenterOfMass;

@@ -11,7 +11,7 @@ import java.awt.*;
 */
 public class ResultsTable {
 
-	public static final int MAX_COLUMNS = 50;
+	public static final int MAX_COLUMNS = 150;
 	
 	public static final int COLUMN_NOT_FOUND = -1;
 	public static final int COLUMN_IN_USE = -2;
@@ -21,14 +21,14 @@ public class ResultsTable {
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
 		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
 		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19, INTEGRATED_DENSITY=20,
-		MEDIAN=21;
+		MEDIAN=21, SKEWNESS=22, KURTOSIS=23;
 
 	private String[] headings = new String[MAX_COLUMNS];
 	private String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
-		"Circ.", "Feret", "IntDen", "Median"};
+		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt"};
 	private int counter;
-	private float[][] columns = new float[MAX_COLUMNS][];
+	private double[][] columns = new double[MAX_COLUMNS][];
 	private String[] rowLabels;
 	private int maxRows = 100; // will be increased as needed
 	private int lastColumn = -1;
@@ -57,9 +57,9 @@ public class ResultsTable {
 				System.arraycopy(rowLabels, 0, s, 0, maxRows);
 				rowLabels = s;
 			}
-			for (int i=0; i<MAX_COLUMNS; i++) {
+			for (int i=0; i<=lastColumn; i++) {
 				if (columns[i]!=null) {
-					float[] tmp = new float[maxRows*2];
+					double[] tmp = new double[maxRows*2];
 					System.arraycopy(columns[i], 0, tmp, 0, maxRows);
 					columns[i] = tmp;
 				}
@@ -80,12 +80,12 @@ public class ResultsTable {
 		if (counter==0)
 			throw new IllegalArgumentException("Counter==0");
 		if (columns[column]==null) {
-			columns[column] = new float[maxRows];
+			columns[column] = new double[maxRows];
 			if (headings[column]==null)
 				headings[column] = "---";
 			if (column>lastColumn) lastColumn = column;
 		}
-		columns[column][counter-1] = (float)value;
+		columns[column][counter-1] = value;
 	}
 	
 	/** Adds a value to the end of the given column. If the column
@@ -140,7 +140,7 @@ public class ResultsTable {
 		else {
 			float[] data = new float[counter];
 			for (int i=0; i<counter; i++)
-				data[i] = columns[column][i];
+				data[i] = (float)columns[column][i];
 			return data;
 		}
 	}
@@ -172,7 +172,7 @@ public class ResultsTable {
 	public int getFreeColumn(String heading) {
 		for(int i=0; i<headings.length; i++) {
 			if (headings[i]==null) {
-				columns[i] = new float[maxRows];
+				columns[i] = new double[maxRows];
 				headings[i] = heading;
 				if (i>lastColumn) lastColumn = i;
 				return i;
@@ -187,7 +187,7 @@ public class ResultsTable {
 		column must be greater than or equal zero and less than
 		MAX_COLUMNS and row must be greater than or equal zero
 		and less than counter. */
-	public float getValue(int column, int row) {
+	public double getValueAsDouble(int column, int row) {
 		if (columns[column]==null)
 			throw new IllegalArgumentException("Column not defined: "+column);
 		if (column>=MAX_COLUMNS || row>=counter)
@@ -195,6 +195,11 @@ public class ResultsTable {
 		return columns[column][row];
 	}
 	
+	/**	Obsolete, replaced by getValueAsDouble. */
+	public float getValue(int column, int row) {
+		return (float)getValueAsDouble(column, row);
+	}
+
 	/**	Returns the value of the specified column and row, where
 		column is the column heading and row is a number greater
 		than or equal zero and less than value returned by getCounter(). 
@@ -207,7 +212,7 @@ public class ResultsTable {
 		if (col==COLUMN_NOT_FOUND)
 			throw new IllegalArgumentException("\""+column+"\" column not found");
 		//IJ.log("col: "+col+" "+(col==COLUMN_NOT_FOUND?"not found":""+columns[col]));
-		return getValue(col,row);
+		return getValueAsDouble(col,row);
 	}
 
 	/** Sets the value of the given column and row, where
@@ -233,10 +238,10 @@ public class ResultsTable {
 		if (row>=counter)
 			throw new IllegalArgumentException("row>=counter");
 		if (columns[column]==null) {
-			columns[column] = new float[maxRows];
+			columns[column] = new double[maxRows];
 			if (column>lastColumn) lastColumn = column;
 		}
-		columns[column][row] = (float)value;
+		columns[column][row] = value;
 	}
 
 	/** Returns a tab-delimited string containing the column headings. */
@@ -316,7 +321,7 @@ public class ResultsTable {
 			for (int i=row; i<counter-1; i++)
 				rowLabels[i] = rowLabels[i+1];
 		}
-		for (int i=0; i<MAX_COLUMNS; i++) {
+		for (int i=0; i<=lastColumn; i++) {
 			if (columns[i]!=null) {
 				for (int j=row; j<counter-1; j++)
 					columns[i][j] = columns[i][j+1];
