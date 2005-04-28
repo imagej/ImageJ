@@ -49,7 +49,9 @@ public class Zoom implements PlugIn{
 			double mag = ic.getHigherZoomLevel(ic.getMagnification());
 			while(r.width*mag<w.width && r.height*mag<w.height) {
 				ic.zoomIn(ic.screenX(x), ic.screenY(y));
-				mag = ic.getHigherZoomLevel(ic.getMagnification());
+				double cmag = ic.getMagnification();
+				if (cmag==32.0) break;
+				mag = ic.getHigherZoomLevel(cmag);
 				w = imp.getWindow().getBounds();
 				//IJ.log(mag+"  "+r.width+"  "+w.width+"  "+r.height+"  "+w.height);
 				//IJ.wait(5000);

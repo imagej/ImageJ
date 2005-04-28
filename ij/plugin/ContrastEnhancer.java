@@ -24,6 +24,8 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		imp.trimProcessor();
 		if (!showDialog(imp))
 			return;
+		Roi roi = imp.getRoi();
+		if (roi!=null) roi.endPaste();
 		if (stackSize==1)
 			Undo.setup(Undo.TRANSFORM, imp);
 		else

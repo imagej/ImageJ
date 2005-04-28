@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.Macro_Runner;
+import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
@@ -44,6 +45,7 @@ public class Interpreter implements MacroConstants {
 	String macroName;
 	String argument;
 	String returnValue;
+	boolean calledMacro; // macros envoked by eval() or runMacro()
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -58,6 +60,7 @@ public class Interpreter implements MacroConstants {
 		argument and returning a string value. */
 	public String run(String macro, String arg) {
 		argument = arg;
+		calledMacro = true;
 		run(macro);
 		return returnValue;
 	}
@@ -67,8 +70,10 @@ public class Interpreter implements MacroConstants {
 		this.pgm = pgm;
 		pc = -1;
 		instance = this;
-		batchMode = false;
-		imageTable = null;
+		if (!calledMacro) {
+			batchMode = false;
+			imageTable = null;
+		}
 		pushGlobals();
 		if (func==null)
 			func = new Functions(this, pgm);
@@ -298,7 +303,7 @@ public class Interpreter implements MacroConstants {
 					Variable[] array = null;
 					String str = null;
 					getToken();
-					Variable v = lookupNumericVariable();
+					Variable v = lookupVariable();
 					if (v!=null) {
 						int type = v.getType();
 						if (type==Variable.VALUE)
@@ -311,7 +316,7 @@ public class Interpreter implements MacroConstants {
 					args[count] = new Variable(0, value, str, array);
 				} else if (next==WORD && nextPlus=='[' ) {
 					getToken();
-					Variable v = lookupNumericVariable();
+					Variable v = lookupVariable();
 					v = getArrayElement(v);
 					if (v.getString()!=null)
 						args[count] = new Variable(0, 0.0, v.getString(), null);
@@ -364,7 +369,7 @@ public class Interpreter implements MacroConstants {
 			boolean isString = token==STRING_CONSTANT || token==STRING_FUNCTION;
 			boolean isArrayFunction = token==ARRAY_FUNCTION;
 			if (token==WORD) {
-				Variable v = lookupVariable(tokenAddress);
+				Variable v = lookupLocalVariable(tokenAddress);
 				if (v!=null && nextToken()==';') {
 					array = v.getArray();
 					isString = v.getString()!=null;
@@ -600,32 +605,33 @@ public class Interpreter implements MacroConstants {
 			doArrayElementAssignment();
 			return;
 		} 
-		//else if (next=='.') {
-		//	Variable v = lookupVariable(tokenAddress);
-		//	String name = v!=null?v.getString():null;
-		//	if (name!=null && name.charAt(0)=='*') {
-		//		func.doDotFunction();
-		//		return;
-		//	}
-		//}
-		int type = getExpressionType();		
-		if (type==Variable.STRING)
-			doStringAssignment();
-		else if (type==Variable.ARRAY)
-			doArrayAssignment();
-		else if (type==USER_FUNCTION)
-			doUserFunctionAssignment();
-		else {
-			putTokenBack();
-			getAssignmentExpression();
+		int type = getExpressionType();
+		switch (type) {
+			case Variable.STRING: doStringAssignment(); break;
+			case Variable.ARRAY: doArrayAssignment(); break;
+			case USER_FUNCTION: doUserFunctionAssignment(); break;
+			case STRING_FUNCTION: doNumericStringAssignment(); break;
+			default:
+				putTokenBack();
+				getAssignmentExpression();
 		}
 	}
 
 	int getExpressionType() {
 		int rightSideToken = pgm.code[pc+2];
 		int tok = rightSideToken&0xff;
-		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION)
+		if (tok==STRING_CONSTANT)
 			return Variable.STRING;
+		if (tok==STRING_FUNCTION) {
+			int address = rightSideToken>>16;
+			if (pgm.table[address].type==DIALOG) {
+				int token2 = pgm.code[pc+4];
+				String name = pgm.table[token2>>16].str;
+				if (name.equals("getNumber") || name.equals("getCheckbox"))
+					return STRING_FUNCTION; 
+			}
+			return Variable.STRING;
+		}
 		if (tok==ARRAY_FUNCTION)
 			return Variable.ARRAY;
 		if (tok==USER_FUNCTION)
@@ -656,8 +662,19 @@ public class Interpreter implements MacroConstants {
 		return array[index].getType();
 	}
 	
+	/** Handles string functions such as Dialog.getNumber() that return a number. */
+	final void doNumericStringAssignment() {
+		putTokenBack();
+		getToken();		
+		Variable v = lookupLocalVariable(tokenAddress);
+		if (v==null) v = push(tokenAddress, 0.0, null, this);
+		getToken();
+		if (token!='=') error("'=' expected");
+		v.setValue(getExpression());
+	}
+
 	final void doArrayElementAssignment() {
-		Variable v = lookupVariable(tokenAddress);
+		Variable v = lookupLocalVariable(tokenAddress);
 		if (v==null)
 				error("Undefined identifier");
 		if (pgm.code[pc+5]==';'&&(pgm.code[pc+4]==PLUS_PLUS||pgm.code[pc+4]==MINUS_MINUS))
@@ -710,7 +727,7 @@ public class Interpreter implements MacroConstants {
 			getAssignmentExpression();
 		else {
 			getToken();		
-			Variable v1 = lookupVariable(tokenAddress);
+			Variable v1 = lookupLocalVariable(tokenAddress);
 			if (v1==null)
 				v1 = push(tokenAddress, 0.0, null, this);
 			getToken();
@@ -750,7 +767,7 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	final void doStringAssignment() {
-		Variable v = lookupVariable(tokenAddress);
+		Variable v = lookupLocalVariable(tokenAddress);
 		if (v==null) {
 			if (nextToken()=='=')
 				v = push(tokenAddress, 0.0, null, this);
@@ -766,7 +783,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final void doArrayAssignment() {
-		Variable v = lookupVariable(tokenAddress);
+		Variable v = lookupLocalVariable(tokenAddress);
 		if (v==null) {
 			if (nextToken()=='=')
 				v = push(tokenAddress, 0.0, null, this);
@@ -782,7 +799,7 @@ public class Interpreter implements MacroConstants {
 		if (token==ARRAY_FUNCTION)
 			v.setArray(func.getArrayFunction(pgm.table[tokenAddress].type));
 		else if (token==WORD) {
-			Variable v2 = lookupVariable(tokenAddress);
+			Variable v2 = lookupVariable();
 			v.setArray(v2.getArray());
 		} else
 			error("Array expected");
@@ -918,7 +935,7 @@ public class Interpreter implements MacroConstants {
 		if ((pgm.code[pc+1]&0xff)==WORD && (tokPlus2=='='||tokPlus2==PLUS_EQUAL
 		||tokPlus2==MINUS_EQUAL||tokPlus2==MUL_EQUAL||tokPlus2==DIV_EQUAL)) {
 			getToken();
-			Variable v = lookupVariable(tokenAddress);
+			Variable v = lookupLocalVariable(tokenAddress);
 			if (v==null)
 				v = push(tokenAddress, 0.0, null, this);
 			getToken();
@@ -1150,6 +1167,12 @@ public class Interpreter implements MacroConstants {
 			case NUMERIC_FUNCTION:
 				value = func.getFunctionValue(pgm.table[tokenAddress].type);
 				break;
+			case STRING_FUNCTION:
+				String str = func.getStringFunction(pgm.table[tokenAddress].type);
+				value = Tools.parseDouble(str);
+				if (Double.isNaN(value))
+					error("Numeric value expected");
+				break;
 			case USER_FUNCTION:
 				v = runUserFunction();
 				if (v==null)
@@ -1164,7 +1187,7 @@ public class Interpreter implements MacroConstants {
 			case PI: value = Math.PI; break;
 			case NaN: value = Double.NaN; break;
 			case WORD:
-				v = lookupNumericVariable();
+				v = lookupVariable();
 				if (v==null)
 					return 0.0;
 				int next = nextToken();
@@ -1274,8 +1297,10 @@ public class Interpreter implements MacroConstants {
 		return value;
 	}
 
-	final Variable lookupVariable(int symTabAddress) {
-		//IJ.log("lookupVariable: "+topOfStack+" "+startOfLocals+" "+topOfGlobals);
+	/** Searches the local and global sections of the stack for.
+		the specified variable. Returns null if it is not found. */
+		final Variable lookupLocalVariable(int symTabAddress) {
+		//IJ.log("lookupLocalVariable: "+topOfStack+" "+startOfLocals+" "+topOfGlobals);
 		Variable v = null;
 		for (int i=topOfStack; i>=startOfLocals; i--) {
 			if (stack[i].symTabIndex==symTabAddress) {
@@ -1289,6 +1314,18 @@ public class Interpreter implements MacroConstants {
 					v = stack[i];
 					break;
 				}
+			}
+		}
+		return v;
+	}
+
+	/** Searches the entire stack for the specified variable. Returns null if it is not found. */
+	final Variable lookupVariable(int symTabAddress) {
+		Variable v = null;
+		for (int i=topOfStack; i>=0; i--) {
+			if (stack[i].symTabIndex==symTabAddress) {
+				v = stack[i];
+				break;
 			}
 		}
 		return v;
@@ -1338,7 +1375,9 @@ public class Interpreter implements MacroConstants {
 	    //IJ.log("trimStack: "+topOfStack);
 	}
 	
-	final Variable lookupNumericVariable() {
+	/** Searches the entire stack for the variable associated with the 
+		current token. Aborts the macro if it is not found. */
+	final Variable lookupVariable() {
 		Variable v = null;
 		if (stack==null) {
 			undefined();
@@ -1435,9 +1474,11 @@ public class Interpreter implements MacroConstants {
 		func.updateDisplay();
 		if (func.plot!=null) func.plot.show();
 		instance = null;
-		batchMode = false;
-		imageTable = null;
-		WindowManager.setTempCurrentImage(null);
+		if (!calledMacro) {
+			batchMode = false;
+			imageTable = null;
+			WindowManager.setTempCurrentImage(null);
+		}
 		if (!statusUpdated)
 			IJ.showStatus("");
 		if (showingProgress)

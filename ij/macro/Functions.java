@@ -23,8 +23,8 @@ public class Functions implements MacroConstants, Measurements {
 	Program pgm;
     boolean updateNeeded;
     boolean autoUpdate = true;
-    ImagePlus imp;
-    ImageProcessor ip;
+    ImagePlus defaultImp;
+    ImageProcessor defaultIP;
     int imageType;
     boolean colorSet, fontSet;
     Color defaultColor;
@@ -33,6 +33,7 @@ public class Functions implements MacroConstants, Measurements {
     static int plotID;
     int justification = ImageProcessor.LEFT_JUSTIFY;
     Font font;
+    GenericDialog gd;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -198,6 +199,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EVAL: str = runMacro(true); break;
 			case TO_STRING: str = getStringArg(); break;
 			case REPLACE: str = replace(); break;
+			case DIALOG: str = doDialog(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -346,7 +348,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getToken();
 		if (interp.token!=WORD)
 			interp.error("Variable expected");
-		Variable v = interp.lookupVariable(interp.tokenAddress);
+		Variable v = interp.lookupLocalVariable(interp.tokenAddress);
 		if (v==null)
 				v = interp.push(interp.tokenAddress, 0.0, null, interp);
 		Variable[] array = v.getArray();
@@ -379,7 +381,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getToken();
 		if (interp.token!=WORD)
 			interp.error("Variable expected");
-		Variable v = interp.lookupVariable(interp.tokenAddress);
+		Variable v = interp.lookupLocalVariable(interp.tokenAddress);
 		if (v==null)
 				v = interp.push(interp.tokenAddress, 0.0, null, interp);
 		return v;
@@ -387,41 +389,52 @@ public class Functions implements MacroConstants, Measurements {
 
 	final double[] getFirstArray() {
 		interp.getLeftParen();
-		return getArray();
+		return getNumericArray();
 	}
 
 	final double[] getNextArray() {
 		interp.getComma();
-		return getArray();
+		return getNumericArray();
 	}
 
 	final double[] getLastArray() {
 		interp.getComma();
-		double[] a = getArray();
+		double[] a = getNumericArray();
 		interp.getRightParen();
 		return a;
 	}
 
-	double[] getArray() {
-		interp.getToken();
-		boolean newArray = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==NEW_ARRAY;
-		if (!(interp.token==WORD||newArray))
-			interp.error("Array expected");
-		Variable[] a1;
-		if (newArray)
-			a1 = getArrayFunction(NEW_ARRAY);
-		else {
-			Variable v = interp.lookupVariable(interp.tokenAddress);
-			if (v==null)
-				interp.error("Undefined variable");		
-			a1= v.getArray();
-		}
-		if (a1==null)
-			interp.error("Array expected");
+	double[] getNumericArray() {
+		Variable[] a1 = getArray();
 		double[] a2 = new double[a1.length];
 		for (int i=0; i<a1.length; i++)
 			a2[i] = a1[i].getValue();
 		return a2;
+	}
+
+	String[] getStringArray() {
+		Variable[] a1 = getArray();
+		String[] a2 = new String[a1.length];
+		for (int i=0; i<a1.length; i++)
+			a2[i] = a1[i].getString();
+		return a2;
+	}
+
+	Variable[] getArray() {
+		interp.getToken();
+		boolean newArray = interp.token==ARRAY_FUNCTION && pgm.table[interp.tokenAddress].type==NEW_ARRAY;
+		if (!(interp.token==WORD||newArray))
+			interp.error("Array expected");
+		Variable[] a;
+		if (newArray)
+			a = getArrayFunction(NEW_ARRAY);
+		else {
+			Variable v = interp.lookupVariable();
+			a= v.getArray();
+		}
+		if (a==null)
+			interp.error("Array expected");
+		return a;
 	}
 		
 	Color getColor() {
@@ -508,6 +521,7 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setColor(double value) {
 		ImageProcessor ip = getProcessor();
+		ImagePlus imp = getImage();
 		switch (imp.getBitDepth()) {
 			case 8:
 				if (value<0 || value>255)
@@ -543,29 +557,31 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	ImagePlus getImage() {
-		if (imp==null)
-			imp = IJ.getImage();
-		if (imp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode())
+		if (defaultImp==null)
+			defaultImp = IJ.getImage();
+		if (defaultImp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode())
 			throw new RuntimeException(Macro.MACRO_CANCELED);			
-		return imp;
+		return defaultImp;
 	}
 	
 	void resetImage() {
-		imp = null;
-		ip = null;
+		defaultImp = null;
+		defaultIP = null;
 		colorSet = fontSet = false;
 	}
 
 	ImageProcessor getProcessor() {
-		if (ip==null)
-			ip = getImage().getProcessor();
-		return ip;
+		if (defaultIP==null) {
+			defaultImp = getImage();
+			defaultIP = defaultImp.getProcessor();
+		}
+		return defaultIP;
 	}
 
 	int getType() {
-		if (imp==null)
-			imp = IJ.getImage();
-		imageType = imp.getType();
+		if (defaultImp==null)
+			defaultImp = IJ.getImage();
+		imageType = defaultImp.getType();
 		return imageType;
 	}
 
@@ -591,7 +607,7 @@ public class Functions implements MacroConstants, Measurements {
 		int size = stack.getSize();
 		if (z<0 || z>=size)
 			interp.error("Z coordinate ("+z+") is out of 0-"+(size-1)+ " range");
-		this.ip = stack.getProcessor(z+1);		
+		this.defaultIP = stack.getProcessor(z+1);		
 	}
 	
 	void setPixel() {
@@ -627,7 +643,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
 		ip.lineTo(a1, a2);
-		updateAndDraw(imp);
+		updateAndDraw(defaultImp);
 	}
 
 	void drawLine() {
@@ -643,7 +659,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
 		ip.drawLine(a1, a2, a3, a4);
-		updateAndDraw(imp);
+		updateAndDraw(defaultImp);
 	}
 	
 	void setForegroundColor(ImageProcessor ip) {
@@ -707,7 +723,7 @@ public class Functions implements MacroConstants, Measurements {
 		setFont(ip);
 		ip.setJustification(justification);
 		ip.drawString(str, x, y);
-		updateAndDraw(imp);
+		updateAndDraw(defaultImp);
 	}
 	
 	void setFont(ImageProcessor ip) {
@@ -952,7 +968,7 @@ public class Functions implements MacroConstants, Measurements {
 		Variable xCoordinates = getFirstArrayVariable();
 		Variable yCoordinates = getLastArrayVariable();
 		resetImage();
-		ImageProcessor ip = getProcessor();
+		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("Selection required");
@@ -1152,9 +1168,8 @@ public class Functions implements MacroConstants, Measurements {
 				break; 
 			case WORD:
 				interp.getToken();
-				Variable v = interp.lookupNumericVariable();
-				if (v==null)
-					return 0.0;
+				Variable v = interp.lookupVariable();
+				if (v==null) return 0.0;
 				String s = v.getString();
 				if (s!=null)
 					length = s.length();
@@ -1547,7 +1562,7 @@ public class Functions implements MacroConstants, Measurements {
 				x[i] = i;
 		} else {
 			interp.getComma();
-			y = getArray();
+			y = getNumericArray();
 		}
 		interp.getRightParen();
 		if (what==-1)
@@ -2078,10 +2093,11 @@ public class Functions implements MacroConstants, Measurements {
 		int y = (int)getNextArg();
 		int width = (int)getNextArg();
 		int height = (int)getLastArg();
+		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
 		ip.setRoi(x, y, width, height);
 		ip.fill();
-		updateAndDraw(imp);
+		updateAndDraw(defaultImp);
 	}
 
 	double getScreenDimension(int type) {
@@ -2166,7 +2182,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (!colorSet) setForegroundColor(ip);
 		FloodFiller ff = new FloodFiller(ip);
 		ff.fill(x, y);
-		updateAndDraw(imp);
+		updateAndDraw(defaultImp);
 	}
 	
 	void restorePreviousTool() {
@@ -2207,6 +2223,67 @@ public class Functions implements MacroConstants, Measurements {
 		v2.setValue(y);
 		v3.setValue(w);
 		v4.setValue(h);
+	}
+	
+	String doDialog() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		try {
+			if (name.equals("create")) {
+				gd = new GenericDialog(getStringArg());
+				return null;
+			}
+			if (gd==null) {
+				interp.error("No dialog created with Dialog.create()"); 
+				return null;
+			}
+			if (name.equals("addString"))
+				gd.addStringField(getFirstString(), getLastString());
+			else if (name.equals("addNumber")) {
+				String prompt = getFirstString();
+				double defaultNumber = getLastArg();
+				int decimalPlaces = (int)defaultNumber==defaultNumber?0:3;
+				gd.addNumericField(prompt, defaultNumber, decimalPlaces);
+			} else if (name.equals("addCheckbox")) {
+				gd.addCheckbox(getFirstString(), getLastArg()==1?true:false);
+			} else if (name.equals("addMessage")) {
+				gd.addMessage(getStringArg());
+			} else if (name.equals("addChoice")) {
+				String prompt = getFirstString();
+				interp.getComma();
+				String[] choices = getStringArray();
+				interp.getRightParen();
+				gd.addChoice(prompt, choices, choices[0]);
+			} else if (name.equals("show")) {
+				interp.getParens();
+				gd.showDialog();
+				if (gd.wasCanceled()) {
+					interp.finishUp();
+					throw new RuntimeException(Macro.MACRO_CANCELED);
+				}
+			} else if (name.equals("getString")) {
+				interp.getParens();
+				return gd.getNextString();
+			} else if (name.equals("getNumber")) {
+				interp.getParens();
+				return ""+gd.getNextNumber();
+			} else if (name.equals("getCheckbox")) {
+				interp.getParens();
+				return gd.getNextBoolean()==true?"1":"0";
+			} else if (name.equals("getChoice")) {
+				interp.getParens();
+				return gd.getNextChoice();
+			} else
+				interp.error("Unrecognized Dialog function "+name);
+		} catch (IndexOutOfBoundsException e) {
+			interp.error("Dialog error");
+		}
+		return null;
 	}
 
 } // class Functions

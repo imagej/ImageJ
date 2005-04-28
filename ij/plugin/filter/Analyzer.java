@@ -659,7 +659,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int counter = systemRT.getCounter();
 		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
 		ImageJ ij = IJ.getInstance();
-		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning() && ij!=null) {
+		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning() && ij!=null && !ij.quitting()) {
 			SaveChangesDialog d = new SaveChangesDialog(ij, "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;

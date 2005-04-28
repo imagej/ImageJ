@@ -69,7 +69,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private FileInfo fileInfo;
 	protected int width;
 	protected int height;
-	private int depth = 1;
+	private int nSlices = 1;
 	private int nChannels = 1;
 	private int nFrames = 1;
 	private int imageType = GRAY8;
@@ -461,8 +461,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (stackSize==1 && win instanceof StackWindow)
 			win = new ImageWindow(this);   // replaces this window
 		else if (dimensionsChanged && !stackSizeChanged)
-            win.updateImage(this);
-        else if (stackSize>1 && !(win instanceof StackWindow))
+			win.updateImage(this);
+		else if (stackSize>1 && !(win instanceof StackWindow))
 			win = new StackWindow(this);   // replaces this window
 		else
 			repaintWindow();
@@ -657,15 +657,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	/** Sets the 3rd, 4th and 5th dimensions, where 
-	<code>nChannels</code>*<code>depth</code>*<code>nFrames</code> 
+	<code>nChannels</code>*<code>nSlices</code>*<code>nFrames</code> 
 	must be the same as the stack size. */
-	public void setDimensions(int nChannels, int depth, int nFrames) {
-		if (nChannels*depth*nFrames!=getStackSize())
-			throw new IllegalArgumentException("channels*depth*frames!=stackSize");
+	public void setDimensions(int nChannels, int nSlices, int nFrames) {
+		if (nChannels*nSlices*nFrames!=getStackSize())
+			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
 		this.nChannels = nChannels;
-		this.depth = depth;
+		this.nSlices = nSlices;
 		this.nFrames = nFrames;
-		//IJ.log("setDimensions: "+ nChannels+"  "+depth+"  "+nFrames);
+		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 
 	/** Returns the number of channels. */
@@ -674,21 +674,34 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 
 	/** Returns the image depth (number of z-slices). */
-	public int getDepth() {
-		//IJ.log("getDepth: "+ nChannels+"  "+depth+"  "+nFrames);
+	public int getNSlices() {
+		//IJ.log("getNSlices: "+ nChannels+"  "+nSlices+"  "+nFrames);
 		int stackSize = getStackSize();
-		if (depth==1 && nFrames*nChannels!=stackSize) {
-			depth = stackSize;
+		if (nSlices==1 && nFrames*nChannels!=stackSize) {
+			nSlices = stackSize;
 			nChannels = 1;
 			nFrames = 1;
 		}
-		return depth;
+		return nSlices;
 	}
 
 	/** Returns the number of frames (time-points). */
 	public int getNFrames() {
 		return nFrames;
 	}
+	
+	/** Returns the dimensions of this image (width, height, nChannels, 
+		nSlices, nFrames) as a 5 element int array. */
+	public int[] getDimensions() {
+		int[] d = new int[5];
+		d[0] = width;
+		d[1] = height;
+		d[2] = nChannels;
+		d[3] = nSlices;
+		d[4] = nFrames;
+		return d;
+	}
+
 
 	/** Returns the current image type (ImagePlus.GRAY8, ImagePlus.GRAY16,
 		ImagePlus.GRAY32, ImagePlus.COLOR_256 or ImagePlus.COLOR_RGB).
@@ -1396,10 +1409,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (nonRect) ip.snapshot();
 			r = roi.getBounds();
 			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
-			if (nonRect)
-				ip.reset(getMask());
+			if (nonRect) ip.reset(getMask());
 			updateAndDraw();
-			killRoi();
+			//killRoi();
 		} else {
 			roi.startPaste(clipboard);
 			Undo.setup(Undo.PASTE, this);

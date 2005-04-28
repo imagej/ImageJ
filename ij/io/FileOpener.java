@@ -299,14 +299,14 @@ public class FileOpener {
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
 			int channels = (int)getDouble(props,"channels");
-			int depth = (int)getDouble(props,"depth");
+			int slices = (int)getDouble(props,"slices");
 			int frames = (int)getDouble(props,"frames");
 			if (channels==0) channels = 1;
-			if (depth==0) depth = 1;
+			if (slices==0) slices = 1;
 			if (frames==0) frames = 1;
-			//IJ.log("setCalibration: "+channels+"  "+depth+"  "+frames);
-			if (channels*depth*frames==stackSize)
-				imp.setDimensions(channels, depth, frames);
+			//IJ.log("setCalibration: "+channels+"  "+slices+"  "+frames);
+			if (channels*slices*frames==stackSize)
+				imp.setDimensions(channels, slices, frames);
 		}
 	}
 

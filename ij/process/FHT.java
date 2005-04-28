@@ -124,8 +124,8 @@ public class FHT extends FloatProcessor {
 
 		int mRow, mCol;
 		float A,B,C,D,E;
-		for (int row=0; row<maxN/2; row++) { // Now calculate actual Hartley transform
-			for (int col=0; col<maxN/2; col++) {
+		for (int row=0; row<=maxN/2; row++) { // Now calculate actual Hartley transform
+			for (int col=0; col<=maxN/2; col++) {
 				mRow = (maxN - row) % maxN;
 				mCol = (maxN - col)  % maxN;
 				A = x[row * maxN + col];	//  see Bracewell, 'Fast 2D Hartley Transf.' IEEE Procs. 9/86
@@ -427,7 +427,9 @@ public class FHT extends FloatProcessor {
 					tmp[r * maxN + c] = (float)(h1[r * maxN + c] * h2e + h1[rowMod * maxN + colMod] * h2o);
 			}
 		}
-		return new FHT(new FloatProcessor(maxN, maxN, tmp, null));
+		FHT fht2 =  new FHT(new FloatProcessor(maxN, maxN, tmp, null));
+		fht2.isFrequencyDomain = true;
+		return fht2;
 	}
 		
 	/** Returns the image resulting from the point by point Hartley division
@@ -453,7 +455,9 @@ public class FHT extends FloatProcessor {
 				out[r*maxN+c] = (float)(tmp/mag);
 			}
 		}
-		return new FHT(new FloatProcessor(maxN, maxN, out, null));
+		FHT fht2 = new FHT(new FloatProcessor(maxN, maxN, out, null));
+		fht2.isFrequencyDomain = true;
+		return fht2;
 	}
 			
 	/** Enables/disables display of the progress bar during transforms. */

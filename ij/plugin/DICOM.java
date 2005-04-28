@@ -88,8 +88,8 @@ public class DICOM extends ImagePlus implements PlugIn {
  					imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
  				}
 			}
-			if (fi.fileType==FileInfo.GRAY16_SIGNED && imp.getStackSize()==1)
-				convertToUnsigned(imp, fi);
+			//if (fi.fileType==FileInfo.GRAY16_SIGNED && imp.getStackSize()==1)
+			//	convertToUnsigned(imp, fi);
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
@@ -1277,7 +1277,7 @@ class DicomDictionary {
 		"00402006= 1Placer Order Number / Imaging Service Request S",
 		"00402007= 1Filler Order Number / Imaging Service Request S",
 		"00402008=PNOrder Entered By",
-		"00402009=SHOrder EntererÍs Location",
+		"00402009=SHOrder Enterers Location",
 		"00402010=SHOrder Callback Phone Number",
 		"00402016=LOPlacer Order Number / Imaging Service Request",
 		"00402017=LOFiller Order Number / Imaging Service Request",

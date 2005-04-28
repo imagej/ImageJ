@@ -37,7 +37,7 @@ public class FolderOpener implements PlugIn {
 			title = title.substring(0, title.length()-1);
 		
 		IJ.register(FolderOpener.class);
-		ij.util.StringSorter.sort(list);
+		list = sortFileList(list);
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
 		int width=0,height=0,bitDepth=0;
 		ImageStack stack = null;
@@ -218,6 +218,37 @@ public class FolderOpener implements PlugIn {
 		convertToGrayscale = gd.getNextBoolean();
 		convertToRGB = gd.getNextBoolean();
 		return true;
+	}
+
+	String[] sortFileList(String[] list) {
+		int listLength = list.length;
+		int first = listLength>1?1:0;
+		if ((list[first].length()==list[listLength-1].length())&&(list[first].length()==list[listLength/2].length()))
+			{ij.util.StringSorter.sort(list); return list;} 
+		int maxDigits = 15;     
+		String[] list2 = null;	
+		char ch;	
+		for (int i=0; i<listLength; i++) {
+			int len = list[i].length();
+			String num = "";
+			for (int j=0; j<len; j++) {
+				ch = list[i].charAt(j);
+				if (ch>=48&&ch<=57) num += ch;
+			}
+			if (list2==null) list2 = new String[listLength];
+			num = "000000000000000" + num; // prepend maxDigits leading zeroes
+			num = num.substring(num.length()-maxDigits);
+			list2[i] = num + list[i];
+		}
+		if (list2!=null) {
+			ij.util.StringSorter.sort(list2);
+			for (int i=0; i<listLength; i++)
+				list2[i] = list2[i].substring(maxDigits);
+			return list2;   
+		} else {
+			ij.util.StringSorter.sort(list);
+			return list;   
+		}   
 	}
 
 }

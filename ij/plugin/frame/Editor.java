@@ -447,7 +447,8 @@ TextListener, ClipboardOwner, MacroConstants {
 	/** Overrides close() in PlugInFrame. */
 	public void close() {
 		boolean okayToClose = true;
-		if (!getTitle().equals("Errors") && changes && !IJ.macroRunning()) {
+		ImageJ ij = IJ.getInstance();
+		if (!getTitle().equals("Errors") && changes && !IJ.macroRunning() && ij!=null && !ij.quitting()) {
 			SaveChangesDialog d = new SaveChangesDialog(this, getTitle());
 			if (d.cancelPressed())
 				okayToClose = false;

@@ -23,9 +23,10 @@ public class Convolver implements PlugInFilter, ActionListener {
 	boolean isLineRoi;
 	Button open, save;
 	GenericDialog gd;
+	boolean normalize = true;
 	
 	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
-	static boolean normalize = true;
+	static boolean normalizeFlag = true;
 
 	public int setup(String arg, ImagePlus imp) {
  		IJ.register(Convolver.class);
@@ -71,14 +72,15 @@ public class Convolver implements PlugInFilter, ActionListener {
 		gd = new GenericDialog("Convolver...", IJ.getInstance());
 		gd.addTextAreas(kernelText, null, 10, 30);
 		gd.addPanel(makeButtonPanel(gd));
-		gd.addCheckbox("Normalize Kernel", normalize);
+		gd.addCheckbox("Normalize Kernel", normalizeFlag);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			canceled = true;
 			return null;
 		}
 		kernelText = gd.getNextText();
-		normalize = gd.getNextBoolean();
+		normalizeFlag = gd.getNextBoolean();
+		normalize = normalizeFlag;
 		StringTokenizer st = new StringTokenizer(kernelText);
 		int n = st.countTokens();
 		kw = (int)Math.sqrt(n);

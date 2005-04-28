@@ -2,6 +2,8 @@ package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
+import ij.text.TextWindow;
+import ij.plugin.frame.PlugInFrame;
 import java.awt.*;
 import java.util.*;
 import ij.gui.*;
@@ -9,9 +11,9 @@ import ij.gui.*;
 /** This class consists of static methods used to manage ImageJ's windows. */
 public class WindowManager {
 
-	private static Vector imageList = new Vector();		// list of image windows
-	private static Vector nonImageList = new Vector();	// list of non-image windows
-	private static ImageWindow currentWindow;			// active image window
+	private static Vector imageList = new Vector();		 // list of image windows
+	private static Vector nonImageList = new Vector();	 // list of non-image windows
+	private static ImageWindow currentWindow;			 // active image window
 	private static Frame frontWindow;
 	private static ImagePlus tempCurrentImage;
 	
@@ -111,6 +113,13 @@ public class WindowManager {
 		return list;
 	}
 
+	/** Returns an array containing a list of the non-image windows. */
+	synchronized static Frame[] getNonImageWindows() {
+		Frame[] list = new Frame[nonImageList.size()];
+		nonImageList.copyInto((Frame[])list);
+		return list;
+	}
+
 	/** For IDs less than zero, returns the ImagePlus with the specified ID. 
 		Returns null if no open window has a matching ID or no images are open. 
 		For IDs greater than zero, returns the Nth ImagePlus. Returns null if 
@@ -173,7 +182,9 @@ public class WindowManager {
 			removeImageWindow((ImageWindow)win);
 		else {
 			int index = nonImageList.indexOf(win);
+			ImageJ ij = IJ.getInstance();
 			if (index>=0) {
+			 	//if (ij!=null && !ij.quitting())
 				Menus.removeWindowMenuItem(index);
 				nonImageList.removeElement(win);
 			}
@@ -207,7 +218,7 @@ public class WindowManager {
 		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
     }
 
-	/** Closes all image windows. Stops and returns false if any "save changes" dialog is canceled. */
+	/** Closes all windows. Stops and returns false if any image "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		while (imageList.size()>0) {
 			//ImagePlus imp = ((ImageWindow)imageList.elementAt(0)).getImagePlus();
@@ -215,6 +226,14 @@ public class WindowManager {
 			if (!((ImageWindow)imageList.elementAt(0)).close())
 				return false;
 			IJ.wait(100);
+		}
+		Frame[] list = getNonImageWindows();
+		for (int i=0; i<list.length; i++) {
+			Frame frame = list[i];
+			if (frame instanceof PlugInFrame)
+				((PlugInFrame)frame).close();
+			else if (frame instanceof TextWindow)
+			((TextWindow)frame).close();
 		}
 		return true;
     }

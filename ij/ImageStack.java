@@ -20,7 +20,6 @@ public class ImageStack {
 	private ColorModel cm;
 	private double min=Double.MAX_VALUE;
 	private double max;
-	private ImageProcessor ip;
 	private float[] cTable;
 	
 	/** Creates a new, empty image stack. */
@@ -214,6 +213,7 @@ public class ImageStack {
 		were 1<=n<=nslices. Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
+		ImageProcessor ip;
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
 		if (nSlices==0)
@@ -226,6 +226,8 @@ public class ImageStack {
 			ip = new ColorProcessor(width, height, null);
 		else if (stack[0] instanceof float[])
 			ip = new FloatProcessor(width, height, null, cm);		
+		else
+			throw new IllegalArgumentException("Unknown stack type");
 		ip.setPixels(stack[n-1]);
 		if (min!=Double.MAX_VALUE && ip!=null && !(ip instanceof ColorProcessor))
 			ip.setMinAndMax(min, max);

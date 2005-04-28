@@ -37,13 +37,13 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
 		int stackSize = imp.getStackSize();
 		int channels = imp.getNChannels();
-		int depth = imp.getDepth();
+		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
 		GenericDialog gd = new GenericDialog(imp.getTitle());
 		gd.addNumericField("Width:", imp.getWidth(), 0);
 		gd.addNumericField("Height:", imp.getHeight(), 0);
+		gd.addNumericField("Depth (z-slices):", slices, 0);
 		gd.addNumericField("Channels:", channels, 0);
-		gd.addNumericField("Depth (z-slices):", depth, 0);
 		gd.addNumericField("Frames (time-points):", frames, 0);
 		gd.addMessage("");
 		gd.addStringField("Unit of Length:", cal.getUnit());
@@ -54,8 +54,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Pixel_Height:", cal.pixelHeight, 4);
 		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 4);
 		gd.addMessage("");
-		double fps = cal.frameInterval>0.0?1/cal.frameInterval:0.0;
-		gd.addNumericField("Frames/Second:", fps, (int)fps==fps?0:2);
+		double interval = cal.frameInterval;
+		gd.addNumericField("Frame Interval (sec.):", interval, (int)interval==interval?0:2);
 		nfields = gd.getNumericFields();
         for (int i=0; i<nfields.size(); i++)
             ((TextField)nfields.elementAt(i)).addTextListener(this);
@@ -70,20 +70,20 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			return;
  		double width = gd.getNextNumber();
  		double height = gd.getNextNumber();
+ 		slices = (int)gd.getNextNumber();
+ 		if (slices<1) slices = 1;
  		channels = (int)gd.getNextNumber();
  		if (channels<1) channels = 1;
- 		depth = (int)gd.getNextNumber();
- 		if (depth<1) depth = 1;
  		frames = (int)gd.getNextNumber();
  		if (frames<1) frames = 1;
  		if (width!=imp.getWidth() || height!=imp.getHeight()) {
  			IJ.error("Properties", "Use Image>Adjust>Size to change the image size.");
  			return;
  		}
- 		if (channels*depth*frames==stackSize)
- 			imp.setDimensions(channels, depth, frames);
+ 		if (channels*slices*frames==stackSize)
+ 			imp.setDimensions(channels, slices, frames);
  		else
- 			IJ.error("Properties", "The product of channels ("+channels+"), depth ("+depth
+ 			IJ.error("Properties", "The product of channels ("+channels+"), slices ("+slices
  				+")\n and frames ("+frames+") must equal the stack size ("+stackSize+").");
 
 		String unit = gd.getNextString();
@@ -107,11 +107,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			cal.pixelDepth = pixelDepth;
 		}
 
-		fps = gd.getNextNumber();
-		if (fps!=0.0)
-			cal.frameInterval = 1.0/fps;
-		else
-			cal.frameInterval = 0.0;
+		cal.frameInterval = gd.getNextNumber();
 		imp.repaintWindow();
 	}
 	

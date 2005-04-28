@@ -38,17 +38,18 @@ public class Converter implements PlugIn {
 	 	boolean saveChanges = imp.changes;
 		imp.changes = IJ.getApplet()==null; //if not applet, set 'changes' flag
 	 	newWindowCreated = false;
+	 	ImageWindow win = imp.getWindow();
 		try {
  			if (stack!=null) {
 				// do stack conversions
 		    	if (stack.isRGB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertRGBStackToRGB();
 		    		newWindowCreated = true;
-		    		new ImageWindow(imp); // replace StackWindow with ImageWindow
+		    		if (win!=null) new ImageWindow(imp); // replace StackWindow with ImageWindow
 		    	} else if (stack.isHSB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertHSBToRGB();
 		    		newWindowCreated = true;
-		    		new ImageWindow(imp);
+		    		if (win!=null) new ImageWindow(imp);
 				} else if (item.equals("8-bit"))
 					new StackConverter(imp).convertToGray8();
 				else if (item.equals("16-bit"))

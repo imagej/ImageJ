@@ -134,7 +134,8 @@ public class IJ {
 			{((PlugInFilter)theFilter).run(null); return;}
 		if (imp==null)
 			{IJ.noImage(); return;}
-		if ((capabilities&PlugInFilter.ROI_REQUIRED)!=0 && imp.getRoi()==null)
+		Roi roi = imp.getRoi();
+		if ((capabilities&PlugInFilter.ROI_REQUIRED)!=0 && roi==null)
 			{IJ.error("Selection required"); return;}
 		if ((capabilities&PlugInFilter.STACK_REQUIRED)!=0 && imp.getStackSize()==1)
 			{IJ.error("Stack required"); return;}
@@ -161,6 +162,7 @@ public class IJ {
 					{wrongType(capabilities, cmd); return;}
 				break;
 		}
+		if (roi!=null) roi.endPaste();
 		int slices = imp.getStackSize();
 		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
 		if (!imp.lock())
@@ -191,7 +193,6 @@ public class IJ {
 			int n = stack.getSize();
 			int currentSlice = imp.getCurrentSlice();
 			Rectangle r = null;
-			Roi roi = imp.getRoi();
 			if (roi!=null && roi.isArea())
 				r = roi.getBounds();
 			ip = imp.getProcessor();

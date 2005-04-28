@@ -31,7 +31,8 @@ public class RGBStackConverter implements PlugIn {
 			imp2.setStack(imp.getTitle()+" (RGB)", imp.getStack());
 	 		ImageConverter ic = new ImageConverter(imp2);
 			ic.convertRGBStackToRGB();
-			new ImageWindow(imp2); // replace StackWindow with ImageWindow
+			if (imp.getWindow()!=null)
+				new ImageWindow(imp2); // replace StackWindow with ImageWindow
 		}
 		imp.unlock();
 	}

@@ -458,9 +458,9 @@ public class FileSaver {
 		int channels = imp.getNChannels();
 		if (channels>1)
 			sb.append("channels="+channels+"\n");
-		int depth = imp.getDepth();
-		if (depth>1)
-			sb.append("depth="+depth+"\n");
+		int slices = imp.getNSlices();
+		if (slices>1)
+			sb.append("slices="+slices+"\n");
 		int frames = imp.getNFrames();
 		if (frames>1)
 			sb.append("frames="+frames+"\n");
