@@ -275,8 +275,10 @@ public abstract class ImageProcessor extends Object {
 			stdDev = Math.sqrt(stdDev/(767.0));
 		else
 			stdDev = 0.0;
-		//ij.IJ.log("isPseudoColorLut: "+(stdDev<10.0) + " " + stdDev);
-		return stdDev<20.0;
+		boolean isPseudoColor = stdDev<20.0;
+		if ((int)stdDev==67) isPseudoColor = true; // "3-3-2 RGB" LUT
+		//ij.IJ.log("isPseudoColorLut: "+(isPseudoColor) + " " + stdDev);
+		return isPseudoColor;
 	}
 
 	/** Sets the default fill/draw value to the pixel
@@ -722,8 +724,8 @@ public abstract class ImageProcessor extends Object {
 		int n = absdy>absdx?absdy:absdx;
 		double xinc = (double)dx/n;
 		double yinc = (double)dy/n;
-		double x = cx+0.5;
-		double y = cy+0.5;
+		double x = cx<0?cx-0.5:cx+0.5;
+		double y = cy<0?cy-0.5:cy+0.5;
 		n++;
 		do {
 			if (lineWidth==1)
@@ -748,11 +750,19 @@ public abstract class ImageProcessor extends Object {
 	public void drawRect(int x, int y, int width, int height) {
 		if (width<1 || height<1)
 			return;
-		moveTo(x, y);
-		lineTo(x+width-1, y);
-		lineTo(x+width-1, y+height-1);
-		lineTo(x, y+height-1);
-		lineTo(x, y);
+		if (lineWidth==1) {
+			moveTo(x, y);
+			lineTo(x+width-1, y);
+			lineTo(x+width-1, y+height-1);
+			lineTo(x, y+height-1);
+			lineTo(x, y);
+		} else {
+			moveTo(x, y);
+			lineTo(x+width, y);
+			lineTo(x+width, y+height);
+			lineTo(x, y+height);
+			lineTo(x, y);
+		}
 	}
 
 	/** Draws a polygon. */
@@ -780,12 +790,20 @@ public abstract class ImageProcessor extends Object {
 		
 	/** Draws a dot using the current line width and fill/draw value. */
 	public void drawDot(int xcenter, int ycenter) {
-		int r = lineWidth/2;
-		int r2 = r*r+1;
-		for (int x=-r; x<=r; x++)
-			for (int y=-r; y<=r; y++)
-				if ((x*x+y*y)<=r2)
-					drawPixel(xcenter+x, ycenter+y);
+		double r = lineWidth/2.0;
+		double r2 = r*r;
+		int xmin=(int)(xcenter-r+0.5), ymin=(int)(ycenter-r+0.5);
+		int xmax=xmin+lineWidth, ymax=ymin+lineWidth;
+		r -= 0.5;
+		double xoffset=xmin+r, yoffset=ymin+r;
+		double xx, yy;
+		for (int y=ymin; y<ymax; y++) {
+			for (int x=xmin; x<xmax; x++) {
+				xx = x-xoffset; yy = y-yoffset;
+				if (xx*xx+yy*yy<=r2)
+				drawPixel(x, y);
+			}
+		}
 	}
 
 	private void setupFrame() {

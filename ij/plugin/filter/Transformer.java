@@ -40,16 +40,11 @@ public class Transformer implements PlugInFilter {
 	    		s2 = sp.rotateRight();
 	    	else
 	    		s2 = sp.rotateLeft();
-	    	Calibration cal1 = imp.getCalibration();
-	    	imp.changes = false;
-	    	ImageWindow win = imp.getWindow();
-	    	if (win!=null) win.close();
-	    	ImagePlus imp2 = new ImagePlus(imp.getTitle(), s2);
-	    	imp2.setCalibration(cal1);
-	    	Calibration cal2 = imp2.getCalibration();
-	    	cal2.pixelWidth = cal1.pixelHeight;
-	    	cal2.pixelHeight = cal1.pixelWidth;
-	    	imp2.show();
+	    	Calibration cal = imp.getCalibration();
+	    	imp.setStack(null, s2);
+	    	double pixelWidth = cal.pixelWidth;
+	    	cal.pixelWidth = cal.pixelHeight;
+	    	cal.pixelHeight = pixelWidth;
 			return;
 		}
 	}

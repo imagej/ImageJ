@@ -850,7 +850,7 @@ public class ShortProcessor extends ImageProcessor {
 		newSnapshot = false;
 		findMinAndMax();
 	}
-	
+
 	/** Not implemented. */
 	public void medianFilter() {}
 	/** Not implemented. */

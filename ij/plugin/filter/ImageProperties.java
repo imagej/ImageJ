@@ -35,7 +35,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		Calibration cal = imp.getCalibration();
 		oldUnitIndex = getUnitIndex(cal.getUnit());
 		oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
-		int stackSize = imp.getStackSize();
+		int stackSize = imp.getImageStackSize();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();

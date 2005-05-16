@@ -415,7 +415,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (currentSlice>stackSize) currentSlice = stackSize;
 		}
 		img = null;
-		boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
+		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
 		if (dimensionsChanged) roi = null;
 		int type;
 		if (ip instanceof ByteProcessor)
@@ -435,7 +435,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (win!=null) {
 			if (dimensionsChanged && stackSize==1)
                 win.updateImage(this);
-				//win = new ImageWindow(this);
 			else if (newStack==null)
 				repaintWindow();
 		}
@@ -454,7 +453,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     		currentSlice = stackSize;
 		//IJ.log("setStack: "+stack+"  "+stackSizeChanged+"  "+resetCurrentSlice);
     	ImageProcessor ip = stack.getProcessor(currentSlice);
-    	boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
+    	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
     	this.stack = stack;
     	setProcessor2(title, ip, stack);
 		if (win==null) return;
@@ -463,6 +462,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		else if (dimensionsChanged && !stackSizeChanged)
 			win.updateImage(this);
 		else if (stackSize>1 && !(win instanceof StackWindow))
+			win = new StackWindow(this);   // replaces this window
+		else if (stackSize>1 && dimensionsChanged)
 			win = new StackWindow(this);   // replaces this window
 		else
 			repaintWindow();
@@ -656,11 +657,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
+	/** If this is a stack, return the number of slices, else return 1. */
+	public int getImageStackSize() {
+		return getStackSize();
+	}
+
 	/** Sets the 3rd, 4th and 5th dimensions, where 
 	<code>nChannels</code>*<code>nSlices</code>*<code>nFrames</code> 
 	must be the same as the stack size. */
 	public void setDimensions(int nChannels, int nSlices, int nFrames) {
-		if (nChannels*nSlices*nFrames!=getStackSize())
+		if (nChannels*nSlices*nFrames!=getImageStackSize())
 			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
@@ -676,7 +682,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the image depth (number of z-slices). */
 	public int getNSlices() {
 		//IJ.log("getNSlices: "+ nChannels+"  "+nSlices+"  "+nFrames);
-		int stackSize = getStackSize();
+		int stackSize = getImageStackSize();
 		if (nSlices==1 && nFrames*nChannels!=stackSize) {
 			nSlices = stackSize;
 			nChannels = 1;

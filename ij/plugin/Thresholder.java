@@ -130,7 +130,7 @@ public class Thresholder implements PlugIn, Measurements {
 		int nSlices = imp.getStackSize();
 		String label;
 		for(int i=1; i<=nSlices; i++) {
-			label = stack1.getSliceLabel(1);
+			label = stack1.getSliceLabel(i);
 			ip = stack1.getProcessor(i);
 			ip.setMinAndMax(min, max);
 			stack2.addSlice(label, ip.convertToByte(true));

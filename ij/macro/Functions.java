@@ -132,6 +132,7 @@ public class Functions implements MacroConstants, Measurements {
 			case RESTORE_PREVIOUS_TOOL: restorePreviousTool(); break;
 			case SET_VOXEL_SIZE: setVoxelSize(); break;
 			case GET_LOCATION_AND_SIZE: getLocationAndSize(); break;
+			case GET_DATE_AND_TIME: getDateAndTime(); break;
 		}
 	}
 	
@@ -764,6 +765,10 @@ public class Functions implements MacroConstants, Measurements {
 			xmin=r.x; ymin=r.y; xmax=r.x+r.width; ymax=r.y+r.height;
 		}
 		boolean isFloat = getType()==ImagePlus.GRAY32;
+		if (imp.getBitDepth()==24) {
+			darg1 = (int)darg1&0xffffff;
+			darg2 = (int)darg2&0xffffff;
+		}
 		double v;
 		for (int y=ymin; y<ymax; y++) {
 			for (int x=xmin; x<xmax; x++) {
@@ -1167,6 +1172,10 @@ public class Functions implements MacroConstants, Measurements {
 				length = getString().length();
 				break; 
 			case WORD:
+				if (pgm.code[interp.pc+2]=='[') {
+					length = getString().length();
+					break;
+				}
 				interp.getToken();
 				Variable v = interp.lookupVariable();
 				if (v==null) return 0.0;
@@ -1669,7 +1678,7 @@ public class Functions implements MacroConstants, Measurements {
 		String msg = null;
 		if (interp.nextToken()=='(') {
 			interp.getLeftParen();
-			if (interp.nextToken()==STRING_CONSTANT || interp.nextToken()==STRING_FUNCTION)
+			if (isStringArg())
 				msg = getString();
 			interp.getRightParen();
 		}
@@ -2284,6 +2293,26 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Dialog error");
 		}
 		return null;
+	}
+	
+	void getDateAndTime() {
+		Variable year = getFirstVariable();
+		Variable month = getNextVariable();
+		Variable dayOfWeek = getNextVariable();
+		Variable dayOfMonth = getNextVariable();
+		Variable hour = getNextVariable();
+		Variable minute = getNextVariable();
+		Variable second = getNextVariable();
+		Variable millisecond = getLastVariable();
+		Calendar date = Calendar.getInstance();
+		year.setValue(date.get(Calendar.YEAR));
+		month.setValue(date.get(Calendar.MONTH));
+		dayOfWeek.setValue(date.get(Calendar.DAY_OF_WEEK)-1);
+		dayOfMonth.setValue(date.get(Calendar.DAY_OF_MONTH));
+		hour.setValue(date.get(Calendar.HOUR_OF_DAY));
+		minute.setValue(date.get(Calendar.MINUTE));
+		second.setValue(date.get(Calendar.SECOND));
+		millisecond.setValue(date.get(Calendar.MILLISECOND));
 	}
 
 } // class Functions

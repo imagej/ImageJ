@@ -433,8 +433,15 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (Recorder.record) {
 			if (imp.getBitDepth()==32)
 				Recorder.record("setThreshold", ip.getMinThreshold(), ip.getMaxThreshold());
-			else
-				Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
+			else {
+				int min = (int)ip.getMinThreshold();
+				int max = (int)ip.getMaxThreshold();
+				if (cal.isSigned16Bit()) {
+					min = (int)cal.getCValue(level1);
+					max = (int)cal.getCValue(level2);
+				}
+				Recorder.record("setThreshold", min, max);
+			}
 		}
 	}
 

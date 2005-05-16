@@ -824,7 +824,7 @@ public class IJ {
 	
 	/** Sets the lower and upper threshold levels and displays the image using
 		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
-	public static void setThreshold(double lowerThreshold, double upperThresold, String displayMode) {
+	public static void setThreshold(double lowerThreshold, double upperThreshold, String displayMode) {
 		int mode = ImageProcessor.RED_LUT;
 		if (displayMode!=null) {
 			displayMode = displayMode.toLowerCase(Locale.US);
@@ -836,7 +836,11 @@ public class IJ {
 				mode = ImageProcessor.NO_LUT_UPDATE;
 		}
 		ImagePlus img = getImage();
-		img.getProcessor().setThreshold(lowerThreshold, upperThresold, mode);
+		if (img.getCalibration().isSigned16Bit()) {
+			lowerThreshold += 32768.0;
+			upperThreshold += 32768.0;
+		}
+		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
 		if (mode != ImageProcessor.NO_LUT_UPDATE)
 			img.updateAndDraw();
 	}

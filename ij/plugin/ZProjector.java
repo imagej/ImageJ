@@ -553,7 +553,7 @@ public class ZProjector implements PlugIn {
 		}
 	
 		public void projectSlice(short[] pixels) {
-			int v;
+			float v;
 		    for(int i=0; i<len; i++) {
 		    	v = pixels[i]&0xffff;
 				sum[i] += v;

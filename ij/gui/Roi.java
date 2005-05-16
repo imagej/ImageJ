@@ -272,7 +272,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	void move(int xNew, int yNew) {
 		x += xNew - startX;
 		y += yNew - startY;
-		if (clipboard==null) {
+		if (clipboard==null && type==RECTANGLE) {
 			if (x<0) x=0; if (y<0) y=0;
 			if ((x+width)>xMax) x = xMax-width;
 			if ((y+height)>yMax) y = yMax-height;
