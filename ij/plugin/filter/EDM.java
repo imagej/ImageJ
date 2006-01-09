@@ -111,6 +111,7 @@ public class EDM implements PlugInFilter {
 				}
 			} // for x
  		} // for y
+		//(new ImagePlus("EDM16", ip16.duplicate())).show();
 
 		ImageProcessor ip2 = ip.createProcessor(width, height);
 		byte[] image8 = (byte[])ip2.getPixels();

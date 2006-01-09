@@ -66,18 +66,25 @@ public class Plot {
 	private int plotWidth = PlotWindow.plotWidth;
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
+	private boolean drawPending;
 	 	
 	/** Construct a new PlotWindow.
 	* @param title			the window title
 	* @param xLabel			the x-axis label
 	* @param yLabel			the y-axis label
-	* @param xValues		the x-coodinates
-	* @param yValues		the y-coodinates
+	* @param xValues		the x-coodinates, or null
+	* @param yValues		the y-coodinates, or null
 	*/
 	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		this.title = title;
 		this.xLabel = xLabel;
 		this.yLabel = yLabel;
+		if (xValues==null || yValues==null) {
+			xValues = new float[1];
+			yValues = new float[1];
+			xValues[0] = -1f;
+			yValues[0] = -1f;
+		}
 		this.xValues = xValues;
 		this.yValues = yValues;
 		double[] a = Tools.getMinMax(xValues);
@@ -86,11 +93,12 @@ public class Plot {
 		yMin=a[0]; yMax=a[1];
 		fixedYScale = false;
 		nPoints = xValues.length;
+		drawPending = true;
 	}
 
 	/** This version of the constructor excepts double arrays. */
 	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
-		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
+		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null);
 	}
 	
 	/** Sets the x-axis and y-axis range. */
@@ -132,6 +140,12 @@ public class Plot {
 				break;
 		}
 		multiplePlots = true;
+		if (xValues.length==1) {
+			xValues = x;
+			yValues = y;
+			nPoints = x.length;
+			drawPending = false;
+		}
 	}
 
 	/** Adds a set of points to the plot using double arrays.
@@ -316,26 +330,27 @@ public class Plot {
 		createImage();
 		setup();
 		
-		ip.setClipRect(frame);					
-		int xpoints[] = new int[nPoints];
-		int ypoints[] = new int[nPoints];
-		for (int i=0; i<nPoints; i++) {
-			xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-			ypoints[i] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin)*yScale);
-		}
-		drawPolyline(ip, xpoints, ypoints, nPoints); 
-		ip.setClipRect(null);					
-		
-		if (this.errorBars != null) {
-			xpoints = new int[2];
-			ypoints = new int[2];
+		if (drawPending) {
+			ip.setClipRect(frame);					
+			int xpoints[] = new int[nPoints];
+			int ypoints[] = new int[nPoints];
 			for (int i=0; i<nPoints; i++) {
-				xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-				ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
-				ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
-				drawPolyline(ip, xpoints,ypoints, 2);
-			}	    
-	    }
+				xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
+				ypoints[i] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin)*yScale);
+			}
+			drawPolyline(ip, xpoints, ypoints, nPoints); 
+			ip.setClipRect(null);	
+			if (this.errorBars != null) {
+				xpoints = new int[2];
+				ypoints = new int[2];
+				for (int i=0; i<nPoints; i++) {
+					xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
+					ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
+					ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
+					drawPolyline(ip, xpoints,ypoints, 2);
+				}	    
+			}
+		}				
 
 		if (ip instanceof ColorProcessor)
 			ip.setColor(Color.black);

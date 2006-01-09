@@ -158,19 +158,21 @@ public class ImageReader {
 			}
 			byteArray = lzwUncompress(byteArray);
 			int pixelsRead = byteArray.length/bytesPerPixel;
+			int pmax = base+pixelsRead;
+			if (pmax > nPixels) pmax = nPixels;
 			if (fi.intelByteOrder) {
 				if (fi.fileType==FileInfo.GRAY16_SIGNED)
-					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+					for (int i=base,j=0; i<pmax; i++,j+=2)
 						pixels[i] = (short)((((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff))+32768);
 				else
-					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+					for (int i=base,j=0; i<pmax; i++,j+=2)
 						pixels[i] = (short)(((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
 			} else {
 				if (fi.fileType==FileInfo.GRAY16_SIGNED)
-					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+					for (int i=base,j=0; i<pmax; i++,j+=2)
 						pixels[i] = (short)((((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff))+32768);
 				else
-					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+					for (int i=base,j=0; i<pmax; i++,j+=2)
 						pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
 			}
 			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
@@ -179,7 +181,7 @@ public class ImageReader {
 				// I believe doing the differencing here will work, but I did not have
 				// any 16-bit or 48-bit LZW TIFFs with differencing, so this code is
 				// untested.
-				for (int b=base+1; b<(base+pixelsRead); b++) {
+				for (int b=base+1; b<pmax; b++) {
 					pixels[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
 				}
@@ -267,11 +269,28 @@ public class ImageReader {
 			boolean bgr = fi.fileType==FileInfo.BGR;
 			int j = 0;
 			for (int i=base; i<(base+pixelsRead); i++) {
-				if (bytesPerPixel==4)
-					j++; // ignore alfa byte
-				r = buffer[j++]&0xff;
-				g = buffer[j++]&0xff;
-				b = buffer[j++]&0xff;
+				if (bytesPerPixel==4) {
+					if (fi.fileType==FileInfo.BARG) {  // MCID
+						b = buffer[j++]&0xff;
+						j++; // ignore alfa byte
+						r = buffer[j++]&0xff;
+						g = buffer[j++]&0xff;
+					} else if (fi.intelByteOrder) {
+						b = buffer[j++]&0xff;
+						g = buffer[j++]&0xff;
+						r = buffer[j++]&0xff;
+						j++; // ignore alfa byte
+					} else {
+						j++; // ignore alfa byte
+						r = buffer[j++]&0xff;
+						g = buffer[j++]&0xff;
+						b = buffer[j++]&0xff;
+					}
+				} else {
+					r = buffer[j++]&0xff;
+					g = buffer[j++]&0xff;
+					b = buffer[j++]&0xff;
+				}
 				if (bgr)
 					pixels[i] = 0xff000000 | (b<<16) | (g<<8) | r;
 				else
@@ -304,25 +323,21 @@ public class ImageReader {
 				left -= r;
 			}
 			byteArray = lzwUncompress(byteArray);
+			if (differencing) {
+				for (int b=0; b<byteArray.length; b++) {
+					if (b / bytesPerPixel % fi.width == 0) continue;
+					byteArray[b] += byteArray[b - bytesPerPixel];
+				}
+			}
 			int k = 0;
 			int pixelsRead = byteArray.length/bytesPerPixel;
-			for (int j=base; j<(base+pixelsRead); j++) {
+			int pmax = base+pixelsRead;
+			if (pmax > nPixels) pmax = nPixels;
+			for (int j=base; j<pmax; j++) {
 				if (bytesPerPixel==4) k++; // ignore alfa byte
-				if (differencing) {
-					nextByte = byteArray[k++];
-					red = (nextByte + lastRed)&255;
-					lastRed = j%fi.width==fi.width-1?0:red;
-					nextByte = byteArray[k++];
-					green = (nextByte + lastGreen)&255;
-					lastGreen = j%fi.width==fi.width-1?0:green;
-					nextByte = byteArray[k++];
-					blue = (nextByte + lastBlue)&255;
-					lastBlue = j%fi.width==fi.width-1?0:blue;
-				} else {
-					red = byteArray[k++]&0xff;
-					green = byteArray[k++]&0xff;
-					blue = byteArray[k++]&0xff;
-				}
+				red = byteArray[k++]&0xff;
+				green = byteArray[k++]&0xff;
+				blue = byteArray[k++]&0xff;
 				if (bgr)
 					pixels[j] = 0xff000000 | (blue<<16) | (green<<8) | red;
 				else
@@ -424,8 +439,6 @@ public class ImageReader {
 		if ((nPixels&1)==1) nBytes++; // add 1 if odd
 		byte[] buffer = new byte[nBytes];
 		short[] pixels = new short[nPixels];
-		int totalRead = 0;
-		int count, actuallyRead;		
 		DataInputStream dis = new DataInputStream(in);
 		dis.readFully(buffer);
 		int i = 0;
@@ -434,6 +447,25 @@ public class ImageReader {
 			pixels[j++] = (short)(((buffer[i]&0xff)*16) + ((buffer[i+1]>>4)&0xf));
 			pixels[j++] = (short)(((buffer[i+1]&0xf)*256) + (buffer[i+2]&0xff));
 			i += 3;
+		}
+		return pixels;
+	}
+
+	float[] read24bitImage(InputStream in) throws IOException {
+		byte[] buffer = new byte[width*3];
+		float[] pixels = new float[nPixels];
+		int b1, b2, b3;
+		DataInputStream dis = new DataInputStream(in);
+		for (int y=0; y<height; y++) {
+			//IJ.log("read24bitImage: ");
+			dis.readFully(buffer);
+			int b = 0;
+			for (int x=0; x<width; x++) {
+				b1 = buffer[b++]&0xff;
+				b2 = buffer[b++]&0xff;
+				b3 = buffer[b++]&0xff;
+				pixels[x+y*width] = (b3<<16) | (b2<<8) | b1;
+			}
 		}
 		return pixels;
 	}
@@ -492,7 +524,8 @@ public class ImageReader {
 				case FileInfo.RGB:
 				case FileInfo.BGR:
 				case FileInfo.ARGB:
-					bytesPerPixel = fi.fileType==FileInfo.ARGB?4:3;
+				case FileInfo.BARG:
+					bytesPerPixel = fi.getBytesPerPixel();
 					skip(in);
 					return (Object)readChunkyRGB(in);
 				case FileInfo.RGB_PLANAR:
@@ -513,12 +546,15 @@ public class ImageReader {
 					skip(in);
 					short[] data = read12bitImage(in);
 					return (Object)data;
+				case FileInfo.GRAY24_UNSIGNED:
+					skip(in);
+					return (Object)read24bitImage(in);
 				default:
 					return null;
 			}
 		}
 		catch (IOException e) {
-			IJ.write("" + e);
+			IJ.log("" + e);
 			return null;
 		}
 	}
@@ -546,9 +582,9 @@ public class ImageReader {
 		java.net.URL theURL;
 		InputStream is;
 		try {theURL = new URL(url);}
-		catch (MalformedURLException e) {IJ.write(""+e); return null;}
+		catch (MalformedURLException e) {IJ.log(""+e); return null;}
 		try {is = theURL.openStream();}
-		catch (IOException e) {IJ.write(""+e); return null;}
+		catch (IOException e) {IJ.log(""+e); return null;}
 		return readPixels(is);
 	}
 	

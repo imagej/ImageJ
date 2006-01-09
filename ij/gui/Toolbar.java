@@ -32,6 +32,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int SPARE6 = 19;
 	public static final int SPARE7 = 20;
 	//public static final int NONE = 100;
+	
+	public static final int DOUBLE_CLICK_THRESHOLD = 650;
 
 	private static final int NUM_TOOLS = 21;
 	private static final int SIZE = 22;
@@ -91,6 +93,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void fill3DRect(Graphics g, int x, int y, int width, int height, boolean raised) {
+		if (null==g) return;
 		if (raised)
 			g.setColor(gray);
 		else
@@ -105,6 +108,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}    
 
 	private void drawButton(Graphics g, int tool) {
+		if (null==g) return;
         int index = toolIndex(tool);
         fill3DRect(g, index * 22 + 1, 1, 22, 21, !down[tool]);
         g.setColor(Color.black);
@@ -213,7 +217,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	void drawIcon(Graphics g, String icon, int x, int y) {
-		//IJ.log("drawIcon: "+icon);
+		if (null==g) return;
 		this.icon = icon;
 		int length = icon.length();
 		int x1, y1, x2, y2;
@@ -291,7 +295,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Rectangular selections");
 				return;
 			case OVAL:
-				IJ.showStatus("Oval selections");
+				IJ.showStatus("Elliptical selections");
 				return;
 			case POLYGON:
 				IJ.showStatus("Polygon selections");
@@ -355,6 +359,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public void paint(Graphics g) {
+		if (null==g) return;
 		drawButtons(g);
 	}
 
@@ -377,6 +382,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Graphics g = this.getGraphics();
 		drawButton(g, previous);
 		drawButton(g, current);
+		if (null==g) return;
 		g.dispose();
 		showMessage(current);
 		previous = current;
@@ -427,7 +433,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			Graphics g = tb.getGraphics();
 			tb.drawButton(g, DROPPER);
 			tb.drawButton(g, POINT);
-			g.dispose();
+			if (g!=null) g.dispose();
 		}
 	}
 	
@@ -456,7 +462,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (x>i*SIZE && x<i*SIZE+SIZE)
 				newTool = toolID(i);
 		}
-		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=500;
+		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=DOUBLE_CLICK_THRESHOLD;
  		mouseDownTime = System.currentTimeMillis();
 		if (!doubleClick) {
 			if (isMacroTool(newTool)) {

@@ -68,14 +68,12 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
-		//ij.IJ.log("createImage: "+min+" "+max);
 		boolean firstTime = pixels8==null;
 		if (firstTime || !lutAnimation) {
 			// scale from 16-bits to 8-bits
 			int size = width*height;
 			if (pixels8==null)
 				pixels8 = new byte[size];
-				
 			int value;
 			double scale = 256.0/(max-min+1);
 			for (int i=0; i<size; i++) {
@@ -204,16 +202,6 @@ public class ShortProcessor extends ImageProcessor {
 		if (y>=height-1.0) y = height-1.001;
 		return getInterpolatedPixel(x, y, pixels);
 	}
-
-	/** Uses bilinear interpolation to find the calibrated
-		pixel value at real coordinates (x,y). */
-		public double getInterpolatedValue(double x, double y) {
-			double value = getInterpolatedPixel(x, y);
-			if (cTable==null)
-				return value;
-			else
-				return cTable[(int)(value+0.5)]; 
-		}
 
 	/** Stores the specified value at (x,y). Does
 		nothing if (x,y) is outside the image boundary.
@@ -751,6 +739,14 @@ public class ShortProcessor extends ImageProcessor {
         return ip2;
 	}
 	
+	/** Returns a duplicate of this image. */ 
+	public synchronized ImageProcessor duplicate() { 
+		ImageProcessor ip2 = createProcessor(width, height); 
+		short[] pixels2 = (short[])ip2.getPixels(); 
+		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
+		return ip2; 
+	} 
+
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {
 		int bestIndex = getBestIndex(color);
@@ -769,6 +765,10 @@ public class ShortProcessor extends ImageProcessor {
 			fgColor = (int)value;
 			if (fgColor<0) fgColor = 0;
 			if (fgColor>65535) fgColor = 65535;
+	}
+
+	/** Does nothing. The rotate() and scale() methods always zero fill. */
+	public void setBackgroundValue(double value) {
 	}
 
 	/** Returns 65536 bin histogram of the current ROI, which
@@ -825,21 +825,24 @@ public class ShortProcessor extends ImageProcessor {
 
     public void noise(double range) {
 		Random rnd=new Random();
-		int v;
+		int v, ran;
+		boolean inRange;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				int RandomBrightness = (int)Math.round(rnd.nextGaussian()*range);
-				v = (pixels[i] & 0xffff) + RandomBrightness;
-				if (v < 0) v = 0;
-				if (v > 65535) v = 65535;
-				pixels[i] = (short)v;
+				inRange = false;
+				do {
+					ran = (int)Math.round(rnd.nextGaussian()*range);
+					v = (pixels[i] & 0xffff) + ran;
+					inRange = v>=0 && v<=65535;
+					if (inRange) pixels[i] = (short)v;
+				} while (!inRange);
 				i++;
 			}
 		}
-		findMinAndMax();
+		resetMinAndMax();
     }
-
+    
 	public void threshold(int level) {
 		for (int i=0; i<width*height; i++) {
 			if ((pixels[i]&0xffff)<=level)

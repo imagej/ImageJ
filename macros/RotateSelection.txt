@@ -1,0 +1,27 @@
+// Rotates the selection by a specified angle.
+// Does not work with straight line and composite
+// selections.
+
+  angle = parseFloat(getArgument());
+  if (isNaN(angle)) exit("Angle is invalid: "+getArgument());
+  Dialog.create("Rotate Selection");
+  decimalPlaces = 0;
+  if (floor(angle)!=angle) decimalPlaces = 2;
+  Dialog.addNumber("     Angle:", angle, decimalPlaces, 3, "degrees");
+  Dialog.addMessage("Enter negative angle to \nrotate counter-clockwise");
+  Dialog.show();
+  angle = Dialog.getNumber();
+  theta = -angle*PI/180;
+  getBoundingRect(xbase, ybase, width, height);
+  xcenter=xbase+width/2; ycenter=ybase+height/2;
+  getSelectionCoordinates(x, y);
+  for (i=0; i<x.length; i++) {
+      dx=x[i]-xcenter; dy=ycenter-y[i];
+      r = sqrt(dx*dx+dy*dy);
+      a = atan2(dy, dx);
+      x[i] = xcenter + r*cos(a+theta);
+      y[i] = ycenter - r*sin(a+theta);
+  }
+  makeSelection(selectionType, x, y);
+  return toString(angle);
+

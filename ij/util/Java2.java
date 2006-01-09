@@ -35,7 +35,7 @@ public class Java2 {
 
 	public static void setBilinearInterpolation(Graphics g, boolean bilinearInterpolation) {
 			Graphics2D g2d = (Graphics2D)g;
-			if (bilinearInterpolation && Prefs.interpolateScaledImages)
+			if (bilinearInterpolation)
 				g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			else
 				g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);

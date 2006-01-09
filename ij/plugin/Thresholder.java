@@ -116,6 +116,8 @@ public class Thresholder implements PlugIn, Measurements {
 			new StackProcessor(imp.getStack(), ip).applyTable(lut);
 		else
 			ip.applyTable(lut);
+		if (fill1=true && fill2==true && ((fcolor==0&&bcolor==255)||(fcolor==255&&bcolor==0)))
+			imp.getProcessor().setThreshold(fcolor, fcolor, ImageProcessor.NO_LUT_UPDATE);
 		imp.updateAndDraw();
 		imp.unlock();
 	}

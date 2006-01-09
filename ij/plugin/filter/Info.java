@@ -197,10 +197,10 @@ public class Info implements PlugInFilter {
 	    	Rectangle r = roi.getBounds();
 	    	if (roi instanceof Line) {
 	    		Line line = (Line)roi;
-	    		s += "  X1: " + IJ.d2s(line.x1*cal.pixelWidth) + "\n";
-	    		s += "  Y1: " + IJ.d2s(yy(line.y1,imp)*cal.pixelHeight) + "\n";
-	    		s += "  X2: " + IJ.d2s(line.x2*cal.pixelWidth) + "\n";
-	    		s += "  Y2: " + IJ.d2s(yy(line.y2,imp)*cal.pixelHeight) + "\n";
+	    		s += "  X1: " + IJ.d2s(line.x1d*cal.pixelWidth) + "\n";
+	    		s += "  Y1: " + IJ.d2s(yy(line.y1d,imp)*cal.pixelHeight) + "\n";
+	    		s += "  X2: " + IJ.d2s(line.x2d*cal.pixelWidth) + "\n";
+	    		s += "  Y2: " + IJ.d2s(yy(line.y2d,imp)*cal.pixelHeight) + "\n";
 	    	
 			} else if (cal.scaled()) {
 				s += "  X: " + IJ.d2s(r.x*cal.pixelWidth) + " (" + r.x + ")\n";
@@ -220,6 +220,11 @@ public class Info implements PlugInFilter {
 	
 	// returns a Y coordinate based on the "Invert Y Coodinates" flag
 	int yy(int y, ImagePlus imp) {
+		return Analyzer.updateY(y, imp.getHeight());
+	}
+
+	// returns a Y coordinate based on the "Invert Y Coodinates" flag
+	double yy(double y, ImagePlus imp) {
 		return Analyzer.updateY(y, imp.getHeight());
 	}
 

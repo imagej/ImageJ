@@ -21,7 +21,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
 	double calPixelWidth, calPixelHeight;
 
 
-
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		return DOES_ALL+NO_CHANGES;
@@ -33,17 +32,20 @@ public class ImageProperties implements PlugInFilter, TextListener {
 	
 	void showDialog(ImagePlus imp) {
 		Calibration cal = imp.getCalibration();
+		Calibration calOrig = cal.copy();
 		oldUnitIndex = getUnitIndex(cal.getUnit());
 		oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
 		int stackSize = imp.getImageStackSize();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
+		boolean global1 = imp.getGlobalCalibration()!=null;
+		boolean global2;
 		GenericDialog gd = new GenericDialog(imp.getTitle());
 		gd.addNumericField("Width:", imp.getWidth(), 0);
 		gd.addNumericField("Height:", imp.getHeight(), 0);
-		gd.addNumericField("Depth (z-slices):", slices, 0);
 		gd.addNumericField("Channels:", channels, 0);
+		gd.addNumericField("Depth (z-slices):", slices, 0);
 		gd.addNumericField("Frames (time-points):", frames, 0);
 		gd.addMessage("");
 		gd.addStringField("Unit of Length:", cal.getUnit());
@@ -56,6 +58,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addMessage("");
 		double interval = cal.frameInterval;
 		gd.addNumericField("Frame Interval (sec.):", interval, (int)interval==interval?0:2);
+		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
         for (int i=0; i<nfields.size(); i++)
             ((TextField)nfields.elementAt(i)).addTextListener(this);
@@ -70,10 +73,10 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			return;
  		double width = gd.getNextNumber();
  		double height = gd.getNextNumber();
- 		slices = (int)gd.getNextNumber();
- 		if (slices<1) slices = 1;
  		channels = (int)gd.getNextNumber();
  		if (channels<1) channels = 1;
+ 		slices = (int)gd.getNextNumber();
+ 		if (slices<1) slices = 1;
  		frames = (int)gd.getNextNumber();
  		if (frames<1) frames = 1;
  		if (width!=imp.getWidth() || height!=imp.getHeight()) {
@@ -108,7 +111,14 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		}
 
 		cal.frameInterval = gd.getNextNumber();
-		imp.repaintWindow();
+ 		global2 = gd.getNextBoolean();
+		if (!cal.equals(calOrig))
+			imp.setCalibration(cal);
+ 		imp.setGlobalCalibration(global2?cal:null);
+		if (global2 || global2!=global1)
+			WindowManager.repaintImageWindows();
+		else
+			imp.repaintWindow();
 	}
 	
 	double getNewScale(String newUnit) {

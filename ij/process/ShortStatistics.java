@@ -31,7 +31,7 @@ public class ShortStatistics extends ImageStatistics {
 		getRawMinAndMax(hist, minThreshold, maxThreshold);
 		histMin = min;
 		histMax = max;
-		getStatistics(hist, (int)min, (int)max, cTable);
+		getStatistics(ip, hist, (int)min, (int)max, cTable);
 		if ((mOptions&MODE)!=0)
 			getMode();
 		if ((mOptions&ELLIPSE)!=0)
@@ -44,6 +44,8 @@ public class ShortStatistics extends ImageStatistics {
 			getCalibratedMinAndMax(hist, (int)min, (int)max, cTable);
 		if ((mOptions&MEDIAN)!=0)
 			calculateMedian(hist, (int)histMin, cal);
+		if ((mOptions&AREA_FRACTION)!=0)
+			calculateAreaFraction(ip, hist);
 	}
 
 	void getRawMinAndMax(int[] hist, int minThreshold, int maxThreshold) {
@@ -58,11 +60,21 @@ public class ShortStatistics extends ImageStatistics {
 		this.max = max;
 	}
 
-	void getStatistics(int[] hist, int min, int max, float[] cTable) {
+	void getStatistics(ImageProcessor ip, int[] hist, int min, int max, float[] cTable) {
 		int count;
 		double value;
 		double sum = 0.0;
 		double sum2 = 0.0;
+		nBins = ip.getHistogramSize();
+		histMin = ip.getHistogramMin();
+		histMax = ip.getHistogramMax();
+		if (histMin==0.0 && histMax==0.0) {
+			histMin = min; 
+			histMax = max;
+		} else {
+			if (min<histMin) min = (int)histMin;
+			if (max>histMax) max = (int)histMax;
+		}
 		binSize = (histMax-histMin)/nBins;
 		double scale = 1.0/binSize;
 		int hMin = (int)histMin;

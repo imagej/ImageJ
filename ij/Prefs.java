@@ -81,7 +81,8 @@ public class Prefs {
 		InputStream f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
 		if (applet!=null)
 			return loadAppletProps(f,applet);
-		homeDir = System.getProperty("user.dir");
+		if (homeDir==null)
+			homeDir = System.getProperty("user.dir");
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
 		if (osName.indexOf("Windows",0)>-1)
@@ -142,6 +143,11 @@ public class Prefs {
 	/** Returns the path to the ImageJ directory. */
 	public static String getHomeDir() {
 		return homeDir;
+	}
+
+	/** Sets the path to the ImageJ directory. */
+	static void setHomeDir(String path) {
+		homeDir = path;
 	}
 
 	/** Finds an string in IJ_Props or IJ_Prefs.txt. */

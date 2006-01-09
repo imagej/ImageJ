@@ -50,6 +50,12 @@ public class FileInfo {
 	/** 12-bit unsigned integer (0-4095). Import only. */
 	public static final int GRAY12_UNSIGNED = 13;	
 
+	/** 24-bit unsigned integer. Import only. */
+	public static final int GRAY24_UNSIGNED = 14;	
+
+	/** 32-bit interleaved BARG (MCID). Import only. */
+	public static final int BARG  = 15;	
+
 	// File formats
 	public static final int UNKNOWN = 0;
 	public static final int RAW = 1;
@@ -58,6 +64,7 @@ public class FileInfo {
 	public static final int FITS = 4;
 	public static final int BMP = 5;
 	public static final int DICOM = 6;
+	public static final int ZIP_ARCHIVE = 7;
 
 	// Compression modes
 	public static final int COMPRESSION_UNKNOWN = 0;
@@ -103,8 +110,11 @@ public class FileInfo {
 	public String valueUnit;
 	public double frameInterval;
 	public String description;
-	/** Use <i>longOffset</i> instead of <i>offset</i> when offset>2147483647. */
+	// Use <i>longOffset</i> instead of <i>offset</i> when offset>2147483647.
 	public long longOffset;
+	// Extra metadata to be stored in the TIFF header
+	public int[] metaDataTypes; // must be < 0xffffff
+	public byte[][] metaData;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {
@@ -123,7 +133,7 @@ public class FileInfo {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
-			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: return 4;
+			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			case RGB48: return 6;
 			default: return 0;
@@ -161,6 +171,7 @@ public class FileInfo {
 			case BITMAP: return "bitmap";
 			case ARGB: return "ARGB";
 			case BGR: return "BGR";
+			case BARG: return "BARG";
 			default: return "";
     	}
     }

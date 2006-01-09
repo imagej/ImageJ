@@ -102,6 +102,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
 	}
 
+	public static void record(String method, String arg1, String arg2, String arg3) {
+		if (textArea==null) return;
+		textArea.append(method+"(\""+arg1+"\", \""+arg2+"\",\""+arg3+"\");\n");
+	}
+
 	public static void record(String method, int a1) {
 		if (textArea==null) return;
 		textArea.append(method+"("+a1+");\n");
@@ -140,6 +145,18 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		textArea.append(method+"(\""+path+"\", "+"\""+args+"\", "+a1+", "+a2+", "+a3+", "+a4+", "+a5+");\n");
 	}
 	
+	public static void recordRoi(Polygon p, int type) {
+		if (textArea==null) return;
+		String method = type==Roi.POLYGON?"makePolygon":"makeLine";
+		StringBuffer args = new StringBuffer();
+		for (int i=0; i<p.npoints; i++) {
+			args.append(p.xpoints[i]+",");
+			args.append(""+p.ypoints[i]);
+			if (i!=p.npoints-1) args.append(",");
+		}
+		textArea.append(method+"("+args.toString()+");\n");
+	}
+
 	public static void recordOption(String key, String value) {
 		if (key==null) return;
 		key = trimKey(key);
@@ -217,6 +234,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 					textArea.append("setSlice("+strip(commandOptions)+");\n");
 				else if (commandName.equals("Rename..."))
 					textArea.append("rename(\""+strip(commandOptions)+"\");\n");
+				else if (commandName.equals("Image Calculator..."))
+					textArea.append("//run(\""+commandName+"\", \""+commandOptions+"\");\n");
 				else 
 					textArea.append("run(\""+commandName+"\", \""+commandOptions+"\");\n");
 			} else {

@@ -27,9 +27,10 @@ public class OvalRoi extends Roi {
 		setImage(imp);
 	}
 
-	protected void moveHandle(int ox, int oy) {
-		if (clipboard!=null)
-			return;
+	protected void moveHandle(int sx, int sy) {
+		if (clipboard!=null) return;
+		int ox = ic.offScreenX(sx);
+		int oy = ic.offScreenY(sy);
 		//IJ.log("moveHandle: "+activeHandle+" "+ox+" "+oy);
 		int x1=x, y1=y, x2=x1+width, y2=y+height;
 		int w2 = (int)(0.14645*width);
@@ -44,7 +45,7 @@ public class OvalRoi extends Roi {
 			case 6: x=ox-w2; y2=oy+h2; break;
 			case 7: x=ox; break;
 		}
-		if (x<0) x=0; if (y<0) y=0;
+		//if (x<0) x=0; if (y<0) y=0;
 		if (x<x2)
 		   width=x2-x;
 		else
@@ -55,8 +56,6 @@ public class OvalRoi extends Roi {
 		   {height=1; y=y2;}
 		if (constrain)
 			height = width;
-		if ((x+width)>xMax) width=xMax-x;
-		if ((y+height)>yMax) height=yMax-y;
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
@@ -67,7 +66,7 @@ public class OvalRoi extends Roi {
 	public void draw(Graphics g) {
 		if (ic==null) return;
 		g.setColor(ROIColor);
-		mag = ic!=null?ic.getMagnification():1.0;
+		mag = ic.getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
 		int sw2 = (int)(0.14645*width*mag);

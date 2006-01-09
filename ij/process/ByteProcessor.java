@@ -15,9 +15,9 @@ public class ByteProcessor extends ImageProcessor {
 	protected byte[] pixels;
 	protected byte[] snapshotPixels;
 	private int bgColor = 255; //white
+	private boolean bgColorSet;
 	private int min=0, max=255;
-	private boolean brokenNewPixels = ij.IJ.isMacintosh()&&!ij.IJ.isJava2()
-		|| System.getProperty("java.version").startsWith("1.4");
+	private boolean brokenNewPixels = ij.IJ.brokenNewPixels();
     private int binaryCount, binaryBackground;
 
 	/**Creates a ByteProcessor from an 8-bit, indexed color AWT Image. */
@@ -92,6 +92,14 @@ public class ByteProcessor extends ImageProcessor {
         return ip2;
 	}
 	
+	/** Returns a duplicate of this image. */ 
+	public synchronized ImageProcessor duplicate() { 
+		ImageProcessor ip2 = createProcessor(width, height); 
+		byte[] pixels2 = (byte[])ip2.getPixels(); 
+		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
+		return ip2; 
+	} 
+
 	/**Make a snapshot of the current image.*/
 	public void snapshot() {
 		snapshotWidth=width;
@@ -159,6 +167,14 @@ public class ByteProcessor extends ImageProcessor {
 			return 0;
 	}
 	
+	public int get(int x, int y) {
+		return pixels[y*width+x]&0xff;
+	}
+
+	public void set(int x, int y, int value) {
+		pixels[y*width + x] = (byte)value;
+	}
+
 	static double oldx, oldy;
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -168,31 +184,6 @@ public class ByteProcessor extends ImageProcessor {
 		if (y<0.0) y = 0.0;
 		if (y>=height-1.0) y = height-1.001;
 		return getInterpolatedPixel(x, y, pixels);
-	}
-
-	/** Uses bilinear interpolation to find the calibrated
-		pixel value at real coordinates (x,y). */
-		public double getInterpolatedValue(double x, double y) {
-		if (cTable==null)
-			return getInterpolatedPixel(x, y);
-		if (x<0.0) x = 0.0;
-		if (x>=width-1.0) x = width-1.001;
-		if (y<0.0) y = 0.0;
-		if (y>=height-1.0) y = height-1.001;
-		int xbase = (int)x;
-		int ybase = (int)y;
-		double xFraction = x - xbase;
-		double yFraction = y - ybase;
-		int offset = ybase * width + xbase;
-		double lowerLeft = cTable[pixels[offset]&255];
-		//if ((xbase>=(width-1))||(ybase>=(height-1)))
-		//	return lowerLeft;
-		double lowerRight = cTable[pixels[offset + 1]&255];
-		double upperRight = cTable[pixels[offset + width + 1]&255];
-		double upperLeft = cTable[pixels[offset + width]&255];
-		double upperAverage = upperLeft + xFraction * (upperRight - upperLeft);
-		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
-		return lowerAverage + yFraction * (upperAverage - lowerAverage);
 	}
 
 	public float getPixelValue(int x, int y) {
@@ -217,6 +208,14 @@ public class ByteProcessor extends ImageProcessor {
 		fgColor = (int)value;
 		if (fgColor<0) fgColor = 0;
 		if (fgColor>255) fgColor = 255;
+	}
+
+	/** Sets the background fill value, where 0<=value<=255. */
+	public void setBackgroundValue(double value) {
+		bgColor = (int)value;
+		if (bgColor<0) bgColor = 0;
+		if (bgColor>255) bgColor = 255;
+		bgColorSet = true;
 	}
 
 	/** Stores the specified real value at (x,y). Does
@@ -708,21 +707,21 @@ public class ByteProcessor extends ImageProcessor {
 
     public void noise(double range) {
 		Random rnd=new Random();
-		int v;
-
+		int v, ran;
+		boolean inRange;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				int RandomBrightness = (int)Math.round(rnd.nextGaussian()*range);
-				v = (pixels[i] & 0xff) + RandomBrightness;
-				if (v < 0)
-					v = 0;
-				if (v > 255)
-					v = 255;
-				pixels[i] = (byte)v;
+				inRange = false;
+				do {
+					ran = (int)Math.round(rnd.nextGaussian()*range);
+					v = (pixels[i] & 0xff) + ran;
+					inRange = v>=0 && v<=255;
+					if (inRange) pixels[i] = (byte)v;
+				} while (!inRange);
 				i++;
 			}
-			if (y%10==0)
+			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
 		hideProgress();
@@ -735,7 +734,7 @@ public class ByteProcessor extends ImageProcessor {
 		double xCenter = roiX + roiWidth/2.0;
 		double yCenter = roiY + roiHeight/2.0;
 		int xmin, xmax, ymin, ymax;
-		if (isInvertedLut()) bgColor = 0;
+		if (!bgColorSet && isInvertedLut()) bgColor = 0;
 		
 		if ((xScale>1.0) && (yScale>1.0)) {
 			//expand roi
@@ -860,7 +859,7 @@ public class ByteProcessor extends ImageProcessor {
 		double centerX = roiX + (roiWidth-1)/2.0;
 		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
-		if (isInvertedLut()) bgColor = 0;
+		if (!bgColorSet && isInvertedLut()) bgColor = 0;
 		
 		double angleRadians = -angle/(180.0/Math.PI);
 		double ca = Math.cos(angleRadians);

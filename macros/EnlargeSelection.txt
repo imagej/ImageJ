@@ -1,0 +1,74 @@
+// This macro expands or shrinks a selection by 
+// a specified distance. 
+
+  pixels = parseFloat(getArgument());
+  if (isNaN(pixels)) exit("Distance is invalid: "+getArgument());
+  getPixelSize(unit, pixelWidth, pixelHeight);
+  n = pixels*pixelWidth;
+  decimalPlaces = 0;
+  if (floor(n)!=n) decimalPlaces = 2;
+  Dialog.create("Enlarge Selection");
+  Dialog.addNumber("    Enlarge by", n, decimalPlaces, 4, unit);
+  Dialog.addMessage("Enter negative number to shrink");
+  Dialog.show();
+  n = Dialog.getNumber();
+  pixels = n/pixelWidth; 
+  enlarge(pixels);
+  return toString(pixels); 
+
+  function enlarge(n) {
+       if (n<0) {
+           shrink(-n);
+           return;
+       }
+       if (pixels > 255) 
+           exit("Cannot enlarge by more than 255 pixels"); 
+       id = getImageID(); 
+       setBatchMode(true); 
+       getBoundingRect(xbase, ybase, width, height); 
+       getSelectionCoordinates(xc,yc); 
+       run("Create Mask"); 
+       run("Invert"); 
+       run("Options...", "iterations=1 count=1"); 
+       run("Distance Map"); 
+       setThreshold(0, n); 
+       x = xbase + width/2; 
+       y = ybase + height/2; 
+       count = 0; 
+       while(getPixel(x,y)>n) { 
+           if (count++==10000) 
+               exit("Unable to scale selection"); 
+           x = xbase + width*random(); 
+           y = ybase + height*random(); 
+       } 
+       doWand(x, y); 
+       close(); 
+       selectImage(id); 
+       run("Restore Selection"); 
+   } 
+
+   function shrink(n) { 
+       if (pixels >255) 
+           exit("Cannot shrink by more than 255 pixels"); 
+       id = getImageID(); 
+       setBatchMode(true); 
+       getBoundingRect(xbase, ybase, width, height); 
+       getSelectionCoordinates(xc,yc); 
+       run("Create Mask"); 
+       run("Options...", "iterations=1 count=1"); 
+       run("Distance Map"); 
+       setThreshold(0, n); 
+       x = xbase + width/2; 
+       y = ybase + height/2; 
+       count = 0; 
+       while(getPixel(x,y)<=n) { 
+           if (count++==10000) 
+               exit("Unable to scale selection"); 
+           x = xbase + width*random(); 
+           y = ybase + height*random(); 
+       } 
+       doWand(x, y); 
+       close(); 
+       selectImage(id); 
+       run("Restore Selection"); 
+   } 

@@ -258,8 +258,8 @@ public class BackgroundSubtracter implements PlugInFilter {
 				xmaskmin = shrinkfactor*x;
 				ymaskmin = shrinkfactor*y;
 				min = 65535;
-				for (int j=1; j<=shrinkfactor; j++) {
-					for (int k=1; k<=shrinkfactor; k++) {
+				for (int j=0; j<shrinkfactor; j++) {
+					for (int k=0; k<shrinkfactor; k++) {
 						thispixel = ip2.getPixel(xmaskmin+j, ymaskmin+k);
 						if (thispixel<min)
 							min = thispixel;

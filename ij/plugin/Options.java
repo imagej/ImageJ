@@ -54,6 +54,7 @@ public class Options implements PlugIn {
 			if (f!=null)
 				FloatBlitter.divideByZeroValue = f.floatValue();
 		}
+		IJ.register(FloatBlitter.class); 
 			
 		Prefs.usePointerCursor = gd.getNextBoolean();
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
@@ -129,7 +130,7 @@ public class Options implements PlugIn {
 		
 	void imageOptions() {
 		GenericDialog gd = new GenericDialog("Image Options", IJ.getInstance());
-		gd.addCheckbox("Interpolate Images <100%", Prefs.interpolateScaledImages);
+		gd.addCheckbox("Interpolate Zoomed Images", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
 		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
 		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);

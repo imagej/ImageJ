@@ -21,8 +21,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
-		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,LIMIT,
-		LABELS,INVERT_Y};
+		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,SLICE,
+		LIMIT,LABELS,INVERT_Y};
 
 	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,POINTS=4;
 	private static int mode = AREAS;
@@ -100,8 +100,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		String target = tImp!=null?tImp.getTitle():NONE;
 		
  		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
-		String[] labels = new String[16];
-		boolean[] states = new boolean[16];
+		String[] labels = new String[18];
+		boolean[] states = new boolean[18];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
 		labels[1]="Mean Gray Value"; states[1]=(systemMeasurements&MEAN)!=0;
 		labels[2]="Standard Deviation"; states[2]=(systemMeasurements&STD_DEV)!=0;
@@ -118,7 +118,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[13]="Median"; states[13]=(systemMeasurements&MEDIAN)!=0;
 		labels[14]="Skewness"; states[14]=(systemMeasurements&SKEWNESS)!=0;
 		labels[15]="Kurtosis"; states[15]=(systemMeasurements&KURTOSIS)!=0;
-		gd.addCheckboxGroup(9, 2, labels, states);
+		labels[16]="Area_Fraction"; states[16]=(systemMeasurements&AREA_FRACTION)!=0;
+		labels[17]="Slice Number"; states[17]=(systemMeasurements&SLICE)!=0;
+		gd.addCheckboxGroup(10, 2, labels, states);
 		labels = new String[3];
 		states = new boolean[3];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
@@ -238,6 +240,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		ImagePlus redirectImp = getRedirectImage(imp);
 		if (redirectImp==null)
 			return null;
+		int depth = redirectImp.getStackSize();
+		if (depth>1 && depth==imp.getStackSize())
+			redirectImp.setSlice(imp.getCurrentSlice());
 		ImageProcessor ip = redirectImp.getProcessor();
 		ip.setRoi(roi);
 		return ImageStatistics.getStatistics(ip, measurements, redirectImp.getCalibration());
@@ -379,7 +384,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue(ResultsTable.PERIMETER,perimeter);
 			if ((measurements&CIRCULARITY)!=0) {
 				double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.area/(perimeter*perimeter));
-				if (circularity>1.)
+				if (circularity>1.0)
 					circularity = -1.0;
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
 			}
@@ -402,6 +407,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&MEDIAN)!=0) rt.addValue(ResultsTable.MEDIAN, stats.median);
 		if ((measurements&SKEWNESS)!=0) rt.addValue(ResultsTable.SKEWNESS, stats.skewness);
 		if ((measurements&KURTOSIS)!=0) rt.addValue(ResultsTable.KURTOSIS, stats.kurtosis);
+		if ((measurements&AREA_FRACTION)!=0) rt.addValue(ResultsTable.AREA_FRACTION, stats.areaFraction);
+		if ((measurements&SLICE)!=0) rt.addValue(ResultsTable.SLICE, imp!=null?imp.getCurrentSlice():1.0);
 	}
 	
 	// Update centroid and center of mass y-coordinate
@@ -622,6 +629,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.SKEWNESS);
 		if ((measurements&KURTOSIS)!=0)
 			add2(ResultsTable.KURTOSIS);
+		if ((measurements&AREA_FRACTION)!=0)
+			add2(ResultsTable.AREA_FRACTION);
 	}
 
 	private void add2(int column) {
@@ -707,9 +716,16 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return systemRT;
 	}
 
-	/** Returns the number of digits displayed on the right of decimal point. */
+	/** Returns the number of digits displayed to the right of decimal point. */
 	public static int getPrecision() {
 		return precision;
+	}
+
+	/** Sets the number of digits displayed to the right of decimal point. */
+	public static void setPrecision(int decimalPlaces) {
+		if (decimalPlaces<0) decimalPlaces = 0;
+		if (decimalPlaces>9) decimalPlaces = 9;
+		precision = decimalPlaces;
 	}
 
 	/** Returns an updated Y coordinate based on
@@ -720,5 +736,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return y;
 	}
 	
+	/** Returns an updated Y coordinate based on
+		the current "Invert Y Coordinates" flag. */
+	public static double updateY(double y, int imageHeight) {
+		if ((systemMeasurements&INVERT_Y)!=0)
+			y = imageHeight-y-1;
+		return y;
+	}
+
 }
 	

@@ -24,13 +24,14 @@ public class URLOpener implements PlugIn {
 			ImagePlus imp = new ImagePlus(url);
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				Opener.convertGrayJpegTo8Bits(imp);
+			WindowManager.checkForDuplicateName = true;
 			imp.show();
 			return;
 		}
 		
 		GenericDialog gd = new GenericDialog("Enter a URL");
-		gd.addMessage("Enter the URL of a TIFF, JPEG or GIF image:");
-		gd.addStringField("", url, 40);
+		gd.addMessage("Enter URL of a TIFF, JPEG, GIF, PNG or DICOM image");
+		gd.addStringField("URL:", url, 40);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -43,6 +44,7 @@ public class URLOpener implements PlugIn {
 		else {
 			IJ.showStatus("Opening: " + url);
 			ImagePlus imp = new ImagePlus(url);
+			WindowManager.checkForDuplicateName = true;
 			imp.show();
 			IJ.showStatus("");
 		}

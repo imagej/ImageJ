@@ -240,8 +240,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		running = running2 = false;
 		if (isRunning) IJ.wait(500);
 		ImageJ ij = IJ.getInstance();
-		if (imp.changes && IJ.getApplet()==null && !IJ.macroRunning() && ij!=null) {
-			SaveChangesDialog d = new SaveChangesDialog(ij, imp.getTitle());
+		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() ||  IJ.macroRunning())
+			imp.changes = false;
+		if (imp.changes) {
+			SaveChangesDialog d = new SaveChangesDialog(this, imp.getTitle());
 			if (d.cancelPressed())
 				return false;
 			else if (d.savePressed()) {
@@ -255,12 +257,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			{xloc = 0; yloc = 0;}
 		WindowManager.removeWindow(this);
 		setVisible(false);
-		if (ij!=null && !ij.quitting()) { // may help avoid thread deadlocks
-			dispose();
-			imp.flush();
-		}
-		//imp.setWindow(null);
-		//IJ.log("close: "+imp.getTitle());
+		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
+			return true;
+		dispose();
+		imp.flush();
 		return true;
 	}
 	

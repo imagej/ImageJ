@@ -308,7 +308,7 @@ public class TiffDecoder {
 	
 		int tag, fieldType, count, value;
 		int nEntries = getShort();
-		if (nEntries<1)
+		if (nEntries<1 || nEntries>1000)
 			return null;
 		ifdCount++;
 		FileInfo fi = new FileInfo();
@@ -336,8 +336,8 @@ public class TiffDecoder {
 						fi.stripOffsets = new int[count];
 						for (int c=0; c<count; c++) {
 							fi.stripOffsets[c] = getInt();
-							if (c > 0 && fi.stripOffsets[c] < fi.stripOffsets[c - 1])
-								error("Images not in order");
+							if (c > 0 && fi.stripOffsets[c] < fi.stripOffsets[c - 1] && fi.stripOffsets[c]!=0)
+								error("Strip offsets are not in order");
 						}
 						in.seek(saveLoc);
 					}
@@ -409,9 +409,13 @@ public class TiffDecoder {
 				case RESOLUTION_UNIT:
 					if (value==1&&fi.unit==null)
 						fi.unit = " ";
-					else if (value==2)
-						fi.unit = "inch";
-					else if (value==3)
+					else if (value==2) {
+						if (fi.pixelWidth==1.0/72.0) {
+							fi.pixelWidth = 1.0;
+							fi.pixelHeight = 1.0;
+						} else
+							fi.unit = "inch";
+					} else if (value==3)
 						fi.unit = "cm";
 					break;
 				case PLANAR_CONFIGURATION:
@@ -481,6 +485,8 @@ public class TiffDecoder {
  					getMetaData(value, fi);
  					break;
 				default:
+					if (tag>10000 && tag<32768 && ifdCount>1)
+						return null;
 			}
 		}
 		fi.fileFormat = fi.TIFF;
@@ -507,18 +513,32 @@ public class TiffDecoder {
 		int nTypes = (hdrSize-4)/8;
 		int[] types = new int[nTypes];
 		int[] counts = new int[nTypes];
+		
+		int extraMetaDataEntries = 0;
 		for (int i=0; i<nTypes; i++) {
 			types[i] = getInt();
 			counts[i] = getInt();
+			if (types[i]<0xffffff)
+				extraMetaDataEntries += counts[i];
 		}
+		fi.metaDataTypes = new int[extraMetaDataEntries];
+		fi.metaData = new byte[extraMetaDataEntries][];
 		int start = 1;
+		int eMDindex = 0;
 		for (int i=0; i<nTypes; i++) {
 			if (types[i]==0x696e666f)  // "info"
 				getInfoProperty(start, start+counts[i]-1, fi);
 			else if (types[i]==0x6c61626c)  // "labl"
 				getSliceLabels(start, start+counts[i]-1, fi);
-			else
-				break;
+			else if (types[i]<0xffffff) {
+				for (int j=start; j<start+counts[i]; j++) { 
+					int len = metaDataCounts[j]; 
+					fi.metaData[eMDindex] = new byte[len]; 
+					in.readFully(fi.metaData[eMDindex], len); 
+					fi.metaDataTypes[eMDindex] = types[i]; 
+					eMDindex++; 
+				} 
+			}
 			start += counts[i];
 		}
 		in.seek(saveLoc);
@@ -579,10 +599,11 @@ public class TiffDecoder {
 		while (ifdOffset>0) {
 			in.seek(ifdOffset);
 			FileInfo fi = OpenIFD();
-			//ij.IJ.write(""+fi);
-			if (fi!=null)
+			if (fi!=null) {
 				info.addElement(fi);
-			ifdOffset = getInt();
+				ifdOffset = getInt();
+			} else
+				ifdOffset = 0;
 			if (debugMode && ifdCount<10) dInfo += "  nextIFD=" + ifdOffset + "\n";
 			if (fi!=null) {
 				if (fi.nImages>1) // ignore extra IFDs in ImageJ and NIH Image stacks

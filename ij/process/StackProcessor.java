@@ -10,6 +10,7 @@ public class StackProcessor {
 	int nSlices;
 	double xScale, yScale;
 	int[] table;
+	double fillValue;
 	    
     /* Constructs a StackProcessor from a stack. */
     //public StackProcessor(ImageStack stack) {
@@ -26,17 +27,18 @@ public class StackProcessor {
  	    	ip.setProgressBar(null);
    }
 	
-	static final int FLIPH=0, FLIPV=1, SCALE=2, INVERT=3, APPLY_TABLE=4;
+	static final int FLIPH=0, FLIPV=1, SCALE=2, INVERT=3, APPLY_TABLE=4, SCALE_WITH_FILL=5;
 	
 	void process(int command) {
 	    String s = "";
+ 	   	ImageProcessor ip2 = stack.getProcessor(1);
     	switch (command) {
     		case FLIPH: case FLIPV: s="Flip: "; break;
     		case SCALE: s="Scale: "; break;
+    		case SCALE_WITH_FILL: s="Scale: "; ip2.setBackgroundValue(fillValue); break;
     		case INVERT: s="Invert: "; break;
     		case APPLY_TABLE: s="Apply: "; break;
     	}
- 	   	ImageProcessor ip2 = stack.getProcessor(1);
  	   	ip2.setRoi(this.ip.getRoi());
 	    ip2.setInterpolate(this.ip.getInterpolate());
 	    for (int i=1; i<=nSlices; i++) {
@@ -47,7 +49,7 @@ public class StackProcessor {
 	    	switch (command) {
 	    		case FLIPH: ip2.flipHorizontal(); break;
 	    		case FLIPV: ip2.flipVertical(); break;
-	    		case SCALE: ip2.scale(xScale, yScale); break;
+	    		case SCALE: case SCALE_WITH_FILL: ip2.scale(xScale, yScale); break;
 	    		case INVERT: ip2.invert(); break;
 	    		case APPLY_TABLE: ip2.applyTable(table); break;
 	    	}
@@ -77,6 +79,13 @@ public class StackProcessor {
 		this.xScale = xScale;
 		this.yScale = yScale;
 		process(SCALE);
+ 	}
+
+	public void scale(double xScale, double yScale, double fillValue) {
+		this.xScale = xScale;
+		this.yScale = yScale;
+		this.fillValue = fillValue;
+		process(SCALE_WITH_FILL);
  	}
 
 	/** Creates a new stack with dimensions 'newWidth' x 'newHeight'.

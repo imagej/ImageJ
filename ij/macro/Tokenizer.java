@@ -22,6 +22,7 @@ public class Tokenizer implements MacroConstants {
         st.ordinaryChar('/');
         st.ordinaryChar('.');
         st.wordChars('_', '_');
+        st.whitespaceChars(128, 255);
         st.slashStarComments(true);
         st.slashSlashComments(true);
         pgm = new Program();
@@ -41,119 +42,118 @@ public class Tokenizer implements MacroConstants {
     final void getToken() {
         try {
             token = st.nextToken();
-            String ret=null;
+            String ret = null;
             int nextToken;
             switch (st.ttype) {
-            case StreamTokenizer.TT_EOF:
-                ret = "EOF";
-                token = EOF;
-                break;
-            case StreamTokenizer.TT_EOL:
-                ret = "EOL";
-                token = EOL;
-                break;
-            case StreamTokenizer.TT_WORD:
-                ret = st.sval;
-                token = WORD;
-                break;
-            case StreamTokenizer.TT_NUMBER:
-                ret = ""+st.nval;
-                tokenValue = st.nval;
-                if (tokenValue==0.0)
-                    tokenValue = getHexConstant();
-                token = NUMBER;
-                break;
-            case '"':
-            case '\'':
-                ret = ""+st.sval;
-                token = STRING_CONSTANT;
-                break;
-            case '+':
-                nextToken = st.nextToken();
-                if (nextToken=='+')
-                    token = PLUS_PLUS;
-                else if (nextToken=='=')
-                	token = PLUS_EQUAL;
-                else
-                    st.pushBack();
-                break;
-            case '-':
-                nextToken = st.nextToken();
-                if (nextToken=='-')
-                    token = MINUS_MINUS;
-                else if (nextToken=='=')
-                	token = MINUS_EQUAL;
-                else
-                    st.pushBack();
-                break;
-            case '*':
-                nextToken = st.nextToken();
-                if (nextToken=='=')
-                    token = MUL_EQUAL;
-                else
-                    st.pushBack();
-                break;
-            case '/':
-                nextToken = st.nextToken();
-                if (nextToken=='=')
-                    token = DIV_EQUAL;
-                else
-                    st.pushBack();
-                break;
-            case '=':
-                nextToken = st.nextToken();
-                if (nextToken=='=')
-                    token = EQ;
-                else
-                    st.pushBack();
-                break;
-            case '!':
-                nextToken = st.nextToken();
-                if (nextToken=='=')
-                    token = NEQ;
-                else
-                    st.pushBack();
-                break;
-            case '>':
-                nextToken = st.nextToken();
-                if (nextToken=='=')
-                    token = GTE;
-                else if (nextToken=='>')
-                    token = SHIFT_RIGHT;
-                else {
-                    st.pushBack();
-                    token = GT;
-                }
-                break;
-            case '<':
-                nextToken = st.nextToken();
-                if (nextToken=='=')
-                    token = LTE;
-                else if (nextToken=='<')
-                    token = SHIFT_LEFT;
-                else {
-                    st.pushBack();
-                    token = LT;
-                }
-                break;
-            case '&':
-                nextToken = st.nextToken();
-                if (nextToken=='&')
-                    token = LOGICAL_AND;
-                else
-                    st.pushBack();
-                break;
-            case '|':
-                nextToken = st.nextToken();
-                if (nextToken=='|')
-                    token = LOGICAL_OR;
-                else
-                    st.pushBack();
-                break;
-            default:
-                //char s[] = new char[1];
-                //s[0] = (char)token;
-                //ret = new String(s);
+				case StreamTokenizer.TT_EOF:
+					ret = "EOF";
+					token = EOF;
+					break;
+				case StreamTokenizer.TT_EOL:
+					ret = "EOL";
+					token = EOL;
+					break;
+				case StreamTokenizer.TT_WORD:
+					ret = st.sval;
+					token = WORD;
+					break;
+				case StreamTokenizer.TT_NUMBER:
+					ret = ""+st.nval;
+					tokenValue = st.nval;
+					if (tokenValue==0.0)
+						tokenValue = getHexConstant();
+					token = NUMBER;
+					break;
+				case '"': case '\'':
+					ret = ""+st.sval;
+					token = STRING_CONSTANT;
+					break;
+				case '+':
+					nextToken = st.nextToken();
+					if (nextToken=='+')
+						token = PLUS_PLUS;
+					else if (nextToken=='=')
+						token = PLUS_EQUAL;
+					else
+						st.pushBack();
+					break;
+				case '-':
+					nextToken = st.nextToken();
+					if (nextToken=='-')
+						token = MINUS_MINUS;
+					else if (nextToken=='=')
+						token = MINUS_EQUAL;
+					else
+						st.pushBack();
+					break;
+				case '*':
+					nextToken = st.nextToken();
+					if (nextToken=='=')
+						token = MUL_EQUAL;
+					else
+						st.pushBack();
+					break;
+				case '/':
+					nextToken = st.nextToken();
+					if (nextToken=='=')
+						token = DIV_EQUAL;
+					else
+						st.pushBack();
+					break;
+				case '=':
+					nextToken = st.nextToken();
+					if (nextToken=='=')
+						token = EQ;
+					else
+						st.pushBack();
+					break;
+				case '!':
+					nextToken = st.nextToken();
+					if (nextToken=='=')
+						token = NEQ;
+					else
+						st.pushBack();
+					break;
+				case '>':
+					nextToken = st.nextToken();
+					if (nextToken=='=')
+						token = GTE;
+					else if (nextToken=='>')
+						token = SHIFT_RIGHT;
+					else {
+						st.pushBack();
+						token = GT;
+					}
+					break;
+				case '<':
+					nextToken = st.nextToken();
+					if (nextToken=='=')
+						token = LTE;
+					else if (nextToken=='<')
+						token = SHIFT_LEFT;
+					else {
+						st.pushBack();
+						token = LT;
+					}
+					break;
+				case '&':
+					nextToken = st.nextToken();
+					if (nextToken=='&')
+						token = LOGICAL_AND;
+					else
+						st.pushBack();
+					break;
+				case '|':
+					nextToken = st.nextToken();
+					if (nextToken=='|')
+						token = LOGICAL_OR;
+					else
+						st.pushBack();
+					break;
+				default:
+					//char s[] = new char[1];
+					//s[0] = (char)token;
+					//ret = new String(s);
             }
             tokenString = ret;
         } catch (Exception e) {
@@ -165,34 +165,34 @@ public class Tokenizer implements MacroConstants {
     final void addToken() {
         int tok = token;
         switch (token) {
-        case WORD:
-            Symbol symbol = pgm.lookupWord(tokenString);
-            if (symbol!=null) {
-                int type = symbol.getFunctionType();
-                if (type==0) {
-                    tok = symbol.type;
-                    if (tok==FUNCTION)
-                    	hasUserFunctions = true;
-                    if (tok==VAR)
-                    	pgm.hasVars = true;
-                } else
-                    tok = type;
-                tok += pgm.symTabLoc<<16;
-            } else {
-                pgm.addSymbol(new Symbol(token, tokenString));
-                tok += pgm.stLoc<<16;
-            }
-            break;
-        case STRING_CONSTANT:
-            pgm.addSymbol(new Symbol(token, tokenString));
-            tok += pgm.stLoc<<16;
-            break;
-        case NUMBER:
-            pgm.addSymbol(new Symbol(tokenValue));
-            tok += pgm.stLoc<<16;
-            break;
-        default:
-            break;
+			case WORD:
+				Symbol symbol = pgm.lookupWord(tokenString);
+				if (symbol!=null) {
+					int type = symbol.getFunctionType();
+					if (type==0) {
+						tok = symbol.type;
+						if (tok==FUNCTION)
+							hasUserFunctions = true;
+						if (tok==VAR)
+							pgm.hasVars = true;
+					} else
+						tok = type;
+					tok += pgm.symTabLoc<<16;
+				} else {
+					pgm.addSymbol(new Symbol(token, tokenString));
+					tok += pgm.stLoc<<16;
+				}
+				break;
+			case STRING_CONSTANT:
+				pgm.addSymbol(new Symbol(token, tokenString));
+				tok += pgm.stLoc<<16;
+				break;
+			case NUMBER:
+				pgm.addSymbol(new Symbol(tokenValue));
+				tok += pgm.stLoc<<16;
+				break;
+			default:
+				break;
         }
         pgm.addToken(tok);
     }

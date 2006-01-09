@@ -86,7 +86,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					if (name.indexOf('-')!=-1 && (name.indexOf("Tool")!=-1||name.indexOf("tool")!=-1)) {
 						Toolbar.getInstance().addMacroTool(name, this, toolCount);
 						toolCount++;
-                    } else if (name.equals("AutoRun")) {
+                    } else if (name.startsWith("AutoRun")) {
                         new MacroRunner(pgm, macroStarts[count], name);
                         count--;
 					} else { 
@@ -199,8 +199,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		String name = od.getFileName();
 		if (name==null) return null;
 		String dir = od.getDirectory();
-		if (!name.endsWith(".txt")) {
-			IJ.showMessage("Macro Installer", "File name must end with \".txt\".");
+		if (!(name.endsWith(".txt")||name.endsWith(".ijm"))) {
+			IJ.showMessage("Macro Installer", "File name must end with \".txt\" or \".ijm\" .");
 			return null;
 		}
 		fileName = name;

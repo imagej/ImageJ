@@ -5,7 +5,7 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/** Implements the "Plot Profile" command. */
+/** Implements the Process/Plot Profile and Edit/Options/Profile Plot Options commands. */
 public class Profiler implements PlugInFilter {
 
 	ImagePlus imp;

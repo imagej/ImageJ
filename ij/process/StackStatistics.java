@@ -13,8 +13,8 @@ public class StackStatistics extends ImageStatistics {
 	}
 
 	public StackStatistics(ImagePlus imp, int nBins, double histMin, double histMax) {
-		if (imp.getBitDepth()==8)
-			histMax = 255.0;
+		//if (imp.getBitDepth()==8)
+		//	histMax = 255.0;
 		doCalculations(imp, nBins, histMin, histMax);
 		//IJ.log("StackStatistics: "+histMin+"  "+histMax+"  "+nBins);
 	}

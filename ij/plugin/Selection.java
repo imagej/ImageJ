@@ -11,8 +11,10 @@ public class Selection implements PlugIn, Measurements {
 	ImagePlus imp;
 	float[] kernel = {1f, 1f, 1f, 1f, 1f};
 	float[] kernel3 = {1f, 1f, 1f};
+	static String angle = "15"; // degrees
+	static String enlarge = "15"; // pixels
+	static String bandSize = "15"; // pixels
 
-	/** 'arg' must be "all", "none", "restore" or "spline". */
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		if (imp==null)
@@ -32,7 +34,30 @@ public class Selection implements PlugIn, Measurements {
     	else if (arg.equals("mask"))
     		createMask(imp);    	
     	else if (arg.equals("inverse"))
-    		invert(imp);    	
+    		invert(imp); 
+    	else
+    		runMacro(arg);
+	}
+	
+	void runMacro(String arg) {
+		Roi roi = imp.getRoi();
+		if (roi==null) {
+			IJ.error("Selection required");
+			return;
+		}
+		roi = (Roi)roi.clone();
+		if (arg.equals("rotate")) {
+			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
+			if (value!=null) angle = value;    	
+		} else if (arg.equals("enlarge")) {
+			String value = IJ.runMacroFile("ij.jar:EnlargeSelection", enlarge); 
+			if (value!=null) enlarge = value; 
+			Roi.previousRoi = roi;
+		} else if (arg.equals("band")) {
+			String value = IJ.runMacroFile("ij.jar:MakeSelectionBand", bandSize); 
+			if (value!=null) bandSize = value;    	
+			Roi.previousRoi = roi;
+		}
 	}
 	
 	void fitSpline() {

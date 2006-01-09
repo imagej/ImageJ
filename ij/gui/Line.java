@@ -10,26 +10,35 @@ import java.awt.event.KeyEvent;
 public class Line extends Roi {
 
 	public int x1, y1, x2, y2;	// the line
-	private int x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
+	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
+	private double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private static int lineWidth = 1;
-	private int xHandleOffset, yHandleOffset;
+	private double xHandleOffset, yHandleOffset;
+	private double startxd, startyd;
 
 	/** Creates a new straight line selection using the specified
-		starting and ending offscreen coordinates. */
+		starting and ending screen coordinates. */
 	public Line(int ox1, int oy1, int ox2, int oy2) {
-		this(ox1, oy1, null);
+		//this(ox1, oy1, null);
+		super(ox1, oy1, null);
+		type = LINE;
+		startxd = startX; startyd = startY;
 		grow(ox2, oy2);
-		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 		state = NORMAL;
 	}
 
 	/** Starts the process of creating a new user-generated straight line
-		selection. 'ox' and 'oy' are offscreen coordinates that specify
+		selection. 'sx' and 'sy' are screen coordinates that specify
 		the start of the line. The user will determine the end of the line
 		interactively using rubber banding. */
-	public Line(int ox, int oy, ImagePlus imp) {
-		super(ox, oy, imp);
-		x1R = 0; y1R = 0;
+	public Line(int sx, int sy, ImagePlus imp) {
+		super(sx, sy, imp);
+		startxd = ic.offScreenXD(sx);
+		startyd = ic.offScreenYD(sy);
+		x1R = x2R = startxd - startX;
+		y1R = y2R = startyd - startY;
 		type = LINE;
 	}
 
@@ -39,22 +48,24 @@ public class Line extends Roi {
 		setImage(imp);
 	}
 
-	protected void grow(int xend, int yend) {
-		if (xend<0) xend=0; if (yend<0) yend=0;
+	protected void grow(int sx, int sy) {
+		double xend = ic!=null?ic.offScreenXD(sx):sx;
+		double yend = ic!=null?ic.offScreenYD(sy):sy;
+		if (xend<0.0) xend=0.0; if (yend<0.0) yend=0.0;
 		if (xend>xMax) xend=xMax; if (yend>yMax) yend=yMax;
-		int xstart=x+x1R, ystart=y+y1R;
+		double xstart=x+x1R, ystart=y+y1R;
 		if (constrain) {
-			int dx = Math.abs(xend-xstart);
-			int dy = Math.abs(yend-ystart);
+			double dx = Math.abs(xend-xstart);
+			double dy = Math.abs(yend-ystart);
 			if (dx>=dy)
 				yend = ystart;
 			else
 				xend = xstart;
 		}
-		x=Math.min(x+x1R,xend); y=Math.min(y+y1R,yend);
+		x=(int)Math.min(x+x1R,xend); y=(int)Math.min(y+y1R,yend);
 		x1R=xstart-x; y1R=ystart-y;
 		x2R=xend-x; y2R=yend-y;
-		width=Math.abs(x2R-x1R); height=Math.abs(y2R-y1R);
+		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
 		if (width<1) width=1; if (height<1) height=1;
 		updateClipRect();
 		if (imp!=null) {
@@ -67,12 +78,14 @@ public class Line extends Roi {
 		oldWidth=width; oldHeight=height;
 	}
 
-	void move(int xNew, int yNew) {
-		x += xNew - startX;
-		y += yNew - startY;
+	void move(int sx, int sy) {
+		int xNew = ic.offScreenX(sx);
+		int yNew = ic.offScreenY(sy);
+		x += xNew - startxd;
+		y += yNew - startyd;
 		clipboard=null;
-		startX = xNew;
-		startY = yNew;
+		startxd = xNew;
+		startyd = yNew;
 		if (lineWidth==1) {
 			updateClipRect();
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
@@ -84,34 +97,36 @@ public class Line extends Roi {
 		oldHeight=height;
 	}
 
-	protected void moveHandle(int ox, int oy) {
-		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
+	protected void moveHandle(int sx, int sy) {
+		double ox = ic.offScreenXD(sx);
+		double oy = ic.offScreenYD(sy);
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		switch (activeHandle) {
-			case 0: x1=ox; y1=oy; break;
-			case 1: x2=ox; y2=oy; break;
+			case 0: x1d=ox; y1d=oy; break;
+			case 1: x2d=ox; y2d=oy; break;
 			case 2:
-				int dx = ox-(x1+(x2-x1)/2);
-				int dy = oy-(y1+(y2-y1)/2);
-				x1+=dx; y1+=dy; x2+=dx; y2+=dy;
+				double dx = ox-(x1d+(x2d-x1d)/2);
+				double dy = oy-(y1d+(y2d-y1d)/2);
+				x1d+=dx; y1d+=dy; x2d+=dx; y2d+=dy;
 				if (lineWidth>1) {
-					x1+=xHandleOffset; y1+=yHandleOffset; 
-					x2+=xHandleOffset; y2+=yHandleOffset;
+					x1d+=xHandleOffset; y1d+=yHandleOffset; 
+					x2d+=xHandleOffset; y2d+=yHandleOffset;
 				}
 				break;
 		}
 		if (constrain) {
-			int dx = Math.abs(x1-x2);
-			int dy = Math.abs(y1-y2);
+			double dx = Math.abs(x1d-x2d);
+			double dy = Math.abs(y1d-y2d);
 			if (activeHandle==0) {
-				if (dx>=dy) y1= y2; else x1 = x2;
+				if (dx>=dy) y1d = y2d; else x1d = x2d;
 			} else if (activeHandle==1) {
-				if (dx>=dy) y2= y1; else x2 = x1;
+				if (dx>=dy) y2d= y1d; else x2d = x1d;
 			}
 		}
-		x=Math.min(x1,x2); y=Math.min(y1,y2);
-		x1R=x1-x; y1R=y1-y;
-		x2R=x2-x; y2R=y2-y;
-		width=Math.abs(x2R-x1R); height=Math.abs(y2R-y1R);
+		x=(int)Math.min(x1d,x2d); y=(int)Math.min(y1d,y2d);
+		x1R=x1d-x; y1R=y1d-y;
+		x2R=x2d-x; y2R=y2d-y;
+		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
 		updateClipRect();
 		if (lineWidth==1)
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
@@ -133,11 +148,12 @@ public class Line extends Roi {
 	/** Draws this line in the image. */
 	public void draw(Graphics g) {
 		g.setColor(ROIColor);
-		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
-		int sx1 = ic.screenX(x1);
-		int sy1 = ic.screenY(y1);
-		int sx2 = ic.screenX(x2);
-		int sy2 = ic.screenY(y2);
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+		int sx1 = ic.screenXD(x1d);
+		int sy1 = ic.screenYD(y1d);
+		int sx2 = ic.screenXD(x2d);
+		int sy2 = ic.screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		if (lineWidth==1)
@@ -152,7 +168,6 @@ public class Line extends Roi {
 		}
 		if (state!=CONSTRUCTING) {
 			int size2 = HANDLE_SIZE/2;
-			if (ic!=null) mag = ic.getMagnification();
 			drawHandle(g, sx1-size2, sy1-size2);
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
@@ -166,13 +181,13 @@ public class Line extends Roi {
 	/** Returns the length of this line. */
 	public double getLength() {
 		Calibration cal = imp.getCalibration();
-		return Math.sqrt((x2-x1)*cal.pixelWidth*(x2-x1)*cal.pixelWidth
-			+ (y2-y1)*cal.pixelHeight*(y2-y1)*cal.pixelHeight);
+		return Math.sqrt((x2d-x1d)*cal.pixelWidth*(x2d-x1d)*cal.pixelWidth
+			+ (y2d-y1d)*cal.pixelHeight*(y2d-y1d)*cal.pixelHeight);
 	}
 
 	/** Returns the length of this line in pixels. */
 	public double getRawLength() {
-		return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+		return Math.sqrt((x2d-x1d)*(x2d-x1d)+(y2d-y1d)*(y2d-y1d));
 	}
 
 	/** Returns the pixel values along this line. */
@@ -180,7 +195,7 @@ public class Line extends Roi {
 			double[] profile;
 			ImageProcessor ip = imp.getProcessor();
 			if (lineWidth==1)
-				profile = ip.getLine(x1, y1, x2, y2);
+				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			else {
 				ImageProcessor ip2 = rotateWideLine(ip);
 				int width = ip2.getWidth();
@@ -203,7 +218,7 @@ public class Line extends Roi {
 		int width = (int)Math.round(getRawLength());
 		int height = lineWidth;
 		ImageProcessor ip2 = new FloatProcessor(width, height);
-		double angle = Math.atan2(y1-y2, x2-x1);
+		double angle = Math.atan2(y1d-y2d, x2d-x1d);
 		double srcWidth = (double)ip.getWidth();
 		double srcHeight = (double)ip.getHeight();
 		Polygon p = getPolygon();
@@ -279,10 +294,10 @@ public class Line extends Roi {
 		int size = HANDLE_SIZE+5;
 		if (lineWidth>1) size += (int)Math.log(lineWidth);
 		int halfSize = size/2;
-		int sx1 = ic.screenX(x+x1R) - halfSize;
-		int sy1 = ic.screenY(y+y1R) - halfSize;
-		int sx2 = ic.screenX(x+x2R) - halfSize;
-		int sy2 = ic.screenY(y+y2R) - halfSize;
+		int sx1 = ic.screenXD(x+x1R) - halfSize;
+		int sy1 = ic.screenYD(y+y1R) - halfSize;
+		int sx2 = ic.screenXD(x+x2R) - halfSize;
+		int sy2 = ic.screenYD(y+y2R) - halfSize;
 		int sx3 = sx1 + (sx2-sx1)/2-1;
 		int sy3 = sy1 + (sy2-sy1)/2-1;
 		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
@@ -303,13 +318,15 @@ public class Line extends Roi {
 	
 	/** Nudge end point of line by one pixel. */
 	public void nudgeCorner(int key) {
+		if (ic==null) return;
+		double inc = 1.0/ic.getMagnification();
 		switch(key) {
-			case KeyEvent.VK_UP: y2R--; break;
-			case KeyEvent.VK_DOWN: y2R++; break;
-			case KeyEvent.VK_LEFT: x2R--; break;
-			case KeyEvent.VK_RIGHT: x2R++; break;
+			case KeyEvent.VK_UP: y2R-=inc; break;
+			case KeyEvent.VK_DOWN: y2R+=inc; break;
+			case KeyEvent.VK_LEFT: x2R-=inc; break;
+			case KeyEvent.VK_RIGHT: x2R+=inc; break;
 		}
-		grow(x+x2R,y+y2R);
+		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
 	}
 
 

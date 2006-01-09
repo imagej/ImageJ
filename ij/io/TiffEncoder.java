@@ -23,7 +23,8 @@ public class TiffEncoder {
 	private int metaDataSize;
 	private int metaDataEntries;
 	private int nSliceLabels;
-	
+	private int extraMetaDataEntries;
+		
 	public TiffEncoder (FileInfo fi) {
 		this.fi = fi;
 		fi.intelByteOrder = false;
@@ -93,7 +94,8 @@ public class TiffEncoder {
 			descriptionSize = writeDescription(out);
 		if (fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0)
 			scaleSize = writeScale(out);
-		byte[] filler = new byte[IMAGE_START - (HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize)];
+		int fillerSize = IMAGE_START - (HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize);
+		byte[] filler = new byte[fillerSize];
 		out.write(filler); // force image to start at offset 768
 		//ij.IJ.write("filler: "+filler.length);
 		new ImageWriter(fi).write(out);
@@ -132,6 +134,14 @@ public class TiffEncoder {
 			}
 			if (nSliceLabels>0) nTypes++;
 			metaDataEntries += nSliceLabels;
+		}
+		if (fi.metaDataTypes!=null && fi.metaData!=null && fi.metaData[0]!=null
+		&& fi.metaDataTypes.length==fi.metaData.length) {
+			extraMetaDataEntries = fi.metaData.length;
+			nTypes += extraMetaDataEntries;
+			metaDataEntries += extraMetaDataEntries;
+			for (int i=0; i<extraMetaDataEntries; i++)
+				size += fi.metaData.length;
 		}
 		if (metaDataEntries>0) metaDataEntries++; // add entry for header
 		int hdrSize = 4 + nTypes*8;
@@ -250,20 +260,24 @@ public class TiffEncoder {
 		out.write(colorTable16);
 	}
 	
-	/** Writes image meta-data ("info" image propery and stack slice labels) 
-		following the image and color palette. */
+	/** Writes image metadata ("info" image propery, stack slice labels
+		and extra metadata) following the image and any color palette. */
 	void writeMetaData(DataOutputStream out) throws IOException {
+	
 		// write byte counts
 		int nTypes = 0;
 		if (fi.info!=null) nTypes++;
 		if (nSliceLabels>0) nTypes++;
-		out.writeInt(4+nTypes*8); // header size
+		nTypes += extraMetaDataEntries;
+		
+		// write byte counts
+		out.writeInt(4+nTypes*8); // header size	
 		if (fi.info!=null)
 			out.writeInt(fi.info.length()*2);
-		if (nSliceLabels>0) {
-			for (int i=0; i<nSliceLabels; i++)
-				out.writeInt(fi.sliceLabels[i].length()*2);
-		}
+		for (int i=0; i<nSliceLabels; i++)
+			out.writeInt(fi.sliceLabels[i].length()*2);
+		for (int i=0; i<extraMetaDataEntries; i++)
+			out.writeInt(fi.metaData[i].length);	
 		
 		// write header
 		out.writeInt(0x494a494a); // magic number ("IJIJ")
@@ -275,14 +289,19 @@ public class TiffEncoder {
 			out.writeInt(0x6c61626c); // type="labl"
 			out.writeInt(nSliceLabels); // count
 		}
+		for (int i=0; i<extraMetaDataEntries; i++) {
+			out.writeInt(fi.metaDataTypes[i]);
+			out.writeInt(1); // count
+		}
 		
 		// write data
 		if (fi.info!=null)
 			out.writeChars(fi.info);
-		if (nSliceLabels>0) {
-			for (int i=0; i<nSliceLabels; i++)
-				out.writeChars(fi.sliceLabels[i]);
-		}
+		for (int i=0; i<nSliceLabels; i++)
+			out.writeChars(fi.sliceLabels[i]);
+		for (int i=0; i<extraMetaDataEntries; i++)
+			out.write(fi.metaData[i]); 
+					
 	}
 
 	/** Creates an optional image description string for saving calibration data.

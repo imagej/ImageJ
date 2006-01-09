@@ -77,6 +77,7 @@ public class FileOpener {
 			case FileInfo.GRAY32_INT:
 			case FileInfo.GRAY32_UNSIGNED:
 			case FileInfo.GRAY32_FLOAT:
+			case FileInfo.GRAY24_UNSIGNED:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
 	    		ip = new FloatProcessor(width, height, (float[])pixels, cm);
@@ -85,6 +86,7 @@ public class FileOpener {
 			case FileInfo.RGB:
 			case FileInfo.BGR:
 			case FileInfo.ARGB:
+			case FileInfo.BARG:
 			case FileInfo.RGB_PLANAR:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
@@ -207,6 +209,14 @@ public class FileOpener {
 	    	return;
 		}
 
+		if (fi.fileFormat==fi.ZIP_ARCHIVE) {
+			// restore ".zip" file
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", fi.directory + fi.fileName);
+			if (imp2!=null && imp2.getWidth()!=0)
+				imp.setProcessor(null, imp2.getProcessor());
+	    	return;
+		}
+
 		if (fi.nImages>1)
 			return;
 		
@@ -247,17 +257,22 @@ public class FileOpener {
 	}
 	
 	void setCalibration(ImagePlus imp) {
-		Calibration cal = imp.getCalibration();
 		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
 			if (IJ.debugMode) IJ.log("16-bit signed");
 			double[] coeff = new double[2];
 			coeff[0] = -32768.0;
 			coeff[1] = 1.0;
- 			cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+			if (imp.getGlobalCalibration()!=null) {
+				// signed 16-bit images and global galibration cannot coexist
+				imp.setGlobalCalibration(null);
+				WindowManager.repaintImageWindows();
+				IJ.error("FileOpener", "Global calibration disabled");
+			}
+ 			imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 		}
 		
 		Properties props = decodeDescriptionString();
-
+		Calibration cal = imp.getCalibration();
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
 			cal.pixelWidth = fi.pixelWidth;
 			cal.pixelHeight = fi.pixelHeight;
@@ -268,8 +283,10 @@ public class FileOpener {
 		if (fi.valueUnit!=null) {
 			int f = fi.calibrationFunction;
 			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.LOG2 && fi.coefficients!=null)
-			||f==Calibration.UNCALIBRATED_OD)
-				cal.setFunction(f, fi.coefficients, fi.valueUnit);
+			|| f==Calibration.UNCALIBRATED_OD) {
+				boolean zeroClip = props!=null && props.getProperty("zeroclip", "false").equals("true");	
+				cal.setFunction(f, fi.coefficients, fi.valueUnit, zeroClip);
+			}
 		}
 		
 		if (fi.frameInterval!=0.0)
@@ -390,13 +407,16 @@ public class FileOpener {
 				PrintWriter pw = new PrintWriter(caw);
 				e.printStackTrace(pw);
 				String s = caw.toString();
-				new ij.text.TextWindow("Exception", s, 350, 250);
+				if (IJ.getInstance()!=null)
+					new ij.text.TextWindow("Exception", s, 350, 250);
+				else
+					IJ.log(s);
 			}
 		}
 		return pixels;
 	}
 
-	public Properties decodeDescriptionString() {
+	Properties decodeDescriptionString() {
 		if (fi.description==null || fi.description.length()<7)
 			return null;
 		if (IJ.debugMode)

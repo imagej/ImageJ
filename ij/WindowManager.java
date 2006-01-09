@@ -16,6 +16,7 @@ public class WindowManager {
 	private static ImageWindow currentWindow;			 // active image window
 	private static Frame frontWindow;
 	private static ImagePlus tempCurrentImage;
+	public static boolean checkForDuplicateName;
 	
 	private WindowManager() {
 	}
@@ -69,7 +70,7 @@ public class WindowManager {
 			ImageWindow win = (ImageWindow)imageList.elementAt(imageList.size()-1);
 			return win.getImagePlus();
 		} else
-			return null;
+			return Interpreter.getLastBatchModeImage(); 
 	}
 
 	/** Returns the number of open image windows. */
@@ -155,6 +156,18 @@ public class WindowManager {
 		}
 		return imp;
 	}
+	
+	/** Returns the first image that has the specified title or null if it is not found. */
+	public synchronized static ImagePlus getImage(String title) {
+		int[] wList = getIDList();
+		if (wList==null) return null;
+		for (int i=0; i<wList.length; i++) {
+			ImagePlus imp = getImage(wList[i]);
+			if (imp!=null && imp.getTitle().equals(title))
+				return imp;
+		}
+		return null;
+	}
 
 	/** Adds the specified window to the Window menu. */
 	public synchronized static void addWindow(Frame win) {
@@ -170,10 +183,55 @@ public class WindowManager {
     }
 
 	private static void addImageWindow(ImageWindow win) {
+		ImagePlus imp = win.getImagePlus();
+		if (imp==null) return;
+		checkForDuplicateName(imp);
 		imageList.addElement(win);
-        Menus.addWindowMenuItem(win.getImagePlus());
+        Menus.addWindowMenuItem(imp);
         setCurrentWindow(win);
     }
+
+	static void checkForDuplicateName(ImagePlus imp) {
+		if (checkForDuplicateName) {
+			String name = imp.getTitle();
+			if (isDuplicateName(name))
+				imp.setTitle(getUniqueName(name));
+		} 
+		checkForDuplicateName = false;
+    }
+
+	static boolean isDuplicateName(String name) {
+		int n = imageList.size();
+		for (int i=0; i<n; i++) {
+			ImageWindow win = (ImageWindow)imageList.elementAt(i);
+			String name2 = win.getImagePlus().getTitle();
+			if (name.equals(name2))
+				return true;
+		}
+		return false;
+	}
+
+	/** Returns a unique name by adding, before the extension,  -1, -2, etc. as needed. */
+	public static String getUniqueName(String name) {
+        String name2 = name;
+        String extension = "";
+        int len = name2.length();
+        int lastDot = name2.lastIndexOf(".");
+        if (lastDot!=-1 && len-lastDot<6 && lastDot!=len-1) {
+            extension = name2.substring(lastDot, len);
+            name2 = name2.substring(0, lastDot);
+        }
+        int lastDash = name2.lastIndexOf("-");
+        if (lastDash!=-1 && name2.length()-lastDash<4)
+            name2 = name2.substring(0, lastDash);
+        for (int i=1; i<=99; i++) {
+            String name3 = name2+"-"+ i + extension;
+            //IJ.log(i+" "+name3);
+            if (!isDuplicateName(name3))
+                return name3;
+        }
+        return name;
+	}
 
 	/** Removes the specified window from the Window menu. */
 	public synchronized static void removeWindow(Frame win) {
@@ -323,7 +381,20 @@ public class WindowManager {
 		}
     }
     
-    static void showList() {
+    /** Repaints all open image windows. */
+    public synchronized static void repaintImageWindows() {
+		int[] list = getIDList();
+		if (list==null) return;
+		for (int i=0; i<list.length; i++) {
+			ImagePlus imp2 = getImage(list[i]);
+			if (imp2!=null) {
+				ImageWindow win = imp2.getWindow();
+				if (win!=null) win.repaint();
+			}
+		}
+	}
+    
+	static void showList() {
 		if (IJ.debugMode) {
 			for (int i=0; i<imageList.size(); i++) {
 				ImageWindow win = (ImageWindow)imageList.elementAt(i);

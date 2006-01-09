@@ -34,7 +34,7 @@ public abstract class ImageProcessor extends Object {
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
-	static final String WRONG_LENGTH = "(width*height) != pixels.length";
+	static final String WRONG_LENGTH = "width*height!=pixels.length";
 	
 	int fgColor = 0;
 	protected int lineWidth = 1;
@@ -102,6 +102,13 @@ public abstract class ImageProcessor extends Object {
 			return baseCM;
 		else
 			return cm;
+	}
+
+	/** Returns the current color model, which may have
+		been modified by setMinAndMax() or setThreshold(). */
+	public ColorModel getCurrentColorModel() {
+		if (cm==null) makeDefaultColorModel();
+		return cm;
 	}
 
 	/** Sets the color model. Must be an IndexColorModel (aka LUT)
@@ -293,6 +300,9 @@ public abstract class ImageProcessor extends Object {
 	/** Sets the default fill/draw value. */
 	public abstract void setValue(double value);
 
+	/** Sets the background fill value used by the rotate() and scale() methods. */
+	public abstract void setBackgroundValue(double value);
+
 	/** Returns the smallest displayed pixel value. */
 	public abstract double getMin();
 
@@ -408,6 +418,12 @@ public abstract class ImageProcessor extends Object {
 	/** Returns the upper threshold level. */
 	public double getMaxThreshold() {
 		return maxThreshold;
+	}
+	
+	/** Returns the LUT update mode, which can be RED_LUT, BLACK_AND_WHITE_LUT, 
+		OVER_UNDER_LUT or NO_LUT_UPDATE. */
+	public int getLutUpdateMode() {
+		return lutUpdateMode;
 	}
 
 	/** Defines a rectangular region of interest and sets the mask 
@@ -652,21 +668,19 @@ public abstract class ImageProcessor extends Object {
 		double[] data = new double[n];
 		double rx = x1;
 		double ry = y1;
-		if (interpolate)
+		if (interpolate) {
 			for (int i=0; i<n; i++) {
-				if (cTable!=null)
-					data[i] = getInterpolatedValue(rx, ry);
-				else
-					data[i] = getInterpolatedPixel(rx, ry);
+				data[i] = getInterpolatedValue(rx, ry);
 				rx += xinc;
 				ry += yinc;
 			}
-		else
+		} else {
 			for (int i=0; i<n; i++) {
 				data[i] = getPixelValue((int)(rx+0.5), (int)(ry+0.5));
 				rx += xinc;
 				ry += yinc;
 			}
+		}
 		return data;
 	}
 	
@@ -1052,6 +1066,7 @@ public abstract class ImageProcessor extends Object {
 	/** Set the number of bins to be used for histograms of float images. */
 	public void setHistogramSize(int size) {
 		histogramSize = size;
+		if (histogramSize<1) histogramSize = 1;
 	}
 
 	/**	Returns the number of float image histogram bins. The bin
@@ -1116,12 +1131,28 @@ public abstract class ImageProcessor extends Object {
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
 
-	/** For color and float images, this is the same as getInterpolatedPixel(). */
-	public double getInterpolatedValue(double x, double y) {
-		return getInterpolatedPixel(x, y);
+	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). 
+		Returns zero if the (x, y) is not inside the image. */
+	public final double getInterpolatedValue(double x, double y) {
+		int xbase = (int)x;
+		int ybase = (int)y;
+		double xFraction = x - xbase;
+		double yFraction = y - ybase;
+		if (xFraction<0.0) xFraction = 0.0;
+		if (yFraction<0.0) yFraction = 0.0;
+		double lowerLeft = getPixelValue(xbase, ybase);
+		double lowerRight = getPixelValue(xbase+1, ybase);
+		double upperRight = getPixelValue(xbase+1, ybase+1);
+		double upperLeft = getPixelValue(xbase, ybase+1);
+		double upperAverage = upperLeft + xFraction * (upperRight - upperLeft);
+		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
+		return lowerAverage + yFraction * (upperAverage - lowerAverage);
 	}
 
-	/** Stores the specified value at (x,y). For RGB images, the
+	/** Stores the specified value at (x,y). Does
+		nothing if (x,y) is outside the image boundary.
+		For 8-bit and 16-bit images, out of range values
+		are clipped. For RGB images, the
 		argb values are packed in 'value'. For float images,
 		'value' is expected to be a float converted to an int
 		using Float.floatToIntBits(). */
@@ -1232,15 +1263,7 @@ public abstract class ImageProcessor extends Object {
 	public abstract void threshold(int level);
 
 	/** Returns a duplicate of this image. */
-	public ImageProcessor duplicate() {
-		Rectangle saveRoi = getRoi();
-		ImageProcessor saveMask= getMask();
-		resetRoi();
-		ImageProcessor ip2 = crop();
-		setRoi(saveRoi);
-		setMask(saveMask);
-		return ip2;
-	}
+	public abstract ImageProcessor duplicate();
 
 	/** Scales the image by the specified factors. Does not
 		change the image size.

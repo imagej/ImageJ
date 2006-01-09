@@ -21,12 +21,8 @@ public class Duplicater implements PlugInFilter {
 
 	public void duplicate(ImagePlus imp) {
 		int stackSize = imp.getStackSize();
-		String newTitle;
 		String title = imp.getTitle();
-		if (!title.endsWith("-copy"))
-			newTitle = title + "-copy";
-		else
-			newTitle = title;
+		String newTitle = WindowManager.getUniqueName(title);
 		if (!IJ.altKeyDown()||stackSize>1)
 			newTitle = getString("Duplicate...", "Title: ", newTitle);
 		if (newTitle==null)

@@ -42,6 +42,8 @@ public class FloatStatistics extends ImageStatistics {
 				if (binSize!=1.0) median += binSize/2.0; 
 			}       	
 		}
+		if ((mOptions&AREA_FRACTION)!=0)
+			calculateAreaFraction(ip);
 	}
 
 	void getStatistics(ImageProcessor ip, double minThreshold, double maxThreshold) {
@@ -182,6 +184,34 @@ public class FloatStatistics extends ImageStatistics {
 		}
 		xCentroid = ((double)xsum/count+0.5)*pw;
 		yCentroid = ((double)ysum/count+0.5)*ph;
+	}
+
+	void calculateAreaFraction(ImageProcessor ip) {
+		int sum = 0;
+		int total = 0;
+		float t1 = (float)ip.getMinThreshold();
+		float t2 = (float)ip.getMaxThreshold();
+		float v;
+		float[] pixels = (float[])ip.getPixels();
+		boolean noThresh = t1==ImageProcessor.NO_THRESHOLD;
+		byte[] mask = ip.getMaskArray();
+		int i, mi;
+		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
+			i = y*width + rx;
+			mi = my*rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null||mask[mi++]!=0) {
+					v = pixels[i];
+					total++;
+					if (noThresh) {
+						if (v!=0f) sum++;
+					} else if (v>=t1 && v<=t2)
+						sum++;
+				}
+				i++;
+			}
+		}
+		areaFraction = sum*100.0/total;
 	}
 
 }

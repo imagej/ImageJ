@@ -9,7 +9,8 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
 
-/** Opens a folder of images as a stack. */
+/** Implements the File/Import/Image Sequence command, which
+opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
 	private static boolean convertToGrayscale, convertToRGB;
@@ -39,7 +40,7 @@ public class FolderOpener implements PlugIn {
 		IJ.register(FolderOpener.class);
 		list = sortFileList(list);
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
-		int width=0,height=0,bitDepth=0;
+		int width=0,height=0,depth=0,bitDepth=0;
 		ImageStack stack = null;
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
@@ -111,6 +112,7 @@ public class FolderOpener implements PlugIn {
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
+					depth = imp.getStackSize();
 					bitDepth = imp.getBitDepth();
 					cal = imp.getCalibration();
 					if (convertToRGB) bitDepth = 24;
@@ -127,43 +129,52 @@ public class FolderOpener implements PlugIn {
 						IJ.log(list[i] + ": unable to open");
 					continue;
 				}
-				ImageProcessor ip = imp.getProcessor();
-				int bitDepth2 = imp.getBitDepth();
-				if (convertToRGB) {
-					ip = ip.convertToRGB();
-					bitDepth2 = 24;
-				} else if(convertToGrayscale) {
-					ip = ip.convertToByte(true);
-					bitDepth2 = 8;
+				if (imp.getWidth()!=width || imp.getHeight()!=height) {
+					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
+					continue;
 				}
-				if (bitDepth2!=bitDepth) {
-					if (bitDepth==8) {
-						ip = ip.convertToByte(true);
-						bitDepth2 = 8;
-					} else if (bitDepth==24) {
+				String label = imp.getTitle();
+				if (depth==1) {
+					String info = (String)imp.getProperty("Info");
+					if (info!=null)
+						label += "\n" + info;
+				}
+				if (imp.getCalibration().pixelWidth!=cal.pixelWidth)
+					allSameCalibration = false;
+				ImageStack inputStack = imp.getStack();
+				for (int slice=1; slice<=inputStack.getSize(); slice++) {
+					ImageProcessor ip = inputStack.getProcessor(slice);
+					int bitDepth2 = imp.getBitDepth();
+					if (convertToRGB) {
 						ip = ip.convertToRGB();
 						bitDepth2 = 24;
+					} else if(convertToGrayscale) {
+						ip = ip.convertToByte(true);
+						bitDepth2 = 8;
 					}
-				}
-				if (imp.getWidth()!=width || imp.getHeight()!=height)
-					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
-				else if (bitDepth2!=bitDepth) {
-					IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
-				} else {
-					count = stack.getSize()+1;
+					if (bitDepth2!=bitDepth) {
+						if (bitDepth==8) {
+							ip = ip.convertToByte(true);
+							bitDepth2 = 8;
+						} else if (bitDepth==24) {
+							ip = ip.convertToRGB();
+							bitDepth2 = 24;
+						}
+					}
+					if (bitDepth2!=bitDepth) {
+						IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
+						break;
+					}
+					if (slice==1) count++;
 					IJ.showStatus(count+"/"+n);
 					IJ.showProgress(count, n);
 					if (scale<100.0)
 						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
-					String label = imp.getTitle();
-					if (imp.getCalibration().pixelWidth!=cal.pixelWidth)
-						allSameCalibration = false;
-					String info = (String)imp.getProperty("Info");
-					if (info!=null)
-						label += "\n" + info;
-					stack.addSlice(label, ip);
+					String label2 = label;
+					if (depth>1) label2 = ""+slice;
+					stack.addSlice(label2, ip);
 				}
 				if (count>=n)
 					break;
@@ -199,7 +210,7 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Increment:", 1, 0);
 		//gd.addMessage("");
 		gd.addStringField("File Name Contains:", "");
-		gd.addNumericField("Scale Images", scale, 0, 4, "%");
+		gd.addNumericField("Scale Images:", scale, 0, 4, "%");
 		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
@@ -300,6 +311,7 @@ class FolderOpenerDialog extends GenericDialog {
 	void setStackInfo() {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
+		int depth = imp.getStackSize();
 		int bytesPerPixel = 1;
  		int n = getNumber(numberField.elementAt(0));
 		int start = getNumber(numberField.elementAt(1));
@@ -343,7 +355,7 @@ class FolderOpenerDialog extends GenericDialog {
 			bytesPerPixel = 4;
 		width = (int)(width*scale/100.0);
 		height = (int)(height*scale/100.0);
-		int n2 = n/inc;
+		int n2 = (n*depth)/inc;
 		if (n2<0)
 			n2 = 0;
 		double size = ((double)width*height*n2*bytesPerPixel)/(1024*1024);

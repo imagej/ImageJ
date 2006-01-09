@@ -275,9 +275,21 @@ public class NewImage {
 
 	void showClipboard() {
 		ImagePlus clipboard = ImagePlus.getClipboard();
-		if (clipboard!=null)
-			clipboard.show();
-		else
+		if (clipboard!=null) {
+			ImageProcessor ip = clipboard.getProcessor();
+			ImagePlus imp2 = new ImagePlus("Clipboard", ip.duplicate());
+			Roi roi = clipboard.getRoi();
+			imp2.killRoi();
+			if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
+				roi = (Roi)roi.clone();
+				roi.setLocation(0, 0);
+				imp2.setRoi(roi);
+				WindowManager.setTempCurrentImage(imp2);
+				IJ.run("Clear Outside");
+				imp2.killRoi();
+			}
+			imp2.show();
+		} else
 			IJ.error("The internal clipboard is empty.\n"
 				+"Use the \"System Clipboard\" plugin\n"
 				+"to paste from the system clipboard.");

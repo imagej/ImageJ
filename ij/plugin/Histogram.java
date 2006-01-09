@@ -5,6 +5,7 @@ import ij.gui.*;
 import ij.util.Tools;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.frame.Recorder;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
@@ -15,8 +16,7 @@ public class Histogram implements PlugIn, TextListener {
 
 	private static int nBins = 256;
 	private static boolean useImageMinAndMax = true;
-	private static double xMin;
-	private static double xMax;
+	private static double xMin, xMax;
 	private static String yMax = "Auto";
 	private static boolean stackHistogram;
 	private static int imageID;	
@@ -26,7 +26,9 @@ public class Histogram implements PlugIn, TextListener {
 
  	public void run(String arg) {
  		ImagePlus imp = IJ.getImage();
- 		if (imp.getBitDepth()==32) {
+ 		int bitDepth = imp.getBitDepth();
+ 		if (bitDepth==32 || IJ.altKeyDown()) {
+			IJ.setKeyUp(KeyEvent.VK_ALT);
  			if (!showDialog(imp))
  				return;
  		} else {
@@ -34,16 +36,25 @@ public class Histogram implements PlugIn, TextListener {
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
  			nBins = 256;
- 			xMin = 0.0;
- 			xMax = 0.0;
+			if (stackHistogram && (bitDepth==8||bitDepth==24)) {
+				xMin = 0.0;
+				xMax = 256.0;
+				useImageMinAndMax = false;
+			} else
+				useImageMinAndMax = true;
  			yMax = "Auto";
  		}
  		ImageStatistics stats = null;
  		if (useImageMinAndMax)
  			{xMin=0.0; xMax=0.0;}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
- 		if (stackHistogram) {
-			stats = new StackStatistics(imp, nBins, xMin, xMax);
+ 		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
+ 		if (stackHistogram || customHistogram) {
+ 			ImagePlus imp2 = imp;
+ 			if (customHistogram && !stackHistogram && imp.getStackSize()>1)
+ 				imp2 = new ImagePlus("Temp", imp.getProcessor());
+			stats = new StackStatistics(imp2, nBins, xMin, xMax);
+			stats.histYMax = iyMax;
 			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, stats);
 		} else
 			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, nBins, xMin, xMax, iyMax);
@@ -58,9 +69,12 @@ public class Histogram implements PlugIn, TextListener {
 		if (imp.getID()!=imageID || useImageMinAndMax) {
 			xMin = min;
 			xMax = max;
+			Calibration cal = imp.getCalibration();
+			xMin = cal.getCValue(xMin);
+			xMax = cal.getCValue(xMax);
 		}
 		defaultMin = IJ.d2s(xMin,2);
-		defaultMax = IJ.d2s(xMax,2);;
+		defaultMax = IJ.d2s(xMax,2);
 		imageID = imp.getID();
 		int stackSize = imp.getStackSize();
 		GenericDialog gd = new GenericDialog("Histogram");
@@ -68,8 +82,11 @@ public class Histogram implements PlugIn, TextListener {
 		gd.addCheckbox("Use min/max or:", useImageMinAndMax);
 		//gd.addMessage("          or");
 		gd.addMessage("");
-		gd.addNumericField("X_Min:", xMin, 2);
-		gd.addNumericField("X_Max:", xMax, 2);
+		int fwidth = 6;
+		int nwidth = Math.max(IJ.d2s(xMin,2).length(), IJ.d2s(xMax,2).length());
+		if (nwidth>fwidth) fwidth = nwidth;
+		gd.addNumericField("X_Min:", xMin, 2, fwidth, null);
+		gd.addNumericField("X_Max:", xMax, 2, fwidth, null);
 		gd.addMessage(" ");
 		gd.addStringField("Y_Max:", yMax, 6);
 		if (stackSize>1)

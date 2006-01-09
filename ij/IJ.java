@@ -8,6 +8,7 @@ import ij.plugin.filter.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
+import ij.measure.Calibration;
 import java.awt.event.*;
 import java.text.*;
 import java.util.Locale;	
@@ -41,6 +42,7 @@ public class IJ {
 	private static long maxMemory;
 	private static boolean escapePressed;
 	private static boolean redirectErrorMessages;
+	private static boolean brokenNewPixels;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -50,6 +52,7 @@ public class IJ {
 		// JVM on Sharp Zaurus PDA claims to be "3.1"!
 		isJava2 = version.compareTo("1.1")>0 && version.compareTo("2.9")<=0;
 		isJava14 = version.compareTo("1.3")>0 && version.compareTo("2.9")<=0;
+		brokenNewPixels = (isMac&&!isJava2) || version.startsWith("1.4") || osname.startsWith("Linux");
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -87,8 +90,15 @@ public class IJ {
 		Returns any string value returned by the macro or null. 
 		The equivalent macro function is runMacro(). */
 	public static String runMacroFile(String name, String arg) {
+		if (ij==null && Menus.getCommands()==null)
+			init();
 		Macro_Runner mr = new Macro_Runner();
 		return mr.runMacroFile(name, arg);
+	}
+
+	/** Runs the specified macro file. */
+	public static String runMacroFile(String name) {
+		return runMacroFile(name, null);
 	}
 
 	/** Runs the specified plugin and returns a reference to it. */
@@ -136,9 +146,9 @@ public class IJ {
 			{IJ.noImage(); return;}
 		Roi roi = imp.getRoi();
 		if ((capabilities&PlugInFilter.ROI_REQUIRED)!=0 && roi==null)
-			{IJ.error("Selection required"); return;}
+			{error("Selection required"); return;}
 		if ((capabilities&PlugInFilter.STACK_REQUIRED)!=0 && imp.getStackSize()==1)
-			{IJ.error("Stack required"); return;}
+			{error("Stack required"); return;}
 		int type = imp.getType();
 		switch (type) {
 			case ImagePlus.GRAY8:
@@ -266,10 +276,10 @@ public class IJ {
 		}
 		catch (ClassNotFoundException e) {
 			if (className.indexOf('_')!=-1)
-				IJ.error("Plugin not found: "+className);
+				error("Plugin not found: "+className);
 		}
-		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
-		catch (IllegalAccessException e) {IJ.error("Unable to load plugin, possibly \nbecause it is not public.");}
+		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
+		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
 		redirectErrorMessages = false;
 		return thePlugIn;
 	} 
@@ -281,7 +291,7 @@ public class IJ {
 		if ((capabilities&PlugInFilter.DOES_16)!=0) s +=  "    16-bit grayscale\n";
 		if ((capabilities&PlugInFilter.DOES_32)!=0) s +=  "    32-bit (float) grayscale\n";
 		if ((capabilities&PlugInFilter.DOES_RGB)!=0) s += "    RGB color\n";
-		IJ.error(s);
+		error(s);
 	}
 	
     /** Starts executing a menu command in a separete thread and returns immediately. */
@@ -291,7 +301,9 @@ public class IJ {
 	}
 	
     /** Runs an ImageJ command. Does not return until 
-    	the command has finished executing. */
+    	the command has finished executing. To avoid "image locked",
+    	errors, plugins that call this method should implement
+    	the PlugIn interface instead of PlugInFilter. */
 	public static void run(String command) {
 		run(command, null);
 	}
@@ -487,7 +499,7 @@ public class IJ {
 	/**	Displays a message in a dialog box with the specified title.
 		If a macro is running, it is aborted. Writes to the Java  
 		console if ImageJ is not present. */
-	public static void error(String title, String msg) {
+	public static synchronized void error(String title, String msg) {
 		showMessage(title, msg);
 		Macro.abort();
 	}
@@ -532,7 +544,7 @@ public class IJ {
 	}
 
 	/**Delays 'msecs' milliseconds.*/
-	public synchronized static void wait(int msecs) {
+	public static void wait(int msecs) {
 		try {Thread.sleep(msecs);}
 		catch (InterruptedException e) { }
 	}
@@ -612,10 +624,12 @@ public class IJ {
 	public static String d2s(double n, int decimalPlaces) {
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
+		double np = n;
 		boolean negative = n<0.0;
-		if (negative)
-			n = -n;
-		double whole = Math.round(n * Math.pow(10, decimalPlaces));
+		if (negative) np = -n;
+		if (np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces))
+			return Float.toString((float)n); // use scientific notation
+		double whole = Math.round(np * Math.pow(10, decimalPlaces));
 		double rounded = whole/Math.pow(10, decimalPlaces);
 		if (negative)
 			rounded = -rounded;
@@ -635,6 +649,7 @@ public class IJ {
 				case 9: df.applyPattern("0.000000000"); dfDigits=9; break;
 			}
 		String s = df.format(rounded);
+		if (s.length()>12) s = Float.toString((float)n); // use scientific notation
 		return s;
 	}
 
@@ -802,8 +817,11 @@ public class IJ {
 	/** Sets the minimum and maximum displayed pixel values. */
 	public static void setMinAndMax(double min, double max) {
 		ImagePlus img = getImage();
-		if (img.getCalibration().isSigned16Bit())
-			{min+=32768; max+=32768;}
+		if (img.getBitDepth()==16) {
+			Calibration cal = img.getCalibration();
+			min = cal.getRawValue(min); 
+			max = cal.getRawValue(max); 
+		}
 		img.getProcessor().setMinAndMax(min, max);
 		img.updateAndDraw();
 	}
@@ -817,7 +835,9 @@ public class IJ {
 	}
 
 	/** Sets the lower and upper threshold levels and displays the image 
-		using red to highlight thresholded pixels. */
+		using red to highlight thresholded pixels. May not work correctly on
+		16 and 32 bit images unless the display range has been reset using IJ.resetMinAndMax().
+	*/
 	public static void setThreshold(double lowerThreshold, double upperThresold) {
 		setThreshold(lowerThreshold, upperThresold, null);
 	}
@@ -836,19 +856,24 @@ public class IJ {
 				mode = ImageProcessor.NO_LUT_UPDATE;
 		}
 		ImagePlus img = getImage();
-		if (img.getCalibration().isSigned16Bit()) {
-			lowerThreshold += 32768.0;
-			upperThreshold += 32768.0;
+		if (img.getBitDepth()==16) {
+			Calibration cal = img.getCalibration();
+			lowerThreshold = cal.getRawValue(lowerThreshold); 
+			upperThreshold = cal.getRawValue(upperThreshold); 
 		}
 		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
-		if (mode != ImageProcessor.NO_LUT_UPDATE)
+		if (mode != ImageProcessor.NO_LUT_UPDATE) {
+			img.getProcessor().setLutAnimation(true);
 			img.updateAndDraw();
+		}
 	}
 
 	/** Disables thresholding. */
 	public static void resetThreshold() {
 		ImagePlus img = getImage();
-		img.getProcessor().resetThreshold();
+		ImageProcessor ip = img.getProcessor();
+		ip.resetThreshold();
+		ip.setLutAnimation(true);
 		img.updateAndDraw();
 	}
 	
@@ -869,13 +894,15 @@ public class IJ {
 			win.toFront();
 			WindowManager.setWindow(win);
 			long start = System.currentTimeMillis();
+			// timeout after 2 seconds unless current thread is event dispatch thread
+			String thread = Thread.currentThread().getName();
+			int timeout = thread!=null&&thread.indexOf("EventQueue")!=-1?0:2000;
 			while (true) {
 				wait(10);
 				imp = WindowManager.getCurrentImage();
 				if (imp!=null && imp.getTitle().equals(title))
 					return; // specified image is now active
-				if ((System.currentTimeMillis()-start)>2000) {
-					// 2 second timeout
+				if ((System.currentTimeMillis()-start)>timeout) {
 					WindowManager.setCurrentWindow(win);
 					return;
 				}
@@ -886,7 +913,7 @@ public class IJ {
 	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
 		long start = System.currentTimeMillis();
-		while (System.currentTimeMillis()-start<4000) { // 4 sec timeout
+		while (System.currentTimeMillis()-start<3000) { // 3 sec timeout
 			Frame frame = WindowManager.getFrame(title);
 			if (frame!=null && !(frame instanceof ImageWindow)) {
 				selectWindow(frame);
@@ -956,12 +983,14 @@ public class IJ {
 	public static int doWand(int x, int y) {
 		ImagePlus img = getImage();
 		ImageProcessor ip = img.getProcessor();
+		if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y)))
+			return 0;
 		Wand w = new Wand(ip);
 		double t1 = ip.getMinThreshold();
 		if (t1==ip.NO_THRESHOLD)
 			w.autoOutline(x, y);
 		else
-			w.autoOutline(x, y, (int)t1, (int)ip.getMaxThreshold());
+			w.autoOutline(x, y, t1, ip.getMaxThreshold());
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
@@ -1016,8 +1045,9 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
-	/** Returns the path to the plugins, macros, temp or image directory if <code>title</code> 
-		is "plugins", "macros", "temp" or "image", otherwise, displays a dialog 
+	/** Returns the path to the home ("user.home"), startup ("user.dir"), plugins, macros, 
+		temp or image directory if <code>title</code> is "home", "startup", 
+		"plugins", "macros", "temp" or "image", otherwise, displays a dialog 
 		and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user
 		cancels the dialog box. Also aborts the macro if the user cancels
@@ -1027,6 +1057,10 @@ public class IJ {
 			return Menus.getPlugInsPath();
 		else if (title.equals("macros"))
 			return Menus.getMacrosPath();
+		else if (title.equals("home"))
+			return System.getProperty("user.home") + File.separator;
+		else if (title.equals("startup"))
+			return System.getProperty("user.dir") + File.separator;
 		else if (title.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
 			if (dir!=null && !dir.endsWith(File.separator)) dir += File.separator;
@@ -1069,6 +1103,14 @@ public class IJ {
 	}
 	
 	
+	/** Open the specified file as a tiff, bmp, dicom, fits, pgm, gif 
+		or jpeg image and returns an ImagePlus object if successful.
+		Calls HandleExtraFileTypes plugin if the file type is not recognised.
+		Note that 'path' can also be a URL. */
+	public static ImagePlus openImage(String path) {
+		return (new Opener()).openImage(path);
+	}
+
 	/** Saves an image, lookup table, selection or text window to the specified file path. 
 		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".lut", ".roi" or ".txt".  */
 	public static void save(String path) {
@@ -1197,8 +1239,14 @@ public class IJ {
 		redirectErrorMessages = true;
 	}
 	
+	/** Returns true if animated MemoryImageSources do not work correctly. */
+	public static boolean brokenNewPixels() {
+		return brokenNewPixels;
+	}
+
 	static void abort() {
-		throw new RuntimeException(Macro.MACRO_CANCELED);
+		if (ij!=null || Interpreter.isBatchMode())
+			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
 }

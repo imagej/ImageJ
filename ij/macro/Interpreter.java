@@ -46,6 +46,7 @@ public class Interpreter implements MacroConstants {
 	String argument;
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
+	double[] rgbWeights;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -61,6 +62,8 @@ public class Interpreter implements MacroConstants {
 	public String run(String macro, String arg) {
 		argument = arg;
 		calledMacro = true;
+		if (IJ.getInstance()==null)
+			setBatchMode(true);
 		run(macro);
 		return returnValue;
 	}
@@ -681,6 +684,8 @@ public class Interpreter implements MacroConstants {
 			{putTokenBack(); getFactor(); return;}
 		int index = getIndex();
 		int expressionType = getExpressionType();
+		if (expressionType==Variable.ARRAY) 
+			error("Arrays of arrays not supported");
 		getToken();
 		int op = token;
 		if (!(op=='='||op==PLUS_EQUAL||op==MINUS_EQUAL||op==MUL_EQUAL||op==DIV_EQUAL))
@@ -883,7 +888,8 @@ public class Interpreter implements MacroConstants {
 					v1 = v1<=v2?1.0:0.0;
 					break;
 			}
-		}
+		} else if (s1!=null)
+			v1 = Tools.parseDouble(s1, 0.0);
 		return v1;
 	}
 
@@ -1022,6 +1028,8 @@ public class Interpreter implements MacroConstants {
 		WindowManager.setTempCurrentImage(null);
 		if (showMessage) {
 			String line = getErrorLine();
+			if (line.length()>120)
+				line = line.substring(0,119)+"...";
 			IJ.showMessage("Macro Error", message+" in line "+lineNumber+".\n \n"+line);
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
@@ -1422,9 +1430,11 @@ public class Interpreter implements MacroConstants {
 						pc = savePC-1;
 						getToken();
 					}
-				} else {
+				} else if (next=='.')
+						str = null;
+				else {
 					if (v.getArray()!=null)
-						{getToken(); error("'[' expected");}
+						{getToken(); error("'[' or '.' expected");}
 					str = v.getString();
 				}
 				break;
@@ -1488,16 +1498,20 @@ public class Interpreter implements MacroConstants {
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);		
 			IJ.setKeyUp(KeyEvent.VK_SPACE);
 		}
+		if (rgbWeights!=null)
+			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
 	}
 	
 	/** Aborts currently running macro. */
 	public static void abort() {
 		if (instance!=null) {
+			if (!instance.calledMacro) {
+				batchMode = false;
+				imageTable = null;
+			}
 			instance.done = true;
 			IJ.showStatus("Macro aborted");
 		}
-		batchMode = false;
-		imageTable = null;
 	}
 	
 	public static Interpreter getInstance() {
@@ -1560,7 +1574,14 @@ public class Interpreter implements MacroConstants {
 		return null;
 	}
 	
-} // class Interpreter
+	public static ImagePlus getLastBatchModeImage() { 
+		if (!batchMode || imageTable==null) return null; 
+		int size = imageTable.size(); 
+		if (size==0) return null; 
+		return (ImagePlus)imageTable.elementAt(size-1); 
+	} 
+ 
+ } // class Interpreter
 
 
 

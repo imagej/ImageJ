@@ -8,6 +8,7 @@ import ij.io.*;
 import ij.util.*;
 import ij.plugin.frame.Editor;
 import ij.text.TextWindow;
+import java.awt.event.KeyEvent;
 
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
@@ -16,6 +17,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	private static ByteArrayOutputStream output;
 	private static String dir, name;
 	private static Editor errors;
+	private static boolean generateDebuggingInfo;
 
 	public void run(String arg) {
 		IJ.register(Compiler.class);
@@ -35,6 +37,14 @@ public class Compiler implements PlugIn, FilenameFilter {
 	void compileAndRun(String path) {
 		if (!isJavac())
 			return;
+		if (IJ.altKeyDown()) {
+			IJ.setKeyUp(KeyEvent.VK_ALT);
+			GenericDialog gd = new GenericDialog("Compile and Run");
+			gd.addCheckbox("Generate Debugging Info (javac -g)", generateDebuggingInfo);
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			generateDebuggingInfo = gd.getNextBoolean();
+		}
 		if (!open(path, "Compile and Run Plugin..."))
 			return;
 		if (name.endsWith(".class"))
@@ -52,7 +62,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		} catch (NoClassDefFoundError e) {
 			IJ.error("This JVM does not include the javac compiler. Javac is\n"
 					+"included with the Windows, OS X and Linux versions of\n"
- 					+"ImageJ. Mac OS 9 users must install Apple's Java SDK.");
+ 					+"ImageJ.");
  			return false;
 		}
 		return true;
@@ -66,7 +76,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 			classpath += File.pathSeparator + f.getParent();
 		//IJ.log("classpath: " + classpath);
 		output.reset();
-		boolean compiled = javac.compile(new String[] {"-deprecation", "-classpath", classpath, path});
+		String[] arguments;
+		if (generateDebuggingInfo)
+			arguments = new String[] {"-g", "-deprecation", "-classpath", classpath, path};
+		else
+			arguments = new String[] {"-deprecation", "-classpath", classpath, path};
+		boolean compiled = javac.compile(arguments);
 		String s = output.toString();
 		boolean errors = (!compiled || areErrors(s));
 		if (errors)

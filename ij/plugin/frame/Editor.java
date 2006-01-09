@@ -38,6 +38,7 @@ TextListener, ClipboardOwner, MacroConstants {
 	private int nShortcuts;
 	private MacroInstaller installer;
 	private static String defaultDir;
+	private boolean dontShowWindow;
 	
 	public Editor() {
 		super("Editor");
@@ -127,7 +128,7 @@ TextListener, ClipboardOwner, MacroConstants {
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
-		if (name.endsWith(".txt")) {
+		if (name.endsWith(".txt") || name.endsWith(".ijm")) {
 			fileMenu.remove(4);
 			fileMenu.insert(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)), 4);
 			int itemCount = fileMenu.getItemCount();
@@ -141,8 +142,12 @@ TextListener, ClipboardOwner, MacroConstants {
 			if (text.indexOf("macro ")!=-1)
 				installMacros(text, false);				
 		}
-		if (IJ.getInstance()!=null)
+		if (IJ.getInstance()!=null && !dontShowWindow)
 			show();
+		if (dontShowWindow) {
+			dispose();
+			dontShowWindow = false;
+		}
 		WindowManager.setWindow(this);
 		changes = false;
 	}
@@ -156,8 +161,12 @@ TextListener, ClipboardOwner, MacroConstants {
 		installer = new MacroInstaller();
 		installer.setFileName(getTitle());
 		int nShortcuts = installer.install(text, macrosMenu);
-		if (text.indexOf("AutoRun")==-1 && (installInPluginsMenu || nShortcuts>0))
+		boolean isAutoRunMacro = text.indexOf("AutoRun")!=-1;
+		if (!isAutoRunMacro && (installInPluginsMenu || nShortcuts>0))
 			installer.install(null);
+		if (isAutoRunMacro) {
+			dontShowWindow = text.indexOf("AutoRunAndHide")!=-1;
+		}
 	}
 		
 	public void open(String dir, String name) {
@@ -202,7 +211,7 @@ TextListener, ClipboardOwner, MacroConstants {
 
 	public void display(String title, String text) {
 		ta.selectAll();
-		ta.replaceRange(text,ta.getSelectionStart(),ta.getSelectionEnd());
+		ta.replaceRange(text, ta.getSelectionStart(), ta.getSelectionEnd());
 		ta.setCaretPosition(0);
 		setWindowTitle(title);
 		changes = false;
@@ -606,6 +615,8 @@ TextListener, ClipboardOwner, MacroConstants {
 		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
 		Editor ed = np.getEditor();
 		String title = getTitle();
+		if (title.equals("Macro.txt"))
+			title = "Converted_Macro";
 		if (title.endsWith(".txt")) title = title.substring(0, title.length()-4);
 		if (title.indexOf('_')==-1) title += "_";
 		title += ".java";

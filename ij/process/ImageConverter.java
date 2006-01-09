@@ -200,6 +200,7 @@ public class ImageConverter {
 		to byte and to 0-65535 when converting float to short. */
 	public static void setDoScaling(boolean scaleConversions) {
 		doScaling = scaleConversions;
+		IJ.register(ImageConverter.class); 
 	}
 
 	/** Returns true if scaling is enabled. */

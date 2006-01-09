@@ -69,6 +69,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public HistogramWindow(String title, ImagePlus imp, ImageStatistics stats) {
 		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
 		//IJ.log("HistogramWindow: "+stats.histMin+"  "+stats.histMax+"  "+stats.nBins);
+		this.yMax = stats.histYMax;
 		showHistogram(imp, stats);
 	}
 
@@ -236,7 +237,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
-		if (fixedRange&&!cal.calibrated())
+		if (fixedRange&&!cal.calibrated()&&hmin==0&&hmax==255)
 			{hmin=0; hmax=256;}
 		ip.drawString(d2s(hmin), x - 4, y);
 		ip.drawString(d2s(hmax), x + HIST_WIDTH - getWidth(hmax, ip) + 10, y);

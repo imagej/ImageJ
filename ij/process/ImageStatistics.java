@@ -32,9 +32,11 @@ public class ImageStatistics implements Measurements {
 	public double angle;
 	/** 65536 element histogram (16-bit images only) */
 	public int[] histogram16;
+	public double areaFraction;
 	
 	public double histMin;
 	public double histMax;
+	public int histYMax;
 	public int maxCount;
 	public int nBins = 256;
 	public double binSize = 1.0;
@@ -187,4 +189,23 @@ public class ImageStatistics implements Measurements {
 		median = cal!=null?cal.getCValue(i):i;
 	}
 	
+	void calculateAreaFraction(ImageProcessor ip, int[] hist) {
+		int sum = 0;
+		int total = 0;
+		int t1 = (int)ip.getMinThreshold();
+		int t2 = (int)ip.getMaxThreshold();
+		if (t1==ImageProcessor.NO_THRESHOLD) {
+			for (int i=0; i<hist.length; i++)
+				total += hist[i];
+			sum = total - hist[0];
+		} else {
+			for (int i=0; i<hist.length; i++) {
+				if (i>=t1 && i<=t2)
+					sum += hist[i];
+				total += hist[i];
+			}
+		}
+		areaFraction = sum*100.0/total;
+	}
+
 }

@@ -38,6 +38,7 @@ public class StackEditor implements PlugIn {
 		if (!imp.lock())
 			return;
 		ImageStack stack = imp.getStack();
+		if (stack.getSize()==1) stack.setSliceLabel(null, 1);
 		ImageProcessor ip = imp.getProcessor();
 		int n = imp.getCurrentSlice();
 		if (IJ.altKeyDown())
@@ -137,7 +138,7 @@ public class StackEditor implements PlugIn {
 		}
 		Calibration cal = imp.getCalibration();
 		for (int i=1; i<=size; i++) {
-			String label = stack.getSliceLabel(i);
+			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getDigits(i);
 			ImagePlus imp2 = new ImagePlus(title, stack.getProcessor(i));
 			imp2.setCalibration(cal);

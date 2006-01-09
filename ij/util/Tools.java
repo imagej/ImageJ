@@ -1,5 +1,6 @@
 package ij.util;
 import java.awt.Color;
+import java.util.StringTokenizer;
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -101,6 +102,7 @@ import java.awt.Color;
 	*	<code>defaultValue</code> if the string does not contain a parsable double
 	*/
 	public static double parseDouble(String s, double defaultValue) {
+		if (s==null) return defaultValue;
 		try {
 			Double d = new Double(s);
 			defaultValue = d.doubleValue();
@@ -138,6 +140,30 @@ import java.awt.Color;
 			if (n<0.0001) digits = 7;
 			return digits;
 		}
+	}
+	
+	/** Splits a string into substrings using the default delimiter set, 
+	which is " \t\n\r" (space, tab, newline and carriage-return). */
+	public static String[] split(String str) {
+		return split(str, " \t\n\r");
+	}
+
+	/** Splits a string into substring using the characters
+	contained in the second argument as the delimiter set. */
+	public static String[] split(String str, String delim) {
+		StringTokenizer t = new StringTokenizer(str, delim);
+		int tokens = t.countTokens();
+		String[] strings;
+		if (tokens>0) {
+       		strings = new String[tokens];
+        	for(int i=0; i<tokens; i++) 
+        		strings[i] = t.nextToken();
+        } else {
+        	strings = new String[1];
+        	strings[0] = str;
+        	tokens = 1;
+        }
+		return strings;
 	}
 
 }

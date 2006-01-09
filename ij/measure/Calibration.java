@@ -265,11 +265,13 @@ public class Calibration {
 				return getCValue((int)value);
 		}
  	}
-
+ 	
   	/** Converts a density calibrated value into a raw pixel value. */
  	public double getRawValue(double value) {
 		if (function==NONE)
 			return value;
+		if (function==STRAIGHT_LINE && coefficients!=null && coefficients.length==2 && coefficients[1]!=0.0)
+			return (value-coefficients[0])/coefficients[1];
 		if (cTable==null)
 			makeCTable();
 		float fvalue = (float)value;
@@ -330,6 +332,11 @@ public class Calibration {
 			&& coefficients[0]==-32768.0 && coefficients[1]==1.0);
  	}
 
+ 	/** Returns true if zero clipping is enabled. */
+ 	public boolean zeroClip() {
+ 		return zeroClip;
+ 	}
+ 	
     public String toString() {
     	return
     		"w=" + pixelWidth

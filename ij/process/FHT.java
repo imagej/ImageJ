@@ -1,5 +1,6 @@
 package ij.process;
 import ij.*;
+import ij.plugin.FFT;
 import java.awt.image.ColorModel; 
 
 /**
@@ -313,6 +314,15 @@ public class FHT extends FloatProcessor {
 		}
 		ImageProcessor ip = new ByteProcessor(maxN, maxN, ps, null);
 		swapQuadrants(ip);
+		if (FFT.displayRawPS) {
+			ImageProcessor ip2 = new FloatProcessor(maxN, maxN, fps, null);
+			swapQuadrants(ip2);
+			new ImagePlus("PS of "+FFT.fileName, ip2).show();
+		}
+		if (FFT.displayFHT) {
+			ImageProcessor ip3 = new FloatProcessor(maxN, maxN, fht, null);
+			new ImagePlus("FHT of "+FFT.fileName, ip3.duplicate()).show();
+		}
 		return ip;
 	}
 

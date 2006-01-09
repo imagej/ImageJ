@@ -87,6 +87,7 @@ public class Menus {
 		Menu file = new Menu("File");
 		addItem(file, "New...", KeyEvent.VK_N, false);
 		addItem(file, "Open...", KeyEvent.VK_O, false);
+		addPlugInItem(file, "Open Next", "ij.plugin.NextImageOpener", KeyEvent.VK_O, true);
 		addSubMenu(file, "Open Samples");
 		addOpenRecentSubMenu(file);
 		importMenu = addSubMenu(file, "Import");
@@ -167,6 +168,7 @@ public class Menus {
 		addPlugInItem(analyze, "Measure", "ij.plugin.filter.Analyzer", KeyEvent.VK_M, false);
 		addPlugInItem(analyze, "Analyze Particles...", "ij.plugin.filter.ParticleAnalyzer", 0, false);
 		addPlugInItem(analyze, "Summarize", "ij.plugin.filter.Analyzer(\"sum\")", 0, false);
+		addPlugInItem(analyze, "Distribution...", "ij.plugin.Distribution", 0, false);
 		addPlugInItem(analyze, "Label", "ij.plugin.filter.Filler(\"label\")", 0, false);
 		addPlugInItem(analyze, "Clear Results", "ij.plugin.filter.Analyzer(\"clear\")", 0, false);
 		addPlugInItem(analyze, "Set Measurements...", "ij.plugin.filter.Analyzer(\"set\")", 0, false);
@@ -198,6 +200,7 @@ public class Menus {
 			installPlugins();
 		
 		mbar = new MenuBar();
+		//mbar.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		mbar.add(file);
 		mbar.add(edit);
 		mbar.add(image);
@@ -948,6 +951,7 @@ public class Menus {
 
 	/** Adds one image to the end of the Window menu. */
 	static synchronized void addWindowMenuItem(ImagePlus imp) {
+		//IJ.log("addWindowMenuItem: "+imp);
 		if (ij==null) return;
 		String name = imp.getTitle();
 		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
@@ -968,7 +972,7 @@ public class Menus {
 	
 	/** Removes the specified item from the Window menu. */
 	static synchronized void removeWindowMenuItem(int index) {
-		//IJ.write("removeWindowMenuItem: "+index+" "+windowMenuItems2);
+		//IJ.log("removeWindowMenuItem: "+index+" "+windowMenuItems2+" "+window.getItemCount());
 		if (ij==null)
 			return;
 		if (index>=0 && index<window.getItemCount()) {
@@ -979,7 +983,6 @@ public class Menus {
 					window.remove(WINDOW_MENU_ITEMS);
 					windowMenuItems2 = 0;
 				}
-					
 			}
 		}
 	}

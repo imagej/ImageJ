@@ -15,14 +15,16 @@ import ij.plugin.frame.*;
 import ij.plugin.Zip_Reader;
 import ij.text.TextWindow;
 import ij.util.Java2;
+import java.awt.event.KeyEvent;
 
 /** Opens tiff (and tiff stacks), dicom, fits, pgm, jpeg, bmp or
 	gif images, and look-up tables, using a file open dialog or a path.
 	Calls HandleExtraFileTypes plugin if the file type is unrecognised. */
 public class Opener {
 
-	private static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
-		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,TIFF_AND_DICOM=14,CUSTOM=15;
+	public static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
+		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,
+		TIFF_AND_DICOM=14,CUSTOM=15;
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
 		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d"};
 	private static String defaultDirectory = null;
@@ -30,6 +32,9 @@ public class Opener {
 	private boolean error;
 	private boolean isRGB48;
 	private boolean silentMode;
+	private String omDirectory;
+	private File[] omFiles;
+
 
 	public Opener() {
 	}
@@ -56,33 +61,43 @@ public class Opener {
 		the user. Displays error messages if one or more of the selected 
 		files is not in one of the supported formats. This is the method
 		that ImageJ's File/Open command uses to open files if
-		"Use JFileChooser" is checked in EditOptions/Miscellaneous. */
+		"Open/Save Using JFileChooser" is checked in EditOptions/Misc. */
 	public void openMultiple() {
 		if (!IJ.isJava2()) return;
 		Java2.setSystemLookAndFeel();
-		JFileChooser fc = new JFileChooser();
-		fc.setMultiSelectionEnabled(true);
-		File dir = null;
-		String sdir = OpenDialog.getDefaultDirectory();
-		if (sdir!=null)
-			dir = new File(sdir);
-		if (dir!=null)
-			fc.setCurrentDirectory(dir);
-		int returnVal = fc.showOpenDialog(IJ.getInstance());
-		if (returnVal!=JFileChooser.APPROVE_OPTION)
-			return;
-		File[] files = fc.getSelectedFiles();
-		if (files.length==0) { // getSelectedFiles does not work on some JVMs
-			files = new File[1];
-			files[0] = fc.getSelectedFile();
-		}
-		String directory = fc.getCurrentDirectory().getPath()+File.separator;
-		OpenDialog.setDefaultDirectory(directory);
-		for (int i=0; i<files.length; i++) {
-			String path = directory + files[i].getName();
+		// run JFileChooser in a separate thread to avoid possible thread deadlocks
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					JFileChooser fc = new JFileChooser();
+					fc.setMultiSelectionEnabled(true);
+					File dir = null;
+					String sdir = OpenDialog.getDefaultDirectory();
+					if (sdir!=null)
+						dir = new File(sdir);
+					if (dir!=null)
+						fc.setCurrentDirectory(dir);
+					int returnVal = fc.showOpenDialog(IJ.getInstance());
+					if (returnVal!=JFileChooser.APPROVE_OPTION)
+						return;
+					omFiles = fc.getSelectedFiles();
+					if (omFiles.length==0) { // getSelectedFiles does not work on some JVMs
+						omFiles = new File[1];
+						omFiles[0] = fc.getSelectedFile();
+					}
+					omDirectory = fc.getCurrentDirectory().getPath()+File.separator;
+				}
+			});
+		} catch (Exception e) {}
+		if (omDirectory==null) return;
+		OpenDialog.setDefaultDirectory(omDirectory);
+		for (int i=0; i<omFiles.length; i++) {
+			String path = omDirectory + omFiles[i].getName();
 			open(path);
 			if (i==0 && Recorder.record)
 				Recorder.recordPath("open", path);
+			if (i==0 && !error)
+				Menus.addOpenRecentItem(path);
 		}
 	}
 
@@ -90,10 +105,14 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
+        boolean fullPath = path.startsWith("/") || path.indexOf(":\\")==1;
+        if (!fullPath)
+			path = System.getProperty("user.dir") + File.separator + path;
 		if (!silentMode) IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
 		if (imp!=null) {
+			WindowManager.checkForDuplicateName = true;
 			if (isRGB48)
 				openRGB48(imp);
 			else
@@ -109,6 +128,11 @@ public class Opener {
 					IJ.runPlugIn("ij.plugin.RoiReader", path);
 					break;
 				case JAVA_OR_TEXT: case TEXT:
+					if (IJ.altKeyDown()) { // open in TextWindow if alt key down
+						new TextWindow(path,400,450);
+						IJ.setKeyUp(KeyEvent.VK_ALT);
+						break;
+					}
 					File file = new File(path);
 					boolean betterTextArea = IJ.isJava2() || IJ.isMacintosh();
 					int maxSize = 250000;
@@ -146,7 +170,7 @@ public class Opener {
 		if (directory.length()>0 && !directory.endsWith(Prefs.separator))
 			directory += Prefs.separator;
 		String path = directory+name;
-		fileType = getFileType(path,name);
+		fileType = getFileType(path);
 		if (IJ.debugMode)
 			IJ.log("openImage: \""+types[fileType]+"\", "+path);
 		switch (fileType) {
@@ -514,13 +538,15 @@ public class Opener {
 
 	/**
 	Attempts to determine the image file type by looking for
-	'magic numbers' or text strings in the header.
+	'magic numbers' and the file name extension.
 	 */
-	int getFileType(String path, String name) {
+	public int getFileType(String path) {
+		File file = new File(path);
+		String name = file.getName();
 		InputStream is;
 		byte[] buf = new byte[132];
 		try {
-			is = new FileInputStream(path);
+			is = new FileInputStream(file);
 			is.read(buf, 0, 132);
 			is.close();
 		} catch (IOException e) {
@@ -589,7 +615,7 @@ public class Opener {
 			return ZIP;
 
 		// Java source file or text file
-		if (name.endsWith(".java") || name.endsWith(".txt"))
+		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm"))
 			return JAVA_OR_TEXT;
 
 		// ImageJ, NIH Image, Scion Image for Windows ROI

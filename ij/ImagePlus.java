@@ -90,6 +90,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean ignoreFlush;
 	private boolean errorLoadingImage;
 	private static ImagePlus clipboard;
+	private static Vector listeners;
+	private static boolean inListener;
+	private static final int OPENED=0, CLOSED=1, UPDATED=2;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -226,6 +229,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			width = (int)(width*mag);
 			height = (int)(height*mag);
 			ic.repaint(x, y, width, height);
+			if (listeners!=null && roi!=null && roi.getPasteMode()!=Roi.NOT_PASTING)
+				notifyListeners(UPDATED);
 		}
 	}
 	
@@ -238,6 +243,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (win!=null)
 				win.getCanvas().setImageUpdated();
 			draw();
+			if (listeners!=null && !inListener) notifyListeners(UPDATED);
 		}
 	}
 	
@@ -308,6 +314,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				win = new StackWindow(this);
 			else
 				win = new ImageWindow(this);
+			if (roi!=null) roi.setImage(this);
 			draw();
 			IJ.showStatus(statusMessage);
 			if (IJ.macroRunning()) { // wait for image to become activated
@@ -322,6 +329,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				}
 				//IJ.log(""+(System.currentTimeMillis()-start));
 			}
+			if (listeners!=null) notifyListeners(OPENED);
 		}
 	}
 	
@@ -585,16 +593,18 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Returns an ImageStatistics object generated using the
 		specified measurement options, histogram bin count and histogram range. 
-		Note: except for float images, the number of bins
-		is currently fixed at 256 and the histogram range must be
-		the same as the image range.
+		Note: for 8-bit and RGB images, the number of bins
+		is fixed at 256 and the histogram range is always 0-255.
 	*/
 	public ImageStatistics getStatistics(int mOptions, int nBins, double histMin, double histMax) {
 		setupProcessor();
 		ip.setRoi(roi);
 		ip.setHistogramSize(nBins);
+		Calibration cal = getCalibration();
+		if (getType()==GRAY16&& !(histMin==0.0&&histMax==0.0))
+			{histMin=cal.getRawValue(histMin); histMax=cal.getRawValue(histMax);}
 		ip.setHistogramRange(histMin, histMax);
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, mOptions, getCalibration());
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, mOptions, cal);
 		ip.setHistogramSize(256);
 		ip.setHistogramRange(0.0, 0.0);
 		return stats;
@@ -608,12 +618,16 @@ public class ImagePlus implements ImageObserver, Measurements {
     		return title;
     }
 
-	/** Returns a shortened version of image name. */
+	/** Returns a shortened version of image name that does not 
+		include spaces or a file name extension. */
 	public String getShortTitle() {
 		String title = getTitle();
 		int index = title.indexOf(' ');
 		if (index>-1)
-			title = title.substring(0,index);
+			title = title.substring(0, index);
+		index = title.lastIndexOf('.');
+		if (index>0)
+			title = title.substring(0, index);
 		return title;
     }
 
@@ -699,6 +713,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the dimensions of this image (width, height, nChannels, 
 		nSlices, nFrames) as a 5 element int array. */
 	public int[] getDimensions() {
+		int stackSize = getImageStackSize();
+		if (nChannels*nSlices*nFrames!=stackSize) {
+			nSlices = stackSize;
+			nChannels = 1;
+			nFrames = 1;
+		}
 		int[] d = new int[5];
 		d[0] = width;
 		d[1] = height;
@@ -869,6 +889,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return s;
 	}
 	
+	/** Returns the base image stack. */ 
+	public ImageStack getImageStack() {
+		if (stack==null)
+			return getStack();
+		else {
+			stack.update(ip);
+			return stack;
+		}
+	}
+
 	/** Returns the current stack slice number or 1 if
 		this is a single image. */
 	public int getCurrentSlice() {
@@ -928,6 +958,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		ROI is deleted if <code>roi</code> is null or its width or height is zero. */
 	public void setRoi(Roi roi) {
 		killRoi();
+		if (roi.isVisible())
+			roi = (Roi)roi.clone();
 		if (roi==null)
 			return;
 		Rectangle bounds = roi.getBounds();
@@ -961,34 +993,35 @@ public class ImagePlus implements ImageObserver, Measurements {
 		draw();
 	}
 	
-	/** Creates a new selection. The type is determined by which tool in
-		the tool bar is active. The user interactively sets the size. */
-	public void createNewRoi(int x, int y) {
+	/** Starts the process of creating a new selection, where sx and sy are the
+		starting screen coordinates. The selection type is determined by which tool in
+		the tool bar is active. The user interactively sets the selection size and shape. */
+	public void createNewRoi(int sx, int sy) {
 		killRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
-				roi = new Roi(x, y, this);
+				roi = new Roi(sx, sy, this);
 				break;
 			case Toolbar.OVAL:
-				roi = new OvalRoi(x, y, this);
+				roi = new OvalRoi(sx, sy, this);
 				break;
 			case Toolbar.POLYGON:
 			case Toolbar.POLYLINE:
 			case Toolbar.ANGLE:
-				roi = new PolygonRoi(x, y, this);
+				roi = new PolygonRoi(sx, sy, this);
 				break;
 			case Toolbar.FREEROI:
 			case Toolbar.FREELINE:
-				roi = new FreehandRoi(x, y, this);
+				roi = new FreehandRoi(sx, sy, this);
 				break;
 			case Toolbar.LINE:
-				roi = new Line(x, y, this);
+				roi = new Line(sx, sy, this);
 				break;
 			case Toolbar.TEXT:
-				roi = new TextRoi(x, y, this);
+				roi = new TextRoi(sx, sy, this);
 				break;
 			case Toolbar.POINT:
-				roi = new PointRoi(x, y, this);
+				roi = new PointRoi(sx, sy, this);
 				if (Prefs.pointAutoMeasure || Prefs.pointAutoNextSlice) IJ.run("Measure");
 				if (Prefs.pointAutoNextSlice && getStackSize()>1) {
 					IJ.run("Next Slice [>]");
@@ -1151,6 +1184,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		do its job. Does nothing if the image is locked or a
 		setIgnoreFlush(true) call has been made. */
 	public synchronized void flush() {
+		if (listeners!=null)
+			notifyListeners(CLOSED);
 		if (locked || ignoreFlush)
 			return;
 		if (ip!=null) {
@@ -1235,6 +1270,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 			globalCalibration = global.copy();
     }
     
+    /** Returns the system-wide calibration, or null. */
+    public Calibration getGlobalCalibration() {
+			return globalCalibration;
+    }
+
     /** Displays the cursor coordinates and pixel value in the status bar.
     	Called by ImageCanvas when the mouse moves. Can be overridden by
     	ImagePlus subclasses.
@@ -1365,8 +1405,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	 is a selection the same size as the image on the clipboard, the image is inserted 
 	 into that selection, otherwise the selection is inserted into the center of the image.*/
 	 public void paste() {
-		if (clipboard==null)
-			return;
+		if (clipboard==null) return;
 		int cType = clipboard.getType();
 		int iType = getType();
 		
@@ -1382,13 +1421,13 @@ public class ImagePlus implements ImageObserver, Measurements {
         int w = clipboard.getWidth();
         int h = clipboard.getHeight();
 		Roi cRoi = clipboard.getRoi();
-		if (cRoi!=null) {
-			Rectangle r = cRoi.getBounds();
-			w = r.width;
-			h = r.height;
-		}
-		Roi roi = getRoi();
 		Rectangle r = null;
+		//if (cRoi!=null) {
+		//	r = cRoi.getBounds();
+		//	w = r.width;
+		//	h = r.height;
+		//}
+		Roi roi = getRoi();
 		if (roi!=null)
 			r = roi.getBounds();
 		if (r==null || (r!=null && (w!=r.width || h!=r.height))) {
@@ -1406,7 +1445,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			} else
 				setRoi(xCenter-w/2, yCenter-h/2, w, h);
 			roi = getRoi();
-		}
+		} 
 		if (IJ.macroRunning()) {
 			//non-interactive paste
 			int pasteMode = Roi.getCurrentPasteMode();
@@ -1418,7 +1457,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (nonRect) ip.reset(getMask());
 			updateAndDraw();
 			//killRoi();
-		} else {
+		} else if (roi!=null) {
 			roi.startPaste(clipboard);
 			Undo.setup(Undo.PASTE, this);
 		}
@@ -1433,6 +1472,41 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return clipboard;
 	}
 	
+	synchronized void notifyListeners(int id) {
+		if (listeners==null) return;
+		for (int i=0; i<listeners.size(); i++) {
+			ImageListener listener = (ImageListener)listeners.elementAt(i);
+			switch (id) {
+				case OPENED:
+					listener.imageOpened(this);
+					break;
+				case CLOSED:
+					listener.imageClosed(this);
+					break;
+				case UPDATED: 
+					inListener = true;
+					listener.imageUpdated(this);
+					inListener = false;
+					break;
+			}
+			if (listeners==null) break;
+		}
+	}
+
+	public static synchronized void addImageListener(ImageListener listener) {
+		if (listeners==null)
+			listeners = new Vector();
+		listeners.addElement(listener);
+	}
+	
+	public static synchronized void removeImageListener(ImageListener listener) {
+		if (listeners==null)
+			return;
+		listeners.removeElement(listener);
+		if (listeners.isEmpty())
+			listeners = null;
+	}
+
     public String toString() {
     	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
     }

@@ -176,12 +176,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		copy = new Button("Copy...");
 		copy.addActionListener(this);
 		buttons.add(copy);
-		coordinates = new Label("                     ");
+		coordinates = new Label("X=12345678, Y=12345678"); 
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		buttons.add(coordinates);
 		add(buttons);
 		plot.draw();
 		pack();
+		coordinates.setText(""); 
 		ImageProcessor ip = plot.getProcessor();
 		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
 			imp.setProcessor(null, ip);

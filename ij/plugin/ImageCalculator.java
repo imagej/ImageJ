@@ -4,25 +4,28 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.filter.*;
 import ij.measure.Calibration;
+import ij.plugin.frame.Recorder;
 
 /** This plugin implements the Process/Image Calculator command. */
 public class ImageCalculator implements PlugIn {
 
+	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy"};
+	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy"};
 	private static int operator;
 	private static String title1 = "";
 	private static String title2 = "";
 	private static boolean createWindow = true;
 	private static boolean floatResult;
+	private boolean processStack;
 	
 	public void run(String arg) {
 		int[] wList = WindowManager.getIDList();
 		if (wList==null) {
-			IJ.error("No windows are open.");
+			IJ.noImage();
 			return;
 		}
 		IJ.register(ImageCalculator.class);
 		String[] titles = new String[wList.length];
-		String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy"};
 		for (int i=0; i<wList.length; i++) {
 			ImagePlus imp = WindowManager.getImage(wList[i]);
 			if (imp!=null)
@@ -59,6 +62,33 @@ public class ImageCalculator implements PlugIn {
 		title2 = titles[index2];
 		ImagePlus img1 = WindowManager.getImage(wList[index1]);
 		ImagePlus img2 = WindowManager.getImage(wList[index2]);
+		calculate(img1, img2, false);
+	}
+	
+	public void calculate(String params, ImagePlus img1, ImagePlus img2) {
+		if (img1==null || img2==null || params==null) return;
+		params = params.toLowerCase();
+		int op= -1;
+		if  (params.indexOf("xor")!=-1)
+			op = 6;
+		if (op==-1) {
+			for (int i=0; i<lcOperators.length; i++) {
+				if (params.indexOf(lcOperators[i])!=-1) {
+					op = i;
+					break;
+				}
+			}
+		}
+		if (op==-1)
+			{IJ.error("Image Calclulator", "No valid operator"); return;}
+		operator = op;
+		createWindow = params.indexOf("create")!=-1;
+		floatResult= params.indexOf("32")!=-1 || params.indexOf("float")!=-1;
+		processStack = params.indexOf("stack")!=-1;
+		calculate(img1, img2, true);
+	}
+		
+	void calculate(ImagePlus img1, ImagePlus img2, boolean apiCall) {
 		if (img1.getCalibration().isSigned16Bit() || img2.getCalibration().isSigned16Bit())
 			floatResult = true;
 		if (floatResult)
@@ -69,18 +99,35 @@ public class ImageCalculator implements PlugIn {
 			IJ.error("Image Calculator", "Both stacks must have the same number of slices.");
 			return;
 		}
-		if (size1>1 && (size2==1||size1==size2)) {
-			int result = IJ.setupDialog(img1, 0);
-			if (result==PlugInFilter.DONE)
-				return;
-			if (result==PlugInFilter.DOES_STACKS)
+		boolean isStack = size1>1 && (size2==1||size1==size2);
+		if (apiCall) {
+			if (processStack && isStack)
 				doStackOperation(img1, img2);
 			else
 				doOperation(img1, img2);
+			return;
+		}
+		boolean stackOp = false;
+		if (isStack) {
+			int result = IJ.setupDialog(img1, 0);
+			if (result==PlugInFilter.DONE)
+				return;
+			if (result==PlugInFilter.DOES_STACKS) {
+				doStackOperation(img1, img2);
+				stackOp = true;
+			} else
+				doOperation(img1, img2);
 		} else
 			doOperation(img1, img2);
+		if (Recorder.record) {
+			String params = operators[operator];
+			if (createWindow) params += " create";
+			if (floatResult) params += " 32-bit";
+			if (stackOp) params += " stack";
+			Recorder.record("imageCalculator", params, img1.getTitle(), img2.getTitle());
+		}
 	}
-	
+
 	/** img1 = img2 op img2 (e.g. img1 = img2/img1) */
 	void doStackOperation(ImagePlus img1, ImagePlus img2) {
 		if (createWindow) {

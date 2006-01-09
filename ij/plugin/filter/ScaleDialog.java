@@ -23,8 +23,10 @@ public class ScaleDialog implements PlugInFilter {
 		double known = 1.0;
 		double aspectRatio = 1.0;
 		String unit = "cm";
-		boolean oldGlobal = Calibrator.global;
+		boolean global1 = imp.getGlobalCalibration()!=null;
+		boolean global2;
 		Calibration cal = imp.getCalibration();
+		Calibration calOrig = cal.copy();
 		boolean isCalibrated = cal.scaled();
 		
 		String scale = "<no scale>";
@@ -49,7 +51,7 @@ public class ScaleDialog implements PlugInFilter {
 		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1, 8, null);
 		gd.addStringField("Unit of Length:", unit);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
-		gd.addCheckbox("Global", Calibrator.global);
+		gd.addCheckbox("Global", global1);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -61,9 +63,9 @@ public class ScaleDialog implements PlugInFilter {
             unit = IJ.micronSymbol+"m";
         else if (unit.equals("A"))
         	unit = ""+IJ.angstromSymbol;
- 		Calibrator.global = gd.getNextBoolean();
+ 		global2 = gd.getNextBoolean();
 		if (measured!=0.0 && known==0.0) {
-			imp.setGlobalCalibration(Calibrator.global?cal:null);
+			imp.setGlobalCalibration(global2?cal:null);
 			return;
 		}
 		if (measured<=0.0 || unit.startsWith("pixel") || unit.startsWith("Pixel") || unit.equals("")) {
@@ -78,29 +80,14 @@ public class ScaleDialog implements PlugInFilter {
 				cal.pixelHeight = cal.pixelWidth;
 			cal.setUnit(unit);
 		}
-		if (oldGlobal&&!Calibrator.global)
-			imp.setGlobalCalibration(null);
-		else {
+		if (!cal.equals(calOrig))
 			imp.setCalibration(cal);
-			imp.setGlobalCalibration(Calibrator.global?cal:null);
-		}
-		if (Calibrator.global || Calibrator.global!=oldGlobal) {
-			int[] list = WindowManager.getIDList();
-			if (list==null)
-				return;
-			for (int i=0; i<list.length; i++) {
-				ImagePlus imp2 = WindowManager.getImage(list[i]);
-				if (imp2!=null) {
-					ImageWindow win = imp2.getWindow();
-					if (win!=null) win.repaint();
-				}
-			}
-		} else {
-			ImageWindow win = imp.getWindow();
-			if (win!=null) win.repaint();
-		}
+		imp.setGlobalCalibration(global2?cal:null);
+		if (global2 || global2!=global1)
+			WindowManager.repaintImageWindows();
+		else
+			imp.repaintWindow();
 	}
-
 }
 
 class SetScaleDialog extends GenericDialog {

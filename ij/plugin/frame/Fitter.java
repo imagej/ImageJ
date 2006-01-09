@@ -106,8 +106,9 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	boolean getData() {
 		textArea.selectAll();
 		String text = textArea.getText();
+		text = zapGremlins(text);
 		textArea.select(0,0);
-		StringTokenizer st = new StringTokenizer(text);
+		StringTokenizer st = new StringTokenizer(text, " \t\n\r,");
 		int nTokens = st.countTokens();
 		if (nTokens<4 || (nTokens%2)!=0)
 			return false;
@@ -202,6 +203,23 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		//	try {doFit(fit.getSelectedIndex());}
 		//	catch (Exception ex) {IJ.write(ex.getMessage());}
 		//}
+	}
+	
+	String zapGremlins(String text) {
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		int count=0;
+		for (int i=0; i<chars.length; i++) {
+			char c = chars[i];
+			if (c!='\n' && c!='\t' && (c<32||c>127)) {
+				count++;
+				chars[i] = ' ';
+			}
+		}
+		if (count>0)
+			return new String(chars);
+		else
+			return text;
 	}
 
 }

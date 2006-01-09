@@ -403,9 +403,28 @@ public class CurveFitter {
         return sd;
     }
     
-    /**  Get a measure of "goodness of fit" where 1.0 is best.
-     *
-     */
+    /** Returns R^2, where 1.0 is best.
+    <pre>
+     r^2 = 1 - SSE/SSD
+     
+     where:	 SSE = sum of the squares of the errors
+                 SSD = sum of the squares of the deviations about the mean.
+    </pre>
+    */
+    public double getRSquared() {
+        double sumY = 0.0;
+        for (int i=0; i<numPoints; i++) sumY += yData[i];
+        double mean = sumY/numPoints;
+        double sumMeanDiffSqr = 0.0;
+        for (int i=0; i<numPoints; i++)
+            sumMeanDiffSqr += sqr(yData[i]-mean);
+        double rSquared = 0.0;
+        if (sumMeanDiffSqr>0.0)
+            rSquared = 1.0 - getSumResidualsSqr()/sumMeanDiffSqr;
+        return rSquared;
+    }
+
+    /**  Get a measure of "goodness of fit" where 1.0 is best. */
     public double getFitGoodness() {
         double sumY = 0.0;
         for (int i = 0; i < numPoints; i++) sumY += yData[i];
@@ -428,14 +447,14 @@ public class CurveFitter {
     public String getResultString() {
         StringBuffer results = new StringBuffer("\nNumber of iterations: " + getIterations() +
         "\nMaximum number of iterations: " + getMaxIterations() +
-        "\nSum of residuals squared: " + getSumResidualsSqr() +
-        "\nStandard deviation: " + getSD() +
-        "\nGoodness of fit: " + getFitGoodness() +
+        "\nSum of residuals squared: " + IJ.d2s(getSumResidualsSqr(),4) +
+        "\nStandard deviation: " + IJ.d2s(getSD(),4) +
+        "\nR^2: " + IJ.d2s(getRSquared(),4) +
         "\nParameters:");
         char pChar = 'a';
         double[] pVal = getParams();
         for (int i = 0; i < numParams; i++) {
-            results.append("\n" + pChar + " = " + pVal[i]);
+            results.append("\n  " + pChar + " = " + IJ.d2s(pVal[i],4));
             pChar++;
         }
         return results.toString();
@@ -515,5 +534,5 @@ public class CurveFitter {
         }
         return index;
     }
- 
+    
 }

@@ -7,25 +7,25 @@ import ij.plugin.frame.Editor;
 /** This class creates a new macro or the Java source for a new plugin. */
 public class NewPlugin implements PlugIn {
 
-	public static final int MACRO=0, PLUGIN=1, PLUGIN_FILTER=2, PLUGIN_FRAME=3;
+	public static final int MACRO=0, PLUGIN=1, PLUGIN_FILTER=2, PLUGIN_FRAME=3, TEXT_FILE=4;
 	
     private static int type = MACRO;
     private static String name = "Macro";
-    private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame"};
+    private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame", "Text File"};
 	private Editor ed;
     
     public void run(String arg) {
 		if (arg.equals("")&&!showDialog())
 			return;
-		if (!arg.equals(""))
-			type = PLUGIN;
 		if (arg.equals("")) {
-			if (type==MACRO)
+			if (type==MACRO || type==TEXT_FILE) {
+				if (type==TEXT_FILE && name.equals("Macro"))
+					name = "Untitled.txt";
     			createMacro(name);
-    		else
+    		} else
     			createPlugin(name, type, arg);
     	} else
-    		createPlugin("Macro_.java", type, arg);
+    		createPlugin("Converted_Macro.java", PLUGIN, arg);
     	IJ.register(NewPlugin.class);
     }
     
@@ -44,16 +44,25 @@ public class NewPlugin implements PlugIn {
 
 	public void createPlugin(String name, int type, String methods) {
   		ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-		if (ed==null)
-			return;
-		String pluginName = name;
-		if (!(name.endsWith(".java") || name.endsWith(".JAVA")))
-			pluginName += ".java";
-		if (name.indexOf('_')==-1) {
-			pluginName = pluginName.substring(0, pluginName.length()-5);
-			pluginName = pluginName + "_.java";
+		if (ed==null) return;
+		if (name.equals("Macro") || name.equals("Macro.txt") || name.equals("Untitled.txt")) {
+			switch (type) {
+				case PLUGIN: name = "My_Plugin.java"; break;
+				case PLUGIN_FILTER:  name = "Filter_Plugin.java"; break;
+				case PLUGIN_FRAME:  name = "Plugin_Frame.java"; break;
+			}
 		}
-		String className = pluginName.substring(0,pluginName.length()-5);
+		String pluginName = name;
+		if (!(name.endsWith(".java") || name.endsWith(".JAVA"))) {
+			if (pluginName.endsWith(".txt"))
+				pluginName = pluginName.substring(0, pluginName.length()-4);
+			pluginName += ".java";
+		}
+		//if (name.indexOf('_')==-1) {
+		//	pluginName = pluginName.substring(0, pluginName.length()-5);
+		//	pluginName = pluginName + "_.java";
+		//}
+		String className = pluginName.substring(0, pluginName.length()-5);
 		String text = "";
 		text += "import ij.*;\n";
 		text += "import ij.process.*;\n";
@@ -98,7 +107,7 @@ public class NewPlugin implements PlugIn {
 				text += "\n";
 				text += "\tpublic "+className+"() {\n";
 				text += "\t\tsuper(\""+className+"\");\n";
-				text += "\t\tTextArea ta = new TextArea();\n";
+				text += "\t\tTextArea ta = new TextArea(15, 50);\n";
 				text += "\t\tadd(ta);\n";
 				text += "\t\tpack();\n";
 				text += "\t\tGUI.center(this);\n";

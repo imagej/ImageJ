@@ -86,7 +86,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 					coeff[0] = dd.rescaleIntercept;
 					coeff[1] = dd.rescaleSlope;
  					imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
- 				}
+  				}
 			}
 			//if (fi.fileType==FileInfo.GRAY16_SIGNED && imp.getStackSize()==1)
 			//	convertToUnsigned(imp, fi);

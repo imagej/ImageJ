@@ -53,6 +53,21 @@ public class FloatProcessor extends ImageProcessor {
 		findMinAndMax();
 	}
 	
+	/** Creates a FloatProcessor from a float[][] array using the default LUT*/
+	public FloatProcessor(float[][] array) {
+		width = array.length;
+		height = array[0].length;
+		pixels = new float[width*height];
+		int i=0;
+		for (int y=0; y<height; y++) {
+			for (int x=0; x<width; x++) {
+				pixels[i++] = array[x][y];
+			}
+		}
+		resetRoi();
+		findMinAndMax();
+	}
+
 	/**
 	Calculates the minimum and maximum pixel value for the entire image. 
 	Returns without doing anything if fixedScale has been set true as a result
@@ -567,7 +582,6 @@ public class FloatProcessor extends ImageProcessor {
 	
     public void noise(double range) {
 		Random rnd=new Random();
-
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
@@ -575,10 +589,8 @@ public class FloatProcessor extends ImageProcessor {
 				pixels[i] = pixels[i] + RandomBrightness;
 				i++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		findMinAndMax();
+		resetMinAndMax();
     }
 
 	public ImageProcessor crop() {
@@ -593,6 +605,14 @@ public class FloatProcessor extends ImageProcessor {
         return ip2;
 	}
 	
+	/** Returns a duplicate of this image. */ 
+	public synchronized ImageProcessor duplicate() { 
+		ImageProcessor ip2 = createProcessor(width, height); 
+		float[] pixels2 = (float[])ip2.getPixels(); 
+		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
+		return ip2; 
+	} 
+
 	/** Scales the image or selection using the specified scale factors.
 		@see ImageProcessor#setInterpolate
 	*/
@@ -723,6 +743,10 @@ public class FloatProcessor extends ImageProcessor {
 	/** Sets the default fill/draw value. */
 	public void setValue(double value) {
 		fillColor = (float)value;
+	}
+
+	/** Does nothing. The rotate() and scale() methods always zero fill. */
+	public void setBackgroundValue(double value) {
 	}
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {

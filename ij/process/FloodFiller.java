@@ -16,9 +16,11 @@ public class FloodFiller {
 	int stackSize;
 	ImageProcessor ip;
 	int max;
+	boolean isFloat;
   
 	public FloodFiller(ImageProcessor ip) {
 		this.ip = ip;
+		isFloat = ip instanceof FloatProcessor;
 	}
 
 	public boolean fill(int x, int y) {
@@ -102,7 +104,10 @@ public class FloodFiller {
 	}
 	
 	final boolean inParticle(int x, int y, double level1, double level2) {
-		return ip.getPixel(x,y)>=level1 &&  ip.getPixel(x,y)<=level2;
+		if (isFloat)
+			return ip.getPixelValue(x,y)>=level1 &&  ip.getPixelValue(x,y)<=level2;
+		else
+			return ip.getPixel(x,y)>=level1 &&  ip.getPixel(x,y)<=level2;
 	}
 	
 	final void push(int x, int y) {

@@ -15,10 +15,12 @@ public class Scaler implements PlugInFilter, TextListener {
     private static double yscale = 0.5;
     private static boolean newWindow = true;
     private static boolean interpolate = true;
+    private static boolean fillWithBackground;
     private static boolean processStack = true;
     private static String title = "Untitled";
     private Vector fields;
     private boolean duplicateScale = true;
+    private double bgValue;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -32,9 +34,10 @@ public class Scaler implements PlugInFilter, TextListener {
 	}
 
 	public void run(ImageProcessor ip) {
-		if (!showDialog())
+		if (!showDialog(ip))
 			return;
 		ip.setInterpolate(interpolate);
+		ip.setBackgroundValue(bgValue);
 		imp.startTiming();
 		try {
 			if (newWindow && imp.getStackSize()>1 && processStack)
@@ -101,14 +104,15 @@ public class Scaler implements PlugInFilter, TextListener {
 			if (processStack && imp.getStackSize()>1) {
 				Undo.reset();
 				StackProcessor sp = new StackProcessor(imp.getStack(), ip);
-				sp.scale(xscale, yscale);
+				sp.scale(xscale, yscale, bgValue);
 			} else
 				ip.scale(xscale, yscale);
 			imp.killRoi();
 		}
 	}
 	
-	boolean showDialog() {
+	boolean showDialog(ImageProcessor ip) {
+		int bitDepth = imp.getBitDepth();
 		boolean isStack = imp.getStackSize()>1;
 		GenericDialog gd = new GenericDialog("Scale");
 		gd.addNumericField("X Scale (0.05-25):", xscale, 2);
@@ -117,6 +121,8 @@ public class Scaler implements PlugInFilter, TextListener {
 		for (int i=0; i<fields.size(); i++)
 			((TextField)fields.elementAt(i)).addTextListener(this);
 		gd.addCheckbox("Interpolate", interpolate);
+		if (bitDepth==8 || bitDepth==24)
+			gd.addCheckbox("Fill with Background Color", fillWithBackground);
 		if (isStack)
 			gd.addCheckbox("Process Entire Stack", processStack);
 		gd.addCheckbox("Create New Window", newWindow);
@@ -135,10 +141,26 @@ public class Scaler implements PlugInFilter, TextListener {
 		if (yscale > 25.0) yscale = 25.0;
 		if (yscale < 0.05) yscale = 0.05;
 		interpolate = gd.getNextBoolean();
+		if (bitDepth==8 || bitDepth==24)
+			fillWithBackground = gd.getNextBoolean();
 		if (isStack)
 			processStack = gd.getNextBoolean();
 		newWindow = gd.getNextBoolean();
 		title = gd.getNextString();
+
+		if (fillWithBackground) {
+			Color bgc = Toolbar.getBackgroundColor();
+			if (bitDepth==8)
+				bgValue = ip.getBestIndex(bgc);
+			else if (bitDepth==24)
+				bgValue = bgc.getRGB();
+		} else {
+			if (bitDepth==8)
+				bgValue = ip.isInvertedLut()?0.0:255.0; // white
+			else if (bitDepth==24)
+				bgValue = 0xffffffff; // white
+		}
+		
 		return true;
 	}
 

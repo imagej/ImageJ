@@ -76,8 +76,8 @@ public class Memory implements PlugIn {
 	void showError() {
 		int max = (int)(maxMemory()/1048576L);
 		String msg =
-			   "ImageJ is unable to change the memory limit. For\n"
-			+ "more information, refer to the installation notes.\n"
+			   "ImageJ is unable to change the memory limit. For \n"
+			+ "more information, refer to the installation notes. \n"
 			+ " \n";
 		if (max>0)
 			msg += "Current limit: " + max + "MB";

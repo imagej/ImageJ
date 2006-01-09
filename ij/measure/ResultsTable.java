@@ -4,9 +4,9 @@ import ij.plugin.filter.Analyzer;
 import ij.text.*;
 import java.awt.*;
 
-/** This is a table for storing measurement results as columns of real numbers. 
-	Call Analyzer.getResultsTable() to get a reference to the ResultsTable
-	used by the <i>Analyze/Measure</i> command. 
+/** This is a table for storing measurement results as columns of numeric values. 
+	Call the static ResultsTable.getResultsTable() method to get a reference to the 
+	ResultsTable used by the <i>Analyze/Measure</i> command. 
 	@see ij.plugin.filter.Analyzer#getResultsTable
 */
 public class ResultsTable {
@@ -21,12 +21,12 @@ public class ResultsTable {
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
 		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
 		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19, INTEGRATED_DENSITY=20,
-		MEDIAN=21, SKEWNESS=22, KURTOSIS=23;
+		MEDIAN=21, SKEWNESS=22, KURTOSIS=23, AREA_FRACTION=24, SLICE=25;
 
 	private String[] headings = new String[MAX_COLUMNS];
 	private String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
-		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt"};
+		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice"};
 	private int counter;
 	private double[][] columns = new double[MAX_COLUMNS][];
 	private String[] rowLabels;

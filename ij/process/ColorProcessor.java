@@ -96,9 +96,14 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
-	/** Sets the default fill/draw value, where value is interpreted as an RGB int. */
+	/** Sets the default fill/draw value, where <code>value</code> is interpreted as an RGB int. */
 	public void setValue(double value) {
 		fgColor = (int)value;
+	}
+
+	/** Sets the background fill value, where <code>value</code> is interpreted as an RGB int. */
+	public void setBackgroundValue(double value) {
+		bgColor = (int)value;
 	}
 
 	/** Returns the smallest displayed pixel value. */
@@ -239,7 +244,7 @@ public class ColorProcessor extends ImageProcessor {
 		int array of samples. */
 	public void putPixel(int x, int y, int[] iArray) {
 		int r=iArray[0], g=iArray[1], b=iArray[2];
-		putPixel(x, y, 0xff000000+(r<<16)+(g<<8)+b);
+		putPixel(x, y, (r<<16)+(g<<8)+b);
 	}
 
 	/** Calls getPixelValue(x,y). */
@@ -256,7 +261,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Stores the specified value at (x,y). */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
-			pixels[y*width + x] = value|0xff000000;
+			pixels[y*width + x] = value;
 	}
 
 	/** Stores the specified real grayscale value at (x,y).
@@ -605,7 +610,7 @@ public class ColorProcessor extends ImageProcessor {
 				xs = (x-xCenter)/xScale + xCenter;
 				xsi = (int)xs;
 				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
-					pixels[index1++] = (byte)bgColor;
+					pixels[index1++] = bgColor;
 				else {
 					if (interpolate) {
 						if (xs<0.0) xs = 0.0;
@@ -632,6 +637,12 @@ public class ColorProcessor extends ImageProcessor {
 		return new ColorProcessor(roiWidth, roiHeight, pixels2);
 	}
 	
+	/** Returns a duplicate of this image. */ 
+	public synchronized ImageProcessor duplicate() { 
+		int[] pixels2 = new int[width*height]; 
+		System.arraycopy(pixels, 0, pixels2, 0, width*height); 
+		return new ColorProcessor(width, height, pixels2); 
+	} 
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public int getInterpolatedRGBPixel(double x, double y) {

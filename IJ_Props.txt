@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.34
+# Version 1.35
 
 # Popup Menu
 popup01=Undo
@@ -20,6 +20,8 @@ popup08=Fill
 popup09=Draw
 popup10=-
 popup11=Rename...
+popup12=Duplicate...
+
 
 # Plugins installed in the File/Import submenu
 import01="Image Sequence...",ij.plugin.FolderOpener
@@ -59,7 +61,11 @@ selection05="Fit Ellipse",ij.plugin.Selection("ellipse")
 selection06="Convex Hull",ij.plugin.Selection("hull")
 selection07="Create Mask",ij.plugin.Selection("mask")
 selection08="Make Inverse",ij.plugin.Selection("inverse")
-selection09="Specify...",ij.plugin.filter.SpecifyROI
+selection09=-
+selection10="Rotate...",ij.plugin.Selection("rotate")
+selection11="Enlarge...",ij.plugin.Selection("enlarge")
+selection12="Make Band...",ij.plugin.Selection("band")
+selection13="Specify...",ij.plugin.filter.SpecifyROI
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
@@ -197,10 +203,11 @@ math16="Abs",ij.plugin.filter.ImageMath("abs")
 fft01="FFT",ij.plugin.FFT("fft")
 fft02="Inverse FFT",ij.plugin.FFT("inverse")
 fft03="Redisplay Power Spectrum",ij.plugin.FFT("redisplay")
-fft04=-
-fft05="Bandpass Filter...",ij.plugin.filter.FFTFilter
-fft06="Custom Filter...",ij.plugin.filter.FFTCustomFilter
-fft07="FD Math...",ij.plugin.FFTMath
+fft04="FFT Options...",ij.plugin.FFT("options")
+fft05=-
+fft06="Bandpass Filter...",ij.plugin.filter.FFTFilter
+fft07="Custom Filter...",ij.plugin.filter.FFTCustomFilter
+fft08="FD Math...",ij.plugin.FFTMath
 
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver

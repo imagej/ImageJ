@@ -8,8 +8,8 @@ import ij.*;
 public class FreehandRoi extends PolygonRoi {
 
 
-	public FreehandRoi(int x, int y, ImagePlus imp) {
-		super(x, y, imp);
+	public FreehandRoi(int sx, int sy, ImagePlus imp) {
+		super(sx, sy, imp);
 		if (Toolbar.getToolId()==Toolbar.FREEROI)
 			type = FREEROI;
 		else
@@ -17,7 +17,9 @@ public class FreehandRoi extends PolygonRoi {
 		if (nPoints==2) nPoints--;
 	}
 
-	protected void grow(int ox, int oy) {
+	protected void grow(int sx, int sy) {
+		int ox = ic.offScreenX(sx);
+		int oy = ic.offScreenY(sy);
 		if (ox<0) ox = 0;
 		if (oy<0) oy = 0;
 		if (ox>xMax) ox = xMax;

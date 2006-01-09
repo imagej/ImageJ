@@ -80,8 +80,10 @@ public class Executer implements Runnable {
 						return;
 					s = Tools.fixNewLines(s);
 				}
-				new TextWindow("Exception", s, 350, 250);
-				if (ij==null) IJ.wait(10000);
+				if (ij!=null)
+					new TextWindow("Exception", s, 350, 250);
+				else
+					IJ.log(s);
 			}
 		}
 	}
@@ -199,10 +201,9 @@ public class Executer implements Runnable {
 			return;
 		}
 		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			imp.changes = false;
+		if (win!=null)
 			win.close();
-		} else {
+		else {
 			WindowManager.setTempCurrentImage(null);
 			imp.killRoi(); //save any ROI so it can be restored later
 			Interpreter.removeBatchModeImage(imp);

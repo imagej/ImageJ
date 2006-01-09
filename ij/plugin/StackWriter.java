@@ -90,7 +90,7 @@ public class StackWriter implements PlugIn {
 			tmp.setProcessor(null, stack.getProcessor(i));
 			digits = getDigits(number++);
 			if (useLabels) {
-				label = stack.getSliceLabel(i);
+				label = stack.getShortSliceLabel(i);
 				if (label!=null && label.equals(""))
 					label = null;
 				if (label!=null) {

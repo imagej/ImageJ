@@ -73,19 +73,28 @@ public class Macro_Runner implements PlugIn {
     	<code>name</code> is a full path. ".txt"  is
     	added if <code>name</code> does not have an extension. */
 	public String runMacroFile(String name, String arg) {
+		if (name.startsWith("ij.jar:"))
+			return runMacroFromIJJar(name, arg);
+        if (name.indexOf(".")==-1) name = name + ".txt";
+		String name2 = name;
         boolean fullPath = name.startsWith("/") || name.indexOf(":\\")==1;
         if (!fullPath) {
         	String macrosDir = Menus.getMacrosPath();
         	if (macrosDir!=null)
-        		name = Menus.getMacrosPath() + name;
+        		name2 = Menus.getMacrosPath() + name;
         }
-        if (name.indexOf(".")==-1) name = name + ".txt";
-		File file = new File(name);
+		File file = new File(name2);
 		int size = (int)file.length();
+		if (size<=0 && !fullPath) {
+			file = new File(System.getProperty("user.dir") + File.separator + name);
+			size = (int)file.length();
+			//IJ.log("runMacroFile: "+file.getAbsolutePath()+"  "+name+"  "+size);
+		}
 		if (size<=0) {
-            IJ.error("RunMacro", "Macro file not found:\n \n"+name);
+            IJ.error("RunMacro", "Macro file not found:\n \n"+name2);
 			return null;
-		} try {
+		}
+		try {
 			byte[] buffer = new byte[size];
 			FileInputStream in = new FileInputStream(file);
 			in.read(buffer, 0, size);
@@ -123,10 +132,44 @@ public class Macro_Runner implements PlugIn {
 			if (IJ.isMacintosh())
 				s = Tools.fixNewLines(s);
 			//Don't show exceptions resulting from window being closed
-			if (!(s.indexOf("NullPointerException")>=0 && s.indexOf("ij.process")>=0))
-				new TextWindow("Exception", s, 350, 250);
+			if (!(s.indexOf("NullPointerException")>=0 && s.indexOf("ij.process")>=0)) {
+				if (IJ.getInstance()!=null)
+					new ij.text.TextWindow("Exception", s, 350, 250);
+				else
+					IJ.log(s);
+			}
 		}
 		return null;
+	}
+	
+	public String runMacroFromIJJar(String name, String arg) {
+		ImageJ ij = IJ.getInstance();
+		if (ij==null) return null;
+		name = name.substring(7);
+		String macro = null;
+        try {
+			InputStream is = ij.getClass().getResourceAsStream("/macros/"+name+".txt");
+			//IJ.log(is+"  "+("/macros/"+name+".txt"));
+			if (is==null)
+				return runMacroFile(name, arg);
+            InputStreamReader isr = new InputStreamReader(is);
+            StringBuffer sb = new StringBuffer();
+            char [] b = new char [8192];
+            int n;
+            while ((n = isr.read(b)) > 0)
+                sb.append(b,0, n);
+            macro = sb.toString();
+        }
+        catch (IOException e) {
+            String msg = e.getMessage();
+            if (msg==null || msg.equals(""))
+                msg = "" + e;	
+            IJ.showMessage("Macro Runner", msg);
+        }
+		if (macro!=null)
+			return runMacro(macro, arg);
+		else
+			return null;
 	}
 
 }

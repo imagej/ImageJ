@@ -56,7 +56,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	public ContrastAdjuster() {
 		super("B&C");
-		if (IJ.isMacOSX()) setResizable(false);
 	}
 	
 	public void run(String arg) {
@@ -91,8 +90,9 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		c.insets = new Insets(10, 10, 0, 10);
 		gridbag.setConstraints(plot, c);
 		add(plot);
-		
+		plot.addKeyListener(ij);		
 		// min and max labels
+		
 		if (!windowLevel) {
 			panel = new Panel();
 			c.gridy = y++;
@@ -116,6 +116,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			gridbag.setConstraints(minSlider, c);
 			add(minSlider);
 			minSlider.addAdjustmentListener(this);
+			minSlider.addKeyListener(ij);		
 			minSlider.setUnitIncrement(1);
 			addLabel("Minimum", null);
 		}
@@ -128,6 +129,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			gridbag.setConstraints(maxSlider, c);
 			add(maxSlider);
 			maxSlider.addAdjustmentListener(this);
+			maxSlider.addKeyListener(ij);		
 			maxSlider.setUnitIncrement(1);
 			addLabel("Maximum", null);
 		}
@@ -139,6 +141,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		gridbag.setConstraints(brightnessSlider, c);
 		add(brightnessSlider);
 		brightnessSlider.addAdjustmentListener(this);
+		brightnessSlider.addKeyListener(ij);		
 		brightnessSlider.setUnitIncrement(1);
 		if (windowLevel)
 			addLabel("Level: ", levelLabel=new TrimmedLabel("        "));
@@ -153,6 +156,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			gridbag.setConstraints(contrastSlider, c);
 			add(contrastSlider);
 			contrastSlider.addAdjustmentListener(this);
+			contrastSlider.addKeyListener(ij);		
 			contrastSlider.setUnitIncrement(1);
 			if (windowLevel)
 				addLabel("Window: ", windowLabel=new TrimmedLabel("        "));
@@ -169,6 +173,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				choice.addItem(channelLabels[i]);
 			gridbag.setConstraints(choice, c);
 			choice.addItemListener(this);
+			choice.addKeyListener(ij);		
 			add(choice);
 		}
 
@@ -200,6 +205,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		pack();
 		GUI.center(this);
+		if (IJ.isMacOSX()) setResizable(false);
 		show();
 
 		thread = new Thread(this, "ContrastAdjuster");

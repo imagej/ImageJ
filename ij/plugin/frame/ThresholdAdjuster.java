@@ -74,6 +74,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.anchor = GridBagConstraints.CENTER;
 		c.insets = new Insets(10, 10, 0, 10);
 		add(plot, c);
+		plot.addKeyListener(ij);
 		
 		// minThreshold slider
 		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/3, 1, 0, sliderRange);
@@ -85,6 +86,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.insets = new Insets(5, 10, 0, 0);
 		add(minSlider, c);
 		minSlider.addAdjustmentListener(this);
+		minSlider.addKeyListener(ij);
 		minSlider.setUnitIncrement(1);
 		
 		// minThreshold slider label
@@ -105,6 +107,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.insets = new Insets(0, 10, 0, 0);
 		add(maxSlider, c);
 		maxSlider.addAdjustmentListener(this);
+		maxSlider.addKeyListener(ij);
 		maxSlider.setUnitIncrement(1);
 		
 		// maxThreshold slider label
@@ -122,6 +125,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			choice.addItem(modes[i]);
 		choice.select(mode);
 		choice.addItemListener(this);
+		choice.addKeyListener(ij);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
@@ -159,6 +163,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		pack();
 		GUI.center(this);
 		firstActivation = true;
+		if (IJ.isMacOSX()) setResizable(false);
 		show();
 
 		thread = new Thread(this, "ThresholdAdjuster");
@@ -645,6 +650,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	}
 
 	public void paint(Graphics g) {
+		if (g==null) return;
 		if (histogram!=null) {
 			if (os==null && hmax>0) {
 				os = createImage(WIDTH,HEIGHT);

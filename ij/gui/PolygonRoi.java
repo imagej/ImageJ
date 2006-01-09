@@ -4,6 +4,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 
 /** This class represents a polygon region of interest or polyline of interest. */
 public class PolygonRoi extends Roi {
@@ -74,8 +75,8 @@ public class PolygonRoi extends Roi {
 	}
 
 	/** Starts the process of creating a new user-generated polygon or polyline ROI. */
-	public PolygonRoi(int ox, int oy, ImagePlus imp) {
-		super(ox, oy, imp);
+	public PolygonRoi(int sx, int sy, ImagePlus imp) {
+		super(sx, sy, imp);
 		int tool = Toolbar.getToolId();
 		if (tool==Toolbar.POLYGON)
 			type = POLYGON;
@@ -88,12 +89,12 @@ public class PolygonRoi extends Roi {
 		xp2 = new int[maxPoints];
 		yp2 = new int[maxPoints];
 		nPoints = 2;
-		x = ox;
-		y = oy;
+		x = ic.offScreenX(sx);
+		y = ic.offScreenY(sy);
 		width=1;
 		height=1;
-		clipX = ox;
-		clipY = oy;
+		clipX = x;
+		clipY = y;
 		clipWidth = 1;
 		clipHeight = 1;
 		ImageWindow win = imp.getWindow();
@@ -158,7 +159,7 @@ public class PolygonRoi extends Roi {
 			updateFullWindow = true;
 	}
 
-	protected void grow(int x, int y) {
+	protected void grow(int sx, int sy) {
 	// Overrides grow() in Roi class
 	}
 
@@ -271,12 +272,15 @@ public class PolygonRoi extends Roi {
 		if (imp!=null && !(type==TRACED_ROI))
 			imp.draw(x-5, y-5, width+10, height+10);
 		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
+		if (Recorder.record && (type==POLYGON||type==POLYLINE||type==ANGLE))
+			Recorder.recordRoi(getPolygon(), type);
 		if (type!=POINT) modifyRoi();
 	}
 	
-    protected void moveHandle(int ox, int oy) {
-		if (clipboard!=null)
-			return;
+    protected void moveHandle(int sx, int sy) {
+		if (clipboard!=null) return;
+		int ox = ic.offScreenX(sx);
+		int oy = ic.offScreenY(sy);
 		xp[activeHandle] = ox-x;
 		yp[activeHandle] = oy-y;
 		if (xSpline!=null) {
@@ -502,6 +506,7 @@ public class PolygonRoi extends Roi {
 		//IJ.log("reset: "+ymin+" "+before+" "+yp[0]);
 		x+=xmin; y+=ymin;
 		width=xmax-xmin; height=ymax-ymin;
+		cachedMask = null;
 	}
 
 	/*
@@ -547,6 +552,8 @@ public class PolygonRoi extends Roi {
 		}		
 		if (state!=CONSTRUCTING)
 			return;
+		if (IJ.spaceBarDown()) // is user scrolling image?
+			return;
 		boolean samePoint = (xp[nPoints-2]==xp[nPoints-1] && yp[nPoints-2]==yp[nPoints-1]);
 		Rectangle biggerStartBox = new Rectangle(ic.screenX(startX)-5, ic.screenY(startY)-5, 10, 10);
 		if (nPoints>2 && (biggerStartBox.contains(sx, sy)
@@ -582,12 +589,12 @@ public class PolygonRoi extends Roi {
 	public boolean contains(int x, int y) {
 		if (!super.contains(x, y))
 			return false;
-		else if (xScreenSpline!=null) {
-			Polygon poly = new Polygon(xScreenSpline, yScreenSpline, splinePoints);
-			return poly.contains(ic.screenX(x), ic.screenY(y));
+		if (xScreenSpline!=null) {
+			Polygon poly = new Polygon(xSpline, ySpline, splinePoints);
+			return poly.contains(x-this.x, y-this.y);
 		} else {
-			Polygon poly = new Polygon(xp2, yp2, nPoints);
-			return poly.contains(ic.screenX(x), ic.screenY(y));
+			Polygon poly = new Polygon(xp, yp, nPoints);
+			return poly.contains(x-this.x, y-this.y);
 		}
 	}
 	
@@ -631,28 +638,6 @@ public class PolygonRoi extends Roi {
 		cachedMask = pf.getMask(width, height);
 		return cachedMask;
 	}
-
-	/*
-	public int[] getMask() {
-		if (type==POLYLINE || type==FREELINE || type==ANGLE || width==0 || height==0)
-			return null;
-		Image img = GUI.createBlankImage(width, height);
-		Graphics g = img.getGraphics();
-		//g.setColor(Color.white);
-		//g.fillRect(0, 0, width, height);
-		g.setColor(Color.black);
-		if (xSpline!=null)
-			g.fillPolygon(xSpline, ySpline, splinePoints);
-		else
-			g.fillPolygon(xp, yp, nPoints);
-		//new ImagePlus("Mask", img).show();
-		ColorProcessor cp = new ColorProcessor(img);
-		img.flush();
-		img = null;
-		g.dispose();
-		return (int[])cp.getPixels();
-	}
-	*/
 
 	/** Returns the length of this line selection after
 		smoothing using a 3-point running average.*/
@@ -720,9 +705,15 @@ public class PolygonRoi extends Roi {
 		return length;
 	}
 
-	/** Returns the perimeter length of ROIs created using
-		the wand tool. Edge pixels are counted as 1 and
-		corner pixels as sqrt(2). */
+	/** Returns the perimeter length of ROIs created using the
+		wand tool and the particle analyzer. The algorithm counts
+		edge pixels as 1 and corner pixels as sqrt(2). It does this by
+		calculating the total length of the ROI boundary and subtracting
+		2-sqrt(2) for each non-adjacent corner. For example, a 1x1 pixel
+		ROI has a boundary length of 4 and 2 non-adjacent edges so the
+		perimeter is 4-2*(2-sqrt(2)). A 2x2 pixel ROI has a boundary length
+		of 8 and 4 non-adjacent edges so the perimeter is 8-4*(2-sqrt(2)).
+	*/
 	double getTracedPerimeter() {
 		int sumdx = 0;
 		int sumdy = 0;

@@ -1128,8 +1128,8 @@ public class ShapeRoi extends Roi{
 	 */
 	boolean setShape(Shape rhs) {
 		boolean result = true;
-		if (rhs==null) {IJ.log("rhs null!"); return false;}
-		if(shape.equals(rhs)) {IJ.log("shouldn't set it to itself"); return false;}
+		if (rhs==null) return false;
+		if(shape.equals(rhs)) return false;
 		shape = rhs;
 		type = Roi.COMPOSITE;
 		Rectangle rect = shape.getBounds();

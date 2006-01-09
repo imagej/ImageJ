@@ -42,6 +42,8 @@ public class ByteStatistics extends ImageStatistics {
 			calculateMoments(ip, minThreshold, maxThreshold, cTable);
 		if ((mOptions&MEDIAN)!=0)
 			calculateMedian(histogram, 0, cal);
+		if ((mOptions&AREA_FRACTION)!=0)
+			calculateAreaFraction(ip, histogram);
 	}
 
 	void getCalibratedStatistics(int minThreshold, int maxThreshold, float[] cTable) {

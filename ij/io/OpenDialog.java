@@ -100,9 +100,11 @@ import javax.swing.filechooser.*;
 		GUI.center(fd);
 		fd.show();
 		name = fd.getFile();
-		if (name==null)
+		if (name==null) {
+			if (IJ.isMacOSX())
+				System.setProperty("apple.awt.fileDialogForDirectories", "false");
 			Macro.abort();
-		else
+		} else
 			dir = fd.getDirectory();
 	}
 

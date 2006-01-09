@@ -167,7 +167,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     private void saveLabel(Component component, String label) {
     	if (labels==null)
     		labels = new Hashtable();
-		labels.put(component, label);
+    	if (label.length()>0) {
+    		if (label.charAt(0)==' ')
+    			label = label.trim();
+			labels.put(component, label);
+		}
     }
     
 	/** Adds an 8 column text field.
@@ -264,7 +268,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 				int i2 = col*rows+row;
 				if (i2>=labels.length) break;
 				index[i1] = i2;
-				Checkbox cb = new Checkbox(labels[i1]);
+				String label = labels[i1];
+				if (label.indexOf('_')!=-1)
+   					label = label.replace('_', ' ');
+				Checkbox cb = new Checkbox(label);
 				checkbox.addElement(cb);
 				cb.setState(defaultValues[i1]);
 				if (addListeners) cb.addItemListener(this);
@@ -682,7 +689,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.insets = new Insets(15, 0, 0, 0);
 		grid.setConstraints(buttons, c);
 		add(buttons);
-        if (IJ.isMacintosh() && !IJ.isJava14())
+        if (IJ.isMacintosh())
         	setResizable(false);
 		pack();
 		setup();
@@ -785,12 +792,17 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			((TextField)c).select(0,0);
 	}
 
- 	public void keyPressed(KeyEvent e) {
-		int keyCode = e.getKeyCode();
-		IJ.setKeyDown(keyCode);
-		if (keyCode==KeyEvent.VK_ENTER && textArea1==null)
-			closeDialog();
-	}
+	public void keyPressed(KeyEvent e) { 
+		int keyCode = e.getKeyCode(); 
+		IJ.setKeyDown(keyCode); 
+		if (keyCode==KeyEvent.VK_ENTER && textArea1==null) 
+			closeDialog(); 
+		else if (keyCode==KeyEvent.VK_ESCAPE) { 
+			wasCanceled = true; 
+			closeDialog(); 
+			IJ.resetEscape();
+		} 
+	} 
 
 	public void keyReleased(KeyEvent e) {
 		int keyCode = e.getKeyCode();
