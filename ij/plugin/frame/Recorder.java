@@ -98,7 +98,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void record(String method, String arg1, String arg2) {
 		if (textArea==null) return;
-		if (arg1.equals("Open")||arg1.equals("Save")) arg2 = fixPath(arg2);
+		if (arg1.equals("Open")||arg1.equals("Save")||method.equals("saveAs"))
+			arg2 = fixPath(arg2);
 		textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
 	}
 

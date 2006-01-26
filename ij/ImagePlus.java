@@ -289,6 +289,19 @@ public class ImagePlus implements ImageObserver, Measurements {
 			unlock();
 	}
 
+	/** Closes this image and sets the pixel arrays to null. */
+	public void close() {
+		ImageWindow win = getWindow();
+		if (win!=null)
+			win.close();
+		else {
+            if (WindowManager.getCurrentImage()==this)
+                WindowManager.setTempCurrentImage(null);
+			killRoi(); //save any ROI so it can be restored later
+			Interpreter.removeBatchModeImage(this);
+		}
+    }
+
 	/** Opens a window to display this image and clears the status bar. */
 	public void show() {
 		show("");

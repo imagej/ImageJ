@@ -183,10 +183,11 @@ public class FileOpener {
 		Image img;
 		ProgressBar pb = IJ.getInstance().getProgressBar();
 		ImageProcessor ip;
+		String path = fi.directory + fi.fileName;
 		
 		if (fi.fileFormat==fi.GIF_OR_JPG) {
 			// restore gif or jpg
-			img = Toolkit.getDefaultToolkit().getImage(fi.directory + fi.fileName);
+			img = Toolkit.getDefaultToolkit().getImage(path);
 			imp.setImage(img);
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				Opener.convertGrayJpegTo8Bits(imp);
@@ -195,7 +196,7 @@ public class FileOpener {
 				
 		if (fi.fileFormat==fi.DICOM) {
 			// restore DICOM
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", fi.directory + fi.fileName);
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
 			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
 	    	return;
@@ -203,7 +204,15 @@ public class FileOpener {
 
 		if (fi.fileFormat==fi.BMP) {
 			// restore BMP
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", fi.directory + fi.fileName);
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
+			if (imp2!=null)
+				imp.setProcessor(null, imp2.getProcessor());
+	    	return;
+		}
+
+		if (fi.fileFormat==fi.PGM) {
+			// restore PGM
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
 			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
 	    	return;
@@ -211,7 +220,7 @@ public class FileOpener {
 
 		if (fi.fileFormat==fi.ZIP_ARCHIVE) {
 			// restore ".zip" file
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", fi.directory + fi.fileName);
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
 			if (imp2!=null && imp2.getWidth()!=0)
 				imp.setProcessor(null, imp2.getProcessor());
 	    	return;
@@ -222,7 +231,7 @@ public class FileOpener {
 		
 		ColorModel cm;
 		if (fi.url==null || fi.url.equals(""))
-			IJ.showStatus("Loading: " + fi.directory + fi.fileName);
+			IJ.showStatus("Loading: " + path);
 		else
 			IJ.showStatus("Loading: " + fi.url + fi.fileName);
 		Object pixels = readPixels(fi);

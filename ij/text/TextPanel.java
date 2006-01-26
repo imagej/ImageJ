@@ -10,6 +10,7 @@ import ij.plugin.filter.Analyzer;
 import ij.io.SaveDialog;
 import ij.measure.ResultsTable;
 import ij.util.Tools;
+import ij.plugin.frame.Recorder;
 
 
 /**
@@ -303,7 +304,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		//else if (keyListener!=null)
 		//	keyListener.keyPressed(e);
 		int key = e.getKeyCode();
-		if (keyListener!=null && key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
+		if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
 		
 	}
@@ -339,7 +340,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			IJ.doCommand("Clear Results");
 		else if (cmd.equals("Set Measurements..."))
 			IJ.doCommand("Set Measurements...");
- 	}
+ 		else if (cmd.equals("Set File Extension..."))
+			IJ.doCommand("Input/Output...");
+	}
  	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
 
@@ -470,8 +473,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	/** Saves all the text in this TextPanel to a file. Set
 		'path' to "" to display a save as dialog. */
 	public void saveAs(String path) {
+		boolean isResults = IJ.isResultsWindow() && IJ.getTextPanel()==this;
 		if (path.equals("")) {
-			SaveDialog sd = new SaveDialog("Save as Text", title, ".txt");
+			String ext = isResults?Prefs.get("options.ext", ".xls"):".txt";
+			SaveDialog sd = new SaveDialog("Save as Text", title, ext);
 			String file = sd.getFileName();
 			if (file == null) return;
 			path = sd.getDirectory() + file;
@@ -488,8 +493,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		save(pw);
 		pw.close();
-		if (IJ.isResultsWindow() && IJ.getTextPanel()==this)
+		if (isResults) {
 			Analyzer.setSaved();
+			if (Recorder.record)
+				Recorder.record("saveAs", "Measurements", path);
+		}
 		IJ.showStatus("");
 	}
 

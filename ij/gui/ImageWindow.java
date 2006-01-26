@@ -10,6 +10,7 @@ import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
+import ij.util.MacMenuBarSetter;
 
 /** A frame for displaying images. */
 public class ImageWindow extends Frame implements FocusListener, WindowListener {
@@ -307,10 +308,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 
 	public void windowActivated(WindowEvent e) {
 		//IJ.log("windowActivated: "+imp.getTitle());
-		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-			IJ.wait(10); // needed for 1.4 on OS X
-			this.setMenuBar(Menus.getMenuBar());
-		}
+		if (IJ.isMacintosh() && IJ.getInstance()!=null)
+			new MacMenuBarSetter((Frame)this);
 		ImageJ ij = IJ.getInstance();
 		boolean quitting = ij!=null && ij.quitting();
 		imp.setActivated(); // notify ImagePlus that image has been activated

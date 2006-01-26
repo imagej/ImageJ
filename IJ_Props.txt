@@ -69,7 +69,7 @@ selection13="Specify...",ij.plugin.filter.SpecifyROI
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
-options02="JPEG Quality...",ij.plugin.Options("quality")
+options02="Input/Output...",ij.plugin.Options("io")
 options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
 options05="Point Tool...",ij.plugin.Options("point")
@@ -312,9 +312,10 @@ open20="Mandrill (70K)",ij.plugin.URLOpener("baboon.jpg")
 open21="MRI Scan (48K)",ij.plugin.URLOpener("mri.gif")
 open22="MRI Stack (528K)",ij.plugin.URLOpener("mri-stack.zip")
 open23="M51 Galaxy (177K, 16-bits)",ij.plugin.URLOpener("m51.zip")
-open24="Particles (75K)",ij.plugin.URLOpener("particles.gif")
-open25="PET Scan (11K)",ij.plugin.URLOpener("PET_Scan.gif")
-open26="Scala Media Stack (48K)",ij.plugin.URLOpener("scala-media.zip")
-open27="TEM Filter (112K)",ij.plugin.URLOpener("TEM_filter_sample.jpg")
-open28="Tree Rings (48K)",ij.plugin.URLOpener("Tree_Rings.jpg")
+open24="M51 Galaxy  (116K, RGB)",ij.plugin.URLOpener("m51.jpg")
+open25="Particles (75K)",ij.plugin.URLOpener("particles.gif")
+open26="PET Scan (11K)",ij.plugin.URLOpener("PET_Scan.gif")
+open27="Scala Media Stack (48K)",ij.plugin.URLOpener("scala-media.zip")
+open28="TEM Filter (112K)",ij.plugin.URLOpener("TEM_filter_sample.jpg")
+open29="Tree Rings (48K)",ij.plugin.URLOpener("Tree_Rings.jpg")
 

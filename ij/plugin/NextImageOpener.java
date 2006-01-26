@@ -11,8 +11,8 @@ This code was modified from Image_Browser by Albert Cardona
 
 package ij.plugin;
 import ij.*;
-import ij.io.Opener;
-import ij.gui.ImageWindow;
+import ij.io.*;
+import ij.gui.*;
 import java.io.File;
 
 public class NextImageOpener implements PlugIn {
@@ -43,26 +43,47 @@ public class NextImageOpener implements PlugIn {
 			return;
 		}
 		// get the next name (full path)
-		String nextPath = getNext(currentPath, imp0.getTitle(), forward);
+		//long start = System.currentTimeMillis();
+		String nextPath = getNext(currentPath, getName(imp0), forward);
+		//IJ.log("time: "+(System.currentTimeMillis()-start));
 		if (IJ.debugMode) IJ.log("OpenNext.nextPath:" + nextPath);
 		// open
 		if (nextPath != null) {
-			String newTitle = open(nextPath);
-			if (newTitle!=null)
-				open(getNext(currentPath, newTitle, forward));
+			String rtn = open(nextPath);
+			if (rtn==null)
+				open(getNext(currentPath, (new File(nextPath)).getName(), forward));
 		}
 	}
 	
+	String getName(ImagePlus imp) {
+		String name = imp.getTitle();
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi!=null && fi.fileName!=null)
+			name = fi.fileName;
+		return name;
+	}
+	
 	String open(String nextPath) {
-		Opener o = new Opener();
-		ImagePlus imp2 = o.openImage(nextPath);
-		if (imp2==null) return (new File(nextPath)).getName();
+		ImagePlus imp2 = IJ.openImage(nextPath);
+		if (imp2==null) return null;
 		String newTitle = imp2.getTitle();
+		if (imp0.changes) {
+			SaveChangesDialog d = new SaveChangesDialog(imp0.getWindow(), imp0.getTitle());
+			if (d.cancelPressed())
+				return "Canceled";
+			else if (d.savePressed()) {
+				FileSaver fs = new FileSaver(imp0);
+				if (!fs.save())
+					return "Canceled";
+			}
+			imp0.changes = false;
+		}
 		imp0.setStack(newTitle, imp2.getStack());
 		imp0.setCalibration(imp2.getCalibration());
+		imp0.setFileInfo(imp2.getOriginalFileInfo());
 		ImageWindow win = imp0.getWindow();
 		if (win!=null) win.repaint();
-		return null;
+		return "ok";
 	}
 
 	/** gets the next image name in a directory list */

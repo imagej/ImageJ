@@ -425,7 +425,7 @@ public class FHT extends FloatProcessor {
 		float[] h1 = (float[])getPixels();
 		float[] h2 = (float[])fht.getPixels();
 		float[] tmp = new float[maxN*maxN];
-		for ( int r =0; r<maxN; r++) {
+		for (int r =0; r<maxN; r++) {
 			rowMod = (maxN - r) % maxN;
 			for (int c=0; c<maxN; c++) {
 				colMod = (maxN - c) % maxN;

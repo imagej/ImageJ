@@ -1161,7 +1161,6 @@ public class IJ {
 			path = updateExtension(path, ".lut");
 			format = "LUT...";
 		} else if (format.indexOf("measurements")!=-1) {
-			path = updateExtension(path, ".txt");
 			format = "Measurements...";
 		} else if (format.indexOf("selection")!=-1 || format.indexOf("roi")!=-1) {
 			path = updateExtension(path, ".roi");

@@ -371,20 +371,20 @@ public class EDM implements PlugInFilter {
 					offset = x + y * rowsize;
 					if ((image[offset]&255) != 255) {
 						setPixel = false;
-						if ((x>0) && (y>0) && ((image[offset-rowsize-1]&255) > level))
-							setPixel = true;
+						//if ((x>0) && (y>0) && ((image[offset-rowsize-1]&255) > level))
+						//	setPixel = true;
 						if ((y>0) && ((image[offset-rowsize]&255) > level))
 							setPixel = true;
-						if ((x<xmax) && (y>0) && ((image[offset-rowsize+1]&255) > level))
-							setPixel = true;
+						//if ((x<xmax) && (y>0) && ((image[offset-rowsize+1]&255) > level))
+						//	setPixel = true;
 						if ((x<xmax) && ((image[offset+1]&255) > level))
 							setPixel = true;
-						if ((x<xmax) && (y<ymax) && ((image[offset+rowsize+1]&255) > level))
-							setPixel = true;
+						//if ((x<xmax) && (y<ymax) && ((image[offset+rowsize+1]&255) > level))
+						//	setPixel = true;
 						if ((y<ymax) && ((image[offset+rowsize]&255) > level))
 							setPixel = true;
-						if ((x>0) && (y<ymax) && ((image[offset+rowsize-1]&255) > level))
-							setPixel = true;
+						//if ((x>0) && (y<ymax) && ((image[offset+rowsize-1]&255) > level))
+						//	setPixel = true;
 						if ((x>0) && ((image[offset-1]&255) > level))
 							setPixel = true;
 						if (setPixel) {

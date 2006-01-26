@@ -14,7 +14,7 @@ import ij.plugin.filter.*;
 import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
-import ij.util.Tools;
+import ij.util.*;
 
 /**
 This frame is the main ImageJ class.
@@ -53,7 +53,8 @@ The following command line options are recognized by ImageJ:
 
   -eval "macro code"
      Evaluates macro code
-     Example: -eval "print('Hello, world');"
+     Example 1: -eval "print('Hello, world');"
+     Example 2: -eval "return getVersion();"
 
   -run command
      Runs an ImageJ menu command
@@ -64,7 +65,7 @@ The following command line options are recognized by ImageJ:
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.35l";
+	public static final String VERSION = "1.35m";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -407,10 +408,8 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh()) {
-			IJ.wait(10); // needed for 1.4 on OS X
-			this.setMenuBar(Menus.getMenuBar());
-		}
+		if (IJ.isMacintosh())
+			new MacMenuBarSetter((Frame)this);
 	}
 	
 	public void windowClosed(WindowEvent e) {}
@@ -496,7 +495,9 @@ public class ImageJ extends Frame implements ActionListener,
 					IJ.runMacroFile(args[i+1], arg2);
 					break;
 				} else if (arg.startsWith("-eval") && i+1<nArgs) {
-					IJ.runMacro(args[i+1]);
+					String rtn = IJ.runMacro(args[i+1]);
+					if (rtn!=null)
+						System.out.print(rtn);
 					args[i+1] = null;
 				} else if (arg.startsWith("-run") && i+1<nArgs) {
 					IJ.run(args[i+1]);
@@ -515,6 +516,8 @@ public class ImageJ extends Frame implements ActionListener,
 	static boolean isRunning(String args[]) {
 		int macros = 0;
 		int nArgs = args.length;
+		if (nArgs==2 && args[0].startsWith("-ijpath"))
+			return false;
 		int nCommands = 0;
 		try {
 			sendArgument("user.dir "+System.getProperty("user.dir"));

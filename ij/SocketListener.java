@@ -49,9 +49,11 @@ public class SocketListener implements Runnable {
 						IJ.runMacroFile(name, arg);
 					} else if (cmd.startsWith("run "))
 						IJ.run(cmd.substring(4));
-					else if (cmd.startsWith("eval "))
-						IJ.runMacro(cmd.substring(5));
-					else if (cmd.startsWith("user.dir "))
+					else if (cmd.startsWith("eval ")) {
+						String rtn = IJ.runMacro(cmd.substring(5));
+						if (rtn!=null)
+							System.out.print(rtn);
+					} else if (cmd.startsWith("user.dir "))
 						System.setProperty("user.dir", cmd.substring(9));
 				} catch (Throwable e) {}
 				clientSocket.close();

@@ -11,6 +11,7 @@ import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
 import ij.util.Tools;
+import ij.macro.Interpreter;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener {
@@ -693,14 +694,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	public void select(int index) {
-			int n = list.getItemCount();
+		int n = list.getItemCount();
+		if (index<0) {
 			for (int i=0; i<n; i++)
 				if (list.isSelected(i)) list.deselect(i);
-			if (index>=0 && index<n) {
-				list.select(index);
-				restore(index, true);	
+			return;
+		}
+		boolean mm = list.isMultipleMode();
+		if (mm) list.setMultipleMode(false);
+		if (index<n) {
+			list.select(index);
+			restore(index, true);	
+			if (!Interpreter.isBatchMode())
 				IJ.wait(10);
-			}
+		}
+		if (mm) list.setMultipleMode(true);
 	}
 	
 	/*

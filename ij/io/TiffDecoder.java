@@ -286,7 +286,7 @@ public class TiffDecoder {
 		}
 		String cs = (count==1)?"":", count=" + count;
 		dInfo += "    " + tag + ", \"" + name + "\", value=" + value + cs + "\n";
-		//ij.IJ.write(tag + ", \"" + name + "\", value=" + value + cs);
+		//ij.IJ.log(tag + ", \"" + name + "\", value=" + value + cs + "\n");
 	}
 
 	double getRational(int loc) throws IOException {

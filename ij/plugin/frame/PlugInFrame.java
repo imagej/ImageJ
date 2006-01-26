@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import ij.*;
 import ij.plugin.*;
+import ij.util.MacMenuBarSetter;
 
 /**  This is a closeable window that plugins can extend. */
 public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusListener {
@@ -41,10 +42,8 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-			IJ.wait(10); // needed for 1.4 on OS X
-			setMenuBar(Menus.getMenuBar());
-		}
+		if (IJ.isMacintosh() && IJ.getInstance()!=null)
+			new MacMenuBarSetter((Frame)this);
 		WindowManager.setWindow(this);
 	}
 

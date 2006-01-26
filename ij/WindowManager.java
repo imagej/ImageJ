@@ -127,23 +127,27 @@ public class WindowManager {
 		the ID is zero. */
 	public synchronized static ImagePlus getImage(int imageID) {
 		//if (IJ.debugMode) IJ.write("ImageWindow.getImage");
-		if (imageID==0)
+		if (imageID==0 || getImageCount()==0)
 			return null;
 		if (imageID<0) {
 			ImagePlus imp2 = Interpreter.getBatchModeImage(imageID);
 			if (imp2!=null) return imp2;
 		}
-		int nImages = imageList.size();
-		if (nImages==0)
-			return null;
 		if (imageID>0) {
-			if (imageID>nImages)
-				return null;
-			ImageWindow win = (ImageWindow)imageList.elementAt(imageID-1);
-			if (win!=null)
-				return win.getImagePlus();
-			else
-				return null;
+            if (Interpreter.isBatchMode()) {
+                int[] list = getIDList();
+                if (imageID>list.length)
+                	return null;
+                else
+                	return getImage(list[imageID-1]);
+            } else {
+            	if (imageID>imageList.size()) return null;
+                ImageWindow win = (ImageWindow)imageList.elementAt(imageID-1);
+                if (win!=null)
+                    return win.getImagePlus();
+                else
+                    return null;
+            }
 		}
 		ImagePlus imp = null;
 		for (int i=0; i<imageList.size(); i++) {

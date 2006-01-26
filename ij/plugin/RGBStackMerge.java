@@ -87,9 +87,7 @@ public class RGBStackMerge implements PlugIn {
             for (int i=0; i<3; i++) {
                 if (image[i]!=null) {
                     image[i].changes = false;
-                    ImageWindow win = image[i].getWindow();
-                    if (win!=null)
-                        win.close();
+                    image[i].close();
                 }
             }
         ImagePlus imp2 = new ImagePlus("RGB", rgb);

@@ -81,7 +81,11 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 	void addMenuBar() {
 		MenuBar mb = new MenuBar();
 		Menu m = new Menu("File");
-		m.add(new MenuItem("Save As..."/*, new MenuShortcut(KeyEvent.VK_S)*/));
+		m.add(new MenuItem("Save As...", new MenuShortcut(KeyEvent.VK_S)));
+		if (getTitle().equals("Results")) {
+			m.addSeparator();
+			m.add(new MenuItem("Set File Extension..."));
+		}
 		m.addActionListener(this);
 		mb.add(m);
 		m = new Menu("Edit");

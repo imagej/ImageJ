@@ -200,14 +200,7 @@ public class Executer implements Runnable {
 			IJ.noImage();
 			return;
 		}
-		ImageWindow win = imp.getWindow();
-		if (win!=null)
-			win.close();
-		else {
-			WindowManager.setTempCurrentImage(null);
-			imp.killRoi(); //save any ROI so it can be restored later
-			Interpreter.removeBatchModeImage(imp);
-		}
+		imp.close();
 		if (Recorder.record) {
 			Recorder.record("close");
 			command = null;

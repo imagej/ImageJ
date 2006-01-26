@@ -62,7 +62,8 @@ public class LUT_Editor implements PlugIn, ActionListener{
     }
 
     void save() {
-        IJ.run("LUT...");
+    	try {IJ.run("LUT...");} // File>Save As>Lut...
+    	catch(RuntimeException e) {}
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -236,7 +237,8 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
     }
 
     void open() {
-        IJ.run("LUT... ");
+    	try {IJ.run("LUT... ");} // File>Import>Lut...
+    	catch(RuntimeException e) {}
         updateLut = true;
         repaint();
    }

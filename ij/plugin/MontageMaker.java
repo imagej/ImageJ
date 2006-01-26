@@ -13,6 +13,7 @@ public class MontageMaker implements PlugIn {
 	private static int columns, rows, first, last, inc, borderWidth;
 	private static double scale;
 	private static boolean label;
+	private static boolean useForegroundColor;
 	private static int saveID;
 
 	public void run(String arg) {
@@ -50,6 +51,7 @@ public class MontageMaker implements PlugIn {
 			gd.addNumericField("Increment:", inc, 0);
 			gd.addNumericField("Border Width:", borderWidth, 0);
 			gd.addCheckbox("Label Slices", label);
+			gd.addCheckbox("Use Foreground Color", useForegroundColor);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
@@ -69,6 +71,7 @@ public class MontageMaker implements PlugIn {
 				return;
 			}
 			label = gd.getNextBoolean();
+			useForegroundColor = gd.getNextBoolean();
 			makeMontage(imp, columns, rows, scale, first, last, inc, borderWidth, label);
 	}
 	
@@ -82,26 +85,27 @@ public class MontageMaker implements PlugIn {
 		int montageHeight = height*rows;
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor montage = ip.createProcessor(montageWidth+borderWidth/2, montageHeight+borderWidth/2);
-		ImageStatistics is = imp.getStatistics();
-		boolean blackBackground = is.mode<200;
-		if (imp.isInvertedLut())
-			blackBackground = !blackBackground;
-		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor))
-			blackBackground = true;
-		if (blackBackground) {
-			float[] cTable = imp.getCalibration().getCTable();
-		    boolean signed16Bit = cTable!=null && cTable[0]==-32768;
-			if (signed16Bit)
-				montage.setValue(32768);
-			else
-				montage.setColor(Color.black);
-			montage.fill();
-			montage.setColor(Color.white);
+		Color fgColor=Color.white;
+		Color bgColor = Color.black;
+		if (useForegroundColor) {
+			fgColor = Toolbar.getForegroundColor();
+			bgColor = Toolbar.getBackgroundColor();
 		} else {
-			montage.setColor(Color.white);
-			montage.fill();
-			montage.setColor(Color.black);
+			boolean whiteBackground = false;
+			if ((ip instanceof ByteProcessor) || (ip instanceof ColorProcessor)) {
+				ImageStatistics is = imp.getStatistics();
+				whiteBackground = is.mode>=200;
+				if (imp.isInvertedLut())
+					whiteBackground = !whiteBackground;
+			}
+			if (whiteBackground) {
+				fgColor=Color.black;
+				bgColor = Color.white;
+			}
 		}
+		montage.setColor(bgColor);
+		montage.fill();
+		montage.setColor(fgColor);
 		ImageStack stack = imp.getStack();
 		int x = 0;
 		int y = 0;

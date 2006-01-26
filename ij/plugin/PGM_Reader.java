@@ -86,8 +86,12 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 			IJ.showMessage("PBM/PGM/PPM Reader", msg.equals("")?""+e:msg);
 			return;
 		}
-
 		setProcessor(name, ip);
+		FileInfo fi = new FileInfo();
+		fi.fileFormat = FileInfo.PGM;
+		fi.directory = directory;
+		fi.fileName = name;
+		setFileInfo(fi);
 		if (arg.equals(""))
 			show();
 	}

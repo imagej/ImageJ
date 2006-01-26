@@ -15,8 +15,8 @@ public class Options implements PlugIn {
 			{miscOptions(); return;}
 		else if (arg.equals("line"))
 			{lineWidth(); return;}
-		else if (arg.equals("quality"))
-			{jpegQuality(); return;}
+		else if (arg.equals("io"))
+			{io(); return;}
 		else if (arg.equals("point"))
 			{pointToolOptions(); return;}
 		else if (arg.equals("conv"))
@@ -33,7 +33,6 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
 		gd.addCheckbox("Antialiased Text", Prefs.antialiasedText);
-		gd.addCheckbox("Open/Save Using JFileChooser", Prefs.useJFileChooser);
 		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Debug Mode", IJ.debugMode);
 		gd.showDialog();
@@ -59,12 +58,8 @@ public class Options implements PlugIn {
 		Prefs.usePointerCursor = gd.getNextBoolean();
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
 		Prefs.antialiasedText = gd.getNextBoolean();
-		Prefs.useJFileChooser = gd.getNextBoolean();
 		Prefs.requireControlKey = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
-
-		if (!IJ.isJava2())
-			Prefs.useJFileChooser = false;
 	}
 
 	void lineWidth() {
@@ -80,10 +75,26 @@ public class Options implements PlugIn {
 		}
 	}
 
-	void jpegQuality() {
-		int quality = (int)IJ.getNumber("JPEG quality (0-100):", JpegWriter.getQuality());
-		if (quality==IJ.CANCELED) return;
+	// Input/Output options
+	void io() {
+		GenericDialog gd = new GenericDialog("I/O Options");
+		gd.addNumericField("JPEG Quality (0-100):", JpegWriter.getQuality(), 0, 3, "");
+		gd.addStringField("File Extension for Tables:", Prefs.get("options.ext", ".xls"), 4);
+		gd.addCheckbox("Use JFileChooser to Open/Save", Prefs.useJFileChooser);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		int quality = (int)gd.getNextNumber();
+		if (quality<0) quality = 0;
+		if (quality>100) quality = 100;
 		JpegWriter.setQuality(quality);
+		String extension = gd.getNextString();
+		if (!extension.startsWith("."))
+			extension = "." + extension;
+		Prefs.set("options.ext", extension);
+		Prefs.useJFileChooser = gd.getNextBoolean();
+		if (!IJ.isJava2())
+			Prefs.useJFileChooser = false;
 		return;
 	}
 
