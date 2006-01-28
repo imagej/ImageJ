@@ -76,7 +76,7 @@ public class ImageReader {
 					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
 				}
 			int length = byteArray.length;
-			if (length>pixels.length) length = pixels.length;
+			if (current+length>pixels.length) length = pixels.length-current;
 			System.arraycopy(byteArray, 0, pixels, current, length);
 			current += byteArray.length;
 			IJ.showProgress(i+1, fi.stripOffsets.length);

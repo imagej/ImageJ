@@ -60,12 +60,12 @@ The following command line options are recognized by ImageJ:
      Runs an ImageJ menu command
      Example: -run "About ImageJ..."
 </pre>
-@author Wayne Rasband (wayne@codon.nih.gov)
+@author Wayne Rasband (wsr@nih.gov)
 */
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.35m";
+	public static final String VERSION = "1.35p";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -147,12 +147,12 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.error(err1);
 		if (err2!=null)
 			IJ.error(err2);
-		if (IJ.isMacintosh()) { 
+		if (IJ.isMacintosh()&&applet==null) { 
 			Object qh = null; 
-				if (IJ.isJava14()) 
-					qh = IJ.runPlugIn("MacAdapter", ""); 
-				if (qh==null) 
-			IJ.runPlugIn("QuitHandler", ""); 
+			if (IJ.isJava14()) 
+				qh = IJ.runPlugIn("MacAdapter", ""); 
+			if (qh==null) 
+				IJ.runPlugIn("QuitHandler", ""); 
 		} 
 		if (IJ.isJava2() && applet==null) {
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
@@ -408,8 +408,10 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh())
-			new MacMenuBarSetter((Frame)this);
+		if (IJ.isMacintosh()) {
+			IJ.wait(10); // may be needed for Java 1.4 on OS X
+			setMenuBar(Menus.getMenuBar());
+		}
 	}
 	
 	public void windowClosed(WindowEvent e) {}
@@ -463,6 +465,7 @@ public class ImageJ extends Frame implements ActionListener,
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
 			if (arg==null) continue;
+			//IJ.log(i+"  "+arg);
 			if (args[i].startsWith("-")) {
 				if (args[i].startsWith("-batch"))
 					noGUI = true;

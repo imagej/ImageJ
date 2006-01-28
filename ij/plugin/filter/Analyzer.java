@@ -8,6 +8,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.text.*;
 import ij.plugin.MeasurementsWriter;
+import ij.util.Tools;
 
 /** This plugin implements ImageJ's Analyze/Measure and Analyze/Set Measurements commands. */
 public class Analyzer implements PlugInFilter, Measurements {
@@ -137,6 +138,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int index = gd.getNextChoiceIndex();
 		redirectTarget = index==0?0:wList[index-1];
 		redirectTitle = titles[index];
+
 		int prec = (int)gd.getNextNumber();
 		if (prec<0) prec = 0;
 		if (prec>9) prec = 9;
@@ -275,7 +277,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if ((measurements&LABELS)!=0)
 				rt.addLabel("Label", getFileName());
 			rt.addValue("X", cal.getX(x));
-			rt.addValue("Y", cal.getY(updateY(y,imp.getHeight())));
+			rt.addValue("Y", cal.getY(y, imp.getHeight()));
 			rt.addValue("Z", cal.getZ(imp.getCurrentSlice()-1));
 			rt.addValue("Value", value);
 			displayResults();
@@ -338,8 +340,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&RECT)!=0) {
 			Rectangle r = roi.getBounds();
 			Calibration cal = imp.getCalibration();
-			rt.addValue(ResultsTable.ROI_X, r.x*cal.pixelWidth);
-			rt.addValue(ResultsTable.ROI_Y, updateY2(r.y*cal.pixelHeight));
+			rt.addValue(ResultsTable.ROI_X, cal.getX(r.x));
+			rt.addValue(ResultsTable.ROI_Y, cal.getY(r.y, imp.getHeight()));
 			rt.addValue(ResultsTable.ROI_WIDTH, r.width*cal.pixelWidth);
 			rt.addValue(ResultsTable.ROI_HEIGHT, r.height*cal.pixelHeight);
 		}
@@ -350,6 +352,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		or by calling setMeasurments(), in the system results table.
 	*/
 	public void saveResults(ImageStatistics stats, Roi roi) {
+		if (imp==null)
+			return;
+		Calibration cal = imp.getCalibration();
 		incrementCounter();
 		int counter = rt.getCounter();
 		if (counter<=MAX_STANDARDS) {
@@ -368,11 +373,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&CENTROID)!=0) {
 			rt.addValue(ResultsTable.X_CENTROID,stats.xCentroid);
-			rt.addValue(ResultsTable.Y_CENTROID,updateY(stats.yCentroid));
+			rt.addValue(ResultsTable.Y_CENTROID,stats.yCentroid);
 		}
 		if ((measurements&CENTER_OF_MASS)!=0) {
 			rt.addValue(ResultsTable.X_CENTER_OF_MASS,stats.xCenterOfMass);
-			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,updateY(stats.yCenterOfMass));
+			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,stats.yCenterOfMass);
 		}
 		if ((measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0) {
 			double perimeter;
@@ -391,7 +396,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&RECT)!=0) {
 			rt.addValue(ResultsTable.ROI_X,stats.roiX);
-			rt.addValue(ResultsTable.ROI_Y,updateY2(stats.roiY));
+			rt.addValue(ResultsTable.ROI_Y,stats.roiY);
 			rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
 			rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
 		}
@@ -411,34 +416,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&SLICE)!=0) rt.addValue(ResultsTable.SLICE, imp!=null?imp.getCurrentSlice():1.0);
 	}
 	
-	// Update centroid and center of mass y-coordinate
-	// based on value "Invert Y Coordinates" flag
-	double updateY(double y) {
-		if (imp==null)
-			return y;
-		else {
-			if ((systemMeasurements&INVERT_Y)!=0) {
-				Calibration cal = imp.getCalibration();
-				y = imp.getHeight()*cal.pixelHeight-y;
-			}
-			return y;
-		}
-	}
-
-	// Update bounding rectangle y-coordinate based
-	// on value "Invert Y Coordinates" flag
-	double updateY2(double y) {
-		if (imp==null)
-			return y;
-		else {
-			if ((systemMeasurements&INVERT_Y)!=0) {
-				Calibration cal = imp.getCalibration();
-				y = imp.getHeight()*cal.pixelHeight-y-cal.pixelHeight;
-			}
-			return y;
-		}
-	}
-
 	String getFileName() {
 		String s = "";
 		if (imp!=null) {

@@ -12,6 +12,7 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import ij.util.Tools;
 import ij.macro.Interpreter;
+import ij.measure.Calibration;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener {
@@ -152,6 +153,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.add(label);
 		roi.setName(label);
 		roiCopy = (Roi)roi.clone();
+		Calibration cal = imp.getCalibration();
+		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
+			Rectangle r = roiCopy.getBounds();
+			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+		}
 		slice2 = slice1;
 		rois.put(label, roiCopy);
 		if (Recorder.record) Recorder.record("roiManager", "Add");
@@ -278,7 +284,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             if (slice>=1 && slice<=imp.getStackSize())
                 imp.setSlice(slice);
         }
-		imp.setRoi((Roi)roi.clone());
+        Roi roi2 = (Roi)roi.clone();
+		Calibration cal = imp.getCalibration();
+		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
+			Rectangle r = roi2.getBounds();
+			roi2.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
+		}
+		imp.setRoi(roi2);
 		return true;
 	}
 	
@@ -544,6 +556,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
 			if (roi.isLine() || roi.getType()==Roi.POINT)
 				continue;
+			Calibration cal = imp.getCalibration();
+			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
+				roi = (Roi)roi.clone();
+				Rectangle r = roi.getBounds();
+				roi.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
+			}
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi;

@@ -44,6 +44,7 @@ public class ImageStatistics implements Measurements {
 	protected int width, height;
 	protected int rx, ry, rw, rh;
 	protected double pw, ph;
+	protected Calibration cal;
 	
 	EllipseFitter ef;
 
@@ -113,6 +114,7 @@ public class ImageStatistics implements Measurements {
 	void setup(ImageProcessor ip, Calibration cal) {
 		width = ip.getWidth();
 		height = ip.getHeight();
+		this.cal = cal;
 		Rectangle roi = ip.getRoi();
 		if (roi != null) {
 			rx = roi.x;
@@ -135,8 +137,8 @@ public class ImageStatistics implements Measurements {
 			ph = 1.0;
 		}
 		
-		roiX = rx*pw;
-		roiY = ry*ph;
+		roiX = cal!=null?cal.getX(rx):rx;
+		roiY = cal!=null?cal.getY(ry, height):ry;
 		roiWidth = rw*pw;
 		roiHeight = rh*ph;
 	}
@@ -154,8 +156,12 @@ public class ImageStatistics implements Measurements {
 				}
 			}
 		}
-		xCentroid = ((double)xsum/count+0.5)*pw;
-		yCentroid = ((double)ysum/count+0.5)*ph;
+		xCentroid = (double)xsum/count+0.5;
+		yCentroid = (double)ysum/count+0.5;
+		if (cal!=null) {
+			xCentroid = cal.getX(xCentroid);
+			yCentroid = cal.getY(yCentroid, height);
+		}
 	}
 	
 	void fitEllipse(ImageProcessor ip) {
@@ -166,8 +172,12 @@ public class ImageStatistics implements Measurements {
 		major = ef.major*psize;
 		minor = ef.minor*psize;
 		angle = ef.angle;
-		xCentroid = ef.xCenter*pw;
-		yCentroid = ef.yCenter*ph;
+		xCentroid = ef.xCenter;
+		yCentroid = ef.yCenter;
+		if (cal!=null) {
+			xCentroid = cal.getX(xCentroid);
+			yCentroid = cal.getY(yCentroid, height);
+		}
 		//if (ij.IJ.altKeyDown())
 		//	ef.drawEllipse(ip);
 	}

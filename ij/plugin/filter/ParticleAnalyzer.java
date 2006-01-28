@@ -732,7 +732,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			String average = IJ.d2s(sum/totalCount,places);
 			s += "Average Size: "+IJ.d2s(sum/totalCount,places)+" "+unit+"^2\n";
 			if (processStack) totalArea *= imp.getStackSize();
-			String fraction = IJ.d2s(sum*100.0/totalArea,1);
+			String fraction = IJ.d2s(sum*100.0/totalArea,2);
 			s += "Area Fraction: "+fraction+"%";
 			aLine = " "+"\t"+totalCount+"\t"+total+"\t"+average+"\t"+fraction;
 		} else

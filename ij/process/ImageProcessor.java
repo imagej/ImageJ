@@ -933,6 +933,11 @@ public abstract class ImageProcessor extends Object {
 		int w;
 		if (antialiasedText) {
 			Graphics g = frame.getGraphics();
+			if (g==null) {
+				frame = null;
+				setupFrame();
+				g = frame.getGraphics();
+			}
 			Java2.setAntialiasedText(g, true);
 			w = Java2.getStringWidth(s, fontMetrics, g);
 			g.dispose();

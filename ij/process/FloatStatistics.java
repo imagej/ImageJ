@@ -158,8 +158,12 @@ public class FloatStatistics extends ImageStatistics {
 	    double sDeviation = Math.sqrt(variance);
 	    skewness = ((sum3 - 3.0*mean*sum2)/pixelCount + 2.0*mean*mean2)/(variance*sDeviation);
 	    kurtosis = (((sum4 - 4.0*mean*sum3 + 6.0*mean2*sum2)/pixelCount - 3.0*mean2*mean2)/(variance*variance)-3.0);
-		xCenterOfMass = (xsum/sum1+0.5)*pw;
-		yCenterOfMass = (ysum/sum1+0.5)*ph;
+		xCenterOfMass = xsum/sum1+0.5;
+		yCenterOfMass = ysum/sum1+0.5;
+		if (cal!=null) {
+			xCenterOfMass = cal.getX(xCenterOfMass);
+			yCenterOfMass = cal.getY(yCenterOfMass, height);
+		}
 	}
 
 	void getCentroid(ImageProcessor ip, double minThreshold, double maxThreshold) {
@@ -182,8 +186,12 @@ public class FloatStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCentroid = ((double)xsum/count+0.5)*pw;
-		yCentroid = ((double)ysum/count+0.5)*ph;
+		xCentroid = (double)xsum/count+0.5;
+		yCentroid = (double)ysum/count+0.5;
+		if (cal!=null) {
+			xCentroid = cal.getX(xCentroid);
+			yCentroid = cal.getY(yCentroid, height);
+		}
 	}
 
 	void calculateAreaFraction(ImageProcessor ip) {

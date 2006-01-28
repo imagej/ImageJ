@@ -1,5 +1,6 @@
 package ij.measure;
 import ij.*;
+import ij.plugin.filter.Analyzer;
 
 /** Calibration objects contain an image's spatial and density calibration data. */
    
@@ -21,13 +22,13 @@ public class Calibration {
 	/** Frame interval in seconds */
 	public double frameInterval;
 
-	/** X origin in pixels (not currently used by ImageJ). */
+	/** X origin in pixels. */
 	public double xOrigin;
 
-	/** Y origin in pixels (not currently used by ImageJ). */
+	/** Y origin in pixels. */
 	public double yOrigin;
 
-	/** Z origin in pixels (not currently used by ImageJ). */
+	/** Z origin in pixels. */
 	public double zOrigin;
 
 	/** Plugin writers can use this string to store information about the
@@ -105,19 +106,35 @@ public class Calibration {
  	}
  	
  	/** Converts a x-coodinate in pixels to physical units (e.g. mm). */
- 	public double getX(int x) {
+ 	public double getX(double x) {
  		return (x-xOrigin)*pixelWidth;
  	}
  	
   	/** Converts a y-coodinate in pixels to physical units (e.g. mm). */
- 	public double getY(int y) {
+ 	public double getY(double y) {
  		return (y-yOrigin)*pixelHeight;
  	}
  	
+ 	/** Converts a y-coodinate in pixels to physical units (e.g. mm),
+ 		taking into account the global "Invert Y Coordinates" flag. */
+ 	public double getY(double y, int imageHeight) {
+ 		if ((Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
+			if (yOrigin!=0.0)
+				return (yOrigin-y)*pixelHeight;
+			else
+				return (imageHeight-y-1)*pixelHeight;
+		} else
+   			return (y-yOrigin)*pixelHeight;
+	}
+
   	/** Converts a z-coodinate in pixels to physical units (e.g. mm). */
- 	public double getZ(int z) {
+ 	public double getZ(double z) {
  		return (z-zOrigin)*pixelDepth;
  	}
+ 	
+ 	//public double getX(int x) {return getX((double)x);}
+ 	//public double getY(int y) {return getY((double)y);}
+ 	//public double getZ(int z) {return getZ((double)z);}
  	
   	/** Sets the calibration function,  coefficient table and unit (e.g. "OD"). */
  	public void setFunction(int function, double[] coefficients, String unit) {
@@ -143,7 +160,10 @@ public class Calibration {
  			return;
  		int type = imp.getType();
  		int newBitDepth = imp.getBitDepth();
-		if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB)
+ 		if (newBitDepth==16 && imp.getLocalCalibration().isSigned16Bit()) {
+			double[] coeff = new double[2]; coeff[0] = -32768.0; coeff[1] = 1.0;
+ 			setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+		} else if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB)
 			disableDensityCalibration();
  		bitDepth = newBitDepth;
  	}
@@ -326,7 +346,7 @@ public class Calibration {
  		return equal;
  	}
  	
- 	/** Returns true if this is a signed 16-bit image. */
+  	/** Returns true if this is a signed 16-bit image. */
  	public boolean isSigned16Bit() {
 		return (bitDepth==16 && function>=STRAIGHT_LINE && function<=LOG2 && coefficients!=null
 			&& coefficients[0]==-32768.0 && coefficients[1]==1.0);

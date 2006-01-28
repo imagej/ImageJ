@@ -1076,6 +1076,8 @@ public class Functions implements MacroConstants, Measurements {
 		String[] list = f.list();
 		if (list==null)
 			return new Variable[0];
+		if (System.getProperty("os.name").indexOf("Linux")!=-1)
+			ij.util.StringSorter.sort(list);
     	File f2;
     	int hidden = 0;
     	for (int i=0; i<list.length; i++) {

@@ -271,13 +271,7 @@ public class FileOpener {
 			double[] coeff = new double[2];
 			coeff[0] = -32768.0;
 			coeff[1] = 1.0;
-			if (imp.getGlobalCalibration()!=null) {
-				// signed 16-bit images and global galibration cannot coexist
-				imp.setGlobalCalibration(null);
-				WindowManager.repaintImageWindows();
-				IJ.error("FileOpener", "Global calibration disabled");
-			}
- 			imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+ 			imp.getLocalCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 		}
 		
 		Properties props = decodeDescriptionString();

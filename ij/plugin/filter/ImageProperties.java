@@ -58,6 +58,14 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addMessage("");
 		double interval = cal.frameInterval;
 		gd.addNumericField("Frame Interval (sec.):", interval, (int)interval==interval?0:2);
+		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
+		String yo = cal.yOrigin==(int)cal.yOrigin?IJ.d2s(cal.yOrigin,0):IJ.d2s(cal.yOrigin,2);
+		String zo = "";
+		if (cal.zOrigin!=0.0) {
+			zo = cal.zOrigin==(int)cal.zOrigin?IJ.d2s(cal.zOrigin,0):IJ.d2s(cal.zOrigin,2);
+			zo = "," + zo;
+		}
+		gd.addStringField("Origin (pixels):", xo+","+yo+zo);
 		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
         for (int i=0; i<nfields.size(); i++)
@@ -111,6 +119,13 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		}
 
 		cal.frameInterval = gd.getNextNumber();
+        String[] origin = Tools.split(gd.getNextString(), " ,");
+		double x = Tools.parseDouble(origin[0]);
+		double y = origin.length>=2?Tools.parseDouble(origin[1]):Double.NaN;
+		double z = origin.length>=3?Tools.parseDouble(origin[2]):Double.NaN;
+		cal.xOrigin= Double.isNaN(x)?0.0:x;
+		cal.yOrigin= Double.isNaN(y)?cal.xOrigin:y;
+		cal.zOrigin= Double.isNaN(z)?0.0:z;
  		global2 = gd.getNextBoolean();
 		if (!cal.equals(calOrig))
 			imp.setCalibration(cal);

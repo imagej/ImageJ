@@ -240,6 +240,7 @@ public class ProfilePlot {
 			int n2 = (int)len2;
 			for (int j=0; j<=n2; j++) {
 				index = (int)distance+j;
+				//IJ.log(i+" "+index+" "+distance+" "+j);
 				if (index<values.length) {
 					values[index] = ip.getInterpolatedValue(rx, ry);
 					if (calcXValues && index>0) {

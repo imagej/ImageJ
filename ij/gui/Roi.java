@@ -101,10 +101,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	public void setLocation(int x, int y) {
-		if (x<0) x = 0;
-		if (y<0) y = 0;
-		if ((x+width)>xMax) x = xMax-width;
-		if ((y+height)>yMax) y = yMax-height;
+		//if (x<0) x = 0;
+		//if (y<0) y = 0;
+		//if ((x+width)>xMax) x = xMax-width;
+		//if ((y+height)>yMax) y = yMax-height;
 		//IJ.write(imp.getTitle() + ": Roi.setlocation(" + x + "," + y + ")");
 		this.x = x;
 		this.y = y;

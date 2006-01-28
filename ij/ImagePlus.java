@@ -770,8 +770,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (imageType!=previousType) {
 			if (win!=null)
 				Menus.updateMenus();
-			if (calibration!=null || globalCalibration!=null)
-				getCalibration().setImage(this);
+			getLocalCalibration().setImage(this);
 		}
     }
 
@@ -1254,9 +1253,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns this image's calibration. */
 	public Calibration getCalibration() {
 		//IJ.log("getCalibration: "+globalCalibration+" "+calibration);
-		if (globalCalibration!=null)
-			return globalCalibration.copy();
-		else {
+		if (globalCalibration!=null) {
+			Calibration gc = globalCalibration.copy();
+			gc.setImage(this);
+			return gc;
+		} else {
 			if (calibration==null)
 				calibration = new Calibration(this);
 			return calibration;
@@ -1287,6 +1288,14 @@ public class ImagePlus implements ImageObserver, Measurements {
     public Calibration getGlobalCalibration() {
 			return globalCalibration;
     }
+
+	/** Returns this image's local calibration, ignoring 
+		the "Global" calibration flag. */
+	public Calibration getLocalCalibration() {
+		if (calibration==null)
+			calibration = new Calibration(this);
+		return calibration;
+	}
 
     /** Displays the cursor coordinates and pixel value in the status bar.
     	Called by ImageCanvas when the mouse moves. Can be overridden by
@@ -1328,11 +1337,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		Calibration cal = getCalibration();
 		if (getProperty("FHT")!=null)
 			return getFFTLocation(x, height-y-1, cal);
-		y = Analyzer.updateY(y, height);
-		if (cal.scaled() && !IJ.altKeyDown()) {
-			String s = " x="+IJ.d2s(cal.getX(x)) + ", y=" + IJ.d2s(cal.getY(y));
+		//y = Analyzer.updateY(y, height);
+		if (!IJ.altKeyDown()) {
+			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
 			if (getStackSize()>1)
-				s += ", z="+IJ.d2s(cal.getZ(getCurrentSlice()-1));
+				s += ", z="+d2s(cal.getZ(getCurrentSlice()-1));
 			return s;
 		} else {
 			String s =  " x="+x+", y=" + y;
@@ -1341,6 +1350,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return s;
 		}
     }
+    
+    private String d2s(double n) {
+		return n==(int)n?Integer.toString((int)n):IJ.d2s(n);
+	}
     
     private String getValueAsString(int x, int y) {
 		Calibration cal = getCalibration();
@@ -1519,7 +1532,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (listeners.isEmpty())
 			listeners = null;
 	}
-
+	
     public String toString() {
     	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
     }

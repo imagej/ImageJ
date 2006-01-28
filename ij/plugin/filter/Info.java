@@ -73,6 +73,8 @@ public class Info implements PlugInFilter {
 	    	if (nSlices>1)
 	    		s += "Depth:  " + nSlices + " pixels\n";
 	    }
+	    String zOrigin = nSlices>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
+	    s += "Coordinate origin:  " + d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin+"\n";
 	    int type = imp.getType();
     	switch (type) {
 	    	case ImagePlus.GRAY8:
@@ -218,6 +220,10 @@ public class Info implements PlugInFilter {
 		return s;
 	}
 	
+    String d2s(double n) {
+		return n==(int)n?Integer.toString((int)n):IJ.d2s(n);
+	}
+
 	// returns a Y coordinate based on the "Invert Y Coodinates" flag
 	int yy(int y, ImagePlus imp) {
 		return Analyzer.updateY(y, imp.getHeight());
