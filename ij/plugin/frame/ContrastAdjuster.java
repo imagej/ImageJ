@@ -414,8 +414,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	void adjustMax(ImagePlus imp, ImageProcessor ip, double maxvalue) {
 		//IJ.log(min+" "+max+" "+maxvalue);
 		max = defaultMin + maxvalue*(defaultMax-defaultMin)/255.0;
-		if (min<0)
-			min = 0;
+		if (min<defaultMin)
+			min = defaultMin;
 		if (max<min)
 			min = max;
 		setMinAndMax(ip, min, max);

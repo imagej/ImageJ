@@ -344,6 +344,9 @@ public class FloatProcessor extends ImageProcessor {
 						else
 							v2 = (float)Math.log(v1);
 						break;
+					case EXP:
+						v2 = (float)Math.exp(v1);
+						break;
 					case SQR:
 							v2 = v1*v1;
 						break;
@@ -386,6 +389,7 @@ public class FloatProcessor extends ImageProcessor {
 	public void xor(int value) {}
 	public void gamma(double value) {process(GAMMA, value);}
 	public void log() {process(LOG, 0.0);}
+	public void exp() {process(EXP, 0.0);}
 	public void sqr() {process(SQR, 0.0);}
 	public void sqrt() {process(SQRT, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}

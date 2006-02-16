@@ -212,7 +212,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_METADATA: str = getMetadata(); break;
 			case FILE: str = doFile(); break;
 			case SELECTION_NAME: str = selectionName(); break;
-			case GET_VERSION: str = IJ.getVersion(); break;
+			case GET_VERSION: interp.getParens();  str = IJ.getVersion(); break;
 			default:
 				str="";
 				interp.error("String function expected");

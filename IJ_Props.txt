@@ -50,6 +50,7 @@ save11="Selection...",ij.plugin.filter.RoiWriter
 save12="XY Coordinates...",ij.plugin.filter.XYWriter
 save13="Measurements...",ij.plugin.MeasurementsWriter
 save14="Text...",ij.plugin.TextWriter
+#save15="PNG....",ij.plugin.filter.Writer("png")
 #save15="QuickTime Movie... ",QT_Movie_Writer
 
 # Plugins installed in the Edit/Selection submenu
@@ -193,11 +194,13 @@ math08="Min...",ij.plugin.filter.ImageMath("min")
 math09="Max...",ij.plugin.filter.ImageMath("max")
 math10="Gamma...",ij.plugin.filter.ImageMath("gamma")
 math11="Log",ij.plugin.filter.ImageMath("log")
-math12="Square",ij.plugin.filter.ImageMath("sqr")
-math13="Square Root",ij.plugin.filter.ImageMath("sqrt")
-math14="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
-math15="NaN Background",ij.plugin.filter.ImageMath("nan")
-math16="Abs",ij.plugin.filter.ImageMath("abs")
+math12="Exp",ij.plugin.filter.ImageMath("exp")
+math13="Square",ij.plugin.filter.ImageMath("sqr")
+math14="Square Root",ij.plugin.filter.ImageMath("sqrt")
+math15="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
+math16="NaN Background",ij.plugin.filter.ImageMath("nan")
+math17="Abs",ij.plugin.filter.ImageMath("abs")
+
 
 # Plugins installed in the Process/FFT submenu
 fft01="FFT",ij.plugin.FFT("fft")

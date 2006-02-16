@@ -497,6 +497,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			Analyzer.setSaved();
 			if (Recorder.record)
 				Recorder.record("saveAs", "Measurements", path);
+		} else {
+			if (Recorder.record)
+				Recorder.record("saveAs", "Text", path);
 		}
 		IJ.showStatus("");
 	}

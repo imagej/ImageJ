@@ -239,8 +239,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		boolean isRunning = running || running2;
 		running = running2 = false;
 		if (isRunning) IJ.wait(500);
-		ImageJ ij = IJ.getInstance();
-		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() ||  IJ.macroRunning())
+		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning())
 			imp.changes = false;
 		if (imp.changes) {
 			SaveChangesDialog d = new SaveChangesDialog(this, imp.getTitle());
@@ -300,7 +299,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	
 	public void focusGained(FocusEvent e) {
 		//IJ.log("focusGained: "+imp.getTitle());
-		if (!Interpreter.isBatchMode())
+		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting())
 			WindowManager.setCurrentWindow(this);
 	}
 
@@ -322,7 +321,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		//IJ.log("windowClosing: "+imp.getTitle()+" "+closed);
 		if (closed)
 			return;
-		if (IJ.getInstance()!=null) {
+		if (ij!=null) {
 			WindowManager.setCurrentWindow(this);
 			IJ.doCommand("Close");
 		} else {

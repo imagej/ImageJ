@@ -37,30 +37,24 @@ public class Zoom implements PlugIn{
 	}
 	
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {
-			Roi roi = imp.getRoi();
-			if (roi==null) {
-				IJ.error("Zoom", "Selection required");
-				return;
-			}
-			Rectangle w = imp.getWindow().getBounds();
-			Rectangle r = roi.getBounds();
-			int x = r.x+r.width/2;
-			int y = r.y+r.height/2;
-			double mag = ic.getHigherZoomLevel(ic.getMagnification());
-			while(r.width*mag<w.width && r.height*mag<w.height) {
-				ic.zoomIn(ic.screenX(x), ic.screenY(y));
-				double cmag = ic.getMagnification();
-				if (cmag==32.0) break;
-				mag = ic.getHigherZoomLevel(cmag);
-				w = imp.getWindow().getBounds();
-				//IJ.log(mag+"  "+r.width+"  "+w.width+"  "+r.height+"  "+w.height);
-				//IJ.wait(5000);
-			}
-			while(r.width*mag>w.width || r.height*mag>w.height) {
-				ic.zoomOut(ic.screenX(x), ic.screenY(y));
-				mag = ic.getHigherZoomLevel(ic.getMagnification());
-				w = imp.getWindow().getBounds();
-			}
+		Roi roi = imp.getRoi();
+		ic.unzoom();
+		if (roi==null) return;
+		Rectangle w = imp.getWindow().getBounds();
+		Rectangle r = roi.getBounds();
+		double mag = ic.getMagnification();
+		int marginw = (int)((w.width - mag * imp.getWidth()));
+		int marginh = (int)((w.height - mag * imp.getHeight()));
+		int x = r.x+r.width/2;
+		int y = r.y+r.height/2;
+		mag = ic.getHigherZoomLevel(mag);
+		while(r.width*mag<w.width - marginw && r.height*mag<w.height - marginh) {
+			ic.zoomIn(ic.screenX(x), ic.screenY(y));
+			double cmag = ic.getMagnification();
+			if (cmag==32.0) break;
+			mag = ic.getHigherZoomLevel(cmag);
+			w = imp.getWindow().getBounds();
+		}
 	}
 	
 }

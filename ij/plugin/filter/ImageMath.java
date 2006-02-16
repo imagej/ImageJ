@@ -137,6 +137,11 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 		
+	 	if (arg.equals("exp")) {
+			ip.exp();
+			return;
+		}
+
 	 	if (arg.equals("sqr")) {
 			ip.sqr();
 			return;
@@ -148,11 +153,7 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("reciprocal")) {
-			if (!(ip instanceof FloatProcessor)) {
-				IJ.error("32-bit float image required");
-				canceled = true;
-				return;
-			}
+			if (!isFloat(ip)) return;
 			float[] pixels = (float[])ip.getPixels();
 			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++) {
 				if (pixels[i]==0f)
@@ -170,11 +171,7 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("abs")) {
-			if (!(ip instanceof FloatProcessor)) {
-				IJ.error("32-bit float image required");
-				canceled = true;
-				return;
-			}
+			if (!isFloat(ip)) return;
 			float[] pixels = (float[])ip.getPixels();
 			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++)
 				pixels[i] = Math.abs(pixels[i]);
@@ -182,6 +179,15 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 
+	}
+	
+	boolean isFloat(ImageProcessor ip) {
+		if (!(ip instanceof FloatProcessor)) {
+			IJ.error("32-bit float image required");
+			canceled = true;
+			return false;
+		} else
+			return true;
 	}
 	
 	double getValue (String title, String prompt, double defaultValue, int digits) {

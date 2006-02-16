@@ -699,7 +699,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
-	public void mouseClicked(MouseEvent e) {}
+	public void mouseClicked(MouseEvent e) {
+		flags = e.getModifiers();
+	}
+	
 	public void mouseEntered(MouseEvent e) {}
 
 }

@@ -276,6 +276,14 @@ public class WindowManager {
 
 	/** The specified frame becomes the front window, the one returnd by getFrontWindow(). */
 	public static void setWindow(Frame win) {
+		/*
+		if (Recorder.record && win!=null && win!=frontWindow) {
+			String title = win.getTitle();
+			IJ.log("Set window: "+title+"  "+(getFrame(title)!=null?"not null":"null"));
+			if (getFrame(title)!=null && !title.equals("Recorder"))
+				Recorder.record("selectWindow", title);
+		}
+		*/
 		frontWindow = win;
 		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
     }
@@ -283,8 +291,6 @@ public class WindowManager {
 	/** Closes all windows. Stops and returns false if any image "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		while (imageList.size()>0) {
-			//ImagePlus imp = ((ImageWindow)imageList.elementAt(0)).getImagePlus();
-			//IJ.write("Closing: " + imp.getTitle() + " " + imageList.size());
 			if (!((ImageWindow)imageList.elementAt(0)).close())
 				return false;
 			IJ.wait(100);

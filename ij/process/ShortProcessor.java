@@ -363,6 +363,9 @@ public class ShortProcessor extends ImageProcessor {
 						else 
 							v2 = (int)(Math.log(v1)*(max2/Math.log(max2)));
 						break;
+					case EXP:
+						v2 = (int)(Math.exp(v1*(Math.log(max2)/max2)));
+						break;
 					case SQR:
 							v2 = v1*v1;
 						break;
@@ -412,6 +415,7 @@ public class ShortProcessor extends ImageProcessor {
 	public void xor(int value) {process(XOR, value);}
 	public void gamma(double value) {process(GAMMA, value);}
 	public void log() {process(LOG, 0.0);}
+	public void exp() {process(EXP, 0.0);}
 	public void sqr() {process(SQR, 0.0);}
 	public void sqrt() {process(SQRT, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}

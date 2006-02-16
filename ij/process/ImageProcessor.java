@@ -32,7 +32,7 @@ public abstract class ImageProcessor extends Object {
 
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
-		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12;
+		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
 	static final String WRONG_LENGTH = "width*height!=pixels.length";
 	
@@ -620,6 +620,9 @@ public abstract class ImageProcessor extends Object {
 						v = 0;
 					else
 						v = (int)(Math.log(i) * SCALE);
+					break;
+				case EXP:
+					v = (int)(Math.exp(i/SCALE));
 					break;
 				case SQR:
 						v = i*i;
@@ -1215,6 +1218,9 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Performs a log transform on the image or ROI. */
 	public void log() {process(LOG, 0.0);}
+
+	/** Performs a exponential transform on the image or ROI. */
+	public void exp() {process(EXP, 0.0);}
 
 	/** Performs a square transform on the image or ROI. */
 	public void sqr() {process(SQR, 0.0);}

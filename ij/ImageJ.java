@@ -63,9 +63,9 @@ The following command line options are recognized by ImageJ:
 @author Wayne Rasband (wsr@nih.gov)
 */
 public class ImageJ extends Frame implements ActionListener, 
-	MouseListener, KeyListener, WindowListener, ItemListener {
+	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
-	public static final String VERSION = "1.35p";
+	public static final String VERSION = "1.35q";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -394,17 +394,7 @@ public class ImageJ extends Frame implements ActionListener,
 	public void keyTyped(KeyEvent e) {}
 
 	public void windowClosing(WindowEvent e) {
-		boolean quit = true;
-		ImagePlus imp = WindowManager.getCurrentImage();
-		boolean imageWithChanges = imp!=null && imp.changes;
-		if (!imageWithChanges && Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS) {
-			GenericDialog gd = new GenericDialog("ImageJ", this);
-			gd.addMessage("Are you sure you want to quit ImageJ?");
-			gd.showDialog();
-			quit = !gd.wasCanceled();
-		}
-		if (quit)
-			doCommand("Quit");
+		doCommand("Quit");
 	}
 
 	public void windowActivated(WindowEvent e) {
@@ -429,20 +419,9 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Called by ImageJ when the user selects Quit. */
 	public void quit() {
-		//IJ.log("quit: "+exitWhenQuiting); IJ.wait(5000);
-		quitting = true;
-		if (!WindowManager.closeAllWindows()) {
-			quitting = false;
-			return;
-		}
-		//IJ.log("savePreferences");
-		if (applet==null)
-			Prefs.savePreferences();
-		setVisible(false);
-		//IJ.log("dispose");
-		dispose();
-		if (exitWhenQuiting)
-			System.exit(0);
+		Thread thread = new Thread(this, "Quit");
+		thread.setPriority(Thread.NORM_PRIORITY);
+		thread.start();
 	}
 	
 	/** Returns true if ImageJ is exiting. */
@@ -572,5 +551,40 @@ public class ImageJ extends Frame implements ActionListener,
 		return port;
 	}
 
+	/** Quit using a separate thread, hopefully avoiding thread deadlocks. */
+	public void run() {
+		quitting = true;
+		boolean changes = false;
+		int[] wList = WindowManager.getIDList();
+		if (wList!=null) {
+			for (int i=0; i<wList.length; i++) {
+				ImagePlus imp = WindowManager.getImage(wList[i]);
+				if (imp!=null & imp.changes==true) {
+					changes = true;
+					break;
+				}
+			}
+		}
+		if (!changes && Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS) {
+			GenericDialog gd = new GenericDialog("ImageJ", this);
+			gd.addMessage("Are you sure you want to quit ImageJ?");
+			gd.showDialog();
+			quitting = !gd.wasCanceled();
+		}
+		if (!quitting)
+			return;
+		if (!WindowManager.closeAllWindows()) {
+			quitting = false;
+			return;
+		}
+		//IJ.log("savePreferences");
+		if (applet==null)
+			Prefs.savePreferences();
+		setVisible(false);
+		//IJ.log("dispose");
+		dispose();
+		if (exitWhenQuiting)
+			System.exit(0);
+	}
 
 }

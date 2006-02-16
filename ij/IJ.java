@@ -278,6 +278,10 @@ public class IJ {
 			if (className.indexOf('_')!=-1)
 				error("Plugin not found: "+className);
 		}
+		catch (NoClassDefFoundError e) {
+			if (className.indexOf('_')!=-1)
+				error("Plugin not found: "+className);
+		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
 		redirectErrorMessages = false;
@@ -1196,7 +1200,9 @@ public class IJ {
 		if (type.indexOf("16")!=-1) bitDepth = 16;
 		if (type.indexOf("rgb")!=-1) bitDepth = 24;
 		if (type.indexOf("32")!=-1) bitDepth = 32;
-		int options = 0;
+		int options = NewImage.FILL_WHITE;
+		if (bitDepth==16 || bitDepth==32)
+			options = NewImage.FILL_BLACK;
 		if (type.indexOf("white")!=-1)
 			options = NewImage.FILL_WHITE;
 		else if (type.indexOf("black")!=-1)

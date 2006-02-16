@@ -292,9 +292,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Closes this image and sets the pixel arrays to null. */
 	public void close() {
 		ImageWindow win = getWindow();
-		if (win!=null)
+		if (win!=null) {
+			changes = false; // avoid 'save changes?' dialog and potential deadlocks
 			win.close();
-		else {
+		} else {
             if (WindowManager.getCurrentImage()==this)
                 WindowManager.setTempCurrentImage(null);
 			killRoi(); //save any ROI so it can be restored later

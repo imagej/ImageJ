@@ -352,9 +352,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		or by calling setMeasurments(), in the system results table.
 	*/
 	public void saveResults(ImageStatistics stats, Roi roi) {
-		if (imp==null)
-			return;
-		Calibration cal = imp.getCalibration();
 		incrementCounter();
 		int counter = rt.getCounter();
 		if (counter<=MAX_STANDARDS) {
