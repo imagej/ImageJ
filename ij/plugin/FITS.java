@@ -121,8 +121,10 @@ class FitsDecoder {
                     fi.fileType = FileInfo.GRAY32_INT;
                 else if (bitsPerPixel==-32)
                     fi.fileType = FileInfo.GRAY32_FLOAT;
+                else if (bitsPerPixel==-64)
+                    fi.fileType = FileInfo.GRAY64_FLOAT;
                 else {
-                    IJ.error("BITPIX must be 8, 16, 32 or -32 (float).");
+                    IJ.error("BITPIX must be 8, 16, 32, -32 (float) or -64 (double).");
                     f.close();
                     return null;
                 }

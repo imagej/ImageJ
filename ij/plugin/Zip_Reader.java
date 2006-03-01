@@ -24,9 +24,11 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 		if (name==null)
 			return;
 		String path = directory + name;
-		dir = Prefs.getHomeDir();
-		if (dir==null) dir = ""; else dir = dir+"/";
-		
+		dir = IJ.getDirectory("temp");
+		if (dir==null)
+			dir = IJ.getDirectory("startup");
+		if (dir==null)
+			dir = "";
 		IJ.showStatus("Opening: " + path);
 		ImagePlus imp;
 		try {
@@ -51,6 +53,8 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 			fi.height = getHeight();
 			fi.nImages = getStackSize();
 			setFileInfo(fi);
+			Object info = imp.getProperty("Info");
+			if (info!=null) setProperty("Info", info);
 			if (arg.equals("")) show();
 		}
 	}

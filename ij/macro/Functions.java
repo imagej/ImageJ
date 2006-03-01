@@ -13,7 +13,7 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
-import java.io.File;
+import java.io.*;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.*;
 
@@ -34,6 +34,7 @@ public class Functions implements MacroConstants, Measurements {
     int justification = ImageProcessor.LEFT_JUSTIFY;
     Font font;
     GenericDialog gd;
+    PrintWriter writer;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -213,6 +214,7 @@ public class Functions implements MacroConstants, Measurements {
 			case FILE: str = doFile(); break;
 			case SELECTION_NAME: str = selectionName(); break;
 			case GET_VERSION: interp.getParens();  str = IJ.getVersion(); break;
+			case GET_RESULT_LABEL: str = getResultLabel(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -870,6 +872,18 @@ public class Functions implements MacroConstants, Measurements {
 		if (!rt.columnExists(col))
 			interp.error("\""+column+"\" column not found in Results");
    		return rt.getValueAsDouble(col, row);
+	}
+
+	String getResultLabel() {
+		int row = (int)getArg();
+		ResultsTable rt = Analyzer.getResultsTable();
+		int counter = rt.getCounter();
+		if (counter==0)
+			interp.error("\"Results\" table empty");
+		if (row<0 || row>=counter)
+			interp.error("Row ("+row+") out of range");
+		String label = rt.getLabel(row);
+   		return label!=null?label:"";
 	}
 
 	void setResult() {
@@ -2105,6 +2119,16 @@ public class Functions implements MacroConstants, Measurements {
 	void print() {
 		String s = getFirstString();
 		if (interp.nextNonEolToken()==',') {
+			if (s.length()==3 && s.equals("~0~")) {
+				if (writer==null)
+					interp.error("File not open");
+                String s2 = getLastString();
+                if (s2.endsWith("\n"))
+                    writer.print(s2);
+                else
+                    writer.println(s2);
+				return;
+			}
 			StringBuffer sb = new StringBuffer(s);
 			do {
 				sb.append(" ");
@@ -2476,10 +2500,16 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION))
+		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION || interp.token==PREDEFINED_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		if (name.equals("separator")) {
+		if (name.equals("open"))
+			return openFile();
+		else if (name.equals("openAsString"))
+			return openAsString();
+		else if (name.equals("close"))
+			return closeFile();
+		else if (name.equals("separator")) {
 			interp.getParens();
 			return File.separator;
 		}
@@ -2529,6 +2559,74 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			name = roi.getName();
 		return name!=null?name:"";
+	}
+	
+	String openFile() {
+		String path = getStringArg();
+		if (path.equals("")) {
+			SaveDialog sd = new SaveDialog("openFile", "log.txt", ".txt");
+			if(sd.getFileName()==null) return "";
+			path = sd.getDirectory()+sd.getFileName();
+		} else {
+			File file = new File(path);
+			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")))
+				interp.error("File exists and suffix is not '.txt'");
+		}
+		if (writer!=null) writer.close();
+		writer = null;
+		try {
+			FileOutputStream fos = new FileOutputStream(path);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			writer = new PrintWriter(bos);
+		}
+		catch (IOException e) {
+			interp.error("File open error");
+			return "";
+		}
+		return "~0~";
+	}
+
+	String openAsString() {
+		String path = getStringArg();
+		if (path.equals("")) {
+			OpenDialog od = new OpenDialog("OpenAsString...", "");
+			String directory = od.getDirectory();
+			String name = od.getFileName();
+			if (name==null) return "";
+			path = directory + name;
+		}
+		String str = "";
+		File file = new File(path);
+		if (!file.exists())
+			interp.error("File not found");
+		try {
+			StringBuffer sb = new StringBuffer(5000);
+			BufferedReader r = new BufferedReader(new FileReader(file));
+			while (true) {
+				String s=r.readLine();
+				if (s==null)
+					break;
+				else
+					sb.append(s+"\n");
+			}
+			r.close();
+			str = new String(sb);
+		}
+		catch (Exception e) {
+			interp.error("File open error");
+		}
+		return str;
+	}
+	
+	String closeFile() {
+		String f = getStringArg();
+		if (!f.equals("~0~"))
+			interp.error("Invalid file variable");
+		if (writer!=null) {
+			writer.close();
+			writer = null;
+		}
+		return "";
 	}
 
 } // class Functions

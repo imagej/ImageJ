@@ -17,9 +17,12 @@ import javax.swing.filechooser.*;
  	public DirectoryChooser(String title) {
  		if (IJ.isMacOSX() && IJ.isJava14())
 			getDirectoryUsingFileDialog(title);
- 		else if (IJ.isJava2())
- 			getDirectoryUsingJFileChooser(title);
- 		else {
+ 		else if (IJ.isJava2()) {
+ 			if (EventQueue.isDispatchThread())
+ 				getDirectoryUsingJFileChooserOnThisThread(title);
+ 			else
+ 				getDirectoryUsingJFileChooser(title);
+ 		} else {
 			OpenDialog od = new OpenDialog(title, null);
 			directory = od.getDirectory();
 		}
@@ -51,6 +54,28 @@ import javax.swing.filechooser.*;
 		} catch (Exception e) {}
 	}
  
+	// Choose a directory using JFileChooser on the current thread
+ 	void getDirectoryUsingJFileChooserOnThisThread(final String title) {
+		Java2.setSystemLookAndFeel();
+		try {
+			JFileChooser chooser = new JFileChooser();
+			if (defaultDir!=null) 
+				chooser.setCurrentDirectory(new File(defaultDir));
+			chooser.setDialogTitle(title);
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setApproveButtonText("Select");
+			if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
+				File dir = chooser.getCurrentDirectory();
+				File file = chooser.getSelectedFile();
+				directory = dir.getPath();
+				if (!directory.endsWith(File.separator))
+					directory += File.separator;
+				defaultDir = directory;
+				directory += file.getName()+File.separator;
+			}
+		} catch (Exception e) {}
+	}
+
  	// On Mac OS X, we can select directories using the native file open dialog
  	void getDirectoryUsingFileDialog(String title) {
  		boolean saveUseJFC = Prefs.useJFileChooser;

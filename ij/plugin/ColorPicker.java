@@ -42,6 +42,7 @@ public class ColorPicker extends ImagePlus implements PlugIn {
         draw();
         IJ.showStatus("");
     }
+    
 }
 
 class ColorGenerator extends ColorProcessor {

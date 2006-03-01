@@ -64,9 +64,6 @@ public class FileSaver {
 		String path = getPath("TIFF", ".tif");
 		if (path==null)
 			return false;
-		Object info = imp.getProperty("Info");
-		if (info!=null && (info instanceof String))
-			fi.info = (String)info;
 		if (imp.getStackSize()==1)
 			return saveAsTiff(path);
 		else
@@ -76,6 +73,9 @@ public class FileSaver {
 	/** Save the image in TIFF format using the specified path. */
 	public boolean saveAsTiff(String path) {
 		fi.nImages = 1;
+		Object info = imp.getProperty("Info");
+		if (info!=null && (info instanceof String))
+			fi.info = (String)info;
 		fi.description = getDescriptionString();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
@@ -97,6 +97,9 @@ public class FileSaver {
 			{IJ.error("This is not a stack"); return false;}
 		if (fi.pixels==null && imp.getStack().isVirtual())
 			{IJ.error("Save As Tiff", "Virtual stacks not supported."); return false;}
+		Object info = imp.getProperty("Info");
+		if (info!=null && (info instanceof String))
+			fi.info = (String)info;
 		fi.description = getDescriptionString();
 		fi.sliceLabels = imp.getStack().getSliceLabels();
 		try {

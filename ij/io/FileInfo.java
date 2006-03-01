@@ -56,6 +56,9 @@ public class FileInfo {
 	/** 32-bit interleaved BARG (MCID). Import only. */
 	public static final int BARG  = 15;	
 
+	/** 64-bit floating-point. Import only.*/
+	public static final int GRAY64_FLOAT  = 16;	
+
 	// File formats
 	public static final int UNKNOWN = 0;
 	public static final int RAW = 1;
@@ -137,6 +140,7 @@ public class FileInfo {
 			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			case RGB48: return 6;
+			case GRAY64_FLOAT : return 8;
 			default: return 0;
 		}
 	}
@@ -173,6 +177,7 @@ public class FileInfo {
 			case ARGB: return "ARGB";
 			case BGR: return "BGR";
 			case BARG: return "BARG";
+			case GRAY64_FLOAT: return "double";
 			default: return "";
     	}
     }

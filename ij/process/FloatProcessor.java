@@ -358,13 +358,13 @@ public class FloatProcessor extends ImageProcessor {
 						break;
 					case MINIMUM:
 						if (v1<value)
-							v2 = (int)value;
+							v2 = (float)value;
 						else
 							v2 = v1;
 						break;
 					case MAXIMUM:
 						if (v1>value)
-							v2 = (int)value;
+							v2 = (float)value;
 						else
 							v2 = v1;
 						break;

@@ -215,6 +215,16 @@ public class ResultsTable {
 		return getValueAsDouble(col,row);
 	}
 
+	/**	 Returns the label of the specified row. Returns null if the row does not have a label. */
+	public String getLabel(int row) {
+		if (row<0 || row>=getCounter())
+			throw new IllegalArgumentException("Row out of range");
+		String label = null;
+		if (rowLabels!=null && rowLabels[row]!=null)
+				label = rowLabels[row];
+		return label;
+	}
+
 	/** Sets the value of the given column and row, where
 		where 0&lt;=row&lt;counter. If the specified column does 
 		not exist, it is created. When adding columns, 

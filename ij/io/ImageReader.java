@@ -241,6 +241,45 @@ public class ImageReader {
 		return pixels;
 	}
 	
+	float[] read64bitImage(InputStream in) throws IOException {
+		int pixelsRead;
+		byte[] buffer = new byte[bufferSize];
+		float[] pixels = new float[nPixels];
+		int totalRead = 0;
+		int base = 0;
+		int count, value;
+		int bufferCount;
+		long tmp;
+		long b1, b2, b3, b4, b5, b6, b7, b8;
+		
+		while (totalRead<byteCount) {
+			if ((totalRead+bufferSize)>byteCount)
+				bufferSize = byteCount-totalRead;
+			bufferCount = 0;
+			while (bufferCount<bufferSize) { // fill the buffer
+				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
+				if (count==-1) {eofError(); return pixels;}
+				bufferCount += count;
+			}
+			totalRead += bufferSize;
+			showProgress((double)totalRead/byteCount);
+			pixelsRead = bufferSize/bytesPerPixel;
+			int j = 0;
+			for (int i=base; i < (base+pixelsRead); i++) {
+				b1 = buffer[j+7]&0xff;  b2 = buffer[j+6]&0xff;  b3 = buffer[j+5]&0xff;  b4 = buffer[j+4]&0xff; 
+				b5 = buffer[j+3]&0xff;  b6 = buffer[j+2]&0xff;  b7 = buffer[j+1]&0xff;  b8 = buffer[j]&0xff; 
+				if (fi.intelByteOrder)
+					tmp = (long)((b1<<56)|(b2<<48)|(b3<<40)|(b4<<32)|(b5<<24)|(b6<<16)|(b7<<8)|b8);
+				else
+					tmp = (long)((b8<<56)|(b7<<48)|(b6<<40)|(b5<<32)|(b4<<24)|(b3<<16)|(b2<<8)|b1);
+				pixels[i] = (float)Double.longBitsToDouble(tmp);
+				j += 8;
+			}
+			base += pixelsRead;
+		}
+		return pixels;
+	}
+
 	int[] readChunkyRGB(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressedChunkyRGB(in);
@@ -521,6 +560,10 @@ public class ImageReader {
 					bytesPerPixel = 4;
 					skip(in);
 					return (Object)read32bitImage(in);
+				case FileInfo.GRAY64_FLOAT:
+					bytesPerPixel = 8;
+					skip(in);
+					return (Object)read64bitImage(in);
 				case FileInfo.RGB:
 				case FileInfo.BGR:
 				case FileInfo.ARGB:

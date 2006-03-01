@@ -16,9 +16,9 @@ public class TiffEncoder {
 	private int samplesPerPixel;
 	private int nEntries;
 	private int ifdSize;
-	private int imageOffset = IMAGE_START;
+	private long imageOffset = IMAGE_START;
 	private int imageSize;
-	private int stackSize;
+	private long stackSize;
 	private byte[] description;
 	private int metaDataSize;
 	private int metaDataEntries;
@@ -66,12 +66,12 @@ public class TiffEncoder {
 		makeDescriptionString();
 		if (description!=null)
 			nEntries++;  // ImageDescription tag
+		imageSize = fi.width*fi.height*bytesPerPixel;
+		stackSize = (long)imageSize*fi.nImages;
 		metaDataSize = getMetaDataSize();
 		if (metaDataSize>0)
 			nEntries += 2; // MetaData & MetaDataCounts
 		ifdSize = 2 + nEntries*12 + 4;
-		imageSize = fi.width*fi.height*bytesPerPixel;
-		stackSize = imageSize*fi.nImages;
 	}
 	
 	/** Saves the image as a TIFF file. The DataOutputStream is not closed.
@@ -79,14 +79,16 @@ public class TiffEncoder {
 		then fi.pixels must be a 2D array. The fi.offset field is ignored. */
 	public void write(DataOutputStream out) throws IOException {
 		writeHeader(out);
-		int nextIFD = 0;
+		long nextIFD = 0L;
 		if (fi.nImages>1) {
 			nextIFD = IMAGE_START+stackSize;
 			if (fi.fileType==FileInfo.COLOR8) nextIFD += MAP_SIZE*2;
             if (metaDataSize>0) 
                 nextIFD += metaDataEntries*4 + metaDataSize;
 		}
-		writeIFD(out, imageOffset, nextIFD);
+        if (nextIFD+fi.nImages*ifdSize>=0xffffffffL)
+            nextIFD = 0L;
+		writeIFD(out, (int)imageOffset, (int)nextIFD);
 		int bpsSize=0, scaleSize=0, descriptionSize=0;
 		if (fi.fileType==FileInfo.RGB)
 			bpsSize = writeBitsPerPixel(out);
@@ -103,17 +105,21 @@ public class TiffEncoder {
 			writeColorMap(out);
 		if (metaDataSize>0)
 			writeMetaData(out);
-		for (int i=2; i<=fi.nImages; i++) {
-			if (i==fi.nImages)
-				nextIFD = 0;
-			else
-				nextIFD += ifdSize;
-			imageOffset += imageSize;
-			writeIFD(out, imageOffset, nextIFD);
-		}
+        if (nextIFD>0L) {
+            for (int i=2; i<=fi.nImages; i++) {
+                if (i==fi.nImages)
+                    nextIFD = 0;
+                else
+                    nextIFD += ifdSize;
+                imageOffset += imageSize;
+                writeIFD(out, (int)imageOffset, (int)nextIFD);
+            }
+        }
 	}
 	
 	int getMetaDataSize() {
+        if (stackSize+IMAGE_START>0xffffffffL)
+            return 0;
 		nSliceLabels = 0;
 		metaDataEntries = 0;
 		int size = 0;
@@ -210,12 +216,12 @@ public class TiffEncoder {
 			writeEntry(out, TiffDecoder.SAMPLE_FORMAT, 3, 1, format);
 		}
 		if (fi.fileType==FileInfo.COLOR8)
-			writeEntry(out, TiffDecoder.COLOR_MAP, 3, MAP_SIZE, IMAGE_START+stackSize);
+			writeEntry(out, TiffDecoder.COLOR_MAP, 3, MAP_SIZE, (int)(IMAGE_START+stackSize));
 		if (metaDataSize>0) {
-			int metaDataOffset = IMAGE_START+stackSize;
+			long metaDataOffset = IMAGE_START+stackSize;
 			if (fi.fileType==FileInfo.COLOR8) metaDataOffset += MAP_SIZE*2;
-			writeEntry(out, TiffDecoder.META_DATA_BYTE_COUNTS, 4, metaDataEntries, metaDataOffset);
-			writeEntry(out, TiffDecoder.META_DATA, 1, metaDataSize, metaDataOffset+4*(metaDataEntries));
+			writeEntry(out, TiffDecoder.META_DATA_BYTE_COUNTS, 4, metaDataEntries, (int)metaDataOffset);
+			writeEntry(out, TiffDecoder.META_DATA, 1, metaDataSize, (int)(metaDataOffset+4*(metaDataEntries)));
 		}
 		out.writeInt(nextIFD);
 	}

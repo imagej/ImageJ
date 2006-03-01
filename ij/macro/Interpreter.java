@@ -7,6 +7,7 @@ import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
+import java.io.PrintWriter;
 
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
@@ -1500,6 +1501,7 @@ public class Interpreter implements MacroConstants {
 		}
 		if (rgbWeights!=null)
 			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
+		if (func.writer!=null) func.writer.close();
 	}
 	
 	/** Aborts currently running macro. */

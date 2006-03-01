@@ -587,6 +587,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		xMouse = offScreenX(x);
 		yMouse = offScreenY(y);
 		flags = e.getModifiers();
+		//IJ.log("mouseDragged: "+flags);
 		if (flags==0)  // workaround for Mac OS 9 bug
 			flags = InputEvent.BUTTON1_MASK;
 		if (Toolbar.getToolId()==Toolbar.HAND || IJ.spaceBarDown())
@@ -659,7 +660,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void mouseReleased(MouseEvent e) {
 		flags = e.getModifiers();
 		flags &= ~InputEvent.BUTTON1_MASK; // make sure button 1 bit is not set
-		//IJ.log("mouseReleased: "+flags);
+		flags &= ~InputEvent.BUTTON2_MASK; // make sure button 2 bit is not set
+		flags &= ~InputEvent.BUTTON3_MASK; // make sure button 3 bit is not set
 		Roi roi = imp.getRoi();
 		if (roi != null) {
 			Rectangle r = roi.getBounds();
@@ -699,10 +701,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
-	public void mouseClicked(MouseEvent e) {
-		flags = e.getModifiers();
-	}
-	
+	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 
 }

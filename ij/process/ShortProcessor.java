@@ -757,9 +757,12 @@ public class ShortProcessor extends ImageProcessor {
 		if (bestIndex>0 && getMin()==0.0 && getMax()==0.0) {
 			setValue(bestIndex);
 			setMinAndMax(0.0,255.0);
-		} else if (bestIndex==0 && getMin()>0.0 && (color.getRGB()&0xffffff)==0)
-			setValue(0.0);
-		else
+		} else if (bestIndex==0 && getMin()>0.0 && (color.getRGB()&0xffffff)==0) {
+			if (cTable!=null&&cTable[0]==-32768f) // signed image
+				setValue(32768.0);
+			else
+				setValue(0.0);
+		} else
 			fgColor = (int)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
 
 	}

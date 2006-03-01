@@ -120,7 +120,7 @@ public final class RandomAccessStream extends InputStream {
     public void seek(int loc) throws IOException {
 		//if (ij.IJ.debugMode) ij.IJ.log("seek: "+loc);
     	if (ras!=null)
-    		{ras.seek(loc); return;}
+    		{ras.seek(loc&0xffffffff); return;}
         if(loc < 0)
 			pointer = 0;
         else
