@@ -37,6 +37,11 @@ public class ImageConverter {
 			ip = new ColorProcessor(imp.getImage());
 	    	imp.setProcessor(null, ip.convertToByte(doScaling));
 	    }
+	    ImageProcessor ip2 = imp.getProcessor();
+		if (Prefs.useInvertingLut && ip2 instanceof ByteProcessor && !ip2.isInvertedLut()&& !ip2.isColorLut()) {
+			ip2.invertLut();
+			ip2.invert();
+		}
 	}
 
 	/** Converts this ImagePlus to 16-bit grayscale. */

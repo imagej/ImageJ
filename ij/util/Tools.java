@@ -1,6 +1,7 @@
 package ij.util;
 import java.awt.Color;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.io.*;
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -151,6 +152,8 @@ import java.util.StringTokenizer;
 	/** Splits a string into substring using the characters
 	contained in the second argument as the delimiter set. */
 	public static String[] split(String str, String delim) {
+		if (delim.equals("\n"))
+			return splitLines(str);
 		StringTokenizer t = new StringTokenizer(str, delim);
 		int tokens = t.countTokens();
 		String[] strings;
@@ -164,6 +167,23 @@ import java.util.StringTokenizer;
         	tokens = 1;
         }
 		return strings;
+	}
+	
+	static String[] splitLines(String str) {
+		Vector v = new Vector();
+        try {
+            BufferedReader br  = new BufferedReader(new StringReader(str));
+            String line;
+            while (true) {
+                line = br.readLine();
+                if (line == null) break;
+                v.addElement(line);
+            }
+            br.close();
+        } catch(Exception e) { }
+		String[] lines = new String[v.size()];
+		v.copyInto((String[])lines);
+		return lines;
 	}
 
 }

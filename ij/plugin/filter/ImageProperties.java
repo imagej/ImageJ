@@ -52,12 +52,12 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		oldScale = cal.pixelWidth!=0?1.0/cal.pixelWidth:0;
 		//gd.addNumericField("Pixels/Unit:", oldScale, (int)oldScale==oldScale?0:3);
 		//gd.addMessage("");
-		gd.addNumericField("Pixel_Width:", cal.pixelWidth, 4);
-		gd.addNumericField("Pixel_Height:", cal.pixelHeight, 4);
-		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 4);
+		gd.addNumericField("Pixel_Width:", cal.pixelWidth, 5, 8, null);
+		gd.addNumericField("Pixel_Height:", cal.pixelHeight, 5, 8, null);
+		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 5, 8, null);
 		gd.addMessage("");
 		double interval = cal.frameInterval;
-		gd.addNumericField("Frame Interval (sec.):", interval, (int)interval==interval?0:2);
+		gd.addNumericField("Frame Interval (sec.):", interval, (int)interval==interval?0:2, 8, null);
 		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
 		String yo = cal.yOrigin==(int)cal.yOrigin?IJ.d2s(cal.yOrigin,0):IJ.d2s(cal.yOrigin,2);
 		String zo = "";
@@ -226,11 +226,11 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			double newScale = getNewScale(newUnit);
 			if (newScale!=0.0) {
 				//ppuField.setText(((int)newScale)==newScale?IJ.d2s(newScale,0):IJ.d2s(newScale,2));
-				pixelWidthField.setText(IJ.d2s(1/newScale,4));
-				pixelHeightField.setText(IJ.d2s(1/newScale,4));
+				pixelWidthField.setText(IJ.d2s(1/newScale,6));
+				pixelHeightField.setText(IJ.d2s(1/newScale,6));
 				oldUnitIndex = getUnitIndex(newUnit);
 				oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
-				oldScale = newScale;;
+				oldScale = newScale;
 			}
 			calUnit = newUnit;
 		}

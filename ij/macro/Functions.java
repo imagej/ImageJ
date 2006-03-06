@@ -2569,8 +2569,8 @@ public class Functions implements MacroConstants, Measurements {
 			path = sd.getDirectory()+sd.getFileName();
 		} else {
 			File file = new File(path);
-			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")))
-				interp.error("File exists and suffix is not '.txt'");
+			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")||path.endsWith(".ijm")))
+				interp.error("File exists and suffix is not '.txt', '.java', etc.");
 		}
 		if (writer!=null) writer.close();
 		writer = null;
@@ -2580,7 +2580,7 @@ public class Functions implements MacroConstants, Measurements {
 			writer = new PrintWriter(bos);
 		}
 		catch (IOException e) {
-			interp.error("File open error");
+			interp.error("File open error \n\""+e.getMessage()+"\"\n");
 			return "";
 		}
 		return "~0~";
@@ -2613,7 +2613,7 @@ public class Functions implements MacroConstants, Measurements {
 			str = new String(sb);
 		}
 		catch (Exception e) {
-			interp.error("File open error");
+			interp.error("File open error \n\""+e.getMessage()+"\"\n");
 		}
 		return str;
 	}
@@ -2626,7 +2626,7 @@ public class Functions implements MacroConstants, Measurements {
 			writer.close();
 			writer = null;
 		}
-		return "";
+		return null;
 	}
 
 } // class Functions
