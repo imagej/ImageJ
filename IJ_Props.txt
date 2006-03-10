@@ -45,13 +45,14 @@ save06="Raw Data...",ij.plugin.filter.Writer("raw")
 save07="Image Sequence... ",ij.plugin.StackWriter
 save08="AVI... ",ij.plugin.filter.AVIWriter
 save09="BMP...",ij.plugin.filter.Writer("bmp")
-save10="LUT...",ij.plugin.filter.Writer("lut")
-save11="Selection...",ij.plugin.filter.RoiWriter
-save12="XY Coordinates...",ij.plugin.filter.XYWriter
-save13="Measurements...",ij.plugin.MeasurementsWriter
-save14="Text...",ij.plugin.TextWriter
-#save15="PNG....",ij.plugin.filter.Writer("png")
-#save15="QuickTime Movie... ",QT_Movie_Writer
+save10="PGM...",ij.plugin.filter.Writer("pgm")
+save11="LUT...",ij.plugin.filter.Writer("lut")
+save12="Selection...",ij.plugin.filter.RoiWriter
+save13="XY Coordinates...",ij.plugin.filter.XYWriter
+save14="Measurements...",ij.plugin.MeasurementsWriter
+save15="Text...",ij.plugin.TextWriter
+#save16="PNG....",ij.plugin.filter.Writer("png")
+#save17="QuickTime Movie... ",QT_Movie_Writer
 
 # Plugins installed in the Edit/Selection submenu
 selection01="Select All[a]",ij.plugin.Selection("all")

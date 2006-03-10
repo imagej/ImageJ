@@ -1,6 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.text.*;
+import ij.io.OpenDialog;
 import java.awt.*;
 import java.util.*;
 import java.applet.Applet;
@@ -72,8 +73,10 @@ public class JavaProperties implements PlugIn {
 		sb.append("  java 2: "+IJ.isJava2()+"\n");
 		sb.append("  java 1.4: "+IJ.isJava14()+"\n");
 		sb.append("  prefs dir: "+prefsDir+"\n");
+		sb.append("  imagej dir: "+Prefs.getHomeDir()+"\n");
 		sb.append("  plugins dir: "+Menus.getPlugInsPath()+"\n");
 		sb.append("  macros dir: "+Menus.getMacrosPath()+"\n");
+		sb.append("  current dir: "+OpenDialog.getDefaultDirectory()+"\n");
 		sb.append("  sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		sb.append("  screen size: " + d.width + "x" + d.height+"\n");

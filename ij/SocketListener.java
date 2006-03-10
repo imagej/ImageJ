@@ -1,5 +1,6 @@
 package ij;
 import ij.*;
+import ij.io.OpenDialog;
 import java.io.*;
 import java.net.*;
 
@@ -54,7 +55,7 @@ public class SocketListener implements Runnable {
 						if (rtn!=null)
 							System.out.print(rtn);
 					} else if (cmd.startsWith("user.dir "))
-						System.setProperty("user.dir", cmd.substring(9));
+						OpenDialog.setDefaultDirectory(cmd.substring(9));
 				} catch (Throwable e) {}
 				clientSocket.close();
 				if (IJ. debugMode) IJ.log("SocketServer: connection closed");

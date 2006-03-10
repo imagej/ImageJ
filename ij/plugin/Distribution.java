@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.PlugIn;
 import ij.measure.*;
+import ij.util.Tools;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -19,9 +20,10 @@ public class Distribution implements PlugIn, TextListener {
 	static boolean autoBinning = true;
 	static boolean showStats = false;
 	static int nBins = 10;
+	static String range = "0-0";
 	Checkbox checkbox;
-	TextField nBinsField;
-	String defaultNBins;
+	TextField nBinsField, rangeField;
+	String defaultNBins, defaultRange;
 
 	public void run(String arg) {
 		ResultsTable rt=ResultsTable.getResultsTable();
@@ -41,15 +43,21 @@ public class Distribution implements PlugIn, TextListener {
 			strings[i] = t.nextToken();
 
 		defaultNBins = ""+nBins;
+		defaultRange = range;
 		GenericDialog gd = new GenericDialog("Distribution");
 		gd.addChoice("Parameter: ", strings, strings[getIndex(strings)]);
 		gd.addMessage("Data points: "+ count);
 		gd.addCheckbox("Automatic binning", autoBinning);
 		gd.addNumericField ("or specify bins:", nBins, 0);
+		gd.addStringField ("and range:", range);
+
 		//gd.addCheckbox("Log Statistics", showStats);
-		Vector numbers = gd.getNumericFields();
-		nBinsField = (TextField)numbers.elementAt(0);
+		Vector v = gd.getNumericFields();
+		nBinsField = (TextField)v.elementAt(0);
 		nBinsField.addTextListener(this);
+		v = gd.getStringFields();
+		rangeField = (TextField)v.elementAt(0);
+		rangeField.addTextListener(this);
 		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -57,7 +65,16 @@ public class Distribution implements PlugIn, TextListener {
 
 		parameter = gd.getNextChoice ();
 		autoBinning = gd.getNextBoolean();
-		nBins = (int)gd.getNextNumber();
+		double nMin=0.0, nMax=0.0;
+		if (!autoBinning) {
+			nBins = (int)gd.getNextNumber();
+			range = gd.getNextString();
+			String[] minAndMax = Tools.split(range, " -");
+			nMin = Tools.parseDouble(minAndMax[0]);
+			nMax = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;
+			if (Double.isNaN(nMin) || Double.isNaN(nMax))
+				{nMin=0.0; nMax=0.0; range="0-0";}
+		}
 		//boolean showStats = gd.getNextBoolean();
 
 		//int nBins =5;
@@ -89,7 +106,8 @@ public class Distribution implements PlugIn, TextListener {
 
 		ImageProcessor ip = new FloatProcessor(count, 1, data, null);
 		ImagePlus imp = new ImagePlus("", ip);
-		ImageStatistics stats = new StackStatistics(imp, nBins, 0, 0);
+//		ImageStatistics stats = new StackStatistics(imp, nBins, 0, 0);
+		ImageStatistics stats = new StackStatistics(imp, nBins, nMin, nMax); // GL new line
 		int maxCount = 0;
 		for (int i=0; i<stats.histogram.length; i++) {
 			if (stats.histogram[i]>maxCount)
@@ -110,6 +128,8 @@ public class Distribution implements PlugIn, TextListener {
 
 	public void textValueChanged(TextEvent e) {
 		if (!defaultNBins.equals(nBinsField.getText()))
+			checkbox.setState(false);
+		if (!defaultRange.equals(rangeField.getText()))
 			checkbox.setState(false);
 	}
 

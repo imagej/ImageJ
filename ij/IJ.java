@@ -1049,9 +1049,9 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
-	/** Returns the path to the home ("user.home"), startup ("user.dir"), plugins, macros, 
-		temp or image directory if <code>title</code> is "home", "startup", 
-		"plugins", "macros", "temp" or "image", otherwise, displays a dialog 
+	/** Returns the path to the home ("user.home"), startup (ImageJ directory), plugins, macros, 
+		temp, current or image directory if <code>title</code> is "home", "startup", 
+		"plugins", "macros", "temp", "current" or "image", otherwise, displays a dialog 
 		and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user
 		cancels the dialog box. Also aborts the macro if the user cancels
@@ -1064,7 +1064,9 @@ public class IJ {
 		else if (title.equals("home"))
 			return System.getProperty("user.home") + File.separator;
 		else if (title.equals("startup"))
-			return System.getProperty("user.dir") + File.separator;
+			return Prefs.getHomeDir() + File.separator;
+		else if (title.equals("current"))
+			return OpenDialog.getDefaultDirectory();
 		else if (title.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
 			if (dir!=null && !dir.endsWith(File.separator)) dir += File.separator;
@@ -1116,7 +1118,7 @@ public class IJ {
 	}
 
 	/** Saves an image, lookup table, selection or text window to the specified file path. 
-		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".lut", ".roi" or ".txt".  */
+		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", "pgm", ".lut", ".roi" or ".txt".  */
 	public static void save(String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1)
@@ -1127,7 +1129,7 @@ public class IJ {
 
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 
 		coordinates or text window to the specified file path. The format argument must be "tiff", 
-		"jpeg", "gif", "zip", "raw", "avi", "bmp", "text image", "lut", "selection", "measurements", 
+		"jpeg", "gif", "zip", "raw", "avi", "bmp", "pgm", "text image", "lut", "selection", "measurements", 
 		"xy Coordinates" or "text".  If <code>path</code> is null or an emply string, a file
 		save dialog is displayed. */
  	public static void saveAs(String format, String path) {
@@ -1161,6 +1163,9 @@ public class IJ {
 		} else if (format.indexOf("bmp")!=-1) {
 			path = updateExtension(path, ".bmp");
 			format = "BMP...";
+		} else if (format.indexOf("pgm")!=-1) {
+			path = updateExtension(path, ".pgm");
+			format = "PGM...";
 		} else if (format.indexOf("lut")!=-1) {
 			path = updateExtension(path, ".lut");
 			format = "LUT...";

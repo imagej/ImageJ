@@ -75,6 +75,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			pm.addSeparator();
 			addPopupItem("Clear Results");
 			addPopupItem("Summarize");
+			addPopupItem("Distribution...");
 			addPopupItem("Set Measurements...");
 		}
 	}
@@ -336,6 +337,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			resetSelection();		
 		} else if (cmd.equals("Summarize"))
 			IJ.doCommand("Summarize");
+		else if (cmd.equals("Distribution..."))
+			IJ.doCommand("Distribution...");
 		else if (cmd.equals("Clear Results"))
 			IJ.doCommand("Clear Results");
 		else if (cmd.equals("Set Measurements..."))

@@ -133,16 +133,19 @@ import javax.swing.filechooser.*;
 		return name;
 	}
 		
-	/** Returns the current working directory, which my be null. */
+	/** Returns the current working directory, which may be null. The
+		returned string always ends with the separator character ("/" or "\").*/
 	public static String getDefaultDirectory() {
 		if (defaultDirectory==null)
 			defaultDirectory = Prefs.getString(Prefs.DIR_IMAGE);
 		return defaultDirectory;
 	}
 
+	/** Sets the current working directory. */
 	public static void setDefaultDirectory(String defaultDir) {
 		defaultDirectory = defaultDir;
-		IJ.register(OpenDialog.class);
+		if (!defaultDirectory.endsWith(File.separator))
+			defaultDirectory = defaultDirectory + File.separator;
 	}
 
 }

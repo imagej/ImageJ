@@ -256,6 +256,31 @@ public class FileSaver {
 		return true;
 	}
 
+	/** Saves grayscale images in PGM (portable graymap) format 
+		and RGB images in PPM (portable pixmap) format,
+		using a save file dialog.
+		Returns false if the user selects cancel.
+	*/
+	public boolean saveAsPgm() {
+		String extension = imp.getBitDepth()==24?".pnm":".pgm";
+		String path = getPath("PGM", extension);
+		if (path==null)
+			return false;
+		else
+			return saveAsPgm(path);
+	}
+
+	/** Saves grayscale images in PGM (portable graymap) format 
+		and RGB images in PPM (portable pixmap) format,
+		using the specified path. */
+	public boolean saveAsPgm(String path) {
+		ImagePlus tempImage = WindowManager.getTempCurrentImage();
+		WindowManager.setTempCurrentImage(imp);
+		IJ.runPlugIn("ij.plugin.PNM_Writer", path);
+		WindowManager.setTempCurrentImage(tempImage);
+		return true;
+	}
+
 	/** Save the image in PNG format using a save file dialog. 
 		Returns false if the user selects cancel. Requires
 		java 1.4 or later. */

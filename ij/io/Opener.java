@@ -106,8 +106,11 @@ public class Opener {
 		is not in one of the supported formats. */
 	public void open(String path) {
         boolean fullPath = path.startsWith("/") || path.indexOf(":\\")==1;
-        if (!fullPath)
-			path = System.getProperty("user.dir") + File.separator + path;
+        if (!fullPath) {
+            String workingDir = OpenDialog.getDefaultDirectory();
+            if (workingDir!=null)
+                path = workingDir + path;
+        }
 		if (!silentMode) IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);

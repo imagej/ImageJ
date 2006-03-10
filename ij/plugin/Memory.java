@@ -85,7 +85,7 @@ public class Memory implements PlugIn {
 	}
 
 	long getMemorySetting(String file) {
-		String path = System.getProperty("user.dir")+File.separator+file;
+		String path = Prefs.getHomeDir()+File.separator+file;
 		f = new File(path);
 		if (!f.exists()) return 0L;
 		long max = 0L;
