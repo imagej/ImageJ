@@ -242,8 +242,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning())
 			imp.changes = false;
 		if (imp.changes) {
-			if (IJ.isWindows() && IJ.isJava14())
-				IJ.wait(250); // this is an attemp to avoid thread deadlocks
 			SaveChangesDialog d = new SaveChangesDialog(this, imp.getTitle());
 			if (d.cancelPressed())
 				return false;

@@ -37,6 +37,17 @@ public class ByteProcessor extends ImageProcessor {
 			pixels = (byte[])(pg.getPixels());
 		else
 			System.err.println("ByteProcessor: not 8-bit image");
+		if (((IndexColorModel)cm).getTransparentPixel()!=-1) {
+    		IndexColorModel icm = (IndexColorModel)cm;
+			int mapSize = icm.getMapSize();
+			byte[] reds = new byte[mapSize];
+			byte[] greens = new byte[mapSize];
+			byte[] blues = new byte[mapSize];	
+			icm.getReds(reds); 
+			icm.getGreens(greens); 
+			icm.getBlues(blues);
+			cm = new IndexColorModel(8, mapSize, reds, greens, blues);
+		}
 	}
 
 	/**Creates a blank ByteProcessor of the specified dimensions. */

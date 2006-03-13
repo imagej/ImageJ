@@ -182,6 +182,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			newMaxCount = (int)(maxCount2 * 1.5);
   			//histogram[stats.mode] = newMaxCount;
 		}
+		if (IJ.shiftKeyDown()) {
+			logScale = true;
+			drawLogPlot(yMax>0?yMax:newMaxCount, ip);
+		}
 		drawPlot(yMax>0?yMax:newMaxCount, ip);
 		histogram[stats.mode] = saveModalCount;
  		x = XMARGIN + 1;
@@ -324,10 +328,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.resetRoi();
 		ip.setColor(Color.black);
 		if (logScale) {
-			drawLogPlot(newMaxCount, ip);
-			drawPlot(newMaxCount, ip);
+			drawLogPlot(yMax>0?yMax:newMaxCount, ip);
+			drawPlot(yMax>0?yMax:newMaxCount, ip);
 		} else
-			drawPlot(newMaxCount, ip);
+			drawPlot(yMax>0?yMax:newMaxCount, ip);
 		this.imp.updateAndDraw();
 	}
 	

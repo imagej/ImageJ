@@ -744,6 +744,8 @@ public abstract class ImageProcessor extends Object {
 		double x = cx<0?cx-0.5:cx+0.5;
 		double y = cy<0?cy-0.5:cy+0.5;
 		n++;
+		cx = x2; cy = y2;
+		if (n>1000000) return;
 		do {
 			if (lineWidth==1)
 				drawPixel((int)x, (int)y);
@@ -754,7 +756,6 @@ public abstract class ImageProcessor extends Object {
 			x += xinc;
 			y += yinc;
 		} while (--n>0);
-		cx = x2; cy = y2;
 	}
 		
 	/** Draws a line from (x1,y1) to (x2,y2). */
