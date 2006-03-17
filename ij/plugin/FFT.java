@@ -59,16 +59,16 @@ public class FFT implements  PlugIn, Measurements {
 			inverse = false;
 		}
 		if (inverse)
-			doInverseTransform(fht, ip);
+			doInverseTransform(fht);
 		else {
 			if (displayRawPS || displayFHT)
 				fileName = imp.getTitle();
-			doForewardTransform(fht, ip);	
+			doForewardTransform(fht);	
 		}	 
 		IJ.showProgress(1.0);
 	}
 	
-	void doInverseTransform(FHT fht, ImageProcessor ip) {
+	void doInverseTransform(FHT fht) {
 		fht = fht.getCopy();
 		doMasking(fht);
 		showStatus("Inverse transform");
@@ -109,7 +109,7 @@ public class FFT implements  PlugIn, Measurements {
 		imp2.show();
 	}
 
-	public void doForewardTransform(FHT fht, ImageProcessor ip) {
+	void doForewardTransform(FHT fht) {
 		showStatus("Foreward transform");
 		fht.transform();
 		showStatus("Calculating power spectrum");
@@ -208,7 +208,7 @@ public class FFT implements  PlugIn, Measurements {
 		}
 	}
 	
-	public void redisplayPowerSpectrum() {
+	void redisplayPowerSpectrum() {
 		FHT fht = (FHT)imp.getProperty("FHT");
 		if (fht==null)
 			{IJ.error("FFT", "Frequency domain image required"); return;}

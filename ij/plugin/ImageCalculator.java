@@ -95,20 +95,15 @@ public class ImageCalculator implements PlugIn {
 			createWindow = true;
 		int size1 = img1.getStackSize();
 		int size2 = img2.getStackSize();
-		if (size1>1 && size2>1 && size1!=size2) {
-			IJ.error("Image Calculator", "Both stacks must have the same number of slices.");
-			return;
-		}
-		boolean isStack = size1>1 && (size2==1||size1==size2);
 		if (apiCall) {
-			if (processStack && isStack)
+			if (processStack && (size1>1||size2>1))
 				doStackOperation(img1, img2);
 			else
 				doOperation(img1, img2);
 			return;
 		}
 		boolean stackOp = false;
-		if (isStack) {
+		if (size1>1) {
 			int result = IJ.setupDialog(img1, 0);
 			if (result==PlugInFilter.DONE)
 				return;
@@ -130,6 +125,12 @@ public class ImageCalculator implements PlugIn {
 
 	/** img1 = img2 op img2 (e.g. img1 = img2/img1) */
 	void doStackOperation(ImagePlus img1, ImagePlus img2) {
+		int size1 = img1.getStackSize();
+		int size2 = img2.getStackSize();
+		if (size1>1 && size2>1 && size1!=size2) {
+			IJ.error("Image Calculator", "'Image1' and 'image2' must be stacks with the same\nnumber of slices, or 'image2' must be a single image.");
+			return;
+		}
 		if (createWindow) {
 			img1 = duplicateStack(img1);
 			if (img1==null) {
@@ -148,7 +149,7 @@ public class ImageCalculator implements PlugIn {
 		Calibration cal2 = img2.getCalibration();
 		img2.getProcessor().setCalibrationTable(cal2.getCTable());
 		try {
-			if (img2.getStackSize()==1)
+			if (size2==1)
 				sp.copyBits(img2.getProcessor(), 0, 0, mode);
 			else
 				sp.copyBits(img2.getStack(), 0, 0, mode);

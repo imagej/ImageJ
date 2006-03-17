@@ -34,7 +34,7 @@ public class Prefs {
 	public static final String FPS = "fps";
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
     public static final String NOISE_SD = "noise.sd";
-    public static final String KEY_PREFIX = ".";
+	public static final String KEY_PREFIX = ".";
  
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
 		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNUSED=64, BLACK_CANVAS=128, WEIGHTED=256, 
@@ -312,6 +312,13 @@ public class Prefs {
 		if (key.indexOf('.')<1)
 			throw new IllegalArgumentException("Key must have a prefix");
 		ijPrefs.put(KEY_PREFIX+key, text);
+	}
+
+	/** Saves <code>value</code> in the preferences file using 
+		the keyword <code>key</code>. This value can be retrieved 
+		using the appropriate <code>getPref()</code> method. */
+	public static void set(String key, int value) {
+		set(key, Integer.toString(value));
 	}
 
 	/** Saves <code>value</code> in the preferences file using 

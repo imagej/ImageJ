@@ -77,7 +77,7 @@ public class Macro_Runner implements PlugIn {
 			return runMacroFromIJJar(name, arg);
         if (name.indexOf(".")==-1) name = name + ".txt";
 		String name2 = name;
-        boolean fullPath = name.startsWith("/") || name.indexOf(":\\")==1;
+        boolean fullPath = name.startsWith("/") || name.startsWith("\\") || name.indexOf(":\\")==1;
         if (!fullPath) {
         	String macrosDir = Menus.getMacrosPath();
         	if (macrosDir!=null)

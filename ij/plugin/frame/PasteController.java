@@ -37,6 +37,8 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		pasteMode.addItem("Subtract");
 		pasteMode.addItem("Multiply");
 		pasteMode.addItem("Divide");
+		pasteMode.addItem("Min");
+		pasteMode.addItem("Max");
 		pasteMode.select("Copy");
 		pasteMode.addItemListener(this);
 		add(pasteMode);
@@ -63,6 +65,8 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 			case 8: mode = Blitter.SUBTRACT; break;
 			case 9: mode = Blitter.MULTIPLY; break;
 			case 10: mode = Blitter.DIVIDE; break;
+			case 11: mode = Blitter.MIN; break;
+			case 12: mode = Blitter.MAX; break;
 		}
 		Roi.setPasteMode(mode);
 		if (Recorder.record)

@@ -2,6 +2,8 @@ package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.*;
+import java.awt.datatransfer.*;																																																																																													
 import ij.*;
 import ij.gui.*;
 import ij.util.Tools;
@@ -9,14 +11,15 @@ import ij.text.TextWindow;
 import ij.macro.*;
 import ij.plugin.*;
 import ij.io.SaveDialog;
-import java.awt.datatransfer.*;																																																																																																																																																																																																																																																									 import java.util.*;
-																																																																																																																																																					   
+
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
-public class Editor extends PlugInFrame implements ActionListener,
-TextListener, ClipboardOwner, MacroConstants {
-
+public class Editor extends PlugInFrame implements ActionListener, ItemListener,
+	TextListener, ClipboardOwner, MacroConstants {
+	
 	public static final int MAX_SIZE = 28000, MAX_MACROS=50, XINC=10, YINC=18;
+	static final String FONT_SIZE = "editor.font.size";
+	static final String FONT_MONO= "editor.font.mono";
 	private TextArea ta;
 	private String path;
 	private boolean changes;
@@ -39,6 +42,9 @@ TextListener, ClipboardOwner, MacroConstants {
 	private MacroInstaller installer;
 	private static String defaultDir;
 	private boolean dontShowWindow;
+    private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
+    private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
+    private CheckboxMenuItem monospaced;
 	
 	public Editor() {
 		super("Editor");
@@ -89,15 +95,26 @@ TextListener, ClipboardOwner, MacroConstants {
 		mb.add(m);
 		editMenu = m;
 		setMenuBar(mb);
-
+		
+		m = new Menu("Font");
+		m.add(new MenuItem("Make Text Larger", new MenuShortcut(KeyEvent.VK_EQUALS)));
+		m.add(new MenuItem("Make Text Smaller", new MenuShortcut(KeyEvent.VK_MINUS)));
+		m.addSeparator();
+		monospaced = new CheckboxMenuItem("Monospaced Font", Prefs.get(FONT_MONO, false));
+		monospaced.addItemListener(this);
+		m.add(monospaced);
+		m.add(new MenuItem("Save Settings"));
+		m.addActionListener(this);
+		mb.add(m);
+		
 		ta = new TextArea(16, 60);
 		ta.addTextListener(this);
-		//ta.setBackground(Color.white);
-		if (IJ.isMacOSX() && !IJ.isJava14())
-			ta.setFont(new Font("SansSerif",Font.PLAIN,12));
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
+		if (fontSize<0) fontSize = 0;
+		if (fontSize>=sizes.length) fontSize = sizes.length-1;
+        setFont();
 		positionWindow();
 		//display("Test.java", "");
 		IJ.register(Editor.class);
@@ -301,7 +318,7 @@ TextListener, ClipboardOwner, MacroConstants {
 		LineNumberReader lnr = new LineNumberReader (sr);
 		String nextLine;
 		int pageHeight = pjob.getPageDimension().height - bottomMargin;
-		Font helv = new Font("Helvetica", Font.PLAIN, 10);
+		Font helv = new Font(getFontName(), Font.PLAIN, 10);
 		pg.setFont (helv);
 		FontMetrics fm = pg.getFontMetrics(helv);
 		int fontHeight = fm.getHeight();
@@ -430,6 +447,12 @@ TextListener, ClipboardOwner, MacroConstants {
 			zapGremlins();
 		else if ("Convert to Plugin".equals(what))
 			convertToPlugin();
+		else if ("Make Text Larger".equals(what))
+			changeFontSize(true);
+		else if ("Make Text Smaller".equals(what))
+			changeFontSize(false);
+		else if ("Save Settings".equals(what))
+			saveSettings();
 		else
 			installer.runMacro(what);
 	}
@@ -441,6 +464,11 @@ TextListener, ClipboardOwner, MacroConstants {
 			changes = true;
 		if (IJ.isMacOSX()) // screen update bug work around
 			ta.setCaretPosition(ta.getCaretPosition());
+	}
+
+	public void itemStateChanged(ItemEvent e) {
+		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
+        setFont();
 	}
 
 	/** Override windowActivated in PlugInFrame to
@@ -623,6 +651,35 @@ TextListener, ClipboardOwner, MacroConstants {
 		ed.updateClassName(ed.getTitle(), title);
 		ed.setTitle(title);
 	}
+    
+    void changeFontSize(boolean larger) {
+        int in = fontSize;
+        if (larger) {
+            fontSize++;
+            if (fontSize==sizes.length)
+                fontSize = sizes.length-1;
+        } else {
+            fontSize--;
+            if (fontSize<0)
+                fontSize = 0;
+        }
+        IJ.showStatus(sizes[fontSize]+" point");
+        setFont();
+    }
+    
+    void saveSettings() {
+		Prefs.set(FONT_SIZE, fontSize);
+		Prefs.set(FONT_MONO, monospaced.getState());
+		IJ.showStatus("Font settings saved (size="+sizes[fontSize]+", monospaced="+monospaced.getState()+")");
+    }
+    
+    void setFont() {
+        ta.setFont(new Font(getFontName(), Font.PLAIN, sizes[fontSize]));
+    }
+    
+    String getFontName() {
+    	return monospaced.getState()?"Monospaced":"SansSerif";
+    }
 	
 	public void setFont(Font font) {
 		ta.setFont(font);

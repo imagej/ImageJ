@@ -35,6 +35,7 @@ public class Functions implements MacroConstants, Measurements {
     Font font;
     GenericDialog gd;
     PrintWriter writer;
+    boolean altKeyDown, shiftKeyDown;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -590,12 +591,16 @@ public class Functions implements MacroConstants, Measurements {
 
 	void makeOval() {
 		IJ.makeOval((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
-		resetImage(); 
+		Roi roi = getImage().getRoi();
+		if (roi!=null) roi.update(shiftKeyDown, altKeyDown);
+		resetImage();
 	}
-
+	
 	void makeRectangle() {
 		IJ.makeRectangle((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
-		resetImage(); 
+		Roi roi = getImage().getRoi();
+		if (roi!=null) roi.update(shiftKeyDown, altKeyDown);
+		resetImage();
 	}
 	
 	ImagePlus getImage() {
@@ -1489,8 +1494,7 @@ public class Functions implements MacroConstants, Measurements {
 		imp.setRoi(roi);
 		if (roiType==Roi.POLYGON || roiType==Roi.FREEROI) {
 			roi = imp.getRoi();
-			if (roi!=null && (IJ.shiftKeyDown()||IJ.altKeyDown()))
-				roi.addOrSubtract(); 
+			if (roi!=null) roi.update(shiftKeyDown, altKeyDown); 
 		}
 		updateNeeded = false;
 	}
@@ -1810,17 +1814,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setKeyDown() {
-		String key = getStringArg();
-		key = key.toLowerCase(Locale.US);
-		if (key.indexOf("alt")!=-1)
+		String keys = getStringArg();
+		keys = keys.toLowerCase(Locale.US);
+		altKeyDown = keys.indexOf("alt")!=-1;
+		if (altKeyDown)
 			IJ.setKeyDown(KeyEvent.VK_ALT);
-		else 
+		else
 			IJ.setKeyUp(KeyEvent.VK_ALT);
-		if (key.indexOf("shift")!=-1)
+		shiftKeyDown = keys.indexOf("shift")!=-1;
+		if (shiftKeyDown)
 			IJ.setKeyDown(KeyEvent.VK_SHIFT);
 		else
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);		
-		if (key.equals("space"))
+		if (keys.equals("space"))
 			IJ.setKeyDown(KeyEvent.VK_SPACE);
 		else
 			IJ.setKeyUp(KeyEvent.VK_SPACE);
@@ -2491,7 +2497,11 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Fewer than 3 points");
 		if (n==max && interp.token!=')')
 			interp.error("More than "+max+" points");
-		getImage().setRoi(new PolygonRoi(x, y, n, Roi.POLYGON));
+		ImagePlus imp = getImage();
+		imp.setRoi(new PolygonRoi(x, y, n, Roi.POLYGON));
+		Roi roi = imp.getRoi();
+		if (roi!=null)
+			roi.update(shiftKeyDown, altKeyDown); 
 		resetImage(); 
 	}
 	

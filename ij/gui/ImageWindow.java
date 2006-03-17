@@ -247,8 +247,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				return false;
 			else if (d.savePressed()) {
 				FileSaver fs = new FileSaver(imp);
-				if (!fs.save())
-					return false;
+				if (!fs.save()) return false;
 			}
 		}
 		closed = true;

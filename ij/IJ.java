@@ -794,8 +794,6 @@ public class IJ {
 		else {
 			ImagePlus img = getImage();
 			img.setRoi(x, y, width, height);
-			//if (shiftKeyDown() || altKeyDown())
-			//	img.getRoi().addOrSubtract(); 
 		}
 	}
 	
@@ -807,8 +805,6 @@ public class IJ {
 		else {
 			ImagePlus img = getImage();
 			img.setRoi(new OvalRoi(x, y, width, height));
-			//if (shiftKeyDown() || altKeyDown())
-			//	img.getRoi().addOrSubtract(); 
 		}
 	}
 	
@@ -999,8 +995,8 @@ public class IJ {
 			Roi previousRoi = img.getRoi();
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
 			img.setRoi(roi);
-			if (previousRoi!=null && (shiftKeyDown() || altKeyDown()))
-				roi.addOrSubtract(); 
+			// add/subtract this ROI to the previous one if the shift/alt key is down
+			roi.update(shiftKeyDown(), altKeyDown());
 		}
 		return w.npoints;
 	}
@@ -1030,6 +1026,10 @@ public class IJ {
 			m = Blitter.DIVIDE;
 		else if (mode.startsWith("mul"))
 			m = Blitter.MULTIPLY;
+		else if (mode.startsWith("min"))
+			m = Blitter.MIN;
+		else if (mode.startsWith("max"))
+			m = Blitter.MAX;
 		Roi.setPasteMode(m);
 	}
 

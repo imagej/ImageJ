@@ -27,7 +27,7 @@ public class SaveDialog {
 			return;
 		String defaultDir = OpenDialog.getDefaultDirectory();
 		defaultName = addExtension(defaultName, extension);
-		if (Prefs.useJFileChooser)
+		if (Prefs.useJFileChooser && !EventQueue.isDispatchThread())
 			jsave(title, defaultDir, defaultName);
 		else
 			save(title, defaultDir, defaultName);
@@ -44,7 +44,7 @@ public class SaveDialog {
 		if (isMacro())
 			return;
 		defaultName = addExtension(defaultName, extension);
-		if (Prefs.useJFileChooser)
+		if (Prefs.useJFileChooser && !EventQueue.isDispatchThread())
 			jsave(title, defaultDir, defaultName);
 		else
 			save(title, defaultDir, defaultName);
@@ -81,34 +81,41 @@ public class SaveDialog {
 		return name;
 	}
 	
-	// Save using JFileChooser
-	void jsave(String title, String defaultDir, String defaultName) {
+	// Save using JFileChooser. Runs on event
+	// dispatch thread to avoid thread deadlocks.
+	void jsave(String title, final String defaultDir, final String defaultName) {
 		Java2.setSystemLookAndFeel();
-		JFileChooser fc = new JFileChooser();
-		if (defaultDir!=null) {
-			File f = new File(defaultDir);
-			if (f!=null)
-				fc.setCurrentDirectory(f);
-		}
-		if (defaultName!=null)
-			fc.setSelectedFile(new File(defaultName));
-		int returnVal = fc.showSaveDialog(IJ.getInstance());
-		if (returnVal!=JFileChooser.APPROVE_OPTION)
-			{Macro.abort(); return;}
-		File f = fc.getSelectedFile();
-		if(f.exists()) {
-			int ret = JOptionPane.showConfirmDialog (fc,
-				"The file "+ f.getName() + " already exists. \nWould you like to replace it?",
-				"Replace?",
-				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-			if (ret!=JOptionPane.OK_OPTION) f = null;
-		}
-		if (f==null)
-			Macro.abort();
-		else {
-			dir = fc.getCurrentDirectory().getPath()+File.separator;
-			name = fc.getName(f);
-		}
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					JFileChooser fc = new JFileChooser();
+					if (defaultDir!=null) {
+						File f = new File(defaultDir);
+						if (f!=null)
+							fc.setCurrentDirectory(f);
+					}
+					if (defaultName!=null)
+						fc.setSelectedFile(new File(defaultName));
+					int returnVal = fc.showSaveDialog(IJ.getInstance());
+					if (returnVal!=JFileChooser.APPROVE_OPTION)
+						{Macro.abort(); return;}
+					File f = fc.getSelectedFile();
+					if(f.exists()) {
+						int ret = JOptionPane.showConfirmDialog (fc,
+							"The file "+ f.getName() + " already exists. \nWould you like to replace it?",
+							"Replace?",
+							JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+						if (ret!=JOptionPane.OK_OPTION) f = null;
+					}
+					if (f==null)
+						Macro.abort();
+					else {
+						dir = fc.getCurrentDirectory().getPath()+File.separator;
+						name = fc.getName(f);
+					}
+				}
+			});
+		} catch (Exception e) {}
 	}
 
 	// Save using FileDialog

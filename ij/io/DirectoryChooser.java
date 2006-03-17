@@ -28,7 +28,7 @@ import javax.swing.filechooser.*;
 		}
  	}
  	
-	// runs JFileChooser in a separate thread to avoid possible thread deadlocks
+	// runs JFileChooser on event dispatch thread to avoid possible thread deadlocks
  	void getDirectoryUsingJFileChooser(final String title) {
 		Java2.setSystemLookAndFeel();
 		try {

@@ -109,8 +109,8 @@ public class FHT extends FloatProcessor {
 			bitrev[i] = bitRevX(i, nLog2);
 	}
 
-	/** Row-column Fast Hartley Transform */
-	void rc2DFHT(float[] x, boolean inverse, int maxN) {
+	/** Performs a 2D FHT (Fast Hartley Transform). */
+	public void rc2DFHT(float[] x, boolean inverse, int maxN) {
 		//IJ.write("FFT: rc2DFHT (row-column Fast Hartley Transform)");
 		for (int row=0; row<maxN; row++)
 			dfht3(x, row*maxN, inverse, maxN);		
@@ -148,8 +148,8 @@ public class FHT extends FloatProcessor {
 			IJ.showProgress(percent);
 	}
 	
-	/* An optimized real FHT */
-	void dfht3 (float[] x, int base, boolean inverse, int maxN) {
+	/** Performs an optimized 1D FHT. */
+	public void dfht3 (float[] x, int base, boolean inverse, int maxN) {
 		int i, stage, gpNum, gpIndex, gpSize, numGps, Nlog2;
 		int bfNum, numBfs;
 		int Ad0, Ad1, Ad2, Ad3, Ad4, CSAd;

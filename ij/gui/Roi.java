@@ -595,19 +595,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			imp.killRoi();
     }
 
-    /** Called by IJ.doWand(), IJ.makeRectangle(), IJ.makeOval() and the
-    	makeSelection() macro function when the shift or alt key is down to
-    	to add to or subtract from an existing selection. */
-    public void addOrSubtract() {
+    /** If 'add' is true, adds this selection to the previous one. If 'subtract' is true, subtracts 
+    	it from the previous selection. Called by the IJ.doWand() method, and the makeRectangle(), 
+    	makeOval(), makePolygon() and makeSelection() macro functions. */
+    public void update(boolean add, boolean subtract) {
     	if (!IJ.isJava2() || previousRoi==null) return;
-    	if (IJ.shiftKeyDown())
+    	if (add) {
 			previousRoi.modState = ADD_TO_ROI;
-		else if (IJ.altKeyDown())
+   			modifyRoi();
+		} else if (subtract) {
 			previousRoi.modState = SUBTRACT_FROM_ROI;
-		else
+   			modifyRoi();
+		} else
 			previousRoi.modState = NO_MODS;
-    	modifyRoi();
-    }
+     }
 
 	protected void showStatus() {
 		String value;
