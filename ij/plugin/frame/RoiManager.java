@@ -23,7 +23,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	java.awt.List list;
 	Hashtable rois = new Hashtable();
 	Roi roiCopy;
-	int slice2;
 	boolean canceled;
 	boolean macro;
 	boolean ignoreInterrupts;
@@ -137,13 +136,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return false;
 		}
 		String name = roi.getName();
-		int slice1 = imp.getCurrentSlice();
-		if (name!=null && roiCopy!=null && name.equals(roiCopy.getName()) && name.indexOf('-')!=-1) {
-			Rectangle r1 = roi.getBounds();
-			Rectangle r2 = roiCopy.getBounds();
-			if (r1.x!=r2.x || r1.y!=r2.y || slice1!=slice2)
-				name = null;
-		}
+		if (isStandardName(name))
+			name = null;
 		String label = name!=null?name:getLabel(imp, roi);
 		if (promptForName)
 			label = getName(label);
@@ -158,10 +152,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Rectangle r = roiCopy.getBounds();
 			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
 		}
-		slice2 = slice1;
 		rois.put(label, roiCopy);
 		if (Recorder.record) Recorder.record("roiManager", "Add");
 		return true;
+	}
+	
+	boolean isStandardName(String name) {
+		if (name==null) return false;
+		boolean isStandard = false;
+		int len = name.length();
+		if (len>=14 && name.charAt(4)=='-' && name.charAt(9)=='-' )
+			isStandard = true;
+		else if (len>=9 && name.charAt(4)=='-')
+			isStandard = true;
+		return isStandard;
 	}
 	
 	String getLabel(ImagePlus imp, Roi roi) {

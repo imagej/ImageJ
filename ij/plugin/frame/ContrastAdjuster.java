@@ -654,6 +654,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		GenericDialog gd = new GenericDialog("Set Min and Max");
 		gd.addNumericField("Minimum Displayed Value: ", minValue, digits);
 		gd.addNumericField("Maximum Displayed Value: ", maxValue, digits);
+		gd.addCheckbox("Propagate to all open images", false);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -661,12 +662,15 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		maxValue = gd.getNextNumber();
 		minValue = cal.getRawValue(minValue);
 		maxValue = cal.getRawValue(maxValue);
+		boolean propagate = gd.getNextBoolean();
 		if (maxValue>=minValue) {
 			min = minValue;
 			max = maxValue;
 			setMinAndMax(ip, min, max);
 			updateScrollBars(null);
 			if (RGBImage) doMasking(imp, ip);
+			if (propagate)
+				IJ.runMacroFile("ij.jar:PropagateMinAndMax");
 			if (Recorder.record)
 				Recorder.record("setMinAndMax", (int)min, (int)max);
 		}
@@ -685,6 +689,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		GenericDialog gd = new GenericDialog("Set W&L");
 		gd.addNumericField("Window Center (Level): ", levelValue, digits);
 		gd.addNumericField("Window Width: ", windowValue, digits);
+		gd.addCheckbox("Propagate to all open images", false);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -694,12 +699,15 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		maxValue = levelValue+(windowValue/2.0);
 		minValue = cal.getRawValue(minValue);
 		maxValue = cal.getRawValue(maxValue);
+		boolean propagate = gd.getNextBoolean();
 		if (maxValue>=minValue) {
 			min = minValue;
 			max = maxValue;
 			setMinAndMax(ip, minValue, maxValue);
 			updateScrollBars(null);
 			if (RGBImage) doMasking(imp, ip);
+			if (propagate)
+				IJ.runMacroFile("ij.jar:PropagateMinAndMax");
 			if (Recorder.record)
 				Recorder.record("setMinAndMax", (int)min, (int)max);
 		}

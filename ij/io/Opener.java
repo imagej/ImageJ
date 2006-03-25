@@ -606,7 +606,7 @@ public class Opener {
 			return LUT;
 		
 		// BMP ("BM")
-		if (b0==66 && b1==77 && name.endsWith(".bmp"))
+		if (b0==66 && b1==77 && (name.endsWith(".bmp")||name.endsWith(".dib")))
 			return BMP;
 				
 		// PNG

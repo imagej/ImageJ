@@ -101,7 +101,7 @@ public class FolderOpener implements PlugIn {
 			int count = 0;
 			int counter = 0;
 			for (int i=start-1; i<list.length; i++) {
-				if (list[i].endsWith(".txt"))
+				if (list[i].endsWith(".txt")||list[i].equals("Thumbs.db"))
 					continue;
 				if ((counter++%increment)!=0)
 					continue;

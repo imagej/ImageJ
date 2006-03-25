@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.filter.Analyzer;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -36,7 +37,7 @@ public class GelAnalyzer implements PlugIn {
 	FontMetrics fm;
 	double odMin=Double.MAX_VALUE, odMax=-Double.MAX_VALUE;
 	static boolean isVertical;
-
+	
 	public void run(String arg) {
 		if (arg.equals("options")) {
 			showDialog();
@@ -489,7 +490,8 @@ class PlotsCanvas extends ImageCanvas {
 		//area += (rect[counter].width/rect[counter].height)*1.5;
 		// adjustment for small peaks from NIH Image gel macros
 
-		IJ.write((counter+1)+"\t"+IJ.d2s(area, 0)+error);
+		int places = cal.scaled()?3:0;
+		IJ.write((counter+1)+"\t"+IJ.d2s(area, places)+error);
 		measured[counter] = area;
 		if (counter<MAX_PEAKS)
 			counter++;
@@ -561,7 +563,7 @@ class PlotsCanvas extends ImageCanvas {
 		}
 		for (int i=0; i<counter; i++) {
 			double percent = (measured[i]/total)*100;
-			IJ.write((i+1)+"\t"+IJ.d2s(measured[i],4)+"\t"+IJ.d2s(percent,4));
+			IJ.write((i+1)+"\t"+IJ.d2s(measured[i],3)+"\t"+IJ.d2s(percent,3));
 		}
 	}
 

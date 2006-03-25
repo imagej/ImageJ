@@ -9,6 +9,7 @@ import ij.measure.*;
 import ij.text.*;
 import ij.plugin.MeasurementsWriter;
 import ij.util.Tools;
+import ij.macro.Interpreter;
 
 /** This plugin implements ImageJ's Analyze/Measure and Analyze/Set Measurements commands. */
 public class Analyzer implements PlugInFilter, Measurements {
@@ -72,9 +73,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			{doSetDialog(); return DONE;}
 		else if (arg.equals("sum"))
 			{summarize(); return DONE;}
-		else if (arg.equals("clear"))
-			{clearWorksheet(); return DONE;}
-		else
+		else if (arg.equals("clear")) {
+			if (IJ.macroRunning()) unsavedMeasurements = false;
+			resetCounter();
+			return DONE;
+		} else
 			return DOES_ALL+NO_CHANGES;
 	}
 
@@ -152,10 +155,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 	}
 	
-	void clearWorksheet() {
-		resetCounter();
-	}
-	 
 	void setOptions(GenericDialog gd) {
 		int oldMeasurements = systemMeasurements;
 		int previous = 0;
@@ -171,6 +170,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))) {
 			if (IJ.macroRunning()) {
+				unsavedMeasurements = false;
 				resetCounter();
 				mode = AREAS;
 			} else
@@ -642,7 +642,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int counter = systemRT.getCounter();
 		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
 		ImageJ ij = IJ.getInstance();
-		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning() && ij!=null && !ij.quitting()) {
+		if (counter>0 && lineCount>0 && unsavedMeasurements && !Interpreter.isBatchMode() && ij!=null && !ij.quitting()) {
 			SaveChangesDialog d = new SaveChangesDialog(ij, "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;
@@ -656,7 +656,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			tp.selectAll();
 			tp.clearSelection();
 		}
-		summarized = false;		
+		summarized = false;
 		return true;
 	}
 	

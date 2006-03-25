@@ -1289,6 +1289,12 @@ public abstract class ImageProcessor extends Object {
 	*/
 	public abstract ImageProcessor resize(int dstWidth, int dstHeight);
 	
+	/** Creates a new ImageProcessor containing a scaled copy 
+		of this image or ROI, with the aspect ratio maintained. */
+	public ImageProcessor resize(int dstWidth) {
+		return resize(dstWidth, (int)(dstWidth*((double)roiHeight/roiWidth)));
+	}
+
 	/** Rotates the image or selection 'angle' degrees clockwise.
 		@see ImageProcessor#setInterpolate
 	*/

@@ -85,29 +85,30 @@ public class Menus {
 		pluginsTable = new Hashtable();
 		
 		Menu file = new Menu("File");
-		addItem(file, "New...", KeyEvent.VK_N, false);
-		addItem(file, "Open...", KeyEvent.VK_O, false);
+		addSubMenu(file, "New");
+		addPlugInItem(file, "Open...", "ij.plugin.Commands(\"open\")", KeyEvent.VK_O, false);
 		addPlugInItem(file, "Open Next", "ij.plugin.NextImageOpener", KeyEvent.VK_O, true);
 		addSubMenu(file, "Open Samples");
 		addOpenRecentSubMenu(file);
 		importMenu = addSubMenu(file, "Import");
 		file.addSeparator();
-		addItem(file, "Close", KeyEvent.VK_W, false);
-		addItem(file, "Save",  KeyEvent.VK_S, false);
+		addPlugInItem(file, "Close", "ij.plugin.Commands(\"close\")", KeyEvent.VK_W, false);
+		addPlugInItem(file, "Save", "ij.plugin.Commands(\"save\")", KeyEvent.VK_S, false);
 		saveAsMenu = addSubMenu(file, "Save As");
-		addItem(file, "Revert", KeyEvent.VK_R,  false);
+		addPlugInItem(file, "Revert", "ij.plugin.Commands(\"revert\")", KeyEvent.VK_R,  false);
 		file.addSeparator();
 		addPlugInItem(file, "Page Setup...", "ij.plugin.filter.Printer(\"setup\")", 0, false);
 		addPlugInItem(file, "Print...", "ij.plugin.filter.Printer(\"print\")", KeyEvent.VK_P, false);
 		file.addSeparator();
-		addItem(file, "Quit",  0, false);
+		addPlugInItem(file, "Quit", "ij.plugin.Commands(\"quit\")", 0, false);
 		
 		Menu edit = new Menu("Edit");
-		addItem(edit, "Undo", KeyEvent.VK_Z, false);
+		addPlugInItem(edit, "Undo", "ij.plugin.Commands(\"undo\")", KeyEvent.VK_Z, false);
 		edit.addSeparator();
-		addItem(edit, "Cut", KeyEvent.VK_X, false);
-		addItem(edit, "Copy", KeyEvent.VK_C, false);
-		addItem(edit, "Paste", KeyEvent.VK_V, false);
+		addPlugInItem(edit, "Cut", "ij.plugin.Clipboard(\"cut\")", KeyEvent.VK_X, false);
+		addPlugInItem(edit, "Copy", "ij.plugin.Clipboard(\"copy\")", KeyEvent.VK_C, false);
+		addPlugInItem(edit, "Copy to System", "ij.plugin.Clipboard(\"scopy\")", 0, false);
+		addPlugInItem(edit, "Paste", "ij.plugin.Clipboard(\"paste\")", KeyEvent.VK_V, false);
 		addPlugInItem(edit, "Paste Control...", "ij.plugin.frame.PasteController", 0, false);
 		edit.addSeparator();
 		addPlugInItem(edit, "Clear", "ij.plugin.filter.Filler(\"clear\")", 0, false);
@@ -182,8 +183,8 @@ public class Menus {
 		toolsMenu = addSubMenu(analyze, "Tools");
 
 		window = new Menu("Window");
-		addItem(window, "ImageJ [enter]", 0, false);
-		addItem(window, "Put Behind [tab]", 0, false);
+		addPlugInItem(window, "ImageJ [enter]", "ij.plugin.Commands(\"ij\")", 0, false);
+		addPlugInItem(window, "Put Behind [tab]", "ij.plugin.Commands(\"tab\")", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);
 		window.addSeparator();

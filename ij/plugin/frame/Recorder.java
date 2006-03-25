@@ -229,7 +229,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 									commandName= commandName.substring(0, commandName.length()-3);
 							String path = strip(commandOptions);
 							textArea.append("saveAs(\""+commandName+"\", \""+path+"\");\n");
-				} else if (commandName.equals("New..."))
+				} else if (commandName.equals("Image..."))
 					appendNewImage();
 				else if (commandName.equals("Set Slice..."))
 					textArea.append("setSlice("+strip(commandOptions)+");\n");
@@ -259,6 +259,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			|| commandName.equals("Raw Data...")
 			|| commandName.equals("AVI... ")
 			|| commandName.equals("BMP...")
+			|| commandName.equals("PNG...")
 			|| commandName.equals("PGM...")
 			|| commandName.equals("LUT...")
 			|| commandName.equals("Selection...")

@@ -10,7 +10,7 @@ import java.util.Vector;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
-	private String[] colors = {"red","green","blue","magenta     ","cyan","yellow","orange","black","white"};
+	private String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 

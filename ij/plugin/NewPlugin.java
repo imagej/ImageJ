@@ -17,6 +17,10 @@ public class NewPlugin implements PlugIn {
     public void run(String arg) {
 		if (arg.equals("")&&!showDialog())
 			return;
+		if (arg.equals("text")) {
+			type = TEXT_FILE;
+			arg = "";
+		}
 		if (arg.equals("")) {
 			if (type==MACRO || type==TEXT_FILE) {
 				if (type==TEXT_FILE && name.equals("Macro"))

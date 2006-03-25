@@ -709,6 +709,8 @@ public class ColorProcessor extends ImageProcessor {
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		if (interpolate) {
+			if (xScale<=0.25)
+				return makeThumbnail(dstWidth, dstHeight);
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
@@ -737,6 +739,43 @@ public class ColorProcessor extends ImageProcessor {
 			showProgress((double)y/dstHeight);
 		}
 		hideProgress();
+		return ip2;
+	}
+	
+	ImageProcessor makeThumbnail(int width2, int height2) {
+		ImageProcessor ip = this;
+		if (roiWidth!=width || roiHeight!=height)
+			ip = ip.crop();
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		int[] pixel = new int[3];
+		int[] sum = new int[3];
+		double xscale, yscale;
+		int w, h;
+		double product;
+		xscale = (double)width/width2;
+		yscale = (double)height/height2;
+		w = (int)(xscale*0.6);
+		h = (int)(yscale*0.6);
+		product = w*h;
+		ImageProcessor ip2 = ip.createProcessor(width2, height2);
+		for (int y=0; y<height2; y++) {
+			for (int x=0; x<width2; x++) {
+				for (int i=0; i<3; i++) sum[i] = 0;
+				int xbase = (int)(x*xscale);
+				int ybase = (int)(y*yscale);
+				for (int y2=0; y2<h; y2++) {
+					for (int x2=0;  x2<w; x2++) {
+						pixel = ip.getPixel(xbase+x2, ybase+y2, pixel);
+						for (int i=0; i<3; i++)
+							sum[i] += pixel[i];
+					}
+				}
+				for (int i=0; i<3; i++)
+					sum[i] = (int)(sum[i]/product+0.5);
+				ip2.putPixel(x, y, sum);
+			}
+		}
 		return ip2;
 	}
 

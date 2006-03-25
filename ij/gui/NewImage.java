@@ -29,7 +29,7 @@ public class NewImage {
     private static int type = Prefs.getInt(TYPE, GRAY8);
     private static int fillWith = Prefs.getInt(FILL, OLD_FILL_WHITE);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
-    private static String[] fill = {"White", "Black", "Ramp", "Clipboard"};
+    private static String[] fill = {"White", "Black", "Ramp"};
     
 	
     public NewImage() {
@@ -256,6 +256,7 @@ public class NewImage {
 		long startTime = System.currentTimeMillis();
 		ImagePlus imp = createImage(title, width, height, nSlices, bitDepth, options);
 		if (imp!=null) {
+			WindowManager.checkForDuplicateName = true;          
 			imp.show();
 			IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");
 		}
@@ -272,35 +273,13 @@ public class NewImage {
 		}
 		return imp;
 	}
-
-	void showClipboard() {
-		ImagePlus clipboard = ImagePlus.getClipboard();
-		if (clipboard!=null) {
-			ImageProcessor ip = clipboard.getProcessor();
-			ImagePlus imp2 = new ImagePlus("Clipboard", ip.duplicate());
-			Roi roi = clipboard.getRoi();
-			imp2.killRoi();
-			if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
-				roi = (Roi)roi.clone();
-				roi.setLocation(0, 0);
-				imp2.setRoi(roi);
-				WindowManager.setTempCurrentImage(imp2);
-				IJ.run("Clear Outside");
-				imp2.killRoi();
-			}
-			imp2.show();
-		} else
-			IJ.error("The internal clipboard is empty.\n"
-				+"Use the \"System Clipboard\" plugin\n"
-				+"to paste from the system clipboard.");
-		}
-
+	
 	boolean showDialog() {
 		if (type<GRAY8|| type>RGB)
 			type = GRAY8;
 		if (fillWith<OLD_FILL_WHITE||fillWith>FILL_RAMP)
 			fillWith = OLD_FILL_WHITE;
-		GenericDialog gd = new GenericDialog("New...", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("New Image...", IJ.getInstance());
 		gd.addStringField("Name:", name, 12);
 		gd.addChoice("Type:", types, types[type]);
 		gd.addChoice("Fill With:", fill, fill[fillWith]);
@@ -330,10 +309,8 @@ public class NewImage {
 	void openImage() {
 		if (!showDialog())
 			return;
-		if (fillWith>FILL_RAMP)
-			{showClipboard(); return;}
 		try {open(name, width, height, slices, type, fillWith);}
-		catch(OutOfMemoryError e) {IJ.outOfMemory("New...");}
+		catch(OutOfMemoryError e) {IJ.outOfMemory("New Image...");}
 	}
 	
 	/** Called when ImageJ quits. */

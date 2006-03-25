@@ -22,7 +22,6 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}
 		}
-		if (IJ.debugMode) IJ.log("opening "+title);
 	}
 	
 	public void run(String arg) {

@@ -301,7 +301,7 @@ public class FileSaver {
 	public boolean saveAsPng(String path) {
 		ImagePlus tempImage = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(imp);
-		IJ.runPlugIn("PNG_Writer", path);
+		IJ.runPlugIn("ij.plugin.PNG_Writer", path);
 		WindowManager.setTempCurrentImage(tempImage);
 		return true;
 	}

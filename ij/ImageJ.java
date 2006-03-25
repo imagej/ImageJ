@@ -65,7 +65,7 @@ The following command line options are recognized by ImageJ:
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
-	public static final String VERSION = "1.37a";
+	public static final String VERSION = "1.37b";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -206,7 +206,7 @@ public class ImageJ extends Frame implements ActionListener,
 
     /** Starts executing a menu command in a separate thread. */
     void doCommand(String name) {
-		new Executer(name, WindowManager.getCurrentImage());
+		new Executer(name, null);
     }
         
 	public void runFilterPlugIn(Object theFilter, String cmd, String arg) {

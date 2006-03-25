@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.35
+# Version 1.37
 
 # Popup Menu
 popup01=Undo
@@ -22,6 +22,12 @@ popup10=-
 popup11=Rename...
 popup12=Duplicate...
 
+
+# Plugins installed in the File/New submenu
+new01="Image...[n]",ij.plugin.Commands("new")
+new02="Text Window[N]",ij.plugin.NewPlugin("text")
+new03="Internal Clipboard",ij.plugin.Clipboard("show")
+new04="System Clipboard[V]",ij.plugin.Clipboard("showsys")
 
 # Plugins installed in the File/Import submenu
 import01="Image Sequence...",ij.plugin.FolderOpener
@@ -45,13 +51,13 @@ save06="Raw Data...",ij.plugin.filter.Writer("raw")
 save07="Image Sequence... ",ij.plugin.StackWriter
 save08="AVI... ",ij.plugin.filter.AVIWriter
 save09="BMP...",ij.plugin.filter.Writer("bmp")
-save10="PGM...",ij.plugin.filter.Writer("pgm")
-save11="LUT...",ij.plugin.filter.Writer("lut")
-save12="Selection...",ij.plugin.filter.RoiWriter
-save13="XY Coordinates...",ij.plugin.filter.XYWriter
-save14="Measurements...",ij.plugin.MeasurementsWriter
-save15="Text...",ij.plugin.TextWriter
-#save16="PNG....",ij.plugin.filter.Writer("png")
+save10="PNG...",ij.plugin.filter.Writer("png")
+save11="PGM...",ij.plugin.filter.Writer("pgm")
+save12="LUT...",ij.plugin.filter.Writer("lut")
+save13="Selection...",ij.plugin.filter.RoiWriter
+save14="XY Coordinates...",ij.plugin.filter.XYWriter
+save15="Measurements...",ij.plugin.MeasurementsWriter
+save16="Text...",ij.plugin.TextWriter
 #save17="QuickTime Movie... ",QT_Movie_Writer
 
 # Plugins installed in the Edit/Selection submenu
@@ -76,7 +82,7 @@ options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
 options05="Point Tool...",ij.plugin.Options("point")
 options06="Colors...",ij.plugin.Colors
-options07="Image...",ij.plugin.Options("image")
+options07="Images...",ij.plugin.Options("image")
 options08="Conversions...",ij.plugin.Options("conv")
 options09="Memory...",ij.plugin.Memory
 options10="Misc...",ij.plugin.Options("misc")
@@ -236,7 +242,7 @@ gels06="Gel Analyzer Options...",ij.plugin.GelAnalyzer("options")
 #gels08="Perimeter",ij.plugin.GelAnalyzer("perimeter")
 
 # Plugins installed in the Analyze/Tools submenu
-tools01="Save XY Coordinates...",ij.plugin.filter.XYCoordinates
+tools01="Save XY Coordinates...",ij.plugin.XYCoordinates
 tools02="Fractal Box Count...",ij.plugin.filter.FractalBoxCounter
 tools03="Analyze Line Graph",ij.plugin.filter.LineGraphAnalyzer
 tools04="Curve Fitting...",ij.plugin.frame.Fitter
@@ -248,7 +254,7 @@ tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
 plug-in01=>"Macros"
 plug-in02=>"Shortcuts"
 plug-in03=>"Utilities"
-plug-in04="New... [N]",ij.plugin.NewPlugin
+plug-in04="New... ",ij.plugin.NewPlugin
 plug-in05="Edit...",ij.plugin.Compiler("edit")
 plug-in06="Compile and Run...",ij.plugin.Compiler
 plug-in07=-
