@@ -1262,6 +1262,18 @@ public class IJ {
 		return brokenNewPixels;
 	}
 
+	/** Returns an instance of the class loader ImageJ uses to run plugins. */
+	public static ClassLoader getClassLoader() {
+		if (classLoader==null) {
+			String pluginsDir = Menus.getPlugInsPath();
+			if (pluginsDir==null)
+				return ClassLoader.getSystemClassLoader();
+			else
+				classLoader = new PluginClassLoader(pluginsDir);
+		}
+		return classLoader;
+	}
+
 	static void abort() {
 		if (ij!=null || Interpreter.isBatchMode())
 			throw new RuntimeException(Macro.MACRO_CANCELED);
