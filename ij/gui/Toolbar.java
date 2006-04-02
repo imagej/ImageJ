@@ -36,8 +36,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int DOUBLE_CLICK_THRESHOLD = 650;
 
 	private static final int NUM_TOOLS = 21;
-	private static final int SIZE = 22;
-	private static final int OFFSET = 3;
+	private static final int SIZE = 24;
+	private static final int OFFSET = 4;
 		
 	private Dimension ps = new Dimension(SIZE*NUM_TOOLS, SIZE);
 	private boolean[] down;
@@ -88,6 +88,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
+		if (IJ.isJava2()) {
+			Graphics2D g2d = (Graphics2D)g;
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			//g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		}
 		for (int i=0; i<NUM_TOOLS; i++)
 			drawButton(g, i);
 	}
@@ -110,9 +115,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private void drawButton(Graphics g, int tool) {
 		if (null==g) return;
         int index = toolIndex(tool);
-        fill3DRect(g, index * 22 + 1, 1, 22, 21, !down[tool]);
+        fill3DRect(g, index * SIZE + 1, 1, SIZE, SIZE-1, !down[tool]);
         g.setColor(Color.black);
-        int x = index * 22 + 3;
+        int x = index * SIZE + OFFSET;
 		int y = OFFSET;
 		if (down[tool]) { x++; y++;}
 		this.g = g;
@@ -380,6 +385,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		down[current] = true;
 		down[previous] = false;
 		Graphics g = this.getGraphics();
+		if (IJ.isJava2()) {
+			Graphics2D g2d = (Graphics2D)g;
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		}
 		drawButton(g, previous);
 		drawButton(g, current);
 		if (null==g) return;

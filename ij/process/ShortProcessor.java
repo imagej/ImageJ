@@ -86,7 +86,7 @@ public class ShortProcessor extends ImageProcessor {
 		}
 		if (cm==null)
 			makeDefaultColorModel();
-		if (source==null || (ij.IJ.isMacintosh()&&(!ij.IJ.isJava2()||lutAnimation))) {
+		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
 			source.setAnimated(true);
 			source.setFullBufferUpdates(true);

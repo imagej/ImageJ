@@ -73,8 +73,6 @@ public class ImageJ extends Frame implements ActionListener,
 	public static final int DEFAULT_PORT = 57294;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
-	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
-		RESULTS_WIDTH="results.width",RESULTS_HEIGHT="results.height";
 	private static int port = DEFAULT_PORT;
 	
 	private Toolbar toolbar;
@@ -121,7 +119,7 @@ public class ImageJ extends Frame implements ActionListener,
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
 		statusBar.add("Center", statusLine);
-		progressBar = new ProgressBar(100, 18);
+		progressBar = new ProgressBar(120, 20);
 		progressBar.addKeyListener(this);
 		progressBar.addMouseListener(this);
 		statusBar.add("East", progressBar);
@@ -162,7 +160,7 @@ public class ImageJ extends Frame implements ActionListener,
 		IJ.showStatus("Version "+VERSION + " ("+ m.nPlugins + " commands, " + m.nMacros + str);
 		if (applet==null)
 			new SocketListener();
-	}
+ 	}
     	
 	void setIcon() {
 		URL url = this.getClass().getResource("/microscope.gif"); 

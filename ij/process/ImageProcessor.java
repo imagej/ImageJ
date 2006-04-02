@@ -122,6 +122,7 @@ public abstract class ImageProcessor extends Object {
 		newPixels = true;
 		inversionTested = false;
 		minThreshold = NO_THRESHOLD;
+		source = null;
 	}
 
 	protected void makeDefaultColorModel() {
@@ -395,6 +396,7 @@ public abstract class ImageProcessor extends Object {
 
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 		newPixels = true;
+		source = null;
 	}
 
 	/** Disables thresholding. */
@@ -407,6 +409,7 @@ public abstract class ImageProcessor extends Object {
 		rLUT1 = rLUT2 = null;
 		inversionTested = false;
 		newPixels = true;
+		source = null;
 	}
 
 	/** Returns the lower threshold level. Returns NO_THRESHOLD
@@ -1317,6 +1320,7 @@ public abstract class ImageProcessor extends Object {
 	public void setLutAnimation(boolean lutAnimation) {
 		this.lutAnimation = lutAnimation;
 		newPixels = true;
+		source = null;
 	}
 	
 	void resetPixels(Object pixels) {
@@ -1328,6 +1332,7 @@ public abstract class ImageProcessor extends Object {
 			source = null;
 		}
 		newPixels = true;
+		source = null;
 	}
 
 	/** Returns an 8-bit version of this image as a ByteProcessor. */

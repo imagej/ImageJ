@@ -192,6 +192,11 @@ public class FolderOpener implements PlugIn {
 			ImagePlus imp2 = new ImagePlus(title, stack);
 			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
 				imp2.getProcessor().setMinAndMax(min, max);
+			if (fi==null)
+				fi = new FileInfo();
+			fi.fileFormat = FileInfo.UNKNOWN;
+			fi.fileName = "";
+			fi.directory = directory;
 			imp2.setFileInfo(fi); // saves FileInfo of the first image
 			if (allSameCalibration)
 				imp2.setCalibration(cal); // use calibration from first image

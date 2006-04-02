@@ -710,7 +710,7 @@ public class ColorProcessor extends ImageProcessor {
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		if (interpolate) {
 			if (xScale<=0.25)
-				return makeThumbnail(dstWidth, dstHeight);
+				return makeThumbnail(dstWidth, dstHeight, 0.6);
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
@@ -742,7 +742,11 @@ public class ColorProcessor extends ImageProcessor {
 		return ip2;
 	}
 	
-	ImageProcessor makeThumbnail(int width2, int height2) {
+	/** Uses averaging to creates a new ColorProcessor containing a scaled copy 
+		of this image or selection. The amount of smoothing is determined by
+		'smoothFactor', which must be greater than zero and less than or equal 1.0
+	*/
+	public ImageProcessor makeThumbnail(int width2, int height2, double smoothFactor) {
 		ImageProcessor ip = this;
 		if (roiWidth!=width || roiHeight!=height)
 			ip = ip.crop();
@@ -755,8 +759,8 @@ public class ColorProcessor extends ImageProcessor {
 		double product;
 		xscale = (double)width/width2;
 		yscale = (double)height/height2;
-		w = (int)(xscale*0.6);
-		h = (int)(yscale*0.6);
+		w = (int)(xscale*smoothFactor);
+		h = (int)(yscale*smoothFactor);
 		product = w*h;
 		ImageProcessor ip2 = ip.createProcessor(width2, height2);
 		for (int y=0; y<height2; y++) {

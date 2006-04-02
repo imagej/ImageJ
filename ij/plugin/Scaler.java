@@ -119,7 +119,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		boolean isStack = imp.getStackSize()>1;
         r = ip.getRoi();
        	int width = newWidth;
-        int height = newHeight;
+        int height = (int)((double)width*r.height/r.width);
         xscale = Tools.parseDouble(xstr, 0.0);
         yscale = Tools.parseDouble(ystr, 0.0);
         if (xscale!=0.0 && yscale!=0.0) {
