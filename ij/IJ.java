@@ -31,7 +31,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
-	private static boolean isMac, isWin, isJava2, isJava14;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -42,7 +42,6 @@ public class IJ {
 	private static long maxMemory;
 	private static boolean escapePressed;
 	private static boolean redirectErrorMessages;
-	private static boolean brokenNewPixels;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -52,7 +51,7 @@ public class IJ {
 		// JVM on Sharp Zaurus PDA claims to be "3.1"!
 		isJava2 = version.compareTo("1.1")>0 && version.compareTo("2.9")<=0;
 		isJava14 = version.compareTo("1.3")>0 && version.compareTo("2.9")<=0;
-		brokenNewPixels = (isMac&&!isJava2) || version.startsWith("1.4") || osname.startsWith("Linux");
+		isJava15 = version.compareTo("1.4")>0 && version.compareTo("2.9")<=0;
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -744,6 +743,11 @@ public class IJ {
 		return isJava14;
 	}
 
+	/** Returns true if ImageJ is running on a Java 1.5 or greater JVM. */
+	public static boolean isJava15() {
+		return isJava15;
+	}
+
 	/** Displays an error message and returns false if the
 		ImageJ version is less than the one specified. */
 	public static boolean versionLessThan(String version) {
@@ -1257,11 +1261,6 @@ public class IJ {
 		redirectErrorMessages = true;
 	}
 	
-	/** Returns true if animated MemoryImageSources do not work correctly. */
-	public static boolean brokenNewPixels() {
-		return brokenNewPixels;
-	}
-
 	/** Returns an instance of the class loader ImageJ uses to run plugins. */
 	public static ClassLoader getClassLoader() {
 		if (classLoader==null) {

@@ -71,6 +71,7 @@ public class ImageJ extends Frame implements ActionListener,
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 	/** Address of socket where Image accepts commands */
 	public static final int DEFAULT_PORT = 57294;
+	public static long startTime;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static int port = DEFAULT_PORT;
@@ -97,6 +98,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if the 'applet' argument is not null. */
 	public ImageJ(java.applet.Applet applet) {
 		super("ImageJ");
+		startTime = System.currentTimeMillis();
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
 		Menus m = new Menus(this, applet);

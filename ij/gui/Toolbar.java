@@ -54,6 +54,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private int pc;
 	private String icon;
 	private MacroInstaller macroInstaller;
+	private int startupTime;
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.white);
@@ -88,7 +89,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
-		if (IJ.isJava2()) {
+		if (startupTime==0)
+			startupTime = (int)(System.currentTimeMillis()-ImageJ.startTime);
+		if (IJ.isMacOSX() || (startupTime<1000&&IJ.isJava2())) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			//g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -385,7 +388,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		down[current] = true;
 		down[previous] = false;
 		Graphics g = this.getGraphics();
-		if (IJ.isJava2()) {
+		if (IJ.isMacOSX() || (startupTime<1000&&IJ.isJava2())) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}

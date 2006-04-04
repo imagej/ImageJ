@@ -17,7 +17,8 @@ public class ByteProcessor extends ImageProcessor {
 	private int bgColor = 255; //white
 	private boolean bgColorSet;
 	private int min=0, max=255;
-	private boolean brokenNewPixels = ij.IJ.brokenNewPixels();
+	private boolean brokenNewPixels = ij.IJ.isMacintosh()&&!ij.IJ.isJava2();
+
     private int binaryCount, binaryBackground;
 
 	/**Creates a ByteProcessor from an 8-bit, indexed color AWT Image. */
@@ -68,7 +69,7 @@ public class ByteProcessor extends ImageProcessor {
 
 	public Image createImage() {
 		if (cm==null)
-			makeDefaultColorModel();
+			cm = getDefaultColorModel();
 		if (source==null || brokenNewPixels) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
@@ -80,6 +81,21 @@ public class ByteProcessor extends ImageProcessor {
 		} else
 			source.newPixels();
 		return img;
+	}
+
+	public Image createImageBeta() {
+		if (cm==null)
+			cm = getDefaultColorModel();
+		if (raster==null) {
+			SampleModel sm = getIndexSampleModel();
+			DataBuffer db = new DataBufferByte(pixels, width*height, 0);
+			raster = Raster.createWritableRaster(sm, db, null);
+		}
+		if (image==null || cm!=cm2) {
+			image = new BufferedImage(cm, raster, false, null);
+			cm2 = cm;
+		}
+		return image;
 	}
 
 	/** Returns a new, blank ByteProcessor with the specified width and height. */
@@ -284,6 +300,8 @@ public class ByteProcessor extends ImageProcessor {
 		this.pixels = (byte[])pixels;
 		resetPixels(pixels);
 		snapshotPixels = null;
+		raster = null;
+		image = null;
 	}
 
 	/*

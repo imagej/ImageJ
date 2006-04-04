@@ -17,7 +17,7 @@ import ij.plugin.filter.Analyzer;
  * This code is in the public domain.
  * @author Cezar M.Tigaret <c.tigaret@ucl.ac.uk>
  */
-public class ShapeRoi extends Roi{
+public class ShapeRoi extends Roi {
 
 	/***/
 	static final int NO_TYPE = 128;
