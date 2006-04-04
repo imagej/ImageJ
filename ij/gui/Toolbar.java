@@ -75,6 +75,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
+		if (IJ.isMacOSX()) Prefs.antialiasedTools = true;
 	}
 
 	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
@@ -89,9 +90,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
-		if (startupTime==0)
-			startupTime = (int)(System.currentTimeMillis()-ImageJ.startTime);
-		if (IJ.isMacOSX() || (startupTime<1000&&IJ.isJava2())) {
+		if (Prefs.antialiasedTools && IJ.isJava2()) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			//g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -166,8 +165,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case WAND:
 				xOffset = x+2; yOffset = y+2;
-				m(4,0); d(4,0);  m(2,0); d(3,1); d(4,2);  m(0,0); d(1,1);
-				m(0,2); d(1,3); d(2,4);  m(0,4); d(0,4);  m(3,3); d(12,12);
+				dot(4,0);  m(2,0); d(3,1); d(4,2);  m(0,0); d(1,1);
+				m(0,2); d(1,3); d(2,4);  dot(0,4); m(3,3); d(12,12);
 				return;
 			case TEXT:
 				xOffset = x+2; yOffset = y+1;
@@ -217,7 +216,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case ANGLE:
 				xOffset = x+1; yOffset = y+2;
 				m(0,11); d(11,0); m(0,11); d(15,11); 
-				m(10,11); d(10,8); m(9,7); d(9,6); m(8,5); d(8,5);
+				m(10,11); d(10,8); m(9,7); d(9,6); dot(8,5);
 				//m(0,9); d(14,0); m(0,9); d(16,9); 
 				//m(12,9); d(12,7); m(11,7); d(11,5); m(10,4); d(10,3);
 				return;
@@ -241,7 +240,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
 				case 'C': g.setColor(new Color(v()*16,v()*16,v()*16)); break; // set color
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
-				case 'D': g.drawLine(x1=x+v(), x2=y+v(), x1, x2); break; // dot
+				case 'D': g.fillRect(x+v(), y+v(), 1, 1); break; // dot
 				case 'P': // polyline
 					x1=x+v(); y1=y+v();
 					while (true) {
@@ -360,6 +359,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		this.x = x;
 		this.y = y;
 	}
+	
+	private void dot(int x, int y) {
+		g.fillRect(x+xOffset, y+yOffset, 1, 1);
+	}
 
 	private void resetButtons() {
 		for (int i=0; i<NUM_TOOLS; i++)
@@ -388,7 +391,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		down[current] = true;
 		down[previous] = false;
 		Graphics g = this.getGraphics();
-		if (IJ.isMacOSX() || (startupTime<1000&&IJ.isJava2())) {
+		if (Prefs.antialiasedTools && IJ.isJava2()) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}

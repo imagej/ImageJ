@@ -57,8 +57,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.add(new MenuItem("Save", new MenuShortcut(KeyEvent.VK_S)));
 		m.add(new MenuItem("Save As..."));
 		m.add(new MenuItem("Print...", new MenuShortcut(KeyEvent.VK_P)));
-		m.addSeparator();
-		m.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
 		m.addActionListener(this);
 		fileMenu = m;
 		mb.add(m);
@@ -148,19 +146,19 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
-		if (name.endsWith(".txt") || name.endsWith(".ijm")) {
-			fileMenu.remove(4);
-			fileMenu.insert(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)), 4);
-			int itemCount = fileMenu.getItemCount();
-			if (itemCount==5)
-				fileMenu.insert(new MenuItem("Abort Macro"), 5);
+		if (name.endsWith(".txt") || name.endsWith(".ijm") || name.indexOf(".")==-1) {
 			macrosMenu = new Menu("Macros");			
+			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
+			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.addSeparator();
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
 			if (text.indexOf("macro ")!=-1)
 				installMacros(text, false);				
+		} else {
+			fileMenu.addSeparator();
+			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
 		}
 		if (IJ.getInstance()!=null && !dontShowWindow)
 			show();
@@ -464,6 +462,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.run("New... ");
 		else if ("Open...".equals(what))
 			IJ.open();
+		else
+			installer.runMacro(what);
 	}
 
 	public void textValueChanged(TextEvent evt) {

@@ -32,7 +32,8 @@ public class Options implements PlugIn {
 		gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
-		gd.addCheckbox("Antialiased Text", Prefs.antialiasedText);
+		gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
+		gd.addCheckbox("Antialiased_Tool Icons", Prefs.antialiasedTools);
 		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Debug Mode", IJ.debugMode);
 		gd.showDialog();
@@ -58,6 +59,10 @@ public class Options implements PlugIn {
 		Prefs.usePointerCursor = gd.getNextBoolean();
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
 		Prefs.antialiasedText = gd.getNextBoolean();
+		boolean antialiasedTools = gd.getNextBoolean();
+		boolean change = antialiasedTools!=Prefs.antialiasedTools;
+		Prefs.antialiasedTools = antialiasedTools;
+		if (change) Toolbar.getInstance().repaint();
 		Prefs.requireControlKey = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}

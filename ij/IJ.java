@@ -1070,9 +1070,11 @@ public class IJ {
 			return Menus.getPlugInsPath();
 		else if (title.equals("macros"))
 			return Menus.getMacrosPath();
+		else if (title.equals("luts"))
+			return Prefs.getHomeDir()+File.separator+"luts"+File.separator;
 		else if (title.equals("home"))
 			return System.getProperty("user.home") + File.separator;
-		else if (title.equals("startup"))
+		else if (title.equals("startup")||title.equals("imagej"))
 			return Prefs.getHomeDir() + File.separator;
 		else if (title.equals("current"))
 			return OpenDialog.getDefaultDirectory();
