@@ -89,7 +89,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
                     } else if (name.startsWith("AutoRun")) {
                         new MacroRunner(pgm, macroStarts[count], name);
                         count--;
-					} else { 
+					} else if (!name.endsWith("Tool Selected")){ 
 						addShortcut(name);
 						macrosMenu.add(new MenuItem(name));
 					}

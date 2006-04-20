@@ -5,8 +5,7 @@ import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
-import ij.plugin.frame.Editor;
-import ij.plugin.frame.RoiManager;
+import ij.plugin.frame.*;
 import ij.text.*;
 import ij.io.*;
 import ij.util.Tools;
@@ -591,16 +590,20 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void makeOval() {
+		Roi previousRoi = getImage().getRoi();
 		IJ.makeOval((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
 		Roi roi = getImage().getRoi();
-		if (roi!=null) roi.update(shiftKeyDown, altKeyDown);
+		if (previousRoi!=null && roi!=null)
+			roi.update(shiftKeyDown, altKeyDown);
 		resetImage();
 	}
 	
 	void makeRectangle() {
+		Roi previousRoi = getImage().getRoi();
 		IJ.makeRectangle((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
 		Roi roi = getImage().getRoi();
-		if (roi!=null) roi.update(shiftKeyDown, altKeyDown);
+		if (previousRoi!=null && roi!=null)
+			roi.update(shiftKeyDown, altKeyDown);
 		resetImage();
 	}
 	
@@ -772,6 +775,7 @@ public class Functions implements MacroConstants, Measurements {
 			setForegroundColor(ip);
 		setFont(ip);
 		ip.setJustification(justification);
+		ip.setAntialiasedText(true);
 		ip.drawString(str, x, y);
 		updateAndDraw(defaultImp);
 	}
@@ -1492,10 +1496,12 @@ public class Functions implements MacroConstants, Measurements {
 			roi = new PointRoi(xcoord, ycoord, n);
 		else
 			roi = new PolygonRoi(xcoord, ycoord, n, roiType);
+		Roi previousRoi = imp.getRoi();
 		imp.setRoi(roi);
 		if (roiType==Roi.POLYGON || roiType==Roi.FREEROI) {
 			roi = imp.getRoi();
-			if (roi!=null) roi.update(shiftKeyDown, altKeyDown); 
+			if (previousRoi!=null && roi!=null)
+				roi.update(shiftKeyDown, altKeyDown); 
 		}
 		updateNeeded = false;
 	}
@@ -2280,6 +2286,8 @@ public class Functions implements MacroConstants, Measurements {
 		FloodFiller ff = new FloodFiller(ip);
 		ff.fill(x, y);
 		updateAndDraw(defaultImp);
+		if (Recorder.record && pgm.hasVars)
+			Recorder.record("floodFill", x, y);
 	}
 	
 	void restorePreviousTool() {
@@ -2499,9 +2507,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (n==max && interp.token!=')')
 			interp.error("More than "+max+" points");
 		ImagePlus imp = getImage();
+		Roi previousRoi = imp.getRoi();
 		imp.setRoi(new PolygonRoi(x, y, n, Roi.POLYGON));
 		Roi roi = imp.getRoi();
-		if (roi!=null)
+		if (previousRoi!=null && roi!=null)
 			roi.update(shiftKeyDown, altKeyDown); 
 		resetImage(); 
 	}

@@ -2,9 +2,11 @@ package ij.plugin;
 import java.awt.*;
 import java.io.*;
 import java.text.DecimalFormat;	
+import java.util.Properties;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
+import ij.measure.Calibration;
 
 /** Writes the slices of stack as separate files. */
 public class StackWriter implements PlugIn {
@@ -80,14 +82,23 @@ public class StackWriter implements PlugIn {
 		String directory = sd.getDirectory();
 		
 		ImageStack stack = imp.getStack();
-		ImagePlus tmp = new ImagePlus();
-		tmp.setTitle(imp.getTitle());
+		ImagePlus imp2 = new ImagePlus();
+		imp2.setTitle(imp.getTitle());
+		Calibration cal = imp.getCalibration();
 		int nSlices = stack.getSize();
 		String path,label=null;
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("writing: "+i+"/"+nSlices);
 			IJ.showProgress((double)i/nSlices);
-			tmp.setProcessor(null, stack.getProcessor(i));
+			imp2.setProcessor(null, stack.getProcessor(i));
+			String label2 = stack.getSliceLabel(i);
+			if (label2!=null)
+				imp2.setProperty("Info", label2);
+			else {
+				Properties props = imp2.getProperties();
+				if (props!=null) props.remove("Info");
+			}
+			imp2.setCalibration(cal);
 			digits = getDigits(number++);
 			if (useLabels) {
 				label = stack.getShortSliceLabel(i);
@@ -104,26 +115,26 @@ public class StackWriter implements PlugIn {
 			else
 				path = directory+label+extension;
 			if (fileType.equals("Tiff")) {
-				if (!(new FileSaver(tmp).saveAsTiff(path)))
+				if (!(new FileSaver(imp2).saveAsTiff(path)))
 					break;
 			} else if (fileType.equals("Gif")) {
-				if (!(new FileSaver(tmp).saveAsGif(path)))
+				if (!(new FileSaver(imp2).saveAsGif(path)))
 					break;
 			} else if (fileType.equals("Jpeg")) {
-				if (!(new FileSaver(tmp).saveAsJpeg(path)))
+				if (!(new FileSaver(imp2).saveAsJpeg(path)))
 					break;
 			} else if (fileType.equals("Bmp")) {
-				if (!(new FileSaver(tmp).saveAsBmp(path)))
+				if (!(new FileSaver(imp2).saveAsBmp(path)))
 					break;
 			} else if (fileType.equals("Raw")) {
-				if (!(new FileSaver(tmp).saveAsRaw(path)))
+				if (!(new FileSaver(imp2).saveAsRaw(path)))
 					break;
 			} else if (fileType.equals("Zip")) {
-				tmp.setTitle(name+digits+extension);
-				if (!(new FileSaver(tmp).saveAsZip(path)))
+				imp2.setTitle(name+digits+extension);
+				if (!(new FileSaver(imp2).saveAsZip(path)))
 					break;
 			} else if (fileType.equals("Text")) {
-				if (!(new FileSaver(tmp).saveAsText(path)))
+				if (!(new FileSaver(imp2).saveAsText(path)))
 					break;
 			}
 			//System.gc();

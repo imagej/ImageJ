@@ -21,6 +21,28 @@ public class ShortProcessor extends ImageProcessor {
 	public ShortProcessor(int width, int height, short[] pixels, ColorModel cm) {
 		if (pixels!=null && width*height!=pixels.length)
 			throw new IllegalArgumentException(WRONG_LENGTH);
+		init(width, height, pixels, cm);
+	}
+
+	/** Creates a blank ShortProcessor using the default grayscale LUT that
+		displays zero as black. Call invertLut() to display zero as white. */
+	public ShortProcessor(int width, int height) {
+		this(width, height, new short[width*height], null);
+	}
+	
+	/** Creates a ShortProcessor from a TYPE_USHORT_GRAY BufferedImage. */
+	public ShortProcessor(BufferedImage bi) {
+		if (bi.getType()!=BufferedImage.TYPE_USHORT_GRAY)
+			throw new IllegalArgumentException("Type!=TYPE_USHORT_GRAY");
+		WritableRaster raster = bi.getRaster();
+		DataBuffer buffer = raster.getDataBuffer();
+		short[] data = ((DataBufferUShort) buffer).getData();
+		//short[] data2 = new short[data.length];
+		//System.arraycopy(data, 0, data2, 0, data.length);
+		init(raster.getWidth(), raster.getHeight(), data, null);
+	}
+
+	void init(int width, int height, short[] pixels, ColorModel cm) {
 		this.width = width;
 		this.height = height;
 		this.pixels = pixels;
@@ -29,12 +51,6 @@ public class ShortProcessor extends ImageProcessor {
 		if (pixels!=null)
 			findMinAndMax();
 		fgColor = max;
-	}
-
-	/** Creates a blank ShortProcessor using the default grayscale LUT that
-		displays zero as black. Call invertLut() to display zero as white. */
-	public ShortProcessor(int width, int height) {
-		this(width, height, new short[width*height], null);
 	}
 
 	/** Obsolete. 16 bit images are normally unsigned but signed images can be used by

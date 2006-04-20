@@ -22,7 +22,7 @@ public class Java2 {
 
 	public static void setAntialiasedText(Graphics g, boolean antialiasedText) {
 			Graphics2D g2d = (Graphics2D)g;
-			if (antialiasedText && Prefs.antialiasedText)
+			if (antialiasedText)
 				g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			else
 				g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);

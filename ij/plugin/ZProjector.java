@@ -191,7 +191,6 @@ public class ZProjector implements PlugIn {
 		// Create new float processor for projected pixels.
 		FloatProcessor fp = new FloatProcessor(imp.getWidth(),imp.getHeight()); 
 		ImageStack stack = imp.getStack();
-		 
 		RayFunction rayFunc = getRayFunction(method, fp);
 		if(IJ.debugMode==true) {
 	    	IJ.log("\nProjecting stack from: "+startSlice
@@ -532,15 +531,16 @@ public class ZProjector implements PlugIn {
 
     /** Compute standard deviation projection. */
     class StandardDeviation extends RayFunction {
-    	FloatProcessor fp;
-    	private float[] sum, sum2;
+    	private float[] result;
+    	private double[] sum, sum2;
 		private int num,len; 
 
 		public StandardDeviation(FloatProcessor fp, int num) {
-			sum = (float[])fp.getPixels();
-			len = sum.length;
-			sum2 = new float[len];
+			result = (float[])fp.getPixels();
+			len = result.length;
 		    this.num = num;
+			sum = new double[len];
+			sum2 = new double[len];
 		}
 	
 		public void projectSlice(byte[] pixels) {
@@ -553,7 +553,7 @@ public class ZProjector implements PlugIn {
 		}
 	
 		public void projectSlice(short[] pixels) {
-			float v;
+			double v;
 		    for(int i=0; i<len; i++) {
 		    	v = pixels[i]&0xffff;
 				sum[i] += v;
@@ -562,7 +562,7 @@ public class ZProjector implements PlugIn {
 		}
 	
 		public void projectSlice(float[] pixels) {
-			float v;
+			double v;
 		    for(int i=0; i<len; i++) {
 		    	v = pixels[i];
 				sum[i] += v;
@@ -577,11 +577,11 @@ public class ZProjector implements PlugIn {
 				if (num>1) {
 					stdDev = (n*sum2[i]-sum[i]*sum[i])/n;
 					if (stdDev>0.0)
-						sum[i] = (float)Math.sqrt(stdDev/(n-1.0));
+						result[i] = (float)Math.sqrt(stdDev/(n-1.0));
 					else
-						sum[i] = 0f;
+						result[i] = 0f;
 				} else
-					sum[i] = 0f;
+					result[i] = 0f;
 			}
 		}
 

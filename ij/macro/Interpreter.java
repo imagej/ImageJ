@@ -127,8 +127,8 @@ public class Interpreter implements MacroConstants {
 			getToken();
 			switch (token) {
 				case VAR: doVar(); break;
-				case MACRO: done=true;; break;
-				case FUNCTION: done=true; break;
+				case MACRO: skipMacro(); break;
+				case FUNCTION: skipFunction(); break;
 				default:
 			}
 		}
@@ -564,7 +564,7 @@ public class Interpreter implements MacroConstants {
 			}
 		} while (count>0);
 	}
-
+	
 	final void skipParens() {
 		int count = 0;
 		do {

@@ -46,6 +46,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
     private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
     private CheckboxMenuItem monospaced;
+    private static boolean caseSensitive = true;
+    private static boolean wholeWords;
 	
 	public Editor() {
 		super("Editor");
@@ -551,20 +553,52 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (s==null) {
 			GenericDialog gd = new GenericDialog("Find", this);
 			gd.addStringField("Find: ", searchString, 20);
+			String[] labels = {"Case Sensitive", "Whole Words"};
+			boolean[] states = {caseSensitive, wholeWords};
+			//boolean[] states = new boolean[2];
+			//states[0]=caseSensitive; states[1]=wholeWords;
+			gd.addCheckboxGroup(1, 2, labels, states);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
 			s = gd.getNextString();
+			caseSensitive = gd.getNextBoolean();
+			wholeWords = gd.getNextBoolean();
 		}
 		if (s.equals(""))
 			return;
 		String text = ta.getText();
-		int index = text.indexOf(s, ta.getCaretPosition()+1);
+		String s2 = s;
+		if (!caseSensitive) {
+			text = text.toLowerCase(Locale.US);
+			s = s.toLowerCase(Locale.US);
+		}
+		int index = -1;
+		if (wholeWords) {
+			int position = ta.getCaretPosition()+1;
+			while (true) {
+				index = text.indexOf(s, position);
+				if (index==-1) break;
+				if (isWholeWordMatch(text, s, index)) break;
+				position = index + 1;
+				if (position>=text.length()-1)
+					{index=-1; break;}
+			}
+		} else
+			index = text.indexOf(s, ta.getCaretPosition()+1);
 		if (index<0)
 			{IJ.beep(); return;}
 		ta.setSelectionStart(index);
 		ta.setSelectionEnd(index+s.length());
-		searchString = s;
+		searchString = s2;
+	}
+	
+	boolean isWholeWordMatch(String text, String word, int index) {
+		char c = index==0?' ':text.charAt(index-1);
+		if (Character.isLetterOrDigit(c) || c=='_') return false;
+		c = index+word.length()>=text.length()?' ':text.charAt(index+word.length());
+		if (Character.isLetterOrDigit(c) || c=='_') return false;
+		return true;
 	}
 	
 	void gotoLine() {

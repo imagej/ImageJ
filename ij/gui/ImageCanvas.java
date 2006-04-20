@@ -303,10 +303,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 	
-	boolean canEnlarge(int newWidth, int newHeight) {
+	protected boolean canEnlarge(int newWidth, int newHeight) {
 		if ((flags&Event.SHIFT_MASK)!=0 || IJ.shiftKeyDown())
 			return false;
-		Rectangle r1 = imp.getWindow().getBounds();
+		ImageWindow win = imp.getWindow();
+		if (win==null) return false;
+		Rectangle r1 = win.getBounds();
 		r1.width = newWidth + 20;
 		r1.height = newHeight + 50;
 		if (imp.getStackSize()>1)

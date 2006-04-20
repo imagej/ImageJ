@@ -119,6 +119,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		boolean isStack = imp.getStackSize()>1;
         r = ip.getRoi();
        	int width = newWidth;
+		if (width==0) width = r.width;
         int height = (int)((double)width*r.height/r.width);
         xscale = Tools.parseDouble(xstr, 0.0);
         yscale = Tools.parseDouble(ystr, 0.0);
@@ -160,8 +161,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		ystr = gd.getNextString();
         xscale = Tools.parseDouble(xstr, 0.0);
         yscale = Tools.parseDouble(ystr, 0.0);
-		newWidth = (int)Tools.parseDouble(gd.getNextString(), 0);
+        String wstr = gd.getNextString();
+		newWidth = (int)Tools.parseDouble(wstr, 0);
 		newHeight = (int)Tools.parseDouble(gd.getNextString(), 0);
+		if (newHeight!=0 && (wstr.equals("-") || wstr.equals("0")))
+                newWidth= (int)(newHeight*(double)r.width/r.height);
 		if (newWidth==0 || newHeight==0) {
 			IJ.error("Invalid width or height entered");
 			return false;

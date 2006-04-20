@@ -213,7 +213,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		int index, y;
 		for (int i = 0; i<HIST_WIDTH; i++) {
 			index = (int)(i*(double)histogram.length/HIST_WIDTH); 
-			y = (int)(HIST_HEIGHT*histogram[index])/maxCount;
+			y = (int)((double)HIST_HEIGHT*histogram[index])/maxCount;
 			if (y>HIST_HEIGHT)
 				y = HIST_HEIGHT;
 			ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);

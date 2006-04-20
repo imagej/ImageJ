@@ -221,7 +221,7 @@ public class TiffDecoder {
 				case 5: fi.calibrationFunction = 4; break; //Calibration.EXPONENTIAL
 				case 6: fi.calibrationFunction = 5; break; //Calibration.POWER
 				case 7: fi.calibrationFunction = 6; break; //Calibration.LOG
-				case 8: fi.calibrationFunction = 7; break; //Calibration.RODBARD
+				case 8: fi.calibrationFunction = 10; break; //Calibration.RODBARD2 (NIH Image)
 			}
 			fi.coefficients = new double[nCoefficients];
 			for (int i=0; i<nCoefficients; i++) {

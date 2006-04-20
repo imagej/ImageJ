@@ -80,10 +80,12 @@ public class CanvasResizer implements PlugIn {
 			ImageStack stackNew = expandStack(stackOld, wNew, hNew, xOff, yOff);
 			imp.setStack(null, stackNew);
 		} else {
-			Undo.setup(Undo.COMPOUND_FILTER, imp);
+			if (!IJ.macroRunning())
+				Undo.setup(Undo.COMPOUND_FILTER, imp);
 			ImageProcessor newIP = expandImage(imp.getProcessor(), wNew, hNew, xOff, yOff);
 			imp.setProcessor(null, newIP);
-			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+			if (!IJ.macroRunning())
+				Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		}
 	}
 	

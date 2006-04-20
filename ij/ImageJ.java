@@ -65,7 +65,7 @@ The following command line options are recognized by ImageJ:
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
-	public static final String VERSION = "1.37c";
+	public static final String VERSION = "1.37d";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -486,8 +486,10 @@ public class ImageJ extends Frame implements ActionListener,
 			} else if (macros==0 && (arg.endsWith(".ijm") || arg.endsWith(".txt"))) {
 				IJ.runMacroFile(arg);
 				macros++;
-			} else if (arg.indexOf("ij.ImageJ")==-1)
-				IJ.open(arg);
+			} else if (arg.indexOf("ij.ImageJ")==-1) {
+				File file = new File(arg);
+				IJ.open(file.getAbsolutePath());
+			}
 		}
 		if (noGUI) System.exit(0);
 	}

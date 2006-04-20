@@ -31,6 +31,12 @@ public class ImageProperties implements PlugInFilter, TextListener {
 	}
 	
 	void showDialog(ImagePlus imp) {
+		String options = Macro.getOptions();
+		if (options!=null && IJ.isJava14()) {
+			String options2 = options.replaceAll("depth=", "slices=");
+			options2 = options2.replaceAll("frame=", "interval=");
+			Macro.setOptions(options2);
+		}
 		Calibration cal = imp.getCalibration();
 		Calibration calOrig = cal.copy();
 		oldUnitIndex = getUnitIndex(cal.getUnit());
@@ -45,8 +51,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Width:", imp.getWidth(), 0);
 		gd.addNumericField("Height:", imp.getHeight(), 0);
 		gd.addNumericField("Channels:", channels, 0);
-		gd.addNumericField("Depth (z-slices):", slices, 0);
-		gd.addNumericField("Frames (time-points):", frames, 0);
+		gd.addNumericField("Slices (z):", slices, 0);
+		gd.addNumericField("Frames (t):", frames, 0);
 		gd.addMessage("");
 		gd.addStringField("Unit of Length:", cal.getUnit());
 		oldScale = cal.pixelWidth!=0?1.0/cal.pixelWidth:0;
@@ -57,7 +63,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 5, 8, null);
 		gd.addMessage("");
 		double interval = cal.frameInterval;
-		gd.addNumericField("Frame Interval (sec.):", interval, (int)interval==interval?0:2, 8, null);
+		gd.addNumericField("Interval (sec.):", interval, (int)interval==interval?0:2, 8, null);
 		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
 		String yo = cal.yOrigin==(int)cal.yOrigin?IJ.d2s(cal.yOrigin,0):IJ.d2s(cal.yOrigin,2);
 		String zo = "";

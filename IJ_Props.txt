@@ -127,7 +127,7 @@ rotate01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")
 rotate02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
 rotate03="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 rotate04="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
-rotate05="Arbitrarily...",ij.plugin.filter.Rotator
+rotate05="Arbitrarily...",ij.plugin.Rotator
 
 # Plugins installed in the Image/Zoom submenu
 zoom01="In[+]",ij.plugin.Zoom("in")

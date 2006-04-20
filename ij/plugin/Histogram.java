@@ -35,8 +35,9 @@ public class Histogram implements PlugIn, TextListener {
  			int flags = setupDialog(imp, 0);
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
+			Calibration cal = imp.getCalibration();
  			nBins = 256;
-			if (stackHistogram && (bitDepth==8||bitDepth==24)) {
+			if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||bitDepth==24)) {
 				xMin = 0.0;
 				xMax = 256.0;
 				useImageMinAndMax = false;

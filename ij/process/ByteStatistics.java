@@ -55,14 +55,16 @@ public class ByteStatistics extends ImageStatistics {
 		
 		for (int i=minThreshold; i<=maxThreshold; i++) {
 			count = histogram[i];
-			pixelCount += count;
 			value = cTable[i];
-			sum += value*count;
-			isum += i*count;
-			sum2 += (value*value)*count;
-			if (count>maxCount) {
-				maxCount = count;
-				mode = i;
+			if (count>0 && !Double.isNaN(value)) {
+				pixelCount += count;
+				sum += value*count;
+				isum += i*count;
+				sum2 += (value*value)*count;
+				if (count>maxCount) {
+					maxCount = count;
+					mode = i;
+				}
 			}
 		}
 		area = pixelCount*pw*ph;
@@ -147,6 +149,8 @@ public class ByteStatistics extends ImageStatistics {
 	}
 	
 	void getCalibratedMinAndMax(int minThreshold, int maxThreshold, float[] cTable) {
+		if (pixelCount==0)
+			{min=0.0; max=0.0; return;}
 		min = Double.MAX_VALUE;
 		max = -Double.MAX_VALUE;
 		double v = 0.0;

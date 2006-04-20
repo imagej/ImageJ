@@ -625,6 +625,8 @@ public class IJ {
 		The 'decimalPlaces' argument specifies the number of
 		digits to the right of the decimal point (0-9). */
 	public static String d2s(double n, int decimalPlaces) {
+		if (Double.isNaN(n))
+			return "NaN";
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		double np = n;
@@ -1000,7 +1002,8 @@ public class IJ {
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
 			img.setRoi(roi);
 			// add/subtract this ROI to the previous one if the shift/alt key is down
-			roi.update(shiftKeyDown(), altKeyDown());
+			if (previousRoi!=null)
+				roi.update(shiftKeyDown(), altKeyDown());
 		}
 		return w.npoints;
 	}

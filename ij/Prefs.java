@@ -45,7 +45,7 @@ public class Prefs {
 	public static String separator = System.getProperty("file.separator");
 	/** Use pointer cursor instead of cross */
 	public static boolean usePointerCursor;
-	/** Display antialiased text */
+	/** No longer used */
 	public static boolean antialiasedText;
 	/** Display images scaled <100% using bilinear interpolation */
 	public static boolean interpolateScaledImages;
@@ -282,7 +282,8 @@ public class Prefs {
 	static void loadOptions() {
 		int options = getInt(OPTIONS, ANTIALIASING);
 		usePointerCursor = (options&USE_POINTER)!=0;
-		antialiasedText = (options&ANTIALIASING)!=0;
+		//antialiasedText = (options&ANTIALIASING)!=0;
+		antialiasedText = false;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;

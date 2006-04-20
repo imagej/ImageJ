@@ -43,6 +43,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static String redirectTitle = "";
 	static int firstParticle, lastParticle;
 	private static boolean summarized;
+	private static boolean switchingModes;
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -196,6 +197,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			return;
 		}
 		if (mode!=AREAS) {
+			switchingModes = true;
 			if (!resetCounter())
 				return;
 			mode = AREAS;
@@ -252,6 +254,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measurePoint(Roi roi) {
 		if (mode!=POINTS) {
+			switchingModes = true;
 			if (!resetCounter())
 				return;
 			//IJ.setColumnHeadings(" \tX\tY\tValue");		
@@ -287,6 +290,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measureAngle(Roi roi) {
 		if (mode!=ANGLES) {
+			switchingModes = true;
 			if (!resetCounter())
 				return;
 			if ((measurements&LABELS)!=0)
@@ -305,6 +309,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measureLength(Roi roi) {
 		if (mode!=LENGTHS) {
+			switchingModes = true;
 			if (!resetCounter())
 				return;
 			if ((measurements&LABELS)!=0)
@@ -642,7 +647,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int counter = systemRT.getCounter();
 		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
 		ImageJ ij = IJ.getInstance();
-		if (counter>0 && lineCount>0 && unsavedMeasurements && !Interpreter.isBatchMode() && ij!=null && !ij.quitting()) {
+		boolean macro = (IJ.macroRunning()&&!switchingModes) || Interpreter.isBatchMode();
+		switchingModes = false;
+		if (counter>0 && lineCount>0 && unsavedMeasurements && !macro && ij!=null && !ij.quitting()) {
 			SaveChangesDialog d = new SaveChangesDialog(ij, "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;

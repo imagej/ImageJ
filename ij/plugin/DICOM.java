@@ -563,7 +563,13 @@ class DicomDecoder {
 	}
 	
 	String getDicomInfo() {
-		return new String(dicomInfo);
+		String s = new String(dicomInfo);
+		char[] chars = new char[s.length()];
+		s.getChars(0, s.length(), chars, 0);
+		for (int i=0; i<chars.length; i++) {
+			if (chars[i]<' ' && chars[i]!='\n') chars[i] = ' ';
+		}
+		return new String(chars);
 	}
 
 	void addInfo(int tag, String value) throws IOException {

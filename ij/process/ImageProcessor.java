@@ -72,10 +72,9 @@ public abstract class ImageProcessor extends Object {
 	protected int lutUpdateMode;
 	protected WritableRaster raster;
 	protected BufferedImage image;
-	protected ColorModel cm2;
-	protected static SampleModel sampleModel;
+	//protected ColorModel cm2;
+	//protected static SampleModel sampleModel;
 	protected static IndexColorModel defaultColorModel;
-	protected static boolean useOldCreateImage = true;
 		
 	protected void showProgress(double percentDone) {
 		if (progressBar!=null)
@@ -931,9 +930,11 @@ public abstract class ImageProcessor extends Object {
 	}
 	
 	/** Specifies whether or not text is drawn using antialiasing. Antialiased
-		test requires Java 2 and an 8 bit or RGB image. */
+		test requires Java 2 and an 8 bit or RGB image. Antialiasing does not
+		work with 8-bit images that are not using 0-255 display range. */
 	public void setAntialiasedText(boolean antialiasedText) {
-		if (antialiasedText && ij.IJ.isJava2() && ((this instanceof ByteProcessor) || (this instanceof ColorProcessor)))
+		if (antialiasedText && ij.IJ.isJava2() &&
+		(((this instanceof ByteProcessor)&&getMin()==0.0&&getMax()==255.0) || (this instanceof ColorProcessor)))
 			this.antialiasedText = true;
 		else
 			this.antialiasedText = false;
@@ -1457,6 +1458,7 @@ public abstract class ImageProcessor extends Object {
 			roiWidth+"x"+roiHeight+")";
 	}
 	
+	/*
 	protected SampleModel getIndexSampleModel() {
 		if (sampleModel==null) {
 			IndexColorModel icm = getDefaultColorModel();
@@ -1466,6 +1468,7 @@ public abstract class ImageProcessor extends Object {
 		}
 		return sampleModel;
 	}
+	*/
 
 	protected IndexColorModel getDefaultColorModel() {
 		if (defaultColorModel==null) {
