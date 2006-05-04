@@ -196,11 +196,11 @@ public class ByteProcessor extends ImageProcessor {
 			return 0;
 	}
 	
-	public int get(int x, int y) {
+	public final int get(int x, int y) {
 		return pixels[y*width+x]&0xff;
 	}
 
-	public void set(int x, int y, int value) {
+	public final void set(int x, int y, int value) {
 		pixels[y*width + x] = (byte)value;
 	}
 

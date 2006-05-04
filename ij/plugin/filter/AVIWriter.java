@@ -20,16 +20,11 @@ public class AVIWriter implements PlugInFilter {
     private int bytesPerPixel;
 
     private File          file;
-    private int           bufferFactor;
     private int           xDim,yDim,zDim,tDim;
     private int           lutBufferRemapped[] = null;
     private int           microSecPerFrame;
     private int           xPad;
     private byte[]      bufferWrite;
-    private int           bufferSize;
-    private int           indexA, indexB;
-    private float        opacityPrime;
-    private int           bufferAdr;
     private byte[]      lutWrite = null;
     private int[]         dcLength = null;
     

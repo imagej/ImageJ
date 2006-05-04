@@ -27,8 +27,8 @@ public class SaveDialog {
 			return;
 		String defaultDir = OpenDialog.getDefaultDirectory();
 		defaultName = addExtension(defaultName, extension);
-		if (Prefs.useJFileChooser && !EventQueue.isDispatchThread())
-			jsave(title, defaultDir, defaultName);
+		if (Prefs.useJFileChooser)
+			jSave(title, defaultDir, defaultName);
 		else
 			save(title, defaultDir, defaultName);
 		if (name!=null && dir!=null)
@@ -44,8 +44,8 @@ public class SaveDialog {
 		if (isMacro())
 			return;
 		defaultName = addExtension(defaultName, extension);
-		if (Prefs.useJFileChooser && !EventQueue.isDispatchThread())
-			jsave(title, defaultDir, defaultName);
+		if (Prefs.useJFileChooser)
+			jSave(title, defaultDir, defaultName);
 		else
 			save(title, defaultDir, defaultName);
 		IJ.showStatus(title+": "+dir+name);
@@ -81,14 +81,54 @@ public class SaveDialog {
 		return name;
 	}
 	
+	// Save using JFileChooser.
+	void jSave(String title, String defaultDir, String defaultName) {
+		Java2.setSystemLookAndFeel();
+		if (EventQueue.isDispatchThread())
+			jSaveDispatchThread(title, defaultDir, defaultName);
+		else
+			jSaveInvokeAndWait(title, defaultDir, defaultName);
+	}
+
+	// Save using JFileChooser.
+	// assumes we are running on the event dispatch thread
+	void jSaveDispatchThread(String title, String defaultDir, String defaultName) {
+		JFileChooser fc = new JFileChooser();
+		fc.setDialogTitle(title);
+		if (defaultDir!=null) {
+			File f = new File(defaultDir);
+			if (f!=null)
+				fc.setCurrentDirectory(f);
+		}
+		if (defaultName!=null)
+			fc.setSelectedFile(new File(defaultName));
+		int returnVal = fc.showSaveDialog(IJ.getInstance());
+		if (returnVal!=JFileChooser.APPROVE_OPTION)
+			{Macro.abort(); return;}
+		File f = fc.getSelectedFile();
+		if(f.exists()) {
+			int ret = JOptionPane.showConfirmDialog (fc,
+				"The file "+ f.getName() + " already exists. \nWould you like to replace it?",
+				"Replace?",
+				JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			if (ret!=JOptionPane.OK_OPTION) f = null;
+		}
+		if (f==null)
+			Macro.abort();
+		else {
+			dir = fc.getCurrentDirectory().getPath()+File.separator;
+			name = fc.getName(f);
+		}
+	}
+
 	// Save using JFileChooser. Runs on event
 	// dispatch thread to avoid thread deadlocks.
-	void jsave(String title, final String defaultDir, final String defaultName) {
-		Java2.setSystemLookAndFeel();
+	void jSaveInvokeAndWait(final String title, final String defaultDir, final String defaultName) {
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
 					JFileChooser fc = new JFileChooser();
+					fc.setDialogTitle(title);
 					if (defaultDir!=null) {
 						File f = new File(defaultDir);
 						if (f!=null)

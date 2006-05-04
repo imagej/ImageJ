@@ -28,15 +28,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	protected int xMouse; // current cursor offscreen x location 
 	protected int yMouse; // current cursor offscreen y location
 		
-	private ImageJ ij;
-	private double magnification;
-	private int dstWidth, dstHeight;
+	protected ImageJ ij;
+	protected double magnification;
+	protected int dstWidth, dstHeight;
 
-	private int xMouseStart;
-	private int yMouseStart;
-	private int xSrcStart;
-	private int ySrcStart;
-	private int flags;
+	protected int xMouseStart;
+	protected int yMouseStart;
+	protected int xSrcStart;
+	protected int ySrcStart;
+	protected int flags;
 	
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;

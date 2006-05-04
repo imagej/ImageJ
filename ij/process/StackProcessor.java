@@ -18,12 +18,13 @@ public class StackProcessor {
    //}
 	
     /** Constructs a StackProcessor from a stack. 'ip' is the
-    	processor that will be used to process the slices. */
+    	processor that will be used to process the slices. 
+    	'ip' can be null when using crop(). */
     public StackProcessor(ImageStack stack, ImageProcessor ip) {
     	this.stack = stack;
     	this.ip = ip;
     	nSlices = stack.getSize();
- 	    if (nSlices>1)
+ 	    if (nSlices>1 && ip!=null)
  	    	ip.setProgressBar(null);
    }
 	
@@ -113,6 +114,23 @@ public class StackProcessor {
 			IJ.outOfMemory("StackProcessor.resize");
 			IJ.showProgress(1.0);
 		}
+		return stack2;
+	}
+
+	/** Crops the stack to the specified rectangle. */
+	public ImageStack crop(int x, int y, int width, int height) {
+	    ImageStack stack2 = new ImageStack(width, height);
+ 		ImageProcessor ip2;
+		for (int i=1; i<=nSlices; i++) {
+			ImageProcessor ip1 = stack.getProcessor(1);
+			ip1.setRoi(x, y, width, height);
+			String label = stack.getSliceLabel(1);
+			stack.deleteSlice(1);
+			ip2 = ip1.crop();
+			stack2.addSlice(label, ip2);
+			IJ.showProgress((double)i/nSlices);
+		}
+		IJ.showProgress(1.0);
 		return stack2;
 	}
 

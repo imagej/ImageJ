@@ -103,9 +103,9 @@ public class Filler implements PlugInFilter, Measurements {
 			drawParticleLabels(ip);
 		else {
 			ip.setColor(Toolbar.getForegroundColor());
-			ImageWindow win = imp.getWindow();
-			if (win!=null) {
-				double mag = win.getCanvas().getMagnification();
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null) {
+				double mag = ic.getMagnification();
 				if (mag<1.0) {
 					int lineWidth = 1;
 					lineWidth = (int)(lineWidth/mag);
@@ -150,9 +150,9 @@ public class Filler implements PlugInFilter, Measurements {
 			background = Color.white;
 		}
 		int size = 9;
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			double mag = win.getCanvas().getMagnification();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null) {
+			double mag = ic.getMagnification();
 			if (mag<1.0)
 				size /= mag;
 		}

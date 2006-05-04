@@ -11,7 +11,6 @@ import ij.gui.*;
 /** Implements the Image/Color/Color Picker command. */
 public class ColorPicker extends ImagePlus implements PlugIn {
     static int id;
-    private static Frame instance;
 
     public void run(String arg) {
         ImagePlus imp = WindowManager.getImage(id);

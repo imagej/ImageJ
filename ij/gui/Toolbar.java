@@ -500,8 +500,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					break;
 				case MAGNIFIER:
 					if (imp!=null) {
-						ImageWindow win = imp.getWindow();
-						if (win!=null) win.getCanvas().unzoom();
+						ImageCanvas ic = imp.getCanvas();
+						if (ic!=null) ic.unzoom();
 					}
 					break;
 				case POLYGON:

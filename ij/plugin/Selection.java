@@ -73,9 +73,9 @@ public class Selection implements PlugIn, Measurements {
 		if (!segmentedSelection)
 			p = trimPolygon(p, length);
 		int evaluationPoints = (int)(length/2.0);
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			double mag = win.getCanvas().getMagnification();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null) {
+			double mag = ic.getMagnification();
 			if (mag<1.0)
 				evaluationPoints *= mag;;
 		}

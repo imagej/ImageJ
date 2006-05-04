@@ -218,7 +218,7 @@ public class Projector implements PlugInFilter {
 			projwidth = (int) (Math.sqrt (nSlices*sliceInterval*nSlices*sliceInterval+width*width) + 0.5);
 			projheight = (int) (Math.sqrt (nSlices*sliceInterval*nSlices*sliceInterval+height*height) + 0.5);
 		}
-		if ((projwidth%1)==1)
+		if ((projwidth%2)==1)
 			projwidth++;
 		int projsize = projwidth * projheight;
 		

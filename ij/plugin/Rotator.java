@@ -79,6 +79,7 @@ public class Rotator implements PlugIn {
 			imp.setSlice(slice);
 		}
 		imp.updateAndDraw();
+		imp.changes = true;
 		if (enlarge && slices==1)
 			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		IJ.showTime(imp, startTime, "Rotate: ");

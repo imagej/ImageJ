@@ -37,7 +37,7 @@ public class IJ {
 	private static Thread previousThread;
 	private static TextPanel logPanel;
 	private static boolean notVerified = true;		
-	private static PluginClassLoader classLoader;
+	private static ClassLoader classLoader;
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
 	private static boolean escapePressed;
@@ -247,24 +247,14 @@ public class IJ {
 	}
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
-		if (applet!=null)
-			return null;
-		String pluginsDir = Menus.getPlugInsPath();
-		if (pluginsDir==null)
-			return null;
+		if (applet!=null) return null;
 		if (notVerified) {
 			// check for duplicate classes in the plugins folder
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 			notVerified = false;
 		}
-		PluginClassLoader loader;
-		if (createNewLoader)
-			loader = new PluginClassLoader(pluginsDir);
-		else {
-			if (classLoader==null)
-				classLoader = new PluginClassLoader(pluginsDir);
-			loader = classLoader;
-		}
+		if (createNewLoader) classLoader = null;
+		ClassLoader loader = getClassLoader();
 		Object thePlugIn = null;
 		try { 
 			thePlugIn = (loader.loadClass(className)).newInstance(); 

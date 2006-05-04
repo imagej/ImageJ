@@ -41,6 +41,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		window, presses the escape key, or closes the window. */
 	public boolean running2;
 	
+	public ImageWindow(String title) {
+		super(title);
+	}
+
     public ImageWindow(ImagePlus imp) {
     	this(imp, new ImageCanvas(imp));
    }

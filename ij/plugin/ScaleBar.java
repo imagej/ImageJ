@@ -62,8 +62,8 @@ public class ScaleBar implements PlugIn {
             location = locations[UPPER_RIGHT];
             
         Calibration cal = imp.getCalibration();
-        ImageWindow win = imp.getWindow();
-        mag = (win!=null)?win.getCanvas().getMagnification():1.0;
+        ImageCanvas ic = imp.getCanvas();
+        mag = (ic!=null)?ic.getMagnification():1.0;
         if (mag>1.0)
             mag = 1.0;
         if (fontSize<(12/mag))

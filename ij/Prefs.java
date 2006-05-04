@@ -38,7 +38,8 @@ public class Prefs {
  
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
 		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNUSED=64, BLACK_CANVAS=128, WEIGHTED=256, 
-		AUTO_MEASURE=512, REQUIRE_CONTROL=1024, USE_INVERTING_LUT=2048, ANTIALIASED_TOOLS=4096;  
+		AUTO_MEASURE=512, REQUIRE_CONTROL=1024, USE_INVERTING_LUT=2048, ANTIALIASED_TOOLS=4096,
+		INTEL_BYTE_ORDER=8192;  
     public static final String OPTIONS = "prefs.options";
 
 	/** file.separator system property */
@@ -69,6 +70,8 @@ public class Prefs {
 	public static boolean useInvertingLut;
 	/** Draw tool icons using antialiasing. */
 	public static boolean antialiasedTools;
+	/** Export Raw using little-endian byte order. */
+	public static boolean intelByteOrder;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -244,7 +247,7 @@ public class Prefs {
 	}
 
 	/** Saves user preferences in the IJ_Prefs.txt properties file. */
-	static void savePreferences() {
+	public static void savePreferences() {
 		try {
 			Properties prefs = new Properties();
 			String dir = OpenDialog.getDefaultDirectory();
@@ -297,6 +300,7 @@ public class Prefs {
 		requireControlKey = (options&REQUIRE_CONTROL)!=0;
 		useInvertingLut = (options&USE_INVERTING_LUT)!=0;
 		antialiasedTools = (options&ANTIALIASED_TOOLS)!=0;
+		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -305,7 +309,8 @@ public class Prefs {
 			+ (blackBackground?BLACK_BACKGROUND:0) + (useJFileChooser?JFILE_CHOOSER:0)
 			+ (blackCanvas?BLACK_CANVAS:0) + (weightedColor?WEIGHTED:0) 
 			+ (pointAutoMeasure?AUTO_MEASURE:0) + (requireControlKey?REQUIRE_CONTROL:0)
-			+ (useInvertingLut?USE_INVERTING_LUT:0) + (antialiasedTools?ANTIALIASED_TOOLS:0);
+			+ (useInvertingLut?USE_INVERTING_LUT:0) + (antialiasedTools?ANTIALIASED_TOOLS:0)
+			+ (intelByteOrder?INTEL_BYTE_ORDER:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

@@ -356,7 +356,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	}
 
 	void adjustMinThreshold(ImagePlus imp, ImageProcessor ip, double value) {
-		if (IJ.altKeyDown()) {
+		if (IJ.altKeyDown() || IJ.shiftKeyDown() ) {
 			double width = maxThreshold-minThreshold;
 			if (width<1.0) width = 1.0;
 			minThreshold = value;
@@ -385,6 +385,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			minSlider.setValue((int)minThreshold);
 		}
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
+		IJ.setKeyUp(KeyEvent.VK_ALT);
+		IJ.setKeyUp(KeyEvent.VK_SHIFT);
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {

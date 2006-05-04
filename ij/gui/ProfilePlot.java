@@ -59,9 +59,9 @@ public class ProfilePlot {
 		else
 			profile = getColumnAverageProfile(roi.getBounds(), ip);
 		ip.setCalibrationTable(null);
-		ImageWindow win = imp.getWindow();
-		if (win!=null)
-			magnification = win.getCanvas().getMagnification();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null)
+			magnification = ic.getMagnification();
 		else
 			magnification = 1.0;
 	}

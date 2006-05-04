@@ -110,6 +110,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void record(String method, int a1) {
 		if (textArea==null) return;
+		if (method.equals("setTool"))
+			method = "//"+method;
 		textArea.append(method+"("+a1+");\n");
 	}
 
@@ -146,6 +148,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		textArea.append(method+"(\""+path+"\", "+"\""+args+"\", "+a1+", "+a2+", "+a3+", "+a4+", "+a5+");\n");
 	}
 	
+	public static void recordString (String str) {
+		if (textArea==null) return;
+		textArea.append(str);
+	}
+
 	public static void recordRoi(Polygon p, int type) {
 		if (textArea==null) return;
 		String method = type==Roi.POLYGON?"makePolygon":"makeLine";
@@ -200,10 +207,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	static void checkForDuplicate(String key, String value) {
 		if (commandOptions!=null && commandName!=null && commandOptions.indexOf(key)!=-1 && (value.equals("") || commandOptions.indexOf(value)==-1)) {
 			if (key.endsWith("=")) key = key.substring(0, key.length()-1);
-			IJ.showMessage("Recorder", "Duplicate keyword\n \n" 
-				+"  Command: " + "\"" + commandName +"\"\n"
-				+"  Keyword: " + "\"" + key +"\"\n"
-				+"  Value: " + value);
+			IJ.showMessage("Recorder", "Duplicate keyword:\n \n" 
+				+ "    Command: " + "\"" + commandName +"\"\n"
+				+ "    Keyword: " + "\"" + key +"\"\n"
+				+ "    Value: " + value+"\n \n"
+				+ "Add an underscore to the corresponding label\n"
+				+ "in the dialog to make the first word unique.");
 		}
 	}
 	

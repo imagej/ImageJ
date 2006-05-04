@@ -34,7 +34,6 @@ public class GelAnalyzer implements PlugIn {
 	
 	ImagePlus imp;
 	Font f;
-	FontMetrics fm;
 	double odMin=Double.MAX_VALUE, odMax=-Double.MAX_VALUE;
 	static boolean isVertical;
 	
@@ -203,7 +202,7 @@ public class GelAnalyzer implements PlugIn {
 		if (!outlineLanes)
 			return;
 		//IJ.write("outlining lane "+x);
-		int lineWidth = (int)(1.0/imp.getWindow().getCanvas().getMagnification());
+		int lineWidth = (int)(1.0/imp.getCanvas().getMagnification());
 		if (lineWidth<1)
 			lineWidth = 1;
 		if (nLanes==1) {

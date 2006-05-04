@@ -15,14 +15,12 @@ public class Interpreter implements MacroConstants {
 	static final int STACK_SIZE=1000;
 	static final int MAX_ARGS=20;
 
-	Tokenizer tok;
 	int pc;
 	int token;
 	int tokenAddress;
 	double tokenValue;
 	String tokenString;
 	boolean looseSyntax = true;
-	double darg1,darg2,darg3,darg4;
 	int lineNumber;
 	boolean ignoreEOL = true;
 	boolean statusUpdated;

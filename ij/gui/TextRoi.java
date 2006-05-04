@@ -22,8 +22,8 @@ public class TextRoi extends Roi {
 
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
-        ImageWindow win = imp.getWindow();
-        double mag = (win!=null)?win.getCanvas().getMagnification():1.0;
+        ImageCanvas ic = imp.getCanvas();
+        double mag = (ic!=null)?ic.getMagnification():1.0;
         if (mag>1.0)
             mag = 1.0;
         if (size<(12/mag))

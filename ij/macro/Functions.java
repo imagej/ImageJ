@@ -35,6 +35,7 @@ public class Functions implements MacroConstants, Measurements {
     GenericDialog gd;
     PrintWriter writer;
     boolean altKeyDown, shiftKeyDown;
+    boolean antialiasedText;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -45,7 +46,7 @@ public class Functions implements MacroConstants, Measurements {
     boolean weightedColor;
     double[] weights;
 	boolean interpolateScaledImages, open100Percent, blackCanvas;
-	boolean antialiasedText, useJFileChooser,debugMode;
+	boolean useJFileChooser,debugMode;
 	Color foregroundColor, backgroundColor, roiColor;
 	boolean pointAutoMeasure, requireControlKey, useInvertingLut;
 	int measurements;
@@ -128,7 +129,6 @@ public class Functions implements MacroConstants, Measurements {
 			case SAVE_AS: saveAs(); break;
 			case SET_AUTO_THRESHOLD: setAutoThreshold(); break;
 			case RENAME: IJ.run("Rename...", "title=["+getStringArg()+"]"); break;
-			case FILL_RECT: fillRect(); break;
 			case GET_STATISTICS: getStatistics(true); break;
 			case GET_RAW_STATISTICS: getStatistics(false); break;
 			case FLOOD_FILL: floodFill(); break;
@@ -141,6 +141,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_RGB_WEIGHTS: setRGBWeights(); break;
 			case MAKE_POLYGON: makePolygon(); break;
 			case SET_SELECTION_NAME: setSelectionName(); break;
+			case DRAW_RECT: case FILL_RECT: case DRAW_OVAL: case FILL_OVAL: drawOrFill(type); break;
 		}
 	}
 	
@@ -548,6 +549,8 @@ public class Functions implements MacroConstants, Measurements {
 				ip.setValue(value);
 				break;
 			case 16:
+				if (imp.getLocalCalibration().isSigned16Bit())
+					value += 32768;
 				if (value<0 || value>65535)
 					interp.error("Argument out of 16-bit range (0-65535)");
 				ip.setValue(value);
@@ -775,7 +778,7 @@ public class Functions implements MacroConstants, Measurements {
 			setForegroundColor(ip);
 		setFont(ip);
 		ip.setJustification(justification);
-		ip.setAntialiasedText(true);
+		ip.setAntialiasedText(antialiasedText);
 		ip.drawString(str, x, y);
 		updateAndDraw(defaultImp);
 	}
@@ -1258,9 +1261,8 @@ public class Functions implements MacroConstants, Measurements {
 		Variable z = getNextVariable();
 		Variable flags = getLastVariable();
 		ImagePlus imp = getImage();
-		ImageWindow win = imp.getWindow();
-		if (win==null) return;
-		ImageCanvas ic = win.getCanvas();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
 		Point p = ic.getCursorLoc();
 		x.setValue(p.x);
 		y.setValue(p.y);
@@ -1778,7 +1780,6 @@ public class Functions implements MacroConstants, Measurements {
 		interpolateScaledImages = Prefs.interpolateScaledImages;
 		open100Percent = Prefs.open100Percent;
 		blackCanvas = Prefs.blackCanvas;
-		antialiasedText = Prefs.antialiasedText;
 		useJFileChooser = Prefs.useJFileChooser;
 		debugMode = IJ.debugMode;
 		foregroundColor =Toolbar.getForegroundColor();
@@ -1809,7 +1810,6 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.interpolateScaledImages = interpolateScaledImages;
 		Prefs.open100Percent = open100Percent;
 		Prefs.blackCanvas = blackCanvas;
-		Prefs.antialiasedText = antialiasedText;
 		Prefs.useJFileChooser = useJFileChooser;
 		IJ.debugMode = debugMode;
 		Toolbar.setForegroundColor(foregroundColor);
@@ -1893,10 +1893,12 @@ public class Functions implements MacroConstants, Measurements {
 		String name = getFirstString();
 		int size = (int)getNextArg();
 		int style = 0;
+		antialiasedText = false;
 		if (interp.nextToken()==',') {
 			String styles = getLastString().toLowerCase();
 			if (styles.indexOf("bold")!=-1) style += Font.BOLD;
 			if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
+			if (styles.indexOf("anti")!=-1) antialiasedText = true;
 		} else
 			interp.getRightParen();
 		font = new Font(name, style, size);
@@ -2058,8 +2060,8 @@ public class Functions implements MacroConstants, Measurements {
 	double getZoom() {
 		interp.getParens();
 		ImagePlus imp = getImage();
-		ImageWindow win = imp.getWindow();
-		return win!=null?win.getCanvas().getMagnification():1.0;
+		ImageCanvas ic = imp.getCanvas();
+		return ic!=null?ic.getMagnification():1.0;
 	}
 	
 	void setAutoThreshold() {
@@ -2191,15 +2193,19 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 	}
 
-	void fillRect() {
+	void drawOrFill(int type) {
 		int x = (int)getFirstArg();
 		int y = (int)getNextArg();
 		int width = (int)getNextArg();
 		int height = (int)getLastArg();
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
-		ip.setRoi(x, y, width, height);
-		ip.fill();
+		switch (type) {
+			case DRAW_RECT: ip.drawRect(x, y, width, height); break;
+			case FILL_RECT: ip.setRoi(x, y, width, height); ip.fill(); break;
+			case DRAW_OVAL: ip.drawOval(x, y, width, height); break;
+			case FILL_OVAL: ip.fillOval(x, y, width, height); break;
+		}
 		updateAndDraw(defaultImp);
 	}
 
@@ -2280,11 +2286,21 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void floodFill() {
 		int x = (int)getFirstArg();
-		int y = (int)getLastArg();
+		int y = (int)getNextArg();
+		boolean fourConnected = true;
+		if (interp.nextNonEolToken()==',') {
+			String s = getLastString();
+			if (s.indexOf("8")!=-1)
+				fourConnected = false;
+		} else
+			interp.getRightParen();
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
 		FloodFiller ff = new FloodFiller(ip);
-		ff.fill(x, y);
+		if (fourConnected)
+			ff.fill(x, y);
+		else
+			ff.fill8(x, y);
 		updateAndDraw(defaultImp);
 		if (Recorder.record && pgm.hasVars)
 			Recorder.record("floodFill", x, y);
@@ -2707,11 +2723,10 @@ public class Functions implements MacroConstants, Measurements {
 				     args.length+" parameter(s) in class "+className);
 			return null;
 		}
-		if (m.getReturnType()!=String.class)
-			interp.error("Method does not return a string");
 
 		try {
-			return (String)m.invoke(null,args);
+			Object obj = m.invoke(null, args);
+			return obj!=null?obj.toString():null;
 		} catch(Exception ex) {
 			interp.error("Could not invoke the method");
 			return null;

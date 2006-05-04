@@ -217,6 +217,14 @@ public class FloatProcessor extends ImageProcessor {
 			return 0;
 	}
 
+	public final int get(int x, int y) {
+		return Float.floatToIntBits(pixels[y*width+x]);
+	}
+
+	public final void set(int x, int y, int value) {
+		pixels[y*width + x] = Float.intBitsToFloat(value);
+	}
+
     /** Returns the value of the pixel at (x,y) in a
     	one element int array. iArray is an optiona
 		preallocated array. */

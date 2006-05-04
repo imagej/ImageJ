@@ -52,7 +52,6 @@ public class CurveFitter {
     private int maxIter; 	// maximum number of iterations per restart
     private int restarts; 	// number of times to restart simplex after first soln.
     private double maxError;     // maximum error tolerance
-    private static boolean fitting;
     
     /** Construct a new CurveFitter. */
     public CurveFitter (double[] xData, double[] yData) {

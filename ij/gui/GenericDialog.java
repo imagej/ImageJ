@@ -24,11 +24,15 @@ import ij.util.Tools;
  *      title = gd.getNextString();
  *      width = (int)gd.getNextNumber();
  *      height = (int)gd.getNextNumber();
- *      IJ.run("New...", "name="+title+" type='8-bit Unsigned' width="+width+" height="+height);
+ *      IJ.newImage(title, "8-bit", width, height, 1);
  *   }
  * }
  * </pre>
- */
+* To work with macros, the first word of each component label must be 
+* unique. If this is not the case, add underscores, which will be converted  
+* to spaces when the dialog is displayed. For example, change the checkbox labels
+* "Show Quality" and "Show Residue" to "Show_Quality" and "Show_Residue".
+*/
 public class GenericDialog extends Dialog implements ActionListener,
 TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
@@ -50,6 +54,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	private Hashtable labels;
 	private boolean macro;
 	private String macroOptions;
+	private int topInset, leftInset, bottomInset;
+    private boolean customInsets;
+
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -116,9 +123,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
 		if (firstNumericField)
-			c.insets = new Insets(5, 0, 3, 0);
+			c.insets = getInsets(5, 0, 3, 0);
 		else
-			c.insets = new Insets(0, 0, 3, 0);
+			c.insets = getInsets(0, 0, 3, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 
@@ -197,9 +204,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.gridwidth = 1;
 		if (stringField==null) {
 			stringField = new Vector(4);
-			c.insets = new Insets(5, 0, 5, 0);
+			c.insets = getInsets(5, 0, 5, 0);
 		} else
-			c.insets = new Insets(0, 0, 5, 0);
+			c.insets = getInsets(0, 0, 5, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 
@@ -229,9 +236,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
    			label2 = label2.replace('_', ' ');
     	if (checkbox==null) {
     		checkbox = new Vector(4);
-			c.insets = new Insets(15, 20, 0, 0);
+			c.insets = getInsets(15, 20, 0, 0);
     	} else
-			c.insets = new Insets(0, 20, 0, 0);
+			c.insets = getInsets(0, 20, 0, 0);
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
@@ -284,7 +291,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		c.insets = new Insets(10, 0, 0, 0);
+		c.insets = getInsets(10, 0, 0, 0);
 		grid.setConstraints(panel, c);
 		add(panel);
 		y++;
@@ -302,9 +309,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.gridwidth = 1;
 		if (choice==null) {
 			choice = new Vector(4);
-			c.insets = new Insets(5, 0, 5, 0);
+			c.insets = getInsets(5, 0, 5, 0);
 		} else
-			c.insets = new Insets(0, 0, 5, 0);
+			c.insets = getInsets(0, 0, 5, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 		Choice thisChoice = new Choice();
@@ -333,7 +340,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		c.insets = new Insets(text.equals("")?0:10, 20, 0, 0);
+		c.insets = getInsets(text.equals("")?0:10, 20, 0, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 		y++;
@@ -463,6 +470,33 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		add(panel);
 		y++;
     }
+    
+    /** Set the insets (margins), in pixels, that will be 
+    	used for the next component added to the dialog.
+    <pre>
+    Default insets:
+        addMessage: 0,20,0 (empty string) or 10,20,0
+        addCheckbox: 15,20,0 (first checkbox) or 0,20,0
+        addCheckboxGroup: 10,0,0 
+        addNumericField: 5,0,3 (first field) or 0,0,3
+        addStringField: 5,0,5 (first field) or 0,0,5
+        addChoice: 5,0,5 (first field) or 0,0,5
+     </pre>
+    */
+    public void setInsets(int top, int left, int bottom) {
+    	topInset = top;
+    	leftInset = left;
+    	bottomInset = bottom;
+    	customInsets = true;
+    }
+    
+	Insets getInsets(int top, int left, int bottom, int right) {
+		if (customInsets) {
+			customInsets = false;
+			return new Insets(topInset, leftInset, bottomInset, 0);
+		} else
+			return new Insets(top, left, bottom, right);
+	}
 
 	/** Returns true if the user clicks on "Cancel". */
     public boolean wasCanceled() {

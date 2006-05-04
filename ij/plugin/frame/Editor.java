@@ -250,7 +250,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			return;
 		}
 		File f = new File(path);
-		if (f.exists() & !f.canWrite()) {
+		if (f.exists() && !f.canWrite()) {
 			IJ.showMessage("Editor", "Unable to save because file is write-protected. \n \n" + path);
 			return;
 		}

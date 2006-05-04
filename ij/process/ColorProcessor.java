@@ -227,6 +227,13 @@ public class ColorProcessor extends ImageProcessor {
 			return 0;
 	}
 
+	public final int get(int x, int y) {
+		return pixels[y*width+x];
+	}
+
+	public final void set(int x, int y, int value) {
+		pixels[y*width + x] = value;
+	}
 
     /** Returns the 3 samples for the pixel at (x,y) in an array of int.
 		Returns zeros if the the coordinates are not in bounds. iArray

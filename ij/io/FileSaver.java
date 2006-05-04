@@ -322,6 +322,7 @@ public class FileSaver {
 	/** Save the image as raw data using the specified path. */
 	public boolean saveAsRaw(String path) {
 		fi.nImages = 1;
+		fi.intelByteOrder = Prefs.intelByteOrder;
 		boolean signed16Bit = false;
 		short[] pixels = null;
 		int n = 0;
@@ -354,6 +355,7 @@ public class FileSaver {
 	public boolean saveAsRawStack(String path) {
 		if (fi.nImages==1)
 			{IJ.write("This is not a stack"); return false;}
+		fi.intelByteOrder = Prefs.intelByteOrder;
 		boolean signed16Bit = false;
 		Object[] stack = null;
 		int n = 0;

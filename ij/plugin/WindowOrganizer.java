@@ -77,7 +77,7 @@ public class WindowOrganizer implements PlugIn {
 						theyFit = false;
 				}
 				hloc = hloc + tileWidth + GAP;
-			} while (theyFit & (i<nPics));
+			} while (theyFit && (i<nPics));
 			if (!theyFit) {
 				tileWidth = (int)(tileWidth*0.98 +0.5);
 				tileHeight = (int)(tileHeight*0.98+0.5);

@@ -522,6 +522,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.win = win;
 	}
 	
+	/** Returns the ImageCanvas being used to
+		display this image, or null. */
+	public ImageCanvas getCanvas() {
+		return win!=null?win.getCanvas():null;
+	}
+
 	/** Sets current foreground color. */
 	public void setColor(Color c) {
 		if (ip!=null)
@@ -1466,8 +1472,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		int iType = getType();
 		
 		boolean sameType = false;
-		if ((cType==ImagePlus.GRAY8|cType==ImagePlus.COLOR_256)&&(iType==ImagePlus.GRAY8|iType==ImagePlus.COLOR_256)) sameType = true;
-		else if ((cType==ImagePlus.COLOR_RGB|cType==ImagePlus.GRAY8|cType==ImagePlus.COLOR_256)&&iType==ImagePlus.COLOR_RGB) sameType = true;
+		if ((cType==ImagePlus.GRAY8||cType==ImagePlus.COLOR_256)&&(iType==ImagePlus.GRAY8||iType==ImagePlus.COLOR_256)) sameType = true;
+		else if ((cType==ImagePlus.COLOR_RGB||cType==ImagePlus.GRAY8||cType==ImagePlus.COLOR_256)&&iType==ImagePlus.COLOR_RGB) sameType = true;
 		else if (cType==ImagePlus.GRAY16&&iType==ImagePlus.GRAY16) sameType = true;
 		else if (cType==ImagePlus.GRAY32&&iType==ImagePlus.GRAY32) sameType = true;
 		if (!sameType) {

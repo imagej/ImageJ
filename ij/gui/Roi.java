@@ -121,9 +121,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			xMax = 99999;
 			yMax = 99999;
 		} else {
-			ImageWindow win = imp.getWindow();
-			if (win!=null)
-				ic = win.getCanvas();
+			ic = imp.getCanvas();
 			xMax = imp.getWidth();
 			yMax = imp.getHeight();
 		}
@@ -548,6 +546,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
     			subtractPoints();
     		return;
     	}
+		Roi previous = (Roi)previousRoi.clone();
+		previous.modState = NO_MODS;
         ShapeRoi s1  = null;
         ShapeRoi s2 = null;
         if (previousRoi instanceof ShapeRoi)
@@ -567,10 +567,15 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (rois.length==0) return;
 		int type2 = rois[0].getType();
 		//IJ.log(rois.length+" "+type2);
+		Roi roi2 = null;
 		if (rois.length==1 && (type2==POLYGON||type2==FREEROI))
-			imp.setRoi(rois[0]);
+			roi2 = rois[0];
 		else
-			imp.setRoi(s1);
+			roi2 = s1;
+		if (roi2!=null)
+			roi2.setName(previousRoi.getName());
+		imp.setRoi(roi2);
+		previousRoi = previous;
     }
     
     void addPoint() {

@@ -86,6 +86,7 @@ public class Options implements PlugIn {
 		gd.addNumericField("JPEG Quality (0-100):", JpegWriter.getQuality(), 0, 3, "");
 		gd.addStringField("File Extension for Tables:", Prefs.get("options.ext", ".xls"), 4);
 		gd.addCheckbox("Use JFileChooser to Open/Save", Prefs.useJFileChooser);
+		gd.addCheckbox("Export Raw in Intel Byte Order", Prefs.intelByteOrder);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -98,6 +99,7 @@ public class Options implements PlugIn {
 			extension = "." + extension;
 		Prefs.set("options.ext", extension);
 		Prefs.useJFileChooser = gd.getNextBoolean();
+		Prefs.intelByteOrder = gd.getNextBoolean();
 		if (!IJ.isJava2())
 			Prefs.useJFileChooser = false;
 		return;

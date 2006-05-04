@@ -53,7 +53,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Channels:", channels, 0);
 		gd.addNumericField("Slices (z):", slices, 0);
 		gd.addNumericField("Frames (t):", frames, 0);
-		gd.addMessage("");
+		gd.setInsets(10, 0, 5);
 		gd.addStringField("Unit of Length:", cal.getUnit());
 		oldScale = cal.pixelWidth!=0?1.0/cal.pixelWidth:0;
 		//gd.addNumericField("Pixels/Unit:", oldScale, (int)oldScale==oldScale?0:3);
@@ -61,7 +61,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Pixel_Width:", cal.pixelWidth, 5, 8, null);
 		gd.addNumericField("Pixel_Height:", cal.pixelHeight, 5, 8, null);
 		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 5, 8, null);
-		gd.addMessage("");
+		gd.setInsets(10, 0, 5);
 		double interval = cal.frameInterval;
 		gd.addNumericField("Interval (sec.):", interval, (int)interval==interval?0:2, 8, null);
 		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
@@ -72,6 +72,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			zo = "," + zo;
 		}
 		gd.addStringField("Origin (pixels):", xo+","+yo+zo);
+		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
         for (int i=0; i<nfields.size(); i++)

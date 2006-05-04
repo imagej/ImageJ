@@ -31,7 +31,7 @@ import javax.swing.filechooser.*;
 				path = Macro.getValue(macroOptions, "path", path);		
 		}
 		if (path==null || path.equals("")) {
-			if (Prefs.useJFileChooser && !EventQueue.isDispatchThread())
+			if (Prefs.useJFileChooser)
 				jOpen(title, getDefaultDirectory(), null);
 			else
 				open(title, getDefaultDirectory(), null);
@@ -55,7 +55,7 @@ import javax.swing.filechooser.*;
 		if (path!=null)
 			decodePath(path);
 		else {
-			if (Prefs.useJFileChooser && !EventQueue.isDispatchThread())
+			if (Prefs.useJFileChooser)
 				jOpen(title, defaultDir, defaultName);
 			else
 				open(title, defaultDir, defaultName);
@@ -64,14 +64,44 @@ import javax.swing.filechooser.*;
 		}
 	}
 	
-	// Uses the JFileChooser class to display the dialog box.
-	// Runs on event dispatch thread to avoid thread deadlocks.
-	void jOpen(String title, final String path, final String fileName) {
+	// Uses JFileChooser to display file open dialog box.
+	void jOpen(String title, String path, String fileName) {
 		Java2.setSystemLookAndFeel();
+		if (EventQueue.isDispatchThread())
+			jOpenDispatchThread(title, path, fileName);
+		else
+			jOpenInvokeAndWait(title, path, fileName);
+	}
+		
+	// Uses the JFileChooser class to display the dialog box.
+	// Assumes we are running on the event dispatch thread
+	void jOpenDispatchThread(String title, String path, final String fileName) {
+		JFileChooser fc = new JFileChooser();
+		fc.setDialogTitle(title);
+		File fdir = null;
+		if (path!=null)
+			fdir = new File(path);
+		if (fdir!=null)
+			fc.setCurrentDirectory(fdir);
+		if (fileName!=null)
+			fc.setSelectedFile(new File(fileName));
+		int returnVal = fc.showOpenDialog(null);
+		if (returnVal!=JFileChooser.APPROVE_OPTION)
+			{Macro.abort(); return;}
+		File file = fc.getSelectedFile();
+		if (file==null)
+			{Macro.abort(); return;}
+		name = file.getName();
+		dir = fc.getCurrentDirectory().getPath()+File.separator;
+	}
+
+	// Run JFileChooser on event dispatch thread to avoid deadlocks
+	void jOpenInvokeAndWait(final String title, final String path, final String fileName) {
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
 				JFileChooser fc = new JFileChooser();
+				fc.setDialogTitle(title);
 				File fdir = null;
 				if (path!=null)
 					fdir = new File(path);

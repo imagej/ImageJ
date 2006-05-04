@@ -90,8 +90,8 @@ public class CalibrationBar implements PlugInFilter {
     }
 
     public void run(ImageProcessor ipPassed) {
-        ImageWindow win = imp.getWindow();
-        double mag = (win!=null)?win.getCanvas().getMagnification():1.0;
+        ImageCanvas ic = imp.getCanvas();
+        double mag = (ic!=null)?ic.getMagnification():1.0;
         if (zoom<=1 && mag<1)
         	zoom = (double) 1.0/mag;
         ip = ipPassed.duplicate().convertToRGB();

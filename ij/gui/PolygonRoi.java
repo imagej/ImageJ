@@ -98,7 +98,6 @@ public class PolygonRoi extends Roi {
 		clipY = y;
 		clipWidth = 1;
 		clipHeight = 1;
-		ImageWindow win = imp.getWindow();
 		state = CONSTRUCTING;
 		userCreated = true;
 	}

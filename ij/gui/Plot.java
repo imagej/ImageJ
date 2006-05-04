@@ -38,8 +38,6 @@ public class Plot {
 	
 	private int frameWidth;
 	private int frameHeight;
-	private int xloc;
-	private int yloc;
 	
 	Rectangle frame = null;
 	float[] xValues, yValues;
@@ -48,16 +46,12 @@ public class Plot {
 	double xMin, xMax, yMin, yMax;
 		
 	private double xScale, yScale;
-	private Button list, save, copy;
-	private Label coordinates;
 	private static String defaultDirectory = null;
 	private String xLabel;
 	private String yLabel;
 	private Font font = new Font("Helvetica", Font.PLAIN, 12);
 	private boolean fixedYScale;
-	private static int options;
 	private int lineWidth = 1; // Line.getWidth();
-	private boolean realNumbers;
 	private int markSize = 5;
 	private ImageProcessor ip;
 	private String title;

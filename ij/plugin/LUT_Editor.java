@@ -11,7 +11,6 @@ import java.util.Vector;
 import java.awt.event.*;
 
 public class LUT_Editor implements PlugIn, ActionListener{
-    Vector colors;
     private ImagePlus imp;
     Button openButton, saveButton, resizeButton, invertButton;
     ColorPanel colorPanel;

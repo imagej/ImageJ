@@ -685,7 +685,7 @@ public class Menus {
 			macrosPath = null;
 		f = pluginsPath!=null?new File(pluginsPath):null;
 		if (f==null || (f!=null && !f.isDirectory())) {
-			error = "Plugins folder not found at "+pluginsPath;
+			//error = "Plugins folder not found at "+pluginsPath;
 			pluginsPath = null;
 			return null;
 		}
@@ -1177,9 +1177,11 @@ public class Menus {
 		File f = new File(path);
 		if (f==null || !f.exists())
 			return;
-		MacroInstaller mi = new MacroInstaller();
-		mi.run(path);
-		nMacros += mi.getMacroCount();
+		try {
+			MacroInstaller mi = new MacroInstaller();
+			mi.run(path);
+			nMacros += mi.getMacroCount();
+		} catch (Exception e) {}
 	}
 	
 	static boolean validShortcut(String shortcut) {

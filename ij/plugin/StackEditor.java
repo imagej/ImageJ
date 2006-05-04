@@ -8,7 +8,6 @@ import ij.macro.Interpreter;
 
 /** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
 public class StackEditor implements PlugIn {
-	String arg;
 	ImagePlus imp;
 	int nSlices, width, height;
 

@@ -12,7 +12,8 @@ import java.awt.Rectangle;
 public class FloodFiller {
 
 	int maxStackSize = 500; // will be increased as needed
-	int[] stack = new int[maxStackSize];
+	int[] xstack = new int[maxStackSize];
+	int[] ystack = new int[maxStackSize];
 	int stackSize;
 	ImageProcessor ip;
 	int max;
@@ -23,42 +24,108 @@ public class FloodFiller {
 		isFloat = ip instanceof FloatProcessor;
 	}
 
+	/** Does a 4-connected flood fill. */
 	public boolean fill(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
-		int color = ip.getPixel(x, y);
-		ip.drawLine(x, y, x, y);
-		int newColor = ip.getPixel(x, y);
-		ip.putPixel(x, y, color);
+		int color = ip.get(x, y);
+		fillLine(ip, x, x, y);
+		int newColor = ip.get(x, y);
+		ip.set(x, y, color);
 		if (color==newColor) return false;
 		stackSize = 0;
 		push(x, y);
 		while(true) {   
-			int coordinates = pop(); 
-			if (coordinates ==-1) return true;
-			x = coordinates&0xffff;
-			y = coordinates>>16;
+			x = popx(); 
+			if (x ==-1) return true;
+			y = popy();
 			int x1 = x; int x2 = x;
-			while (ip.getPixel(x1,y)==color && x1>=0) x1--; // find start of scan-line
+			while (ip.get(x1,y)==color && x1>=0) x1--; // find start of scan-line
 			x1++;
-			while (ip.getPixel(x2,y)==color && x2<width) x2++;  // find end of scan-line                 
+			while (ip.get(x2,y)==color && x2<width) x2++;  // find end of scan-line                 
 			x2--;
-			ip.drawLine(x1,y, x2,y); // fill scan-line
+			fillLine(ip, x1,x2,y); // fill scan-line
 			boolean inScanLine = false;
 			for (int i=x1; i<=x2; i++) { // find scan-lines above this one
-				if (!inScanLine && y>0 && ip.getPixel(i,y-1)==color)
+				if (!inScanLine && y>0 && ip.get(i,y-1)==color)
 					{push(i, y-1); inScanLine = true;}
-				else if (inScanLine && y>0 && ip.getPixel(i,y-1)!=color)
+				else if (inScanLine && y>0 && ip.get(i,y-1)!=color)
 					inScanLine = false;
 			}
 			inScanLine = false;
 			for (int i=x1; i<=x2; i++) { // find scan-lines below this one
-				if (!inScanLine && y<height-1 && ip.getPixel(i,y+1)==color)
+				if (!inScanLine && y<height-1 && ip.get(i,y+1)==color)
 					{push(i, y+1); inScanLine = true;}
-				else if (inScanLine && y<height-1 && ip.getPixel(i,y+1)!=color)
+				else if (inScanLine && y<height-1 && ip.get(i,y+1)!=color)
 					inScanLine = false;
 			}
 		}        
+	}
+	
+	/** Does a 8-connected flood fill. */
+	public boolean fill8(int x, int y) {
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		int color = ip.get(x, y);
+		int wm1=width-1;
+		int hm1=height-1; 
+		fillLine(ip, x, x, y);
+		int newColor = ip.get(x, y);
+		ip.set(x, y, color);
+		if (color==newColor) return false;
+		stackSize = 0;
+		push(x, y);
+		while(true) {   
+			x = popx(); 
+			if (x==-1) return true;
+			y = popy();
+			int x1 = x; int x2 = x;
+			if(ip.get(x1,y)==color){ 
+				while (ip.get(x1,y)==color && x1>=0) x1--; // find start of scan-line
+				x1++;
+				while (ip.get(x2,y)==color && x2<width) x2++;  // find end of scan-line
+				x2--;
+				fillLine(ip, x1,x2,y); // fill scan-line
+			} 
+			if(y>0){
+				if (x1>0){
+					if (ip.get(x1-1,y-1)==color){
+						push(x1-1,y-1);
+					}
+				}
+				if (x2<wm1){
+					if (ip.get(x2+1,y-1)==color){
+						push(x2+1,y-1);
+					}
+				}
+			}
+			if(y<hm1){
+				if (x1>0){
+					if (ip.get(x1-1,y+1)==color){
+						push(x1-1,y+1);
+					}
+				}
+				if (x2<wm1){
+					if (ip.get(x2+1,y+1)==color){
+						push(x2+1,y+1);
+					}
+				}
+			}
+			boolean inScanLine = false;
+			for (int i=x1; i<=x2; i++) { // find scan-lines above this one
+				if (!inScanLine && y>0 && ip.get(i,y-1)==color)
+					{push(i, y-1); inScanLine = true;}
+				else if (inScanLine && y>0 && ip.get(i,y-1)!=color)
+					inScanLine = false;
+			}
+			inScanLine = false;
+			for (int i=x1; i<=x2; i++) {// find scan-lines below this one
+				if (!inScanLine && y<hm1 && ip.get(i,y+1)==color)
+					{push(i, y+1); inScanLine = true;}
+				else if (inScanLine && y<hm1 && ip.get(i,y+1)!=color)
+					inScanLine = false;
+			}
+		}
 	}
 	
 	int count=0;
@@ -74,17 +141,16 @@ public class FloodFiller {
 		stackSize = 0;
 		push(x, y);
 		while(true) {   
-			int coordinates = pop(); 
-			if (coordinates ==-1) return;
-			x = coordinates&0xffff;
-			y = coordinates>>16;
+			x = popx(); 
+			if (x ==-1) return;
+			y = popy();
 			int x1 = x; int x2 = x;
 			while (inParticle(x1,y,level1,level2) && x1>=0) x1--; // find start of scan-line
 			x1++;
 			while (inParticle(x2,y,level1,level2) && x2<width) x2++;  // find end of scan-line                 
 			x2--;
-			mask.drawLine(x1-bounds.x,y-bounds.y, x2-bounds.x,y-bounds.y); // fill scan-line i mask
-			ip.drawLine(x1,y, x2,y); // fill scan-line in image
+			fillLine(mask, x1-bounds.x, x2-bounds.x, y-bounds.y); // fill scan-line i mask
+			fillLine(ip,x1,x2,y); // fill scan-line in image
 			boolean inScanLine = false;
 			if (x1>0) x1--; if (x2<width-1) x2++;
 			for (int i=x1; i<=x2; i++) { // find scan-lines above this one
@@ -106,33 +172,44 @@ public class FloodFiller {
 	final boolean inParticle(int x, int y, double level1, double level2) {
 		if (isFloat)
 			return ip.getPixelValue(x,y)>=level1 &&  ip.getPixelValue(x,y)<=level2;
-		else
-			return ip.getPixel(x,y)>=level1 &&  ip.getPixel(x,y)<=level2;
+		else {
+            int v = ip.get(x,y);
+			return v>=level1 && v<=level2;
+        }
 	}
 	
 	final void push(int x, int y) {
-		//IJ.log("push: "+x+"  "+y);
-		//if (count++>100) return;
 		stackSize++;
 		if (stackSize==maxStackSize) {
-			int[] newStack = new int[maxStackSize*2];
-			System.arraycopy(stack, 0, newStack, 0, maxStackSize);
-			stack = newStack;
+			int[] newXStack = new int[maxStackSize*2];
+			int[] newYStack = new int[maxStackSize*2];
+			System.arraycopy(xstack, 0, newXStack, 0, maxStackSize);
+			System.arraycopy(ystack, 0, newYStack, 0, maxStackSize);
+			xstack = newXStack;
+			ystack = newYStack;
 			maxStackSize *= 2;
 		}
-		//if (stackSize>max) max = stackSize;
-		stack[stackSize-1] = x + (y<<16);
+		xstack[stackSize-1] = x;
+		ystack[stackSize-1] = y;
 	}
 	
-	final int pop() {
-		//IJ.log("pop ");
+	final int popx() {
 		if (stackSize==0)
 			return -1;
-		else {
-			int value = stack[stackSize-1];
-			stackSize--;
-			return value;
-		}
+		else
+            return xstack[stackSize-1];
+	}
+
+	final int popy() {
+        int value = ystack[stackSize-1];
+        stackSize--;
+        return value;
+	}
+
+	final void fillLine(ImageProcessor ip, int x1, int x2, int y) {
+		if (x1>x2) {int t = x1; x1=x2; x2=t;}
+		for (int x=x1; x<=x2; x++)
+            ip.drawPixel(x, y);
 	}
 
 }

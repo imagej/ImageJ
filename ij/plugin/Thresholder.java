@@ -10,7 +10,6 @@ import java.awt.*;
 /** This plugin implements the Proxess/Binary/Threshold command. */
 public class Thresholder implements PlugIn, Measurements {
 	
-	private int slice;
 	private double minThreshold;
 	private double maxThreshold;
 	boolean autoThreshold;

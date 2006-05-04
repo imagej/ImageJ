@@ -20,7 +20,6 @@ public class Slicer implements PlugIn, TextListener {
 	private int outputSlices = 1;
 	private boolean noRoi;
 	private boolean rgb;
-	private Polygon irregularLine;
     private Vector fields;
     private Label message;
 	private ImagePlus imp;
@@ -33,7 +32,6 @@ public class Slicer implements PlugIn, TextListener {
 	private int xbase;
 	private int ybase;
 	private double length;
-	private double segmentLength;
 	private double[] segmentLengths;
 	private double[] dx;
 	private double[] dy;
@@ -404,10 +402,8 @@ public class Slicer implements PlugIn, TextListener {
 	}
 	
 	void drawLine(double x1, double y1, double x2, double y2, ImagePlus imp) {
-		ImageWindow win = imp.getWindow();
-		if (win==null)
-			return;
-		ImageCanvas ic = win.getCanvas();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
 		Graphics g = ic.getGraphics();
 		g.setColor(Roi.getColor());
 		g.setXORMode(Color.black);

@@ -51,7 +51,7 @@ public class ColorBlitter implements Blitter {
 		int c1, c2, r1, g1, b1, r2, g2, b2;
 		int src, dst;
 		
-		if (mode==COPY | mode==COPY_TRANSPARENT) {
+		if (mode==COPY || mode==COPY_TRANSPARENT) {
 			for (int y=rect1.y; y<(rect1.y+rect1.height); y++) {
 				srcIndex = (y-yloc)*srcWidth + (rect1.x-xloc);
 				dstIndex = y * width + rect1.x;

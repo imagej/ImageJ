@@ -790,6 +790,18 @@ public abstract class ImageProcessor extends Object {
 		}
 	}
 
+	/** Draws an elliptical shape. */
+	public void drawOval(int x, int y, int width, int height) {
+		OvalRoi oval = new OvalRoi(x, y, width, height);
+		drawPolygon(oval.getPolygon());
+	}
+
+	/** Fills an elliptical shape. */
+	public void fillOval(int x, int y, int width, int height) {
+		OvalRoi oval = new OvalRoi(x, y, width, height);
+		fillPolygon(oval.getPolygon());
+	}
+
 	/** Draws a polygon. */
 	public void drawPolygon(Polygon p) {
 		moveTo(p.xpoints[0], p.ypoints[0]);
@@ -868,9 +880,9 @@ public abstract class ImageProcessor extends Object {
 		int descent = metrics.getDescent();
 		g.setFont(font);
 
-		if (antialiasedText) {
+		if (antialiasedText && cxx>=00 && cy-h>=0) {
 			Java2.setAntialiasedText(g, true);
-			setRoi(cxx,cy-h,w,h);
+			setRoi(cxx, cy-h, w, h);
 			ImageProcessor ip = crop();
 			resetRoi();
 			g.drawImage(ip.createImage(), 0, 0, null);
@@ -1130,6 +1142,13 @@ public abstract class ImageProcessor extends Object {
 		Returns zero if either the x or y coodinate is out of range. */
 	public abstract int getPixel(int x, int y);
 	
+	/** This is a faster version of getPixel() that does not do bounds checking. */
+	public abstract int get(int x, int y);
+	
+	/** This is a faster version of putPixel() that does not clip  
+		out of range values and does not do bounds checking. */
+	public abstract void set(int x, int y, int value);
+
     /** Returns the samples for the pixel at (x,y) in an int array.
     	RGB pixels have three samples, all others have one.
 		Returns zeros if the the coordinates are not in bounds.

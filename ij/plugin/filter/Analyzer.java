@@ -125,15 +125,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[15]="Kurtosis"; states[15]=(systemMeasurements&KURTOSIS)!=0;
 		labels[16]="Area_Fraction"; states[16]=(systemMeasurements&AREA_FRACTION)!=0;
 		labels[17]="Slice Number"; states[17]=(systemMeasurements&SLICE)!=0;
+		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(10, 2, labels, states);
 		labels = new String[3];
 		states = new boolean[3];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
 		labels[1]="Display Label"; states[1]=(systemMeasurements&LABELS)!=0;
 		labels[2]="Invert Y Coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
+		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(2, 2, labels, states);
-		gd.addMessage("");
+		gd.setInsets(15, 0, 0);
         gd.addChoice("Redirect To:", titles, target);
+		gd.setInsets(5, 0, 0);
 		gd.addNumericField("Decimal Places (0-9):", precision, 0, 2, "");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -248,7 +251,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (depth>1 && depth==imp.getStackSize())
 			redirectImp.setSlice(imp.getCurrentSlice());
 		ImageProcessor ip = redirectImp.getProcessor();
-		ip.setRoi(roi);
+		if (imp.getTitle().equals("mask") && imp.getBitDepth()==8) {
+			ip.setMask(imp.getProcessor());
+			ip.setRoi(0, 0, imp.getWidth(), imp.getHeight());
+		} else
+			ip.setRoi(roi);
 		return ImageStatistics.getStatistics(ip, measurements, redirectImp.getCalibration());
 	}
 	

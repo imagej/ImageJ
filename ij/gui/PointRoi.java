@@ -27,13 +27,13 @@ public class PointRoi extends PolygonRoi {
 
 	static int[] makeXArray(int value, ImagePlus imp) {
 		int[] array = new int[1];
-		array[0] = imp!=null?imp.getWindow().getCanvas().offScreenX(value):value;
+		array[0] = imp!=null?imp.getCanvas().offScreenX(value):value;
 		return array;
 	}
 				
 	static int[] makeYArray(int value, ImagePlus imp) {
 		int[] array = new int[1];
-		array[0] = imp!=null?imp.getWindow().getCanvas().offScreenY(value):value;
+		array[0] = imp!=null?imp.getCanvas().offScreenY(value):value;
 		return array;
 	}
 				

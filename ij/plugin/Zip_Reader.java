@@ -13,7 +13,6 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 
 	private static final String TEMP_NAME = "temp.tif";
 	private int width, height;
-	private boolean rawBits;
 	private String tifName="";
 	private	String dir;
 	

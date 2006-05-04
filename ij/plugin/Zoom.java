@@ -13,9 +13,8 @@ public class Zoom implements PlugIn{
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{IJ.noImage(); return;}
-		ImageWindow win = imp.getWindow();
-		if (win==null) return;
-		ImageCanvas ic = win.getCanvas();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
 		Point loc = ic.getCursorLoc();
 		int x = ic.screenX(loc.x);
 		int y = ic.screenY(loc.y);
