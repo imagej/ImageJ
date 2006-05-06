@@ -4,6 +4,7 @@ import ij.text.TextWindow;
 import ij.plugin.frame.Recorder;
 import java.io.*;
 import java.util.*;
+import java.awt.event.KeyEvent;
 
 /** Runs ImageJ menu commands in a separate thread.*/
 public class Executer implements Runnable {
@@ -85,7 +86,11 @@ public class Executer implements Runnable {
 					className = className.substring(0, argStart);
 				}
 			}
-			IJ.runPlugIn(cmd, className, arg);
+			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner")) {
+    			IJ.open(IJ.getDirectory("plugins")+arg);
+				IJ.setKeyUp(KeyEvent.VK_SHIFT);		
+    		} else
+				IJ.runPlugIn(cmd, className, arg);
 		} else
 	 		IJ.error("Unrecognized command: " + cmd);
     }

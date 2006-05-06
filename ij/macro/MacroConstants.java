@@ -110,8 +110,11 @@ public interface MacroConstants {
 		CALL};
 
 	// Array functions
-	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003;
-	static final String[] arrayFunctions = {"getProfile", "newArray", "split", "getFileList"};
-	static final int[] arrayFunctionIDs = {GET_PROFILE, NEW_ARRAY, SPLIT, GET_FILE_LIST};
+	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003,
+		GET_FONT_LIST=3004;
+	static final String[] arrayFunctions = {"getProfile", "newArray", "split", "getFileList",
+		"getFontList"};
+	static final int[] arrayFunctionIDs = {GET_PROFILE, NEW_ARRAY, SPLIT, GET_FILE_LIST,
+		GET_FONT_LIST};
 
 }  // interface MacroConstants

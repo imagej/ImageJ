@@ -231,6 +231,7 @@ public class Functions implements MacroConstants, Measurements {
 			case NEW_ARRAY: array = newArray(); break;
 			case SPLIT: array = split(); break;
 			case GET_FILE_LIST: array = getFileList(); break;
+			case GET_FONT_LIST: array = getFontList(); break;
 			default:
 				array = null;
 				interp.error("Array function expected");
@@ -2363,9 +2364,15 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("No dialog created with Dialog.create()"); 
 				return null;
 			}
-			if (name.equals("addString"))
-				gd.addStringField(getFirstString(), getLastString());
-			else if (name.equals("addNumber")) {
+			if (name.equals("addString")) {
+				String label = getFirstString();
+				String defaultStr = getNextString();
+				int columns = 8;
+				if (interp.nextNonEolToken()==',')
+					columns = (int)getNextArg();
+				interp.getRightParen();
+				gd.addStringField(label, defaultStr, columns);
+			} else if (name.equals("addNumber")) {
 				int columns = 6;
 				String units = null;
 				String prompt = getFirstString();
@@ -2733,6 +2740,21 @@ public class Functions implements MacroConstants, Measurements {
 		}
 			
  	}
+ 	
+ 	Variable[] getFontList() {
+		interp.getParens();
+		String fonts[] = null;
+		if (IJ.isJava2()) {
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			fonts = ge.getAvailableFontFamilyNames();
+		} else
+			fonts = Toolkit.getDefaultToolkit().getFontList();
+		if (fonts==null) return null;
+    	Variable[] array = new Variable[fonts.length];
+    	for (int i=0; i<fonts.length; i++)
+    		array[i] = new Variable(0, 0.0, fonts[i]);
+    	return array;
+	}
 
 } // class Functions
 

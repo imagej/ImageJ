@@ -28,9 +28,9 @@ public class FloodFiller {
 	public boolean fill(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
-		int color = ip.get(x, y);
+		int color = ip.getPixel(x, y);
 		fillLine(ip, x, x, y);
-		int newColor = ip.get(x, y);
+		int newColor = ip.getPixel(x, y);
 		ip.set(x, y, color);
 		if (color==newColor) return false;
 		stackSize = 0;
@@ -40,23 +40,23 @@ public class FloodFiller {
 			if (x ==-1) return true;
 			y = popy();
 			int x1 = x; int x2 = x;
-			while (ip.get(x1,y)==color && x1>=0) x1--; // find start of scan-line
+			while (ip.getPixel(x1,y)==color && x1>=0) x1--; // find start of scan-line
 			x1++;
-			while (ip.get(x2,y)==color && x2<width) x2++;  // find end of scan-line                 
+			while (ip.getPixel(x2,y)==color && x2<width) x2++;  // find end of scan-line                 
 			x2--;
 			fillLine(ip, x1,x2,y); // fill scan-line
 			boolean inScanLine = false;
 			for (int i=x1; i<=x2; i++) { // find scan-lines above this one
-				if (!inScanLine && y>0 && ip.get(i,y-1)==color)
+				if (!inScanLine && y>0 && ip.getPixel(i,y-1)==color)
 					{push(i, y-1); inScanLine = true;}
-				else if (inScanLine && y>0 && ip.get(i,y-1)!=color)
+				else if (inScanLine && y>0 && ip.getPixel(i,y-1)!=color)
 					inScanLine = false;
 			}
 			inScanLine = false;
 			for (int i=x1; i<=x2; i++) { // find scan-lines below this one
-				if (!inScanLine && y<height-1 && ip.get(i,y+1)==color)
+				if (!inScanLine && y<height-1 && ip.getPixel(i,y+1)==color)
 					{push(i, y+1); inScanLine = true;}
-				else if (inScanLine && y<height-1 && ip.get(i,y+1)!=color)
+				else if (inScanLine && y<height-1 && ip.getPixel(i,y+1)!=color)
 					inScanLine = false;
 			}
 		}        
@@ -66,11 +66,11 @@ public class FloodFiller {
 	public boolean fill8(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
-		int color = ip.get(x, y);
+		int color = ip.getPixel(x, y);
 		int wm1=width-1;
 		int hm1=height-1; 
 		fillLine(ip, x, x, y);
-		int newColor = ip.get(x, y);
+		int newColor = ip.getPixel(x, y);
 		ip.set(x, y, color);
 		if (color==newColor) return false;
 		stackSize = 0;
@@ -80,49 +80,49 @@ public class FloodFiller {
 			if (x==-1) return true;
 			y = popy();
 			int x1 = x; int x2 = x;
-			if(ip.get(x1,y)==color){ 
-				while (ip.get(x1,y)==color && x1>=0) x1--; // find start of scan-line
+			if(ip.getPixel(x1,y)==color){ 
+				while (ip.getPixel(x1,y)==color && x1>=0) x1--; // find start of scan-line
 				x1++;
-				while (ip.get(x2,y)==color && x2<width) x2++;  // find end of scan-line
+				while (ip.getPixel(x2,y)==color && x2<width) x2++;  // find end of scan-line
 				x2--;
 				fillLine(ip, x1,x2,y); // fill scan-line
 			} 
 			if(y>0){
 				if (x1>0){
-					if (ip.get(x1-1,y-1)==color){
+					if (ip.getPixel(x1-1,y-1)==color){
 						push(x1-1,y-1);
 					}
 				}
 				if (x2<wm1){
-					if (ip.get(x2+1,y-1)==color){
+					if (ip.getPixel(x2+1,y-1)==color){
 						push(x2+1,y-1);
 					}
 				}
 			}
 			if(y<hm1){
 				if (x1>0){
-					if (ip.get(x1-1,y+1)==color){
+					if (ip.getPixel(x1-1,y+1)==color){
 						push(x1-1,y+1);
 					}
 				}
 				if (x2<wm1){
-					if (ip.get(x2+1,y+1)==color){
+					if (ip.getPixel(x2+1,y+1)==color){
 						push(x2+1,y+1);
 					}
 				}
 			}
 			boolean inScanLine = false;
 			for (int i=x1; i<=x2; i++) { // find scan-lines above this one
-				if (!inScanLine && y>0 && ip.get(i,y-1)==color)
+				if (!inScanLine && y>0 && ip.getPixel(i,y-1)==color)
 					{push(i, y-1); inScanLine = true;}
-				else if (inScanLine && y>0 && ip.get(i,y-1)!=color)
+				else if (inScanLine && y>0 && ip.getPixel(i,y-1)!=color)
 					inScanLine = false;
 			}
 			inScanLine = false;
 			for (int i=x1; i<=x2; i++) {// find scan-lines below this one
-				if (!inScanLine && y<hm1 && ip.get(i,y+1)==color)
+				if (!inScanLine && y<hm1 && ip.getPixel(i,y+1)==color)
 					{push(i, y+1); inScanLine = true;}
-				else if (inScanLine && y<hm1 && ip.get(i,y+1)!=color)
+				else if (inScanLine && y<hm1 && ip.getPixel(i,y+1)!=color)
 					inScanLine = false;
 			}
 		}
@@ -173,7 +173,7 @@ public class FloodFiller {
 		if (isFloat)
 			return ip.getPixelValue(x,y)>=level1 &&  ip.getPixelValue(x,y)<=level2;
 		else {
-            int v = ip.get(x,y);
+            int v = ip.getPixel(x,y);
 			return v>=level1 && v<=level2;
         }
 	}

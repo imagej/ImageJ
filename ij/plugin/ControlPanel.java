@@ -1028,8 +1028,12 @@ class TreePanel implements
 			pFrame.setLocation((int)defaultLocation.getX(),(int)defaultLocation.getY());
 		else pcp.restoreGeometry(this);
 		//restoreExpandedNodes();
+		GUI.center(pFrame);
 		setVisible();
-		IJ.getInstance().addWindowListener(this);
+		ImageJ ij = IJ.getInstance();
+		ij.addWindowListener(this);
+		pFrame.addKeyListener(ij);
+		pTree.addKeyListener(ij);
 	}
 
 	void addMenu()

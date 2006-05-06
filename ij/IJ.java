@@ -677,6 +677,7 @@ public class IJ {
 				break;
 			case KeyEvent.VK_SHIFT:
 				shiftDown=true;
+				if (debugMode) beep();
 				break;
 			case KeyEvent.VK_SPACE: {
 				spaceDown=true;
@@ -695,7 +696,7 @@ public class IJ {
 	public static void setKeyUp(int key) {
 		switch (key) {
 			case KeyEvent.VK_ALT: altDown=false; break;
-			case KeyEvent.VK_SHIFT: shiftDown=false; break;
+			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;
 			case KeyEvent.VK_SPACE: {
 				spaceDown=false;
 				ImageWindow win = WindowManager.getCurrentWindow();
