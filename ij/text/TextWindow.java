@@ -11,10 +11,15 @@ import ij.plugin.filter.Analyzer;
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
 */
-public class TextWindow extends Frame implements ActionListener, FocusListener {
+public class TextWindow extends Frame implements ActionListener, FocusListener, ItemListener {
 
-	private TextPanel textPanel;
-
+	static final String FONT_SIZE = "tw.font.size";
+	static final String FONT_ANTI= "tw.font.anti";
+	TextPanel textPanel;
+    CheckboxMenuItem antialiased;
+	int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
+	int fontSize = (int)Prefs.get(FONT_SIZE, 5);
+ 
 	/**
 	Opens a new single-column text window.
 	@param title	the title of the window
@@ -52,6 +57,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		}
  		addFocusListener(this);
  		addMenuBar();
+		setFont();
 		WindowManager.addWindow(this);
 		setSize(width, height);
 		GUI.center(this);
@@ -102,6 +108,16 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		}
 		m.addActionListener(this);
 		mb.add(m);
+		m = new Menu("Font");
+		m.add(new MenuItem("Make Text Smaller"));
+		m.add(new MenuItem("Make Text Larger"));
+		m.addSeparator();
+		antialiased = new CheckboxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()?true:false));
+		antialiased.addItemListener(this);
+		m.add(antialiased);
+		m.add(new MenuItem("Save Settings"));
+		m.addActionListener(this);
+		mb.add(m);
 		setMenuBar(mb);
 	}
 
@@ -114,11 +130,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		textPanel.append(text);
 	}
 	
-	/** Set the font that will be used to display the text. */
-	public void setFont(Font font) {
-		textPanel.setFont(font);
+	void setFont() {
+        textPanel.setFont(new Font("SanSerif", Font.PLAIN, sizes[fontSize]), antialiased.getState());
 	}
-  
+	
 	boolean openFile(String path) {
 		OpenDialog od = new OpenDialog("Open Text File...", path);
 		String directory = od.getDirectory();
@@ -160,7 +175,14 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 
 	public void actionPerformed(ActionEvent evt) {
 		String cmd = evt.getActionCommand();
-		textPanel.doCommand(cmd);
+		if (cmd.equals("Make Text Larger"))
+			changeFontSize(true);
+		else if (cmd.equals("Make Text Smaller"))
+			changeFontSize(false);
+		else if (cmd.equals("Save Settings"))
+			saveSettings();
+		else
+			textPanel.doCommand(cmd);
 	}
 
 	public void processWindowEvent(WindowEvent e) {
@@ -170,6 +192,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 			close();	
 		else if (id==WindowEvent.WINDOW_ACTIVATED)
 			WindowManager.setWindow(this);
+	}
+
+	public void itemStateChanged(ItemEvent e) {
+        setFont();
 	}
 
 	public void close() {
@@ -186,6 +212,27 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		dispose();
 		WindowManager.removeWindow(this);
 		textPanel.flush();
+	}
+	
+    void changeFontSize(boolean larger) {
+        int in = fontSize;
+        if (larger) {
+            fontSize++;
+            if (fontSize==sizes.length)
+                fontSize = sizes.length-1;
+        } else {
+            fontSize--;
+            if (fontSize<0)
+                fontSize = 0;
+        }
+        IJ.showStatus(sizes[fontSize]+" point");
+        setFont();
+    }
+
+	void saveSettings() {
+		Prefs.set(FONT_SIZE, fontSize);
+		Prefs.set(FONT_ANTI, antialiased.getState());
+		IJ.showStatus("Font settings saved (size="+sizes[fontSize]+", antialiased="+antialiased.getState()+")");
 	}
 	
 	public void focusGained(FocusEvent e) {

@@ -23,6 +23,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	MouseListener, MouseMotionListener, KeyListener,  ClipboardOwner,
 	ActionListener {
 
+	static final int DOUBLE_CLICK_THRESHOLD = 650;
 	// height / width
 	int iGridWidth,iGridHeight;
 	int iX,iY;
@@ -48,6 +49,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	TextCanvas tc;
 	PopupMenu pm;
 	boolean columnsManuallyAdjusted;
+	long mouseDownTime;
   
 	/** Constructs a new TextPanel. */
 	public TextPanel() {
@@ -131,11 +133,13 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		return labels==null?"":labels;
 	}
 	
-	public void setFont(Font font) {
+	public void setFont(Font font, boolean antialiased) {
 		tc.fFont = font;
 		tc.iImage = null;
 		tc.fMetrics = null;
+		tc.antialiased = antialiased;
 		iColWidth[0] = 0;
+		if (isShowing()) updateDisplay();
 	}
   
 	/** Adds a single line to the end of this TextPanel. */
@@ -231,8 +235,22 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			pm.show(e.getComponent(),x,y);
  		else if (e.isShiftDown())
 			extendSelection(x, y);
-		else
+		else {
  			select(x, y);
+ 			handleDoubleClick();
+ 		}
+	}
+	
+	void handleDoubleClick() {
+			if (selStart<0 || selStart!=selEnd) return;
+			boolean doubleClick = System.currentTimeMillis()-mouseDownTime<=DOUBLE_CLICK_THRESHOLD;
+ 			mouseDownTime = System.currentTimeMillis();
+ 			if (doubleClick) {
+				char[] chars = (char[])(vData.elementAt(selStart));
+				String s = new String(chars);
+				if (s.endsWith(".java") || s.endsWith(".txt") || s.endsWith(".ijm"))
+					IJ.open(s);
+			}
 	}
 	
 	public void mouseExited (MouseEvent e) {
@@ -399,7 +417,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		for (int i=selStart; i<=selEnd; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
 			sb.append(chars);
-			sb.append('\n');
+			if (i<selEnd || selEnd>selStart) sb.append('\n');
 		}
 		String s = new String(sb);
 		Clipboard clip = getToolkit().getSystemClipboard();

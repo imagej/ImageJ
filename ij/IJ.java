@@ -378,6 +378,7 @@ public class IJ {
 		if (logPanel==null && ij!=null) {
 			TextWindow logWindow = new TextWindow("Log", "", 350, 250);
 			logPanel = logWindow.getTextPanel();
+			logPanel.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		}
 		if (logPanel!=null) {
 				if (s.equals("$Closed"))

@@ -149,8 +149,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
 		if (name.endsWith(".txt") || name.endsWith(".ijm") || name.indexOf(".")==-1) {
+			// 'baseCount' in MacroInstaller must be updated if items are added to this menu
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
+			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_E)));
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.addSeparator();
@@ -292,6 +294,27 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getSelectedText();
 		new MacroRunner(text);
 	}
+	
+	void evaluateLine() {
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		if (end>start)
+			{runMacro(); return;}
+		String text = ta.getText();
+		while (start>0) {
+			start--;
+			if (text.charAt(start)=='\n')
+				{start++; break;}
+		}
+		while (end<text.length()-1) {
+			end++;
+			if (text.charAt(end)=='\n')
+				break;
+		}
+		ta.setSelectionStart(start);
+		ta.setSelectionEnd(end);
+		runMacro();
+	}
 
 	void print () {
 		PrintJob pjob = Toolkit.getDefaultToolkit().getPrintJob(this, "Cool Stuff", p);
@@ -427,6 +450,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				compileAndRun();
 		else if ("Run Macro".equals(what))
 				runMacro();
+		else if ("Evaluate Line".equals(what))
+				evaluateLine();
 		else if ("Abort Macro".equals(what)) {
 				Interpreter.abort();
 				IJ.beep();		

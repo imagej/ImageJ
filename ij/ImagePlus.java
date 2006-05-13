@@ -42,27 +42,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** True if any changes have been made to this image. */
 	public boolean changes;
 	
-	/** Obsolete. Use GetCalibration(). */
-	public double pixelWidth = 1.0;
-	
-	/** Obsolete. Use GetCalibration(). */
-	public double pixelHeight = 1.0;
-	
-	/** Obsolete. Use GetCalibration(). */
-	public double pixelDepth = 1.0;
-
-	/** Obsolete. Use GetCalibration(). */
-	public String unit = "pixel";
-	
-	/** Obsolete. Use GetCalibration(). */
-	public String units = "pixels";
-	
-	/** Obsolete. Use GetCalibration(). */
-	public boolean sCalibrated;
-
 	protected Image img;
 	protected ImageProcessor ip;
 	protected ImageWindow win;
+	protected Roi roi;
+	protected int currentSlice;
 	private ImageJ ij = IJ.getInstance();
 	private String title;
 	private	String url;
@@ -74,8 +58,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private int nFrames = 1;
 	private int imageType = GRAY8;
 	private ImageStack stack;
-	private int currentSlice;
-	private Roi roi;
 	protected boolean locked = false;
 	private static int currentID = -1;
 	private int ID;
@@ -345,7 +327,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				}
 				//IJ.log(""+(System.currentTimeMillis()-start));
 			}
-			if (listeners!=null) notifyListeners(OPENED);
+			notifyListeners(OPENED);
 		}
 	}
 	
@@ -874,7 +856,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 			case COLOR_RGB:
 				int[] pixels32 = new int[1];
 				if (win==null) break;
-				ImageCanvas ic = win.getCanvas();
 				PixelGrabber pg = new PixelGrabber(img, x, y, 1, 1, pixels32, 0, width);
 				try {pg.grabPixels();}
 				catch (InterruptedException e){return pvalue;};
@@ -1232,8 +1213,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		do its job. Does nothing if the image is locked or a
 		setIgnoreFlush(true) call has been made. */
 	public synchronized void flush() {
-		if (listeners!=null)
-			notifyListeners(CLOSED);
+		notifyListeners(CLOSED);
 		if (locked || ignoreFlush)
 			return;
 		if (ip!=null) {

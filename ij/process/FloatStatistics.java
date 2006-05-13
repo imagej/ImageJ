@@ -186,8 +186,8 @@ public class FloatStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCentroid = (double)xsum/count+0.5;
-		yCentroid = (double)ysum/count+0.5;
+		xCentroid = xsum/count+0.5;
+		yCentroid = ysum/count+0.5;
 		if (cal!=null) {
 			xCentroid = cal.getX(xCentroid);
 			yCentroid = cal.getY(yCentroid, height);

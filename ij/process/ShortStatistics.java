@@ -123,7 +123,8 @@ public class ShortStatistics extends ImageStatistics {
 		short[] pixels = (short[])ip.getPixels();
 		byte[] mask = ip.getMaskArray();
 		boolean limit = minThreshold>0 || maxThreshold<65535;
-		int count=0, xsum=0, ysum=0,i,mi,v;
+		int count=0, i, mi, v;
+		double xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
@@ -145,8 +146,8 @@ public class ShortStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCentroid = (double)xsum/count+0.5;
-		yCentroid = (double)ysum/count+0.5;
+		xCentroid = xsum/count+0.5;
+		yCentroid = ysum/count+0.5;
 		if (cal!=null) {
 			xCentroid = cal.getX(xCentroid);
 			yCentroid = cal.getY(yCentroid, height);

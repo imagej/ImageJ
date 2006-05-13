@@ -1731,7 +1731,7 @@ public class Functions implements MacroConstants, Measurements {
 		int tok = nextToken&0xff;
 		if (tok==STRING_CONSTANT||tok==STRING_FUNCTION) return true;
 		if (tok!=WORD) return false;
-		Variable v = interp.lookupVariable(nextToken>>16);
+		Variable v = interp.lookupVariable(nextToken>>TOK_SHIFT);
 		if (v==null) return false;
 		int type = v.getType();
 		if (type!=Variable.ARRAY)

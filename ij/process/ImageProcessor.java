@@ -870,9 +870,8 @@ public abstract class ImageProcessor extends Object {
 			cxx -= w/2;
 		else if (justification==RIGHT_JUSTIFY)
 			cxx -= w;
-		//if (antialiasedText)
-		//	w = boldFont?(int)(1.15*w):(int)(1.08*w);
 		int h =  fontMetrics.getHeight();
+		if (w<=0 || h<=0) return;
 		Image img = frame.createImage(w, h);
 		Graphics g = img.getGraphics();
 		FontMetrics metrics = g.getFontMetrics(font);
@@ -1489,7 +1488,8 @@ public abstract class ImageProcessor extends Object {
 	}
 	*/
 
-	protected IndexColorModel getDefaultColorModel() {
+	/** Returns the default grayscale IndexColorModel. */
+	public IndexColorModel getDefaultColorModel() {
 		if (defaultColorModel==null) {
 			byte[] r = new byte[256];
 			byte[] g = new byte[256];

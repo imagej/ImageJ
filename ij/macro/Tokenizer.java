@@ -163,9 +163,9 @@ public class Tokenizer implements MacroConstants {
     }
 
     final void addToken() {
-        int tok = token;
-        switch (token) {
-			case WORD:
+        	int tok = token;
+        	switch (token) {
+        		case WORD:
 				Symbol symbol = pgm.lookupWord(tokenString);
 				if (symbol!=null) {
 					int type = symbol.getFunctionType();
@@ -177,19 +177,19 @@ public class Tokenizer implements MacroConstants {
 							pgm.hasVars = true;
 					} else
 						tok = type;
-					tok += pgm.symTabLoc<<16;
+					tok += pgm.symTabLoc<<TOK_SHIFT;
 				} else {
 					pgm.addSymbol(new Symbol(token, tokenString));
-					tok += pgm.stLoc<<16;
+					tok += pgm.stLoc<<TOK_SHIFT;
 				}
 				break;
 			case STRING_CONSTANT:
 				pgm.addSymbol(new Symbol(token, tokenString));
-				tok += pgm.stLoc<<16;
+				tok += pgm.stLoc<<TOK_SHIFT;
 				break;
 			case NUMBER:
 				pgm.addSymbol(new Symbol(tokenValue));
-				tok += pgm.stLoc<<16;
+				tok += pgm.stLoc<<TOK_SHIFT;
 				break;
 			default:
 				break;
@@ -228,26 +228,26 @@ public class Tokenizer implements MacroConstants {
 		Symbol[] symbolTable = pgm.getSymbolTable();
 		int nextToken, address, address2;
 		for (int i=0; i<code.length; i++) {
-			token = code[i]&0xffff;
+			token = code[i]&TOK_MASK;
 			if (token==FUNCTION) {
-				nextToken = code[i+1]&0xffff;
+				nextToken = code[i+1]&TOK_MASK;
 				if (nextToken==WORD || (nextToken>=PREDEFINED_FUNCTION&&nextToken<=ARRAY_FUNCTION)) {
-					address = address2 = code[i+1]>>16;
+					address = address2 = code[i+1]>>TOK_SHIFT;
 					if (nextToken!=WORD) { // override built in function
                 		pgm.addSymbol(new Symbol(WORD, symbolTable[address].str));
                 		address2 = pgm.stLoc;
-                		code[i+1] = WORD + (address2<<16);
+                		code[i+1] = WORD + (address2<<TOK_SHIFT);
 					}
 					Symbol sym = symbolTable[address2];
 					sym.type = USER_FUNCTION;
 					sym.value = i+1;  //address of function
 					for (int j=0; j<code.length; j++) {
-						token = code[j]&0xffff;
+						token = code[j]&TOK_MASK;
 						if ((token==WORD || (token>=PREDEFINED_FUNCTION&&token<=ARRAY_FUNCTION))
-						&& (code[j]>>16)==address && (j==0||(code[j-1]&0xfff)!=FUNCTION)) {
+						&& (code[j]>>TOK_SHIFT)==address && (j==0||(code[j-1]&0xfff)!=FUNCTION)) {
 							code[j] = USER_FUNCTION;
-							code[j] += address2<<16;
-							//IJ.log((code[j]&0xffff)+" "+(code[j]>>16)+" "+USER_FUNCTION+" "+address);
+							code[j] += address2<<TOK_SHIFT;
+							//IJ.log((code[j]&TOK_MASK)+" "+(code[j]>>TOK_SHIFT)+" "+USER_FUNCTION+" "+address);
 						} else if (token==EOF)
 							break;
 					}

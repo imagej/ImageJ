@@ -38,6 +38,8 @@ public class ColorBlitter implements Blitter {
 		if (ip instanceof ByteProcessor) {
 			byte[] pixels8 = (byte[])ip.getPixels();
 			ColorModel cm = ip.getColorModel();
+			if (ip.isInvertedLut())
+				cm = ip.getDefaultColorModel();
 			int size = ip.getWidth()*ip.getHeight();
 			srcPixels = new int[size];
 			int v;

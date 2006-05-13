@@ -8,6 +8,7 @@ import ij.macro.*;
 import ij.text.*;
 import ij.util.Tools;
 import ij.io.*;
+import ij.macro.MacroConstants;
 																																																																																																																																																																																																																																																								 import java.util.*;																																																																																																																																																					   
 
 /** This plugin implements the Plugins/Macros/Install Macros command. It is also used by the Editor
@@ -62,23 +63,23 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macroNames = new String[MAX_MACROS];
 		int toolCount = 0;
 		int itemCount = macrosMenu.getItemCount();
-		int baseCount = 4;
+		int baseCount = macrosMenu==Menus.getMacrosMenu()?4:5;
 		if (itemCount>baseCount)
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
 		if (pgm.hasVars() && pgm.getGlobals()==null)
 			new Interpreter().saveGlobals(pgm);
 		for (int i=0; i<code.length; i++) {
-			token = code[i]&0xffff;
+			token = code[i]&TOK_MASK;
 			if (token==MACRO) {
-				nextToken = code[i+1]&0xffff;
+				nextToken = code[i+1]&TOK_MASK;
 				if (nextToken==STRING_CONSTANT) {
 					if (count==MAX_MACROS) {
 						if (macrosMenu==Menus.getMacrosMenu())
 							IJ.error("Macro Installer", "Macro sets are limited to "+MAX_MACROS+" macros.");
 						break;
 					}
-					address = code[i+1]>>16;
+					address = code[i+1]>>TOK_SHIFT;
 					symbol = symbolTable[address];
 					name = symbol.str;
 					macroStarts[count] = i + 2;

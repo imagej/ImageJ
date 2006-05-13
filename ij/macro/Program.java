@@ -132,7 +132,7 @@ public class Program implements MacroConstants {
 		String str;
 		int token, address;
 		for (int i=0; i<=pc; i++) 
-			IJ.log(i+"	"+(code[i]&0xffff)+"  "+decodeToken(code[i]));
+			IJ.log(i+"	"+(code[i]&TOK_MASK)+"  "+decodeToken(code[i]));
 	}
 	
 	public Variable[] getGlobals() {
@@ -144,7 +144,7 @@ public class Program implements MacroConstants {
 	}
 
 	public String decodeToken(int token) {
-		return decodeToken(token&0xffff, token>>16);
+		return decodeToken(token&TOK_MASK, token>>TOK_SHIFT);
 	}
 
 	String decodeToken(int token, int address) {

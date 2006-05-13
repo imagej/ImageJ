@@ -6,7 +6,8 @@ import com.apple.eawt.*;
 
 /**	This Mac specific plugin handles the "About" and "Quit" items in the Apple menu and opens
 	 files dropped on ImageJ and files with creator code "imgJ" that are double-clicked. */ 
-public class MacAdapter implements PlugIn, ApplicationListener {
+public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
+    String path;
 
 	public void run(String arg) {
 		Application app = new Application();
@@ -20,8 +21,10 @@ public class MacAdapter implements PlugIn, ApplicationListener {
 	}
 
 	public void handleOpenFile(ApplicationEvent event) {
-		String path = event.getFilename();
-		IJ.open(path);
+		path = event.getFilename();
+		Thread thread = new Thread(this, "Open");
+		thread.setPriority(thread.getPriority()-1);
+		thread.start();
 	}
 
 	public void handlePreferences(ApplicationEvent event) {
@@ -32,6 +35,10 @@ public class MacAdapter implements PlugIn, ApplicationListener {
 		IJ.getInstance().quit();
 	}
   
+    public void run() {
+        if (path!=null) IJ.open(path);
+    }
+
 	public void handleOpenApplication(ApplicationEvent event) {}
 	public void handleReOpenApplication(ApplicationEvent event) {}
 	public void handlePrintFile(ApplicationEvent event) {}

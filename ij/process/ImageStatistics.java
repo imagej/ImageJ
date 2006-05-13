@@ -145,19 +145,20 @@ public class ImageStatistics implements Measurements {
 	
 	void getCentroid(ImageProcessor ip) {
 		byte[] mask = ip.getMaskArray();
-		int count=0, xsum=0, ysum=0,mi;
+		int count=0, mi;
+		double xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null||mask[mi++]!=0) {
 					count++;
-					xsum+=x;
-					ysum+=y;
+					xsum += x;
+					ysum += y;
 				}
 			}
 		}
-		xCentroid = (double)xsum/count+0.5;
-		yCentroid = (double)ysum/count+0.5;
+		xCentroid = xsum/count+0.5;
+		yCentroid = ysum/count+0.5;
 		if (cal!=null) {
 			xCentroid = cal.getX(xCentroid);
 			yCentroid = cal.getY(yCentroid, height);

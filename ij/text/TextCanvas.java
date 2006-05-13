@@ -1,4 +1,5 @@
 package ij.text;
+import ij.util.Java2;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -9,6 +10,7 @@ class TextCanvas extends Canvas {
 	FontMetrics fMetrics;
 	Graphics gImage;
 	Image iImage;
+	boolean antialiased;
 
 	TextCanvas(TextPanel tp) {
 		this.tp = tp;
@@ -83,13 +85,12 @@ class TextCanvas extends Canvas {
 	}
   
  	void makeImage(int iWidth, int iHeight) {
-		iImage=createImage(iWidth,iHeight);
+		iImage=createImage(iWidth, iHeight);
 		if (gImage!=null)
 			gImage.dispose();
 		gImage=iImage.getGraphics();
-		if (fFont==null)
-			fFont=new Font("Dialog",Font.PLAIN,12);
 		gImage.setFont(fFont);
+		Java2.setAntialiasedText(gImage, antialiased);
 		if(fMetrics==null)
 			fMetrics=gImage.getFontMetrics();
 	}

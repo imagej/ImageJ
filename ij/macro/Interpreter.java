@@ -146,8 +146,8 @@ public class Interpreter implements MacroConstants {
 			return;
 		while (token==EOL && ignoreEOL)
 			token = pgm.code[++pc];
-		tokenAddress = token>>16;
-		token = token&0xffff;
+		tokenAddress = token>>TOK_SHIFT;
+		token = token&TOK_MASK;
 		Symbol sym = pgm.table[tokenAddress];
 		tokenString = sym.str;
 		tokenValue = sym.value;
@@ -155,7 +155,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final int nextToken() {
-		return pgm.code[pc+1]&0xffff;
+		return pgm.code[pc+1]&TOK_MASK;
 	}
 
 	final int nextNonEolToken() {
@@ -164,14 +164,14 @@ public class Interpreter implements MacroConstants {
 			tok = pgm.code[pc+i];
 			i++;
 		} while (tok==EOL);
-		return tok&0xffff;
+		return tok&TOK_MASK;
 	}
 
 	final int nextNextNonEolToken() {
 		int tok, i=1;
 		do tok = pgm.code[pc+(i++)]; while (tok==EOL);
 		do tok = pgm.code[pc+(i++)]; while (tok==EOL);
-		return tok&0xffff;
+		return tok&TOK_MASK;
 	}
 
 	final void putTokenBack() {
@@ -625,10 +625,10 @@ public class Interpreter implements MacroConstants {
 		if (tok==STRING_CONSTANT)
 			return Variable.STRING;
 		if (tok==STRING_FUNCTION) {
-			int address = rightSideToken>>16;
+			int address = rightSideToken>>TOK_SHIFT;
 			if (pgm.table[address].type==DIALOG) {
 				int token2 = pgm.code[pc+4];
-				String name = pgm.table[token2>>16].str;
+				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("getNumber") || name.equals("getCheckbox"))
 					return STRING_FUNCTION; 
 			}
@@ -640,7 +640,7 @@ public class Interpreter implements MacroConstants {
 			return USER_FUNCTION;
 		if (tok!=WORD)
 			return Variable.VALUE;
-		Variable v = lookupVariable(rightSideToken>>16);
+		Variable v = lookupVariable(rightSideToken>>TOK_SHIFT);
 		if (v==null)
 			return Variable.VALUE;
 		int type = v.getType();
@@ -855,7 +855,7 @@ public class Interpreter implements MacroConstants {
 		double v1 = 0.0;
 		String s1 = null;
 		int next = pgm.code[pc+1];
-		int tok = next&0xffff;
+		int tok = next&TOK_MASK;
 		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION || isString(next))
 			s1 = getString();
 		else
@@ -894,8 +894,8 @@ public class Interpreter implements MacroConstants {
 
 	// returns true if the specified token is a string variable
 	boolean isString(int token) {
-		if ((token&0xffff)!=WORD) return false;
-		Variable v = lookupVariable(token>>16);
+		if ((token&TOK_MASK)!=WORD) return false;
+		Variable v = lookupVariable(token>>TOK_SHIFT);
 		if (v==null) return false;
 		if (pgm.code[pc+2]=='[') {
 			Variable[] array = v.getArray();
