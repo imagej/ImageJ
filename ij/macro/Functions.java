@@ -705,17 +705,17 @@ public class Functions implements MacroConstants, Measurements {
 
 	void drawLine() {
 		interp.getLeftParen();
-		int a1 = (int)(interp.getExpression()+0.5);
+		int x1 = (int)(interp.getExpression()+0.5);
 		interp.getComma();
-		int a2 = (int)(interp.getExpression()+0.5);
+		int y1 = (int)(interp.getExpression()+0.5);
 		interp.getComma();
-		int a3 = (int)(interp.getExpression()+0.5);
+		int x2 = (int)(interp.getExpression()+0.5);
 		interp.getComma();
-		int a4 = (int)(interp.getExpression()+0.5);
+		int y2 = (int)(interp.getExpression()+0.5);
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
-		ip.drawLine(a1, a2, a3, a4);
+		ip.drawLine(x1, y1, x2, y2);
 		updateAndDraw(defaultImp);
 	}
 	
@@ -734,7 +734,10 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		switch (type) {
 			case SNAPSHOT: ip.snapshot(); break;
-			case RESET: ip.reset(); break;
+			case RESET:
+				ip.reset();
+				updateNeeded = true;
+				break;
 			case FILL: 
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
@@ -759,7 +762,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void updateDisplay() {
-		if (updateNeeded) {
+		if (updateNeeded && WindowManager.getImageCount()>0) {
 			ImagePlus imp = getImage();
 			imp.updateAndDraw();
 			updateNeeded = false;
@@ -1860,7 +1863,7 @@ public class Functions implements MacroConstants, Measurements {
 		String path = null;
 		int index=0;
 		double count=Double.NaN;
-		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save");
+		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename");
 		boolean select = cmd.equals("select");
 		if (twoArgCommand)
 			path = getLastString();
@@ -2072,6 +2075,8 @@ public class Functions implements MacroConstants, Measurements {
 		double min=0.0, max=0.0;
 		boolean notByteData = !(ip instanceof ByteProcessor);
 		if (notByteData) {
+			if (ip instanceof ColorProcessor)
+				interp.error("Non-RGB image expected");
 			ip.resetMinAndMax();
 			min = ip.getMin(); max = ip.getMax();
 			ip = new ByteProcessor(ip.createImage());
@@ -2079,13 +2084,26 @@ public class Functions implements MacroConstants, Measurements {
 		ip.setRoi(imp.getRoi());
 		ImageStatistics stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
 		int threshold = ip.getAutoThreshold(stats.histogram);
+		int count1=0, count2=0;
+		for (int i=0; i<256; i++) {
+			if (i<threshold)
+				count1 += stats.histogram[i];
+			else
+				count2 += stats.histogram[i];
+		}
+		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
+		//IJ.log(unbalanced+"  "+count1+"  "+count2);
 		double lower, upper;
-		if ((stats.max-stats.dmode)>(stats.dmode-stats.min)) {
-			lower = threshold;
-			upper = stats.max;
+		if (unbalanced) {
+			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
+				{lower=threshold; upper=stats.max;}
+			else
+				{lower=stats.min; upper=threshold;}
 		} else {
-			lower = stats.min;
-			upper = threshold;
+			if (ip.isInvertedLut())
+				{lower=threshold; upper=255;}
+			else
+				{lower=0; upper=threshold;}
 		}
 		if (notByteData) {
 			if (max>min) {

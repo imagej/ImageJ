@@ -90,7 +90,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Delete"))
 			delete(false);
 		else if (command.equals("Rename"))
-			rename();
+			rename(null);
 		else if (command.equals("Open"))
 			open(null);
 		else if (command.equals("Save"))
@@ -114,6 +114,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             catch (NumberFormatException ex) {}
 			if (index<0) index = 0;
 			restore(index, true);
+			if (Recorder.record) Recorder.record("roiManager", "Select", index);
 		}
 	}
 	
@@ -250,12 +251,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 
-	boolean rename() {
+	boolean rename(String name2) {
 		int index = list.getSelectedIndex();
 		if (index<0)
 			return error("Exactly one item in the list must be selected.");
 		String name = list.getItem(index);
-		String name2 = getName(name);
+		if (name2==null) name2 = getName(name);
 		if (name2==null) return false;
 		Roi roi = (Roi)rois.get(name);
 		rois.remove(name);
@@ -263,6 +264,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.put(name2, roi);
 		list.replaceItem(name2, index);
 		list.select(index);
+		if (Recorder.record) Recorder.record("roiManager", "Rename", name2);
 		return true;
 	}
 	
@@ -693,24 +695,28 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return ok;
 	}
 
-	/** Executes the ROI Manager "Open" or "Save" command. Returns false if 
-	<code>cmd</code> is not "Open" or "Save" or if an error occurs. */
-	public boolean runCommand(String cmd, String path) {
+	/** Executes the ROI Manager "Open", "Save" or "Rename" command. Returns false if 
+	<code>cmd</code> is not "Open", "Save" or "Rename", or if an error occurs. */
+	public boolean runCommand(String cmd, String name) {
 		cmd = cmd.toLowerCase();
 		macro = true;
 		if (cmd.equals("open")) {
-			open(path);
+			open(name);
 			macro = false;
 			return true;
 		} else if (cmd.equals("save")) {
-			if (!path.endsWith(".zip"))
-				return error("Path must end with '.zip'");
+			if (!name.endsWith(".zip"))
+				return error("Name must end with '.zip'");
 			if (list.getItemCount()==0)
 				return error("The selection list is empty.");
 			int[] indexes = getAllIndexes();
-			boolean ok = saveMultiple(indexes, path);
+			boolean ok = saveMultiple(indexes, name);
 			macro = false;
 			return ok;
+		} else if (cmd.equals("rename")) {
+			rename(name);
+			macro = false;
+			return true;
 		}
 		return false;
 	}

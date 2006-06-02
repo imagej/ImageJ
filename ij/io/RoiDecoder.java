@@ -74,6 +74,8 @@ public class RoiDecoder {
 		int height = bottom-top;
 		int n = getShort(16);
 		
+		if (name.endsWith(".roi"))
+			name = name.substring(0, name.length()-4);
 		boolean isComposite = getInt(36)>0;		
 		if (isComposite)
 			return getShapeRoi();
@@ -137,8 +139,6 @@ public class RoiDecoder {
 		default:
 			throw new IOException("Unrecognized ROI type: "+type);
 		}
-		if (name.endsWith(".roi"))
-			name = name.substring(0, name.length()-4);
 		roi.setName(name);
 		return roi;
 	}
@@ -163,6 +163,7 @@ public class RoiDecoder {
 			base += 4;
 		}
 		roi = new ShapeRoi(shapeArray);
+		roi.setName(name);
 		return roi;
 	}
 

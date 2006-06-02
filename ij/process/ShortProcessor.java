@@ -214,8 +214,16 @@ public class ShortProcessor extends ImageProcessor {
 		return pixels[y*width+x]&0xffff;
 	}
 
+	public final int get(int index) {
+		return pixels[index]&0xffff;
+	}
+
 	public final void set(int x, int y, int value) {
 		pixels[y*width + x] = (short)value;
+	}
+
+	public final void set(int index, int value) {
+		pixels[index] = (short)value;
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */

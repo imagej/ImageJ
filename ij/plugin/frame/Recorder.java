@@ -130,6 +130,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		textArea.append(method+"("+a1+", "+a2+", "+a3+");\n");
 	}
 
+	public static void record(String method, String a1, int a2) {
+		textArea.append(method+"(\""+a1+"\", "+a2+");\n");
+	}
+
 	public static void record(String method, String args, int a1, int a2) {
 		if (textArea==null) return;
 		method = "//"+method;

@@ -170,7 +170,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Displays a modal options dialog. */
 	public boolean showDialog() {
-		Calibration cal = imp.getCalibration();
+		Calibration cal = imp!=null?imp.getCalibration():(new Calibration());
 		double unitSquared = cal.pixelWidth*cal.pixelHeight;
 		if (Macro.getOptions()!=null) {
 			boolean oldMacro = updateMacroOptions();
@@ -600,7 +600,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (minCircularity>0.0 || maxCircularity<1.0) {
 			double perimeter = roi.getLength();
 			double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.pixelCount/(perimeter*perimeter));
-			if (circularity>1.0) circularity = 0.0;
+			if (circularity>1.0) circularity = 1.0;
 			//IJ.log(circularity+"  "+perimeter+"  "+stats.area);
 			if (circularity<minCircularity || circularity>maxCircularity) include = false;
 		}

@@ -266,13 +266,27 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			return;
 		}
 		int threshold = ip.getAutoThreshold(stats.histogram);
-		//IJ.log(threshold+" "+stats.min+" "+stats.max+" "+stats.dmode);
-		if ((stats.max-stats.dmode)>(stats.dmode-stats.min)) {
-			minThreshold = threshold;
-			maxThreshold = stats.max;
+		//IJ.log(threshold+"  "+stats.min+"  "+stats.max+"  "+stats.dmode);
+		int count1=0, count2=0;
+		for (int i=0; i<256; i++) {
+			if (i<threshold)
+				count1 += stats.histogram[i];
+			else
+				count2 += stats.histogram[i];
+		}
+		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
+		//IJ.log(unbalanced+"  "+count1+"  "+count2);
+		double lower, upper;
+		if (unbalanced) {
+			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
+				{minThreshold=threshold; maxThreshold=stats.max;}
+			else
+				{minThreshold=stats.min; maxThreshold=threshold;}
 		} else {
-			minThreshold = stats.min;
-			maxThreshold = threshold;
+			if (ip.isInvertedLut())
+				{minThreshold=threshold; maxThreshold=255;}
+			else
+				{minThreshold=0; maxThreshold=threshold;}
 		}
 		if (Recorder.record)
 			Recorder.record("setAutoThreshold");
@@ -666,6 +680,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 				}
 				osg.dispose();
 			}
+			if (os==null) return;
 			g.drawImage(os, 0, 0, this);
 		} else {
 			g.setColor(Color.white);

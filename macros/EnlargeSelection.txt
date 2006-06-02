@@ -17,6 +17,10 @@
   return toString(pixels); 
 
   function enlarge(n) {
+       if (selectionType==0 || selectionType==1) {
+           enlargeRectOrOval(n);
+           return;
+       }
        if (n<0) {
            shrink(-n);
            return;
@@ -45,14 +49,30 @@
        close(); 
        selectImage(id); 
        run("Restore Selection"); 
-   } 
+   }
+
+   function enlargeRectOrOval(n) {
+       getBoundingRect(x, y, width, height);
+       x -= n;
+       y -= n;
+       width = width + 2*n;
+       height = height + 2*n;
+       if (width>0 && height>0) {
+           if (selectionType==0)
+               makeRectangle(x, y, width, height);
+           else
+               makeOval(x, y, width, height);
+       }
+   }
 
    function shrink(n) { 
-       if (pixels >255) 
+       if (pixels>255) 
            exit("Cannot shrink by more than 255 pixels"); 
        id = getImageID(); 
        setBatchMode(true); 
-       getBoundingRect(xbase, ybase, width, height); 
+       getBoundingRect(xbase, ybase, width, height);
+       if (xbase<=0 || ybase<=0 || xbase+width>=getWidth || ybase+height>=getHeight)
+          exit("Cannot shrink selections touching image edge"); 
        getSelectionCoordinates(xc,yc); 
        run("Create Mask"); 
        run("Options...", "iterations=1 count=1"); 

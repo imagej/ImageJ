@@ -65,7 +65,7 @@ The following command line options are recognized by ImageJ:
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
-	public static final String VERSION = "1.37g";
+	public static final String VERSION = "1.37h";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -135,7 +135,7 @@ public class ImageJ extends Frame implements ActionListener,
 		int ijWidth = tbSize.width+10;
 		int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
-		setIcon();
+		if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
 		setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
 		setLocation(loc.x, loc.y);
 		pack();
@@ -162,15 +162,11 @@ public class ImageJ extends Frame implements ActionListener,
 			new SocketListener();
  	}
     	
-	void setIcon() {
-		URL url = this.getClass().getResource("/microscope.gif"); 
-		if (url==null)
-			return;
-		Image img = null;
-		try {img = createImage((ImageProducer)url.getContent());}
-		catch(Exception e) {}
-		if (img!=null)
-			try {setIconImage(img);} catch (Exception e) {}
+	void setIcon() throws Exception {
+		URL url = this.getClass().getResource("/microscope.gif");
+		if (url==null) return;
+		Image img = createImage((ImageProducer)url.getContent());
+		if (img!=null) setIconImage(img);
 	}
 	
 	public Point getPreferredLocation() {
@@ -311,7 +307,7 @@ public class ImageJ extends Frame implements ActionListener,
 				else
 					c = (String)macroShortcuts.get(new Integer(keyCode));
 				if (c!=null) {
-						MacroInstaller.doShortcut(c);
+						MacroInstaller.runMacroCommand(c);
 						return;
 				}
 			}
@@ -377,7 +373,7 @@ public class ImageJ extends Frame implements ActionListener,
 			if (c.equals("Fill"))
 				hotkey = true;
 			if (c.charAt(0)==MacroInstaller.commandPrefix)
-				MacroInstaller.doShortcut(c);
+				MacroInstaller.runMacroCommand(c);
 			else {
 				doCommand(c);
 				keyPressedTime = System.currentTimeMillis();

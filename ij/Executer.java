@@ -1,6 +1,7 @@
 package ij;
 import ij.util.Tools;
 import ij.text.TextWindow;
+import ij.plugin.MacroInstaller;
 import ij.plugin.frame.Recorder;
 import java.io.*;
 import java.util.*;
@@ -92,8 +93,11 @@ public class Executer implements Runnable {
 				IJ.setKeyUp(KeyEvent.VK_SHIFT);		
     		} else
 				IJ.runPlugIn(cmd, className, arg);
-		} else
-	 		IJ.error("Unrecognized command: " + cmd);
+		} else {
+			// Is this command in Plugins>Menus?
+			if (!MacroInstaller.runMacroCommand(cmd))
+				IJ.error("Unrecognized command: " + cmd);
+	 	}
     }
 
 	/** Returns the last command executed. Returns null

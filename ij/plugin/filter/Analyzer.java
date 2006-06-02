@@ -398,8 +398,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue(ResultsTable.PERIMETER,perimeter);
 			if ((measurements&CIRCULARITY)!=0) {
 				double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.area/(perimeter*perimeter));
-				if (circularity>1.0)
-					circularity = -1.0;
+				if (circularity>1.0) circularity = 1.0;
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
 			}
 		}
@@ -657,11 +656,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 		boolean macro = (IJ.macroRunning()&&!switchingModes) || Interpreter.isBatchMode();
 		switchingModes = false;
 		if (counter>0 && lineCount>0 && unsavedMeasurements && !macro && ij!=null && !ij.quitting()) {
-			SaveChangesDialog d = new SaveChangesDialog(ij, "Save "+counter+" measurements?");
+			YesNoCancelDialog d = new YesNoCancelDialog(ij, "ImageJ", "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;
-			else if (d.savePressed())
-				new MeasurementsWriter().run("");
+			else if (d.yesPressed()) {
+				if (!(new MeasurementsWriter()).save(""))
+					return false;
+			}
 		}
 		umeans = null;
 		systemRT.reset();

@@ -200,8 +200,16 @@ public class ByteProcessor extends ImageProcessor {
 		return pixels[y*width+x]&0xff;
 	}
 
+	public final int get(int index) {
+		return pixels[index]&0xff;
+	}
+
 	public final void set(int x, int y, int value) {
 		pixels[y*width + x] = (byte)value;
+	}
+
+	public final void set(int index, int value) {
+		pixels[index] = (byte)value;
 	}
 
 	static double oldx, oldy;
@@ -293,6 +301,26 @@ public class ByteProcessor extends ImageProcessor {
 			byte[] pixels2 = new byte[width*height];
         	System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
+		}
+	}
+
+	public int[][] getIntArray() {
+		int[][] a = new int [width][height];
+		int offset = 0;
+		for(int y=0; y<height; y++) {
+			for(int x=0; x<width; x++) {
+				//ij.IJ.log(x+"  "+y+"  "+offset);
+				a[x][y]=pixels[offset++]&255;
+			}
+		}
+		return a; 
+	}
+
+	public void setIntArray(int[][] a) {
+		int offset = 0;
+		for(int y=0; y<height; y++) {
+			for(int x=0; x<width; x++)
+				pixels[offset++] = (byte)a[x][y];
 		}
 	}
 

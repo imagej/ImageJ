@@ -492,14 +492,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	/** Saves all the text in this TextPanel to a file. Set
-		'path' to "" to display a save as dialog. */
-	public void saveAs(String path) {
+		'path' to "" to display a save as dialog. Returns
+		'false' if the user cancels the save as dialog.*/
+	public boolean saveAs(String path) {
 		boolean isResults = IJ.isResultsWindow() && IJ.getTextPanel()==this;
 		if (path.equals("")) {
+			IJ.wait(10);
 			String ext = isResults?Prefs.get("options.ext", ".xls"):".txt";
 			SaveDialog sd = new SaveDialog("Save as Text", title, ext);
 			String file = sd.getFileName();
-			if (file == null) return;
+			if (file == null) return false;
 			path = sd.getDirectory() + file;
 		}
 		PrintWriter pw = null;
@@ -510,7 +512,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		catch (IOException e) {
 			//IJ.write("" + e);
-			return;
+			return true;
 		}
 		save(pw);
 		pw.close();
@@ -523,6 +525,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				Recorder.record("saveAs", "Text", path);
 		}
 		IJ.showStatus("");
+		return true;
 	}
 
 	/** Returns all the text as a string. */
@@ -556,6 +559,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (index<0 || index>=iRowCount)
 			throw new IllegalArgumentException("index out of range: "+index);
 		return new String((char[])(vData.elementAt(index)));
+	}
+	
+	/** Replaces the contents of the specified line, where 'index'
+		must be greater than or equal to zero and less than 
+		the value returned by getLineCount(). */
+	public void setLine(int index, String s) {
+		if (index<0 || index>=iRowCount)
+			throw new IllegalArgumentException("index out of range: "+index);
+		vData.setElementAt(s.toCharArray(), index);	
+		tc.repaint();
 	}
 
 	/** Returns the index of the first selected line, or -1 

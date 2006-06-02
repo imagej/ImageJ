@@ -732,8 +732,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		cancel = new Button("Cancel");
 		cancel.addActionListener(this);
+		cancel.addKeyListener(this);
 		okay = new Button("  OK  ");
 		okay.addActionListener(this);
+		okay.addKeyListener(this);
 		if (IJ.isMacintosh()) {
 			buttons.add(cancel);
 			buttons.add(okay);
@@ -893,9 +895,12 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
     public void paint(Graphics g) {
     	super.paint(g);
-      	if (firstPaint && numberField!=null) {
-      		TextField tf = (TextField)(numberField.elementAt(0));
-    		tf.requestFocus();
+      	if (firstPaint) {
+      		if (numberField!=null) {
+      			TextField tf = (TextField)(numberField.elementAt(0));
+    			tf.requestFocus();
+    		} else
+    			okay.requestFocus();
     		firstPaint = false;
     	}
     }

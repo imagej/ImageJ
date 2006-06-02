@@ -183,12 +183,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		installer = new MacroInstaller();
 		installer.setFileName(getTitle());
 		int nShortcuts = installer.install(text, macrosMenu);
-		boolean isAutoRunMacro = text.indexOf("AutoRun")!=-1;
-		if (!isAutoRunMacro && (installInPluginsMenu || nShortcuts>0))
+		if (installInPluginsMenu || nShortcuts>0)
 			installer.install(null);
-		if (isAutoRunMacro) {
-			dontShowWindow = text.indexOf("AutoRunAndHide")!=-1;
-		}
+		dontShowWindow = installer.isAutoRunAndHide();
 	}
 		
 	public void open(String dir, String name) {
@@ -522,10 +519,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		boolean okayToClose = true;
 		ImageJ ij = IJ.getInstance();
 		if (!getTitle().equals("Errors") && changes && !IJ.macroRunning() && ij!=null && !ij.quitting()) {
-			SaveChangesDialog d = new SaveChangesDialog(this, getTitle());
+			String msg = "Save changes to \"" + getTitle() + "\"?";
+			YesNoCancelDialog d = new YesNoCancelDialog(this, "Editor", msg);
 			if (d.cancelPressed())
 				okayToClose = false;
-			else if (d.savePressed())
+			else if (d.yesPressed())
 				save();
 		}
 		if (okayToClose) {

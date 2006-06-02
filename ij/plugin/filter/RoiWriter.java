@@ -36,20 +36,9 @@ public class RoiWriter implements PlugInFilter {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			throw new IllegalArgumentException("ROI required");
-		String name;
-		switch (roi.getType()) {
-			case Roi.POLYGON: name="Polygon.roi"; break;
-			case Roi.FREEROI: name="Freehand.roi"; break;
-			case Roi.TRACED_ROI: name="TracedRoi.roi"; break;
-			case Roi.OVAL: name="Oval.roi"; break;
-			case Roi.LINE: name="Line.roi"; break;
-			case Roi.POLYLINE: name="PolyLine.roi"; break;
-			case Roi.FREELINE: name="FreeLine.roi"; break;
-			case Roi.ANGLE: name="Angle.roi"; break;
-			case Roi.COMPOSITE: name="Composite.roi"; break;
-			case Roi.POINT: name="Point.roi"; break;
-			default: name="Rectangle.roi"; break;
-		}
+		String name = roi.getName();
+		if (name==null)
+			name = imp.getTitle();
 		SaveDialog sd = new SaveDialog("Save Selection...", name, ".roi");
 		name = sd.getFileName();
 		if (name == null)

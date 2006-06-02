@@ -68,10 +68,16 @@ public class NextImageOpener implements PlugIn {
 		if (imp2==null) return null;
 		String newTitle = imp2.getTitle();
 		if (imp0.changes) {
-			SaveChangesDialog d = new SaveChangesDialog(imp0.getWindow(), imp0.getTitle());
+			String msg;
+			String name = imp0.getTitle();
+			if (name.length()>22)
+				msg = "Save changes to\n" + "\"" + name + "\"?";
+			else
+				msg = "Save changes to \"" + name + "\"?";
+			YesNoCancelDialog d = new YesNoCancelDialog(imp0.getWindow(), "ImageJ", msg);
 			if (d.cancelPressed())
 				return "Canceled";
-			else if (d.savePressed()) {
+			else if (d.yesPressed()) {
 				FileSaver fs = new FileSaver(imp0);
 				if (!fs.save())
 					return "Canceled";

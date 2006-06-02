@@ -1,10 +1,11 @@
 package ij.gui;
+import ij.IJ;
 import java.awt.*;
 import java.awt.event.*;
 
 /** A modal dialog box with a one line message and
 	"Don't Save", "Cancel" and "Save" buttons. */
-public class SaveChangesDialog extends Dialog implements ActionListener {
+public class SaveChangesDialog extends Dialog implements ActionListener, KeyListener {
 	private Button dontSave, cancel, save;
 	private boolean cancelPressed, savePressed;
 
@@ -30,10 +31,13 @@ public class SaveChangesDialog extends Dialog implements ActionListener {
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 8, 8));
 		save = new Button("  Save  ");
 		save.addActionListener(this);
+		save.addKeyListener(this);
 		cancel = new Button("  Cancel  ");
 		cancel.addActionListener(this);
+		cancel.addKeyListener(this);
 		dontSave = new Button("Don't Save");
 		dontSave.addActionListener(this);
+		dontSave.addKeyListener(this);
 		if (ij.IJ.isMacintosh()) {
 			panel.add(dontSave);
 			panel.add(cancel);
@@ -56,8 +60,7 @@ public class SaveChangesDialog extends Dialog implements ActionListener {
 			cancelPressed = true;
 		else if (e.getSource()==save)
 			savePressed = true;
-		setVisible(false);
-		dispose();
+		closeDialog();
 	}
 	
 	/** Returns true if the user dismissed dialog by pressing "Cancel". */
@@ -72,4 +75,24 @@ public class SaveChangesDialog extends Dialog implements ActionListener {
 		return savePressed;
 	}
 	
+	void closeDialog() {
+		setVisible(false);
+		dispose();
+	}
+
+	public void keyPressed(KeyEvent e) { 
+		int keyCode = e.getKeyCode(); 
+		IJ.setKeyDown(keyCode); 
+		if (keyCode==KeyEvent.VK_ENTER) 
+			closeDialog(); 
+		else if (keyCode==KeyEvent.VK_ESCAPE) { 
+			cancelPressed = true; 
+			closeDialog(); 
+			IJ.resetEscape();
+		} 
+	} 
+
+	public void keyReleased(KeyEvent e) {}
+	public void keyTyped(KeyEvent e) {}
+
 }

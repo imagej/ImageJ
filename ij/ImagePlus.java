@@ -47,18 +47,21 @@ public class ImagePlus implements ImageObserver, Measurements {
 	protected ImageWindow win;
 	protected Roi roi;
 	protected int currentSlice;
+	protected static final int OPENED=0, CLOSED=1, UPDATED=2;
+	protected boolean compositeImage;
+	protected int width;
+	protected int height;
+	protected boolean locked = false;
+
 	private ImageJ ij = IJ.getInstance();
 	private String title;
 	private	String url;
 	private FileInfo fileInfo;
-	protected int width;
-	protected int height;
 	private int nSlices = 1;
 	private int nChannels = 1;
 	private int nFrames = 1;
 	private int imageType = GRAY8;
 	private ImageStack stack;
-	protected boolean locked = false;
 	private static int currentID = -1;
 	private int ID;
 	private static Component comp;
@@ -74,8 +77,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private static ImagePlus clipboard;
 	private static Vector listeners;
 	private static boolean inListener;
-	protected static final int OPENED=0, CLOSED=1, UPDATED=2;
-	protected boolean compositeImage;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {

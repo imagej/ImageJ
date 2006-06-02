@@ -763,6 +763,7 @@ public abstract class ImageProcessor extends Object {
 			x += xinc;
 			y += yinc;
 		} while (--n>0);
+		if (lineWidth>2) resetRoi();
 	}
 		
 	/** Draws a line from (x1,y1) to (x2,y2). */
@@ -825,23 +826,34 @@ public abstract class ImageProcessor extends Object {
 		drawPixel(x-1, y-1);
 	}
 		
-	/** Draws a dot using the current line width and fill/draw value. */
+    /** Draws a dot using the current line width and fill/draw value. */
 	public void drawDot(int xcenter, int ycenter) {
 		double r = lineWidth/2.0;
-		double r2 = r*r;
 		int xmin=(int)(xcenter-r+0.5), ymin=(int)(ycenter-r+0.5);
 		int xmax=xmin+lineWidth, ymax=ymin+lineWidth;
-		r -= 0.5;
-		double xoffset=xmin+r, yoffset=ymin+r;
-		double xx, yy;
-		for (int y=ymin; y<ymax; y++) {
-			for (int x=xmin; x<xmax; x++) {
-				xx = x-xoffset; yy = y-yoffset;
-				if (xx*xx+yy*yy<=r2)
-				drawPixel(x, y);
+		if (xmin<0 || ymin<0 || xmax>=width || ymax>=height) {
+			// draw edge dot
+			double r2 = r*r;
+			r -= 0.5;
+			double xoffset=xmin+r, yoffset=ymin+r;
+			double xx, yy;
+			for (int y=ymin; y<ymax; y++) {
+				for (int x=xmin; x<xmax; x++) {
+					xx = x-xoffset; yy = y-yoffset;
+					if (xx*xx+yy*yy<=r2)
+					drawPixel(x, y);
+				}
 			}
+		} else {
+			if (dotMask==null || lineWidth!=dotMask.getWidth()) {
+				OvalRoi oval = new OvalRoi(0, 0, lineWidth, lineWidth);
+				dotMask = oval.getMask();
+			}
+			setRoi(xmin, ymin, lineWidth, lineWidth);
+			fill(dotMask);
 		}
 	}
+    private ImageProcessor dotMask;
 
 	private void setupFrame() {
 		if (frame==null) {
@@ -1144,9 +1156,13 @@ public abstract class ImageProcessor extends Object {
 	/** This is a faster version of getPixel() that does not do bounds checking. */
 	public abstract int get(int x, int y);
 	
+	public abstract int get(int index);
+
 	/** This is a faster version of putPixel() that does not clip  
 		out of range values and does not do bounds checking. */
 	public abstract void set(int x, int y, int value);
+
+	public abstract void set(int index, int value);
 
     /** Returns the samples for the pixel at (x,y) in an int array.
     	RGB pixels have three samples, all others have one.
@@ -1414,8 +1430,10 @@ public abstract class ImageProcessor extends Object {
 		int level;
 		int maxValue = histogram.length - 1;
 		double result, sum1, sum2, sum3, sum4;
-
+		
+		int count0 = histogram[0];
 		histogram[0] = 0; //set to zero so erased areas aren't included
+		int countMax = histogram[maxValue];
 		histogram[maxValue] = 0;
 		int min = 0;
 		while ((histogram[min]==0) && (min<maxValue))
@@ -1424,6 +1442,7 @@ public abstract class ImageProcessor extends Object {
 		while ((histogram[max]==0) && (max>0))
 			max--;
 		if (min>=max) {
+			histogram[0]= count0; histogram[maxValue]=countMax;
 			level = histogram.length/2;
 			return level;
 		}
@@ -1447,6 +1466,7 @@ public abstract class ImageProcessor extends Object {
 		} while ((movingIndex+1)<=result && movingIndex<max-1);
 		
 		showProgress(1.0);
+		histogram[0]= count0; histogram[maxValue]=countMax;
 		level = (int)Math.round(result);
 		return level;
 	}

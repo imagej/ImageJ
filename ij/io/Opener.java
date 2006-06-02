@@ -106,7 +106,7 @@ public class Opener {
 		is not in one of the supported formats. */
 	public void open(String path) {
         boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1;
-        if (!fullPath) {
+        if (!fullPath && IJ.getInstance()!=null) {
             String workingDir = OpenDialog.getDefaultDirectory();
             if (workingDir!=null)
                 path = workingDir + path;

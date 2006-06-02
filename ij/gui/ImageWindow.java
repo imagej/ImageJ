@@ -246,10 +246,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning())
 			imp.changes = false;
 		if (imp.changes) {
-			SaveChangesDialog d = new SaveChangesDialog(this, imp.getTitle());
+			String msg;
+			String name = imp.getTitle();
+			if (name.length()>22)
+				msg = "Save changes to\n" + "\"" + name + "\"?";
+			else
+				msg = "Save changes to \"" + name + "\"?";
+			YesNoCancelDialog d = new YesNoCancelDialog(this, "ImageJ", msg);
 			if (d.cancelPressed())
 				return false;
-			else if (d.savePressed()) {
+			else if (d.yesPressed()) {
 				FileSaver fs = new FileSaver(imp);
 				if (!fs.save()) return false;
 			}

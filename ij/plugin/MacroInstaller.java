@@ -31,6 +31,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private String text;
 	private String anonymousName;
 	private Menu macrosMenu;
+	private int autoRunCount, autoRunAndHideCount;
 	
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
@@ -87,8 +88,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					if (name.indexOf('-')!=-1 && (name.indexOf("Tool")!=-1||name.indexOf("tool")!=-1)) {
 						Toolbar.getInstance().addMacroTool(name, this, toolCount);
 						toolCount++;
-                    } else if (name.startsWith("AutoRun")) {
+                    } else if (name.startsWith("AutoRun") && autoRunCount==0) {
                         new MacroRunner(pgm, macroStarts[count], name);
+                        autoRunCount++;
+                        if (name.equals("AutoRunAndHide"))
+                        	autoRunAndHideCount++;
                         count--;
 					} else if (!name.endsWith("Tool Selected")){ 
 						addShortcut(name);
@@ -107,7 +111,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();
 		}
-		this.instance = nShortcuts>0?this:null;
+		this.instance = this;
 		if (shortcutsInUse!=null && text!=null)
 			IJ.showMessage("Install Macros", (inUseCount==1?"This keyboard shortcut is":"These keyboard shortcuts are")
 			+ " already in use:"+shortcutsInUse);
@@ -243,17 +247,17 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return false;
 	}
 	
-	public static void doShortcut(String name) {
-		if (instance==null)
-			return;
+	public static boolean runMacroCommand(String name) {
+		if (instance==null) return false;
 		if (name.startsWith(commandPrefixS))
 			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
 			if (name.equals(instance.macroNames[i])) {
 				new MacroRunner(instance.pgm, instance.macroStarts[i], name);
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
 	
 	public void runMacro(String name) {
@@ -273,6 +277,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return nMacros;
 	}
 	
+	/** Returns true if an "AutoRunAndHide" macro was run/installed. */
+	public boolean isAutoRunAndHide() {
+		return autoRunAndHideCount>0;
+	}
+
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}

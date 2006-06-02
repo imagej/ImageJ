@@ -69,7 +69,7 @@ public class Menus {
     private boolean isJarErrorHeading;
 	private boolean installingJars, duplicateCommand;
 	private static Vector jarFiles;  // JAR files in plugins folder with "_" in their name
-	private static Vector macroFiles;  // Jmacro files in plugins folder with "_" in their name
+	private static Vector macroFiles;  // Macro files in plugins folder with "_" in their name
 	private int importCount, saveAsCount, toolsCount, optionsCount;
 	private static Hashtable menusTable; // Submenus of Plugins menu
 	private int userPluginsIndex; // First user plugin or submenu in Plugins menu
@@ -247,9 +247,12 @@ public class Menus {
 				shortcuts.put(new Integer(shortcut),label);
 			}
 		}
-		if (addSorted && menu==pluginsMenu)
-			addItemSorted(menu, item, userPluginsIndex);
-		else
+		if (addSorted) {
+			if (menu==pluginsMenu)
+				addItemSorted(menu, item, userPluginsIndex);
+			else
+				addOrdered(menu, item);
+		} else
 			menu.add(item);
 		item.addActionListener(ij);
 	}
@@ -448,18 +451,32 @@ public class Menus {
 			menu = getPluginsSubmenu(dir);
 		}
 		String command = name.replace('_',' ');
-		command = command.substring(0, command.length()-4); //remove ".txt"
+		command = command.substring(0, command.length()-4); //remove ".txt" or ".ijm"
 		command.trim();
 		if (pluginsTable.get(command)!=null) // duplicate command?
 			command = command + " Macro";
 		MenuItem item = new MenuItem(command);
-		menu.add(item);
+		addOrdered(menu, item);
 		item.addActionListener(ij);
 		String path = (dir!=null?dir+File.separator:"") + name;
 		pluginsTable.put(command, "ij.plugin.Macro_Runner(\""+path+"\")");
 		nMacros++;
 	}
 
+	/** Inserts 'item' into 'menu' in alphanumeric order. */
+	void addOrdered(Menu menu, MenuItem item) {
+		if (menu==pluginsMenu)
+			{menu.add(item); return;}
+		String label = item.getLabel();
+		for (int i=0; i<menu.getItemCount(); i++) {
+			if (label.compareTo(menu.getItem(i).getLabel())<0) {
+				menu.insert(item, i);
+				return;
+			}
+		}
+		menu.add(item);
+	}
+	
 	/** Install plugins located in JAR files. */
 	void installJarPlugins() {
 		if (jarFiles==null)
@@ -506,10 +523,9 @@ public class Menus {
         	String name = getSubmenuName(jar);
         	if (name!=null)
         		menu = getPluginsSubmenu(name);
-        	else {
+        	else
 				menu = pluginsMenu;
-				addSorted = true;
-			}
+			addSorted = true;
 		} else if (s.startsWith("File>Import")) {
 			menu = importMenu;
 			if (importCount==0) addSeparator(menu);
@@ -705,7 +721,7 @@ public class Menus {
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(pluginsPath + name);
-			} else if (hasUnderscore && (name.endsWith(".txt"))) {
+			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm"))) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(name);
 			} else {
@@ -740,7 +756,7 @@ public class Menus {
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(f.getPath() + File.separator + name);
-			} else if (hasUnderscore && (name.endsWith(".txt"))) {
+			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm"))) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(dir + name);
 			}

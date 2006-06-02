@@ -103,6 +103,7 @@ public class ImageConverter {
 		stack.addSlice("Green", G);
 		stack.addSlice("Blue", B);
 		imp.setStack(null, stack);
+		imp.setDimensions(3, 1, 1);
 	}
 
 	/** Converts an RGB image to a HSB (hue, saturation and brightness) stack. */
@@ -132,6 +133,7 @@ public class ImageConverter {
 		stack.addSlice("Saturation", S);
 		stack.addSlice("Brightness", B);
 		imp.setStack(null, stack);
+		imp.setDimensions(3, 1, 1);
 		//IJ.showProgress(1.0);
 	}
 	
