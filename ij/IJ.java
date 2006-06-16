@@ -672,6 +672,7 @@ public class IJ {
 	}
 
 	public static void setKeyDown(int key) {
+		//IJ.showStatus("setKeyDown: "+key);
 		switch (key) {
 			case KeyEvent.VK_ALT:
 				altDown=true;
@@ -687,7 +688,6 @@ public class IJ {
 				break;
 			}
 			case KeyEvent.VK_ESCAPE: {
-				//IJ.log("setKeyDown: esc");
 				escapePressed = true;
 				break;
 			}
@@ -695,6 +695,7 @@ public class IJ {
 	}
 	
 	public static void setKeyUp(int key) {
+		//IJ.showStatus("setKeyUp: "+key);
 		switch (key) {
 			case KeyEvent.VK_ALT: altDown=false; break;
 			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;

@@ -15,7 +15,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	protected int slice;
 
 	public StackWindow(ImagePlus imp) {
-		this(imp, new ImageCanvas(imp));
+		this(imp, null);
 	}
     
     public StackWindow(ImagePlus imp, ImageCanvas ic) {

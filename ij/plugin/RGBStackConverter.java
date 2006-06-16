@@ -32,7 +32,7 @@ public class RGBStackConverter implements PlugIn {
 	 		ImageConverter ic = new ImageConverter(imp2);
 			ic.convertRGBStackToRGB();
 			if (imp.getWindow()!=null)
-				new ImageWindow(imp2); // replace StackWindow with ImageWindow
+				new ImageWindow(imp2, imp.getCanvas()); // replace StackWindow with ImageWindow
 		}
 		imp.unlock();
 	}

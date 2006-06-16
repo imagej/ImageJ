@@ -20,6 +20,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private double initialMagnification = 1;
 	private int newWidth, newHeight;
 	protected boolean closed;
+	private boolean newCanvas;
 		
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -34,7 +35,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	
     private int textGap = centerOnScreen?0:TEXT_GAP;
 	
-	/** This variable is set false if presses the escape key or closes the window. */
+	/** This variable is set false if the user presses the escape key or closes the window. */
 	public boolean running;
 	
 	/** This variable is set false if the user clicks in this
@@ -46,7 +47,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	}
 
     public ImageWindow(ImagePlus imp) {
-    	this(imp, new ImageCanvas(imp));
+    	this(imp, null);
    }
     
     public ImageWindow(ImagePlus imp, ImageCanvas ic) {
@@ -60,6 +61,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
         }
 		ij = IJ.getInstance();
 		this.imp = imp;
+		if (ic==null)
+			{ic=new ImageCanvas(imp); newCanvas=true;}
 		this.ic = ic;
 		ImageWindow previousWindow = imp.getWindow();
 		setLayout(new ImageLayout(ic));
@@ -71,10 +74,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		WindowManager.addWindow(this);
 		imp.setWindow(this);
 		if (previousWindow!=null) {
-			setLocationAndSize(false);
+			if (newCanvas) setLocationAndSize(false);
 			Point loc = previousWindow.getLocation();
 			setLocation(loc.x, loc.y);
-			show();
+			if (!(this instanceof StackWindow)) {
+				pack();
+				show();
+			}
 			boolean unlocked = imp.lockSilently();
 			boolean changes = imp.changes;
 			imp.changes = false;
@@ -199,24 +205,24 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
     	switch (type) {
 	    	case ImagePlus.GRAY8:
+	    	case ImagePlus.COLOR_256:
 	    		s += "8-bit";
 	    		break;
 	    	case ImagePlus.GRAY16:
-	    		s += "16-bit grayscale";
+	    		s += "16-bit";
 				size *= 2;
 	    		break;
 	    	case ImagePlus.GRAY32:
-	    		s += "32-bit grayscale";
+	    		s += "32-bit";
 				size *= 4;
-	    		break;
-	    	case ImagePlus.COLOR_256:
-	    		s += "8-bit color";
 	    		break;
 	    	case ImagePlus.COLOR_RGB:
 	    		s += "RGB";
 				size *= 4;
 	    		break;
     	}
+    	if (imp.isInvertedLut())
+    		s += " (inverting LUT)";
     	if (size>=10000)    	
     		s += "; " + (int)Math.round(size/1024.0) + "MB";
     	else if (size>=1024) {

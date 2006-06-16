@@ -81,7 +81,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				ip.setColorModel(cm);
 				if (imp.getStackSize()>1)
 					imp.getStack().setColorModel(cm);
-				imp.updateAndDraw();
+				imp.updateAndRepaintWindow();
 			}
 		} else
 			createImage(fi, showImage);
@@ -97,9 +97,9 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		ip.invertLut();
 		if (imp.getStackSize()>1)
 			imp.getStack().setColorModel(ip.getColorModel());
-		imp.updateAndDraw();
-		if (imp.getRoi()!=null)
-			imp.draw(); // update entire image, not just roi
+		imp.updateAndRepaintWindow();
+		//if (imp.getRoi()!=null)
+		//	imp.draw(); // update entire image, not just roi
 	}
 
 	int fire(byte[] reds, byte[] greens, byte[] blues) {

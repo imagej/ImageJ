@@ -39,7 +39,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private int eventCount;
 	private String shortcutsInUse;
 	private int inUseCount;
-	private int nShortcuts;
 	private MacroInstaller installer;
 	private static String defaultDir;
 	private boolean dontShowWindow;
@@ -182,8 +181,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	void installMacros(String text, boolean installInPluginsMenu) {
 		installer = new MacroInstaller();
 		installer.setFileName(getTitle());
-		int nShortcuts = installer.install(text, macrosMenu);
-		if (installInPluginsMenu || nShortcuts>0)
+		int nShortcutsOrTools = installer.install(text, macrosMenu);
+		if (installInPluginsMenu || nShortcutsOrTools>0)
 			installer.install(null);
 		dontShowWindow = installer.isAutoRunAndHide();
 	}

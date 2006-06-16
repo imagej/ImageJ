@@ -2694,9 +2694,8 @@ public class Functions implements MacroConstants, Measurements {
 	// of String parameters, returning a String.
 	// Contributed by Johannes Schindelin
 	String call() {
-		interp.getLeftParen();
-
 		// get class and method name
+		interp.getLeftParen();
 		String fullName = getString();
 		int dot = fullName.lastIndexOf('.');
 		if(dot<0)

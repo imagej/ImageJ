@@ -295,6 +295,8 @@ public class WindowManager {
 				return false;
 			IJ.wait(100);
 		}
+		if (IJ.getInstance().quitting() && IJ.getApplet()==null)
+			return true;
 		Frame[] list = getNonImageWindows();
 		for (int i=0; i<list.length; i++) {
 			Frame frame = list[i];

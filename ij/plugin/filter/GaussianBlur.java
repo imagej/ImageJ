@@ -87,11 +87,12 @@ public class GaussianBlur implements PlugInFilter {
 					ip2.reset(ip.getMask());
 				if (isRoi)
 					ip.insert(ip2, rect.x, rect.y);
+				IJ.showProgress(1.0);
 				return !canceled;
 		}
 		ip2.setCalibrationTable(null);
         ip2 = ip2.convertToFloat();
-        blurFloat(ip2, kernel);
+        blurFloat(ip2, kernel, 0, 2);
 		if (nonRectRoi)
 			ip.snapshot();
         switch (type) {
@@ -110,15 +111,18 @@ public class GaussianBlur implements PlugInFilter {
         }
 		if (nonRectRoi)
 			ip.reset(ip.getMask());
+		IJ.showProgress(1.0);
 		return !canceled;
     }
 
-	void blurFloat(ImageProcessor ip, float[] kernel) {
+	void blurFloat(ImageProcessor ip, float[] kernel, int p1, int p2) {
 		if (canceled) return;
 		Convolver c = new Convolver();
+		IJ.showProgress(p1, p2);
 		if (!c.convolve(ip, kernel, kernel.length, 1))
 			{canceled=true; return;}
 		ip.snapshot();
+		IJ.showProgress(p1+1, p2);
 		if (!c.convolve(ip, kernel,1, kernel.length))
 			{canceled=true; return;}
 	}
@@ -135,13 +139,13 @@ public class GaussianBlur implements PlugInFilter {
         ImageProcessor gip = new ByteProcessor(width, height, g, null);
         ImageProcessor bip = new ByteProcessor(width, height, b, null);
         ImageProcessor ip2 = rip.convertToFloat();
-        blurFloat(ip2, kernel);
+        blurFloat(ip2, kernel, 0, 6);
         ImageProcessor r2 = ip2.convertToByte(false);
         ip2 = gip.convertToFloat();
-        blurFloat(ip2, kernel);
+        blurFloat(ip2, kernel, 2, 6);
         ImageProcessor g2 = ip2.convertToByte(false);
         ip2 = bip.convertToFloat();
-        blurFloat(ip2, kernel);
+        blurFloat(ip2, kernel, 4, 6);
         ImageProcessor b2 = ip2.convertToByte(false);
         ((ColorProcessor)ip).setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
     }

@@ -899,7 +899,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
       		if (numberField!=null) {
       			TextField tf = (TextField)(numberField.elementAt(0));
     			tf.requestFocus();
-    		} else
+    		} else if (stringField==null)
     			okay.requestFocus();
     		firstPaint = false;
     	}

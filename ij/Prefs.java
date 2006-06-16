@@ -272,7 +272,7 @@ public class Prefs {
 			NewImage.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			savePrefs(prefs, path);
-		} catch (Exception e) {
+		} catch (Throwable t) {
 			//CharArrayWriter caw = new CharArrayWriter();
 			//PrintWriter pw = new PrintWriter(caw);
 			//e.printStackTrace(pw);

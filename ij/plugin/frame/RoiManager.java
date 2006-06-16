@@ -141,7 +141,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			name = null;
 		String label = name!=null?name:getLabel(imp, roi);
 		if (promptForName)
-			label = getName(label);
+			label = promptForName(label);
 		else
 			label = getUniqueName(label);
 		if (label==null) return false;
@@ -231,6 +231,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				list.remove(i);
 			}
 		}
+		if (Recorder.record) Recorder.record("roiManager", "Delete");
 		return true;
 	}
 	
@@ -248,6 +249,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String name = list.getItem(index);
 		rois.remove(name);
 		rois.put(name, roi);
+		if (Recorder.record) Recorder.record("roiManager", "Update");
 		return true;
 	}
 
@@ -256,7 +258,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index<0)
 			return error("Exactly one item in the list must be selected.");
 		String name = list.getItem(index);
-		if (name2==null) name2 = getName(name);
+		if (name2==null) name2 = promptForName(name);
 		if (name2==null) return false;
 		Roi roi = (Roi)rois.get(name);
 		rois.remove(name);
@@ -268,7 +270,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
-	String getName(String name) {
+	String promptForName(String name) {
 		GenericDialog gd = new GenericDialog("ROI Manager");
 		gd.addStringField("Rename As:", name, 20);
 		gd.showDialog();
@@ -413,7 +415,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		roi.setName(newName);
 		list.replaceItem(newName, indexes[0]);
 		if (restore(indexes[0], true))
-			IJ.run("Selection...", "path='"+dir+name2+"'");
+			IJ.saveAs("selection", dir+name2);
 		return true;
 	}
 
@@ -448,46 +450,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (Recorder.record) Recorder.record("roiManager", "Save", path);
 		return true;
 	}
-	
-	/*
-	boolean save() {
-		if (list.getItemCount()==0)
-			return error("The selection list is empty.");
-		int[] indexes = list.getSelectedIndexes();
-		if (indexes.length==0)
-			indexes = getAllIndexes();
-		String name = list.getItem(indexes[0]);
-		Macro.setOptions(null);
-		SaveDialog sd = new SaveDialog("Save Selection...", name, ".roi");
-		String name2 = sd.getFileName();
-		if (name2 == null)
-			return false;
-		String dir = sd.getDirectory();
-		if (indexes.length==1) {
-			Roi roi = (Roi)rois.get(name);
-			rois.remove(name);
-			if (!name2.endsWith(".roi")) name = name+".roi";
-			String newName = name2.substring(0, name2.length()-4);
-			rois.put(newName, roi);
-			list.replaceItem(newName, indexes[0]);
-			if (restore(indexes[0]))
-				IJ.run("Selection...", "path='"+dir+name2+"'");
-			return true;
-		}
-		for (int i=0; i<indexes.length; i++) {
-			if (restore(indexes[i])) {
-				name = list.getItem(indexes[i]);
-				if (!name.endsWith(".roi"))
-					name = name+".roi";
-				//IJ.log("Selection...," + " path='"+dir+name+"'");
-				IJ.run("Selection...", "path='"+dir+name+"'");
-			} else
-				break;
-		}
-		return true;
-	}
-	*/
-	
+		
 	boolean measure() {
 		ImagePlus imp = getImage();
 		if (imp==null)
@@ -666,8 +629,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return list;
 	}
 		
-	/** Executes the ROI Manager "Add", "Add & Draw", "Delete", "Measure", "Draw",
-		"Combine" command. Returns false if <code>cmd</code> is not one of these strings. */
+	/** Returns the name of the selection with the specified index.
+		Can be called from a macro using
+		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
+		Returns "null" if the Roi Manager is not open index is
+		out of range.
+	*/
+	public static String getName(String index) {
+		int i = (int)Tools.parseDouble(index, -1);
+		RoiManager instance = getInstance();
+		if (instance!=null && i>=0 && i<instance.list.getItemCount())
+       	 	return  instance.list.getItem(i);
+		else
+			return "null";
+	}
+
+	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
+		"Deselect" or "Combine" command. Returns false if <code>cmd</code> is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
 		macro = true;
@@ -676,6 +654,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			add(IJ.shiftKeyDown(), IJ.altKeyDown());
 		else if (cmd.equals("add & draw"))
 			addAndDraw(false);
+		else if (cmd.equals("update"))
+			update();
 		else if (cmd.equals("delete"))
 			delete(false);
 		else if (cmd.equals("measure"))

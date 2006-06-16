@@ -21,7 +21,7 @@ class at
 */
 public class TextPanel extends Panel implements AdjustmentListener,
 	MouseListener, MouseMotionListener, KeyListener,  ClipboardOwner,
-	ActionListener {
+	ActionListener, Runnable {
 
 	static final int DOUBLE_CLICK_THRESHOLD = 650;
 	// height / width
@@ -50,6 +50,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	PopupMenu pm;
 	boolean columnsManuallyAdjusted;
 	long mouseDownTime;
+    String filePath;
+
   
 	/** Constructs a new TextPanel. */
 	public TextPanel() {
@@ -90,7 +92,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		addPopupItem("Copy");
 		addPopupItem("Clear");
 		addPopupItem("Select All");
-		addPopupItem("Copy All");
 		add(pm);
 	}
 	
@@ -242,17 +243,30 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	void handleDoubleClick() {
-			if (selStart<0 || selStart!=selEnd) return;
-			boolean doubleClick = System.currentTimeMillis()-mouseDownTime<=DOUBLE_CLICK_THRESHOLD;
- 			mouseDownTime = System.currentTimeMillis();
- 			if (doubleClick) {
-				char[] chars = (char[])(vData.elementAt(selStart));
-				String s = new String(chars);
-				if (s.endsWith(".java") || s.endsWith(".txt") || s.endsWith(".ijm"))
-					IJ.open(s);
+		if (selStart<0 || selStart!=selEnd || iColCount!=1) return;
+		boolean doubleClick = System.currentTimeMillis()-mouseDownTime<=DOUBLE_CLICK_THRESHOLD;
+		mouseDownTime = System.currentTimeMillis();
+		if (doubleClick) {
+			char[] chars = (char[])(vData.elementAt(selStart));
+			String s = new String(chars);
+			int index = s.indexOf(": ");
+			if (index>-1 && !s.endsWith(": "))
+				s = s.substring(index+2); // remove sequence number added by ListFilesRecursively
+			if (s.indexOf(File.separator)!=-1 ||  s.indexOf(".")!=-1) {
+				filePath = s;
+				Thread thread = new Thread(this, "Open");
+				thread.setPriority(thread.getPriority()-1);
+				thread.start();
 			}
+		}
 	}
 	
+    /** For better performance, open double-clicked files on 
+    	separate thread instead of on event dispatch thread. */
+    public void run() {
+        if (filePath!=null) IJ.open(filePath);
+    }
+
 	public void mouseExited (MouseEvent e) {
 		if(bDrag) {
 			setCursor(defaultCursor);
@@ -342,18 +356,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (cmd.equals("Save As..."))
 			saveAs("");
 		else if (cmd.equals("Cut"))
-			{copySelection();clearSelection();}
+			cutSelection();
 		else if (cmd.equals("Copy"))
 			copySelection();
 		else if (cmd.equals("Clear"))
 			clearSelection();
 		else if (cmd.equals("Select All"))
 			selectAll();
-		else if (cmd.equals("Copy All")) {
-			selectAll();
-			copySelection();
-			resetSelection();		
-		} else if (cmd.equals("Summarize"))
+		else if (cmd.equals("Summarize"))
 			IJ.doCommand("Summarize");
 		else if (cmd.equals("Distribution..."))
 			IJ.doCommand("Distribution...");
@@ -372,7 +382,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if(iRowHeight==0 || x>d.width || y>d.height)
 			return;
      	int r=(y/iRowHeight)-1+iFirstRow;
-      	if(r>=0 && r<iRowCount && x<iGridWidth) {
+     	int lineWidth = iGridWidth;
+		if (iColCount==1 && tc.fMetrics!=null && r>=0 && r<iRowCount) {
+			char[] chars = (char[])vData.elementAt(r);
+			lineWidth = Math.max(tc.fMetrics.charsWidth(chars,0,chars.length), iGridWidth);
+		}
+      	if(r>=0 && r<iRowCount && x<lineWidth) {
 			selOrigin = r;
 			selStart = r;
 			selEnd = r;
@@ -412,7 +427,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	Returns the number of characters copied.
 	*/
 	public int copySelection() {
-		if (selStart==-1 || selEnd==-1) return 0;
+		if (selStart==-1 || selEnd==-1)
+			return copyAll();
 		StringBuffer sb = new StringBuffer();
 		for (int i=selStart; i<=selEnd; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
@@ -432,10 +448,29 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		return s.length();
 	}
 	
+	int copyAll() {
+		selectAll();
+		int count = selEnd - selStart;
+		if (count>0)
+			copySelection();
+		resetSelection();
+		return count;
+	}
+	
+	void cutSelection() {
+		if (selStart==-1 || selEnd==-1)
+			selectAll();
+		copySelection();
+		clearSelection();
+	}	
+
 	/** Deletes the selected lines. */
 	public void clearSelection() {
-		if (selStart==-1 || selEnd==-1)
+		if (selStart==-1 || selEnd==-1) {
+			if (getLineCount()>0)
+				IJ.error("Selection required");
 			return;
+		}
 		if (selStart==0 && selEnd==(iRowCount-1)) {
 			vData.removeAllElements();
 			iRowCount = 0;
@@ -463,6 +498,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	
 	/** Selects all the lines in this TextPanel. */
 	public void selectAll() {
+		if (selStart==0 && selEnd==iRowCount-1) {
+			resetSelection();
+			return;
+		}
 		selStart = 0;
 		selEnd = iRowCount-1;
 		selOrigin = 0;
@@ -590,7 +629,3 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 }
-
-
-
-

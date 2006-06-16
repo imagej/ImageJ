@@ -140,7 +140,7 @@ public class ImageConverter {
 	/** Converts a 2 or 3 slice 8-bit stack to RGB. */
 	public void convertRGBStackToRGB() {
 		int stackSize = imp.getStackSize();
-		if (stackSize<2 ||stackSize>4 || type!=ImagePlus.GRAY8)
+		if (stackSize<2 || stackSize>3 || type!=ImagePlus.GRAY8)
 			throw new IllegalArgumentException("2 or 3 slice 8-bit stack required");
 		int width = imp.getWidth();
 		int height = imp.getHeight();

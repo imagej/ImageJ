@@ -28,6 +28,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private String shortcutsInUse;
 	private int inUseCount;
 	private int nShortcuts;
+	private int toolCount;
 	private String text;
 	private String anonymousName;
 	private Menu macrosMenu;
@@ -60,11 +61,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		shortcutsInUse = null;
 		inUseCount = 0;
 		nShortcuts = 0;
+		toolCount = 0;
 		macroStarts = new int[MAX_MACROS];
 		macroNames = new String[MAX_MACROS];
-		int toolCount = 0;
 		int itemCount = macrosMenu.getItemCount();
-		int baseCount = macrosMenu==Menus.getMacrosMenu()?4:5;
+		int baseCount = macrosMenu==Menus.getMacrosMenu()?5:5;
 		if (itemCount>baseCount)
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
@@ -145,7 +146,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		this.text = text;
 		macrosMenu = menu;
 		install();
-		return nShortcuts;
+		return nShortcuts+toolCount;
 	}
 
 	void removeShortcuts() {

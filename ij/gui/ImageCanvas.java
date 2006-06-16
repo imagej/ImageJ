@@ -154,6 +154,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setCursor(handCursor);
 			return;
 		}
+		int id = Toolbar.getToolId();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.MAGNIFIER:
 				if (IJ.isMacintosh())
@@ -165,7 +166,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				setCursor(handCursor);
 				break;
 			default:  //selection tool
-				if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
+				if (id==Toolbar.SPARE1 || id>=Toolbar.SPARE2)
+					setCursor(crosshairCursor);
+				else if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
 					setCursor(handCursor);
 				else if (Prefs.usePointerCursor || (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.contains(ox, oy)))
 					setCursor(defaultCursor);

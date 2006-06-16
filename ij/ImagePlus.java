@@ -473,11 +473,11 @@ public class ImagePlus implements ImageObserver, Measurements {
     	setProcessor2(title, ip, stack);
 		if (win==null) return;
 		if (stackSize==1 && win instanceof StackWindow)
-			win = new ImageWindow(this);   // replaces this window
+			win = new ImageWindow(this, getCanvas());   // replaces this window
 		else if (dimensionsChanged && !stackSizeChanged)
 			win.updateImage(this);
 		else if (stackSize>1 && !(win instanceof StackWindow))
-			win = new StackWindow(this);   // replaces this window
+			win = new StackWindow(this, getCanvas());   // replaces this window
 		else if (stackSize>1 && dimensionsChanged)
 			win = new StackWindow(this);   // replaces this window
 		else
@@ -713,35 +713,27 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Returns the number of channels. */
 	public int getNChannels() {
+		verifyDimensions();
 		return nChannels;
 	}
 
 	/** Returns the image depth (number of z-slices). */
 	public int getNSlices() {
 		//IJ.log("getNSlices: "+ nChannels+"  "+nSlices+"  "+nFrames);
-		int stackSize = getImageStackSize();
-		if (nSlices==1 && nFrames*nChannels!=stackSize) {
-			nSlices = stackSize;
-			nChannels = 1;
-			nFrames = 1;
-		}
+		verifyDimensions();
 		return nSlices;
 	}
 
 	/** Returns the number of frames (time-points). */
 	public int getNFrames() {
+		verifyDimensions();
 		return nFrames;
 	}
 	
 	/** Returns the dimensions of this image (width, height, nChannels, 
 		nSlices, nFrames) as a 5 element int array. */
 	public int[] getDimensions() {
-		int stackSize = getImageStackSize();
-		if (nChannels*nSlices*nFrames!=stackSize) {
-			nSlices = stackSize;
-			nChannels = 1;
-			nFrames = 1;
-		}
+		verifyDimensions();
 		int[] d = new int[5];
 		d[0] = width;
 		d[1] = height;
@@ -751,6 +743,21 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return d;
 	}
 
+
+	void verifyDimensions() {
+		int stackSize = getImageStackSize();
+		if (nSlices==1) {
+			if (nChannels>1 && nFrames==1)
+				nChannels = stackSize;
+			else if (nFrames>1 && nChannels==1)
+				nFrames = stackSize;
+		}
+		if (nChannels*nSlices*nFrames!=stackSize) {
+			nSlices = stackSize;
+			nChannels = 1;
+			nFrames = 1;
+		}
+	}
 
 	/** Returns the current image type (ImagePlus.GRAY8, ImagePlus.GRAY16,
 		ImagePlus.GRAY32, ImagePlus.COLOR_256 or ImagePlus.COLOR_RGB).
@@ -923,10 +930,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the current stack slice number or 1 if
 		this is a single image. */
 	public int getCurrentSlice() {
-		if (currentSlice==0)
-			return 1;
-		else
-			return currentSlice;
+		if (currentSlice<1) currentSlice = 1;
+		if (currentSlice>getStackSize()) currentSlice = getStackSize();
+		return currentSlice;
 	}
 	
 	public void killStack() {

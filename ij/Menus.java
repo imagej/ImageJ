@@ -688,12 +688,15 @@ public class Menus {
 		if (homeDir.endsWith("plugins"))
 			pluginsPath = homeDir+Prefs.separator;
 		else {
-			String pluginsDir = System.getProperty("plugins.dir");
+			String property = System.getProperty("plugins.dir");
+			String pluginsDir = property;
 			if (pluginsDir==null)
 				pluginsDir = homeDir;
 			else if (pluginsDir.equals("user.home"))
 				pluginsDir = System.getProperty("user.home");
 			pluginsPath = pluginsDir+Prefs.separator+"plugins"+Prefs.separator;
+			if (property!=null&&!(new File(pluginsPath)).isDirectory())
+				pluginsPath = pluginsDir + Prefs.separator;
 			macrosPath = pluginsDir+Prefs.separator+"macros"+Prefs.separator;
 		}
 		File f = macrosPath!=null?new File(macrosPath):null;
@@ -1187,12 +1190,19 @@ public class Menus {
 	}
 	
 	void installStartupMacroSet() {
+		if (applet!=null) {
+			IJ.runPlugIn("ij.plugin.URLOpener", applet.getDocumentBase()+"StartupMacros.txt");
+			return;
+		}
 		if (macrosPath==null)
 			return;
 		String path = macrosPath + "StartupMacros.txt";
 		File f = new File(path);
-		if (f==null || !f.exists())
-			return;
+		if (!f.exists()) {
+			path = macrosPath + "StartupMacros.ijm";
+			f = new File(path);
+			if (!f.exists()) return;
+		}
 		try {
 			MacroInstaller mi = new MacroInstaller();
 			mi.run(path);

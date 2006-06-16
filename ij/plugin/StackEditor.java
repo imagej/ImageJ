@@ -37,7 +37,11 @@ public class StackEditor implements PlugIn {
 		if (!imp.lock())
 			return;
 		ImageStack stack = imp.getStack();
-		if (stack.getSize()==1) stack.setSliceLabel(null, 1);
+		if (stack.getSize()==1) {
+			String label = stack.getSliceLabel(1);
+			if (label!=null && label.indexOf("\n")!=-1)
+				stack.setSliceLabel(null, 1);
+		}
 		ImageProcessor ip = imp.getProcessor();
 		int n = imp.getCurrentSlice();
 		if (IJ.altKeyDown())

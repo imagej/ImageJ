@@ -24,17 +24,14 @@ public class Binary implements PlugInFilter {
 			return DONE;
 		}
 		
-		if (arg.equals("outline") || arg.equals("skel")) {
-			if (imp!=null && (imp.getType()==ImagePlus.GRAY8 || imp.getType()==ImagePlus.COLOR_256)) {
-				ImageStatistics stats = imp.getStatistics();
-				if (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
-					IJ.error("8-bit binary (black and white only) image required.");
-					return DONE;
-				}
+		if (imp!=null && (imp.getType()==ImagePlus.GRAY8 || imp.getType()==ImagePlus.COLOR_256)) {
+			ImageStatistics stats = imp.getStatistics();
+			if (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
+				IJ.error("8-bit binary (black and white only) image required.");
+				return DONE;
 			}
-			return IJ.setupDialog(imp, DOES_8G+DOES_8C+SUPPORTS_MASKING);
-		} else
-			return IJ.setupDialog(imp, DOES_8G+DOES_8C+DOES_RGB+SUPPORTS_MASKING);
+		}
+		return IJ.setupDialog(imp, DOES_8G+DOES_8C+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {

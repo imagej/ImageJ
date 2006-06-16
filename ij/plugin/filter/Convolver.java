@@ -138,7 +138,10 @@ public class Convolver implements PlugInFilter, ActionListener {
 		ImageProcessor ip2 = ip.convertToFloat();
 		ip2.setMask(ip.getMask());
 		ip2.setRoi(ip.getRoi());
-		convolveFloat(ip2, kernel, kw, kh);
+		if (kw==1 || kh==1)
+			convolveFloat1D(ip2, kernel, kw, kh);
+		else
+			convolveFloat(ip2, kernel, kw, kh);
 		switch (type) {
 			case BYTE:
 				ip2 = ip2.convertToByte(false);
@@ -202,7 +205,6 @@ public class Convolver implements PlugInFilter, ActionListener {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
-		boolean isRoi = r.width!=width||r.height!=height;
 		boolean nonRectRoi = ip.getMask()!=null;
 		if (nonRectRoi)
 			ip.snapshot();
@@ -214,17 +216,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 		int vc = kh/2;
 		float[] pixels = (float[])ip.getPixels();
 		float[] pixels2 = (float[])ip.getPixelsCopy();
-		//for (int i=0; i<width*height; i++)
-		//	pixels[i] = 0f;
-
-		double scale = 1.0;
-		if (normalize) {
-			double sum = 0.0;
-			for (int i=0; i<kernel.length; i++)
-				sum += kernel[i];
-			if (sum!=0.0)
-				scale = (float)(1.0/sum);
-		}
+		double scale = getScale(kernel);
 
  		int progress = Math.max((y2-y1)/25,1);
 		double sum;
@@ -263,6 +255,69 @@ public class Convolver implements PlugInFilter, ActionListener {
    		IJ.showProgress(1.0);
    		return true;
    	 }
+
+	/** Convolves the image <code>ip</code> with a kernel of width 
+		<code>kw</code> and height <code>kh</code>. */
+	void convolveFloat1D(ImageProcessor ip, float[] kernel, int kw, int kh) {
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		Rectangle r = ip.getRoi();
+		int x1 = r.x;
+		int y1 = r.y;
+		int x2 = x1 + r.width;
+		int y2 = y1 + r.height;
+		int uc = kw/2;    
+		int vc = kh/2;
+		float[] pixels = (float[])ip.getPixels();
+		float[] pixels2 = (float[])ip.getPixelsCopy();
+		double scale = getScale(kernel);
+		boolean vertical = kw==1;
+
+		double sum;
+		int offset, i;
+		boolean edgePixel;
+		int xedge = width-uc;
+		int yedge = height-vc;
+		for(int y=y1; y<y2; y++) {
+			for(int x=x1; x<x2; x++) {
+				sum = 0.0;
+				i = 0;
+				if (vertical) {
+					edgePixel = y<vc || y>=yedge;
+					offset = x+(y-vc)*width;
+					for(int v=-vc; v<=vc; v++) {
+						if (edgePixel)
+							sum += getPixel(x+uc, y+v, pixels2, width, height)*kernel[i++];
+						else
+							sum += pixels2[offset+uc]*kernel[i++];
+						offset += width;
+					}
+				} else {
+					edgePixel = x<uc || x>=xedge;
+					offset = x+(y-vc)*width;
+					for(int u = -uc; u<=uc; u++) {
+						if (edgePixel)
+							sum += getPixel(x+u, y+vc, pixels2, width, height)*kernel[i++];
+						else
+							sum += pixels2[offset+u]*kernel[i++];
+					}
+				}
+				pixels[x+y*width] = (float)(sum*scale);
+			}
+    	}
+    }
+   	 
+	double getScale(float[] kernel) {
+		double scale = 1.0;
+		if (normalize) {
+			double sum = 0.0;
+			for (int i=0; i<kernel.length; i++)
+				sum += kernel[i];
+			if (sum!=0.0)
+				scale = (float)(1.0/sum);
+		}
+		return scale;
+	}
 
 	private float getPixel(int x, int y, float[] pixels, int width, int height) {
 		if (x<=0) x = 0;

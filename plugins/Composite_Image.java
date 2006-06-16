@@ -16,6 +16,7 @@ public class Composite_Image implements PlugIn {
 			return;
 		}
 		new CompositeImage("Test", imp, 3).show();
+IJ.wait(10000);
 	}
 
 }

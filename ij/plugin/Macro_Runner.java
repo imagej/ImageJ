@@ -28,8 +28,11 @@ public class Macro_Runner implements PlugIn {
 				runMacroFile(directory+name, null);
 		} else if (name.startsWith("JAR:"))
 			runMacroFromJar(name);
+		else if (name.startsWith("ij.jar:"))
+			runMacroFromIJJar(name, null);
 		else {
-			path = Menus.getPlugInsPath() + name;
+			if (!name.startsWith("ij.jar:"))
+				path = Menus.getPlugInsPath() + name;
 			runMacroFile(path, null);
 		}
 	}

@@ -22,10 +22,17 @@ of the line is the negative of the fractal dimension, i.e. D=-S.
 A full description of the technique can be found in T. G. Smith,
 Jr., G. D. Lange and W. B. Marks, Fractal Methods and Results in Cellular Morphology,
 which appeared in J. Neurosci. Methods, 69:1123-126, 1996.
+
+---
+12/Jun/2006 G. Landini added "set is white" option, otherwise the plugin
+assumes that the object is always low-dimensional (i.e. the phase with
+the smallest number of pixels). Now it works fine for sets with D near to 2.0
+
 */
 public class FractalBoxCounter implements PlugInFilter {
 
 	static String sizes = "2,3,4,6,8,12,16,32,64";
+	static boolean blackBackground;
 
 	int[] boxSizes;
 	float[] boxCountSums;
@@ -42,7 +49,19 @@ public class FractalBoxCounter implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		String s = IJ.getString("Box sizes:", sizes);
+
+		GenericDialog gd = new GenericDialog("Fractal Box Counter", IJ.getInstance());
+		gd.addStringField("Box Sizes:", sizes, 20);
+		gd.addCheckbox("Black Background", blackBackground);
+
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+
+		String s = gd.getNextString();
+
+		blackBackground = gd.getNextBoolean ();
+
 		if (s.equals(""))
 			return;
 		boxSizes = s2ints(s);
@@ -59,12 +78,14 @@ public class FractalBoxCounter implements PlugInFilter {
 			IJ.error("8-bit binary image (0 and 255) required.");
 			return;
 		}
-		if (stats.histogram[0]>stats.histogram[255])
+		if (blackBackground)
 			foreground = 255;
 		else
 			foreground = 0;
+		if (ip.isInvertedLut())
+			foreground = 255 - foreground;
 		doBoxCounts(ip);
-		IJ.register(FractalBoxCounter.class);  // keeps this class from being GC'd
+		IJ.register(FractalBoxCounter.class);  // keeps this class from being GC'd on 1.1 JVMs
 		return;
 	}
 

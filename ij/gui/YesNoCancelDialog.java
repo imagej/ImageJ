@@ -10,37 +10,48 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
     private boolean cancelPressed, yesPressed;
 	private boolean firstPaint = true;
 
-    public YesNoCancelDialog(Frame parent, String title, String msg) {
-        super(parent, title, true);
+	public YesNoCancelDialog(Frame parent, String title, String msg) {
+		super(parent, title, true);
 		setLayout(new BorderLayout());
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-	    MultiLineLabel message = new MultiLineLabel(msg);
-		message.setFont(new Font("Dialog", Font.BOLD, 12));
+		MultiLineLabel message = new MultiLineLabel(msg);
+		message.setFont(new Font("Dialog", Font.PLAIN, 12));
 		panel.add(message);
 		add("North", panel);
 		
 		panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 15, 8));
-        yesB = new Button("  Yes  ");
+		if (IJ.isMacintosh() && msg.startsWith("Save")) {
+			yesB = new Button("  Save  ");
+			noB = new Button("Don't Save");
+			cancelB = new Button("  Cancel  ");
+		} else {
+			yesB = new Button("  Yes  ");
+			noB = new Button("  No  ");
+			cancelB = new Button(" Cancel ");
+		}
 		yesB.addActionListener(this);
-		yesB.addKeyListener(this);
-		panel.add(yesB);
-        noB = new Button("  No  ");
 		noB.addActionListener(this);
-		noB.addKeyListener(this);
-		panel.add(noB);
-        cancelB = new Button(" Cancel ");
 		cancelB.addActionListener(this);
+		yesB.addKeyListener(this);
+		noB.addKeyListener(this);
 		cancelB.addKeyListener(this);
-		panel.add(cancelB);
-		add("South", panel);
-		if (ij.IJ.isMacintosh())
+		if (IJ.isMacintosh()) {
+			panel.add(noB);
+			panel.add(cancelB);
+			panel.add(yesB);
 			setResizable(false);
+		} else {
+			panel.add(yesB);
+			panel.add(noB);
+			panel.add(cancelB);
+		}
+		add("South", panel);
 		pack();
 		GUI.center(this);
 		show();
-    }
+	}
     
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource()==cancelB)
@@ -68,10 +79,10 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 	public void keyPressed(KeyEvent e) { 
 		int keyCode = e.getKeyCode(); 
 		IJ.setKeyDown(keyCode); 
-		if (keyCode==KeyEvent.VK_ENTER||keyCode==KeyEvent.VK_Y) {
+		if (keyCode==KeyEvent.VK_ENTER||keyCode==KeyEvent.VK_Y||keyCode==KeyEvent.VK_S) {
 			yesPressed = true;
 			closeDialog(); 
-		} else if (keyCode==KeyEvent.VK_N) {
+		} else if (keyCode==KeyEvent.VK_N || keyCode==KeyEvent.VK_D) {
 			closeDialog(); 
 		} else if (keyCode==KeyEvent.VK_ESCAPE||keyCode==KeyEvent.VK_C) { 
 			cancelPressed = true; 
@@ -80,7 +91,11 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 		} 
 	} 
 
-	public void keyReleased(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {
+		int keyCode = e.getKeyCode(); 
+		IJ.setKeyUp(keyCode); 
+	}
+	
 	public void keyTyped(KeyEvent e) {}
 
     public void paint(Graphics g) {

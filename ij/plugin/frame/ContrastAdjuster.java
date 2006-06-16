@@ -471,8 +471,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		updateScrollBars(null);
 		plotHistogram(imp);
 		autoThreshold = 0;
-		if (Recorder.record)
-			Recorder.record("resetMinAndMax");
 	}
 
 	void plotHistogram(ImagePlus imp) {
@@ -499,6 +497,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
+		String option = null;
 		if (RGBImage)
 			imp.unlock();
 		if (!imp.lock())
@@ -510,6 +509,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				ip.snapshot();
 				reset(imp, ip);
 				imp.changes = true;
+				if (Recorder.record) Recorder.record("run", "Apply LUT");
 			}
 			imp.unlock();
 			return;
@@ -549,10 +549,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 					ip.reset(mask);
 				}
 				imp.setSlice(current);
+				option = "stack";
 			} else {
 				if (ip.getMask()!=null) ip.snapshot();
 				ip.applyTable(table);
 				ip.reset(ip.getMask());
+				option = "slice";
 			}
 		} else {
 			if (ip.getMask()!=null) ip.snapshot();
@@ -562,6 +564,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		reset(imp, ip);
 		imp.changes = true;
 		imp.unlock();
+		if (Recorder.record) {
+			if (option!=null)
+				Recorder.record("run", "Apply LUT", option);
+			else
+				Recorder.record("run", "Apply LUT");
+		}
 	}
 
 	void applyRGBStack(ImagePlus imp) {
@@ -585,6 +593,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		imp.setSlice(current);
 		imp.changes = true;
+		if (Recorder.record)
+			Recorder.record("run", "Apply LUT", "stack");
 	}
 
 	void setThreshold(ImageProcessor ip) {
@@ -757,7 +767,10 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			{imp=null; return;}
 		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
 		switch (action) {
-			case RESET: reset(imp, ip); break;
+			case RESET:
+				reset(imp, ip);
+				if (Recorder.record) Recorder.record("resetMinAndMax");
+				break;
 			case AUTO: autoAdjust(imp, ip); break;
 			case SET: if (windowLevel) setWindowLevel(imp, ip); else setMinAndMax(imp, ip); break;
 			case APPLY: apply(imp, ip); break;

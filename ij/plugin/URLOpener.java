@@ -1,9 +1,11 @@
 package ij.plugin;
 import java.awt.*;
 import java.io.*;
+import java.net.URL;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
+import ij.plugin.frame.Editor;
 
 /** Opens TIFFs, ZIP compressed TIFFs, DICOMs, GIFs and JPEGs using a URL. 
 	TIFF file names must end in ".tif", ZIP file names must end 
@@ -20,12 +22,16 @@ public class URLOpener implements PlugIn {
 		URL and open the specified image. */
 	public void run(String urlOrName) {
 		if (!urlOrName.equals("")) {
-			String url = urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
-			ImagePlus imp = new ImagePlus(url);
-			if (imp.getType()==ImagePlus.COLOR_RGB)
-				Opener.convertGrayJpegTo8Bits(imp);
-			WindowManager.checkForDuplicateName = true;
-			imp.show();
+			if (urlOrName.endsWith("StartupMacros.txt"))
+				openTextFile(urlOrName, true);
+			else {
+				String url = urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
+				ImagePlus imp = new ImagePlus(url);
+				if (imp.getType()==ImagePlus.COLOR_RGB)
+					Opener.convertGrayJpegTo8Bits(imp);
+				WindowManager.checkForDuplicateName = true;
+				imp.show();
+			}
 			return;
 		}
 		
@@ -41,6 +47,8 @@ public class URLOpener implements PlugIn {
 			url = "http://" + url;
 		if (url.endsWith("/"))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url.substring(0, url.length()-1));
+		else if (url.endsWith(".txt")||url.endsWith(".ijm"))
+			openTextFile(url, false);
 		else {
 			IJ.showStatus("Opening: " + url);
 			ImagePlus imp = new ImagePlus(url);
@@ -50,4 +58,29 @@ public class URLOpener implements PlugIn {
 		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd
 	}
+	
+	void openTextFile(String urlString, boolean install) {
+		StringBuffer sb = null;
+		try {
+			URL url = new URL(urlString);
+			InputStream in = url.openStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			sb = new StringBuffer() ;
+			String line;
+			while ((line=br.readLine()) != null)
+				sb.append (line + "\n");
+			in.close ();
+		} catch (IOException e) {
+			if  (!(install&&urlString.endsWith("StartupMacros.txt")))
+				IJ.error("URL Opener", ""+e);
+			sb = null;
+		}
+		if (sb!=null) {
+			if (install)
+				(new MacroInstaller()).install(new String(sb));
+			else
+				(new Editor()).create(urlString, new String(sb));
+		}
+	}
+ 
 }

@@ -97,7 +97,6 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m = new Menu("Edit");
 		m.add(new MenuItem("Cut", new MenuShortcut(KeyEvent.VK_X)));
 		m.add(new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C)));
-		m.add(new MenuItem("Copy All"));
 		m.add(new MenuItem("Clear"));
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
 		if (getTitle().equals("Results")) {

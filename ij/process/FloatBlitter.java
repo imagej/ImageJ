@@ -91,7 +91,23 @@ public class FloatBlitter implements Blitter {
 								pixels[dstIndex] = pixels[dstIndex]/src;
 						}
 					break;
-				case AND: case OR: case XOR:
+				case AND:
+					for (int i=r1.width; --i>=0;) {
+						dst = (int)srcPixels[srcIndex++]&(int)pixels[dstIndex];
+						pixels[dstIndex++] = dst;
+					}
+					break;
+				case OR:
+					for (int i=r1.width; --i>=0;) {
+						dst = (int)srcPixels[srcIndex++]|(int)pixels[dstIndex];
+						pixels[dstIndex++] = dst;
+					}
+					break;
+				case XOR:
+					for (int i=r1.width; --i>=0;) {
+						dst = (int)srcPixels[srcIndex++]^(int)pixels[dstIndex];
+						pixels[dstIndex++] = dst;
+					}
 					break;
 				case MIN:
 					for (int i=r1.width; --i>=0;) {

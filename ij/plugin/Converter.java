@@ -45,11 +45,11 @@ public class Converter implements PlugIn {
 		    	if (stack.isRGB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertRGBStackToRGB();
 		    		newWindowCreated = true;
-		    		if (win!=null) new ImageWindow(imp); // replace StackWindow with ImageWindow
+		    		if (win!=null) new ImageWindow(imp, imp.getCanvas()); // replace StackWindow with ImageWindow
 		    	} else if (stack.isHSB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertHSBToRGB();
 		    		newWindowCreated = true;
-		    		if (win!=null) new ImageWindow(imp);
+		    		if (win!=null) new ImageWindow(imp, imp.getCanvas());
 				} else if (item.equals("8-bit"))
 					new StackConverter(imp).convertToGray8();
 				else if (item.equals("16-bit"))
@@ -78,7 +78,7 @@ public class Converter implements PlugIn {
 			    	Undo.reset(); // Reversible; no need for Undo
 					ic.convertToRGBStack();
 		    		newWindowCreated = true;
-			    	//new StackWindow(imp); // replace window with a StackWindow
+			    	//new StackWindow(imp); // now done in ImagePlus.setStack()
 		    	} else if (item.equals("HSB Stack")) {
 			    	Undo.reset();
 					ic.convertToHSB();

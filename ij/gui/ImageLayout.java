@@ -61,17 +61,24 @@ public class ImageLayout implements LayoutManager {
 		}
     }
 
-    /** Lays out the container amd calls ImageCanvas.resizeCanvas()
-	to adjust the image canvas size as needed. */
+    /** Lays out the container and calls ImageCanvas.resizeCanvas()
+		to adjust the image canvas size as needed. */
     public void layoutContainer(Container target) {
 		Insets insets = target.getInsets();
-		Dimension d = target.getSize();
+		int nmembers = target.getComponentCount();
+		Dimension d;
+		int extraHeight = 0;
+		for (int i=1; i<nmembers; i++) {
+			Component m = target.getComponent(i);
+			d = m.getPreferredSize();
+			extraHeight += d.height;
+		}
+		d = target.getSize();
 		int preferredImageWidth = d.width - (insets.left + insets.right + hgap*2);
-		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap*2);
+		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap*2 + extraHeight);
 		ic.resizeCanvas(preferredImageWidth, preferredImageHeight);
 		int maxwidth = d.width - (insets.left + insets.right + hgap*2);
 		int maxheight = d.height - (insets.top + insets.bottom + vgap*2);
-		int nmembers = target.getComponentCount();
 		Dimension psize = preferredLayoutSize(target);
 		int x = insets.left + hgap + (d.width - psize.width)/2;
 		int y = 0;
