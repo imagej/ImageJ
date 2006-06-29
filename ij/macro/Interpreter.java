@@ -816,14 +816,18 @@ public class Interpreter implements MacroConstants {
 			doStatement();
 		else
 			skipStatement();
-		getToken();
-		if (token==ELSE) {
+		int next = nextNonEolToken();
+		if (next==';') {
+			getToken();
+			next = nextNonEolToken();
+		}
+		if (next==ELSE) {
+			getToken();
 			if (b)
 				skipStatement();
 			else
 				doStatement();
-		} else
-			putTokenBack();
+		}
 	}
 
 	final boolean getBoolean() {

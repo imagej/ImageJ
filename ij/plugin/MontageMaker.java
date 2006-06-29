@@ -65,6 +65,8 @@ public class MontageMaker implements PlugIn {
 			if (borderWidth<0) borderWidth = 0;
 			if (first<1) first = 1;
 			if (last>nSlices) last = nSlices;
+			if (first>last)
+				{first=1; last=nSlices;}
 			if (inc<1) inc = 1;
 			if (gd.invalidNumber()) {
 				IJ.error("Invalid number");

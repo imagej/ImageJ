@@ -16,12 +16,22 @@ public class Composite_Image implements PlugIn {
 			return;
 		}
 		new CompositeImage("Test", imp, 3).show();
-IJ.wait(10000);
 	}
 
 }
 
 class CompositeImage extends ImagePlus {
+
+	int[] awtImagePixels;
+	boolean newPixels;
+	MemoryImageSource imageSource;
+	ColorModel imageColorModel;
+	Image awtImage;
+	int[][] awtChannelPixels;
+	ImageProcessor[] channelIPs;
+	Color[] colors = {Color.red, Color.green, Color.blue};
+	boolean singleChannel = false;
+	int currentChannel = 0;
 
 	public CompositeImage(String title, ImagePlus imp, int channels) {
 		ImageStack stack;
@@ -34,41 +44,71 @@ class CompositeImage extends ImagePlus {
 			throw new IllegalArgumentException("channels<2 or stacksize not multiple of channels");
 		setDimensions(channels, stackSize/channels, 1);
 		compositeImage = true;
+       	channelIPs = new ImageProcessor[channels];
+        	for (int i=0; i<channels; ++i) {
+			channelIPs[i] = stack.getProcessor(i+1);
+			channelIPs[i].setColorModel(createModelFromColor(colors[i]));
+		}
 		setStack(imp.getTitle(), stack);
+		channelIPs[currentChannel] = getProcessor();
+		channelIPs[currentChannel].setColorModel(createModelFromColor(colors[currentChannel]));
 	}
 
 	public Image getImage() {
-		if (img==null) {
-			if (ip==null) return null;
-			switch (getBitDepth()) {
-				case 8: img = createImage8(); break;
-				case 16: img = createImage16(); break;
-			}
-		}
+		if (img==null)
+			updateImage();
 		return img;
 	}
 
-	BufferedImage bi;
-	int[] pixels;
-
-	Image createImage16() {
-		int size = width*height;
-		if (bi==null) {
-			bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			pixels = new int[size];
+	public void updateImage() {
+		if (singleChannel) {
+			img = ip.createImage();
+			return;
 		}
-		ImageStack stack = getStack();
-		short[] r = (short[])stack.getProcessor(1).getPixels();
-		short[] g = (short[])stack.getProcessor(2).getPixels();
-		short[] b = (short[])stack.getProcessor(3).getPixels();
-		for (int i=0; i<size; i++) {
+		int imageSize = width*height;
+		int nChannels = getNChannels();
+		int redValue, greenValue, blueValue;
+		if (awtImagePixels == null || awtImagePixels.length != imageSize) {
+			awtImagePixels = new int[imageSize];
+			newPixels = true;
 		}
-		return bi;
-	}
+		if (awtChannelPixels==null || awtChannelPixels.length!=nChannels || awtChannelPixels[0].length!=imageSize) {
+			awtChannelPixels = new int[nChannels][];
+			for (int i=0; i<nChannels; ++i)
+				awtChannelPixels[i] = new int[imageSize];
+		}
+		for (int i=0; i<nChannels; ++i) {
+			PixelGrabber pg = new PixelGrabber(channelIPs[i].createImage(), 0, 0, width, height, awtChannelPixels[i], 0, width);
+			try { pg.grabPixels();}
+			catch (InterruptedException e){};
+		}
+		for (int i=0; i<imageSize; ++i) {
+			redValue=0; greenValue=0; blueValue=0;
+			for (int j=0; j<nChannels; ++j) {
+				redValue += (awtChannelPixels[j][i]>>16)&0xFF;
+				greenValue += (awtChannelPixels[j][i]>>8)&0xFF;
+				blueValue += (awtChannelPixels[j][i])&0xFF; 
+				if (redValue>255) redValue = 255;
+				if (greenValue>255) greenValue = 255;
+				if (blueValue>255) blueValue = 255;
+			}
+			awtImagePixels[i] = (redValue<<16) | (greenValue<<8) | (blueValue); 		}			
+		if (imageSource==null) {
+			imageColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF);
+			imageSource = new MemoryImageSource(width, height, imageColorModel, awtImagePixels, 0, width);
+			imageSource.setAnimated(true);
+			imageSource.setFullBufferUpdates(true);
+			awtImage = Toolkit.getDefaultToolkit().createImage(imageSource);
+			newPixels = false;
+		} else if (newPixels){
+			imageSource.newPixels(awtImagePixels, imageColorModel, 0, width);
+			newPixels = false;
+		} else
+			imageSource.newPixels();	
+		if (img == null && awtImage!=null)
+			img = awtImage;
+	}	
 
-	Image createImage8() {
-		return null;
-	}
 
 	ImageStack getRGBStack(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
@@ -84,6 +124,28 @@ class CompositeImage extends ImagePlus {
 		stack.addSlice("Green", g);	
 		stack.addSlice("Blue", b);	
 		return stack;
+	}
+
+	public static IndexColorModel createModelFromColor(Color color) {
+		byte[] rLut = new byte[256];
+		byte[] gLut = new byte[256];
+		byte[] bLut = new byte[256];
+
+		int red = color.getRed();
+		int green = color.getGreen();
+		int blue = color.getBlue();
+
+		double rIncr = ((double)red)/255d;
+		double gIncr = ((double)green)/255d;
+		double bIncr = ((double)blue)/255d;
+		
+		for (int i=0; i<256; ++i) {
+			rLut[i] = (byte) (i*rIncr);
+			gLut[i] = (byte) (i*gIncr);
+			bLut[i] = (byte) (i*bIncr);
+		}
+		
+		return new IndexColorModel(8, 256, rLut, gLut, bLut);
 	}
 
 }

@@ -297,6 +297,7 @@ public class WindowManager {
 		}
 		if (IJ.getInstance().quitting() && IJ.getApplet()==null)
 			return true;
+		//System.out.println("closeAllWindows2");
 		Frame[] list = getNonImageWindows();
 		for (int i=0; i<list.length; i++) {
 			Frame frame = list[i];

@@ -205,7 +205,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		}
 		if (getTitle().equals("Log")) {
 			IJ.debugMode = false;
-			IJ.log("$Closed");
+			IJ.log("\\Closed");
 		}
 		setVisible(false);
 		dispose();

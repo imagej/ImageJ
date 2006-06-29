@@ -97,7 +97,10 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 			else
 				newHeight = (int)(newWidth*(origHeight/origWidth));
 		}
-		ip.setInterpolate(interpolate);
+		if (ip.getWidth()==1 || ip.getHeight()==1)
+			ip.setInterpolate(false);
+		else
+			ip.setInterpolate(interpolate);
     	
 		int nSlices = imp.getStackSize();
 		try {

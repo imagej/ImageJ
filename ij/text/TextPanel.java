@@ -496,6 +496,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc.repaint();
 	}
 	
+	/** Deletes all the lines. */
+	public void clear() {
+		if (vData==null) return;
+		vData.removeAllElements();
+		iRowCount = 0;
+		selStart=-1; selEnd=-1; selOrigin=-1; selLine=-1;
+		adjustVScroll();
+		tc.repaint();
+	}
+
 	/** Selects all the lines in this TextPanel. */
 	public void selectAll() {
 		if (selStart==0 && selEnd==iRowCount-1) {
@@ -606,8 +616,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void setLine(int index, String s) {
 		if (index<0 || index>=iRowCount)
 			throw new IllegalArgumentException("index out of range: "+index);
-		vData.setElementAt(s.toCharArray(), index);	
-		tc.repaint();
+		if (vData!=null) {
+			vData.setElementAt(s.toCharArray(), index);	
+			tc.repaint();
+		}
 	}
 
 	/** Returns the index of the first selected line, or -1 

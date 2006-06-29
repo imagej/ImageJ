@@ -1997,25 +1997,49 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setBatchMode() {
-		boolean b =getBooleanArg();
+		boolean enterBatchMode = false;
+		String sarg = null;
+		interp.getLeftParen();
+		if (isStringArg())
+			sarg = getString();
+		else {
+			double arg = interp.getBooleanExpression();
+			interp.checkBoolean(arg);
+			enterBatchMode = arg==1.0;
+		}
+		interp.getRightParen();
 		if (!interp.isBatchMode())
 			interp.calledMacro = false;
-		interp.setBatchMode(b);
-		if (!b) {
-			resetImage();
-			ImagePlus imp2 = WindowManager.getCurrentImage();
-			if (imp2!=null) {
-				ImageWindow win = imp2.getWindow();
-				if (win==null)
-					imp2.show();
-				else {
-					if (!win.isVisible()) win.show(); 
-					imp2.updateAndDraw();
-				}
-				Roi roi = imp2.getRoi();
-				if (roi!=null) imp2.setRoi(roi);
+		resetImage();
+		if (enterBatchMode)  // true
+			{interp.setBatchMode(true); return;}
+		ImagePlus imp2 = WindowManager.getCurrentImage();
+		WindowManager.setTempCurrentImage(null);
+		if (sarg==null) {  //false
+			interp.setBatchMode(false);
+			displayBatchModeImage(imp2);
+		} else {
+			Vector v = Interpreter.imageTable;
+			interp.setBatchMode(false);
+			for (int i=0; i<v.size(); i++) {
+				imp2 = (ImagePlus)v.elementAt(i);
+				if (imp2!=null) 
+					displayBatchModeImage(imp2);
 			}
-			WindowManager.setTempCurrentImage(null);
+		}
+	}
+	
+	void displayBatchModeImage(ImagePlus imp2) {
+		if (imp2!=null) {
+			ImageWindow win = imp2.getWindow();
+			if (win==null)
+				imp2.show();
+			else {
+				if (!win.isVisible()) win.show(); 
+				imp2.updateAndDraw();
+			}
+			Roi roi = imp2.getRoi();
+			if (roi!=null) imp2.setRoi(roi);
 		}
 	}
 	
@@ -2065,7 +2089,10 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getParens();
 		ImagePlus imp = getImage();
 		ImageCanvas ic = imp.getCanvas();
-		return ic!=null?ic.getMagnification():1.0;
+		if (ic==null)
+			{interp.error("Image not displayed"); return 0.0;}
+		else
+			return ic.getMagnification();
 	}
 	
 	void setAutoThreshold() {
@@ -2623,9 +2650,16 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String openFile() {
-		String path = getStringArg();
-		if (path.equals("")) {
-			SaveDialog sd = new SaveDialog("openFile", "log.txt", ".txt");
+		String path = getFirstString();
+		String defaultName = null;
+		if (interp.nextToken()==')')
+			interp.getRightParen();
+		else
+			defaultName = getLastString();
+		if (path.equals("") || defaultName!=null) {
+			String title = defaultName!=null?path:"openFile";
+			defaultName = defaultName!=null?defaultName:"log.txt";
+			SaveDialog sd = new SaveDialog(title, defaultName, ".txt");
 			if(sd.getFileName()==null) return "";
 			path = sd.getDirectory()+sd.getFileName();
 		} else {
@@ -2695,29 +2729,20 @@ public class Functions implements MacroConstants, Measurements {
 	// Contributed by Johannes Schindelin
 	String call() {
 		// get class and method name
-		interp.getLeftParen();
-		String fullName = getString();
+		String fullName = getFirstString();
 		int dot = fullName.lastIndexOf('.');
 		if(dot<0)
 			interp.error("Expected 'classname.methodname'");
 		String className = fullName.substring(0,dot);
 		String methodName = fullName.substring(dot+1);
 
-		// get arguments (all strings)
+		// get optional string arguments
 		Object[] args = null;
-		if (interp.nextNonEolToken()!=')') {
-			interp.getComma();
+		if (interp.nextNonEolToken()==',') {
 			Vector vargs = new Vector();
-			while(true) {
-				vargs.add(getString());
-				int nextToken = interp.nextNonEolToken();
-				if (nextToken==')')
-					break;
-				if (nextToken==',')
-					interp.getComma();
-				else
-					interp.error("',' or ')' expected");
-			}
+			do
+				vargs.add(getNextString());
+			while (interp.nextNonEolToken()==',');
 			args = vargs.toArray();
 		}
 		interp.getRightParen();
@@ -2751,8 +2776,8 @@ public class Functions implements MacroConstants, Measurements {
 		try {
 			Object obj = m.invoke(null, args);
 			return obj!=null?obj.toString():null;
-		} catch(Exception ex) {
-			interp.error("Could not invoke the method");
+		} catch(Exception e) {
+			interp.error("Call error ("+e+")");
 			return null;
 		}
 			

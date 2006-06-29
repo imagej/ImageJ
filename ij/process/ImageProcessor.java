@@ -1156,14 +1156,46 @@ public abstract class ImageProcessor extends Object {
 	/** This is a faster version of getPixel() that does not do bounds checking. */
 	public abstract int get(int x, int y);
 	
-	public abstract int get(int index);
-
 	/** This is a faster version of putPixel() that does not clip  
 		out of range values and does not do bounds checking. */
 	public abstract void set(int x, int y, int value);
 
-	public abstract void set(int index, int value);
+	public abstract float getf(int x, int y);
+	
+	public abstract void setf(int x, int y, float value);
 
+	public int[][] getIntArray() {
+		int[][] a = new int [width][height];
+		for(int y=0; y<height; y++) {
+			for(int x=0; x<width; x++)
+				a[x][y]=get(x,y);
+		}
+		return a; 
+	}
+
+	public void setIntArray(int[][] a) {
+		for(int y=0; y<height; y++) {
+			for(int x=0; x<width; x++)
+				set(x, y, a[x][y]);
+		}
+	}
+
+	public float[][] getFloatArray() {
+		float[][] a = new float[width][height];
+		for(int y=0; y<height; y++) {
+			for(int x=0; x<width; x++)
+				a[x][y]=getf(x,y);
+		}
+		return a; 
+	}
+
+	public void setFloatArray(float[][] a) {
+		for(int y=0; y<height; y++) {
+			for(int x=0; x<width; x++)
+				setf(x, y, a[x][y]);
+		}
+	}
+	
     /** Returns the samples for the pixel at (x,y) in an int array.
     	RGB pixels have three samples, all others have one.
 		Returns zeros if the the coordinates are not in bounds.

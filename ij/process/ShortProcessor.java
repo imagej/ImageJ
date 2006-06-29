@@ -214,16 +214,16 @@ public class ShortProcessor extends ImageProcessor {
 		return pixels[y*width+x]&0xffff;
 	}
 
-	public final int get(int index) {
-		return pixels[index]&0xffff;
-	}
-
 	public final void set(int x, int y, int value) {
 		pixels[y*width + x] = (short)value;
 	}
 
-	public final void set(int index, int value) {
-		pixels[index] = (short)value;
+	public final float getf(int x, int y) {
+		return pixels[y*width+x]&0xffff;
+	}
+
+	public final void setf(int x, int y, float value) {
+		pixels[y*width + x] = (short)value;
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -273,7 +273,7 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Returns the value of the pixel at (x,y) as a float. For signed
 		images, returns a signed value if a calibration table has
-		been set using setCalibraionTable() (this is done automatically 
+		been set using setCalibrationTable() (this is done automatically 
 		in PlugInFilters). */
 	public float getPixelValue(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height) {

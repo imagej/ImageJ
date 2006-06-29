@@ -53,7 +53,7 @@ public class FloatProcessor extends ImageProcessor {
 		findMinAndMax();
 	}
 	
-	/** Creates a FloatProcessor from a float[][] array using the default LUT*/
+	/** Creates a FloatProcessor from a float[][] array using the default LUT. */
 	public FloatProcessor(float[][] array) {
 		width = array.length;
 		height = array[0].length;
@@ -65,6 +65,13 @@ public class FloatProcessor extends ImageProcessor {
 			}
 		}
 		resetRoi();
+		findMinAndMax();
+	}
+
+	/** Creates a FloatProcessor from an int[][] array. */
+	public FloatProcessor(int[][] array) {
+		this(array.length, array[0].length);
+		setIntArray(array);
 		findMinAndMax();
 	}
 
@@ -218,19 +225,19 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	public final int get(int x, int y) {
-		return Float.floatToIntBits(pixels[y*width+x]);
-	}
-
-	public final int get(int index) {
-		return Float.floatToIntBits(pixels[index]);
+		return (int)pixels[y*width+x];
 	}
 
 	public final void set(int x, int y, int value) {
-		pixels[y*width + x] = Float.intBitsToFloat(value);
+		pixels[y*width + x] = value;
 	}
 
-	public final void set(int index, int value) {
-		pixels[index] = Float.intBitsToFloat(value);
+	public final float getf(int x, int y) {
+		return pixels[y*width+x];
+	}
+
+	public final void setf(int x, int y, float value) {
+		pixels[y*width + x] = value;
 	}
 
     /** Returns the value of the pixel at (x,y) in a

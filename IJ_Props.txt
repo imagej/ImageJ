@@ -67,13 +67,14 @@ selection03="Restore Selection[E]",ij.plugin.Selection("restore")
 selection04="Fit Spline",ij.plugin.Selection("spline")
 selection05="Fit Ellipse",ij.plugin.Selection("ellipse")
 selection06="Convex Hull",ij.plugin.Selection("hull")
-selection07="Create Mask",ij.plugin.Selection("mask")
-selection08="Make Inverse",ij.plugin.Selection("inverse")
-selection09=-
-selection10="Rotate...",ij.plugin.Selection("rotate")
-selection11="Enlarge...",ij.plugin.Selection("enlarge")
-selection12="Make Band...",ij.plugin.Selection("band")
-selection13="Specify...",ij.plugin.filter.SpecifyROI
+selection07="Make Inverse",ij.plugin.Selection("inverse")
+selection08="Create Mask",ij.plugin.Selection("mask")
+selection09="Create Selection",ij.plugin.Selection("from")
+selection10=-
+selection11="Rotate...",ij.plugin.Selection("rotate")
+selection12="Enlarge...",ij.plugin.Selection("enlarge")
+selection13="Make Band...",ij.plugin.Selection("band")
+selection14="Specify...",ij.plugin.filter.SpecifyROI
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
@@ -270,8 +271,8 @@ plug-in07=-
 # 'baseCount' in MacroInstaller must be updated if more items are added
 macros01="Install...[M]",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
-macros03="Record...",ij.plugin.frame.Recorder
-macros04="Open StartupMacros",ij.plugin.Commands("startup")
+macros03="StartupMacros...",ij.plugin.Commands("startup")
+macros04="Record...",ij.plugin.frame.Recorder
 macros05=-
 
 # Plugins installed in the Plugins/Shortcuts submenu

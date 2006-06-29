@@ -541,7 +541,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			else
 				defaultDir = Menus.getPlugInsPath();
 		}
-		SaveDialog sd = new SaveDialog("Save Plugin As...", defaultDir, name1, null);
+		SaveDialog sd = new SaveDialog("Save As...", defaultDir, name1, null);
 		String name2 = sd.getFileName();
 		String dir = sd.getDirectory();
 		if (name2!=null) {

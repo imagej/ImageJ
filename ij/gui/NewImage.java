@@ -125,7 +125,7 @@ public class NewImage {
 			case FILL_RAMP:
 				byte[] ramp = new byte[width];
 				for (int i=0; i<width; i++)
-					ramp[i] = (byte)(((i*256.0)/width)+0.5);
+					ramp[i] = (byte)((i*256.0)/width);
 				int offset;
 				for (int y=0; y<height; y++) {
 					offset = y*width;
@@ -160,7 +160,7 @@ public class NewImage {
 				int r,g,b,offset;
 				int[] ramp = new int[width];
 				for (int i=0; i<width; i++) {
-					r = g = b = (byte)(((i*256.0)/width)+0.5);
+					r = g = b = (byte)((i*256.0)/width);
 					ramp[i] = 0xff000000 | ((r<<16)&0xff0000) | ((g<<8)&0xff00) | (b&0xff);
 				}
 				for (int y=0; y<height; y++) {

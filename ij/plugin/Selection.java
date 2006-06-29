@@ -33,6 +33,8 @@ public class Selection implements PlugIn, Measurements {
     		convexHull(imp);
     	else if (arg.equals("mask"))
     		createMask(imp);    	
+     	else if (arg.equals("from"))
+    		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
     	else
@@ -261,7 +263,7 @@ public class Selection implements PlugIn, Measurements {
 	void createMask(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT))
-			{IJ.error("Create Mask", "Area selection required"); return;}
+			{createMaskFromThreshold(imp); return;}
 		ImagePlus maskImp = null;
 		Frame frame = WindowManager.getFrame("Mask");
 		if (frame!=null && (frame instanceof ImageWindow))
@@ -278,6 +280,48 @@ public class Selection implements PlugIn, Measurements {
 		ip.fill(ip.getMask());
 		maskImp.updateAndDraw();
 	}
+	
+	void createMaskFromThreshold(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+			{IJ.error("Create Mask", "Area selection or thresholded image required"); return;}
+		double t1 = ip.getMinThreshold();
+		double t2 = ip.getMaxThreshold();
+		IJ.run("Duplicate...", "title=mask");
+		ImagePlus imp2 = WindowManager.getCurrentImage();
+		ImageProcessor ip2 = imp2.getProcessor();
+		ip2.setThreshold(t1, t2, ImageProcessor.NO_LUT_UPDATE);
+		IJ.run("Threshold", "thresholded remaining black");
+		if (!ip2.isInvertedLut()) {
+			IJ.run("Invert");
+			IJ.run("Invert LUT");
+		}
+	}
+
+	void createSelectionFromMask(ImagePlus imp) {
+		if (!IJ.isJava2())
+			{IJ.error("Create Selection", "Java 1.2 or later required"); return;}
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+			IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
+			return;
+		}
+		ImageStatistics stats = null;
+		if (imp.getBitDepth()==8)
+			stats = imp.getStatistics();
+		if (stats==null || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
+			IJ.error("Create Selection",
+				"This command creates a composite selection from\n"+
+				"a mask (8-bit binary image with white background)\n"+
+				"or from an image that has been thresholded using\n"+
+				"the Image>Adjust>Threshold tool. The current\n"+
+				"image is not a mask and has not been thresholded.");
+			return;
+		}
+		int threshold = ip.isInvertedLut()?255:0;
+		ip.setThreshold(threshold, threshold, ImageProcessor.NO_LUT_UPDATE);
+		IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
+	}
 
 	void invert(ImagePlus imp) {
 		if (!IJ.isJava2())
@@ -290,7 +334,6 @@ public class Selection implements PlugIn, Measurements {
 			s1 = (ShapeRoi)roi;
 		else
 			s1 = new ShapeRoi(roi);
-		
 		s2 = new ShapeRoi(new Roi(0,0, imp.getWidth(), imp.getHeight()));
 		imp.setRoi(s1.xor(s2));
 	}
