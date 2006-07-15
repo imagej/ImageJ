@@ -19,6 +19,8 @@ import java.lang.reflect.*;
 
 /** This class consists of static utility methods. */
 public class IJ {
+	public static final int ALL_KEYS = 0x32;
+	
 	public static boolean debugMode;
 	public static boolean hideProcessStackDialog;
 	    
@@ -126,7 +128,7 @@ public class IJ {
 		}
 		catch (ClassNotFoundException e) {
 			if (IJ.getApplet()==null)
-				log("Plugin not found: " + className);
+				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {log("Unable to load plugin, possibly \nbecause it is not public.");}
@@ -265,11 +267,11 @@ public class IJ {
 		}
 		catch (ClassNotFoundException e) {
 			if (className.indexOf('_')!=-1)
-				error("Plugin not found: "+className);
+				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (NoClassDefFoundError e) {
 			if (className.indexOf('_')!=-1)
-				error("Plugin not found: "+className);
+				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
@@ -318,6 +320,8 @@ public class IJ {
 		}
 		if (command.equals("New..."))
 			command = "Image...";
+		if (command.equals("Threshold"))
+			command = "Make Binary";
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);
@@ -734,6 +738,7 @@ public class IJ {
 				if (win!=null) win.getCanvas().setCursor(-1,-1,-1,-1);
 				break;
 			}
+			case ALL_KEYS: altDown=shiftDown=spaceDown=false; break;
 		}
 	}
 	
@@ -1022,6 +1027,7 @@ public class IJ {
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+			img.killRoi();
 			img.setRoi(roi);
 			// add/subtract this ROI to the previous one if the shift/alt key is down
 			if (previousRoi!=null)

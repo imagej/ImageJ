@@ -39,7 +39,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		WindowManager.addWindow(this);
 		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
 		int rows = 15;
-		boolean allowMultipleSelections = IJ.isMacintosh();
+		boolean allowMultipleSelections = true; //IJ.isMacintosh();
 		list = new List(rows, allowMultipleSelections);
 		list.add("012345678901234");
 		list.addItemListener(this);
@@ -107,14 +107,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	public void itemStateChanged(ItemEvent e) {
 		//IJ.log("itemStateChanged: "+e.getItem().toString()+"  "+e+"  "+ignoreInterrupts);
-		if (e.getStateChange()==ItemEvent.SELECTED
-		&& WindowManager.getCurrentImage()!=null && !ignoreInterrupts) {
+		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
 			int index = 0;
             try {index = Integer.parseInt(e.getItem().toString());}
             catch (NumberFormatException ex) {}
 			if (index<0) index = 0;
-			restore(index, true);
-			if (Recorder.record) Recorder.record("roiManager", "Select", index);
+			if (!IJ.shiftKeyDown() && !IJ.isMacintosh()) {
+				int[] indexes = list.getSelectedIndexes();
+				for (int i=0; i<indexes.length; i++) {
+					if (indexes[i]!=index)
+						list.deselect(indexes[i]);
+				}
+			}
+			if (WindowManager.getCurrentImage()!=null) {
+				restore(index, true);
+				if (Recorder.record) Recorder.record("roiManager", "Select", index);
+			}
 		}
 	}
 	
@@ -426,6 +434,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String name = sd.getFileName();
 			if (name == null)
 				return false;
+			if (!(name.endsWith(".zip") || name.endsWith(".ZIP")))
+				name = name + ".zip";
 			String dir = sd.getDirectory();
 			path = dir+name;
 		}
@@ -552,7 +562,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (Recorder.record) Recorder.record("roiManager", "Combine");
 	}
 
-	/*
 	void split() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
@@ -562,25 +571,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		}
 		Roi[] rois = ((ShapeRoi)roi).getRois();
-		if (rois.length<2) {
-			error("Enable to decompose this composite ROI into two or more simple ROIs.");
-			return;
-		}
-		//IJ.log("split: "+list.getItemCount());
-		if (list.getItemCount()>0) {
-			if (!delete(true)) {
-				//IJ.log("delete: false");
-				return;
-			}
-			//IJ.log("delete: true");
-		}
 		for (int i=0; i<rois.length; i++) {
 			imp.setRoi(rois[i]);
-			add();
+			add(false);
 		}
-		if (Recorder.record) Recorder.record("roiManager", "Split");
+		//if (Recorder.record) Recorder.record("roiManager", "Split");
 	}
-	*/
 
 	int[] getAllIndexes() {
 		int count = list.getItemCount();
@@ -645,7 +641,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Deselect" or "Combine" command. Returns false if <code>cmd</code> is not one of these strings. */
+		"Deselect", "Combine" or "Split" command. Returns false if <code>cmd</code> is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
 		macro = true;
@@ -664,6 +660,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			draw();
 		else if (cmd.equals("combine"))
 			combine();
+		else if (cmd.equals("split"))
+			split();
 		else if (cmd.equals("deselect")) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
@@ -717,6 +715,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				IJ.wait(10);
 		}
 		if (mm) list.setMultipleMode(true);
+	}
+	
+	public void select(int index, boolean shiftKeyDown, boolean altKeyDown) {
+		ImagePlus imp = IJ.getImage();
+		Roi previousRoi = imp!=null?imp.getRoi():null;
+		Roi.previousRoi = (Roi)previousRoi.clone();
+		select(index);
+		Roi roi = imp!=null?imp.getRoi():null;
+		if (previousRoi!=null && roi!=null)
+			roi.update(shiftKeyDown, altKeyDown);
 	}
 	
 	/*

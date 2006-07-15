@@ -47,6 +47,8 @@ public class URLOpener implements PlugIn {
 			url = "http://" + url;
 		if (url.endsWith("/"))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url.substring(0, url.length()-1));
+		else if (url.endsWith(".html") || url.endsWith(".htm"))
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 		else if (url.endsWith(".txt")||url.endsWith(".ijm"))
 			openTextFile(url, false);
 		else {

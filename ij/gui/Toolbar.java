@@ -8,7 +8,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.MacroInstaller;
 
 /** The ImageJ toolbar. */
-public class Toolbar extends Canvas implements MouseListener, MouseMotionListener {
+public class Toolbar extends Canvas implements MouseListener, MouseMotionListener, ItemListener {
 
 	public static final int RECTANGLE = 0;
 	public static final int OVAL = 1;
@@ -38,6 +38,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int NUM_TOOLS = 21;
 	private static final int SIZE = 24;
 	private static final int OFFSET = 4;
+	private static final String BRUSH_SIZE = "toolbar.brush.size";
 		
 	private Dimension ps = new Dimension(SIZE*NUM_TOOLS, SIZE);
 	private boolean[] down;
@@ -55,9 +56,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String icon;
 	private MacroInstaller macroInstaller;
 	private int startupTime;
+	private PopupMenu pm;
+	private CheckboxMenuItem ovalItem, brushItem;
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.white);
+	private static boolean brushEnabled;
+	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
 	
 	private Color gray = ImageJ.backgroundColor;
 	private Color brighter = gray.brighter();
@@ -75,9 +80,21 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
+		addPopupMenu();
 		if (IJ.isMacOSX()) Prefs.antialiasedTools = true;
 	}
 
+	void addPopupMenu() {
+		pm=new PopupMenu();
+		ovalItem = new CheckboxMenuItem("Elliptical Selection Tool", !brushEnabled);
+		ovalItem.addItemListener(this);
+		pm.add(ovalItem);
+		brushItem = new CheckboxMenuItem("Selection Brush Tool", brushEnabled);
+		brushItem.addItemListener(this);
+		pm.add(brushItem);
+		add(pm);
+	}
+	
 	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
 		Toolbar.OVAL, etc.). */
 	public static int getToolId() {
@@ -132,7 +149,20 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				g.drawRect(x+1, y+2, 14, 11);
 				return;
 			case OVAL:
-				g.drawOval(x+1, y+3, 14, 11);
+				xOffset = x; yOffset = y;
+				if (brushEnabled) {
+					m(9,2); d(13,2); d(13,2); d(15,5); d(15,8);
+					d(13,10); d(10,10); d(8,13); d(4,13); 
+					d(2,11);  d(2,7); d(4,5); d(7,5); d(9,2);
+					m(13,14); d(17,14);
+					m(14,15); d(16,15);
+					dot(15,16);
+				} else {
+					g.drawOval(x+1, y+2, 14, 11);
+					m(13,14); d(17,14);
+					m(14,15); d(16,15);
+					dot(15,16);
+				}
 				return;
 			case POLYGON:
 				xOffset = x+1; yOffset = y+3;
@@ -302,7 +332,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Rectangular selections");
 				return;
 			case OVAL:
-				IJ.showStatus("Elliptical selections");
+				if (brushEnabled)
+					IJ.showStatus("Elliptical or *brush* selections");
+				else
+					IJ.showStatus("*Elliptical* or brush selections");
 				return;
 			case POLYGON:
 				IJ.showStatus("Polygon selections");
@@ -427,7 +460,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static void setForegroundColor(Color c) {
 		if (c!=null) {
 			foregroundColor = c;
-			updateColors();
+			repaintTool(DROPPER);
 		}
 	}
 
@@ -438,18 +471,28 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static void setBackgroundColor(Color c) {
 		if (c!=null) {
 			backgroundColor = c;
-			updateColors();
+			repaintTool(DROPPER);
 		}
 	}
 	
-	static void updateColors() {
+	public static int getBrushSize() {
+		if (brushEnabled)
+			return brushSize;
+		else
+			return 0;
+	}
+
+	static void repaintTool(int tool) {
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
-			tb.drawButton(g, DROPPER);
-			tb.drawButton(g, POINT);
+			if (Prefs.antialiasedTools && IJ.isJava2())
+				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			tb.drawButton(g, tool);
 			if (g!=null) g.dispose();
 		}
+		//Toolbar tb = getInstance();
+		//tb.repaint(tool * SIZE , 0, SIZE, SIZE);
 	}
 	
 	// Returns the toolbar position index of the specified tool
@@ -486,6 +529,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 			mpPrevious = current;
 			setTool2(newTool);
+			if (current==OVAL && (e.isPopupTrigger() || e.isMetaDown())) {
+				ovalItem.setState(!brushEnabled);
+				brushItem.setState(brushEnabled);
+				pm.show(e.getComponent(),x,y);
+				mouseDownTime = 0L;
+			}
 		} else {
 			if (isMacroTool(current)) {
 				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
@@ -494,6 +543,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 			ImagePlus imp = WindowManager.getCurrentImage();
 			switch (current) {
+				case OVAL:
+					showBrushDialog();
+					break;
 				case FREEROI:
 					IJ.doCommand("Set Measurements...");
 					setTool2(mpPrevious);
@@ -505,7 +557,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					break;
 				case POLYGON:
-					if (imp!=null) IJ.doCommand("Calibrate...");
 					setTool2(mpPrevious);
 					break;
 				case LINE: case POLYLINE: case FREELINE:
@@ -540,6 +591,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void mouseEntered(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
 	
+	public void itemStateChanged(ItemEvent e) {
+		String cmd = e.getItem().toString();
+		brushEnabled = cmd.equals("Selection Brush Tool");
+		repaintTool(OVAL);
+		showMessage(OVAL);
+	}
+
 	public Dimension getPreferredSize(){
 		return ps;
 	}
@@ -599,5 +657,21 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (macroInstaller!=null)
 			macroInstaller.runMacroTool(names[id]);
 	}
+	
+	void showBrushDialog() {
+		GenericDialog gd = new GenericDialog("Selection Brush");
+		gd.addCheckbox("Enable Selection Brush", brushEnabled);
+		gd.addNumericField("           Size:", brushSize, 0, 4, "pixels");
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		brushEnabled = gd.getNextBoolean();
+		brushSize = (int)gd.getNextNumber();
+		repaintTool(OVAL);
+		ImagePlus img = WindowManager.getCurrentImage();
+		Roi roi = img!=null?img.getRoi():null;
+		if (roi!=null && roi.getType()==Roi.OVAL && brushEnabled) img.killRoi();
+		Prefs.set(BRUSH_SIZE, brushSize);
+	}
+
 
 }

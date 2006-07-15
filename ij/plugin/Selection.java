@@ -291,11 +291,7 @@ public class Selection implements PlugIn, Measurements {
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		ImageProcessor ip2 = imp2.getProcessor();
 		ip2.setThreshold(t1, t2, ImageProcessor.NO_LUT_UPDATE);
-		IJ.run("Threshold", "thresholded remaining black");
-		if (!ip2.isInvertedLut()) {
-			IJ.run("Invert");
-			IJ.run("Invert LUT");
-		}
+		IJ.run("Convert to Mask");
 	}
 
 	void createSelectionFromMask(ImagePlus imp) {

@@ -38,6 +38,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	protected int ySrcStart;
 	protected int flags;
 	
+	private Image offScreenImage;
+	private int offScreenWidth = 0;
+	private int offScreenHeight = 0;
+	
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
 		ij = IJ.getInstance();
@@ -82,7 +86,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
-		if (roi != null) roi.updatePaste();
+		if (roi != null) {
+			roi.updatePaste();
+			if (Prefs.doubleBuffer && !IJ.isMacOSX())
+				{paintDoubleBuffered(g); return;}
+		}
 		try {
 			if (imageUpdated) {
 				imageUpdated = false;
@@ -100,6 +108,36 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
     }
     
+	// Use double buffer to reduce flicker when drawing complex ROIs.
+	// Author: Erik Meijering
+	void paintDoubleBuffered(Graphics g) {
+		final int srcRectWidthMag = (int)(srcRect.width*magnification);
+		final int srcRectHeightMag = (int)(srcRect.height*magnification);
+		if (offScreenImage==null || offScreenWidth!=srcRectWidthMag || offScreenHeight!=srcRectHeightMag) {
+			offScreenImage = createImage(srcRectWidthMag, srcRectHeightMag);
+			offScreenWidth = srcRectWidthMag;
+			offScreenHeight = srcRectHeightMag;
+		}
+		Roi roi = imp.getRoi();
+		try {
+			if (imageUpdated) {
+				imageUpdated = false;
+				imp.updateImage();
+			}
+			if (IJ.isJava2())
+				Java2.setBilinearInterpolation(g, Prefs.interpolateScaledImages);
+			Image img = imp.getImage();
+			Graphics offScreenGraphics = offScreenImage.getGraphics();
+			if (img!=null)
+				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
+					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+			if (roi!=null) roi.draw(offScreenGraphics);
+			if (IJ.debugMode) showFrameRate(offScreenGraphics);
+			g.drawImage(offScreenImage, 0, 0, null);
+		}
+		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
+	}
+
     long firstFrame;
     int frames, fps;
         
@@ -515,6 +553,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				int npoints = IJ.doWand(ox, oy);
 				if (Recorder.record && npoints>0)
 					Recorder.record("doWand", ox, oy);
+				break;
+			case Toolbar.OVAL:
+				if (Toolbar.getBrushSize()>0)
+					new RoiBrush();
+				else
+					handleRoiMouseDown(e);
 				break;
 			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
 			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:

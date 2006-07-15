@@ -21,8 +21,8 @@ public class Options implements PlugIn {
 			{pointToolOptions(); return;}
 		else if (arg.equals("conv"))
 			{conversions(); return;}
-		else if (arg.equals("image"))
-			{imageOptions(); return;}
+		else if (arg.equals("display"))
+			{displayOptions(); return;}
 	}
 				
 	// Miscellaneous Options
@@ -146,12 +146,13 @@ public class Options implements PlugIn {
 		return;
 	}
 		
-	void imageOptions() {
-		GenericDialog gd = new GenericDialog("Image Options", IJ.getInstance());
+	void displayOptions() {
+		GenericDialog gd = new GenericDialog("Display Options", IJ.getInstance());
 		gd.addCheckbox("Interpolate Zoomed Images", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
 		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
 		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);
+		gd.addCheckbox("Double Buffer Selections", Prefs.doubleBuffer);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;			
@@ -159,6 +160,7 @@ public class Options implements PlugIn {
 		Prefs.open100Percent = gd.getNextBoolean();
 		boolean blackCanvas = gd.getNextBoolean();
 		boolean useInvertingLut = gd.getNextBoolean();
+		Prefs.doubleBuffer = gd.getNextBoolean();
 		if (interpolate!=Prefs.interpolateScaledImages) {
 			Prefs.interpolateScaledImages = interpolate;
 			ImagePlus imp = WindowManager.getCurrentImage();
@@ -185,6 +187,10 @@ public class Options implements PlugIn {
 		if (useInvertingLut!=Prefs.useInvertingLut) {
 			invertLuts(useInvertingLut);
 			Prefs.useInvertingLut = useInvertingLut;
+		}
+		if (Prefs.doubleBuffer && IJ.isMacOSX()) {
+			IJ.error("Double-buffering is built into Mac OS X.");
+			Prefs.doubleBuffer = false;
 		}
 	}
 	

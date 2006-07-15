@@ -7,21 +7,22 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.filter.PlugInFilter;
 import java.awt.*;
 
-/** This plugin implements the Proxess/Binary/Threshold command. */
+/** This plugin implements the Proxess/Binary/Threshold 
+	and Convert to Mask commands. */
 public class Thresholder implements PlugIn, Measurements {
 	
 	private double minThreshold;
 	private double maxThreshold;
 	boolean autoThreshold;
 	boolean skipDialog;
-	ImageStack stack1;
 	static boolean fill1 = true;
 	static boolean fill2 = true;
 	static boolean useBW = true;
-
+	boolean convertToMask;
 
 	public void run(String arg) {
-		skipDialog = arg.equals("skip");
+		convertToMask = arg.equals("mask");
+		skipDialog = arg.equals("skip") || convertToMask;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{IJ.noImage(); return;}
@@ -30,8 +31,10 @@ public class Thresholder implements PlugIn, Measurements {
 			applyThreshold(imp);
 			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		} else {
-			Undo.reset();
-			applyThreshold(imp);
+			if (IJ.showMessageWithCancel("Convert to Mask", "Convert all images in stack to binary?")) {
+				Undo.reset();
+				applyThreshold(imp);
+			}
 		}
 	}
 
@@ -69,6 +72,7 @@ public class Thresholder implements PlugIn, Measurements {
 		if (!(imp.getType()==ImagePlus.GRAY8))
 			convertToByte(imp);
 		ip = imp.getProcessor();
+		
 		if (autoThreshold)
 			autoThreshold(imp);
 		else {
@@ -104,20 +108,18 @@ public class Thresholder implements PlugIn, Measurements {
 				lut[i] = fill2?bcolor:(byte)i;
 			}
 		}
-		int result = IJ.setupDialog(imp, 0);
-		if (result==PlugInFilter.DONE) {
-			if (stack1!=null)
-				imp.setStack(null, stack1);
-			imp.unlock();
-			return;
-		}
-		if (result==PlugInFilter.DOES_STACKS)
+		if (imp.getStackSize()>1)
 			new StackProcessor(imp.getStack(), ip).applyTable(lut);
 		else
 			ip.applyTable(lut);
+		if (convertToMask && !imp.isInvertedLut()) {
+			invertLut(imp);
+			fcolor = 255 - fcolor;
+			bcolor = 255 - bcolor;
+		}
 		if (fill1=true && fill2==true && ((fcolor==0&&bcolor==255)||(fcolor==255&&bcolor==0)))
 			imp.getProcessor().setThreshold(fcolor, fcolor, ImageProcessor.NO_LUT_UPDATE);
-		imp.updateAndDraw();
+		imp.updateAndRepaintWindow();
 		imp.unlock();
 	}
 
@@ -126,7 +128,7 @@ public class Thresholder implements PlugIn, Measurements {
 		double min = ip.getMin();
 		double max = ip.getMax();
 		int currentSlice =  imp.getCurrentSlice();
-		stack1 = imp.getStack();
+		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = imp.createEmptyStack();
 		int nSlices = imp.getStackSize();
 		String label;
@@ -141,6 +143,20 @@ public class Thresholder implements PlugIn, Measurements {
 		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 	
+	void invertLut(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		ip.invertLut();
+		int nImages = imp.getStackSize();
+		if (nImages==1)
+			ip.invert();
+		else {
+			ImageStack stack = imp.getStack();
+			for (int slice=1; slice<=nImages; slice++)
+				stack.getProcessor(slice).invert();
+			stack.setColorModel(ip.getColorModel());
+		}
+	}
+
 	void autoThreshold(ImagePlus imp) {
 		ImageStatistics stats = imp.getStatistics(MIN_MAX+MODE);
 		ImageProcessor ip = imp.getProcessor();

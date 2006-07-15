@@ -19,24 +19,22 @@ import java.util.ArrayList;
 public class ThresholdToSelection implements PlugInFilter {
 	ImagePlus image;
 	ImageProcessor ip;
-	double min, max;
+	float min, max;
 	int w, h;
-    boolean isFloat;
 
 	public void run(ImageProcessor ip) {
 		this.ip = ip;
-		min = ip.getMinThreshold();
-		max = ip.getMaxThreshold();
+		min = (float)ip.getMinThreshold();
+		max = (float)ip.getMaxThreshold();
 
 		w = ip.getWidth();
 		h = ip.getHeight();
-        isFloat = ip instanceof FloatProcessor;
 
 		image.setRoi(getShapeRoi());
 	}
 
 	final boolean selected(int x, int y) {
-		double v = isFloat?ip.getPixelValue(x,y):ip.getPixel(x,y);
+		float v = ip.getf(x,y);
 		return v>=min && v<=max;
 	}
 

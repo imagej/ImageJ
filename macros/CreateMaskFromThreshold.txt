@@ -1,8 +1,0 @@
-  setBatchMode(true);
-  getThreshold(t1, t2);
-  run("Duplicate...", "title=mask");
-  setThreshold(t1, t2);
-  run("Threshold", "thresholded remaining black");
-  run("Invert");
-  run("Invert LUT");
-  setBatchMode(false);

@@ -9,6 +9,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
+import ij.util.Tools;
 
 /**A subclass of <code>ij.gui.Roi</code> (2D Regions Of Interest) implemented in terms of java.awt.Shape.
  * A ShapeRoi is constructed from a <code>ij.gui.Roi</code> object, or as a result of logical operators
@@ -85,6 +86,13 @@ public class ShapeRoi extends Roi {
 		AffineTransform at = new AffineTransform();
 		at.translate(-x, -y);
 		shape = new GeneralPath(at.createTransformedShape(s));
+		type = COMPOSITE;
+	}
+
+	/** Constructs a ShapeRoi from a Shape. */
+	public ShapeRoi(int x, int y, Shape s) {
+		super(x, y, s.getBounds().width, s.getBounds().height);
+		shape = new GeneralPath(s);
 		type = COMPOSITE;
 	}
 
@@ -1038,37 +1046,27 @@ public class ShapeRoi extends Roi {
 		}
 	}
 
-	/**Draws the shape of this object onto the associated ImagePlus.
-	 * <br> This method will always draw a flattened version of the actual shape (i.e., all curve segments
-	 * will be approximated by line segments).
+	/**Draws the shape of this object onto the specified ImageProcessor.
+	 * <br> This method will always draw a flattened version of the actual shape
+	 * (i.e., all curve segments will be approximated by line segments).
 	 */
 	public void drawPixels(ImageProcessor ip) {
 		PathIterator pIter = getFlatteningPathIterator(shape,flatness);
-		double[] coords;
-		double x0 = Double.NaN;
-		double y0 = Double.NaN;
-		double sX = Double.NaN;
-		double sY = Double.NaN;
-		for(;!pIter.isDone();)
-		{
-			coords = new double[6];
+		float[] coords = new float[6];
+		float sx=0f, sy=0f;
+		while (!pIter.isDone()) {
 			int segType = pIter.currentSegment(coords);
-			switch(segType)
-			{
+			switch(segType) {
 				case PathIterator.SEG_MOVETO:
-					x0 = coords[0];
-					y0 = coords[1];
-					sX = coords[0];
-					sY = coords[1];
-					ip.moveTo(x+(int)coords[0], y+(int)coords[1]);
+					sx = coords[0];
+					sy = coords[1];
+					ip.moveTo(x+(int)sx, y+(int)sy);
 					break;
 				case PathIterator.SEG_LINETO:
-					x0 = coords[0];
-					y0 = coords[1];
 					ip.lineTo(x+(int)coords[0], y+(int)coords[1]);
 					break;
 				case PathIterator.SEG_CLOSE:
-					if(x0 != sX && y0 != sY) ip.lineTo(x+(int)sX, y+(int)sY);
+					ip.lineTo(x+(int)sx, y+(int)sy);
 					break;
 				default: break;
 			}
@@ -1160,5 +1158,55 @@ public class ShapeRoi extends Roi {
 		for (int i=1; i<array.length; i++) val = Math.max(val,array[i]);
 		return val;
 	}
+	
+	public static void addCircle(String sx, String sy, String swidth) {
+		int x = Integer.parseInt(sx);
+		int y = Integer.parseInt(sy);
+		int width = Integer.parseInt(swidth);
+		ImagePlus img = IJ.getImage();
+		if (img==null) return;
+		Roi roi = img.getRoi();
+		if (roi!=null) {
+			if (!(roi instanceof ShapeRoi))
+			roi = new ShapeRoi(roi);
+			((ShapeRoi)roi).or(getCircularRoi(x, y, width));
+		} else
+			roi = getCircularRoi(x, y, width);
+		img.setRoi(roi);
+	}
+
+	public static void subtractCircle(String sx, String sy, String swidth) {
+		int x = Integer.parseInt(sx);
+		int y = Integer.parseInt(sy);
+		int width = Integer.parseInt(swidth);
+		ImagePlus img = IJ.getImage();
+		if (img==null) return;
+		Roi roi = img.getRoi();
+		if (roi!=null) {
+			if (!(roi instanceof ShapeRoi))
+			roi = new ShapeRoi(roi);
+			((ShapeRoi)roi).not(getCircularRoi(x, y, width));
+			img.setRoi(roi);
+		}
+	}
+
+	static ShapeRoi getCircularRoi(int x, int y, int width) {
+		return new ShapeRoi(new OvalRoi(x - width / 2, y - width / 2, width, width));
+	}
+
+    /*
+    static Polygon poly;
+	static ShapeRoi getCircularRoi(int x, int y, int width) {
+		if (poly==null || poly.getBoundingBox().width!=width) {
+			Roi roi = new OvalRoi(x-width/2, y-width/2, width, width);
+			poly = roi.getPolygon();
+			for (int i=0; i<poly.npoints; i++) {
+				poly.xpoints[i] -= x;
+				poly.ypoints[i] -= y;
+			}
+		}
+		return new ShapeRoi(x, y, poly);
+	}
+	*/
 
 }

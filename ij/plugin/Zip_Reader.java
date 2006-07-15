@@ -59,18 +59,18 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 	}
 
 	public ImagePlus openZip(String path) throws IOException {
-		String name = extractTiffFile(path);
+		String name = extractFile(path);
 		if (name==null)
 			return null;
 		else {
 			tifName = name;
-			ImagePlus imp = new Opener().openTiff(dir, TEMP_NAME);
+			ImagePlus imp = new Opener().openImage(dir, TEMP_NAME);
 			new File(dir+TEMP_NAME).delete();
 			return imp;
 		}
 	}
 
-	String extractTiffFile(String path) throws IOException {
+	String extractFile(String path) throws IOException {
 		ZipInputStream in = new ZipInputStream(new FileInputStream(path));
 		OutputStream out = new FileOutputStream(dir+TEMP_NAME);
 		byte[] buf = new byte[1024];
@@ -83,9 +83,9 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 			out.close(); in.close();
 			IJ.runMacro("roiManager(\"Open\", getArgument());", path);
 			return null;
-		} else if (!name.endsWith(".tif")) {
+		} else if (!(name.endsWith(".tif")||name.endsWith(".dcm"))) {
 			out.close(); in.close();
-			throw new IOException("This ZIP archive does not appear to contain a TIFF file or ROIs");
+			throw new IOException("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
 		}
 		while ((len = in.read(buf)) > 0)
 			out.write(buf, 0, len);

@@ -143,6 +143,7 @@ public class MontageMaker implements PlugIn {
 			cal.pixelWidth /= scale;
 			cal.pixelHeight /= scale;
 		}
+        imp2.setProperty("Info", "xMontage="+columns+"\nyMontage="+rows+"\n");
 		imp2.show();
 	}
 		

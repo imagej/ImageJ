@@ -843,6 +843,8 @@ public class ShortProcessor extends ImageProcessor {
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		if (minThreshold!=NO_THRESHOLD && max>min) {
+            if (minThreshold<0.0) minThreshold = 0.0;
+            if (maxThreshold>65535.0) maxThreshold = 65535.0;
 			double minT = Math.round(((minThreshold-min)/(max-min))*255.0);
 			double maxT = Math.round(((maxThreshold-min)/(max-min))*255.0);
 			super.setThreshold(minT, maxT, lutUpdate);

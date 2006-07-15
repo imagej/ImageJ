@@ -47,7 +47,11 @@ import javax.swing.filechooser.*;
 						if (!directory.endsWith(File.separator))
 							directory += File.separator;
 						defaultDir = directory;
-						directory += file.getName()+File.separator;
+						String fileName = file.getName();
+						if (fileName.indexOf(":\\")!=-1)
+							directory = defaultDir = fileName;
+						else
+							directory += fileName+File.separator;
 					}
 				}
 			});
@@ -71,7 +75,11 @@ import javax.swing.filechooser.*;
 				if (!directory.endsWith(File.separator))
 					directory += File.separator;
 				defaultDir = directory;
-				directory += file.getName()+File.separator;
+				String fileName = file.getName();
+				if (fileName.indexOf(":\\")!=-1)
+					directory = defaultDir = fileName;
+				else
+					directory += fileName+File.separator;
 			}
 		} catch (Exception e) {}
 	}

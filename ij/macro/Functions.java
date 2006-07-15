@@ -513,6 +513,8 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			IJ.run(arg1);
 		resetImage();
+		IJ.setKeyUp(IJ.ALL_KEYS);
+		shiftKeyDown = altKeyDown = false;
 	}
 
 	void setForegroundColor() {
@@ -1883,7 +1885,10 @@ public class Functions implements MacroConstants, Measurements {
 		else if (select) {
 			int n = rm.getList().getItemCount();
 			checkIndex(index, 0, n-1);
-			rm.select(index);
+			if (shiftKeyDown || altKeyDown)
+				rm.select(index, shiftKeyDown, altKeyDown);
+			else
+				rm.select(index);
 		} else if (cmd.equals("count"))
 			count = rm.getList().getItemCount();
 		else {
@@ -2020,6 +2025,7 @@ public class Functions implements MacroConstants, Measurements {
 			displayBatchModeImage(imp2);
 		} else {
 			Vector v = Interpreter.imageTable;
+			if (v==null) return;
 			interp.setBatchMode(false);
 			for (int i=0; i<v.size(); i++) {
 				imp2 = (ImagePlus)v.elementAt(i);

@@ -501,7 +501,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
  	
  	void runThresholdCommand() {
 		Recorder.recordInMacros = true;
- 		IJ.run("Threshold");
+ 		IJ.run("Convert to Mask");
 		Recorder.recordInMacros = false;
  	}
 	

@@ -983,21 +983,23 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Assigns the specified ROI to this image and displays it. Any existing
 		ROI is deleted if <code>roi</code> is null or its width or height is zero. */
-	public void setRoi(Roi roi) {
-		killRoi();
-		if (roi.isVisible())
-			roi = (Roi)roi.clone();
-		if (roi==null)
-			return;
-		Rectangle bounds = roi.getBounds();
+	public void setRoi(Roi newRoi) {
+		if (newRoi==null)
+			{killRoi(); return;}
+		if (newRoi.isVisible()) {
+			newRoi = (Roi)newRoi.clone();
+			if (newRoi==null)
+				{killRoi(); return;}
+		}
+		Rectangle bounds = newRoi.getBounds();
 		if (bounds.width==0 && bounds.height==0)
-			return;
-		this.roi = roi;
+			{killRoi(); return;}
+		roi = newRoi;
 		if (ip!=null) {
 			ip.setMask(null);
 			ip.setRoi(bounds);
 		}
-		this.roi.setImage(this);
+		roi.setImage(this);
 		draw();
 	}
 	
@@ -1008,16 +1010,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Creates a rectangular selection. */
 	public void setRoi(Rectangle r) {
-		if (r==null)
-			{killRoi(); return;}
-		killRoi();
-		roi = new Roi(r.x, r.y, r.width, r.height);
-		roi.setImage(this);
-		if (ip!=null) {
-			ip.setMask(null);
-			ip.setRoi(r);
-		}
-		draw();
+		setRoi(new Roi(r.x, r.y, r.width, r.height));
 	}
 	
 	/** Starts the process of creating a new selection, where sx and sy are the
@@ -1066,7 +1059,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			saveRoi();
 			roi = null;
 			if (ip!=null)
-			ip.resetRoi();
+				ip.resetRoi();
 			draw();
 		}
 	}

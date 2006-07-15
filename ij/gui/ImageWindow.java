@@ -321,12 +321,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 
 	public void windowActivated(WindowEvent e) {
 		//IJ.log("windowActivated: "+imp.getTitle());
-		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
+		ImageJ ij = IJ.getInstance();
+		boolean quitting = ij!=null && ij.quitting();
+		if (IJ.isMacintosh() && ij!=null && !quitting) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			setMenuBar(Menus.getMenuBar());
 		}
-		ImageJ ij = IJ.getInstance();
-		boolean quitting = ij!=null && ij.quitting();
 		imp.setActivated(); // notify ImagePlus that image has been activated
 		if (!closed && !quitting && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
