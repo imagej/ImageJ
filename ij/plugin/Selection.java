@@ -270,7 +270,8 @@ public class Selection implements PlugIn, Measurements {
 			maskImp = ((ImageWindow)frame).getImagePlus();
 		if (maskImp==null) {
 			ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
-			ip.invertLut();
+			if (!Prefs.blackBackground)
+				ip.invertLut();
 			maskImp = new ImagePlus("Mask", ip);
 			maskImp.show();
 		}

@@ -88,6 +88,12 @@ public class Macro_Runner implements PlugIn {
         }
 		File file = new File(name2);
 		int size = (int)file.length();
+		if (size<=0 && !fullPath && name2.endsWith(".txt")) {
+			String name3 = name2.substring(0, name2.length()-4)+".ijm";
+			file = new File(name3);
+			size = (int)file.length();
+			if (size>0) name2 = name3;
+		}
 		if (size<=0 && !fullPath) {
 			file = new File(System.getProperty("user.dir") + File.separator + name);
 			size = (int)file.length();

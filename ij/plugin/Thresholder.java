@@ -55,7 +55,7 @@ public class Thresholder implements PlugIn, Measurements {
 		if (skipDialog)
 			fill1 = fill2 = useBlackAndWhite = true;
 		else if (!autoThreshold) {
-			GenericDialog gd = new GenericDialog("Apply Lut");
+			GenericDialog gd = new GenericDialog("Make Binary");
 			gd.addCheckbox("Thresholded pixels to foreground color", fill1);
 			gd.addCheckbox("Remaining pixels to background color", fill2);
 			gd.addMessage("");
@@ -82,6 +82,8 @@ public class Thresholder implements PlugIn, Measurements {
  			maxThreshold = ((saveMaxThreshold-saveMin)/(saveMax-saveMin))*255.0;
 		}
 
+		if (convertToMask && ip.isColorLut())
+			ip.setColorModel(ip.getDefaultColorModel());
 		int fcolor, bcolor;
 		ip.resetThreshold();
 		int savePixel = ip.getPixel(0,0);
@@ -112,10 +114,14 @@ public class Thresholder implements PlugIn, Measurements {
 			new StackProcessor(imp.getStack(), ip).applyTable(lut);
 		else
 			ip.applyTable(lut);
-		if (convertToMask && !imp.isInvertedLut()) {
-			invertLut(imp);
-			fcolor = 255 - fcolor;
-			bcolor = 255 - bcolor;
+		if (convertToMask) {
+			if (!imp.isInvertedLut()) {
+				setInvertedLut(imp);
+				fcolor = 255 - fcolor;
+				bcolor = 255 - bcolor;
+			}
+			if (Prefs.blackBackground)
+			ip.invertLut();
 		}
 		if (fill1=true && fill2==true && ((fcolor==0&&bcolor==255)||(fcolor==255&&bcolor==0)))
 			imp.getProcessor().setThreshold(fcolor, fcolor, ImageProcessor.NO_LUT_UPDATE);
@@ -143,7 +149,7 @@ public class Thresholder implements PlugIn, Measurements {
 		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 	
-	void invertLut(ImagePlus imp) {
+	void setInvertedLut(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		ip.invertLut();
 		int nImages = imp.getStackSize();

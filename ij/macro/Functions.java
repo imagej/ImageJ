@@ -597,19 +597,21 @@ public class Functions implements MacroConstants, Measurements {
 
 	void makeOval() {
 		Roi previousRoi = getImage().getRoi();
+		if (shiftKeyDown||altKeyDown) getImage().saveRoi();
 		IJ.makeOval((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
 		Roi roi = getImage().getRoi();
 		if (previousRoi!=null && roi!=null)
-			roi.update(shiftKeyDown, altKeyDown);
+			updateRoi(roi);
 		resetImage();
 	}
 	
 	void makeRectangle() {
 		Roi previousRoi = getImage().getRoi();
+		if (shiftKeyDown||altKeyDown) getImage().saveRoi();
 		IJ.makeRectangle((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
 		Roi roi = getImage().getRoi();
 		if (previousRoi!=null && roi!=null)
-			roi.update(shiftKeyDown, altKeyDown);
+			updateRoi(roi);
 		resetImage();
 	}
 	
@@ -1505,11 +1507,12 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			roi = new PolygonRoi(xcoord, ycoord, n, roiType);
 		Roi previousRoi = imp.getRoi();
+		if (shiftKeyDown||altKeyDown) imp.saveRoi();
 		imp.setRoi(roi);
 		if (roiType==Roi.POLYGON || roiType==Roi.FREEROI) {
 			roi = imp.getRoi();
 			if (previousRoi!=null && roi!=null)
-				roi.update(shiftKeyDown, altKeyDown); 
+				updateRoi(roi); 
 		}
 		updateNeeded = false;
 	}
@@ -2582,11 +2585,18 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("More than "+max+" points");
 		ImagePlus imp = getImage();
 		Roi previousRoi = imp.getRoi();
+		if (shiftKeyDown||altKeyDown) imp.saveRoi();
 		imp.setRoi(new PolygonRoi(x, y, n, Roi.POLYGON));
 		Roi roi = imp.getRoi();
 		if (previousRoi!=null && roi!=null)
-			roi.update(shiftKeyDown, altKeyDown); 
+			updateRoi(roi); 
 		resetImage(); 
+	}
+	
+	void updateRoi(Roi roi) {
+		if (shiftKeyDown || altKeyDown)
+			roi.update(shiftKeyDown, altKeyDown);
+		shiftKeyDown = altKeyDown = false;
 	}
 	
 	String doFile() {
@@ -2783,7 +2793,7 @@ public class Functions implements MacroConstants, Measurements {
 			Object obj = m.invoke(null, args);
 			return obj!=null?obj.toString():null;
 		} catch(Exception e) {
-			interp.error("Call error ("+e+")");
+			IJ.log("Call error ("+e+")");
 			return null;
 		}
 			

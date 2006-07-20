@@ -8,6 +8,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
+import ij.plugin.filter.Analyzer;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
@@ -226,10 +227,13 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		boolean minMaxChange = false;		
         boolean not8Bits = type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32;
 		if (not8Bits) {
-			if (ip.getMin()!=previousMin || ip.getMax()!=previousMax)
+			if (ip.getMin()==plot.stackMin && ip.getMax()==plot.stackMax)
+				minMaxChange = false;
+			else if (ip.getMin()!=previousMin || ip.getMax()!=previousMax) {
 				minMaxChange = true;
-	 		previousMin = ip.getMin();
-	 		previousMax = ip.getMax();
+	 			previousMin = ip.getMin();
+	 			previousMax = ip.getMax();
+	 		}
 		}
 		int id = imp.getID();
 		if (minMaxChange || id!=previousImageID || type!=previousImageType) {
@@ -241,7 +245,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			invertedLut = imp.isInvertedLut();
 			minThreshold = ip.getMinThreshold();
 			maxThreshold = ip.getMaxThreshold();
-			ImageStatistics stats = plot.setHistogram(imp);
+			ImageStatistics stats = plot.setHistogram(imp, false);
 			if (minThreshold==ip.NO_THRESHOLD)
 				autoSetLevels(ip, stats);
 			else {
@@ -404,8 +408,13 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
-		plot.setHistogram(imp);
+		boolean useStackMinAndMax = false;
+		if (!(ip instanceof ByteProcessor)) {
+			ip.resetMinAndMax();
+			useStackMinAndMax = imp.getStackSize()>1 && IJ.altKeyDown();
+		}
 		ip.resetThreshold();
+		plot.setHistogram(imp, useStackMinAndMax);
 		updateScrollBars();
 		if (Recorder.record)
 			Recorder.record("resetThreshold");
@@ -443,7 +452,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (level2>maxValue) level2 = maxValue;
 		boolean outOfRange = level1<minDisplay || level2>maxDisplay;
 		if (outOfRange)
-			plot.setHistogram(imp);
+			plot.setHistogram(imp, false);
 		else
 			ip.setMinAndMax(minDisplay, maxDisplay);
 			
@@ -598,7 +607,6 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
 
 class ThresholdPlot extends Canvas implements Measurements, MouseListener {
-	
 	static final int WIDTH = 256, HEIGHT=48;
 	double minThreshold = 85;
 	double maxThreshold = 170;
@@ -608,6 +616,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	Image os;
 	Graphics osg;
 	int mode;
+	double stackMin, stackMax;
 	
 	public ThresholdPlot() {
 		addMouseListener(this);
@@ -620,16 +629,31 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
         return new Dimension(WIDTH+1, HEIGHT+1);
     }
     
-	ImageStatistics setHistogram(ImagePlus imp) {
+	ImageStatistics setHistogram(ImagePlus imp, boolean useStackMinAndMax) {
 		ImageProcessor ip = imp.getProcessor();
+		ImageStatistics stats = null;
 		if (!(ip instanceof ByteProcessor)) {
-			double min = ip.getMin();
-			double max = ip.getMax();
-			ip.setMinAndMax(min, max);
-			ip = new ByteProcessor(ip.createImage());
+			if (useStackMinAndMax) {
+				stats = new StackStatistics(imp);
+				if (imp.getLocalCalibration().isSigned16Bit()) 
+					{stats.min += 32768; stats.max += 32768;}
+				stackMin = stats.min;
+				stackMax = stats.max;
+				ip.setMinAndMax(stackMin, stackMax);
+			} else
+				stackMin = stackMax = 0.0;
+			Calibration cal = imp.getCalibration();
+			if (ip instanceof FloatProcessor) {
+				int digits = Math.max(Analyzer.getPrecision(), 2);
+				IJ.showStatus("min="+IJ.d2s(ip.getMin(),digits)+", max="+IJ.d2s(ip.getMax(),digits));
+			} else
+				IJ.showStatus("min="+(int)cal.getCValue(ip.getMin())+", max="+(int)cal.getCValue(ip.getMax()));
+			ip = ip.convertToByte(true);
+			ip.setColorModel(ip.getDefaultColorModel());
 		}
 		ip.setRoi(imp.getRoi());
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
+		if (stats==null)
+			stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
 		int maxCount2 = 0;
 		histogram = stats.histogram;
 		for (int i = 0; i < stats.nBins; i++)

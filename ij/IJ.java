@@ -1123,7 +1123,10 @@ public class IJ {
 		} else {
 			DirectoryChooser dc = new DirectoryChooser(title);
 			String dir = dc.getDirectory();
-			if (dir==null) Macro.abort();
+			if (dir==null)
+				Macro.abort();
+			else if (Recorder.record)
+				Recorder.record("getDirectory", dir);
 			return dir;
 		}
 	}

@@ -536,7 +536,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	void saveAs() {
 		String name1 = getTitle();
 		if (defaultDir==null) {
-			if (name1.endsWith(".txt"))
+			if (name1.endsWith(".txt")||name1.endsWith(".ijm"))
 				defaultDir = Menus.getMacrosPath();
 			else
 				defaultDir = Menus.getPlugInsPath();
@@ -681,7 +681,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	void convertToPlugin() {
-		if (!getTitle().endsWith(".txt")) return;
+		if (!(getTitle().endsWith(".txt")||getTitle().endsWith(".ijm"))) return;
 		String text = ta.getText();
 		if (text==null || text.equals("")) {
 			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
@@ -709,9 +709,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
 		Editor ed = np.getEditor();
 		String title = getTitle();
-		if (title.equals("Macro.txt"))
+		if (title.equals("Macro.txt")||title.equals("Macro.ijm"))
 			title = "Converted_Macro";
-		if (title.endsWith(".txt")) title = title.substring(0, title.length()-4);
+		if (title.endsWith(".txt")||title.endsWith(".ijm")) title = title.substring(0, title.length()-4);
 		if (title.indexOf('_')==-1) title += "_";
 		title += ".java";
 		ed.updateClassName(ed.getTitle(), title);

@@ -648,14 +648,20 @@ public class Menus {
 			while (entries.hasMoreElements()) {
 				ZipEntry entry = (ZipEntry) entries.nextElement();
 				String name = entry.getName();
-				//IJ.log(name);
 				if (name.endsWith(".class") && name.indexOf("_")>0 && name.indexOf("$")==-1
-				&& name.indexOf("/")==-1 && !name.startsWith("_")) {
+				&& name.indexOf("/_")==-1 && !name.startsWith("_")) {
 					if (sb==null) sb = new StringBuffer();
 					String className = name.substring(0, name.length()-6);
-					//className = className.replace('/', '.');
-					name = className.replace('_', ' ');
-					sb.append("Plugins, \""+name+"\", "+className+"\n");
+					int slashIndex = className.lastIndexOf('/');
+					String plugins = "Plugins";
+					if (slashIndex >= 0) {
+						plugins += ">" + className.substring(0, slashIndex).replace('/', '>').replace('_', ' ');
+						name = className.substring(slashIndex + 1);
+					} else
+						name = className;
+					name = name.replace('_', ' ');
+					className = className.replace('/', '.');
+					sb.append(plugins + ", \""+name+"\", "+className+"\n");
 				}
 			}
 		}

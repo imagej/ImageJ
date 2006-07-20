@@ -422,8 +422,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.put(newName, roi);
 		roi.setName(newName);
 		list.replaceItem(newName, indexes[0]);
-		if (restore(indexes[0], true))
-			IJ.saveAs("selection", dir+name2);
+		RoiEncoder re = new RoiEncoder(dir+name2);
+		try {
+			re.write(roi);
+		} catch (IOException e) {
+			IJ.error("ROI Manager", e.getMessage());
+		}
 		return true;
 	}
 
