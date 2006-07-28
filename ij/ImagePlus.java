@@ -42,6 +42,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** True if any changes have been made to this image. */
 	public boolean changes;
 	
+	/** Obsolete. Use GetCalibration(). */
+	public double pixelWidth=1.0, pixelHeight=1.0;
+	/** Obsolete. Use GetCalibration(). */
+	public String unit="pixel";
+	/** Obsolete. Use GetCalibration(). */
+	public String units=unit;
+	/** Obsolete. Use GetCalibration(). */
+	public boolean sCalibrated;
+
 	protected Image img;
 	protected ImageProcessor ip;
 	protected ImageWindow win;

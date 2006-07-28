@@ -40,14 +40,20 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		IJ.register(Calibrator.class);
-		return DOES_8G+DOES_8C+DOES_16+NO_CHANGES;
+		return DOES_ALL-DOES_RGB+NO_CHANGES;
 	}
 
 	public void run(ImageProcessor ip) {
 		global1 = imp.getGlobalCalibration()!=null;
 		if (!showDialog(imp))
 			return;
-		calibrate(imp);
+		if (imp.getType()==ImagePlus.GRAY32) {
+			if (choiceIndex==0)
+				imp.getCalibration().setValueUnit(unit);
+			else
+				IJ.error("Calibrate", "Function must be \"None\" for 32-bit images,\nbut you can change the Unit.");
+		} else
+			calibrate(imp);
 	}
 
 	public boolean showDialog(ImagePlus imp) {
@@ -117,12 +123,12 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		boolean zeroClip=false;
 		if (choiceIndex<=0) {
 			if (oldFunction==Calibration.NONE&&!yText.equals("")&&!xText.equals(""))
-				IJ.error("Calibrator", "Please select a function");
+				IJ.error("Calibrate", "Please select a function");
 			function = Calibration.NONE;
 		} else if (choiceIndex<=nFits) {
 			function = choiceIndex - 1;
 			if (function>0 && is16Bits) {
-				IJ.error("Calibration of 16-bit images, except with straight\nline functions, is currently not supported.");
+				IJ.error("Calibrate", "Calibration of 16-bit images, except with straight\nline functions, is currently not supported.");
 				return;
 			}
 			x = getData(xText);
@@ -146,7 +152,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			unit = "Inverted Gray Value";
 		} else if (choiceIndex==odIndex) {
 			if (is16Bits) {
-				IJ.error("Uncalibrated OD is not supported on 16-bit images.");
+				IJ.error("Calibrate", "Uncalibrated OD is not supported on 16-bit images.");
 				return;
 			}
 			function = Calibration.UNCALIBRATED_OD;
@@ -166,7 +172,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 
 	double[] doCurveFitting(double[] x, double[] y, int fitType) {
 		if (x.length!=y.length || y.length==0) {
-			IJ.error("Calibrator",
+			IJ.error("Calibrate",
 				"To create a calibration curve, the left column must\n"
 				+"contain a list of measured mean pixel values and the\n"
 				+"right column must contain the same number of calibration\n"
@@ -354,7 +360,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		if (!((width==1||width==2)&&height>1)) {
-			IJ.error("Calibrator", "This appears to not be a one or two column text file");
+			IJ.error("Calibrate", "This appears to not be a one or two column text file");
 			return;
 		}
 		StringBuffer sb = new StringBuffer();

@@ -60,7 +60,7 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		Analyzer analyzer = new Analyzer(imp);
 		int measurements = analyzer.getMeasurements();
 		boolean showResults = measurements!=0 && measurements!=LIMIT;
-		boolean showingLabels = (measurements&LABELS)!=0;
+		boolean showingLabels = (measurements&LABELS)!=0 || (measurements&SLICE)!=0;
 		measurements |= MEAN;
 		if (showResults) {
 			if (!analyzer.resetCounter())

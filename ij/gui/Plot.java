@@ -449,6 +449,7 @@ public class Plot {
 			Interpreter.addBatchModeImage(imp);
 			return null;
 		}
+		ImageWindow.centerNextImage();
 		return new PlotWindow(this);
 	}
 	

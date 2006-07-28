@@ -33,7 +33,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isLinux;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -49,6 +49,7 @@ public class IJ {
 		osname = System.getProperty("os.name");
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
+		isLinux = osname.startsWith("Linux");
 		String version = System.getProperty("java.version").substring(0,3);
 		// JVM on Sharp Zaurus PDA claims to be "3.1"!
 		isJava2 = version.compareTo("1.1")>0 && version.compareTo("2.9")<=0;
@@ -777,6 +778,11 @@ public class IJ {
 		return isJava15;
 	}
 
+	/** Returns true if ImageJ is running on Linux. */
+	public static boolean isLinux() {
+		return isLinux;
+	}
+
 	/** Displays an error message and returns false if the
 		ImageJ version is less than the one specified. */
 	public static boolean versionLessThan(String version) {
@@ -916,7 +922,6 @@ public class IJ {
 		ImagePlus imp = WindowManager.getImage(id);
 		if (imp==null)
 			error("Macro Error", "Image "+id+" not found or no images are open.");
-		String title = imp.getTitle();
 		if (Interpreter.isBatchMode()) {
 			ImagePlus imp2 = WindowManager.getCurrentImage();
 			if (imp2!=null && imp2!=imp) imp2.saveRoi();
@@ -933,7 +938,7 @@ public class IJ {
 			while (true) {
 				wait(10);
 				imp = WindowManager.getCurrentImage();
-				if (imp!=null && imp.getTitle().equals(title))
+				if (imp!=null && imp.getID()==id)
 					return; // specified image is now active
 				if ((System.currentTimeMillis()-start)>timeout) {
 					WindowManager.setCurrentWindow(win);

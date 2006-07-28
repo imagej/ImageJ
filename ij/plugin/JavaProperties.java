@@ -72,6 +72,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  version: "+IJ.getInstance().VERSION+"\n");
 		sb.append("  java 2: "+IJ.isJava2()+"\n");
 		sb.append("  java 1.4: "+IJ.isJava14()+"\n");
+		sb.append("  linux: "+IJ.isLinux()+"\n");
 		sb.append("  prefs dir: "+prefsDir+"\n");
 		sb.append("  imagej dir: "+Prefs.getHomeDir()+"\n");
 		sb.append("  plugins dir: "+Menus.getPlugInsPath()+"\n");

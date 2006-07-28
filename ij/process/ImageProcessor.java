@@ -884,7 +884,11 @@ public abstract class ImageProcessor extends Object {
 			cxx -= w;
 		int h =  fontMetrics.getHeight();
 		if (w<=0 || h<=0) return;
-		Image img = frame.createImage(w, h);
+		Image img;
+		if (ij.IJ.isLinux() && ij.IJ.isJava2())
+			img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		else
+			img = frame.createImage(w, h);
 		Graphics g = img.getGraphics();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();

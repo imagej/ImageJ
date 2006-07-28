@@ -21,7 +21,8 @@ public class DICOM_Sorter implements PlugIn {
 		//	IJ.log(strings[i]);
 		StringSorter.sort(strings);
 		ImageStack stack2 = sortStack(stack, strings);
-		imp.setStack(null, stack2);
+		if (stack2!=null)
+			imp.setStack(null, stack2);
 	}
 	
 	public ImageStack sort(ImageStack stack) {
@@ -38,7 +39,8 @@ public class DICOM_Sorter implements PlugIn {
 		ImageProcessor ip = stack.getProcessor(1);
 		ImageStack stack2 = new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 		for (int i=0; i<stack.getSize(); i++) {
-			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-4));
+			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-4), 0.0);
+			if (slice==0) return null;
 			stack2.addSlice(stack.getSliceLabel(slice), stack.getPixels(slice));
 		}
 		stack2.update(stack.getProcessor(1));
