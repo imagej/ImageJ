@@ -57,6 +57,7 @@ public class Calibration {
 	private boolean invertedLut;
 	private int bitDepth = 8;
 	private boolean zeroClip;
+	private boolean invertY;
 
 	/** Constructs a new Calibration object using the default values. */ 
 	public Calibration(ImagePlus imp) {
@@ -116,9 +117,9 @@ public class Calibration {
  	}
  	
  	/** Converts a y-coodinate in pixels to physical units (e.g. mm),
- 		taking into account the global "Invert Y Coordinates" flag. */
+ 		taking into account the invertY and global "Invert Y Coordinates" flags. */
  	public double getY(double y, int imageHeight) {
- 		if ((Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
+ 		if (invertY || (Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
 			if (yOrigin!=0.0)
 				return (yOrigin-y)*pixelHeight;
 			else
@@ -356,6 +357,11 @@ public class Calibration {
  	/** Returns true if zero clipping is enabled. */
  	public boolean zeroClip() {
  		return zeroClip;
+ 	}
+ 	
+ 	/** Sets the 'invertY' flag. */
+ 	public void setInvertY(boolean invertYCoordinates) {
+ 		invertY = invertYCoordinates;
  	}
  	
     public String toString() {

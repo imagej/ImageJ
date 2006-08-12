@@ -38,8 +38,6 @@ public class ResultsTable {
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
-		for(int i=0; i<defaultHeadings.length; i++)
-				headings[i] = defaultHeadings[i];
 	}
 	
 	/** Returns the ResultsTable used by the Measure command. */
@@ -235,7 +233,7 @@ public class ResultsTable {
 		if (col==COLUMN_NOT_FOUND) {
 			col = getFreeColumn(column);
 			if (col==TABLE_FULL)
-				throw new IllegalArgumentException("Too many columns (>"+(MAX_COLUMNS-defaultHeadings.length)+")");
+				throw new IllegalArgumentException("Too many columns (>"+(MAX_COLUMNS)+")");
 		}
 		setValue(col, row, value);
 	}
@@ -308,6 +306,12 @@ public class ResultsTable {
 		headings[column] = heading;
 	}
 	
+	/** Sets the headings used by the Measure command ("Area", "Mean", etc.). */
+	public void setDefaultHeadings() {
+		for(int i=0; i<defaultHeadings.length; i++)
+				headings[i] = defaultHeadings[i];
+	}
+
 	/** Sets the number of digits to the right of decimal point. */
 	public void setPrecision(int precision) {
 		this.precision = precision;
@@ -344,12 +348,9 @@ public class ResultsTable {
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
-		for (int i=0; i<=lastColumn; i++) {
+		for (int i=0; i<MAX_COLUMNS; i++) {
 			columns[i] = null;
-			if (i<defaultHeadings.length)
-				headings[i] = defaultHeadings[i];
-			else
-				headings[i] = null;
+			headings[i] = null;
 		}
 		lastColumn = -1;
 		rowLabels = null;

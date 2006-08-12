@@ -175,7 +175,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))) {
 			if (IJ.macroRunning()) {
 				unsavedMeasurements = false;
-				resetCounter();
+				reset();
 				mode = AREAS;
 			} else
 				mode = UNDEFINED;
@@ -185,6 +185,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	void measure() {
+		String sliceHdr = rt.getColumnHeading(ResultsTable.SLICE);
+		if (sliceHdr==null || sliceHdr.charAt(0)!='S')
+			reset();
 		firstParticle = lastParticle = 0;
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.getType()==Roi.POINT) {
@@ -201,7 +204,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if (mode!=AREAS) {
 			switchingModes = true;
-			if (!resetCounter())
+			if (!reset())
 				return;
 			mode = AREAS;
 		}
@@ -213,6 +216,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 			stats = imp.getStatistics(measurements);
 		saveResults(stats, roi);
 		displayResults();
+	}
+	
+	boolean reset() {
+		boolean ok = true;
+		if (rt.getCounter()>0)
+			ok = resetCounter();
+		if (rt.getColumnHeading(ResultsTable.SLICE)==null)
+			rt.setDefaultHeadings();
+		return ok;
 	}
 
 	/** Returns <code>true</code> if an image is selected in the "Redirect To:"
@@ -262,7 +274,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	void measurePoint(Roi roi) {
 		if (mode!=POINTS) {
 			switchingModes = true;
-			if (!resetCounter())
+			if (!reset())
 				return;
 			//IJ.setColumnHeadings(" \tX\tY\tValue");		
 			mode = POINTS;
@@ -298,7 +310,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	void measureAngle(Roi roi) {
 		if (mode!=ANGLES) {
 			switchingModes = true;
-			if (!resetCounter())
+			if (!reset())
 				return;
 			if ((measurements&LABELS)!=0)
 				IJ.setColumnHeadings(" \tName\tangle");
@@ -317,7 +329,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	void measureLength(Roi roi) {
 		if (mode!=LENGTHS) {
 			switchingModes = true;
-			if (!resetCounter())
+			if (!reset())
 				return;
 			if ((measurements&LABELS)!=0)
 				IJ.setColumnHeadings(" \tName\tlength");
@@ -364,6 +376,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		or by calling setMeasurments(), in the system results table.
 	*/
 	public void saveResults(ImageStatistics stats, Roi roi) {
+		if (rt.getColumnHeading(ResultsTable.SLICE)==null)
+			reset();
 		incrementCounter();
 		int counter = rt.getCounter();
 		if (counter<=MAX_STANDARDS) {

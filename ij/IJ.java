@@ -1306,6 +1306,14 @@ public class IJ {
 	public static ClassLoader getClassLoader() {
 		if (classLoader==null) {
 			String pluginsDir = Menus.getPlugInsPath();
+			if (pluginsDir==null) {
+				String home = System.getProperty("plugins.dir");
+				if (home!=null) {
+					if (!home.endsWith(Prefs.separator)) home+=Prefs.separator;
+					pluginsDir = home+"plugins"+Prefs.separator;
+					if (!(new File(pluginsDir)).isDirectory()) pluginsDir = home;
+				}
+			}
 			if (pluginsDir==null)
 				return ClassLoader.getSystemClassLoader();
 			else

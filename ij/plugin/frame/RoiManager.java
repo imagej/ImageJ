@@ -532,7 +532,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null) return;
 		int[] indexes = list.getSelectedIndexes();
-		if (indexes.length<=1)
+		if (indexes.length==1) {
+			error("More than one item must be selected, or none");
+			return;
+		}
+		if (indexes.length==0)
 			indexes = getAllIndexes();
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {

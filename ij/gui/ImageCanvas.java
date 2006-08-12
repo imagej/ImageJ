@@ -103,11 +103,36 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (roi != null) roi.draw(g);
+			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
+				drawZoomIndicator(g);
 			if (IJ.debugMode) showFrameRate(g);
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
     }
     
+	void drawZoomIndicator(Graphics g) {
+		//IJ.log("Zoom: "+srcRect+imageWidth+"  "+imageHeight);
+		int x1 = 10;
+		int y1 = 10;
+		double aspectRatio = (double)imageHeight/imageWidth;
+		int w1 = 64;
+		if (aspectRatio>1.0)
+			w1 = (int)(w1/aspectRatio);
+		int h1 = (int)(w1*aspectRatio);
+		int w2 = (int)(w1*((double)srcRect.width/imageWidth));
+		int h2 = (int)(h1*((double)srcRect.height/imageHeight));
+		if (w2<1) w2 = 1;
+		if (h2<1) h2 = 1;
+		int x2 = (int)(w1*((double)srcRect.x/imageWidth));
+		int y2 = (int)(h1*((double)srcRect.y/imageHeight));
+		g.setColor(new Color(128, 128, 255));
+		g.drawRect(x1, y1, w1, h1);
+		if (w2*h2<=100)
+			g.fillRect(x1+x2, y1+y2, w2, h2);
+		else
+			g.drawRect(x1+x2, y1+y2, w2, h2);
+	}
+
 	// Use double buffer to reduce flicker when drawing complex ROIs.
 	// Author: Erik Meijering
 	void paintDoubleBuffered(Graphics g) {
@@ -132,6 +157,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (roi!=null) roi.draw(offScreenGraphics);
+			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
+				drawZoomIndicator(g);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
 			g.drawImage(offScreenImage, 0, 0, null);
 		}

@@ -7,6 +7,7 @@ import ij.util.*;
 
 /* Sorts a DICOM stack by image number. */
 public class DICOM_Sorter implements PlugIn {
+	static final int MAX_DIGITS = 5;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -17,8 +18,6 @@ public class DICOM_Sorter implements PlugIn {
 		int stackSize = imp.getStackSize();
 		ImageStack stack = imp.getStack();
 		String[] strings = getSortStrings(stack, "0020,0013");
-		//for (int i=0; i<stackSize; i++)
-		//	IJ.log(strings[i]);
 		StringSorter.sort(strings);
 		ImageStack stack2 = sortStack(stack, strings);
 		if (stack2!=null)
@@ -39,7 +38,7 @@ public class DICOM_Sorter implements PlugIn {
 		ImageProcessor ip = stack.getProcessor(1);
 		ImageStack stack2 = new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 		for (int i=0; i<stack.getSize(); i++) {
-			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-4), 0.0);
+			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-MAX_DIGITS), 0.0);
 			if (slice==0) return null;
 			stack2.addSlice(stack.getSliceLabel(slice), stack.getPixels(slice));
 		}
@@ -63,14 +62,14 @@ public class DICOM_Sorter implements PlugIn {
 				if (IJ.debugMode) IJ.log("  all slices must be part of the same series");
 				return null;
 			}
-			values[i-1] = toString(value, 4) + toString(i, 4);
+			values[i-1] = toString(value, MAX_DIGITS) + toString(i, MAX_DIGITS);
 		}
 		return values;
 	}
 
 	String toString(double value, int width) {
-		String s = "      " + IJ.d2s(value,0);
-		return s.substring(s.length()-4);
+		String s = "       " + IJ.d2s(value,0);
+		return s.substring(s.length()-MAX_DIGITS);
 	}
 
 	boolean isDicomStack(ImagePlus imp) {

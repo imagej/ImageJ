@@ -1888,9 +1888,10 @@ public class Functions implements MacroConstants, Measurements {
 		else if (select) {
 			int n = rm.getList().getItemCount();
 			checkIndex(index, 0, n-1);
-			if (shiftKeyDown || altKeyDown)
+			if (shiftKeyDown || altKeyDown) {
 				rm.select(index, shiftKeyDown, altKeyDown);
-			else
+				shiftKeyDown = altKeyDown = false;
+			} else
 				rm.select(index);
 		} else if (cmd.equals("count"))
 			count = rm.getList().getItemCount();

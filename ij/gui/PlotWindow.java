@@ -215,6 +215,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
     	@see ij.gui.ImageWindow#mouseMoved
     */
     public void mouseMoved(int x, int y) {
+    	super.mouseMoved(x, y);
 		if (plot!=null && plot.frame!=null && coordinates!=null)
 			coordinates.setText(plot.getCoordinates(x,y));
 	}

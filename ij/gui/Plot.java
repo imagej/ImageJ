@@ -9,6 +9,7 @@ import ij.process.*;
 import ij.util.*;
 import ij.plugin.filter.Analyzer;
 import ij.macro.Interpreter;
+import ij.measure.Calibration;
 
 
 /** This class is an image that line graphs can be drawn on. */
@@ -433,7 +434,14 @@ public class Plot {
 	/** Returns the plot as an ImagePlus. */
 	public ImagePlus getImagePlus() {
 		draw();
-		return new ImagePlus(title, ip);
+		ImagePlus img = new ImagePlus(title, ip);
+		Calibration cal = img.getCalibration();
+		cal.xOrigin = LEFT_MARGIN;
+		cal.yOrigin = TOP_MARGIN+frameHeight+yMin*yScale;
+		cal.pixelWidth = 1.0/xScale;
+		cal.pixelHeight = 1.0/yScale;
+		cal.setInvertY(true);
+		return img;
 	}
 
 	/** Displays the plot in a PlotWindow and returns a reference to the PlotWindow. */

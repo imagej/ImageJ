@@ -915,7 +915,7 @@ public abstract class ImageProcessor extends Object {
 			return;
 		}
 		
-		if (ij.IJ.isMacOSX()) {
+		if (ij.IJ.isMacOSX() || (ij.IJ.isLinux()&&ij.IJ.isJava2())) {
 			Java2.setAntialiasedText(g, false);
 			g.setColor(Color.white);
 			g.fillRect(0, 0, w, h);
@@ -1326,7 +1326,8 @@ public abstract class ImageProcessor extends Object {
 	/** Restores the pixel data from the snapshot (undo) buffer. */
 	public abstract void reset();
 	
-	/** Restore pixels that are within roi but not part of the mask. */
+	/** Restores pixels from the snapshot buffer that are 
+		within the rectangular roi but not part of the mask. */
 	public abstract void reset(ImageProcessor mask);
 	
 	/** Convolves the image or ROI with the specified

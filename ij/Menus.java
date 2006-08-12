@@ -695,11 +695,15 @@ public class Menus {
 			pluginsPath = homeDir+Prefs.separator;
 		else {
 			String property = System.getProperty("plugins.dir");
+			if (property!=null && property.endsWith(Prefs.separator))
+				property = property.substring(0, property.length()-1);
 			String pluginsDir = property;
 			if (pluginsDir==null)
 				pluginsDir = homeDir;
-			else if (pluginsDir.equals("user.home"))
+			else if (pluginsDir.equals("user.home")) {
 				pluginsDir = System.getProperty("user.home");
+				property = null;
+			}
 			pluginsPath = pluginsDir+Prefs.separator+"plugins"+Prefs.separator;
 			if (property!=null&&!(new File(pluginsPath)).isDirectory())
 				pluginsPath = pluginsDir + Prefs.separator;

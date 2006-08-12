@@ -1381,6 +1381,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
     
     private String getValueAsString(int x, int y) {
+    	if (win!=null && win instanceof PlotWindow)
+    		return "";
 		Calibration cal = getCalibration();
     	int[] v = getPixel(x, y);
     	int type = getType();
