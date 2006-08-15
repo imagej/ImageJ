@@ -30,6 +30,16 @@ public class PluginClassLoader extends ClassLoader {
      * @param path the path to the plugins directory.
      */
 	public PluginClassLoader(String path) {
+		init(path);
+	}
+	
+	/** This version of the constructor is used when ImageJ is launched using Java WebStart. */
+	public PluginClassLoader(String path, boolean callSuper) {
+		super(Thread.currentThread().getContextClassLoader());
+		init(path);
+	}
+
+	void init(String path) {
 		this.path = path;
 		jarFiles = new Vector();
 		//find all JAR files on the path and subdirectories
@@ -226,9 +236,11 @@ public class PluginClassLoader extends ClassLoader {
         classBytes = loadClassBytes(className);
 		//IJ.log("loadClass: "+ className + "  "+ (classBytes!=null?""+classBytes.length:"null"));
 		if (classBytes==null) {
-			//IJ.log("ClassNotFoundException");
-			throw new ClassNotFoundException(className);
+			result = getParent().loadClass(className);
+			if (result != null) return result;
 		}
+		if (classBytes==null)
+			throw new ClassNotFoundException(className);
 
         // Define it (parse the class file)
         result = defineClass(className, classBytes, 0, classBytes.length);

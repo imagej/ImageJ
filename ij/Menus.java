@@ -74,6 +74,7 @@ public class Menus {
 	private static Hashtable menusTable; // Submenus of Plugins menu
 	private int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private boolean addSorted;
+	static boolean jnlp; // true when using Java WebStart
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
@@ -702,7 +703,12 @@ public class Menus {
 				pluginsDir = homeDir;
 			else if (pluginsDir.equals("user.home")) {
 				pluginsDir = System.getProperty("user.home");
+				if (!(new File(pluginsDir+Prefs.separator+"plugins")).isDirectory())
+					pluginsDir = pluginsDir + Prefs.separator + "ImageJ";
 				property = null;
+				// needed to run plugins when ImageJ launched using Java WebStart
+				if (applet==null) System.setSecurityManager(null);
+				jnlp = true;
 			}
 			pluginsPath = pluginsDir+Prefs.separator+"plugins"+Prefs.separator;
 			if (property!=null&&!(new File(pluginsPath)).isDirectory())

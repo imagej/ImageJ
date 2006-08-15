@@ -6,20 +6,26 @@ import java.awt.*;
 import ij.measure.*;
 import java.awt.event.*;
 
-/** This plugin implements the Analyze/Tools/Draw Scale Bar command. */
+/**	This plugin implements the Analyze/Tools/Draw Scale Bar command.
+	Divakar Ramachandran added options to draw a background 
+	and use a serif font on 23 April 2006.
+*/
 public class ScaleBar implements PlugIn {
 
     static final String[] locations = {"Upper Right", "Lower Right", "Lower Left", "Upper Left", "At Selection"};
     static final int UPPER_RIGHT=0, LOWER_RIGHT=1, LOWER_LEFT=2, UPPER_LEFT=3, AT_SELECTION=4;
     static final String[] colors = {"White","Black","Light Gray","Gray","Dark Gray","Red","Green","Blue","Yellow"};
-    static final String[] checkboxLabels = {"Bold Text", "Hide Text"};
+    static final String[] bcolors = {"None","Black","White","Dark Gray","Gray","Light Gray","Yellow","Blue","Green","Red"};
+    static final String[] checkboxLabels = {"Bold Text", "Hide Text", "Serif Font"};
     static double barWidth;
-    static int defaultBarHeight = 3;
+    static int defaultBarHeight = 4;
     static int barHeightInPixels = defaultBarHeight;
-    static String location = locations[UPPER_RIGHT];
+    static String location = locations[LOWER_RIGHT];
     static String color = colors[0];
+    static String bcolor = bcolors[0];
     static boolean boldText = true;
     static boolean hideText;
+    static int defaultFontSize = 14;
     static int fontSize;
     static boolean labelAll;
     ImagePlus imp;
@@ -28,27 +34,28 @@ public class ScaleBar implements PlugIn {
     int xloc, yloc;
     int barWidthInPixels;
     int roiX=-1, roiY, roiWidth, roiHeight;
-    boolean[] checkboxStates = new boolean[2];
+    boolean serifFont;
+    boolean[] checkboxStates = new boolean[3];
 
- 
+
     public void run(String arg) {
         imp = WindowManager.getCurrentImage();
         if (imp!=null) {
             if (showDialog(imp) && imp.getStackSize()>1 && labelAll)
-            	labelSlices(imp);
+                labelSlices(imp);
         } else
             IJ.noImage();
      }
 
     void labelSlices(ImagePlus imp) {
-		int slice = imp.getCurrentSlice();
-		for (int i=1; i<=imp.getStackSize(); i++) {
-			imp.setSlice(i);
-			drawScaleBar(imp);
-		}
-		imp.setSlice(slice);		
+        int slice = imp.getCurrentSlice();
+        for (int i=1; i<=imp.getStackSize(); i++) {
+            imp.setSlice(i);
+            drawScaleBar(imp);
+        }
+        imp.setSlice(slice);        
     }
-    
+
     boolean showDialog(ImagePlus imp) {
         Roi roi = imp.getRoi();
         if (roi!=null) {
@@ -60,15 +67,18 @@ public class ScaleBar implements PlugIn {
             location = locations[AT_SELECTION];
         } else if (location.equals(locations[AT_SELECTION]))
             location = locations[UPPER_RIGHT];
-            
+
         Calibration cal = imp.getCalibration();
-        ImageCanvas ic = imp.getCanvas();
-        mag = (ic!=null)?ic.getMagnification():1.0;
+        ImageWindow win = imp.getWindow();
+        mag = (win!=null)?win.getCanvas().getMagnification():1.0;
         if (mag>1.0)
             mag = 1.0;
-        if (fontSize<(12/mag))
-        	fontSize = (int)(12/mag);
+        if (fontSize<(defaultFontSize/mag))
+            fontSize = (int)(defaultFontSize/mag);
         String units = cal.getUnits();
+        // Handle Digital Micrograph unit microns
+        if (units.equals("micron"))
+            units = "µm";
         double pixelWidth = cal.pixelWidth;
         if (pixelWidth==0.0)
             pixelWidth = 1.0;
@@ -92,16 +102,17 @@ public class ScaleBar implements PlugIn {
             barHeightInPixels = (int)(defaultBarHeight/mag);
         imp.getProcessor().snapshot();
         if (!IJ.macroRunning()) updateScalebar();
-        GenericDialog gd = new BarDialog("Scale Bar");
+        GenericDialog gd = new BarDialog("ScaleBar Plus");
         gd.addNumericField("Width in "+units+": ", barWidth, digits);
         gd.addNumericField("Height in pixels: ", barHeightInPixels, 0);
         gd.addNumericField("Font Size: ", fontSize, 0);
         gd.addChoice("Color: ", colors, color);
+        gd.addChoice("Background: ", bcolors, bcolor);
         gd.addChoice("Location: ", locations, location);
-        checkboxStates[0] = boldText; checkboxStates[1] = hideText;
-		gd.addCheckboxGroup(1, 2, checkboxLabels, checkboxStates);
-		if (stackSize>1)
-			gd.addCheckbox("Label all Slices", labelAll);
+        checkboxStates[0] = boldText; checkboxStates[1] = hideText; checkboxStates[2] = serifFont;
+        gd.addCheckboxGroup(2, 2, checkboxLabels, checkboxStates);
+        if (stackSize>1)
+            gd.addCheckbox("Label all Slices", labelAll);
         gd.showDialog();
         if (gd.wasCanceled()) {
             imp.getProcessor().reset();
@@ -112,11 +123,13 @@ public class ScaleBar implements PlugIn {
         barHeightInPixels = (int)gd.getNextNumber();
         fontSize = (int)gd.getNextNumber();
         color = gd.getNextChoice();
+        bcolor = gd.getNextChoice();
         location = gd.getNextChoice();
         boldText = gd.getNextBoolean();
         hideText = gd.getNextBoolean();
+        serifFont = gd.getNextBoolean();
         if (stackSize>1)
-        	labelAll = gd.getNextBoolean();
+            labelAll = gd.getNextBoolean();
         if (IJ.macroRunning()) updateScalebar();
          return true;
     }
@@ -127,31 +140,58 @@ public class ScaleBar implements PlugIn {
         ImageProcessor ip = imp.getProcessor();
         Undo.setup(Undo.FILTER, imp);
         Color color = getColor();
+        Color bcolor = getBColor();
         //if (!(color==Color.white || color==Color.black)) {
         //    ip = ip.convertToRGB();
         //    imp.setProcessor(null, ip);
         //}
-        ip.setColor(color);
+
         int x = xloc;
         int y = yloc;
+        int fontType = boldText?Font.BOLD:Font.PLAIN;
+        String font = serifFont?"Serif":"SanSerif";
+        ip.setFont(new Font(font, fontType, fontSize));
+        ip.setAntialiasedText(true);
+        int digits = (int)barWidth==barWidth?0:1;
+        if (barWidth<1.0)
+            digits = 1;
+        // Handle Digital Micrograph unit microns
+        String units = imp.getCalibration().getUnits();
+        if (units.equals("microns"))
+            units = "µm";
+        String label = IJ.d2s(barWidth, digits) + " "+ units;
+        int swidth = hideText?0:ip.getStringWidth(label);
+        int xoffset = (barWidthInPixels - swidth)/2;
+        int yoffset =  barHeightInPixels + (hideText?0:fontSize+fontSize/(serifFont?8:4));
+
+        // Draw bkgnd box first,  based on bar width and height (and font size if hideText is not checked)
+        if (bcolor!=null) {
+            int w = barWidthInPixels;
+            int h = yoffset;
+            if (w<swidth) w = swidth;
+            int x2 = x;
+            if (x+xoffset<x2) x2 = x + xoffset;
+            int margin = w/20;
+            if (margin<2) margin = 2;
+            x2 -= margin;
+            int y2 = y - margin;
+            w = w+ margin*2;
+            h = h+ margin*2;
+            ip.setColor(bcolor);
+            ip.setRoi(x2, y2, w, h);
+            ip.fill();
+        }
+        
+        ip.resetRoi();
+        ip.setColor(color);
         ip.setRoi(x, y, barWidthInPixels, barHeightInPixels);
         ip.fill();
         ip.resetRoi();
-
-        int fontType = boldText?Font.BOLD:Font.PLAIN;
-        ip.setFont(new Font("SansSerif", fontType, fontSize));
-		ip.setAntialiasedText(true);
-        int digits = (int)barWidth==barWidth?0:1;
-        if (barWidth<1.0)
-            digits = 2;
-        String label = IJ.d2s(barWidth, digits) + " "+ imp.getCalibration().getUnits();
-        x = x +(barWidthInPixels - ip.getStringWidth(label))/2;
-        y = y + barHeightInPixels + fontSize + fontSize/4;
         if (!hideText)
-            ip.drawString(label, x, y);   
+            ip.drawString(label, x+xoffset, y+yoffset);   
         imp.updateAndDraw();
     }
- 
+
      boolean updateLocation() {
         Calibration cal = imp.getCalibration();
         barWidthInPixels = (int)(barWidth/cal.pixelWidth);
@@ -182,8 +222,8 @@ public class ScaleBar implements PlugIn {
     }
 
     Color getColor() {
-        Color c = Color.white;
-        if (color.equals(colors[1])) c = Color.black;
+        Color c = Color.black;
+        if (color.equals(colors[0])) c = Color.white;
         else if (color.equals(colors[2])) c = Color.lightGray;
         else if (color.equals(colors[3])) c = Color.gray;
         else if (color.equals(colors[4])) c = Color.darkGray;
@@ -194,7 +234,23 @@ public class ScaleBar implements PlugIn {
        return c;
     }
 
-     void updateScalebar() {
+    // Div., mimic getColor to write getBColor for bkgnd    
+    Color getBColor() {
+        if (bcolor==null || bcolor.equals(bcolors[0])) return null;
+        Color bc = Color.white;
+        if (bcolor.equals(bcolors[1])) bc = Color.black;
+        else if (bcolor.equals(bcolors[3])) bc = Color.darkGray;
+        else if (bcolor.equals(bcolors[4])) bc = Color.gray;
+        else if (bcolor.equals(bcolors[5])) bc = Color.lightGray;
+        else if (bcolor.equals(bcolors[6])) bc = Color.yellow;
+        else if (bcolor.equals(bcolors[7])) bc = Color.blue;
+        else if (bcolor.equals(bcolors[8])) bc = Color.green;
+        else if (bcolor.equals(bcolors[9])) bc = Color.red;
+        return bc;
+    }
+
+
+    void updateScalebar() {
         updateLocation();
         imp.getProcessor().reset();
         drawScaleBar(imp);
@@ -230,15 +286,16 @@ public class ScaleBar implements PlugIn {
         public void itemStateChanged(ItemEvent e) {
             Choice col = (Choice)(choice.elementAt(0));
             color = col.getSelectedItem();
-            Choice loc = (Choice)(choice.elementAt(1));
+            Choice bcol = (Choice)(choice.elementAt(1));
+            bcolor = bcol.getSelectedItem();
+            Choice loc = (Choice)(choice.elementAt(2));
             location = loc.getSelectedItem();
             boldText = ((Checkbox)(checkbox.elementAt(0))).getState();
             hideText = ((Checkbox)(checkbox.elementAt(1))).getState();
+            serifFont = ((Checkbox)(checkbox.elementAt(2))).getState();
             updateScalebar();
         }
 
    } //BarDialog inner class
 
 } //ScaleBar class
-
-

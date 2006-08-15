@@ -1316,8 +1316,12 @@ public class IJ {
 			}
 			if (pluginsDir==null)
 				return ClassLoader.getSystemClassLoader();
-			else
-				classLoader = new PluginClassLoader(pluginsDir);
+			else {
+				if (Menus.jnlp)
+					classLoader = new PluginClassLoader(pluginsDir, true);
+				else
+					classLoader = new PluginClassLoader(pluginsDir);
+			}
 		}
 		return classLoader;
 	}

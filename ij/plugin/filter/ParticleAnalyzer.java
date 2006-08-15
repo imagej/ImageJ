@@ -367,10 +367,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		double value;
 		int inc = Math.max(r.height/25, 1);
 		int mi = 0;
-		if (recordStarts) {
-			xStartC = getColumnID("XStart");
-			yStartC = getColumnID("YStart");
-		}
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
 			win.running = true;
@@ -637,6 +633,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected void saveResults(ImageStatistics stats, Roi roi) {
 		analyzer.saveResults(stats, roi);
 		if (recordStarts) {
+			if (xStartC==0) {
+				xStartC = getColumnID("XStart");
+				yStartC = getColumnID("YStart");
+			}
 			int coordinates = ((PolygonRoi)roi).getNCoordinates();
 			Rectangle r = roi.getBounds();
 			int x = r.x+((PolygonRoi)roi).getXCoordinates()[coordinates-1];

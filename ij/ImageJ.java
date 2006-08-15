@@ -65,7 +65,7 @@ The following command line options are recognized by ImageJ:
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
-	public static final String VERSION = "1.37n";
+	public static final String VERSION = "1.37o";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -82,7 +82,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
-	private boolean exitWhenQuiting;
+	private boolean exitWhenQuitting;
 	private boolean quitting;
 	private long keyPressedTime, actionPerformedTime;
 	
@@ -459,7 +459,7 @@ public class ImageJ extends Frame implements ActionListener,
  		ImageJ ij = IJ.getInstance();    	
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
 			ij = new ImageJ(null);
-			ij.exitWhenQuiting = true;
+			ij.exitWhenQuitting = true;
 		}
 		int macros = 0;
 		for (int i=0; i<nArgs; i++) {
@@ -579,7 +579,7 @@ public class ImageJ extends Frame implements ActionListener,
 		setVisible(false);
 		//IJ.log("dispose");
 		dispose();
-		if (exitWhenQuiting)
+		if (exitWhenQuitting)
 			System.exit(0);
 	}
 
