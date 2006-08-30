@@ -15,6 +15,7 @@ import java.util.*;
 import java.io.*;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.*;
+import java.net.URL;
 
 /** This class implements the built-in macro functions. */
 public class Functions implements MacroConstants, Measurements {
@@ -891,8 +892,9 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Row ("+row+") out of range");
 		int col = rt.getColumnIndex(column);
 		if (!rt.columnExists(col))
-			interp.error("\""+column+"\" column not found in Results");
-   		return rt.getValueAsDouble(col, row);
+			return Double.NaN;
+		else
+   			return rt.getValueAsDouble(col, row);
 	}
 
 	String getResultLabel() {
@@ -1867,7 +1869,7 @@ public class Functions implements MacroConstants, Measurements {
 		cmd = cmd.toLowerCase();
 		String path = null;
 		int index=0;
-		double count=Double.NaN;
+		double countOrIndex=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename");
 		boolean select = cmd.equals("select");
 		if (twoArgCommand)
@@ -1894,12 +1896,14 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				rm.select(index);
 		} else if (cmd.equals("count"))
-			count = rm.getList().getItemCount();
+			countOrIndex = rm.getList().getItemCount();
+		else if (cmd.equals("index"))
+			countOrIndex = rm.getList().getSelectedIndex();
 		else {
 			if (!rm.runCommand(cmd))
 				interp.error("Invalid ROI Manager command");
 		}
-		return count;			
+		return countOrIndex;			
 	}
 	
 	void setFont() {
@@ -2612,6 +2616,8 @@ public class Functions implements MacroConstants, Measurements {
 			return openFile();
 		else if (name.equals("openAsString"))
 			return openAsString();
+		else if (name.equals("openUrlAsString"))
+			return openUrlAsString();
 		else if (name.equals("close"))
 			return closeFile();
 		else if (name.equals("separator")) {
@@ -2813,6 +2819,32 @@ public class Functions implements MacroConstants, Measurements {
     	for (int i=0; i<fonts.length; i++)
     		array[i] = new Variable(0, 0.0, fonts[i]);
     	return array;
+	}
+	
+	String openUrlAsString() {
+		String urlString = getStringArg();
+		StringBuffer sb = null;
+		try {
+			URL url = new URL(urlString);
+			InputStream in = url.openStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			sb = new StringBuffer() ;
+			String line;
+			while ((line=br.readLine()) != null)
+				sb.append (line + "\n");
+			in.close ();
+		} catch (IOException e) {
+			String msg = ""+e;
+			if (msg.indexOf("UnknownHost")!=-1 || msg.indexOf("FileNotFound")!=-1)
+				return "";
+			else
+				interp.error(msg);
+			sb = null;
+		}
+		if (sb!=null)
+			return new String(sb);
+		else
+			return null;
 	}
 
 } // class Functions

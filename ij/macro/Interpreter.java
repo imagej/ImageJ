@@ -1492,8 +1492,8 @@ public class Interpreter implements MacroConstants {
 			imageTable = null;
 			WindowManager.setTempCurrentImage(null);
 		}
-		if (!statusUpdated)
-			IJ.showStatus("");
+		//if (!statusUpdated)
+		//	IJ.showStatus("");
 		if (showingProgress)
 			IJ.showProgress(0, 0);
 		if (keysSet) {

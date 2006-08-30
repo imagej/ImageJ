@@ -4,7 +4,7 @@ import ij.plugin.filter.Analyzer;
 
 /** Calibration objects contain an image's spatial and density calibration data. */
    
-public class Calibration {
+public class Calibration implements Cloneable {
 
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
 		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10;
@@ -19,8 +19,11 @@ public class Calibration {
 	/** Pixel depth in 'unit's */
 	public double pixelDepth = 1.0;
 	
-	/** Frame interval in seconds */
+	/** Frame interval in 'timeUnit's */
 	public double frameInterval;
+
+	/** Frame rate in frames per second */
+	public double fps;
 
 	/** X origin in pixels. */
 	public double xOrigin;
@@ -47,6 +50,9 @@ public class Calibration {
 
 	/* Pixel value unit (e.g. 'gray level', 'OD') */
 	private String valueUnit = "Gray Value";
+
+	/* Unit of time (e.g. 'sec', 'msec') */
+	private String timeUnit = "sec";
 
 	/* Calibration function ID */
 	private int function = NONE;
@@ -77,7 +83,7 @@ public class Calibration {
 		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0;
 	}
 	
-   	/** Sets the distance unit (e.g. "mm", "inch"). */
+   	/** Sets the length unit (e.g. "mm", "inch"). */
  	public void setUnit(String unit) {
  		if (unit==null || unit.equals(""))
  			this.unit = "pixel";
@@ -86,12 +92,12 @@ public class Calibration {
  		units = null;
  	}
  	
- 	/** Returns the distance unit (e.g. "micron", "inch"). */
+ 	/** Returns the length unit (e.g. "micron", "inch"). */
  	public String getUnit() {
  		return unit;
  	}
  	
-	/** Returns the plural form of the distance unit (e.g. "microns", "inches"). */
+	/** Returns the plural form of the length unit (e.g. "microns", "inches"). */
  	public String getUnits() {
  		if (units==null) {
   			if (unit.equals("pixel"))
@@ -106,6 +112,19 @@ public class Calibration {
  		return units;
  	}
  	
+   	/** Sets the time unit (e.g. "sec", "msec"). */
+ 	public void setTimeUnit(String unit) {
+ 		if (unit==null || unit.equals(""))
+ 			timeUnit = "sec";
+ 		else
+ 			timeUnit = unit;
+ 	}
+
+ 	/** Returns the distance unit (e.g. "sec", "msec"). */
+ 	public String getTimeUnit() {
+ 		return timeUnit;
+ 	}
+
  	/** Converts a x-coodinate in pixels to physical units (e.g. mm). */
  	public double getX(double x) {
  		return (x-xOrigin)*pixelWidth;
@@ -318,6 +337,7 @@ public class Calibration {
 		copy.pixelHeight = pixelHeight;
 		copy.pixelDepth = pixelDepth;
 		copy.frameInterval = frameInterval;
+		copy.fps = fps;
 		copy.xOrigin = xOrigin;
 		copy.yOrigin = yOrigin;
 		copy.zOrigin = zOrigin;
@@ -325,6 +345,7 @@ public class Calibration {
 		copy.unit = unit;
 		copy.units = units;
 		copy.valueUnit = valueUnit;
+		copy.timeUnit = timeUnit;
 		copy.function = function;
 		copy.coefficients = coefficients;
 		copy.cTable = cTable;
@@ -334,6 +355,11 @@ public class Calibration {
 		return copy;
 	}
 	
+	public synchronized Object clone() {
+		try {return super.clone();}
+		catch (CloneNotSupportedException e) {return null;}
+	}
+
 	/** Compares two Calibration objects for equality. */
  	public boolean equals(Calibration cal) {
  		if (cal==null)

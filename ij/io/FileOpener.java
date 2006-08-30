@@ -304,6 +304,10 @@ public class FileOpener {
 		cal.zOrigin = getDouble(props,"zorigin");
 		cal.info = props.getProperty("info");		
 				
+		cal.fps = getDouble(props,"fps");
+		cal.frameInterval = getDouble(props,"finterval");
+		cal.setTimeUnit(props.getProperty("tunit", "sec"));
+
 		double displayMin = getDouble(props,"min");
 		double displayMax = getDouble(props,"max");
 		if (!(displayMin==0.0&&displayMax==0.0)) {
@@ -455,10 +459,6 @@ public class FileOpener {
 			double spacing = getDouble(props,"spacing");
 			if (spacing!=0.0)
 				fi.pixelDepth = spacing;
-			n = getNumber(props,"fps");
-			double fps = getDouble(props,"fps");
-			if (fps!=0.0)
-				fi.frameInterval = 1.0/fps;
 		}
 		return props;
 	}

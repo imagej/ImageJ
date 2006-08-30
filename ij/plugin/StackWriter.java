@@ -92,7 +92,7 @@ public class StackWriter implements PlugIn {
 			IJ.showProgress((double)i/nSlices);
 			imp2.setProcessor(null, stack.getProcessor(i));
 			String label2 = stack.getSliceLabel(i);
-			if (label2!=null)
+			if (label2!=null && label2.indexOf("\n")!=-1)
 				imp2.setProperty("Info", label2);
 			else {
 				Properties props = imp2.getProperties();

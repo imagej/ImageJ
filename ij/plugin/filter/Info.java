@@ -110,7 +110,8 @@ public class Info implements PlugInFilter {
 	    		s += "Bits per pixel: 32 (RGB)\n";
 	    		break;
     	}
-		double interval = cal.frameInterval;		
+		double interval = cal.frameInterval;	
+		double fps = cal.fps;	
     	if (nSlices>1) {
     		ImageStack stack = imp.getStack();
     		int slice = imp.getCurrentSlice();
@@ -120,14 +121,14 @@ public class Info implements PlugInFilter {
     			label = " (" + label + ")";
     		else
     			label = "";
-			if (interval>0.0) {
+			if (interval>0.0 || fps!=0.0) {
 				s += "Frame: " + number + label + "\n";
-				if (interval<1.0) {
-					double rate = 1.0/interval;
-					String sRate = Math.abs(rate-Math.round(rate))<0.00001?IJ.d2s(rate,0):IJ.d2s(rate,5);
+				if (fps!=0.0) {
+					String sRate = Math.abs(fps-Math.round(fps))<0.00001?IJ.d2s(fps,0):IJ.d2s(fps,5);
 					s += "Frame rate: " + sRate + " fps\n";
-				} else
-					s += "Frame interval: " + IJ.d2s(interval,5) + " seconds\n";
+				}
+				if (interval!=0.0)
+					s += "Frame interval: " + ((int)interval==interval?IJ.d2s(interval,0):IJ.d2s(interval,5)) + " " + cal.getTimeUnit() + "\n";
 			} else
 				s += "Slice: " + number + label + "\n";
 		}

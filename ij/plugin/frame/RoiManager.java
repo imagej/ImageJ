@@ -15,7 +15,7 @@ import ij.macro.Interpreter;
 import ij.measure.Calibration;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
-public class RoiManager extends PlugInFrame implements ActionListener, ItemListener {
+public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener {
 
 	static final int BUTTONS = 10;
 	Panel panel;
@@ -26,6 +26,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean canceled;
 	boolean macro;
 	boolean ignoreInterrupts;
+	PopupMenu pm;
+	Button moreButton;
+
 
 	public RoiManager() {
 		super("ROI Manager");
@@ -36,6 +39,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		instance = this;
 		ImageJ ij = IJ.getInstance();
  		addKeyListener(ij);
+ 		addMouseListener(this);
 		WindowManager.addWindow(this);
 		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
 		int rows = 15;
@@ -44,11 +48,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.add("012345678901234");
 		list.addItemListener(this);
  		list.addKeyListener(ij);
+ 		list.addMouseListener(this);
 		add(list);
 		panel = new Panel();
 		int nButtons = IJ.isJava2()?BUTTONS:BUTTONS-1;
 		panel.setLayout(new GridLayout(nButtons, 1, 5, 0));
-		addButton("Add");
+		addButton("Add [t]");
 		addButton("Update");
 		addButton("Delete");
 		addButton("Rename");
@@ -57,9 +62,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Measure");
 		addButton("Draw");
 		addButton("Deselect");
-		if (IJ.isJava2())
-			addButton("Combine");
+		addButton("More>>");
 		add(panel);		
+		addPopupMenu();
 		pack();
 		list.remove(0);
 		GUI.center(this);
@@ -70,9 +75,26 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Button b = new Button(label);
 		b.addActionListener(this);
 		b.addKeyListener(IJ.getInstance());
+ 		b.addMouseListener(this);
+ 		if (label.equals("More>>")) moreButton = b;
 		panel.add(b);
 	}
 
+	void addPopupMenu() {
+		pm=new PopupMenu();
+		//addPopupItem("Select All");
+		addPopupItem("Combine");
+		addPopupItem("Split");
+		addPopupItem("Add Particles");
+		add(pm);
+	}
+
+	void addPopupItem(String s) {
+		MenuItem mi=new MenuItem(s);
+		mi.addActionListener(this);
+		pm.add(mi);
+	}
+	
 	public void actionPerformed(ActionEvent e) {
 		int modifiers = e.getModifiers();
 		boolean altKeyDown = (modifiers&ActionEvent.ALT_MASK)!=0 || IJ.altKeyDown();
@@ -83,7 +105,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (label==null)
 			return;
 		String command = label;
-		if (command.equals("Add"))
+		if (command.equals("Add [t]"))
 			add(shiftKeyDown, altKeyDown);
 		else if (command.equals("Update"))
 			update();
@@ -101,8 +123,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			draw();
 		else if (command.equals("Deselect"))
 			select(-1);
-		else if (command.equals("Combine")) 
+		else if (command.equals("More>>")) {
+			Point ploc = panel.getLocation();
+			Point bloc = moreButton.getLocation();
+			pm.show(this, ploc.x, bloc.y);
+		} else if (command.equals("Select All"))
+			selectAll();
+		else if (command.equals("Combine"))
 			combine();
+		else if (command.equals("Split"))
+			split();
+		else if (command.equals("Add Particles"))
+			addParticles();
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -570,6 +602,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (Recorder.record) Recorder.record("roiManager", "Combine");
 	}
 
+	void addParticles() {
+		String err = IJ.runMacroFile("ij.jar:AddParticles", null);
+		if (err!=null && err.length()>0)
+			error(err);
+	}
+
 	void split() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
@@ -636,7 +674,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the name of the selection with the specified index.
 		Can be called from a macro using
 		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
-		Returns "null" if the Roi Manager is not open index is
+		Returns "null" if the Roi Manager is not open or index is
 		out of range.
 	*/
 	public static String getName(String index) {
@@ -649,7 +687,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Deselect", "Combine" or "Split" command. Returns false if <code>cmd</code> is not one of these strings. */
+		"Deselect", "Select All", "Combine" or "Split" command. Returns false if <code>cmd</code> 
+		is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
 		macro = true;
@@ -670,7 +709,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			combine();
 		else if (cmd.equals("split"))
 			split();
-		else if (cmd.equals("deselect")) {
+		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
 		} else if (cmd.equals("reset"))
@@ -726,16 +765,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	public void select(int index, boolean shiftKeyDown, boolean altKeyDown) {
+		if (!(shiftKeyDown||altKeyDown))
+			select(index);
 		ImagePlus imp = IJ.getImage();
-		Roi previousRoi = imp!=null?imp.getRoi():null;
+		if (imp==null) return;
+		Roi previousRoi = imp.getRoi();
+		if (previousRoi==null)
+			{select(index); return;}
 		Roi.previousRoi = (Roi)previousRoi.clone();
-		select(index);
-		Roi roi = imp!=null?imp.getRoi():null;
-		if (previousRoi!=null && roi!=null)
+		String label = list.getItem(index);
+		Roi roi = (Roi)rois.get(label);
+		if (roi!=null) {
+			roi.setImage(imp);
 			roi.update(shiftKeyDown, altKeyDown);
+		}
 	}
 	
-	/*
 	void selectAll() {
 		boolean allSelected = true;
 		int count = list.getItemCount();
@@ -750,12 +795,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (!list.isSelected(i)) list.select(i);
 		}
 	}
-	*/
 
     /** Overrides PlugInFrame.close(). */
     public void close() {
     	super.close();
     	instance = null;
     }
+    
+    public void mousePressed (MouseEvent e) {
+		int x=e.getX(), y=e.getY();
+		if (e.isPopupTrigger() || e.isMetaDown())
+			pm.show(e.getComponent(),x,y);
+	}
+
+ 	public void mouseReleased (MouseEvent e) {}
+	public void mouseClicked (MouseEvent e) {}
+	public void mouseEntered (MouseEvent e) {}
+	public void mouseExited (MouseEvent e) {}
+
 }
 

@@ -49,7 +49,7 @@ public class FolderOpener implements PlugIn {
 		IJ.resetEscape();		
 		try {
 			for (int i=0; i<list.length; i++) {
-				if (list[i].endsWith(".txt"))
+				if (list[i].endsWith(".txt")||list[i].equals("Thumbs.db"))
 					continue;
 				IJ.redirectErrorMessages();
 				ImagePlus imp = (new Opener()).openImage(directory, list[i]);

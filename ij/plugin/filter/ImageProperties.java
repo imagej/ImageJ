@@ -34,7 +34,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		String options = Macro.getOptions();
 		if (options!=null && IJ.isJava14()) {
 			String options2 = options.replaceAll(" depth=", " slices=");
-			options2 = options2.replaceAll(" frame=", " interval=");
+			options2 = options2.replaceAll(" interval=", " frame=");
 			Macro.setOptions(options2);
 		}
 		Calibration cal = imp.getCalibration();
@@ -63,7 +63,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addNumericField("Voxel_Depth:", cal.pixelDepth, 5, 8, null);
 		gd.setInsets(10, 0, 5);
 		double interval = cal.frameInterval;
-		gd.addNumericField("Interval (sec.):", interval, (int)interval==interval?0:2, 8, null);
+		String intervalStr = IJ.d2s(interval, (int)interval==interval?0:2) + " " + cal.getTimeUnit();
+		gd.addStringField("Frame Interval:", intervalStr);
 		String xo = cal.xOrigin==(int)cal.xOrigin?IJ.d2s(cal.xOrigin,0):IJ.d2s(cal.xOrigin,2);
 		String yo = cal.yOrigin==(int)cal.yOrigin?IJ.d2s(cal.yOrigin,0):IJ.d2s(cal.yOrigin,2);
 		String zo = "";
@@ -125,7 +126,15 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			cal.pixelDepth = pixelDepth;
 		}
 
-		cal.frameInterval = gd.getNextNumber();
+		String frameInterval = validateInterval(gd.getNextString());
+		String[] intAndUnit = Tools.split(frameInterval, " -");
+		interval = Tools.parseDouble(intAndUnit[0]);
+		cal.frameInterval = Double.isNaN(interval)?0.0:interval;
+		String timeUnit = intAndUnit.length>=2?intAndUnit[1]:"sec";
+        if (timeUnit.equals("usec"))
+            timeUnit = IJ.micronSymbol + "sec";
+		cal.setTimeUnit(timeUnit);
+
         String[] origin = Tools.split(gd.getNextString(), " ,");
 		double x = Tools.parseDouble(origin[0]);
 		double y = origin.length>=2?Tools.parseDouble(origin[1]):Double.NaN;
@@ -141,6 +150,22 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			WindowManager.repaintImageWindows();
 		else
 			imp.repaintWindow();
+	}
+	
+	String validateInterval(String interval) {
+		if (interval.indexOf(" ")!=-1)
+			return interval;
+		int firstLetter = -1;
+		for (int i=0; i<interval.length(); i++) {
+			char c = interval.charAt(i);
+			if (Character.isLetter(c)) {
+				firstLetter = i;
+				break;
+			}
+		}
+		if (firstLetter>0 && firstLetter<interval.length()-1)
+			interval = interval.substring(0,firstLetter)+" "+interval.substring(firstLetter, interval.length());
+		return interval;
 	}
 	
 	double getNewScale(String newUnit) {

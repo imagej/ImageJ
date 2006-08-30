@@ -7,7 +7,7 @@ import ij.measure.Calibration;
 /** This plugin animates stacks. */
 public class Animator implements PlugIn {
 
-	private static double animationSpeed = Prefs.getDouble(Prefs.FPS, 7.0);
+	private static double animationRate = Prefs.getDouble(Prefs.FPS, 7.0);
 	private static boolean oscillate;
 	private ImagePlus imp;
 	private StackWindow swin;
@@ -68,7 +68,7 @@ public class Animator implements PlugIn {
 
 	void stopAnimation() {
 		swin.running2 = false;
-		IJ.wait(500+(int)(1000.0/animationSpeed));
+		IJ.wait(500+(int)(1000.0/animationRate));
 		imp.unlock(); 
 	}
 
@@ -81,15 +81,15 @@ public class Animator implements PlugIn {
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		int sliceIncrement = 1;
 		Calibration cal = imp.getCalibration();
-		if (cal.frameInterval!=0.0)
-			animationSpeed = 1.0/cal.frameInterval;
+		if (cal.fps!=0.0)
+			animationRate = cal.fps;
 		while (swin.running2) {
 			time = System.currentTimeMillis();
 			if (time<nextTime)
 				IJ.wait((int)(nextTime-time));
 			else
 				Thread.yield();
-			nextTime += (long)(1000.0/animationSpeed);
+			nextTime += (long)(1000.0/animationRate);
 			slice += sliceIncrement;
 			if (slice<1) {
 				slice = 2;
@@ -112,11 +112,13 @@ public class Animator implements PlugIn {
 		boolean start = !swin.running2;
 		boolean saveOscillate = oscillate;
 		Calibration cal = imp.getCalibration();
-		if (cal.frameInterval!=0.0)
-			animationSpeed = 1.0/cal.frameInterval;
-		int decimalPlaces = (int)animationSpeed==animationSpeed?0:1;
+		if (cal.fps!=0.0)
+			animationRate = cal.fps;
+		else if (cal.frameInterval!=0.0 && cal.getTimeUnit().equals("sec"))
+			animationRate = 1.0/cal.frameInterval;
+		int decimalPlaces = (int)animationRate==animationRate?0:1;
 		GenericDialog gd = new GenericDialog("Animation Options");
-		gd.addNumericField("Speed (0.1-100 fps):", animationSpeed, decimalPlaces);
+		gd.addNumericField("Speed (0.1-100 fps):", animationRate, decimalPlaces);
 		gd.addCheckbox("Loop Back and Forth", oscillate);
 		gd.addCheckbox("Start Animation", start);
 		gd.showDialog();
@@ -127,9 +129,9 @@ public class Animator implements PlugIn {
 		start = gd.getNextBoolean();
 		if (speed>100.0) speed = 100.0;
 		if (speed<0.1) speed = 0.1;
-		animationSpeed = speed;
-		if (animationSpeed!=0.0)
-			cal.frameInterval = 1.0/animationSpeed;
+		animationRate = speed;
+		if (animationRate!=0.0)
+			cal.fps = animationRate;
 		if (start && !swin.running2)
 			startAnimation();
 	}
@@ -172,7 +174,7 @@ public class Animator implements PlugIn {
 
 	/** Returns the current animation speed in frames per second. */
 	public static double getFrameRate() {
-		return animationSpeed;
+		return animationRate;
 	}
 
 }

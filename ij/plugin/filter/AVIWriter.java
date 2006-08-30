@@ -386,7 +386,9 @@ public class AVIWriter implements PlugInFilter {
     }
     
     double getFrameRate() {
-		double rate = Animator.getFrameRate();
+    	double rate = imp.getCalibration().fps;
+    	if (rate==0.0)
+ 			rate = Animator.getFrameRate();
 		if (rate<=1.0) rate = 1.0;
 		if (rate>60.0) rate = 60.0;
 		return rate;

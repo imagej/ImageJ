@@ -109,7 +109,7 @@ public class RGBStackMerge implements PlugIn {
         boolean invertedBlue = blue!=null?blue.getProcessor(1).isInvertedLut():false;
         try {
             for (int i=1; i<=d; i++) {
-            cp = new ColorProcessor(w, h);
+            	cp = new ColorProcessor(w, h);
                 redPixels = getPixels(red, slice, 0);
                 greenPixels = getPixels(green, slice, 1);
                 bluePixels = getPixels(blue, slice, 2);
@@ -119,14 +119,10 @@ public class RGBStackMerge implements PlugIn {
                 cp.setRGB(redPixels, greenPixels, bluePixels);
             if (keep) {
                 slice++;
-                //if (invertedRed) invert(redPixels);
-                //if (invertedGreen) invert(greenPixels);
-                //if (invertedBlue) invert(bluePixels);
             } else {
                     if (red!=null) red.deleteSlice(1);
                 if (green!=null &&green!=red) green.deleteSlice(1);
                 if (blue!=null&&blue!=red && blue!=green) blue.deleteSlice(1);
-                //System.gc();
             }
             rgb.addSlice(null, cp);
             if ((i%inc) == 0) IJ.showProgress((double)i/d);

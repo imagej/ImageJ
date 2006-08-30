@@ -356,6 +356,10 @@ public class IJ {
 	/**Displays a message in the ImageJ status bar.*/
 	public static void showStatus(String s) {
 		if (ij!=null) ij.showStatus(s);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		ImageCanvas ic = imp!=null?imp.getCanvas():null;
+		if (ic!=null)
+			ic.setShowCursorStatus(s.length()==0?true:false);
 	}
 
 	/** Displays a line of text in the "Results" window. Writes to

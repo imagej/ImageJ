@@ -266,6 +266,7 @@ public class WindowManager {
 		} else
 			currentWindow = null;
 		imageList.removeElementAt(index);
+		tempCurrentImage = null;
 		int nonImageCount = nonImageList.size();
 		if (nonImageCount>0)
 			nonImageCount++;

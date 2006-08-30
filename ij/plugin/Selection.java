@@ -3,7 +3,10 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.frame.RoiManager;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+
 
 
 /** This plugin implements the commands in the Edit/Section submenu. */
@@ -17,6 +20,8 @@ public class Selection implements PlugIn, Measurements {
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
+    	if (arg.equals("add"))
+    		{addToRoiManager(imp); return;}
 		if (imp==null)
 			{IJ.noImage(); return;}
     	if (arg.equals("all"))
@@ -333,6 +338,24 @@ public class Selection implements PlugIn, Measurements {
 			s1 = new ShapeRoi(roi);
 		s2 = new ShapeRoi(new Roi(0,0, imp.getWidth(), imp.getHeight()));
 		imp.setRoi(s1.xor(s2));
+	}
+	
+	void addToRoiManager(ImagePlus imp) {
+		Frame frame = WindowManager.getFrame("ROI Manager");
+		if (frame==null)
+			IJ.run("ROI Manager...");
+		if (imp==null) return;
+		Roi roi = imp.getRoi();
+		if (roi==null) return;
+		frame = WindowManager.getFrame("ROI Manager");
+		if (frame==null || !(frame instanceof RoiManager))
+			IJ.error("ROI Manager not found");
+		RoiManager rm = (RoiManager)frame;
+		boolean altDown= IJ.altKeyDown();
+		IJ.setKeyUp(IJ.ALL_KEYS);
+		if (altDown) IJ.setKeyDown(KeyEvent.VK_SHIFT);
+		rm.runCommand("add");
+		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 
 }

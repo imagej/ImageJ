@@ -74,7 +74,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		WindowManager.addWindow(this);
 		imp.setWindow(this);
 		if (previousWindow!=null) {
-			if (newCanvas) setLocationAndSize(false);
+			if (newCanvas)
+				setLocationAndSize(false);
+			else
+				ic.update(previousWindow.getCanvas());
 			Point loc = previousWindow.getLocation();
 			setLocation(loc.x, loc.y);
 			if (!(this instanceof StackWindow)) {
