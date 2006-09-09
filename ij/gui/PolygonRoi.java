@@ -330,7 +330,8 @@ public class PolygonRoi extends Roi {
 		if (yClipMax>ymax2) ymax2 = yClipMax;
 		xClipMin=xmin; yClipMin=ymin; xClipMax=xmax; yClipMax=ymax;
 		double mag = ic.getMagnification();
-		int m = mag<1.0?(int)(HANDLE_SIZE/mag):HANDLE_SIZE;
+		int handleSize = type==POINT?HANDLE_SIZE+8:HANDLE_SIZE;
+		int m = mag<1.0?(int)(handleSize/mag):handleSize;
 		imp.draw(xmin2-m, ymin2-m, xmax2-xmin2+m*2, ymax2-ymin2+m*2);
 	}
 

@@ -30,6 +30,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	private static String commandName;
 	private static String commandOptions;
 	private static String defaultName = "Macro";
+	private static boolean recordPath = true;
 
 	public Recorder() {
 		super("Recorder");
@@ -77,6 +78,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			return;
 		commandName = command;
 		commandOptions = null;
+		recordPath = true;
 		//IJ.log("setCommand: "+command+" "+Thread.currentThread().getName());
 	}
 
@@ -182,7 +184,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	}
 
 	public static void recordPath(String key, String path) {
-		if (key==null) return;
+		if (key==null || !recordPath)
+			{recordPath=true; return;}
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
@@ -191,7 +194,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			commandOptions = key+"="+path;
 		else
 			commandOptions += " "+key+"="+path;
-		//IJ.write("  "+key+"="+value);
+		//IJ.log("recordPath: "+key+"="+path);
 	}
 
 	public static void recordOption(String key) {
@@ -328,6 +331,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		if (dotIndex>=0) name = name.substring(0, dotIndex);
 		name += ".txt";
 		ed.createMacro(name, text);
+	}
+	
+	/** Temporarily disables path recording. */
+	public static void disablePathRecording() {
+		recordPath = false;
 	}
 	
 	public void actionPerformed(ActionEvent e) {

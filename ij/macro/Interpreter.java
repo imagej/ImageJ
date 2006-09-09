@@ -46,6 +46,7 @@ public class Interpreter implements MacroConstants {
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
 	double[] rgbWeights;
+	boolean inPrint;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -236,7 +237,9 @@ public class Interpreter implements MacroConstants {
 			case STRING_CONSTANT:
 			case '(': 
 				putTokenBack();
+				inPrint = true;
 				String s = getString();
+				inPrint = false;
 				if (s!=null && !s.equals("NaN")) IJ.log(s);
 				return;
 			case EOF: break;
@@ -1116,7 +1119,7 @@ public class Interpreter implements MacroConstants {
 				str = IJ.d2s(value,0);
 			else {
 				str = ""+value;
-				if (value!=Double.POSITIVE_INFINITY && value!=Double.NEGATIVE_INFINITY
+				if (inPrint && value!=Double.POSITIVE_INFINITY && value!=Double.NEGATIVE_INFINITY
 						&& value!=Double.NaN && (str.length()-str.indexOf('.'))>6 && str.indexOf('E')==-1)
 					str = IJ.d2s(value, 4);
 			}

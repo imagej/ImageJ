@@ -509,6 +509,29 @@ public class ImageReader {
 		return pixels;
 	}
 
+	byte[] read1bitImage(InputStream in) throws IOException {
+ 		int scan=(int)Math.ceil(width/8.0);
+		int len = scan*height;
+		byte[] buffer = new byte[len];
+		byte[] pixels = new byte[nPixels];
+		DataInputStream dis = new DataInputStream(in);
+		dis.readFully(buffer);
+		int value1,value2, offset, index;
+		for (int y=0; y<height; y++) {
+			offset = y*scan;
+			index = y*width;
+			for (int x=0; x<scan; x++) {
+				value1 = buffer[offset+x]&0xff;
+				for (int i=7; i>=0; i--) {
+					value2 = (value1&(1<<i))!=0?255:0;
+					if (index<pixels.length)
+						pixels[index++] = (byte)value2;
+				}
+			}
+		}
+		return pixels;
+	}
+
 	void skip(InputStream in) throws IOException {
 		if (skipCount>0) {
 			long bytesRead = 0;
@@ -578,9 +601,7 @@ public class ImageReader {
 				case FileInfo.BITMAP:
 					bytesPerPixel = 1;
 					skip(in);
-					byte[] bitmap = read8bitImage(in);
-					expandBitmap(bitmap);
-					return (Object)bitmap;
+					return (Object)read1bitImage(in);
 				case FileInfo.RGB48:
 					bytesPerPixel = 6;
 					skip(in);
@@ -631,28 +652,6 @@ public class ImageReader {
 		return readPixels(is);
 	}
 	
- 	void expandBitmap(byte[] pixels) {
- 		int scan=width/8;
-		int pad = width%8;
-		if (pad>0) scan++;
-		int len = scan*height;
-		byte bitmap[] = new byte [len];
-		System.arraycopy(pixels, 0, bitmap, 0, len);
-		int value1,value2, offset, index;
-		for (int y=0; y<height; y++) {
-			offset = y*scan;
-			index = y*width;
-			for (int x=0; x<scan; x++) {
-				value1 = bitmap[offset+x]&0xff;
-				for (int i=7; i>=0; i--) {
-					value2 = (value1&(1<<i))!=0?255:0;
-					if (index<pixels.length)
-						pixels[index++] = (byte)value2;
-				}
-			}
-		}
-	}
-
   /**
  * Utility method for decoding an LZW-compressed image strip. 
  * Adapted from the TIFF 6.0 Specification:

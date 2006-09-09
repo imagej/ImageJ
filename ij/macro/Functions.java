@@ -50,6 +50,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean useJFileChooser,debugMode;
 	Color foregroundColor, backgroundColor, roiColor;
 	boolean pointAutoMeasure, requireControlKey, useInvertingLut;
+	boolean doubleBuffer, disablePopup;
 	int measurements;
 	int decimalPlaces;
 
@@ -129,7 +130,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SAVE: IJ.save(getStringArg()); break;
 			case SAVE_AS: saveAs(); break;
 			case SET_AUTO_THRESHOLD: setAutoThreshold(); break;
-			case RENAME: IJ.run("Rename...", "title=["+getStringArg()+"]"); break;
+			case RENAME: resetImage(); getImage().setTitle(getStringArg()); break;
 			case GET_STATISTICS: getStatistics(true); break;
 			case GET_RAW_STATISTICS: getStatistics(false); break;
 			case FLOOD_FILL: floodFill(); break;
@@ -143,6 +144,7 @@ public class Functions implements MacroConstants, Measurements {
 			case MAKE_POLYGON: makePolygon(); break;
 			case SET_SELECTION_NAME: setSelectionName(); break;
 			case DRAW_RECT: case FILL_RECT: case DRAW_OVAL: case FILL_OVAL: drawOrFill(type); break;
+			case SET_OPTION: setOption(); break;
 		}
 	}
 	
@@ -1799,6 +1801,7 @@ public class Functions implements MacroConstants, Measurements {
 		pointAutoMeasure = Prefs.pointAutoMeasure;
 		requireControlKey = Prefs.requireControlKey;
 		useInvertingLut = Prefs.useInvertingLut;
+		doubleBuffer = Prefs.doubleBuffer;
 		saveSettingsCalled = true;
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
@@ -1822,6 +1825,8 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.open100Percent = open100Percent;
 		Prefs.blackCanvas = blackCanvas;
 		Prefs.useJFileChooser = useJFileChooser;
+		Prefs.useInvertingLut = useInvertingLut;
+		Prefs.doubleBuffer = doubleBuffer;
 		IJ.debugMode = debugMode;
 		Toolbar.setForegroundColor(foregroundColor);
 		Toolbar.setBackgroundColor(backgroundColor);
@@ -2192,6 +2197,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void print() {
+		interp.inPrint = true;
 		String s = getFirstString();
 		if (interp.nextNonEolToken()==',') {
 			if (s.length()==3 && s.equals("~0~")) {
@@ -2202,6 +2208,7 @@ public class Functions implements MacroConstants, Measurements {
                     writer.print(s2);
                 else
                     writer.println(s2);
+				interp.inPrint = false;
 				return;
 			}
 			StringBuffer sb = new StringBuffer(s);
@@ -2213,6 +2220,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		interp.getRightParen();
 		IJ.log(s);
+		interp.inPrint = false;
 	}
 	
 	double isKeyDown() {
@@ -2846,6 +2854,21 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			return null;
 	}
-
+	
+	void setOption() {
+		String arg1 = getFirstString();
+		interp.getComma();
+		double arg2 = interp.getBooleanExpression();
+		interp.checkBoolean(arg2);
+		interp.getRightParen();
+		boolean state = arg2==0?false:true;
+		arg1 = arg1.toLowerCase(Locale.US);
+		if (arg1.equals("disablepopupmenu")) {
+			ImageCanvas ic = getImage().getCanvas();
+			if (ic!=null) ic.disablePopupMenu(state);
+		} else if (arg1.equals("debugmode"))
+			IJ.debugMode = state;
+	}
+	
 } // class Functions
 

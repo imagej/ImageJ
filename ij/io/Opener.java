@@ -400,9 +400,11 @@ public class Opener {
 			if (info[0].fileType==FileInfo.GRAY12_UNSIGNED) {
 				imageSize = (int)(fi.width*fi.height*1.5);
 				if ((imageSize&1)==1) imageSize++; // add 1 if odd
+			} if (info[0].fileType==FileInfo.BITMAP) {
+				int scan=(int)Math.ceil(fi.width/8.0);
+				imageSize = scan*fi.height;
 			}
 			int loc = 0;
-			
 			try {
 				InputStream is = createInputStream(fi);
 				ImageReader reader = new ImageReader(fi);
@@ -428,7 +430,7 @@ public class Opener {
 				is.close();
 			}
 			catch (Exception e) {
-				IJ.write("" + e);
+				IJ.log("" + e);
 			}
 			catch(OutOfMemoryError e) {
 				IJ.outOfMemory(fi.fileName);

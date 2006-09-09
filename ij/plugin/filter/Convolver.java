@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.TextReader;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
@@ -398,6 +399,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
+		Recorder.disablePathRecording();
 		if (source==save)
 			save();
 		else if (source==open)

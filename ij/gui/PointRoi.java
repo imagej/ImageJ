@@ -11,18 +11,24 @@ import java.awt.event.KeyEvent;
 /** This class represents selection consisting of one or more points. */
 public class PointRoi extends PolygonRoi {
 	
-	/** Creates a new PointRoi using the specified offscreen coordinates. */
+	/** Creates a new PointRoi using the specified arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
 		super(ox, oy, points, POINT);
 		width+=1; height+=1;
 	}
 
 	/** Creates a new PointRoi using the specified offscreen coordinates. */
+	public PointRoi(int ox, int oy) {
+		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
+		width=1; height=1;
+	}
+
+	/** Creates a new PointRoi using the specified screen coordinates. */
 	public PointRoi(int sx, int sy, ImagePlus imp) {
 		super(makeXArray(sx, imp), makeYArray(sy, imp), 1, POINT);
 		setImage(imp);
 		width=1; height=1;
-		imp.draw(x-5, y-5, width+10, height+10);
+		if (imp!=null) imp.draw(x-5, y-5, width+10, height+10);
 	}
 
 	static int[] makeXArray(int value, ImagePlus imp) {
@@ -60,10 +66,11 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	void drawPoint(Graphics g, int x, int y) {
+		g.setColor(Color.white);
+		g.drawLine(x-4, y+2, x+8, y+2);
+		g.drawLine(x+2, y-4, x+2, y+8);
 		g.setColor(ROIColor);
 		g.fillRect(x+1,y+1,3,3);
-		//g.drawLine(x-3, y+2, x+7, y+2);
-		//g.drawLine(x+2, y-3, x+2, y+7);
 		g.setColor(Color.black);
 		g.drawRect(x, y, 4, 4);
 	}

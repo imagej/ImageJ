@@ -30,6 +30,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	private boolean showCursorStatus = true;
 	private int sx2, sy2;
+	private boolean disablePopupMenu;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -163,10 +164,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imageUpdated = false;
 				imp.updateImage();
 			}
-			if (IJ.isJava2())
-				Java2.setBilinearInterpolation(g, Prefs.interpolateScaledImages);
-			Image img = imp.getImage();
 			Graphics offScreenGraphics = offScreenImage.getGraphics();
+			if (IJ.isJava2())
+				Java2.setBilinearInterpolation(offScreenGraphics, Prefs.interpolateScaledImages);
+			Image img = imp.getImage();
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
@@ -620,6 +621,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	protected void handlePopupMenu(MouseEvent e) {
+		if (disablePopupMenu) return;
 		if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
 		int x = e.getX();
 		int y = e.getY();
@@ -748,6 +750,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		//IJ.log("setRoiModState: "+roi.modState+" "+ roi.state);
 	}
 	
+	/** Disable/enable popup menu. */
+	public void disablePopupMenu(boolean status) {
+		disablePopupMenu = status;
+	}
+
 	/** Called by IJ.showStatus() to prevent status bar text from
 		being overwritten until the cursor moves at least 12 pixels. */
 	public void setShowCursorStatus(boolean status) {

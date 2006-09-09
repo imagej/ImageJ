@@ -332,6 +332,7 @@ public class Calibration implements Cloneable {
  	 	
 	/** Returns a clone of this object. */
 	public Calibration copy() {
+		/*
 		Calibration copy = new Calibration();
 		copy.pixelWidth = pixelWidth;
 		copy.pixelHeight = pixelHeight;
@@ -352,7 +353,8 @@ public class Calibration implements Cloneable {
 		copy.invertedLut = invertedLut;
 		copy.bitDepth = bitDepth;
 		copy.zeroClip = zeroClip;
-		return copy;
+		*/
+		return (Calibration)clone();
 	}
 	
 	public synchronized Object clone() {

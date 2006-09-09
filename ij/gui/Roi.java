@@ -364,6 +364,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		clipWidth = ((x+width>=oldX+oldWidth)?x+width:oldX+oldWidth) - clipX + 1;
 		clipHeight = ((y+height>=oldY+oldHeight)?y+height:oldY+oldHeight) - clipY + 1;
 		int m = 3;
+		if (type==POINT) m += 4;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0)
@@ -463,11 +464,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 
+	/** Obsolete, use drawPixels(ImageProcessor) */
 	public void drawPixels() {
 		if (imp!=null)
 			drawPixels(imp.getProcessor());	
 	}
 
+	/** Draws the selection outline on the specified ImageProcessor.
+		@see ij.process.ImageProcessor#setColor
+		@see ij.process.ImageProcessor#setLineWidth
+	*/
 	public void drawPixels(ImageProcessor ip) {
 		endPaste();
 		ip.drawRect(x, y, width, height);
