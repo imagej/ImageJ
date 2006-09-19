@@ -2868,6 +2868,8 @@ public class Functions implements MacroConstants, Measurements {
 			if (ic!=null) ic.disablePopupMenu(state);
 		} else if (arg1.equals("debugmode"))
 			IJ.debugMode = state;
+		else
+			interp.error("Invalid option");
 	}
 	
 } // class Functions

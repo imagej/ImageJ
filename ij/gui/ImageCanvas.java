@@ -3,13 +3,15 @@ package ij.gui;
 import java.awt.*;
 import java.util.Properties;
 import java.awt.image.*;
-import java.awt.event.*;
 import ij.process.ImageProcessor;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
 import ij.*;
 import ij.util.Java2;
+import java.awt.event.*;
+import java.util.*;
 
 /** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
@@ -31,6 +33,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean showCursorStatus = true;
 	private int sx2, sy2;
 	private boolean disablePopupMenu;
+	private boolean showAllROIs;
+	private Color gold;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -117,6 +121,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+			if (showAllROIs) showAllROIs(g);
 			if (roi != null) roi.draw(g);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(g);
@@ -125,6 +130,64 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
     }
     
+    void showAllROIs(Graphics g) {
+		RoiManager rm=RoiManager.getInstance();
+		if (rm==null) return;
+		Hashtable rois = rm.getROIs();
+		java.awt.List list = rm.getList();
+		//if (gold==null) gold = new Color(255, 200, 23);
+		if (gold==null) gold = new Color(128, 255, 255);
+		g.setColor(gold);
+		int n = list.getItemCount();
+		for (int i=0; i<n; i++) {
+			String label = list.getItem(i);
+			Roi roi = (Roi)rois.get(label);
+			if (roi.getType()==Roi.COMPOSITE) {
+				roi.setImage(imp);
+				Color c = roi.getColor();
+				roi.setColor(gold);
+				roi.draw(g);
+				roi.setColor(c);
+			} else {
+				Polygon p = roi.getPolygon();
+				int x1=0, y1=0, x2=0, y2=0;
+				for (int j=0; j<p.npoints; j++) {
+					x2 = screenX(p.xpoints[j]);
+					y2 = screenY(p.ypoints[j]);
+					if (j>0) g.drawLine(x1, y1, x2, y2);
+					x1=x2; y1=y2;
+				}
+				if (roi.isArea()) {
+					int x0 = screenX(p.xpoints[0]);
+					int y0 = screenY(p.ypoints[0]);
+					g.drawLine(x1, y1, x0, y0);
+				}
+				drawRoiLabel(g, i+1, roi.getBounds());
+			}
+		}
+    }
+    
+	void drawRoiLabel(Graphics g, int count, Rectangle r) {
+		int x = screenX(r.x);
+		int y = screenY(r.y);
+		double mag = getMagnification();
+		int width = (int)(r.width*mag);
+		int height = (int)(r.height*mag);
+		int size = 9;
+		if (width>50 && height>50) size = 12;
+		g.setFont(new Font("SansSerif", Font.PLAIN, size));
+		String label = "" + count;
+		FontMetrics metrics = g.getFontMetrics();
+		int w = metrics.stringWidth(label);
+		x = x + width/2 - w/2;
+		y = y + height/2 + Math.max(size/2,6);
+		int h =  metrics.getHeight();
+		g.setColor(Color.black);
+		g.fillRect(x-1, y-h+2, w+1, h-3);
+		g.setColor(gold);
+		g.drawString(label, x, y-2);
+	} 
+
 	void drawZoomIndicator(Graphics g) {
 		//IJ.log("Zoom: "+srcRect+imageWidth+"  "+imageHeight);
 		int x1 = 10;
@@ -753,6 +816,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	/** Disable/enable popup menu. */
 	public void disablePopupMenu(boolean status) {
 		disablePopupMenu = status;
+	}
+
+	public void setShowAllROIs(boolean showAllROIs) {
+		this.showAllROIs = showAllROIs;
+	}
+
+	public boolean getShowAllROIs() {
+		return showAllROIs;
 	}
 
 	/** Called by IJ.showStatus() to prevent status bar text from

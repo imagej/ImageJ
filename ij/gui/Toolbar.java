@@ -339,7 +339,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void showMessage(int tool) {
-		if (tool>=SPARE1 && tool<=SPARE7 && names[tool]!=null) {
+		if (tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null) {
 			IJ.showStatus(names[tool]);
 			return;
 		}
@@ -629,7 +629,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	boolean isMacroTool(int tool) {
-		return tool>=SPARE1 && tool<=SPARE7 && names[tool]!=null && macroInstaller!=null;
+		return tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null && macroInstaller!=null;
 	}
 	
 	public void mouseReleased(MouseEvent e) {}
@@ -673,10 +673,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		showMessage(x);
 	}
 
-	/** Enables the unused tool between the text and zoom tools. The 'toolTip' string 
-		is displayed in the status bar when the user clicks on the tool. If the 'toolTip'
-		string includes an icon (see Tools.txt macro), enables the next available tool
-		and draws it using that icon. Returns the tool ID, or -1 if all tools are in use. */
+	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
+		 when the mouse is over the tool icon. If the 'toolTip' string includes an icon 
+		(http://rsb.info.nih.gov/ij/developer/macro/macros.html#tools), enables the 
+		next available tool and draws it using that icon. Returns the tool ID, or -1 
+		if all tools are in use. */
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');
 		boolean hasIcon = index>=0 && (toolTip.length()-index)>4;
@@ -688,7 +689,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (names[SPARE1]==null)
 			tool = SPARE1;
 		if (tool==-1) {
-			for (int i=SPARE2; i<=SPARE7; i++) {
+			for (int i=SPARE2; i<=SPARE9; i++) {
 				if (names[i]==null) {
 					tool = i;
 					break;

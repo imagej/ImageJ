@@ -97,7 +97,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private TextWindow tw;
 	private Wand wand;
 	private int imageType, imageType2;
-	private int xStartC, yStartC;
 	private boolean roiNeedsImage;
 	private int minX, maxX, minY, maxY;
 	private ImagePlus redirectImp;
@@ -633,16 +632,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected void saveResults(ImageStatistics stats, Roi roi) {
 		analyzer.saveResults(stats, roi);
 		if (recordStarts) {
-			if (xStartC==0) {
-				xStartC = getColumnID("XStart");
-				yStartC = getColumnID("YStart");
-			}
 			int coordinates = ((PolygonRoi)roi).getNCoordinates();
 			Rectangle r = roi.getBounds();
 			int x = r.x+((PolygonRoi)roi).getXCoordinates()[coordinates-1];
 			int y = r.y+((PolygonRoi)roi).getYCoordinates()[coordinates-1];
-			rt.addValue(xStartC, x);
-			rt.addValue(yStartC, y);
+			rt.addValue("XStart", x);
+			rt.addValue("YStart", y);
 		}
 		if (showResults)
 			analyzer.displayResults();

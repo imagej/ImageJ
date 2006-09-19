@@ -292,7 +292,8 @@ utilities05="Threads...",ij.plugin.ThreadLister
 utilities06="Benchmark",ij.plugin.filter.Benchmark
 utilities07="Unlock Image",ij.plugin.SimpleCommands("unlock")
 utilities08="Monitor Memory...",ij.plugin.MemoryMonitor
-utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
+utilities09="Search...",ij.plugin.SimpleCommands("search")
+utilities10="Capture Screen [G]",ij.plugin.ScreenGrabber
 
 # Plugins installed in the Help/About submenu
 about01="Inverter...",Inverter_("about")

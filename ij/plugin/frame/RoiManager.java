@@ -60,8 +60,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Open");
 		addButton("Save");
 		addButton("Measure");
-		addButton("Draw");
 		addButton("Deselect");
+		addButton("Show All");
 		addButton("More>>");
 		add(panel);		
 		addPopupMenu();
@@ -83,6 +83,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void addPopupMenu() {
 		pm=new PopupMenu();
 		//addPopupItem("Select All");
+		addPopupItem("Draw");
+		addPopupItem("Fill");
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
@@ -119,8 +121,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			save();
 		else if (command.equals("Measure"))
 			measure();
+		else if (command.equals("Show All"))
+			showAll();
 		else if (command.equals("Draw"))
-			draw();
+			drawOrFill(true);
+		else if (command.equals("Fill"))
+			drawOrFill(false);
 		else if (command.equals("Deselect"))
 			select(-1);
 		else if (command.equals("More>>")) {
@@ -194,6 +200,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
 		}
 		rois.put(label, roiCopy);
+		updateShowAll();
 		if (Recorder.record) Recorder.record("roiManager", "Add");
 		return true;
 	}
@@ -271,6 +278,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				list.remove(i);
 			}
 		}
+		updateShowAll();
 		if (Recorder.record) Recorder.record("roiManager", "Delete");
 		return true;
 	}
@@ -278,18 +286,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean update() {
 		ImagePlus imp = getImage();
 		if (imp==null) return false;
+		ImageCanvas ic = imp.getCanvas();
+		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		Roi roi = imp.getRoi();
-		if (roi==null) {
+		if (roi==null && !showingAll) {
 			error("The active image does not have a selection.");
 			return false;
 		}
 		int index = list.getSelectedIndex();
-		if (index<0)
+		if (index<0 && !showingAll)
 			return error("Exactly one item in the list must be selected.");
-		String name = list.getItem(index);
-		rois.remove(name);
-		rois.put(name, roi);
+		if (index>=0) {
+			String name = list.getItem(index);
+			rois.remove(name);
+			rois.put(name, roi);
+		}
 		if (Recorder.record) Recorder.record("roiManager", "Update");
+		if (showingAll) imp.draw();
 		return true;
 	}
 
@@ -375,6 +388,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			list.add(name);
 			rois.put(name, roi);
 		}		
+		updateShowAll();
 	}
 	
 	// Modified on 2005/11/15 by Ulrik Stervbo to only read .roi files and to not empty the current list
@@ -411,6 +425,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} catch (IOException e) {error(e.toString());} 
 		if(nRois==0)
 				error("This ZIP archive does not appear to contain \".roi\" files");
+		updateShowAll();
 	} 
 
 
@@ -542,7 +557,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}	
 
-	boolean draw() {
+	boolean drawOrFill(boolean draw) {
 		int[] indexes = list.getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
@@ -550,13 +565,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Undo.setup(Undo.COMPOUND_FILTER, imp);
 		for (int i=0; i<indexes.length; i++) {
 			if (restore(indexes[i], true)) {
-				IJ.run("Draw");
+				if (draw)
+					IJ.run("Draw");
+				else
+					IJ.run("Fill", "slice");
 				IJ.run("Select None");
 			} else
 				break;
 		}
 		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
-		if (Recorder.record) Recorder.record("roiManager", "Draw");
+		if (Recorder.record) Recorder.record("roiManager", draw?"Draw":"Fill");
 		return true;
 	}
 
@@ -623,6 +641,26 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		//if (Recorder.record) Recorder.record("roiManager", "Split");
 	}
+	
+	void showAll() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			{error("There are no images open."); return;}
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		boolean showingROIs = ic.getShowAllROIs();
+		if (!showingROIs) imp.killRoi();
+		ic.setShowAllROIs(!showingROIs);
+		imp.draw();
+	}
+
+	void updateShowAll() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) return;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null && ic.getShowAllROIs())
+			imp.draw();
+	}
 
 	int[] getAllIndexes() {
 		int count = list.getItemCount();
@@ -687,7 +725,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Deselect", "Select All", "Combine" or "Split" command. Returns false if <code>cmd</code> 
+		"Fill", "Deselect", "Select All", "Combine" or "Split" command. Returns false if <code>cmd</code> 
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
@@ -704,7 +742,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("measure"))
 			measure();
 		else if (cmd.equals("draw"))
-			draw();
+			drawOrFill(true);
+		else if (cmd.equals("fill"))
+			drawOrFill(false);
 		else if (cmd.equals("combine"))
 			combine();
 		else if (cmd.equals("split"))

@@ -3,11 +3,14 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 
-/** This plugin implements the Help/About ImageJ, Help/ImageJ Web Site,
-	Plugins/Utilities/Unlock Image and the Image/Rename commands. */
+/** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
+	and Plugins/Utilities/Search commands. */
 public class SimpleCommands implements PlugIn {
+	static String searchArg;
 
 	public void run(String arg) {
+		if (arg.equals("search"))
+			{search(); return;}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{IJ.noImage(); return;}
@@ -38,4 +41,8 @@ public class SimpleCommands implements PlugIn {
 			imp.setTitle(gd.getNextString());
 	}
 		
+	void search() {
+		searchArg = IJ.runMacroFile("ij.jar:Search", searchArg);
+	}
+
 }
