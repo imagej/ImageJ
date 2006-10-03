@@ -50,6 +50,8 @@ public class Thresholder implements PlugIn, Measurements {
 		if (ip instanceof ByteProcessor)
 			{saveMin =0; saveMax = 255;}
 		autoThreshold = saveMinThreshold==ImageProcessor.NO_THRESHOLD;
+		if (saveMinThreshold==saveMaxThreshold && ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE)
+			autoThreshold = true;
 					
 		boolean useBlackAndWhite = true;
 		if (skipDialog)

@@ -191,8 +191,11 @@ public class ImageMath implements PlugInFilter {
 	}
 	
 	double getValue (String title, String prompt, double defaultValue, int digits) {
+			int places = Analyzer.getPrecision();
+			if (digits>0 || (int)defaultValue!=defaultValue)
+				digits = Math.max(places, 1);
 			GenericDialog gd = new GenericDialog(title);
-			gd.addNumericField(prompt, defaultValue, digits);
+			gd.addNumericField(prompt, defaultValue, digits, 8, null);
 			gd.showDialog();
 			if (first) imp.startTiming();
 			first = false;

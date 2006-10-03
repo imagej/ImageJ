@@ -207,6 +207,10 @@ public class Opener {
 				if (imp.getWidth()!=0) return imp; else return null;
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
+				if (path.endsWith("Thumbs.db")) {
+					fileType = CUSTOM;
+					return null;
+				}
 				imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
 				if (imp==null) return null;
 				if (imp.getWidth()>0 && imp.getHeight()>0) {

@@ -1,10 +1,11 @@
 package ij.gui;
-
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.*;
+import java.io.File;
 import ij.*;
 import ij.plugin.frame.Recorder; 
+import ij.plugin.frame.Editor; 
 import ij.plugin.MacroInstaller;
 
 /** The ImageJ toolbar. */
@@ -58,9 +59,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String icon;
 	private MacroInstaller macroInstaller;
 	private int startupTime;
-	private PopupMenu ovalPopup, linePopup;
+	private PopupMenu ovalPopup, linePopup, switchPopup;
 	private CheckboxMenuItem ovalItem, brushItem;
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem;
+	private String currentSet = "Startup Macros";
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.white);
@@ -70,8 +72,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private Color gray = ImageJ.backgroundColor;
 	private Color brighter = gray.brighter();
-	private Color darker = gray.darker();
-	private Color evenDarker = darker.darker();
+	//private Color darker = gray.darker();
+	//private Color evenDarker = darker.darker();
+	private Color darker = new Color(175, 175, 175);
+	private Color evenDarker = new Color(110, 110, 110);
 	private Color triangleColor = new Color(150, 0, 0);
 	private Color toolColor = new Color(0, 30, 60);
 
@@ -86,12 +90,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
+		names[NUM_TOOLS-1] = "Switch to alternate macro tool sets";
+		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
 		addPopupMenus();
 		if (IJ.isMacOSX()) Prefs.antialiasedTools = true;
 	}
 
 	void addPopupMenus() {
-		ovalPopup=new PopupMenu();
+		ovalPopup = new PopupMenu();
 		ovalItem = new CheckboxMenuItem("Elliptical Selection Tool", !brushEnabled);
 		ovalItem.addItemListener(this);
 		ovalPopup.add(ovalItem);
@@ -100,7 +106,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ovalPopup.add(brushItem);
 		add(ovalPopup);
 
-		linePopup=new PopupMenu();
+		linePopup = new PopupMenu();
 		straightLineItem = new CheckboxMenuItem("Straight Lines", lineType==LINE);
 		straightLineItem.addItemListener(this);
 		linePopup.add(straightLineItem);
@@ -111,12 +117,28 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		freeLineItem.addItemListener(this);
 		linePopup.add(freeLineItem);
 		add(linePopup);
+
+		switchPopup = new PopupMenu();
+		add(switchPopup);
 	}
 	
 	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
 		Toolbar.OVAL, etc.). */
 	public static int getToolId() {
 		return current;
+	}
+
+	/** Returns the ID of the tool whose name (the description displayed in the status bar)
+		starts with the specified string, or -1 if the tool is not found. */
+	public int getToolId(String name) {
+		int tool =  -1;
+		for (int i=0; i<=SPARE9; i++) {
+			if (names[i]!=null && names[i].startsWith(name)) {
+				tool = i;
+				break;
+			}			
+		}
+		return tool;
 	}
 
 	/** Returns a reference to the ImageJ toolbar. */
@@ -128,7 +150,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (Prefs.antialiasedTools && IJ.isJava2()) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			//g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		}
 		for (int i=0; i<LINE; i++)
 			drawButton(g, i);
@@ -340,7 +362,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private void showMessage(int tool) {
 		if (tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null) {
-			IJ.showStatus(names[tool]);
+			String name = names[tool];
+			int index = name.indexOf("Action Tool");
+			if (index!=-1)
+				name = name.substring(0, index);
+			IJ.showStatus(name);
 			return;
 		}
 		switch (tool) {
@@ -391,7 +417,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Angle tool");
 				return;
 			default:
-				IJ.showStatus("");
+				IJ.showStatus("ImageJ "+IJ.getVersion()+" / Java "+System.getProperty("java.version"));
 				return;
 		}
 	}
@@ -426,17 +452,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void setTool(int tool) {
 		if (tool==current || tool<0 || tool>=NUM_TOOLS)
 			return;
-		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) && names[tool]==null)
-			names[tool] = "Spare tool"; // enable tool
+		if (tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) {
+			if (names[tool]==null)
+				names[tool] = "Spare tool"; // enable tool
+			if (names[tool].indexOf("Action Tool")!=-1)
+				return;
+		}
 		if (isLine(tool)) lineType = tool;
 		setTool2(tool);
 	}
 	
 	private void setTool2(int tool) {
-		if (tool==current || tool<0 || tool>=NUM_TOOLS)
-			return;
-		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) && names[tool]==null)
-			return;
+		if (tool==current || !isValidTool(tool)) return;
 		current = tool;
 		down[current] = true;
 		down[previous] = false;
@@ -455,6 +482,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			Recorder.record("setTool", current);
 		if (IJ.isMacOSX())
 			repaint();
+	}
+	
+	boolean isValidTool(int tool) {
+		if (tool<0 || tool>=NUM_TOOLS)
+			return false;
+		if ((tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) && names[tool]==null)
+			return false;
+		return true;
 	}
 
 	/** Obsolete. Use getForegroundColor(). */
@@ -561,14 +596,33 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (x>i*SIZE && x<i*SIZE+SIZE)
 				newTool = toolID(i);
 		}
+		if (newTool==SPARE9) {
+			//drawTool(newTool, true);
+			//IJ.wait(50);
+			//drawTool(newTool, false);
+			showSwitchPopupMenu(e);
+			return;
+		}
+		if (!isValidTool(newTool)) return;
 		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=DOUBLE_CLICK_THRESHOLD;
  		mouseDownTime = System.currentTimeMillis();
 		if (!doubleClick) {
-			if (isMacroTool(newTool)) {
-				String name = names[newTool].endsWith(" ")?names[newTool]:names[newTool]+" ";
-				macroInstaller.runMacroTool(name+"Selected");
-			}
 			mpPrevious = current;
+			if (isMacroTool(newTool)) {
+				String name = names[newTool];
+				if (name.indexOf("Unused Tool")!=-1)
+					return;
+				if (name.indexOf("Action Tool")!=-1) {
+					drawTool(newTool, true);
+					IJ.wait(50);
+					drawTool(newTool, false);
+					runMacroTool(newTool);
+					return;
+				} else {	
+					name = name.endsWith(" ")?name:name+" ";
+					macroInstaller.runMacroTool(name+"Selected");
+				}
+			}
 			setTool2(newTool);
 			if (current==OVAL && (e.isPopupTrigger() || e.isMetaDown())) {
 				ovalItem.setState(!brushEnabled);
@@ -620,6 +674,65 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
+	void showSwitchPopupMenu(MouseEvent e) {
+		String path = IJ.getDirectory("macros")+"toolsets/";
+		if (path==null) {
+			return;
+		}
+		boolean applet = IJ.getApplet()!=null;
+		File f = new File(path);
+		String[] list;
+		if (!applet && f.exists() && f.isDirectory()) {
+			list = f.list();
+			if (list==null) return;
+		} else
+			list = new String[0];
+        boolean stackTools = false;
+		for (int i=0; i<list.length; i++) {
+            if (list[i].equals("Stack Tools.txt")) {
+                stackTools = true;
+                break;
+            }
+		}
+		switchPopup.removeAll();
+        path = IJ.getDirectory("macros") + "StartupMacros.txt";
+		f = new File(path);
+		if (!applet && f.exists())
+            addItem("Startup Macros");
+        else
+            addItem("StartupMacros*");
+		if (!stackTools) addItem("Stack Tools*");
+ 		for (int i=0; i<list.length; i++) {
+			String name = list[i];
+			if (name.endsWith(".txt") || name.endsWith(".ijm")) {
+				name = name.substring(0, name.length()-4);
+                addItem(name);
+			}
+		}
+		addItem("Help...");
+		add(ovalPopup);
+		if (IJ.isMacOSX()) IJ.wait(10);
+		switchPopup.show(e.getComponent(), e.getX(), e.getY());
+	}
+    
+    void addItem(String name) {
+		CheckboxMenuItem item = new CheckboxMenuItem(name, name.equals(currentSet));
+		item.addItemListener(this);
+		switchPopup.add(item);
+    }
+
+	void drawTool(int tool, boolean drawDown) {
+		down[tool] = drawDown;
+		Graphics g = this.getGraphics();
+		if (!drawDown && Prefs.antialiasedTools && IJ.isJava2()) {
+			Graphics2D g2d = (Graphics2D)g;
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		}
+		drawButton(g, tool);
+		if (null==g) return;
+		g.dispose();
+	}
+
 	boolean isLine(int tool) {
 		return tool==LINE || tool==POLYLINE || tool==FREELINE;
 	}
@@ -656,6 +769,53 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			lineType = FREELINE;
 			setTool2(FREELINE);
 			showMessage(FREELINE);
+		} else {
+			String label = item.getActionCommand();
+			if (!label.equals("Help...")) currentSet = label;
+			String path;
+			if (label.equals("Help...")) {
+				IJ.showMessage("Tool Switcher",
+					"Use this drop down menu to switch to macro tool\n"+
+					"sets located in the ImageJ/macros/toolsets folder,\n"+
+					"or to revert to the ImageJ/macros/StartupMacros\n"+
+					"set. The default tool sets, which have names\n"+
+					"ending in '*', are loaded from ij.jar.\n"+
+					" \n"+
+					"Hold the shift key down while selecting a tool\n"+
+					"set to view its source code.\n"+
+					" \n"+
+					"Several example tool sets are available at\n"+
+					"<http://rsb.info.nih.gov/ij/macros/toolsets/>."
+					);
+				return;
+			} else if (label.endsWith("*")) {
+                // load from ij.jar
+                MacroInstaller mi = new MacroInstaller();
+                label = label.substring(0, label.length()-1) + ".txt";
+                path = "/macros/"+label;
+				if (IJ.shiftKeyDown()) {
+					String macros = mi.openFromIJJar(path);
+                    Editor ed = new Editor();
+                    ed.setSize(350, 300);
+                    ed.create(label, macros);
+                	IJ.setKeyUp(KeyEvent.VK_SHIFT);
+				} else
+					mi.installFromIJJar(path);
+            } else {
+                // load from ImageJ/macros/toolsets
+                if (label.equals("Startup Macros"))
+                    path = IJ.getDirectory("macros")+"StartupMacros.txt";
+                else
+                    path = IJ.getDirectory("macros")+"toolsets/"+label+".txt";
+                try {
+                    if (IJ.shiftKeyDown()) {
+                        IJ.open(path);
+                		IJ.setKeyUp(KeyEvent.VK_SHIFT);
+                    } else
+                        new MacroInstaller().run(path);
+                }
+                catch(Exception ex) {}
+            }
 		}
 	}
 
@@ -674,39 +834,43 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
-		 when the mouse is over the tool icon. If the 'toolTip' string includes an icon 
-		(http://rsb.info.nih.gov/ij/developer/macro/macros.html#tools), enables the 
-		next available tool and draws it using that icon. Returns the tool ID, or -1 
-		if all tools are in use. */
+		 when the mouse is over the tool icon. The 'toolTip' string may include icon 
+		(http://rsb.info.nih.gov/ij/developer/macro/macros.html#tools).
+		Returns the tool ID, or -1 if all tools are in use. */
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');
 		boolean hasIcon = index>=0 && (toolTip.length()-index)>4;
-		if (!hasIcon) {
-			names[SPARE1] = toolTip;
-			return SPARE1;
-		}
 		int tool =  -1;
 		if (names[SPARE1]==null)
 			tool = SPARE1;
 		if (tool==-1) {
-			for (int i=SPARE2; i<=SPARE9; i++) {
+			for (int i=SPARE2; i<=SPARE8; i++) {
 				if (names[i]==null) {
 					tool = i;
 					break;
 				}			
 			}
 		}
-		if (tool==-1)
-			return -1;
-		icons[tool] = toolTip.substring(index+1);
-		names[tool] = toolTip.substring(0, index);
+		//if (tool==-1 && names[SPARE1].indexOf("Unused Tool")!=-1)
+		//		tool = SPARE1;
+		if (tool==-1) return -1;
+		if (hasIcon) {
+			icons[tool] = toolTip.substring(index+1);
+			names[tool] = toolTip.substring(0, index);
+		} else {
+			if (toolTip.endsWith("-"))
+				toolTip = toolTip.substring(0, toolTip.length()-1);
+			else if (toolTip.endsWith("- "))
+				toolTip = toolTip.substring(0, toolTip.length()-2);
+			names[tool] = toolTip;
+		}
 		return tool;
 	}
 
 	/** Used by the MacroInstaller class to install macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
 	    if (id==0) {
-			for (int i=SPARE1; i<NUM_TOOLS; i++) {
+			for (int i=SPARE1; i<NUM_TOOLS-1; i++) {
 				names[i] = null;
 				icons[i] = null;
 			}

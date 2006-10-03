@@ -608,11 +608,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			}
 		} else
 			index = text.indexOf(s, ta.getCaretPosition()+1);
+		searchString = s2;
 		if (index<0)
 			{IJ.beep(); return;}
 		ta.setSelectionStart(index);
 		ta.setSelectionEnd(index+s.length());
-		searchString = s2;
 	}
 	
 	boolean isWholeWordMatch(String text, String word, int index) {

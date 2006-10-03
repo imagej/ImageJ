@@ -132,17 +132,17 @@ public class Filler implements PlugInFilter, Measurements {
 		for (int i=first; i<=last; i++) {
 			int x = (int)rt.getValueAsDouble(ResultsTable.X_CENTROID, i);		
 			int y = (int)rt.getValueAsDouble(ResultsTable.Y_CENTROID, i);		
-			drawLabel(ip, i+1, new Rectangle(x,y,0,0));
+			drawLabel(imp, ip, i+1, new Rectangle(x,y,0,0));
 		}
 	}
 
 	void drawLabel(ImageProcessor ip) {
 		int count = Analyzer.getCounter();
 		if (count>0 && roi!=null)
-			drawLabel(ip, count, roi.getBounds());
+			drawLabel(imp, ip, count, roi.getBounds());
 	}
 
-	void drawLabel(ImageProcessor ip, int count, Rectangle r) {
+	public void drawLabel(ImagePlus imp, ImageProcessor ip, int count, Rectangle r) {
 		Color foreground = Toolbar.getForegroundColor();
 		Color background = Toolbar.getBackgroundColor();
 		if (foreground.equals(background)) {

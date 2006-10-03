@@ -34,7 +34,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int sx2, sy2;
 	private boolean disablePopupMenu;
 	private boolean showAllROIs;
-	private Color gold;
+	private static Color showAllColor;
+	private static Font smallFont, largeFont;
+	private Rectangle[] labelRects;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -135,19 +137,26 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (rm==null) return;
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
-		//if (gold==null) gold = new Color(255, 200, 23);
-		if (gold==null) gold = new Color(128, 255, 255);
-		g.setColor(gold);
+		if (showAllColor==null) {
+			showAllColor = new Color(128, 255, 255);
+			smallFont = new Font("SansSerif", Font.PLAIN, 9);
+			largeFont = new Font("SansSerif", Font.PLAIN, 12);
+		}
+		g.setColor(showAllColor);
 		int n = list.getItemCount();
+		if (labelRects==null || labelRects.length!=n)
+			labelRects = new Rectangle[n];
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
+			if (roi==null) continue;
 			if (roi.getType()==Roi.COMPOSITE) {
 				roi.setImage(imp);
 				Color c = roi.getColor();
-				roi.setColor(gold);
+				roi.setColor(showAllColor);
 				roi.draw(g);
 				roi.setColor(c);
+				drawRoiLabel(g, i, roi.getBounds());
 			} else {
 				Polygon p = roi.getPolygon();
 				int x1=0, y1=0, x2=0, y2=0;
@@ -157,35 +166,38 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					if (j>0) g.drawLine(x1, y1, x2, y2);
 					x1=x2; y1=y2;
 				}
-				if (roi.isArea()) {
+				if (roi.isArea()&&p.npoints>0) {
 					int x0 = screenX(p.xpoints[0]);
 					int y0 = screenY(p.ypoints[0]);
 					g.drawLine(x1, y1, x0, y0);
 				}
-				drawRoiLabel(g, i+1, roi.getBounds());
+				drawRoiLabel(g, i, roi.getBounds());
 			}
 		}
     }
     
-	void drawRoiLabel(Graphics g, int count, Rectangle r) {
+	void drawRoiLabel(Graphics g, int index, Rectangle r) {
 		int x = screenX(r.x);
 		int y = screenY(r.y);
 		double mag = getMagnification();
 		int width = (int)(r.width*mag);
 		int height = (int)(r.height*mag);
-		int size = 9;
-		if (width>50 && height>50) size = 12;
-		g.setFont(new Font("SansSerif", Font.PLAIN, size));
-		String label = "" + count;
+		int size = width>40 && height>40?12:9;
+		if (size==12)
+			g.setFont(largeFont);
+		else
+			g.setFont(smallFont);
+		String label = "" + (index+1);
 		FontMetrics metrics = g.getFontMetrics();
 		int w = metrics.stringWidth(label);
 		x = x + width/2 - w/2;
 		y = y + height/2 + Math.max(size/2,6);
 		int h =  metrics.getHeight();
+		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
+		labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h-3);
 		g.setColor(Color.black);
-		g.fillRect(x-1, y-h+2, w+1, h-3);
-		g.setColor(gold);
 		g.drawString(label, x, y-2);
+		g.setColor(showAllColor);
 	} 
 
 	void drawZoomIndicator(Graphics g) {
@@ -234,6 +246,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+			if (showAllROIs) showAllROIs(offScreenGraphics);
 			if (roi!=null) roi.draw(offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
@@ -300,18 +313,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int id = Toolbar.getToolId();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.MAGNIFIER:
-				if (IJ.isMacintosh())
-					setCursor(defaultCursor);
-				else 
-					setCursor(moveCursor);
+				setCursor(moveCursor);
 				break;
 			case Toolbar.HAND:
 				setCursor(handCursor);
 				break;
 			default:  //selection tool
-				if (id==Toolbar.SPARE1 || id>=Toolbar.SPARE2)
-					setCursor(crosshairCursor);
-				else if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
+				if (id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) {
+					if (Prefs.usePointerCursor) setCursor(defaultCursor); else setCursor(crosshairCursor);
+				} else if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
 					setCursor(handCursor);
 				else if (Prefs.usePointerCursor || (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.contains(ox, oy)))
 					setCursor(defaultCursor);
@@ -619,11 +629,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setupScroll(ox, oy);
 			return;
 		}
-		//if ((flags&Event.ALT_MASK)!=0 && toolID!=Toolbar.MAGNIFIER && toolID!=Toolbar.DROPPER) {
-			// temporarily switch to color tool alt/option key down
-			//setDrawingColor(ox, oy, false);
-			//return;
-		//}
+		if (showAllROIs) {
+			Roi roi = imp.getRoi();
+			if (!(roi!=null && (roi.contains(ox, oy)||roi.isHandle(x, y)>=0)) && roiManagerSelect(x, y))
+ 				return;
+		}
+
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
 				if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
@@ -668,13 +679,31 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				break;
 			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
 			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:
-			case Toolbar.SPARE7:
+			case Toolbar.SPARE7: case Toolbar.SPARE8: case Toolbar.SPARE9:
 				Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool
 				handleRoiMouseDown(e);
 		}
 	}
+
+    boolean roiManagerSelect(int x, int y) {
+		RoiManager rm=RoiManager.getInstance();
+		if (rm==null) return false;
+		Hashtable rois = rm.getROIs();
+		java.awt.List list = rm.getList();
+		int n = list.getItemCount();
+		if (labelRects==null || labelRects.length!=n) return false;
+		for (int i=0; i<n; i++) {
+			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
+				//rm.select(i);
+				// this needs to run on a separate thread, at least on OS X
+				new ij.macro.MacroRunner("roiManager('select', "+i+"); roiManager('update');");
+				return true;
+			}
+		}
+		return false;
+    }
 
 	protected void setupScroll(int ox, int oy) {
 		xMouseStart = ox;

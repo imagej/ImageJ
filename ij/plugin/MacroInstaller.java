@@ -33,6 +33,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private String anonymousName;
 	private Menu macrosMenu;
 	private int autoRunCount, autoRunAndHideCount;
+	private boolean openingStartupMacros;
 	
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
@@ -40,11 +41,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public void run(String path) {
 		if (path==null || path.equals(""))
 			path = showDialog();
-		if (path==null)
-			return;
+		if (path==null) return;
 		String text = open(path);
-		if (text!=null)
+		if (text!=null) {
+			openingStartupMacros = path.indexOf("StartupMacros")!=-1;
 			install(text);
+		}
 	}
 			
 	void install() {
@@ -89,7 +91,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					if (name.indexOf('-')!=-1 && (name.indexOf("Tool")!=-1||name.indexOf("tool")!=-1)) {
 						Toolbar.getInstance().addMacroTool(name, this, toolCount);
 						toolCount++;
-                    } else if (name.startsWith("AutoRun") && autoRunCount==0) {
+                    } else if (name.startsWith("AutoRun") && autoRunCount==0 && !openingStartupMacros) {
                         new MacroRunner(pgm, macroStarts[count], name);
                         autoRunCount++;
                         if (name.equals("AutoRunAndHide"))
@@ -147,6 +149,19 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macrosMenu = menu;
 		install();
 		return nShortcuts+toolCount;
+	}
+
+	public void installFile(String path) {
+		if (path!=null) {
+			String text = open(path);
+			if (text!=null) install(text);
+		}
+	}
+
+    /** Installs a macro set contained in ij.jar. */
+	public void installFromIJJar(String path) {
+        String text = openFromIJJar(path);
+        if (text!=null) install(text);
 	}
 
 	void removeShortcuts() {
@@ -233,6 +248,27 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			return null;
 		}
 	}
+    
+    /** Returns a text file contained in ij.jar. */
+    public String openFromIJJar(String path) {
+		//ImageJ ij = IJ.getInstance();
+		//if (ij==null) return null;
+		String text = null;
+        try {
+			InputStream is = this.getClass().getResourceAsStream(path);
+			//IJ.log(is+"  "+path);
+			if (is==null) return null;
+            InputStreamReader isr = new InputStreamReader(is);
+            StringBuffer sb = new StringBuffer();
+            char [] b = new char [8192];
+            int n;
+            while ((n = isr.read(b)) > 0)
+                sb.append(b,0, n);
+            text = sb.toString();
+        }
+        catch (IOException e) {}
+        return text;
+	}
 	
 	//void runMacro() {
 	//	new MacroRunner(text);
@@ -277,7 +313,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public int getMacroCount() {
 		return nMacros;
 	}
-	
+		
 	/** Returns true if an "AutoRunAndHide" macro was run/installed. */
 	public boolean isAutoRunAndHide() {
 		return autoRunAndHideCount>0;
@@ -285,6 +321,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+		openingStartupMacros = fileName.startsWith("StartupMacros");
 	}
 
 	public void actionPerformed(ActionEvent evt) {

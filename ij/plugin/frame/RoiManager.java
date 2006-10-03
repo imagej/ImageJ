@@ -18,6 +18,7 @@ import ij.measure.Calibration;
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener {
 
 	static final int BUTTONS = 10;
+	static final int DRAW=0, FILL=1, LABEL=2;
 	Panel panel;
 	static Frame instance;
 	java.awt.List list;
@@ -62,7 +63,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Measure");
 		addButton("Deselect");
 		addButton("Show All");
-		addButton("More>>");
+		addButton("More >>");
 		add(panel);		
 		addPopupMenu();
 		pack();
@@ -76,7 +77,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		b.addActionListener(this);
 		b.addKeyListener(IJ.getInstance());
  		b.addMouseListener(this);
- 		if (label.equals("More>>")) moreButton = b;
+ 		if (label.equals("More >>")) moreButton = b;
 		panel.add(b);
 	}
 
@@ -85,6 +86,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		//addPopupItem("Select All");
 		addPopupItem("Draw");
 		addPopupItem("Fill");
+		addPopupItem("Label");
+		pm.addSeparator();
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
@@ -124,12 +127,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Show All"))
 			showAll();
 		else if (command.equals("Draw"))
-			drawOrFill(true);
+			drawOrFill(DRAW);
 		else if (command.equals("Fill"))
-			drawOrFill(false);
+			drawOrFill(FILL);
+		else if (command.equals("Label"))
+			drawOrFill(LABEL);
 		else if (command.equals("Deselect"))
 			select(-1);
-		else if (command.equals("More>>")) {
+		else if (command.equals("More >>")) {
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);
@@ -181,6 +186,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (roi==null) {
 			error("The active image does not have a selection.");
 			return false;
+		}
+		int n = list.getItemCount();
+		if (n>0) {
+			// check for duplicate
+			String label = list.getItem(n-1);
+			Roi roi2 = (Roi)rois.get(label);
+			if (roi2!=null) {
+				boolean sameType = roi.getType()==roi2.getType();
+				if (sameType && roi.getBounds().equals(roi2.getBounds()))
+					return false;
+			}
 		}
 		String name = roi.getName();
 		if (isStandardName(name))
@@ -289,7 +305,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		Roi roi = imp.getRoi();
-		if (roi==null && !showingAll) {
+		if (roi==null) {
 			error("The active image does not have a selection.");
 			return false;
 		}
@@ -522,8 +538,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         if (indexes.length==0) return false;
 
 		int nLines = 0;
+		boolean allSliceOne = true;
 		for (int i=0; i<indexes.length; i++) {
 			String label = list.getItem(indexes[i]);
+	           if (getSliceNumber(label)>1) allSliceOne = false;
 			Roi roi = (Roi)rois.get(label);
 			if (roi.isLine()) nLines++;
 		}
@@ -533,8 +551,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 						
 		int nSlices = 1;
-		String label = list.getItem(indexes[0]);
-		if (getSliceNumber(label)==-1 || indexes.length==1) {
+		if (imp.getStackSize()>1 && allSliceOne) {
 			int setup = IJ.setupDialog(imp, 0);
 			if (setup==PlugInFilter.DONE)
 				return false;
@@ -544,7 +561,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int slice=1; slice<=nSlices; slice++) {
 			if (nSlices>1) imp.setSlice(slice);
 			for (int i=0; i<indexes.length; i++) {
-				if (restore(indexes[i], nSlices==1))
+				if (restore(indexes[i], nSlices==1&&!allSliceOne))
 					IJ.run("Measure");
 				else
 					break;
@@ -557,24 +574,51 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}	
 
-	boolean drawOrFill(boolean draw) {
+	boolean drawOrFill(int mode) {
 		int[] indexes = list.getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		Undo.setup(Undo.COMPOUND_FILTER, imp);
+		imp.killRoi();
+		ImageProcessor ip = imp.getProcessor();
+		ip.setColor(Toolbar.getForegroundColor());
+		ip.snapshot();
+		Undo.setup(Undo.FILTER, imp);
+		Filler filler = mode==LABEL?new Filler():null;
+		int slice = imp.getCurrentSlice();
 		for (int i=0; i<indexes.length; i++) {
-			if (restore(indexes[i], true)) {
-				if (draw)
-					IJ.run("Draw");
-				else
-					IJ.run("Fill", "slice");
-				IJ.run("Select None");
-			} else
-				break;
+			String name = list.getItem(i);
+			Roi roi = (Roi)rois.get(name);
+			int type = roi.getType();
+			if (roi==null) continue;
+			if (mode==FILL&&(type==Roi.POLYLINE||type==Roi.FREELINE||type==Roi.ANGLE))
+				mode = DRAW;
+            int slice2 = getSliceNumber(name);
+            if (slice2>=1 && slice2<=imp.getStackSize()) {
+                imp.setSlice(slice2);
+				ip = imp.getProcessor();
+				ip.setColor(Toolbar.getForegroundColor());
+				if (slice2!=slice) Undo.reset();
+            }
+ 			switch (mode) {
+				case DRAW: roi.drawPixels(ip); break;
+				case FILL: ip.fillPolygon(roi.getPolygon()); break;
+				case LABEL:
+					roi.drawPixels(ip);
+					filler.drawLabel(imp, ip, i+1, roi.getBounds());
+					break;
+			}
 		}
-		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
-		if (Recorder.record) Recorder.record("roiManager", draw?"Draw":"Fill");
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null) ic.setShowAllROIs(false);
+		imp.updateAndDraw();
+		String str=null;
+		switch (mode) {
+			case DRAW: str="Draw"; break;
+			case FILL: str="Fill"; break;
+			case LABEL: str="Label"; imp.updateAndDraw(); break;
+		}
+		if (Recorder.record) Recorder.record("roiManager", str);
 		return true;
 	}
 
@@ -649,7 +693,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
 		boolean showingROIs = ic.getShowAllROIs();
-		if (!showingROIs) imp.killRoi();
 		ic.setShowAllROIs(!showingROIs);
 		imp.draw();
 	}
@@ -742,9 +785,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("measure"))
 			measure();
 		else if (cmd.equals("draw"))
-			drawOrFill(true);
+			drawOrFill(DRAW);
 		else if (cmd.equals("fill"))
-			drawOrFill(false);
+			drawOrFill(FILL);
+		else if (cmd.equals("label"))
+			drawOrFill(LABEL);
 		else if (cmd.equals("combine"))
 			combine();
 		else if (cmd.equals("split"))
