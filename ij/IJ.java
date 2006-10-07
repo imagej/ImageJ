@@ -44,6 +44,7 @@ public class IJ {
 	private static long maxMemory;
 	private static boolean escapePressed;
 	private static boolean redirectErrorMessages;
+	private static boolean suppressPluginNotFoundError;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -267,16 +268,17 @@ public class IJ {
 				runFilterPlugIn(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
-			if (className.indexOf('_')!=-1)
+			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (NoClassDefFoundError e) {
-			if (className.indexOf('_')!=-1)
+			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
-		redirectErrorMessages = false;
+ 		redirectErrorMessages = false;
+		suppressPluginNotFoundError = false;
 		return thePlugIn;
 	} 
 
@@ -1306,6 +1308,11 @@ public class IJ {
 		redirectErrorMessages = true;
 	}
 	
+	/** Temporarily suppress "plugin not found" errors. */
+	public static void suppressPluginNotFoundError() {
+		suppressPluginNotFoundError = true;
+	}
+
 	/** Returns an instance of the class loader ImageJ uses to run plugins. */
 	public static ClassLoader getClassLoader() {
 		if (classLoader==null) {

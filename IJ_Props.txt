@@ -139,21 +139,21 @@ zoom04="Original Scale",ij.plugin.Zoom("orig")
 zoom05="To Selection",ij.plugin.Zoom("to")
 
 # Plugins installed in the Image/Lookup Tables submenu
-lookup01="Fire",ij.plugin.LutLoader("fire")
-lookup02="Grays",ij.plugin.LutLoader("grays")
-lookup03="Ice",ij.plugin.LutLoader("ice")
-lookup04="Spectrum",ij.plugin.LutLoader("spectrum")
-lookup05="3-3-2 RGB",ij.plugin.LutLoader("3-3-2 RGB")
-lookup06="Red",ij.plugin.LutLoader("red")
-lookup07="Green",ij.plugin.LutLoader("green")
-lookup08="Blue",ij.plugin.LutLoader("blue")
-lookup09="Cyan",ij.plugin.LutLoader("cyan")
-lookup10="Magenta",ij.plugin.LutLoader("magenta")
-lookup11="Yellow",ij.plugin.LutLoader("yellow")
-lookup12="Red/Green",ij.plugin.LutLoader("redgreen")
-lookup13=-
-lookup14="Invert LUT",ij.plugin.LutLoader("invert")
-lookup15="Apply LUT",ij.plugin.filter.LutApplier
+lookup01="Invert LUT",ij.plugin.LutLoader("invert")
+lookup02="Apply LUT",ij.plugin.filter.LutApplier
+lookup03=-
+lookup04="Fire",ij.plugin.LutLoader("fire")
+lookup05="Grays",ij.plugin.LutLoader("grays")
+lookup06="Ice",ij.plugin.LutLoader("ice")
+lookup07="Spectrum",ij.plugin.LutLoader("spectrum")
+lookup08="3-3-2 RGB",ij.plugin.LutLoader("3-3-2 RGB")
+lookup09="Red",ij.plugin.LutLoader("red")
+lookup10="Green",ij.plugin.LutLoader("green")
+lookup11="Blue",ij.plugin.LutLoader("blue")
+lookup12="Cyan",ij.plugin.LutLoader("cyan")
+lookup13="Magenta",ij.plugin.LutLoader("magenta")
+lookup14="Yellow",ij.plugin.LutLoader("yellow")
+lookup15="Red/Green",ij.plugin.LutLoader("redgreen")
 
 # Plug-ins installed in the Process/Noise submenu
 noise01="Add Noise",ij.plugin.filter.Filters("add")
@@ -273,7 +273,7 @@ plug-in07=-
 # 'baseCount' in MacroInstaller must be updated if more items are added
 macros01="Install...[M]",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
-macros03="StartupMacros...",ij.plugin.Commands("startup")
+macros03="Startup Macros...",ij.plugin.Commands("startup")
 macros04="Record...",ij.plugin.frame.Recorder
 macros05=-
 

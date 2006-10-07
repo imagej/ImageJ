@@ -95,7 +95,14 @@ public class Executer implements Runnable {
 				IJ.runPlugIn(cmd, className, arg);
 		} else {
 			// Is this command in Plugins>Menus?
-			if (!MacroInstaller.runMacroCommand(cmd))
+			if (MacroInstaller.runMacroCommand(cmd))
+				return;
+			// Is this command a LUT name?
+			String path = Prefs.getHomeDir()+File.separator+"luts"+File.separator+cmd+".lut";
+			File f = new File(path);
+			if (f.exists())
+				IJ.open(path);
+			else
 				IJ.error("Unrecognized command: " + cmd);
 	 	}
     }

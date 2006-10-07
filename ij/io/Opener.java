@@ -153,8 +153,9 @@ public class Opener {
 					break;
 				case UNKNOWN:
 					String msg =
-						"File is not in TIFF, JPEG, GIF, BMP, DICOM, FITS, PGM, \n"
-						+"ZIP, LUT, ROI or text format, or it was not found.";
+						"File is not in TIFF, JPEG, GIF, BMP, DICOM, FITS, PGM, \n"+
+						"ZIP, LUT, ROI or text format, a reader plugin for this\n"+
+						"format is not installed, or it was not found.";
 					if (path!=null && path.length()<=64)
 						msg += " \n  \n   "+path;
 					IJ.error("Opener", msg);

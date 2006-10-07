@@ -2,7 +2,7 @@
 
     macro "Unused Tool - C037" { }
 
-    macro "Start/Stop Animation (alt click for dialog) Action Tool - C037B43L1131L1252L1373L1494L1595L1676L1757L1838" {
+    macro "Start/Stop Animation (alt click for dialog) Action Tool - C037B33L2131L2252L2373L2494L2595L2676L2757L2838" {
         if (nImages==0) {
             showMessage("Stack Tools", "The \"Stack Tools\" macros require a stack");
             return;

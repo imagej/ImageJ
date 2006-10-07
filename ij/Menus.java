@@ -279,7 +279,6 @@ public class Menus {
 		String key = name.toLowerCase(Locale.US);
 		int index;
  		Menu submenu=new Menu(name.replace('_', ' '));
- 
 		index = key.indexOf(' ');
 		if (index>0)
 			key = key.substring(0, index);
@@ -294,7 +293,31 @@ public class Menus {
 			else
 				addPluginItem(submenu, value);
 		}
+		if (name.equals("Lookup Tables"))
+			addLuts(submenu);
 		return submenu;
+	}
+	
+	void addLuts(Menu submenu) {
+		String path = Prefs.getHomeDir()+File.separator;
+		File f = new File(path+"luts");
+		if (!f.exists())
+			f = new File(path+"LUTs");
+		String[] list = null;
+		if (applet==null && f.exists() && f.isDirectory())
+			list = f.list();
+		if (list==null) return;
+		submenu.addSeparator();
+ 		for (int i=0; i<list.length; i++) {
+ 			String name = list[i];
+ 			if (name.endsWith(".lut")) {
+ 				name = name.substring(0,name.length()-4);
+ 				MenuItem item = new MenuItem(name);
+				submenu.add(item);
+				item.addActionListener(ij);
+				nPlugins++;
+			}
+		}
 	}
 
 	void addPluginItem(Menu submenu, String s) {

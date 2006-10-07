@@ -9,6 +9,7 @@ import ij.measure.*;
 import ij.text.*;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.RoiManager;
 import ij.util.Tools;
 
 /** Implements ImageJ's Analyze Particles command.
@@ -55,6 +56,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	/** Flood fill to ignore interior holes. */
 	public static final int INCLUDE_HOLES = 1024;
+	
+	/** Add particles to ROI Manager. */
+	public static final int ADD_TO_MANAGER = 2048;
+
 
 	static final String OPTIONS = "ap.options";
 	
@@ -76,7 +81,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected int slice;
 	protected boolean processStack;
 	protected boolean showResults,excludeEdgeParticles,showSizeDistribution,
-		resetCounter,showProgress, recordStarts, displaySummary, floodFill;
+		resetCounter,showProgress, recordStarts, displaySummary, floodFill, addToManager;
 		
 	private double level1, level2;
 	private double minSize;
@@ -109,6 +114,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private double totalArea;
 	private FloodFiller ff;
 	private Polygon polygon;
+	private RoiManager roiManager;
+
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -204,15 +211,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		gd.addStringField("Circularity:", IJ.d2s(minCircularity)+"-"+IJ.d2s(maxCircularity), 12);
 		gd.addChoice("Show:", showStrings, showStrings[showChoice]);
 		
-		String[] labels = new String[6];
-		boolean[] states = new boolean[6];
+		String[] labels = new String[7];
+		boolean[] states = new boolean[7];
 		labels[0]="Display Results"; states[0] = (options&SHOW_RESULTS)!=0;
 		labels[1]="Exclude on Edges"; states[1]=(options&EXCLUDE_EDGE_PARTICLES)!=0;
 		labels[2]="Clear Results"; states[2]=(options&CLEAR_WORKSHEET)!=0;
 		labels[3]="Include Holes"; states[3]=(options&INCLUDE_HOLES)!=0;
 		labels[4]="Summarize"; states[4]=(options&DISPLAY_SUMMARY)!=0;
 		labels[5]="Record Starts"; states[5]=(options&RECORD_STARTS)!=0;
-		gd.addCheckboxGroup(3, 2, labels, states);
+		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
+		gd.addCheckboxGroup(4, 2, labels, states);
 
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -255,6 +263,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			options |= DISPLAY_SUMMARY; else options &= ~DISPLAY_SUMMARY;
 		if (gd.getNextBoolean())
 			options |= RECORD_STARTS; else options &= ~RECORD_STARTS;
+		if (gd.getNextBoolean())
+			options |= ADD_TO_MANAGER; else options &= ~ADD_TO_MANAGER;
 		staticOptions = options;
 		options |= SHOW_PROGRESS;
 		if ((options&DISPLAY_SUMMARY)!=0)
@@ -293,6 +303,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		showProgress = (options&SHOW_PROGRESS)!=0;
 		floodFill = (options&INCLUDE_HOLES)==0;
 		recordStarts = (options&RECORD_STARTS)!=0;
+		addToManager = (options&ADD_TO_MANAGER)!=0;
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
 		if ((options&SHOW_OUTLINES)!=0)
 			showChoice = OUTLINES;
@@ -412,6 +423,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ip.reset();
 		if (displaySummary && processStack && IJ.getInstance()!=null)
 			updateSliceSummary();
+		if (addToManager && roiManager!=null) {
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null) ic.setShowAllROIs(true);
+		}
 		totalCount += particleCount;
 		if (!canceled)
 			showResults();
@@ -638,6 +653,20 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			int y = r.y+((PolygonRoi)roi).getYCoordinates()[coordinates-1];
 			rt.addValue("XStart", x);
 			rt.addValue("YStart", y);
+		}
+		if (addToManager) {
+			if (roiManager==null) {
+				Frame frame = WindowManager.getFrame("ROI Manager");
+				if (frame==null)
+					IJ.run("ROI Manager...");
+				frame = WindowManager.getFrame("ROI Manager");
+				if (frame==null || !(frame instanceof RoiManager))
+					{addToManager=false; return;}
+				roiManager = (RoiManager)frame;
+				if (resetCounter)
+					roiManager.runCommand("reset");
+			}
+			roiManager.add(imp, roi, Analyzer.getCounter());
 		}
 		if (showResults)
 			analyzer.displayResults();

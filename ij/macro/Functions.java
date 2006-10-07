@@ -2866,6 +2866,13 @@ public class Functions implements MacroConstants, Measurements {
 		if (arg1.equals("disablepopupmenu")) {
 			ImageCanvas ic = getImage().getCanvas();
 			if (ic!=null) ic.disablePopupMenu(state);
+		} else if (arg1.equals("show all")) {
+			ImagePlus img = getImage();
+			ImageCanvas ic = img.getCanvas();
+			if (ic!=null) {
+				ic.setShowAllROIs(state);
+				img.updateAndDraw();
+			}
 		} else if (arg1.equals("debugmode"))
 			IJ.debugMode = state;
 		else

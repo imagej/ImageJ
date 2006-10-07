@@ -704,8 +704,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!stackTools) addItem("Stack Tools*");
  		for (int i=0; i<list.length; i++) {
 			String name = list[i];
-			if (name.endsWith(".txt") || name.endsWith(".ijm")) {
+			if (name.endsWith(".txt")) {
 				name = name.substring(0, name.length()-4);
+                addItem(name);
+			} else if (name.endsWith(".ijm")) {
+				name = name.substring(0, name.length()-4) + " ";
                 addItem(name);
 			}
 		}
@@ -805,6 +808,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 // load from ImageJ/macros/toolsets
                 if (label.equals("Startup Macros"))
                     path = IJ.getDirectory("macros")+"StartupMacros.txt";
+                else if (label.endsWith(" "))
+                    path = IJ.getDirectory("macros")+"toolsets/"+label.substring(0, label.length()-1)+".ijm";
                 else
                     path = IJ.getDirectory("macros")+"toolsets/"+label+".txt";
                 try {

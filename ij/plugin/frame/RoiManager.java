@@ -201,7 +201,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String name = roi.getName();
 		if (isStandardName(name))
 			name = null;
-		String label = name!=null?name:getLabel(imp, roi);
+		String label = name!=null?name:getLabel(imp, roi, -1);
 		if (promptForName)
 			label = promptForName(label);
 		else
@@ -221,6 +221,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
+	public void add(ImagePlus imp, Roi roi, int n) {
+		if (roi==null) return;
+		String label = getLabel(imp, roi, n);
+		if (label==null) return;
+		list.add(label);
+		roi.setName(label);
+		roiCopy = (Roi)roi.clone();
+		Calibration cal = imp.getCalibration();
+		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
+			Rectangle r = roiCopy.getBounds();
+			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+		}
+		rois.put(label, roiCopy);
+	}
+
 	boolean isStandardName(String name) {
 		if (name==null) return false;
 		boolean isStandard = false;
@@ -232,10 +247,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return isStandard;
 	}
 	
-	String getLabel(ImagePlus imp, Roi roi) {
+	String getLabel(ImagePlus imp, Roi roi, int n) {
 		Rectangle r = roi.getBounds();
 		int xc = r.x + r.width/2;
 		int yc = r.y + r.height/2;
+		if (n>=0)
+			{xc = yc; yc=n;}
 		if (xc<0) xc = 0;
 		if (yc<0) yc = 0;
 		int digits = 4;
@@ -694,6 +711,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (ic==null) return;
 		boolean showingROIs = ic.getShowAllROIs();
 		ic.setShowAllROIs(!showingROIs);
+		if (Recorder.record)
+			Recorder.recordString("setOption(\"Show All\","+(showingROIs?"false":"true")+");\n");
 		imp.draw();
 	}
 
