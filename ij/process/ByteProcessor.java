@@ -170,13 +170,14 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	/** Fills pixels that are within roi and part of the mask.
-		Throws an IllegalArgumentException if the mask is
-		not the same size as the ROI. */
+		Does nothing if the mask is not the same size as the ROI. */
 	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}
+		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
+		int roiX=this.roiX, roiY=this.roiY;
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
-			throw new IllegalArgumentException(maskSizeError(mask));
+			return;
 		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
@@ -461,7 +462,15 @@ public class ByteProcessor extends ImageProcessor {
 		hideProgress();
 	}
 
-	/** Filters using a 3x3 neighborhood. */
+	/** Filters using a 3x3 neighborhood. The p1, p2, etc variables, which
+		contain the values of the pixels in the neighborhood, are arranged
+		as follows:
+		<pre>
+		    p1 p2 p3
+		    p4 p5 p6
+		    p7 p8 p9
+		</pre>
+	*/
 	public void filter(int type) {
 		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
 		int inc = roiHeight/25;

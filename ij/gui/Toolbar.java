@@ -77,7 +77,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private Color darker = new Color(175, 175, 175);
 	private Color evenDarker = new Color(110, 110, 110);
 	private Color triangleColor = new Color(150, 0, 0);
-	private Color toolColor = new Color(0, 30, 60);
+	private Color toolColor = new Color(0, 25, 45);
 
 
 	public Toolbar() {
@@ -395,7 +395,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Freehand line selections");
 				return;
 			case POINT:
-				IJ.showStatus("Point selections");
+				IJ.showStatus("Point selections (shift click for multiple points)");
 				return;
 			case WAND:
 				IJ.showStatus("Wand (tracing) tool");
@@ -404,10 +404,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Text tool");
 				return;
 			case MAGNIFIER:
-				IJ.showStatus("Magnifying glass");
+				IJ.showStatus("Magnifying glass (or use \"+\" and \"-\" keys)");
 				return;
 			case HAND:
-				IJ.showStatus("Scrolling tool");
+				IJ.showStatus("Scrolling tool (or press space bar and drag)");
 				return;
 			case DROPPER:
 				IJ.showStatus("Color picker (" + foregroundColor.getRed() + ","

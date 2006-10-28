@@ -145,6 +145,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_SELECTION_NAME: setSelectionName(); break;
 			case DRAW_RECT: case FILL_RECT: case DRAW_OVAL: case FILL_OVAL: drawOrFill(type); break;
 			case SET_OPTION: setOption(); break;
+			case SHOW_TEXT: showText(); break;
 		}
 	}
 	
@@ -2870,13 +2871,24 @@ public class Functions implements MacroConstants, Measurements {
 			ImagePlus img = getImage();
 			ImageCanvas ic = img.getCanvas();
 			if (ic!=null) {
+				boolean previousState = ic.getShowAllROIs();
 				ic.setShowAllROIs(state);
-				img.updateAndDraw();
+				if (state!=previousState) img.draw();
 			}
-		} else if (arg1.equals("debugmode"))
+		} else if (arg1.equals("changes"))
+			getImage().changes = state;
+		else if (arg1.equals("debugmode"))
 			IJ.debugMode = state;
 		else
 			interp.error("Invalid option");
+	}
+	
+	void showText() {
+		String title = getFirstString();
+		String text = getLastString();
+		Editor ed = new Editor();
+		ed.setSize(350, 300);
+		ed.create(title, text);
 	}
 	
 } // class Functions

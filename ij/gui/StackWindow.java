@@ -1,18 +1,16 @@
 package ij.gui;
-
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import ij.*;
 
-
 /** This class is an extended ImageWindow used to display image stacks. */
-public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener {
+public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
 	protected Scrollbar sliceSelector;
 	protected Thread thread;
-	protected boolean done;
-	protected int slice;
+	protected volatile boolean done;
+	protected volatile int slice;
 
 	public StackWindow(ImagePlus imp) {
 		this(imp, null);
@@ -23,6 +21,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		// add slice selection slider
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
+		addMouseWheelListener(this);
 		sliceSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, stackSize+1);
 		add(sliceSelector);
 		ImageJ ij = IJ.getInstance();
@@ -50,6 +49,17 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public void actionPerformed(ActionEvent e) {
+	}
+
+	public void mouseWheelMoved(MouseWheelEvent event) {
+		synchronized(this) {
+			int slice = imp.getCurrentSlice() + event.getWheelRotation();
+			if (slice<1)
+				slice = 1;
+			else if (slice>imp.getStack().getSize())
+				slice = imp.getStack().getSize();
+			imp.setSlice(slice);
+		}
 	}
 
 	public boolean close() {

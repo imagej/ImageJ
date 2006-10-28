@@ -184,13 +184,14 @@ public class ColorProcessor extends ImageProcessor {
 
 
 	/** Fills pixels that are within roi and part of the mask.
-		Throws an IllegalArgumentException if the mask is null or
-		the size of the mask is not the same as the size of the ROI. */
+		Does nothing if the mask is not the same as the the ROI. */
 	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}
+		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
+		int roiX=this.roiX, roiY=this.roiY;
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
-			throw new IllegalArgumentException(maskSizeError(mask));
+			return;
 		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;

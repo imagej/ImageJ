@@ -236,30 +236,34 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	/** Writes the current command and options to the Recorder window. */
 	public static void saveCommand() {
-		if (commandName!=null) {
+		String name = commandName;
+		if (name!=null) {
 			if (commandOptions!=null) {
-				if (commandName.equals("Open..."))
+				if (name.equals("Open..."))
 					textArea.append("open(\""+strip(commandOptions)+"\");\n");
 				else if (isSaveAs()) {
-							if (commandName.endsWith("..."))
-									commandName= commandName.substring(0, commandName.length()-3);
+							if (name.endsWith("..."))
+									name= name.substring(0, name.length()-3);
 							String path = strip(commandOptions);
-							textArea.append("saveAs(\""+commandName+"\", \""+path+"\");\n");
-				} else if (commandName.equals("Image..."))
+							textArea.append("saveAs(\""+name+"\", \""+path+"\");\n");
+				} else if (name.equals("Image..."))
 					appendNewImage();
-				else if (commandName.equals("Set Slice..."))
+				else if (name.equals("Set Slice..."))
 					textArea.append("setSlice("+strip(commandOptions)+");\n");
-				else if (commandName.equals("Rename..."))
+				else if (name.equals("Rename..."))
 					textArea.append("rename(\""+strip(commandOptions)+"\");\n");
-				else if (commandName.equals("Image Calculator..."))
-					textArea.append("//run(\""+commandName+"\", \""+commandOptions+"\");\n");
+				else if (name.equals("Image Calculator..."))
+					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
 				else 
-					textArea.append("run(\""+commandName+"\", \""+commandOptions+"\");\n");
+					textArea.append("run(\""+name+"\", \""+commandOptions+"\");\n");
 			} else {
-				if (commandName.equals("Threshold..."))
-					textArea.append("//run(\""+commandName+"\");\n");
-				else
-					textArea.append("run(\""+commandName+"\");\n");
+				if (name.equals("Threshold..."))
+					textArea.append("//run(\""+name+"\");\n");
+				else {
+					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
+						textArea.append("setKeyDown(\"alt\"); ");
+					textArea.append("run(\""+name+"\");\n");
+				}
 			}
 		}
 		commandName = null;
@@ -352,7 +356,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			+" \n" 
 			+"In the editor:\n" 
 			+" \n"
-			+"    Type ctrl+R (File>Run Macro) to\n" 
+			+"    Type ctrl+R (Macros>Run Macro) to\n" 
 			+"    run the macro.\n"     
 			+" \n"    
 			+"    Use File>Save As to save it and\n" 

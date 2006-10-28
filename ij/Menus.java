@@ -293,7 +293,7 @@ public class Menus {
 			else
 				addPluginItem(submenu, value);
 		}
-		if (name.equals("Lookup Tables"))
+		if (name.equals("Lookup Tables") && applet==null)
 			addLuts(submenu);
 		return submenu;
 	}
@@ -301,12 +301,11 @@ public class Menus {
 	void addLuts(Menu submenu) {
 		String path = Prefs.getHomeDir()+File.separator;
 		File f = new File(path+"luts");
-		if (!f.exists())
-			f = new File(path+"LUTs");
 		String[] list = null;
 		if (applet==null && f.exists() && f.isDirectory())
 			list = f.list();
 		if (list==null) return;
+		if (IJ.isLinux()) StringSorter.sort(list);
 		submenu.addSeparator();
  		for (int i=0; i<list.length; i++) {
  			String name = list[i];
@@ -321,7 +320,7 @@ public class Menus {
 	}
 
 	void addPluginItem(Menu submenu, String s) {
-		if (s.equals("\"-\"")) {
+		if (s.startsWith("\"-\"")) {
 			// add menu separator if command="-"
 			addSeparator(submenu);
 			return;

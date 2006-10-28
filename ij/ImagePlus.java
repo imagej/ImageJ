@@ -306,8 +306,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Opens a window to display this image and displays
 		'statusMessage' in the status bar. */
 	public void show(String statusMessage) {
-		if (win!=null)
-			return;
+		if (win!=null) return;
 		if ((IJ.macroRunning() && ij==null) || Interpreter.isBatchMode()) {
 			WindowManager.setTempCurrentImage(this);
 			Interpreter.addBatchModeImage(this);

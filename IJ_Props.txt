@@ -137,6 +137,7 @@ zoom02="Out[-]",ij.plugin.Zoom("out")
 zoom03="View 100%",ij.plugin.Zoom("100%")
 zoom04="Original Scale",ij.plugin.Zoom("orig")
 zoom05="To Selection",ij.plugin.Zoom("to")
+#zoom06="Maximize",ij.plugin.Zoom("max")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")

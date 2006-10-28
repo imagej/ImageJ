@@ -925,6 +925,8 @@ public class IJ {
 	/** For IDs less than zero, activates the image with the specified ID.
 		For IDs greater than zero, activates the Nth image. */
 	public static void selectWindow(int id) {
+		if (id>0)
+			id = WindowManager.getNthImageID(id);
 		ImagePlus imp = WindowManager.getImage(id);
 		if (imp==null)
 			error("Macro Error", "Image "+id+" not found or no images are open.");

@@ -161,7 +161,8 @@ public class ZProjector implements PlugIn {
         RGBStackMerge merge = new RGBStackMerge();
         ImageStack stack = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
         imp = saveImp;
-        projImage = new ImagePlus("ZProjection of "+imp.getShortTitle(), stack);
+		String title = WindowManager.getUniqueName(imp.getTitle());
+        projImage = new ImagePlus(title, stack);
     }
 
     /** Builds dialog to query users for projection parameters.
@@ -221,11 +222,11 @@ public class ZProjector implements PlugIn {
 		// Finish up projection.
 		if (method==SUM_METHOD) {
 			fp.resetMinAndMax();
-			projImage = new ImagePlus("Sum",fp); 
+			projImage = new ImagePlus(WindowManager.makeUniqueName("Sum"),fp); 
 		} else if (method==SD_METHOD) {
 			rayFunc.postProcess();
 			fp.resetMinAndMax();
-			projImage = new ImagePlus("Standard Deviation", fp); 
+			projImage = new ImagePlus(WindowManager.makeUniqueName("Standard Deviation"), fp); 
 		} else {
 			rayFunc.postProcess(); 
 			projImage = makeOutputImage(imp, fp, ptype);
@@ -287,7 +288,8 @@ public class ZProjector implements PlugIn {
 		// ImagePlus.createImagePlus here because there may be
 		// attributes of input image that are not appropriate for
 		// projection.
-		return new ImagePlus("ZProjection of "+imp.getShortTitle(), oip); 
+		String title = WindowManager.getUniqueName(imp.getTitle());
+		return new ImagePlus(title, oip); 
     }
 
     /** Handles mechanics of projection by selecting appropriate pixel
@@ -330,7 +332,7 @@ public class ZProjector implements PlugIn {
     			ip2.putPixelValue(x, y, median(values));
     		}
     	}
-  		return new ImagePlus("Median of "+imp.getShortTitle(), ip2);
+  		return new ImagePlus(WindowManager.makeUniqueName("Median"), ip2);
     }
 
 	float median(float[] a) {

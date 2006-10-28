@@ -90,7 +90,10 @@ import javax.swing.filechooser.*;
  		Prefs.useJFileChooser = false;
 		System.setProperty("apple.awt.fileDialogForDirectories", "true");
 		OpenDialog od = new OpenDialog(title, null);
-		directory = od.getDirectory() + od.getFileName() + "/";
+		if (od.getDirectory()==null)
+			directory = null;
+		else
+			directory = od.getDirectory() + od.getFileName() + "/";
 		System.setProperty("apple.awt.fileDialogForDirectories", "false");
  		Prefs.useJFileChooser = saveUseJFC;
 	}

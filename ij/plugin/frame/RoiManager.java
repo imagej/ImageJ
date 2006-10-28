@@ -15,7 +15,7 @@ import ij.macro.Interpreter;
 import ij.measure.Calibration;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
-public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener {
+public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener {
 
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
@@ -41,6 +41,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageJ ij = IJ.getInstance();
  		addKeyListener(ij);
  		addMouseListener(this);
+		addMouseWheelListener(this);
 		WindowManager.addWindow(this);
 		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
 		int rows = 15;
@@ -50,6 +51,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.addItemListener(this);
  		list.addKeyListener(ij);
  		list.addMouseListener(this);
+ 		list.addMouseWheelListener(this);
 		add(list);
 		panel = new Panel();
 		int nButtons = IJ.isJava2()?BUTTONS:BUTTONS-1;
@@ -193,8 +195,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String label = list.getItem(n-1);
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
+				int slice2 = getSliceNumber(label);
 				boolean sameType = roi.getType()==roi2.getType();
-				if (sameType && roi.getBounds().equals(roi2.getBounds()))
+				if (sameType && roi.getBounds().equals(roi2.getBounds())
+				&& (slice2==-1||slice2==imp.getCurrentSlice()))
 					return false;
 			}
 		}
@@ -910,6 +914,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int x=e.getX(), y=e.getY();
 		if (e.isPopupTrigger() || e.isMetaDown())
 			pm.show(e.getComponent(),x,y);
+	}
+
+	public void mouseWheelMoved(MouseWheelEvent event) {
+		synchronized(this) {
+			int index = list.getSelectedIndex();
+			int rot = event.getWheelRotation();
+			if (rot<-1) rot = -1;
+			if (rot>1) rot = 1;
+			index += rot;
+			if (index<0) index = 0;
+			if (index>=list.getItemCount()) index = list.getItemCount();
+			//IJ.log(index+"  "+rot);
+			select(index);
+			if (IJ.isWindows())
+				list.requestFocusInWindow();
+		}
 	}
 
  	public void mouseReleased (MouseEvent e) {}

@@ -7,7 +7,7 @@ import ij.process.ImageProcessor;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
-import ij.macro.Interpreter;
+import ij.macro.*;
 import ij.*;
 import ij.util.Java2;
 import java.awt.event.*;
@@ -34,7 +34,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int sx2, sy2;
 	private boolean disablePopupMenu;
 	private boolean showAllROIs;
-	private static Color showAllColor;
+	private static Color showAllColor, zoomIndicatorColor;
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
 		
@@ -51,6 +51,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private Image offScreenImage;
 	private int offScreenWidth = 0;
 	private int offScreenHeight = 0;
+	
+	// use by ImageWindow.minimize()
+	double saveMag;
+	Rectangle saveSrcRect;
+	Dimension saveDrawingSize;
+
 	
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -201,7 +207,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	} 
 
 	void drawZoomIndicator(Graphics g) {
-		//IJ.log("Zoom: "+srcRect+imageWidth+"  "+imageHeight);
 		int x1 = 10;
 		int y1 = 10;
 		double aspectRatio = (double)imageHeight/imageWidth;
@@ -215,7 +220,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (h2<1) h2 = 1;
 		int x2 = (int)(w1*((double)srcRect.x/imageWidth));
 		int y2 = (int)(h1*((double)srcRect.y/imageHeight));
-		g.setColor(new Color(128, 128, 255));
+		if (zoomIndicatorColor==null)
+			zoomIndicatorColor = new Color(128, 128, 255);
+		g.setColor(zoomIndicatorColor);
 		g.drawRect(x1, y1, w1, h1);
 		if (w2*h2<=100)
 			g.fillRect(x1+x2, y1+y2, w2, h2);
@@ -376,13 +383,26 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 		
 	public void setMagnification(double magnification) {
+		setMagnification2(magnification);
+		saveMag = this.magnification;
+		saveSrcRect = srcRect;
+		saveDrawingSize = getPreferredSize();
+	}
+		
+	void setMagnification2(double magnification) {
+		if (magnification>32.0) magnification = 32.0;
 		this.magnification = magnification;
 		imp.setTitle(imp.getTitle());
 	}
-		
+
 	public Rectangle getSrcRect() {
 		return srcRect;
 	}
+	
+	void setSrcRect(Rectangle srcRect) {
+		this.srcRect = srcRect;
+	}
+
 	
 	/** Enlarge the canvas if the user enlarges the window. */
 	void resizeCanvas(int width, int height) {
@@ -514,10 +534,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		double imag = imp.getWindow().getInitialMagnification();
 		if (magnification==imag)
 			return;
-		setMagnification(imag);
 		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
 		ImageWindow win = imp.getWindow();
 		setDrawingSize((int)(imageWidth*imag), (int)(imageHeight*imag));
+		setMagnification(imag);
 		win.pack();
 		repaint();
 	}
@@ -637,7 +657,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
-				if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
+				if (IJ.shiftKeyDown())
+					zoomToSelection(ox, oy);
+				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
 					zoomOut(x, y);
 				else
 					zoomIn(x, y);
@@ -685,6 +707,22 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			default:  //selection tool
 				handleRoiMouseDown(e);
 		}
+	}
+	
+	void zoomToSelection(int x, int y) {
+		IJ.setKeyUp(IJ.ALL_KEYS);
+		String macro =
+			"args = split(getArgument);\n"+
+			"x1=parseInt(args[0]); y1=parseInt(args[1]); flags=20;\n"+
+			"while (flags&20!=0) {\n"+
+				"getCursorLoc(x2, y2, z, flags);\n"+
+				"if (x2>=x1) x=x1; else x=x2;\n"+
+				"if (y2>=y1) y=y1; else y=y2;\n"+
+				"makeRectangle(x, y, abs(x2-x1), abs(y2-y1));\n"+
+				"wait(10);\n"+
+			"}\n"+
+			"run('To Selection');\n";
+		new MacroRunner(macro, x+" "+y);
 	}
 
     boolean roiManagerSelect(int x, int y) {

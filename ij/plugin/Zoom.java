@@ -33,6 +33,11 @@ public class Zoom implements PlugIn{
 				ic.zoomOut(0, 0);
 		} else if (arg.equals("to"))
 			zoomToSelection(imp, ic);
+		else if (arg.equals("max")) {
+			ImageWindow win = imp.getWindow();
+			win.setBounds(win.getMaximumBounds());
+			win.maximize();
+		}
 	}
 	
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {

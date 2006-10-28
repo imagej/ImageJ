@@ -66,7 +66,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.37u";
+	public static final String VERSION = "1.38a";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -171,24 +171,19 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 	
 	public Point getPreferredLocation() {
-		int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+		if (!IJ.isJava14()) return new Point(0, 0);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Rectangle maxBounds = ge.getMaximumWindowBounds();
 		int ijX = Prefs.getInt(IJ_X,-99);
 		int ijY = Prefs.getInt(IJ_Y,-99);
-		if (ijX>=0 && ijY>0 && ijX<(screenWidth-75))
+		if (ijX>=0 && ijY>0 && ijX<(maxBounds.x+maxBounds.width-75))
 			return new Point(ijX, ijY);
-			
 		Dimension tbsize = toolbar.getPreferredSize();
-		int windowWidth = tbsize.width+10;
-		double percent;
-		if (screenWidth > 832)
-			percent = 0.8;
-		else
-			percent = 0.9;
-		int windowX = (int)(percent * (screenWidth - windowWidth));
-		if (windowX < 10)
-			windowX = 10;
-		int windowY = 32;
-		return new Point(windowX, windowY);
+		int ijWidth = tbsize.width+10;
+		double percent = maxBounds.width>832?0.8:0.9;
+		ijX = (int)(percent*(maxBounds.width-ijWidth));
+		if (ijX<10) ijX = 10;
+		return new Point(ijX, maxBounds.y);
 	}
 	
 	void showStatus(String s) {
@@ -434,6 +429,10 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	public static void main(String args[]) {
+		if (System.getProperty("java.version").substring(0,3).compareTo("1.4")<0) {
+			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.4.1 or later.");
+			System.exit(0);
+		}
 		boolean noGUI = false;
 		int nArgs = args!=null?args.length:0;
 		for (int i=0; i<nArgs; i++) {

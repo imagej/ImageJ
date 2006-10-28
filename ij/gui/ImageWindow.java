@@ -12,7 +12,7 @@ import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 
 /** A frame for displaying images. */
-public class ImageWindow extends Frame implements FocusListener, WindowListener {
+public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener {
 
 	protected ImagePlus imp;
 	protected ImageJ ij;
@@ -21,11 +21,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private int newWidth, newHeight;
 	protected boolean closed;
 	private boolean newCanvas;
+	private static Rectangle maxWindow;
+	private Rectangle maxBounds;
 		
 	private static final int XINC = 8;
 	private static final int YINC = 12;
 	private static final int TEXT_GAP = 10;
-	private static final int MENU_BAR_HEIGHT = 40;
 	private static int xbase = -1;
 	private static int ybase;
 	private static int xloc;
@@ -69,6 +70,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		add(ic);
  		addFocusListener(this);
  		addWindowListener(this);
+ 		addWindowStateListener(this);
  		addKeyListener(ij);
 		setResizable(true);
 		WindowManager.addWindow(this);
@@ -114,16 +116,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private void setLocationAndSize(boolean updating) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
+		if (maxWindow==null)
+			maxWindow = getMaxWindow();
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (xbase==-1) {
-			Rectangle ijBounds = ij!=null?ij.getBounds():new Rectangle(10,5,0,0);
-			if (IJ.isMacintosh())
-				ijBounds.height += 24;
 			count = 0;
-			xbase = 5;
-			ybase = ijBounds.y+ijBounds.height;
-			if (ybase>140) ybase = ijBounds.height;
+			xbase = maxWindow.x + 5;
+			ybase = maxWindow.y;
 			xloc = xbase;
 			yloc = ybase;
 		}
@@ -131,41 +131,50 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		int y = yloc;
 		xloc += XINC;
 		yloc += YINC;
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		count++;
 		if (count%6==0) {
 			xloc = xbase;
 			yloc = ybase;
 		}
 
-		int taskbarHeight = IJ.isWindows()?30:0;
 		int sliderHeight = (this instanceof StackWindow)?20:0;
-		int screenHeight = screen.height-MENU_BAR_HEIGHT-taskbarHeight-sliderHeight;
+		int screenHeight = maxWindow.height-sliderHeight;
 		double mag = 1;
-		while (xbase+XINC*4+width*mag>screen.width || ybase+height*mag>screenHeight) {
+		while (xbase+XINC*4+width*mag>maxWindow.width || ybase+height*mag>screenHeight) {
 			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
 			if (mag2==mag)
 				break;
 			mag = mag2;
 		}
-		ic.setMagnification(mag);
 		
 		if (mag<1.0) {
 			initialMagnification = mag;
 			ic.setDrawingSize((int)(width*mag), (int)(height*mag));
 		}
+		ic.setMagnification(mag);
 		if (y+height*mag>screenHeight)
 			y = ybase;
         if (!updating) setLocation(x, y);
 		if (Prefs.open100Percent && ic.getMagnification()<1.0) {
 			while(ic.getMagnification()<1.0)
 				ic.zoomIn(0, 0);
-			setSize(Math.min(width, screen.width-x), Math.min(height, screenHeight-y));
+			setSize(Math.min(width, maxWindow.width-x), Math.min(height, screenHeight-y));
 			validate();
 		} else 
 			pack();
+		maxBounds = getMaximumBounds();
+		setMaximizedBounds(maxBounds);
 	}
 				
+	Rectangle getMaxWindow() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Rectangle maxWindow = ge.getMaximumWindowBounds();
+		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
+		maxWindow.y += ijSize.height;
+		maxWindow.height -= ijSize.height;
+		return maxWindow;
+	}
+
 	public double getInitialMagnification() {
 		return initialMagnification;
 	}
@@ -310,6 +319,48 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		return ImagePlus.getClipboard();
 	}
 	
+	public Rectangle getMaximumBounds() {
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		maxWindow = getMaxWindow();
+		int extraHeight = 40;
+		if (this instanceof StackWindow) extraHeight += 25;
+		if (IJ.isWindows()) extraHeight += 20;
+		double maxHeight = maxWindow.height-extraHeight-5;
+		double maxWidth = maxWindow.width;
+		double mAspectRatio = maxWidth/maxHeight;
+		double iAspectRatio = (double)width/height;
+		int wWidth, wHeight;
+		if (iAspectRatio>=mAspectRatio) {
+			wWidth = (int)maxWidth;
+			wHeight = (int)(maxWidth/iAspectRatio);
+		} else {
+			wHeight = (int)maxHeight;
+			wWidth = (int)(maxHeight*iAspectRatio);
+		}
+		int xloc = (int)(maxWidth-wWidth)/2;
+		if (xloc<0) xloc = 0;
+		return new Rectangle(xloc, maxWindow.y, wWidth, wHeight+extraHeight);
+	}
+
+	public void maximize() {
+		if (maxBounds==null) return;
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		double mag = Math.floor(maxBounds.height*100.0/height)/100.0;
+		ic.setMagnification2(mag);
+		ic.setSrcRect(new Rectangle(0, 0, width, height));
+		ic.setDrawingSize((int)(width*mag), (int)(height*mag));
+		validate();
+	}
+	
+	public void minimize() {
+		ic.setMagnification2(ic.saveMag);
+		ic.setSrcRect(ic.saveSrcRect);
+		ic.setDrawingSize(ic.saveDrawingSize.width, ic.saveDrawingSize.height);
+		validate();
+	}
+
 	/** Has this window been closed? */
 	public boolean isClosed() {
 		return closed;
@@ -349,6 +400,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		}
 	}
 	
+	public void windowStateChanged(WindowEvent e) {
+		int oldState = e.getOldState();
+		int newState = e.getNewState();
+		//IJ.log("WSC: "+getBounds()+" "+oldState+" "+newState);
+		if ((oldState & Frame.MAXIMIZED_BOTH) == 0 && (newState & Frame.MAXIMIZED_BOTH) != 0)
+			maximize();
+		else if ((oldState & Frame.MAXIMIZED_BOTH) != 0 && (newState & Frame.MAXIMIZED_BOTH) == 0)
+			minimize();
+	}
+
 	public void windowClosed(WindowEvent e) {}
 	public void windowDeactivated(WindowEvent e) {}
 	public void focusLost(FocusEvent e) {}

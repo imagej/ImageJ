@@ -34,7 +34,7 @@
 
 
   <target name="run" depends="build" description="Build and run ImageJ.">
-    <java jar="ij.jar" fork="yes" />
+    <java maxmemory="256m" jar="ij.jar" fork="yes" />
   </target>
   
 

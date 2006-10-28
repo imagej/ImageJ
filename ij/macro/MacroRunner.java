@@ -13,6 +13,7 @@ public class MacroRunner implements Runnable {
 	private int address;
 	private String name;
 	private Thread thread;
+	private String argument;
 
 	/** Create a new object that interprets macro source in a separate thread. */
 	public MacroRunner(String macro) {
@@ -22,7 +23,17 @@ public class MacroRunner implements Runnable {
 		thread.start();
 	}
 
-	/** Create a new object that interprets macro source in a separate thread. */
+	/** Create a new object that interprets macro source in a 
+		separate thread, and also passing a string argument. */
+	public MacroRunner(String macro, String argument) {
+		this.macro = macro;
+		this.argument = argument;
+		thread = new Thread(this, "Macro$"); 
+		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
+		thread.start();
+	}
+
+	/** Create a new object that interprets a macro file using a separate thread. */
 	public MacroRunner(File file) {
 		int size = (int)file.length();
 		if (size<=0)
@@ -61,9 +72,11 @@ public class MacroRunner implements Runnable {
 
 	public void run() {
 		try {
-			if (pgm==null)
-				new Interpreter().run(macro);
-			else
+			if (pgm==null) {
+				Interpreter interp = new Interpreter();
+				interp.argument = argument;
+				interp.run(macro);
+			} else
 				new Interpreter().runMacro(pgm, address, name);
 		} catch(Throwable e) {
 			Interpreter.abort();

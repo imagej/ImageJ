@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.lang.reflect.*; 
 import ij.gui.*;
-import ij.util.Java2;
+import ij.util.*;
 
 /**
 This abstract class is the superclass for classes that process
@@ -869,13 +869,22 @@ public abstract class ImageProcessor extends Object {
 		}
 	}
 
-	/** Draws a string at the current location using the current fill/draw value. */
+	/** Draws a string at the current location using the current fill/draw value.
+        Draws multiple lines if the string contains newline characters. */
 	public void drawString(String s) {
-		if (s.equals(""))
-			return;
+		if (s==null || s.equals("")) return;
 		setupFrame();
-		if (ij.IJ.isMacOSX())
-			s += " ";
+		if (ij.IJ.isMacOSX()) s += " ";
+		if (s.indexOf("\n")==-1)
+			drawString2(s);
+		else {
+			String[] s2 = Tools.split(s, "\n");
+			for (int i=0; i<s2.length; i++)
+				drawString2(s2[i]);
+		}
+	}
+
+	private void drawString2(String s) {
 		int w =  getStringWidth(s);
 		int cxx = cx;
 		if (justification==CENTER_JUSTIFY)

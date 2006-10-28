@@ -303,7 +303,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
    * @param defaultItem	the menu item initially selected
    */
    public void addChoice(String label, String[] items, String defaultItem) {
-		Label theLabel = makeLabel(label);
+   		String label2 = label;
+   		if (label2.indexOf('_')!=-1)
+   			label2 = label2.replace('_', ' ');
+		Label theLabel = makeLabel(label2);
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;

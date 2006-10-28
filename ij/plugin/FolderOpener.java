@@ -39,6 +39,7 @@ public class FolderOpener implements PlugIn {
 		
 		IJ.register(FolderOpener.class);
 		list = sortFileList(list);
+		if (list==null) return;
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
 		int width=0,height=0,depth=0,bitDepth=0;
 		ImageStack stack = null;
@@ -49,8 +50,6 @@ public class FolderOpener implements PlugIn {
 		IJ.resetEscape();		
 		try {
 			for (int i=0; i<list.length; i++) {
-				if (list[i].endsWith(".txt")||list[i].equals("Thumbs.db"))
-					continue;
 				IJ.redirectErrorMessages();
 				ImagePlus imp = (new Opener()).openImage(directory, list[i]);
 				if (imp!=null) {
@@ -101,8 +100,6 @@ public class FolderOpener implements PlugIn {
 			int count = 0;
 			int counter = 0;
 			for (int i=start-1; i<list.length; i++) {
-				if (list[i].endsWith(".txt")||list[i].equals("Thumbs.db"))
-					continue;
 				if ((counter++%increment)!=0)
 					continue;
 				Opener opener = new Opener();
@@ -236,12 +233,37 @@ public class FolderOpener implements PlugIn {
 		return true;
 	}
 
-	String[] sortFileList(String[] list) {
+	String[] sortFileList(String[] rawlist) {
+		int count = 0;
+		for (int i=0; i< rawlist.length; i++) {
+			String name = rawlist[i];
+			if (name.startsWith(".")||name.equals("Thumbs.db")||name.endsWith(".txt"))
+				rawlist[i] = null;
+			else
+				count++;
+		}
+		if (count==0) return null;
+		String[] list = rawlist;
+		if (count<rawlist.length) {
+			list = new String[count];
+			int index = 0;
+			for (int i=0; i< rawlist.length; i++) {
+				if (rawlist[i]!=null)
+					list[index++] = rawlist[i];
+			}
+		}
 		int listLength = list.length;
-		int first = listLength>1?1:0;
-		if ((list[first].length()==list[listLength-1].length())&&(list[first].length()==list[listLength/2].length()))
-			{ij.util.StringSorter.sort(list); return list;} 
-		int maxDigits = 15;     
+		boolean allSameLength = true;
+		int len0 = list[0].length();
+		for (int i=0; i<listLength; i++) {
+			if (list[i].length()!=len0) {
+				allSameLength = false;
+				break;
+			}
+		}
+		if (allSameLength)
+			{ij.util.StringSorter.sort(list); return list;}
+		int maxDigits = 15;		
 		String[] list2 = null;	
 		char ch;	
 		for (int i=0; i<listLength; i++) {
@@ -252,6 +274,7 @@ public class FolderOpener implements PlugIn {
 				if (ch>=48&&ch<=57) num += ch;
 			}
 			if (list2==null) list2 = new String[listLength];
+			if (num.length()==0) num = "aaaaaa";
 			num = "000000000000000" + num; // prepend maxDigits leading zeroes
 			num = num.substring(num.length()-maxDigits);
 			list2[i] = num + list[i];
@@ -260,11 +283,11 @@ public class FolderOpener implements PlugIn {
 			ij.util.StringSorter.sort(list2);
 			for (int i=0; i<listLength; i++)
 				list2[i] = list2[i].substring(maxDigits);
-			return list2;   
+			return list2;	
 		} else {
 			ij.util.StringSorter.sort(list);
 			return list;   
-		}   
+		}	
 	}
 
 }
@@ -325,20 +348,13 @@ class FolderOpenerDialog extends GenericDialog {
 		if (scale<5.0) scale = 5.0;
 		if (scale>100.0) scale = 100.0;
 		
-		if (n<1)
-			n = fileCount;
-		if (start<1 || start>fileCount)
-			start = 1;
-		if (start+n-1>fileCount) {
+		if (n<1) n = fileCount;
+		if (start<1 || start>fileCount) start = 1;
+		if (start+n-1>fileCount)
 			n = fileCount-start+1;
-			//TextField tf = (TextField)numberField.elementAt(0);
-			//tf.setText(""+nImages);
-		}
-		if (inc<1)
-			inc = 1;
+		if (inc<1) inc = 1;
  		TextField tf = (TextField)stringField.elementAt(0);
  		String filter = tf.getText();
-		// IJ.write(nImages+" "+startingImage);
  		if (!filter.equals("") && !filter.equals("*")) {
  			int n2 = 0;
  			for (int i=0; i<list.length; i++) {
@@ -360,9 +376,9 @@ class FolderOpenerDialog extends GenericDialog {
 			bytesPerPixel = 4;
 		width = (int)(width*scale/100.0);
 		height = (int)(height*scale/100.0);
-		int n2 = (n*depth)/inc;
-		if (n2<0)
-			n2 = 0;
+		int n2 = ((fileCount-start+1)*depth)/inc;
+		if (n2<0) n2 = 0;
+		if (n2>n) n2 = n;
 		double size = ((double)width*height*n2*bytesPerPixel)/(1024*1024);
  		((Label)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
 	}

@@ -127,10 +127,10 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			function = Calibration.NONE;
 		} else if (choiceIndex<=nFits) {
 			function = choiceIndex - 1;
-			if (function>0 && is16Bits) {
-				IJ.error("Calibrate", "Calibration of 16-bit images, except with straight\nline functions, is currently not supported.");
-				return;
-			}
+			//if (function>0 && is16Bits) {
+			//	IJ.error("Calibrate", "Calibration of 16-bit images, except with straight\nline functions, is currently not supported.");
+			//	return;
+			//}
 			x = getData(xText);
 			y = getData(yText);
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {
