@@ -32,6 +32,7 @@
       dir = getDirectory("Choose a Directory ");
   if (ignore)
       str = toLowerCase(str);
+  count = 0;
   find(dir);
   if (indexOf(str, "|")==-1)
       return ""+str+"|"+contents+"|"+ignore+"|"+macros;
@@ -49,6 +50,7 @@
               if (ignore)
                   s2 = toLowerCase(s);
               if (indexOf(s2,str)!=-1) {
+                  count++;
                   print("");
                   print(dir+list[i]);
                   lines = split(s, "\n");
@@ -73,6 +75,10 @@
               }
           }
       }
+      if (count==1)
+          showStatus("1 matche");
+      else
+          showStatus(count+" matches");
   }
 
   function valid(name) {

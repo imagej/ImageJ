@@ -14,7 +14,7 @@ public class ColorPicker extends ImagePlus implements PlugIn {
 
     public void run(String arg) {
         ImagePlus imp = WindowManager.getImage(id);
-        if (imp!=null) {
+        if (imp!=null && imp.getWindow()!=null) {
             imp.getWindow().toFront();
             return;
         }

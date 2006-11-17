@@ -32,7 +32,7 @@ public abstract class ImageProcessor extends Object {
 
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
-		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13;
+		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
 	static final String WRONG_LENGTH = "width*height!=pixels.length";
 	
@@ -1316,6 +1316,10 @@ public abstract class ImageProcessor extends Object {
 
 	/** Performs a square root transform on the image or ROI. */
 	public void sqrt() {process(SQRT, 0.0);}
+
+	/** If this is a 32-bit or signed 16-bit image, performs an 
+		absolute value transform, otherwise does nothing. */
+	public void abs() {}
 
 	/** Pixels less than 'value' are set to 'value'. */
 	public void min(double value) {process(MINIMUM, value);}

@@ -379,6 +379,9 @@ public class FloatProcessor extends ImageProcessor {
 						else
 							v2 = (float)Math.sqrt(v1);
 						break;
+					case ABS:
+							v2 = (float)Math.abs(v1);
+						break;
 					case MINIMUM:
 						if (v1<value)
 							v2 = (float)value;
@@ -415,6 +418,7 @@ public class FloatProcessor extends ImageProcessor {
 	public void exp() {process(EXP, 0.0);}
 	public void sqr() {process(SQR, 0.0);}
 	public void sqrt() {process(SQRT, 0.0);}
+	public void abs() {process(ABS, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}
 	public void max(double value) {process(MAXIMUM, value);}
 

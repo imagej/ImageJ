@@ -43,6 +43,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected double mag = 1.0;
 	protected String name;
 	protected ImageProcessor cachedMask;
+	protected Color handleColor = Color.white;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -449,17 +450,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (size>6000.0) {
 			g.setColor(Color.black);
 			g.fillRect(x,y,5,5);
-			g.setColor(Color.white);
+			g.setColor(handleColor);
 			g.fillRect(x+1,y+1,3,3);
 		} else if (size>1500.0) {
 			g.setColor(Color.black);
 			g.fillRect(x+1,y+1,4,4);
-			g.setColor(Color.white);
+			g.setColor(handleColor);
 			g.fillRect(x+2,y+2,2,2);
 		} else {			
 			g.setColor(Color.black);
 			g.fillRect(x+1,y+1,3,3);
-			g.setColor(Color.white);
+			g.setColor(handleColor);
 			g.fillRect(x+2,y+2,1,1);
 		}
 	}

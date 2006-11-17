@@ -1,5 +1,6 @@
 package ij.macro;
 import ij.*;
+import java.util.Hashtable;
 
 /** An object of this type is a tokenized macro file and the associated symbol table. */
 public class Program implements MacroConstants {
@@ -15,6 +16,7 @@ public class Program implements MacroConstants {
 	int[] code = new int[maxProgramSize];
 	Variable[] globals;
 	boolean hasVars;
+    Hashtable menus;
 
 	public Program() {
 		if (systemTable!=null) {
@@ -234,5 +236,9 @@ public class Program implements MacroConstants {
 		}
 		return str;
 	}
+    
+    public Hashtable getMenus() {
+        return menus;
+    }
 
 } // Program

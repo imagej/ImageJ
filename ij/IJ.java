@@ -514,7 +514,7 @@ public class IJ {
 			return;
 		}
 		if (ij!=null) {
-			if (msg.startsWith("<html>") && isJava2())
+			if (msg!=null && msg.startsWith("<html>") && isJava2())
 				new HTMLDialog(title, msg);
 			else
 				new MessageDialog(ij, title, msg);

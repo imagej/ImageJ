@@ -138,7 +138,7 @@ public class StackEditor implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
-			String title = label!=null&&!label.equals("")?label:getDigits(i);
+			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
 			ImagePlus imp2 = new ImagePlus(title, stack.getProcessor(i));
 			imp2.setCalibration(cal);
 			imp2.show();
@@ -152,9 +152,9 @@ public class StackEditor implements PlugIn {
 		imp.unlock();
 	}
 
-	String getDigits(int n) {
+	String getTitle(ImagePlus imp, int n) {
 		String digits = "00000000"+n;
-		return digits.substring(digits.length()-4,digits.length());
+		return imp.getShortTitle()+"-"+digits.substring(digits.length()-4,digits.length());
 	}
 
 }

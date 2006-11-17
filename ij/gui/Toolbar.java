@@ -3,13 +3,15 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Hashtable;
 import ij.*;
 import ij.plugin.frame.Recorder; 
 import ij.plugin.frame.Editor; 
 import ij.plugin.MacroInstaller;
+import ij.macro.Program;
 
 /** The ImageJ toolbar. */
-public class Toolbar extends Canvas implements MouseListener, MouseMotionListener, ItemListener {
+public class Toolbar extends Canvas implements MouseListener, MouseMotionListener, ItemListener, ActionListener {
 
 	public static final int RECTANGLE = 0;
 	public static final int OVAL = 1;
@@ -55,6 +57,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private int mpPrevious = RECTANGLE;
 	private String[] names = new String[NUM_TOOLS];
 	private String[] icons = new String[NUM_TOOLS];
+    private PopupMenu[] menus = new PopupMenu[NUM_TOOLS];
+;
 	private int pc;
 	private String icon;
 	private MacroInstaller macroInstaller;
@@ -184,7 +188,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (down[tool]) { x++; y++;}
 		this.g = g;
 		if (tool>=SPARE1 && tool<=SPARE9 && icons[tool]!=null) {
-			drawIcon(g, icons[tool], x, y);
+			drawIcon(g, tool, x, y);
 			return;
 		}
 		switch (tool) {
@@ -217,17 +221,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case LINE:
 				xOffset = x; yOffset = y;
 				m(0,10); d(16,4);
-				drawTriangle(11,12);
+				drawTriangle(11,13);
 				return;
 			case POLYLINE:
 				xOffset = x; yOffset = y;
 				m(14,6); d(11,3); d(1,3); d(1,4); d(6,9); d(2,13);
-				drawTriangle(11,12);
+				drawTriangle(11,13);
 				return;
 			case FREELINE:
 				xOffset = x; yOffset = y;
 				m(16,4); d(14,6); d(12,6); d(9,3); d(8,3); d(6,7); d(2,11); d(1,11);
-				drawTriangle(11,12);
+				drawTriangle(11,13);
 				return;
 			case POINT:
 				xOffset = x; yOffset = y;
@@ -292,8 +296,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		m(0,0); d(4,0); m(1,1); d(3,1); dot(2,2);
 	}
 	
-	void drawIcon(Graphics g, String icon, int x, int y) {
+	void drawIcon(Graphics g, int tool, int x, int y) {
 		if (null==g) return;
+		icon = icons[tool];
 		this.icon = icon;
 		int length = icon.length();
 		int x1, y1, x2, y2;
@@ -332,6 +337,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				default: break;
 			}
 			if (pc>=length) break;
+		}
+		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
+			xOffset = x; yOffset = y;
+			drawTriangle(13, 14);
 		}
 	}
 	
@@ -597,13 +606,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				newTool = toolID(i);
 		}
 		if (newTool==SPARE9) {
-			//drawTool(newTool, true);
-			//IJ.wait(50);
-			//drawTool(newTool, false);
 			showSwitchPopupMenu(e);
 			return;
 		}
 		if (!isValidTool(newTool)) return;
+		if (menus[newTool]!=null && menus[newTool].getItemCount()>0) {
+            menus[newTool].show(e.getComponent(), e.getX(), e.getY());
+			return;
+		}
 		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=DOUBLE_CLICK_THRESHOLD;
  		mouseDownTime = System.currentTimeMillis();
 		if (!doubleClick) {
@@ -824,6 +834,22 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 
+	public void actionPerformed(ActionEvent e) {
+		MenuItem item = (MenuItem)e.getSource();
+		String cmd = e.getActionCommand();
+		PopupMenu popup = (PopupMenu)item.getParent();
+		int tool = -1;
+		for (int i=SPARE1; i<NUM_TOOLS; i++) {
+			if (popup==menus[i]) {
+				tool = i;
+				break;
+			}
+		}
+		if (tool==-1) return;
+		if (macroInstaller!=null)
+			macroInstaller.runMenuTool(names[tool], cmd);
+    }
+
 	public Dimension getPreferredSize(){
 		return ps;
 	}
@@ -845,7 +871,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');
 		boolean hasIcon = index>=0 && (toolTip.length()-index)>4;
-		int tool =  -1;
+		int tool =-1;
 		if (names[SPARE1]==null)
 			tool = SPARE1;
 		if (tool==-1) {
@@ -856,12 +882,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				}			
 			}
 		}
-		//if (tool==-1 && names[SPARE1].indexOf("Unused Tool")!=-1)
-		//		tool = SPARE1;
 		if (tool==-1) return -1;
 		if (hasIcon) {
 			icons[tool] = toolTip.substring(index+1);
-			names[tool] = toolTip.substring(0, index);
+			if (index>0 && toolTip.charAt(index-1)==' ')
+				names[tool] = toolTip.substring(0, index-1);
+			else
+				names[tool] = toolTip.substring(0, index);
 		} else {
 			if (toolTip.endsWith("-"))
 				toolTip = toolTip.substring(0, toolTip.length()-1);
@@ -869,8 +896,35 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				toolTip = toolTip.substring(0, toolTip.length()-2);
 			names[tool] = toolTip;
 		}
+        if (tool==current && (names[tool].indexOf("Action Tool")!=-1||names[tool].indexOf("Unused Tool")!=-1))
+        	setTool(RECTANGLE);
+        if (names[tool].endsWith(" Menu Tool"))
+            installMenu(tool);
 		return tool;
 	}
+    
+    void installMenu(int tool) {
+        Program pgm = macroInstaller.getProgram();
+        Hashtable h = pgm.getMenus();
+        if (h==null) return;
+        String[] commands = (String[])h.get(names[tool]);
+        if (commands==null) return;
+		if (menus[tool]==null) {
+			menus[tool] = new PopupMenu("");
+			add(menus[tool] );
+		} else
+			menus[tool].removeAll();
+        for (int i=0; i<commands.length; i++) {
+			if (commands[i].equals("-"))
+				menus[tool].addSeparator();
+			else {
+				MenuItem mi = new MenuItem(commands[i]);
+				mi.addActionListener(this);
+				menus[tool].add(mi);
+			}
+        }
+        if (tool==current) setTool(RECTANGLE);
+    }
 
 	/** Used by the MacroInstaller class to install macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
@@ -878,10 +932,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			for (int i=SPARE1; i<NUM_TOOLS-1; i++) {
 				names[i] = null;
 				icons[i] = null;
+				if (menus[i]!=null) menus[i].removeAll();
 			}
 	    }
-		int tool = addTool(name);
 		this.macroInstaller = macroInstaller;
+        addTool(name);
 	}
 			
 	void runMacroTool(int id) {

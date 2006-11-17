@@ -40,6 +40,8 @@ public class ShapeRoi extends Roi {
 
     private static final int OR=0, AND=1, XOR=2, NOT=3;
     
+    private static final double SHAPE_TO_ROI=-1.0;
+
 	/**The <code>java.awt.Shape</code> encapsulated by this object.*/
 	private Shape shape;
 	
@@ -427,19 +429,19 @@ public class ShapeRoi extends Roi {
 		if (savedRois!=null)
 			return getSavedRois();
 		Vector rois = new Vector();
-		if(shape instanceof Rectangle2D.Double) {
+		if (shape instanceof Rectangle2D.Double) {
 			Roi r = new Roi((int)((Rectangle2D.Double)shape).getX(), (int)((Rectangle2D.Double)shape).getY(), (int)((Rectangle2D.Double)shape).getWidth(), (int)((Rectangle2D.Double)shape).getHeight());
 			rois.addElement(r);
-		} else if(shape instanceof Ellipse2D.Double) {
+		} else if (shape instanceof Ellipse2D.Double) {
 			Roi r = new OvalRoi((int)((Ellipse2D.Double)shape).getX(), (int)((Ellipse2D.Double)shape).getY(), (int)((Ellipse2D.Double)shape).getWidth(), (int)((Ellipse2D.Double)shape).getHeight());
 			rois.addElement(r);
-		} else if(shape instanceof Line2D.Double) {
+		} else if (shape instanceof Line2D.Double) {
 			Roi r = new ij.gui.Line((int)((Line2D.Double)shape).getX1(), (int)((Line2D.Double)shape).getY1(), (int)((Line2D.Double)shape).getX2(), (int)((Line2D.Double)shape).getY2());
 			rois.addElement(r);
-		} else if(shape instanceof Polygon) {
+		} else if (shape instanceof Polygon) {
 			Roi r = new PolygonRoi(((Polygon)shape).xpoints, ((Polygon)shape).ypoints, ((Polygon)shape).npoints, Roi.POLYGON);
 			rois.addElement(r);
-		} else if(shape instanceof GeneralPath) {
+		} else if (shape instanceof GeneralPath) {
 			PathIterator pIter;
 			if (flatten) pIter = getFlatteningPathIterator(shape,flatness);
 			else pIter = shape.getPathIterator(new AffineTransform());
@@ -456,7 +458,24 @@ public class ShapeRoi extends Roi {
 		return array;
 	}
 
-	/**Implements the rules of conversion from <code>java.awt.geom.GeneralPath</code> to <code>ij.gui.Roi</code>.
+	/**Attempts to convert this ShapeRoi into a non-composite Roi.
+	 * @return an ij.gui.Roi object or null
+	 */
+	public Roi shapeToRoi() {
+		if(shape==null || !(shape instanceof GeneralPath))
+			return null;
+		PathIterator pIter = shape.getPathIterator(new AffineTransform());
+		Vector rois = new Vector();
+		double[] params = {SHAPE_TO_ROI};
+		if (!parsePath(pIter, params, null, rois, null))
+			return null;
+		if (rois.size()==1)
+			return (Roi)rois.elementAt(0);
+		else
+			return null;
+	}
+	
+		/**Implements the rules of conversion from <code>java.awt.geom.GeneralPath</code> to <code>ij.gui.Roi</code>.
 	 * @param segments The number of segments that compose the path
 	 * @param linesOnly Indicates wether the GeneralPath object is composed only of SEG_LINETO segments
 	 * @param curvesOnly Indicates wether the GeneralPath object is composed only of SEG_CUBICTO and SEG_QUADTO segments
@@ -769,7 +788,7 @@ public class ShapeRoi extends Roi {
 		PathIterator pIt = shape.getPathIterator(new AffineTransform());
 		Vector h = new Vector(); // handles
 		Vector s = new Vector(); // segment types
-		if(!(parsePath(pIt, null, s, null, h))) return null;
+		if (!(parsePath(pIt, null, s, null, h))) return null;
 		float[] result = new float[7*s.size()];
 		Point2D.Double p;
 		int segType;
@@ -884,6 +903,7 @@ public class ShapeRoi extends Roi {
 		if(handles==null) handles = new Vector();
 		//if(rois==null) rois = new Vector();
 		if(params == null) params = new double[1];
+		boolean shapeToRoi = params[0]==SHAPE_TO_ROI;
 		int subPaths = 0; // the number of subpaths
 		int count = 0;// the number of segments in each subpath w/o SEG_CLOSE; resets to one after each SEG_MOVETO
 		int roiType = Roi.RECTANGLE;
@@ -904,7 +924,8 @@ public class ShapeRoi extends Roi {
 		double uy0 = Double.NaN;
 		double pathLength = 0.0;
 		Shape curve; // temporary reference to a curve segment of the path
-		for(;!pIter.isDone();) {
+		boolean done = false;
+		while (!done) {
 			coords = new double[6];
 			ucoords = new double[6];
 			segType = pIter.currentSegment(coords);
@@ -996,13 +1017,14 @@ public class ShapeRoi extends Roi {
 					break;
 			}
 			pIter.next();
-			if(pIter.isDone()) {
+			done = pIter.isDone() || (shapeToRoi&&rois!=null&&rois.size()==1);
+			if (done) {
 				if(closed && (int)x0!=(int)sX && (int)y0!=(int)sY) { // this may only happen after a SEG_CLOSE
 					xCoords.add(new Integer(((Integer)xCoords.elementAt(0)).intValue()));
 					yCoords.add(new Integer(((Integer)yCoords.elementAt(0)).intValue()));
 				}
 				if (rois!=null) {
-					roiType = guessType(count, linesOnly, curvesOnly, closed);
+					roiType = shapeToRoi?TRACED_ROI:guessType(count, linesOnly, curvesOnly, closed);
 					Roi r = createRoi(xCoords, yCoords, roiType);
 					if (r!=null)
 						rois.addElement(r);

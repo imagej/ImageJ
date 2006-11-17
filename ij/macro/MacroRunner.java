@@ -62,9 +62,16 @@ public class MacroRunner implements Runnable {
 
 	/** Create a new object that runs a tokenized macro in a separate thread. */
 	public MacroRunner(Program pgm, int address, String name) {
+		this(pgm, address, name, null);
+	}
+
+	/** Create a new object that runs a tokenized macro in a separate thread,
+		passing a string argument. */
+	public MacroRunner(Program pgm, int address, String name, String argument) {
 		this.pgm = pgm;
 		this.address = address;
 		this.name = name;
+		this.argument = argument;
 		thread = new Thread(this, name+"_Macro$");
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
 		thread.start();
@@ -72,12 +79,12 @@ public class MacroRunner implements Runnable {
 
 	public void run() {
 		try {
-			if (pgm==null) {
-				Interpreter interp = new Interpreter();
-				interp.argument = argument;
+			Interpreter interp = new Interpreter();
+			interp.argument = argument;
+			if (pgm==null)
 				interp.run(macro);
-			} else
-				new Interpreter().runMacro(pgm, address, name);
+			else
+				interp.runMacro(pgm, address, name);
 		} catch(Throwable e) {
 			Interpreter.abort();
 			IJ.showStatus("");

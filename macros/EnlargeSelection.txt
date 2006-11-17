@@ -3,6 +3,7 @@
 
   pixels = parseFloat(getArgument());
   if (isNaN(pixels)) exit("Distance is invalid: "+getArgument());
+  saveSettings();
   getPixelSize(unit, pixelWidth, pixelHeight);
   n = pixels*pixelWidth;
   decimalPlaces = 0;
@@ -12,8 +13,10 @@
   Dialog.addMessage("Enter negative number to shrink");
   Dialog.show();
   n = Dialog.getNumber();
+  if (n==0) return "0";
   pixels = n/pixelWidth; 
   enlarge(pixels);
+  restoreSettings();
   return toString(pixels); 
 
   function enlarge(n) {
@@ -31,21 +34,12 @@
        setBatchMode(true); 
        getBoundingRect(xbase, ybase, width, height); 
        getSelectionCoordinates(xc,yc); 
+       run("Options...", "iterations=1 count=1"); 
        run("Create Mask"); 
        run("Invert"); 
-       run("Options...", "iterations=1 count=1"); 
        run("Distance Map"); 
-       setThreshold(0, n); 
-       x = xbase + width/2; 
-       y = ybase + height/2; 
-       count = 0; 
-       while(getPixel(x,y)>n) { 
-           if (count++==10000) 
-               exit("Unable to scale selection"); 
-           x = xbase + width*random(); 
-           y = ybase + height*random(); 
-       } 
-       doWand(x, y); 
+       setThreshold(0, n);
+       run("Create Selection");
        close(); 
        selectImage(id); 
        run("Restore Selection"); 
@@ -74,20 +68,11 @@
        if (xbase<=0 || ybase<=0 || xbase+width>=getWidth || ybase+height>=getHeight)
           exit("Cannot shrink selections touching image edge"); 
        getSelectionCoordinates(xc,yc); 
-       run("Create Mask"); 
        run("Options...", "iterations=1 count=1"); 
+       run("Create Mask");
        run("Distance Map"); 
-       setThreshold(0, n); 
-       x = xbase + width/2; 
-       y = ybase + height/2; 
-       count = 0; 
-       while(getPixel(x,y)<=n) { 
-           if (count++==10000) 
-               exit("Unable to scale selection"); 
-           x = xbase + width*random(); 
-           y = ybase + height*random(); 
-       } 
-       doWand(x, y); 
+       setThreshold(n+1, 255);
+       run("Create Selection");
        close(); 
        selectImage(id); 
        run("Restore Selection"); 

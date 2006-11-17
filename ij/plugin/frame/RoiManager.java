@@ -10,8 +10,8 @@ import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
-import ij.util.Tools;
-import ij.macro.Interpreter;
+import ij.util.*;
+import ij.macro.*;
 import ij.measure.Calibration;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
@@ -93,6 +93,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
+		addPopupItem("Sort");
+		addPopupItem("Help");
 		add(pm);
 	}
 
@@ -148,6 +150,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (command.equals("Add Particles"))
 			addParticles();
+		else if (command.equals("Sort"))
+			sort();
+		else if (command.equals("Help"))
+			help();
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -691,6 +697,25 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error(err);
 	}
 
+	void sort() {
+		int n = rois.size();
+		if (n==0) return;
+		String[] labels = new String[n];
+		int index = 0;
+		for (Enumeration en=rois.keys(); en.hasMoreElements();)
+			labels[index++] = (String)en.nextElement();
+		list.removeAll();
+		StringSorter.sort(labels);
+		for (int i=0; i<labels.length; i++)
+			list.add(labels[i]);
+		if (Recorder.record) Recorder.record("roiManager", "Sort");
+	}
+	
+	void help() {
+		String macro = "run('URL...', 'url=http://rsb.info.nih.gov/ij/docs/menus/analyze.html#manager');";
+		new MacroRunner(macro);
+	}
+
 	void split() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
@@ -791,7 +816,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Fill", "Deselect", "Select All", "Combine" or "Split" command. Returns false if <code>cmd</code> 
+		"Fill", "Deselect", "Select All", "Combine", "Split" or "Sort" command. Returns false if <code>cmd</code> 
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
@@ -817,6 +842,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			combine();
 		else if (cmd.equals("split"))
 			split();
+		else if (cmd.equals("sort"))
+			sort();
 		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);

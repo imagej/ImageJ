@@ -168,7 +168,7 @@ public class Line extends Roi {
 		}
 		if (state!=CONSTRUCTING) {
 			int size2 = HANDLE_SIZE/2;
-			drawHandle(g, sx1-size2, sy1-size2);
+			handleColor=ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 	   }

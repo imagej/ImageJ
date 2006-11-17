@@ -5,6 +5,9 @@
    var brushWidth = 10;
    var floodType = "8-connected"; 
 
+   // macro "AutoRun" {print('AutoRun');}
+
+
    macro "Unused Tool -" {}
    macro "Unused Tool -" {}
 

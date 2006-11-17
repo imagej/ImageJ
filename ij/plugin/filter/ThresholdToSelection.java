@@ -1,5 +1,5 @@
 /*
- * This plugin implements the Edit/Selection/From Mask command.
+ * This plugin implements the Edit/Selection/Create Mask command.
  * It is based on a proposal by Tom Larkworthy.
  * Written and public domained in June 2006 by Johannes E. Schindelin
  */
@@ -30,7 +30,7 @@ public class ThresholdToSelection implements PlugInFilter {
 		w = ip.getWidth();
 		h = ip.getHeight();
 
-		image.setRoi(getShapeRoi());
+		image.setRoi(getRoi());
 	}
 
 	final boolean selected(int x, int y) {
@@ -134,7 +134,7 @@ public class ThresholdToSelection implements PlugInFilter {
 	 * outline[x] is the outline which is currently unclosed at the
 	 * lower right corner of the previous row.
 	 */
-	ShapeRoi getShapeRoi() {
+	Roi getRoi() {
 		boolean[] prevRow, thisRow;
 		ArrayList polygons = new ArrayList();
 		Outline[] outline;
@@ -251,7 +251,12 @@ public class ThresholdToSelection implements PlugInFilter {
 		for (int i = 0; i < polygons.size(); i++)
 			path.append((Polygon)polygons.get(i), false);
 
-		return new ShapeRoi(path);
+		ShapeRoi shape = new ShapeRoi(path);
+		Roi roi = shape!=null?shape.shapeToRoi():null; // try to convert to non-composite ROI
+		if (roi!=null)
+			return roi;
+		else
+			return shape;
 	}
 
 	public int setup(String arg, ImagePlus imp) {

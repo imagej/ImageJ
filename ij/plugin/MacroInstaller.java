@@ -9,13 +9,13 @@ import ij.text.*;
 import ij.util.Tools;
 import ij.io.*;
 import ij.macro.MacroConstants;
-																																																																																																																																																																																																																																																								 import java.util.*;																																																																																																																																																					   
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                import java.util.*;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
 /** This plugin implements the Plugins/Macros/Install Macros command. It is also used by the Editor
 	class to install macro in menus and by the ImageJ class to install macros at startup. */
 public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
-	public static final int MAX_SIZE = 28000, MAX_MACROS=60, XINC=10, YINC=18;
+	public static final int MAX_SIZE = 28000, MAX_MACROS=75, XINC=10, YINC=18;
 	public static final char commandPrefix = '^';
 	static final String commandPrefixS = "^";
 	
@@ -33,7 +33,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private String anonymousName;
 	private Menu macrosMenu;
 	private int autoRunCount, autoRunAndHideCount;
-	private boolean openingStartupMacros;
+	private boolean openingStartupMacrosInEditor;
 	
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
@@ -42,11 +42,10 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		if (path==null || path.equals(""))
 			path = showDialog();
 		if (path==null) return;
+		openingStartupMacrosInEditor = path.indexOf("StartupMacros")!=-1;
 		String text = open(path);
-		if (text!=null) {
-			openingStartupMacros = path.indexOf("StartupMacros")!=-1;
+		if (text!=null)
 			install(text);
-		}
 	}
 			
 	void install() {
@@ -68,9 +67,10 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macroNames = new String[MAX_MACROS];
 		int itemCount = macrosMenu.getItemCount();
 		int baseCount = macrosMenu==Menus.getMacrosMenu()?5:5;
-		if (itemCount>baseCount)
+		if (itemCount>baseCount) {
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
+		}
 		if (pgm.hasVars() && pgm.getGlobals()==null)
 			new Interpreter().saveGlobals(pgm);
 		for (int i=0; i<code.length; i++) {
@@ -91,12 +91,14 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					if (name.indexOf('-')!=-1 && (name.indexOf("Tool")!=-1||name.indexOf("tool")!=-1)) {
 						Toolbar.getInstance().addMacroTool(name, this, toolCount);
 						toolCount++;
-                    } else if (name.startsWith("AutoRun") && autoRunCount==0 && !openingStartupMacros) {
-                        new MacroRunner(pgm, macroStarts[count], name);
-                        autoRunCount++;
-                        if (name.equals("AutoRunAndHide"))
-                        	autoRunAndHideCount++;
-                        count--;
+					} else if (name.startsWith("AutoRun")) {
+						if (autoRunCount==0 && !openingStartupMacrosInEditor) {
+							new MacroRunner(pgm, macroStarts[count], name, null);
+							if (name.equals("AutoRunAndHide"))
+								autoRunAndHideCount++;
+						}
+						autoRunCount++;
+						count--;
 					} else if (!name.endsWith("Tool Selected")){ 
 						addShortcut(name);
 						macrosMenu.add(new MenuItem(name));
@@ -158,10 +160,10 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		}
 	}
 
-    /** Installs a macro set contained in ij.jar. */
+	 /** Installs a macro set contained in ij.jar. */
 	public void installFromIJJar(String path) {
-        String text = openFromIJJar(path);
-        if (text!=null) install(text);
+		  String text = openFromIJJar(path);
+		  if (text!=null) install(text);
 	}
 
 	void removeShortcuts() {
@@ -205,13 +207,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		if (shortcuts.get(new Integer(code))!=null) {
 			if (shortcutsInUse==null)
 				shortcutsInUse = "\n \n";
-			shortcutsInUse += "    " + name + "\n";
+			shortcutsInUse += "	  " + name + "\n";
 			inUseCount++;
 			return;
 		}
 		shortcuts.put(new Integer(code), commandPrefix+name);
 		nShortcuts++;
-		//IJ.log("addShortcut3: "+name+"   "+shortcut+"   "+code);
+		//IJ.log("addShortcut3: "+name+"	  "+shortcut+"	  "+code);
 	}
 	
 	 String showDialog() {
@@ -248,49 +250,59 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			return null;
 		}
 	}
-    
-    /** Returns a text file contained in ij.jar. */
-    public String openFromIJJar(String path) {
+	 
+	 /** Returns a text file contained in ij.jar. */
+	 public String openFromIJJar(String path) {
 		//ImageJ ij = IJ.getInstance();
 		//if (ij==null) return null;
 		String text = null;
-        try {
+		  try {
 			InputStream is = this.getClass().getResourceAsStream(path);
-			//IJ.log(is+"  "+path);
+			//IJ.log(is+"	"+path);
 			if (is==null) return null;
-            InputStreamReader isr = new InputStreamReader(is);
-            StringBuffer sb = new StringBuffer();
-            char [] b = new char [8192];
-            int n;
-            while ((n = isr.read(b)) > 0)
-                sb.append(b,0, n);
-            text = sb.toString();
-        }
-        catch (IOException e) {}
-        return text;
+				InputStreamReader isr = new InputStreamReader(is);
+				StringBuffer sb = new StringBuffer();
+				char [] b = new char [8192];
+				int n;
+				while ((n = isr.read(b)) > 0)
+					 sb.append(b,0, n);
+				text = sb.toString();
+		  }
+		  catch (IOException e) {}
+		  return text;
 	}
 	
 	//void runMacro() {
-	//	new MacroRunner(text);
+	// new MacroRunner(text);
 	//}
 
 	public boolean runMacroTool(String name) {
 		for (int i=0; i<nMacros; i++) {
 			if (macroNames[i].startsWith(name)) {
-				new MacroRunner(pgm, macroStarts[i], name);
+				new MacroRunner(pgm, macroStarts[i], name, null);
 				return true;
 			}
 		}
 		return false;
 	}
 	
+	public boolean runMenuTool(String name, String command) {
+		for (int i=0; i<nMacros; i++) {
+			if (macroNames[i].startsWith(name)) {
+				new MacroRunner(pgm, macroStarts[i], name, command);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static boolean runMacroCommand(String name) {
 		if (instance==null) return false;
 		if (name.startsWith(commandPrefixS))
 			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
 			if (name.equals(instance.macroNames[i])) {
-				new MacroRunner(instance.pgm, instance.macroStarts[i], name);
+				new MacroRunner(instance.pgm, instance.macroStarts[i], name, null);
 				return true;
 			}
 		}
@@ -300,12 +312,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public void runMacro(String name) {
 		if (anonymousName!=null && name.equals(anonymousName)) {
 			//IJ.log("runMacro: "+anonymousName);
-			new MacroRunner(pgm, 0, anonymousName);
+			new MacroRunner(pgm, 0, anonymousName, null);
 			return;
 		}
 		for (int i=0; i<nMacros; i++)
 			if (name.equals(macroNames[i])) {
-				new MacroRunner(pgm, macroStarts[i], name);
+				new MacroRunner(pgm, macroStarts[i], name, null);
 				return;
 			}
 	}
@@ -313,6 +325,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public int getMacroCount() {
 		return nMacros;
 	}
+    
+    public Program getProgram() {
+		return pgm;
+	}
+
 		
 	/** Returns true if an "AutoRunAndHide" macro was run/installed. */
 	public boolean isAutoRunAndHide() {
@@ -321,7 +338,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
-		openingStartupMacros = fileName.startsWith("StartupMacros");
+		openingStartupMacrosInEditor = fileName.startsWith("StartupMacros");
 	}
 
 	public void actionPerformed(ActionEvent evt) {

@@ -402,7 +402,10 @@ public class ShortProcessor extends ImageProcessor {
 							v2 = v1*v1;
 						break;
 					case SQRT:
-							v2 = (int)Math.sqrt(v1);
+						v2 = (int)Math.sqrt(v1);
+						break;
+					case ABS:
+						v2 = (int)Math.abs(v1);
 						break;
 					case MINIMUM:
 						if (v1<value)
@@ -450,6 +453,7 @@ public class ShortProcessor extends ImageProcessor {
 	public void exp() {process(EXP, 0.0);}
 	public void sqr() {process(SQR, 0.0);}
 	public void sqrt() {process(SQRT, 0.0);}
+	public void abs() {process(ABS, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}
 	public void max(double value) {process(MAXIMUM, value);}
 

@@ -171,11 +171,13 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("abs")) {
-			if (!isFloat(ip)) return;
-			float[] pixels = (float[])ip.getPixels();
-			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++)
-				pixels[i] = Math.abs(pixels[i]);
-			ip.resetMinAndMax();
+			if (!((ip instanceof FloatProcessor)||imp.getCalibration().isSigned16Bit())) {
+				IJ.error("32-bit or signed 16-bit image required");
+				canceled = true;
+			} else {
+				ip.abs();
+				ip.resetMinAndMax();
+			}
 			return;
 		}
 

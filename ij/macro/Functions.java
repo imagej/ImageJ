@@ -53,6 +53,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean doubleBuffer, disablePopup;
 	int measurements;
 	int decimalPlaces;
+	boolean blackBackground;
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -236,6 +237,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SPLIT: array = split(); break;
 			case GET_FILE_LIST: array = getFileList(); break;
 			case GET_FONT_LIST: array = getFontList(); break;
+			case NEW_MENU: array = newMenu(); break;
 			default:
 				array = null;
 				interp.error("Array function expected");
@@ -1806,6 +1808,7 @@ public class Functions implements MacroConstants, Measurements {
 		saveSettingsCalled = true;
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
+		blackBackground = Prefs.blackBackground;
 	}
 	
 	void restoreSettings() {
@@ -1835,6 +1838,7 @@ public class Functions implements MacroConstants, Measurements {
 		Analyzer.setMeasurements(measurements);
 		Analyzer.setPrecision(decimalPlaces);
 		ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);
+		Prefs.blackBackground = blackBackground;
 	}
 	
 	void setKeyDown() {
@@ -2632,6 +2636,10 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("separator")) {
 			interp.getParens();
 			return File.separator;
+		} else if (name.equals("rename")) {
+			File f1 = new File(getFirstString());
+			File f2 = new File(getLastString());
+			return f1.renameTo(f2)?"1":"0";
 		}
 		File f = new File(getStringArg());
 		if (name.equals("getLength")||name.equals("length"))
@@ -2891,5 +2899,19 @@ public class Functions implements MacroConstants, Measurements {
 		ed.create(title, text);
 	}
 	
+	Variable[] newMenu() {
+        String name = getFirstString();
+        interp.getComma();
+        String[] commands = getStringArray();
+        interp.getRightParen();
+        if (pgm.menus==null)
+            pgm.menus = new Hashtable();
+        pgm.menus.put(name, commands);
+    	Variable[] commands2 = new Variable[commands.length];
+    	for (int i=0; i<commands.length; i++)
+    		commands2[i] = new Variable(0, 0.0, commands[i]);
+    	return commands2;
+	}
+
 } // class Functions
 

@@ -16,7 +16,7 @@ public class BinaryFiller implements PlugInFilter {
 			IJ.error("8-bit binary image (0 and 255) required.");
 			return DONE;
 		}
-		backgroundIsZero = Binary.blackBackground;
+		backgroundIsZero = Prefs.blackBackground;
 		if (imp.isInvertedLut()) 
 			backgroundIsZero = !backgroundIsZero;			
 		return IJ.setupDialog(imp, DOES_8G);

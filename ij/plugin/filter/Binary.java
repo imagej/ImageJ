@@ -11,7 +11,6 @@ public class Binary implements PlugInFilter {
 	ImagePlus imp;
 	static int iterations = 1;
 	static int count = 1;
-	static boolean blackBackground = Prefs.blackBackground;
 	int foreground, background;
 
 	public int setup(String arg, ImagePlus imp) {
@@ -35,7 +34,7 @@ public class Binary implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		foreground = blackBackground?255:0;
+		foreground = Prefs.blackBackground?255:0;
 		if (ip.isInvertedLut())
 			foreground = 255 - foreground;
         background = 255 - foreground;
@@ -74,29 +73,29 @@ public class Binary implements PlugInFilter {
 	}
 	
 	void outline(ImageProcessor ip) {
-		if (blackBackground) ip.invert();
+		if (Prefs.blackBackground) ip.invert();
 		((ByteProcessor)ip).outline();
-		if (blackBackground) ip.invert();
+		if (Prefs.blackBackground) ip.invert();
 	}
 
 	void skeletonize(ImageProcessor ip) {
-		if (blackBackground) ip.invert();
+		if (Prefs.blackBackground) ip.invert();
 		boolean edgePixels = hasEdgePixels(ip);
 		ImageProcessor ip2 = expand(ip, edgePixels);
 		((ByteProcessor)ip2).skeletonize();
 		ip = shrink(ip, ip2, edgePixels);
-		if (blackBackground) ip.invert();
+		if (Prefs.blackBackground) ip.invert();
 	}
 		
 	void showDialog() {
 		GenericDialog gd = new GenericDialog("Binary Options");
 		gd.addNumericField("Iterations (1-25):", iterations, 0, 3, "");
 		gd.addNumericField("Count (1-8):", count, 0, 3, "");
-		gd.addCheckbox("Black Background", blackBackground);
+		gd.addCheckbox("Black Background", Prefs.blackBackground);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		int n = (int)gd.getNextNumber();
-		Prefs.blackBackground = blackBackground = gd.getNextBoolean();
+		Prefs.blackBackground = gd.getNextBoolean();
 		if (n>25) n = 25;
 		if (n<1) n = 1;
 		iterations = n;

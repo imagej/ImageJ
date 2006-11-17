@@ -161,8 +161,7 @@ public class ZProjector implements PlugIn {
         RGBStackMerge merge = new RGBStackMerge();
         ImageStack stack = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
         imp = saveImp;
-		String title = WindowManager.getUniqueName(imp.getTitle());
-        projImage = new ImagePlus(title, stack);
+        projImage = new ImagePlus(makeTitle(), stack);
     }
 
     /** Builds dialog to query users for projection parameters.
@@ -222,11 +221,11 @@ public class ZProjector implements PlugIn {
 		// Finish up projection.
 		if (method==SUM_METHOD) {
 			fp.resetMinAndMax();
-			projImage = new ImagePlus(WindowManager.makeUniqueName("Sum"),fp); 
+			projImage = new ImagePlus(makeTitle(),fp); 
 		} else if (method==SD_METHOD) {
 			rayFunc.postProcess();
 			fp.resetMinAndMax();
-			projImage = new ImagePlus(WindowManager.makeUniqueName("Standard Deviation"), fp); 
+			projImage = new ImagePlus(makeTitle(), fp); 
 		} else {
 			rayFunc.postProcess(); 
 			projImage = makeOutputImage(imp, fp, ptype);
@@ -288,8 +287,7 @@ public class ZProjector implements PlugIn {
 		// ImagePlus.createImagePlus here because there may be
 		// attributes of input image that are not appropriate for
 		// projection.
-		String title = WindowManager.getUniqueName(imp.getTitle());
-		return new ImagePlus(title, oip); 
+		return new ImagePlus(makeTitle(), oip); 
     }
 
     /** Handles mechanics of projection by selecting appropriate pixel
@@ -332,7 +330,19 @@ public class ZProjector implements PlugIn {
     			ip2.putPixelValue(x, y, median(values));
     		}
     	}
-  		return new ImagePlus(WindowManager.makeUniqueName("Median"), ip2);
+  		return new ImagePlus(makeTitle(), ip2);
+    }
+    
+    String makeTitle() {
+    	String prefix = "AVG_";
+ 		switch (method) {
+ 			case SUM_METHOD: prefix = "SUM_"; break;
+			case MAX_METHOD: prefix = "MAX_"; break;
+	    	case MIN_METHOD: prefix = "MIN_"; break;
+			case SD_METHOD:  prefix = "STD_"; break;
+			case MEDIAN_METHOD:  prefix = "MED_"; break;
+	    }
+    	return WindowManager.makeUniqueName(prefix+imp.getTitle());
     }
 
 	float median(float[] a) {

@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.plugin.ZProjector;
 import ij.measure.Calibration;
 import ij.plugin.RGBStackMerge;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -310,7 +311,7 @@ public class Projector implements PlugInFilter {
 			}
 
 			theta = (theta + angleInc)%360;
-			if (projections.getWindow()==null && IJ.getInstance()!=null)   // is "Projections" window still open?
+			if (projections.getWindow()==null && IJ.getInstance()!=null && !Interpreter.isBatchMode())   // is "Projections" window still open?
 				{done=true; break;}
 			if (IJ.escapePressed())
 				{done=true; break;}
