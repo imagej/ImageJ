@@ -2,6 +2,7 @@ package ij.process;
 import java.awt.*;
 import ij.*;
 import ij.process.*;
+import ij.macro.Interpreter;
 
 /** This class processes stacks. */
 public class StackProcessor {
@@ -149,9 +150,11 @@ public class StackProcessor {
 				ip2 = ip.rotateLeft();
 			if (ip2!=null)
 				stack2.addSlice(label, ip2);
-			IJ.showProgress((double)i/nSlices);
+			if (!Interpreter.isBatchMode())
+				IJ.showProgress((double)i/nSlices);
     	}
-		IJ.showProgress(1.0);
+		if (!Interpreter.isBatchMode())
+			IJ.showProgress(1.0);
 		return stack2;
 	}
 	

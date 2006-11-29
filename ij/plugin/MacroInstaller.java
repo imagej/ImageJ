@@ -99,7 +99,9 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						}
 						autoRunCount++;
 						count--;
-					} else if (!name.endsWith("Tool Selected")){ 
+					} else if  (name.equals("Popup Menu"))
+						installPopupMenu(name, pgm);
+					else if (!name.endsWith("Tool Selected")){ 
 						addShortcut(name);
 						macrosMenu.add(new MenuItem(name));
 					}
@@ -164,6 +166,25 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public void installFromIJJar(String path) {
 		  String text = openFromIJJar(path);
 		  if (text!=null) install(text);
+	}
+
+	void installPopupMenu(String name, Program pgm) {
+        Hashtable h = pgm.getMenus();
+        if (h==null) return;
+        String[] commands = (String[])h.get(name);
+        if (commands==null) return;
+        PopupMenu popup = Menus.getPopupMenu();
+        if (popup==null) return;
+		popup.removeAll();
+        for (int i=0; i<commands.length; i++) {
+			if (commands[i].equals("-"))
+				popup.addSeparator();
+			else {
+				MenuItem mi = new MenuItem(commands[i]);
+				mi.addActionListener(this);
+				popup.add(mi);
+			}
+        }
 	}
 
 	void removeShortcuts() {
@@ -342,7 +363,16 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent evt) {
-		runMacro(evt.getActionCommand());
+		String cmd = evt.getActionCommand();
+		MenuItem item = (MenuItem)evt.getSource();
+		MenuContainer parent = item.getParent();
+		if (parent instanceof PopupMenu) {
+			for (int i=0; i<nMacros; i++) {
+				if (macroNames[i].equals("Popup Menu"))
+					{new MacroRunner(pgm, macroStarts[i], "Popup Menu", cmd); return; }
+			}
+		} else
+			runMacro(cmd);
 	}
 
 } 

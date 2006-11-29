@@ -52,6 +52,7 @@ public class Projector implements PlugInFilter {
 	boolean isRGB;
 	String label = "";
 	boolean done;
+	boolean batchMode = Interpreter.isBatchMode();
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -246,7 +247,7 @@ public class Projector implements PlugInFilter {
 		IJ.resetEscape();
 		for (n=0; n<nProjections; n++) {
 			IJ.showStatus(n+"/"+nProjections);
-			IJ.showProgress((double)n/nProjections);
+			if (!batchMode) IJ.showProgress((double)n/nProjections);
 			thetarad = theta * Math.PI/180.0;
 			costheta = (int)(BIGPOWEROF2*Math.cos(thetarad) + 0.5);
 			sintheta = (int)(BIGPOWEROF2*Math.sin(thetarad) + 0.5);
@@ -311,7 +312,7 @@ public class Projector implements PlugInFilter {
 			}
 
 			theta = (theta + angleInc)%360;
-			if (projections.getWindow()==null && IJ.getInstance()!=null && !Interpreter.isBatchMode())   // is "Projections" window still open?
+			if (projections.getWindow()==null && IJ.getInstance()!=null && !batchMode)   // is "Projections" window still open?
 				{done=true; break;}
 			if (IJ.escapePressed())
 				{done=true; break;}
@@ -319,7 +320,7 @@ public class Projector implements PlugInFilter {
    			if (IJ.escapePressed())
 				{IJ.beep(); break;}
  		} //end for all projections
- 		IJ.showProgress(1.0);
+ 		if (!batchMode) IJ.showProgress(1.0);
  
 		if (debugMode) {
 			if (projArray!=null) new ImagePlus("projArray", new ByteProcessor(projwidth, projheight, projArray, null)).show();
@@ -714,7 +715,7 @@ public class Projector implements PlugInFilter {
 				else
 					putByteRow(stack2, y, z, width2, line);
 			}
-			IJ.showProgress(y, height2-1);
+			if (!batchMode) IJ.showProgress(y, height2-1);
 		}
 		//imp2.show();
 		//imp2.setCalibration(imp.getCalibration());

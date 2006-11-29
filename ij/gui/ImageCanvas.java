@@ -37,6 +37,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private static Color showAllColor, zoomIndicatorColor;
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
+    private boolean maxBoundsReset;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -52,11 +53,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int offScreenWidth = 0;
 	private int offScreenHeight = 0;
 	
-	// use by ImageWindow.minimize()
-	double saveMag;
-	Rectangle saveSrcRect;
-	Dimension saveDrawingSize;
-
 	
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -384,9 +380,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		
 	public void setMagnification(double magnification) {
 		setMagnification2(magnification);
-		saveMag = this.magnification;
-		saveSrcRect = srcRect;
-		saveDrawingSize = getPreferredSize();
 	}
 		
 	void setMagnification2(double magnification) {
@@ -419,9 +412,25 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if ((srcRect.y+srcRect.height)>imageHeight)
 				srcRect.y = imageHeight-srcRect.height;
 			repaint();
-			//IJ.write("resize: " + magnification + " " + srcRect.x+" "+srcRect.y+" "+srcRect.width+" "+srcRect.height+" "+dstWidth + " " + dstHeight);
+            if (!IJ.isWindows()) {
+                // Works around problem that prevented window from being larger than maximized size
+                ImageWindow win = imp.getWindow();
+                if (win==null) return;
+                win.setMaximizedBounds(win.getMaxWindow());
+                maxBoundsReset = true;
+                //IJ.log("resize: " + magnification + " " + srcRect+" "+dstWidth + " " + dstHeight+"  "+win.maxBounds);
+            }
 		}
 	}
+    
+    void resetMaxBounds() {
+        if (maxBoundsReset) {
+            maxBoundsReset = false;
+            ImageWindow win = imp.getWindow();
+            if (win!=null)
+                win.setMaximizedBounds(win.maxBounds);
+        }
+    }
 
 	private static final double[] zoomLevels = {
 		1/72.0, 1/48.0, 1/32.0, 1/24.0, 1/16.0, 1/12.0, 
@@ -527,6 +536,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		//IJ.write(newMag + " " + srcRect.x+" "+srcRect.y+" "+srcRect.width+" "+srcRect.height+" "+dstWidth + " " + dstHeight);
 		setMagnification(newMag);
 		//IJ.write(srcRect.x + " " + srcRect.width + " " + dstWidth);
+        resetMaxBounds();
 		repaint();
 	}
 
@@ -538,6 +548,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImageWindow win = imp.getWindow();
 		setDrawingSize((int)(imageWidth*imag), (int)(imageHeight*imag));
 		setMagnification(imag);
+        resetMaxBounds();
 		win.pack();
 		repaint();
 	}

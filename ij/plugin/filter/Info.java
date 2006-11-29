@@ -191,10 +191,19 @@ public class Info implements PlugInFilter {
 	    } else {
 	    	s += " \n";
 	    	s += roi.getTypeAsString()+" Selection";
+	    	String points = null;
+			if (roi instanceof PointRoi) {
+				int npoints = ((PolygonRoi)roi).getNCoordinates();
+				String suffix = npoints>1?"s)":")";
+				points = " (" + npoints + " point" + suffix;
+			}
     		String name = roi.getName();
-    		if (name!=null)
+    		if (name!=null) {
 				s += " (\"" + name + "\")";
-			s += "\n";			
+				if (points!=null) s += "\n " + points;		
+			} else if (points!=null)
+				s += points;
+			s += "\n";		
 	    	Rectangle r = roi.getBounds();
 	    	if (roi instanceof Line) {
 	    		Line line = (Line)roi;
@@ -202,7 +211,6 @@ public class Info implements PlugInFilter {
 	    		s += "  Y1: " + IJ.d2s(yy(line.y1d,imp)*cal.pixelHeight) + "\n";
 	    		s += "  X2: " + IJ.d2s(line.x2d*cal.pixelWidth) + "\n";
 	    		s += "  Y2: " + IJ.d2s(yy(line.y2d,imp)*cal.pixelHeight) + "\n";
-	    	
 			} else if (cal.scaled()) {
 				s += "  X: " + IJ.d2s(r.x*cal.pixelWidth) + " (" + r.x + ")\n";
 				s += "  Y: " + IJ.d2s(yy(r.y,imp)*cal.pixelHeight) + " (" +  r.y + ")\n";
@@ -213,7 +221,7 @@ public class Info implements PlugInFilter {
 				s += "  Y: " + yy(r.y,imp) + "\n";
 				s += "  Width: " + r.width + "\n";
 				s += "  Height: " + r.height + "\n";
-	    	}
+			}
 	    }
 	    
 		return s;

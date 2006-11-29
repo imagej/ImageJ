@@ -175,6 +175,7 @@ public class IJ {
 					{wrongType(capabilities, cmd); return;}
 				break;
 		}
+		boolean changes = (capabilities&PlugInFilter.NO_CHANGES)==0;
 		if (roi!=null) roi.endPaste();
 		int slices = imp.getStackSize();
 		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
@@ -200,6 +201,7 @@ public class IJ {
 			((PlugInFilter)theFilter).run(ip);
 			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
 				ip.reset(ip.getMask());  //restore image outside irregular roi
+			if (changes) ip.resetBinaryThreshold();
 			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
 		} else {
        		Undo.reset(); // can't undo stack operations
@@ -231,15 +233,12 @@ public class IJ {
 				IJ.showProgress(i, n);
 				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}
-			if (roi!=null)
-				imp.setRoi(roi);
+			if (roi!=null) imp.setRoi(roi);
 			IJ.showProgress(1.0);
 			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", n);
 		}
-		if ((capabilities&PlugInFilter.NO_CHANGES)==0) {
+		if (changes) {
 			imp.changes = true;
-			//if (slices>1 && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32))
-			//	imp.getProcessor().resetMinAndMax();
 	 		imp.updateAndDraw();
 	 	}
 		ImageWindow win = imp.getWindow();

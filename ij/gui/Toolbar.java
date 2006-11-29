@@ -375,6 +375,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			int index = name.indexOf("Action Tool");
 			if (index!=-1)
 				name = name.substring(0, index);
+			else {
+				index = name.indexOf("Menu Tool");
+				if (index!=-1)
+					name = name.substring(0, index+4);
+			}
 			IJ.showStatus(name);
 			return;
 		}

@@ -22,7 +22,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	protected boolean closed;
 	private boolean newCanvas;
 	private static Rectangle maxWindow;
-	private Rectangle maxBounds;
+	Rectangle maxBounds;
 		
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -323,10 +323,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		maxWindow = getMaxWindow();
-		int extraHeight = 40;
+		Insets insets = getInsets();
+		int extraHeight = insets.top+insets.bottom;
 		if (this instanceof StackWindow) extraHeight += 25;
-		if (IJ.isWindows()) extraHeight += 20;
-		double maxHeight = maxWindow.height-extraHeight-5;
+		//if (IJ.isWindows()) extraHeight += 20;
+		double maxHeight = maxWindow.height-extraHeight;
 		double maxWidth = maxWindow.width;
 		double mAspectRatio = maxWidth/maxHeight;
 		double iAspectRatio = (double)width/height;
@@ -347,7 +348,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (maxBounds==null) return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		double mag = Math.floor(maxBounds.height*100.0/height)/100.0;
+		Insets insets = getInsets();
+		int extraHeight = insets.top+insets.bottom+5;
+		if (this instanceof StackWindow) extraHeight += 25;
+		double mag = Math.floor((maxBounds.height-extraHeight)*100.0/height)/100.0;
 		ic.setMagnification2(mag);
 		ic.setSrcRect(new Rectangle(0, 0, width, height));
 		ic.setDrawingSize((int)(width*mag), (int)(height*mag));
@@ -355,10 +359,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void minimize() {
-		ic.setMagnification2(ic.saveMag);
-		ic.setSrcRect(ic.saveSrcRect);
-		ic.setDrawingSize(ic.saveDrawingSize.width, ic.saveDrawingSize.height);
-		validate();
+		ic.unzoom();
 	}
 
 	/** Has this window been closed? */
