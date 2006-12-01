@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.37
+# Version 1.38
 
 # Popup Menu
 popup01=Undo
@@ -22,13 +22,11 @@ popup10=-
 popup11=Rename...
 popup12=Duplicate...
 
-
 # Plugins installed in the File/New submenu
 new01="Image...[n]",ij.plugin.Commands("new")
 new02="Text Window[N]",ij.plugin.NewPlugin("text")
 new03="Internal Clipboard",ij.plugin.Clipboard("show")
 new04="System Clipboard[V]",ij.plugin.Clipboard("showsys")
-
 # Plugins installed in the File/Import submenu
 import01="Image Sequence...",ij.plugin.FolderOpener
 import02="Raw...",ij.plugin.Raw
@@ -59,7 +57,6 @@ save14="XY Coordinates...",ij.plugin.filter.XYWriter
 save15="Measurements...",ij.plugin.MeasurementsWriter
 save16="Text...",ij.plugin.TextWriter
 #save17="QuickTime Movie... ",QT_Movie_Writer
-
 # Plugins installed in the Edit/Selection submenu
 selection01="Select All[a]",ij.plugin.Selection("all")
 selection02="Select None[A]",ij.plugin.Selection("none")
@@ -104,7 +101,6 @@ color03="RGB Merge...",ij.plugin.RGBStackMerge
 color04="Show LUT",ij.plugin.filter.LutViewer
 color05="Edit LUT...",ij.plugin.LUT_Editor
 color06="Color Picker...[K]",ij.plugin.ColorPicker
-
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
 stacks02="Delete Slice",ij.plugin.StackEditor("delete")
@@ -138,7 +134,6 @@ zoom03="View 100%",ij.plugin.Zoom("100%")
 zoom04="Original Scale",ij.plugin.Zoom("orig")
 zoom05="To Selection",ij.plugin.Zoom("to")
 #zoom06="Maximize",ij.plugin.Zoom("max")
-
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")
 lookup02="Apply LUT",ij.plugin.filter.LutApplier
@@ -177,7 +172,7 @@ shadows10="Shadows Demo",ij.plugin.filter.Shadows("demo")
 # Plugins installed in the Process/Binary submenu
 binary01="Make Binary",ij.plugin.Thresholder
 binary02="Convert to Mask",ij.plugin.Thresholder("mask")
-binary03="Find Maxima...",ij.plugin.filter.MaximaFinder
+binary03="Find Maxima...",ij.plugin.filter.MaximumFinder
 binary04=-
 binary05="Erode",ij.plugin.filter.Binary("erode")
 binary06="Dilate",ij.plugin.filter.Binary("dilate")
@@ -212,7 +207,6 @@ math14="Square Root",ij.plugin.filter.ImageMath("sqrt")
 math15="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
 math16="NaN Background",ij.plugin.filter.ImageMath("nan")
 math17="Abs",ij.plugin.filter.ImageMath("abs")
-
 
 # Plugins installed in the Process/FFT submenu
 fft01="FFT",ij.plugin.FFT("fft")
@@ -255,7 +249,6 @@ tools04="Curve Fitting...",ij.plugin.frame.Fitter
 tools05="ROI Manager...",ij.plugin.frame.RoiManager
 tools06="Scale Bar...",ij.plugin.ScaleBar
 tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
-tools08="Find Maxima...",ij.plugin.filter.MaximaFinder
 
 # Plugins installed in the Plugins menu
 plug-in01=>"Macros"
@@ -303,7 +296,7 @@ about01="Inverter...",Inverter_("about")
 about02="MemoryMonitor...",ij.plugin.MemoryMonitor("about")
 
 # URL of directory containing the sample images
-# Used when Image/J is running as an application,
+# Used when ImageJ is running as an application,
 # otherwise applet.getDocumentBase()+"/images" is used.
 images.location=http://rsb.info.nih.gov/ij/images/
 

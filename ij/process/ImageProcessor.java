@@ -429,9 +429,9 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Returns the LUT update mode, which can be RED_LUT, BLACK_AND_WHITE_LUT, 
 		OVER_UNDER_LUT or NO_LUT_UPDATE. */
-	//public int getLutUpdateMode() {
-	//	return lutUpdateMode;
-	//}
+	public int getLutUpdateMode() {
+		return lutUpdateMode;
+	}
 
 	/** Resets the threshold if minThreshold=maxThreshold and lutUpdateMode=NO_LUT_UPDATE. 
 		This removes the invisible threshold set by the MakeBinary and Convert to Mask commands.*/

@@ -23,7 +23,7 @@ import java.util.*;
  */
 
 
-public class MaximaFinder implements PlugInFilter {
+public class MaximumFinder implements PlugInFilter {
     //filter params
     /** maximum height difference between points that are not counted as separate maxima */
     private static double tolerance;
@@ -47,6 +47,8 @@ public class MaximaFinder implements PlugInFilter {
     private static boolean useMinThreshold;
     /** Display point selection? */
     private static boolean displayPoints;
+    /** Does image have a light background? */
+    private static boolean lightBackground;
     /** the ImagePlus of the setup call */
     private ImagePlus imp;
     /** the following constants are used to set bits corresponding to pixel types */
@@ -96,42 +98,22 @@ public class MaximaFinder implements PlugInFilter {
     public void run(ImageProcessor ip) {
         win = imp.getWindow();
         if (win!=null) win.running = true;
-		ip.resetBinaryThreshold(); // remove invisible threshold set by MakeBinary and Convert to Mask
-        boolean thresholded = ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
-        
-        GenericDialog myDialog=new GenericDialog("Find Maxima Options");
-        int digits = (ip instanceof FloatProcessor)?2:0;
-        String unit = (imp.getCalibration()!=null)?imp.getCalibration().getValueUnit():null;
-        unit = (unit==null||unit.equals("Gray Value"))?"":" ("+unit+")";
-        myDialog.addNumericField("Noise Tolerance"+unit,tolerance,digits);
-        myDialog.addChoice("Output type", outputTypeNames, outputTypeNames[outputType]);
-        myDialog.addCheckbox("Exclude Edge Maxima", excludeOnEdges);
-        myDialog.addCheckbox("Display Point Selection", displayPoints);
-        if (thresholded)
-            myDialog.addCheckbox("Above Lower Threshold", useMinThreshold);
-        myDialog.showDialog();                  //input by the user (or macro) happens here
-        if (myDialog.wasCanceled()) return;
-        
-        tolerance = myDialog.getNextNumber();
-        if (tolerance<0) tolerance = 0;
-        outputType = myDialog.getNextChoiceIndex();
-        excludeOnEdges = myDialog.getNextBoolean();
-        displayPoints = myDialog.getNextBoolean();
-        if (thresholded)
-            useMinThreshold = myDialog.getNextBoolean();
-        else
-            useMinThreshold = false;
-        
+        if (!showDialog(ip))
+        	return;
         Roi roi = imp.getRoi();
         if (roi!=null && (!roi.isArea() || outputType==SEGMENTED))
         	imp.killRoi();
+		boolean invertedLut = imp.isInvertedLut();
+		if ((invertedLut&&!lightBackground) || (!invertedLut&&lightBackground)) {
+			ip = ip.duplicate();
+			ip.invert();
+			ip.setRoi(roi);
+		}
         double threshold = useMinThreshold?ip.getMinThreshold():ImageProcessor.NO_THRESHOLD;
         ByteProcessor outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
         if (outIp == null) return;              //cancelled by user or only counting
-        
-        if (!Prefs.blackBackground) {           //normally, we use an inverted LUT, "active" pixels black (255) - like a mask
+         if (!Prefs.blackBackground)           //normally, we use an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();
-        }
         String resultName;
         if (outputType == SEGMENTED)            //Segmentation required
             resultName = " Segmented";
@@ -150,8 +132,37 @@ public class MaximaFinder implements PlugInFilter {
         maxImp.setCalibration(cal);             //keep the spatial calibration
         maxImp.show();
     } //public void run
-
         
+	boolean showDialog(ImageProcessor ip) {
+		ip.resetBinaryThreshold(); // remove invisible threshold set by MakeBinary and Convert to Mask
+        boolean thresholded = ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+		GenericDialog myDialog=new GenericDialog("Find Maxima Options");
+		int digits = (ip instanceof FloatProcessor)?2:0;
+		String unit = (imp.getCalibration()!=null)?imp.getCalibration().getValueUnit():null;
+		unit = (unit==null||unit.equals("Gray Value"))?":":" ("+unit+"):";
+		myDialog.addNumericField("Noise Tolerance"+unit,tolerance, digits);
+		myDialog.addChoice("Output type:", outputTypeNames, outputTypeNames[outputType]);
+		myDialog.addCheckbox("Exclude Edge Maxima", excludeOnEdges);
+		if (thresholded)
+			myDialog.addCheckbox("Above Lower Threshold", useMinThreshold);
+		myDialog.addCheckbox("Display Point Selection", displayPoints);
+		myDialog.addCheckbox("Light Background", lightBackground);
+		myDialog.showDialog();    //input by the user (or macro) happens here
+		if (myDialog.wasCanceled())
+			return false;
+		tolerance = myDialog.getNextNumber();
+		if (tolerance<0) tolerance = 0;
+		outputType = myDialog.getNextChoiceIndex();
+		excludeOnEdges = myDialog.getNextBoolean();
+		if (thresholded)
+			useMinThreshold = myDialog.getNextBoolean();
+		else
+			useMinThreshold = false;
+		displayPoints = myDialog.getNextBoolean();
+		lightBackground = myDialog.getNextBoolean();
+		return true;
+	}
+
     /** Here the processing is done: Find the maxima of an image (8, 16, 32 bit)
      * @param ip             The image subject to filtering
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value from the ridge to a higher maximum
@@ -187,7 +198,9 @@ public class MaximaFinder implements PlugInFilter {
             threshold -= (globalMax-globalMin)*1e-6;//avoid rounding errors
         boolean excludeEdgesNow = excludeOnEdges && outputType!=SEGMENTED; //for segmentation, exclusion of edge maxima cannot be done now but has to be done after segmentation
 
-        MaxPoint[] maxPoints = getSortedMaxPoints(ip, typeP, excludeEdgesNow, isEDM, globalMin, threshold);       
+        IJ.showStatus("Getting sorted maxima...");
+        MaxPoint[] maxPoints = getSortedMaxPoints(ip, typeP, excludeEdgesNow, isEDM, globalMin, threshold); 
+         IJ.showStatus("Analyzing  maxima...");
         analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance);
         //new ImagePlus("Pixel types",typeP.duplicate()).show();
         if (outputType==COUNT)
@@ -196,7 +209,7 @@ public class MaximaFinder implements PlugInFilter {
         ByteProcessor outIp;
         byte[] pixels;
         if (outputType == SEGMENTED) {                  //Segmentation required, convert to 8bit (also for 8-bit images, since the calibration may have a negative slope)
-            IJ.showStatus("Preparing Segmentation..."); //create 8-bit image from ip with background 0 and maximum areas 255
+            //create 8-bit image from ip with background 0 and maximum areas 255
             outIp = make8bit(ip, typeP, isEDM, globalMin, globalMax, threshold);
             cleanupMaxima(outIp, typeP, maxPoints);     //eliminate all the small maxima (i.e. those outside MAX_AREA)
             //new ImagePlus("pixel types", typeP).show();
@@ -224,7 +237,7 @@ public class MaximaFinder implements PlugInFilter {
         }
 
         return outIp;
-    } // public ByteProcessor MaximaFinder
+    } // public ByteProcessor MaximumFinder
 
     /** find all local maxima (irrespective whether they finally qualify as maxima or not)
      * @param ip the image to be analyzed
@@ -407,7 +420,6 @@ public class MaximaFinder implements PlugInFilter {
                 rt.incrementCounter();
                 rt.setValue("Count", rt.getCounter()-1, npoints);
                 rt.show("Results");
-                if (!displayPoints) return;
             }
         }
     } //void analyzeAndMarkMaxima
@@ -759,8 +771,7 @@ public class MaximaFinder implements PlugInFilter {
         // At each level, dilate the particle, constrained to pixels whose values are
         // at that level and also constrained to prevent features from merging.
         int[] table = makeFateTable();
-        if (win != null) IJ.showStatus("Segmentation (ESC to cancel)");
-        else IJ.showStatus("Segmentation (Please wait)");
+        IJ.showStatus("Segmenting (Esc to cancel)");
         ImageProcessor ip2 = ip.duplicate();
         for (int level=highestValue; level>=1; level--) {
             IJ.showProgress(highestValue-level, highestValue);
@@ -1031,7 +1042,7 @@ public class MaximaFinder implements PlugInFilter {
         short x;
         short y;
         
-        /** a contructor filling in the data */
+        /** a constructor filling in the data */
         MaxPoint(short x, short y, float value) {
             this.x = x;
             this.y = y;
@@ -1047,6 +1058,6 @@ public class MaximaFinder implements PlugInFilter {
         }
     }
     
-} // end of class MaximaFinder
+} // end of class MaximumFinder
 
 

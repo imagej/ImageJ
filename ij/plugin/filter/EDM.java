@@ -10,7 +10,7 @@ import ij.gui.*;
  * Note: These functions do not take ROIs into account (any ROI gets deselected).
  * setup is called with no argument for EDM, "points" for ultimate eroded points and "watershed"
  * for watershed segmentation.
- * Ultimate Eroded Points and Watershed are handled by the MaximaFinder 
+ * Ultimate Eroded Points and Watershed are handled by the MaximumFinder 
  * plugin applied to the EDM
  * 
  * version 09-Nov-2006 Michael Schmid
@@ -53,15 +53,15 @@ import ij.gui.*;
         if (arg.equals("points")||arg.equals("watershed")) {
             int outputType;
             if (arg.equals("watershed")) {
-                outputType = MaximaFinder.SEGMENTED;
+                outputType = MaximumFinder.SEGMENTED;
             } else {                                // output ultimate points: one per maximum
-                outputType = MaximaFinder.SINGLE_POINTS;
+                outputType = MaximumFinder.SINGLE_POINTS;
             }
             ImageProcessor ip16 = make16bitEDM(ip);
             //new ImagePlus("16-bit EDM",ip16).show();
             ImageWindow win = imp.getWindow();
             if (win!=null) win.running = true;
-            MaximaFinder fm = new MaximaFinder();
+            MaximumFinder fm = new MaximumFinder();
             fm.setImageWindow(win);                 //makes aborting with ESC possible
 
             //setting the tolerance to lower values such as 0.3*ONE creates more segments,

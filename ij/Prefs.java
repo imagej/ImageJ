@@ -142,9 +142,14 @@ public class Prefs {
 		return null;
 	}
 
-	/** Returns the URL for the ImageJ sample images. */
+	/** Returns the URL of the directory that contains the ImageJ sample images. */
 	public static String getImagesURL() {
 		return imagesURL;
+	}
+
+	/** Sets the URL of the directory that contains the ImageJ sample images. */
+	public static void setImagesURL(String url) {
+		imagesURL = url;
 	}
 
 	/** Returns the path to the ImageJ directory. */

@@ -15,7 +15,7 @@ import java.awt.*;
 public class BackgroundSubtracter implements PlugInFilter {
 
 	private static int radius = 50; // default rolling ball radius
-	private static boolean whiteBackground = true;
+	private static boolean lightBackground = true;
 	private ImagePlus imp;
 	private boolean canceled;
 	private int slice;
@@ -48,18 +48,21 @@ public class BackgroundSubtracter implements PlugInFilter {
 	}
 
 	public void showDialog() {
+		String options = Macro.getOptions();
+		if  (options!=null)
+			Macro.setOptions(options.replaceAll("white", "light"));
 		GenericDialog gd = new GenericDialog("Subtract Background");
 		gd.addNumericField("Rolling Ball Radius:", radius, 0);
-		gd.addCheckbox("White Background", whiteBackground);
+		gd.addCheckbox("Light Background", lightBackground);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			canceled = true;
 		else {
 			radius = (int)gd.getNextNumber();
-			whiteBackground = gd.getNextBoolean();
+			lightBackground = gd.getNextBoolean();
 		}
 		boolean invertedLut = imp.isInvertedLut();
-		invert = (invertedLut && !whiteBackground) || (!invertedLut && whiteBackground);
+		invert = (invertedLut && !lightBackground) || (!invertedLut && lightBackground);
 	}
 
 	public void subtractRGBBackround(ColorProcessor ip, int ballRadius) {

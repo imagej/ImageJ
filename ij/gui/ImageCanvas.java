@@ -467,9 +467,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		double newMag = getHigherZoomLevel(magnification);
 		int newWidth = (int)(imageWidth*newMag);
 		int newHeight = (int)(imageHeight*newMag);
-		if (canEnlarge(newWidth, newHeight)) {
-			setDrawingSize(newWidth, newHeight);
+		Dimension newSize = canEnlarge(newWidth, newHeight);
+		if (newSize!=null) {
+			setDrawingSize(newSize.width, newSize.height);
 			imp.getWindow().pack();
+			//ImageWindow win = imp.getWindow();
+			//if (win==null) return;
+			//win.setMaximizedBounds(win.getMaxWindow());
+			//maxBoundsReset = true;
+			//imp.repaintWindow();
 		} else {
 			int w = (int)Math.round(dstWidth/newMag);
 			if (w*newMag<dstWidth) w++;
@@ -488,11 +494,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 	
-	protected boolean canEnlarge(int newWidth, int newHeight) {
+	protected Dimension canEnlarge(int newWidth, int newHeight) {
 		if ((flags&Event.SHIFT_MASK)!=0 || IJ.shiftKeyDown())
-			return false;
+			return null;
 		ImageWindow win = imp.getWindow();
-		if (win==null) return false;
+		if (win==null) return null;
 		Rectangle r1 = win.getBounds();
 		r1.width = newWidth + 20;
 		r1.height = newHeight + 50;
@@ -500,7 +506,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			r1.height += 20;
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		boolean fitsOnScreen = r1.x+r1.width<screen.width && r1.y+r1.height+30<screen.height;
-		return fitsOnScreen;
+		if (fitsOnScreen)
+			return new Dimension(newWidth, newHeight);
+		else
+			return null;
 	}
 		
 	/**Zooms out by making srcRect bigger. If we can't make
@@ -509,10 +518,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (magnification<=0.03125)
 			return;
 		double newMag = getLowerZoomLevel(magnification);
-		//if (newMag==imp.getWindow().getInitialMagnification()) {
-		//	unzoom();
-		//	return;
-		//}
 		if (imageWidth*newMag>dstWidth) {
 			int w = (int)Math.round(dstWidth/newMag);
 			if (w*newMag<dstWidth) w++;
