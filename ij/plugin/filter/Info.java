@@ -157,6 +157,8 @@ public class Info implements PlugInFilter {
 			s += "Calibration Function: ";
 			if (curveFit==Calibration.UNCALIBRATED_OD)
 				s += "Uncalibrated OD\n";	    	
+			else if (curveFit==Calibration.CUSTOM)
+				s += "Custom lookup table\n";	    	
 			else
 				s += CurveFitter.fList[curveFit]+"\n";
 			double[] c = cal.getCoefficients();

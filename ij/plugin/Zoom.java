@@ -19,25 +19,33 @@ public class Zoom implements PlugIn{
 		int x = ic.screenX(loc.x);
 		int y = ic.screenY(loc.y);
     	if (arg.equals("in")) {
-			ic.zoomIn(x, y);
-			if (ic.getMagnification()<=1.0) imp.repaintWindow();
+    		if (IJ.altKeyDown())
+    			view100Percent(ic);
+    		else {
+				ic.zoomIn(x, y);
+				if (ic.getMagnification()<=1.0) imp.repaintWindow();
+			}
     	} else if (arg.equals("out")) {
 			ic.zoomOut(x, y);
 			if (ic.getMagnification()<1.0) imp.repaintWindow();
     	} else if (arg.equals("orig"))
 			ic.unzoom();
-    	else if (arg.equals("100%")) {
-			while(ic.getMagnification()<1.0)
-				ic.zoomIn(0, 0);
-			while(ic.getMagnification()>1.0)
-				ic.zoomOut(0, 0);
-		} else if (arg.equals("to"))
+    	else if (arg.equals("100%"))
+    		view100Percent(ic);
+		else if (arg.equals("to"))
 			zoomToSelection(imp, ic);
 		else if (arg.equals("max")) {
 			ImageWindow win = imp.getWindow();
 			win.setBounds(win.getMaximumBounds());
 			win.maximize();
 		}
+	}
+	
+	void view100Percent(ImageCanvas ic) {
+		while(ic.getMagnification()<1.0)
+			ic.zoomIn(0, 0);
+		while(ic.getMagnification()>1.0)
+			ic.zoomOut(0, 0);
 	}
 	
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {

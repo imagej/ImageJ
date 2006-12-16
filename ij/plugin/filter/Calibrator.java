@@ -18,6 +18,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private static final String NONE = "None";
 	private static final String INVERTER = "Pixel Inverter";
 	private static final String UNCALIBRATED_OD = "Uncalibrated OD";
+	private static final String CUSTOM = "Custom";
 	private static boolean showSettings;
 	private boolean global1, global2;
     private ImagePlus imp;
@@ -27,6 +28,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private int spacerIndex = nFits+1;
 	private int inverterIndex = nFits+2;
 	private int odIndex = nFits+3;
+	private int customIndex = nFits+4;
 	private static String xText = "";
 	private static String yText = "";
 	private static boolean importedValues;
@@ -47,7 +49,10 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		global1 = imp.getGlobalCalibration()!=null;
 		if (!showDialog(imp))
 			return;
-		if (imp.getType()==ImagePlus.GRAY32) {
+		if (choiceIndex==customIndex) {
+			showPlot(null, null, imp.getCalibration(), null);
+			return;
+		} else if (imp.getType()==ImagePlus.GRAY32) {
 			if (choiceIndex==0)
 				imp.getCalibration().setValueUnit(unit);
 			else
@@ -59,7 +64,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	public boolean showDialog(ImagePlus imp) {
 		String defaultChoice;
 		Calibration cal = imp.getCalibration();
-		functions = getFunctionList();
+		functions = getFunctionList(cal.getFunction()==Calibration.CUSTOM);
 		int function = cal.getFunction();
 		oldFunction = function;
 		double[] p = cal.getCoefficients();
@@ -72,6 +77,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			defaultChoice = CurveFitter.fitList[function];
 		else if (function==Calibration.UNCALIBRATED_OD)
 			defaultChoice=UNCALIBRATED_OD;
+		else if (function==Calibration.CUSTOM)
+			defaultChoice=CUSTOM;
 		else
 			defaultChoice=NONE;
 			
@@ -261,14 +268,18 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 
 	double sqr(double x) {return x*x;}
 
-	String[] getFunctionList() {
-		String[] list = new String[nFits+4];
+	String[] getFunctionList(boolean custom) {
+		int n = nFits+4;
+		if (custom) n++;
+		String[] list = new String[n];
 		list[0] = NONE;
 		for (int i=0; i<nFits; i++)
 			list[1+i] = CurveFitter.fitList[i];
 		list[spacerIndex] = "-";
 		list[inverterIndex] = INVERTER;
 		list[odIndex] = UNCALIBRATED_OD;
+		if (custom) 
+			list[customIndex] = CUSTOM;
 		return list;
  	}
 	

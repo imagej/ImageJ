@@ -14,6 +14,9 @@ import ij.macro.Interpreter;
 /** A frame for displaying images. */
 public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener {
 
+	public static final int MIN_WIDTH = 128;
+	public static final int MIN_HEIGHT = 32;
+	
 	protected ImagePlus imp;
 	protected ImageJ ij;
 	protected ImageCanvas ic;
@@ -23,6 +26,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private boolean newCanvas;
 	private static Rectangle maxWindow;
 	Rectangle maxBounds;
+	//boolean maximized;
 		
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -182,8 +186,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	/** Override Container getInsets() to make room for some text above the image. */
 	public Insets getInsets() {
 		Insets insets = super.getInsets();
-		//IJ.write(""+insets);
-		return new Insets(insets.top+textGap, insets.left, insets.bottom, insets.right);
+		double mag = ic.getMagnification();
+		int extraWidth = (int)((MIN_WIDTH - imp.getWidth()*mag)/2.0);
+		if (extraWidth<0) extraWidth = 0;
+		int extraHeight = (int)((MIN_HEIGHT - imp.getHeight()*mag)/2.0);
+		if (extraHeight<0) extraHeight = 0;
+		insets = new Insets(insets.top+textGap+extraHeight, insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
+		return insets;
 	}
 
     public void drawInfo(Graphics g) {
@@ -249,10 +258,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     public void paint(Graphics g) {
 		//if (IJ.debugMode) IJ.log("wPaint: " + imp.getTitle());
 		drawInfo(g);
-		Point loc = ic.getLocation();
-		Dimension csize = ic.getSize();
-		g.drawRect(loc.x-1, loc.y-1, csize.width+1, csize.height+1);
-		//IJ.write(p + " " + d);
+		Rectangle r = ic.getBounds();
+		int extraWidth = MIN_WIDTH - r.width;
+		int extraHeight = MIN_HEIGHT - r.height;
+		if (extraWidth<=0 && extraHeight<=0)
+			g.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
     }
     
 	/** Removes this window from the window list and disposes of it.

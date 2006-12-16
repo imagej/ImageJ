@@ -67,19 +67,8 @@ public class MaximumFinder implements PlugInFilter {
     final static byte[] outputTypeMasks = new byte[] {MAX_POINT, EQUAL, MAX_AREA, MAX_AREA, MAX_POINT};
     /**offsets of neighbor pixels for addressing*/
     int [] dirOffset, dirXoffset, dirYoffset;
-    /** window of the current ImagePlus (needed to accept esc for cancel) */
-    ImageWindow win;
     
-    /** Set the ImageWindow
-     * When using the findMaxima method from another plugin, using this method
-     * will allow the user cancel the action by pressing ESC
-     * In this case, do not forget to set win.running=true in the calling program!
-     * @param win  The ImageWindow of the image to be processed
-     **/
-    public void setImageWindow(ImageWindow win) {
-        this.win = win;
-    }
-
+    
     /** Method to return types supported and about dialog
      * @param arg if "about", displays 'about...' dialog
      * if "again", does filtering with the same parameters again (without asking)
@@ -96,20 +85,27 @@ public class MaximumFinder implements PlugInFilter {
      * @param ip the image to be filtered)
      */
     public void run(ImageProcessor ip) {
-        win = imp.getWindow();
-        if (win!=null) win.running = true;
         if (!showDialog(ip))
         	return;
         Roi roi = imp.getRoi();
         if (roi!=null && (!roi.isArea() || outputType==SEGMENTED))
         	imp.killRoi();
 		boolean invertedLut = imp.isInvertedLut();
+        double threshold = useMinThreshold?ip.getMinThreshold():ImageProcessor.NO_THRESHOLD;
 		if ((invertedLut&&!lightBackground) || (!invertedLut&&lightBackground)) {
+			if (threshold!=ImageProcessor.NO_THRESHOLD) {
+				useMinThreshold = false;
+				if (!IJ.showMessageWithCancel(
+					"Find Maxima",
+					"\"Above Lower Threshold\" option cannot be used\n"+
+					"when finding minima (image with light background\n"+
+					"or image with dark background and inverting LUT)."))
+					return;
+			}
 			ip = ip.duplicate();
 			ip.invert();
 			ip.setRoi(roi);
 		}
-        double threshold = useMinThreshold?ip.getMinThreshold():ImageProcessor.NO_THRESHOLD;
         ByteProcessor outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
         if (outIp == null) return;              //cancelled by user or only counting
          if (!Prefs.blackBackground)           //normally, we use an inverted LUT, "active" pixels black (255) - like a mask
@@ -804,7 +800,7 @@ public class MaximumFinder implements PlugInFilter {
                 if (idle++ >=8) break;
                 //IJ.write("All directions; level="+level+"; countW="+countW);
             }
-            if (win!=null && !win.running) {        //cancelled by the user
+            if (IJ.escapePressed()) {  // cancelled by the user
                 IJ.beep();
                 IJ.showProgress(1.0);
                 return false;

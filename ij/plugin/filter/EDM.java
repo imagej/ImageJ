@@ -59,10 +59,7 @@ import ij.gui.*;
             }
             ImageProcessor ip16 = make16bitEDM(ip);
             //new ImagePlus("16-bit EDM",ip16).show();
-            ImageWindow win = imp.getWindow();
-            if (win!=null) win.running = true;
             MaximumFinder fm = new MaximumFinder();
-            fm.setImageWindow(win);                 //makes aborting with ESC possible
 
             //setting the tolerance to lower values such as 0.3*ONE creates more segments,
             //larger values like 0.7*ONE give fewer segments

@@ -43,25 +43,13 @@ public class Java2 {
 	
 	/** Sets the Swing look and feel to the system look and feel. */
 	public static void setSystemLookAndFeel() {
-		if (lookAndFeelSet)
-			return;
+		if (lookAndFeelSet) return;
 		try {
-			if(IJ.isWindows())
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			else if(!IJ.isMacintosh()) {
-				String s = System.getProperty("java.version");
-				int dot_ver = Integer.parseInt(s.substring(s.lastIndexOf('.')+1, s.length()));
-				if(dot_ver >= 2)
-					UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-				else
-					UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-			}
-		}
-		catch(Throwable t){}
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch(Throwable t) {}
 		lookAndFeelSet = true;
 		IJ.register(Java2.class);
 	}
-
 
 }
 

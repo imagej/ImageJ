@@ -111,6 +111,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		
 		ta = new TextArea(16, 60);
 		ta.addTextListener(this);
+		if (IJ.isLinux()) ta.setBackground(Color.white);
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();

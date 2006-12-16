@@ -8,7 +8,7 @@ public class Calibration implements Cloneable {
 
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
 		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10;
-	public static final int NONE=20, UNCALIBRATED_OD=21;
+	public static final int NONE=20, UNCALIBRATED_OD=21, CUSTOM=22;
 
 	/** Pixel width in 'unit's */
 	public double pixelWidth = 1.0;
@@ -221,8 +221,8 @@ public class Calibration implements Cloneable {
  		return function;
  	}
  	
-	/** Returns the calibration table. For 8-bit images,
-		the table has a length of 256, for 16-bit images,
+	/** Returns the calibration table. With 8-bit images,
+		the table has a length of 256. With 16-bit images,
 		the length is 65536. */
  	public float[] getCTable() {
  		if (cTable==null)
@@ -230,6 +230,20 @@ public class Calibration implements Cloneable {
  		return cTable;
  	}
  	
+	/** Sets the calibration table. With 8-bit images, the table must 
+		have a length of 256. With 16-bit images, it must be 65536. */
+ 	public void setCTable(float[] table, String unit) {
+ 		if (table==null)
+ 			{disableDensityCalibration(); return;}
+ 		if (bitDepth==16 && table.length!=65536)
+ 			throw new IllegalArgumentException("Table.length!=65536");
+ 		cTable = table;
+ 		function = CUSTOM;
+ 		coefficients = null;
+ 		zeroClip = false;
+ 		if (unit!=null) valueUnit = unit;
+ 	}
+
  	void makeCTable() {
  		if (bitDepth==16)
  			{make16BitCTable(); return;}

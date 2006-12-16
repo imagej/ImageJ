@@ -507,7 +507,7 @@ public class FileSaver {
 			sb.append("frames="+frames+"\n");
 		if (fi.unit!=null)
 			sb.append("unit="+fi.unit+"\n");
-		if (fi.valueUnit!=null) {
+		if (fi.valueUnit!=null && fi.calibrationFunction!=Calibration.CUSTOM) {
 			sb.append("cf="+fi.calibrationFunction+"\n");
 			if (fi.coefficients!=null) {
 				for (int i=0; i<fi.coefficients.length; i++)

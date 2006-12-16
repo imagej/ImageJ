@@ -202,7 +202,7 @@ public class Menus {
 			installPlugins();
 		
 		mbar = new MenuBar();
-		//mbar.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		mbar.setFont(new Font("SanSerif", Font.PLAIN, 14));
 		mbar.add(file);
 		mbar.add(edit);
 		mbar.add(image);

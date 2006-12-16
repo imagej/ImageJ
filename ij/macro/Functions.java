@@ -147,6 +147,7 @@ public class Functions implements MacroConstants, Measurements {
 			case DRAW_RECT: case FILL_RECT: case DRAW_OVAL: case FILL_OVAL: drawOrFill(type); break;
 			case SET_OPTION: setOption(); break;
 			case SHOW_TEXT: showText(); break;
+			case SET_SELECTION_LOC: setSelectionLocation(); break;
 		}
 	}
 	
@@ -626,7 +627,7 @@ public class Functions implements MacroConstants, Measurements {
 			defaultImp = IJ.getImage();
 		if (defaultImp==null)
 			{interp.error("No image"); return null;}	
-		if (defaultImp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode())
+		if (defaultImp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode() && WindowManager.getTempCurrentImage()==null)
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		return defaultImp;
 	}
@@ -1858,7 +1859,24 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.setKeyDown(KeyEvent.VK_SPACE);
 		else
 			IJ.setKeyUp(KeyEvent.VK_SPACE);
-		interp.keysSet = true;
+		if (keys.indexOf("esc")!=-1)
+			abortPluginOrMacro();
+		else
+			interp.keysSet = true;
+	}
+	
+	void abortPluginOrMacro() {
+		Interpreter.abortPrevious();
+		IJ.setKeyDown(KeyEvent.VK_ESCAPE);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			ImageWindow win = imp.getWindow();
+			if (win!=null) {
+				win.running = false;
+				win.running2 = false;
+			}
+		}
+		//Macro.abort();
 	}
 	
 	void open() {
@@ -2034,8 +2052,13 @@ public class Functions implements MacroConstants, Measurements {
 		if (!interp.isBatchMode())
 			interp.calledMacro = false;
 		resetImage();
-		if (enterBatchMode)  // true
-			{interp.setBatchMode(true); return;}
+		if (enterBatchMode)  { // true
+			interp.setBatchMode(true);
+			ImagePlus tmp = WindowManager.getTempCurrentImage();
+			if (tmp!=null)
+				Interpreter.addBatchModeImage(tmp);
+			return;
+		}
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		WindowManager.setTempCurrentImage(null);
 		if (sarg==null) {  //false
@@ -2912,6 +2935,19 @@ public class Functions implements MacroConstants, Measurements {
     		commands2[i] = new Variable(0, 0.0, commands[i]);
     	return commands2;
 	}
+	
+	void setSelectionLocation() {
+		int x = (int)Math.round(getFirstArg());
+		int y = (int)Math.round(getLastArg());
+		resetImage();
+		ImagePlus imp = getImage();
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			interp.error("Selection required");
+		roi.setLocation(x, y);
+		imp.draw();
+	}
+
 
 } // class Functions
 

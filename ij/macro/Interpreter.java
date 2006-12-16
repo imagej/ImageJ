@@ -34,7 +34,7 @@ public class Interpreter implements MacroConstants {
 	int topOfGlobals = -1;
 	int startOfLocals = 0;
 
-	static Interpreter instance;
+	static Interpreter instance, previousInstance;
 	static boolean batchMode;
 	static Vector imageTable; // images opened in batch mode
 	boolean done;
@@ -97,6 +97,7 @@ public class Interpreter implements MacroConstants {
 		this.pgm = pgm;
 		this.macroName = macroName;
 		pc = macroLoc-1;
+		previousInstance = instance;
 		instance = this;
 		batchMode = false;
 		imageTable = null;
@@ -1511,16 +1512,29 @@ public class Interpreter implements MacroConstants {
 	
 	/** Aborts currently running macro. */
 	public static void abort() {
-		if (instance!=null) {
-			if (!instance.calledMacro) {
+		abort2(instance);
+	}
+	
+	/** Aborts the macro that was running when this one started. */
+	static void abortPrevious() {
+		if (previousInstance!=null) {
+			abort2(previousInstance);
+			IJ.beep();
+			previousInstance = null;
+		}
+	}
+
+	private static void abort2(Interpreter interpreter) {
+		if (interpreter!=null) {
+			if (!interpreter.calledMacro) {
 				batchMode = false;
 				imageTable = null;
 			}
-			instance.done = true;
+			interpreter.done = true;
 			IJ.showStatus("Macro aborted");
 		}
 	}
-	
+
 	public static Interpreter getInstance() {
 		return instance;
 	}

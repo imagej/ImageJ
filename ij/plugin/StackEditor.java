@@ -33,25 +33,26 @@ public class StackEditor implements PlugIn {
     		convertStackToImages(imp);
 	}
 
-    void addSlice() {
-		if (!imp.lock())
-			return;
+	void addSlice() {
+		if (!imp.lock()) return;
+		int id = 0;
 		ImageStack stack = imp.getStack();
 		if (stack.getSize()==1) {
 			String label = stack.getSliceLabel(1);
 			if (label!=null && label.indexOf("\n")!=-1)
 				stack.setSliceLabel(null, 1);
+			id = imp.getID();
 		}
 		ImageProcessor ip = imp.getProcessor();
 		int n = imp.getCurrentSlice();
-		if (IJ.altKeyDown())
-			n--; // insert in front of current slice
+		if (IJ.altKeyDown()) n--; // insert in front of current slice
 		stack.addSlice(null, ip.createProcessor(width, height), n);
 		imp.setStack(null, stack);
 		imp.setSlice(n+1);
 		imp.unlock();
+		if (id!=0) IJ.selectWindow(id); // prevents macros from failing
 	}
-
+	
 	void deleteSlice() {
 		if (!imp.lock())
 			return;
