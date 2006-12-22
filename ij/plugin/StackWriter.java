@@ -2,7 +2,7 @@ package ij.plugin;
 import java.awt.*;
 import java.io.*;
 import java.text.DecimalFormat;	
-import java.util.Properties;
+import java.util.*;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
@@ -12,8 +12,8 @@ import ij.measure.Calibration;
 public class StackWriter implements PlugIn {
 
 	//private static String defaultDirectory = null;
-	private static String[] choices = {"Tiff","Gif","Jpeg","Bmp", "Raw","Zip","Text"};
-	private static String fileType = "Tiff";
+	private static String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
+	private static String fileType = "TIFF";
 	private static int ndigits = 4;
 	private static int startAt;
 	private static boolean useLabels;
@@ -55,25 +55,20 @@ public class StackWriter implements PlugIn {
 				+" digits are required to generate \nunique file names for "+stackSize+" images.");
 			return;			
 		}
-		if (fileType.equals("Gif") && !FileSaver.okForGif(imp))
+		String format = fileType.toLowerCase(Locale.US);
+		if (format.equals("gif") && !FileSaver.okForGif(imp))
 			return;
-
-		String extension = "";
-		if (fileType.equals("Tiff"))
+		else if (format.equals("fits") && !FileSaver.okForFits(imp))
+			return;
+			
+		if (format.equals("text"))
+			format = "text image";
+		String extension = "." + format;
+		if (format.equals("tiff"))
 			extension = ".tif";
-		else if (fileType.equals("Jpeg"))
-			extension = ".jpg";
-		else if (fileType.equals("Gif"))
-			extension = ".gif";
-		else if (fileType.equals("Bmp"))
-			extension = ".bmp";
-		else if (fileType.equals("Raw"))
-			extension = ".raw";
-		else if (fileType.equals("Zip"))
-			extension = ".zip";
-		else if (fileType.equals("Text"))
+		else if (format.equals("text image"))
 			extension = ".txt";
-		
+			
 		String digits = getDigits(number);
 		SaveDialog sd = new SaveDialog("Save Image Sequence", name+digits+extension, extension);
 		String name2 = sd.getFileName();
@@ -114,31 +109,10 @@ public class StackWriter implements PlugIn {
 				path = directory+name+digits+extension;
 			else
 				path = directory+label+extension;
-			if (fileType.equals("Tiff")) {
-				if (!(new FileSaver(imp2).saveAsTiff(path)))
-					break;
-			} else if (fileType.equals("Gif")) {
-				if (!(new FileSaver(imp2).saveAsGif(path)))
-					break;
-			} else if (fileType.equals("Jpeg")) {
-				if (!(new FileSaver(imp2).saveAsJpeg(path)))
-					break;
-			} else if (fileType.equals("Bmp")) {
-				if (!(new FileSaver(imp2).saveAsBmp(path)))
-					break;
-			} else if (fileType.equals("Raw")) {
-				if (!(new FileSaver(imp2).saveAsRaw(path)))
-					break;
-			} else if (fileType.equals("Zip")) {
-				imp2.setTitle(name+digits+extension);
-				if (!(new FileSaver(imp2).saveAsZip(path)))
-					break;
-			} else if (fileType.equals("Text")) {
-				if (!(new FileSaver(imp2).saveAsText(path)))
-					break;
-			}
-			//System.gc();
+			WindowManager.setTempCurrentImage(imp2);
+			IJ.saveAs(format, path);
 		}
+		WindowManager.setTempCurrentImage(null);
 		IJ.showStatus("");
 		IJ.showProgress(1.0);
 		IJ.register(StackWriter.class);

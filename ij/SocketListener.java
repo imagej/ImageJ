@@ -1,6 +1,6 @@
 package ij;
 import ij.*;
-import ij.io.OpenDialog;
+import ij.io.*;
 import java.io.*;
 import java.net.*;
 
@@ -35,7 +35,7 @@ public class SocketListener implements Runnable {
 					String cmd = is.readLine();
 					if (IJ. debugMode) IJ.log("SocketServer: command: \""+ cmd+"\"");
 					if (cmd.startsWith("open "))
-						IJ.open(cmd.substring(5)); 
+						(new Opener()).openAndAddToRecent(cmd.substring(5));
 					else if (cmd.startsWith("macro ")) {
 						String name = cmd.substring(6);
 						String name2 = name;

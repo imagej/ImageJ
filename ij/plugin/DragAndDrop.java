@@ -99,12 +99,11 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 							for (int k=0; k<names.length; k++) {
 								IJ.redirectErrorMessages();
 								if (!names[k].startsWith("."))
-									new Opener().open(tmp + "/" + names[k]);
+									(new Opener()).open(tmp + "/" + names[k]);
 							}
 						}
-					} else {
-						new Opener().open(tmp);
-					}
+					} else
+						(new Opener()).openAndAddToRecent(tmp);
 				} else {
 					IJ.log("File not found: " + tmp);
 				}

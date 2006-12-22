@@ -165,7 +165,6 @@ public class FileSaver {
 			return false;
 		} else
 			return true;
-		
 	}
 
 	/** Save the image in GIF format using a save file
@@ -304,6 +303,35 @@ public class FileSaver {
 		IJ.runPlugIn("ij.plugin.PNG_Writer", path);
 		WindowManager.setTempCurrentImage(tempImage);
 		return true;
+	}
+
+	/** Save the image in FITS format using a save file dialog. 
+		Returns false if the user selects cancel. */
+	public boolean saveAsFits() {
+		if (!okForFits(imp)) return false;
+		String path = getPath("FITS", ".fits");
+		if (path==null)
+			return false;
+		else
+			return saveAsFits(path);
+	}
+
+	/** Save the image in FITS format using the specified path. */
+	public boolean saveAsFits(String path) {
+		if (!okForFits(imp)) return false;
+		ImagePlus tempImage = WindowManager.getTempCurrentImage();
+		WindowManager.setTempCurrentImage(imp);
+		IJ.runPlugIn("ij.plugin.FITS_Writer", path);
+		WindowManager.setTempCurrentImage(tempImage);
+		return true;
+	}
+
+	public static boolean okForFits(ImagePlus imp) {
+		if (imp.getBitDepth()==8 || imp.getBitDepth()==24) {
+			IJ.error("FITS Writer", "16 or 32 bit image required");
+			return false;
+		} else
+			return true;
 	}
 
 	/** Save the image or stack as raw data using a save file

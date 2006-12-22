@@ -36,7 +36,8 @@ public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
 	}
   
     public void run() {
-        if (path!=null) IJ.open(path);
+        if (path!=null)
+		(new Opener()).openAndAddToRecent(path);
     }
 
 	public void handleOpenApplication(ApplicationEvent event) {}

@@ -51,12 +51,14 @@ save08="AVI... ",ij.plugin.filter.AVIWriter
 save09="BMP...",ij.plugin.filter.Writer("bmp")
 save10="PNG...",ij.plugin.filter.Writer("png")
 save11="PGM...",ij.plugin.filter.Writer("pgm")
-save12="LUT...",ij.plugin.filter.Writer("lut")
-save13="Selection...",ij.plugin.filter.RoiWriter
-save14="XY Coordinates...",ij.plugin.filter.XYWriter
-save15="Measurements...",ij.plugin.MeasurementsWriter
-save16="Text...",ij.plugin.TextWriter
-#save17="QuickTime Movie... ",QT_Movie_Writer
+save12="FITS...",ij.plugin.filter.Writer("fits")
+save13="LUT...",ij.plugin.filter.Writer("lut")
+save14="Selection...",ij.plugin.filter.RoiWriter
+save15="XY Coordinates...",ij.plugin.filter.XYWriter
+save16="Measurements...",ij.plugin.MeasurementsWriter
+save17="Text...",ij.plugin.TextWriter
+#save18="QuickTime Movie... ",QT_Movie_Writer
+
 # Plugins installed in the Edit/Selection submenu
 selection01="Select All[a]",ij.plugin.Selection("all")
 selection02="Select None[A]",ij.plugin.Selection("none")

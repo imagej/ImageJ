@@ -1734,7 +1734,17 @@ public class Functions implements MacroConstants, Measurements {
 		if (isStringArg()) {
 			String title = getString();
 			interp.getRightParen();
-			return WindowManager.getFrame(title)==null?0.0:1.0;
+			boolean open = WindowManager.getFrame(title)!=null;
+			if (open)
+				return 1.0;
+			else if (Interpreter.isBatchMode() && Interpreter.imageTable!=null) {
+				for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
+					ImagePlus imp = (ImagePlus)en.nextElement();
+					if (imp!=null && imp.getTitle().equals(title))
+						return 1.0;
+				}
+			}
+			return 0.0;
 		} else {
 			int id = (int)interp.getExpression();
 			interp.getRightParen();
@@ -2910,6 +2920,8 @@ public class Functions implements MacroConstants, Measurements {
 			getImage().changes = state;
 		else if (arg1.equals("debugmode"))
 			IJ.debugMode = state;
+		else if (arg1.equals("openusingplugins"))
+			Opener.setOpenUsingPlugins(state);
 		else
 			interp.error("Invalid option");
 	}

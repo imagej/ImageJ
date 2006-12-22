@@ -36,6 +36,8 @@ public class Writer implements PlugInFilter {
 			new FileSaver(imp).saveAsPng();
 		else if (arg.equals("pgm"))
 			new FileSaver(imp).saveAsPgm();
+		else if (arg.equals("fits"))
+			new FileSaver(imp).saveAsFits();
 	}
 	
 }

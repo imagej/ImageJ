@@ -1164,8 +1164,7 @@ public class IJ {
 			o.open(path);
 		macroRunning = false;
 	}
-	
-	
+		
 	/** Open the specified file as a tiff, bmp, dicom, fits, pgm, gif 
 		or jpeg image and returns an ImagePlus object if successful.
 		Calls HandleExtraFileTypes plugin if the file type is not recognised.
@@ -1175,7 +1174,7 @@ public class IJ {
 	}
 
 	/** Saves an image, lookup table, selection or text window to the specified file path. 
-		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", "png", "pgm", ".lut", ".roi" or ".txt".  */
+		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
 	public static void save(String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1)
@@ -1186,7 +1185,7 @@ public class IJ {
 
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 
 		coordinates or text window to the specified file path. The format argument must be "tiff", 
-		"jpeg", "gif", "zip", "raw", "avi", "bmp", "png", "pgm", "text image", "lut", "selection", "measurements", 
+		"jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "png", "text image", "lut", "selection", "measurements", 
 		"xy Coordinates" or "text".  If <code>path</code> is null or an emply string, a file
 		save dialog is displayed. */
  	public static void saveAs(String format, String path) {
@@ -1220,6 +1219,9 @@ public class IJ {
 		} else if (format.indexOf("bmp")!=-1) {
 			path = updateExtension(path, ".bmp");
 			format = "BMP...";
+		} else if (format.indexOf("fits")!=-1) {
+			path = updateExtension(path, ".fits");
+			format = "FITS...";
 		} else if (format.indexOf("png")!=-1) {
 			path = updateExtension(path, ".png");
 			format = "PNG...";

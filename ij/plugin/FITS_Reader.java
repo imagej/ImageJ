@@ -6,12 +6,10 @@ import ij.io.*;
 import ij.process.*;
 import ij.measure.*;
 
-/** Opens and displays FITS images. ImageJ does not support
-    signed 16-bits so 16-bit FITS images are converted to
-    unsigned by adding 32768. The FITS format is described at
-    "ftp://nssdc.gsfc.nasa.gov/pub/fits".
+/** Opens and displays FITS images. The FITS format is 
+    described at "ftp://nssdc.gsfc.nasa.gov/pub/fits".
 */
-public class FITS extends ImagePlus implements PlugIn {
+public class FITS_Reader extends ImagePlus implements PlugIn {
 
     public void run(String arg) {
         OpenDialog od = new OpenDialog("Open FITS...", arg);
