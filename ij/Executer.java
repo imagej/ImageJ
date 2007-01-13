@@ -94,7 +94,7 @@ public class Executer implements Runnable {
     		} else
 				IJ.runPlugIn(cmd, className, arg);
 		} else {
-			// Is this command in Plugins>Menus?
+			// Is this command in Plugins>Macros?
 			if (MacroInstaller.runMacroCommand(cmd))
 				return;
 			// Is this command a LUT name?

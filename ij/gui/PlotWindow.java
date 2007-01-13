@@ -29,10 +29,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Connect points with solid lines. */
 	public static final int LINE = 2;
 
-	private static final int LEFT_MARGIN = 50;
-	private static final int RIGHT_MARGIN = 20;
-	private static final int TOP_MARGIN = 20;
-	private static final int BOTTOM_MARGIN = 30;
 	private static final int WIDTH = 450;
 	private static final int HEIGHT = 200;
 	
@@ -45,6 +41,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static final int AUTO_CLOSE = 2;
 	private static final int LIST_VALUES = 4;
 	private static final int INTERPOLATE = 8;
+	private static final int NO_GRID_LINES = 16;
 
 	private Button list, save, copy;
 	private Label coordinates;
@@ -80,6 +77,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		set, use Edit/Options/Profile Plot Options. */
 	public static boolean interpolate;
 
+	/** Add grid lines to plots */
+	public static boolean noGridLines;
+
     // static initializer
     static {
 		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
@@ -90,7 +90,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
     	plotWidth = Prefs.getInt(PLOT_WIDTH, WIDTH);
     	plotHeight = Prefs.getInt(PLOT_HEIGHT, HEIGHT);
     	interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
-    }
+     	noGridLines = (options&NO_GRID_LINES)!=0; 
+   }
 
 	/** Construct a new PlotWindow.
 	* @param title			the window title
@@ -374,6 +375,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (autoClose && !listValues) options |= AUTO_CLOSE;
 		if (listValues) options |= LIST_VALUES;
 		if (!interpolate) options |= INTERPOLATE; // true=0, false=1
+		if (noGridLines) options |= NO_GRID_LINES; 
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	

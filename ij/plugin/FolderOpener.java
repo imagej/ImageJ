@@ -233,7 +233,8 @@ public class FolderOpener implements PlugIn {
 		return true;
 	}
 
-	String[] sortFileList(String[] rawlist) {
+	/** Sorts the file names into numeric order. */
+	public String[] sortFileList(String[] rawlist) {
 		int count = 0;
 		for (int i=0; i< rawlist.length; i++) {
 			String name = rawlist[i];

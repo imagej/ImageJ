@@ -32,7 +32,7 @@ import javax.swing.filechooser.*;
  	void getDirectoryUsingJFileChooser(final String title) {
 		Java2.setSystemLookAndFeel();
 		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
+			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
 					JFileChooser chooser = new JFileChooser();
 					if (defaultDir!=null) 

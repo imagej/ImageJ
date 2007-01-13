@@ -186,8 +186,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measure() {
 		String sliceHdr = rt.getColumnHeading(ResultsTable.SLICE);
-		if (sliceHdr==null || sliceHdr.charAt(0)!='S')
-			reset();
+		if (sliceHdr==null || sliceHdr.charAt(0)!='S') {
+			if (!reset()) return;
+		}
 		firstParticle = lastParticle = 0;
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.getType()==Roi.POINT) {
@@ -224,7 +225,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		boolean ok = true;
 		if (rt.getCounter()>0)
 			ok = resetCounter();
-		if (rt.getColumnHeading(ResultsTable.SLICE)==null)
+		if (ok && rt.getColumnHeading(ResultsTable.SLICE)==null)
 			rt.setDefaultHeadings();
 		return ok;
 	}
@@ -691,8 +692,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return true;
 	}
 	
-	public static void setSaved() {
-		unsavedMeasurements = false;
+	public static void setUnsavedMeasurements(boolean b) {
+		unsavedMeasurements = b;
 	}
 	
 	// Returns the measurements defined in the Set Measurements dialog. */
@@ -716,7 +717,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return umeans;
 	}
 
-	/** Returns the ImageJ results table. */
+	/** Returns the ImageJ results table. This table should only
+		be displayed in a the "Results" window. */
 	public static ResultsTable getResultsTable() {
 		return systemRT;
 	}

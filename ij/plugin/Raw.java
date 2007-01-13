@@ -5,7 +5,7 @@ import java.io.*;
 import ij.*;
 import ij.io.*;
 
-/** This plugin implements the Acquire/Raw command. */
+/** This plugin implements the File/Import/Raw command. */
 public class Raw implements PlugIn {
 
 	private static String defaultDirectory = null;

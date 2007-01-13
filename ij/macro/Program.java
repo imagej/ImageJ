@@ -17,7 +17,9 @@ public class Program implements MacroConstants {
 	Variable[] globals;
 	boolean hasVars;
     Hashtable menus;
-
+    // run keyboard shortcut macros on event dispatch thread?
+	boolean queueCommands; 
+	
 	public Program() {
 		if (systemTable!=null) {
 			stLoc = systemTable.length - 1;

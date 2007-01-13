@@ -39,7 +39,7 @@ public class Prefs {
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
 		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNUSED=64, BLACK_CANVAS=128, WEIGHTED=256, 
 		AUTO_MEASURE=512, REQUIRE_CONTROL=1024, USE_INVERTING_LUT=2048, ANTIALIASED_TOOLS=4096,
-		INTEL_BYTE_ORDER=8192, DOUBLE_BUFFER=16384;  
+		INTEL_BYTE_ORDER=8192, DOUBLE_BUFFER=16384, NO_POINT_LABELS=32768;  
     public static final String OPTIONS = "prefs.options";
 
 	/** file.separator system property */
@@ -74,6 +74,8 @@ public class Prefs {
 	public static boolean intelByteOrder;
 	/** Double buffer display of selections. */
 	public static boolean doubleBuffer;
+	/** Do not label multiple points created using point tool. */
+	public static boolean noPointLabels = true;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -309,6 +311,7 @@ public class Prefs {
 		antialiasedTools = (options&ANTIALIASED_TOOLS)!=0;
 		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
 		doubleBuffer = (options&DOUBLE_BUFFER)!=0;
+		noPointLabels = (options&NO_POINT_LABELS)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -318,7 +321,8 @@ public class Prefs {
 			+ (blackCanvas?BLACK_CANVAS:0) + (weightedColor?WEIGHTED:0) 
 			+ (pointAutoMeasure?AUTO_MEASURE:0) + (requireControlKey?REQUIRE_CONTROL:0)
 			+ (useInvertingLut?USE_INVERTING_LUT:0) + (antialiasedTools?ANTIALIASED_TOOLS:0)
-			+ (intelByteOrder?INTEL_BYTE_ORDER:0) + (doubleBuffer?DOUBLE_BUFFER:0);
+			+ (intelByteOrder?INTEL_BYTE_ORDER:0) + (doubleBuffer?DOUBLE_BUFFER:0)
+			+ (noPointLabels?NO_POINT_LABELS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

@@ -33,7 +33,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isLinux;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isLinux, isVista;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -51,6 +51,7 @@ public class IJ {
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
+		isVista = isWin && osname.indexOf("Vista")!=-1;
 		String version = System.getProperty("java.version").substring(0,3);
 		// JVM on Sharp Zaurus PDA claims to be "3.1"!
 		isJava2 = version.compareTo("1.1")>0 && version.compareTo("2.9")<=0;
@@ -377,6 +378,7 @@ public class IJ {
 	private static void showResults() {
 		TextWindow resultsWindow = new TextWindow("Results", "", 300, 200);
 		textPanel = resultsWindow.getTextPanel();
+		textPanel.setResultsTable(Analyzer.getResultsTable());
 		if (ij!=null)
 			textPanel.addKeyListener(ij);
 	}
@@ -627,6 +629,7 @@ public class IJ {
 	}
 	
 	static void showTime(ImagePlus imp, long start, String str, int nslices) {
+		if (Interpreter.isBatchMode()) return;
 	    long elapsedTime = System.currentTimeMillis() - start;
 		double seconds = elapsedTime / 1000.0;
 		long pixels = imp.getWidth() * imp.getHeight();
@@ -662,7 +665,7 @@ public class IJ {
 		double np = n;
 		boolean negative = n<0.0;
 		if (negative) np = -n;
-		if (np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces))
+		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d)
 			return Float.toString((float)n); // use scientific notation
 		double whole = Math.round(np * Math.pow(10, decimalPlaces));
 		double rounded = whole/Math.pow(10, decimalPlaces);
@@ -684,7 +687,7 @@ public class IJ {
 				case 9: df.applyPattern("0.000000000"); dfDigits=9; break;
 			}
 		String s = df.format(rounded);
-		if (s.length()>12) s = Float.toString((float)n); // use scientific notation
+		//if (s.length()>12) s = Float.toString((float)n); // use scientific notation
 		return s;
 	}
 
@@ -786,6 +789,11 @@ public class IJ {
 	/** Returns true if ImageJ is running on Linux. */
 	public static boolean isLinux() {
 		return isLinux;
+	}
+
+	/** Returns true if ImageJ is running on Windows Vista. */
+	public static boolean isVista() {
+		return isVista;
 	}
 
 	/** Displays an error message and returns false if the

@@ -44,8 +44,16 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		if (path==null) return;
 		openingStartupMacrosInEditor = path.indexOf("StartupMacros")!=-1;
 		String text = open(path);
-		if (text!=null)
+		if (text!=null) {
+			String functions = Interpreter.getAdditionalFunctions();
+			if (functions!=null) {
+				if (!(text.endsWith("\n") || functions.startsWith("\n")))
+					text = text + "\n" + functions;
+				else
+					text = text + functions;
+			}
 			install(text);
+		}
 	}
 			
 	void install() {
@@ -330,6 +338,16 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return false;
 	}
 	
+	public static void runMacroShortcut(String name) {
+		if (instance==null) return;
+		if (name.startsWith(commandPrefixS))
+		name = name.substring(1);
+		for (int i=0; i<instance.nMacros; i++) {
+			if (name.equals(instance.macroNames[i]))
+				(new MacroRunner()).runShortcut(instance.pgm, instance.macroStarts[i], name);
+		}
+	}
+
 	public void runMacro(String name) {
 		if (anonymousName!=null && name.equals(anonymousName)) {
 			//IJ.log("runMacro: "+anonymousName);

@@ -662,8 +662,11 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public int getInterpolatedRGBPixel(double x, double y) {
+		if (width==1||height==1)
+			return getPixel((int)x, (int)y);
 		if (x<0.0) x = 0.0;
-		if (x>=width-1.0) x = width-1.001;
+		if (x>=width-1.0)
+			x = width-1.001;
 		if (y<0.0) y = 0.0;
 		if (y>=height-1.0) y = height-1.001;
 		return getInterpolatedPixel(x, y, pixels);

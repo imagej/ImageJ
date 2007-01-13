@@ -1562,6 +1562,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 			listeners = null;
 	}
 	
+	/** Returns 'true' if the image is locked. */
+	public boolean isLocked() {
+		return locked;
+	}
+	
     public String toString() {
     	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
     }

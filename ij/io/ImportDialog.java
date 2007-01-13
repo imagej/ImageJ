@@ -9,6 +9,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.util.StringSorter;
 import ij.plugin.frame.Recorder;
+import ij.plugin.FolderOpener;
 import ij.measure.Calibration;
 
 
@@ -88,7 +89,10 @@ public class ImportDialog {
 	
 	/** Opens all the images in the directory. */
 	void openAll(String[] list, FileInfo fi) {
-		StringSorter.sort(list);
+		//StringSorter.sort(list);
+		FolderOpener fo = new FolderOpener();
+		list = fo.sortFileList(list);
+		if (list==null) return;
 		ImageStack stack=null;
 		ImagePlus imp=null;
 		double min = Double.MAX_VALUE;

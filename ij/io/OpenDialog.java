@@ -98,7 +98,7 @@ import javax.swing.filechooser.*;
 	// Run JFileChooser on event dispatch thread to avoid deadlocks
 	void jOpenInvokeAndWait(final String title, final String path, final String fileName) {
 		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
+			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle(title);

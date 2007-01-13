@@ -40,7 +40,8 @@ public class ResultsTable {
 	public ResultsTable() {
 	}
 	
-	/** Returns the ResultsTable used by the Measure command. */
+	/** Returns the ResultsTable used by the Measure command. This
+		table must be displayed in the "Results" window. */
 	public static ResultsTable getResultsTable() {
 		return Analyzer.getResultsTable();
 	}
@@ -357,14 +358,20 @@ public class ResultsTable {
 	}
 
 	/** Displays the contents of this ResultsTable in a window with the specified title. 
-		Opens a new window if there is no open text window with this title. */
+		Opens a new window if there is no open text window with this title. The title must
+		be "Results" if this table was obtained using ResultsTable.getResultsTable
+		or Analyzer.getResultsTable . */
 	public void show(String windowTitle) {
+		if (!windowTitle.equals("Results") && this==Analyzer.getResultsTable())
+			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
 		String tableHeadings = getColumnHeadings();		
 		TextPanel tp;
 		if (windowTitle.equals("Results")) {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
 			IJ.setColumnHeadings(tableHeadings);
+			if (getCounter()>0)
+				Analyzer.setUnsavedMeasurements(true);
 		} else {
 			Frame frame = WindowManager.getFrame(windowTitle);
 			TextWindow win;
@@ -375,6 +382,7 @@ public class ResultsTable {
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 		}
+		tp.setResultsTable(this);
 		int n = getCounter();
 		if (n>0) {
 			StringBuffer sb = new StringBuffer(n*tableHeadings.length());

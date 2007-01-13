@@ -170,7 +170,7 @@ public class Functions implements MacroConstants, Measurements {
 			case NIMAGES: value=getImageCount(); break;
 			case NSLICES: value=getStackSize(); break;
 			case LENGTH_OF: value=lengthOf(); break;
-			case GET_ID: interp.getParens(); value = getImage().getID(); break;
+			case GET_ID: interp.getParens(); resetImage(); value=getImage().getID(); break;
 			case BIT_DEPTH: interp.getParens(); value = getImage().getBitDepth(); break;
 			case SELECTION_TYPE: value=getSelectionType(); break;
 			case IS_OPEN: value=isOpen(); break;
@@ -190,6 +190,7 @@ public class Functions implements MacroConstants, Measurements {
 			case CALIBRATE: value = getImage().getCalibration().getCValue(getArg()); break;
 			case ROI_MANAGER: value = roiManager(); break;
 			case TOOL_ID: interp.getParens(); value = Toolbar.getToolId(); break;
+			case GET_STATE: value = getState(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -202,7 +203,7 @@ public class Functions implements MacroConstants, Measurements {
 			case D2S: str = d2s(); break;
 			case TO_HEX: str = toString(16); break;
 			case TO_BINARY: str = toString(2); break;
-			case GET_TITLE: interp.getParens(); str = getImage().getTitle(); break;
+			case GET_TITLE: interp.getParens(); resetImage(); str=getImage().getTitle(); break;
 			case GET_STRING: str = getStringDialog(); break;
 			case SUBSTRING: str = substring(); break;
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
@@ -2069,6 +2070,7 @@ public class Functions implements MacroConstants, Measurements {
 				Interpreter.addBatchModeImage(tmp);
 			return;
 		}
+		IJ.showProgress(0, 0);
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		WindowManager.setTempCurrentImage(null);
 		if (sarg==null) {  //false
@@ -2922,6 +2924,8 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.debugMode = state;
 		else if (arg1.equals("openusingplugins"))
 			Opener.setOpenUsingPlugins(state);
+		else if (arg1.equals("queuemacros"))
+			pgm.queueCommands = state;
 		else
 			interp.error("Invalid option");
 	}
@@ -2959,7 +2963,17 @@ public class Functions implements MacroConstants, Measurements {
 		roi.setLocation(x, y);
 		imp.draw();
 	}
-
+	
+	double getState() {
+		double state = 0.0;
+		String arg = getStringArg();
+		arg = arg.toLowerCase(Locale.US);
+		if (arg.equals("locked"))
+			state = getImage().isLocked()?1.0:0.0;
+		else
+			interp.error("Argument must be 'locked'");
+		return state;
+	}
 
 } // class Functions
 

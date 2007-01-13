@@ -12,7 +12,7 @@ import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 
 /** A frame for displaying images. */
-public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener {
+public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
 
 	public static final int MIN_WIDTH = 128;
 	public static final int MIN_HEIGHT = 32;
@@ -76,6 +76,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
  		addWindowListener(this);
  		addWindowStateListener(this);
  		addKeyListener(ij);
+		if (!(this instanceof StackWindow))
+			addMouseWheelListener(this);
 		setResizable(true);
 		WindowManager.addWindow(this);
 		imp.setWindow(this);
@@ -428,6 +430,26 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void windowIconified(WindowEvent e) {}	
 	public void windowOpened(WindowEvent e) {}
 	
+	public void mouseWheelMoved(MouseWheelEvent event) {
+		int rotation = event.getWheelRotation();
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		Rectangle srcRect = ic.getSrcRect();
+		int xstart = srcRect.x;
+		int ystart = srcRect.y;
+		if (IJ.spaceBarDown() || srcRect.height==height) {
+			srcRect.x += rotation*Math.max(width/200, 1);
+			if (srcRect.x<0) srcRect.x = 0;
+			if (srcRect.x+srcRect.width>width) srcRect.x = width-srcRect.width;
+		} else {
+			srcRect.y += rotation*Math.max(height/200, 1);
+			if (srcRect.y<0) srcRect.y = 0;
+			if (srcRect.y+srcRect.height>height) srcRect.y = height-srcRect.height;
+		}
+		if (srcRect.x!=xstart || srcRect.y!=ystart)
+			ic.repaint();
+	}
+
 	/** Copies the current ROI to the clipboard. The entire
 	    image is copied if there is no ROI. */
 	public void copy(boolean cut) {

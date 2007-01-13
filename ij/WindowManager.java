@@ -25,11 +25,11 @@ public class WindowManager {
 	public synchronized static void setCurrentWindow(ImageWindow win) {
 		if (win==null || win.isClosed() || win.getImagePlus()==null) // deadlock-"wait to lock"
 			return;
+		//IJ.log("setCurrentWindow: "+win.getImagePlus().getTitle()+" ("+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
 		setWindow(win);
 		tempCurrentImage = null;
 		if (win==currentWindow || imageList.size()==0)
 			return;
-		//IJ.log(win.getImagePlus().getTitle()+", previous="+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
 		if (currentWindow!=null) {
 			// free up pixel buffers AWT Image resources used by current window
 			ImagePlus imp = currentWindow.getImagePlus();

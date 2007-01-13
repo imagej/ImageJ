@@ -15,6 +15,10 @@ public class MacroRunner implements Runnable {
 	private Thread thread;
 	private String argument;
 
+	/** Create a MacrRunner. */
+	public MacroRunner() {
+	}
+
 	/** Create a new object that interprets macro source in a separate thread. */
 	public MacroRunner(String macro) {
 		this.macro = macro;
@@ -75,6 +79,20 @@ public class MacroRunner implements Runnable {
 		thread = new Thread(this, name+"_Macro$");
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
 		thread.start();
+	}
+
+	/** Runs tokenized macro on current thread if pgm.queueCommands is true. */
+	public void runShortcut(Program pgm, int address, String name) {
+		this.pgm = pgm;
+		this.address = address;
+		this.name = name;
+		if (pgm.queueCommands)
+			run();
+		else {
+			thread = new Thread(this, name+"_Macro$");
+			thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
+			thread.start();
+		}
 	}
 
 	public void run() {

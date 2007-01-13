@@ -180,6 +180,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	void installMacros(String text, boolean installInPluginsMenu) {
+		String functions = Interpreter.getAdditionalFunctions();
+		if (functions!=null && text!=null) {
+			if (!(text.endsWith("\n") || functions.startsWith("\n")))
+				text = text + "\n" + functions;
+			else
+				text = text + functions;
+		}
 		installer = new MacroInstaller();
 		installer.setFileName(getTitle());
 		int nShortcutsOrTools = installer.install(text, macrosMenu);

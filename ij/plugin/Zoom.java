@@ -42,10 +42,13 @@ public class Zoom implements PlugIn{
 	}
 	
 	void view100Percent(ImageCanvas ic) {
+		Point loc = ic.getCursorLoc();
+		if (!IJ.altKeyDown())
+			{loc.x=0; loc.y=0;}
 		while(ic.getMagnification()<1.0)
-			ic.zoomIn(0, 0);
+			ic.zoomIn(loc.x, loc.y);
 		while(ic.getMagnification()>1.0)
-			ic.zoomOut(0, 0);
+			ic.zoomOut(loc.x, loc.y);
 	}
 	
 	void zoomToSelection(ImagePlus imp, ImageCanvas ic) {

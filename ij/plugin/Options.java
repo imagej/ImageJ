@@ -107,10 +107,12 @@ public class Options implements PlugIn {
 
 	// Cross hair mark width
 	void pointToolOptions() {
+		boolean saveNoPointLabels = Prefs.noPointLabels;
 		GenericDialog gd = new GenericDialog("Point Tool");
 		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
 		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
 		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
+		gd.addCheckbox("Label Points", !Prefs.noPointLabels);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -119,7 +121,12 @@ public class Options implements PlugIn {
 		Analyzer.markWidth = width;
 		Prefs.pointAutoMeasure = gd.getNextBoolean();
 		Prefs.pointAutoNextSlice = gd.getNextBoolean();
+		Prefs.noPointLabels = !gd.getNextBoolean();
 		if (Prefs.pointAutoNextSlice) Prefs.pointAutoMeasure = true;
+		if (Prefs.noPointLabels!=saveNoPointLabels) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.draw();
+		}
 		return;
 	}
 

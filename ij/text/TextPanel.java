@@ -51,6 +51,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	boolean columnsManuallyAdjusted;
 	long mouseDownTime;
     String filePath;
+    ResultsTable rt;
 
   
 	/** Constructs a new TextPanel. */
@@ -443,7 +444,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (s.length()>0) {
 			IJ.showStatus((selEnd-selStart+1)+" lines copied to clipboard");
 			if (this.getParent() instanceof ImageJ)
-				Analyzer.setSaved();
+				Analyzer.setUnsavedMeasurements(false);
 		}
 		return s.length();
 	}
@@ -474,21 +475,29 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (selStart==0 && selEnd==(iRowCount-1)) {
 			vData.removeAllElements();
 			iRowCount = 0;
-			if (IJ.isResultsWindow() && IJ.getTextPanel()==this) {
-				Analyzer.setSaved();
-				Analyzer.resetCounter();
+			if (rt!=null) {
+				if (IJ.isResultsWindow() && IJ.getTextPanel()==this) {
+					Analyzer.setUnsavedMeasurements(false);
+					Analyzer.resetCounter();
+				} else
+					rt.reset();
 			}
 		} else {
+			int rowCount = iRowCount;
+			boolean atEnd = rowCount-selEnd<8;
 			int count = selEnd-selStart+1;
 			for (int i=0; i<count; i++) {
 				vData.removeElementAt(selStart);
 				iRowCount--;
 			}
-			if (IJ.isResultsWindow() && IJ.getTextPanel()==this) {
-				ResultsTable rt = ResultsTable.getResultsTable();
+			if (rt!=null && rowCount==rt.getCounter()) {
 				for (int i=0; i<count; i++)
 					rt.deleteRow(selStart);
-				rt.show("Results");
+				rt.show(title);
+				if (!atEnd) {
+					iY = 0;
+					tc.repaint();
+				}
 			}
 		}
 		selStart=-1; selEnd=-1; selOrigin=-1; selLine=-1; 
@@ -566,7 +575,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		save(pw);
 		pw.close();
 		if (isResults) {
-			Analyzer.setSaved();
+			Analyzer.setUnsavedMeasurements(false);
 			if (Recorder.record)
 				Recorder.record("saveAs", "Measurements", path);
 		} else {
@@ -632,6 +641,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if there is no slection. */
 	public int getSelectionEnd() {
 		return selEnd;
+	}
+	
+	/** Sets the ResultsTable associated with this TextPanel. */
+	public void setResultsTable(ResultsTable rt) {
+		this.rt = rt;
 	}
 
 	void flush() {

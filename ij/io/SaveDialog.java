@@ -125,7 +125,7 @@ public class SaveDialog {
 	// dispatch thread to avoid thread deadlocks.
 	void jSaveInvokeAndWait(final String title, final String defaultDir, final String defaultName) {
 		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
+			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
 					JFileChooser fc = new JFileChooser();
 					fc.setDialogTitle(title);

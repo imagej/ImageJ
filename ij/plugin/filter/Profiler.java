@@ -40,6 +40,7 @@ public class Profiler implements PlugInFilter {
 		gd.addCheckbox("Vertical Profile", verticalProfile);
 		gd.addCheckbox("List Values", PlotWindow.listValues);
 		gd.addCheckbox("Interpolate Line Profiles", PlotWindow.interpolate);
+		gd.addCheckbox("Draw Grid Lines", !PlotWindow.noGridLines);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -60,6 +61,7 @@ public class Profiler implements PlugInFilter {
 		verticalProfile = gd.getNextBoolean();
 		PlotWindow.listValues = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
+		PlotWindow.noGridLines = !gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {

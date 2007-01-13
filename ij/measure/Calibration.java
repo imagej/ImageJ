@@ -183,8 +183,11 @@ public class Calibration implements Cloneable {
  		if (newBitDepth==16 && imp.getLocalCalibration().isSigned16Bit()) {
 			double[] coeff = new double[2]; coeff[0] = -32768.0; coeff[1] = 1.0;
  			setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
-		} else if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB)
+		} else if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB) {
+			String saveUnit = valueUnit;
 			disableDensityCalibration();
+			if (type==ImagePlus.GRAY32) valueUnit = saveUnit;
+		}
  		bitDepth = newBitDepth;
  	}
  	

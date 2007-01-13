@@ -97,7 +97,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		names[NUM_TOOLS-1] = "Switch to alternate macro tool sets";
 		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
 		addPopupMenus();
-		if (IJ.isMacOSX()) Prefs.antialiasedTools = true;
+		if (IJ.isMacOSX() || IJ.isVista()) Prefs.antialiasedTools = true;
 	}
 
 	void addPopupMenus() {
@@ -151,7 +151,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void drawButtons(Graphics g) {
-		if (Prefs.antialiasedTools && IJ.isJava2()) {
+		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -482,7 +482,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		down[current] = true;
 		down[previous] = false;
 		Graphics g = this.getGraphics();
-		if (Prefs.antialiasedTools && IJ.isJava2()) {
+		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}
@@ -552,7 +552,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
-			if (Prefs.antialiasedTools && IJ.isJava2())
+			if (Prefs.antialiasedTools)
 				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			tb.drawButton(g, tool);
 			if (g!=null) g.dispose();

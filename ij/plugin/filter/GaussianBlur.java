@@ -118,11 +118,11 @@ public class GaussianBlur implements PlugInFilter {
 	void blurFloat(ImageProcessor ip, float[] kernel, int p1, int p2) {
 		if (canceled) return;
 		Convolver c = new Convolver();
-		IJ.showProgress(p1, p2);
+		IJ.showProgress((double)p1/p2);
 		if (!c.convolve(ip, kernel, kernel.length, 1))
 			{canceled=true; return;}
 		ip.snapshot();
-		IJ.showProgress(p1+1, p2);
+		IJ.showProgress((double)(p1+1)/p2);
 		if (!c.convolve(ip, kernel,1, kernel.length))
 			{canceled=true; return;}
 	}
@@ -169,7 +169,7 @@ public class GaussianBlur implements PlugInFilter {
 	
 	public boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Gaussian Blur...");
-		gd.addNumericField("Radius (pixels)", radius,0);
+		gd.addNumericField("Radius (pixels)", radius, 0);
 		gd.addCheckbox("Show Kernel", displayKernel);
 		gd.showDialog();
 		if (gd.wasCanceled()) {

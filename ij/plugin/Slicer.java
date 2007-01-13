@@ -43,7 +43,8 @@ public class Slicer implements PlugIn, TextListener {
 			return;
 		}
 		int stackSize = imp.getStackSize();
-		if (stackSize<2) {
+		Roi roi = imp.getRoi();
+		if (stackSize<2 && !(roi==null||roi.getType()==Roi.RECTANGLE)) {
 			IJ.error("Reslicer", "Stack required");
 			return;
 		}
@@ -207,12 +208,13 @@ public class Slicer implements PlugIn, TextListener {
 		String status = null;
 		ImagePlus imp2 = null;
 		ImageStack stack2 = null;
+		boolean isStack = imp.getStackSize()>1;
 		IJ.resetEscape();
 		for (int i=0; i<outputSlices; i++)	{
 			if (virtualStack)
 				status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
 			ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
-			drawLine(x1, y1, x2, y2, imp);
+			if (isStack) drawLine(x1, y1, x2, y2, imp);
 			if (stack2==null) {
 				stack2 = createOutputStack(imp, ip);
 				if (stack2==null || stack2.getSize()<outputSlices) return null; // out of memory
@@ -251,11 +253,15 @@ public class Slicer implements PlugIn, TextListener {
 		int stackSize = stack.getSize();
 		ImageProcessor ip,ip2=null;
 		float[] line = null;
+		boolean ortho = (int)x1==x1&&(int)y1==y1&&x1==x2||y1==y2;
+		//IJ.log("ortho: "+ortho);
 		for (int i=0; i<stackSize; i++) {
 			ip = stack.getProcessor(flip?stackSize-i:i+1);
 			if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
 				line = getIrregularProfile(roi, ip);
-			 else
+			 else if (ortho)
+				line = getOrthoLine(ip, (int)x1, (int)y1, (int)x2, (int)y2, line);
+			else
 				line = getLine(ip, x1, y1, x2, y2, line);
 			if (rotate) {
 				if (i==0) ip2 = ip.createProcessor(stackSize, line.length);
@@ -401,6 +407,27 @@ public class Slicer implements PlugIn, TextListener {
 		return data;
 	}
 	
+	private float[] getOrthoLine(ImageProcessor ip, int x1, int y1, int x2, int y2, float[] data) {
+		int dx = x2-x1;
+		int dy = y2-y1;
+		int n = Math.max(dx, dy);
+		if (data==null) data = new float[n];
+		int xinc = dx/n;
+		int yinc = dy/n;
+		int rx = x1;
+		int ry = y1;
+		for (int i=0; i<n; i++) {
+			if (rgb) {
+				int rgbPixel = ((ColorProcessor)ip).getPixel(rx, ry);
+				data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
+			} else
+				data[i] = (float)ip.getPixelValue(rx, ry);
+			rx += xinc;
+			ry += yinc;
+		}
+		return data;
+	}
+
 	void drawLine(double x1, double y1, double x2, double y2, ImagePlus imp) {
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
