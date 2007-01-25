@@ -7,12 +7,17 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.plugin.filter.Analyzer;
+import ij.measure.ResultsTable;
+import ij.macro.Interpreter;
 
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
 */
 public class TextWindow extends Frame implements ActionListener, FocusListener, ItemListener {
 
+	public static final String LOC_KEY = "results.loc";
+	public static final String WIDTH_KEY = "results.width";
+	public static final String HEIGHT_KEY = "results.height";
 	static final String FONT_SIZE = "tw.font.size";
 	static final String FONT_ANTI= "tw.font.anti";
 	TextPanel textPanel;
@@ -59,8 +64,21 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
  		addMenuBar();
 		setFont();
 		WindowManager.addWindow(this);
-		setSize(width, height);
-		GUI.center(this);
+		
+		Point loc=null;
+		int w=0, h=0;
+		if (title.equals("Results")) {
+			loc = Prefs.getLocation(LOC_KEY);
+			w = (int)Prefs.get(WIDTH_KEY, 0.0);
+			h = (int)Prefs.get(HEIGHT_KEY, 0.0);
+		}
+		if (loc!=null && w>0 && h>0) {
+			setSize(w, h);
+			setLocation(loc);
+		} else {
+			setSize(width, height);
+			GUI.center(this);
+		}
 		show();
 	}
 
@@ -103,7 +121,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			m.addSeparator();
 			m.add(new MenuItem("Clear Results"));
 			m.add(new MenuItem("Summarize"));
+			m.add(new MenuItem("Distribution..."));
 			m.add(new MenuItem("Set Measurements..."));
+			m.add(new MenuItem("Duplicate..."));
 		}
 		m.addActionListener(this);
 		mb.add(m);
@@ -202,10 +222,15 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			if (!Analyzer.resetCounter())
 				return;
 			IJ.setTextPanel(null);
-		}
-		if (getTitle().equals("Log")) {
+			Prefs.saveLocation(LOC_KEY, getLocation());
+			Dimension d = getSize();
+			Prefs.set(WIDTH_KEY, d.width);
+			Prefs.set(HEIGHT_KEY, d.height);
+		} else if (getTitle().equals("Log")) {
 			IJ.debugMode = false;
 			IJ.log("\\Closed");
+		} else if (textPanel!=null && textPanel.rt!=null) {
+			if (!saveContents()) return;
 		}
 		setVisible(false);
 		dispose();
@@ -213,7 +238,25 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		textPanel.flush();
 	}
 	
-    void changeFontSize(boolean larger) {
+	boolean saveContents() {
+		int lineCount = textPanel.getLineCount();
+		if (!textPanel.unsavedLines) lineCount = 0;
+		ImageJ ij = IJ.getInstance();
+		boolean macro = IJ.macroRunning() || Interpreter.isBatchMode();
+		if (lineCount>0 && !macro && ij!=null && !ij.quitting()) {
+			YesNoCancelDialog d = new YesNoCancelDialog(this, getTitle(), "Save "+lineCount+" measurements?");
+			if (d.cancelPressed())
+				return false;
+			else if (d.yesPressed()) {
+				if (!textPanel.saveAs(""))
+					return false;
+			}
+		}
+		textPanel.rt.reset();
+		return true;
+	}
+	
+	void changeFontSize(boolean larger) {
         int in = fontSize;
         if (larger) {
             fontSize++;

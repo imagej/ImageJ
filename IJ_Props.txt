@@ -288,14 +288,14 @@ utilities03="List Commands...",ij.plugin.CommandLister
 utilities04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
 utilities05="Threads...",ij.plugin.ThreadLister
 utilities06="Benchmark",ij.plugin.filter.Benchmark
-utilities07="Unlock Image",ij.plugin.SimpleCommands("unlock")
+utilities07="Reset...",ij.plugin.SimpleCommands("reset")
 utilities08="Monitor Memory...",ij.plugin.MemoryMonitor
 utilities09="Search...",ij.plugin.SimpleCommands("search")
 utilities10="Capture Screen [G]",ij.plugin.ScreenGrabber
 
 # Plugins installed in the Help/About submenu
-about01="Inverter...",Inverter_("about")
-about02="MemoryMonitor...",ij.plugin.MemoryMonitor("about")
+about01="About This Submenu...",ij.plugin.SimpleCommands("about")
+about02=-
 
 # URL of directory containing the sample images
 # Used when ImageJ is running as an application,

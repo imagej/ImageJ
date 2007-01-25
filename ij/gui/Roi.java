@@ -649,7 +649,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.clipboard = clipboard;
 		imp.getProcessor().snapshot();
 		updateClipRect();
-		if (IJ.debugMode) IJ.log("startPaste: "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 	}
 	

@@ -17,6 +17,7 @@ import ij.measure.*;
 public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	ActionListener, AdjustmentListener, ItemListener {
 
+	public static final String LOC_KEY = "b&c.loc";
 	static final int AUTO_THRESHOLD = 5000;
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "RGB"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
@@ -204,7 +205,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		pack();
-		GUI.center(this);
+		Point loc = Prefs.getLocation(LOC_KEY);
+		if (loc!=null)
+			setLocation(loc);
+		else
+			GUI.center(this);
 		if (IJ.isMacOSX()) setResizable(false);
 		show();
 
@@ -788,6 +793,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	public void windowClosing(WindowEvent e) {
 	 	close();
+		Prefs.saveLocation(LOC_KEY, getLocation());
 	}
 
     /** Overrides close() in PlugInFrame. */

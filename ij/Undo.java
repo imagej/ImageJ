@@ -24,8 +24,11 @@ public class Undo {
 	private static ImagePlus impCopy;
 	
 	public static void setup(int what, ImagePlus imp) {
-		if (imp==null)
-			{reset(); return;}
+		if (imp==null) {
+			whatToUndo = NOTHING;
+			reset();
+			return;
+		}
 		//IJ.log(imp.getTitle() + ": set up undo (" + what + ")");
 		if (what==FILTER && whatToUndo==COMPOUND_FILTER)
 				return;

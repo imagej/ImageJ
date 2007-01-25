@@ -3,8 +3,7 @@ import java.io.*;
 import java.util.*;
 import java.applet.*;
 import java.net.URL;
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 import java.applet.Applet;
 import ij.io.*;
 import ij.util.Tools;
@@ -76,6 +75,8 @@ public class Prefs {
 	public static boolean doubleBuffer;
 	/** Do not label multiple points created using point tool. */
 	public static boolean noPointLabels = true;
+	/** Disable Edit/Undo command. */
+	public static boolean disableUndo;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -353,7 +354,7 @@ public class Prefs {
 		 file using the keyword <code>key</code>. This value can be retrieved 
 		using the appropriate <code>getPref()</code> method. */
 	public static void set(String key, boolean value) {
-		set (key, ""+value);
+		set(key, ""+value);
 	}
 
 	/** Uses the keyword <code>key</code> to retrieve a string from the
@@ -391,6 +392,32 @@ public class Prefs {
 			return defaultValue;
 		else
 			return value.equals("true");
+	}
+
+	/** Saves the Point <code>loc</code> in the preferences
+		 file as a string using the keyword <code>key</code>. */
+	public static void saveLocation(String key, Point loc) {
+		set(key, loc.x+","+loc.y);
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a location
+		from the preferences file. Returns null if the
+		key is not found or the location is not valid (e.g., offscreen). */
+	public static Point getLocation(String key) {
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value==null) return null;
+		int index = value.indexOf(",");
+		if (index==-1) return null;
+		double xloc = Tools.parseDouble(value.substring(0, index));
+		if (Double.isNaN(xloc) || index==value.length()-1) return null;
+		double yloc = Tools.parseDouble(value.substring(index+1));
+		if (Double.isNaN(yloc)) return null;
+		Point p = new Point((int)xloc, (int)yloc);
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		if (p.x>screen.width-100 || p.y>screen.height-40)
+			return null;
+		else
+			return p;
 	}
 
 	/** Save plugin preferences. */

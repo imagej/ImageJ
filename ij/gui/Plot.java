@@ -51,7 +51,7 @@ public class Plot {
     /** the default flags */
     public static final int DEFAULT_FLAGS =  X_NUMBERS + Y_NUMBERS + /*X_TICKS + Y_TICKS +*/ X_GRID + Y_GRID; 
     /** the margin width left of the plot frame (enough for 5-digit numbers such as unscaled 16-bit data*/
-    public static final int LEFT_MARGIN = 55;
+    public static final int LEFT_MARGIN = 60;
     /** the margin width right of the plot frame */
     public static final int RIGHT_MARGIN = 18;
     /** the margin width above the plot frame */
@@ -364,7 +364,7 @@ public class Plot {
 		s = IJ.d2s(xMax,digits);
 		ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
 		ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
-		drawYLabel(yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height, fm);
+		drawYLabel(yLabel,LEFT_MARGIN-4,TOP_MARGIN,frame.height, fm);
     }
     
     void drawTicksEtc() {
@@ -388,7 +388,7 @@ public class Plot {
             if (digits < 0) digits = 0;
             int y1 = TOP_MARGIN;
             int y2 = TOP_MARGIN+frame.height;
-            int yNumbers = y2 + fontAscent + 4;
+            int yNumbers = y2 + fontAscent + 7;
             for (int i=0; i<=(i2-i1); i++) {
                 double v = (i+i1)*step;
                 int x = (int)Math.round((v - xMin)*xScale) + LEFT_MARGIN;
@@ -407,6 +407,7 @@ public class Plot {
                 }
             }
         }
+        int maxNumWidth = 0;
         if ((flags&(Y_NUMBERS + Y_TICKS + Y_GRID)) != 0) {
             double step = Math.abs(Math.max(frame.width/MAX_INTERVALS, MIN_Y_GRIDWIDTH)/yScale); //the smallest allowable increment
             step = niceNumber(step);
@@ -439,7 +440,9 @@ public class Plot {
                 }
                 if ((flags&Y_NUMBERS) != 0) {
                     String s = IJ.d2s(v,digits);
-                    ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-3, y+fontMaxAscent/2+1);
+                    int w = ip.getStringWidth(s);
+                    if (w>maxNumWidth) maxNumWidth = w;
+                    ip.drawString(s, LEFT_MARGIN-w-4, y+fontMaxAscent/2+1);
                 }
             }
         }
@@ -468,8 +471,8 @@ public class Plot {
             ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
         } else
             y += fm.getAscent();                    //space needed for x numbers
-        ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
-        drawYLabel(yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height, fm);
+        ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+6);
+        drawYLabel(yLabel,LEFT_MARGIN-maxNumWidth-4,TOP_MARGIN,frame.height, fm);
     }
     
     double niceNumber(double v) {   //the smallest "nice" number >= v. "Nice" numbers are .. 0.5, 1, 2, 5, 10, 20 ...
@@ -480,9 +483,8 @@ public class Plot {
     }
 
     void createImage() {
-        if (ip!=null)
-            return;
-        int width = plotWidth+LEFT_MARGIN+RIGHT_MARGIN;
+        if (ip!=null) return;
+       int width = plotWidth+LEFT_MARGIN+RIGHT_MARGIN;
         int height = plotHeight+TOP_MARGIN+BOTTOM_MARGIN;
         byte[] pixels = new byte[width*height];
         for (int i=0; i<width*height; i++)
@@ -568,10 +570,7 @@ public class Plot {
         label = label.rotateLeft();
         int y2 = y+(height-ip.getStringWidth(yLabel))/2;
         if (y2<y) y2 = y;
-        int x2;
-        if ((flags&Y_NUMBERS) != 0) x2 = 0; //space required for numbers, put label to the very left
-        else x2 = x-h-2;
-        //new ImagePlus("after", label).show();
+        int x2 = Math.max(x-h, 0);
         ip.insert(label, x2, y2);
     }
     

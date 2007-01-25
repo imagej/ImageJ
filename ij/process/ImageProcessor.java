@@ -72,8 +72,8 @@ public abstract class ImageProcessor extends Object {
 	protected int lutUpdateMode;
 	protected WritableRaster raster;
 	protected BufferedImage image;
-	//protected ColorModel cm2;
-	//protected static SampleModel sampleModel;
+	protected ColorModel cm2;
+	protected SampleModel sampleModel;
 	protected static IndexColorModel defaultColorModel;
 		
 	protected void showProgress(double percentDone) {
@@ -1553,7 +1553,6 @@ public abstract class ImageProcessor extends Object {
 			roiWidth+"x"+roiHeight+")";
 	}
 	
-	/*
 	protected SampleModel getIndexSampleModel() {
 		if (sampleModel==null) {
 			IndexColorModel icm = getDefaultColorModel();
@@ -1563,7 +1562,6 @@ public abstract class ImageProcessor extends Object {
 		}
 		return sampleModel;
 	}
-	*/
 
 	/** Returns the default grayscale IndexColorModel. */
 	public IndexColorModel getDefaultColorModel() {

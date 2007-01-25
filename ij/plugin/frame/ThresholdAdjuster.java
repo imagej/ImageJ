@@ -15,6 +15,7 @@ import ij.plugin.filter.Analyzer;
 public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measurements,
 	Runnable, ActionListener, AdjustmentListener, ItemListener {
 
+	public static final String LOC_KEY = "threshold.loc";
 	static final int RED=0, BLACK_AND_WHITE=1, OVER_UNDER=2;
 	static final String[] modes = {"Red","Black & White", "Over/Under"};
 	static final double defaultMinThreshold = 85; 
@@ -162,7 +163,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		pack();
-		GUI.center(this);
+		Point loc = Prefs.getLocation(LOC_KEY);
+		if (loc!=null)
+			setLocation(loc);
+		else
+			GUI.center(this);
 		firstActivation = true;
 		if (IJ.isMacOSX()) setResizable(false);
 		show();
@@ -579,6 +584,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
     public void windowClosing(WindowEvent e) {
     	close();
+		Prefs.saveLocation(LOC_KEY, getLocation());
 	}
 
     /** Overrides close() in PlugInFrame. */

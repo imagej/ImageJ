@@ -110,7 +110,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 	    	if (s2.getWidth()>0 && newSize>0) {
 	    		if (restoreRoi)
 	    			imp.killRoi();
-	    		imp.hide();
+	    		//imp.hide();
 	    		Calibration cal = imp.getCalibration();
 	    		if (cal.scaled()) {
     				cal.pixelWidth *= origWidth/newWidth;
@@ -118,7 +118,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
     				imp.setCalibration(cal);
     			}
 	    		imp.setStack(null, s2);
-	    		imp.show();
+	    		//imp.show();
 	    		if (restoreRoi) {
 	    			imp.restoreRoi();
 	    			roi = imp.getRoi();

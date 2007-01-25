@@ -8,6 +8,7 @@ import java.lang.reflect.*;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.plugin.frame.Editor;
 	
 /**	Copies and pastes images to the clipboard. Java 1.4 or later is 
 	required to copy to or paste from the system clipboard. */
@@ -80,10 +81,11 @@ public class Clipboard implements PlugIn, Transferable {
 		IJ.showStatus("Opening system clipboard...");
 		try {
 			Transferable transferable = clipboard.getContents(null);
-			boolean supported = transferable.isDataFlavorSupported(DataFlavor.imageFlavor);
-			if (!supported && IJ.isMacOSX() && displayMacImage(transferable))
+			boolean imageSupported = transferable.isDataFlavorSupported(DataFlavor.imageFlavor);
+			boolean textSupported = transferable.isDataFlavorSupported(DataFlavor.stringFlavor);
+			if (!imageSupported && IJ.isMacOSX() && displayMacImage(transferable))
 				return;
-			if (supported) {
+			if (imageSupported) {
 				Image img = (Image)transferable.getTransferData(DataFlavor.imageFlavor);
 				if (img==null) {
 					IJ.error("Unable to convert image on system clipboard");
@@ -96,8 +98,14 @@ public class Clipboard implements PlugIn, Transferable {
 				Graphics g = bi.createGraphics();
 				g.drawImage(img, 0, 0, null);
 				g.dispose();
-				WindowManager.checkForDuplicateName = true;          
+				WindowManager.checkForDuplicateName = true;
 				new ImagePlus("Clipboard", bi).show();
+			} else if (textSupported) {
+				String text = (String)transferable.getTransferData(DataFlavor.stringFlavor);
+				Editor ed = new Editor();
+				ed.setSize(600, 300);
+				ed.create("Clipboard", text);
+				IJ.showStatus("");
 			} else
 				IJ.error("Unable to find an image on the system clipboard");
 		} catch (Throwable t) {

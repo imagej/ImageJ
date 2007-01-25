@@ -1527,6 +1527,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return clipboard;
 	}
 	
+	/** Clears the internal clipboard. */
+	public static void resetClipboard() {
+		clipboard = null;
+	}
+
 	protected synchronized void notifyListeners(int id) {
 		if (listeners==null) return;
 		for (int i=0; i<listeners.size(); i++) {

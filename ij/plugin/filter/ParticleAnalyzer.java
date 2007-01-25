@@ -118,14 +118,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 
 	
-	/** Construct a ParticleAnalyzer.
+	/** Constructs a ParticleAnalyzer.
 		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
 		@param measurements	a flag word created by ORing constants defined in the Measurements interface
 		@param rt		a ResultsTable where the measurements will be stored
 		@param minSize	the smallest particle size in pixels
 		@param maxSize	the largest particle size in pixels
+		@param minCirc	minimum circularity
+		@param maxCirc	maximum circularity
 	*/
-	public ParticleAnalyzer(int options, int measurements, ResultsTable rt, double minSize, double maxSize) {
+	public ParticleAnalyzer(int options, int measurements, ResultsTable rt, double minSize, double maxSize, double minCirc, double maxCirc) {
 		this.options = options;
 		this.measurements = measurements;
 		this.rt = rt;
@@ -133,9 +135,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			this.rt = new ResultsTable();
 		this.minSize = minSize;
 		this.maxSize = maxSize;
+		this.minCircularity = minCirc;
+		this.maxCircularity = maxCirc;
 		slice = 1;
 	}
 	
+	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
+	public ParticleAnalyzer(int options, int measurements, ResultsTable rt, double minSize, double maxSize) {
+		this(options, measurements, rt, minSize, maxSize, 0.0, 1.0);
+	}
+
 	/** Default constructor */
 	public ParticleAnalyzer() {
 		slice = 1;
@@ -297,6 +306,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Performs particle analysis on the specified ImagePlus and
 		ImageProcessor. Returns false if there is an error. */
 	public boolean analyze(ImagePlus imp, ImageProcessor ip) {
+		if (this.imp==null) this.imp = imp;
 		showResults = (options&SHOW_RESULTS)!=0;
 		excludeEdgeParticles = (options&EXCLUDE_EDGE_PARTICLES)!=0;
 		resetCounter = (options&CLEAR_WORKSHEET)!=0;

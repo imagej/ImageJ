@@ -2926,6 +2926,8 @@ public class Functions implements MacroConstants, Measurements {
 			Opener.setOpenUsingPlugins(state);
 		else if (arg1.equals("queuemacros"))
 			pgm.queueCommands = state;
+		else if (arg1.equals("disableundo"))
+			Prefs.disableUndo = state;
 		else
 			interp.error("Invalid option");
 	}

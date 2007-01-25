@@ -68,6 +68,7 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	public Image createImage() {
+		if (ij.IJ.isJava16()) return createBufferedImage();
 		if (cm==null)
 			cm = getDefaultColorModel();
 		if (source==null || brokenNewPixels) {
@@ -83,8 +84,7 @@ public class ByteProcessor extends ImageProcessor {
 		return img;
 	}
 
-	/*
-	public Image createImageBeta() {
+	Image createBufferedImage() {
 		if (cm==null)
 			cm = getDefaultColorModel();
 		if (raster==null) {
@@ -98,7 +98,6 @@ public class ByteProcessor extends ImageProcessor {
 		}
 		return image;
 	}
-	*/
 
 	/** Returns a new, blank ByteProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {

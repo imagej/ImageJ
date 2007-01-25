@@ -16,7 +16,7 @@ public class GaussianBlur implements PlugInFilter {
 	private boolean isLineRoi;
 	private boolean isAreaRoi;
 	private boolean displayKernel;
-	private static int radius = 2;
+	private static double radius = 2.0;
 	
 	public int setup(String arg, ImagePlus imp) {
  		IJ.register(GaussianBlur.class);
@@ -151,6 +151,22 @@ public class GaussianBlur implements PlugInFilter {
     }
 
 	public float[] makeKernel(double radius) {
+		radius += 1.0;
+		double v = radius - (int)radius;
+		int extra = (v>0)?1:0;
+		int size = (int)(radius+extra)*2+1;
+		float[] kernel = new float[size];
+		for (int i=0; i<size; i++)
+			kernel[i] = (float)Math.exp(-0.5*(sqr((i-(radius-v))/((radius)*2)))/sqr(0.2));
+		float[] kernel2 = new float[size-2];
+		for (int i=0; i<size-2; i++)
+			kernel2[i] = kernel[i+1-extra];
+		if (kernel2.length==1)
+			kernel2[0] = 1f;
+		return kernel2;
+	}
+
+	public float[] makeKernel_old(double radius) {
 		radius += 1;
 		int size = (int)radius*2+1;
 		float[] kernel = new float[size];
@@ -169,14 +185,14 @@ public class GaussianBlur implements PlugInFilter {
 	
 	public boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Gaussian Blur...");
-		gd.addNumericField("Radius (pixels)", radius, 0);
+		gd.addNumericField("Radius (pixels)", radius, 1);
 		gd.addCheckbox("Show Kernel", displayKernel);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			canceled = true;
 			return false;
 		}
-		radius = (int)gd.getNextNumber();
+		radius = gd.getNextNumber();
 		displayKernel = gd.getNextBoolean();
 		return true;
 	}

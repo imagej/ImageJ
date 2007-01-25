@@ -9,7 +9,7 @@ import java.awt.*;
 	ResultsTable used by the <i>Analyze/Measure</i> command. 
 	@see ij.plugin.filter.Analyzer#getResultsTable
 */
-public class ResultsTable {
+public class ResultsTable implements Cloneable {
 
 	public static final int MAX_COLUMNS = 150;
 	
@@ -22,11 +22,11 @@ public class ResultsTable {
 		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
 		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19, INTEGRATED_DENSITY=20,
 		MEDIAN=21, SKEWNESS=22, KURTOSIS=23, AREA_FRACTION=24, SLICE=25;
-
-	private String[] headings = new String[MAX_COLUMNS];
-	private String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
+	private static final String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
 		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice"};
+
+	private String[] headings = new String[MAX_COLUMNS];
 	private int counter;
 	private double[][] columns = new double[MAX_COLUMNS][];
 	private String[] rowLabels;
@@ -390,6 +390,32 @@ public class ResultsTable {
 				sb.append(getRowAsString(i)+"\n");
 			tp.append(new String(sb));
 		}
+	}
+	
+	/** Creates a copy of this ResultsTable. */
+	public synchronized Object clone() {
+		try { 
+			ResultsTable rt2 = (ResultsTable)super.clone();
+			rt2.headings = new String[headings.length];
+			for (int i=0; i<=lastColumn; i++)
+				rt2.headings[i] = headings[i];
+			rt2.columns = new double[columns.length][];
+			for (int i=0; i<=lastColumn; i++) {
+				if (columns[i]!=null) {
+					double[] data = new double[maxRows];
+					for (int j=0; j<counter; j++)
+						data[j] = columns[i][j];
+					rt2.columns[i] = data;
+				}
+			}
+			if (rowLabels!=null) {
+				rt2.rowLabels = new String[rowLabels.length];
+				for (int i=0; i<counter; i++)
+					rt2.rowLabels[i] = rowLabels[i];
+			}
+			return rt2;
+		}
+		catch (CloneNotSupportedException e) {return null;}
 	}
 	
 	public String toString() {

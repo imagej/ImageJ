@@ -126,9 +126,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			maxWindow = getMaxWindow();
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
+		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
+			xbase = -1;
 		if (xbase==-1) {
 			count = 0;
 			xbase = maxWindow.x + 5;
+			if (width*2<=maxWindow.width)
+				xbase = maxWindow.x+maxWindow.width/2-width/2;
 			ybase = maxWindow.y;
 			xloc = xbase;
 			yloc = ybase;

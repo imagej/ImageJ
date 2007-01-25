@@ -11,6 +11,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
+import ij.plugin.frame.*;
 import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
@@ -66,7 +67,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.38g";
+	public static final String VERSION = "1.38h";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -578,13 +579,31 @@ public class ImageJ extends Frame implements ActionListener,
 			return;
 		}
 		//IJ.log("savePreferences");
-		if (applet==null)
+		if (applet==null) {
+			saveWindowLocations();
 			Prefs.savePreferences();
+		}
 		setVisible(false);
 		//IJ.log("dispose");
 		dispose();
 		if (exitWhenQuitting)
 			System.exit(0);
+	}
+	
+	void saveWindowLocations() {
+		Frame frame = WindowManager.getFrame("B&C");
+		if (frame!=null)
+			Prefs.saveLocation(ContrastAdjuster.LOC_KEY, frame.getLocation());
+		frame = WindowManager.getFrame("Threshold");
+		if (frame!=null)
+			Prefs.saveLocation(ThresholdAdjuster.LOC_KEY, frame.getLocation());
+		frame = WindowManager.getFrame("Results");
+		if (frame!=null) {
+			Prefs.saveLocation(TextWindow.LOC_KEY, frame.getLocation());
+			Dimension d = frame.getSize();
+			Prefs.set(TextWindow.WIDTH_KEY, d.width);
+			Prefs.set(TextWindow.HEIGHT_KEY, d.height);
+		}
 	}
 
 }

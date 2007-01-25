@@ -81,7 +81,7 @@ public class ImageStatistics implements Measurements {
 		for (int i=minThreshold; i<=maxThreshold; i++) {
 			count = histogram[i];
 			pixelCount += count;
-			sum += i*count;
+			sum += (double)i*count;
 			value = i;
 			sum2 += (value*value)*count;
 			if (count>maxCount) {

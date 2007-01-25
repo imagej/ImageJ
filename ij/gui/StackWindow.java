@@ -27,6 +27,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) sliceSelector.addKeyListener(ij);
 		sliceSelector.addAdjustmentListener(this);
+		sliceSelector.setFocusable(false);
 		int blockIncrement = stackSize/10;
 		if (blockIncrement<1) blockIncrement = 1;
 		sliceSelector.setUnitIncrement(1);

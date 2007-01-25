@@ -52,6 +52,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	long mouseDownTime;
     String filePath;
     ResultsTable rt;
+    boolean unsavedLines;
 
   
 	/** Constructs a new TextPanel. */
@@ -82,6 +83,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			addPopupItem("Summarize");
 			addPopupItem("Distribution...");
 			addPopupItem("Set Measurements...");
+			addPopupItem("Duplicate...");
 		}
 	}
 
@@ -157,6 +159,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				adjustHScroll();
 			}
 			updateDisplay();
+			unsavedLines = true;
 		}
 	}
 	
@@ -176,8 +179,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (data.equals("")) 
 				break;
 		}
-		if (isShowing())
+		if (isShowing()) {
 			updateDisplay();
+			unsavedLines = true;
+		}
 	}
 	
 	/** Adds a single line to the end of this TextPanel without updating the display. */
@@ -364,6 +369,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			clearSelection();
 		else if (cmd.equals("Select All"))
 			selectAll();
+		else if (cmd.equals("Duplicate..."))
+			duplicate();
 		else if (cmd.equals("Summarize"))
 			IJ.doCommand("Summarize");
 		else if (cmd.equals("Distribution..."))
@@ -378,6 +385,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
  	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
 
+	void duplicate() {
+		if (rt==null) return;
+		ResultsTable rt2 = (ResultsTable)rt.clone();
+		String title2 = IJ.getString("Title:", "Results2");
+		if (!title2.equals("")) {
+			if (title2.equals("Results")) title2 = "Results2";
+			rt2.show(title2);
+		}
+	}
+	
 	void select(int x,int y) {
 		Dimension d = tc.getSize();
 		if(iRowHeight==0 || x>d.width || y>d.height)
@@ -455,6 +472,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (count>0)
 			copySelection();
 		resetSelection();
+		unsavedLines = false;
 		return count;
 	}
 	
@@ -547,6 +565,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			char[] chars = (char[])(vData.elementAt(i));
 			pw.println(new String(chars));
 		}
+		unsavedLines = false;
 	}
 
 	/** Saves all the text in this TextPanel to a file. Set

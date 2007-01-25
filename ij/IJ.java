@@ -33,7 +33,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isLinux, isVista;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isLinux, isVista;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -53,10 +53,12 @@ public class IJ {
 		isLinux = osname.startsWith("Linux");
 		isVista = isWin && osname.indexOf("Vista")!=-1;
 		String version = System.getProperty("java.version").substring(0,3);
-		// JVM on Sharp Zaurus PDA claims to be "3.1"!
-		isJava2 = version.compareTo("1.1")>0 && version.compareTo("2.9")<=0;
-		isJava14 = version.compareTo("1.3")>0 && version.compareTo("2.9")<=0;
-		isJava15 = version.compareTo("1.4")>0 && version.compareTo("2.9")<=0;
+		if (version.compareTo("2.9")<=0) {  // JVM on Sharp Zaurus PDA claims to be "3.1"!
+			isJava2 = version.compareTo("1.1")>0;
+			isJava14 = version.compareTo("1.3")>0;
+			isJava15 = version.compareTo("1.4")>0;
+			isJava16 = version.compareTo("1.5")>0;
+		}
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -192,7 +194,7 @@ public class IJ {
 		ImageProcessor mask = imp.getMask();
 		if (slices==1 || !doesStacks) {
 			ip = imp.getProcessor();
-			if ((capabilities&PlugInFilter.NO_UNDO)!=0)
+			if ((capabilities&PlugInFilter.NO_UNDO)!=0 || Prefs.disableUndo)
 				Undo.reset();
 			else {
 				Undo.setup(Undo.FILTER, imp);
@@ -784,6 +786,11 @@ public class IJ {
 	/** Returns true if ImageJ is running on a Java 1.5 or greater JVM. */
 	public static boolean isJava15() {
 		return isJava15;
+	}
+
+	/** Returns true if ImageJ is running on a Java 1.6 or greater JVM. */
+	public static boolean isJava16() {
+		return isJava16;
 	}
 
 	/** Returns true if ImageJ is running on Linux. */
