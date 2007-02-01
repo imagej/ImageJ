@@ -1092,7 +1092,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
 			Rectangle r = pRoi.getBounds();
-			if (r.width<=width || r.height<=height) { // will it fit in this window?
+			if (r.width<=width || r.height<=height) { // will it fit in this image?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
 				if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0) // does it need to be moved?

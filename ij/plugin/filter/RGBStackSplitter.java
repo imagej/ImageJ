@@ -23,11 +23,12 @@ public class RGBStackSplitter implements PlugInFilter {
 
     /** Splits the specified RGB image or stack into three 8-bit grayscale images or stacks. */
     public void split(ImagePlus imp) {
-        split(imp.getStack(), true);
+    	boolean keepSource = IJ.altKeyDown();
         String title = imp.getTitle();
         Calibration cal = imp.getCalibration();
-        if (!IJ.altKeyDown())
-        	imp.hide();
+        split(imp.getStack(), keepSource);
+        if (!keepSource)
+            {imp.unlock(); imp.close();}
         ImagePlus rImp = new ImagePlus(title+" (red)",red);
         rImp.setCalibration(cal);
         rImp.show();

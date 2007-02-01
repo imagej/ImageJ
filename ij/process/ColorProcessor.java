@@ -15,6 +15,8 @@ public class ColorProcessor extends ImageProcessor {
 	protected int[] snapshotPixels = null;
 	private int bgColor = 0xffffffff; //white
 	private int min=0, max=255;
+	private WritableRaster rgbRaster;
+	private SampleModel rgbSampleModel;
 	
 	// Weighting factors used by getPixelValue(), getHistogram() and convertToByte().
 	// Enable "Weighted RGB Conversion" in <i>Edit/Options/Conversions</i>
@@ -58,6 +60,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	public Image createImage() {
+		if (ij.IJ.isJava15()) return createBufferedImage();
 		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
@@ -71,6 +74,25 @@ public class ColorProcessor extends ImageProcessor {
 		return img;
 	}
 
+	Image createBufferedImage() {
+		if (rgbSampleModel==null)
+			rgbSampleModel = getRGBSampleModel();
+		if (rgbRaster==null) {
+			DataBuffer dataBuffer = new DataBufferInt(pixels, width*height, 0);
+			rgbRaster = Raster.createWritableRaster(rgbSampleModel, dataBuffer, null);
+		}
+		if (image==null) {
+			image = new BufferedImage(cm, rgbRaster, false, null);
+		}
+		return image;
+	}
+
+	SampleModel getRGBSampleModel() {
+		WritableRaster wr = cm.createCompatibleWritableRaster(1, 1);
+		SampleModel sampleModel = wr.getSampleModel();
+		sampleModel = sampleModel.createCompatibleSampleModel(width, height);
+		return sampleModel;
+	}
 
 	/** Returns a new, blank ShortProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {
@@ -146,6 +168,7 @@ public class ColorProcessor extends ImageProcessor {
 		else
 			applyTable(lut, channels);
 	}
+	
 
 	public void snapshot() {
 		snapshotWidth = width;
@@ -330,6 +353,8 @@ public class ColorProcessor extends ImageProcessor {
 		this.pixels = (int[])pixels;
 		resetPixels(pixels);
 		snapshotPixels = null;
+		rgbRaster = null;
+		image = null;
 	}
 
 

@@ -2674,7 +2674,10 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("rename")) {
 			File f1 = new File(getFirstString());
 			File f2 = new File(getLastString());
-			return f1.renameTo(f2)?"1":"0";
+			if (isValid(f1) && isValid(f2)) 
+				return f1.renameTo(f2)?"1":"0";
+			else
+				return "0";
 		}
 		File f = new File(getStringArg());
 		if (name.equals("getLength")||name.equals("length"))
@@ -2696,14 +2699,26 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("dateLastModified"))
 			return (new Date(f.lastModified())).toString();
 		else if (name.equals("delete")) {
-			String path = f.getAbsolutePath();
-			if (!(path.indexOf("ImageJ")!=-1||path.startsWith(System.getProperty("java.io.tmpdir"))))
-				interp.error("File must be in ImageJ or temp directory");
-			f.delete();
+			if (isValid(f)) 
+				f.delete();
 			return null;
 		} else
 			interp.error("Unrecognized File function "+name);
 		return null;
+	}
+	
+	boolean isValid(File f) {
+		String path = f.getPath();
+		if (path.equals("0") || path.equals("NaN") )
+				interp.error("Invalid path");
+		path = f.getAbsolutePath();
+		if (!(path.indexOf("ImageJ")!=-1
+		||path.startsWith(System.getProperty("java.io.tmpdir"))
+		||path.startsWith(System.getProperty("user.home")))) {
+			interp.error("File must be in ImageJ, home or tmp directory");
+			return false;
+		} else
+			return true;
 	}
 	
 	void setSelectionName() {

@@ -194,7 +194,7 @@ public class IJ {
 		ImageProcessor mask = imp.getMask();
 		if (slices==1 || !doesStacks) {
 			ip = imp.getProcessor();
-			if ((capabilities&PlugInFilter.NO_UNDO)!=0 || Prefs.disableUndo)
+			if ((capabilities&PlugInFilter.NO_UNDO)!=0 || !changes || Prefs.disableUndo)
 				Undo.reset();
 			else {
 				Undo.setup(Undo.FILTER, imp);

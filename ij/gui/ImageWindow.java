@@ -173,6 +173,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		} else 
 			pack();
 		maxBounds = getMaximumBounds();
+        //if (IJ.debugMode) IJ.log("maxBounds: "+maxBounds+"  "+maxWindow);
 		setMaximizedBounds(maxBounds);
 	}
 				

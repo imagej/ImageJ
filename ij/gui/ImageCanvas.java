@@ -462,8 +462,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return newMag;
 	}
 
-	/** Zooms in by making the window bigger. If we can't
-		make it bigger, then make the srcRect smaller.*/
+	/** Zooms in by making the window bigger. If it can't
+		be made bigger, then make the source rectangle 
+		(srcRect) smaller and center it at (x,y). */
 	public void zoomIn(int x, int y) {
 		if (magnification>=32)
 			return;
@@ -522,8 +523,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			return null;
 	}
 		
-	/**Zooms out by making srcRect bigger. If we can't make
-		it bigger, then make the window smaller.*/
+	/**Zooms out by making the source rectangle (srcRect)  
+		larger and centering it on (x,y). If we can't make it larger,  
+		then make the window smaller.*/
 	public void zoomOut(int x, int y) {
 		if (magnification<=0.03125)
 			return;

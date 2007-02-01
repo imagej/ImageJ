@@ -390,10 +390,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         }
         Roi roi2 = (Roi)roi.clone();
 		Calibration cal = imp.getCalibration();
-		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-			Rectangle r = roi2.getBounds();
+		Rectangle r = roi2.getBounds();
+		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0)
 			roi2.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
-		}
+		int width= imp.getWidth(), height=imp.getHeight();
+		if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0)
+			roi2.setLocation((width-r.width)/2, (height-r.height)/2);
 		imp.setRoi(roi2);
 		return true;
 	}
@@ -847,9 +849,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
-		} else if (cmd.equals("reset"))
+		} else if (cmd.equals("reset")) {
 			list.removeAll();
-		else
+			rois.clear();
+		} else
 			ok = false;
 		macro = false;
 		return ok;
