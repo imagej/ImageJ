@@ -11,6 +11,8 @@ public class WindowOrganizer implements PlugIn {
 
 	public void run(String arg) {
 		int[] wList = WindowManager.getIDList();
+		if (arg.equals("front"))
+			{bringAllToFront(wList); return;}
 		if (wList==null) {
 			IJ.noImage();
 			return;
@@ -144,6 +146,22 @@ public class WindowOrganizer implements PlugIn {
 				x += XOFFSET;
 			y += YOFFSET;
 		}
+	}
+	
+	void bringAllToFront(int[] wList) {
+		if (wList!=null) {
+			for (int i=0; i<wList.length; i++) {
+				ImageWindow win = getWindow(wList[i]);
+				if (win!=null) win.toFront();
+				
+			}
+		}
+		Frame[] frames = WindowManager.getNonImageWindows();
+		if (frames!=null) {
+			for (int i=0; i<frames.length; i++)
+				frames[i].toFront();
+		}
+		IJ.getInstance().toFront();
 	}
 
 }

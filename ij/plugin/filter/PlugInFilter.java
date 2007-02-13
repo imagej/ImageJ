@@ -37,7 +37,7 @@ public interface PlugInFilter {
 		ROIs, to restore that part of the image that's inside the bounding
 		rectangle but outside of the ROI. */
 	public int SUPPORTS_MASKING = 64;
-	/** Set this flag if the filter makes no changes to the pixel data. */
+	/** Set this flag if the filter makes no changes to the pixel data and does not require undo. */
 	public int NO_CHANGES = 128;
 	/** Set this flag if the filter does not require undo. */
 	public int NO_UNDO = 256;

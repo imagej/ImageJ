@@ -173,8 +173,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		} else 
 			pack();
 		maxBounds = getMaximumBounds();
-        //if (IJ.debugMode) IJ.log("maxBounds: "+maxBounds+"  "+maxWindow);
-		setMaximizedBounds(maxBounds);
+		if (!IJ.isLinux())
+			setMaximizedBounds(maxBounds);
 	}
 				
 	Rectangle getMaxWindow() {
@@ -268,7 +268,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		Rectangle r = ic.getBounds();
 		int extraWidth = MIN_WIDTH - r.width;
 		int extraHeight = MIN_HEIGHT - r.height;
-		if (extraWidth<=0 && extraHeight<=0)
+		if (extraWidth<=0 && extraHeight<=0 && !IJ.isLinux())
 			g.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
     }
     

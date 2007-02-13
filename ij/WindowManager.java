@@ -115,7 +115,7 @@ public class WindowManager {
 	}
 
 	/** Returns an array containing a list of the non-image windows. */
-	synchronized static Frame[] getNonImageWindows() {
+	public synchronized static Frame[] getNonImageWindows() {
 		Frame[] list = new Frame[nonImageList.size()];
 		nonImageList.copyInto((Frame[])list);
 		return list;
@@ -309,7 +309,8 @@ public class WindowManager {
 				return false;
 			IJ.wait(100);
 		}
-		if (IJ.getInstance().quitting() && IJ.getApplet()==null)
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null && ij.quitting() && IJ.getApplet()==null)
 			return true;
 		//System.out.println("closeAllWindows2");
 		Frame[] list = getNonImageWindows();

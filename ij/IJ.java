@@ -1326,6 +1326,11 @@ public class IJ {
 		redirectErrorMessages = true;
 	}
 	
+	/** Returns the state of the  'redirectErrorMessages' flag. The File/Import/Image Sequence command sets this flag.*/
+	public static boolean redirectingErrorMessages() {
+		return redirectErrorMessages;
+	}
+
 	/** Temporarily suppress "plugin not found" errors. */
 	public static void suppressPluginNotFoundError() {
 		suppressPluginNotFoundError = true;

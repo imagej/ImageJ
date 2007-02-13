@@ -102,16 +102,17 @@ public class EllipseFitter {
 	private double   xm, ym;   //mean values
 	private double   u20, u02, u11;  //central moments
 	private ImageProcessor ip;
-	private double pw, ph;
+	//private double pw, ph;
 	private boolean record;
 
-	/** Fits an ellipse to the current ROI. The fit parameters are returned in public fields. */
+	/** Fits an ellipse to the current ROI. The 'stats' argument, currently not used, 
+		can be null. The fit parameters are returned in public fields. */
 	public void fit(ImageProcessor ip, ImageStatistics stats) {
 		this.ip = ip;
 		mask = ip.getMaskArray();
 		Rectangle r = ip.getRoi();
-		this.pw = stats.pw;
-		this.ph = stats.ph;
+		//this.pw = stats.pw;
+		//this.ph = stats.ph;
 		left = r.x;
 		top = r.y;
 		width = r.width;

@@ -400,7 +400,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	/** Enlarge the canvas if the user enlarges the window. */
 	void resizeCanvas(int width, int height) {
-		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height);
+		ImageWindow win = imp.getWindow();
+		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+"  "+win.maxBounds);
+		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10) {
+			// Works around problem that prevented window from being larger than maximized size
+			Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+			win.setMaximizedBounds(new Rectangle(0, 0, screen.width, screen.height));
+			maxBoundsReset = true;
+		}
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight) {
 			if (width>imageWidth*magnification)
 				width = (int)(imageWidth*magnification);
@@ -414,12 +421,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if ((srcRect.y+srcRect.height)>imageHeight)
 				srcRect.y = imageHeight-srcRect.height;
 			repaint();
-			// Works around problem that prevented window from being larger than maximized size
-			ImageWindow win = imp.getWindow();
-			if (win!=null) {
-				win.setMaximizedBounds(win.getMaxWindow());
-				maxBoundsReset = true;
-			}
 		}
 		//IJ.log("resizeCanvas2: "+srcRect+" "+dstWidth+"  "+dstHeight+" "+width+"  "+height);
 	}
@@ -428,10 +429,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
         if (maxBoundsReset) {
             maxBoundsReset = false;
             ImageWindow win = imp.getWindow();
-            if (win!=null) {
+            if (win!=null && !IJ.isLinux())
                 win.setMaximizedBounds(win.maxBounds);
-				//win.maximized = false;
-            }
         }
     }
 
@@ -508,8 +507,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImageWindow win = imp.getWindow();
 		if (win==null) return null;
 		Rectangle r1 = win.getBounds();
-		r1.width = r1.width - dstWidth + newWidth+10;
-		r1.height = r1.height - dstHeight + newHeight+10;
+
+		Insets insets = win.getInsets();
+		Point loc = getLocation();
+		if (loc.x>insets.left+5 || loc.y>insets.top+5) {
+			r1.width = newWidth+insets.left+insets.right+10;
+			r1.height = newHeight+insets.top+insets.bottom+10;
+			if (win instanceof StackWindow) r1.height+=20;
+		} else {
+			r1.width = r1.width - dstWidth + newWidth+10;
+			r1.height = r1.height - dstHeight + newHeight+10;
+		}
 		Rectangle max = win.getMaxWindow();
 		boolean fitsHorizontally = r1.x+r1.width<max.x+max.width;
 		boolean fitsVertically = r1.y+r1.height<max.y+max.height;
@@ -911,7 +919,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if ((type==Roi.POLYGON || type==Roi.POLYLINE || type==Roi.ANGLE)
 			&& roi.getState()==roi.CONSTRUCTING)
 				return;
-			if (Toolbar.getToolId()==Toolbar.POLYGON && !(IJ.shiftKeyDown()||IJ.altKeyDown())) {
+			int tool = Toolbar.getToolId();
+			if ((tool==Toolbar.POLYGON||tool==Toolbar.POLYLINE||tool==Toolbar.ANGLE)&& !(IJ.shiftKeyDown()||IJ.altKeyDown())) {
 				imp.killRoi();
 				return;
 			}

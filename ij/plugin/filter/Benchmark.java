@@ -22,6 +22,7 @@ public class Benchmark implements PlugInFilter{
 	public void run(ImageProcessor ip) {
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		ip.setInterpolate(false);
+		ip.snapshot();
 		for (int i=0; i <4; i++) {
 			ip.invert();
 			updateScreen(imp);

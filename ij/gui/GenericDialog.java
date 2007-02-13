@@ -36,6 +36,7 @@ import ij.util.Tools;
 public class GenericDialog extends Dialog implements ActionListener,
 TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
+	public static final int MAX_SLIDERS = 25;
 	protected Vector numberField, stringField, checkbox, choice, slider;
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
@@ -56,6 +57,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	private String macroOptions;
 	private int topInset, leftInset, bottomInset;
     private boolean customInsets;
+    private int[] sliderIndexes;
 
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
@@ -71,14 +73,8 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     public GenericDialog(String title, Frame parent) {
 		super(parent==null?new Frame():parent, title, true);
 		if (Prefs.blackCanvas) {
-			//Color fc = getForeground();
-			//Color bc = getBackground();
-			//IJ.log("before: "+fc+" "+bc);
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
-			//fc = getForeground();
-			//bc = getBackground();
-			//IJ.log("after : "+fc+" "+bc);
 		}
 		grid = new GridBagLayout();
 		c = new GridBagConstraints();
@@ -392,8 +388,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 		
-		if (slider==null)
+		if (slider==null) {
 			slider = new Vector(5);
+			sliderIndexes = new int[MAX_SLIDERS];
+		}
 		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
 		slider.addElement(s);
 		s.addAdjustmentListener(this);
@@ -412,6 +410,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		tf.addFocusListener(this);
 		tf.addKeyListener(this);
 		numberField.addElement(tf);
+		sliderIndexes[slider.size()-1] = numberField.size()-1;
 		defaultValues.addElement(new Double(defaultValue));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
@@ -758,7 +757,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		setup();
 		GUI.center(this);
 		show();
-		IJ.wait(250); // work around for Sun/WinNT bug
+		IJ.wait(100); // work around for Sun/WinNT bug
 		//EventQueue.invokeLater(new Runnable () {
 		//	public void run () { 
 		//		show(); 
@@ -824,12 +823,12 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	}
 	
 	public void textValueChanged(TextEvent e) {
-		if (slider==null || slider.size()!=numberField.size())
-			return;
+		if (slider==null) return;
 		Object source = e.getSource();
-		for (int i=0; i<numberField.size(); i++) {
-			if (source==numberField.elementAt(i)) {
-				TextField tf = (TextField)numberField.elementAt(i);
+		for (int i=0; i<slider.size(); i++) {
+			int index = sliderIndexes[i];
+			if (source==numberField.elementAt(index)) {
+				TextField tf = (TextField)numberField.elementAt(index);
 				double value = Tools.parseDouble(tf.getText());
 				if (!Double.isNaN(value)) {
 					Scrollbar sb = (Scrollbar)slider.elementAt(i);
@@ -890,22 +889,27 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		for (int i=0; i<slider.size(); i++) {
 			if (source==slider.elementAt(i)) {
 				Scrollbar sb = (Scrollbar)source;
-				TextField tf = (TextField)numberField.elementAt(i);
+				TextField tf = (TextField)numberField.elementAt(sliderIndexes[i]);
 				tf.setText(""+sb.getValue());
 			}
 		}
 	}
 
-    public void paint(Graphics g) {
-    	super.paint(g);
-      	if (firstPaint) {
-      		if (numberField!=null) {
-      			TextField tf = (TextField)(numberField.elementAt(0));
-    			tf.requestFocus();
-    		} else if (stringField==null)
-    			okay.requestFocus();
-    		firstPaint = false;
-    	}
-    }
+	public void paint(Graphics g) {
+		super.paint(g);
+		if (firstPaint) {
+			if (numberField!=null) {
+				TextField tf = (TextField)(numberField.elementAt(0));
+				tf.requestFocus();
+				if (IJ.isMacOSX()) {
+					// work around for bug on Intel Macs that caused 1st field to be un-editable
+					tf.setEditable(false);
+					tf.setEditable(true);
+				}
+			} else if (stringField==null)
+				okay.requestFocus();
+			firstPaint = false;
+		}
+	}
     	
 }

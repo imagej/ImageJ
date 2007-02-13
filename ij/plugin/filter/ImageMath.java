@@ -10,7 +10,7 @@ public class ImageMath implements PlugInFilter {
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
-	private boolean first;
+	private boolean first; // first stack slice?
 	private double lower;
 	private double upper;
 	

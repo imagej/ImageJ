@@ -48,7 +48,7 @@ public class ImageConverter {
 	public void convertToGray16() {
 		if (type==ImagePlus.GRAY16)
 			return;
-		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY32))
+		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY32||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
@@ -60,7 +60,7 @@ public class ImageConverter {
 	public void convertToGray32() {
 		if (type==ImagePlus.GRAY32)
 			return;
-		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY16))
+		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16||type==ImagePlus.COLOR_RGB))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
