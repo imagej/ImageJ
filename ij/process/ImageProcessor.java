@@ -46,13 +46,12 @@ public abstract class ImageProcessor extends Object {
 	static Frame frame;
 		
     ProgressBar progressBar;
-    boolean pixelsModified;
 	protected int width, snapshotWidth;
 	protected int height, snapshotHeight;
 	protected int roiX, roiY, roiWidth, roiHeight;
 	protected int xMin, xMax, yMin, yMax;
-	boolean newSnapshot = false; // true if pixels = snapshotPixels
-	ImageProcessor mask = null;
+	boolean snapshotCopyMode;
+	ImageProcessor mask;
 	protected ColorModel baseCM; // base color model
 	protected ColorModel cm;
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
@@ -81,9 +80,9 @@ public abstract class ImageProcessor extends Object {
         	progressBar.show(percentDone);
 	}
 
+	// Obsolete
 	protected void hideProgress() {
 		showProgress(1.0);
-		newSnapshot = false;
 	}
 		
 	/** Returns the width of this image in pixels. */
@@ -1032,18 +1031,6 @@ public abstract class ImageProcessor extends Object {
 
 	/** Flips the image or ROI vertically. */
 	public abstract void flipVertical();
-	/* {
-		int[] row1 = new int[roiWidth];
-		int[] row2 = new int[roiWidth];
-		for (int y=0; y<roiHeight/2; y++) {
-			getRow(roiX, roiY+y, row1, roiWidth);
-			getRow(roiX, roiY+roiHeight-y-1, row2, roiWidth);
-			putRow(roiX, roiY+y, row2, roiWidth);
-			putRow(roiX, roiY+roiHeight-y-1, row1, roiWidth);
-		}
-		newSnapshot = false;
-	}
-	*/
 
 	/** Flips the image or ROI horizontally. */
 	public void flipHorizontal() {
@@ -1055,7 +1042,6 @@ public abstract class ImageProcessor extends Object {
 			putColumn(roiX+x, roiY, col2, roiHeight);
 			putColumn(roiX+roiWidth-x-1, roiY, col1, roiHeight);
 		}
-		newSnapshot = false;
 	}
 
 	/** Rotates the entire image 90 degrees clockwise. Returns
@@ -1162,9 +1148,9 @@ public abstract class ImageProcessor extends Object {
 		depending on the image type. */
 	public abstract Object getPixels();
 	
-	/** Returns a reference to this image's snapshot (undo) array. If
-		the snapshot array is null, returns a copy of the pixel data.
-		The array type varies depending on the image type. */
+	/** Returns a reference to this image's snapshot (undo) array
+		if it is not null and 'snapshotCopyMode' is true. Otherwise,
+		returns a copy of the pixel data. */
 	public abstract Object getPixelsCopy();
 
 	/** Returns the value of the pixel at (x,y). For RGB images, the
@@ -1274,8 +1260,8 @@ public abstract class ImageProcessor extends Object {
 	/** Sets the pixel at (x,y) to the current fill/draw value. */
 	public abstract void drawPixel(int x, int y);
 	
-	/** Sets a new pixel array for the image and resets the snapshot
-		buffer. The length of the array must be equal to width*height. */
+	/** Sets a new pixel array for the image. The length of the array must be equal to width*height.
+		Use setSnapshotPixels(null) to clear the snapshot buffer. */
 	public abstract void setPixels(Object pixels);
 	
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
@@ -1350,6 +1336,9 @@ public abstract class ImageProcessor extends Object {
 		within the rectangular roi but not part of the mask. */
 	public abstract void reset(ImageProcessor mask);
 	
+	/** Sets a new pixel array for the snapshot (undo) buffer. */
+	public abstract void setSnapshotPixels(Object pixels);
+
 	/** Convolves the image or ROI with the specified
 		3x3 integer convolution kernel. */
 	public abstract void convolve3x3(int[] kernel);
@@ -1577,6 +1566,12 @@ public abstract class ImageProcessor extends Object {
 			defaultColorModel = new IndexColorModel(8, 256, r, g, b);
 		}
 		return defaultColorModel;
+	}
+	
+	/**	The getPixelsCopy() method returns a reference to the
+		snapshot buffer when 'snapshotCopyMode' is true. */
+	public void setSnapshotCopyMode(boolean b) {
+		snapshotCopyMode = b;
 	}
 
 }

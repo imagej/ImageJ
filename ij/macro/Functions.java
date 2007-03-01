@@ -1917,13 +1917,11 @@ public class Functions implements MacroConstants, Measurements {
 			index = (int)getLastArg();
 		else
 			interp.getRightParen();
-		Frame frame = WindowManager.getFrame("ROI Manager");
-		if (frame==null)
+		if (RoiManager.getInstance()==null)
 			IJ.run("ROI Manager...");
-		frame = WindowManager.getFrame("ROI Manager");
-		if (frame==null || !(frame instanceof RoiManager))
+		RoiManager rm = RoiManager.getInstance();
+		if (rm==null)
 			interp.error("ROI Manager not found");
-		RoiManager rm = (RoiManager)frame;
 		if (twoArgCommand)
 			rm.runCommand(cmd, path);
 		else if (select) {
@@ -2240,7 +2238,11 @@ public class Functions implements MacroConstants, Measurements {
 		interp.inPrint = true;
 		String s = getFirstString();
 		if (interp.nextNonEolToken()==',') {
-			if (s.length()==3 && s.equals("~0~")) {
+			char c = s.charAt(0);
+			if (c=='[' && s.endsWith("]")) {
+				printToWindow(s);
+				return;
+			} else if (c=='~' && s.equals("~0~")) {
 				if (writer==null)
 					interp.error("File not open");
                 String s2 = getLastString();
@@ -2261,6 +2263,21 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		IJ.log(s);
 		interp.inPrint = false;
+	}
+	
+	void printToWindow(String s) {
+		String title = s.substring(1, s.length()-1);
+		Frame frame = WindowManager.getFrame(title);
+		if (frame==null)
+			interp.error("Window not found");
+		boolean isEditor = frame instanceof Editor;
+		if (!(isEditor || frame instanceof TextWindow))
+			interp.error("Window is not text window");
+		String s2 = getLastString();
+		if (isEditor)
+			((Editor)frame).append(s2);
+		else
+			((TextWindow)frame).append(s2);
 	}
 	
 	double isKeyDown() {

@@ -171,16 +171,16 @@ public class Slicer implements PlugIn, TextListener {
 				outputSlices =	(int)(r.width/outputZSpacing);		
 			} else if (startAt.equals(starts[2])) { // bottom
 				x1 = r.x;
-				y1 = r.y + r.height;
+				y1 = r.y + r.height-1;
 				x2 = r.x + r.width;
-				y2 = r.y + r.height;
+				y2 = r.y + r.height-1;
 				xInc = 0.0;
 				yInc = -outputZSpacing;
 				outputSlices =	(int)(r.height/outputZSpacing); 	
 			} else if (startAt.equals(starts[3])) { // right
-				x1 = r.x + r.width;
+				x1 = r.x + r.width-1;
 				y1 = r.y;
-				x2 = r.x + r.width;
+				x2 = r.x + r.width-1;
 				y2 = r.y + r.height;
 				xInc = -outputZSpacing;
 				yInc = 0.0;

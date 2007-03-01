@@ -58,7 +58,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String[] names = new String[NUM_TOOLS];
 	private String[] icons = new String[NUM_TOOLS];
     private PopupMenu[] menus = new PopupMenu[NUM_TOOLS];
-;
 	private int pc;
 	private String icon;
 	private MacroInstaller macroInstaller;
@@ -102,6 +101,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	void addPopupMenus() {
 		ovalPopup = new PopupMenu();
+		if (Menus.getFontSize()!=0)
+			ovalPopup.setFont(Menus.getFont());
 		ovalItem = new CheckboxMenuItem("Elliptical Selection Tool", !brushEnabled);
 		ovalItem.addItemListener(this);
 		ovalPopup.add(ovalItem);
@@ -111,6 +112,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		add(ovalPopup);
 
 		linePopup = new PopupMenu();
+		if (Menus.getFontSize()!=0)
+			linePopup.setFont(Menus.getFont());
 		straightLineItem = new CheckboxMenuItem("Straight Lines", lineType==LINE);
 		straightLineItem.addItemListener(this);
 		linePopup.add(straightLineItem);
@@ -123,6 +126,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		add(linePopup);
 
 		switchPopup = new PopupMenu();
+		if (Menus.getFontSize()!=0)
+			switchPopup.setFont(Menus.getFont());
 		add(switchPopup);
 	}
 	
@@ -916,6 +921,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         if (commands==null) return;
 		if (menus[tool]==null) {
 			menus[tool] = new PopupMenu("");
+			if (Menus.getFontSize()!=0)
+				menus[tool].setFont(Menus.getFont());
 			add(menus[tool] );
 		} else
 			menus[tool].removeAll();

@@ -135,11 +135,6 @@ public class ByteProcessor extends ImageProcessor {
 		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
 			snapshotPixels = new byte[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
-		newSnapshot = true;
-		//double sum = 0;
-		//for (int i=0; i<width*height; i++)
-		//	sum += pixels[i]&0xff;
-		//ij.IJ.write("snapshot: "+(sum/(width*height)));
 	}
 	
 	/** Reset the image from snapshot.*/
@@ -147,7 +142,6 @@ public class ByteProcessor extends ImageProcessor {
 		if (snapshotPixels==null)
 			return;	
         System.arraycopy(snapshotPixels,0,pixels,0,width*height);
-        newSnapshot = true;
 	}
 	
 	/** Restore pixels that are within roi but not part of mask. */
@@ -166,6 +160,12 @@ public class ByteProcessor extends ImageProcessor {
 				i++;
 			}
 		}
+	}
+
+	public void setSnapshotPixels(Object pixels) {
+		snapshotPixels = (byte[])pixels;
+		snapshotWidth=width;
+		snapshotHeight=height;
 	}
 
 	/** Fills pixels that are within roi and part of the mask.
@@ -292,12 +292,14 @@ public class ByteProcessor extends ImageProcessor {
 		return (Object)pixels;
 	}
 
-	/** Returns a reference to this image's snapshot (undo) byte array. If
-		the snapshot array is null, returns a copy of the pixel data. */
+	/** Returns a reference to this image's snapshot (undo) array
+		if it is not null and 'snapshotCopyMode' is true. Otherwise,
+		returns a copy of the pixel data. */
 	public Object getPixelsCopy() {
-		if (snapshotPixels!=null && newSnapshot)
+		if (snapshotPixels!=null && snapshotCopyMode) {
+			snapshotCopyMode = false;
 			return snapshotPixels;
-		else {
+		} else {
 			byte[] pixels2 = new byte[width*height];
         	System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
@@ -309,7 +311,7 @@ public class ByteProcessor extends ImageProcessor {
 			throw new IllegalArgumentException("");
 		this.pixels = (byte[])pixels;
 		resetPixels(pixels);
-		snapshotPixels = null;
+		if (pixels==null) snapshotPixels = null;
 		raster = null;
 		image = null;
 	}
@@ -458,7 +460,7 @@ public class ByteProcessor extends ImageProcessor {
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Filters using a 3x3 neighborhood. The p1, p2, etc variables, which
@@ -585,7 +587,7 @@ public class ByteProcessor extends ImageProcessor {
         if (yMin==1) filterEdge(type, pixels2, roiWidth, roiX, roiY, 1, 0);
         if (xMax==width-2) filterEdge(type, pixels2, roiHeight, width-1, roiY, 0, 1);
         if (yMax==height-2) filterEdge(type, pixels2, roiWidth, roiX, height-1, 1, 0);
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	void filterEdge(int type, byte[] pixels2, int n, int x, int y, int xinc, int yinc) {
@@ -771,7 +773,7 @@ public class ByteProcessor extends ImageProcessor {
 			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
     }
 
 	/** Scales the image or selection using the specified scale factors.
@@ -829,7 +831,7 @@ public class ByteProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)(y-ymin)/height);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -892,7 +894,7 @@ public class ByteProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)y/dstHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 		return ip2;
 	}
 
@@ -946,7 +948,7 @@ public class ByteProcessor extends ImageProcessor {
 			if (y%30==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	public void flipVertical() {
@@ -961,7 +963,6 @@ public class ByteProcessor extends ImageProcessor {
 				pixels[index2++] = tmp;
 			}
 		}
-		newSnapshot = false;
 	}
 	
 	public int[] getHistogram() {
@@ -1006,7 +1007,6 @@ public class ByteProcessor extends ImageProcessor {
 			else
 				pixels[i] = (byte)255;
 		}
-		newSnapshot = false;
 	}
 
 	public void applyLut() {

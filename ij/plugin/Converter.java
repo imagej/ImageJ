@@ -7,7 +7,7 @@ import java.awt.*;
 /** Implements the conversion commands in the Image/Type submenu. */
 public class Converter implements PlugIn {
 
-	/** Used by WindowManager.setCurrentWindow(). */
+	/** obsolete */
 	public static boolean newWindowCreated;
 	private ImagePlus imp;
 
@@ -33,22 +33,19 @@ public class Converter implements PlugIn {
 		String msg = "Converting to " + item;
 		IJ.showStatus(msg + "...");
 	 	long start = System.currentTimeMillis();
-	 	boolean isRoi = imp.getRoi()!=null;
+	 	Roi roi = imp.getRoi();
 	 	imp.killRoi();
 	 	boolean saveChanges = imp.changes;
 		imp.changes = IJ.getApplet()==null; //if not applet, set 'changes' flag
-	 	newWindowCreated = false;
 	 	ImageWindow win = imp.getWindow();
 		try {
  			if (stack!=null) {
 				// do stack conversions
 		    	if (stack.isRGB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertRGBStackToRGB();
-		    		newWindowCreated = true;
 		    		if (win!=null) new ImageWindow(imp, imp.getCanvas()); // replace StackWindow with ImageWindow
 		    	} else if (stack.isHSB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertHSBToRGB();
-		    		newWindowCreated = true;
 		    		if (win!=null) new ImageWindow(imp, imp.getCanvas());
 				} else if (item.equals("8-bit"))
 					new StackConverter(imp).convertToGray8();
@@ -77,13 +74,9 @@ public class Converter implements PlugIn {
 				else if (item.equals("RGB Stack")) {
 			    	Undo.reset(); // Reversible; no need for Undo
 					ic.convertToRGBStack();
-		    		newWindowCreated = true;
-			    	//new StackWindow(imp); // now done in ImagePlus.setStack()
 		    	} else if (item.equals("HSB Stack")) {
 			    	Undo.reset();
 					ic.convertToHSB();
-		    		newWindowCreated = true;
-			    	//new StackWindow(imp);
 		    	} else if (item.equals("RGB Color")) {
 					ic.convertToRGB();
 		    	} else if (item.equals("8-bit Color")) {
@@ -108,8 +101,8 @@ public class Converter implements PlugIn {
 			Macro.abort();
 			return;
 		}
-		if (isRoi)
-			imp.restoreRoi();
+		if (roi!=null)
+			imp.setRoi(roi);
 		IJ.showTime(imp, start, "");
 		imp.repaintWindow();
 		Menus.updateMenus();

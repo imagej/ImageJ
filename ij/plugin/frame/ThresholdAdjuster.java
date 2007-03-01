@@ -90,6 +90,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		minSlider.addAdjustmentListener(this);
 		minSlider.addKeyListener(ij);
 		minSlider.setUnitIncrement(1);
+		minSlider.setFocusable(false);
 		
 		// minThreshold slider label
 		c.gridx = 1;
@@ -111,6 +112,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		maxSlider.addAdjustmentListener(this);
 		maxSlider.addKeyListener(ij);
 		maxSlider.setUnitIncrement(1);
+		maxSlider.setFocusable(false);
 		
 		// maxThreshold slider label
 		c.gridx = 1;

@@ -31,15 +31,11 @@ public class WindowManager {
 		if (win==currentWindow || imageList.size()==0)
 			return;
 		if (currentWindow!=null) {
-			// free up pixel buffers AWT Image resources used by current window
+			// free up pixel buffers used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
-			if (imp!=null && imp.lockSilently()) {
+			if (imp!=null ) {
 				imp.trimProcessor();
-				Image img = imp.getImage();
-				if (!Converter.newWindowCreated)
-					imp.saveRoi();
-				Converter.newWindowCreated = false;
-				imp.unlock();
+				imp.saveRoi();
 			}
 		}
 		Undo.reset();

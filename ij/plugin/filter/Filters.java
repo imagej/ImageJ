@@ -33,17 +33,23 @@ public class Filters implements PlugInFilter {
 	 	}
 	 	
 		if (arg.equals("smooth")) {
+			ip.setSnapshotCopyMode(true);
 	 		ip.smooth();
+			ip.setSnapshotCopyMode(false);
 	 		return;
 	 	}
 	 	
 		if (arg.equals("sharpen")) {
+			ip.setSnapshotCopyMode(true);
 	 		ip.sharpen();
+			ip.setSnapshotCopyMode(false);
 	 		return;
 	 	}
 	 	
 		if (arg.equals("edge")) {
+			ip.setSnapshotCopyMode(true);
 			ip.findEdges();
+			ip.setSnapshotCopyMode(false);
 	 		return;
 		}
 						

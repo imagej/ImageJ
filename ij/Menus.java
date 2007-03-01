@@ -74,6 +74,8 @@ public class Menus {
 	private static Hashtable menusTable; // Submenus of Plugins menu
 	private int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private boolean addSorted;
+	private  static int fontSize = Prefs.getInt(Prefs.MENU_SIZE, 14);
+	private static Font menuFont;
 	static boolean jnlp; // true when using Java WebStart
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
@@ -184,7 +186,7 @@ public class Menus {
 		toolsMenu = addSubMenu(analyze, "Tools");
 
 		window = new Menu("Window");
-		addPlugInItem(window, "Bring All to Front", "ij.plugin.WindowOrganizer(\"front\")", KeyEvent.VK_F, true);
+		addPlugInItem(window, "Show All", "ij.plugin.WindowOrganizer(\"show\")", KeyEvent.VK_F, true);
 		addPlugInItem(window, "Put Behind [tab]", "ij.plugin.Commands(\"tab\")", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);
@@ -211,7 +213,8 @@ public class Menus {
 			installPlugins();
 		
 		mbar = new MenuBar();
-		mbar.setFont(new Font("SanSerif", Font.PLAIN, 14));
+		if (fontSize!=0)
+			mbar.setFont(getFont());
 		mbar.add(file);
 		mbar.add(edit);
 		mbar.add(image);
@@ -852,6 +855,8 @@ public class Menus {
 		int count = 0;
 		MenuItem mi;
 		popup = new PopupMenu("");
+		if (fontSize!=0)
+			popup.setFont(getFont());
 
 		while (true) {
 			count++;
@@ -1282,6 +1287,26 @@ public class Menus {
 		else
 			return false;
 	}
+	
+	/** Set the size (in points) used for the fonts in ImageJ menus. 
+		Set the size to 0 to use the Java default size. */
+	public static void setFontSize(int size) {
+		if (size<9 && size!=0) size = 9;
+		if (size>24) size = 24;
+		fontSize = size;
+	}
+	
+	/** Returns the size (in points) used for the fonts in ImageJ menus. Returns
+		0 if the default font size is being used or if this is a Macintosh. */
+	public static int getFontSize() {
+		return IJ.isMacintosh()?0:fontSize;
+	}
+	
+	public static Font getFont() {
+		if (menuFont==null)
+			menuFont =  new Font("SanSerif", Font.PLAIN, fontSize==0?12:fontSize);
+		return menuFont;
+	}
 
 	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
@@ -1299,6 +1324,7 @@ public class Menus {
 			key = "recent"+key;
 			prefs.put(key, Prefs.escapeBackSlashes(openRecentMenu.getItem(i).getLabel()));
 		}
+		prefs.put(Prefs.MENU_SIZE, Integer.toString(fontSize));
 	}
 
 }

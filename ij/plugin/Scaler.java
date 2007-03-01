@@ -85,6 +85,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.pixelWidth *= 1.0/xscale;
 			cal.pixelHeight *= 1.0/yscale;
 		}
+		int[] dim = imp.getDimensions();
+		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		IJ.showProgress(1.0);
 		imp2.show();
 		imp2.changes = true;
@@ -112,7 +114,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			} else {
 				ip.snapshot();
 				Undo.setup(Undo.FILTER, imp);
+				ip.setSnapshotCopyMode(true);
 				ip.scale(xscale, yscale);
+				ip.setSnapshotCopyMode(false);
 			}
 			imp.killRoi();
 			imp.updateAndDraw();

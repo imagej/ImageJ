@@ -325,8 +325,10 @@ public class IJ {
 		}
 		if (command.equals("New..."))
 			command = "Image...";
-		if (command.equals("Threshold"))
+		else if (command.equals("Threshold"))
 			command = "Make Binary";
+		else if (command.equals("Display..."))
+			command = "Appearance...";
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);

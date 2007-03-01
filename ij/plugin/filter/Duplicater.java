@@ -65,6 +65,8 @@ public class Duplicater implements PlugInFilter {
 		}
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack(newTitle, stack2);
+		int[] dim = imp.getDimensions();
+		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		return imp2;
 	}
 	

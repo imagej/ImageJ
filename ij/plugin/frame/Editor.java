@@ -32,7 +32,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private Properties p = new Properties();
 	private int[] macroStarts;
 	private String[] macroNames;
-	private MenuBar mb = new MenuBar();
+	private MenuBar mb;
 	private Menu macrosMenu;
 	private int nMacros;
 	private Program pgm;
@@ -52,6 +52,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		super("Editor");
 		WindowManager.addWindow(this);
 
+		mb = new MenuBar();
+		if (Menus.getFontSize()!=0) ;
+			mb.setFont(Menus.getFont());
 		Menu m = new Menu("File");
 		m.add(new MenuItem("New...", new MenuShortcut(KeyEvent.VK_N, true)));
 		m.add(new MenuItem("Open...", new MenuShortcut(KeyEvent.VK_O)));
@@ -757,6 +760,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	public void setFont(Font font) {
 		ta.setFont(font);
+	}
+
+	public void append(String s) {
+		ta.append(s);
 	}
 
 	public static void setDefaultDirectory(String defaultDirectory) {

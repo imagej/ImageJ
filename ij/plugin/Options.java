@@ -22,7 +22,7 @@ public class Options implements PlugIn {
 		else if (arg.equals("conv"))
 			{conversions(); return;}
 		else if (arg.equals("display"))
-			{displayOptions(); return;}
+			{appearance(); return;}
 	}
 				
 	// Miscellaneous Options
@@ -153,13 +153,14 @@ public class Options implements PlugIn {
 		return;
 	}
 		
-	void displayOptions() {
-		GenericDialog gd = new GenericDialog("Display Options", IJ.getInstance());
+	void appearance() {
+		GenericDialog gd = new GenericDialog("Appearance", IJ.getInstance());
 		gd.addCheckbox("Interpolate Zoomed Images", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
 		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
 		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);
 		gd.addCheckbox("Double Buffer Selections", Prefs.doubleBuffer);
+		gd.addNumericField("Menu Font Size:", Menus.getFontSize(), 0, 3, "points");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;			
@@ -168,6 +169,7 @@ public class Options implements PlugIn {
 		boolean blackCanvas = gd.getNextBoolean();
 		boolean useInvertingLut = gd.getNextBoolean();
 		Prefs.doubleBuffer = gd.getNextBoolean();
+		int menuSize = (int)gd.getNextNumber();
 		if (interpolate!=Prefs.interpolateScaledImages) {
 			Prefs.interpolateScaledImages = interpolate;
 			ImagePlus imp = WindowManager.getCurrentImage();
@@ -198,6 +200,10 @@ public class Options implements PlugIn {
 		if (Prefs.doubleBuffer && IJ.isMacOSX()) {
 			IJ.error("Double-buffering is built into Mac OS X.");
 			Prefs.doubleBuffer = false;
+		}
+		if (menuSize!=Menus.getFontSize() && !IJ.isMacintosh()) {
+			Menus.setFontSize(menuSize);
+			IJ.showMessage("Appearance", "Restart ImageJ to use the new font size");
 		}
 	}
 	

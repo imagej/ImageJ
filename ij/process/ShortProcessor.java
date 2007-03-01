@@ -79,7 +79,7 @@ public class ShortProcessor extends ImageProcessor {
 			if (value>max)
 				max = value;
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
@@ -131,7 +131,6 @@ public class ShortProcessor extends ImageProcessor {
 		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
 			snapshotPixels = new short[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
-		newSnapshot = true;
 	}
 	
 	public void reset() {
@@ -140,7 +139,6 @@ public class ShortProcessor extends ImageProcessor {
 	    min=snapshotMin;
 		max=snapshotMax;
         System.arraycopy(snapshotPixels, 0, pixels, 0, width*height);
-        newSnapshot = true;
 	}
 	
 	public void reset(ImageProcessor mask) {
@@ -158,6 +156,12 @@ public class ShortProcessor extends ImageProcessor {
 				i++;
 			}
 		}
+	}
+
+	public void setSnapshotPixels(Object pixels) {
+		snapshotPixels = (short[])pixels;
+		snapshotWidth=width;
+		snapshotHeight=height;
 	}
 
 	/* Obsolete. */
@@ -292,12 +296,14 @@ public class ShortProcessor extends ImageProcessor {
 		return (Object)pixels;
 	}
 
-	/** Returns a reference to this image's snapshot (undo) array. If
-		the snapshot array is null, returns a copy of the pixel data. */
+	/** Returns a reference to this image's snapshot (undo) array
+		if it is not null and 'snapshotCopyMode' is true. Otherwise,
+		returns a copy of the pixel data. */
 	public Object getPixelsCopy() {
-		if (newSnapshot)
+		if (snapshotPixels!=null && snapshotCopyMode) {
+			snapshotCopyMode = false;
 			return snapshotPixels;
-		else {
+		} else {
 			short[] pixels2 = new short[width*height];
         	System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
@@ -307,9 +313,8 @@ public class ShortProcessor extends ImageProcessor {
 	public void setPixels(Object pixels) {
 		this.pixels = (short[])pixels;
 		resetPixels(pixels);
-		snapshotPixels = null;
-		if (pixels==null)
-			pixels8 = null;
+		if (pixels==null) snapshotPixels = null;
+		if (pixels==null) pixels8 = null;
 	}
 
 	void getRow2(int x, int y, int[] data, int length) {
@@ -532,7 +537,7 @@ public class ShortProcessor extends ImageProcessor {
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Filters using a 3x3 neighborhood. */
@@ -581,7 +586,7 @@ public class ShortProcessor extends ImageProcessor {
 				showProgress((double)(y-roiY)/roiHeight);
 		}
 		if (type==BLUR_MORE)
-			hideProgress();
+			showProgress(1.0);
 		else
 			findMinAndMax();
 	}
@@ -635,7 +640,7 @@ public class ShortProcessor extends ImageProcessor {
 			if (y%30==0)
 			showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	public void flipVertical() {
@@ -650,7 +655,6 @@ public class ShortProcessor extends ImageProcessor {
 				pixels[index2++] = tmp;
 			}
 		}
-		newSnapshot = false;
 	}
 	
 	/** Scales the image or selection using the specified scale factors.
@@ -707,7 +711,7 @@ public class ShortProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)(y-ymin)/height);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -764,7 +768,7 @@ public class ShortProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)y/dstHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 		return ip2;
 	}
 
@@ -896,7 +900,6 @@ public class ShortProcessor extends ImageProcessor {
 			else
 				pixels[i] = (short)255;
 		}
-		newSnapshot = false;
 		findMinAndMax();
 	}
 

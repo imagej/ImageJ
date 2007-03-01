@@ -176,7 +176,6 @@ public class ColorProcessor extends ImageProcessor {
 		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
 			snapshotPixels = new int[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
-		newSnapshot = true;
 	}
 
 
@@ -184,7 +183,6 @@ public class ColorProcessor extends ImageProcessor {
 		if (snapshotPixels==null)
 			return;
 		System.arraycopy(snapshotPixels, 0, pixels, 0, width*height);
-		newSnapshot = true;
 	}
 
 
@@ -205,6 +203,11 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
+	public void setSnapshotPixels(Object pixels) {
+		snapshotPixels = (int[])pixels;
+		snapshotWidth=width;
+		snapshotHeight=height;
+	}
 
 	/** Fills pixels that are within roi and part of the mask.
 		Does nothing if the mask is not the same as the the ROI. */
@@ -227,17 +230,19 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-
+	/** Returns a reference to this image's snapshot (undo) array
+		if it is not null and 'snapshotCopyMode' is true. Otherwise,
+		returns a copy of the pixel data. */
 	public Object getPixelsCopy() {
-		if (newSnapshot)
+		if (snapshotPixels!=null && snapshotCopyMode) {
+			snapshotCopyMode = false;
 			return snapshotPixels;
-		else {
+		} else {
 			int[] pixels2 = new int[width*height];
         	System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
 		}
 	}
-
 
 	/** Returns a reference to the snapshot pixel array. Used by the ContrastAdjuster. */
 	public Object getSnapshotPixels() {
@@ -352,7 +357,7 @@ public class ColorProcessor extends ImageProcessor {
 	public void setPixels(Object pixels) {
 		this.pixels = (int[])pixels;
 		resetPixels(pixels);
-		snapshotPixels = null;
+		if (pixels==null) snapshotPixels = null;
 		rgbRaster = null;
 		image = null;
 	}
@@ -470,7 +475,7 @@ public class ColorProcessor extends ImageProcessor {
 				i++;
 			}
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 	
 	public void applyTable(int[] lut, int channels) {
@@ -508,7 +513,7 @@ public class ColorProcessor extends ImageProcessor {
 				i++;
 			}
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Fills the current rectangular ROI. */
@@ -520,7 +525,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 
@@ -582,7 +587,7 @@ public class ColorProcessor extends ImageProcessor {
 		B = (byte[])b.getPixels();
 		
 		setRGB(R, G, B);
-		hideProgress();
+		showProgress(1.0);
 	}
 
    public void noise(double range) {
@@ -664,7 +669,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)(y-ymin)/height);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	public ImageProcessor crop() {
@@ -782,7 +787,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)y/dstHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 		return ip2;
 	}
 	
@@ -876,7 +881,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%30==0)
 			showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	public void flipVertical() {
@@ -891,7 +896,6 @@ public class ColorProcessor extends ImageProcessor {
 				pixels[index2++] = tmp;
 			}
 		}
-		newSnapshot = false;
 	}
 	
 	/** 3x3 convolution contributed by Glynne Casteel. */
@@ -979,7 +983,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** 3x3 unweighted smoothing. */
@@ -1021,7 +1025,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	public int[] getHistogram() {
@@ -1042,7 +1046,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 		return histogram;
 	}
 
@@ -1070,7 +1074,7 @@ public class ColorProcessor extends ImageProcessor {
 			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 		return histogram;
 	}
 

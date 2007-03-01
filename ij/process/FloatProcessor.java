@@ -98,8 +98,7 @@ public class FloatProcessor extends ImageProcessor {
 					max = value;
 			}
 		}
-		pixelsModified = true;
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/**
@@ -185,8 +184,6 @@ public class FloatProcessor extends ImageProcessor {
 		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
 			snapshotPixels = new float[width * height];
         System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
-        pixelsModified = false;
-		newSnapshot = true;
 	}
 	
 	public void reset() {
@@ -212,7 +209,12 @@ public class FloatProcessor extends ImageProcessor {
 				i++;
 			}
 		}
-        newSnapshot = true;
+	}
+
+	public void setSnapshotPixels(Object pixels) {
+		snapshotPixels = (float[])pixels;
+		snapshotWidth=width;
+		snapshotHeight=height;
 	}
 
 	/** Returns a pixel value that must be converted using
@@ -296,10 +298,14 @@ public class FloatProcessor extends ImageProcessor {
 		return (Object)pixels;
 	}
 
+	/** Returns a reference to this image's snapshot (undo) array
+		if it is not null and 'snapshotCopyMode' is true. Otherwise,
+		returns a copy of the pixel data. */
 	public Object getPixelsCopy() {
-		if (newSnapshot && snapshotPixels!=null)
+		if (snapshotCopyMode && snapshotPixels!=null) {
+			snapshotCopyMode = false;
 			return snapshotPixels;
-		else {
+		} else {
 			float[] pixels2 = new float[width*height];
         	System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
@@ -309,9 +315,8 @@ public class FloatProcessor extends ImageProcessor {
 	public void setPixels(Object pixels) {
 		this.pixels = (float[])pixels;
 		resetPixels(pixels);
-		snapshotPixels = null;
-		if (pixels==null)
-			pixels8 = null;
+		if (pixels==null) snapshotPixels = null;
+		if (pixels==null) pixels8 = null;
 	}
 
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
@@ -324,16 +329,6 @@ public class FloatProcessor extends ImageProcessor {
 
 	public void applyTable(int[] lut) {}
 
-	private float[] getCopyOfPixels() {
-		if (pixelsModified) {
-			float[] pixelsCopy = new float[width * height];
-	        System.arraycopy(pixels, 0, pixelsCopy, 0, width*height);
-			return pixelsCopy;
-		}
-		else
-			return snapshotPixels;
-	}
-	
 	private void process(int op, double value) {
 		float c, v1, v2;
 		boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
@@ -494,7 +489,7 @@ public class FloatProcessor extends ImageProcessor {
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Filters using a 3x3 neighborhood. */
@@ -542,7 +537,7 @@ public class FloatProcessor extends ImageProcessor {
 				showProgress((double)(y-roiY)/roiHeight);
 		}
 		if (type==BLUR_MORE)
-			hideProgress();
+			showProgress(1.0);
 		else
 			findMinAndMax();
 	}
@@ -594,7 +589,7 @@ public class FloatProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	public void flipVertical() {
@@ -609,7 +604,6 @@ public class FloatProcessor extends ImageProcessor {
 				pixels[index2++] = tmp;
 			}
 		}
-		newSnapshot = false;
 	}
 	
     public void noise(double range) {
@@ -699,7 +693,7 @@ public class FloatProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)(y-ymin)/height);
 		}
-		hideProgress();
+		showProgress(1.0);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -756,7 +750,7 @@ public class FloatProcessor extends ImageProcessor {
 			if (y%20==0)
 			showProgress((double)y/dstHeight);
 		}
-		hideProgress();
+		showProgress(1.0);
 		return ip2;
 	}
 

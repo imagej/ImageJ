@@ -11,6 +11,8 @@ import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 import ij.macro.Interpreter;
+import ij.plugin.frame.ContrastAdjuster;
+import ij.plugin.Converter;
 
 /**
 This is an extended image class that supports 8-bit, 16-bit,
@@ -308,6 +310,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void show(String statusMessage) {
 		if (win!=null) return;
 		if ((IJ.macroRunning() && ij==null) || Interpreter.isBatchMode()) {
+			ImagePlus img = WindowManager.getCurrentImage();
+			if (img!=null) img.saveRoi();
 			WindowManager.setTempCurrentImage(this);
 			Interpreter.addBatchModeImage(this);
 			return;
@@ -567,8 +571,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		the current ImageProcessor to null. */
 	public synchronized void trimProcessor() {
 		if (ip!=null && !locked) {
-			if (ip!=null && IJ.debugMode) IJ.log(title + ": trimProcessor");
-			ip.setPixels(ip.getPixels()); // sets snapshot buffer to null
+			if (IJ.debugMode) IJ.log(title + ": trimProcessor");
+			ip.setSnapshotPixels(null);
 		}
 	}
 	
@@ -967,7 +971,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip = getProcessor();
 			currentSlice = index;
 			Object pixels = stack.getPixels(currentSlice);
-			if (pixels!=null) ip.setPixels(pixels);
+			if (pixels!=null) {
+				ip.setSnapshotPixels(null);
+				ip.setPixels(pixels);
+			}
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
 			if (IJ.spaceBarDown() && (imageType==GRAY16||imageType==GRAY32)) {
@@ -1097,6 +1104,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 				roi.setImage(this);
 				if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0) // does it need to be moved?
 					roi.setLocation((width-r.width)/2, (height-r.height)/2);
+				else if (r.width==width && r.height==height) // is it the same size as the image
+					roi.setLocation(0, 0);
 				draw();
 			}
 		}
@@ -1137,6 +1146,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (getTitle().startsWith("FFT of "))
 				setTitle(getTitle().substring(6));
 		}
+		ContrastAdjuster.reset();
 		repaintWindow();
 		IJ.showStatus("");
 		changes = false;

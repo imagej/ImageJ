@@ -135,6 +135,6 @@ public class ColorBlitter implements Blitter {
 			if (y%20==0)
 				ip.showProgress((double)(y-rect1.y)/rect1.height);
 		}
-		ip.hideProgress();
+		ip.showProgress(1.0);
 	}
 }

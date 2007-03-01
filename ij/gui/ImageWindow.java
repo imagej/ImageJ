@@ -76,6 +76,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
  		addWindowListener(this);
  		addWindowStateListener(this);
  		addKeyListener(ij);
+		setFocusTraversalKeysEnabled(false);
 		if (!(this instanceof StackWindow))
 			addMouseWheelListener(this);
 		setResizable(true);

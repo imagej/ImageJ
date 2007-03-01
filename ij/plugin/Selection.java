@@ -267,8 +267,13 @@ public class Selection implements PlugIn, Measurements {
 	
 	void createMask(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT))
-			{createMaskFromThreshold(imp); return;}
+		boolean useInvertingLut = Prefs.useInvertingLut;
+		Prefs.useInvertingLut = false;
+		if (roi==null || !(roi.isArea()||roi.getType()==Roi.POINT)) {
+			createMaskFromThreshold(imp);
+			Prefs.useInvertingLut = useInvertingLut;
+			return;
+		}
 		ImagePlus maskImp = null;
 		Frame frame = WindowManager.getFrame("Mask");
 		if (frame!=null && (frame instanceof ImageWindow))
@@ -285,6 +290,7 @@ public class Selection implements PlugIn, Measurements {
 		ip.setValue(255);
 		ip.fill(ip.getMask());
 		maskImp.updateAndDraw();
+		Prefs.useInvertingLut = useInvertingLut;
 	}
 	
 	void createMaskFromThreshold(ImagePlus imp) {

@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
+import ij.io.FileInfo;
 
 
 /** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
@@ -105,6 +106,8 @@ public class StackEditor implements PlugIn {
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
 		ImageStack stack = new ImageStack(width, height);
+		FileInfo fi = image[0].getOriginalFileInfo();
+		if (fi!=null && fi.directory==null) fi = null;
 		for (int i=0; i<count; i++) {
 			ImageProcessor ip = image[i].getProcessor();
 			if (ip.getMin()<min) min = ip.getMin();
@@ -112,6 +115,11 @@ public class StackEditor implements PlugIn {
             String label = image[i].getTitle();
             String info = (String)image[i].getProperty("Info");
             if (info!=null) label += "\n" + info;
+            if (fi!=null) {
+				FileInfo fi2 = image[i].getOriginalFileInfo();
+				if (fi2!=null && !fi.directory.equals(fi2.directory))
+					fi = null;
+            }
             stack.addSlice(label, ip);
 			image[i].changes = false;
 			image[i].close();
@@ -121,6 +129,11 @@ public class StackEditor implements PlugIn {
 			imp.getProcessor().setMinAndMax(min, max);
 		if (cal2!=null)
 			imp.setCalibration(cal2);
+		if (fi!=null) {
+			fi.fileName = "";
+			fi.nImages = imp.getStackSize();
+			imp.setFileInfo(fi);
+		}
 		imp.show();
 	}
 

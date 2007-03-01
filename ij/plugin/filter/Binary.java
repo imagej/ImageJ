@@ -38,12 +38,14 @@ public class Binary implements PlugInFilter {
 		if (ip.isInvertedLut())
 			foreground = 255 - foreground;
         background = 255 - foreground;
+		ip.setSnapshotCopyMode(true);
 		if (arg.equals("erode")) erode(ip);
 		else if (arg.equals("dilate")) dilate(ip);
 		else if (arg.equals("open")) open(ip);
 		else if (arg.equals("close")) close(ip);
 		else if (arg.equals("outline")) outline(ip);
 		else if (arg.equals("skel")) skeletonize(ip);
+		ip.setSnapshotCopyMode(false);
 	}
 
 		

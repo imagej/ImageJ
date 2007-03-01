@@ -33,6 +33,7 @@ public class Prefs {
 	public static final String FPS = "fps";
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
     public static final String NOISE_SD = "noise.sd";
+    public static final String MENU_SIZE = "menu.size";
 	public static final String KEY_PREFIX = ".";
  
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
@@ -270,6 +271,7 @@ public class Prefs {
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
 			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));
+			if (IJ.isMacOSX()) useJFileChooser = false;
 			saveOptions(prefs);
 			savePluginPrefs(prefs);
 			IJ.getInstance().savePreferences(prefs);

@@ -76,6 +76,8 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
 		}
+		//if (IJ.isLinux())
+		//	setBackground(new Color(238, 238, 238));
 		grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);

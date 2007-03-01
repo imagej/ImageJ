@@ -120,15 +120,11 @@ public class RankFilters implements PlugInFilter {
                 switch (type) {
                         case BYTE:
                                 ip2 = ip2.convertToByte(scale);
-                                byte[] pixels = (byte[])ip.getPixels();
-                                byte[] pixels2 = (byte[])ip2.getPixels();
-                                System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
+                                ip.setPixels(ip2.getPixels());
                                 break;
                         case SHORT:
                                 ip2 = ip2.convertToShort(scale);
-                                short[] pixels16 = (short[])ip.getPixels();
-                                short[] pixels16b = (short[])ip2.getPixels();
-                                System.arraycopy(pixels16b, 0, pixels16, 0, pixels16.length);
+                                ip.setPixels(ip2.getPixels());
                                 break;
                         case FLOAT:
                                 break;

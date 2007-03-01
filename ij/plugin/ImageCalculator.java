@@ -259,6 +259,10 @@ public class ImageCalculator implements PlugIn {
 		}
 		ImagePlus img3 = new ImagePlus("Result of "+img1.getShortTitle(), stack2);
 		img3.setCalibration(cal);
+		if (img3.getStackSize()==n) {
+			int[] dim = img1.getDimensions();
+			img3.setDimensions(dim[2], dim[3], dim[4]);
+		}
 		return img3;
 	}
 

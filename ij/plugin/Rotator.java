@@ -44,6 +44,7 @@ public class Rotator implements PlugIn {
 		}
 		if (slices==1 && !enlarge) {
 			ip.snapshot();
+			ip.setSnapshotCopyMode(true);
 			Undo.setup(Undo.FILTER, imp);
 		} else if (slices>1)
 			Undo.reset();
@@ -73,6 +74,7 @@ public class Rotator implements PlugIn {
 				}
 			}
 			ip.rotate(angle);
+			ip.setSnapshotCopyMode(false);
 		}
 		if (rotateStack) {
 			imp.setStack(null, stack);
