@@ -67,12 +67,13 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.38k";
+	public static final String VERSION = "1.38l";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 	/** Address of socket where Image accepts commands */
 	public static final int DEFAULT_PORT = 57294;
+	public static final int STANDALONE=0, EMBEDDED=1;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static int port = DEFAULT_PORT;
@@ -87,20 +88,32 @@ public class ImageJ extends Frame implements ActionListener,
 	private boolean exitWhenQuitting;
 	private boolean quitting;
 	private long keyPressedTime, actionPerformedTime;
+	private boolean embedded;
 	
 	boolean hotkey;
 	
-	/** Creates a new ImageJ frame. */
+	/** Creates a new ImageJ frame that runs as an application. */
 	public ImageJ() {
-		this(null);
+		this(null, STANDALONE);
 	}
 	
-	/** Creates a new ImageJ frame running as an applet
-		if the 'applet' argument is not null. */
+	/** Creates a new ImageJ frame that runs as an applet. */
 	public ImageJ(java.applet.Applet applet) {
+		this(applet, 0);
+	}
+
+	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
+		If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded 
+		version of ImageJ which does not start the SocketListener. */
+	public ImageJ(java.applet.Applet applet, int mode) {
 		super("ImageJ");
+		embedded = applet==null && mode==EMBEDDED;
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
+		if (IJ.isLinux()) {
+			backgroundColor = new Color(240,240,240);
+			setBackground(backgroundColor);
+		}
 		Menus m = new Menus(this, applet);
 		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
@@ -161,7 +174,7 @@ public class ImageJ extends Frame implements ActionListener,
 		m.installStartupMacroSet();
 		String str = m.nMacros==1?" macro)":" macros)";
 		IJ.showStatus("Version "+VERSION + " ("+ m.nPlugins + " commands, " + m.nMacros + str);
-		if (applet==null)
+		if (applet==null && !embedded)
 			new SocketListener();
  	}
     	
@@ -553,6 +566,11 @@ public class ImageJ extends Frame implements ActionListener,
 		return port;
 	}
 
+	/** ImageJ calls System.exit() when qutting when 'exitWhenQuitting' is true.*/
+	public void exitWhenQuitting(boolean ewq) {
+		exitWhenQuitting = ewq;
+	}
+	
 	/** Quit using a separate thread, hopefully avoiding thread deadlocks. */
 	public void run() {
 		quitting = true;

@@ -16,7 +16,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 		ImageJ ij = IJ.getInstance();
 		addWindowListener(this);
  		addFocusListener(this);
-		//setBackground(Color.white);
+		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
 		if (ij!=null) {
 			Image img = ij.getIconImage();
 			if (img!=null)

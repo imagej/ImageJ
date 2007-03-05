@@ -25,6 +25,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 	Button open, save;
 	GenericDialog gd;
 	boolean normalize = true;
+	int nSlices;
 	
 	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
 	static boolean normalizeFlag = true;
@@ -46,6 +47,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 				+"odd width. This kernel is "+kw+"x"+kh+".");
 			return DONE;
 		}
+		nSlices = imp.getStackSize();
 		int flags = IJ.setupDialog(imp, DOES_ALL);
 		if ((flags&DONE)!=0)
 			return DONE;
@@ -61,8 +63,8 @@ public class Convolver implements PlugInFilter, ActionListener {
 			ip.resetRoi();
 		convolve(ip, kernel, kw, kh);
 		if (slice>1)
-			IJ.showStatus("Convolve: "+slice+"/"+imp.getStackSize());
-		if (slice==imp.getStackSize()) {
+			IJ.showStatus("Convolve: "+slice+"/"+nSlices);
+		if (slice==nSlices) {
 			ip.resetMinAndMax();
 		}
 		slice++;
@@ -146,11 +148,21 @@ public class Convolver implements PlugInFilter, ActionListener {
 		switch (type) {
 			case BYTE:
 				ip2 = ip2.convertToByte(false);
-				ip.setPixels(ip2.getPixels());
+				if (nSlices>1) {
+					byte[] pixels = (byte[])ip.getPixels();
+					byte[] pixels2 = (byte[])ip2.getPixels();
+					System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
+				} else
+					ip.setPixels(ip2.getPixels());
 				break;
 			case SHORT:
 				ip2 = ip2.convertToShort(false);
-				ip.setPixels(ip2.getPixels());
+				if (nSlices>1) {
+					short[] pixels16 = (short[])ip.getPixels();
+					short[] pixels16b = (short[])ip2.getPixels();
+					System.arraycopy(pixels16b, 0, pixels16, 0, pixels16.length);
+				} else
+					ip.setPixels(ip2.getPixels());
 				break;
 			case FLOAT:
 				break;

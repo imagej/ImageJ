@@ -47,6 +47,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public TextWindow(String title, String headings, String data, int width, int height) {
 		super(title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
+		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
 		textPanel = new TextPanel(title);
 		textPanel.setTitle(title);
 		add("Center", textPanel);

@@ -25,9 +25,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	protected boolean closed;
 	private boolean newCanvas;
 	private static Rectangle maxWindow;
+	private boolean unzoomWhenMinimizing = true;
 	Rectangle maxBounds;
-	//boolean maximized;
-		
+
 	private static final int XINC = 8;
 	private static final int YINC = 12;
 	private static final int TEXT_GAP = 10;
@@ -62,7 +62,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setBackground(Color.black);
 		} else {
         	setForeground(Color.black);
-        	setBackground(Color.white);
+        	if (IJ.isLinux())
+        		setBackground(ImageJ.backgroundColor);
+        	else
+        		setBackground(Color.white);
         }
 		ij = IJ.getInstance();
 		this.imp = imp;
@@ -370,14 +373,21 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int extraHeight = insets.top+insets.bottom+5;
 		if (this instanceof StackWindow) extraHeight += 25;
 		double mag = Math.floor((maxBounds.height-extraHeight)*100.0/height)/100.0;
-		ic.setMagnification2(mag);
-		ic.setSrcRect(new Rectangle(0, 0, width, height));
-		ic.setDrawingSize((int)(width*mag), (int)(height*mag));
-		validate();
+		double aspectRatio = (double)width/height;
+		if (mag>ic.getMagnification() || aspectRatio<0.5 || aspectRatio>2.0) {
+			ic.setMagnification2(mag);
+			ic.setSrcRect(new Rectangle(0, 0, width, height));
+			ic.setDrawingSize((int)(width*mag), (int)(height*mag));
+			validate();
+			unzoomWhenMinimizing = true;
+		} else
+			unzoomWhenMinimizing = false;
 	}
 	
 	public void minimize() {
-		ic.unzoom();
+		if (unzoomWhenMinimizing)
+			ic.unzoom();
+		unzoomWhenMinimizing = true;
 	}
 
 	/** Has this window been closed? */

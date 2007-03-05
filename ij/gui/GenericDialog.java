@@ -135,6 +135,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		if (IJ.isWindows()) columns -= 2;
 		if (columns<1) columns = 1;
 		TextField tf = new TextField(IJ.d2s(defaultValue, digits), columns);
+		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
@@ -209,6 +210,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		add(theLabel);
 
 		TextField tf = new TextField(defaultText, columns);
+		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
@@ -358,11 +360,13 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     		return;
     	Panel panel = new Panel();
 		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
+		if (IJ.isLinux()) textArea1.setBackground(Color.white);
 		//textArea1.setBackground(Color.white);
 		//textArea1.append(text1);
 		panel.add(textArea1);
 		if (text2!=null) {
 			textArea2 = new TextArea(text2,rows,columns,TextArea.SCROLLBARS_NONE);
+			if (IJ.isLinux()) textArea2.setBackground(Color.white);
 			//textArea2.setBackground(Color.white);
 			//textArea2.append(text2);
 			panel.add(textArea2);
@@ -407,6 +411,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		if (IJ.isWindows()) columns -= 2;
 		if (columns<1) columns = 1;
 		TextField tf = new TextField(IJ.d2s(defaultValue, digits), columns);
+		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);

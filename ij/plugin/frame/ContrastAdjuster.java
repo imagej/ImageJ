@@ -865,8 +865,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
         toFront();
     }
     
-    /** Resets the ContrastAdjuster. */
-    public static void reset() {
+    /** Updates the ContrastAdjuster. */
+    public static void update() {
 		if (instance!=null) {
 			ContrastAdjuster ca = ((ContrastAdjuster)instance);
 			ca.previousImageID = 0;

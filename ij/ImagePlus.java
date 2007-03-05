@@ -1146,7 +1146,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (getTitle().startsWith("FFT of "))
 				setTitle(getTitle().substring(6));
 		}
-		ContrastAdjuster.reset();
+		ContrastAdjuster.update();
 		repaintWindow();
 		IJ.showStatus("");
 		changes = false;

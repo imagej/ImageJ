@@ -320,16 +320,20 @@ public class WindowManager {
 		return true;
     }
     
-	/** Activates the next window on the window list. */
+	/** Activates the next image window on the window list. */
 	public static void putBehind() {
 		if (IJ.debugMode) IJ.log("putBehind");
 		if(imageList.size()<1 || currentWindow==null)
 			return;
 		int index = imageList.indexOf(currentWindow);
-		index--;
-		if (index<0)
-			index = imageList.size()-1;
-		ImageWindow win = (ImageWindow)imageList.elementAt(index);
+		ImageWindow win;
+		int count = 0;
+		do {
+			index--;
+			if (index<0) index = imageList.size()-1;
+			win = (ImageWindow)imageList.elementAt(index);
+			if (++count==imageList.size()) return;
+		} while (win instanceof HistogramWindow || win instanceof PlotWindow);
 		setCurrentWindow(win);
 		win.toFront();
 		Menus.updateMenus();

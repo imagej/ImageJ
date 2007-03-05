@@ -61,6 +61,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		textArea = new TextArea("",15,30,TextArea.SCROLLBARS_VERTICAL_ONLY);
 		//textArea.setBackground(Color.white);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		textArea.append(text);
 		add("Center", textArea);
 		pack();

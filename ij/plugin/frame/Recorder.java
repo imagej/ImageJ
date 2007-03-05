@@ -56,7 +56,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		add("North", panel);
 		textArea = new TextArea("",15,60,TextArea.SCROLLBARS_VERTICAL_ONLY);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-		//textArea.setBackground(Color.white);
+		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		add("Center", textArea);
 		pack();
 		GUI.center(this);

@@ -14,7 +14,7 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 		setLayout(new BorderLayout());
 		if (message==null) message = "";
 		label = new MultiLineLabel(message);
-		label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 15));
 		panel.add(label);

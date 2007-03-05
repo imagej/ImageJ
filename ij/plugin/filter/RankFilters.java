@@ -20,6 +20,7 @@ public class RankFilters implements PlugInFilter {
         boolean canceled;
         private static final String[] typeStrings = {"Median","Mean","Minimum","Maximum","Variance","Median"};
         boolean isLineRoi;
+        int nSlices;
         
         static double radius = 2.0;
         static boolean separable = true;
@@ -48,6 +49,7 @@ public class RankFilters implements PlugInFilter {
                         IJ.resetEscape();
 						Roi roi = imp.getRoi();
 						isLineRoi= roi!=null && roi.isLine();
+						nSlices = imp.getStackSize();
                 }
                 title = typeStrings[filterType];
                 IJ.showStatus(title+", radius="+radius+" (esc to abort)");
@@ -72,7 +74,7 @@ public class RankFilters implements PlugInFilter {
                		rank(ip, radius, filterType);
                 if (slice>1)
                         IJ.showStatus(title+": "+slice+"/"+imp.getStackSize());
-                if (imp!=null && slice==imp.getStackSize())
+                if (imp!=null && slice==nSlices)
                         ip.resetMinAndMax();
         }
 
@@ -120,11 +122,21 @@ public class RankFilters implements PlugInFilter {
                 switch (type) {
                         case BYTE:
                                 ip2 = ip2.convertToByte(scale);
-                                ip.setPixels(ip2.getPixels());
+                                if (nSlices>1) {
+                                	byte[] pixels = (byte[])ip.getPixels();
+                                	byte[] pixels2 = (byte[])ip2.getPixels();
+                                	System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
+                                } else
+                                	ip.setPixels(ip2.getPixels());
                                 break;
                         case SHORT:
                                 ip2 = ip2.convertToShort(scale);
-                                ip.setPixels(ip2.getPixels());
+                                if (nSlices>1) {
+                               		short[] pixels16 = (short[])ip.getPixels();
+									short[] pixels16b = (short[])ip2.getPixels();
+                                	System.arraycopy(pixels16b, 0, pixels16, 0, pixels16.length);
+                                } else
+                                	ip.setPixels(ip2.getPixels());
                                 break;
                         case FLOAT:
                                 break;

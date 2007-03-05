@@ -52,6 +52,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
  		list.addKeyListener(ij);
  		list.addMouseListener(this);
  		list.addMouseWheelListener(this);
+		if (IJ.isLinux()) list.setBackground(Color.white);
 		add(list);
 		panel = new Panel();
 		int nButtons = IJ.isJava2()?BUTTONS:BUTTONS-1;
