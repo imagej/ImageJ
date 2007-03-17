@@ -103,7 +103,7 @@ public class FileInfo {
 	public String debugInfo;
 	public String[] sliceLabels;
 	public String info;
-	InputStream inputStream;
+	public InputStream inputStream;
 	
 	public double pixelWidth=1.0;
 	public double pixelHeight=1.0;

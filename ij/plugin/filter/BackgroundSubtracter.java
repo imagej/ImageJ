@@ -15,7 +15,7 @@ import java.awt.*;
 public class BackgroundSubtracter implements PlugInFilter {
 
 	private static int radius = 50; // default rolling ball radius
-	private static boolean lightBackground = true;
+	private static boolean lightBackground = Prefs.get("bs.background", true);
 	private ImagePlus imp;
 	private boolean canceled;
 	private int slice;
@@ -60,6 +60,7 @@ public class BackgroundSubtracter implements PlugInFilter {
 		else {
 			radius = (int)gd.getNextNumber();
 			lightBackground = gd.getNextBoolean();
+			Prefs.set("bs.background", lightBackground);	
 		}
 		boolean invertedLut = imp.isInvertedLut();
 		invert = (invertedLut && !lightBackground) || (!invertedLut && lightBackground);

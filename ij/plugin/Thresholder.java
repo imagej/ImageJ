@@ -77,7 +77,7 @@ public class Thresholder implements PlugIn, Measurements {
 		if (autoThreshold)
 			autoThreshold(imp);
 		else {
-			if (Recorder.record)
+			if (Recorder.record && (!IJ.macroRunning()||Recorder.recordInMacros))
 				Recorder.record("setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
  			minThreshold = ((saveMinThreshold-saveMin)/(saveMax-saveMin))*255.0;
  			maxThreshold = ((saveMaxThreshold-saveMin)/(saveMax-saveMin))*255.0;

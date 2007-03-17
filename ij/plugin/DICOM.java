@@ -46,6 +46,23 @@ import ij.measure.Calibration;
 
 public class DICOM extends ImagePlus implements PlugIn {
 	private boolean showErrors = true;
+	private BufferedInputStream inputStream;
+	
+	/** Default constructor. */
+	public DICOM() {
+	}
+
+	/** Constructs a DICOM reader that using an Input stream. Here is an example
+		that shows how to open and display a DICOM using a BufferedInputStream:
+	<pre>
+    DICOM dcm = new DICOM(bis);
+    dcm.run("Name");
+    dcm.show();
+	<pre>
+	*/
+	public DICOM(BufferedInputStream bis) {
+		inputStream = bis;
+	}
 
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("Open Dicom...", arg);
@@ -55,6 +72,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			return;
 		//IJ.showStatus("Opening: " + directory + fileName);
 		DicomDecoder dd = new DicomDecoder(directory, fileName);
+		dd.inputStream = inputStream;
 		FileInfo fi = null;
 		try {fi = dd.getFileInfo();}
 		catch (IOException e) {
@@ -210,6 +228,7 @@ class DicomDecoder {
 	double windowCenter, windowWidth;
 	double rescaleIntercept, rescaleSlope;
 	boolean inSequence;
+ 	BufferedInputStream inputStream;
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -218,7 +237,6 @@ class DicomDecoder {
 			DicomDictionary d = new DicomDictionary();
 			dictionary = d.getDictionary();
 		}
-			
 		IJ.register(DICOM.class);
 	}
   
@@ -350,6 +368,8 @@ class DicomDecoder {
 		fi.fileName = fileName;
 		if (isURL)
 			fi.url = directory;
+		else if (inputStream!=null)
+			fi.inputStream = inputStream;
 		else
 			fi.directory = directory;
 		fi.width = 0;
@@ -365,6 +385,9 @@ class DicomDecoder {
 		if (isURL) {
 			URL u = new URL(fi.url+fi.fileName);
 			f = new BufferedInputStream(u.openStream());
+		} else if (inputStream!=null) {
+			f = inputStream;
+			f.mark(100000);
 		} else
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		if (IJ.debugMode) {
@@ -377,11 +400,13 @@ class DicomDecoder {
 		location += ID_OFFSET;
 		
 		if (!getString(4).equals(DICM)) {
-			f.close();
+			if (inputStream==null) f.close();
 			if (isURL) {
 				URL u = new URL(fi.url+fi.fileName);
 				f = new BufferedInputStream(u.openStream());
-			} else
+			} else if (inputStream!=null)
+				f.reset();
+			else
 				f = new BufferedInputStream(new FileInputStream(directory + fileName));
 			location = 0;
 			if (IJ.debugMode) IJ.log(DICM + " not found at offset "+ID_OFFSET+"; reseting to offset 0");
@@ -558,7 +583,10 @@ class DicomDecoder {
 			IJ.log("offset: " + fi.offset);
 		}
 	
-		f.close();
+		if (inputStream!=null)
+			f.reset();
+		else
+			f.close();
 		return fi;
 	}
 	

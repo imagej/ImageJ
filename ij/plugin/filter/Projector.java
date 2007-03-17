@@ -457,8 +457,8 @@ public class Projector implements PlugInFilter {
 									if ((thispixel>(brightCueArray[offset]&0xff)) || (thispixel==(brightCueArray[offset]&0xff)) && (znew>cueZBuffer[offset])) {
 										brightCueArray[offset] = (byte)thispixel;  //use z-buffer to ensure that if depth-cueing is on,
 										cueZBuffer[offset] = (short)znew;       //the closer of two equally-bright points is displayed.
- 										projArray[offset] = (byte)(255 - (depthCueInt*(255-thispixel)/100 +
-											c100minusDepthCueInt*(255-thispixel)*(zmax-znew)/zmaxminuszmintimes100));
+										projArray[offset] = (byte)((depthCueInt*thispixel/100 +
+											c100minusDepthCueInt*thispixel*(zmax-znew)/zmaxminuszmintimes100));
 									}
 							} else {
 								if (thispixel>(projArray[offset]&0xff))

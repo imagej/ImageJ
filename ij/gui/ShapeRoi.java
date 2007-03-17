@@ -1040,22 +1040,26 @@ public class ShapeRoi extends Roi {
 	/***                         Drawing and Image routines                        ****/
 	/**********************************************************************************/
 
-	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
-	public void draw(Graphics g) {
-		if(ic==null) return;
-		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
-		g.setColor(ROIColor);
-		mag = ic.getMagnification();
-		Rectangle r = ic.getSrcRect();
-		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
-        aTx.translate(x, y); //wsr
-		((Graphics2D)g).draw(aTx.createTransformedShape(shape));
-		//if (savedRois!=null) drawLines(g);
-		showStatus();
-		if (updateFullWindow) 
-			{updateFullWindow = false; imp.draw();}
-	}
-	
+ 	/** Non-destructively draws the shape of this object on the associated ImagePlus.
+		2007/03/12: Uses a scaled graphics object as proposed by Albert Cardona . */
+   public void draw(Graphics g) {
+		   if(ic==null) return;
+		   g.setColor(ROIColor);
+		   mag = ic.getMagnification();
+		   Rectangle r = ic.getSrcRect();
+		   final Graphics2D g2d = (Graphics2D)g;
+		   g2d.scale(mag, mag);
+		   g2d.translate(x-r.x, y-r.y);
+		   g2d.draw(shape);
+		   g2d.translate(-x+r.x, -y+r.y);
+		   g2d.scale(1/mag, 1/mag);
+		   if (state==MOVING) showStatus();
+		   if (updateFullWindow) {
+				   updateFullWindow = false;
+				   imp.draw();
+		   }
+   }
+
 	void drawLines(Graphics g) {
 		Roi[] rois = getRois();
 		//IJ.log("drawLines: "+rois.length);

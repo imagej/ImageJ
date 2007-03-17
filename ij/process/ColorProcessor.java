@@ -209,6 +209,12 @@ public class ColorProcessor extends ImageProcessor {
 		snapshotHeight=height;
 	}
 
+	/** Returns a reference to the snapshot pixel array. Used by the ContrastAdjuster. */
+	public Object getSnapshotPixels() {
+		return snapshotPixels;
+	}
+
+
 	/** Fills pixels that are within roi and part of the mask.
 		Does nothing if the mask is not the same as the the ROI. */
 	public void fill(ImageProcessor mask) {
@@ -230,9 +236,11 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Returns a reference to this image's snapshot (undo) array
-		if it is not null and 'snapshotCopyMode' is true. Otherwise,
-		returns a copy of the pixel data. */
+	/** Returns a copy of the pixel data. Or returns a reference to the
+		snapshot buffer if it is not null and 'snapshotCopyMode' is true.
+		@see ImageProcessor#snapshot
+		@see ImageProcessor#setSnapshotCopyMode
+	*/
 	public Object getPixelsCopy() {
 		if (snapshotPixels!=null && snapshotCopyMode) {
 			snapshotCopyMode = false;
@@ -242,11 +250,6 @@ public class ColorProcessor extends ImageProcessor {
         	System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
 		}
-	}
-
-	/** Returns a reference to the snapshot pixel array. Used by the ContrastAdjuster. */
-	public Object getSnapshotPixels() {
-		return snapshotPixels;
 	}
 
 	public int getPixel(int x, int y) {

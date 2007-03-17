@@ -217,6 +217,10 @@ public class FloatProcessor extends ImageProcessor {
 		snapshotHeight=height;
 	}
 
+	public Object getSnapshotPixels() {
+		return snapshotPixels;
+	}
+
 	/** Returns a pixel value that must be converted using
 		Float.intBitsToFloat(). */
 	public int getPixel(int x, int y) {
@@ -298,9 +302,11 @@ public class FloatProcessor extends ImageProcessor {
 		return (Object)pixels;
 	}
 
-	/** Returns a reference to this image's snapshot (undo) array
-		if it is not null and 'snapshotCopyMode' is true. Otherwise,
-		returns a copy of the pixel data. */
+	/** Returns a copy of the pixel data. Or returns a reference to the
+		snapshot buffer if it is not null and 'snapshotCopyMode' is true.
+		@see ImageProcessor#snapshot
+		@see ImageProcessor#setSnapshotCopyMode
+	*/
 	public Object getPixelsCopy() {
 		if (snapshotCopyMode && snapshotPixels!=null) {
 			snapshotCopyMode = false;

@@ -1244,7 +1244,10 @@ public class Menus {
 	
 	void installStartupMacroSet() {
 		if (applet!=null) {
-			IJ.runPlugIn("ij.plugin.URLOpener", applet.getDocumentBase()+"StartupMacros.txt");
+			String docBase = ""+applet.getDocumentBase();
+			if (docBase.endsWith("index.html"))
+				docBase = docBase.substring(0, docBase.length()-10);
+			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
 			return;
 		}
 		if (macrosPath==null) {

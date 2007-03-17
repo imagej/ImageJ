@@ -1222,7 +1222,8 @@ public class IJ {
 			path = updateExtension(path, ".txt");
 			format = "Text Image...";
 		} else if (format.indexOf("text")!=-1 || format.indexOf("txt")!=-1) {
-			path = updateExtension(path, ".txt");
+			if (!path.endsWith(".xls"))
+				path = updateExtension(path, ".txt");
 			format = "Text...";
 		} else if (format.indexOf("zip")!=-1) {
 			path = updateExtension(path, ".zip");

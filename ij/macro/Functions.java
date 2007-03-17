@@ -207,8 +207,8 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_STRING: str = getStringDialog(); break;
 			case SUBSTRING: str = substring(); break;
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
-			case GET_INFO: str = getInfo(true); break;			
-			case GET_IMAGE_INFO: str = getInfo(false); break;			
+			case GET_INFO: str = getInfo(); break;			
+			case GET_IMAGE_INFO: interp.getParens(); str = getImageInfo(); break;			
 			case GET_DIRECTORY: str = getDirectory(); break;
 			case GET_ARGUMENT: interp.getParens(); str=interp.argument!=null?interp.argument:""; break;
 			case TO_LOWER_CASE: str = getStringArg().toLowerCase(Locale.US); break;
@@ -240,6 +240,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_FILE_LIST: array = getFileList(); break;
 			case GET_FONT_LIST: array = getFontList(); break;
 			case NEW_MENU: array = newMenu(); break;
+			case GET_LIST: array = getList(); break;
 			default:
 				array = null;
 				interp.error("Array function expected");
@@ -1188,19 +1189,51 @@ public class Functions implements MacroConstants, Measurements {
     	return new String(chars, 0, count);
 	}
 
-	public String getInfo(boolean frontWindow) {
-		interp.getParens();
-		Frame frame = frontWindow?WindowManager.getFrontWindow():null;
+	String getInfo() {
+		if (interp.nextNextNonEolToken()==STRING_CONSTANT
+		|| (interp.nextNonEolToken()=='('&&interp.nextNextNonEolToken()!=')'))
+			return getInfo(getStringArg());
+		else {
+			interp.getParens();
+			return getWindowContents();
+		}
+	}
+	
+	String getInfo(String key) {
+			if (key.equals("image.subtitle")) {
+				ImagePlus imp = getImage();
+				ImageWindow win = imp.getWindow();
+				return win!=null?win.createSubtitle():"";
+			} else if (key.equals("slice.label")) {
+				ImagePlus imp = getImage();
+				if (imp.getStackSize()==1) return "";
+				String label = imp.getStack().getShortSliceLabel(imp.getCurrentSlice());
+				return label!=null?label:"";
+			} else if (key.equals("window.contents")) {
+				return getWindowContents();
+			} else {
+				String value = "";
+				try {value = System.getProperty(key);}
+				catch (Exception e) {};
+				return value!=null?value:"";
+			}
+	}
+	
+	String getWindowContents() {
+		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && frame instanceof TextWindow) {
 			TextPanel tp = ((TextWindow)frame).getTextPanel();
 			return tp.getText();			
-		} else if (frame!=null && frame instanceof Editor)
+		} else if (frame!=null && frame instanceof Editor) {
 			return ((Editor)frame).getText();			
-		else {
-			ImagePlus imp = getImage();
-			Info infoPlugin = new Info();
-			return infoPlugin.getImageInfo(imp, getProcessor());
-		}		
+		} else
+			return getImageInfo();
+	}
+	
+	String getImageInfo() {		
+		ImagePlus imp = getImage();
+		Info infoPlugin = new Info();
+		return infoPlugin.getImageInfo(imp, getProcessor());
 	}
 
 	public String getDirectory() {
@@ -2238,11 +2271,10 @@ public class Functions implements MacroConstants, Measurements {
 		interp.inPrint = true;
 		String s = getFirstString();
 		if (interp.nextNonEolToken()==',') {
-			char c = s.charAt(0);
-			if (c=='[' && s.endsWith("]")) {
+			if (s.startsWith("[") && s.endsWith("]")) {
 				printToWindow(s);
 				return;
-			} else if (c=='~' && s.equals("~0~")) {
+			} else if (s.equals("~0~")) {
 				if (writer==null)
 					interp.error("File not open");
                 String s2 = getLastString();
@@ -2267,18 +2299,80 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void printToWindow(String s) {
 		String title = s.substring(1, s.length()-1);
+		String s2 = getLastString();
+		boolean isCommand = s2.startsWith("\\");
 		Frame frame = WindowManager.getFrame(title);
-		if (frame==null)
-			interp.error("Window not found");
+		if (frame==null) {
+			if (isCommand) {
+				interp.done = true;
+				return;
+			} else
+				interp.error("Window not found");
+		}
 		boolean isEditor = frame instanceof Editor;
 		if (!(isEditor || frame instanceof TextWindow))
 			interp.error("Window is not text window");
-		String s2 = getLastString();
-		if (isEditor)
-			((Editor)frame).append(s2);
-		else
-			((TextWindow)frame).append(s2);
+		if (isEditor) {
+			Editor ed = (Editor)frame;
+			ed.setIsMacroWindow(true);
+			if (isCommand)
+				handleEditorCommand(ed, s2);
+			else
+				ed.append(s2);
+		} else {
+			TextWindow tw = (TextWindow)frame;
+			if (isCommand)
+				handleTextWindowCommand(tw, s2);
+			else
+				tw.append(s2);
+		}
 	}
+	
+	void handleEditorCommand(Editor ed, String s) {
+		if (s.startsWith("\\Update:")) {
+			TextArea ta = ed.getTextArea();
+			ta.setText(s.substring(8, s.length()));
+			ta.setEditable(false);
+		} else if (s.equals("\\Close"))
+			ed.close();
+		else
+			ed.append(s);
+	}
+
+	void handleTextWindowCommand(TextWindow tw, String s) {
+		TextPanel tp = tw.getTextPanel();
+		if (s.startsWith("\\Update:")) {
+			int n = tp.getLineCount();
+			String s2 = s.substring(8, s.length());
+			if (n==0)
+				tp.append(s2);
+			else
+				tp.setLine(n-1, s2);
+		} else if (s.startsWith("\\Update")) {
+			int cindex = s.indexOf(":");
+			if (cindex==-1)
+				{tp.append(s); return;}
+			String nstr = s.substring(7, cindex);
+			int line = (int)Tools.parseDouble(nstr, -1);
+			if (line<0 || line>25)
+				{tp.append(s); return;}
+			int count = tp.getLineCount();
+			while (line>=count) {
+				tp.append("");
+				count++;
+			}
+			String s2 = s.substring(cindex+1, s.length());
+			tp.setLine(line, s2);
+		} else if (s.equals("\\Clear"))
+			tp.clear();
+		else if (s.equals("\\Close"))
+			tw.close();
+		else if (s.startsWith("\\Headings:"))
+			tp.setColumnHeadings(s.substring(10));
+		else
+			tp.append(s);
+	}
+
 	
 	double isKeyDown() {
 		double value = 0.0;
@@ -3009,5 +3103,30 @@ public class Functions implements MacroConstants, Measurements {
 		return state;
 	}
 
+	Variable[] getList() {
+		String key = getStringArg();
+		if (key.equals("java.properties")) {
+			Properties props = System.getProperties();
+			Vector v = new Vector();
+			for (Enumeration en=props.keys(); en.hasMoreElements();)
+				v.addElement((String)en.nextElement());
+			Variable[] array = new Variable[v.size()];
+			for (int i=0; i<array.length; i++)
+				array[i] = new Variable(0, 0.0, (String)v.elementAt(i));
+			return array;
+		} else if (key.equals("window.titles")) {
+			Frame[] list = WindowManager.getNonImageWindows();
+			Variable[] array = new Variable[list.length];
+			for (int i=0; i<list.length; i++) {
+				Frame frame = list[i];
+				array[i] = new Variable(0, 0.0, frame.getTitle());
+			}
+			return array;
+		} else {
+			interp.error("Unvalid key");
+			return null;
+		}
+	}
+    	
 } // class Functions
 

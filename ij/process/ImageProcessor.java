@@ -1148,9 +1148,11 @@ public abstract class ImageProcessor extends Object {
 		depending on the image type. */
 	public abstract Object getPixels();
 	
-	/** Returns a reference to this image's snapshot (undo) array
-		if it is not null and 'snapshotCopyMode' is true. Otherwise,
-		returns a copy of the pixel data. */
+	/** Returns a copy of the pixel data. Or returns a reference to the
+		snapshot buffer if it is not null and 'snapshotCopyMode' is true.
+		@see ImageProcessor#snapshot
+		@see ImageProcessor#setSnapshotCopyMode
+	*/
 	public abstract Object getPixelsCopy();
 
 	/** Returns the value of the pixel at (x,y). For RGB images, the
@@ -1326,7 +1328,11 @@ public abstract class ImageProcessor extends Object {
 	/** Returns a new, blank processor with the specified width and height. */
 	public abstract ImageProcessor createProcessor(int width, int height);
 	
-	/** Makes a copy of this image's pixel data. */
+	/** Makes a copy of this image's pixel data that can be 
+		later restored using reset() or reset(mask).
+		@see ImageProcessor#reset		
+		@see ImageProcessor#reset(ImageProcessor)		
+	*/
 	public abstract void snapshot();
 	
 	/** Restores the pixel data from the snapshot (undo) buffer. */
@@ -1338,6 +1344,9 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Sets a new pixel array for the snapshot (undo) buffer. */
 	public abstract void setSnapshotPixels(Object pixels);
+
+	/** Returns a reference to the snapshot (undo) buffer, or null. */
+	public abstract Object getSnapshotPixels();
 
 	/** Convolves the image or ROI with the specified
 		3x3 integer convolution kernel. */
@@ -1569,7 +1578,10 @@ public abstract class ImageProcessor extends Object {
 	}
 	
 	/**	The getPixelsCopy() method returns a reference to the
-		snapshot buffer when 'snapshotCopyMode' is true. */
+		snapshot buffer if it is not null and 'snapshotCopyMode' is true.
+		@see ImageProcessor#getPixelsCopy		
+		@see ImageProcessor#snapshot		
+	*/
 	public void setSnapshotCopyMode(boolean b) {
 		snapshotCopyMode = b;
 	}

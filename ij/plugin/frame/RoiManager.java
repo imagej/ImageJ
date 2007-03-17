@@ -12,13 +12,14 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import ij.util.*;
 import ij.macro.*;
-import ij.measure.Calibration;
+import ij.measure.*;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener {
 
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
+	static final int MENU=0, COMMAND=1, MULTI=2;
 	Panel panel;
 	static Frame instance;
 	java.awt.List list;
@@ -29,6 +30,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean ignoreInterrupts;
 	PopupMenu pm;
 	Button moreButton;
+	static boolean measureAll = true;
+	static boolean onePerSlice = true;
 
 
 	public RoiManager() {
@@ -94,6 +97,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
+		addPopupItem("Multi Measure");
 		addPopupItem("Sort");
 		addPopupItem("Help");
 		add(pm);
@@ -128,7 +132,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Save"))
 			save();
 		else if (command.equals("Measure"))
-			measure();
+			measure(MENU);
 		else if (command.equals("Show All"))
 			showAll();
 		else if (command.equals("Draw"))
@@ -151,6 +155,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (command.equals("Add Particles"))
 			addParticles();
+		else if (command.equals("Multi Measure"))
+			multiMeasure();
 		else if (command.equals("Sort"))
 			sort();
 		else if (command.equals("Help"))
@@ -560,7 +566,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 		
-	boolean measure() {
+	boolean measure(int mode) {
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
@@ -573,7 +579,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		boolean allSliceOne = true;
 		for (int i=0; i<indexes.length; i++) {
 			String label = list.getItem(indexes[i]);
-	           if (getSliceNumber(label)>1) allSliceOne = false;
+			if (getSliceNumber(label)>1) allSliceOne = false;
 			Roi roi = (Roi)rois.get(label);
 			if (roi.isLine()) nLines++;
 		}
@@ -583,12 +589,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 						
 		int nSlices = 1;
-		if (imp.getStackSize()>1 && allSliceOne) {
+		if (imp.getStackSize()>1 && allSliceOne && mode==MENU) {
 			int setup = IJ.setupDialog(imp, 0);
 			if (setup==PlugInFilter.DONE)
 				return false;
 			nSlices = setup==PlugInFilter.DOES_STACKS?imp.getStackSize():1;
 		}
+		if (mode==MULTI)
+			nSlices = imp.getStackSize();
+		int measurements = Analyzer.getMeasurements();
+		if ((nSlices>1||!allSliceOne) && indexes.length>1)
+			Analyzer.setMeasurements(measurements|Measurements.SLICE);
 		int currentSlice = imp.getCurrentSlice();
 		for (int slice=1; slice<=nSlices; slice++) {
 			if (nSlices>1) imp.setSlice(slice);
@@ -600,11 +611,102 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 		}
 		imp.setSlice(currentSlice);
+		Analyzer.setMeasurements(measurements);
 		if (indexes.length>1)
 			IJ.run("Select None");
 		if (Recorder.record) Recorder.record("roiManager", "Measure");
 		return true;
 	}	
+
+	/* This method performs measurements for several ROI's in a stack
+		and arranges the results with one line per slice.  By constast, the 
+		measure() method produces several lines per slice.  The results 
+		from multiMeasure() may be easier to import into a spreadsheet 
+		program for plotting or additional analysis. Based on the multi() 
+		method in Bob Dougherty's Multi_Measure plugin
+		(http://www.optinav.com/Multi-Measure.htm).
+	*/
+ 	boolean multiMeasure() {
+		ImagePlus imp = getImage();
+		if (imp==null) return false;
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+        if (indexes.length==0) return false;
+		int measurements = Analyzer.getMeasurements();
+
+		int nSlices = imp.getStackSize();
+		GenericDialog gd = new GenericDialog("Multi Measure");
+		if (nSlices>1)
+			gd.addCheckbox("Measure All "+nSlices+" Slices", measureAll);
+		gd.addCheckbox("One Row Per Slice", onePerSlice);
+		int columns = getColumnCount(imp, measurements)*indexes.length;
+		String str = nSlices==1?"this option":"both options";
+		gd.setInsets(10, 25, 0);
+		gd.addMessage(
+			"Enabling "+str+" will result\n"+
+			"in a table with "+columns+" columns."
+		);
+		gd.showDialog();
+		if (gd.wasCanceled()) return false;
+		if (nSlices>1)
+			measureAll = gd.getNextBoolean();
+		onePerSlice = gd.getNextBoolean();
+		if (!measureAll) nSlices = 1;
+		int currentSlice = imp.getCurrentSlice();
+		if (!onePerSlice)
+			return measure(MULTI);
+
+		Analyzer aSys = new Analyzer(); //System Analyzer
+		ResultsTable rtSys = Analyzer.getResultsTable();
+		ResultsTable rtMulti = new ResultsTable();
+		Analyzer aMulti = new Analyzer(imp, measurements, rtMulti); //Private Analyzer
+
+		for (int slice=1; slice<=nSlices; slice++) {
+			int sliceUse = slice;
+			if(nSlices == 1)sliceUse = currentSlice;
+			imp.setSlice(sliceUse);
+			rtMulti.incrementCounter();
+			int roiIndex = 0;
+			for (int i=0; i<indexes.length; i++) {
+				if (restore(indexes[i], false)) {
+					roiIndex++;
+					Roi roi = imp.getRoi();
+					ImageStatistics stats = imp.getStatistics(measurements);
+					aSys.saveResults(stats, roi); //Save measurements in system results table;
+					for (int j=0; j<ResultsTable.MAX_COLUMNS; j++){
+						float[] col = rtSys.getColumn(j);
+						String head = rtSys.getColumnHeading(j);
+						if (head!=null && col!=null && !head.equals("Slice"))
+							rtMulti.addValue(head+roiIndex,rtSys.getValue(j,rtSys.getCounter()-1));
+					}
+				} else
+					break;
+			}
+			aMulti.displayResults();
+			aMulti.updateHeadings();
+		}
+
+		imp.setSlice(currentSlice);
+		if (indexes.length>1)
+			IJ.run("Select None");
+		return true;
+	}
+	
+	int getColumnCount(ImagePlus imp, int measurements) {
+		ImageStatistics stats = imp.getStatistics(measurements);
+		ResultsTable rt = new ResultsTable();
+		Analyzer analyzer = new Analyzer(imp, measurements, rt);
+		analyzer.saveResults(stats, null);
+		int count = 0;
+		for (int i=0; i<ResultsTable.MAX_COLUMNS; i++) {
+			float[] col = rt.getColumn(i);
+			String head = rt.getColumnHeading(i);
+			if (head!=null && col!=null)
+				count++;
+		}
+		return count;
+	}
 
 	boolean drawOrFill(int mode) {
 		int[] indexes = list.getSelectedIndexes();
@@ -836,7 +938,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("delete"))
 			delete(false);
 		else if (cmd.equals("measure"))
-			measure();
+			measure(COMMAND);
 		else if (cmd.equals("draw"))
 			drawOrFill(DRAW);
 		else if (cmd.equals("fill"))

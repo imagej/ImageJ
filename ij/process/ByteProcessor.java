@@ -168,6 +168,10 @@ public class ByteProcessor extends ImageProcessor {
 		snapshotHeight=height;
 	}
 
+	public Object getSnapshotPixels() {
+		return snapshotPixels;
+	}
+
 	/** Fills pixels that are within roi and part of the mask.
 		Does nothing if the mask is not the same size as the ROI. */
 	public void fill(ImageProcessor mask) {
@@ -292,9 +296,11 @@ public class ByteProcessor extends ImageProcessor {
 		return (Object)pixels;
 	}
 
-	/** Returns a reference to this image's snapshot (undo) array
-		if it is not null and 'snapshotCopyMode' is true. Otherwise,
-		returns a copy of the pixel data. */
+	/** Returns a copy of the pixel data. Or returns a reference to the
+		snapshot buffer if it is not null and 'snapshotCopyMode' is true.
+		@see ImageProcessor#snapshot
+		@see ImageProcessor#setSnapshotCopyMode
+	*/
 	public Object getPixelsCopy() {
 		if (snapshotPixels!=null && snapshotCopyMode) {
 			snapshotCopyMode = false;

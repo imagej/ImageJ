@@ -18,7 +18,8 @@ import ij.io.SaveDialog;
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	TextListener, ClipboardOwner, MacroConstants {
 	
-	public static final int MAX_SIZE = 28000, MAX_MACROS=50, XINC=10, YINC=18;
+	public static final int MAX_SIZE=28000, MAX_MACROS=50, XINC=10, YINC=18;
+	public static final int MONOSPACED=1, MENU_BAR=2;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	private TextArea ta;
@@ -47,11 +48,31 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private CheckboxMenuItem monospaced;
     private static boolean caseSensitive = true;
     private static boolean wholeWords;
+    private boolean isMacroWindow;
 	
 	public Editor() {
+		this(16, 60, 0, MENU_BAR);
+	}
+
+	public Editor(int rows, int columns, int fontSize, int options) {
 		super("Editor");
 		WindowManager.addWindow(this);
-
+		addMenuBar(options);	
+		ta = new TextArea(rows, columns);
+		ta.addTextListener(this);
+		if (IJ.isLinux()) ta.setBackground(Color.white);
+ 		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
+		add(ta);
+		pack();
+		if (fontSize<0) fontSize = 0;
+		if (fontSize>=sizes.length) fontSize = sizes.length-1;
+        setFont();
+		positionWindow();
+		//display("Test.java", "");
+		IJ.register(Editor.class);
+	}
+	
+	void addMenuBar(int options) {
 		mb = new MenuBar();
 		if (Menus.getFontSize()!=0) ;
 			mb.setFont(Menus.getFont());
@@ -99,31 +120,20 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.addActionListener(this);
 		mb.add(m);
 		editMenu = m;
-		setMenuBar(mb);
+		if ((options&MENU_BAR)!=0)
+			setMenuBar(mb);
 		
 		m = new Menu("Font");
 		m.add(new MenuItem("Make Text Smaller", new MenuShortcut(KeyEvent.VK_J)));
 		m.add(new MenuItem("Make Text Larger", new MenuShortcut(KeyEvent.VK_K)));
 		m.addSeparator();
 		monospaced = new CheckboxMenuItem("Monospaced Font", Prefs.get(FONT_MONO, false));
+		if ((options&MONOSPACED)!=0) monospaced.setState(true);
 		monospaced.addItemListener(this);
 		m.add(monospaced);
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
-		
-		ta = new TextArea(16, 60);
-		ta.addTextListener(this);
-		if (IJ.isLinux()) ta.setBackground(Color.white);
- 		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
-		add(ta);
-		pack();
-		if (fontSize<0) fontSize = 0;
-		if (fontSize>=sizes.length) fontSize = sizes.length-1;
-        setFont();
-		positionWindow();
-		//display("Test.java", "");
-		IJ.register(Editor.class);
 	}
 			
 	public void positionWindow() {
@@ -501,6 +511,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	public void textValueChanged(TextEvent evt) {
+		if (isMacroWindow) return;
 		// first few textValueChanged events may be bogus
 		eventCount++;
 		if (eventCount>2 || !IJ.isMacOSX() && eventCount>1)
@@ -546,6 +557,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	void saveAs() {
 		String name1 = getTitle();
+		if (name1.indexOf(".")==-1) name1 += ".txt";
 		if (defaultDir==null) {
 			if (name1.endsWith(".txt")||name1.endsWith(".ijm"))
 				defaultDir = Menus.getMacrosPath();
@@ -764,6 +776,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public void append(String s) {
 		ta.append(s);
+	}
+
+	public void setIsMacroWindow(boolean mw) {
+		isMacroWindow = mw;
 	}
 
 	public static void setDefaultDirectory(String defaultDirectory) {

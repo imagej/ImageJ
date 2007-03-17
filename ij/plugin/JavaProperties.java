@@ -67,8 +67,6 @@ public class JavaProperties implements PlugIn {
 		String userDir = System.getProperty("user.dir");
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
-		String prefsDir = osName.indexOf("Windows",0)>-1?userDir:userHome;
-		if (IJ.isMacOSX()) prefsDir = prefsDir + "/Library/Preferences";
 		sb.append("  IJ.getVersion(): "+IJ.getVersion()+"\n");
 		sb.append("  IJ.isJava2(): "+IJ.isJava2()+"\n");
 		sb.append("  IJ.isJava14(): "+IJ.isJava14()+"\n");
@@ -98,7 +96,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Prefs.doubleBuffer: "+Prefs.doubleBuffer+"\n");		
 		sb.append("  Prefs.noPointLabels: "+Prefs.noPointLabels+"\n");		
 		sb.append("  Prefs.disableUndo: "+Prefs.disableUndo+"\n");		
-		sb.append("  Prefs dir: "+prefsDir+"\n");
+		sb.append("  Prefs dir: "+Prefs.getPrefsDir()+"\n");
 		sb.append("  Current dir: "+OpenDialog.getDefaultDirectory()+"\n");
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();

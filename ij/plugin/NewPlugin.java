@@ -3,16 +3,26 @@ import java.awt.*;
 import ij.*;
 import ij.gui.*;
 import ij.plugin.frame.Editor;
+import ij.text.TextWindow;
 
 /** This class creates a new macro or the Java source for a new plugin. */
 public class NewPlugin implements PlugIn {
 
-	public static final int MACRO=0, PLUGIN=1, PLUGIN_FILTER=2, PLUGIN_FRAME=3, TEXT_FILE=4;
+	public static final int MACRO=0, PLUGIN=1, PLUGIN_FILTER=2, PLUGIN_FRAME=3, TEXT_FILE=4, TABLE=5;
 	
     private static int type = MACRO;
     private static String name = "Macro";
-    private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame", "Text File"};
+    private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame", "Text File", "Table"};
+    private static int rows = 16;
+    private static int columns = 60;
+    private static boolean monospaced;
+    private boolean menuBar = true;
 	private Editor ed;
+	private int saveType = type;
+	private String saveName = name;
+	private int saveRows = rows;
+	private int saveColumns = columns;
+	private boolean saveMonospaced = monospaced;
     
     public void run(String arg) {
 		if (arg.equals("")&&!showDialog())
@@ -26,24 +36,41 @@ public class NewPlugin implements PlugIn {
 				if (type==TEXT_FILE && name.equals("Macro"))
 					name = "Untitled.txt";
     			createMacro(name);
+    		} else if (type==TABLE) {
+    			createTextWindow();
     		} else
     			createPlugin(name, type, arg);
     	} else
     		createPlugin("Converted_Macro.java", PLUGIN, arg);
+    	if (IJ.macroRunning()) {
+			type = saveType;
+			name = saveName;
+			rows = saveRows;
+			columns = saveColumns;
+			monospaced = saveMonospaced;
+    	}
     	IJ.register(NewPlugin.class);
     }
     
 	public void createMacro(String name) {
-		ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-		if (ed==null)
-			return;
+		int options = (monospaced?Editor.MONOSPACED:0)+(menuBar?Editor.MENU_BAR:0);
+		ed = new Editor(rows, columns, 0, options);
 		if (name.endsWith(".java"))
 			name = name.substring(0, name.length()-5);
 		//if (name.endsWith("_"))
 		//	name = name.substring(0, name.length()-1);
-		if (!(name.endsWith(".txt")))
+		if (type==MACRO && !(name.endsWith(".txt")))
 			name += ".txt";
 		ed.create(name, "");
+	}
+	
+	void createTextWindow() {
+		String tableName = name;
+		if (tableName.equals("Macro")) tableName = "Table";
+		if (columns<128 || rows<75 )
+			new TextWindow(tableName, "", 350, 250);
+		else
+			new TextWindow(tableName, "", columns, rows);
 	}
 
 	public void createPlugin(String name, int type, String methods) {
@@ -125,14 +152,29 @@ public class NewPlugin implements PlugIn {
 	}
 	
 	public boolean showDialog() {
-		GenericDialog gd = new GenericDialog("New...");
+		GenericDialog gd = new GenericDialog("New Text Window");
 		gd.addStringField("Name:", name, 16);
 		gd.addChoice("Type:", types, types[type]);
+		gd.addMessage("");
+		gd.addNumericField("Width:", columns, 0, 3, "characters");
+		gd.addNumericField("Height:", rows, 0, 3, "lines");
+		gd.setInsets(5, 30, 0);
+		gd.addCheckbox("Menu Bar", menuBar);
+		gd.setInsets(0, 30, 0);
+		gd.addCheckbox("Monospaced Font", monospaced);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		name = gd.getNextString();
 		type = gd.getNextChoiceIndex();
+		columns = (int)gd.getNextNumber();
+		rows = (int)gd.getNextNumber();
+		menuBar = gd.getNextBoolean();
+		monospaced = gd.getNextBoolean();
+		if (rows<1) rows = 1;
+		if (type!=TABLE && rows>100) rows = 100;
+		if (columns<1) columns = 1;
+		if (type!=TABLE && columns>200) columns = 200;
 		return true;
 	}
 	
