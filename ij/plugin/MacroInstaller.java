@@ -170,6 +170,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		}
 	}
 
+	public void installLibrary(String path) {
+			String text = open(path);
+			if (text!=null)
+				Interpreter.setAdditionalFunctions(text);
+	}
+
 	 /** Installs a macro set contained in ij.jar. */
 	public void installFromIJJar(String path) {
 		  String text = openFromIJJar(path);

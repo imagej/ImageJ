@@ -224,6 +224,10 @@ public class Projector implements PlugInFilter {
 			projwidth++;
 		int projsize = projwidth * projheight;
 		
+		if (projwidth<=0 || projheight<=0) {
+			IJ.error("'projwidth' or 'projheight' <= 0");
+			return null;
+		}
 		try {
 			allocateArrays(nProjections, projwidth, projheight);
 		}  catch(OutOfMemoryError e) {

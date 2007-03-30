@@ -95,6 +95,7 @@ public class FileOpener {
         		imp = new ImagePlus(fi.fileName, ip);
 				break;
 			case FileInfo.RGB48:
+			case FileInfo.RGB48_PLANAR:
 				Object[] pixelArray = (Object[])readPixels(fi);
 				if (pixelArray==null) return null;
 				ImageStack stack = new ImageStack(width, height);
@@ -102,6 +103,7 @@ public class FileOpener {
 				stack.addSlice("Green", pixelArray[1]);
 				stack.addSlice("Blue", pixelArray[2]);
         		imp = new ImagePlus(fi.fileName, stack);
+        		imp = new CompositeImage(imp, 3);
         		imp.getProcessor().resetMinAndMax();
 				break;
 		}

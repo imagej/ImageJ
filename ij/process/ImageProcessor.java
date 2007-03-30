@@ -1585,5 +1585,31 @@ public abstract class ImageProcessor extends Object {
 	public void setSnapshotCopyMode(boolean b) {
 		snapshotCopyMode = b;
 	}
+	
+	/** Returns the number of color channels in the image. The color channels can be
+	*  accessed by toFloat(channelNumber, fp) and written by setPixels(channelNumber, fp).
+	* @return 1 for grayscale images, 3 for RGB images
+	*/
+	public int getNChannels() {
+		return 1;   /* superseded by ColorProcessor */
+	}
+	
+	/** Returns a FloatProcessor with the image or one color channel thereof.
+	*  The roi and mask are also set for the FloatProcessor.
+	*  @param channelNumber   Determines the color channel, 0=red, 1=green, 2=blue. Ignored for
+	*                         grayscale images.
+	*  @param fp     Here a FloatProcessor can be supplied, or null. The FloatProcessor
+	*                         is overwritten when converting data (re-using its pixels array 
+	*                         improves performance).
+	*  @return A FloatProcessor with the converted image data of the color channel selected
+	*/
+	public abstract FloatProcessor toFloat(int channelNumber, FloatProcessor fp);
+	
+	/** Sets the pixels (of one color channel for RGB images) from a FloatProcessor.
+	*  @param channelNumber   Determines the color channel, 0=red, 1=green, 2=blue.Ignored for
+	*                         grayscale images.
+	*  @param fp              The FloatProcessor where the image data are read from.
+	*/
+	public abstract void setPixels(int channelNumber, FloatProcessor fp);
 
 }

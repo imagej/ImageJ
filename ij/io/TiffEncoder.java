@@ -52,6 +52,13 @@ public class TiffEncoder {
 				samplesPerPixel = 3;
 				bytesPerPixel = 3;
 				break;
+			case FileInfo.RGB48:
+				bitsPerSample = 16;
+				photoInterp = fi.whiteIsZero?0:1;
+				samplesPerPixel = 3;
+				bytesPerPixel = 6;
+				fi.nImages /= 3;
+				break;
 			case FileInfo.COLOR8:
 				photoInterp = 3;
 				nEntries = 10;
@@ -90,7 +97,7 @@ public class TiffEncoder {
             nextIFD = 0L;
 		writeIFD(out, (int)imageOffset, (int)nextIFD);
 		int bpsSize=0, scaleSize=0, descriptionSize=0;
-		if (fi.fileType==FileInfo.RGB)
+		if (fi.fileType==FileInfo.RGB||fi.fileType==FileInfo.RGB48)
 			bpsSize = writeBitsPerPixel(out);
 		if (description!=null)
 			descriptionSize = writeDescription(out);
@@ -186,7 +193,7 @@ public class TiffEncoder {
 		writeEntry(out, TiffDecoder.NEW_SUBFILE_TYPE, 4, 1, 0);
 		writeEntry(out, TiffDecoder.IMAGE_WIDTH,      3, 1, fi.width);
 		writeEntry(out, TiffDecoder.IMAGE_LENGTH,     3, 1, fi.height);
-		if (fi.fileType==FileInfo.RGB) {
+		if (fi.fileType==FileInfo.RGB||fi.fileType==FileInfo.RGB48) {
 			writeEntry(out, TiffDecoder.BITS_PER_SAMPLE,  3, 3, tagDataOffset);
 			tagDataOffset += BPS_DATA_SIZE;
 		} else
@@ -228,9 +235,10 @@ public class TiffEncoder {
 	
 	/** Writes the 6 bytes of data required by RGB BitsPerSample tag. */
 	int writeBitsPerPixel(DataOutputStream out) throws IOException {
-		out.writeShort(8);
-		out.writeShort(8);
-		out.writeShort(8);
+		int bitsPerPixel = fi.fileType==FileInfo.RGB48?16:8;
+		out.writeShort(bitsPerPixel);
+		out.writeShort(bitsPerPixel);
+		out.writeShort(bitsPerPixel);
 		return BPS_DATA_SIZE;
 	}
 

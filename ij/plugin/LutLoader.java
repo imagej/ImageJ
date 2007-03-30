@@ -76,7 +76,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				IJ.error("Color tables cannot be assiged to RGB Images.");
 			else {
-				ImageProcessor ip = imp.getProcessor();
+				ImageProcessor ip = imp.getChannelProcessor();
 				ColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
 				ip.setColorModel(cm);
 				if (imp.getStackSize()>1)

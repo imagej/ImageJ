@@ -533,7 +533,10 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			stats = ImageStatistics.getStatistics(ip, 0, imp.getCalibration());
 		} else
 			stats = imp.getStatistics();
-		plot.setHistogram(stats);
+		Color color = Color.gray;
+		if (imp instanceof CompositeImage)
+			color = ((CompositeImage)imp).getChannelColor();
+		plot.setHistogram(stats, color);
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
@@ -827,7 +830,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		updatePlot();
 		updateLabels(imp, ip);
-		imp.updateAndDraw();
+		imp.updateChannelAndDraw();
 		if (RGBImage)
 			imp.unlock();
 	}
@@ -888,6 +891,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 	int hmax;
 	Image os;
 	Graphics osg;
+	Color color = Color.gray;
 	
 	public ContrastPlot() {
 		addMouseListener(this);
@@ -900,7 +904,8 @@ class ContrastPlot extends Canvas implements MouseListener {
         return new Dimension(WIDTH+1, HEIGHT+1);
     }
 
-	void setHistogram(ImageStatistics stats) {
+	void setHistogram(ImageStatistics stats, Color color) {
+		this.color = color;
 		histogram = stats.histogram;
 		if (histogram.length!=256)
 			{histogram=null; return;}
@@ -963,7 +968,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 				osg = os.getGraphics();
 				osg.setColor(Color.white);
 				osg.fillRect(0, 0, WIDTH, HEIGHT);
-				osg.setColor(Color.gray);
+				osg.setColor(color);
 				for (int i = 0; i < WIDTH; i++)
 					osg.drawLine(i, HEIGHT, i, HEIGHT - ((int)(HEIGHT * histogram[i])/hmax));
 				osg.dispose();

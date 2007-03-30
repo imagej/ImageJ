@@ -4,16 +4,17 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.ContrastEnhancer;
 import java.awt.*;
+import java.awt.image.*;
 import java.util.*;
+
 
 /** This plugin implements the Median, Mean, Minimum, Maximum, Variance and Despeckle commands. */
 public class RankFilters implements PlugInFilter {
 
         public static final int MEDIAN=0, MEAN=1, MIN=2, MAX=3, VARIANCE=4, DESPECKLE=5;
-        static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
         
         ImagePlus imp;
-        int filterType = MEDIAN;
+        int filterType = MEDIAN; 
         String title;
         int kw, kh;
         int slice;
@@ -23,13 +24,15 @@ public class RankFilters implements PlugInFilter {
         int nSlices;
         
         static double radius = 2.0;
-        static boolean separable = true;
+        static boolean separable = true; 
 
 
         public int setup(String arg, ImagePlus imp) {
-                IJ.register(RankFilters.class);
+                IJ.register(this.getClass());
                 this.imp = imp;
-                if (arg.equals("min"))
+                if (arg.equals("median"))
+                        filterType = MEDIAN;
+                else if (arg.equals("min"))
                         filterType = MIN;
                 else if (arg.equals("max"))
                         filterType = MAX;
@@ -103,44 +106,14 @@ public class RankFilters implements PlugInFilter {
 			}
 			new ImagePlus("Masks", stack).show();
 		}
-	
-	    int getType(ImageProcessor ip) {
-                int type;
-                if (ip instanceof ByteProcessor)
-                        type = BYTE;
-                else if (ip instanceof ShortProcessor)
-                        type = SHORT;
-                else if (ip instanceof FloatProcessor)
-                        type = FLOAT;
-                else
-                        type = RGB;
-                return type;
-        }
 
-        public void convertBack(ImageProcessor ip2, ImageProcessor ip, int type) {
-                boolean scale = filterType==VARIANCE;
-                switch (type) {
-                        case BYTE:
-                                ip2 = ip2.convertToByte(scale);
-                                if (nSlices>1) {
-                                	byte[] pixels = (byte[])ip.getPixels();
-                                	byte[] pixels2 = (byte[])ip2.getPixels();
-                                	System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
-                                } else
-                                	ip.setPixels(ip2.getPixels());
-                                break;
-                        case SHORT:
-                                ip2 = ip2.convertToShort(scale);
-                                if (nSlices>1) {
-                               		short[] pixels16 = (short[])ip.getPixels();
-									short[] pixels16b = (short[])ip2.getPixels();
-                                	System.arraycopy(pixels16b, 0, pixels16, 0, pixels16.length);
-                                } else
-                                	ip.setPixels(ip2.getPixels());
-                                break;
-                        case FLOAT:
-                                break;
-                }
+        public void rank(ImageProcessor ip, double radius, int rankType) {
+            FloatProcessor fp = null;
+            for (int i=0; i<ip.getNChannels(); i++) {
+                fp = ip.toFloat(i, fp);
+                rankFloat(fp, radius, rankType);
+                ip.setPixels(i, fp);
+            }
         }
 
         boolean showDialog() {
@@ -166,56 +139,6 @@ public class RankFilters implements PlugInFilter {
                 if (radius<0.5) radius=0.5;
                 imp.startTiming();
                 return true;
-        }
-
-        public void rank(ImageProcessor ip, double radius, int rankType) {
-                int type = getType(ip);
-                if (type==RGB) {
-                        rankRGB(ip, radius, rankType);
-                        return;
-                }
-                ip.setCalibrationTable(null);
-                ImageProcessor ip2 = ip.convertToFloat();
-                if (imp!=null)
-                	ip2.setRoi(imp.getRoi());
-                else
-                	ip2.setRoi(ip.getRoi());
-                rankFloat(ip2, radius, rankType);
-                convertBack(ip2, ip, type);
-        }
-
-        public void rankRGB(ImageProcessor ip, double radius, int rankType) {
-                int width = ip.getWidth();
-                int height = ip.getHeight();
-                Roi roi = imp!=null?imp.getRoi():new Roi(ip.getRoi());
-                int size = width*height;
-                if (slice==1) IJ.showStatus(title+" (red)");
-                byte[] r = new byte[size];
-                byte[] g = new byte[size];
-                byte[] b = new byte[size];
-                ((ColorProcessor)ip).getRGB(r,g,b);
-                ImageProcessor rip = new ByteProcessor(width, height, r, null);
-                ImageProcessor gip = new ByteProcessor(width, height, g, null);
-                ImageProcessor bip = new ByteProcessor(width, height, b, null);
-                ImageProcessor ip2 = rip.convertToFloat();
-                ip2.setRoi(roi);
-                rankFloat(ip2, radius, rankType);
-                boolean scale = filterType==VARIANCE;
-                if (canceled) return;
-                ImageProcessor r2 = ip2.convertToByte(scale);
-                if (slice==1) IJ.showStatus(title+" (green)");
-                ip2 = gip.convertToFloat();
-                ip2.setRoi(roi); 
-                rankFloat(ip2, radius, rankType);
-                if (canceled) return;
-                ImageProcessor g2 = ip2.convertToByte(scale);
-                if (slice==1) IJ.showStatus(title+" (blue)");
-                ip2 = bip.convertToFloat();
-                ip2.setRoi(roi); 
-                rankFloat(ip2, radius, rankType);
-                if (canceled) return;
-                ImageProcessor b2 = ip2.convertToByte(scale);
-                ((ColorProcessor)ip).setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
         }
 
         public void rankFloat(ImageProcessor ip, double radius, int rankType) {

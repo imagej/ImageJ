@@ -105,7 +105,8 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
            return;
         }
         this.imp  =  imp;
-        IndexColorModel cm = (IndexColorModel)imp.getProcessor().getColorModel();
+        ImageProcessor ip = imp.getChannelProcessor();
+        IndexColorModel cm = (IndexColorModel)ip.getColorModel();
         origin = cm;
         mapSize = cm.getMapSize();
         reds = new byte[256];
@@ -119,18 +120,22 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
         for(int index  = 0; index < mapSize; index++)
             c[index] = new Color(reds[index]&255, greens[index]&255, blues[index]&255);
     }
+    
     public Dimension getPreferredSize()  {
         return new Dimension(columns*entryWidth, rows*entryHeight);
     }
+    
     public Dimension getMinimumSize() {
         return new Dimension(columns*entryWidth, rows*entryHeight);
     }
+    
     int getMouseZone(int x, int y){
         int horizontal = (int)x/entryWidth;
         int vertical = (int)y/entryHeight;
         int index = (columns*vertical + horizontal);
         return index;
     }
+    
     public void colorRamp() {
         if (initialC>finalC) {
             int tmp = initialC;
@@ -243,7 +248,7 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
    }
 
     void updateLut() {
-        IndexColorModel cm = (IndexColorModel)imp.getProcessor().getColorModel();
+        IndexColorModel cm = (IndexColorModel)imp.getChannelProcessor().getColorModel();
         if (mapSize == 0)
              return;
         cm.getReds(reds);
@@ -394,9 +399,9 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
             scale(reds2, greens2, blues2, 256);
         }
         ColorModel cm = new IndexColorModel(8, 256, reds2, greens2, blues2);
-        ImageProcessor ip = imp.getProcessor();
+        ImageProcessor ip = imp.getChannelProcessor();
         ip.setColorModel(cm);
-        if (imp.getStackSize()>1)
+        if (imp.getStackSize()>1 && !(imp instanceof CompositeImage))
             imp.getStack().setColorModel(cm);
         imp.updateAndDraw();
     }

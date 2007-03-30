@@ -1143,6 +1143,53 @@ public class ColorProcessor extends ImageProcessor {
 	
 	/** Not implemented. */
 	public void threshold(int level) {}
+	
+	/** Returns the number of color channels of the image, i.e., 3. */
+	public int getNChannels() {
+		return 3;
+	}
+	
+	/** Returns a FloatProcessor with one color channel of the image.
+	*  The roi and mask are also set for the FloatProcessor.
+	*  @param channelNumber   Determines the color channel, 0=red, 1=green, 2=blue
+	*  @param fp              Here a FloatProcessor can be supplied, or null. The FloatProcessor
+	*                         is overwritten by this method (re-using its pixels array 
+	*                         improves performance).
+	*  @return A FloatProcessor with the converted image data of the color channel selected
+	*/
+	public FloatProcessor toFloat(int channelNumber, FloatProcessor fp) {
+		int size = width*height;
+		if (fp == null || fp.getWidth()!=width || fp.getHeight()!=height)
+			fp = new FloatProcessor(width, height, new float[size], null);
+		float[] fPixels = (float[])fp.getPixels();
+		int shift = 16 - 8*channelNumber;
+		int byteMask = 255<<shift;
+		for (int i=0; i<size; i++)
+			fPixels[i] = (pixels[i]&byteMask)>>shift;
+		fp.setRoi(getRoi());
+		fp.setMask(mask);
+		fp.setMinAndMax(0, 255);
+		return fp;
+	}
+	
+	/** Sets the pixels of one color channel from a FloatProcessor.
+	*  @param channelNumber   Determines the color channel, 0=red, 1=green, 2=blue
+	*  @param fp              The FloatProcessor where the image data are read from.
+	*/
+	public void setPixels(int channelNumber, FloatProcessor fp) {
+		float[] fPixels = (float[])fp.getPixels();
+		float value;
+		int size = width*height;
+		int shift = 16 - 8*channelNumber;
+		int resetMask = 0xffffffff^(255<<shift);
+		for (int i=0; i<size; i++) {
+			value = fPixels[i] + 0.49999995f;
+			if (value<0f) value = 0f;
+			if (value>255f) value = 255f;
+			pixels[i] = (pixels[i]&resetMask) | ((int)value<<shift);
+		}
+	}
+
 
 }
 

@@ -38,6 +38,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
+    private Vector displayList;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -136,16 +137,19 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     
     void showAllROIs(Graphics g) {
-		RoiManager rm=RoiManager.getInstance();
-		if (rm==null) return;
-		Hashtable rois = rm.getROIs();
-		java.awt.List list = rm.getList();
 		if (showAllColor==null) {
 			showAllColor = new Color(128, 255, 255);
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);
 			largeFont = new Font("SansSerif", Font.PLAIN, 12);
 		}
 		g.setColor(showAllColor);
+		RoiManager rm=RoiManager.getInstance();
+		if (rm==null) {
+			if (displayList!=null) drawDisplayList(g);
+			return;
+		}
+		Hashtable rois = rm.getROIs();
+		java.awt.List list = rm.getList();
 		int n = list.getItemCount();
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
@@ -153,29 +157,42 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
-			if (roi.getType()==Roi.COMPOSITE) {
-				roi.setImage(imp);
-				Color c = roi.getColor();
-				roi.setColor(showAllColor);
-				roi.draw(g);
-				roi.setColor(c);
-				drawRoiLabel(g, i, roi.getBounds());
-			} else {
-				Polygon p = roi.getPolygon();
-				int x1=0, y1=0, x2=0, y2=0;
-				for (int j=0; j<p.npoints; j++) {
-					x2 = screenX(p.xpoints[j]);
-					y2 = screenY(p.ypoints[j]);
-					if (j>0) g.drawLine(x1, y1, x2, y2);
-					x1=x2; y1=y2;
-				}
-				if (roi.isArea()&&p.npoints>0) {
-					int x0 = screenX(p.xpoints[0]);
-					int y0 = screenY(p.ypoints[0]);
-					g.drawLine(x1, y1, x0, y0);
-				}
-				drawRoiLabel(g, i, roi.getBounds());
+			drawRoi(g, roi, i);
+		}
+    }
+    
+    void drawDisplayList(Graphics g) {
+    	int n = displayList.size();
+		if (labelRects==null || labelRects.length!=n)
+			labelRects = new Rectangle[n];
+    	for (int i=0; i<n; i++)
+    		drawRoi(g, (Roi)displayList.elementAt(i), i);
+    		
+    }
+    
+    void drawRoi(Graphics g, Roi roi, int i) {
+		if (roi.getType()==Roi.COMPOSITE) {
+			roi.setImage(imp);
+			Color c = roi.getColor();
+			roi.setColor(showAllColor);
+			roi.draw(g);
+			roi.setColor(c);
+			drawRoiLabel(g, i, roi.getBounds());
+		} else {
+			Polygon p = roi.getPolygon();
+			int x1=0, y1=0, x2=0, y2=0;
+			for (int j=0; j<p.npoints; j++) {
+				x2 = screenX(p.xpoints[j]);
+				y2 = screenY(p.ypoints[j]);
+				if (j>0) g.drawLine(x1, y1, x2, y2);
+				x1=x2; y1=y2;
 			}
+			if (roi.isArea()&&p.npoints>0) {
+				int x0 = screenX(p.xpoints[0]);
+				int y0 = screenY(p.ypoints[0]);
+				g.drawLine(x1, y1, x0, y0);
+			}
+			drawRoiLabel(g, i, roi.getBounds());
 		}
     }
     
@@ -957,6 +974,16 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public boolean getShowAllROIs() {
 		return showAllROIs;
+	}
+	
+	public void setDisplayList(Vector list) {
+		if (list!=null) {
+			displayList = list;
+			showAllROIs = true;
+		} else {
+			showAllROIs = false;
+			displayList = null;
+		}
 	}
 
 	/** Called by IJ.showStatus() to prevent status bar text from

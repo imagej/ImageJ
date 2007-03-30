@@ -150,10 +150,13 @@ public class StackEditor implements PlugIn {
 				{imp.unlock(); return;}
 		}
 		Calibration cal = imp.getCalibration();
+		CompositeImage cimg = imp instanceof CompositeImage?(CompositeImage)imp:null;
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
-			ImagePlus imp2 = new ImagePlus(title, stack.getProcessor(i));
+			ImageProcessor ip = stack.getProcessor(i);
+			if (cimg!=null) ip.setMinAndMax(cimg.getMin(i),cimg.getMax(i));
+			ImagePlus imp2 = new ImagePlus(title, ip);
 			imp2.setCalibration(cal);
 			imp2.show();
 		}

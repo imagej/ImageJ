@@ -68,6 +68,6 @@ public class CommandLister implements PlugIn {
 			sb.append(list[i]);
 			sb.append("\n");
 		}
-		TextWindow tw = new TextWindow(title, headings, sb.toString(), 300, 400);
+		TextWindow tw = new TextWindow(title, headings, sb.toString(), 600, 500);
 	}
 }

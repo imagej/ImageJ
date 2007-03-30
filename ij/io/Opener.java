@@ -13,6 +13,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.frame.*;
 import ij.plugin.Zip_Reader;
+import ij.plugin.DICOM;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import java.awt.event.KeyEvent;
@@ -216,7 +217,13 @@ public class Opener {
 				if (imp.getWidth()!=0) return imp; else return null;
 			case ZIP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
-				if (imp.getWidth()!=0) return imp; else return null;
+				if (imp.getWidth()!=0) {
+					FileInfo fi = imp.getOriginalFileInfo();
+					if (fi!=null && fi.fileType==FileInfo.RGB48)
+						imp = new CompositeImage(imp, 3);
+					return imp;
+				} else
+					return null;
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
 				if (path.endsWith("Thumbs.db")) {
@@ -289,7 +296,6 @@ public class Opener {
 	
 	/** Opens the ZIP compressed TIFF at the specified URL. */
 	ImagePlus openZip(URL url) throws IOException {
-		IJ.showProgress(0.01);
 		URLConnection uc = url.openConnection();
 		int fileSize = uc.getContentLength(); // compressed size
 		fileSize *=2; // estimate uncompressed size
@@ -302,22 +308,33 @@ public class Opener {
 			return null;
 		String name = entry.getName();
 		//double fileSize = entry.getSize(); //returns -1
-		if (!name.endsWith(".tif"))
-			throw new IOException("This ZIP archive does not appear to contain a TIFF file");
+		if (!(name.endsWith(".tif")||name.endsWith(".dcm")))
+			throw new IOException("This ZIP archive does not appear to contain a .tif or .dcm file");
 		int len;
 		int byteCount = 0;
 		int progress = 0;
+		IJ.resetEscape();
 		while (true) {
 			len = zin.read(buf);
 			if (len<0) break;
 			out.write(buf, 0, len);
 			byteCount += len;
-			IJ.showProgress((double)(byteCount%fileSize)/fileSize);
+			if (IJ.escapePressed()) {
+				IJ.beep();
+				IJ.showProgress(1.0);
+				return null;
+			}
+			IJ.showProgress(byteCount%fileSize, fileSize);
 		}
 		zin.close();
 		byte[] bytes = out.toByteArray();
-		IJ.showProgress(1.0);
-		return openTiff(new ByteArrayInputStream(bytes), name);
+		IJ.showProgress(fileSize, fileSize);
+		if (name.endsWith(".dcm")) {
+			DICOM dcm = new DICOM(new ByteArrayInputStream(bytes));
+			dcm.run(name);
+			return dcm;
+		} else
+			return openTiff(new ByteArrayInputStream(bytes), name);
 	}
 
 	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
@@ -544,6 +561,7 @@ public class Opener {
 		//IJ.showStatus("");
 		return imp;
 	}
+	
 	
 	/** Attempts to open the specified ROI, returning null if unsuccessful. */
 	public Roi openRoi(String path) {

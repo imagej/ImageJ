@@ -14,6 +14,7 @@ opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
 	private static boolean convertToGrayscale, convertToRGB;
+	private static boolean sortFileNames = true;
 	private static double scale = 100.0;
 	private int n, start, increment;
 	private String filter;
@@ -38,7 +39,7 @@ public class FolderOpener implements PlugIn {
 			title = title.substring(0, title.length()-1);
 		
 		IJ.register(FolderOpener.class);
-		list = sortFileList(list);
+		list = trimFileList(list);
 		if (list==null) return;
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
 		int width=0,height=0,depth=0,bitDepth=0;
@@ -90,6 +91,8 @@ public class FolderOpener implements PlugIn {
  				}
   				list = list2;
   			}
+			if (sortFileNames)
+				list = sortFileList(list);
 
 			if (n<1)
 				n = list.length;
@@ -121,11 +124,8 @@ public class FolderOpener implements PlugIn {
 						stack = new ImageStack(width, height, cm);
 					info1 = (String)imp.getProperty("Info");
 				}
-				if (imp==null) {
-					if (!list[i].startsWith("."))
-						IJ.log(list[i] + ": unable to open");
+				if (imp==null)
 					continue;
-				}
 				if (imp.getWidth()!=width || imp.getHeight()!=height) {
 					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
 					continue;
@@ -215,6 +215,7 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Scale Images:", scale, 0, 4, "%");
 		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
+		gd.addCheckbox("Sort Names Numerically", sortFileNames);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -230,11 +231,12 @@ public class FolderOpener implements PlugIn {
 		filter = gd.getNextString();
 		convertToGrayscale = gd.getNextBoolean();
 		convertToRGB = gd.getNextBoolean();
+		sortFileNames = gd.getNextBoolean();
 		return true;
 	}
 
-	/** Sorts the file names into numeric order. */
-	public String[] sortFileList(String[] rawlist) {
+	/** Removes names that start with "." or end with ".db". ".txt", ".lut", "roi" or ".pty". */
+	public String[] trimFileList(String[] rawlist) {
 		int count = 0;
 		for (int i=0; i< rawlist.length; i++) {
 			String name = rawlist[i];
@@ -253,6 +255,11 @@ public class FolderOpener implements PlugIn {
 					list[index++] = rawlist[i];
 			}
 		}
+		return list;
+	}
+
+	/** Sorts the file names into numeric order. */
+	public String[] sortFileList(String[] list) {
 		int listLength = list.length;
 		boolean allSameLength = true;
 		int len0 = list[0].length();

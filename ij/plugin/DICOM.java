@@ -52,14 +52,19 @@ public class DICOM extends ImagePlus implements PlugIn {
 	public DICOM() {
 	}
 
-	/** Constructs a DICOM reader that using an Input stream. Here is an example
-		that shows how to open and display a DICOM using a BufferedInputStream:
-	<pre>
-    DICOM dcm = new DICOM(bis);
-    dcm.run("Name");
-    dcm.show();
-	<pre>
+	/** Constructs a DICOM reader that using an InputStream. Here 
+		is an example that shows how to open and display a DICOM:
+		<pre>
+		DICOM dcm = new DICOM(is);
+		dcm.run("Name");
+		dcm.show();
+		<pre>
 	*/
+	public DICOM(InputStream is) {
+		this(new BufferedInputStream(is));
+	}
+
+	/** Constructs a DICOM reader that using an BufferredInputStream. */
 	public DICOM(BufferedInputStream bis) {
 		inputStream = bis;
 	}
@@ -79,7 +84,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			String msg = e.getMessage();
 			IJ.showStatus("");
 			if (msg.indexOf("EOF")<0&&showErrors) {
-				IJ.error("DicomDecoder", msg);
+				IJ.error("DicomDecoder", e.getClass().getName()+"\n \n"+msg);
 				return;
 			} else if (!dd.dicmFound()&&showErrors) {
 				msg = "This does not appear to be a valid\n"
@@ -360,15 +365,15 @@ class DicomDecoder {
   
 	FileInfo getFileInfo() throws IOException {
 		long skipCount;
-		
-    	boolean isURL = directory.indexOf("://")>0;
 		FileInfo fi = new FileInfo();
 		int bitsAllocated = 16;
 		fi.fileFormat = fi.RAW;
 		fi.fileName = fileName;
-		if (isURL)
-			fi.url = directory;
-		else if (inputStream!=null)
+		if (directory.indexOf("://")>0) { // is URL
+			URL u = new URL(directory+fileName);
+			inputStream = new BufferedInputStream(u.openStream());
+			fi.inputStream = inputStream;
+		} else if (inputStream!=null)
 			fi.inputStream = inputStream;
 		else
 			fi.directory = directory;
@@ -382,10 +387,7 @@ class DicomDecoder {
 		int planarConfiguration = 0;
 		String photoInterpretation = "";
 				
-		if (isURL) {
-			URL u = new URL(fi.url+fi.fileName);
-			f = new BufferedInputStream(u.openStream());
-		} else if (inputStream!=null) {
+		if (inputStream!=null) {
 			f = inputStream;
 			f.mark(100000);
 		} else
@@ -401,10 +403,7 @@ class DicomDecoder {
 		
 		if (!getString(4).equals(DICM)) {
 			if (inputStream==null) f.close();
-			if (isURL) {
-				URL u = new URL(fi.url+fi.fileName);
-				f = new BufferedInputStream(u.openStream());
-			} else if (inputStream!=null)
+			if (inputStream!=null)
 				f.reset();
 			else
 				f = new BufferedInputStream(new FileInputStream(directory + fileName));

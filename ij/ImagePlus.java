@@ -130,6 +130,7 @@ public class ImagePlus implements ImageObserver, Measurements {
      			setProcessor(imp.getTitle(), imp.getProcessor());
      		setCalibration(imp.getCalibration());
      		properties = imp.getProperties();
+     		setFileInfo(imp.getOriginalFileInfo());
    			if (isURL)
    				this.url = pathOrURL;
    			ID = --currentID;
@@ -242,6 +243,21 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
+	/** Updates this image from the pixel data in its 
+		associated ImageProcessor, then displays it.
+		The CompositeImage class overrides this method 
+		to only update the current channel. */
+	public void updateChannelAndDraw() {
+		updateAndDraw();
+	}
+
+	/** Returns a reference to the current ImageProcessor. The
+		CompositeImage class overrides this method so it returns
+		the processor associated with the current channel. */
+	public ImageProcessor getChannelProcessor() {
+		return getProcessor();
+	}
+
 	/** Calls draw to draw the image and also repaints the
 		image window to force the information displayed above
 		the image (dimension, type, size) to be updated. */
@@ -321,7 +337,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 		img = getImage();
 		if ((img!=null) && (width>=0) && (height>=0)) {
 			activated = false;
-			if (getStackSize()>1)
+			int stackSize = getStackSize();
+			//if (compositeImage) stackSize /= nChannels;
+			if (stackSize>1)
 				win = new StackWindow(this);
 			else
 				win = new ImageWindow(this);
@@ -472,7 +490,6 @@ public class ImagePlus implements ImageObserver, Measurements {
    		int stackSize = stack.getSize();
    		if (stackSize==0)
    			throw new IllegalArgumentException("Stack is empty");
-   		if (compositeImage) stackSize /= nChannels;
     	boolean stackSizeChanged = this.stack!=null && stackSize!=getStackSize();
     	if (currentSlice<1) currentSlice = 1;
     	boolean resetCurrentSlice = currentSlice>stackSize;
@@ -559,7 +576,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (ip==null && img==null)
 			return null;
 		setupProcessor();
-		ip.setLineWidth(Line.getWidth());
+		if (!compositeImage)
+			ip.setLineWidth(Line.getWidth());
 		if (ij!=null) {
 			//setColor(Toolbar.getForegroundColor());
 			ip.setProgressBar(ij.getProgressBar());
@@ -696,8 +714,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return 1;
 		else {
 			int slices = stack.getSize();
-			if (slices==0) slices = 1;
-			if (compositeImage) slices /= nChannels;
+			//if (compositeImage) slices /= nChannels;
+			if (slices<=0) slices = 1;
 			return slices;
 		}
 	}
@@ -827,10 +845,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		
 	/** Creates a LookUpTable object corresponding to this image. */
     public LookUpTable createLut() {
-    	if (getImage()!=null)
-    		return new LookUpTable(img);
-    	else
-    		return null;
+    	return new LookUpTable(getProcessor().getColorModel());
     }
     
 	/** Returns true is this image uses an inverting LUT that 
@@ -1126,7 +1141,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (roi!=null)
 			roi.endPaste();
 		trimProcessor();
-		if (isFileInfo)
+		if (isFileInfo && !(url!=null&&(fi.directory==null||fi.directory.equals(""))))
 			new FileOpener(fi).revertToSaved(this);
 		else if (url!=null) {
 			IJ.showStatus("Loading: " + url);
@@ -1164,6 +1179,8 @@ public class ImagePlus implements ImageObserver, Measurements {
     	fi.width = width;
     	fi.height = height;
     	fi.nImages = getStackSize();
+    	if (compositeImage)
+    		fi.nImages = getImageStackSize();
     	fi.whiteIsZero = isInvertedLut();
 		fi.intelByteOrder = false;
     	setupProcessor();
@@ -1198,7 +1215,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 				fi.blues = lut.getBlues();
 				break;
 	    	case GRAY16:
-				fi.fileType = fi.GRAY16_UNSIGNED;
+	    		if (compositeImage && fi.nImages==3)
+					fi.fileType = fi.RGB48;
+				else
+					fi.fileType = fi.GRAY16_UNSIGNED;
 				break;
 	    	case GRAY32:
 				fi.fileType = fi.GRAY32_FLOAT;
@@ -1217,6 +1237,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 		@see #getFileInfo
 	*/
     public FileInfo getOriginalFileInfo() {
+    	if (fileInfo==null & url!=null) {
+    		fileInfo = new FileInfo();
+    		fileInfo.width = width;
+    		fileInfo.height = height;
+    		fileInfo.url = url;
+    		fileInfo.directory = null;
+    	}
     	return fileInfo;
     }
 

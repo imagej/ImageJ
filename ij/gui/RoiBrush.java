@@ -44,7 +44,8 @@ class RoiBrush implements Runnable {
 			roi = new ShapeRoi(roi);
 			((ShapeRoi)roi).or(getCircularRoi(x, y, width));
 		} else
-			roi = getCircularRoi(x, y, width);
+			roi = new OvalRoi(x-width/2, y-width/2, width, width);
+			//roi = getCircularRoi(x, y, width);
 		img.setRoi(roi);
 	}
 

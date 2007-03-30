@@ -91,6 +91,7 @@ public class ImportDialog {
 	void openAll(String[] list, FileInfo fi) {
 		//StringSorter.sort(list);
 		FolderOpener fo = new FolderOpener();
+		list = fo.trimFileList(list);
 		list = fo.sortFileList(list);
 		if (list==null) return;
 		ImageStack stack=null;

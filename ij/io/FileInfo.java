@@ -44,7 +44,7 @@ public class FileInfo {
 		converted to floating-point. */
 	public static final int GRAY32_UNSIGNED = 11;
 	
-	/** 48-bit interleaved RGB. Import only. */
+	/** 48-bit interleaved RGB. */
 	public static final int RGB48 = 12;	
 
 	/** 12-bit unsigned integer (0-4095). Import only. */
@@ -58,6 +58,9 @@ public class FileInfo {
 
 	/** 64-bit floating-point. Import only.*/
 	public static final int GRAY64_FLOAT  = 16;	
+
+	/** 48-bit planar RGB. Import only. */
+	public static final int RGB48_PLANAR = 17;	
 
 	// File formats
 	public static final int UNKNOWN = 0;
@@ -139,7 +142,7 @@ public class FileInfo {
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
 			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
-			case RGB48: return 6;
+			case RGB48: case RGB48_PLANAR: return 6;
 			case GRAY64_FLOAT : return 8;
 			default: return 0;
 		}
@@ -178,6 +181,7 @@ public class FileInfo {
 			case BGR: return "BGR";
 			case BARG: return "BARG";
 			case GRAY64_FLOAT: return "double";
+			case RGB48_PLANAR: return "RGB48(p)";
 			default: return "";
     	}
     }

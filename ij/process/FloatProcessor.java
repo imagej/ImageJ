@@ -811,6 +811,26 @@ public class FloatProcessor extends ImageProcessor {
 	/** Not implemented. */
 	public void dilate() {}
 
+	/** Returns this FloatProcessor.
+	*  @param channelNumber   Ignored (needed for compatibility with ColorProcessor.toFloat)
+	*  @param fp              Ignored (needed for compatibility with the other ImageProcessor types).
+	*  @return This FloatProcessor
+	*/
+	public FloatProcessor toFloat(int channelNumber, FloatProcessor fp) {
+		return this;
+	}
+	
+	/** Sets the pixels, and min&max values from a FloatProcessor.
+	*  Also the  values are taken from the FloatProcessor.
+	*  @param channelNumber   Ignored (needed for compatibility with ColorProcessor.toFloat)
+	*  @param fp              The FloatProcessor where the image data are read from.
+	*/
+	public void setPixels(int channelNumber, FloatProcessor fp) {
+		if (fp.getPixels() != getPixels())
+		setPixels(fp.getPixels());
+		setMinAndMax(fp.getMin(), fp.getMax());
+	}
 
+	
 }
 

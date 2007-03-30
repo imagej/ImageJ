@@ -825,9 +825,10 @@ public class Menus {
 	void installUserPlugin(String className) {
 		Menu menu = pluginsMenu;
 		int slashIndex = className.indexOf('/');
+		String command = className;
 		if (slashIndex>0) {
 			String dir = className.substring(0, slashIndex);
-			className = className.substring(slashIndex+1, className.length());
+			command = className.substring(slashIndex+1, className.length());
 			//className = className.replace('/', '.');
 			if (submenu==null || !submenuName.equals(dir)) {
  				submenuName = dir;
@@ -839,14 +840,14 @@ public class Menus {
 			menu = submenu;
 		//IJ.write(dir + "  " + className);
 		}
-		String command = className.replace('_',' ');
+		command = command.replace('_',' ');
 		command.trim();
 		if (pluginsTable.get(command)!=null)  // duplicate command?
 			command = command + " Plugin";
 		MenuItem item = new MenuItem(command);
 		menu.add(item);
 		item.addActionListener(ij);
-		pluginsTable.put(command, className);
+		pluginsTable.put(command, className.replace('/', '.'));
 		nPlugins++;
 	}
 	
@@ -1264,8 +1265,12 @@ public class Menus {
 				return;
 			}
 		}
+		String libraryPath = macrosPath + "Library.txt";
+		f = new File(libraryPath);
+		boolean isLibrary = f.exists();
 		try {
 			MacroInstaller mi = new MacroInstaller();
+			if (isLibrary) mi.installLibrary(libraryPath);
 			mi.installFile(path);
 			nMacros += mi.getMacroCount();
 		} catch (Exception e) {}

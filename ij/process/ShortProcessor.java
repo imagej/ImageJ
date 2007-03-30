@@ -909,6 +909,50 @@ public class ShortProcessor extends ImageProcessor {
 		findMinAndMax();
 	}
 
+	/** Returns a FloatProcessor with the same image, no scaling or calibration
+	*  (pixel values 0 to 65535).
+	*  The roi, mask, lut (ColorModel), threshold, min&max are
+	*  also set for the FloatProcessor
+	*  @param channelNumber   Ignored (needed for compatibility with ColorProcessor.toFloat)
+	*  @param fp              Here a FloatProcessor can be supplied, or null. The FloatProcessor
+	*                         is overwritten by this method (re-using its pixels array 
+	*                         improves performance).
+	*  @return A FloatProcessor with the converted image data
+	*/
+	public FloatProcessor toFloat(int channelNumber, FloatProcessor fp) {
+		int size = width*height;
+		if (fp == null || fp.getWidth()!=width || fp.getHeight()!=height)
+			fp = new FloatProcessor(width, height, new float[size], cm);
+		float[] fPixels = (float[])fp.getPixels();
+		for (int i=0; i<size; i++)
+			fPixels[i] = pixels[i]&0xffff;
+		fp.setRoi(getRoi());
+		fp.setMask(mask);
+		fp.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
+		//##can be NO_LUT_UPDATE
+		fp.setMinAndMax(min, max);
+		return fp;
+	}
+	
+	/** Sets the pixels from a FloatProcessor, no scaling.
+	*  Also the min&max values are taken from the FloatProcessor.
+	*  @param channelNumber   Ignored (needed for compatibility with ColorProcessor.toFloat)
+	*  @param fp              The FloatProcessor where the image data are read from.
+	*/
+	public void setPixels(int channelNumber, FloatProcessor fp) {
+		float[] fPixels = (float[])fp.getPixels();
+		float value;
+		int size = width*height;
+		for (int i=0; i<size; i++) {
+			value = fPixels[i] + 0.49999995f;
+			if (value<0f) value = 0f;
+			if (value>65535f) value = 65535f;
+			pixels[i] = (short)value;
+		}
+		setMinAndMax(fp.getMin(), fp.getMax());
+	}
+		
+
 	/** Not implemented. */
 	public void medianFilter() {}
 	/** Not implemented. */

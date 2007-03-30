@@ -8,12 +8,11 @@ import ij.gui.*;
 public class RGBStackConverter implements PlugIn {
 	
 	public void run(String arg) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{IJ.noImage(); return;}
+		ImagePlus imp = IJ.getImage();
+		CompositeImage cimg = imp instanceof CompositeImage?(CompositeImage)imp:null;
 		int size = imp.getStackSize();
-		if (size<2||size>3) {
-			IJ.error("2 or 3 slice stack required");
+		if ((size<2||size>3) && cimg==null) {
+			IJ.error("2 or 3 slice stack, or composite color stack, required");
 			return;
 		}
 		int type = imp.getType();
@@ -24,11 +23,16 @@ public class RGBStackConverter implements PlugIn {
 		if (!imp.lock())
 			return;
 		Undo.reset();
-		if (type==ImagePlus.GRAY16)
-			sixteenBitsToRGB(imp);
-		else {
+		String title = imp.getTitle()+" (RGB)";
+		if (cimg!=null) {
 			ImagePlus imp2 = imp.createImagePlus();
-			imp2.setStack(imp.getTitle()+" (RGB)", imp.getStack());
+			imp2.setProcessor(title, new ColorProcessor(imp.getImage()));
+			imp2.show();
+		} else if (type==ImagePlus.GRAY16) {
+			sixteenBitsToRGB(imp);
+		} else {
+			ImagePlus imp2 = imp.createImagePlus();
+			imp2.setStack(title, imp.getStack());
 	 		ImageConverter ic = new ImageConverter(imp2);
 			ic.convertRGBStackToRGB();
 			imp2.show();
@@ -53,13 +57,11 @@ public class RGBStackConverter implements PlugIn {
 			ip = stack1.getProcessor(i);
 			ip.setRoi(r);
 			ImageProcessor ip2 = ip.crop();
+			ip2 = ip2.convertToByte(true);
 			stack2.addSlice(null, ip2);
 		}
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack(imp.getTitle()+" (RGB)", stack2);
-		ImageProcessor ip2 = imp2.getProcessor();
-		StackConverter sc = new StackConverter(imp2);
-		sc.convertToGray8();
 	 	ImageConverter ic = new ImageConverter(imp2);
 		ic.convertRGBStackToRGB();
 		imp2.show();

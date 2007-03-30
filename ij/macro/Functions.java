@@ -539,8 +539,16 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setColor() {
-		double arg1 = getFirstArg();
 		colorSet = true;
+        interp.getLeftParen();
+		if (isStringArg()) {
+			defaultColor = getColor();
+			getProcessor().setColor(defaultColor);
+			defaultValue = Double.NaN;
+        	interp.getRightParen();
+        	return;
+		}
+		double arg1 = (int)interp.getExpression();
 		if (interp.nextToken()==')')
 			{interp.getRightParen(); setColor(arg1); return;}
 		int red=(int)arg1, green=(int)getNextArg(), blue=(int)getLastArg();
@@ -769,7 +777,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	void updateAndDraw(ImagePlus imp) {
 		if (autoUpdate)
-			imp.updateAndDraw();
+			imp.updateChannelAndDraw();
 		else
 			updateNeeded = true;
 	}

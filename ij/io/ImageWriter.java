@@ -80,6 +80,33 @@ public class ImageWriter {
 		}
 	}
 
+	void writeRGB48Image(OutputStream out, Object[] stack)  throws IOException {
+		short[] r = (short[])stack[0];
+		short[] g = (short[])stack[1];
+		short[] b = (short[])stack[2];
+		int size = fi.width*fi.height;
+		int count = fi.width*6;
+		byte[] buffer = new byte[count];
+		for (int line=0; line<fi.height; line++) {
+			int index2 = 0;
+			int index1 = line*fi.width;
+			int value;
+			for (int i=0; i<fi.width; i++) {
+				value = r[index1];
+				buffer[index2++] = (byte)(value>>>8);
+				buffer[index2++] = (byte)value;
+				value = g[index1];
+				buffer[index2++] = (byte)(value>>>8);
+				buffer[index2++] = (byte)value;
+				value = b[index1];
+				buffer[index2++] = (byte)(value>>>8);
+				buffer[index2++] = (byte)value;
+				index1++;
+			}
+			out.write(buffer, 0, count);
+		}
+	}
+
 	void writeFloatImage(OutputStream out, float[] pixels)  throws IOException {
 		int bytesWritten = 0;
 		int size = fi.width*fi.height*4;
@@ -136,7 +163,6 @@ public class ImageWriter {
 		int size = fi.width*fi.height*3;
 		int count = fi.width*24;
 		byte[] buffer = new byte[count];
-
 		while (bytesWritten<size) {
 			if ((bytesWritten + count)>size)
 				count = size - bytesWritten;
@@ -187,6 +213,9 @@ public class ImageWriter {
 					write16BitStack(out, (Object[])fi.pixels);
 				else
 					write16BitImage(out, (short[])fi.pixels);
+				break;
+			case FileInfo.RGB48:
+				writeRGB48Image(out, (Object[])fi.pixels);
 				break;
 			case FileInfo.GRAY32_FLOAT:
 				if (fi.nImages>1)

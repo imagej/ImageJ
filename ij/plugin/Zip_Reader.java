@@ -44,14 +44,16 @@ public class Zip_Reader extends ImagePlus implements PlugIn {
 				int[] dim = imp.getDimensions();
 				setDimensions(dim[2], dim[3], dim[4]);
 			}
-			FileInfo fi = new FileInfo();
-			fi.fileFormat = FileInfo.ZIP_ARCHIVE;
-			fi.fileName = name;
-			fi.directory = directory;
-			fi.width = getWidth();
-			fi.height = getHeight();
-			fi.nImages = getStackSize();
-			setFileInfo(fi);
+			FileInfo fi1 = imp.getOriginalFileInfo();
+			FileInfo fi2 = new FileInfo();
+			fi2.fileFormat = FileInfo.ZIP_ARCHIVE;
+			fi2.fileType = fi1.fileType;
+			fi2.fileName = name;
+			fi2.directory = directory;
+			fi2.width = getWidth();
+			fi2.height = getHeight();
+			fi2.nImages = getStackSize();
+			setFileInfo(fi2);
 			Object info = imp.getProperty("Info");
 			if (info!=null) setProperty("Info", info);
 			if (arg.equals("")) show();

@@ -389,44 +389,42 @@ public class ImageReader {
 	}
 
 	int[] readPlanarRGB(InputStream in) throws IOException {
+		DataInputStream dis = new DataInputStream(in);
 		int planeSize = nPixels; // 1/3 image size
 		byte[] buffer = new byte[planeSize];
 		int[] pixels = new int[nPixels];
 		int r, g, b;
 
-		int bytesRead;
-		int totalRead = 0;
-		showProgress(0.12);
-		bytesRead = in.read(buffer, 0, planeSize);
-		if (bytesRead==-1) {eofError(); return pixels;}
-		totalRead += bytesRead;
+		showProgress(10, 100);
+		dis.readFully(buffer);
 		for (int i=0; i < planeSize; i++) {
 			r = buffer[i]&0xff;
 			pixels[i] = 0xff000000 | (r<<16);
 		}
 		
-		showProgress(0.37);
-		bytesRead = in.read(buffer, 0, planeSize);
-		if (bytesRead==-1) {eofError(); return pixels;}
-		totalRead += bytesRead;
+		showProgress(40, 100);
+		dis.readFully(buffer);
 		for (int i=0; i < planeSize; i++) {
 			g = buffer[i]&0xff;
 			pixels[i] |= g<<8;
 		}
 
-		showProgress(0.62);
-		bytesRead = in.read(buffer, 0, planeSize);
-		if (bytesRead==-1) {eofError(); return pixels;}
-		totalRead += bytesRead;
+		showProgress(70, 100);
+		dis.readFully(buffer);
 		for (int i=0; i < planeSize; i++) {
 			b = buffer[i]&0xff;
 			pixels[i] |= b;
 		}
 
-		showProgress(0.87);
+		showProgress(90, 100);
 		return pixels;
 	}
 
+	private void showProgress(int current, int last) {
+		if (showProgressBar)
+			IJ.showProgress(current, last);
+	}
+	
 	Object readRGB48(InputStream in) throws IOException {
 		int pixelsRead;
 		bufferSize = 24*width;
@@ -470,6 +468,17 @@ public class ImageReader {
 			}
 			base += pixelsRead;
 		}
+		return stack;
+	}
+
+	Object readRGB48Planar(InputStream in) throws IOException {
+		short[] red = read16bitImage(in);
+		short[] green = read16bitImage(in);
+		short[] blue = read16bitImage(in);
+		Object[] stack = new Object[3];
+		stack[0] = red;
+		stack[1] = green;
+		stack[2] = blue;
 		return stack;
 	}
 
@@ -606,6 +615,10 @@ public class ImageReader {
 					bytesPerPixel = 6;
 					skip(in);
 					return (Object)readRGB48(in);
+				case FileInfo.RGB48_PLANAR:
+					bytesPerPixel = 2;
+					skip(in);
+					return (Object)readRGB48Planar(in);
 				case FileInfo.GRAY12_UNSIGNED:
 					skip(in);
 					short[] data = read12bitImage(in);

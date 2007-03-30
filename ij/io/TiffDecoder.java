@@ -419,7 +419,7 @@ public class TiffDecoder {
 					break;
 				case PLANAR_CONFIGURATION:
 					if (value==2 && fi.fileType==FileInfo.RGB48)
-							error("ImageJ cannot open planar 48-bit RGB images");
+							 fi.fileType = FileInfo.RGB48_PLANAR;
 					if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
 					break;

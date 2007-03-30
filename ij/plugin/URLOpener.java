@@ -30,6 +30,9 @@ public class URLOpener implements PlugIn {
 				if (imp.getType()==ImagePlus.COLOR_RGB)
 					Opener.convertGrayJpegTo8Bits(imp);
 				WindowManager.checkForDuplicateName = true;
+				FileInfo fi = imp.getOriginalFileInfo();
+				if (fi!=null && fi.fileType==FileInfo.RGB48)
+					imp = new CompositeImage(imp, 3);
 				imp.show();
 			}
 			return;
@@ -55,6 +58,9 @@ public class URLOpener implements PlugIn {
 			IJ.showStatus("Opening: " + url);
 			ImagePlus imp = new ImagePlus(url);
 			WindowManager.checkForDuplicateName = true;
+			FileInfo fi = imp.getOriginalFileInfo();
+			if (fi!=null && fi.fileType==FileInfo.RGB48)
+				imp = new CompositeImage(imp, 3);
 			imp.show();
 			IJ.showStatus("");
 		}

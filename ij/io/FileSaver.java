@@ -64,10 +64,10 @@ public class FileSaver {
 		String path = getPath("TIFF", ".tif");
 		if (path==null)
 			return false;
-		if (imp.getStackSize()==1)
-			return saveAsTiff(path);
-		else
+		if (fi.nImages>1)
 			return saveAsTiffStack(path);
+		else
+			return saveAsTiff(path);
 	}
 	
 	/** Save the image in TIFF format using the specified path. */
@@ -522,7 +522,7 @@ public class FileSaver {
 		Calibration cal = imp.getCalibration();
 		StringBuffer sb = new StringBuffer(100);
 		sb.append("ImageJ="+ImageJ.VERSION+"\n");
-		if (fi.nImages>1)
+		if (fi.nImages>1 && fi.fileType!=FileInfo.RGB48)
 			sb.append("images="+fi.nImages+"\n");
 		int channels = imp.getNChannels();
 		if (channels>1)

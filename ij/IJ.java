@@ -274,6 +274,9 @@ public class IJ {
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (NoClassDefFoundError e) {
+			int dotIndex = className.indexOf('.');
+			if (dotIndex >= 0)
+				return runUserPlugIn(commandName, className.substring(dotIndex + 1), arg, createNewLoader);
 			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
 				error("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}

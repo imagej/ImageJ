@@ -210,6 +210,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     public void drawInfo(Graphics g) {
         if (textGap!=0) {
 			Insets insets = super.getInsets();
+			if (imp instanceof CompositeImage)
+				g.setColor(((CompositeImage)imp).getChannelColor());
 			g.drawString(createSubtitle(), 5, insets.top+TEXT_GAP);
 		}
     }
