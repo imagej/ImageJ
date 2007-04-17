@@ -34,6 +34,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	Button autoB, resetB, setB, applyB;
 	int previousImageID;
 	int previousType;
+	int previousSlice = 1;
 	Object previousSnapshot;
 	ImageJ ij;
 	double min, max;
@@ -286,12 +287,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if (roi!=null) roi.endPaste();
 		ImageProcessor ip = imp.getProcessor();
 		int type = imp.getType();
+		int slice = imp.getCurrentSlice();
 		RGBImage = type==ImagePlus.COLOR_RGB;
 		boolean snapshotChanged = RGBImage && previousSnapshot!=null && ((ColorProcessor)ip).getSnapshotPixels()!=previousSnapshot;
-		if (imp.getID()!=previousImageID || snapshotChanged || type!=previousType)
+		if (imp.getID()!=previousImageID || snapshotChanged || type!=previousType || slice!=previousSlice)
 			setupNewImage(imp, ip);
 		previousImageID = imp.getID();
 	 	previousType = type;
+	 	previousSlice = slice;
 	 	return ip;
 	}
 

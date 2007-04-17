@@ -124,15 +124,20 @@ public class FileOpener {
 		try {
 			ImageReader reader = new ImageReader(fi);
 			InputStream is = createInputStream(fi);
-			if (is==null)
-				return null;
+			if (is==null) return null;
+			IJ.resetEscape();
 			for (int i=1; i<=fi.nImages; i++) {
 				IJ.showStatus("Reading: " + i + "/" + fi.nImages);
+				if (IJ.escapePressed()) {
+					IJ.beep();
+					IJ.showProgress(1.0);
+					return null;
+				}
 				pixels = reader.readPixels(is, skip);
 				if (pixels==null) break;
 				stack.addSlice(null, pixels);
 				skip = fi.gapBetweenImages;
-				IJ.showProgress((double)i/fi.nImages);
+				IJ.showProgress(i, fi.nImages);
 			}
 			is.close();
 		}

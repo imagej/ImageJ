@@ -83,8 +83,10 @@ public class Thresholder implements PlugIn, Measurements {
 			fill1 = gd.getNextBoolean();
 			fill2 = gd.getNextBoolean();
 			useBW = useBlackAndWhite = gd.getNextBoolean();
-		} else
+		} else {
 			fill1 = fill2 = true;
+			convertToMask = true;
+		}
 
 		if (!(imp.getType()==ImagePlus.GRAY8))
 			convertToByte(imp);
@@ -138,7 +140,7 @@ public class Thresholder implements PlugIn, Measurements {
 				bcolor = 255 - bcolor;
 			}
 			if (Prefs.blackBackground)
-			ip.invertLut();
+				ip.invertLut();
 		}
 		if (fill1=true && fill2==true && ((fcolor==0&&bcolor==255)||(fcolor==255&&bcolor==0)))
 			imp.getProcessor().setThreshold(fcolor, fcolor, ImageProcessor.NO_LUT_UPDATE);

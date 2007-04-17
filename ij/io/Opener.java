@@ -310,31 +310,12 @@ public class Opener {
 		//double fileSize = entry.getSize(); //returns -1
 		if (!(name.endsWith(".tif")||name.endsWith(".dcm")))
 			throw new IOException("This ZIP archive does not appear to contain a .tif or .dcm file");
-		int len;
-		int byteCount = 0;
-		int progress = 0;
-		IJ.resetEscape();
-		while (true) {
-			len = zin.read(buf);
-			if (len<0) break;
-			out.write(buf, 0, len);
-			byteCount += len;
-			if (IJ.escapePressed()) {
-				IJ.beep();
-				IJ.showProgress(1.0);
-				return null;
-			}
-			IJ.showProgress(byteCount%fileSize, fileSize);
-		}
-		zin.close();
-		byte[] bytes = out.toByteArray();
-		IJ.showProgress(fileSize, fileSize);
 		if (name.endsWith(".dcm")) {
-			DICOM dcm = new DICOM(new ByteArrayInputStream(bytes));
+			DICOM dcm = new DICOM(zin);
 			dcm.run(name);
 			return dcm;
 		} else
-			return openTiff(new ByteArrayInputStream(bytes), name);
+			return openTiff(zin, name);
 	}
 
 	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
@@ -441,8 +422,14 @@ public class Opener {
 			try {
 				InputStream is = createInputStream(fi);
 				ImageReader reader = new ImageReader(fi);
+				IJ.resetEscape();
 				for (int i=0; i<info.length; i++) {
 					IJ.showStatus("Reading: " + (i+1) + "/" + info.length);
+					if (IJ.escapePressed()) {
+						IJ.beep();
+						IJ.showProgress(1.0);
+						return null;
+					}
 					pixels = reader.readPixels(is, skip);
 					if (pixels==null) break;
 					loc += imageSize+skip;
@@ -458,7 +445,7 @@ public class Opener {
 						isRGB48 = true;					
 					} else
 						stack.addSlice(null, pixels);					
-					IJ.showProgress((double)i/info.length);
+					IJ.showProgress(i, info.length);
 				}
 				is.close();
 			}

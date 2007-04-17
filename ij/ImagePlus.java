@@ -992,9 +992,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 			}
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if (IJ.spaceBarDown() && (imageType==GRAY16||imageType==GRAY32)) {
-				ip.resetMinAndMax();
-				IJ.showStatus(index+": min="+ip.getMin()+", max="+ip.getMax());
+			if (IJ.altKeyDown()) {
+				if (imageType==GRAY16 || imageType==GRAY32) {
+					ip.resetMinAndMax();
+					IJ.showStatus(index+": min="+ip.getMin()+", max="+ip.getMax());
+				}
+				ContrastAdjuster.update();
 			}
 			if (!Interpreter.isBatchMode())
 				updateAndRepaintWindow();
