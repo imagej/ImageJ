@@ -355,7 +355,7 @@ public class TiffDecoder {
 					}
 					break;
  				case PHOTO_INTERP:
-					fi.whiteIsZero = value==0;
+ 					fi.whiteIsZero = value==0;
 					break;
 				case BITS_PER_SAMPLE:
 						if (count==1) {

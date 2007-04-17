@@ -21,7 +21,7 @@ class at
 */
 public class TextPanel extends Panel implements AdjustmentListener,
 	MouseListener, MouseMotionListener, KeyListener,  ClipboardOwner,
-	ActionListener, Runnable {
+	ActionListener, MouseWheelListener, Runnable {
 
 	static final int DOUBLE_CLICK_THRESHOLD = 650;
 	// height / width
@@ -328,6 +328,15 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void mouseClicked (MouseEvent e) {}
 	public void mouseEntered (MouseEvent e) {}
 	
+	public void mouseWheelMoved(MouseWheelEvent event) {
+		synchronized(this) {
+			int rot = event.getWheelRotation();
+			sbVert.setValue(sbVert.getValue()+rot);
+			iY=iRowHeight*sbVert.getValue();
+			tc.repaint();
+		}
+	}
+
 	/** Unused keyPressed events will be passed to 'listener'.*/
 	public void addKeyListener(KeyListener listener) {
 		keyListener = listener;

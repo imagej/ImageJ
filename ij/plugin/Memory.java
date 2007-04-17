@@ -44,10 +44,13 @@ public class Memory implements PlugIn {
 				return;
 		}
 		try {
-			String s2 = s.substring(0, index1) + max2 + s.substring(index2);
+			String s2 = s.substring(index2);
+			if (s2.startsWith("g"))
+				s2 = "m"+s2.substring(1);
+			String s3 = s.substring(0, index1) + max2 + s2;
 			FileOutputStream fos = new FileOutputStream(f);
 			PrintWriter pw = new PrintWriter(fos);
-			pw.print(s2);
+			pw.print(s3);
 			pw.close();
 		} catch (IOException e) {
 			String error = e.getMessage();
@@ -104,6 +107,8 @@ public class Memory implements PlugIn {
 			while (index2<s.length()-1 && Character.isDigit(s.charAt(++index2))) {}
 			String s2 = s.substring(index1, index2);
 			max = (long)Tools.parseDouble(s2, 0.0)*1024*1024;
+			if (index2<s.length() && s.charAt(index2)=='g')
+				max = max*1024L;
 		}
 		catch (Exception e) {
 			IJ.log(""+e);
@@ -112,19 +117,9 @@ public class Memory implements PlugIn {
 		return max;
 	}
 
-	/** With Java 1.4.1 or later, returns the maximum amount of memory
-		that this JVM will attempt to use, otherwise, returns zero. */
+	/** Returns the maximum amount of memory this JVM will attempt to use. */
 	public long maxMemory() {
-		// Call maxMemory using reflection so this class can be compiled with Java 1.3
-		long max = 0L;
-		try {
-			Runtime rt = Runtime.getRuntime();
-			Class c = rt.getClass();
-			Method maxMemory = c.getDeclaredMethod("maxMemory", new Class[0]);
-			Long l = (Long)maxMemory.invoke(rt, new Object[] {});
-			max = l.longValue();
-		} catch (Exception e) {}
-		return max;
+			return Runtime.getRuntime().maxMemory();
 	}
 	
 }

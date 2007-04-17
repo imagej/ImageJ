@@ -24,6 +24,7 @@ public class LookUpTable extends Object {
 
 	/** Constructs a LookUpTable object from a ColorModel. */
 	public LookUpTable(ColorModel cm) {
+		this.cm = cm;
 		getColors(cm);
 	}
 	

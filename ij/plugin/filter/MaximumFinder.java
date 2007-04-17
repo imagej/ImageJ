@@ -37,10 +37,12 @@ public class MaximumFinder implements PlugInFilter {
     public final static int IN_TOLERANCE=2;
     /** Output type watershed-segmented image */
     public final static int SEGMENTED=3;
-    /** Output type no image, only count maxima */
+    /** Do not create an image, just count maxima and add count to Results table*/
     public final static int COUNT=4;
+    /** Do not create image and do not write to Results table*/
+    public final static int NONE=5;
     /** output type names */
-    final static String[] outputTypeNames = new String[] {"Single Points", "Maxima (Exact)", "Maxima Within Tolerance", "Segmented Particles", "Count"};
+    final static String[] outputTypeNames = new String[] {"Single Points", "Maxima (Exact)", "Maxima Within Tolerance", "Segmented Particles", "Count", "None"};
     /** whether to exclude mxima at the edge of the image*/
     private static boolean excludeOnEdges;
     /** whether to accept maxima only in the thresholded height range*/
@@ -88,8 +90,10 @@ public class MaximumFinder implements PlugInFilter {
         if (!showDialog(ip))
         	return;
         Roi roi = imp.getRoi();
-        if (roi!=null && (!roi.isArea() || outputType==SEGMENTED))
+        if (roi!=null && (!roi.isArea() || outputType==SEGMENTED)) {
         	imp.killRoi();
+        	roi = null;
+        }
 		boolean invertedLut = imp.isInvertedLut();
         double threshold = useMinThreshold?ip.getMinThreshold():ImageProcessor.NO_THRESHOLD;
 		if ((invertedLut&&!lightBackground) || (!invertedLut&&lightBackground)) {
@@ -199,7 +203,7 @@ public class MaximumFinder implements PlugInFilter {
          IJ.showStatus("Analyzing  maxima...");
         analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance);
         //new ImagePlus("Pixel types",typeP.duplicate()).show();
-        if (outputType==COUNT)
+        if (outputType==COUNT || outputType==NONE)
             return null;
         
         ByteProcessor outIp;
@@ -303,7 +307,7 @@ public class MaximumFinder implements PlugInFilter {
         Vector xyVector = null;
         Roi roi = null;
         boolean displayOrCount = imp!=null && (displayPoints||outputType==COUNT);
-        for (int iMax=nMax-1; iMax>=0; iMax--) {    //process all maxima now, starting from the highest
+         for (int iMax=nMax-1; iMax>=0; iMax--) {    //process all maxima now, starting from the highest
             float v = maxPoints[iMax].value;
             if (v==globalMin) break;
             int offset = maxPoints[iMax].x + width*maxPoints[iMax].y;
@@ -409,6 +413,7 @@ public class MaximumFinder implements PlugInFilter {
                     xpoints[i] = mp.x;
                     ypoints[i] = mp.y;
                 }
+                imp.saveRoi(); // save previous selection so user can restore it
                 imp.setRoi(new PointRoi(xpoints, ypoints, npoints));
             }
             if (outputType==COUNT) {

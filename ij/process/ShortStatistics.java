@@ -21,7 +21,7 @@ public class ShortStatistics extends ImageStatistics {
 		nBins = 256;
 		double minT = ip.getMinThreshold();
 		int minThreshold,maxThreshold;
-		if ((mOptions&LIMIT)==0 || minT==ip.NO_THRESHOLD)
+		if ((mOptions&LIMIT)==0 || minT==ImageProcessor.NO_THRESHOLD)
 			{minThreshold=0; maxThreshold=65535;}
 		else
 			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}

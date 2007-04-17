@@ -20,7 +20,7 @@ public class FloatStatistics extends ImageStatistics {
 		setup(ip, cal);
 		double minT = ip.getMinThreshold();
 		double minThreshold,maxThreshold;
-		if ((mOptions&LIMIT)==0 || minT==ip.NO_THRESHOLD)
+		if ((mOptions&LIMIT)==0 || minT==ImageProcessor.NO_THRESHOLD)
 			{minThreshold=-Float.MAX_VALUE; maxThreshold=Float.MAX_VALUE;}
 		else
 			{minThreshold=minT; maxThreshold=ip.getMaxThreshold();}

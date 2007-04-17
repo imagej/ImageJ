@@ -19,7 +19,7 @@ public class ByteStatistics extends ImageStatistics {
 		setup(ip, cal);
 		double minT = ip.getMinThreshold();
 		int minThreshold,maxThreshold;
-		if ((mOptions&LIMIT)==0 || minT==ip.NO_THRESHOLD)
+		if ((mOptions&LIMIT)==0 || minT==ImageProcessor.NO_THRESHOLD)
 			{minThreshold=0; maxThreshold=255;}
 		else
 			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}

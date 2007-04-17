@@ -18,6 +18,7 @@ public class Thresholder implements PlugIn, Measurements {
 	static boolean fill1 = true;
 	static boolean fill2 = true;
 	static boolean useBW = true;
+	static boolean useLocal = true;
 	boolean convertToMask;
 
 	public void run(String arg) {
@@ -30,12 +31,27 @@ public class Thresholder implements PlugIn, Measurements {
 			Undo.setup(Undo.COMPOUND_FILTER, imp);
 			applyThreshold(imp);
 			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
-		} else {
-			if (IJ.showMessageWithCancel("Convert to Mask", "Convert all images in stack to binary?")) {
-				Undo.reset();
-				applyThreshold(imp);
-			}
-		}
+		} else
+			convertStack(imp);
+	}
+	
+	void convertStack(ImagePlus imp) {
+		if (!(imp.getProcessor().getMinThreshold()==ImageProcessor.NO_THRESHOLD))
+			useLocal = false;		
+		GenericDialog gd = new GenericDialog("Convert to Mask");
+		gd.addMessage("Convert all images in stack to binary?");
+		gd.addCheckbox("Calculate Threshold for Each Image", useLocal);
+		gd.addCheckbox("Black Background", Prefs.blackBackground);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		useLocal = gd.getNextBoolean();
+		Prefs.blackBackground = gd.getNextBoolean();
+		Undo.reset();
+		if (useLocal)
+			//IJ.runMacroFile("ij.jar:ConvertStackToBinary");
+			convertStackToBinary(imp);
+		else
+			applyThreshold(imp);
 	}
 
 	void applyThreshold(ImagePlus imp) {
@@ -75,7 +91,7 @@ public class Thresholder implements PlugIn, Measurements {
 		ip = imp.getProcessor();
 		
 		if (autoThreshold)
-			autoThreshold(imp);
+			autoThreshold(ip);
 		else {
 			if (Recorder.record && (!IJ.macroRunning()||Recorder.recordInMacros))
 				Recorder.record("setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
@@ -130,6 +146,42 @@ public class Thresholder implements PlugIn, Measurements {
 		imp.unlock();
 	}
 
+	void convertStackToBinary(ImagePlus imp) {
+		int nSlices = imp.getStackSize();
+		if ((imp.getBitDepth()!=8)) {
+			IJ.showStatus("Converting to byte");
+			ImageStack stack1 = imp.getStack();
+			ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
+			for(int i=1; i<=nSlices; i++) {
+				IJ.showProgress(i, nSlices);
+				String label = stack1.getSliceLabel(i);
+				ImageProcessor ip = stack1.getProcessor(i);
+				ip.resetMinAndMax();
+				stack2.addSlice(label, ip.convertToByte(true));
+			}
+			imp.setStack(null, stack2);
+		}
+		ImageStack stack = imp.getStack();
+		IJ.showStatus("Auto-thresholding");
+		for(int i=1; i<=nSlices; i++) {
+			IJ.showProgress(i, nSlices);
+			ImageProcessor ip = stack.getProcessor(i);
+			autoThreshold(ip);
+			int[] lut = new int[256];
+			for (int j=0; j<256; j++) {
+				if (j>=minThreshold && j<=maxThreshold)
+					lut[j] = (byte)255;
+				else
+					lut[j] = 0;
+			}
+			ip.applyTable(lut);
+		}
+		stack.setColorModel(LookUpTable.createGrayscaleColorModel(!Prefs.blackBackground));
+		imp.setStack(null, stack);
+		imp.getProcessor().setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		IJ.showStatus("");
+	}
+
 	void convertToByte(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		double min = ip.getMin();
@@ -164,9 +216,8 @@ public class Thresholder implements PlugIn, Measurements {
 		}
 	}
 
-	void autoThreshold(ImagePlus imp) {
-		ImageStatistics stats = imp.getStatistics(MIN_MAX+MODE);
-		ImageProcessor ip = imp.getProcessor();
+	void autoThreshold(ImageProcessor ip) {
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, MIN_MAX+MODE, null);
 		int threshold = ((ByteProcessor)ip).getAutoThreshold();
 		if ((stats.max-stats.mode)<(stats.mode-stats.min)) {
 			minThreshold = stats.min;

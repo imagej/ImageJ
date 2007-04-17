@@ -17,6 +17,7 @@ class TextCanvas extends Canvas {
 		addMouseListener(tp);
 		addMouseMotionListener(tp);
 		addKeyListener(tp);
+		addMouseWheelListener(tp);
 	}
 
     public void setBounds(int x, int y, int width, int height) {

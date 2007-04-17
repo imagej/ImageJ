@@ -253,7 +253,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			minThreshold = ip.getMinThreshold();
 			maxThreshold = ip.getMaxThreshold();
 			ImageStatistics stats = plot.setHistogram(imp, false);
-			if (minThreshold==ip.NO_THRESHOLD)
+			if (minThreshold==ImageProcessor.NO_THRESHOLD)
 				autoSetLevels(ip, stats);
 			else {
 				minThreshold = scaleDown(ip, minThreshold);

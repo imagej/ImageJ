@@ -49,5 +49,9 @@ public interface PlugInFilter {
 	public int STACK_REQUIRED = 2048;
 	/** Set this flag if the filter does not want its run method called. */
 	public int DONE = 4096;
+	/** Set this flag to have the ImageProcessor that is passed to the run() method 
+		converted  to a FloatProcessor. With  RGB images, the run() method is  
+		called three times, once for each channel. */
+	public int CONVERT_TO_FLOAT = 8192;
 	
 }

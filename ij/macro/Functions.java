@@ -190,7 +190,7 @@ public class Functions implements MacroConstants, Measurements {
 			case CALIBRATE: value = getImage().getCalibration().getCValue(getArg()); break;
 			case ROI_MANAGER: value = roiManager(); break;
 			case TOOL_ID: interp.getParens(); value = Toolbar.getToolId(); break;
-			case GET_STATE: value = getState(); break;
+			case IS: value = is(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -1972,7 +1972,7 @@ public class Functions implements MacroConstants, Measurements {
 				rm.select(index, shiftKeyDown, altKeyDown);
 				shiftKeyDown = altKeyDown = false;
 			} else
-				rm.select(index);
+				roiManagerSelect(rm, index);
 		} else if (cmd.equals("count"))
 			countOrIndex = rm.getList().getItemCount();
 		else if (cmd.equals("index"))
@@ -1982,6 +1982,23 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Invalid ROI Manager command");
 		}
 		return countOrIndex;			
+	}
+	
+	void roiManagerSelect(RoiManager rm, int index) {
+		int delay = 1;
+		long start = System.currentTimeMillis();
+		while (true) {
+			rm.select(index);
+			if (delay>1) IJ.wait(delay);
+			if (rm.getList().isIndexSelected(index))
+				break;
+			//IJ.log(index+" "+delay);
+			rm.select(-1); // deselect all
+			IJ.wait(delay);
+			delay *= 2; if (delay>32) delay=32;
+			if ((System.currentTimeMillis()-start)>1000L)
+				interp.error("Failed to select");
+		}
 	}
 	
 	void setFont() {
@@ -3100,14 +3117,16 @@ public class Functions implements MacroConstants, Measurements {
 		imp.draw();
 	}
 	
-	double getState() {
+	double is() {
 		double state = 0.0;
 		String arg = getStringArg();
 		arg = arg.toLowerCase(Locale.US);
 		if (arg.equals("locked"))
 			state = getImage().isLocked()?1.0:0.0;
+		else if (arg.indexOf("invert")!=-1)
+			state = getImage().isInvertedLut()?1.0:0.0;
 		else
-			interp.error("Argument must be 'locked'");
+			interp.error("Argument must be 'locked' or 'Inverted LUT'");
 		return state;
 	}
 

@@ -98,7 +98,7 @@ public class OvalRoi extends Roi {
 	/** Draws an outline of this OvalRoi on the image. */
 	public void drawPixels(ImageProcessor ip) {
 		Polygon p = getPolygon();
-		ip.drawPolygon(p);
+		if (p.npoints>0) ip.drawPolygon(p);
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
 	}		

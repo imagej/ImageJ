@@ -389,7 +389,7 @@ class DicomDecoder {
 				
 		if (inputStream!=null) {
 			f = inputStream;
-			f.mark(100000);
+			f.mark(200000);
 		} else
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		if (IJ.debugMode) {

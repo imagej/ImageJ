@@ -479,8 +479,8 @@ public class Opener {
 				ip.resetMinAndMax();
 				stack.update(ip);
 			}
-			if (fi.whiteIsZero)
-				new StackProcessor(stack, stack.getProcessor(1)).invert();
+			//if (fi.whiteIsZero)
+			//	new StackProcessor(stack, stack.getProcessor(1)).invert();
 			ImagePlus imp = new ImagePlus(fi.fileName, stack);
 			new FileOpener(fi).setCalibration(imp);
 			imp.setFileInfo(fi);

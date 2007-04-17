@@ -10,7 +10,6 @@ import java.awt.Rectangle;
 	description of the algorithm used here as well as examples in C and Java. 
 */
 public class FloodFiller {
-
 	int maxStackSize = 500; // will be increased as needed
 	int[] xstack = new int[maxStackSize];
 	int[] ystack = new int[maxStackSize];
@@ -31,7 +30,7 @@ public class FloodFiller {
 		int color = ip.getPixel(x, y);
 		fillLine(ip, x, x, y);
 		int newColor = ip.getPixel(x, y);
-		ip.set(x, y, color);
+		ip.putPixel(x, y, color);
 		if (color==newColor) return false;
 		stackSize = 0;
 		push(x, y);
@@ -39,6 +38,7 @@ public class FloodFiller {
 			x = popx(); 
 			if (x ==-1) return true;
 			y = popy();
+			if (ip.getPixel(x,y)!=color) continue;
 			int x1 = x; int x2 = x;
 			while (ip.getPixel(x1,y)==color && x1>=0) x1--; // find start of scan-line
 			x1++;
@@ -71,7 +71,7 @@ public class FloodFiller {
 		int hm1=height-1; 
 		fillLine(ip, x, x, y);
 		int newColor = ip.getPixel(x, y);
-		ip.set(x, y, color);
+		ip.putPixel(x, y, color);
 		if (color==newColor) return false;
 		stackSize = 0;
 		push(x, y);

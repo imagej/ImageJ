@@ -431,7 +431,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		imp.killRoi();
 		ip.resetRoi();
 		ip.reset();
-		if (displaySummary && processStack && IJ.getInstance()!=null)
+		if (displaySummary && IJ.getInstance()!=null)
 			updateSliceSummary();
 		if (addToManager && roiManager!=null) {
 			ImageCanvas ic = imp.getCanvas();
@@ -444,9 +444,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 	
 	void updateSliceSummary() {
+		int slices = imp.getStackSize();
 		float[] areas = rt.getColumn(ResultsTable.AREA);
-		String label = imp.getStack().getShortSliceLabel(slice);
-		label = label!=null&&!label.equals("")?label:""+slice;
+		String label = imp.getTitle();
+		if (slices>1) {
+			label = imp.getStack().getShortSliceLabel(slice);
+			label = label!=null&&!label.equals("")?label:""+slice;
+		}
 		String aLine;
 		if (areas!=null) {
 			double sum = 0.0;
@@ -463,10 +467,15 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			aLine = label+"\t"+particleCount+total+average+fraction;
 		} else
 			aLine = label+"\t"+particleCount;
+		if (slices==1) {
+			Frame frame = WindowManager.getFrame("Summary");
+			if (frame!=null && (frame instanceof TextWindow))
+				tw = (TextWindow)frame;
+		}
 		if (tw==null) {
-			String title = "Summary of "+imp.getTitle();
+			String title = slices==1?"Summary":"Summary of "+imp.getTitle();
 			String headings = "Slice\tCount\tTotal Area\tAverage Size\tArea Fraction";
-			tw = new TextWindow(title, headings, aLine, 180, 360);
+			tw = new TextWindow(title, headings, aLine, 450, 300);
 		} else
 			tw.append(aLine);
 	}
@@ -526,7 +535,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			imageType = FLOAT;
 		else
 			imageType = BYTE;
-		if (t1==ip.NO_THRESHOLD) {
+		if (t1==ImageProcessor.NO_THRESHOLD) {
 			ImageStatistics stats = imp.getStatistics();
 			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
 				IJ.error("Particle Analyzer",
@@ -726,9 +735,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (count==0)
 			return;
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
-		if (displaySummary && lastSlice && rt==Analyzer.getResultsTable() && imp!=null) {
-			showSummary();
-		}
+		//if (displaySummary && lastSlice && rt==Analyzer.getResultsTable() && imp!=null) {
+		//	showSummary();
+		//}
 		if (outlines!=null && lastSlice) {
 			String title = imp!=null?imp.getTitle():"Outlines";
 			String prefix = showChoice==MASKS?"Mask of ":"Drawing of ";

@@ -133,7 +133,7 @@ public class Info implements PlugInFilter {
 				s += "Slice: " + number + label + "\n";
 		}
 
-		if (ip.getMinThreshold()==ip.NO_THRESHOLD)
+		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
 	    	s += "No Threshold\n";
 	    else {
 	    	double lower = ip.getMinThreshold();

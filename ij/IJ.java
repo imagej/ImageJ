@@ -182,6 +182,7 @@ public class IJ {
 		if (roi!=null) roi.endPaste();
 		int slices = imp.getStackSize();
 		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
+		boolean convertToFloat = (capabilities&PlugInFilter.CONVERT_TO_FLOAT)!=0;
 		if (!imp.lock())
 			return; // exit if image is in use
 		imp.startTiming();
@@ -201,7 +202,15 @@ public class IJ {
 				ip.snapshot();
 			}
 			ip.setCalibrationTable(cTable);
-			((PlugInFilter)theFilter).run(ip);
+			if (convertToFloat) {
+				FloatProcessor fp = null;
+				for (int i=0; i<ip.getNChannels(); i++) {
+					fp = ip.toFloat(i, fp);
+					((PlugInFilter)theFilter).run(fp);
+					ip.setPixels(i, fp);
+				}
+			} else
+				((PlugInFilter)theFilter).run(ip);
 			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
 				ip.reset(ip.getMask());  //restore image outside irregular roi
 			if (changes) ip.resetBinaryThreshold();
@@ -222,18 +231,28 @@ public class IJ {
 				&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
-			boolean doGarbageCollection = IJ.isWindows() && !IJ.isJava2();
 			ip.setMask(mask);
 			ip.setRoi(r);
 			ip.setCalibrationTable(cTable);
 			IJ.resetEscape();
+			int p1=1, p2=n;
+			if (convertToFloat && imp.getBitDepth()==24) p2*=3;
 			for (int i=1; i<=n; i++) {
 				ip.setPixels(stack.getPixels(i));
 				if (doMasking) ip.snapshot();
-				((PlugInFilter)theFilter).run(ip);
+				if (convertToFloat) {
+					FloatProcessor fp = null;
+					for (int j=0; j<ip.getNChannels(); j++) {
+						fp = ip.toFloat(j, fp);
+						((PlugInFilter)theFilter).run(fp);
+						ip.setPixels(j, fp);
+						IJ.showProgress(p1++, p2);
+					}
+				} else {
+					((PlugInFilter)theFilter).run(ip);
+					IJ.showProgress(p1++, p2);
+				}
 				if (doMasking) ip.reset(ip.getMask());
-				if (doGarbageCollection && (i%10==0)) System.gc();
-				IJ.showProgress(i, n);
 				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}
 			if (roi!=null) imp.setRoi(roi);
@@ -1052,7 +1071,7 @@ public class IJ {
 			return 0;
 		Wand w = new Wand(ip);
 		double t1 = ip.getMinThreshold();
-		if (t1==ip.NO_THRESHOLD)
+		if (t1==ImageProcessor.NO_THRESHOLD)
 			w.autoOutline(x, y);
 		else
 			w.autoOutline(x, y, t1, ip.getMaxThreshold());
@@ -1225,7 +1244,7 @@ public class IJ {
 			path = updateExtension(path, ".txt");
 			format = "Text Image...";
 		} else if (format.indexOf("text")!=-1 || format.indexOf("txt")!=-1) {
-			if (!path.endsWith(".xls"))
+			if (path!=null && !path.endsWith(".xls"))
 				path = updateExtension(path, ".txt");
 			format = "Text...";
 		} else if (format.indexOf("zip")!=-1) {

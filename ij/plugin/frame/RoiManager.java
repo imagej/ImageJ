@@ -973,12 +973,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			macro = false;
 			return true;
 		} else if (cmd.equals("save")) {
-			if (!name.endsWith(".zip"))
+			if (!name.endsWith(".zip") && !name.equals(""))
 				return error("Name must end with '.zip'");
 			if (list.getItemCount()==0)
 				return error("The selection list is empty.");
 			int[] indexes = getAllIndexes();
-			boolean ok = saveMultiple(indexes, name);
+			boolean ok = false;
+			if (name.equals(""))
+				ok = saveMultiple(indexes, null);
+			else
+				ok = saveMultiple(indexes, name);
 			macro = false;
 			return ok;
 		} else if (cmd.equals("rename")) {
