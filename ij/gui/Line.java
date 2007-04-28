@@ -180,6 +180,7 @@ public class Line extends Roi {
 
 	/** Returns the length of this line. */
 	public double getLength() {
+		if (imp==null) return getRawLength();
 		Calibration cal = imp.getCalibration();
 		return Math.sqrt((x2d-x1d)*cal.pixelWidth*(x2d-x1d)*cal.pixelWidth
 			+ (y2d-y1d)*cal.pixelHeight*(y2d-y1d)*cal.pixelHeight);

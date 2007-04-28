@@ -144,6 +144,7 @@ public class FloodFiller {
 			x = popx(); 
 			if (x ==-1) return;
 			y = popy();
+			if (!inParticle(x,y,level1,level2)) continue;
 			int x1 = x; int x2 = x;
 			while (inParticle(x1,y,level1,level2) && x1>=0) x1--; // find start of scan-line
 			x1++;

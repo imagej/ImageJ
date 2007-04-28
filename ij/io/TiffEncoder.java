@@ -3,7 +3,6 @@ import java.io.*;
 
 /**Saves an image described by a FileInfo object as an uncompressed, big-endian TIFF file.*/
 public class TiffEncoder {
-	static final int IMAGE_START = 768;
 	static final int HDR_SIZE = 8;
 	static final int MAP_SIZE = 768; // in 16-bit words
 	static final int BPS_DATA_SIZE = 6;
@@ -16,7 +15,7 @@ public class TiffEncoder {
 	private int samplesPerPixel;
 	private int nEntries;
 	private int ifdSize;
-	private long imageOffset = IMAGE_START;
+	private long imageOffset;
 	private int imageSize;
 	private long stackSize;
 	private byte[] description;
@@ -24,6 +23,7 @@ public class TiffEncoder {
 	private int metaDataEntries;
 	private int nSliceLabels;
 	private int extraMetaDataEntries;
+	private int scaleSize;
 		
 	public TiffEncoder (FileInfo fi) {
 		this.fi = fi;
@@ -32,6 +32,9 @@ public class TiffEncoder {
 		samplesPerPixel = 1;
 		nEntries = 9;
 		int bytesPerPixel = 1;
+		int bpsSize = 0;
+		int colorMapSize = 0;
+
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 				photoInterp = fi.whiteIsZero?0:1;
@@ -51,6 +54,7 @@ public class TiffEncoder {
 				photoInterp = 2;
 				samplesPerPixel = 3;
 				bytesPerPixel = 3;
+				bpsSize = BPS_DATA_SIZE;
 				break;
 			case FileInfo.RGB48:
 				bitsPerSample = 16;
@@ -58,10 +62,12 @@ public class TiffEncoder {
 				samplesPerPixel = 3;
 				bytesPerPixel = 6;
 				fi.nImages /= 3;
+				bpsSize = BPS_DATA_SIZE;
 				break;
 			case FileInfo.COLOR8:
 				photoInterp = 3;
 				nEntries = 10;
+				colorMapSize = MAP_SIZE*2;
 				break;
 			default:
 				photoInterp = 0;
@@ -79,6 +85,10 @@ public class TiffEncoder {
 		if (metaDataSize>0)
 			nEntries += 2; // MetaData & MetaDataCounts
 		ifdSize = 2 + nEntries*12 + 4;
+		int descriptionSize = description!=null?description.length:0;
+		scaleSize = fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0?SCALE_DATA_SIZE:0;
+		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + metaDataEntries*4 + metaDataSize;
+		//ij.IJ.log(ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize);
 	}
 	
 	/** Saves the image as a TIFF file. The DataOutputStream is not closed.
@@ -87,31 +97,22 @@ public class TiffEncoder {
 	public void write(DataOutputStream out) throws IOException {
 		writeHeader(out);
 		long nextIFD = 0L;
-		if (fi.nImages>1) {
-			nextIFD = IMAGE_START+stackSize;
-			if (fi.fileType==FileInfo.COLOR8) nextIFD += MAP_SIZE*2;
-            if (metaDataSize>0) 
-                nextIFD += metaDataEntries*4 + metaDataSize;
-		}
+		if (fi.nImages>1)
+			nextIFD = imageOffset+stackSize;
         if (nextIFD+fi.nImages*ifdSize>=0xffffffffL)
             nextIFD = 0L;
 		writeIFD(out, (int)imageOffset, (int)nextIFD);
-		int bpsSize=0, scaleSize=0, descriptionSize=0;
 		if (fi.fileType==FileInfo.RGB||fi.fileType==FileInfo.RGB48)
-			bpsSize = writeBitsPerPixel(out);
+			writeBitsPerPixel(out);
 		if (description!=null)
-			descriptionSize = writeDescription(out);
-		if (fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0)
-			scaleSize = writeScale(out);
-		int fillerSize = IMAGE_START - (HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize);
-		byte[] filler = new byte[fillerSize];
-		out.write(filler); // force image to start at offset 768
-		//ij.IJ.write("filler: "+filler.length);
-		new ImageWriter(fi).write(out);
+			writeDescription(out);
+		if (scaleSize>0)
+			writeScale(out);
 		if (fi.fileType==FileInfo.COLOR8)
 			writeColorMap(out);
 		if (metaDataSize>0)
 			writeMetaData(out);
+		new ImageWriter(fi).write(out);
         if (nextIFD>0L) {
             for (int i=2; i<=fi.nImages; i++) {
                 if (i==fi.nImages)
@@ -125,8 +126,7 @@ public class TiffEncoder {
 	}
 	
 	int getMetaDataSize() {
-        if (stackSize+IMAGE_START>0xffffffffL)
-            return 0;
+        //if (stackSize+IMAGE_START>0xffffffffL) return 0;
 		nSliceLabels = 0;
 		metaDataEntries = 0;
 		int size = 0;
@@ -222,28 +222,28 @@ public class TiffEncoder {
 			int format = TiffDecoder.FLOATING_POINT;
 			writeEntry(out, TiffDecoder.SAMPLE_FORMAT, 3, 1, format);
 		}
-		if (fi.fileType==FileInfo.COLOR8)
-			writeEntry(out, TiffDecoder.COLOR_MAP, 3, MAP_SIZE, (int)(IMAGE_START+stackSize));
+		if (fi.fileType==FileInfo.COLOR8) {
+			writeEntry(out, TiffDecoder.COLOR_MAP, 3, MAP_SIZE, tagDataOffset);
+			tagDataOffset += MAP_SIZE*2;
+		}
 		if (metaDataSize>0) {
-			long metaDataOffset = IMAGE_START+stackSize;
-			if (fi.fileType==FileInfo.COLOR8) metaDataOffset += MAP_SIZE*2;
-			writeEntry(out, TiffDecoder.META_DATA_BYTE_COUNTS, 4, metaDataEntries, (int)metaDataOffset);
-			writeEntry(out, TiffDecoder.META_DATA, 1, metaDataSize, (int)(metaDataOffset+4*(metaDataEntries)));
+			writeEntry(out, TiffDecoder.META_DATA_BYTE_COUNTS, 4, metaDataEntries, tagDataOffset);
+			writeEntry(out, TiffDecoder.META_DATA, 1, metaDataSize, tagDataOffset+4*metaDataEntries);
+			tagDataOffset += metaDataEntries*4 + metaDataSize;
 		}
 		out.writeInt(nextIFD);
 	}
 	
 	/** Writes the 6 bytes of data required by RGB BitsPerSample tag. */
-	int writeBitsPerPixel(DataOutputStream out) throws IOException {
+	void writeBitsPerPixel(DataOutputStream out) throws IOException {
 		int bitsPerPixel = fi.fileType==FileInfo.RGB48?16:8;
 		out.writeShort(bitsPerPixel);
 		out.writeShort(bitsPerPixel);
 		out.writeShort(bitsPerPixel);
-		return BPS_DATA_SIZE;
 	}
 
 	/** Writes the 16 bytes of data required by the XResolution and YResolution tags. */
-	int writeScale(DataOutputStream out) throws IOException {
+	void writeScale(DataOutputStream out) throws IOException {
 		double xscale = 1.0/fi.pixelWidth;
 		double yscale = 1.0/fi.pixelHeight;
 		double scale = 1000000.0;
@@ -252,13 +252,11 @@ public class TiffEncoder {
 		out.writeInt((int)scale);
 		out.writeInt((int)(yscale*scale));
 		out.writeInt((int)scale);
-		return SCALE_DATA_SIZE;
 	}
 
 	/** Writes the variable length ImageDescription string. */
-	int writeDescription(DataOutputStream out) throws IOException {
+	void writeDescription(DataOutputStream out) throws IOException {
 		out.write(description,0,description.length);
-		return description.length;
 	}
 
 	/** Writes color palette following the image. */

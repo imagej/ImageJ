@@ -25,6 +25,9 @@ public class Calibration implements Cloneable {
 	/** Frame rate in frames per second */
 	public double fps;
 
+	/** Loop back and forth when animating stack */
+	public boolean loop;
+
 	/** X origin in pixels. */
 	public double xOrigin;
 

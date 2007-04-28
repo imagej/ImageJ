@@ -209,9 +209,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
 				int slice2 = getSliceNumber(label);
-				boolean sameType = roi.getType()==roi2.getType();
-				if (sameType && roi.getBounds().equals(roi2.getBounds())
-				&& (slice2==-1||slice2==imp.getCurrentSlice()))
+				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()))
 					return false;
 			}
 		}
@@ -419,7 +417,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void open(String path) {
 		Macro.setOptions(null);
 		String name = null;
-		if (path==null) {
+		if (path==null || path.equals("")) {
 			OpenDialog od = new OpenDialog("Open Selection(s)...", "");
 			String directory = od.getDirectory();
 			name = od.getFileName();
@@ -897,14 +895,36 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return (RoiManager)instance;
 	}
 
-	/** Returns the ROI Hashtable. */
+	/**	Returns the ROI Hashtable.
+		@see getCount
+		@see getRoisAsArray
+	*/
 	public Hashtable getROIs() {
 		return rois;
 	}
 
-	/** Returns the selection list. */
+	/** Returns the selection list.
+		@see getCount
+		@see getRoisAsArray
+	*/
 	public List getList() {
 		return list;
+	}
+	
+	/** Returns the ROI count. */
+	public int getCount() {
+		return list.getItemCount();
+	}
+
+	/** Returns the ROIs as an array. */
+	public Roi[] getRoisAsArray() {
+		int n = list.getItemCount();
+		Roi[] array = new Roi[n];
+		for (int i=0; i<n; i++) {
+			String label = list.getItem(i);
+			array[i] = (Roi)rois.get(label);
+		}
+		return array;
 	}
 		
 	/** Returns the name of the selection with the specified index.

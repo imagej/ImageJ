@@ -778,6 +778,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ic!=null;
 	}
 
+
+    /** Checks whether two rectangles are equal. */
+    public boolean equals(Object obj) {
+		if (obj instanceof Roi) {
+			Roi roi2 = (Roi)obj;
+			if (type!=roi2.getType()) return false;
+			if (!getBounds().equals(roi2.getBounds())) return false;
+			if (getLength()!=roi2.getLength()) return false;
+			return true;
+		} else
+			return false;
+    }
+
 	public String toString() {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}

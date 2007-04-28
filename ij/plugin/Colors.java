@@ -15,7 +15,10 @@ public class Colors implements PlugIn, ItemListener {
 	private Color fc2, bc2, sc2;
 
  	public void run(String arg) {
-		showDialog();
+		if (arg.equals("point"))
+			pointToolOptions();
+		else
+			showDialog();
 	}
 
 	void showDialog() {
@@ -104,7 +107,54 @@ public class Colors implements PlugIn, ItemListener {
 			Roi.setColor(color);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null && imp.getRoi()!=null) imp.draw();
+			Toolbar.getInstance().repaint();
 		}
 	}
+	
+	// Point tool options
+	void pointToolOptions() {
+		boolean saveNoPointLabels = Prefs.noPointLabels;
+		Color sc =Roi.getColor();
+		String sname = getColorName(sc, "yellow");
+		GenericDialog gd = new GenericDialog("Point Tool");
+		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
+		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
+		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
+		gd.addCheckbox("Label Points", !Prefs.noPointLabels);
+		gd.addChoice("Selection Color:", colors, sname);
+		Vector choices = gd.getChoices();
+		schoice = (Choice)choices.elementAt(0);
+		schoice.addItemListener(this);
+		gd.showDialog();
+		if (gd.wasCanceled()) {
+			if (sc2!=sc) {
+				Roi.setColor(sc);
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (imp!=null && imp.getRoi()!=null) imp.draw();
+				Toolbar.getInstance().repaint();
+			}
+			return;
+		}
+		int width = (int)gd.getNextNumber();
+		if (width<0) width = 0;
+		Analyzer.markWidth = width;
+		Prefs.pointAutoMeasure = gd.getNextBoolean();
+		Prefs.pointAutoNextSlice = gd.getNextBoolean();
+		Prefs.noPointLabels = !gd.getNextBoolean();
+		sname = gd.getNextChoice();
+		sc2 = getColor(sname, Color.yellow);
+		if (Prefs.pointAutoNextSlice) Prefs.pointAutoMeasure = true;
+		if (Prefs.noPointLabels!=saveNoPointLabels) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.draw();
+		}
+		if (sc2!=sc) {
+			Roi.setColor(sc2);
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.draw();
+			Toolbar.getInstance().repaint();
+		}
+	}
+
 
 }

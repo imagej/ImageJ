@@ -8,7 +8,7 @@ import ij.measure.Calibration;
 public class Animator implements PlugIn {
 
 	private static double animationRate = Prefs.getDouble(Prefs.FPS, 7.0);
-	private static boolean oscillate;
+	private static int firstFrame=0, lastFrame=0;
 	private ImagePlus imp;
 	private StackWindow swin;
 	private int slice;
@@ -73,6 +73,9 @@ public class Animator implements PlugIn {
 	}
 
 	void startAnimation() {
+		int first=firstFrame, last=lastFrame;
+		if (first<1 || first>nSlices || last<1 || last>nSlices)
+			{first=1; last=nSlices;}
 		if (swin.running2)
 			{stopAnimation(); return;}
 		imp.unlock(); // so users can adjust brightness/contrast/threshold
@@ -91,16 +94,16 @@ public class Animator implements PlugIn {
 				Thread.yield();
 			nextTime += (long)(1000.0/animationRate);
 			slice += sliceIncrement;
-			if (slice<1) {
-				slice = 2;
+			if (slice<first) {
+				slice = first+1;
 				sliceIncrement = 1;
 			}
-			if (slice>nSlices) {
-				if (oscillate) {
-					slice = nSlices-1;
+			if (slice>last) {
+				if (cal.loop) {
+					slice = last-1;
 					sliceIncrement = -1;
 				} else {
-					slice = 1;
+					slice = first;
 					sliceIncrement = 1;
 				}
 			}
@@ -109,8 +112,11 @@ public class Animator implements PlugIn {
 	}
 
 	void doOptions() {
+		if (firstFrame<1 || firstFrame>nSlices || lastFrame<1 || lastFrame>nSlices) {
+			firstFrame = 1;
+			lastFrame = nSlices;
+		}
 		boolean start = !swin.running2;
-		boolean saveOscillate = oscillate;
 		Calibration cal = imp.getCalibration();
 		if (cal.fps!=0.0)
 			animationRate = cal.fps;
@@ -119,13 +125,22 @@ public class Animator implements PlugIn {
 		int decimalPlaces = (int)animationRate==animationRate?0:1;
 		GenericDialog gd = new GenericDialog("Animation Options");
 		gd.addNumericField("Speed (0.1-100 fps):", animationRate, decimalPlaces);
-		gd.addCheckbox("Loop Back and Forth", oscillate);
+		gd.addNumericField("First Frame:", firstFrame, 0);
+		gd.addNumericField("Last Frame:", lastFrame, 0);
+		gd.addCheckbox("Loop Back and Forth", cal.loop);
 		gd.addCheckbox("Start Animation", start);
 		gd.showDialog();
-		if (gd.wasCanceled())
+		if (gd.wasCanceled()) {
+			if (firstFrame==1 && lastFrame==nSlices)
+				{firstFrame=0; lastFrame=0;}
 			return;
+		}
 		double speed = gd.getNextNumber();
-		oscillate = gd.getNextBoolean();
+		firstFrame = (int)gd.getNextNumber();
+		lastFrame = (int)gd.getNextNumber();
+		if (firstFrame==1 && lastFrame==nSlices)
+			{firstFrame=0; lastFrame=0;}
+		cal.loop = gd.getNextBoolean();
 		start = gd.getNextBoolean();
 		if (speed>100.0) speed = 100.0;
 		if (speed<0.1) speed = 0.1;

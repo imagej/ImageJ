@@ -502,8 +502,8 @@ public class FileSaver {
 			fi.fileFormat = fileFormat;
 			fi.fileName = name;
 			fi.directory = directory;
-			if (fileFormat==fi.TIFF)
-				fi.offset = TiffEncoder.IMAGE_START;
+			//if (fileFormat==fi.TIFF)
+			//	fi.offset = TiffEncoder.IMAGE_START;
 			fi.description = null;
 			imp.setTitle(name);
 			imp.setFileInfo(fi);
@@ -555,6 +555,7 @@ public class FileSaver {
 				else
 					sb.append("fps="+cal.fps+"\n");
 			}
+			sb.append("loop="+(cal.loop?"true":"false")+"\n");
 			if (cal.frameInterval!=0.0) {
 				if ((int)cal.frameInterval==cal.frameInterval)
 					sb.append("finterval="+(int)cal.frameInterval+"\n");

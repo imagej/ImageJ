@@ -1236,7 +1236,7 @@ public class Menus {
 			switch (c) {
 				case 43: code = KeyEvent.VK_PLUS; break;
 				case 45: code = KeyEvent.VK_MINUS; break;
-				case 92: code = KeyEvent.VK_BACK_SLASH; break;
+				//case 92: code = KeyEvent.VK_BACK_SLASH; break;
 				default: return 0;
 			}
 		}
@@ -1246,8 +1246,11 @@ public class Menus {
 	void installStartupMacroSet() {
 		if (applet!=null) {
 			String docBase = ""+applet.getDocumentBase();
-			if (docBase.endsWith("index.html"))
-				docBase = docBase.substring(0, docBase.length()-10);
+			if (!docBase.endsWith("/")) {
+				int index = docBase.lastIndexOf("/");
+				if (index!=-1)
+					docBase = docBase.substring(0, index+1);
+			}
 			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
 			return;
 		}

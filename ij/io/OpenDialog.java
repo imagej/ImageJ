@@ -18,6 +18,8 @@ import javax.swing.filechooser.*;
 	private static String defaultDirectory;
 	private static Frame sharedFrame;
 	private String title;
+	static String lastDir, lastName;
+
 	
 	/** Displays a file open dialog with 'title' as
 		the title. If 'path' is non-blank, it is
@@ -160,6 +162,7 @@ import javax.swing.filechooser.*;
 
 	/** Returns the selected directory. */
 	public String getDirectory() {
+		lastDir = dir;
 		return dir;
 	}
 	
@@ -167,6 +170,7 @@ import javax.swing.filechooser.*;
 	public String getFileName() {
 		if (Recorder.record && recordPath)
 			Recorder.recordPath(title, dir+name);
+		lastName = name;
 		return name;
 	}
 		
@@ -184,5 +188,20 @@ import javax.swing.filechooser.*;
 		if (!defaultDirectory.endsWith(File.separator))
 			defaultDirectory = defaultDirectory + File.separator;
 	}
+	
+	/** Returns the path to the last directory opened by the
+		user using a file open or file save dialog. Returns null
+		if the users has not opened a file. */
+	public static String getLastDirectory() {
+		return lastDir;
+	}
+		
+	/** Returns the name of the last file opened by the
+		user using a file open or file save dialog. Returns
+		null if the users has not opened a file. */
+	public static String getLastName() {
+		return lastName;
+	}
+
 
 }

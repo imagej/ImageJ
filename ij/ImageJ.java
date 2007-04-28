@@ -67,7 +67,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.38p";
+	public static final String VERSION = "1.38q";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -348,7 +348,7 @@ public class ImageJ extends Frame implements ActionListener,
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
 				case KeyEvent.VK_BACK_SPACE: c="Clear"; hotkey=true; break; // delete
-				case KeyEvent.VK_BACK_SLASH: c="Start Animation"; break;
+				//case KeyEvent.VK_BACK_SLASH: c=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
 				case KeyEvent.VK_EQUALS: c="In"; break;
 				case KeyEvent.VK_MINUS: c="Out"; break;
 				case KeyEvent.VK_SLASH: case 0xbf: c="Reslice [/]..."; break;
@@ -400,7 +400,18 @@ public class ImageJ extends Frame implements ActionListener,
 		IJ.setKeyUp(e.getKeyCode());
 	}
 		
-	public void keyTyped(KeyEvent e) {}
+	public void keyTyped(KeyEvent e) {
+		char keyChar = e.getKeyChar();
+		int flags = e.getModifiers();
+		if (IJ.debugMode) IJ.log("keyTyped=\"" + keyChar + "\" (" + (int)keyChar 
+			+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
+		if (keyChar=='\\' || keyChar==171 || keyChar==223) {
+			if (((flags&Event.ALT_MASK)!=0))
+				doCommand("Animation Options...");
+			else
+				doCommand("Start Animation [\\]");
+		}
+	}
 
 	public void windowClosing(WindowEvent e) {
 		doCommand("Quit");

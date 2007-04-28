@@ -351,6 +351,8 @@ public class IJ {
 			command = "Make Binary";
 		else if (command.equals("Display..."))
 			command = "Appearance...";
+		else if (command.equals("Start Animation"))
+			command = "Start Animation [\\]";
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);

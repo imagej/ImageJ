@@ -767,9 +767,12 @@ public class PolygonRoi extends Roi {
 		
 		double length = 0.0;
 		int dx, dy;
-		Calibration cal = imp.getCalibration();
-		double w2 = cal.pixelWidth*cal.pixelWidth;
-		double h2 = cal.pixelHeight*cal.pixelHeight;
+		double w2=1.0, h2=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			w2 = cal.pixelWidth*cal.pixelWidth;
+			h2 = cal.pixelHeight*cal.pixelHeight;
+		}
 		if (xSpline!=null) {
 			for (int i=0; i<(splinePoints-1); i++) {
 				dx = xSpline[i+1]-xSpline[i];

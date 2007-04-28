@@ -174,7 +174,10 @@ public class RoiDecoder {
 	int getShort(int base) {
 		int b0 = data[base]&255;
 		int b1 = data[base+1]&255;
-		return (short)((b0<<8) + b1);		
+		int n = (short)((b0<<8) + b1);
+		if (n<-5000)
+			n = (b0<<8) + b1; // assume n>32767 and unsigned
+		return n;		
 	}
 	
 	int getInt(int base) {

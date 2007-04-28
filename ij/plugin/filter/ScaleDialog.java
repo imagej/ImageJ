@@ -71,6 +71,7 @@ public class ScaleDialog implements PlugInFilter {
 		if (measured<=0.0 || unit.startsWith("pixel") || unit.startsWith("Pixel") || unit.equals("")) {
 			cal.pixelWidth = 1.0;
 			cal.pixelHeight = 1.0;
+			cal.pixelDepth = 1.0;
 			cal.setUnit("pixel");
 		} else {
 			cal.pixelWidth = known/measured;
@@ -78,6 +79,7 @@ public class ScaleDialog implements PlugInFilter {
 				cal.pixelHeight = cal.pixelWidth*aspectRatio;
 			else
 				cal.pixelHeight = cal.pixelWidth;
+			cal.pixelDepth = cal.pixelWidth;
 			cal.setUnit(unit);
 		}
 		if (!cal.equals(calOrig))

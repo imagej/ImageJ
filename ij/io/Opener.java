@@ -12,7 +12,6 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.frame.*;
-import ij.plugin.Zip_Reader;
 import ij.plugin.DICOM;
 import ij.text.TextWindow;
 import ij.util.Java2;
@@ -216,14 +215,7 @@ public class Opener {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
 			case ZIP:
-				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
-				if (imp.getWidth()!=0) {
-					FileInfo fi = imp.getOriginalFileInfo();
-					if (fi!=null && fi.fileType==FileInfo.RGB48)
-						imp = new CompositeImage(imp, 3);
-					return imp;
-				} else
-					return null;
+				return openZip(path);
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
 				if (path.endsWith("Thumbs.db")) {
@@ -277,7 +269,7 @@ public class Opener {
 		    if (url.endsWith(".tif") || url.endsWith(".TIF"))
 				imp = openTiff(u.openStream(), name);
 	 	    else if (url.endsWith(".zip"))
-				imp = openZip(u);
+				imp = openZipUsingUrl(u);
 	 	    else if (url.endsWith(".dcm")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
@@ -295,7 +287,7 @@ public class Opener {
 	}
 	
 	/** Opens the ZIP compressed TIFF at the specified URL. */
-	ImagePlus openZip(URL url) throws IOException {
+	ImagePlus openZipUsingUrl(URL url) throws IOException {
 		URLConnection uc = url.openConnection();
 		int fileSize = uc.getContentLength(); // compressed size
 		fileSize *=2; // estimate uncompressed size
@@ -512,6 +504,42 @@ public class Opener {
 		return openTiff2(info);
 	}
 
+		/** Opens a single TIFF or DICOM contained in a ZIP archive,
+			or a ZIPed collection of ".roi" files created by the ROI manager. */	
+	public ImagePlus openZip(String path) {
+		ImagePlus imp = null;
+		try {
+			ZipInputStream in = new ZipInputStream(new FileInputStream(path));
+			ZipEntry entry = in.getNextEntry();
+			if (entry==null) return null;
+			String name = entry.getName();
+			if (name.endsWith(".roi")) {
+				in.close();
+				IJ.runMacro("roiManager(\"Open\", getArgument());", path);
+				return null;
+			}
+			if (name.endsWith(".tif")) {
+				imp = openTiff(in, name);
+			} else if (name.endsWith(".dcm")) {
+				DICOM dcm = new DICOM(in);
+				dcm.run(name);
+				imp = dcm;
+			} else {
+				in.close();
+				IJ.error("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
+				return null;
+			}
+		} catch (Exception e) {
+			IJ.error("ZipDecoder", ""+e);
+		}
+		File f = new File(path);
+		FileInfo fi = imp.getOriginalFileInfo();
+		fi.fileFormat = FileInfo.ZIP_ARCHIVE;
+		fi.fileName = f.getName();
+		fi.directory = f.getParent()+File.separator;
+		return imp;
+	}
+	
 	public String getName(String path) {
 		int i = path.lastIndexOf('/');
 		if (i==-1)
@@ -630,10 +658,6 @@ public class Opener {
 		if (name.endsWith(".lut"))
 			return LUT;
 		
-		// BMP ("BM")
-		if (b0==66 && b1==77 && (name.endsWith(".bmp")||name.endsWith(".dib")))
-			return BMP;
-				
 		// PNG
 		if (b0==137 && b1==80 && b2==78 && b3==71 && IJ.isJava2())
 			return PNG;
@@ -653,7 +677,7 @@ public class Opener {
         // Text file
         boolean isText = true;
         for (int i=0; i<10; i++) {
-          int c = buf[i];
+          int c = buf[i]&255;
           if ((c<32&&c!=9&&c!=10&&c!=13) || c>126) {
               isText = false;
               break;
@@ -662,6 +686,10 @@ public class Opener {
         if (isText)
            return TEXT;
 
+		// BMP ("BM")
+		if ((b0==66 && b1==77)||name.endsWith(".dib"))
+			return BMP;
+				
 		return UNKNOWN;
 	}
 

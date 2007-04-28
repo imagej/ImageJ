@@ -2807,6 +2807,14 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("separator")) {
 			interp.getParens();
 			return File.separator;
+		} else if (name.equals("directory")) {
+			interp.getParens();
+			String lastDir = OpenDialog.getLastDirectory();
+			return lastDir!=null?lastDir:"";
+		} else if (name.equals("name")) {
+			interp.getParens();
+			String lastName = OpenDialog.getLastName();
+			return lastName!=null?lastName:"";
 		} else if (name.equals("rename")) {
 			File f1 = new File(getFirstString());
 			File f2 = new File(getLastString());

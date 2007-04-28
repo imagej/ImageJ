@@ -16,6 +16,7 @@ public class FolderOpener implements PlugIn {
 	private static boolean convertToGrayscale, convertToRGB;
 	private static boolean sortFileNames = true;
 	private static double scale = 100.0;
+	private static boolean virtualStack;
 	private int n, start, increment;
 	private String filter;
 	private FileInfo fi;
@@ -102,13 +103,15 @@ public class FolderOpener implements PlugIn {
 				n = list.length-start+1;
 			int count = 0;
 			int counter = 0;
+			ImagePlus imp = null;
 			for (int i=start-1; i<list.length; i++) {
 				if ((counter++%increment)!=0)
 					continue;
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
 				IJ.redirectErrorMessages();
-				ImagePlus imp = opener.openImage(directory, list[i]);
+				if (!virtualStack||stack==null)
+					imp = opener.openImage(directory, list[i]);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
@@ -118,7 +121,9 @@ public class FolderOpener implements PlugIn {
 					if (convertToRGB) bitDepth = 24;
 					if (convertToGrayscale) bitDepth = 8;
 					ColorModel cm = imp.getProcessor().getColorModel();
-					if (scale<100.0)						
+					if (virtualStack)
+						stack = new VirtualStack(width, height, cm, directory);
+					else if (scale<100.0)						
 						stack = new ImageStack((int)(width*scale/100.0), (int)(height*scale/100.0), cm);
 					else
 						stack = new ImageStack(width, height, cm);
@@ -171,7 +176,10 @@ public class FolderOpener implements PlugIn {
 					if (ip.getMax()>max) max = ip.getMax();
 					String label2 = label;
 					if (depth>1) label2 = ""+slice;
-					stack.addSlice(label2, ip);
+					if (virtualStack) {
+						if (slice==1) ((VirtualStack)stack).addSlice(list[i]);
+					} else
+						stack.addSlice(label2, ip);
 				}
 				if (count>=n)
 					break;
@@ -216,6 +224,7 @@ public class FolderOpener implements PlugIn {
 		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addCheckbox("Sort Names Numerically", sortFileNames);
+		gd.addCheckbox("Use Virtual Stack", virtualStack);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -232,6 +241,12 @@ public class FolderOpener implements PlugIn {
 		convertToGrayscale = gd.getNextBoolean();
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
+		virtualStack = gd.getNextBoolean();
+		if (virtualStack) {
+			convertToGrayscale = false;
+			convertToRGB = false;
+			scale = 100.0;
+		}
 		return true;
 	}
 
@@ -298,7 +313,7 @@ public class FolderOpener implements PlugIn {
 		}	
 	}
 
-}
+} // FolderOpener
 
 class FolderOpenerDialog extends GenericDialog {
 	ImagePlus imp;
@@ -406,4 +421,127 @@ class FolderOpenerDialog extends GenericDialog {
 			return 0;
       }
 
-}
+} // FolderOpenerDialog
+
+
+/**
+This class represents an array of disk-resident images.
+*/
+class VirtualStack extends ImageStack{
+	static final int INITIAL_SIZE = 100;
+	String path;
+	int nSlices;
+	String[] names;
+	
+	/** Creates a new, empty virtual stack. */
+	public VirtualStack(int width, int height, ColorModel cm, String path) {
+		super(width, height, cm);
+		this.path = path;
+		names = new String[INITIAL_SIZE];
+		//IJ.log("VirtualStack: "+path);
+	}
+
+	 /** Adds an image to the end of the stack. */
+	public void addSlice(String name) {
+		if (name==null) 
+			throw new IllegalArgumentException("'name' is null!");
+		nSlices++;
+	   //IJ.log("addSlice: "+nSlices+"	"+name);
+	   if (nSlices==names.length) {
+			String[] tmp = new String[nSlices*2];
+			System.arraycopy(names, 0, tmp, 0, nSlices);
+			names = tmp;
+		}
+		names[nSlices-1] = name;
+	}
+
+   /** Does nothing. */
+	public void addSlice(String sliceLabel, Object pixels) {
+	}
+
+	/** Does nothing.. */
+	public void addSlice(String sliceLabel, ImageProcessor ip) {
+	}
+	
+	/** Does noting. */
+	public void addSlice(String sliceLabel, ImageProcessor ip, int n) {
+	}
+
+	/** Deletes the specified slice, were 1<=n<=nslices. */
+	public void deleteSlice(int n) {
+		if (n<1 || n>nSlices)
+			throw new IllegalArgumentException("Argument out of range: "+n);
+			if (nSlices<1)
+				return;
+			for (int i=n; i<nSlices; i++)
+				names[i-1] = names[i];
+			names[nSlices-1] = null;
+			nSlices--;
+		}
+	
+	/** Deletes the last slice in the stack. */
+	public void deleteLastSlice() {
+		if (nSlices>0)
+			deleteSlice(nSlices);
+	}
+	   
+   /** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+	public Object getPixels(int n) {
+		ImageProcessor ip = getProcessor(n);
+		if (ip!=null)
+			return ip.getPixels();
+		else
+			return null;
+	}		
+	
+	 /** Assigns a pixel array to the specified slice,
+		were 1<=n<=nslices. */
+	public void setPixels(Object pixels, int n) {
+	}
+
+   /** Returns an ImageProcessor for the specified slice,
+		were 1<=n<=nslices. Returns null if the stack is empty.
+	*/
+	public ImageProcessor getProcessor(int n) {
+		//IJ.log("getProcessor: "+n+"  "+names[n-1]);
+		ImagePlus imp = new Opener().openImage(path, names[n-1]);
+		if (imp!=null) {
+			int w = imp.getWidth();
+			int h = imp.getHeight();
+			int type = imp.getType();
+			ColorModel cm = imp.getProcessor().getColorModel();
+		} else
+			return null;
+		return imp.getProcessor();
+	 }
+ 
+	 /** Returns the number of slices in this stack. */
+	public int getSize() {
+		return nSlices;
+	}
+
+	/** Returns the file name of the Nth image. */
+	public String getSliceLabel(int n) {
+		 return names[n-1];
+	}
+	
+	/** Returns null. */
+	public Object[] getImageArray() {
+		return null;
+	}
+
+   /** Does nothing. */
+	public void setSliceLabel(String label, int n) {
+	}
+
+	/** Always return true. */
+	public boolean isVirtual() {
+		return true;
+	}
+
+   /** Does nothing. */
+	public void trim() {
+	}
+		
+} // VirtualStack
+

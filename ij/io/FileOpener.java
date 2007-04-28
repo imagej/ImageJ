@@ -228,8 +228,8 @@ public class FileOpener {
 
 		if (fi.fileFormat==fi.ZIP_ARCHIVE) {
 			// restore ".zip" file
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
-			if (imp2!=null && imp2.getWidth()!=0)
+			ImagePlus imp2 = (new Opener()).openZip(path);
+			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
 	    	return;
 		}
@@ -312,6 +312,7 @@ public class FileOpener {
 		cal.info = props.getProperty("info");		
 				
 		cal.fps = getDouble(props,"fps");
+		cal.loop = getBoolean(props, "loop");
 		cal.frameInterval = getDouble(props,"finterval");
 		cal.setTimeUnit(props.getProperty("tunit", "sec"));
 
@@ -484,6 +485,12 @@ public class FileOpener {
 		Double n = getNumber(props, key);
 		return n!=null?n.doubleValue():0.0;
 	}
+	
+	private boolean getBoolean(Properties props, String key) {
+		String s = props.getProperty(key);
+		return s!=null&&s.equals("true")?true:false;
+	}
+
 	
 
 }

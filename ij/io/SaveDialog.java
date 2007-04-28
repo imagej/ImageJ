@@ -179,6 +179,7 @@ public class SaveDialog {
 	
 	/** Returns the selected directory. */
 	public String getDirectory() {
+		OpenDialog.lastDir = dir;
 		return dir;
 	}
 	
@@ -192,7 +193,8 @@ public class SaveDialog {
 			//Recorder.record("saveAs", cmd, dir+name);
 			//Recorder.setCommand(null);
 		}
+		OpenDialog.lastName = name;
 		return name;
 	}
-	
+		
 }

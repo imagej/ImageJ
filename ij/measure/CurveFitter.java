@@ -21,17 +21,18 @@ import ij.gui.*;
  */
 public class CurveFitter {    
     public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
-    EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10;
+    EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10, EXP_WITH_OFFSET=11;
     
     public static final int IterFactor = 500;
     
     public static final String[] fitList = {"Straight Line","2nd Degree Polynomial",
     "3rd Degree Polynomial", "4th Degree Polynomial","Exponential","Power",
-    "log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)","Rodbard (NIH Image)"};
+    "log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)","Rodbard (NIH Image)", "Exponential with Offset"};
     
     public static final String[] fList = {"y = a+bx","y = a+bx+cx^2",
     "y = a+bx+cx^2+dx^3", "y = a+bx+cx^2+dx^3+ex^4","y = a*exp(bx)","y = ax^b",
-    "y = a*ln(bx)", "y = d+(a-d)/(1+(x/c)^b)", "y = a*(x-b)^c*exp(-(x-b)/d)", "y = a+b*ln(x-c)", "y = d+(a-d)/(1+(x/c)^b)",};
+    "y = a*ln(bx)", "y = d+(a-d)/(1+(x/c)^b)", "y = a*(x-b)^c*exp(-(x-b)/d)", "y = a+b*ln(x-c)", "y = d+(a-d)/(1+(x/c)^b)",
+    "y = a*exp(-bx) + c"};
            
     private static final double alpha = -1.0;	  // reflection coefficient
     private static final double beta = 0.5;	  // contraction coefficient
@@ -72,7 +73,7 @@ public class CurveFitter {
     }
     
     public void doFit(int fitType, boolean showSettings) {
-        if (fitType < STRAIGHT_LINE || fitType > RODBARD2)
+        if (fitType < STRAIGHT_LINE || fitType > EXP_WITH_OFFSET)
             throw new IllegalArgumentException("Invalid fit type");
         int saveFitType = fitType;
         if (fitType==RODBARD2) {
@@ -210,6 +211,11 @@ public class CurveFitter {
                 simp[0][0] = 0.1;
                 simp[0][1] = 0.01;
                 break;
+            case EXP_WITH_OFFSET:
+                simp[0][0] = 0.1;
+                simp[0][1] = 0.01;
+                simp[0][2] = 0.1;
+                break;            
             case POWER:
                 simp[0][0] = 0.0;
                 simp[0][1] = 1.0;
@@ -329,6 +335,7 @@ public class CurveFitter {
             case RODBARD: case RODBARD2: return 4;
             case GAMMA_VARIATE: return 4;
             case LOG2: return 3;
+            case EXP_WITH_OFFSET: return 3;
         }
         return 0;
     }
@@ -347,6 +354,8 @@ public class CurveFitter {
                 return p[0] + p[1]*x + p[2]*x*x + p[3]*x*x*x + p[4]*x*x*x*x;
             case EXPONENTIAL:
                 return p[0]*Math.exp(p[1]*x);
+            case EXP_WITH_OFFSET:
+                return p[0]*Math.exp(p[1]*x*-1)+p[2];
             case POWER:
                 if (x == 0.0)
                     return 0.0;
