@@ -65,7 +65,7 @@ public class OvalRoi extends Roi {
 
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		g.setColor(ROIColor);
+		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		mag = ic.getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
@@ -115,16 +115,20 @@ public class OvalRoi extends Roi {
 		return new Polygon(wand.xpoints, wand.ypoints, wand.npoints);
 	}		
 
+	/** Tests if the specified point is inside the boundary of this OvalRoi.
+	@author Michael Schmid
+	*/
 	public boolean contains(int x, int y) {
-	// equation for an ellipse is x^2/a^2 + y^2/b^2 = 1
+		// equation for an ellipse is x^2/a^2 + y^2/b^2 = 1
 		if (!super.contains(x, y))
 			return false;
 		else {
-			x = Math.abs(x - (this.x + width/2));
-			y = Math.abs(y - (this.y + height/2));
-			double a = width/2;
-			double b = height/2;
-			return (x*x/(a*a) + y*y/(b*b)) <= 1;
+			int twoDx = 2*x - (2*this.x+width-1);
+			int twoDy = 2*y - (2*this.y+height-1);
+			int twoRx = width;
+			int twoRy = height;
+			return (twoDx*twoDx/(double)(twoRx*twoRx)
+				+ twoDy*twoDy/(double)(twoRy*twoRy)) < 1;
 		}
 	}
 		

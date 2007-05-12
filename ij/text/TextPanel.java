@@ -456,6 +456,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	Returns the number of characters copied.
 	*/
 	public int copySelection() {
+		if (Recorder.record && title.equals("Results"))
+			Recorder.record("String.copyResults");
 		if (selStart==-1 || selEnd==-1)
 			return copyAll();
 		StringBuffer sb = new StringBuffer();

@@ -53,5 +53,8 @@ public interface PlugInFilter {
 		converted  to a FloatProcessor. With  RGB images, the run() method is  
 		called three times, once for each channel. */
 	public int CONVERT_TO_FLOAT = 8192;
+	/** Set this flag if the filter requires a snapshot (copy of the pixels array). */
+	public int SNAPSHOT = 16384;
+
 	
 }

@@ -278,7 +278,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		Rectangle r = ic.getBounds();
 		int extraWidth = MIN_WIDTH - r.width;
 		int extraHeight = MIN_HEIGHT - r.height;
-		if (extraWidth<=0 && extraHeight<=0 && !IJ.isLinux())
+		if (extraWidth<=0 && extraHeight<=0 && !Prefs.noBorder && !IJ.isLinux())
 			g.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
     }
     

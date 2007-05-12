@@ -15,6 +15,7 @@ public class TextRoi extends Roi {
 	private static int style = Font.PLAIN;
 	private static int size = 18;
 	private static Font font;
+	private static boolean antialiasedText = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
@@ -86,7 +87,7 @@ public class TextRoi extends Roi {
 	public void drawPixels(ImageProcessor ip) {
 		Font font = new Font(name, style, size);
 		ip.setFont(font);
-		ip.setAntialiasedText(true);
+		ip.setAntialiasedText(antialiasedText);
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
@@ -102,14 +103,14 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		super.draw(g); // draw the rectangle
-		g.setColor(ROIColor);
+		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		double mag = ic.getMagnification();
 		int sx = ic.screenX(x);
 		int sy = ic.screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
 		if (IJ.isJava2())
-			Java2.setAntialiasedText(g, true);
+			Java2.setAntialiasedText(g, antialiasedText);
 		if (font==null)
 			adjustSize();
 		Font font = getCurrentFont();
@@ -150,12 +151,22 @@ public class TextRoi extends Roi {
 	public static int getStyle() {
 		return style;
 	}
+	
+	public static boolean isAntialiased() {
+		return antialiasedText;
+	}
 
 	/** Sets the font face, size and style. */
 	public static void setFont(String fontName, int fontSize, int fontStyle) {
+		setFont(fontName, fontSize, fontStyle, true);
+	}
+	
+	/** Sets the font face, size, style and antialiasing mode. */
+	public static void setFont(String fontName, int fontSize, int fontStyle, boolean antialiased) {
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
+		antialiasedText = antialiased;
 		font = null;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
@@ -164,7 +175,7 @@ public class TextRoi extends Roi {
 				imp.draw();
 		}
 	}
-	
+
 	//v1.24g
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);

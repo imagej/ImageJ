@@ -16,13 +16,12 @@ public class Benchmark implements PlugInFilter{
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		return DOES_ALL+NO_CHANGES;
+		return DOES_ALL+NO_CHANGES+SNAPSHOT;
 	}
 
 	public void run(ImageProcessor ip) {
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		ip.setInterpolate(false);
-		ip.snapshot();
 		for (int i=0; i <4; i++) {
 			ip.invert();
 			updateScreen(imp);

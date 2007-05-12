@@ -952,6 +952,10 @@ public class ShortProcessor extends ImageProcessor {
 		setMinAndMax(fp.getMin(), fp.getMax());
 	}
 		
+	/** Returns the maximum possible pixel value. */
+	public double maxValue() {
+		return 65535.0;
+	}
 
 	/** Not implemented. */
 	public void medianFilter() {}

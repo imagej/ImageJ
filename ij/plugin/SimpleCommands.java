@@ -13,6 +13,8 @@ public class SimpleCommands implements PlugIn {
 	public void run(String arg) {
 		if (arg.equals("search"))
 			search();
+		if (arg.equals("import"))
+			IJ.runMacroFile("ij.jar:ImportResultsTable");
 		else if (arg.equals("rename"))
 			rename();
 		else if (arg.equals("reset"))

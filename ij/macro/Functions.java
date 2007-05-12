@@ -16,6 +16,7 @@ import java.io.*;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.*;
 import java.net.URL;
+import java.awt.datatransfer.*;
 
 /** This class implements the built-in macro functions. */
 public class Functions implements MacroConstants, Measurements {
@@ -37,6 +38,7 @@ public class Functions implements MacroConstants, Measurements {
     PrintWriter writer;
     boolean altKeyDown, shiftKeyDown;
     boolean antialiasedText;
+    StringBuffer buffer;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -89,7 +91,7 @@ public class Functions implements MacroConstants, Measurements {
 			case UPDATE_DISPLAY: interp.getParens(); updateDisplay(); break;
 			case DRAW_STRING: drawString(); break;
 			case SET_PASTE_MODE: IJ.setPasteMode(getStringArg()); break;
-			case DO_COMMAND: IJ.doCommand(getStringArg()); break;
+			case DO_COMMAND: doCommand(); break;
 			case SHOW_STATUS: IJ.showStatus(getStringArg()); interp.statusUpdated=true; break;
 			case SHOW_PROGRESS: showProgress(); break;
 			case SHOW_MESSAGE: showMessage(false); break;
@@ -224,6 +226,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_VERSION: interp.getParens();  str = IJ.getVersion(); break;
 			case GET_RESULT_LABEL: str = getResultLabel(); break;
 			case CALL: str = call(); break;
+			case STRING: str = doString(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3162,6 +3165,88 @@ public class Functions implements MacroConstants, Measurements {
 			return null;
 		}
 	}
+	
+	String doString() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (interp.token!=WORD)
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("append"))
+			return appendToBuffer();
+		else if (name.equals("copy"))
+			return copyStringToClipboard();
+		else if (name.equals("copyResults"))
+			return copyResults();
+		else if (name.equals("paste"))
+			return getClipboardContents();
+		else if (name.equals("resetBuffer"))
+			return resetBuffer();
+		else if (name.equals("buffer"))
+			return getBuffer();
+		else
+			interp.error("Unrecognized String function");
+		return null;
+	}
+	
+	String appendToBuffer() {
+		String text = getStringArg();
+		if (buffer==null)
+			buffer = new StringBuffer(256);
+		buffer.append(text);
+		return null;
+	}
+
+	String copyStringToClipboard() {
+		String text = getStringArg();
+		StringSelection ss = new StringSelection(text);
+		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(ss, null);
+		return null;
+	}
+		  
+	String getClipboardContents() {
+		interp.getParens();
+		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		Transferable data = clipboard.getContents(null);
+		String s = null;
+		try {s = (String)data.getTransferData(DataFlavor.stringFlavor);} 
+		catch (Exception e) {s = data.toString();}
+		return s;
+	}
     	
+	String copyResults() {
+		interp.getParens();
+		if (!IJ.isResultsWindow())
+			interp.error("No results");
+		TextPanel tp = IJ.getTextPanel();
+		StringSelection ss = new StringSelection(tp.getText());
+		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(ss, null);
+		return null;
+	}
+
+	String resetBuffer() {
+		interp.getParens();
+		buffer = new StringBuffer(256);
+		return null;
+	}
+
+	String getBuffer() {
+		interp.getParens();
+		if (buffer==null)
+			buffer = new StringBuffer(256);
+		return buffer.toString();
+	}
+	
+	void doCommand() {
+		String arg = getStringArg();
+		if (arg.equals("Start Animation"))
+			arg = "Start Animation [\\]";
+		IJ.doCommand(arg);
+	}
+
 } // class Functions
 

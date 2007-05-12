@@ -67,7 +67,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.38q";
+	public static final String VERSION = "1.38r";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -77,6 +77,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static int port = DEFAULT_PORT;
+	private static String[] arguments;
 	
 	private Toolbar toolbar;
 	private Panel statusBar;
@@ -464,6 +465,7 @@ public class ImageJ extends Frame implements ActionListener,
 			System.exit(0);
 		}
 		boolean noGUI = false;
+		arguments = args;
 		int nArgs = args!=null?args.length:0;
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
@@ -575,6 +577,11 @@ public class ImageJ extends Frame implements ActionListener,
 	*/
 	public static int getPort() {
 		return port;
+	}
+	
+	/** Returns the command line arguments passed to ImageJ. */
+	public static String[] getArgs() {
+		return arguments;
 	}
 
 	/** ImageJ calls System.exit() when qutting when 'exitWhenQuitting' is true.*/

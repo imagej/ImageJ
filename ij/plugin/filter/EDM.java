@@ -117,6 +117,7 @@ import ij.gui.*;
         ShortProcessor ip16 = (ShortProcessor)ip.convertToShort(false);
         ip16.multiply(128); //foreground pixels set (almost) as high as possible for signed short
         short[] image16 = (short[])ip16.getPixels();
+        int inc = Math.max(height/50,1);
         
         for (int y=0; y<height; y++) {
             for (int x=0; x<width; x++) {
@@ -128,6 +129,7 @@ import ij.gui.*;
                         setValue(offset, rowsize, image16);
                 }
             } // for x
+            if ((inc&0)==0) IJ.showProgress(y/2, height);
         } // for y
         
         for (int y=height-1; y>=0; y--) {
@@ -140,7 +142,9 @@ import ij.gui.*;
                         setValue(offset, rowsize, image16);
                 }
             } // for x
+            if ((inc&0)==0) IJ.showProgress(height/2+(height-y)/2, height);
         } // for y
+        IJ.showProgress(1,1);
         //(new ImagePlus("EDM16", ip16.duplicate())).show();
         
         return ip16;

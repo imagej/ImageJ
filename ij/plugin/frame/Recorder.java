@@ -124,7 +124,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void record(String method, double a1, double a2) {
 		if (textArea==null) return;
-		textArea.append(method+"("+a1+", "+a2+");\n");
+		int places = Math.abs(a1)<0.0001||Math.abs(a2)<0.0001?9:4;
+		textArea.append(method+"("+IJ.d2s(a1,places)+", "+IJ.d2s(a2,places)+");\n");
 	}
 
 	public static void record(String method, int a1, int a2, int a3) {
@@ -259,6 +260,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			} else {
 				if (name.equals("Threshold..."))
 					textArea.append("//run(\""+name+"\");\n");
+				else if (name.equals("Start Animation [\\]"))
+					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
 				else {
 					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
 						textArea.append("setKeyDown(\"alt\"); ");
@@ -281,6 +284,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			|| commandName.equals("BMP...")
 			|| commandName.equals("PNG...")
 			|| commandName.equals("PGM...")
+			|| commandName.equals("FITS...")
 			|| commandName.equals("LUT...")
 			|| commandName.equals("Selection...")
 			|| commandName.equals("XY Coordinates...")

@@ -147,7 +147,7 @@ public class Line extends Roi {
 
 	/** Draws this line in the image. */
 	public void draw(Graphics g) {
-		g.setColor(ROIColor);
+		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 		int sx1 = ic.screenXD(x1d);
@@ -168,7 +168,7 @@ public class Line extends Roi {
 		}
 		if (state!=CONSTRUCTING) {
 			int size2 = HANDLE_SIZE/2;
-			handleColor=ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
+			handleColor=instanceColor!=null?instanceColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 	   }
@@ -180,10 +180,13 @@ public class Line extends Roi {
 
 	/** Returns the length of this line. */
 	public double getLength() {
-		if (imp==null) return getRawLength();
-		Calibration cal = imp.getCalibration();
-		return Math.sqrt((x2d-x1d)*cal.pixelWidth*(x2d-x1d)*cal.pixelWidth
-			+ (y2d-y1d)*cal.pixelHeight*(y2d-y1d)*cal.pixelHeight);
+		if (imp==null || IJ.altKeyDown())
+			return getRawLength();
+		else {
+			Calibration cal = imp.getCalibration();
+			return Math.sqrt((x2d-x1d)*cal.pixelWidth*(x2d-x1d)*cal.pixelWidth
+				+ (y2d-y1d)*cal.pixelHeight*(y2d-y1d)*cal.pixelHeight);
+		}
 	}
 
 	/** Returns the length of this line in pixels. */

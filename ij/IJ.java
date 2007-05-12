@@ -179,10 +179,11 @@ public class IJ {
 				break;
 		}
 		boolean changes = (capabilities&PlugInFilter.NO_CHANGES)==0;
+		boolean snapshotRequired = (capabilities&PlugInFilter.SNAPSHOT)!=0;
 		if (roi!=null) roi.endPaste();
 		int slices = imp.getStackSize();
 		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
-		boolean convertToFloat = (capabilities&PlugInFilter.CONVERT_TO_FLOAT)!=0;
+		boolean convertToFloat = (capabilities&PlugInFilter.CONVERT_TO_FLOAT)!=0 && type!=ImagePlus.GRAY32;
 		if (!imp.lock())
 			return; // exit if image is in use
 		imp.startTiming();
@@ -193,11 +194,14 @@ public class IJ {
 			stack = imp.getStack();
 		float[] cTable = imp.getCalibration().getCTable();
 		ImageProcessor mask = imp.getMask();
+		boolean supportsMasking = (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
 		if (slices==1 || !doesStacks) {
 			ip = imp.getProcessor();
-			if ((capabilities&PlugInFilter.NO_UNDO)!=0 || !changes || Prefs.disableUndo)
+			boolean disableUndo = Prefs.disableUndo && !(roi!=null&&roi.getType()!=Roi.RECTANGLE&&supportsMasking);
+			if ((capabilities&PlugInFilter.NO_UNDO)!=0 || !changes || disableUndo) {
 				Undo.reset();
-			else {
+				if (snapshotRequired && !convertToFloat) ip.snapshot();
+			} else {
 				Undo.setup(Undo.FILTER, imp);
 				ip.snapshot();
 			}
@@ -206,12 +210,13 @@ public class IJ {
 				FloatProcessor fp = null;
 				for (int i=0; i<ip.getNChannels(); i++) {
 					fp = ip.toFloat(i, fp);
+					if (snapshotRequired) fp.snapshot();
 					((PlugInFilter)theFilter).run(fp);
 					ip.setPixels(i, fp);
 				}
 			} else
 				((PlugInFilter)theFilter).run(ip);
-			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
+			if (supportsMasking)
 				ip.reset(ip.getMask());  //restore image outside irregular roi
 			if (changes) ip.resetBinaryThreshold();
 			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
@@ -227,8 +232,7 @@ public class IJ {
 			double maxThreshold = ip.getMaxThreshold();
 			ip = stack.getProcessor(1);
 			ip.setLineWidth(Line.getWidth());
-			boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
-				&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
+			boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE  && supportsMasking;
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 			ip.setMask(mask);
@@ -239,11 +243,12 @@ public class IJ {
 			if (convertToFloat && imp.getBitDepth()==24) p2*=3;
 			for (int i=1; i<=n; i++) {
 				ip.setPixels(stack.getPixels(i));
-				if (doMasking) ip.snapshot();
+				if (doMasking||(snapshotRequired&&!convertToFloat)) ip.snapshot();
 				if (convertToFloat) {
 					FloatProcessor fp = null;
 					for (int j=0; j<ip.getNChannels(); j++) {
 						fp = ip.toFloat(j, fp);
+						if (snapshotRequired) fp.snapshot();
 						((PlugInFilter)theFilter).run(fp);
 						ip.setPixels(j, fp);
 						IJ.showProgress(p1++, p2);

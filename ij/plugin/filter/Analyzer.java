@@ -750,6 +750,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 			y = imageHeight-y-1;
 		return y;
 	}
+	
+	/** Sets the default headings ("Area", "Mean", etc.). */
+	public static void setDefaultHeadings() {
+		systemRT.setDefaultHeadings();
+	}
+
 
 }
 	

@@ -21,7 +21,7 @@ public class Info implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		String info = getImageInfo(imp, ip);
 		if (info.indexOf("----")>0)
-			showInfo(info, 400, 500);
+			showInfo(info, 450, 500);
 		else
 			showInfo(info, 300, 300);
 	}

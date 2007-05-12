@@ -15,6 +15,7 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 	private Choice font;
 	private Choice size;
 	private Choice style;
+	private Checkbox checkbox;
 	private static Frame instance;
 
 	public Fonts() {
@@ -71,6 +72,10 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		style.select(s);
 		style.addItemListener(this);
 		add(style);
+		
+		checkbox = new Checkbox("Smooth", TextRoi.isAntialiased());
+		add(checkbox);
+		checkbox.addItemListener(this);
 
 		pack();
 		GUI.center(this);
@@ -99,7 +104,7 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 			fontStyle = Font.ITALIC;
 		else if (styleName.equals("Bold+Italic"))
 			fontStyle = Font.BOLD+Font.ITALIC;
-		TextRoi.setFont(fontName, fontSize, fontStyle);
+		TextRoi.setFont(fontName, fontSize, fontStyle, checkbox.getState());
 		IJ.showStatus(fontSize+" point "+fontName + " " + styleName);
 	}
 	

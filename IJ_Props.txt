@@ -33,11 +33,12 @@ import02="Raw...",ij.plugin.Raw
 import03="LUT... ",ij.plugin.LutLoader
 import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader
-import06="URL...",ij.plugin.URLOpener
-#import07="TWAIN...",ij.plugin.twain.Twain
-#import07="Capture Video...",QT_Capture
-#import08="QuickTime Movie...",Movie_Opener
-#import09="Pict...",QuickTime_Opener
+import06="Results...",ij.plugin.SimpleCommands("import")
+import07="URL...",ij.plugin.URLOpener
+#import08="TWAIN...",ij.plugin.twain.Twain
+#import09="Capture Video...",QT_Capture
+#import10="QuickTime Movie...",Movie_Opener
+#import11="Pict...",QuickTime_Opener
 
 # Plugins installed in the File/Save As submenu
 save01="Tiff...",ij.plugin.filter.Writer("tiff")

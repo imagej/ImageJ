@@ -52,6 +52,7 @@ public class ScaleDialog implements PlugInFilter {
 		gd.addStringField("Unit of Length:", unit);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
 		gd.addCheckbox("Global", global1);
+		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.EAST, new Insets(5, 0, 0, 25));
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -90,11 +91,23 @@ public class ScaleDialog implements PlugInFilter {
 		else
 			imp.repaintWindow();
 	}
+	
+	/** Creates a panel containing an "Unscale" button. */
+	Panel makeButtonPanel(SetScaleDialog gd) {
+		Panel panel = new Panel();
+    	panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		gd.unscaleButton = new Button("Unscale");
+		gd.unscaleButton.addActionListener(gd);
+		panel.add(gd.unscaleButton);
+		return panel;
+	}
+
 }
 
 class SetScaleDialog extends GenericDialog {
 	static final String NO_SCALE = "<no scale>";
 	String initialScale;
+	Button unscaleButton;
 
 	public SetScaleDialog(String title, String scale) {
 		super(title);
@@ -129,6 +142,15 @@ class SetScaleDialog extends GenericDialog {
  		setScale(theScale);
 	}
 	
+	public void actionPerformed(ActionEvent e) {
+		super.actionPerformed(e);
+		if (e.getSource()==unscaleButton) {
+			((TextField)numberField.elementAt(0)).setText("0.00");
+			((TextField)stringField.elementAt(0)).setText("pixel");
+			setScale(NO_SCALE);
+		}
+	}
+
 	void setScale(String theScale) {
  		((Label)theLabel).setText("Scale: "+theScale);
 	}

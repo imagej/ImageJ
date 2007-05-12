@@ -731,7 +731,7 @@ public class Menus {
 			pluginsPath = homeDir+Prefs.separator;
 		else {
 			String property = System.getProperty("plugins.dir");
-			if (property!=null && property.endsWith(Prefs.separator))
+			if (property!=null && (property.endsWith("/")||property.endsWith("\\")))
 				property = property.substring(0, property.length()-1);
 			String pluginsDir = property;
 			if (pluginsDir==null)

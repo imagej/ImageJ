@@ -204,6 +204,8 @@ class ColorCanvas extends ImageCanvas {
         //super.mousePressed(e);
         ImageProcessor ip = imp.getProcessor();
         ip.setLineWidth(1);
+        if (Toolbar.getToolId()==Toolbar.DROPPER)
+			IJ.setTool(Toolbar.RECTANGLE );
         
         Rectangle flipperRect = new Rectangle(86, 268, 18, 18);
         Rectangle resetRect = new Rectangle(86, 294, 18, 18);

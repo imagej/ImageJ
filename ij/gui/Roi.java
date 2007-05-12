@@ -44,6 +44,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected String name;
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
+	protected Color instanceColor;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -402,7 +403,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		g.setColor(ROIColor);
+		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		mag = ic.getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
@@ -689,7 +690,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public double getAngle(int x1, int y1, int x2, int y2) {
 		double dx = x2-x1;
 		double dy = y1-y2;
-		if (imp!=null) {
+		if (imp!=null && !IJ.altKeyDown()) {
 			Calibration cal = imp.getCalibration();
 			dx *= cal.pixelWidth;
 			dy *= cal.pixelHeight;
@@ -702,11 +703,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ROIColor;
 	}
 
-	/** Sets the color used for ROI outline to the specified value. */
+	/** Sets the color used for ROI outlines to the specified value. */
 	public static void setColor(Color c) {
 		ROIColor = c;
 	}
 	
+	/** Sets the color used by this ROI to draw its outline. This color, if not null, 
+		overrides the global color set by the static setColor() method. */
+	public void setInstanceColor(Color c) {
+		instanceColor = c;
+	}
+
 	/** Returns the name of this ROI, or null. */
 	public String getName() {
 		return name;

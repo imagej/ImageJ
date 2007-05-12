@@ -231,11 +231,11 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	public final int get(int x, int y) {
-		return (int)pixels[y*width+x];
+		return Float.floatToIntBits(pixels[y*width+x]);
 	}
 
 	public final void set(int x, int y, int value) {
-		pixels[y*width + x] = value;
+		pixels[y*width + x] = Float.intBitsToFloat(value);
 	}
 
 	public final float getf(int x, int y) {
@@ -830,7 +830,17 @@ public class FloatProcessor extends ImageProcessor {
 		setPixels(fp.getPixels());
 		setMinAndMax(fp.getMin(), fp.getMax());
 	}
-
 	
+	/** Returns the smallest possible positive nonzero pixel value. */
+	public double minValue() {
+		return Float.MIN_VALUE;
+	}
+
+	/** Returns the largest possible positive finite pixel value. */
+	public double maxValue() {
+		return Float.MAX_VALUE;
+	}
+	
+
 }
 

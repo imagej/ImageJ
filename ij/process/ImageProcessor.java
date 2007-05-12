@@ -1086,7 +1086,10 @@ public abstract class ImageProcessor extends Object {
 		return ("ip[width="+width+", height="+height+", min="+getMin()+", max="+getMax()+"]");
 	}
 
-	/** Fills the image or ROI with the current fill/draw value. */
+	/**	Fills the image or ROI bounding rectangle with the current fill/draw value. Use
+	*	fill(mask) to fill non-rectangular selections.
+	*	@see ImageProcessor fill(ImageProcessor)
+	*/
 	public void fill() {
 		process(FILL, 0.0);
 	}
@@ -1611,5 +1614,15 @@ public abstract class ImageProcessor extends Object {
 	*  @param fp              The FloatProcessor where the image data are read from.
 	*/
 	public abstract void setPixels(int channelNumber, FloatProcessor fp);
+	
+	/** Returns the minimum possible pixel value. */
+	public double minValue() {
+		return 0.0;
+	}
 
+	/** Returns the maximum possible pixel value. */
+	public double maxValue() {
+		return 255.0;
+	}
+	
 }

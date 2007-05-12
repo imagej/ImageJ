@@ -327,8 +327,8 @@ public class FileSaver {
 	}
 
 	public static boolean okForFits(ImagePlus imp) {
-		if (imp.getBitDepth()==8 || imp.getBitDepth()==24) {
-			IJ.error("FITS Writer", "16 or 32 bit image required");
+		if (imp.getBitDepth()==24) {
+			IJ.error("FITS Writer", "Grayscale image required");
 			return false;
 		} else
 			return true;

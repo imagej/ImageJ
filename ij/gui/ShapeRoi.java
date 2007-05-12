@@ -150,7 +150,7 @@ public class ShapeRoi extends Roi {
 				
 		AffineTransform at = new AffineTransform();
 		at.translate(-x, -y);
-		shape = at.createTransformedShape(shape);
+		shape = new GeneralPath(at.createTransformedShape(shape));
 		flatness = ShapeRoi.FLATNESS;
 		maxerror = ShapeRoi.MAXERROR;
 		maxPoly = ShapeRoi.MAXPOLY;
@@ -1044,7 +1044,7 @@ public class ShapeRoi extends Roi {
 	public void draw(Graphics g) {
 		if(ic==null) return;
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
-		g.setColor(ROIColor);
+		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
 		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
@@ -1061,7 +1061,7 @@ public class ShapeRoi extends Roi {
 	/*
    public void draw(Graphics g) {
 		   if(ic==null) return;
-		   g.setColor(ROIColor);
+		   g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		   mag = ic.getMagnification();
 		   Rectangle r = ic.getSrcRect();
 		   final Graphics2D g2d = (Graphics2D)g;

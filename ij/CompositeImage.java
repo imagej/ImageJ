@@ -35,6 +35,10 @@ public class CompositeImage extends ImagePlus {
 		setDimensions(channels, stackSize/channels, 1);
 		setup(channels, stack2);
 		setStack(imp.getTitle(), stack2);
+		setCalibration(imp.getCalibration());
+		Object info = imp.getProperty("Info");
+		if (info!=null)
+			setProperty("Info", imp.getProperty("Info"));
 	}
 
 	public Image getImage() {

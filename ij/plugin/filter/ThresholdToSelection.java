@@ -26,10 +26,8 @@ public class ThresholdToSelection implements PlugInFilter {
 		this.ip = ip;
 		min = (float)ip.getMinThreshold();
 		max = (float)ip.getMaxThreshold();
-
 		w = ip.getWidth();
 		h = ip.getHeight();
-
 		image.setRoi(getRoi());
 	}
 
@@ -106,13 +104,41 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		public Polygon getPolygon() {
-			// TODO: optimize out long straight lines
+			// optimize out long straight lines
+			int i, j=first+1;
+			for (i=first+1; i+1<last; j++) {
+				int x1 = x[j] - x[j - 1];
+				int y1 = y[j] - y[j - 1];
+				int x2 = x[j + 1] - x[j];
+				int y2 = y[j + 1] - y[j];
+				if (x1 * y2 == x2 * y1) {
+					// merge i + 1 into i
+					last--;
+					continue;
+				}
+				if (i != j) {
+					x[i] = x[j];
+					y[i] = y[j];
+				}
+				i++;
+			}
+			// wraparound
+			int x1 = x[j] - x[j-1];
+			int y1 = y[j] - y[j-1];
+			int x2 = x[first] - x[j];
+			int y2 = y[first] - y[j];
+			if (x1*y2==x2*y1)
+				last--;
+			else {
+				x[i] = x[j];
+				y[i] = y[j];
+			}
 			int count = last - first;
-			int[] x1 = new int[count];
-			int[] y1 = new int[count];
-			System.arraycopy(x, first, x1, 0, count);
-			System.arraycopy(y, first, y1, 0, count);
-			return new Polygon(x1, y1, count);
+			int[] xNew = new int[count];
+			int[] yNew = new int[count];
+			System.arraycopy(x, first, xNew, 0, count);
+			System.arraycopy(y, first, yNew, 0, count);
+			return new Polygon(xNew, yNew, count);
 		}
 
 		public String toString() {
@@ -135,10 +161,12 @@ public class ThresholdToSelection implements PlugInFilter {
 	 * lower right corner of the previous row.
 	 */
 	Roi getRoi() {
+		IJ.showStatus("Converting threshold to selection");
 		boolean[] prevRow, thisRow;
 		ArrayList polygons = new ArrayList();
 		Outline[] outline;
-
+		int progressInc = Math.max(h/50, 1);
+		
 		prevRow = new boolean[w + 2];
 		thisRow = new boolean[w + 2];
 		outline = new Outline[w + 1];
@@ -242,17 +270,17 @@ public class ThresholdToSelection implements PlugInFilter {
 					}
 				}
 			}
-			IJ.showProgress(y + 1, h + 1);
+			if ((y&progressInc)==0) IJ.showProgress(y + 1, h + 1);
 		}
 
-		IJ.showStatus("Turning into path");
-
+		//IJ.showStatus("Creating GeneralPath");
 		GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 		for (int i = 0; i < polygons.size(); i++)
 			path.append((Polygon)polygons.get(i), false);
 
 		ShapeRoi shape = new ShapeRoi(path);
 		Roi roi = shape!=null?shape.shapeToRoi():null; // try to convert to non-composite ROI
+		IJ.showProgress(1,1);
 		if (roi!=null)
 			return roi;
 		else

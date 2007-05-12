@@ -109,7 +109,7 @@ public class PolygonRoi extends Roi {
 	
 	public void draw(Graphics g) {
         updatePolygon();
-        g.setColor(ROIColor);
+        g.setColor(instanceColor!=null?instanceColor:ROIColor);
         if (xSpline!=null) {
             if (type==POLYLINE || type==FREELINE)
                 g.drawPolyline(xScreenSpline, yScreenSpline, splinePoints);
@@ -132,7 +132,7 @@ public class PolygonRoi extends Roi {
                 drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);
             if (activeHandle<nPoints-1)
                 drawHandle(g, xp2[activeHandle+1]-size2, yp2[activeHandle+1]-size2);
-            handleColor=ROIColor; drawHandle(g, xp2[0]-size2, yp2[0]-size2); handleColor=Color.white;
+            handleColor=instanceColor!=null?instanceColor:ROIColor; drawHandle(g, xp2[0]-size2, yp2[0]-size2); handleColor=Color.white;
             for (int i=1; i<nPoints; i++)
                 drawHandle(g, xp2[i]-size2, yp2[i]-size2);
         }
@@ -207,8 +207,9 @@ public class PolygonRoi extends Roi {
 			degrees = getAngle(x1, y1, x2, y2);
 			if (tool!=Toolbar.ANGLE) {
 				Calibration cal = imp.getCalibration();
-				len = Math.sqrt((x2-x1)*cal.pixelWidth*(x2-x1)*cal.pixelWidth
-				+ (y2-y1)*cal.pixelHeight*(y2-y1)*cal.pixelHeight);
+				double pw=cal.pixelWidth, ph=cal.pixelHeight;
+				if (IJ.altKeyDown()) {pw=1.0; ph=1.0;}
+				len = Math.sqrt((x2-x1)*pw*(x2-x1)*pw + (y2-y1)*ph*(y2-y1)*ph);
 			}
 		}
 		if (tool==Toolbar.ANGLE) {

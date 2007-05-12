@@ -16,6 +16,7 @@ public class ImageReader {
     private int bytesPerPixel, bufferSize, byteCount, nPixels;
 	private boolean showProgressBar=true;
 	private int eofErrorCount;
+	private long startTime;
 
 	/**
 	Constructs a new ImageReader using a FileInfo object to describe the file to be read.
@@ -31,10 +32,11 @@ public class ImageReader {
 	void eofError() {
 		eofErrorCount++;
 	}
-
+	
 	byte[] read8bitImage(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressed8bitImage(in);
+		startTime = System.currentTimeMillis();
 		byte[] pixels = new byte[nPixels];
 		// assume contiguous strips
 		int count, actuallyRead;
@@ -47,12 +49,13 @@ public class ImageReader {
   			actuallyRead = in.read(pixels, totalRead, count);
   			if (actuallyRead==-1) {eofError(); break;}
   			totalRead += actuallyRead;
-  			showProgress((double)totalRead/byteCount);
+  			showProgress(totalRead, byteCount);
   		}
 		return pixels;
 	}
 	
 	byte[] readCompressed8bitImage(InputStream in) throws IOException {
+		startTime = System.currentTimeMillis();
 		byte[] pixels = new byte[nPixels];
 		int current = 0;
 		byte last = 0;
@@ -79,7 +82,7 @@ public class ImageReader {
 			if (current+length>pixels.length) length = pixels.length-current;
 			System.arraycopy(byteArray, 0, pixels, current, length);
 			current += byteArray.length;
-			IJ.showProgress(i+1, fi.stripOffsets.length);
+			showProgress(i+1, fi.stripOffsets.length);
 		}
 		return pixels;
 	}
@@ -93,6 +96,7 @@ public class ImageReader {
 	short[] read16bitImage(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressed16bitImage(in);
+		startTime = System.currentTimeMillis();
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		short[] pixels = new short[nPixels];
@@ -117,7 +121,7 @@ public class ImageReader {
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
-			showProgress((double)totalRead/byteCount);
+			showProgress(totalRead, byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
 			if (fi.intelByteOrder) {
 				if (fi.fileType==FileInfo.GRAY16_SIGNED)
@@ -143,6 +147,7 @@ public class ImageReader {
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
+		startTime = System.currentTimeMillis();
 		for (int k=0; k<fi.stripOffsets.length; k++) {
 			if (k > 0) {
 				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
@@ -186,7 +191,7 @@ public class ImageReader {
 					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
 				}
 			base += pixelsRead;
-			IJ.showProgress(k+1, fi.stripOffsets.length);
+			showProgress(k+1, fi.stripOffsets.length);
 		}
 		return pixels;
 	}
@@ -283,6 +288,7 @@ public class ImageReader {
 	int[] readChunkyRGB(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressedChunkyRGB(in);
+		startTime = System.currentTimeMillis();
 		int pixelsRead;
 		bufferSize = 24*width;
 		byte[] buffer = new byte[bufferSize];
@@ -303,7 +309,7 @@ public class ImageReader {
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
-			showProgress((double)totalRead/byteCount);
+			showProgress(totalRead, byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
 			boolean bgr = fi.fileType==FileInfo.BGR;
 			int j = 0;
@@ -348,6 +354,7 @@ public class ImageReader {
 		int red=0, green=0, blue=0;
 		boolean bgr = fi.fileType==FileInfo.BGR;
 		boolean differencing = fi.compression == FileInfo.LZW_WITH_DIFFERENCING;
+		startTime = System.currentTimeMillis();
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (i > 0) {
 				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
@@ -383,7 +390,7 @@ public class ImageReader {
 					pixels[j] = 0xff000000 | (red<<16) | (green<<8) | blue;
 			}
 			base += pixelsRead;
-			IJ.showProgress(i+1, fi.stripOffsets.length);
+			showProgress(i+1, fi.stripOffsets.length);
 		}
 		return pixels;
 	}
@@ -395,6 +402,7 @@ public class ImageReader {
 		int[] pixels = new int[nPixels];
 		int r, g, b;
 
+		startTime = 0L;
 		showProgress(10, 100);
 		dis.readFully(buffer);
 		for (int i=0; i < planeSize; i++) {
@@ -421,7 +429,7 @@ public class ImageReader {
 	}
 
 	private void showProgress(int current, int last) {
-		if (showProgressBar)
+		if (showProgressBar && (System.currentTimeMillis()-startTime)>500L)
 			IJ.showProgress(current, last);
 	}
 	

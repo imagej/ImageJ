@@ -196,7 +196,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		maxSize = staticMaxSize;
 		if (maxSize==999999) maxSize = DEFAULT_MAX_SIZE;
 		options = staticOptions;
-		String units = cal.getUnit()+"^2";
+		String unit = cal.getUnit();
+		if (unit.equals("inch")) {
+			unit = "pixel";
+			unitSquared = 1.0;
+		}
+		String units = unit+"^2";
 		int places = 0;
 		double cmin = minSize*unitSquared;
 		if ((int)cmin!=cmin) places = 2;

@@ -9,44 +9,47 @@ import java.io.*;
 	http://www.umanitoba.ca/faculties/science/astronomy/jwest/plugins.html
 */
 public class FITS_Writer implements PlugIn {
-	ImagePlus imp;
 	
 	public void run(String path) {
-		imp = IJ.getImage();
+		ImagePlus imp = IJ.getImage();
 		ImageProcessor ip = imp.getProcessor();
+		int numImages = imp.getImageStackSize();
 		int bitDepth = imp.getBitDepth();
-		if (bitDepth==8 || bitDepth==24) {
-			IJ.error("16 or 32 bit image required");
+		if (bitDepth==24) {
+			IJ.error("RGB images are not supported");
 			return;
 		}
 		File f = new File(path);
 		String directory = f.getParent()+File.separator;
 		String name = f.getName();
 		if (f.exists()) f.delete();
-		int numImages = imp.getImageStackSize();
 		int numBytes = 0;
-		if (imp.getType() == ImagePlus.GRAY16)
+		if (bitDepth==8)
+			ip = ip.convertToShort(false);
+		else if (imp.getCalibration().isSigned16Bit())
+			ip = ip.convertToFloat();
+		if (ip instanceof ShortProcessor)
 			numBytes = 2;
-		else if (imp.getType() == ImagePlus.GRAY32)
+		else if (ip instanceof FloatProcessor)
 			numBytes = 4;
 		int fillerLength = 2880 - ( (numBytes * imp.getWidth() * imp.getHeight()) % 2880 );
-		createHeader(path);
-		writeData(path, ip.getPixels());
+		createHeader(path, ip, numBytes);
+		writeData(path, ip);
 		char[] endFiller = new char[fillerLength];
 		appendFile(endFiller, path);
 	}
 	
-	void createHeader(String path) {
+	void createHeader(String path, ImageProcessor ip, int numBytes) {
 		int numCards = 5;
 		String bitperpix = "";
-		if (imp.getType() == ImagePlus.GRAY16) {bitperpix = "                  16";}
-		else if (imp.getType() == ImagePlus.GRAY32) {bitperpix = "                 -32";}
-		else if (imp.getType() == ImagePlus.GRAY8) {bitperpix = "                   8";}
+		if (numBytes==2) {bitperpix = "                  16";}
+		else if (numBytes==4) {bitperpix = "                 -32";}
+		else if (numBytes==1) {bitperpix = "                   8";}
  		appendFile(writeCard("SIMPLE", "                   T", ""), path);
  		appendFile(writeCard("BITPIX", bitperpix, ""), path);
  		appendFile(writeCard("NAXIS", "                   2", ""), path);
- 		appendFile(writeCard("NAXIS1", "                 "+imp.getWidth(), "image width"), path);
- 		appendFile(writeCard("NAXIS2", "                 "+imp.getHeight(), "image height"), path);
+ 		appendFile(writeCard("NAXIS1", "                 "+ip.getWidth(), "image width"), path);
+ 		appendFile(writeCard("NAXIS2", "                 "+ip.getHeight(), "image height"), path);
  		int fillerSize = 2880 - ((numCards*80+3) % 2880);
 		char[] end = new char[3];
 		end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
@@ -91,43 +94,36 @@ public class FITS_Writer implements PlugIn {
 	}
 			
 	/** Appends the data of the current image to the end of the file specified by path. */
-	void writeData(String path, Object data) {
-		int w = imp.getWidth();
-		int h = imp.getHeight();
-		FileInfo fi = imp.getFileInfo();
-		if (imp.getType() == ImagePlus.GRAY16) {
-			short[] pixels = (short[])data;
-			ImageProcessor ip = new ShortProcessor(w, h, pixels, null);
-			ip.flipVertical();
+	void writeData(String path, ImageProcessor ip) {
+		int w = ip.getWidth();
+		int h = ip.getHeight();
+		ip.flipVertical();
+		if (ip instanceof ShortProcessor) {
+			short[] pixels = (short[])ip.getPixels();
 			try {	
 				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path,true)));
-				for (int i = 0; i < (pixels.length); i++) {
-					//dos.writeShort((pixels[i]-32768));
+				for (int i = 0; i < (pixels.length); i++)
 					dos.writeShort(pixels[i]);
-				}
 				dos.close();
 			}
 			catch (IOException e) {
 				IJ.write("Error writing file!");
 				return;
 			}
-			ip.flipVertical();
-		} else if (imp.getType() == ImagePlus.GRAY32) {
-			float[] pixels = (float[])data;
-			ImageProcessor ip = new FloatProcessor(w, h, pixels, null);
-			ip.flipVertical();
+		} else if (ip instanceof FloatProcessor) {
+			float[] pixels = (float[])ip.getPixels();
 			try {	
 				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path,true)));
-				for (int i = 0; i < (pixels.length); i++) {				
+				for (int i = 0; i < (pixels.length); i++)		
 					dos.writeFloat(pixels[i]);
-				}
 				dos.close();
 			}
 			catch (IOException e) {
 				IJ.write("Error writing file!");
 				return;
 			}						
-			ip.flipVertical();
-		}	
+		}
+		ip.flipVertical();
 	}
+	
 }

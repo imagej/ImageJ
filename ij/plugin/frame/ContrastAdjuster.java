@@ -733,8 +733,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			if (RGBImage) doMasking(imp, ip);
 			if (propagate)
 				IJ.runMacroFile("ij.jar:PropagateMinAndMax");
-			if (Recorder.record)
-				Recorder.record("setMinAndMax", (int)min, (int)max);
+			if (Recorder.record) {
+				if (imp.getBitDepth()==32)
+					Recorder.record("setMinAndMax", min, max);
+				else
+					Recorder.record("setMinAndMax", (int)min, (int)max);
+			}
 		}
 	}
 

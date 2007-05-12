@@ -131,6 +131,7 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Interpolate Zoomed Images", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
 		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
+		gd.addCheckbox("No Image Border", Prefs.noBorder);
 		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);
 		gd.addCheckbox("Double Buffer Selections", Prefs.doubleBuffer);
 		gd.addNumericField("Menu Font Size:", Menus.getFontSize(), 0, 3, "points");
@@ -140,6 +141,7 @@ public class Options implements PlugIn {
 		boolean interpolate = gd.getNextBoolean();
 		Prefs.open100Percent = gd.getNextBoolean();
 		boolean blackCanvas = gd.getNextBoolean();
+		boolean noBorder = gd.getNextBoolean();
 		boolean useInvertingLut = gd.getNextBoolean();
 		Prefs.doubleBuffer = gd.getNextBoolean();
 		int menuSize = (int)gd.getNextNumber();
@@ -165,6 +167,11 @@ public class Options implements PlugIn {
 					imp.repaintWindow();
 				}
 			}
+		}
+		if (noBorder!=Prefs.noBorder) {
+			Prefs.noBorder = noBorder;
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.repaintWindow();
 		}
 		if (useInvertingLut!=Prefs.useInvertingLut) {
 			invertLuts(useInvertingLut);
