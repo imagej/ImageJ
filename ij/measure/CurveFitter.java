@@ -53,7 +53,8 @@ public class CurveFitter {
     private int maxIter; 	// maximum number of iterations per restart
     private int restarts; 	// number of times to restart simplex after first soln.
     private double maxError;     // maximum error tolerance
-    
+	private double[] initialParams; // user specified initial parameters
+	
     /** Construct a new CurveFitter. */
     public CurveFitter (double[] xData, double[] yData) {
         this.xData = xData;
@@ -85,6 +86,11 @@ public class CurveFitter {
         }
         fit = fitType;
         initialize();
+		if (initialParams!=null) {
+			for (int i=0; i<numParams; i++)
+				simp[0][i] = initialParams[i];
+			initialParams = null;
+		}
         if (showSettings) settingsDialog();
         restart(0);
         
@@ -427,11 +433,17 @@ public class CurveFitter {
         return sumResidualsSqr;
     }
     
-    /**  SD = sqrt(sum of residuals squared / number of params+1)
-     */
+    /**  Returns the standard deviation of the residuals. */
     public double getSD() {
-        double sd = Math.sqrt(getSumResidualsSqr() / numVertices);
-        return sd;
+    	double[] residuals = getResiduals();
+		int n = residuals.length;
+		double sum=0.0, sum2=0.0;
+		for (int i=0; i<n; i++) {
+			sum += residuals[i];
+			sum2 += residuals[i]*residuals[i];
+		}
+		double stdDev = (n*sum2-sum*sum)/n;
+		return Math.sqrt(stdDev/(n-1.0));
     }
     
     /** Returns R^2, where 1.0 is best.
@@ -547,6 +559,11 @@ public class CurveFitter {
     public void setRestarts(int x) {
         restarts = x;
     }
+
+	/** Sets the initial parameters, which override the default initial parameters. */
+	public void setInitialParameters(double[] params) {
+		initialParams = params;
+	}
 
     /**
      * Gets index of highest value in an array.

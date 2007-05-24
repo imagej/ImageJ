@@ -320,6 +320,15 @@ public class Line extends Roi {
 		lineWidth = w;
 	}
 	
+	/** Return the bounding rectangle of this line. */
+	public Rectangle getBounds() {
+		int xmin = (int)Math.round(Math.min(x1d, x2d));
+		int ymin = (int)Math.round(Math.min(y1d, y2d));
+		int w = (int)Math.round(Math.abs(x2d - x1d));
+		int h = (int)Math.round(Math.abs(y2d - y1d));
+		return new Rectangle(xmin, ymin, w, h);
+	}
+	
 	/** Nudge end point of line by one pixel. */
 	public void nudgeCorner(int key) {
 		if (ic==null) return;

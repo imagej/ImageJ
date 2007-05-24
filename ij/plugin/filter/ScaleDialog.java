@@ -96,7 +96,7 @@ public class ScaleDialog implements PlugInFilter {
 	Panel makeButtonPanel(SetScaleDialog gd) {
 		Panel panel = new Panel();
     	panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		gd.unscaleButton = new Button("Unscale");
+		gd.unscaleButton = new Button("Reset");
 		gd.unscaleButton.addActionListener(gd);
 		panel.add(gd.unscaleButton);
 		return panel;
@@ -146,6 +146,8 @@ class SetScaleDialog extends GenericDialog {
 		super.actionPerformed(e);
 		if (e.getSource()==unscaleButton) {
 			((TextField)numberField.elementAt(0)).setText("0.00");
+			((TextField)numberField.elementAt(1)).setText("1.00");
+			((TextField)numberField.elementAt(2)).setText("1.0");
 			((TextField)stringField.elementAt(0)).setText("pixel");
 			setScale(NO_SCALE);
 		}

@@ -79,6 +79,8 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		a = Tools.getMinMax(y);
 		double ymin=a[0], ymax=a[1]; 
 		cf = new CurveFitter(x, y);
+		//double[] params = {0.4, 3.0, 4.6, 44.0};
+		//cf.setInitialParameters(params);
 		cf.doFit(fitType, settings.getState());
 		IJ.log(cf.getResultString());
 

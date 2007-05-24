@@ -5,9 +5,9 @@ import ij.*;
 /** This class consists of static GUI utility methods. */
 public class GUI {
 
-	/** Positions the specified frame in the center of the screen. */
+	/** Positions the specified window in the center of the screen. */
 	public static void center(Window w) {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		Dimension window = w.getSize();
 		if (window.width==0)
 			return;
@@ -15,8 +15,6 @@ public class GUI {
 		int top = (screen.height-window.height)/4;
 		if (top<0) top = 0;
 		w.setLocation(left, top);
-		//ij.IJ.write("screen: "+screen);
-		//ij.IJ.write("window: "+window);
 	}
 	
     static private Frame frame;

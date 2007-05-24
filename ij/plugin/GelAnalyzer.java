@@ -284,7 +284,7 @@ public class GelAnalyzer implements PlugIn {
 				plotWidth = 2*firstRect.width;
 		}
 
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		if (plotWidth>screen.width-40)
 			plotWidth = screen.width - 40;
 		plotHeight = plotWidth/2;
@@ -459,7 +459,7 @@ class Plots extends ImagePlus {
 		Point loc = win.getLocation();
 		int w = getWidth()+20;
 		int h = getHeight()+30;
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		if (loc.x+w>screen.width)
 			w = screen.width-loc.x-20;
 		if (loc.y+h>screen.height)

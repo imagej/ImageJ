@@ -94,7 +94,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 						String[] names = f.list();
 						YesNoCancelDialog yn = new YesNoCancelDialog(IJ.getInstance(), "Open folder?", "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?");
 						if (yn.yesPressed()) {
-							IJ.run("Image Sequence...", "open=" + tmp + "/");
+							IJ.run("Image Sequence...", "open=[" + tmp + "/]");
 						} else if (!yn.cancelPressed()) {
 							for (int k=0; k<names.length; k++) {
 								IJ.redirectErrorMessages();
@@ -102,8 +102,11 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 									(new Opener()).open(tmp + "/" + names[k]);
 							}
 						}
-					} else
+					} else {
 						(new Opener()).openAndAddToRecent(tmp);
+						OpenDialog.setLastDirectory(f.getParent()+File.separator);
+						OpenDialog.setLastName(f.getName());
+					}
 				} else {
 					IJ.log("File not found: " + tmp);
 				}

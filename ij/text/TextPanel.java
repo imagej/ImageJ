@@ -337,7 +337,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 	}
 
-	/** Unused keyPressed events will be passed to 'listener'.*/
+	/** Unused keyPressed and keyTyped events will be passed to 'listener'.*/
 	public void addKeyListener(KeyListener listener) {
 		keyListener = listener;
 	}
@@ -360,7 +360,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	public void keyReleased (KeyEvent e) {}
-	public void keyTyped (KeyEvent e) {}
+	
+	public void keyTyped (KeyEvent e) {
+		if (keyListener!=null)
+			keyListener.keyTyped(e);
+	}
   
 	public void actionPerformed (ActionEvent e) {
 		String cmd=e.getActionCommand();

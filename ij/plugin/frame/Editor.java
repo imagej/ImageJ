@@ -137,7 +137,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 			
 	public void positionWindow() {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		Dimension window = getSize();
 		if (window.width==0)
 			return;

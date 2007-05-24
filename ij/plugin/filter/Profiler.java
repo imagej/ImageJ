@@ -44,7 +44,7 @@ public class Profiler implements PlugInFilter {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		int w = (int)gd.getNextNumber();
 		int h = (int)gd.getNextNumber();
 		if (w<300) w = 300;

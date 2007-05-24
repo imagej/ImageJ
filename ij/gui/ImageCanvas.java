@@ -438,7 +438,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+"  "+win.maxBounds);
 		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10) {
 			// Works around problem that prevented window from being larger than maximized size
-			Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+			Dimension screen = IJ.getScreenSize();
 			win.setMaximizedBounds(new Rectangle(0, 0, screen.width, screen.height));
 			maxBoundsReset = true;
 		}

@@ -88,7 +88,7 @@ public class TiffEncoder {
 		int descriptionSize = description!=null?description.length:0;
 		scaleSize = fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0?SCALE_DATA_SIZE:0;
 		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + metaDataEntries*4 + metaDataSize;
-		//ij.IJ.log(ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize);
+		//ij.IJ.log(imageOffset+", "+ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize+", "+metaDataEntries*4+", "+metaDataSize);
 	}
 	
 	/** Saves the image as a TIFF file. The DataOutputStream is not closed.
@@ -139,7 +139,7 @@ public class TiffEncoder {
 		if (fi.nImages>1 && fi.sliceLabels!=null) {
 			int max = fi.sliceLabels.length;
 			for (int i=0; i<fi.nImages&&i<max; i++) {
-				if (fi.sliceLabels[i]!=null) {
+				if (fi.sliceLabels[i]!=null&&fi.sliceLabels[i].length()>0) {
 					nSliceLabels++;
 					size += fi.sliceLabels[i].length()*2;
 				} else
@@ -281,8 +281,6 @@ public class TiffEncoder {
 		if (fi.info!=null) nTypes++;
 		if (nSliceLabels>0) nTypes++;
 		nTypes += extraMetaDataEntries;
-		
-		// write byte counts
 		out.writeInt(4+nTypes*8); // header size	
 		if (fi.info!=null)
 			out.writeInt(fi.info.length()*2);

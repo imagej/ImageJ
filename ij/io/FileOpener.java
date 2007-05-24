@@ -4,6 +4,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
@@ -112,7 +113,6 @@ public class FileOpener {
 		if (fi.info!=null)
 			imp.setProperty("Info", fi.info);
 		if (show) imp.show();
-		IJ.showProgress(1.0);
 		return imp;
 	}
 
@@ -195,7 +195,7 @@ public class FileOpener {
 		
 		if (fi.fileFormat==fi.GIF_OR_JPG) {
 			// restore gif or jpg
-			img = Toolkit.getDefaultToolkit().getImage(path);
+			img = Toolkit.getDefaultToolkit().createImage(path);
 			imp.setImage(img);
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				Opener.convertGrayJpegTo8Bits(imp);
@@ -231,6 +231,13 @@ public class FileOpener {
 			ImagePlus imp2 = (new Opener()).openZip(path);
 			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
+	    	return;
+		}
+
+		// restore PNG or another image opened using ImageIO
+		if (fi.fileFormat==fi.IMAGEIO) {
+			ImagePlus imp2 = (new Opener()).openUsingImageIO(path);
+			if (imp2!=null) imp.setProcessor(null, imp2.getProcessor());
 	    	return;
 		}
 
@@ -353,19 +360,23 @@ public class FileOpener {
 
 	/** Returns an InputStream for the image described by this FileInfo. */
 	public InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
+		InputStream is = null;
 		if (fi.inputStream!=null)
-			return fi.inputStream;
+			is = fi.inputStream;
 		else if (fi.url!=null && !fi.url.equals(""))
-			return new URL(fi.url+fi.fileName).openStream();
+			is = new URL(fi.url+fi.fileName).openStream();
 		else {
 			if (fi.directory.length()>0 && !fi.directory.endsWith(Prefs.separator))
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
 		    if (f==null || f.isDirectory() || !validateFileInfo(f, fi))
-		    	return null;
+		    	is = null;
 		    else
-				return new FileInputStream(f);
+				is = new FileInputStream(f);
 		}
+		if (is!=null && (fi.fileName.endsWith(".gz")||fi.fileName.endsWith(".GZ")))
+			is = new GZIPInputStream(is);
+		return is;
 	}
 	
 	static boolean validateFileInfo(File f, FileInfo fi) {

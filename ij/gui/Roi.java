@@ -641,6 +641,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 		
+	/** Always returns null for rectangular Roi's */
 	public ImageProcessor getMask() {
 		return null;
 	}

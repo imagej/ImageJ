@@ -150,6 +150,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_OPTION: setOption(); break;
 			case SHOW_TEXT: showText(); break;
 			case SET_SELECTION_LOC: setSelectionLocation(); break;
+			case GET_DIMENSIONS: getDimensions(); break;
 		}
 	}
 	
@@ -2458,7 +2459,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	double getScreenDimension(int type) {
 		interp.getParens();
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		if (type==SCREEN_WIDTH)
 			return screen.width;
 		else
@@ -3246,6 +3247,21 @@ public class Functions implements MacroConstants, Measurements {
 		if (arg.equals("Start Animation"))
 			arg = "Start Animation [\\]";
 		IJ.doCommand(arg);
+	}
+	
+	void getDimensions() {
+		Variable width = getFirstVariable();
+		Variable height = getNextVariable();
+		Variable channels = getNextVariable();
+		Variable slices = getNextVariable();
+		Variable frames = getLastVariable();
+		ImagePlus imp = getImage();
+		int[] dim = imp.getDimensions();
+		width.setValue(dim[0]);
+		height.setValue(dim[1]);
+		channels.setValue(dim[2]);
+		slices.setValue(dim[3]);
+		frames.setValue(dim[4]);
 	}
 
 } // class Functions

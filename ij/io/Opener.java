@@ -16,6 +16,7 @@ import ij.plugin.DICOM;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import java.awt.event.KeyEvent;
+import javax.imageio.ImageIO;
 
 /** Opens tiff (and tiff stacks), dicom, fits, pgm, jpeg, bmp or
 	gif images, and look-up tables, using a file open dialog or a path.
@@ -208,8 +209,11 @@ public class Opener {
 			case PGM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
-			case JPEG: case GIF: case PNG:
+			case JPEG: case GIF:
 				imp = openJpegOrGif(directory, name);
+				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
+			case PNG:
+				imp = openUsingImageIO(directory+name);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
 			case BMP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
@@ -311,10 +315,8 @@ public class Opener {
 	}
 
 	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
-		if (url==null)
-			return null;
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Image img = IJ.isJava2()?tk.createImage(url):tk.getImage(url);
+		if (url==null) return null;
+		Image img = Toolkit.getDefaultToolkit().createImage(url);
 		if (img!=null) {
 			ImagePlus imp = new ImagePlus(title, img);
 			return imp;
@@ -324,8 +326,7 @@ public class Opener {
 
 	ImagePlus openJpegOrGif(String dir, String name) {
 	   	ImagePlus imp = null;
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Image img = IJ.isJava2()?tk.createImage(dir+name):tk.getImage(dir+name);
+		Image img = Toolkit.getDefaultToolkit().createImage(dir+name);
  		if (img!=null) {
  			try {
  				imp = new ImagePlus(name, img);
@@ -343,6 +344,24 @@ public class Opener {
 	    return imp;
 	}
 	
+	ImagePlus openUsingImageIO(String path) {
+		ImagePlus imp = null;
+		File f = new File(path);
+		try {
+			Image img = ImageIO.read(f);
+			if (img==null) return null;
+			imp = new ImagePlus(f.getName(), img);
+		} catch (Exception e) {
+			return null; // error loading image				
+		} 
+		FileInfo fi = new FileInfo();
+		fi.fileFormat = fi.IMAGEIO;
+		fi.fileName = f.getName();
+		fi.directory = f.getParent()+File.separator;
+		imp.setFileInfo(fi);
+	    return imp;
+	}
+
 	/** If this image is grayscale, convert it to 8-bits. */
 	public static void convertGrayJpegTo8Bits(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
@@ -647,7 +666,7 @@ public class Opener {
   			 	return DICOM;
 
 		// FITS ("SIMP")
-		if (b0==83 && b1==73 && b2==77 && b3==80)
+		if ((b0==83 && b1==73 && b2==77 && b3==80) || name.endsWith(".fits.gz"))
 			return FITS;
 			
 		// PGM ("P1", "P4", "P2", "P5", "P3" or "P6")
@@ -659,7 +678,7 @@ public class Opener {
 			return LUT;
 		
 		// PNG
-		if (b0==137 && b1==80 && b2==78 && b3==71 && IJ.isJava2())
+		if (b0==137 && b1==80 && b2==78 && b3==71)
 			return PNG;
 				
 		// ZIP containing a TIFF
@@ -717,6 +736,7 @@ public class Opener {
 	}
 	
 	void openRGB48(ImagePlus imp) {
+			isRGB48 = false;
 			ImageStack stack = imp.getStack();
 			ImageStack stack1 = imp.createEmptyStack();
 			ImageStack stack2 = imp.createEmptyStack();

@@ -24,7 +24,7 @@ public class WindowOrganizer implements PlugIn {
 	}
 	
 	void tileWindows(int[] wList) {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		int minWidth = Integer.MAX_VALUE;
 		int minHeight = Integer.MAX_VALUE;
 		boolean allSameSize = true;
@@ -119,7 +119,7 @@ public class WindowOrganizer implements PlugIn {
 	}		
 			
 	void cascadeWindows(int[] wList) {
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension screen = IJ.getScreenSize();
 		int x = XSTART;
 		int y = YSTART;
 		int xstep = 0;

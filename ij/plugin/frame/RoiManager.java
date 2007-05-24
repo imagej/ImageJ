@@ -99,6 +99,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Add Particles");
 		addPopupItem("Multi Measure");
 		addPopupItem("Sort");
+		addPopupItem("Specify...");
+		addPopupItem("Remove Slice Info");
 		addPopupItem("Help");
 		add(pm);
 	}
@@ -159,6 +161,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			multiMeasure();
 		else if (command.equals("Sort"))
 			sort();
+		else if (command.equals("Specify..."))
+			specify();
+		else if (command.equals("Remove Slice Info"))
+			removeSliceInfo();
 		else if (command.equals("Help"))
 			help();
 	}
@@ -277,11 +283,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (xs.length()>digits) digits = xs.length();
 		String ys = "" + yc;
 		if (ys.length()>digits) digits = ys.length();
-		xs = "000" + xc;
-		ys = "000" + yc;
+		xs = "000000" + xc;
+		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp.getStackSize()>1) {
-			String zs = "000" + imp.getCurrentSlice();
+			String zs = "000000" + imp.getCurrentSlice();
 			label = zs.substring(zs.length()-digits) + "-" + label;
 		}
 		return label;
@@ -587,16 +593,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 						
 		int nSlices = 1;
-		if (imp.getStackSize()>1 && allSliceOne && mode==MENU) {
-			int setup = IJ.setupDialog(imp, 0);
-			if (setup==PlugInFilter.DONE)
-				return false;
-			nSlices = setup==PlugInFilter.DOES_STACKS?imp.getStackSize():1;
-		}
 		if (mode==MULTI)
 			nSlices = imp.getStackSize();
 		int measurements = Analyzer.getMeasurements();
-		if ((nSlices>1||!allSliceOne) && indexes.length>1)
+		if (imp.getStackSize()>1)
 			Analyzer.setMeasurements(measurements|Measurements.SLICE);
 		int currentSlice = imp.getCurrentSlice();
 		for (int slice=1; slice<=nSlices; slice++) {
@@ -816,6 +816,31 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (Recorder.record) Recorder.record("roiManager", "Sort");
 	}
 	
+	void specify() {
+		try {IJ.run("Specify...");}
+		catch (Exception e) {return;}
+		runCommand("add");
+	}
+	
+	void removeSliceInfo() {
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+		for (int i=0; i<indexes.length; i++) {
+			int index = indexes[i];
+			String name = list.getItem(index);
+			int n = getSliceNumber(name);
+			if (n==-1) continue;
+			String name2 = name.substring(5, name.length());
+			name2 = getUniqueName(name2);
+			Roi roi = (Roi)rois.get(name);
+			rois.remove(name);
+			roi.setName(name2);
+			rois.put(name2, roi);
+			list.replaceItem(name2, index);
+		}
+	}
+
 	void help() {
 		String macro = "run('URL...', 'url=http://rsb.info.nih.gov/ij/docs/menus/analyze.html#manager');";
 		new MacroRunner(macro);

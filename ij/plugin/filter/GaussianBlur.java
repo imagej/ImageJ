@@ -38,6 +38,19 @@ public class GaussianBlur implements PlugInFilter {
     private ImagePlus imp = null;
     /** The slice currently processed */
     private int slice;
+    /** The number of passes */
+    private int nPasses = 1;
+    /** Current pass */
+    private int pass;
+    
+    /** Default constructor */
+    public GaussianBlur() {
+    }
+
+    /** Construct a GaussianBlur using an ImagePlus */
+    public GaussianBlur(ImagePlus imp) {
+    	nPasses = imp!=null&&imp.getBitDepth()==24?6:2;
+    }
 
     /** Method to return types supported and "about" text
      * @param arg unused
@@ -52,7 +65,7 @@ public class GaussianBlur implements PlugInFilter {
         }
         int flags = DOES_ALL|SUPPORTS_MASKING;
         if (!showDialog()) return DONE;
-        IJ.register(this.getClass());       //protect static class variables (filter parameters) from garbage collection
+    	nPasses = imp.getBitDepth()==24?6:2;
         return IJ.setupDialog(imp, flags);  //ask whether to process all slices of stack (if a stack)
     }
     
@@ -61,7 +74,7 @@ public class GaussianBlur implements PlugInFilter {
     public boolean showDialog() {
         String options = Macro.getOptions();
         //IJ.log("GaussBlurOptions="+options);
-        boolean oldMacro = false;               //for old macros, "radius" was 2.5 sigma
+        boolean oldMacro = false;   //for old macros, "radius" was 2.5 sigma
         if  (options!=null) {
             sigmaScaled = false;
             if (options.indexOf("radius=") >= 0) {
@@ -124,7 +137,9 @@ public class GaussianBlur implements PlugInFilter {
      * @param accuracy  Accuracy of kernel, should not be above 0.02. Better (lower)
      *                  accuracy needs slightly more computing time.
      */
-    public static void blurGaussian(ImageProcessor ip, double sigmaX, double sigmaY, double accuracy) {
+    public void blurGaussian(ImageProcessor ip, double sigmaX, double sigmaY, double accuracy) {
+    	if (nPasses==1)
+    		nPasses = (ip instanceof ColorProcessor)?6:2;
         FloatProcessor fp = null;
         for (int i=0; i<ip.getNChannels(); i++) {
             fp = ip.toFloat(i, fp);
@@ -146,7 +161,7 @@ public class GaussianBlur implements PlugInFilter {
      * @param accuracy  Accuracy of kernel, should not be above 0.02. Better (lower)
      *                  accuracy needs slightly more computing time.
      */
-    public static void blurFloat(FloatProcessor ip, double sigmaX, double sigmaY, double accuracy) {
+    public void blurFloat(FloatProcessor ip, double sigmaX, double sigmaY, double accuracy) {
         if (sigmaX > 0)
             blur1Direction(ip, sigmaX, accuracy, true, true);
         if (sigmaY > 0)
@@ -162,7 +177,7 @@ public class GaussianBlur implements PlugInFilter {
      * @param doAllLines Whether all lines (parallel to the blurring direction) 
      *                  should be processed, irrespective of the roi.
      */
-    public static void blur1Direction(FloatProcessor ip, double sigma, double accuracy,
+    public void blur1Direction(FloatProcessor ip, double sigma, double accuracy,
             boolean xDirection, boolean doAllLines) {
         final int UPSCALE_K_RADIUS = 2;             //number of pixels to add for upscaling
         final double MIN_DOWNSCALED_SIGMA = 4.;     //minimum standard deviation in the downscaled image
@@ -178,6 +193,9 @@ public class GaussianBlur implements PlugInFilter {
             (xDirection ? roi.y+roi.height : roi.x+roi.width);
         int writeFrom = xDirection? roi.x : roi.y;  //first point of a line that needs to be written
         int writeTo = xDirection ? roi.x+roi.width : roi.y+roi.height;
+        int inc = Math.max((lineTo-lineFrom)/(40/(nPasses>0?nPasses:1)),1);
+        pass++;
+        if (pass>nPasses) pass =1;
         if (sigma > 2*MIN_DOWNSCALED_SIGMA + 0.5) {
             /* large radius (sigma): scale down, then convolve, then scale up */
             int reduceBy = (int)Math.floor(sigma/MIN_DOWNSCALED_SIGMA); //downscale by this factor
@@ -199,8 +217,8 @@ public class GaussianBlur implements PlugInFilter {
             float[] cache2 = new float[newLength];  //holds data after convolution
             int pixel0 = lineFrom*lineInc;
             for (int line=lineFrom; line<lineTo; line++, pixel0+=lineInc) {
-                if (line%50 == 0)
-                    IJ.showProgress(line-lineFrom,lineTo-lineFrom);
+                if (line%inc==0)
+                    showProgress((double)(line-lineFrom)/(lineTo-lineFrom));
                 downscaleLine(pixels, cache1, downscaleKernel, reduceBy, pixel0, unscaled0, length, pointInc, newLength);
                 convolveLine(cache1, cache2, gaussKernel, 0, newLength, 1, newLength-1, 0, 1);
                 upscaleLine(cache2, pixels, upscaleKernel, reduceBy, pixel0, unscaled0, writeFrom, writeTo, pointInc);
@@ -214,15 +232,15 @@ public class GaussianBlur implements PlugInFilter {
             int readTo = (writeTo+kRadius > length) ? length : writeTo+kRadius;
             int pixel0 = lineFrom*lineInc;
             for (int line=lineFrom; line<lineTo; line++, pixel0+=lineInc) {
-                if (line%50 == 0)
-                    IJ.showProgress(line-lineFrom,lineTo-lineFrom);
+                if (line%inc==0)
+                    showProgress((double)(line-lineFrom)/(lineTo-lineFrom));
                 int p = pixel0 + readFrom*pointInc;
                 for (int i=readFrom; i<readTo; i++ ,p+=pointInc)
                     cache[i] = pixels[p];
                 convolveLine(cache, pixels, gaussKernel, readFrom, readTo, writeFrom, writeTo, pixel0, pointInc);
             }
         }
-        IJ.showProgress(1);
+        if (pass==nPasses) IJ.showProgress(1.0);
         return;
     }
 
@@ -233,7 +251,7 @@ public class GaussianBlur implements PlugInFilter {
      * line pixel # 0. <code>unscaled0</code> may be negative. Out-of-line
      * pixels of the input are replaced by the edge pixels.
      */
-    static void downscaleLine(float[] pixels, float[] cache, float[] kernel,
+    void downscaleLine(float[] pixels, float[] cache, float[] kernel,
             int reduceBy, int pixel0, int unscaled0, int length, int pointInc, int newLength) {
         float first = pixels[pixel0];
         float last = pixels[pixel0 + pointInc*(length-1)];
@@ -258,7 +276,7 @@ public class GaussianBlur implements PlugInFilter {
      * Array index corresponding to the kernel center is
      * unitLength*3/2
      */
-    static float[] makeDownscaleKernel (int unitLength) {
+    float[] makeDownscaleKernel (int unitLength) {
         int mid = unitLength*3/2;
         float[] kernel = new float[3*unitLength];
         for (int i=0; i<=unitLength/2; i++) {
@@ -279,7 +297,7 @@ public class GaussianBlur implements PlugInFilter {
     /** Scale a line up by factor <code>reduceBy</code> and write as a row
      * or column (or part thereof) to the pixels array of a FloatProcessor.
      */
-    static void upscaleLine (float[] cache, float[] pixels, float[] kernel,
+    void upscaleLine (float[] cache, float[] pixels, float[] kernel,
             int reduceBy, int pixel0, int unscaled0, int writeFrom, int writeTo, int pointInc) {
         int p = pixel0 + pointInc*writeFrom;
         for (int xout = writeFrom; xout < writeTo; xout++, p+=pointInc) {
@@ -300,7 +318,7 @@ public class GaussianBlur implements PlugInFilter {
      *  The kernel runs from [-2 to +2[, corresponding to array index
      *  0 ... 4*unitLength (whereby the last point is not in the array any more).
      */
-    static float[] makeUpscaleKernel (int unitLength) {
+    float[] makeUpscaleKernel (int unitLength) {
         float[] kernel = new float[4*unitLength];
         int mid = 2*unitLength;
         kernel[0] = 0;
@@ -341,7 +359,7 @@ public class GaussianBlur implements PlugInFilter {
      * @param pointInc  Increment of the pixels array index to the next point (for an ImageProcessor,
      *                  it should be <code>1</code> for a row, <code>width</code> for a column)
      */
-    public static void convolveLine(float[] input, float[] pixels, float[][] kernel, int readFrom,
+    public void convolveLine(float[] input, float[] pixels, float[][] kernel, int readFrom,
             int readTo, int writeFrom, int writeTo, int point0, int pointInc) {
         int length = input.length;
         float first = input[0];                 //out-of-edge pixels are replaced by nearest edge pixels
@@ -408,7 +426,7 @@ public class GaussianBlur implements PlugInFilter {
      * Array[1][n] holds the sum over all kernel values > n, including non-calculated
      * values in case the kernel size is limited by <code>maxRadius</code>.
      */
-    public static float[][] makeGaussianKernel(double sigma, double accuracy, int maxRadius) {
+    public float[][] makeGaussianKernel(double sigma, double accuracy, int maxRadius) {
         int kRadius = (int)Math.ceil(sigma*Math.sqrt(-2*Math.log(accuracy)))+1;
         if (maxRadius < 50) maxRadius = 50;         // too small maxRadius would result in inaccurate sum.
         if (kRadius > maxRadius) kRadius = maxRadius;
@@ -454,7 +472,7 @@ public class GaussianBlur implements PlugInFilter {
      * (If the roi is non-rectangular and the SUPPORTS_MASKING flag is set).
      * @param ip The image to be processed
      */    
-    public static void resetOutOfRoi(ImageProcessor ip) {
+    public void resetOutOfRoi(ImageProcessor ip) {
         Rectangle roi = ip.getRoi();
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -464,5 +482,10 @@ public class GaussianBlur implements PlugInFilter {
             System.arraycopy(snapshot, p, pixels, p, roi.width);
         for (int y=roi.y+roi.height,p=width*y+roi.x; y<height; y++,p+=width)
             System.arraycopy(snapshot, p, pixels, p, roi.width);
+    }
+    
+    void showProgress(double percent) {
+    	percent = (double)(pass-1)/nPasses + percent/nPasses;
+    	IJ.showProgress(percent);
     }
 }

@@ -99,7 +99,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Prefs dir: "+Prefs.getPrefsDir()+"\n");
 		sb.append("  Current dir: "+OpenDialog.getDefaultDirectory()+"\n");
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");
-		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension d = IJ.getScreenSize();
 		sb.append("  Screen size: " + d.width + "x" + d.height+"\n");
 		if (IJ.altKeyDown())
 			doFullDump();

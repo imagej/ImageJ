@@ -86,8 +86,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean ignoreFlush;
 	private boolean errorLoadingImage;
 	private static ImagePlus clipboard;
-	private static Vector listeners;
-	private static boolean inListener;
+	private static Vector listeners = new Vector();
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -225,7 +224,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			width = (int)(width*mag);
 			height = (int)(height*mag);
 			ic.repaint(x, y, width, height);
-			if (listeners!=null && roi!=null && roi.getPasteMode()!=Roi.NOT_PASTING)
+			if (listeners.size()>0 && roi!=null && roi.getPasteMode()!=Roi.NOT_PASTING)
 				notifyListeners(UPDATED);
 		}
 	}
@@ -239,7 +238,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (win!=null)
 				win.getCanvas().setImageUpdated();
 			draw();
-			if (listeners!=null && !inListener) notifyListeners(UPDATED);
+			if (listeners.size()>0) notifyListeners(UPDATED);
 		}
 	}
 	
@@ -587,10 +586,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Frees RAM by setting the snapshot (undo) buffer in
 		the current ImageProcessor to null. */
-	public synchronized void trimProcessor() {
-		if (ip!=null && !locked) {
+	public void trimProcessor() {
+		ImageProcessor ip2 = ip;
+		if (!locked && ip2!=null) {
 			if (IJ.debugMode) IJ.log(title + ": trimProcessor");
-			ip.setSnapshotPixels(null);
+			ip2.setSnapshotPixels(null);
 		}
 	}
 	
@@ -1572,39 +1572,31 @@ public class ImagePlus implements ImageObserver, Measurements {
 		clipboard = null;
 	}
 
-	protected synchronized void notifyListeners(int id) {
-		if (listeners==null) return;
-		for (int i=0; i<listeners.size(); i++) {
-			ImageListener listener = (ImageListener)listeners.elementAt(i);
-			switch (id) {
-				case OPENED:
-					listener.imageOpened(this);
-					break;
-				case CLOSED:
-					listener.imageClosed(this);
-					break;
-				case UPDATED: 
-					inListener = true;
-					listener.imageUpdated(this);
-					inListener = false;
-					break;
+	protected void notifyListeners(int id) {
+		synchronized (listeners) {
+			for (int i=0; i<listeners.size(); i++) {
+				ImageListener listener = (ImageListener)listeners.elementAt(i);
+				switch (id) {
+					case OPENED:
+						listener.imageOpened(this);
+						break;
+					case CLOSED:
+						listener.imageClosed(this);
+						break;
+					case UPDATED: 
+						listener.imageUpdated(this);
+						break;
+				}
 			}
-			if (listeners==null) break;
 		}
 	}
 
-	public static synchronized void addImageListener(ImageListener listener) {
-		if (listeners==null)
-			listeners = new Vector();
+	public static void addImageListener(ImageListener listener) {
 		listeners.addElement(listener);
 	}
 	
-	public static synchronized void removeImageListener(ImageListener listener) {
-		if (listeners==null)
-			return;
+	public static void removeImageListener(ImageListener listener) {
 		listeners.removeElement(listener);
-		if (listeners.isEmpty())
-			listeners = null;
 	}
 	
 	/** Returns 'true' if the image is locked. */

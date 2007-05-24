@@ -7,6 +7,7 @@ import ij.process.*;
 import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
+import ij.plugin.JpegWriter;
 
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
@@ -211,7 +212,8 @@ public class FileSaver {
 		@see ij.plugin.JpegWriter#getQuality
 	*/
 	public boolean saveAsJpeg() {
-		String path = getPath("JPEG", ".jpg");
+		String type = "JPEG ("+JpegWriter.getQuality()+")";
+		String path = getPath(type, ".jpg");
 		if (path==null)
 			return false;
 		else

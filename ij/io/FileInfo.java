@@ -72,6 +72,7 @@ public class FileInfo {
 	public static final int DICOM = 6;
 	public static final int ZIP_ARCHIVE = 7;
 	public static final int PGM = 8;
+	public static final int IMAGEIO = 9;
 
 	// Compression modes
 	public static final int COMPRESSION_UNKNOWN = 0;

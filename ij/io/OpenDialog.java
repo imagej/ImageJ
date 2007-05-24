@@ -87,7 +87,7 @@ import javax.swing.filechooser.*;
 			fc.setCurrentDirectory(fdir);
 		if (fileName!=null)
 			fc.setSelectedFile(new File(fileName));
-		int returnVal = fc.showOpenDialog(null);
+		int returnVal = fc.showOpenDialog(IJ.getInstance());
 		if (returnVal!=JFileChooser.APPROVE_OPTION)
 			{Macro.abort(); return;}
 		File file = fc.getSelectedFile();
@@ -111,7 +111,7 @@ import javax.swing.filechooser.*;
 					fc.setCurrentDirectory(fdir);
 				if (fileName!=null)
 					fc.setSelectedFile(new File(fileName));
-				int returnVal = fc.showOpenDialog(null);
+				int returnVal = fc.showOpenDialog(IJ.getInstance());
 				if (returnVal!=JFileChooser.APPROVE_OPTION)
 					{Macro.abort(); return;}
 				File file = fc.getSelectedFile();
@@ -123,7 +123,7 @@ import javax.swing.filechooser.*;
 			});
 		} catch (Exception e) {}
 	}
-		
+	
 	// Uses the AWT FileDialog class to display the dialog box
 	void open(String title, String path, String fileName) {
 		Frame parent = IJ.getInstance();
@@ -136,7 +136,7 @@ import javax.swing.filechooser.*;
 			fd.setDirectory(path);
 		if (fileName!=null)
 			fd.setFile(fileName);
-		GUI.center(fd);
+		//GUI.center(fd);
 		fd.show();
 		name = fd.getFile();
 		if (name==null) {
@@ -189,19 +189,28 @@ import javax.swing.filechooser.*;
 			defaultDirectory = defaultDirectory + File.separator;
 	}
 	
-	/** Returns the path to the last directory opened by the
-		user using a file open or file save dialog. Returns null
-		if the users has not opened a file. */
+	/** Returns the path to the last directory opened by the user
+		using a file open or file save dialog, or using drag and drop. 
+		Returns null if the users has not opened a file. */
 	public static String getLastDirectory() {
 		return lastDir;
 	}
 		
-	/** Returns the name of the last file opened by the
-		user using a file open or file save dialog. Returns
-		null if the users has not opened a file. */
+	/** Sets the path to the directory containing the last file opened by the user. */
+	public static void setLastDirectory(String dir) {
+		lastDir = dir;
+	}
+
+	/** Returns the name of the last file opened by the user
+		using a file open or file save dialog, or using drag and drop.
+		Returns null if the users has not opened a file. */
 	public static String getLastName() {
 		return lastName;
 	}
 
+	/** Sets the name of the last file opened by the user. */
+	public static void setLastName(String name) {
+		lastName = name;
+	}
 
 }

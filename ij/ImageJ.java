@@ -67,7 +67,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.38r";
+	public static final String VERSION = "1.38s";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -89,6 +89,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private boolean exitWhenQuitting;
 	private boolean quitting;
 	private long keyPressedTime, actionPerformedTime;
+	private String lastKeyCommand;
 	private boolean embedded;
 	
 	boolean hotkey;
@@ -247,9 +248,10 @@ public class ImageJ extends Frame implements ActionListener,
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
-			if (cmd!=null && ellapsedTime>=10L)
+			if (cmd!=null && (ellapsedTime>=200L||!cmd.equals(lastKeyCommand)))
 				doCommand(cmd);
-			if (IJ.debugMode) IJ.log("actionPerformed: "+ellapsedTime+" "+e);
+			lastKeyCommand = null;
+			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
 		}
 	}
 
@@ -284,14 +286,14 @@ public class ImageJ extends Frame implements ActionListener,
 			return;
 		char keyChar = e.getKeyChar();
 		int flags = e.getModifiers();
-		if (IJ.debugMode) IJ.log("keyCode=" + keyCode + " (" + KeyEvent.getKeyText(keyCode)
-			+ ") keyChar=\"" + keyChar + "\" (" + (int)keyChar + ") "
+		if (IJ.debugMode) IJ.log("keyPressed: code=" + keyCode + " (" + KeyEvent.getKeyText(keyCode)
+			+ "), char=\"" + keyChar + "\" (" + (int)keyChar + "), flags="
 			+ KeyEvent.getKeyModifiersText(flags));
 		boolean shift = (flags & e.SHIFT_MASK) != 0;
 		boolean control = (flags & e.CTRL_MASK) != 0;
 		boolean alt = (flags & e.ALT_MASK) != 0;
 		boolean meta = (flags & e.META_MASK) != 0;
-		String c = "";
+		String cmd = "";
 		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
 		
@@ -315,12 +317,12 @@ public class ImageJ extends Frame implements ActionListener,
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
 			if (macroShortcuts.size()>0) {
 				if (shift)
-					c = (String)macroShortcuts.get(new Integer(keyCode+200));
+					cmd = (String)macroShortcuts.get(new Integer(keyCode+200));
 				else
-					c = (String)macroShortcuts.get(new Integer(keyCode));
-				if (c!=null) {
-					//MacroInstaller.runMacroCommand(c);
-					MacroInstaller.runMacroShortcut(c);
+					cmd = (String)macroShortcuts.get(new Integer(keyCode));
+				if (cmd!=null) {
+					//MacroInstaller.runMacroCommand(cmd);
+					MacroInstaller.runMacroShortcut(cmd);
 					return;
 				}
 			}
@@ -329,32 +331,32 @@ public class ImageJ extends Frame implements ActionListener,
 		if (!Prefs.requireControlKey || control || meta) {
 			Hashtable shortcuts = Menus.getShortcuts();
 			if (shift)
-				c = (String)shortcuts.get(new Integer(keyCode+200));
+				cmd = (String)shortcuts.get(new Integer(keyCode+200));
 			else
-				c = (String)shortcuts.get(new Integer(keyCode));
+				cmd = (String)shortcuts.get(new Integer(keyCode));
 		}
 		
-		if (c==null) {
+		if (cmd==null) {
 			switch (keyChar) {
-				case '<': c="Previous Slice [<]"; break;
-				case '>': c="Next Slice [>]"; break;
-				case '+': case '=': c="In"; break;
-				case '-': c="Out"; break;
-				case '/': c="Reslice [/]..."; break;
+				case '<': cmd="Previous Slice [<]"; break;
+				case '>': cmd="Next Slice [>]"; break;
+				case '+': case '=': cmd="In"; break;
+				case '-': cmd="Out"; break;
+				case '/': cmd="Reslice [/]..."; break;
 				default:
 			}
 		}
 
-		if (c==null) {
+		if (cmd==null) {
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
-				case KeyEvent.VK_BACK_SPACE: c="Clear"; hotkey=true; break; // delete
-				//case KeyEvent.VK_BACK_SLASH: c=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
-				case KeyEvent.VK_EQUALS: c="In"; break;
-				case KeyEvent.VK_MINUS: c="Out"; break;
-				case KeyEvent.VK_SLASH: case 0xbf: c="Reslice [/]..."; break;
-				case KeyEvent.VK_COMMA: case 0xbc: c="Previous Slice [<]"; break;
-				case KeyEvent.VK_PERIOD: case 0xbe: c="Next Slice [>]"; break;
+				case KeyEvent.VK_BACK_SPACE: cmd="Clear"; hotkey=true; break; // delete
+				//case KeyEvent.VK_BACK_SLASH: cmd=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
+				case KeyEvent.VK_EQUALS: cmd="In"; break;
+				case KeyEvent.VK_MINUS: cmd="Out"; break;
+				case KeyEvent.VK_SLASH: case 0xbf: cmd="Reslice [/]..."; break;
+				case KeyEvent.VK_COMMA: case 0xbc: cmd="Previous Slice [<]"; break;
+				case KeyEvent.VK_PERIOD: case 0xbe: cmd="Next Slice [>]"; break;
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
 					Roi roi = null;
 					if (imp!=null) roi = imp.getRoi();
@@ -372,18 +374,36 @@ public class ImageJ extends Frame implements ActionListener,
 			}
 		}
 		
-		if (c!=null && !c.equals("")) {
-			if (c.equals("Fill"))
+		if (cmd!=null && !cmd.equals("")) {
+			if (cmd.equals("Fill"))
 				hotkey = true;
-			if (c.charAt(0)==MacroInstaller.commandPrefix)
-				MacroInstaller.runMacroCommand(c);
+			if (cmd.charAt(0)==MacroInstaller.commandPrefix)
+				MacroInstaller.runMacroCommand(cmd);
 			else {
-				doCommand(c);
+				doCommand(cmd);
 				keyPressedTime = System.currentTimeMillis();
+				lastKeyCommand = cmd;
 			}
 		}
 	}
 	
+	public void keyTyped(KeyEvent e) {
+		char keyChar = e.getKeyChar();
+		int flags = e.getModifiers();
+		if (IJ.debugMode) IJ.log("keyTyped: char=\"" + keyChar + "\" (" + (int)keyChar 
+			+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
+		if (keyChar=='\\' || keyChar==171 || keyChar==223) {
+			if (((flags&Event.ALT_MASK)!=0))
+				doCommand("Animation Options...");
+			else
+				doCommand("Start Animation [\\]");
+		}
+	}
+
+	public void keyReleased(KeyEvent e) {
+		IJ.setKeyUp(e.getKeyCode());
+	}
+		
 	void abortPluginOrMacro(ImagePlus imp) {
 		if (imp!=null) {
 			ImageWindow win = imp.getWindow();
@@ -395,23 +415,6 @@ public class ImageJ extends Frame implements ActionListener,
 		Macro.abort();
 		Interpreter.abort();
 		if (Interpreter.getInstance()!=null) IJ.beep();
-	}
-
-	public void keyReleased(KeyEvent e) {
-		IJ.setKeyUp(e.getKeyCode());
-	}
-		
-	public void keyTyped(KeyEvent e) {
-		char keyChar = e.getKeyChar();
-		int flags = e.getModifiers();
-		if (IJ.debugMode) IJ.log("keyTyped=\"" + keyChar + "\" (" + (int)keyChar 
-			+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
-		if (keyChar=='\\' || keyChar==171 || keyChar==223) {
-			if (((flags&Event.ALT_MASK)!=0))
-				doCommand("Animation Options...");
-			else
-				doCommand("Start Animation [\\]");
-		}
 	}
 
 	public void windowClosing(WindowEvent e) {

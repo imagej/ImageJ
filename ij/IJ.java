@@ -45,6 +45,7 @@ public class IJ {
 	private static boolean escapePressed;
 	private static boolean redirectErrorMessages;
 	private static boolean suppressPluginNotFoundError;
+	private static Dimension screenSize;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -241,6 +242,7 @@ public class IJ {
 			IJ.resetEscape();
 			int p1=1, p2=n;
 			if (convertToFloat && imp.getBitDepth()==24) p2*=3;
+			if (progressBar!=null) progressBar.setStackMode(true);
 			for (int i=1; i<=n; i++) {
 				ip.setPixels(stack.getPixels(i));
 				if (doMasking||(snapshotRequired&&!convertToFloat)) ip.snapshot();
@@ -261,7 +263,7 @@ public class IJ {
 				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}
 			if (roi!=null) imp.setRoi(roi);
-			IJ.showProgress(1.0);
+			IJ.showProgress(n, n);
 			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", n);
 		}
 		if (changes) {
@@ -1312,7 +1314,7 @@ public class IJ {
 		type = type.toLowerCase(Locale.US);
 		int bitDepth = 8;
 		if (type.indexOf("16")!=-1) bitDepth = 16;
-		if (type.indexOf("rgb")!=-1) bitDepth = 24;
+		if (type.indexOf("24")!=-1||type.indexOf("rgb")!=-1) bitDepth = 24;
 		if (type.indexOf("32")!=-1) bitDepth = 32;
 		int options = NewImage.FILL_WHITE;
 		if (bitDepth==16 || bitDepth==32)
@@ -1391,7 +1393,26 @@ public class IJ {
 		}
 		return classLoader;
 	}
-
+	
+	/** Returns the size, in pixels, of the primary display. */
+	public static Dimension getScreenSize() {
+		if (screenSize==null) {
+			if (GraphicsEnvironment.isHeadless())
+				screenSize = new Dimension(0, 0);
+			else {
+				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+				GraphicsDevice[] gd = ge.getScreenDevices();
+				GraphicsConfiguration[] gc = gd[0].getConfigurations();
+				Rectangle bounds = gc[0].getBounds();
+				if (bounds.x==0&&bounds.y==0)
+					screenSize = new Dimension(bounds.width, bounds.height);
+				else
+					screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			}
+		}
+		return screenSize;
+	}
+	
 	static void abort() {
 		if (ij!=null || Interpreter.isBatchMode())
 			throw new RuntimeException(Macro.MACRO_CANCELED);

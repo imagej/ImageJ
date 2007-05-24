@@ -310,7 +310,8 @@ public class ShapeRoi extends Roi {
 					((GeneralPath)shape).lineTo((float)xCoords[i],(float)yCoords[i]);
 				break;
 			case Roi.COMPOSITE: shape = ShapeRoi.cloneShape(((ShapeRoi)roi).getShape()); break;
-			default: type = NO_TYPE; break;
+			default:
+				throw new IllegalArgumentException("Roi type not supported");
 		}
 
 		if(shape!=null) {

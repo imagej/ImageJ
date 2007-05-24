@@ -36,7 +36,6 @@ public class ImageReader {
 	byte[] read8bitImage(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressed8bitImage(in);
-		startTime = System.currentTimeMillis();
 		byte[] pixels = new byte[nPixels];
 		// assume contiguous strips
 		int count, actuallyRead;
@@ -55,7 +54,6 @@ public class ImageReader {
 	}
 	
 	byte[] readCompressed8bitImage(InputStream in) throws IOException {
-		startTime = System.currentTimeMillis();
 		byte[] pixels = new byte[nPixels];
 		int current = 0;
 		byte last = 0;
@@ -87,16 +85,10 @@ public class ImageReader {
 		return pixels;
 	}
 	
-	private void showProgress(double progress) {
-		if (showProgressBar)
-			IJ.showProgress(progress);
-	}
-	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressed16bitImage(in);
-		startTime = System.currentTimeMillis();
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		short[] pixels = new short[nPixels];
@@ -147,7 +139,6 @@ public class ImageReader {
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
-		startTime = System.currentTimeMillis();
 		for (int k=0; k<fi.stripOffsets.length; k++) {
 			if (k > 0) {
 				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
@@ -216,7 +207,7 @@ public class ImageReader {
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
-			showProgress((double)totalRead/byteCount);
+			showProgress(totalRead, byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
 			int j = 0;
 			if (fi.intelByteOrder)
@@ -267,7 +258,7 @@ public class ImageReader {
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
-			showProgress((double)totalRead/byteCount);
+			showProgress(totalRead, byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
 			int j = 0;
 			for (int i=base; i < (base+pixelsRead); i++) {
@@ -288,7 +279,6 @@ public class ImageReader {
 	int[] readChunkyRGB(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressedChunkyRGB(in);
-		startTime = System.currentTimeMillis();
 		int pixelsRead;
 		bufferSize = 24*width;
 		byte[] buffer = new byte[bufferSize];
@@ -354,7 +344,6 @@ public class ImageReader {
 		int red=0, green=0, blue=0;
 		boolean bgr = fi.fileType==FileInfo.BGR;
 		boolean differencing = fi.compression == FileInfo.LZW_WITH_DIFFERENCING;
-		startTime = System.currentTimeMillis();
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (i > 0) {
 				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
@@ -459,7 +448,7 @@ public class ImageReader {
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
-			showProgress((double)totalRead/byteCount);
+			showProgress(totalRead, byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
 			if (fi.intelByteOrder) {
 				for (int i=base,j=0; i<(base+pixelsRead); i++) {
@@ -582,61 +571,76 @@ public class ImageReader {
 	was an IO exception. Does not close the InputStream.
 	*/
 	public Object readPixels(InputStream in) {
+		Object pixels;
+		startTime = System.currentTimeMillis();
 		try {
 			switch (fi.fileType) {
 				case FileInfo.GRAY8:
 				case FileInfo.COLOR8:
 					bytesPerPixel = 1;
 					skip(in);
-					return (Object)read8bitImage(in);
+					pixels = (Object)read8bitImage(in);
+					break;
 				case FileInfo.GRAY16_SIGNED:
 				case FileInfo.GRAY16_UNSIGNED:
 					bytesPerPixel = 2;
 					skip(in);
-					return (Object)read16bitImage(in);
+					pixels = (Object)read16bitImage(in);
+					break;
 				case FileInfo.GRAY32_INT:
 				case FileInfo.GRAY32_UNSIGNED:
 				case FileInfo.GRAY32_FLOAT:
 					bytesPerPixel = 4;
 					skip(in);
-					return (Object)read32bitImage(in);
+					pixels = (Object)read32bitImage(in);
+					break;
 				case FileInfo.GRAY64_FLOAT:
 					bytesPerPixel = 8;
 					skip(in);
-					return (Object)read64bitImage(in);
+					pixels = (Object)read64bitImage(in);
+					break;
 				case FileInfo.RGB:
 				case FileInfo.BGR:
 				case FileInfo.ARGB:
 				case FileInfo.BARG:
 					bytesPerPixel = fi.getBytesPerPixel();
 					skip(in);
-					return (Object)readChunkyRGB(in);
+					pixels = (Object)readChunkyRGB(in);
+					break;
 				case FileInfo.RGB_PLANAR:
 					bytesPerPixel = 3;
 					skip(in);
-					return (Object)readPlanarRGB(in);
+					pixels = (Object)readPlanarRGB(in);
+					break;
 				case FileInfo.BITMAP:
 					bytesPerPixel = 1;
 					skip(in);
-					return (Object)read1bitImage(in);
+					pixels = (Object)read1bitImage(in);
+					break;
 				case FileInfo.RGB48:
 					bytesPerPixel = 6;
 					skip(in);
-					return (Object)readRGB48(in);
+					pixels = (Object)readRGB48(in);
+					break;
 				case FileInfo.RGB48_PLANAR:
 					bytesPerPixel = 2;
 					skip(in);
-					return (Object)readRGB48Planar(in);
+					pixels = (Object)readRGB48Planar(in);
+					break;
 				case FileInfo.GRAY12_UNSIGNED:
 					skip(in);
 					short[] data = read12bitImage(in);
-					return (Object)data;
+					pixels = (Object)data;
+					break;
 				case FileInfo.GRAY24_UNSIGNED:
 					skip(in);
-					return (Object)read24bitImage(in);
+					pixels = (Object)read24bitImage(in);
+					break;
 				default:
-					return null;
+					pixels = null;
 			}
+			showProgress(1, 1);
+			return pixels;
 		}
 		catch (IOException e) {
 			IJ.log("" + e);
