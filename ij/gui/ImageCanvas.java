@@ -1032,7 +1032,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			Rectangle r = roi.getBounds();
 			int type = roi.getType();
 			if ((r.width==0 || r.height==0)
-			&& !(type==Roi.POLYGON || type==Roi.POLYLINE || type==Roi.ANGLE)
+			&& !(type==Roi.POLYGON||type==Roi.POLYLINE||type==Roi.ANGLE||type==Roi.LINE)
 			&& !(roi instanceof TextRoi)
 			&& roi.getState()==roi.CONSTRUCTING
 			&& type!=roi.POINT)

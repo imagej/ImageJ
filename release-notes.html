@@ -5,36 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.38s, 24 May 2007</u>
+<li> <u>1.38t, 25 May 2007</u>
 <ul>
-<li>The <i>Gaussian Blur </i>and <i>Unsharp Mask</i> filters now display a single progress bar instead of 
-two (grayscale images) or six (RGB images).
-<li> When saving in JPEG format, the current quality setting (0-100) is displayed in the title bar of
-the "Save As" dialog.
-<li> Added the ROI Manager <i>More&gt;&gt;Remove Slice Info</i> and <i>More&gt;&gt;Specify</i> commands.
-<li> The ROI Manager <i>Measure</i> command no longer displays a "Process Stack?" dialog.
-<li> ImageJ now opens gzipped FITS (".fits.gz") and raw (".gz") images.
-<li> The File.directory and File.name macro functions now return the path to the last file dragged and dropped
-on the ImageJ window.
-<li> Added the getDimensions(width,height,channels,slices,frames) macro function.
-<li> Added the IJ.getScreenSize() method.
-<li> Added a getBounds() method to the Line class.
-<li> Added the OpenDialog.setLastDirectory() and OpenDialog.setLastName() methods.
-<li> Added the setInitialParameters(double[]) method to the CurveFitter class.
-<li> Fixed bugs that could cause ImageJ to hang, especially when using the Sync_Windows plugin or when quitting.
-<li> Fixed a bug that sometimes caused <i>File&gt;New&gt;Image</i> and <i>File&gt;Open</i> to display 
-a duplicate dialog box when invoked by typing ctrl-n or ctrl-o.
-<li> Fixed a bug that caused dialog boxes to be incorrectly positioned on multi-monitor Linux systems.
-<li> Fixed a bug that caused the standard deviation calculated by <i>Analyze&gt;Tools&gt;Curve Fitting</i>
-to be incorrect.
-<li> Fixed a bug that could cause an exception when opening 16-bit grayscale PNGs.
-<li> Fixed a bug that caused directories with spaces in the path to fail to open when dragged 
-and dropped on the ImageJ window.
-<li> Fixed a bug that could cause an exception in the particle analyzer when
-processing a stack with more than 10,000 particles and adding them to the ROI Manager.
-<li> Fixed a bug, introduced in v1.38q, that caused stacks with blank slice labels
-to not be correctly saved in TIFF format.
-<li> Fixed a bug, introduced in v1.38n,  that could cause an exception when opening multiple 48-bit tiff images using JFileChooser.
+<li> Fixed a bug that caused <i>File&gt;Revert</i> to fail on images that 
+had been re-saved in TIFF format.
+
 </ul>
 
 </body>

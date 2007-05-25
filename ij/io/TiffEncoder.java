@@ -88,6 +88,7 @@ public class TiffEncoder {
 		int descriptionSize = description!=null?description.length:0;
 		scaleSize = fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0?SCALE_DATA_SIZE:0;
 		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + metaDataEntries*4 + metaDataSize;
+		fi.offset = (int)imageOffset;
 		//ij.IJ.log(imageOffset+", "+ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize+", "+metaDataEntries*4+", "+metaDataSize);
 	}
 	
