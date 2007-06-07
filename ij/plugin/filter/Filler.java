@@ -12,13 +12,14 @@ public class Filler implements PlugInFilter {
 	ImagePlus imp;
 	int sliceCount;
 	int[] mask;
+	boolean isTextRoi;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
 		this.imp = imp;
 		if (imp!=null)
 			roi = imp.getRoi();			
-		boolean isTextRoi = roi!=null && (roi instanceof TextRoi);
+		isTextRoi = roi!=null && (roi instanceof TextRoi);
 		IJ.register(Filler.class);
 		int baseCapabilities = DOES_ALL+ROI_REQUIRED;
 	 	if (arg.equals("clear")) {
@@ -26,21 +27,20 @@ public class Filler implements PlugInFilter {
 				return baseCapabilities;
 			else
 				return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
-		} else if (arg.equals("draw")) {
-	 		if (isTextRoi)
-				return baseCapabilities+SUPPORTS_MASKING;
-			else
+		} else if (arg.equals("draw"))
 				return baseCapabilities;
-		} else if (arg.equals("outside")) {
+		else if (arg.equals("outside"))
 				return IJ.setupDialog(imp,baseCapabilities);
-		} else
+		else
 			return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
 	 	if (arg.equals("clear"))
 	 		clear(ip);
-	 	else if (arg.equals("fill") || (arg.equals("draw")&&(roi instanceof TextRoi)))
+	 	else if (isTextRoi && (arg.equals("draw") || arg.equals("fill")))
+	 		draw(ip);
+	 	else if (arg.equals("fill"))
 	 		fill(ip);
 	 	else if (arg.equals("draw"))
 			draw(ip);
@@ -130,4 +130,5 @@ public class Filler implements PlugInFilter {
  				mask[i] = ImageProcessor.BLACK;
  		}
  	}
+
 }

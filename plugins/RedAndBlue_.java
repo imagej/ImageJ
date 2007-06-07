@@ -8,7 +8,7 @@ import ij.plugin.PlugIn;
 public class RedAndBlue_ implements PlugIn {
 
 	public void run(String arg) {
-		int w = 40, h = 40;
+		int w = 400, h = 400;
 		ImageProcessor ip = new ColorProcessor(w, h);
 		int[] pixels = (int[])ip.getPixels();
 		int i = 0;

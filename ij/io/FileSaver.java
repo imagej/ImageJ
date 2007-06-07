@@ -160,7 +160,8 @@ public class FileSaver {
 		if (!okForGif(imp))
 			return false;
 		try {
-			GifEncoder encoder = new GifEncoder(fi.width, fi.height, (byte[])fi.pixels, fi.reds, fi.greens, fi.blues);
+			byte[] pixels = (byte[])imp.getProcessor().getPixels();
+			GifEncoder encoder = new GifEncoder(fi.width, fi.height, pixels, fi.reds, fi.greens, fi.blues);
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
 			encoder.write(output);
 			output.close();
@@ -190,15 +191,23 @@ public class FileSaver {
 
 	/** Save the image in JPEG format using the specified path. */
 	public boolean saveAsJpeg(String path) {
-		try {
-			OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
-			JpegEncoder encoder = new JpegEncoder(imp.getImage(), JpegEncoder.getQuality(), output);
-			encoder.Compress();
-			output.close();
+		Object jpegWriter = null;
+		if (IJ.isJava2()) {
+			WindowManager.setTempCurrentImage(imp);
+			jpegWriter = IJ.runPlugIn("ij.plugin.JpegWriter", path);
+			WindowManager.setTempCurrentImage(null);
 		}
-		catch (IOException e) {
-			showErrorMessage(e);
-			return false;
+		if (jpegWriter==null) {
+			try {
+				OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
+				JpegEncoder encoder = new JpegEncoder(imp.getImage(), JpegEncoder.getQuality(), output);
+				encoder.Compress();
+				output.close();
+			}
+			catch (IOException e) {
+				showErrorMessage(e);
+				return false;
+			}
 		}
 		if (!(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
 			updateImp(fi, fi.GIF_OR_JPG);
@@ -364,6 +373,8 @@ public class FileSaver {
 			}
 			sb.append("vunit="+fi.valueUnit+"\n");
 		}
+		
+		// get stack z-spacing and fps
 		if (fi.nImages>1) {
 			if (fi.pixelDepth!=0.0 && fi.pixelDepth!=1.0)
 				sb.append("spacing="+fi.pixelDepth+"\n");
@@ -375,6 +386,8 @@ public class FileSaver {
 					sb.append("fps="+fps+"\n");
 			}
 		}
+		
+		// get min and max display values
 		ImageProcessor ip = imp.getProcessor();
 		double min = ip.getMin();
 		double max = ip.getMax();
@@ -384,6 +397,17 @@ public class FileSaver {
 			sb.append("min="+min+"\n");
 			sb.append("max="+max+"\n");
 		}
+		
+		// get non-zero origins
+		Calibration cal = imp.getCalibration();
+		if (cal.xOrigin!=0.0)
+			sb.append("xorigin="+cal.xOrigin+"\n");
+		if (cal.yOrigin!=0.0)
+			sb.append("yorigin="+cal.yOrigin+"\n");
+		if (cal.zOrigin!=0.0)
+			sb.append("zorigin="+cal.zOrigin+"\n");
+		if (cal.info!=null && cal.info.length()<=64 && cal.info.indexOf('=')==-1 && cal.info.indexOf('\n')==-1)
+			sb.append("info="+cal.info+"\n");			
 		sb.append((char)0);
 		return new String(sb);
 	}

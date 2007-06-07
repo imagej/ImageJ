@@ -57,6 +57,11 @@ public class Converter implements PlugIn {
 					new StackConverter(imp).convertToGray32();
 				else if (item.equals("RGB Color"))
 					new StackConverter(imp).convertToRGB();
+		    	else if (item.equals("8-bit Color")) {
+		    		int nColors = getNumber();
+		    		if (nColors!=0)
+						new StackConverter(imp).convertToIndexedColor(nColors);
+				}
 		    	else throw new IllegalArgumentException();
 			} else {
 				// do single image conversions
@@ -81,11 +86,9 @@ public class Converter implements PlugIn {
 		    	} else if (item.equals("RGB Color")) {
 					ic.convertToRGB();
 		    	} else if (item.equals("8-bit Color")) {
-		    		int nColors = 256;
-					if (type==ImagePlus.COLOR_RGB)
-						nColors = (int)IJ.getNumber("Number of Colors (2-256):", 256);
+		    		int nColors = getNumber();
 		 			start = System.currentTimeMillis();
-					if (nColors!=IJ.CANCELED)
+					if (nColors!=0)
 						ic.convertRGBtoIndexedColor(nColors);
 				} else {
 					imp.changes = saveChanges;
@@ -127,7 +130,7 @@ public class Converter implements PlugIn {
 			"8-bit Color -> 8-bit (grayscale)*\n" +
 			"8-bit Color -> RGB Color\n" +
 			"RGB Color -> 8-bit (grayscale)*\n" +
-			"RGB Color -> 8-bit Color\n" +
+			"RGB Color -> 8-bit Color*\n" +
 			"RGB Color -> RGB Stack\n" +
 			"RGB Color -> HSB Stack\n" +
 			"RGB Stack -> RGB Color\n" +
@@ -137,4 +140,18 @@ public class Converter implements PlugIn {
 			);
 	}
 
+	int getNumber() {
+		if (imp.getType()!=ImagePlus.COLOR_RGB)
+			return 256;
+		GenericDialog gd = new GenericDialog("MedianCut");
+		gd.addNumericField("Number of Colors (2-256):", 256, 0);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return 0;
+		int n = (int)gd.getNextNumber();
+		if (n<2) n = 2;
+		if (n>256) n = 256;
+		return n;
+	}
+		
 }

@@ -171,7 +171,7 @@ public class Info implements PlugInFilter {
 	}
 
 	void showInfo(String info, int width, int height) {
-		TextWindow tw = new TextWindow("Info for "+imp.getTitle(), info, width, height);
+		new TextWindow("Info for "+imp.getTitle(), info, width, height);
 	}
 
 }

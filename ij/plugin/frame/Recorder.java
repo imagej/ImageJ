@@ -47,7 +47,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		add("Center", textArea);
 		pack();
 		GUI.center(this);
-		setVisible(true);
+		show();
 		IJ.register(Recorder.class);
 	}
 
@@ -65,12 +65,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		//IJ.write("setCommand: "+command);
 	}
 
-	public static void record(String method, String arg) {
-		if (textArea==null)
-			return;
-		textArea.append(method+"(\""+arg+"\");\n");
-	}
-
 	static String fixPath (String path) {
 		StringBuffer sb = new StringBuffer();
 		char c;
@@ -82,40 +76,39 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		return new String(sb);
 	}
 
+	public static void record(String method, String arg) {
+		if (textArea==null) return;
+		textArea.append(method+"(\""+arg+"\");\n");
+	}
+
 	public static void record(String method, int a1) {
-		if (textArea==null)
-			return;
+		if (textArea==null) return;
 		textArea.append(method+"("+a1+");\n");
 	}
 
 	public static void record(String method, int a1, int a2) {
-		if (textArea==null)
-			return;
+		if (textArea==null) return;
 		textArea.append(method+"("+a1+", "+a2+");\n");
 	}
 
 	public static void record(String method, int a1, int a2, int a3) {
-		if (textArea==null)
-			return;
+		if (textArea==null) return;
 		textArea.append(method+"("+a1+", "+a2+", "+a3+");\n");
 	}
 
 	public static void record(String method, String args, int a1, int a2) {
-		if (textArea==null)
-			return;
+		if (textArea==null) return;
 		method = "//"+method;
 		textArea.append(method+"(\""+args+"\", "+a1+", "+a2+");\n");
 	}
 
 	public static void record(String method, int a1, int a2, int a3, int a4) {
-		if (textArea==null)
-			return;
+		if (textArea==null) return;
 		textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+");\n");
 	}
 
 	public static void record(String method, String path, String args, int a1, int a2, int a3, int a4, int a5) {
-		if (textArea==null)
-			return;
+		if (textArea==null) return;
 		path = fixPath(path);
 		method = "//"+method;
 		textArea.append(method+"(\""+path+"\", "+"\""+args+"\", "+a1+", "+a2+", "+a3+", "+a4+", "+a5+");\n");
@@ -158,7 +151,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		index = key.indexOf(":");
 		if (index>-1)
 			key = key.substring(0,index);
-		key = key.toLowerCase();
+		key = key.toLowerCase(Locale.US);
 		return key;
 	}
 

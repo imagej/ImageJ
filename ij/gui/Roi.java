@@ -32,9 +32,9 @@ public class Roi extends Object implements Cloneable {
 	protected boolean constrain = false;
 	protected boolean updateFullWindow;
 
-	/** Creates a new rectangular Roi. The ImagePlus argument can be null. */
-	public Roi(int x, int y, int width, int height, ImagePlus imp) {
-		setImage(imp);
+	/** Creates a new rectangular Roi. */
+	public Roi(int x, int y, int width, int height) {
+		setImage(null);
 		if (width>xMax) width = xMax;
 		if (height>yMax) height = yMax;
 		//setLocation(x, y);
@@ -69,6 +69,12 @@ public class Roi extends Object implements Cloneable {
 		type = RECTANGLE;
 	}
 	
+	/** Obsolete */
+	public Roi(int x, int y, int width, int height, ImagePlus imp) {
+		this(x, y, width, height);
+		setImage(imp);
+	}
+
 	public void setLocation(int x, int y) {
 		if (x<0) x = 0;
 		if (y<0) y = 0;
@@ -106,7 +112,13 @@ public class Roi extends Object implements Cloneable {
 	
 	/** Returns the perimeter length. */
 	public double getLength() {
-		return 2*(width+height);
+		double pw=1.0, ph=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			pw = cal.pixelWidth;
+			ph = cal.pixelHeight;
+		}
+		return 2.0*width*pw+2.0*height*ph;
 	}
 	
 	public Rectangle getBoundingRect() {
@@ -234,10 +246,12 @@ public class Roi extends Object implements Cloneable {
 		clipY = (y<=oldY)?y:oldY;
 		clipWidth = ((x+width>=oldX+oldWidth)?x+width:oldX+oldWidth) - clipX + 1;
 		clipHeight = ((y+height>=oldY+oldHeight)?y+height:oldY+oldHeight) - clipY + 1;
-		double mag = ic.getMagnification();
-		if (mag<1.0) {
-			clipWidth += (int)(1/mag);
-			clipHeight += (int)(1/mag);
+		if (ic!=null) {
+			double mag = ic.getMagnification();
+			if (mag<1.0) {
+				clipWidth += (int)(1/mag);
+				clipHeight += (int)(1/mag);
+			}
 		}
 		if (clipboard!=null && type!=RECTANGLE) {
 			clipWidth += 5;
@@ -360,11 +374,11 @@ public class Roi extends Object implements Cloneable {
 	
 	void startPaste(ImagePlus clipboard) {
 		IJ.showStatus("Pasting...");
+		this.clipboard = clipboard;
 		imp.getProcessor().snapshot();
 		updateClipRect(); //v1.24e
 		if (IJ.debugMode) IJ.log("startPaste: "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
-		this.clipboard = clipboard;
 	}
 	
 	void updatePaste() {

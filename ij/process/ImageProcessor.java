@@ -2,8 +2,10 @@ package ij.process;
 
 import java.util.*;
 import java.awt.*;
-import java.awt.image.*; 
+import java.awt.image.*;
+import java.lang.reflect.*; 
 import ij.gui.*;
+import ij.util.Java2;
 
 /**
 This abstract class is the superclass for classes that process
@@ -17,7 +19,7 @@ public abstract class ImageProcessor extends Object {
 	/** Value returned by getMinThreshold() when thresholding is not enabled. */
 	public static final double NO_THRESHOLD = -808080.0;
 	
-	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2;
+	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
@@ -29,6 +31,8 @@ public abstract class ImageProcessor extends Object {
 	protected int cx, cy; //current drawing coordinates
 	protected Font font;
 	protected FontMetrics fontMetrics;
+	protected boolean antialiasedText;
+	protected boolean boldFont;
 	static Frame frame;
 		
     ProgressBar progressBar;
@@ -51,7 +55,8 @@ public abstract class ImageProcessor extends Object {
 	protected MemoryImageSource source;
 	protected Image img;
 	protected boolean newPixels;
-	
+	protected Color drawingColor = Color.black;
+		
 	protected void showProgress(double percentDone) {
 		if (progressBar!=null)
         	progressBar.show(percentDone);
@@ -222,20 +227,21 @@ public abstract class ImageProcessor extends Object {
 		ByteProcessors, resets the LUT. */
 	public void resetMinAndMax() {}
 
-	/** Sets the lower and upper threshold levels. If 'lutUdate' is true,
-		recalculates the LUT. Thresholding of RGB images is not supported. */
+	/** Sets the lower and upper threshold levels. The 'lutUpdate' argument
+		can be RED_LUT, BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.
+		Thresholding of RGB images is not supported. */
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		//ij.IJ.write("setThreshold: "+" "+minThreshold+" "+maxThreshold+" "+lutUpdate);
 		if (this instanceof ColorProcessor)
 			return;
 		this.minThreshold = minThreshold;
 		this.maxThreshold = maxThreshold;
-		
+
 		if (minThreshold==NO_THRESHOLD) {
 			resetThreshold();
 			return;
 		}
-		
+
 		if (lutUpdate==NO_LUT_UPDATE)
 			return;
 		if (rLUT1==null) {
@@ -244,7 +250,7 @@ public abstract class ImageProcessor extends Object {
 			baseCM = cm;
 			IndexColorModel m = (IndexColorModel)cm;
 			rLUT1 = new byte[256]; gLUT1 = new byte[256]; bLUT1 = new byte[256];
-			m.getReds(rLUT1); m.getGreens(gLUT1); m.getBlues(bLUT1); 
+			m.getReds(rLUT1); m.getGreens(gLUT1); m.getBlues(bLUT1);
 			rLUT2 = new byte[256]; gLUT2 = new byte[256]; bLUT2 = new byte[256];
 		}
 		int t1 = (int)minThreshold;
@@ -262,7 +268,7 @@ public abstract class ImageProcessor extends Object {
 					bLUT2[i] = bLUT1[i];
 				}
 			}
-		else
+		else if (lutUpdate==BLACK_AND_WHITE_LUT)
 			for (int i=0; i<256; i++) {
 				if (i>=t1 && i<=t2) {
 					rLUT2[i] = (byte)0;
@@ -271,6 +277,23 @@ public abstract class ImageProcessor extends Object {
 				} else {
 					rLUT2[i] = (byte)255;
 					gLUT2[i] = (byte)255;
+					bLUT2[i] = (byte)255;
+				}
+			}
+		else
+			for (int i=0; i<256; i++) {
+				if (i>=t1 && i<=t2) {
+					rLUT2[i] = rLUT1[i];
+					gLUT2[i] = gLUT1[i];
+					bLUT2[i] = bLUT1[i];
+
+				} else if (i>t2) {
+					rLUT2[i] = (byte)0;
+					gLUT2[i] = (byte)255;
+					bLUT2[i] = (byte)0;
+				} else { 
+					rLUT2[i] = (byte)0;
+					gLUT2[i] = (byte)0; 
 					bLUT2[i] = (byte)255;
 				}
 			}
@@ -320,8 +343,12 @@ public abstract class ImageProcessor extends Object {
 			//find intersection of roi and this image
 			Rectangle r1 = new Rectangle(x, y, rwidth, rheight);
 			Rectangle r2 = r1.intersection(new Rectangle(0, 0, width, height));
-			if (r2.width<=0 || r2.height<=0)
-				throw new IllegalArgumentException(""+new Rectangle(x,y,rwidth,rheight));
+			if (r2.width<=0 || r2.height<=0) {
+				roiX=0; roiY=0; roiWidth=0; roiHeight=0;
+				xMin=0; xMax=0; yMin=0; yMax=0;
+				mask=null;
+				return;
+			}
 			if (mask!=null && mask.length==rwidth*rheight) {
 				Rectangle r3 = new Rectangle(0, 0, r2.width, r2.height);
 				if (x<0) r3.x = -x;
@@ -595,7 +622,7 @@ public abstract class ImageProcessor extends Object {
 			frame.setBackground(Color.white);
 		}
 		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 9);
+			font = new Font("SansSerif", Font.PLAIN, 12);
 		if (fontMetrics==null) {
 			frame.setFont(font);
 			fontMetrics = frame.getFontMetrics(font);
@@ -607,15 +634,40 @@ public abstract class ImageProcessor extends Object {
 		if (s.equals(""))
 			return;
 		setupFrame();
-		int w =  fontMetrics.stringWidth(s);
+		int w =  getStringWidth(s);
+		//if (antialiasedText)
+		//	w = boldFont?(int)(1.15*w):(int)(1.08*w);
 		int h =  fontMetrics.getHeight();
 		Image img = frame.createImage(w, h);
 		Graphics g = img.getGraphics();
-		g.setColor(Color.black);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
 		g.setFont(font);
+
+		if (antialiasedText) {
+			Java2.setAntialiasedText(g, true);
+			setRoi(cx,cy-h,w,h);
+			ImageProcessor ip = crop();
+			setRoi(null);
+			g.drawImage(ip.createImage(), 0, 0, null);
+			g.setColor(drawingColor);
+			g.drawString(s, 0, h-descent);
+			g.dispose();
+			ip = new ColorProcessor(img);
+			if (this instanceof ByteProcessor) {
+				ip = ip.convertToByte(false);
+				if (isInvertedLut()) ip.invert();
+			}
+			//new ij.ImagePlus("ip",ip).show();
+			insert(ip, cx, cy-h);
+			cy += h;
+			return;
+		}
+		
+		if (ij.IJ.isMacOSX())
+			Java2.setAntialiasedText(g, false);
+		g.setColor(Color.black);
 		g.drawString(s, 0, h-descent);
 		g.dispose();
 		//new ij.ImagePlus("img",img).show();
@@ -625,14 +677,16 @@ public abstract class ImageProcessor extends Object {
 			if (textMask[i]!=0xffffffff && textMask[i]!=0xff00ffff)
 				textMask[i] = BLACK;
 		}
-		setMask(textMask);
-		setRoi(cx,cy-h,w,h);
-		fill(getMask());
+		if (cx<width && cy-h<height) {
+			setMask(textMask);
+			setRoi(cx,cy-h,w,h);
+			fill(getMask());
+		}
 		setRoi(null);
 		setMask(null);
 		cy += h;
 	}
-	
+
 	/** Draws a string at the specified location using the current fill/draw value. */
 	public void drawString(String s, int x, int y) {
 		moveTo(x, y);
@@ -643,12 +697,30 @@ public abstract class ImageProcessor extends Object {
 	public void setFont(Font font) {
 		this.font = font;
 		fontMetrics	= null;
+		boldFont = font.isBold();
 	}
 	
+	/** Specifies whether or not text is drawn using antialiasing. Antialiased
+		test requires Java 2 and an 8 bit or RGB image. */
+	public void setAntialiasedText(boolean antialiasedText) {
+		if (antialiasedText && ij.IJ.isJava2() && ((this instanceof ByteProcessor) || (this instanceof ColorProcessor)))
+			this.antialiasedText = true;
+		else
+			this.antialiasedText = false;
+	}
+
 	/** Returns the width in pixels of the specified string. */
 	public int getStringWidth(String s) {
 		setupFrame();
-		return fontMetrics.stringWidth(s);
+		int w;
+		if (antialiasedText) {
+			Graphics g = frame.getGraphics();
+			Java2.setAntialiasedText(g, true);
+			w = Java2.getStringWidth(s, fontMetrics, g);
+			g.dispose();
+		} else
+			w =  fontMetrics.stringWidth(s);
+		return w;
 	}
 	
 	/** Returns the current FontMetrics. */
@@ -791,6 +863,22 @@ public abstract class ImageProcessor extends Object {
 		Returns zero if either the x or y coodinate is out of range. */
 	public abstract int getPixel(int x, int y);
 	
+    /** Returns the samples for the pixel at (x,y) in an int array.
+    	RGB pixels have three samples, all others have one.
+		Returns zeros if the the coordinates are not in bounds.
+		iArray is an optional preallocated array. */
+	public int[] getPixel(int x, int y, int[] iArray) {
+		if (iArray==null) iArray = new int[1];
+		iArray[0] = getPixel(x, y);
+		return iArray;
+	}
+
+	/** Sets a pixel in the image using an int array of samples.
+		RGB pixels have three samples, all others have one. */
+	public void putPixel(int x, int y, int[] iArray) {
+		putPixel(x, y, iArray[0]);
+	}
+
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
 
@@ -966,13 +1054,13 @@ public abstract class ImageProcessor extends Object {
 		newPixels = true;
 	}
 
-	/** Convertes this processor to a ByteProcessor. */
+	/** Converts this processor to a ByteProcessor. */
 	public ImageProcessor convertToByte(boolean doScaling) {
 		TypeConverter tc = new TypeConverter(this, doScaling);
 		return tc.convertToByte();
 	}
 
-	/** Convertes this processor to a ShortProcessor. */
+	/** Converts this processor to a ShortProcessor. */
 	public ImageProcessor convertToShort(boolean doScaling) {
 		TypeConverter tc = new TypeConverter(this, doScaling);
 		return tc.convertToShort();
@@ -986,11 +1074,13 @@ public abstract class ImageProcessor extends Object {
 		return tc.convertToFloat(cTable);
 	}
 	
-	/** Convertes this processor to an ColorProcessor. */
+	/** Converts this processor to an ColorProcessor. */
 	public ImageProcessor convertToRGB() {
 		TypeConverter tc = new TypeConverter(this, true);
 		return tc.convertToRGB();
 	}
-
+	
+	/** Performs a convolution operation using the specified kernel. */
+	public abstract void convolve(float[] kernel, int kernelWidth, int kernelHeight);
+	
 }
-

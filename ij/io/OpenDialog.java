@@ -27,7 +27,7 @@ import ij.plugin.frame.Recorder;
 			if (defaultDirectory!=null)
 				fd.setDirectory(defaultDirectory);
 			GUI.center(fd);
-			fd.setVisible(true);
+			fd.show();
 			name = fd.getFile();
 			if (name==null)
 				Macro.abort();

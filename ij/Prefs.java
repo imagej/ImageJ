@@ -10,6 +10,7 @@ import ij.util.Tools;
 import ij.gui.*;
 import ij.plugin.filter.*;
 import ij.process.ImageConverter;
+import ij.plugin.Animator;
 /**
 This class contains the ImageJ preferences, which are 
 loaded from the "IJ_Props.txt" and "IJ_Prefs.txt" files.
@@ -25,11 +26,18 @@ public class Prefs {
 	public static final String ROICOLOR = "roicolor";
 	public static final String JPEG = "jpeg";
 	public static final String USE_POINTER = "pcursor";
-	//public static final String SCALE_CONVERSIONS = "scale";
+	public static final String FPS = "fps";
+	public static final String ANTIALIASING = "antialiasing";
+	public static final String INTERPOLATE = "interpolate";
+	
 	
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
-	
+	/** Display antialiased text? */
+	public static boolean antialiasedText = true;
+	/** Display images scaled <100% using bilinear interpolation? */
+	public static boolean interpolateScaledImages;
+
 	static Properties prefs = new Properties();
 	static Properties props = new Properties(prefs);
 	static String prefsDir;
@@ -61,6 +69,8 @@ public class Prefs {
 		catch (IOException e) {return("Error loading "+PROPS_NAME);}
 		imagesURL = props.getProperty("images.location");
 		loadPreferences();
+		antialiasedText = getBoolean(ANTIALIASING, true);
+		interpolateScaledImages = getBoolean(INTERPOLATE, false);
 		return null;
 	}
 	
@@ -170,7 +180,9 @@ public class Prefs {
 			prefs.put(BCOLOR, Tools.c2hex(Toolbar.getBackgroundColor()));
 			prefs.put(JPEG, Integer.toString(JpegEncoder.getQuality()));
 			prefs.put(USE_POINTER, ImageCanvas.usePointer?"true":"false");
-			//prefs.put(SCALE_CONVERSIONS, ImageConverter.getDoScaling()?"true":"false");
+			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
+			prefs.put(ANTIALIASING, antialiasedText?"true":"false");
+			prefs.put(INTERPOLATE, interpolateScaledImages?"true":"false");
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);

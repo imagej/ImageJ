@@ -12,10 +12,12 @@ public class WindowManager {
 	private static Vector nonImageList = new Vector();	// list of non-image windows
 	private static ImageWindow currentWindow;			// active image window
 	private static Frame frontWindow;
+	private static ImagePlus tempCurrentImage;
 
 	/** Makes the specified image active. */
 	public synchronized static void setCurrentWindow(ImageWindow win) {
 		setWindow(win);
+		tempCurrentImage = null;
 		if (win==currentWindow || win==null || imageList.size()==0)
 			return;
 		//if (IJ.debugMode && win!=null)
@@ -55,7 +57,9 @@ public class WindowManager {
 	/** Returns the active ImagePlus. */
 	public synchronized static ImagePlus getCurrentImage() {
 		//if (IJ.debugMode) IJ.write("ImageWindow.getCurrentImage");
-		if (currentWindow!=null)
+		if (tempCurrentImage!=null)
+			return tempCurrentImage;
+		else if (currentWindow!=null)
 			return currentWindow.getImagePlus();
 		else
 			return null;
@@ -193,6 +197,14 @@ public class WindowManager {
 		Menus.updateMenus();
     }
 
+	/** Makes the specified image temporarily the active image.
+		Allows use of IJ.run() commands on images that
+		are not displayed in a window. Call again with a null
+		argument to revert to the previous active image. */
+	public static void setTempCurrentImage(ImagePlus imp) {
+		tempCurrentImage = imp;
+    }
+
 	/** Activates a window selected from the Window menu. */
 	synchronized static void activateWindow(String menuItemLabel, MenuItem item) {
 		//IJ.write("activateWindow: "+menuItemLabel+" "+item);
@@ -225,7 +237,7 @@ public class WindowManager {
 		}
     }
     
-	static void showList() {
+    static void showList() {
 		if (IJ.debugMode) {
 			for (int i=0; i<imageList.size(); i++) {
 				ImageWindow win = (ImageWindow)imageList.elementAt(i);

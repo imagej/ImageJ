@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.*;
 import java.util.zip.*;
+import java.util.Locale;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
@@ -86,9 +87,16 @@ public class Opener {
 			case TIFF:
 				imp = openTiff(directory, name);
 				return imp;
-			case DICOM: case TIFF_AND_DICOM:
+			case DICOM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
 				if (imp.getWidth()!=0) return imp; else return null;
+			case TIFF_AND_DICOM:
+				// "hybrid" files created by GE-Senographe 2000 D */
+				imp = openTiff(directory,name);
+				ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
+				if (imp!=null)				
+					imp.setProperty("Info",imp2.getProperty("Info"));
+				return imp;
 			case FITS:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS", path);
 				if (imp.getWidth()!=0) return imp; else return null;
@@ -475,7 +483,7 @@ public class Opener {
 			return PGM;
 
 		// Lookup table
-		name = name.toLowerCase();
+		name = name.toLowerCase(Locale.US);
 		if (name.endsWith(".lut"))
 			return LUT;
 		

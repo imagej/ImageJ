@@ -19,14 +19,15 @@ public class ShortProcessor extends ImageProcessor {
 	/** Creates a new ShortProcessor using the specified pixel array and ColorModel.
 		Set 'cm' to null to use the default grayscale LUT. */
 	public ShortProcessor(int width, int height, short[] pixels, ColorModel cm) {
-		if (width*height!=pixels.length)
+		if (pixels!=null && width*height!=pixels.length)
 			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
 		this.pixels = pixels;
 		this.cm = cm;
 		setRoi(null);
-		findMinAndMax();
+		if (pixels!=null)
+			findMinAndMax();
 		fgColor = max;
 	}
 
@@ -45,7 +46,7 @@ public class ShortProcessor extends ImageProcessor {
 	public ShortProcessor(int width, int height,  boolean unsigned) {
 		this(width, height);
 	}
-
+	
 	public void findMinAndMax() {
 		if (fixedScale)
 			return;
@@ -410,7 +411,9 @@ public class ShortProcessor extends ImageProcessor {
 		Throws an IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
 	public void fill(int[] mask) {
-		if (mask==null || mask.length<roiWidth*roiHeight)
+		if (mask==null)
+			{fill(); return;}
+		if (mask.length!=roiWidth*roiHeight)
 			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
@@ -465,6 +468,8 @@ public class ShortProcessor extends ImageProcessor {
 				    + k4*p4 + k5*p5 + k6*p6
 				    + k7*p7 + k8*p8 + k9*p9;
 				sum /= scale;
+				if(sum>65535) sum = 65535;
+				if(sum<0) sum= 0;
 				pixels[offset++] = (short)sum;
 			}
 			if (y%inc==0)
@@ -751,6 +756,16 @@ public class ShortProcessor extends ImageProcessor {
 			this.maxThreshold = maxThreshold;
 		} else
 			super.resetThreshold();
+	}
+
+	/** Performs a convolution operation using the specified kernel. */
+	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
+		ImageProcessor ip2 = convertToFloat();
+		ip2.setRoi(getRoi());
+		new ij.plugin.filter.Convolver().convolve(ip2, kernel, kernelWidth, kernelHeight);
+		ip2 = ip2.convertToShort(false);
+		short[] pixels2 = (short[])ip2.getPixels();
+		System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
 	}
 
     public void noise(double range) {}

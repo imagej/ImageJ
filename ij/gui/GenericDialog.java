@@ -233,6 +233,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		add(theLabel);
 		Choice thisChoice = new Choice();
 		thisChoice.addKeyListener(this);
+		thisChoice.addItemListener(this);
 		for (int i=0; i<items.length; i++)
 			thisChoice.addItem(items[i]);
 		thisChoice.select(defaultItem);
@@ -475,10 +476,15 @@ TextListener, FocusListener, ItemListener, KeyListener {
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		cancel = new Button("Cancel");
 		cancel.addActionListener(this);
-		buttons.add(cancel);
 		okay = new Button("  OK  ");
 		okay.addActionListener(this);
-		buttons.add(okay);
+		if (IJ.isMacintosh()) {
+			buttons.add(cancel);
+			buttons.add(okay);
+		} else {
+			buttons.add(okay);
+			buttons.add(cancel);
+		}
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 2;
@@ -490,7 +496,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		pack();
 		setup();
 		GUI.center(this);
-		setVisible(true);
+		show();
 		IJ.wait(250); // work around for Sun/WinNT bug
   	}
     

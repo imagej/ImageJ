@@ -20,14 +20,15 @@ public class FloatProcessor extends ImageProcessor {
 	/** Creates a new FloatProcessor using the specified pixel array and ColorModel.
 		Set 'cm' to null to use the default grayscale LUT. */
 	public FloatProcessor(int width, int height, float[] pixels, ColorModel cm) {
-		if (width*height!=pixels.length)
+		if (pixels!=null && width*height!=pixels.length)
 			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
 		this.pixels = pixels;
 		this.cm = cm;
 		setRoi(null);
-		findMinAndMax();
+		if (pixels!=null)
+			findMinAndMax();
 	}
 
 	/** Creates a blank FloatProcessor using the default grayscale LUT that
@@ -193,6 +194,20 @@ public class FloatProcessor extends ImageProcessor {
 			return Float.floatToIntBits(pixels[y*width+x]);
 		else
 			return 0;
+	}
+
+    /** Returns the value of the pixel at (x,y) in a
+    	one element int array. iArray is an optiona
+		preallocated array. */
+	public int[] getPixel(int x, int y, int[] iArray) {
+		if (iArray==null) iArray = new int[1];
+		iArray[0] = (int)getPixelValue(x, y);
+		return iArray;
+	}
+
+	/** Sets a pixel in the image using a one element int array. */
+	public void putPixel(int x, int y, int[] iArray) {
+		putPixelValue(x, y, iArray[0]);
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -362,7 +377,9 @@ public class FloatProcessor extends ImageProcessor {
 		Throws an IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
 	public void fill(int[] mask) {
-		if (mask==null || mask.length<roiWidth*roiHeight)
+		if (mask==null)
+			{fill(); return;}
+		if (mask.length!=roiWidth*roiHeight)
 			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
@@ -686,6 +703,11 @@ public class FloatProcessor extends ImageProcessor {
 			this.maxThreshold = maxThreshold;
 		} else
 			super.resetThreshold();
+	}
+
+	/** Performs a convolution operation using the specified kernel. */
+	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
+		new ij.plugin.filter.Convolver().convolve(this, kernel, kernelWidth, kernelHeight);
 	}
 
 	public void threshold(int level) {}

@@ -45,7 +45,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		pack();
 		GUI.center(this);
 		setResizable(false);
-		setVisible(true);
+		show();
 	}
 	
 	public void itemStateChanged(ItemEvent e) {

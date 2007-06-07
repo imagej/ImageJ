@@ -91,6 +91,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 				setProcessor(fileName, imp.getProcessor());
 			setCalibration(imp.getCalibration());
 			setProperty("Info", dd.getDicomInfo());
+			setFileInfo(fi); // needed for revert
 			if (arg.equals("")) show();
 		} else
 			IJ.showMessage("DicomDecoder","Unable to decode DICOM header.");
@@ -307,6 +308,7 @@ class DicomDecoder {
 		fi.offset = 0;
 		fi.intelByteOrder = true;
 		fi.fileType = FileInfo.GRAY16_UNSIGNED;
+		fi.fileFormat = FileInfo.DICOM;
 		int samplesPerPixel = 1;
 		int planarConfiguration = 0;
 		String photoInterpretation = "";

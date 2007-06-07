@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Locale;
 import ij.measure.Calibration;
 
 public class ImageProperties implements PlugInFilter {
@@ -29,20 +30,22 @@ public class ImageProperties implements PlugInFilter {
 		oldUnitIndex = getUnitIndex(cal.getUnit());
 		oldUnitsPerCm = getUnitsPerCm(oldUnitIndex);
 		GenericDialog gd = new ImagePropertiesDialog(imp.getTitle(), this);
-		gd.addStringField("Unit of Measure:", cal.getUnit());
+		gd.addStringField("Unit of Length:", cal.getUnit());
 		oldScale = cal.pixelWidth!=0?1.0/cal.pixelWidth:0;
-		gd.addNumericField("Pixels/Unit:", oldScale, (int)oldScale==oldScale?0:2);
+		gd.addNumericField("Pixels/Unit:", oldScale, (int)oldScale==oldScale?0:3);
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
 			gd.addMessage("");
-			gd.addNumericField("Slice Spacing:", cal.pixelDepth, 2);
+			gd.addNumericField("Slice Spacing:", cal.pixelDepth, (int)cal.pixelDepth==cal.pixelDepth?0:3);
 			double fps = cal.frameInterval>0.0?1/cal.frameInterval:0.0;
 			gd.addNumericField("Frames per Second:", fps, (int)fps==fps?0:2);		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		String unit = gd.getNextString();
-		double resolution = gd.getNextNumber();
+        if (unit.equals("um"))
+            unit = "µm";
+ 		double resolution = gd.getNextNumber();
 		if (unit.equals("")||unit.equalsIgnoreCase("pixel")
 		||unit.equalsIgnoreCase("none")||resolution==0.0) {
 			cal.setUnit(null);
@@ -80,14 +83,14 @@ public class ImageProperties implements PlugInFilter {
 	}
 	
 	int getUnitIndex(String unit) {
-		unit = unit.toLowerCase();
+		unit = unit.toLowerCase(Locale.US);
 		if (unit.equals("cm")||unit.startsWith("cent"))
 			return CENTIMETER;
 		else if (unit.equals("mm")||unit.startsWith("milli"))
 			return MILLIMETER;
 		else if (unit.startsWith("inch"))
 			return INCH;
-		else if (unit.equals("um")||unit.startsWith("micro"))
+		else if (unit.equals("µm")||unit.equals("um")||unit.startsWith("micro"))
 			return MICROMETER;
 		else if (unit.equals("nm")||unit.startsWith("nano"))
 			return NANOMETER;

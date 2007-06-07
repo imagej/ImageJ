@@ -120,6 +120,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     			setStack(imp.getTitle(), imp.getStack());
     		else
      			setProcessor(imp.getTitle(), imp.getProcessor());
+     		setCalibration(imp.getCalibration());
    			if (isURL)
    				this.url = pathOrURL;
    			ID = --currentID;
@@ -181,7 +182,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			double progress;
 			while (!imageLoaded) {
 				//IJ.showStatus(imageUpdateY+" "+imageUpdateW);
-				IJ.wait(50);
+				IJ.wait(30);
 				if (imageUpdateW>1) {
 					progress = (double)imageUpdateY/imageUpdateW;
 					if (!(progress<1.0)) {
@@ -195,7 +196,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
-	/** Displays this image. If there is an ROI, its
+	/** Draws the image. If there is an ROI, its
 		outline is also displayed.  Does nothing if there
 		is no window associated with this image (i.e. show()
 		has not been called).*/
@@ -791,6 +792,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	public void setRoi(Roi roi) {
 		killRoi();
+		if (roi==null)
+			return;
 		this.roi = roi;
 		if (ip!=null) {
 			ip.setMask(null);
@@ -810,7 +813,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (r==null)
 			{killRoi(); return;}
 		killRoi();
-		roi = new Roi(r.x, r.y, r.width, r.height, this);
+		roi = new Roi(r.x, r.y, r.width, r.height);
+		roi.setImage(this);
 		if (ip!=null) {
 			ip.setMask(null);
 			ip.setRoi(r);
@@ -1064,9 +1068,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		//IJ.write("setCalibration: "+cal);
 		if (cal==null)
 			calibration = null;
-		else
+		else {
 			calibration = cal.copy();
- 		//globalCalibration = null;
+			if (imageType==GRAY32 || imageType==COLOR_RGB)
+				calibration.disableDensityCalibration();
+		}
    }
 
     /** Sets the system-wide calibration. */
@@ -1084,17 +1090,36 @@ public class ImagePlus implements ImageObserver, Measurements {
     */
     public void mouseMoved(int x, int y) {
 		IJ.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
+		savex=x; savey=y;
 	}
 	
+    private int savex, savey;
+    
+    /** Redisplays the (x,y) coordinates and pixel value (which may
+		have changed) in the status bar. Called by the Next Slice and
+		Previous Slice commands to update the z-coordinate and pixel value.
+    */
+	public void updateStatusbarValue() {
+		IJ.showStatus(getLocationAsString(savex,savey) + getValueAsString(savex,savey));
+	}
+
     /** Converts the current cursor location to a string. */
     public String getLocationAsString(int x, int y) {
 		Calibration cal = getCalibration();
 		y = Analyzer.updateY(y, height);
-		if (cal.scaled())
-			return " x="+IJ.d2s(cal.getX(x))+" ("+x+")"
-			+", y="+IJ.d2s(cal.getY(y))+" ("+y+")";
-		else
-			return " x="+x+", y=" + y;
+		if (cal.scaled()) {
+			if (getStackSize()>1)
+				return " x="+IJ.d2s(cal.getX(x))+", y="+IJ.d2s(cal.getY(y))
+				+", z="+IJ.d2s(cal.getZ(getCurrentSlice()-1));
+			else
+				return " x="+IJ.d2s(cal.getX(x))+" ("+x+")"
+				+", y="+IJ.d2s(cal.getY(y))+" ("+y+")";
+		} else {
+			String s =  " x="+x+", y=" + y;
+			if (getStackSize()>1)
+				s += ", z=" + (getCurrentSlice()-1);
+			return s;
+		}
     }
     
     private String getValueAsString(int x, int y) {

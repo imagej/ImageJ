@@ -34,7 +34,8 @@ public class ImportDialog {
     private static int nImages = Prefs.getInt(N,1);
     private static int gapBetweenImages = Prefs.getInt(GAP,0);
 	private static int options;
-    private static boolean whiteIsZero,intelByteOrder,openAll;
+    private static boolean whiteIsZero,intelByteOrder;
+    private boolean openAll;
     private static String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
 		"32-bit Integer", "32-bit Real", "24-bit RGB", "24-bit RGB Planar", 
 		"24-bit BGR", "32-bit ARGB", "1-bit Bitmap"};
@@ -43,7 +44,7 @@ public class ImportDialog {
     	options = Prefs.getInt(OPTIONS,0);
     	whiteIsZero = (options&WHITE_IS_ZERO)!=0;
     	intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
-    	openAll = (options&OPEN_ALL)!=0;
+    	//openAll = (options&OPEN_ALL)!=0;
     }
 	
     public ImportDialog(String fileName, String directory) {
@@ -95,7 +96,7 @@ public class ImportDialog {
 			fi.fileName = list[i];
 			imp = new FileOpener(fi).open(false);
 			if (imp==null)
-				IJ.write(list[i] + ": unable to open");
+				IJ.log(list[i] + ": unable to open");
 			else {
 				if (stack==null)
 					stack = imp.createEmptyStack();	
@@ -193,8 +194,8 @@ public class ImportDialog {
 			options |= WHITE_IS_ZERO;
 		if (intelByteOrder)
 			options |= INTEL_BYTE_ORDER;
-		if (openAll)
-			options |= OPEN_ALL;
+		//if (openAll)
+		//	options |= OPEN_ALL;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

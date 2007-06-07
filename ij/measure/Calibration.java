@@ -21,14 +21,19 @@ public class Calibration {
 	/** Frame interval in seconds */
 	public double frameInterval;
 
-	/** X origin in pixels. */
-	public int xOrigin;
+	/** X origin in pixels (not currently used by ImageJ). */
+	public double xOrigin;
 
-	/** Y origin in pixels. */
-	public int yOrigin;
+	/** Y origin in pixels (not currently used by ImageJ). */
+	public double yOrigin;
 
-	/** Set true to display cartesian coordinates (not yet implemented). */
-	public boolean invertY;
+	/** Z origin in pixels (not currently used by ImageJ). */
+	public double zOrigin;
+
+	/** Plugin writers can use this string to store information about the
+		image. This string is saved in the TIFF header if it is not longer
+		than 64 characters and it contains no '=' or '\n' characters. */
+	public String info;
 
 	/** Calibration function coefficients */
 	private double[] coefficients;
@@ -99,14 +104,19 @@ public class Calibration {
  		return units;
  	}
  	
- 	/** Convertes an x-coodinate in pixels to physical units (e.g. mm). */
+ 	/** Converts a x-coodinate in pixels to physical units (e.g. mm). */
  	public double getX(int x) {
  		return (x-xOrigin)*pixelWidth;
  	}
  	
-  	/** Convertes an x-coodinate in pixels to physical units (e.g. mm). */
+  	/** Converts a y-coodinate in pixels to physical units (e.g. mm). */
  	public double getY(int y) {
  		return (y-yOrigin)*pixelHeight;
+ 	}
+ 	
+  	/** Converts a z-coodinate in pixels to physical units (e.g. mm). */
+ 	public double getZ(int z) {
+ 		return (z-zOrigin)*pixelDepth;
  	}
  	
   	/** Sets the calibration function,  coefficient table and unit (e.g. "OD"). */
@@ -244,7 +254,8 @@ public class Calibration {
 		copy.frameInterval = frameInterval;
 		copy.xOrigin = xOrigin;
 		copy.yOrigin = yOrigin;
-		copy.invertY = invertY;
+		copy.zOrigin = zOrigin;
+		copy.info = info;
 		copy.unit = unit;
 		copy.units = units;
 		copy.valueUnit = valueUnit;
@@ -256,7 +267,21 @@ public class Calibration {
 		return copy;
 	}
 	
-   public String toString() {
+	/** Compares two Calibration objects for equality. */
+ 	public boolean equals(Calibration cal) {
+ 		if (cal==null)
+ 			return false;
+ 		boolean equal = true;
+ 		if (cal.pixelWidth!=pixelWidth || cal.pixelHeight!=pixelHeight || cal.pixelDepth!=pixelDepth)
+ 			equal = false;
+ 		if (!cal.unit.equals(unit))
+ 			equal = false;
+ 		if (!cal.valueUnit.equals(valueUnit) || cal.function!=function)
+ 			equal = false;
+ 		return equal;
+ 	}
+ 
+    public String toString() {
     	return
     		"w=" + pixelWidth
 			+ ", h=" + pixelHeight

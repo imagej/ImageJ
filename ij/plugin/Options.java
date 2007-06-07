@@ -20,6 +20,8 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Use Pointer Cursor", ImageCanvas.usePointer);
 			gd.addCheckbox("Scale When Converting", ImageConverter.getDoScaling());
 			gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
+			gd.addCheckbox("Antialiased Text", Prefs.antialiasedText);
+			gd.addCheckbox("Interpolate Images <100%", Prefs.interpolateScaledImages);
 			gd.addCheckbox("Debug Mode", IJ.debugMode);
 			gd.showDialog();
 			if (gd.wasCanceled())
@@ -39,7 +41,17 @@ public class Options implements PlugIn {
 			ImageCanvas.usePointer = gd.getNextBoolean();
 			ImageConverter.setDoScaling(gd.getNextBoolean());
 			IJ.hideProcessStackDialog = gd.getNextBoolean();
+			Prefs.antialiasedText = gd.getNextBoolean();
+			boolean interpolate = gd.getNextBoolean();
 			IJ.debugMode = gd.getNextBoolean();
+
+			if (interpolate!=Prefs.interpolateScaledImages) {
+				Prefs.interpolateScaledImages = interpolate;
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (imp!=null)
+					imp.draw();
+			}
+			
 			return;
 		}
 		

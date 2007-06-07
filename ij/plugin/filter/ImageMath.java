@@ -9,9 +9,9 @@ public class ImageMath implements PlugInFilter {
 	
 	private String arg;
 	private ImagePlus imp;
-	private boolean canceled;
+	private boolean canceled;	
+	private boolean first;
 	
-	private static boolean first;
 	private static double addValue = 25;
 	private static double mulValue = 1.25;
 	private static double minValue = 0;

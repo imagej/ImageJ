@@ -14,9 +14,18 @@ public class Line extends Roi {
 	private int x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private static int lineWidth = 1;
 
-	/** Creates a new user-generated straight line selection. 'ox'
-		and 'oy' are offscreen coordinates that specify the start
-		of the line. The user will determine the end of the line
+	/** Creates a new straight line selection using the specified
+		starting and ending offscreen coordinates. */
+	public Line(int ox1, int oy1, int ox2, int oy2) {
+		this(ox1, oy1, null);
+		grow(ox2, oy2);
+		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
+		state = NORMAL;
+	}
+
+	/** Starts the process of creating a new user-generated straight line
+		selection. 'ox' and 'oy' are offscreen coordinates that specify
+		the start of the line. The user will determine the end of the line
 		interactively using rubber banding. */
 	public Line(int ox, int oy, ImagePlus imp) {
 		super(ox, oy, imp);
@@ -24,12 +33,10 @@ public class Line extends Roi {
 		type = LINE;
 	}
 
-	/** Creates a new straight line selection using the specified
-		starting and ending offscreen coordinates. */
+	/** Obsolete */
 	public Line(int ox1, int oy1, int ox2, int oy2, ImagePlus imp) {
-		this(ox1, oy1, imp);
-		grow(ox2, oy2);
-		state = NORMAL;
+		this(ox1, oy1, ox2, oy2);
+		setImage(imp);
 	}
 
 	protected void grow(int xend, int yend) {
@@ -50,7 +57,8 @@ public class Line extends Roi {
 		width=Math.abs(x2R-x1R); height=Math.abs(y2R-y1R);
 		if (width<1) width=1; if (height<1) height=1;
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (imp!=null)
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
 	}

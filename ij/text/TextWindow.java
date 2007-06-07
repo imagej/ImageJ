@@ -52,7 +52,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		WindowManager.addWindow(this);
 		setSize(width, height);
 		GUI.center(this);
-		setVisible(true);
+		show();
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		if (openFile(path)) {
 			WindowManager.addWindow(this);
 			setSize(width, height);
-			setVisible(true);
+			show();
 		} else
 			dispose();
 	}
@@ -124,6 +124,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(directory + name));
 			load(r);
+			r.close();
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());
@@ -163,8 +164,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 					return;
 				IJ.setTextPanel(null);
 			}
-			if (getTitle().equals("Log"))
+			if (getTitle().equals("Log")) {
+				IJ.debugMode = false;
 				IJ.log("$Closed");
+			}
 			setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);

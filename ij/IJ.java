@@ -54,8 +54,12 @@ public class IJ {
 	
 	/** Runs the specified plugin and returns a reference to it. */
 	static Object runPlugIn(String commandName, String className, String arg) {
-		if (!className.startsWith("ij")) {
-			boolean createNewClassLoader = altKeyDown();
+		if (IJ.debugMode)
+			IJ.log("runPlugin: "+className+" "+arg);
+		// Use custom classloader if this is a user plugin
+		// and we are not running as an applet
+		if (!className.startsWith("ij") && applet==null) {
+ 			boolean createNewClassLoader = altKeyDown();
 			return ij.runUserPlugIn(commandName, className, arg, createNewClassLoader);
 		}
 		Object thePlugIn=null;
@@ -67,9 +71,12 @@ public class IJ {
  			else
 				ij.runFilterPlugIn(thePlugIn, commandName, arg);
 		}
-		catch (ClassNotFoundException e) {write("Plugin not found: " + className);}
-		catch (InstantiationException e) {write("Unable to load plugin (ins)");}
-		catch (IllegalAccessException e) {write("Unable to load plugin (acc)");}
+		catch (ClassNotFoundException e) {
+			if (IJ.getApplet()==null)
+				log("Plugin not found: " + className);
+		}
+		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
+		catch (IllegalAccessException e) {log("Unable to load plugin (acc)");}
 		return thePlugIn;
 	}
 	       
@@ -391,6 +398,11 @@ public class IJ {
 		return isMac;
 	}
 	
+	/** Returns true if this machine is a Macintosh running OS X. */
+	public static boolean isMacOSX() {
+		return isMacintosh() && isJava2();
+	}
+
 	/** Returns true if this machine is running Windows. */
 	public static boolean isWindows() {
 		return isWin;
@@ -450,14 +462,12 @@ public class IJ {
 	
 	/** Creates an oval selection. */
 	public static void makeOval(int x, int y, int width, int height) {
-		ImagePlus img = getImage();
-		getImage().setRoi(new OvalRoi(x, y, width, height, img));
+		getImage().setRoi(new OvalRoi(x, y, width, height));
 	}
 	
 	/** Creates a straight line selection. */
 	public static void makeLine(int x1, int y1, int x2, int y2) {
-		ImagePlus img = getImage();
-		getImage().setRoi(new Line(x1, y1, x2, y2, img));
+		getImage().setRoi(new Line(x1, y1, x2, y2));
 		//wait(100);
 	}
 	
@@ -465,6 +475,14 @@ public class IJ {
 	public static void setMinAndMax(double min, double max) {
 		ImagePlus img = getImage();
 		img.getProcessor().setMinAndMax(min, max);
+		img.updateAndDraw();
+	}
+
+	/** Resets the minimum and maximum displayed pixel values
+		to be the same as the min and max pixel values. */
+	public static void resetMinAndMax() {
+		ImagePlus img = getImage();
+		img.getProcessor().resetMinAndMax();
 		img.updateAndDraw();
 	}
 
@@ -534,7 +552,7 @@ public class IJ {
 		else
 			w.autoOutline(x, y, (int)t1, (int)ip.getMaxThreshold());
 		if (w.npoints>0) {
-			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, img, Roi.TRACED_ROI);
+			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
 			img.setRoi(roi);
 		}
 		return w.npoints;

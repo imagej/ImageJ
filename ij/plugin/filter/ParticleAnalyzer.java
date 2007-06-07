@@ -49,6 +49,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	static final String OPTIONS = "ap.options";
 	static final String BINS = "ap.bins";
 	
+	static final int BYTE=0, SHORT=1, FLOAT=2;
+	
 	private static int staticMinSize = 1;
 	private static int staticMaxSize = 999999;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
@@ -65,7 +67,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected boolean showResults,showSummary,excludeEdgeParticles,
 		showSizeDistribution,resetCounter,showProgress;
 
-	private int level1, level2;
+	private double level1, level2;
 	private int minSize;
 	private int maxSize;
 	private int sizeBins;
@@ -73,7 +75,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int measurements;
 	private Calibration calibration;
 	private String arg;
-	private int fillColor;
+	private double fillColor;
 	private boolean thresholdingLUT;
 	private ImageProcessor ip2;
 	private int width,height;
@@ -83,6 +85,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int particleCount;
 	private TextWindow tw;
 	private Wand wand;
+	private int imageType;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -106,6 +109,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Default constructor */
 	public ParticleAnalyzer() {
+		slice = 1;
 	}
 	
 	public int setup(String arg, ImagePlus imp) {
@@ -116,8 +120,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			{IJ.noImage();return DONE;}
 		if (!showDialog())
 			return DONE;
-		int flags = IJ.setupDialog(imp, DOES_8G+NO_CHANGES+NO_UNDO);
+		int flags = IJ.setupDialog(imp, DOES_8G+DOES_16+DOES_32+NO_CHANGES+NO_UNDO);
 		processStack = (flags&DOES_STACKS)!=0;
+		slice = 0;
 		imp.startTiming();
 		return flags;
 	}
@@ -210,6 +215,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				if (customLut==null)
 					makeCustomLut();
 				ip2.setColorModel(customLut);
+				ip2.setFont(new Font("SansSerif", Font.PLAIN, 9));
+
 			}
 			outlines.addSlice(null, ip2);
 			ip2.setColor(Color.white);
@@ -218,10 +225,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		calibration = imp.getCalibration();
 		
-		byte[] pixels = (byte[])ip.getPixels();
+		byte[] pixels = null;
+		if (ip instanceof ByteProcessor)
+			pixels = (byte[])ip.getPixels();
 		Rectangle r = ip.getRoi();
 		int[] mask = ip.getMask();
-		int offset, value;
+		int offset;
+		double value;
 		int inc = r.height/20;
 		if (inc<1) inc = 1;
 		int mi = 0;
@@ -247,9 +257,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
 			for (int x=r.x; x<(r.x+r.width); x++) {
-				value = pixels[offset+x]&255;
+				if (pixels!=null)
+					value = pixels[offset+x]&255;
+				else
+					value = ip.getPixelValue(x, y);
 				if (mask!=null && mask[mi++]!=ip.BLACK)
-					value = -1;
+					value = Double.MIN_VALUE;
 				if (value>=level1 && value<=level2)
 					analyzeParticle(x,y,imp,ip);
 			}
@@ -285,10 +298,20 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		double t1 = ip.getMinThreshold();
 		double t2 = ip.getMaxThreshold();
 		boolean invertedLut = imp.isInvertedLut();
+		boolean byteImage = ip instanceof ByteProcessor;
+		if (ip instanceof ShortProcessor)
+			imageType = SHORT;
+		else if (ip instanceof FloatProcessor)
+			imageType = FLOAT;
+		else
+			imageType = BYTE;
 		if (t1==ip.NO_THRESHOLD) {
 			ImageStatistics stats = imp.getStatistics();
-			if (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
-				IJ.error("8-bit binary or thresholded image required.");
+			if (imageType!=BYTE || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
+				IJ.showMessage("Particle Analyzer",
+					"A thresholded image or an 8-bit binary image is\n"
+					+"required. Refer to Image->Adjust->Threshold\n"
+					+"or to Process->Binary->Threshold.");
 				canceled = true;
 				return false;
 			}
@@ -302,12 +325,20 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				fillColor = 192;
 			}
 		} else {
-			level1 = (int)t1;
-			level2 = (int)t2;
-			if (level1>0)
-				fillColor = 0;
-			else if (level2<255)
-				fillColor = 255;
+			level1 = t1;
+			level2 = t2;
+			if (imageType==BYTE) {
+				if (level1>0)
+					fillColor = 0;
+				else if (level2<255)
+					fillColor = 255;
+			} else if (imageType==SHORT) {
+				if (level1>0)
+					fillColor = 0;
+				else if (level2<65535)
+					fillColor = 65535;
+			} else if (imageType==FLOAT)
+					fillColor = -Float.MAX_VALUE;
 			else
 				return false;
 		}
@@ -318,13 +349,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		//Wand wand = new Wand(ip);
 		wand.autoOutline(x,y, level1, level2);
 		if (wand.npoints==0)
-			{IJ.write("wand error: "+x+" "+y); return;}
-		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, imp, Roi.TRACED_ROI);
+			{IJ.log("wand error: "+x+" "+y); return;}
+		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
 		Rectangle r = roi.getBoundingRect();
 		if (r.width>1 && r.height>1)ip.setMask(roi.getMask());
 		ip.setRoi(r);
-		ip.setColor(fillColor);
-		ImageStatistics stats = new ByteStatistics(ip,measurements,calibration);
+		ip.setValue(fillColor);
+		ImageStatistics stats = getStatistics(ip,measurements,calibration);
 		boolean include = true;
 		if (excludeEdgeParticles &&
 		(r.x==0||r.y==0||r.x+r.width==width||r.y+r.height==height))
@@ -332,12 +363,27 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int[] mask = ip.getMask();
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {
 			particleCount++;
+			if ((measurements&PERIMETER)!=0)
+				roi.setImage(imp);
 			saveResults(stats, roi);
 			if (showChoice!=NOTHING)
 				drawParticle(ip2, roi, stats, mask);
 		}
 		ip.fill(mask);
 	}
+
+    ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
+    	switch (imageType) {
+        	case BYTE:
+            	return new ByteStatistics(ip, mOptions, cal);
+        	case SHORT:
+            	return new ShortStatistics(ip, mOptions, cal);
+            case FLOAT:
+            	return new FloatStatistics(ip, mOptions, cal);
+			default:
+				return null;
+		}
+    }
 
 	/** Saves statistics for one particle in a results table. This is
 		a method subclasses may want to override. */
@@ -390,9 +436,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int count = rt.getCounter();
 		if (count==0)
 			return;
-		if (!showResults && !processStack && rt==Analyzer.getResultsTable()) {
-			IJ.write("threshold: "+level1+"-"+level2);
-			IJ.write("count: "+particleCount);
+		if (!showResults && !processStack && rt==Analyzer.getResultsTable() && imp!=null) {
+			showSummary();
 		}
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
 		if (showSizeDistribution && lastSlice) {
@@ -408,6 +453,32 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 	}
 	
+	void showSummary() {
+			String s = "";
+			s += "Threshold: ";
+			if ((int)level1==level1 && (int)level2==level2)
+				s += (int)level1+"-"+(int)level2+"\n";
+			else
+				s += IJ.d2s(level1,2)+"-"+IJ.d2s(level2,2)+"\n";
+			s += "Count: " + particleCount+"\n";
+			float[] areas = rt.getColumn(ResultsTable.AREA);
+			if (areas!=null) {
+				if (areas.length!=particleCount)
+					return;
+				double sum = 0.0;
+				for (int i=0; i<particleCount; i++)
+					sum += areas[i];
+				int places = Analyzer.getPrecision();
+				Calibration cal = imp.getCalibration();
+				String unit = cal.getUnit();
+				s += "Total Area: "+IJ.d2s(sum,places)+" "+unit+"^2\n";
+				s += "Average Size: "+IJ.d2s(sum/particleCount,places)+" "+unit+"^2\n";
+				double totalArea = imp.getWidth()*cal.pixelWidth*imp.getHeight()*cal.pixelHeight;
+				s += "Area Fraction: "+IJ.d2s(sum*100.0/totalArea,1)+"%";
+			}
+		new TextWindow("Summary of "+imp.getTitle(), s, 300, 200);
+		}
+
 	void makeCustomLut() {
 		IndexColorModel cm = (IndexColorModel)LookUpTable.createGrayscaleColorModel(false);
 		byte[] reds = new byte[256];

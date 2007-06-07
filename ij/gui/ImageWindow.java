@@ -29,6 +29,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private static int xloc;
 	private static int yloc;
 	private static int count;
+	private static boolean centerOnScreen;
 	//private static int defaultYLoc = IJ.isMacintosh()?5:32;
 	
 	/** This variable is set false if the user clicks in this
@@ -62,7 +63,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			Point loc = previousWindow.getLocation();
 			setLocation(loc.x, loc.y);
 			pack();
-			setVisible(true);
+			show();
 			boolean unlocked = imp.lockSilently();
 			boolean changes = imp.changes;
 			imp.changes = false;
@@ -78,7 +79,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				if (img!=null) setIconImage(img);
 			}
 			pack();
-			setVisible(true);
+			if (centerOnScreen) {
+				GUI.center(this);
+				centerOnScreen = false;
+			}
+			show();
 		}
      }
     
@@ -207,8 +212,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		boolean isRunning = running;
 		running = false;
 		if (isRunning) IJ.wait(500);
-		if (imp.changes && IJ.getApplet()==null && !IJ.macroRunning()) {
-			SaveChangesDialog d = new SaveChangesDialog(IJ.getInstance(), imp.getTitle());
+		ImageJ ij = IJ.getInstance();
+		if (imp.changes && IJ.getApplet()==null && !IJ.macroRunning() && ij!=null) {
+			SaveChangesDialog d = new SaveChangesDialog(ij, imp.getTitle());
 			if (d.cancelPressed())
 				return false;
 			else if (d.savePressed()) {
@@ -370,6 +376,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     	return imp.getTitle();
     }
     
+    /** Causes the next image to be opened centered on the screen. */
+    public static void centerNextImage() {
+    	centerOnScreen = true;
+    }
+
 	/** Overrides the setBounds() method in Component so
 		we can find out when the window is resized. */
 	//public void setBounds(int x, int y, int width, int height)	{

@@ -7,6 +7,7 @@ import ij.plugin.filter.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+import java.util.Locale;
 
 /** The class contains static methods that perform macro operations. */
 public class Macro {
@@ -106,7 +107,7 @@ public class Macro {
 		index = key.indexOf(":");
 		if (index>-1)
 			key = key.substring(0,index);
-		key = key.toLowerCase();
+		key = key.toLowerCase(Locale.US);
 		return key;
 	}
 

@@ -8,6 +8,7 @@ import ij.process.ImageProcessor;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.*;
+import ij.util.Java2;
 
 /** This is as Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
@@ -21,10 +22,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	protected ImagePlus imp;
 	protected boolean imageUpdated;
+	protected Rectangle srcRect;
+	protected int imageWidth, imageHeight;
+		
 	private ImageJ ij;
-	private int imageWidth, imageHeight;
 	private double magnification;
-	private Rectangle srcRect;
 	private int dstWidth, dstHeight;
 
 	private int xMouseStart = 0;
@@ -83,9 +85,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imp.updateImage();
 			}
 			Image img = imp.getImage();
-
+			if (IJ.isJava2()) {
+				if (magnification<1.0)
+					 Java2.setBilinearInterpolation(g, true);
+				else if (IJ.isMacOSX())
+					Java2.setBilinearInterpolation(g, false);
+			}
 			if (img!=null)
-				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
+ 				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (roi != null) roi.draw(g);
 		}
@@ -432,6 +439,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (IJ.debugMode) IJ.log("Mouse pressed: (" + x + "," + y + ")" + ij.modifiers(flags));
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger() || (flags & e.META_MASK)!=0)) {
 			if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
+			Roi roi = imp.getRoi();
+			if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE)
+			&& roi.getState()==roi.CONSTRUCTING) {
+				roi.handleMouseUp(x, y); // simulate double-click to finalize
+				roi.handleMouseUp(x, y); // polygon or polyline selection
+				return;
+			}
 			PopupMenu popup = Menus.getPopupMenu();
 			if (popup!=null) {
 				add(popup);
@@ -484,10 +498,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						handleRoiMouseDown(x, y);
 						return;
 					}
-				}
-				if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32) {
-					IJ.error("The wand tool does not work with 16 and 32-bit grayscale images.");
-					return;
 				}
 				int npoints = IJ.doWand(ox, oy);
 				if (Recorder.record && npoints>0)

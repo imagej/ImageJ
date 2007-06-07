@@ -27,12 +27,13 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 	}
 	
     public void windowClosing(WindowEvent e) {
-		setVisible(false);
-		dispose();
-		WindowManager.removeWindow(this);
-		if (IJ.debugMode) IJ.log("closing "+title);
+    	if (e.getSource()==this) {
+			setVisible(false);
+			dispose();
+			WindowManager.removeWindow(this);
+		}
     }
-
+    
     public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh() && IJ.getInstance()!=null)
 			setMenuBar(Menus.getMenuBar());

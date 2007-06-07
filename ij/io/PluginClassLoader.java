@@ -17,7 +17,7 @@ public class PluginClassLoader extends ClassLoader {
 
 	protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
 		Class c = (Class)cache.get(name); // try to find in cache
-		//ij.IJ.write("loadClass: "+name+" ("+((c == null) ? "not in cache" : "in cache")+"), "+resolve);
+		//ij.IJ.log("loadClass: "+name+" ("+((c == null) ? "not in cache" : "in cache")+"), "+resolve);
        
 		if (c == null) {  // Not in cache
 			try {
@@ -26,6 +26,11 @@ public class PluginClassLoader extends ClassLoader {
 			c = loadIt(path, name);   // Try to get it from plugins folder
 			if (c==null)
 				c = loadFromSubdirectory(path, name);  // Try to get it from subfolders
+			if (c==null) {
+				// try loading from ij.jar
+				try {c = Class.forName(name);}
+				catch (Exception e) {c=null;}
+			}
 			if (c==null)
 				throw new ClassNotFoundException(name);
 		}

@@ -128,29 +128,30 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		add(panel);
 
 		// buttons
+		int trim = IJ.isMacOSX()?20:0;
 		panel = new Panel();
 		panel.setLayout(new GridLayout(3, 2, 0, 0));
-		autoB = new Button("Auto");
+		autoB = new TrimmedButton("Auto",trim);
 		autoB.addActionListener(this);
 		autoB.addKeyListener(ij);
 		panel.add(autoB);
-		resetB = new Button("Reset");
+		resetB = new TrimmedButton("Reset",trim);
 		resetB.addActionListener(this);
 		resetB.addKeyListener(ij);
 		panel.add(resetB);
-		setB = new Button("Set");
+		setB = new TrimmedButton("Set",trim);
 		setB.addActionListener(this);
 		setB.addKeyListener(ij);
 		panel.add(setB);
-		applyB = new Button("Apply");
+		applyB = new TrimmedButton("Apply",trim);
 		applyB.addActionListener(this);
 		applyB.addKeyListener(ij);
 		panel.add(applyB);
-		threshB = new Button("Thresh");
+		threshB = new TrimmedButton("Thresh",trim);
 		threshB.addActionListener(this);
 		threshB.addKeyListener(ij);
 		panel.add(threshB);
-		updateB = new Button("Update");
+		updateB = new TrimmedButton("Update",trim);
 		updateB.addActionListener(this);
 		updateB.addKeyListener(ij);
 		panel.add(updateB);
@@ -162,7 +163,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		pack();
 		GUI.center(this);
-		setVisible(true);
+		show();
 
 		thread = new Thread(this, "ContrastAdjuster");
 		//thread.setPriority(thread.getPriority()-1);
@@ -348,6 +349,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		updateScrollBars();
 		plotHistogram(imp);
 		autoThreshold = 0;
+		if (Recorder.record)
+			Recorder.record("resetMinAndMax");
 	}
 
 	void update(ImagePlus imp, ImageProcessor ip) {

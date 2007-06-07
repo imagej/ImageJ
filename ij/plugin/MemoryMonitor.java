@@ -47,6 +47,7 @@ public class MemoryMonitor implements PlugIn {
 		ip.setFont(new Font("SansSerif",Font.PLAIN,12));
 		ip.snapshot();
 		ImagePlus imp = new ImagePlus("Memory", ip);
+		ImageWindow.centerNextImage();
 		imp.show();
 		imp.lock();
 		ImageWindow win = imp.getWindow();

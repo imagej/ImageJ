@@ -19,48 +19,74 @@ public class Wand {
 	private ImageProcessor ip;
 	private byte[] bpixels;
 	private int[] cpixels;
-	private boolean isColor;
+	private short[] spixels;
+	private float[] fpixels;
 	private int width, height;
-	private int lowerThreshold, upperThreshold;
+	private float lowerThreshold, upperThreshold;
 
-	/** Constructs a Wand object from either a ByteProcessor or a ColorProcessor. */
+	/** Constructs a Wand object from an ImageProcessor. */
 	public Wand(ImageProcessor ip) {
-		isColor = ip instanceof ColorProcessor;
-		if (isColor)
-			cpixels = (int[])ip.getPixels();
-		else
+		if (ip instanceof ByteProcessor)
 			bpixels = (byte[])ip.getPixels();
+		else if (ip instanceof ColorProcessor)
+			cpixels = (int[])ip.getPixels();
+		else if (ip instanceof ShortProcessor)
+			spixels = (short[])ip.getPixels();
+		else if (ip instanceof FloatProcessor)
+			fpixels = (float[])ip.getPixels();
 		width = ip.getWidth();
 		height = ip.getHeight();
 	}
 	
-	private int getColorPixel(int x, int y) {
+	private float getColorPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return cpixels[y*width + x];
 		else
-			return 0xafff;
+			return Float.MAX_VALUE;
 	}
 
-	private int getBytePixel(int x, int y) {
+	private float getBytePixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return bpixels[y*width + x] & 0xff;
 		else
-			return -1;
+			return Float.MAX_VALUE;
 	}
 
-	private int getPixel(int x, int y) {
-		if (isColor)
-			return getColorPixel(x,y);
+	private float getShortPixel(int x, int y) {
+		if (x>=0 && x<width && y>=0 && y<height)
+			return spixels[y*width + x] & 0xffff;
 		else
+			return Float.MAX_VALUE;
+	}
+
+	private float getFloatPixel(int x, int y) {
+		if (x>=0 && x<width && y>=0 && y<height)
+			return fpixels[y*width + x];
+		else
+			return Float.MAX_VALUE;
+	}
+
+	private float getPixel(int x, int y) {
+		if (bpixels!=null)
 			return getBytePixel(x,y);
+		else if (spixels!=null)
+			return getShortPixel(x,y);
+		else if (fpixels!=null)
+			return getFloatPixel(x,y);
+		else
+			return getColorPixel(x,y);
 	}
 
 	private boolean inside(int x, int y) {
-		int value;
-		if (isColor)
-			value =  getColorPixel(x,y);
-		else
+		float value;
+		if (bpixels!=null)
 			value = getBytePixel(x,y);
+		else if (spixels!=null)
+			value = getShortPixel(x,y);
+		else if (fpixels!=null)
+			value = getFloatPixel(x,y);
+		else
+			value = getColorPixel(x,y);
 		return value>=lowerThreshold && value<=upperThreshold;
 	}
 
@@ -114,13 +140,13 @@ public class Wand {
 		
 	/** Traces an object defined by lower and upper threshold values. The
 		boundary points are stored in the public xpoints and ypoints fields.*/
-	public void autoOutline(int startX, int startY, int lower, int upper) {
+	public void autoOutline(int startX, int startY, double lower, double upper) {
 		npoints = 0;
 		int x = startX;
 		int y = startY;
 		int direction;
-		lowerThreshold = lower;
-		upperThreshold = upper;
+		lowerThreshold = (float)lower;
+		upperThreshold = (float)upper;
 		if (inside(x,y)) {
 			do {x++;} while (inside(x,y));
 			if (!inside(x-1,y-1))
@@ -135,6 +161,11 @@ public class Wand {
 			if (x>=width) return;
 		}
 		traceEdge(x, y, direction);
+	}
+
+	/** This is a variation of autoOutline that uses int threshold arguments. */
+	public void autoOutline(int startX, int startY, int lower, int upper) {
+		autoOutline(startX, startY, (double)lower, (double)upper);
 	}
 
 	void traceEdge(int xstart, int ystart, int startingDirection) {

@@ -481,8 +481,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	    false if the user cancels the dialog.
 	*/
 	public synchronized static boolean resetCounter() {
-		int lineCount = IJ.getTextPanel().getLineCount();
+		TextPanel tp = IJ.isResultsWindow()?IJ.getTextPanel():null;
 		int counter = systemRT.getCounter();
+		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
 		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning()) {
 			SaveChangesDialog d = new SaveChangesDialog(IJ.getInstance(), "Save "+counter+" measurements?");
 			if (d.cancelPressed())
@@ -493,7 +494,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		umeans = null;
 		systemRT.reset();
 		unsavedMeasurements = false;
-		TextPanel tp = IJ.getTextPanel();
 		if (tp!=null) {
 			tp.selectAll();
 			tp.clearSelection();

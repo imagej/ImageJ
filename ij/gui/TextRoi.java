@@ -2,6 +2,7 @@ package ij.gui;
 import java.awt.*;
 import ij.*;
 import ij.process.*;
+import ij.util.Java2;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -75,33 +76,24 @@ public class TextRoi extends Roi {
 		return font;
 	}
 	
-	/** Returns a mask that can be used to draw the text on an image. */
-	public int[] getMask() {
-		if (width==0 || height==0)
-			return null;
-		Image img = GUI.createBlankImage(width, height);
-		Graphics g = img.getGraphics();
-		g.setColor(Color.black);
+	/** Renders the text on the image. */
+	public void drawPixels() {
+		if (imp==null)
+			return;
+		ImageProcessor ip = imp.getProcessor();
 		Font font = new Font(name, style, size);
-		FontMetrics metrics = g.getFontMetrics(font);
+		ip.setFont(font);
+		ip.setAntialiasedText(true);
+		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
-		g.setFont(font);
 		int i = 0;
 		int yy = 0;
 		while (i<MAX_LINES && theText[i]!=null) {
-			g.drawString(theText[i], 1, yy + fontHeight-descent+1);
+			ip.drawString(theText[i], x, y+yy+fontHeight);
 			i++;
 			yy += fontHeight;
 		}
-		g.dispose();
-		ColorProcessor cp = new ColorProcessor(img);
-		int[] mask = (int[])cp.getPixels();
-		for (int j=0; j<mask.length; j++) {
-			if (mask[j]!=0xffffffff && mask[j]!=0xff00ffff)
-				mask[j] = ImageProcessor.BLACK;
-		}
-		return mask;
 	}
 
 	/** Draws the text on the screen, clipped to the ROI. */
@@ -112,6 +104,8 @@ public class TextRoi extends Roi {
 		int sy = ic.screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
+		if (IJ.isJava2())
+			Java2.setAntialiasedText(g, true);
 		if (font==null)
 			adjustSize();
 		Font font = getCurrentFont();
@@ -123,7 +117,7 @@ public class TextRoi extends Roi {
 		g.setClip(sx, sy, swidth, sheight);
 		int i = 0;
 		while (i<MAX_LINES && theText[i]!=null) {
-			g.drawString(theText[i], sx+(int)(mag), sy+fontHeight-descent+(int)(mag));
+			g.drawString(theText[i], sx, sy+fontHeight-descent);
 			i++;
 			sy += fontHeight;
 		}
@@ -187,6 +181,8 @@ public class TextRoi extends Roi {
 		double mag = ic.getMagnification();
 		Font font = getCurrentFont();
 		Graphics g = ic.getGraphics();
+		if (IJ.isJava2())
+			Java2.setAntialiasedText(g, true);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
@@ -198,11 +194,12 @@ public class TextRoi extends Roi {
 		width = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
-			int w = (int)(metrics.stringWidth(theText[i])/mag);
+			int w = (int)(stringWidth(theText[i],metrics,g)/mag);
 			if (w>width)
 				width = w;
 			i++;
 		}
+		g.dispose();
 		width += 2;
 		if (x+width>xMax)
 			x = xMax-width;
@@ -213,6 +210,13 @@ public class TextRoi extends Roi {
 			y = yMax-height;
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
+	}
+
+	int stringWidth(String s, FontMetrics metrics, Graphics g) {
+		if (IJ.isJava2())
+			return Java2.getStringWidth(s, metrics, g);
+		else
+			return  metrics.stringWidth(s);
 	}
 
 }

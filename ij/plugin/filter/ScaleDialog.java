@@ -27,12 +27,19 @@ public class ScaleDialog implements PlugInFilter {
 		boolean isCalibrated = cal.scaled();
 		
 		String scale = "<no scale>";
+		int digits = 2;
 		if (isCalibrated) {
 			measured = 1.0/cal.pixelWidth;
+			if ((int)measured==measured)
+				digits = 0;
+			if (measured<0.01)
+				digits = 3;
+			else if (measured<0.001)
+				digits = 4;
 			known = 1.0;
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 			unit = cal.getUnit();
-			scale = IJ.d2s(measured,2)+" pixels per "+unit;
+			scale = IJ.d2s(measured,digits)+" pixels per "+unit;
 		}
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi instanceof Line)) {
@@ -41,10 +48,10 @@ public class ScaleDialog implements PlugInFilter {
 		}
 		
 		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale);
-		gd.addNumericField("Distance in Pixels:", measured, 2);
+		gd.addNumericField("Distance in Pixels:", measured, digits);
 		gd.addNumericField("Known Distance:", known, 2);
 		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1);
-		gd.addStringField("Unit of Measurement:", unit);
+		gd.addStringField("Unit of Length:", unit);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
 		gd.addCheckbox("Global", Calibrator.global);
 		gd.showDialog();
@@ -54,7 +61,9 @@ public class ScaleDialog implements PlugInFilter {
 		known = gd.getNextNumber();
 		aspectRatio = gd.getNextNumber();
 		unit = gd.getNextString();
-		Calibrator.global = gd.getNextBoolean();
+        if (unit.equals("um"))
+            unit = "µm";
+ 		Calibrator.global = gd.getNextBoolean();
 		if (measured!=0.0 && known==0.0) {
 			imp.setGlobalCalibration(Calibrator.global?cal:null);
 			return;
@@ -93,6 +102,7 @@ public class ScaleDialog implements PlugInFilter {
 }
 
 class SetScaleDialog extends GenericDialog {
+	static final String NO_SCALE = "<no scale>";
 	String initialScale;
 
 	public SetScaleDialog(String title, String scale) {
@@ -101,23 +111,36 @@ class SetScaleDialog extends GenericDialog {
 	}
 
     protected void setup() {
+    	if (IJ.isJava2())
+    		initialScale += "          ";
    		setScale(initialScale);
     }
  	
  	public void textValueChanged(TextEvent e) {
  		Double d = getValue(((TextField)numberField.elementAt(0)).getText());
- 		if (d==null) return;
+ 		if (d==null)
+ 			{setScale(NO_SCALE); return;}
  		double measured = d.doubleValue();
  		d = getValue(((TextField)numberField.elementAt(1)).getText());
- 		if (d==null) return;
+ 		if (d==null)
+ 			{setScale(NO_SCALE); return;}
  		double known = d.doubleValue();
  		String theScale;
  		String unit = ((TextField)stringField.elementAt(0)).getText();
  		boolean noScale = measured<=0||known<=0||unit.startsWith("pixel")||unit.startsWith("Pixel")||unit.equals("");
  		if (noScale)
- 			theScale = "<no scale>";
- 		else
- 			theScale = IJ.d2s(measured/known,2)+" pixels per "+unit;
+ 			theScale = NO_SCALE;
+ 		else {
+ 			double scale = measured/known;
+			int digits = 2;
+			if ((int)scale==scale)
+				digits = 0;
+			else if (scale<0.01)
+				digits = 3;
+			else if (scale<0.001)
+				digits = 4;
+ 			theScale = IJ.d2s(measured/known,digits)+" pixels per "+unit;
+ 		}
  		setScale(theScale);
 	}
 	

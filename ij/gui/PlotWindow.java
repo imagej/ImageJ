@@ -33,6 +33,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	
 	private static final String MIN = "pp.min";
 	private static final String MAX = "pp.max";
+	private static final String PLOT_WIDTH = "pp.width";
+	private static final String PLOT_HEIGHT = "pp.height";
 	private static final String OPTIONS = "pp.options";
 	private static final int SAVE_X_VALUES = 1;
 	private static final int AUTO_CLOSE = 2;
@@ -66,12 +68,20 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		set, use Edit/Options/Profile Plot Options. */
 	public static boolean autoClose;
  	
+	/** The width of the plot in pixels. */
+	public static int plotWidth = WIDTH;
+
+	/** The height of the plot in pixels. */
+	public static int plotHeight = HEIGHT;
+
     // static initializer
     static {
 		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
     	options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
     	saveXValues = (options&SAVE_X_VALUES)!=0;
     	autoClose = (options&AUTO_CLOSE)!=0;
+    	plotWidth = Prefs.getInt(PLOT_WIDTH, WIDTH);
+    	plotHeight = Prefs.getInt(PLOT_HEIGHT, HEIGHT);
     }
 
 	/** Construct a new PlotWindow.
@@ -83,7 +93,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	*/
 	public PlotWindow(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		super(NewImage.createByteImage(title,
-			WIDTH+LEFT_MARGIN+RIGHT_MARGIN, HEIGHT+TOP_MARGIN+BOTTOM_MARGIN,
+			plotWidth+LEFT_MARGIN+RIGHT_MARGIN, plotHeight+TOP_MARGIN+BOTTOM_MARGIN,
 			1, NewImage.FILL_WHITE));
 		this.xLabel = xLabel;
 		this.yLabel = yLabel;
@@ -214,9 +224,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (Line.getWidth()>3)
 			ip.setLineWidth(1);
 		ip.setFont(font);
+		ip.setAntialiasedText(true);
 		if (frameWidth==0) {
-			frameWidth = WIDTH;
-			frameHeight = HEIGHT;
+			frameWidth = plotWidth;
+			frameHeight = plotHeight;
 		}
 		frame = new Rectangle(LEFT_MARGIN, TOP_MARGIN, frameWidth, frameHeight);
 		if ((xMax-xMin)==0.0)
@@ -309,19 +320,21 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (yLabel.equals(""))
 			return;
 		FontMetrics fm = ip.getFontMetrics();
-		int w =  fm.stringWidth(yLabel);
-		int h =  fm.getHeight();
+		int w =  fm.stringWidth(yLabel) + 5;
+		int h =  fm.getHeight() + 5;
 		ImageProcessor label = new ByteProcessor(w, h);
 		label.setColor(Color.white);
 		label.fill();
 		label.setColor(Color.black);
 		label.setFont(font);
+		label.setAntialiasedText(true);
 		int descent = fm.getDescent();
 		label.drawString(yLabel, 0, h-descent);
 		label = label.rotateLeft();
 		int y2 = y+(height-ip.getStringWidth(yLabel))/2;
 		if (y2<y) y2 = y;
-		int x2 = x-h-5;
+		int x2 = x-h-2;
+		//new ImagePlus("after", label).show();
 		ip.insert(label, x2, y2);
 	}
 
@@ -431,6 +444,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (!(min==0.0&&max==0.0) && min<max) {
 			prefs.put(MIN, Double.toString(min));
 			prefs.put(MAX, Double.toString(max));
+		}
+		if (plotWidth!=WIDTH || plotHeight!=HEIGHT) {
+			prefs.put(PLOT_WIDTH, Integer.toString(plotWidth));
+			prefs.put(PLOT_HEIGHT, Integer.toString(plotHeight));
 		}
 		int options = 0;
 		if (saveXValues)

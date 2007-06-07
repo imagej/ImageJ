@@ -44,7 +44,7 @@ public class BMP extends ImagePlus implements PlugIn {
                 if (mis==null) IJ.write("mis=null");
                 Image img = Toolkit.getDefaultToolkit().createImage(mis);
         FileInfo fi = new FileInfo();
-        //fi.fileFormat = fi.GIF_OR_JPG;
+        fi.fileFormat = FileInfo.BMP;
         fi.fileName = name;
         fi.directory = directory;
         setImage(img);

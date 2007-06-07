@@ -169,6 +169,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		
 	void drawText(ImageProcessor ip, int x, int y, boolean fixedRange) {
 		ip.setFont(new Font("SansSerif",Font.PLAIN,12));
+		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
 		ip.drawString(d2s(hmin), x - 4, y);

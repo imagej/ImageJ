@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -119,7 +120,14 @@ public class MontageMaker implements PlugIn {
 		}
 		if (borders) drawBorder(montage, 0, 0, montageWidth-1, montageHeight-1);
 		IJ.showProgress(1.0);
-		new ImagePlus("Montage", montage).show();
+		ImagePlus imp2 = new ImagePlus("Montage", montage);
+		imp2.setCalibration(imp.getCalibration());
+		Calibration cal = imp2.getCalibration();
+		if (cal.scaled()) {
+			cal.pixelWidth /= scale;
+			cal.pixelHeight /= scale;
+		}
+		imp2.show();
 	}
 		
 	void drawBorder(ImageProcessor montage, int x, int y, int width, int height) {

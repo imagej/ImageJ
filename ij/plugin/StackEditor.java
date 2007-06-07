@@ -2,6 +2,8 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.Calibration;
+
 
 /** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
 public class StackEditor implements PlugIn {
@@ -80,6 +82,8 @@ public class StackEditor implements PlugIn {
 				return;
 			}
 		}
+		
+		Calibration cal2 = image[0].getCalibration();
 		for (int i=0; i<(wList.length-1); i++) {
 			if (image[i].getType()!=image[i+1].getType()) {
 				IJ.error("All open images must be the same type.");
@@ -90,6 +94,9 @@ public class StackEditor implements PlugIn {
 				IJ.error("All open images must be the same size.");
 				return;
 			}
+			Calibration cal = image[i].getCalibration();
+			if (!image[i].getCalibration().equals(cal2))
+				cal2 = null;
 		}
 		
 		int width = image[0].getWidth();
@@ -108,6 +115,8 @@ public class StackEditor implements PlugIn {
 		ImagePlus imp = new ImagePlus("Stack", stack);
 		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
 			imp.getProcessor().setMinAndMax(min, max);
+		if (cal2!=null)
+			imp.setCalibration(cal2);
 		imp.show();
 	}
 
@@ -123,10 +132,13 @@ public class StackEditor implements PlugIn {
 			if (!ok)
 				{imp.unlock(); return;}
 		}
+		Calibration cal = imp.getCalibration();
 		for (int i=1; i<=size; i++) {
 			String label = stack.getSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getDigits(i);
-			new ImagePlus(title, stack.getProcessor(i)).show();
+			ImagePlus imp2 = new ImagePlus(title, stack.getProcessor(i));
+			imp2.setCalibration(cal);
+			imp2.show();
 		}
 		imp.changes = false;
 		ImageWindow win = imp.getWindow();

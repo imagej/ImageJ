@@ -13,7 +13,7 @@ public class FolderOpener implements PlugIn {
 
 	private static boolean grayscale;
 	private static boolean halfSize;
-	private int n, start;
+	private int n, start, increment;
 	private String filter;
 
 	public void run(String arg) {
@@ -72,11 +72,13 @@ public class FolderOpener implements PlugIn {
   			n = filteredImages;
   			
 			int count = 0;
+			int counter = 0;
 			for (int i=start-1; i<list.length; i++) {
-				//IJ.write(i+" "+list[i]);
 				if (list[i].endsWith(".txt"))
 					continue;
 				if (filter!=null && (list[i].indexOf(filter)<0))
+					continue;
+				if ((counter++%increment)!=0)
 					continue;
 				ImagePlus imp = new Opener().openImage(directory, list[i]);
 				if (imp!=null && stack==null) {
@@ -130,6 +132,7 @@ public class FolderOpener implements PlugIn {
 		FolderOpenerDialog gd = new FolderOpenerDialog("Sequence Options", imp, list);
 		gd.addNumericField("Number of Images: ", fileCount, 0);
 		gd.addNumericField("Starting Image: ", 1, 0);
+		gd.addNumericField("Increment: ", 1, 0);
 		gd.addStringField("File Name Contains: ", "");
 		gd.addCheckbox("Convert to 8-bits", grayscale);
 		gd.addCheckbox("Open 1/2 Size", halfSize);
@@ -139,6 +142,9 @@ public class FolderOpener implements PlugIn {
 			return false;
 		n = (int)gd.getNextNumber();
 		start = (int)gd.getNextNumber();
+		increment = (int)gd.getNextNumber();
+		if (increment<1)
+			increment = 1;
 		filter = gd.getNextString();
 		grayscale = gd.getNextBoolean();
 		halfSize = gd.getNextBoolean();
@@ -181,6 +187,7 @@ class FolderOpenerDialog extends GenericDialog {
  		halfSize = ((Checkbox)checkbox.elementAt(1)).getState();
  		int n = getNumber(numberField.elementAt(0));
 		int start = getNumber(numberField.elementAt(1));
+		int inc = getNumber(numberField.elementAt(2));
 		if (n<1)
 			n = fileCount;
 		if (start<1 || start>fileCount)
@@ -190,6 +197,8 @@ class FolderOpenerDialog extends GenericDialog {
 			//TextField tf = (TextField)numberField.elementAt(0);
 			//tf.setText(""+nImages);
 		}
+		if (inc<1)
+			inc = 1;
  		TextField tf = (TextField)stringField.elementAt(0);
  		String filter = tf.getText();
 		// IJ.write(nImages+" "+startingImage);
@@ -216,8 +225,11 @@ class FolderOpenerDialog extends GenericDialog {
 			width /= 2;
 			height /= 2;
 		}
-		double size = (double)(width*height*n*bytesPerPixel)/(1024*1024);
- 		((Label)theLabel).setText(width+" x "+height+" x "+n+" ("+IJ.d2s(size,1)+"MB)");
+		int n2 = n/inc;
+		if (n2<0)
+			n2 = 0;
+		double size = (double)(width*height*n2*bytesPerPixel)/(1024*1024);
+ 		((Label)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
 	}
 
 	public int getNumber(Object field) {

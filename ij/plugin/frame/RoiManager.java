@@ -10,8 +10,7 @@ import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.PlugInFilter;
 
-/**
-*/
+/** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener {
 
 	Panel panel;
@@ -27,18 +26,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		instance = this;
 		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
-		int rows = 14;
+		int rows = 18;
 		list = new List(rows, true);
 		list.add("012345678901234567");
 		list.addItemListener(this);
 		add(list);
 		panel = new Panel();
-		panel.setLayout(new GridLayout(8, 1, 5, 5));
+		panel.setLayout(new GridLayout(10, 1, 5, 5));
 		addButton("Add");
+		addButton("Add & Draw");
 		addButton("Delete");
 		addButton("Open");
 		addButton("Open All");
 		addButton("Save");
+		addButton("Select All");
 		addButton("Measure");
 		addButton("Draw");
 		addButton("Fill");
@@ -46,6 +47,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		
 		pack();
 		list.delItem(0);
+		GUI.center(this);
 		show();
 	}
 	
@@ -62,6 +64,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		String command = label;
 		if (command.equals("Add"))
 			add();
+		if (command.equals("Add & Draw"))
+			addAndDraw();
 		else if (command.equals("Delete"))
 			delete();
 		else if (command.equals("Open"))
@@ -70,6 +74,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			openAll();
 		else if (command.equals("Save"))
 			save();
+		else if (command.equals("Select All"))
+			selectAll();
 		else if (command.equals("Measure"))
 			measure();
 		else if (command.equals("Draw"))
@@ -88,14 +94,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 
-	void add() {
+	boolean add() {
 		ImagePlus imp = getImage();
 		if (imp==null)
-			return;
+			return false;
 		Roi roi = imp.getRoi();
 		if (roi==null) {
 			error("The active image does not have an ROI.");
-			return;
+			return false;
 		}
 		String type = null;
 		switch (roi.getType()) {
@@ -109,12 +115,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			case Roi.FREELINE: type = "Freeline"; break;
 		}
 		if (type==null)
-			return;
+			return false;
 		Rectangle r = roi.getBoundingRect();
 		//String label = type+" ("+(r.x+r.width/2)+","+(r.y+r.height/2)+")";
 		String label = type+(r.x+r.width/2)+"-"+(r.y+r.height/2);
 		list.add(label);
 		rois.put(label, roi.clone());
+		return true;
+	}
+	
+	void addAndDraw() {
+		if (add()) {
+			list.select(list.getItemCount()-1);
+			draw();
+		}
 	}
 	
 	boolean delete() {
@@ -203,6 +217,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
+	void selectAll() {
+		boolean allSelected = true;
+		int count = list.getItemCount();
+		for (int i=0; i<count; i++) {
+			if (!list.isIndexSelected(i))
+				allSelected = false;
+		}
+		for (int i=0; i<count; i++) {
+			if (allSelected)
+				list.deselect(i);
+			else
+				list.select(i);
+		}
+	}
+	
 	boolean measure() {
 		ImagePlus imp = getImage();
 		if (imp==null)
@@ -284,6 +313,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
 			instance = null;	
 		}
+	}
+	
+	/** Returns a reference to the ROI Manager
+		or null if it is not open. */
+	public static RoiManager getInstance() {
+		return (RoiManager)instance;
+	}
+
+	/** Returns the ROI Hashtable. */
+	public Hashtable getROIs() {
+		return rois;
+	}
+
+	/** Returns the ROI list. */
+	public List getList() {
+		return list;
 	}
 
 }

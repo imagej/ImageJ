@@ -35,7 +35,7 @@ public class RoiDecoder {
 	public Roi getRoi() throws IOException {
 		File f = new File(path);
 		int size = (int)f.length();
-		if (size>5000)
+		if (size>500000)
 			throw new IOException("This is not an ImageJ ROI");
 		FileInputStream fis = new FileInputStream(path);
 		data = new byte[size];
@@ -57,10 +57,10 @@ public class RoiDecoder {
 		Roi roi = null;
 		switch (type) {
 		case rect:
-			roi = new Roi(left, top, width, height, null);
+			roi = new Roi(left, top, width, height);
 			break;
 		case oval:
-			roi = new OvalRoi(left, top, width, height, null);
+			roi = new OvalRoi(left, top, width, height);
 			break;
 		case line:
 			int x1 = (int)getFloat(18);		
@@ -95,7 +95,7 @@ public class RoiDecoder {
 					roiType = Roi.FREEROI;
 				else
 					roiType = Roi.TRACED_ROI;
-				roi = new PolygonRoi(x, y, n, null, roiType);
+				roi = new PolygonRoi(x, y, n, roiType);
 				break;
 		default:
 		}

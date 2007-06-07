@@ -115,8 +115,8 @@ public class TypeConverter {
 			case FLOAT:
 				return convertFloatToShort();
 			case RGB:
-				//return convertRGBToShort(ctable);
-				return null;
+				ip = convertRGBToByte();
+				return convertByteToShort();
 			default:
 				return null;
 		}
@@ -166,8 +166,8 @@ public class TypeConverter {
 			case FLOAT:
 				return ip;
 			case RGB:
-				//return convertRGBToFloat(ctable);
-				return null;
+				ip = convertRGBToByte();
+				return convertByteToFloat(null);
 			default:
 				return null;
 		}

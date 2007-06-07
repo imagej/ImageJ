@@ -169,4 +169,25 @@ public class StackConverter {
 		imp.setStack(null, stack2);
 		cal.disableDensityCalibration();
 	}
+
+	/** Converts the stack to 8-bits indexed color. 'nColors' must
+		be greater than 1 and less than or equal to 256. */
+	public void convertToIndexedColor(int nColors) {
+		if (type!=ImagePlus.COLOR_RGB)
+			throw new IllegalArgumentException("RGB stack required");
+		ImageStack stack = imp.getStack();
+		int size = stack.getSize();
+		ImageProcessor montage = new ColorProcessor(width*size, height);
+        for (int i=0; i<size; i++)
+            montage.insert(stack.getProcessor(i+1), i*width, 0);
+        MedianCut mc = new MedianCut((ColorProcessor)montage);
+        montage = mc.convertToByte(nColors);
+        ImageStack stack2 = new ImageStack(width, height);
+        for (int i=0; i<size; i++) {
+            montage.setRoi(i*width, 0, width, height);
+            stack2.addSlice(null, montage.crop());
+        }
+		imp.setStack(null, stack2);
+	}
+
 }

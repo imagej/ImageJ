@@ -17,6 +17,7 @@ public class Convolver implements PlugInFilter {
 	boolean canceled;
 	float[] kernel;
 	ImageWindow win;
+	boolean isLineRoi;
 	
 	static String kernelText = ".0625  .125  .0625\n.125    .25    .125\n.0625  .125  .0625";
 	static boolean normalize = true;
@@ -27,6 +28,8 @@ public class Convolver implements PlugInFilter {
 		canceled = false;
 		if (imp==null)
 			{IJ.noImage(); return DONE;}
+		Roi roi = imp.getRoi();
+		isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
 		kernel = getKernel();
 		if (kernel==null)
 			return DONE;
@@ -50,6 +53,8 @@ public class Convolver implements PlugInFilter {
 			return;
 		if (win.running!=true)
 			{canceled=true; return;}
+		if (isLineRoi)
+			ip.setRoi(null);
 		convolve(ip, kernel, kw, kh);
 		if (slice>1)
 			IJ.showStatus("Convolve: "+slice+"/"+imp.getStackSize());
@@ -110,7 +115,9 @@ public class Convolver implements PlugInFilter {
 			return;
 		}
 		ip.setCalibrationTable(null);
-		ImageProcessor ip2=ip.convertToFloat();
+		ImageProcessor ip2 = ip.convertToFloat();
+		ip2.setRoi(ip.getRoi());
+		ip2.setMask(ip.getMask());
 		convolveFloat(ip2, kernel, kw, kh);
 		switch (type) {
 			case BYTE:
@@ -133,6 +140,8 @@ public class Convolver implements PlugInFilter {
 	public void convolveRGB(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
+        Rectangle roi = ip.getRoi();
+        int[] mask = ip.getMask();
 		int size = width*height;
 		if (slice==1) IJ.showStatus("Convolve (red)");
 		byte[] r = new byte[size];
@@ -142,14 +151,18 @@ public class Convolver implements PlugInFilter {
 		ImageProcessor rip = new ByteProcessor(width, height, r, null);
 		ImageProcessor gip = new ByteProcessor(width, height, g, null);
 		ImageProcessor bip = new ByteProcessor(width, height, b, null);
+		Rectangle rect = ip.getRoi();
 		ImageProcessor ip2 = rip.convertToFloat();
+        ip2.setRoi(roi); ip2.setMask(mask);
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor r2 = ip2.convertToByte(false);
 		if (slice==1) IJ.showStatus("Convolve (green)");
 		ip2 = gip.convertToFloat();
+        ip2.setRoi(roi); ip2.setMask(mask);
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor g2 = ip2.convertToByte(false);
 		ip2 = bip.convertToFloat();
+        ip2.setRoi(roi); ip2.setMask(mask);
 		if (slice==1) IJ.showStatus("Convolve (blue)");
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor b2 = ip2.convertToByte(false);
@@ -159,12 +172,21 @@ public class Convolver implements PlugInFilter {
 	public void convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
+		Rectangle r = ip.getRoi();
+		boolean isRoi = r.width!=width||r.height!=height;
+		boolean nonRectRoi = isRoi && ip.getMask()!=null;
+		if (nonRectRoi)
+			ip.snapshot();
+		int x1 = r.x;
+		int y1 = r.y;
+		int x2 = x1 + r.width;
+		int y2 = y1 + r.height;
 		int uc = kw/2;    
 		int vc = kh/2;
 		float[] pixels = (float[])ip.getPixels();
 		float[] pixels2 = (float[])ip.getPixelsCopy();
-		for (int i=0; i<width*height; i++)
-			pixels[i] = 0f;
+		//for (int i=0; i<width*height; i++)
+		//	pixels[i] = 0f;
 
 		double scale = 1.0;
 		if (normalize) {
@@ -175,15 +197,15 @@ public class Convolver implements PlugInFilter {
 				scale = (float)(1.0/sum);
 		}
 
- 		int progress = Math.max(height/25,1);
+ 		int progress = Math.max((y2-y1)/25,1);
 		double sum;
 		int offset, i;
 		boolean edgePixel;
 		int xedge = width-uc;
 		int yedge = height-vc;
-		for(int y=0; y<height; y++) {
+		for(int y=y1; y<y2; y++) {
 			if (y%progress ==0) IJ.showProgress((double)y/height);
-			for(int x=0; x<width; x++) {
+			for(int x=x1; x<x2; x++) {
 				sum = 0.0;
 				i = 0;
 				edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
@@ -199,6 +221,8 @@ public class Convolver implements PlugInFilter {
 				pixels[x+y*width] = (float)(sum*scale);
 			}
     	}
+		if (nonRectRoi)
+			ip.reset(ip.getMask());
    		IJ.showProgress(1.0);
    	 }
 
@@ -209,6 +233,7 @@ public class Convolver implements PlugInFilter {
 		if (y>=height) y = height-1;
 		return pixels[x+y*width];
 	}
+	
 
 }
 

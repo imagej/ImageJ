@@ -12,15 +12,17 @@ import ij.plugin.frame.Recorder;
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
 public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measurements,
-	Runnable, ActionListener, AdjustmentListener {
+	Runnable, ActionListener, AdjustmentListener, ItemListener {
 
+	static final int RED=0, BLACK_AND_WHITE=1, OVER_UNDER=2;
+	static final String[] modes = {"Red","Black & White", "Over/Under"};
 	static final double defaultMinThreshold = 85; 
 	static final double defaultMaxThreshold = 170;
 	static boolean fill1 = true;
 	static boolean fill2 = true;
 	static boolean useBW = true;
 	static Frame instance; 
-	
+	static int mode = RED;	
 	ThresholdPlot plot = new ThresholdPlot();
 	Thread thread;
 	
@@ -30,7 +32,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	boolean doAutoAdjust,doReset,doApplyLut,doStateChange,doSet;
 	
 	Panel panel;
-	Button autoB, resetB, applyB, stateB, setB;
+	Button autoB, resetB, applyB, setB;
 	int previousImageID;
 	int previousImageType;
 	double previousMin, previousMax;
@@ -40,8 +42,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	Label label1, label2;
 	boolean done;
 	boolean invertedLut;
-	boolean blackAndWhite;
-	int lutColor = ImageProcessor.RED_LUT;
+	int lutColor;	
+	static Choice choice;
 
 	public ThresholdAdjuster() {
 		super("Threshold");
@@ -51,6 +53,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 		WindowManager.addWindow(this);
 		instance = this;
+		setLutColor(mode);
 		IJ.register(PasteController.class);
 
 		ij = IJ.getInstance();
@@ -64,8 +67,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.fill = c.BOTH;
-		c.anchor = c.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.CENTER;
 		c.insets = new Insets(10, 10, 0, 10);
 		add(plot, c);
 		
@@ -75,7 +78,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.gridy = y++;
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?90:100;
-		c.fill = c.HORIZONTAL;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(5, 10, 0, 0);
 		add(minSlider, c);
 		minSlider.addAdjustmentListener(this);
@@ -110,44 +113,49 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
     	label2.setFont(font);
 		add(label2, c);
 				
-		// buttons
-		panel = new Panel();
-		//panel.setLayout(new GridLayout(2, 2, 0, 0));
-		autoB = new Button("Auto");
-		autoB.addActionListener(this);
-		autoB.addKeyListener(ij);
-		panel.add(autoB);
-		applyB = new Button("Apply");
-		applyB.addActionListener(this);
-		applyB.addKeyListener(ij);
-		panel.add(applyB);
-		resetB = new Button("Reset");
-		resetB.addActionListener(this);
-		resetB.addKeyListener(ij);
-		panel.add(resetB);
-		stateB = new Button("B&W");
-		stateB.addActionListener(this);
-		stateB.addKeyListener(ij);
-		panel.add(stateB);
-		setB = new Button("Set");
-		setB.addActionListener(this);
-		setB.addKeyListener(ij);
-		panel.add(setB);
-		//panel.add(new Label("  "));
-		//blackAndWhiteCB = new Checkbox("B&W", false);
-		//blackAndWhiteCB.addItemListener(this);
-		//blackAndWhiteCB.addKeyListener(ij);
-		//panel.add(blackAndWhiteCB);
+		// choice
+		choice = new Choice();
+		for (int i=0; i<modes.length; i++)
+			choice.addItem(modes[i]);
+		choice.select(mode);
+		choice.addItemListener(this);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 5, 10, 5);
+		c.insets = new Insets(5, 5, 0, 5);
+		c.anchor = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.NONE;
+		add(choice, c);
+
+		// buttons
+		int trim = IJ.isMacOSX()?15:0;
+		panel = new Panel();
+		autoB = new TrimmedButton("Auto",trim);
+		autoB.addActionListener(this);
+		autoB.addKeyListener(ij);
+		panel.add(autoB);
+		applyB = new TrimmedButton("Apply",trim);
+		applyB.addActionListener(this);
+		applyB.addKeyListener(ij);
+		panel.add(applyB);
+		resetB = new TrimmedButton("Reset",trim);
+		resetB.addActionListener(this);
+		resetB.addKeyListener(ij);
+		panel.add(resetB);
+		setB = new TrimmedButton("Set",trim);
+		setB.addActionListener(this);
+		setB.addKeyListener(ij);
+		panel.add(setB);
+		c.gridx = 0;
+		c.gridy = y++;
+		c.gridwidth = 2;
+		c.insets = new Insets(0, 5, 10, 5);
 		add(panel, c);
 		
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		pack();
 		GUI.center(this);
-		setVisible(true);
+		show();
 
 		thread = new Thread(this, "ThresholdAdjuster");
 		//thread.setPriority(thread.getPriority()-1);
@@ -174,21 +182,32 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			doAutoAdjust = true;
 		else if (b==applyB)
 			doApplyLut = true;
-		else if (b==stateB) {
-			blackAndWhite = stateB.getLabel().equals("B&W");
-			if (blackAndWhite) {
-				stateB.setLabel("Red");
-				lutColor = ImageProcessor.BLACK_AND_WHITE_LUT;
-			} else {
-				stateB.setLabel("B&W");
-				lutColor = ImageProcessor.RED_LUT;
-			}
-			doStateChange = true;
-		} else if (b==setB)
+		else if (b==setB)
 			doSet = true;
 		notify();
 	}
 	
+	void setLutColor(int mode) {
+		switch (mode) {
+			case RED:
+				lutColor = ImageProcessor.RED_LUT;
+				break;
+			case BLACK_AND_WHITE:
+				lutColor = ImageProcessor.BLACK_AND_WHITE_LUT;
+				break;
+			case OVER_UNDER:
+				lutColor = ImageProcessor.OVER_UNDER_LUT; 
+				break;
+		}
+	}
+	
+	public synchronized void itemStateChanged(ItemEvent e) {
+		mode = choice.getSelectedIndex();
+		setLutColor(mode);
+		doStateChange = true;
+		notify();
+	}
+
 	ImageProcessor setup(ImagePlus imp) {
 		ImageProcessor ip;
 		int type = imp.getType();
@@ -260,7 +279,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	void updatePlot() {
 		plot.minThreshold = minThreshold;
 		plot.maxThreshold = maxThreshold;
-		plot.blackAndWhite = blackAndWhite;
+		plot.mode = mode;
 		plot.repaint();
 	}
 	
@@ -382,90 +401,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
 	}
 
-	void apply(ImagePlus imp, ImageProcessor ip) {
-		if (!imp.lock())
-			return;
-		boolean not8Bits = !(ip instanceof ByteProcessor);
-		if (not8Bits) {
-			double min = ip.getMin();
-			double max = ip.getMax();
-			ip.setMinAndMax(min, max);
-			ip = new ByteProcessor(ip.createImage());
-		}
-			
-		boolean useBlackAndWhite = (stateB.getLabel().equals("Red"));
-		if (!useBlackAndWhite) {
-			GenericDialog gd = new GenericDialog("Apply Lut", this);
-			gd.addCheckbox("Set thresholded pixels to foreground color", fill1);
-			gd.addCheckbox("Set remaining pixels to background color", fill2);
-			gd.addMessage("");
-			gd.addCheckbox("Black forground, white background", useBW);
-			gd.showDialog();
-			if (gd.wasCanceled())
-				{imp.unlock(); return;}
-			fill1 = gd.getNextBoolean();
-			fill2 = gd.getNextBoolean();
-			useBW = useBlackAndWhite = gd.getNextBoolean();
-		} else {
-			fill1 = true;
-			fill2 = true;
-		}
-		
-		Undo.setup(Undo.FILTER, imp);
-		ip.snapshot();
-		reset(imp, ip);
-		int fcolor, bcolor;
-		int savePixel = ip.getPixel(0,0);
-
-		if (useBlackAndWhite)
- 			ip.setColor(Color.black);
- 		else
- 			ip.setColor(Toolbar.getForegroundColor());
-		ip.drawPixel(0,0);
-		fcolor = ip.getPixel(0,0);
-		if (useBlackAndWhite)
- 			ip.setColor(Color.white);
- 		else
- 			ip.setColor(Toolbar.getBackgroundColor());
-		ip.drawPixel(0,0);
-		bcolor = ip.getPixel(0,0);
-		ip.setColor(Toolbar.getForegroundColor());
-		ip.putPixel(0,0,savePixel);
-
-		int[] lut = new int[256];
-		for (int i=0; i<256; i++) {
-			if (i>=minThreshold && i<=maxThreshold)
-				lut[i] = fill1?fcolor:(byte)i;
-			else {
-				lut[i] = fill2?bcolor:(byte)i;
-			}
-		}
-		if (not8Bits) {
-			ip.applyTable(lut);
-			new ImagePlus(imp.getTitle(), ip).show();
-		}
-		if (imp.getStackSize()>1) {
-			ImageStack stack = imp.getStack();
-			YesNoCancelDialog d = new YesNoCancelDialog(this,
-				"Entire Stack?", "Apply threshold to all "+stack.getSize()+" slices in the stack?");
-			if (d.cancelPressed())
-				{imp.unlock(); return;}
-			if (d.yesPressed())
-				new StackProcessor(stack, ip).applyTable(lut);
-			else
-				ip.applyTable(lut);
-		} else
-			ip.applyTable(lut);
-		imp.changes = true;
-		if (plot.histogram!=null)
-			plot.setHistogram(imp);
-		imp.unlock();
-	}
-
 	void changeState(ImagePlus imp, ImageProcessor ip) {
-		//if (blackAndWhite)
-		//	minThreshold = 0;
-		//IJ.write("blackAndWhite: "+blackAndWhite);
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
 		updateScrollBars();
 	}
@@ -486,6 +422,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		updateScrollBars();
 		if (Recorder.record)
 			Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
+ 	}
+ 	
+ 	void apply() {
+ 		try {IJ.run("Threshold");}
+ 		catch (Exception e) {}
  	}
 	
 	static final int RESET=0, AUTO=1, HIST=2, APPLY=3, STATE_CHANGE=4, MIN_THRESHOLD=5, MAX_THRESHOLD=6, SET=7;
@@ -539,7 +480,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		switch (action) {
 			case RESET: reset(imp, ip); break;
 			case AUTO: autoThreshold(imp, ip); break;
-			case APPLY: apply(imp, ip); break;
+			case APPLY: apply(); break;
 			case STATE_CHANGE: changeState(imp, ip); break;
 			case SET: doSet(imp, ip); break;
 			case MIN_THRESHOLD: adjustMinThreshold(imp, ip, min); break;
@@ -565,7 +506,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
 class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	
-	static final int WIDTH = 256, HEIGHT=64;
+	static final int WIDTH = 256, HEIGHT=48;
 	double minThreshold = 85;
 	double maxThreshold = 170;
 	int[] histogram;
@@ -573,7 +514,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	int hmax;
 	Image os;
 	Graphics osg;
-	boolean blackAndWhite;
+	int mode;
 	
 	public ThresholdPlot() {
 		addMouseListener(this);
@@ -586,7 +527,9 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			double min = ip.getMin();
 			double max = ip.getMax();
 			ip.setMinAndMax(min, max);
+			Rectangle r = ip.getRoi();
 			ip = new ByteProcessor(ip.createImage());
+			ip.setRoi(r);
 		}
 		ip.setMask(imp.getMask());
 		ImageStatistics stats = ImageStatistics.getStatistics(ip, AREA+MODE, null);
@@ -645,9 +588,19 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		}
 		g.setColor(Color.black);
  		g.drawRect(0, 0, WIDTH, HEIGHT);
- 		if (!blackAndWhite)
+ 		if (mode==ThresholdAdjuster.RED)
 			g.setColor(Color.red);
+		else if (mode==ThresholdAdjuster.OVER_UNDER) {
+			g.setColor(Color.blue);
+ 			g.drawRect(1, 1, (int)minThreshold-2, HEIGHT);
+ 			g.drawRect(1, 0, (int)minThreshold-2, 0);
+ 			g.setColor(Color.green);
+ 			g.drawRect((int)maxThreshold+1, 1, WIDTH-(int)maxThreshold, HEIGHT);
+ 			g.drawRect((int)maxThreshold+1, 0, WIDTH-(int)maxThreshold, 0);
+			return;
+		}
  		g.drawRect((int)minThreshold, 1, (int)(maxThreshold-minThreshold), HEIGHT);
+ 		g.drawLine((int)minThreshold, 0, (int)maxThreshold, 0);
      }
 
 	public void mousePressed(MouseEvent e) {}

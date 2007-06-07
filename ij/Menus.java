@@ -156,6 +156,7 @@ public class Menus {
 		addPlugInItem(analyze, "Calibrate...", "ij.plugin.filter.Calibrator", 0, false);
 		addItem(analyze, "Histogram", KeyEvent.VK_H, false);
 		addPlugInItem(analyze, "Plot Profile", "ij.plugin.filter.Profiler(\"plot\")", KeyEvent.VK_K, false);
+		addPlugInItem(analyze, "Surface Plot...", "ij.plugin.SurfacePlotter", 0, false);
 		addPlugInItem(analyze, "Show LUT", "ij.plugin.filter.LutViewer", 0, false);
 		addSubMenu(analyze, "Gels");
 		toolsMenu = addSubMenu(analyze, "Tools");
@@ -171,7 +172,8 @@ public class Menus {
 		aboutMenu = addSubMenu(help, "About Plugins");
 		help.addSeparator();
 		addPlugInItem(help, "ImageJ Web Site...", "ij.plugin.BrowserLauncher", 0, false);
-		addPlugInItem(help, "About ImageJ...", "ij.plugin.SimpleCommands(\"about\")", 0, false);
+		addPlugInItem(help, "Online Docs...", "ij.plugin.BrowserLauncher(\"online\")", 0, false);
+		addPlugInItem(help, "About ImageJ...", "ij.plugin.AboutBox", 0, false);
 				
 		addPluginsMenu();
 		if (applet==null)
@@ -228,9 +230,9 @@ public class Menus {
 
 	Menu addSubMenu(Menu menu, String name) {
 		String value;
-		String key = name.toLowerCase();
+		String key = name.toLowerCase(Locale.US);
 		int index;
- 		Menu submenu=new Menu(name);
+ 		Menu submenu=new Menu(name.replace('_', ' '));
  
 		index = key.indexOf(' ');
 		if (index>0)
@@ -605,6 +607,8 @@ public class Menus {
 	/** Removes the specified item from the Window menu. */
 	static synchronized void removeWindowMenuItem(int index) {
 		//IJ.write("removeWindowMenuItem: "+index+" "+windowMenuItems2);
+		if (ij==null)
+			return;
 		if (index>=0 && index<window.getItemCount()) {
 			window.remove(WINDOW_MENU_ITEMS+index);
 			if (index<windowMenuItems2) {

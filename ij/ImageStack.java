@@ -20,7 +20,7 @@ public class ImageStack {
 	private ColorModel cm;
 	private double min=Double.MAX_VALUE;
 	private double max;
-	private static boolean msgShown;
+	private ImageProcessor ip;
 	
 	/** Creates a new, empty image stack. */
 	public ImageStack(int width, int height) {
@@ -183,16 +183,17 @@ public class ImageStack {
 	public ImageProcessor getProcessor(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
-		if (nSlices==0) return null;
-		ImageProcessor ip = null;
+		if (nSlices==0)
+			return null;
 		if (stack[0] instanceof byte[])
-			ip = new ByteProcessor(width, height, (byte[])stack[n-1], cm);
+			ip = new ByteProcessor(width, height, null, cm);
 		else if (stack[0] instanceof short[])
-			ip = new ShortProcessor(width, height, (short[])stack[n-1], cm);
+			ip = new ShortProcessor(width, height, null, cm);
 		else if (stack[0] instanceof int[])
-			ip = new ColorProcessor(width, height, (int[])stack[n-1]);
+			ip = new ColorProcessor(width, height, null);
 		else if (stack[0] instanceof float[])
-			ip = new FloatProcessor(width, height, (float[])stack[n-1], cm);
+			ip = new FloatProcessor(width, height, null, cm);		
+		ip.setPixels(stack[n-1]);
 		if (min!=Double.MAX_VALUE && ip!=null && !(ip instanceof ColorProcessor))
 			ip.setMinAndMax(min, max);
 		return ip;

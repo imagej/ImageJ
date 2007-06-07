@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import java.awt.*;
 import java.awt.event.*;
 
 /** Implements the "Plot Profile" command. */
@@ -29,6 +30,8 @@ public class Profiler implements PlugInFilter {
 		boolean wasFixedScale = fixedScale;
 		
 		GenericDialog gd = new GenericDialog("Profile Plot Options", IJ.getInstance());
+		gd.addNumericField("Plot Width:", PlotWindow.plotWidth, 0);
+		gd.addNumericField("Plot Height:", PlotWindow.plotHeight, 0);
 		gd.addNumericField("Y Min:", ymin, 2);
 		gd.addNumericField("Y Max:", ymax, 2);
 		gd.addCheckbox("Fixed Y-axis Scale", fixedScale);
@@ -38,6 +41,15 @@ public class Profiler implements PlugInFilter {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		int w = (int)gd.getNextNumber();
+		int h = (int)gd.getNextNumber();
+		if (w<300) w = 300;
+		if (w>screen.width-140) w = screen.width-140;
+		if (h<100) h = 100;
+		if (h>screen.height-300) h = screen.height-300;
+		PlotWindow.plotWidth = w;
+		PlotWindow.plotHeight = h;
 		ymin = gd.getNextNumber();
 		ymax = gd.getNextNumber();
 		fixedScale = gd.getNextBoolean();

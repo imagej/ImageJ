@@ -187,9 +187,8 @@ public class ImageConverter {
 		// convert to 8-bits
 		long start = System.currentTimeMillis();
 		MedianCut mc = new MedianCut(pixels, width, height);
-		Image img8 = mc.convert(nColors);
-	    imp.setImage(img8);
-		IJ.showProgress(1.0);
+		ImageProcessor ip2 = mc.convertToByte(nColors);
+	    imp.setProcessor(null, ip2);
 	}
 	
 	/** Set true to scale to 0-255 when converting short to byte or float

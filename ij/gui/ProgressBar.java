@@ -5,7 +5,7 @@ import java.awt.image.*;
 
 /** This is ImageJ's progress bar. It is not displayed if
 	the time between the first and second calls to 'show'
-	is less than 50 milliseconds. It is erased when show
+	is less than 30 milliseconds. It is erased when show
 	is passed a percent value >= 1.0. */
 public class ProgressBar extends Canvas {
 
@@ -51,19 +51,22 @@ public class ProgressBar extends Canvas {
 	public void show(double percent) {
 		count++;
     	if (count==1) {
+			//ij.IJ.log("");
+			//ij.IJ.log("1st call");
     		startTime = System.currentTimeMillis();
     		showBar = false;
     	}
 		else if (count==2) {
 			long time2 = System.currentTimeMillis();
-			//if (IJ.debugMode) IJ.write("Progress: " + (time2 - startTime) + "ms");
-			if ((time2 - startTime)>=50)
+			//ij.IJ.log("2nd call: "+(time2 - startTime) + "ms");
+			if ((time2 - startTime)>=30)
 				showBar = true;
 		}
 		
 		negativeProgress = percent<this.percent;
 		this.percent = percent;
     	if (percent>=1.0) {
+			//ij.IJ.log("total calls: "+count);
 			count = 0;
 			percent = 0.0;
 			showBar = false;

@@ -62,6 +62,8 @@ public class BrowserLauncher implements PlugIn {
 			return;
 		if (theURL==null || theURL.equals(""))
 			theURL = "http://rsb.info.nih.gov/ij/";
+		else if (theURL.equals("online"))
+			theURL = "http://rsb.info.nih.gov/ij/docs";
 		try {openURL(theURL);}
 		catch (IOException e) {}
 	}

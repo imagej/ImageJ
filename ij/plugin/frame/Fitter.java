@@ -64,7 +64,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		add("Center", textArea);
 		pack();
 		GUI.center(this);
-		setVisible(true);
+		show();
 		IJ.register(Fitter.class);
 	}
 

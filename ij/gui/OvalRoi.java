@@ -4,13 +4,14 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.*;
 import ij.process.*;
+import ij.measure.Calibration;
 
 /** Oval region of interest */
 public class OvalRoi extends Roi {
 
-	/** Creates a new OvalRoi. The ImagePlus argument can be null. */
-	public OvalRoi(int x, int y, int width, int height, ImagePlus imp) {
-		super(x, y, width, height, imp);
+	/** Creates a new OvalRoi.*/
+	public OvalRoi(int x, int y, int width, int height) {
+		super(x, y, width, height);
 		type = OVAL;
 	}
 
@@ -18,6 +19,12 @@ public class OvalRoi extends Roi {
 	public OvalRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
 		type = OVAL;
+	}
+
+	/** Obsolete */
+	public OvalRoi(int x, int y, int width, int height, ImagePlus imp) {
+		this(x, y, width, height);
+		setImage(imp);
 	}
 
 	public void draw(Graphics g) {
@@ -30,7 +37,7 @@ public class OvalRoi extends Roi {
 	}
 
 	public void drawPixels() {
-	// equation for an ellipse is x^2/a^2 + y^2/b^2 = 1
+		// equation for an ellipse is x^2/a^2 + y^2/b^2 = 1
 		ImageProcessor ip = imp.getProcessor();
 		int a = width/2;
 		int b = height/2;
@@ -79,7 +86,13 @@ public class OvalRoi extends Roi {
 
 	/** Returns the perimeter length. */
 	public double getLength() {
-		return Math.PI*(width+height)/2;
+		double pw=1.0, ph=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			pw = cal.pixelWidth;
+			ph = cal.pixelHeight;
+		}
+		return Math.PI*(width*pw+height*ph)/2.0;
 	}
 	
 }

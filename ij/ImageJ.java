@@ -26,7 +26,7 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.27z";
+	public static final String VERSION = "1.28u";
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
@@ -97,8 +97,8 @@ public class ImageJ extends Frame implements ActionListener,
 		setLocation(loc.x, loc.y);
 		pack();
 		setResizable(false);
-		setVisible(true);
-		if (IJ.isMacintosh() && IJ.isJava2())
+		show();
+		if (IJ.isMacOSX())
 			pack(); // hack needed for window to display correctly Mac OS X
 		if (err1!=null)
 			IJ.error(err1);
@@ -266,8 +266,6 @@ public class ImageJ extends Frame implements ActionListener,
 					System.gc();
 				IJ.showProgress((double)i/n);
 			}
-			//int current = imp.getCurrentSlice();
-			//imp.setProcessor(null,stack.getProcessor(current));
 			if (roi!=null)
 				imp.setRoi(roi);
 			IJ.showProgress(1.0);
@@ -275,6 +273,8 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		if ((capabilities&PlugInFilter.NO_CHANGES)==0) {
 			imp.changes = true;
+			if (slices>1 && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32))
+				imp.getProcessor().resetMinAndMax();
 	 		imp.updateAndDraw();
 	 	}
 		ImageWindow win = imp.getWindow();
@@ -311,7 +311,7 @@ public class ImageJ extends Frame implements ActionListener,
 				runFilterPlugIn(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
-			if (!className.equals("QuitHandler"))
+			if (className.indexOf('_')!=-1)
 				IJ.error("Plugin not found: "+className);
 		}
 		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
@@ -498,10 +498,18 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
     public static void main(String args[]) {
-    	//if (args!=null)
-    	//	for (int i=0; i<args.length; i++)
-    	//		System.out.println(i+" "+args[i]);
-		new ImageJ(null);
+    	ImageJ ij = IJ.getInstance();
+		if (ij==null || (ij!=null && !ij.isShowing()))
+			new ImageJ(null);
+    	if (args!=null) {
+    		for (int i=1; i<args.length; i++) {
+    			//IJ.log(i+" "+args[i]);
+    			Opener opener = new Opener();
+    			ImagePlus imp = opener.openImage(args[i]);
+    			if (imp!=null)
+    				imp.show();
+    		}
+    	}
     }
 
 

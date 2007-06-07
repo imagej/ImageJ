@@ -42,7 +42,7 @@ public class SaveDialog {
 		String defaultDir = OpenDialog.getDefaultDirectory();
 		if (defaultDir!=null)
 			fd.setDirectory(defaultDir);
-		fd.setVisible(true);
+		fd.show();
 		name = fd.getFile();
 		dir = fd.getDirectory();
 		if (name!=null && dir!=null)

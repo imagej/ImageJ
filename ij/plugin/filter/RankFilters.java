@@ -7,19 +7,21 @@ import java.util.*;
 
 public class RankFilters implements PlugInFilter {
 
+        public static final int MEDIAN=0, MEAN=1, MIN=2, MAX=3;
         static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
-        static final int MEDIAN=0, MEAN=1, MIN=2, MAX=3;
+        
         ImagePlus imp;
-        static int filterType = MEDIAN;
+        int filterType = MEDIAN;
         String title;
-        static boolean createSelection = false;
         int kw, kh;
-        static float[] kernel;
-        static int slice;
-        static boolean canceled;
-        static ImageWindow win;
-        static double radius = 2.0;
+        int slice;
+        boolean canceled;
+        ImageWindow win;
         private static final String[] typeStrings = {"Median","Mean","Minimum","Maximum"};
+        boolean isLineRoi;
+        
+        static double radius = 2.0;
+
 
         public int setup(String arg, ImagePlus imp) {
                 IJ.register(RankFilters.class);
@@ -35,6 +37,8 @@ public class RankFilters implements PlugInFilter {
                 if (imp!=null) {
                         win = imp.getWindow();
                         win.running = true;
+						Roi roi = imp.getRoi();
+						isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
                 }
                 title = typeStrings[filterType];
                 IJ.showStatus(title+", radius="+radius+" (esc to abort)");
@@ -51,6 +55,8 @@ public class RankFilters implements PlugInFilter {
                 if (win.running!=true)
                         {canceled=true; IJ.beep(); return;}
 
+				if (isLineRoi)
+					ip.setRoi(null);
                 rank(ip, radius, filterType);
                 if (slice>1)
                         IJ.showStatus(title+": "+slice+"/"+imp.getStackSize());
@@ -131,6 +137,8 @@ public class RankFilters implements PlugInFilter {
                 }
                 ip.setCalibrationTable(null);
                 ImageProcessor ip2 = ip.convertToFloat();
+                ip2.setRoi(ip.getRoi());
+                ip2.setMask(ip.getMask());
                 rankFloat(ip2, radius, rankType);
                 convertBack(ip2, ip, type);
         }
@@ -138,6 +146,8 @@ public class RankFilters implements PlugInFilter {
         public void rankRGB(ImageProcessor ip, double radius, int rankType) {
                 int width = ip.getWidth();
                 int height = ip.getHeight();
+                Rectangle roi = ip.getRoi();
+                int[] mask = ip.getMask();
                 int size = width*height;
                 if (slice==1) IJ.showStatus(title+" (red)");
                 byte[] r = new byte[size];
@@ -148,16 +158,19 @@ public class RankFilters implements PlugInFilter {
                 ImageProcessor gip = new ByteProcessor(width, height, g, null);
                 ImageProcessor bip = new ByteProcessor(width, height, b, null);
                 ImageProcessor ip2 = rip.convertToFloat();
+                ip2.setRoi(roi); ip2.setMask(mask);
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
                 ImageProcessor r2 = ip2.convertToByte(false);
                 if (slice==1) IJ.showStatus(title+" (green)");
                 ip2 = gip.convertToFloat();
+                ip2.setRoi(roi); ip2.setMask(mask);
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
                 ImageProcessor g2 = ip2.convertToByte(false);
                 if (slice==1) IJ.showStatus(title+" (blue)");
                 ip2 = bip.convertToFloat();
+                ip2.setRoi(roi); ip2.setMask(mask);
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
                 ImageProcessor b2 = ip2.convertToByte(false);
@@ -167,7 +180,19 @@ public class RankFilters implements PlugInFilter {
         public void rankFloat(ImageProcessor ip, double radius, int rankType) {
                 int width = ip.getWidth();
                 int height = ip.getHeight();
-                int kw = ((int)(radius+0.5))*2 + 1;
+				Rectangle r = ip.getRoi();
+				boolean isRoi = r.width!=width||r.height!=height;
+				boolean nonRectRoi = isRoi && ip.getMask()!=null;
+				int x1=0, y1=0, x2=width-1, y2=height-1;
+        		if (isRoi) {
+        			x1 = r.x;
+        			y1 = r.y;
+        			x2 = x1 + r.width - 1;
+        			y2 = y1 + r.height - 1;
+					if (nonRectRoi)
+						ip.snapshot();
+        		}
+        		int kw = ((int)(radius+0.5))*2 + 1;
                 int kh = kw;
                 int[] mask = createCircularMask(kw,radius);
                 int maskSize = 0;
@@ -179,55 +204,49 @@ public class RankFilters implements PlugInFilter {
                 int vc = kh/2;
                 float[] pixels = (float[])ip.getPixels();
                 float[] pixels2 = (float[])ip.getPixelsCopy();
-                for (int i=0; i<width*height; i++)
-                        pixels[i] = 0f;
-//if (medianFilter) {
-//      float[] test = {0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10,0,1,2,3,4,5,6,7,8,9,10};
-//      float median = findMedian(test);
-//      return;
-//}
-
-                int progress = Math.max(height/50,1);
+                int progress = Math.max((y2-y1)/50,1);
                 double sum;
                 int offset, i, count;
                 boolean edgePixel;
-                for(int y=0; y<height; y++) {
+				int xedge = width-uc;
+				int yedge = height-vc;
+                for(int y=y1; y<=y2; y++) {
                         if (y%progress ==0) {
                                 IJ.showProgress((double)y/height);
                                 canceled = win!=null && !win.running;
                                 if (canceled)
                                         break;
                         }
-                        edgePixel = y<vc || y>=height+vc;
-                        for(int x=0; x<width; x++) {
+                        for(int x=x1; x<=x2; x++) {
                                 sum = 0.0;
                                 i = 0;
                                 count = 0;
-                                if (x<uc || x>=height+uc)
-                                        edgePixel = true;
+								edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
                                 for(int v=-vc; v <= vc; v++) {
                                         offset = x+(y+v)*width;
                                         for(int u = -uc; u <= uc; u++) {
                                                 if (mask[i++]!=0) {
                                                         if (edgePixel)
-                                                                values[count] = getPixel(x+u, y+v, pixels2, width, height);
+                                                               values[count] = getPixel(x+u, y+v, pixels2, width, height);
                                                         else
                                                                 values[count] = pixels2[offset+u];
                                                         count++;
                                                 }
                                         }
-                        }
+                                }
                                 if (rankType==MEDIAN)
-                                         pixels[x+y*width] = findMedian(values);
+                                    pixels[x+y*width] = findMedian(values);
                                 else if (rankType==MEAN)
-                                        pixels[x+y*width] = findMean(values);
+                                    pixels[x+y*width] = findMean(values);
                                 else if (rankType==MIN)
-                                        pixels[x+y*width] = findMin(values);
+                                    pixels[x+y*width] = findMin(values);
                                 else  
-                                        pixels[x+y*width] = findMax(values);
+                                    pixels[x+y*width] = findMax(values);
 
-                        }
-        }
+               		    }
+        		}
+				if (nonRectRoi)
+					ip.reset(ip.getMask());
                 IJ.showProgress(1.0);
                 if (canceled) {
                         //ip.reset();

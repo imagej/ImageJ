@@ -38,7 +38,7 @@ public class ColorProcessor extends ImageProcessor {
 	
 	/**Creates a ColorProcessor from a pixel array. */
 	public ColorProcessor(int width, int height, int[] pixels) {
-		if (width*height!=pixels.length)
+		if (pixels!=null && width*height!=pixels.length)
 			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
@@ -88,6 +88,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Sets the foreground color. */
 	public void setColor(Color color) {
 		fgColor = color.getRGB();
+		drawingColor = color;
 	}
 
 
@@ -199,6 +200,25 @@ public class ColorProcessor extends ImageProcessor {
 			return 0;
 	}
 
+
+    /** Returns the 3 samples for the pixel at (x,y) in an array of int.
+		Returns zeros if the the coordinates are not in bounds. iArray
+		is an optional preallocated array. */
+	public int[] getPixel(int x, int y, int[] iArray) {
+		if (iArray==null) iArray = new int[3];
+		int c = getPixel(x, y);
+		iArray[0] = (c&0xff0000)>>16;
+		iArray[1] = (c&0xff00)>>8;
+		iArray[2] = c&0xff;
+		return iArray;
+	}
+
+	/** Sets a pixel in the image using a 3 element (R, G and B)
+		int array of samples. */
+	public void putPixel(int x, int y, int[] iArray) {
+		int r=iArray[0], g=iArray[1], b=iArray[2];
+		putPixel(x, y, 0xff000000+(r<<16)+(g<<8)+b);
+	}
 
 	/** Calls getPixelValue(x,y). */
 	public double getInterpolatedPixel(double x, double y) {
@@ -821,6 +841,32 @@ public class ColorProcessor extends ImageProcessor {
 		hideProgress();
 		return histogram;
 	}
+
+	/** Performs a convolution operation using the specified kernel. */
+	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
+		int size = width*height;
+		byte[] r = new byte[size];
+		byte[] g = new byte[size];
+		byte[] b = new byte[size];
+		getRGB(r,g,b);
+		ImageProcessor rip = new ByteProcessor(width, height, r, null);
+		ImageProcessor gip = new ByteProcessor(width, height, g, null);
+		ImageProcessor bip = new ByteProcessor(width, height, b, null);
+		ImageProcessor ip2 = rip.convertToFloat();
+		Rectangle roi = getRoi();
+		ip2.setRoi(roi);
+		ip2.convolve(kernel, kernelWidth, kernelHeight);
+		ImageProcessor r2 = ip2.convertToByte(false);
+		ip2 = gip.convertToFloat();
+		ip2.setRoi(roi);
+		ip2.convolve(kernel, kernelWidth, kernelHeight);
+		ImageProcessor g2 = ip2.convertToByte(false);
+		ip2 = bip.convertToFloat();
+		ip2.setRoi(roi);
+		ip2.convolve(kernel, kernelWidth, kernelHeight);
+		ImageProcessor b2 = ip2.convertToByte(false);
+		setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
+   	}
 
 	/** Always returns false since RGB images do not use LUTs. */
 	public boolean isInvertedLut() {

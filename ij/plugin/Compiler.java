@@ -47,11 +47,9 @@ public class Compiler implements PlugIn, FilenameFilter {
 				javac = new sun.tools.javac.Main(output, "javac");
 			}
 		} catch (NoClassDefFoundError e) {
-			IJ.error("This JVM appears not to include the javac compiler. Javac\n"
-				+"is included with the JRE 1.1.8 bundled with the Windows and\n"
- 				+"Linux versions of ImageJ. Mac OS 9 users must install Apple's\n"
- 				+"Java SDK. When using JDK 1.2 and later, the tools.jar file\n"
- 				+"must be added to the command line that runs ImageJ.");
+			IJ.error("This JVM does not include the javac compiler. Javac is\n"
+				+"included with the Windows and Linux versions of ImageJ.\n"
+ 				+"Mac OS 9 users must install Apple's Java SDK.");
  			return false;
 		}
 		return true;
@@ -97,7 +95,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 				fd.setFile(this.name);
 			GUI.center(fd);
 			fd.setFilenameFilter(this);
-			fd.setVisible(true);
+			fd.show();
 			name = fd.getFile();
 			okay = name!=null;
 			dir = fd.getDirectory();

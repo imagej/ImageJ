@@ -69,7 +69,7 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 
 		pack();
 		GUI.center(this);
-		setVisible(true);
+		show();
 		IJ.register(Fonts.class);
 	}
 	

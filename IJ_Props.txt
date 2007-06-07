@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.27
+# Version 1.28
 
 # Popup Menu
 popup01=Undo
@@ -39,11 +39,12 @@ save04="Text Image...",ij.plugin.filter.Writer("text")
 save05="ZIP...",ij.plugin.filter.Writer("zip")
 save06="Raw Data...",ij.plugin.filter.Writer("raw")
 save07="Image Sequence... ",ij.plugin.StackWriter
-save08="LUT...",ij.plugin.filter.Writer("lut")
-save09="ROI...",ij.plugin.filter.RoiWriter
-save10="XY Coordinates...",ij.plugin.filter.XYWriter
-save11="Measurements...",ij.plugin.MeasurementsWriter
-#save12="QuickTime Movie... ",QT_Movie_Writer
+save08="AVI... ",ij.plugin.filter.AVIWriter
+save09="LUT...",ij.plugin.filter.Writer("lut")
+save10="ROI...",ij.plugin.filter.RoiWriter
+save11="XY Coordinates...",ij.plugin.filter.XYWriter
+save12="Measurements...",ij.plugin.MeasurementsWriter
+#save13="QuickTime Movie... ",QT_Movie_Writer
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("width")
@@ -133,7 +134,7 @@ shadows09=-
 shadows10="Shadows Demo",ij.plugin.filter.Shadows("demo")
 
 # Plugins installed in the Process/Binary submenu
-binary01="Threshold",ij.plugin.filter.Filters("threshold")
+binary01="Threshold",ij.plugin.Thresholder
 binary02=-
 binary03="Erode",ij.plugin.filter.Binary("erode")
 binary04="Dilate",ij.plugin.filter.Binary("dilate")
@@ -187,8 +188,10 @@ gels06="Gel Analyzer Options...",ij.plugin.GelAnalyzer("options")
 tools01="Save XY Coordinates...",ij.plugin.filter.XYCoordinates
 tools02="Fractal Box Count...",ij.plugin.filter.FractalBoxCounter
 tools03="Analyze Line Graph",ij.plugin.filter.LineGraphAnalyzer
-tools04="Do Curve Fitting...",ij.plugin.frame.Fitter
+tools04="Curve Fitting...",ij.plugin.frame.Fitter
 tools05="ROI Manager...",ij.plugin.frame.RoiManager
+tools06="Scale Bar...",ij.plugin.ScaleBar
+tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
 
 # Plugins installed in the Plugins menu
 plug-in01=>"Shortcuts"
@@ -198,6 +201,12 @@ plug-in04="New... ",ij.plugin.NewPlugin
 plug-in05="Edit...",ij.plugin.Compiler("edit")
 plug-in06="Compile and Run...",ij.plugin.Compiler
 plug-in07=-
+#plug-in08=>"User_Plugins"
+
+# Install user plugins located in ij.jar
+#user_plugins01="Red And Blue",RedAndBlue_
+#user_plugins02="Inverter",Inverter_
+
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...[P]",ij.plugin.frame.ControlPanel

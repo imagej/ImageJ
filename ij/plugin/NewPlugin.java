@@ -79,7 +79,7 @@ public class NewPlugin implements PlugIn {
 				text += "\t\tadd(ta);\n";
 				text += "\t\tpack();\n";
 				text += "\t\tGUI.center(this);\n";
-				text += "\t\tsetVisible(true);\n";
+				text += "\t\tshow();\n";
 				text += "\t}\n";
 				break;
 		}

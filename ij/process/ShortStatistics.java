@@ -19,9 +19,12 @@ public class ShortStatistics extends ImageStatistics {
 		this.height = ip.getHeight();
 		setup(ip, cal);
 		nBins = 256;
+		double minT = ip.getMinThreshold();
 		int minThreshold,maxThreshold;
-		minThreshold=0;
-		maxThreshold=65535;
+		if ((mOptions&LIMIT)==0 || minT==ip.NO_THRESHOLD)
+			{minThreshold=0; maxThreshold=65535;}
+		else
+			{minThreshold=(int)minT; maxThreshold=(int)ip.getMaxThreshold();}
 		int[] hist = ip.getHistogram(); // 65536 bin histogram
 		float[] cTable = cal!=null?cal.getCTable():null;
 		getRawMinAndMax(hist, minThreshold, maxThreshold);
@@ -33,9 +36,9 @@ public class ShortStatistics extends ImageStatistics {
 		if ((mOptions&ELLIPSE)!=0)
 			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
-			getCentroid(ip);
+			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&CENTER_OF_MASS)!=0)
-			getCenterOfMass(ip, cTable);
+			getCenterOfMass(ip, minThreshold, maxThreshold);
 		if ((mOptions&MIN_MAX)!=0 && cTable!=null) {
 			getCalibratedMinAndMax(hist, (int)min, (int)max, cTable);
 		}
@@ -98,7 +101,37 @@ public class ShortStatistics extends ImageStatistics {
 	}
 
 
-	void getCenterOfMass(ImageProcessor ip, float[] cTable) {
+	void getCentroid(ImageProcessor ip, int minThreshold, int maxThreshold) {
+		short[] pixels = (short[])ip.getPixels();
+		int[] mask = ip.getMask();
+		boolean limit = minThreshold>0 || maxThreshold<65535;
+		int count=0, xsum=0, ysum=0,i,mi,v;
+		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
+			i = y*width + rx;
+			mi = my*rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null||mask[mi++]==ip.BLACK) {
+					if (limit) {
+						v = pixels[i]&0xffff;
+						if (v>=minThreshold&&v<=maxThreshold) {
+							count++;
+							xsum+=x;
+							ysum+=y;
+						}
+					} else {
+						count++;
+						xsum+=x;
+						ysum+=y;
+					}
+				}
+				i++;
+			}
+		}
+		xCentroid = ((double)xsum/count+0.5)*pw;
+		yCentroid = ((double)ysum/count+0.5)*ph;
+	}
+
+	void getCenterOfMass(ImageProcessor ip,  int minThreshold, int maxThreshold) {
 		short[] pixels = (short[])ip.getPixels();
 		int[] mask = ip.getMask();
 		int i, mi, v;
@@ -109,10 +142,11 @@ public class ShortStatistics extends ImageStatistics {
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]==ip.BLACK) {
 					v = pixels[i]&0xffff;
-					dv = ((cTable!=null)?cTable[v]:v)+Double.MIN_VALUE;
-					count += v;
-					xsum += x*v;
-					ysum += y*v;
+					if (v>=minThreshold&&v<=maxThreshold) {
+						count += v;
+						xsum += x*v;
+						ysum += y*v;
+					}
 				}
 				i++;
 			}

@@ -5,7 +5,7 @@ import ij.process.*;
 import java.awt.*;
 
 /** This plugin implements the Invert, Smooth, Sharpen, Detect Edges, 
-	Add Noise, Reduce Noise, and Threshold commands. */
+	Add Noise and Reduce Noise commands. */
 public class Filters implements PlugInFilter {
 	
 	private String arg;
@@ -22,13 +22,11 @@ public class Filters implements PlugInFilter {
 			if (roi!=null && roi.getType()>Roi.TRACED_ROI)
 				imp.killRoi(); // ignore any line selection
 		}
-		if (arg.equals("threshold"))
-			return IJ.setupDialog(imp, DOES_8G+DOES_8C+DOES_RGB);
-		else
-			return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
+		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
+	
 		if (arg.equals("invert")) {
 	 		ip.invert();
 	 		return;
@@ -49,14 +47,6 @@ public class Filters implements PlugInFilter {
 	 		return;
 		}
 						
-	 	if (arg.equals("threshold")) {
-			ip.resetThreshold();
-			ip.autoThreshold();
-			ip.setMask(null);
-			imp.killRoi();
-			return;
-		}
-		
 	 	if (arg.equals("add")) {
 	 		ip.noise(25.0);
 	 		return;

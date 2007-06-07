@@ -7,7 +7,7 @@ import ij.measure.Calibration;
 /** This plugin animates stacks. */
 public class Animator implements PlugIn {
 
-	private static double animationSpeed = 7.0; // frames per second
+	private static double animationSpeed = Prefs.getDouble(Prefs.FPS, 7.0);
 	private static boolean oscillate;
 	private ImagePlus imp;
 	private StackWindow swin;
@@ -55,6 +55,7 @@ public class Animator implements PlugIn {
 			if (slice>nSlices)
 				slice = nSlices;
 			swin.showSlice(slice);
+			imp.updateStatusbarValue();
 			imp.unlock();
 			return;
 		}
@@ -68,6 +69,7 @@ public class Animator implements PlugIn {
 			if (slice<1)
 				slice = 1;
 			swin.showSlice(slice);
+			imp.updateStatusbarValue();
 			imp.unlock();
 			return;
 		}
@@ -122,7 +124,7 @@ public class Animator implements PlugIn {
 		if (cal.frameInterval!=0.0)
 			animationSpeed = 1.0/cal.frameInterval;
 		GenericDialog gd = new GenericDialog("Animation Options");
-		gd.addNumericField("Speed (1-100fps):", animationSpeed, 0);
+		gd.addNumericField("Speed (1-100 fps):", animationSpeed, 0);
 		gd.addCheckbox("Loop Back and Forth", oscillate);
 		gd.addCheckbox("Start Animation", start);
 		gd.showDialog();

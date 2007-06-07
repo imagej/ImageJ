@@ -27,7 +27,7 @@ public class Undo {
 			{reset(); return;}
 		if (what==FILTER && whatToUndo==COMPOUND_FILTER)
 				return;
-		//IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
+		//IJ.log(imp.getTitle() + ": set up undo (" + what + ")");
 		if (what==COMPOUND_FILTER_DONE) {
 			if (whatToUndo==COMPOUND_FILTER)
 				whatToUndo = what;
@@ -52,7 +52,7 @@ public class Undo {
 		whatToUndo = NOTHING;
 		imageID = 0;
 		ipCopy = null;
-		//IJ.write("Undo: reset");
+		//IJ.log("Undo: reset");
 	}
 	
 
@@ -62,7 +62,7 @@ public class Undo {
 			reset();
 			return;
 		}
-		//IJ.write(imp.getTitle() + ": undo (" + whatToUndo + ")");
+		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")");
 		switch (whatToUndo) {
 			case FILTER:
 				ImageProcessor ip = imp.getProcessor();

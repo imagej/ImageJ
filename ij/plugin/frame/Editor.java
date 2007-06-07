@@ -66,6 +66,8 @@ TextListener, ClipboardOwner {
 
         ta = new TextArea(16, 60);
         ta.addTextListener(this);
+        if (IJ.isMacOSX())
+        	ta.setFont(new Font("SansSerif",Font.PLAIN,12));
         //ta.addKeyListener(this);
         add(ta);
         pack();
@@ -83,7 +85,7 @@ TextListener, ClipboardOwner {
         ta.setCaretPosition(0);
         setWindowTitle(name);
         changes = true;
-        setVisible(true);
+        show();
     }
 
     public void open(String dir, String name) {
@@ -125,7 +127,7 @@ TextListener, ClipboardOwner {
         ta.setCaretPosition(0);
         setWindowTitle(title);
         changes = false;
-        setVisible(true);
+        show();
     }
 
     void save() {
@@ -340,7 +342,7 @@ TextListener, ClipboardOwner {
         String pluginsDir = Menus.getPlugInsPath();
         if (path!=null)
             fd.setDirectory(pluginsDir);
-        fd.setVisible(true);
+        fd.show();
         String name2 = fd.getFile();
         String dir = fd.getDirectory();
         fd.dispose();

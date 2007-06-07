@@ -42,7 +42,7 @@ public class ByteProcessor extends ImageProcessor {
 
 	/**Creates a ByteProcessor from a pixel array and IndexColorModel. */
 	public ByteProcessor(int width, int height, byte[] pixels, ColorModel cm) {
-		if (width*height!=pixels.length)
+		if (pixels!=null && width*height!=pixels.length)
 			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
@@ -204,6 +204,7 @@ public class ByteProcessor extends ImageProcessor {
 	/** Sets the foreground drawing color. */
 	public void setColor(Color color) {
 		//if (ij.IJ.altKeyDown()) throw new IllegalArgumentException("setColor: "+color);
+		drawingColor = color;
 		fgColor = getBestIndex(color);
 	}
 
@@ -259,7 +260,7 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	public void setPixels(Object pixels) {
-		if (pixels!=null && (((byte[])pixels).length!=this.pixels.length))
+		if (pixels!=null && this.pixels!=null && (((byte[])pixels).length!=this.pixels.length))
 			throw new IllegalArgumentException("");
 		this.pixels = (byte[])pixels;
 		resetPixels(pixels);
@@ -819,6 +820,16 @@ public class ByteProcessor extends ImageProcessor {
 			for (int i=0; i<width*height; i++)
 				pixels[i] = rLUT2[pixels[i] & 0xff];
 		setMinAndMax(0, 255);
+	}
+
+	/** Performs a convolution operation using the specified kernel. */
+	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
+		ImageProcessor ip2 = convertToFloat();
+		ip2.setRoi(getRoi());
+		new ij.plugin.filter.Convolver().convolve(ip2, kernel, kernelWidth, kernelHeight);
+		ip2 = ip2.convertToByte(false);
+		byte[] pixels2 = (byte[])ip2.getPixels();
+		System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
 	}
 
 }

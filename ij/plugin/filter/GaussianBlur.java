@@ -14,6 +14,8 @@ public class GaussianBlur implements PlugInFilter {
 	private boolean canceled;
 	private int slice;
 	private ImageWindow win;
+	private boolean isLineRoi;
+	private boolean isAreaRoi;
 	private boolean displayKernel;
 	private static int radius = 2;
 	
@@ -23,6 +25,9 @@ public class GaussianBlur implements PlugInFilter {
 		if (imp!=null) {
 			win = imp.getWindow();
 			win.running = true;
+			Roi roi = imp.getRoi();
+			isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
+			isAreaRoi = roi!=null && !isLineRoi;
 		}
 		if (imp!=null && !showDialog())
 			return DONE;
@@ -37,7 +42,7 @@ public class GaussianBlur implements PlugInFilter {
 			{canceled=true; IJ.beep(); return;}
 		slice++;
 		if (slice==1) {
-			if (imp.getType()==ImagePlus.GRAY32 && imp.getStackSize()==1) {
+			if (imp.getType()==ImagePlus.GRAY32 && !isAreaRoi && imp.getStackSize()==1) {
 				Undo.setup(Undo.COMPOUND_FILTER, imp);
 				blur(ip, radius);
 				Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
@@ -45,47 +50,69 @@ public class GaussianBlur implements PlugInFilter {
 			}
 		} else
 			IJ.showStatus("Gaussian Blur: "+slice+"/"+imp.getStackSize());
+		if (isLineRoi)
+			ip.setRoi(null);
 		blur(ip, radius);
 	}
 	
     public void blur(ImageProcessor ip, double radius) {
+		Rectangle rect = ip.getRoi();
+		ImageProcessor ip2 = ip;
+		boolean isRoi = rect.width!=ip.getWidth()||rect.height!=ip.getHeight();
+		boolean nonRectRoi = ip.getMask()!=null;
+		if (isRoi) {
+			ip2.setRoi(rect);
+			ip2 = ip2.crop();
+		}
         int type;
-        if (ip instanceof ByteProcessor)
+        if (ip2 instanceof ByteProcessor)
             type = BYTE;
-        else if (ip instanceof ShortProcessor)
+        else if (ip2 instanceof ShortProcessor)
             type = SHORT;
-        else if (ip instanceof FloatProcessor)
+        else if (ip2 instanceof FloatProcessor)
             type = FLOAT;
         else
             type = RGB;
-		 float[] kernel = makeKernel(radius);
+		float[] kernel = makeKernel(radius);
  		if (slice==1 && displayKernel) {
 			TextWindow tw = new TextWindow("Kernel", "", 150, 300);
 			for (int i=0; i<kernel.length; i++)
 				tw.append(i+"  "+IJ.d2s(kernel[i],3));
 		}
 		if (type==RGB) {
-				blurRGB(ip, kernel);
+				if (nonRectRoi) {
+					ip2.snapshot();
+					blurRGB(ip2, kernel);
+					ip2.reset(ip.getMask());
+				} else
+					blurRGB(ip2, kernel);
+				if (nonRectRoi)
+					ip2.reset(ip.getMask());
+				if (isRoi)
+					ip.insert(ip2, rect.x, rect.y);
 				return;
 		}
-        ImageProcessor ip2=ip.convertToFloat();
+		ip2.setCalibrationTable(null);
+        ip2 = ip2.convertToFloat();
         blurFloat(ip2, kernel);
-         switch (type) {
+		if (nonRectRoi)
+			ip.snapshot();
+        switch (type) {
             case BYTE:
                 ip2 = ip2.convertToByte(false);
-                byte[] pixels = (byte[])ip.getPixels();
-                byte[] pixels2 = (byte[])ip2.getPixels();
-                System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
+                ip.insert(ip2, rect.x, rect.y);
                 break;
             case SHORT:
                 ip2 = ip2.convertToShort(false);
-                short[] pixels16 = (short[])ip.getPixels();
-                short[] pixels16b = (short[])ip2.getPixels();
-                System.arraycopy(pixels16b, 0, pixels16, 0, pixels16.length);
+                ip.insert(ip2, rect.x, rect.y);
                 break;
             case FLOAT:
+                if (isRoi)
+                	ip.insert(ip2, rect.x, rect.y);
                 break;
         }
+		if (nonRectRoi)
+			ip.reset(ip.getMask());
     }
 
 	void blurFloat(ImageProcessor ip, float[] kernel) {
@@ -108,7 +135,7 @@ public class GaussianBlur implements PlugInFilter {
         ImageProcessor ip2 = rip.convertToFloat();
         blurFloat(ip2, kernel);
         ImageProcessor r2 = ip2.convertToByte(false);
-         ip2 = gip.convertToFloat();
+        ip2 = gip.convertToFloat();
         blurFloat(ip2, kernel);
         ImageProcessor g2 = ip2.convertToByte(false);
         ip2 = bip.convertToFloat();
@@ -135,7 +162,7 @@ public class GaussianBlur implements PlugInFilter {
 	double sqr(double x) {return x*x;}
 	
 	public boolean showDialog() {
-		GenericDialog gd = new GenericDialog("Guassian Blur...");
+		GenericDialog gd = new GenericDialog("Gaussian Blur...");
 		gd.addNumericField("Radius (pixels)", radius,0);
 		gd.addCheckbox("Show Kernel", displayKernel);
 		gd.showDialog();

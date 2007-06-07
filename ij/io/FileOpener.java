@@ -15,7 +15,6 @@ public class FileOpener {
 
 	private FileInfo fi;
 	private int width, height;
-	private double displayMin, displayMax;
 
 	public FileOpener(FileInfo fi) {
 		this.fi = fi;
@@ -34,7 +33,6 @@ public class FileOpener {
 	/** Opens the image. Displays it if 'show' is
 	true. Returns an ImagePlus object if successful. */
 	public ImagePlus open(boolean show) {
-		Image img;
 		ImagePlus imp=null;
 		Object pixels;
 		ProgressBar pb=null;
@@ -49,8 +47,6 @@ public class FileOpener {
 			case FileInfo.BITMAP:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
-			    //img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, cm, (byte[])pixels, 0, width));
-		        //imp = new ImagePlus(fi.fileName, img);
 				ip = new ByteProcessor(width, height, (byte[])pixels, cm);
     			imp = new ImagePlus(fi.fileName, ip);
 				break;
@@ -74,8 +70,9 @@ public class FileOpener {
 			case FileInfo.RGB_PLANAR:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
-	    		img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
-        		imp = new ImagePlus(fi.fileName, img);
+	    		//img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
+	    		ip = new ColorProcessor(width, height, (int[])pixels);
+        		imp = new ImagePlus(fi.fileName, ip);
 				break;
 		}
 		imp.setFileInfo(fi);
@@ -93,6 +90,8 @@ public class FileOpener {
 		try {
 			ImageReader reader = new ImageReader(fi);
 			InputStream is = createInputStream(fi);
+			if (is==null)
+				return null;
 			for (int i=1; i<=fi.nImages; i++) {
 				IJ.showStatus("Reading: " + i + "/" + fi.nImages);
 				pixels = reader.readPixels(is, skip);
@@ -136,6 +135,22 @@ public class FileOpener {
 	    	return;
 		}
 				
+		if (fi.fileFormat==fi.DICOM) {
+			// restore DICOM
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", fi.directory + fi.fileName);
+			if (imp2!=null)
+				imp.setProcessor(null, imp2.getProcessor());
+	    	return;
+		}
+
+		if (fi.fileFormat==fi.BMP) {
+			// restore BMP
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP", fi.directory + fi.fileName);
+			if (imp2!=null)
+				imp.setProcessor(null, imp2.getProcessor());
+	    	return;
+		}
+
 		if (fi.nImages>1)
 			return;
 		
@@ -175,10 +190,18 @@ public class FileOpener {
 	}
 	
 	void setCalibration(ImagePlus imp) {
-		decodeDescriptionString();
-		Calibration cal = null;
+		Calibration cal = imp.getCalibration();
+		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+			if (IJ.debugMode) IJ.log("16-bit signed");
+			double[] coeff = new double[2];
+			coeff[0] = -32768.0;
+			coeff[1] = 1.0;
+ 			cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+		}
+		
+		Properties props = decodeDescriptionString();
+		
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
-			cal = new Calibration(imp);
 			cal.pixelWidth = fi.pixelWidth;
 			cal.pixelHeight = fi.pixelHeight;
 			cal.pixelDepth = fi.pixelDepth;
@@ -188,29 +211,23 @@ public class FileOpener {
 		if (fi.valueUnit!=null) {
 			int f = fi.calibrationFunction;
 			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.GAMMA_VARIATE && fi.coefficients!=null)
-			||f==Calibration.UNCALIBRATED_OD) {
-				if (cal==null) cal = new Calibration(imp);
+			||f==Calibration.UNCALIBRATED_OD)
 				cal.setFunction(f, fi.coefficients, fi.valueUnit);
-			}
 		}
 		
-		if (fi.frameInterval!=0.0) {
-			if (cal==null) cal = new Calibration(imp);
+		if (fi.frameInterval!=0.0)
 			cal.frameInterval = fi.frameInterval;
-		}
 		
-		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-			if (IJ.debugMode) IJ.log("16-bit signed");
-			if (cal==null) cal = new Calibration(imp);
-			double[] coeff = new double[2];
-			coeff[0] = -32768.0;
-			coeff[1] = 1.0;
-			cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
-		}
-		
-		if (cal!=null)
-			imp.setCalibration(cal);
-		
+		if (props==null)
+			return;	
+					
+		cal.xOrigin = getDouble(props,"xorigin");
+		cal.yOrigin = getDouble(props,"yorigin");
+		cal.zOrigin = getDouble(props,"zorigin");
+		cal.info = props.getProperty("info");		
+				
+		double displayMin = getDouble(props,"min");
+		double displayMax = getDouble(props,"max");
 		if (!(displayMin==0.0&&displayMax==0.0)) {
 			int type = imp.getType();
 			ImageProcessor ip = imp.getProcessor();
@@ -237,8 +254,13 @@ public class FileOpener {
 			return fi.inputStream;
 		else if (fi.url!=null && !fi.url.equals(""))
 			return new URL(fi.url+fi.fileName).openStream();
-		else
-			return new FileInputStream(new File(fi.directory + fi.fileName));
+		else {
+		    File f = new File(fi.directory + fi.fileName);
+		    if (f==null || f.isDirectory())
+		    	return null;
+		    else
+				return new FileInputStream(f);
+		}
 	}
 	
 	/** Reads the pixel data from an image described by a FileInfo object. */
@@ -246,27 +268,29 @@ public class FileOpener {
 		Object pixels = null;
 		try {
 			InputStream is = createInputStream(fi);
+			if (is==null)
+				return null;
 			ImageReader reader = new ImageReader(fi);
 			pixels = reader.readPixels(is);
 			is.close();
 		}
 		catch (Exception e) {
-			IJ.write("FileOpener.readPixels(): " + e);
+			IJ.log("FileOpener.readPixels(): " + e);
 		}
 		return pixels;
 	}
 
-	public void decodeDescriptionString() {
+	public Properties decodeDescriptionString() {
 		if (fi.description==null || fi.description.length()<7)
-			return;
+			return null;
 		if (IJ.debugMode)
 			IJ.log("Image Description: " + new String(fi.description).replace('\n',' '));
 		if (!fi.description.startsWith("ImageJ"))
-			return;
+			return null;
 		Properties props = new Properties();
 		InputStream is = new ByteArrayInputStream(fi.description.getBytes());
 		try {props.load(is); is.close();}
-		catch (IOException e) {return;}
+		catch (IOException e) {return null;}
 		fi.unit = props.getProperty("unit","");
 		Double n = getNumber(props,"cf");
 		if (n!=null) fi.calibrationFunction = n.intValue();
@@ -296,8 +320,7 @@ public class FileOpener {
 			if (fps!=0.0)
 				fi.frameInterval = 1.0/fps;
 		}
-		displayMin = getDouble(props,"min");
-		displayMax = getDouble(props,"max");
+		return props;
 	}
 
 	private Double getNumber(Properties props, String key) {

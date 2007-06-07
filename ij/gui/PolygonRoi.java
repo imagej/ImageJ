@@ -20,10 +20,9 @@ public class PolygonRoi extends Roi {
 	long mouseUpTime = 0;
 
 	/** Creates a new polygon or polyline ROI from x and y coordinate arrays.
-		The ImagePlus argument can be null. Type must be Roi.POLYGON, Roi.FREEROI,
-		Roi.TRACED_ROI or Roi.POLYLINE.*/
-	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
-		super(0, 0, imp);
+		Type must be Roi.POLYGON, Roi.FREEROI, Roi.TRACED_ROI or Roi.POLYLINE.*/
+	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, int type) {
+		super(0, 0, null);
 		if (type==POLYGON)
 			this.type = POLYGON;
 		else if (type==FREEROI)
@@ -41,6 +40,12 @@ public class PolygonRoi extends Roi {
 		yp2 = new int[maxPoints];
 		this.nPoints = nPoints;
 		finishPolygon();
+	}
+	
+	/** Obsolete */
+	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
+		this(xPoints, yPoints, nPoints, type);
+		setImage(imp);
 	}
 
 	/** Starts the process of creating a new user-generated polygon or polyline ROI. */
@@ -245,10 +250,14 @@ public class PolygonRoi extends Roi {
 		smoothing using a 3-point running average.*/
 	double getSmoothedLineLength() {
 		double length = 0.0;
+		double w2 = 1.0;
+		double h2 = 1.0;
 		double dx, dy;
-		Calibration cal = imp.getCalibration();
-		double w2 = cal.pixelWidth*cal.pixelWidth;
-		double h2 = cal.pixelHeight*cal.pixelHeight;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			w2 = cal.pixelWidth*cal.pixelWidth;
+			h2 = cal.pixelHeight*cal.pixelHeight;
+		}
 		double x1,x2,x3,x4,y1,y2,y3,y4;
 		x2=xp[0]; x3=xp[0]; x4=xp[1];
 		y2=yp[0]; y3=yp[0]; y4=yp[1];
@@ -270,10 +279,14 @@ public class PolygonRoi extends Roi {
 		smoothing using a 3-point running average.*/
 	double getSmoothedPerimeter() {
 		double length = 0.0;
+		double w2 = 1.0;
+		double h2 = 1.0;
 		double dx, dy;
-		Calibration cal = imp.getCalibration();
-		double w2 = cal.pixelWidth*cal.pixelWidth;
-		double h2 = cal.pixelHeight*cal.pixelHeight;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			w2 = cal.pixelWidth*cal.pixelWidth;
+			h2 = cal.pixelHeight*cal.pixelHeight;
+		}
 		double x1,x2,x3,x4,y1,y2,y3,y4;
 		x2=xp[nPoints-1]; x3=xp[0]; x4=xp[1];
 		y2=yp[nPoints-1]; y3=yp[0]; y4=yp[1];

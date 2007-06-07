@@ -15,6 +15,7 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 	private ImageWindow win;
 	private static double radius = 2;
 	private static double weight = 0.6;
+	private boolean isLineRoi;
 	
 	public int setup(String arg, ImagePlus imp) {
  		IJ.register(UnsharpMask.class);
@@ -22,6 +23,8 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 		if (imp!=null) {
 			win = imp.getWindow();
 			win.running = true;
+			Roi roi = imp.getRoi();
+			isLineRoi= roi!=null && roi.getType()>=Roi.LINE;
 		}
 		if (imp!=null && !showDialog())
 			return DONE;
@@ -37,27 +40,39 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 		slice++;
 		if (slice>1)
 			IJ.showStatus("Unsharp Mask: "+slice+"/"+imp.getStackSize());
+		if (isLineRoi)
+			ip.setRoi(null);
 		sharpen(ip, radius, weight);
 	}
 	
 	public void sharpen(ImageProcessor ip, double radius, double weight) {
 		ip.setCalibrationTable(null);
+		Rectangle rect = ip.getRoi();
+		boolean isRoi = rect.width!=ip.getWidth()||rect.height!=ip.getHeight();
+		boolean nonRectRoi = ip.getMask()!=null;
 		ImageProcessor ip2 = ip;
+		if (isRoi) {
+			ip2.setRoi(rect);
+			ip2 = ip2.crop();
+		}
 		boolean convertToFloat = (ip instanceof ByteProcessor) || (ip instanceof ShortProcessor);
 		if (convertToFloat)
-			ip2 = ip.convertToFloat();
+			ip2 = ip2.convertToFloat();
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, MIN_MAX, null);
 		double min = stats.min;
 		double max = stats.max;
 		ImageProcessor mask = ip2.duplicate();
 		new GaussianBlur().blur(mask, radius);
 		mask.multiply(weight);
+		//new ImagePlus("", mask).show();
 		ip2.copyBits(mask,0,0,Blitter.SUBTRACT);
 		ip2.multiply(1.0/(1.0-weight));
 		if (!(ip2 instanceof ColorProcessor)) {
 			ip2.min(min);
 			ip2.max(max);
 		}
+		if (nonRectRoi)
+			ip.snapshot();
 		if (convertToFloat) {
 			ImageProcessor ip3;
 			boolean bytes = ip instanceof ByteProcessor;
@@ -66,8 +81,11 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 				ip3 = ip2.convertToByte(scale);
 			else 
 				ip3 = ip2.convertToShort(scale);
-			ip.insert(ip3, 0, 0);
-		}
+			ip.insert(ip3, rect.x, rect.y);
+		} else if (isRoi)
+			ip.insert(ip2, rect.x, rect.y);
+		if (nonRectRoi)
+			ip.reset(ip.getMask());
 	}
 	
 	public boolean showDialog() {
