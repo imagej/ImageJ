@@ -17,6 +17,7 @@ public class JavaProperties implements PlugIn {
 		show("java.vendor");
 		show("java.vendor.url");
 		show("java.class.version");
+		show("mrj.version");
 		show("os.name");
 		show("os.arch");
 		show("file.separator");
@@ -52,7 +53,9 @@ public class JavaProperties implements PlugIn {
 	}
 	
 	void show(String property) {
-		tw.append("  " + property + ": " + System.getProperty(property));
+		String p = System.getProperty(property);
+		if (p!=null)
+			tw.append("  " + property + ": " + p);
 	}
 
 }

@@ -10,13 +10,15 @@ import ij.measure.*;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
-public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Runnable, ActionListener, AdjustmentListener {
+public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measurements,
+	Runnable, ActionListener, AdjustmentListener {
 
 	static final double defaultMinThreshold = 85;
 	static final double defaultMaxThreshold = 170;
 	static boolean fill1 = true;
 	static boolean fill2 = true;
-	static boolean useBW = true; 
+	static boolean useBW = true;
+	static Frame instance; 
 	
 	ThresholdPlot plot = new ThresholdPlot();
 	Thread thread;
@@ -42,6 +44,13 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Runnable, 
 
 	public ThresholdAdjuster() {
 		super("Threshold");
+		if (instance!=null) {
+			instance.toFront();
+			return;
+		}
+		instance = this;
+		IJ.register(PasteController.class);
+
 		ij = IJ.getInstance();
 		Font font = new Font("SansSerif", Font.PLAIN, 10);
 		GridBagLayout gridbag = new GridBagLayout();
@@ -450,11 +459,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Runnable, 
 	void autoThreshold(ImagePlus imp, ImageProcessor ip) {
 		if (!(ip instanceof ByteProcessor))
 			return;
-		minThreshold = 0;
-		maxThreshold = ((ByteProcessor)ip).getAutoThreshold();
-		if (invertedLut) {
-			minThreshold = maxThreshold;
-			maxThreshold = 255;
+		ImageStatistics stats = imp.getStatistics(MIN_MAX+MODE);
+		int threshold = ((ByteProcessor)ip).getAutoThreshold();
+		if ((stats.max-stats.mode)<(stats.mode-stats.min)) {
+			minThreshold = stats.min;
+			maxThreshold = threshold;
+		} else {
+			minThreshold = threshold;
+			maxThreshold = stats.max;
 		}
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
 		updateScrollBars();
@@ -526,7 +538,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Runnable, 
 		imp.unlock();
 	}
 
-} // ContrastAdjuster class
+	public void processWindowEvent(WindowEvent e) {
+		super.processWindowEvent(e);
+		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
+			instance = null;	
+		}
+	}
+
+} // ThresholdAdjuster class
 
 
 class ThresholdPlot extends Canvas implements Measurements, MouseListener {

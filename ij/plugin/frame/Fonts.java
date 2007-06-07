@@ -13,9 +13,15 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 	private Choice font;
 	private Choice size;
 	private Choice style;
+	private static Frame instance;
 
 	public Fonts() {
 		super("Fonts");
+		if (instance!=null) {
+			instance.toFront();
+			return;
+		}
+		instance = this;
 		setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 		
 		font = new Choice();
@@ -63,6 +69,7 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		pack();
 		GUI.center(this);
 		setVisible(true);
+		IJ.register(Fonts.class);
 	}
 	
 	public void itemStateChanged(ItemEvent e) {
@@ -80,4 +87,11 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		IJ.showStatus(fontSize+" point "+fontName + " " + styleName);
 	}
 	
+	public void processWindowEvent(WindowEvent e) {
+		super.processWindowEvent(e);
+		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
+			instance = null;	
+		}
+	}
+
 }

@@ -71,6 +71,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			WindowManager.setCurrentWindow(this);
 		} else {
 			setLocationAndSize();
+			if (ij!=null) {
+				Image img = ij.getIconImage();
+				if (img!=null) setIconImage(img);
+			}
 			pack();
 			setVisible(true);
 		}

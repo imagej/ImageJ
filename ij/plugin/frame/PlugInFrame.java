@@ -4,7 +4,7 @@ import java.awt.event.*;
 import ij.*;
 import ij.plugin.*;
 
-/**  This is a closeable window that plug-ins can extend. */
+/**  This is a closeable window that plugins can extend. */
 public class PlugInFrame extends Frame implements PlugIn {
 
 	String title;
@@ -13,6 +13,11 @@ public class PlugInFrame extends Frame implements PlugIn {
 		super(title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null) {
+			Image img = ij.getIconImage();
+			if (img!=null) setIconImage(img);
+		}
 		if (IJ.debugMode) IJ.write("opening "+title);
 	}
 	

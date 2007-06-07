@@ -26,7 +26,7 @@ public class Opener {
 	}
 
 	/** Displays a file open dialog box and then opens, the tiff, dicom, 
-		fits, pgm, jpeg, bmp, gif or lut file specified by the user. */
+		fits, pgm, jpeg, bmp, gif, lut or roi file specified by the user. */
 	public void openImage() {
 		OpenDialog od = new OpenDialog("Open...", "");
 		String directory = od.getDirectory();
@@ -40,7 +40,7 @@ public class Opener {
 	}
 
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	pgm, gif, jpeg, bmp or lut. Returns an ImagePlus object if successful. */
+	pgm, gif, jpeg, bmp, lut or roi. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
 		String path = directory+name;

@@ -40,6 +40,11 @@ public class TextWindow extends Frame {
 		add("Center", textPanel);
 		textPanel.setColumnHeadings(headings);
 		textPanel.append(data);
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null) {
+			Image img = ij.getIconImage();
+			if (img!=null) setIconImage(img);
+		}
 		setSize(width, height);
 		setVisible(true);
 	}

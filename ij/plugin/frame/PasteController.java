@@ -11,9 +11,16 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 
 	private Panel panel;
 	private Choice pasteMode;
-
+	private static Frame instance;
+	
 	public PasteController() {
 		super("Paste Control");
+		if (instance!=null) {
+			instance.toFront();
+			return;
+		}
+		instance = this;
+		IJ.register(PasteController.class);
 		setLayout(new FlowLayout(FlowLayout.CENTER, 2, 5));
 		
 		add(new Label(" Transfer Mode:"));
@@ -60,4 +67,11 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		ImagePlus imp = WindowManager.getCurrentImage();
 	}
 	
+	public void processWindowEvent(WindowEvent e) {
+		super.processWindowEvent(e);
+		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
+			instance = null;	
+		}
+	}
+
 }

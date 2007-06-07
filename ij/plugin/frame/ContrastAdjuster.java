@@ -14,7 +14,8 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 
 	ContrastPlot plot = new ContrastPlot();
 	Thread thread;
-	
+	private static Frame instance;
+		
 	int brightnessValue = -1;
 	int contrastValue = -1;
 	int sliderRange = 256;
@@ -35,6 +36,13 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 
 	public ContrastAdjuster() {
 		super("B&C");
+		if (instance!=null) {
+			instance.toFront();
+			return;
+		}
+		instance = this;
+		IJ.register(ContrastAdjuster.class);
+
 		ij = IJ.getInstance();
 		Font monoFont = new Font("Monospaced", Font.PLAIN, 12);
 		Font sanFont = new Font("SansSerif", Font.PLAIN, 12);
@@ -490,6 +498,13 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 		imp.unlock();
 	}
 
+	public void processWindowEvent(WindowEvent e) {
+		super.processWindowEvent(e);
+		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
+			instance = null;	
+		}
+	}
+
 } // ContrastAdjuster class
 
 
@@ -573,7 +588,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 		g.setColor(Color.black);
  		g.drawLine(x1, y1, x2, y2);
  		g.drawRect(0, 0, WIDTH, HEIGHT);
-     	}
+     }
 
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}

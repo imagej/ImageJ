@@ -33,7 +33,10 @@ public class BMP extends ImagePlus implements PlugIn {
 			bmp.read(is);
 		}
 		catch (Exception e) {
-			IJ.error(e.getMessage());
+			String msg = e.getMessage();
+			if (msg==null || msg.equals(""))
+				msg = ""+e;
+			IJ.showMessage("BMP Decoder", msg);
 			return;
 		}
 

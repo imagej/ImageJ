@@ -220,10 +220,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			mode = LENGTHS;
 		}
 		incrementCounter();
-		String s = rt.getCounter()+"\t";
 		if ((measurements&LABELS)!=0)
-			s += getFileName()+"\t";
-		IJ.write(s+n(roi.getLength()));
+			rt.addLabel("File Name", getFileName());
+		rt.addValue("Length", roi.getLength());
+		displayResults();
 	}
 	
 	/** Saves the measurements specified in the "Set Measurements" dialog,
@@ -344,6 +344,43 @@ public class Analyzer implements PlugInFilter, Measurements {
 		max.append("Max\t");
 		mean.append("Mean\t");
 		sd.append("SD\t");
+		if ((measurements&LABELS)!=0) {
+			min.append("\t");
+			max.append("\t");
+			mean.append("\t");
+			sd.append("\t");
+		}
+		if (mode==MARK_AND_COUNT) 
+			summarizePoints(rt);
+		else if (mode==LENGTHS) 
+			add2(rt.getColumnIndex("Length"));
+		else
+			summarizeAreas();
+		TextPanel tp = IJ.getTextPanel();
+		if (tp!=null) {
+			String worksheetHeadings = tp.getColumnHeadings();		
+			if (worksheetHeadings.equals(""))
+				IJ.setColumnHeadings(rt.getColumnHeadings());
+		}		
+		IJ.write("");		
+		IJ.write(new String(mean));		
+		IJ.write(new String(sd));		
+		IJ.write(new String(min));		
+		IJ.write(new String(max));
+		IJ.write("");		
+		mean = null;		
+		sd = null;		
+		min = null;		
+		max = null;		
+	}
+	
+	void summarizePoints(ResultsTable rt) {
+		add2(rt.getColumnIndex("X"));
+		add2(rt.getColumnIndex("Y"));
+		add2(rt.getColumnIndex("Value"));
+	}
+
+	void summarizeAreas() {
 		if ((measurements&AREA)!=0) add2(ResultsTable.AREA);
 		if ((measurements&MEAN)!=0) add2(ResultsTable.MEAN);
 		if ((measurements&STD_DEV)!=0) add2(ResultsTable.STD_DEV);
@@ -368,20 +405,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.ROI_WIDTH);
 			add2(ResultsTable.ROI_HEIGHT);
 		}
-		IJ.write("");		
-		IJ.write(new String(mean));		
-		IJ.write(new String(sd));		
-		IJ.write(new String(min));		
-		IJ.write(new String(max));
-		IJ.write("");		
-		mean = null;		
-		sd = null;		
-		min = null;		
-		max = null;		
 	}
-	
+
 	private void add2(int column) {
-		float[] c = rt.getColumn(column);
+		float[] c = column>=0?rt.getColumn(column):null;
 		if (c!=null) {
 			ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
 			if (ip==null)

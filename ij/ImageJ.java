@@ -4,6 +4,8 @@ import java.awt.*;
 import java.util.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URL;
+import java.awt.image.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
@@ -24,7 +26,7 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.21w";
+	public static final String VERSION = "1.22d";
 
 	private Toolbar toolbar;
 	private Panel statusBar;
@@ -36,6 +38,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private Vector classes = new Vector();
 	private static PluginClassLoader classLoader;
 	private boolean notVerified = true;
+	private static boolean wasMaximized;
 
 	/** Creates a new ImageJ frame. */
 	public ImageJ() {
@@ -101,11 +104,23 @@ public class ImageJ extends Frame implements ActionListener,
 		setBounds(loc.x, loc.y, tbSize.width+10, 230);
 		//setLocation(loc.x, loc.y);
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
+		setIcon();
 		setVisible(true);
 		requestFocus();
 		//IJ.write("font: "+Menus.getMenuBar().getFont());
 	}
     
+	void setIcon() {
+		URL url = this .getClass() .getResource("/microscope.gif"); 
+		if (url==null)
+			return;
+		Image img = null;
+		try {img = createImage((ImageProducer)url.getContent());}
+		catch(Exception e) {}
+		if (img!=null)
+			setIconImage(img);
+	}
+	
 	public Point getPreferredLocation() {
 		int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
 		Dimension tbsize = toolbar.getPreferredSize();
@@ -389,6 +404,25 @@ public class ImageJ extends Frame implements ActionListener,
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh())
 			this.setMenuBar(Menus.getMenuBar());
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension window = getSize();
+		if (IJ.debugMode) IJ.write("screen: "+screen);
+		if (IJ.debugMode) IJ.write("Window: "+window);
+		boolean bigWindow = window.width>=screen.width;
+		if (bigWindow) {
+			//ImagePlus imp = WindowManager.getCurrentImage();
+			//if (imp!=null)
+			//	imp.getWindow().toFront();
+			if (!wasMaximized) {
+				wasMaximized = true;
+				IJ.beep();
+				IJ.showMessage("Error",
+					"The \"ImageJ\" window should not be maximized!\n"
+					+"Instead, make it as small as possible and position\n"
+					+"it so as to minimize overlap of image windows."
+					);
+			}
+		}
 	}
 	
 	public void windowClosed(WindowEvent e) {}
