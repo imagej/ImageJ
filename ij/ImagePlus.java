@@ -120,10 +120,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Constructs an ImagePlus from a stack. */
     public ImagePlus(String title, ImageStack stack) {
-    	if (stack.getSize()==1)
-			setProcessor(title, stack.getProcessor(1));
-		else
-    		setStack(title, stack);
+    	setStack(title, stack);
     	ID = --currentID;
     }
     
@@ -261,14 +258,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 
-	/** Closes the window, if any, that is displaying this image. This image
-		must be locked to prevent disposal of the pixel arrays. */
+	/** Closes the window, if any, that is displaying this image. */
 	public void hide() {
 		if (win==null)
 			return;
+		boolean unlocked = lockSilently();
 		changes = false;
 		win.close();
 		win = null;
+		if (unlocked)
+			unlock();
 	}
 
 	/** Opens a window to display this image and clears the status bar. */
@@ -332,11 +331,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
 		roi = null;
-		if (stack!=null && stack.getSize()<2)
-			stack = null;
+		//if (stack!=null && stack.getSize()<2)
+		//	stack = null;
 		img = ip.createImage();
 		boolean newSize = width!=ip.getWidth() || height!=ip.getHeight();
-		LookUpTable lut = new LookUpTable(img);
+		//LookUpTable lut = new LookUpTable(img);
 		int type;
 		if (ip instanceof ByteProcessor)
 			type = GRAY8;
@@ -662,8 +661,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		and <= N, where N in the number of slices in the stack.
 		Does nothing if this ImagePlus does not use a stack. */
 	public synchronized void setSlice(int index) {
-		if (stack==null || index==currentSlice)
+		if (stack==null || index==currentSlice) {
+	    	updateAndRepaintWindow();
 			return;
+		}
 		if (index>=1 && index<=stack.getSize()) {
 			Roi roi = getRoi();
 			if (roi!=null)
@@ -674,10 +675,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 			currentSlice = index;
 			Object pixels = stack.getPixels(currentSlice);
 			if (pixels!=null) ip.setPixels(pixels);
-			//if (ip instanceof FloatProcessor)
-			//	ip.resetMinAndMax();
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
+			if (IJ.spaceBarDown() && (imageType==GRAY16||imageType==GRAY32)) {
+				ip.resetMinAndMax();
+				IJ.showStatus(index+": min="+ip.getMin()+", max="+ip.getMax());
+			}
 	    	updateAndRepaintWindow();
 		}
 	}

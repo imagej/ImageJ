@@ -13,7 +13,6 @@ public class ImageStack {
 	static final int INITIAL_SIZE = 25;
 	static final String outOfRange = "Argument out of range: ";
 	private int nSlices = 0;
-	private int currentSlice;
 	private Object[] stack;
 	private String[] label;
 	private int width, height;
@@ -36,7 +35,6 @@ public class ImageStack {
 		stack = new Object[INITIAL_SIZE];
 		label = new String[INITIAL_SIZE];
 		nSlices = 0;
-		currentSlice = 0;
 	}
 
 	/** Adds an image to the end of the stack. */
@@ -52,8 +50,6 @@ public class ImageStack {
 			System.arraycopy(label, 0, tmp2, 0, nSlices);
 			label = tmp2;
 		}
-		if (nSlices==1)
-			currentSlice = 1;		
 		stack[nSlices-1] = pixels;
 		this.label[nSlices-1] = sliceLabel;
 	}
@@ -105,8 +101,6 @@ public class ImageStack {
 		stack[nSlices-1] = null;
 		label[nSlices-1] = null;
 		nSlices--;
-		if (currentSlice>nSlices)
-			currentSlice = nSlices;
 	}
 	
 	/** Deletes the last slice in the stack. */
@@ -239,56 +233,4 @@ public class ImageStack {
 		return ("width="+width+", height="+height+", nSlices="+nSlices+", cm="+cm);
 	}
 		
-	void obsolete(String method) {
-		if (!msgShown)
-			ij.IJ.write("ImageStack."+method+"() is obsolete");
-		msgShown=true;
-	}
-	
-	// The 6 following methods may be removed in the future.
-
-	/** Obsolete */
-	public void setSlice(int n) {
-		obsolete("setSlice");
-		if (n<1 || n>nSlices)
-			throw new IllegalArgumentException(outOfRange+n);
-		currentSlice = n;
-	}
-
-	/**  Obsolete */
-	public int getCurrentSlice() {
-		obsolete("getCurrentSlice");
-		return currentSlice;
-	}
-
-	/** Use getPixels(n). */
-	public Object getPixels() {
-		if (currentSlice>0)
-			return stack[currentSlice-1];
-		else
-			return null;
-	}
-	
-	/** Use setPixels(pixels, n). */
-	public void setPixels(Object pixels) {
-		if (pixels==null) 
-			throw new IllegalArgumentException("'pixels' is null!");
-		if (currentSlice>0)
-			stack[currentSlice-1] = pixels;
-	}
-	
-	/** Use getProcessor(n). */
-	public ImageProcessor getProcessor() {
-		if (nSlices==0) return null;
-		return getProcessor(currentSlice);
-	}
-	
-	/** Use getSliceLabel(n). */
-	public String getSliceLabel() {
-		if (currentSlice<1)
-			return null;
-		else
-			return label[currentSlice-1];
-	}
-	
 }

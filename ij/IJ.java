@@ -40,8 +40,10 @@ public class IJ {
 	
 	/** Runs the specified plug-in and returns a reference to it. */
 	static Object runPlugIn(String commandName, String className, String arg) {
-		if (!className.startsWith("ij"))
-			return ij.runUserPlugIn(commandName, className, arg, false);
+		if (!className.startsWith("ij")) {
+			boolean createNewClassLoader = altKeyDown();
+			return ij.runUserPlugIn(commandName, className, arg, createNewClassLoader);
+		}
 		Object thePlugIn=null;
 		try {
 			Class c = Class.forName(className);
@@ -303,4 +305,21 @@ public class IJ {
 			error("This plugin requires ImageJ "+version+" or later.");
 		return lessThan;
 	}
+	
+	public static int setupDialog(ImagePlus imp, int flags) {
+		if (imp==null)
+			return flags;
+		int stackSize = imp.getStackSize();
+		if (stackSize>1) {
+			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
+				"Process Stack?", "Process all "+stackSize+" slices?  There is\n"
+				+"no Undo if you select \"Yes\".");
+			if (d.cancelPressed())
+				return PlugInFilter.DONE;
+			else if (d.yesPressed())
+				return flags+PlugInFilter.DOES_STACKS;
+		}
+		return flags;
+	}
+	
 }

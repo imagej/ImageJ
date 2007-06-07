@@ -17,7 +17,7 @@ public class Rotator implements PlugInFilter {
 		IJ.register(Rotator.class);
 		firstTime = true;
 		canceled = false;
-		return DOES_ALL+DOES_STACKS;
+		return IJ.setupDialog(imp, DOES_ALL);
 	}
 
 	public void run(ImageProcessor ip) {

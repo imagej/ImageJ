@@ -4,6 +4,7 @@ import java.util.*;
 import ij.*;
 import ij.io.*;
 import ij.util.Tools;
+import ij.measure.Calibration;
 
 /** This plug-in decodes DICOM files. If 'arg' is empty, it
 	displays a file open dialog and opens and displays the 
@@ -38,7 +39,7 @@ import ij.util.Tools;
    simpler debug mode message generation (values no longer reported).
 
    Added z pixel aspect ratio support for multi-slice DICOM volumes.
-s   Michael Abramoff, 31-10-2000
+   Michael Abramoff, 31-10-2000
    */
 
 public class DICOM extends ImagePlus implements PlugIn {
@@ -59,7 +60,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 			if (msg.indexOf("EOF")<0) {
 				IJ.showMessage("DicomDecoder", msg);
 				return;
-			} else if (!dd.prefixFound()) {
+			} else if (!dd.dicmFound()) {
 				msg = "This does not appear to be a valid\n"
 				+ "DICOM file. It does not have the\n"
 				+ "characters 'DICM' at offset 128.";
@@ -70,11 +71,18 @@ public class DICOM extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
+			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+				Calibration cal = imp.getCalibration();
+				double[] coeff = new double[2];
+				coeff[0] = -32768.0;
+				coeff[1] = 1.0;
+				cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+			}
 			if (imp.getStackSize()>1)
 				setStack(fileName, imp.getStack());
 			else
 				setProcessor(fileName, imp.getProcessor());
-			copyScale(imp);
+			setCalibration(imp.getCalibration());
 			setProperty("Info", dd.getDicomInfo());
 			if (arg.equals("")) show();
 		} else
@@ -120,7 +128,8 @@ class DicomDecoder {
 	private byte[] vrLetters = new byte[2];
  	private int previousGroup;
  	private StringBuffer dicomInfo = new StringBuffer(1000);
- 	private boolean prefixFound;
+ 	private boolean dicmFound; // "DICM" found at offset 128
+ 	private boolean oddLocations;  // one or more tags at odd locations
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -235,7 +244,7 @@ class DicomDecoder {
 		
 		// hack needed to read some GE files
 		// The element length must be even!
-		if (elementLength==13) elementLength = 10;  
+		if (elementLength==13 && !oddLocations) elementLength = 10; 
 		
 		// "Undefined" element length.
 		// This is a sort of bracket that encloses a sequence of elements.
@@ -274,7 +283,7 @@ class DicomDecoder {
 			location = 0;
 			if (IJ.debugMode) IJ.write(DICM + " not found at offset "+ID_OFFSET+"; reseting to offset 0");
 		} else if (IJ.debugMode) {
-			prefixFound = true;
+			dicmFound = true;
 			IJ.write(DICM + " found at offset " + ID_OFFSET);
 		}
 		
@@ -282,8 +291,11 @@ class DicomDecoder {
 		
 		while (true) {
 			int tag = getNextTag();
-			if ((location&1)!=0) // tags must be at even locations
-				break;
+			if ((location&1)!=0) { // DICOM tags must be at even locations
+				oddLocations = true;
+				if (dicmFound)
+					break;
+			}
 			if (tag==TRANSFER_SYNTAX_UID) {
 				String s = getString(elementLength);
 				addInfo(tag, s);
@@ -486,8 +498,8 @@ class DicomDecoder {
 		}
 	}
 	
-	boolean prefixFound() {
-		return prefixFound;
+	boolean dicmFound() {
+		return dicmFound;
 	}
 
 }

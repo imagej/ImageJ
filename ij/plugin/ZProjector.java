@@ -164,9 +164,9 @@ public class ZProjector implements PlugIn {
 		// more general use of ImageProcessor's getPixelValue and
 		// putPixel methods.
 		int ptype; 
-		if(stack.getProcessor() instanceof ByteProcessor)       ptype = BYTE_TYPE; 
-		else if(stack.getProcessor() instanceof ShortProcessor) ptype = SHORT_TYPE; 
-		else if(stack.getProcessor() instanceof FloatProcessor) ptype = FLOAT_TYPE; 
+		if(stack.getProcessor(1) instanceof ByteProcessor)       ptype = BYTE_TYPE; 
+		else if(stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
+		else if(stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
 		else {
 	    	IJ.error("ZProjection_: Unknown processor type."); 
 	    	return; 

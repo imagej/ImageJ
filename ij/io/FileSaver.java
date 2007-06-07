@@ -3,6 +3,8 @@ import java.awt.*;
 import java.io.*;
 import java.util.zip.*;
 import ij.*;
+import ij.measure.Calibration;
+import ij.plugin.filter.Analyzer;
 
 /** Saves images in tiff, gif, jpeg and raw format. */
 public class FileSaver {
@@ -269,7 +271,9 @@ public class FileSaver {
 	/** Save the image as tab-delimited text using the specified path. */
 	public boolean saveAsText(String path) {
 		try {
-			TextEncoder file = new TextEncoder(imp.getProcessor());
+			Calibration cal = imp.getCalibration();
+			int precision = Analyzer.getPrecision();
+			TextEncoder file = new TextEncoder(imp.getProcessor(), cal, precision);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);
 			out.close();

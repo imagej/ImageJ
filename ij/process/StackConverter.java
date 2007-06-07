@@ -77,6 +77,7 @@ public class StackConverter {
 			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
 		}
 		imp.setStack(null, stack2);
+		IJ.showProgress(1.0);
 	}
 
 	/** Converts this Stack to 32-bit (float) grayscale. */
@@ -101,8 +102,31 @@ public class StackConverter {
 			stack2.addSlice(label, ip2);
 			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
 		}
+		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
 		cal.disableDensityCalibration();
 	}
 
+	/** Converts the Stack to RGB. */
+	public void convertToRGB() {
+		ImageStack stack1 = imp.getStack();
+		ImageStack stack2 = new ImageStack(width, height);
+		String label;
+	    int inc = nSlices/20;
+	    if (inc<1) inc = 1;
+	    ImageProcessor ip1, ip2;
+	    Calibration cal = imp.getCalibration();
+		for(int i=1; i<=nSlices; i++) {
+			label = stack1.getSliceLabel(i);
+			ip1 = stack1.getProcessor(i);
+			ip2 = ip1.convertToRGB();
+			//stack1.deleteSlice(1);
+			//System.gc();
+			stack2.addSlice(label, ip2);
+			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
+		}
+		IJ.showProgress(1.0);
+		imp.setStack(null, stack2);
+		cal.disableDensityCalibration();
+	}
 }

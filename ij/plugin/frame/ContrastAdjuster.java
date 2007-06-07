@@ -220,14 +220,24 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 		plot.repaint();
 	}
 	
-	void updateLabels(ImageProcessor ip) {
-		if (ip instanceof FloatProcessor) {
-			minLabel.setText(""+IJ.d2s(ip.getMin()));
-			maxLabel.setText(""+IJ.d2s(ip.getMax()));
+	void updateLabels(ImagePlus imp, ImageProcessor ip) {
+		double min = ip.getMin();
+		double max = ip.getMax();
+		int type = imp.getType();
+		Calibration cal = imp.getCalibration();
+		boolean realValue = type==ImagePlus.GRAY32;
+		if (cal.calibrated()) {
+			min = cal.getCValue((int)min);
+			max = cal.getCValue((int)max);
+			if (type!=ImagePlus.GRAY16)
+				realValue = true;
 		}
-		else {
-			minLabel.setText(""+(int)ip.getMin());
-			maxLabel.setText(""+(int)ip.getMax());
+		if (realValue) {
+			minLabel.setText(""+IJ.d2s(min));
+			maxLabel.setText(""+IJ.d2s(max));
+		} else {
+			minLabel.setText(IJ.d2s(min,0));
+			maxLabel.setText(IJ.d2s(max,0));
 		}
 	}
 
@@ -475,7 +485,7 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 			case CONTRAST: adjustContrast(imp, ip, cvalue); break;
 		}
 		updatePlot();
-		updateLabels(ip);
+		updateLabels(imp, ip);
 		imp.updateAndDraw();
 		imp.unlock();
 	}

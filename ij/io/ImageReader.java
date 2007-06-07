@@ -310,8 +310,9 @@ public class ImageReader {
 		return readPixels(is);
 	}
 	
-	/** If the pixel array contains any value less than zero
-		then add 32768 to all values. */
+	/** If the pixel array contains any value less than zero than
+		32768 is added to all values. The file type is changed to
+		GRAY16_UNSIGNED if 32768 is not added to the pixel values. */
 	void convertToUnsigned(short[] pixels) {
 		int min = Integer.MAX_VALUE;
 		int value;
@@ -320,9 +321,11 @@ public class ImageReader {
 			if (value<min)
 				min = value;
 		}
-		if (min<0 || fi.fileFormat==FileInfo.FITS)
+		if (min<0 || fi.fileFormat==FileInfo.FITS) {
 			for (int i=0; i<pixels.length; i++)
 				pixels[i] = (short)(pixels[i]+32768);
+		} else
+			fi.fileType = FileInfo.GRAY16_UNSIGNED;			
 	}
 
 }

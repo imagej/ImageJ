@@ -130,17 +130,21 @@ public class ImageConverter {
 		//IJ.showProgress(1.0);
 	}
 	
-	/** Converts a 3 slice 8-bit stack to RGB. */
+	/** Converts a 2 or 3 slice 8-bit stack to RGB. */
 	public void convertRGBStackToRGB() {
 		int stackSize = imp.getStackSize();
-		if (stackSize<3 ||stackSize>4 || type!=ImagePlus.GRAY8)
-			throw new IllegalArgumentException("3-slice 8-bit stack required");
+		if (stackSize<2 ||stackSize>4 || type!=ImagePlus.GRAY8)
+			throw new IllegalArgumentException("2 or 3 slice 8-bit stack required");
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		ImageStack stack = imp.getStack();
 		byte[] R = (byte[])stack.getPixels(1);
 		byte[] G = (byte[])stack.getPixels(2);
-		byte[] B = (byte[])stack.getPixels(3);
+		byte[] B;
+		if (stackSize>2)
+			B = (byte[])stack.getPixels(3);
+		else
+			B = new byte[width*height];
 		imp.trimProcessor();
 		ColorProcessor cp = new ColorProcessor(width, height);
 		cp.setRGB(R, G, B);

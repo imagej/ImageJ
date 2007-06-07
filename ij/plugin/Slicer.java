@@ -3,7 +3,8 @@ package ij.plugin;
 import ij.*; 
 import ij.gui.*; 
 import ij.process.*;
-import ij.measure.*; 
+import ij.measure.*;
+import java.awt.*; 
 
 import java.util.*; 
 import java.awt.image.*; 
@@ -39,10 +40,12 @@ public class Slicer implements PlugIn{
 
 	// Get roi from image and check for validity.
 	Roi roi = imp.getRoi(); 
-	if(roiIsLine(roi)==false) {
-	    IJ.error("Straight line selection required"); 
+	if (roi==null || !(roi.getType()==Roi.LINE || roi.getType()==Roi.RECTANGLE)) {
+	    IJ.error("Straight line or rectangular selection required"); 
 	    return; 
 	}
+	if (roi.getType()==Roi.RECTANGLE)
+		swidth = roi.getBoundingRect().height;
 
 	// Get z-scaling factor and line width from user.
 	Calibration cal = imp.getCalibration();
@@ -64,7 +67,7 @@ public class Slicer implements PlugIn{
 	long tstart = System.currentTimeMillis(); 
 
 	if(!imp.lock()) return;   // exit if in use
-	ImagePlus oimg = sliceImage(imp,(Line)roi); 
+	ImagePlus oimg = sliceImage(imp, roi); 
 	imp.unlock(); 
 
 	// Show slice image.
@@ -85,7 +88,7 @@ public class Slicer implements PlugIn{
     }
 
     // --------------------------------------------------
-    public ImagePlus sliceImage(ImagePlus imp, Line roi) {
+    public ImagePlus sliceImage(ImagePlus imp, Roi roi) {
 		// Adjust z-spacing and slice width if necessary.
 		adjustParameters(imp); 
 	
@@ -97,7 +100,7 @@ public class Slicer implements PlugIn{
 		ImageStack stack = imp.getStack(); 
 	
 		// Generate the "sliced" image.
-		ImageStack ostack = stackSlice(stack,roi); 
+		ImageStack ostack = stackSlice(stack, roi); 
 	
 		// Scale stack.
 		if (zscale!=1.0)
@@ -117,7 +120,7 @@ public class Slicer implements PlugIn{
     // should check bounds in this routine or in the line2Image
     // routine.
     //
-    private ImageStack stackSlice(ImageStack stack, Line roi) {
+    private ImageStack stackSlice(ImageStack stack, Roi roi) {
 		// Initialize processing parameters.
 		setLineParams(roi); 
 	
@@ -162,13 +165,19 @@ public class Slicer implements PlugIn{
 		return ostack; 
     }
 
-    private ImageProcessor processorSlice(ImageStack stack, Line roi) {
+    private ImageProcessor processorSlice(ImageStack stack, Roi roi) {
 		ImageProcessor sp = stack.getProcessor(1); 
 
-		// Write new data into this processor.
+		// Write new data into this processor
+		// Except for RGB stacks, use a FloatProcessor
+		// so lines can be interpolated
 		int width = number;
 		int height = stack.getSize();
-		ImageProcessor oip = new FloatProcessor(width, height, new float[width*height], cmod);
+		ImageProcessor oip;
+		if (imp.getType()==ImagePlus.COLOR_RGB)
+			oip = sp.createProcessor(width, height);
+		else 
+			oip = new FloatProcessor(width, height, new float[width*height], cmod);
 
 		// Read pixel data from this processor.
 		ImageProcessor sip = sp.createProcessor(sp.getWidth(), sp.getHeight());
@@ -191,11 +200,6 @@ public class Slicer implements PlugIn{
 	
 		    // Add appropriate line from this slice to image.
 		    line2Image(sip, oip, row);
-		    double[] data = sip.getLine(xstart, ystart, xend, yend);
-		    int x = 0;
-			for (int i=0; i<data.length; i++)
-				oip.putPixelValue(i, row, data[i]);
-		     
 		}
 
 		// No longer needed so help garbage collection.
@@ -227,47 +231,58 @@ public class Slicer implements PlugIn{
 
 
     // --------------------------------------------------
-    private void line2Image(ImageProcessor ip, ImageProcessor oip, int col) {
+    private void line2Image(ImageProcessor ip, ImageProcessor oip, int row) {
 		double rx = xstart, ry = ystart; 
 		double value;
+		int ivalue;
+		boolean interpolateLine = interpolate && (xinc!=1.0 || yinc!=0.0);
 
-		for(int n=0; n<number; ++n) {
-		    // Extract pixel value.
-		    if (interpolate)
-		    	value = ip.getInterpolatedPixel(rx, ry);
-		    else
-		     	value = (int)ip.getPixel((int)(rx+0.5),(int)(ry+0.5)); 
-		    rx += xinc; 
-		    ry += yinc; 
-	
-		    oip.putPixelValue(n, col, value); 
+		if (oip instanceof FloatProcessor) {
+			for(int n=0; n<number; ++n) {
+			    if (interpolateLine)
+			    	value = ip.getInterpolatedPixel(rx, ry);
+			    else
+			     	value = ip.getPixel((int)(rx+0.5),(int)(ry+0.5)); 
+			    rx += xinc; 
+			    ry += yinc; 
+			    oip.putPixelValue(n, row, value);
+			}
+		} else { // can't interpolate lines from RGB images
+			for(int n=0; n<number; ++n) {
+			    ivalue = ip.getPixel((int)(rx+0.5),(int)(ry+0.5)); 
+			    rx += xinc; 
+			    ry += yinc; 
+			    oip.putPixel(n, row, ivalue); 
+			}
 		}
     }
 
 
     // --------------------------------------------------
     /** Retrieve processing parameters from input Roi. */
-    private void setLineParams(Line roi) {
-		dx = roi.x2 - roi.x1; 
-		dy = roi.y2 - roi.y1; 
-
-		// Width of output image.
-		number = (int)Math.round(Math.sqrt(dx*dx+dy*dy))+1; 
-
-		xinc = (double)dx/number; 
-		yinc = (double)dy/number; 
-
-		xstart = roi.x1; ystart = roi.y1; 
-		xend = roi.x2; yend = roi.y2; 
+    private void setLineParams(Roi roi) {
+    	if (roi.getType()==Roi.RECTANGLE) {
+    		Rectangle r = roi.getBoundingRect();
+			dx = r.width; 
+			dy = 0; 
+			number = (int)dx; // width of output image.
+			xinc = 1.0; 
+			yinc = 0; 
+			xstart = r.x; ystart = r.y; 
+			xend = xstart+r.width; yend = ystart;
+    	} else {
+    		Line line = (Line)roi;
+			dx = line.x2 - line.x1; 
+			dy = line.y2 - line.y1; 
+			number = (int)Math.round(Math.sqrt(dx*dx+dy*dy))+1; // width of output image.
+			xinc = (double)dx/number; 
+			yinc = (double)dy/number; 
+			xstart = line.x1; ystart = line.y1; 
+			xend = line.x2; yend = line.y2;
+		}
+		//IJ.write(dx+" "+dy+" "+number+" "+xinc+" "+yinc+" "+xstart+" "+ystart+" "+xend+" "+yend); 
     }
 
-
-    // --------------------------------------------------
-    /** Determine whether roi is valid. */
-    private boolean roiIsLine(Roi roi) {
-	if(roi==null || roi.getType()!=Roi.LINE) return false; 
-	return true; 
-    }
 
     // --------------------------------------------------
     /** Adjust z-spacing and slice width to ensure they have

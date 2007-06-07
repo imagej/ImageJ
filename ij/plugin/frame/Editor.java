@@ -40,6 +40,14 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		pack();
 	}
 			
+	public void create(String name, String text) {
+		ta.append(text);
+		ta.setCaretPosition(0);
+		setTitle(name);
+		changes = true;
+		setVisible(true);
+	}
+
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
@@ -63,11 +71,8 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 				else
 					sb.append(s+"\n");
 			}
-			ta.append(new String(sb));
-			ta.setCaretPosition(0);
-			setTitle(name);
+			create(name, new String(sb));
 			changes = false;
-			setVisible(true);
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());
@@ -116,6 +121,8 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 	}
 
 	void compileAndRun() {
+		if (path==null)
+			saveAs();
 		if (path!=null) {
 			save();
 			IJ.runPlugIn("ij.plugin.Compiler", path);

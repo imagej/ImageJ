@@ -13,6 +13,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 	private static final String NONE = "None";
 	private static final String INVERTER = "Pixel Inverter";
 	private static final String UNCALIBRATED_OD = "Uncalibrated OD";
+	private static boolean showSettings;
 	static boolean global;
 	private static boolean oldGlobal;
     private ImagePlus imp;
@@ -32,7 +33,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		IJ.register(Calibrator.class);
-		return DOES_8G+DOES_16+NO_CHANGES;
+		return DOES_8G+DOES_8C+DOES_16+NO_CHANGES;
 	}
 
 	public void run(ImageProcessor ip) {
@@ -59,11 +60,11 @@ public class Calibrator implements PlugInFilter, Measurements {
 		functions = getFunctionList();
 		int function = cal.getFunction();
 		oldFunction = function;
-		double[] c = cal.getCoefficients();
+		double[] p = cal.getCoefficients();
 		unit = cal.getValueUnit();
 		if (function==Calibration.NONE)
 			defaultChoice=NONE;
-		else if (function<nFits&&function==Calibration.STRAIGHT_LINE&&c!=null&& c[0]==255.0&&c[1]==-1.0)
+		else if (function<nFits&&function==Calibration.STRAIGHT_LINE&&p!=null&& p[0]==255.0&&p[1]==-1.0)
 			defaultChoice=INVERTER;
 		else if (function<nFits)
 			defaultChoice = CurveFitter.fitList[function];
@@ -78,6 +79,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		gd.addStringField("Unit:", unit, 16);
 		gd.addTextAreas(xText, yText, 12, 10);
 		gd.addCheckbox("Global Calibration", global);
+		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -87,6 +89,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 			xText = gd.getNextText();
 			yText = gd.getNextText();
 			global = gd.getNextBoolean();
+			//showSettings = gd.getNextBoolean();
 			return true;
 		}
 	}
@@ -95,7 +98,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		Calibration cal = imp.getCalibration();
 		int function = Calibration.NONE;
 		boolean is16Bits = imp.getType()==ImagePlus.GRAY16;
-		double[] coefficients = null;
+		double[] parameters = null;
 		double[] x=null, y=null;
 		if (choiceIndex<=0) {
 			if (oldFunction==Calibration.NONE&&!yText.equals("")&&!xText.equals(""))
@@ -110,18 +113,18 @@ public class Calibrator implements PlugInFilter, Measurements {
 			x = getData(xText);
 			y = getData(yText);
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {
-				coefficients = doCurveFitting(x, y, function);
-				if (coefficients==null)
+				parameters = doCurveFitting(x, y, function);
+				if (parameters==null)
 					return;
 			}
 		} else if (choiceIndex==inverterIndex) {
 			function = Calibration.STRAIGHT_LINE;
-			coefficients = new double[2];
+			parameters = new double[2];
 			if (is16Bits)
-				coefficients[0] = 65535;
+				parameters[0] = 65535;
 			else
-				coefficients[0] = 255;
-			coefficients[1] = -1.0;
+				parameters[0] = 255;
+			parameters[1] = -1.0;
 			unit = "Inverted Gray Value";
 		} else if (choiceIndex==odIndex) {
 			if (is16Bits) {
@@ -131,7 +134,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 			function = Calibration.UNCALIBRATED_OD;
 			unit = "Uncalibrated OD";
 		}
-		cal.setFunction(function, coefficients, unit);
+		cal.setFunction(function, parameters, unit);
 		if (global)
 			imp.setGlobalCalibration(cal);
 		else
@@ -161,15 +164,15 @@ public class Calibrator implements PlugInFilter, Measurements {
 		double[] a = Tools.getMinMax(y);
 		double ymin=a[0], ymax=a[1]; 
 		CurveFitter cf = new CurveFitter(x, y);
-		cf.doFit(fitType);
+		cf.doFit(fitType, showSettings);
 		//IJ.write("");
 		//IJ.write("n: "+n);
 		//IJ.write("iterations: "+cf.getIterations());
 		//IJ.write("max iterations: "+cf.getMaxIterations());
 		//IJ.write("function: "+cf.fList[fitType]);
-		int nc = cf.nCoefficients();
-		double[] c = cf.getCoefficients();
-		double sumResidualsSqr = c[nc];
+		int np = cf.getNumParams();
+		double[] p = cf.getParams();
+		double sumResidualsSqr = p[np];
 		//IJ.write("sum of residuals: "+IJ.d2s(Math.sqrt(sumResidualsSqr),6));
 		double sumY = 0.0;
 		for (int i=0; i<n; i++)
@@ -177,7 +180,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		sumResiduals = IJ.d2s(Math.sqrt(sumResidualsSqr/n),6);
 		double mean = sumY/n;
 		double sumMeanDiffSqr = 0.0;
-		int degreesOfFreedom = n-nc;
+		int degreesOfFreedom = n-np;
 		double goodness=1.0;
 		for (int i=0; i<n; i++) {
 			sumMeanDiffSqr += sqr(y[i]-mean);
@@ -185,10 +188,10 @@ public class Calibrator implements PlugInFilter, Measurements {
 				goodness = 1.0-(sumResidualsSqr/degreesOfFreedom)*((n-1)/sumMeanDiffSqr);
 		}
 		fitGoodness = IJ.d2s(goodness,6);
-		double[] coefficients = new double[nc];
-		for (int i=0; i<nc; i++)
-			coefficients[i] = c[i];
-		return coefficients;									
+		double[] parameters = new double[np];
+		for (int i=0; i<np; i++)
+			parameters[i] = p[i];
+		return parameters;									
 	}
 	
 	void showPlot(double[] x, double[] y, Calibration cal, String sumResiduals, String fitGoodness) {
@@ -219,21 +222,21 @@ public class Calibrator implements PlugInFilter, Measurements {
 		pw.setLimits(xmin,xmax,ymin,ymax);
 		if (x!=null&&y!=null&&x.length>0&&y.length>0)
 			pw.addPoints(x, y, PlotWindow.CIRCLE);
-		double[] c = cal.getCoefficients();
-		if (fit<=Calibration.RODBARD) {
+		double[] p = cal.getCoefficients();
+		if (fit<=Calibration.GAMMA_VARIATE) {
 			drawLabel(pw, CurveFitter.fList[fit]);
 			ly += 0.04;
 		}
-		if (c!=null) {
-			int nc = c.length;
-			drawLabel(pw, "a="+IJ.d2s(c[0],6));
-			drawLabel(pw, "b="+IJ.d2s(c[1],6));
-			if (nc>=3)
-				drawLabel(pw, "c="+IJ.d2s(c[2],6));
-			if (nc>=4)
-				drawLabel(pw, "d="+IJ.d2s(c[3],6));
-			if (nc>=5)
-				drawLabel(pw, "e="+IJ.d2s(c[4],6));
+		if (p!=null) {
+			int np = p.length;
+			drawLabel(pw, "a="+IJ.d2s(p[0],6));
+			drawLabel(pw, "b="+IJ.d2s(p[1],6));
+			if (np>=3)
+				drawLabel(pw, "c="+IJ.d2s(p[2],6));
+			if (np>=4)
+				drawLabel(pw, "d="+IJ.d2s(p[3],6));
+			if (np>=5)
+				drawLabel(pw, "e="+IJ.d2s(p[4],6));
 			ly += 0.04;
 		}
 		if (sumResiduals!=null)

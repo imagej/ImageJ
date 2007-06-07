@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 
-/** This plug-in generates gel profile plots that can be analyzed using
+/** This plugin generates gel profile plots that can be analyzed using
 the wand tool. It is similar to the "Gel Plotting Macros" in NIH Image. */
 public class GelAnalyzer implements PlugIn {
 
@@ -125,7 +125,8 @@ public class GelAnalyzer implements PlugIn {
 			cal.setFunction(Calibration.UNCALIBRATED_OD, null, "Uncalibrated OD");
 		else if (cal.getFunction()==Calibration.UNCALIBRATED_OD)
 			cal.setFunction(Calibration.NONE, null, "Gray Value");
-		int topMargin = 15;
+		int topMargin = 16;
+		int bottomBorder = 2;
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
 		int plotWidth, plotHeight;
@@ -136,10 +137,6 @@ public class GelAnalyzer implements PlugIn {
 			imp.setRoi(firstRect.x, y[i], firstRect.width, firstRect.height);
 			ProfilePlot pp = new ProfilePlot(imp);
 			profiles[i] = pp.getProfile();
-			//if (uncalibratedOD) {
-			//	for (int j=0; j<profiles[i].length; j++)
-			//		profiles[i][j] = od(profiles[i][j]);
-			//}
 			if (pp.getMin()<min)
 				min = pp.getMin();
 			if (pp.getMax()>max)
@@ -156,15 +153,24 @@ public class GelAnalyzer implements PlugIn {
 			plotHeight = 200;
 		if (plotHeight>400)
 			plotHeight = 400;
-		ImageProcessor ip = new ByteProcessor(plotWidth, topMargin+nLanes*plotHeight);
+		ImageProcessor ip = new ByteProcessor(plotWidth, topMargin+nLanes*plotHeight+bottomBorder);
 		ip.setColor(Color.white);
 		ip.fill();
+		ip.setColor(Color.black);
+		//draw border
+		int h= ip.getHeight();
+		ip.moveTo(0,0);
+		ip.lineTo(plotWidth-1,0);
+		ip.lineTo(plotWidth-1, h-1);
+		ip.lineTo(0, h-1);
+		ip.lineTo(0, 0);
+		ip.moveTo(0, h-2);
+		ip.lineTo(plotWidth-1, h-2);
 		String s = imp.getTitle()+"; ";
 		if (cal.calibrated())
 			s += cal.getValueUnit();
 		else
 			s += "**Uncalibrated**";
-		ip.setColor(Color.black);
 		ip.moveTo(5,topMargin);
 		ip.drawString(s);
 		double xScale = (double)plotWidth/profiles[1].length;
@@ -185,6 +191,7 @@ public class GelAnalyzer implements PlugIn {
 	 	}
 	 	ImagePlus plots = new Plots();
 	 	plots.setProcessor("Plots", ip);
+	 	ip.setThreshold(0,0,ImageProcessor.NO_LUT_UPDATE); // Wand tool works better with threshold set
 	 	plots.show();
 		nLanes = 0;
 		saveID = 0;
@@ -256,10 +263,14 @@ class PlotsCanvas extends ImageCanvas {
 		if (counter==0)
 			IJ.setColumnHeadings(" \tArea");
 		double perimeter = roi.getLength();
+		String error = "";
+		double circularity = 4.0*Math.PI*(s.pixelCount/(perimeter*perimeter));
+		if (circularity<0.025)
+			error = " (error?)";
 		double area = s.pixelCount+perimeter/2.0; // add perimeter/2 to account area under border
 		rect[counter] = roi.getBoundingRect();
 		//area += (rect[counter].width/rect[counter].height)*1.5; // adjustment for small peaks from NIH Image gel macros
-		IJ.write((counter+1)+"\t"+IJ.d2s(area, 0));
+		IJ.write((counter+1)+"\t"+IJ.d2s(area, 0)+error);
 		measured[counter] = area;
 		if (counter<MAX_PEAKS)
 			counter++;
@@ -296,7 +307,7 @@ class PlotsCanvas extends ImageCanvas {
 				s = IJ.d2s(measured[i], 0);
 			int swidth = ip.getStringWidth(s);
 			int x = r.x + r.width/2 - swidth/2;
-			int	y = r.y + r.height*2/3 + 9;
+			int	y = r.y + r.height*3/4 + 9;
 			int[] data = new int[swidth];
 			ip.getRow(x, y, data, swidth);
 			boolean fits = true;

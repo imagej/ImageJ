@@ -58,7 +58,7 @@ public class ImageStatistics implements Measurements {
 	void getRawStatistics(int minThreshold, int maxThreshold) {
 		int count;
 		double value;
-		int sum = 0;
+		double sum = 0.0;
 		double sum2 = 0.0;
 		
 		for (int i=minThreshold; i<=maxThreshold; i++) {
@@ -73,7 +73,7 @@ public class ImageStatistics implements Measurements {
 			}
 		}
 		area = pixelCount*pw*ph;
-		mean = (double)sum/pixelCount;
+		mean = sum/pixelCount;
 		umean = mean;
 		dmode = mode;
 		calculateStdDev(pixelCount, sum, sum2);

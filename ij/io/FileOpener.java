@@ -177,7 +177,7 @@ public class FileOpener {
 		
 		if (fi.valueUnit!=null) {
 			int f = fi.calibrationFunction;
-			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.RODBARD && fi.coefficients!=null)
+			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.GAMMA_VARIATE && fi.coefficients!=null)
 			||f==Calibration.UNCALIBRATED_OD) {
 				if (cal==null) cal = new Calibration(imp);
 				cal.setFunction(f, fi.coefficients, fi.valueUnit);

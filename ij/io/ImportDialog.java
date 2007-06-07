@@ -48,7 +48,9 @@ public class ImportDialog {
         this.fileName = fileName;
         this.directory = directory;
 		IJ.showStatus("Importing: " + fileName);
-		IJ.register(ImportDialog.class);  // keep this class from being GC'd
+	}
+
+    public ImportDialog() {
 	}
 
 	boolean showDialog() {
@@ -74,6 +76,7 @@ public class ImportDialog {
 		whiteIsZero = gd.getNextBoolean();
 		intelByteOrder = gd.getNextBoolean();
 		openAll = gd.getNextBoolean();
+		IJ.register(ImportDialog.class);
 		return true;
 	}
 	
@@ -82,6 +85,8 @@ public class ImportDialog {
 		StringSorter.sort(list);
 		ImageStack stack=null;
 		ImagePlus imp=null;
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
 		for (int i=0; i<list.length; i++) {
 			fi.fileName = list[i];
 			imp = new FileOpener(fi).open(false);
@@ -91,7 +96,10 @@ public class ImportDialog {
 				if (stack==null)
 					stack = imp.createEmptyStack();	
 				try {
-					stack.addSlice(list[i], imp.getProcessor());
+					ImageProcessor ip = imp.getProcessor();
+					if (ip.getMin()<min) min = ip.getMin();
+					if (ip.getMax()>max) max = ip.getMax();
+					stack.addSlice(list[i], ip);
 				}
 				catch(OutOfMemoryError e) {
 					IJ.outOfMemory("OpenAll");
@@ -102,18 +110,35 @@ public class ImportDialog {
 			}
 		}
 		imp = new ImagePlus(list[0], stack);
+		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
+			imp.getProcessor().setMinAndMax(min, max);
 		imp.show();
 	}
 	
-	/** Opens the specified image. Does nothing if the dialog was canceled. */
+	/** Displays the dialog and opens the specified image or images.
+		Does nothing if the dialog is canceled. */
 	public void openImage() {
-		if (!showDialog())
+		FileInfo fi = getFileInfo();
+		if (fi==null)
 			return;
-		FileInputStream in;
-		String path = directory + fileName;
-		File f = new File(path);
-		String imageType = types[choiceSelection];
+		if (openAll) {
+			String[] list = new File(directory).list();
+			if (list==null)
+				return;
+			openAll(list, fi);
+		} else {
+			FileOpener fo = new FileOpener(fi);
+			fo.open();
+		}
+	}
 
+	/** Displays the dialog and returns a FileInfo object that can be used to
+		open the image. Returns null if the dialog is canceled. The fileName 
+		and directory fields are null if the no argument constructor was used. */
+	public FileInfo getFileInfo() {
+		if (!showDialog())
+			return null;
+		String imageType = types[choiceSelection];
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.RAW;
 		fi.fileName = fileName;
@@ -140,18 +165,9 @@ public class ImportDialog {
 		else if (imageType.equals("24-bit RGB Planar"))
 			fi.fileType = FileInfo.RGB_PLANAR;
 		else
-			return;
-			
+			fi.fileType = FileInfo.GRAY8;
 		if (IJ.debugMode) IJ.write("ImportDialog: "+fi);
-		if (openAll) {
-			String[] list = new File(directory).list();
-			if (list==null)
-				return;
-			openAll(list, fi);
-		} else {
-			FileOpener fo = new FileOpener(fi);
-			fo.open();
-		}
+		return fi;
 	}
 
 	public static void savePreferences(Properties prefs) {

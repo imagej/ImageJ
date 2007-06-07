@@ -469,8 +469,12 @@ public class ColorProcessor extends ImageProcessor {
 
 	public ImageProcessor crop() {
 		int[] pixels2 = new int[roiWidth*roiHeight];
-		for (int ys=roiY; ys<roiY+roiHeight; ys++)
-			System.arraycopy(pixels, roiX+ys*width, pixels2, (ys-roiY)*roiWidth, roiWidth);
+		for (int ys=roiY; ys<roiY+roiHeight; ys++) {
+			int offset1 = (ys-roiY)*roiWidth;
+			int offset2 = ys*width+roiX;
+			for (int xs=0; xs<roiWidth; xs++)
+				pixels2[offset1++] = pixels[offset2++];
+		}
 		return new ColorProcessor(roiWidth, roiHeight, pixels2);
 	}
 	

@@ -19,8 +19,6 @@ public class Projector implements PlugInFilter {
 	static final int xAxis=0, yAxis=1, zAxis=2;
 	static final int nearestPoint=0, brightestPoint=1, meanValue=2;
 	static final int BIGPOWEROF2 = 8192;
-	static final String noThresholdMsg = "You must first use the Image->Adjust->Threshold\n"
-		+"tool (shift-T) to define the transparency bounds. ";
 		
 	String[] axisList = {"X-Axis", "Y-Axis", "Z-Axis"};
 	String[] methodList = {"Nearest Point", "Brightest Point", "Mean Value"};
@@ -54,21 +52,27 @@ public class Projector implements PlugInFilter {
 	}
 	
 	public void run(ImageProcessor ip) {
-		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
-			IJ.showMessage("Projector", noThresholdMsg);
-		else if (showDialog())
+		if (showDialog())
 			doProjections(imp);
 	}
 
 	public boolean showDialog() {
+		ImageProcessor ip = imp.getProcessor();
+		double lower = ip.getMinThreshold();
+		if (lower!=ImageProcessor.NO_THRESHOLD) {
+			transparencyLower = (int)lower;
+			transparencyUpper = (int)ip.getMaxThreshold();
+		}
 		GenericDialog gd = new GenericDialog("3D Projection");
 		gd.addChoice("Projection Method:", methodList, methodList[projectionMethod]);
 		gd.addChoice("Axis of Rotation:", axisList, axisList[axisOfRotation]);
-		gd.addMessage("");
+		//gd.addMessage("");
 		gd.addNumericField("Slice Interval (pixels):", sliceInterval, 1);
 		gd.addNumericField("Initial Angle (0-359 degrees):", initAngle, 0);
 		gd.addNumericField("Total Rotation (0-359 degrees):", totalAngle, 0);
 		gd.addNumericField("Rotation Angle Increment:", angleInc, 0);
+		gd.addNumericField("Lower Transparency Bound:", transparencyLower, 0);
+		gd.addNumericField("Upper Transparency Bound:", transparencyUpper, 0);
 		gd.addNumericField("Surface Opacity (0-100%):", opacity, 0);
 		gd.addNumericField("Surface Depth-Cueing (0-100%):", 100-depthCueSurf, 0);
 		gd.addNumericField("Interior Depth-Cueing (0-100%):", 100-depthCueInt, 0);
@@ -83,6 +87,8 @@ public class Projector implements PlugInFilter {
 		initAngle =  (int)gd.getNextNumber();
 		totalAngle =  (int)gd.getNextNumber();
 		angleInc =  (int)gd.getNextNumber();
+		transparencyLower =  (int)gd.getNextNumber();
+		transparencyUpper =  (int)gd.getNextNumber();
 		opacity =  (int)gd.getNextNumber();
 		depthCueSurf =  100-(int)gd.getNextNumber();
 		depthCueInt =  100-(int)gd.getNextNumber();
@@ -122,11 +128,6 @@ public class Projector implements PlugInFilter {
 			nProjections = 1;
 
 		ImageProcessor ip = imp.getProcessor();
-		double lower = ip.getMinThreshold();
-		if (lower!=ImageProcessor.NO_THRESHOLD) {
-			transparencyLower = (int)lower;
-			transparencyUpper = (int)ip.getMaxThreshold();
-		}
 		Rectangle r = ip.getRoi();
 		left = r.x;
 		top = r.y;
@@ -335,6 +336,7 @@ public class Projector implements PlugInFilter {
 		ycosthetainit = (top - ycenter - 1) * costheta;
 		ysinthetainit = (top - ycenter - 1) * sintheta;
 		offsetinit = ((projheight-bottom+top)/2) * projwidth + (projwidth - right + left)/2 - 1;
+
 		for (int k=1; k<=nSlices; k++) {
 			pixels = (byte[])stack.getPixels(k);
 			z = (int)((k-1)*sliceInterval+0.5) - zcenter;
@@ -517,8 +519,11 @@ public class Projector implements PlugInFilter {
 		int projsize = projwidth * projheight;
 
 		//find z-coordinates of first and last slices
-		zmax = zcenter + projwidth/2;  
-		zmin = zcenter - projwidth/2;
+		//zmax = zcenter + projwidth/2;  
+		//zmin = zcenter - projwidth/2;
+		zmax = (int)((nSlices-1)*sliceInterval+0.5) - zcenter;
+		zmin = -zcenter;
+
 		zmaxminuszmintimes100 = 100 * (zmax-zmin);
 		c100minusDepthCueInt = 100 - depthCueInt;
 		c100minusDepthCueSurf = 100 - depthCueSurf;
@@ -532,7 +537,15 @@ public class Projector implements PlugInFilter {
 		xsinthetainit = (left - xcenter - 1) * sintheta;
 		ycosthetainit = (top - ycenter - 1) * costheta;
 		ysinthetainit = (top - ycenter - 1) * sintheta;
-		offsetinit = ((projheight-bottom+top)/2) * projwidth +(projwidth - right + left)/2 + left - 1;
+		//float[] f = new float[projsize];
+		//IJ.write("");
+		//IJ.write("depthCueSurf: "+depthCueSurf);
+		//IJ.write("zmax: "+zmax);
+		//IJ.write("zmin: "+zmin);
+		//IJ.write("zcenter: "+zcenter);
+		//IJ.write("zmaxminuszmintimes100: "+zmaxminuszmintimes100);
+		//IJ.write("c100minusDepthCueSurf: "+c100minusDepthCueSurf);
+		offsetinit = ((projheight-bottom+top)/2) * projwidth + (projwidth - right + left)/2 - 1;
  		for (int k=1; k<=nSlices; k++) {
 			pixels = (byte[])stack.getPixels(k);
 			z = (int)((k-1)*sliceInterval+0.5) - zcenter;
@@ -565,9 +578,11 @@ public class Projector implements PlugInFilter {
 									else
 										opaArray[offset] = (byte)thispixel;
 								} else {
-									if (DepthCueSurfLessThan100)
-										projArray[offset] = (byte)((depthCueSurf*(thispixel)/100 + c100minusDepthCueSurf*(thispixel)*(zmax-z)/zmaxminuszmintimes100));
-									else
+									if (DepthCueSurfLessThan100) {
+										int v = (depthCueSurf*thispixel/100 + c100minusDepthCueSurf*thispixel*(zmax-z)/zmaxminuszmintimes100);
+										//f[offset] = z;
+										projArray[offset] = (byte)v;
+									} else
 										projArray[offset] = (byte)thispixel;
 								}
 							} // if z<zBuffer[offset]
@@ -592,6 +607,7 @@ public class Projector implements PlugInFilter {
 				} //for i (all pixels in row)
 			} // for j (all rows of BoundRect)
 		} // for k (all slices)
+		//new ImagePlus("f", new FloatProcessor(projwidth,projheight,f,null)).show();
 	} // end doOneProjectionZ()
 
 

@@ -22,6 +22,8 @@ public class FolderOpener implements PlugIn {
 		if (IJ.debugMode) IJ.write("FolderOpener: "+directory+" ("+list.length+" files)");
 		int width=0,height=0,type=0;
 		ImageStack stack = null;
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
 		int n = 0;
 		try {
 			for (int i=0; i<list.length; i++) {
@@ -42,16 +44,24 @@ public class FolderOpener implements PlugIn {
 					IJ.write(list[i] + ": wrong dimensions");
 				else if (imp.getType()!=type)
 					IJ.write(list[i] + ": wrong type");
-				else
-					stack.addSlice(imp.getTitle(), imp.getProcessor());
+				else {
+					ImageProcessor ip = imp.getProcessor();
+					if (ip.getMin()<min) min = ip.getMin();
+					if (ip.getMax()>max) max = ip.getMax();
+					stack.addSlice(imp.getTitle(), ip);
+				}
 				System.gc();
 			}
 		} catch(OutOfMemoryError e) {
 			IJ.outOfMemory("FolderOpener");
 			stack.trim();
 		}
-		if (stack!=null && stack.getSize()>0)
-			new ImagePlus("Stack", stack).show();
+		if (stack!=null && stack.getSize()>0) {
+			ImagePlus imp2 = new ImagePlus("Stack", stack);
+			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
+				imp2.getProcessor().setMinAndMax(min, max);
+			imp2.show();
+		}
 		IJ.showProgress(1.0);
 	}
 

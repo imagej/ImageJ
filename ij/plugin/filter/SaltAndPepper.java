@@ -10,7 +10,7 @@ public class SaltAndPepper implements PlugInFilter {
 	Random r = new Random();
 
 	public int setup(String arg, ImagePlus imp) {
-		return DOES_8G+DOES_8C+DOES_STACKS+SUPPORTS_MASKING;
+		return IJ.setupDialog(imp, DOES_8G+DOES_8C+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {

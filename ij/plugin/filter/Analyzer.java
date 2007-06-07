@@ -95,7 +95,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[1]="Display Row Labels"; states[1]=(systemMeasurements&LABELS)!=0;
 		gd.addCheckboxGroup(1, 2, labels, states);
 		gd.addMessage("");
-		gd.addNumericField("Precision:", precision, 0);
+		gd.addNumericField("Decimal Places:", precision, 0);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -173,7 +173,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (mode!=MARK_AND_COUNT) {
 			if (!resetCounter())
 				return;
-			IJ.setColumnHeadings(" \tX\tY\tValue");		
+			//IJ.setColumnHeadings(" \tX\tY\tValue");		
 			mode = MARK_AND_COUNT;
 		}
 		incrementCounter();
@@ -189,7 +189,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 			imp.updateAndDraw();
 			ip.setLineWidth(Line.getWidth());
 		}
-		IJ.write(rt.getCounter()+"\t"+n(cal.getX(x))+n(cal.getY(y))+n(value));
+		if ((measurements&LABELS)!=0)
+			rt.addLabel("File Name", getFileName());
+		rt.addValue("X", cal.getX(x));
+		rt.addValue("Y", cal.getY(y));
+		rt.addValue("Value", value);
+		displayResults();
+		//IJ.write(rt.getCounter()+"\t"+n(cal.getX(x))+n(cal.getY(y))+n(value));
 	}
 	
 	void measureAngle(Roi roi) {
@@ -450,6 +456,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 	/** Returns the ImageJ results table. */
 	public static ResultsTable getResultsTable() {
 		return systemRT;
+	}
+
+	/** Returns the number of digits displayed on the right of decimal point. */
+	public static int getPrecision() {
+		return precision;
 	}
 
 }

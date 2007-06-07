@@ -123,8 +123,9 @@ public class Toolbar extends Canvas implements MouseListener {
 				return;
 			case CROSSHAIR:
 				xOffset = x; yOffset = y;
-				m(1,8); d(15,8);
-				m(8,1); d(8,15);
+				m(1,8); d(6,8); d(6,6); d(10,6); d(10,10); d(6,10); d(6,9);
+				m(8,1); d(8,5); m(11,8); d(15,8); m(8,11); d(8,15);
+				m(8,8); d(8,8);
 				return;
 			case WAND:
 				xOffset = x+2; yOffset = y+2;

@@ -14,6 +14,8 @@ public class ImageMath implements PlugInFilter {
 	private static boolean first;
 	private static double addValue = 25;
 	private static double mulValue = 1.25;
+	private static double minValue = 0;
+	private static double maxValue = 255;
 	private static final String defaultAndValue = "11110000";
 	private static String andValue = defaultAndValue;
 	private static final double defaultGammaValue = 0.5;
@@ -24,7 +26,7 @@ public class ImageMath implements PlugInFilter {
 		this.imp = imp;
 		first = true;
 		IJ.register(ImageMath.class);
-		return DOES_ALL+DOES_STACKS+SUPPORTS_MASKING;
+		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
@@ -98,6 +100,42 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 		
+	 	if (arg.equals("min")||arg.equals("max")) {
+	 		if (ip instanceof ColorProcessor) {
+	 			IJ.error("RGB images not supported");
+	 			canceled = true;
+	 			return;
+	 		}
+	 	}
+
+	 	if (arg.equals("min")) {
+	 		if (first) minValue = getValue("Minimum: ", minValue, 0);
+	 		if (canceled) return;
+	 		double v;
+	 		for (int y=0; y<ip.getHeight(); y++) {
+				for (int x=0; x<ip.getWidth(); x++) {
+					v = ip.getPixelValue(x,y);
+					if (v<minValue) v = minValue;
+					ip.putPixelValue(x,y,v);
+				}
+			}
+			return;
+		}
+
+	 	if (arg.equals("max")) {
+	 		if (first) maxValue = getValue("Maximum: ", maxValue, 0);
+	 		if (canceled) return;
+	 		double v;
+	 		for (int y=0; y<ip.getHeight(); y++) {
+				for (int x=0; x<ip.getWidth(); x++) {
+					v = ip.getPixelValue(x,y);
+					if (v>maxValue) v = maxValue;
+					ip.putPixelValue(x,y,v);
+				}
+			}
+			return;
+		}
+
 	 	if (arg.equals("gamma")) {
 	 		if (first) gammaValue = getValue("Gamma (0.1-5.0): ", gammaValue, 2);
 	 		if (canceled) return;
@@ -116,8 +154,11 @@ public class ImageMath implements PlugInFilter {
 		}
 		
 	 	if (arg.equals("reciprocal")) {
-			if (!(ip instanceof FloatProcessor))
-				{IJ.error("32-bit float image required"); return;}
+			if (!(ip instanceof FloatProcessor)) {
+				IJ.error("32-bit float image required");
+				canceled = true;
+				return;
+			}
 			float[] pixels = (float[])ip.getPixels();
 			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++) {
 				if (pixels[i]==0f)

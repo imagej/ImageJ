@@ -18,48 +18,45 @@ public class StackEditor implements PlugIn {
     	width = imp.getWidth();
     	height = imp.getHeight();
     	
+    	if (arg.equals("tostack"))
+    		{convertImagesToStack(); return;}
+		if (nSlices<2)
+			{IJ.error("Stack requred"); return;}
     	if (arg.equals("add"))
     		addSlice();
     	else if (arg.equals("delete"))
     		deleteSlice();
-    	else if (arg.equals("convert"))
-    		convertImagesToStack();
+    	else if (arg.equals("toimages"))
+    		convertStackToImages(imp);
 	}
 
     void addSlice() {
-		if (nSlices<2) {
-			IJ.error("Stack requred");
-			return;
-		}
 		if (!imp.lock())
 			return;
 		ImageStack stack = imp.getStack();
 		ImageProcessor ip = imp.getProcessor();
 		int n = imp.getCurrentSlice();
+		if (IJ.altKeyDown())
+			n--; // insert in front of current slice
 		stack.addSlice(null, ip.createProcessor(width, height), n);
+		imp.setStack(null, stack);
 		imp.setSlice(n+1);
-		imp.repaintWindow();
 		imp.unlock();
 	}
 
 	void deleteSlice() {
-		if (nSlices<2) {
-			IJ.error("Stack requred");
-			return;
-		}
 		if (!imp.lock())
 			return;
 		ImageStack stack = imp.getStack();
 		int n = imp.getCurrentSlice();
  		stack.deleteSlice(n);
 		if (stack.getSize()==1) {
-			imp.setProcessor(null, stack.getProcessor());
+			imp.setProcessor(null, stack.getProcessor(1));
 			new ImageWindow(imp);
 		} else {
 			imp.setStack(null, stack);
  			if (n--<1) n = 1;
 			imp.setSlice(n);
-			imp.repaintWindow();
 		}
 		imp.unlock();
 	}
@@ -96,16 +93,51 @@ public class StackEditor implements PlugIn {
 		
 		int width = image[0].getWidth();
 		int height = image[0].getHeight();
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
 		ImageStack stack = new ImageStack(width, height);
 		for (int i=0; i<wList.length; i++) {
-			stack.addSlice(null, image[i].getProcessor());
+			ImageProcessor ip = image[i].getProcessor();
+			if (ip.getMin()<min) min = ip.getMin();
+			if (ip.getMax()>max) max = ip.getMax();
+			stack.addSlice(null, ip);
 			image[i].changes = false;
 			image[i].getWindow().close();
 		}
-		new ImagePlus("Stack", stack).show();
+		ImagePlus imp = new ImagePlus("Stack", stack);
+		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
+			imp.getProcessor().setMinAndMax(min, max);
+		imp.show();
 	}
 
+	public void convertStackToImages(ImagePlus imp) {
+		if (!imp.lock())
+			return;
+		ImageStack stack = imp.getStack();
+		int size = stack.getSize();
+		if (size>30) {
+			boolean ok = IJ.showMessageWithCancel("Convert to Images?",
+			"Are you sure you want to convert this\nstack to "
+			+size+" separate windows?");
+			if (!ok)
+				{imp.unlock(); return;}
+		}
+		for (int i=1; i<=size; i++) {
+			String label = stack.getSliceLabel(i);
+			String title = label!=null&&!label.equals("")?label:getDigits(i);
+			new ImagePlus(title, stack.getProcessor(i)).show();
+		}
+		imp.changes = false;
+		ImageWindow win = imp.getWindow();
+		if (win!=null)
+			win.close();
+		imp.unlock();
+	}
 
+	String getDigits(int n) {
+		String digits = "00000000"+n;
+		return digits.substring(digits.length()-4,digits.length());
+	}
 
 }
 

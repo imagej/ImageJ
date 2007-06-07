@@ -10,13 +10,14 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.frame.Editor;
 import ij.plugin.Zip_Reader;
+import ij.text.TextWindow;
 
 /** Opens tiff (and tiff stacks), dicom, fits, pgm, jpeg, bmp or
 	gif images, and look-up tables, using a file open dialog or a path. */
 public class Opener {
 
 	private static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
-		GIF=6,LUT=7,BMP=8,ZIP=9,PLUGIN=10,ROI=11;
+		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA=10,ROI=11,TEXT=12;
 	private static String defaultDirectory = null;
 	private boolean showErrorDialog = false;
 
@@ -68,13 +69,17 @@ public class Opener {
 			case ZIP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
-			case PLUGIN:
-				Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-				if (ed!=null) ed.open(directory, name);
-				return null;
 			case ROI:
 				IJ.runPlugIn("ij.plugin.RoiReader", path);
 				return null;
+			case JAVA: case TEXT:
+				File file = new File(path);
+				if (file.length()<28000) {
+					Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+					if (ed!=null) ed.open(directory, name);
+				} else
+					new TextWindow(path,400,450);
+				return null;				
 			case UNKNOWN:
 				if (showErrorDialog)
 					IJ.showMessage("Open...","This file does not appear to be in TIFF, JPEG, \n GIF, BMP, DICOM, FITS, PGM, ZIP or LUT format.");
@@ -397,6 +402,7 @@ public class Opener {
 			return PGM;
 
 		// Lookup table
+		name = name.toLowerCase();
 		if (name.endsWith(".lut"))
 			return LUT;
 		
@@ -410,11 +416,16 @@ public class Opener {
 
 		// Java source file
 		if (name.endsWith(".java"))
-			return PLUGIN;
+			return JAVA;
 
 		// ImageJ, NIH Image, Scion Image for Windows ROI
 		if (b0==73 && b1==111) // "Iout"
 			return ROI;
+			
+		// Text file
+		if (name.endsWith(".txt") || (b0>=32 && b0<=126 && b1>=32 && b1<=126
+			&& b2>=32 && b2<=126 && b3>=32 && b3<=126 && buf[8]>=32 && buf[8]<=126))
+			return TEXT;
 
 		return UNKNOWN;
 	}

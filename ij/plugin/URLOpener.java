@@ -14,7 +14,7 @@ public class URLOpener implements PlugIn {
 	IJ_Props.txt. Otherwise, prompt for an image URL and open that image. */
 	public void run(String name) {
 		if (!name.equals("")) {
-			ImagePlus imp = new ImagePlus(Prefs.getImagesURL() + name);
+			ImagePlus imp = new ImagePlus(Prefs.getImagesURL()+name);
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				Opener.convertGrayJpegTo8Bits(imp);
 			imp.show();

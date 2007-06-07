@@ -38,7 +38,7 @@ public class FloatStatistics extends ImageStatistics {
 		
 		// Find min and max
 		double roiMin = Double.MAX_VALUE;
-		double roiMax = Double.MIN_VALUE;
+		double roiMax = -Double.MAX_VALUE;
 		if (mask!=null)
 			// non-rectangular roi
 			for (int y=ry, my=0; y<(ry+rh); y++, my++) {
@@ -65,10 +65,10 @@ public class FloatStatistics extends ImageStatistics {
 			}
 		min = roiMin; max = roiMax;
 		histMin = min; histMax = max;
+		binSize = (histMax-histMin)/nBins;
 
 		// Generate histogram
 		double scale = (nBins-1)/(histMax-histMin);
-		binSize = (histMax - histMin)/nBins;
 		if (mask!=null) { // non-rectangular roi
 			pixelCount = 0;
 			for (int y=ry, my=0; y<(ry+rh); y++, my++) {
@@ -115,7 +115,7 @@ public class FloatStatistics extends ImageStatistics {
                 mode = i;
             }
         }
-        dmode = histMin+mode*binSize;
+        dmode = histMin+mode*binSize+binSize/2.0;
 	}
 
 	void getCenterOfMass(ImageProcessor ip) {
@@ -128,7 +128,7 @@ public class FloatStatistics extends ImageStatistics {
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]==ip.BLACK) {
-					v = pixels[i];
+					v = pixels[i]+Double.MIN_VALUE;
 					count += v;
 					xsum += x*v;
 					ysum += y*v;

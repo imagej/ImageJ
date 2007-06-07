@@ -6,24 +6,19 @@ import java.io.*;
 import java.awt.event.*;
 import ij.*;
 import ij.process.*;
+import ij.plugin.frame.Editor;
 
 /** New image dialog box plus several static utility methods for creating images.*/
 public class NewImage {
 
-	public static final int GRAY8 = 0;
-	public static final int GRAY16 = 1;
-	public static final int GRAY32 = 2;
-	public static final int RGB = 3;
-
-	public static final int FILL_WHITE = 0;
-	public static final int FILL_BLACK = 1;
-	public static final int FILL_RAMP = 2;
+	public static final int GRAY8=0, GRAY16=1, GRAY32=2, RGB=3;
+	public static final int FILL_WHITE=0, FILL_BLACK=1, FILL_RAMP=2;
 	
     private static String name = "Untitled";
     private static int width = 400;
     private static int height = 400;
     private static int slices = 1;
-    private static int imageType = GRAY8;
+    private static int type = GRAY8;
     private static int fillWith = FILL_WHITE;
     private static String[] types = {"8-bit Unsigned", "16-bit Unsigned", "32-bit Real", "32-bit RGB"};
     private static String[] fill = {"White", "Black", "Ramp", "Clipboard"};
@@ -76,9 +71,14 @@ public class NewImage {
 			case FILL_BLACK:
 				break;
 			case FILL_RAMP:
-				for (int y=0; y<height; y++)
+				byte[] ramp = new byte[width];
+				for (int i=0; i<width; i++)
+					ramp[i] = (byte)((i*255)/(width-1));
+				for (int y=0; y<height; y++) {
+					int offset = y*width;
 					for (int x=0; x<width; x++)
-						pixels[y*width+x] = (byte)((x*255)/(width-1));
+						pixels[offset++] = ramp[x];
+				}
 				break;
 		}
 		ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
@@ -193,7 +193,7 @@ public class NewImage {
 	boolean showDialog() {
 		GenericDialog gd = new GenericDialog("New...", IJ.getInstance());
 		gd.addStringField("Name:", name, 12);
-		gd.addChoice("Type:", types, types[imageType]);
+		gd.addChoice("Type:", types, types[type]);
 		gd.addChoice("Fill With:", fill, fill[fillWith]);
 		gd.addNumericField("Width (pixels):", width, 0);
 		gd.addNumericField("Height (pixels):", height, 0);
@@ -202,7 +202,7 @@ public class NewImage {
 		if (gd.wasCanceled())
 			return false;
 		name = gd.getNextString();
-		imageType = gd.getNextChoiceIndex();
+		type = gd.getNextChoiceIndex();
 		fillWith = gd.getNextChoiceIndex();
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
@@ -215,7 +215,7 @@ public class NewImage {
 			return;
 		if (fillWith>FILL_RAMP)
 			{showClipboard(); return;}
-		try {open(name, width, height, slices, imageType, fillWith);}
+		try {open(name, width, height, slices, type, fillWith);}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("New...");}
 	}
 	

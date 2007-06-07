@@ -20,7 +20,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener {
 		c.anchor = GridBagConstraints.CENTER;
 		c.gridwidth = 3;
 		c.insets = new Insets(20, 10, 10, 10);
-	    Label message = new Label(msg);
+	    MultiLineLabel message = new MultiLineLabel(msg);
 		gridbag.setConstraints(message, c);
 		message.setFont(new Font("Dialog", Font.BOLD, 12));
         add(message);

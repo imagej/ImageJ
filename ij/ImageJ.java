@@ -24,7 +24,7 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.20s";
+	public static final String VERSION = "1.21w";
 
 	private Toolbar toolbar;
 	private Panel statusBar;
@@ -37,7 +37,13 @@ public class ImageJ extends Frame implements ActionListener,
 	private static PluginClassLoader classLoader;
 	private boolean notVerified = true;
 
-	/** Creates a new ImageJ frame. Set applet to null if running as an application. */
+	/** Creates a new ImageJ frame. */
+	public ImageJ() {
+		this(null);
+	}
+	
+	/** Creates a new ImageJ frame running as an applet
+		if the 'applet' argument is not null. */
 	public ImageJ(java.applet.Applet applet) {
 		super("ImageJ");
 		this.applet = applet;
@@ -97,6 +103,7 @@ public class ImageJ extends Frame implements ActionListener,
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		setVisible(true);
 		requestFocus();
+		//IJ.write("font: "+Menus.getMenuBar().getFont());
 	}
     
 	public Point getPreferredLocation() {

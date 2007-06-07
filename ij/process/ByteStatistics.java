@@ -110,7 +110,7 @@ public class ByteStatistics extends ImageStatistics {
 				if (mask==null || mask[mi++]==ip.BLACK) {
 					v = pixels[i]&255;
 					if (v>=minThreshold&&v<=maxThreshold) {
-						dv = (cTable!=null)?cTable[v]:v;
+						dv = ((cTable!=null)?cTable[v]:v)+Double.MIN_VALUE;
 						count += dv;
 						xsum += x*dv;
 						ysum += y*dv;
@@ -125,9 +125,9 @@ public class ByteStatistics extends ImageStatistics {
 	
 	void getCalibratedMinAndMax(int minThreshold, int maxThreshold, float[] cTable) {
 		min = Double.MAX_VALUE;
-		max = Double.MIN_VALUE;
+		max = -Double.MAX_VALUE;
 		double v = 0.0;
-		for (int i=minThreshold; i<maxThreshold; i++) {
+		for (int i=minThreshold; i<=maxThreshold; i++) {
 			if (histogram[i]>0) {
 				v = cTable[i];
 				if (v<min) min = v;

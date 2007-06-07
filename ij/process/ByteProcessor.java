@@ -69,8 +69,13 @@ public class ByteProcessor extends ImageProcessor {
 	public ImageProcessor crop() {
 		ImageProcessor ip2 = createProcessor(roiWidth, roiHeight);
 		byte[] pixels2 = (byte[])ip2.getPixels();
-		for (int ys=roiY; ys<roiY+roiHeight; ys++)
-			System.arraycopy(pixels, roiX+ys*width, pixels2, (ys-roiY)*roiWidth, roiWidth);
+		for (int ys=roiY; ys<roiY+roiHeight; ys++) {
+			int offset1 = (ys-roiY)*roiWidth;
+			int offset2 = ys*width+roiX;
+			for (int xs=0; xs<roiWidth; xs++)
+				pixels2[offset1++] = pixels[offset2++];
+		}
+		//System.arraycopy(pixels, roiX+ys*width, pixels2, (ys-roiY)*roiWidth, roiWidth);
         return ip2;
 	}
 	
@@ -558,6 +563,8 @@ public class ByteProcessor extends ImageProcessor {
 		@see ij.process.ImageProcessor#setInterpolate
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+		if (roiWidth==dstWidth && roiHeight==dstHeight)
+			return crop();
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;

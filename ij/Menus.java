@@ -49,14 +49,21 @@ public class Menus {
 	static int nPlugins;
 	private static Hashtable shortcuts = new Hashtable();
 	private static Vector pluginsPrefs = new Vector();
+	private static Font font; // = new Font("Dialog", Font.PLAIN, 14);
 	
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
 		applet = appletInstance;
 	}
 
+	Menu createMenu(String name) {
+		Menu m = new Menu(name);
+		if (font!=null) m.setFont(font);
+		return m;
+	}
+	
 	void addMenuBar() {
-		Menu file = new Menu("File");
+		Menu file = createMenu("File");
 		addItem(file, "New...", KeyEvent.VK_N, false);
 		addItem(file, "Open...", KeyEvent.VK_O, false);
 		addSubMenu(file, "Open Samples");
@@ -72,7 +79,7 @@ public class Menus {
 		file.addSeparator();
 		addItem(file, "Quit",  0, false);
 		
-		Menu edit = new Menu("Edit");
+		Menu edit = createMenu("Edit");
 		addItem(edit, "Undo", KeyEvent.VK_Z, false);
 		edit.addSeparator();
 		addItem(edit, "Cut", KeyEvent.VK_X, false);
@@ -92,8 +99,8 @@ public class Menus {
 		edit.addSeparator();
 		addSubMenu(edit, "Options");
 		
-		Menu image = new Menu("Image");
-		Menu imageType = new Menu("Type");
+		Menu image = createMenu("Image");
+		Menu imageType = createMenu("Type");
 			gray8Item = new CheckboxMenuItem("8-bit");
 			imageType.add(gray8Item);
 			gray8Item.addItemListener(ij);
@@ -139,16 +146,17 @@ public class Menus {
 		addPlugInItem(image, "Scale...", "ij.plugin.filter.Scaler", KeyEvent.VK_E, false);
 		addSubMenu(image, "Rotate");
 		image.addSeparator();
-		addSubMenu(image, "Color Tables");
+		addSubMenu(image, "Lookup Tables");
 		addPlugInItem(image, "Colors...", "ij.plugin.Colors", 0, false);
 
-		Menu process = new Menu("Process");
+		Menu process = createMenu("Process");
 		addPlugInItem(process, "Smooth", "ij.plugin.filter.Filters(\"smooth\")", KeyEvent.VK_S, true);
 		addPlugInItem(process, "Sharpen", "ij.plugin.filter.Filters(\"sharpen\")", 0, false);
 		addPlugInItem(process, "Find Edges", "ij.plugin.filter.Filters(\"edge\")", KeyEvent.VK_F, true);
 		addPlugInItem(process, "Equalize", "ij.plugin.filter.Equalizer", 0, false);
+		addSubMenu(process, "Noise");
 		addSubMenu(process, "Shadows");
-		addSubMenu(process, "Morphology");
+		addSubMenu(process, "Binary");
 		addSubMenu(process, "Math");
 		filtersMenu = addSubMenu(process, "Filters");
 		process.addSeparator();
@@ -156,7 +164,7 @@ public class Menus {
 		addPlugInItem(process, "Subtract Background...", "ij.plugin.filter.BackgroundSubtracter", 0, false);
 		addItem(process, "Repeat Command", KeyEvent.VK_R, true);
 		
-		Menu analyze = new Menu("Analyze");
+		Menu analyze = createMenu("Analyze");
 		addPlugInItem(analyze, "Measure", "ij.plugin.filter.Analyzer", KeyEvent.VK_M, false);
 		addPlugInItem(analyze, "Analyze Particles...", "ij.plugin.filter.ParticleAnalyzer", 0, false);
 		addPlugInItem(analyze, "Summarize", "ij.plugin.filter.Analyzer(\"sum\")", 0, false);
@@ -171,12 +179,12 @@ public class Menus {
 		addSubMenu(analyze, "Gels");
 		toolsMenu = addSubMenu(analyze, "Tools");
 
-		window = new Menu("Window");
+		window = createMenu("Window");
 		addItem(window, "ImageJ [enter]", 0, false);
 		addItem(window, "Put Behind [tab]", 0, false);
 		window.addSeparator();
 
-		Menu help = new Menu("Help");
+		Menu help = createMenu("Help");
 		addItem(help, "About ImageJ...", 0, false);
 		help.addSeparator();
 		aboutMenu = addSubMenu(help, "About Plugins");
@@ -212,6 +220,7 @@ public class Menus {
 				shortcuts.put(new Integer(shortcut),label);
 			}
 		}
+		if (font!=null) item.setFont(font);
 		menu.add(item);
 		item.addActionListener(ij);
 	}
@@ -226,7 +235,7 @@ public class Menus {
 		String value;
 		String key = name.toLowerCase();
 		int index;
- 		Menu submenu=new Menu(name);
+ 		Menu submenu=createMenu(name);
  
 		index = key.indexOf(' ');
 		if (index>0)
@@ -279,7 +288,7 @@ public class Menus {
 	void addPluginsMenu() {
 		String value,label,className;
 		int index;
-		pluginsMenu = new Menu("Plugins");
+		pluginsMenu = createMenu("Plugins");
 		for (int count=1; count<100; count++) {
 			value = Prefs.getString("plug-in" + (count/10)%10 + count%10);
 			if (value==null)
@@ -437,7 +446,7 @@ public class Menus {
 			className = className.substring(slashIndex+1, className.length());
 			if (submenu==null || !submenuName.equals(dir)) {
  				submenuName = dir;
- 				submenu = new Menu(submenuName);
+ 				submenu = createMenu(submenuName);
  				pluginsMenu.add(submenu);
 			}
 		menu = submenu;
@@ -446,6 +455,7 @@ public class Menus {
 		String command = className.replace('_',' ');
 		command.trim();
 		MenuItem item = new MenuItem(command);
+		if (font!=null) item.setFont(font);
 		menu.add(item);
 		item.addActionListener(ij);
 		pluginsTable.put(command, className);

@@ -15,7 +15,7 @@ public class Shadows implements PlugInFilter {
 		this.imp = imp;
 		if (imp!=null && imp.getStackSize()>1 && arg.equals("demo"))
 			{IJ.error("This demo does not work with stacks."); return DONE;}
-		return DOES_ALL+DOES_STACKS+SUPPORTS_MASKING;
+		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {

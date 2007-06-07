@@ -45,6 +45,8 @@ public class Converter {
 					new StackConverter(imp).convertToGray8();
 				else if (item.equals("32-bit"))
 					new StackConverter(imp).convertToGray32();
+				else if (item.equals("RGB Color"))
+					new StackConverter(imp).convertToRGB();
 		    	else throw new IllegalArgumentException();
 			} else {
 				// do single image conversions
@@ -105,13 +107,13 @@ public class Converter {
 			" \n" +
 			"8-bit -> 16-bit\n" +
 			"8-bit -> 32-bit*\n" +
-			"8-bit -> RGB Color\n" +
+			"8-bit -> RGB Color*\n" +
 			"16-bit -> 8-bit*\n" +
 			"16-bit -> 32-bit*\n" +
-			"16-bit -> RGB Color\n" +
+			"16-bit -> RGB Color*\n" +
 			"32-bit -> 8-bit*\n" +
 			"32-bit -> 16-bit\n" +
-			"32-bit -> RGB Color\n" +
+			"32-bit -> RGB Color*\n" +
 			"8-bit Color -> 8-bit (grayscale)*\n" +
 			"8-bit Color -> RGB Color\n" +
 			"RGB Color -> 8-bit (grayscale)*\n" +
@@ -121,7 +123,7 @@ public class Converter {
 			"RGB Stack -> RGB Color\n" +
 			"HSB Stack -> RGB Color\n" +
 			" \n" +
-			"* supports stacks\n"
+			"* works with stacks\n"
 			);
 	}
 	

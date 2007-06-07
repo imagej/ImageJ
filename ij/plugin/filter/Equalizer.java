@@ -29,7 +29,7 @@ public class Equalizer implements PlugInFilter {
 		imp.killRoi();
 		if (arg.equals("classic"))
 			classicEqualization = true;
-		return DOES_8G+DOES_RGB+DOES_16+DOES_STACKS;
+		return IJ.setupDialog(imp, DOES_8G+DOES_RGB+DOES_16);
 	}
 
 	private double getWeightedValue(int i) {

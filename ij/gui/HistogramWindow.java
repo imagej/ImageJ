@@ -8,27 +8,29 @@ import java.awt.datatransfer.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.Measurements;
+import ij.plugin.filter.Analyzer;
 
 /** This class is an extended ImageWindow that displays histograms. */
 public class HistogramWindow extends ImageWindow implements Measurements,
 ActionListener, ClipboardOwner {
 	static final int WIN_WIDTH = 300;
-	static final int WIN_HEIGHT = 250;
+	static final int WIN_HEIGHT = 240;
     static final int HIST_WIDTH = 256;
     static final int HIST_HEIGHT = 128;
 	static final int BAR_HEIGHT = 12;
 	static final int XMARGIN = 20;
 	static final int YMARGIN = 10;
 	
-	private ImageStatistics stats;
-	private float[] cTable;
-	private int[] histogram;
-	private LookUpTable lut;
-	private Rectangle frame = null;
-	private Image img;
-	private Button list, save, copy;
-	private Label value, count;
-	private static String defaultDirectory = null;
+	protected ImageStatistics stats;
+	protected float[] cTable;
+	protected int[] histogram;
+	protected LookUpTable lut;
+	protected Rectangle frame = null;
+	protected Image img;
+	protected Button list, save, copy;
+	protected Label value, count;
+	protected static String defaultDirectory = null;
+	protected int decimalPlaces;
 	public static int nBins = 256;
     
     /** Displays a histogram using the title "Histogram". */
@@ -46,6 +48,22 @@ ActionListener, ClipboardOwner {
     }
 
     public void showHistogram(ImagePlus imp, int bins) {
+    	setup();
+		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins);
+		histogram = stats.histogram;
+        lut = imp.createLut();
+        img = this.imp.getImage();
+        int type = imp.getType();
+        cTable = imp.getCalibration().getCTable();
+        boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
+        Graphics g = img.getGraphics();
+        if (g!=null)
+         {drawHistogram(g, fixedRange); g.dispose();}
+        this.imp.setImage(img); // needed to get text to show on WinNT??
+        this.imp.draw();
+    }
+
+    public void setup() {
  		Panel buttons = new Panel();
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		list = new Button(" List ");
@@ -65,19 +83,6 @@ ActionListener, ClipboardOwner {
 		buttons.add(valueAndCount);
 		add(buttons);
 		pack();
-
-		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins);
-		histogram = stats.histogram;
-        lut = imp.createLut();
-        img = this.imp.getImage();
-        int type = imp.getType();
-        cTable = imp.getCalibration().getCTable();
-        boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
-        Graphics g = img.getGraphics();
-        if (g!=null)
-         {drawHistogram(g, fixedRange); g.dispose();}
-        this.imp.setImage(img); // needed to get text to show on WinNT??
-        this.imp.draw();
     }
 
     public void mouseMoved(int x, int y) {
@@ -88,11 +93,11 @@ ActionListener, ClipboardOwner {
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
 			double v = (cTable!=null&&cTable.length==256)?cTable[index]:stats.histMin+index*stats.binSize;
-			if (stats.nBins<256) v += stats.binSize/2.0;
+			if (stats.binSize!=1.0) v += stats.binSize/2.0;
 			if (v==(int)v)
 				value.setText("  Value: " + (int)v);
 			else
-				value.setText("  Value: " + IJ.d2s(v));
+				value.setText("  Value: " + IJ.d2s(v,decimalPlaces));
 			count.setText("  Count: " + histogram[index]);
 		} else {
 			value.setText("");
@@ -100,14 +105,14 @@ ActionListener, ClipboardOwner {
 		}
 	}
     
-    void drawHistogram(Graphics g, boolean fixedRange) {
+    protected void drawHistogram(Graphics g, boolean fixedRange) {
     	int x, y;
     	int maxCount2 = 0, newMaxCount;
     	int mode2 = 0;
     	int saveModalCount;
 		    	
 		g.setColor(Color.black);
-			        
+		decimalPlaces = Analyzer.getPrecision();
         saveModalCount = histogram[stats.mode];
         for (int i = 0; i<histogram.length; i++)
             if ((histogram[i] > maxCount2) && (i != stats.mode)) {
@@ -148,25 +153,24 @@ ActionListener, ClipboardOwner {
         g.drawString(d2s(hmin), x - 4, y);
         g.drawString(d2s(hmax), x + HIST_WIDTH - getWidth(hmax, g) + 10, y);
         
-		x += 10;
-		y += 20;
-		int saveY = y;
-		g.drawString("Total: " + stats.pixelCount, x, y);
-		y += 15;
-		g.drawString("Mean: " + d2s(stats.mean), x, y);
-		y += 15;
-		g.drawString("Mode: " + d2s(stats.dmode) + " (" + stats.maxCount + ")", x, y);
-		y += 15;
-		g.drawString("Min: " + d2s(stats.min) + ",  Max: " + d2s(stats.max), x, y);
+		boolean showBins = stats.nBins!=256 || !fixedRange;
+		int col1 = XMARGIN + 5;
+		int col2 = XMARGIN + HIST_WIDTH/2;
+		int row1 = y+25;
+		if (showBins) row1 -= 8;
+		int row2 = row1 + 15;
+		int row3 = row2 + 15;
+		int row4 = row3 + 15;
+		g.drawString("Count: " + stats.pixelCount, col1, row1);
+		g.drawString("Mean: " + d2s(stats.mean), col1, row2);
+		g.drawString("StdDev: " + d2s(stats.stdDev), col1, row3);
+		g.drawString("Mode: " + d2s(stats.dmode) + " (" + stats.maxCount + ")", col2, row3);
+		g.drawString("Min: " + d2s(stats.min), col2, row1);
+		g.drawString("Max: " + d2s(stats.max), col2, row2);
 		
-        if (stats.nBins!=256 || !fixedRange) {
-	        x = XMARGIN + HIST_WIDTH/2 + 20;
-			y = saveY;
-			g.drawString("Bins: " + d2s(stats.nBins), x, y);
-			y += 15;
-			double range = fixedRange?256:stats.max-stats.min;
-			double binWidth = range/stats.nBins;
-			g.drawString("Bin Width: " + d2s(binWidth), x, y);
+        if (showBins) {
+			g.drawString("Bins: " + d2s(stats.nBins), col1, row4);
+			g.drawString("Bin Width: " + d2s(stats.binSize), col2, row4);
 		}
 	}
 
@@ -174,7 +178,7 @@ ActionListener, ClipboardOwner {
 		if ((int)d==d)
 			return IJ.d2s(d,0);
 		else
-			return IJ.d2s(d);
+			return IJ.d2s(d,decimalPlaces);
 	}
 	
 	int getWidth(double d, Graphics g) {
@@ -186,31 +190,14 @@ ActionListener, ClipboardOwner {
 
 	void showList() {
 		IJ.setColumnHeadings("value\tcount");
-		for (int i=0; i<stats.nBins; i++)
-			IJ.write(i+"\t"+histogram[i]);
+		if (stats.binSize==1.0)
+			for (int i=0; i<stats.nBins; i++)
+				IJ.write(i+"\t"+histogram[i]);
+		else
+			for (int i=0; i<stats.nBins; i++)
+				IJ.write(IJ.d2s(stats.histMin+i*stats.binSize+stats.binSize/2, decimalPlaces)+"\t"+histogram[i]);
 	}
 
-	/*
-	void saveAsText() {
-		FileDialog fd = new FileDialog(this, "Save as Text...", FileDialog.SAVE);
-		if (defaultDirectory!=null)
-			fd.setDirectory(defaultDirectory);
-		fd.setVisible(true);
-		String name = fd.getFile();
-		String directory = fd.getDirectory();
-		defaultDirectory = directory;
-		fd.dispose();
-		PrintStream ps = null;
-		try {ps = new PrintStream(new FileOutputStream(directory+name));}
-		catch (IOException e) {IJ.write("" + e); return;}
-		IJ.wait(250);  // give system time to redraw ImageJ window
-		IJ.showStatus("Saving histogram values...");
-		for (int i=0; i<stats.nBins; i++)
-			ps.println(histogram[i]);
-		ps.close();
-	}
-	*/
-	
 	void copyToClipboard() {
 		Clipboard systemClipboard = null;
 		try {systemClipboard = getToolkit().getSystemClipboard();}
@@ -220,9 +207,12 @@ ActionListener, ClipboardOwner {
 		IJ.showStatus("Copying histogram values...");
         CharArrayWriter aw = new CharArrayWriter(stats.nBins*4);
         PrintWriter pw = new PrintWriter(aw);
-		for (int i=0; i<stats.nBins; i++)
-			//pw.println(histogram[i]);
-			pw.print(i+"\t"+histogram[i]+"\n");
+		if (stats.binSize==1.0)
+			for (int i=0; i<stats.nBins; i++)
+				pw.print(i+"\t"+histogram[i]+"\n");
+		else
+			for (int i=0; i<stats.nBins; i++)
+				pw.print(IJ.d2s(stats.histMin+i*stats.binSize+stats.binSize/2, decimalPlaces)+"\t"+histogram[i]+"\n");
         String text = aw.toString();
 		pw.close();
 		StringSelection contents = new StringSelection(text);

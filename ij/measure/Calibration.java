@@ -6,7 +6,7 @@ import ij.*;
 public class Calibration {
 
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
-		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7;
+		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8;
 	public static final int NONE=20, UNCALIBRATED_OD=21;
 
 	/** Pixel width in 'unit's */
@@ -110,7 +110,7 @@ public class Calibration {
  	public void setFunction(int function, double[] coefficients, String unit) {
  		if (function==NONE)
  			{disableDensityCalibration(); return;}
- 		if (coefficients==null && function>=STRAIGHT_LINE && function<=RODBARD)
+ 		if (coefficients==null && function>=STRAIGHT_LINE && function<=GAMMA_VARIATE)
  			return;
  		this.function = function;
  		this.coefficients = coefficients;
@@ -162,7 +162,7 @@ public class Calibration {
  			cTable = new float[256];
 			for (int i=0; i<256; i++)
 				cTable[i] = (float)od(i);
-		} else if (function>=STRAIGHT_LINE && function<=RODBARD && coefficients!=null) {
+		} else if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
  			cTable = new float[256];
  			for (int i=0; i<256; i++)
 				cTable[i] = (float)CurveFitter.f(function, coefficients, i);
@@ -171,7 +171,7 @@ public class Calibration {
   	}
 
  	void make16BitCTable() {
-		if (function>=STRAIGHT_LINE && function<=RODBARD && coefficients!=null) {
+		if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
  			cTable = new float[65536];
  			for (int i=0; i<65536; i++)
 				cTable[i] = (float)CurveFitter.f(function, coefficients, i);
@@ -193,7 +193,7 @@ public class Calibration {
  	public double getCValue(int value) {
 		if (function==NONE)
 			return value;
-		if (function>=STRAIGHT_LINE && function<=RODBARD && coefficients!=null)
+		if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null)
 			return CurveFitter.f(function, coefficients, value);
 		if (cTable==null)
 			makeCTable();
@@ -232,5 +232,4 @@ public class Calibration {
 			+ ", vunit=" + valueUnit;
    }
 }
-
 

@@ -96,7 +96,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 			okay = name!=null;
 			dir = fd.getDirectory();
 			fd.dispose();
-			if (okay && !name.endsWith(".java")) {
+			if (okay && !(name.endsWith(".java")||name.endsWith(".txt"))) {
 				IJ.error("File name must end with \".java\".");
 				okay = false;
 			}

@@ -5,13 +5,14 @@ import ij.*;
 
 /** This class is a customizable modal dialog box. */
 public class GenericDialog extends Dialog implements ActionListener {
-	static final int MAX_ITEMS = 20;
-	private TextField[] numberField = new TextField[MAX_ITEMS];
-	private double[] defaultValues = new double[MAX_ITEMS];
-	private String[] defaultText = new String[MAX_ITEMS];
-	private TextField[] stringField = new TextField[MAX_ITEMS];
-	private Checkbox[] checkbox = new Checkbox[MAX_ITEMS];
-	private Choice[] choice = new Choice[MAX_ITEMS];
+	/** Maximum number of each component (numeric field, checkbox, etc). */
+	public static final int MAX_ITEMS = 20;
+	private TextField[] numberField;
+	private double[] defaultValues;
+	private String[] defaultText;
+	private TextField[] stringField;
+	private Checkbox[] checkbox;
+	private Choice[] choice;
 	private Button cancel, okay;
 	private TextArea textArea1,textArea2;
     private boolean wasCanceled;
@@ -66,12 +67,17 @@ public class GenericDialog extends Dialog implements ActionListener {
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
 		if (firstNumericField)
-			c.insets = new Insets(5, 0, 5, 0);
+			c.insets = new Insets(5, 0, 3, 0);
 		else
-			c.insets = new Insets(0, 0, 5, 0);
+			c.insets = new Insets(0, 0, 3, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 
+		if (numberField==null) {
+			numberField = new TextField[MAX_ITEMS];
+			defaultValues = new double[MAX_ITEMS];
+			defaultText = new String[MAX_ITEMS];
+		}
 		numberField[nfIndex] = new TextField(IJ.d2s(defaultValue, digits), 6);
 		numberField[nfIndex].addActionListener(this);
 		defaultValues[nfIndex] = defaultValue;
@@ -117,6 +123,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 
+		if (stringField==null)
+			stringField = new TextField[MAX_ITEMS];
 		stringField[sfIndex] = new TextField(defaultText, columns);
 		stringField[sfIndex].addActionListener(this);
 		c.gridx = 1; c.gridy = y;
@@ -132,6 +140,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 	* @param defaultValue	the initial state
 	*/
     public void addCheckbox(String label, boolean defaultValue) {
+    	if (checkbox==null)
+    		checkbox = new Checkbox[MAX_ITEMS];
 		checkbox[cbIndex] = new Checkbox(label);
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
@@ -160,6 +170,8 @@ public class GenericDialog extends Dialog implements ActionListener {
     	int startCBIndex = cbIndex;
     	int i1 = 0;
     	int[] index = new int[labels.length];
+    	if (checkbox==null)
+    		checkbox = new Checkbox[MAX_ITEMS];
     	for (int row=0; row<rows; row++) {
 			for (int col=0; col<columns; col++) {
 				int i2 = col*rows+row;
@@ -199,6 +211,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 			c.insets = new Insets(0, 0, 5, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
+		if (choice==null)
+			choice = new Choice[MAX_ITEMS];
 		choice[choiceIndex] = new Choice();
 		for (int i=0; i<items.length; i++)
 			choice[choiceIndex].addItem(items[i]);
@@ -262,7 +276,7 @@ public class GenericDialog extends Dialog implements ActionListener {
 	/** Returns the contents of the next numeric field. */
    public double getNextNumber() {
 		Double d;
-		if (numberField[nfIndex]==null)
+		if (numberField==null||numberField[nfIndex]==null)
 			return -1.0;
 		String theText = numberField[nfIndex].getText();
 		String originalText = defaultText[nfIndex];
@@ -293,7 +307,7 @@ public class GenericDialog extends Dialog implements ActionListener {
   	/** Returns the contents of the next text field. */
    public String getNextString() {
 		Double d;
-		if (stringField[sfIndex]==null)
+		if (stringField==null||stringField[sfIndex]==null)
 			return "";
 		else
 			return stringField[sfIndex++].getText();
@@ -301,7 +315,7 @@ public class GenericDialog extends Dialog implements ActionListener {
     
   	/** Returns the state of the next checkbox. */
     public boolean getNextBoolean() {
-		if (checkbox[cbIndex]==null)
+		if (checkbox==null||checkbox[cbIndex]==null)
 			return false;
 		else
 			return checkbox[cbIndex++].getState();
@@ -309,7 +323,7 @@ public class GenericDialog extends Dialog implements ActionListener {
     
   	/** Returns the selected item in the next popup menu. */
     public String getNextChoice() {
-		if (choice[choiceIndex]==null)
+		if (choice==null || choice[choiceIndex]==null)
 			return "";
 		else
 			return choice[choiceIndex++].getSelectedItem();
@@ -317,7 +331,7 @@ public class GenericDialog extends Dialog implements ActionListener {
     
   	/** Returns the index of the selected item in the next popup menu. */
     public int getNextChoiceIndex() {
-		if (choice[choiceIndex]==null)
+		if (choice==null || choice[choiceIndex]==null)
 			return -1;
 		else
 			return choice[choiceIndex++].getSelectedIndex();
@@ -341,7 +355,7 @@ public class GenericDialog extends Dialog implements ActionListener {
 
   	/** Displays this dialog box. */
     public void showDialog() {
-    	if (stringField[0]!=null && numberField[0]==null)
+    	if (stringField!=null&&stringField[0]!=null&&numberField==null)
     		stringField[0].selectAll();
 		Panel buttons = new Panel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
@@ -379,7 +393,7 @@ public class GenericDialog extends Dialog implements ActionListener {
 
     public void paint(Graphics g) {
     	super.paint(g);
-      	if (firstPaint && numberField[0]!=null)
+      	if (firstPaint && numberField!=null && numberField[0]!=null)
     		numberField[0].requestFocus();
     	firstPaint = false;
     }

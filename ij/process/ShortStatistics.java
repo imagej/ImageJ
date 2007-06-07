@@ -87,7 +87,7 @@ public class ShortStatistics extends ImageStatistics {
                 mode = i;
             }
         }
-        dmode = histMin+mode*((histMax-histMin)/nBins);
+        dmode = histMin+mode*binSize+binSize/2.0;
         if (cTable!=null)
         	dmode = cTable[(int)dmode];
 		//ij.IJ.write("mode2: "+mode+" "+dmode+" "+maxCount);
@@ -97,17 +97,15 @@ public class ShortStatistics extends ImageStatistics {
 	void getCenterOfMass(ImageProcessor ip, float[] cTable) {
 		short[] pixels = (short[])ip.getPixels();
 		int[] mask = ip.getMask();
-		int i, mi;
-		double v, count=0.0, xsum=0.0, ysum=0.0;
+		int i, mi, v;
+		double dv, count=0.0, xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]==ip.BLACK) {
-					if (cTable!=null)
-						v = cTable[pixels[i]&0xffff];
-					else
-						v = pixels[i]&0xffff;
+					v = pixels[i]&0xffff;
+					dv = ((cTable!=null)?cTable[v]:v)+Double.MIN_VALUE;
 					count += v;
 					xsum += x*v;
 					ysum += y*v;
@@ -121,7 +119,7 @@ public class ShortStatistics extends ImageStatistics {
 
 	void getCalibratedMinAndMax(int[] hist, int minValue, int maxValue, float[] cTable) {
 		min = Double.MAX_VALUE;
-		max = Double.MIN_VALUE;
+		max = -Double.MAX_VALUE;
 		double v = 0.0;
 		for (int i=minValue; i<maxValue; i++) {
 			if (hist[i]>0) {

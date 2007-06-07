@@ -19,7 +19,7 @@ public class PolygonRoi extends Roi {
 	private double angle1=-1.0, degrees=-1.0;
 	long mouseUpTime = 0;
 
-	/** Creates a new user-generated polygon ROI. */
+	/** Creates a new user-generated polygon or polyline ROI. */
 	public PolygonRoi(int ox, int oy, ImagePlus imp) {
 		super(ox, oy, imp);
 		int tool = Toolbar.getToolId();
@@ -54,8 +54,8 @@ public class PolygonRoi extends Roi {
 	}
 
 
-	/** Creates a new polygon ROI from x and y coordinate arrays. Type
-		must be Roi.POLYGON, Roi.FREEROI or Roi.TRACED_ROI. */
+	/** Creates a new polygon or polyline ROI from x and y coordinate arrays.
+		Type must be Roi.POLYGON, Roi.FREEROI, Roi.TRACED_ROI or Roi.POLYLINE. */
 	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
 		super(0, 0, imp);
 		if (type==POLYGON)
@@ -64,6 +64,8 @@ public class PolygonRoi extends Roi {
 			this.type = FREEROI;
 		else if (type==TRACED_ROI)
 			this.type = TRACED_ROI;
+		else if (type==POLYLINE)
+			this.type = POLYLINE;
 		else
 			throw new IllegalArgumentException("Invalid type");
 		maxPoints = xPoints.length;

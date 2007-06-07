@@ -202,6 +202,7 @@ public class TiffDecoder {
 			fi.pixelHeight = fi.pixelWidth;
 		} 
 
+		// spatial calibration
 		in.seek(offset+172);
 		int units = in.readShort();
 		if (version<=153) units += 5;
@@ -217,6 +218,47 @@ public class TiffDecoder {
 			case 13: fi.unit = "mi"; break;
 		}
 
+		// density calibration
+		//ij.IJ.write("");
+		in.seek(offset+182);
+		int fitType = in.read();
+		int unused = in.read();
+		//ij.IJ.write("curveFitType: "+fitType);
+		int nCoefficients = in.readShort();
+		//ij.IJ.write("nCoefficients: "+nCoefficients);
+		if (fitType==11) {
+			fi.calibrationFunction = 21; //Calibration.UNCALIBRATED_OD
+			fi.valueUnit = "U. OD";
+		} else if (fitType>=0 && fitType<=8 && nCoefficients>=1 && nCoefficients<=5) {
+			switch (fitType) {
+				case 0: fi.calibrationFunction = 0; break; //Calibration.STRAIGHT_LINE
+				case 1: fi.calibrationFunction = 1; break; //Calibration.POLY2
+				case 2: fi.calibrationFunction = 2; break; //Calibration.POLY3
+				case 3: fi.calibrationFunction = 3; break; //Calibration.POLY4
+				case 5: fi.calibrationFunction = 4; break; //Calibration.EXPONENTIAL
+				case 6: fi.calibrationFunction = 5; break; //Calibration.POWER
+				case 7: fi.calibrationFunction = 6; break; //Calibration.LOG
+				case 8: fi.calibrationFunction = 7; break; //Calibration.RODBARD
+			}
+			//ij.IJ.write("fi.calibrationFunction: "+fi.calibrationFunction);
+			fi.coefficients = new double[nCoefficients];
+			for (int i=0; i<nCoefficients; i++) {
+				fi.coefficients[i] = in.readDouble();
+				//ij.IJ.write(i+" "+fi.coefficients[i]);
+			}
+			in.seek(offset+234);
+			int size = in.read();
+			//ij.IJ.write("size: "+size);
+			StringBuffer sb = new StringBuffer();
+			if (size>=1 && size<=16) {
+				for (int i=0; i<size; i++)
+					sb.append((char)(in.read()));
+				fi.valueUnit = new String(sb);
+			} else
+				fi.valueUnit = " ";
+			//ij.IJ.write("fi.valueUnit: "+fi.valueUnit);
+		}
+			
 		in.seek(offset+260);
 		int nImages = in.readShort();
 		if(nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8))
@@ -326,6 +368,12 @@ public class TiffDecoder {
 							}
 							else
 								throw new IOException("Unsupported BitsPerSample: " + value);
+						} else if (count==3) {
+							int saveLoc = in.getFilePointer();
+							in.seek(value);
+							if (getShort()!=8)
+								throw new IOException("ImageJ can only open 8-bit/channel RGB images");
+							in.seek(saveLoc);
 						}
 						break;
 				case SAMPLES_PER_PIXEL:

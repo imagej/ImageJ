@@ -63,8 +63,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				setLocationAndSize();
 			pack();
 			setVisible(true);
+			boolean unlocked = imp.lockSilently();
 			imp.changes = false;
 			previousWindow.close();
+			if (unlocked)
+				imp.unlock();
 			WindowManager.setCurrentWindow(this);
 		} else {
 			setLocationAndSize();
@@ -132,7 +135,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     		s += currentSlice+"/"+nSlices;
     		boolean isLabel = false;
     		String label = stack.getSliceLabel(currentSlice);
-    		if (label!=null)
+    		if (label!=null && label.length()>0)
     			s += " (" + label + ")";
 			if ((this instanceof StackWindow) && running) {
 				g.drawString(s, 5, insets.top+TEXT_GAP);

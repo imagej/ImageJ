@@ -604,8 +604,12 @@ public class ShortProcessor extends ImageProcessor {
 	public ImageProcessor crop() {
 		ImageProcessor ip2 = createProcessor(roiWidth, roiHeight);
 		short[] pixels2 = (short[])ip2.getPixels();
-		for (int ys=roiY; ys<roiY+roiHeight; ys++)
-			System.arraycopy(pixels, roiX+ys*width, pixels2, (ys-roiY)*roiWidth, roiWidth);
+		for (int ys=roiY; ys<roiY+roiHeight; ys++) {
+			int offset1 = (ys-roiY)*roiWidth;
+			int offset2 = ys*width+roiX;
+			for (int xs=0; xs<roiWidth; xs++)
+				pixels2[offset1++] = pixels[offset2++];
+		}
         return ip2;
 	}
 	

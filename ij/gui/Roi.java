@@ -167,7 +167,7 @@ public class Roi extends Object implements Cloneable {
 				break;
         	case KeyEvent.VK_DOWN:
         		y++;
-				if ((y + height) >= yMax) y = yMax - height - 1;
+				if ((y+height)>=yMax) y = yMax-height;
 				break;
 			case KeyEvent.VK_LEFT:
 				x--;
@@ -175,7 +175,7 @@ public class Roi extends Object implements Cloneable {
 				break;
 			case KeyEvent.VK_RIGHT:
         		x++;
-				if ((x + width) >= xMax) x = xMax - width - 1;
+				if ((x+width)>=xMax) x = xMax-width;
 				break;
         }
 		updateClipRect();

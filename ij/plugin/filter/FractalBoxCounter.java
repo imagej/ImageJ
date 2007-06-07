@@ -182,8 +182,8 @@ public class FractalBoxCounter implements PlugInFilter {
 			sizes[i] = (float)Math.log(boxSizes[i]);
 		CurveFitter cf = new CurveFitter(Tools.toDouble(sizes), Tools.toDouble(boxCountSums));
 		cf.doFit(CurveFitter.STRAIGHT_LINE);
-		double[] c = cf.getCoefficients();
-		String label = "D="+IJ.d2s(-c[1],4);
+		double[] p = cf.getParams();
+		String label = "D="+IJ.d2s(-p[1],4);
 		float[] px = new float[100];
 		float[] py = new float[100];
 		double[] a = Tools.getMinMax(sizes);
@@ -197,7 +197,7 @@ public class FractalBoxCounter implements PlugInFilter {
 			tmp += inc;
 		}
 		for (int i=0; i<100; i++)
-			py[i] = (float)CurveFitter.f(CurveFitter.STRAIGHT_LINE, c, px[i]);
+			py[i] = (float)CurveFitter.f(CurveFitter.STRAIGHT_LINE, p, px[i]);
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);
 		ymax = Math.max(ymax, a[1]);

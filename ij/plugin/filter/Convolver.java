@@ -12,7 +12,7 @@ public class Convolver implements PlugInFilter {
 	static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
 	ImagePlus imp;
 	static String kernelText = ".0625  .125  .0625\n.125    .25    .125\n.0625  .125  .0625";
-	static boolean autoScale = true;
+	static boolean normalize = true;
 	static boolean createSelection = false;
 	int kw, kh;
 	static float[] kernel;
@@ -25,7 +25,7 @@ public class Convolver implements PlugInFilter {
 		this.imp = imp;
 		slice = 0;
 		canceled = false;
-		return DOES_ALL+DOES_STACKS;
+		return IJ.setupDialog(imp, DOES_ALL);
 	}
 
 	public void run(ImageProcessor ip) {
@@ -62,7 +62,7 @@ public class Convolver implements PlugInFilter {
 	float[] getKernel() {
 		GenericDialog gd = new GenericDialog("Convolver...", IJ.getInstance());
 		gd.addTextAreas(kernelText, null, 10, 30);
-		gd.addCheckbox("Scale", autoScale);
+		gd.addCheckbox("Normalize Kernel", normalize);
 		gd.addCheckbox("Create Selection", createSelection);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -70,7 +70,7 @@ public class Convolver implements PlugInFilter {
 			return null;
 		}
 		kernelText = gd.getNextText();
-		autoScale = gd.getNextBoolean();
+		normalize = gd.getNextBoolean();
 		createSelection = gd.getNextBoolean();
 		StringTokenizer st = new StringTokenizer(kernelText);
 		int n = st.countTokens();
@@ -163,7 +163,7 @@ public class Convolver implements PlugInFilter {
 			pixels[i] = 0f;
 
 		double scale = 1.0;
-		if (autoScale) {
+		if (normalize) {
 			double sum = 0.0;
 			for (int i=0; i<kernel.length; i++)
 				sum += kernel[i];

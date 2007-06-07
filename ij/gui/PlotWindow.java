@@ -205,6 +205,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 		
 	void drawYLabel(Graphics g, String yLabel, int x, int y, int height) {
+		if (yLabel.equals(""))
+			return;
 		if(fm==null)
 			fm = g.getFontMetrics();
 		int w =  fm.stringWidth(yLabel);

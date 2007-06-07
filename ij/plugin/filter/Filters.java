@@ -12,7 +12,7 @@ public class Filters implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
-		return DOES_ALL+DOES_STACKS+SUPPORTS_MASKING;
+		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {

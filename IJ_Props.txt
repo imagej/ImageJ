@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.20
+# Version 1.21
 
 # Popup Menu
 popup01=Undo
@@ -64,18 +64,19 @@ stacks02="Delete Slice",ij.plugin.StackEditor("delete")
 stacks03="Next Slice [>]",ij.plugin.Animator("next")
 stacks04="Previous Slice [<]",ij.plugin.Animator("previous")
 stacks05=-
-stacks06="Convert Images to Stack",ij.plugin.StackEditor("convert")
-stacks07="Convert Stack to RGB",ij.plugin.RGBStackConverter
-stacks08="Make Montage...",ij.plugin.MontageMaker
-stacks09="Reslice [/]...",ij.plugin.Slicer
-stacks10="ZProject...",ij.plugin.ZProjector
-stacks11="Render...",ij.plugin.filter.Projector
-stacks12="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks13="Save Slices as Files...",ij.plugin.StackWriter
-stacks14=-
-stacks15="Start Animation [=]",ij.plugin.Animator("start")
-stacks16="Stop Animation",ij.plugin.Animator("stop")
-stacks17="Animation Options...",ij.plugin.Animator("options")
+stacks06="Convert Images to Stack",ij.plugin.StackEditor("tostack")
+stacks07="Convert Stack to Images",ij.plugin.StackEditor("toimages")
+stacks08="Convert Stack to RGB",ij.plugin.RGBStackConverter
+stacks09="Make Montage...",ij.plugin.MontageMaker
+stacks10="Reslice [/]...",ij.plugin.Slicer
+stacks11="Z Project...",ij.plugin.ZProjector
+stacks12="3D Project...",ij.plugin.filter.Projector
+stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
+stacks14="Save Slices as Files...",ij.plugin.StackWriter
+stacks15=-
+stacks16="Start Animation [=]",ij.plugin.Animator("start")
+stacks17="Stop Animation",ij.plugin.Animator("stop")
+stacks18="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Rotate submenu
 rotate01="Flip Horizonal",ij.plugin.filter.Transformer("fliph")
@@ -95,18 +96,24 @@ benchmarks07="Particles...",ij.plugin.filter.Benchmark("particles")
 benchmarks08="Macro 1",ij.plugin.filter.Macro1
 benchmarks09="Macro 2",ij.plugin.filter.Macro2
 
-# Plugins installed in the Image/Color Tables submenu
-color01="Fire",ij.plugin.LutLoader("fire")
-color02="Grays",ij.plugin.LutLoader("grays")
-color03="Ice",ij.plugin.LutLoader("ice")
-color04="Spectrum",ij.plugin.LutLoader("spectrum")
-color05="3-3-2 RGB",ij.plugin.LutLoader("3-3-2 RGB")
-color06="Red",ij.plugin.LutLoader("red")
-color07="Green",ij.plugin.LutLoader("green")
-color08="Blue",ij.plugin.LutLoader("blue")
-color09="Red/Green",ij.plugin.LutLoader("redgreen")
-color10=-
-color11="Invert LUT",ij.plugin.LutLoader("invert")
+# Plugins installed in the Image/Lookup Tables submenu
+lookup01="Fire",ij.plugin.LutLoader("fire")
+lookup02="Grays",ij.plugin.LutLoader("grays")
+lookup03="Ice",ij.plugin.LutLoader("ice")
+lookup04="Spectrum",ij.plugin.LutLoader("spectrum")
+lookup05="3-3-2 RGB",ij.plugin.LutLoader("3-3-2 RGB")
+lookup06="Red",ij.plugin.LutLoader("red")
+lookup07="Green",ij.plugin.LutLoader("green")
+lookup08="Blue",ij.plugin.LutLoader("blue")
+lookup09="Red/Green",ij.plugin.LutLoader("redgreen")
+lookup10=-
+lookup11="Invert LUT",ij.plugin.LutLoader("invert")
+
+# Plug-ins installed in the Process/Noise submenu
+noise01="Add Noise",ij.plugin.filter.Filters("add")
+noise02="Add More Noise",ij.plugin.filter.Filters("addmore")
+noise03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
+noise04="Despeckle",ij.plugin.filter.Filters("median")
 
 # Plugins installed in the Process/Shadows submenu
 shadows01="North",ij.plugin.filter.Shadows("north")
@@ -120,18 +127,21 @@ shadows08="Northwest",ij.plugin.filter.Shadows("northwest")
 shadows09=-
 shadows10="Shadows Demo",ij.plugin.filter.Shadows("demo")
 
-# Plugins installed in the Process/Morphology submenu
-morphology01="Threshold",ij.plugin.filter.Filters("threshold")
-morphology02=-
-morphology03="Erode",ij.plugin.filter.Binary("erode")
-morphology04="Dilate",ij.plugin.filter.Binary("dilate")
-morphology05="Open",ij.plugin.filter.Binary("open")
+# Plugins installed in the Process/Binary submenu
+binary01="Threshold",ij.plugin.filter.Filters("threshold")
+binary02=-
+binary03="Erode",ij.plugin.filter.Binary("erode")
+binary04="Dilate",ij.plugin.filter.Binary("dilate")
+binary05="Open",ij.plugin.filter.Binary("open")
 # Can't use "Close" because it conflicts with File/Close
-morphology06="Close-",ij.plugin.filter.Binary("close")
-morphology07="Set Iterations...",ij.plugin.filter.Binary("set")
-morphology08=-
-morphology09="Outline",ij.plugin.filter.Binary("outline")
-morphology10="Skeletonize",ij.plugin.filter.Binary("skel")
+binary06="Close-",ij.plugin.filter.Binary("close")
+binary07="Set Iterations...",ij.plugin.filter.Binary("set")
+binary08=-
+binary09="Outline",ij.plugin.filter.Binary("outline")
+binary10="Skeletonize",ij.plugin.filter.Binary("skel")
+binary11=-
+binary12="Distance Map",ij.plugin.filter.EDM("edm")
+binary13="Ultimate Points",ij.plugin.filter.EDM("points")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")
@@ -141,15 +151,14 @@ math04="Divide...",ij.plugin.filter.ImageMath("div")
 math05="AND...",ij.plugin.filter.ImageMath("and")
 math06="OR...",ij.plugin.filter.ImageMath("or")
 math07="XOR...",ij.plugin.filter.ImageMath("xor")
-math08="Gamma...",ij.plugin.filter.ImageMath("gamma")
-math09="Log",ij.plugin.filter.ImageMath("log")
-math10="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
+math08="Min...",ij.plugin.filter.ImageMath("min")
+math09="Max...",ij.plugin.filter.ImageMath("max")
+math10="Gamma...",ij.plugin.filter.ImageMath("gamma")
+math11="Log",ij.plugin.filter.ImageMath("log")
+math12="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
 
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver
-filters02="Add Noise",ij.plugin.filter.Filters("add")
-filters03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
-filters04="Despeckle",ij.plugin.filter.Filters("median")
 
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")
@@ -170,9 +179,10 @@ tools04="Do Curve Fitting...",ij.plugin.frame.Fitter
 # Plugins installed in the Plugins menu
 plug-in01=>"Shortcuts"
 plug-in02=>"Utilities"
-plug-in03="Edit...",ij.plugin.Compiler("edit")
-plug-in04="Compile and Run...",ij.plugin.Compiler
-plug-in05=-
+plug-in03="New... ",ij.plugin.NewPlugin
+plug-in04="Edit...",ij.plugin.Compiler("edit")
+plug-in05="Compile and Run...",ij.plugin.Compiler
+plug-in06=-
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Panel...[P]",ij.plugin.frame.ControlPanel
@@ -180,7 +190,8 @@ utilities02="List Threads...",ij.plugin.ThreadLister
 utilities03="List Java Properties...",ij.plugin.JavaProperties
 utilities04="List Commands...",ij.plugin.CommandLister
 utilities05="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
-utilities06="Monitor Memory...",ij.plugin.MemoryMonitor
+utilities06="Unlock Image",ij.plugin.Unlocker
+utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
 
 # Plugins installed in the Plugins/Shortcuts submenu
 shortcuts01="Create Shortcut... ",ij.plugin.Hotkeys("install")

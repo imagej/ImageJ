@@ -24,9 +24,9 @@ public class Binary implements PlugInFilter {
 					return DONE;
 				}
 			}
-			return DOES_8G+DOES_8C+DOES_STACKS+SUPPORTS_MASKING;
+			return IJ.setupDialog(imp, DOES_8G+DOES_8C+SUPPORTS_MASKING);
 		} else
-			return DOES_8G+DOES_8C+DOES_RGB+DOES_STACKS+SUPPORTS_MASKING;
+			return IJ.setupDialog(imp, DOES_8G+DOES_8C+DOES_RGB+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
