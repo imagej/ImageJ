@@ -128,4 +128,5 @@ public class TextWindow extends Frame {
 			textPanel.flush();
 		}
 	}
+
 }

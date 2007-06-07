@@ -1,20 +1,24 @@
 package ij.gui;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import ij.*;
+import ij.plugin.frame.Recorder;
 
 /** This class is a customizable modal dialog box. */
-public class GenericDialog extends Dialog implements ActionListener {
+public class GenericDialog extends Dialog implements ActionListener,
+TextListener, FocusListener, ItemListener {
 	/** Maximum number of each component (numeric field, checkbox, etc). */
 	public static final int MAX_ITEMS = 20;
-	private TextField[] numberField;
 	private double[] defaultValues;
 	private String[] defaultText;
-	private TextField[] stringField;
-	private Checkbox[] checkbox;
-	private Choice[] choice;
+	protected TextField[] numberField;
+	protected TextField[] stringField;
+	protected Checkbox[] checkbox;
+	protected Choice[] choice;
+	protected Component theLabel;
+	protected TextArea textArea1,textArea2;
 	private Button cancel, okay;
-	private TextArea textArea1,textArea2;
     private boolean wasCanceled;
     private int y;
     private int nfIndex;
@@ -29,15 +33,15 @@ public class GenericDialog extends Dialog implements ActionListener {
 	private boolean firstChoice = true;
 	private boolean invalidNumber;
 	private boolean firstPaint = true;
+	private Hashtable labels;
+	private boolean macro;
+	private String macroOptions;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	window as the parent frame or the ImageJ frame if no image windows are open. */
 	public GenericDialog(String title) {
-		super(WindowManager.getCurrentImage()!=null?(Frame)WindowManager.getCurrentImage().getWindow():
-			IJ.getInstance(), title, true);
-		grid = new GridBagLayout();
-		c = new GridBagConstraints();
-		setLayout(grid);
+		this(title, WindowManager.getCurrentImage()!=null?
+			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance());
 	}
 
     /** Creates a new GenericDialog using the specified title and parent frame. */
@@ -46,6 +50,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 		grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);
+		macroOptions = Macro.getOptions();
+		macro = macroOptions!=null;
     }
     
 	//void showFields(String id) {
@@ -80,6 +86,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 		}
 		numberField[nfIndex] = new TextField(IJ.d2s(defaultValue, digits), 6);
 		numberField[nfIndex].addActionListener(this);
+		numberField[nfIndex].addTextListener(this);
+		numberField[nfIndex].addFocusListener(this);
 		defaultValues[nfIndex] = defaultValue;
 		defaultText[nfIndex] = numberField[nfIndex].getText();
 		c.gridx = 1; c.gridy = y;
@@ -89,6 +97,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 		if (firstNumericField) numberField[nfIndex].selectAll();
 		firstNumericField = false;
 		add(numberField[nfIndex]);
+		if (Recorder.record || macro)
+			saveLabel(numberField[nfIndex], label);
 		y++; nfIndex++;
     }
     
@@ -96,6 +106,12 @@ public class GenericDialog extends Dialog implements ActionListener {
     	if (IJ.isMacintosh())
     		label += " ";
 		return new Label(label);
+    }
+    
+    private void saveLabel(Component component, String label) {
+    	if (labels==null)
+    		labels = new Hashtable();
+		labels.put(component, label);
     }
     
 	/** Adds an 8 column text field.
@@ -127,11 +143,15 @@ public class GenericDialog extends Dialog implements ActionListener {
 			stringField = new TextField[MAX_ITEMS];
 		stringField[sfIndex] = new TextField(defaultText, columns);
 		stringField[sfIndex].addActionListener(this);
+		stringField[sfIndex].addTextListener(this);
+		stringField[sfIndex].addFocusListener(this);
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(stringField[sfIndex], c);
 		stringField[sfIndex].setEditable(true);
 		add(stringField[sfIndex]);
+		if (Recorder.record || macro)
+			saveLabel(stringField[sfIndex], label);
 		y++; sfIndex++;
     }
     
@@ -153,8 +173,11 @@ public class GenericDialog extends Dialog implements ActionListener {
 		firstCheckbox = false;
 		grid.setConstraints(checkbox[cbIndex], c);
 		checkbox[cbIndex].setState(defaultValue);
+		checkbox[cbIndex].addItemListener(this);
 		add(checkbox[cbIndex]);
 		//ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
+		if (Recorder.record || macro)
+			saveLabel(checkbox[cbIndex], label);
 		y++; cbIndex++;
     }
     
@@ -180,6 +203,8 @@ public class GenericDialog extends Dialog implements ActionListener {
 				index[i1] = i2;
 				checkbox[cbIndex] = new Checkbox(labels[i1]);
 				checkbox[cbIndex].setState(defaultValues[i1]);
+				if (Recorder.record || macro)
+					saveLabel(checkbox[cbIndex], labels[i1]);
 				cbIndex++;
  				i1++;
 			}
@@ -222,12 +247,13 @@ public class GenericDialog extends Dialog implements ActionListener {
 		grid.setConstraints(choice[choiceIndex], c);
 		firstChoice = false;
 		add(choice[choiceIndex]);
+		if (Recorder.record || macro)
+			saveLabel(choice[choiceIndex], label);
 		y++; choiceIndex++;
     }
     
     /** Adds a message consisting of one or more lines of text. */
     public void addMessage(String text) {
-    	Component theLabel;
     	if (text.indexOf('\n')>=0)
 			theLabel = new MultiLineLabel(text);
 		else
@@ -270,34 +296,70 @@ public class GenericDialog extends Dialog implements ActionListener {
     
 	/** Returns true if the user clicks on "Cancel". */
     public boolean wasCanceled() {
+    	if (wasCanceled)
+    		Macro.abort();
     	return wasCanceled;
     }
     
 	/** Returns the contents of the next numeric field. */
    public double getNextNumber() {
-		Double d;
 		if (numberField==null||numberField[nfIndex]==null)
 			return -1.0;
 		String theText = numberField[nfIndex].getText();
+		if (macro) {
+			String label = (String)labels.get((Object)numberField[nfIndex]);
+			theText = Macro.getValue(macroOptions, label, theText);
+			//IJ.write("getNextNumber: "+label+"  "+theText);
+		}	
 		String originalText = defaultText[nfIndex];
 		double defaultValue = defaultValues[nfIndex];
-		nfIndex++;
+		double value;
 		if (theText.equals(originalText))
-			return defaultValue;
-		try {d = new Double(theText);}
-		catch (NumberFormatException e){
-			//numberField[nfIndex].setText(""+xScale);
-			d = null;
-		}
-		if (d!=null)
-			return(d.doubleValue());
+			value = defaultValue;
 		else {
-			invalidNumber = true;
-			return 0.0;
+			Double d = getValue(theText);
+			if (d!=null)
+				value = d.doubleValue();
+			else {
+				invalidNumber = true;
+				value = 0.0;
+			}
 		}
+		if (Recorder.record)
+			recordOption(numberField[nfIndex], trim(theText));
+		nfIndex++;
+		return value;
     }
     
- 	/** Returns true if one or more of the numeric fields contained an invalid number. */
+	private String trim(String value) {
+		if (value.endsWith(".0"))
+			value = value.substring(0, value.length()-2);
+		if (value.endsWith(".00"))
+			value = value.substring(0, value.length()-3);
+		return value;
+	}
+
+	private void recordOption(Component component, String value) {
+		String label = (String)labels.get((Object)component);
+		Recorder.recordOption(label, value);
+	}
+
+	private void recordCheckboxOption(Checkbox cb) {
+		String label = (String)labels.get((Object)cb);
+		if (cb.getState() && label!=null)
+			Recorder.recordOption(label);
+	}
+
+ 	protected Double getValue(String theText) {
+ 		Double d;
+ 		try {d = new Double(theText);}
+		catch (NumberFormatException e){
+			d = null;
+		}
+		return d;
+	}
+
+	/** Returns true if one or more of the numeric fields contained an invalid number. */
    public boolean invalidNumber() {
     	boolean wasInvalid = invalidNumber;
     	invalidNumber = false;
@@ -306,35 +368,72 @@ public class GenericDialog extends Dialog implements ActionListener {
     
   	/** Returns the contents of the next text field. */
    public String getNextString() {
-		Double d;
-		if (stringField==null||stringField[sfIndex]==null)
+   		String theText;
+		if (stringField!=null||stringField[sfIndex]!=null) {
+			theText = stringField[sfIndex].getText();
+			if (macro) {
+				String label = (String)labels.get((Object)stringField[sfIndex]);
+				theText = Macro.getValue(macroOptions, label, theText);
+				//IJ.write("getNextString: "+label+"  "+theText);
+			}	
+		} else
 			return "";
-		else
-			return stringField[sfIndex++].getText();
+		if (Recorder.record)
+			recordOption(stringField[sfIndex], theText);
+		sfIndex++;
+		return theText;
     }
     
   	/** Returns the state of the next checkbox. */
     public boolean getNextBoolean() {
 		if (checkbox==null||checkbox[cbIndex]==null)
 			return false;
-		else
-			return checkbox[cbIndex++].getState();
+		if (Recorder.record)
+			recordCheckboxOption(checkbox[cbIndex]);
+		boolean state = checkbox[cbIndex].getState();
+		if (macro) {
+			String label = (String)labels.get((Object)checkbox[cbIndex]);
+			String key = Macro.trimKey(label);
+			state = macroOptions.indexOf(key+" ")>=0;
+			//IJ.write("getNextBoolean: "+label+"  "+state);
+		}
+		cbIndex++;
+		return state;
     }
     
   	/** Returns the selected item in the next popup menu. */
     public String getNextChoice() {
 		if (choice==null || choice[choiceIndex]==null)
 			return "";
-		else
-			return choice[choiceIndex++].getSelectedItem();
+		String item = choice[choiceIndex].getSelectedItem();
+		if (macro) {
+			String label = (String)labels.get((Object)choice[choiceIndex]);
+			item = Macro.getValue(macroOptions, label, item);
+			//IJ.write("getNextChoice: "+label+"  "+item);
+		}	
+		if (Recorder.record)
+			recordOption(choice[choiceIndex++], item);
+		choiceIndex++;
+		return item;
     }
     
   	/** Returns the index of the selected item in the next popup menu. */
     public int getNextChoiceIndex() {
 		if (choice==null || choice[choiceIndex]==null)
 			return -1;
-		else
-			return choice[choiceIndex++].getSelectedIndex();
+		int index = choice[choiceIndex].getSelectedIndex();
+		if (macro) {
+			String label = (String)labels.get((Object)choice[choiceIndex]);
+			String item = choice[choiceIndex].getSelectedItem();
+			item = Macro.getValue(macroOptions, label, item);
+			choice[choiceIndex].select(item);
+			index = choice[choiceIndex].getSelectedIndex();
+			//IJ.write("getNextChoiceIndex: "+label+"  "+item);
+		}	
+		if (Recorder.record)
+			recordOption(choice[choiceIndex], choice[choiceIndex].getSelectedItem());
+		choiceIndex++;
+		return index;
     }
     
   	/** Returns the contents of the next text area. */
@@ -355,6 +454,15 @@ public class GenericDialog extends Dialog implements ActionListener {
 
   	/** Displays this dialog box. */
     public void showDialog() {
+		nfIndex = 0;
+		sfIndex = 0;
+		cbIndex = 0;
+		choiceIndex = 0;
+		if (macro) {
+			//IJ.write("showDialog: "+macroOptions);
+			dispose();
+			return;
+		}
     	if (stringField!=null&&stringField[0]!=null&&numberField==null)
     		stringField[0].selectAll();
 		Panel buttons = new Panel();
@@ -371,25 +479,43 @@ public class GenericDialog extends Dialog implements ActionListener {
 		c.insets = new Insets(20, 0, 0, 0);
 		grid.setConstraints(buttons, c);
 		add(buttons);
-		nfIndex = 0;
-		sfIndex = 0;
-		cbIndex = 0;
-		choiceIndex = 0;
 		pack();
+		setup();
 		GUI.center(this);
 		setVisible(true);
 		IJ.wait(250); // work around for Sun/WinNT bug
-  }
+  	}
     
+	protected void setup() {
+	}
+
 	public void actionPerformed(ActionEvent e) {
 		wasCanceled = (e.getSource()==cancel);
 		setVisible(false);
 		dispose();
 	}
 
-    public Insets getInsets() {
+	public void textValueChanged(TextEvent e) {
+	}
+
+	public void itemStateChanged(ItemEvent e) {
+	}
+
+	public void focusGained(FocusEvent e) {
+		Component c = e.getComponent();
+		if (c instanceof TextField)
+			((TextField)c).selectAll();
+	}
+
+	public void focusLost(FocusEvent e) {
+		Component c = e.getComponent();
+		if (c instanceof TextField)
+			((TextField)c).select(0,0);
+	}
+
+	public Insets getInsets() {
     	return new Insets(40, 20, 20, 20);
-    }
+	}
 
     public void paint(Graphics g) {
     	super.paint(g);

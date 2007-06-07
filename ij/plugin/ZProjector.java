@@ -26,7 +26,12 @@ public class ZProjector implements PlugIn {
 
     private static final int BYTE_TYPE  = 0; 
     private static final int SHORT_TYPE = 1; 
-    private static final int FLOAT_TYPE = 2; 
+    private static final int FLOAT_TYPE = 2;
+    
+    public static final String lutMessage =
+    	"Stacks with inverter LUTs may not project correctly.\n"
+    	+"To create a standard LUT, invert the stack (Edit/Invert)\n"
+    	+"and invert the LUT (Image/Lookup Tables/Invert LUT)."; 
 
     /** Image to hold z-projection. */
     private ImagePlus projImage = null; 
@@ -92,6 +97,12 @@ public class ZProjector implements PlugIn {
 	    	return; 
 		}
 	
+		//  Check for inverted LUT.
+		if(imp.getProcessor().isInvertedLut()) {
+	    	if (!IJ.showMessageWithCancel("ZProjection", lutMessage))
+	    		return; 
+		}
+
 		// Set default bounds.
 		startSlice = 1; 
 		stopSlice  = imp.getStackSize(); 

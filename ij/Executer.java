@@ -9,6 +9,7 @@ import ij.io.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.*;
+import ij.plugin.frame.Recorder;
 
 /** Runs menu commands in a separate thread.*/
 public class Executer implements Runnable {
@@ -22,7 +23,7 @@ public class Executer implements Runnable {
 	
 	/** Create an Executer to run the specified menu command
 		in this thread using the active image. */
-	Executer(String cmd) {
+	public Executer(String cmd) {
 		command = cmd;
 		iplus = WindowManager.getCurrentImage();
 		ij = IJ.getInstance();
@@ -30,7 +31,7 @@ public class Executer implements Runnable {
 
 	/** Create an Executer that runs the specified menu command
 		in a separate thread using the specified image. */
-	Executer(String cmd, ImagePlus imp) {
+	public Executer(String cmd, ImagePlus imp) {
 		iplus = imp;
 		if (cmd.startsWith("Repeat"))
 			command = previousCommand;
@@ -50,13 +51,22 @@ public class Executer implements Runnable {
 		if (command==null) return;
 		ImagePlus imp = iplus;
 		iplus = null; // maybe this will help get the image GC'd
-		try {runCommand(command, imp);}
-		catch(Throwable e) {
+		try {
+			if (Recorder.record) {
+				Recorder.setCommand(command);
+				runCommand(command, imp);
+				Recorder.saveCommand();
+			} else
+				runCommand(command, imp);
+		} catch(Throwable e) {
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
 			if (imp!=null) imp.unlock();
+			String msg = e.getMessage();
 			if (e instanceof OutOfMemoryError)
 				IJ.outOfMemory(command);
+			else if (e instanceof RuntimeException && msg!=null && msg.equals("Macro canceled"))
+				; //do nothing
 			else {
 				CharArrayWriter caw = new CharArrayWriter();
 				PrintWriter pw = new PrintWriter(caw);
@@ -119,8 +129,6 @@ public class Executer implements Runnable {
 			{if (win!=null) imp.setRoi(0,0,imp.getWidth(),imp.getHeight()); else IJ.noImage();}
 		else if (cmd.equals("Select None"))
 			{if (win!=null) imp.killRoi(); else IJ.noImage();}
-		else if (isConversionCommand(cmd))
-			{if (win!=null) new Converter(imp).convert(cmd); else IJ.noImage();}
 		else if (cmd.equals("Histogram"))
 			{if (win!=null) {new HistogramWindow(imp);} else IJ.noImage();}
 		else if (cmd.startsWith("Restore"))
@@ -128,17 +136,10 @@ public class Executer implements Runnable {
 		else if (cmd.equals("Undo"))
 			{if (win!=null) Undo.undo(); else IJ.noImage();}
 		else
-			//runFilter(cmd);
 	 		IJ.error("Unrecognized command: " + cmd);
 		if (imp!=null)
 			imp.unlock();
     }
-
-	private boolean isConversionCommand(String cmd) {
-		return (cmd.equals("8-bit") || cmd.equals("16-bit")
-			|| cmd.equals("32-bit") || cmd.equals("8-bit Color")
-			|| cmd.equals("RGB Color") || cmd.equals("RGB Stack") || cmd.equals("HSB Stack"));
-	}
 
 	void runPlugIn(String cmd, String className) {
 		String arg = "";

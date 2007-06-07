@@ -92,16 +92,6 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 	void save() {
 		if (path==null)
 			return;
-		//try   {
-		//	FileWriter out = new FileWriter(path);
-		//	String text = ta.getText();
-		//	out.write(text);
-		//	out.close();
-		//	changes = false;
-		//}   catch (IOException e) {
-		//	IJ.error(e.getMessage());
-		//	return;
-		//}
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
 		text.getChars(0, text.length(), chars, 0);
@@ -150,15 +140,16 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		changes = true;
 	}
 
-	public void processWindowEvent(WindowEvent e) {
-		boolean canceled = true;
-		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
-			if (getTitle().equals("Errors") || close()) {	
-				setVisible(false);
-				dispose();
-			}
-		} else
-			super.processWindowEvent(e);
+    /** Override windowActivated in PlugInFrame to
+    	prevent Mac meno bar from being installed. */
+    public void windowActivated(WindowEvent e) {
+	}
+
+    public void windowClosing(WindowEvent e) {
+		if (getTitle().equals("Errors") || close()) {	
+			setVisible(false);
+			dispose();
+		}
 	}
 
 	boolean close() {
@@ -174,19 +165,37 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 	}
 
 	void saveAs() {
-		FileDialog fd = new FileDialog(this, "Save As...", FileDialog.SAVE);
-		fd.setFile(getTitle());
+		FileDialog fd = new FileDialog(this, "Save Plugin As...", FileDialog.SAVE);
+		String name1 = getTitle();
+		fd.setFile(name1);
 		fd.setDirectory(Menus.getPlugInsPath());
 		fd.setVisible(true);
-		String name = fd.getFile();
+		String name2 = fd.getFile();
 		String dir = fd.getDirectory();
 		fd.dispose();
-		if (name!=null) {
-			path = dir+name;
+		if (name2!=null) {
+			updateClassName(name1, name2);
+			path = dir+name2;
 			save();
 			changes = false;
-			setTitle(name);
+			setTitle(name2);
 		}
+	}
+	
+	void updateClassName(String oldName, String newName) {
+		if (newName.indexOf("_")<0)
+			IJ.showMessage("Plugin Editor", "Plugins without an underscore in their name will not\n"
+				+"be automatically installed when ImageJ is restarted.");
+		if (oldName.equals(newName) || !oldName.endsWith(".java") || !newName.endsWith(".java"))
+			return;
+		oldName = oldName.substring(0,oldName.length()-5);
+		newName = newName.substring(0,newName.length()-5);
+		String text1 = ta.getText();
+		int index = text1.indexOf("public class "+oldName);
+		if (index<0)
+			return;
+		String text2 = text1.substring(0,index+13)+newName+text1.substring(index+13+oldName.length(),text1.length());
+		ta.setText(text2);
 	}
 	
 	void find(String s) {

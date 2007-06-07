@@ -46,9 +46,11 @@ public class Compiler implements PlugIn, FilenameFilter {
 				javac = new sun.tools.javac.Main(output, "javac");
 			}
 		} catch (NoClassDefFoundError e) {
-			IJ.error("This JVM does not appear to include a javac compiler. Javac is\n"
-					+"included with the JDKs from Sun and with Apple's Java SDK. With\n"
- 					+"JDK 1.2 and later, the tools.jar file must be in the classpath.");
+			IJ.error("This JVM appears not to include the javac compiler. Javac\n"
+				+"is included with the JRE 1.1.8 bundled with the Windows and\n"
+ 				+"Linux versions of ImageJ. Mac OS 9 users must install Apple's\n"
+ 				+"Java SDK. When using JDK 1.2 and later, the tools.jar file\n"
+ 				+"must be added to the command line that runs ImageJ.");
  			return false;
 		}
 		return true;
@@ -157,6 +159,9 @@ class PlugInExecuter implements Runnable {
 			IJ.showProgress(1.0);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) imp.unlock();
+			String msg = e.getMessage();
+			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals("Macro canceled"))
+				return;
 			CharArrayWriter caw = new CharArrayWriter();
 			PrintWriter pw = new PrintWriter(caw);
 			e.printStackTrace(pw);

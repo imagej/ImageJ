@@ -103,11 +103,16 @@ public class ImagePlus implements ImageObserver, Measurements {
    		ID = --currentID;
     }
     
-    /** Constructs an ImagePlus from a TIFF, ZIP compressed TIFF, 
-    	GIF or JPEG specified by a URL. */
-    public ImagePlus(String url) {
+	/** Constructs an ImagePlus from a TIFF, BMP, DICOM, FITS,
+		PGM, GIF or JPRG specified by a path or from a TIFF,
+		GIF or JPEG specified by a URL. */
+    public ImagePlus(String pathOrURL) {
     	Opener opener = new Opener();
-    	ImagePlus imp = opener.openURL(url);
+    	ImagePlus imp = null;
+    	if (pathOrURL.indexOf("://")>0)
+    		imp = opener.openURL(pathOrURL);
+    	else
+    		imp = opener.openImage(pathOrURL);
     	if (imp!=null) {
     		if (imp.getStackSize()>1)
     			setStack(imp.getTitle(), imp.getStack());
@@ -132,6 +137,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
+			if (IJ.macroRunning()) {
+				IJ.error("Image is locked");
+				Macro.abort();
+			}
 			return false;
         } else {
         	locked = true;
@@ -331,8 +340,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
 		roi = null;
-		//if (stack!=null && stack.getSize()<2)
-		//	stack = null;
+		if (stack!=null && stack.getSize()<currentSlice)
+			currentSlice = 1;
 		img = ip.createImage();
 		boolean newSize = width!=ip.getWidth() || height!=ip.getHeight();
 		//LookUpTable lut = new LookUpTable(img);
@@ -351,13 +360,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			setType(type);
 		width = ip.getWidth();
 		height = ip.getHeight();
-		if (win!=null && newSize) {
-			 // replaces this window
-			//if (getStackSize()>1)
-			//	win = new StackWindow(this);
-			//else
+		if (win!=null && newSize)
 				win = new ImageWindow(this);
-		}
 	}
 	
 	/** Replaces the stack, if any, with the one specified.
@@ -367,6 +371,9 @@ public class ImagePlus implements ImageObserver, Measurements {
     	ImageProcessor processor = stack.getProcessor(currentSlice);
     	this.stack = stack;
     	setProcessor(title, processor);
+			 // replaces this window
+		if (stack.getSize()>1 && win!=null && !(win instanceof StackWindow))
+			win = new StackWindow(this);
     	if (win!=null && win instanceof StackWindow)
     		((StackWindow)win).showSlice(1);
     }
@@ -445,11 +452,41 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void killProcessor() {
 	}
 	
+	private Rectangle maskRect;
+	private int maskCount;
+	
+	/** For images with irregular ROIs, returns a binary mask, otherwise, returns
+		null. Pixels inside the mask have a value of ImageProcessor.BLACK. */
 	public int[] getMask () {
-		if (roi!=null && roi.getType()<Roi.LINE)
-			return roi.getMask();
-		else
-			return null;
+		int[] mask = null;
+		if (roi!=null && roi.getType()<Roi.LINE) {
+			if (ip!=null) {
+				mask = ip.getMask();
+				if (mask!=null) {
+					Rectangle r = roi.getBoundingRect();
+					if (maskRect==null || r.width!=maskRect.width || r.height!=maskRect.height)
+						mask = null;
+				if (roi instanceof PolygonRoi && maskCount!=((PolygonRoi)roi).getNCoordinates())
+					mask = null;
+				}
+			}
+			if (mask==null)
+				mask = roi.getMask();
+		}
+		if (ip!=null) {
+			if (roi!=null) {
+				ip.setRoi(roi.getBoundingRect());
+				ip.setMask(mask);
+				maskRect = roi.getBoundingRect();
+				if (roi instanceof PolygonRoi)
+					maskCount = ((PolygonRoi)roi).getNCoordinates();
+				else
+					maskCount = 0;
+
+			} else
+				ip.setMask(null);
+		}
+		return mask;
 	}
 
 	/** Returns an ImageStatistics object generated using the standard
@@ -471,6 +508,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 	*/
 	public ImageStatistics getStatistics(int mOptions, int nBins) {
 		setupProcessor();
+		//int[] mask = null;
+		//if (ip!=null)
+		//	mask = ip.getMask();
+		//if (mask==null)
+		//	mask = getMask();
 		ip.setMask(getMask());
 		ip.setHistogramSize(nBins);
 		ImageStatistics stats = ImageStatistics.getStatistics(ip, mOptions, getCalibration());
@@ -778,7 +820,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
     
-	void restoreRoi() {
+	public void restoreRoi() {
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
 			Rectangle r = pRoi.getBoundingRect();
@@ -1017,6 +1059,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
     }
     
+    public String toString() {
+    	return getTitle();
+    }
+
 }
 
 

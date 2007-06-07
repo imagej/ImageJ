@@ -92,8 +92,16 @@ ActionListener, ClipboardOwner {
 			x = x - frame.x;
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
-			double v = (cTable!=null&&cTable.length==256)?cTable[index]:stats.histMin+index*stats.binSize;
-			if (stats.binSize!=1.0) v += stats.binSize/2.0;
+			double v = 0.0;
+			if (cTable!=null && cTable.length==256)
+				v = cTable[index];
+			else if (cTable!=null && cTable.length==65536) {
+				int index2 = (int)(stats.histMin+index*stats.binSize+stats.binSize/2.0);
+				if (index2>=0&&index<65536) v = cTable[index2];
+			} else {
+				v = stats.histMin+index*stats.binSize;
+				if (stats.binSize!=1.0) v += stats.binSize/2.0;
+			}
 			if (v==(int)v)
 				value.setText("  Value: " + (int)v);
 			else
@@ -146,7 +154,7 @@ ActionListener, ClipboardOwner {
         y += 15;
         double hmin = stats.histMin;
         double hmax = stats.histMax;
-        if (cTable!=null && cTable.length==256) {
+        if (cTable!=null && (int)hmin>=0 && (int)hmax<cTable.length) {
         	hmin = cTable[(int)hmin];
         	hmax = cTable[(int)hmax];
         }
@@ -190,12 +198,16 @@ ActionListener, ClipboardOwner {
 
 	void showList() {
 		IJ.setColumnHeadings("value\tcount");
-		if (stats.binSize==1.0)
+		if (stats.binSize==1.0 && stats.nBins==256 )
 			for (int i=0; i<stats.nBins; i++)
 				IJ.write(i+"\t"+histogram[i]);
 		else
-			for (int i=0; i<stats.nBins; i++)
-				IJ.write(IJ.d2s(stats.histMin+i*stats.binSize+stats.binSize/2, decimalPlaces)+"\t"+histogram[i]);
+			for (int i=0; i<stats.nBins; i++) {
+				double v = stats.histMin+i*stats.binSize;
+				if (stats.binSize!=1.0)
+					v += stats.binSize/2;
+				IJ.write(IJ.d2s(v, decimalPlaces)+"\t"+histogram[i]);
+			}
 	}
 
 	void copyToClipboard() {

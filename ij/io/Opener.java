@@ -8,7 +8,7 @@ import java.util.zip.*;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.plugin.frame.Editor;
+import ij.plugin.frame.*;
 import ij.plugin.Zip_Reader;
 import ij.text.TextWindow;
 
@@ -33,14 +33,15 @@ public class Opener {
 		String name = od.getFileName();
 		if (name==null)
 			return;
-		IJ.showStatus("Opening: " + directory + name);
+		String path = directory + name;
+		IJ.showStatus("Opening: " + path);
 		showErrorDialog = true;
 		ImagePlus imp = openImage(directory, name);
 		if (imp!=null) imp.show();
 	}
 
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	pgm, gif, jpeg, bmp, lut or roi. Returns an ImagePlus object if successful. */
+	pgm, gif, jpeg, lut or roi. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
 		String path = directory+name;
@@ -89,6 +90,20 @@ public class Opener {
 			}
 		}
 	
+	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
+	pgm, gif, jpeg, lut or roi. Returns an ImagePlus object if successful. */
+	public ImagePlus openImage(String path) {
+		Opener o = new Opener();
+		ImagePlus img = null;
+		if (path==null || path.equals(""))
+			img = null;
+		else if (path.indexOf("://")>0)
+			img = o.openURL(path);
+		else
+			img = o.openImage(getDir(path), getName(path));
+		return img;
+	}
+
 	/** Attempts to open the specified url as a tiff, zip compressed tiff, 
 		gif or jpeg. Tiff file names must end in ".tif" and ZIP file names
 		must end in ".zip". Returns an ImagePlus object if successful. */
@@ -333,6 +348,26 @@ public class Opener {
 			return null;
 		}
 		return openTiff2(info);
+	}
+
+	public String getName(String path) {
+		int i = path.lastIndexOf('/');
+		if (i==-1)
+			i = path.lastIndexOf('\\');
+		if (i>0)
+			return path.substring(i+1);
+		else
+			return path;
+	}
+	
+	public String getDir(String path) {
+		int i = path.lastIndexOf('/');
+		if (i==-1)
+			i = path.lastIndexOf('\\');
+		if (i>0)
+			return path.substring(0, i+1);
+		else
+			return "";
 	}
 
 	ImagePlus openTiff2(FileInfo[] info) {

@@ -44,8 +44,6 @@ public class Equalizer implements PlugInFilter {
 			return;
 	
 		if (ip instanceof ShortProcessor) {	// Short
-			if (imp.getStackSize()>1)
-				return;
 			max = 65535;
 			range = 65535;
 		} else { //bytes

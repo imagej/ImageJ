@@ -50,6 +50,10 @@ class ColorGenerator extends ColorProcessor {
 		drawColor(0, 0, Color.black);
 		drawRamp();
 		drawColor(columns-1, 0, Color.white);
+		//setColor(Color.white);
+		//moveTo(15,0); lineTo(15,15);
+		//setColor(Color.black);
+		//moveTo(272,0); lineTo(272,15);
 		int x = 0;
 		int y = 1;
 		for (int i=0; i<colors.length; i++) {

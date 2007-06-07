@@ -18,9 +18,10 @@ public abstract class ImageProcessor extends Object {
 	public static final double NO_THRESHOLD = -808080.0;
 	
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2;
-	static final int INVERT = 0, FILL = 1, ADD = 2, MULT = 3, AND = 4, OR = 5, XOR = 6, GAMMA = 7, LOG = 8;
+	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
+		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
-	static final double rWeight = 0.30, gWeight = 0.59, bWeight = 0.11;
+	static final double rWeight = 0.299, gWeight = 0.587, bWeight = 0.114;
 	
 	int fgColor = 0;
 	protected int lineWidth = 1;
@@ -172,35 +173,18 @@ public abstract class ImageProcessor extends Object {
 		if (inversionTested)
 			return invertedLut;
 		inversionTested = true;
-		if (cm==null)
+		if (cm==null || !(cm instanceof IndexColorModel))
 			return (invertedLut=false);
-
-		if (rLUT2!=null) {
-			invertedLut = true;
-			for (int i=1; i<255; i++)
-				if ((rLUT2[i-1]&0xff)<(rLUT2[i]&0xff))
-					{invertedLut = false; break;}
-			return invertedLut;
-		}
-
-   		IndexColorModel icm = (IndexColorModel)cm;
-		int mapSize = icm.getMapSize();
-		if (mapSize!=256)
-			return (invertedLut=false);
-		
-		byte[] rLUT = new byte[mapSize];
-    	icm.getReds(rLUT); 
-		int r1, r2;
-		
+		IndexColorModel icm = (IndexColorModel)cm;
 		invertedLut = true;
-		r1 = rLUT[0]&0xff;
-		for (int i=1; i<mapSize; i++) {
-			r2 = rLUT[i]&0xff;
-			if (r1<r2) {
+		int v1, v2;
+		for (int i=1; i<255; i++) {
+			v1 = icm.getRed(i-1)+icm.getGreen(i-1)+icm.getBlue(i-1);
+			v2 = icm.getRed(i)+icm.getGreen(i)+icm.getBlue(i);
+			if (v1<v2) {
 				invertedLut = false;
 				break;
 			}
-			r1 = r2;;
 		}
 		return invertedLut;
 	}
@@ -314,8 +298,11 @@ public abstract class ImageProcessor extends Object {
 			setRoi(roi.x, roi.y, roi.width, roi.height);
 	}
 
-	/** Defines a rectangular region of interest and sets the mask to null. */
+	/** Defines a rectangular region of interest and sets the mask to 
+		null if this ROI is not the same size as the previous one. */
 	public void setRoi(int x, int y, int rwidth, int rheight) {
+		int oldWidth = roiWidth;
+		int oldHeight = roiHeight;
 		//find intersection of roi and this image
 		roiX = Math.max(0, x);
 		roiWidth = Math.min(width, x+rwidth)-roiX;
@@ -326,7 +313,8 @@ public abstract class ImageProcessor extends Object {
 		xMax = Math.min(roiX + roiWidth - 1, width - 2);
 		yMin = Math.max(roiY, 1);
 		yMax = Math.min(roiY + roiHeight - 1, height - 2);
-		mask = null;
+		if (roiWidth!=oldWidth || roiHeight!=oldHeight)
+			mask = null;
 	}
 
 	/** Returns a Rectangle that represents the current
@@ -402,6 +390,18 @@ public abstract class ImageProcessor extends Object {
 						v = 0;
 					else
 						v = (int)(Math.log(i) * SCALE);
+					break;
+				case MINIMUM:
+					if (i<value)
+						v = (int)value;
+					else
+						v = i;
+					break;
+				case MAXIMUM:
+					if (i>value)
+						v = (int)value;
+					else
+						v = i;
 					break;
 				 default:
 				 	v = i;
@@ -762,6 +762,9 @@ public abstract class ImageProcessor extends Object {
 	/** Adds 'value' to each pixel in the image or ROI. */
 	public void add(int value) {process(ADD, value);}
 	
+	/** Adds 'value' to each pixel in the image or ROI. */
+	public void add(double value) {process(ADD, value);}
+	
 	/** Multiplies each pixel in the image or ROI by 'value'. */
 	public void multiply(double value) {process(MULT, value);}
 	
@@ -779,6 +782,12 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Performs a log transform on the image or ROI. */
 	public void log() {process(LOG, 0.0);}
+
+	/** Pixels less than 'value' are set to 'value'. */
+	public void min(double value) {process(MINIMUM, value);}
+
+	/** Pixels greater than 'value' are set to 'value'. */
+	public void max(double value) {process(MAXIMUM, value);}
 
 	/** Returns a copy of this image is the form of an AWT Image. */
 	public abstract Image createImage();

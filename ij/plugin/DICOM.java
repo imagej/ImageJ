@@ -97,6 +97,9 @@ class DicomDecoder {
 	private static final int PIXEL_REPRESENTATION = 0x00280103;
 	private static final int TRANSFER_SYNTAX_UID = 0x00020010;
 	private static final int SLICE_SPACING = 0x00180088;
+	private static final int SAMPLES_PER_PIXEL = 0x00280002;
+	private static final int PHOTOMETRIC_INTERPRETATION = 0x00280004;
+	private static final int PLANAR_CONFIGURATION = 0x00280006;
 	private static final int NUMBER_OF_FRAMES = 0x00280008;
 	private static final int ROWS = 0x00280010;
 	private static final int COLUMNS = 0x00280011;
@@ -266,7 +269,10 @@ class DicomDecoder {
 		fi.offset = 0;
 		fi.intelByteOrder = true;
 		fi.fileType = FileInfo.GRAY16_UNSIGNED;
-		
+		int samplesPerPixel = 1;
+		int planarConfiguration = 0;
+		String photoInterpretation = "";
+				
 		f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		if (IJ.debugMode) {
 			IJ.write("");
@@ -288,76 +294,109 @@ class DicomDecoder {
 		}
 		
 		boolean inSequence = true;
+		boolean decodingTags = true;
 		
-		while (true) {
+		while (decodingTags) {
 			int tag = getNextTag();
 			if ((location&1)!=0) { // DICOM tags must be at even locations
 				oddLocations = true;
 				if (dicmFound)
 					break;
 			}
-			if (tag==TRANSFER_SYNTAX_UID) {
-				String s = getString(elementLength);
-				addInfo(tag, s);
-				if (s.indexOf("1.2.4")>-1||s.indexOf("1.2.5")>-1) {
-					f.close();
-					String msg = "ImageJ cannot open compressed DICOM images.\n \n";
-					msg += "Transfer Syntax UID = "+s;
-					throw new IOException(msg);
-				}
-			} else if (tag==NUMBER_OF_FRAMES) {
-				String s = getString(elementLength);
-				addInfo(tag, s);
-				double frames = s2d(s);
-				if (frames>1.0)
-					fi.nImages = (int)frames;
-			} else if (tag==ROWS) {
-				fi.height = getShort();
-				addInfo(tag, Integer.toString(fi.height));
-			} else if (tag==COLUMNS) {
-				fi.width = getShort();
-				addInfo(tag, Integer.toString(fi.width));
-			} else if (tag==PIXEL_SPACING) {
-				String scale = getString(elementLength);
-				getSpatialScale(fi, scale);
-				addInfo(tag, scale);
-			} else if (tag==SLICE_SPACING) {
-				String spacing = getString(elementLength);
-				fi.pixelDepth = s2d(spacing);
-				addInfo(tag, spacing);
-			} else if (tag==BITS_ALLOCATED) {
-				bitsAllocated = getShort();
-				if (bitsAllocated==8)
-					fi.fileType = FileInfo.GRAY8;
-				addInfo(tag, Integer.toString(bitsAllocated));
-			} else if (tag==PIXEL_REPRESENTATION) {
-				int pixelRepresentation = getShort();
-				if (pixelRepresentation==1)
-					fi.fileType = FileInfo.GRAY16_SIGNED;
-				addInfo(tag, Integer.toString(pixelRepresentation));
-			} else if (tag==RED_PALETTE) {
-				fi.reds = getLut(elementLength);
-				addInfo(tag, Integer.toString(elementLength/2));
-			} else if (tag==GREEN_PALETTE) {
-				fi.greens = getLut(elementLength);
-				addInfo(tag, Integer.toString(elementLength/2));
-			} else if (tag==BLUE_PALETTE) {
-				fi.blues = getLut(elementLength);
-				addInfo(tag, Integer.toString(elementLength/2));
-			} else if (tag==PIXEL_DATA && elementLength!=0) {
-				// Start of image data...
-				fi.offset = location;
-				addInfo(tag, Integer.toString(location));
-				break;
-			} else if (tag==0x7F880010 && elementLength!=0) {
-				// What is this? - RAK
-				fi.offset = location+4;
-				break;
-			} else {
-				// Not used, skip over it...
-				addInfo(tag, null);
+			String s;
+			switch (tag) {
+				case TRANSFER_SYNTAX_UID:
+					s = getString(elementLength);
+					addInfo(tag, s);
+					if (s.indexOf("1.2.4")>-1||s.indexOf("1.2.5")>-1) {
+						f.close();
+						String msg = "ImageJ cannot open compressed DICOM images.\n \n";
+						msg += "Transfer Syntax UID = "+s;
+						throw new IOException(msg);
+					}
+					break;
+				case NUMBER_OF_FRAMES:
+					s = getString(elementLength);
+					addInfo(tag, s);
+					double frames = s2d(s);
+					if (frames>1.0)
+						fi.nImages = (int)frames;
+					break;
+				case SAMPLES_PER_PIXEL:
+					samplesPerPixel = getShort();
+					addInfo(tag, samplesPerPixel);
+					break;
+				case PHOTOMETRIC_INTERPRETATION:
+					photoInterpretation = getString(elementLength);
+					addInfo(tag, photoInterpretation);
+					break;
+				case PLANAR_CONFIGURATION:
+					planarConfiguration = getShort();
+					addInfo(tag, planarConfiguration);
+					break;
+				case ROWS:
+					fi.height = getShort();
+					addInfo(tag, fi.height);
+					break;
+				case COLUMNS:
+					fi.width = getShort();
+					addInfo(tag, fi.width);
+					break;
+				case PIXEL_SPACING:
+					String scale = getString(elementLength);
+					getSpatialScale(fi, scale);
+					addInfo(tag, scale);
+					break;
+				case SLICE_SPACING:
+					String spacing = getString(elementLength);
+					fi.pixelDepth = s2d(spacing);
+					addInfo(tag, spacing);
+					break;
+				case BITS_ALLOCATED:
+					bitsAllocated = getShort();
+					if (bitsAllocated==8)
+						fi.fileType = FileInfo.GRAY8;
+					addInfo(tag, bitsAllocated);
+					break;
+				case PIXEL_REPRESENTATION:
+					int pixelRepresentation = getShort();
+					if (pixelRepresentation==1)
+						fi.fileType = FileInfo.GRAY16_SIGNED;
+					addInfo(tag, pixelRepresentation);
+					break;
+				case RED_PALETTE:
+					fi.reds = getLut(elementLength);
+					addInfo(tag, elementLength/2);
+					break;
+				case GREEN_PALETTE:
+					fi.greens = getLut(elementLength);
+					addInfo(tag, elementLength/2);
+					break;
+				case BLUE_PALETTE:
+					fi.blues = getLut(elementLength);
+					addInfo(tag, elementLength/2);
+					break;
+				case PIXEL_DATA:
+					// Start of image data...
+					if (elementLength!=0) {
+						fi.offset = location;
+						addInfo(tag, location);
+						decodingTags = false;
+					} else
+						addInfo(tag, null);
+					break;
+				case 0x7F880010:
+					// What is this? - RAK
+					if (elementLength!=0) {
+						fi.offset = location+4;
+						decodingTags = false;
+					}
+					break;
+				default:
+					// Not used, skip over it...
+					addInfo(tag, null);
 			}
-		} // while(true)
+		} // while(decodingTags)
 		
 		if (fi.fileType==FileInfo.GRAY8) {
 			if (fi.reds!=null && fi.greens!=null && fi.blues!=null
@@ -367,6 +406,13 @@ class DicomDecoder {
 				fi.lutSize = fi.reds.length;
 				
 			}
+		}
+				
+		if (samplesPerPixel==3 && photoInterpretation.startsWith("RGB")) {
+			if (planarConfiguration==0)
+				fi.fileType = FileInfo.RGB;
+			else if (planarConfiguration==1)
+				fi.fileType = FileInfo.RGB_PLANAR;
 		}
 		
 		if (IJ.debugMode) {
@@ -404,6 +450,10 @@ class DicomDecoder {
 			+ (location-elementLength)+") "
 			+ info);
 		}
+	}
+
+	void addInfo(int tag, int value) throws IOException {
+		addInfo(tag, Integer.toString(value));
 	}
 
 	String getHeaderInfo(int tag, String value) throws IOException {
@@ -693,7 +743,7 @@ class DicomDictionary {
 		"00181110=DSDistance Source to Detector",
 		"00181111=DSDistance Source to Patient",
 		"00181120=DSGantry/Detector Tilt",
-		"00181030=DSTable Height",
+		"00181130=DSTable Height",
 		"00181131=DSTable Traverse",
 		"00181140=CSRotation Direction",
 		"00181141=DSAngular Position",

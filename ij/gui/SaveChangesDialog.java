@@ -71,6 +71,8 @@ public class SaveChangesDialog extends Dialog implements ActionListener {
 	
 	/** Returns true if the user dismissed dialog by pressing "Cancel". */
 	public boolean cancelPressed() {
+		if (cancelPressed)
+			ij.Macro.abort();
 		return cancelPressed;
 	}
 

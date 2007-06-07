@@ -87,11 +87,9 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		IJ.showStatus(fontSize+" point "+fontName + " " + styleName);
 	}
 	
-	public void processWindowEvent(WindowEvent e) {
-		super.processWindowEvent(e);
-		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
-			instance = null;	
-		}
+    public void windowClosing(WindowEvent e) {
+		super.windowClosing(e);
+		instance = null;
 	}
 
 }

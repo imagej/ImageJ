@@ -1,7 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.text.*;
-import java.awt.Color;
+import java.awt.*;
 
 /** Displays the Java system properties in a text window. */
 public class JavaProperties implements PlugIn {
@@ -12,12 +12,12 @@ public class JavaProperties implements PlugIn {
 	
 		tw = new TextWindow("Properties", "", 300, 400);
 		tw.append("");
-		tw.append("Properties applets can read");
+		tw.append("Java properties applets can read:");
 		show("java.version");
 		show("java.vendor");
 		show("java.vendor.url");
 		show("java.class.version");
-		show("mrj.version");
+		if (IJ.isMacintosh()) show("mrj.version");
 		show("os.name");
 		show("os.arch");
 		show("file.separator");
@@ -43,13 +43,26 @@ public class JavaProperties implements PlugIn {
 		if (IJ.getApplet()!=null)
 			return;
 		tw.append("");
-		tw.append("Properties only applications can read");
+		tw.append("Java properties only applications can read:");
 		show("user.name");
 		show("user.home");
 		show("user.dir");
 		show("java.home");
 		show("java.compiler");
 		show("java.class.path");
+		
+		tw.append("");
+		tw.append("Other properties:");
+		String userDir = System.getProperty("user.dir");
+		String userHome = System.getProperty("user.home");
+		String osName = System.getProperty("os.name");
+		String prefsDir = osName.indexOf("Windows",0)>-1?userDir:userHome;
+		tw.append("  prefs dir: "+prefsDir);
+		tw.append("  plugins dir: "+Menus.getPlugInsPath());
+		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+		tw.append("  screen size: " + d.width + "x" + d.height);
+		String mem = IJ.freeMemory();
+		tw.append("  memory"+mem.substring(6,mem.length()));
 	}
 	
 	void show(String property) {

@@ -27,7 +27,7 @@ public class Undo {
 			imageCopy = imp.getImage();
 		else
 			imageCopy = null;
-		if (IJ.debugMode) IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
+		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
 	}
 	
 	
@@ -37,7 +37,7 @@ public class Undo {
 			imp.trimProcessor();
 		imp = null;
 		imageCopy = null;
-		if (IJ.debugMode) IJ.write("Undo: reset");
+		//if (IJ.debugMode) IJ.write("Undo: reset");
 	}
 	
 
@@ -53,7 +53,7 @@ public class Undo {
 			case TYPE_CONVERSION:
 				imp.setImage(imageCopy);
 		    	imp.repaintWindow();
-				if (IJ.debugMode) IJ.write(imp.getTitle() + ": undo type conversion");
+				//if (IJ.debugMode) IJ.write(imp.getTitle() + ": undo type conversion");
 	    		break;
 			case PASTE:
 				Roi roi = imp.getRoi();

@@ -137,8 +137,10 @@ public class Calibrator implements PlugInFilter, Measurements {
 		cal.setFunction(function, parameters, unit);
 		if (global)
 			imp.setGlobalCalibration(cal);
-		else
+		else {
 			imp.setCalibration(cal);
+			imp.setGlobalCalibration(null);
+		}
 		if (function!=Calibration.NONE)
 			showPlot(x, y, cal, sumResiduals, fitGoodness);
 		//IJ.write("cal: "+cal);

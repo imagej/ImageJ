@@ -13,6 +13,7 @@ public class StackWriter implements PlugIn {
 	private static String[] choices = {"Tiff","Gif","Jpeg","Raw"};
 	private static String fileType = "Tiff";
 	private static int ndigits = 4;
+	private static boolean useLabels;
 	//private static boolean startAtZero;
 
 	public void run(String arg) {
@@ -26,21 +27,19 @@ public class StackWriter implements PlugIn {
 		if (dotIndex>=0)
 			name = name.substring(0, dotIndex);
 		
-		GenericDialog gd = new GenericDialog("Save Stack", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Save Stack");
 		gd.addChoice("Save Slices as:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
-		//gd.addCheckbox("Start at Zero:", false);
+		gd.addCheckbox("Use Slice Labels as File Names", useLabels);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		fileType = gd.getNextChoice();
 		name = gd.getNextString();
 		ndigits = (int)gd.getNextNumber();
-		//startAtZero = gd.getNextBoolean();
+		useLabels = gd.getNextBoolean();
 		int number = 0;
-		//if (startAtZero)
-		//	number = 0;
 		if (ndigits<1) ndigits = 1;
 		if (ndigits>8) ndigits = 8;
 		if (fileType.equals("Gif") && !FileSaver.okForGif(imp))
@@ -68,23 +67,37 @@ public class StackWriter implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImagePlus tmp = new ImagePlus();
 		int nSlices = stack.getSize();
-		String path = directory+name;
+		String path,label=null;
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("writing: "+i+"/"+nSlices);
 			IJ.showProgress((double)i/nSlices);
 			tmp.setProcessor(null, stack.getProcessor(i));
 			digits = getDigits(number++);
+			if (useLabels) {
+				label = stack.getSliceLabel(i);
+				if (label!=null && label.equals(""))
+					label = null;
+				if (label!=null) {
+					int index = label.lastIndexOf(".");
+					if (index>=0)
+						label = label.substring(0, index);
+				}
+			}
+			if (label==null)
+				path = directory+name+digits+extension;
+			else
+				path = directory+label+extension;
 			if (fileType.equals("Tiff")) {
-				if (!(new FileSaver(tmp).saveAsTiff(path+digits+extension)))
+				if (!(new FileSaver(tmp).saveAsTiff(path)))
 					break;
 			} else if (fileType.equals("Gif")) {
-				if (!(new FileSaver(tmp).saveAsGif(path+digits+extension)))
+				if (!(new FileSaver(tmp).saveAsGif(path)))
 					break;
 			} else if (fileType.equals("Jpeg")) {
-				if (!(new FileSaver(tmp).saveAsJpeg(path+digits+extension)))
+				if (!(new FileSaver(tmp).saveAsJpeg(path)))
 					break;
 			} else if (fileType.equals("Raw")) {
-				if (!(new FileSaver(tmp).saveAsRaw(path+digits+extension)))
+				if (!(new FileSaver(tmp).saveAsRaw(path)))
 					break;
 			}
 			System.gc();

@@ -21,6 +21,7 @@ public class FileOpener {
 			width = fi.width;
 			height = fi.height;
 		}
+		if (IJ.debugMode) IJ.write("FileOpener: "+fi);
 	}
 	
 	/** Opens the image and displays it. */

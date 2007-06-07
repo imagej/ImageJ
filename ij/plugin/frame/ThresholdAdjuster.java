@@ -7,13 +7,14 @@ import ij.plugin.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
 public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measurements,
 	Runnable, ActionListener, AdjustmentListener {
 
-	static final double defaultMinThreshold = 85;
+	static final double defaultMinThreshold = 85; 
 	static final double defaultMaxThreshold = 170;
 	static boolean fill1 = true;
 	static boolean fill2 = true;
@@ -332,6 +333,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		plot.setHistogram(imp);
 		ip.setThreshold(ImageProcessor.NO_THRESHOLD,0,0);
 		updateScrollBars();
+		if (Recorder.record)
+			Recorder.record("resetThreshold");
 	}
 
 	void doSet(ImagePlus imp, ImageProcessor ip) {
@@ -369,9 +372,13 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		maxThreshold = scaleDown(ip,level2);
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
 		updateScrollBars();
+		if (Recorder.record)
+			Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
+		if (!imp.lock())
+			return;
 		boolean not8Bits = !(ip instanceof ByteProcessor);
 		if (not8Bits) {
 			double min = ip.getMin();
@@ -389,7 +396,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			gd.addCheckbox("Black forground, white background", useBW);
 			gd.showDialog();
 			if (gd.wasCanceled())
-				return;
+				{imp.unlock(); return;}
 			fill1 = gd.getNextBoolean();
 			fill2 = gd.getNextBoolean();
 			useBW = useBlackAndWhite = gd.getNextBoolean();
@@ -436,7 +443,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			YesNoCancelDialog d = new YesNoCancelDialog(this,
 				"Entire Stack?", "Apply threshold to all "+stack.getSize()+" slices in the stack?");
 			if (d.cancelPressed())
-				return;
+				{imp.unlock(); return;}
 			if (d.yesPressed())
 				new StackProcessor(stack, ip).applyTable(lut);
 			else
@@ -446,6 +453,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		imp.changes = true;
 		if (plot.histogram!=null)
 			plot.setHistogram(imp);
+		imp.unlock();
 	}
 
 	void changeState(ImagePlus imp, ImageProcessor ip) {
@@ -470,6 +478,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
 		updateScrollBars();
+		if (Recorder.record)
+			Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
  	}
 	
 	static final int RESET=0, AUTO=1, HIST=2, APPLY=3, STATE_CHANGE=4, MIN_THRESHOLD=5, MAX_THRESHOLD=6, SET=7;
@@ -512,8 +522,6 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			IJ.showStatus("No image");
 			return;
 		}
-		if (!imp.lock())
-			{imp=null; return;}
 		ip = setup(imp);
 		if (ip==null) {
 			imp.unlock();
@@ -535,14 +543,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		updateLabels(imp, ip);
 		ip.setLutAnimation(true);
 		imp.updateAndDraw();
-		imp.unlock();
 	}
 
-	public void processWindowEvent(WindowEvent e) {
-		super.processWindowEvent(e);
-		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
-			instance = null;	
-		}
+    public void windowClosing(WindowEvent e) {
+		super.windowClosing(e);
+		instance = null;
 	}
 
 } // ThresholdAdjuster class

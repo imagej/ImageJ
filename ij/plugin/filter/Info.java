@@ -143,11 +143,6 @@ public class Info implements PlugInFilter {
 				s += "  Height: " + r.height + "\n";
 	    	}
 	    }
-
-		s += " \n";
-		s += IJ.freeMemory() + "\n";
-		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		s += "Screen Size: " + d.width + "x" + d.height;
 		return s;
 	}
 

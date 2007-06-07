@@ -275,6 +275,18 @@ public class FloatProcessor extends ImageProcessor {
 						else
 							v2 = (float)Math.log(v1);
 						break;
+					case MINIMUM:
+						if (v1<value)
+							v2 = (int)value;
+						else
+							v2 = v1;
+						break;
+					case MAXIMUM:
+						if (v1>value)
+							v2 = (int)value;
+						else
+							v2 = v1;
+						break;
 					 default:
 					 	v2 = v1;
 				}
@@ -288,12 +300,16 @@ public class FloatProcessor extends ImageProcessor {
 
 	public void invert() {process(INVERT, 0.0);}
 	public void add(int value) {process(ADD, value);}
+	public void add(double value) {process(ADD, value);}
 	public void multiply(double value) {process(MULT, value);}
 	public void and(int value) {}
 	public void or(int value) {}
 	public void xor(int value) {}
 	public void gamma(double value) {process(GAMMA, value);}
 	public void log() {process(LOG, 0.0);}
+	public void min(double value) {process(MINIMUM, value);}
+	public void max(double value) {process(MAXIMUM, value);}
+
 
 
 	/** Fills the current rectangular ROI. */

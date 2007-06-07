@@ -15,7 +15,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	protected int slice;
 
 	public StackWindow(ImagePlus imp) {
-		super(imp);
+		this(imp, new ImageCanvas(imp));
+	}
+    
+    public StackWindow(ImagePlus imp, ImageCanvas ic) {
+		super(imp, ic);
 
 		// add slice selection slider
 		ImageStack s = imp.getStack();

@@ -1,17 +1,22 @@
-package ij;
-
-import java.awt.*;
-import java.awt.image.*;
-import ij.gui.*;
+package ij.plugin;
+import ij.*;
 import ij.process.*;
+import ij.gui.*;
+import java.awt.*;
 
-/** This class implements ImageJ's Image/Type submenu. */
-public class Converter {
-	ImagePlus imp;
-	static boolean newWindowCreated; // tested by WindowManager.setCurrentWindow()
+/** Implements the conversion commands in the Image/Type submenu. */
+public class Converter implements PlugIn {
 
-	public Converter(ImagePlus imp) {
-		this.imp = imp;
+	/** Used by WindowManager.setCurrentWindow(). */
+	public static boolean newWindowCreated;
+	private ImagePlus imp;
+
+	public void run(String arg) {
+		imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			convert(arg);
+		else
+			IJ.noImage();
 	}
 
 	/** Converts the ImagePlus to the specified image type. The string
@@ -91,6 +96,7 @@ public class Converter {
 	    	Undo.reset();
 	    	imp.changes = saveChanges;
 			Menus.updateMenus();
+			Macro.abort();
 			return;
 		}
 		if (isRoi)
@@ -99,7 +105,6 @@ public class Converter {
 		imp.repaintWindow();
 		Menus.updateMenus();
 	}
-	
 
 	void unsupportedConversion(ImagePlus imp) {
 		IJ.showMessage("Converter",
@@ -126,5 +131,5 @@ public class Converter {
 			"* works with stacks\n"
 			);
 	}
-	
+
 }

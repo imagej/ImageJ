@@ -8,11 +8,16 @@ import java.awt.*;
 	Add Noise, Reduce Noise, and Threshold commands. */
 public class Filters implements PlugInFilter {
 	
-	String arg;
+	private String arg;
+	private ImagePlus imp;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
-		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
+		this.imp = imp;
+		if (arg.equals("threshold"))
+			return IJ.setupDialog(imp, DOES_8G+DOES_8C+DOES_RGB);
+		else
+			return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
@@ -37,8 +42,6 @@ public class Filters implements PlugInFilter {
 		}
 						
 	 	if (arg.equals("threshold")) {
-	 		ImagePlus imp = WindowManager.getCurrentImage();
-			ip.setMask(imp.getMask());
 			ip.autoThreshold();
 			ip.setMask(null);
 			imp.killRoi();

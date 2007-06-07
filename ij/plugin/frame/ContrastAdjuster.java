@@ -330,16 +330,23 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
+		if (!RGBImage && !imp.lock())
+			return;
 		if (imp.getType()==ImagePlus.COLOR_RGB && imp.getStackSize()>1)
 			{applyRGBStack(imp); return;}
 		if (imp.getType()!=ImagePlus.GRAY8)
 			{IJ.beep(); IJ.showStatus("Apply requires an 8-bit grayscale image or an RGB stack"); return;}
 		int[] table = new int[256];
-		LookUpTable lut = imp.createLut();
-		IndexColorModel cm = (IndexColorModel)lut.getColorModel();
-		boolean invertedLut = ((ByteProcessor)ip).isInvertedLut();
-		for (int i=0; i<cm.getMapSize(); i++)
-			table[i] = invertedLut?255-cm.getRed(i)&255:cm.getRed(i)&255;
+		int min = (int)ip.getMin();
+		int max = (int)ip.getMax();
+		for (int i=0; i<256; i++) {
+			if (i<=min)
+				table[i] = 0;
+			else if (i>=max)
+				table[i] = 255;
+			else
+				table[i] = (int)(((double)(i-min)/(max-min))*255);
+		}
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
 			YesNoCancelDialog d = new YesNoCancelDialog(this,
@@ -356,6 +363,8 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 		imp.changes = true;
 		if (plot.histogram!=null)
 			plotHistogram(imp, ip);
+		if (!RGBImage)
+			imp.unlock();
 	}
 
 	void applyRGBStack(ImagePlus imp) {
@@ -475,12 +484,12 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 			IJ.showStatus("No image");
 			return;
 		}
-		if (!imp.lock())
-			{imp=null; return;}
 		if (action!=UPDATE)
 			ip = setup(imp);
 		else
 			ip = imp.getProcessor();
+		if (RGBImage && !imp.lock())
+			{imp=null; return;}
 		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));
 		switch (action) {
 			case RESET: reset(ip); break;
@@ -495,14 +504,13 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 		updatePlot();
 		updateLabels(imp, ip);
 		imp.updateAndDraw();
-		imp.unlock();
+		if (RGBImage)
+			imp.unlock();
 	}
 
-	public void processWindowEvent(WindowEvent e) {
-		super.processWindowEvent(e);
-		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
-			instance = null;	
-		}
+    public void windowClosing(WindowEvent e) {
+		super.windowClosing(e);
+		instance = null;
 	}
 
 } // ContrastAdjuster class

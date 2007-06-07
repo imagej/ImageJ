@@ -16,7 +16,7 @@ public class ByteProcessor extends ImageProcessor {
 	private int bgColor = 255; //white
 	private int min=0, max=255;
 
-	/**Creates a ByteProcessor from an AWT Image. */
+	/**Creates a ByteProcessor from an 8-bit, indexed color AWT Image. */
 	public ByteProcessor(Image img) {
 		width = img.getWidth(null);
 		height = img.getHeight(null);

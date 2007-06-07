@@ -20,11 +20,12 @@ public class StackEditor implements PlugIn {
     	
     	if (arg.equals("tostack"))
     		{convertImagesToStack(); return;}
+    	if (arg.equals("add"))
+    		{addSlice(); return;}
+    		
 		if (nSlices<2)
 			{IJ.error("Stack requred"); return;}
-    	if (arg.equals("add"))
-    		addSlice();
-    	else if (arg.equals("delete"))
+    	if (arg.equals("delete"))
     		deleteSlice();
     	else if (arg.equals("toimages"))
     		convertStackToImages(imp);

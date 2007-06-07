@@ -67,7 +67,9 @@ public class TiffEncoder {
 		stackSize = imageSize*fi.nImages;
 	}
 	
-	/** Saves the image as a TIFF file. The DataOutputStream is not closed. */
+	/** Saves the image as a TIFF file. The DataOutputStream is not closed.
+		The fi.pixels field must contain the image data. If fi.nImages>1
+		then fi.pixels must be a 2D array. The fi.offset field is ignored. */
 	public void write(DataOutputStream out) throws IOException {
 		writeHeader(out);
 		int nextIFD = 0;

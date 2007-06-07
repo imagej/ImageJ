@@ -2,6 +2,7 @@ package ij.io;
 import java.awt.*;
 import ij.*;
 import ij.gui.*;
+import ij.plugin.frame.Recorder;
 
 /** This class displays a dialog window from 
 	which the user can select an input file. */ 
@@ -15,6 +16,9 @@ import ij.gui.*;
 		the title. If 'path' is non-blank, it is
 		used and the dialog is not displayed. */
 	public OpenDialog(String title, String path) {
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null)
+			path = Macro.getValue(macroOptions, "path", path);
 		if (path==null || path.equals("")) {
 			ImageJ ij = IJ.getInstance();
 			Frame parent = ij!=null?ij:new Frame();
@@ -25,7 +29,9 @@ import ij.gui.*;
 			GUI.center(fd);
 			fd.setVisible(true);
 			name = fd.getFile();
-			if (name!=null) {
+			if (name==null)
+				Macro.abort();
+			else {
 				dir = fd.getDirectory();
 				defaultDirectory = dir;
 			}
@@ -54,6 +60,8 @@ import ij.gui.*;
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
+		if (Recorder.record)
+			Recorder.recordPath(dir+name);
 		return name;
 	}
 		

@@ -156,10 +156,16 @@ public class ImageWriter {
 	}
 
 	/** Writes the image to the specified OutputStream.
-		The OutputStream is not closed. */
+		The OutputStream is not closed. The fi.pixels field
+		must contain the image data. If fi.nImages>1
+		then fi.pixels must be a 2D array, for example an
+ 		array of images returned by ImageStack.getImageArray()).
+ 		The fi.offset field is ignored. */
 	public void write(OutputStream out) throws IOException {
+		if (fi.pixels==null)
+				throw new IOException("ImageWriter: fi.pixels==null");
 		if (fi.nImages>1 && !(fi.pixels instanceof Object[]))
-				throw new IOException("Stack expected");
+				throw new IOException("ImageWriter: fi.pixels not a stack");
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 			case FileInfo.COLOR8:

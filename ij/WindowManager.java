@@ -1,4 +1,6 @@
 package ij;
+import ij.plugin.Converter;
+import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.util.*;
 import ij.gui.*;
@@ -13,8 +15,8 @@ public class WindowManager {
 	public synchronized static void setCurrentWindow(ImageWindow win) {
 		if (win==currentWindow || win==null || windowList.size()==0)
 			return;
-		if (IJ.debugMode && win!=null)
-			IJ.write(win.getImagePlus().getTitle()+": setCurrentWindow (previous="+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
+		//if (IJ.debugMode && win!=null)
+		//	IJ.write(win.getImagePlus().getTitle()+": setCurrentWindow (previous="+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
 		if (currentWindow!=null) {
 			// free up pixel buffers used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
@@ -36,7 +38,7 @@ public class WindowManager {
 	
 	
 	public static ImageWindow getCurrentWindow() {
-		if (IJ.debugMode) IJ.write("ImageWindow.getCurrentWindow");
+		//if (IJ.debugMode) IJ.write("ImageWindow.getCurrentWindow");
 		return currentWindow;
 	}
 	
@@ -47,7 +49,7 @@ public class WindowManager {
 	
 
 	public synchronized static ImagePlus getCurrentImage() {
-		if (IJ.debugMode) IJ.write("ImageWindow.getCurrentImage");
+		//if (IJ.debugMode) IJ.write("ImageWindow.getCurrentImage");
 		if (currentWindow!=null)
 			return currentWindow.getImagePlus();
 		else
@@ -78,7 +80,7 @@ public class WindowManager {
 	/** Returns the ImagePlus with the specified ID. Returns
 		null if no open window has a matching ID. */
 	public synchronized static ImagePlus getImage(int imageID) {
-		if (IJ.debugMode) IJ.write("ImageWindow.getImage");
+		//if (IJ.debugMode) IJ.write("ImageWindow.getImage");
 		if (imageID>=0)
 			return null;
 		ImagePlus imp = null;
@@ -95,7 +97,7 @@ public class WindowManager {
 
 
 	public synchronized static void addWindow(ImageWindow win) {
-		if (IJ.debugMode) IJ.write(win.getImagePlus().getTitle()+": addWindow");
+		//if (IJ.debugMode) IJ.write(win.getImagePlus().getTitle()+": addWindow");
 		windowList.addElement(win);
         Menus.extendWindowMenu(win.getImagePlus());
         setCurrentWindow(win);
@@ -104,8 +106,8 @@ public class WindowManager {
 
 	/** Closes the current window and removes it from the window list. */
 	public synchronized static void removeWindow(ImageWindow win) {
-		if (IJ.debugMode)
-			IJ.write(win.getImagePlus().getTitle() + ": removeWindow (" + windowList.size() + ")");
+		//if (IJ.debugMode)
+		//	IJ.write(win.getImagePlus().getTitle() + ": removeWindow (" + windowList.size() + ")");
 		int index = windowList.indexOf(win);
 		if (index==-1)
 			return;  // not on the window list
@@ -141,7 +143,7 @@ public class WindowManager {
 
 	/** Activates the next window on the window list. */
 	public static void putBehind() {
-		if (IJ.debugMode) IJ.write("putBehind");
+		//if (IJ.debugMode) IJ.write("putBehind");
 		if(windowList.size()<1 || currentWindow==null)
 			return;
 		int index = windowList.indexOf(currentWindow);
@@ -159,7 +161,8 @@ public class WindowManager {
 	synchronized static void activateWindow(String menuItemLabel, MenuItem item) {
 		for (int i=0; i<windowList.size(); i++) {
 			ImageWindow win = (ImageWindow)windowList.elementAt(i);
-			if (menuItemLabel.startsWith(win.getImagePlus().getTitle())) {
+			String title = win.getImagePlus().getTitle();
+			if (menuItemLabel.startsWith(title)) {
 				setCurrentWindow(win);
 				win.toFront();
 				int index = windowList.indexOf(win);
@@ -168,6 +171,8 @@ public class WindowManager {
 					MenuItem mi = Menus.window.getItem(j);
 					((CheckboxMenuItem)mi).setState((j-Menus.WINDOW_MENU_ITEMS)==index);						
 				}
+				if (Recorder.record)
+					Recorder.record("selectWindow", title);
 				break;
 			}
 		}

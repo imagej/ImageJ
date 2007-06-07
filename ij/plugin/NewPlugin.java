@@ -14,13 +14,16 @@ public class NewPlugin implements PlugIn {
     private static String[] types = {"Plugin", "Filter", "Frame"};
     
     public void run(String arg) {
-		if (!showDialog())
+		if (arg.equals("")&&!showDialog())
 			return;
-    	createPlugin(name, type);
+		if (arg.equals(""))
+    		createPlugin(name, type, arg);
+    	else
+    		createPlugin("Macro_.java", type, arg);
     	IJ.register(NewPlugin.class);
     }
     
-	public void createPlugin(String name, int type) {
+	public void createPlugin(String name, int type, String methods) {
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
@@ -40,7 +43,10 @@ public class NewPlugin implements PlugIn {
 				text += "public class "+className+" implements PlugIn {\n";
 				text += "\n";
 				text += "\tpublic void run(String arg) {\n";
-				text += "\t\tIJ.showMessage(\""+className+"\",\"Hello world!\");\n";
+				if (methods.equals(""))
+					text += "\t\tIJ.showMessage(\""+className+"\",\"Hello world!\");\n";
+				else
+					text += methods;
 				text += "\t}\n";
 				break;
 			case PLUGIN_FILTER:

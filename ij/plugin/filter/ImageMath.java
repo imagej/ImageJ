@@ -39,14 +39,14 @@ public class ImageMath implements PlugInFilter {
 	 	if (arg.equals("add")) {
 	 		if (first) addValue = getValue("Add: ", addValue, 0);
 	 		if (canceled) return;
-			ip.add((int)addValue);
+			ip.add(addValue);
 			return;
 		}
 
 	 	if (arg.equals("sub")) {
 	 		if (first) addValue = getValue("Subtract: ", addValue, 0);
 	 		if (canceled) return;
-			ip.add((int)-addValue);
+			ip.add(-addValue);
 			return;
 		}
 
@@ -100,39 +100,21 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 		
-	 	if (arg.equals("min")||arg.equals("max")) {
-	 		if (ip instanceof ColorProcessor) {
-	 			IJ.error("RGB images not supported");
-	 			canceled = true;
-	 			return;
-	 		}
-	 	}
-
 	 	if (arg.equals("min")) {
 	 		if (first) minValue = getValue("Minimum: ", minValue, 0);
 	 		if (canceled) return;
-	 		double v;
-	 		for (int y=0; y<ip.getHeight(); y++) {
-				for (int x=0; x<ip.getWidth(); x++) {
-					v = ip.getPixelValue(x,y);
-					if (v<minValue) v = minValue;
-					ip.putPixelValue(x,y,v);
-				}
-			}
+	 		ip.min(minValue);
+			if (!(ip instanceof ByteProcessor))
+				ip.resetMinAndMax();
 			return;
 		}
 
 	 	if (arg.equals("max")) {
 	 		if (first) maxValue = getValue("Maximum: ", maxValue, 0);
 	 		if (canceled) return;
-	 		double v;
-	 		for (int y=0; y<ip.getHeight(); y++) {
-				for (int x=0; x<ip.getWidth(); x++) {
-					v = ip.getPixelValue(x,y);
-					if (v>maxValue) v = maxValue;
-					ip.putPixelValue(x,y,v);
-				}
-			}
+	 		ip.max(maxValue);
+			if (!(ip instanceof ByteProcessor))
+				ip.resetMinAndMax();
 			return;
 		}
 
@@ -166,6 +148,8 @@ public class ImageMath implements PlugInFilter {
 				else
 					pixels[i] = 1f/pixels[i];
 			}
+			if (!(ip instanceof ByteProcessor))
+				ip.resetMinAndMax();
 			return;
 		}
 		

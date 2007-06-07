@@ -101,38 +101,14 @@ public class Menus {
 		
 		Menu image = createMenu("Image");
 		Menu imageType = createMenu("Type");
-			gray8Item = new CheckboxMenuItem("8-bit");
-			imageType.add(gray8Item);
-			gray8Item.addItemListener(ij);
-			gray8Item.setState(false);
-			gray16Item = new CheckboxMenuItem("16-bit");
-			imageType.add(gray16Item);
-			gray16Item.addItemListener(ij);
-			gray16Item.setState(false);
-			gray32Item = new CheckboxMenuItem("32-bit");
-			imageType.add(gray32Item);
-			gray32Item.addItemListener(ij);
-			gray32Item.setState(false);
+			gray8Item = addCheckboxItem(imageType, "8-bit", "ij.plugin.Converter(\"8-bit\")");
+			gray16Item = addCheckboxItem(imageType, "16-bit", "ij.plugin.Converter(\"16-bit\")");
+			gray32Item = addCheckboxItem(imageType, "32-bit", "ij.plugin.Converter(\"32-bit\")");
+			color256Item = addCheckboxItem(imageType, "8-bit Color", "ij.plugin.Converter(\"8-bit Color\")");
+			colorRGBItem = addCheckboxItem(imageType, "RGB Color", "ij.plugin.Converter(\"RGB Color\")");
 			imageType.add(new MenuItem("-"));
-			
-			color256Item = new CheckboxMenuItem("8-bit Color");
-			imageType.add(color256Item);
-			color256Item.addItemListener(ij);
-			color256Item.setState(false);
-			colorRGBItem = new CheckboxMenuItem("RGB Color");
-			imageType.add(colorRGBItem);
-			colorRGBItem.addItemListener(ij);
-			colorRGBItem.setState(false);
-			imageType.add(new MenuItem("-"));
-			
-			RGBStackItem = new CheckboxMenuItem("RGB Stack");
-			imageType.add(RGBStackItem);
-			RGBStackItem.addItemListener(ij);
-			RGBStackItem.setState(false);
-			HSBStackItem = new CheckboxMenuItem("HSB Stack");
-			imageType.add(HSBStackItem);
-			HSBStackItem.addItemListener(ij);
-			HSBStackItem.setState(false);
+			RGBStackItem = addCheckboxItem(imageType, "RGB Stack", "ij.plugin.Converter(\"RGB Stack\")");
+			HSBStackItem = addCheckboxItem(imageType, "HSB Stack", "ij.plugin.Converter(\"HSB Stack\")");
 			image.add(imageType);
 			
 		image.addSeparator();
@@ -229,6 +205,16 @@ public class Menus {
 		pluginsTable.put(label, className);
 		nPlugins++;
 		addItem(menu, label, shortcut, shift);
+	}
+
+	CheckboxMenuItem addCheckboxItem(Menu menu, String label, String className) {
+		pluginsTable.put(label, className);
+		nPlugins++;
+		CheckboxMenuItem item = new CheckboxMenuItem(label);
+		menu.add(item);
+		item.addItemListener(ij);
+		item.setState(false);
+		return item;
 	}
 
 	Menu addSubMenu(Menu menu, String name) {
@@ -444,12 +430,13 @@ public class Menus {
 		if (slashIndex>0) {
 			String dir = className.substring(0, slashIndex);
 			className = className.substring(slashIndex+1, className.length());
+			//className = className.replace('/', '.');
 			if (submenu==null || !submenuName.equals(dir)) {
  				submenuName = dir;
  				submenu = createMenu(submenuName);
  				pluginsMenu.add(submenu);
 			}
-		menu = submenu;
+			menu = submenu;
 		//IJ.write(dir + "  " + className);
 		}
 		String command = className.replace('_',' ');
@@ -489,7 +476,8 @@ public class Menus {
 		
 	static final int RGB_STACK=10, HSB_STACK=11;
 	
-	static void updateMenus() {
+	/** Updates the Image/Type and Window menus. */
+	public static void updateMenus() {
 	
 		if (ij==null) return;
 		gray8Item.setState(false);

@@ -8,6 +8,7 @@ import ij.*;
 import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 
 /** A frame for displaying images. */
 public class ImageWindow extends Frame implements FocusListener, WindowListener {
@@ -242,16 +243,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	}
 	
 	public void focusGained(FocusEvent e) {
-		if (IJ.debugMode) IJ.write(imp.getTitle() + ": Got focus");
+		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": Got focus");
 		//ic.requestFocus();
 		WindowManager.setCurrentWindow(this);
 	}
 
 
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh())
+		if (IJ.isMacintosh() && IJ.getInstance()!=null)
 			this.setMenuBar(Menus.getMenuBar());
-		if (IJ.debugMode) IJ.write(imp.getTitle() + ": Activated");
+		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": Activated");
 		if (!closed) {
 			//ic.requestFocus();
 			WindowManager.setCurrentWindow(this);
@@ -346,6 +347,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
                 
     public void mouseMoved(int x, int y) {
     	imp.mouseMoved(x, y);
+    }
+    
+    public String toString() {
+    	return imp.getTitle();
     }
     
 	/** Overrides the setBounds() method in Component so

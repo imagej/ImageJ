@@ -8,6 +8,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.util.StringSorter;
+import ij.plugin.frame.Recorder;
 
 
 /** This is a dialog box used to imports raw 8, 16, 24 and 32-bit images. */
@@ -56,8 +57,8 @@ public class ImportDialog {
 	boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Import...", IJ.getInstance());
 		gd.addChoice("Image Type:", types, types[choiceSelection]);
-		gd.addNumericField("Image Width:", width, 0);
-		gd.addNumericField("Image Height:", height, 0);
+		gd.addNumericField("Width (pixels):", width, 0);
+		gd.addNumericField("Height (pixels):", height, 0);
 		gd.addNumericField("Offset to First Image:", offset, 0);
 		gd.addNumericField("Number of Images:", nImages, 0);
 		gd.addNumericField("Gap Between Images:", gapBetweenImages, 0);

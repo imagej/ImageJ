@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable {
@@ -305,6 +306,17 @@ public class Roi extends Object implements Cloneable {
 		
 	protected void handleMouseUp(int screenX, int screenY) {
 		state = NORMAL;
+		if (Recorder.record) {
+			String method;
+			if (type==LINE) {
+				if (imp==null) return;
+				Line line = (Line)imp.getRoi();
+				Recorder.record("makeLine", line.x1, line.y1, line.x2, line.y2);
+			} else if (type==OVAL)
+				Recorder.record("makeOval", x, y, width, height);
+			else
+				Recorder.record("makeRectangle", x, y, width, height);
+		}
 	}
 
 

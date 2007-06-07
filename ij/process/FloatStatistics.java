@@ -68,38 +68,27 @@ public class FloatStatistics extends ImageStatistics {
 		binSize = (histMax-histMin)/nBins;
 
 		// Generate histogram
-		double scale = (nBins-1)/(histMax-histMin);
-		if (mask!=null) { // non-rectangular roi
-			pixelCount = 0;
-			for (int y=ry, my=0; y<(ry+rh); y++, my++) {
-				int i = y * width + rx;
-				int mi = my * rw;
-				for (int x=rx; x<(rx+rw); x++) {
-					if (mask[mi++]==ip.BLACK) {
-						v = pixels[i];
-						pixelCount++;
-						sum += v;
-						sum2 += v*v;
-						histogram[(int)(scale*(v-histMin))]++;
-					}
-					i++;
-				}
-			}
-			min = roiMin; max = roiMax;
-		}
-		else {  // rectangular roi or no roi
-			for (int y=ry; y<(ry+rh); y++) {
-				int i = y * width + rx;
-				for (int x=rx; x<(rx+rw); x++) {
-					v = pixels[i++];
+		double scale = nBins/(histMax-histMin);
+		int index;
+		pixelCount = 0;
+		for (int y=ry, my=0; y<(ry+rh); y++, my++) {
+			int i = y * width + rx;
+			int mi = my * rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null || mask[mi++]==ip.BLACK) {
+					v = pixels[i];
+					pixelCount++;
 					sum += v;
 					sum2 += v*v;
-					histogram[(int)(scale*(v-histMin))]++;
+					index = (int)(scale*(v-histMin));
+					if (index>=nBins)
+						index = nBins-1;
+					histogram[index]++;
 				}
+				i++;
 			}
-			pixelCount = rw*rh;
 		}
-		
+		min = roiMin; max = roiMax;
 		area = pixelCount*pw*ph;
 		mean = sum/pixelCount;
 		calculateStdDev(pixelCount, sum, sum2);

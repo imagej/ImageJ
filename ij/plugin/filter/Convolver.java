@@ -16,14 +16,13 @@ public class Convolver implements PlugInFilter {
 	static boolean createSelection = false;
 	int kw, kh;
 	static float[] kernel;
-	static int slice;
+	static int slice = 1;
 	static boolean canceled;
 	static ImageWindow win;
 
 	public int setup(String arg, ImagePlus imp) {
  		IJ.register(Convolver.class);
 		this.imp = imp;
-		slice = 0;
 		canceled = false;
 		return IJ.setupDialog(imp, DOES_ALL);
 	}
@@ -31,7 +30,6 @@ public class Convolver implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		if (canceled)
 			return;
-		slice++;
 		if (slice==1) {
 			kernel = getKernel();
 			if (kernel==null)
@@ -44,19 +42,20 @@ public class Convolver implements PlugInFilter {
 			}
 			win = imp.getWindow();
 			win.running = true;
-			IJ.showStatus("Convolver: convolving with "+kw+"x"+kh+" kernel");
+			IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
 			imp.startTiming();
 		}
 		if (win.running!=true)
 			{canceled=true; return;}
 		convolve(ip, kernel, kw, kh);
 		if (slice>1)
-			IJ.showStatus(slice+"/"+imp.getStackSize());
+			IJ.showStatus("Convolve: "+slice+"/"+imp.getStackSize());
 		if (slice==imp.getStackSize()) {
 			ip.resetMinAndMax();
 			if (createSelection)
 				imp.setRoi(kw/2,kh/2,imp.getWidth()-(kw/2)*2, imp.getHeight()-(kh/2)*2);
 		}
+		slice++;
 	}
 	
 	float[] getKernel() {
@@ -109,6 +108,7 @@ public class Convolver implements PlugInFilter {
 			convolveRGB(ip, kernel, kw, kh);
 			return;
 		}
+		ip.setCalibrationTable(null);
 		ImageProcessor ip2=ip.convertToFloat();
 		convolveFloat(ip2, kernel, kw, kh);
 		switch (type) {
@@ -133,6 +133,7 @@ public class Convolver implements PlugInFilter {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		int size = width*height;
+		if (slice==1) IJ.showStatus("Convolve (red)");
 		byte[] r = new byte[size];
 		byte[] g = new byte[size];
 		byte[] b = new byte[size];
@@ -143,10 +144,12 @@ public class Convolver implements PlugInFilter {
 		ImageProcessor ip2 = rip.convertToFloat();
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor r2 = ip2.convertToByte(false);
+		if (slice==1) IJ.showStatus("Convolve (green)");
 		ip2 = gip.convertToFloat();
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor g2 = ip2.convertToByte(false);
 		ip2 = bip.convertToFloat();
+		if (slice==1) IJ.showStatus("Convolve (blue)");
 		convolveFloat(ip2, kernel, kw, kh);
 		ImageProcessor b2 = ip2.convertToByte(false);
 		((ColorProcessor)ip).setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
@@ -173,25 +176,39 @@ public class Convolver implements PlugInFilter {
 
  		int progress = Math.max(height/25,1);
 		double sum;
-		int offset, i;  
-		for(int y=vc; y<height-vc; y++) {
+		int offset, i;
+		boolean edgePixel;  
+		for(int y=0; y<height; y++) {
 			if (y%progress ==0) IJ.showProgress((double)y/height);
 			//IJ.write(""+y);
-			for(int x=uc; x<width-uc; x++) {
+			edgePixel = y<vc || y>=height+vc;
+			for(int x=0; x<width; x++) {
 				sum = 0.0;
 				i = 0;
+				if (x<uc || x>=height+uc)
+					edgePixel = true;
 				for(int v=-vc; v <= vc; v++) {
 					offset = x+(y+v)*width;
 					for(int u = -uc; u <= uc; u++) {
-    						sum +=pixels2[offset+u] * kernel[i++];
-	    				}
-	    			}
+						if (edgePixel)
+   							sum += getPixel(x+u, y+v, pixels2, width, height)*kernel[i++];
+     					else
+ 							sum += pixels2[offset+u]*kernel[i++];
+        				}
+		    	}
 				pixels[x+y*width] = (float)(sum*scale);
-					
 			}
-    		}
+    	}
    		IJ.showProgress(1.0);
    	 }
+
+	private float getPixel(int x, int y, float[] pixels, int width, int height) {
+		if (x<=0) x = 0;
+		if (x>=width) x = width-1;
+		if (y<=0) y = 0;
+		if (y>=height) y = height-1;
+		return pixels[x+y*width];
+	}
 
 }
 

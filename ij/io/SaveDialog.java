@@ -1,6 +1,7 @@
 package ij.io;
 import java.awt.*;
 import ij.*;
+import ij.plugin.frame.Recorder;
 
 /** This class displays a dialog window from 
 	which the user can save a file. */ 
@@ -14,6 +15,17 @@ public class SaveDialog {
 		'extension' (e.g. ".tif") as the default extension.
 	*/
 	public SaveDialog(String title, String defaultName, String extension) {
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null) {
+			String path = Macro.getValue(macroOptions, "path", null);
+			if (path!=null) {
+				Opener o = new Opener();
+				dir = o.getDir(path);
+				name = o.getName(path);
+				return;
+			}
+		}
+
 		ImageJ ij = IJ.getInstance();
 		Frame parent = ij!=null?ij:new Frame();
 		FileDialog fd = new FileDialog(parent, title, FileDialog.SAVE);
@@ -22,6 +34,8 @@ public class SaveDialog {
 				int dotIndex = defaultName.lastIndexOf(".");
 				if (dotIndex>=0)
 					defaultName = defaultName.substring(0, dotIndex)+extension;
+				else
+					defaultName += extension;
 			}
 			fd.setFile(defaultName);
 		}
@@ -46,6 +60,8 @@ public class SaveDialog {
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
+		if (Recorder.record)
+			Recorder.recordPath(dir+name);
 		return name;
 	}
 }

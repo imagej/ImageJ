@@ -5,6 +5,7 @@ import java.util.zip.*;
 import ij.*;
 import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.Recorder;
 
 /** Saves images in tiff, gif, jpeg and raw format. */
 public class FileSaver {
@@ -35,7 +36,8 @@ public class FileSaver {
 			return null;
 		directory = sd.getDirectory();
 		imp.startTiming();
-		return directory+name;
+		String path = directory+name;
+		return path;
 	}
 	
 	/** Save the image or stack in TIFF format using a save file

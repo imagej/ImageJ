@@ -7,6 +7,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.Recorder;
 
 /** Implements ImageJ's Analyze Particles command.
 	<p>
@@ -107,7 +108,7 @@ public class ParticleAnalyzer implements PlugInFilter {
 		imp.startTiming();
 		analyze(imp, ip);
 	}
-
+	
 	/** Displays a modal options dialog. */
 	public boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Analyze Particles", IJ.getInstance());
@@ -187,7 +188,7 @@ public class ParticleAnalyzer implements PlugInFilter {
 		width = ip.getWidth();
 		height = ip.getHeight();
 		Rectangle r = ip.getRoi();
-		int[] mask = imp.getMask();
+		int[] mask = ip.getMask();
 		int offset, value;
 		int inc = r.height/20;
 		if (inc<1) inc = 1;
@@ -221,8 +222,10 @@ public class ParticleAnalyzer implements PlugInFilter {
 				IJ.showProgress((double)(y-r.y)/r.height);
 			if (win!=null)
 				canceled = !win.running;
-			if (canceled)
+			if (canceled) {
+				Macro.abort();
 				break;
+			}
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
@@ -323,11 +326,12 @@ public class ParticleAnalyzer implements PlugInFilter {
 		//	IJ.write("threshold: "+level1+"-"+level2);
 		//	IJ.write("count: "+IJ.d2s(count,0));
 		//}
-		ImageProcessor ip = null;
 		if (showSizeDistribution) {
-			if (ip==null)
-				ip = new FloatProcessor(count, 1, rt.getColumn(ResultsTable.AREA), null);
-			new HistogramWindow("Particle Size Distribution", new ImagePlus("",ip), sizeBins);
+			float[] areas = rt.getColumn(ResultsTable.AREA);
+			if (areas!=null) {
+				ImageProcessor ip = new FloatProcessor(count, 1, areas, null);
+				new HistogramWindow("Particle Size Distribution", new ImagePlus("",ip), sizeBins);
+			}
 		}
 		if (ip2!=null)
 			new ImagePlus("Outlines", ip2).show();

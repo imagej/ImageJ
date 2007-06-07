@@ -1,5 +1,5 @@
 package ij.plugin.filter;
-import java.awt.Frame;
+import java.awt.*;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -7,9 +7,11 @@ import ij.gui.*;
 /** This plug-in implements ImageJ's Image/Duplicate command. */
 public class Duplicater implements PlugInFilter {
 	ImagePlus imp;
+	static boolean duplicateStack;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
+		IJ.register(Duplicater.class);
 		return DOES_ALL+NO_CHANGES;
 	}
 
@@ -18,38 +20,67 @@ public class Duplicater implements PlugInFilter {
 	}
 
 	public void duplicate(ImagePlus imp) {
-		ImageProcessor ip2 = imp.getProcessor().crop();
-		imp.killRoi();
-		imp.trimProcessor();
+		int stackSize = imp.getStackSize();
 		String newTitle;
 		String title = imp.getTitle();
-		if (imp.getStackSize()>1)
-			newTitle = title + "-" + imp.getCurrentSlice();
-		else {
-			if (!title.endsWith("-copy"))
-				newTitle = title + "-copy";
-			else
-				newTitle = title;
-		}
-		if (!IJ.altKeyDown())
+		if (!title.endsWith("-copy"))
+			newTitle = title + "-copy";
+		else
+			newTitle = title;
+		if (!IJ.altKeyDown()||stackSize>1)
 			newTitle = getString("Duplicate...", "Title: ", newTitle);
-		if (newTitle.equals(""))
+		if (newTitle==null)
 			return;
-		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setProcessor(newTitle, ip2);
+		ImagePlus imp2;
+		if (duplicateStack)
+			imp2 = duplicateStack(imp, newTitle);
+		else {
+			ImageProcessor ip2 = imp.getProcessor().crop();
+			imp2 = imp.createImagePlus();
+			imp2.setProcessor(newTitle, ip2);
+		}
+		imp.killRoi();
 		imp2.show();
 	}
                 
+	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {
+		Rectangle rect = null;
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.getType()==Roi.RECTANGLE)
+			rect = roi.getBoundingRect();
+		int width = rect!=null?rect.width:imp.getWidth();
+		int height = rect!=null?rect.height:imp.getHeight();
+		ImageStack stack = imp.getStack();
+		ImageStack stack2 = new ImageStack(width, height, imp.getProcessor().getColorModel());
+		for (int i=1; i<=stack.getSize(); i++) {
+			ImageProcessor ip2 = stack.getProcessor(i);
+			ip2.setRoi(rect);
+			ip2 = ip2.crop();
+			stack2.addSlice(stack.getSliceLabel(i), ip2);
+		}
+		ImagePlus imp2 = imp.createImagePlus();
+		imp2.setStack(newTitle, stack2);
+		return imp2;
+	}
+	
 	String getString(String title, String prompt, String defaultString) {
 		Frame win = imp.getWindow();
+		int stackSize = imp.getStackSize();
 		if (win==null)
 			win = IJ.getInstance();
 		GenericDialog gd = new GenericDialog(title, win);
 		gd.addStringField(prompt, defaultString, 20);
+		if (stackSize>1)
+			gd.addCheckbox("Duplicate Entire Stack", duplicateStack);
+		else
+			duplicateStack = false;
 		gd.showDialog();
 		if (gd.wasCanceled())
-			return "";
-		return gd.getNextString();
+			return null;
+		title = gd.getNextString();
+		if (stackSize>1)
+			duplicateStack = gd.getNextBoolean();
+		return title;
 	}
 	
 }

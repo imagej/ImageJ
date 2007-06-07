@@ -18,8 +18,10 @@ public class Hotkeys implements PlugIn {
 			installHotkey();
 		else if (arg.equals("remove"))
 			removeHotkey();
-		else
-			IJ.run(arg);
+		else {
+			Executer e = new Executer(arg);
+			e.run();
+		}
 		IJ.register(Hotkeys.class);
 	}
 

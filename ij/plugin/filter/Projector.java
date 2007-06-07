@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.plugin.ZProjector;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -52,6 +53,10 @@ public class Projector implements PlugInFilter {
 	}
 	
 	public void run(ImageProcessor ip) {
+		if(ip.isInvertedLut()) {
+	    	if (!IJ.showMessageWithCancel("3D Project", ZProjector.lutMessage))
+	    		return; 
+		}
 		if (showDialog())
 			doProjections(imp);
 	}

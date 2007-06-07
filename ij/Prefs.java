@@ -83,7 +83,7 @@ public class Prefs {
 		return imagesURL;
 	}
 	
-	/** Returns the path to the directory containing IJ_Props.txt. */
+	/** Returns the path to the ImageJ directory. */
 	public static String getHomeDir() {
 		return homeDir;
 	}

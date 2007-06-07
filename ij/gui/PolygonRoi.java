@@ -169,7 +169,7 @@ public class PolygonRoi extends Roi {
 		y = r.y;
 		width = r.width;
 		height = r.height;
-		if (nPoints<3 || width==0 || height==0) {
+		if ((nPoints<2) || (type!=FREELINE && (nPoints<3 || width==0 || height==0))) {
 			imp.killRoi();
 			return;
 		}
@@ -374,7 +374,7 @@ public class PolygonRoi extends Roi {
 		if (nPoints>2) {
 			if (type==FREEROI)
 				return getSmoothedPerimeter();
-			else if (type==FREELINE)
+			else if (type==FREELINE && !(width==0 || height==0))
 				return getSmoothedLineLength();
 		}
 		

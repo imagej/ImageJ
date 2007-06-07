@@ -116,18 +116,18 @@ public class Animator implements PlugIn {
 		boolean saveOscillate = oscillate;
 		GenericDialog gd = new GenericDialog("Animation Options");
 		gd.addNumericField("Speed (1-100fps):", animationSpeed, 0);
-		gd.addCheckbox("\"Oscillating\" Animation", oscillate);
+		gd.addCheckbox("Loop Back and Forth", oscillate);
 		gd.addCheckbox("Start Animation", start);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		double speed = gd.getNextNumber();
 		oscillate = gd.getNextBoolean();
-		if (speed==IJ.CANCELED) return;
+		start = gd.getNextBoolean();
 		if (speed>100.0) speed = 100.0;
 		if (speed<1.0) speed = 1.0;
 		animationSpeed = speed;
-		if (start | !swin.running)
+		if (start && !swin.running)
 			startAnimation();
 	}
 

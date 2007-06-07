@@ -11,23 +11,30 @@ import ij.process.*;
 import ij.util.*;
 
 
-/** This class is an extended ImageWindow that displays plots. */
+/** This class is an extended ImageWindow that displays line graphs. */
 public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner {
 
+	/** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
 
-	static final int LEFT_MARGIN = 50;
-	static final int RIGHT_MARGIN = 20;
-	static final int TOP_MARGIN = 20;
-	static final int BOTTOM_MARGIN = 30;
-	static final int WIDTH = 450;
-	static final int HEIGHT = 200;
+	/** Display points using an X-shaped mark. */
+	public static final int X = 1;
+
+	/** Connect points with solid lines. */
+	public static final int LINE = 2;
+
+	private static final int LEFT_MARGIN = 50;
+	private static final int RIGHT_MARGIN = 20;
+	private static final int TOP_MARGIN = 20;
+	private static final int BOTTOM_MARGIN = 30;
+	private static final int WIDTH = 450;
+	private static final int HEIGHT = 200;
 	
-	static final String MIN = "pp.min";
-	static final String MAX = "pp.max";
-	static final String OPTIONS = "pp.options";
-	static final int SAVE_X_VALUES = 1;
-	static final int AUTO_CLOSE = 2;
+	private static final String MIN = "pp.min";
+	private static final String MAX = "pp.max";
+	private static final String OPTIONS = "pp.options";
+	private static final int SAVE_X_VALUES = 1;
+	private static final int AUTO_CLOSE = 2;
 
 	private int frameWidth;
 	private int frameHeight;
@@ -36,6 +43,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	
 	private Rectangle frame = null;
 	private float[] xValues, yValues;
+	private float[] errorBars;
 	private int nPoints;
 	private double xScale, yScale;
 	private double xMin, xMax, yMin, yMax;
@@ -49,9 +57,16 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private boolean fixedYScale;
  	private Graphics g;
 	private static int options;
+	
+	/** Save x-values only. To set, use Edit/Options/
+		Profile Plot Options. */
 	public static boolean saveXValues;
+	
+	/** Automatically close window after saving values. To
+		set, use Edit/Options/Profile Plot Options. */
 	public static boolean autoClose;
  	
+    // static initializer
     static {
 		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
     	options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
@@ -59,6 +74,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
     	autoClose = (options&AUTO_CLOSE)!=0;
     }
 
+	/** Construct a new PlotWindow.
+	* @param title			the window title
+	* @param xLabel			the x-axis label
+	* @param yLabel			the y-axis label
+	* @param xValues		the x-coodinates
+	* @param yValues		the y-coodinates
+	*/
 	public PlotWindow(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		super(new ImagePlus(title,
 			GUI.createBlankImage(WIDTH+LEFT_MARGIN+RIGHT_MARGIN, HEIGHT+TOP_MARGIN+BOTTOM_MARGIN)));
@@ -74,6 +96,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		nPoints = xValues.length;
 	}
 
+	/** Sets the x-axis and y-axis range. */
 	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
 		this.xMin = xMin;
 		this.xMax = xMax;
@@ -82,19 +105,56 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		fixedYScale = true;
 	}
 
+	/** Adds a set of points to the plot.
+	* @param x			the x-coodinates
+	* @param y			the y-coodinates
+	* @param shape		CIRCLE, X or LINE
+	*/
 	public void addPoints(float[] x, float[] y, int shape) {
 		setup();
-		for (int i=0; i<x.length; i++) {
-			int xt = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-			int yt = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-			g.drawOval(xt-2, yt-2, 5, 5);
+		switch(shape) {
+			case CIRCLE: case X: 
+				for (int i=0; i<x.length; i++) {
+					int xt = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+					int yt = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
+					drawShape(shape, xt, yt, 5);
+				}	
+				break;
+			case LINE: 
+				int xts[] = new int[x.length];
+				int yts[] = new int[y.length];
+				for (int i=0; i<x.length; i++) {
+					xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+					yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
+				}
+				g.drawPolyline(xts, yts,x.length); 
+				break;
 		}
 	}
 
+	void drawShape(int shape, int x, int y, int size) {
+		int xbase = x-size/2;
+		int ybase = y-size/2;
+		if (shape==X) {
+			g.drawLine(xbase,ybase,xbase+size,ybase+size);
+			g.drawLine(xbase+size,ybase,xbase,ybase+size);
+		} else
+			g.drawOval(xbase, ybase, size, size);
+	}
+	
+	/** Adds a set of points to the plot using double arrays. */
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
 
+	/** Adds error bars to the plot. */
+	public void addErrorBars(float[] errorBars) {
+		if (errorBars.length!=nPoints)
+			throw new IllegalArgumentException("errorBars.length != npoints");
+		this.errorBars = errorBars  ;
+	}
+
+	/** Draws a label. */
 	public void addLabel(double x, double y, String label) {
 		setup();
 		int xt = LEFT_MARGIN + (int)(x*frameWidth);
@@ -102,6 +162,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		g.drawString(label, xt, yt);
 	}
 
+	/** Displays the plot. */
 	public void draw() {
 		Panel buttons = new Panel();
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -118,8 +179,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		buttons.add(coordinates);
 		add(buttons);
-		pack();
 		drawPlot();
+		pack();
 		g.dispose();
 		g = null;
 		imp.setProcessor(null, new ColorProcessor(imp.getImage()));
@@ -183,6 +244,17 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 		g.drawPolyline(xpoints, ypoints, nPoints); 
 		
+		if (this.errorBars != null) {
+			xpoints = new int[2];
+			ypoints = new int[2];
+			for (int i=0; i<nPoints; i++) {
+				xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
+				ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
+				ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
+				g.drawPolyline(xpoints,ypoints,2);
+			}	    
+	    }
+
 		String s = d2s(yMax);
 		int sw = getWidth(s,g);
 		if ((sw+4)>LEFT_MARGIN)
@@ -233,15 +305,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	void showList() {
-		if (saveXValues)
-			IJ.setColumnHeadings("X\tY");
-		else
-			IJ.setColumnHeadings("Y");
-		for (int i=0; i<nPoints; i++) {
+		if (errorBars !=null) {
 			if (saveXValues)
-				IJ.write(d2s(xValues[i])+"\t"+d2s(yValues[i]));
+				IJ.setColumnHeadings("X\tY\tErrorBar");
 			else
-				IJ.write(d2s(yValues[i]));
+				IJ.setColumnHeadings("Y\tErrorBar");
+			for (int i=0; i<nPoints; i++) {
+				if (saveXValues)
+					IJ.write(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\t"+d2s(errorBars[i]));
+				else
+					IJ.write(d2s(yValues[i])+"\t"+d2s(errorBars[i]));
+			}
+		} else {
+			if (saveXValues)
+				IJ.setColumnHeadings("X\tY");
+			else
+				IJ.setColumnHeadings("Y");
+			for (int i=0; i<nPoints; i++) {
+				if (saveXValues)
+					IJ.write(d2s(xValues[i])+"\t"+d2s(yValues[i]));
+				else
+					IJ.write(d2s(yValues[i]));
+			}
 		}
 		if (autoClose)
 			{imp.changes=false; close();}

@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import java.awt.*;
+import java.awt.event.*;
 
 /** Implements the Analyze/Set Scale command. */
 public class ScaleDialog implements PlugInFilter {
@@ -25,11 +26,13 @@ public class ScaleDialog implements PlugInFilter {
 		Calibration cal = imp.getCalibration();
 		boolean isCalibrated = cal.scaled();
 		
+		String scale = "<no scale>";
 		if (isCalibrated) {
 			measured = 1.0/cal.pixelWidth;
 			known = 1.0;
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 			unit = cal.getUnit();
+			scale = IJ.d2s(measured,2)+" pixels per "+unit;
 		}
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi instanceof Line)) {
@@ -37,11 +40,12 @@ public class ScaleDialog implements PlugInFilter {
 			known = 0.0;
 		}
 		
-		GenericDialog gd = new GenericDialog("Set Scale", IJ.getInstance());
+		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale);
 		gd.addNumericField("Distance in Pixels:", measured, 2);
 		gd.addNumericField("Known Distance:", known, 2);
 		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1);
 		gd.addStringField("Unit of Measurement:", unit);
+		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
 		gd.addCheckbox("Global", Calibrator.global);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -84,6 +88,41 @@ public class ScaleDialog implements PlugInFilter {
 			}
 		} else
 			imp.getWindow().repaint();
+	}
+
+}
+
+class SetScaleDialog extends GenericDialog {
+	String initialScale;
+
+	public SetScaleDialog(String title, String scale) {
+		super(title);
+		initialScale = scale;
+	}
+
+    protected void setup() {
+   		setScale(initialScale);
+    }
+ 	
+ 	public void textValueChanged(TextEvent e) {
+ 		Double d = getValue(numberField[0].getText());
+ 		if (d==null) return;
+ 		double measured = d.doubleValue();
+ 		d = getValue(numberField[1].getText());
+ 		if (d==null) return;
+ 		double known = d.doubleValue();
+ 		String theScale;
+ 		String unit = stringField[0].getText();
+ 		boolean noScale = measured<=0||known<=0||unit.startsWith("pixel")||unit.startsWith("Pixel")||unit.equals("");
+ 		if (noScale)
+ 			theScale = "<no scale>";
+ 		else
+ 			theScale = IJ.d2s(measured/known,2)+" pixels per "+unit;
+ 		setScale(theScale);
+	}
+	
+	void setScale(String theScale) {
+ 		((Label)theLabel).setText("Scale: "+theScale);
 	}
 
 }

@@ -26,7 +26,7 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.22d";
+	public static final String VERSION = "1.23y";
 
 	private Toolbar toolbar;
 	private Panel statusBar;
@@ -206,30 +206,51 @@ public class ImageJ extends Frame implements ActionListener,
 		ImageStack stack = null;
 		if (slices>1)
 			stack = imp.getStack();
+		int[] mask = null;
+		float[] cTable = imp.getCalibration().getCTable();
 		if (slices==1 || !doesStacks || (stack!=null && (stack.isRGB() || stack.isHSB()))) {
 			ip = imp.getProcessor();
+			mask = imp.getMask();
 			if ((capabilities&PlugInFilter.NO_UNDO)!=0)
 				Undo.reset();
 			else {
 				Undo.setup(Undo.FILTER, imp);
 				ip.snapshot();
 			}
+			ip.setMask(mask);
+			ip.setCalibrationTable(cTable);
 			((PlugInFilter)theFilter).run(ip);
 			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
-				ip.reset(imp.getMask());  //restore image outside irregular roi
+				ip.reset(mask);  //restore image outside irregular roi
 		} else {
        		Undo.reset(); // can't undo stack operations
 			int n = stack.getSize();
 			int currentSlice = imp.getCurrentSlice();
+			Rectangle r = null;
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.getType()<Roi.LINE)
+				r = roi.getBoundingRect();
+			mask = imp.getMask();
 			for (int i=1; i<=n; i++) {
 				ip = stack.getProcessor(i);
+				boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
+					&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
+				if (doMasking)
+					ip.snapshot();
+				ip.setRoi(r);
+				ip.setMask(mask);
+				ip.setCalibrationTable(cTable);
 				((PlugInFilter)theFilter).run(ip);
+				if (doMasking)
+					ip.reset(mask);
 				IJ.showProgress((double)i/n);
 				System.gc();
 				Thread.yield();
 			}
 			int current = imp.getCurrentSlice();
 			imp.setProcessor(null,stack.getProcessor(current));
+			if (roi!=null)
+				imp.setRoi(roi);
 			IJ.showProgress(1.0);
 		}
 		IJ.showTime(imp, imp.getStartTime(), cmd + ": ");
@@ -248,7 +269,7 @@ public class ImageJ extends Frame implements ActionListener,
 			return null;
 		if (notVerified) {
 			// check for duplicate classes in the plugins folder
-			IJ.runPlugIn("ij.plugin.Verifier", "");
+			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 			notVerified = false;
 		}
 		PluginClassLoader loader;
@@ -267,7 +288,7 @@ public class ImageJ extends Frame implements ActionListener,
  			else if (thePlugIn instanceof PlugInFilter)
 				runFilterPlugIn(thePlugIn, commandName, arg);
 		}
-		catch (ClassNotFoundException e) {IJ.write("PlugIn not found: "+className);}
+		catch (ClassNotFoundException e) {IJ.write("Plugin not found: "+className);}
 		catch (InstantiationException e) {IJ.write("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {IJ.write("Unable to load plugin (acc)");}
 		return thePlugIn;
@@ -291,7 +312,7 @@ public class ImageJ extends Frame implements ActionListener,
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
 			if (cmd!=null)
-			doCommand(cmd);
+				doCommand(cmd);
 			if (IJ.debugMode) IJ.write("actionPerformed: "+cmd);
 		}
 	}
@@ -383,6 +404,7 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_ESCAPE:
 					if (imp!=null)
 						imp.getWindow().running = false;
+					Macro.abort();
 					return;
 				case KeyEvent.VK_ENTER: this.toFront(); return;
 				default: break;
@@ -406,8 +428,8 @@ public class ImageJ extends Frame implements ActionListener,
 			this.setMenuBar(Menus.getMenuBar());
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension window = getSize();
-		if (IJ.debugMode) IJ.write("screen: "+screen);
-		if (IJ.debugMode) IJ.write("Window: "+window);
+		//if (IJ.debugMode) IJ.write("screen: "+screen);
+		//if (IJ.debugMode) IJ.write("Window: "+window);
 		boolean bigWindow = window.width>=screen.width;
 		if (bigWindow) {
 			//ImagePlus imp = WindowManager.getCurrentImage();

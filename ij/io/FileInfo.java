@@ -9,7 +9,8 @@ public class FileInfo {
 	public static final int GRAY8 = 0;
 	
 	/*	16-bit signed integer (-32768-32767). Imported signed images
-		are converted to unsigned by adding 32768. */
+		with any negative pixel values are converted to unsigned by 
+		adding 32768. */
 	public static final int GRAY16_SIGNED = 1;
 	
 	/* 16-bit unsigned integer (0-65535). */
@@ -96,11 +97,25 @@ public class FileInfo {
 			+ ", width=" + width
 			+ ", height=" + height
 			+ ", nImages=" + nImages
-			+ ", type=" + fileType
+			+ ", type=" + getType()
 			+ ", offset=" + offset
 			+ ", whiteZero=" + (whiteIsZero?"t":"f")
 			+ ", Intel=" + (intelByteOrder?"t":"f")
 			+ ", lutSize=" + lutSize;
+    }
+    
+    private String getType() {
+    	switch (fileType) {
+			case GRAY8: return "byte";
+			case GRAY16_SIGNED: return "short";
+			case GRAY16_UNSIGNED: return "ushort";
+			case GRAY32_INT: return "int";
+			case GRAY32_FLOAT: return "float";
+			case COLOR8: return "byte+lut";
+			case RGB: return "RGB";
+			case RGB_PLANAR: return "RGB(p)";
+			default: return "";
+    	}
     }
     
 }

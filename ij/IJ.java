@@ -1,5 +1,6 @@
 package ij;
 import ij.gui.*;
+import ij.process.*;
 import ij.text.TextPanel;
 import ij.io.*;
 import ij.plugin.*;
@@ -9,6 +10,7 @@ import java.text.DecimalFormat;
 import java.awt.Color;	
 import java.awt.Frame;	
 import java.applet.Applet;
+import ij.plugin.frame.Recorder;
 
 /** This class consists of static utility methods. */
 public class IJ {
@@ -18,9 +20,11 @@ public class IJ {
 	private static java.applet.Applet applet;
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
-	private static boolean isMac=System.getProperty("os.name").startsWith("Mac");
+	private static boolean isMac = System.getProperty("os.name").startsWith("Mac");
 	private static boolean altDown, spaceDown;
-		
+	private static boolean macroRunning;
+	private static Thread previousThread;
+			
 	static void init(ImageJ imagej, Applet theApplet, TextPanel tp) {
 		ij = imagej;
 		applet = theApplet;
@@ -68,10 +72,43 @@ public class IJ {
     /** Runs a menu command in the current thread. Does not
     	return until the command has finished executing. */
 	public static void run(String command) {
+		Macro.abort = false;
+		Macro.setOptions(null);
+		macroRunning = true;
 		Executer e = new Executer(command);
 		e.run();
+		macroRunning = false;
+		testAbort();
 	}
 	
+	public static void run(String command, String options) {
+		Macro.abort = false;
+		Macro.setOptions(options);
+		Thread thread = Thread.currentThread();
+		if (previousThread==null || thread!=previousThread) {
+			String name = thread.getName();
+			if (name.indexOf("-macro")<0) {
+				thread.setName(name+"-macro");
+				//IJ.write("setName: "+name+"-macro");
+			}
+		}
+		previousThread = thread;
+		macroRunning = true;
+		Executer e = new Executer(command);
+		e.run();
+		macroRunning = false;
+		testAbort();
+	}
+
+	private static void testAbort() {
+		if (Macro.abort)
+			throw new RuntimeException("Macro canceled");
+	}
+
+	public static boolean macroRunning() {
+		return macroRunning;
+	}
+
 	/**Returns the Applet that created this ImageJ or null if running as an application.*/
 	public static java.applet.Applet getApplet() {
 		return applet;
@@ -106,6 +143,7 @@ public class IJ {
 	/**Displays a "no images are open" dialog box.*/
 	public static void noImage() {
 		showMessage("No Image", "There are no images open.");
+		Macro.abort();
 	}
 
 	/**Displays an "out of memory" message in the ImageJ window.*/
@@ -141,6 +179,7 @@ public class IJ {
 			new MessageDialog(ij, "ImageJ", msg);
 		else
 			System.out.println(msg);
+		Macro.abort();
 	}
 	
 	/** Displays a message in a dialog box with the specified title.
@@ -270,7 +309,9 @@ public class IJ {
 
 	static void setKeyDown(int key) {
 		switch (key) {
-			case KeyEvent.VK_ALT: altDown=true; break;
+			case KeyEvent.VK_ALT:
+				altDown=true;
+				break;
 			case KeyEvent.VK_SPACE: {
 				spaceDown=true;
 				ImageWindow win = WindowManager.getCurrentWindow();
@@ -294,7 +335,7 @@ public class IJ {
 
 	/** Returns true if this machine is a Macintosh. */
 	public static boolean isMacintosh() {
-		return isMac && ij!=null;
+		return isMac;
 	}
 	
 	/** Displays an error message and returns false if the
@@ -311,15 +352,93 @@ public class IJ {
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
+			String macroOptions = Macro.getOptions();
+			if (macroOptions!=null) {
+				if (macroOptions.indexOf("stack ")>=0)
+					return flags+PlugInFilter.DOES_STACKS;
+				else
+					return flags;
+			}
 			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
 				"Process Stack?", "Process all "+stackSize+" slices?  There is\n"
 				+"no Undo if you select \"Yes\".");
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
-			else if (d.yesPressed())
+			else if (d.yesPressed()) {
+				if (Recorder.record)
+					Recorder.recordOption("stack");
 				return flags+PlugInFilter.DOES_STACKS;
+			}
+			if (Recorder.record)
+				Recorder.recordOption("slice");
 		}
 		return flags;
+	}
+	
+	public static void makeRectangle(int x, int y, int width, int height) {
+		getImage().setRoi(x, y, width, height);
+	}
+	
+	public static void makeOval(int x, int y, int width, int height) {
+		ImagePlus img = getImage();
+		getImage().setRoi(new OvalRoi(x, y, width, height, img));
+	}
+	
+	public static void makeLine(int x1, int y1, int x2, int y2) {
+		ImagePlus img = getImage();
+		getImage().setRoi(new Line(x1, y1, x2, y2, img));
+	}
+	
+	public static void setThreshold(double lowerThreshold, double upperThresold) {
+		ImagePlus img = getImage();
+		img.getProcessor().setThreshold(lowerThreshold,upperThresold,ImageProcessor.RED_LUT);
+		img.updateAndDraw();
+	}
+	
+	public static void resetThreshold() {
+		ImagePlus img = getImage();
+		img.getProcessor().setThreshold(ImageProcessor.NO_THRESHOLD,0,0);
+		img.updateAndDraw();
+	}
+	
+	public static void selectWindow(String title) {
+		int[] wList = WindowManager.getIDList();
+		if (wList==null)
+			return;
+		String[] titles = new String[wList.length];
+		for (int i=0; i<wList.length; i++) {
+			ImagePlus imp = WindowManager.getImage(wList[i]);
+			//IJ.write(i+" "+imp);
+			if (imp!=null) {
+				if (imp.getTitle().equals(title)) {
+					ImageWindow win = imp.getWindow();
+					if (win!=null) {
+						//IJ.write("toFront: "+imp);
+						win.toFront();
+						IJ.wait(50);
+						WindowManager.setCurrentWindow(win);
+					}
+					return;
+				}
+			}
+		}
+	}
+	
+	public static void setForegroundColor(int red, int green, int blue) {
+		Toolbar.setForegroundColor(new Color(red, green, blue));
+	}
+
+	public static void setBackgroundColor(int red, int green, int blue) {
+		Toolbar.setBackgroundColor(new Color(red, green, blue));
+	}
+
+	private static ImagePlus getImage() {
+		ImagePlus img = WindowManager.getCurrentImage();
+		if (img==null) {
+			IJ.noImage();
+			throw new RuntimeException("Macro canceled");
+		}
+		return img;
 	}
 	
 }

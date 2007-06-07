@@ -22,9 +22,9 @@ public class Toolbar extends Canvas implements MouseListener {
 	public static final int HAND = 12;
 	public static final int DROPPER = 13;
 
-	static final int NUM_TOOLS = 19;
-	static final int SIZE = 22;
-	static final int OFFSET = 3;
+	private static final int NUM_TOOLS = IJ.isMacintosh()?14:19;
+	private static final int SIZE = 22;
+	private static final int OFFSET = 3;
 
 	private Dimension ps;
 	private boolean[] down;

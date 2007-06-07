@@ -100,7 +100,7 @@ public class TypeConverter {
 			r = (c&0xff0000)>>16;
 			g = (c&0xff00)>>8;
 			b = c&0xff;
-			pixels8[i] = (byte)((int)(r*0.30 + g*0.59 + b*0.11) & 0xff);
+			pixels8[i] = (byte)((int)(r*0.299 + g*0.587 + b*0.114) & 0xff);
 		}
 		
 		return new ByteProcessor(width, height, pixels8, null);

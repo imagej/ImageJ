@@ -10,6 +10,7 @@ public class Filler implements PlugInFilter {
 	String arg;
 	Roi roi;
 	ImagePlus imp;
+	int sliceCount;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -23,16 +24,16 @@ public class Filler implements PlugInFilter {
 	 		if (isTextRoi)
 				return baseCapabilities;
 			else
-				return baseCapabilities+SUPPORTS_MASKING;
+				return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
 		} else if (arg.equals("draw")) {
 	 		if (isTextRoi)
 				return baseCapabilities+SUPPORTS_MASKING;
 			else
 				return baseCapabilities;
-		} else if (arg.equals("outside"))
-			return baseCapabilities;
-		else
-			return baseCapabilities+SUPPORTS_MASKING;
+		} else if (arg.equals("outside")) {
+				return IJ.setupDialog(imp,baseCapabilities);
+		} else
+			return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
@@ -54,7 +55,10 @@ public class Filler implements PlugInFilter {
 		
 	public void fill(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
-	 	ip.fill(); // fill with foreground color
+		if (roi!=null && roi.getType()>=Roi.LINE && roi.getType()<=Roi.FREELINE)
+			roi.drawPixels();
+		else
+	 		ip.fill(); // fill with foreground color
 	}
 	 			 		
 	public void draw(ImageProcessor ip) {
@@ -63,20 +67,29 @@ public class Filler implements PlugInFilter {
 	}
 
 	public synchronized void clearOutside(ImageProcessor ip) {
+ 		sliceCount++;
  		Rectangle r = ip.getRoi();
  		int[] mask = imp.getMask();
  		if (mask==null) {
  			mask = new int[r.width*r.height];
  			for (int i=0; i<mask.length; i++)
- 				mask[i] = ip.BLACK;
+ 				mask[i] = ImageProcessor.BLACK;
  		}
- 		// invert mask
+ 		// duplicate mask (needed because getMask caches masks)
+ 		int[] mask2 = new int[mask.length];
  		for (int i=0; i<mask.length; i++)
- 			if (mask[i]==ip.BLACK)
+ 			mask2[i] = mask[i];
+ 		mask = mask2;
+  		// invert mask
+ 		for (int i=0; i<mask.length; i++)
+ 			if (mask[i]==ImageProcessor.BLACK)
  				mask[i] = 0xFFFFFFFF;
  			else
- 				mask[i] = ip.BLACK;
+ 				mask[i] = ImageProcessor.BLACK;
  		ip.setColor(Toolbar.getBackgroundColor());
+ 		int stackSize = imp.getStackSize();
+ 		if (stackSize>1)
+ 			ip.snapshot();
 		ip.fill();
  		ip.reset(mask);
 		int width = ip.getWidth();
@@ -90,11 +103,13 @@ public class Filler implements PlugInFilter {
  		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
  		ip.fill();
  		ip.setRoi(null);
-		ip.setColor(Toolbar.getForegroundColor());
-		Roi roi = imp.getRoi();
-		imp.killRoi();
-		imp.updateAndDraw();
-		imp.setRoi(roi);
+ 		if (sliceCount==stackSize) {
+			ip.setColor(Toolbar.getForegroundColor());
+			Roi roi = imp.getRoi();
+			imp.killRoi();
+			imp.updateAndDraw();
+			imp.setRoi(roi);
+		}
 	}
 
 }

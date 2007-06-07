@@ -295,7 +295,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		IJ.write(rt.getRowAsString(counter-1));
 	}
 
-	/** Updates the column headings. */
+	/** Updates the displayed column headings. Does nothing if
+	    the results table headings and the displayed headings are
+        the same. Redisplays the results if the headings are
+        different and the results table is not empty. */
 	public void updateHeadings() {
 		TextPanel tp = IJ.getTextPanel();
 		if (tp==null)
@@ -433,12 +436,14 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return systemRT.getCounter();
 	}
 
-	/** Sets the measurement count to zero. */
+	/** Sets the measurement counter to zero. Displays a dialog that
+	    allows the user to save any existing measurements. Returns
+	    false if the user cancels the dialog.
+	*/
 	public synchronized static boolean resetCounter() {
 		int lineCount = IJ.getTextPanel().getLineCount();
 		int counter = systemRT.getCounter();
-		if (counter>0 && lineCount>0 && unsavedMeasurements) {
-
+		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning()) {
 			SaveChangesDialog d = new SaveChangesDialog(IJ.getInstance(), "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;

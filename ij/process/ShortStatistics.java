@@ -56,10 +56,11 @@ public class ShortStatistics extends ImageStatistics {
 		double value;
 		double sum = 0.0;
 		double sum2 = 0.0;
-		double scale = (double)((nBins-1)/(histMax-histMin));
+		double scale = (double)(nBins/(histMax-histMin));
 		int hMin = (int)histMin;
 		binSize = (histMax-histMin)/nBins;
 		histogram = new int[nBins]; // 256 bin histogram
+		int index;
 				
 		for (int i=min; i<=max; i++) {
 			count = hist[i];
@@ -67,14 +68,15 @@ public class ShortStatistics extends ImageStatistics {
 			value = cTable==null?i:cTable[i];
 			sum += value*count;
 			sum2 += (value*value)*count;
-			histogram[(int)(scale*(i-hMin))] += count;
+			index = (int)(scale*(i-hMin));
+			if (index>=nBins)
+				index = nBins-1;
+			histogram[index] += count;
 		}
 		area = pixelCount*pw*ph;
 		mean = sum/pixelCount;
 		umean = mean;
 		calculateStdDev(pixelCount, sum, sum2);
-		histMin = min;
-		histMax = max;
 	}
 	
 	void getMode(float[] cTable) {
@@ -121,7 +123,7 @@ public class ShortStatistics extends ImageStatistics {
 		min = Double.MAX_VALUE;
 		max = -Double.MAX_VALUE;
 		double v = 0.0;
-		for (int i=minValue; i<maxValue; i++) {
+		for (int i=minValue; i<=maxValue; i++) {
 			if (hist[i]>0) {
 				v = cTable[i];
 				if (v<min) min = v;

@@ -6,6 +6,7 @@ import java.awt.image.*;
 import java.awt.event.*;
 import ij.process.ImageProcessor;
 import ij.measure.*;
+import ij.plugin.frame.Recorder;
 import ij.*;
 
 /** This is as Canvas used to display images in a Window. */
@@ -313,9 +314,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		switch (type) {
 			case ImagePlus.GRAY8: {
 				if (setBackground)
-					Toolbar.setBackgroundColor(getColor(v[0]));
+					setBackgroundColor(getColor(v[0]));
 				else
-					Toolbar.setForegroundColor(getColor(v[0]));
+					setForegroundColor(getColor(v[0]));
 				break;
 			}
 			case ImagePlus.GRAY16: case ImagePlus.GRAY32: {
@@ -326,17 +327,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (index<0) index = 0;
 				if (index>255) index = 255;
 				if (setBackground)
-					Toolbar.setBackgroundColor(getColor(index));
+					setBackgroundColor(getColor(index));
 				else
-					Toolbar.setForegroundColor(getColor(index));
+					setForegroundColor(getColor(index));
 				break;
 			}
 			case ImagePlus.COLOR_RGB: case ImagePlus.COLOR_256: {
 				Color c = new Color(v[0], v[1], v[2]);
 				if (setBackground)
-					Toolbar.setBackgroundColor(c);
+					setBackgroundColor(c);
 				else
-					Toolbar.setForegroundColor(c);
+					setForegroundColor(c);
 				break;
 			}
 		}
@@ -348,6 +349,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			imp.setColor(c);
 		}
 		IJ.showStatus("("+c.getRed()+", "+c.getGreen()+", "+c.getBlue()+")");
+	}
+	
+	private void setForegroundColor(Color c) {
+		Toolbar.setForegroundColor(c);
+		if (Recorder.record)
+			Recorder.record("setForegroundColor", c.getRed(), c.getGreen(), c.getBlue());
+	}
+
+	private void setBackgroundColor(Color c) {
+		Toolbar.setBackgroundColor(c);
+		if (Recorder.record)
+			Recorder.record("setBackgroundColor", c.getRed(), c.getGreen(), c.getBlue());
 	}
 
 	public void mousePressed(MouseEvent e) {
