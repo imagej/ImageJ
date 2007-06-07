@@ -11,11 +11,13 @@ import ij.plugin.frame.Recorder;
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable {
 
-	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3; // States
-	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, POLYLINE=6, FREELINE=7; // Types
-	public static final int HANDLE_SIZE = 4; 
+	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
+	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, POLYLINE=6, FREELINE=7, ANGLE=8; // Types
+	public static final int HANDLE_SIZE = 5; 
+	public static final int NOT_PASTING = -1; 
 	
 	int startX, startY, x, y, width, height;
+	int activeHandle;
 	int state;
 	
 	public static Roi previousRoi = null;
@@ -31,6 +33,7 @@ public class Roi extends Object implements Cloneable {
 	protected ImagePlus clipboard = null;
 	protected boolean constrain = false;
 	protected boolean updateFullWindow;
+	protected double mag = 1.0;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -138,7 +141,7 @@ public class Roi extends Object implements Cloneable {
 	}
 	
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
-	    (www.eckelobjects.com) for a good description of object cloning. */
+		(www.eckelobjects.com) for a good description of object cloning. */
 	public synchronized Object clone() {
 		try { 
 			Roi r = (Roi)super.clone();
@@ -182,13 +185,47 @@ public class Roi extends Object implements Cloneable {
 		oldHeight = height;
 	}
 
+	protected void moveHandle(int ox, int oy) {
+		if (clipboard!=null)
+			return;
+		if (ox<0) ox=0; if (oy<0) oy=0;
+		if (ox>xMax) ox=xMax; if (oy>yMax) oy=yMax;
+		//IJ.log("moveHandle: "+activeHandle+" "+ox+" "+oy);
+		int x1=x, y1=y, x2=x1+width, y2=y+height;
+		switch (activeHandle) {
+			case 0: x=ox; y=oy; break;
+			case 1: y=oy; break;
+			case 2: x2=ox; y=oy; break;
+			case 3: x2=ox; break;			
+			case 4: x2=ox; y2=oy; break;
+			case 5: y2=oy; break;
+			case 6: x=ox; y2=oy; break;
+			case 7: x=ox; break;
+		}
+		if (x<x2)
+		   width=x2-x;
+		else
+		  {width=1; x=x2;}
+		if (y<y2)
+		   height = y2-y;
+		else
+		   {height=1; y=y2;}
+		if (constrain)
+			height = width;
+		updateClipRect();
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		oldX=x; oldY=y;
+		oldWidth=width; oldHeight=height;
+	}
+
 	void move(int xNew, int yNew) {
 		x += xNew - startX;
 		y += yNew - startY;
-		if (x < 0) x = 0;
-		if (y < 0) y = 0;
-		if ((x+width)>xMax) x = xMax-width;
-		if ((y+height)>yMax) y = yMax-height;
+		if (type!=RECTANGLE || clipboard==null) {
+			if (x<0) x=0; if (y<0) y=0;
+			if ((x+width)>xMax) x = xMax-width;
+			if ((y+height)>yMax) y = yMax-height;
+		}
 		startX = xNew;
 		startY = yNew;
 		updateClipRect();
@@ -202,23 +239,27 @@ public class Roi extends Object implements Cloneable {
 	/** Nudge ROI one pixel on arrow key press. */
 	public void nudge(int key) {
 		switch(key) {
-        	case KeyEvent.VK_UP:
-        		y--;
-				if (y<0) y = 0;
+			case KeyEvent.VK_UP:
+				y--;
+				if (y<0 && (type!=RECTANGLE||clipboard==null))
+					y = 0;
 				break;
-        	case KeyEvent.VK_DOWN:
-        		y++;
-				if ((y+height)>=yMax) y = yMax-height;
+			case KeyEvent.VK_DOWN:
+				y++;
+				if ((y+height)>=yMax && (type!=RECTANGLE||clipboard==null))
+					y = yMax-height;
 				break;
 			case KeyEvent.VK_LEFT:
 				x--;
-				if (x<0) x = 0;
+				if (x<0 && (type!=RECTANGLE||clipboard==null))
+					x = 0;
 				break;
 			case KeyEvent.VK_RIGHT:
-        		x++;
-				if ((x+width)>=xMax) x = xMax-width;
+				x++;
+				if ((x+width)>=xMax && (type!=RECTANGLE||clipboard==null))
+					x = xMax-width;
 				break;
-        }
+		}
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
@@ -230,12 +271,12 @@ public class Roi extends Object implements Cloneable {
 		if (type>OVAL || clipboard!=null)
 			return;
 		switch(key) {
-        	case KeyEvent.VK_UP:
-        		height--;
+			case KeyEvent.VK_UP:
+				height--;
 				if (height<1) height = 1;
 				break;
-        	case KeyEvent.VK_DOWN:
-        		height++;
+			case KeyEvent.VK_DOWN:
+				height++;
 				if ((y+height) > yMax) height = yMax-y;
 				break;
 			case KeyEvent.VK_LEFT:
@@ -243,10 +284,10 @@ public class Roi extends Object implements Cloneable {
 				if (width<1) width = 1;
 				break;
 			case KeyEvent.VK_RIGHT:
-        		width++;
+				width++;
 				if ((x+width) > xMax) width = xMax-x;
 				break;
-        }
+		}
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
@@ -258,27 +299,18 @@ public class Roi extends Object implements Cloneable {
 		clipY = (y<=oldY)?y:oldY;
 		clipWidth = ((x+width>=oldX+oldWidth)?x+width:oldX+oldWidth) - clipX + 1;
 		clipHeight = ((y+height>=oldY+oldHeight)?y+height:oldY+oldHeight) - clipY + 1;
+		int m = 3;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
-			if (mag<1.0) {
-				clipWidth += (int)(1/mag);
-				clipHeight += (int)(1/mag);
-			}
+			if (mag<1.0)
+				m = (int)(3/mag);
 		}
-		if (type!=RECTANGLE) {
-			if (clipboard==null) {
-				clipWidth += 2;
-				clipHeight += 2;
-				clipX -= 1;
-				clipY -= 1;
-			} else {
-				clipWidth += 5;
-				clipHeight += 5;
-			}
-		}
-	}
+		clipX-=m; clipY-=m;
+		clipWidth+=m*2; clipHeight+=m*2;
+	 }
 		
 	protected void handleMouseDrag(int sx, int sy, boolean constrain) {
+		if (ic==null) return;
 		this.constrain = constrain;
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
@@ -289,33 +321,71 @@ public class Roi extends Object implements Cloneable {
 			case MOVING:
 				move(ox, oy);
 				break;
+			case MOVING_HANDLE:
+				moveHandle(ox, oy);
+				break;
 			default:
 				break;
 		}
 	}
 
 	int getHandleSize() {
-		double mag = ic.getMagnification();
+		double mag = ic!=null?ic.getMagnification():1.0;
 		double size = HANDLE_SIZE/mag;
 		return (int)(size*mag);
 	}
 	
 	public void draw(Graphics g) {
-		double mag = ic.getMagnification();
+		if (ic==null) return;
 		g.setColor(ROIColor);
+		mag = ic.getMagnification();
+		int sw = (int)(width*mag);
+		int sh = (int)(height*mag);
 		int sx1 = ic.screenX(x);
 		int sy1 = ic.screenY(y);
-		int sx2 = sx1+(int)(width*mag)-1;
-		int sy2 = sy1+(int)(height*mag)-1;
-		g.drawRect(sx1, sy1, sx2-sx1, sy2-sy1);
-		//IJ.write(sx1 + " " + sy1 + " " + (sx2-sx1+1) + " " + (sy2-sy1+1));
-		if ((sx2-sx1)>2 && (sy2-sy1)>2 ) {
-			int handleSize = getHandleSize();
-			g.fillRect(sx2-HANDLE_SIZE, sy2-HANDLE_SIZE, HANDLE_SIZE, HANDLE_SIZE);
+		int sx2 = sx1+sw/2;
+		int sy2 = sy1+sh/2;
+		int sx3 = sx1+sw;
+		int sy3 = sy1+sh;
+		g.drawRect(sx1, sy1, sw, sh);
+		if (state!=CONSTRUCTING && clipboard==null) {
+			int size2 = HANDLE_SIZE/2;
+			drawHandle(g, sx1-size2, sy1-size2);
+			drawHandle(g, sx2-size2, sy1-size2);
+			drawHandle(g, sx3-size2, sy1-size2);
+			drawHandle(g, sx3-size2, sy2-size2);
+			drawHandle(g, sx3-size2, sy3-size2);
+			drawHandle(g, sx2-size2, sy3-size2);
+			drawHandle(g, sx1-size2, sy3-size2);
+			drawHandle(g, sx1-size2, sy2-size2);
 		}
 		showStatus();
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
+	}
+
+	void drawHandle(Graphics g, int x, int y) {
+		double size = (width*height)*mag;
+		if (type==LINE) {
+			size = Math.sqrt(width*width+height*height);
+			size *= size*mag;
+		}
+		if (size>6000.0) {
+			g.setColor(Color.black);
+			g.fillRect(x,y,5,5);
+			g.setColor(Color.white);
+			g.fillRect(x+1,y+1,3,3);
+		} else if (size>1500.0) {
+			g.setColor(Color.black);
+			g.fillRect(x+1,y+1,4,4);
+			g.setColor(Color.white);
+			g.fillRect(x+2,y+2,2,2);
+		} else {			
+			g.setColor(Color.black);
+			g.fillRect(x+1,y+1,3,3);
+			g.setColor(Color.white);
+			g.fillRect(x+2,y+2,1,1);
+		}
 	}
 
 	public void drawPixels() {
@@ -330,29 +400,47 @@ public class Roi extends Object implements Cloneable {
 		return r.contains(x, y);
 	}
 		
-	boolean insideHandle(int sx, int sy) {
-		if (type!=RECTANGLE)
-			return false;
-		return sx>=(ic.screenX(x+width)-HANDLE_SIZE*2) && sy>=(ic.screenY(y+height)-HANDLE_SIZE*2);
+	/** Returns a handle number if the specified screen coordinates are  
+		inside or near a handle, otherwise returns -1. */
+	int isHandle(int sx, int sy) {
+		if (clipboard!=null) return -1;
+		double mag = ic.getMagnification();
+		int size = HANDLE_SIZE+3;
+		int halfSize = size/2;
+		int sx1 = ic.screenX(x) - halfSize;
+		int sy1 = ic.screenY(y) - halfSize;
+		int sx3 = ic.screenX(x+width) - halfSize;
+		int sy3 = ic.screenY(y+height) - halfSize;
+		int sx2 = sx1 + (sx3 - sx1)/2;
+		int sy2 = sy1 + (sy3 - sy1)/2;
+		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
+		if (sx>=sx2&&sx<=sx2+size&&sy>=sy1&&sy<=sy1+size) return 1;
+		if (sx>=sx3&&sx<=sx3+size&&sy>=sy1&&sy<=sy1+size) return 2;
+		if (sx>=sx3&&sx<=sx3+size&&sy>=sy2&&sy<=sy2+size) return 3;
+		if (sx>=sx3&&sx<=sx3+size&&sy>=sy3&&sy<=sy3+size) return 4;
+		if (sx>=sx2&&sx<=sx2+size&&sy>=sy3&&sy<=sy3+size) return 5;
+		if (sx>=sx1&&sx<=sx1+size&&sy>=sy3&&sy<=sy3+size) return 6;
+		if (sx>=sx1&&sx<=sx1+size&&sy>=sy2&&sy<=sy2+size) return 7;
+		return -1;
+	}
+	
+	protected void mouseDownInHandle(int handle, int sx, int sy) {
+		state = MOVING_HANDLE;
+		activeHandle = handle;
 	}
 
 	protected void handleMouseDown(int sx, int sy) {
 		if (state==NORMAL) {
-			if (insideHandle(sx, sy)) {
-				state = CONSTRUCTING;
-				startX = x;
-				startY = y;
-			} else {
-				state = MOVING;
-				startX = ic.offScreenX(sx);
-				startY = ic.offScreenY(sy);
-			}
+			state = MOVING;
+			startX = ic.offScreenX(sx);
+			startY = ic.offScreenY(sy);
 			showStatus();
 		}
 	}
 		
 	protected void handleMouseUp(int screenX, int screenY) {
 		state = NORMAL;
+		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
 		if (Recorder.record) {
 			String method;
 			if (type==LINE) {
@@ -365,7 +453,6 @@ public class Roi extends Object implements Cloneable {
 				Recorder.record("makeRectangle", x, y, width, height);
 		}
 	}
-
 
 	protected void showStatus() {
 		String value;
@@ -430,7 +517,7 @@ public class Roi extends Object implements Cloneable {
 		imp.getProcessor().reset();
 		imp.updateAndDraw();
 	}
-	
+
 	/** Returns the angle in degrees between the specified line and a horizontal line. */
 	public double getAngle(int x1, int y1, int x2, int y2) {
 		final int q1=0, q2orq3=2, q4=3; //quadrant
@@ -482,7 +569,9 @@ public class Roi extends Object implements Cloneable {
 		ROIColor = c;
 	}
 	
-	/** Sets the Paste transfer mode. */
+	/** Sets the Paste transfer mode.
+		@see ij.process.Blitter
+	*/
 	public static void setPasteMode(int transferMode) {
 		int previousMode = pasteMode;
 		pasteMode = transferMode;
@@ -498,6 +587,17 @@ public class Roi extends Object implements Cloneable {
 			}
 		}
 		imp.updateAndDraw();
+	}
+	
+	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
+		if no paste operation is in progress.
+		@see ij.process.Blitter
+	*/
+	public int getPasteMode() {
+		if (clipboard==null)
+			return NOT_PASTING;
+		else
+			return pasteMode;
 	}
 
 	public String toString() {

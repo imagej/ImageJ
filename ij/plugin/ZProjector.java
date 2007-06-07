@@ -2,8 +2,8 @@ package ij.plugin;
 
 import ij.*; 
 import ij.gui.GenericDialog; 
-import ij.process.*; 
-
+import ij.process.*;
+import ij.plugin.filter.*; 
 import java.lang.*; 
 import java.awt.*; 
 import java.awt.event.*; 
@@ -92,12 +92,6 @@ public class ZProjector implements PlugIn {
 	    	return; 
 		}
 	
-		//  Check for RGB stack.
-		if(imp.getType()==ImagePlus.COLOR_RGB) {
-	    	IJ.showMessage("ZProjection", "RGB stacks are not supported."); 
-	    	return; 
-		}
-	
 		//  Check for inverted LUT.
 		if(imp.getProcessor().isInvertedLut()) {
 	    	if (!IJ.showMessageWithCancel("ZProjection", lutMessage))
@@ -114,11 +108,23 @@ public class ZProjector implements PlugIn {
 		if(gd.wasCanceled()) return; 
 
 		if(!imp.lock()) return;   // exit if in use
-		long tstart = System.currentTimeMillis(); 
-		doProjection(gd); 
+		long tstart = System.currentTimeMillis();
+		setStartSlice((int)gd.getNextNumber()); 
+		setStopSlice((int)gd.getNextNumber()); 
+		method = gd.getNextChoiceIndex(); 
+		if (imp.getType()==ImagePlus.COLOR_RGB) {
+			if(method==SUM_METHOD || method==SD_METHOD) {
+	    		IJ.showMessage("ZProjection", "Sum and standard deviation methods \nnot available with RGB stacks.");
+	    		imp.unlock(); 
+	    		return; 
+			}
+			doRGBProjection();
+		} else 
+			doProjection(); 
 
 		if(arg.equals("")) {
-			long tstop = System.currentTimeMillis(); 
+			long tstop = System.currentTimeMillis();
+			projImage.setCalibration(imp.getCalibration()); 
 	    	projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
 		}
 
@@ -126,19 +132,29 @@ public class ZProjector implements PlugIn {
 		IJ.register(ZProjector.class);
 		return; 
     }
-
-     /** Reads values from dialog and performs projection.
-	@param gd read values from this generic dialog
-    */
-    private void doProjection(GenericDialog gd) {
-		// Update starting and stopping slice values.
-		setStartSlice((int)gd.getNextNumber()); 
-		setStopSlice((int)gd.getNextNumber()); 
-
-		// Get projection method.
-		method = gd.getNextChoiceIndex(); 
-
-		computeProjection(method); 
+    
+    private void doRGBProjection() {
+        RGBStackSplitter splitter = new RGBStackSplitter();
+        splitter.split(imp.getStack(), true);
+        ImagePlus red = new ImagePlus("Red", splitter.red);
+        ImagePlus green = new ImagePlus("Green", splitter.green);
+        ImagePlus blue = new ImagePlus("Blue", splitter.blue);
+        imp.unlock();
+        ImagePlus saveImp = imp;
+        imp = red;
+		doProjection();
+		ImagePlus red2 = projImage;
+        imp = green;
+		doProjection();
+		ImagePlus green2 = projImage;
+        imp = blue;
+		doProjection();
+		ImagePlus blue2 = projImage;
+        int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
+        RGBStackMerge merge = new RGBStackMerge();
+        ImageStack stack = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
+        projImage = new ImagePlus(projImage.getTitle(), stack);
+        imp = saveImp;
     }
 
     /** Builds dialog to query users for projection parameters.
@@ -156,7 +172,7 @@ public class ZProjector implements PlugIn {
     }
 
     /** Performs actual projection using specified method. */
-    public void computeProjection(int method) {
+    public void doProjection() {
 		if(imp==null)
 			return; 
 		

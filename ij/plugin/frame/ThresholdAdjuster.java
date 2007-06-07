@@ -51,6 +51,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			instance.toFront();
 			return;
 		}
+		
 		WindowManager.addWindow(this);
 		instance = this;
 		setLutColor(mode);
@@ -229,6 +230,9 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			if (minThreshold==ip.NO_THRESHOLD) {
 				minThreshold = defaultMinThreshold;
 				maxThreshold = defaultMaxThreshold;
+			} else {
+				minThreshold = scaleDown(ip, minThreshold);
+				maxThreshold = scaleDown(ip, maxThreshold);
 			}
 			plot.setHistogram(imp);
 			scaleUpAndSet(ip, minThreshold, maxThreshold);
@@ -397,8 +401,12 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		maxThreshold = scaleDown(ip,level2);
 		scaleUpAndSet(ip, minThreshold, maxThreshold);
 		updateScrollBars();
-		if (Recorder.record)
-			Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
+		if (Recorder.record) {
+			if (imp.getBitDepth()==32)
+				Recorder.record("setThreshold", ip.getMinThreshold(), ip.getMaxThreshold());
+			else
+				Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
+		}
 	}
 
 	void changeState(ImagePlus imp, ImageProcessor ip) {
@@ -407,19 +415,26 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	}
 
 	void autoThreshold(ImagePlus imp, ImageProcessor ip) {
-		if (!(ip instanceof ByteProcessor))
+		if (!(ip instanceof ByteProcessor || ip instanceof ShortProcessor))
 			return;
-		ImageStatistics stats = imp.getStatistics(MIN_MAX+MODE);
-		int threshold = ((ByteProcessor)ip).getAutoThreshold();
-		if ((stats.max-stats.mode)<(stats.mode-stats.min)) {
-			minThreshold = stats.min;
-			maxThreshold = threshold;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, MIN_MAX+MODE, null);
+		int threshold = ip.getAutoThreshold();
+		//IJ.log(stats.min+" "+stats.max+" "+stats.dmode+" "+threshold);
+		double lower, upper;
+		if ((stats.max-stats.dmode)<(stats.dmode-stats.min)) {
+			lower = stats.min;
+			upper = threshold;
 		} else {
-			minThreshold = threshold;
-			maxThreshold = stats.max;
+			lower = threshold;
+			upper = stats.max;
 		}
-		scaleUpAndSet(ip, minThreshold, maxThreshold);
+		ip.resetMinAndMax();
+		ip.setThreshold(lower, upper, lutColor);
+		minThreshold = scaleDown(ip, lower);
+		maxThreshold = scaleDown(ip, upper);
+		//IJ.log(lower+" "+upper+" "+minThreshold+" "+maxThreshold+" "+ip.getMin()+" "+ip.getMax());
 		updateScrollBars();
+		imp.updateAndDraw();
 		if (Recorder.record)
 			Recorder.record("setThreshold", (int)ip.getMinThreshold(), (int)ip.getMaxThreshold());
  	}
@@ -493,11 +508,25 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	}
 
     public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+    	close();
+	}
+
+    /** Overrides close() in PlugInFrame. */
+    public void close() {
+    	super.close();
 		instance = null;
 		done = true;
 		synchronized(this) {
 			notify();
+		}
+	}
+
+    public void windowActivated(WindowEvent e) {
+    	super.windowActivated(e);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			previousImageID = 0;
+			setup(imp);
 		}
 	}
 

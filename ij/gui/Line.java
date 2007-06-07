@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent;
 /** This class represents a straight line selection. */
 public class Line extends Roi {
 
-	public int x1, y1, x2, y2;  // the line
+	public int x1, y1, x2, y2;	// the line
 	private int x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private static int lineWidth = 1;
 
@@ -63,11 +63,62 @@ public class Line extends Roi {
 		oldWidth=width; oldHeight=height;
 	}
 
+	protected void moveHandle(int ox, int oy) {
+		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
+		switch (activeHandle) {
+			case 0: x1=ox; y1=oy; break;
+			case 1: x2=ox; y2=oy; break;
+			case 2:
+				int dx = ox-(x1+(x2-x1)/2);
+				int dy = oy-(y1+(y2-y1)/2);
+				x1+=dx; y1+=dy; x2+=dx; y2+=dy;
+				break;
+		}
+		if (constrain) {
+			int dx = Math.abs(x1-x2);
+			int dy = Math.abs(y1-y2);
+			if (activeHandle==0) {
+				if (dx>=dy) y1= y2; else x1 = x2;
+			} else if (activeHandle==1) {
+				if (dx>=dy) y2= y1; else x2 = x1;
+			}
+		}
+		x=Math.min(x1,x2); y=Math.min(y1,y2);
+		x1R=x1-x; y1R=y1-y;
+		x2R=x2-x; y2R=y2-y;
+		width=Math.abs(x2R-x1R); height=Math.abs(y2R-y1R);
+		updateClipRect();
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		oldX = x;
+		oldY = y;
+		oldWidth = width;
+		oldHeight = height;
+	}
+
+	protected void mouseDownInHandle(int handle, int sx, int sy) {
+		state = MOVING_HANDLE;
+		activeHandle = handle;
+		ic.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+	}
+
 	/** Draws this line in the image. */
 	public void draw(Graphics g) {
 		g.setColor(ROIColor);
 		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
-		g.drawLine(ic.screenX(x1), ic.screenY(y1), ic.screenX(x2), ic.screenY(y2));
+		int sx1 = ic.screenX(x1);
+		int sy1 = ic.screenY(y1);
+		int sx2 = ic.screenX(x2);
+		int sy2 = ic.screenY(y2);
+		int sx3 = sx1 + (sx2-sx1)/2;
+		int sy3 = sy1 + (sy2-sy1)/2;
+		g.drawLine(sx1, sy1, sx2, sy2);
+		if (state!=CONSTRUCTING) {
+			int size2 = HANDLE_SIZE/2;
+			if (ic!=null) mag = ic.getMagnification();
+			drawHandle(g, sx1-size2, sy1-size2);
+			drawHandle(g, sx2-size2, sy2-size2);
+			drawHandle(g, sx3-size2, sy3-size2);
+	   }
 		IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle(x1,y1,x2,y2)) + ", length=" + IJ.d2s(getLength()));
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
@@ -104,6 +155,23 @@ public class Line extends Roi {
 		return false;
 	}
 		
+	/** Returns a handle number if the specified screen coordinates are  
+		inside or near a handle, otherwise returns -1. */
+	int isHandle(int sx, int sy) {
+		int size = HANDLE_SIZE+5;
+		int halfSize = size/2;
+		int sx1 = ic.screenX(x+x1R) - halfSize;
+		int sy1 = ic.screenY(y+y1R) - halfSize;
+		int sx2 = ic.screenX(x+x2R) - halfSize;
+		int sy2 = ic.screenY(y+y2R) - halfSize;
+		int sx3 = sx1 + (sx2-sx1)/2-1;
+		int sy3 = sy1 + (sy2-sy1)/2-1;
+		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
+		if (sx>=sx2&&sx<=sx2+size&&sy>=sy2&&sy<=sy2+size) return 1;
+		if (sx>=sx3&&sx<=sx3+size+2&&sy>=sy3&&sy<=sy3+size+2) return 2;
+		return -1;
+	}
+
 	public static int getWidth() {
 		return lineWidth;
 	}

@@ -8,7 +8,8 @@ import ij.*;  //??
 public class ImageReader {
 
     private FileInfo fi;
-    private int width, height, skipCount;
+    private int width, height;
+    private long skipCount;
     private int bytesPerPixel, bufferSize, byteCount, nPixels;
 	private boolean showProgressBar=true;
 	private int eofErrorCount;
@@ -16,13 +17,12 @@ public class ImageReader {
 	/**
 	Constructs a new ImageReader using a FileInfo object to describe the file to be read.
 	@see ij.io.FileInfo
-	@see ij.plugin.ImageReaderDemo
 	*/
 	public ImageReader (FileInfo fi) {
 		this.fi = fi;
 	    width = fi.width;
 	    height = fi.height;
-	    skipCount = fi.offset;
+	    skipCount = fi.longOffset>0?fi.longOffset:fi.offset;
 	}
 	
 	void eofError() {
@@ -233,14 +233,15 @@ public class ImageReader {
 
 	void skip(InputStream in) throws IOException {
 		if (skipCount>0) {
-			int bytesRead = 0;
+			long bytesRead = 0;
 			int skipAttempts = 0;
 			long count;
 			while (bytesRead<skipCount) {
-				count = in.skip((long)(skipCount-bytesRead));
+				count = in.skip(skipCount-bytesRead);
 				skipAttempts++;
 				if (count==-1 || skipAttempts>5) break;
 				bytesRead += count;
+				//IJ.log("skip: "+skipCount+" "+count+" "+bytesRead+" "+skipAttempts);
 			}
 		}
 		byteCount = width*height*bytesPerPixel;
@@ -307,7 +308,7 @@ public class ImageReader {
 	returns the pixel array (byte, short, int or float). Returns
 	null if there was an IO exception. Does not close the InputStream.
 	*/
-	public Object readPixels(InputStream in, int skipCount) {
+	public Object readPixels(InputStream in, long skipCount) {
 		this.skipCount = skipCount;
 		showProgressBar = false;
 		Object pixels = readPixels(in);

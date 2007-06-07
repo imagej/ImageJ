@@ -1,6 +1,7 @@
 package ij.plugin;
 import java.io.*;
 import java.util.*;
+import java.net.URL;
 import ij.*;
 import ij.io.*;
 import ij.process.*;
@@ -298,11 +299,15 @@ class DicomDecoder {
 	FileInfo getFileInfo() throws IOException {
 		long skipCount;
 		
+    	boolean isURL = directory.indexOf("://")>0;
 		FileInfo fi = new FileInfo();
 		int bitsAllocated = 16;
 		fi.fileFormat = fi.RAW;
 		fi.fileName = fileName;
-		fi.directory = directory;
+		if (isURL)
+			fi.url = directory;
+		else
+			fi.directory = directory;
 		fi.width = 0;
 		fi.height = 0;
 		fi.offset = 0;
@@ -313,7 +318,11 @@ class DicomDecoder {
 		int planarConfiguration = 0;
 		String photoInterpretation = "";
 				
-		f = new BufferedInputStream(new FileInputStream(directory + fileName));
+		if (isURL) {
+			URL u = new URL(fi.url+fi.fileName);
+			f = new BufferedInputStream(u.openStream());
+		} else
+			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		if (IJ.debugMode) {
 			IJ.log("");
 			IJ.log("DicomDecoder: decoding "+fileName);
@@ -325,7 +334,11 @@ class DicomDecoder {
 		
 		if (!getString(4).equals(DICM)) {
 			f.close();
-			f = new BufferedInputStream(new FileInputStream(directory + fileName));
+			if (isURL) {
+				URL u = new URL(fi.url+fi.fileName);
+				f = new BufferedInputStream(u.openStream());
+			} else
+				f = new BufferedInputStream(new FileInputStream(directory + fileName));
 			location = 0;
 			if (IJ.debugMode) IJ.log(DICM + " not found at offset "+ID_OFFSET+"; reseting to offset 0");
 		} else {
@@ -335,6 +348,7 @@ class DicomDecoder {
 		
 		boolean inSequence = true;
 		boolean decodingTags = true;
+		boolean signed = false;
 		
 		while (decodingTags) {
 			int tag = getNextTag();
@@ -395,12 +409,16 @@ class DicomDecoder {
 					bitsAllocated = getShort();
 					if (bitsAllocated==8)
 						fi.fileType = FileInfo.GRAY8;
+					else if (bitsAllocated==32)
+						fi.fileType = FileInfo.GRAY32_UNSIGNED;
 					addInfo(tag, bitsAllocated);
 					break;
 				case PIXEL_REPRESENTATION:
 					int pixelRepresentation = getShort();
-					if (pixelRepresentation==1)
+					if (pixelRepresentation==1) {
 						fi.fileType = FileInfo.GRAY16_SIGNED;
+						signed = true;
+					}
 					addInfo(tag, pixelRepresentation);
 					break;
 				case WINDOW_CENTER:
@@ -457,6 +475,9 @@ class DicomDecoder {
 			}
 		}
 				
+		if (fi.fileType==FileInfo.GRAY32_UNSIGNED && signed)
+			fi.fileType = FileInfo.GRAY32_INT;
+
 		if (samplesPerPixel==3 && photoInterpretation.startsWith("RGB")) {
 			if (planarConfiguration==0)
 				fi.fileType = FileInfo.RGB;
@@ -619,8 +640,12 @@ class DicomDictionary {
 	}
 
 	String[] dict = {
-
+		//"00020000=ULFile Meta Elements Group Len",
+		//"00020001=OBFile Meta Info Version",
+		"00020002=UIMedia Storage SOP Class UID", 
+		"00020003=UIMedia Storage SOP Inst UID",
 		"00020010=UITransfer Syntax UID",
+		
 		"00080005=CSSpecific Character Set",
 		"00080008=CSImage Type",
 		"00080012=DAInstance Creation Date",

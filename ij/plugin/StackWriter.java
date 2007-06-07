@@ -10,7 +10,7 @@ import ij.gui.*;
 public class StackWriter implements PlugIn {
 
 	//private static String defaultDirectory = null;
-	private static String[] choices = {"Tiff","Gif","Jpeg","Raw","Zip","Text"};
+	private static String[] choices = {"Tiff","Gif","Jpeg","Bmp", "Raw","Zip","Text"};
 	private static String fileType = "Tiff";
 	private static int ndigits = 4;
 	private static boolean useLabels;
@@ -44,8 +44,6 @@ public class StackWriter implements PlugIn {
 		if (ndigits>8) ndigits = 8;
 		if (fileType.equals("Gif") && !FileSaver.okForGif(imp))
 			return;
-		if (fileType.equals("Jpeg") && !FileSaver.okForJpeg(imp))
-			return;
 
 		String extension = "";
 		if (fileType.equals("Tiff"))
@@ -54,6 +52,8 @@ public class StackWriter implements PlugIn {
 			extension = ".jpg";
 		else if (fileType.equals("Gif"))
 			extension = ".gif";
+		else if (fileType.equals("Bmp"))
+			extension = ".bmp";
 		else if (fileType.equals("Raw"))
 			extension = ".raw";
 		else if (fileType.equals("Zip"))
@@ -100,6 +100,9 @@ public class StackWriter implements PlugIn {
 					break;
 			} else if (fileType.equals("Jpeg")) {
 				if (!(new FileSaver(tmp).saveAsJpeg(path)))
+					break;
+			} else if (fileType.equals("Bmp")) {
+				if (!(new FileSaver(tmp).saveAsBmp(path)))
 					break;
 			} else if (fileType.equals("Raw")) {
 				if (!(new FileSaver(tmp).saveAsRaw(path)))

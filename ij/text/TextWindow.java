@@ -158,23 +158,29 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 
 	public void processWindowEvent(WindowEvent e) {
 		super.processWindowEvent(e);
-		if (e.getID()==WindowEvent.WINDOW_CLOSING) {	
-			if (getTitle().equals("Results")) {
-				if (!Analyzer.resetCounter())
-					return;
-				IJ.setTextPanel(null);
-			}
-			if (getTitle().equals("Log")) {
-				IJ.debugMode = false;
-				IJ.log("$Closed");
-			}
-			setVisible(false);
-			dispose();
-			WindowManager.removeWindow(this);
-			textPanel.flush();
-		}
+		int id = e.getID();
+		if (id==WindowEvent.WINDOW_CLOSING)
+			close();	
+		else if (id==WindowEvent.WINDOW_ACTIVATED)
+			WindowManager.setWindow(this);
 	}
 
+	public void close() {
+		if (getTitle().equals("Results")) {
+			if (!Analyzer.resetCounter())
+				return;
+			IJ.setTextPanel(null);
+		}
+		if (getTitle().equals("Log")) {
+			IJ.debugMode = false;
+			IJ.log("$Closed");
+		}
+		setVisible(false);
+		dispose();
+		WindowManager.removeWindow(this);
+		textPanel.flush();
+	}
+	
 	public void focusGained(FocusEvent e) {
 		WindowManager.setWindow(this);
 	}

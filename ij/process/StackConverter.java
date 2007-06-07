@@ -25,17 +25,25 @@ public class StackConverter {
 	public void convertToGray8() {
 		ImageStack stack1 = imp.getStack();
 		int currentSlice =  imp.getCurrentSlice();
-		if (type==ImagePlus.COLOR_RGB || type==ImagePlus.COLOR_256) {
+		ImageProcessor ip = imp.getProcessor();
+		boolean colorLut = ip.isColorLut();
+		boolean pseudoColorLut = colorLut && ip.isPseudoColorLut();
+		if (type==ImagePlus.GRAY8 && pseudoColorLut) {
+			boolean invertedLut = ip.isInvertedLut();
+			ip.setColorModel(LookUpTable.createGrayscaleColorModel(invertedLut));
+			stack1.setColorModel(ip.getColorModel());
+	    	imp.updateAndDraw();
+			return;
+		}
+		if (type==ImagePlus.COLOR_RGB || type==ImagePlus.COLOR_256 || colorLut) {
 			convertRGBToGray8();
 			imp.setSlice(currentSlice);
 			return;
 		}
 		
 		ImageStack stack2 = new ImageStack(width, height);
-		ImageProcessor ip;
 		Image img;
 		String label;
-		ip = imp.getProcessor();
 		double min = ip.getMin();
 		double max = ip.getMax();
 	    int inc = nSlices/20;

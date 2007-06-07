@@ -34,7 +34,7 @@ public class Opener {
 		in one of the supported formats. This is the method that
 		ImageJ's File/Open command uses to open files. */
 	public void open() {
-		OpenDialog od = new OpenDialog("Open...", "");
+		OpenDialog od = new OpenDialog("Open", "");
 		String directory = od.getDirectory();
 		String name = od.getFileName();
 		if (name!=null)
@@ -61,7 +61,15 @@ public class Opener {
 					break;
 				case JAVA: case TEXT:
 					File file = new File(path);
-					if (file.length()<28000) {
+					boolean betterTextArea = IJ.isJava2() || IJ.isMacintosh();
+					int maxSize = 250000;
+					long size = file.length();
+					if (size>=28000 && betterTextArea) {
+						String osName = System.getProperty("os.name");
+						if (osName.indexOf("95")>0 || osName.indexOf("98")>0)
+							maxSize = 60000;
+					}
+					if (size<28000 || (betterTextArea && size<maxSize)) {
 						Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 						if (ed!=null) ed.open(getDir(path), getName(path));
 					} else
@@ -114,7 +122,7 @@ public class Opener {
 				imp = openJpegOrGif(directory, name);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
 			case BMP:
-				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP", path);
+				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
 			case ZIP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
@@ -139,8 +147,9 @@ public class Opener {
 	}
 
 	/** Attempts to open the specified url as a tiff, zip compressed tiff, 
-		gif or jpeg. Tiff file names must end in ".tif" and ZIP file names
-		must end in ".zip". Returns an ImagePlus object if successful. */
+		dicom, gif or jpeg. Tiff file names must end in ".tif", ZIP file names 
+		must end in ".zip" and dicom file names must end in ".dcm". Returns an 
+		ImagePlus object if successful. */
 	public ImagePlus openURL(String url) {
 	   	try {
 			String name = "";
@@ -158,7 +167,10 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 	 	    else if (url.endsWith(".zip"))
 				imp = openZip(u);
-			else
+	 	    else if (url.endsWith(".dcm")) {
+				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
+				if (imp!=null && imp.getWidth()==0) imp = null;
+			} else
 				imp = openJpegOrGifUsingURL(name, u);
 			IJ.showStatus("");
 			return imp;
@@ -168,7 +180,7 @@ public class Opener {
 	   	} 
 	}
 	
-	/** Opens a ZIP compressed TIF from a URL. */
+	/** Opens the ZIP compressed TIFF at the specified URL. */
 	ImagePlus openZip(URL url) throws IOException {
 		IJ.showProgress(0.01);
 		URLConnection uc = url.openConnection();
@@ -302,14 +314,14 @@ public class Opener {
 		if (fi.nImages>1)
 			return new FileOpener(fi).open(false); // open contiguous images as stack
 		else {
-			ColorModel cm = FileOpener.createColorModel(fi);
+			ColorModel cm = createColorModel(fi);
 			ImageStack stack = new ImageStack(fi.width, fi.height, cm);
 			Object pixels;
 			int skip = fi.offset;
 			int imageSize = fi.width*fi.height*fi.getBytesPerPixel();
 			int loc = 0;
 			try {
-				InputStream is = FileOpener.createInputStream(fi);
+				InputStream is = createInputStream(fi);
 				ImageReader reader = new ImageReader(fi);
 				for (int i=0; i<info.length; i++) {
 					IJ.showStatus("Reading: " + (i+1) + "/" + info.length);
@@ -421,7 +433,7 @@ public class Opener {
 		return imp;
 	}
 	
-	/** Attempts to open the specified file as an ROI, returning null if unsuccessful. */
+	/** Attempts to open the specified ROI, returning null if unsuccessful. */
 	public Roi openRoi(String path) {
 		Roi roi = null;
 		RoiDecoder rd = new RoiDecoder(path);
@@ -434,7 +446,7 @@ public class Opener {
 	}
 
 	/**
-	Attempts to determinate the image file type by looking for
+	Attempts to determine the image file type by looking for
 	'magic numbers' or text strings in the header.
 	 */
 	int getFileType(String path, String name) {
@@ -449,7 +461,7 @@ public class Opener {
 		}
 		
 		int b0=buf[0]&255, b1=buf[1]&255, b2=buf[2]&255, b3=buf[3]&255;
-		//IJ.write("getFileType: "+ name+" "+b0+" "+b1+" "+b2+" "+b3);
+		//IJ.log("getFileType: "+ name+" "+b0+" "+b1+" "+b2+" "+b3);
 		
 		 // Combined TIFF and DICOM created by GE Senographe scanners
 		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77
@@ -477,8 +489,8 @@ public class Opener {
 			return DICOM;
 		}
 
- 		// ACR/NEMA with first tag = (00008,00xx)
- 		if (b0==8 && b1==0 && b3==0)
+ 		// ACR/NEMA with first tag = 00002,00xx or 00008,00xx
+ 		if ((b0==8||b0==2) && b1==0 && b3==0) 	
   			 	return DICOM;
 
 		// FITS ("SIMP")
@@ -521,6 +533,29 @@ public class Opener {
 			return TEXT;
 
 		return UNKNOWN;
+	}
+
+	/** Returns an IndexColorModel for the image specified by this FileInfo. */
+	ColorModel createColorModel(FileInfo fi) {
+		if (fi.fileType==FileInfo.COLOR8 && fi.lutSize>0)
+			return new IndexColorModel(8, fi.lutSize, fi.reds, fi.greens, fi.blues);
+		else
+			return LookUpTable.createGrayscaleColorModel(fi.whiteIsZero);
+	}
+
+	/** Returns an InputStream for the image described by this FileInfo. */
+	InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
+		if (fi.inputStream!=null)
+			return fi.inputStream;
+		else if (fi.url!=null && !fi.url.equals(""))
+			return new URL(fi.url+fi.fileName).openStream();
+		else {
+		    File f = new File(fi.directory + fi.fileName);
+		    if (f==null || f.isDirectory())
+		    	return null;
+		    else
+				return new FileInputStream(f);
+		}
 	}
 
 }

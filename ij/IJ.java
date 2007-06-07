@@ -29,12 +29,15 @@ public class IJ {
 	private static TextPanel logPanel;
 	private static boolean notVerified = true;		
 	private static PluginClassLoader classLoader;
+	private static boolean memMessageDisplayed;
 			
 	static {
 		osname = System.getProperty("os.name");
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
-		isJava2 = !System.getProperty("java.version").startsWith("1.1");
+		String version = System.getProperty("java.version");
+		// JVM on Sharp Zaurus PDA claims to be "3.1"!
+		isJava2 = !(version.startsWith("1.1")||version.startsWith("3."));
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -271,10 +274,8 @@ public class IJ {
 		Thread thread = Thread.currentThread();
 		if (previousThread==null || thread!=previousThread) {
 			String name = thread.getName();
-			if (name.indexOf("-macro")<0) {
-				thread.setName(name+"-macro");
-				//IJ.write("setName: "+name+"-macro");
-			}
+			if (!name.startsWith("Run$_"))
+				thread.setName("Run$_"+name);
 		}
 		previousThread = thread;
 		macroRunning = true;
@@ -293,7 +294,7 @@ public class IJ {
 
 	private static void testAbort() {
 		if (Macro.abort)
-			throw new RuntimeException("Macro canceled");
+			abort();
 	}
 
 	/** Returns true if either of the IJ.run() methods is executing. */
@@ -372,7 +373,12 @@ public class IJ {
 
 	/** Displays an "out of memory" message to the "Results" window.*/
 	public static void outOfMemory(String name) {
-		write("<<"+name + ": out of memory>>");
+		log("<<"+name + ": out of memory>>");
+		if (!memMessageDisplayed) {
+			log("<<See the \"Memory\" section of the installation notes for>>");
+			log("<<your OS at \"http://rsb.info.nih.gov/ij/docs/install/\".>>");
+			memMessageDisplayed = true;
+		}
 		Macro.abort();
 	}
 
@@ -382,6 +388,13 @@ public class IJ {
 	if the ImageJ window is not present. */
 	public static void showProgress(double progress) {
 		if (progressBar!=null) progressBar.show(progress);
+	}
+
+	/**	Updates the progress bar, where bar-length = (currentIndex/finalIndex)*total-length.
+	The bar is erased if currentIndex>=finalIndex. Does nothing 
+	if the ImageJ window is not present. */
+	public static void showProgress(int currentIndex, int finalIndex) {
+		if (progressBar!=null) progressBar.show(currentIndex, finalIndex);
 	}
 
 	/**	Displays a message in a dialog box with the specified title.
@@ -424,9 +437,7 @@ public class IJ {
 	    value IJ.CANCELED (-2,147,483,648) if the user cancels the dialog box. 
 	    Returns 'defaultValue' if the user enters an invalid number. */
 	public static double getNumber(String prompt, double defaultValue) {
-		Frame win = WindowManager.getCurrentWindow();
-		if (win==null) win = ij;
-		GenericDialog gd = new GenericDialog("", win);
+		GenericDialog gd = new GenericDialog("");
 		int decimalPlaces = (int)defaultValue==defaultValue?0:2;
 		gd.addNumericField(prompt, defaultValue, decimalPlaces);
 		gd.showDialog();
@@ -442,9 +453,7 @@ public class IJ {
 	/** Allows the user to enter a string in a dialog box. Returns
 	    "" if the user cancels the dialog box. */
 	public static String getString(String prompt, String defaultString) {
-		Frame win = WindowManager.getCurrentWindow();
-		if (win==null) win = ij;
-		GenericDialog gd = new GenericDialog("", win);
+		GenericDialog gd = new GenericDialog("");
 		gd.addStringField(prompt, defaultString, 20);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -553,7 +562,7 @@ public class IJ {
 			case KeyEvent.VK_SPACE: {
 				spaceDown=true;
 				ImageWindow win = WindowManager.getCurrentWindow();
-				if (win!=null) win.getCanvas().setCursor(-1,-1);
+				if (win!=null) win.getCanvas().setCursor(-1,-1,-1, -1);
 				break;
 			}
 		}
@@ -565,7 +574,7 @@ public class IJ {
 			case KeyEvent.VK_SPACE: {
 				spaceDown=false;
 				ImageWindow win = WindowManager.getCurrentWindow();
-				if (win!=null) win.getCanvas().setCursor(-1,-1);
+				if (win!=null) win.getCanvas().setCursor(-1,-1,-1,-1);
 				break;
 			}
 		}
@@ -678,40 +687,68 @@ public class IJ {
 		img.updateAndDraw();
 	}
 	
-	/** Activates the specified image. */
+	/** For IDs less than zero, activates the image with the specified ID.
+		For IDs greater than zero, activates the Nth image. */
+	public static void selectWindow(int id) {
+		ImagePlus imp = WindowManager.getImage(id);
+		if (imp==null) {
+			showMessage("Macro Error", "Image "+id+" not found or no images are open.");
+			abort();
+		}
+		String title = imp.getTitle();
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			win.toFront();
+			WindowManager.setWindow(win);
+			long start = System.currentTimeMillis();
+			while (true) {
+				wait(10);
+				imp = WindowManager.getCurrentImage();
+				if (imp!=null && imp.getTitle().equals(title))
+					return; // specified image is now active
+				if ((System.currentTimeMillis()-start)>2000) {
+					// 2 second timeout
+					WindowManager.setCurrentWindow(win);
+					return;
+				}
+			}
+		}
+	}
+
+	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
-		int[] wList = WindowManager.getIDList();
-		if (wList==null) {
-			noImage();
+		Frame frame = WindowManager.getFrame(title);
+		if (frame!=null && !(frame instanceof ImageWindow)) {
+			selectWindow(frame);
 			return;
 		}
-		for (int i=0; i<wList.length; i++) {
+		int[] wList = WindowManager.getIDList();
+		int len = wList!=null?wList.length:0;
+		for (int i=0; i<len; i++) {
 			ImagePlus imp = WindowManager.getImage(wList[i]);
 			if (imp!=null) {
 				if (imp.getTitle().equals(title)) {
-					ImageWindow win = imp.getWindow();
-					if (win!=null) {
-						win.toFront();
-						long start = System.currentTimeMillis();
-						while (true) {
-							wait(10);
-							imp = WindowManager.getCurrentImage();
-							if (imp==null) {
-								showMessage("Macro Error", "Image not found: \""+title+"\"");
-								throw new RuntimeException("Macro canceled");
-							};
-							if (imp.getTitle().equals(title))
-								return; // specified image is now active
-							if ((System.currentTimeMillis()-start)>2000) {
-								 // 2 second timeout
-								 WindowManager.setCurrentWindow(win);
-								return;
-							}
-						}
-					}
+					selectWindow(imp.getID());
+					return;
 				}
 			}
-		}		
+		}
+		showMessage("Macro Error", "No window with the title \""+title+"\" found.");
+		abort();
+	}
+	
+	static void selectWindow(Frame frame) {
+		frame.toFront();
+		long start = System.currentTimeMillis();
+		while (true) {
+			wait(10);
+			if (WindowManager.getFrontWindow()==frame)
+				return; // specified window is now in front
+			if ((System.currentTimeMillis()-start)>1000) {
+				WindowManager.setWindow(frame);
+				return;   // 1 second timeout
+			}
+		}
 	}
 	
 	/** Sets the foreground color. */
@@ -784,6 +821,8 @@ public class IJ {
 			m = Blitter.ADD;
 		else if (mode.startsWith("div"))
 			m = Blitter.DIVIDE;
+		else if (mode.startsWith("mul"))
+			m = Blitter.MULTIPLY;
 		Roi.setPasteMode(m);
 	}
 
@@ -791,9 +830,13 @@ public class IJ {
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {
 			IJ.noImage();
-			throw new RuntimeException("Macro canceled");
+			abort();
 		}
 		return img;
+	}
+	
+	static void abort() {
+		throw new RuntimeException("Macro canceled");
 	}
 	
 }

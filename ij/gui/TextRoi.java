@@ -105,6 +105,7 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		super.draw(g); // draw the rectangle
+		g.setColor(ROIColor);
 		double mag = ic.getMagnification();
 		int sx = ic.screenX(x);
 		int sy = ic.screenY(y);

@@ -4,10 +4,12 @@ package ij.macro;
 class ReturnException extends RuntimeException {
 	double value;
 	String str;
+	Variable[] array;
 	
-	ReturnException(double value, String str) {
+	ReturnException(double value, String str, Variable[] array) {
 		this.value = value;
 		this.str = str;
+		this.array = array;
 	}
 
 }

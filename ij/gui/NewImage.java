@@ -20,7 +20,7 @@ public class NewImage {
     private static int slices = 1;
     private static int type = GRAY8;
     private static int fillWith = FILL_WHITE;
-    private static String[] types = {"8-bit Unsigned", "16-bit Unsigned", "32-bit Real", "32-bit RGB"};
+    private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
     private static String[] fill = {"White", "Black", "Ramp", "Clipboard"};
 	
     public NewImage() {
@@ -31,9 +31,12 @@ public class NewImage {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		ImageStack stack = imp.createEmptyStack();
+		int inc = nSlices/40;
+		if (inc<1) inc = 1;
 		try {
 			stack.addSlice(null, ip);
 			for (int i=2; i<=nSlices; i++) {
+				if ((i%inc)==0) IJ.showProgress(i, nSlices);
 				Object pixels2 = null;
 				switch (type) {
 					case GRAY8: pixels2 = new byte[width*height]; break;
@@ -49,6 +52,7 @@ public class NewImage {
 			IJ.outOfMemory(imp.getTitle());
 			stack.trim();
 		}
+		IJ.showProgress(nSlices, nSlices);
 		if (stack.getSize()>1)
 			imp.setStack(null, stack);
 	}
@@ -212,14 +216,22 @@ public class NewImage {
 		gd.addStringField("Name:", name, 12);
 		gd.addChoice("Type:", types, types[type]);
 		gd.addChoice("Fill With:", fill, fill[fillWith]);
-		gd.addNumericField("Width (pixels):", width, 0);
-		gd.addNumericField("Height (pixels):", height, 0);
-		gd.addNumericField("Slices:", slices, 0);
+		gd.addNumericField("Width:", width, 0, 5, "pixels");
+		gd.addNumericField("Height:", height, 0, 5, "pixels");
+		gd.addNumericField("Slices:", slices, 0, 5, "");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		name = gd.getNextString();
-		type = gd.getNextChoiceIndex();
+		String s = gd.getNextChoice();
+		if (s.startsWith("8"))
+			type = GRAY8;
+		else if (s.startsWith("16"))
+			type = GRAY16;
+		else if (s.endsWith("RGB") || s.endsWith("rgb"))
+			type = RGB;
+		else
+			type = GRAY32;
 		fillWith = gd.getNextChoiceIndex();
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();

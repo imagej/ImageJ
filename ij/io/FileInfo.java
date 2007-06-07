@@ -86,6 +86,8 @@ public class FileInfo {
 	public String valueUnit;
 	public double frameInterval;
 	public String description;
+	/** Use <i>longOffset</i> instead of <i>offset</i> when offset>2147483647. */
+	public long longOffset;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {
@@ -118,7 +120,7 @@ public class FileInfo {
 			+ ", height=" + height
 			+ ", nImages=" + nImages
 			+ ", type=" + getType()
-			+ ", offset=" + offset
+			+ ", offset=" + (longOffset>0?longOffset:offset)
 			+ ", whiteZero=" + (whiteIsZero?"t":"f")
 			+ ", Intel=" + (intelByteOrder?"t":"f")
 			+ ", lutSize=" + lutSize;

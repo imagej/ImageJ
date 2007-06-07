@@ -1,7 +1,11 @@
 package ij.measure;
 import ij.IJ;
 
-/** This is a table for storing measurement results as columns of real numbers. */
+/** This is a table for storing measurement results as columns of real numbers. 
+	Call Analyzer.getResultsTable() to get a reference to the ResultsTable
+	used by the <i>Analyze/Measure</i> command. 
+	@see ij.plugin.filter.Analyzer#getResultsTable
+*/
 public class ResultsTable {
 
 	public static final int MAX_COLUMNS = 50;

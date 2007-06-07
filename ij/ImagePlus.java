@@ -16,7 +16,7 @@ This is an extended image class that supports 8-bit, 16-bit,
 32-bit (real) and RGB images. It also provides support for
 3D image stacks.
 @see ij.process.ImageProcessor
-@see ImageStack
+@see ij.ImageStack
 @see ij.gui.ImageWindow
 @see ij.gui.ImageCanvas
 */
@@ -105,7 +105,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     }
     
 	/** Constructs an ImagePlus from a TIFF, BMP, DICOM, FITS,
-		PGM, GIF or JPRG specified by a path or from a TIFF,
+		PGM, GIF or JPRG specified by a path or from a TIFF, DICOM,
 		GIF or JPEG specified by a URL. */
     public ImagePlus(String pathOrURL) {
     	Opener opener = new Opener();
@@ -121,6 +121,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     		else
      			setProcessor(imp.getTitle(), imp.getProcessor());
      		setCalibration(imp.getCalibration());
+     		properties = imp.getProperties();
    			if (isURL)
    				this.url = pathOrURL;
    			ID = --currentID;
@@ -353,7 +354,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	void setProcessor2(String title, ImageProcessor ip) {
-		if (title!=null) this.title = title;
+		if (title!=null) setTitle(title);
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
 		if (stack!=null) {
@@ -855,6 +856,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				break;
 			case Toolbar.POLYGON:
 			case Toolbar.POLYLINE:
+			case Toolbar.ANGLE:
 				roi = new PolygonRoi(x, y, this);
 				break;
 			case Toolbar.FREEROI:
@@ -907,7 +909,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			}
 		}
 	}
-    
+	
 	void revert() {
 		if (getStackSize()>1) // can't revert stacks
 			return;
@@ -923,10 +925,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 	    	try {
 	    		ImagePlus imp = opener.openURL(url);
 	    		if (imp!=null)
-	     			setProcessor(imp.getTitle(), imp.getProcessor());
+	     			setProcessor(null, imp.getProcessor());
 	    	} catch (Exception e) {} 
 			if (getType()==COLOR_RGB && getTitle().endsWith(".jpg"))
 				Opener.convertGrayJpegTo8Bits(this);
+		}
+		if (getProperty("FHT")!=null) {
+			properties.remove("FHT");
+			if (getTitle().startsWith("FFT of "))
+				setTitle(getTitle().substring(6));
 		}
 		repaintWindow();
 		IJ.showStatus("");
@@ -936,8 +943,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		pixel array, needed to save this image. Use getOriginalFileInfo()
 		to get a copy of the FileInfo object used to open the image.
 		@see ij.io.FileInfo
-		@see getOriginalFileInfo
-		@see setFileInfo
+		@see #getOriginalFileInfo
+		@see #setFileInfo
 	*/
     public FileInfo getFileInfo() {
     	FileInfo fi = new FileInfo();
@@ -991,10 +998,10 @@ public class ImagePlus implements ImageObserver, Measurements {
     	return fi;
     }
         
-    /** Returns the FileInfo object that was used to open this
-    	image. Returns null for Gif, Jpeg and New images.
+    /** Returns the FileInfo object that was used to open this image.
+    	Returns null for images created using the File/New command.
 		@see ij.io.FileInfo
-		@see getFileInfo
+		@see #getFileInfo
 	*/
     public FileInfo getOriginalFileInfo() {
     	return fileInfo;
@@ -1074,8 +1081,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Returns this image's calibration. */
 	public Calibration getCalibration() {
+		//IJ.log("getCalibration: "+globalCalibration+" "+calibration);
 		if (globalCalibration!=null)
-			return globalCalibration;
+			return globalCalibration.copy();
 		else {
 			if (calibration==null)
 				calibration = new Calibration(this);
@@ -1096,7 +1104,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 
     /** Sets the system-wide calibration. */
     public void setGlobalCalibration(Calibration global) {
-		//IJ.write("setGlobalCalibration ("+getTitle()+"): "+global);
+		//IJ.log("setGlobalCalibration ("+getTitle()+"): "+global);
 		if (global==null)
 			globalCalibration = null;
 		else
@@ -1122,9 +1130,27 @@ public class ImagePlus implements ImageObserver, Measurements {
 		IJ.showStatus(getLocationAsString(savex,savey) + getValueAsString(savex,savey));
 	}
 
+	String getFFTLocation(int x, int y, Calibration cal) {
+		double center = width/2.0;
+		double r = Math.sqrt((x-center)*(x-center) + (y-center)*(y-center));
+		if (r<1.0) r = 1.0;
+		double theta = Math.atan2(y-center, x-center);
+		theta = theta*180.0/Math.PI;
+		if (theta<0) theta = 360.0+theta;
+		String s = "r=";
+		if (cal.scaled())
+			s += IJ.d2s((width/r)*cal.pixelWidth,2) + " " + cal.getUnit() + "/c (" + IJ.d2s(r,0) + ")";
+		else
+			s += IJ.d2s(width/r,2) + " p/c (" + IJ.d2s(r,0) + ")";
+		s += ", theta= " + IJ.d2s(theta,2) + "¡" ;
+		return s;
+	}
+
     /** Converts the current cursor location to a string. */
     public String getLocationAsString(int x, int y) {
 		Calibration cal = getCalibration();
+		if (getProperty("FHT")!=null)
+			return getFFTLocation(x, height-y-1, cal);
 		y = Analyzer.updateY(y, height);
 		if (cal.scaled()) {
 			if (getStackSize()>1)

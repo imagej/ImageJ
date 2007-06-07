@@ -17,11 +17,12 @@ public class Options implements PlugIn {
 			GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
 			gd.addNumericField("Real Histogram Bins:", HistogramWindow.nBins, 0);
 			gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
-			gd.addCheckbox("Use Pointer Cursor", ImageCanvas.usePointer);
+			gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
 			gd.addCheckbox("Scale When Converting", ImageConverter.getDoScaling());
 			gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
 			gd.addCheckbox("Antialiased Text", Prefs.antialiasedText);
 			gd.addCheckbox("Interpolate Images <100%", Prefs.interpolateScaledImages);
+			gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
 			gd.addCheckbox("Debug Mode", IJ.debugMode);
 			gd.showDialog();
 			if (gd.wasCanceled())
@@ -38,11 +39,12 @@ public class Options implements PlugIn {
 			if (f!=null)
 				FloatBlitter.divideByZeroValue = f.floatValue();
 				
-			ImageCanvas.usePointer = gd.getNextBoolean();
+			Prefs.usePointerCursor = gd.getNextBoolean();
 			ImageConverter.setDoScaling(gd.getNextBoolean());
 			IJ.hideProcessStackDialog = gd.getNextBoolean();
 			Prefs.antialiasedText = gd.getNextBoolean();
 			boolean interpolate = gd.getNextBoolean();
+			Prefs.open100Percent = gd.getNextBoolean();
 			IJ.debugMode = gd.getNextBoolean();
 
 			if (interpolate!=Prefs.interpolateScaledImages) {
@@ -68,9 +70,9 @@ public class Options implements PlugIn {
 		}
 	
 		if (arg.equals("quality")) {
-			int quality = (int)IJ.getNumber("JPEG quality (0-100):", JpegEncoder.getQuality());
+			int quality = (int)IJ.getNumber("JPEG quality (0-100):", JpegWriter.getQuality());
 			if (quality==IJ.CANCELED) return;
-			JpegEncoder.setQuality(quality);
+			JpegWriter.setQuality(quality);
 			return;
 		}
 

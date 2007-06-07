@@ -15,12 +15,12 @@ public class ColorSelector extends PlugInFrame implements ItemListener {
 	private int mode = ROI;
 	
 	public ColorSelector() {
-		super("ROI Color");
+		super("Selection Color");
 	}
 	
 	public void run(String arg) {
 		if (arg.equals("roi")) {
-			setTitle("ROI Color");
+			setTitle("Selection Color");
 			mode = ROI;
 		} else if (arg.equals("back")) {
 			setTitle("Background Color");

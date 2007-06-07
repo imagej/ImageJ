@@ -38,8 +38,8 @@ public class Resizer implements PlugInFilter {
 			interpolate = false;
 		} else {
 			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
-			gd.addNumericField("New width (pixels):", newWidth, 0);
-			gd.addNumericField("New Height (pixels):", newHeight, 0);
+			gd.addNumericField("Width (pixels):", newWidth, 0);
+			gd.addNumericField("Height (pixels):", newHeight, 0);
 			gd.addCheckbox("Constrain Aspect Ratio", constrain);
 			gd.addCheckbox("Interpolate", interpolate);
 			gd.addMessage("NOTE: Undo is not available");

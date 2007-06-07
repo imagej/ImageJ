@@ -81,6 +81,8 @@ public abstract class ImageProcessor extends Object {
  		this is the base lookup table (LUT), not the one that may have
 		been modified by setMinAndMax() or setThreshold(). */
 	public ColorModel getColorModel() {
+		if (cm==null)
+			makeDefaultColorModel();
 		if (baseCM!=null)
 			return baseCM;
 		else
@@ -195,6 +197,61 @@ public abstract class ImageProcessor extends Object {
 			}
 		}
 		return invertedLut;
+	}
+	
+	/** Returns true if this image uses a color LUT. */
+	public boolean isColorLut() {
+		if (cm==null || !(cm instanceof IndexColorModel))
+			return false;
+    	IndexColorModel icm = (IndexColorModel)cm;
+		int mapSize = icm.getMapSize();
+		byte[] reds = new byte[mapSize];
+		byte[] greens = new byte[mapSize];
+		byte[] blues = new byte[mapSize];	
+		icm.getReds(reds); 
+		icm.getGreens(greens); 
+		icm.getBlues(blues);
+		boolean isColor = false;
+		for (int i=0; i<mapSize; i++) {
+			if ((reds[i] != greens[i]) || (greens[i] != blues[i])) {
+				isColor = true;
+				break;
+			}
+		}
+		return isColor;
+	}
+
+
+	/** Returns true if this image uses a pseudocolor LUT. */
+    boolean isPseudoColorLut() {
+		if (cm==null || !(cm instanceof IndexColorModel))
+			return false;
+    	IndexColorModel icm = (IndexColorModel)cm;
+		int mapSize = icm.getMapSize();
+		if (mapSize!=256)
+			return false;
+		byte[] reds = new byte[mapSize];
+		byte[] greens = new byte[mapSize];
+		byte[] blues = new byte[mapSize];	
+		icm.getReds(reds); 
+		icm.getGreens(greens); 
+		icm.getBlues(blues);
+		int r, g, b, d;
+		int r2=reds[0]&255, g2=greens[0]&255, b2=blues[0]&255;
+		double sum=0.0, sum2=0.0;
+		for (int i=0; i<mapSize; i++) {
+			r=reds[i]&255; g=greens[i]&255; b=blues[i]&255;
+			d=r-r2; sum+=d; sum2+=d*d;
+			d=g-g2; sum+=d; sum2+=d*d;
+			d=b-b2; sum+=d; sum2+=d*d;
+			r2=r; g2=g; b2=b;
+		}
+		double stdDev = (768*sum2-sum*sum)/768.0;
+		if (stdDev>0.0)
+			stdDev = Math.sqrt(stdDev/(767.0));
+		else
+			stdDev = 0.0;
+		return stdDev<10.0;
 	}
 
 	/** Sets the default fill/draw value to the pixel
@@ -1005,6 +1062,10 @@ public abstract class ImageProcessor extends Object {
 		that corresponds to the current ROI. */
 	public abstract ImageProcessor crop();
 	
+	/** Sets pixels less than or equal to level to 0 and all other 
+		pixels to 255. Only works with 8-bit and 16-bit images. */
+	public abstract void threshold(int level);
+
 	/** Returns a duplicate of this image. */
 	public ImageProcessor duplicate() {
 		Rectangle saveRoi = getRoi();
@@ -1030,12 +1091,7 @@ public abstract class ImageProcessor extends Object {
 		@see ImageProcessor#setInterpolate
 	*/
   	public abstract void rotate(double angle);
-  	
-	/**	For byte images, converts to binary using an automatically determined
-		threshold. For RGB images, converts each channel to binary. For
-		short and float images, does nothing. */
-	public abstract void autoThreshold();
-	
+  		
 	/** Returns the histogram of the image or ROI. Returns
 		a luminosity histogram for RGB images and null
 		for float images. */
@@ -1092,7 +1148,64 @@ public abstract class ImageProcessor extends Object {
 		return tc.convertToRGB();
 	}
 	
-	/** Performs a convolution operation using the specified kernel. */
+	/** Performs a convolution operation using the specified kernel. 
+	KernelWidth and kernelHeight must be odd. */
 	public abstract void convolve(float[] kernel, int kernelWidth, int kernelHeight);
 	
+	/** Converts the image to binary using an automatically determined threshold.
+		For byte and short images, converts to binary using an automatically determined
+		threshold. For RGB images, converts each channel to binary. For
+		float images, does nothing.
+	*/
+	public void autoThreshold() {
+		threshold(getAutoThreshold());
+	}
+
+	/** Iterative thresholding technique, described originally by Ridler & Calvard in
+	"PIcture Thresholding Using an Iterative Selection Method", IEEE transactions
+	on Systems, Man and Cybernetics, August, 1978. */
+	public int getAutoThreshold() {
+		int level;
+		int[] histogram = getHistogram();
+		int maxValue = histogram.length - 1;
+		double result,tempSum1,tempSum2,tempSum3,tempSum4;
+
+		histogram[0] = 0; //set to zero so erased areas aren't included
+		histogram[maxValue] = 0;
+		int min = 0;
+		while ((histogram[min]==0) && (min<maxValue))
+			min++;
+		int max = maxValue;
+		while ((histogram[max]==0) && (max>0))
+			max--;
+		if (min>=max) {
+			level = histogram.length/2;
+			return level;
+		}
+		
+		int movingIndex = min;
+		int inc = max/40;
+		if (inc<1) inc = 1;
+		do {
+			tempSum1=tempSum2=tempSum3=tempSum4=0.0;
+			for (int i=min; i<=movingIndex; i++) {
+				tempSum1 += i*histogram[i];
+				tempSum2 += histogram[i];
+			}
+			for (int i=(movingIndex+1); i<=max; i++) {
+				tempSum3 += i *histogram[i];
+				tempSum4 += histogram[i];
+			}
+			
+			result = (tempSum1/tempSum2/2.0) + (tempSum3/tempSum4/2.0);
+			movingIndex++;
+			if (max>255 && (movingIndex%inc)==0)
+				showProgress((double)(movingIndex)/max);
+			} while ((movingIndex+1)<=result && movingIndex<=(max-1));
+		
+		showProgress(1.0);
+		level = (int)Math.round(result);
+		return level;
+	}
+
 }

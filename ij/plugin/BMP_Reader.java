@@ -11,9 +11,9 @@ import ij.io.*;
         displays a file open dialog and opens and displays the 
         selected file. If 'arg' is a path, it opens the 
         specified file and the calling routine can display it using
-        "((ImagePlus)IJ.runPlugIn("ij.plugin.BMP", path)).show()".
+        "((ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path)).show()".
         */
-public class BMP extends ImagePlus implements PlugIn {
+public class BMP_Reader extends ImagePlus implements PlugIn {
 
         private static String defaultDirectory;
 
@@ -43,15 +43,15 @@ public class BMP extends ImagePlus implements PlugIn {
                 MemoryImageSource mis = bmp.makeImageSource();
                 if (mis==null) IJ.write("mis=null");
                 Image img = Toolkit.getDefaultToolkit().createImage(mis);
-        FileInfo fi = new FileInfo();
-        fi.fileFormat = FileInfo.BMP;
-        fi.fileName = name;
-        fi.directory = directory;
-        setImage(img);
-        setTitle(name);
-        setFileInfo(fi);
-        if (arg.equals(""))
-                show();
+                FileInfo fi = new FileInfo();
+                fi.fileFormat = FileInfo.BMP;
+                fi.fileName = name;
+                fi.directory = directory;
+                setImage(img);
+                setTitle(name);
+                setFileInfo(fi);
+                if (arg.equals(""))
+                    show();
         }
         
 }
@@ -160,7 +160,6 @@ class BMPDecoder {
                                 actualColorsUsed = 0;   // no palette
         }
 
-
         void getPalette() throws IOException {
                 noOfEntries = actualColorsUsed;
                 //IJ.write("noOfEntries: " + noOfEntries);
@@ -180,22 +179,7 @@ class BMPDecoder {
                 }
         }
 
-        void unpack(byte[] rawData, int rawOffset, int[] intData, int intOffset, int w) {
-                int j = intOffset;
-                int k = rawOffset;
-                int mask = 0xff;
-                for (int i = 0; i < w; i++) {
-                        int b0 = (((int)(rawData[k++])) & mask);
-                        int b1 = (((int)(rawData[k++])) & mask) << 8;
-                        int b2 = (((int)(rawData[k++])) & mask) << 16;
-                        intData[j] = 0xff000000 | b0 | b1 | b2;
-                        j++;
-                }
-        }
-
-
-        void unpack(byte[] rawData, int rawOffset, int bpp, 
-                byte[] byteData, int byteOffset, int w) throws Exception {
+        void unpack(byte[] rawData, int rawOffset, int bpp, byte[] byteData, int byteOffset, int w) throws Exception {
                 int j = byteOffset;
                 int k = rawOffset;
                 byte mask;
@@ -206,7 +190,7 @@ class BMPDecoder {
                 case 4: mask = (byte)0x0f; pixPerByte = 2; break;
                 case 8: mask = (byte)0xff; pixPerByte = 1; break;
                 default:
-                        throw new Exception("Unsupported bits-per-pixel value");
+                        throw new Exception("Unsupported bits-per-pixel value: " + bpp);
                 }
 
                 for (int i = 0;;) {
@@ -225,6 +209,32 @@ class BMPDecoder {
                 }
         }
 
+        void unpack24(byte[] rawData, int rawOffset, int[] intData, int intOffset, int w) {
+                int j = intOffset;
+                int k = rawOffset;
+                int mask = 0xff;
+                for (int i = 0; i < w; i++) {
+                        int b0 = (((int)(rawData[k++])) & mask);
+                        int b1 = (((int)(rawData[k++])) & mask) << 8;
+                        int b2 = (((int)(rawData[k++])) & mask) << 16;
+                        intData[j] = 0xff000000 | b0 | b1 | b2;
+                        j++;
+                }
+        }
+
+        void unpack32(byte[] rawData, int rawOffset, int[] intData, int intOffset, int w) {
+                int j = intOffset;
+                int k = rawOffset;
+                int mask = 0xff;
+                for (int i = 0; i < w; i++) {
+                        int b0 = (((int)(rawData[k++])) & mask);
+                        int b1 = (((int)(rawData[k++])) & mask) << 8;
+                        int b2 = (((int)(rawData[k++])) & mask) << 16;
+                        int b3 = (((int)(rawData[k++])) & mask) << 24; // this gets ignored!
+                        intData[j] = 0xff000000 | b0 | b1 | b2;
+                        j++;
+                }
+        }
 
         void getPixelData() throws IOException, Exception {
                 byte[] rawData;                 // the raw unpacked data
@@ -246,17 +256,13 @@ class BMPDecoder {
                 int offset = (height - 1) * width;
                 for (int i = height - 1; i >= 0; i--) {
                         int n = is.read(rawData, rawOffset, len);
-                        if (n < len) throw new Exception("Scan line ended prematurely after "
-                                + n + " bytes");
-                        if (bitsPerPixel > 8) {
-                                // Unpack and create one int per pixel
-                                unpack(rawData, rawOffset, intData, offset, width);
-                        }
-                        else {
-                                // Unpack and create one byte per pixel
-                                unpack(rawData, rawOffset, bitsPerPixel, 
-                                        byteData, offset, width);
-                        }
+                        if (n < len) throw new Exception("Scan line ended prematurely after " + n + " bytes");
+                        if (bitsPerPixel==24)
+                                unpack24(rawData, rawOffset, intData, offset, width);
+                        else if (bitsPerPixel==32)
+                                unpack32( rawData, rawOffset, intData, offset, width);
+                        else // 8-bits or less
+                                unpack(rawData, rawOffset, bitsPerPixel, byteData, offset, width);
                         rawOffset += len;
                         offset -= width;
                 }

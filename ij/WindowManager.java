@@ -70,10 +70,10 @@ public class WindowManager {
 		return imageList.size();
 	}
 
-	/** Returns the front most window. */
-	//public static Frame getFrontWindow() {
-	//	return frontWindow;
-	//}
+	/** Returns the front most window or null. */
+	public static Frame getFrontWindow() {
+		return frontWindow;
+	}
 
 	/** Returns a list of the IDs of open images. Returns
 		null if no windows are open. */
@@ -89,12 +89,26 @@ public class WindowManager {
 		return list;
 	}
 
-	/** Returns the ImagePlus with the specified ID. Returns
-		null if no open window has a matching ID. */
+	/** For IDs less than zero, returns the ImagePlus with the specified ID. 
+		Returns null if no open window has a matching ID or no images are open. 
+		For IDs greater than zero, returns the Nth ImagePlus. Returns null if 
+		the ID is zero. */
 	public synchronized static ImagePlus getImage(int imageID) {
 		//if (IJ.debugMode) IJ.write("ImageWindow.getImage");
-		if (imageID>=0)
+		if (imageID==0)
 			return null;
+		int nImages = imageList.size();
+		if (nImages==0)
+			return null;
+		if (imageID>0) {
+			if (imageID>nImages)
+				return null;
+			ImageWindow win = (ImageWindow)imageList.elementAt(imageID-1);
+			if (win!=null)
+				return win.getImagePlus();
+			else
+				return null;
+		}
 		ImagePlus imp = null;
 		for (int i=0; i<imageList.size(); i++) {
 			ImageWindow win = (ImageWindow)imageList.elementAt(i);
@@ -134,12 +148,13 @@ public class WindowManager {
 		else if (win instanceof ImageWindow)
 			removeImageWindow((ImageWindow)win);
 		else {
-				int index = nonImageList.indexOf(win);
-				if (index>=0) {
-					Menus.removeWindowMenuItem(index);
-					nonImageList.removeElement(win);
-				}
+			int index = nonImageList.indexOf(win);
+			if (index>=0) {
+				Menus.removeWindowMenuItem(index);
+				nonImageList.removeElement(win);
+			}
 		}
+		setWindow(null);
 	}
 
 	private static void removeImageWindow(ImageWindow win) {
@@ -162,12 +177,10 @@ public class WindowManager {
 		Undo.reset();
 	}
 
-	/** Puts a checkmark in the Windows menu next to the specified window. */
+	/** The specified frame becomes the front window, the one returnd by getFrontWindow(). */
 	public static void setWindow(Frame win) {
-		if (win==null)
-			return;
 		frontWindow = win;
-		//IJ.write("Front window: "+win.getTitle());
+		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
     }
 
 	/** Closes all image windows. Stops and returns false if any "save changes" dialog is canceled. */
@@ -204,6 +217,17 @@ public class WindowManager {
 	public static void setTempCurrentImage(ImagePlus imp) {
 		tempCurrentImage = imp;
     }
+    
+    /** Returns the frame with the specified title or null if a frame with that 
+    	title is not found. Currently only works for non-image windows. */
+    public static Frame getFrame(String title) {
+		for (int i=0; i<nonImageList.size(); i++) {
+			Frame frame = (Frame)nonImageList.elementAt(i);
+			if (title.equals(frame.getTitle()))
+				return frame;
+		}
+		return null;
+    }
 
 	/** Activates a window selected from the Window menu. */
 	synchronized static void activateWindow(String menuItemLabel, MenuItem item) {
@@ -214,6 +238,8 @@ public class WindowManager {
 			if (menuItemLabel.equals(title)) {
 				win.toFront();
 				((CheckboxMenuItem)item).setState(false);
+				if (Recorder.record)
+					Recorder.record("selectWindow", title);
 				return;
 			}
 		}

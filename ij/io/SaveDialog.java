@@ -9,6 +9,7 @@ public class SaveDialog {
 
 	private String dir;
 	private String name;
+	private String title;
 	
 	/** Displays a file save dialog with 'title' as the 
 		title, 'defaultName' as the initial file name, and
@@ -16,8 +17,11 @@ public class SaveDialog {
 	*/
 	public SaveDialog(String title, String defaultName, String extension) {
 		String macroOptions = Macro.getOptions();
+		this.title = title;
 		if (macroOptions!=null) {
-			String path = Macro.getValue(macroOptions, "path", null);
+			String path = Macro.getValue(macroOptions, title, null);
+			if (path==null)
+				path = Macro.getValue(macroOptions, "path", null);
 			if (path!=null) {
 				Opener o = new Opener();
 				dir = o.getDir(path);
@@ -45,6 +49,8 @@ public class SaveDialog {
 		fd.show();
 		name = fd.getFile();
 		dir = fd.getDirectory();
+		if (name==null)
+			Macro.abort();
 		if (name!=null && dir!=null)
 			OpenDialog.setDefaultDirectory(dir);
 		fd.dispose();
@@ -61,7 +67,7 @@ public class SaveDialog {
 	/** Returns the selected file name. */
 	public String getFileName() {
 		if (Recorder.record)
-			Recorder.recordPath(dir+name);
+			Recorder.recordPath(title, dir+name);
 		return name;
 	}
 }

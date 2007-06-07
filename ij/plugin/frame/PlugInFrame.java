@@ -27,19 +27,25 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 	}
 	
     public void windowClosing(WindowEvent e) {
-    	if (e.getSource()==this) {
-			setVisible(false);
-			dispose();
-			WindowManager.removeWindow(this);
-		}
+    	if (e.getSource()==this)
+    		close();
     }
     
+    /** Closes this window. */
+    public void close() {
+		setVisible(false);
+		dispose();
+		WindowManager.removeWindow(this);
+    }
+
     public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh() && IJ.getInstance()!=null)
 			setMenuBar(Menus.getMenuBar());
+		WindowManager.setWindow(this);
 	}
 
 	public void focusGained(FocusEvent e) {
+		//IJ.log("PlugInFrame: focusGained");
 		WindowManager.setWindow(this);
 	}
 

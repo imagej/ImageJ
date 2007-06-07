@@ -72,7 +72,11 @@ public class Filters implements PlugInFilter {
 	 	}
 	 	
 		if (arg.equals("median")) {
-			ip.medianFilter();
+			if (imp.getBitDepth()==16 || imp.getBitDepth()==32) {
+				imp.unlock();
+				IJ.run("Median...", "radius=1.5");			
+			} else
+				ip.medianFilter();
 	 		return;
 		}
 

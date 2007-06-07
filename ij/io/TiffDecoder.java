@@ -371,7 +371,7 @@ public class TiffDecoder {
 					break;
 				case COMPRESSION:
 					if (value!=1 && value!=7) // don't abort with Spot camera compressed (7) thumbnails
-						throw new IOException("ImageJ cannot open compressed TIFF files");
+						throw new IOException("ImageJ cannot open compressed TIFF files ("+value+")");
 					break;
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)

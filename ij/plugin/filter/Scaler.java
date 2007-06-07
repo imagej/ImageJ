@@ -58,15 +58,20 @@ public class Scaler implements PlugInFilter {
 		    	if (cal.scaled()) {
 		    		cal.pixelWidth *= 1.0/xscale;
 		    		cal.pixelHeight *= 1.0/yscale;
-		    		imp.setCalibration(cal);
 		    	}
 				imp2.show();
 				imp.trimProcessor();
 				imp2.trimProcessor();
 			} else {
-				if (imp.getStackSize()>1) Undo.reset();
-	    		StackProcessor sp = new StackProcessor(imp.getStack(), ip);
-	    		sp.scale(xscale, yscale);
+				int flags = IJ.setupDialog(imp, 0);
+				if (flags==DONE)
+					return;
+				if ((flags&DOES_STACKS)!=0 && imp.getStackSize()>1) {
+					Undo.reset();
+	    			StackProcessor sp = new StackProcessor(imp.getStack(), ip);
+	    			sp.scale(xscale, yscale);
+	    		} else
+	    			ip.scale(xscale, yscale);
 	    		imp.killRoi();
 			}
 		}

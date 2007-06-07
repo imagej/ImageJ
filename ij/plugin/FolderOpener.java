@@ -15,9 +15,11 @@ public class FolderOpener implements PlugIn {
 	private static boolean halfSize;
 	private int n, start, increment;
 	private String filter;
+	private FileInfo fi;
+	private String info1;
 
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("Image Sequence...", arg);
+		OpenDialog od = new OpenDialog("Open Image Sequence...", arg);
 		String directory = od.getDirectory();
 		String name = od.getFileName();
 		if (name==null)
@@ -43,10 +45,16 @@ public class FolderOpener implements PlugIn {
 					width = imp.getWidth();
 					height = imp.getHeight();
 					type = imp.getType();
+					fi = imp.getOriginalFileInfo();
 					if (!showDialog(imp, list))
 						return;
 					break;
 				}
+			}
+			if (width==0) {
+				IJ.showMessage("Import Sequence", "This folder does not appear to contain any TIFF,\n"
+				+ "JPEG, BMP, DICOM, GIF, FITS or PGM files.");
+				return;
 			}
 
 			if (n<1)
@@ -56,7 +64,7 @@ public class FolderOpener implements PlugIn {
 			if (start+n-1>list.length)
 				n = list.length-start+1;
 			int filteredImages = n;
-			if (filter.equals("") || filter.equals("*"))
+			if (filter!=null && (filter.equals("") || filter.equals("*")))
 				filter = null;
 			if (filter!=null) {
 				filteredImages = 0;
@@ -90,10 +98,12 @@ public class FolderOpener implements PlugIn {
 						stack = new ImageStack(width/2, height/2, cm);
 					else
 						stack = new ImageStack(width, height, cm);
+					info1 = (String)imp.getProperty("Info");
 				}
-				if (imp==null)
-					IJ.log(list[i] + ": unable to open");
-				else if (imp.getWidth()!=width || imp.getHeight()!=height)
+				if (imp==null) {
+					if (!list[i].startsWith("."))
+						IJ.log(list[i] + ": unable to open");
+				} else if (imp.getWidth()!=width || imp.getHeight()!=height)
 					IJ.log(list[i] + ": wrong dimensions");
 				else if (imp.getType()!=type)
 					IJ.log(list[i] + ": wrong type");
@@ -103,15 +113,19 @@ public class FolderOpener implements PlugIn {
 					IJ.showProgress((double)count/n);
 					ImageProcessor ip = imp.getProcessor();
 					if (grayscale) {
-						if (nonStandardLut(ip))
-							ip = new ColorProcessor(imp.getImage());
-						ip = ip.convertToByte(true);
+						ImageConverter ic = new ImageConverter(imp);
+						ic.convertToGray8();
+						ip = imp.getProcessor();
 					}
 					if (halfSize)
 						ip = ip.resize(width/2, height/2);
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
-					stack.addSlice(imp.getTitle(), ip);
+					String label = imp.getTitle();
+					String info = (String)imp.getProperty("Info");
+					if (info!=null)
+						label += "\n" + info;
+					stack.addSlice(label, ip);
 				}
 				if (count>=n)
 					break;
@@ -125,38 +139,12 @@ public class FolderOpener implements PlugIn {
 			ImagePlus imp2 = new ImagePlus("Stack", stack);
 			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
 				imp2.getProcessor().setMinAndMax(min, max);
+			imp2.setFileInfo(fi); // saves FileInfo of the first image
+			if (imp2.getStackSize()==1 && info1!=null)
+				imp2.setProperty("Info", info1);
 			imp2.show();
 		}
 		IJ.showProgress(1.0);
-	}
-	
-	boolean nonStandardLut(ImageProcessor ip) {
-		ColorModel cm = ip.getColorModel();
-		if (!(cm instanceof IndexColorModel))
-			return false;
-		IndexColorModel icm = (IndexColorModel)cm;
-		int mapSize = icm.getMapSize();
-		if (mapSize!=256)
-			return true;
-		byte[] reds = new byte[256];
-		byte[] greens = new byte[256];
-		byte[] blues = new byte[256];
-		icm.getReds(reds); 
-		icm.getGreens(greens); 
-		icm.getBlues(blues); 
-		boolean isStandard = true;
-		int inc = (reds[1]&255) - (reds[0]&255);
-		for (int i=0; i<256; i++) {
-			if ((reds[i] != greens[i]) || (greens[i] != blues[i])) {
-				isStandard = false;
-				break;
-			}
-			if (i>0 && ((reds[i]&255)-(reds[i-1]&255))!=inc) {
-				isStandard = false;
-				break;
-			}
-		}
-		return !isStandard;
 	}
 	
 	boolean showDialog(ImagePlus imp, String[] list) {

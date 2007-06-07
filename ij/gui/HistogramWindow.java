@@ -51,8 +51,21 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public void showHistogram(ImagePlus imp, int bins) {
 		setup();
 		cal = imp.getCalibration();
-		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins);
+		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
+		imp.getMask();
+		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins);
 		histogram = stats.histogram;
+		if (limitToThreshold && histogram.length==256) {
+			ImageProcessor ip = imp.getProcessor();
+			if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+				int lower = scaleDown(ip, ip.getMinThreshold());
+				int upper = scaleDown(ip, ip.getMaxThreshold());
+				for (int i=0; i<lower; i++)
+					histogram[i] = 0;
+				for (int i=upper+1; i<256; i++)
+					histogram[i] = 0;
+			}
+		}
 		lut = imp.createLut();
 		int type = imp.getType();
 		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
@@ -138,6 +151,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
        
+	/** Scales a threshold level to the range 0-255. */
+	int scaleDown(ImageProcessor ip, double threshold) {
+		double min = ip.getMin();
+		double max = ip.getMax();
+		if (max>min)
+			return (int)(((threshold-min)/(max-min))*255.0);
+		else
+			return 0;
+	}
+
 	void drawPlot(int maxCount, ImageProcessor ip) {
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
@@ -280,6 +303,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
+	
+	public int[] getHistogram() {
+		return histogram;
+	}
 
 }
 

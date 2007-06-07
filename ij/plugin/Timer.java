@@ -119,7 +119,7 @@ public class Timer implements PlugIn {
 				i++;
 			}
 		} catch (OutOfMemoryError e) {
-			IJ.write("out of memory at "+i);
+			IJ.log("out of memory at "+i);
 		}
 	}
 	*/

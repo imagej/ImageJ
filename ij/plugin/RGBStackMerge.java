@@ -92,7 +92,10 @@ public class RGBStackMerge implements PlugIn {
                         win.close();
                 }
             }
-        new ImagePlus("RGB", rgb).show();
+        ImagePlus imp2 = new ImagePlus("RGB", rgb);
+        if (image[0]!=null)
+            imp2.setCalibration(image[0].getCalibration());
+        imp2.show();
     }
     
     public ImageStack mergeStacks(int w, int h, int d, ImageStack red, ImageStack green, ImageStack blue, boolean keep) {
@@ -152,9 +155,9 @@ public class RGBStackMerge implements PlugIn {
             ColorProcessor cp = (ColorProcessor)stack.getProcessor(slice);
             cp.getRGB(r, g, b);
             switch (color) {
-                case 0: return r;;
-                case 1: return g;;
-                case 2: return b;;
+                case 0: return r;
+                case 1: return g;
+                case 2: return b;
             }
         }
         return null;

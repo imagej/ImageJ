@@ -94,6 +94,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		textArea.append(method+"("+a1+", "+a2+");\n");
 	}
 
+	public static void record(String method, double a1, double a2) {
+		if (textArea==null) return;
+		textArea.append(method+"("+a1+", "+a2+");\n");
+	}
+
 	public static void record(String method, int a1, int a2, int a3) {
 		if (textArea==null) return;
 		textArea.append(method+"("+a1+", "+a2+", "+a3+");\n");
@@ -127,8 +132,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		//IJ.write("  "+key+"="+value);
 	}
 
-	public static void recordPath(String path) {
-		String key = "path";
+	public static void recordPath(String key, String path) {
+		if (key==null) return;
+		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
 		if (commandOptions==null)
@@ -219,9 +225,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 	}
 
     public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+    	close();
+	}
+
+	public void close() {
+		super.close();
 		record = false;
 		textArea = null;
+		commandName = null;
 		instance = null;	
 	}
 

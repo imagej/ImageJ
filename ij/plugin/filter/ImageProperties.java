@@ -45,6 +45,8 @@ public class ImageProperties implements PlugInFilter {
 		String unit = gd.getNextString();
         if (unit.equals("um"))
             unit = "µm";
+        else if (unit.equals("A"))
+        	unit = "Å";
  		double resolution = gd.getNextNumber();
 		if (unit.equals("")||unit.equalsIgnoreCase("pixel")
 		||unit.equalsIgnoreCase("none")||resolution==0.0) {

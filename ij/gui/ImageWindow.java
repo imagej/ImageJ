@@ -17,6 +17,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	protected ImageJ ij;
 	protected ImageCanvas ic;
 	private double initialMagnification = 1;
+	private int newWidth, newHeight;
 	protected static ImagePlus clipboard;
 	protected boolean closed;
 		
@@ -36,8 +37,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		window, presses the escape key, or closes the window. */
 	public boolean running;
 	
-	private int j = 0;
-
     public ImageWindow(ImagePlus imp) {
     	this(imp, new ImageCanvas(imp));
    }
@@ -62,7 +61,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			setLocationAndSize();
 			Point loc = previousWindow.getLocation();
 			setLocation(loc.x, loc.y);
-			pack();
 			show();
 			boolean unlocked = imp.lockSilently();
 			boolean changes = imp.changes;
@@ -74,11 +72,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			WindowManager.setCurrentWindow(this);
 		} else {
 			setLocationAndSize();
-			if (ij!=null) {
+			if (ij!=null && !IJ.isMacintosh()) {
 				Image img = ij.getIconImage();
 				if (img!=null) setIconImage(img);
 			}
-			pack();
 			if (centerOnScreen) {
 				GUI.center(this);
 				centerOnScreen = false;
@@ -86,6 +83,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			show();
 		}
      }
+
     
 	private void setLocationAndSize() {
 		int width = imp.getWidth();
@@ -129,9 +127,15 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		if (y+height*mag>screenHeight)
 			y = ybase;
 		setLocation(x, y);
+		if (Prefs.open100Percent && ic.getMagnification()<1.0) {
+			while(ic.getMagnification()<1.0)
+				ic.zoomIn(0, 0);
+			setSize(Math.min(width, screen.width-x), Math.min(height, screenHeight-y));
+			validate();
+		} else
+			pack();
 	}
-	
-
+				
 	public double getInitialMagnification() {
 		return initialMagnification;
 	}
@@ -142,9 +146,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		//IJ.write(""+insets);
 		return new Insets(insets.top+TEXT_GAP, insets.left, insets.bottom, insets.right);
 	}
-    
-	//public void update(Graphics g) {
-	//}
 
     public void drawInfo(Graphics g) {
     	String s="";
@@ -156,6 +157,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     		s += currentSlice+"/"+nSlices;
     		boolean isLabel = false;
     		String label = stack.getSliceLabel(currentSlice);
+    		int newline = label!=null?label.indexOf('\n'):-1;
+    		if (newline>0)
+    			label = label.substring(0, newline);
     		if (label!=null && label.length()>0)
     			s += " (" + label + ")";
 			if ((this instanceof StackWindow) && running) {
@@ -175,7 +179,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
     	switch (type) {
 	    	case ImagePlus.GRAY8:
-	    		s += "8-bit grayscale";
+	    		s += "8-bit";
 	    		break;
 	    	case ImagePlus.GRAY16:
 	    		s += "16-bit grayscale";
@@ -196,6 +200,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     	s += "; " + size + "K";
 		g.drawString(s, 5, insets.top+TEXT_GAP);
     }
+
 
     public void paint(Graphics g) {
 		//if (IJ.debugMode) IJ.log("wPaint: " + imp.getTitle());
@@ -379,6 +384,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		//imp2.show();
     }
                 
+    /** This method is called by ImageCanvas.mouseMoved(MouseEvent). 
+    	@see ij.gui.ImageCanvas#mouseMoved
+    */
     public void mouseMoved(int x, int y) {
     	imp.mouseMoved(x, y);
     }

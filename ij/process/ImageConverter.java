@@ -23,17 +23,18 @@ public class ImageConverter {
 	public synchronized void convertToGray8() {
 		if (imp.getStackSize()>1)
 			throw new IllegalArgumentException("Unsupported conversion");
-
+		ImageProcessor ip = imp.getProcessor();
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
-			ImageProcessor ip = imp.getProcessor();
 			imp.setProcessor(null, ip.convertToByte(doScaling));
 			imp.setCalibration(imp.getCalibration()); //update calibration
+		} else if (type==ImagePlus.COLOR_RGB)
+	    	imp.setProcessor(null, ip.convertToByte(doScaling));
+		else if (ip.isPseudoColorLut()) {
+			boolean invertedLut = ip.isInvertedLut();
+			ip.setColorModel(LookUpTable.createGrayscaleColorModel(invertedLut));
+	    	imp.updateAndDraw();
 		} else {
-			ImageProcessor ip;
-			if (imp.getType()==ImagePlus.COLOR_RGB)
-				ip = imp.getProcessor();
-			else
-				ip = new ColorProcessor(imp.getImage());
+			ip = new ColorProcessor(imp.getImage());
 	    	imp.setProcessor(null, ip.convertToByte(doScaling));
 	    }
 	}

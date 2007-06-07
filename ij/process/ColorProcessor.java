@@ -175,7 +175,9 @@ public class ColorProcessor extends ImageProcessor {
 		Throws an IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
 	public void fill(int[] mask) {
-		if (mask==null || mask.length<roiWidth*roiHeight)
+		if (mask==null)
+			{fill(); return;}
+		if (mask.length<roiWidth*roiHeight)
 			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
@@ -554,7 +556,7 @@ public class ColorProcessor extends ImageProcessor {
 			for (int x=xmin; x<=xmax; x++) {
 				xs = (x-xCenter)/xScale + xCenter;
 				xsi = (int)xs;
-				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ys>ymax)))
+				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 					pixels[index1++] = (byte)bgColor;
 				else {
 					if (interpolate) {
@@ -954,5 +956,8 @@ public class ColorProcessor extends ImageProcessor {
 	public void invertLut() {
 	}
 	
+	/** Not implemented. */
+	public void threshold(int level) {}
+
 }
 

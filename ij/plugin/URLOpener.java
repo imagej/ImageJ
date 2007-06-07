@@ -5,7 +5,9 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 
-/** Opens TIFFs, ZIP compressed TIFFs, GIFs and JPEGs using a URL. */
+/** Opens TIFFs, ZIP compressed TIFFs, DICOMs, GIFs and JPEGs using a URL. 
+	TIFF file names must end in ".tif", ZIP file names must end 
+	in ".zip" and DICOM file names must end in ".dcm". */
 public class URLOpener implements PlugIn {
 
 	private static String url = "http://rsb.info.nih.gov/ij/images/clown.gif";

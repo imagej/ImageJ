@@ -52,7 +52,7 @@ public class RankFilters implements PlugInFilter {
                 if (canceled)
                         return;
                 slice++;
-                if (win.running!=true)
+                if (win!=null && win.running!=true)
                         {canceled=true; IJ.beep(); return;}
 
 				if (isLineRoi)
@@ -60,7 +60,7 @@ public class RankFilters implements PlugInFilter {
                 rank(ip, radius, filterType);
                 if (slice>1)
                         IJ.showStatus(title+": "+slice+"/"+imp.getStackSize());
-                if (slice==imp.getStackSize())
+                if (imp!=null && slice==imp.getStackSize())
                         ip.resetMinAndMax();
         }
 

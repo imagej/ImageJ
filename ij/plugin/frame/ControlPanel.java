@@ -24,6 +24,7 @@ public class ControlPanel extends PlugInFrame implements PlugIn, ActionListener 
 			return;
 		}
 		instance = this;
+		WindowManager.addWindow(this);
 		IJ.register(ControlPanel.class);
 		WindowManager.addWindow(this);
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -95,7 +96,11 @@ public class ControlPanel extends PlugInFrame implements PlugIn, ActionListener 
 	}
 
     public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+		close();
+	}
+	
+	public void close() {
+		super.close();
 		instance = null;
 	}
 

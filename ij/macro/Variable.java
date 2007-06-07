@@ -1,10 +1,19 @@
 package ij.macro;
 
 class Variable implements MacroConstants {
+	static final int VALUE=0, ARRAY=1, STRING=2;
+    static boolean doHash;
     int symTabIndex;
-    private int flags;
     private double value;
     private String str;
+    private Variable[] array;
+
+    Variable() {
+    }
+
+    Variable(double value) {
+        this.value = value;
+    }
 
     Variable(int symTabIndex, double value, String str) {
         this.symTabIndex = symTabIndex;
@@ -12,13 +21,54 @@ class Variable implements MacroConstants {
         this.str = str;
     }
 
-    double getValue() {
-        return value;
+    Variable(int symTabIndex, double value, String str, Variable[] array) {
+        this.symTabIndex = symTabIndex;
+        this.value = value;
+        this.str = str;
+        this.array = array;
     }
+
+    Variable(byte[] array) {
+    	this.array = new Variable[array.length];
+    	for (int i=0; i<array.length; i++)
+    		this.array[i] = new Variable(array[i]&255);
+    }
+
+    Variable(int[] array) {
+    	this.array = new Variable[array.length];
+    	for (int i=0; i<array.length; i++)
+    		this.array[i] = new Variable(array[i]);
+    }
+
+    Variable(double[] array) {
+    	this.array = new Variable[array.length];
+    	for (int i=0; i<array.length; i++)
+    		this.array[i] = new Variable(array[i]);
+    }
+
+    double getValue() {
+    	if (str!=null) {
+    		if (doHash)
+    			return getHashCode(); // string comparisons
+    		else
+    			return convertToDouble();  // string to number conversions
+    	} else
+        	return value;
+    }
+
+	double convertToDouble() {
+		try {
+			Double d = new Double(str);
+			return d.doubleValue();
+		} catch (NumberFormatException e){
+			return Double.NaN;
+		}
+	}
 
     void setValue(double value) {
         this.value = value;
         str = null;
+        array = null;
     }
 
     String getString() {
@@ -28,10 +78,53 @@ class Variable implements MacroConstants {
     void setString(String str) {
         this.str = str;
         value = 0.0;
+        array = null;
+    }
+
+    Variable[] getArray() {
+        return array;
+    }
+
+    void setArray(Variable[] array) {
+        this.array = array;
+        value = 0.0;
+        str = null;
+    }
+    
+    int getType() {
+    	if (array!=null)
+    		return ARRAY;
+    	else if (str!=null)
+    		return STRING;
+    	else
+    		return VALUE;
+    }
+
+    /** Convert string to a base 102 number so Interpreter.getBooleanExpression()
+		can compare strings. */
+    double getHashCode() {
+        int base = 102;
+        double k=1.0, v=0.0, j;
+        for (int i=0; i<str.length(); i++) {
+            j = str.charAt(i);
+            if (j>=65 && j<=90) j += 32; // convert to lower case
+            if (j>=91) j -= 26;
+            v += j*k;
+            //ij.IJ.log(i+"  "+j+"  "+k+"  "+v);
+            k *= base;
+        }
+        return v;
     }
 
     public String toString() {
-        return value+" "+str+" "+symTabIndex;
+    	String s = "";
+    	if (array!=null)
+    		s += "array["+array.length+"]";
+    	else if (str!=null)
+    		s += str;
+    	else
+    		s += ""+value;    	
+        return s+" "+symTabIndex;
     }
-
+    
 } // class Variable

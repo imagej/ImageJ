@@ -71,7 +71,11 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 	}
 	
     public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+    	close();
+	}
+
+	public void close() {
+		super.close();
 		instance = null;
 	}
 

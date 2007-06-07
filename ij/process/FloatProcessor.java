@@ -59,8 +59,8 @@ public class FloatProcessor extends ImageProcessor {
 	of calling setMinAndMax(). In this case, getMin() and getMax() return the
 	fixed min and max defined by setMinAndMax(), rather than the calculated min
 	and max.
-	@see getMin()
-	@see getMin()
+	@see #getMin()
+	@see #getMin()
 	*/
 	public void findMinAndMax() {
 		if (fixedScale)
@@ -624,7 +624,7 @@ public class FloatProcessor extends ImageProcessor {
 			for (int x=xmin; x<=xmax; x++) {
 				xs = (x-xCenter)/xScale + xCenter;
 				xsi = (int)xs;
-				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ys>ymax)))
+				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 					pixels[index1++] = (float)min;
 				else {
 					if (interpolate) {
@@ -732,12 +732,19 @@ public class FloatProcessor extends ImageProcessor {
 		new ij.plugin.filter.Convolver().convolve(this, kernel, kernelWidth, kernelHeight);
 	}
 
+	/** Not implemented. */
 	public void threshold(int level) {}
+	/** Not implemented. */
 	public void autoThreshold() {}
+	/** Not implemented. */
 	public void medianFilter() {}
+	/** Not implemented. */
 	public int[] getHistogram() {return null;}
+	/** Not implemented. */
 	public void erode() {}
+	/** Not implemented. */
 	public void dilate() {}
+
 
 }
 

@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.29
+# Version 1.30
 
 # Popup Menu
 popup01=Undo
@@ -40,11 +40,20 @@ save05="ZIP...",ij.plugin.filter.Writer("zip")
 save06="Raw Data...",ij.plugin.filter.Writer("raw")
 save07="Image Sequence... ",ij.plugin.StackWriter
 save08="AVI... ",ij.plugin.filter.AVIWriter
-save09="LUT...",ij.plugin.filter.Writer("lut")
-save10="ROI...",ij.plugin.filter.RoiWriter
-save11="XY Coordinates...",ij.plugin.filter.XYWriter
-save12="Measurements...",ij.plugin.MeasurementsWriter
-#save13="QuickTime Movie... ",QT_Movie_Writer
+save09="BMP...",ij.plugin.filter.Writer("bmp")
+save10="LUT...",ij.plugin.filter.Writer("lut")
+save11="ROI...",ij.plugin.filter.RoiWriter
+save12="XY Coordinates...",ij.plugin.filter.XYWriter
+save13="Measurements...",ij.plugin.MeasurementsWriter
+save14="Text...",ij.plugin.TextWriter
+#save15="QuickTime Movie... ",QT_Movie_Writer
+
+# Plugins installed in the Edit/Selection submenu
+selection01="Select All[a]",ij.plugin.Selection("all")
+selection02="Select None[A]",ij.plugin.Selection("none")
+selection03="Restore Selection[E]",ij.plugin.Selection("restore")
+selection04="Fit Spline",ij.plugin.Selection("spline")
+
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("width")
@@ -53,7 +62,7 @@ options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
 options05="Foreground Color...",ij.plugin.frame.ColorSelector("fore")
 options06="Background Color...",ij.plugin.frame.ColorSelector("back")
-options07="ROI Color...",ij.plugin.frame.ColorSelector("roi")
+options07="Selection Color...",ij.plugin.frame.ColorSelector("roi")
 options08="Crosshair...",ij.plugin.Options("cross")
 options09="Miscellaneous...",ij.plugin.Options("misc")
 
@@ -121,6 +130,7 @@ lookup11="Yellow",ij.plugin.LutLoader("yellow")
 lookup12="Red/Green",ij.plugin.LutLoader("redgreen")
 lookup13=-
 lookup14="Invert LUT",ij.plugin.LutLoader("invert")
+lookup15="Apply LUT",ij.plugin.filter.LutApplier
 
 # Plug-ins installed in the Process/Noise submenu
 noise01="Add Noise",ij.plugin.filter.Filters("add")
@@ -172,6 +182,14 @@ math12="Square",ij.plugin.filter.ImageMath("sqr")
 math13="Square Root",ij.plugin.filter.ImageMath("sqrt")
 math14="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
 
+# Plugins installed in the Process/FFT submenu
+fft01="FFT",ij.plugin.filter.FFT("fft")
+fft02="Inverse FFT",ij.plugin.filter.FFT("inverse")
+fft03="Redisplay Power Spectrum",ij.plugin.filter.FFT("redisplay")
+fft04=-
+fft05="Band-pass Filter...",ij.plugin.filter.FFT("bandpass")
+fft06="Custom Filter...",ij.plugin.filter.FFT("custom")
+
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver
 filters02="Gaussian Blur...",ij.plugin.filter.GaussianBlur
@@ -201,9 +219,9 @@ tools06="Scale Bar...",ij.plugin.ScaleBar
 tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
 
 # Plugins installed in the Plugins menu
-plug-in01=>"Shortcuts"
-plug-in02=>"Utilities"
-plug-in03="Record... ",ij.plugin.frame.Recorder
+plug-in01=>"Macros"
+plug-in02=>"Shortcuts"
+plug-in03=>"Utilities"
 plug-in04="New... [N]",ij.plugin.NewPlugin
 plug-in05="Edit...",ij.plugin.Compiler("edit")
 plug-in06="Compile and Run...",ij.plugin.Compiler
@@ -215,20 +233,25 @@ plug-in07=-
 #user_plugins02="Inverter",Inverter_
 
 
-# Plugins installed in the Plugins/Utilities submenu
-utilities01="Control Panel...[P]",ij.plugin.frame.ControlPanel
-utilities02="ImageJ Properties...",ij.plugin.JavaProperties
-utilities03="Commands...",ij.plugin.CommandLister
-utilities04="Shortcuts...",ij.plugin.CommandLister("shortcuts")
-utilities05="Threads...",ij.plugin.ThreadLister
-utilities06="Unlock Image",ij.plugin.SimpleCommands("unlock")
-utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
+# Plugins installed in the Plugins/Macros submenu
+macros01="Install...[M]",ij.plugin.MacroInstaller
+macros02="Record... ",ij.plugin.frame.Recorder
+macros03=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
 shortcuts01="Create Shortcut... ",ij.plugin.Hotkeys("install")
 shortcuts02="Install Plugin...",ij.plugin.Installer
 shortcuts03="Remove...",ij.plugin.Hotkeys("remove")
 shortcuts04=-
+
+# Plugins installed in the Plugins/Utilities submenu
+utilities01="Control Panel...[P]",ij.plugin.frame.ControlPanel
+utilities02="ImageJ Properties...",ij.plugin.JavaProperties
+utilities03="List Commands...",ij.plugin.CommandLister
+utilities04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
+utilities05="Threads...",ij.plugin.ThreadLister
+utilities06="Unlock Image",ij.plugin.SimpleCommands("unlock")
+utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
 
 # Plugins installed in the Help/About submenu
 about01="Inverter...",Inverter_("about")

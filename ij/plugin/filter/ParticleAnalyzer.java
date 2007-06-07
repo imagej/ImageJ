@@ -95,6 +95,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int imageType;
 	private int xStartC, yStartC;
 	private boolean roiNeedsImage;
+	private int minX, maxX, minY, maxY;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -143,6 +144,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
 		analyze(imp, ip);
+		if (slice==imp.getStackSize())
+			imp.updateAndDraw();
 	}
 	
 	/** Displays a modal options dialog. */
@@ -247,6 +250,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			pixels = (byte[])ip.getPixels();
 		Rectangle r = ip.getRoi();
 		int[] mask = ip.getMask();
+		if (r.width<width || r.height<height || mask!=null)
+			eraseOutsideRoi(ip, r, mask);
+		minX=r.x; maxX=r.x+r.width; minY=r.y; maxY=r.y+r.height;
 		int offset;
 		double value;
 		int inc = r.height/20;
@@ -283,8 +289,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					value = pixels[offset+x]&255;
 				else
 					value = ip.getPixelValue(x, y);
-				if (mask!=null && mask[mi++]!=ip.BLACK)
-					value = Double.MIN_VALUE;
+				//if (mask!=null && mask[mi++]!=ip.BLACK)
+				//	value = -Double.MAX_VALUE;
 				if (value>=level1 && value<=level2)
 					analyzeParticle(x,y,imp,ip);
 			}
@@ -317,6 +323,33 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		return true;
 	}
 	
+	void eraseOutsideRoi(ImageProcessor ip, Rectangle r, int[] mask) {
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		ip.setValue(fillColor);		
+		if (mask!=null) {
+ 			int[] invertedMask = new int[mask.length];
+ 			for (int i=0; i<mask.length; i++) {
+ 				if (mask[i]==ImageProcessor.BLACK)
+ 					invertedMask[i] = 0xFFFFFFFF;
+ 				else
+ 					invertedMask[i] = ImageProcessor.BLACK;
+ 			}
+ 			ip.setMask(invertedMask);
+			ip.fill();
+ 			ip.reset(invertedMask);
+ 		} 		
+ 		ip.setRoi(0, 0, r.x, height);
+ 		ip.fill();
+ 		ip.setRoi(r.x, 0, r.width, r.y);
+ 		ip.fill();
+ 		ip.setRoi(r.x, r.y+r.height, r.width, height-(r.y+r.height));
+ 		ip.fill();
+ 		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
+ 		ip.fill();
+ 		ip.resetRoi();
+	}
+
 	boolean setThresholdLevels(ImagePlus imp, ImageProcessor ip) {
 		double t1 = ip.getMinThreshold();
 		double t2 = ip.getMaxThreshold();
@@ -381,7 +414,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ImageStatistics stats = getStatistics(ip,measurements,calibration);
 		boolean include = true;
 		if (excludeEdgeParticles &&
-		(r.x==0||r.y==0||r.x+r.width==width||r.y+r.height==height))
+		(r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY))
 				include = false;
 		int[] mask = ip.getMask();
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {

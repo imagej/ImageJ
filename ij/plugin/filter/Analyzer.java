@@ -109,7 +109,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (prec>=0 && prec<=8 && prec!=precision) {
 			precision = prec;
 			rt.setPrecision(precision);
-			if (mode==AREAS) {
+			if (mode==AREAS && IJ.isResultsWindow()) {
 				IJ.setColumnHeadings("");
 				updateHeadings();
 			}
@@ -151,10 +151,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.getType()>=Roi.LINE) {
-			//if (roi.getType()==Roi.POLYLINE && ((PolygonRoi)roi).getAngle()>=0.0)
-			//	measureAngle(roi);
-			//else
-			measureLength(roi);
+			if (roi.getType()==Roi.ANGLE)
+				measureAngle(roi);
+			else
+				measureLength(roi);
 			return;
 		}
 		if (mode!=AREAS) {
@@ -177,8 +177,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 			x = p.x;
 			y = p.y;
 		}
-		if (x<0)
-			return;
 		imp.killRoi();
 		if (mode!=MARK_AND_COUNT) {
 			if (!resetCounter())
@@ -212,11 +210,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (mode!=ANGLES) {
 			if (!resetCounter())
 				return;
-			IJ.setColumnHeadings(" \tangle");		
+			if ((measurements&LABELS)!=0)
+				IJ.setColumnHeadings(" \tName\tangle");
+			else		
+				IJ.setColumnHeadings(" \tangle");
 			mode = ANGLES;
 		}
 		incrementCounter();
-		IJ.write(rt.getCounter()+"\t"+n(((PolygonRoi)roi).getAngle()));
+		if ((measurements&LABELS)!=0)
+			rt.addLabel("Name", getFileName());
+		rt.addValue("Angle", ((PolygonRoi)roi).getAngle());
+		displayResults();
+		//IJ.write(rt.getCounter()+"\t"+n(((PolygonRoi)roi).getAngle()));
 	}
 	
 	void measureLength(Roi roi) {
@@ -410,6 +415,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			summarizePoints(rt);
 		else if (mode==LENGTHS) 
 			add2(rt.getColumnIndex("Length"));
+		else if (mode==ANGLES) 
+			add2(rt.getColumnIndex("Angle"));
 		else
 			summarizeAreas();
 		TextPanel tp = IJ.getTextPanel();

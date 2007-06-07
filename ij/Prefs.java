@@ -13,11 +13,12 @@ import ij.process.ImageConverter;
 import ij.plugin.Animator;
 import ij.process.FloatBlitter;
 import ij.plugin.GelAnalyzer;
+import ij.plugin.JpegWriter;
 
 /**
 This class contains the ImageJ preferences, which are 
 loaded from the "IJ_Props.txt" and "IJ_Prefs.txt" files.
-@see ImageJ
+@see ij.ImageJ
 */
 public class Prefs {
 
@@ -28,20 +29,23 @@ public class Prefs {
 	public static final String BCOLOR = "bcolor";
 	public static final String ROICOLOR = "roicolor";
 	public static final String JPEG = "jpeg";
-	public static final String USE_POINTER = "pcursor";
 	public static final String FPS = "fps";
-	public static final String ANTIALIASING = "antialiasing";
-	public static final String INTERPOLATE = "interpolate";
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";   	
 	
+	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8;  
+    public static final String OPTIONS = "prefs.options";   	
+
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
-	/** Display antialiased text? */
-	public static boolean antialiasedText = true;
-	/** Display images scaled <100% using bilinear interpolation? */
+	/** Use pointer cursor instead of cross */
+	public static boolean usePointerCursor;
+	/** Display antialiased text */
+	public static boolean antialiasedText;
+	/** Display images scaled <100% using bilinear interpolation */
 	public static boolean interpolateScaledImages;
-	/** Gel Analyzer options */
-
+	/** Open images at 100% magnification*/
+	public static boolean open100Percent;
+	
 	static Properties prefs = new Properties();
 	static Properties props = new Properties(prefs);
 	static String prefsDir;
@@ -73,8 +77,7 @@ public class Prefs {
 		catch (IOException e) {return("Error loading "+PROPS_NAME);}
 		imagesURL = props.getProperty("images.location");
 		loadPreferences();
-		antialiasedText = getBoolean(ANTIALIASING, true);
-		interpolateScaledImages = getBoolean(INTERPOLATE, false);
+		loadOptions();
 		return null;
 	}
 	
@@ -182,12 +185,10 @@ public class Prefs {
 			prefs.put(ROICOLOR, Tools.c2hex(Roi.getColor()));
 			prefs.put(FCOLOR, Tools.c2hex(Toolbar.getForegroundColor()));
 			prefs.put(BCOLOR, Tools.c2hex(Toolbar.getBackgroundColor()));
-			prefs.put(JPEG, Integer.toString(JpegEncoder.getQuality()));
-			prefs.put(USE_POINTER, ImageCanvas.usePointer?"true":"false");
+			prefs.put(JPEG, Integer.toString(JpegWriter.getQuality()));
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
-			prefs.put(ANTIALIASING, antialiasedText?"true":"false");
-			prefs.put(INTERPOLATE, interpolateScaledImages?"true":"false");
-			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));		
+			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
+			saveOptions(prefs);		
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);
@@ -207,6 +208,20 @@ public class Prefs {
 		}
 	}
 			
+	static void loadOptions() {
+		int options = getInt(OPTIONS, ANTIALIASING);
+		usePointerCursor = (options&USE_POINTER)!=0;		
+		antialiasedText = (options&ANTIALIASING)!=0;
+		interpolateScaledImages = (options&INTERPOLATE)!=0;
+		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
+	}
+
+	static void saveOptions(Properties prefs) {
+		int options = (usePointerCursor?USE_POINTER:0) + (antialiasedText?ANTIALIASING:0)
+			+ (interpolateScaledImages?INTERPOLATE:0) + (open100Percent?ONE_HUNDRED_PERCENT:0);
+		prefs.put(OPTIONS, Integer.toString(options));
+	}
+	
 	static void savePrefs(Properties prefs, String path) throws IOException{
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);

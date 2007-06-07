@@ -1,0 +1,44 @@
+// These macro are automatically installed in the editor's "Macros" menu
+// Keyboard shortcuts only work when an image window or the ImageJ
+// window has focus. They continue to work when this window is closed.
+
+var x=123.45;  // global variable
+
+print('Run these macros using commands in the "Macros" menu.');
+
+macro 'Invert [f9]' {
+    run("Invert");
+}
+
+macro 'Find Edges [f10]' {
+    run("Find Edges");
+}
+
+macro 'Smooth [f11]' {
+     run("Smooth");
+}
+
+macro 'Threshold [y]' {
+     run("Threshold");
+}
+
+macro 'Add noise [Y]' {
+    run("Add Noise");
+}
+
+macro '-' {}  // menu divider
+
+macro 'Set X...' {
+    requires("1.29i");
+    x = getNumber("Global Variable X:", x);
+}
+
+macro 'Show XX' {
+    showMessage("x="+x);
+}
+
+macro "Macro Tool [Cf0fG22ccCf00E22cc]" {
+    print("macro tool");
+}
+
+

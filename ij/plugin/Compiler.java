@@ -13,7 +13,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 
 	private static sun.tools.javac.Main javac;
 	private static ByteArrayOutputStream output;
-	private static String dir,name;
+	private static String dir, name;
 	private static Editor errors;
 
 	public void run(String arg) {
@@ -88,27 +88,16 @@ public class Compiler implements PlugIn, FilenameFilter {
 	 // open the .java source file
 	 boolean open(String path, String msg) {
 	 	boolean okay;
-		String name, dir;
+		String fileName, directory;
 	 	if (path.equals("")) {
-			FileDialog fd = new FileDialog(IJ.getInstance(), msg);
-			if (this.dir!=null)
-				fd.setDirectory(this.dir);
-			else {
-				String pluginsDir = Menus.getPlugInsPath();
-				if (path!=null)
-					fd.setDirectory(pluginsDir);
-			}
-			if (this.name!=null)
-				fd.setFile(this.name);
-			GUI.center(fd);
-			fd.setFilenameFilter(this);
-			fd.show();
-			name = fd.getFile();
-			okay = name!=null;
-			dir = fd.getDirectory();
-			fd.dispose();
-			if (okay && !(name.endsWith(".java")||name.endsWith(".txt")||name.endsWith(".macro"))) {
-				IJ.error("File name must end with \".java\", \".macro\" or \".txt\".");
+			if (dir==null)
+				dir = Menus.getPlugInsPath();
+			OpenDialog od = new OpenDialog(msg, dir, name);
+			directory = od.getDirectory();
+			fileName = od.getFileName();
+			okay = fileName!=null;
+			if (okay && !(fileName.endsWith(".java")||fileName.endsWith(".txt"))) {
+				IJ.error("File name must end with \".java\", or \".txt\".");
 				okay = false;
 			}
 		} else {
@@ -116,17 +105,17 @@ public class Compiler implements PlugIn, FilenameFilter {
 			if (i==-1)
 				i = path.lastIndexOf('\\');
 			if (i>0) {
-				dir = path.substring(0, i+1);
-				name = path.substring(i+1);
+				directory = path.substring(0, i+1);
+				fileName = path.substring(i+1);
 			} else {
-				dir = "";
-				name = path;
+				directory = "";
+				fileName = path;
 			}
 			okay = true;
 		}
 		if (okay) {
-			this.name = name;
-			this.dir = dir;
+			name = fileName;
+			dir = directory;
 		}
 		return okay;
 	}

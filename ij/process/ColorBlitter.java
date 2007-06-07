@@ -41,11 +41,8 @@ public class ColorBlitter implements Blitter {
 			int size = ip.getWidth()*ip.getHeight();
 			srcPixels = new int[size];
 			int v;
-			for (int i=0; i<size; i++) {
-				//v = pixels8[i]&255;
-				//srcPixels[i] = (0xff000000) + (v<<16) + (v<<8) + v;
+			for (int i=0; i<size; i++)
 				srcPixels[i] = cm.getRGB(pixels8[i]&255);
-			}
 		} else
 			srcPixels = (int[])ip.getPixels();
 		rect1 = rect1.intersection(rect2);

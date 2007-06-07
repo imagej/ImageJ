@@ -12,19 +12,23 @@ public class ScaleBar implements PlugIn {
     static final String[] locations = {"Upper Right", "Lower Right", "Lower Left", "Upper Left", "At Selection"};
     static final int UPPER_RIGHT=0, LOWER_RIGHT=1, LOWER_LEFT=2, UPPER_LEFT=3, AT_SELECTION=4;
     static final String[] colors = {"White","Black","Light Gray","Gray","Dark Gray","Red","Green","Blue","Yellow"};
+    static final String[] checkboxLabels = {"Bold Text", "Hide Text"};
     static double barWidth;
     static int defaultBarHeight = 3;
     static int barHeightInPixels = defaultBarHeight;
     static String location = locations[UPPER_RIGHT];
     static String color = colors[0];
     static boolean boldText = true;
+    static boolean hideText;
     static int fontSize;
     ImagePlus imp;
     double imageWidth;
     double mag;
     int xloc, yloc;
     int barWidthInPixels;
-    int roiX=-1, roiY, roiWidth, roiHeight ;
+    int roiX=-1, roiY, roiWidth, roiHeight;
+    boolean[] checkboxStates = new boolean[2];
+
  
     public void run(String arg) {
         imp = WindowManager.getCurrentImage();
@@ -80,11 +84,12 @@ public class ScaleBar implements PlugIn {
         updateScalebar();
         GenericDialog gd = new BarDialog("Scale Bar");
         gd.addNumericField("Width in "+units+": ", barWidth, digits);
-        gd.addNumericField("Height in Pixels: ", barHeightInPixels, 0);
+        gd.addNumericField("Height in pixels: ", barHeightInPixels, 0);
         gd.addNumericField("Font Size: ", fontSize, 0);
         gd.addChoice("Color: ", colors, color);
         gd.addChoice("Location: ", locations, location);
-        gd.addCheckbox("Bold Text", boldText);
+        checkboxStates[0] = boldText; checkboxStates[1] = hideText;
+		gd.addCheckboxGroup(1, 2, checkboxLabels, checkboxStates);
         gd.showDialog();
         if (gd.wasCanceled()) {
             imp.getProcessor().reset();
@@ -97,6 +102,7 @@ public class ScaleBar implements PlugIn {
         color = gd.getNextChoice();
         location = gd.getNextChoice();
         boldText = gd.getNextBoolean();
+        hideText = gd.getNextBoolean();
         return true;
     }
 
@@ -104,7 +110,7 @@ public class ScaleBar implements PlugIn {
           if (!updateLocation())
             return;
         ImageProcessor ip = imp.getProcessor();
-        Undo.setup(Undo.COMPOUND_FILTER, imp);
+        Undo.setup(Undo.FILTER, imp);
         Color color = getColor();
         //if (!(color==Color.white || color==Color.black)) {
         //    ip = ip.convertToRGB();
@@ -126,7 +132,8 @@ public class ScaleBar implements PlugIn {
         String label = IJ.d2s(barWidth, digits) + " "+ imp.getCalibration().getUnits();
         x = x +(barWidthInPixels - ip.getStringWidth(label))/2;
         y = y + barHeightInPixels + fontSize + fontSize/4;
-        ip.drawString(label, x, y);   
+        if (!hideText)
+            ip.drawString(label, x, y);   
         imp.updateAndDraw();
     }
  
@@ -211,6 +218,7 @@ public class ScaleBar implements PlugIn {
             Choice loc = (Choice)(choice.elementAt(1));
             location = loc.getSelectedItem();
             boldText = ((Checkbox)(checkbox.elementAt(0))).getState();
+            hideText = ((Checkbox)(checkbox.elementAt(1))).getState();
             updateScalebar();
         }
 

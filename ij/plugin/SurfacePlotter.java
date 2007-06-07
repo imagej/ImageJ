@@ -40,8 +40,6 @@ public class SurfacePlotter implements PlugIn {
 	
 	public void run(String arg) {
 		img = WindowManager.getCurrentImage();
-
-		
 		if (img==null)
 			{IJ.noImage(); return;}
 		if (img.getType()==ImagePlus.COLOR_RGB)
@@ -279,8 +277,14 @@ public class SurfacePlotter implements PlugIn {
 			s = "";
 		w =  ip2.getFontMetrics().stringWidth(s);
 		drawAxis(ip2, (int) p1x, (int) p1y-255, (int) p1x, (int) p1y , s, 10, -1, 0, 1);
-		double min = img.getProcessor().getMin();
-		double max = img.getProcessor().getMax();
+		double min, max;
+		if (img.getBitDepth()==8) {
+			min = 0;
+			max = 255;
+		} else {
+			min = img.getProcessor().getMin();
+			max = img.getProcessor().getMax();
+		}
 		if (cal.calibrated()) {
 			min = cal.getCValue((int)min);
 			max = cal.getCValue((int)max);
@@ -294,7 +298,6 @@ public class SurfacePlotter implements PlugIn {
 		ip2.drawString(s, (int) p1x-15-w, (int) p1y +h/2);
 		
 		//x-axis
-
 		s = (double) Math.round(roi.height*cal.pixelHeight*10)/10+" "+cal.getUnits();
 		w =  ip2.getFontMetrics().stringWidth(s);
 		drawAxis(ip2, (int) p1x, (int) p1y, (int) p2x, (int) p2y, s, 10, -1, 1, 1);
@@ -331,12 +334,6 @@ public class SurfacePlotter implements PlugIn {
 		
 		ip.drawLine(x1, y1, x2, y2);
 		
-		//IJ.write("m="+m);
-		//IJ.write("mTangent="+mTangent);
-		//IJ.write("theta="+theta);
-		//IJ.write("dx="+dx);
-		//IJ.write("dy="+dy);
-				
 		ip.drawLine(x1, y1, x1+dx, y1-dy);
 		ip.drawLine(x2, y2, x2+dx, y2-dy);
 		ImageProcessor ipText = drawString( ip, label, (int) (Math.atan(m)/2/Math.PI*360) );

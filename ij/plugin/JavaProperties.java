@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.text.*;
 import java.awt.*;
+import java.applet.Applet;
 
 /** Displays the Java system properties in a text window. */
 public class JavaProperties implements PlugIn {
@@ -38,8 +39,14 @@ public class JavaProperties implements PlugIn {
 		}
 		sb.append("  line.separator: " + str1 + str2+"\n");
 			
-		if (IJ.getApplet()!=null)
+		Applet applet = IJ.getApplet();
+		if (applet!=null) {
+			sb.append("\n");
+			sb.append("  code base: "+applet.getCodeBase()+"\n");
+			sb.append("  document base: "+applet.getDocumentBase()+"\n");
+			TextWindow tw = new TextWindow("Properties", new String(sb), 400, 400);
 			return;
+		}
 		sb.append("\n");
 		sb.append("Java properties only applications can read:\n");
 		show("user.name");
@@ -58,6 +65,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  version: "+IJ.getInstance().VERSION+"\n");
 		sb.append("  prefs dir: "+prefsDir+"\n");
 		sb.append("  plugins dir: "+Menus.getPlugInsPath()+"\n");
+		sb.append("  macros dir: "+Menus.getMacrosPath()+"\n");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		sb.append("  screen size: " + d.width + "x" + d.height+"\n");
 		String mem = IJ.freeMemory();

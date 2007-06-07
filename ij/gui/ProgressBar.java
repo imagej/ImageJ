@@ -3,10 +3,9 @@ package ij.gui;
 import java.awt.*;
 import java.awt.image.*;
 
-/** This is ImageJ's progress bar. It is not displayed if
-	the time between the first and second calls to 'show'
-	is less than 30 milliseconds. It is erased when show
-	is passed a percent value >= 1.0. */
+/** This is the progress bar that is displayed in the lower 
+	right hand corner of the ImageJ window. Use one of the static 
+	IJ.showProgress() methods to display the progress bar. */
 public class ProgressBar extends Canvas {
 
 	private int canvasWidth, canvasHeight;
@@ -20,7 +19,7 @@ public class ProgressBar extends Canvas {
 	
 	private Color barColor = Color.gray;
 	private Color fillColor = new Color(204,204,255);
-	private Color backgroundColor = Color.lightGray;
+	private Color backgroundColor = ij.ImageJ.backgroundColor;
 	private Color frameBrighter = backgroundColor.brighter();
 	private Color frameDarker = backgroundColor.darker();
 
@@ -48,6 +47,23 @@ public class ProgressBar extends Canvas {
 		g.drawLine(x+width, y, x+width, y+height-1);
     }    
 
+	/**	Updates the progress bar, where current-length = (current/final)*total-length.
+	The bar is erased if current>=final. Does nothing 
+	if the ImageJ window is not present. */
+	public void show(int current, int last) {
+		if (current>=last)
+			showBar = false;
+		else {
+			percent = Math.min((current+1)/(double)last, 1.0);
+			showBar = true;
+		}
+		repaint();
+	}
+
+	/** Updates the progress bar. It is not displayed if
+		the time between the first and second calls to 'show'
+		is less than 30 milliseconds. It is erased when show
+		is passed a percent value >= 1.0. */
 	public void show(double percent) {
 		count++;
     	if (count==1) {

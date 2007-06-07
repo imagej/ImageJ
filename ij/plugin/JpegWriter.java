@@ -13,6 +13,11 @@ import java.io.*;
       path where the image is to be saved is passed to the run method. */
 public class JpegWriter implements PlugIn {
 
+	public static final int DEFAULT_QUALITY = 75;
+	private static int quality;
+	
+    static {setQuality(ij.Prefs.getInt(ij.Prefs.JPEG, DEFAULT_QUALITY));}
+
     public void run(String arg) {
         ImagePlus imp = WindowManager.getCurrentImage();
         if (imp==null)
@@ -34,13 +39,25 @@ public class JpegWriter implements PlugIn {
             g.dispose();            
             JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(f);
             JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(bi);
-            param.setQuality((float)(JpegEncoder.getQuality()/100.0), true);
+            param.setQuality((float)(quality/100.0), true);
             encoder.encode(bi, param);
             f.close();
         }
         catch (Exception e) {
            IJ.showMessage("Jpeg Writer", ""+e);
         }
+    }
+
+	/** Specifies the image quality (0-100). 0 is poorest image quality,
+		highest compression, and 100 is best image quality, lowest compression. */
+    public static void setQuality(int jpegQuality) {
+        quality = jpegQuality;
+    	if (quality<0) quality = 0;
+    	if (quality>100) quality = 100;
+    }
+
+    public static int getQuality() {
+        return quality;
     }
 
 }

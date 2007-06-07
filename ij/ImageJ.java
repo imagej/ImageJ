@@ -13,21 +13,23 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.text.*;
 import ij.macro.Interpreter;
+import ij.plugin.frame.Editor;
 
 /**
 This frame is the main ImageJ class.
 <p>
-ImageJ is open-source. You are free to do anything you want
-with this source as long as I get credit for my work and you
-offer your changes to me so I can possibly add them to the
-"official" version.
+ImageJ is a work of the United States Government. It is in the public domain 
+and open source. There is no copyright. You are free to do anything you want 
+with this source but I like to get credit for my work and I would like you to 
+offer your changes to me so I can possibly add them to the "official" version.
 
 @author Wayne Rasband (wayne@codon.nih.gov)
 */
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.29w";
+	public static final String VERSION = "1.30s";
+	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
@@ -40,6 +42,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
+	private boolean exitWhenQuiting;
 	
 	boolean hotkey;
 	
@@ -68,7 +71,7 @@ public class ImageJ extends Frame implements ActionListener,
 		statusBar = new Panel();
 		statusBar.setLayout(new BorderLayout());
 		statusBar.setForeground(Color.black);
-		statusBar.setBackground(Color.lightGray);
+		statusBar.setBackground(backgroundColor);
 		statusLine = new Label();
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
@@ -81,7 +84,6 @@ public class ImageJ extends Frame implements ActionListener,
 		add(statusBar);
 
 		IJ.init(this, applet);
-		IJ.showStatus("Version "+VERSION + " ("+ Menus.nPlugins + " commands)");
  		addKeyListener(this);
  		addWindowListener(this);
  		
@@ -110,6 +112,10 @@ public class ImageJ extends Frame implements ActionListener,
 		if (IJ.isJava2() && applet==null) {
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		}
+		int nMacros = m.installMacros();
+		String str = nMacros==1?" macro)":" macros)";
+		IJ.showStatus("Version "+VERSION + " ("+ Menus.nPlugins + " commands, " + nMacros + str);
+		// Toolbar.getInstance().addTool("Spare tool [Cf0fG22ccCf00E22cc]"); 
 	}
     
 	void showResults() {
@@ -232,13 +238,20 @@ public class ImageJ extends Frame implements ActionListener,
 			+ KeyEvent.getKeyModifiersText(flags));
 		boolean shift = (flags & e.SHIFT_MASK) != 0;
 		boolean control = (flags & e.CTRL_MASK) != 0;
+		boolean alt = (flags & e.ALT_MASK) != 0;
 		String c = "";
 		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
 		
-		if (imp!=null && !control && ((keyChar>=32 && keyChar<=127) || keyChar=='\b' || keyChar=='\n')) {
+		if (imp!=null && !control && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
+				if (alt)
+					switch (keyChar) {
+						case 'u': case 'm': keyChar = 'µ'; break;
+						case 'A': keyChar = ''; break;
+						default:
+					}				
 				((TextRoi)roi).addChar(keyChar);
 				return;
 			}
@@ -267,25 +280,13 @@ public class ImageJ extends Frame implements ActionListener,
 					else
 						roi.nudge(keyCode);
 					return;
-				case KeyEvent.VK_F1: case KeyEvent.VK_F2: case KeyEvent.VK_F3: case KeyEvent.VK_F4: // function keys
-				case KeyEvent.VK_F5: case KeyEvent.VK_F6: case KeyEvent.VK_F7: case KeyEvent.VK_F8:
-				case KeyEvent.VK_F9: case KeyEvent.VK_F10: case KeyEvent.VK_F11: case KeyEvent.VK_F12:
-					Toolbar.getInstance().selectTool(keyCode);
-					if (imp!=null) {
-						ImageWindow win = imp.getWindow();
-						if (win!=null) {
-							ImageCanvas ic = win.getCanvas();
-							Point loc = ic.getCursorLoc();
-							if (loc.x>0 && loc.y>0)
-								ic.setCursor(loc.x, loc.y);
-						}
-					}
-					break;
 				case KeyEvent.VK_ESCAPE:
 					if (imp!=null)
 						imp.getWindow().running = false;
 					Macro.abort();
 					Interpreter.abort();
+					if (Interpreter.getInstance()!=null)
+						IJ.beep();
 					return;
 				case KeyEvent.VK_ENTER: this.toFront(); return;
 				default: break;
@@ -293,7 +294,10 @@ public class ImageJ extends Frame implements ActionListener,
 		if (c!=null && !c.equals("")) {
 			if (c.equals("Fill"))
 				hotkey = true;
-			doCommand(c);
+			if (c.charAt(0)==MacroInstaller.commandPrefix)
+				MacroInstaller.doShortcut(c);
+			else
+				doCommand(c);
 		}
 	}
 
@@ -332,7 +336,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Called by ImageJ when the user selects Quit. */
 	public void quit() {
-		//IJ.log("closeAllWindows");
+		//IJ.log("quit: "+exitWhenQuiting); IJ.wait(5000);
 		if (!WindowManager.closeAllWindows())
 			return;
 		//IJ.log("savePreferences");
@@ -341,7 +345,7 @@ public class ImageJ extends Frame implements ActionListener,
 		setVisible(false);
 		//IJ.log("dispose");
 		dispose();
-		if (applet==null)
+		if (exitWhenQuiting)
 			System.exit(0);
 	}
 	
@@ -354,20 +358,32 @@ public class ImageJ extends Frame implements ActionListener,
 		//prefs.put(IJ_HEIGHT, Integer.toString(size.height));
 	}
 
-    public static void main(String args[]) {
-    	ImageJ ij = IJ.getInstance();
-		if (ij==null || (ij!=null && !ij.isShowing()))
-			new ImageJ(null);
-    	if (args!=null) {
-    		for (int i=0; i<args.length; i++) {
-    			//IJ.log(i+" "+args[i]);
-    			Opener opener = new Opener();
-    			ImagePlus imp = opener.openImage(args[i]);
-    			if (imp!=null)
-    				imp.show();
-    		}
-    	}
-    }
+	public static void main(String args[]) {
+		ImageJ ij = IJ.getInstance();    	
+		if (ij==null || (ij!=null && !ij.isShowing())) {
+			ij = new ImageJ(null);
+			ij.exitWhenQuiting = true;
+		}
+		boolean macroStarted = false;
+		if (args!=null) {
+			for (int i=0; i<args.length; i++) {
+				//IJ.log(i+" "+args[i]);
+				if (args[i].endsWith(".txt")) {
+					if (macroStarted)
+						new Opener().open(args[i]);
+					else {
+       					new ij.macro.MacroRunner(new File(args[i]));
+       					macroStarted = true;
+       				}
+				} else {
+					Opener opener = new Opener();
+					ImagePlus imp = opener.openImage(args[i]);
+					if (imp!=null)
+					imp.show();
+				}
+			}
+		}
+	}
 
 
 } //class ImageJ

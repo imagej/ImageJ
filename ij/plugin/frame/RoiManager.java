@@ -25,6 +25,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		}
 		instance = this;
+		WindowManager.addWindow(this);
 		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
 		int rows = 18;
 		list = new List(rows, true);
@@ -90,6 +91,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			int index = 0;
             try {index = Integer.parseInt(e.getItem().toString());}
             catch (NumberFormatException ex) {}
+			if (index<0) index = 0;
 			restore(index);
 		}
 	}
@@ -132,14 +134,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	boolean delete() {
-		if (list.getItemCount()==0)
+		int count = list.getItemCount();
+		if (count==0)
 			return error("The ROI list is empty.");
 		int index[] = list.getSelectedIndexes();
 		if (index.length==0)
 			return error("At least one ROI in the list must be selected.");
-		for (int i=index.length-1; i>=0; i--) {
-			rois.remove(list.getItem(index[i]));
-			list.remove(index[i]);
+		for (int i=count-1; i>=0; i--) {
+			boolean delete = false;
+			for (int j=0; j<index.length; j++) {
+				if (index[j]==i)
+					delete = true;
+			}
+			if (delete) {
+				rois.remove(list.getItem(i));
+				list.remove(i);
+			}
 		}
 		return true;
 	}
@@ -246,7 +256,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int nSlices = setup==PlugInFilter.DOES_STACKS?imp.getStackSize():1;
 		int currentSlice = imp.getCurrentSlice();
 		for (int slice=1; slice<=nSlices; slice++) {
-			imp.setSlice(slice);
+			if (nSlices>1) imp.setSlice(slice);
 			for (int i=0; i<index.length; i++) {
 				if (restore(index[i]))
 					IJ.run("Measure");

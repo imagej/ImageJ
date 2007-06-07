@@ -8,7 +8,11 @@ import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
 
-/** Saves the current ROI outline to a file. */
+/** Saves the current ROI outline to a file. RoiDecoder.java 
+	has a description of the file format.
+	@see ij.io.RoiDecoder
+	@see ij.plugin.RoiReader
+*/
 public class RoiWriter implements PlugInFilter {
 
 	static final int HEADER_SIZE = 64;

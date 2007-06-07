@@ -30,7 +30,7 @@ public class ImportDialog {
     private static int choiceSelection = Prefs.getInt(TYPE,0);
     private static int width = Prefs.getInt(WIDTH,512);
     private static int height = Prefs.getInt(HEIGHT,512);
-    private static int offset = Prefs.getInt(OFFSET,0);
+    private static long offset = Prefs.getInt(OFFSET,0);
     private static int nImages = Prefs.getInt(N,1);
     private static int gapBetweenImages = Prefs.getInt(GAP,0);
 	private static int options;
@@ -61,11 +61,11 @@ public class ImportDialog {
 			choiceSelection = 0;
 		GenericDialog gd = new GenericDialog("Import...", IJ.getInstance());
 		gd.addChoice("Image Type:", types, types[choiceSelection]);
-		gd.addNumericField("Width (pixels):", width, 0);
-		gd.addNumericField("Height (pixels):", height, 0);
-		gd.addNumericField("Offset to First Image:", offset, 0);
-		gd.addNumericField("Number of Images:", nImages, 0);
-		gd.addNumericField("Gap Between Images:", gapBetweenImages, 0);
+		gd.addNumericField("Width:", width, 0, 6, "pixels");
+		gd.addNumericField("Height:", height, 0, 6, "pixels");
+		gd.addNumericField("Offset to First Image:", offset, 0, 6, "bytes");
+		gd.addNumericField("Number of Images:", nImages, 0, 6, null);
+		gd.addNumericField("Gap Between Images:", gapBetweenImages, 0, 6, "bytes");
 		gd.addCheckbox("White is Zero", whiteIsZero);
 		gd.addCheckbox("Little-Endian Byte Order", intelByteOrder);
 		gd.addCheckbox("Open All Files in Folder", openAll);
@@ -75,7 +75,7 @@ public class ImportDialog {
 		choiceSelection = gd.getNextChoiceIndex();
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
-		offset = (int)gd.getNextNumber();
+		offset = (long)gd.getNextNumber();
 		nImages = (int)gd.getNextNumber();
 		gapBetweenImages = (int)gd.getNextNumber();
 		whiteIsZero = gd.getNextBoolean();
@@ -93,6 +93,8 @@ public class ImportDialog {
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
 		for (int i=0; i<list.length; i++) {
+			if (list[i].startsWith("."))
+				continue;
 			fi.fileName = list[i];
 			imp = new FileOpener(fi).open(false);
 			if (imp==null)
@@ -114,10 +116,12 @@ public class ImportDialog {
 				IJ.showStatus((stack.getSize()+1) + ": " + list[i]);
 			}
 		}
-		imp = new ImagePlus(list[0], stack);
-		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
-			imp.getProcessor().setMinAndMax(min, max);
-		imp.show();
+		if (stack!=null) {
+			imp = new ImagePlus("Imported Stack", stack);
+			if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
+				imp.getProcessor().setMinAndMax(min, max);
+			imp.show();
+		}
 	}
 	
 	/** Displays the dialog and opens the specified image or images.
@@ -150,7 +154,10 @@ public class ImportDialog {
 		fi.directory = directory;
 		fi.width = width;
 		fi.height = height;
-		fi.offset = offset;
+		if (offset>2147483647)
+			fi.longOffset = offset;
+		else
+			fi.offset = (int)offset;
 		fi.nImages = nImages;
 		fi.gapBetweenImages = gapBetweenImages;
 		fi.intelByteOrder = intelByteOrder;
@@ -188,7 +195,7 @@ public class ImportDialog {
 		prefs.put(TYPE, Integer.toString(choiceSelection));
 		prefs.put(WIDTH, Integer.toString(width));
 		prefs.put(HEIGHT, Integer.toString(height));
-		prefs.put(OFFSET, Integer.toString(offset));
+		prefs.put(OFFSET, Integer.toString(offset>2147483647?0:(int)offset));
 		prefs.put(N, Integer.toString(nImages));
 		prefs.put(GAP, Integer.toString(gapBetweenImages));
 		int options = 0;

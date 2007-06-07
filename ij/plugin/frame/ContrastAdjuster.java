@@ -772,8 +772,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			imp.unlock();
 	}
 
-	 public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+	public void windowClosing(WindowEvent e) {
+	 	close();
+	}
+
+    /** Overrides close() in PlugInFrame. */
+    public void close() {
+    	super.close();
 		instance = null;
 		done = true;
 		synchronized(this) {
@@ -784,6 +789,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	public void windowActivated(WindowEvent e) {
 		//windowActivated(e);
 		setup();
+		WindowManager.setWindow(this);
 	}
 
 	public synchronized  void itemStateChanged(ItemEvent e) {

@@ -39,22 +39,9 @@ public class NewPlugin implements PlugIn {
 		if (!(name.endsWith(".txt") || name.endsWith(".macro")))
 			name += ".txt";
 		String text = "";
-		text += "// This is an ImageJ macro. Run it by typing ctrl-R.\n";
-		text += "// If there is a selection, only the selection runs.\n";
-		text += "  \n";
-		text += "  var n = 2\n";
-		text += "  \"n = \"+n\n";
-		text += "  \"(n+3)/2 = \"+(n+3)/2+\",   sqrt(n) = \"+sqrt(n)\n";
-		text += "  \"1.234567 to 3 decimal places is \"+d2s(1.234567,3)\n";
-		text += "  \"1023 in hex is \"+toHex(1023)\n";
-		text += "  \"3ff in decimal is \"+0x3ff\n";
-		text += "  \n";
-		text += "  var w=400, h=w/2;\n";
-		text += "  \"opening \"+w+\"x\"+h+\" image...\"\n";
-		text += "  run(\"New...\",  \"name=Test fill=Ramp width=\"+w+\" height=\"+h);\n";
-		text += "  run(\"AND...\", \"value=11100000\");\n";
-		text += "  run(\"Find Edges\");\n";
-		text += "  run(\"Invert\");\n";
+		text += "  macro \"Hello\" {\n";
+		text += "      print(\"Hello world!\");\n";
+		text += "  }";
 		ed.create(name, text);
 	}
 

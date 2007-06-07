@@ -18,7 +18,7 @@ public class FileSaver {
 	private String name;
 	private String directory;
 
-	/** Constructs a FileSave from an ImagePlus. */
+	/** Constructs a FileSaver from an ImagePlus. */
 	public FileSaver(ImagePlus imp) {
 		this.imp = imp;
 		fi = imp.getFileInfo();
@@ -192,25 +192,32 @@ public class FileSaver {
 	/** Save the image in JPEG format using the specified path. */
 	public boolean saveAsJpeg(String path) {
 		Object jpegWriter = null;
-		if (IJ.isJava2()) {
-			WindowManager.setTempCurrentImage(imp);
-			jpegWriter = IJ.runPlugIn("ij.plugin.JpegWriter", path);
-			WindowManager.setTempCurrentImage(null);
-		}
-		if (jpegWriter==null) {
-			try {
-				OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
-				JpegEncoder encoder = new JpegEncoder(imp.getImage(), JpegEncoder.getQuality(), output);
-				encoder.Compress();
-				output.close();
-			}
-			catch (IOException e) {
-				showErrorMessage(e);
-				return false;
-			}
-		}
+		WindowManager.setTempCurrentImage(imp);
+		if (IJ.isJava2())
+			IJ.runPlugIn("ij.plugin.JpegWriter", path);
+		else
+			IJ.runPlugIn("Jpeg_Writer", path);		
+		WindowManager.setTempCurrentImage(null);
 		if (!(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
 			updateImp(fi, fi.GIF_OR_JPG);
+		return true;
+	}
+
+	/** Save the image in JBMP format using a save file. 
+		Returns false if the user selects cancel. */
+	public boolean saveAsBmp() {
+		String path = getPath("BMP", ".bmp");
+		if (path==null)
+			return false;
+		else
+			return saveAsBmp(path);
+	}
+
+	/** Save the image in BMP format using the specified path. */
+	public boolean saveAsBmp(String path) {
+		WindowManager.setTempCurrentImage(imp);
+		IJ.runPlugIn("ij.plugin.BMP_Writer", path);
+		WindowManager.setTempCurrentImage(null);
 		return true;
 	}
 

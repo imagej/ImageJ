@@ -9,8 +9,24 @@ import ij.process.*;
 import ij.measure.*;
 import ij.*;
 
-/** Opens or reverts an image specified by a FileInfo object. Images can
-	be loaded from either a file (directory+fileName) or a URL (url+fileName). */
+/**
+ * Opens or reverts an image specified by a FileInfo object. Images can
+ * be loaded from either a file (directory+fileName) or a URL (url+fileName).
+ * Here is an example:	
+ * <pre>
+ *   public class FileInfo_Test implements PlugIn {
+ *     public void run(String arg) {
+ *       FileInfo fi = new FileInfo();
+ *       fi.width = 256;
+ *       fi.height = 254;
+ *       fi.offset = 768;
+ *       fi.fileName = "blobs.tif";
+ *       fi.directory = "/Users/wayne/Desktop/";
+ *       new FileOpener(fi).open();
+ *     }  
+ *   }	
+ * </pre> 
+ */
 public class FileOpener {
 
 	private FileInfo fi;
@@ -58,6 +74,7 @@ public class FileOpener {
        			imp = new ImagePlus(fi.fileName, ip);
 				break;
 			case FileInfo.GRAY32_INT:
+			case FileInfo.GRAY32_UNSIGNED:
 			case FileInfo.GRAY32_FLOAT:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
@@ -85,7 +102,7 @@ public class FileOpener {
 	/** Opens a stack of images. */
 	ImagePlus openStack(ColorModel cm, boolean show) {
 		ImageStack stack = new ImageStack(fi.width, fi.height, cm);
-		int skip = fi.offset;
+		long skip = fi.longOffset>0?fi.longOffset:fi.offset;
 		Object pixels;
 		try {
 			ImageReader reader = new ImageReader(fi);
@@ -166,7 +183,7 @@ public class FileOpener {
 
 		if (fi.fileFormat==fi.BMP) {
 			// restore BMP
-			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP", fi.directory + fi.fileName);
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", fi.directory + fi.fileName);
 			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
 	    	return;
@@ -262,7 +279,7 @@ public class FileOpener {
 	}
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
-	public static ColorModel createColorModel(FileInfo fi) {
+	public ColorModel createColorModel(FileInfo fi) {
 		if (fi.fileType==FileInfo.COLOR8 && fi.lutSize>0)
 			return new IndexColorModel(8, fi.lutSize, fi.reds, fi.greens, fi.blues);
 		else
@@ -270,20 +287,58 @@ public class FileOpener {
 	}
 
 	/** Returns an InputStream for the image described by this FileInfo. */
-	public static InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
+	public InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
 		if (fi.inputStream!=null)
 			return fi.inputStream;
 		else if (fi.url!=null && !fi.url.equals(""))
 			return new URL(fi.url+fi.fileName).openStream();
 		else {
+			if (fi.directory.length()>0 && !fi.directory.endsWith(Prefs.separator))
+				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
-		    if (f==null || f.isDirectory())
+		    if (f==null || f.isDirectory() || !validateFileInfo(f, fi))
 		    	return null;
 		    else
 				return new FileInputStream(f);
 		}
 	}
 	
+	static boolean validateFileInfo(File f, FileInfo fi) {
+		long offset = fi.longOffset>0?fi.longOffset:fi.offset;
+		long length = 0;
+		if (fi.width<=0 || fi.height<0) {
+		   error("Width or height <= 0.", fi, offset, length);
+		   return false;
+		}
+		if (offset>=0 && offset<1000)
+			 return true;
+		if (offset<0) {
+		   error("Offset is negative.", fi, offset, length);
+		   return false;
+		}
+		length = f.length();
+		long size = fi.width*fi.height*fi.getBytesPerPixel();
+		size = fi.nImages>1?size:size/4;
+		if (fi.height==1) size = 0; // allows plugins to read info of unknown length at end of file
+		if (offset+size>length) {
+		   error("Offset + image size > file length.", fi, offset, length);
+		   return false;
+		}
+		return true;
+	}
+
+	static void error(String msg, FileInfo fi, long offset, long length) {
+		IJ.showMessage("FileOpener", "FileInfo parameter error. \n"
+			+msg + "\n \n"
+			+"  Width: " + fi.width + "\n"
+			+"  Height: " + fi.height + "\n"
+			+"  Offset: " + offset + "\n"
+			+"  Bytes/pixel: " + fi.getBytesPerPixel() + "\n"
+			+(length>0?"  File length: " + length + "\n":"")
+		);
+	}
+
+
 	/** Reads the pixel data from an image described by a FileInfo object. */
 	Object readPixels(FileInfo fi) {
 		Object pixels = null;

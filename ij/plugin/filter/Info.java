@@ -6,6 +6,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.text.*;
 import ij.measure.*;
+import ij.io.*;
 
 /** This plugin implements the Image/Show Info command. */
 public class Info implements PlugInFilter {
@@ -17,24 +18,46 @@ public class Info implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		String infoProperty = (String)imp.getProperty("Info");
-		String info = getInfo(ip);
-		if (infoProperty!=null)
-			showInfo(infoProperty+"\n------------------------\n"
-				+info, 400, 500);
+		String info = getImageInfo(imp, ip);
+		if (info.indexOf("----")>0)
+			showInfo(info, 400, 500);
 		else
 			showInfo(info, 300, 300);
 	}
 
-	String getInfo(ImageProcessor ip) {
+	public String getImageInfo(ImagePlus imp, ImageProcessor ip) {
+		String infoProperty = null;
+		if (imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0)
+				infoProperty = label;
+		}
+		if (infoProperty==null)
+			infoProperty = (String)imp.getProperty("Info");
+		String info = getInfo(imp, ip);
+		if (infoProperty!=null)
+			return infoProperty + "\n------------------------\n" + info;
+		else
+			return info;
+		
+	}
+
+	String getInfo(ImagePlus imp, ImageProcessor ip) {
 		String s = new String("\n");
-		s += "Title: '" + imp.getTitle() + "'\n";
+		s += "Title: " + imp.getTitle() + "\n";
 		Calibration cal = imp.getCalibration();
+    	int nSlices = imp.getStackSize();
+		int digits = imp.getBitDepth()==32?4:0;
 		if (cal.scaled()) {
 			String unit = cal.getUnit();
 			String units = cal.getUnits();
 	    	s += "Width:  "+IJ.d2s(imp.getWidth()*cal.pixelWidth,2)+" " + units+" ("+imp.getWidth()+")\n";
 	    	s += "Height:  "+IJ.d2s(imp.getHeight()*cal.pixelHeight,2)+" " + units+" ("+imp.getHeight()+")\n";
+	    	if (nSlices>1)
+	    		s += "Depth:  "+IJ.d2s(nSlices*cal.pixelDepth,2)+" " + units+" ("+nSlices+")\n";	    			    	
+	    	if (nSlices>1)
+	    		s += "Voxel size: "+IJ.d2s(cal.pixelWidth,2) + "x" + IJ.d2s(cal.pixelHeight,2)+"x"+IJ.d2s(cal.pixelDepth,2) + "\n";	    		
 	    	if (cal.pixelWidth==cal.pixelHeight)
 	    		s += "Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,1) + " pixels per "+unit+"\n";
 	    	else {
@@ -44,16 +67,21 @@ public class Info implements PlugInFilter {
 	    } else {
 	    	s += "Width:  " + imp.getWidth() + " pixels\n";
 	    	s += "Height:  " + imp.getHeight() + " pixels\n";
+	    	if (nSlices>1)
+	    		s += "Depth:  " + nSlices + " pixels\n";
 	    }
-	    
 	    int type = imp.getType();
     	switch (type) {
 	    	case ImagePlus.GRAY8:
 	    		s += "Bits per pixel: 8 ";
-	    		if (imp.isInvertedLut())
-	    			s += "(inverted LUT)\n";
+	    		String lut = "LUT";
+	    		if (imp.getProcessor().isColorLut())
+	    			lut = "color " + lut;
 	    		else
-	    			s += "(grayscale LUT)\n";
+	    			lut = "grayscale " + lut;
+	    		if (imp.isInvertedLut())
+	    			lut = "inverted " + lut;
+	    		s += "(" + lut + ")\n";
 	    		break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {
@@ -62,14 +90,13 @@ public class Info implements PlugInFilter {
 	    		} else
 	    			s += "Bits per pixel: 32 (float)\n";
 				s += "Display range: ";
-				int places = type==ImagePlus.GRAY16?0:2;
 				double min = ip.getMin();
 				double max = ip.getMax();
 	    		if (cal.calibrated()) {
 	    			min = cal.getCValue((int)min);
 	    			max = cal.getCValue((int)max);
 	    		}
-		    	s += IJ.d2s(min,places) + " - " + IJ.d2s(max,places) + "\n";
+		    	s += IJ.d2s(min,digits) + " - " + IJ.d2s(max,digits) + "\n";
 	    		break;
 	    	case ImagePlus.COLOR_256:
 	    		s += "Bits per pixel: 8 (color LUT)\n";
@@ -78,9 +105,8 @@ public class Info implements PlugInFilter {
 	    		s += "Bits per pixel: 32 (RGB)\n";
 	    		break;
     	}
-    	int nSlices = imp.getStackSize();
-    	if (nSlices>1) {
-			double interval = cal.frameInterval;
+		double interval = cal.frameInterval;
+    	if (nSlices>1 && interval!=0.0) {
 			String label = interval>0.0?"Frames: ":"Slices: ";
 			s += label + nSlices + " (" + imp.getCurrentSlice() + ")\n";
 			if (interval>0.0) {
@@ -96,7 +122,7 @@ public class Info implements PlugInFilter {
 		if (ip.getMinThreshold()==ip.NO_THRESHOLD)
 	    	s += "No Threshold\n";
 	    else
-			s += "Threshold: "+IJ.d2s(ip.getMinThreshold(),0)+"-"+IJ.d2s(ip.getMaxThreshold(),0)+"\n";
+			s += "Threshold: "+IJ.d2s(ip.getMinThreshold(),digits)+"-"+IJ.d2s(ip.getMaxThreshold(),digits)+"\n";
 		ImageCanvas ic = imp.getWindow().getCanvas();
     	double mag = ic.getMagnification();
     	if (mag!=1.0)
@@ -125,6 +151,16 @@ public class Info implements PlugInFilter {
 	    } else
 	    	s += "Uncalibrated\n";
 
+	    FileInfo fi = imp.getOriginalFileInfo();
+		if (fi!=null) {
+			if (fi.directory!=null && fi.fileName!=null) {
+				s += "Path: " + fi.directory + fi.fileName + "\n";
+			}
+			if (fi.url!=null && !fi.url.equals("")) {
+				s += "URL: " + fi.url + "\n";
+			}
+		}
+	    
 	    Roi roi = imp.getRoi();
 	    if (roi == null) {
 			if (cal.calibrated())
@@ -162,6 +198,7 @@ public class Info implements PlugInFilter {
 				s += "  Height: " + r.height + "\n";
 	    	}
 	    }
+	    
 		return s;
 	}
 	

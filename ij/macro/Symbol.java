@@ -23,6 +23,8 @@ public class Symbol implements MacroConstants {
             t = NUMERIC_FUNCTION;
         else if (type>=2000 && type<3000)
             t = STRING_FUNCTION;
+        else if (type>=3000 && type<4000)
+            t = ARRAY_FUNCTION;
         return t;
     }
 

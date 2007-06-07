@@ -1,0 +1,11 @@
+// This is an example of a command line macro. Run it from the
+// command line using:
+//
+//   java -jar ij.jar CommandLine.txt
+//
+// ImageJ 1.30p or later is required.
+
+  selectWindow("CommandLineArgs");
+  info = getInfo();
+  print(info);
+  //run("Quit");

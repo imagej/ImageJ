@@ -39,7 +39,7 @@ public class ScaleDialog implements PlugInFilter {
 			known = 1.0;
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 			unit = cal.getUnit();
-			scale = IJ.d2s(measured,digits)+" pixels per "+unit;
+			scale = IJ.d2s(measured,digits)+" pixels/"+unit;
 		}
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi instanceof Line)) {
@@ -63,6 +63,8 @@ public class ScaleDialog implements PlugInFilter {
 		unit = gd.getNextString();
         if (unit.equals("um"))
             unit = "µm";
+        else if (unit.equals("A"))
+        	unit = "Å";
  		Calibrator.global = gd.getNextBoolean();
 		if (measured!=0.0 && known==0.0) {
 			imp.setGlobalCalibration(Calibrator.global?cal:null);
@@ -139,7 +141,7 @@ class SetScaleDialog extends GenericDialog {
 				digits = 3;
 			else if (scale<0.001)
 				digits = 4;
- 			theScale = IJ.d2s(measured/known,digits)+" pixels per "+unit;
+ 			theScale = IJ.d2s(measured/known,digits)+" pixels/"+unit;
  		}
  		setScale(theScale);
 	}

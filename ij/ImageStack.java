@@ -163,7 +163,8 @@ public class ImageStack {
 	}
 
 	/** Returns the label of the specified slice, were 1<=n<=nslices.
-		Returns null if the slice does not have a label. */
+		Returns null if the slice does not have a label. For DICOM
+		and FITS stacks, labels may contain header information. */
 	public String getSliceLabel(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
@@ -204,7 +205,7 @@ public class ImageStack {
 		this.cm = cm;
 	}
 	
-	/** Returns this stack's color model. My return null. */
+	/** Returns this stack's color model. May return null. */
 	public ColorModel getColorModel() {
 		return cm;
 	}

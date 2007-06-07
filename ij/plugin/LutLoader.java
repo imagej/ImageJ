@@ -56,6 +56,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 				interpolate(fi.reds, fi.greens, fi.blues, nColors);
 			fi.fileName = arg;
 			showLut(fi, true);
+			Menus.updateMenus();
 			return;
 		}
 		

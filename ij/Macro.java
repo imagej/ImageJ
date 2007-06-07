@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.io.*;
 import ij.measure.*;
 import ij.plugin.filter.*;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -62,12 +63,16 @@ public class Macro {
 			return "";
 	}
 	
+	/** Aborts the currently running macro or any plugin using IJ.run(). */
 	public static void abort() {
 		abort = true;
+		//IJ.log("Abort: "+Thread.currentThread().getName());
+        if (Thread.currentThread().getName().endsWith("Macro$"))
+           throw new RuntimeException("Macro canceled");
 	}
 
 	public static String getOptions() {
-		if (currentOptions!=null && Thread.currentThread().getName().indexOf("-macro")>-1)
+		if (currentOptions!=null && Thread.currentThread().getName().startsWith("Run$_"))
 			return currentOptions+" ";
 		else
 			return null;

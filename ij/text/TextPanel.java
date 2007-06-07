@@ -355,11 +355,13 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	*/
 	public int copySelection() {
 		if (selStart==-1 || selEnd==-1) return 0;
-		String s="";
+		StringBuffer sb = new StringBuffer();
 		for (int i=selStart; i<=selEnd; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
-			s += new String(chars)+"\n";
+			sb.append(chars);
+			sb.append('\n');
 		}
+		String s = new String(sb);
 		Clipboard clip = getToolkit().getSystemClipboard();
 		if (clip==null) return 0;
 		StringSelection cont = new StringSelection(s);
@@ -449,6 +451,21 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		IJ.showStatus("");
 	}
 
+	/** Returns all the text as a string. */
+	public String getText() {
+		StringBuffer sb = new StringBuffer();
+		if (labels!=null && !labels.equals("")) {
+			sb.append(labels);
+			sb.append('\n');
+		}
+		for (int i=0; i<iRowCount; i++) {
+			char[] chars = (char[])(vData.elementAt(i));
+			sb.append(chars);
+			sb.append('\n');
+		}
+		return new String(sb);
+	}
+	
 	public void setTitle(String title) {
 		this.title = title;
 	}

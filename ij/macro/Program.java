@@ -1,29 +1,26 @@
 package ij.macro;
 import ij.*;
 
-/** An object of this type is a tokenized macro file and the associated symbol table and stack. */
+/** An object of this type is a tokenized macro file and the associated symbol table. */
 public class Program implements MacroConstants {
 
-	static final int STACK_SIZE=1000;
-
-	private int maxSymbols = 1000;
-	private int maxProgramSize = 5000;
+	private int maxSymbols = 800; // will be increased as needed
+	private int maxProgramSize = 2000;  // well be increased as needed
 	private int pc = -1;
-	Variable[] stack;
-	int topOfStack = -1;
-	int topOfGlobals = -1;
-	int startOfLocals = 0;
-
+	
 	int stLoc = -1;
 	int symTabLoc;
 	Symbol[] table = new Symbol[maxSymbols];
 	int[] code = new int[maxProgramSize];
+	Variable[] globals;
+	boolean hasVars;
 
 	public Program() {
 		addKeywords();
 		addFunctions();
 		addNumericFunctions();
 		addStringFunctions();
+		addArrayFunctions();
 	}
 	
 	public int[] getCode() {
@@ -36,33 +33,48 @@ public class Program implements MacroConstants {
 	
 	void addKeywords() {
 		for (int i=0; i<keywords.length; i++)
-			table[++stLoc] = new Symbol(keywordIDs[i], keywords[i]);
+			addSymbol(new Symbol(keywordIDs[i], keywords[i]));
 	}
 
 	void addFunctions() {
 		for (int i=0; i<functions.length; i++)
-			table[++stLoc] = new Symbol(functionIDs[i], functions[i]);
+			addSymbol(new Symbol(functionIDs[i], functions[i]));
 	}
 
 	void addNumericFunctions() {
 		for (int i=0; i<numericFunctions.length; i++)
-			table[++stLoc] = new Symbol(numericFunctionIDs[i], numericFunctions[i]);
+			addSymbol(new Symbol(numericFunctionIDs[i], numericFunctions[i]));
 	}
 	
 	void addStringFunctions() {
 		for (int i=0; i<stringFunctions.length; i++)
-			table[++stLoc] = new Symbol(stringFunctionIDs[i], stringFunctions[i]);
+			addSymbol(new Symbol(stringFunctionIDs[i], stringFunctions[i]));
+	}
+
+	void addArrayFunctions() {
+		for (int i=0; i<arrayFunctions.length; i++)
+			addSymbol(new Symbol(arrayFunctionIDs[i], arrayFunctions[i]));
 	}
 
 	void addSymbol(Symbol sym) {
-		if (stLoc<(maxSymbols-1))
-			stLoc++;
+		stLoc++;
+		if (stLoc==table.length) {
+			Symbol[] tmp = new Symbol[maxSymbols*2];
+			System.arraycopy(table, 0, tmp, 0, maxSymbols);
+			table = tmp;
+			maxSymbols *= 2;
+		}
 		table[stLoc] = sym;
 	}
 	
 	void addToken(int tok) {
-		if (pc<(maxProgramSize-1))
-			pc++;
+		pc++;
+		if (pc==code.length) {
+			int[] tmp = new int[maxProgramSize*2];
+			System.arraycopy(code, 0, tmp, 0, maxProgramSize);
+			code = tmp;
+			maxProgramSize *= 2;
+		}
 		code[pc] = tok;
 	}
 
@@ -75,7 +87,7 @@ public class Program implements MacroConstants {
 			if (symbol==null)
 				break;
 			symStr = symbol.str;
-			if (symStr!=null && str.equals(symStr)) {
+			if (symStr!=null && symbol.type!=STRING_CONSTANT && str.equals(symStr)) {
 				symTabLoc = i;
 				break;
 			}
@@ -83,45 +95,14 @@ public class Program implements MacroConstants {
 		return symbol;
 	}
 
-	final Variable lookupVariable(int symTabAddress) {
-		//IJ.log("lookupLocalVariable: "+topOfStack+" "+startOfLocals+" "+topOfGlobals);
-		Variable v = null;
-		for (int i=topOfStack; i>=startOfLocals; i--) {
-			if (stack[i].symTabIndex==symTabAddress) {
-				v = stack[i];
-				break;
-			}
-		}
-		if (v==null) {
-			for (int i=topOfGlobals; i>=0; i--) {
-				if (stack[i].symTabIndex==symTabAddress) {
-					v = stack[i];
-					break;
-				}
-			}
-		}
-		return v;
-	}
-
-	/** Creates a Variable and pushes it onto the stack. */
-	Variable push(int symTabLoc, double value, String str, Interpreter interp) {
-		Variable var = new Variable(symTabLoc, value, str);
-		if (stack==null)
-			stack = new Variable[STACK_SIZE];
-		if (topOfStack>=(STACK_SIZE-2))
-			interp.error("Stack overflow");
-		else
-			topOfStack++;
-		stack[topOfStack] = var;
-		return var;
-	}
-
-	void trimStack(int previousTOS, int previousStartOfLocals) {
-		for (int i=previousTOS+1; i<=topOfStack; i++)
-			stack[i] = null;
-		topOfStack = previousTOS;
-	    startOfLocals = previousStartOfLocals;
-	    //IJ.log("trimStack: "+topOfStack);
+	void saveGlobals(Interpreter interp) {
+		//IJ.log("saveGlobals: "+interp.topOfStack);
+		if (interp.topOfStack==-1)
+			return;
+		int n = interp.topOfStack+1;
+		globals = new Variable[n];
+		for (int i=0; i<n; i++)
+			globals[i] = interp.stack[i];
 	}
 	
 	public void dumpSymbolTable() {
@@ -143,6 +124,14 @@ public class Program implements MacroConstants {
 		for (int i=0; i<=pc; i++) 
 			IJ.log(i+"	"+(code[i]&0xffff)+"  "+decodeToken(code[i]));
 	}
+	
+	public Variable[] getGlobals() {
+		return globals;
+	}
+
+	public boolean hasVars() {
+		return hasVars;
+	}
 
 	public String decodeToken(int token) {
 		return decodeToken(token&0xffff, token>>16);
@@ -155,6 +144,7 @@ public class Program implements MacroConstants {
 			case PREDEFINED_FUNCTION:
 			case NUMERIC_FUNCTION:
 			case STRING_FUNCTION:
+			case ARRAY_FUNCTION:
 			case USER_FUNCTION:
 				str = table[address].str;
 				break;
@@ -182,6 +172,12 @@ public class Program implements MacroConstants {
 						break;
 					case MINUS_MINUS:
 						str="--";
+						break;
+					case LOGICAL_AND:
+						str="&&";
+						break;
+					case LOGICAL_OR:
+						str="||";
 						break;
 					case EQ:
 						str="==";

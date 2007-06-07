@@ -78,7 +78,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		double ymin=a[0], ymax=a[1]; 
 		cf = new CurveFitter(x, y);
 		cf.doFit(fitType, settings.getState());
-		IJ.write(cf.getResultString());
+		IJ.log(cf.getResultString());
 
 		float[] px = new float[100];
 		float[] py = new float[100];
@@ -176,7 +176,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 			while (true) {
 				String s=r.readLine();
 				if (s==null) break;
-				if (s.length()>50) break;
+				if (s.length()>100) break;
 				textArea.append(s+"\n");
 			}
 		}

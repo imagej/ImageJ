@@ -10,6 +10,7 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
+import ij.plugin.filter.Analyzer;
 
 
 /** This class is an extended ImageWindow that displays line graphs. */
@@ -59,6 +60,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private boolean fixedYScale;
  	private ImageProcessor ip;
 	private static int options;
+	private int lineWidth = Line.getWidth();
+	private int defaultDigits = -1;
+	private boolean realNumbers;
+	private int xdigits, ydigits;
 	
 	/** Save x-values only. To set, use Edit/Options/
 		Profile Plot Options. */
@@ -187,9 +192,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		always drawn in black. */
 	public void setColor(Color c) {
 		setup();
-		ip = ip.convertToRGB();
+		if (!(ip instanceof ColorProcessor)) {
+			ip = ip.convertToRGB();
+			ip.setLineWidth(lineWidth);
+			ip.setFont(font);
+			ip.setAntialiasedText(true);
+		}
 		ip.setColor(c);
 	}
+
+	/** Changes the line width. */
+	public void setLineWidth(int lineWidth) {
+		setup();
+		ip.setLineWidth(lineWidth);
+		this.lineWidth = lineWidth;
+	}
+
+	/** Changes the font. */
+    public void changeFont(Font font) {
+    	setup();
+		ip.setFont(font);
+		this.font = font;
+    }
 
 	/** Displays the plot. */
 	public void draw() {
@@ -221,8 +245,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			return;
 		ip = imp.getProcessor();
 		ip.setColor(Color.black);
-		if (Line.getWidth()>3)
-			ip.setLineWidth(1);
+		if (lineWidth>3)
+			lineWidth = 3;
+		ip.setLineWidth(lineWidth);
 		ip.setFont(font);
 		ip.setAntialiasedText(true);
 		if (frameWidth==0) {
@@ -240,19 +265,39 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			yScale = frame.height/(yMax-yMin);
 	}
 
-	String d2s(double n) {
-		if (Math.round(n)==n)
-			return(IJ.d2s(n,0));
-		else
-			return(IJ.d2s(n));
+	int getDigits(double n1, double n2) {
+		if (Math.round(n1)==n1 && Math.round(n2)==n2)
+			return 0;
+		else {
+			n1 = Math.abs(n1);
+			n2 = Math.abs(n2);
+		    double n = n1<n2&&n1>0.0?n1:n2;
+		    double diff = Math.abs(n2-n1);
+		    if (diff>0.0 && diff<n) n = diff;		    
+			int digits = 1;
+			if (n<10.0) digits = 2;
+			if (n<0.01) digits = 3;
+			if (n<0.001) digits = 4;
+			if (n<0.0001) digits = 5;
+			return digits;
+		}
 	}
 
+    /** Updates the graph X and Y values when the mouse is moved.
+    	Overrides mouseMoved() in ImageWindow. 
+    	@see ij.gui.ImageWindow#mouseMoved
+    */
     public void mouseMoved(int x, int y) {
 		if (frame==null || coordinates==null)
 			return;
 		if (frame.contains(x, y)) {
-			x -= frame.x; y -= frame.y;
-			coordinates.setText("X=" + d2s(x/xScale+xMin)+", Y=" + d2s((frameHeight-y)/yScale+yMin));
+			int index = (int)((x-frame.x)/((double)frame.width/xValues.length));
+			if (index>0 && index<xValues.length) {
+				double xv = xValues[index];
+				double yv = yValues[index];
+				coordinates.setText("X=" + IJ.d2s(xv,getDigits(xv,xv))+", Y=" + IJ.d2s(yv,getDigits(yv,yv)));
+			}
+			//coordinates.setText("X=" + d2s(x/xScale+xMin)+", Y=" + d2s((frameHeight-y)/yScale+yMin));
 		} else
 			coordinates.setText("");
 	}
@@ -289,25 +334,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (ip instanceof ColorProcessor)
 			ip.setColor(Color.black);
 		ip.drawRect(frame.x, frame.y, frame.width+1, frame.height+1);
-		String s = d2s(yMax);
+		int digits = getDigits(yMax, yMin);
+		String s = IJ.d2s(yMax, digits);
 		int sw = ip.getStringWidth(s);
 		if ((sw+4)>LEFT_MARGIN)
 			ip.drawString(s, 4, TOP_MARGIN-4);
 		else
 			ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-4, TOP_MARGIN+10);
-		s = d2s(yMin);
+		s = IJ.d2s(yMin, digits);
 		sw = ip.getStringWidth(s);
 		if ((sw+4)>LEFT_MARGIN)
 			ip.drawString(s, 4, TOP_MARGIN+frame.height);
 		else
 			ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-4, TOP_MARGIN+frame.height);
+		FontMetrics fm = ip.getFontMetrics();
 		x = LEFT_MARGIN;
-		y = TOP_MARGIN + frame.height + 15;
-		ip.drawString(d2s(xMin), x, y);
-		s = d2s(xMax);
+		y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
+		digits = getDigits(xMin, xMax);
+		ip.drawString(IJ.d2s(xMin,digits), x, y);
+		s = IJ.d2s(xMax,digits);
 		ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
 		ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
-		drawYLabel(yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height);
+		drawYLabel(yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height, fm);
 	}
 	
 	void drawPolyline(ImageProcessor ip, int[] x, int[] y, int n) {
@@ -316,10 +364,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			ip.lineTo(x[i], y[i]);
 	}
 		
-	void drawYLabel(String yLabel, int x, int y, int height) {
+	void drawYLabel(String yLabel, int x, int y, int height, FontMetrics fm) {
 		if (yLabel.equals(""))
 			return;
-		FontMetrics fm = ip.getFontMetrics();
 		int w =  fm.stringWidth(yLabel) + 5;
 		int h =  fm.getHeight() + 5;
 		ImageProcessor label = new ByteProcessor(w, h);
@@ -341,6 +388,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	void showList() {
 		StringBuffer sb = new StringBuffer();
 		String headings;
+		initDigits();
 		if (errorBars !=null) {
 			if (saveXValues)
 				headings = "X\tY\tErrorBar";
@@ -348,9 +396,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 				headings = "Y\tErrorBar";
 			for (int i=0; i<nPoints; i++) {
 				if (saveXValues)
-					sb.append(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\t"+d2s(errorBars[i])+"\n");
+					sb.append(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits)+"\t"+IJ.d2s(errorBars[i],ydigits)+"\n");
 				else
-					sb.append(d2s(yValues[i])+"\t"+d2s(errorBars[i])+"\n");
+					sb.append(IJ.d2s(yValues[i],ydigits)+"\t"+IJ.d2s(errorBars[i],ydigits)+"\n");
 			}
 		} else {
 			if (saveXValues)
@@ -359,9 +407,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 				headings = "Y";
 			for (int i=0; i<nPoints; i++) {
 				if (saveXValues)
-					sb.append(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\n");
+					sb.append(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits)+"\n");
 				else
-					sb.append(d2s(yValues[i])+"\n");
+					sb.append(IJ.d2s(yValues[i],ydigits)+"\n");
 			}
 		}
 		TextWindow tw = new TextWindow("Plot Values", headings, sb.toString(), 200, 400);
@@ -390,11 +438,12 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 		IJ.wait(250);  // give system time to redraw ImageJ window
 		IJ.showStatus("Saving plot values...");
+		initDigits();
 		for (int i=0; i<nPoints; i++) {
 			if (saveXValues)
-				pw.println(d2s(xValues[i])+"\t"+d2s(yValues[i]));
+				pw.println(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits));
 			else
-				pw.println(d2s(yValues[i]));
+				pw.println(IJ.d2s(yValues[i],ydigits));
 		}
 		pw.close();
 		if (autoClose)
@@ -408,13 +457,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (systemClipboard==null)
 			{IJ.error("Unable to copy to Clipboard."); return;}
 		IJ.showStatus("Copying plot values...");
+		initDigits();
 		CharArrayWriter aw = new CharArrayWriter(nPoints*4);
 		PrintWriter pw = new PrintWriter(aw);
 		for (int i=0; i<nPoints; i++) {
 			if (saveXValues)
-				pw.print(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\n");
+				pw.print(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits)+"\n");
 			else
-				pw.print(d2s(yValues[i])+"\n");
+				pw.print(IJ.d2s(yValues[i],ydigits)+"\n");
 		}
 		String text = aw.toString();
 		pw.close();
@@ -423,6 +473,21 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		IJ.showStatus(text.length() + " characters copied to Clipboard");
 		if (autoClose)
 			{imp.changes=false; close();}
+	}
+	
+	void initDigits() {
+		ydigits = Analyzer.getPrecision();
+		if (ydigits==0)
+			ydigits = 2;
+		if (ydigits!=defaultDigits) {
+			realNumbers = false;
+			for (int i=0; i<xValues.length; i++) {
+				if ((int)xValues[i]!=xValues[i])
+					realNumbers = true;
+			}
+			defaultDigits = ydigits;
+		}
+		xdigits =  realNumbers?ydigits:0;
 	}
 		
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
@@ -435,6 +500,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			saveAsText();
 		else
 			copyToClipboard();
+	}
+	
+	public float[] getYValues() {
+		return yValues;
 	}
 	
 	/** Called once when ImageJ quits. */

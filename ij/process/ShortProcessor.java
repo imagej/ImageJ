@@ -159,7 +159,7 @@ public class ShortProcessor extends ImageProcessor {
 	/**
 	Sets the min and max variables that control how real
 	pixel values are mapped to 0-255 screen values.
-	@see resetMinAndMax
+	@see #resetMinAndMax
 	@see ij.plugin.frame.ContrastAdjuster 
 	*/
 	public void setMinAndMax(double min, double max) {
@@ -210,16 +210,22 @@ public class ShortProcessor extends ImageProcessor {
 				return cTable[(int)(value+0.5)]; 
 		}
 
-	/** Stores the specified value at (x,y). */
+	/** Stores the specified value at (x,y). Does
+		nothing if (x,y) is outside the image boundary.
+		Values outside the range 0-65535 are clipped.
+	*/
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
+			if (value>65535) value = 65535;
+			if (value<0) value = 0;
 			pixels[y*width + x] = (short)value;
 		}
 	}
 
 	/** Stores the specified real value at (x,y). Does
 		nothing if (x,y) is outside the image boundary.
-		The value is clamped to be in the range 0-65535. */
+		Values outside the range 0-65535 are clipped.
+	*/
 	public void putPixelValue(int x, int y, double value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			if (value>65535.0)
@@ -638,7 +644,7 @@ public class ShortProcessor extends ImageProcessor {
 			for (int x=xmin; x<=xmax; x++) {
 				xs = (x-xCenter)/xScale + xCenter;
 				xsi = (int)xs;
-				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ys>ymax)))
+				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 					pixels[index1++] = (short)min;
 				else {
 					if (interpolate) {
@@ -794,11 +800,39 @@ public class ShortProcessor extends ImageProcessor {
 		System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
 	}
 
-    public void noise(double range) {}
-	public void threshold(int level) {}
-	public void autoThreshold() {}
+    public void noise(double range) {
+		Random rnd=new Random();
+		int v;
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int i = y * width + roiX;
+			for (int x=roiX; x<(roiX+roiWidth); x++) {
+				int RandomBrightness = (int)Math.round(rnd.nextGaussian()*range);
+				v = (pixels[i] & 0xffff) + RandomBrightness;
+				if (v < 0) v = 0;
+				if (v > 65535) v = 65535;
+				pixels[i] = (short)v;
+				i++;
+			}
+		}
+		findMinAndMax();
+    }
+
+	public void threshold(int level) {
+		for (int i=0; i<width*height; i++) {
+			if ((pixels[i]&0xffff)<=level)
+				pixels[i] = 0;
+			else
+				pixels[i] = (short)255;
+		}
+		newSnapshot = false;
+		findMinAndMax();
+	}
+	
+	/** Not implemented. */
 	public void medianFilter() {}
+	/** Not implemented. */
 	public void erode() {}
+	/** Not implemented. */
 	public void dilate() {}
 
 }

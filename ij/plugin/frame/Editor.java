@@ -7,6 +7,7 @@ import ij.gui.*;
 import ij.util.Tools;
 import ij.text.TextWindow;
 import ij.macro.*;
+import ij.plugin.MacroInstaller;
 import java.awt.datatransfer.*;																																																																																																																																																																																																																																																									 import java.util.*;
 																																																																																																																																																					   
 
@@ -24,13 +25,17 @@ TextListener, ClipboardOwner, MacroConstants {
 	private static int nWindows;
 	private Menu fileMenu;
 	private Properties p = new Properties();
-	private int[] macroStarts = new int[MAX_MACROS];
-	private String[] macroNames = new String[MAX_MACROS];
+	private int[] macroStarts;
+	private String[] macroNames;
 	private MenuBar mb = new MenuBar();
 	private Menu macrosMenu;
 	private int nMacros;
 	private Program pgm;
 	private boolean firstEvent = true;
+	private String shortcutsInUse;
+	private int inUseCount;
+	private int nShortcuts;
+	private MacroInstaller installer;
 	
 	public Editor() {
 		super("Editor");
@@ -81,11 +86,12 @@ TextListener, ClipboardOwner, MacroConstants {
 		ta.addTextListener(this);
 		if (IJ.isMacOSX())
 			ta.setFont(new Font("SansSerif",Font.PLAIN,12));
-		//ta.addKeyListener(this);
+ 		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
 		positionWindow();
 		display("Test.java", "");
+		IJ.register(Editor.class);
 	}
 			
 	public void positionWindow() {
@@ -123,55 +129,26 @@ TextListener, ClipboardOwner, MacroConstants {
 			macrosMenu.addSeparator();
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
-			installMacros(text);				
+			if (text.indexOf("macro ")!=-1)
+				installMacros(text, false);				
 		}
 		show();
 		changes = false;
 	}
 
-	void installMacros(String text) {
-		Tokenizer tok = new Tokenizer();
-		pgm = tok.tokenize(text);
-		IJ.showStatus("");
-		int[] code = pgm.getCode();
-		Symbol[] symbolTable = pgm.getSymbolTable();
-		int count=0, token, nextToken, address;
-		String name;
-		Symbol symbol;
-		int itemCount = macrosMenu.getItemCount();
-		if (itemCount>2)
-			for (int i=itemCount-1; i>=2; i--)
-				macrosMenu.remove(i);
-		for (int i=0; i<code.length; i++) {
-			token = code[i]&0xffff;
-			if (token==MACRO) {
-				nextToken = code[i+1]&0xffff;
-				if (nextToken==STRING_CONSTANT) {
-					address = code[i+1]>>16;
-					symbol = symbolTable[address];
-					name = symbol.str;
-					macroStarts[count] = i + 2;
-					macroNames[count] = name;
-					macrosMenu.add(new MenuItem(name));
-					//IJ.log(count+" "+name+" "+macroStarts[count]);
-					count++;
-					if (count==MAX_MACROS)
-						break;
-				}					
-			} else if (token==EOF)
-				break;
-		}
-		nMacros = count;
-		if (nMacros>0)
-			new MacroExecuter(pgm, true);
-		IJ.showStatus(nMacros + " macros installed");
+	void installMacros(String text, boolean installInPluginsMenu) {
+		installer = new MacroInstaller();
+		installer.setFileName(getTitle());
+		int nShortcuts = installer.install(text, macrosMenu);
+		if (installInPluginsMenu || nShortcuts>0)
+			installer.install(null);
 	}
-	
+		
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
 		int size = (int)file.length();
-		if (size>MAX_SIZE && !IJ.isMacintosh()) {
+		if (size>MAX_SIZE && !(IJ.isJava2()||IJ.isMacintosh())) {
 			IJ.error("This file is too large for ImageJ to open.\n"
 				+" \n"
 				+"	  File size: "+size+" bytes\n"
@@ -198,6 +175,13 @@ TextListener, ClipboardOwner, MacroConstants {
 			IJ.error(e.getMessage());
 			return;
 		}
+	}
+
+	public String getText() {
+		if (ta==null)
+			return "";
+		else
+			return ta.getText();
 	}
 
 	public void display(String title, String text) {
@@ -227,6 +211,7 @@ TextListener, ClipboardOwner, MacroConstants {
 				bw.newLine();
 			}
 			bw.close();
+			IJ.showStatus(text.length()+" chars saved to " + path);
 			changes = false;
 		} catch
 			(IOException e) {}
@@ -249,7 +234,7 @@ TextListener, ClipboardOwner, MacroConstants {
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		new MacroExecuter(text);
+		new MacroRunner(text);
 	}
 
 	void print () {
@@ -386,13 +371,12 @@ TextListener, ClipboardOwner, MacroConstants {
 				compileAndRun();
 		else if ("Run Macro".equals(what))
 				runMacro();
-		else if ("Abort Macro".equals(what))
+		else if ("Abort Macro".equals(what)) {
 				Interpreter.abort();
-		else if ("Install Macros".equals(what)) {
-				installMacros(ta.getText());
-				if (nMacros==0)
-					IJ.showMessage("Editor", "No installable macros found");
-		} else if ("Print...".equals(what))
+				IJ.beep();		
+		} else if ("Install Macros".equals(what))
+				installMacros(ta.getText(), true);
+		else if ("Print...".equals(what))
 			print();
 		else if("Paste".equals(what))
 			paste();
@@ -409,15 +393,9 @@ TextListener, ClipboardOwner, MacroConstants {
 		else if ("Go to Line...".equals(what))
 			gotoLine();
 		else
-			runMacro(what);
+			installer.runMacro(what);
 	}
 
-	void runMacro(String name) {
-		for (int i=0; i<nMacros; i++)
-			if (name.equals(macroNames[i]))
-				new MacroExecuter(pgm, macroStarts[i], name);
-	}
-	
 	public void textValueChanged(TextEvent evt) {
 		if (firstEvent)  // first textValueChanged event may be bogus
 			firstEvent = false;
@@ -428,27 +406,29 @@ TextListener, ClipboardOwner, MacroConstants {
 	/** Override windowActivated in PlugInFrame to
 		prevent Mac meno bar from being installed. */
 	public void windowActivated(WindowEvent e) {
+		WindowManager.setWindow(this);
 	}
 
 	public void windowClosing(WindowEvent e) {
-		if (getTitle().equals("Errors") || close()) {	
+		close();
+	}
+
+	/** Overrides close() in PlugInFrame. */
+	public void close() {
+		boolean okayToClose = true;
+		if (!getTitle().equals("Errors") && changes) {
+			SaveChangesDialog d = new SaveChangesDialog(this, getTitle());
+			if (d.cancelPressed())
+				okayToClose = false;
+			else if (d.savePressed())
+				save();
+		}
+		if (okayToClose) {
 			setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
 			nWindows--;
 		}
-	}
-
-	boolean close() {
-		boolean okay = true;
-		if (changes) {
-			SaveChangesDialog d = new SaveChangesDialog(this, getTitle());
-			if (d.cancelPressed())
-				okay = false;
-			else if (d.savePressed())
-				save();
-		}
-		return okay;
 	}
 
 	void saveAs() {
@@ -554,69 +534,5 @@ TextListener, ClipboardOwner, MacroConstants {
 	//public void keyTyped(KeyEvent e) {}
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
 
-} // class Editor
-
-class MacroExecuter implements Runnable {
-
-	private String macro;
-	private Program pgm;
-	private int address;
-	private Thread thread;
-	private boolean pushGlobals;
-
-	/** Create a new object that interprets macro source in a separate thread. */
-	MacroExecuter(String macro) {
-		this.macro = macro;
-		thread = new Thread(this, "Macro");
-		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
-		thread.start();
-	}
-
-	/** Create a new object that runs a tokenized macro in a separate thread. */
-	MacroExecuter(Program pgm, int address, String name) {
-		this.pgm = pgm;
-		this.address = address;
-		thread = new Thread(this, name);
-		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
-		thread.start();
-	}
-
-	/** Create a MacroExecuter that pushes global variables onto the stack. */
-	MacroExecuter(Program pgm, boolean pushGlobals) {
-		this.pgm = pgm;
-		this.pushGlobals = true;
-		thread = new Thread(this, "GlobalPusher");
-		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
-		thread.start();
-	}
-
-	public void run() {
-		try {
-			if (pgm==null)
-				new Interpreter().run(macro);
-			else if (pushGlobals)
-					new Interpreter().pushGlobals(pgm);
-			else
-					new Interpreter().runMacro(pgm, address);
-		} catch(Throwable e) {
-			IJ.showStatus("");
-			IJ.showProgress(1.0);
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.unlock();
-			String msg = e.getMessage();
-			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals("Macro canceled"))
-				return;
-			CharArrayWriter caw = new CharArrayWriter();
-			PrintWriter pw = new PrintWriter(caw);
-			e.printStackTrace(pw);
-			String s = caw.toString();
-			if (IJ.isMacintosh())
-				s = Tools.fixNewLines(s);
-			// Don't show exceptions resulting from window being closed
-			if (!(s.indexOf("NullPointerException")>=0 && s.indexOf("ij.process")>=0))
-				new TextWindow("Exception", s, 350, 250);
-		}
-	}
-
-} // class MacroExecuter
+}
 

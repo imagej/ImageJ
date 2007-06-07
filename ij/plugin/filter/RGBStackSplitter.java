@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.Calibration;
 import java.awt.*;
 
 /** Splits an RGB image or stack into three 8-bit grayscale images or stacks. */
@@ -24,12 +25,19 @@ public class RGBStackSplitter implements PlugInFilter {
     public void split(ImagePlus imp) {
         split(imp.getStack(), true);
         String title = imp.getTitle();
+        Calibration cal = imp.getCalibration();
         imp.hide();
-        new ImagePlus(title+" (red)",red).show();
+        ImagePlus rImp = new ImagePlus(title+" (red)",red);
+        rImp.setCalibration(cal);
+        rImp.show();
         if (IJ.isMacOSX()) IJ.wait(500);
-        new ImagePlus(title+" (green)",green).show();
+        ImagePlus gImp = new ImagePlus(title+" (green)",green);
+        gImp.setCalibration(cal);
+        gImp.show();
         if (IJ.isMacOSX()) IJ.wait(500);
-        new ImagePlus(title+" (blue)",blue).show();
+        ImagePlus bImp = new ImagePlus(title+" (blue)",blue);
+        bImp.setCalibration(cal);
+        bImp.show();
     }
 
     /** Splits the specified RGB stack into three 8-bit grayscale stacks. 

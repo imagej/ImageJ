@@ -215,7 +215,7 @@ public class ByteProcessor extends ImageProcessor {
 
 	/** Stores the specified real value at (x,y). Does
 		nothing if (x,y) is outside the image boundary.
-		The value is clamped to be in the range 0-255. */
+		Values outside the range 0-255 are clipped. */
 	public void putPixelValue(int x, int y, double value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			if (value>255.0)
@@ -226,9 +226,13 @@ public class ByteProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Stores the specified value at (x,y). */
+	/** Stores the specified value at (x,y). Does
+		nothing if (x,y) is outside the image boundary.
+		Values outside the range 0-255 are clipped. */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
+			if (value>255) value = 255;
+			if (value<0) value = 0;
 			pixels[y*width + x] = (byte)value;
 	}
 
@@ -596,7 +600,7 @@ public class ByteProcessor extends ImageProcessor {
 			for (int x=xmin; x<=xmax; x++) {
 				xs = (x-xCenter)/xScale + xCenter;
 				xsi = (int)xs;
-				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ys>ymax)))
+				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 					pixels[index1++] = (byte)bgColor;
 				else {
 					if (interpolate) {
@@ -776,6 +780,7 @@ public class ByteProcessor extends ImageProcessor {
 		return histogram;
 	}
 
+	/** Sets pixels less than or equal to level to 0 and all other pixels to 255. */
 	public void threshold(int level) {
 		for (int i=0; i<width*height; i++) {
 			if ((pixels[i] & 0xff) <= level)
@@ -784,52 +789,6 @@ public class ByteProcessor extends ImageProcessor {
 				pixels[i] = (byte)255;
 		}
 		newSnapshot = false;
-	}
-
-	/** Iterative thresholding technique, described originally by Ridler & Calvard in
-	"PIcture Thresholding Using an Iterative Selection Method", IEEE transactions
-	on Systems, Man and Cybernetics, August, 1978. */
-	public int getAutoThreshold() {
-		int level;
-		int[] histogram = getHistogram();
-		double result,tempSum1,tempSum2,tempSum3,tempSum4;
-
-		histogram[0] = 0; //set to zero so erased areas aren't included
-		histogram[255] = 0;
-		int min = 0;
-		while ((histogram[min] == 0) && (min < 255))
-			min++;
-		int max = 255;
-		while ((histogram[max] == 0) && (max > 0))
-			max--;
-		if (min >= max) {
-			level = 128;
-			return level;
-		}
-		
-		int movingIndex = min;
-		do {
-			tempSum1=tempSum2=tempSum3=tempSum4=0.0;
-			for (int i=min; i<=movingIndex; i++) {
-				tempSum1 += i*histogram[i];
-				tempSum2 += histogram[i];
-			}
-			for (int i=(movingIndex+1); i<=max; i++) {
-				tempSum3 += i *histogram[i];
-				tempSum4 += histogram[i];
-			}
-			
-			result = (tempSum1/tempSum2/2.0) + (tempSum3/tempSum4/2.0);
-			movingIndex++;
-		} while ((movingIndex+1)<=result && movingIndex<=(max-1));
-		
-		level = (int)Math.round(result);
-		return level;
-	}
-	
-	/** Converts the image to binary using an automatically determined threshold. */
-	public void autoThreshold() {
-		threshold(getAutoThreshold());
 	}
 
 	public void applyLut() {

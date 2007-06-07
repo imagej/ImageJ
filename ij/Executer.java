@@ -10,7 +10,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.util.*;
 import ij.text.TextWindow;
-import ij.plugin.frame.Recorder;
+import ij.plugin.frame.*;
 
 /** Runs menu commands in a separate thread.*/
 public class Executer implements Runnable {
@@ -106,7 +106,7 @@ public class Executer implements Runnable {
 		else if (cmd.equals("Open..."))
 			new Opener().open();
 		else if (cmd.equals("Close"))
-			closeImage(imp);
+			close(imp);
 		else if (cmd.equals("Cut"))
 			copy(imp, true);
 		else if (cmd.equals("Copy"))
@@ -144,14 +144,8 @@ public class Executer implements Runnable {
 			{if (win!=null) new FileSaver(imp).save(); else IJ.noImage();}
 		else if (cmd.equals("Paste"))
 			{if (win!=null) win.paste(); else IJ.noImage();}
-		else if (cmd.equals("Select All"))
-			{if (win!=null) imp.setRoi(0,0,imp.getWidth(),imp.getHeight()); else IJ.noImage();}
-		else if (cmd.equals("Select None"))
-			{if (win!=null) imp.killRoi(); else IJ.noImage();}
 		else if (cmd.equals("Histogram"))
 			{if (win!=null) {new HistogramWindow(imp);} else IJ.noImage();}
-		else if (cmd.startsWith("Restore"))
-			{if (win!=null) imp.restoreRoi(); else IJ.noImage();}
 		else if (cmd.equals("Undo"))
 			{if (win!=null) Undo.undo(); else IJ.noImage();}
 		else
@@ -185,8 +179,13 @@ public class Executer implements Runnable {
 	 		imp.getWindow().copy(cut);
 	}
 	
-	void closeImage(ImagePlus imp) {
-		if (imp==null)
+	void close(ImagePlus imp) {
+		Frame frame = WindowManager.getFrontWindow();
+		if (frame!=null && (frame instanceof PlugInFrame))
+			((PlugInFrame)frame).close();
+		else if (frame!=null && (frame instanceof TextWindow))
+			((TextWindow)frame).close();
+		else if (imp==null)
 			IJ.noImage();
 		else {
 			ImageWindow win = imp.getWindow();

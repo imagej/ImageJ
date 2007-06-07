@@ -1,7 +1,10 @@
 package ij;
+import ij.process.*;
 import ij.util.*;
 import ij.gui.ImageWindow;
+import ij.plugin.MacroInstaller;
 import java.awt.*;
+import java.awt.image.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.File;
@@ -46,9 +49,9 @@ public class Menus {
 	private static ImageJ ij;
 	private static Applet applet;
 	private static Hashtable demoImagesTable = new Hashtable();
-	private static String pluginsPath;
-	private static Menu pluginsMenu, importMenu, saveAsMenu, shortcutsMenu,
-		aboutMenu, filtersMenu, toolsMenu, utilitiesMenu;
+	private static String pluginsPath, macrosPath;
+	private static Menu pluginsMenu, importMenu, saveAsMenu, shortcutsMenu, 
+		aboutMenu, filtersMenu, toolsMenu, utilitiesMenu, macrosMenu;
 	private static Hashtable pluginsTable;
 	
 	static Menu window;
@@ -90,17 +93,14 @@ public class Menus {
 		addItem(edit, "Copy", KeyEvent.VK_C, false);
 		addItem(edit, "Paste", KeyEvent.VK_V, false);
 		addPlugInItem(edit, "Paste Control...", "ij.plugin.frame.PasteController", 0, false);
+		edit.addSeparator();
 		addPlugInItem(edit, "Clear", "ij.plugin.filter.Filler(\"clear\")", 0, false);
 		addPlugInItem(edit, "Clear Outside", "ij.plugin.filter.Filler(\"outside\")", 0, false);
-		edit.addSeparator();
-		addItem(edit, "Select All", KeyEvent.VK_A, false);
-		addItem(edit, "Select None", KeyEvent.VK_A, true);
-		addItem(edit, "Restore Selection", KeyEvent.VK_E, true);
-		edit.addSeparator();
 		addPlugInItem(edit, "Fill", "ij.plugin.filter.Filler(\"fill\")", KeyEvent.VK_F, false);
 		addPlugInItem(edit, "Draw", "ij.plugin.filter.Filler(\"draw\")", KeyEvent.VK_D, false);
 		addPlugInItem(edit, "Invert", "ij.plugin.filter.Filters(\"invert\")", KeyEvent.VK_I, true);
 		edit.addSeparator();
+		addSubMenu(edit, "Selection");
 		addSubMenu(edit, "Options");
 		
 		Menu image = new Menu("Image");
@@ -136,11 +136,12 @@ public class Menus {
 		addPlugInItem(process, "Smooth", "ij.plugin.filter.Filters(\"smooth\")", KeyEvent.VK_S, true);
 		addPlugInItem(process, "Sharpen", "ij.plugin.filter.Filters(\"sharpen\")", 0, false);
 		addPlugInItem(process, "Find Edges", "ij.plugin.filter.Filters(\"edge\")", KeyEvent.VK_F, true);
-		addPlugInItem(process, "Equalize", "ij.plugin.filter.Equalizer", 0, false);
+		addPlugInItem(process, "Enhance Contrast", "ij.plugin.filter.ContrastEnhancer", 0, false);
 		addSubMenu(process, "Noise");
 		addSubMenu(process, "Shadows");
 		addSubMenu(process, "Binary");
 		addSubMenu(process, "Math");
+		addSubMenu(process, "FFT");
 		filtersMenu = addSubMenu(process, "Filters");
 		process.addSeparator();
 		addPlugInItem(process, "Image Calculator...", "ij.plugin.ImageCalculator", 0, false);
@@ -303,6 +304,8 @@ public class Menus {
 					shortcutsMenu = menu;
 				else if (submenu.equals("Utilities"))
 					utilitiesMenu = menu;
+				else if (submenu.equals("Macros"))
+					macrosMenu = menu;
 			} else
 				addPluginItem(pluginsMenu, value);
 		}
@@ -393,8 +396,12 @@ public class Menus {
 			else if (pluginsDir.equals("user.home"))
 				pluginsDir = System.getProperty("user.home");
 			pluginsPath = pluginsDir+Prefs.separator+"plugins"+Prefs.separator;
+			macrosPath = pluginsDir+Prefs.separator+"macros"+Prefs.separator;
 		}
-		File f = new File(pluginsPath);
+		File f = new File(macrosPath);
+		if (macrosPath!=null && f!=null && !f.isDirectory())
+			macrosPath = null;
+		f = new File(pluginsPath);
 		if (f!=null && !f.isDirectory()) {
 			error = "Plugins folder not found at "+pluginsPath;
 			pluginsPath = null;
@@ -496,6 +503,10 @@ public class Menus {
 		return mbar;
 	}
 		
+	public static Menu getMacrosMenu() {
+		return macrosMenu;
+	}
+		
 	static final int RGB_STACK=10, HSB_STACK=11;
 	
 	/** Updates the Image/Type and Window menus. */
@@ -517,6 +528,11 @@ public class Menus {
     		ImageStack stack = imp.getStack();
     		if (stack.isRGB()) type = RGB_STACK;
     		else if (stack.isHSB()) type = HSB_STACK;
+    	}
+    	if (type==ImagePlus.GRAY8) {
+			ImageProcessor ip = imp.getProcessor();
+    		if (ip!=null && ip.isColorLut())
+    			type = ImagePlus.COLOR_256;
     	}
     	switch (type) {
     		case ImagePlus.GRAY8:
@@ -552,10 +568,38 @@ public class Menus {
 		}
 	}
 	
-	/** Returns the path to the user plugins directory. Returns
-		null if there is no plugins directory. */
+	static boolean isColorLut(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+    	IndexColorModel cm = (IndexColorModel)ip.getColorModel();
+    	if (cm==null) return false;
+		int mapSize = cm.getMapSize();
+		byte[] reds = new byte[mapSize];
+		byte[] greens = new byte[mapSize];
+		byte[] blues = new byte[mapSize];	
+		cm.getReds(reds); 
+		cm.getGreens(greens); 
+		cm.getBlues(blues);
+		boolean isColor = false;
+		for (int i=0; i<mapSize; i++) {
+			if ((reds[i] != greens[i]) || (greens[i] != blues[i])) {
+				isColor = true;
+				break;
+			}
+		}
+		return isColor;
+	}
+
+	
+	/** Returns the path to the user plugins directory or
+		null if the plugins directory was not found. */
 	public static String getPlugInsPath() {
 		return pluginsPath;
+	}
+
+	/** Returns the path to the macros directory or
+		null if the macros directory was not found. */
+	public static String getMacrosPath() {
+		return macrosPath;
 	}
         
 	/** Returns the hashtable that associates commands with plugins. */
@@ -656,7 +700,7 @@ public class Menus {
 	* @param plugin			the plugin (e.g. "Inverter_", "Inverter_("arg")")
 	* @param menuCode		PLUGINS_MENU, IMPORT_MENU, SAVE_AS_MENU or HOT_KEYS
 	* @param command		the menu item label (set to "" to uninstall)
-	* @param command		the keyboard shortcut (e.g. "y", "Y", "F1")
+	* @param shortcut		the keyboard shortcut (e.g. "y", "Y", "F1")
 	* @param ij				ImageJ (the action listener)
 	*
 	* @return				returns an error code(NORMAL_RETURN,COMMAND_IN_USE_ERROR, etc.)
@@ -742,7 +786,7 @@ public class Menus {
 			return false;
 	}
 
-	static int convertShortcutToCode(String shortcut) {
+	public static int convertShortcutToCode(String shortcut) {
 		int code = 0;
 		int len = shortcut.length();
 		if (len==2 && shortcut.startsWith("F")) {
@@ -769,6 +813,18 @@ public class Menus {
 		else if (c>=48&&c<=57) //0-9
 			code = KeyEvent.VK_0+c-48;
 		return code;
+	}
+	
+	int installMacros() {
+		if (macrosPath==null)
+			return 0;
+		String path = macrosPath + "StartupMacros.txt";
+		File f = new File(path);
+		if (f==null || !f.exists())
+			return 0;
+		MacroInstaller mi = new MacroInstaller();
+		mi.run(path);
+		return mi.getMacroCount();
 	}
 	
 	static boolean validShortcut(String shortcut) {

@@ -6,7 +6,7 @@
     <!-- First, ensure the build directory exists. -->
     <mkdir dir="build" />
     <!-- Build everything; add debug="on" to debug -->
-    <javac srcdir="." destdir="build" optimize="on">
+    <javac srcdir="." destdir="build" optimize="on" debug="on" target="1.1">
       <!-- The plugins directory only needs to be present at runtime,
            not at build time. -->
       <exclude name="plugins/*" />

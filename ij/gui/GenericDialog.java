@@ -5,7 +5,28 @@ import java.util.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
 
-/** This class is a customizable modal dialog box. */
+/**
+ * This class is a customizable modal dialog box. Here is an example
+ * GenericDialog with one string field and two numeric fields:
+ * <pre>
+ *  public class Generic_Dialog_Example implements PlugIn {
+ *    static String title="Example";
+ *    static int width=512,height=512;
+ *    public void run(String arg) {
+ *      GenericDialog gd = new GenericDialog("New Image");
+ *      gd.addStringField("Title: ", title);
+ *      gd.addNumericField("Width: ", width, 0);
+ *      gd.addNumericField("Height: ", height, 0);
+ *      gd.showDialog();
+ *      if (gd.wasCanceled()) return;
+ *      title = gd.getNextString();
+ *      width = (int)gd.getNextNumber();
+ *      height = (int)gd.getNextNumber();
+ *      IJ.run("New...", "name="+title+" type='8-bit Unsigned' width="+width+" height="+height);
+ *   }
+ * }
+ * </pre>
+ */
 public class GenericDialog extends Dialog implements ActionListener,
 TextListener, FocusListener, ItemListener, KeyListener {
 
@@ -59,8 +80,23 @@ TextListener, FocusListener, ItemListener, KeyListener {
 	* @param defaultValue	value to be initially displayed
 	* @param digits			number of digits to right of decimal point
 	*/
-   public void addNumericField(String label, double defaultValue, int digits) {
-		Label theLabel = makeLabel(label);
+	public void addNumericField(String label, double defaultValue, int digits) {
+		addNumericField(label, defaultValue, digits, 6, null);
+	}
+
+	/** Adds a numeric field. The first word of the label must be
+		unique or command recording will not work.
+	* @param label			the label
+	* @param defaultValue	value to be initially displayed
+	* @param digits			number of digits to right of decimal point
+	* @param columns		width of field in characters
+	* @param units			a string displayed to the right of the field
+	*/
+   public void addNumericField(String label, double defaultValue, int digits, int columns, String units) {
+   		String label2 = label;
+   		if (label2.indexOf('_')!=-1)
+   			label2 = label2.replace('_', ' ');
+		Label theLabel = makeLabel(label2);
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -76,7 +112,9 @@ TextListener, FocusListener, ItemListener, KeyListener {
 			defaultValues = new Vector(5);
 			defaultText = new Vector(5);
 		}
-		TextField tf = new TextField(IJ.d2s(defaultValue, digits), 6);
+		if (IJ.isWindows()) columns -= 2;
+		if (columns<1) columns = 1;
+		TextField tf = new TextField(IJ.d2s(defaultValue, digits), columns);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
@@ -86,11 +124,20 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		defaultText.addElement(tf.getText());
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
-		grid.setConstraints(tf, c);
 		tf.setEditable(true);
 		if (firstNumericField) tf.selectAll();
 		firstNumericField = false;
-		add(tf);
+		if (units==null||units.equals("")) {
+			grid.setConstraints(tf, c);
+			add(tf);
+		} else {
+    		Panel panel = new Panel();
+			panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    		panel.add(tf);
+			panel.add(new Label(" "+units));
+			grid.setConstraints(panel, c);
+			add(panel);    		
+		}
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
 		y++;
@@ -190,6 +237,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
     	int[] index = new int[labels.length];
     	if (checkbox==null)
     		checkbox = new Vector(12);
+    	boolean addListeners = labels.length<=4;
     	for (int row=0; row<rows; row++) {
 			for (int col=0; col<columns; col++) {
 				int i2 = col*rows+row;
@@ -199,6 +247,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 				Checkbox cb = new Checkbox(labels[i1]);
 				checkbox.addElement(cb);
 				cb.setState(defaultValues[i1]);
+				if (addListeners) cb.addItemListener(this);
 				if (Recorder.record || macro)
 					saveLabel(cb, labels[i1]);
 				panel.add(cb);
@@ -431,7 +480,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 			thisChoice.select(item);
 			index = thisChoice.getSelectedIndex();
 			if (index==oldIndex && !item.equals(oldItem)) {
-				IJ.showMessage(getTitle(), "\""+item+"\" is not a vaid choice for \""+label+"\"");
+				IJ.showMessage(getTitle(), "\""+item+"\" is not a valid choice for \""+label+"\"");
 				Macro.abort();
 			}
 

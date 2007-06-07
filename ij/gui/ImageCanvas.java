@@ -18,7 +18,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	protected static Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
 	protected static Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 
-	public static boolean usePointer = Prefs.getBoolean(Prefs.USE_POINTER,false);
+	public static boolean usePointer = Prefs.usePointerCursor;
 	
 	protected ImagePlus imp;
 	protected boolean imageUpdated;
@@ -29,12 +29,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private double magnification;
 	private int dstWidth, dstHeight;
 
-	private int xMouseStart = 0;
-	private int yMouseStart = 0;
-	private int xSrcStart = 0;
-	private int ySrcStart = 0;
-	private int xMouse = -1;
-	private int yMouse = -1;
+	private int xMouseStart;
+	private int yMouseStart;
+	private int xSrcStart;
+	private int ySrcStart;
+	private int xMouse;
+	private int yMouse;
 	private int flags;
 
 	public ImageCanvas(ImagePlus imp) {
@@ -69,13 +69,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		paint(g);
 	}
 
-	public void print(Graphics g, double scale) {
-		//Rectangle bounds = g.getClipBounds();
-		//g.drawImage(imp.getImage(), 0, 0, null);
-		g.drawImage(imp.getImage(), 0, 0, (int)(imageWidth*scale), (int)(imageHeight*scale),
-			0, 0, imageWidth, imageHeight, null);
-	}
-	
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
 		if (roi != null) roi.updatePaste();
@@ -120,10 +113,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return new Point(xMouse, yMouse);
 	}
 
+	/** Returns the mouse event modifiers. */
+	public int getModifiers() {
+		return flags;
+	}
+
 	/** Sets the cursor based on the current tool and cursor location. */
-	public void setCursor(int x, int y) {
-		if (x!=-1) xMouse = x;
-		if (y!=-1) yMouse = y;
+	public void setCursor(int sx, int sy, int ox, int oy) {
+		xMouse = ox;
+		yMouse = oy;
 		Roi roi = imp.getRoi();
 		ImageWindow win = imp.getWindow();
 		if (win==null)
@@ -143,7 +141,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				setCursor(handCursor);
 				break;
 			default:  //selection tool
-				if (usePointer || (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.contains(x, y)))
+				if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
+					setCursor(handCursor);
+				else if (usePointer || (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.contains(ox, oy)))
 					setCursor(defaultCursor);
 				else
 					setCursor(crosshairCursor);
@@ -230,24 +230,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	/** Zooms in by making the window bigger. If we can't
-	make it bigger, then make the srcRect smaller.*/
+		make it bigger, then make the srcRect smaller.*/
 	public void zoomIn(int x, int y) {
 		if (magnification>=32)
 			return;
 		double newMag = getHigherZoomLevel(magnification);
-		//if (newMag==imp.getWindow().getInitialMagnification()) {
-		//	unzoom();
-		//	return;
-		//}
-		//int newWidth = (int)(dstWidth*newMag/magnification);
-		//int newHeight = (int)(dstHeight*newMag/magnification);
 		int newWidth = (int)(imageWidth*newMag);
 		int newHeight = (int)(imageHeight*newMag);
 		if (canEnlarge(newWidth, newHeight)) {
 			setDrawingSize(newWidth, newHeight);
 			imp.getWindow().pack();
-		}
-		else {
+		} else {
 			int w = (int)Math.round(dstWidth/newMag);
 			if (w*newMag<dstWidth) w++;
 			int h = (int)Math.round(dstHeight/newMag);
@@ -269,34 +262,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if ((flags&Event.SHIFT_MASK)!=0)
 			return false;
 		Rectangle r1 = imp.getWindow().getBounds();
-		//int right = r1.x + r1.width;
-		//int bottom = r1.y + r1.height;
 		r1.width = newWidth + 20;
 		r1.height = newHeight + 50;
 		if (imp.getStackSize()>1)
 			r1.height += 20;
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		//int[] wList = WindowManager.getIDList();
 		boolean fitsOnScreen = r1.x+r1.width<screen.width && r1.y+r1.height+30<screen.height;
-		//if (wList==null || wList.length<=1 || !fitsOnScreen)
-			return fitsOnScreen;
-		/*
-		for (int i=0; i<wList.length; i++) {
-			ImagePlus imp = WindowManager.getImage(wList[i]);
-			if (imp!=null && imp!=this.imp) {
-				ImageWindow win = imp.getWindow();
-				if (win!=null) {
-					Rectangle r2 = win.getBounds();
-					if (r2.x+r2.width<right && r2.y+r2.height<bottom)
-						continue;
-					Rectangle inter = r1.intersection(r2);
-					if (inter.width*inter.height>0.25*r2.width*r2.height)
-						return false;
-				}
-			}
-		}
-		return true;
-	*/
+		return fitsOnScreen;
 	}
 		
 	/**Zooms out by making srcRect bigger. If we can't make
@@ -437,25 +409,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int y = e.getY();
 		flags = e.getModifiers();
 		if (IJ.debugMode) IJ.log("Mouse pressed: (" + x + "," + y + ")" + ij.modifiers(flags));
-		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger() || (flags & e.META_MASK)!=0)) {
-			if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
-			Roi roi = imp.getRoi();
-			if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE)
-			&& roi.getState()==roi.CONSTRUCTING) {
-				roi.handleMouseUp(x, y); // simulate double-click to finalize
-				roi.handleMouseUp(x, y); // polygon or polyline selection
-				return;
-			}
-			PopupMenu popup = Menus.getPopupMenu();
-			if (popup!=null) {
-				add(popup);
-				popup.show(this, x, y);
-			}
+		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger() || (flags & Event.META_MASK)!=0)) {
+			handlePopupMenu(e);
 			return;
 		}
 
 		int ox = offScreenX(x);
 		int oy = offScreenY(y);
+		xMouse = ox; yMouse = oy;
 		if (IJ.spaceBarDown()) {
 			// temporarily switch to "hand" tool of space bar down
 			xMouseStart = ox; yMouseStart = oy;
@@ -484,8 +445,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				setDrawingColor(ox, oy, IJ.altKeyDown());
 				break;
 			case Toolbar.CROSSHAIR:
-				xMouse = ox;
-				yMouse = oy;
 				IJ.doCommand("Measure");
 				break;
 			case Toolbar.WAND:
@@ -499,31 +458,64 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						return;
 					}
 				}
+				if (roi!=null) {
+					int handle = roi.isHandle(x, y);
+					if (handle>=0) {
+						roi.mouseDownInHandle(handle, x, y);
+						return;
+					}
+				}
 				int npoints = IJ.doWand(ox, oy);
 				if (Recorder.record && npoints>0)
 					Recorder.record("doWand", ox, oy);
+				break;
+			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
+			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:
+				Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool
 				handleRoiMouseDown(x, y);
 		}
 	}
 
+	protected void handlePopupMenu(MouseEvent e) {
+		if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
+		int x = e.getX();
+		int y = e.getY();
+		Roi roi = imp.getRoi();
+		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE)
+		&& roi.getState()==roi.CONSTRUCTING) {
+			roi.handleMouseUp(x, y); // simulate double-click to finalize
+			roi.handleMouseUp(x, y); // polygon or polyline selection
+			return;
+		}
+		PopupMenu popup = Menus.getPopupMenu();
+		if (popup!=null) {
+			add(popup);
+			popup.show(this, x, y);
+		}
+	}
+	
 	public void mouseExited(MouseEvent e) {
 		ImageWindow win = imp.getWindow();
 		if (win!=null) setCursor(defaultCursor);
-		xMouse = -1; yMouse = -1;
 		IJ.showStatus("");
 	}
 
 	public void mouseDragged(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
+		xMouse = offScreenX(x);
+		yMouse = offScreenY(y);
+		flags = e.getModifiers();
+		if (flags==0)  // workaround for Mac OS 9 bug
+			flags = InputEvent.BUTTON1_MASK;
 		if (Toolbar.getToolId()==Toolbar.HAND || IJ.spaceBarDown())
 			scroll(x, y);
 		else {
 			Roi roi = imp.getRoi();
 			if (roi != null)
-				roi.handleMouseDrag(x, y, (e.getModifiers()&e.SHIFT_MASK)!=0);
+				roi.handleMouseDrag(x, y, (flags&Event.SHIFT_MASK)!=0);
 		}
 	}
 
@@ -534,15 +526,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (roi!=null) {
 			Rectangle r = roi.getBoundingRect();
 			int type = roi.getType();
-			if (type==Roi.RECTANGLE && r.width==imp.getWidth() && r.height==imp.getHeight()) {
+			if (type==Roi.RECTANGLE && r.width==imp.getWidth() && r.height==imp.getHeight()
+			&& roi.getPasteMode()==Roi.NOT_PASTING) {
 				imp.killRoi();
+				return;
+			}
+			int handle = roi.isHandle(sx, sy);
+			if (handle>=0) {
+				roi.mouseDownInHandle(handle, sx, sy);
 				return;
 			}
 			if (roi.contains(ox, oy)) {
 				roi.handleMouseDown(sx, sy);
 				return;
 			}
-			if ((roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE)
+			if ((type==Roi.POLYGON || type==Roi.POLYLINE || type==Roi.ANGLE)
 			&& roi.getState()==roi.CONSTRUCTING)
 				return;
 		}
@@ -550,11 +548,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mouseReleased(MouseEvent e) {
+		flags = e.getModifiers();
+		flags &= ~InputEvent.BUTTON1_MASK; // make sure button 1 bit is not set
+		//IJ.log("mouseReleased: "+flags);
 		Roi roi = imp.getRoi();
 		if (roi != null) {
 			Rectangle r = roi.getBoundingRect();
 			if ((r.width==0 || r.height==0)
-			&& !(roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE)
+			&& !(roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE)
 			&& !(roi instanceof TextRoi)
 			&& roi.getState()==roi.CONSTRUCTING)
 				imp.killRoi();
@@ -565,12 +566,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public void mouseMoved(MouseEvent e) {
 		if (ij==null) return;
-		int ox = offScreenX(e.getX());
-		int oy = offScreenY(e.getY());
+		int sx = e.getX();
+		int sy = e.getY();
+		int ox = offScreenX(sx);
+		int oy = offScreenY(sy);
+		flags = e.getModifiers();
 		//if (IJ.debugMode) IJ.log(e.getX() + " " + e.getY() + " " + ox + " " + oy);
-		setCursor(ox, oy);
+		setCursor(sx, sy, ox, oy);
 		Roi roi = imp.getRoi();
-		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE) 
+		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
 		&& roi.getState()==roi.CONSTRUCTING) {
 			PolygonRoi pRoi = (PolygonRoi)roi;
 			pRoi.handleMouseMove(ox, oy);
