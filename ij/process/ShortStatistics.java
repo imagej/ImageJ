@@ -107,14 +107,14 @@ public class ShortStatistics extends ImageStatistics {
 
 	void getCentroid(ImageProcessor ip, int minThreshold, int maxThreshold) {
 		short[] pixels = (short[])ip.getPixels();
-		int[] mask = ip.getMask();
+		byte[] mask = ip.getMaskArray();
 		boolean limit = minThreshold>0 || maxThreshold<65535;
 		int count=0, xsum=0, ysum=0,i,mi,v;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null||mask[mi++]==ip.BLACK) {
+				if (mask==null||mask[mi++]!=0) {
 					if (limit) {
 						v = pixels[i]&0xffff;
 						if (v>=minThreshold&&v<=maxThreshold) {
@@ -137,14 +137,14 @@ public class ShortStatistics extends ImageStatistics {
 
 	void getCenterOfMass(ImageProcessor ip,  int minThreshold, int maxThreshold) {
 		short[] pixels = (short[])ip.getPixels();
-		int[] mask = ip.getMask();
+		byte[] mask = ip.getMaskArray();
 		int i, mi, v;
 		double dv, count=0.0, xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null || mask[mi++]==ip.BLACK) {
+				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i]&0xffff;
 					if (v>=minThreshold&&v<=maxThreshold) {
 						count += v;

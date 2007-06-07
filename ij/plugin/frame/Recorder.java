@@ -14,18 +14,22 @@ import ij.process.*;
 import ij.measure.*;
 
 /** This is ImageJ's macro recorder. */
-public class Recorder extends PlugInFrame implements PlugIn, ActionListener, ItemListener {
+public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	/** This variable is true if the recorder is running. */
 	public static boolean record;
 	
-	private Button makeMacro,makePlugin;
-	private Checkbox recordCB;
+	/** Set this variable true to allow recording within IJ.run() calls. */
+	public static boolean recordInMacros;
+
+	private Button makeMacro, help;
+	private TextField macroName;
 	private String fitTypeStr = CurveFitter.fitList[0];
 	private static TextArea textArea;
 	private static Frame instance;
 	private static String commandName;
 	private static String commandOptions;
+	private static String defaultName = "Macro";
 
 	public Recorder() {
 		super("Recorder");
@@ -35,20 +39,23 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		}
 		WindowManager.addWindow(this);
 		instance = this;
-		Panel panel = new Panel();
 		record = true;
-		recordCB = new Checkbox("Record", record);
-		recordCB.addItemListener(this);
-		panel.add(recordCB);
-		makeMacro = new Button("Create Macro");
+		Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+		panel.add(new Label("Name:"));
+		macroName = new TextField(defaultName,15);
+		panel.add(macroName);
+		panel.add(new Label("     "));
+		makeMacro = new Button("Create");
 		makeMacro.addActionListener(this);
 		panel.add(makeMacro);
-		makePlugin = new Button("Create Plugin");
-		makePlugin.addActionListener(this);
-		panel.add(makePlugin);
+		panel.add(new Label("     "));
+		help = new Button("?");
+		help.addActionListener(this);
+		panel.add(help);
 		add("North", panel);
 		textArea = new TextArea("",15,60,TextArea.SCROLLBARS_VERTICAL_ONLY);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		//textArea.setBackground(Color.white);
 		add("Center", textArea);
 		pack();
 		GUI.center(this);
@@ -66,7 +73,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		not open or the command being recorded has called IJ.run(). 
 	*/
 	public static void setCommand(String command) {
-		if (textArea==null || Thread.currentThread().getName().startsWith("Run$_"))
+		if (textArea==null || (Thread.currentThread().getName().startsWith("Run$_")&&!recordInMacros))
 			return;
 		commandName = command;
 		commandOptions = null;
@@ -191,48 +198,51 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		return value;
 	}
 
-	void createPlugin() {
-		String text = textArea.getText();
-		if (text==null || text.equals("")) {
-			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
-			return;
-		}
-		StringTokenizer st = new StringTokenizer(text, "\n");
-		int n = st.countTokens();
-		String line;
-		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<n; i++) {
-			line = st.nextToken();
-			if (line!=null && line.length()>3) {
-				sb.append("\t\tIJ.");
-				sb.append(line);
-				sb.append('\n');
-			}
-		}
-		IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
-	}
-	
 	void createMacro() {
 		String text = textArea.getText();
-		if (text==null || text.equals(""))
+		if (text==null || text.equals("")) {
+			IJ.showMessage("Recorder", "A macro cannot be created until at least\none command hes been recorded.");
 			return;
+		}
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
-		ed.create("macro.txt", text);
+		String name = macroName.getText();
+		int dotIndex = name.lastIndexOf(".");
+		if (dotIndex>=0) name = name.substring(0, dotIndex);
+		name += ".txt";
+		ed.createMacro(name, text);
 	}
 	
-	public void itemStateChanged(ItemEvent e) {
-		record = recordCB.getState();
-	}
-
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource()==makeMacro)
 			createMacro();
-		else if (e.getSource()==makePlugin)
-			createPlugin();
+		else if (e.getSource()==help)
+			showHelp();
 	}
 
+    void showHelp() {
+    	IJ.showMessage("Recorder",
+			"Click \"Create\" to open recorded commands\n"  
+			+"as a macro in an editor window.\n" 
+			+" \n" 
+			+"In the editor:\n" 
+			+" \n"
+			+"    Type ctrl+R (File>Run Macro) to\n" 
+			+"    run the macro.\n"     
+			+" \n"    
+			+"    Use File>Save As to save it and\n" 
+			+"    ImageJ's Open command to open it.\n" 
+			+" \n"    
+			+"    To create a command, use File>Save As,\n"  
+			+"    add a '_' to the name, save in the \n" 
+			+"    plugins folder, and restart ImageJ.\n" 
+			+" \n"     
+			+"    Use Edit>Convert to Plugin to convert\n" 
+			+"    the macro to a plugin."
+		);
+    }
+    
     public void windowClosing(WindowEvent e) {
     	close();
 	}

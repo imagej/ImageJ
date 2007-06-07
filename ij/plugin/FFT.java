@@ -41,9 +41,10 @@ public class FFT implements  PlugIn, Measurements {
 			IJ.showMessage("FFT", "Frequency domain image required");
 			return;
 		}
-		if (fht!=null)
+		if (fht!=null) {
 			inverse = true;
-		else {
+			imp.killRoi();
+		} else {
 			if (imp.getRoi()!=null)
 				ip = ip.crop();
 			fht = newFHT(ip);

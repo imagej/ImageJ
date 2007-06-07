@@ -14,6 +14,7 @@ import ij.plugin.Animator;
 import ij.process.FloatBlitter;
 import ij.plugin.GelAnalyzer;
 import ij.plugin.JpegWriter;
+import ij.process.ColorProcessor;
 
 /**
 This class contains the ImageJ preferences, which are 
@@ -30,12 +31,13 @@ public class Prefs {
 	public static final String ROICOLOR = "roicolor";
 	public static final String JPEG = "jpeg";
 	public static final String FPS = "fps";
-    public static final String DIV_BY_ZERO_VALUE = "div-by-zero";   	
+    public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
     public static final String NOISE_SD = "noise.sd";
-      		
+    public static final String KEY_PREFIX = ".";
+ 
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
-		BLACK_BACKGROUND=16, JFILE_CHOOSER=32;  
-    public static final String OPTIONS = "prefs.options";   	
+		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNWEIGHTED=64, BLACK_CANVAS=128;  
+    public static final String OPTIONS = "prefs.options";
 
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
@@ -51,9 +53,13 @@ public class Prefs {
 	public static boolean blackBackground;
 	/** Use JFileChooser instead of FileDialog to open and save files. */
 	public static boolean useJFileChooser;
-	
-	static Properties prefs = new Properties();
-	static Properties props = new Properties(prefs);
+	/** Color to grayscale conversion is not weighted if the variable is true. */
+	public static boolean unweightedColor;
+	/** Use black image border. */
+	public static boolean blackCanvas;
+
+	static Properties ijPrefs = new Properties();
+	static Properties props = new Properties(ijPrefs);
 	static String prefsDir;
 	static String imagesURL;
 	static String homeDir; // ImageJ folder
@@ -89,7 +95,19 @@ public class Prefs {
 		loadOptions();
 		return null;
 	}
-	
+
+	/*
+	static void dumpPrefs(String title) {
+		IJ.log("");
+		IJ.log(title);
+		Enumeration e = ijPrefs.keys();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			IJ.log(key+": "+ijPrefs.getProperty(key));
+		}
+	}
+	*/
+
 	static String loadAppletProps(InputStream f, Applet applet) {
 		if (f==null)
 			return PROPS_NAME+" not found in ij.jar";
@@ -105,12 +123,12 @@ public class Prefs {
 		catch (Exception e) {}
 		return null;
 	}
-	
+
 	/** Returns the URL for the ImageJ sample images. */
 	public static String getImagesURL() {
 		return imagesURL;
 	}
-	
+
 	/** Returns the path to the ImageJ directory. */
 	public static String getHomeDir() {
 		return homeDir;
@@ -120,11 +138,11 @@ public class Prefs {
 	public static String getString(String key) {
 		return props.getProperty(key);
 	}
-	
+
 	/** Finds an string in IJ_Props or IJ_Prefs.txt. */
 	public static String getString(String key, String defaultString) {
 		if (props==null)
-			return defaultString;			
+			return defaultString;
 		String s = props.getProperty(key);
 		if (s==null)
 			return defaultString;
@@ -134,7 +152,7 @@ public class Prefs {
 
 	/** Finds a boolean in IJ_Props or IJ_Prefs.txt. */
 	public static boolean getBoolean(String key, boolean defaultValue) {
-		if (props==null) return defaultValue;			
+		if (props==null) return defaultValue;
 		String s = props.getProperty(key);
 		if (s==null)
 			return defaultValue;
@@ -145,20 +163,20 @@ public class Prefs {
 	/** Finds an int in IJ_Props or IJ_Prefs.txt. */
 	public static int getInt(String key, int defaultValue) {
 		if (props==null) //workaround for Netscape JIT bug
-			return defaultValue;			
+			return defaultValue;
 		String s = props.getProperty(key);
 		if (s!=null) {
 			try {
 				return Integer.decode(s).intValue();
 			} catch (NumberFormatException e) {IJ.write(""+e);}
-		}	
+		}
 		return defaultValue;
 	}
 
 	/** Looks up a real number in IJ_Props or IJ_Prefs.txt. */
 	public static double getDouble(String key, double defaultValue) {
 		if (props==null)
-			return defaultValue;			
+			return defaultValue;
 		String s = props.getProperty(key);
 		Double d = null;
 		if (s!=null) {
@@ -166,7 +184,7 @@ public class Prefs {
 			catch (NumberFormatException e){d = null;}
 			if (d!=null)
 				return(d.doubleValue());
-		}	
+		}
 		return defaultValue;
 	}
 
@@ -177,12 +195,12 @@ public class Prefs {
 			return defaultColor;
 		return new Color((i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF);
 	}
-	
+
 	/** Returns the file.separator system property. */
 	public static String getFileSeparator() {
 		return separator;
 	}
-	
+
 	/** Opens the IJ_Prefs.txt file. */
 	static void loadPreferences() {
 		String path = prefsDir+separator+PREFS_NAME;
@@ -193,13 +211,13 @@ public class Prefs {
 			if (ok)
 				new File(path).delete();
 		}
-		
+
 	}
-	
+
 	static boolean loadPrefs(String path) {
 		try {
 			InputStream is = new BufferedInputStream(new FileInputStream(path));
-			prefs.load(is);
+			ijPrefs.load(is);
 			is.close();
 			return true;
 		} catch (Exception e) {
@@ -221,7 +239,8 @@ public class Prefs {
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
 			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));
-			saveOptions(prefs);		
+			saveOptions(prefs);
+			savePluginPrefs(prefs);
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);
@@ -237,30 +256,105 @@ public class Prefs {
 			//PrintWriter pw = new PrintWriter(caw);
 			//e.printStackTrace(pw);
 			//IJ.write(caw.toString());
-			IJ.write("<<Unable to save preferences>>");
-			IJ.wait(2000);
+			IJ.log("<Unable to save preferences>");
+			IJ.wait(3000);
 		}
 	}
-			
+
 	static void loadOptions() {
 		int options = getInt(OPTIONS, ANTIALIASING);
-		usePointerCursor = (options&USE_POINTER)!=0;		
+		usePointerCursor = (options&USE_POINTER)!=0;
 		antialiasedText = (options&ANTIALIASING)!=0;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
 		blackBackground = (options&BLACK_BACKGROUND)!=0;
 		useJFileChooser = (options&JFILE_CHOOSER)!=0;
+		unweightedColor = (options&UNWEIGHTED)!=0;
+		if (unweightedColor)
+			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
+		blackCanvas = (options&BLACK_CANVAS)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
 		int options = (usePointerCursor?USE_POINTER:0) + (antialiasedText?ANTIALIASING:0)
 			+ (interpolateScaledImages?INTERPOLATE:0) + (open100Percent?ONE_HUNDRED_PERCENT:0)
-			+ (blackBackground?BLACK_BACKGROUND:0) + (useJFileChooser?JFILE_CHOOSER:0);
+			+ (blackBackground?BLACK_BACKGROUND:0) + (useJFileChooser?JFILE_CHOOSER:0)
+			+ (unweightedColor?UNWEIGHTED:0) + (blackCanvas?BLACK_CANVAS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
-	
-	static void savePrefs(Properties prefs, String path) throws IOException{
+
+	/** Saves the value of the string <code>text</code> in the preferences
+		file using the keyword <code>key</code>. This string can be 
+		retrieved using the appropriate <code>get()</code> method. */
+	public static void set(String key, String text) {
+		if (key.indexOf('.')<1)
+			throw new IllegalArgumentException("Key must have a prefix");
+		ijPrefs.put(KEY_PREFIX+key, text);
+	}
+
+	/** Saves <code>value</code> in the preferences file using 
+		the keyword <code>key</code>. This value can be retrieved 
+		using the appropriate <code>getPref()</code> method. */
+	public static void set(String key, double value) {
+		set(key, ""+value);
+	}
+
+	/** Saves the boolean variable <code>value</code> in the preferences
+		 file using the keyword <code>key</code>. This value can be retrieved 
+		using the appropriate <code>getPref()</code> method. */
+	public static void set(String key, boolean value) {
+		set (key, ""+value);
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a string from the
+		preferences file. Returns <code>defaultValue</code> if the key
+		is not found. */
+	public static String get(String key, String defaultValue) {
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value == null)
+			return defaultValue;
+		else
+			return value;
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a number from the
+		preferences file. Returns <code>defaultValue</code> if the key
+		is not found. */
+	public static double get(String key, double defaultValue) {
+		String s = ijPrefs.getProperty(KEY_PREFIX+key);
+		Double d = null;
+		if (s!=null) {
+			try {d = new Double(s);}
+			catch (NumberFormatException e) {d = null;}
+			if (d!=null)
+				return(d.doubleValue());
+		}
+		return defaultValue;
+	}
+
+	/** Uses the keyword <code>key</code> to retrieve a boolean from
+		the preferences file. Returns <code>defaultValue</code> if
+		the key is not found. */
+	public static boolean get(String key, boolean defaultValue) {
+		String value = ijPrefs.getProperty(KEY_PREFIX+key);
+		if (value==null)
+			return defaultValue;
+		else
+			return value.equals("true");
+	}
+
+	/** Save plugin preferences. */
+	static void savePluginPrefs(Properties prefs) {
+		Enumeration e = ijPrefs.keys();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			if (key.indexOf(KEY_PREFIX) == 0)
+				prefs.put(key, ijPrefs.getProperty(key));
+		}
+	}
+
+	public static void savePrefs(Properties prefs, String path) throws IOException{
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 		PrintWriter pw = new PrintWriter(bos);
@@ -275,7 +369,7 @@ public class Prefs {
 		}
 		pw.close();
 	}
-	
+
 	static String escapeBackSlashes (String s) {
 		StringBuffer sb = new StringBuffer(s.length()+10);
 		char[] chars = s.toCharArray();

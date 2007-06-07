@@ -64,7 +64,7 @@ class FitsDecoder {
 
     FileInfo getInfo() throws IOException {
         FileInfo fi = new FileInfo();
-        fi.fileFormat = fi.FITS;
+        fi.fileFormat = FileInfo.FITS;
         fi.fileName = fileName;
         fi.directory = directory;
         fi.width = 0;
@@ -72,17 +72,47 @@ class FitsDecoder {
         fi.offset = 0;
 
         f = new DataInputStream(new FileInputStream(directory + fileName));
-        String s = getString(80);
-        info.append(s+"\n");
-        if (!s.startsWith("SIMPLE"))
+        String line = getString(80);
+        info.append(line+"\n");
+        if (!line.startsWith("SIMPLE"))
             {f.close(); return null;}
         int count = 1;
-        do {
+        while ( true )
+        {
             count++;
-            s = getString(80);
-            info.append(s+"\n");
-            if (s.startsWith("BITPIX")) {
-                int bitsPerPixel = getInteger(s);
+            line = getString(80);
+			info.append(line+"\n");
+
+            // Cut the key/value pair
+			int index = line.indexOf ( "=" );
+
+			// Strip out comments
+			int commentIndex = line.indexOf ( "/", index );
+			if ( commentIndex < 0 )
+			{
+				commentIndex = line.length ();
+			}
+			
+			// Split that values
+			String key;
+			String value;
+			if ( index >= 0 )
+			{
+				key = line.substring ( 0, index ).trim ();
+				value = line.substring ( index + 1, commentIndex ).trim ();
+			}
+			else
+			{
+				key = line.trim ();
+				value = "";
+			}
+
+			// Time to stop ?
+			if (key.equals ("END") ) break;
+
+			// Look for interesting information			
+            if (key.equals("BITPIX")) {
+                int bitsPerPixel = Integer.parseInt ( value );
                if (bitsPerPixel==8)
                     fi.fileType = FileInfo.GRAY8;
                 else if (bitsPerPixel==16)
@@ -96,19 +126,21 @@ class FitsDecoder {
                     f.close();
                     return null;
                 }
-            } else if (s.startsWith("NAXIS1"))
-                fi.width = getInteger(s);
-            else if (s.startsWith("NAXIS2"))
-                fi.height = getInteger(s);
-            else if (s.startsWith("NAXIS3")) //for multi-frame fits
-                fi.nImages = getInteger(s);
-            else if (s.startsWith("BSCALE"))
-                bscale = getFloat(s);
-            else if (s.startsWith("BZERO"))
-                bzero = getFloat(s);
+            } else if (key.equals("NAXIS1"))
+                fi.width = Integer.parseInt ( value );
+            else if (key.equals("NAXIS2"))
+                fi.height = Integer.parseInt( value );
+            else if (key.equals("NAXIS3")) //for multi-frame fits
+                fi.nImages = Integer.parseInt ( value );
+            else if (key.equals("BSCALE"))
+                bscale = parseDouble ( value );
+            else if (key.equals("BZERO"))
+                bzero = parseDouble ( value );
+
 			if (count>360 && fi.width==0)
 				{f.close(); return null;}
-        } while (!s.startsWith("END"));
+        }
+
         f.close();
         fi.offset = 2880+2880*(((count*80)-1)/2880);
         return fi;
@@ -126,21 +158,13 @@ class FitsDecoder {
         return Integer.parseInt(s);
     }
 
-    double getFloat(String s) {
-        s = s.substring(10, 30);
-        s = s.trim();
-        Double d;
-        try {d = new Double(s);}
-        catch (NumberFormatException e){d = null;}
-        if (d!=null)
-            return(d.doubleValue());
-        else
-            return 0.0;
-    }
+	double parseDouble(String s) throws NumberFormatException {
+		Double d = new Double(s);
+		return d.doubleValue();
+	}
 
     String getHeaderInfo() {
         return new String(info);
     }
 
 }
-

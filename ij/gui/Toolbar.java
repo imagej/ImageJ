@@ -8,7 +8,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.MacroInstaller;
 
 /** The ImageJ toolbar. */
-public class Toolbar extends Canvas implements MouseListener {
+public class Toolbar extends Canvas implements MouseListener, MouseMotionListener {
 
 	public static final int RECTANGLE = 0;
 	public static final int OVAL = 1;
@@ -70,6 +70,7 @@ public class Toolbar extends Canvas implements MouseListener {
 		setBackground(gray);
 		//setBackground(Color.red);
 		addMouseListener(this);
+		addMouseMotionListener(this);
 		instance = this;
 	}
 
@@ -228,6 +229,7 @@ public class Toolbar extends Canvas implements MouseListener {
 				case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
 				case 'C': g.setColor(new Color(v()*16,v()*16,v()*16)); break; // set color
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
+				case 'D': g.drawLine(x1=x+v(), x2=y+v(), x1, x2); break; // dot
 				case 'P': // polyline
 					x1=x+v(); y1=y+v();
 					while (true) {
@@ -497,6 +499,7 @@ public class Toolbar extends Canvas implements MouseListener {
 	public void mouseExited(MouseEvent e) {}
 	public void mouseClicked(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
+    public void mouseDragged(MouseEvent e) {}
 	
 	public Dimension getPreferredSize(){
 		return ps;
@@ -506,6 +509,12 @@ public class Toolbar extends Canvas implements MouseListener {
 		return ps;
 	}
 	
+	public void mouseMoved(MouseEvent e) {
+		int x = e.getX();
+		x=toolID(x/SIZE);
+		showMessage(x);
+	}
+
 	/** Enables the unused tool between the text and zoom tools. The 'toolTip' string 
 		is displayed in the status bar when the user clicks on the tool. If the 'toolTip'
 		string includes an icon (see Tools.txt macro), enables the next available tool

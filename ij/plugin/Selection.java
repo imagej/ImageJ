@@ -31,6 +31,8 @@ public class Selection implements PlugIn {
     		convexHull(imp);
     	else if (arg.equals("mask"))
     		createMask(imp);    	
+    	else if (arg.equals("inverse"))
+    		invert(imp);    	
 	}
 	
 	void fitSpline() {
@@ -72,7 +74,7 @@ public class Selection implements PlugIn {
 		int[] y = roi.getYCoordinates();
 		int n = roi.getNCoordinates();
 		float[] curvature = getCurvature(x, y, n);
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		double threshold = rodbard(length);
 		//IJ.log("trim: "+length+" "+threshold);
 		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
@@ -163,7 +165,7 @@ public class Selection implements PlugIn {
 		int n = roi.getNCoordinates();
 		int[] xCoordinates = roi.getXCoordinates();
 		int[] yCoordinates = roi.getYCoordinates();
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		int xbase = r.x;
 		int ybase = r.y;
 		int[] xx = new int[n];
@@ -223,7 +225,7 @@ public class Selection implements PlugIn {
 	
 	void createMask(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (roi==null || roi.getType()>Roi.TRACED_ROI)
+		if (roi==null || !roi.isArea())
 			{IJ.showMessage("Create Mask", "Area selection required"); return;}
 		ImagePlus maskImp = null;
 		Frame frame = WindowManager.getFrame("Mask");
@@ -235,15 +237,27 @@ public class Selection implements PlugIn {
 			maskImp = new ImagePlus("Mask", ip);
 			maskImp.show();
 		}
-		maskImp.setRoi((Roi)roi.clone());
-		int[] mask = maskImp.getMask();
 		ImageProcessor ip = maskImp.getProcessor();
+		ip.setRoi(roi);
 		ip.setValue(255);
-		Rectangle r = ip.getRoi();
-		if (mask!=null && mask.length==r.width*r.height || mask==null)
-			ip.fill(mask);
-		maskImp.killRoi();
+		ip.fill(ip.getMask());
 		maskImp.updateAndDraw();
+	}
+
+	void invert(ImagePlus imp) {
+		if (!IJ.isJava2())
+			{IJ.showMessage("Inverse", "Java 1.2 or later required"); return;}
+		Roi roi = imp.getRoi();
+		if (roi==null || !roi.isArea())
+			{IJ.showMessage("Inverse", "Area selection required"); return;}
+		ShapeRoi s1, s2;
+		if (roi instanceof ShapeRoi)
+			s1 = (ShapeRoi)roi;
+		else
+			s1 = new ShapeRoi(roi);
+		
+		s2 = new ShapeRoi(new Roi(0,0, imp.getWidth(), imp.getHeight()));
+		imp.setRoi(s1.xor(s2));
 	}
 
 }

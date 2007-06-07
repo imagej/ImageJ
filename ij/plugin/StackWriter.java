@@ -13,6 +13,7 @@ public class StackWriter implements PlugIn {
 	private static String[] choices = {"Tiff","Gif","Jpeg","Bmp", "Raw","Zip","Text"};
 	private static String fileType = "Tiff";
 	private static int ndigits = 4;
+	private static int startAt;
 	private static boolean useLabels;
 	//private static boolean startAtZero;
 
@@ -31,6 +32,7 @@ public class StackWriter implements PlugIn {
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
 		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
+		gd.addNumericField("Start At:", startAt, 0);
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
 		gd.addCheckbox("Use Slice Labels as File Names", useLabels);
 		gd.showDialog();
@@ -38,6 +40,8 @@ public class StackWriter implements PlugIn {
 			return;
 		fileType = gd.getNextChoice();
 		name = gd.getNextString();
+		startAt = (int)gd.getNextNumber();
+		if (startAt<0) startAt = 0;
 		ndigits = (int)gd.getNextNumber();
 		useLabels = gd.getNextBoolean();
 		int number = 0;
@@ -130,8 +134,8 @@ public class StackWriter implements PlugIn {
 	}
 	
 	String getDigits(int n) {
-		String digits = "00000000"+n;
-		return digits.substring(digits.length()-ndigits,digits.length());
+		String digits = "00000000"+(startAt+n);
+		return digits.substring(digits.length()-ndigits);
 	}
 	
 }

@@ -82,11 +82,9 @@ public final class RandomAccessStream extends InputStream {
     	int len = bytes.length;
         do {
             int l = read(bytes, read, len - read);
-            if(l < 0)
-                throw new EOFException();
+            if(l < 0) break;
             read += l;
-        }
-        while(read<len);
+        } while (read<len);
     }
 
     private int readUntil(int l) throws IOException {

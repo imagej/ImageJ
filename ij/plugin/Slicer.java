@@ -18,6 +18,19 @@ public class Slicer implements PlugIn {
 	private ImageWindow win;
 	private boolean noRoi;
 	private boolean rgb;
+	private Polygon irregularLine;
+	
+	// Variables used by getIrregularProfile and doIrregularSetup
+	private int n;
+	private double[] x;
+	private  double[] y;
+	private int xbase;
+	private int ybase;
+	private double length;
+	private double segmentLength;
+	private double[] segmentLengths;
+	private double[] dx;
+	private double[] dy;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -142,7 +155,7 @@ public class Slicer implements PlugIn {
 			roi = imp.getRoi();
 		}
 		if (roi.getType()==Roi.RECTANGLE) {
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			if (startAt.equals(starts[0])) { // top
 				x1 = r.x;
 				y1 = r.y;
@@ -204,6 +217,7 @@ public class Slicer implements PlugIn {
 			drawLine(x1, y1, x2, y2, imp);
 			if (stack==null)
 				stack = new ImageStack(ip.getWidth(), ip.getHeight());
+			//if (IJ.debugMode) IJ.log("Slicer: "+i+" "+ip.getWidth()+"x"+ip.getHeight());
 			stack.addSlice(null, ip);
 			x1 += xInc;
 			x2 += xInc;
@@ -271,27 +285,8 @@ public class Slicer implements PlugIn {
 	}
 
 	float[] getIrregularProfile(Roi roi, ImageProcessor ip) {
-		int n = ((PolygonRoi)roi).getNCoordinates();
-		int[] x = ((PolygonRoi)roi).getXCoordinates();
-		int[] y = ((PolygonRoi)roi).getYCoordinates();
-		Rectangle r = roi.getBoundingRect();
-		int xbase = r.x;
-		int ybase = r.y;
-		double length = 0.0;
-		double segmentLength;
-		int xdelta, ydelta, iLength;
-		double[] segmentLengths = new double[n];
-		int[] dx = new int[n];
-		int[] dy = new int[n];
-		for (int i=0; i<(n-1); i++) {
-			xdelta = x[i+1] - x[i];
-			ydelta = y[i+1] - y[i];
-			segmentLength = Math.sqrt(xdelta*xdelta+ydelta*ydelta);
-			length += segmentLength;
-			segmentLengths[i] = segmentLength;
-			dx[i] = xdelta;
-			dy[i] = ydelta;
-		}
+		if (x==null)
+			doIrregularSetup(roi);
 		float[] values = new float[(int)length];
 		double leftOver = 1.0;
 		double distance = 0.0;
@@ -332,7 +327,44 @@ public class Slicer implements PlugIn {
 		return values;
 
 	}
-
+	
+	void doIrregularSetup(Roi roi) {
+		n = ((PolygonRoi)roi).getNCoordinates();
+		int[] ix = ((PolygonRoi)roi).getXCoordinates();
+		int[] iy = ((PolygonRoi)roi).getYCoordinates();
+		x = new double[n];
+		y = new double[n];
+		for (int i=0; i<n; i++) {
+			x[i] = ix[i];
+			y[i] = iy[i];
+		}
+		if (roi.getType()==Roi.FREELINE) {
+			// smooth line
+			for (int i=1; i<n-1; i++) {
+				x[i] = (x[i-1] + x[i] + x[i+1])/3.0+0.5;
+				y[i] = (y[i-1] + y[i] + y[i+1])/3.0+0.5;
+			}
+		}
+		Rectangle r = roi.getBounds();
+		xbase = r.x;
+		ybase = r.y;
+		length = 0.0;
+		double segmentLength;
+		double xdelta, ydelta;
+		segmentLengths = new double[n];
+		dx = new double[n];
+		dy = new double[n];
+		for (int i=0; i<(n-1); i++) {
+			xdelta = x[i+1] - x[i];
+			ydelta = y[i+1] - y[i];
+			segmentLength = Math.sqrt(xdelta*xdelta+ydelta*ydelta);
+			length += segmentLength;
+			segmentLengths[i] = segmentLength;
+			dx[i] = xdelta;
+			dy[i] = ydelta;
+		}
+	}
+	
 	private float[] getLine(ImageProcessor ip, double x1, double y1, double x2, double y2, float[] data) {
 		double dx = x2-x1;
 		double dy = y2-y1;

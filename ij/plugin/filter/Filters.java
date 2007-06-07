@@ -19,7 +19,7 @@ public class Filters implements PlugInFilter {
 		this.imp = imp;
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi.getType()>Roi.TRACED_ROI)
+			if (roi!=null && !roi.isArea())
 				imp.killRoi(); // ignore any line selection
 		}
 		return IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
@@ -77,5 +77,5 @@ public class Filters implements PlugInFilter {
 	public static double getSD() {
 		return sd;
 	}
-
+	
 }

@@ -205,7 +205,7 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the image in JBMP format using a save file. 
+	/** Save the image in BMP format using a save file dialog. 
 		Returns false if the user selects cancel. */
 	public boolean saveAsBmp() {
 		String path = getPath("BMP", ".bmp");
@@ -219,6 +219,30 @@ public class FileSaver {
 	public boolean saveAsBmp(String path) {
 		WindowManager.setTempCurrentImage(imp);
 		IJ.runPlugIn("ij.plugin.BMP_Writer", path);
+		WindowManager.setTempCurrentImage(null);
+		return true;
+	}
+
+	/** Save the image in PNG format using a save file dialog. 
+		Returns false if the user selects cancel. Requires
+		java 1.4 or later. */
+	public boolean saveAsPng() {
+		if (!IJ.isJava14()) {
+			IJ.showMessage("Save As PNG", "Java 1.4 or later required");
+			return false;
+		}
+		String path = getPath("PNG", ".png");
+		if (path==null)
+			return false;
+		else
+			return saveAsPng(path);
+	}
+
+	/** Save the image in PNG format using the specified path. 
+		Requires Java 1,4 or later. */
+	public boolean saveAsPng(String path) {
+		WindowManager.setTempCurrentImage(imp);
+		IJ.runPlugIn("ij.plugin.PNG_Writer", path);
 		WindowManager.setTempCurrentImage(null);
 		return true;
 	}

@@ -20,7 +20,7 @@ public class Scaler implements PlugInFilter {
 		IJ.register(Scaler.class);
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi.getType()>Roi.TRACED_ROI)
+			if (roi!=null && !roi.isArea())
 				imp.killRoi(); // ignore any line selection
 		}
 		return DOES_ALL;

@@ -1,4 +1,5 @@
 package ij.process;
+//import ij.*;
 import java.awt.*;
 
 /** This class processes binary images. */
@@ -70,21 +71,26 @@ public class BinaryProcessor extends ByteProcessor {
 		by Zhang and Suen (CACM, March 1984, 236-239). There is
 		an entry in the table for each of the 256 possible 3x3 neighborhood
 		configurations. An entry of '1' means delete pixel on first pass, '2' means
-		delete pixel on second pass, and '3' means delete on either pass. There is a
-		routine in 'user.p' that draws all 256 neighborhoods. */
+		delete pixel on second pass, and '3' means delete on either pass. A graphical
+		representation of the 256 neighborhoods indexed by the table is available
+		at "http://rsb.info.nih.gov/ij/images/skeletonize-table.gif".
+	*/
 	public void  skeletonize() {
 		int[] table  =
 				//0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1
 				 {0,0,0,1,0,0,1,3,0,0,3,1,1,0,1,3,0,0,0,0,0,0,0,0,2,0,2,0,3,0,3,3,
-				 0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,3,0,2,2,
-				 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-				 2,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,3,0,2,0,
-				 0,1,3,1,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-				 3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-				 2,3,1,3,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-				 2,3,0,1,0,0,0,1,0,0,0,0,0,0,0,0,3,3,0,1,0,0,0,0,2,2,0,0,2,0,0,0};
+				  0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,3,0,2,2,
+				  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				  2,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,3,0,2,0,
+				  0,0,3,1,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+				  3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				  2,3,1,3,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+				  2,3,0,1,0,0,0,1,0,0,0,0,0,0,0,0,3,3,0,1,0,0,0,0,2,2,0,0,2,0,0,0};
 		int pass = 0;
 		int pixelsRemoved;
+		//ImageStack movie=null;
+		//boolean debug = IJ.altKeyDown();
+		//if (debug) movie = new ImageStack(width, height);
 		do {
 			setColor(Color.white);
 			if (roiX==0) {moveTo(0,0); lineTo(0,height-1);}
@@ -92,11 +98,14 @@ public class BinaryProcessor extends ByteProcessor {
 			if (roiWidth==width) {moveTo(width-1,0); lineTo(width-1,height-1);}
 			if (roiHeight==height) {moveTo(0,height-1); lineTo(width/*-1*/,height-1);}
 			snapshot();
+			//if (debug) movie.addSlice(""+pass, duplicate());
 			pixelsRemoved = thin(pass++, table);
 			snapshot();
+			//if (debug) movie.addSlice(""+pass, duplicate());
 			pixelsRemoved = thin(pass++, table);
 			//ij.IJ.write(pass+" "+pixelsRemoved);
 		} while (pixelsRemoved>0);
+		//if (debug) new ImagePlus("Skel Movie", movie).show();
 	}
 
 	int thin(int pass, int[] table) {

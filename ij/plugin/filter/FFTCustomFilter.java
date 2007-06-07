@@ -28,7 +28,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
  			{IJ.noImage(); return DONE;}
  		stackSize = imp.getStackSize();
 		if (imp.getProperty("FHT")!=null) {
-			IJ.showMessage("FFT", "Frequency domain image required");
+			IJ.showMessage("FFT Custom Filter", "Ordinary (non-FFT) image required");
 			return DONE;
 		}
 		else

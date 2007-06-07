@@ -23,19 +23,18 @@ import ij.text.TextWindow;
  *
  *
  *
- * <br>Created: Tue Dec  5 00:52:15 2000; Modified 2004-01-27
+ * <br>Created: Tue Dec  5 00:52:15 2000; Modified 05/03/2004
  * <p>
  * </p>
  * @author Cezar M. Tigaret <c.tigaret@ucl.ac.uk>
- * @version 1.0f
+ * @version 1.0g
  */
 public class ControlPanel implements PlugIn
 {
 
-
 	private static final String pluginsPath=Menus.getPlugInsPath();
 
-	private static final String pcpVersion="1.0f";
+	private static final String pcpVersion="1.0g";
 
 	/** The platform-specific file separator string.*/
 	private static final String fileSeparator=System.getProperty("file.separator");
@@ -56,6 +55,7 @@ public class ControlPanel implements PlugIn
 	private Vector visiblePanels = new Vector();
 	private Vector expandedNodes = new Vector();
 	private String defaultArg = "";
+	String currentArg = "";
 
 	private Properties pcpProperties=new Properties();
 	private File pcpPropsFile=new File(System.getProperty("user.home")+System.getProperty("file.separator")+"PCPanel2.ini");
@@ -63,6 +63,9 @@ public class ControlPanel implements PlugIn
 	private boolean propertiesChanged=true;
 	private boolean closeChildPanelOnExpand = true;
 	private boolean requireDoubleClick=false;
+	private boolean quitting = true;
+
+	//private static boolean running = true;
 
 	TreePanel panel;
 
@@ -78,8 +81,9 @@ public class ControlPanel implements PlugIn
 	private String path=null;
 	private DefaultMutableTreeNode root;
 
-	private static String pcpDir=null;
+	MenuItem reloadMI = null;
 
+	//private static String pcpDir=null;
 
 	public ControlPanel()
 	{
@@ -87,22 +91,22 @@ public class ControlPanel implements PlugIn
 			IJ.error("This command requires Java 1.2 or later");
 			return;
 		}
-		commands = Menus.getCommands();
-		pluginsArray = Menus.getPlugins();
 		requireDoubleClick = !(IJ.isWindows() || IJ.isMacintosh());
 		Java2.setSystemLookAndFeel();
 	}
 
 
-	/** Creates a panel with the hierarchical tree structure of (some of) Imagej's commands according to the structure
+	/** Creates a panel with the hierarchical tree structure of (some of the) ImageJ's commands according to the structure
 	 * of the String argument (see below).
 	 *
-	 * @param arg String (optional) = a semi-colon -- separated list of one or more tokens:<br>
-	 * "imagej menus" creates a tree with all of ImageJ's menu structure, that means it replicates in tree
-	 * form ImageJ's menu bar; this includes any jar plugin and user plugins
-	 * "user plugins" creates a tree with loose user plugins (not "jar plugins")<br>
-	 * "imagej commands" creates a tree with all ImageJ's commands<br>
-	 * "about" will not create a tree panel; instead, it will show a brief help message<br>
+	 * @param arg String (optional): a semi-colon - separated list of one or more tokens:<br>
+	 * <dl>
+	 * <dt>"imagej menus"</dt><dd>creates a tree with all of ImageJ's menu structure, that means it replicates in tree
+	 * form the ImageJ's menu bar; this includes any jar plugin and user plugins</dd>
+	 * <dt>"user plugins"</dt><dd>creates a tree with loose user plugins (not "jar plugins")</dd>
+	 * <dt>"imagej commands"</dt><dd>creates a tree with all ImageJ's commands</dd>
+	 * <dt>"about"</dt><dd>will not create a tree panel; instead, it will show a brief help message</dd>
+	 * </dl>
 	 * If there is more than one token, a subtree will be created for each token, and added to a common root tree.
 	 * If the "about" token is also present, a help essage will be displayed<br>
 	 * If the argument is missing, a panel with all of ImageJ's menus will be created as if "imagej menus" was passed as argument.<br>
@@ -115,9 +119,23 @@ public class ControlPanel implements PlugIn
 		//IJ.write("***** MARK *****");
 		if (!IJ.isJava2()) //wsr
 			return;
-		arg = (arg.length()==0) ? defaultArg : arg;
-		argLength = arg.length();
-		root=buildTree(arg);
+		currentArg = (arg.length()==0) ? defaultArg : arg;
+		argLength = currentArg.length();
+// 		IJ.getInstance().setControlPanel(this);
+		load();
+		//IJ.write("thread: "+Thread.currentThread().getName());
+	}
+
+
+	/* *********************************************************************** */
+	/*                             Tree logic                                  */
+	/* *********************************************************************** */
+
+	synchronized void load()
+	{
+		commands = Menus.getCommands();
+		pluginsArray = Menus.getPlugins();
+		root=buildTree(currentArg);
 		if(root==null | root.getChildCount()==0 ) return; // do nothing if there's no tree or a root w/o children
 		loadProperties();
 		restoreVisiblePanels();
@@ -128,10 +146,15 @@ public class ControlPanel implements PlugIn
 		}
 	}
 
-	/* *********************************************************************** */
-	/*                             Tree logic                                  */
-	/* *********************************************************************** */
-
+	/**Constructs the root TreeNode of the ControlPanel.
+	 * If a non-empty argument is passed, then for each token in the argument this method
+	 * delegates the construction of the TreeNode to the
+	 * <code>doRoot(String)</code> method. Else, this method delegates to the
+	 * <code>doRootFromMenus()</code> method.
+	 * @param arg See {@see run(String)} comments for what arguments are allowed.
+	 * @return a DefaultMutableTreeNode populated according to the argument.
+	 * @see doRoot(String)
+	 */
 	DefaultMutableTreeNode buildTree(String arg)
 	{
 		DefaultMutableTreeNode rootNode = null;
@@ -155,14 +178,25 @@ public class ControlPanel implements PlugIn
 		return rootNode;
 	}
 
+	/**Constructs a TreeNode according to the argument.
+	 * The argument has the canonical form described in the {@link run()} method. If the argument
+	 * is <strong><code>null</code></strong> or empty, this method returns a TreeNode with an
+	 * empty string as its user object and without children.<br>
+	 * For the token "imagej menus", this method delegates to the {@link doRootFromMenus()};
+	 * for any other valid token, the method delegates to {@link populateNode(Hashtable, DefaultMutableTreeNode)}.
+	 * @param arg See {@see run(String)} comments for a full description.
+	 * @return a DefaultMutableTreeNode constructed on the String argument as its "user object"
+	 * and populated with children according to the rules stated above.
+	 */
 	private DefaultMutableTreeNode doRoot(String arg)
 	{
 		DefaultMutableTreeNode node = null;
+		if(arg==null || arg.length()==0) node = new DefaultMutableTreeNode("");
 		if(arg.equals("user plugins"))
 		{
 			node = new DefaultMutableTreeNode("User Plugins");
 			if(argLength==0) node.setUserObject("Control Panel");
-			retrieveItems(pluginsArray,null,node);
+			populateNode(pluginsArray,null,node);
 		}
 		if(arg.equals("imagej menus"))
 		{
@@ -172,7 +206,7 @@ public class ControlPanel implements PlugIn
 		{
 			node = new DefaultMutableTreeNode("ImageJ Commands");
 			if(argLength==0) node.setUserObject("Control Panel");
-			retrieveItems(commands,node);
+			populateNode(commands,node);
 		}
 		if(arg.equals("about"))
 		{
@@ -184,9 +218,10 @@ public class ControlPanel implements PlugIn
 
 	/** Builds up a root tree from ImageJ's menu bar.
 	 * The root tree replicates ImageJ's menu bar with its menus and their submenus.
+	 * Delegates to the {@link recursesubMenu(Menu, DefaultMutableTreeNode} method to gather the root children.
 	 *
 	 */
-	private DefaultMutableTreeNode doRootFromMenus()
+	private synchronized DefaultMutableTreeNode doRootFromMenus()
 	{
 		DefaultMutableTreeNode node = new DefaultMutableTreeNode("ImageJ Menus");
 		if(argLength==0) node.setUserObject("Control Panel");
@@ -201,10 +236,16 @@ public class ControlPanel implements PlugIn
 		return node;
 	}
 
-	/** Recursively builds up a tree structure from a menu.
+	/**Recursively builds up a tree structure from the Menu argument, by populating the TreeNode argument
+	 * with children TreeNode objects constructed on the menu items.
 	 * Descendants can be intermediate-level nodes (submenus) or leaf nodes (i.e., no children).
 	 * Leaf nodes will only be added if there are any commands associated with them, i.e.
 	 * their labels correspond to keys in the hashtable returned by <code>ij.Menus.getCommands()</code>
+	 * except for the "Reload Plugins" menu item, for which a local action command string is assigned
+	 * to avoid clashes with the action fired from ImageJ Plugins->Utilties->Reload Plugins
+	 * menu item.<br>
+	 * <strong>Note: </strong> this method bypasses the tree buildup based on the
+	 * {@link populateNode(Hashtable,DefaultMutableTreeNode)} method.
 	 * @param menu The Menu instance to be searched recursively for menu items
 	 * @param node The DefaultMutableTreeNode corresponding to the <code>Menu menu</code> argument.
 	 */
@@ -228,14 +269,27 @@ public class ControlPanel implements PlugIn
 				{
 					DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(label);
 					node.add(leaf);
+					if(treeCommands==null) treeCommands = new Hashtable();
+					if(label.equals("Reload Plugins"))
+					{
+						reloadMI = mItem;
+						treeCommands.put(label,"Reload Plugins From Panel");
+					}
 				}
 			}
 		}
 	}
 
-	// extract from Hashtable collection the keys into labels[]
-	// and the values into items[]
-	private void retrieveItems
+	/**Populates the <code>node</code> argument with items retrieved from the collection.
+	 * Actually, the method delegates to {@link populateNode{String[], String[], DefaultMutableTreeNode)}.
+	 * @param collection Hashtable with `keys' (java.lang.String) representing a tree path which
+	 * is to be added to this node, but excludes it; the path extends to the last child (leaf node).
+   * The `values' are (java.lang.String) as labels and user objects for the last child of the path.
+	 * Actually, <code><strong>null<strong></code> elements for labels are allowed, in which case
+	 * the last child will be constructed on the last token in the `key'.
+	 * @param node The TreeNode to be populated.
+	 */
+	private void populateNode
 	(
 		Hashtable collection,
 		DefaultMutableTreeNode node
@@ -255,17 +309,25 @@ public class ControlPanel implements PlugIn
 		{
 			items[i] = (String)collection.get(labels[i]); //values into items[]
 		}
-		retrieveItems(items,labels,node);
+		populateNode(items,labels,node);
 	}
 
-	private void retrieveItems
+	/**Populates the <code>node</code> argument with items retrieved from the two String[] arguments.
+	 * Delegates indirectly to {@link buildTreePath(String.String,String,DefaultMutableTreeNode)} to do the job.
+	 * If either arguments are empty (i.e., length=0) or have different sizes, the method does nothing.
+	 * @param items String array where each element is the source of a tree path (see {@see buildTreePath(String, String, DefaultMutableTreeNode)}
+	 * and {@see buildTreePath(String,String,String,DefaultMutableTreeNode)}.
+	 * @param labels String array where each element is the label of the root of the tree path
+	 * @param node The TreeNode to be populated
+	 */
+	private void populateNode
 	(
 		String[] items,
 		String[] labels,
 		DefaultMutableTreeNode node
 	)
 	{
-		if(items.length==0) return;
+		if(items.length==0 || items.length!=labels.length) return;
 		String label=null;
 		for (int i=0; i<items.length; i++)
 		{
@@ -275,6 +337,11 @@ public class ControlPanel implements PlugIn
 		}
 	}
 
+	/**Short-hand for the four-argument <code>buildTreePath</code> method.
+	 * Calls <code>buildTreePath(source,label,<strong>null</strong>,topNode)</code>.
+	 * @see buildTreePath(String,String,String,DefaultMutableTreeNode).
+	 *
+	 */
 	private void buildTreePath
 	(
 		String source,
@@ -282,13 +349,20 @@ public class ControlPanel implements PlugIn
 		DefaultMutableTreeNode topNode
 	)
 	{
+/*		IJ.write("source "+source);
+		if(source.endsWith("Reload Plugins"))
+			buildTreePath(source, label, "Reload Plugins From Panel", topNode);
+		else*/
 		buildTreePath(source, label, null, topNode);
 	}
 
 	/**Builds up a tree path structure.
+	 * Populates the <code>node</code> argument with a tree path constructed as described below:
    * @param source String to be parsed in a tree path; must be composed of tokens delimited by "/"
-	 * @param label The label (String) of the leaf node for this path.
+	 * @param label The label (String) of the leaf node for this path. If <code><strong>null</strong></code>
+	 * then the leafe nod will be constructed from the last token.
 	 * @param command The command string of the action event fired upon clicking the leaf node.
+	 * If <code><strong>null</strong></code>, then the last token will be taken as action command.
 	 * @param topNode The DefaulMutableTreeNode to which this path will be added
 	 */
 	private void buildTreePath
@@ -299,10 +373,13 @@ public class ControlPanel implements PlugIn
 		DefaultMutableTreeNode topNode
 	)
 	{
-		String local=source; // here is where we place the string to be parsed into the tree path
-		String argument="";
-		String delimiter = fileSeparator;
-		// 1. store away any argument (the string between parentheses) passed to the plugin
+		String local=source; // will contain the string to be parsed into the tree path
+		String argument="";  // will store any argument for the plugin
+		String delimiter = fileSeparator; // meaning `/'
+
+		// 1. store plugin arguments (the string between parentheses) in `argument'
+		// then store the rest into `local'
+		// if there aren't any plugin arguments, then local remains the same as `source'
 		int leftParen=source.indexOf('(');
 		int rightParen = source.indexOf(')');
 		if(leftParen>-1 && rightParen>leftParen)
@@ -310,15 +387,17 @@ public class ControlPanel implements PlugIn
 			argument = source.substring(leftParen+1, rightParen);
 			local = source.substring(0,leftParen);
 		}
-		// 2. process the source:
+		// 2. maybe `local' was passed in from some plugin class finder, and is prefixed by
+		// full path of the plugins directory; if so, then remove this prefix
 		if(local.startsWith(pluginsPath))
 		{
 			local = local.substring(pluginsPath.length(),local.length());
 		}
-		// convert package/class separators into file separator, for parsing into tree path
+		// 3. convert package/class separators into file separators,
+		// to allow parsing into tree path later
 		local=local.replace('.',delimiter.charAt(0));
-		// 3. add back the arguments, but with file separator; like this, calls to the same
-		// plugin with different arguments will show up under the same tree branch
+		// 4. append the plugin arguments, but with file separator so that to the same
+		// plugin with different arguments will show up as children of the same tree branch
 		if(argument.length()>0)
 		{
 			local=local.concat(fileSeparator).concat(argument);
@@ -326,8 +405,15 @@ public class ControlPanel implements PlugIn
 
 		DefaultMutableTreeNode node=null;
 
-		// parsing the tree path: split the string into tokens delimited by file separator
-		// use the name of the token for intermediate nodes; and the label for the leaf node
+		// 5. parse the tree path: this code is entirely different from the logic in TreePanel,
+		// so don't hold your breath:
+		// split the string into tokens delimited by file separator
+		// and iterate through the tokens adding an intermediate subnode for each token
+		//
+		// use the name of the token for intermediate nodes, and the `label' argument for
+		// the leaf node if not null; else use the last token for the leaf node
+		//
+		// for leaf node replace `_' with ` ' and trim away the `.class' extension
 		StringTokenizer pathParser = new StringTokenizer(local,delimiter);
 		int tokens = pathParser.countTokens();
 		while(pathParser.hasMoreTokens())
@@ -338,20 +424,29 @@ public class ControlPanel implements PlugIn
 			{
 				if(token.indexOf("ControlPanel")==-1)// avoid showing this up in the tree
 				{
-					String cmd=token;
-					if(tokens==0) // we're at leaf level
+					// when at leaf level the user object for the node is the `label' if not null,
+					// else is the `token'
+					if(tokens==0)
 					{
-						if(label!=null) token=label;
+						if(label!=null) token=label; // if label is not null use it instead of token
 						token=token.replace('_',' ');
 						if(token.endsWith(".class"))
 							token = token.substring(0,token.length()-6);//...
 					}
-					node = new DefaultMutableTreeNode(token);
+
+					node = new DefaultMutableTreeNode(token); // finally, construct the node
+
+					// when at leaf level, store the `command' (or the `token' if `command' is null)
+					// into our internal table
 					if(tokens==0)
 					{
+						String cmd = (command==null) ? token : command;
+/*						if(token.equals("Reload Plugins"))
+							IJ.write("node cmd: "+cmd);*/
 						if(treeCommands==null) treeCommands = new Hashtable();
 						if(!treeCommands.containsKey(token)) treeCommands.put(token,cmd);
 					}
+					// add this node to the top node, then make it top node and continue iteration
 					topNode.add(node);
 					topNode=node;
 				}
@@ -359,6 +454,9 @@ public class ControlPanel implements PlugIn
 			}
 			else
 			{
+				// this node may have been visited before, so we avoid duplicate nodes
+				// by recursing through the tree until we find a token that has not been
+				// "made" into a node
 				boolean hasTokenAsNode=false;
 				Enumeration nodes = topNode.children();
 				while(nodes.hasMoreElements())
@@ -625,6 +723,7 @@ public class ControlPanel implements PlugIn
 		//IJ.write("restoring "+visiblePanels.size()+" visible panels ...");
 		String[] visPanls = new String[visiblePanels.size()];
 		visiblePanels.toArray(visPanls);
+		Arrays.sort(visPanls);
 		for(int i=0; i<visPanls.length; i++)
 		{
 			if(!panels.containsKey(visPanls[i]))
@@ -671,11 +770,39 @@ public class ControlPanel implements PlugIn
 					Point pnt = panel.getDefaultLocation();
 					if(pnt!=null)
 					{
-						IJ.write("restore for no geometry "+pnt.getX()+ " "+pnt.getY());
+						//IJ.write("restore for no geometry "+pnt.getX()+ " "+pnt.getY());
 						panel.getFrame().setLocation((int)pnt.getX(),(int)pnt.getY());
 					}
 				}
 			}
+		}
+	}
+
+	void closeAll(boolean die)
+	{
+		quitting = die;
+		if(!visiblePanels.isEmpty())
+		{
+			propertiesChanged = true;
+			saveProperties();
+		}
+		for (Enumeration e = panels.elements(); e.hasMoreElements();)
+		{
+			TreePanel p = (TreePanel)e.nextElement();
+			p.close();
+		}
+		//if(quitting) panels.clear();
+		quitting = true;
+	}
+
+	void verifyQuit()
+	{
+		//IJ.write("shall I quit?");
+		if(quitting && visiblePanels.isEmpty())
+		{
+			//IJ.write("no more visible panels");
+			//closeAll(true);
+// 			IJ.getInstance().setControlPanel(null);
 		}
 	}
 
@@ -701,13 +828,13 @@ public class ControlPanel implements PlugIn
 		IJ.showMessage("About Control Panel...",
 		"This plugin displays a panel with ImageJ commands in a hierarchical tree structure.\n"+" \n"+
 		"Usage:\n"+" \n"+
-		"     Click on a leaf node to launch the corresponding ImageJ command (or plugin)\n"+" \n"+
+		"     Click on a leaf node to launch the corresponding ImageJ command (or plugin)\n"+
+		"     (double-click on X Window Systems)\n"+" \n"+
 		"     Double-click on a tree branch node (folder) to expand or collapse it\n"+" \n"+
 		"     Click and drag on a tree branch node (folder) to display its descendants,\n"+
 		"     in a separate (child) panel (\"tear-off\" mock-up)\n"+" \n"+
 		"     In a child panel, use the \"Show Parent\" menu item to re-open the parent panel\n"+
 		"     if it was accidentally closed\n"+" \n"+
-		"Please note that after installing/removing plugins, ImageJ must be restarted\n"+" \n"+
 		"Version: "+pcpVersion+"\n"+
 		"Author: Cezar M. Tigaret (c.tigaret@ucl.ac.uk)\n"+
 		"This code is in the public domain."
@@ -770,6 +897,8 @@ public class ControlPanel implements PlugIn
 		return ints;
 	}
 
+	//boolean isRunning(){return running;}
+
 } // ControlPanel
 
 
@@ -796,7 +925,7 @@ class TreePanel implements
 {
 
 	ControlPanel pcp;
-	Vector childrenPanels = new Vector();
+	//Vector childrenPanels = new Vector();
 	boolean isMainPanel;
 	String title;
 	boolean isDragging=false;
@@ -908,12 +1037,19 @@ class TreePanel implements
 	void addMenu()
 	{
 		pMenuBar=new JMenuBar();
+		Insets ins = new Insets(0,0,0,10);
+		pMenuBar.setMargin(ins);
 		if(isMainPanel)
 		{
 			JMenuItem helpMI = new JMenuItem("Help");
 			helpMI.addActionListener(this);
 			helpMI.setActionCommand("Help");
 			pMenuBar.add(helpMI);
+/*			if(pcp.reloadMI!=null)
+			{
+				pcp.reloadMI.addActionListener(this);
+				pMenuBar.add(pcp.reloadMI);
+			}*/
 		}
 		else
 		{
@@ -952,7 +1088,9 @@ class TreePanel implements
 			{
 				if(isDragging)
 				{
-					tearOff(null);
+					Point pnt = new Point(e.getX(), e.getY());
+					SwingUtilities.convertPointToScreen(pnt,pTree);
+					tearOff(null,pnt);
 				}
 				isDragging = false;
 			}
@@ -964,6 +1102,8 @@ class TreePanel implements
 				int selRow = pTree.getRowForLocation(e.getX(), e.getY());
 				if(selRow!=-1)
 				{
+					if(((DefaultMutableTreeNode)pTree.getLastSelectedPathComponent()).isLeaf()) return;
+					pFrame.setCursor(new Cursor(Cursor.MOVE_CURSOR));
 					isDragging = true;
 				}
 			}
@@ -1017,18 +1157,18 @@ class TreePanel implements
 		//IJ.write("restore exp nodes");
 		pTree.removeTreeExpansionListener(this);
 		TreeNode[] rootPath = root.getPath();
-		//for(Enumeration e = root.breadthFirstEnumeration(); e.hasMoreElements();)
-		for(Enumeration e = root.children(); e.hasMoreElements();)
+		for(Enumeration e = root.breadthFirstEnumeration(); e.hasMoreElements();)
+		//for(Enumeration e = root.children(); e.hasMoreElements();)
 		{
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
-			if(!node.isLeaf())
+			if(!node.isLeaf() && node != root)
 			{
 				TreeNode[] nodePath = node.getPath();
 				TreePath nTreePath = new TreePath(nodePath);
 				String npS = nTreePath.toString();
 /*				if(pcp.hasPanelShowingProperty(npS))
 				{
-					IJ.write("has pnel showing: "+npS);
+					IJ.write("has panel showing: "+npS);
 				}*/
 				DefaultMutableTreeNode[] localPath = new DefaultMutableTreeNode[nodePath.length-rootPath.length+1];
 				for(int i=0; i<localPath.length; i++)
@@ -1078,6 +1218,7 @@ class TreePanel implements
 	public void actionPerformed(ActionEvent e)
 	{
 			String cmd=e.getActionCommand();
+			//IJ.write(cmd);
 			if(cmd==null) return;
 			if (cmd.equals("Help"))
 			{
@@ -1096,9 +1237,18 @@ class TreePanel implements
 				}
 				return;
 			}
+			if(cmd.equals("Reload Plugins From Panel")) // cmd fired by clicking on tree leaf
+			{
+				pcp.closeAll(false);
+				IJ.doCommand("Reload Plugins");
+			}
 			else
 			{
-				IJ.doCommand(cmd);
+				if(cmd.equals("Reload Plugins")) // cmd fired from ImageJ menu; don't propagate it further
+				{
+					pcp.closeAll(false);
+				}
+				else IJ.doCommand(cmd);
 				return;
 			}
 	}
@@ -1113,7 +1263,8 @@ class TreePanel implements
 	{
 		if(isMainPanel)
 			pcp.saveProperties();
-		else pcp.unsetPanelShowingProperty(getRootPath().toString());
+		pcp.unsetPanelShowingProperty(getRootPath().toString());
+		pcp.verifyQuit();
 	}
 
 	public void windowActivated(WindowEvent e){}
@@ -1170,6 +1321,11 @@ class TreePanel implements
 	/*                             Actions                                        */
 	/* ************************************************************************** */
 
+	void refreshTree()
+	{
+		pTreeModel.reload();
+	}
+
 	void tearOff()
 	{
 		tearOff(null);
@@ -1183,6 +1339,7 @@ class TreePanel implements
 	void tearOff(DefaultMutableTreeNode node, Point pnt)
 	{
 		isDragging = false;
+		pFrame.setCursor(Cursor.getDefaultCursor());
 		if(node==null)
 			node = (DefaultMutableTreeNode)pTree.getLastSelectedPathComponent();
 		if(node.isLeaf()) return;
@@ -1224,7 +1381,12 @@ class TreePanel implements
 			// if the node has children then do nothing (return)
 			if (nde.getChildCount()>0) return;
 			String aCmd=nde.toString();
-			processEvent(new ActionEvent(this,ActionEvent.ACTION_PERFORMED,aCmd));
+			String cmd= aCmd;
+			if(pcp.treeCommands.containsKey(aCmd))
+			{
+				cmd = (String)pcp.treeCommands.get(aCmd);
+			}
+			processEvent(new ActionEvent(this,ActionEvent.ACTION_PERFORMED,cmd));
 	}
 
 	void setVisible()
@@ -1235,6 +1397,27 @@ class TreePanel implements
 			restoreExpandedNodes();
 			if(defaultLocation!=null) pFrame.setLocation(defaultLocation);
 			pFrame.setVisible(true);
+			// close expanded path to this panel in its parent panel (if visible and if the path is expanded)
+			DefaultMutableTreeNode parent = (DefaultMutableTreeNode)root.getParent();
+			if(parent!=null)
+			{
+				TreePanel pnl = pcp.getPanelForNode(parent);
+				if(pnl!=null && pnl.isVisible())
+				{
+					TreeNode[] rPath = root.getPath();
+					TreeNode[] pPath = pnl.getRootNode().getPath();
+					DefaultMutableTreeNode[] tPath = new DefaultMutableTreeNode[rPath.length-pPath.length+1];
+					for(int i=0; i<tPath.length; i++)
+					{
+						tPath[i] = (DefaultMutableTreeNode)rPath[i+pPath.length-1];
+					}
+					//TreePath path = new TreePath(rPath);
+					TreePath localPath = new TreePath(tPath);
+					//IJ.write("root path="+new TreePath(rPath).toString()+"; parent path="+new TreePath(pPath).toString()+"; local="+localPath.toString());
+					//IJ.write("to be collapsed "+localPath.toString());
+					pnl.getTree().collapsePath(localPath);
+				}
+			}
 		}
 		pcp.setPanelShowingProperty(getRootPath().toString());
 	}

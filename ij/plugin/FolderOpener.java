@@ -11,7 +11,7 @@ import ij.process.*;
 /** Opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
-	private static boolean grayscale;
+	private static boolean convertToGrayscale, convertToRGB;
 	private static double scale = 100.0;
 	private int n, start, increment;
 	private String filter;
@@ -112,11 +112,10 @@ public class FolderOpener implements PlugIn {
 					IJ.showStatus(count+"/"+n);
 					IJ.showProgress((double)count/n);
 					ImageProcessor ip = imp.getProcessor();
-					if (grayscale) {
-						ImageConverter ic = new ImageConverter(imp);
-						ic.convertToGray8();
-						ip = imp.getProcessor();
-					}
+					if (convertToRGB)
+						ip = ip.convertToRGB();
+					else if(convertToGrayscale)
+						ip = ip.convertToByte(true);
 					if (scale<100.0)
 						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
 					if (ip.getMin()<min) min = ip.getMin();
@@ -156,7 +155,8 @@ public class FolderOpener implements PlugIn {
 		//gd.addMessage("");
 		gd.addStringField("File Name Contains:", "");
 		gd.addNumericField("Scale Images", scale, 0, 4, "%");
-		gd.addCheckbox("Convert to 8-bit Grayscale", grayscale);
+		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
+		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -170,7 +170,8 @@ public class FolderOpener implements PlugIn {
 		if (scale<5.0) scale = 5.0;
 		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
-		grayscale = gd.getNextBoolean();
+		convertToGrayscale = gd.getNextBoolean();
+		convertToRGB = gd.getNextBoolean();
 		return true;
 	}
 
@@ -179,7 +180,7 @@ public class FolderOpener implements PlugIn {
 class FolderOpenerDialog extends GenericDialog {
 	ImagePlus imp;
 	int fileCount;
- 	boolean eightBits;
+ 	boolean eightBits, rgb;
  	String saveFilter = "";
  	String[] list;
 
@@ -191,10 +192,29 @@ class FolderOpenerDialog extends GenericDialog {
 	}
 
 	protected void setup() {
+ 		eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
+ 		rgb = ((Checkbox)checkbox.elementAt(1)).getState();
 		setStackInfo();
 	}
  	
 	public void itemStateChanged(ItemEvent e) {
+		Checkbox item = (Checkbox)e.getSource();
+		Checkbox grayscaleCB = (Checkbox)checkbox.elementAt(0);
+		Checkbox rgbCB = (Checkbox)checkbox.elementAt(1);
+		if (item==grayscaleCB) {
+			eightBits = item.getState();
+			if (eightBits) {
+			 rgbCB.setState(false);
+			 rgb = false;
+			}
+		}
+		if (item==rgbCB) {
+			rgb = item.getState();
+			if (rgb) {
+				grayscaleCB.setState(false);
+				eightBits = false;
+			}
+		}
  		setStackInfo();
 	}
 	
@@ -206,7 +226,6 @@ class FolderOpenerDialog extends GenericDialog {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		int bytesPerPixel = 1;
- 		eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
  		int n = getNumber(numberField.elementAt(0));
 		int start = getNumber(numberField.elementAt(1));
 		int inc = getNumber(numberField.elementAt(2));
@@ -247,6 +266,8 @@ class FolderOpenerDialog extends GenericDialog {
 		}
 		if (eightBits)
 			bytesPerPixel = 1;
+		if (rgb)
+			bytesPerPixel = 4;
 		width = (int)(width*scale/100.0);
 		height = (int)(height*scale/100.0);
 		int n2 = n/inc;

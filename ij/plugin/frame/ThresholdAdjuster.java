@@ -337,7 +337,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	
 	/** Restore image outside non-rectangular roi. */
   	void doMasking(ImagePlus imp, ImageProcessor ip) {
-		int[] mask = imp.getMask();
+		ImageProcessor mask = imp.getMask();
 		if (mask!=null)
 			ip.reset(mask);
 	}

@@ -173,6 +173,20 @@ public class ImageStack {
 		return label[n-1];
 	}
 	
+	/** Returns a shortened version (up to the first newline and 
+		suffix removed) of the label of the specified slice.
+		Returns null if the slice does not have a label. */
+	public String getShortSliceLabel(int n) {
+		String shortLabel = getSliceLabel(n);
+    	int newline = shortLabel!=null?shortLabel.indexOf('\n'):-1;
+    	if (newline>0)
+    		shortLabel = shortLabel.substring(0, newline);
+    	int len = shortLabel!=null?shortLabel.length():0;
+		if (len>4 && shortLabel.charAt(len-4)=='.' && !Character.isDigit(shortLabel.charAt(len-1)))
+			shortLabel = shortLabel.substring(0,len-4);
+		return shortLabel;
+	}
+
 	/** Sets the label of the specified slice, were 1<=n<=nslices. */
 	public void setSliceLabel(String label, int n) {
 		if (n<1 || n>nSlices)

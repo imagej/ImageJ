@@ -2,7 +2,6 @@ package ij.macro;
 
 class Variable implements MacroConstants {
 	static final int VALUE=0, ARRAY=1, STRING=2;
-    static boolean doHash;
     int symTabIndex;
     private double value;
     private String str;
@@ -47,12 +46,9 @@ class Variable implements MacroConstants {
     }
 
     double getValue() {
-    	if (str!=null) {
-    		if (doHash)
-    			return getHashCode(); // string comparisons
-    		else
+    	if (str!=null)
     			return convertToDouble();  // string to number conversions
-    	} else
+    	else
         	return value;
     }
 
@@ -98,22 +94,6 @@ class Variable implements MacroConstants {
     		return STRING;
     	else
     		return VALUE;
-    }
-
-    /** Convert string to a base 102 number so Interpreter.getBooleanExpression()
-		can compare strings. */
-    double getHashCode() {
-        int base = 102;
-        double k=1.0, v=0.0, j;
-        for (int i=0; i<str.length(); i++) {
-            j = str.charAt(i);
-            if (j>=65 && j<=90) j += 32; // convert to lower case
-            if (j>=91) j -= 26;
-            v += j*k;
-            //ij.IJ.log(i+"  "+j+"  "+k+"  "+v);
-            k *= base;
-        }
-        return v;
     }
 
     public String toString() {

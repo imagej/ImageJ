@@ -44,9 +44,11 @@ public class ImageProperties implements PlugInFilter {
 			return;
 		String unit = gd.getNextString();
         if (unit.equals("um"))
-            unit = "µm";
+            unit = IJ.micronSymbol + "m";
+        else if (unit.equals("u"))
+            unit = "" + IJ.micronSymbol;
         else if (unit.equals("A"))
-        	unit = "Å";
+        	unit = ""+IJ.angstromSymbol;
  		double resolution = gd.getNextNumber();
 		if (unit.equals("")||unit.equalsIgnoreCase("pixel")
 		||unit.equalsIgnoreCase("none")||resolution==0.0) {
@@ -92,7 +94,7 @@ public class ImageProperties implements PlugInFilter {
 			return MILLIMETER;
 		else if (unit.startsWith("inch"))
 			return INCH;
-		else if (unit.equals("µm")||unit.equals("um")||unit.startsWith("micro"))
+		else if (unit.startsWith(""+IJ.micronSymbol)||unit.startsWith("u")||unit.startsWith("micro"))
 			return MICROMETER;
 		else if (unit.equals("nm")||unit.startsWith("nano"))
 			return NANOMETER;

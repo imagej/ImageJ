@@ -7,7 +7,9 @@ import ij.gui.*;
 
 /** Opens TIFFs, ZIP compressed TIFFs, DICOMs, GIFs and JPEGs using a URL. 
 	TIFF file names must end in ".tif", ZIP file names must end 
-	in ".zip" and DICOM file names must end in ".dcm". */
+	in ".zip" and DICOM file names must end in ".dcm". 
+	Opens a Web page in the default browser if the URL ends with "/".
+*/
 public class URLOpener implements PlugIn {
 
 	private static String url = "http://rsb.info.nih.gov/ij/images/clown.gif";
@@ -33,10 +35,17 @@ public class URLOpener implements PlugIn {
 		if (gd.wasCanceled())
 			return;
 		url = gd.getNextString();
-		IJ.showStatus("Opening: " + url);
-		ImagePlus imp = new ImagePlus(url);
-		imp.show();
-		IJ.showStatus("");
+		url = url.trim();
+		if (url.indexOf("://")==-1)
+			url = "http://" + url;
+		if (url.endsWith("/"))
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", url.substring(0, url.length()-1));
+		else {
+			IJ.showStatus("Opening: " + url);
+			ImagePlus imp = new ImagePlus(url);
+			imp.show();
+			IJ.showStatus("");
+		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd
 	}
 }

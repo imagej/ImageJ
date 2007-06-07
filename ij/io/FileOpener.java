@@ -129,7 +129,7 @@ public class FileOpener {
 			is.close();
 		}
 		catch (Exception e) {
-			IJ.write("" + e);
+			IJ.log("" + e);
 		}
 		catch(OutOfMemoryError e) {
 			IJ.outOfMemory(fi.fileName);
@@ -325,6 +325,8 @@ public class FileOpener {
 		   error("Offset is negative.", fi, offset, length);
 		   return false;
 		}
+		if (fi.fileType==FileInfo.BITMAP)
+			return true;
 		length = f.length();
 		long size = fi.width*fi.height*fi.getBytesPerPixel();
 		size = fi.nImages>1?size:size/4;

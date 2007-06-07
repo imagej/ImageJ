@@ -38,6 +38,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static ResultsTable systemRT = new ResultsTable();
 	private static int redirectTarget;
 	private static String redirectTitle = "";
+	static int firstParticle, lastParticle;
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -168,6 +169,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	void measure() {
+		firstParticle = lastParticle = 0;
 		if (Toolbar.getToolId()==Toolbar.CROSSHAIR) {
 			markAndCount();
 			return;
@@ -229,7 +231,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			return null;
 		ImageProcessor ip = redirectImp.getProcessor();
 		if (roi!=null) {
-			ip.setRoi(roi.getBoundingRect());
+			ip.setRoi(roi.getBounds());
 			ip.setMask(imp.getMask());
 		} else
 			ip.resetRoi();
@@ -267,7 +269,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			ip.setLineWidth(Line.getWidth());
 		}
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("Name", getFileName());
+			rt.addLabel("Label", getFileName());
 		rt.addValue("X", cal.getX(x));
 		rt.addValue("Y", cal.getY(updateY(y,imp.getHeight())));
 		rt.addValue("Value", value);
@@ -287,7 +289,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		incrementCounter();
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("Name", getFileName());
+			rt.addLabel("Label", getFileName());
 		rt.addValue("Angle", ((PolygonRoi)roi).getAngle());
 		displayResults();
 		//IJ.write(rt.getCounter()+"\t"+n(((PolygonRoi)roi).getAngle()));
@@ -305,7 +307,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		incrementCounter();
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("Name", getFileName());
+			rt.addLabel("Label", getFileName());
 		rt.addValue("Length", roi.getLength());
 		boolean moreParams = (measurements&MEAN)!=0||(measurements&STD_DEV)!=0||(measurements&MODE)!=0||(measurements&MIN_MAX)!=0;
 		if (moreParams) {
@@ -335,7 +337,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			umeans[counter-1] = (float)stats.umean;
 		}
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("Name", getFileName());
+			rt.addLabel("Label", getFileName());
 		if ((measurements&AREA)!=0) rt.addValue(ResultsTable.AREA,stats.area);
 		if ((measurements&MEAN)!=0) rt.addValue(ResultsTable.MEAN,stats.mean);
 		if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);
@@ -419,7 +421,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			} else
 				s = imp.getTitle();
 			int len = s.length();
-			if (len>4 && s.charAt(len-4)=='.')
+			if (len>4 && s.charAt(len-4)=='.' && !Character.isDigit(s.charAt(len-1)))
 				s = s.substring(0,len-4); 
 			Roi roi = imp.getRoi();
 			String roiName = roi!=null?roi.getName():null;
@@ -428,7 +430,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (imp.getStackSize()>1) {
 				ImageStack stack = imp.getStack();
 				int currentSlice = imp.getCurrentSlice();
-				String label = stack.getSliceLabel(currentSlice);
+				String label = stack.getShortSliceLabel(currentSlice);
 				String colon = s.equals("")?"":":";
 				if (label!=null && !label.equals(""))
 					s += colon+label;
@@ -667,5 +669,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 			y = imageHeight-y-1;
 		return y;
 	}
+	
 }
 	

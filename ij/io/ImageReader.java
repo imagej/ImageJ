@@ -36,8 +36,8 @@ public class ImageReader {
 		int count, actuallyRead;
 
 		while (totalRead<byteCount) {
-			if (totalRead+bufferSize>nPixels)
-				count = nPixels-totalRead;
+			if (totalRead+bufferSize>byteCount)
+				count = byteCount-totalRead;
 			else
 				count = bufferSize;
 			actuallyRead = in.read(pixels, totalRead, count);
@@ -291,6 +291,11 @@ public class ImageReader {
 			}
 		}
 		byteCount = width*height*bytesPerPixel;
+		if (fi.fileType==FileInfo.BITMAP) {
+ 			int scan=width/8, pad = width%8;
+			if (pad>0) scan++;
+			byteCount = scan*height;
+		}
 		nPixels = width*height;
 		bufferSize = byteCount/25;
 		if (bufferSize<8192)
@@ -389,20 +394,18 @@ public class ImageReader {
 		int len = scan*height;
 		byte bitmap[] = new byte [len];
 		System.arraycopy(pixels, 0, bitmap, 0, len);
-		int value1,value2, offset;
-		int n = 0;
+		int value1,value2, offset, index;
 		for (int y=0; y<height; y++) {
 			offset = y*scan;
+			index = y*width;
 			for (int x=0; x<scan; x++) {
-				if ( n+8>=width*height)
-					continue;
 				value1 = bitmap[offset+x]&0xff;
 				for (int i=7; i>=0; i--) {
 					value2 = (value1&(1<<i))!=0?255:0;
-					pixels[n++] = (byte)value2;
+					if (index<pixels.length)
+						pixels[index++] = (byte)value2;
 				}
 			}
-			n -= pad>0?8-pad:0;
 		}
 	}
 	

@@ -135,12 +135,12 @@ public class ImageStatistics implements Measurements {
 	}
 	
 	void getCentroid(ImageProcessor ip) {
-		int[] mask = ip.getMask();
+		byte[] mask = ip.getMaskArray();
 		int count=0, xsum=0, ysum=0,mi;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null||mask[mi++]==ip.BLACK) {
+				if (mask==null||mask[mi++]!=0) {
 					count++;
 					xsum+=x;
 					ysum+=y;
@@ -148,7 +148,7 @@ public class ImageStatistics implements Measurements {
 			}
 		}
 		xCentroid = ((double)xsum/count+0.5)*pw;
-		yCentroid = ((double)ysum/count+0.5)*pw;
+		yCentroid = ((double)ysum/count+0.5)*ph;
 	}
 	
 	void fitEllipse(ImageProcessor ip) {

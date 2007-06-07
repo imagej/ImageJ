@@ -44,7 +44,7 @@ public class FloatStatistics extends ImageStatistics {
 		histogram = new int[nBins];
 		double sum = 0;
 		double sum2 = 0;
-		int[] mask = ip.getMask();
+		byte[] mask = ip.getMaskArray();
 		
 		// Find image min and max
 		double roiMin = Double.MAX_VALUE;
@@ -55,7 +55,7 @@ public class FloatStatistics extends ImageStatistics {
 			int i = y * width + rx;
 			int mi = my * rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null || mask[mi++]==ip.BLACK) {
+				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i];
 					if (v>=minThreshold && v<=maxThreshold) {
 						if (v<roiMin) roiMin = v;
@@ -83,7 +83,7 @@ public class FloatStatistics extends ImageStatistics {
 			int i = y * width + rx;
 			int mi = my * rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null || mask[mi++]==ip.BLACK) {
+				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i];
 					if (v>=minThreshold && v<=maxThreshold && v>=histMin && v<=histMax) {
 						pixelCount++;
@@ -120,14 +120,14 @@ public class FloatStatistics extends ImageStatistics {
 
 	void getCenterOfMass(ImageProcessor ip, double minThreshold, double maxThreshold) {
 		float[] pixels = (float[])ip.getPixels();
-		int[] mask = ip.getMask();
+		byte[] mask = ip.getMaskArray();
 		int i, mi;
 		double v, count=0.0, xsum=0.0, ysum=0.0;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null || mask[mi++]==ip.BLACK) {
+				if (mask==null || mask[mi++]!=0) {
 					v = pixels[i]+Double.MIN_VALUE;
 					if (v>=minThreshold && v<=maxThreshold) {
 						count += v;
@@ -144,14 +144,14 @@ public class FloatStatistics extends ImageStatistics {
 
 	void getCentroid(ImageProcessor ip, double minThreshold, double maxThreshold) {
 		float[] pixels = (float[])ip.getPixels();
-		int[] mask = ip.getMask();
+		byte[] mask = ip.getMaskArray();
 		double count=0.0, xsum=0.0, ysum=0.0, v;
 		int i, mi;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
 			for (int x=rx; x<(rx+rw); x++) {
-				if (mask==null||mask[mi++]==ip.BLACK) {
+				if (mask==null||mask[mi++]!=0) {
 					v = pixels[i];
 					if (v>=minThreshold && v<=maxThreshold) {
 						count++;

@@ -89,24 +89,19 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		do {
 			i++;
 			count += histogram[i];
-			found = count>=threshold;
+			found = count>threshold;
 		} while (!found && i<255);
-		if (i > 0)
-			hmin = i-1;
-		else
-			hmin = 0;
+		hmin = i;
 				
 		i = 256;
 		count = 0;
 		do {
 			i--;
 			count += histogram[i];
-			found = count>=threshold;
+			found = count>threshold;
+			//IJ.log(i+" "+count+" "+found);
 		} while (!found && i>0);
-		if (i < 255)
-			hmax = i+1;
-		else
-			hmax = 255;
+		hmax = i;
 				
 		//IJ.log(hmin+" "+hmax+" "+threshold);
 		if (hmax>hmin) {

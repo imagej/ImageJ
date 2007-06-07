@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.applet.Applet;
 
 /**
  * This plugin implements ImageJ's Help/ImageJ Web Site command. It is a slightly modified
@@ -60,12 +61,17 @@ public class BrowserLauncher implements PlugIn {
 
 	/** Opens the specified URL (default is the ImageJ home page). */
 	public void run(String theURL) {
-		if (ij.IJ.getApplet()!=null) // do nothing if ImageJ is running as an applet
-			return;
 		if (theURL==null || theURL.equals(""))
 			theURL = "http://rsb.info.nih.gov/ij/";
 		else if (theURL.equals("online"))
 			theURL = "http://rsb.info.nih.gov/ij/docs";
+		Applet applet = ij.IJ.getApplet();
+		if (applet!=null) {
+			try {
+				applet.getAppletContext().showDocument(new URL(theURL), "_blank" );
+			} catch (Exception e) {}
+			return;
+		}
 		try {openURL(theURL);}
 		catch (IOException e) {}
 	}
@@ -156,14 +162,11 @@ public class BrowserLauncher implements PlugIn {
 	/** JVM constant for MRJ 3.1 */
 	private static final int MRJ_3_1 = 4;
 
-	/** JVM constant for any Windows NT JVM */
-	private static final int WINDOWS_NT = 5;
+	/** JVM constant for any Windows JVM */
+	private static final int WINDOWS = 5;
 	
-	/** JVM constant for any Windows 9x JVM */
-	private static final int WINDOWS_9x = 6;
-
 	/** JVM constant for any Mac OS X JVM */
-    private static final int MACOSX = 7;
+    private static final int MACOSX = 6;
 
 	/** JVM constant for any other platform */
 	private static final int OTHER = -1;
@@ -182,22 +185,6 @@ public class BrowserLauncher implements PlugIn {
 
 	/** The name for the AppleEvent type corresponding to a GetURL event. */
 	private static final String GURL_EVENT = "GURL";
-
-	/**
-	 * The first parameter that needs to be passed into Runtime.exec() to open the default web
-	 * browser on Windows.
-	 */
-    private static final String FIRST_WINDOWS_PARAMETER = "/c";
-    
-    /** The second parameter for Runtime.exec() on Windows. */
-    private static final String SECOND_WINDOWS_PARAMETER = "start";
-    
-    /**
-     * The third parameter for Runtime.exec() on Windows.  This is a "title"
-     * parameter that the command line expects.  Setting this parameter allows
-     * URLs containing spaces to work.
-     */
-    private static String THIRD_WINDOWS_PARAMETER = "\"\"";
 
 	/**
 	 * The shell parameters for Netscape that opens a given URL in an already-open copy of Netscape
@@ -246,15 +233,10 @@ public class BrowserLauncher implements PlugIn {
 				loadedWithoutErrors = false;
 				errorMessage = "Invalid MRJ version: " + mrjVersion;
 			}
-		} else if (osName.startsWith("Windows")) {
-			if (osName.indexOf("9") != -1) {
-				jvm = WINDOWS_9x;
-			} else {
-				jvm = WINDOWS_NT;
-			}
-		} else {
+		} else if (osName.startsWith("Windows"))
+				jvm = WINDOWS;
+		else
 			jvm = OTHER;
-		}
 		
 		if (loadedWithoutErrors) {	// if we haven't hit any errors yet
 			loadedWithoutErrors = loadClasses();
@@ -391,13 +373,8 @@ public class BrowserLauncher implements PlugIn {
 				break;
 			case MRJ_3_0:
 			case MRJ_3_1:
-				browser = "";	// Return something non-null
-				break;
-			case WINDOWS_NT:
-				browser = "cmd.exe";
-				break;
-			case WINDOWS_9x:
-				browser = "command.com";
+			case WINDOWS:
+				browser = "";	// not used; return something non-null
 				break;
 			case OTHER:
 			default:
@@ -434,23 +411,10 @@ public class BrowserLauncher implements PlugIn {
 					errorMessage = ""+e;
 			    }
 			    break;
-		    case WINDOWS_NT:
-		    case WINDOWS_9x:
-		    	// Add quotes around the URL to allow ampersands and other special
-		    	// characters to work
-				//ij.IJ.write((String)browser
-				//	+"  "+FIRST_WINDOWS_PARAMETER
-				//	+"  "+SECOND_WINDOWS_PARAMETER
-				//	+"  "+THIRD_WINDOWS_PARAMETER
-				//	+"  "+url
-				//	);
-				if (jvm==WINDOWS_9x)
-					THIRD_WINDOWS_PARAMETER = "";
-				Process process = Runtime.getRuntime().exec(new String[] { (String) browser,
-					FIRST_WINDOWS_PARAMETER,
-					SECOND_WINDOWS_PARAMETER,
-					THIRD_WINDOWS_PARAMETER,
-					'"' + url + '"' });
+		    case WINDOWS:
+				String cmd = "rundll32 url.dll,FileProtocolHandler " + url;
+				if (ij.IJ.debugMode) {ij.IJ.log("Exec: "+cmd);}
+				Process process = Runtime.getRuntime().exec(cmd);
 				// This avoids a memory leak on some versions of Java on Windows.
 				// That's hinted at in <http://developer.java.sun.com/developer/qow/archive/68/>.
 				try {

@@ -140,7 +140,7 @@ public class ZProjector implements PlugIn {
 		return; 
     }
     
-    private void doRGBProjection() {
+    public void doRGBProjection() {
         RGBStackSplitter splitter = new RGBStackSplitter();
         splitter.split(imp.getStack(), true);
         ImagePlus red = new ImagePlus("Red", splitter.red);
@@ -208,7 +208,7 @@ public class ZProjector implements PlugIn {
 		else if(stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
 		else if(stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
 		else {
-	    	IJ.error("ZProjection_: Unknown processor type."); 
+	    	IJ.error("ZProjector: Unknown processor type."); 
 	    	return; 
 		}
 

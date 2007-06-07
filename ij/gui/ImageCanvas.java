@@ -21,6 +21,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public static boolean usePointer = Prefs.usePointerCursor;
 	
+	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // ROI modification states
+	
 	protected ImagePlus imp;
 	protected boolean imageUpdated;
 	protected Rectangle srcRect;
@@ -37,6 +39,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int xSrcStart;
 	private int ySrcStart;
 	private int flags;
+	
+	int roiModState = NO_MODS;
 
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -94,6 +98,22 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
     }
     
+	public void drawImage(Image img, Graphics g) {
+		int width = img.getWidth(null);
+		int  height = img.getHeight(null);
+		//BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		//GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		//GraphicsDevice gd = ge.getDefaultScreenDevice();
+		//GraphicsConfiguration gc = gd.getDefaultConfiguration();  
+  		//BufferedImage bi = gc.createCompatibleImage(width, height);
+		//Graphics2D g2 = (Graphics2D)bi.getGraphics();
+		//g2.drawImage(img, 0, 0, null);
+		Image img2 = createImage(width, height);
+		img2.getGraphics().drawImage(img, 0, 0, null);
+		g.drawImage(img2, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
+			srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+        }
+
     long firstFrame;
     int frames, fps;
         
@@ -466,11 +486,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			case Toolbar.WAND:
 				Roi roi = imp.getRoi();
 				if (roi!=null && roi.contains(ox, oy)) {
-					Rectangle r = roi.getBoundingRect();
+					Rectangle r = roi.getBounds();
 					if (r.width==imageWidth && r.height==imageHeight)
 						imp.killRoi();
 					else {
-						handleRoiMouseDown(x, y);
+						handleRoiMouseDown(e);
 						return;
 					}
 				}
@@ -481,6 +501,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						return;
 					}
 				}
+				setRoiModState(e, roi, -1);
 				int npoints = IJ.doWand(ox, oy);
 				if (Recorder.record && npoints>0)
 					Recorder.record("doWand", ox, oy);
@@ -490,7 +511,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool
-				handleRoiMouseDown(x, y);
+				handleRoiMouseDown(e);
 		}
 	}
 
@@ -537,7 +558,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int sy = e.getY();
 		xMouseStart = srcRect.x+srcRect.width/2;
 		yMouseStart = srcRect.y+srcRect.height/2;
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		Dimension size = getSize();
 		int deltax=0, deltay=0;
 		if (sx<0)
@@ -564,31 +585,40 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (Toolbar.getToolId()==Toolbar.HAND || IJ.spaceBarDown())
 			scroll(x, y);
 		else {
+			IJ.setInputEvent(e);
 			Roi roi = imp.getRoi();
 			if (roi != null)
 				roi.handleMouseDrag(x, y, flags);
 		}
 	}
 
-	void handleRoiMouseDown(int sx, int sy) {
+	void handleRoiMouseDown(MouseEvent e) {
+		int sx = e.getX();
+		int sy = e.getY();
 		int ox = offScreenX(sx);
 		int oy = offScreenY(sy);
 		Roi roi = imp.getRoi();
+		int handle = roi!=null?roi.isHandle(sx, sy):-1;		
+		setRoiModState(e, roi, handle);
 		if (roi!=null) {
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			int type = roi.getType();
 			if (type==Roi.RECTANGLE && r.width==imp.getWidth() && r.height==imp.getHeight()
 			&& roi.getPasteMode()==Roi.NOT_PASTING) {
 				imp.killRoi();
 				return;
 			}
-			int handle = roi.isHandle(sx, sy);
 			if (handle>=0) {
 				roi.mouseDownInHandle(handle, sx, sy);
 				return;
 			}
 			if (roi.contains(ox, oy)) {
-				roi.handleMouseDown(sx, sy);
+				if (roiModState==NO_MODS)
+					roi.handleMouseDown(sx, sy);
+				else {
+					imp.killRoi();
+					imp.createNewRoi(ox,oy);
+				}
 				return;
 			}
 			if ((type==Roi.POLYGON || type==Roi.POLYLINE || type==Roi.ANGLE)
@@ -597,6 +627,25 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		imp.createNewRoi(ox,oy);
 	}
+	
+	void setRoiModState(MouseEvent e, Roi roi, int handle) {
+		if (roi==null || !IJ.isJava2())
+			{roiModState = NO_MODS; return;}
+		if (handle>=0 && roiModState==NO_MODS)
+			return;
+		if (roi.state==Roi.CONSTRUCTING)
+			return;
+		int tool = Toolbar.getToolId();
+		if (tool>Toolbar.FREEROI && tool!=Toolbar.WAND)
+			{roiModState = NO_MODS; return;}
+		if (e.isShiftDown())
+			roiModState = ADD_TO_ROI;
+		else if (e.isAltDown())
+			roiModState = SUBTRACT_FROM_ROI;
+		else
+			roiModState = NO_MODS;
+		//IJ.log("setRoiModState: "+roiModState+" "+ (roi==null?"null":""+roi.state));
+	}
 
 	public void mouseReleased(MouseEvent e) {
 		flags = e.getModifiers();
@@ -604,7 +653,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		//IJ.log("mouseReleased: "+flags);
 		Roi roi = imp.getRoi();
 		if (roi != null) {
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			if ((r.width==0 || r.height==0)
 			&& !(roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE)
 			&& !(roi instanceof TextRoi)
@@ -624,10 +673,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		flags = e.getModifiers();
 		//if (IJ.debugMode) IJ.log(e.getX() + " " + e.getY() + " " + ox + " " + oy);
 		setCursor(sx, sy, ox, oy);
-		if (e.isAltDown())
-			IJ.setKeyDown(KeyEvent.VK_ALT);
-		else
-			IJ.setKeyUp(KeyEvent.VK_ALT);
+		IJ.setInputEvent(e);
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
 		&& roi.getState()==roi.CONSTRUCTING) {

@@ -33,7 +33,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.addItemListener(this);
 		add(list);
 		panel = new Panel();
-		panel.setLayout(new GridLayout(11, 1, 5, 0));
+		panel.setLayout(new GridLayout(12, 1, 5, 0));
 		addButton("Add");
 		addButton("Add & Draw");
 		addButton("Rename");
@@ -45,6 +45,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Measure");
 		addButton("Draw");
 		addButton("Fill");
+		// cmt
+		//addButton("And");
+		if (IJ.isJava2())
+			addButton("Combine");
+		//addButton("Xor");
+		//addButton("Not");
 		add(panel);
 		
 		pack();
@@ -86,8 +92,42 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			draw();
 		else if (command.equals("Fill"))
 			fill();
+		// cmt
+		else if (command.equals("And")) opFirst("and");
+		else if (command.equals("Combine")) opFirst("or");
+		else if (command.equals("Xor")) opFirst("xor");
+		else if (command.equals("Not")) opFirst("not");
+		// cmt
 	}
-	
+
+	// cmt
+	void opFirst(String op) {
+		ImagePlus imp = getImage();
+		if(imp==null) return;
+		String[] lst = list.getItems();
+		if(lst.length == 0) return;
+		String first = lst[0];
+		Roi r = (Roi)rois.get(first);
+		ShapeRoi sr  = null;
+		ShapeRoi r1 = null;
+		if(r instanceof ShapeRoi) r1 = (ShapeRoi)r;
+		else r1 = new ShapeRoi(r);
+		if(r1==null) return;
+		for (int i=1; i<lst.length; i++)
+		{
+			r = (Roi)rois.get(lst[i]);
+			if(r instanceof ShapeRoi) sr = (ShapeRoi)r;
+			else sr = new ShapeRoi(r);
+			if(sr==null) break;
+			if (op.equals("or")) r1.or(sr);
+			else if (op.equals("and")) r1.and(sr);
+			else if (op.equals("xor")) r1.xor(sr);
+			else if (op.equals("not")) r1.not(sr);
+		}
+		if(r1!=null) imp.setRoi(r1);
+// 		else IJ.write("r1 null!");
+	}
+
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getStateChange()==ItemEvent.SELECTED
 		&& WindowManager.getCurrentImage()!=null) {
@@ -118,10 +158,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			case Roi.LINE: type = "Line"; break;
 			case Roi.POLYLINE: type = "Polyline"; break;
 			case Roi.FREELINE: type = "Freeline"; break;
+			case Roi.COMPOSITE: type = "Composite"; break; // cmt
 		}
 		if (type==null)
 			return false;
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		//String label = type+" ("+(r.x+r.width/2)+","+(r.y+r.height/2)+")";
 		String name = roi.getName();
 		String label = name!=null?getUniqueName(name):getUniqueLabel(type);
@@ -206,7 +247,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null || roi==null)
 			return false;
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		if (r.x+r.width>imp.getWidth() || r.y+r.height>imp.getHeight())
 			return error("This selection does not fit the current image.");
 		imp.setRoi(roi);
@@ -280,7 +321,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Macro.setOptions(null);
 		SaveDialog sd = new SaveDialog("Save Selection...", name, ".roi");
 		String name2 = sd.getFileName();
-		if (name == null)
+		if (name2 == null)
 			return false;
 		if (index.length==1) {
 			Roi roi = (Roi)rois.get(name);

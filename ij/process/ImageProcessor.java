@@ -34,7 +34,6 @@ public abstract class ImageProcessor extends Object {
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
-	static final double rWeight = 0.299, gWeight = 0.587, bWeight = 0.114;
 	static final String WRONG_LENGTH = "(width*height) != pixels.length";
 	
 	int fgColor = 0;
@@ -53,7 +52,7 @@ public abstract class ImageProcessor extends Object {
 	protected int roiX, roiY, roiWidth, roiHeight;
 	protected int xMin, xMax, yMin, yMax;
 	boolean newSnapshot = false; // true if pixels = snapshotPixels
-	int[] mask = null;
+	ImageProcessor mask = null;
 	protected ColorModel baseCM; // base color model
 	protected ColorModel cm;
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
@@ -398,9 +397,10 @@ public abstract class ImageProcessor extends Object {
 		return maxThreshold;
 	}
 
-	/** Defines a rectangular region of interest and sets
-		the mask to null if this ROI is not the same size
-		as the previous one. */
+	/** Defines a rectangular region of interest and sets the mask 
+		to null if this ROI is not the same size as the previous one. 
+		@see ImageProcessor#resetRoi		
+	*/
 	public void setRoi(Rectangle roi) {
 		if (roi==null)
 			resetRoi();
@@ -409,7 +409,9 @@ public abstract class ImageProcessor extends Object {
 	}
 
 	/** Defines a rectangular region of interest and sets the mask to 
-		null if this ROI is not the same size as the previous one. */
+		null if this ROI is not the same size as the previous one. 
+		@see ImageProcessor#resetRoi		
+	*/
 	public void setRoi(int x, int y, int rwidth, int rheight) {
 		if (x<0 || y<0 || x+rwidth>width || y+rheight>height) {
 			//find intersection of roi and this image
@@ -421,20 +423,18 @@ public abstract class ImageProcessor extends Object {
 				mask=null;
 				return;
 			}
-			if (mask!=null && mask.length==rwidth*rheight) {
+			if (mask!=null && mask.getWidth()==rwidth && mask.getHeight()==rheight) {
 				Rectangle r3 = new Rectangle(0, 0, r2.width, r2.height);
 				if (x<0) r3.x = -x;
 				if (y<0) r3.y = -y;
-				ImageProcessor ip2 = new ColorProcessor(rwidth, rheight, mask);
-				ip2.setRoi(r3);
-				ip2 = ip2.crop();
-				mask = (int[])ip2.getPixels();
+				mask.setRoi(r3);
+				mask = mask.crop();
 			}
 			roiX=r2.x; roiY=r2.y; roiWidth=r2.width; roiHeight=r2.height;
 		} else {
 			roiX=x; roiY=y; roiWidth=rwidth; roiHeight=rheight;
 		}
-		if (mask!=null && mask.length!=roiWidth*roiHeight)
+		if (mask!=null && (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight))
 			mask = null;
 		//setup limits for 3x3 filters
 		xMin = Math.max(roiX, 1);
@@ -443,6 +443,64 @@ public abstract class ImageProcessor extends Object {
 		yMax = Math.min(roiY + roiHeight - 1, height - 2);
 	}
 	
+	/** Defines a non-rectangular region of interest that will consist of a
+		rectangular ROI and a mask. After processing, call <code>reset(mask)</code>
+		to restore non-masked pixels. Here is an example:
+		<pre>
+		ip.setRoi(new OvalRoi(50, 50, 100, 50));
+		ip.fill();
+		ip.reset(ip.getMask());
+		</pre>
+		The example assumes <code>snapshot()</code> has been called, which is the case
+		for code executed in the <code>run()</code> method of plugins that implement the 
+		<code>PlugInFilter</code> interface.
+		@see ij.ImagePlus#getRoi
+	*/
+	public void setRoi(ij.gui.Roi roi) {
+		if (roi==null)
+			resetRoi();
+		else {
+			setMask(roi.getMask());
+			setRoi(roi.getBounds());
+		}
+	}
+
+	/** Defines a polygonal region of interest that will consist of a
+		rectangular ROI and a mask. After processing, call <code>reset(mask)</code>
+		to restore non-masked pixels. Here is an example:
+		<pre>
+		Polygon p = new Polygon();
+		p.addPoint(50, 0); p.addPoint(100, 100); p.addPoint(0, 100);
+		ip.setRoi(triangle);
+		ip.invert();
+		ip.reset(ip.getMask());
+		</pre>
+		The example assumes <code>snapshot()</code> has been called, which is the case
+		for code executed in the <code>run()</code> method of plugins that implement the 
+		<code>PlugInFilter</code> interface.
+		@see ij.gui.Roi#getPolygon
+		@see ImageProcessor#drawPolygon
+		@see ImageProcessor#fillPolygon
+	*/
+	public void setRoi(Polygon roi) {
+		if (roi==null)
+			{resetRoi(); return;}
+		Rectangle bounds = roi.getBounds();
+		for (int i=0; i<roi.npoints; i++) {
+			roi.xpoints[i] -= bounds.x;
+			roi.ypoints[i] -= bounds.y;
+		}
+		PolygonFiller pf = new PolygonFiller();
+		pf.setPolygon(roi.xpoints, roi.ypoints, roi.npoints);
+		ImageProcessor mask = pf.getMask(bounds.width, bounds.height);
+		setMask(mask);
+		setRoi(bounds);
+		for (int i=0; i<roi.npoints; i++) {
+			roi.xpoints[i] += bounds.x;
+			roi.ypoints[i] += bounds.y;
+		}
+	}
+
 	/** Sets the ROI (Region of Interest) and clipping rectangle to the entire image. */
 	public void resetRoi() {
 		roiX=0; roiY=0; roiWidth=width; roiHeight=height;
@@ -457,18 +515,22 @@ public abstract class ImageProcessor extends Object {
 		return new Rectangle(roiX, roiY, roiWidth, roiHeight);
 	}
 
-	/** Sets an int array used as a mask to limit processing to an
-		irregular ROI. The size of the array must be equal to
-		roiWidth*roiHeight. Pixels in the array with a value of BLACK
-		are inside the mask, all other pixels are outside the mask. */
-	public void setMask(int[] mask) {
+	/** Defines a byte mask that limits processing to an
+		irregular ROI. Background pixels in the mask have
+		a value of zero. */
+	public void setMask(ImageProcessor mask) {
 		this.mask = mask;
 	}
 
 	/** For images with irregular ROIs, returns a mask, otherwise, 
-		returns null. Pixels inside the mask have a value of BLACK. */
-	public int[] getMask() {
+		returns null. Pixels outside the mask have a value of zero. */
+	public ImageProcessor getMask() {
 		return mask;
+	}
+
+	/** Returns the mask byte array, or null if there is no mask. */
+	public byte[] getMaskArray() {
+		return mask!=null?(byte[])mask.getPixels():null;
 	}
 
 	/** Assigns a progress bar to this processor. Set 'pb' to
@@ -682,6 +744,21 @@ public abstract class ImageProcessor extends Object {
 		lineTo(x, y);
 	}
 
+	/** Draws a polygon. */
+	public void drawPolygon(Polygon p) {
+		moveTo(p.xpoints[0], p.ypoints[0]);
+		for (int i=0; i<p.npoints; i++)
+			lineTo(p.xpoints[i], p.ypoints[i]);
+		lineTo(p.xpoints[0], p.ypoints[0]);
+	}
+
+	/** Fills a polygon. */
+	public void fillPolygon(Polygon p) {
+		setRoi(p);
+		fill(getMask());
+		resetRoi();
+	}
+
 	/** Obsolete */
 	public void drawDot2(int x, int y) {
 		drawPixel(x, y);
@@ -757,18 +834,19 @@ public abstract class ImageProcessor extends Object {
 			return;
 		}
 		
-		if (ij.IJ.isMacOSX())
+		if (ij.IJ.isMacOSX()) {
 			Java2.setAntialiasedText(g, false);
+			g.setColor(Color.white);
+			g.fillRect(0, 0, w, h);
+		}
 		g.setColor(Color.black);
 		g.drawString(s, 0, h-descent);
 		g.dispose();
-		//new ij.ImagePlus("img",img).show();
 		ImageProcessor ip = new ColorProcessor(img);
-		int[] textMask = (int[])ip.getPixels();
-		for (int i=0; i<textMask.length; i++) {
-			if (textMask[i]!=0xffffffff && textMask[i]!=0xff00ffff)
-				textMask[i] = BLACK;
-		}
+		ImageProcessor textMask = ip.convertToByte(false);
+		byte[] mpixels = (byte[])textMask.getPixels();
+		//new ij.ImagePlus("textmask",textMask).show();
+		textMask.invert();
 		if (cxx<width && cy-h<height) {
 			setMask(textMask);
 			setRoi(cxx,cy-h,w,h);
@@ -828,20 +906,24 @@ public abstract class ImageProcessor extends Object {
 
 	/** Replaces each pixel with the 3x3 neighborhood mean. */
 	public void smooth() {
-		filter(BLUR_MORE);
+		if (width>1)
+			filter(BLUR_MORE);
 	}
 
 	/** Sharpens the image or ROI using a 3x3 convolution kernel. */
 	public void sharpen() {
-		int[] kernel = {-1, -1, -1,
+		if (width>1) {
+			int[] kernel = {-1, -1, -1,
 		                -1, 12, -1,
 		                -1, -1, -1};
-		convolve3x3(kernel);
+			convolve3x3(kernel);
+		}
 	}
 	
 	/** Finds edges in the image or ROI using a Sobel operator. */
 	public void findEdges() {
-		filter(FIND_EDGES);
+		if (width>1)
+			filter(FIND_EDGES);
 	}
 
 	/** Flips the image or ROI vertically. */
@@ -923,7 +1005,7 @@ public abstract class ImageProcessor extends Object {
 		(i.e. pixels that have a value=BLACK in the mask array). 
 		Throws and IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
-	public abstract void fill(int[] mask);
+	public abstract void fill(ImageProcessor mask);
 
 	/** Set a lookup table used by getPixelValue(), getLine() and
 		convertToFloat() to calibrate pixel values. The length of
@@ -1089,7 +1171,7 @@ public abstract class ImageProcessor extends Object {
 	public abstract void reset();
 	
 	/** Restore pixels that are within roi but not part of the mask. */
-	public abstract void reset(int[] mask);
+	public abstract void reset(ImageProcessor mask);
 	
 	/** Convolves the image or ROI with the specified
 		3x3 integer convolution kernel. */
@@ -1118,9 +1200,11 @@ public abstract class ImageProcessor extends Object {
 	/** Returns a duplicate of this image. */
 	public ImageProcessor duplicate() {
 		Rectangle saveRoi = getRoi();
+		ImageProcessor saveMask= getMask();
 		resetRoi();
 		ImageProcessor ip2 = crop();
 		setRoi(saveRoi);
+		setMask(saveMask);
 		return ip2;
 	}
 
@@ -1171,27 +1255,27 @@ public abstract class ImageProcessor extends Object {
 		newPixels = true;
 	}
 
-	/** Converts this processor to a ByteProcessor. */
+	/** Returns an 8-bit version of this image as a ByteProcessor. */
 	public ImageProcessor convertToByte(boolean doScaling) {
 		TypeConverter tc = new TypeConverter(this, doScaling);
 		return tc.convertToByte();
 	}
 
-	/** Converts this processor to a ShortProcessor. */
+	/** Returns a 16-bit version of this image as a ShortProcessor. */
 	public ImageProcessor convertToShort(boolean doScaling) {
 		TypeConverter tc = new TypeConverter(this, doScaling);
 		return tc.convertToShort();
 	}
 
-	/** Converts this processor to a FloatProcessor. For byte and
-		short images, transforms using a calibration function if a
-		calibration table has been set using setCalibrationTable(). */
+	/** Returns a 32-bit float version of this image as a FloatProcessor. 
+		For byte and short images, converts using a calibration function 
+		if a calibration table has been set using setCalibrationTable(). */
 	public ImageProcessor convertToFloat() {
 		TypeConverter tc = new TypeConverter(this, false);
 		return tc.convertToFloat(cTable);
 	}
 	
-	/** Converts this processor to an ColorProcessor. */
+	/** Returns an RGB version of this image as a ColorProcessor. */
 	public ImageProcessor convertToRGB() {
 		TypeConverter tc = new TypeConverter(this, true);
 		return tc.convertToRGB();
@@ -1281,6 +1365,11 @@ public abstract class ImageProcessor extends Object {
 			if (clipYMin<0) clipYMin = 0;
 			if (clipYMax>=height) clipYMax = height-1;
 		}
+	}
+	
+	protected String maskSizeError(ImageProcessor mask) {
+		return "Mask size ("+mask.getWidth()+"x"+mask.getHeight()+") != ROI size ("+
+			roiWidth+"x"+roiHeight+")";
 	}
 
 }

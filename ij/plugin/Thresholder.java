@@ -14,6 +14,7 @@ public class Thresholder implements PlugIn, Measurements {
 	private double minThreshold;
 	private double maxThreshold;
 	boolean autoThreshold;
+	boolean skipDialog;
 	ImageStack stack1;
 	static boolean fill1 = true;
 	static boolean fill2 = true;
@@ -21,6 +22,7 @@ public class Thresholder implements PlugIn, Measurements {
 
 
 	public void run(String arg) {
+		skipDialog = arg.equals("skip");
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{IJ.noImage(); return;}
@@ -45,10 +47,14 @@ public class Thresholder implements PlugIn, Measurements {
 		double saveMaxThreshold = ip.getMaxThreshold();
 		double saveMin = ip.getMin();
 		double saveMax = ip.getMax();
+		if (ip instanceof ByteProcessor)
+			{saveMin =0; saveMax = 255;}
 		autoThreshold = saveMinThreshold==ImageProcessor.NO_THRESHOLD;
 					
 		boolean useBlackAndWhite = true;
-		if (!autoThreshold) {
+		if (skipDialog)
+			fill1 = fill2 = useBlackAndWhite = true;
+		else if (!autoThreshold) {
 			GenericDialog gd = new GenericDialog("Apply Lut");
 			gd.addCheckbox("Thresholded pixels to foreground color", fill1);
 			gd.addCheckbox("Remaining pixels to background color", fill2);
@@ -60,10 +66,8 @@ public class Thresholder implements PlugIn, Measurements {
 			fill1 = gd.getNextBoolean();
 			fill2 = gd.getNextBoolean();
 			useBW = useBlackAndWhite = gd.getNextBoolean();
-		} else {
-			fill1 = true;
-			fill2 = true;
-		}
+		} else
+			fill1 = fill2 = true;
 
 		if (!(imp.getType()==ImagePlus.GRAY8))
 			convertToByte(imp);

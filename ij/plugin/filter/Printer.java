@@ -65,8 +65,8 @@ public class Printer implements PlugInFilter {
 		int height = imp.getHeight();
 		Roi roi = imp.getRoi();
 		boolean crop = false;
-		if (printSelection && roi!=null && roi.getType()<=Roi.TRACED_ROI) {
-			Rectangle r = roi.getBoundingRect();
+		if (printSelection && roi!=null && roi.isArea()) {
+			Rectangle r = roi.getBounds();
 			width = r.width;
 			height = r.height;
 			crop = true;

@@ -90,9 +90,11 @@ public class Macro {
 	public static String getValue(String options, String key, String defaultValue) {
 		key = trimKey(key);
         key += '=';
-		int index = options.indexOf(key);
-		if (index<0)
-			return defaultValue;
+		int index=-1;
+		do {
+			index = options.indexOf(key, ++index);
+			if (index<0) return defaultValue;
+		} while (index!=0&&options.charAt(index-1)!=' ');
 		options = options.substring(index+key.length(), options.length());
 		if (options.startsWith("'")) {
 			index = options.indexOf("'",1);

@@ -15,7 +15,10 @@ public class ColorProcessor extends ImageProcessor {
 	protected int[] snapshotPixels = null;
 	private int bgColor = 0xffffffff; //white
 	private int min=0, max=255;
-
+	
+	// Weighting factors used by getPixelValue(), getHistogram() and convertToByte().
+	// For unweighted conversions, check "Unweighted Color Conversion" in <i>Edit/Options/Conversions</i>.
+	private static double rWeight=0.299, gWeight=0.587,	bWeight=0.114; 
 
 	/**Creates a ColorProcessor from an AWT Image. */
 	public ColorProcessor(Image img) {
@@ -156,14 +159,17 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
-	public void reset(int[] mask) {
-		if (mask==null || snapshotPixels==null || mask.length!=roiWidth*roiHeight)
-			return;
+	public void reset(ImageProcessor mask) {
+		if (mask==null || snapshotPixels==null)
+			return;	
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]!=BLACK)
+				if (mpixels[mi++]==0)
 					pixels[i] = snapshotPixels[i];
 				i++;
 			}
@@ -174,16 +180,17 @@ public class ColorProcessor extends ImageProcessor {
 	/** Fills pixels that are within roi and part of the mask.
 		Throws an IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
-	public void fill(int[] mask) {
+	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}
-		if (mask.length<roiWidth*roiHeight)
-			throw new IllegalArgumentException();
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]==BLACK)
+				if (mpixels[mi++]!=0)
 					pixels[i] = fgColor;
 				i++;
 			}
@@ -266,17 +273,18 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Converts the specified pixel to grayscale
-		(g=r*0.299+g*0.587+b*0.114) and returns it as a float. */
+	/** Converts the specified pixel to grayscale using
+		the formula g=r/3+g/3+b/3 and returns it as a float. 
+		Call setWeightingFactors() for weighted conversions. */
 	public float getPixelValue(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			int c = pixels[y*width+x];
 			int r = (c&0xff0000)>>16;
 			int g = (c&0xff00)>>8;
 			int b = c&0xff;
-			return (float)(r*0.299 + g*0.587 + b*0.114);
+			return (float)(r*rWeight + g*gWeight + b*bWeight);
 		}
-		else
+		else 
 			return 0;
 	}
 
@@ -928,7 +936,7 @@ public class ColorProcessor extends ImageProcessor {
 				r = (c&0xff0000)>>16;
 				g = (c&0xff00)>>8;
 				b = c&0xff;
-				v = (int)(r*0.299 + g*0.587 + b*0.114 + 0.5);
+				v = (int)(r*rWeight + g*gWeight + b*bWeight + 0.5);
 				histogram[v]++;
 			}
 			if (y%20==0)
@@ -939,19 +947,22 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
-	public int[] getHistogram(int[] mask) {
+	public int[] getHistogram(ImageProcessor mask) {
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		int c, r, g, b, v;
 		int[] histogram = new int[256];
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]==BLACK) {
+				if (mpixels[mi++]!=0) {
 					c = pixels[i];
 					r = (c&0xff0000)>>16;
 					g = (c&0xff00)>>8;
 					b = c&0xff;
-					v = (int)(r*0.299 + g*0.587 + b*0.114 + 0.5);
+					v = (int)(r*rWeight + g*gWeight + b*bWeight + 0.5);
 					histogram[v]++;
 				}
 				i++;
@@ -988,6 +999,26 @@ public class ColorProcessor extends ImageProcessor {
 		ImageProcessor b2 = ip2.convertToByte(false);
 		setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
    	}
+
+	/** Sets the weighting factors used by getPixelValue(), getHistogram()
+		and convertToByte() to do color conversions. The default values are
+		0.299, 0.587 and 0.114. Check "Unweighted Color Conversions" in
+		<i>Edit/Options/Conversions</i> to use 1/3, 1/3 and 1/3. */
+	public static void setWeightingFactors(double rFactor, double gFactor, double bFactor) {
+		rWeight = rFactor;
+		gWeight = gFactor;
+		bWeight = bFactor;
+	}
+
+	/** Returns the three weighting factors used by getPixelValue(), 
+		getHistogram() and convertToByte() to do color conversions. */
+	public static double[] getWeightingFactors() {
+		double[] weights = new double[3];
+		weights[0] = rWeight;
+		weights[1] = gWeight;
+		weights[2] = bWeight;
+		return weights;
+	}
 
 	/** Always returns false since RGB images do not use LUTs. */
 	public boolean isInvertedLut() {

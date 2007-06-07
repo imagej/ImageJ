@@ -32,7 +32,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener {
 				Iterator iterator = ((List)data).iterator();
 				while(iterator.hasNext()) {
 					File file = (File)iterator.next();
-						new Opener().open(file.getAbsolutePath());
+					new Opener().open(file.getAbsolutePath());
 				}
 			}
 		}

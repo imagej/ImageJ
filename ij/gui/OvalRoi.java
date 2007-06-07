@@ -61,6 +61,7 @@ public class OvalRoi extends Roi {
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
+		cachedMask = null;
 	}
 
 	public void draw(Graphics g) {
@@ -89,33 +90,32 @@ public class OvalRoi extends Roi {
 			drawHandle(g, sx2-size2, sy3-size2);
 			drawHandle(g, sx1-size2, sy2-size2);
 		}
+		drawPreviousRoi(g);
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
-		showStatus();
+		if (state!=NORMAL) showStatus();
 	}
 
+	/** Draws an outline of this OvalRoi on the image. */
 	public void drawPixels() {
-		// equation for an ellipse is x^2/a^2 + y^2/b^2 = 1
+		if (imp==null) return;
+		Polygon p = getPolygon();
 		ImageProcessor ip = imp.getProcessor();
-		int a = width/2;
-		int b = height/2;
-		double a2 = a*a;
-		double b2 = b*b;
-		int xbase = x+a;
-		int ybase = y+b;
-		double yy;
-		ip.moveTo(x, y+b);
-		for (int i=-a+1; i<=a; i++) {
-			yy = Math.sqrt(b2*(1.0-(i*i)/a2));
-			ip.lineTo(xbase+i, ybase+(int)(yy+0.5));		
-		}
-		ip.moveTo(x, y+b);
-		for (int i=-a+1; i<=a; i++) {
-			yy = Math.sqrt(b2*(1.0-(i*i)/a2));
-			ip.lineTo(xbase+i, ybase-(int)(yy+0.5));		
-		}
+		ip.drawPolygon(p);
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
+	}		
+
+	/** Returns this OvalRoi as a polygon. */
+	public Polygon getPolygon() {
+		ImageProcessor mask = getMask();
+		Wand wand = new Wand(mask);
+		wand.autoOutline(width/2,height/2, 255, 255);
+        for (int i=0; i<wand.npoints; i++) {
+            wand.xpoints[i] += x;
+            wand.ypoints[i] += y;
+        }
+		return new Polygon(wand.xpoints, wand.ypoints, wand.npoints);
 	}		
 
 	public boolean contains(int x, int y) {
@@ -134,7 +134,7 @@ public class OvalRoi extends Roi {
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
-		if (clipboard!=null) return -1;
+		if (clipboard!=null || ic==null) return -1;
 		double mag = ic.getMagnification();
 		int size = HANDLE_SIZE+3;
 		int halfSize = size/2;
@@ -159,14 +159,27 @@ public class OvalRoi extends Roi {
 		return -1;
 	}
 
-	public int[] getMask() {
-		Image img = GUI.createBlankImage(width, height);
-		Graphics g = img.getGraphics();
-		g.setColor(Color.black);
-		g.fillOval(0, 0, width, height);
-		g.dispose();
-		ColorProcessor cp = new ColorProcessor(img);
-		return (int[])cp.getPixels();
+	public ImageProcessor getMask() {
+		if (cachedMask!=null)
+			return cachedMask;
+		ImageProcessor mask = new ByteProcessor(width, height);
+		double a=width/2.0, b=height/2.0;
+		double a2=a*a, b2=b*b;
+        a -= 0.5; b -= 0.5;
+		double xx, yy;
+        int offset;
+        byte[] pixels = (byte[])mask.getPixels();
+		for (int y=0; y<height; y++) {
+            offset = y*width;
+			for (int x=0; x<width; x++) {
+				xx = x - a;
+				yy = y - b;   
+				if ((xx*xx/a2+yy*yy/b2)<=1.0)
+					pixels[offset+x] = -1;
+			}
+		}
+		cachedMask = mask;
+		return mask;
 	}
 
 	/** Returns the perimeter length. */

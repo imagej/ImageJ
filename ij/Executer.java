@@ -104,9 +104,12 @@ public class Executer implements Runnable {
     public void runCommand(String cmd, ImagePlus imp) {
 		if (cmd.equals("New..."))
 			new NewImage();
-		else if (cmd.equals("Open..."))
-			new Opener().open();
-		else if (cmd.equals("Close"))
+		else if (cmd.equals("Open...")) {
+			if (Prefs.useJFileChooser && !IJ.macroRunning())
+				new Opener().openMultiple();
+			else
+				new Opener().open();
+		} else if (cmd.equals("Close"))
 			close(imp);
 		else if (cmd.equals("Cut"))
 			copy(imp, true);

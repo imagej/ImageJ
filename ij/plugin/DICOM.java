@@ -45,6 +45,7 @@ import ij.measure.Calibration;
    */
 
 public class DICOM extends ImagePlus implements PlugIn {
+	private boolean showErrors = true;
 
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("Open Dicom...", arg);
@@ -59,10 +60,10 @@ public class DICOM extends ImagePlus implements PlugIn {
 		catch (IOException e) {
 			String msg = e.getMessage();
 			IJ.showStatus("");
-			if (msg.indexOf("EOF")<0) {
+			if (msg.indexOf("EOF")<0&&showErrors) {
 				IJ.showMessage("DicomDecoder", msg);
 				return;
-			} else if (!dd.dicmFound()) {
+			} else if (!dd.dicmFound()&&showErrors) {
 				msg = "This does not appear to be a valid\n"
 				+ "DICOM file. It does not have the\n"
 				+ "characters 'DICM' at offset 128.";
@@ -94,11 +95,28 @@ public class DICOM extends ImagePlus implements PlugIn {
 			setProperty("Info", dd.getDicomInfo());
 			setFileInfo(fi); // needed for revert
 			if (arg.equals("")) show();
-		} else
+		} else if (showErrors)
 			IJ.showMessage("DicomDecoder","Unable to decode DICOM header.");
 		IJ.showStatus("");
 	}
 
+	/** Opens the specified file as a DICOM. Does not 
+		display a message if there is an error.
+		Here is an example:
+		<pre>
+		DICOM dcm = new DICOM();
+		dcm.open(path);
+		if (dcm.getWidth()==0)
+			IJ.log("Error opening '"+path+"'");
+		else
+			dcm.show();
+		</pre>
+	*/
+	public void open(String path) {
+		showErrors = false;
+		run(path);
+	}
+	
 	/** Convert 16-bit signed to unsigned if all pixels>=0. */
 	void convertToUnsigned(ImagePlus imp, FileInfo fi) {
 		ImageProcessor ip = imp.getProcessor();

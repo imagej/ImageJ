@@ -10,10 +10,11 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
-public class Roi extends Object implements Cloneable {
+public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	public static final int CONSTRUCTING=0, MOVING=1, RESIZING=2, NORMAL=3, MOVING_HANDLE=4; // States
-	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, POLYLINE=6, FREELINE=7, ANGLE=8; // Types
+	public static final int RECTANGLE=0, OVAL=1, POLYGON=2, FREEROI=3, TRACED_ROI=4, LINE=5, 
+		POLYLINE=6, FREELINE=7, ANGLE=8, COMPOSITE=9; // Types
 	public static final int HANDLE_SIZE = 5; 
 	public static final int NOT_PASTING = -1; 
 	
@@ -21,7 +22,7 @@ public class Roi extends Object implements Cloneable {
 	int activeHandle;
 	int state;
 	
-	public static Roi previousRoi = null;
+	public static Roi previousRoi;
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
 	protected static int pasteMode = Blitter.COPY;
 	
@@ -37,6 +38,7 @@ public class Roi extends Object implements Cloneable {
 	protected boolean updateFullWindow;
 	protected double mag = 1.0;
 	protected String name;
+	protected ImageProcessor cachedMask;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -97,8 +99,10 @@ public class Roi extends Object implements Cloneable {
 	
 	public void setImage(ImagePlus imp) {
 		this.imp = imp;
+		cachedMask = null;
 		if (imp==null) {
 			ic = null;
+			clipboard = null;
 			xMax = 99999;
 			yMax = 99999;
 		} else {
@@ -141,17 +145,42 @@ public class Roi extends Object implements Cloneable {
 		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
 	}
 
-	public Rectangle getBoundingRect() {
+	/** Return this selection's bounding rectangle. */
+	public Rectangle getBounds() {
 		return new Rectangle(x, y, width, height);
 	}
 	
+	/** This obsolete method has been replaced by getBounds(). */
+	public Rectangle getBoundingRect() {
+		return getBounds();
+	}
+
+	/** Returns the outline of this selection as a Polygon, or 
+		null if this is a straight line selection. 
+		@see ij.process.ImageProcessor#setRoi
+		@see ij.process.ImageProcessor#drawPolygon
+		@see ij.process.ImageProcessor#fillPolygon
+	*/
+	public Polygon getPolygon() {
+		int[] xpoints = new int[4];
+		int[] ypoints = new int[4];
+		xpoints[0] = x;
+		ypoints[0] = y;
+		xpoints[1] = x+width;
+		ypoints[1] = y;
+		xpoints[2] = x+width;
+		ypoints[2] = y+height;
+		xpoints[3] = x;
+		ypoints[3] = y+height;
+		return new Polygon(xpoints, ypoints, 4);
+	}
+
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
 		(www.eckelobjects.com) for a good description of object cloning. */
 	public synchronized Object clone() {
 		try { 
 			Roi r = (Roi)super.clone();
-			r.previousRoi = null;
-			r.imp = null;
+			r.setImage(null);
 			return r;
 		}
 		catch (CloneNotSupportedException e) {return null;}
@@ -276,6 +305,7 @@ public class Roi extends Object implements Cloneable {
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
+		showStatus();
 	}
 	
 	/** Nudge lower right corner of rectangular and oval ROIs by
@@ -304,6 +334,8 @@ public class Roi extends Object implements Cloneable {
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
+		cachedMask = null;
+		showStatus();
 	}
 	
 	protected void updateClipRect() {
@@ -373,11 +405,19 @@ public class Roi extends Object implements Cloneable {
 			drawHandle(g, sx1-size2, sy3-size2);
 			drawHandle(g, sx1-size2, sy2-size2);
 		}
-		showStatus();
+		drawPreviousRoi(g);
+		if (state!=NORMAL) showStatus();
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
 	}
-
+	
+	void drawPreviousRoi(Graphics g) {
+		if (previousRoi!=null && previousRoi!=this && ic.roiModState!=ImageCanvas.NO_MODS) {
+			previousRoi.setImage(imp);
+			previousRoi.draw(g);
+		}		
+	}
+	
 	void drawHandle(Graphics g, int x, int y) {
 		double size = (width*height)*mag;
 		if (type==LINE) {
@@ -466,8 +506,37 @@ public class Roi extends Object implements Cloneable {
 			else
 				Recorder.record("makeRectangle", x, y, width, height);
 		}
+		modifyRoi();
 	}
 
+    public void modifyRoi() {
+		//IJ.log("modifyRoi: "+ic+(ic!=null?""+ic.roiModState:"")+" "+previousRoi);
+    	if (ic==null || ic.roiModState==ImageCanvas.NO_MODS || previousRoi==null)
+    		return;
+        ShapeRoi s1  = null;
+        ShapeRoi s2 = null;
+        if (previousRoi instanceof ShapeRoi)
+            s1 = (ShapeRoi)previousRoi;
+        else
+            s1 = new ShapeRoi(previousRoi);
+        if (this instanceof ShapeRoi)
+            s2 = (ShapeRoi)this;
+        else
+            s2 = new ShapeRoi(this);
+        if (ic.roiModState==ImageCanvas.ADD_TO_ROI)
+        	s1.or(s2);
+        else
+        	s1.not(s2);
+		ic.roiModState = ImageCanvas.NO_MODS;
+		Roi[] rois = s1.getRois();
+		int type2 = rois[0].getType();
+		//IJ.log(rois.length+" "+type2);
+		if (rois.length==1 && (type2==POLYGON||type2==FREEROI))
+			imp.setRoi(rois[0]);
+		else
+			imp.setRoi(s1);
+    }
+    
 	protected void showStatus() {
 		String value;
 		if (state!=CONSTRUCTING && type==RECTANGLE && width<=25 && height<=25) {
@@ -486,7 +555,7 @@ public class Roi extends Object implements Cloneable {
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 		
-	public int[] getMask() {
+	public ImageProcessor getMask() {
 		return null;
 	}
 	
@@ -625,6 +694,34 @@ public class Roi extends Object implements Cloneable {
 	/** Returns the current paste transfer mode. */
 	public static int getCurrentPasteMode() {
 		return pasteMode;
+	}
+	
+	/** Returns true if this is an area selection. */
+	public boolean isArea() {
+		return (type>=RECTANGLE && type<=TRACED_ROI) || type==COMPOSITE;
+	}
+
+	/** Returns true if this is a line selection. */
+    boolean isLine() {
+        return type>=LINE && type<=FREELINE;
+    }
+
+	/** Convenience method that converts Roi type to a human-readable form. */
+	public String getTypeAsString() {
+		String s="";
+		switch(type) {
+			case POLYGON: s="Polygon"; break;
+			case FREEROI: s="Freehand"; break;
+			case TRACED_ROI: s="Traced"; break;
+			case POLYLINE: s="Polyline"; break;
+			case FREELINE: s="Freeline"; break;
+			case ANGLE: s="Angle"; break;
+			case LINE: s="Straight Line"; break;
+			case OVAL: s="Oval"; break;
+			case COMPOSITE: s = "Composite"; break;
+			default: s="Rectangle"; break;
+		}
+		return s;
 	}
 
 	public String toString() {

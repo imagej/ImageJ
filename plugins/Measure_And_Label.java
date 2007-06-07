@@ -28,7 +28,7 @@ public void run(String arg) {
 
 void drawLabel(ImagePlus imp, Roi roi, String label) {
             if (roi==null) return;
-            Rectangle r = roi.getBoundingRect();
+            Rectangle r = roi.getBounds();
             ImageProcessor ip = imp.getProcessor();
             //label = Analyzer.getCounter() + label;
             int x = r.x + r.width/2 - ip.getStringWidth(label)/2;

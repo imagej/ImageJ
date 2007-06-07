@@ -24,7 +24,8 @@ public class EDM implements PlugInFilter {
 	ImageStack movie;
 	boolean debug = IJ.debugMode;
 	boolean invertImage;
-	static boolean whiteBackground = true;	
+	static boolean whiteBackground = true;
+	static boolean smoothEDM = true;	
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -344,7 +345,7 @@ public class EDM implements PlugInFilter {
 			movie.addSlice("EDM", ip.duplicate());
 		}
 		if (watershed) {
-			filterEDM(ip, true);
+			if (smoothEDM) filterEDM(ip, true);
 			filterEDM(ip, false);
 		}
 		if (debug)

@@ -60,7 +60,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macroNames = new String[MAX_MACROS];
 		int toolCount = 0;
 		int itemCount = macrosMenu.getItemCount();
-		int baseCount = macrosMenu==Menus.getMacrosMenu()?3:2;
+		int baseCount = macrosMenu==Menus.getMacrosMenu()?4:2;
 		if (itemCount>baseCount)
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);

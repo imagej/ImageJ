@@ -27,6 +27,7 @@ public class TiffDecoder {
 	public static final int COLOR_MAP = 320;
 	public static final int SAMPLE_FORMAT = 339;
 	public static final int METAMORPH1 = 33628;
+	public static final int METAMORPH2 = 33629;
 	public static final int IPLAB = 34122;
 	public static final int NIH_IMAGE_HDR = 43314;
 	
@@ -351,8 +352,12 @@ public class TiffDecoder {
 				case SAMPLES_PER_PIXEL:
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = FileInfo.RGB;
-					else if (!(value==1||value==3))
-						throw new IOException("Unsupported SamplesPerPixel: " + value);
+					else if (!(value==1||value==3)) {
+						String msg = "Unsupported SamplesPerPixel: " + value;
+						if (value==4)
+							msg += " \n \n" + "ImageJ cannot open CMYK and RGB+alpha TIFFs";
+						throw new IOException(msg);
+					}
 					break;
 				case X_RESOLUTION:
 					double xScale = getRational(value); 
@@ -396,9 +401,13 @@ public class TiffDecoder {
 						if (s!=null) decodeImageDescription(s,fi);
 					}
 					break;
-				case METAMORPH1: 
-					if (name.indexOf(".STK")>0 || name.indexOf(".stk")>0)
-						fi.nImages=9999;
+				case METAMORPH1: case METAMORPH2:
+					if (name.indexOf(".STK")>0 || name.indexOf(".stk")>0) {
+						if (tag==METAMORPH2)
+							fi.nImages=count;
+						else
+							fi.nImages=9999;
+					}
 					break;
 				case IPLAB: 
 					fi.nImages=value;

@@ -24,7 +24,7 @@ TextListener, ClipboardOwner, MacroConstants {
 	private static int lineNumber = 1;
 	private static int xoffset, yoffset;
 	private static int nWindows;
-	private Menu fileMenu;
+	private Menu fileMenu, editMenu;
 	private Properties p = new Properties();
 	private int[] macroStarts;
 	private String[] macroNames;
@@ -83,10 +83,12 @@ TextListener, ClipboardOwner, MacroConstants {
 		m.add(new MenuItem("Zap Gremlins"));
 		m.addActionListener(this);
 		mb.add(m);
+		editMenu = m;
 		setMenuBar(mb);
 
 		ta = new TextArea(16, 60);
 		ta.addTextListener(this);
+		//ta.setBackground(Color.white);
 		if (IJ.isMacOSX())
 			ta.setFont(new Font("SansSerif",Font.PLAIN,12));
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
@@ -121,7 +123,7 @@ TextListener, ClipboardOwner, MacroConstants {
 		ta.append(text);
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
-		if (!name.endsWith(".java")) {
+		if (name.endsWith(".txt")) {
 			fileMenu.remove(4);
 			fileMenu.insert(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)), 4);
 			int itemCount = fileMenu.getItemCount();
@@ -137,6 +139,11 @@ TextListener, ClipboardOwner, MacroConstants {
 		}
 		show();
 		changes = false;
+	}
+
+	public void createMacro(String name, String text) {
+		create(name, text);
+		editMenu.add(new MenuItem("Convert to Plugin"));
 	}
 
 	void installMacros(String text, boolean installInPluginsMenu) {
@@ -402,6 +409,8 @@ TextListener, ClipboardOwner, MacroConstants {
 			gotoLine();
 		else if ("Zap Gremlins".equals(what))
 			zapGremlins();
+		else if ("Convert to Plugin".equals(what))
+			convertToPlugin();
 		else
 			installer.runMacro(what);
 	}
@@ -462,7 +471,8 @@ TextListener, ClipboardOwner, MacroConstants {
 		}
 	}
 	
-	void updateClassName(String oldName, String newName) {
+	/** Changes a plugins class name to reflect a new file name. */
+	public void updateClassName(String oldName, String newName) {
 		if (newName.indexOf("_")<0)
 			IJ.showMessage("Plugin Editor", "Plugins without an underscore in their name will not\n"
 				+"be automatically installed when ImageJ is restarted.");
@@ -551,6 +561,39 @@ TextListener, ClipboardOwner, MacroConstants {
 			IJ.showMessage("Zap Gremlins", "No invalid characters found");
 	}
 
+	void convertToPlugin() {
+		if (!getTitle().endsWith(".txt")) return;
+		String text = ta.getText();
+		if (text==null || text.equals("")) {
+			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
+			return;
+		}
+		if (text.indexOf("{")>-1) {
+			IJ.showMessage("Convert to Plugin", "Conversion limited to recorder generated macro code.");
+			return;
+		}
+		StringTokenizer st = new StringTokenizer(text, "\n");
+		int n = st.countTokens();
+		String line;
+		StringBuffer sb = new StringBuffer();
+		for(int i=0; i<n; i++) {
+			line = st.nextToken();
+			if (line!=null && line.length()>3) {
+				sb.append("\t\tIJ.");
+				sb.append(line);
+				sb.append('\n');
+			}
+		}
+		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
+		Editor ed = np.getEditor();
+		String title = getTitle();
+		if (title.endsWith(".txt")) title = title.substring(0, title.length()-4);
+		if (title.indexOf('_')==-1) title += "_";
+		title += ".java";
+		ed.updateClassName(ed.getTitle(), title);
+		ed.setTitle(title);
+	}
+	
 	public static void setDefaultDirectory(String defaultDirectory) {
 		defaultDir = defaultDirectory;
 	}

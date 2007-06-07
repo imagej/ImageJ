@@ -1,0 +1,16 @@
+// Inverts the current image. Does not work with float
+// images because it uses the ~ (bitwise complement)
+// operator that only works with integers.
+
+  requires("1.29m");
+  w = getWidth();
+  h = getHeight();
+  start = getTime();
+  for (y=0; y<h; y++) {
+      for (x=0; x<w; x++)
+           putPixel(x, y, ~getPixel(x, y));      
+      if (y%10==0) showProgress(y, h-1);
+      //if (y%10==0) updateDisplay();
+  }
+  showStatus(round((w*h)/((getTime()-start)/1000)) + " pixels/sec");
+  resetMinAndMax();

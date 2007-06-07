@@ -32,7 +32,7 @@ public class Resizer implements PlugInFilter {
 		}
 		boolean sizeToHeight=false;
 		if (crop) {
-			Rectangle bounds = roi.getBoundingRect();
+			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
 			newHeight = bounds.height;
 			interpolate = false;

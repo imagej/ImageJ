@@ -100,6 +100,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private ImageProcessor redirectIP;
 	private PolygonFiller pf;
     private Roi saveRoi;
+    private int beginningCount;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -270,12 +271,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (!Analyzer.resetCounter())
                 return false;
 		}
+		beginningCount = Analyzer.getCounter();
 
 		byte[] pixels = null;
 		if (ip instanceof ByteProcessor)
 			pixels = (byte[])ip.getPixels();
 		Rectangle r = ip.getRoi();
-		int[] mask = ip.getMask();
+		ImageProcessor mask = ip.getMask();
 		if (r.width<width || r.height<height || mask!=null)
 			eraseOutsideRoi(ip, r, mask);
 		minX=r.x; maxX=r.x+r.width; minY=r.y; maxY=r.y+r.height;
@@ -338,21 +340,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		return true;
 	}
 	
-	void eraseOutsideRoi(ImageProcessor ip, Rectangle r, int[] mask) {
+	void eraseOutsideRoi(ImageProcessor ip, Rectangle r, ImageProcessor mask) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		ip.setValue(fillColor);		
 		if (mask!=null) {
- 			int[] invertedMask = new int[mask.length];
- 			for (int i=0; i<mask.length; i++) {
- 				if (mask[i]==ImageProcessor.BLACK)
- 					invertedMask[i] = 0xFFFFFFFF;
- 				else
- 					invertedMask[i] = ImageProcessor.BLACK;
- 			}
- 			ip.setMask(invertedMask);
+			mask = mask.duplicate();
+			mask.invert();
+ 			ip.setMask(mask);
 			ip.fill();
- 			ip.reset(invertedMask);
+ 			ip.reset(mask);
  		} 		
  		ip.setRoi(0, 0, r.x, height);
  		ip.fill();
@@ -432,7 +429,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (wand.npoints==0)
 			{IJ.log("wand error: "+x+" "+y); return;}
 		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		if (r.width>1 && r.height>1) {
                     PolygonRoi proi = (PolygonRoi)roi;
                     pf.setPolygon(proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
@@ -445,7 +442,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (excludeEdgeParticles &&
 		(r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY))
 				include = false;
-		int[] mask = ip2.getMask();
+		ImageProcessor mask = ip2.getMask();
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {
 			particleCount++;
 			if (roiNeedsImage)
@@ -478,7 +475,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		analyzer.saveResults(stats, roi);
 		if (recordStarts) {
 			int coordinates = ((PolygonRoi)roi).getNCoordinates();
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			int x = r.x+((PolygonRoi)roi).getXCoordinates()[coordinates-1];
 			int y = r.y+((PolygonRoi)roi).getYCoordinates()[coordinates-1];
 			rt.addValue(xStartC, x);
@@ -491,7 +488,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Draws a selected particle in a separate image.  This is
 		another method subclasses may want to override. */
 	protected void drawParticle(ImageProcessor drawIP, Roi roi,
-	ImageStatistics stats, int[] mask) {
+	ImageStatistics stats, ImageProcessor mask) {
 		switch (showChoice) {
 			case MASKS: drawFilledParticle(drawIP, roi, mask); break;
 			case OUTLINES: drawOutline(drawIP, roi, rt.getCounter()); break;
@@ -500,14 +497,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 	}
 
-	void drawFilledParticle(ImageProcessor ip, Roi roi, int[] mask) {
-		//IJ.write(roi.getBoundingRect()+" "+mask.length);
-		ip.setRoi(roi.getBoundingRect());
+	void drawFilledParticle(ImageProcessor ip, Roi roi, ImageProcessor mask) {
+		//IJ.write(roi.getBounds()+" "+mask.length);
+		ip.setRoi(roi.getBounds());
 		ip.fill(mask);
 	}
 
 	void drawOutline(ImageProcessor ip, Roi roi, int count) {
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		int nPoints = ((PolygonRoi)roi).getNCoordinates();
 		int[] xp = ((PolygonRoi)roi).getXCoordinates();
 		int[] yp = ((PolygonRoi)roi).getYCoordinates();
@@ -547,6 +544,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			String prefix = showChoice==MASKS?"Mask of ":"Drawing of ";
 			new ImagePlus(prefix+title, outlines).show();
 		}
+		if (showResults && !processStack) {
+			Analyzer.firstParticle = beginningCount;
+			Analyzer.lastParticle = Analyzer.getCounter()-1;
+		} else
+			Analyzer.firstParticle = Analyzer.lastParticle = 0;
 	}
 	
 	void showSummary() {
@@ -559,10 +561,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		s += "Count: " + totalCount+"\n";
 		float[] areas = rt.getColumn(ResultsTable.AREA);
 		if (areas!=null) {
-			if (areas.length!=totalCount)
-				return;
 			double sum = 0.0;
-			for (int i=0; i<totalCount; i++)
+			int start = areas.length-totalCount;
+			if (start<0)
+				return;
+			for (int i=start; i<areas.length; i++)
 				sum += areas[i];
 			int places = Analyzer.getPrecision();
 			Calibration cal = imp.getCalibration();

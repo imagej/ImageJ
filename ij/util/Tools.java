@@ -91,20 +91,53 @@ import java.awt.Color;
 	}
 
 	/**
-	* Returns a new double initialized to the value represented by the 
+	* Returns a double containg the value represented by the 
 	* specified <code>String</code>.
 	*
 	* @param      s   the string to be parsed.
-	* @return     The double value represented by the string argument. 
-	*	Returns Double.NaN if the string does not contain a parsable double
+	* @param      defaultValue   the value returned if <code>s</code>
+	*	does not contain a parsable double
+	* @return     The double value represented by the string argument or
+	*	<code>defaultValue</code> if the string does not contain a parsable double
 	*/
-	public static double parseDouble(String s) {
-		double n = Double.NaN;
+	public static double parseDouble(String s, double defaultValue) {
 		try {
 			Double d = new Double(s);
-			n = d.doubleValue();
+			defaultValue = d.doubleValue();
 		} catch (NumberFormatException e) {}
-		return n;			
+		return defaultValue;			
+	}
+
+	/**
+	* Returns a double containg the value represented by the 
+	* specified <code>String</code>.
+	*
+	* @param      s   the string to be parsed.
+	* @return     The double value represented by the string argument or
+	*	Double.NaN if the string does not contain a parsable double
+	*/
+	public static double parseDouble(String s) {
+		return parseDouble(s, Double.NaN);
+	}
+	
+	/** Returns the number of decimal places need to display two numbers. */
+	public static int getDecimalPlaces(double n1, double n2) {
+		if (Math.round(n1)==n1 && Math.round(n2)==n2)
+			return 0;
+		else {
+			n1 = Math.abs(n1);
+			n2 = Math.abs(n2);
+		    double n = n1<n2&&n1>0.0?n1:n2;
+		    double diff = Math.abs(n2-n1);
+		    if (diff>0.0 && diff<n) n = diff;		    
+			int digits = 2;
+			if (n<100.0) digits = 3;
+			if (n<0.1) digits = 4;
+			if (n<0.01) digits = 5;
+			if (n<0.001) digits = 6;
+			if (n<0.0001) digits = 7;
+			return digits;
+		}
 	}
 
 }

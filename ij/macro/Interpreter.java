@@ -187,10 +187,6 @@ public class Interpreter implements MacroConstants {
 			case WORD:
 				doAssignment();
 				break;
-			case '(': case PLUS_PLUS:
-				putTokenBack();
-				getAssignmentExpression();
-				break;
 			case IF:
 				doIf();
 				return;
@@ -222,6 +218,7 @@ public class Interpreter implements MacroConstants {
 			case NUMERIC_FUNCTION:
 			case STRING_FUNCTION:
 			case STRING_CONSTANT:
+			case '(': 
 				putTokenBack();
 				IJ.log(getString());
 				return;
@@ -335,6 +332,10 @@ public class Interpreter implements MacroConstants {
 		getRightParen();
 	}
 	
+	// cache exception object for better performance
+    ReturnException returnException;
+    
+    // Handle return statement 
 	void doReturn() {
 		if (inFunction) {
 			double value = 0.0;
@@ -361,7 +362,13 @@ public class Interpreter implements MacroConstants {
 				} else if (array==null)
 					value = getExpression();
 			}
-			throw new ReturnException(value, str, array);
+            if (returnException==null)
+                returnException = new ReturnException();
+            returnException.value = value;
+            returnException.str = str;
+            returnException.array = array;
+			//throw new ReturnException(value, str, array);
+			throw returnException;
 		} else
 			error("Return outside of function");
 	}
@@ -773,9 +780,7 @@ public class Interpreter implements MacroConstants {
 
 	final boolean getBoolean() {
 		getLeftParen();
-		Variable.doHash = true;
 		double value = getLogicalExpression();
-		Variable.doHash = false;
 		checkBoolean(value);
 		getRightParen();
 		return value==0.0?false:true;
@@ -799,42 +804,81 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final double getBooleanExpression() {
-		double v1;
-		int next = nextToken();
-		if (next==STRING_CONSTANT || next==STRING_FUNCTION)
-			v1 = new Variable(0, 0.0, getString()).getHashCode();
+		double v1 = 0.0;
+		String s1 = null;
+		int next = pgm.code[pc+1];
+		int tok = next&0xffff;
+		if (tok==STRING_CONSTANT || tok==STRING_FUNCTION || isString(next))
+			s1 = getString();
 		else
 			v1 = getExpression();
 		next = nextToken();
 		if (next>=EQ && next<=LTE) {
 			getToken();
 			int op = token;
-			double v2;
-			next = nextToken();
-			if (next==STRING_CONSTANT || next==STRING_FUNCTION)
-				v2 = new Variable(0, 0.0, getString()).getHashCode();
-			else
-				v2 = getExpression();
+			if (s1!=null)
+				return compareStrings(s1, getString(), op);
+			double v2 = getExpression();
 			switch (op) {
+				case EQ:
+					v1 = v1==v2?1.0:0.0;
+					break;
+				case NEQ:
+					v1 = v1!=v2?1.0:0.0;
+					break;
+				case GT:
+					v1 = v1>v2?1.0:0.0;
+					break;
+				case GTE:
+					v1 = v1>=v2?1.0:0.0;
+					break;
+				case LT:
+					v1 = v1<v2?1.0:0.0;
+					break;
+				case LTE:
+					v1 = v1<=v2?1.0:0.0;
+					break;
+			}
+		}
+		return v1;
+	}
+
+	// returns true if the specified token is a string variable
+	boolean isString(int token) {
+		if ((token&0xffff)!=WORD)
+			return false;
+		Variable v = lookupVariable(token>>16);
+		if (v==null)
+			return false;
+		return v.getType()==Variable.STRING;
+	}
+
+	double compareStrings(String s1, String s2, int op) {
+		int result;
+		if (IJ.isJava2())
+			result = s1.compareToIgnoreCase(s2);
+		else
+			result = s1.toLowerCase().compareTo(s2.toLowerCase());
+		double v1 = 0.0;
+		switch (op) {
 			case EQ:
-				v1 = v1==v2?1.0:0.0;
+				v1 = result==0?1.0:0.0;
 				break;
 			case NEQ:
-				v1 = v1!=v2?1.0:0.0;
+				v1 = result!=0?1.0:0.0;
 				break;
 			case GT:
-				v1 = v1>v2?1.0:0.0;
+				v1 = result>0?1.0:0.0;
 				break;
 			case GTE:
-				v1 = v1>=v2?1.0:0.0;
+				v1 = result>=0?1.0:0.0;
 				break;
 			case LT:
-				v1 = v1<v2?1.0:0.0;
+				v1 = result<0?1.0:0.0;
 				break;
 			case LTE:
-				v1 = v1<=v2?1.0:0.0;
+				v1 = result<=0?1.0:0.0;
 				break;
-			}
 		}
 		return v1;
 	}
@@ -926,7 +970,6 @@ public class Interpreter implements MacroConstants {
 		tokenString = "";
 		IJ.showStatus("");
 		if (showingProgress) IJ.showProgress(0, 0);
-		Variable.doHash = false;
 		batchMode = false;
 		if (showMessage) {
 			String line = getErrorLine();
@@ -1196,7 +1239,7 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final Variable lookupVariable(int symTabAddress) {
-		//IJ.log("lookupLocalVariable: "+topOfStack+" "+startOfLocals+" "+topOfGlobals);
+		//IJ.log("lookupVariable: "+topOfStack+" "+startOfLocals+" "+topOfGlobals);
 		Variable v = null;
 		for (int i=topOfStack; i>=startOfLocals; i--) {
 			if (stack[i].symTabIndex==symTabAddress) {

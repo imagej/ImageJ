@@ -82,7 +82,7 @@ public class GelAnalyzer implements PlugIn {
 			show("Rectangular selection required.");
 			return;
 		}
-		Rectangle rect = roi.getBoundingRect();
+		Rectangle rect = roi.getBounds();
 		if (nLanes==0) {
 			invertedLut = imp.isInvertedLut();
 			IJ.register(GelAnalyzer.class);  // keeps this class from being GC'd
@@ -341,6 +341,14 @@ public class GelAnalyzer implements PlugIn {
 		plots.setProcessor("Plots of "+imp.getShortTitle(), ip);
 		plots.changes = true;
 		ip.setThreshold(0,0,ImageProcessor.NO_LUT_UPDATE); // Wand tool works better with threshold set
+		if (cal.calibrated()) {
+			double pixelsAveraged = isVertical?firstRect.width:firstRect.height;
+			double scale = Math.sqrt((xScale*yScale)/pixelsAveraged);
+			Calibration plotsCal = plots.getCalibration();
+			plotsCal.setUnit("unit");
+			plotsCal.pixelWidth = 1.0/scale;
+			plotsCal.pixelHeight = 1.0/scale;
+		}
 		plots.show();
 		nLanes = 0;
 		saveID = 0;
@@ -463,7 +471,9 @@ class PlotsCanvas extends ImageCanvas {
 		if (circularity<0.025)
 			error = " (error?)";
 		double area = s.pixelCount+perimeter/2.0; // add perimeter/2 to account area under border
-		rect[counter] = roi.getBoundingRect();
+		Calibration cal = imp.getCalibration();
+		area = area*cal.pixelWidth*cal.pixelHeight;
+		rect[counter] = roi.getBounds();
 
 		//area += (rect[counter].width/rect[counter].height)*1.5;
 		// adjustment for small peaks from NIH Image gel macros

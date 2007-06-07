@@ -13,14 +13,15 @@ import java.awt.image.*;
 		static final int SMALL_FONT=14, LARGE_FONT=30;
 
 	public void run(String arg) {
-		int lines = 6;
+		int lines = 7;
 		String[] text = new String[lines];
 		text[0] = "ImageJ "+ImageJ.VERSION;
 		text[1] = "Wayne Rasband";
 		text[2] = "National Institutes of Health, USA";
 		text[3] = "http://rsb.info.nih.gov/ij/";
 		text[4] = "Java "+System.getProperty("java.version");
-		text[5] = "ImageJ is in the public domain";
+		text[5] = IJ.freeMemory();
+		text[6] = "ImageJ is in the public domain";
 		ImageProcessor ip = null;
 		ImageJ ij = IJ.getInstance();
 		URL url = ij .getClass() .getResource("/about.jpg");
@@ -60,7 +61,11 @@ import java.awt.image.*;
 		ip.drawString(text[3], x(text[3],ip,max), y);
 		y += 18;
 		ip.drawString(text[4], x(text[4],ip,max), y);
-		ip.drawString(text[5], ip.getWidth()-ip.getStringWidth(text[5])-10, ip.getHeight()-3);
+		if (IJ.maxMemory()>0L) {
+			y += 18;
+			ip.drawString(text[5], x(text[5],ip,max), y);
+		}
+		ip.drawString(text[6], ip.getWidth()-ip.getStringWidth(text[6])-10, ip.getHeight()-3);
 		ImageWindow.centerNextImage();
 		new ImagePlus("About ImageJ", ip).show();
 	}

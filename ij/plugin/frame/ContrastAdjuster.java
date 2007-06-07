@@ -392,7 +392,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	
 	/** Restore image outside non-rectangular roi. */
   	void doMasking(ImagePlus imp, ImageProcessor ip) {
-		int[] mask = imp.getMask();
+		ImageProcessor mask = imp.getMask();
 		if (mask!=null)
 			ip.reset(mask);
 	}
@@ -543,6 +543,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			else
 				table[i] = (int)(((double)(i-min)/(max-min))*255);
 		}
+		ip.setRoi(imp.getRoi());
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
 			YesNoCancelDialog d = new YesNoCancelDialog(this,
@@ -553,8 +554,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				new StackProcessor(stack, ip).applyTable(table);
 			else
 				ip.applyTable(table);
-		} else
+		} else {
+			if (ip.getMask()!=null)	 ip.snapshot();
 			ip.applyTable(table);
+			ip.reset(ip.getMask());
+		}
 		reset(imp, ip);
 		imp.changes = true;
 		imp.unlock();
@@ -638,7 +642,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		updateScrollBars(null);
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
-			int[] mask = roi.getMask();
+			ImageProcessor mask = roi.getMask();
 			if (mask!=null)
 				ip.reset(mask);
 		}
@@ -798,6 +802,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		notify();
 	}
 
+    /** Resets this ContrastAdjuster and brings it to the front. */
+    public void updateAndDraw() {
+        previousImageID = 0;
+        toFront();
+    }
+
 } // ContrastAdjuster class
 
 
@@ -882,7 +892,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 				y2 = 0;
 		}
 		if (histogram!=null) {
-			if (os==null) {
+			if (os==null && hmax!=0) {
 				os = createImage(WIDTH,HEIGHT);
 				osg = os.getGraphics();
 				osg.setColor(Color.white);

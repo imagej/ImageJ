@@ -7,6 +7,7 @@ import ij.process.*;
 import ij.text.*;
 import ij.measure.*;
 import ij.io.*;
+import ij.util.Tools;
 
 /** This plugin implements the Image/Show Info command. */
 public class Info implements PlugInFilter {
@@ -58,11 +59,14 @@ public class Info implements PlugInFilter {
 	    		s += "Depth:  "+IJ.d2s(nSlices*cal.pixelDepth,2)+" " + units+" ("+nSlices+")\n";	    			    	
 	    	if (nSlices>1)
 	    		s += "Voxel size: "+IJ.d2s(cal.pixelWidth,2) + "x" + IJ.d2s(cal.pixelHeight,2)+"x"+IJ.d2s(cal.pixelDepth,2) + "\n";	    		
-	    	if (cal.pixelWidth==cal.pixelHeight)
-	    		s += "Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,2) + " pixels per "+unit+"\n";
+	    	double xResolution = 1.0/cal.pixelWidth;
+	    	double yResolution = 1.0/cal.pixelHeight;
+	    	int places = Tools.getDecimalPlaces(xResolution, yResolution);
+	    	if (xResolution==yResolution)
+	    		s += "Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+unit+"\n";
 	    	else {
-	    		s += "X Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,2) + " pixels per "+unit+"\n";
-	    		s += "Y Resolution:  "+IJ.d2s(1.0/cal.pixelHeight,2) + " pixels per "+unit+"\n";
+	    		s += "X Resolution:  "+IJ.d2s(xResolution,places) + " pixels per "+unit+"\n";
+	    		s += "Y Resolution:  "+IJ.d2s(yResolution,places) + " pixels per "+unit+"\n";
 	    	}
 	    } else {
 	    	s += "Width:  " + imp.getWidth() + " pixels\n";
@@ -177,21 +181,12 @@ public class Info implements PlugInFilter {
 	    	s += "No Selection\n";
 	    } else {
 	    	s += " \n";
-    		switch (roi.getType()) {
-    			case Roi.RECTANGLE: s += "Rectangular Selection"; break;
-    			case Roi.OVAL: s += "Oval Selection"; break;
-    			case Roi.POLYGON: s += "Polygon Selection"; break;
-    			case Roi.FREEROI: s += "Freehand Selection"; break;
-    			case Roi.TRACED_ROI: s += "Traced Selection"; break;
-    			case Roi.LINE: s += "Line Selection"; break;
-    			case Roi.POLYLINE: s += "Polyline Selection"; break;
-    			case Roi.FREELINE: s += "Freehand line Selection"; break;
-    		}
+	    	s += roi.getTypeAsString()+" Selection";
     		String name = roi.getName();
     		if (name!=null)
 				s += " (\"" + name + "\")";
 			s += "\n";			
-	    	Rectangle r = roi.getBoundingRect();
+	    	Rectangle r = roi.getBounds();
 	    	if (roi instanceof Line) {
 	    		Line line = (Line)roi;
 	    		s += "  X1: " + IJ.d2s(line.x1*cal.pixelWidth) + "\n";
@@ -223,5 +218,5 @@ public class Info implements PlugInFilter {
 	void showInfo(String info, int width, int height) {
 		new TextWindow("Info for "+imp.getTitle(), info, width, height);
 	}
-
+	
 }

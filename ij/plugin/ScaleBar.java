@@ -52,7 +52,7 @@ public class ScaleBar implements PlugIn {
     boolean showDialog(ImagePlus imp) {
         Roi roi = imp.getRoi();
         if (roi!=null) {
-            Rectangle r = roi.getBoundingRect();
+            Rectangle r = roi.getBounds();
             roiX = r.x;
             roiY = r.y; 
             roiWidth = r.width;

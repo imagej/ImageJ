@@ -2,16 +2,17 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.*;
 import java.awt.*;
 
 /** This plugin implements ImageJ's Fill, Clear, Clear Outside and Draw commands. */
-public class Filler implements PlugInFilter {
+public class Filler implements PlugInFilter, Measurements {
 	
 	String arg;
 	Roi roi;
 	ImagePlus imp;
 	int sliceCount;
-	int[] mask;
+	ImageProcessor mask;
 	boolean isTextRoi;
 
 	public int setup(String arg, ImagePlus imp) {
@@ -29,7 +30,12 @@ public class Filler implements PlugInFilter {
 				return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
 		} else if (arg.equals("draw"))
 				return baseCapabilities;
-		else if (arg.equals("outside"))
+		else if (arg.equals("label")) {
+				if (Analyzer.firstParticle<Analyzer.lastParticle)
+					return baseCapabilities-ROI_REQUIRED;
+				else
+					return baseCapabilities;
+		} else if (arg.equals("outside"))
 				return IJ.setupDialog(imp,baseCapabilities);
 		else
 			return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
@@ -44,6 +50,8 @@ public class Filler implements PlugInFilter {
 	 		fill(ip);
 	 	else if (arg.equals("draw"))
 			draw(ip);
+	 	else if (arg.equals("label"))
+			label(ip);
 	 	else if (arg.equals("outside"))
 	 		clearOutside(ip);
 	}
@@ -72,7 +80,70 @@ public class Filler implements PlugInFilter {
 	public void draw(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
 		roi.drawPixels();
+		if (IJ.altKeyDown())
+			drawLabel(ip);
+ 	}
+
+	public void label(ImageProcessor ip) {
+		if (Analyzer.getCounter()==0) {
+			IJ.showMessage("Label", "Measurement counter is zero");
+			return;
+		}
+		if (Analyzer.firstParticle<Analyzer.lastParticle)
+			drawParticleLabels(ip);
+		else {
+			ip.setColor(Toolbar.getForegroundColor());
+			roi.drawPixels();
+			drawLabel(ip);
+		}
 	}
+
+	void drawParticleLabels(ImageProcessor ip) {
+		ResultsTable rt = ResultsTable.getResultsTable();
+		int count = rt.getCounter();
+		int first = Analyzer.firstParticle;
+		int last = Analyzer.lastParticle;
+		if (count==0 || first>=count || last>=count)
+			return;
+		if (!rt.columnExists(ResultsTable.X_CENTROID)) {
+			IJ.showMessage("Label", "\"Centroids\" required to label particles");
+			return;
+		}
+		for (int i=first; i<=last; i++) {
+			int x = (int)rt.getValue(ResultsTable.X_CENTROID, i);		
+			int y = (int)rt.getValue(ResultsTable.Y_CENTROID, i);		
+			drawLabel(ip, i+1, new Rectangle(x,y,0,0));
+		}
+	}
+
+	void drawLabel(ImageProcessor ip) {
+		int count = Analyzer.getCounter();
+		if (count>0 && roi!=null)
+			drawLabel(ip, count, roi.getBounds());
+	}
+
+	void drawLabel(ImageProcessor ip, int count, Rectangle r) {
+		Color foreground = Toolbar.getForegroundColor();
+		Color background = Toolbar.getBackgroundColor();
+		if (foreground.equals(background)) {
+			foreground = Color.black;
+			background = Color.white;
+		}
+		int size = r.width>50&&r.height>50?12:9;
+		ip.setFont(new Font("SansSerif", Font.PLAIN, size));
+		String label = "" + count;
+		int w =  ip.getStringWidth(label);
+		int x = r.x + r.width/2 - w/2;
+		int y = r.y + r.height/2 + 6;
+		FontMetrics metrics = ip.getFontMetrics();
+		int h =  metrics.getHeight();
+		ip.setColor(background);
+		ip.setRoi(x-1, y-h+2, w+1, h-3);
+		ip.fill();
+		ip.resetRoi();
+		ip.setColor(foreground);
+		ip.drawString(label, x, y);
+	} 
 
 	public synchronized void clearOutside(ImageProcessor ip) {
 		if (isLineSelection()) {
@@ -112,23 +183,13 @@ public class Filler implements PlugInFilter {
 	public void makeMask(ImageProcessor ip, Rectangle r) {
  		mask = imp.getMask();
  		if (mask==null) {
- 			mask = new int[r.width*r.height];
- 			for (int i=0; i<mask.length; i++)
- 				mask[i] = ImageProcessor.BLACK;
+ 			mask = new ByteProcessor(r.width, r.height);
+ 			mask.invert();
  		} else {
  			// duplicate mask (needed because getMask caches masks)
- 			int[] mask2 = new int[mask.length];
- 			for (int i=0; i<mask.length; i++)
- 				mask2[i] = mask[i];
- 			mask = mask2;
+ 			mask = mask.duplicate();
  		}
-  		// invert mask
- 		for (int i=0; i<mask.length; i++) {
- 			if (mask[i]==ImageProcessor.BLACK)
- 				mask[i] = 0xFFFFFFFF;
- 			else
- 				mask[i] = ImageProcessor.BLACK;
- 		}
+ 		mask.invert();
  	}
 
 }

@@ -9,6 +9,7 @@ import ij.text.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
+import java.io.File;
 
 /** This class implements the built-in macro functions. */
 public class Functions implements MacroConstants, Measurements {
@@ -27,7 +28,6 @@ public class Functions implements MacroConstants, Measurements {
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
 		this.pgm = pgm;
-		Variable.doHash = false;
 	}
  
 	void doFunction(int type) {
@@ -76,7 +76,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_VOXEL_SIZE: getVoxelSize(); break;
 			case GET_HISTOGRAM: getHistogram(); break;
 			case GET_STATISTICS: getStatistics(); break;
-			case GET_BOUNDING_RECT: getBoundingRect(); break;
+			case GET_BOUNDING_RECT: getBounds(); break;
 			case GET_LUT: getLut(); break;
 			case SET_LUT: setLut(); break;
 			case GET_COORDINATES: getCoordinates(); break;
@@ -87,6 +87,9 @@ public class Functions implements MacroConstants, Measurements {
 			case PLOT: doPlot(); break;
 			case SET_JUSTIFICATION: setJustification(); break;
 			case SET_Z_COORDINATE: setZCoordinate(); break;
+			case GET_THRESHOLD: getThreshold(); break;
+			case GET_PIXEL_SIZE: getPixelSize(); break;
+			case SETUP_UNDO: interp.getParens(); Undo.setup(Undo.TRANSFORM, getImage()); break;
 		}
 	}
 	
@@ -118,6 +121,7 @@ public class Functions implements MacroConstants, Measurements {
 			case LAST_INDEX_OF: value=getFirstString().lastIndexOf(getLastString()); break;
 			case CHAR_CODE_AT: value=getFirstString().charAt((int)getLastArg()); break;
 			case GET_BOOLEAN: value=getBoolean(); break;
+			case STARTS_WITH: case ENDS_WITH: value = startsWithEndsWith(type); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -135,6 +139,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SUBSTRING: str = substring(); break;
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
 			case GET_INFO: str = getInfo(); break;			
+			case GET_DIRECTORY: str = getDirectory(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -148,6 +153,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_PROFILE: array=getProfile(); break;
 			case NEW_ARRAY: array = newArray(); break;
 			case SPLIT: array = split(); break;
+			case GET_FILE_LIST: array = getFileList(); break;
 			default:
 				array = null;
 				interp.error("Array function expected");
@@ -592,7 +598,7 @@ public class Functions implements MacroConstants, Measurements {
 					ip.resetRoi();
 					ip.fill();
 				} else {
-					ip.setRoi(roi.getBoundingRect());
+					ip.setRoi(roi.getBounds());
 					ip.fill(imp.getMask());
 				}
 				updateAndDraw(imp);
@@ -648,19 +654,19 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		ImageProcessor ip = getProcessor();
 		Roi roi = imp.getRoi();
-		int[] mask = null;
-		if (roi==null || roi.getType()>Roi.TRACED_ROI) {
+		ImageProcessor mask = null;
+		if (roi==null || !roi.isArea()) {
 			ip.resetRoi();
 			roi = null;
 		} else {
-			ip.setRoi(roi.getBoundingRect());
+			ip.setRoi(roi.getBounds());
 			mask = imp.getMask();
 			ip.setMask(mask);
 			if (mask!=null) ip.snapshot();
 		}
 		int xmin=0, ymin=0, xmax=imp.getWidth(), ymax=imp.getHeight();
 		if (roi!=null) {
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			xmin=r.x; ymin=r.y; xmax=r.x+r.width; ymax=r.y+r.height;
 		}
 		boolean isFloat = getType()==ImagePlus.GRAY32;
@@ -854,20 +860,17 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 		ImageProcessor ip = getProcessor();
 		Roi roi = imp.getRoi();
-		if (roi==null || !(roi instanceof PolygonRoi))
-			interp.error("Polygonal selection required");
-		int[] x = ((PolygonRoi)roi).getXCoordinates();
-		int[] y = ((PolygonRoi)roi).getYCoordinates();
-		int n = ((PolygonRoi)roi).getNCoordinates();
-		Rectangle r = roi.getBoundingRect();
-		int[] x2 = new int[n];
-		int[] y2 = new int[n];
-		for (int i=0; i<n; i++) {
-			x2[i] = r.x+x[i];
-			y2[i] = r.y+y[i];
-		}			
-		xCoordinates.setArray(new Variable(x2).getArray());
-		yCoordinates.setArray(new Variable(y2).getArray());
+		if (roi==null)
+			interp.error("Selection required");
+		Polygon p = roi.getPolygon();
+    	Variable[] xa = new Variable[p.npoints];
+    	for (int i=0; i<p.npoints; i++)
+    		xa[i] = new Variable(p.xpoints[i]);
+		xCoordinates.setArray(xa);
+    	Variable[] ya = new Variable[p.npoints];
+    	for (int i=0; i<p.npoints; i++)
+    		ya[i] = new Variable(p.ypoints[i]);
+		yCoordinates.setArray(ya);
 	}
 	
 	Variable[] getProfile() {
@@ -916,6 +919,25 @@ public class Functions implements MacroConstants, Measurements {
     	return array;
 	}
 
+	Variable[] getFileList() {
+		String dir = getStringArg();
+		File f = new File(dir);
+		if (!f.exists() || !f.isDirectory())
+			return new Variable[0];
+		String[] list = f.list();
+		if (list==null)
+			return new Variable[0];
+    	Variable[] array = new Variable[list.length];
+    	File f2;
+    	for (int i=0; i<list.length; i++) {
+    		f2 = new File(dir, list[i]);
+    		if (f2.isDirectory())
+    			list[i] = list[i] + "/";
+    		array[i] = new Variable(0, 0.0, list[i]);
+    	}
+    	return array;
+	}
+
 	Variable[] initNewArray() {
 		Vector vector = new Vector();
 		int size = 0;
@@ -949,7 +971,7 @@ public class Functions implements MacroConstants, Measurements {
 				interp.getToken();
 		}
 		interp.getRightParen();		
-    	return new String(chars);
+    	return new String(chars, 0, count);
 	}
 
 	public String getInfo() {
@@ -965,6 +987,12 @@ public class Functions implements MacroConstants, Measurements {
 			Info infoPlugin = new Info();
 			return infoPlugin.getImageInfo(imp, getProcessor());
 		}		
+	}
+
+	public String getDirectory() {
+		String dir = IJ.getDirectory(getStringArg());
+		if (dir==null) dir = "";
+		return dir;
 	}
 
 	double getSelectionType() {
@@ -1169,8 +1197,62 @@ public class Functions implements MacroConstants, Measurements {
 		updateNeeded = false;
 	}
 
+	void getThreshold() {
+		Variable lower = getFirstVariable();
+		Variable upper = getLastVariable();
+		ImageProcessor ip = getProcessor();
+		double t1 = ip.getMinThreshold();
+		double t2 = ip.getMaxThreshold();
+		if (t1==ImageProcessor.NO_THRESHOLD) {
+			t1 = -1;
+			t2 = -1;
+		}
+		lower.setValue(t1);
+		upper.setValue(t2);
+	}
+
+	void getPixelSize() {
+		Variable unit = getFirstVariable();
+		Variable width = getNextVariable();
+		Variable height = getNextVariable();
+		Variable depth = null;
+		if (interp.nextToken()==',')
+			depth = getNextVariable();
+		interp.getRightParen();
+		Calibration cal = getImage().getCalibration();
+		unit.setString(cal.getUnit());
+		width.setValue(cal.pixelWidth);
+		height.setValue(cal.pixelHeight);
+		if (depth!=null)
+		depth.setValue(cal.pixelDepth);
+	}
+
 	void makeSelection() {
-		String type = getFirstString().toLowerCase();
+        String type = null;
+        int roiType = -1;
+        interp.getLeftParen();
+		if (isStringArg()) {
+			type = getString().toLowerCase();
+			roiType = Roi.POLYGON;
+			if (type.indexOf("free")!=-1)
+				roiType = Roi.FREEROI;
+			if (type.indexOf("traced")!=-1)
+				roiType = Roi.TRACED_ROI;
+			if (type.indexOf("line")!=-1) {
+				if (type.indexOf("free")!=-1)
+					roiType = Roi.FREELINE;
+				else
+					roiType = Roi.POLYLINE;
+			}
+			if (type.indexOf("angle")!=-1)
+				roiType = Roi.ANGLE;
+		} else {
+			roiType = (int)interp.getExpression();
+			if (roiType<0 || roiType>=Roi.COMPOSITE || roiType==Roi.LINE)
+				interp.error("Invalid selection type ("+roiType+")");
+			if (roiType==Roi.RECTANGLE) roiType = Roi.POLYGON;		
+			if (roiType==Roi.OVAL) roiType = Roi.FREEROI;		
+		}
 		double[] x = getNextArray();
 		double[] y = getLastArray();
 		int n = x.length;		
@@ -1178,26 +1260,13 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Arrays are not the same length");
 		resetImage();
 		ImagePlus imp = getImage();
-		int roiType = Roi.POLYGON;
-		if (type.indexOf("free")!=-1)
-			roiType = Roi.FREEROI;
-		if (type.indexOf("traced")!=-1)
-			roiType = Roi.TRACED_ROI;
-		if (type.indexOf("line")!=-1) {
-			if (type.indexOf("free")!=-1)
-				roiType = Roi.FREELINE;
-			else
-				roiType = Roi.POLYLINE;
-		}
-		if (type.indexOf("angle")!=-1)
-			roiType = Roi.ANGLE;
 		int[] xcoord = new int[n];
 		int[] ycoord = new int[n];
 		int height = imp.getHeight();
 		for (int i=0; i<n; i++) {
 			xcoord[i] = (int)x[i];
 			ycoord[i] = (int)y[i];
-		}		
+		}
 		imp.setRoi(new PolygonRoi(xcoord, ycoord, n, roiType));
 		updateNeeded = false;
 	}
@@ -1342,7 +1411,7 @@ public class Functions implements MacroConstants, Measurements {
 			plot.addPoints(x, y, what);		
 	}
 	
-	void getBoundingRect() {
+	void getBounds() {
 		Variable x = getFirstVariable();
 		Variable y = getNextVariable();
 		Variable width = getNextVariable();
@@ -1351,7 +1420,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			x.setValue(r.x);
 			y.setValue(r.y);
 			width.setValue(r.width);
@@ -1393,6 +1462,15 @@ public class Functions implements MacroConstants, Measurements {
 			return s1.indexOf(s2, fromIndex);
 	}
 
+	int startsWithEndsWith(int type) {
+		String s1 = getFirstString();
+		String s2 = getLastString();
+		if (type==STARTS_WITH)
+			return s1.startsWith(s2)?1:0;
+		else
+			return s1.endsWith(s2)?1:0;
+	}
+
 	double isActive() {
 		int id = (int)getArg();
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -1403,8 +1481,8 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	double isOpen() {
-		interp.getLeftParen();
-		if (interp.nextToken()==STRING_CONSTANT) {
+        interp.getLeftParen();
+		if (isStringArg()) {
 			String title = getString();
 			interp.getRightParen();
 			return WindowManager.getFrame(title)==null?0.0:1.0;
@@ -1413,6 +1491,16 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			return WindowManager.getImage(id)==null?0.0:1.0;
 		}
+	}
+
+	boolean isStringArg() {
+		int nextToken = pgm.code[interp.pc+1];
+		int tok = nextToken&0xff;
+		if (tok==STRING_CONSTANT||tok==STRING_FUNCTION) return true;
+		if (tok!=WORD) return false;
+		Variable v = interp.lookupVariable(nextToken>>16);
+		if (v==null) return false;
+		return v.getType()==Variable.STRING;
 	}
 
 	void exit() {

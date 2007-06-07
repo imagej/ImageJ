@@ -55,8 +55,8 @@ public class Duplicater implements PlugInFilter {
 	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.getType()<=Roi.TRACED_ROI)
-			rect = roi.getBoundingRect();
+		if (roi!=null && roi.isArea())
+			rect = roi.getBounds();
 		int width = rect!=null?rect.width:imp.getWidth();
 		int height = rect!=null?rect.height:imp.getHeight();
 		ImageStack stack = imp.getStack();

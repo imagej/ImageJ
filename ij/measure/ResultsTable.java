@@ -100,14 +100,14 @@ public class ResultsTable {
 	}
 	
 	/** Adds a label to the beginning of the current row. Counter must be >0. */
-	public void addLabel(String heading, String label) {
+	public void addLabel(String columnHeading, String label) {
 		if (counter==0)
 			throw new IllegalArgumentException("Counter==0");
 		if (rowLabels==null)
 			rowLabels = new String[maxRows];
 		rowLabels[counter-1] = label;
-		if (heading!=null)
-			rowLabelHeading = heading;
+		if (columnHeading!=null)
+			rowLabelHeading = columnHeading;
 	}
 	
 	/** Set the row label column to null. */
@@ -183,19 +183,23 @@ public class ResultsTable {
 	/**	Returns the value of the specified column and row, where
 		column is the column heading and row is a number greater
 		than or equal zero and less than value returned by getCounter(). 
-		Returns Double.NAN if the specified column heading is not found. 
-		Use Double.isNaN(value) to test the returned value. */
+		Throws an IllegalArgumentException if this ResultsTable
+		does not have a column with the specified heading. */
 	public double getValue(String column, int row) {
 		if (row<0 || row>=getCounter())
 			throw new IllegalArgumentException("Row out of range");
 		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND)
+			throw new IllegalArgumentException("\""+column+"\" column not found");
 		//IJ.log("col: "+col+" "+(col==COLUMN_NOT_FOUND?"not found":""+columns[col]));
-		return col==COLUMN_NOT_FOUND?Double.NaN:getValue(col,row);
+		return getValue(col,row);
 	}
 
 	/** Sets the value of the given column and row, where
 		where 0<=row<counter. If the specified column does 
-		not exist, it is created.*/
+		not exist, it is created. When adding columns, 
+		<code>show()</code> must be called to update the 
+		window that displays the table.*/
 	public void setValue(String column, int row, double value) {
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND) {

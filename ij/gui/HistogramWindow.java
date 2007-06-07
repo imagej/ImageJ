@@ -253,7 +253,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		return ip.getStringWidth(d2s(d));
 	}
 
-	void showList() {
+	protected void showList() {
 		StringBuffer sb = new StringBuffer();
         String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
@@ -267,7 +267,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 	}
 
-	void copyToClipboard() {
+	protected void copyToClipboard() {
 		Clipboard systemClipboard = null;
 		try {systemClipboard = getToolkit().getSystemClipboard();}
 		catch (Exception e) {systemClipboard = null; }

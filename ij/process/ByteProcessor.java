@@ -113,16 +113,17 @@ public class ByteProcessor extends ImageProcessor {
 	}
 	
 	/** Restore pixels that are within roi but not part of mask. */
-	public void reset(int[] mask) {
+	public void reset(ImageProcessor mask) {
 		if (mask==null || snapshotPixels==null)
 			return;	
-		if (mask.length!=roiWidth*roiHeight)
-			throw new IllegalArgumentException("mask.length!=roiWidth*roiHeight");
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]!=BLACK)
+				if (mpixels[mi++]==0)
 					pixels[i] = snapshotPixels[i];
 				i++;
 			}
@@ -132,16 +133,17 @@ public class ByteProcessor extends ImageProcessor {
 	/** Fills pixels that are within roi and part of the mask.
 		Throws an IllegalArgumentException if the mask is
 		not the same size as the ROI. */
-	public void fill(int[] mask) {
+	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}
-		if (mask.length!=roiWidth*roiHeight)
-			throw new IllegalArgumentException();
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]==BLACK)
+				if (mpixels[mi++]!=0)
 					pixels[i] = (byte)fgColor;
 				i++;
 			}
@@ -765,14 +767,17 @@ public class ByteProcessor extends ImageProcessor {
 		return histogram;
 	}
 
-	public int[] getHistogram(int[] mask) {
+	public int[] getHistogram(ImageProcessor mask) {
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
 		int v;
 		int[] histogram = new int[256];
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]==BLACK) {
+				if (mpixels[mi++]!=0) {
 					v = pixels[i] & 0xff;
 					histogram[v]++;
 				}

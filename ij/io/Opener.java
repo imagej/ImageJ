@@ -6,12 +6,15 @@ import java.net.URL;
 import java.net.*;
 import java.util.zip.*;
 import java.util.Locale;
+import javax.swing.*;
+import javax.swing.filechooser.*;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.frame.*;
 import ij.plugin.Zip_Reader;
 import ij.text.TextWindow;
+import ij.util.Java2;
 
 /** Opens tiff (and tiff stacks), dicom, fits, pgm, jpeg, bmp or
 	gif images, and look-up tables, using a file open dialog or a path.
@@ -42,6 +45,41 @@ public class Opener {
 			open(directory+name);
 	}
 
+	/** Displays a JFileChooser and then opens the tiff, dicom, 
+		fits, pgm, jpeg, bmp, gif, lut, roi, or text files selected by 
+		the user. Displays error messages if one or more of the selected 
+		files is not in one of the supported formats. This is the method
+		that ImageJ's File/Open command uses to open files if
+		"Use JFileChooser" is checked in EditOptions/Miscellaneous. */
+	public void openMultiple() {
+		if (!IJ.isJava2()) return;
+		Java2.setSystemLookAndFeel();
+		JFileChooser fc = new JFileChooser();
+		fc.setMultiSelectionEnabled(true);
+		File dir = null;
+		String sdir = OpenDialog.getDefaultDirectory();
+		if (sdir!=null)
+			dir = new File(sdir);
+		if (dir!=null)
+			fc.setCurrentDirectory(dir);
+		int returnVal = fc.showOpenDialog(IJ.getInstance());
+		if (returnVal!=JFileChooser.APPROVE_OPTION)
+			return;
+		File[] files = fc.getSelectedFiles();
+		if (files.length==0) { // getSelectedFiles does not work on some JVMs
+			files = new File[1];
+			files[0] = fc.getSelectedFile();
+		}
+		String directory = fc.getCurrentDirectory().getPath()+File.separator;
+		OpenDialog.setDefaultDirectory(directory);
+		for (int i=0; i<files.length; i++) {
+			String path = directory + files[i].getName();
+			open(path);
+			if (i==0 && Recorder.record)
+				Recorder.recordPath("open", path);
+		}
+	}
+
 	/** Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
@@ -67,7 +105,7 @@ public class Opener {
 					long size = file.length();
 					if (size>=28000 && betterTextArea) {
 						String osName = System.getProperty("os.name");
-						if (osName.indexOf("95")>0 || osName.indexOf("98")>0)
+						if (osName.equals("Windows 95") || osName.equals("Windows 98") || osName.equals("Windows Me"))
 							maxSize = 60000;
 					}
 					if (size<28000 || (betterTextArea && size<maxSize)) {
@@ -100,7 +138,7 @@ public class Opener {
 		String path = directory+name;
 		fileType = getFileType(path,name);
 		if (IJ.debugMode)
-			IJ.log("openImage: \""+types[fileType]+"\", "+path+name);
+			IJ.log("openImage: \""+types[fileType]+"\", "+path);
 		switch (fileType) {
 			case TIFF:
 				imp = openTiff(directory, name);
@@ -392,7 +430,9 @@ public class Opener {
 		FileInfo[] info=null;
 		try {info = td.getTiffInfo();}
 		catch (IOException e) {
-			IJ.showMessage("TiffDecoder", e.getMessage());
+			String msg = e.getMessage();
+			if (msg==null||msg.equals("")) msg = ""+e;
+			IJ.showMessage("TiffDecoder", msg);
 			return null;
 		}
 		if (info==null)

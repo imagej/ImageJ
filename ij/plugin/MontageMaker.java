@@ -10,9 +10,9 @@ import java.awt.event.*;
 /** Implements the Image/Stacks/Make Montage command. */
 public class MontageMaker implements PlugIn {
 			
-	private static int columns, rows, first, last, inc;
+	private static int columns, rows, first, last, inc, borderWidth;
 	private static double scale;
-	private static boolean label=false, borders=false;
+	private static boolean label;
 	private static int saveID;
 
 	public void run(String arg) {
@@ -48,8 +48,8 @@ public class MontageMaker implements PlugIn {
 			gd.addNumericField("First Slice:", first, 0);
 			gd.addNumericField("Last Slice:", last, 0);
 			gd.addNumericField("Increment:", inc, 0);
+			gd.addNumericField("Border Width:", borderWidth, 0);
 			gd.addCheckbox("Label Slices", label);
-			gd.addCheckbox("Borders", borders);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
@@ -59,6 +59,8 @@ public class MontageMaker implements PlugIn {
 			first = (int)gd.getNextNumber();
 			last = (int)gd.getNextNumber();
 			inc = (int)gd.getNextNumber();
+			borderWidth = (int)gd.getNextNumber();
+			if (borderWidth<0) borderWidth = 0;
 			if (first<1) first = 1;
 			if (last>nSlices) last = nSlices;
 			if (inc<1) inc = 1;
@@ -67,11 +69,10 @@ public class MontageMaker implements PlugIn {
 				return;
 			}
 			label = gd.getNextBoolean();
-			borders = gd.getNextBoolean();
-			makeMontage(imp, columns, rows, scale, first, last, inc, label, borders);
+			makeMontage(imp, columns, rows, scale, first, last, inc, borderWidth, label);
 	}
 	
-	public void makeMontage(ImagePlus imp, int columns, int rows, double scale, int first, int last, int inc, boolean labels, boolean borders) {
+	public void makeMontage(ImagePlus imp, int columns, int rows, double scale, int first, int last, int inc, int borderWidth, boolean labels) {
 		int stackWidth = imp.getWidth();
 		int stackHeight = imp.getHeight();
 		int nSlices = imp.getStackSize();
@@ -80,7 +81,7 @@ public class MontageMaker implements PlugIn {
 		int montageWidth = width*columns;
 		int montageHeight = height*rows;
 		ImageProcessor ip = imp.getProcessor();
-		ImageProcessor montage = ip.createProcessor(montageWidth, montageHeight);
+		ImageProcessor montage = ip.createProcessor(montageWidth+borderWidth/2, montageHeight+borderWidth/2);
 		ImageStatistics is = imp.getStatistics();
 		boolean blackBackground = is.mode<200;
 		if (imp.isInvertedLut())
@@ -111,8 +112,9 @@ public class MontageMaker implements PlugIn {
 			if (scale!=1.0)
 				aSlice = aSlice.resize(width, height);
 			montage.insert(aSlice, x, y);
-			if (borders) drawBorder(montage, x, y, width, height);
-			if (labels) drawLabel(montage, slice, x, y, width, height);
+			String label = stack.getShortSliceLabel(slice);
+			if (borderWidth>0) drawBorder(montage, x, y, width, height, borderWidth);
+			if (labels) drawLabel(montage, slice, label, x, y, width, height);
 			x += width;
 			if (x>=montageWidth) {
 				x = 0;
@@ -123,7 +125,10 @@ public class MontageMaker implements PlugIn {
 			IJ.showProgress((double)(slice-first)/(last-first));
 			slice += inc;
 		}
-		if (borders) drawBorder(montage, 0, 0, montageWidth-1, montageHeight-1);
+		if (borderWidth>0) {
+			int w2 = borderWidth/2;
+			drawBorder(montage, w2, w2, montageWidth-w2, montageHeight-w2, borderWidth);
+		}
 		IJ.showProgress(1.0);
 		ImagePlus imp2 = new ImagePlus("Montage", montage);
 		imp2.setCalibration(imp.getCalibration());
@@ -135,7 +140,8 @@ public class MontageMaker implements PlugIn {
 		imp2.show();
 	}
 		
-	void drawBorder(ImageProcessor montage, int x, int y, int width, int height) {
+	void drawBorder(ImageProcessor montage, int x, int y, int width, int height, int borderWidth) {
+		montage.setLineWidth(borderWidth);
 		montage.moveTo(x, y);
 		montage.lineTo(x+width, y);
 		montage.lineTo(x+width, y+height);
@@ -143,13 +149,19 @@ public class MontageMaker implements PlugIn {
 		montage.lineTo(x, y);
 	}
 	
-	void drawLabel(ImageProcessor montage, int slice, int x, int y, int width, int height) {
-		String s = ""+slice;
-		int swidth = montage.getStringWidth(s);
+	void drawLabel(ImageProcessor montage, int slice, String label, int x, int y, int width, int height) {
+		if (label!=null && !label.equals("") && montage.getStringWidth(label)>=width) {
+			do {
+				label = label.substring(0, label.length()-1);
+			} while (label.length()>1 && montage.getStringWidth(label)>=width);
+		}
+		if (label==null || label.equals(""))
+			label = ""+slice;
+		int swidth = montage.getStringWidth(label);
 		x += width/2 - swidth/2;
 		y += height;
 		montage.moveTo(x, y); 
-		montage.drawString(s);
+		montage.drawString(label);
 	}
 }
 

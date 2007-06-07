@@ -19,7 +19,7 @@ public class Plugin_ implements PlugInFilter {
   ip = imp.getProcessor(); // get the ImageProcessor
   ip.snapshot(); // needed for reset(mask) to work
   int[] mask = imp.getMask(); // get the mask needed to process non-rect ROIs
-  ip.setRoi(roi.getBoundingRect()); // define a rectangular area
+  ip.setRoi(roi.getBounds()); // define a rectangular area
   ip.invert();
 IJ.log("mask: "+mask);
   ip.reset(mask); // restore image outside of mask

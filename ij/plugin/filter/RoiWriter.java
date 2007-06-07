@@ -17,7 +17,8 @@ public class RoiWriter implements PlugInFilter {
 
 	static final int HEADER_SIZE = 64;
 	static final int VERSION = 217;
-	final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9;
+	final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
+		traced=8, angle=9;
 	ImagePlus imp;
 	byte[] data;
 
@@ -29,7 +30,7 @@ public class RoiWriter implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		try {
 			saveRoi(imp);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			String msg = e.getMessage();
 			if (msg==null || msg.equals(""))
 				msg = ""+e;
@@ -37,7 +38,7 @@ public class RoiWriter implements PlugInFilter {
 		}
 	}
 
-	public void saveRoi(ImagePlus imp) throws Exception{
+	public void saveRoi(ImagePlus imp) throws IOException{
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			throw new IllegalArgumentException("ROI required");
@@ -70,6 +71,9 @@ public class RoiWriter implements PlugInFilter {
 		} else if (roiType==Roi.ANGLE) {
 			type = angle;
 			name = "Angle.roi";
+		} else if (roiType==Roi.COMPOSITE) {
+			type = rect; // shape array size (36-39) will be >0 to indicate composite type
+			name ="Composite.roi";
 		} else {
 			type = rect;
 			name = "Rectangle.roi";
@@ -82,6 +86,11 @@ public class RoiWriter implements PlugInFilter {
 		String dir = sd.getDirectory();
 		FileOutputStream f = new FileOutputStream(dir+name);
 		
+		if (roiType==Roi.COMPOSITE) {
+			saveShapeRoi(roi, name, type, f);
+			return;
+		}
+
 		int n=0;
 		int[] x=null,y=null;
 		if (roi instanceof PolygonRoi) {
@@ -92,7 +101,7 @@ public class RoiWriter implements PlugInFilter {
 		}
 		data = new byte[HEADER_SIZE+n*4];
 		
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		putShort(4, VERSION);
@@ -127,6 +136,37 @@ public class RoiWriter implements PlugInFilter {
 		roi.setName(name);
 	}
 
+	void saveShapeRoi(Roi roi, String name, int type, FileOutputStream f) throws IOException {
+		float[] shapeArray = ((ShapeRoi)roi).getShapeAsArray();
+		if (shapeArray==null) return;
+		BufferedOutputStream bout = new BufferedOutputStream(f);
+		Rectangle r = roi.getBounds();
+		data  = new byte[HEADER_SIZE + shapeArray.length*4];
+		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
+		putShort(4, VERSION);
+		data[6] = (byte)type;
+		putShort(8, r.y);			//top
+		putShort(10, r.x);			//left
+		putShort(12, r.y+r.height);	//bottom
+		putShort(14, r.x+r.width);	//right
+		//putShort(16, n);
+		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
+
+		// handle the actual data: data are stored segment-wise, i.e.,
+		// the type of the segment followed by 0-6 control point coordinates.
+		int base = 64;
+		for (int i=0; i<shapeArray.length; i++) {
+			putFloat(base, shapeArray[i]);
+			base += 4;
+		}
+		bout.write(data,0,data.length);
+		bout.flush();
+		bout.close();
+		if (name.endsWith(".roi"))
+			name = name.substring(0, name.length()-4);
+		roi.setName(name);
+	}
+
     void putShort(int base, int v) {
 		data[base] = (byte)(v>>>8);
 		data[base+1] = (byte)v;
@@ -140,4 +180,11 @@ public class RoiWriter implements PlugInFilter {
 		data[base+3] = (byte)tmp;
 	}
 
+	void putInt(int base, int i) {
+		data[base]   = (byte)(i>>24);
+		data[base+1] = (byte)(i>>16);
+		data[base+2] = (byte)(i>>8);
+		data[base+3] = (byte)i;
+	}
+	
 }

@@ -90,7 +90,7 @@ class ColorGenerator extends ColorProcessor {
             }
         }
         drawSpectrum(h);        
-        setRoi(null);
+        resetRoi();
     }
        
     void drawColor(int x, int y, Color c) 

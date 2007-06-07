@@ -89,7 +89,7 @@ class ColorGenerator extends ColorProcessor {
             }
         }
         drawSpectrum(h);        
-        setRoi(null);
+        resetRoi();
     }
        
     void drawColor(int x, int y, Color c) 
@@ -203,6 +203,7 @@ class ColorCanvas extends ImageCanvas {
     public void mousePressed(MouseEvent e) {
         //super.mousePressed(e);
         ImageProcessor ip = imp.getProcessor();
+        ip.setLineWidth(1);
         
         Rectangle flipperRect = new Rectangle(86, 268, 18, 18);
         Rectangle resetRect = new Rectangle(86, 294, 18, 18);

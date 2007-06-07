@@ -254,8 +254,16 @@ public class Calibration {
  	public double getCValue(double value) {
 		if (function==NONE)
 			return value;
-		else
-			return getCValue((int)value);
+		else {
+			if (function>=STRAIGHT_LINE && function<=LOG2 && coefficients!=null) {
+				double v = CurveFitter.f(function, coefficients, value);
+				if (zeroClip && v<0.0)
+					return 0.0;
+				else
+					return v;
+			} else
+				return getCValue((int)value);
+		}
  	}
 
   	/** Converts a density calibrated value into a raw pixel value. */

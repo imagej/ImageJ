@@ -11,6 +11,7 @@ import java.awt.*;
 	@author Jeffrey Kuhn (jkuhn at ccwf.cc.utexas.edu)
 */
 public class CanvasResizer implements PlugIn {
+	boolean zeroFill = Prefs.get("resizer.zero", false);
 
 	public void run(String arg) {
 		int wOld, hOld, wNew, hNew;
@@ -35,6 +36,7 @@ public class CanvasResizer implements PlugIn {
 		gd.addNumericField("Width:", wOld, 0, 5, "pixels");
 		gd.addNumericField("Height:", hOld, 0, 5, "pixels");
 		gd.addChoice("Position:", sPositions, sPositions[4]);
+		gd.addCheckbox("Zero Fill", zeroFill);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -42,6 +44,8 @@ public class CanvasResizer implements PlugIn {
 		wNew = (int)gd.getNextNumber();
 		hNew = (int)gd.getNextNumber();
 		int iPos = gd.getNextChoiceIndex();
+		zeroFill = gd.getNextBoolean();
+		Prefs.set("resizer.zero", zeroFill);
 		
 		int xOff, yOff;
 		int xC = (wNew - wOld)/2;	// offset for centered
@@ -94,7 +98,10 @@ public class CanvasResizer implements PlugIn {
 		for (int i=1; i<=nFrames; i++) {
 			IJ.showProgress((double)i/nFrames);
 			ipNew = ipOld.createProcessor(wNew, hNew);
-			ipNew.setColor(colorBack);
+			if (zeroFill)
+				ipNew.setValue(0.0);
+			else 
+				ipNew.setColor(colorBack);
 			ipNew.fill();
 			ipNew.insert(stackOld.getProcessor(i), xOff, yOff);
 			stackNew.addSlice(null, ipNew);
@@ -104,7 +111,10 @@ public class CanvasResizer implements PlugIn {
 	
 	public ImageProcessor expandImage(ImageProcessor ipOld, int wNew, int hNew, int xOff, int yOff) {
 		ImageProcessor ipNew = ipOld.createProcessor(wNew, hNew);
-		ipNew.setColor(Toolbar.getBackgroundColor());
+		if (zeroFill)
+			ipNew.setValue(0.0);
+		else 
+			ipNew.setColor(Toolbar.getBackgroundColor());
 		ipNew.fill();
 		ipNew.insert(ipOld, xOff, yOff);
 		return ipNew;

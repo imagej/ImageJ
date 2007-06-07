@@ -470,8 +470,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip = new ByteProcessor(getImage());
 			if (IJ.debugMode) IJ.log(title + ": new ByteProcessor");
 		}
-		if (roi!=null && roi.getType()<Roi.LINE)
-			ip.setRoi(roi.getBoundingRect());
+		if (roi!=null && roi.isArea())
+			ip.setRoi(roi.getBounds());
 		else
 			ip.resetRoi();
 	}
@@ -508,44 +508,19 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void killProcessor() {
 	}
 	
-	private Rectangle maskRect;
-	private int maskCount;
-	
-	/** For images with irregular ROIs, returns a binary mask, otherwise, returns
-		null. Mask pixels have a value of ImageProcessor.BLACK. The size of the
-		mask array is rw*rh, where rw and rh are the width and height of the ROI's 
-		bounding rectangle.*/
-	public int[] getMask () {
-		int[] mask = null;
-		if (roi!=null && roi.getType()<Roi.LINE) {
-			if (ip!=null) {
-				mask = ip.getMask();
-				if (mask!=null) {
-					Rectangle r = roi.getBoundingRect();
-					if (maskRect==null || r.width!=maskRect.width || r.height!=maskRect.height)
-						mask = null;
-					if (roi instanceof PolygonRoi) {
-						if (maskCount!=((PolygonRoi)roi).getNCoordinates())
-							mask = null;
-					} else if (roi instanceof TextRoi)
-						mask = null;
-				}
-			}
-			if (mask==null)
-				mask = roi.getMask();
+	/** For images with irregular ROIs, returns a byte mask, otherwise, returns
+		null. Mask pixels have a non-zero value. */
+	public ImageProcessor getMask() {
+		if (roi==null) {
+			if (ip!=null) ip.resetRoi();
+			return null;
 		}
+		ImageProcessor mask = roi.getMask();
+		if (mask==null)
+			return null;
 		if (ip!=null) {
-			if (roi!=null) {
-				ip.setMask(mask);
-				ip.setRoi(roi.getBoundingRect());
-				maskRect = roi.getBoundingRect();
-				if (roi instanceof PolygonRoi)
-					maskCount = ((PolygonRoi)roi).getNCoordinates();
-				else
-					maskCount = 0;
-
-			} else
-				ip.setMask(null);
+			ip.setMask(mask);
+			ip.setRoi(roi.getBounds());
 		}
 		return mask;
 	}
@@ -777,7 +752,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return new ImageStack(width, height, cm);
 	}
 	
-	/** Returns the image stack. The stack may have only one slice. */
+	/** Returns the image stack. The stack may have only 
+		one slice. After adding or removing slices, call  
+		<code>setStack()</code> to update the image and
+		the window that is displaying it.
+		@see #setStack
+	*/
 	public ImageStack getStack() {
 		ImageStack s;
 		if (stack==null) {
@@ -788,7 +768,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (ip!=null) s.update(ip);
 		}
 		if (roi!=null)
-			s.setRoi(roi.getBoundingRect());
+			s.setRoi(roi.getBounds());
 		return s;
 	}
 	
@@ -846,14 +826,19 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return roi;
 	}
 	
+	/** Assigns the specified ROI to this image and displays it. Any existing
+		ROI is deleted if <code>roi</code> is null or its width or height is zero. */
 	public void setRoi(Roi roi) {
 		killRoi();
 		if (roi==null)
 			return;
+		Rectangle bounds = roi.getBounds();
+		if (bounds.width==0 && bounds.height==0)
+			return;
 		this.roi = roi;
 		if (ip!=null) {
 			ip.setMask(null);
-			ip.setRoi(roi.getBoundingRect());
+			ip.setRoi(bounds);
 		}
 		this.roi.setImage(this);
 		draw();
@@ -923,9 +908,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 	void saveRoi() {
 		if (roi!=null) {
 			roi.endPaste();
-			Rectangle r = roi.getBoundingRect();
+			Rectangle r = roi.getBounds();
 			if (r.width>0 && r.height>0) {
-				Roi.previousRoi = roi;
+				Roi.previousRoi = (Roi)roi.clone();
 				if (IJ.debugMode) IJ.log("saveRoi: "+roi);
 			}
 		}
@@ -934,7 +919,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void restoreRoi() {
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
-			Rectangle r = pRoi.getBoundingRect();
+			Rectangle r = pRoi.getBounds();
 			if (r.width<=width || r.height<=height) { // will it fit in this window?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
@@ -1064,6 +1049,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip.setPixels(null);
 			ip = null;
 		}
+		if (roi!=null)
+			roi.setImage(null);
 		if (stack!=null) {
 			Object[] arrays = stack.getImageArray();
 			if (arrays!=null)
@@ -1171,7 +1158,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			s += IJ.d2s((width/r)*cal.pixelWidth,2) + " " + cal.getUnit() + "/c (" + IJ.d2s(r,0) + ")";
 		else
 			s += IJ.d2s(width/r,2) + " p/c (" + IJ.d2s(r,0) + ")";
-		s += ", theta= " + IJ.d2s(theta,2) + "¡" ;
+		s += ", theta= " + IJ.d2s(theta,2) + IJ.degreeSymbol;
 		return s;
 	}
 

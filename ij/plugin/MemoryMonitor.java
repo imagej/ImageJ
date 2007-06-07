@@ -21,10 +21,11 @@ public class MemoryMonitor implements PlugIn {
 	ImageProcessor ip;
 	int frames;
 	ImageCanvas ic;
-	int[] mem;
+	float[] mem;
 	int index;
-	int value;
+	long value;
 	int max = 12*1204*1024; // 12MB
+	long maxMemory = IJ.maxMemory();
 
 	public void run(String arg) {
 		if (IJ.altKeyDown()) {
@@ -45,7 +46,7 @@ public class MemoryMonitor implements PlugIn {
 		imp.lock();
 		ImageWindow win = imp.getWindow();
 		ic = win.getCanvas();
-		mem = new int[width+1];
+		mem = new float[width+1];
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		startTime = System.currentTimeMillis();
 		win.running = true;
@@ -63,8 +64,12 @@ public class MemoryMonitor implements PlugIn {
 	}
 	
     void showValue() {
-    	double value2 = value/(1024.0*1024.0);
+    	double value2 = (double)value/1048576L;
     	String s = IJ.d2s(value2,value2>50?0:2)+"MB";
+    	if (maxMemory>0L) {
+			double percent = value*100/maxMemory;
+			s += " ("+(percent<1.0?"<1":IJ.d2s(percent,0)) + "%)";
+		}
     	if (width==640) {
 			elapsedTime = System.currentTimeMillis()-startTime;
 			if (elapsedTime>0) {
@@ -77,17 +82,17 @@ public class MemoryMonitor implements PlugIn {
 		ip.drawString(s);
 	}
 
-	int memoryInUse() {
+	long memoryInUse() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totMem = Runtime.getRuntime().totalMemory();
-		return  (int)(totMem-freeMem);
+		return  totMem-freeMem;
 	}
 
 	void updatePixels() {
-		int used = memoryInUse();
+		long used = memoryInUse();
 		if (frames%10==0) value=used;
 		if (used>0.9*max) max*=2;
-		mem[index++] = used;
+		mem[index++] = (float)used;
 		if (index==mem.length) index = 0;
 		ip.reset();
 		int index2 = index+1;

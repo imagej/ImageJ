@@ -41,7 +41,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	KeyListener keyListener;
 	Cursor resizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
   	Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
-	int selStart=-1, selEnd=-1,selOrigin=-1;
+	int selStart=-1, selEnd=-1,selOrigin=-1, selLine=-1;
 	TextCanvas tc;
 	PopupMenu pm;
 	boolean columnsManuallyAdjusted;
@@ -56,6 +56,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		add("South", sbHoriz);
 		sbVert=new Scrollbar(Scrollbar.VERTICAL);
 		sbVert.addAdjustmentListener(this);
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null) {
+			sbHoriz.addKeyListener(ij);
+			sbVert.addKeyListener(ij);
+		}
 		add("East", sbVert);
 		addPopupMenu();
 	}
@@ -338,29 +343,39 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if(iRowHeight==0 || x>d.width || y>d.height)
 			return;
      	int r=(y/iRowHeight)-1+iFirstRow;
-      	if(r>=0 && r<iRowCount) {
+      	if(r>=0 && r<iRowCount && x<iGridWidth) {
 			selOrigin = r;
-			selStart = -1;
-			selEnd = -1;
+			selStart = r;
+			selEnd = r;
+		} else {
+			resetSelection();
+			selOrigin = r;
+			if (r>=iRowCount)
+				selOrigin = iRowCount-1;
+			//System.out.println("select: "+selOrigin);
 		}
 		tc.repaint();
+		selLine=r;
 	}
-  
+
 	void extendSelection(int x,int y) {
 		Dimension d = tc.getSize();
 		if(iRowHeight==0 || x>d.width || y>d.height)
 			return;
      	int r=(y/iRowHeight)-1+iFirstRow;
+		//System.out.println(r+"  "+selOrigin);
      	if(r>=0 && r<iRowCount) {
 			if (r<selOrigin) {
 				selStart = r;
 				selEnd = selOrigin;
+				
 			} else {
 				selStart = selOrigin;
 				selEnd = r;
 			}
 		}
 		tc.repaint();
+		selLine=r;
 	}
 
 	/**
@@ -406,7 +421,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				iRowCount--;
 			}
 		}
-		selStart=-1; selEnd=-1; selOrigin=-1;
+		selStart=-1; selEnd=-1; selOrigin=-1; selLine=-1; 
 		adjustVScroll();
 		tc.repaint();
 	}
@@ -417,6 +432,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		selEnd = iRowCount-1;
 		selOrigin = 0;
 		tc.repaint();
+		selLine=-1;
 	}
 
 	/** Clears the selection, if any. */
@@ -424,6 +440,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		selStart=-1;
 		selEnd=-1;
 		selOrigin=-1;
+		selLine=-1;
 		if (iRowCount>0)
 			tc.repaint();
 	}

@@ -22,7 +22,7 @@ public class Polygon_Filler implements PlugInFilter {
 		}
 		PolygonRoi proi = (PolygonRoi)roi;
 		PolygonFiller pf = new PolygonFiller (proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		//new ImagePlus("Mask",  new ColorProcessor(r.width, r.height, pf.createMask(r))).show();
 		for (int i=0; i<2500; i++)
 			pf.fill(ip, r);

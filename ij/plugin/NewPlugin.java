@@ -12,6 +12,7 @@ public class NewPlugin implements PlugIn {
     private static int type = MACRO;
     private static String name = "Macro";
     private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame"};
+	private Editor ed;
     
     public void run(String arg) {
 		if (arg.equals("")&&!showDialog())
@@ -29,7 +30,7 @@ public class NewPlugin implements PlugIn {
     }
     
 	public void createMacro(String name) {
-		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+		ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
 		if (name.endsWith(".java"))
@@ -46,7 +47,7 @@ public class NewPlugin implements PlugIn {
 	}
 
 	public void createPlugin(String name, int type, String methods) {
-  		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+  		ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
 		String pluginName = name;
@@ -124,6 +125,11 @@ public class NewPlugin implements PlugIn {
 		name = gd.getNextString();
 		type = gd.getNextChoiceIndex();
 		return true;
+	}
+	
+	/** Returns the Editor the newly created macro or plugin was opened in. */
+	public Editor getEditor() {
+		return ed;
 	}
 
 }

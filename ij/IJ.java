@@ -5,31 +5,39 @@ import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
+import ij.util.Tools;
+import ij.plugin.frame.Recorder;
 import java.awt.event.*;
 import java.text.*;
 import java.util.Locale;	
 import java.awt.*;	
 import java.applet.Applet;
-import ij.plugin.frame.Recorder;
+import java.io.*;
+import java.lang.reflect.*;
 
 /** This class consists of static utility methods. */
 public class IJ {
 	public static boolean debugMode;
 	public static boolean hideProcessStackDialog;
-	
+	    
+    public static final char micronSymbol = (char)181;
+    public static final char angstromSymbol = (char)197;
+    public static final char degreeSymbol = (char)176;
+
 	private static ImageJ ij;
 	private static java.applet.Applet applet;
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
 	private static boolean isMac, isWin, isJava2, isJava14;
-	private static boolean altDown, spaceDown;
+	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
 	private static TextPanel logPanel;
 	private static boolean notVerified = true;		
 	private static PluginClassLoader classLoader;
 	private static boolean memMessageDisplayed;
+	private static long maxMemory;
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -131,7 +139,7 @@ public class IJ {
 		ImageStack stack = null;
 		if (slices>1)
 			stack = imp.getStack();
-		int[] mask = null;
+		ImageProcessor mask = null;
 		float[] cTable = imp.getCalibration().getCTable();
 		if (slices==1 || !doesStacks) {
 			ip = imp.getProcessor();
@@ -155,7 +163,7 @@ public class IJ {
 			Rectangle r = null;
 			Roi roi = imp.getRoi();
 			if (roi!=null && roi.getType()<Roi.LINE)
-				r = roi.getBoundingRect();
+				r = roi.getBounds();
 			mask = imp.getMask();
 			ip = imp.getProcessor();
 			double minThreshold = ip.getMinThreshold();
@@ -271,6 +279,8 @@ public class IJ {
 			if (!name.startsWith("Run$_"))
 				thread.setName("Run$_"+name);
 		}
+		if (command.equals("Miscellaneous..."))
+			command = "Misc...";
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);
@@ -373,12 +383,21 @@ public class IJ {
 		Macro.abort();
 	}
 
-	/** Displays an "out of memory" message to the "Results" window.*/
+	/** Displays an "out of memory" message to the "Log" window. */
 	public static void outOfMemory(String name) {
-		log("<<"+name + ": out of memory>>");
+		Undo.reset();
+		System.gc();
+		String tot = Runtime.getRuntime().totalMemory()/1048576L+"MB";
+		if (!memMessageDisplayed)
+			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		log("<Out of memory>");
 		if (!memMessageDisplayed) {
-			log("<<See the \"Memory\" section of the installation notes for>>");
-			log("<<your OS at \"http://rsb.info.nih.gov/ij/docs/install/\".>>");
+			log("<All available memory ("+tot+") has been>");
+			log("<used. Instructions for making more>");
+			log("<available can be found in the \"Memory\" >");
+			log("<sections of the installation notes at>");
+			log("<http://rsb.info.nih.gov/ij/docs/install/>");
+			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 			memMessageDisplayed = true;
 		}
 		Macro.abort();
@@ -402,9 +421,12 @@ public class IJ {
 	/**	Displays a message in a dialog box with the specified title.
 		Writes the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
-		if (ij!=null)
-			new MessageDialog(ij, title, msg);
-		else
+		if (ij!=null) {
+			if (msg.startsWith("<html>") && isJava2())
+				new HTMLDialog(title, msg);
+			else
+				new MessageDialog(ij, title, msg);
+		} else
 			System.out.println(msg);
 	}
 
@@ -474,12 +496,30 @@ public class IJ {
 		java.awt.Toolkit.getDefaultToolkit().beep();
 	}
 	
-
 	public static String freeMemory() {
 		System.gc();
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totMem = Runtime.getRuntime().totalMemory();
-		return  "Memory: " + (totMem-freeMem)/1024 + "K";
+		long inUse = (int)(totMem-freeMem);
+		String inUseStr = inUse<10000*1024?inUse/1024L+"K":inUse/1048576L+"MB";
+		String maxStr="";
+		long max = maxMemory();
+		if (max>0L) {
+			double percent = inUse*100/max;
+			maxStr = " of "+max/1048576L+"MB ("+(percent<1.0?"<1":d2s(percent,0)) + "%)";
+		}
+		return  inUseStr + maxStr;
+	}
+	
+	/** Returns the maximum amount of memory available to ImageJ or
+		zero if ImageJ is unable to determine this limit. */
+	public static long maxMemory() {
+		if (maxMemory==0L) {
+			Memory mem = new Memory();
+			maxMemory = mem.getMemorySetting();
+			if (maxMemory==0L) maxMemory = mem.maxMemory();
+		}
+		return maxMemory;
 	}
 	
 	public static void showTime(ImagePlus imp, long start, String str) {
@@ -512,20 +552,20 @@ public class IJ {
 	private static int dfDigits = 2;
 
 	/** Converts a number to a rounded formatted string.
-		The 'precision' argument specifies the number of
+		The 'decimalPlaces' argument specifies the number of
 		digits to the right of the decimal point. */
-	public static String d2s(double n, int precision) {
+	public static String d2s(double n, int decimalPlaces) {
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		boolean negative = n<0.0;
 		if (negative)
 			n = -n;
-		double whole = Math.round(n * Math.pow(10, precision));
-		double rounded = whole/Math.pow(10, precision);
+		double whole = Math.round(n * Math.pow(10, decimalPlaces));
+		double rounded = whole/Math.pow(10, decimalPlaces);
 		if (negative)
 			rounded = -rounded;
-		if (precision!=dfDigits)
-			switch (precision) {
+		if (decimalPlaces!=dfDigits)
+			switch (decimalPlaces) {
 				case 0: df.applyPattern("0"); dfDigits=0; break;
 				case 1: df.applyPattern("0.0"); dfDigits=1; break;
 				case 2: df.applyPattern("0.00"); dfDigits=2; break;
@@ -556,10 +596,18 @@ public class IJ {
 		return altDown;
 	}
 
+	/** Returns true if the shift key is down. */
+	public static boolean shiftKeyDown() {
+		return shiftDown;
+	}
+
 	public static void setKeyDown(int key) {
 		switch (key) {
 			case KeyEvent.VK_ALT:
 				altDown=true;
+				break;
+			case KeyEvent.VK_SHIFT:
+				shiftDown=true;
 				break;
 			case KeyEvent.VK_SPACE: {
 				spaceDown=true;
@@ -573,6 +621,7 @@ public class IJ {
 	public static void setKeyUp(int key) {
 		switch (key) {
 			case KeyEvent.VK_ALT: altDown=false; break;
+			case KeyEvent.VK_SHIFT: shiftDown=false; break;
 			case KeyEvent.VK_SPACE: {
 				spaceDown=false;
 				ImageWindow win = WindowManager.getCurrentWindow();
@@ -580,6 +629,11 @@ public class IJ {
 				break;
 			}
 		}
+	}
+	
+	public static void setInputEvent(InputEvent e) {
+		altDown = e.isAltDown();
+		shiftDown = e.isShiftDown();
 	}
 
 	/** Returns true if this machine is a Macintosh. */
@@ -732,21 +786,25 @@ public class IJ {
 
 	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
-		Frame frame = WindowManager.getFrame(title);
-		if (frame!=null && !(frame instanceof ImageWindow)) {
-			selectWindow(frame);
-			return;
-		}
-		int[] wList = WindowManager.getIDList();
-		int len = wList!=null?wList.length:0;
-		for (int i=0; i<len; i++) {
-			ImagePlus imp = WindowManager.getImage(wList[i]);
-			if (imp!=null) {
-				if (imp.getTitle().equals(title)) {
-					selectWindow(imp.getID());
-					return;
+		long start = System.currentTimeMillis();
+		while (System.currentTimeMillis()-start<4000) { // 4 sec timeout
+			Frame frame = WindowManager.getFrame(title);
+			if (frame!=null && !(frame instanceof ImageWindow)) {
+				selectWindow(frame);
+				return;
+			}
+			int[] wList = WindowManager.getIDList();
+			int len = wList!=null?wList.length:0;
+			for (int i=0; i<len; i++) {
+				ImagePlus imp = WindowManager.getImage(wList[i]);
+				if (imp!=null) {
+					if (imp.getTitle().equals(title)) {
+						selectWindow(imp.getID());
+						return;
+					}
 				}
 			}
+			wait(10);
 		}
 		showMessage("Macro Error", "No window with the title \""+title+"\" found.");
 		abort();
@@ -809,6 +867,8 @@ public class IJ {
 		if (w.npoints>0) {
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
 			img.setRoi(roi);
+			if (shiftKeyDown() || altKeyDown())
+				roi.modifyRoi(); 
 		}
 		return w.npoints;
 	}
@@ -841,6 +901,8 @@ public class IJ {
 		Roi.setPasteMode(m);
 	}
 
+	/** Returns a reference to the active image. Displays an error
+		message and aborts the macro if no images are open. */
 	public static ImagePlus getImage() {
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {
@@ -848,6 +910,41 @@ public class IJ {
 			abort();
 		}
 		return img;
+	}
+	
+	/** Returns the ImageJ version number as a string. */
+	public static String getVersion() {
+		return ImageJ.VERSION;
+	}
+	
+	/** Returns the path to the plugins, macros, temp or image directory if <code>title</code> 
+		is "plugins", "macros", "temp" or "image", otherwise, displays a dialog 
+		and returns the path to the directory selected by the user. 
+		Returns null if the specified directory is not found or the user
+		cancels the dialog box. Also aborts the macro if the user cancels
+		the dialog box.*/
+	public static String getDirectory(String title) {
+		if (title.equals("plugins"))
+			return Menus.getPlugInsPath();
+		else if (title.equals("macros"))
+			return Menus.getMacrosPath();
+		else if (title.equals("temp")) {
+			String dir = System.getProperty("java.io.tmpdir");
+			if (dir!=null && !dir.endsWith(File.separator)) dir += File.separator;
+			return dir;
+		} else if (title.equals("image")) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+	    	FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
+			if (fi!=null && fi.directory!=null)
+				return fi.directory;
+			else
+				return null;
+		} else {
+			DirectoryChooser dc = new DirectoryChooser(title);
+			String dir = dc.getDirectory();
+			if (dir==null) Macro.abort();
+			return dir;
+		}
 	}
 	
 	static void abort() {

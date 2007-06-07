@@ -75,7 +75,7 @@ import javax.swing.filechooser.*;
 			fc.setCurrentDirectory(fdir);
 		if (fileName!=null)
 			fc.setSelectedFile(new File(fileName));
-		int returnVal = fc.showOpenDialog(IJ.getInstance());
+		int returnVal = fc.showOpenDialog(null);
 		if (returnVal!=JFileChooser.APPROVE_OPTION)
 			{Macro.abort(); return;}
 		File file = fc.getSelectedFile();
@@ -138,7 +138,7 @@ import javax.swing.filechooser.*;
 		return defaultDirectory;
 	}
 
-	static void setDefaultDirectory(String defaultDir) {
+	public static void setDefaultDirectory(String defaultDir) {
 		defaultDirectory = defaultDir;
 		IJ.register(OpenDialog.class);
 	}

@@ -32,7 +32,7 @@ public class TextRoi extends Roi {
 		theText[1] = "Ctl+D";
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;
-			//IJ.write(""+previousRoi.getBoundingRect());
+			//IJ.write(""+previousRoi.getBounds());
 			previousRoi = null;
 		}
 	}

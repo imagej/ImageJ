@@ -339,12 +339,14 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 	
 	void save() {
-		gd.textArea1.selectAll();
-		String text1 = gd.textArea1.getText();
-		gd.textArea1.select(0, 0);
-		gd.textArea2.selectAll();
-		String text2 = gd.textArea2.getText();
-		gd.textArea2.select(0, 0);
+		TextArea ta1 = gd.getTextArea1();
+		TextArea ta2 = gd.getTextArea2();
+		ta1.selectAll();
+		String text1 = ta1.getText();
+		ta1.select(0, 0);
+		ta2.selectAll();
+		String text2 = ta2.getText();
+		ta2.select(0, 0);
 		double[] x = getData(text1);
 		double[] y = getData(text2);
 		SaveDialog sd = new SaveDialog("Save as Text...", "calibration", ".txt");
@@ -406,11 +408,13 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		} else
 			s2 = new String(sb);
 		if (s1!=null) {
-			gd.textArea1.selectAll();
-			gd.textArea1.setText(s1);
+			TextArea ta1 = gd.getTextArea1();
+			ta1.selectAll();
+			ta1.setText(s1);
 		}
-		gd.textArea2.selectAll();
-		gd.textArea2.setText(s2);
+		TextArea ta2 = gd.getTextArea2();
+		ta2.selectAll();
+		ta2.setText(s2);
 		importedValues = true;
 	}
 

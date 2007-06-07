@@ -120,7 +120,7 @@ public class CalibrationBar implements PlugInFilter {
         ip.reset();
         Roi roi = imp.getRoi();
         if (roi!=null &&  location.equals(locations[AT_SELECTION])) {
-            Rectangle r = roi.getBoundingRect();
+            Rectangle r = roi.getBounds();
             drawColorBar(imp,r.x,r.y);
         } else if( location.equals(locations[UPPER_LEFT]))
             drawColorBar(imp,insetPad,insetPad);

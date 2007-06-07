@@ -28,7 +28,7 @@ offer your changes to me so I can possibly add them to the "official" version.
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.31v";
+	public static final String VERSION = "1.32j";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
@@ -114,14 +114,14 @@ public class ImageJ extends Frame implements ActionListener,
 		if (IJ.isJava2() && applet==null) {
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		}
-		int nMacros = m.installMacros();
-		String str = nMacros==1?" macro)":" macros)";
-		IJ.showStatus("Version "+VERSION + " ("+ Menus.nPlugins + " commands, " + nMacros + str);
+		m.installStartupMacroSet();
+		String str = m.nMacros==1?" macro)":" macros)";
+		IJ.showStatus("Version "+VERSION + " ("+ m.nPlugins + " commands, " + m.nMacros + str);
 		// Toolbar.getInstance().addTool("Spare tool [Cf0fG22ccCf00E22cc]"); 
 	}
     	
 	void setIcon() {
-		URL url = this .getClass() .getResource("/microscope.gif"); 
+		URL url = this.getClass().getResource("/microscope.gif"); 
 		if (url==null)
 			return;
 		Image img = null;
@@ -212,7 +212,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void mousePressed(MouseEvent e) {
 		Undo.reset();
-		IJ.showStatus(IJ.freeMemory());
+		IJ.showStatus("Memory: "+IJ.freeMemory());
 		if (IJ.debugMode)
 			IJ.log("Windows: "+WindowManager.getWindowCount());
 	}
@@ -243,12 +243,13 @@ public class ImageJ extends Frame implements ActionListener,
 		if (imp!=null && !control && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
+				if ((flags & e.META_MASK)!=0 && IJ.isMacOSX()) return;
 				if (alt)
 					switch (keyChar) {
-						case 'u': case 'm': keyChar = 'µ'; break;
-						case 'A': keyChar = ''; break;
+						case 'u': case 'm': keyChar = IJ.micronSymbol; break;
+						case 'A': keyChar = IJ.angstromSymbol; break;
 						default:
-					}				
+					}
 				((TextRoi)roi).addChar(keyChar);
 				return;
 			}

@@ -44,8 +44,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     
     public ImageWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp.getTitle());
-        setBackground(Color.white);
-        setForeground(Color.black);
+		if (Prefs.blackCanvas && getClass().getName().equals("ij.gui.ImageWindow")) {
+			setForeground(Color.white);
+			setBackground(Color.black);
+		} else {
+        	setForeground(Color.black);
+        	setBackground(Color.white);
+        }
 		ij = IJ.getInstance();
 		this.imp = imp;
 		this.ic = ic;
@@ -82,6 +87,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				centerOnScreen = false;
 			}
 			show();
+			//EventQueue.invokeLater(new Runnable () {
+			//	public void run () { 
+			//		show(); 
+			//}}); 
 		}
      }
 
@@ -163,10 +172,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     		int currentSlice = imp.getCurrentSlice();
     		s += currentSlice+"/"+nSlices;
     		boolean isLabel = false;
-    		String label = stack.getSliceLabel(currentSlice);
-    		int newline = label!=null?label.indexOf('\n'):-1;
-    		if (newline>0)
-    			label = label.substring(0, newline);
+    		String label = stack.getShortSliceLabel(currentSlice);
     		if (label!=null && label.length()>0)
     			s += " (" + label + ")";
 			if ((this instanceof StackWindow) && running) {
@@ -372,7 +378,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		Roi roi = imp.getRoi();
 		Rectangle r = null;
 		if (roi!=null)
-			r = roi.getBoundingRect();
+			r = roi.getBounds();
 		if (r==null || (r!=null && (w!=r.width || h!=r.height))) {
 			// create a new roi centered on visible part of image
 			Rectangle srcRect = ic.getSrcRect();
@@ -393,7 +399,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			boolean nonRect = roi.getType()!=Roi.RECTANGLE;
 			ImageProcessor ip = imp.getProcessor();
 			if (nonRect) ip.snapshot();
-			r = roi.getBoundingRect();
+			r = roi.getBounds();
 			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
 			if (nonRect)
 				ip.reset(imp.getMask());

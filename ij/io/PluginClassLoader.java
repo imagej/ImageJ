@@ -29,27 +29,27 @@ public class PluginClassLoader extends ClassLoader {
      * are stored in a Vector for future searches.
      * @param path the path to the plugins directory.
      */
-    public PluginClassLoader(String path) {
-        this.path = path;
-        jarFiles = new Vector();
-        //find all JAR files on the path and subdirectories
-        File f = new File(path);
-        String[] list = f.list();
-        if (list!=null) {
-            for (int i=0; i<list.length; i++) {
-                f=new File(path, list[i]);
-                if (f.isDirectory()) {
-                    String[] innerlist = f.list();
-                    for (int j=0; j<innerlist.length; j++) {
-                        File g = new File(f,innerlist[j]);
-                        if (g.isFile()) addJAR(g);
-                    }
-                }
-                else addJAR(f);
-            }
-        }
-        jarFiles.trimToSize();
-    }
+	public PluginClassLoader(String path) {
+		this.path = path;
+		jarFiles = new Vector();
+		//find all JAR files on the path and subdirectories
+		File f = new File(path);
+		String[] list = f.list();
+		if (list==null)
+			return;
+		for (int i=0; i<list.length; i++) {
+			f=new File(path, list[i]);
+			if (f.isDirectory()) {
+				String[] innerlist = f.list();
+				if (innerlist==null) continue;
+				for (int j=0; j<innerlist.length; j++) {
+					File g = new File(f,innerlist[j]);
+					if (g.isFile()) addJAR(g);
+				}
+			} else 
+				addJAR(f);
+		}
+	}
 
     private void addJAR(File f) {
         if (f.getName().endsWith(".jar") || f.getName().endsWith(".zip"))
@@ -126,7 +126,7 @@ public class PluginClassLoader extends ClassLoader {
     
     // make a URL from a file within a JAR
     private URL makeURL (String name, File jar) throws MalformedURLException {
-        StringBuffer filename = new StringBuffer("file:/");
+        StringBuffer filename = new StringBuffer("file:///");
         filename.append(jar.toString());
         filename.append("!/");
         filename.append(name);

@@ -6,10 +6,13 @@ class ReturnException extends RuntimeException {
 	String str;
 	Variable[] array;
 	
-	ReturnException(double value, String str, Variable[] array) {
-		this.value = value;
-		this.str = str;
-		this.array = array;
+	ReturnException() {
 	}
+
+	//ReturnException(double value, String str, Variable[] array) {
+	//	this.value = value;
+	//	this.str = str;
+	//	this.array = array;
+	//}
 
 }

@@ -50,7 +50,7 @@ public class XYWriter implements PlugInFilter {
 			return;
 		}
 		
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		PolygonRoi p = (PolygonRoi)roi;
 		int n = p.getNCoordinates();
 		int[] x = p.getXCoordinates();

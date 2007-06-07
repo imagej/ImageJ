@@ -86,10 +86,9 @@ public class ShortProcessor extends ImageProcessor {
 				pixels8[i] = (byte)value;
 			}
 		}
-		lutAnimation = false;
 		if (cm==null)
 			makeDefaultColorModel();
-		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
+		if (source==null || (ij.IJ.isMacintosh()&&(!ij.IJ.isJava2()||lutAnimation))) {
 			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
 			source.setAnimated(true);
 			source.setFullBufferUpdates(true);
@@ -99,6 +98,7 @@ public class ShortProcessor extends ImageProcessor {
 			newPixels = false;
 		} else
 			source.newPixels();
+		lutAnimation = false;
 	    return img;
 	}
 
@@ -129,14 +129,17 @@ public class ShortProcessor extends ImageProcessor {
         newSnapshot = true;
 	}
 	
-	public void reset(int[] mask) {
-		if (mask==null || snapshotPixels==null || mask.length!=roiWidth*roiHeight)
-			return;
+	public void reset(ImageProcessor mask) {
+		if (mask==null || snapshotPixels==null)
+			return;	
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]!=BLACK)
+				if (mpixels[mi++]==0)
 					pixels[i] = snapshotPixels[i];
 				i++;
 			}
@@ -421,16 +424,17 @@ public class ShortProcessor extends ImageProcessor {
 	/** Fills pixels that are within roi and part of the mask.
 		Throws an IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
-	public void fill(int[] mask) {
+	public void fill(ImageProcessor mask) {
 		if (mask==null)
 			{fill(); return;}
-		if (mask.length!=roiWidth*roiHeight)
-			throw new IllegalArgumentException();
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]==BLACK)
+				if (mpixels[mi++]!=0)
 					pixels[i] = (short)fgColor;
 				i++;
 			}
@@ -768,13 +772,16 @@ public class ShortProcessor extends ImageProcessor {
 		return histogram;
 	}
 
-	int[] getHistogram(int[] mask) {
+	int[] getHistogram(ImageProcessor mask) {
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+			throw new IllegalArgumentException(maskSizeError(mask));
+		byte[] mpixels = (byte[])mask.getPixels();
 		int[] histogram = new int[65536];
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				if (mask[mi++]==BLACK)
+				if (mpixels[mi++]!=0)
 					histogram[pixels[i]&0xffff]++;
 				i++;
 			}

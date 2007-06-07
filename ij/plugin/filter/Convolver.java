@@ -158,12 +158,16 @@ public class Convolver implements PlugInFilter, ActionListener {
 				break;
 		}
 	}
+	
+	public void setNormalize(boolean normalizeKernel) {
+		normalize = normalizeKernel;
+	}
 
 	public void convolveRGB(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
         Rectangle roi = ip.getRoi();
-        int[] mask = ip.getMask();
+        ImageProcessor mask = ip.getMask();
 		int size = width*height;
 		if (slice==1) IJ.showStatus("Convolve (red)");
 		byte[] r = new byte[size];
@@ -257,9 +261,10 @@ public class Convolver implements PlugInFilter, ActionListener {
 	}
 	
 	void save() {
-		gd.textArea1.selectAll();
-		String text = gd.textArea1.getText();
-		gd.textArea1.select(0, 0);
+		TextArea ta1 = gd.getTextArea1();
+		ta1.selectAll();
+		String text = ta1.getText();
+		ta1.select(0, 0);
 		if (text==null || text.length()==0)
 			return;
 		text += "\n";
@@ -321,7 +326,7 @@ public class Convolver implements PlugInFilter, ActionListener {
 			if (y!=height-1)
 				sb.append("\n");
 		}
-		gd.textArea1.setText(new String(sb));
+		gd.getTextArea1().setText(new String(sb));
 	}
 
 	public void actionPerformed(ActionEvent e) {

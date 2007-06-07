@@ -14,10 +14,15 @@ import java.net.*;
 	10-11	left
 	12-13	bottom
 	14-15	right
-	16-17	NCoordinate
+	16-17	NCoordinates
 	18-33	x1,y1,x2,y2 (straight line)
 	34-35	line width (unused)
-	36-63	reserved (zero)
+	36-39   ShapeRoi size (type must be 1 if this value>0)
+	40-63	reserved (zero)
+	64-67   x0, y0 (polygon)
+	68-71   x1, y1 
+	etc.
+	
 */
 
 /** Decodes an ImageJ, NIH Image or Scion Image ROI. */
@@ -53,6 +58,10 @@ public class RoiDecoder {
 		int width = right-left;
 		int height = bottom-top;
 		int n = getShort(16);
+		
+		boolean isComposite = getInt(36)>0;		
+		if (isComposite)
+			return getShapeRoi();
 
 		Roi roi = null;
 		switch (type) {
@@ -107,6 +116,7 @@ public class RoiDecoder {
 				roi = new PolygonRoi(x, y, n, roiType);
 				break;
 		default:
+			throw new IOException("Unrecognized ROI type: "+type);
 		}
 		String name = f.getName();
 		if (name.endsWith(".roi"))
@@ -115,6 +125,29 @@ public class RoiDecoder {
 		return roi;
 	}
 	
+	public Roi getShapeRoi() throws IOException {
+		int type = getByte(6);
+		if (type!=rect)
+			throw new IllegalArgumentException("Invalid composite ROI type");
+		int top= getShort(8);
+		int left = getShort(10);
+		int bottom = getShort(12);
+		int right = getShort(14);
+		int width = right-left;
+		int height = bottom-top;
+		int n = getInt(36);
+
+		ShapeRoi roi = null;
+		float[] shapeArray = new float[n];
+		int base = 64;
+		for(int i=0; i<n; i++) {
+			shapeArray[i] = getFloat(base);
+			base += 4;
+		}
+		roi = new ShapeRoi(shapeArray);
+		return roi;
+	}
+
 	int getByte(int base) {
 		return data[base]&255;
 	}

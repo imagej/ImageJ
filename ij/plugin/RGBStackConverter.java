@@ -41,7 +41,7 @@ public class RGBStackConverter implements PlugIn {
 		int width, height;
 		Rectangle r;
 		if (roi!=null) {
-			r = roi.getBoundingRect();
+			r = roi.getBounds();
 			width = r.width;
 			height = r.height;
 		} else

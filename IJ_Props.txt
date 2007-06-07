@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.31
+# Version 1.32
 
 # Popup Menu
 popup01=Undo
@@ -56,17 +56,19 @@ selection04="Fit Spline",ij.plugin.Selection("spline")
 selection05="Fit Ellipse",ij.plugin.Selection("ellipse")
 selection06="Convex Hull",ij.plugin.Selection("hull")
 selection07="Create Mask",ij.plugin.Selection("mask")
+selection08="Make Inverse",ij.plugin.Selection("inverse")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("width")
 options02="JPEG Quality...",ij.plugin.Options("quality")
 options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
-options05="Foreground Color...",ij.plugin.frame.ColorSelector("fore")
-options06="Background Color...",ij.plugin.frame.ColorSelector("back")
-options07="Selection Color...",ij.plugin.frame.ColorSelector("roi")
-options08="Crosshair...",ij.plugin.Options("cross")
-options09="Miscellaneous...",ij.plugin.Options("misc")
+options05="Crosshair...",ij.plugin.Options("cross")
+options06="Colors...",ij.plugin.Colors
+options07="Image...",ij.plugin.Options("image")
+options08="Conversions...",ij.plugin.Options("conv")
+options09="Memory...",ij.plugin.Memory
+options10="Misc...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
@@ -76,22 +78,13 @@ adjust04="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
 adjust05="Size...",ij.plugin.filter.Resizer
 adjust06="Canvas Size...",ij.plugin.CanvasResizer
 
-# Plugins installed in the Image/Benchmarks submenu
-benchmarks01="Run Benchmark",ij.plugin.filter.Benchmark("run")
-benchmarks02="Run Without Screen Updates",ij.plugin.filter.Benchmark("no-updates")
-benchmarks03="Benchmark Results...",ij.plugin.filter.Benchmark("show")
-benchmarks04="JVM Comparison...",ij.plugin.filter.Benchmark("jvm")
-benchmarks05=-
-benchmarks06="Waves",ij.plugin.filter.Waves("run")
-benchmarks07="Particles...",ij.plugin.filter.Benchmark("particles")
-benchmarks08="Macro 1",ij.plugin.filter.Macro1
-#benchmarks09="Macro 2",ij.plugin.filter.Macro2
-
 # Plugins installed in the Image/Color submenu
 color01="Convert Stack to RGB",ij.plugin.RGBStackConverter
 color02="RGB Split",ij.plugin.filter.RGBStackSplitter
 color03="RGB Merge...",ij.plugin.RGBStackMerge
-color04="Color Picker...[K]",ij.plugin.ColorPicker
+color04="Show LUT",ij.plugin.filter.LutViewer
+color05="Edit LUT...",ij.plugin.LUT_Editor
+color06="Color Picker...[K]",ij.plugin.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
@@ -247,8 +240,9 @@ plug-in07=-
 
 # Plugins installed in the Plugins/Macros submenu
 macros01="Install...[M]",ij.plugin.MacroInstaller
-macros02="Record... ",ij.plugin.frame.Recorder
-macros03=-
+macros02="Run... ",ij.plugin.Macro_Runner
+macros03="Record... ",ij.plugin.frame.Recorder
+macros04=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
 shortcuts01="Create Shortcut... ",ij.plugin.Hotkeys("install")
@@ -262,13 +256,14 @@ utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="List Commands...",ij.plugin.CommandLister
 utilities04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
 utilities05="Threads...",ij.plugin.ThreadLister
-utilities06="Unlock Image",ij.plugin.SimpleCommands("unlock")
-utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
+utilities06="Benchmark",ij.plugin.filter.Benchmark
+utilities07="Unlock Image",ij.plugin.SimpleCommands("unlock")
+utilities08="Monitor Memory...",ij.plugin.MemoryMonitor
+utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
 
 # Plugins installed in the Help/About submenu
 about01="Inverter...",Inverter_("about")
 about02="MemoryMonitor...",ij.plugin.MemoryMonitor("about")
-about03="Waves...",ij.plugin.filter.Waves("about")
 
 # URL of directory containing the sample images
 # Used when Image/J is running as an application,

@@ -37,7 +37,9 @@ public class Compiler implements PlugIn, FilenameFilter {
 			return;
 		if (!open(path, "Compile and Run Plugin..."))
 			return;
-		if (compile(dir+name))
+		if (name.endsWith(".class"))
+			runPlugin(name.substring(0, name.length()-1));
+		else if (compile(dir+name))
 			runPlugin(name);
 	}
 	 
@@ -101,9 +103,16 @@ public class Compiler implements PlugIn, FilenameFilter {
 			fileName = od.getFileName();
 			okay = fileName!=null;
 			String lcName = okay?fileName.toLowerCase(Locale.US):null;
-			if (okay && !(lcName.endsWith(".java")||lcName.endsWith("txt"))) {
-				IJ.error("File name must end with \".java\", or \".txt\".");
-				okay = false;
+			if (okay) {
+				if (msg.startsWith("Compile")) {
+					if (!(lcName.endsWith(".java")||lcName.endsWith(".class"))) {
+						IJ.error("File name must end with \".java\" or \".class\".");
+						okay = false;
+					}
+				} else if (!(lcName.endsWith(".java")||lcName.endsWith("txt"))) {
+					IJ.error("File name must end with \".java\" or \".txt\".");
+					okay = false;
+				}
 			}
 		} else {
 			int i = path.lastIndexOf('/');

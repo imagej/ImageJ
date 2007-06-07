@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.text.*;
 import java.awt.*;
+import java.util.*;
 import java.applet.Applet;
 
 /** Displays the Java system properties in a text window. */
@@ -14,10 +15,9 @@ public class JavaProperties implements PlugIn {
 		sb.append("Java properties applets can read:\n");
 		show("java.version");
 		show("java.vendor");
-		show("java.vendor.url");
-		show("java.class.version");
 		if (IJ.isMacintosh()) show("mrj.version");
 		show("os.name");
+		show("os.version");
 		show("os.arch");
 		show("file.separator");
 		show("path.separator");
@@ -53,9 +53,13 @@ public class JavaProperties implements PlugIn {
 		show("user.name");
 		show("user.home");
 		show("user.dir");
+		show("user.country");
+		show("file.encoding");
 		show("java.home");
 		show("java.compiler");
 		show("java.class.path");
+		show("java.ext.dirs");
+		show("java.io.tmpdir");
 		
 		sb.append("\n");
 		sb.append("Other properties:\n");
@@ -63,6 +67,7 @@ public class JavaProperties implements PlugIn {
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
 		String prefsDir = osName.indexOf("Windows",0)>-1?userDir:userHome;
+		if (IJ.isMacOSX()) prefsDir = prefsDir + "/Library/Preferences";
 		sb.append("  version: "+IJ.getInstance().VERSION+"\n");
 		sb.append("  java 2: "+IJ.isJava2()+"\n");
 		sb.append("  java 1.4: "+IJ.isJava14()+"\n");
@@ -72,8 +77,9 @@ public class JavaProperties implements PlugIn {
 		sb.append("  sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		sb.append("  screen size: " + d.width + "x" + d.height+"\n");
-		String mem = IJ.freeMemory();
-		sb.append("  memory in use"+mem.substring(6,mem.length())+"\n");
+		sb.append("  memory in use: "+IJ.freeMemory()+"\n");		
+		if (IJ.altKeyDown())
+			doFullDump();
 		TextWindow tw = new TextWindow("Properties", new String(sb), 300, 400);
 	}
 	
@@ -81,6 +87,16 @@ public class JavaProperties implements PlugIn {
 		String p = System.getProperty(property);
 		if (p!=null)
 			sb.append("  " + property + ": " + p+"\n");
+	}
+	
+	void doFullDump() {
+		sb.append("\n");
+		sb.append("All Properties:\n");
+		Properties props = System.getProperties();
+		for (Enumeration en=props.keys(); en.hasMoreElements();) {
+			String key = (String)en.nextElement();
+			sb.append("  "+key+": "+(String)props.get(key)+"\n");
+		}
 	}
 
 }

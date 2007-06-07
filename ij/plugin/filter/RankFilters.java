@@ -176,7 +176,7 @@ public class RankFilters implements PlugInFilter {
                 int width = ip.getWidth();
                 int height = ip.getHeight();
                 Rectangle roi = ip.getRoi();
-                int[] mask = ip.getMask();
+                ImageProcessor mask = ip.getMask();
                 int size = width*height;
                 if (slice==1) IJ.showStatus(title+" (red)");
                 byte[] r = new byte[size];

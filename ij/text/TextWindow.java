@@ -41,11 +41,13 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 		textPanel.setTitle(title);
 		add("Center", textPanel);
 		textPanel.setColumnHeadings(headings);
-		textPanel.append(data);
+		if (data!=null && !data.equals(""))
+			textPanel.append(data);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
 			Image img = ij.getIconImage();
 			if (img!=null) setIconImage(img);
+			addKeyListener(ij);
 		}
  		addFocusListener(this);
  		addMenuBar();

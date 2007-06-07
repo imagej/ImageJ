@@ -25,6 +25,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		int stackSize = s.getSize();
 		sliceSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, stackSize+1);
 		add(sliceSelector);
+		ImageJ ij = IJ.getInstance();
+		if (ij!=null)
+			sliceSelector.addKeyListener(ij);
 		sliceSelector.addAdjustmentListener(this);
 		int blockIncrement = stackSize/10;
 		if (blockIncrement<1) blockIncrement = 1;

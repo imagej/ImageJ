@@ -54,9 +54,9 @@ public class ProfilePlot {
 		} else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
 			profile = getIrregularProfile(roi, ip);
 		else if (averageHorizontally)
-			profile = getRowAverageProfile(roi.getBoundingRect(), cal, ip);
+			profile = getRowAverageProfile(roi.getBounds(), cal, ip);
 		else
-			profile = getColumnAverageProfile(roi.getBoundingRect(), ip);
+			profile = getColumnAverageProfile(roi.getBounds(), ip);
 		ip.setCalibrationTable(null);
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
@@ -185,7 +185,7 @@ public class ProfilePlot {
 		int n = ((PolygonRoi)roi).getNCoordinates();
 		int[] x = ((PolygonRoi)roi).getXCoordinates();
 		int[] y = ((PolygonRoi)roi).getYCoordinates();
-		Rectangle r = roi.getBoundingRect();
+		Rectangle r = roi.getBounds();
 		int xbase = r.x;
 		int ybase = r.y;
 		double length = 0.0;

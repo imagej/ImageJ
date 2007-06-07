@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -30,12 +31,7 @@ public class ScaleDialog implements PlugInFilter {
 		int digits = 2;
 		if (isCalibrated) {
 			measured = 1.0/cal.pixelWidth;
-			if ((int)measured==measured)
-				digits = 0;
-			if (measured<0.01)
-				digits = 3;
-			else if (measured<0.001)
-				digits = 4;
+			digits = Tools.getDecimalPlaces(measured, measured);
 			known = 1.0;
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 			unit = cal.getUnit();
@@ -48,9 +44,9 @@ public class ScaleDialog implements PlugInFilter {
 		}
 		
 		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale);
-		gd.addNumericField("Distance in Pixels:", measured, digits);
-		gd.addNumericField("Known Distance:", known, 2);
-		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1);
+		gd.addNumericField("Distance in Pixels:", measured, digits, 8, null);
+		gd.addNumericField("Known Distance:", known, 2, 8, null);
+		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1, 8, null);
 		gd.addStringField("Unit of Length:", unit);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
 		gd.addCheckbox("Global", Calibrator.global);
@@ -62,9 +58,9 @@ public class ScaleDialog implements PlugInFilter {
 		aspectRatio = gd.getNextNumber();
 		unit = gd.getNextString();
         if (unit.equals("um"))
-            unit = "µm";
+            unit = IJ.micronSymbol+"m";
         else if (unit.equals("A"))
-        	unit = "";
+        	unit = ""+IJ.angstromSymbol;
  		Calibrator.global = gd.getNextBoolean();
 		if (measured!=0.0 && known==0.0) {
 			imp.setGlobalCalibration(Calibrator.global?cal:null);
@@ -134,14 +130,8 @@ class SetScaleDialog extends GenericDialog {
  			theScale = NO_SCALE;
  		else {
  			double scale = measured/known;
-			int digits = 2;
-			if ((int)scale==scale)
-				digits = 0;
-			else if (scale<0.01)
-				digits = 3;
-			else if (scale<0.001)
-				digits = 4;
- 			theScale = IJ.d2s(measured/known,digits)+" pixels/"+unit;
+			int digits = Tools.getDecimalPlaces(scale, scale);
+ 			theScale = IJ.d2s(scale,digits)+" pixels/"+unit;
  		}
  		setScale(theScale);
 	}

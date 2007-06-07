@@ -96,7 +96,7 @@ public class EllipseFitter {
 	
 	private int bitCount;
 	private double  xsum, ysum, x2sum, y2sum, xysum;
-	private int[] mask;
+	private byte[] mask;
 	private int left, top, width, height;
  	private double   n;
 	private double   xm, ym;   //mean values
@@ -108,7 +108,7 @@ public class EllipseFitter {
 	/** Fits an ellipse to the current ROI. The fit parameters are returned in public fields. */
 	public void fit(ImageProcessor ip, ImageStatistics stats) {
 		this.ip = ip;
-		mask = ip.getMask();
+		mask = ip.getMaskArray();
 		Rectangle r = ip.getRoi();
 		this.pw = stats.pw;
 		this.ph = stats.ph;
@@ -204,7 +204,7 @@ public class EllipseFitter {
  			xSumOfLine = 0;
 			int offset = y*width;
 			for (int x=0; x<width; x++) {
-				if (mask[offset+x] == ImageProcessor.BLACK) {
+				if (mask[offset+x] != 0) {
 					bitcountOfLine++;
 					xSumOfLine += x;
 					x2sum += x * x;
@@ -254,7 +254,7 @@ public class EllipseFitter {
 		g12:= (1/a^2 - 1/b^2) * sin(t) * cos(t)
 		g22:= ([sin(t)]/a)^2 + ([cos(t)]/b)^2
 
-		solving for x:      x:= k1*y ± sqrt( k2*y^2 + k3 )
+		solving for x:      x:= k1*y  sqrt( k2*y^2 + k3 )
 
 		where:  k1:= -g12/g11
 		k2:= (g12^2 - g11*g22)/g11^2

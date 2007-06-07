@@ -61,7 +61,7 @@ public class Histogram implements PlugIn, TextListener {
 		minField.addTextListener(this);
 		maxField = (TextField)numbers.elementAt(2);
 		maxField.addTextListener(this);
-		checkbox = (Checkbox)(gd.checkbox.elementAt(0));
+		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;			

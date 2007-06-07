@@ -4,6 +4,7 @@ import java.awt.event.*;
 import java.util.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
+import ij.plugin.ScreenGrabber;
 import ij.util.Tools;
 
 /**
@@ -31,8 +32,8 @@ import ij.util.Tools;
 public class GenericDialog extends Dialog implements ActionListener,
 TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
-	public Vector numberField, stringField, checkbox, choice, slider;
-	public TextArea textArea1, textArea2;
+	protected Vector numberField, stringField, checkbox, choice, slider;
+	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
 	private Button cancel, okay;
@@ -44,6 +45,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	private boolean firstNumericField=true;
 	private boolean firstSlider=true;
 	private boolean invalidNumber;
+	private String errorMessage;
 	private boolean firstPaint = true;
 	private Hashtable labels;
 	private boolean macro;
@@ -61,6 +63,16 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     /** Creates a new GenericDialog using the specified title and parent frame. */
     public GenericDialog(String title, Frame parent) {
 		super(parent==null?new Frame():parent, title, true);
+		if (Prefs.blackCanvas) {
+			//Color fc = getForeground();
+			//Color bc = getBackground();
+			//IJ.log("before: "+fc+" "+bc);
+			setForeground(SystemColor.controlText);
+			setBackground(SystemColor.control);
+			//fc = getForeground();
+			//bc = getBackground();
+			//IJ.log("after : "+fc+" "+bc);
+		}
 		grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);
@@ -326,10 +338,12 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     		return;
     	Panel panel = new Panel();
 		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
+		//textArea1.setBackground(Color.white);
 		//textArea1.append(text1);
 		panel.add(textArea1);
 		if (text2!=null) {
 			textArea2 = new TextArea(text2,rows,columns,TextArea.SCROLLBARS_NONE);
+			//textArea2.setBackground(Color.white);
 			//textArea2.append(text2);
 			panel.add(textArea2);
 		}
@@ -468,6 +482,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 				value = d.doubleValue();
 			else {
 				invalidNumber = true;
+				errorMessage = "\""+theText+"\" is an invalid number";
 				value = 0.0;
                 if (macro) {
                     IJ.showMessage("Macro Error", "Numeric value expected in run() function\n \n"
@@ -517,13 +532,19 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	}
 
 	/** Returns true if one or more of the numeric fields contained an  
-		invalid number. Must be called after calls to getNextNumber(). */
+		invalid number. Must be called after one or more calls to getNextNumber(). */
    public boolean invalidNumber() {
     	boolean wasInvalid = invalidNumber;
     	invalidNumber = false;
     	return wasInvalid;
     }
     
+	/** Returns an error message if getNextNumber was unable to convert a 
+		string into a number, otherwise, returns null. */
+	public String getErrorMessage() {
+		return errorMessage;
+   	}
+
   	/** Returns the contents of the next text field. */
    public String getNextString() {
    		String theText;
@@ -667,6 +688,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		GUI.center(this);
 		show();
 		IJ.wait(250); // work around for Sun/WinNT bug
+		//EventQueue.invokeLater(new Runnable () {
+		//	public void run () { 
+		//		show(); 
+		//}}); 
+
   	}
   	
   	/** Returns the Vector containing the numeric TextFields. */
@@ -692,6 +718,16 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
   	/** Returns the sliders (Scrollbars). */
   	public Vector getSliders() {
   		return slider;
+  	}
+
+  	/** Returns a reference to textArea1. */
+  	public TextArea getTextArea1() {
+  		return textArea1;
+  	}
+
+  	/** Returns a reference to textArea2. */
+  	public TextArea getTextArea2() {
+  		return textArea2;
   	}
 
 	protected void setup() {
@@ -750,7 +786,14 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	}
 
 	public void keyReleased(KeyEvent e) {
-		IJ.setKeyUp(e.getKeyCode());
+		int keyCode = e.getKeyCode();
+		IJ.setKeyUp(keyCode);
+		int flags = e.getModifiers();
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean meta = (flags & KeyEvent.META_MASK) != 0;
+		boolean shift = (flags & e.SHIFT_MASK) != 0;
+		if (keyCode==KeyEvent.VK_G && shift && (control||meta) && IJ.isJava2())
+			new ScreenGrabber().run(""); 
 	}
 		
 	public void keyTyped(KeyEvent e) {}
