@@ -68,13 +68,20 @@ public class Macro_Runner implements PlugIn {
 			runMacro(macro, null);
     }
 
-    /** Opens and runs the specified macro file on the current thread.*/
-	public String runMacroFile(String path, String arg) {
-		File file = new File(path);
+    /** Opens and runs the specified macro file on the current thread.
+    	The file is assumed to be in the macros folder unless 
+    	<code>name</code> is a full path. ".txt"  is
+    	added if <code>name</code> does not have an extension. */
+	public String runMacroFile(String name, String arg) {
+        boolean fullPath = name.startsWith("/") || name.indexOf(":\\")==1;
+        if (!fullPath) name = Menus.getMacrosPath() + name;
+        if (name.indexOf(".")==-1) name = name + ".txt";
+		File file = new File(name);
 		int size = (int)file.length();
-		if (size<=0)
+		if (size<=0) {
+            IJ.error("RunMacro", "Macro file not found:\n \n"+name);
 			return null;
-		try {
+		} try {
 			byte[] buffer = new byte[size];
 			FileInputStream in = new FileInputStream(file);
 			in.read(buffer, 0, size);

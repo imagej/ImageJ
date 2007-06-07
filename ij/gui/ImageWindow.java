@@ -9,6 +9,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
+import ij.macro.Interpreter;
 
 /** A frame for displaying images. */
 public class ImageWindow extends Frame implements FocusListener, WindowListener {
@@ -89,14 +90,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				GUI.center(this);
 				centerOnScreen = false;
 			}
-			show();
-			//EventQueue.invokeLater(new Runnable () {
-			//	public void run () { 
-			//		show(); 
-			//}}); 
+			if (Interpreter.isBatchMode()) {
+				WindowManager.setTempCurrentImage(imp);
+				Interpreter.addBatchModeImage(imp);
+			} else
+				show();
 		}
      }
-
     
 	private void setLocationAndSize(boolean updating) {
 		int width = imp.getWidth();
@@ -255,8 +255,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			{xloc = 0; yloc = 0;}
 		WindowManager.removeWindow(this);
 		setVisible(false);
-		dispose();
-		imp.flush();
+		if (ij!=null && !ij.quitting()) { // may help avoid thread deadlocks
+			dispose();
+			imp.flush();
+		}
 		//imp.setWindow(null);
 		//IJ.log("close: "+imp.getTitle());
 		return true;
@@ -298,7 +300,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	
 	public void focusGained(FocusEvent e) {
 		//IJ.log("focusGained: "+imp.getTitle());
-		WindowManager.setCurrentWindow(this);
+		if (!Interpreter.isBatchMode())
+			WindowManager.setCurrentWindow(this);
 	}
 
 
@@ -311,7 +314,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		ImageJ ij = IJ.getInstance();
 		boolean quitting = ij!=null && ij.quitting();
 		imp.setActivated(); // notify ImagePlus that image has been activated
-		if (!closed && !quitting)
+		if (!closed && !quitting && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
 	}
 	

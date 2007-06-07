@@ -28,6 +28,7 @@ public class Opener {
 	private static String defaultDirectory = null;
 	private static int fileType;
 	private boolean error;
+	private boolean isRGB48;
 
 
 	public Opener() {
@@ -92,9 +93,12 @@ public class Opener {
 		IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
-		if (imp!=null)
-			imp.show(IJ.d2s((System.currentTimeMillis()-start)/1000.0,3)+" seconds");
-		else {
+		if (imp!=null) {
+			if (isRGB48)
+				openRGB48(imp);
+			else
+				imp.show(IJ.d2s((System.currentTimeMillis()-start)/1000.0,3)+" seconds");
+		} else {
 			switch (fileType) {
 				case LUT:
 					imp = (ImagePlus)IJ.runPlugIn("ij.plugin.LutLoader", path);
@@ -276,7 +280,8 @@ public class Opener {
 	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
 		if (url==null)
 			return null;
-    	Image img = Toolkit.getDefaultToolkit().getImage(url);
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Image img = IJ.isJava2()?tk.createImage(url):tk.getImage(url);
 		if (img!=null) {
 			ImagePlus imp = new ImagePlus(title, img);
 			return imp;
@@ -286,7 +291,8 @@ public class Opener {
 
 	ImagePlus openJpegOrGif(String dir, String name) {
 	   	ImagePlus imp = null;
- 		Image img = Toolkit.getDefaultToolkit().getImage(dir+name);
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Image img = IJ.isJava2()?tk.createImage(dir+name):tk.getImage(dir+name);
  		if (img!=null) {
  			try {
  				imp = new ImagePlus(name, img);
@@ -341,26 +347,7 @@ public class Opener {
 				&& info[i].height==info[0].height;
 			contiguous &= info[i].offset==startingOffset+i*size;
 		}
-		/*
-		int last = info.length-1;
-		if (info[0].fileType==FileInfo.COLOR8&&info[0].lutSize>0&&info[last].lutSize>0) {
-			// do the first and last images have the same LUT?
-			if (info[0].lutSize!=info[last].lutSize)
-				sameSizeAndType = false;
-			else {
-				int n = info[0].lutSize;
-				for (int i=0; i<n; i++) {
-					if (info[0].reds[i]!=info[last].reds[i])
-						{sameSizeAndType=false; break;}
-					if (info[0].greens[i]!=info[last].greens[i])
-						{sameSizeAndType=false; break;}
-					if (info[0].blues[i]!=info[last].blues[i])
-						{sameSizeAndType=false; break;}
-				}
-			}
-		}
-		*/
-		if (contiguous)
+		if (contiguous &&  info[0].fileType!=FileInfo.RGB48)
 			info[0].nImages = info.length;
 		if (IJ.debugMode) {
 			IJ.log("  sameSizeAndType: " + sameSizeAndType);
@@ -388,6 +375,7 @@ public class Opener {
 				if ((imageSize&1)==1) imageSize++; // add 1 if odd
 			}
 			int loc = 0;
+			
 			try {
 				InputStream is = createInputStream(fi);
 				ImageReader reader = new ImageReader(fi);
@@ -400,7 +388,14 @@ public class Opener {
 						skip = info[i+1].offset-loc;
 						if (skip<0) throw new IOException("Images are not in order");
 					}
-					stack.addSlice(null, pixels);					
+					if (fi.fileType==FileInfo.RGB48) {
+						Object[] pixels2 = (Object[])pixels;
+						stack.addSlice(null, pixels2[0]);					
+						stack.addSlice(null, pixels2[1]);					
+						stack.addSlice(null, pixels2[2]);
+						isRGB48 = true;					
+					} else
+						stack.addSlice(null, pixels);					
 					IJ.showProgress((double)i/info.length);
 				}
 				is.close();
@@ -417,7 +412,7 @@ public class Opener {
 			if (stack.getSize()==0)
 				return null;
 			if (fi.fileType==FileInfo.GRAY16_UNSIGNED||fi.fileType==FileInfo.GRAY12_UNSIGNED
-			||fi.fileType==FileInfo.GRAY32_FLOAT) {
+			||fi.fileType==FileInfo.GRAY32_FLOAT||fi.fileType==FileInfo.RGB48) {
 				ImageProcessor ip = stack.getProcessor(1);
 				ip.resetMinAndMax();
 				stack.update(ip);
@@ -637,6 +632,31 @@ public class Opener {
 		    else
 				return new FileInputStream(f);
 		}
+	}
+	
+	void openRGB48(ImagePlus imp) {
+			ImageStack stack = imp.getStack();
+			ImageStack stack1 = imp.createEmptyStack();
+			ImageStack stack2 = imp.createEmptyStack();
+			ImageStack stack3 = imp.createEmptyStack();
+			int n = imp.getStackSize()/3;
+			for (int i=0; i<n; i++) {
+				stack1.addSlice(null, stack.getProcessor(1));
+				stack.deleteSlice(1);
+				stack2.addSlice(null, stack.getProcessor(1));
+				stack.deleteSlice(1);
+				stack3.addSlice(null, stack.getProcessor(1));
+				stack.deleteSlice(1);
+			}
+			ImagePlus imp1 = new ImagePlus("Red-"+imp.getTitle(), stack1);
+			imp1.getProcessor().resetMinAndMax();
+			imp1.show();
+			ImagePlus imp2 = new ImagePlus("Green-"+imp.getTitle(), stack2);
+			imp2.getProcessor().resetMinAndMax();
+			imp2.show();
+			ImagePlus imp3 = new ImagePlus("Blue-"+imp.getTitle(), stack3);
+			imp3.getProcessor().resetMinAndMax();
+			imp3.show();
 	}
 
 }

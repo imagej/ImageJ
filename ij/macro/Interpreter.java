@@ -36,7 +36,7 @@ public class Interpreter implements MacroConstants {
 
 	static Interpreter instance;
 	static boolean batchMode;
-	static Hashtable imageTable; // images opened in batch mode
+	static Vector imageTable; // images opened in batch mode
 	boolean done;
 	Program pgm;
 	Functions func;
@@ -813,7 +813,7 @@ public class Interpreter implements MacroConstants {
 
 	final double getLogicalExpression() {
 		double v1 = getBooleanExpression();
-		int next = nextToken();
+		int next = nextNonEolToken();
 		if (!(next==LOGICAL_AND || next==LOGICAL_OR))
 			return v1;
 		checkBoolean(v1);
@@ -1473,27 +1473,28 @@ public class Interpreter implements MacroConstants {
 	public static void addBatchModeImage(ImagePlus imp) {
 		if (!batchMode || imp==null) return;
 		if (imageTable==null)
-			imageTable = new Hashtable();
+			imageTable = new Vector();
 		//IJ.log("add: "+imp+"  "+imageTable.size());
-		imageTable.put(new Integer(imp.getID()), imp);
+		imageTable.addElement(imp);
 	}
 
 	public static void removeBatchModeImage(ImagePlus imp) {
 		if (imageTable!=null && imp!=null) {
 			//IJ.log("remove: "+imp+"  "+imageTable.size());
-			imageTable.remove(new Integer(imp.getID()));
+			int index = imageTable.indexOf(imp);
+			if (index!=-1)
+				imageTable.removeElementAt(index);
 		}
 	}
 	
 	public static int[] getBatchModeImageIDs() {
 		if (!batchMode || imageTable==null)
 			return new int[0];
-		int[] imageIDs = new int[imageTable.size()];
-		int i = 0;
-		for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
-			ImagePlus imp = (ImagePlus)en.nextElement();
-			if (imp!=null)
-				imageIDs[i++] = imp.getID();
+		int n = imageTable.size();
+		int[] imageIDs = new int[n];
+		for (int i=0; i<n; i++) {
+			ImagePlus imp = (ImagePlus)imageTable.elementAt(i);
+			imageIDs[i] = imp.getID();
 		}
 		return imageIDs;
 	}

@@ -63,7 +63,8 @@ public class IJ {
 	}
 	
 	/** Runs the macro contained in the string <code>macro</code>.
-		Returns any string value returned by the macro, or null. */
+		Returns any string value returned by the macro, or null. 
+		The equivalent macro function is eval(). */
 	public static String runMacro(String macro) {
 		return runMacro(macro, "");
 	}
@@ -77,13 +78,16 @@ public class IJ {
 		return mr.runMacro(macro, arg);
 	}
 
-	/** Runs the specified macro file. The optional 
-		string argument can be retrieved in the called 
+	/** Runs the specified macro file. The file is assumed to be in the macros 
+		folder unless <code>name</code> is a full path. ".txt"  is
+    	added if <code>name</code> does not have an extension.
+		The optional string argument (<code>arg</code>) can be retrieved in the called 
 		macro using the getArgument() macro function. 
-		Returns any string value returned by the macro or null. */
-	public static String runMacroFile(String path, String arg) {
+		Returns any string value returned by the macro or null. 
+		The equivalent macro function is runMacro(). */
+	public static String runMacroFile(String name, String arg) {
 		Macro_Runner mr = new Macro_Runner();
-		return mr.runMacroFile(path, arg);
+		return mr.runMacroFile(name, arg);
 	}
 
 	/** Runs the specified plugin and returns a reference to it. */
@@ -361,6 +365,7 @@ public class IJ {
 	/** Displays a line of text in the "Log" window. Writes to
 		System.out.println if the "ImageJ" frame is not present. */
 	public static synchronized void log(String s) {
+		if (s==null) return;
 		if (logPanel==null && ij!=null) {
 			TextWindow logWindow = new TextWindow("Log", "", 300, 200);
 			logPanel = logWindow.getTextPanel();
@@ -805,13 +810,31 @@ public class IJ {
 		img.updateAndDraw();
 	}
 
-	/** Sets the lower and upper threshold levels. */
+	/** Sets the lower and upper threshold levels and displays the image 
+		using red to highlight thresholded pixels. */
 	public static void setThreshold(double lowerThreshold, double upperThresold) {
-		ImagePlus img = getImage();
-		img.getProcessor().setThreshold(lowerThreshold,upperThresold,ImageProcessor.RED_LUT);
-		img.updateAndDraw();
+		setThreshold(lowerThreshold, upperThresold, null);
 	}
 	
+	/** Sets the lower and upper threshold levels and displays the image using
+		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
+	public static void setThreshold(double lowerThreshold, double upperThresold, String displayMode) {
+		int mode = ImageProcessor.RED_LUT;
+		if (displayMode!=null) {
+			displayMode = displayMode.toLowerCase(Locale.US);
+			if (displayMode.indexOf("black")!=-1)
+				mode = ImageProcessor.BLACK_AND_WHITE_LUT;
+			else if (displayMode.indexOf("over")!=-1)
+				mode = ImageProcessor.OVER_UNDER_LUT;
+			else if (displayMode.indexOf("no")!=-1)
+				mode = ImageProcessor.NO_LUT_UPDATE;
+		}
+		ImagePlus img = getImage();
+		img.getProcessor().setThreshold(lowerThreshold, upperThresold, mode);
+		if (mode != ImageProcessor.NO_LUT_UPDATE)
+			img.updateAndDraw();
+	}
+
 	/** Disables thresholding. */
 	public static void resetThreshold() {
 		ImagePlus img = getImage();
@@ -827,6 +850,8 @@ public class IJ {
 			error("Macro Error", "Image "+id+" not found or no images are open.");
 		String title = imp.getTitle();
 		if (Interpreter.isBatchMode()) {
+			ImagePlus imp2 = WindowManager.getCurrentImage();
+			if (imp2!=null && imp2!=imp) imp2.saveRoi();
             WindowManager.setTempCurrentImage(imp);
             WindowManager.setWindow(null);
 		} else {

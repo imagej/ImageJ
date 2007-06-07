@@ -133,6 +133,7 @@ public class Executer implements Runnable {
 				runImageCommand(cmd, imp);
 		} 
     }
+    
 
    /** Run commands that process images. */
     public void runImageCommand(String cmd, ImagePlus imp) {

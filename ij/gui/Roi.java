@@ -8,6 +8,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
+import ij.macro.Interpreter;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable, java.io.Serializable {
@@ -696,20 +697,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		@see ij.process.Blitter
 	*/
 	public static void setPasteMode(int transferMode) {
-		int previousMode = pasteMode;
+		if (transferMode==pasteMode) return;
 		pasteMode = transferMode;
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			return;
-		if (previousMode!=Blitter.COPY) {
-			ImageProcessor ip = imp.getProcessor();
-			ip.reset();
-			if (pasteMode!=Blitter.COPY) {
-				//ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
-				//ic.setImageUpdated();
-			}
-		}
-		imp.updateAndDraw();
+		if (imp!=null)
+			imp.updateAndDraw();
 	}
 	
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)

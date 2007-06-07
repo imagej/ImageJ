@@ -34,6 +34,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	protected int plotScale = 1;
 	protected boolean logScale;
 	protected Calibration cal;
+	protected int yMax;
 	public static int nBins = 256;
     
 	/** Displays a histogram using the title "Histogram of ImageName". */
@@ -54,6 +55,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		same as the image range expect for 32 bit images. */
 	public HistogramWindow(String title, ImagePlus imp, int bins, double histMin, double histMax) {
 		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		showHistogram(imp, bins, histMin, histMax);
+	}
+
+	/** Displays a histogram using the specified title, number of bins, histogram range and yMax. */
+	public HistogramWindow(String title, ImagePlus imp, int bins, double histMin, double histMax, int yMax) {
+		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		this.yMax = yMax;
 		showHistogram(imp, bins, histMin, histMax);
 	}
 
@@ -173,7 +181,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			newMaxCount = (int)(maxCount2 * 1.5);
   			//histogram[stats.mode] = newMaxCount;
 		}
-		drawPlot(newMaxCount, ip);
+		drawPlot(yMax>0?yMax:newMaxCount, ip);
 		histogram[stats.mode] = saveModalCount;
  		x = XMARGIN + 1;
 		y = YMARGIN + HIST_HEIGHT + 2;

@@ -226,21 +226,27 @@ public class Tokenizer implements MacroConstants {
 	void addUserFunctions() {
 		int[] code = pgm.getCode();
 		Symbol[] symbolTable = pgm.getSymbolTable();
-		int nextToken, address;
+		int nextToken, address, address2;
 		for (int i=0; i<code.length; i++) {
 			token = code[i]&0xffff;
 			if (token==FUNCTION) {
 				nextToken = code[i+1]&0xffff;
-				if (nextToken==WORD) {
-					address = code[i+1]>>16;
-					Symbol sym = symbolTable[address];
+				if (nextToken==WORD || (nextToken>=PREDEFINED_FUNCTION&&nextToken<=ARRAY_FUNCTION)) {
+					address = address2 = code[i+1]>>16;
+					if (nextToken!=WORD) { // override built in function
+                		pgm.addSymbol(new Symbol(WORD, symbolTable[address].str));
+                		address2 = pgm.stLoc;
+                		code[i+1] = WORD + (address2<<16);
+					}
+					Symbol sym = symbolTable[address2];
 					sym.type = USER_FUNCTION;
 					sym.value = i+1;  //address of function
 					for (int j=0; j<code.length; j++) {
 						token = code[j]&0xffff;
-						if (token==WORD && (code[j]>>16)==address && j>0 && (code[j-1]&0xfff)!=FUNCTION) {
+						if ((token==WORD || (token>=PREDEFINED_FUNCTION&&token<=ARRAY_FUNCTION))
+						&& (code[j]>>16)==address && (j==0||(code[j-1]&0xfff)!=FUNCTION)) {
 							code[j] = USER_FUNCTION;
-							code[j] += address<<16;
+							code[j] += address2<<16;
 							//IJ.log((code[j]&0xffff)+" "+(code[j]>>16)+" "+USER_FUNCTION+" "+address);
 						} else if (token==EOF)
 							break;

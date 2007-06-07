@@ -14,8 +14,9 @@ import ij.io.*;
 	class to install macro in menus and by the ImageJ class to install macros at startup. */
 public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
-	public static final int MAX_SIZE = 28000, MAX_MACROS=50, XINC=10, YINC=18;
+	public static final int MAX_SIZE = 28000, MAX_MACROS=60, XINC=10, YINC=18;
 	public static final char commandPrefix = '^';
+	static final String commandPrefixS = "^";
 	
 	private int[] macroStarts;
 	private String[] macroNames;
@@ -72,6 +73,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			if (token==MACRO) {
 				nextToken = code[i+1]&0xffff;
 				if (nextToken==STRING_CONSTANT) {
+					if (count==MAX_MACROS) {
+						if (macrosMenu==Menus.getMacrosMenu())
+							IJ.error("Macro Installer", "Macro sets are limited to "+MAX_MACROS+" macros.");
+						break;
+					}
 					address = code[i+1]>>16;
 					symbol = symbolTable[address];
 					name = symbol.str;
@@ -89,8 +95,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					}
 					//IJ.log(count+" "+name+" "+macroStarts[count]);
 					count++;
-					if (count==MAX_MACROS)
-						break;
 				}					
 			} else if (token==EOF)
 				break;
@@ -241,11 +245,14 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public static void doShortcut(String name) {
 		if (instance==null)
 			return;
-		for (int i=0; i<instance.nMacros; i++)
-			if (name.endsWith(instance.macroNames[i])) {
+		if (name.startsWith(commandPrefixS))
+			name = name.substring(1);
+		for (int i=0; i<instance.nMacros; i++) {
+			if (name.equals(instance.macroNames[i])) {
 				new MacroRunner(instance.pgm, instance.macroStarts[i], name);
 				return;
 			}
+		}
 	}
 	
 	public void runMacro(String name) {

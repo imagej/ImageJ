@@ -266,6 +266,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 	
 	ImageProcessor setup(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi!=null) roi.endPaste();
 		ImageProcessor ip = imp.getProcessor();
 		int type = imp.getType();
 		RGBImage = type==ImagePlus.COLOR_RGB;
@@ -530,12 +532,24 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" slices in the stack?");
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
-			if (d.yesPressed())
-				new StackProcessor(stack, ip).applyTable(table);
-			else
+			if (d.yesPressed()) {
+				int current = imp.getCurrentSlice();
+				ImageProcessor mask = imp.getMask();
+				for (int i=1; i<=imp.getStackSize(); i++) {
+					imp.setSlice(i);
+					ip = imp.getProcessor();
+					if (mask!=null) ip.snapshot();
+					ip.applyTable(table);
+					ip.reset(mask);
+				}
+				imp.setSlice(current);
+			} else {
+				if (ip.getMask()!=null) ip.snapshot();
 				ip.applyTable(table);
+				ip.reset(ip.getMask());
+			}
 		} else {
-			if (ip.getMask()!=null)	 ip.snapshot();
+			if (ip.getMask()!=null) ip.snapshot();
 			ip.applyTable(table);
 			ip.reset(ip.getMask());
 		}
@@ -552,11 +566,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		"to all "+n+" slices in the stack?\n \n"+
 		"NOTE: There is no Undo for this operation."))
 			return;
+ 		ImageProcessor mask = imp.getMask();
 		for (int i=1; i<=n; i++) {
 			if (i!=current) {
 				imp.setSlice(i);
 				ImageProcessor ip = imp.getProcessor();
+				if (mask!=null) ip.snapshot();
 				setMinAndMax(ip, min, max);
+				ip.reset(mask);
 				IJ.showProgress((double)i/n);
 			}
 		}
@@ -617,6 +634,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			if (mask!=null)
 				ip.reset(mask);
 		}
+		if (Recorder.record)
+			Recorder.record("run", "Enhance Contrast", "saturated=0.5");
 	}
 	
 	void setMinAndMax(ImagePlus imp, ImageProcessor ip) {

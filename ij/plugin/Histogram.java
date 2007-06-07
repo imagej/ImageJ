@@ -15,8 +15,9 @@ public class Histogram implements PlugIn, TextListener {
 
 	private static int nBins = 256;
 	private static boolean useImageMinAndMax = true;
-	private static double histMin;
-	private static double histMax;
+	private static double xMin;
+	private static double xMax;
+	private static String yMax = "Auto";
 	private static boolean stackHistogram;
 	private static int imageID;	
 	private Checkbox checkbox;
@@ -33,40 +34,44 @@ public class Histogram implements PlugIn, TextListener {
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
  			nBins = 256;
- 			histMin = 0.0;
- 			histMax = 0.0;
+ 			xMin = 0.0;
+ 			xMax = 0.0;
+ 			yMax = "Auto";
  		}
  		ImageStatistics stats = null;
  		if (useImageMinAndMax)
- 			{histMin=0.0; histMax=0.0;}
+ 			{xMin=0.0; xMax=0.0;}
+ 		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
  		if (stackHistogram) {
-			stats = new StackStatistics(imp, nBins, histMin, histMax);
+			stats = new StackStatistics(imp, nBins, xMin, xMax);
 			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, stats);
-		} else 
-			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, nBins, histMin, histMax);
+		} else
+			new HistogramWindow("Histogram of "+imp.getShortTitle(), imp, nBins, xMin, xMax, iyMax);
 	}
 	
 	boolean showDialog(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
 		double min = ip.getMin();
 		double max = ip.getMax();
-		if (imp.getID()!=imageID || (min==histMin&&min==histMax))
+		if (imp.getID()!=imageID || (min==xMin&&min==xMax))
 			useImageMinAndMax = true;
 		if (imp.getID()!=imageID || useImageMinAndMax) {
-			histMin = min;
-			histMax = max;
+			xMin = min;
+			xMax = max;
 		}
-		defaultMin = IJ.d2s(histMin,2);
-		defaultMax = IJ.d2s(histMax,2);;
+		defaultMin = IJ.d2s(xMin,2);
+		defaultMax = IJ.d2s(xMax,2);;
 		imageID = imp.getID();
 		int stackSize = imp.getStackSize();
 		GenericDialog gd = new GenericDialog("Histogram");
-		gd.addNumericField("Number of Bins:", HistogramWindow.nBins, 0);
-		gd.addCheckbox("Use Image Min and Max", useImageMinAndMax);
-		gd.addMessage("          or");
+		gd.addNumericField("Bins:", HistogramWindow.nBins, 0);
+		gd.addCheckbox("Use min/max or:", useImageMinAndMax);
+		//gd.addMessage("          or");
 		gd.addMessage("");
-		gd.addNumericField("Histogram_Min:", histMin, 2);
-		gd.addNumericField("Histogram_Max:", histMax, 2);
+		gd.addNumericField("X_Min:", xMin, 2);
+		gd.addNumericField("X_Max:", xMax, 2);
+		gd.addMessage(" ");
+		gd.addStringField("Y_Max:", yMax, 6);
 		if (stackSize>1)
 			gd.addCheckbox("Stack Histogram", stackHistogram);
 		Vector numbers = gd.getNumericFields();
@@ -82,8 +87,9 @@ public class Histogram implements PlugIn, TextListener {
 		if (nBins>=2 && nBins<=1000)
 			HistogramWindow.nBins = nBins;
 		useImageMinAndMax = gd.getNextBoolean();
-		histMin = gd.getNextNumber();
-		histMax = gd.getNextNumber();
+		xMin = gd.getNextNumber();
+		xMax = gd.getNextNumber();
+		yMax = gd.getNextString();
 		stackHistogram = (stackSize>1)?gd.getNextBoolean():false;
 		IJ.register(Histogram.class);
 		return true;

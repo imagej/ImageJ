@@ -20,7 +20,7 @@ public class WindowManager {
 
 	/** Makes the specified image active. */
 	public synchronized static void setCurrentWindow(ImageWindow win) {
-		if (win==null || win.isClosed() || win.getImagePlus()==null)
+		if (win==null || win.isClosed() || win.getImagePlus()==null) // deadlock-"wait to lock"
 			return;
 		setWindow(win);
 		tempCurrentImage = null;

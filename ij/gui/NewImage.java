@@ -208,6 +208,7 @@ public class NewImage {
 			boolean ok = createStack(imp, ip, slices, GRAY16, options);
 			if (!ok) imp = null;
 		}
+		imp.getProcessor().setMinAndMax(0, 65535); // default display range
 		return imp;
 	}
 
@@ -243,6 +244,7 @@ public class NewImage {
 			boolean ok = createStack(imp, ip, slices, GRAY32, options);
 			if (!ok) imp = null;
 		}
+		imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
 	}
 

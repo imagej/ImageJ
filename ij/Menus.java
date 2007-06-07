@@ -65,6 +65,7 @@ public class Menus {
 	static int windowMenuItems2; // non-image windows listed in Window menu + separator
 	private static String error;
 	private String jarError;
+	private String pluginError;
     private boolean isJarErrorHeading;
 	private boolean installingJars, duplicateCommand;
 	private static Vector jarFiles;  // JAR files in plugins folder with "_" in their name
@@ -208,6 +209,8 @@ public class Menus {
 		if (ij!=null)
 			ij.setMenuBar(mbar);
 		
+		if (pluginError!=null)
+			error = error!=null?error+="\n"+pluginError:pluginError;
 		if (jarError!=null)
 			error = error!=null?error+="\n"+jarError:jarError;
 		return error;
@@ -443,6 +446,8 @@ public class Menus {
 		String command = name.replace('_',' ');
 		command = command.substring(0, command.length()-4); //remove ".txt"
 		command.trim();
+		if (pluginsTable.get(command)!=null) // duplicate command?
+			command = command + " Macro";
 		MenuItem item = new MenuItem(command);
 		menu.add(item);
 		item.addActionListener(ij);
@@ -734,6 +739,8 @@ public class Menus {
 		}
 		String command = className.replace('_',' ');
 		command.trim();
+		if (pluginsTable.get(command)!=null)  // duplicate command?
+			command = command + " Plugin";
 		MenuItem item = new MenuItem(command);
 		menu.add(item);
 		item.addActionListener(ij);
@@ -828,10 +835,12 @@ public class Menus {
     	int nItems = window.getItemCount();
     	int start = WINDOW_MENU_ITEMS + windowMenuItems2;
     	int index = start + WindowManager.getCurrentIndex();
-    	for (int i=start; i<nItems; i++) {
-			CheckboxMenuItem item = (CheckboxMenuItem)window.getItem(i);
-			item.setState(i==index);
-		}
+    	try {  // workaround for Linux/Java 5.0/bug
+			for (int i=start; i<nItems; i++) {
+				CheckboxMenuItem item = (CheckboxMenuItem)window.getItem(i);
+				item.setState(i==index);
+			}
+		} catch (NullPointerException e) {}
 	}
 	
 	static boolean isColorLut(ImagePlus imp) {

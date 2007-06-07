@@ -661,7 +661,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int ox = offScreenX(sx);
 		int oy = offScreenY(sy);
 		flags = e.getModifiers();
-		//if (IJ.debugMode) IJ.log(e.getX() + " " + e.getY() + " " + ox + " " + oy);
 		setCursor(sx, sy, ox, oy);
 		IJ.setInputEvent(e);
 		Roi roi = imp.getRoi();

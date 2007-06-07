@@ -155,6 +155,7 @@ public class FileInfo {
 			case COLOR8: return "byte+lut";
 			case RGB: return "RGB";
 			case RGB_PLANAR: return "RGB(p)";
+			case RGB48: return "RGB48";
 			case BITMAP: return "bitmap";
 			case ARGB: return "ARGB";
 			case BGR: return "BGR";

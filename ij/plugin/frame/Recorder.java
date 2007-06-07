@@ -282,7 +282,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	void createMacro() {
 		String text = textArea.getText();
 		if (text==null || text.equals("")) {
-			IJ.showMessage("Recorder", "A macro cannot be created until at least\none command hes been recorded.");
+			IJ.showMessage("Recorder", "A macro cannot be created until at least\none command has been recorded.");
 			return;
 		}
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");

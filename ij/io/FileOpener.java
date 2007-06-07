@@ -248,8 +248,6 @@ public class FileOpener {
  			cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 		}
 		
-		Properties props = decodeDescriptionString();
-		
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
 			cal.pixelWidth = fi.pixelWidth;
 			cal.pixelHeight = fi.pixelHeight;
@@ -267,8 +265,9 @@ public class FileOpener {
 		if (fi.frameInterval!=0.0)
 			cal.frameInterval = fi.frameInterval;
 		
+		Properties props = decodeDescriptionString();
 		if (props==null)
-			return;	
+			return;
 					
 		cal.xOrigin = getDouble(props,"xorigin");
 		cal.yOrigin = getDouble(props,"yorigin");

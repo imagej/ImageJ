@@ -950,7 +950,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
-	void saveRoi() {
+	public void saveRoi() {
 		if (roi!=null) {
 			roi.endPaste();
 			Rectangle r = roi.getBounds();

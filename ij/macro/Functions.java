@@ -25,10 +25,13 @@ public class Functions implements MacroConstants, Measurements {
     ImagePlus imp;
     ImageProcessor ip;
     int imageType;
-    boolean colorSet;
+    boolean colorSet, fontSet;
+    Color defaultColor;
+    double defaultValue = Double.NaN;
     Plot plot;
     static int plotID;
     int justification = ImageProcessor.LEFT_JUSTIFY;
+    Font font;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -60,7 +63,7 @@ public class Functions implements MacroConstants, Measurements {
 			case WRITE: IJ.write(getStringArg()); break;
 			case DO_WAND: IJ.doWand((int)getFirstArg(), (int)getLastArg()); resetImage(); break;
 			case SET_MIN_MAX: IJ.setMinAndMax(getFirstArg(), getLastArg()); resetImage(); break;
-			case SET_THRESHOLD: IJ.setThreshold(getFirstArg(), getLastArg()); resetImage(); break;
+			case SET_THRESHOLD: setThreshold(); break;
 			case SET_TOOL: IJ.setTool((int)getArg()); break;
 			case SET_FOREGROUND: setForegroundColor(); break;
 			case SET_BACKGROUND: setBackgroundColor(); break;
@@ -93,8 +96,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_LINE: getLine(); break;
 			case GET_VOXEL_SIZE: getVoxelSize(); break;
 			case GET_HISTOGRAM: getHistogram(); break;
-			case GET_STATISTICS: getStatistics(); break;
-			case GET_BOUNDING_RECT: getBounds(); break;
+			case GET_BOUNDING_RECT: case GET_BOUNDS: getBounds(); break;
 			case GET_LUT: getLut(); break;
 			case SET_LUT: setLut(); break;
 			case GET_COORDINATES: getCoordinates(); break;
@@ -122,6 +124,8 @@ public class Functions implements MacroConstants, Measurements {
 			case SAVE_AS: saveAs(); break;
 			case SET_AUTO_THRESHOLD: setAutoThreshold(); break;
 			case RENAME: IJ.run("Rename...", "title=["+getStringArg()+"]"); break;
+			case FILL_RECT: fillRect(); break;
+			case GET_STATISTICS: getStatistics(); break;
 		}
 	}
 	
@@ -159,6 +163,8 @@ public class Functions implements MacroConstants, Measurements {
 			case PARSE_FLOAT: value = parseDouble(getStringArg()); break;
 			case PARSE_INT: value = parseInt(); break;
 			case IS_KEY_DOWN: value=isKeyDown(); break;
+			case GET_SLICE_NUMBER: interp.getParens(); value=getImage().getCurrentSlice(); break;
+			case SCREEN_WIDTH: case SCREEN_HEIGHT: value = getScreenDimension(type); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -181,6 +187,9 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_ARGUMENT: interp.getParens(); str=interp.argument!=null?interp.argument:""; break;
 			case TO_LOWER_CASE: str = getStringArg().toLowerCase(Locale.US); break;
 			case TO_UPPER_CASE: str = getStringArg().toUpperCase(Locale.US); break;
+			case RUN_MACRO: str = runMacro(false); break;
+			case EVAL: str = runMacro(true); break;
+			case TO_STRING: str = getStringArg(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -465,6 +474,8 @@ public class Functions implements MacroConstants, Measurements {
 	void setForegroundColor() {
 		IJ.setForegroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
 		resetImage(); 
+		defaultColor = null;
+		defaultValue = Double.NaN;
 	}
 
 	void setBackgroundColor() {
@@ -473,34 +484,37 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setColor() {
-		double color = getFirstArg();
+		double arg1 = getFirstArg();
 		colorSet = true;
 		if (interp.nextToken()==')')
-			{interp.getRightParen(); setColor(color); return;}
-		int red=(int)color, green=(int)getNextArg(), blue=(int)getLastArg();
+			{interp.getRightParen(); setColor(arg1); return;}
+		int red=(int)arg1, green=(int)getNextArg(), blue=(int)getLastArg();
 	    if (red<0) red=0; if (green<0) green=0; if (blue<0) blue=0; 
 	    if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;  
-		Color c = new Color(red, green, blue);
-		getProcessor().setColor(c);
+		defaultColor = new Color(red, green, blue);
+		getProcessor().setColor(defaultColor);
+		defaultValue = Double.NaN;
 	}
 	
-	void setColor(double color) {
+	void setColor(double value) {
 		ImageProcessor ip = getProcessor();
 		switch (imp.getBitDepth()) {
 			case 8:
-				if (color<0 || color>255)
+				if (value<0 || value>255)
 					interp.error("Argument out of 8-bit range (0-255)");
-				ip.setValue(color);
+				ip.setValue(value);
 				break;
 			case 16:
-				if (color<0 || color>65535)
+				if (value<0 || value>65535)
 					interp.error("Argument out of 16-bit range (0-65535)");
-				ip.setValue(color);
+				ip.setValue(value);
 				break;
 			default:
-				ip.setValue(color);
+				ip.setValue(value);
 				break;
 		}
+		defaultValue = value;
+		defaultColor = null;
 	}
 
 	void makeLine() {
@@ -529,6 +543,7 @@ public class Functions implements MacroConstants, Measurements {
 	void resetImage() {
 		imp = null;
 		ip = null;
+		colorSet = fontSet = false;
 	}
 
 	ImageProcessor getProcessor() {
@@ -622,7 +637,12 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setForegroundColor(ImageProcessor ip) {
-		ip.setColor(Toolbar.getForegroundColor());
+		if (defaultColor!=null)
+			ip.setColor(defaultColor);
+		else if (!Double.isNaN(defaultValue))
+			ip.setValue(defaultValue);
+		else
+			ip.setColor(Toolbar.getForegroundColor());
 		colorSet = true;
 	}
 
@@ -672,10 +692,18 @@ public class Functions implements MacroConstants, Measurements {
 		int y = (int)(interp.getExpression()+0.5);
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
-		if (!colorSet) setForegroundColor(ip);
+		if (!colorSet)
+			setForegroundColor(ip);
+		setFont(ip);
 		ip.setJustification(justification);
 		ip.drawString(str, x, y);
 		updateAndDraw(imp);
+	}
+	
+	void setFont(ImageProcessor ip) {
+		if (font!=null && !fontSet)
+			ip.setFont(font);
+		fontSet = true;
 	}
 
 	void setJustification() {
@@ -753,16 +781,24 @@ public class Functions implements MacroConstants, Measurements {
 	double getResult() {
 		interp.getLeftParen();
 		String column = getString();
-		interp.getComma();
-		int row = (int)interp.getExpression();
+		int row = -1;
+		if (interp.nextNonEolToken()==',') {
+			interp.getComma();
+			row = (int)interp.getExpression();
+		}
 		interp.getRightParen();
 		ResultsTable rt = Analyzer.getResultsTable();
+		int counter = rt.getCounter();
+		if (counter==0)
+			interp.error("\"Results\" table empty");
+		if (row==-1) row = counter-1;
+		if (row<0 || row>=counter)
+			interp.error("Row ("+row+") out of range");
 		int col = rt.getColumnIndex(column);
 		if (!rt.columnExists(col))
-			interp.error("\""+column+"\" column not found");
-		if (row<0 || row>=rt.getCounter())
-			interp.error("Row ("+row+") out of range");
-   		return rt.getValue(col, row);
+			return Double.NaN;
+		else
+   			return rt.getValue(col, row);
 	}
 
 	void setResult() {
@@ -1526,9 +1562,6 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 
-	void getStatistics() {
-	}
-	
 	String substring() {
 		String s = getFirstString();
 		int index1 = (int)getNextArg();
@@ -1742,9 +1775,8 @@ public class Functions implements MacroConstants, Measurements {
 			if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
 		} else
 			interp.getRightParen();
-		ImageProcessor ip = getProcessor();
-		Font font = new Font(name, style, size);
-		ip.setFont(font);
+		font = new Font(name, style, size);
+		fontSet = false;
 	}
 
 	void getMinAndMax() {
@@ -1767,17 +1799,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 		} else {
 			int id = (int)interp.getExpression();
+			IJ.selectWindow(id);
 			interp.getRightParen();
-			if (Interpreter.isBatchMode()) {
-				ImagePlus imp = null;
-				if (Interpreter.imageTable!=null)
-					imp = (ImagePlus)Interpreter.imageTable.get(new Integer(id));
-				if (imp==null) 
-					IJ.selectWindow(id);
-				else
-					WindowManager.setTempCurrentImage(imp);
-			} else
-				IJ.selectWindow(id);
 		}
 		resetImage();
 	}
@@ -1789,6 +1812,8 @@ public class Functions implements MacroConstants, Measurements {
 					ImagePlus imp = (ImagePlus)en.nextElement();
 					if (imp!=null) {
 						if (imp.getTitle().equals(title)) {
+							ImagePlus imp2 = WindowManager.getCurrentImage();
+							if (imp2!=null && imp2!=imp) imp2.saveRoi();
 							WindowManager.setTempCurrentImage(imp);
 							return;
 						}
@@ -1831,8 +1856,8 @@ public class Functions implements MacroConstants, Measurements {
 			imp.changes = false;
 			win.close();
 		} else {
+			imp.saveRoi();
 			WindowManager.setTempCurrentImage(null);
-			imp.killRoi(); //save any ROI so it can be restored later
 			interp.removeBatchModeImage(imp);
 		}
 		resetImage();
@@ -1840,19 +1865,17 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setBatchMode() {
 		boolean b =getBooleanArg();
-		boolean imagesOpen = interp.imageTable!=null&& interp.imageTable.size()>=1;
 		interp.setBatchMode(b);
 		if (!b) {
 			resetImage();
-			ImagePlus imp2 = null;
-			if (imagesOpen) {
-				imp2 = WindowManager.getCurrentImage();
-				//IJ.log("setBatchMode: "+imp2);
-				if (imp2!=null) {
+			ImagePlus imp2 = WindowManager.getCurrentImage();
+			if (imp2!=null) {
+				if (imp2.getWindow()==null)
 					imp2.show();
-					Roi roi = imp2.getRoi();
-					if (roi!=null) imp2.setRoi(roi);
-				}
+				else
+					imp2.updateAndDraw();
+				Roi roi = imp2.getRoi();
+				if (roi!=null) imp2.setRoi(roi);
 			}
 			WindowManager.setTempCurrentImage(null);
 		}
@@ -1877,6 +1900,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Argument must be >=1 and <="+nSlices);
 		else
 			imp.setSlice(n);
+		resetImage();
 	}
 	
 	void newImage() {
@@ -1985,6 +2009,87 @@ public class Functions implements MacroConstants, Measurements {
 		else if (key.indexOf("space")!=-1) value = IJ.spaceBarDown()==true?1.0:0.0;
 		else interp.error("Invalid key");
 		return value;
+	}
+
+	String runMacro(boolean eval) {
+		interp.getLeftParen();
+		String name = getString();
+		String arg = null;
+		if (interp.nextNonEolToken()==',') {
+			interp.getComma();
+			arg = getString();
+		}
+		interp.getRightParen();
+		if (eval)
+			return IJ.runMacro(name, arg);
+		else
+			return IJ.runMacroFile(name, arg);
+	}
+
+	void setThreshold() {
+		double lower = getFirstArg();
+		double upper = getNextArg();
+		String mode = null;
+		if (interp.nextNonEolToken()==',') {
+			interp.getComma();
+			mode = getString();
+		}
+		interp.getRightParen();
+		IJ.setThreshold(lower, upper, mode);
+		resetImage();
+	}
+
+	void fillRect() {
+		int x = (int)getFirstArg();
+		int y = (int)getNextArg();
+		int width = (int)getNextArg();
+		int height = (int)getLastArg();
+		if (!colorSet) setForegroundColor(ip);
+		ip.setRoi(x, y, width, height);
+		ip.fill();
+		updateAndDraw(imp);
+	}
+
+	double getScreenDimension(int type) {
+		interp.getParens();
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		if (type==SCREEN_WIDTH)
+			return screen.width;
+		else
+			return screen.height;
+	}
+
+	void getStatistics() {
+		Variable count = getFirstVariable();
+		Variable mean=null, min=null, max=null, std=null, mode=null, x=null, y=null;
+		int params = AREA+MEAN+MIN_MAX;
+		interp.getToken();
+		int arg = 1;
+		while (interp.token==',') {
+			arg++;
+			switch (arg) {
+				case 2: mean = getVariable(); break;
+				case 3: min = getVariable(); break;
+				case 4: max = getVariable(); break;
+				case 5: std = getVariable(); params += STD_DEV; break;
+				case 6: mode = getVariable(); params += MODE; break;
+				case 7: x= getVariable(); params += CENTROID; break;
+				case 8: y = getVariable(); break;
+				default: interp.error("')' expected");
+			}
+			interp.getToken();
+		}
+		if (interp.token!=')') interp.error("')' expected");
+		resetImage();
+		ImageStatistics stats = ImageStatistics.getStatistics(getProcessor(), params, null);
+		count.setValue(stats.pixelCount);
+		if (mean!=null) mean.setValue(stats.mean);
+		if (min!=null) min.setValue(stats.min);
+		if (max!=null) max.setValue(stats.max);
+		if (std!=null) std.setValue(stats.stdDev);
+		if (mode!=null) mode.setValue(stats.dmode);
+		if (x!=null) x.setValue(stats.xCentroid);
+		if (y!=null) y.setValue(stats.yCentroid);
 	}
 
 } // class Functions

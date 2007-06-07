@@ -25,7 +25,7 @@ public class Rotator implements PlugInFilter {
 			return;
 		if (firstTime) {
 			GenericDialog gd = new GenericDialog("Rotate", IJ.getInstance());
-			gd.addNumericField("Angle (degrees): ", angle, 1);
+			gd.addNumericField("Angle (degrees): ", angle, 2);
 			gd.addCheckbox("Interpolate", interpolate);
 			gd.showDialog();
 			canceled = gd.wasCanceled();

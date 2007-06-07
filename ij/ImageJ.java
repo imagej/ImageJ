@@ -28,7 +28,7 @@ offer your changes to me so I can possibly add them to the "official" version.
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.34e";
+	public static final String VERSION = "1.34h";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -138,7 +138,7 @@ public class ImageJ extends Frame implements ActionListener,
 		int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
 		int ijX = Prefs.getInt(IJ_X,-99);
 		int ijY = Prefs.getInt(IJ_Y,-99);
-		if (ijX!=-99 && ijY!=-99 && ijX<(screenWidth-75))
+		if (ijX>=0 && ijY>0 && ijX<(screenWidth-75))
 			return new Point(ijX, ijY);
 			
 		Dimension tbsize = toolbar.getPreferredSize();

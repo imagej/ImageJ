@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
+import ij.macro.Interpreter;
 
 
 /** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
@@ -109,7 +110,10 @@ public class StackEditor implements PlugIn {
             stack.addSlice(label, ip);
 			image[i].changes = false;
 			ImageWindow win = image[i].getWindow();
-			if (win!=null) win.close();
+			if (win!=null)
+				win.close();
+			else if (Interpreter.isBatchMode())
+				Interpreter.removeBatchModeImage(image[i]);
 		}
 		ImagePlus imp = new ImagePlus("Stack", stack);
 		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
@@ -124,7 +128,7 @@ public class StackEditor implements PlugIn {
 			return;
 		ImageStack stack = imp.getStack();
 		int size = stack.getSize();
-		if (size>30) {
+		if (size>30 && !IJ.macroRunning()) {
 			boolean ok = IJ.showMessageWithCancel("Convert to Images?",
 			"Are you sure you want to convert this\nstack to "
 			+size+" separate windows?");
@@ -143,6 +147,8 @@ public class StackEditor implements PlugIn {
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
 			win.close();
+		else if (Interpreter.isBatchMode())
+			Interpreter.removeBatchModeImage(imp);
 		imp.unlock();
 	}
 

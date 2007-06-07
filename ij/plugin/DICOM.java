@@ -209,6 +209,7 @@ class DicomDecoder {
  	private boolean bigEndianTransferSyntax = false;
 	double windowCenter, windowWidth;
 	double rescaleIntercept, rescaleSlope;
+	boolean inSequence;
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -331,8 +332,10 @@ class DicomDecoder {
 		
 		// "Undefined" element length.
 		// This is a sort of bracket that encloses a sequence of elements.
-		if (elementLength==-1)
- 			elementLength = 0;
+		if (elementLength==-1) {
+			elementLength = 0;
+			inSequence = true;
+		}
  		//IJ.log("getNextTag: "+tag+" "+elementLength);
 		return tag;
 	}
@@ -387,7 +390,6 @@ class DicomDecoder {
 			if (IJ.debugMode) IJ.log(DICM + " found at offset " + ID_OFFSET);
 		}
 		
-		boolean inSequence = true;
 		boolean decodingTags = true;
 		boolean signed = false;
 		
@@ -395,6 +397,10 @@ class DicomDecoder {
 			int tag = getNextTag();
 			if ((location&1)!=0) // DICOM tags must be at even locations
 				oddLocations = true;
+			if (inSequence) {
+				addInfo(tag, null);
+				continue;
+			}
 			String s;
 			switch (tag) {
 				case TRANSFER_SYNTAX_UID:
@@ -588,8 +594,10 @@ class DicomDecoder {
 	}
 
 	String getHeaderInfo(int tag, String value) throws IOException {
-		if ((tag==ITEM_DELIMINATION ||tag==SEQUENCE_DELIMINATION)&&!IJ.debugMode)
-			return null;
+		if (tag==ITEM_DELIMINATION || tag==SEQUENCE_DELIMINATION) {
+			inSequence = false;
+			if (!IJ.debugMode) return null;
+		}
 		String key = i2hex(tag);
 		//while (key.length()<8)
 		//	key = '0' + key;

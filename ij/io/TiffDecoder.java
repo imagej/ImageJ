@@ -34,6 +34,8 @@ public class TiffDecoder {
 	public static final int METAMORPH2 = 33629;
 	public static final int IPLAB = 34122;
 	public static final int NIH_IMAGE_HDR = 43314;
+	public static final int IMAGEJ_META_DATA = 50838; // private tag registered with Adobe
+	public static final int IMAGEJ_META_DATA_COUNTS = 50839; // private tag registered with Adobe
 	
 	//constants
 	static final int UNSIGNED = 1;
@@ -158,8 +160,6 @@ public class TiffDecoder {
 			return;
 		if (ij.IJ.debugMode)
 			ij.IJ.log("Image Description: " + new String(description).replace('\n',' '));
-		if (!new String(description,0,6).equals("ImageJ"))
-			return;
 		fi.description = new String(description);
 	}
 
@@ -366,7 +366,7 @@ public class TiffDecoder {
 							in.seek(value);
 							int bitDepth = getShort();
 							if (!(bitDepth==8||bitDepth==16))
-								error("ImageJ can only open 8 and 16 bit/channel RGB images");
+								error("ImageJ can only open 8 and 16 bit/channel RGB images ("+bitDepth+")");
 							if (bitDepth==16) {
 								fi.intelByteOrder = littleEndian;
 								fi.fileType = FileInfo.RGB48;
@@ -502,8 +502,8 @@ public class TiffDecoder {
 			if (fi!=null) {
 				if (fi.nImages>1) // ignore extra IFDs in ImageJ and NIH Image stacks
 					ifdOffset = 0;
-				if (fi.fileType==FileInfo.RGB48) // can't open 48-bit RGB stacks
-					ifdOffset = 0;
+				//if (fi.fileType==FileInfo.RGB48) // can't open 48-bit RGB stacks
+				//	ifdOffset = 0;
 			}
 		}
 		if (info.size()==0) {

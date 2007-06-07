@@ -1,0 +1,62 @@
+setBatchMode(true);
+mode="copy"; // this works as expected
+mode="OR";    // this works for oval (masked) rois but not Rectangles
+run("Clown (14K)");
+run("Canvas Size...", "width=200 height=200 position=Center");
+setLocation(screenWidth-212,140)
+pasteTest(99,1,mode);
+//wait(2000);
+pasteTest(10,2,mode);
+//wait(5000);
+selectWindow("clown.jpg");
+//wait(1000);
+selectWindow("testPaste"+2);
+run("Restore Selection");
+getSelectionBounds(x,y,w,h);
+setPasteMode(mode);
+for(i=0,x=0;i<3;i++,x+=w*0.666){
+	makeRectangle(x,0,w,h);
+	run("Paste");
+	//wait(1000);
+}
+//selectWindow("clown.jpg");// without this last paste doesn't "set"
+setBatchMode(false);
+
+function pasteTest(cf,t,mode){
+	N=12;
+	d=768;
+	m=90;
+	newImage("testPaste"+t, "RGB Black", d,d, 1);
+	setLocation(208,80)
+	ds=getWidth/N/2;
+	da=atan(1)*8/N;
+	x0=getWidth/2;y0=getHeight/2;r0=0;
+	setPasteMode(mode);
+	for(i=0,i3=0,a=0,r=0;i<N;i++,i3+=3,a+=da,r+=ds){
+		selectWindow("clown.jpg");
+		sf=d/ds*(i+1)/N/getWidth*8;//print(sf);
+		run("Scale...", "x="+sf+" y="+sf+" create title=temp");
+		selectWindow("temp");
+		w=getWidth;h=getHeight;
+		if(i<cf)makeOval(0,0,w,h);
+		else makeRectangle(0,0,w,h);
+		run("Copy");
+		selectWindow("temp");// otherwise sometimes copies "testPaste"
+		close;
+		x=x0+sin(a)*r;
+		y=y0-cos(a)*r+m;
+		selectWindow("testPaste"+t);
+		y=minOf(getHeight-h,y);
+		if(i<cf){
+			makeOval(x,y,w,h);
+			run("Paste");
+			//wait(500); // to allow for window update
+		}
+		else {
+			makeRectangle(x,y,w,h);
+			run("Paste");
+			//wait(1000); // to allow for window update
+		}
+	}
+	//selectWindow("clown.jpg");// without this last paste doesn't "set"
+}
