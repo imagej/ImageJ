@@ -33,6 +33,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int ySrcStart = 0;
 	private int xMouse = -1;
 	private int yMouse = -1;
+	private int flags;
 
 	public ImageCanvas(ImagePlus imp) {
 		this.imp = imp;
@@ -161,25 +162,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public int screenY(int y) {
 		return  (int)((y-srcRect.y)*magnification);
 	}
-	
-	
+
 	public double getMagnification() {
 		return magnification;
 	}
 		
 	public void setMagnification(double magnification) {
 		this.magnification = magnification;
-		ImageWindow win = imp.getWindow();
-		String scale = "";
-		if (magnification!=1.0) {
-			double percent = magnification*100.0;
-			
-			if (percent==(int)percent)
-				scale = " (" + IJ.d2s(percent,0) + "%)";
-			else
-				scale = " (" + IJ.d2s(percent,1) + "%)";
-		}
-		win.setTitle(imp.getTitle()+scale);
+		imp.setTitle(imp.getTitle());
 	}
 		
 	public Rectangle getSrcRect() {
@@ -238,18 +228,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (magnification>=32)
 			return;
 		double newMag = getHigherZoomLevel(magnification);
-		if (newMag==imp.getWindow().getInitialMagnification()) {
-			unzoom();
-			return;
-		}
-		int newWidth = (int)(dstWidth*newMag/magnification);
-		int newHeight = (int)(dstHeight*newMag/magnification);
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		ImageWindow win = imp.getWindow();
-		Point loc = win.getLocationOnScreen();
-		if ((loc.x+50+newWidth)<screen.width && (loc.y+50+newHeight)<screen.height) {
+		//if (newMag==imp.getWindow().getInitialMagnification()) {
+		//	unzoom();
+		//	return;
+		//}
+		//int newWidth = (int)(dstWidth*newMag/magnification);
+		//int newHeight = (int)(dstHeight*newMag/magnification);
+		int newWidth = (int)(imageWidth*newMag);
+		int newHeight = (int)(imageHeight*newMag);
+		if (canEnlarge(newWidth, newHeight)) {
 			setDrawingSize(newWidth, newHeight);
-			win.pack();
+			imp.getWindow().pack();
 		}
 		else {
 			int w = (int)Math.round(dstWidth/newMag);
@@ -268,6 +257,40 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setMagnification(newMag);
 		repaint();
 	}
+	
+	boolean canEnlarge(int newWidth, int newHeight) {
+		if ((flags&Event.SHIFT_MASK)!=0)
+			return false;
+		Rectangle r1 = imp.getWindow().getBounds();
+		//int right = r1.x + r1.width;
+		//int bottom = r1.y + r1.height;
+		r1.width = newWidth + 20;
+		r1.height = newHeight + 50;
+		if (imp.getStackSize()>1)
+			r1.height += 20;
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		//int[] wList = WindowManager.getIDList();
+		boolean fitsOnScreen = r1.x+r1.width<screen.width && r1.y+r1.height+30<screen.height;
+		//if (wList==null || wList.length<=1 || !fitsOnScreen)
+			return fitsOnScreen;
+		/*
+		for (int i=0; i<wList.length; i++) {
+			ImagePlus imp = WindowManager.getImage(wList[i]);
+			if (imp!=null && imp!=this.imp) {
+				ImageWindow win = imp.getWindow();
+				if (win!=null) {
+					Rectangle r2 = win.getBounds();
+					if (r2.x+r2.width<right && r2.y+r2.height<bottom)
+						continue;
+					Rectangle inter = r1.intersection(r2);
+					if (inter.width*inter.height>0.25*r2.width*r2.height)
+						return false;
+				}
+			}
+		}
+		return true;
+	*/
+	}
 		
 	/**Zooms out by making srcRect bigger. If we can't make
 	it bigger, then make the window smaller.*/
@@ -275,11 +298,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (magnification<=0.03125)
 			return;
 		double newMag = getLowerZoomLevel(magnification);
-		if (newMag==imp.getWindow().getInitialMagnification()) {
-			unzoom();
-			return;
-		}
-		if (srcRect.width<=imageWidth/2) {
+		//if (newMag==imp.getWindow().getInitialMagnification()) {
+		//	unzoom();
+		//	return;
+		//}
+		if (imageWidth*newMag>dstWidth) {
 			int w = (int)Math.round(dstWidth/newMag);
 			if (w*newMag<dstWidth) w++;
 			int h = (int)Math.round(dstHeight/newMag);
@@ -405,10 +428,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		
 		int x = e.getX();
 		int y = e.getY();
-		int flags = e.getModifiers();
-		if (IJ.debugMode) IJ.write("Mouse pressed: (" + x + "," + y + ")" + ij.modifiers(flags));
+		flags = e.getModifiers();
+		if (IJ.debugMode) IJ.log("Mouse pressed: (" + x + "," + y + ")" + ij.modifiers(flags));
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger() || (flags & e.META_MASK)!=0)) {
-			if (IJ.debugMode) IJ.write("show popup: " + (e.isPopupTrigger()?"true":"false"));
+			if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
 			PopupMenu popup = Menus.getPopupMenu();
 			if (popup!=null) {
 				add(popup);
@@ -466,17 +489,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					IJ.error("The wand tool does not work with 16 and 32-bit grayscale images.");
 					return;
 				}
-				ImageProcessor ip = imp.getProcessor();
-				Wand w = new Wand(ip);
-				double t1 = ip.getMinThreshold();
-				if (t1==ip.NO_THRESHOLD)
-					w.autoOutline(ox, oy);
-				else
-					w.autoOutline(ox, oy, (int)t1, (int)ip.getMaxThreshold());
-				if (w.npoints>0) {
-					roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, imp, Roi.TRACED_ROI);
-					imp.setRoi(roi);
-				}
+				int npoints = IJ.doWand(ox, oy);
+				if (Recorder.record && npoints>0)
+					Recorder.record("doWand", ox, oy);
 				break;
 			default:  //selection tool
 				handleRoiMouseDown(x, y);
@@ -542,7 +557,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (ij==null) return;
 		int ox = offScreenX(e.getX());
 		int oy = offScreenY(e.getY());
-		//if (IJ.debugMode) IJ.write(e.getX() + " " + e.getY() + " " + ox + " " + oy);
+		//if (IJ.debugMode) IJ.log(e.getX() + " " + e.getY() + " " + ox + " " + oy);
 		setCursor(ox, oy);
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE) 

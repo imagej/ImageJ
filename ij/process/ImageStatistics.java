@@ -155,7 +155,7 @@ public class ImageStatistics implements Measurements {
 		if (ef==null)
 			ef = new EllipseFitter();
 		ef.fit(ip, this);
-		double psize = pw==ph?pw:0.0;
+		double psize = (Math.abs(pw-ph)/pw)<.01?pw:0.0;
 		major = ef.major*psize;
 		minor = ef.minor*psize;
 		angle = ef.angle;

@@ -65,6 +65,7 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
+		//ij.IJ.log("createImage: "+min+" "+max);
 		boolean firstTime = pixels8==null;
 		if (firstTime || !lutAnimation) {
 			// scale from 16-bits to 8-bits
@@ -187,10 +188,6 @@ public class ShortProcessor extends ImageProcessor {
 			return 0;
 	}
 
-	public int getUncheckedPixel(int x, int y) {
-		return pixels[y*width+x]&0xffff;
-	}
-
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
 		if (x<0.0) x = 0.0;
@@ -217,16 +214,17 @@ public class ShortProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Stores the specified value at (x,y) without
-		varifying that x and y are within range. */
-	public void putUncheckedPixel(int x, int y, int value) {
-		pixels[y*width + x] = (short)value;
-	}
-
-	/** Stores the specified real value at (x,y). */
+	/** Stores the specified real value at (x,y). Does
+		nothing if (x,y) is outside the image boundary.
+		The value is clamped to be in the range 0-65535. */
 	public void putPixelValue(int x, int y, double value) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			pixels[y*width + x] = (short)value;
+		if (x>=0 && x<width && y>=0 && y<height) {
+			if (value>65535.0)
+				value = 65535.0;
+			else if (value<0.0)
+				value = 0.0;
+			pixels[y*width + x] = (short)(value+0.5);
+		}
 	}
 
 	/** Draws a pixel in the current foreground color. */
@@ -408,8 +406,12 @@ public class ShortProcessor extends ImageProcessor {
 		process(FILL, 0.0);
 	}
 
-	/** Fills pixels that are within roi and part of the mask. */
+	/** Fills pixels that are within roi and part of the mask.
+		Throws an IllegalArgumentException if the mask is null or
+		the size of the mask is not the same as the size of the ROI. */
 	public void fill(int[] mask) {
+		if (mask==null || mask.length<roiWidth*roiHeight)
+			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;

@@ -146,23 +146,28 @@ public class Info implements PlugInFilter {
 	    	if (roi instanceof Line) {
 	    		Line line = (Line)roi;
 	    		s += "  X1: " + IJ.d2s(line.x1*cal.pixelWidth) + "\n";
-	    		s += "  Y1: " + IJ.d2s(line.y1*cal.pixelHeight) + "\n";
+	    		s += "  Y1: " + IJ.d2s(yy(line.y1)*cal.pixelHeight) + "\n";
 	    		s += "  X2: " + IJ.d2s(line.x2*cal.pixelWidth) + "\n";
-	    		s += "  Y2: " + IJ.d2s(line.y2*cal.pixelHeight) + "\n";
+	    		s += "  Y2: " + IJ.d2s(yy(line.y2)*cal.pixelHeight) + "\n";
 	    	
 			} else if (cal.scaled()) {
 				s += "  X: " + IJ.d2s(r.x*cal.pixelWidth) + " (" + r.x + ")\n";
-				s += "  Y: " + IJ.d2s(r.y*cal.pixelHeight) + " (" +  r.y + ")\n";
+				s += "  Y: " + IJ.d2s(yy(r.y)*cal.pixelHeight) + " (" +  r.y + ")\n";
 				s += "  Width: " + IJ.d2s(r.width*cal.pixelWidth) + " (" +  r.width + ")\n";
 				s += "  Height: " + IJ.d2s(r.height*cal.pixelHeight) + " (" +  r.height + ")\n";
 			} else {
 				s += "  X: " + r.x + "\n";
-				s += "  Y: " + r.y + "\n";
+				s += "  Y: " + yy(r.y) + "\n";
 				s += "  Width: " + r.width + "\n";
 				s += "  Height: " + r.height + "\n";
 	    	}
 	    }
 		return s;
+	}
+	
+	// returns a Y coordinate based on the "Invert Y Coodinates" flag
+	int yy(int y) {
+		return Analyzer.updateY(y, imp.getHeight());
 	}
 
 	void showInfo(String info, int width, int height) {

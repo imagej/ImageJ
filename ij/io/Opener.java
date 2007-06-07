@@ -81,20 +81,14 @@ public class Opener {
 		String path = directory+name;
 		fileType = getFileType(path,name);
 		if (IJ.debugMode)
-			IJ.write("openImage: \""+types[fileType]+"\", "+path+name);
+			IJ.log("openImage: \""+types[fileType]+"\", "+path+name);
 		switch (fileType) {
 			case TIFF:
 				imp = openTiff(directory, name);
 				return imp;
-			case DICOM:
+			case DICOM: case TIFF_AND_DICOM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
 				if (imp.getWidth()!=0) return imp; else return null;
-			case TIFF_AND_DICOM:
-				// "hybrid" files created by GE-Senographe 2000 D */
-				imp = openTiff(directory,name);
-				ImagePlus imp2=(ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);				
-				imp.setProperty("Info",imp2.getProperty("Info"));
-				return imp;
 			case FITS:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS", path);
 				if (imp.getWidth()!=0) return imp; else return null;
@@ -278,8 +272,8 @@ public class Opener {
 		if (contiguous)
 			info[0].nImages = info.length;
 		if (IJ.debugMode) {
-			IJ.write("  sameSizeAndType: " + sameSizeAndType);
-			IJ.write("  contiguous: " + contiguous);
+			IJ.log("  sameSizeAndType: " + sameSizeAndType);
+			IJ.log("  contiguous: " + contiguous);
 		}
 		return sameSizeAndType;
 	}
@@ -334,7 +328,7 @@ public class Opener {
 			if (fi.whiteIsZero)
 				new StackProcessor(stack, stack.getProcessor(1)).invert();
 			ImagePlus imp = new ImagePlus(fi.fileName, stack);
-			FileOpener.setResolution(fi, imp);
+			new FileOpener(fi).setCalibration(imp);
 			imp.setFileInfo(fi);
 			IJ.showProgress(1.0);
 			return imp;
@@ -400,7 +394,7 @@ public class Opener {
 			return null;
 		ImagePlus imp = null;
 		if (IJ.debugMode) // dump tiff tags
-			IJ.write(info[0].info);
+			IJ.log(info[0].info);
 		if (info.length>1) { // try to open as stack
 			imp = openTiffStack(info);
 			if (imp!=null)

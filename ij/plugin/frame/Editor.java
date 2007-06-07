@@ -17,7 +17,7 @@ TextListener, ClipboardOwner {
     private boolean changes;
     private static String searchString = "";
     private static int lineNumber = 1;
-    Properties p = new Properties( );
+    Properties p = new Properties();
     
     public Editor() {
         super("Editor");
@@ -64,11 +64,12 @@ TextListener, ClipboardOwner {
         mb.add(m);
         setMenuBar(mb);
 
-        ta = new TextArea();
+        ta = new TextArea(16, 60);
         ta.addTextListener(this);
         //ta.addKeyListener(this);
         add(ta);
         pack();
+        GUI.center(this);
         display("Test.java", "");
     }
             
@@ -158,7 +159,7 @@ TextListener, ClipboardOwner {
     }
     
     void print () {
-        PrintJob pjob =getToolkit().getPrintJob(this, "Cool Stuff", p);
+		PrintJob pjob = Toolkit.getDefaultToolkit().getPrintJob(this, "Cool Stuff", p);
         if (pjob != null) {
             Graphics pg = pjob.getGraphics( );
             if (pg != null) {

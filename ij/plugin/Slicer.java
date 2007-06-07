@@ -25,73 +25,76 @@ public class Slicer implements PlugIn{
 
     // --------------------------------------------------
     public void run(String arg) {
-	// Retrieve current image.
-	imp = WindowManager.getCurrentImage(); 
+		// Retrieve current image.
+		imp = WindowManager.getCurrentImage(); 
+		
+		if(imp==null) {
+		    IJ.noImage(); 
+		    return; 
+		}
 	
-	if(imp==null) {
-	    IJ.noImage(); 
-	    return; 
-	}
-
-	if (imp.getStackSize()<2) {
-	    IJ.error("Stack required"); 
-	    return; 
-	}
-
-	// Get roi from image and check for validity.
-	Roi roi = imp.getRoi(); 
-	if (roi==null || !(roi.getType()==Roi.LINE || roi.getType()==Roi.RECTANGLE)) {
-	    IJ.error("Straight line or rectangular selection required"); 
-	    return; 
-	}
-	if (roi.getType()==Roi.RECTANGLE)
-		swidth = roi.getBoundingRect().height;
-
-	// Get z-scaling factor and line width from user.
-	Calibration cal = imp.getCalibration();
-	GenericDialog gd = new GenericDialog("Slice Parameters",IJ.getInstance()); 
-	gd.addNumericField("Z-Spacing ("+cal.getUnits()+"):",cal.pixelDepth,1); 
-	gd.addNumericField("Slice Width (pixels):",swidth,0); 
-	gd.addCheckbox("Interpolate", interpolate);
-	gd.showDialog(); 
-	if(gd.wasCanceled()) return; 
-
-	// Read z-spacing and slice width.
-	cal.pixelDepth = gd.getNextNumber();
-	imp.setCalibration(cal);
-	zscale = cal.pixelDepth/cal.pixelWidth;
-	swidth = (int)gd.getNextNumber(); 
-	interpolate = gd.getNextBoolean();
-
-	//  Record current timing info, for later display.
-	long tstart = System.currentTimeMillis(); 
-
-	if(!imp.lock()) return;   // exit if in use
-	ImagePlus oimg = sliceImage(imp, roi);
-	if (imp.getType()!=ImagePlus.COLOR_RGB) {
-		ImageProcessor ip = imp.getProcessor();
-		double min = ip.getMin();
-		double max = ip.getMax();
-		ip = oimg.getProcessor();
-		ip.setMinAndMax(min, max);
-	}
-	imp.unlock(); 
-
-	// Show slice image.
-	long tstop = System.currentTimeMillis(); 
-	double seconds = (tstop-tstart)/1000.0; 
-	oimg.show("Slicer: "+IJ.d2s(seconds,2)+" seconds"); 
-	IJ.register(Slicer.class);
+		if (imp.getStackSize()<2) {
+		    IJ.error("Stack required"); 
+		    return; 
+		}
+	
+		// Get roi from image and check for validity.
+		Roi roi = imp.getRoi(); 
+		if (roi==null || !(roi.getType()==Roi.LINE || roi.getType()==Roi.RECTANGLE)) {
+		    IJ.error("Straight line or rectangular selection required"); 
+		    return; 
+		}
+		if (roi.getType()==Roi.RECTANGLE)
+			swidth = roi.getBoundingRect().height;
+	
+		// Get z-scaling factor and line width from user.
+		Calibration cal = imp.getCalibration();
+		String units = cal.getUnits();
+		GenericDialog gd = new GenericDialog("Slice Parameters", IJ.getInstance()); 
+		gd.addNumericField("Z-Spacing ("+units+"):", cal.pixelDepth, 1); 
+		gd.addNumericField("Slice Width (pixels):", swidth, 0); 
+		gd.addCheckbox("Interpolate", interpolate);
+		gd.showDialog(); 
+		if(gd.wasCanceled()) return; 
+	
+		// Read z-spacing and slice width.
+		cal.pixelDepth = gd.getNextNumber();
+		if (cal.pixelWidth==0.0) cal.pixelWidth = 1.0;
+		zscale = cal.pixelDepth/cal.pixelWidth;
+		swidth = (int)gd.getNextNumber();
+		interpolate = gd.getNextBoolean();
+	
+		//  Record current timing info, for later display.
+		long tstart = System.currentTimeMillis(); 
+	
+		if(!imp.lock()) return;   // exit if in use
+		ImagePlus oimg = sliceImage(imp, roi);
+		if (imp.getType()!=ImagePlus.COLOR_RGB) {
+			ImageProcessor ip = imp.getProcessor();
+			double min = ip.getMin();
+			double max = ip.getMax();
+			ip = oimg.getProcessor();
+			ip.setMinAndMax(min, max);
+		}
+		imp.unlock();
+		oimg.setCalibration(cal);
+		oimg.getCalibration().pixelDepth = cal.pixelWidth; 
+	
+		// Show slice image.
+		long tstop = System.currentTimeMillis(); 
+		double seconds = (tstop-tstart)/1000.0; 
+		oimg.show("Slicer: "+IJ.d2s(seconds,2)+" seconds"); 
+		IJ.register(Slicer.class);
     }
 
     // --------------------------------------------------
     public void setZScaling(double zscale) {
-	this.zscale = zscale; 
+		this.zscale = zscale; 
     }
 
     // --------------------------------------------------
     public void setSliceWidth(int swidth) {
-	this.swidth = swidth; 
+		this.swidth = swidth; 
     }
 
     // --------------------------------------------------
@@ -122,10 +125,6 @@ public class Slicer implements PlugIn{
     //
     // IMPORTANT: The correctness of this routine depends on the fact
     // that the ImageProcessor.getPixel routine does bounds checking.
-    // In the current version of ImageJ (ImageJ107l) this is the
-    // case. If this routine does not do bounds checking, then we
-    // should check bounds in this routine or in the line2Image
-    // routine.
     //
     private ImageStack stackSlice(ImageStack stack, Roi roi) {
 		// Initialize processing parameters.
@@ -136,10 +135,7 @@ public class Slicer implements PlugIn{
 		double nrm = Math.sqrt(dx*dx + dy*dy); 
 		double sXInc = -dy/nrm; 
 		double sYInc = dx/nrm; 
-	
-		ImageStack ostack =  new ImageStack(number,
-						    stack.getSize(),
-						    cmod); 
+		ImageStack ostack =  new ImageStack(number, stack.getSize(), cmod);
 
 		for(int n=0; n<swidth;++n) {
 		    // Get processor containing pixels for particular slice.
@@ -168,7 +164,6 @@ public class Slicer implements PlugIn{
 		}
 	
 		IJ.showProgress(1.0); 
-			
 		return ostack; 
     }
 
@@ -232,8 +227,8 @@ public class Slicer implements PlugIn{
 	
 		ImageProcessor ip = stack.getProcessor(1);
 		StackProcessor sp = new StackProcessor(stack, ip);
-		ip.setInterpolate(interpolate); 
-		return sp.resize(imp.getWidth(),(int)(zscale*stack.getHeight())); 
+		ip.setInterpolate(interpolate);
+		return sp.resize(stack.getWidth(),(int)(zscale*stack.getHeight())); 
     }
 
 

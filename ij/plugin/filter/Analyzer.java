@@ -19,10 +19,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private StringBuffer min,max,mean,sd;
 	
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
-		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,LIMIT,LABELS};
-	//private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
-	//	MIN_MAX,CENTROID,CENTROID,CENTER_OF_MASS,CENTER_OF_MASS,
-	//	PERIMETER,RECT,RECT,RECT,RECT,LIMIT,LABELS,ELLIPSE,ELLIPSE,ELLIPSE};
+		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,LIMIT,LABELS,INVERT_Y};
 
 	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,MARK_AND_COUNT=4;
 	private static int mode = UNDEFINED;
@@ -92,11 +89,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[8]="Bounding Rectangle"; states[8]=(systemMeasurements&RECT)!=0;
 		labels[9]="Fit Ellipse"; states[9]=(systemMeasurements&ELLIPSE)!=0;
 		gd.addCheckboxGroup(5, 2, labels, states);
-		labels = new String[2];
-		states = new boolean[2];
+		labels = new String[3];
+		states = new boolean[3];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
 		labels[1]="Display Image Name"; states[1]=(systemMeasurements&LABELS)!=0;
-		gd.addCheckboxGroup(1, 2, labels, states);
+		labels[2]="Invert Y Coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
+		gd.addCheckboxGroup(2, 2, labels, states);
 		gd.addMessage("");
 		gd.addNumericField("Decimal Places:", precision, 0);
 		gd.showDialog();
@@ -195,7 +193,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&LABELS)!=0)
 			rt.addLabel("Name", getFileName());
 		rt.addValue("X", cal.getX(x));
-		rt.addValue("Y", cal.getY(y));
+		rt.addValue("Y", cal.getY(updateY(y,imp.getHeight())));
 		rt.addValue("Value", value);
 		displayResults();
 		//IJ.write(rt.getCounter()+"\t"+n(cal.getX(x))+n(cal.getY(y))+n(value));
@@ -251,11 +249,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&CENTROID)!=0) {
 			rt.addValue(ResultsTable.X_CENTROID,stats.xCentroid);
-			rt.addValue(ResultsTable.Y_CENTROID,stats.yCentroid);
+			rt.addValue(ResultsTable.Y_CENTROID,updateY(stats.yCentroid));
 		}
 		if ((measurements&CENTER_OF_MASS)!=0) {
 			rt.addValue(ResultsTable.X_CENTER_OF_MASS,stats.xCenterOfMass);
-			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,stats.yCenterOfMass);
+			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,updateY(stats.yCenterOfMass));
 		}
 		if ((measurements&PERIMETER)!=0) {
 			double perimeter;
@@ -267,7 +265,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&RECT)!=0) {
 			rt.addValue(ResultsTable.ROI_X,stats.roiX);
-			rt.addValue(ResultsTable.ROI_Y,stats.roiY);
+			rt.addValue(ResultsTable.ROI_Y,updateY2(stats.roiY));
 			rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
 			rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
 		}
@@ -278,6 +276,34 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 	}
 	
+	// Update centroid and center of mass y-coordinate
+	// based on value "Invert Y Coordinates" flag
+	double updateY(double y) {
+		if (imp==null)
+			return y;
+		else {
+			if ((systemMeasurements&INVERT_Y)!=0) {
+				Calibration cal = imp.getCalibration();
+				y = imp.getHeight()*cal.pixelHeight-y;
+			}
+			return y;
+		}
+	}
+
+	// Update bounding rectangle y-coordinate based
+	// on value "Invert Y Coordinates" flag
+	double updateY2(double y) {
+		if (imp==null)
+			return y;
+		else {
+			if ((systemMeasurements&INVERT_Y)!=0) {
+				Calibration cal = imp.getCalibration();
+				y = imp.getHeight()*cal.pixelHeight-y-cal.pixelHeight;
+			}
+			return y;
+		}
+	}
+
 	String getFileName() {
 		String s = "";
 		if (imp!=null) {
@@ -510,5 +536,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return precision;
 	}
 
+	/** Returns an updated Y coordinate based on
+		the current "Invert Y Coordinates" flag. */
+	public static int updateY(int y, int imageHeight) {
+		if ((systemMeasurements&INVERT_Y)!=0)
+			y = imageHeight-y-1;
+		return y;
+	}
 }
 	

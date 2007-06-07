@@ -37,7 +37,11 @@ public class Roi extends Object implements Cloneable {
 		setImage(imp);
 		if (width>xMax) width = xMax;
 		if (height>yMax) height = yMax;
-		setLocation(x, y);
+		//setLocation(x, y);
+		this.x = x;
+		this.y = y;
+		startX = x; startY = y;
+		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
 		this.width = width;
 		this.height = height;
 		oldWidth=width;
@@ -283,16 +287,10 @@ public class Roi extends Object implements Cloneable {
 
 	public void drawPixels() {
 		endPaste();
-		ImageProcessor ip = imp.getProcessor();
-		ip.moveTo(x, y);
-		ip.lineTo(x+width-1, y);
-		ip.lineTo(x+width-1, y+height-1);
-		ip.lineTo(x, y+height-1);
-		ip.lineTo(x, y);
+		imp.getProcessor().drawRect(x, y, width, height);
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
 	}
-
 
 	public boolean contains(int x, int y) {
 		Rectangle r = new Rectangle(this.x, this.y, width, height);
@@ -364,7 +362,7 @@ public class Roi extends Object implements Cloneable {
 		IJ.showStatus("Pasting...");
 		imp.getProcessor().snapshot();
 		updateClipRect(); //v1.24e
-		if (IJ.debugMode) IJ.write("startPaste: "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
+		if (IJ.debugMode) IJ.log("startPaste: "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		this.clipboard = clipboard;
 	}
@@ -408,6 +406,12 @@ public class Roi extends Object implements Cloneable {
 		double dy = y1-y2;
 		double angle;
 
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			dx *= cal.pixelWidth;
+			dy *= cal.pixelHeight;
+		}
+		
 		if (dx!=0.0)
 			angle = Math.atan(dy/dx);
 		else {

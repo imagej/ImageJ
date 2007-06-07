@@ -86,23 +86,27 @@ public class LookUpTable extends Object {
 		g.drawRect(x, y, width, height);
 	}
 
-	public void drawUnscaledColorBar(Graphics g, int x, int y, int width, int height) {
-		ColorProcessor cp = new ColorProcessor(width, height);
+	public void drawUnscaledColorBar(ImageProcessor ip, int x, int y, int width, int height) {
+		ImageProcessor bar = null;
+		if (ip instanceof ColorProcessor)
+			bar = new ColorProcessor(width, height);
+		else
+			bar = new ByteProcessor(width, height);
 		if (mapSize == 0) {  //no color table; draw a grayscale bar
 			for (int i = 0; i < 256; i++) {
-				cp.setColor(new Color(i, i, i));
-				cp.moveTo(i, 0); cp.lineTo(i, height);
+				bar.setColor(new Color(i, i, i));
+				bar.moveTo(i, 0); bar.lineTo(i, height);
 			}
 		}
 		else {
 			for (int i = 0; i<mapSize; i++) {
-				cp.setColor(new Color(rLUT[i]&0xff, gLUT[i]&0xff, bLUT[i]&0xff));
-				cp.moveTo(i, 0); cp.lineTo(i, height);
+				bar.setColor(new Color(rLUT[i]&0xff, gLUT[i]&0xff, bLUT[i]&0xff));
+				bar.moveTo(i, 0); bar.lineTo(i, height);
 			}
 		}
-		g.drawImage(cp.createImage(),x,y,null);
-		g.setColor(Color.black);
-		g.drawRect(x, y, width, height);
+		ip.insert(bar, x,y);
+		ip.setColor(Color.black);
+		ip.drawRect(x-1, y, width+2, height);
 	}
 			
 	public static ColorModel createGrayscaleColorModel(boolean invert) {

@@ -6,53 +6,36 @@ import java.awt.event.*;
 	"Yes", "No" and "Cancel" buttons. */
 public class YesNoCancelDialog extends Dialog implements ActionListener {
     private Button yesB, noB, cancelB;
+    //private Checkbox hide;
     private boolean cancelPressed, yesPressed;
 
     public YesNoCancelDialog(Frame parent, String title, String msg) {
         super(parent, title, true);
-		GridBagLayout gridbag = new GridBagLayout();
-		GridBagConstraints c = new GridBagConstraints();
-		setLayout(gridbag);
-
-		// The message
-		c.gridx = 0; c.gridy = 0;
-		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.CENTER;
-		c.gridwidth = 3;
-		c.insets = new Insets(20, 10, 10, 10);
+		setLayout(new BorderLayout());
+		Panel panel = new Panel();
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 	    MultiLineLabel message = new MultiLineLabel(msg);
-		gridbag.setConstraints(message, c);
 		message.setFont(new Font("Dialog", Font.BOLD, 12));
-        add(message);
-        
-		// "Yes" button. Add first so it's the highlighted button.
-		c.gridx = 2; c.gridy = 1;
-		c.gridwidth = 1;
-		c.fill = c.NONE;
-		c.insets = new Insets(10, 10, 10, 10);
+		panel.add(message);
+		add("North", panel);
+		
+		panel = new Panel();
+		panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 15, 8));
         yesB = new Button("  Yes  ");
 		yesB.addActionListener(this);
-		gridbag.setConstraints(yesB, c);
-        add(yesB);
-
-		// "No" button
-		c.gridx = 1;
+		panel.add(yesB);
         noB = new Button("  No  ");
 		noB.addActionListener(this);
-		gridbag.setConstraints(noB, c);
-        add(noB);
-
-		// "Cancel" button
-		c.gridx = 0;
+		panel.add(noB);
         cancelB = new Button(" Cancel ");
 		cancelB.addActionListener(this);
-		gridbag.setConstraints(cancelB, c);
-        add(cancelB);
-
-        setResizable(false);
-        pack();
+		panel.add(cancelB);
+		add("South", panel);
+		if (ij.IJ.isMacintosh())
+			setResizable(false);
+		pack();
 		GUI.center(this);
-        show();
+		show();
     }
     
 	public void actionPerformed(ActionEvent e) {

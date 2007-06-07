@@ -26,7 +26,7 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.26t";
+	public static final String VERSION = "1.27z";
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
@@ -41,6 +41,8 @@ public class ImageJ extends Frame implements ActionListener,
 	private Vector classes = new Vector();
 	private static PluginClassLoader classLoader;
 	private boolean notVerified = true;
+	
+	boolean hotkey;
 	
 	/** Creates a new ImageJ frame. */
 	public ImageJ() {
@@ -91,11 +93,13 @@ public class ImageJ extends Frame implements ActionListener,
 		int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		setIcon();
-		setBounds(loc.x, loc.y, ijWidth, ijHeight); //needed for pack to work
-		pack();
+		setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
 		setLocation(loc.x, loc.y);
+		pack();
 		setResizable(false);
 		setVisible(true);
+		if (IJ.isMacintosh() && IJ.isJava2())
+			pack(); // hack needed for window to display correctly Mac OS X
 		if (err1!=null)
 			IJ.error(err1);
 		if (err2!=null)
@@ -223,11 +227,11 @@ public class ImageJ extends Frame implements ActionListener,
 				Undo.setup(Undo.FILTER, imp);
 				ip.snapshot();
 			}
-			ip.setMask(mask);
+			//ip.setMask(mask);
 			ip.setCalibrationTable(cTable);
 			((PlugInFilter)theFilter).run(ip);
 			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
-				ip.reset(mask);  //restore image outside irregular roi
+				ip.reset(ip.getMask());  //restore image outside irregular roi
 			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
 		} else {
        		Undo.reset(); // can't undo stack operations
@@ -250,8 +254,8 @@ public class ImageJ extends Frame implements ActionListener,
 			boolean doGarbageCollection = IJ.isWindows() && !IJ.isJava2();
 			for (int i=1; i<=n; i++) {
 				ip.setPixels(stack.getPixels(i));
-				ip.setRoi(r);
 				ip.setMask(mask);
+				ip.setRoi(r);
 				ip.setCalibrationTable(cTable);
 				if (doMasking)
 					ip.snapshot();
@@ -332,9 +336,10 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			hotkey = false;
 			if (cmd!=null)
 				doCommand(cmd);
-			if (IJ.debugMode) IJ.write("actionPerformed: "+cmd);
+			if (IJ.debugMode) IJ.log("actionPerformed: "+cmd);
 		}
 	}
 
@@ -353,7 +358,7 @@ public class ImageJ extends Frame implements ActionListener,
 		Undo.reset();
 		IJ.showStatus(IJ.freeMemory());
 		if (IJ.debugMode)
-			IJ.write("Windows: "+WindowManager.getWindowCount());
+			IJ.log("Windows: "+WindowManager.getWindowCount());
 	}
 	
 	public void mouseReleased(MouseEvent e) {}
@@ -364,11 +369,12 @@ public class ImageJ extends Frame implements ActionListener,
  	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
+		hotkey = false;
 		if (keyCode==e.VK_CONTROL || keyCode==e.VK_SHIFT)
 			return;
 		char keyChar = e.getKeyChar();
 		int flags = e.getModifiers();
-		if (IJ.debugMode) IJ.write("keyCode=" + keyCode + " (" + KeyEvent.getKeyText(keyCode)
+		if (IJ.debugMode) IJ.log("keyCode=" + keyCode + " (" + KeyEvent.getKeyText(keyCode)
 			+ ") keyChar=\"" + keyChar + "\" (" + (int)keyChar + ") "
 			+ KeyEvent.getKeyModifiersText(flags));
 		boolean shift = (flags & e.SHIFT_MASK) != 0;
@@ -394,7 +400,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if (c==null)
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
-				case KeyEvent.VK_BACK_SPACE: c="Clear"; break; // delete
+				case KeyEvent.VK_BACK_SPACE: c="Clear"; hotkey=true; break; // delete
 				case KeyEvent.VK_EQUALS: case 0xbb: c="Start Animation [=]"; break;
 				case KeyEvent.VK_SLASH: case 0xbf: c="Reslice [/]..."; break;
 				case KeyEvent.VK_COMMA: case 0xbc: c="Previous Slice [<]"; break;
@@ -430,8 +436,11 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_ENTER: this.toFront(); return;
 				default: break;
 			}
-		if (c!=null && !c.equals(""))
+		if (c!=null && !c.equals("")) {
+			if (c.equals("Fill"))
+				hotkey = true;
 			doCommand(c);
+		}
 	}
 
 	public void keyReleased(KeyEvent e) {

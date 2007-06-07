@@ -11,13 +11,14 @@ public class ProfilePlot {
 
 	static final int MIN_WIDTH = 350;
 	static final double ASPECT_RATIO = 0.5;
-	protected double[] profile;
-	private double magnification;
 	private double min, max;
 	private boolean minAndMaxCalculated;
-	private ImagePlus imp;
-    static private double fixedMin = Prefs.getDouble("pp.min",0.0);
-    static private double fixedMax = Prefs.getDouble("pp.max",0.0);
+    private static double fixedMin = Prefs.getDouble("pp.min",0.0);
+    private static double fixedMax = Prefs.getDouble("pp.max",0.0);
+    
+	protected ImagePlus imp;
+	protected double[] profile;
+	protected double magnification;
 	protected double pixelSize;
 	protected String units;
 	protected String yLabel;

@@ -6,7 +6,8 @@ public class ImageJApplet extends Applet {
 
 	/** Starts ImageJ if it's not already running. */
     public void init() {
-     	if (IJ.getInstance()==null)
+    	ImageJ ij = IJ.getInstance();
+     	if (ij==null || (ij!=null && !ij.isShowing()))
 			new ImageJ(this);
     }
 

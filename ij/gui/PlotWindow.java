@@ -53,10 +53,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static String defaultDirectory = null;
 	private String xLabel;
 	private String yLabel;
-	private FontMetrics fm;
 	private Font font = new Font("Helvetica", Font.PLAIN, 12);
 	private boolean fixedYScale;
- 	private Graphics g;
+ 	private ImageProcessor ip;
 	private static int options;
 	
 	/** Save x-values only. To set, use Edit/Options/
@@ -83,8 +82,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	* @param yValues		the y-coodinates
 	*/
 	public PlotWindow(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
-		super(new ImagePlus(title,
-			GUI.createBlankImage(WIDTH+LEFT_MARGIN+RIGHT_MARGIN, HEIGHT+TOP_MARGIN+BOTTOM_MARGIN)));
+		super(NewImage.createByteImage(title,
+			WIDTH+LEFT_MARGIN+RIGHT_MARGIN, HEIGHT+TOP_MARGIN+BOTTOM_MARGIN,
+			1, NewImage.FILL_WHITE));
 		this.xLabel = xLabel;
 		this.yLabel = yLabel;
 		this.xValues = xValues;
@@ -95,6 +95,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		yMin=a[0]; yMax=a[1];
 		fixedYScale = false;
 		nPoints = xValues.length;
+	}
+
+	/** This version of the constructor excepts double arrays. */
+	public PlotWindow(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
+		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
 	}
 
 	/** Sets the x-axis and y-axis range. */
@@ -128,27 +133,31 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
 					yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
 				}
-				g.drawPolyline(xts, yts,x.length); 
+				drawPolyline(ip, xts, yts, x.length); 
 				break;
 		}
 	}
 
-	void drawShape(int shape, int x, int y, int size) {
-		int xbase = x-size/2;
-		int ybase = y-size/2;
-		if (shape==X) {
-			g.drawLine(xbase,ybase,xbase+size,ybase+size);
-			g.drawLine(xbase+size,ybase,xbase,ybase+size);
-		} else
-			g.drawOval(xbase, ybase, size, size);
-	}
-	
 	/** Adds a set of points to the plot using double arrays.
 		Must be called before the plot is displayed. */
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
 
+	void drawShape(int shape, int x, int y, int size) {
+		int xbase = x-size/2;
+		int ybase = y-size/2;
+		if (shape==X) {
+			ip.drawLine(xbase,ybase,xbase+size,ybase+size);
+			ip.drawLine(xbase+size,ybase,xbase,ybase+size);
+		} else { // 5x5 oval
+			ip.drawLine(x-1, y-2, x+1, y-2);
+			ip.drawLine(x-1, y+2, x+1, y+2);
+			ip.drawLine(x+2, y+1, x+2, y-1);
+			ip.drawLine(x-2, y+1, x-2, y-1);
+		}
+	}
+	
 	/** Adds error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
 		if (errorBars.length!=nPoints)
@@ -161,7 +170,15 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		setup();
 		int xt = LEFT_MARGIN + (int)(x*frameWidth);
 		int yt = TOP_MARGIN + (int)(y*frameHeight);
-		g.drawString(label, xt, yt);
+		ip.drawString(label, xt, yt);
+	}
+	
+	/** Changes the drawing color. The frame and labels are
+		always drawn in black. */
+	public void setColor(Color c) {
+		setup();
+		ip = ip.convertToRGB();
+		ip.setColor(c);
 	}
 
 	/** Displays the plot. */
@@ -183,18 +200,20 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		add(buttons);
 		drawPlot();
 		pack();
-		g.dispose();
-		g = null;
-		imp.setProcessor(null, new ColorProcessor(imp.getImage()));
-		imp.updateAndDraw();
+		if (ip instanceof ColorProcessor)
+			imp.setProcessor(null, ip);
+		else
+			imp.updateAndDraw();
 	}
 
 	void setup() {
-		if (g!=null)
+		if (ip!=null)
 			return;
-		g = imp.getImage().getGraphics();
-		g.setColor(Color.black);
-		g.setFont(font);
+		ip = imp.getProcessor();
+		ip.setColor(Color.black);
+		if (Line.getWidth()>3)
+			ip.setLineWidth(1);
+		ip.setFont(font);
 		if (frameWidth==0) {
 			frameWidth = WIDTH;
 			frameHeight = HEIGHT;
@@ -232,7 +251,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		double v;
 		
 		setup();
-		g.drawRect(frame.x, frame.y, frame.width, frame.height);
 					
 		int xpoints[] = new int[nPoints];
 		int ypoints[] = new int[nPoints];
@@ -244,7 +262,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
 			ypoints[i] = TOP_MARGIN + frame.height - (int)((value-yMin)*yScale);
 		}
-		g.drawPolyline(xpoints, ypoints, nPoints); 
+		drawPolyline(ip, xpoints, ypoints, nPoints); 
 		
 		if (this.errorBars != null) {
 			xpoints = new int[2];
@@ -253,59 +271,60 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 				xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
 				ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
 				ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
-				g.drawPolyline(xpoints,ypoints,2);
+				drawPolyline(ip, xpoints,ypoints, 2);
 			}	    
 	    }
 
+		if (ip instanceof ColorProcessor)
+			ip.setColor(Color.black);
+		ip.drawRect(frame.x, frame.y, frame.width+1, frame.height+1);
 		String s = d2s(yMax);
-		int sw = getWidth(s,g);
+		int sw = ip.getStringWidth(s);
 		if ((sw+4)>LEFT_MARGIN)
-			g.drawString(s, 4, TOP_MARGIN-4);
+			ip.drawString(s, 4, TOP_MARGIN-4);
 		else
-			g.drawString(s, LEFT_MARGIN-getWidth(s,g)-4, TOP_MARGIN+10);
+			ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-4, TOP_MARGIN+10);
 		s = d2s(yMin);
-		sw = getWidth(s,g);
+		sw = ip.getStringWidth(s);
 		if ((sw+4)>LEFT_MARGIN)
-			g.drawString(s, 4, TOP_MARGIN+frame.height);
+			ip.drawString(s, 4, TOP_MARGIN+frame.height);
 		else
-			g.drawString(s, LEFT_MARGIN-getWidth(s,g)-4, TOP_MARGIN+frame.height);
+			ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-4, TOP_MARGIN+frame.height);
 		x = LEFT_MARGIN;
 		y = TOP_MARGIN + frame.height + 15;
-		g.drawString(d2s(xMin), x, y);
+		ip.drawString(d2s(xMin), x, y);
 		s = d2s(xMax);
-		g.drawString(s, x + frame.width-getWidth(s,g)+6, y);
-		g.drawString(xLabel, LEFT_MARGIN+(frame.width-getWidth(xLabel,g))/2, y+3);
-		drawYLabel(g,yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height);
-	}
-		
-	void drawYLabel(Graphics g, String yLabel, int x, int y, int height) {
-		if (yLabel.equals(""))
-			return;
-		if(fm==null)
-			fm = g.getFontMetrics();
-		int w =  fm.stringWidth(yLabel);
-		int h =  fm.getHeight();
-		Image label = createImage(w,h);
-		Graphics g2 = label.getGraphics();
-		g2.setFont(font);
-		int descent = fm.getDescent();
-		g2.drawString(yLabel, 0, h-descent);
-		g2.dispose();
-		ImageProcessor ip = new ColorProcessor(label);
-		ip = ip.rotateLeft();
-		label = ip.createImage();
-		int y2 = y+(height-getWidth(yLabel,g))/2;
-		if (y2<y) y2 = y;
-		int x2 = x-h-5;
-		g.drawImage(label, x2, y2, null);
-	}
-
-	int getWidth(String s, Graphics g) {
-		if(fm==null)
-			fm = g.getFontMetrics();
-		return fm.stringWidth(s);
+		ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
+		ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
+		drawYLabel(yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height);
 	}
 	
+	void drawPolyline(ImageProcessor ip, int[] x, int[] y, int n) {
+		ip.moveTo(x[0], y[0]);
+		for (int i=0; i<n; i++)
+			ip.lineTo(x[i], y[i]);
+	}
+		
+	void drawYLabel(String yLabel, int x, int y, int height) {
+		if (yLabel.equals(""))
+			return;
+		FontMetrics fm = ip.getFontMetrics();
+		int w =  fm.stringWidth(yLabel);
+		int h =  fm.getHeight();
+		ImageProcessor label = new ByteProcessor(w, h);
+		label.setColor(Color.white);
+		label.fill();
+		label.setColor(Color.black);
+		label.setFont(font);
+		int descent = fm.getDescent();
+		label.drawString(yLabel, 0, h-descent);
+		label = label.rotateLeft();
+		int y2 = y+(height-ip.getStringWidth(yLabel))/2;
+		if (y2<y) y2 = y;
+		int x2 = x-h-5;
+		ip.insert(label, x2, y2);
+	}
+
 	void showList() {
 		StringBuffer sb = new StringBuffer();
 		String headings;

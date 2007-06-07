@@ -72,7 +72,7 @@ public class Calibration {
 	
    	/** Sets the distance unit (e.g. "mm", "inch"). */
  	public void setUnit(String unit) {
- 		if (unit==null)
+ 		if (unit==null || unit.equals(""))
  			this.unit = "pixel";
  		else
  			this.unit = unit;
@@ -204,6 +204,35 @@ public class Calibration {
  			return cTable[value];
  		else
  			return value;
+ 	}
+ 	 	
+  	/** Converts a raw pixel value to a density calibrated value. */
+ 	public double getCValue(double value) {
+		if (function==NONE)
+			return value;
+		else
+			return getCValue((int)value);
+ 	}
+
+  	/** Converts a density calibrated value into a raw pixel value. */
+ 	public double getRawValue(double value) {
+		if (function==NONE)
+			return value;
+		if (cTable==null)
+			makeCTable();
+		float fvalue = (float)value;
+		float smallestDiff = Float.MAX_VALUE;
+		float diff;
+		int index = 0;
+		for (int i=0; i<cTable.length; i++) {
+			diff = fvalue - cTable[i];
+			if (diff<0f) diff = -diff;
+			if (diff<smallestDiff) {
+				smallestDiff = diff;
+				index = i;
+			}
+		}
+ 		return index;
  	}
  	 	
 	/** Returns a clone of this object. */

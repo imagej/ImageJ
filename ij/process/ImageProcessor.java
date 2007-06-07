@@ -302,9 +302,10 @@ public abstract class ImageProcessor extends Object {
 		return maxThreshold;
 	}
 
-	/** Defines a rectangular region of interest
-		and sets the mask to null. Use a null
-		argument to set the ROI to the entire image. */
+	/** Defines a rectangular region of interest and sets
+		the mask to null if this ROI is not the same size
+		as the previous one. Use a null argument to 
+		set the ROI to the entire image. */
 	public void setRoi(Rectangle roi) {
 		if (roi==null)
 			setRoi(0, 0, width, height);
@@ -315,22 +316,34 @@ public abstract class ImageProcessor extends Object {
 	/** Defines a rectangular region of interest and sets the mask to 
 		null if this ROI is not the same size as the previous one. */
 	public void setRoi(int x, int y, int rwidth, int rheight) {
-		int oldWidth = roiWidth;
-		int oldHeight = roiHeight;
-		//find intersection of roi and this image
-		roiX = Math.max(0, x);
-		roiWidth = Math.min(width, x+rwidth)-roiX;
-		roiY = Math.max(0, y);
-		roiHeight = Math.min(height, y+rheight)-roiY;
+		if (x<0 || y<0 || x+rwidth>width || y+rheight>height) {
+			//find intersection of roi and this image
+			Rectangle r1 = new Rectangle(x, y, rwidth, rheight);
+			Rectangle r2 = r1.intersection(new Rectangle(0, 0, width, height));
+			if (r2.width<=0 || r2.height<=0)
+				throw new IllegalArgumentException(""+new Rectangle(x,y,rwidth,rheight));
+			if (mask!=null && mask.length==rwidth*rheight) {
+				Rectangle r3 = new Rectangle(0, 0, r2.width, r2.height);
+				if (x<0) r3.x = -x;
+				if (y<0) r3.y = -y;
+				ImageProcessor ip2 = new ColorProcessor(rwidth, rheight, mask);
+				ip2.setRoi(r3);
+				ip2 = ip2.crop();
+				mask = (int[])ip2.getPixels();
+			}
+			roiX=r2.x; roiY=r2.y; roiWidth=r2.width; roiHeight=r2.height;
+		} else {
+			roiX=x; roiY=y; roiWidth=rwidth; roiHeight=rheight;
+		}
+		if (mask!=null && mask.length!=roiWidth*roiHeight)
+			mask = null;
 		//setup limits for 3x3 filters
 		xMin = Math.max(roiX, 1);
 		xMax = Math.min(roiX + roiWidth - 1, width - 2);
 		yMin = Math.max(roiY, 1);
 		yMax = Math.min(roiY + roiHeight - 1, height - 2);
-		if (roiWidth!=oldWidth || roiHeight!=oldHeight)
-			mask = null;
 	}
-
+	
 	/** Returns a Rectangle that represents the current
 		region of interest. */
 	public Rectangle getRoi() {
@@ -540,6 +553,23 @@ public abstract class ImageProcessor extends Object {
 		cx = x2; cy = y2;
 	}
 		
+	/** Draws a line from (x1,y1) to (x2,y2). */
+	public void drawLine(int x1, int y1, int x2, int y2) {
+		moveTo(x1, y1);
+		lineTo(x2, y2);
+	}
+
+	/** Draws a rectangle. */
+	public void drawRect(int x, int y, int width, int height) {
+		if (width<1 || height<1)
+			return;
+		moveTo(x, y);
+		lineTo(x+width-1, y);
+		lineTo(x+width-1, y+height-1);
+		lineTo(x, y+height-1);
+		lineTo(x, y);
+	}
+
 	/** Obsolete */
 	public void drawDot2(int x, int y) {
 		drawPixel(x, y);
@@ -558,8 +588,7 @@ public abstract class ImageProcessor extends Object {
 					drawPixel(xcenter+x, ycenter+y);
 	}
 
-	/** Draws a string at the current location using the current fill/draw value. */
-	public void drawString(String s) {
+	private void setupFrame() {
 		if (frame==null) {
 			frame = new Frame();
 			frame.pack();
@@ -567,8 +596,17 @@ public abstract class ImageProcessor extends Object {
 		}
 		if (font==null)
 			font = new Font("SansSerif", Font.PLAIN, 9);
-		if (fontMetrics==null)
+		if (fontMetrics==null) {
+			frame.setFont(font);
 			fontMetrics = frame.getFontMetrics(font);
+		}
+	}
+
+	/** Draws a string at the current location using the current fill/draw value. */
+	public void drawString(String s) {
+		if (s.equals(""))
+			return;
+		setupFrame();
 		int w =  fontMetrics.stringWidth(s);
 		int h =  fontMetrics.getHeight();
 		Image img = frame.createImage(w, h);
@@ -580,14 +618,27 @@ public abstract class ImageProcessor extends Object {
 		g.setFont(font);
 		g.drawString(s, 0, h-descent);
 		g.dispose();
+		//new ij.ImagePlus("img",img).show();
 		ImageProcessor ip = new ColorProcessor(img);
+		int[] textMask = (int[])ip.getPixels();
+		for (int i=0; i<textMask.length; i++) {
+			if (textMask[i]!=0xffffffff && textMask[i]!=0xff00ffff)
+				textMask[i] = BLACK;
+		}
+		setMask(textMask);
 		setRoi(cx,cy-h,w,h);
-		fill((int[])ip.getPixels()); // fill using mask
-		//new ij.ImagePlus("",ip).show();
+		fill(getMask());
 		setRoi(null);
+		setMask(null);
 		cy += h;
 	}
 	
+	/** Draws a string at the specified location using the current fill/draw value. */
+	public void drawString(String s, int x, int y) {
+		moveTo(x, y);
+		drawString(s);
+	}
+
 	/** Sets the font used by drawString(). */
 	public void setFont(Font font) {
 		this.font = font;
@@ -596,14 +647,14 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Returns the width in pixels of the specified string. */
 	public int getStringWidth(String s) {
-		if (font==null)
-			font = new Font("SansSerif", Font.PLAIN, 9);
-		if (fontMetrics==null) {
-			if (frame==null)
-				{frame = new Frame(); frame.pack();}
-			fontMetrics = frame.getFontMetrics(font);
-		}
+		setupFrame();
 		return fontMetrics.stringWidth(s);
+	}
+	
+	/** Returns the current FontMetrics. */
+	public FontMetrics getFontMetrics() {
+		setupFrame();
+		return fontMetrics;
 	}
 
 	/** Replaces each pixel with the 3x3 neighborhood mean. */
@@ -700,7 +751,9 @@ public abstract class ImageProcessor extends Object {
 	}
 
 	/** Fills pixels that are within the ROI and part of the mask
-		(i.e. pixels that have a value=BLACK in the mask array). */
+		(i.e. pixels that have a value=BLACK in the mask array). 
+		Throws and IllegalArgumentException if the mask is null or
+		the size of the mask is not the same as the size of the ROI. */
 	public abstract void fill(int[] mask);
 
 	/** Set a lookup table used by getPixelValue(), getLine() and
@@ -738,13 +791,6 @@ public abstract class ImageProcessor extends Object {
 		Returns zero if either the x or y coodinate is out of range. */
 	public abstract int getPixel(int x, int y);
 	
-	/** Returns the value of the pixel at (x,y) without checking
-		that x and y are within range. For RGB images, the
-		argb values are packed in an int. For float images, the
-		the value must be converted using Float.intBitsToFloat().
-	*/
-	public abstract int getUncheckedPixel(int x, int y);
-
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
 
@@ -759,21 +805,13 @@ public abstract class ImageProcessor extends Object {
 		using Float.floatToIntBits(). */
 	public abstract void putPixel(int x, int y, int value);
 	
-	/** Stores the specified value at (x,y) withoutchecking that
-		x and y are within range. For RGB images, the
-		argb values are packed in 'value'. For float images,
-		'value' is expected to be a float converted to an int
-		using Float.floatToIntBits(). */
-	public abstract void putUncheckedPixel(int x, int y, int value);
-
 	/** Returns the value of the pixel at (x,y). For byte and short
 		images, returns a calibrated value if a calibration table
 		has been  set using setCalibraionTable(). For RGB images,
 		returns the luminance value. */
 	public abstract float getPixelValue(int x, int y);
 		
-	/** Stores the specified value at (x,y). For RGB images,
-		does nothing. */
+	/** Stores the specified value at (x,y). */
 	public abstract void putPixelValue(int x, int y, double value);
 
 	/** Sets the pixel at (x,y) to the current fill/draw value. */

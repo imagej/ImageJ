@@ -345,15 +345,20 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			level1 = scaleUp(ip, defaultMinThreshold);
 			level2 = scaleUp(ip, defaultMaxThreshold);
 		}
+		Calibration cal = imp.getCalibration();
+		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
+		level1 = cal.getCValue(level1);
+		level2 = cal.getCValue(level2);
 		GenericDialog gd = new GenericDialog("Set Threshold Levels");
-		gd.addNumericField("Lower Threshold Level: ", level1, 0);
-		gd.addNumericField("Upper Threshold Level: ", level2, 0);
+		gd.addNumericField("Lower Threshold Level: ", level1, digits);
+		gd.addNumericField("Upper Threshold Level: ", level2, digits);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		level1 = gd.getNextNumber();
 		level2 = gd.getNextNumber();
-		
+		level1 = cal.getRawValue(level1);
+		level2 = cal.getRawValue(level2);
 		if (level2<level1)
 			level2 = level1;
 		double minDisplay = ip.getMin();

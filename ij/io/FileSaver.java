@@ -3,21 +3,25 @@ import java.awt.*;
 import java.io.*;
 import java.util.zip.*;
 import ij.*;
+import ij.process.*;
 import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
+
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
 
 	private static String defaultDirectory = null;
 	private ImagePlus imp;
+	private FileInfo fi;
 	private String name;
 	private String directory;
 
 	/** Constructs a FileSave from an ImagePlus. */
 	public FileSaver(ImagePlus imp) {
 		this.imp = imp;
+		fi = imp.getFileInfo();
 	}
 
 	/** Resaves the image. Calls saveAsTiff() if this is a new image or if
@@ -54,8 +58,8 @@ public class FileSaver {
 	
 	/** Save the image in TIFF format using the specified path. */
 	public boolean saveAsTiff(String path) {
-		FileInfo fi = imp.getFileInfo();
 		fi.nImages = 1;
+		fi.description = getDescriptionString();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -72,9 +76,9 @@ public class FileSaver {
 
 	/** Save the stack as a multi-image TIFF using the specified path. */
 	public boolean saveAsTiffStack(String path) {
-		FileInfo fi = imp.getFileInfo();
 		if (fi.nImages==1)
 			{IJ.write("This is not a stack"); return false;}
+		fi.description = getDescriptionString();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -101,7 +105,6 @@ public class FileSaver {
 	
 	/** Save the image or stack in TIFF/ZIP format using the specified path. */
 	public boolean saveAsZip(String path) {
-		FileInfo fi = imp.getFileInfo();
 		//fi.nImages = 1;
 		if (!path.endsWith(".zip"))
 			path = path+".zip";
@@ -111,6 +114,7 @@ public class FileSaver {
 			name = name.substring(0,name.length()-4);
 		if (!name.endsWith(".tif"))
 			name = name+".tif";
+		fi.description = getDescriptionString();
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));
@@ -155,7 +159,6 @@ public class FileSaver {
 	public boolean saveAsGif(String path) {
 		if (!okForGif(imp))
 			return false;
-		FileInfo fi = imp.getFileInfo();
 		try {
 			GifEncoder encoder = new GifEncoder(fi.width, fi.height, (byte[])fi.pixels, fi.reds, fi.greens, fi.blues);
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
@@ -170,22 +173,14 @@ public class FileSaver {
 		return true;
 	}
 
+	/** Always returns true. */
 	public static boolean okForJpeg(ImagePlus imp) {
-		int type = imp.getType();
-		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
-			IJ.error("16 and 32-bit grayscale images cannot be saved as JPEG.");
-			return false;
-		} else
-			return true;
-		
+		return true;
 	}
 
 	/** Save the image in JPEG format using a save file
-		dialog. Returns false if the user selects cancel
-		or the image is 16 or 32-bit grayscale. */
+		dialog. Returns false if the user selects cancel. */
 	public boolean saveAsJpeg() {
-		if (!okForJpeg(imp))
-			return false;
 		String path = getPath("JPEG", ".jpg");
 		if (path==null)
 			return false;
@@ -195,9 +190,6 @@ public class FileSaver {
 
 	/** Save the image in JPEG format using the specified path. */
 	public boolean saveAsJpeg(String path) {
-		if (!okForJpeg(imp))
-			return false;
-		FileInfo fi = imp.getFileInfo();
 		try {
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
 			JpegEncoder encoder = new JpegEncoder(imp.getImage(), JpegEncoder.getQuality(), output);
@@ -208,7 +200,8 @@ public class FileSaver {
 			showErrorMessage(e);
 			return false;
 		}
-		updateImp(fi, fi.GIF_OR_JPG);
+		if (!(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
+			updateImp(fi, fi.GIF_OR_JPG);
 		return true;
 	}
 
@@ -226,7 +219,6 @@ public class FileSaver {
 	
 	/** Save the image as raw data using the specified path. */
 	public boolean saveAsRaw(String path) {
-		FileInfo fi = imp.getFileInfo();
 		fi.nImages = 1;
 		try {
 			ImageWriter file = new ImageWriter(fi);
@@ -244,7 +236,6 @@ public class FileSaver {
 
 	/** Save the stack as raw data using the specified path. */
 	public boolean saveAsRawStack(String path) {
-		FileInfo fi = imp.getFileInfo();
 		if (fi.nImages==1)
 			{IJ.write("This is not a stack"); return false;}
 		try {
@@ -347,6 +338,7 @@ public class FileSaver {
 			fi.directory = directory;
 			if (fileFormat==fi.TIFF)
 				fi.offset = TiffEncoder.IMAGE_START;
+			fi.description = null;
 			imp.setTitle(name);
 			imp.setFileInfo(fi);
 		}
@@ -354,6 +346,46 @@ public class FileSaver {
 
 	void showErrorMessage(IOException e) {
 		IJ.error("An error occured writing the file.\n \n" + e);
+	}
+
+	/** Returns a string containing information about the specified  image. */
+	String getDescriptionString() {
+		StringBuffer sb = new StringBuffer(100);
+		sb.append("ImageJ="+ImageJ.VERSION+"\n");
+		if (fi.nImages>1)
+			sb.append("images="+fi.nImages+"\n");
+		if (fi.unit!=null)
+			sb.append("unit="+fi.unit+"\n");
+		if (fi.valueUnit!=null) {
+			sb.append("cf="+fi.calibrationFunction+"\n");
+			if (fi.coefficients!=null) {
+				for (int i=0; i<fi.coefficients.length; i++)
+					sb.append("c"+i+"="+fi.coefficients[i]+"\n");
+			}
+			sb.append("vunit="+fi.valueUnit+"\n");
+		}
+		if (fi.nImages>1) {
+			if (fi.pixelDepth!=0.0 && fi.pixelDepth!=1.0)
+				sb.append("spacing="+fi.pixelDepth+"\n");
+			if (fi.frameInterval!=0.0) {
+				double fps = 1.0/fi.frameInterval;
+				if ((int)fps==fps)
+					sb.append("fps="+(int)fps+"\n");
+				else
+					sb.append("fps="+fps+"\n");
+			}
+		}
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
+		int type = imp.getType();
+		boolean enhancedLut = (type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256) && (min!=0.0 || max !=255.0);
+		if (enhancedLut || type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
+			sb.append("min="+min+"\n");
+			sb.append("max="+max+"\n");
+		}
+		sb.append((char)0);
+		return new String(sb);
 	}
 
 }

@@ -91,7 +91,7 @@ public class ShortStatistics extends ImageStatistics {
                 mode = i;
             }
         }
-        dmode = histMin+mode*binSize+binSize/2.0;
+        dmode = histMin+mode*binSize;
         if (cTable!=null)
         	dmode = cTable[(int)dmode];
 		//ij.IJ.write("mode2: "+mode+" "+dmode+" "+maxCount);

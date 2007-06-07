@@ -19,16 +19,19 @@ public class GUI {
 		//ij.IJ.write("window: "+window);
 	}
 	
-	/** Creates a white AWT Image image of the specified size. */
-	public static Image createBlankImage(int width, int height) {
-		if (width==0 || height==0)
-			throw new IllegalArgumentException("");
-		ImageJ ij = IJ.getInstance();
-		Color c = ij.getBackground();
-		ij.setBackground(Color.white);
-		Image img = ij.createImage(width, height);
-		ij.setBackground(c);
-		return img;
-	}
-
+    static private Frame frame;
+    
+    /** Creates a white AWT Image image of the specified size. */
+    public static Image createBlankImage(int width, int height) {
+        if (width==0 || height==0)
+            throw new IllegalArgumentException("");
+		if (frame==null) {
+			frame = new Frame();
+			frame.pack();
+			frame.setBackground(Color.white);
+		}
+        Image img = frame.createImage(width, height);
+        return img;
+    }
+    
 }

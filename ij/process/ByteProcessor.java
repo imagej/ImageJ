@@ -128,10 +128,13 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	/** Fills pixels that are within roi and part of the mask.
-		Fills the entire roi if the mask is null. */
+		Throws an IllegalArgumentException if the mask is
+		not the same size as the ROI. */
 	public void fill(int[] mask) {
 		if (mask==null)
 			{fill(); return;}
+		if (mask.length!=roiWidth*roiHeight)
+			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
@@ -150,10 +153,6 @@ public class ByteProcessor extends ImageProcessor {
 			return 0;
 	}
 	
-	public final int getUncheckedPixel(int x, int y) {
-		return pixels[y*width+x]&0xff;
-	}
-
 	static double oldx, oldy;
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -198,10 +197,8 @@ public class ByteProcessor extends ImageProcessor {
 				return pixels[y*width + x]&0xff;
 			else
 				return cTable[pixels[y*width + x]&0xff];
-		} else {
-ij.IJ.write("getPixelValue: "+x+" "+y);
+		} else
 			return 0f;
-		}
 	}
 
 	/** Sets the foreground drawing color. */
@@ -217,22 +214,23 @@ ij.IJ.write("getPixelValue: "+x+" "+y);
 		if (fgColor>255) fgColor = 255;
 	}
 
-	/** Stores the specified real value at (x,y). */
+	/** Stores the specified real value at (x,y). Does
+		nothing if (x,y) is outside the image boundary.
+		The value is clamped to be in the range 0-255. */
 	public void putPixelValue(int x, int y, double value) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			pixels[y*width + x] = (byte)value;
+		if (x>=0 && x<width && y>=0 && y<height) {
+			if (value>255.0)
+				value = 255.0;
+			else if (value<0.0)
+				value = 0.0;
+			pixels[y*width + x] = (byte)(value+0.5);
+		}
 	}
 
 	/** Stores the specified value at (x,y). */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = (byte)value;
-	}
-
-	/** Stores the specified value at (x,y) without
-		varifying that x and y are within range. */
-	public void putUncheckedPixel(int x, int y, int value) {
-		pixels[y*width + x] = (byte)value;
 	}
 
 	/** Draws a pixel in the current foreground color. */

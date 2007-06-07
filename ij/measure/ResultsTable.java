@@ -244,9 +244,12 @@ public class ResultsTable {
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
-		lastColumn = -1;
-		for (int i=0; i<MAX_COLUMNS; i++)
+		for (int i=0; i<=lastColumn; i++) {
 			columns[i] = null;
+			if (i<defaultHeadings.length)
+				headings[i] = defaultHeadings[i];
+		}
+		lastColumn = -1;
 	}
 	
 	public String toString() {

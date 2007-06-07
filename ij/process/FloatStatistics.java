@@ -106,7 +106,7 @@ public class FloatStatistics extends ImageStatistics {
                 mode = i;
             }
         }
-        dmode = histMin+mode*binSize+binSize/2.0;
+        dmode = histMin+mode*binSize;
 	}
 
 	void getCenterOfMass(ImageProcessor ip) {

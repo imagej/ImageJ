@@ -47,16 +47,16 @@ public class Printer implements PlugInFilter {
 		if (win==null)
 			return;
 		ImageCanvas ic = win.getCanvas();
-		Toolkit toolkit = win.getToolkit();
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
 		PrintJob job = toolkit.getPrintJob(win, imp.getTitle(), printPrefs);
+		if (job==null)
+			return;
 		imp.startTiming();
-		if (job==null) return;
 		Graphics g = job.getGraphics();
-		if (g==null) return;
+		if (g==null)
+			return;
 		Dimension pageSize = job.getPageDimension();
-		if (IJ.debugMode) IJ.write("pageSize: "+pageSize);
-		//double scale = ic.getMagnification();
-		//if (scale<1.0) scale = 1.0;
+		if (IJ.debugMode) IJ.log("pageSize: "+pageSize);
 		double scale = scaling/100.0;
 		int imageWidth = imp.getWidth();
 		int imageHeight = imp.getHeight();

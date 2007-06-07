@@ -53,11 +53,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static int staticMaxSize = 999999;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
 	private static int staticBins = Prefs.getInt(BINS,20);
-	
-	private static final int NOTHING=0,OUTLINES=1,FILLED=2,ELLIPSES=3;
 	private static String[] showStrings = {"Nothing","Outlines","Filled","Ellipses"};
-	private static int showChoice;
 	
+	protected static final int NOTHING=0,OUTLINES=1,FILLED=2,ELLIPSES=3;
+	protected static int showChoice;
 	protected ImagePlus imp;
 	protected ResultsTable rt;
 	protected Analyzer analyzer;
@@ -83,7 +82,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private IndexColorModel customLut;
 	private int particleCount;
 	private TextWindow tw;
-	
+	private Wand wand;
+
 	
 	/** Construct a ParticleAnalyzer.
 		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
@@ -101,6 +101,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		this.minSize = (int)minSize;
 		this.maxSize = (int)maxSize;
 		sizeBins = staticBins;
+		slice = 1;
 	}
 	
 	/** Default constructor */
@@ -193,6 +194,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		showSizeDistribution = (options&SHOW_SIZE_DISTRIBUTION)!=0;
 		resetCounter = (options&CLEAR_WORKSHEET)!=0;
 		showProgress = (options&SHOW_PROGRESS)!=0;
+		if ((options&SHOW_OUTLINES)!=0)
+			showChoice = OUTLINES;
 		ip.snapshot();
 		ip.setProgressBar(null);
 		if (!setThresholdLevels(imp, ip))
@@ -239,6 +242,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (showChoice==ELLIPSES)
 			measurements |= ELLIPSE;
 		particleCount = 0;
+		wand = new Wand(ip);
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -311,14 +315,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 	
 	void analyzeParticle(int x, int y,ImagePlus imp, ImageProcessor ip) {
-		Wand wand = new Wand(ip);
+		//Wand wand = new Wand(ip);
 		wand.autoOutline(x,y, level1, level2);
 		if (wand.npoints==0)
 			{IJ.write("wand error: "+x+" "+y); return;}
 		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, imp, Roi.TRACED_ROI);
 		Rectangle r = roi.getBoundingRect();
-		ip.setRoi(r);
 		if (r.width>1 && r.height>1)ip.setMask(roi.getMask());
+		ip.setRoi(r);
 		ip.setColor(fillColor);
 		ImageStatistics stats = new ByteStatistics(ip,measurements,calibration);
 		boolean include = true;
@@ -398,8 +402,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				new HistogramWindow("Particle Size Distribution", new ImagePlus("",ip), sizeBins);
 			}
 		}
-		if (outlines!=null && lastSlice)
-			new ImagePlus("Drawing of "+imp.getShortTitle(), outlines).show();
+		if (outlines!=null && lastSlice) {
+			String title = imp!=null?imp.getShortTitle():"Outlines";
+			new ImagePlus("Drawing of "+title, outlines).show();
+		}
 	}
 	
 	void makeCustomLut() {

@@ -82,7 +82,7 @@ public class FractalBoxCounter implements PlugInFilter {
 	}
 
 	boolean FindMargins(ImageProcessor ip) {
-		if (IJ.debugMode) IJ.write("FindMargins");
+		if (IJ.debugMode) IJ.log("FindMargins");
 		int[] histogram = new int[256];
 		int width = imp.getWidth();
 		int height = imp.getHeight();

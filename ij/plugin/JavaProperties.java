@@ -6,13 +6,11 @@ import java.awt.*;
 /** Displays the Java system properties in a text window. */
 public class JavaProperties implements PlugIn {
 
-	TextWindow tw;
+	StringBuffer sb = new StringBuffer();
 	
 	public void run(String arg) {
-	
-		tw = new TextWindow("Properties", "", 300, 400);
-		tw.append("");
-		tw.append("Java properties applets can read:");
+		sb.append("\n");
+		sb.append("Java properties applets can read:\n");
 		show("java.version");
 		show("java.vendor");
 		show("java.vendor.url");
@@ -38,12 +36,12 @@ public class JavaProperties implements PlugIn {
 			else
 				str2 = "<lf>";
 		}
-		tw.append("  line.separator: " + str1 + str2);
+		sb.append("  line.separator: " + str1 + str2+"\n");
 			
 		if (IJ.getApplet()!=null)
 			return;
-		tw.append("");
-		tw.append("Java properties only applications can read:");
+		sb.append("\n");
+		sb.append("Java properties only applications can read:\n");
 		show("user.name");
 		show("user.home");
 		show("user.dir");
@@ -51,25 +49,26 @@ public class JavaProperties implements PlugIn {
 		show("java.compiler");
 		show("java.class.path");
 		
-		tw.append("");
-		tw.append("Other properties:");
+		sb.append("\n");
+		sb.append("Other properties:\n");
 		String userDir = System.getProperty("user.dir");
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
 		String prefsDir = osName.indexOf("Windows",0)>-1?userDir:userHome;
-		tw.append("  version: "+IJ.getInstance().VERSION);
-		tw.append("  prefs dir: "+prefsDir);
-		tw.append("  plugins dir: "+Menus.getPlugInsPath());
+		sb.append("  version: "+IJ.getInstance().VERSION+"\n");
+		sb.append("  prefs dir: "+prefsDir+"\n");
+		sb.append("  plugins dir: "+Menus.getPlugInsPath()+"\n");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		tw.append("  screen size: " + d.width + "x" + d.height);
+		sb.append("  screen size: " + d.width + "x" + d.height+"\n");
 		String mem = IJ.freeMemory();
-		tw.append("  memory in use"+mem.substring(6,mem.length()));
+		sb.append("  memory in use"+mem.substring(6,mem.length())+"\n");
+		TextWindow tw = new TextWindow("Properties", new String(sb), 300, 400);
 	}
 	
 	void show(String property) {
 		String p = System.getProperty(property);
 		if (p!=null)
-			tw.append("  " + property + ": " + p);
+			sb.append("  " + property + ": " + p+"\n");
 	}
 
 }

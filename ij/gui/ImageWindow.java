@@ -53,6 +53,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		add(ic);
  		addFocusListener(this);
  		addWindowListener(this);
+ 		addKeyListener(ij);
 		setResizable(true);
 		WindowManager.addWindow(this);
 		imp.setWindow(this);
@@ -192,7 +193,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     }
 
     public void paint(Graphics g) {
-		//if (IJ.debugMode) IJ.write("wPaint: " + imp.getTitle());
+		//if (IJ.debugMode) IJ.log("wPaint: " + imp.getTitle());
 		drawInfo(g);
 		Point loc = ic.getLocation();
 		Dimension csize = ic.getSize();
@@ -260,7 +261,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh() && IJ.getInstance()!=null)
 			this.setMenuBar(Menus.getMenuBar());
-		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": Activated");
+		//if (IJ.debugMode) IJ.log(imp.getTitle() + ": Activated");
 		if (!closed) {
 			//ic.requestFocus();
 			WindowManager.setCurrentWindow(this);

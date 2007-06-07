@@ -65,7 +65,6 @@ public class Menus {
 
 	String addMenuBar() {
 		error = null;
-		mbar = new MenuBar();
 		
 		Menu file = new Menu("File");
 		addItem(file, "New...", KeyEvent.VK_N, false);
@@ -82,7 +81,6 @@ public class Menus {
 		addPlugInItem(file, "Print...", "ij.plugin.filter.Printer(\"print\")", KeyEvent.VK_P, false);
 		file.addSeparator();
 		addItem(file, "Quit",  0, false);
-		mbar.add(file);
 		
 		Menu edit = new Menu("Edit");
 		addItem(edit, "Undo", KeyEvent.VK_Z, false);
@@ -103,7 +101,6 @@ public class Menus {
 		addPlugInItem(edit, "Invert", "ij.plugin.filter.Filters(\"invert\")", KeyEvent.VK_I, true);
 		edit.addSeparator();
 		addSubMenu(edit, "Options");
-		mbar.add(edit);
 		
 		Menu image = new Menu("Image");
 		Menu imageType = new Menu("Type");
@@ -132,7 +129,6 @@ public class Menus {
 		image.addSeparator();
 		addSubMenu(image, "Lookup Tables");
 		addPlugInItem(image, "Colors...", "ij.plugin.Colors", 0, false);
-		mbar.add(image);
 		
 		Menu process = new Menu("Process");
 		addPlugInItem(process, "Smooth", "ij.plugin.filter.Filters(\"smooth\")", KeyEvent.VK_S, true);
@@ -148,7 +144,6 @@ public class Menus {
 		addPlugInItem(process, "Image Calculator...", "ij.plugin.ImageCalculator", 0, false);
 		addPlugInItem(process, "Subtract Background...", "ij.plugin.filter.BackgroundSubtracter", 0, false);
 		addItem(process, "Repeat Command", KeyEvent.VK_R, true);
-		mbar.add(process);
 		
 		Menu analyze = new Menu("Analyze");
 		addPlugInItem(analyze, "Measure", "ij.plugin.filter.Analyzer", KeyEvent.VK_M, false);
@@ -164,29 +159,35 @@ public class Menus {
 		addPlugInItem(analyze, "Show LUT", "ij.plugin.filter.LutViewer", 0, false);
 		addSubMenu(analyze, "Gels");
 		toolsMenu = addSubMenu(analyze, "Tools");
-		mbar.add(analyze);
 
-		addPluginsMenu();
-		if (applet==null)
-			installPlugins();
-		mbar.add(pluginsMenu);
-		
 		window = new Menu("Window");
 		addItem(window, "ImageJ [enter]", 0, false);
 		addItem(window, "Put Behind [tab]", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);
 		window.addSeparator();
-		mbar.add(window);
 
 		Menu help = new Menu("Help");
 		aboutMenu = addSubMenu(help, "About Plugins");
 		help.addSeparator();
 		addPlugInItem(help, "ImageJ Web Site...", "ij.plugin.BrowserLauncher", 0, false);
 		addPlugInItem(help, "About ImageJ...", "ij.plugin.SimpleCommands(\"about\")", 0, false);
-		mbar.setHelpMenu(help);
+				
+		addPluginsMenu();
+		if (applet==null)
+			installPlugins();
 		
+		mbar = new MenuBar();
+		mbar.add(file);
+		mbar.add(edit);
+		mbar.add(image);
+		mbar.add(process);
+		mbar.add(analyze);
+		mbar.add(pluginsMenu);
+		mbar.add(window);
+		mbar.setHelpMenu(help);
 		ij.setMenuBar(mbar);
+		
 		return error;
 	}
 	

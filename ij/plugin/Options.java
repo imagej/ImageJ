@@ -19,6 +19,7 @@ public class Options implements PlugIn {
 			gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
 			gd.addCheckbox("Use Pointer Cursor", ImageCanvas.usePointer);
 			gd.addCheckbox("Scale When Converting", ImageConverter.getDoScaling());
+			gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
 			gd.addCheckbox("Debug Mode", IJ.debugMode);
 			gd.showDialog();
 			if (gd.wasCanceled())
@@ -37,6 +38,7 @@ public class Options implements PlugIn {
 				
 			ImageCanvas.usePointer = gd.getNextBoolean();
 			ImageConverter.setDoScaling(gd.getNextBoolean());
+			IJ.hideProcessStackDialog = gd.getNextBoolean();
 			IJ.debugMode = gd.getNextBoolean();
 			return;
 		}

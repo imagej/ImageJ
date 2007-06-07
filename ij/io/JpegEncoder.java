@@ -27,8 +27,7 @@ import java.lang.*;
 */
 
 /** Writes images to stream in JPEG format. */
-public class JpegEncoder extends Frame
-{
+public class JpegEncoder {
     Thread runner;
     BufferedOutputStream outStream;
     Image image;
@@ -52,22 +51,13 @@ public class JpegEncoder extends Frame
          53, 60, 61, 54, 47, 55, 62, 63,
         };
 
-    public JpegEncoder(Image image, int quality, OutputStream out)
-    {
-                MediaTracker tracker = new MediaTracker(this);
-                tracker.addImage(image, 0);
-                try {
-                        tracker.waitForID(0);
-                }
-                catch (InterruptedException e) {
-// Got to do something?
-                }
+    public JpegEncoder(Image image, int quality, OutputStream out) {
         /*
         * Quality of the image.
         * 0 to 100 and from bad image quality, high compression to good
         * image quality low compression
         */
-        Quality=quality;
+        Quality = quality;
 
         /*
         * Getting picture information

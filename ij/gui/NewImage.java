@@ -73,9 +73,10 @@ public class NewImage {
 			case FILL_RAMP:
 				byte[] ramp = new byte[width];
 				for (int i=0; i<width; i++)
-					ramp[i] = (byte)((i*255)/(width-1));
+					ramp[i] = (byte)(((i*256.0)/width)+0.5);
+				int offset;
 				for (int y=0; y<height; y++) {
-					int offset = y*width;
+					offset = y*width;
 					for (int x=0; x<width; x++)
 						pixels[offset++] = ramp[x];
 				}
@@ -101,12 +102,16 @@ public class NewImage {
 					pixels[i] = 0xff000000;
 				break;
 			case FILL_RAMP:
-				int r,g,b;
+				int r,g,b,offset;
+				int[] ramp = new int[width];
+				for (int i=0; i<width; i++) {
+					r = g = b = (byte)(((i*256.0)/width)+0.5);
+					ramp[i] = 0xff000000 | ((r<<16)&0xff0000) | ((g<<8)&0xff00) | (b&0xff);
+				}
 				for (int y=0; y<height; y++) {
-					for (int x=0; x<width; x++) {
-						r = g = b = (byte)((x*255)/(width-1));
-						pixels[y*width+x] = 0xff000000 | ((r<<16)&0xff0000) | ((g<<8)&0xff00) | (b&0xff);
-					}
+					offset = y*width;
+					for (int x=0; x<width; x++)
+						pixels[offset++] = ramp[x];
 				}
 				break;
 		}
@@ -125,9 +130,15 @@ public class NewImage {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
 			case FILL_RAMP:
-				for (int y=0; y<height; y++)
+				short[] ramp = new short[width];
+				for (int i=0; i<width; i++)
+					ramp[i] = (short)(((i*65536.0)/width)+0.5);
+				int offset;
+				for (int y=0; y<height; y++) {
+					offset = y*width;
 					for (int x=0; x<width; x++)
-						pixels[y*width+x] = (short)((x*65535)/(width-1));
+						pixels[offset++] = ramp[x];
+				}
 				break;
 		}
 	    ImageProcessor ip = new ShortProcessor(width, height, pixels, null);
@@ -149,9 +160,15 @@ public class NewImage {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
 			case FILL_RAMP:
-				for (int y=0; y<height; y++)
+				float[] ramp = new float[width];
+				for (int i=0; i<width; i++)
+					ramp[i] = (float)((i*1.0)/width);
+				int offset;
+				for (int y=0; y<height; y++) {
+					offset = y*width;
 					for (int x=0; x<width; x++)
-						pixels[y*width+x] = (float)((x*1.0)/(width-1));
+						pixels[offset++] = ramp[x];
+				}
 				break;
 		}
 	    ImageProcessor ip = new FloatProcessor(width, height, pixels, null);

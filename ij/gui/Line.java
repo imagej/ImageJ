@@ -36,6 +36,14 @@ public class Line extends Roi {
 		if (xend<0) xend=0; if (yend<0) yend=0;
 		if (xend>xMax) xend=xMax; if (yend>yMax) yend=yMax;
 		int xstart=x+x1R, ystart=y+y1R;
+		if (constrain) {
+			int dx = Math.abs(xend-xstart);
+			int dy = Math.abs(yend-ystart);
+			if (dx>=dy)
+				yend = ystart;
+			else
+				xend = xstart;
+		}
 		x=Math.min(x+x1R,xend); y=Math.min(y+y1R,yend);
 		x1R=xstart-x; y1R=ystart-y;
 		x2R=xend-x; y2R=yend-y;

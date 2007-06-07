@@ -163,8 +163,12 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
-	/** Fills pixels that are within roi and part of the mask. */
+	/** Fills pixels that are within roi and part of the mask.
+		Throws an IllegalArgumentException if the mask is null or
+		the size of the mask is not the same as the size of the ROI. */
 	public void fill(int[] mask) {
+		if (mask==null || mask.length<roiWidth*roiHeight)
+			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;
@@ -196,11 +200,6 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
-	public int getUncheckedPixel(int x, int y) {
-		return pixels[y*width+x];
-	}
-
-
 	/** Calls getPixelValue(x,y). */
 	public double getInterpolatedPixel(double x, double y) {
 		int ix = (int)(x+0.5);
@@ -218,18 +217,19 @@ public class ColorProcessor extends ImageProcessor {
 			pixels[y*width + x] = value;
 	}
 
-
-	/** Stores the specified value at (x,y) without
-		varifying that x and y are within range. */
-	public void putUncheckedPixel(int x, int y, int value) {
-		pixels[y*width + x] = value;
-	}
-
-
-	/** Stores the specified real value at (x,y). */
+	/** Stores the specified real grayscale value at (x,y).
+		Does nothing if (x,y) is outside the image boundary.
+		The value is clamped to be in the range 0-255. */
 	public void putPixelValue(int x, int y, double value) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			pixels[y*width + x] = (int)value;
+		if (x>=0 && x<width && y>=0 && y<height) {
+			if (value>255.0)
+				value = 255;
+			else if (value<0.0)
+				value = 0.0;
+			int gray = (int)(value+0.5);
+			pixels[y*width + x] = 0xff000000 + (gray<<16) + (gray<<8) + gray;
+
+		}
 	}
 
 	/** Converts the specified pixel to grayscale
@@ -787,7 +787,7 @@ public class ColorProcessor extends ImageProcessor {
 				r = (c&0xff0000)>>16;
 				g = (c&0xff00)>>8;
 				b = c&0xff;
-				v = (int)(r*0.299 + g*0.587 + b*0.114);
+				v = (int)(r*0.299 + g*0.587 + b*0.114 + 0.5);
 				histogram[v]++;
 			}
 			if (y%20==0)
@@ -810,11 +810,8 @@ public class ColorProcessor extends ImageProcessor {
 					r = (c&0xff0000)>>16;
 					g = (c&0xff00)>>8;
 					b = c&0xff;
-					v = (int)(r*0.299 + g*0.587 + b*0.114);
+					v = (int)(r*0.299 + g*0.587 + b*0.114 + 0.5);
 					histogram[v]++;
-					//histogram[r]++;
-					//histogram[g]++;
-					//histogram[b]++;
 				}
 				i++;
 			}

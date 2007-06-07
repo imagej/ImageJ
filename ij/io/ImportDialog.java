@@ -176,7 +176,7 @@ public class ImportDialog {
 			fi.fileType = FileInfo.BITMAP;
 		else
 			fi.fileType = FileInfo.GRAY8;
-		if (IJ.debugMode) IJ.write("ImportDialog: "+fi);
+		if (IJ.debugMode) IJ.log("ImportDialog: "+fi);
 		return fi;
 	}
 

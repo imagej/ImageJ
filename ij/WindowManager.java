@@ -180,7 +180,7 @@ public class WindowManager {
     
 	/** Activates the next window on the window list. */
 	public static void putBehind() {
-		if (IJ.debugMode) IJ.write("putBehind");
+		if (IJ.debugMode) IJ.log("putBehind");
 		if(imageList.size()<1 || currentWindow==null)
 			return;
 		int index = imageList.indexOf(currentWindow);
@@ -230,9 +230,9 @@ public class WindowManager {
 			for (int i=0; i<imageList.size(); i++) {
 				ImageWindow win = (ImageWindow)imageList.elementAt(i);
 				ImagePlus imp = win.getImagePlus();
-				IJ.write(i + " " + imp.getTitle() + (win==currentWindow?"*":""));
+				IJ.log(i + " " + imp.getTitle() + (win==currentWindow?"*":""));
 			}
-			IJ.write(" ");
+			IJ.log(" ");
 		}
     }
     

@@ -24,6 +24,8 @@ public class MessageDialog extends Dialog implements ActionListener {
         panel.setLayout(new FlowLayout());
         panel.add(button);
         add("South", panel);
+        if (ij.IJ.isMacintosh())
+        	setResizable(false);
         pack();
 		GUI.center(this);
         show();

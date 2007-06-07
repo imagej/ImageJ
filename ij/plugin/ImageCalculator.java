@@ -57,7 +57,7 @@ public class ImageCalculator implements PlugIn {
 		int size1 = img1.getStackSize();
 		int size2 = img2.getStackSize();
 		if (size1>1 && size2>1 && size1!=size2) {
-			IJ.showMessage("Image Calculator", "Both stacks must have the same number of sizes.");
+			IJ.showMessage("Image Calculator", "Both stacks must have the same number of slices.");
 			return;
 		}
 		if (size1>1 && (size2==1||size1==size2)) {

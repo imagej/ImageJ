@@ -55,7 +55,7 @@ public class ClassChecker implements PlugIn {
 	}
 
 	void write(String path) {
-		IJ.write("Deleting duplicate class: "+path);
+		IJ.log("Deleting duplicate class: "+path);
 	}
 
 	public String getName(String path) {

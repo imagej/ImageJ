@@ -141,10 +141,10 @@ public class Benchmark implements PlugInFilter{
 		tw.append("");
 		tw.append("PC (JRE 1.1.8)     11.5        8.7         16         44");
 		tw.append("PC (MS Java)       12.3        9.6         19         38");
+		tw.append("PC (JDK 1.4rc)     12.6       10.8         21         34");
 		tw.append("PC (JDK 1.3)       13.2       11.8         20         34");
-		tw.append("PC (JDK 1.4b2)     14.2       10.0         13         37");
 		tw.append("Mac OS 8/9)         8.7        6.4         19         35");
-		tw.append("Mac OS X           24.7!      12.1         13         41");
+		tw.append("Mac OS X           11.0        9.0         18         44");
 		tw.append("Linux (IBM 1.1.8)  10.8        8.8         15         46");
 		tw.append("Linux (Sun 1.3.1)  13.2       11.5         17         13!");
 		tw.append("");

@@ -195,10 +195,6 @@ public class FloatProcessor extends ImageProcessor {
 			return 0;
 	}
 
-	public int getUncheckedPixel(int x, int y) {
-		return Float.floatToIntBits(pixels[y*width+x]);
-	}
-
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
 		if (x<0.0) x = 0.0;
@@ -213,14 +209,6 @@ public class FloatProcessor extends ImageProcessor {
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = Float.intBitsToFloat(value);
-	}
-
-	/** Stores the specified value at (x,y) without varifying
-		that x and y are within range. The value is expected to
-		be a float that has been converted to an int using
-		Float.floatToIntBits(). */
-	public void putUncheckedPixel(int x, int y, int value) {
-		pixels[y*width + x] = Float.intBitsToFloat(value);
 	}
 
 	/** Stores the specified real value at (x,y). */
@@ -370,8 +358,12 @@ public class FloatProcessor extends ImageProcessor {
 	/** Fills the current rectangular ROI. */
 	public void fill() {process(FILL, 0.0);}
 
-	/** Fills pixels that are within roi and part of the mask. */
+	/** Fills pixels that are within roi and part of the mask.
+		Throws an IllegalArgumentException if the mask is null or
+		the size of the mask is not the same as the size of the ROI. */
 	public void fill(int[] mask) {
+		if (mask==null || mask.length<roiWidth*roiHeight)
+			throw new IllegalArgumentException();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;

@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.plugin.ZProjector;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -27,7 +28,7 @@ public class Projector implements PlugInFilter {
 	private static int axisOfRotation = xAxis;
 	private static int projectionMethod = nearestPoint;
 
-	private static double sliceInterval = 1.0;
+	private static double sliceInterval = 1.0; // pixels
 	private static int initAngle = 0;
 	private static int totalAngle = 360;
 	private static int angleInc = 10;
@@ -68,11 +69,13 @@ public class Projector implements PlugInFilter {
 			transparencyLower = (int)lower;
 			transparencyUpper = (int)ip.getMaxThreshold();
 		}
+		Calibration cal = imp.getCalibration();
 		GenericDialog gd = new GenericDialog("3D Projection");
 		gd.addChoice("Projection Method:", methodList, methodList[projectionMethod]);
 		gd.addChoice("Axis of Rotation:", axisList, axisList[axisOfRotation]);
 		//gd.addMessage("");
-		gd.addNumericField("Slice Interval (pixels):", sliceInterval, 1);
+		gd.addNumericField("Slice Interval ("+cal.getUnits()+"):",cal.pixelDepth,1); 
+
 		gd.addNumericField("Initial Angle (0-359 degrees):", initAngle, 0);
 		gd.addNumericField("Total Rotation (0-359 degrees):", totalAngle, 0);
 		gd.addNumericField("Rotation Angle Increment:", angleInc, 0);
@@ -88,7 +91,9 @@ public class Projector implements PlugInFilter {
 			return false;;
 		projectionMethod = gd.getNextChoiceIndex();
 		axisOfRotation = gd.getNextChoiceIndex();
-		sliceInterval =  gd.getNextNumber();
+		cal.pixelDepth = gd.getNextNumber();
+		if (cal.pixelWidth==0.0) cal.pixelWidth = 1.0;
+		sliceInterval = cal.pixelDepth/cal.pixelWidth;
 		initAngle =  (int)gd.getNextNumber();
 		totalAngle =  (int)gd.getNextNumber();
 		angleInc =  (int)gd.getNextNumber();

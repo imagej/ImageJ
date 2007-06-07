@@ -438,7 +438,7 @@ public class CurveFitter {
         x[numParams] = 0.0;
         for (int i = 0; i < numPoints; i++) {
             x[numParams] = x[numParams] + sqr(f(fit,x,xData[i])-yData[i]);
-            //        if (IJ.debugMode) ij.IJ.write(i+" "+x[n-1]+" "+f(fit,x,xData[i])+" "+yData[i]);
+            //        if (IJ.debugMode) ij.IJ.log(i+" "+x[n-1]+" "+f(fit,x,xData[i])+" "+yData[i]);
         }
     }
 

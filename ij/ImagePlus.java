@@ -8,6 +8,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.measure.*;
+import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 
 /**
@@ -146,7 +147,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return false;
         } else {
         	locked = true;
-			if (IJ.debugMode) IJ.write(title + ": lock");
+			if (IJ.debugMode) IJ.log(title + ": lock");
 			return true;
         }
 	}
@@ -158,7 +159,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return false;
         else {
         	locked = true;
-			if (IJ.debugMode) IJ.write(title + ": lock silently");
+			if (IJ.debugMode) IJ.log(title + ": lock silently");
 			return true;
         }
 	}
@@ -166,14 +167,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Unlocks the image. */
 	public synchronized void unlock() {
 		locked = false;
-		if (IJ.debugMode) IJ.write(title + ": unlock");
+		if (IJ.debugMode) IJ.log(title + ": unlock");
 	}
 		
 	private void waitForImage(Image img) {
 		if (comp==null) {
 			comp = IJ.getInstance();
 			if (comp==null)
-				comp = new Frame();
+				comp = new Canvas();
 		}
 		imageLoaded = false;
 		if (!comp.prepareImage(img, this)) {
@@ -251,9 +252,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		
 	static int counter;
 	
-	/** ImageCanvas.paint() calls this method when the ImageProcessor
-		has generated new image. Do not call at other times because 
-		flushing the image while it's being painted can hang the JVM. */
+	/** ImageCanvas.paint() calls this method when the
+		ImageProcessor has generated new image. */
 	public void updateImage() {
 		if (ip!=null)
 			img = ip.createImage();
@@ -312,7 +312,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.img = img;
 		int newWidth = img.getWidth(ij);
 		int newHeight = img.getHeight(ij);
-		boolean dimensionsChanged = newWidth!=width || newHeight!=newHeight;
+		boolean dimensionsChanged = newWidth!=width || newHeight!=height;
 		width = newWidth;
 		height = newHeight;
 		ip = null;
@@ -327,6 +327,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		} else
 			type = COLOR_RGB;
 		setType(type);
+		setupProcessor();
+		this.img = ip.createImage();
 		if (win!=null) {
 			if (dimensionsChanged)
 				win = new ImageWindow(this);
@@ -352,7 +354,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (stackSize<currentSlice)
 				currentSlice = 1;
 		}
-		img = ip.createImage();
+		//img = ip.createImage();
+		img = null;
 		boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
 		if (dimensionsChanged)
 			roi = null;
@@ -429,13 +432,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 	void setupProcessor() {
 		if (imageType==COLOR_RGB) {
 			if (ip == null || ip instanceof ByteProcessor) {
-				ip = new ColorProcessor(img);
-				if (IJ.debugMode) IJ.write(title + ": new ColorProcessor");
+				ip = new ColorProcessor(getImage());
+				if (IJ.debugMode) IJ.log(title + ": new ColorProcessor");
 			}
 		}
 		else if (ip==null || (ip instanceof ColorProcessor)) {
-			ip = new ByteProcessor(img);
-			if (IJ.debugMode) IJ.write(title + ": new ByteProcessor");
+			ip = new ByteProcessor(getImage());
+			if (IJ.debugMode) IJ.log(title + ": new ByteProcessor");
 		}
 		if (roi!=null && roi.getType()<Roi.LINE)
 			ip.setRoi(roi.getBoundingRect());
@@ -466,7 +469,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		the current ImageProcessor to null. */
 	public synchronized void trimProcessor() {
 		if (ip!=null && !locked) {
-			if (ip!=null && IJ.debugMode) IJ.write(title + ": trimProcessor");
+			if (ip!=null && IJ.debugMode) IJ.log(title + ": trimProcessor");
 			ip.setPixels(ip.getPixels()); // sets snapshot buffer to null
 		}
 	}
@@ -501,8 +504,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 		if (ip!=null) {
 			if (roi!=null) {
-				ip.setRoi(roi.getBoundingRect());
 				ip.setMask(mask);
+				ip.setRoi(roi.getBoundingRect());
 				maskRect = roi.getBoundingRect();
 				if (roi instanceof PolygonRoi)
 					maskCount = ((PolygonRoi)roi).getNCoordinates();
@@ -566,8 +569,18 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Sets the image name. */
 	public void setTitle(String title) {
     	if (win!=null) {
-			Menus.updateWindowMenuItem(this.title, title);
-    		win.setTitle(title);
+    		if (ij!=null)
+				Menus.updateWindowMenuItem(this.title, title);
+			String scale = "";
+			double magnification = win.getCanvas().getMagnification();
+			if (magnification!=1.0) {
+				double percent = magnification*100.0;
+				if (percent==(int)percent)
+					scale = " (" + IJ.d2s(percent,0) + "%)";
+				else
+					scale = " (" + IJ.d2s(percent,1) + "%)";
+			}
+			win.setTitle(title+scale);
     	}
     	this.title = title;
     }
@@ -627,7 +640,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		
 	/** Creates a LookUpTable object corresponding to this image. */
     public LookUpTable createLut() {
-    	if (img!=null)
+    	if (getImage()!=null)
     		return new LookUpTable(img);
     	else
     		return null;
@@ -780,8 +793,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		killRoi();
 		this.roi = roi;
 		if (ip!=null) {
-			ip.setRoi(roi.getBoundingRect());
 			ip.setMask(null);
+			ip.setRoi(roi.getBoundingRect());
 		}
 		this.roi.setImage(this);
 		draw();
@@ -799,8 +812,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		killRoi();
 		roi = new Roi(r.x, r.y, r.width, r.height, this);
 		if (ip!=null) {
-			ip.setRoi(r);
 			ip.setMask(null);
+			ip.setRoi(r);
 		}
 		draw();
 	}
@@ -852,7 +865,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			Rectangle r = roi.getBoundingRect();
 			if (r.width>0 && r.height>0) {
 				Roi.previousRoi = roi;
-				if (IJ.debugMode) IJ.write("saveRoi: "+roi);
+				if (IJ.debugMode) IJ.log("saveRoi: "+roi);
 			}
 		}
 	}
@@ -918,15 +931,16 @@ public class ImagePlus implements ImageObserver, Measurements {
     	if (cal.scaled()) {
     		fi.pixelWidth = cal.pixelWidth;
     		fi.pixelHeight = cal.pixelHeight;
-     		fi.pixelDepth = cal.pixelDepth;
    			fi.unit = cal.getUnit();
-   			fi.frameInterval = cal.frameInterval;
     	}
+    	if (fi.nImages>1)
+     		fi.pixelDepth = cal.pixelDepth;
+   		fi.frameInterval = cal.frameInterval;
     	if (cal.calibrated()) {
     		fi.calibrationFunction = cal.getFunction();
      		fi.coefficients = cal.getCoefficients();
     		fi.valueUnit = cal.getValueUnit();
-   	}
+		}
     	switch (imageType) {
 	    	case GRAY8: case COLOR_256:
     			LookUpTable lut = createLut();
@@ -1075,6 +1089,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     /** Converts the current cursor location to a string. */
     public String getLocationAsString(int x, int y) {
 		Calibration cal = getCalibration();
+		y = Analyzer.updateY(y, height);
 		if (cal.scaled())
 			return " x="+IJ.d2s(cal.getX(x))+" ("+x+")"
 			+", y="+IJ.d2s(cal.getY(y))+" ("+y+")";

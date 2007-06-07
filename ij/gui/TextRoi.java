@@ -96,7 +96,12 @@ public class TextRoi extends Roi {
 		}
 		g.dispose();
 		ColorProcessor cp = new ColorProcessor(img);
-		return (int[])cp.getPixels();
+		int[] mask = (int[])cp.getPixels();
+		for (int j=0; j<mask.length; j++) {
+			if (mask[j]!=0xffffffff && mask[j]!=0xff00ffff)
+				mask[j] = ImageProcessor.BLACK;
+		}
+		return mask;
 	}
 
 	/** Draws the text on the screen, clipped to the ROI. */

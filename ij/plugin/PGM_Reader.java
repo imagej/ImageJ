@@ -57,6 +57,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 
 	private int width, height;
 	private boolean rawBits;
+	private boolean sixteenBits;
 	
 	public void run(String arg) {
 		OpenDialog od = new OpenDialog("PGM Reader...", arg);
@@ -71,8 +72,9 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		try {
 			ip = openFile(path);
 		}
-		catch (Exception e) {
-			IJ.showMessage("PGM Reader", e.getMessage());
+		catch (IOException e) {
+			String msg = e.getMessage();
+			IJ.showMessage("PGM Reader", msg.equals("")?""+e:msg);
 			return;
 		}
 
@@ -94,13 +96,17 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		tok.eolIsSignificant(true);
 		tok.commentChar('#');
 		openHeader(tok);
-		byte[] pixels = new byte[width*height];
-		ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
-		if (rawBits)
-			openRawImage(is, width*height, pixels);
-		else
-			openAsciiImage(tok, width*height, pixels);
-		return ip;
+		if (sixteenBits)
+			return open16bitRawImage(is, width, height);
+		else {
+			byte[] pixels = new byte[width*height];
+			ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
+			if (rawBits)
+				openRawImage(is, width*height, pixels);
+			else
+				openAsciiImage(tok, width*height, pixels);
+			return ip;
+		}
 	}
 
 	public void openHeader(StreamTokenizer tok) throws IOException {
@@ -114,8 +120,12 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		int maxValue = getInt(tok);
 		if (width==-1 || height==-1 || maxValue==-1)
 			throw new IOException("Error opening PGM header..");
-		if (maxValue>255)
-			throw new IOException("The maximum gray vale is larger than 255.");
+		sixteenBits = rawBits && maxValue>255;
+		String msg = "The maximum gray value is larger than ";
+		if (sixteenBits && maxValue>65535)
+			throw new IOException(msg + "65535.");
+		if (!sixteenBits && maxValue>255)
+			throw new IOException(msg + "255.");
 	}
 
 	public void openAsciiImage(StreamTokenizer tok, int size, byte[] pixels) throws IOException {
@@ -137,6 +147,18 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 			count = is.read(pixels, count, size-count);
 	}
 
+	public ImageProcessor open16bitRawImage(InputStream is, int width, int height) throws IOException {
+		int size = width*height*2;
+		byte[] bytes = new byte[size];
+		int count = 0;
+		while (count<size && count>=0)
+			count = is.read(bytes, count, size-count);
+		short[] pixels = new short[size/2];
+		for (int i=0,j=0; i<size/2; i++,j+=2)
+			pixels[i] = (short)(((bytes[j]&0xff)<<8) | (bytes[j+1]&0xff)); //big endian
+		return new ShortProcessor(width, height, pixels, null);
+   	}
+	
 	String getWord(StreamTokenizer tok) throws IOException {
 		while (tok.nextToken() != tok.TT_EOF) {
 			if (tok.ttype==tok.TT_WORD)

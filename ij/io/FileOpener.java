@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
@@ -14,6 +15,7 @@ public class FileOpener {
 
 	private FileInfo fi;
 	private int width, height;
+	private double displayMin, displayMax;
 
 	public FileOpener(FileInfo fi) {
 		this.fi = fi;
@@ -21,7 +23,7 @@ public class FileOpener {
 			width = fi.width;
 			height = fi.height;
 		}
-		if (IJ.debugMode) IJ.write("FileOpener: "+fi);
+		if (IJ.debugMode) IJ.log("FileOpener: "+fi);
 	}
 	
 	/** Opens the image and displays it. */
@@ -77,7 +79,7 @@ public class FileOpener {
 				break;
 		}
 		imp.setFileInfo(fi);
-		setResolution(fi, imp);
+		setCalibration(imp);
 		if (show) imp.show();
 		IJ.showProgress(1.0);
 		return imp;
@@ -114,7 +116,7 @@ public class FileOpener {
 		ImagePlus imp = new ImagePlus(fi.fileName, stack);
 		if (show) imp.show();
 		imp.setFileInfo(fi);
-		setResolution(fi, imp);
+		setCalibration(imp);
 		IJ.showProgress(1.0);
 		return imp;
 	}
@@ -172,7 +174,8 @@ public class FileOpener {
 		}
 	}
 	
-	static void setResolution(FileInfo fi, ImagePlus imp) {
+	void setCalibration(ImagePlus imp) {
+		decodeDescriptionString();
 		Calibration cal = null;
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
 			cal = new Calibration(imp);
@@ -197,6 +200,7 @@ public class FileOpener {
 		}
 		
 		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+			if (IJ.debugMode) IJ.log("16-bit signed");
 			if (cal==null) cal = new Calibration(imp);
 			double[] coeff = new double[2];
 			coeff[0] = -32768.0;
@@ -206,6 +210,17 @@ public class FileOpener {
 		
 		if (cal!=null)
 			imp.setCalibration(cal);
+		
+		if (!(displayMin==0.0&&displayMax==0.0)) {
+			int type = imp.getType();
+			ImageProcessor ip = imp.getProcessor();
+			if (type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256)
+				ip.setMinAndMax(displayMin, displayMax);
+			else if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
+				if (ip.getMin()!=displayMin || ip.getMax()!=displayMax)
+					ip.setMinAndMax(displayMin, displayMax);
+			}
+		}
 	}
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
@@ -240,5 +255,65 @@ public class FileOpener {
 		}
 		return pixels;
 	}
+
+	public void decodeDescriptionString() {
+		if (fi.description==null || fi.description.length()<7)
+			return;
+		if (IJ.debugMode)
+			IJ.log("Image Description: " + new String(fi.description).replace('\n',' '));
+		if (!fi.description.startsWith("ImageJ"))
+			return;
+		Properties props = new Properties();
+		InputStream is = new ByteArrayInputStream(fi.description.getBytes());
+		try {props.load(is); is.close();}
+		catch (IOException e) {return;}
+		fi.unit = props.getProperty("unit","");
+		Double n = getNumber(props,"cf");
+		if (n!=null) fi.calibrationFunction = n.intValue();
+		double c[] = new double[5];
+		int count = 0;
+		for (int i=0; i<5; i++) {
+			n = getNumber(props,"c"+i);
+			if (n==null) break;
+			c[i] = n.doubleValue();
+			count++;
+		}
+		if (count>=2) {
+			fi.coefficients = new double[count];
+			for (int i=0; i<count; i++)
+				fi.coefficients[i] = c[i];			
+		}
+		fi.valueUnit = props.getProperty("vunit");
+		n = getNumber(props,"images");
+		if (n!=null && n.doubleValue()>1.0)
+			fi.nImages = (int)n.doubleValue();
+		if (fi.nImages>1) {
+			double spacing = getDouble(props,"spacing");
+			if (spacing!=0.0)
+				fi.pixelDepth = spacing;
+			n = getNumber(props,"fps");
+			double fps = getDouble(props,"fps");
+			if (fps!=0.0)
+				fi.frameInterval = 1.0/fps;
+		}
+		displayMin = getDouble(props,"min");
+		displayMax = getDouble(props,"max");
+	}
+
+	private Double getNumber(Properties props, String key) {
+		String s = props.getProperty(key);
+		if (s!=null) {
+			try {
+				return Double.valueOf(s);
+			} catch (NumberFormatException e) {}
+		}	
+		return null;
+	}
+	
+	private double getDouble(Properties props, String key) {
+		Double n = getNumber(props, key);
+		return n!=null?n.doubleValue():0.0;
+	}
+	
 
 }

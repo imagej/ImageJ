@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.26
+# Version 1.27
 
 # Popup Menu
 popup01=Undo
@@ -26,7 +26,7 @@ import03="LUT... ",ij.plugin.LutLoader
 import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader
 import06="URL...",ij.plugin.URLOpener
-import07="TWAIN...",ij.plugin.twain.Twain
+#import07="TWAIN...",ij.plugin.twain.Twain
 #import07="Capture Video...",QT_Capture
 #import08="QuickTime Movie...",Movie_Opener
 #import09="Pict...",QuickTime_Opener

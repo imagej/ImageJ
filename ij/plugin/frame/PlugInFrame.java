@@ -20,7 +20,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 			Image img = ij.getIconImage();
 			if (img!=null) setIconImage(img);
 		}
-		if (IJ.debugMode) IJ.write("opening "+title);
+		if (IJ.debugMode) IJ.log("opening "+title);
 	}
 	
 	public void run(String arg) {
@@ -30,7 +30,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 		setVisible(false);
 		dispose();
 		WindowManager.removeWindow(this);
-		if (IJ.debugMode) IJ.write("closing "+title);
+		if (IJ.debugMode) IJ.log("closing "+title);
     }
 
     public void windowActivated(WindowEvent e) {

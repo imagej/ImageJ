@@ -144,59 +144,18 @@ public class TiffDecoder {
 		return bytes;
 	}
 
-	/** Decode the ImageDescription tag. ImageJ saves spatial
-		and density calibration data in this string. For stacks,
-		it also saves the number of images to avoid having to
+	/** Save the image description in the specified FileInfo. ImageJ
+		saves spatial and density calibration data in this string. For
+		stacks, it also saves the number of images to avoid having to
 		decode an IFD for each image. */
 	public void decodeImageDescription(byte[] description, FileInfo fi) {
 		if (description.length<7)
 			return;
+		if (ij.IJ.debugMode)
+			ij.IJ.log("Image Description: " + new String(description).replace('\n',' '));
 		if (!new String(description,0,6).equals("ImageJ"))
 			return;
-		Properties props = new Properties();
-		InputStream is = new ByteArrayInputStream(description);
-		try {props.load(is); is.close();}
-		catch (IOException e) {return;}
-		fi.unit = props.getProperty("unit","");
-		Double n = getNumber(props,"cf");
-		if (n!=null) fi.calibrationFunction = n.intValue();
-		double c[] = new double[5];
-		int count = 0;
-		for (int i=0; i<5; i++) {
-			n = getNumber(props,"c"+i);
-			if (n==null) break;
-			c[i] = n.doubleValue();
-			count++;
-		}
-		if (count>=2) {
-			fi.coefficients = new double[count];
-			for (int i=0; i<count; i++)
-				fi.coefficients[i] = c[i];			
-		}
-		fi.valueUnit = props.getProperty("vunit");
-		n = getNumber(props,"images");
-		if (n!=null && n.doubleValue()>1.0)
-			fi.nImages = (int)n.doubleValue();
-		if (fi.nImages>1) {
-			n = getNumber(props,"spacing");
-			double spacing = n!=null?n.doubleValue():0.0;
-			if (spacing!=0.0)
-				fi.pixelDepth = spacing;
-			n = getNumber(props,"fps");
-			double fps = n!=null?n.doubleValue():0.0;
-			if (fps!=0.0)
-				fi.frameInterval = 1.0/fps;
-		}
-	}
-
-	private Double getNumber(Properties props, String key) {
-		String s = props.getProperty(key);
-		if (s!=null) {
-			try {
-				return Double.valueOf(s);
-			} catch (NumberFormatException e) {}
-		}	
-		return null;
+		fi.description = new String(description);
 	}
 
 	void decodeNIHImageHeader(int offset, FileInfo fi) throws IOException {
@@ -410,7 +369,7 @@ public class TiffDecoder {
 					if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
 					break;
-				case COMPRESSION: 
+				case COMPRESSION:
 					if (value!=1 && value!=7) // don't abort with Spot camera compressed (7) thumbnails
 						throw new IOException("ImageJ cannot open compressed TIFF files");
 					break;

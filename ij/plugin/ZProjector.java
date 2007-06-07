@@ -165,7 +165,7 @@ public class ZProjector implements PlugIn {
 		 
 		RayFunction rayFunc = getRayFunction(method, fp);
 		if(IJ.debugMode==true) {
-	    	IJ.write("\nProjecting stack from: "+startSlice
+	    	IJ.log("\nProjecting stack from: "+startSlice
 		     	+" to: "+stopSlice); 
 		}
 

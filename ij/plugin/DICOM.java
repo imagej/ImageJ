@@ -72,6 +72,8 @@ public class DICOM extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
+			if (fi.fileType==FileInfo.GRAY16_SIGNED && imp.getStackSize()==1)
+				convertToUnsigned(imp, fi);
 			if (dd.windowWidth>0.0) {
 				ImageProcessor ip = imp.getProcessor();
 				double min = dd.windowCenter-dd.windowWidth/2;
@@ -81,15 +83,13 @@ public class DICOM extends ImagePlus implements PlugIn {
 					max += 32768.0;
 				}
 				ip.setMinAndMax(min, max);
+				if (IJ.debugMode) IJ.log("window: "+min+"-"+max);
 			}
 			if (imp.getStackSize()>1)
 				setStack(fileName, imp.getStack());
 			else
 				setProcessor(fileName, imp.getProcessor());
-			Calibration cal = imp.getCalibration();
-			if (fi.fileType==FileInfo.GRAY16_SIGNED&&imp.getStackSize()==1)
-				convertToUnsigned(cal);
-			setCalibration(cal);
+			setCalibration(imp.getCalibration());
 			setProperty("Info", dd.getDicomInfo());
 			if (arg.equals("")) show();
 		} else
@@ -98,8 +98,8 @@ public class DICOM extends ImagePlus implements PlugIn {
 	}
 
 	/** Convert 16-bit signed to unsigned if all pixels>=0. */
-	void convertToUnsigned(Calibration cal) {
-		ImageProcessor ip = getProcessor();
+	void convertToUnsigned(ImagePlus imp, FileInfo fi) {
+		ImageProcessor ip = imp.getProcessor();
 		short[] pixels = (short[])ip.getPixels();
 		int min = Integer.MAX_VALUE;
 		int value;
@@ -108,10 +108,14 @@ public class DICOM extends ImagePlus implements PlugIn {
 			if (value<min)
 				min = value;
 		}
+		if (IJ.debugMode) IJ.log("min: "+(min-32768));
 		if (min>=32768) {
 			for (int i=0; i<pixels.length; i++)
 				pixels[i] = (short)(pixels[i]-32768);
+			ip.resetMinAndMax();
+			Calibration cal = imp.getCalibration();
 			cal.setFunction(Calibration.NONE, null, "Gray Value");
+			fi.fileType = FileInfo.GRAY16_UNSIGNED;
 		}
 	}
 
@@ -161,6 +165,7 @@ class DicomDecoder {
  	private StringBuffer dicomInfo = new StringBuffer(1000);
  	private boolean dicmFound; // "DICM" found at offset 128
  	private boolean oddLocations;  // one or more tags at odd locations
+ 	private boolean bigEndianTransferSyntax = false;
 	double windowCenter, windowWidth;
 
 	public DicomDecoder(String directory, String fileName) {
@@ -270,6 +275,10 @@ class DicomDecoder {
 
 	int getNextTag() throws IOException {
 		int groupWord = getShort();
+		if (groupWord==0x0800 && bigEndianTransferSyntax) {
+			littleEndian = false;
+			groupWord = 0x0008;
+		}
 		int elementWord = getShort();
 		int tag = groupWord<<16 | elementWord;
 		elementLength = getLength();
@@ -304,8 +313,8 @@ class DicomDecoder {
 				
 		f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		if (IJ.debugMode) {
-			IJ.write("");
-			IJ.write("DicomDecoder: decoding "+fileName);
+			IJ.log("");
+			IJ.log("DicomDecoder: decoding "+fileName);
 		}
 		
 		skipCount = (long)ID_OFFSET;
@@ -316,10 +325,10 @@ class DicomDecoder {
 			f.close();
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 			location = 0;
-			if (IJ.debugMode) IJ.write(DICM + " not found at offset "+ID_OFFSET+"; reseting to offset 0");
-		} else if (IJ.debugMode) {
+			if (IJ.debugMode) IJ.log(DICM + " not found at offset "+ID_OFFSET+"; reseting to offset 0");
+		} else {
 			dicmFound = true;
-			IJ.write(DICM + " found at offset " + ID_OFFSET);
+			if (IJ.debugMode) IJ.log(DICM + " found at offset " + ID_OFFSET);
 		}
 		
 		boolean inSequence = true;
@@ -327,11 +336,8 @@ class DicomDecoder {
 		
 		while (decodingTags) {
 			int tag = getNextTag();
-			if ((location&1)!=0) { // DICOM tags must be at even locations
+			if ((location&1)!=0) // DICOM tags must be at even locations
 				oddLocations = true;
-				if (dicmFound)
-					break;
-			}
 			String s;
 			switch (tag) {
 				case TRANSFER_SYNTAX_UID:
@@ -343,6 +349,8 @@ class DicomDecoder {
 						msg += "Transfer Syntax UID = "+s;
 						throw new IOException(msg);
 					}
+					if (s.indexOf("1.2.840.10008.1.2.2")>=0)
+						bigEndianTransferSyntax = true;
 					break;
 				case NUMBER_OF_FRAMES:
 					s = getString(elementLength);
@@ -454,13 +462,16 @@ class DicomDecoder {
 				fi.fileType = FileInfo.RGB_PLANAR;
 		} else if (photoInterpretation.endsWith("1 "))
 				fi.whiteIsZero = true;
+				
+		if (!littleEndian)
+			fi.intelByteOrder = false;
 		
 		if (IJ.debugMode) {
-			IJ.write("width: " + fi.width);
-			IJ.write("height: " + fi.height);
-			IJ.write("images: " + fi.nImages);
-			IJ.write("bits allocated: " + bitsAllocated);
-			IJ.write("offset: " + fi.offset);
+			IJ.log("width: " + fi.width);
+			IJ.log("height: " + fi.height);
+			IJ.log("images: " + fi.nImages);
+			IJ.log("bits allocated: " + bitsAllocated);
+			IJ.log("offset: " + fi.offset);
 		}
 	
 		f.close();
@@ -484,7 +495,7 @@ class DicomDecoder {
 			vrLetters[0] = (byte)(vr >> 8);
 			vrLetters[1] = (byte)(vr & 0xFF);
 			String VR = new String(vrLetters);
-			IJ.write("(" + tag2hex(tag) + VR
+			IJ.log("(" + tag2hex(tag) + VR
 			+ " " + elementLength
 			+ " bytes from "
 			+ (location-elementLength)+") "

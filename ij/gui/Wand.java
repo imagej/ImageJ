@@ -83,7 +83,7 @@ public class Wand {
 					insideCount++;
 			}
 		if (IJ.debugMode)
-			IJ.write((((double)insideCount)/area>=0.75?"line ":"blob ")+insideCount+" "+area+" "+IJ.d2s(((double)insideCount)/area));
+			IJ.log((((double)insideCount)/area>=0.75?"line ":"blob ")+insideCount+" "+area+" "+IJ.d2s(((double)insideCount)/area));
 		return ((double)insideCount)/area>=0.75;
 	}
 	
@@ -115,6 +115,7 @@ public class Wand {
 	/** Traces an object defined by lower and upper threshold values. The
 		boundary points are stored in the public xpoints and ypoints fields.*/
 	public void autoOutline(int startX, int startY, int lower, int upper) {
+		npoints = 0;
 		int x = startX;
 		int y = startY;
 		int direction;

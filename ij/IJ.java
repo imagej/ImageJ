@@ -1,7 +1,7 @@
 package ij;
 import ij.gui.*;
 import ij.process.*;
-import ij.text.TextPanel;
+import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
@@ -15,7 +15,8 @@ import ij.plugin.frame.Recorder;
 
 /** This class consists of static utility methods. */
 public class IJ {
-	public static boolean debugMode = false;
+	public static boolean debugMode;
+	public static boolean hideProcessStackDialog;
 	
 	private static ImageJ ij;
 	private static java.applet.Applet applet;
@@ -26,7 +27,8 @@ public class IJ {
 	private static boolean altDown, spaceDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
-	
+	private static TextPanel logPanel;
+		
 	static {
 		osname = System.getProperty("os.name");
 		isWin = osname.startsWith("Windows");
@@ -140,6 +142,22 @@ public class IJ {
 		if (textPanel!=null)
 				textPanel.append(s);
 		else
+			System.out.println(s);
+	}
+
+	/** Displays a line of text in the "Log" window. Uses
+		System.out.println if ImageJ is not present. */
+	public static void log(String s) {
+		if (logPanel==null && ij!=null) {
+			TextWindow logWindow = new TextWindow("Log", "", 300, 200);
+			logPanel = logWindow.getTextPanel();
+		}
+		if (logPanel!=null) {
+				if (s.equals("$Closed"))
+					logPanel = null;
+				else
+					logPanel.append(s);
+		} else
 			System.out.println(s);
 	}
 
@@ -398,7 +416,7 @@ public class IJ {
 		if the user selects "Cancel".
 	*/
 	public static int setupDialog(ImagePlus imp, int flags) {
-		if (imp==null)
+		if (imp==null||ij.hotkey||hideProcessStackDialog)
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
@@ -504,6 +522,24 @@ public class IJ {
 		Toolbar.getInstance().setTool(id);
 	}
 
+	/** Equivalent to clicking on the current image at (x,y) with the
+		wand tool. Returns the number of points in the resulting ROI. */
+	public static int doWand(int x, int y) {
+		ImagePlus img = getImage();
+		ImageProcessor ip = img.getProcessor();
+		Wand w = new Wand(ip);
+		double t1 = ip.getMinThreshold();
+		if (t1==ip.NO_THRESHOLD)
+			w.autoOutline(x, y);
+		else
+			w.autoOutline(x, y, (int)t1, (int)ip.getMaxThreshold());
+		if (w.npoints>0) {
+			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, img, Roi.TRACED_ROI);
+			img.setRoi(roi);
+		}
+		return w.npoints;
+	}
+	
 	private static ImagePlus getImage() {
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {

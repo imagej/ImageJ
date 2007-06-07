@@ -242,10 +242,10 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		min = ip.getMin();
 		max = ip.getMax();
 		if (IJ.debugMode) {
-			IJ.write("min: " + min);
-			IJ.write("max: " + max);
-			IJ.write("defaultMin: " + defaultMin);
-			IJ.write("defaultMax: " + defaultMax);
+			IJ.log("min: " + min);
+			IJ.log("max: " + max);
+			IJ.log("defaultMin: " + defaultMin);
+			IJ.log("defaultMax: " + defaultMax);
 		}
 		plot.defaultMin = defaultMin;
 		plot.defaultMax = defaultMax;
@@ -495,17 +495,23 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 	
 	void setMinAndMax(ImagePlus imp, ImageProcessor ip) {
+		Calibration cal = imp.getCalibration();
+		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
+		double minValue = cal.getCValue(min);
+		double maxValue = cal.getCValue(max);
 		GenericDialog gd = new GenericDialog("Set Min and Max");
-		gd.addNumericField("Minimum Displayed Value: ", min, 0);
-		gd.addNumericField("Minimum Displayed Value: ", max, 0);
+		gd.addNumericField("Minimum Displayed Value: ", minValue, digits);
+		gd.addNumericField("Maximum Displayed Value: ", maxValue, digits);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		double min = gd.getNextNumber();
-		double max = gd.getNextNumber();
-		if (max>=min) {
-			this.min = min;
-			this.max = max;
+		minValue = gd.getNextNumber();
+		maxValue = gd.getNextNumber();
+		minValue = cal.getRawValue(minValue);
+		maxValue = cal.getRawValue(maxValue);
+		if (maxValue>=minValue) {
+			min = minValue;
+			max = maxValue;
 			ip.setMinAndMax(min, max);
 			if (RGBImage) doMasking(imp, ip);
 			if (Recorder.record)

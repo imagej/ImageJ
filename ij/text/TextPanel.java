@@ -44,6 +44,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	int selStart=-1, selEnd=-1,selOrigin=-1;
 	TextCanvas tc;
 	PopupMenu pm;
+	boolean columnsManuallyAdjusted;
   
 	/** Constructs a new TextPanel. */
 	public TextPanel() {
@@ -93,7 +94,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	those in the tab-delimited 'headings' String. Set 'headings'
 	to "" to use a single column with no headings.
 	*/
-	public void setColumnHeadings(String labels) {
+	public synchronized void setColumnHeadings(String labels) {
+		boolean sameLabels = labels.equals(this.labels);
 		this.labels = labels;
 		if (labels.equals("")) {
 			iColCount = 1;
@@ -108,7 +110,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		flush();
 		vData=new Vector();
-		iColWidth=new int[iColCount];
+		if (!(iColWidth!=null && iColWidth.length==iColCount && sameLabels && iColCount!=1)) {
+			iColWidth=new int[iColCount];
+			columnsManuallyAdjusted = false;
+		}
 		iRowCount=0;
 		resetSelection();
 		adjustHScroll();
@@ -123,6 +128,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void setFont(Font font) {
 		tc.fFont = font;
 		tc.iImage = null;
+		tc.fMetrics = null;
+		iColWidth[0] = 0;
 	}
   
 	/** Adds a single line to the end of this TextPanel. */
@@ -139,6 +146,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
   			}
 			iY=iRowHeight*(iRowCount+1);
 			adjustVScroll();
+			if (iColCount>1 && iRowCount<=10 && !columnsManuallyAdjusted)
+				iColWidth[0] = 0; // forces column width calculation
 			tc.repaint();
 			Thread.yield();
 		}
@@ -247,6 +256,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			int w=x-iXDrag;
 			if(w<0) w=0;
 			iColWidth[iColDrag]=w;
+			columnsManuallyAdjusted = true;
 			adjustHScroll();
 			tc.repaint();
 		} else {
@@ -446,6 +456,15 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	/** Returns the number of lines of text in this TextPanel. */
 	public int getLineCount() {
 		return iRowCount;
+	}
+
+	/** Returns the number of lines of text in this TextPanel. 
+		The argument must be greater than or equal to zero and
+		less than the value returned by getLineCount(). */
+	public String getLine(int index) {
+		if (index<0 || index>=iRowCount)
+			throw new IllegalArgumentException("index out of range: "+index);
+		return new String((char[])(vData.elementAt(index)));
 	}
 
 	void flush() {

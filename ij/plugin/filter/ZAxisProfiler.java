@@ -57,8 +57,8 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			ImageProcessor ip = stack.getProcessor(i);
 			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
 				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
-			ip.setRoi(r);
 			ip.setMask(mask);
+			ip.setRoi(r);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, cal);
 			analyzer.saveResults(stats, roi);
 			if (showResults)

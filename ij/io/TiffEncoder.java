@@ -210,35 +210,13 @@ public class TiffEncoder {
 		For stacks, also saves the stack size so ImageJ can open the stack without
 		decoding an IFD for each slice.*/
 	void makeDescriptionString() {
-		StringBuffer sb = new StringBuffer(100);
-		sb.append("ImageJ="+ij.ImageJ.VERSION+"\n");
-		if (fi.nImages>1)
-			sb.append("images="+fi.nImages+"\n");
-		if (fi.unit!=null)
-			sb.append("unit="+fi.unit+"\n");
-		if (fi.valueUnit!=null) {
-			sb.append("cf="+fi.calibrationFunction+"\n");
-			if (fi.coefficients!=null) {
-				for (int i=0; i<fi.coefficients.length; i++)
-					sb.append("c"+i+"="+fi.coefficients[i]+"\n");
-			}
-			sb.append("vunit="+fi.valueUnit+"\n");
-		}
-		if (fi.nImages>1) {
-			if (fi.pixelDepth!=0.0 && fi.pixelDepth!=1.0)
-				sb.append("spacing="+fi.pixelDepth+"\n");
-			if (fi.frameInterval!=0.0) {
-				double fps = 1.0/fi.frameInterval;
-				if ((int)fps==fps)
-					sb.append("fps="+(int)fps+"\n");
-				else
-					sb.append("fps="+fps+"\n");
-			}
-		}
-		sb.append("");
-		//ij.IJ.write(new String(sb));
-		description = new String(sb).getBytes();
-		description[description.length-1] = 0; 
+		if (fi.description!=null) {
+			if (fi.description.charAt(fi.description.length()-1)!=(char)0)
+				fi.description += " ";
+			description = fi.description.getBytes();
+			description[description.length-1] = (byte)0;
+		} else
+			description = null;
 	}
 
 }

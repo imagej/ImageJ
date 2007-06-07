@@ -77,6 +77,7 @@ public class FileInfo {
 	public double[] coefficients;
 	public String valueUnit;
 	public double frameInterval;
+	public String description;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {

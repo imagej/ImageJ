@@ -16,6 +16,11 @@ public class Binary implements PlugInFilter {
 		this.imp = imp;
 		IJ.register(Binary.class);
 		
+		if (arg.equals("set")) {
+			setIterations();
+			return DONE;
+		}
+		
 		if (arg.equals("outline") || arg.equals("skel")) {
 			if (imp!=null && (imp.getType()==ImagePlus.GRAY8 || imp.getType()==ImagePlus.COLOR_256)) {
 				ImageStatistics stats = imp.getStatistics();
@@ -34,7 +39,6 @@ public class Binary implements PlugInFilter {
 		else if (arg.equals("dilate")) dilate(ip);
 		else if (arg.equals("open")) open(ip);
 		else if (arg.equals("close")) close(ip);
-		else if (arg.equals("set")) setIterations();
 		else if (arg.equals("outline")) ((ByteProcessor)ip).outline();
 		else if (arg.equals("skel")) ((ByteProcessor)ip).skeletonize();
 	}

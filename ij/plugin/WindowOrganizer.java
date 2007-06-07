@@ -97,25 +97,11 @@ public class WindowOrganizer implements PlugIn {
 			}
 			ImageWindow win = getWindow(wList[i]);
 			if (win!=null) {
-				//win.setBounds(hloc, vloc,tileWidth, tileHeight);
 				win.setLocation(hloc, vloc);
-				double w = win.getSize().width;
-				double mag = win.getCanvas().getMagnification();
-				double zoomFactor = w/tileWidth;
-				int zoomCount = 0;
-				if (zoomFactor>=1.5)
-					zoomCount = 1;
-				if (zoomFactor>=3.0)
-					zoomCount = 2;
-				if (zoomFactor>=6.0)
-					zoomCount = 3;
-				if (zoomFactor>=12.0)
-					zoomCount = 4;
 				//IJ.write(i+" "+w+" "+tileWidth+" "+mag+" "+IJ.d2s(zoomFactor,2)+" "+zoomCount);
-				if (zoomCount>=1) {
-					for (int j=0; j<zoomCount; j++)
-						win.getCanvas().zoomOut(0, 0);
-				}
+				ImageCanvas canvas = win.getCanvas();
+				while (win.getSize().width*0.85>=tileWidth && canvas.getMagnification()>0.03125)
+					canvas.zoomOut(0, 0);
 				win.toFront();
 			}
 			hloc += tileWidth + GAP;

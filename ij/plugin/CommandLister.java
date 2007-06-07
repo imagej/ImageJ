@@ -3,6 +3,7 @@ import ij.*;
 import ij.text.*;
 import ij.util.*;
 import java.util.*;
+import java.awt.*;
 import java.awt.event.*;
 
 /** Lists ImageJ commands or keyboard shortcuts in a text window. */

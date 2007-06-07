@@ -36,7 +36,7 @@ public class RawReader implements PlugIn {
 			else if (arg.startsWith("little")) fi.intelByteOrder = true;
 			else if (arg.startsWith("big")) fi.intelByteOrder = false;
 		}
-		if (IJ.debugMode) IJ.write("RawReader: "+fi);
+		if (IJ.debugMode) IJ.log("RawReader: "+fi);
 		IJ.showStatus(fi.url + fi.fileName);
 		new FileOpener(fi).open();
 	}

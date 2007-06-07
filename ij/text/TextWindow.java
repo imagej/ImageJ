@@ -163,6 +163,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener {
 					return;
 				IJ.setTextPanel(null);
 			}
+			if (getTitle().equals("Log"))
+				IJ.log("$Closed");
 			setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
