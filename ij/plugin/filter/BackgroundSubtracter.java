@@ -14,26 +14,50 @@ import java.awt.*;
 */
 public class BackgroundSubtracter implements PlugInFilter {
 
-	static int radius = 50; // default rolling ball radius
+	private static int radius = 50; // default rolling ball radius
+	private static boolean whiteBackground = true;
 	private ImagePlus imp;
+	private boolean canceled;
+	private int slice;
+	private boolean invert;
 	
 	public int setup(String arg, ImagePlus imp) {
 		IJ.register(BackgroundSubtracter.class);
 		this.imp = imp;
-		return DOES_8G+DOES_RGB;
+		if (imp!=null) {
+			showDialog();
+			if (canceled)
+				return DONE;
+		}
+		IJ.register(BackgroundSubtracter.class);
+		return IJ.setupDialog(imp, DOES_8G+DOES_RGB);
 	}
 
 	public void run(ImageProcessor ip) {
-		GenericDialog gd = new GenericDialog("Subtract Background", IJ.getInstance());
-		gd.addNumericField("Rolling Ball Radius:", radius, 0);
-		gd.showDialog();
-		if (gd.wasCanceled())
+		if (canceled)
 			return;
-		radius = (int)gd.getNextNumber();
+		slice++;
+		if (slice>1)
+			IJ.showStatus("Subtract Background: "+slice+"/"+imp.getStackSize());
 		if (ip instanceof ColorProcessor)
 			subtractRGBBackround((ColorProcessor)ip, radius);
 		else
 			subtractBackround(ip, radius);
+	}
+
+	public void showDialog() {
+		GenericDialog gd = new GenericDialog("Subtract Background");
+		gd.addNumericField("Rolling Ball Radius:", radius, 0);
+		gd.addCheckbox("White Background", whiteBackground);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			canceled = true;
+		else {
+			radius = (int)gd.getNextNumber();
+			whiteBackground = gd.getNextBoolean();
+		}
+		boolean invertedLut = imp.isInvertedLut();
+		invert = (invertedLut && !whiteBackground) || (!invertedLut && whiteBackground);
 	}
 
 	public void subtractRGBBackround(ColorProcessor ip, int ballRadius) {
@@ -61,12 +85,15 @@ public class BackgroundSubtracter implements PlugInFilter {
  			ip.setRoi(null);
  		ip.setProgressBar(null);
  		IJ.showProgress(0.0);
+ 		if (invert)
+ 			ip.invert();
  		RollingBall ball = new RollingBall(ballRadius);
 		//new ImagePlus("ball", new ByteProcessor(ball.patchwidth+1, ball.patchwidth+1, ball.data, null)).show();
 		//ImageProcessor smallImage = ip.resize(ip.getWidth()/ball.shrinkfactor, ip.getHeight()/ball.shrinkfactor);
 		ImageProcessor smallImage = shrinkImage(ip, ball.shrinkfactor);
 		//new ImagePlus("small image", smallImage).show();
- 		IJ.showStatus("Rolling ball ("+ball.shrinkfactor+")...");
+		if (slice==1)
+ 			IJ.showStatus("Rolling ball ("+ball.shrinkfactor+")...");
 		ImageProcessor background = rollBall(ball, ip, smallImage);
 		interpolateBackground(background, ball);
 		extrapolateBackground(background, ball);
@@ -74,6 +101,8 @@ public class BackgroundSubtracter implements PlugInFilter {
 		if (IJ.altKeyDown())
 			new ImagePlus("background", background).show();
 		ip.copyBits(background, 0, 0, Blitter.SUBTRACT);
+		if (invert)
+			ip.invert();
 		IJ.showProgress(1.0);
 	}
 
@@ -210,7 +239,7 @@ public class BackgroundSubtracter implements PlugInFilter {
 		int height = ip.getHeight();
 		int swidth = width/shrinkfactor;
 		int sheight = height/shrinkfactor;
-		ImageProcessor ip2 = new ByteProcessor(width,height,(byte[])ip.getPixels(),ip.getColorModel());
+		ImageProcessor ip2 = ip.duplicate();
 		ip2.smooth();
 		IJ.showProgress(0.1);
 		ImageProcessor smallImage = new ByteProcessor(swidth, sheight);
@@ -399,17 +428,19 @@ class RollingBall {
 	int shrinkfactor;
 	
 	RollingBall(int radius) {
-		shrinkfactor = 8;
-		int arcTrimPer = 20; // trim 40% in x and y
-		if (radius<=100) {
-			shrinkfactor = 4;
-			arcTrimPer = 16; // trim 32% in x and y
+		int arcTrimPer;
+		if (radius<=10) {
+			shrinkfactor = 1;
+			arcTrimPer = 12; // trim 24% in x and y
 		} else if (radius<=30) {
 			shrinkfactor = 2;
 			arcTrimPer = 12; // trim 24% in x and y
-		} else if (radius<=10) {
-			shrinkfactor = 1;
-			arcTrimPer = 12; // trim 24% in x and y
+		} else if (radius<=100) {
+			shrinkfactor = 4;
+			arcTrimPer = 16; // trim 32% in x and y
+		} else {
+			shrinkfactor = 8;
+			arcTrimPer = 20; // trim 40% in x and y
 		}
 		buildRollingBall(radius, arcTrimPer);
 	}

@@ -13,13 +13,21 @@ public class TextRoi extends Roi {
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
 	private static int size = 18;
+	private static Font font;
+	private double previousMag;
 	private boolean firstChar = true;
+	private boolean firstMouseUp = true;
 	private int cline = 0;
 
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
-		theText[0] = "Replace me";
-		//type = OVAL;
+		theText[0] = "Type, then"; //v1.24g
+		theText[1] = "Ctl+D";
+		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
+			firstMouseUp = false;
+			//IJ.write(""+previousRoi.getBoundingRect());
+			previousRoi = null;
+		}
 	}
 
 	/** Adds the specified character to the end of the text string. */
@@ -46,18 +54,27 @@ public class TextRoi extends Roi {
 			// newline
 			if (cline<(MAX_LINES-1)) cline++;
 			theText[cline] = "";
+			adjustSize();
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
-			if (firstChar)
-				imp.draw(clipX, clipY, clipWidth, clipHeight);
-			else
-				draw(ic.getGraphics());
+			adjustSize();
+			updateClipRect();
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 			firstChar = false;
 			return;
 		}
 	}
 
+	Font getCurrentFont() {
+		double mag = ic.getMagnification();
+		if (font==null || mag!=previousMag) {
+			font = new Font(name, style, (int)(size*mag));
+			previousMag = mag;
+		}
+		return font;
+	}
+	
 	/** Returns a mask that can be used to draw the text on an image. */
 	public int[] getMask() {
 		Image img = GUI.createBlankImage(width, height);
@@ -88,7 +105,9 @@ public class TextRoi extends Roi {
 		int sy = ic.screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
-		Font font = new Font(name, style, (int)(size*mag));
+		if (font==null)
+			adjustSize();
+		Font font = getCurrentFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
@@ -112,7 +131,7 @@ public class TextRoi extends Roi {
 	}
 	*/
 
-	/** Returns the current font. */
+	/** Returns the name of the current font. */
 	public static String getFont() {
 		return name;
 	}
@@ -132,12 +151,58 @@ public class TextRoi extends Roi {
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
+		font = null;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi)
 				imp.draw();
 		}
+	}
+	
+	//v1.24g
+	protected void handleMouseUp(int screenX, int screenY) {
+		super.handleMouseUp(screenX, screenY);
+		if (firstMouseUp) {
+			adjustSize();
+			firstMouseUp = false;
+		}
+	}
+	
+	/** Increases the size of the rectangle so it's large
+		enough to hold the text. */ //v1.24g
+	void adjustSize() {
+		if (ic==null)
+			return;
+		double mag = ic.getMagnification();
+		Font font = getCurrentFont();
+		Graphics g = ic.getGraphics();
+		FontMetrics metrics = g.getFontMetrics(font);
+		int fontHeight = (int)(metrics.getHeight()/mag);
+		int descent = metrics.getDescent();
+		int i=0, nLines=0;
+		oldX = x;
+		oldY = y;
+		oldWidth = width;
+		oldHeight = height;
+		width = 10;
+		while (i<MAX_LINES && theText[i]!=null) {
+			nLines++;
+			int w = (int)(metrics.stringWidth(theText[i])/mag);
+			if (w>width)
+				width = w;
+			i++;
+		}
+		width += 2;
+		if (x+width>xMax)
+			x = xMax-width;
+		height = nLines*fontHeight+2;
+		if (height>yMax)
+			height = yMax;
+		if (y+height>yMax)
+			y = yMax-height;
+		updateClipRect();
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
 	}
 
 }

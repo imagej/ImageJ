@@ -27,7 +27,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private static int ybase;
 	private static int xloc;
 	private static int yloc;
-	private static int count = 0;
+	private static int count;
+	private static int defaultYLoc = IJ.isMacintosh()?5:32;
 	
 	/** This variable is set false if the user clicks in this
 		window, presses the escape key, or closes the window. */
@@ -55,18 +56,16 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		WindowManager.addWindow(this);
 		imp.setWindow(this);
 		if (previousWindow!=null) {
-			// replace the previous window used by this ImagePlus
-			Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-			if (imp.getWidth()<screen.width && imp.getHeight()<screen.height) {
-				Point loc = previousWindow.getLocation();
-				setLocation(loc.x, loc.y);
-			} else
-				setLocationAndSize();
+			setLocationAndSize();
+			Point loc = previousWindow.getLocation();
+			setLocation(loc.x, loc.y);
 			pack();
 			setVisible(true);
 			boolean unlocked = imp.lockSilently();
+			boolean changes = imp.changes;
 			imp.changes = false;
 			previousWindow.close();
+			imp.changes = changes;
 			if (unlocked)
 				imp.unlock();
 			WindowManager.setCurrentWindow(this);
@@ -84,15 +83,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private void setLocationAndSize() {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Point ijLoc = ij!=null?ij.getPreferredLocation():new Point(10,32);
+		if (WindowManager.getWindowCount()<=1)
+			xbase = -1;
+		Point ijLoc = ij!=null?ij.getLocation():new Point(10,defaultYLoc);
 		if (xbase==-1) {
+			count = 0;
 			xbase = 5;
-			ybase = ijLoc.y;
+			ybase = ijLoc.y<defaultYLoc?ijLoc.y:defaultYLoc;
+			if (ybase<0) ybase = 0;
 			xloc = xbase;
 			yloc = ybase;
 		}
-		if ((xloc+width)>ijLoc.x && yloc<(ybase+20))
-			yloc = ybase+20;
+		if (ijLoc.y<40 && (xloc+width)>ijLoc.x && yloc<(ybase+70))
+			yloc = ijLoc.y+70;
 		int x = xloc;
 		int y = yloc;
 		setLocation(x, y);
@@ -105,8 +108,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			yloc = ybase;
 		}
 
+		int adjustedHeight = (this instanceof StackWindow)?height+20:height;
 		int scale = 1;
-		while (xbase+XINC*4+width/scale>screen.width || ybase+YINC*4+height/scale>screen.height)
+		while (xbase+XINC*4+width/scale>screen.width || ybase+YINC*4+adjustedHeight/scale>screen.height)
 			scale *=2;
 		ic.setMagnification(1.0/scale);
 		if (scale>1) {
@@ -196,7 +200,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		boolean isRunning = running;
 		running = false;
 		if (isRunning) IJ.wait(500);
-		if (imp.changes && IJ.getApplet()==null) {
+		if (imp.changes && IJ.getApplet()==null && !IJ.macroRunning()) {
 			SaveChangesDialog d = new SaveChangesDialog(IJ.getInstance(), imp.getTitle());
 			if (d.cancelPressed())
 				return false;
@@ -243,8 +247,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	}
 	
 	public void focusGained(FocusEvent e) {
-		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": Got focus");
-		//ic.requestFocus();
 		WindowManager.setCurrentWindow(this);
 	}
 
@@ -280,18 +282,18 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	public void copy(boolean cut) {
 		Roi roi = imp.getRoi();
 		String msg = (cut)?"Cut":"Copy";
-        if (roi!=null && roi.getType()!=Roi.RECTANGLE) {
-        	IJ.error("Cut/Copy of non-rectangular ROIs not supported.");
-        	return;
-        }
 		IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = ip.crop();
 		clipboard = new ImagePlus("Clipboard", ip2);
+		if (roi!=null && roi.getType()!=Roi.RECTANGLE)
+			clipboard.setRoi((Roi)roi.clone());
 		if (cut) {
 			ip.snapshot();
 	 		ip.setColor(Toolbar.getBackgroundColor());
 			ip.fill();
+			if (roi!=null && roi.getType()!=Roi.RECTANGLE)
+				ip.reset(imp.getMask());
 			imp.setColor(Toolbar.getForegroundColor());
 			Undo.setup(Undo.FILTER, imp);
 			imp.updateAndDraw();
@@ -335,11 +337,18 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			Rectangle srcRect = ic.getSrcRect();
 			int xCenter = srcRect.x + srcRect.width/2;
 			int yCenter = srcRect.y + srcRect.height/2;
-			imp.setRoi(xCenter-w/2, yCenter-h/2, w, h);
+			Roi cRoi = clipboard.getRoi();
+			if (cRoi!=null && cRoi.getType()!=Roi.RECTANGLE) {
+				cRoi.setImage(imp);
+				cRoi.setLocation(xCenter-w/2, yCenter-h/2);
+				imp.setRoi(cRoi);
+			} else
+				imp.setRoi(xCenter-w/2, yCenter-h/2, w, h);
 			roi = imp.getRoi();
 		}
 		roi.startPaste(clipboard);
 		Undo.setup(Undo.PASTE, imp);
+		imp.changes = true;
 		//Image img = clipboard.getImage();
 		//ImagePlus imp2 = new ImagePlus("Clipboard", img);
 		//imp2.show();

@@ -10,11 +10,14 @@ public class URLOpener implements PlugIn {
 
 	private static String url = "http://rsb.info.nih.gov/ij/images/clown.gif";
 
-	/** If 'name' is not blank, open that image from a URL specified in
-	IJ_Props.txt. Otherwise, prompt for an image URL and open that image. */
-	public void run(String name) {
-		if (!name.equals("")) {
-			ImagePlus imp = new ImagePlus(Prefs.getImagesURL()+name);
+	/** If 'urlOrName' is a URL, opens the image at that URL. If it is
+		a file name, opens the image with that name from the 'images.location'
+		URL in IJ_Props.txt. If it is blank, prompts for an image
+		URL and open the specified image. */
+	public void run(String urlOrName) {
+		if (!urlOrName.equals("")) {
+			String url = urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
+			ImagePlus imp = new ImagePlus(url);
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				Opener.convertGrayJpegTo8Bits(imp);
 			imp.show();

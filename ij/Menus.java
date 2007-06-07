@@ -1,5 +1,6 @@
 package ij;
 import ij.util.*;
+import ij.gui.ImageWindow;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -8,7 +9,12 @@ import java.applet.Applet;
 import java.awt.event.*;
 
 /**
-This class installs and updates ImageJ's menus.
+This class installs and updates ImageJ's menus. Note that menu labels,
+even in submenus, must be unique. This is because ImageJ uses a single
+hash table for all menu labels. If you look closely, you will see that
+File->Import->Text Image... and File->Save As->Text Image... do not use
+the same label. One of the labels has an extra space.
+
 @see ImageJ
 */
 
@@ -23,7 +29,7 @@ public class Menus {
 	public static final char TOOLS_MENU = 't';
 	public static final char UTILITIES_MENU = 'u';
 		
-	public static final int WINDOW_MENU_ITEMS = 3;
+	public static final int WINDOW_MENU_ITEMS = 3; // fixed items at top of Window menu
 	
 	public static final int NORMAL_RETURN = 0;
 	public static final int COMMAND_IN_USE = -1;
@@ -50,6 +56,8 @@ public class Menus {
 	private static Hashtable shortcuts = new Hashtable();
 	private static Vector pluginsPrefs = new Vector();
 	private static Font font; // = new Font("Dialog", Font.PLAIN, 14);
+	static int windowMenuItems2; // non-image windows listed in Window menu + separator
+	static String error;
 	
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
@@ -62,7 +70,8 @@ public class Menus {
 		return m;
 	}
 	
-	void addMenuBar() {
+	String addMenuBar() {
+		error = null;
 		Menu file = createMenu("File");
 		addItem(file, "New...", KeyEvent.VK_N, false);
 		addItem(file, "Open...", KeyEvent.VK_O, false);
@@ -119,6 +128,7 @@ public class Menus {
 		image.addSeparator();
 		addPlugInItem(image, "Crop", "ij.plugin.filter.Resizer(\"crop\")", 0, false);
 		addPlugInItem(image, "Duplicate...", "ij.plugin.filter.Duplicater", KeyEvent.VK_D, true);
+		addPlugInItem(image, "Rename...", "ij.plugin.SimpleCommands(\"rename\")", 0, false);
 		addPlugInItem(image, "Scale...", "ij.plugin.filter.Scaler", KeyEvent.VK_E, false);
 		addSubMenu(image, "Rotate");
 		image.addSeparator();
@@ -161,9 +171,10 @@ public class Menus {
 		window.addSeparator();
 
 		Menu help = createMenu("Help");
-		addItem(help, "About ImageJ...", 0, false);
-		help.addSeparator();
 		aboutMenu = addSubMenu(help, "About Plugins");
+		help.addSeparator();
+		addPlugInItem(help, "ImageJ Web Site...", "ij.plugin.BrowserLauncher", 0, false);
+		addPlugInItem(help, "About ImageJ...", "ij.plugin.SimpleCommands(\"about\")", 0, false);
 		
 		addPluginsMenu();
 		if (applet==null)
@@ -179,6 +190,7 @@ public class Menus {
 		mbar.add(window);
 		mbar.setHelpMenu(help);
 		ij.setMenuBar(mbar);
+		return error;
 	}
 	
 	void addItem(Menu menu, String label, int shortcut, boolean shift) {
@@ -366,7 +378,7 @@ public class Menus {
 		
 
 	/** Returns a list of the plugins in the plugins menu. */
-	String[] getPlugins() {
+	public static synchronized String[] getPlugins() {
 		String homeDir = Prefs.getHomeDir();
 		if (homeDir==null)
 			return null;
@@ -374,9 +386,19 @@ public class Menus {
 			pluginsPath = homeDir;
 		else {
 			String separator = Prefs.getFileSeparator();
-			pluginsPath = homeDir+separator+"plugins"+separator;
+			String pluginsDir = System.getProperty("plugins.dir");
+			if (pluginsDir==null)
+				pluginsDir = homeDir;
+			else if (pluginsDir.equals("user.home"))
+				pluginsDir = System.getProperty("user.home");
+			pluginsPath = pluginsDir+separator+"plugins"+separator;
 		}
 		File f = new File(pluginsPath);
+		if (f!=null && !f.isDirectory()) {
+			error = "Plugins folder not found at "+pluginsPath;
+			pluginsPath = null;
+			return null;
+		}
 		String[] list = f.list();
 		if (list==null)
 			return null;
@@ -399,7 +421,7 @@ public class Menus {
 	}
 	
 	/** Looks for plugins in a subdirectorie of the plugins directory. */
-	void checkSubdirectory(String path, String dir, Vector v) {
+	static void checkSubdirectory(String path, String dir, Vector v) {
 		if (dir.endsWith(".java"))
 			return;
 		File f = new File(path, dir);
@@ -522,14 +544,16 @@ public class Menus {
 		
     	//update Window menu
     	int nItems = window.getItemCount();
-    	int index = WindowManager.getCurrentIndex() + WINDOW_MENU_ITEMS;
-    	for (int i=WINDOW_MENU_ITEMS; i<nItems; i++) {
+    	int start = WINDOW_MENU_ITEMS + windowMenuItems2;
+    	int index = start + WindowManager.getCurrentIndex();
+    	for (int i=start; i<nItems; i++) {
 			CheckboxMenuItem item = (CheckboxMenuItem)window.getItem(i);
 			item.setState(i==index);
 		}
 	}
 	
-	/** Returns the path to the user plugins directory. */
+	/** Returns the path to the user plugins directory. Returns
+		null if there is no plugins directory. */
 	public static String getPlugInsPath() {
 		return pluginsPath;
 	}
@@ -545,17 +569,26 @@ public class Menus {
 		return shortcuts;
 	}
         
-	/** Removes the last n items from the Window menu. */
-	static synchronized void trimWindowMenu(int n) {
-		//if (IJ.debugMode) IJ.write("Triming " + n + " items from Window menu");
-		int nItems = window.getItemCount();
-		if (n<=(nItems-WINDOW_MENU_ITEMS))
-			for (int i=0; i<n; i++)
-				window.remove(--nItems);
+	/** Inserts one item (a non-image window) into the Window menu. */
+	static synchronized void insertWindowMenuItem(Frame win) {
+		if (ij==null || win==null)
+			return;
+		CheckboxMenuItem item = new CheckboxMenuItem(win.getTitle());
+		item.addItemListener(ij);
+		int index = WINDOW_MENU_ITEMS+windowMenuItems2;
+		if (windowMenuItems2>=2)
+			index--;
+		window.insert(item, index);
+		windowMenuItems2++;
+		if (windowMenuItems2==1) {
+			window.insertSeparator(WINDOW_MENU_ITEMS+windowMenuItems2);
+			windowMenuItems2++;
+		}
+		//IJ.write("insertWindowMenuItem: "+windowMenuItems2);
 	}
 
-	/** Adds one window to the end of the Window menu. */
-	static synchronized void extendWindowMenu(ImagePlus imp) {
+	/** Adds one image to the end of the Window menu. */
+	static synchronized void addWindowMenuItem(ImagePlus imp) {
 		if (ij==null) return;
 		String name = imp.getTitle();
 		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
@@ -572,6 +605,43 @@ public class Menus {
 		CheckboxMenuItem item = new CheckboxMenuItem(name + " " + size + "K");
 		window.add(item);
 		item.addItemListener(ij);
+	}
+	
+	/** Removes the specified item from the Window menu. */
+	static synchronized void removeWindowMenuItem(int index) {
+		//IJ.write("removeWindowMenuItem: "+index+" "+windowMenuItems2);
+		if (index>=0 && index<window.getItemCount()) {
+			window.remove(WINDOW_MENU_ITEMS+index);
+			if (index<windowMenuItems2) {
+				windowMenuItems2--;
+				if (windowMenuItems2==1) {
+					window.remove(WINDOW_MENU_ITEMS);
+					windowMenuItems2 = 0;
+				}
+					
+			}
+		}
+	}
+
+	/** Changes the name of an item in the Window menu. */
+	public static synchronized void updateWindowMenuItem(String oldLabel, String newLabel) {
+		int first = WINDOW_MENU_ITEMS;
+		int last = window.getItemCount()-1;
+		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last);
+		for (int i=first; i<=last; i++) {
+			MenuItem item = window.getItem(i);
+			//IJ.write(i+" "+item.getLabel()+" "+newLabel);
+			String label = item.getLabel();
+			if (item!=null && label.startsWith(oldLabel)) {
+				if (label.endsWith("K")) {
+					int index = label.lastIndexOf(' ');
+					if (index>-1)
+						newLabel += label.substring(index, label.length());
+				}
+				item.setLabel(newLabel);
+				return;
+			}
+		}
 	}
 	
 	public static PopupMenu getPopupMenu() {
@@ -717,6 +787,7 @@ public class Menus {
 			return false;
 	}
 
+	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		int index = 0;
 		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {

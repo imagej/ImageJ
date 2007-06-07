@@ -9,7 +9,7 @@ import ij.io.*;
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
 */
-public class TextWindow extends Frame {
+public class TextWindow extends Frame implements FocusListener {
 
 	private TextPanel textPanel;
 
@@ -45,6 +45,8 @@ public class TextWindow extends Frame {
 			Image img = ij.getIconImage();
 			if (img!=null) setIconImage(img);
 		}
+ 		addFocusListener(this);
+		WindowManager.addWindow(this);
 		setSize(width, height);
 		setVisible(true);
 	}
@@ -125,8 +127,15 @@ public class TextWindow extends Frame {
 		if (e.getID()==WindowEvent.WINDOW_CLOSING) {	
 			setVisible(false);
 			dispose();
+			WindowManager.removeWindow(this);
 			textPanel.flush();
 		}
 	}
+
+	public void focusGained(FocusEvent e) {
+		WindowManager.setWindow(this);
+	}
+
+	public void focusLost(FocusEvent e) {}
 
 }

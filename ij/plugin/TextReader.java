@@ -8,7 +8,7 @@ import ij.io.*;
 import ij.process.*;
 
 
-/** This plug-in opens a tab-delimeted text file as an image.
+/** This plugin opens a tab-delimeted text file as an image.
 	If 'arg' is empty, it displays a file open dialog and opens
 	and displays the file. If 'arg' is a path, it opens the 
 	specified file and the calling routine can display it using

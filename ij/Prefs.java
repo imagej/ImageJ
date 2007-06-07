@@ -59,7 +59,7 @@ public class Prefs {
 		catch (IOException e) {return("Error loading "+PROPS_NAME);}
 		imagesURL = props.getProperty("images.location");
 		loadPreferences();
-		return "";
+		return null;
 	}
 	
 	static String loadAppletProps(InputStream f, Applet applet) {
@@ -75,7 +75,7 @@ public class Prefs {
 			imagesURL = url.toString();
 		}
 		catch (Exception e) {}
-		return "";
+		return null;
 	}
 	
 	/** Returns the URL for the ImageJ sample images. */
@@ -169,6 +169,7 @@ public class Prefs {
 			prefs.put(JPEG, Integer.toString(JpegEncoder.getQuality()));
 			prefs.put(USE_POINTER, ImageCanvas.usePointer?"true":"false");
 			prefs.put(SCALE_CONVERSIONS, ImageConverter.getDoScaling()?"true":"false");
+			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);
 			Analyzer.savePreferences(prefs);

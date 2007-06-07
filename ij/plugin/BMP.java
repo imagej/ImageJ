@@ -7,7 +7,7 @@ import ij.*;
 import ij.io.*;
 
 
-/** This plug-in reads BMP files. If 'arg' is empty, it
+/** This plugin reads BMP files. If 'arg' is empty, it
 	displays a file open dialog and opens and displays the 
 	selected file. If 'arg' is a path, it opens the 
 	specified file and the calling routine can display it using

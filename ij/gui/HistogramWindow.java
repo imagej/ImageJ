@@ -33,9 +33,9 @@ ActionListener, ClipboardOwner {
 	protected int decimalPlaces;
 	public static int nBins = 256;
     
-    /** Displays a histogram using the title "Histogram". */
+    /** Displays a histogram using the title "Histogram of ImageName". */
     public HistogramWindow(ImagePlus imp) {
-		super(new ImagePlus("Histogram", GUI.createBlankImage(WIN_WIDTH, WIN_HEIGHT)));
+		super(new ImagePlus("Histogram of "+imp.getShortTitle(), GUI.createBlankImage(WIN_WIDTH, WIN_HEIGHT)));
 		showHistogram(imp, nBins);
 
     }

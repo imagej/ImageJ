@@ -171,6 +171,7 @@ public class ImportDialog {
 		return fi;
 	}
 
+	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		prefs.put(TYPE, Integer.toString(choiceSelection));
 		prefs.put(WIDTH, Integer.toString(width));

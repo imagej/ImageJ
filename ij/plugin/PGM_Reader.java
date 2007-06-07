@@ -7,7 +7,7 @@ import ij.io.*;
 import ij.process.*;
 
 /**
-     This plug-in opens PGM (portable graymap) format images.
+     This plugin opens PGM (portable graymap) format images.
 
      The portable graymap format is a lowest  common  denominator
      grayscale file format.  The definition is as follows:

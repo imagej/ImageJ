@@ -105,14 +105,14 @@ class SetScaleDialog extends GenericDialog {
     }
  	
  	public void textValueChanged(TextEvent e) {
- 		Double d = getValue(numberField[0].getText());
+ 		Double d = getValue(((TextField)numberField.elementAt(0)).getText());
  		if (d==null) return;
  		double measured = d.doubleValue();
- 		d = getValue(numberField[1].getText());
+ 		d = getValue(((TextField)numberField.elementAt(1)).getText());
  		if (d==null) return;
  		double known = d.doubleValue();
  		String theScale;
- 		String unit = stringField[0].getText();
+ 		String unit = ((TextField)stringField.elementAt(0)).getText();
  		boolean noScale = measured<=0||known<=0||unit.startsWith("pixel")||unit.startsWith("Pixel")||unit.equals("");
  		if (noScale)
  			theScale = "<no scale>";

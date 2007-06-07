@@ -8,7 +8,7 @@ import ij.*;
 //import ij.process.*;
 
 
-/** This plug-in displays the contents of a text file in a window. */
+/** This plugin displays the contents of a text file in a window. */
 public class TextFileReader implements PlugIn {
 	
 	public void run(String arg) {

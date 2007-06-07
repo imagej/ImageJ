@@ -149,7 +149,10 @@ public class ImageStack {
 		stack[n-1] = pixels;
 	}
 	
-	/** Returns the stack as an array of images. */
+	/** Returns the stack as an array of 1D pixel arrays. Note
+		that the size of the returned array may be greater than
+		the number of slices currently in the stack, with
+		unused elements set to null. */
 	public Object[] getImageArray() {
 		return stack;
 	}

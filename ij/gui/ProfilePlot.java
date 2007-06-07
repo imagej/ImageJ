@@ -15,6 +15,7 @@ public class ProfilePlot {
 	private double magnification;
 	private double min, max;
 	private boolean minAndMaxCalculated;
+	private ImagePlus imp;
     static private double fixedMin = Prefs.getDouble("pp.min",0.0);
     static private double fixedMax = Prefs.getDouble("pp.max",0.0);
 	protected double pixelSize;
@@ -29,6 +30,7 @@ public class ProfilePlot {
 	}
 
 	public ProfilePlot(ImagePlus imp, boolean averageHorizontally) {
+		this.imp = imp;
 		Roi roi = imp.getRoi();
 		if (roi==null) {
 			IJ.error("Selection required.");
@@ -101,7 +103,7 @@ public class ProfilePlot {
         for (int i=0; i<n; i++)
         	yValues[i] = (float)profile[i];
 		boolean fixedYScale = fixedMin!=0.0 || fixedMax!=0.0;
-		PlotWindow pw = new PlotWindow("", xLabel, yLabel, xValues, yValues);
+		PlotWindow pw = new PlotWindow("Plot of "+imp.getShortTitle(), xLabel, yLabel, xValues, yValues);
 		if (fixedYScale) {
 			double[] a = Tools.getMinMax(xValues);
 			pw.setLimits(a[0],a[1],fixedMin,fixedMax);

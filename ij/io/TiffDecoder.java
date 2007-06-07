@@ -219,13 +219,10 @@ public class TiffDecoder {
 		}
 
 		// density calibration
-		//ij.IJ.write("");
 		in.seek(offset+182);
 		int fitType = in.read();
 		int unused = in.read();
-		//ij.IJ.write("curveFitType: "+fitType);
 		int nCoefficients = in.readShort();
-		//ij.IJ.write("nCoefficients: "+nCoefficients);
 		if (fitType==11) {
 			fi.calibrationFunction = 21; //Calibration.UNCALIBRATED_OD
 			fi.valueUnit = "U. OD";
@@ -240,15 +237,12 @@ public class TiffDecoder {
 				case 7: fi.calibrationFunction = 6; break; //Calibration.LOG
 				case 8: fi.calibrationFunction = 7; break; //Calibration.RODBARD
 			}
-			//ij.IJ.write("fi.calibrationFunction: "+fi.calibrationFunction);
 			fi.coefficients = new double[nCoefficients];
 			for (int i=0; i<nCoefficients; i++) {
 				fi.coefficients[i] = in.readDouble();
-				//ij.IJ.write(i+" "+fi.coefficients[i]);
 			}
 			in.seek(offset+234);
 			int size = in.read();
-			//ij.IJ.write("size: "+size);
 			StringBuffer sb = new StringBuffer();
 			if (size>=1 && size<=16) {
 				for (int i=0; i<size; i++)
@@ -256,13 +250,17 @@ public class TiffDecoder {
 				fi.valueUnit = new String(sb);
 			} else
 				fi.valueUnit = " ";
-			//ij.IJ.write("fi.valueUnit: "+fi.valueUnit);
 		}
 			
 		in.seek(offset+260);
 		int nImages = in.readShort();
-		if(nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8))
+		if(nImages>=2 && (fi.fileType==FileInfo.GRAY8||fi.fileType==FileInfo.COLOR8)) {
 			fi.nImages = nImages;
+			fi.pixelDepth = in.readFloat();	//SliceSpacing
+			int skip = in.readShort();		//CurrentSlice
+			fi.frameInterval = in.readFloat();
+			//ij.IJ.write("fi.pixelDepth: "+fi.pixelDepth);
+		}
 			
 		in.seek(offset+272);
 		float aspectRatio = in.readFloat();
@@ -270,8 +268,6 @@ public class TiffDecoder {
 			fi.pixelHeight = fi.pixelWidth/aspectRatio;
 		
 		in.seek(saveLoc);
-		//dInfo += "littleEndian: "+littleEndian+"\n";
-		//dInfo += version+" "+scale+" "+units+" "+aspectRatio+"\n";;
 	}
 	
 	void dumpTag(int tag, int count, int value, FileInfo fi) {
@@ -365,7 +361,8 @@ public class TiffDecoder {
 							else if (value==32) {
 								fi.fileType = FileInfo.GRAY32_INT;
 								fi.intelByteOrder = littleEndian;
-							}
+							} else if (value==1)
+								fi.fileType = FileInfo.BITMAP;
 							else
 								throw new IOException("Unsupported BitsPerSample: " + value);
 						} else if (count==3) {

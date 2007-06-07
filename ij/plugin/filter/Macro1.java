@@ -2,7 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 
-/** Sample ImageJ plug-in */
+/** Sample ImageJ plugin */
 public class Macro1 implements PlugInFilter {
 	
 	ImagePlus imp;

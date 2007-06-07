@@ -223,24 +223,6 @@ public class PolygonRoi extends Roi {
 	}
 
 
-	void move(int xNew, int yNew) {
-		x += xNew - startX;
-		y += yNew - startY;
-		if (x < 0) x = 0;
-		if (y < 0) y = 0;
-		if ((x + width) > xMax) x = xMax - width;
-		if ((y + height) > yMax) y = yMax - height;
-		startX = xNew;
-		startY = yNew;
-		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
-		oldX = x;
-		oldY = y;
-		oldWidth = width;
-		oldHeight=height;
-	}
-
-
 	public boolean contains(int x, int y) {
 		if (!super.contains(x, y))
 			return false;

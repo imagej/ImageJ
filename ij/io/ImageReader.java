@@ -271,6 +271,12 @@ public class ImageReader {
 					bytesPerPixel = 3;
 					skip(in);
 					return (Object)readPlanarRGB(in);
+				case FileInfo.BITMAP:
+					bytesPerPixel = 1;
+					skip(in);
+					byte[] bitmap = read8bitImage(in);
+					expandBitmap(bitmap);
+					return (Object)bitmap;
 				default:
 					return null;
 			}
@@ -328,5 +334,29 @@ public class ImageReader {
 			fi.fileType = FileInfo.GRAY16_UNSIGNED;			
 	}
 
+ 	void expandBitmap(byte[] pixels) {
+ 		int scan=width/8;
+		int pad = width%8;
+		if (pad>0) scan++;
+		int len = scan*height;
+		byte bitmap[] = new byte [len];
+		System.arraycopy(pixels, 0, bitmap, 0, len);
+		int value1,value2, offset;
+		int n = 0;
+		for (int y=0; y<height; y++) {
+			offset = y*scan;
+			for (int x=0; x<scan; x++) {
+				if ( n+8>=width*height)
+					continue;
+				value1 = bitmap[offset+x]&0xff;
+				for (int i=7; i>=0; i--) {
+					value2 = (value1&(1<<i))!=0?255:0;
+					pixels[n++] = (byte)value2;
+				}
+			}
+			n -= pad>0?8-pad:0;
+		}
+	}
+	
 }
 

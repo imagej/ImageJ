@@ -47,15 +47,22 @@ public class Filler implements PlugInFilter {
 	 		clearOutside(ip);
 	}
 
+	boolean isLineSelection() {
+		return roi!=null && roi.getType()>=Roi.LINE && roi.getType()<=Roi.FREELINE;
+	}
+	
 	public void clear(ImageProcessor ip) {
 	 	ip.setColor(Toolbar.getBackgroundColor());
-		ip.fill();
+		if (isLineSelection())
+			roi.drawPixels();
+		else
+	 		ip.fill(); // fill with background color
 		ip.setColor(Toolbar.getForegroundColor());
 	}
 		
 	public void fill(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
-		if (roi!=null && roi.getType()>=Roi.LINE && roi.getType()<=Roi.FREELINE)
+		if (isLineSelection())
 			roi.drawPixels();
 		else
 	 		ip.fill(); // fill with foreground color
@@ -67,6 +74,10 @@ public class Filler implements PlugInFilter {
 	}
 
 	public synchronized void clearOutside(ImageProcessor ip) {
+		if (isLineSelection()) {
+			IJ.error("\"Clear Outside\" does not work with line selections.");
+			return;
+		}
  		sliceCount++;
  		Rectangle r = ip.getRoi();
  		int[] mask = imp.getMask();

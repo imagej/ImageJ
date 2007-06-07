@@ -25,7 +25,7 @@ public class Waves implements PlugInFilter {
 
 	void showAbout() {
 		IJ.showMessage("About Waves...",
-			"\"Waves.java\" is a sample plug-in filter that illustrates\n" +
+			"\"Waves.java\" is a sample plugin filter that illustrates\n" +
 			"how to continuously animate both 8-bit and RGB images until\n" +
 			"the user clicks on the image or presses escape."
 		);

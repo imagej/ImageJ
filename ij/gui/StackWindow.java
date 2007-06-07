@@ -20,7 +20,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     
     public StackWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp, ic);
-
 		// add slice selection slider
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
@@ -33,8 +32,10 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		sliceSelector.setBlockIncrement(blockIncrement);
 		pack();
 		show();
+		int previousSlice = imp.getCurrentSlice();
 		imp.setSlice(1);
-
+		if (previousSlice>1 && previousSlice<=stackSize)
+			imp.setSlice(previousSlice);
 		thread = new Thread(this, "SliceSelector");
 		thread.start();
 	}

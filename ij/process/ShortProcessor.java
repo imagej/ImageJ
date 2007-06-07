@@ -156,7 +156,7 @@ public class ShortProcessor extends ImageProcessor {
 		this.min = (int)min;
 		this.max = (int)max;
 		fixedScale = true;
-		setThreshold(NO_THRESHOLD,0,0);
+		resetThreshold();
 	}
 	
 	/** Recalculates the min and max values used to scale pixel
@@ -165,7 +165,7 @@ public class ShortProcessor extends ImageProcessor {
 	public void resetMinAndMax() {
 		fixedScale = false;
 		findMinAndMax();
-		setThreshold(NO_THRESHOLD,0,0);
+		resetThreshold();
 	}
 
 	public int getPixel(int x, int y) {
@@ -316,6 +316,12 @@ public class ShortProcessor extends ImageProcessor {
 						else 
 							v2 = (int)(Math.log(v1)*(max/Math.log(max)));
 						break;
+					case SQR:
+							v2 = v1*v1;
+						break;
+					case SQRT:
+							v2 = (int)Math.sqrt(v1);
+						break;
 					case MINIMUM:
 						if (v1<value)
 							v2 = (int)value;
@@ -357,6 +363,8 @@ public class ShortProcessor extends ImageProcessor {
 	public void xor(int value) {process(XOR, value);}
 	public void gamma(double value) {process(GAMMA, value);}
 	public void log() {process(LOG, 0.0);}
+	public void sqr() {process(SQR, 0.0);}
+	public void sqrt() {process(SQRT, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}
 	public void max(double value) {process(MAXIMUM, value);}
 
@@ -684,7 +692,7 @@ public class ShortProcessor extends ImageProcessor {
 			this.minThreshold = minThreshold;
 			this.maxThreshold = maxThreshold;
 		} else
-			super.setThreshold(NO_THRESHOLD, 0, 0);
+			super.resetThreshold();
 	}
 
     public void noise(double range) {}

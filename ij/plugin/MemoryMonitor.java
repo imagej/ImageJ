@@ -7,7 +7,7 @@ import java.awt.image.*;
 import java.awt.event.*;
 
 /** Continuously plots ImageJ's memory utilization. Could be a
-	starting point for a video acquisition plug-in. */
+	starting point for a video acquisition plugin. */
 public class MemoryMonitor implements PlugIn {
 	int width = 200;
 	int height = 75;
@@ -22,11 +22,11 @@ public class MemoryMonitor implements PlugIn {
 
 	void showAbout() {
 		IJ.showMessage("About MemoryMonitor...",
-			"This plug-in continuously plots ImageJ's memory\n" +
+			"This plugin continuously plots ImageJ's memory\n" +
 			"utilization. It could also be used as a starting\n" +
-			"point for a video acquisition plug-in. Hold down the\n" +
+			"point for a video acquisition plugin. Hold down the\n" +
 			"alt/option key when selecting the \"Monitor Memory\"\n" +
-			"command and the plug-in will use a 640x480 window\n" +
+			"command and the plugin will use a 640x480 window\n" +
 			"and display the frame rate. Click on the status bar in the\n" +
 			"ImageJ window to force the JVM to do garbage collection."
 		);

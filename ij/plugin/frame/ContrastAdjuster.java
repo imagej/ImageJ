@@ -42,6 +42,7 @@ public class ContrastAdjuster extends PlugInFrame implements PlugIn, Runnable, A
 		}
 		instance = this;
 		IJ.register(ContrastAdjuster.class);
+		WindowManager.addWindow(this);
 
 		ij = IJ.getInstance();
 		Font monoFont = new Font("Monospaced", Font.PLAIN, 12);

@@ -17,17 +17,22 @@ import ij.text.TextWindow;
 public class Opener {
 
 	private static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
-		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA=10,ROI=11,TEXT=12;
+		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA=10,ROI=11,TEXT=12,PNG=13,TIFF_AND_DICOM=14;
+	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
+		"jpg","gif","lut","bmp","zip","java","roi","txt"};
 	private static String defaultDirectory = null;
-	private boolean showErrorDialog = false;
+	private int fileType;
 
 
 	public Opener() {
 	}
 
-	/** Displays a file open dialog box and then opens, the tiff, dicom, 
-		fits, pgm, jpeg, bmp, gif, lut or roi file specified by the user. */
-	public void openImage() {
+	/** Displays a file open dialog box and then opens the tiff, dicom, 
+		fits, pgm, jpeg, bmp, gif, lut, roi, or text file selected by 
+		the user. Displays an error message if the selected file is not
+		in one of the supported formats. This is the method that
+		ImageJ's File/Open command uses to open files. */
+	public void open() {
 		OpenDialog od = new OpenDialog("Open...", "");
 		String directory = od.getDirectory();
 		String name = od.getFileName();
@@ -35,63 +40,76 @@ public class Opener {
 			return;
 		String path = directory + name;
 		IJ.showStatus("Opening: " + path);
-		showErrorDialog = true;
 		ImagePlus imp = openImage(directory, name);
-		if (imp!=null) imp.show();
+		if (imp!=null)
+			imp.show();
+		else {
+			switch (fileType) {
+				case LUT:
+					imp = (ImagePlus)IJ.runPlugIn("ij.plugin.LutLoader", path);
+					if (imp.getWidth()!=0)
+						imp.show();
+					break;
+				case ROI:
+					IJ.runPlugIn("ij.plugin.RoiReader", path);
+					break;
+				case JAVA: case TEXT:
+					File file = new File(path);
+					if (file.length()<28000) {
+						Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+						if (ed!=null) ed.open(directory, name);
+					} else
+						new TextWindow(path,400,450);
+					break;
+				case UNKNOWN:				
+					IJ.showMessage("Open...","This file does not appear to be a TIFF, JPEG, GIF, BMP, \nDICOM, FITS, PGM, ZIP, LUT, ROI or text format.");
+			}
+		}
 	}
 
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	pgm, gif, jpeg, lut or roi. Returns an ImagePlus object if successful. */
+	pgm, gif or jpeg image. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
 		String path = directory+name;
-		switch (getFileType(path,name)) {
+		fileType = getFileType(path,name);
+		if (IJ.debugMode)
+			IJ.write("openImage: \""+types[fileType]+"\", "+path+name);
+		switch (fileType) {
 			case TIFF:
 				imp = openTiff(directory, name);
 				return imp;
 			case DICOM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
 				if (imp.getWidth()!=0) return imp; else return null;
+			case TIFF_AND_DICOM:
+				// "hybrid" files created by GE-Senographe 2000 D */
+				imp = openTiff(directory,name);
+				ImagePlus imp2=(ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);				
+				imp.setProperty("Info",imp2.getProperty("Info"));
+				return imp;
 			case FITS:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS", path);
 				if (imp.getWidth()!=0) return imp; else return null;
 			case PGM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
-			case JPEG: case GIF:
+			case JPEG: case GIF: case PNG:
 				imp = openJpegOrGif(directory, name);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
-			case LUT:
-				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.LutLoader", path);
-				if (imp.getWidth()!=0) return imp; else return null;
 			case BMP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP", path);
 				if (imp.getWidth()!=0) return imp; else return null;
 			case ZIP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
-			case ROI:
-				IJ.runPlugIn("ij.plugin.RoiReader", path);
-				return null;
-			case JAVA: case TEXT:
-				File file = new File(path);
-				if (file.length()<28000) {
-					Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-					if (ed!=null) ed.open(directory, name);
-				} else
-					new TextWindow(path,400,450);
-				return null;				
-			case UNKNOWN:
-				if (showErrorDialog)
-					IJ.showMessage("Open...","This file does not appear to be in TIFF, JPEG, \n GIF, BMP, DICOM, FITS, PGM, ZIP or LUT format.");
-				return null;
 			default:
 				return null;
-			}
 		}
+	}
 	
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	pgm, gif, jpeg, lut or roi. Returns an ImagePlus object if successful. */
+	pgm, gif or jpeg. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String path) {
 		Opener o = new Opener();
 		ImagePlus img = null;
@@ -401,6 +419,7 @@ public class Opener {
 		} catch (IOException e) {
 			return UNKNOWN;
 		}
+		
 		int b0=buf[0]&255, b1=buf[1]&255, b2=buf[2]&255, b3=buf[3]&255;
 		//IJ.write("getFileType: "+ name+" "+b0+" "+b1+" "+b2+" "+b3);
 		
@@ -421,8 +440,12 @@ public class Opener {
 			return GIF;
 
 		 // DICOM ("DICM" at offset 128)
-		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77)
-			return DICOM;
+		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77) {
+			if (b0==73 && b1==73 && b2==42 && b3==00)
+				return TIFF_AND_DICOM;
+			else
+				return DICOM;
+		}
 
  		// ACR/NEMA with first tag = (00008,00xx)
  		if (b0==8 && b1==0 && b3==0)
@@ -444,6 +467,11 @@ public class Opener {
 		// BMP ("BM")
 		if (b0==66 && b1==77 && name.endsWith(".bmp"))
 			return BMP;
+				
+		// PNG
+		if (b0==137 && b1==80 && b2==78 && b3==71
+      	&& !System.getProperty("java.version").startsWith("1.1"))
+			return PNG;
 				
 		// ZIP containing a TIFF
 		if (name.endsWith(".zip"))

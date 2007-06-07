@@ -109,7 +109,8 @@ public class ImagePlus implements ImageObserver, Measurements {
     public ImagePlus(String pathOrURL) {
     	Opener opener = new Opener();
     	ImagePlus imp = null;
-    	if (pathOrURL.indexOf("://")>0)
+    	boolean isURL = pathOrURL.indexOf("://")>0;
+    	if (isURL)
     		imp = opener.openURL(pathOrURL);
     	else
     		imp = opener.openImage(pathOrURL);
@@ -118,7 +119,8 @@ public class ImagePlus implements ImageObserver, Measurements {
     			setStack(imp.getTitle(), imp.getStack());
     		else
      			setProcessor(imp.getTitle(), imp.getProcessor());
-   			this.url = url;
+   			if (isURL)
+   				this.url = pathOrURL;
    			ID = --currentID;
     	}
     }
@@ -156,6 +158,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return false;
         else {
         	locked = true;
+			if (IJ.debugMode) IJ.write(title + ": lock silently");
 			return true;
         }
 	}
@@ -318,8 +321,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		roi = null;
 		waitForImage(img);
 		this.img = img;
-		width = img.getWidth(ij);
-		height = img.getHeight(ij);
+		int newWidth = img.getWidth(ij);
+		int newHeight = img.getHeight(ij);
+		boolean dimensionsChanged = newWidth!=width || newHeight!=newHeight;
+		width = newWidth;
+		height = newHeight;
 		ip = null;
 		LookUpTable lut = new LookUpTable(img);
 		int type;
@@ -331,6 +337,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		} else
 			type = COLOR_RGB;
 		setType(type);
+		if (win!=null) {
+			if (dimensionsChanged)
+				win = new ImageWindow(this);
+			else
+				repaintWindow();
+		}
 	}
 	
 	/** Replaces the ImageProcessor, if any, with the one specified.
@@ -339,11 +351,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (title!=null) this.title = title;
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
-		roi = null;
 		if (stack!=null && stack.getSize()<currentSlice)
 			currentSlice = 1;
 		img = ip.createImage();
-		boolean newSize = width!=ip.getWidth() || height!=ip.getHeight();
+		boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
+		if (dimensionsChanged)
+			roi = null;
 		//LookUpTable lut = new LookUpTable(img);
 		int type;
 		if (ip instanceof ByteProcessor)
@@ -360,22 +373,33 @@ public class ImagePlus implements ImageObserver, Measurements {
 			setType(type);
 		width = ip.getWidth();
 		height = ip.getHeight();
-		if (win!=null && newSize)
+		if (win!=null) {
+			if (dimensionsChanged)
 				win = new ImageWindow(this);
+			else
+				repaintWindow();
+		}
 	}
 	
 	/** Replaces the stack, if any, with the one specified.
 		Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack stack) {
-    	currentSlice = 1;
-    	ImageProcessor processor = stack.getProcessor(currentSlice);
+   		int stackSize = stack.getSize();
+    	boolean stackSizeChanged = this.stack!=null && stackSize!=getStackSize();
+    	if (currentSlice<1)
+    		currentSlice = 1;
+    	boolean resetCurrentSlice = currentSlice>stackSize;
+    	if (resetCurrentSlice)
+    		currentSlice = 1;
+    	ImageProcessor ip = stack.getProcessor(currentSlice);
+    	boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
     	this.stack = stack;
-    	setProcessor(title, processor);
-			 // replaces this window
-		if (stack.getSize()>1 && win!=null && !(win instanceof StackWindow))
-			win = new StackWindow(this);
-    	if (win!=null && win instanceof StackWindow)
-    		((StackWindow)win).showSlice(1);
+    	setProcessor(title, ip);
+		if (stackSize>1 && win!=null
+		&& (!(win instanceof StackWindow) || resetCurrentSlice || dimensionsChanged))
+			win = new StackWindow(this);   // replaces this window
+		else if (win!=null)
+			repaintWindow();
     }
     
 	/**	Saves this image's FileInfo so it can be later
@@ -466,8 +490,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 					Rectangle r = roi.getBoundingRect();
 					if (maskRect==null || r.width!=maskRect.width || r.height!=maskRect.height)
 						mask = null;
-				if (roi instanceof PolygonRoi && maskCount!=((PolygonRoi)roi).getNCoordinates())
-					mask = null;
+					if (roi instanceof PolygonRoi) {
+						if (maskCount!=((PolygonRoi)roi).getNCoordinates())
+							mask = null;
+					} else if (roi instanceof TextRoi)
+						mask = null;
 				}
 			}
 			if (mask==null)
@@ -528,11 +555,22 @@ public class ImagePlus implements ImageObserver, Measurements {
     		return title;
     }
 
+	/** Returns a shortened version of image name. */
+	public String getShortTitle() {
+		String title = getTitle();
+		int index = title.indexOf(' ');
+		if (index>-1)
+			title = title.substring(0,index);
+		return title;
+    }
+
 	/** Sets the image name. */
 	public void setTitle(String title) {
-    	this.title = title;
-    	if (win!=null)
+    	if (win!=null) {
+			Menus.updateWindowMenuItem(this.title, title);
     		win.setTitle(title);
+    	}
+    	this.title = title;
     }
 
     public int getWidth() {
@@ -1060,7 +1098,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     }
     
     public String toString() {
-    	return getTitle();
+    	return getTitle()+" "+width+"x"+height+"x"+getStackSize();
     }
 
 }

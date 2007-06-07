@@ -18,9 +18,11 @@ public class Toolbar extends Canvas implements MouseListener {
 	public static final int CROSSHAIR = 7;
 	public static final int WAND = 8;
 	public static final int TEXT = 9;
+	public static final int SPARE1 = 10;
 	public static final int MAGNIFIER = 11;
 	public static final int HAND = 12;
 	public static final int DROPPER = 13;
+	//public static final int NONE = 100;
 
 	private static final int NUM_TOOLS = IJ.isMacintosh()?14:19;
 	private static final int SIZE = 22;
@@ -57,7 +59,13 @@ public class Toolbar extends Canvas implements MouseListener {
 		instance = this;
 	}
 
+	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
+		Toolbar.OVAL, etc.). Returns Toolbar.NONE if no tool is
+		selected. */
 	public static int getToolId() {
+		//if (current==10 || current>DROPPER)
+		//	return NONE;
+		//else
 		return current;
 	}
 
@@ -251,10 +259,10 @@ public class Toolbar extends Canvas implements MouseListener {
 	}
 
 	public void setTool(int tool) {
-		if (tool<0 || tool>NUM_TOOLS)
-			throw new IllegalArgumentException();
 		if (tool==current)
 			return;
+		if (tool<0 || tool>NUM_TOOLS)
+			throw new IllegalArgumentException();
 		current = tool;
 		down[current] = true;
 		down[previous] = false;
@@ -328,11 +336,7 @@ public class Toolbar extends Canvas implements MouseListener {
 					if (imp!=null) IJ.doCommand("Calibrate...");
 					setTool(mpPrevious);
 					break;
-				case LINE:
-					if (imp!=null) IJ.doCommand("Set Scale...");
-					setTool(mpPrevious);
-					break;
-				case POLYLINE: case FREELINE:
+				case LINE: case POLYLINE: case FREELINE:
 					IJ.doCommand("Line Width...");
 					break;
 				case CROSSHAIR:

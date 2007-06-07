@@ -7,7 +7,7 @@ import ij.process.*;
 import ij.text.*;
 import ij.measure.*;
 
-/** This plug-in implements the Image/Show Info command. */
+/** This plugin implements the Image/Show Info command. */
 public class Info implements PlugInFilter {
     private ImagePlus imp;
 
@@ -71,8 +71,19 @@ public class Info implements PlugInFilter {
 	    		break;
     	}
     	int nSlices = imp.getStackSize();
-    	if (nSlices>1)
-			s += "Slices: " + nSlices + " (" + imp.getCurrentSlice() + ")\n";
+    	if (nSlices>1) {
+			double interval = cal.frameInterval;
+			String label = interval>0.0?"Frames: ":"Slices: ";
+			s += label + nSlices + " (" + imp.getCurrentSlice() + ")\n";
+			if (interval>0.0) {
+				if (interval<1.0) {
+					double rate = 1.0/interval;
+					String sRate = Math.abs(rate-Math.round(rate))<0.00001?IJ.d2s(rate,0):IJ.d2s(rate,5);
+					s += "Frame rate: " + sRate + " fps\n";
+				} else
+					s += "Frame interval: " + IJ.d2s(interval,5) + " seconds\n";
+			}
+		}
 
 		if (ip.getMinThreshold()==ip.NO_THRESHOLD)
 	    	s += "No Threshold\n";

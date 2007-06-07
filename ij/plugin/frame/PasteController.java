@@ -19,6 +19,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 			instance.toFront();
 			return;
 		}
+		WindowManager.addWindow(this);
 		instance = this;
 		IJ.register(PasteController.class);
 		setLayout(new FlowLayout(FlowLayout.CENTER, 2, 5));

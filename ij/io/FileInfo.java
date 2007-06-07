@@ -32,6 +32,10 @@ public class FileInfo {
 	/* 24-bit planer RGB. Import only. */
 	public static final int RGB_PLANAR = 7;
 	
+	/* 1-bit black and white. Import only. */
+	public static final int BITMAP = 8;
+	
+	
 	// File formats
 	public static final int UNKNOWN = 0;
 	public static final int RAW = 1;
@@ -66,6 +70,7 @@ public class FileInfo {
 	public int calibrationFunction;
 	public double[] coefficients;
 	public String valueUnit;
+	public double frameInterval;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {
@@ -81,7 +86,7 @@ public class FileInfo {
 	/** Returns the number of bytes used per pixel. */
 	public int getBytesPerPixel() {
 		switch (fileType) {
-			case GRAY8: case COLOR8: return 1;
+			case GRAY8: case COLOR8: case BITMAP: return 1;
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
 			case GRAY32_INT: case GRAY32_FLOAT: return 4;
 			case RGB: case RGB_PLANAR: return 3;
@@ -114,6 +119,7 @@ public class FileInfo {
 			case COLOR8: return "byte+lut";
 			case RGB: return "RGB";
 			case RGB_PLANAR: return "RGB(p)";
+			case BITMAP: return "bitmap";
 			default: return "";
     	}
     }

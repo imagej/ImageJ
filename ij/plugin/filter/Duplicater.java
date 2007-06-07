@@ -4,7 +4,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 
-/** This plug-in implements ImageJ's Image/Duplicate command. */
+/** This plugin implements ImageJ's Image/Duplicate command. */
 public class Duplicater implements PlugInFilter {
 	ImagePlus imp;
 	static boolean duplicateStack;

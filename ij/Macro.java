@@ -66,7 +66,7 @@ public class Macro {
 	}
 
 	public static String getOptions() {
-		if (Thread.currentThread().getName().indexOf("-macro")>-1)
+		if (currentOptions!=null && Thread.currentThread().getName().indexOf("-macro")>-1)
 			return currentOptions+" ";
 		else
 			return null;

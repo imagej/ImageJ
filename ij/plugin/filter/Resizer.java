@@ -5,7 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import java.awt.*;
 
-/** This plug-in implements ImageJ's Resize command. */
+/** This plugin implements ImageJ's Resize command. */
 public class Resizer implements PlugInFilter {
 	ImagePlus imp;
 	private boolean crop;
@@ -25,9 +25,13 @@ public class Resizer implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.getType()>=Roi.LINE && roi.getType()<=Roi.FREELINE) {
+			IJ.error("The Crop and Adjust->Size commands\ndo not work with line selections.");
+			return;
+		}
 		boolean sizeToHeight=false;
 		if (crop) {
-			Roi roi = imp.getRoi();
 			Rectangle bounds = roi.getBoundingRect();
 			newWidth = bounds.width;
 			newHeight = bounds.height;
@@ -71,6 +75,9 @@ public class Resizer implements PlugInFilter {
 	    	ImageStack s2 = sp.resize(newWidth, newHeight);
 	    	int newSize = s2.getSize();
 	    	if (s2.getWidth()>0 && newSize>0) {
+	    		boolean restoreRoi = crop && roi!=null && roi.getType()!=Roi.RECTANGLE;
+	    		if (restoreRoi)
+	    			imp.killRoi();
 	    		imp.hide();
 	    		Calibration cal = imp.getCalibration();
 	    		if (cal.scaled()) {
@@ -80,6 +87,8 @@ public class Resizer implements PlugInFilter {
     			}
 	    		imp.setStack(null, s2);
 	    		imp.show();
+	    		if (restoreRoi)
+	    			imp.restoreRoi();
 	    	}
 	    	if (nSlices>1 && newSize<nSlices)
 	    		IJ.error("ImageJ ran out of memory causing \nthe last "+(nSlices-newSize)+" slices to be lost.");

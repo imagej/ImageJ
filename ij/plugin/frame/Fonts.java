@@ -21,6 +21,7 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 			instance.toFront();
 			return;
 		}
+		WindowManager.addWindow(this);
 		instance = this;
 		setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 		

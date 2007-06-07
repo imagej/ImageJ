@@ -17,6 +17,7 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 
 	public Editor() {
 		super("Editor");
+		WindowManager.addWindow(this);
 
 		MenuBar mb = new MenuBar();
 		Menu m = new Menu("File");
@@ -27,6 +28,21 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		mb.add(m);
 		
 		m = new Menu("Edit");
+		String key = IJ.isMacintosh()?" = Cmd ":" = Ctrl+";
+		MenuItem item = new MenuItem("Undo"+key+"Z");
+		item.setEnabled(false);
+		m.add(item);
+		m.addSeparator();
+		item = new MenuItem("Cut"+key+"X");
+		item.setEnabled(false);
+		m.add(item);
+		item = new MenuItem("Copy"+key+"C");
+		item.setEnabled(false);
+		m.add(item);
+		item = new MenuItem("Paste"+key+"V");
+		item.setEnabled(false);
+		m.add(item);
+		m.addSeparator();
 		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
 		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.add(new MenuItem("Go to Line...", new MenuShortcut(KeyEvent.VK_L)));
@@ -40,10 +56,15 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		pack();
 	}
 			
+	void setWindowTitle(String title) {
+		Menus.updateWindowMenuItem(getTitle(), title);
+		setTitle(title);
+	}
+	
 	public void create(String name, String text) {
 		ta.append(text);
 		ta.setCaretPosition(0);
-		setTitle(name);
+		setWindowTitle(name);
 		changes = true;
 		setVisible(true);
 	}
@@ -71,6 +92,7 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 				else
 					sb.append(s+"\n");
 			}
+			r.close();
 			create(name, new String(sb));
 			changes = false;
 		}
@@ -84,7 +106,7 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		ta.selectAll();
 		ta.replaceRange(text,ta.getSelectionStart(),ta.getSelectionEnd());
 		ta.setCaretPosition(0);
-		setTitle(title);
+		setWindowTitle(title);
 		changes = false;
 		setVisible(true);
 	}
@@ -149,6 +171,7 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		if (getTitle().equals("Errors") || close()) {	
 			setVisible(false);
 			dispose();
+			WindowManager.removeWindow(this);
 		}
 	}
 
@@ -168,7 +191,9 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 		FileDialog fd = new FileDialog(this, "Save Plugin As...", FileDialog.SAVE);
 		String name1 = getTitle();
 		fd.setFile(name1);
-		fd.setDirectory(Menus.getPlugInsPath());
+		String pluginsDir = Menus.getPlugInsPath();
+		if (path!=null)
+			fd.setDirectory(pluginsDir);
 		fd.setVisible(true);
 		String name2 = fd.getFile();
 		String dir = fd.getDirectory();
@@ -178,7 +203,7 @@ public class Editor extends PlugInFrame implements ActionListener, TextListener 
 			path = dir+name2;
 			save();
 			changes = false;
-			setTitle(name2);
+			setWindowTitle(name2);
 		}
 	}
 	

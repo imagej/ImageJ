@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
 
-/** This plug-in implements ImageJ's Process/Math submenu. */
+/** This plugin implements ImageJ's Process/Math submenu. */
 public class ImageMath implements PlugInFilter {
 	
 	private String arg;
@@ -37,35 +37,35 @@ public class ImageMath implements PlugInFilter {
 	 		return;
 	 	
 	 	if (arg.equals("add")) {
-	 		if (first) addValue = getValue("Add: ", addValue, 0);
+	 		if (first) addValue = getValue("Add", "Value: ", addValue, 0);
 	 		if (canceled) return;
 			ip.add(addValue);
 			return;
 		}
 
 	 	if (arg.equals("sub")) {
-	 		if (first) addValue = getValue("Subtract: ", addValue, 0);
+	 		if (first) addValue = getValue("Subtract", "Value: ", addValue, 0);
 	 		if (canceled) return;
 			ip.add(-addValue);
 			return;
 		}
 
 	 	if (arg.equals("mul")) {
-	 		if (first) mulValue = getValue("Multiple: ", mulValue, 2);
+	 		if (first) mulValue = getValue("Multiply", "Value: ", mulValue, 2);
 	 		if (canceled) return;
 			ip.multiply(mulValue);
 			return;
 		}
 
 	 	if (arg.equals("div")) {
-	 		if (first) mulValue = getValue("Divide: ", mulValue, 2);
+	 		if (first) mulValue = getValue("Divide", "Value: ", mulValue, 2);
 	 		if (canceled) return;
 			if (mulValue!=0.0) ip.multiply(1.0/mulValue);
 			return;
 		}
 
 	 	if (arg.equals("and")) {
-	 		if (first) andValue = getBinaryValue("AND (binary): ", andValue);
+	 		if (first) andValue = getBinaryValue("AND", "Value (binary): ", andValue);
 	 		if (canceled) return;
 	 		try {
 				ip.and(Integer.parseInt(andValue,2));
@@ -77,7 +77,7 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("or")) {
-	 		if (first) andValue = getBinaryValue("OR (binary): ", andValue);
+	 		if (first) andValue = getBinaryValue("OR", "Value (binary): ", andValue);
 	 		if (canceled) return;
 	 		try {
 				ip.or(Integer.parseInt(andValue,2));
@@ -89,7 +89,7 @@ public class ImageMath implements PlugInFilter {
 		}
 			
 	 	if (arg.equals("xor")) {
-	 		if (first) andValue = getBinaryValue("XOR (binary): ", andValue);
+	 		if (first) andValue = getBinaryValue("XOR", "Value (binary): ", andValue);
 	 		if (canceled) return;
 	 		try {
 				ip.xor(Integer.parseInt(andValue,2));
@@ -101,7 +101,7 @@ public class ImageMath implements PlugInFilter {
 		}
 		
 	 	if (arg.equals("min")) {
-	 		if (first) minValue = getValue("Minimum: ", minValue, 0);
+	 		if (first) minValue = getValue("Min", "Value: ", minValue, 0);
 	 		if (canceled) return;
 	 		ip.min(minValue);
 			if (!(ip instanceof ByteProcessor))
@@ -110,7 +110,7 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("max")) {
-	 		if (first) maxValue = getValue("Maximum: ", maxValue, 0);
+	 		if (first) maxValue = getValue("Max", "Value: ", maxValue, 0);
 	 		if (canceled) return;
 	 		ip.max(maxValue);
 			if (!(ip instanceof ByteProcessor))
@@ -119,7 +119,7 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("gamma")) {
-	 		if (first) gammaValue = getValue("Gamma (0.1-5.0): ", gammaValue, 2);
+	 		if (first) gammaValue = getValue("Gamma", "Value (0.1-5.0): ", gammaValue, 2);
 	 		if (canceled) return;
 	 		if (gammaValue<0.1 || gammaValue>5.0) {
 	 			IJ.error("Gamma must be between 0.1 and 5.0");
@@ -135,6 +135,16 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 		
+	 	if (arg.equals("sqr")) {
+			ip.sqr();
+			return;
+		}
+
+	 	if (arg.equals("sqrt")) {
+			ip.sqrt();
+			return;
+		}
+
 	 	if (arg.equals("reciprocal")) {
 			if (!(ip instanceof FloatProcessor)) {
 				IJ.error("32-bit float image required");
@@ -155,8 +165,8 @@ public class ImageMath implements PlugInFilter {
 		
 	}
 	
-	double getValue (String prompt, double defaultValue, int digits) {
-			GenericDialog gd = new GenericDialog("Math", IJ.getInstance());
+	double getValue (String title, String prompt, double defaultValue, int digits) {
+			GenericDialog gd = new GenericDialog(title);
 			gd.addNumericField(prompt, defaultValue, digits);
 			gd.showDialog();
 			if (first) imp.startTiming();
@@ -167,8 +177,8 @@ public class ImageMath implements PlugInFilter {
 			return gd.getNextNumber();
 	}
 
-	String getBinaryValue (String prompt, String defaultValue) {
-			GenericDialog gd = new GenericDialog("Math", IJ.getInstance());
+	String getBinaryValue (String title, String prompt, String defaultValue) {
+			GenericDialog gd = new GenericDialog(title);
 			gd.addStringField(prompt, defaultValue);
 			gd.showDialog();
 			if (first) imp.startTiming();

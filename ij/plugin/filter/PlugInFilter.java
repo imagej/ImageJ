@@ -2,11 +2,11 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 
-/** Image/J plug-in filters must implement this interface. */
+/** ImageJ plugins that process an image should implement this interface. */
 public interface PlugInFilter {
 
 	/** This method is called once when the filter is loaded. 'arg',
-		which may be blank, is the argument specified for this plug-in 
+		which may be blank, is the argument specified for this plugin 
 		in IJ_Props.txt. 'imp' is the currently active image.
 		This method should return a flag word that specifies the
 		filters capabilities. */
@@ -14,7 +14,7 @@ public interface PlugInFilter {
 
 	/** Filters use this method to process the image. If the
 	 	SUPPORTS_STACKS flag was set, it is called for each slice in
-	 	a stack. Image/J will lock the image before calling
+	 	a stack. ImageJ will lock the image before calling
 		this method and unlock it when the filter is finished. */
 	public void run(ImageProcessor ip);
 
@@ -33,7 +33,7 @@ public interface PlugInFilter {
 	/** Set this flag if the filter wants its run() method to be
 		called for all the slices in a stack. */
 	public int DOES_STACKS = 32;
-	/** Set this flag if the filter wants Image/J, for non-rectangular
+	/** Set this flag if the filter wants ImageJ, for non-rectangular
 		ROIs, to restore that part of the image that's inside the bounding
 		rectangle but outside of the ROI. */
 	public int SUPPORTS_MASKING = 64;

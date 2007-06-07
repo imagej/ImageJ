@@ -116,8 +116,11 @@ public class ByteProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Fills pixels that are within roi and part of the mask. */
+	/** Fills pixels that are within roi and part of the mask.
+		Fills the entire roi if the mask is null. */
 	public void fill(int[] mask) {
+		if (mask==null)
+			{fill(); return;}
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
 			int mi = my * roiWidth;

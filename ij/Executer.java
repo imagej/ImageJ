@@ -83,11 +83,9 @@ public class Executer implements Runnable {
 		if (cmd.equals("New..."))
 			new NewImage();
 		else if (cmd.equals("Open..."))
-			new Opener().openImage();
+			new Opener().open();
 		else if (cmd.equals("Close"))
 			closeImage(imp);
-		else if (cmd.equals("About ImageJ..."))
-			ij.showAboutBox();
 		else if (cmd.equals("Cut"))
 			copy(imp, true);
 		else if (cmd.equals("Copy"))

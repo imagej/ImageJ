@@ -15,7 +15,7 @@ public class FolderOpener implements PlugIn {
 	private static boolean halfSize;
 
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("Open All As Stack...", arg);
+		OpenDialog od = new OpenDialog("Image Sequence...", arg);
 		String directory = od.getDirectory();
 		String name = od.getFileName();
 		if (name==null)
@@ -122,8 +122,8 @@ class FolderOpenerDialog extends GenericDialog {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		int bytesPerPixel = 1;
- 		eightBits = checkbox[0].getState();
- 		halfSize = checkbox[1].getState();
+ 		eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
+ 		halfSize = ((Checkbox)checkbox.elementAt(1)).getState();
 		switch (imp.getType()) {
 			case ImagePlus.GRAY16:
 				bytesPerPixel=2;break;

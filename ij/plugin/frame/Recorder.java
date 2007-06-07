@@ -31,6 +31,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 			instance.toFront();
 			return;
 		}
+		WindowManager.addWindow(this);
 		instance = this;
 		Panel panel = new Panel();
 		record = true;
@@ -175,29 +176,22 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 
 	void createPlugin() {
 		String text = textArea.getText();
-		StringBuffer sb = new StringBuffer();
-		int i = 0;
-		if (text.startsWith("//")) {
-			sb.append("\t\t//IJ.");
-			i += 2;
-		} else
-			sb.append("\t\tIJ.");
-		char c;
-		int len = text.length();
-		while (i<text.length()) {
-			sb.append(c=text.charAt(i));
-			if (c=='\n' && i<(len-1)) {
-				sb.append("\t\t");
-				if (text.charAt(i+1)!='/')
-					sb.append("IJ.");
-				else {
-					sb.append("//IJ.");
-					i += 2;
-				}
-			}
-			i++;
+		if (text==null || text.equals("")) {
+			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
+			return;
 		}
-		//sb.append("\n");
+		StringTokenizer st = new StringTokenizer(text, "\n");
+		int n = st.countTokens();
+		String line;
+		StringBuffer sb = new StringBuffer();
+		for(int i=0; i<n; i++) {
+			line = st.nextToken();
+			if (line!=null && line.length()>3) {
+				sb.append("\t\tIJ.");
+				sb.append(line);
+				sb.append('\n');
+			}
+		}
 		IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
 	}
 	

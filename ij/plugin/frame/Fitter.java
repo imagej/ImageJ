@@ -36,6 +36,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 
 	public Fitter() {
 		super("Curve Fitter");
+		WindowManager.addWindow(this);
 		Panel panel = new Panel();
 		fit = new Choice();
 		for (int i=0; i<CurveFitter.fitList.length; i++)

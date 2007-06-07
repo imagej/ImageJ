@@ -259,7 +259,7 @@ public class ZProjector implements PlugIn {
 		// ImagePlus.createImagePlus here because there may be
 		// attributes of input image that are not appropriate for
 		// projection.
-		return new ImagePlus("zprojection", oip); 
+		return new ImagePlus("ZProjection of "+imp.getShortTitle(), oip); 
     }
 
     /** Handles mechanics of projection by selecting appropriate pixel

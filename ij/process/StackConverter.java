@@ -48,7 +48,10 @@ public class StackConverter {
 			ip.setMinAndMax(min, max);
 			boolean scale = ImageConverter.getDoScaling();
 			stack2.addSlice(label, ip.convertToByte(scale));
-			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
+			if ((i%inc)==0) {
+				IJ.showProgress((double)i/nSlices);
+				IJ.showStatus("Converting to 8-bits: "+i+"/"+nSlices);
+			}
 		}
 		imp.setStack(null, stack2);
 		imp.setSlice(currentSlice);
@@ -74,10 +77,41 @@ public class StackConverter {
 				ip = new ColorProcessor(ip.createImage());
 			boolean scale = ImageConverter.getDoScaling();
 			stack2.addSlice(label, ip.convertToByte(scale));
-			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
+			if ((i%inc)==0) {
+				IJ.showProgress((double)i/nSlices);
+				IJ.showStatus("Converting to 8-bits: "+i+"/"+nSlices);
+			}
 		}
 		imp.setStack(null, stack2);
 		IJ.showProgress(1.0);
+	}
+
+	/** Converts this Stack to 16-bit grayscale. */
+	public void convertToGray16() {
+		int type = imp.getType();
+		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY32))
+			throw new IllegalArgumentException("Unsupported conversion");
+		ImageStack stack1 = imp.getStack();
+		ImageStack stack2 = new ImageStack(width, height);
+		String label;
+	    int inc = nSlices/20;
+	    if (inc<1) inc = 1;
+	    boolean scale = type==ImagePlus.GRAY32 && ImageConverter.getDoScaling();
+	    ImageProcessor ip1, ip2;
+		for(int i=1; i<=nSlices; i++) {
+			label = stack1.getSliceLabel(1);
+			ip1 = stack1.getProcessor(1);
+			ip2 = ip1.convertToShort(scale);
+			stack1.deleteSlice(1);
+			System.gc();
+			stack2.addSlice(label, ip2);
+			if ((i%inc)==0) {
+				IJ.showProgress((double)i/nSlices);
+				IJ.showStatus("Converting to 16-bits: "+i+"/"+nSlices);
+			}
+		}
+		IJ.showProgress(1.0);
+		imp.setStack(null, stack2);
 	}
 
 	/** Converts this Stack to 32-bit (float) grayscale. */
@@ -100,7 +134,10 @@ public class StackConverter {
 			stack1.deleteSlice(1);
 			System.gc();
 			stack2.addSlice(label, ip2);
-			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
+			if ((i%inc)==0) {
+				IJ.showProgress((double)i/nSlices);
+				IJ.showStatus("Converting to 32-bits: "+i+"/"+nSlices);
+			}
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
@@ -123,7 +160,10 @@ public class StackConverter {
 			//stack1.deleteSlice(1);
 			//System.gc();
 			stack2.addSlice(label, ip2);
-			if ((i%inc)==0) IJ.showProgress((double)i/nSlices);
+			if ((i%inc)==0) {
+				IJ.showProgress((double)i/nSlices);
+				IJ.showStatus("Converting to RGB: "+i+"/"+nSlices);
+			}
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);

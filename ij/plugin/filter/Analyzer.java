@@ -9,7 +9,7 @@ import ij.measure.*;
 import ij.text.*;
 import ij.plugin.MeasurementsWriter;
 
-/** This plug-in implements ImageJ's Analyze/Measure and Analyze/Set Measurements commands. */
+/** This plugin implements ImageJ's Analyze/Measure and Analyze/Set Measurements commands. */
 public class Analyzer implements PlugInFilter, Measurements {
 	
 	private String arg;
@@ -92,7 +92,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels = new String[2];
 		states = new boolean[2];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
-		labels[1]="Display Row Labels"; states[1]=(systemMeasurements&LABELS)!=0;
+		labels[1]="Display Image Name"; states[1]=(systemMeasurements&LABELS)!=0;
 		gd.addCheckboxGroup(1, 2, labels, states);
 		gd.addMessage("");
 		gd.addNumericField("Decimal Places:", precision, 0);
@@ -190,7 +190,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			ip.setLineWidth(Line.getWidth());
 		}
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("File Name", getFileName());
+			rt.addLabel("Name", getFileName());
 		rt.addValue("X", cal.getX(x));
 		rt.addValue("Y", cal.getY(y));
 		rt.addValue("Value", value);
@@ -214,14 +214,14 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (!resetCounter())
 				return;
 			if ((measurements&LABELS)!=0)
-				IJ.setColumnHeadings(" \tFile Name\tlength");
+				IJ.setColumnHeadings(" \tName\tlength");
 			else		
 				IJ.setColumnHeadings(" \tlength");
 			mode = LENGTHS;
 		}
 		incrementCounter();
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("File Name", getFileName());
+			rt.addLabel("Name", getFileName());
 		rt.addValue("Length", roi.getLength());
 		displayResults();
 	}
@@ -237,7 +237,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			umeans[counter-1] = (float)stats.umean;
 		}
 		if ((measurements&LABELS)!=0)
-			rt.addLabel("File Name", getFileName());
+			rt.addLabel("Name", getFileName());
 		if ((measurements&AREA)!=0) rt.addValue(ResultsTable.AREA,stats.area);
 		if ((measurements&MEAN)!=0) rt.addValue(ResultsTable.MEAN,stats.mean);
 		if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);
@@ -278,10 +278,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 				ImageStack stack = imp.getStack();
 				int currentSlice = imp.getCurrentSlice();
 				String label = stack.getSliceLabel(currentSlice);
+				String colon = s.equals("")?"":":";
 				if (label!=null && !label.equals(""))
-					s += ":"+label;
+					s += colon+label;
 				else
-					s += ":"+currentSlice;
+					s += colon+currentSlice;
 			}
 		}
 		return s;
@@ -475,6 +476,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		systemMeasurements = measurements;
 	}
 
+	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		prefs.put(MEASUREMENTS, Integer.toString(systemMeasurements));
 		prefs.put(MARK_WIDTH, Integer.toString(markWidth));

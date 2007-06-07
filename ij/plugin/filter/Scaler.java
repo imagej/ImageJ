@@ -5,7 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import java.awt.*;
 
-/** This plug-in implements the Edit/Scale command. */
+/** This plugin implements the Edit/Scale command. */
 public class Scaler implements PlugInFilter {
     private ImagePlus imp;
     private static double xscale = 0.5;
@@ -16,6 +16,11 @@ public class Scaler implements PlugInFilter {
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		IJ.register(Scaler.class);
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.getType()>Roi.TRACED_ROI)
+				imp.killRoi(); // ignore any line selection
+		}
 		return DOES_ALL;
 	}
 

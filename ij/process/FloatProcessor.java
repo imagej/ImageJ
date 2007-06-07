@@ -71,7 +71,7 @@ public class FloatProcessor extends ImageProcessor {
 		this.min = (float)min;
 		this.max = (float)max;
 		fixedScale = true;
-		setThreshold(NO_THRESHOLD,0,0);
+		resetThreshold();
 	}
 
 	/** Recalculates the min and max values used to scale pixel
@@ -80,7 +80,7 @@ public class FloatProcessor extends ImageProcessor {
 	public void resetMinAndMax() {
 		fixedScale = false;
 		findMinAndMax();
-		setThreshold(NO_THRESHOLD,0,0);
+		resetThreshold();
 	}
 
 	/** Returns the smallest displayed pixel value. */
@@ -275,6 +275,15 @@ public class FloatProcessor extends ImageProcessor {
 						else
 							v2 = (float)Math.log(v1);
 						break;
+					case SQR:
+							v2 = v1*v1;
+						break;
+					case SQRT:
+						if (v1<=0f)
+							v2 = 0f;
+						else
+							v2 = (float)Math.sqrt(v1);
+						break;
 					case MINIMUM:
 						if (v1<value)
 							v2 = (int)value;
@@ -307,6 +316,8 @@ public class FloatProcessor extends ImageProcessor {
 	public void xor(int value) {}
 	public void gamma(double value) {process(GAMMA, value);}
 	public void log() {process(LOG, 0.0);}
+	public void sqr() {process(SQR, 0.0);}
+	public void sqrt() {process(SQRT, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}
 	public void max(double value) {process(MAXIMUM, value);}
 
@@ -617,7 +628,7 @@ public class FloatProcessor extends ImageProcessor {
 			this.minThreshold = minThreshold;
 			this.maxThreshold = maxThreshold;
 		} else
-			super.setThreshold(NO_THRESHOLD, 0, 0);
+			super.resetThreshold();
 	}
 
 	public void threshold(int level) {}

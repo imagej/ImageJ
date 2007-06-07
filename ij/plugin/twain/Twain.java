@@ -86,7 +86,7 @@ public class Twain implements PlugIn {
 
 	void needsGnome(Throwable e) {
 		if (!IJ.isMacintosh())
-			IJ.error("The Twain plug-in requires the Java Twain Package from\n"
+			IJ.error("The Twain plugin requires the Java Twain Package from\n"
 				+ "http://www.gnome.sk/. The files 'twain.jar' and 'JavaTwain32.dll'\n"
 				+ "from this package must be placed in the ImageJ folder.\n \n"
 				+ e);

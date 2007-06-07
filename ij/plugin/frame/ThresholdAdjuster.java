@@ -49,6 +49,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			instance.toFront();
 			return;
 		}
+		WindowManager.addWindow(this);
 		instance = this;
 		IJ.register(PasteController.class);
 
@@ -331,7 +332,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
 		plot.setHistogram(imp);
-		ip.setThreshold(ImageProcessor.NO_THRESHOLD,0,0);
+		ip.resetThreshold();
 		updateScrollBars();
 		if (Recorder.record)
 			Recorder.record("resetThreshold");

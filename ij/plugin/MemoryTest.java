@@ -6,14 +6,14 @@ import java.util.Vector;
 import ij.*;
 import ij.gui.*;
 
-/** ImageJ plug-in that tries to find out how much memory is available for opening images. */
+/** ImageJ plugin that tries to find out how much memory is available for opening images. */
 public class MemoryTest implements PlugIn {
 
 
 	public void run(String arg) {
 	
 		boolean okay = IJ.showMessageWithCancel("Memory Test", 
-			"The MemoryTest plug-in opens as many\n"
+			"The MemoryTest plugin opens as many\n"
 			+ "1024x1024x8-bit images as possible and then\n"
 			+ "calculates how much memory was used for each\n"
 			+ "image. This is a demanding test that may require\n"

@@ -6,7 +6,7 @@ import ij.process.*;
 /** This plugin animates stacks. */
 public class Animator implements PlugIn {
 
-	private static double animationSpeed = 10.0; // frames per second
+	private static double animationSpeed = 7.0; // frames per second
 	private static boolean oscillate;
 	private ImagePlus imp;
 	private StackWindow swin;
@@ -129,6 +129,11 @@ public class Animator implements PlugIn {
 		animationSpeed = speed;
 		if (start && !swin.running)
 			startAnimation();
+	}
+	
+	/** Returns the current animation speed in frames per second. */
+	public static double getFrameRate() {
+		return animationSpeed;
 	}
 
 }

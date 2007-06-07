@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.plugin.filter.*;
 
 public class ImageCalculator implements PlugIn {
 
@@ -60,11 +61,10 @@ public class ImageCalculator implements PlugIn {
 			return;
 		}
 		if (size1>1 && (size2==1||size1==size2)) {
-			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(),
-				"Process Stack?", "Process all "+size1+" slices?");
-			if (d.cancelPressed())
+			int result = IJ.setupDialog(img1, 0);
+			if (result==PlugInFilter.DONE)
 				return;
-			if (d.yesPressed())
+			if (result==PlugInFilter.DOES_STACKS)
 				doStackOperation(img1, img2);
 			else
 				doOperation(img1, img2);
@@ -100,6 +100,8 @@ public class ImageCalculator implements PlugIn {
 			return;
 		}
 		img1.setStack(null, stack1);
+		if (img1.getType()!=ImagePlus.GRAY8)
+			img1.getProcessor().resetMinAndMax();
 		img1.updateAndDraw();
 	}
 
@@ -123,8 +125,10 @@ public class ImageCalculator implements PlugIn {
 			IJ.error("\""+img1.getTitle()+"\": "+e.getMessage());
 			return;
 		}
+		if (!(ip1 instanceof ByteProcessor))
+			ip1.resetMinAndMax();
 		if (createWindow)
-			new ImagePlus("Result", ip1).show();
+			new ImagePlus("Result of "+img1.getShortTitle(), ip1).show();
 		else
 			img1.updateAndDraw();
 	}
@@ -135,7 +139,6 @@ public class ImageCalculator implements PlugIn {
 		ImageProcessor ip3 = ip1.createProcessor(width, height);
 		ip3.insert(ip1, 0, 0);
 		return ip3;
-		
 	}
 
 	private int getBlitterMode() {

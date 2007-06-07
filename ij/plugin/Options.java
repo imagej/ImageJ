@@ -5,7 +5,7 @@ import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
 
-/** This plug-in implements most of the commands
+/** This plugin implements most of the commands
 	in the Edit/Options sub-menu. */
 public class Options implements PlugIn {
 

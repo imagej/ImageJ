@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
 
-/** This plug-in implements the Image/Rotate command. */
+/** This plugin implements the Image/Rotate command. */
 public class Rotator implements PlugInFilter {
     private static double angle = 15.0;
     private static boolean interpolate = true;

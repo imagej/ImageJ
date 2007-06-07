@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
 
-/** This plug-in implements the Invert, Smooth, Sharpen, Detect Edges, 
+/** This plugin implements the Invert, Smooth, Sharpen, Detect Edges, 
 	Add Noise, Reduce Noise, and Threshold commands. */
 public class Filters implements PlugInFilter {
 	
@@ -14,6 +14,11 @@ public class Filters implements PlugInFilter {
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
 		this.imp = imp;
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.getType()>Roi.TRACED_ROI)
+				imp.killRoi(); // ignore any line selection
+		}
 		if (arg.equals("threshold"))
 			return IJ.setupDialog(imp, DOES_8G+DOES_8C+DOES_RGB);
 		else
@@ -42,6 +47,7 @@ public class Filters implements PlugInFilter {
 		}
 						
 	 	if (arg.equals("threshold")) {
+			ip.resetThreshold();
 			ip.autoThreshold();
 			ip.setMask(null);
 			imp.killRoi();

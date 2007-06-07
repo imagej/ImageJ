@@ -20,10 +20,17 @@ public class IJ {
 	private static java.applet.Applet applet;
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
-	private static boolean isMac = System.getProperty("os.name").startsWith("Mac");
+	private static String osname;
+	private static boolean isMac, isWin;
 	private static boolean altDown, spaceDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
+	
+	static {
+		osname = System.getProperty("os.name");
+		isWin = osname.startsWith("Windows");
+		isMac = !isWin && osname.startsWith("Mac");
+	}
 			
 	static void init(ImageJ imagej, Applet theApplet, TextPanel tp) {
 		ij = imagej;
@@ -37,12 +44,12 @@ public class IJ {
 		return ij;
 	}
 	
-	/** Runs the specified plug-in and returns a reference to it. */
+	/** Runs the specified plugin and returns a reference to it. */
 	public static Object runPlugIn(String className, String arg) {
 		return runPlugIn("", className, arg);
 	}
 	
-	/** Runs the specified plug-in and returns a reference to it. */
+	/** Runs the specified plugin and returns a reference to it. */
 	static Object runPlugIn(String commandName, String className, String arg) {
 		if (!className.startsWith("ij")) {
 			boolean createNewClassLoader = altKeyDown();
@@ -69,8 +76,8 @@ public class IJ {
 			ij.doCommand(command);
 	}
 	
-    /** Runs a menu command in the current thread. Does not
-    	return until the command has finished executing. */
+    /** Runs an ImageJ command. Does not return until 
+    	the command has finished executing. */
 	public static void run(String command) {
 		Macro.abort = false;
 		Macro.setOptions(null);
@@ -81,6 +88,9 @@ public class IJ {
 		testAbort();
 	}
 	
+    /** Runs an ImageJ command, with options that are passed to the
+		GenericDialog and OpenDialog classes. Does not return until
+		the command has finished executing. */
 	public static void run(String command, String options) {
 		Macro.abort = false;
 		Macro.setOptions(options);
@@ -105,6 +115,7 @@ public class IJ {
 			throw new RuntimeException("Macro canceled");
 	}
 
+	/** Returns true if either of the IJ.run() methods is executing. */
 	public static boolean macroRunning() {
 		return macroRunning;
 	}
@@ -338,6 +349,11 @@ public class IJ {
 		return isMac;
 	}
 	
+	/** Returns true if this machine is running Windows. */
+	public static boolean isWindows() {
+		return isWin;
+	}
+	
 	/** Displays an error message and returns false if the
 		ImageJ version is less than the one specified. */
 	public static boolean versionLessThan(String version) {
@@ -347,6 +363,11 @@ public class IJ {
 		return lessThan;
 	}
 	
+	/** Displays a "Process all slices?" dialog. Returns
+		'flags'+PlugInFilter.DOES_STACKS if the user selects "Yes",
+		'flags' if the user selects "No" and PlugInFilter.DONE
+		if the user selects "Cancel".
+	*/
 	public static int setupDialog(ImagePlus imp, int flags) {
 		if (imp==null)
 			return flags;
@@ -375,32 +396,38 @@ public class IJ {
 		return flags;
 	}
 	
+	/** Creates a rectangular selection. */
 	public static void makeRectangle(int x, int y, int width, int height) {
 		getImage().setRoi(x, y, width, height);
 	}
 	
+	/** Creates an oval selection. */
 	public static void makeOval(int x, int y, int width, int height) {
 		ImagePlus img = getImage();
 		getImage().setRoi(new OvalRoi(x, y, width, height, img));
 	}
 	
+	/** Creates a straight line selection. */
 	public static void makeLine(int x1, int y1, int x2, int y2) {
 		ImagePlus img = getImage();
 		getImage().setRoi(new Line(x1, y1, x2, y2, img));
 	}
 	
+	/** Sets the lower and upper threshold levels. */
 	public static void setThreshold(double lowerThreshold, double upperThresold) {
 		ImagePlus img = getImage();
 		img.getProcessor().setThreshold(lowerThreshold,upperThresold,ImageProcessor.RED_LUT);
 		img.updateAndDraw();
 	}
 	
+	/** Disables thresholding. */
 	public static void resetThreshold() {
 		ImagePlus img = getImage();
-		img.getProcessor().setThreshold(ImageProcessor.NO_THRESHOLD,0,0);
+		img.getProcessor().resetThreshold();
 		img.updateAndDraw();
 	}
 	
+	/** Activates the specified image. */
 	public static void selectWindow(String title) {
 		int[] wList = WindowManager.getIDList();
 		if (wList==null)
@@ -424,10 +451,12 @@ public class IJ {
 		}
 	}
 	
+	/** Sets the foreground color. */
 	public static void setForegroundColor(int red, int green, int blue) {
 		Toolbar.setForegroundColor(new Color(red, green, blue));
 	}
 
+	/** Sets the background color. */
 	public static void setBackgroundColor(int red, int green, int blue) {
 		Toolbar.setBackgroundColor(new Color(red, green, blue));
 	}

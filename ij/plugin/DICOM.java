@@ -6,7 +6,7 @@ import ij.io.*;
 import ij.util.Tools;
 import ij.measure.Calibration;
 
-/** This plug-in decodes DICOM files. If 'arg' is empty, it
+/** This plugin decodes DICOM files. If 'arg' is empty, it
 	displays a file open dialog and opens and displays the 
 	image selected by the user. If 'arg' is a path, it opens the 
 	specified image and the calling routine can display it using

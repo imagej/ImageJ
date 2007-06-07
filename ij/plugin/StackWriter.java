@@ -27,7 +27,7 @@ public class StackWriter implements PlugIn {
 		if (dotIndex>=0)
 			name = name.substring(0, dotIndex);
 		
-		GenericDialog gd = new GenericDialog("Save Stack");
+		GenericDialog gd = new GenericDialog("Save Image Sequence");
 		gd.addChoice("Save Slices as:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
@@ -58,7 +58,7 @@ public class StackWriter implements PlugIn {
 			extension = ".raw";
 		
 		String digits = getDigits(number);
-		SaveDialog sd = new SaveDialog("StackWriter", name+digits+extension, extension);
+		SaveDialog sd = new SaveDialog("Save Image Sequence", name+digits+extension, extension);
 		String name2 = sd.getFileName();
 		if (name2==null)
 			return;

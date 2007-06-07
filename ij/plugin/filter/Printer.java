@@ -5,7 +5,7 @@ import ij.process.*;
 import java.awt.*;
 import java.util.Properties;
 
-/** This plug-in implements the Page Setup and Print commands. */
+/** This plugin implements the Page Setup and Print commands. */
 public class Printer implements PlugInFilter {
     private ImagePlus imp;
     private static double scaling = 100.0;
@@ -27,7 +27,7 @@ public class Printer implements PlugInFilter {
 	}
 	
 	void pageSetup() {
-		GenericDialog gd = new GenericDialog("Page Setup", IJ.getInstance());
+		GenericDialog gd = new GenericDialog("Page Setup");
 		gd.addNumericField("Scaling (5-500%):", scaling, 0);
 		gd.addCheckbox("Draw Border", drawBorder);
 		gd.addCheckbox("Center on Page", center);
@@ -44,9 +44,12 @@ public class Printer implements PlugInFilter {
 
 	void print(ImagePlus imp) {
 		ImageWindow win = imp.getWindow();
+		if (win==null)
+			return;
 		ImageCanvas ic = win.getCanvas();
 		Toolkit toolkit = win.getToolkit();
 		PrintJob job = toolkit.getPrintJob(win, imp.getTitle(), printPrefs);
+		imp.startTiming();
 		if (job==null) return;
 		Graphics g = job.getGraphics();
 		if (g==null) return;

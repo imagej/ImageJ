@@ -44,6 +44,7 @@ public class FileOpener {
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 			case FileInfo.COLOR8:
+			case FileInfo.BITMAP:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
 			    //img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, cm, (byte[])pixels, 0, width));
@@ -184,6 +185,12 @@ public class FileOpener {
 				cal.setFunction(f, fi.coefficients, fi.valueUnit);
 			}
 		}
+		
+		if (fi.frameInterval!=0.0) {
+			if (cal==null) cal = new Calibration(imp);
+			cal.frameInterval = fi.frameInterval;
+		}
+		
 		if (cal!=null)
 			imp.setCalibration(cal);
 	}

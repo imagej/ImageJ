@@ -17,6 +17,9 @@ public class Calibration {
 	
 	/** Pixel depth in 'unit's */
 	public double pixelDepth = 1.0;
+	
+	/** Frame interval in seconds */
+	public double frameInterval;
 
 	/** X origin in pixels. */
 	public int xOrigin;
@@ -202,13 +205,14 @@ public class Calibration {
  		else
  			return value;
  	}
- 	
+ 	 	
 	/** Returns a clone of this object. */
 	public Calibration copy() {
 		Calibration copy = new Calibration();
 		copy.pixelWidth = pixelWidth;
 		copy.pixelHeight = pixelHeight;
 		copy.pixelDepth = pixelDepth;
+		copy.frameInterval = frameInterval;
 		copy.unit = unit;
 		copy.units = units;
 		copy.valueUnit = valueUnit;

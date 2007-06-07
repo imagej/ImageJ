@@ -3,7 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.io.*;
 
-/** This plug-in saves an image in tiff, gif, jpeg, text or raw format. */
+/** This plugin saves an image in tiff, gif, jpeg, text or raw format. */
 public class Writer implements PlugInFilter {
 	private String arg;
     private ImagePlus imp;

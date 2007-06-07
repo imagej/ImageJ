@@ -142,7 +142,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			g.drawOval(xbase, ybase, size, size);
 	}
 	
-	/** Adds a set of points to the plot using double arrays. */
+	/** Adds a set of points to the plot using double arrays.
+		Must be called before the plot is displayed. */
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
@@ -400,6 +401,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			copyToClipboard();
 	}
 	
+	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		double min = ProfilePlot.getFixedMin();
 		double max = ProfilePlot.getFixedMax();

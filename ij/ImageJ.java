@@ -15,7 +15,7 @@ import ij.text.*;
 
 /**
 This frame is the main ImageJ class.
-
+<p>
 ImageJ is open-source. You are free to do anything you want
 with this source as long as I get credit for my work and you
 offer your changes to me so I can possibly add them to the
@@ -26,8 +26,10 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.23y";
+	public static final String VERSION = "1.24t";
 
+	private static final String IJ_X="ij.x",IJ_Y="ij.y",IJ_WIDTH="ij.width",IJ_HEIGHT="ij.height";
+	
 	private Toolbar toolbar;
 	private Panel statusBar;
 	private ProgressBar progressBar;
@@ -50,9 +52,9 @@ public class ImageJ extends Frame implements ActionListener,
 	public ImageJ(java.applet.Applet applet) {
 		super("ImageJ");
 		this.applet = applet;
-		String status = Prefs.load(this, applet);
+		String err1 = Prefs.load(this, applet);
 		Menus m = new Menus(this, applet);
-		m.addMenuBar();
+		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
 		notVerified = true;		
 
@@ -90,8 +92,10 @@ public class ImageJ extends Frame implements ActionListener,
 		add("Center", textPanel);
 		IJ.init(this, applet, textPanel);
 		IJ.write("ImageJ "+VERSION);
-		if (!status.equals(""))
-			IJ.write("<<"+status+">>");
+		if (err1!=null)
+			IJ.write("<<"+err1+">>");
+		if (err2!=null)
+			IJ.write("<<"+err2+">>");
 
 		IJ.showStatus("  " + Menus.nPlugins + " plugin commands installed");
  		addKeyListener(this);
@@ -100,14 +104,18 @@ public class ImageJ extends Frame implements ActionListener,
 		setResizable(true);
 		//pack();
 		Point loc = getPreferredLocation();
-		Dimension tbSize = toolbar.getPreferredSize();
-		setBounds(loc.x, loc.y, tbSize.width+10, 230);
-		//setLocation(loc.x, loc.y);
+		int ijWidth = Prefs.getInt(IJ_WIDTH,0);
+		int ijHeight = Prefs.getInt(IJ_HEIGHT,0);
+		if (ijWidth<=100 || ijHeight<=10) {
+			Dimension tbSize = toolbar.getPreferredSize();
+			ijWidth = tbSize.width+10;
+			ijHeight = 230;
+		}
+		setBounds(loc.x, loc.y, ijWidth, ijHeight);
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		setIcon();
 		setVisible(true);
 		requestFocus();
-		//IJ.write("font: "+Menus.getMenuBar().getFont());
 	}
     
 	void setIcon() {
@@ -123,6 +131,11 @@ public class ImageJ extends Frame implements ActionListener,
 	
 	public Point getPreferredLocation() {
 		int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+		int ijX = Prefs.getInt(IJ_X,-99);
+		int ijY = Prefs.getInt(IJ_Y,-99);
+		if (ijX!=-99 && ijY!=-99 && ijX<(screenWidth-75))
+			return new Point(ijX, ijY);
+			
 		Dimension tbsize = toolbar.getPreferredSize();
 		int windowWidth = tbsize.width+10;
 		double percent;
@@ -208,7 +221,7 @@ public class ImageJ extends Frame implements ActionListener,
 			stack = imp.getStack();
 		int[] mask = null;
 		float[] cTable = imp.getCalibration().getCTable();
-		if (slices==1 || !doesStacks || (stack!=null && (stack.isRGB() || stack.isHSB()))) {
+		if (slices==1 || !doesStacks) {
 			ip = imp.getProcessor();
 			mask = imp.getMask();
 			if ((capabilities&PlugInFilter.NO_UNDO)!=0)
@@ -231,6 +244,9 @@ public class ImageJ extends Frame implements ActionListener,
 			if (roi!=null && roi.getType()<Roi.LINE)
 				r = roi.getBoundingRect();
 			mask = imp.getMask();
+			ip = imp.getProcessor();
+			double minThreshold = ip.getMinThreshold();
+			double maxThreshold = ip.getMaxThreshold();
 			for (int i=1; i<=n; i++) {
 				ip = stack.getProcessor(i);
 				boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
@@ -240,6 +256,8 @@ public class ImageJ extends Frame implements ActionListener,
 				ip.setRoi(r);
 				ip.setMask(mask);
 				ip.setCalibrationTable(cTable);
+				if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+					ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 				((PlugInFilter)theFilter).run(ip);
 				if (doMasking)
 					ip.reset(mask);
@@ -267,6 +285,9 @@ public class ImageJ extends Frame implements ActionListener,
 	public Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
 		if (applet!=null)
 			return null;
+		String pluginsDir = Menus.getPlugInsPath();
+		if (pluginsDir==null)
+			return null;
 		if (notVerified) {
 			// check for duplicate classes in the plugins folder
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
@@ -274,10 +295,10 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		PluginClassLoader loader;
 		if (createNewLoader)
-			loader = new PluginClassLoader(Menus.getPlugInsPath());
+			loader = new PluginClassLoader(pluginsDir);
 		else {
 			if (classLoader==null)
-				classLoader = new PluginClassLoader(Menus.getPlugInsPath());
+				classLoader = new PluginClassLoader(pluginsDir);
 			loader = classLoader;
 		}
 		Object thePlugIn = null;
@@ -479,18 +500,6 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 	}
 	
-	void showAboutBox() {
-		MessageDialog d = new MessageDialog(this, "About ImageJ...",
-			"         ImageJ " + VERSION + "\n" +
-			" \n" +
-			"Wayne Rasband (wayne@codon.nih.gov)\n" +
-			"National Institutes of Health, USA\n" +
-			"http://rsb.info.nih.gov/ij/\n" +
-			" \n" +
-			"ImageJ is in the public domain."
-		);
-	}
-	
 	/** Adds the specified class to a Vector to keep it from being
 		garbage collected, causing static fields to be reset. */
 	public void register(Class c) {
@@ -498,6 +507,7 @@ public class ImageJ extends Frame implements ActionListener,
 			classes.addElement(c);
 	}
 
+	/** Called by ImageJ when the user selects Quit. */
 	void quit() {
 		if (applet==null)
 			Prefs.savePreferences();
@@ -509,6 +519,16 @@ public class ImageJ extends Frame implements ActionListener,
 			System.exit(0);
 	}
 	
+	/** Called once when ImageJ quits. */
+	public void savePreferences(Properties prefs) {
+		Point loc = getLocation();
+		Dimension size = getSize();
+		prefs.put(IJ_X, Integer.toString(loc.x));
+		prefs.put(IJ_Y, Integer.toString(loc.y));
+		prefs.put(IJ_WIDTH, Integer.toString(size.width));
+		prefs.put(IJ_HEIGHT, Integer.toString(size.height));
+	}
+
     public static void main(String args[]) {
 		new ImageJ(null);
     }

@@ -10,15 +10,16 @@ import java.util.*;
 public class Convolver implements PlugInFilter {
 
 	static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
+	
 	ImagePlus imp;
+	int kw, kh;
+	int slice = 1;
+	boolean canceled;
+	float[] kernel;
+	ImageWindow win;
+	
 	static String kernelText = ".0625  .125  .0625\n.125    .25    .125\n.0625  .125  .0625";
 	static boolean normalize = true;
-	static boolean createSelection = false;
-	int kw, kh;
-	static float[] kernel;
-	static int slice = 1;
-	static boolean canceled;
-	static ImageWindow win;
 
 	public int setup(String arg, ImagePlus imp) {
  		IJ.register(Convolver.class);
@@ -52,8 +53,8 @@ public class Convolver implements PlugInFilter {
 			IJ.showStatus("Convolve: "+slice+"/"+imp.getStackSize());
 		if (slice==imp.getStackSize()) {
 			ip.resetMinAndMax();
-			if (createSelection)
-				imp.setRoi(kw/2,kh/2,imp.getWidth()-(kw/2)*2, imp.getHeight()-(kh/2)*2);
+			//if (createSelection)
+			//	imp.setRoi(kw/2,kh/2,imp.getWidth()-(kw/2)*2, imp.getHeight()-(kh/2)*2);
 		}
 		slice++;
 	}
@@ -62,7 +63,6 @@ public class Convolver implements PlugInFilter {
 		GenericDialog gd = new GenericDialog("Convolver...", IJ.getInstance());
 		gd.addTextAreas(kernelText, null, 10, 30);
 		gd.addCheckbox("Normalize Kernel", normalize);
-		gd.addCheckbox("Create Selection", createSelection);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			canceled = true;
@@ -70,7 +70,6 @@ public class Convolver implements PlugInFilter {
 		}
 		kernelText = gd.getNextText();
 		normalize = gd.getNextBoolean();
-		createSelection = gd.getNextBoolean();
 		StringTokenizer st = new StringTokenizer(kernelText);
 		int n = st.countTokens();
 		kw = (int)Math.sqrt(n);

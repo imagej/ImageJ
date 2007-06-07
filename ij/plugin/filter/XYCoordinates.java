@@ -16,13 +16,13 @@ public class XYCoordinates implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		return DOES_8G+DOES_8C;
+		return DOES_ALL;
 	}
 
 	public void run(ImageProcessor ip) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		int background = ip.getPixel(0,0);
+		float background = ip.getPixelValue(0,0);
 		imp.killRoi();
 		
 		boolean okay = IJ.showMessageWithCancel("XY_Coordinates", 
@@ -31,9 +31,9 @@ public class XYCoordinates implements PlugInFilter {
 			+ "is assumed to be the value of the pixel in the\n"
 			+ "upper left corner of the image.\n"
 			+ " \n"
-			+ "width: " + width + "\n"
-			+ "height: " + height + "\n"
-			+ "background value: " + background + "\n"
+			+ "    Width: " + width + "\n"
+			+ "    Height: " + height + "\n"
+			+ "    Background value: " + background + "\n"
 			);
 		if (!okay)
 			return;
@@ -56,14 +56,24 @@ public class XYCoordinates implements PlugInFilter {
 
 		IJ.showStatus("Saving coordinates...");
 		int count = 0;
-		byte[] pixels = (byte[])ip.getPixels();
 		String ls = System.getProperty("line.separator");
-		int v;
+		float v;
+		int c,r,g,b;
+		int type = imp.getType();
 		for (int y=height-1; y>=0; y--) {
 			for (int x=0; x<width; x++) {
-				v = pixels[y*width+x]&0xff;
+				v = ip.getPixelValue(x,y);
 				if (v!=background) {
-					pw.print(x+" "+(height-1-y)+" "+v+ls);
+					if (type==ImagePlus.GRAY32)
+						pw.print(x+" "+(height-1-y)+" "+v+ls);
+					else if (type==ImagePlus.COLOR_RGB) {
+						c = ip.getPixel(x,y);
+						r = (c&0xff0000)>>16;
+						g = (c&0xff00)>>8;
+						b = c&0xff;
+						pw.print(x+" "+(height-1-y)+" "+r+" "+g+" "+b+ls);
+					} else
+						pw.print(x+" "+(height-1-y)+" "+(int)v+ls);
 					count++;
 				}
 			}

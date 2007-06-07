@@ -7,7 +7,7 @@ import ij.*;
 import ij.io.*;
 import ij.process.*;
 
-/** This plug-in opens a single TIFF image or stack contained in a ZIP archive. */
+/** This plugin opens a single TIFF image or stack contained in a ZIP archive. */
 
 public class Zip_Reader extends ImagePlus implements PlugIn {
 

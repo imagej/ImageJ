@@ -87,8 +87,11 @@ public class Compiler implements PlugIn, FilenameFilter {
 			FileDialog fd = new FileDialog(IJ.getInstance(), msg);
 			if (this.dir!=null)
 				fd.setDirectory(this.dir);
-			else
-				fd.setDirectory(Menus.getPlugInsPath());
+			else {
+				String pluginsDir = Menus.getPlugInsPath();
+				if (path!=null)
+					fd.setDirectory(pluginsDir);
+			}
 			if (this.name!=null)
 				fd.setFile(this.name);
 			GUI.center(fd);

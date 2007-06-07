@@ -181,7 +181,7 @@ public class Projector implements PlugInFilter {
 				);
 			return;
 		}
-		ImagePlus projections = new ImagePlus("Projections", stack2);
+		ImagePlus projections = new ImagePlus("Projections of "+imp.getShortTitle(), stack2);
 		projections.show();
 		
 		ImageWindow win = imp.getWindow();

@@ -13,9 +13,12 @@ public class Converter implements PlugIn {
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
-		if (imp!=null)
-			convert(arg);
-		else
+		if (imp!=null) {
+			if (imp.lock()) { //v1.24f
+				convert(arg);
+				imp.unlock();
+			}
+		} else
 			IJ.noImage();
 	}
 
@@ -48,6 +51,8 @@ public class Converter implements PlugIn {
 		    		new ImageWindow(imp);
 				} else if (item.equals("8-bit"))
 					new StackConverter(imp).convertToGray8();
+				else if (item.equals("16-bit"))
+					new StackConverter(imp).convertToGray16();
 				else if (item.equals("32-bit"))
 					new StackConverter(imp).convertToGray32();
 				else if (item.equals("RGB Color"))
@@ -67,12 +72,12 @@ public class Converter implements PlugIn {
 			    	Undo.reset(); // Reversible; no need for Undo
 					ic.convertToRGBStack();
 		    		newWindowCreated = true;
-			    	new StackWindow(imp); // replace window with a StackWindow
+			    	//new StackWindow(imp); // replace window with a StackWindow
 		    	} else if (item.equals("HSB Stack")) {
 			    	Undo.reset();
 					ic.convertToHSB();
 		    		newWindowCreated = true;
-			    	new StackWindow(imp);
+			    	//new StackWindow(imp);
 		    	} else if (item.equals("RGB Color")) {
 					ic.convertToRGB();
 		    	} else if (item.equals("8-bit Color")) {
@@ -110,7 +115,7 @@ public class Converter implements PlugIn {
 		IJ.showMessage("Converter",
 			"Supported Conversions:\n" +
 			" \n" +
-			"8-bit -> 16-bit\n" +
+			"8-bit -> 16-bit*\n" +
 			"8-bit -> 32-bit*\n" +
 			"8-bit -> RGB Color*\n" +
 			"16-bit -> 8-bit*\n" +

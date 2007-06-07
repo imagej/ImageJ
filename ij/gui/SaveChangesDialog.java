@@ -30,8 +30,11 @@ public class SaveChangesDialog extends Dialog implements ActionListener {
 		message.setFont(new Font("Dialog", Font.BOLD, 12));
         add(message);
         
+		int yesx=0, nox=1, cancelx=2;
+		if (ij.IJ.isMacintosh())
+			{yesx=2; nox=0; cancelx=1;}
 		// "Save" button. Add first so it's the highlighted button.
-		c.gridx = 2; c.gridy = 1;
+		c.gridx = yesx; c.gridy = 1;
 		c.gridwidth = 1;
 		c.fill = c.NONE;
 		c.insets = new Insets(10, 10, 10, 10);
@@ -41,14 +44,14 @@ public class SaveChangesDialog extends Dialog implements ActionListener {
         add(save);
 
 		// "Cancel" button
-		c.gridx = 1;
+		c.gridx = cancelx;
         cancel = new Button("  Cancel  ");
 		cancel.addActionListener(this);
 		gridbag.setConstraints(cancel, c);
         add(cancel);
 
 		// "Don't Save" button
-		c.gridx = 0;
+		c.gridx = nox;
         dontSave = new Button(" Don't Save ");
 		dontSave.addActionListener(this);
 		gridbag.setConstraints(dontSave, c);

@@ -8,29 +8,17 @@ import ij.plugin.frame.Recorder;
 /** This class is a customizable modal dialog box. */
 public class GenericDialog extends Dialog implements ActionListener,
 TextListener, FocusListener, ItemListener {
-	/** Maximum number of each component (numeric field, checkbox, etc). */
-	public static final int MAX_ITEMS = 20;
-	private double[] defaultValues;
-	private String[] defaultText;
-	protected TextField[] numberField;
-	protected TextField[] stringField;
-	protected Checkbox[] checkbox;
-	protected Choice[] choice;
+
+	protected Vector defaultValues,defaultText,numberField,stringField,checkbox,choice;
 	protected Component theLabel;
 	protected TextArea textArea1,textArea2;
 	private Button cancel, okay;
     private boolean wasCanceled;
     private int y;
-    private int nfIndex;
-    private int sfIndex;
-    private int cbIndex;
-    private int choiceIndex;
+    private int nfIndex, sfIndex, cbIndex, choiceIndex;
 	private GridBagLayout grid;
 	private GridBagConstraints c;
-	private boolean firstNumericField = true;
-	private boolean firstStringField = true;
-	private boolean firstCheckbox = true;
-	private boolean firstChoice = true;
+	private boolean firstNumericField=true;
 	private boolean invalidNumber;
 	private boolean firstPaint = true;
 	private Hashtable labels;
@@ -56,7 +44,7 @@ TextListener, FocusListener, ItemListener {
     
 	//void showFields(String id) {
 	//	String s = id+": ";
-	//	for (int i=0; i<MAX_ITEMS; i++)
+	//	for (int i=0; i<maxItems; i++)
 	//		if (numberField[i]!=null)
 	//			s += i+"='"+numberField[i].getText()+"' ";
 	//	IJ.write(s);
@@ -80,26 +68,27 @@ TextListener, FocusListener, ItemListener {
 		add(theLabel);
 
 		if (numberField==null) {
-			numberField = new TextField[MAX_ITEMS];
-			defaultValues = new double[MAX_ITEMS];
-			defaultText = new String[MAX_ITEMS];
+			numberField = new Vector(5);
+			defaultValues = new Vector(5);
+			defaultText = new Vector(5);
 		}
-		numberField[nfIndex] = new TextField(IJ.d2s(defaultValue, digits), 6);
-		numberField[nfIndex].addActionListener(this);
-		numberField[nfIndex].addTextListener(this);
-		numberField[nfIndex].addFocusListener(this);
-		defaultValues[nfIndex] = defaultValue;
-		defaultText[nfIndex] = numberField[nfIndex].getText();
+		TextField tf = new TextField(IJ.d2s(defaultValue, digits), 6);
+		tf.addActionListener(this);
+		tf.addTextListener(this);
+		tf.addFocusListener(this);
+		numberField.addElement(tf);
+		defaultValues.addElement(new Double(defaultValue));
+		defaultText.addElement(tf.getText());
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
-		grid.setConstraints(numberField[nfIndex], c);
-		numberField[nfIndex].setEditable(true);
-		if (firstNumericField) numberField[nfIndex].selectAll();
+		grid.setConstraints(tf, c);
+		tf.setEditable(true);
+		if (firstNumericField) tf.selectAll();
 		firstNumericField = false;
-		add(numberField[nfIndex]);
+		add(tf);
 		if (Recorder.record || macro)
-			saveLabel(numberField[nfIndex], label);
-		y++; nfIndex++;
+			saveLabel(tf, label);
+		y++;
     }
     
     private Label makeLabel(String label) {
@@ -132,27 +121,27 @@ TextListener, FocusListener, ItemListener {
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
-		if (firstStringField)
+		if (stringField==null) {
+			stringField = new Vector(4);
 			c.insets = new Insets(5, 0, 5, 0);
-		else
+		} else
 			c.insets = new Insets(0, 0, 5, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 
-		if (stringField==null)
-			stringField = new TextField[MAX_ITEMS];
-		stringField[sfIndex] = new TextField(defaultText, columns);
-		stringField[sfIndex].addActionListener(this);
-		stringField[sfIndex].addTextListener(this);
-		stringField[sfIndex].addFocusListener(this);
+		TextField tf = new TextField(defaultText, columns);
+		tf.addActionListener(this);
+		tf.addTextListener(this);
+		tf.addFocusListener(this);
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
-		grid.setConstraints(stringField[sfIndex], c);
-		stringField[sfIndex].setEditable(true);
-		add(stringField[sfIndex]);
+		grid.setConstraints(tf, c);
+		tf.setEditable(true);
+		add(tf);
+		stringField.addElement(tf);
 		if (Recorder.record || macro)
-			saveLabel(stringField[sfIndex], label);
-		y++; sfIndex++;
+			saveLabel(tf, label);
+		y++;
     }
     
 	/** Adds a checkbox.
@@ -160,25 +149,24 @@ TextListener, FocusListener, ItemListener {
 	* @param defaultValue	the initial state
 	*/
     public void addCheckbox(String label, boolean defaultValue) {
-    	if (checkbox==null)
-    		checkbox = new Checkbox[MAX_ITEMS];
-		checkbox[cbIndex] = new Checkbox(label);
+    	if (checkbox==null) {
+    		checkbox = new Vector(4);
+			c.insets = new Insets(15, 20, 0, 0);
+    	} else
+			c.insets = new Insets(0, 20, 0, 0);
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		if (firstCheckbox)
-			c.insets = new Insets(15, 20, 0, 0);
-		else
-			c.insets = new Insets(0, 20, 0, 0);
-		firstCheckbox = false;
-		grid.setConstraints(checkbox[cbIndex], c);
-		checkbox[cbIndex].setState(defaultValue);
-		checkbox[cbIndex].addItemListener(this);
-		add(checkbox[cbIndex]);
+		Checkbox cb = new Checkbox(label);
+		grid.setConstraints(cb, c);
+		cb.setState(defaultValue);
+		cb.addItemListener(this);
+		add(cb);
+		checkbox.addElement(cb);
 		//ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
 		if (Recorder.record || macro)
-			saveLabel(checkbox[cbIndex], label);
-		y++; cbIndex++;
+			saveLabel(cb, label);
+		y++;
     }
     
 	/** Adds a group of checkboxs using a grid layout.
@@ -194,23 +182,22 @@ TextListener, FocusListener, ItemListener {
     	int i1 = 0;
     	int[] index = new int[labels.length];
     	if (checkbox==null)
-    		checkbox = new Checkbox[MAX_ITEMS];
+    		checkbox = new Vector(12);
     	for (int row=0; row<rows; row++) {
 			for (int col=0; col<columns; col++) {
 				int i2 = col*rows+row;
 				if (i2>=labels.length)
 					break;
 				index[i1] = i2;
-				checkbox[cbIndex] = new Checkbox(labels[i1]);
-				checkbox[cbIndex].setState(defaultValues[i1]);
+				Checkbox cb = new Checkbox(labels[i1]);
+				checkbox.addElement(cb);
+				cb.setState(defaultValues[i1]);
 				if (Recorder.record || macro)
-					saveLabel(checkbox[cbIndex], labels[i1]);
-				cbIndex++;
+					saveLabel(cb, labels[i1]);
+				panel.add(cb);
  				i1++;
 			}
 		}
-		for (int i=0; i<i1; i++)
-			panel.add(checkbox[startCBIndex+index[i]]);
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
@@ -230,26 +217,25 @@ TextListener, FocusListener, ItemListener {
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
-		if (firstChoice)
+		if (choice==null) {
+			choice = new Vector(4);
 			c.insets = new Insets(5, 0, 5, 0);
-		else
+		} else
 			c.insets = new Insets(0, 0, 5, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
-		if (choice==null)
-			choice = new Choice[MAX_ITEMS];
-		choice[choiceIndex] = new Choice();
+		Choice thisChoice = new Choice();
 		for (int i=0; i<items.length; i++)
-			choice[choiceIndex].addItem(items[i]);
-		choice[choiceIndex].select(defaultItem);
+			thisChoice.addItem(items[i]);
+		thisChoice.select(defaultItem);
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
-		grid.setConstraints(choice[choiceIndex], c);
-		firstChoice = false;
-		add(choice[choiceIndex]);
+		grid.setConstraints(thisChoice, c);
+		add(thisChoice);
+		choice.addElement(thisChoice);
 		if (Recorder.record || macro)
-			saveLabel(choice[choiceIndex], label);
-		y++; choiceIndex++;
+			saveLabel(thisChoice, label);
+		y++;
     }
     
     /** Adds a message consisting of one or more lines of text. */
@@ -303,16 +289,17 @@ TextListener, FocusListener, ItemListener {
     
 	/** Returns the contents of the next numeric field. */
    public double getNextNumber() {
-		if (numberField==null||numberField[nfIndex]==null)
+		if (numberField==null)
 			return -1.0;
-		String theText = numberField[nfIndex].getText();
+		TextField tf = (TextField)numberField.elementAt(nfIndex);
+		String theText = tf.getText();
 		if (macro) {
-			String label = (String)labels.get((Object)numberField[nfIndex]);
+			String label = (String)labels.get((Object)tf);
 			theText = Macro.getValue(macroOptions, label, theText);
 			//IJ.write("getNextNumber: "+label+"  "+theText);
 		}	
-		String originalText = defaultText[nfIndex];
-		double defaultValue = defaultValues[nfIndex];
+		String originalText = (String)defaultText.elementAt(nfIndex);
+		double defaultValue = ((Double)(defaultValues.elementAt(nfIndex))).doubleValue();
 		double value;
 		if (theText.equals(originalText))
 			value = defaultValue;
@@ -326,7 +313,7 @@ TextListener, FocusListener, ItemListener {
 			}
 		}
 		if (Recorder.record)
-			recordOption(numberField[nfIndex], trim(theText));
+			recordOption(tf, trim(theText));
 		nfIndex++;
 		return value;
     }
@@ -369,30 +356,31 @@ TextListener, FocusListener, ItemListener {
   	/** Returns the contents of the next text field. */
    public String getNextString() {
    		String theText;
-		if (stringField!=null||stringField[sfIndex]!=null) {
-			theText = stringField[sfIndex].getText();
-			if (macro) {
-				String label = (String)labels.get((Object)stringField[sfIndex]);
-				theText = Macro.getValue(macroOptions, label, theText);
-				//IJ.write("getNextString: "+label+"  "+theText);
-			}	
-		} else
+		if (stringField==null)
 			return "";
+		TextField tf = (TextField)(stringField.elementAt(sfIndex));
+		theText = tf.getText();
+		if (macro) {
+			String label = (String)labels.get((Object)tf);
+			theText = Macro.getValue(macroOptions, label, theText);
+			//IJ.write("getNextString: "+label+"  "+theText);
+		}	
 		if (Recorder.record)
-			recordOption(stringField[sfIndex], theText);
+			recordOption(tf, theText);
 		sfIndex++;
 		return theText;
     }
     
   	/** Returns the state of the next checkbox. */
     public boolean getNextBoolean() {
-		if (checkbox==null||checkbox[cbIndex]==null)
+		if (checkbox==null)
 			return false;
+		Checkbox cb = (Checkbox)(checkbox.elementAt(cbIndex));
 		if (Recorder.record)
-			recordCheckboxOption(checkbox[cbIndex]);
-		boolean state = checkbox[cbIndex].getState();
+			recordCheckboxOption(cb);
+		boolean state = cb.getState();
 		if (macro) {
-			String label = (String)labels.get((Object)checkbox[cbIndex]);
+			String label = (String)labels.get((Object)cb);
 			String key = Macro.trimKey(label);
 			state = macroOptions.indexOf(key+" ")>=0;
 			//IJ.write("getNextBoolean: "+label+"  "+state);
@@ -403,35 +391,37 @@ TextListener, FocusListener, ItemListener {
     
   	/** Returns the selected item in the next popup menu. */
     public String getNextChoice() {
-		if (choice==null || choice[choiceIndex]==null)
+		if (choice==null)
 			return "";
-		String item = choice[choiceIndex].getSelectedItem();
+		Choice thisChoice = (Choice)(choice.elementAt(choiceIndex));
+		String item = thisChoice.getSelectedItem();
 		if (macro) {
-			String label = (String)labels.get((Object)choice[choiceIndex]);
+			String label = (String)labels.get((Object)thisChoice);
 			item = Macro.getValue(macroOptions, label, item);
 			//IJ.write("getNextChoice: "+label+"  "+item);
 		}	
 		if (Recorder.record)
-			recordOption(choice[choiceIndex++], item);
+			recordOption(thisChoice, item);
 		choiceIndex++;
 		return item;
     }
     
   	/** Returns the index of the selected item in the next popup menu. */
     public int getNextChoiceIndex() {
-		if (choice==null || choice[choiceIndex]==null)
+		if (choice==null)
 			return -1;
-		int index = choice[choiceIndex].getSelectedIndex();
+		Choice thisChoice = (Choice)(choice.elementAt(choiceIndex));
+		int index = thisChoice.getSelectedIndex();
 		if (macro) {
-			String label = (String)labels.get((Object)choice[choiceIndex]);
-			String item = choice[choiceIndex].getSelectedItem();
+			String label = (String)labels.get((Object)thisChoice);
+			String item = thisChoice.getSelectedItem();
 			item = Macro.getValue(macroOptions, label, item);
-			choice[choiceIndex].select(item);
-			index = choice[choiceIndex].getSelectedIndex();
+			thisChoice.select(item);
+			index = thisChoice.getSelectedIndex();
 			//IJ.write("getNextChoiceIndex: "+label+"  "+item);
 		}	
 		if (Recorder.record)
-			recordOption(choice[choiceIndex], choice[choiceIndex].getSelectedItem());
+			recordOption(thisChoice, thisChoice.getSelectedItem());
 		choiceIndex++;
 		return index;
     }
@@ -463,8 +453,10 @@ TextListener, FocusListener, ItemListener {
 			dispose();
 			return;
 		}
-    	if (stringField!=null&&stringField[0]!=null&&numberField==null)
-    		stringField[0].selectAll();
+    	if (stringField!=null&&numberField==null) {
+    		TextField tf = (TextField)(stringField.elementAt(0));
+    		tf.selectAll();
+    	}
 		Panel buttons = new Panel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		cancel = new Button("Cancel");
@@ -519,9 +511,11 @@ TextListener, FocusListener, ItemListener {
 
     public void paint(Graphics g) {
     	super.paint(g);
-      	if (firstPaint && numberField!=null && numberField[0]!=null)
-    		numberField[0].requestFocus();
-    	firstPaint = false;
+      	if (firstPaint && numberField!=null) {
+      		TextField tf = (TextField)(numberField.elementAt(0));
+    		tf.requestFocus();
+    		firstPaint = false;
+    	}
     }
-    
+    	
 }

@@ -67,7 +67,7 @@ public class Roi extends Object implements Cloneable {
 		if (y<0) y = 0;
 		if ((x+width)>xMax) x = xMax-width;
 		if ((y+height)>yMax) y = yMax-height;
-		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": Roi.setlocation(" + x + "," + y + ")");
+		//IJ.write(imp.getTitle() + ": Roi.setlocation(" + x + "," + y + ")");
 		this.x = x;
 		this.y = y;
 		startX = x; startY = y;
@@ -156,7 +156,10 @@ public class Roi extends Object implements Cloneable {
 		startY = yNew;
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
-		oldX = x; oldY = y;
+		oldX = x;
+		oldY = y;
+		oldWidth = width;
+		oldHeight=height;
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */
@@ -222,6 +225,10 @@ public class Roi extends Object implements Cloneable {
 		if (mag<1.0) {
 			clipWidth += (int)(1/mag);
 			clipHeight += (int)(1/mag);
+		}
+		if (clipboard!=null && type!=RECTANGLE) {
+			clipWidth += 5;
+			clipHeight += 5;
 		}
 	}
 		
@@ -346,8 +353,9 @@ public class Roi extends Object implements Cloneable {
 	void startPaste(ImagePlus clipboard) {
 		IJ.showStatus("Pasting...");
 		imp.getProcessor().snapshot();
+		updateClipRect(); //v1.24e
+		if (IJ.debugMode) IJ.write("startPaste: "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
-		Toolbar.getInstance().setTool(Toolbar.RECTANGLE);
 		this.clipboard = clipboard;
 	}
 	
@@ -356,6 +364,8 @@ public class Roi extends Object implements Cloneable {
 			ImageProcessor ip = imp.getProcessor();
 			ip.reset();
 			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
+			if (type!=RECTANGLE) //v1.24e
+				ip.reset(imp.getMask());
 			ic.setImageUpdated();
 		}
 	}
@@ -365,6 +375,8 @@ public class Roi extends Object implements Cloneable {
 			ImageProcessor ip = imp.getProcessor();
 			if (pasteMode!=Blitter.COPY) ip.reset();
 			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
+			if (type!=RECTANGLE) //v1.24e
+				ip.reset(imp.getMask());
 			ip.snapshot();
 			clipboard = null;
 			imp.updateAndDraw();
