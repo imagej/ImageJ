@@ -1,0 +1,64 @@
+package ij.plugin;
+import ij.*;
+import ij.text.*;
+import ij.util.*;
+import java.util.*;
+import java.awt.event.*;
+
+/** Lists ImageJ commands or keyboard shortcuts in a text window. */
+public class CommandLister implements PlugIn {
+
+	public void run(String arg) {
+		if (arg.equals("shortcuts"))
+			listShortcuts();
+		else
+			listCommands();
+	}
+	
+	public void listCommands() {
+		Hashtable commands = Menus.getCommands();
+		Vector v = new Vector();
+		for (Enumeration en=commands.keys(); en.hasMoreElements();) {
+			String command = (String)en.nextElement();
+			v.addElement(command+"\t"+(String)commands.get(command));
+		}
+		showList("Commands", "Command\tPlugin", v);
+	}
+
+	public void listShortcuts() {
+		Hashtable shortcuts = Menus.getShortcuts();
+		Vector v = new Vector();
+		for (Enumeration en=shortcuts.keys(); en.hasMoreElements();) {
+			Integer key = (Integer)en.nextElement();
+			int keyCode = key.intValue();
+			boolean upperCase = false;
+			if (keyCode>200) {
+				upperCase = true;
+				keyCode -= 200;
+			}
+			String shortcut = KeyEvent.getKeyText(keyCode);
+			if (!upperCase && shortcut.length()==1) {
+				char c = shortcut.charAt(0);
+				if (c>=65 && c<=90)
+					c += 32;
+				char[] chars = new char[1];
+				chars[0] = c;
+				shortcut = new String(chars);
+			}
+			if (shortcut.length()>1)
+				shortcut = " " + shortcut; 
+			v.addElement(shortcut+"\t"+(String)shortcuts.get(key));
+		}
+		showList("Keyboard Shortcuts", "Hot Key\tCommand", v);
+	}
+	
+	void showList(String title, String headings, Vector v) {
+		TextWindow tw = new TextWindow(title, "", 300, 400);
+		tw.getTextPanel().setColumnHeadings(headings);
+		String[] list = new String[v.size()];
+		v.copyInto((String[])list);
+		StringSorter.sort(list);
+		for (int i=0; i<list.length; i++)
+			tw.append(list[i]);
+	}
+}

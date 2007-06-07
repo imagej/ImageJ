@@ -1,0 +1,33 @@
+package ij.plugin.filter;
+import ij.*;
+import ij.process.*;
+import ij.io.*;
+
+/** This plug-in saves an image in tiff, gif, jpeg, text or raw format. */
+public class Writer implements PlugInFilter {
+	private String arg;
+    private ImagePlus imp;
+    
+	public int setup(String arg, ImagePlus imp) {
+		this.arg = arg;
+		this.imp = imp;
+		return DOES_ALL+NO_CHANGES;
+	}
+
+	public void run(ImageProcessor ip) {
+		if (arg.equals("tiff"))
+			new FileSaver(imp).saveAsTiff();
+		else if (arg.equals("gif"))
+			new FileSaver(imp).saveAsGif();
+		else if (arg.equals("jpeg"))
+			new FileSaver(imp).saveAsJpeg();
+		else if (arg.equals("text"))
+			new FileSaver(imp).saveAsText();
+		else if (arg.equals("lut"))
+			new FileSaver(imp).saveAsLut();
+		else if (arg.equals("raw"))
+			new FileSaver(imp).saveAsRaw();
+		else if (arg.equals("zip"))
+			new FileSaver(imp).saveAsZip();
+	}
+}
