@@ -95,13 +95,16 @@ import java.awt.Color;
 	* specified <code>String</code>.
 	*
 	* @param      s   the string to be parsed.
-	* @return     the double value represented by the string argument.
-	* @exception  NumberFormatException  if the string does not contain a
-	*             parsable double.
+	* @return     The double value represented by the string argument. 
+	*	Returns Double.NaN if the string does not contain a parsable double
 	*/
-	public static double parseDouble(String s) throws NumberFormatException {
-		Double d = new Double(s);
-		return(d.doubleValue());
+	public static double parseDouble(String s) {
+		double n = Double.NaN;
+		try {
+			Double d = new Double(s);
+			n = d.doubleValue();
+		} catch (NumberFormatException e) {}
+		return n;			
 	}
 
 }

@@ -36,7 +36,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public static int precision = Prefs.getInt(PRECISION,3);
 	private static float[] umeans = new float[MAX_STANDARDS];
 	private static ResultsTable systemRT = new ResultsTable();
-
+	private static int redirectTarget;
+	private static String redirectTitle = "";
+	
 	public Analyzer() {
 		rt = systemRT;
 		rt.setPrecision(precision);
@@ -77,7 +79,24 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 
 	void doSetDialog() {
-		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
+		String NONE = "None";
+		String[] titles;
+        int[] wList = WindowManager.getIDList();
+        if (wList==null) {
+        	titles = new String[1];
+            titles[0] = NONE;
+        } else {
+			titles = new String[wList.length+1];
+			titles[0] = NONE;
+			for (int i=0; i<wList.length; i++) {
+				ImagePlus imp = WindowManager.getImage(wList[i]);
+				titles[i+1] = imp!=null?imp.getTitle():"";
+			}
+		}
+		ImagePlus tImp = WindowManager.getImage(redirectTarget);
+		String target = tImp!=null?tImp.getTitle():NONE;
+		
+ 		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
 		String[] labels = new String[12];
 		boolean[] states = new boolean[12];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
@@ -96,15 +115,19 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels = new String[3];
 		states = new boolean[3];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
-		labels[1]="Display Image Name"; states[1]=(systemMeasurements&LABELS)!=0;
+		labels[1]="Display Label"; states[1]=(systemMeasurements&LABELS)!=0;
 		labels[2]="Invert Y Coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
 		gd.addCheckboxGroup(2, 2, labels, states);
 		gd.addMessage("");
+        gd.addChoice("Redirect To:", titles, target);
 		gd.addNumericField("Decimal Places:", precision, 0);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		setOptions(gd);
+		int index = gd.getNextChoiceIndex();
+		redirectTarget = index==0?0:wList[index-1];
+		redirectTitle = titles[index];
 		int prec = (int)gd.getNextNumber();
 		if (prec>=0 && prec<=8 && prec!=precision) {
 			precision = prec;
@@ -162,11 +185,57 @@ public class Analyzer implements PlugInFilter, Measurements {
 				return;
 			mode = AREAS;
 		}
-		ImageStatistics stats = imp.getStatistics(measurements);
-		saveResults(stats, imp.getRoi());
+		ImageStatistics stats;
+		if (isRedirectImage()) {
+			stats = getRedirectStats(measurements, roi);
+			if (stats==null) return;
+		} else
+			stats = imp.getStatistics(measurements);
+		saveResults(stats, roi);
 		displayResults();
 	}
 
+	/** Returns <code>true</code> if an image is selected in the "Redirect To:"
+		popup menu of the Analyze/Set Measurements dialog box. */
+	public static boolean isRedirectImage() {
+		return redirectTarget!=0;
+	}
+	
+	/** Returns the image selected in the "Redirect To:" popup
+		menu of the Analyze/Set Measurements dialog or null
+		if "None" is selected, the image was not found or the 
+		image is not the same size as <code>currentImage</code>. */
+	public static ImagePlus getRedirectImage(ImagePlus currentImage) {
+		ImagePlus rImp = WindowManager.getImage(redirectTarget);
+		if (rImp==null) {
+			IJ.showMessage("Analyzer", "Redirect image (\""+redirectTitle+"\")\n"
+				+ "not found.");
+			redirectTarget = 0;
+			Macro.abort();
+			return null;
+		}
+		if (rImp.getWidth()!=currentImage.getWidth() || rImp.getHeight()!=currentImage.getHeight()) {
+			IJ.showMessage("Analyzer", "Redirect image (\""+redirectTitle+"\") \n"
+				+ "is not the same size as the current image.");
+			Macro.abort();
+			return null;
+		}
+		return rImp;
+	}
+
+	ImageStatistics getRedirectStats(int measurements, Roi roi) {
+		ImagePlus redirectImp = getRedirectImage(imp);
+		if (redirectImp==null)
+			return null;
+		ImageProcessor ip = redirectImp.getProcessor();
+		if (roi!=null) {
+			ip.setRoi(roi.getBoundingRect());
+			ip.setMask(imp.getMask());
+		} else
+			ip.resetRoi();
+		return ImageStatistics.getStatistics(ip, measurements, redirectImp.getCalibration());
+	}
+	
 	void markAndCount() {
 		if (imp.getTitle().equals("Colors"))
 			return;
@@ -238,6 +307,20 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&LABELS)!=0)
 			rt.addLabel("Name", getFileName());
 		rt.addValue("Length", roi.getLength());
+		boolean moreParams = (measurements&MEAN)!=0||(measurements&STD_DEV)!=0||(measurements&MODE)!=0||(measurements&MIN_MAX)!=0;
+		if (moreParams) {
+			ProfilePlot profile = new ProfilePlot(imp);
+			double[] values = profile.getProfile();
+			ImageProcessor ip2 = new FloatProcessor(values.length, 1, values);
+			ImageStatistics stats = ImageStatistics.getStatistics(ip2, MEAN+STD_DEV+MODE+MIN_MAX, null);
+			if ((measurements&MEAN)!=0) rt.addValue(ResultsTable.MEAN,stats.mean);
+			if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);
+			if ((measurements&MODE)!=0) rt.addValue(ResultsTable.MODE, stats.dmode);
+			if ((measurements&MIN_MAX)!=0) {
+				rt.addValue(ResultsTable.MIN,stats.min);
+				rt.addValue(ResultsTable.MAX,stats.max);
+			}
+		}
 		displayResults();
 	}
 	
@@ -330,7 +413,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 	String getFileName() {
 		String s = "";
 		if (imp!=null) {
-			s = imp.getTitle();
+			if (mode==AREAS && redirectTarget!=0) {
+				ImagePlus rImp = WindowManager.getImage(redirectTarget);
+				if (rImp!=null) s = rImp.getTitle();				
+			} else
+				s = imp.getTitle();
+			int len = s.length();
+			if (len>4 && s.charAt(len-4)=='.')
+				s = s.substring(0,len-4); 
+			Roi roi = imp.getRoi();
+			String roiName = roi!=null?roi.getName():null;
+			if (roiName!=null)
+				s += ":"+roiName;
 			if (imp.getStackSize()>1) {
 				ImageStack stack = imp.getStack();
 				int currentSlice = imp.getCurrentSlice();
@@ -513,8 +607,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		TextPanel tp = IJ.isResultsWindow()?IJ.getTextPanel():null;
 		int counter = systemRT.getCounter();
 		int lineCount = tp!=null?IJ.getTextPanel().getLineCount():0;
-		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning()) {
-			SaveChangesDialog d = new SaveChangesDialog(IJ.getInstance(), "Save "+counter+" measurements?");
+		ImageJ ij = IJ.getInstance();
+		if (counter>0 && lineCount>0 && unsavedMeasurements && !IJ.macroRunning() && ij!=null) {
+			SaveChangesDialog d = new SaveChangesDialog(ij, "Save "+counter+" measurements?");
 			if (d.cancelPressed())
 				return false;
 			else if (d.savePressed())

@@ -4,13 +4,13 @@ import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
 
-/** This plugin implements the Invert, Smooth, Sharpen, Detect Edges, 
-	Add Noise and Reduce Noise commands. */
+/** This plugin implements the Invert, Smooth, Sharpen, Find Edges, 
+	and Add Noise commands. */
 public class Filters implements PlugInFilter {
 	
+	private static double sd = Prefs.getDouble(Prefs.NOISE_SD, 25.0);
 	private String arg;
 	private ImagePlus imp;
-	private static double sd = 25.0;
 	private int slice;
 	private boolean canceled;
 
@@ -22,7 +22,7 @@ public class Filters implements PlugInFilter {
 			if (roi!=null && roi.getType()>Roi.TRACED_ROI)
 				imp.killRoi(); // ignore any line selection
 		}
-		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
+		return IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
 	}
 
 	public void run(ImageProcessor ip) {
@@ -70,16 +70,12 @@ public class Filters implements PlugInFilter {
 	 		IJ.register(Filters.class);
 	 		return;
 	 	}
-	 	
-		if (arg.equals("median")) {
-			if (imp.getBitDepth()==16 || imp.getBitDepth()==32) {
-				imp.unlock();
-				IJ.run("Median...", "radius=1.5");			
-			} else
-				ip.medianFilter();
-	 		return;
-		}
-
+        	 	
+	}
+	
+	/** Returns the default standard deviation used by Process/Noise/Add Specified Noise. */
+	public static double getSD() {
+		return sd;
 	}
 
 }

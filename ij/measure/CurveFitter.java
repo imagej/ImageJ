@@ -21,17 +21,17 @@ import ij.gui.*;
  */
 public class CurveFitter {    
     public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
-    EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8;
+    EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9;
     
     public static final int IterFactor = 500;
     
     public static final String[] fitList = {"Straight Line","2nd Degree Polynomial",
     "3rd Degree Polynomial", "4th Degree Polynomial","Exponential","Power",
-    "log","Rodbard", "Gamma Variate"};
+    "log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)"};
     
     public static final String[] fList = {"y = a+bx","y = a+bx+cx^2",
     "y = a+bx+cx^2+dx^3", "y = a+bx+cx^2+dx^3+ex^4","y = a*exp(bx)","y = ax^b",
-    "y = a*ln(bx)","y = c*((a-x)/(x-d))^(1/b)", "y = a*(x-b)^c*exp(-(x-b)/d)"};
+    "y = a*ln(bx)","y = c*((a-x)/(x-d))^(1/b)", "y = a*(x-b)^c*exp(-(x-b)/d)", "y = a+b*ln(x-c)"};
            
     private static final double alpha = -1.0;	  // reflection coefficient
     private static final double beta = 0.5;	  // contraction coefficient
@@ -72,7 +72,7 @@ public class CurveFitter {
     }
     
     public void doFit(int fitType, boolean showSettings) {
-        if (fitType < STRAIGHT_LINE || fitType > GAMMA_VARIATE)
+        if (fitType < STRAIGHT_LINE || fitType > LOG2)
             throw new IllegalArgumentException("Invalid fit type");
         fit = fitType;
         initialize();
@@ -227,6 +227,11 @@ public class CurveFitter {
                 simp[0][3] = Math.sqrt(ab);
                 simp[0][1] = yData[getMax(yData)] / (Math.pow(ab, simp[0][2]) * Math.exp(-ab/simp[0][3]));
                 break;
+            case LOG2:
+                simp[0][0] = 0.5;
+                simp[0][1] = 0.05;
+                simp[0][2] = 0.0;
+                break;
         }
     }
     
@@ -314,6 +319,7 @@ public class CurveFitter {
             case LOG: return 2;
             case RODBARD: return 4;
             case GAMMA_VARIATE: return 4;
+            case LOG2: return 3;
         }
         return 0;
     }
@@ -358,6 +364,10 @@ public class CurveFitter {
                 double pw = Math.pow((x - p[0]), p[2]);
                 double e = Math.exp((-(x - p[0]))/p[3]);
                 return p[1]*pw*e;
+            case LOG2:
+            	double tmp = x-p[2];
+            	if (tmp<0.001) tmp = 0.001;
+				return p[0]+p[1]*Math.log(tmp);
             default:
                 return 0.0;
         }

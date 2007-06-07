@@ -61,9 +61,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static int staticMaxSize = 999999;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
 	private static int staticBins = Prefs.getInt(BINS,20);
-	private static String[] showStrings = {"Nothing","Outlines","Filled","Ellipses"};
+	private static String[] showStrings = {"Nothing","Outlines","Masks","Ellipses"};
 	
-	protected static final int NOTHING=0,OUTLINES=1,FILLED=2,ELLIPSES=3;
+	protected static final int NOTHING=0,OUTLINES=1,MASKS=2,ELLIPSES=3;
 	protected static int showChoice;
 	protected ImagePlus imp;
 	protected ResultsTable rt;
@@ -83,7 +83,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private String arg;
 	private double fillColor;
 	private boolean thresholdingLUT;
-	private ImageProcessor ip2;
+	private ImageProcessor drawIP;
 	private int width,height;
 	private boolean canceled;
 	private ImageStack outlines;
@@ -92,10 +92,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int totalCount;
 	private TextWindow tw;
 	private Wand wand;
-	private int imageType;
+	private int imageType, imageType2;
 	private int xStartC, yStartC;
 	private boolean roiNeedsImage;
 	private int minX, maxX, minY, maxY;
+	private ImagePlus redirectImp;
+	private ImageProcessor redirectIP;
+	private PolygonFiller pf;
+    private Roi saveRoi;
 
 	
 	/** Construct a ParticleAnalyzer.
@@ -130,9 +134,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			{IJ.noImage();return DONE;}
 		if (!showDialog())
 			return DONE;
-		int flags = IJ.setupDialog(imp, DOES_8G+DOES_16+DOES_32+NO_CHANGES+NO_UNDO);
+		int baseFlags = DOES_8G+DOES_16+DOES_32+NO_CHANGES+NO_UNDO;
+		int flags = Analyzer.isRedirectImage()?baseFlags:IJ.setupDialog(imp, baseFlags);
 		processStack = (flags&DOES_STACKS)!=0;
 		slice = 0;
+        saveRoi = imp.getRoi();
 		imp.startTiming();
 		return flags;
 	}
@@ -143,9 +149,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		slice++;
 		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
-		analyze(imp, ip);
-		if (slice==imp.getStackSize())
+		if (!analyze(imp, ip))
+            canceled = true;
+		if (slice==imp.getStackSize()) {
 			imp.updateAndDraw();
+            if (saveRoi!=null) imp.setRoi(saveRoi);
+        }
 	}
 	
 	/** Displays a modal options dialog. */
@@ -223,28 +232,45 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			showChoice = OUTLINES;
 		ip.snapshot();
 		ip.setProgressBar(null);
+		if (Analyzer.isRedirectImage()) {
+			redirectImp = Analyzer.getRedirectImage(imp);
+			if (redirectImp==null) return false;
+			redirectIP = redirectImp.getProcessor();
+		}
 		if (!setThresholdLevels(imp, ip))
-			return false;
+            return false;
 		width = ip.getWidth();
 		height = ip.getHeight();
 		if (showChoice!=NOTHING) {
 			if (slice==1)
 				outlines = new ImageStack(width, height);
-			ip2 = new ByteProcessor(width, height);
-			if (showChoice==OUTLINES) {
+			drawIP = new ByteProcessor(width, height);
+			if (showChoice==MASKS)
+				drawIP.invertLut();
+			else if (showChoice==OUTLINES) {
 				if (customLut==null)
 					makeCustomLut();
-				ip2.setColorModel(customLut);
-				ip2.setFont(new Font("SansSerif", Font.PLAIN, 9));
+				drawIP.setColorModel(customLut);
+				drawIP.setFont(new Font("SansSerif", Font.PLAIN, 9));
 
 			}
-			outlines.addSlice(null, ip2);
-			ip2.setColor(Color.white);
-			ip2.fill();
-			ip2.setColor(Color.black);
+			outlines.addSlice(null, drawIP);
+			drawIP.setColor(Color.white);
+			drawIP.fill();
+			drawIP.setColor(Color.black);
 		}
-		calibration = imp.getCalibration();
+		calibration = redirectImp!=null?redirectImp.getCalibration():imp.getCalibration();
 		
+		if (rt==null) {
+			rt = Analyzer.getResultsTable();
+			analyzer = new Analyzer(imp);
+		} else
+			analyzer = new Analyzer(imp, measurements, rt);
+		if (resetCounter && slice==1) {
+			if (!Analyzer.resetCounter())
+                return false;
+		}
+
 		byte[] pixels = null;
 		if (ip instanceof ByteProcessor)
 			pixels = (byte[])ip.getPixels();
@@ -255,18 +281,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		minX=r.x; maxX=r.x+r.width; minY=r.y; maxY=r.y+r.height;
 		int offset;
 		double value;
-		int inc = r.height/20;
-		if (inc<1) inc = 1;
+		int inc = Math.max(r.height/25, 1);
 		int mi = 0;
-		if (rt==null) {
-			rt = Analyzer.getResultsTable();
-			analyzer = new Analyzer(imp);
-		} else
-			analyzer = new Analyzer(imp, measurements, rt);
-		if (resetCounter && slice==1) {
-			if (!Analyzer.resetCounter())
-				return false;
-		}
 		if (recordStarts) {
 			xStartC = getColumnID("XStart");
 			yStartC = getColumnID("YStart");
@@ -281,6 +297,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		roiNeedsImage = (measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0 || (measurements&FERET)!=0;
 		particleCount = 0;
 		wand = new Wand(ip);
+		pf = new PolygonFiller();
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -289,12 +306,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					value = pixels[offset+x]&255;
 				else
 					value = ip.getPixelValue(x, y);
-				//if (mask!=null && mask[mi++]!=ip.BLACK)
-				//	value = -Double.MAX_VALUE;
 				if (value>=level1 && value<=level2)
 					analyzeParticle(x,y,imp,ip);
 			}
-			if (showProgress && (y%inc==0))
+			if (showProgress && ((y%inc)==0))
 				IJ.showProgress((double)(y-r.y)/r.height);
 			if (win!=null)
 				canceled = !win.running;
@@ -311,7 +326,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (processStack && IJ.getInstance()!=null) {
 			String aLine = slice+"\t"+particleCount;
 			if (tw==null) {
-				String title = "Counts of "+imp.getShortTitle();
+				String title = "Counts of "+imp.getTitle();
 				String headings = "Slice\tCount";
 				tw = new TextWindow(title, headings, aLine, 180, 360);
 			} else
@@ -398,38 +413,54 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			else
 				return false;
 		}
+		imageType2 = imageType;
+		if (redirectIP!=null) {
+			if (redirectIP instanceof ShortProcessor)
+				imageType2 = SHORT;
+			else if (redirectIP instanceof FloatProcessor)
+				imageType2 = FLOAT;
+			else
+				imageType2 = BYTE;
+		}
 		return true;
 	}
 	
 	void analyzeParticle(int x, int y,ImagePlus imp, ImageProcessor ip) {
 		//Wand wand = new Wand(ip);
+		ImageProcessor ip2 = redirectIP!=null?redirectIP:ip;
 		wand.autoOutline(x,y, level1, level2);
 		if (wand.npoints==0)
 			{IJ.log("wand error: "+x+" "+y); return;}
 		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
 		Rectangle r = roi.getBoundingRect();
-		if (r.width>1 && r.height>1)ip.setMask(roi.getMask());
-		ip.setRoi(r);
+		if (r.width>1 && r.height>1) {
+                    PolygonRoi proi = (PolygonRoi)roi;
+                    pf.setPolygon(proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
+                    ip2.setMask(pf.getMask(r.width, r.height));
+                }
+		ip2.setRoi(r);
 		ip.setValue(fillColor);
-		ImageStatistics stats = getStatistics(ip,measurements,calibration);
+		ImageStatistics stats = getStatistics(ip2, measurements, calibration);
 		boolean include = true;
 		if (excludeEdgeParticles &&
 		(r.x==minX||r.y==minY||r.x+r.width==maxX||r.y+r.height==maxY))
 				include = false;
-		int[] mask = ip.getMask();
+		int[] mask = ip2.getMask();
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {
 			particleCount++;
 			if (roiNeedsImage)
 				roi.setImage(imp);
 			saveResults(stats, roi);
 			if (showChoice!=NOTHING)
-				drawParticle(ip2, roi, stats, mask);
+				drawParticle(drawIP, roi, stats, mask);
 		}
+		if (redirectIP!=null)
+			ip.setRoi(r);
 		ip.fill(mask);
 	}
 
     ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
-    	switch (imageType) {
+    	switch (imageType2) {
         	case BYTE:
             	return new ByteStatistics(ip, mOptions, cal);
         	case SHORT:
@@ -459,12 +490,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Draws a selected particle in a separate image.  This is
 		another method subclasses may want to override. */
-	protected void drawParticle(ImageProcessor ip2, Roi roi,
+	protected void drawParticle(ImageProcessor drawIP, Roi roi,
 	ImageStatistics stats, int[] mask) {
 		switch (showChoice) {
-			case FILLED: drawFilledParticle(ip2, roi, mask); break;
-			case OUTLINES: drawOutline(ip2, roi, rt.getCounter()); break;
-			case ELLIPSES: drawEllipse(ip2, stats, rt.getCounter()); break;
+			case MASKS: drawFilledParticle(drawIP, roi, mask); break;
+			case OUTLINES: drawOutline(drawIP, roi, rt.getCounter()); break;
+			case ELLIPSES: drawEllipse(drawIP, stats, rt.getCounter()); break;
 			default:
 		}
 	}
@@ -512,8 +543,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 		}
 		if (outlines!=null && lastSlice) {
-			String title = imp!=null?imp.getShortTitle():"Outlines";
-			new ImagePlus("Drawing of "+title, outlines).show();
+			String title = imp!=null?imp.getTitle():"Outlines";
+			String prefix = showChoice==MASKS?"Mask of ":"Drawing of ";
+			new ImagePlus(prefix+title, outlines).show();
 		}
 	}
 	

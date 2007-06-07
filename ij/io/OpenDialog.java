@@ -1,8 +1,12 @@
 package ij.io;
-import java.awt.*;
 import ij.*;
 import ij.gui.*;
 import ij.plugin.frame.Recorder;
+import ij.util.Java2;
+import java.awt.*;
+import java.io.*;
+import javax.swing.*;
+import javax.swing.filechooser.*;
 
 /** This class displays a dialog window from 
 	which the user can select an input file. */ 
@@ -12,6 +16,7 @@ import ij.plugin.frame.Recorder;
 	private String name;
 	private boolean recordPath;
 	private static String defaultDirectory;
+	private static Frame sharedFrame;
 	private String title;
 	
 	/** Displays a file open dialog with 'title' as
@@ -20,32 +25,19 @@ import ij.plugin.frame.Recorder;
 		and updates the ImageJ default directory. */
 	public OpenDialog(String title, String path) {
 		String macroOptions = Macro.getOptions();
-		if (macroOptions!=null) {
+		if (macroOptions!=null && (path==null||path.equals(""))) {
 			path = Macro.getValue(macroOptions, title, path);
 			if (path==null || path.equals(""))
 				path = Macro.getValue(macroOptions, "path", path);		
 		}
 		if (path==null || path.equals("")) {
-			ImageJ ij = IJ.getInstance();
-			Frame parent = ij!=null?ij:new Frame();
-			FileDialog fd = new FileDialog(parent, title);
+			if (Prefs.useJFileChooser)
+				jOpen(title, getDefaultDirectory(), null);
+			else
+				open(title, getDefaultDirectory(), null);
+			if (name!=null) defaultDirectory = dir;
 			this.title = title;
-			defaultDirectory = getDefaultDirectory();
-			if (defaultDirectory!=null)
-				fd.setDirectory(defaultDirectory);
-			GUI.center(fd);
-			fd.show();
-			name = fd.getFile();
-			if (name==null)
-				Macro.abort();
-			else {
-				dir = fd.getDirectory();
-				defaultDirectory = dir;
-			}
 			recordPath = true;
-			fd.dispose();
-			if (ij==null)
-				parent.dispose();
 		} else {
 			decodePath(path);
 			recordPath = IJ.macroRunning();
@@ -63,27 +55,57 @@ import ij.plugin.frame.Recorder;
 		if (path!=null)
 			decodePath(path);
 		else {
-			ImageJ ij = IJ.getInstance();
-			Frame parent = ij!=null?ij:new Frame();
-			FileDialog fd = new FileDialog(parent, title);
+			if (Prefs.useJFileChooser)
+				jOpen(title, defaultDir, defaultName);
+			else
+				open(title, defaultDir, defaultName);
 			this.title = title;
-			if (defaultDir!=null)
-				fd.setDirectory(defaultDir);
-			if (defaultName!=null)
-				fd.setFile(defaultName);
-			GUI.center(fd);
-			fd.show();
-			name = fd.getFile();
-			if (name==null)
-				Macro.abort();
-			dir = fd.getDirectory();
 			recordPath = true;
-			fd.dispose();
-			if (ij==null)
-				parent.dispose();
 		}
 	}
 	
+	// Uses the JFileChooser class to display the dialog box
+	void jOpen(String title, String path, String fileName) {
+		Java2.setSystemLookAndFeel();
+		JFileChooser fc = new JFileChooser();
+		File fdir = null;
+		if (path!=null)
+			fdir = new File(path);
+		if (fdir!=null)
+			fc.setCurrentDirectory(fdir);
+		if (fileName!=null)
+			fc.setSelectedFile(new File(fileName));
+		int returnVal = fc.showOpenDialog(IJ.getInstance());
+		if (returnVal!=JFileChooser.APPROVE_OPTION)
+			{Macro.abort(); return;}
+		File file = fc.getSelectedFile();
+		if (file==null)
+			{Macro.abort(); return;}
+		name = file.getName();
+		dir = fc.getCurrentDirectory().getPath()+File.separator;
+	}
+	
+	// Uses the AWT FileDialog class to display the dialog box
+	void open(String title, String path, String fileName) {
+		Frame parent = IJ.getInstance();
+		if (parent==null) {
+			if (sharedFrame==null) sharedFrame = new Frame();
+			parent = sharedFrame;
+		}
+		FileDialog fd = new FileDialog(parent, title);
+		if (path!=null)
+			fd.setDirectory(path);
+		if (fileName!=null)
+			fd.setFile(fileName);
+		GUI.center(fd);
+		fd.show();
+		name = fd.getFile();
+		if (name==null)
+			Macro.abort();
+		else
+			dir = fd.getDirectory();
+	}
+
 	void decodePath(String path) {
 		int i = path.lastIndexOf('/');
 		if (i==-1)

@@ -14,13 +14,14 @@ import ij.plugin.Zip_Reader;
 import ij.text.TextWindow;
 
 /** Opens tiff (and tiff stacks), dicom, fits, pgm, jpeg, bmp or
-	gif images, and look-up tables, using a file open dialog or a path. */
+	gif images, and look-up tables, using a file open dialog or a path.
+	Calls HandleExtraFileTypes plugin if the file type is unrecognised. */
 public class Opener {
 
 	private static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
-		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA=10,ROI=11,TEXT=12,PNG=13,TIFF_AND_DICOM=14;
+		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,TIFF_AND_DICOM=14,CUSTOM=15;
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
-		"jpg","gif","lut","bmp","zip","java","roi","txt","png","t&d"};
+		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d"};
 	private static String defaultDirectory = null;
 	private static int fileType;
 
@@ -59,7 +60,7 @@ public class Opener {
 				case ROI:
 					IJ.runPlugIn("ij.plugin.RoiReader", path);
 					break;
-				case JAVA: case TEXT:
+				case JAVA_OR_TEXT: case TEXT:
 					File file = new File(path);
 					boolean betterTextArea = IJ.isJava2() || IJ.isMacintosh();
 					int maxSize = 250000;
@@ -89,7 +90,9 @@ public class Opener {
 	}
 
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	pgm, gif or jpeg image. Returns an ImagePlus object if successful. */
+		pgm, gif or jpeg image. Returns an ImagePlus object if successful.
+		Modified by Gregory Jefferis to call HandleExtraFileTypes plugin if 
+		the file type is unrecognised. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
 		if (directory.length()>0 && !directory.endsWith(Prefs.separator))
@@ -127,6 +130,18 @@ public class Opener {
 			case ZIP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.Zip_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
+			case UNKNOWN: case TEXT:
+				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
+				imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
+				if (imp==null) return null;
+				if (imp.getWidth()>0 && imp.getHeight()>0) {
+					fileType = CUSTOM;
+					return imp;
+				} else {
+					if (imp.getWidth()==-1)
+						fileType = CUSTOM; // plugin opened image so don't display error
+					return null;
+				}
 			default:
 				return null;
 		}
@@ -175,8 +190,11 @@ public class Opener {
 			IJ.showStatus("");
 			return imp;
     	} catch (Exception e) {
-             IJ.showMessage(""+e);
-             return null;
+    		String msg = e.getMessage();
+    		if (msg==null || msg.equals(""))
+    			msg = "" + e;	
+			IJ.showMessage("Open URL",msg + "\n \n" + url);
+			return null;
 	   	} 
 	}
 	
@@ -228,7 +246,11 @@ public class Opener {
 	   	ImagePlus imp = null;
  		Image img = Toolkit.getDefaultToolkit().getImage(dir+name);
  		if (img!=null) {
-	   		imp = new ImagePlus(name, img);
+ 			try {
+ 				imp = new ImagePlus(name, img);
+ 			} catch (IllegalStateException e) {
+				return null; // error loading image				
+ 			} 
 	    	if (imp.getType()==ImagePlus.COLOR_RGB)
 	    		convertGrayJpegTo8Bits(imp);
 	    	FileInfo fi = new FileInfo();
@@ -469,6 +491,8 @@ public class Opener {
 			return TIFF_AND_DICOM;
 
 		 // Big-endian TIFF ("MM")
+        if (name.endsWith(".lsm"))
+        		return UNKNOWN; // The LSM  Reader plugin opens these files
 		if (b0==73 && b1==73 && b2==42 && b3==0)
 				return TIFF;
 
@@ -490,7 +514,8 @@ public class Opener {
 		}
 
  		// ACR/NEMA with first tag = 00002,00xx or 00008,00xx
- 		if ((b0==8||b0==2) && b1==0 && b3==0) 	
+		name = name.toLowerCase(Locale.US);
+ 		if ((b0==8||b0==2) && b1==0 && b3==0 && !name.endsWith(".spe")) 	
   			 	return DICOM;
 
 		// FITS ("SIMP")
@@ -502,7 +527,6 @@ public class Opener {
 			return PGM;
 
 		// Lookup table
-		name = name.toLowerCase(Locale.US);
 		if (name.endsWith(".lut"))
 			return LUT;
 		
@@ -518,19 +542,25 @@ public class Opener {
 		if (name.endsWith(".zip"))
 			return ZIP;
 
-		// Java source file
-		if (name.endsWith(".java"))
-			return JAVA;
+		// Java source file or text file
+		if (name.endsWith(".java") || name.endsWith(".txt"))
+			return JAVA_OR_TEXT;
 
 		// ImageJ, NIH Image, Scion Image for Windows ROI
 		if (b0==73 && b1==111) // "Iout"
 			return ROI;
 			
-		// Text file
-		if (name.endsWith(".avi")) return UNKNOWN;
-		if (name.endsWith(".txt") || (b0>=32 && b0<=126 && b1>=32 && b1<=126  
-		&& b2>=32 && b2<=126 && b3>=32 && b3<=126 && buf[8]>=32 && buf[8]<=126))
-			return TEXT;
+        // Text file
+        boolean isText = true;
+        for (int i=0; i<10; i++) {
+          int c = buf[i];
+          if ((c<32&&c!=9&&c!=10&&c!=13) || c>126) {
+              isText = false;
+              break;
+          }
+        }
+        if (isText)
+           return TEXT;
 
 		return UNKNOWN;
 	}

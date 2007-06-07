@@ -22,7 +22,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
-	private static boolean isMac, isWin, isJava2;
+	private static boolean isMac, isWin, isJava2, isJava14;
 	private static boolean altDown, spaceDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -35,9 +35,10 @@ public class IJ {
 		osname = System.getProperty("os.name");
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
-		String version = System.getProperty("java.version");
+		String version = System.getProperty("java.version").substring(0,3);
 		// JVM on Sharp Zaurus PDA claims to be "3.1"!
-		isJava2 = !(version.startsWith("1.1")||version.startsWith("3."));
+		isJava2 = version.compareTo("1.1")>0 && version.compareTo("2.9")<=0;
+		isJava14 = version.compareTo("1.3")>0 && version.compareTo("2.9")<=0;
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -80,7 +81,7 @@ public class IJ {
 				log("Plugin not found: " + className);
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
-		catch (IllegalAccessException e) {log("Unable to load plugin (acc)");}
+		catch (IllegalAccessException e) {log("Unable to load plugin, possibly \nbecause it is not public.");}
 		return thePlugIn;
 	}
 	       
@@ -101,23 +102,23 @@ public class IJ {
 		switch (type) {
 			case ImagePlus.GRAY8:
 				if ((capabilities&PlugInFilter.DOES_8G)==0)
-					{wrongType(capabilities); return;}
+					{wrongType(capabilities, cmd); return;}
 				break;
 			case ImagePlus.COLOR_256:
 				if ((capabilities&PlugInFilter.DOES_8C)==0)
-					{wrongType(capabilities); return;}
+					{wrongType(capabilities, cmd); return;}
 				break;
 			case ImagePlus.GRAY16:
 				if ((capabilities&PlugInFilter.DOES_16)==0)
-					{wrongType(capabilities); return;}
+					{wrongType(capabilities, cmd); return;}
 				break;
 			case ImagePlus.GRAY32:
 				if ((capabilities&PlugInFilter.DOES_32)==0)
-					{wrongType(capabilities); return;}
+					{wrongType(capabilities, cmd); return;}
 				break;
 			case ImagePlus.COLOR_RGB:
 				if ((capabilities&PlugInFilter.DOES_RGB)==0)
-					{wrongType(capabilities); return;}
+					{wrongType(capabilities, cmd); return;}
 				break;
 		}
 		int slices = imp.getStackSize();
@@ -187,8 +188,8 @@ public class IJ {
 		}
 		if ((capabilities&PlugInFilter.NO_CHANGES)==0) {
 			imp.changes = true;
-			if (slices>1 && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32))
-				imp.getProcessor().resetMinAndMax();
+			//if (slices>1 && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32))
+			//	imp.getProcessor().resetMinAndMax();
 	 		imp.updateAndDraw();
 	 	}
 		ImageWindow win = imp.getWindow();
@@ -229,12 +230,12 @@ public class IJ {
 				IJ.error("Plugin not found: "+className);
 		}
 		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
-		catch (IllegalAccessException e) {IJ.error("Unable to load plugin (acc)");}
+		catch (IllegalAccessException e) {IJ.error("Unable to load plugin, possibly \nbecause it is not public.");}
 		return thePlugIn;
 	} 
 
-	static void wrongType(int capabilities) {
-		String s = "This command requires an image of type:\n \n";
+	static void wrongType(int capabilities, String cmd) {
+		String s = "\""+cmd+"\" requires an image of type:\n \n";
 		if ((capabilities&PlugInFilter.DOES_8G)!=0) s +=  "    8-bit grayscale\n";
 		if ((capabilities&PlugInFilter.DOES_8C)!=0) s +=  "    8-bit color\n";
 		if ((capabilities&PlugInFilter.DOES_16)!=0) s +=  "    16-bit grayscale\n";
@@ -252,21 +253,14 @@ public class IJ {
     /** Runs an ImageJ command. Does not return until 
     	the command has finished executing. */
 	public static void run(String command) {
-		if (ij==null && Menus.getCommands()==null)
-			init();
-		Macro.abort = false;
-		Macro.setOptions(null);
-		macroRunning = true;
-		Executer e = new Executer(command);
-		e.run();
-		macroRunning = false;
-		testAbort();
+		run(command, null);
 	}
 	
     /** Runs an ImageJ command, with options that are passed to the
 		GenericDialog and OpenDialog classes. Does not return until
 		the command has finished executing. */
 	public static void run(String command, String options) {
+		//IJ.log("run: "+command+" "+Thread.currentThread().getName());
 		if (ij==null && Menus.getCommands()==null)
 			init();
 		Macro.abort = false;
@@ -315,12 +309,19 @@ public class IJ {
 	/** Displays a line of text in the "Results" window. Uses
 		System.out.println if ImageJ is not present. */
 	public static void write(String s) {
-		if (textPanel==null && ij!=null)
-			ij.showResults();
+		if (textPanel==null)
+			showResults();
 		if (textPanel!=null)
 				textPanel.append(s);
 		else
 			System.out.println(s);
+	}
+
+	private static void showResults() {
+		TextWindow resultsWindow = new TextWindow("Results", "", 300, 200);
+		textPanel = resultsWindow.getTextPanel();
+		if (ij!=null)
+			textPanel.addKeyListener(ij);
 	}
 
 	/** Displays a line of text in the "Log" window. Uses
@@ -342,8 +343,8 @@ public class IJ {
 	/** Clears the "Results" window and sets the column headings to
 		those in the tab-delimited 'headings' String. */
 	public static void setColumnHeadings(String headings) {
-		if (textPanel==null && ij!=null)
-			ij.showResults();
+		if (textPanel==null)
+			showResults();
 		if (textPanel!=null)
 			textPanel.setColumnHeadings(headings);
 	}
@@ -356,16 +357,17 @@ public class IJ {
 	/** Returns a reference to the "Results" window TextPanel.
 		Opens the "Results" window if it is currently not open. */
 	public static TextPanel getTextPanel() {
-		if (textPanel==null && ij!=null)
-			ij.showResults();
+		if (textPanel==null)
+			showResults();
 		return textPanel;
 	}
 	
+	/** TextWindow calls this method with a null argument when the "Results" window is closed. */
 	public static void setTextPanel(TextPanel tp) {
 		textPanel = tp;
 	}
-
-	/**Displays a "no images are open" dialog box.*/
+    
+    /**Displays a "no images are open" dialog box.*/
 	public static void noImage() {
 		showMessage("No Image", "There are no images open.");
 		Macro.abort();
@@ -600,6 +602,11 @@ public class IJ {
 		return isJava2;
 	}
 	
+	/** Returns true if ImageJ is running on a Java 1.4 or greater JVM. */
+	public static boolean isJava14() {
+		return isJava14;
+	}
+
 	/** Displays an error message and returns false if the
 		ImageJ version is less than the one specified. */
 	public static boolean versionLessThan(String version) {
@@ -642,14 +649,22 @@ public class IJ {
 		return flags;
 	}
 	
-	/** Creates a rectangular selection. */
+	/** Creates a rectangular selection. Removes any existing 
+		selection if width or height are less than 1. */
 	public static void makeRectangle(int x, int y, int width, int height) {
-		getImage().setRoi(x, y, width, height);
+		if (width<=0 || height<0)
+			getImage().killRoi();
+		else
+			getImage().setRoi(x, y, width, height);
 	}
 	
-	/** Creates an oval selection. */
+	/** Creates an elliptical selection. Removes any existing 
+		selection if width or height are less than 1. */
 	public static void makeOval(int x, int y, int width, int height) {
-		getImage().setRoi(new OvalRoi(x, y, width, height));
+		if (width<=0 || height<0)
+			getImage().killRoi();
+		else
+			getImage().setRoi(new OvalRoi(x, y, width, height));
 	}
 	
 	/** Creates a straight line selection. */

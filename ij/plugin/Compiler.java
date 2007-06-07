@@ -1,6 +1,7 @@
 package ij.plugin;
 import java.awt.*;
 import java.io.*;
+import java.util.*;
 import ij.*;
 import ij.gui.*;
 import ij.io.*;
@@ -58,9 +59,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 	boolean compile(String path) {
 		IJ.showStatus("compiling: "+path);
 		String classpath = System.getProperty("java.class.path");
-		//IJ.write("classpath: " + classpath);
+		File f = new File(path);
+		if (f!=null)  // add directory containing file to classpath
+			classpath += File.pathSeparator + f.getParent();
+		//IJ.log("classpath: " + classpath);
 		output.reset();
-		boolean compiled = javac.compile(new String[] {"-deprecation","-classpath",classpath,path});
+		boolean compiled = javac.compile(new String[] {"-deprecation", "-classpath", classpath, path});
 		String s = output.toString();
 		boolean errors = (!compiled || areErrors(s));
 		if (errors)
@@ -96,7 +100,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 			directory = od.getDirectory();
 			fileName = od.getFileName();
 			okay = fileName!=null;
-			if (okay && !(fileName.endsWith(".java")||fileName.endsWith(".txt"))) {
+			String lcName = okay?fileName.toLowerCase(Locale.US):null;
+			if (okay && !(lcName.endsWith(".java")||lcName.endsWith("txt"))) {
 				IJ.error("File name must end with \".java\", or \".txt\".");
 				okay = false;
 			}
@@ -116,6 +121,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		if (okay) {
 			name = fileName;
 			dir = directory;
+			Editor.setDefaultDirectory(dir);
 		}
 		return okay;
 	}

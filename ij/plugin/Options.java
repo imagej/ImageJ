@@ -15,7 +15,6 @@ public class Options implements PlugIn {
 		
 		if (arg.equals("misc")) {
 			GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
-			gd.addNumericField("Real Histogram Bins:", HistogramWindow.nBins, 0);
 			gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
 			gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
 			gd.addCheckbox("Scale When Converting", ImageConverter.getDoScaling());
@@ -23,21 +22,26 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Antialiased Text", Prefs.antialiasedText);
 			gd.addCheckbox("Interpolate Images <100%", Prefs.interpolateScaledImages);
 			gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
+			gd.addCheckbox("Use JFileChooser", Prefs.useJFileChooser);
 			gd.addCheckbox("Debug Mode", IJ.debugMode);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;
 				
-			int nBins = (int)gd.getNextNumber();
-			if (nBins>=2 && nBins<=1000)
-				HistogramWindow.nBins = nBins;
-			
 			String divValue = gd.getNextString();
-			Float f;
-			try {f = new Float(divValue);}
-			catch (NumberFormatException e) {f = null;}
-			if (f!=null)
-				FloatBlitter.divideByZeroValue = f.floatValue();
+			if (divValue.equalsIgnoreCase("infinity") || divValue.equalsIgnoreCase("infinite"))
+				FloatBlitter.divideByZeroValue = Float.POSITIVE_INFINITY;
+			else if (divValue.equalsIgnoreCase("NaN"))
+				FloatBlitter.divideByZeroValue = Float.NaN;
+			else if (divValue.equalsIgnoreCase("max"))
+				FloatBlitter.divideByZeroValue = Float.MAX_VALUE;
+			else {
+				Float f;
+				try {f = new Float(divValue);}
+				catch (NumberFormatException e) {f = null;}
+				if (f!=null)
+					FloatBlitter.divideByZeroValue = f.floatValue();
+			}
 				
 			Prefs.usePointerCursor = gd.getNextBoolean();
 			ImageConverter.setDoScaling(gd.getNextBoolean());
@@ -45,8 +49,11 @@ public class Options implements PlugIn {
 			Prefs.antialiasedText = gd.getNextBoolean();
 			boolean interpolate = gd.getNextBoolean();
 			Prefs.open100Percent = gd.getNextBoolean();
+			Prefs.useJFileChooser = gd.getNextBoolean();
 			IJ.debugMode = gd.getNextBoolean();
 
+			if (!IJ.isJava2())
+				Prefs.useJFileChooser = false;
 			if (interpolate!=Prefs.interpolateScaledImages) {
 				Prefs.interpolateScaledImages = interpolate;
 				ImagePlus imp = WindowManager.getCurrentImage();

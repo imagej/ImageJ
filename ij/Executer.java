@@ -5,6 +5,7 @@ import java.net.URL;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
+import java.awt.event.KeyEvent;
 import ij.io.*;
 import ij.process.*;
 import ij.gui.*;
@@ -144,8 +145,6 @@ public class Executer implements Runnable {
 			{if (win!=null) new FileSaver(imp).save(); else IJ.noImage();}
 		else if (cmd.equals("Paste"))
 			{if (win!=null) win.paste(); else IJ.noImage();}
-		else if (cmd.equals("Histogram"))
-			{if (win!=null) {new HistogramWindow(imp);} else IJ.noImage();}
 		else if (cmd.equals("Undo"))
 			{if (win!=null) Undo.undo(); else IJ.noImage();}
 		else

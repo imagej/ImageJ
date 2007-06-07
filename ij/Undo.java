@@ -39,10 +39,12 @@ public class Undo {
 		if (what==TYPE_CONVERSION)
 			ipCopy = imp.getProcessor();
 		else if (what==TRANSFORM) {			
-			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor());
+			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
 			Object fht  = imp.getProperty("FHT");
-			if (fht!=null)
+			if (fht!=null) {
+				fht = new FHT((ImageProcessor)fht); // duplicate
 				impCopy.setProperty("FHT", fht);
+			}
 		} else if (what==COMPOUND_FILTER) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip!=null)
@@ -55,6 +57,8 @@ public class Undo {
 	
 	
 	public static void reset() {
+		if (whatToUndo==COMPOUND_FILTER)
+			return;
 		whatToUndo = NOTHING;
 		imageID = 0;
 		ipCopy = null;

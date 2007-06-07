@@ -391,8 +391,10 @@ public class Toolbar extends Canvas implements MouseListener {
 
 	/** Obsolete. Use setForegroundColor(). */
 	public void setColor(Color c) {
-		foregroundColor = c;
-		drawButton(this.getGraphics(), DROPPER);
+		if (c!=null) {
+			foregroundColor = c;
+			drawButton(this.getGraphics(), DROPPER);
+		}
 	}
 
 	public static Color getForegroundColor() {
@@ -400,8 +402,10 @@ public class Toolbar extends Canvas implements MouseListener {
 	}
 
 	public static void setForegroundColor(Color c) {
-		foregroundColor = c;
-		updateColors();
+		if (c!=null) {
+			foregroundColor = c;
+			updateColors();
+		}
 	}
 
 	public static Color getBackgroundColor() {
@@ -409,8 +413,10 @@ public class Toolbar extends Canvas implements MouseListener {
 	}
 
 	public static void setBackgroundColor(Color c) {
-		backgroundColor = c;
-		updateColors();
+		if (c!=null) {
+			backgroundColor = c;
+			updateColors();
+		}
 	}
 	
 	static void updateColors() {
@@ -479,7 +485,7 @@ public class Toolbar extends Canvas implements MouseListener {
 					IJ.doCommand("Fonts...");
 					break;
 				case DROPPER:
-					IJ.doCommand("Colors...");
+					IJ.doCommand("Color Picker...");
 					setTool2(mpPrevious);
 					break;
 				default:

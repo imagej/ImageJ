@@ -21,8 +21,9 @@ public class ZProjector implements PlugIn {
     public static final int MIN_METHOD = 2;
     public static final int SUM_METHOD = 3;
 	public static final int SD_METHOD = 4;
+	public static final int MEDIAN_METHOD = 5;
 	public static final String[] METHODS = 
-		{"Average Intensity", "Max Intensity", "Min Intensity", "Sum Slices", "Standard Deviation"}; 
+		{"Average Intensity", "Max Intensity", "Min Intensity", "Sum Slices", "Standard Deviation", "Median"}; 
     private static int method = AVG_METHOD;
 
     private static final int BYTE_TYPE  = 0; 
@@ -43,7 +44,9 @@ public class ZProjector implements PlugIn {
     /** Projection starts from this slice. */
     private int startSlice = 1;
     /** Projection ends at this slice. */
-    private int stopSlice = 1; 
+    private int stopSlice = 1;
+    
+    private String color = ""; 
 
     public ZProjector() {
     }
@@ -74,6 +77,10 @@ public class ZProjector implements PlugIn {
 		stopSlice = slice; 
     }
 
+	public void setMethod(int projMethod){
+		method = projMethod;
+	}
+    
     /** Retrieve results of most recent projection operation.*/
     public ImagePlus getProjection() {
 		return projImage; 
@@ -113,8 +120,8 @@ public class ZProjector implements PlugIn {
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex(); 
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
-			if(method==SUM_METHOD || method==SD_METHOD) {
-	    		IJ.showMessage("ZProjection", "Sum and standard deviation methods \nnot available with RGB stacks.");
+			if(method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
+	    		IJ.showMessage("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
 	    		imp.unlock(); 
 	    		return; 
 			}
@@ -142,19 +149,19 @@ public class ZProjector implements PlugIn {
         imp.unlock();
         ImagePlus saveImp = imp;
         imp = red;
-		doProjection();
+		color = "(red)"; doProjection();
 		ImagePlus red2 = projImage;
         imp = green;
-		doProjection();
+		color = "(green)"; doProjection();
 		ImagePlus green2 = projImage;
         imp = blue;
-		doProjection();
+		color = "(blue)"; doProjection();
 		ImagePlus blue2 = projImage;
         int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
         RGBStackMerge merge = new RGBStackMerge();
         ImageStack stack = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
-        projImage = new ImagePlus(projImage.getTitle(), stack);
         imp = saveImp;
+        projImage = new ImagePlus("ZProjection of "+imp.getShortTitle(), stack);
     }
 
     /** Builds dialog to query users for projection parameters.
@@ -174,7 +181,12 @@ public class ZProjector implements PlugIn {
     /** Performs actual projection using specified method. */
     public void doProjection() {
 		if(imp==null)
-			return; 
+			return;
+		if (method==MEDIAN_METHOD) {
+			projImage = doMedianProjection();
+			return;
+		} 
+			 
 		
 		// Create new float processor for projected pixels.
 		FloatProcessor fp = new FloatProcessor(imp.getWidth(),imp.getHeight()); 
@@ -200,14 +212,11 @@ public class ZProjector implements PlugIn {
 	    	return; 
 		}
 
-		// Directly traversing pixel array is more efficient than
-		// using ImageProcessor pixel acces routines.
-		Object[] pixelArray = stack.getImageArray(); 
-
 		// Do the projection.
 		for(int n=startSlice; n<=stopSlice; n++) {
-	    	IJ.showStatus("ZProjection - projecting slice: "+n);
-	    	projectSlice(pixelArray[n-1], rayFunc, ptype);
+	    	IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
+	    	IJ.showProgress(n-startSlice, stopSlice-startSlice);
+	    	projectSlice(stack.getPixels(n), rayFunc, ptype);
 		}
 
 		// Finish up projection.
@@ -228,18 +237,19 @@ public class ZProjector implements PlugIn {
     }
 
  	private RayFunction getRayFunction(int method, FloatProcessor fp) {
- 		if(method==AVG_METHOD||method==SUM_METHOD)
-	    	return new AverageIntensity(fp, stopSlice-startSlice+1); 
-		else if(method==MAX_METHOD)
-	    	return new MaxIntensity(fp); 
-		else if(method==MIN_METHOD)
-	    	return new MinIntensity(fp); 
-		else if(method==SD_METHOD)
-	    	return new StandardDeviation(fp, stopSlice-startSlice+1); 
-		else {
-	    	IJ.error("ZProjection - unknown method.");
-	    	return null;
-	    } 
+ 		switch (method) {
+ 			case AVG_METHOD: case SUM_METHOD:
+	    		return new AverageIntensity(fp, stopSlice-startSlice+1); 
+			case MAX_METHOD:
+	    		return new MaxIntensity(fp);
+	    	case MIN_METHOD:
+	    		return new MinIntensity(fp); 
+			case SD_METHOD:
+	    		return new StandardDeviation(fp, stopSlice-startSlice+1); 
+			default:
+	    		IJ.error("ZProjection - unknown method.");
+	    		return null;
+	    }
 	}
 
     /** Generate output image whose type is same as input image. */
@@ -298,6 +308,97 @@ public class ZProjector implements PlugIn {
 	    		break; 
 		}
     }
+    
+    ImagePlus doMedianProjection() {
+    	IJ.showStatus("Calculating median...");
+    	ImageStack stack = imp.getStack();
+    	int nSlices = stopSlice - startSlice + 1;
+    	ImageProcessor[] slices = new ImageProcessor[nSlices];
+    	int index = 0;
+    	for (int slice=startSlice; slice<=stopSlice; slice++)
+    		slices[index++] = stack.getProcessor(slice);
+    	ImageProcessor ip2 = slices[0].duplicate();
+    	ip2 = ip2.convertToFloat();
+    	float[] values = new float[nSlices];
+    	int width = ip2.getWidth();
+    	int height = ip2.getHeight();
+    	int inc = Math.min(height/30, 1);
+    	for (int y=0; y<height; y++) {
+    		if (y%inc==0) IJ.showProgress(y, height-1);
+    		for (int x=0; x<width; x++) {
+    			for (int i=0; i<nSlices; i++)
+    				values[i] = slices[i].getPixelValue(x, y);
+    			ip2.putPixelValue(x, y, median(values));
+    		}
+    	}
+  		return new ImagePlus("Median of "+imp.getShortTitle(), ip2);
+    }
+
+	float median(float[] a) {
+		sort(a);
+		int length = a.length;
+		if ((length&1)==0)
+			return (a[length/2-1]+a[length/2])/2f; // even
+		else
+			return a[length/2]; // odd
+	}
+
+
+	void sort(float[] a) {
+		if (!alreadySorted(a))
+			sort(a, 0, a.length - 1);
+	}
+	
+	void sort(float[] a, int from, int to) {
+		int i = from, j = to;
+		float center = a[ (from + to) / 2 ];
+		do {
+			while ( i < to && center>a[i] ) i++;
+			while ( j > from && center<a[j] ) j--;
+			if (i < j) {float temp = a[i]; a[i] = a[j]; a[j] = temp; }
+			if (i <= j) { i++; j--; }
+		} while(i <= j);
+		if (from < j) sort(a, from, j);
+		if (i < to) sort(a,  i, to);
+	}
+		
+	boolean alreadySorted(float[] a) {
+		for ( int i=1; i<a.length; i++ ) {
+			if (a[i]<a[i-1] )
+			return false;
+		}
+		return true;
+	}
+
+
+	/*
+	final float median(float[] a) {
+		int nValues = a.length;
+		int nv1b2 = (nValues-1)/2;
+		int i,j;
+		int l=0;
+		int m=nValues-1;
+		float med=a[nv1b2];
+		float dum;
+		
+		while (l<m) {
+			i=l ;
+			j=m ;
+			do {
+				while (a[i]<med) i++;
+				while (med<a[j]) j--;
+				dum=a[j];
+				a[j]=a[i];
+				a[i]=dum;
+				i++ ; j-- ;
+			} while ((j>=nv1b2) && (i<=nv1b2)) ;
+			if (j<nv1b2) l=i;
+			if (nv1b2<i) m=j;
+			med=a[nv1b2];
+		}
+		return med;
+	}
+	*/
 
      /** Abstract class that specifies structure of ray
 	function. Preprocessing should be done in derived class
@@ -484,7 +585,8 @@ public class ZProjector implements PlugIn {
 			}
 		}
 
-    } // end AverageIntensity
+    } // end StandardDeviation
+
 
 }  // end ZProjection
 

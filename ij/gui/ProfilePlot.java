@@ -105,12 +105,12 @@ public class ProfilePlot {
         for (int i=0; i<n; i++)
         	yValues[i] = (float)profile[i];
 		boolean fixedYScale = fixedMin!=0.0 || fixedMax!=0.0;
-		PlotWindow pw = new PlotWindow("Plot of "+imp.getShortTitle(), xLabel, yLabel, xValues, yValues);
+		Plot plot = new Plot("Plot of "+imp.getShortTitle(), xLabel, yLabel, xValues, yValues);
 		if (fixedYScale) {
 			double[] a = Tools.getMinMax(xValues);
-			pw.setLimits(a[0],a[1],fixedMin,fixedMax);
+			plot.setLimits(a[0],a[1],fixedMin,fixedMax);
 		}
-		pw.draw();
+		plot.show();
 	}
 	
 	/** Returns the profile plot data. */

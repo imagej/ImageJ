@@ -10,6 +10,7 @@ public class ImageCalculator implements PlugIn {
 	private static String title1 = "";
 	private static String title2 = "";
 	private static boolean createWindow = true;
+	private static boolean floatResult;
 	
 	public void run(String arg) {
 		int[] wList = WindowManager.getIDList();
@@ -42,6 +43,7 @@ public class ImageCalculator implements PlugIn {
 		gd.addChoice("Image2:", titles, defaultItem);
 		//gd.addStringField("Result:", "Result", 10);
 		gd.addCheckbox("Create New Window", createWindow);
+		gd.addCheckbox("32-bit Result", floatResult);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -51,6 +53,9 @@ public class ImageCalculator implements PlugIn {
 		int index2 = gd.getNextChoiceIndex();
 		//String resultTitle = gd.getNextString();
 		createWindow = gd.getNextBoolean();
+		floatResult = gd.getNextBoolean();
+		if (floatResult)
+			createWindow = true;
 		title2 = titles[index2];
 		ImagePlus img1 = WindowManager.getImage(wList[index1]);
 		ImagePlus img2 = WindowManager.getImage(wList[index2]);
@@ -100,8 +105,9 @@ public class ImageCalculator implements PlugIn {
 			return;
 		}
 		img1.setStack(null, stack1);
-		if (img1.getType()!=ImagePlus.GRAY8)
+		if (img1.getType()!=ImagePlus.GRAY8) {
 			img1.getProcessor().resetMinAndMax();
+		}
 		img1.updateAndDraw();
 	}
 
@@ -137,6 +143,10 @@ public class ImageCalculator implements PlugIn {
 		int width = Math.min(ip1.getWidth(), ip2.getWidth());
 		int height = Math.min(ip1.getHeight(), ip2.getHeight());
 		ImageProcessor ip3 = ip1.createProcessor(width, height);
+		if (floatResult) {
+			ip1 = ip1.convertToFloat();
+			ip3 = ip3.convertToFloat();
+		}
 		ip3.insert(ip1, 0, 0);
 		return ip3;
 	}
@@ -170,7 +180,9 @@ public class ImageCalculator implements PlugIn {
 			for (int i=1; i<=n; i++) {
 				ImageProcessor ip1 = stack1.getProcessor(i);
 				ip1.resetRoi(); 
-				ImageProcessor ip2 = ip1.crop(); 
+				ImageProcessor ip2 = ip1.crop();
+				if (floatResult)
+					ip2 = ip2.convertToFloat(); 
 				stack2.addSlice(stack1.getSliceLabel(i), ip2);
 			}
 		}

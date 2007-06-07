@@ -9,9 +9,10 @@ import java.util.Properties;
 public class Printer implements PlugInFilter {
     private ImagePlus imp;
     private static double scaling = 100.0;
-    private static boolean drawBorder = false;
+    private static boolean drawBorder;
     private static boolean center = true;
-    private static boolean label = false;
+    private static boolean label;
+    private static boolean printSelection;
 	private static Properties printPrefs = new Properties();
 
 	public int setup(String arg, ImagePlus imp) {
@@ -32,6 +33,7 @@ public class Printer implements PlugInFilter {
 		gd.addCheckbox("Draw Border", drawBorder);
 		gd.addCheckbox("Center on Page", center);
 		gd.addCheckbox("Print Title", label);
+		gd.addCheckbox("Selection Only", printSelection);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -40,6 +42,7 @@ public class Printer implements PlugInFilter {
 		drawBorder = gd.getNextBoolean();
 		center = gd.getNextBoolean();
 		label = gd.getNextBoolean();
+		printSelection = gd.getNextBoolean();
 	}
 
 	void print(ImagePlus imp) {
@@ -60,6 +63,14 @@ public class Printer implements PlugInFilter {
 		double scale = scaling/100.0;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
+		Roi roi = imp.getRoi();
+		boolean crop = false;
+		if (printSelection && roi!=null && roi.getType()<=Roi.TRACED_ROI) {
+			Rectangle r = roi.getBoundingRect();
+			width = r.width;
+			height = r.height;
+			crop = true;
+		}
 		int printWidth = (int)(width*scale);
 		int printHeight = (int)(height*scale);
 		int margin = 20;
@@ -72,7 +83,9 @@ public class Printer implements PlugInFilter {
 			g.setFont(new Font("SanSerif", Font.PLAIN, 12));
 			g.drawString(imp.getTitle(), margin+5, margin+labelHeight-3);
 		}
-		Image img = imp.getImage();
+		ImageProcessor ip = imp.getProcessor();
+		if (crop)
+			ip = ip.crop();
 		if (width>maxWidth || height>maxHeight) {
 			// scale to fit page
 			double hscale = (double)maxWidth/width;
@@ -85,11 +98,11 @@ public class Printer implements PlugInFilter {
 			printHeight = (int)(height*scale);
 			if (System.getProperty("os.name").startsWith("Windows") && System.getProperty("java.version").startsWith("1.3.1")) {
 				// workaround for Windows/Java 1.3.1 printing bug
-				ImageProcessor ip = imp.getProcessor();
 				ip.setInterpolate(true);
-				img = ip.resize(printWidth, printHeight).createImage();
+				ip = ip.resize(printWidth, printHeight);
 			}
 		}
+		Image img = ip.createImage();
 		if (center && width<maxWidth && height<maxHeight)
 			g.translate((pageSize.width-width)/2, labelHeight+(pageSize.height-height)/2);
 		else

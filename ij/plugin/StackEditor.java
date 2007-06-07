@@ -70,21 +70,21 @@ public class StackEditor implements PlugIn {
 			IJ.error("No images are open.");
 			return;
 		}
-		if (wList.length<2) {
+		
+		int count = 0;
+		ImagePlus[] image = new ImagePlus[wList.length];
+		for (int i=0; i<wList.length; i++) {
+			ImagePlus imp = WindowManager.getImage(wList[i]);
+			if (imp.getStackSize()==1)
+				image[count++] = imp;
+		}		
+		if (count<2) {
 			IJ.error("There must be at least two open images.");
 			return;
 		}
-		ImagePlus[] image = new ImagePlus[wList.length];
-		for (int i=0; i<wList.length; i++) {
-			image[i] = WindowManager.getImage(wList[i]);
-			if (image[i].getStackSize()>1) {
-				IJ.error("None of the open images can be a stack.");
-				return;
-			}
-		}
-		
+
 		Calibration cal2 = image[0].getCalibration();
-		for (int i=0; i<(wList.length-1); i++) {
+		for (int i=0; i<(count-1); i++) {
 			if (image[i].getType()!=image[i+1].getType()) {
 				IJ.error("All open images must be the same type.");
 				return;
@@ -104,7 +104,7 @@ public class StackEditor implements PlugIn {
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
 		ImageStack stack = new ImageStack(width, height);
-		for (int i=0; i<wList.length; i++) {
+		for (int i=0; i<count; i++) {
 			ImageProcessor ip = image[i].getProcessor();
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();

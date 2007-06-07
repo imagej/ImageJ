@@ -139,7 +139,7 @@ public class SurfacePlotter implements PlugIn {
 		double xinc = 0.8*plotWidth*Math.sin(angle)/polygons;
 		double yinc = 0.8*plotWidth*Math.cos(angle)/polygons;
 		IJ.showProgress(0.01);
-		ip.setInterpolate(true);
+		ip.setInterpolate(!oneToOne);
 		ip = ip.resize(plotWidth, polygons);
 		int width = ip.getWidth();
 		int height = ip.getHeight();
@@ -289,6 +289,7 @@ public class SurfacePlotter implements PlugIn {
 			min = cal.getCValue((int)min);
 			max = cal.getCValue((int)max);
 		}
+		ip2.setAntialiasedText(true);
 		s = String.valueOf( (double) Math.round(max*10)/10);
 		w =  ip.getFontMetrics().stringWidth(s);
 		h =  ip.getFontMetrics().getHeight();
@@ -381,6 +382,7 @@ public class SurfacePlotter implements PlugIn {
 		ipText.setColor(Color.white);
 		ipText.fill();
 		ipText.setColor(Color.black);
+		ipText.setAntialiasedText(true);
 		ipText.drawString(s, tW/2-w/2, ipH/2+h/2);
 		ipText.setInterpolate(true);
 		ipText.rotate(-a);

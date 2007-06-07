@@ -21,6 +21,7 @@ public class ScaleBar implements PlugIn {
     static boolean boldText = true;
     static boolean hideText;
     static int fontSize;
+    static boolean labelAll;
     ImagePlus imp;
     double imageWidth;
     double mag;
@@ -32,14 +33,22 @@ public class ScaleBar implements PlugIn {
  
     public void run(String arg) {
         imp = WindowManager.getCurrentImage();
-        if (imp!=null)
-            showDialog(imp);
-        else {
+        if (imp!=null) {
+            if (showDialog(imp) && imp.getStackSize()>1 && labelAll)
+            	labelSlices(imp);
+        } else
             IJ.noImage();
-            return;
-        } 
      }
 
+    void labelSlices(ImagePlus imp) {
+		int slice = imp.getCurrentSlice();
+		for (int i=1; i<=imp.getStackSize(); i++) {
+			imp.setSlice(i);
+			drawScaleBar(imp);
+		}
+		imp.setSlice(slice);		
+    }
+    
     boolean showDialog(ImagePlus imp) {
         Roi roi = imp.getRoi();
         if (roi!=null) {
@@ -74,6 +83,7 @@ public class ScaleBar implements PlugIn {
             if (barWidth>5.0)
                 barWidth = (int)barWidth;
         }
+        int stackSize = imp.getStackSize();
         int digits = (int)barWidth==barWidth?0:1;
         if (barWidth<1.0)
             digits = 2;
@@ -90,6 +100,8 @@ public class ScaleBar implements PlugIn {
         gd.addChoice("Location: ", locations, location);
         checkboxStates[0] = boldText; checkboxStates[1] = hideText;
 		gd.addCheckboxGroup(1, 2, checkboxLabels, checkboxStates);
+		if (stackSize>1)
+			gd.addCheckbox("Label all Slices", labelAll);
         gd.showDialog();
         if (gd.wasCanceled()) {
             imp.getProcessor().reset();
@@ -103,6 +115,8 @@ public class ScaleBar implements PlugIn {
         location = gd.getNextChoice();
         boldText = gd.getNextBoolean();
         hideText = gd.getNextBoolean();
+        if (stackSize>1)
+        	labelAll = gd.getNextBoolean();
         return true;
     }
 

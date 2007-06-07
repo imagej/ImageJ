@@ -9,10 +9,11 @@ import ij.plugin.frame.*;
 /*  This plugin continuously generates and displays 640x480 images.
     It is plugin version of the "Plasma2" applet at "http://rsb.info.nih.gov/plasma2".
 */
-public class Plasma_ extends PlugInFrame implements Runnable {
+class Plasma_ extends PlugInFrame implements Runnable {
 
+    boolean drawFPS = false;
     boolean noDisplay = false;
-    boolean synch = false;
+    boolean synch = true;
     boolean showFPS = true;
     int width = 640;
     int height =480;
@@ -84,7 +85,10 @@ public class Plasma_ extends PlugInFrame implements Runnable {
                 frames = 0;
                 frames2 = 0;
             }
-            g.drawString((int)((fps+0.5)/4) + " fps ("+(int)((fps2+0.5)/4)+")", 10, 50);
+            if (drawFPS)
+                g.drawString((int)((fps+0.5)/4) + " fps ("+(int)((fps2+0.5)/4)+")", 10, 50);
+            else
+                showFPS();
         }
     }
 

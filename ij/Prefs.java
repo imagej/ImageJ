@@ -31,8 +31,10 @@ public class Prefs {
 	public static final String JPEG = "jpeg";
 	public static final String FPS = "fps";
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";   	
-	
-	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8;  
+    public static final String NOISE_SD = "noise.sd";
+      		
+	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
+		BLACK_BACKGROUND=16, JFILE_CHOOSER=32;  
     public static final String OPTIONS = "prefs.options";   	
 
 	/** file.separator system property */
@@ -45,6 +47,10 @@ public class Prefs {
 	public static boolean interpolateScaledImages;
 	/** Open images at 100% magnification*/
 	public static boolean open100Percent;
+	/** Backgound is black in binary images*/
+	public static boolean blackBackground;
+	/** Use JFileChooser instead of FileDialog to open and save files. */
+	public static boolean useJFileChooser;
 	
 	static Properties prefs = new Properties();
 	static Properties props = new Properties(prefs);
@@ -64,8 +70,11 @@ public class Prefs {
 		String osName = System.getProperty("os.name");
 		if (osName.indexOf("Windows",0)>-1)
 			prefsDir = homeDir; //ImageJ folder on Windows
-		else
-			prefsDir = userHome; // Mac Preferences folder or Unix home dir 
+		else {
+			prefsDir = userHome; // Mac Preferences folder or Unix home dir
+			if (IJ.isMacOSX())
+				prefsDir += "/Library/Preferences";
+		} 
 		if (f==null) {
 			try {f = new FileInputStream(homeDir+"/"+PROPS_NAME);}
 			catch (FileNotFoundException e) {f=null;}
@@ -112,6 +121,17 @@ public class Prefs {
 		return props.getProperty(key);
 	}
 	
+	/** Finds an string in IJ_Props or IJ_Prefs.txt. */
+	public static String getString(String key, String defaultString) {
+		if (props==null)
+			return defaultString;			
+		String s = props.getProperty(key);
+		if (s==null)
+			return defaultString;
+		else
+			return s;
+	}
+
 	/** Finds a boolean in IJ_Props or IJ_Prefs.txt. */
 	public static boolean getBoolean(String key, boolean defaultValue) {
 		if (props==null) return defaultValue;			
@@ -166,12 +186,24 @@ public class Prefs {
 	/** Opens the IJ_Prefs.txt file. */
 	static void loadPreferences() {
 		String path = prefsDir+separator+PREFS_NAME;
+		boolean ok =  loadPrefs(path);
+		if (!ok && IJ.isMacOSX()) {
+			path = System.getProperty("user.home")+separator+PREFS_NAME;
+			ok = loadPrefs(path); // look in home dir
+			if (ok)
+				new File(path).delete();
+		}
+		
+	}
+	
+	static boolean loadPrefs(String path) {
 		try {
 			InputStream is = new BufferedInputStream(new FileInputStream(path));
 			prefs.load(is);
 			is.close();
+			return true;
 		} catch (Exception e) {
-			return;
+			return false;
 		}
 	}
 
@@ -188,6 +220,7 @@ public class Prefs {
 			prefs.put(JPEG, Integer.toString(JpegWriter.getQuality()));
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
+			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));
 			saveOptions(prefs);		
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
@@ -196,6 +229,7 @@ public class Prefs {
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
 			GelAnalyzer.savePreferences(prefs);
+			NewImage.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			savePrefs(prefs, path);
 		} catch (Exception e) {
@@ -214,11 +248,15 @@ public class Prefs {
 		antialiasedText = (options&ANTIALIASING)!=0;
 		interpolateScaledImages = (options&INTERPOLATE)!=0;
 		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
+		open100Percent = (options&ONE_HUNDRED_PERCENT)!=0;
+		blackBackground = (options&BLACK_BACKGROUND)!=0;
+		useJFileChooser = (options&JFILE_CHOOSER)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
 		int options = (usePointerCursor?USE_POINTER:0) + (antialiasedText?ANTIALIASING:0)
-			+ (interpolateScaledImages?INTERPOLATE:0) + (open100Percent?ONE_HUNDRED_PERCENT:0);
+			+ (interpolateScaledImages?INTERPOLATE:0) + (open100Percent?ONE_HUNDRED_PERCENT:0)
+			+ (blackBackground?BLACK_BACKGROUND:0) + (useJFileChooser?JFILE_CHOOSER:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	

@@ -28,7 +28,7 @@ offer your changes to me so I can possibly add them to the "official" version.
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.30s";
+	public static final String VERSION = "1.31v";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
@@ -43,6 +43,8 @@ public class ImageJ extends Frame implements ActionListener,
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private boolean exitWhenQuiting;
+	private boolean quitting;
+	private long keyPressedTime, actionPerformedTime;
 	
 	boolean hotkey;
 	
@@ -96,13 +98,13 @@ public class ImageJ extends Frame implements ActionListener,
 		setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
 		setLocation(loc.x, loc.y);
 		pack();
-		setResizable(false);
+		setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
 		show();
-		if (IJ.isMacOSX()) { // hack needed for window to display correctly Mac OS X
-			setLocation(loc.x+1, loc.y+1);
-			setLocation(loc.x, loc.y);			
-			pack(); 
-		}
+		//if (IJ.isMacOSX()) { // hack needed for window to display correctly Mac OS X
+		//	setLocation(loc.x+1, loc.y+1);
+		//	setLocation(loc.x, loc.y);			
+		//	pack(); 
+		//}
 		if (err1!=null)
 			IJ.error(err1);
 		if (err2!=null)
@@ -117,14 +119,7 @@ public class ImageJ extends Frame implements ActionListener,
 		IJ.showStatus("Version "+VERSION + " ("+ Menus.nPlugins + " commands, " + nMacros + str);
 		// Toolbar.getInstance().addTool("Spare tool [Cf0fG22ccCf00E22cc]"); 
 	}
-    
-	void showResults() {
-		TextWindow resultsWindow = new TextWindow("Results", "", 300, 200);
-		TextPanel textPanel = resultsWindow.getTextPanel();
-		textPanel.addKeyListener(this);
-		IJ.setTextPanel(textPanel);
-	}
-	
+    	
 	void setIcon() {
 		URL url = this .getClass() .getResource("/microscope.gif"); 
 		if (url==null)
@@ -196,9 +191,11 @@ public class ImageJ extends Frame implements ActionListener,
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
 			hotkey = false;
-			if (cmd!=null)
+			actionPerformedTime = System.currentTimeMillis();
+			long ellapsedTime = actionPerformedTime-keyPressedTime;
+			if (cmd!=null && ellapsedTime>=10L)
 				doCommand(cmd);
-			if (IJ.debugMode) IJ.log("actionPerformed: "+e);
+			if (IJ.debugMode) IJ.log("actionPerformed: "+ellapsedTime+" "+e);
 		}
 	}
 
@@ -262,7 +259,7 @@ public class ImageJ extends Frame implements ActionListener,
 			c = (String)shortcuts.get(new Integer(keyCode+200));
 		else
 			c = (String)shortcuts.get(new Integer(keyCode));
-
+		
 		if (c==null)
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
@@ -296,8 +293,10 @@ public class ImageJ extends Frame implements ActionListener,
 				hotkey = true;
 			if (c.charAt(0)==MacroInstaller.commandPrefix)
 				MacroInstaller.doShortcut(c);
-			else
+			else {
 				doCommand(c);
+				keyPressedTime = System.currentTimeMillis();
+			}
 		}
 	}
 
@@ -309,16 +308,21 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void windowClosing(WindowEvent e) {
 		boolean quit = true;
-		if (Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS)
-			quit = IJ.showMessageWithCancel("ImageJ",
-				"Are you sure you want to quit ImageJ?");
+		if (Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS) {
+			GenericDialog gd = new GenericDialog("ImageJ", this);
+			gd.addMessage("Are you sure you want to quit ImageJ?");
+			gd.showDialog();
+			quit = !gd.wasCanceled();
+		}
 		if (quit)
 			doCommand("Quit");
 	}
 
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh())
+		if (IJ.isMacintosh()) {
+			IJ.wait(1); // needed for 1.4.1 on OS X
 			this.setMenuBar(Menus.getMenuBar());
+		}
 	}
 	
 	public void windowClosed(WindowEvent e) {}
@@ -337,8 +341,11 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Called by ImageJ when the user selects Quit. */
 	public void quit() {
 		//IJ.log("quit: "+exitWhenQuiting); IJ.wait(5000);
-		if (!WindowManager.closeAllWindows())
+		quitting = true;
+		if (!WindowManager.closeAllWindows()) {
+			quitting = false;
 			return;
+		}
 		//IJ.log("savePreferences");
 		if (applet==null)
 			Prefs.savePreferences();
@@ -347,6 +354,11 @@ public class ImageJ extends Frame implements ActionListener,
 		dispose();
 		if (exitWhenQuiting)
 			System.exit(0);
+	}
+	
+	/** Returns true if ImageJ is exiting. */
+	public boolean quitting() {
+		return quitting;
 	}
 	
 	/** Called once when ImageJ quits. */
@@ -361,7 +373,12 @@ public class ImageJ extends Frame implements ActionListener,
 	public static void main(String args[]) {
 		ImageJ ij = IJ.getInstance();    	
 		if (ij==null || (ij!=null && !ij.isShowing())) {
-			ij = new ImageJ(null);
+			if (IJ.isMacOSX()) {
+				System.setProperty("com.apple.mrj.application.growbox.intrudes", "true");
+				ij = new ImageJ(null);
+				System.setProperty("com.apple.mrj.application.growbox.intrudes", "false");
+			} else
+				ij = new ImageJ(null);
 			ij.exitWhenQuiting = true;
 		}
 		boolean macroStarted = false;

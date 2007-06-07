@@ -72,11 +72,13 @@ public class ShortProcessor extends ImageProcessor {
 		boolean firstTime = pixels8==null;
 		if (firstTime || !lutAnimation) {
 			// scale from 16-bits to 8-bits
+			int size = width*height;
 			if (pixels8==null)
-				pixels8 = new byte[width*height];
+				pixels8 = new byte[size];
+				
 			int value;
-			double scale = 255.0/(max-min);
-			for (int i=0; i < width*height; i++) {
+			double scale = 256.0/(max-min+1);
+			for (int i=0; i<size; i++) {
 				value = (pixels[i]&0xffff)-min;
 				if (value<0) value = 0;
 				value = (int)(value*scale);
@@ -238,7 +240,8 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Draws a pixel in the current foreground color. */
 	public void drawPixel(int x, int y) {
-		putPixel(x, y, fgColor);
+		if (x>=clipXMin && x<=clipXMax && y>=clipYMin && y<=clipYMax)
+			putPixel(x, y, fgColor);
 	}
 
 	public float getPixelValue(int x, int y) {
@@ -781,11 +784,11 @@ public class ShortProcessor extends ImageProcessor {
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		if (minThreshold!=NO_THRESHOLD && max>min) {
-			double minT = ((minThreshold-min)/(max-min))*255.0;
-			double maxT = ((maxThreshold-min)/(max-min))*255.0;
+			double minT = Math.round(((minThreshold-min)/(max-min))*255.0);
+			double maxT = Math.round(((maxThreshold-min)/(max-min))*255.0);
 			super.setThreshold(minT, maxT, lutUpdate);
-			this.minThreshold = minThreshold;
-			this.maxThreshold = maxThreshold;
+			this.minThreshold = Math.round(minThreshold);
+			this.maxThreshold = Math.round(maxThreshold);
 		} else
 			super.resetThreshold();
 	}

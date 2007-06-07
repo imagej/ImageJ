@@ -46,17 +46,6 @@ public class Thresholder implements PlugIn, Measurements {
 		double saveMin = ip.getMin();
 		double saveMax = ip.getMax();
 		autoThreshold = saveMinThreshold==ImageProcessor.NO_THRESHOLD;
-		if (!(imp.getType()==ImagePlus.GRAY8))
-			convertToByte(imp);
-		ip = imp.getProcessor();
-		if (autoThreshold)
-			autoThreshold(imp);
-		else {
-			if (Recorder.record)
-				Recorder.record("setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
- 			minThreshold = ((saveMinThreshold-saveMin)/(saveMax-saveMin))*255.0;
- 			maxThreshold = ((saveMaxThreshold-saveMin)/(saveMax-saveMin))*255.0;
-		}
 					
 		boolean useBlackAndWhite = true;
 		if (!autoThreshold) {
@@ -74,6 +63,18 @@ public class Thresholder implements PlugIn, Measurements {
 		} else {
 			fill1 = true;
 			fill2 = true;
+		}
+
+		if (!(imp.getType()==ImagePlus.GRAY8))
+			convertToByte(imp);
+		ip = imp.getProcessor();
+		if (autoThreshold)
+			autoThreshold(imp);
+		else {
+			if (Recorder.record)
+				Recorder.record("setThreshold", (int)saveMinThreshold, (int)saveMaxThreshold);
+ 			minThreshold = ((saveMinThreshold-saveMin)/(saveMax-saveMin))*255.0;
+ 			maxThreshold = ((saveMaxThreshold-saveMin)/(saveMax-saveMin))*255.0;
 		}
 
 		int fcolor, bcolor;

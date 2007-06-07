@@ -64,7 +64,7 @@ public class MacroRunner implements Runnable {
 			if (pgm==null)
 				new Interpreter().run(macro);
 			else
-					new Interpreter().runMacro(pgm, address, name);
+				new Interpreter().runMacro(pgm, address, name);
 		} catch(Throwable e) {
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
@@ -79,7 +79,7 @@ public class MacroRunner implements Runnable {
 			String s = caw.toString();
 			if (IJ.isMacintosh())
 				s = Tools.fixNewLines(s);
-			// Don't show exceptions resulting from window being closed
+			//Don't show exceptions resulting from window being closed
 			if (!(s.indexOf("NullPointerException")>=0 && s.indexOf("ij.process")>=0))
 				new TextWindow("Exception", s, 350, 250);
 		}

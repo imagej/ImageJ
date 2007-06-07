@@ -6,7 +6,7 @@ import ij.*;
 public class Calibration {
 
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
-		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8;
+		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9;
 	public static final int NONE=20, UNCALIBRATED_OD=21;
 
 	/** Pixel width in 'unit's */
@@ -72,7 +72,7 @@ public class Calibration {
 	
 	/** Returns true if this image is spatially calibrated. */
 	public boolean scaled() {
-		return pixelWidth!=1.0 || pixelHeight!=1.0;
+		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0;
 	}
 	
    	/** Sets the distance unit (e.g. "mm", "inch"). */
@@ -127,7 +127,7 @@ public class Calibration {
  	public void setFunction(int function, double[] coefficients, String unit, boolean zeroClip) {
  		if (function==NONE)
  			{disableDensityCalibration(); return;}
- 		if (coefficients==null && function>=STRAIGHT_LINE && function<=GAMMA_VARIATE)
+ 		if (coefficients==null && function>=STRAIGHT_LINE && function<=LOG2)
  			return;
  		this.function = function;
  		this.coefficients = coefficients;
@@ -155,11 +155,17 @@ public class Calibration {
 		valueUnit = "Gray Value";
  	}
  	
-	/** Returns the density unit. */
+	/** Returns the value unit. */
  	public String getValueUnit() {
  		return valueUnit;
  	}
  	
+	/** Sets the value unit. */
+ 	public void setValueUnit(String unit) {
+ 		if (unit!=null)
+ 			valueUnit = unit;
+ 	}
+
  	/** Returns the calibration function coefficients. */
  	public double[] getCoefficients() {
  		return coefficients;
@@ -193,7 +199,7 @@ public class Calibration {
  			cTable = new float[256];
 			for (int i=0; i<256; i++)
 				cTable[i] = (float)od(i);
-		} else if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
+		} else if (function>=STRAIGHT_LINE && function<=LOG2 && coefficients!=null) {
  			cTable = new float[256];
  			double value;
  			for (int i=0; i<256; i++) {
@@ -208,7 +214,7 @@ public class Calibration {
   	}
 
  	void make16BitCTable() {
-		if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
+		if (function>=STRAIGHT_LINE && function<=LOG2 && coefficients!=null) {
  			cTable = new float[65536];
  			for (int i=0; i<65536; i++)
 				cTable[i] = (float)CurveFitter.f(function, coefficients, i);
@@ -230,7 +236,7 @@ public class Calibration {
  	public double getCValue(int value) {
 		if (function==NONE)
 			return value;
-		if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
+		if (function>=STRAIGHT_LINE && function<=LOG2 && coefficients!=null) {
 			double v = CurveFitter.f(function, coefficients, value);
 			if (zeroClip && v<0.0)
 				return 0.0;
@@ -308,6 +314,11 @@ public class Calibration {
  		if (!cal.valueUnit.equals(valueUnit) || cal.function!=function)
  			equal = false;
  		return equal;
+ 	}
+ 	
+ 	/** Returns true if this is a signed 16-bit image. */
+ 	public boolean isSigned16Bit() {
+		return bitDepth==16 && cTable!=null && cTable[0]==-32768;
  	}
  
     public String toString() {

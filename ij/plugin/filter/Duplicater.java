@@ -38,6 +38,15 @@ public class Duplicater implements PlugInFilter {
 			ImageProcessor ip2 = imp.getProcessor().crop();
 			imp2 = imp.createImagePlus();
 			imp2.setProcessor(newTitle, ip2);
+			String info = (String)imp.getProperty("Info");
+			if (info!=null)
+				imp2.setProperty("Info", info);
+			if (stackSize>1) {
+				ImageStack stack = imp.getStack();
+				String label = stack.getSliceLabel(imp.getCurrentSlice());
+				if (label!=null && label.indexOf('\n')>0)
+					imp2.setProperty("Info", label);
+			}
 		}
 		imp.killRoi();
 		imp2.show();
@@ -46,7 +55,7 @@ public class Duplicater implements PlugInFilter {
 	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.getType()==Roi.RECTANGLE)
+		if (roi!=null && roi.getType()<=Roi.TRACED_ROI)
 			rect = roi.getBoundingRect();
 		int width = rect!=null?rect.width:imp.getWidth();
 		int height = rect!=null?rect.height:imp.getHeight();

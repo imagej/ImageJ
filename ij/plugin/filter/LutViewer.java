@@ -1,7 +1,11 @@
 package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
+import ij.gui.*;
+import ij.text.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
 
 /** Displays the active image's look-up table. */
 public class LutViewer implements PlugInFilter {
@@ -29,7 +33,7 @@ public class LutViewer implements PlugInFilter {
 		if (mapSize == 0)
 			return;
 		imageWidth = width + 2*xMargin;
-		imageHeight = height + 4*yMargin;
+		imageHeight = height + 3*yMargin;
 		Image img = IJ.getInstance().createImage(imageWidth, imageHeight);
 		Graphics g = img.getGraphics();
 		g.setColor(Color.white);
@@ -94,7 +98,55 @@ public class LutViewer implements PlugInFilter {
 		g.dispose();
 		
         ImagePlus imp = new ImagePlus("Look-Up Table", img);
-        imp.show();
+        //imp.show();
+        new LutWindow(imp, new ImageCanvas(imp), ip);
+    }
+
+} // LutViewer class
+
+class LutWindow extends ImageWindow implements ActionListener {
+
+	private Button button;
+	private ImageProcessor ip;
+
+	LutWindow(ImagePlus imp, ImageCanvas ic, ImageProcessor ip) {
+		super(imp, ic);
+		this.ip = ip;
+		addPanel();
 	}
 
-}
+	void addPanel() {
+		Panel panel = new Panel();
+		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		button = new Button(" List... ");
+		button.addActionListener(this);
+		panel.add(button);
+		add(panel);
+		pack();
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		Object b = e.getSource();
+		if (b==button)
+			list(ip);
+	}
+
+	void list(ImageProcessor ip) {
+		IndexColorModel icm = (IndexColorModel)ip.getColorModel();
+		int size = icm.getMapSize();
+		byte[] r = new byte[size];
+		byte[] g = new byte[size];
+		byte[] b = new byte[size];
+		icm.getReds(r); 
+		icm.getGreens(g); 
+		icm.getBlues(b);
+		StringBuffer sb = new StringBuffer();
+		String headings = "Index\tRed\tGreen\tBlue";
+		for (int i=0; i<size; i++)
+			sb.append(i+"\t"+(r[i]&255)+"\t"+(g[i]&255)+"\t"+(b[i]&255)+"\n");
+		TextWindow tw = new TextWindow("LUT", headings, sb.toString(), 250, 400);
+	}
+
+} // LutWindow class
+
+

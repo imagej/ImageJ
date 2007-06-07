@@ -39,12 +39,14 @@ public class FloatStatistics extends ImageStatistics {
 		double v;
 		float[] pixels = (float[])ip.getPixels();
 		nBins = ip.getHistogramSize();
+		histMin = ip.getHistogramMin();
+		histMax = ip.getHistogramMax();
 		histogram = new int[nBins];
 		double sum = 0;
 		double sum2 = 0;
 		int[] mask = ip.getMask();
 		
-		// Find min and max
+		// Find image min and max
 		double roiMin = Double.MAX_VALUE;
 		double roiMax = -Double.MAX_VALUE;
 		double roiMin2 = Double.MAX_VALUE;
@@ -64,7 +66,13 @@ public class FloatStatistics extends ImageStatistics {
 			}
 		}
 		min = roiMin; max = roiMax;
-		histMin = min; histMax = max;
+		if (histMin==0.0 && histMax==0.0) {
+			histMin = min; 
+			histMax = max;
+		} else {
+			if (min<histMin) min = histMin;
+			if (max>histMax) max = histMax;
+		}
 		binSize = (histMax-histMin)/nBins;
 
 		// Generate histogram
@@ -77,7 +85,7 @@ public class FloatStatistics extends ImageStatistics {
 			for (int x=rx; x<(rx+rw); x++) {
 				if (mask==null || mask[mi++]==ip.BLACK) {
 					v = pixels[i];
-					if (v>=minThreshold && v<=maxThreshold) {
+					if (v>=minThreshold && v<=maxThreshold && v>=histMin && v<=histMax) {
 						pixelCount++;
 						sum += v;
 						sum2 += v*v;
@@ -106,6 +114,8 @@ public class FloatStatistics extends ImageStatistics {
             }
         }
         dmode = histMin+mode*binSize;
+        if (binSize!=1.0)
+        	dmode += binSize/2.0;        	
 	}
 
 	void getCenterOfMass(ImageProcessor ip, double minThreshold, double maxThreshold) {

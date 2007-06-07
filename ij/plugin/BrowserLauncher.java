@@ -6,6 +6,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 /**
  * This plugin implements ImageJ's Help/ImageJ Web Site command. It is a slightly modified
@@ -160,6 +162,9 @@ public class BrowserLauncher implements PlugIn {
 	/** JVM constant for any Windows 9x JVM */
 	private static final int WINDOWS_9x = 6;
 
+	/** JVM constant for any Mac OS X JVM */
+    private static final int MACOSX = 7;
+
 	/** JVM constant for any other platform */
 	private static final int OTHER = -1;
 
@@ -214,7 +219,9 @@ public class BrowserLauncher implements PlugIn {
 	static {
 		loadedWithoutErrors = true;
 		String osName = System.getProperty("os.name");
-		if (osName.startsWith("Mac OS")) {
+		if (osName.startsWith("Mac OS X") )
+            jvm  = MACOSX;
+		else if (osName.startsWith("Mac OS")) {
 			String mrjVersion = System.getProperty("mrj.version");
 			String majorMRJVersion = mrjVersion.substring(0, 3);
 			try {
@@ -267,42 +274,6 @@ public class BrowserLauncher implements PlugIn {
 	 */
 	private static boolean loadClasses() {
 		switch (jvm) {
-			case MRJ_2_0:
-				try {
-					Class aeTargetClass = Class.forName("com.apple.MacOS.AETarget");
-					Class osUtilsClass = Class.forName("com.apple.MacOS.OSUtils");
-					Class appleEventClass = Class.forName("com.apple.MacOS.AppleEvent");
-					Class aeClass = Class.forName("com.apple.MacOS.ae");
-					aeDescClass = Class.forName("com.apple.MacOS.AEDesc");
-
-					aeTargetConstructor = aeTargetClass.getDeclaredConstructor(new Class [] { int.class });
-					appleEventConstructor = appleEventClass.getDeclaredConstructor(new Class[] { int.class, int.class, aeTargetClass, int.class, int.class });
-					aeDescConstructor = aeDescClass.getDeclaredConstructor(new Class[] { String.class });
-
-					makeOSType = osUtilsClass.getDeclaredMethod("makeOSType", new Class [] { String.class });
-					putParameter = appleEventClass.getDeclaredMethod("putParameter", new Class[] { int.class, aeDescClass });
-					sendNoReply = appleEventClass.getDeclaredMethod("sendNoReply", new Class[] { });
-
-					Field keyDirectObjectField = aeClass.getDeclaredField("keyDirectObject");
-					keyDirectObject = (Integer) keyDirectObjectField.get(null);
-					Field autoGenerateReturnIDField = appleEventClass.getDeclaredField("kAutoGenerateReturnID");
-					kAutoGenerateReturnID = (Integer) autoGenerateReturnIDField.get(null);
-					Field anyTransactionIDField = appleEventClass.getDeclaredField("kAnyTransactionID");
-					kAnyTransactionID = (Integer) anyTransactionIDField.get(null);
-				} catch (ClassNotFoundException cnfe) {
-					errorMessage = cnfe.getMessage();
-					return false;
-				} catch (NoSuchMethodException nsme) {
-					errorMessage = nsme.getMessage();
-					return false;
-				} catch (NoSuchFieldException nsfe) {
-					errorMessage = nsfe.getMessage();
-					return false;
-				} catch (IllegalAccessException iae) {
-					errorMessage = iae.getMessage();
-					return false;
-				}
-				break;
 			case MRJ_2_1:
 				try {
 					mrjFileUtilsClass = Class.forName("com.apple.mrj.MRJFileUtils");
@@ -329,40 +300,20 @@ public class BrowserLauncher implements PlugIn {
 					return false;
 				}
 				break;
-			case MRJ_3_0:
+			case MACOSX:
 			    try {
-					Class linker = Class.forName("com.apple.mrj.jdirect.Linker");
-					Constructor constructor = linker.getConstructor(new Class[]{ Class.class });
-					linkage = constructor.newInstance(new Object[] { BrowserLauncher.class });
-				} catch (ClassNotFoundException cnfe) {
-					errorMessage = cnfe.getMessage();
-					return false;
-				} catch (NoSuchMethodException nsme) {
-					errorMessage = nsme.getMessage();
-					return false;
-				} catch (InvocationTargetException ite) {
-					errorMessage = ite.getMessage();
-					return false;
-				} catch (InstantiationException ie) {
-					errorMessage = ie.getMessage();
-					return false;
-				} catch (IllegalAccessException iae) {
-					errorMessage = iae.getMessage();
-					return false;
-				}
-				break;
-			case MRJ_3_1:
-				try {
-					mrjFileUtilsClass = Class.forName("com.apple.mrj.MRJFileUtils");
-					openURL = mrjFileUtilsClass.getDeclaredMethod("openURL", new Class[] { String.class });
-				} catch (ClassNotFoundException cnfe) {
-					errorMessage = cnfe.getMessage();
-					return false;
-				} catch (NoSuchMethodException nsme) {
-					errorMessage = nsme.getMessage();
-					return false;
-				}
-				break;
+                    if (new File("/System/Library/Java/com/apple/cocoa/application/NSWorkspace.class").exists()){
+                         ClassLoader classLoader = new URLClassLoader(new URL[]{new File("/System/Library/Java").toURL()});
+                         mrjFileUtilsClass = Class.forName("com.apple.cocoa.application.NSWorkspace", true, classLoader);
+                    } else {
+                         mrjFileUtilsClass = Class.forName("com.apple.cocoa.application.NSWorkspace");
+                    }
+                    openURL = mrjFileUtilsClass.getDeclaredMethod("openURL", new Class[] { java.net.URL.class });
+			    } catch (Exception e) {
+					ij.IJ.log("MaxOSX: "+e);
+					errorMessage = e.getMessage();
+			        return false;
+			    }
 			default:
 			    break;
 		}
@@ -383,30 +334,7 @@ public class BrowserLauncher implements PlugIn {
 		}
 		switch (jvm) {
 			case MRJ_2_0:
-				try {
-					Integer finderCreatorCode = (Integer) makeOSType.invoke(null, new Object[] { FINDER_CREATOR });
-					Object aeTarget = aeTargetConstructor.newInstance(new Object[] { finderCreatorCode });
-					Integer gurlType = (Integer) makeOSType.invoke(null, new Object[] { GURL_EVENT });
-					Object appleEvent = appleEventConstructor.newInstance(new Object[] { gurlType, gurlType, aeTarget, kAutoGenerateReturnID, kAnyTransactionID });
-					// Don't set browser = appleEvent because then the next time we call
-					// locateBrowser(), we'll get the same AppleEvent, to which we'll already have
-					// added the relevant parameter. Instead, regenerate the AppleEvent every time.
-					// There's probably a way to do this better; if any has any ideas, please let
-					// me know.
-					return appleEvent;
-				} catch (IllegalAccessException iae) {
-					browser = null;
-					errorMessage = iae.getMessage();
-					return browser;
-				} catch (InstantiationException ie) {
-					browser = null;
-					errorMessage = ie.getMessage();
-					return browser;
-				} catch (InvocationTargetException ite) {
-					browser = null;
-					errorMessage = ite.getMessage();
-					return browser;
-				}
+				return null;
 			case MRJ_2_1:
 				File systemFolder;
 				try {
@@ -494,56 +422,18 @@ public class BrowserLauncher implements PlugIn {
 		}
 		
 		switch (jvm) {
-			case MRJ_2_0:
-				Object aeDesc = null;
-				try {
-					aeDesc = aeDescConstructor.newInstance(new Object[] { url });
-					putParameter.invoke(browser, new Object[] { keyDirectObject, aeDesc });
-					sendNoReply.invoke(browser, new Object[] { });
-				} catch (InvocationTargetException ite) {
-					throw new IOException("InvocationTargetException while creating AEDesc: " + ite.getMessage());
-				} catch (IllegalAccessException iae) {
-					throw new IOException("IllegalAccessException while building AppleEvent: " + iae.getMessage());
-				} catch (InstantiationException ie) {
-					throw new IOException("InstantiationException while creating AEDesc: " + ie.getMessage());
-				} finally {
-					aeDesc = null;	// Encourage it to get disposed if it was created
-					browser = null;	// Ditto
-				}
-				break;
 			case MRJ_2_1:
 				Runtime.getRuntime().exec(new String[] { (String) browser, url } );
 				break;
-			case MRJ_3_0:
-				int[] instance = new int[1];
-				int result = ICStart(instance, 0);
-				if (result == 0) {
-					int[] selectionStart = new int[] { 0 };
-					byte[] urlBytes = url.getBytes();
-					int[] selectionEnd = new int[] { urlBytes.length };
-					result = ICLaunchURL(instance[0], new byte[] { 0 }, urlBytes,
-											urlBytes.length, selectionStart,
-											selectionEnd);
-					if (result == 0) {
-						// Ignore the return value; the URL was launched successfully
-						// regardless of what happens here.
-						ICStop(instance);
-					} else {
-						throw new IOException("Unable to launch URL: " + result);
-					}
-				} else {
-					throw new IOException("Unable to create an Internet Config instance: " + result);
-				}
-				break;
-			case MRJ_3_1:
-				try {
-					openURL.invoke(null, new Object[] { url });
-				} catch (InvocationTargetException ite) {
-					throw new IOException("InvocationTargetException while calling openURL: " + ite.getMessage());
-				} catch (IllegalAccessException iae) {
-					throw new IOException("IllegalAccessException while calling openURL: " + iae.getMessage());
-				}
-				break;
+			case MACOSX:
+			    try {
+			        Method aMethod = mrjFileUtilsClass.getDeclaredMethod("sharedWorkspace", new Class[] {});
+			        Object aTarget = aMethod.invoke( mrjFileUtilsClass, new Object[] {});
+			        openURL.invoke(aTarget, new Object[] { new java.net.URL( url )}); 
+			    } catch (Exception e) {
+					errorMessage = ""+e;
+			    }
+			    break;
 		    case WINDOWS_NT:
 		    case WINDOWS_9x:
 		    	// Add quotes around the URL to allow ampersands and other special

@@ -32,7 +32,7 @@ public class URLOpener implements PlugIn {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		String url = gd.getNextString();
+		url = gd.getNextString();
 		IJ.showStatus("Opening: " + url);
 		ImagePlus imp = new ImagePlus(url);
 		imp.show();

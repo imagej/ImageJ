@@ -1,5 +1,8 @@
 package ij.measure;
-import ij.IJ;
+import ij.*;
+import ij.plugin.filter.Analyzer;
+import ij.text.*;
+import java.awt.*;
 
 /** This is a table for storing measurement results as columns of real numbers. 
 	Call Analyzer.getResultsTable() to get a reference to the ResultsTable
@@ -37,6 +40,12 @@ public class ResultsTable {
 		for(int i=0; i<defaultHeadings.length; i++)
 				headings[i] = defaultHeadings[i];
 	}
+	
+	/** Returns the ResultsTable used by the Measure command. */
+	public static ResultsTable getResultsTable() {
+		return Analyzer.getResultsTable();
+	}
+	
 	
 	/** Increments the measurement counter by one. */
 	public synchronized void incrementCounter() {
@@ -121,6 +130,14 @@ public class ResultsTable {
 		}
 	}
 	
+	/** Returns true if the specified column exists and is not empty. */
+	public boolean columnExists(int column) {
+		if ((column<0) || (column>=MAX_COLUMNS))
+			return false;
+		else
+			return columns[column]!=null;
+	}
+
 	/** Returns the index of the first column with the given heading.
 		heading. If not found, returns COLUMN_NOT_FOUND. */
 	public int getColumnIndex(String heading) {
@@ -163,6 +180,32 @@ public class ResultsTable {
 		return columns[column][row];
 	}
 	
+	/**	Returns the value of the specified column and row, where
+		column is the column heading and row is a number greater
+		than or equal zero and less than value returned by getCounter(). 
+		Returns Double.NAN if the specified column heading is not found. 
+		Use Double.isNaN(value) to test the returned value. */
+	public double getValue(String column, int row) {
+		if (row<0 || row>=getCounter())
+			throw new IllegalArgumentException("Row out of range");
+		int col = getColumnIndex(column);
+		//IJ.log("col: "+col+" "+(col==COLUMN_NOT_FOUND?"not found":""+columns[col]));
+		return col==COLUMN_NOT_FOUND?Double.NaN:getValue(col,row);
+	}
+
+	/** Sets the value of the given column and row, where
+		where 0<=row<counter. If the specified column does 
+		not exist, it is created.*/
+	public void setValue(String column, int row, double value) {
+		int col = getColumnIndex(column);
+		if (col==COLUMN_NOT_FOUND) {
+			col = getFreeColumn(column);
+			if (col==TABLE_FULL)
+				throw new IllegalArgumentException("Too many columns (>"+(MAX_COLUMNS-defaultHeadings.length)+")");
+		}
+		setValue(col, row, value);
+	}
+
 	/** Sets the value of the given column and row, where
 		where 0<=column<MAX_COLUMNS and 0<=row<counter. */
 	public void setValue(int column, int row, double value) {
@@ -253,8 +296,38 @@ public class ResultsTable {
 			columns[i] = null;
 			if (i<defaultHeadings.length)
 				headings[i] = defaultHeadings[i];
+			else
+				headings[i] = null;
 		}
 		lastColumn = -1;
+	}
+	
+	/** Displays the contents of this ResultsTable in a window with the specified title. 
+		Opens a new window if there is no open text window with this title. */
+	public void show(String windowTitle) {
+		String tableHeadings = getColumnHeadings();		
+		TextPanel tp;
+		if (windowTitle.equals("Results")) {
+			tp = IJ.getTextPanel();
+			if (tp==null) return;
+			IJ.setColumnHeadings(tableHeadings);
+		} else {
+			Frame frame = WindowManager.getFrame(windowTitle);
+			TextWindow win;
+			if (frame!=null && frame instanceof TextWindow)
+				win = (TextWindow)frame;
+			else
+				win = new TextWindow(windowTitle, "", 300, 200);
+			tp = win.getTextPanel();
+			tp.setColumnHeadings(tableHeadings);
+		}
+		int n = getCounter();
+		if (n>0) {
+			StringBuffer sb = new StringBuffer(n*tableHeadings.length());
+			for (int i=0; i<n; i++)
+				sb.append(getRowAsString(i)+"\n");
+			tp.append(new String(sb));
+		}
 	}
 	
 	public String toString() {

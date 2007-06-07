@@ -13,6 +13,9 @@ public class WindowManager {
 	private static ImageWindow currentWindow;			// active image window
 	private static Frame frontWindow;
 	private static ImagePlus tempCurrentImage;
+	
+	private WindowManager() {
+	}
 
 	/** Makes the specified image active. */
 	public synchronized static void setCurrentWindow(ImageWindow win) {
@@ -143,9 +146,7 @@ public class WindowManager {
 	/** Removes the specified window from the Window menu. */
 	public synchronized static void removeWindow(Frame win) {
 		//IJ.write("removeWindow: "+win.getTitle());
-		if (win==null)
-			return;
-		else if (win instanceof ImageWindow)
+		if (win instanceof ImageWindow)
 			removeImageWindow((ImageWindow)win);
 		else {
 			int index = nonImageList.indexOf(win);
@@ -219,12 +220,21 @@ public class WindowManager {
     }
     
     /** Returns the frame with the specified title or null if a frame with that 
-    	title is not found. Currently only works for non-image windows. */
+    	title is not found. */
     public static Frame getFrame(String title) {
 		for (int i=0; i<nonImageList.size(); i++) {
 			Frame frame = (Frame)nonImageList.elementAt(i);
 			if (title.equals(frame.getTitle()))
 				return frame;
+		}
+		int[] wList = getIDList();
+		int len = wList!=null?wList.length:0;
+		for (int i=0; i<len; i++) {
+			ImagePlus imp = getImage(wList[i]);
+			if (imp!=null) {
+				if (imp.getTitle().equals(title))
+					return imp.getWindow();
+			}
 		}
 		return null;
     }

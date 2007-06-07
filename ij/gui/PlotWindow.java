@@ -18,10 +18,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 
 	/** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
-
 	/** Display points using an X-shaped mark. */
 	public static final int X = 1;
-
+	/** Display points using an box-shaped mark. */
+	public static final int BOX = 3;
+	/** Display points using an tiangular mark. */
+	public static final int TRIANGLE = 4;
+	/** Display points using an cross-shaped mark. */
+	public static final int CROSS = 5;
 	/** Connect points with solid lines. */
 	public static final int LINE = 2;
 
@@ -39,31 +43,19 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static final String OPTIONS = "pp.options";
 	private static final int SAVE_X_VALUES = 1;
 	private static final int AUTO_CLOSE = 2;
+	private static final int LIST_VALUES = 4;
 
-	private int frameWidth;
-	private int frameHeight;
-	private int xloc;
-	private int yloc;
-	
-	private Rectangle frame = null;
-	private float[] xValues, yValues;
-	private float[] errorBars;
-	private int nPoints;
-	private double xScale, yScale;
-	private double xMin, xMax, yMin, yMax;
 	private Button list, save, copy;
 	private Label coordinates;
 	private static String defaultDirectory = null;
-	private String xLabel;
-	private String yLabel;
 	private Font font = new Font("Helvetica", Font.PLAIN, 12);
-	private boolean fixedYScale;
- 	private ImageProcessor ip;
 	private static int options;
-	private int lineWidth = Line.getWidth();
 	private int defaultDigits = -1;
 	private boolean realNumbers;
 	private int xdigits, ydigits;
+	private int markSize = 5;
+	private static Plot staticPlot;
+	private Plot plot;
 	
 	/** Save x-values only. To set, use Edit/Options/
 		Profile Plot Options. */
@@ -79,12 +71,17 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** The height of the plot in pixels. */
 	public static int plotHeight = HEIGHT;
 
+	/** Display the XY coordinates in a separate window. To
+		set, use Edit/Options/Profile Plot Options. */
+	public static boolean listValues;
+
     // static initializer
     static {
 		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
     	options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
     	saveXValues = (options&SAVE_X_VALUES)!=0;
     	autoClose = (options&AUTO_CLOSE)!=0;
+    	listValues = (options&LIST_VALUES)!=0;
     	plotWidth = Prefs.getInt(PLOT_WIDTH, WIDTH);
     	plotHeight = Prefs.getInt(PLOT_HEIGHT, HEIGHT);
     }
@@ -97,19 +94,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	* @param yValues		the y-coodinates
 	*/
 	public PlotWindow(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
-		super(NewImage.createByteImage(title,
-			plotWidth+LEFT_MARGIN+RIGHT_MARGIN, plotHeight+TOP_MARGIN+BOTTOM_MARGIN,
-			1, NewImage.FILL_WHITE));
-		this.xLabel = xLabel;
-		this.yLabel = yLabel;
-		this.xValues = xValues;
-		this.yValues = yValues;
-		double[] a = Tools.getMinMax(xValues);
-		xMin=a[0]; xMax=a[1];
-		a = Tools.getMinMax(yValues);
-		yMin=a[0]; yMax=a[1];
-		fixedYScale = false;
-		nPoints = xValues.length;
+		super(createImage(title, xLabel, yLabel, xValues, yValues));
+		plot = staticPlot;
 	}
 
 	/** This version of the constructor excepts double arrays. */
@@ -117,40 +103,32 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
 	}
 
-	/** Sets the x-axis and y-axis range. */
-	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
-		this.xMin = xMin;
-		this.xMax = xMax;
-		this.yMin = yMin;
-		this.yMax = yMax;
-		fixedYScale = true;
+	/** Creates a PlotWindow from a Plot object. */
+	PlotWindow(Plot plot) {
+		super(plot.getImagePlus());
+		this.plot = plot;
+		draw();
 	}
 
-	/** Adds a set of points to the plot.
+	/** Called by the constructor to generate the image the plot will be drawn on.
+		This is a static method because constructors cannot call instance methods. */
+	static ImagePlus createImage(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
+		staticPlot = new Plot(title, xLabel, yLabel, xValues, yValues);
+		return new ImagePlus(title, staticPlot.getBlankProcessor());
+	}
+	
+	/** Sets the x-axis and y-axis range. */
+	public void setLimits(double xMin, double xMax, double yMin, double yMax) {
+		plot.setLimits(xMin, xMax, yMin, yMax);
+	}
+
+	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
 	* @param x			the x-coodinates
 	* @param y			the y-coodinates
-	* @param shape		CIRCLE, X or LINE
+	* @param shape		CIRCLE, X, BOX, TRIANGLE, CROSS or LINE
 	*/
 	public void addPoints(float[] x, float[] y, int shape) {
-		setup();
-		switch(shape) {
-			case CIRCLE: case X: 
-				for (int i=0; i<x.length; i++) {
-					int xt = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					int yt = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-					drawShape(shape, xt, yt, 5);
-				}	
-				break;
-			case LINE: 
-				int xts[] = new int[x.length];
-				int yts[] = new int[y.length];
-				for (int i=0; i<x.length; i++) {
-					xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-				}
-				drawPolyline(ip, xts, yts, x.length); 
-				break;
-		}
+		plot.addPoints(x, y, shape);
 	}
 
 	/** Adds a set of points to the plot using double arrays.
@@ -158,61 +136,31 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	public void addPoints(double[] x, double[] y, int shape) {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
-
-	void drawShape(int shape, int x, int y, int size) {
-		int xbase = x-size/2;
-		int ybase = y-size/2;
-		if (shape==X) {
-			ip.drawLine(xbase,ybase,xbase+size,ybase+size);
-			ip.drawLine(xbase+size,ybase,xbase,ybase+size);
-		} else { // 5x5 oval
-			ip.drawLine(x-1, y-2, x+1, y-2);
-			ip.drawLine(x-1, y+2, x+1, y+2);
-			ip.drawLine(x+2, y+1, x+2, y-1);
-			ip.drawLine(x-2, y+1, x-2, y-1);
-		}
-	}
 	
 	/** Adds error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
-		if (errorBars.length!=nPoints)
-			throw new IllegalArgumentException("errorBars.length != npoints");
-		this.errorBars = errorBars  ;
+		plot.addErrorBars(errorBars);
 	}
 
 	/** Draws a label. */
 	public void addLabel(double x, double y, String label) {
-		setup();
-		int xt = LEFT_MARGIN + (int)(x*frameWidth);
-		int yt = TOP_MARGIN + (int)(y*frameHeight);
-		ip.drawString(label, xt, yt);
+		plot.addLabel(x, y, label);
 	}
 	
 	/** Changes the drawing color. The frame and labels are
 		always drawn in black. */
 	public void setColor(Color c) {
-		setup();
-		if (!(ip instanceof ColorProcessor)) {
-			ip = ip.convertToRGB();
-			ip.setLineWidth(lineWidth);
-			ip.setFont(font);
-			ip.setAntialiasedText(true);
-		}
-		ip.setColor(c);
+		plot.setColor(c);
 	}
 
 	/** Changes the line width. */
 	public void setLineWidth(int lineWidth) {
-		setup();
-		ip.setLineWidth(lineWidth);
-		this.lineWidth = lineWidth;
+		plot.setLineWidth(lineWidth);
 	}
 
 	/** Changes the font. */
     public void changeFont(Font font) {
-    	setup();
-		ip.setFont(font);
-		this.font = font;
+    	plot.changeFont(font);
     }
 
 	/** Displays the plot. */
@@ -232,37 +180,15 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		buttons.add(coordinates);
 		add(buttons);
-		drawPlot();
+		plot.draw();
 		pack();
-		if (ip instanceof ColorProcessor)
+		ImageProcessor ip = plot.getProcessor();
+		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
 			imp.setProcessor(null, ip);
 		else
 			imp.updateAndDraw();
-	}
-
-	void setup() {
-		if (ip!=null)
-			return;
-		ip = imp.getProcessor();
-		ip.setColor(Color.black);
-		if (lineWidth>3)
-			lineWidth = 3;
-		ip.setLineWidth(lineWidth);
-		ip.setFont(font);
-		ip.setAntialiasedText(true);
-		if (frameWidth==0) {
-			frameWidth = plotWidth;
-			frameHeight = plotHeight;
-		}
-		frame = new Rectangle(LEFT_MARGIN, TOP_MARGIN, frameWidth, frameHeight);
-		if ((xMax-xMin)==0.0)
-			xScale = 1.0;
-		else
-			xScale = frame.width/(xMax-xMin);
-		if ((yMax-yMin)==0.0)
-			yScale = 1.0;
-		else
-			yScale = frame.height/(yMax-yMin);
+		if (listValues)
+			showList();
 	}
 
 	int getDigits(double n1, double n2) {
@@ -288,128 +214,35 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
     	@see ij.gui.ImageWindow#mouseMoved
     */
     public void mouseMoved(int x, int y) {
-		if (frame==null || coordinates==null)
-			return;
-		if (frame.contains(x, y)) {
-			int index = (int)((x-frame.x)/((double)frame.width/xValues.length));
-			if (index>0 && index<xValues.length) {
-				double xv = xValues[index];
-				double yv = yValues[index];
-				coordinates.setText("X=" + IJ.d2s(xv,getDigits(xv,xv))+", Y=" + IJ.d2s(yv,getDigits(yv,yv)));
-			}
-			//coordinates.setText("X=" + d2s(x/xScale+xMin)+", Y=" + d2s((frameHeight-y)/yScale+yMin));
-		} else
-			coordinates.setText("");
+		if (plot!=null && plot.frame!=null && coordinates!=null)
+			coordinates.setText(plot.getCoordinates(x,y));
 	}
-	   
-	void drawPlot() {
-		int x, y;
-		double v;
-		
-		setup();
-					
-		int xpoints[] = new int[nPoints];
-		int ypoints[] = new int[nPoints];
-		double value;
-		for (int i=0; i<nPoints; i++) {
-			value = yValues[i];
-			if (value<yMin) value=yMin;
-			if (value>yMax) value=yMax;
-			xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-			ypoints[i] = TOP_MARGIN + frame.height - (int)((value-yMin)*yScale);
-		}
-		drawPolyline(ip, xpoints, ypoints, nPoints); 
-		
-		if (this.errorBars != null) {
-			xpoints = new int[2];
-			ypoints = new int[2];
-			for (int i=0; i<nPoints; i++) {
-				xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-				ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
-				ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
-				drawPolyline(ip, xpoints,ypoints, 2);
-			}	    
-	    }
-
-		if (ip instanceof ColorProcessor)
-			ip.setColor(Color.black);
-		ip.drawRect(frame.x, frame.y, frame.width+1, frame.height+1);
-		int digits = getDigits(yMax, yMin);
-		String s = IJ.d2s(yMax, digits);
-		int sw = ip.getStringWidth(s);
-		if ((sw+4)>LEFT_MARGIN)
-			ip.drawString(s, 4, TOP_MARGIN-4);
-		else
-			ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-4, TOP_MARGIN+10);
-		s = IJ.d2s(yMin, digits);
-		sw = ip.getStringWidth(s);
-		if ((sw+4)>LEFT_MARGIN)
-			ip.drawString(s, 4, TOP_MARGIN+frame.height);
-		else
-			ip.drawString(s, LEFT_MARGIN-ip.getStringWidth(s)-4, TOP_MARGIN+frame.height);
-		FontMetrics fm = ip.getFontMetrics();
-		x = LEFT_MARGIN;
-		y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
-		digits = getDigits(xMin, xMax);
-		ip.drawString(IJ.d2s(xMin,digits), x, y);
-		s = IJ.d2s(xMax,digits);
-		ip.drawString(s, x + frame.width-ip.getStringWidth(s)+6, y);
-		ip.drawString(xLabel, LEFT_MARGIN+(frame.width-ip.getStringWidth(xLabel))/2, y+3);
-		drawYLabel(yLabel,LEFT_MARGIN,TOP_MARGIN,frame.height, fm);
-	}
-	
-	void drawPolyline(ImageProcessor ip, int[] x, int[] y, int n) {
-		ip.moveTo(x[0], y[0]);
-		for (int i=0; i<n; i++)
-			ip.lineTo(x[i], y[i]);
-	}
-		
-	void drawYLabel(String yLabel, int x, int y, int height, FontMetrics fm) {
-		if (yLabel.equals(""))
-			return;
-		int w =  fm.stringWidth(yLabel) + 5;
-		int h =  fm.getHeight() + 5;
-		ImageProcessor label = new ByteProcessor(w, h);
-		label.setColor(Color.white);
-		label.fill();
-		label.setColor(Color.black);
-		label.setFont(font);
-		label.setAntialiasedText(true);
-		int descent = fm.getDescent();
-		label.drawString(yLabel, 0, h-descent);
-		label = label.rotateLeft();
-		int y2 = y+(height-ip.getStringWidth(yLabel))/2;
-		if (y2<y) y2 = y;
-		int x2 = x-h-2;
-		//new ImagePlus("after", label).show();
-		ip.insert(label, x2, y2);
-	}
-
+	   	
 	void showList() {
 		StringBuffer sb = new StringBuffer();
 		String headings;
 		initDigits();
-		if (errorBars !=null) {
+		if (plot.errorBars !=null) {
 			if (saveXValues)
 				headings = "X\tY\tErrorBar";
 			else
 				headings = "Y\tErrorBar";
-			for (int i=0; i<nPoints; i++) {
+			for (int i=0; i<plot.nPoints; i++) {
 				if (saveXValues)
-					sb.append(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits)+"\t"+IJ.d2s(errorBars[i],ydigits)+"\n");
+					sb.append(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\t"+IJ.d2s(plot.errorBars[i],ydigits)+"\n");
 				else
-					sb.append(IJ.d2s(yValues[i],ydigits)+"\t"+IJ.d2s(errorBars[i],ydigits)+"\n");
+					sb.append(IJ.d2s(plot.yValues[i],ydigits)+"\t"+IJ.d2s(plot.errorBars[i],ydigits)+"\n");
 			}
 		} else {
 			if (saveXValues)
 				headings = "X\tY";
 			else
 				headings = "Y";
-			for (int i=0; i<nPoints; i++) {
+			for (int i=0; i<plot.nPoints; i++) {
 				if (saveXValues)
-					sb.append(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits)+"\n");
+					sb.append(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\n");
 				else
-					sb.append(IJ.d2s(yValues[i],ydigits)+"\n");
+					sb.append(IJ.d2s(plot.yValues[i],ydigits)+"\n");
 			}
 		}
 		TextWindow tw = new TextWindow("Plot Values", headings, sb.toString(), 200, 400);
@@ -439,11 +272,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		IJ.wait(250);  // give system time to redraw ImageJ window
 		IJ.showStatus("Saving plot values...");
 		initDigits();
-		for (int i=0; i<nPoints; i++) {
+		for (int i=0; i<plot.nPoints; i++) {
 			if (saveXValues)
-				pw.println(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits));
+				pw.println(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits));
 			else
-				pw.println(IJ.d2s(yValues[i],ydigits));
+				pw.println(IJ.d2s(plot.yValues[i],ydigits));
 		}
 		pw.close();
 		if (autoClose)
@@ -458,13 +291,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			{IJ.error("Unable to copy to Clipboard."); return;}
 		IJ.showStatus("Copying plot values...");
 		initDigits();
-		CharArrayWriter aw = new CharArrayWriter(nPoints*4);
+		CharArrayWriter aw = new CharArrayWriter(plot.nPoints*4);
 		PrintWriter pw = new PrintWriter(aw);
-		for (int i=0; i<nPoints; i++) {
+		for (int i=0; i<plot.nPoints; i++) {
 			if (saveXValues)
-				pw.print(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits)+"\n");
+				pw.print(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\n");
 			else
-				pw.print(IJ.d2s(yValues[i],ydigits)+"\n");
+				pw.print(IJ.d2s(plot.yValues[i],ydigits)+"\n");
 		}
 		String text = aw.toString();
 		pw.close();
@@ -481,8 +314,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			ydigits = 2;
 		if (ydigits!=defaultDigits) {
 			realNumbers = false;
-			for (int i=0; i<xValues.length; i++) {
-				if ((int)xValues[i]!=xValues[i])
+			for (int i=0; i<plot.xValues.length; i++) {
+				if ((int)plot.xValues[i]!=plot.xValues[i])
 					realNumbers = true;
 			}
 			defaultDigits = ydigits;
@@ -502,8 +335,18 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			copyToClipboard();
 	}
 	
+	public float[] getXValues() {
+		return plot.xValues;
+	}
+
 	public float[] getYValues() {
-		return yValues;
+		return plot.yValues;
+	}
+	
+	/** Draws a new plot in this window. */
+	public void drawPlot(Plot plot) {
+		this.plot = plot;
+		imp.setProcessor(null, plot.getProcessor());	
 	}
 	
 	/** Called once when ImageJ quits. */
@@ -521,10 +364,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		int options = 0;
 		if (saveXValues)
 			options |= SAVE_X_VALUES;
-		if (autoClose)
+		if (autoClose && !listValues)
 			options |= AUTO_CLOSE;
+		if (listValues)
+			options |= LIST_VALUES;
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
+	
 }
 
 

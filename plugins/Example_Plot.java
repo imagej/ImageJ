@@ -18,6 +18,7 @@ public class Example_Plot implements PlugIn {
         float[] e = {.8f,.6f,.5f,.4f,.3f,.5f,.6f,.7f,.8f}; // error bars
 
         PlotWindow plot = new PlotWindow("Example Plot","x-axis","y-axis",x,y);
+        //Plot plot = new Plot("Example Plot","x-axis","y-axis",x,y);
         plot.setLimits(0, 1, 0, 10);
         plot.setLineWidth(2);
         plot.addErrorBars(e);
@@ -26,7 +27,7 @@ public class Example_Plot implements PlugIn {
         float x2[] = {.4f,.5f,.6f,.7f,.8f};
         float y2[] = {4,3,3,4,5};
         plot.setColor(Color.red);
-        plot.addPoints(x2,y2,PlotWindow.X);
+        plot.addPoints(x2,y2,PlotWindow.TRIANGLE);
         plot.addPoints(x2,y2,PlotWindow.LINE);
 
         // add label
@@ -37,5 +38,7 @@ public class Example_Plot implements PlugIn {
         plot.changeFont(new Font("Helvetica", Font.PLAIN, 16));
         plot.setColor(Color.blue);
         plot.draw();
+        //plot.show();
     }
+
 }

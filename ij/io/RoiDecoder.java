@@ -15,7 +15,7 @@ import java.net.*;
 	12-13	bottom
 	14-15	right
 	16-17	NCoordinate
-	18-33	x1,y1,x2,y2 (float, unused)
+	18-33	x1,y1,x2,y2 (straight line)
 	34-35	line width (unused)
 	36-63	reserved (zero)
 */
@@ -23,7 +23,7 @@ import java.net.*;
 /** Decodes an ImageJ, NIH Image or Scion Image ROI. */
 public class RoiDecoder {
 
-	private final int polygon=0, rect=1, oval=2, line=3,freeLine=4, segLine=5, noRoi=6,freehand=7, traced=8;
+	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9;
 	private byte[] data;
 	private String path;
 
@@ -66,10 +66,11 @@ public class RoiDecoder {
 			int x1 = (int)getFloat(18);		
 			int y1 = (int)getFloat(22);		
 			int x2 = (int)getFloat(26);		
-			int y2 = (int)getFloat(30);		
+			int y2 = (int)getFloat(30);
+			roi = new Line(x1, y1, x2, y2);		
 			//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
 			break;
-		case polygon: case freehand: case traced:
+		case polygon: case freehand: case traced: case polyline: case freeline: case angle:
 				//IJ.write("type: "+type);
 				//IJ.write("n: "+n);
 				//IJ.write("rect: "+left+","+top+" "+width+" "+height);
@@ -93,12 +94,24 @@ public class RoiDecoder {
 					roiType = Roi.POLYGON;
 				else if (type==freehand)
 					roiType = Roi.FREEROI;
-				else
+				else if (type==traced)
 					roiType = Roi.TRACED_ROI;
+				else if (type==polyline)
+					roiType = Roi.POLYLINE;
+				else if (type==freeline)
+					roiType = Roi.FREELINE;
+				else if (type==angle)
+					roiType = Roi.ANGLE;
+				else
+					roiType = Roi.FREEROI;
 				roi = new PolygonRoi(x, y, n, roiType);
 				break;
 		default:
 		}
+		String name = f.getName();
+		if (name.endsWith(".roi"))
+			name = name.substring(0, name.length()-4);
+		roi.setName(name);
 		return roi;
 	}
 	

@@ -157,7 +157,7 @@ public class Line extends Roi {
 		
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
-	int isHandle(int sx, int sy) {
+	public int isHandle(int sx, int sy) {
 		int size = HANDLE_SIZE+5;
 		int halfSize = size/2;
 		int sx1 = ic.screenX(x+x1R) - halfSize;

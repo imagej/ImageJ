@@ -38,6 +38,7 @@ public class Profiler implements PlugInFilter {
 		gd.addCheckbox("Do Not Save X-Values", !PlotWindow.saveXValues);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
 		gd.addCheckbox("Vertical Profile", verticalProfile);
+		gd.addCheckbox("List Values", PlotWindow.listValues);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -56,11 +57,16 @@ public class Profiler implements PlugInFilter {
 		PlotWindow.saveXValues = !gd.getNextBoolean();
 		PlotWindow.autoClose = gd.getNextBoolean();
 		verticalProfile = gd.getNextBoolean();
+		PlotWindow.listValues = gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {
 			ymin = 0.0;
 			ymax = 0.0;
+		} else if (ymin>ymax) {
+			double tmp = ymin;
+			ymin = ymax;
+			ymax = tmp;
 		}
 		ProfilePlot.setMinAndMax(ymin, ymax);
 		IJ.register(Profiler.class);

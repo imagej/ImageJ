@@ -31,7 +31,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	private static int yloc;
 	private static int count;
 	private static boolean centerOnScreen;
-	//private static int defaultYLoc = IJ.isMacintosh()?5:32;
+	
+    private int textGap = centerOnScreen?0:TEXT_GAP;
 	
 	/** This variable is set false if the user clicks in this
 		window, presses the escape key, or closes the window. */
@@ -116,8 +117,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		int sliderHeight = (this instanceof StackWindow)?20:0;
 		int screenHeight = screen.height-MENU_BAR_HEIGHT-taskbarHeight-sliderHeight;
 		double mag = 1;
-		while (xbase+XINC*4+width*mag>screen.width || ybase+height*mag>screenHeight)
-			mag = ImageCanvas.getLowerZoomLevel(mag);
+		while (xbase+XINC*4+width*mag>screen.width || ybase+height*mag>screenHeight) {
+			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
+			if (mag2==mag)
+				break;
+			mag = mag2;
+		}
 		ic.setMagnification(mag);
 		
 		if (mag<1.0) {
@@ -132,7 +137,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				ic.zoomIn(0, 0);
 			setSize(Math.min(width, screen.width-x), Math.min(height, screenHeight-y));
 			validate();
-		} else
+		} else 
 			pack();
 	}
 				
@@ -144,10 +149,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	public Insets getInsets() {
 		Insets insets = super.getInsets();
 		//IJ.write(""+insets);
-		return new Insets(insets.top+TEXT_GAP, insets.left, insets.bottom, insets.right);
+		return new Insets(insets.top+textGap, insets.left, insets.bottom, insets.right);
 	}
 
     public void drawInfo(Graphics g) {
+        if (textGap==0)
+            return;
     	String s="";
 		Insets insets = super.getInsets();
     	int nSlices = imp.getStackSize();
@@ -197,7 +204,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				size *= 4;
 	    		break;
     	}
-    	s += "; " + size + "K";
+    	if (size>=10000)    	
+    		s += "; " + (int)Math.round(size/1024.0) + "MB";
+    	else if (size>=1024) {
+    		double size2 = size/1024.0;
+    		s += "; " + IJ.d2s(size2,(int)size2==size2?0:1) + "MB";
+    	} else
+    		s += "; " + size + "K";
 		g.drawString(s, 5, insets.top+TEXT_GAP);
     }
 
@@ -272,13 +285,15 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 
 	public void windowActivated(WindowEvent e) {
 		//IJ.log("windowActivated: "+imp.getTitle());
-		if (IJ.isMacintosh() && IJ.getInstance()!=null)
+		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
+			IJ.wait(1); // needed for 1.4.1 on OS X
 			this.setMenuBar(Menus.getMenuBar());
-		//if (IJ.debugMode) IJ.log(imp.getTitle() + ": Activated");
-		if (!closed) {
-			//ic.requestFocus();
-			WindowManager.setCurrentWindow(this);
 		}
+		ImageJ ij = IJ.getInstance();
+		boolean quitting = ij!=null && ij.quitting();
+		imp.setActivated(); // notify ImagePlus that image has been activated
+		if (!closed && !quitting)
+			WindowManager.setCurrentWindow(this);
 	}
 	
 	public void windowClosing(WindowEvent e) {
@@ -298,7 +313,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	public void windowDeactivated(WindowEvent e) {}
 	public void focusLost(FocusEvent e) {}
 	public void windowDeiconified(WindowEvent e) {}
-	public void windowIconified(WindowEvent e) {}
+	public void windowIconified(WindowEvent e) {}	
 	public void windowOpened(WindowEvent e) {}
 	
 	/** Copies the current ROI to the clipboard. The entire
@@ -332,8 +347,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
                 
 
 	public void paste() {
-		if (IJ.macroRunning())
-			IJ.wait(500);
+		//if (IJ.macroRunning())
+		//	IJ.wait(500);
 		if (clipboard==null)
 			return;
 		int cType = clipboard.getType();
@@ -372,12 +387,22 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 				imp.setRoi(xCenter-w/2, yCenter-h/2, w, h);
 			roi = imp.getRoi();
 		}
-		roi.startPaste(clipboard);
 		if (IJ.macroRunning()) {
-			roi.endPaste();
+			//non-interactive paste
+			int pasteMode = Roi.getCurrentPasteMode();
+			boolean nonRect = roi.getType()!=Roi.RECTANGLE;
+			ImageProcessor ip = imp.getProcessor();
+			if (nonRect) ip.snapshot();
+			r = roi.getBoundingRect();
+			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
+			if (nonRect)
+				ip.reset(imp.getMask());
+			imp.updateAndDraw();
 			imp.killRoi();
-		} else
+		} else {
+			roi.startPaste(clipboard);
 			Undo.setup(Undo.PASTE, imp);
+		}
 		imp.changes = true;
 		//Image img = clipboard.getImage();
 		//ImagePlus imp2 = new ImagePlus("Clipboard", img);
@@ -395,7 +420,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
     	return imp.getTitle();
     }
     
-    /** Causes the next image to be opened centered on the screen. */
+    /** Causes the next image to be opened to be centered on the screen
+    	and displayed without informational text above the image. */
     public static void centerNextImage() {
     	centerOnScreen = true;
     }

@@ -18,13 +18,19 @@ public class Selection implements PlugIn {
 		if (imp==null)
 			{IJ.noImage(); return;}
     	if (arg.equals("all"))
-    		{imp.setRoi(0,0,imp.getWidth(),imp.getHeight()); return;}
-    	if (arg.equals("none"))
-    		{imp.killRoi(); return;}
-    	if (arg.equals("restore"))
-    		{imp.restoreRoi(); return;}
-    	if (arg.equals("spline"))
-    		{fitSpline(); return;}
+    		imp.setRoi(0,0,imp.getWidth(),imp.getHeight());
+    	else if (arg.equals("none"))
+    		imp.killRoi();
+    	else if (arg.equals("restore"))
+    		imp.restoreRoi();
+    	else if (arg.equals("spline"))
+    		fitSpline();
+    	else if (arg.equals("ellipse"))
+    		drawEllipse(imp);
+    	else if (arg.equals("hull"))
+    		convexHull(imp);
+    	else if (arg.equals("mask"))
+    		createMask(imp);    	
 	}
 	
 	void fitSpline() {
@@ -132,5 +138,113 @@ public class Selection implements PlugIn {
 		return curvature;
 	}
 	
+	void drawEllipse(ImagePlus imp) {
+		IJ.showStatus("Fitting ellipse");
+		Roi roi = imp.getRoi();
+		ImageProcessor ip = imp.getProcessor();
+		ImageStatistics stats = imp.getStatistics();
+		EllipseFitter ef = new EllipseFitter();
+		ef.fit(ip, stats);
+		ef.makeRoi(ip);
+		imp.setRoi(new PolygonRoi(ef.xCoordinates, ef.yCoordinates, ef.nCoordinates, roi.FREEROI));
+		IJ.showStatus("");
+	}
+
+	void convexHull(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		int type = roi!=null?roi.getType():-1;
+		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON))
+			{IJ.showMessage("Convex Hull", "Polygonal selection required"); return;}
+		imp.setRoi(makeConvexHull(imp, (PolygonRoi)roi));
+	}
+
+	// Finds the convex hull using the gift wrap algorithm
+	Roi makeConvexHull(ImagePlus imp, PolygonRoi roi) {
+		int n = roi.getNCoordinates();
+		int[] xCoordinates = roi.getXCoordinates();
+		int[] yCoordinates = roi.getYCoordinates();
+		Rectangle r = roi.getBoundingRect();
+		int xbase = r.x;
+		int ybase = r.y;
+		int[] xx = new int[n];
+		int[] yy = new int[n];
+		int n2 = 0;
+		int p1 = findFirstPoint(xCoordinates, yCoordinates, n, imp); 
+		int pstart = p1;
+		int x1, y1, x2, y2, x3, y3, p2, p3;
+		int determinate;
+		do {
+			x1 = xCoordinates[p1];
+			y1 = yCoordinates[p1];
+			p2 = p1+1; if (p2==n) p2=0;
+			x2 = xCoordinates[p2];
+			y2 = yCoordinates[p2];
+			p3 = p2+1; if (p3==n) p3=0;
+			do {
+				x3 = xCoordinates[p3];
+				y3 = yCoordinates[p3];
+				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
+				if (determinate>0)
+					{x2=x3; y2=y3; p2=p3;}
+				p3 += 1;
+				if (p3==n) p3 = 0;
+			} while (p3!=p1);
+			if (n2<n) { 
+				xx[n2] = xbase + x1;
+				yy[n2] = ybase + y1;
+				n2++;
+			}
+			p1 = p2;
+		} while (p1!=pstart);
+		return new PolygonRoi(xx, yy, n2, roi.POLYGON);
+	}
+	
+	// Finds the index of the upper right point that is guaranteed to be on convex hull
+	int findFirstPoint(int[] xCoordinates, int[] yCoordinates, int n, ImagePlus imp) {
+		int smallestY = imp.getHeight();
+		int x, y;
+		for (int i=0; i<n; i++) {
+			y = yCoordinates[i];
+			if (y<smallestY)
+			smallestY = y;
+		}
+		int smallestX = imp.getWidth();
+		int p1 = 0;
+		for (int i=0; i<n; i++) {
+			x = xCoordinates[i];
+			y = yCoordinates[i];
+			if (y==smallestY && x<smallestX) {
+				smallestX = x;
+				p1 = i;
+			}
+		}
+		return p1;
+	}
+	
+	void createMask(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null || roi.getType()>Roi.TRACED_ROI)
+			{IJ.showMessage("Create Mask", "Area selection required"); return;}
+		ImagePlus maskImp = null;
+		Frame frame = WindowManager.getFrame("Mask");
+		if (frame!=null && (frame instanceof ImageWindow))
+			maskImp = ((ImageWindow)frame).getImagePlus();
+		if (maskImp==null) {
+			ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
+			ip.invertLut();
+			maskImp = new ImagePlus("Mask", ip);
+			maskImp.show();
+		}
+		maskImp.setRoi((Roi)roi.clone());
+		int[] mask = maskImp.getMask();
+		ImageProcessor ip = maskImp.getProcessor();
+		ip.setValue(255);
+		Rectangle r = ip.getRoi();
+		if (mask!=null && mask.length==r.width*r.height || mask==null)
+			ip.fill(mask);
+		maskImp.killRoi();
+		maskImp.updateAndDraw();
+	}
+
 }
 

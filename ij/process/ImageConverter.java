@@ -41,6 +41,8 @@ public class ImageConverter {
 
 	/** Converts this ImagePlus to 16-bit grayscale. */
 	public void convertToGray16() {
+		if (type==ImagePlus.GRAY16)
+			return;
 		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY32))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageProcessor ip = imp.getProcessor();
@@ -51,6 +53,8 @@ public class ImageConverter {
 
 	/** Converts this ImagePlus to 32-bit grayscale. */
 	public void convertToGray32() {
+		if (type==ImagePlus.GRAY32)
+			return;
 		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY16))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageProcessor ip = imp.getProcessor();

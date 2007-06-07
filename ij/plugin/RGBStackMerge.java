@@ -30,12 +30,12 @@ public class RGBStackMerge implements PlugIn {
         String none = "*None*";
         titles[wList.length] = none;
 
-        GenericDialog gd = new GenericDialog("RGB Stack Merge");
-        gd.addChoice("Red Stack:", titles, titles[0]);
-        gd.addChoice("Green Stack:", titles, titles[1]);
+        GenericDialog gd = new GenericDialog("RGB Merge");
+        gd.addChoice("Red:", titles, titles[0]);
+        gd.addChoice("Green:", titles, titles[1]);
         String title3 = titles.length>2?titles[2]:none;
-        gd.addChoice("Blue Stack:", titles, title3);
-        gd.addCheckbox("Keep source stacks", false);
+        gd.addChoice("Blue:", titles, title3);
+        gd.addCheckbox("Keep source images", false);
         gd.showDialog();
         if (gd.wasCanceled())
             return;
@@ -115,15 +115,15 @@ public class RGBStackMerge implements PlugIn {
                 redPixels = getPixels(red, slice, 0);
                 greenPixels = getPixels(green, slice, 1);
                 bluePixels = getPixels(blue, slice, 2);
-                if (invertedRed) invert(redPixels);
-                if (invertedGreen) invert(greenPixels);
-                if (invertedBlue) invert(bluePixels);
+                if (invertedRed) redPixels = invert(redPixels);
+                if (invertedGreen) greenPixels = invert(greenPixels);
+                if (invertedBlue) bluePixels = invert(bluePixels);
                 cp.setRGB(redPixels, greenPixels, bluePixels);
             if (keep) {
                 slice++;
-                    if (invertedRed) invert(redPixels);
-                    if (invertedGreen) invert(greenPixels);
-                    if (invertedBlue) invert(bluePixels);
+                //if (invertedRed) invert(redPixels);
+                //if (invertedGreen) invert(greenPixels);
+                //if (invertedBlue) invert(bluePixels);
             } else {
                     if (red!=null) red.deleteSlice(1);
                 if (green!=null &&green!=red) green.deleteSlice(1);
@@ -163,9 +163,12 @@ public class RGBStackMerge implements PlugIn {
         return null;
     }
 
-    void invert(byte[] pixels) {
-        for (int i=0; i<pixels.length; i++)
-            pixels[i] = (byte)(255-pixels[i]&255);
+    byte[] invert(byte[] pixels) {
+        byte[] pixels2 = new byte[pixels.length];
+        System.arraycopy(pixels, 0, pixels2, 0, pixels.length);
+        for (int i=0; i<pixels2.length; i++)
+            pixels2[i] = (byte)(255-pixels2[i]&255);
+        return pixels2;
     }
 
 }

@@ -10,6 +10,10 @@ import ij.util.Java2;
 /**
 This abstract class is the superclass for classes that process
 the four data types (byte, short, float and RGB) supported by ImageJ.
+@see ByteProcessor
+@see ShortProcessor
+@see FloatProcessor
+@see ColorProcessor
 */
 public abstract class ImageProcessor extends Object {
 
@@ -18,7 +22,14 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Value returned by getMinThreshold() when thresholding is not enabled. */
 	public static final double NO_THRESHOLD = -808080.0;
-	
+		
+	/** Left justify text. */
+	public static final int LEFT_JUSTIFY = 0;
+	/** Center justify text. */
+	public static final int CENTER_JUSTIFY = 1;
+	/** Right justify text. */
+	public static final int RIGHT_JUSTIFY = 2;
+
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12;
@@ -50,12 +61,16 @@ public abstract class ImageProcessor extends Object {
 	protected boolean interpolate;
 	protected double minThreshold=NO_THRESHOLD, maxThreshold=NO_THRESHOLD;
 	protected int histogramSize = 256;
+	protected double histogramMin, histogramMax;
 	protected float[] cTable;
 	protected boolean lutAnimation;
 	protected MemoryImageSource source;
 	protected Image img;
 	protected boolean newPixels;
 	protected Color drawingColor = Color.black;
+	protected int clipXMin, clipXMax, clipYMin, clipYMax; // clip rect used by drawTo, drawLine, drawDot and drawPixel 
+	protected int justification = LEFT_JUSTIFY;
+
 		
 	protected void showProgress(double percentDone) {
 		if (progressBar!=null)
@@ -135,11 +150,8 @@ public abstract class ImageProcessor extends Object {
 			greens2[i] = (byte)(greens[mapSize-i-1]&255);
 			blues2[i] = (byte)(blues[mapSize-i-1]&255);
 		}
-		cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2); 
-		newPixels = true;
-		baseCM = null;
-		rLUT1 = rLUT2 = null;
-		inversionTested = false;
+		ColorModel cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2); 
+		setColorModel(cm);
 	}
 
 	/** Returns the LUT index that's the best match for this color. */
@@ -222,10 +234,13 @@ public abstract class ImageProcessor extends Object {
 	}
 
 
-	/** Returns true if this image uses a pseudocolor LUT. */
-    boolean isPseudoColorLut() {
+	/** Returns true if this image uses a pseudocolor or grayscale LUT, 
+		in other words, is this an image that can be filtered. */
+    public boolean isPseudoColorLut() {
 		if (cm==null || !(cm instanceof IndexColorModel))
 			return false;
+		if (getMinThreshold()!=NO_THRESHOLD)
+			return true;
     	IndexColorModel icm = (IndexColorModel)cm;
 		int mapSize = icm.getMapSize();
 		if (mapSize!=256)
@@ -251,7 +266,8 @@ public abstract class ImageProcessor extends Object {
 			stdDev = Math.sqrt(stdDev/(767.0));
 		else
 			stdDev = 0.0;
-		return stdDev<10.0;
+		//ij.IJ.log("isPseudoColorLut: "+(stdDev<10.0) + " " + stdDev);
+		return stdDev<20.0;
 	}
 
 	/** Sets the default fill/draw value to the pixel
@@ -427,11 +443,12 @@ public abstract class ImageProcessor extends Object {
 		yMax = Math.min(roiY + roiHeight - 1, height - 2);
 	}
 	
-	/** Sets the ROI (Region of Interest) to the entire image. */
+	/** Sets the ROI (Region of Interest) and clipping rectangle to the entire image. */
 	public void resetRoi() {
 		roiX=0; roiY=0; roiWidth=width; roiHeight=height;
 		xMin=1; xMax=width-2; yMin=1; yMax=height-2;
-		mask=null; 
+		mask=null;
+		clipXMin=0; clipXMax=width-1; clipYMin=0; clipYMax=height-1; 
 	}
 
 	/** Returns a Rectangle that represents the current
@@ -705,6 +722,11 @@ public abstract class ImageProcessor extends Object {
 		if (ij.IJ.isMacOSX())
 			s += " ";
 		int w =  getStringWidth(s);
+		int cxx = cx;
+		if (justification==CENTER_JUSTIFY)
+			cxx -= w/2;
+		else if (justification==RIGHT_JUSTIFY)
+			cxx -= w;
 		//if (antialiasedText)
 		//	w = boldFont?(int)(1.15*w):(int)(1.08*w);
 		int h =  fontMetrics.getHeight();
@@ -717,7 +739,7 @@ public abstract class ImageProcessor extends Object {
 
 		if (antialiasedText) {
 			Java2.setAntialiasedText(g, true);
-			setRoi(cx,cy-h,w,h);
+			setRoi(cxx,cy-h,w,h);
 			ImageProcessor ip = crop();
 			resetRoi();
 			g.drawImage(ip.createImage(), 0, 0, null);
@@ -730,7 +752,7 @@ public abstract class ImageProcessor extends Object {
 				if (isInvertedLut()) ip.invert();
 			}
 			//new ij.ImagePlus("ip",ip).show();
-			insert(ip, cx, cy-h);
+			insert(ip, cxx, cy-h);
 			cy += h;
 			return;
 		}
@@ -747,9 +769,9 @@ public abstract class ImageProcessor extends Object {
 			if (textMask[i]!=0xffffffff && textMask[i]!=0xff00ffff)
 				textMask[i] = BLACK;
 		}
-		if (cx<width && cy-h<height) {
+		if (cxx<width && cy-h<height) {
 			setMask(textMask);
-			setRoi(cx,cy-h,w,h);
+			setRoi(cxx,cy-h,w,h);
 			fill(getMask());
 		}
 		resetRoi();
@@ -760,6 +782,12 @@ public abstract class ImageProcessor extends Object {
 	public void drawString(String s, int x, int y) {
 		moveTo(x, y);
 		drawString(s);
+	}
+
+	/** Sets the justification used by drawString(), where <code>justification</code>
+		is CENTER_JUSTIFY, RIGHT_JUSTIFY or LEFT_JUSTIFY. The default is LEFT_JUSTIFY. */
+	public void setJustification(int justification) {
+		this.justification = justification;
 	}
 
 	/** Sets the font used by drawString(). */
@@ -905,7 +933,7 @@ public abstract class ImageProcessor extends Object {
 		this.cTable = cTable;
 	}
 
-	/** Set the number of bins to be used for float histograms. */
+	/** Set the number of bins to be used for histograms of float images. */
 	public void setHistogramSize(int size) {
 		histogramSize = size;
 	}
@@ -914,6 +942,27 @@ public abstract class ImageProcessor extends Object {
 		count is fixed at 256 for the other three data types. */
 	public int getHistogramSize() {
 		return histogramSize;
+	}
+
+	/** Set the range used for histograms of float images. The image range is
+		used if both <code>histMin</code> and <code>histMax</code> are zero. */
+	public void setHistogramRange(double histMin, double histMax) {
+		if (histMin>histMax) {
+			histMin = 0.0;
+			histMax = 0.0;
+		}
+		histogramMin = histMin;
+		histogramMax = histMax;
+	}
+
+	/**	Returns the minimum histogram value used for histograms of float images. */
+	public double getHistogramMin() {
+		return histogramMin;
+	}
+
+	/**	Returns the maximum histogram value used for histograms of float images. */
+	public double getHistogramMax() {
+		return histogramMax;
 	}
 
 	/** Returns a reference to this image's pixel array. The
@@ -1161,14 +1210,22 @@ public abstract class ImageProcessor extends Object {
 		threshold(getAutoThreshold());
 	}
 
-	/** Iterative thresholding technique, described originally by Ridler & Calvard in
-	"PIcture Thresholding Using an Iterative Selection Method", IEEE transactions
-	on Systems, Man and Cybernetics, August, 1978. */
+	/**	Returns a pixel value (threshold) that can be used to divide the image into objects 
+		and background. It does this by taking a test threshold and computing the average 
+		of the pixels at or below the threshold and pixels above. It then computes the average
+		of those two, increments the threshold, and repeats the process. Incrementing stops 
+		when the threshold is larger than the composite average. That is, threshold = (average 
+		background + average objects)/2. This description was posted to the ImageJ mailing 
+		list by Jordan Bevic. */
 	public int getAutoThreshold() {
+		return getAutoThreshold(getHistogram());
+	}
+
+	/**	This is a version of getAutoThreshold() that uses a histogram passed as an argument. */
+	public int getAutoThreshold(int[] histogram) {
 		int level;
-		int[] histogram = getHistogram();
 		int maxValue = histogram.length - 1;
-		double result,tempSum1,tempSum2,tempSum3,tempSum4;
+		double result, sum1, sum2, sum3, sum4;
 
 		histogram[0] = 0; //set to zero so erased areas aren't included
 		histogram[maxValue] = 0;
@@ -1184,28 +1241,46 @@ public abstract class ImageProcessor extends Object {
 		}
 		
 		int movingIndex = min;
-		int inc = max/40;
-		if (inc<1) inc = 1;
+		int inc = Math.min(max/40, 1);
 		do {
-			tempSum1=tempSum2=tempSum3=tempSum4=0.0;
+			sum1=sum2=sum3=sum4=0.0;
 			for (int i=min; i<=movingIndex; i++) {
-				tempSum1 += i*histogram[i];
-				tempSum2 += histogram[i];
+				sum1 += i*histogram[i];
+				sum2 += histogram[i];
 			}
 			for (int i=(movingIndex+1); i<=max; i++) {
-				tempSum3 += i *histogram[i];
-				tempSum4 += histogram[i];
-			}
-			
-			result = (tempSum1/tempSum2/2.0) + (tempSum3/tempSum4/2.0);
+				sum3 += i*histogram[i];
+				sum4 += histogram[i];
+			}			
+			result = (sum1/sum2 + sum3/sum4)/2.0;
 			movingIndex++;
 			if (max>255 && (movingIndex%inc)==0)
 				showProgress((double)(movingIndex)/max);
-			} while ((movingIndex+1)<=result && movingIndex<=(max-1));
+		} while ((movingIndex+1)<=result && movingIndex<max-1);
 		
 		showProgress(1.0);
 		level = (int)Math.round(result);
 		return level;
+	}
+	
+	/** Updates the clipping rectangle used by lineTo(), drawLine(), drawDot() and drawPixel().
+		The clipping rectangle is reset by passing a null argument or by calling resetRoi(). */
+	public void setClipRect(Rectangle clipRect) {
+		if (clipRect==null) {
+			clipXMin=0; 
+			clipXMax=width-1; 
+			clipYMin=0; 
+			clipYMax=height-1; 
+		} else {
+			clipXMin = clipRect.x; 
+			clipXMax = clipRect.x + clipRect.width - 1; 
+			clipYMin = clipRect.y; 
+			clipYMax = clipRect.y + clipRect.height - 1; 
+			if (clipXMin<0) clipXMin = 0;
+			if (clipXMax>=width) clipXMax = width-1;
+			if (clipYMin<0) clipYMin = 0;
+			if (clipYMax>=height) clipYMax = height-1;
+		}
 	}
 
 }

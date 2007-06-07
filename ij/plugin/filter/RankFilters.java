@@ -2,12 +2,13 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.plugin.ContrastEnhancer;
 import java.awt.*;
 import java.util.*;
 
 public class RankFilters implements PlugInFilter {
 
-        public static final int MEDIAN=0, MEAN=1, MIN=2, MAX=3;
+        public static final int MEDIAN=0, MEAN=1, MIN=2, MAX=3, VARIANCE=4, DESPECKLE=5;
         static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
         
         ImagePlus imp;
@@ -17,10 +18,11 @@ public class RankFilters implements PlugInFilter {
         int slice;
         boolean canceled;
         ImageWindow win;
-        private static final String[] typeStrings = {"Median","Mean","Minimum","Maximum"};
+        private static final String[] typeStrings = {"Median","Mean","Minimum","Maximum","Variance","Median"};
         boolean isLineRoi;
         
         static double radius = 2.0;
+        static boolean separable = true;
 
 
         public int setup(String arg, ImagePlus imp) {
@@ -32,6 +34,14 @@ public class RankFilters implements PlugInFilter {
                         filterType = MAX;
                 else if (arg.equals("mean"))
                         filterType = MEAN;
+                else if (arg.equals("variance"))
+                        filterType = VARIANCE;
+                else if (arg.equals("despeckle"))
+                        filterType = DESPECKLE;
+                else if (arg.equals("masks")) {
+                	showMasks();
+                	return DONE;
+                }
                 slice = 0;
                 canceled = false;
                 if (imp!=null) {
@@ -57,16 +67,29 @@ public class RankFilters implements PlugInFilter {
 
 				if (isLineRoi)
 					ip.resetRoi();
-                rank(ip, radius, filterType);
+				if (filterType==MEAN && separable)
+					blur(ip, (int)radius);
+				else
+               		rank(ip, radius, filterType);
                 if (slice>1)
                         IJ.showStatus(title+": "+slice+"/"+imp.getStackSize());
                 if (imp!=null && slice==imp.getStackSize())
                         ip.resetMinAndMax();
         }
 
- 		void showMasks() {
+
+		public void blur(ImageProcessor ip, int radius) {
+			float[] kernel = new float[radius*2+1];
+			for (int i=0; i<kernel.length; i++)
+				kernel[i] = 1f;
+			ip.convolve(kernel, kernel.length, 1);
+			ip.convolve(kernel, 1, kernel.length);
+		}
+    
+     	void showMasks() {
  			int w=150, h=150;
 			ImageStack stack = new ImageStack(w, h);
+			//for (double r=0.1; r<3; r+=0.01) {
 			for (double r=0.5; r<50; r+=0.5) {
 				int d = ((int)(r+0.5))*2 + 1;
 				int[] mask = createCircularMask(d,r);
@@ -91,15 +114,16 @@ public class RankFilters implements PlugInFilter {
         }
 
         public void convertBack(ImageProcessor ip2, ImageProcessor ip, int type) {
+                boolean scale = filterType==VARIANCE;
                 switch (type) {
                         case BYTE:
-                                ip2 = ip2.convertToByte(false);
+                                ip2 = ip2.convertToByte(scale);
                                 byte[] pixels = (byte[])ip.getPixels();
                                 byte[] pixels2 = (byte[])ip2.getPixels();
                                 System.arraycopy(pixels2, 0, pixels, 0, pixels.length);
                                 break;
                         case SHORT:
-                                ip2 = ip2.convertToShort(false);
+                                ip2 = ip2.convertToShort(scale);
                                 short[] pixels16 = (short[])ip.getPixels();
                                 short[] pixels16b = (short[])ip2.getPixels();
                                 System.arraycopy(pixels16b, 0, pixels16, 0, pixels16.length);
@@ -110,20 +134,25 @@ public class RankFilters implements PlugInFilter {
         }
 
         boolean showDialog() {
+                if (filterType==DESPECKLE) {
+                    radius = 1.0;
+                    filterType = MEDIAN;
+                    imp.startTiming();
+                    return true;                    
+                }
                 GenericDialog gd = new GenericDialog(title+"...");
-                gd.addNumericField("Radius (pixels):", radius, 1);
-                gd.addCheckbox("Show Circular Masks", false);
+                int digits = filterType==MEAN?0:1;
+                gd.addNumericField("Radius:", radius, digits, 5, "pixels");
+                if (filterType==MEAN)
+                	gd.addCheckbox("Separable Square Mask", separable);
                 gd.showDialog();
                 if (gd.wasCanceled()) {
                   canceled = true;
                   return false;
                 }
                 radius = gd.getNextNumber();
-                boolean showMasks = gd.getNextBoolean();
-                if (showMasks) {
-                	showMasks();
-                	return false;
-                }
+                if (filterType==MEAN)
+                	separable = gd.getNextBoolean();
                 if (radius<0.5) radius=0.5;
                 imp.startTiming();
                 return true;
@@ -160,20 +189,21 @@ public class RankFilters implements PlugInFilter {
                 ImageProcessor ip2 = rip.convertToFloat();
                 ip2.setRoi(roi); ip2.setMask(mask);
                 rankFloat(ip2, radius, rankType);
+                boolean scale = filterType==VARIANCE;
                 if (canceled) return;
-                ImageProcessor r2 = ip2.convertToByte(false);
+                ImageProcessor r2 = ip2.convertToByte(scale);
                 if (slice==1) IJ.showStatus(title+" (green)");
                 ip2 = gip.convertToFloat();
                 ip2.setRoi(roi); ip2.setMask(mask);
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
-                ImageProcessor g2 = ip2.convertToByte(false);
+                ImageProcessor g2 = ip2.convertToByte(scale);
                 if (slice==1) IJ.showStatus(title+" (blue)");
                 ip2 = bip.convertToFloat();
                 ip2.setRoi(roi); ip2.setMask(mask);
                 rankFloat(ip2, radius, rankType);
                 if (canceled) return;
-                ImageProcessor b2 = ip2.convertToByte(false);
+                ImageProcessor b2 = ip2.convertToByte(scale);
                 ((ColorProcessor)ip).setRGB((byte[])r2.getPixels(), (byte[])g2.getPixels(), (byte[])b2.getPixels());
         }
 
@@ -234,15 +264,25 @@ public class RankFilters implements PlugInFilter {
                                                 }
                                         }
                                 }
-                                if (rankType==MEDIAN)
-                                    pixels[x+y*width] = findMedian(values);
-                                else if (rankType==MEAN)
-                                    pixels[x+y*width] = findMean(values);
-                                else if (rankType==MIN)
-                                    pixels[x+y*width] = findMin(values);
-                                else  
-                                    pixels[x+y*width] = findMax(values);
-
+                                switch (rankType) {
+                                	case MEDIAN:
+                                    	pixels[x+y*width] = findMedian(values);
+                                    	break;
+                                	case MEAN:
+                                   		pixels[x+y*width] = findMean(values);
+                                   		break;
+                               		case MIN:
+                                    	pixels[x+y*width] = findMin(values);
+                                    	break;
+                               		case MAX:  
+                                    	pixels[x+y*width] = findMax(values);
+                                    	break;
+                               		case VARIANCE:  
+                                    	pixels[x+y*width] = findVariance(values);
+                                    	break;
+                                    default:
+                                    	break;
+                                }
                		    }
         		}
 				if (nonRectRoi)
@@ -252,6 +292,9 @@ public class RankFilters implements PlugInFilter {
                         //ip.reset();
                         ip.insert(new FloatProcessor(width,height,pixels2,null), 0, 0);
                         IJ.beep();
+                } else if (rankType==VARIANCE) {
+                	ContrastEnhancer ce = new ContrastEnhancer();
+                	ce.stretchHistogram(ip, 0.5);
                 }
          }
 
@@ -263,7 +306,26 @@ public class RankFilters implements PlugInFilter {
                 return pixels[x+y*width];
         }
 
+		/*
+		public int[] createCircularMask(int width, double radius) {
+			int[] mask = new int[width*width];
+			double r = width/2.0-0.5;
+			double r2 = radius*radius + 1;
+			for (double x=-r; x<=r; x++)
+				for (double y=-r; y<=r; y++) {
+					int index= (int)((r+x)+width*(r+y));
+					if (((x*x+y*y)<r2) && (index<width*width))
+						mask[index]=1;
+				}
+			return mask;
+		}
+		*/
+
         int[] createCircularMask(int width, double radius) {
+        		if (radius>=1.5 && radius<1.75)
+        			radius = 1.75;
+        		else if (radius>=2.5 && radius<2.85)
+        			radius = 2.85;
                 int[] mask = new int[width*width];
                 int r = width/2;
                 int r2 = (int) (radius*radius) + 1;
@@ -326,6 +388,20 @@ public class RankFilters implements PlugInFilter {
                         sum += values[i];
                 return (float)(sum/values.length);
         }
+
+		private final float findVariance(float[] values) {
+			double v, sum=0.0, sum2=0.0;
+			float min = findMin(values);
+			int n = values.length;
+			for (int i=1; i<n; i++) {
+				v = values[i] - min;
+				sum += v;
+				sum2 += v*v;
+			} 
+			double variance = (n*sum2-sum*sum)/n;
+			return (float)variance;			
+		}
+
 }
 
 

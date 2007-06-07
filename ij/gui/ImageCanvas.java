@@ -7,10 +7,11 @@ import java.awt.event.*;
 import ij.process.ImageProcessor;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
+import ij.macro.Interpreter;
 import ij.*;
 import ij.util.Java2;
 
-/** This is as Canvas used to display images in a Window. */
+/** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
 
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -24,6 +25,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	protected boolean imageUpdated;
 	protected Rectangle srcRect;
 	protected int imageWidth, imageHeight;
+	protected int xMouse; // current cursor offscreen x location 
+	protected int yMouse; // current cursor offscreen y location
 		
 	private ImageJ ij;
 	private double magnification;
@@ -33,8 +36,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int yMouseStart;
 	private int xSrcStart;
 	private int ySrcStart;
-	private int xMouse;
-	private int yMouse;
 	private int flags;
 
 	public ImageCanvas(ImagePlus imp) {
@@ -88,10 +89,27 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (roi != null) roi.draw(g);
+			if (IJ.debugMode) showFrameRate(g);
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
     }
     
+    long firstFrame;
+    int frames, fps;
+        
+	void showFrameRate(Graphics g) {
+		frames++;
+		if (System.currentTimeMillis()>firstFrame+1000) {
+			firstFrame=System.currentTimeMillis();
+			fps = frames;
+			frames=0;
+		}
+		g.setColor(Color.white);
+		g.fillRect(10, 12, 50, 15);
+		g.setColor(Color.black);
+		g.drawString((int)(fps+0.5) + " fps", 10, 25);
+	}
+
     public Dimension getPreferredSize() {
         return new Dimension(dstWidth, dstHeight);
     }
@@ -154,7 +172,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public int offScreenX(int x) {
 		return srcRect.x + (int)(x/magnification);
 	}
-	
+		
 	/**Converts a screen y-coordinate to an offscreen y-coordinate.*/
 	public int offScreenY(int y) {
 		return srcRect.y + (int)(y/magnification);
@@ -203,13 +221,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	private static final double[] zoomLevels = {
-		1/32.0, 1/24.0, 1/16.0, 1/12.0, 1/8.0,
-		1/6.0, 1/4.0, 1/3.0, 1/2.0, 0.75, 1.0,
+		1/72.0, 1/48.0, 1/32.0, 1/24.0, 1/16.0, 1/12.0, 
+		1/8.0, 1/6.0, 1/4.0, 1/3.0, 1/2.0, 0.75, 1.0,
 		2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0, 24.0, 32.0 };
 	
 	static double getLowerZoomLevel(double currentMag) {
 		double newMag = zoomLevels[0];
-		for (int i = 0; i < zoomLevels.length; i++) {
+		for (int i=0; i<zoomLevels.length; i++) {
 		if (zoomLevels[i] < currentMag)
 			newMag = zoomLevels[i];
 		else
@@ -220,8 +238,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	static double getHigherZoomLevel(double currentMag) {
 		double newMag = 32.0;
-		for (int i = zoomLevels.length - 1; i >= 0; i--) {
-			if (zoomLevels[i] > currentMag)
+		for (int i=zoomLevels.length-1; i>=0; i--) {
+			if (zoomLevels[i]>currentMag)
 				newMag = zoomLevels[i];
 			else
 				break;
@@ -320,10 +338,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 		
 	void scroll(int sx, int sy) {
-		int x = xSrcStart + (int)(sx/magnification);  //convert to offscreen coordinates
-		int y = ySrcStart + (int)(sy/magnification);
-		int newx = xSrcStart + (xMouseStart-x);
-		int newy = ySrcStart + (yMouseStart-y);
+		int ox = xSrcStart + (int)(sx/magnification);  //convert to offscreen coordinates
+		int oy = ySrcStart + (int)(sy/magnification);
+		//IJ.log("scroll: "+ox+" "+oy+" "+xMouseStart+" "+yMouseStart);
+		int newx = xSrcStart + (xMouseStart-ox);
+		int newy = ySrcStart + (yMouseStart-oy);
 		if (newx<0) newx = 0;
 		if (newy<0) newy = 0;
 		if ((newx+srcRect.width)>imageWidth) newx = imageWidth-srcRect.width;
@@ -408,7 +427,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int x = e.getX();
 		int y = e.getY();
 		flags = e.getModifiers();
-		if (IJ.debugMode) IJ.log("Mouse pressed: (" + x + "," + y + ")" + ij.modifiers(flags));
+		if (IJ.debugMode) IJ.log("Mouse pressed: (" + x + "," + y + ")" + ij.modifiers(flags));		
+		//if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
 		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger() || (flags & Event.META_MASK)!=0)) {
 			handlePopupMenu(e);
 			return;
@@ -419,15 +439,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		xMouse = ox; yMouse = oy;
 		if (IJ.spaceBarDown()) {
 			// temporarily switch to "hand" tool of space bar down
-			xMouseStart = ox; yMouseStart = oy;
-			xSrcStart = srcRect.x; ySrcStart = srcRect.y;
+			setupScroll(ox, oy);
 			return;
 		}
-		if ((flags&Event.ALT_MASK)!=0 && toolID!=Toolbar.MAGNIFIER && toolID!=Toolbar.DROPPER) {
+		//if ((flags&Event.ALT_MASK)!=0 && toolID!=Toolbar.MAGNIFIER && toolID!=Toolbar.DROPPER) {
 			// temporarily switch to color tool alt/option key down
-			setDrawingColor(ox, oy, false);
-			return;
-		}
+			//setDrawingColor(ox, oy, false);
+			//return;
+		//}
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
 				if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
@@ -436,10 +455,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					zoomIn(x, y);
 				break;
 			case Toolbar.HAND:
-				xMouseStart = ox;
-				yMouseStart = oy;
-				xSrcStart = srcRect.x;
-				ySrcStart = srcRect.y;
+				setupScroll(ox, oy);
 				break;
 			case Toolbar.DROPPER:
 				setDrawingColor(ox, oy, IJ.altKeyDown());
@@ -478,6 +494,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
+	void setupScroll(int ox, int oy) {
+		xMouseStart = ox;
+		yMouseStart = oy;
+		xSrcStart = srcRect.x;
+		ySrcStart = srcRect.y;
+	}
+
 	protected void handlePopupMenu(MouseEvent e) {
 		if (IJ.debugMode) IJ.log("show popup: " + (e.isPopupTrigger()?"true":"false"));
 		int x = e.getX();
@@ -497,10 +520,38 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	public void mouseExited(MouseEvent e) {
+		//autoScroll(e);
 		ImageWindow win = imp.getWindow();
-		if (win!=null) setCursor(defaultCursor);
+		if (win!=null)
+			setCursor(defaultCursor);
 		IJ.showStatus("");
 	}
+
+	/*
+	public void autoScroll(MouseEvent e) {
+		Roi roi = imp.getRoi();
+		if (roi==null || roi.getState()!=roi.CONSTRUCTING || srcRect.width>=imageWidth || srcRect.height>=imageHeight
+		|| !(roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE))
+			return;
+		int sx = e.getX();
+		int sy = e.getY();
+		xMouseStart = srcRect.x+srcRect.width/2;
+		yMouseStart = srcRect.y+srcRect.height/2;
+		Rectangle r = roi.getBoundingRect();
+		Dimension size = getSize();
+		int deltax=0, deltay=0;
+		if (sx<0)
+			deltax = srcRect.width/4;
+		else if (sx>size.width)
+			deltax = -srcRect.width/4;
+		if (sy<0)
+			deltay = srcRect.height/4;
+		else if (sy>size.height)
+			deltay = -srcRect.height/4;
+		//IJ.log("autoscroll: "+sx+" "+sy+" "+deltax+" "+deltay+" "+r);
+		scroll(screenX(xMouseStart+deltax), screenY(yMouseStart+deltay));
+	}
+	*/
 
 	public void mouseDragged(MouseEvent e) {
 		int x = e.getX();
@@ -515,7 +566,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		else {
 			Roi roi = imp.getRoi();
 			if (roi != null)
-				roi.handleMouseDrag(x, y, (flags&Event.SHIFT_MASK)!=0);
+				roi.handleMouseDrag(x, y, flags);
 		}
 	}
 
@@ -573,6 +624,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		flags = e.getModifiers();
 		//if (IJ.debugMode) IJ.log(e.getX() + " " + e.getY() + " " + ox + " " + oy);
 		setCursor(sx, sy, ox, oy);
+		if (e.isAltDown())
+			IJ.setKeyDown(KeyEvent.VK_ALT);
+		else
+			IJ.setKeyUp(KeyEvent.VK_ALT);
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
 		&& roi.getState()==roi.CONSTRUCTING) {

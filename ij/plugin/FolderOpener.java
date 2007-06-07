@@ -12,7 +12,7 @@ import ij.process.*;
 public class FolderOpener implements PlugIn {
 
 	private static boolean grayscale;
-	private static boolean halfSize;
+	private static double scale = 100.0;
 	private int n, start, increment;
 	private String filter;
 	private FileInfo fi;
@@ -94,8 +94,8 @@ public class FolderOpener implements PlugIn {
 					height = imp.getHeight();
 					type = imp.getType();
 					ColorModel cm = imp.getProcessor().getColorModel();
-					if (halfSize)
-						stack = new ImageStack(width/2, height/2, cm);
+					if (scale<100.0)						
+						stack = new ImageStack((int)(width*scale/100.0), (int)(height*scale/100.0), cm);
 					else
 						stack = new ImageStack(width, height, cm);
 					info1 = (String)imp.getProperty("Info");
@@ -117,8 +117,8 @@ public class FolderOpener implements PlugIn {
 						ic.convertToGray8();
 						ip = imp.getProcessor();
 					}
-					if (halfSize)
-						ip = ip.resize(width/2, height/2);
+					if (scale<100.0)
+						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
 					String label = imp.getTitle();
@@ -133,7 +133,7 @@ public class FolderOpener implements PlugIn {
 			}
 		} catch(OutOfMemoryError e) {
 			IJ.outOfMemory("FolderOpener");
-			stack.trim();
+			if (stack!=null) stack.trim();
 		}
 		if (stack!=null && stack.getSize()>0) {
 			ImagePlus imp2 = new ImagePlus("Stack", stack);
@@ -150,12 +150,13 @@ public class FolderOpener implements PlugIn {
 	boolean showDialog(ImagePlus imp, String[] list) {
 		int fileCount = list.length;
 		FolderOpenerDialog gd = new FolderOpenerDialog("Sequence Options", imp, list);
-		gd.addNumericField("Number of Images: ", fileCount, 0);
-		gd.addNumericField("Starting Image: ", 1, 0);
-		gd.addNumericField("Increment: ", 1, 0);
-		gd.addStringField("File Name Contains: ", "");
+		gd.addNumericField("Number of Images:", fileCount, 0);
+		gd.addNumericField("Starting Image:", 1, 0);
+		gd.addNumericField("Increment:", 1, 0);
+		//gd.addMessage("");
+		gd.addStringField("File Name Contains:", "");
+		gd.addNumericField("Scale Images", scale, 0, 4, "%");
 		gd.addCheckbox("Convert to 8-bit Grayscale", grayscale);
-		gd.addCheckbox("Open 1/2 Size", halfSize);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -165,9 +166,11 @@ public class FolderOpener implements PlugIn {
 		increment = (int)gd.getNextNumber();
 		if (increment<1)
 			increment = 1;
+		scale = gd.getNextNumber();
+		if (scale<5.0) scale = 5.0;
+		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
 		grayscale = gd.getNextBoolean();
-		halfSize = gd.getNextBoolean();
 		return true;
 	}
 
@@ -176,7 +179,7 @@ public class FolderOpener implements PlugIn {
 class FolderOpenerDialog extends GenericDialog {
 	ImagePlus imp;
 	int fileCount;
- 	boolean eightBits, halfSize;
+ 	boolean eightBits;
  	String saveFilter = "";
  	String[] list;
 
@@ -204,10 +207,13 @@ class FolderOpenerDialog extends GenericDialog {
 		int height = imp.getHeight();
 		int bytesPerPixel = 1;
  		eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
- 		halfSize = ((Checkbox)checkbox.elementAt(1)).getState();
  		int n = getNumber(numberField.elementAt(0));
 		int start = getNumber(numberField.elementAt(1));
 		int inc = getNumber(numberField.elementAt(2));
+		double scale = getNumber(numberField.elementAt(3));
+		if (scale<5.0) scale = 5.0;
+		if (scale>100.0) scale = 100.0;
+		
 		if (n<1)
 			n = fileCount;
 		if (start<1 || start>fileCount)
@@ -241,14 +247,12 @@ class FolderOpenerDialog extends GenericDialog {
 		}
 		if (eightBits)
 			bytesPerPixel = 1;
-		if (halfSize) {
-			width /= 2;
-			height /= 2;
-		}
+		width = (int)(width*scale/100.0);
+		height = (int)(height*scale/100.0);
 		int n2 = n/inc;
 		if (n2<0)
 			n2 = 0;
-		double size = (double)(width*height*n2*bytesPerPixel)/(1024*1024);
+		double size = ((double)width*height*n2*bytesPerPixel)/(1024*1024);
  		((Label)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
 	}
 

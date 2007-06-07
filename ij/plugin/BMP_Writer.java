@@ -30,7 +30,7 @@ public class BMP_Writer implements PlugIn {
     private int biPlanes = 1;
     private int biBitCount = 24;
     private int biCompression = 0;
-    private int biSizeImage = 0x030000;
+    private int biSizeImage = 0;
     private int biXPelsPerMeter = 0x0;
     private int biYPelsPerMeter = 0x0;
     private int biClrUsed = 0;
@@ -66,6 +66,7 @@ public class BMP_Writer implements PlugIn {
 		else {
 			biBitCount = 8;
 			biClrUsed=256;
+			bfOffBits=1078;
 		}
     	if (path==null || path.equals("")) {
 			String prompt = "Save as " + biBitCount + " bit BMP";
@@ -131,14 +132,10 @@ public class BMP_Writer implements PlugIn {
             byteBitmap = new byte [parWidth * parHeight];
             byteBitmap = (byte[]) (imp.getProcessor().convertToByte(true)).getPixels();
         }
-        if(biBitCount == 24) {
+        if(biBitCount == 24)
             pad = (4 - ((parWidth * 3) % 4)) * parHeight;
-            biSizeImage = ((parWidth * parHeight) * 3) + pad;
-        } else {
+        else
             pad = (4 - ((parWidth) % 4)) * parHeight;
-            biSizeImage = ((parWidth * parHeight)) + pad;
-        }
-        bfSize = biSizeImage + BITMAPFILEHEADER_SIZE + BITMAPINFOHEADER_SIZE;
         biWidth = parWidth;
         biHeight = parHeight;
         return (true);

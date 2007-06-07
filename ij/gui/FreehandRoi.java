@@ -27,6 +27,8 @@ public class FreehandRoi extends PolygonRoi {
 			nPoints++;
 			if (nPoints==xp.length)
 				enlargeArrays();
+			if (IJ.isMacOSX() && IJ.isJava14() && ic!=null)
+				{g.dispose(); g = ic.getGraphics();}
 			g.setColor(ROIColor);
 			g.drawLine(ic.screenX(xp[nPoints-2]), ic.screenY(yp[nPoints-2]), ic.screenX(ox), ic.screenY(oy));
 		}

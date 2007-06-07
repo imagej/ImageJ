@@ -37,10 +37,12 @@ public class ImageStack {
 		nSlices = 0;
 	}
 
-	/** Adds an image to the end of the stack. */
+	/** Adds an image in the forma of a pixel array to the end of the stack. */
 	public void addSlice(String sliceLabel, Object pixels) {
 		if (pixels==null) 
 			throw new IllegalArgumentException("'pixels' is null!");
+		if (!pixels.getClass().isArray()) 
+			throw new IllegalArgumentException("'pixels' is not an array");
 		nSlices++;
 		if (nSlices==stack.length) {
 			Object[] tmp1 = new Object[nSlices*2];
@@ -212,7 +214,7 @@ public class ImageStack {
 	
 	/** Returns true if this is a 3-slice RGB stack. */
 	public boolean isRGB() {
-    	if (nSlices==3 && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red"))	
+    	if (nSlices==3 && (stack[0] instanceof byte[]) && getSliceLabel(1)!=null && getSliceLabel(1).equals("Red"))	
 			return true;
 		else
 			return false;
@@ -225,6 +227,13 @@ public class ImageStack {
 		else
 			return false;
 	}
+
+	/** Returns true if this is a virtual (disk resident) stack. 
+		This method is overridden by the VirtualStack subclass. */
+	public boolean isVirtual() {
+		return false;
+	}
+
 	/** Frees memory by deleting a few slices from the end of the stack. */
 	public void trim() {
 		int n = (int)Math.round(Math.log(nSlices)+1.0);

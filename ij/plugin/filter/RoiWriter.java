@@ -17,7 +17,7 @@ public class RoiWriter implements PlugInFilter {
 
 	static final int HEADER_SIZE = 64;
 	static final int VERSION = 217;
-	final int polygon=0, rect=1, oval=2, line=3,freeLine=4, segLine=5, noRoi=6,freehand=7, traced=8;
+	final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9;
 	ImagePlus imp;
 	byte[] data;
 
@@ -42,8 +42,8 @@ public class RoiWriter implements PlugInFilter {
 		if (roi==null)
 			throw new IllegalArgumentException("ROI required");
 		int roiType = roi.getType();
-		if (roiType>=Roi.LINE)
-			throw new IllegalArgumentException("Area selection required");
+		//if (roiType>=Roi.LINE)
+		//	throw new IllegalArgumentException("Area selection required");
 		int type;
 		String name;
 		if (roiType==Roi.POLYGON) {
@@ -58,12 +58,24 @@ public class RoiWriter implements PlugInFilter {
 		} else if (roiType==Roi.OVAL) {
 			type = oval;
 			name = "Oval.roi";
+		} else if (roiType==Roi.LINE) {
+			type = line;
+			name = "Line.roi";
+		} else if (roiType==Roi.POLYLINE) {
+			type = polyline;
+			name = "PolyLine.roi";
+		} else if (roiType==Roi.FREELINE) {
+			type = freeline;
+			name = "FreeLine.roi";
+		} else if (roiType==Roi.ANGLE) {
+			type = angle;
+			name = "Angle.roi";
 		} else {
 			type = rect;
 			name = "Rectangle.roi";
 		}
 		
-		SaveDialog sd = new SaveDialog("Save ROI...", name, ".roi");
+		SaveDialog sd = new SaveDialog("Save Selection...", name, ".roi");
 		name = sd.getFileName();
 		if (name == null)
 			return;
@@ -90,6 +102,14 @@ public class RoiWriter implements PlugInFilter {
 		putShort(12, r.y+r.height);	//bottom
 		putShort(14, r.x+r.width);	//right
 		putShort(16, n);
+		
+		if (roi instanceof Line) {
+			Line l = (Line)roi;
+			putFloat(18, l.x1);
+			putFloat(22, l.y1);
+			putFloat(26, l.x2);
+			putFloat(30, l.y2);
+		}
 
 		if (n>0) {
 			int base1 = 64;
@@ -102,11 +122,22 @@ public class RoiWriter implements PlugInFilter {
 		
 		f.write(data);
 		f.close();
+		if (name.endsWith(".roi"))
+			name = name.substring(0, name.length()-4);
+		roi.setName(name);
 	}
 
     void putShort(int base, int v) {
-		data[base] = (byte)((v>>>8)&255);
-		data[base+1] = (byte)(v&255);
+		data[base] = (byte)(v>>>8);
+		data[base+1] = (byte)v;
     }
+
+	void putFloat(int base, float v) {
+		int tmp = Float.floatToIntBits(v);
+		data[base]   = (byte)(tmp>>24);
+		data[base+1] = (byte)(tmp>>16);
+		data[base+2] = (byte)(tmp>>8);
+		data[base+3] = (byte)tmp;
+	}
 
 }

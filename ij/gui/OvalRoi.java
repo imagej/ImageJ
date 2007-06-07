@@ -131,7 +131,9 @@ public class OvalRoi extends Roi {
 		}
 	}
 		
-	int isHandle(int sx, int sy) {
+	/** Returns a handle number if the specified screen coordinates are  
+		inside or near a handle, otherwise returns -1. */
+	public int isHandle(int sx, int sy) {
 		if (clipboard!=null) return -1;
 		double mag = ic.getMagnification();
 		int size = HANDLE_SIZE+3;

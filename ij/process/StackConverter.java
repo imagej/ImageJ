@@ -97,6 +97,8 @@ public class StackConverter {
 	/** Converts this Stack to 16-bit grayscale. */
 	public void convertToGray16() {
 		int type = imp.getType();
+		if (type==ImagePlus.GRAY16)
+			return;
 		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY32))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageStack stack1 = imp.getStack();
@@ -125,6 +127,8 @@ public class StackConverter {
 	/** Converts this Stack to 32-bit (float) grayscale. */
 	public void convertToGray32() {
 		int type = imp.getType();
+		if (type==ImagePlus.GRAY32)
+			return;
 		if (!(type==ImagePlus.GRAY8||type==ImagePlus.GRAY16))
 			throw new IllegalArgumentException("Unsupported conversion");
 		ImageStack stack1 = imp.getStack();

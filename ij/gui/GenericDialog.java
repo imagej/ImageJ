@@ -4,6 +4,7 @@ import java.awt.event.*;
 import java.util.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
+import ij.util.Tools;
 
 /**
  * This class is a customizable modal dialog box. Here is an example
@@ -28,11 +29,12 @@ import ij.plugin.frame.Recorder;
  * </pre>
  */
 public class GenericDialog extends Dialog implements ActionListener,
-TextListener, FocusListener, ItemListener, KeyListener {
+TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
-	protected Vector defaultValues,defaultText,numberField,stringField,checkbox,choice;
+	public Vector numberField, stringField, checkbox, choice, slider;
+	public TextArea textArea1, textArea2;
+	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
-	protected TextArea textArea1,textArea2;
 	private Button cancel, okay;
     private boolean wasCanceled;
     private int y;
@@ -40,6 +42,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 	private GridBagLayout grid;
 	private GridBagConstraints c;
 	private boolean firstNumericField=true;
+	private boolean firstSlider=true;
 	private boolean invalidNumber;
 	private boolean firstPaint = true;
 	private Hashtable labels;
@@ -339,6 +342,102 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		y++;
     }
     
+   public void addSlider(String label, double minValue, double maxValue, double defaultValue) {
+		int columns = 4;
+		int digits = 0;
+   		String label2 = label;
+   		if (label2.indexOf('_')!=-1)
+   			label2 = label2.replace('_', ' ');
+		Label theLabel = makeLabel(label2);
+		c.gridx = 0; c.gridy = y;
+		c.anchor = GridBagConstraints.EAST;
+		c.gridwidth = 1;
+		c.insets = new Insets(0, 0, 3, 0);
+		grid.setConstraints(theLabel, c);
+		add(theLabel);
+		
+		if (slider==null)
+			slider = new Vector(5);
+		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
+		slider.addElement(s);
+		s.addAdjustmentListener(this);
+		s.setUnitIncrement(1);
+
+		if (numberField==null) {
+			numberField = new Vector(5);
+			defaultValues = new Vector(5);
+			defaultText = new Vector(5);
+		}
+		if (IJ.isWindows()) columns -= 2;
+		if (columns<1) columns = 1;
+		TextField tf = new TextField(IJ.d2s(defaultValue, digits), columns);
+		tf.addActionListener(this);
+		tf.addTextListener(this);
+		tf.addFocusListener(this);
+		tf.addKeyListener(this);
+		numberField.addElement(tf);
+		defaultValues.addElement(new Double(defaultValue));
+		defaultText.addElement(tf.getText());
+		tf.setEditable(true);
+		if (firstNumericField && firstSlider) tf.selectAll();
+		firstSlider = false;
+		
+    	Panel panel = new Panel();
+		GridBagLayout pgrid = new GridBagLayout();
+		GridBagConstraints pc  = new GridBagConstraints();
+		panel.setLayout(pgrid);
+		// label
+		//pc.insets = new Insets(5, 0, 0, 0);
+		//pc.gridx = 0; pc.gridy = 0;
+		//pc.gridwidth = 1;
+		//pc.anchor = GridBagConstraints.EAST;
+		//pgrid.setConstraints(theLabel, pc);
+		//panel.add(theLabel);
+		// slider
+		pc.gridx = 0; pc.gridy = 0;
+		pc.gridwidth = 1;
+		pc.ipadx = 75;
+		pc.anchor = GridBagConstraints.WEST;
+		pgrid.setConstraints(s, pc);
+		panel.add(s);
+		pc.ipadx = 0;  // reset
+		// text field
+		pc.gridx = 1;
+		pc.insets = new Insets(5, 5, 0, 0);
+		pc.anchor = GridBagConstraints.EAST;
+		pgrid.setConstraints(tf, pc);
+    	panel.add(tf);
+    	
+		grid.setConstraints(panel, c);
+		c.gridx = 1; c.gridy = y;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(0, 0, 0, 0);
+		grid.setConstraints(panel, c);
+		add(panel);
+		y++;
+		if (Recorder.record || macro)
+			saveLabel(tf, label);
+    }
+
+    /** Adds a Panel to the dialog. */
+    public void addPanel(Panel panel) {
+    	addPanel(panel , GridBagConstraints.WEST, new Insets(5, 0, 0, 0));
+    }
+
+    /** Adds a Panel to the dialog with custom contraint and insets. The
+    	defaults are GridBagConstraints.WEST (left justified) and 
+    	"new Insets(5, 0, 0, 0)" (5 pixels of padding at the top). */
+    public void addPanel(Panel panel, int contraints, Insets insets) {
+		c.gridx = 0; c.gridy = y;
+		c.gridwidth = 2;
+		c.anchor = contraints;
+		c.insets = insets;
+		grid.setConstraints(panel, c);
+		add(panel);
+		y++;
+    }
+
 	/** Returns true if the user clicks on "Cancel". */
     public boolean wasCanceled() {
     	if (wasCanceled)
@@ -352,8 +451,9 @@ TextListener, FocusListener, ItemListener, KeyListener {
 			return -1.0;
 		TextField tf = (TextField)numberField.elementAt(nfIndex);
 		String theText = tf.getText();
+        String label=null;
 		if (macro) {
-			String label = (String)labels.get((Object)tf);
+			label = (String)labels.get((Object)tf);
 			theText = Macro.getValue(macroOptions, label, theText);
 			//IJ.write("getNextNumber: "+label+"  "+theText);
 		}	
@@ -369,6 +469,13 @@ TextListener, FocusListener, ItemListener, KeyListener {
 			else {
 				invalidNumber = true;
 				value = 0.0;
+                if (macro) {
+                    IJ.showMessage("Macro Error", "Numeric value expected in run() function\n \n"
+                        +"   Dialog: \""+getTitle()+"\"\n"
+                        +"   Label: \""+label+"\"\n"
+                        +"   Value: \""+theText+"\"");
+                    Macro.abort();
+                }
 			}
 		}
 		if (Recorder.record)
@@ -392,8 +499,12 @@ TextListener, FocusListener, ItemListener, KeyListener {
 
 	private void recordCheckboxOption(Checkbox cb) {
 		String label = (String)labels.get((Object)cb);
-		if (cb.getState() && label!=null)
-			Recorder.recordOption(label);
+		if (label!=null) {
+			if (cb.getState()) // checked
+				Recorder.recordOption(label);
+			else  // unchecked
+				Recorder.recordOption(" ");
+		}
 	}
 
  	protected Double getValue(String theText) {
@@ -549,7 +660,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		c.insets = new Insets(15, 0, 0, 0);
 		grid.setConstraints(buttons, c);
 		add(buttons);
-        if (IJ.isMacintosh())
+        if (IJ.isMacintosh() && !IJ.isJava14())
         	setResizable(false);
 		pack();
 		setup();
@@ -557,17 +668,63 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		show();
 		IJ.wait(250); // work around for Sun/WinNT bug
   	}
+  	
+  	/** Returns the Vector containing the numeric TextFields. */
+  	public Vector getNumericFields() {
+  		return numberField;
+  	}
     
+  	/** Returns the Vector containing the string TextFields. */
+  	public Vector getStringFields() {
+  		return stringField;
+  	}
+
+  	/** Returns the Vector containing the Checkboxes. */
+  	public Vector getCheckboxes() {
+  		return checkbox;
+  	}
+
+  	/** Returns the Vector containing the Choices. */
+  	public Vector getChoices() {
+  		return choice;
+  	}
+
+  	/** Returns the sliders (Scrollbars). */
+  	public Vector getSliders() {
+  		return slider;
+  	}
+
 	protected void setup() {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		wasCanceled = (e.getSource()==cancel);
+		Object source = e.getSource();
+		if (source==okay || source==cancel) {
+			wasCanceled = source==cancel;
+			closeDialog();
+		}
+	}
+
+	void closeDialog() {
 		setVisible(false);
 		dispose();
 	}
-
+	
 	public void textValueChanged(TextEvent e) {
+		if (slider==null || slider.size()!=numberField.size())
+			return;
+		Object source = e.getSource();
+		for (int i=0; i<numberField.size(); i++) {
+			if (source==numberField.elementAt(i)) {
+				TextField tf = (TextField)numberField.elementAt(i);
+				double value = Tools.parseDouble(tf.getText());
+				if (!Double.isNaN(value)) {
+					Scrollbar sb = (Scrollbar)slider.elementAt(i);
+					sb.setValue((int)value);
+				}	
+				//IJ.log(i+" "+tf.getText());
+			}
+		}
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -588,6 +745,8 @@ TextListener, FocusListener, ItemListener, KeyListener {
  	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
+		if (keyCode==KeyEvent.VK_ENTER && textArea1==null)
+			closeDialog();
 	}
 
 	public void keyReleased(KeyEvent e) {
@@ -599,6 +758,17 @@ TextListener, FocusListener, ItemListener, KeyListener {
 	public Insets getInsets() {
     	Insets i= super.getInsets();
     	return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
+	}
+
+	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
+		Object source = e.getSource();
+		for (int i=0; i<slider.size(); i++) {
+			if (source==slider.elementAt(i)) {
+				Scrollbar sb = (Scrollbar)source;
+				TextField tf = (TextField)numberField.elementAt(i);
+				tf.setText(""+sb.getValue());
+			}
+		}
 	}
 
     public void paint(Graphics g) {

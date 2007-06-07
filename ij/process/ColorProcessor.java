@@ -283,7 +283,7 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Draws a pixel in the current foreground color. */
 	public void drawPixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height)
+		if (x>=clipXMin && x<=clipXMax && y>=clipYMin && y<=clipYMax)
 			pixels[y*width + x] = fgColor;
 	}
 
@@ -319,6 +319,23 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 
+	/** Returns brightness as a FloatProcessor. */
+	public FloatProcessor getBrightness() {
+		int c, r, g, b;
+		int size = width*height;
+		float[] brightness = new float[size];
+		float[] hsb = new float[3];
+		for (int i=0; i<size; i++) {
+			c = pixels[i];
+			r = (c&0xff0000)>>16;
+			g = (c&0xff00)>>8;
+			b = c&0xff;
+			hsb = Color.RGBtoHSB(r, g, b, hsb);
+			brightness[i] = hsb[2];
+		}
+		return new FloatProcessor(width, height, brightness, null);
+	}
+
 	/** Returns the red, green and blue planes as 3 byte arrays. */
 	public void getRGB(byte[] R, byte[] G, byte[] B) {
 		int c, r, g, b;
@@ -350,6 +367,27 @@ public class ColorProcessor extends ImageProcessor {
 			saturation = (float)((S[i]&0xff)/255.0);
 			brightness = (float)((B[i]&0xff)/255.0);
 			pixels[i] = Color.HSBtoRGB(hue, saturation, brightness);
+		}
+	}
+	
+	/** Updates the brightness using the pixels in the specified FloatProcessor). */
+	public void setBrightness(FloatProcessor fp) {
+		int c, r, g, b;
+		int size = width*height;
+		float[] hsb = new float[3];
+		float[] brightness = (float[])fp.getPixels();
+		if (brightness.length!=size)
+			throw new IllegalArgumentException("fp is wrong size");
+		for (int i=0; i<size; i++) {
+			c = pixels[i];
+			r = (c&0xff0000)>>16;
+			g = (c&0xff00)>>8;
+			b = c&0xff;
+			hsb = Color.RGBtoHSB(r, g, b, hsb);
+			float bvalue = brightness[i];
+			if (bvalue<0f) bvalue = 0f;
+			if (bvalue>1.0f) bvalue = 1.0f;
+			pixels[i] = Color.HSBtoRGB(hsb[0], hsb[1], bvalue);
 		}
 	}
 	
@@ -584,6 +622,15 @@ public class ColorProcessor extends ImageProcessor {
 		return new ColorProcessor(roiWidth, roiHeight, pixels2);
 	}
 	
+
+	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	public int getInterpolatedRGBPixel(double x, double y) {
+		if (x<0.0) x = 0.0;
+		if (x>=width-1.0) x = width-1.001;
+		if (y<0.0) y = 0.0;
+		if (y>=height-1.0) y = height-1.001;
+		return getInterpolatedPixel(x, y, pixels);
+	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	private final int getInterpolatedPixel(double x, double y, int[] pixels) {

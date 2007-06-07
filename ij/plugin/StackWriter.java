@@ -19,16 +19,17 @@ public class StackWriter implements PlugIn {
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null || (imp!=null && imp.getStackSize()<2)) {
-			IJ.error("This command requires a stack.");
+			IJ.showMessage("Stack Writer", "This command requires a stack.");
 			return;
 		}
+		int stackSize = imp.getStackSize();
 		String name = imp.getTitle();
 		int dotIndex = name.lastIndexOf(".");
 		if (dotIndex>=0)
 			name = name.substring(0, dotIndex);
 		
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
-		gd.addChoice("Save Slices as:", choices, fileType);
+		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
 		gd.addCheckbox("Use Slice Labels as File Names", useLabels);
@@ -42,6 +43,12 @@ public class StackWriter implements PlugIn {
 		int number = 0;
 		if (ndigits<1) ndigits = 1;
 		if (ndigits>8) ndigits = 8;
+		int maxImages = (int)Math.pow(10,ndigits);
+		if (stackSize>maxImages && !useLabels) {
+			IJ.showMessage("Stack Writer", "More than " + ndigits
+				+" digits are required to generate \nunique file names for "+stackSize+" images.");
+			return;			
+		}
 		if (fileType.equals("Gif") && !FileSaver.okForGif(imp))
 			return;
 

@@ -71,6 +71,11 @@ public class Macro {
            throw new RuntimeException("Macro canceled");
 	}
 
+	/** If a command started using run(name, options) is running, 
+		returns the options string, otherwise, returns null.
+		@see ij.gui.GenericDialog  
+		@see ij.io.OpenDialog 
+	*/
 	public static String getOptions() {
 		if (currentOptions!=null && Thread.currentThread().getName().startsWith("Run$_"))
 			return currentOptions+" ";
@@ -84,10 +89,11 @@ public class Macro {
 
 	public static String getValue(String options, String key, String defaultValue) {
 		key = trimKey(key);
+        key += '=';
 		int index = options.indexOf(key);
 		if (index<0)
 			return defaultValue;
-		options = options.substring(index+key.length()+1, options.length());
+		options = options.substring(index+key.length(), options.length());
 		if (options.startsWith("'")) {
 			index = options.indexOf("'",1);
 			if (index<0)

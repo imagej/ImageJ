@@ -69,10 +69,12 @@ public class FloatProcessor extends ImageProcessor {
 		max = -Float.MAX_VALUE;
 		for (int i=0; i < width*height; i++) {
 			float value = pixels[i];
-			if (value<min)
-				min = value;
-			if (value>max)
-				max = value;
+			if (!Float.isInfinite(value)) {
+				if (value<min)
+					min = value;
+				if (value>max)
+					max = value;
+			}
 		}
 		pixelsModified = true;
 		hideProgress();
@@ -116,12 +118,13 @@ public class FloatProcessor extends ImageProcessor {
 		boolean firstTime = pixels8==null;
 		if (firstTime || !lutAnimation) {
 			// scale from float to 8-bits
+			int size = width*height;
 			if (pixels8==null)
-				pixels8 = new byte[width*height];
+				pixels8 = new byte[size];
 			float value;
 			int ivalue;
 			float scale = 255f/(max-min);
-			for (int i=0; i<width*height; i++) {
+			for (int i=0; i<size; i++) {
 				value = pixels[i]-min;
 				if (value<0f) value = 0f;
 				ivalue = (int)(value*scale);
@@ -241,7 +244,8 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Draws a pixel in the current foreground color. */
 	public void drawPixel(int x, int y) {
-		putPixel(x, y, Float.floatToIntBits(fillColor));
+		if (x>=clipXMin && x<=clipXMax && y>=clipYMin && y<=clipYMax)
+			putPixel(x, y, Float.floatToIntBits(fillColor));
 	}
 
 	/**	Returns a reference to the float array containing
@@ -271,8 +275,8 @@ public class FloatProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		if (!(ip instanceof FloatProcessor))
-			throw new IllegalArgumentException("32-bit (real) image required");
+		//if (!(ip instanceof FloatProcessor))
+		//	throw new IllegalArgumentException("32-bit (real) image required");
 		new FloatBlitter(this).copyBits(ip, xloc, yloc, mode);
 	}
 
@@ -718,8 +722,8 @@ public class FloatProcessor extends ImageProcessor {
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
 		if (minThreshold!=NO_THRESHOLD && max>min) {
-			double minT = ((minThreshold-min)/(max-min))*255.0;
-			double maxT = ((maxThreshold-min)/(max-min))*255.0;
+			double minT = Math.round(((minThreshold-min)/(max-min))*255.0);
+			double maxT = Math.round(((maxThreshold-min)/(max-min))*255.0);
 			super.setThreshold(minT, maxT, lutUpdate);
 			this.minThreshold = minThreshold;
 			this.maxThreshold = maxThreshold;
@@ -729,6 +733,7 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Performs a convolution operation using the specified kernel. */
 	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
+		snapshot();
 		new ij.plugin.filter.Convolver().convolve(this, kernel, kernelWidth, kernelHeight);
 	}
 

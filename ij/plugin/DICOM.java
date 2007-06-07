@@ -612,8 +612,8 @@ class DicomDecoder {
 		double xscale=0, yscale=0;
 		int i = scale.indexOf('\\');
 		if (i>0) {
-			xscale = s2d(scale.substring(0, i));
-			yscale = s2d(scale.substring(i+1));
+			yscale = s2d(scale.substring(0, i));
+			xscale = s2d(scale.substring(i+1));
 		}
 		if (xscale!=0.0 && yscale!=0.0) {
 			fi.pixelWidth = xscale;

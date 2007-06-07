@@ -60,6 +60,9 @@ public class LookUpTable extends Object {
 		return cm;
 	}
 
+	/** Returns <code>true</code> if this is a 256 entry grayscale LUT.
+		@see ij.process.ImageProcessor#isColorLut
+	*/
 	public boolean isGrayscale() {
 		boolean isGray = true;
 		

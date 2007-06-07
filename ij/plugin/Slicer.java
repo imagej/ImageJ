@@ -17,6 +17,7 @@ public class Slicer implements PlugIn {
 	private int outputSlices = 1;
 	private ImageWindow win;
 	private boolean noRoi;
+	private boolean rgb;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -36,10 +37,8 @@ public class Slicer implements PlugIn {
 		if (win!=null) win.running = true;
 		long startTime = System.currentTimeMillis();
 		ImagePlus imp2 = null;
-		if (imp.getType()==ImagePlus.COLOR_RGB)
-			imp2 = resliceRGB(imp);
-		else
-			imp2 = reslice(imp);
+		rgb = imp.getType()==ImagePlus.COLOR_RGB;
+		imp2 = reslice(imp);
 		if (imp2==null)
 			return;
 		imp2.setCalibration(imp.getCalibration());
@@ -54,6 +53,7 @@ public class Slicer implements PlugIn {
 		IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");
 	}
 
+	/*
 	public ImagePlus resliceRGB(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		RGBStackSplitter splitter = new RGBStackSplitter();
@@ -77,6 +77,7 @@ public class Slicer implements PlugIn {
 		ImageStack stack = merge.mergeStacks(w, h, d, red.getStack(), green.getStack(), blue.getStack(), true);
 		return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
 	}
+	*/
 
 	public ImagePlus reslice(ImagePlus imp) {
 		Roi roi = imp.getRoi();
@@ -84,7 +85,8 @@ public class Slicer implements PlugIn {
 		if (roi==null || roiType==Roi.RECTANGLE || roiType==Roi.LINE)
 			return resliceRectOrLine(imp);
 		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
-			 ImageProcessor ip2 = getSlice(imp, 0.0, 0.0, 0.0, 0.0);
+			String status = imp.getStack().isVirtual()?"":null;
+			 ImageProcessor ip2 = getSlice(imp, 0.0, 0.0, 0.0, 0.0, status);
 			 return new ImagePlus("Reslice of  "+imp.getShortTitle(), ip2);
 		} else {
 			IJ.showMessage("Reslice...", "Line or rectangular selection required");
@@ -193,8 +195,12 @@ public class Slicer implements PlugIn {
 		   return null;
 		}
 		ImageStack stack=null;
+		boolean virtualStack = imp.getStack().isVirtual();
+		String status = null;
 		for (int i=0; i<outputSlices; i++)	{
-			ImageProcessor ip = getSlice(imp, x1, y1, x2, y2);
+			if (virtualStack)
+				status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
+			ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
 			drawLine(x1, y1, x2, y2, imp);
 			if (stack==null)
 				stack = new ImageStack(ip.getWidth(), ip.getHeight());
@@ -210,13 +216,13 @@ public class Slicer implements PlugIn {
 		return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
 	}
 
-   ImageProcessor getSlice(ImagePlus imp, double x1, double y1, double x2, double y2) {
+   ImageProcessor getSlice(ImagePlus imp, double x1, double y1, double x2, double y2, String status) {
 		Roi roi = imp.getRoi();
 		int roiType = roi!=null?roi.getType():0;
 		ImageStack stack = imp.getStack();
 		int stackSize = stack.getSize();
 		ImageProcessor ip,ip2=null;
-		double[] line = null;
+		float[] line = null;
 		for (int i=0; i<stackSize; i++) {
 			ip = stack.getProcessor(flip?stackSize-i:i+1);
 			if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
@@ -230,6 +236,7 @@ public class Slicer implements PlugIn {
 				if (i==0) ip2 = ip.createProcessor(line.length, stackSize);
 				putRow(ip2, 0, i, line, line.length);
 			}
+			if (status!=null) IJ.showStatus("Slicing: "+status +i+"/"+stackSize);
 		}
 		Calibration cal = imp.getCalibration();
 		double zSpacing = cal.pixelDepth/cal.pixelWidth;
@@ -243,17 +250,27 @@ public class Slicer implements PlugIn {
 		return ip2;
 	}
 
-	public void putRow(ImageProcessor ip, int x, int y, double[] data, int length) {
-		for (int i=0; i<length; i++)
-			ip.putPixelValue(x++, y, data[i]);
+	public void putRow(ImageProcessor ip, int x, int y, float[] data, int length) {
+		if (rgb) {
+			for (int i=0; i<length; i++)
+				ip.putPixel(x++, y, Float.floatToIntBits(data[i]));
+		} else {
+			for (int i=0; i<length; i++)
+				ip.putPixelValue(x++, y, data[i]);
+		}
 	}
 
-	public void putColumn(ImageProcessor ip, int x, int y, double[] data, int length) {
-		for (int i=0; i<length; i++)
-			ip.putPixelValue(x, y++, data[i]);
+	public void putColumn(ImageProcessor ip, int x, int y, float[] data, int length) {
+		if (rgb) {
+			for (int i=0; i<length; i++)
+				ip.putPixel(x, y++, Float.floatToIntBits(data[i]));
+		} else {
+			for (int i=0; i<length; i++)
+				ip.putPixelValue(x, y++, data[i]);
+		}
 	}
 
-	double[] getIrregularProfile(Roi roi, ImageProcessor ip) {
+	float[] getIrregularProfile(Roi roi, ImageProcessor ip) {
 		int n = ((PolygonRoi)roi).getNCoordinates();
 		int[] x = ((PolygonRoi)roi).getXCoordinates();
 		int[] y = ((PolygonRoi)roi).getYCoordinates();
@@ -275,7 +292,7 @@ public class Slicer implements PlugIn {
 			dx[i] = xdelta;
 			dy[i] = ydelta;
 		}
-		double[] values = new double[(int)length];
+		float[] values = new float[(int)length];
 		double leftOver = 1.0;
 		double distance = 0.0;
 		int index;
@@ -295,8 +312,13 @@ public class Slicer implements PlugIn {
 			//IJ.write("new segment: "+IJ.d2s(xinc)+" "+IJ.d2s(yinc)+" "+IJ.d2s(len)+" "+IJ.d2s(len2)+" "+IJ.d2s(n2)+" "+IJ.d2s(leftOver));
 			for (int j=0; j<=n2; j++) {
 				index = (int)distance+j;
-				if (index<values.length)
-					values[index] = ip.getInterpolatedValue(rx, ry);
+				if (index<values.length) {
+					if (rgb) {
+						int rgbPixel = ((ColorProcessor)ip).getInterpolatedRGBPixel(rx, ry);
+						values[index] = Float.intBitsToFloat(rgbPixel&0xffffff);
+					} else
+						values[index] = (float)ip.getInterpolatedValue(rx, ry);
+				}
 				//d = Math.sqrt((rx-oldx)*(rx-oldx)+(ry-oldy)*(ry-oldy));
 				//IJ.write(IJ.d2s(rx)+"    "+IJ.d2s(ry)+"	 "+IJ.d2s(d));
 				//oldx = rx; oldy = ry;
@@ -311,18 +333,22 @@ public class Slicer implements PlugIn {
 
 	}
 
-	private double[] getLine(ImageProcessor ip, double x1, double y1, double x2, double y2, double[] data) {
+	private float[] getLine(ImageProcessor ip, double x1, double y1, double x2, double y2, float[] data) {
 		double dx = x2-x1;
 		double dy = y2-y1;
 		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
 		if (data==null)
-			data = new double[n];
+			data = new float[n];
 		double xinc = dx/n;
 		double yinc = dy/n;
 		double rx = x1;
 		double ry = y1;
 		for (int i=0; i<n; i++) {
-			data[i] = ip.getInterpolatedValue(rx, ry);
+			if (rgb) {
+				int rgbPixel = ((ColorProcessor)ip).getInterpolatedRGBPixel(rx, ry);
+				data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
+			} else
+				data[i] = (float)ip.getInterpolatedValue(rx, ry);
 			rx += xinc;
 			ry += yinc;
 		}

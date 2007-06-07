@@ -15,6 +15,8 @@ public class ByteProcessor extends ImageProcessor {
 	protected byte[] snapshotPixels;
 	private int bgColor = 255; //white
 	private int min=0, max=255;
+	private boolean brokenNewPixels = ij.IJ.isMacintosh()&&!ij.IJ.isJava2()
+		|| System.getProperty("java.version").startsWith("1.4");
 
 	/**Creates a ByteProcessor from an 8-bit, indexed color AWT Image. */
 	public ByteProcessor(Image img) {
@@ -54,7 +56,7 @@ public class ByteProcessor extends ImageProcessor {
 	public Image createImage() {
 		if (cm==null)
 			makeDefaultColorModel();
-		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
+		if (source==null || brokenNewPixels) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
 			source.setFullBufferUpdates(true);
@@ -238,7 +240,7 @@ public class ByteProcessor extends ImageProcessor {
 
 	/** Draws a pixel in the current foreground color. */
 	public void drawPixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height)
+		if (x>=clipXMin && x<=clipXMax && y>=clipYMin && y<=clipYMax)
 			pixels[y*width + x] = (byte)fgColor;
 	}
 
@@ -449,7 +451,7 @@ public class ByteProcessor extends ImageProcessor {
 					case BLUR_MORE:
 						sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9)/9;
 						break;
-					case FIND_EDGES:
+					case FIND_EDGES: // 3x3 Sobel filter
 	        			sum1 = p1 + 2*p2 + p3 - p7 - 2*p8 - p9;
 	        			sum2 = p1  + 2*p4 + p7 - p3 - 2*p6 - p9;
 	        			sum = (int)Math.sqrt(sum1*sum1 + sum2*sum2);

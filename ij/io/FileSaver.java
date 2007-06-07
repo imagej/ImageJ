@@ -77,7 +77,9 @@ public class FileSaver {
 	/** Save the stack as a multi-image TIFF using the specified path. */
 	public boolean saveAsTiffStack(String path) {
 		if (fi.nImages==1)
-			{IJ.write("This is not a stack"); return false;}
+			{IJ.error("This is not a stack"); return false;}
+		if (fi.pixels==null && imp.getStack().isVirtual())
+			{IJ.showMessage("Save As Tiff", "Virtual stacks not supported."); return false;}
 		fi.description = getDescriptionString();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);

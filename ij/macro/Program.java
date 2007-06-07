@@ -173,6 +173,18 @@ public class Program implements MacroConstants {
 					case MINUS_MINUS:
 						str="--";
 						break;
+					case PLUS_EQUAL:
+						str="+=";
+						break;
+					case MINUS_EQUAL:
+						str="-=";
+						break;
+					case MUL_EQUAL:
+						str="*=";
+						break;
+					case DIV_EQUAL:
+						str="/=";
+						break;
 					case LOGICAL_AND:
 						str="&&";
 						break;

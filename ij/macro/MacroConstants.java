@@ -27,7 +27,9 @@ public interface MacroConstants {
 		SET_PASTE_MODE=326, DO_COMMAND=327, SHOW_STATUS=328, SHOW_PROGRESS=329, SHOW_MESSAGE=330, PUT_PIXEL=331, SET_PIXEL=332,
 		SNAPSHOT=333, RESET=334, FILL=335, SET_COLOR=336, SET_LINE_WIDTH=337, CHANGE_VALUES=338, SELECT_IMAGE=339, EXIT=340,
 		SET_LOCATION=341, GET_CURSOR_LOC=342, GET_LINE=343, GET_VOXEL_SIZE=344, GET_HISTOGRAM=345, GET_STATISTICS=346,
-		GRAPH=347, GET_BOUNDING_RECT=348, GET_LUT=349, SET_LUT=350, GET_COORDINATES=351, SHOW_MESSAGE_WITH_CANCEL=352;
+		GET_BOUNDING_RECT=347, GET_LUT=348, SET_LUT=349, GET_COORDINATES=350, SHOW_MESSAGE_WITH_CANCEL=351,
+		MAKE_SELECTION=352, SET_RESULT=353, UPDATE_RESULTS=354, SET_BATCH_MODE=355, PLOT=356, SET_JUSTIFICATION=357,
+		SET_Z_COORDINATE=358;
 	static final String[] functions = {"run","invert","selectWindow","wait", "beep", "resetMinAndMax", "resetThreshold",
 		"print", "write", "doWand", "setMinAndMax", "setThreshold", "setTool",
 		"setForegroundColor", "setBackgroundColor", "makeLine", "makeOval", "makeRectangle",
@@ -35,7 +37,9 @@ public interface MacroConstants {
 		"setPasteMode", "doCommand", "showStatus", "showProgress", "showMessage", "putPixel", "setPixel",
 		"snapshot", "reset", "fill", "setColor", "setLineWidth", "changeValues", "selectImage", "exit",
 		"setLocation", "getCursorLoc", "getLine", "getVoxelSize", "getHistogram", "getStatistics",
-		"graph", "getBoundingRect", "getLut", "setLut", "getSelectionCoordinates", "showMessageWithCancel"};
+		"getBoundingRect", "getLut", "setLut", "getSelectionCoordinates", "showMessageWithCancel",
+		"makeSelection", "setResult", "updateResults", "setBatchMode", "Plot", "setJustification",
+		"setZCoordinate"};
 	static final int[] functionIDs = {RUN, INVERT, SELECT, WAIT, BEEP, RESET_MIN_MAX, RESET_THRESHOLD,
 		PRINT, WRITE,	 DO_WAND, SET_MIN_MAX, SET_THRESHOLD, SET_TOOL,
 		SET_FOREGROUND, SET_BACKGROUND, MAKE_LINE, MAKE_OVAL, MAKE_RECTANGLE,
@@ -43,24 +47,26 @@ public interface MacroConstants {
 		SET_PASTE_MODE, DO_COMMAND, SHOW_STATUS, SHOW_PROGRESS, SHOW_MESSAGE, PUT_PIXEL, SET_PIXEL,
 		SNAPSHOT, RESET, FILL, SET_COLOR, SET_LINE_WIDTH, CHANGE_VALUES, SELECT_IMAGE, EXIT,
 		SET_LOCATION, GET_CURSOR_LOC, GET_LINE, GET_VOXEL_SIZE, GET_HISTOGRAM, GET_STATISTICS,
-		GRAPH, GET_BOUNDING_RECT, GET_LUT, SET_LUT, GET_COORDINATES, SHOW_MESSAGE_WITH_CANCEL,};
+		GET_BOUNDING_RECT, GET_LUT, SET_LUT, GET_COORDINATES, SHOW_MESSAGE_WITH_CANCEL,
+		MAKE_SELECTION, SET_RESULT, UPDATE_RESULTS, SET_BATCH_MODE, PLOT, SET_JUSTIFICATION,
+		SET_Z_COORDINATE};
 
 	// Numeric functions
 	static final int GET_PIXEL=1000, ABS=1001, COS=1002, EXP=1003, FLOOR=1004, LOG=1005, MAX_OF=1006, MIN_OF=1007, POW=1008,
 		ROUND=1009, SIN=1010, SQRT=1011, TAN=1012, GET_TIME=1013, GET_WIDTH=1014, GET_HEIGHT=1015, RANDOM=1016,
 		GET_RESULT=1017, GET_COUNT=1018, GET_NUMBER=1019, NIMAGES=1020, NSLICES=1021,
 		LENGTH_OF=1022, NRESULTS=1023, GET_ID=1024, BIT_DEPTH=1025, SELECTION_TYPE=1026, ATAN=1027, IS_OPEN=1028, 
-		IS_ACTIVE=1029, INDEX_OF=1030, LAST_INDEX_OF=1031, CHAR_CODE_AT=1032;
+		IS_ACTIVE=1029, INDEX_OF=1030, LAST_INDEX_OF=1031, CHAR_CODE_AT=1032, GET_BOOLEAN=1033;
 	static final String[] numericFunctions = { "getPixel", "abs", "cos", "exp", "floor", "log", "maxOf", "minOf", "pow",
 		"round", "sin", "sqrt", "tan", "getTime", "getWidth", "getHeight", "random",
 		"getResult", "getResultsCount", "getNumber", "nImages", "nSlices", 
 		"lengthOf", "nResults", "getImageID", "bitDepth", "selectionType", "atan", "isOpen",
-		"isActive", "indexOf", "lastIndexOf", "charCodeAt"};
+		"isActive", "indexOf", "lastIndexOf", "charCodeAt", "getBoolean"};
 	static final int[] numericFunctionIDs = {GET_PIXEL, ABS, COS, EXP, FLOOR, LOG, MAX_OF, MIN_OF, POW,
 		ROUND, SIN, SQRT, TAN, GET_TIME, GET_WIDTH, GET_HEIGHT, RANDOM,
 		GET_RESULT, GET_COUNT, GET_NUMBER, NIMAGES, NSLICES,
 		LENGTH_OF, NRESULTS, GET_ID, BIT_DEPTH, SELECTION_TYPE, ATAN, IS_OPEN, 
-		IS_ACTIVE, INDEX_OF, LAST_INDEX_OF, CHAR_CODE_AT};
+		IS_ACTIVE, INDEX_OF, LAST_INDEX_OF, CHAR_CODE_AT, GET_BOOLEAN};
 
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,

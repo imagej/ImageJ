@@ -32,7 +32,7 @@ public class ShortStatistics extends ImageStatistics {
 		histMax = max;
 		getStatistics(hist, (int)min, (int)max, cTable);
 		if ((mOptions&MODE)!=0)
-			getMode(cTable);
+			getMode();
 		if ((mOptions&ELLIPSE)!=0)
 			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
@@ -61,14 +61,19 @@ public class ShortStatistics extends ImageStatistics {
 		double value;
 		double sum = 0.0;
 		double sum2 = 0.0;
-		double scale = (double)(nBins/(histMax-histMin));
-		int hMin = (int)histMin;
 		binSize = (histMax-histMin)/nBins;
+		double scale = 1.0/binSize;
+		int hMin = (int)histMin;
 		histogram = new int[nBins]; // 256 bin histogram
 		int index;
+        int maxCount = 0;
 				
 		for (int i=min; i<=max; i++) {
 			count = hist[i];
+            if (count>maxCount) {
+                maxCount = count;
+                dmode = i;
+            }
 			pixelCount += count;
 			value = cTable==null?i:cTable[i];
 			sum += value*count;
@@ -82,9 +87,11 @@ public class ShortStatistics extends ImageStatistics {
 		mean = sum/pixelCount;
 		umean = mean;
 		calculateStdDev(pixelCount, sum, sum2);
+        if (cTable!=null)
+        	dmode = cTable[(int)dmode];
 	}
 	
-	void getMode(float[] cTable) {
+	void getMode() {
         int count;
         maxCount = 0;
         for (int i=0; i<nBins; i++) {
@@ -94,9 +101,6 @@ public class ShortStatistics extends ImageStatistics {
                 mode = i;
             }
         }
-        dmode = histMin+mode*binSize;
-        if (cTable!=null)
-        	dmode = cTable[(int)dmode];
 		//ij.IJ.write("mode2: "+mode+" "+dmode+" "+maxCount);
 	}
 

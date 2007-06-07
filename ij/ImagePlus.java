@@ -82,6 +82,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private long startTime;
 	private Calibration calibration;
 	private static Calibration globalCalibration;
+	private boolean activated;
+	private boolean ignoreFlush;
+	private boolean errorLoadingImage;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -90,7 +93,9 @@ public class ImagePlus implements ImageObserver, Measurements {
     }
     
     /** Constructs an ImagePlus from an AWT Image. The first argument
-		will be used as the title of the window that displays the image. */
+		will be used as the title of the window that displays the image.
+		Throws an IllegalStateException if an error occurs 
+		while loading the image. */
     public ImagePlus(String title, Image img) {
 		this.title = title;
     	ID = --currentID;
@@ -181,7 +186,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imageLoaded = false;
 		if (!comp.prepareImage(img, this)) {
 			double progress;
-			while (!imageLoaded) {
+			while (!imageLoaded && !errorLoadingImage) {
 				//IJ.showStatus(imageUpdateY+" "+imageUpdateW);
 				IJ.wait(30);
 				if (imageUpdateW>1) {
@@ -252,8 +257,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 		
-	static int counter;
-	
 	/** ImageCanvas.paint() calls this method when the
 		ImageProcessor has generated new image. */
 	public void updateImage() {
@@ -283,20 +286,35 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void show(String statusMessage) {
 		if (win!=null)
 			return;
-		if (ij==null && IJ.macroRunning()) {
+		if (IJ.macroRunning() && ij==null) {
 			WindowManager.setTempCurrentImage(this);
 			return;
 		}
 		if (img==null && ip!=null)
 			img = ip.createImage();
 		if ((img!=null) && (width>=0) && (height>=0)) {
+			activated = false;
 			if (stack!=null && stack.getSize()>1)
 				win = new StackWindow(this);
 			else
 				win = new ImageWindow(this);
 			draw();
 			IJ.showStatus(statusMessage);
+			if (IJ.macroRunning()) { // wait for image to become activated
+				long start = System.currentTimeMillis();
+				while (!activated) {
+					IJ.wait(5);
+					if ((System.currentTimeMillis()-start)>2000) break; // 2 second timeout
+				}
+				//IJ.log(""+(System.currentTimeMillis()-start));
+			}
 		}
+	}
+	
+
+	/** Called by ImageWindow.windowActivated(). */
+	public void setActivated() {
+		activated = true;
 	}
 		
 	/** Returns the current AWT image. */
@@ -311,10 +329,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return ID;
 	}
 	
-	/** Replaces the AWT image, if any, with the one specified. */
+	/** Replaces the AWT image, if any, with the one specified. 
+		Throws an IllegalStateException if an error occurs 
+		while loading the image. */
 	public void setImage(Image img) {
 		roi = null;
+		errorLoadingImage = false;
 		waitForImage(img);
+		if (errorLoadingImage)
+			throw new IllegalStateException ("Error loading image");
 		this.img = img;
 		int newWidth = img.getWidth(ij);
 		int newHeight = img.getHeight(ij);
@@ -362,12 +385,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (stackSize<currentSlice)
 				currentSlice = 1;
 		}
-		//img = ip.createImage();
 		img = null;
 		boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
 		if (dimensionsChanged)
 			roi = null;
-		//LookUpTable lut = new LookUpTable(img);
 		int type;
 		if (ip instanceof ByteProcessor)
 			type = GRAY8;
@@ -415,7 +436,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/**	Saves this image's FileInfo so it can be later
 		retieved using getOriginalFileInfo(). */
 	public void setFileInfo(FileInfo fi) {
-		fi.pixels = null;
+		if (fi!=null)
+			fi.pixels = null;
 		fileInfo = fi;
 	}
 		
@@ -537,25 +559,32 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns an ImageStatistics object generated using the
 		 specified measurement options. */
 	public ImageStatistics getStatistics(int mOptions) {
-		return getStatistics(mOptions, 256);
+		return getStatistics(mOptions, 256, 0.0, 0.0);
 	}
 	
 	/** Returns an ImageStatistics object generated using the
 		specified measurement options and histogram bin count. 
-		Note: except for float images, the number of histogram bins
-		is currently fixed at 256 .
+		Note: except for float images, the number of bins
+		is currently fixed at 256.
 	*/
 	public ImageStatistics getStatistics(int mOptions, int nBins) {
+		return getStatistics(mOptions, nBins, 0.0, 0.0);
+	}
+
+	/** Returns an ImageStatistics object generated using the
+		specified measurement options, histogram bin count and histogram range. 
+		Note: except for float images, the number of bins
+		is currently fixed at 256 and the histogram range must be
+		the same as the image range.
+	*/
+	public ImageStatistics getStatistics(int mOptions, int nBins, double histMin, double histMax) {
 		setupProcessor();
-		//int[] mask = null;
-		//if (ip!=null)
-		//	mask = ip.getMask();
-		//if (mask==null)
-		//	mask = getMask();
 		ip.setMask(getMask());
 		ip.setHistogramSize(nBins);
+		ip.setHistogramRange(histMin, histMax);
 		ImageStatistics stats = ImageStatistics.getStatistics(ip, mOptions, getCalibration());
 		ip.setHistogramSize(256);
+		ip.setHistogramRange(0.0, 0.0);
 		return stats;
 	}
 	
@@ -578,6 +607,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Sets the image name. */
 	public void setTitle(String title) {
+		if (title==null)
+			return;
     	if (win!=null) {
     		if (ij!=null)
 				Menus.updateWindowMenuItem(this.title, title);
@@ -636,8 +667,12 @@ public class ImagePlus implements ImageObserver, Measurements {
     		return;
     	int previousType = imageType;
     	imageType = type;
-		if (win!=null && imageType!=previousType);
-			Menus.updateMenus();
+		if (imageType!=previousType) {
+			if (win!=null)
+				Menus.updateMenus();
+			if (calibration!=null || globalCalibration!=null)
+				getCalibration().setImage(this);
+		}
     }
 
 	/** Adds a key-value pair to this image's properties. */
@@ -1011,32 +1046,19 @@ public class ImagePlus implements ImageObserver, Measurements {
     public boolean imageUpdate(Image img, int flags, int x, int y, int w, int h) {
     	imageUpdateY = y;
     	imageUpdateW = w;
-    	imageLoaded = (flags & (ALLBITS|FRAMEBITS|ABORT)) != 0;
-    	/*
-    	// Load animated gif into stack
-		if ((flags & FRAMEBITS)!= 0) {
-			//Image img2 = IJ.getInstance().createImage(w, h);
-			if (stack==null) stack = new ImageStack(w, h);
-			//ImageProcessor ip = new ByteProcessor(img);
-			//stack.addSlice(null, ip);
-			Image img2 = ij.createImage(w, h);
-			img2.getGraphics().drawImage(img, 0, 0, this);
-			ImageProcessor ip = new ColorProcessor(img2);
-			stack.addSlice(null, ip);
-			IJ.write(""+stack);
-			if (stack.getSize()==10)
-				imageLoaded = true;
+		if ((flags & ERROR) != 0) {
+			errorLoadingImage = true;
+			return false;
 		}
-		//IJ.write(y+" "+flags);
-    	//IJ.wait(10);
-    	*/
+    	imageLoaded = (flags & (ALLBITS|FRAMEBITS|ABORT)) != 0;
 		return !imageLoaded;
     }
 
 	/** Sets the image arrays to null to help the garbage collector
-		do its job. Does nothing if the image is locked. */
+		do its job. Does nothing if the image is locked or a
+		setIgnoreFlush(true) call has been made. */
 	public synchronized void flush() {
-		if (locked)
+		if (locked || ignoreFlush)
 			return;
 		if (ip!=null) {
 			ip.setPixels(null);
@@ -1052,10 +1074,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 		System.gc();
 	}
 	
+	/** Set <code>ignoreFlush true</code> to not have the pixel 
+		data set to null when the window is closed. */
+	public void setIgnoreFlush(boolean ignoreFlush) {
+		this.ignoreFlush = ignoreFlush;
+	}
+	
 	/** Returns a new ImagePlus with this ImagePlus' attributes
 		(e.g. spatial scale), but no image. */
 	public ImagePlus createImagePlus() {
 		ImagePlus imp2 = new ImagePlus();
+		imp2.setType(getType());
 		imp2.setCalibration(getCalibration());
 		return imp2;
 	}
@@ -1152,13 +1181,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (getProperty("FHT")!=null)
 			return getFFTLocation(x, height-y-1, cal);
 		y = Analyzer.updateY(y, height);
-		if (cal.scaled()) {
+		if (cal.scaled() && !IJ.altKeyDown()) {
+			String s = " x="+IJ.d2s(cal.getX(x)) + ", y=" + IJ.d2s(cal.getY(y));
 			if (getStackSize()>1)
-				return " x="+IJ.d2s(cal.getX(x))+", y="+IJ.d2s(cal.getY(y))
-				+", z="+IJ.d2s(cal.getZ(getCurrentSlice()-1));
-			else
-				return " x="+IJ.d2s(cal.getX(x))+" ("+x+")"
-				+", y="+IJ.d2s(cal.getY(y))+" ("+y+")";
+				s += ", z="+IJ.d2s(cal.getZ(getCurrentSlice()-1));
+			return s;
 		} else {
 			String s =  " x="+x+", y=" + y;
 			if (getStackSize()>1)

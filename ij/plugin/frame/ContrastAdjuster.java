@@ -818,6 +818,12 @@ class ContrastPlot extends Canvas implements MouseListener {
 		setSize(WIDTH+1, HEIGHT+1);
 	}
 
+    /** Overrides Component getPreferredSize(). Added to work 
+    	around a bug in Java 1.4.1 on Mac OS X.*/
+    public Dimension getPreferredSize() {
+        return new Dimension(WIDTH+1, HEIGHT+1);
+    }
+
 	void setHistogram(ImageStatistics stats) {
 		histogram = stats.histogram;
 		if (histogram.length!=256)
@@ -907,13 +913,14 @@ class ContrastPlot extends Canvas implements MouseListener {
 
 
 class TrimmedLabel extends Label {
+	int trim = IJ.isMacOSX() && IJ.isJava14()?0:6;
 
     public TrimmedLabel(String title) {
         super(title);
     }
 
     public Dimension getMinimumSize() {
-        return new Dimension(super.getMinimumSize().width, super.getMinimumSize().height-6);
+        return new Dimension(super.getMinimumSize().width, super.getMinimumSize().height-trim);
     }
 
     public Dimension getPreferredSize() {

@@ -7,7 +7,8 @@ import ij.gui.*;
 import ij.util.Tools;
 import ij.text.TextWindow;
 import ij.macro.*;
-import ij.plugin.MacroInstaller;
+import ij.plugin.*;
+import ij.io.SaveDialog;
 import java.awt.datatransfer.*;																																																																																																																																																																																																																																																									 import java.util.*;
 																																																																																																																																																					   
 
@@ -36,6 +37,7 @@ TextListener, ClipboardOwner, MacroConstants {
 	private int inUseCount;
 	private int nShortcuts;
 	private MacroInstaller installer;
+	private static String defaultDir;
 	
 	public Editor() {
 		super("Editor");
@@ -78,6 +80,7 @@ TextListener, ClipboardOwner, MacroConstants {
 		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
 		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
 		m.add(new MenuItem("Go to Line...", new MenuShortcut(KeyEvent.VK_L)));
+		m.add(new MenuItem("Zap Gremlins"));
 		m.addActionListener(this);
 		mb.add(m);
 		setMenuBar(mb);
@@ -196,6 +199,11 @@ TextListener, ClipboardOwner, MacroConstants {
 	void save() {
 		if (path==null) {
 			saveAs(); 
+			return;
+		}
+		File f = new File(path);
+		if (f.exists() & !f.canWrite()) {
+			IJ.showMessage("Editor", "Unable to save because file is write-protected. \n \n" + path);
 			return;
 		}
 		String text = ta.getText();
@@ -392,6 +400,8 @@ TextListener, ClipboardOwner, MacroConstants {
 			find(searchString);
 		else if ("Go to Line...".equals(what))
 			gotoLine();
+		else if ("Zap Gremlins".equals(what))
+			zapGremlins();
 		else
 			installer.runMacro(what);
 	}
@@ -432,16 +442,16 @@ TextListener, ClipboardOwner, MacroConstants {
 	}
 
 	void saveAs() {
-		FileDialog fd = new FileDialog(this, "Save Plugin As...", FileDialog.SAVE);
 		String name1 = getTitle();
-		fd.setFile(name1);
-		String pluginsDir = Menus.getPlugInsPath();
-		if (path!=null)
-			fd.setDirectory(pluginsDir);
-		fd.show();
-		String name2 = fd.getFile();
-		String dir = fd.getDirectory();
-		fd.dispose();
+		if (defaultDir==null) {
+			if (name1.endsWith(".txt"))
+				defaultDir = Menus.getMacrosPath();
+			else
+				defaultDir = Menus.getPlugInsPath();
+		}
+		SaveDialog sd = new SaveDialog("Save Plugin As...", defaultDir, name1, null);
+		String name2 = sd.getFileName();
+		String dir = sd.getDirectory();
 		if (name2!=null) {
 			if (name2.endsWith(".java"))
 				updateClassName(name1, name2);
@@ -507,6 +517,42 @@ TextListener, ClipboardOwner, MacroConstants {
 		}
 		ta.setCaretPosition(loc);
 		lineNumber = n;
+	}
+	
+	void zapGremlins() {
+		String text = ta.getText();
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		int count=0;
+		boolean inQuotes = false;
+		char quoteChar = 0;
+		for (int i=0; i<chars.length; i++) {
+			char c = chars[i];
+			if (!inQuotes && (c=='"' || c=='\'')) {
+				inQuotes = true;
+				quoteChar = c;
+			} else  {
+				if (inQuotes && (c==quoteChar || c=='\n'))
+				inQuotes = false;
+			}
+			if (!inQuotes && c!='\n' && c!='\t' && (c<32||c>127)) {
+				count++;
+				chars[i] = ' ';
+				//IJ.log(""+(0+c));
+			}
+		}
+		if (count>0) {
+			text = new String(chars);
+			ta.setText(text);
+		}
+		if (count>0)
+			IJ.showMessage("Zap Gremlins", count+" invalid characters converted to spaces");
+		else
+			IJ.showMessage("Zap Gremlins", "No invalid characters found");
+	}
+
+	public static void setDefaultDirectory(String defaultDirectory) {
+		defaultDir = defaultDirectory;
 	}
 
 	/*

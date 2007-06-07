@@ -7,6 +7,7 @@ import ij.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
+import ij.plugin.filter.Analyzer;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable {
@@ -30,14 +31,18 @@ public class Roi extends Object implements Cloneable {
 	protected ImageCanvas ic;
 	protected int oldX, oldY, oldWidth, oldHeight;
 	protected int clipX, clipY, clipWidth, clipHeight;
-	protected ImagePlus clipboard = null;
-	protected boolean constrain = false;
+	protected ImagePlus clipboard;
+	protected boolean constrain; // to be square
+    protected boolean center;
 	protected boolean updateFullWindow;
 	protected double mag = 1.0;
+	protected String name;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
 		setImage(null);
+		if (width<1) width = 1;
+		if (height<1) height = 1;
 		if (width>xMax) width = xMax;
 		if (height>yMax) height = yMax;
 		//setLocation(x, y);
@@ -169,14 +174,22 @@ public class Roi extends Object implements Cloneable {
 			xNew = x + d;
 			yNew = y + d;
 		}
-		width = Math.abs(xNew - startX);
-		height = Math.abs(yNew - startY);
-		x = (xNew>=startX)?startX:startX - width;
-		y = (yNew>=startY)?startY:startY - height;
-		if ((x+width) > xMax)
-			width = xMax-x;
-		if ((y+height) > yMax)
-			height = yMax-y;
+		
+		if (center) {
+			width = Math.abs(xNew - startX)*2;
+			height = Math.abs(yNew - startY)*2;
+			x = startX - width/2;
+			y = startY - height/2;
+		} else {
+			width = Math.abs(xNew - startX);
+			height = Math.abs(yNew - startY);
+			x = (xNew>=startX)?startX:startX - width;
+			y = (yNew>=startY)?startY:startY - height;
+			if ((x+width) > xMax)
+				width = xMax-x;
+			if ((y+height) > yMax)
+				height = yMax-y;
+		}
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x;
@@ -309,9 +322,10 @@ public class Roi extends Object implements Cloneable {
 		clipWidth+=m*2; clipHeight+=m*2;
 	 }
 		
-	protected void handleMouseDrag(int sx, int sy, boolean constrain) {
+	protected void handleMouseDrag(int sx, int sy, int flags) {
 		if (ic==null) return;
-		this.constrain = constrain;
+		constrain = (flags&Event.SHIFT_MASK)!=0;
+		center = (flags&Event.CTRL_MASK)!=0 || (IJ.isMacintosh()&&(flags&Event.META_MASK)!=0);
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
 		switch(state) {
@@ -402,7 +416,7 @@ public class Roi extends Object implements Cloneable {
 		
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
-	int isHandle(int sx, int sy) {
+	public int isHandle(int sx, int sy) {
 		if (clipboard!=null) return -1;
 		double mag = ic.getMagnification();
 		int size = HANDLE_SIZE+3;
@@ -465,15 +479,13 @@ public class Roi extends Object implements Cloneable {
 			value = "";
 		Calibration cal = imp.getCalibration();
 		String size;
-		if (cal.scaled())
-			size = ", w="+IJ.d2s(width*cal.pixelWidth)+" ("+width+"), h="
-			+IJ.d2s(height*cal.pixelHeight)+" ("+height+")";
+		if (cal.scaled() && !IJ.altKeyDown())
+			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
 		else
-			size = ", width="+width+", height="+height;
+			size = ", w="+width+", h="+height;
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
-	
-	
+		
 	public int[] getMask() {
 		return null;
 	}
@@ -569,6 +581,16 @@ public class Roi extends Object implements Cloneable {
 		ROIColor = c;
 	}
 	
+	/** Returns the name of this ROI, or null. */
+	public String getName() {
+		return name;
+	}
+
+	/** Sets the name of this ROI. */
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/** Sets the Paste transfer mode.
 		@see ij.process.Blitter
 	*/
@@ -598,6 +620,11 @@ public class Roi extends Object implements Cloneable {
 			return NOT_PASTING;
 		else
 			return pasteMode;
+	}
+
+	/** Returns the current paste transfer mode. */
+	public static int getCurrentPasteMode() {
+		return pasteMode;
 	}
 
 	public String toString() {

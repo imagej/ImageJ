@@ -30,6 +30,7 @@ public class Interpreter implements MacroConstants {
 	int startOfLocals = 0;
 
 	static Interpreter instance;
+	static boolean batchMode;
 	boolean done;
 	Program pgm;
 	Functions func;
@@ -50,9 +51,11 @@ public class Interpreter implements MacroConstants {
 		this.pgm = pgm;
 		pc = -1;
 		instance = this;
+		batchMode = false;
 		pushGlobals();
 		if (func==null)
 			func = new Functions(this, pgm);
+		func.plot = null;
 		IJ.showStatus("interpreting");
 		if ((pgm.code[pc+1]&0xff)==MACRO && (pgm.code[pc+2]&0xff)==STRING_CONSTANT) {
 		   // run macro instead of skipping over it
@@ -61,7 +64,9 @@ public class Interpreter implements MacroConstants {
 		}
 		doStatements();
 		func.updateDisplay();
+		if (func.plot!=null) func.plot.show();
 		instance = null;
+		batchMode = false;
 		if (!statusUpdated) IJ.showStatus("");
 		if (showingProgress) IJ.showProgress(0, 0);
 	}
@@ -72,16 +77,20 @@ public class Interpreter implements MacroConstants {
 		this.macroName = macroName;
 		pc = macroLoc-1;
 		instance = this;
+		batchMode = false;
 		IJ.showStatus("interpreting");
 		pushGlobals();
 		if (func==null)
 			func = new Functions(this, pgm);
+		func.plot = null;
 		if (macroLoc==0)
 			doStatements();
 		else
 			doBlock(); 
 		func.updateDisplay();
+		if (func.plot!=null) func.plot.show();
 		instance = null;
+		batchMode = false;
 		if (!statusUpdated) IJ.showStatus("");
 		if (showingProgress) IJ.showProgress(0, 0);
 	}
@@ -222,7 +231,7 @@ public class Interpreter implements MacroConstants {
 		}
 		if (!looseSyntax) {
 			getToken();
-			if (token!=';')
+			if (token!=';' && !done)
 				error("';' expected");
 		}
 	}
@@ -554,8 +563,19 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final void doAssignment() {
-		if ((pgm.code[pc+1]&0xff)=='[')
-			{doArrayElementAssignment(); return;}
+		int next = pgm.code[pc+1]&0xff;
+		if (next=='[') {
+			doArrayElementAssignment();
+			return;
+		} 
+		//else if (next=='.') {
+		//	Variable v = lookupVariable(tokenAddress);
+		//	String name = v!=null?v.getString():null;
+		//	if (name!=null && name.charAt(0)=='*') {
+		//		func.doDotFunction();
+		//		return;
+		//	}
+		//}
 		int type = getExpressionType();		
 		if (type==Variable.STRING)
 			doStringAssignment();
@@ -870,7 +890,7 @@ public class Interpreter implements MacroConstants {
 			}
 		}
 	}
-
+	
 	final void getLeftParen() {
 		getToken();
 		if (token!='(')
@@ -907,6 +927,7 @@ public class Interpreter implements MacroConstants {
 		IJ.showStatus("");
 		if (showingProgress) IJ.showProgress(0, 0);
 		Variable.doHash = false;
+		batchMode = false;
 		if (showMessage) {
 			String line = getErrorLine();
 			IJ.showMessage("Macro Error", message+" in line "+lineNumber+".\n \n"+line);
@@ -1341,6 +1362,11 @@ public class Interpreter implements MacroConstants {
 	public static Interpreter getInstance() {
 		return instance;
 	}
+	
+	public static boolean isBatchMode() {
+		return batchMode;
+	}
+
 
 } // class Interpreter
 

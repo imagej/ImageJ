@@ -39,21 +39,39 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
 		super(NewImage.createByteImage("Histogram of "+imp.getShortTitle(), WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
-		showHistogram(imp, nBins);
+		showHistogram(imp, nBins, 0.0, 0.0);
 	}
 
-	/** Displays a histogram using the specified title and number of bins. */
+	/** Displays a histogram using the specified title and number of bins. 
+		Currently, the number of bins must be 256 expect for 32 bit images. */
 	public HistogramWindow(String title, ImagePlus imp, int bins) {
 		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
-		showHistogram(imp, bins);
+		showHistogram(imp, bins, 0.0, 0.0);
 	}
 
+	/** Displays a histogram using the specified title, number of bins and histogram range.
+		Currently, the number of bins must be 256 and the histogram range range must be the 
+		same as the image range expect for 32 bit images. */
+	public HistogramWindow(String title, ImagePlus imp, int bins, double histMin, double histMax) {
+		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		showHistogram(imp, bins, histMin, histMax);
+	}
+
+	/** Draws the histogram using the specified title and number of bins.
+		Currently, the number of bins must be 256 expect for 32 bit images. */
 	public void showHistogram(ImagePlus imp, int bins) {
+		showHistogram(imp, bins, 0.0, 0.0);
+	}
+
+	/** Draws the histogram using the specified title, number of bins and histogram range.
+		Currently, the number of bins must be 256 and the histogram range range must be 
+		the same as the image range expect for 32 bit images. */
+	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
 		setup();
 		cal = imp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		imp.getMask();
-		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins);
+		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins, histMin, histMax);
 		histogram = stats.histogram;
 		if (limitToThreshold && histogram.length==256) {
 			ImageProcessor ip = imp.getProcessor();
@@ -162,6 +180,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	void drawPlot(int maxCount, ImageProcessor ip) {
+		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		int index, y;
@@ -195,10 +214,12 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
+		if (fixedRange&&!cal.calibrated())
+			{hmin=0; hmax=256;}
 		ip.drawString(d2s(hmin), x - 4, y);
 		ip.drawString(d2s(hmax), x + HIST_WIDTH - getWidth(hmax, ip) + 10, y);
         
-		double binWidth = fixedRange&&!cal.calibrated()?stats.binSize:(hmax-hmin)/stats.nBins;
+		double binWidth = (hmax-hmin)/stats.nBins;
 		binWidth = Math.abs(binWidth);
 		boolean showBins = binWidth!=1.0 || !fixedRange;
 		int col1 = XMARGIN + 5;
@@ -234,9 +255,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	void showList() {
 		StringBuffer sb = new StringBuffer();
-		for (int i=0; i<stats.nBins; i++)
-			sb.append(IJ.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
-		TextWindow tw = new TextWindow(getTitle(), "value\tcount", sb.toString(), 200, 400);
+        String vheading = stats.binSize==1.0?"value":"bin start";
+		if (cal.calibrated() && !cal.isSigned16Bit()) {
+			for (int i=0; i<stats.nBins; i++)
+				sb.append(i+"\t"+IJ.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
+			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", sb.toString(), 200, 400);
+		} else {
+			for (int i=0; i<stats.nBins; i++)
+				sb.append(IJ.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
+			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", sb.toString(), 200, 400);
+		}
 	}
 
 	void copyToClipboard() {

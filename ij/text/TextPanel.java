@@ -141,34 +141,48 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		iRowCount++;
 		if (isShowing()) {
 			if (iColCount==1 && tc.fMetrics!=null) {
-  				iColWidth[0] = Math.max(iColWidth[0], tc.fMetrics.charsWidth(chars,0,chars.length));
+				iColWidth[0] = Math.max(iColWidth[0], tc.fMetrics.charsWidth(chars,0,chars.length));
 				adjustHScroll();
-  			}
-			iY=iRowHeight*(iRowCount+1);
-			adjustVScroll();
-			if (iColCount>1 && iRowCount<=10 && !columnsManuallyAdjusted)
-				iColWidth[0] = 0; // forces column width calculation
-			tc.repaint();
-			Thread.yield();
+			}
+			updateDisplay();
 		}
 	}
 	
 	/** Adds one or more lines to the end of this TextPanel. */
 	public void append(String data) {
 		if (data==null) data="null";
+		if (vData==null)
+			setColumnHeadings("");
 		while (true) {
 			int p=data.indexOf('\n');
 			if (p<0) {
-				appendLine(data);
+				appendWithoutUpdate(data);
 				break;
 			}
-			appendLine(data.substring(0,p));
+			appendWithoutUpdate(data.substring(0,p));
 			data = data.substring(p+1);
 			if (data.equals("")) 
 				break;
 		}
+		if (isShowing())
+			updateDisplay();
 	}
 	
+	/** Adds a single line to the end of this TextPanel without updating the display. */
+	void appendWithoutUpdate(String data) {
+		char[] chars = data.toCharArray();
+		vData.addElement(chars);
+		iRowCount++;
+	}
+
+	void updateDisplay() {
+		iY=iRowHeight*(iRowCount+1);
+		adjustVScroll();
+		if (iColCount>1 && iRowCount<=10 && !columnsManuallyAdjusted)
+			iColWidth[0] = 0; // forces column width calculation
+		tc.repaint();
+	}
+
 	String getCell(int column, int row) {
 		if (column<0||column>=iColCount||row<0||row>=iRowCount)
 			return null;

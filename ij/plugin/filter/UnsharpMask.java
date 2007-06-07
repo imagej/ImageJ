@@ -38,11 +38,16 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 		if (win.running!=true)
 			{canceled=true; IJ.beep(); return;}
 		slice++;
-		if (slice>1)
-			IJ.showStatus("Unsharp Mask: "+slice+"/"+imp.getStackSize());
 		if (isLineRoi)
 			ip.resetRoi();
 		sharpen(ip, radius, weight);
+	}
+	
+	void showStatus(String msg) {
+		if (slice>1)
+			IJ.showStatus("Unsharp Mask: "+slice+"/"+imp.getStackSize());
+		else
+			IJ.showStatus("Unsharp Mask: " + msg);
 	}
 	
 	public void sharpen(ImageProcessor ip, double radius, double weight) {
@@ -53,16 +58,24 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 		ImageProcessor ip2 = ip;
 		if (isRoi) {
 			ip2.setRoi(rect);
+			showStatus("cropping");
 			ip2 = ip2.crop();
 		}
-		boolean convertToFloat = (ip instanceof ByteProcessor) || (ip instanceof ShortProcessor);
-		if (convertToFloat)
+		if (ip instanceof ColorProcessor) {
+			showStatus("extracting brightness");
+			ip2 = ((ColorProcessor)ip2).getBrightness();
+		} else {
+			showStatus("converting to float");
 			ip2 = ip2.convertToFloat();
+		}
+		showStatus("getting statistics");
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, MIN_MAX, null);
 		double min = stats.min;
 		double max = stats.max;
+		showStatus("Gaussian blur");
 		ImageProcessor mask = ip2.duplicate();
 		new GaussianBlur().blur(mask, radius);
+		showStatus("Subtracting blurred mask");
 		mask.multiply(weight);
 		//new ImagePlus("", mask).show();
 		ip2.copyBits(mask,0,0,Blitter.SUBTRACT);
@@ -71,19 +84,22 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 			ip2.min(min);
 			ip2.max(max);
 		}
+		showStatus("converting back");
 		if (nonRectRoi)
 			ip.snapshot();
-		if (convertToFloat) {
-			ImageProcessor ip3;
-			boolean bytes = ip instanceof ByteProcessor;
-			boolean scale = bytes && imp.getStackSize()==1;
-			if (bytes)
-				ip3 = ip2.convertToByte(scale);
-			else 
-				ip3 = ip2.convertToShort(scale);
-			ip.insert(ip3, rect.x, rect.y);
-		} else if (isRoi)
-			ip.insert(ip2, rect.x, rect.y);
+		ImageProcessor ip3 = null;
+		int bitDepth = imp.getBitDepth();
+		boolean scale = bitDepth==8 && imp.getStackSize()==1;
+		switch (bitDepth) {
+			case 8: ip3 = ip2.convertToByte(scale); break;
+			case 16: ip3 = ip2.convertToShort(scale); break;
+			case 24: 
+				ip3 = nonRectRoi?ip.crop():ip;
+				((ColorProcessor)ip3).setBrightness((FloatProcessor)ip2); 
+				break;				
+			case 32: ip3 = ip2; break;
+		}
+		ip.insert(ip3, rect.x, rect.y);
 		if (nonRectRoi)
 			ip.reset(ip.getMask());
 	}

@@ -16,7 +16,9 @@ import ij.measure.*;
 /** This is ImageJ's macro recorder. */
 public class Recorder extends PlugInFrame implements PlugIn, ActionListener, ItemListener {
 
+	/** This variable is true if the recorder is running. */
 	public static boolean record;
+	
 	private Button makeMacro,makePlugin;
 	private Checkbox recordCB;
 	private String fitTypeStr = CurveFitter.fitList[0];
@@ -60,12 +62,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		textArea.append(method+"();\n");
 	}
 
+	/** Starts recording a command. Does nothing if the recorder is
+		not open or the command being recorded has called IJ.run(). 
+	*/
 	public static void setCommand(String command) {
-		if (textArea==null)
+		if (textArea==null || Thread.currentThread().getName().startsWith("Run$_"))
 			return;
 		commandName = command;
 		commandOptions = null;
-		//IJ.write("setCommand: "+command);
+		//IJ.log("setCommand: "+command+" "+Thread.currentThread().getName());
 	}
 
 	static String fixPath (String path) {
@@ -145,12 +150,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 	}
 
 	public static void recordOption(String key) {
-		key = trimKey(key);
-		if (commandOptions==null)
-			commandOptions = key;
-		else
-			commandOptions += " "+key;
-		//IJ.write("  "+key+"="+value);
+		if (commandOptions==null && key.equals(" "))
+			commandOptions = " ";
+		else {
+			key = trimKey(key);
+			if (commandOptions==null)
+				commandOptions = key;
+			else
+				commandOptions += " "+key;
+		}
 	}
 	
 	static String trimKey(String key) {
@@ -164,6 +172,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		return key;
 	}
 
+	/** Writes the current command and options to the Recorder window. */
 	public static void saveCommand() {
 		if (commandName!=null) {
 			if (commandOptions!=null)

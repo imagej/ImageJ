@@ -4,11 +4,16 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.*;
+import ij.io.*;
+import ij.plugin.TextReader;
 import java.awt.*;
 import java.util.*;
+import java.awt.event.*;
+import java.io.*;
+
 
 /** Implements the Analyze/Calibrate command. */
-public class Calibrator implements PlugInFilter, Measurements {
+public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 
 	private static final String NONE = "None";
 	private static final String INVERTER = "Pixel Inverter";
@@ -23,12 +28,15 @@ public class Calibrator implements PlugInFilter, Measurements {
 	private int spacerIndex = nFits+1;
 	private int inverterIndex = nFits+2;
 	private int odIndex = nFits+3;
-	private String xText;
-	private static String yText="";
+	private static String xText = "";
+	private static String yText = "";
+	private static boolean importedValues;
 	private String unit;
 	private double lx=0.02, ly=0.1;
 	private int oldFunction;
 	private String sumResiduals, fitGoodness;
+	private Button open, save;
+	private GenericDialog gd;
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -73,12 +81,15 @@ public class Calibrator implements PlugInFilter, Measurements {
 		else
 			defaultChoice=NONE;
 			
-		xText = getMeans();	
-		GenericDialog gd = new GenericDialog("Calibrate...");
+		String tmpText = getMeans();
+		if (!importedValues)	
+			xText = tmpText;	
+		gd = new GenericDialog("Calibrate...");
 		gd.addChoice("Function:", functions, defaultChoice);
 		gd.addStringField("Unit:", unit, 16);
 		gd.addTextAreas(xText, yText, 20, 14);
 		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
+		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Global Calibration", global);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.showDialog();
@@ -95,6 +106,19 @@ public class Calibrator implements PlugInFilter, Measurements {
 		}
 	}
 
+	/** Creates a panel containing "Save..." and "Save..." buttons. */
+	Panel makeButtonPanel(GenericDialog gd) {
+		Panel buttons = new Panel();
+    	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+		open = new Button("Open...");
+		open.addActionListener(this);
+		buttons.add(open);
+		save = new Button("Save...");
+		save.addActionListener(this);
+		buttons.add(save);
+		return buttons;
+	}
+	
 	public void calibrate(ImagePlus imp) {
 		Calibration cal = imp.getCalibration();
 		int function = Calibration.NONE;
@@ -234,7 +258,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		if (x!=null&&y!=null&&x.length>0&&y.length>0)
 			pw.addPoints(x, y, PlotWindow.CIRCLE);
 		double[] p = cal.getCoefficients();
-		if (fit<=Calibration.GAMMA_VARIATE) {
+		if (fit<=Calibration.LOG2) {
 			drawLabel(pw, CurveFitter.fList[fit]);
 			ly += 0.04;
 		}
@@ -286,6 +310,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		String s = "";
 		for (int i=0; i<count; i++)
 			s += IJ.d2s(umeans[i],2)+"\n";
+		importedValues = false;
 		return s;
 	}
 
@@ -311,6 +336,90 @@ public class Calibrator implements PlugInFilter, Measurements {
 			return(d.doubleValue());
 		else
 			return 0.0;
+	}
+	
+	void save() {
+		gd.textArea1.selectAll();
+		String text1 = gd.textArea1.getText();
+		gd.textArea1.select(0, 0);
+		gd.textArea2.selectAll();
+		String text2 = gd.textArea2.getText();
+		gd.textArea2.select(0, 0);
+		double[] x = getData(text1);
+		double[] y = getData(text2);
+		SaveDialog sd = new SaveDialog("Save as Text...", "calibration", ".txt");
+		String name = sd.getFileName();
+		if (name == null)
+			return;
+		String directory = sd.getDirectory();
+		PrintWriter pw = null;
+		try {
+			FileOutputStream fos = new FileOutputStream(directory+name);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			pw = new PrintWriter(bos);
+		}
+		catch (IOException e) {
+			IJ.error("" + e);
+			return;
+		}
+		IJ.wait(250);  // give system time to redraw ImageJ window
+		int n = Math.max(x.length, y.length);
+		for (int i=0; i<n; i++) {
+			String xs = x.length==0?"":i<x.length?""+x[i]:"0";
+			String ys = y.length==0?"":i<y.length?""+y[i]:"0";
+			pw.println(xs + "\t"+ ys);
+		}
+		pw.close();
+	}
+	
+	void open() {
+		OpenDialog od = new OpenDialog("Open Calibration...", "");
+		String directory = od.getDirectory();
+		String name = od.getFileName();
+		if (name==null)
+			return;
+		String path = directory + name;
+		TextReader tr = new TextReader();
+		ImageProcessor ip = tr.open(path);
+		if (ip==null)
+			return;
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		if (!((width==1||width==2)&&height>1)) {
+			IJ.showMessage("Calibrator", "This appears to not be a one or two column text file");
+			return;
+		}
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<height; i++) {
+			sb.append(""+ip.getPixelValue(0, i));
+			sb.append("\n");
+		}
+		String s1=null, s2=null;
+		if (width==2) {
+			s1 = new String(sb);
+			sb = new StringBuffer();
+			for (int i=0; i<height; i++) {
+				sb.append(""+ip.getPixelValue(1, i));
+				sb.append("\n");
+			}
+			s2 = new String(sb);
+		} else
+			s2 = new String(sb);
+		if (s1!=null) {
+			gd.textArea1.selectAll();
+			gd.textArea1.setText(s1);
+		}
+		gd.textArea2.selectAll();
+		gd.textArea2.setText(s2);
+		importedValues = true;
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		Object source = e.getSource();
+		if (source==save)
+			save();
+		else if (source==open)
+			open();
 	}
 
 }

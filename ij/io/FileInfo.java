@@ -44,6 +44,9 @@ public class FileInfo {
 		converted to floating-point. */
 	public static final int GRAY32_UNSIGNED = 11;
 	
+	/** 48-bit interleaved RGB. Import only. */
+	public static final int RGB48 = 12;	
+
 	// File formats
 	public static final int UNKNOWN = 0;
 	public static final int RAW = 1;

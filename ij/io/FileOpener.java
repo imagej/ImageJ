@@ -87,9 +87,18 @@ public class FileOpener {
 			case FileInfo.RGB_PLANAR:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
-	    		//img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
 	    		ip = new ColorProcessor(width, height, (int[])pixels);
         		imp = new ImagePlus(fi.fileName, ip);
+				break;
+			case FileInfo.RGB48:
+				Object[] pixelArray = (Object[])readPixels(fi);
+				if (pixelArray==null) return null;
+				ImageStack stack = new ImageStack(width, height);
+				stack.addSlice("Red", pixelArray[0]);
+				stack.addSlice("Green", pixelArray[1]);
+				stack.addSlice("Blue", pixelArray[2]);
+        		imp = new ImagePlus(fi.fileName, stack);
+        		imp.getProcessor().resetMinAndMax();
 				break;
 		}
 		imp.setFileInfo(fi);
@@ -248,7 +257,7 @@ public class FileOpener {
 		
 		if (fi.valueUnit!=null) {
 			int f = fi.calibrationFunction;
-			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.GAMMA_VARIATE && fi.coefficients!=null)
+			if ((f>=Calibration.STRAIGHT_LINE && f<=Calibration.LOG2 && fi.coefficients!=null)
 			||f==Calibration.UNCALIBRATED_OD)
 				cal.setFunction(f, fi.coefficients, fi.valueUnit);
 		}

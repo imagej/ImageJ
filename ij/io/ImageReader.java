@@ -231,6 +231,52 @@ public class ImageReader {
 		return pixels;
 	}
 
+	Object readRGB48(InputStream in) throws IOException {
+		int pixelsRead;
+		bufferSize = 24*width;
+		byte[] buffer = new byte[bufferSize];
+		short[] red = new short[nPixels];
+		short[] green = new short[nPixels];
+		short[] blue = new short[nPixels];
+		int totalRead = 0;
+		int base = 0;
+		int count, value;
+		int bufferCount;
+		
+		Object[] stack = new Object[3];
+		stack[0] = red;
+		stack[1] = green;
+		stack[2] = blue;
+		while (totalRead<byteCount) {
+			if ((totalRead+bufferSize)>byteCount)
+				bufferSize = byteCount-totalRead;
+			bufferCount = 0;
+			while (bufferCount<bufferSize) { // fill the buffer
+				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
+				if (count==-1) {eofError(); return stack;}
+				bufferCount += count;
+			}
+			totalRead += bufferSize;
+			showProgress((double)totalRead/byteCount);
+			pixelsRead = bufferSize/bytesPerPixel;
+			if (fi.intelByteOrder) {
+				for (int i=base,j=0; i<(base+pixelsRead); i++) {
+					red[i] = (short)(((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff)); j+=2;
+					green[i] = (short)(((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff)); j+=2;
+					blue[i] = (short)(((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff)); j+=2;
+				}
+			} else {
+				for (int i=base,j=0; i<(base+pixelsRead); i++) {
+					red[i] = (short)(((buffer[j]&0xff)<<8) | (buffer[j+1]&0xff)); j+=2;
+					green[i] = (short)(((buffer[j]&0xff)<<8) | (buffer[j+1]&0xff)); j+=2;
+					blue[i] = (short)(((buffer[j]&0xff)<<8) | (buffer[j+1]&0xff)); j+=2;
+				}
+			}
+			base += pixelsRead;
+		}
+		return stack;
+	}
+
 	void skip(InputStream in) throws IOException {
 		if (skipCount>0) {
 			long bytesRead = 0;
@@ -293,6 +339,10 @@ public class ImageReader {
 					byte[] bitmap = read8bitImage(in);
 					expandBitmap(bitmap);
 					return (Object)bitmap;
+				case FileInfo.RGB48:
+					bytesPerPixel = 6;
+					skip(in);
+					return (Object)readRGB48(in);
 				default:
 					return null;
 			}

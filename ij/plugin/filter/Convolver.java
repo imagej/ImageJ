@@ -2,12 +2,16 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.io.*;
+import ij.plugin.TextReader;
 import java.awt.*;
 import java.util.*;
+import java.awt.event.*;
+import java.io.*;
 
 /** This plugin does convolutions on real images using user user defined kernels. */
 
-public class Convolver implements PlugInFilter {
+public class Convolver implements PlugInFilter, ActionListener {
 
 	static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
 	
@@ -18,6 +22,8 @@ public class Convolver implements PlugInFilter {
 	float[] kernel;
 	ImageWindow win;
 	boolean isLineRoi;
+	Button open, save;
+	GenericDialog gd;
 	
 	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
 	static boolean normalize = true;
@@ -67,8 +73,9 @@ public class Convolver implements PlugInFilter {
 	}
 	
 	float[] getKernel() {
-		GenericDialog gd = new GenericDialog("Convolver...", IJ.getInstance());
+		gd = new GenericDialog("Convolver...", IJ.getInstance());
 		gd.addTextAreas(kernelText, null, 10, 30);
+		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Normalize Kernel", normalize);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -89,6 +96,19 @@ public class Convolver implements PlugInFilter {
 		return k;
 	}
 
+	/** Creates a panel containing "Save..." and "Save..." buttons. */
+	Panel makeButtonPanel(GenericDialog gd) {
+		Panel buttons = new Panel();
+    	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+		open = new Button("Open...");
+		open.addActionListener(this);
+		buttons.add(open);
+		save = new Button("Save...");
+		save.addActionListener(this);
+		buttons.add(save);
+		return buttons;
+	}
+
 	double getNum(StringTokenizer st) {
 		Double d;
 		String token = st.nextToken();
@@ -101,6 +121,8 @@ public class Convolver implements PlugInFilter {
 	}
 
 	public void convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
+		if ((kw&1)!=1 || (kh&1)!=1)
+			throw new IllegalArgumentException("Kernel width or height not odd");
 		int type;
 		if (ip instanceof ByteProcessor)
 			type = BYTE;
@@ -234,6 +256,81 @@ public class Convolver implements PlugInFilter {
 		return pixels[x+y*width];
 	}
 	
+	void save() {
+		gd.textArea1.selectAll();
+		String text = gd.textArea1.getText();
+		gd.textArea1.select(0, 0);
+		if (text==null || text.length()==0)
+			return;
+		text += "\n";
+		SaveDialog sd = new SaveDialog("Save as Text...", "kernel", ".txt");
+		String name = sd.getFileName();
+		if (name == null)
+			return;
+		String directory = sd.getDirectory();
+		PrintWriter pw = null;
+		try {
+			FileOutputStream fos = new FileOutputStream(directory+name);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			pw = new PrintWriter(bos);
+		}
+		catch (IOException e) {
+			IJ.error("" + e);
+			return;
+		}
+		IJ.wait(250);  // give system time to redraw ImageJ window
+		pw.print(text);
+		pw.close();
+	}
+	
+	void open() {
+		OpenDialog od = new OpenDialog("Open Calibration...", "");
+		String directory = od.getDirectory();
+		String name = od.getFileName();
+		if (name==null)
+			return;
+		String path = directory + name;
+		TextReader tr = new TextReader();
+		ImageProcessor ip = tr.open(path);
+		if (ip==null)
+			return;
+		int width = ip.getWidth();
+		int height = ip.getHeight();
+		if ((width&1)!=1 || width!=height) {
+			IJ.showMessage("Convolver", "Kernel must be square and have an odd width");
+			return;
+		}
+		StringBuffer sb = new StringBuffer();
+		boolean integers = true;
+		for (int y=0; y<height; y++) {
+			for (int x=0; x<width; x++) {
+				double v = ip.getPixelValue(x, y);
+				if ((int)v!=v)
+					integers = false;
+			}
+		}
+		for (int y=0; y<height; y++) {
+			for (int x=0; x<width; x++) {
+				if (x!=0) sb.append(" ");
+				double v = ip.getPixelValue(x, y);
+				if (integers)
+					sb.append(IJ.d2s(ip.getPixelValue(x, y),0));
+				else
+					sb.append(""+ip.getPixelValue(x, y));
+			}
+			if (y!=height-1)
+				sb.append("\n");
+		}
+		gd.textArea1.setText(new String(sb));
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		Object source = e.getSource();
+		if (source==save)
+			save();
+		else if (source==open)
+			open();
+	}
 
 }
 

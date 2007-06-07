@@ -5,7 +5,7 @@ import java.awt.image.*;
 
 /** This is the progress bar that is displayed in the lower 
 	right hand corner of the ImageJ window. Use one of the static 
-	IJ.showProgress() methods to display the progress bar. */
+	IJ.showProgress() methods to display and update the progress bar. */
 public class ProgressBar extends Canvas {
 
 	private int canvasWidth, canvasHeight;
@@ -23,6 +23,7 @@ public class ProgressBar extends Canvas {
 	private Color frameBrighter = backgroundColor.brighter();
 	private Color frameDarker = backgroundColor.darker();
 
+	/** This constructor is called once by ImageJ at startup. */
 	public ProgressBar(int canvasWidth, int canvasHeight) {
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
@@ -47,14 +48,15 @@ public class ProgressBar extends Canvas {
 		g.drawLine(x+width, y, x+width, y+height-1);
     }    
 
-	/**	Updates the progress bar, where current-length = (current/final)*total-length.
-	The bar is erased if current>=final. Does nothing 
-	if the ImageJ window is not present. */
-	public void show(int current, int last) {
-		if (current>=last)
+	/**	Updates the progress bar, where the length of the bar is set to
+		(<code>currentValue+1)/finalValue</code> of the maximum bar length.
+		The bar is erased if <code>currentValue&gt;=finalValue</code>. 
+		Does nothing if the ImageJ window is not present. */
+	public void show(int currentValue, int finalValue) {
+		if (currentValue>=finalValue)
 			showBar = false;
 		else {
-			percent = Math.min((current+1)/(double)last, 1.0);
+			percent = Math.min((currentValue+1)/(double)finalValue, 1.0);
 			showBar = true;
 		}
 		repaint();

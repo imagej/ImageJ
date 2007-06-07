@@ -78,5 +78,5 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		super.close();
 		instance = null;
 	}
-
+	
 }

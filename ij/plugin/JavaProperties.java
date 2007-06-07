@@ -44,6 +44,7 @@ public class JavaProperties implements PlugIn {
 			sb.append("\n");
 			sb.append("  code base: "+applet.getCodeBase()+"\n");
 			sb.append("  document base: "+applet.getDocumentBase()+"\n");
+			sb.append("  sample images dir: "+Prefs.getImagesURL()+"\n");
 			TextWindow tw = new TextWindow("Properties", new String(sb), 400, 400);
 			return;
 		}
@@ -63,9 +64,12 @@ public class JavaProperties implements PlugIn {
 		String osName = System.getProperty("os.name");
 		String prefsDir = osName.indexOf("Windows",0)>-1?userDir:userHome;
 		sb.append("  version: "+IJ.getInstance().VERSION+"\n");
+		sb.append("  java 2: "+IJ.isJava2()+"\n");
+		sb.append("  java 1.4: "+IJ.isJava14()+"\n");
 		sb.append("  prefs dir: "+prefsDir+"\n");
 		sb.append("  plugins dir: "+Menus.getPlugInsPath()+"\n");
 		sb.append("  macros dir: "+Menus.getMacrosPath()+"\n");
+		sb.append("  sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		sb.append("  screen size: " + d.width + "x" + d.height+"\n");
 		String mem = IJ.freeMemory();

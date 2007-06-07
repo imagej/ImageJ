@@ -338,15 +338,20 @@ public class TiffDecoder {
 						} else if (count==3) {
 							int saveLoc = in.getFilePointer();
 							in.seek(value);
-							if (getShort()!=8)
-								throw new IOException("ImageJ can only open 8-bit/channel RGB images");
+							int bitDepth = getShort();
+							if (!(bitDepth==8||bitDepth==16))
+								throw new IOException("ImageJ can only open 8 and 16 bit/channel RGB images");
+							if (bitDepth==16) {
+								fi.intelByteOrder = littleEndian;
+								fi.fileType = FileInfo.RGB48;
+							}
 							in.seek(saveLoc);
 						}
 						break;
 				case SAMPLES_PER_PIXEL:
-					if (value==3)
+					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = FileInfo.RGB;
-					else if (value!=1)
+					else if (!(value==1||value==3))
 						throw new IOException("Unsupported SamplesPerPixel: " + value);
 					break;
 				case X_RESOLUTION:
@@ -366,6 +371,8 @@ public class TiffDecoder {
 						fi.unit = "cm";
 					break;
 				case PLANAR_CONFIGURATION:
+					if (value==2 && fi.fileType==FileInfo.RGB48)
+							throw new IOException("ImageJ cannot open planar 48-bit RGB images");
 					if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
 					break;

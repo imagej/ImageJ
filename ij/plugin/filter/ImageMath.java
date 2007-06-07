@@ -11,6 +11,8 @@ public class ImageMath implements PlugInFilter {
 	private ImagePlus imp;
 	private boolean canceled;	
 	private boolean first;
+	private double lower;
+	private double upper;
 	
 	private static double addValue = 25;
 	private static double mulValue = 1.25;
@@ -158,11 +160,28 @@ public class ImageMath implements PlugInFilter {
 				else
 					pixels[i] = 1f/pixels[i];
 			}
-			if (!(ip instanceof ByteProcessor))
-				ip.resetMinAndMax();
+			ip.resetMinAndMax();
 			return;
 		}
 		
+	 	if (arg.equals("nan")) {
+	 		setBackgroundToNaN(ip);
+			return;
+		}
+
+	 	if (arg.equals("abs")) {
+			if (!(ip instanceof FloatProcessor)) {
+				IJ.error("32-bit float image required");
+				canceled = true;
+				return;
+			}
+			float[] pixels = (float[])ip.getPixels();
+			for (int i=0; i<ip.getWidth()*ip.getHeight(); i++)
+				pixels[i] = Math.abs(pixels[i]);
+			ip.resetMinAndMax();
+			return;
+		}
+
 	}
 	
 	double getValue (String title, String prompt, double defaultValue, int digits) {
@@ -188,4 +207,32 @@ public class ImageMath implements PlugInFilter {
 				return defaultValue;
 			return gd.getNextString();
 	}
+
+	/** Set non-thresolded pixels in a float image to NaN. */
+	void setBackgroundToNaN(ImageProcessor ip) {
+		if (first) {
+			lower = ip.getMinThreshold();
+			upper = ip.getMaxThreshold();
+			first = false;
+			if (lower==ImageProcessor.NO_THRESHOLD || !(ip instanceof FloatProcessor)) {
+				IJ.error("Thresholded 32-bit float image required");
+				canceled = true;
+				return;
+			}
+		}
+        float[] pixels = (float[])ip.getPixels();
+        int width = ip.getWidth();
+        int height = ip.getHeight();
+        double v;
+        for (int y=0; y<height; y++) {
+            for (int x=0; x<width; x++) {
+                  v = pixels[y*width+x];
+                  if (v<lower || v>upper)
+                      pixels[y*width+x] = Float.NaN;
+            }
+        }
+		ip.resetMinAndMax();
+		return;
+	}
+
 }

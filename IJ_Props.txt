@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.30
+# Version 1.31
 
 # Popup Menu
 popup01=Undo
@@ -42,7 +42,7 @@ save07="Image Sequence... ",ij.plugin.StackWriter
 save08="AVI... ",ij.plugin.filter.AVIWriter
 save09="BMP...",ij.plugin.filter.Writer("bmp")
 save10="LUT...",ij.plugin.filter.Writer("lut")
-save11="ROI...",ij.plugin.filter.RoiWriter
+save11="Selection...",ij.plugin.filter.RoiWriter
 save12="XY Coordinates...",ij.plugin.filter.XYWriter
 save13="Measurements...",ij.plugin.MeasurementsWriter
 save14="Text...",ij.plugin.TextWriter
@@ -53,7 +53,9 @@ selection01="Select All[a]",ij.plugin.Selection("all")
 selection02="Select None[A]",ij.plugin.Selection("none")
 selection03="Restore Selection[E]",ij.plugin.Selection("restore")
 selection04="Fit Spline",ij.plugin.Selection("spline")
-
+selection05="Fit Ellipse",ij.plugin.Selection("ellipse")
+selection06="Convex Hull",ij.plugin.Selection("hull")
+selection07="Create Mask",ij.plugin.Selection("mask")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("width")
@@ -72,6 +74,7 @@ adjust02="Window/Level...",ij.plugin.frame.ContrastAdjuster("wl")
 adjust03="Color Balance...",ij.plugin.frame.ContrastAdjuster("balance")
 adjust04="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
 adjust05="Size...",ij.plugin.filter.Resizer
+adjust06="Canvas Size...",ij.plugin.CanvasResizer
 
 # Plugins installed in the Image/Benchmarks submenu
 benchmarks01="Run Benchmark",ij.plugin.filter.Benchmark("run")
@@ -88,6 +91,7 @@ benchmarks08="Macro 1",ij.plugin.filter.Macro1
 color01="Convert Stack to RGB",ij.plugin.RGBStackConverter
 color02="RGB Split",ij.plugin.filter.RGBStackSplitter
 color03="RGB Merge...",ij.plugin.RGBStackMerge
+color04="Color Picker...[K]",ij.plugin.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
@@ -136,7 +140,7 @@ lookup15="Apply LUT",ij.plugin.filter.LutApplier
 noise01="Add Noise",ij.plugin.filter.Filters("add")
 noise02="Add Specified Noise...",ij.plugin.filter.Filters("noise")
 noise03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
-noise04="Despeckle",ij.plugin.filter.Filters("median")
+noise04="Despeckle",ij.plugin.filter.RankFilters("despeckle")
 
 # Plugins installed in the Process/Shadows submenu
 shadows01="North",ij.plugin.filter.Shadows("north")
@@ -158,13 +162,15 @@ binary04="Dilate",ij.plugin.filter.Binary("dilate")
 binary05="Open",ij.plugin.filter.Binary("open")
 # Can't use "Close" because it conflicts with File/Close
 binary06="Close-",ij.plugin.filter.Binary("close")
-binary07="Set Iterations...",ij.plugin.filter.Binary("set")
+binary07="Options...",ij.plugin.filter.Binary("options")
 binary08=-
 binary09="Outline",ij.plugin.filter.Binary("outline")
-binary10="Skeletonize",ij.plugin.filter.Binary("skel")
-binary11=-
-binary12="Distance Map",ij.plugin.filter.EDM("edm")
-binary13="Ultimate Points",ij.plugin.filter.EDM("points")
+binary10="Fill Holes",ij.plugin.filter.BinaryFiller
+binary11="Skeletonize",ij.plugin.filter.Binary("skel")
+binary12=-
+binary13="Distance Map",ij.plugin.filter.EDM("edm")
+binary14="Ultimate Points",ij.plugin.filter.EDM("points")
+binary15="Watershed",ij.plugin.filter.EDM("watershed")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")
@@ -181,14 +187,17 @@ math11="Log",ij.plugin.filter.ImageMath("log")
 math12="Square",ij.plugin.filter.ImageMath("sqr")
 math13="Square Root",ij.plugin.filter.ImageMath("sqrt")
 math14="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
+math15="NaN Background",ij.plugin.filter.ImageMath("nan")
+math16="Abs",ij.plugin.filter.ImageMath("abs")
 
 # Plugins installed in the Process/FFT submenu
-fft01="FFT",ij.plugin.filter.FFT("fft")
-fft02="Inverse FFT",ij.plugin.filter.FFT("inverse")
-fft03="Redisplay Power Spectrum",ij.plugin.filter.FFT("redisplay")
+fft01="FFT",ij.plugin.FFT("fft")
+fft02="Inverse FFT",ij.plugin.FFT("inverse")
+fft03="Redisplay Power Spectrum",ij.plugin.FFT("redisplay")
 fft04=-
-fft05="Band-pass Filter...",ij.plugin.filter.FFT("bandpass")
-fft06="Custom Filter...",ij.plugin.filter.FFT("custom")
+fft05="Bandpass Filter...",ij.plugin.filter.FFTFilter
+fft06="Custom Filter...",ij.plugin.filter.FFTCustomFilter
+fft07="FD Math...",ij.plugin.FFTMath
 
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver
@@ -198,6 +207,9 @@ filters04="Mean...",ij.plugin.filter.RankFilters("mean")
 filters05="Minimum...",ij.plugin.filter.RankFilters("min")
 filters06="Maximum...",ij.plugin.filter.RankFilters("max")
 filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
+filters08="Variance...",ij.plugin.filter.RankFilters("variance")
+filters09=-
+filters10="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
 
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")
@@ -245,7 +257,7 @@ shortcuts03="Remove...",ij.plugin.Hotkeys("remove")
 shortcuts04=-
 
 # Plugins installed in the Plugins/Utilities submenu
-utilities01="Control Panel...[P]",ij.plugin.frame.ControlPanel
+utilities01="Control Panel...[P]",ij.plugin.ControlPanel
 utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="List Commands...",ij.plugin.CommandLister
 utilities04="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
@@ -259,7 +271,8 @@ about02="MemoryMonitor...",ij.plugin.MemoryMonitor("about")
 about03="Waves...",ij.plugin.filter.Waves("about")
 
 # URL of directory containing the sample images
-# Only used when Image/J is running as an application
+# Used when Image/J is running as an application,
+# otherwise applet.getDocumentBase()+"/images" is used.
 images.location=http://rsb.info.nih.gov/ij/images/
 
 # Images installed in the Open Samples submenu

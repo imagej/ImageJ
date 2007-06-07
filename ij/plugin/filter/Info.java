@@ -59,10 +59,10 @@ public class Info implements PlugInFilter {
 	    	if (nSlices>1)
 	    		s += "Voxel size: "+IJ.d2s(cal.pixelWidth,2) + "x" + IJ.d2s(cal.pixelHeight,2)+"x"+IJ.d2s(cal.pixelDepth,2) + "\n";	    		
 	    	if (cal.pixelWidth==cal.pixelHeight)
-	    		s += "Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,1) + " pixels per "+unit+"\n";
+	    		s += "Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,2) + " pixels per "+unit+"\n";
 	    	else {
-	    		s += "X Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,1) + " pixels per "+unit+"\n";
-	    		s += "Y Resolution:  "+IJ.d2s(1.0/cal.pixelHeight,1) + " pixels per "+unit+"\n";
+	    		s += "X Resolution:  "+IJ.d2s(1.0/cal.pixelWidth,2) + " pixels per "+unit+"\n";
+	    		s += "Y Resolution:  "+IJ.d2s(1.0/cal.pixelHeight,2) + " pixels per "+unit+"\n";
 	    	}
 	    } else {
 	    	s += "Width:  " + imp.getWidth() + " pixels\n";
@@ -121,8 +121,17 @@ public class Info implements PlugInFilter {
 
 		if (ip.getMinThreshold()==ip.NO_THRESHOLD)
 	    	s += "No Threshold\n";
-	    else
-			s += "Threshold: "+IJ.d2s(ip.getMinThreshold(),digits)+"-"+IJ.d2s(ip.getMaxThreshold(),digits)+"\n";
+	    else {
+	    	double lower = ip.getMinThreshold();
+	    	double upper = ip.getMaxThreshold();
+			int dp = digits;
+			if (cal.calibrated()) {
+				lower = cal.getCValue((int)lower);
+				upper = cal.getCValue((int)upper);
+				dp = cal.isSigned16Bit()?0:4;
+			}
+			s += "Threshold: "+IJ.d2s(lower,dp)+"-"+IJ.d2s(upper,dp)+"\n";
+		}
 		ImageCanvas ic = imp.getWindow().getCanvas();
     	double mag = ic.getMagnification();
     	if (mag!=1.0)
@@ -165,35 +174,39 @@ public class Info implements PlugInFilter {
 	    if (roi == null) {
 			if (cal.calibrated())
 	    		s += " \n";
-	    	s += "No ROI\n";
+	    	s += "No Selection\n";
 	    } else {
 	    	s += " \n";
     		switch (roi.getType()) {
-    			case Roi.RECTANGLE: s += "Rectangular ROI\n"; break;
-    			case Roi.OVAL: s += "Oval ROI\n"; break;
-    			case Roi.POLYGON: s += "Polygon ROI\n"; break;
-    			case Roi.FREEROI: s += "Freehand ROI\n"; break;
-    			case Roi.TRACED_ROI: s += "Traced ROI\n"; break;
-    			case Roi.LINE: s += "Line Selection\n"; break;
-    			case Roi.POLYLINE: s += "Polyline Selection\n"; break;
-    			case Roi.FREELINE: s += "Freehand line Selection\n"; break;
+    			case Roi.RECTANGLE: s += "Rectangular Selection"; break;
+    			case Roi.OVAL: s += "Oval Selection"; break;
+    			case Roi.POLYGON: s += "Polygon Selection"; break;
+    			case Roi.FREEROI: s += "Freehand Selection"; break;
+    			case Roi.TRACED_ROI: s += "Traced Selection"; break;
+    			case Roi.LINE: s += "Line Selection"; break;
+    			case Roi.POLYLINE: s += "Polyline Selection"; break;
+    			case Roi.FREELINE: s += "Freehand line Selection"; break;
     		}
+    		String name = roi.getName();
+    		if (name!=null)
+				s += " (\"" + name + "\")";
+			s += "\n";			
 	    	Rectangle r = roi.getBoundingRect();
 	    	if (roi instanceof Line) {
 	    		Line line = (Line)roi;
 	    		s += "  X1: " + IJ.d2s(line.x1*cal.pixelWidth) + "\n";
-	    		s += "  Y1: " + IJ.d2s(yy(line.y1)*cal.pixelHeight) + "\n";
+	    		s += "  Y1: " + IJ.d2s(yy(line.y1,imp)*cal.pixelHeight) + "\n";
 	    		s += "  X2: " + IJ.d2s(line.x2*cal.pixelWidth) + "\n";
-	    		s += "  Y2: " + IJ.d2s(yy(line.y2)*cal.pixelHeight) + "\n";
+	    		s += "  Y2: " + IJ.d2s(yy(line.y2,imp)*cal.pixelHeight) + "\n";
 	    	
 			} else if (cal.scaled()) {
 				s += "  X: " + IJ.d2s(r.x*cal.pixelWidth) + " (" + r.x + ")\n";
-				s += "  Y: " + IJ.d2s(yy(r.y)*cal.pixelHeight) + " (" +  r.y + ")\n";
+				s += "  Y: " + IJ.d2s(yy(r.y,imp)*cal.pixelHeight) + " (" +  r.y + ")\n";
 				s += "  Width: " + IJ.d2s(r.width*cal.pixelWidth) + " (" +  r.width + ")\n";
 				s += "  Height: " + IJ.d2s(r.height*cal.pixelHeight) + " (" +  r.height + ")\n";
 			} else {
 				s += "  X: " + r.x + "\n";
-				s += "  Y: " + yy(r.y) + "\n";
+				s += "  Y: " + yy(r.y,imp) + "\n";
 				s += "  Width: " + r.width + "\n";
 				s += "  Height: " + r.height + "\n";
 	    	}
@@ -203,7 +216,7 @@ public class Info implements PlugInFilter {
 	}
 	
 	// returns a Y coordinate based on the "Invert Y Coodinates" flag
-	int yy(int y) {
+	int yy(int y, ImagePlus imp) {
 		return Analyzer.updateY(y, imp.getHeight());
 	}
 

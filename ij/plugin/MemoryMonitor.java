@@ -6,8 +6,14 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 
-/** Continuously plots ImageJ's memory utilization. Could be a
-	starting point for a video acquisition plugin. */
+/**	This plugin continuously plots ImageJ's memory
+	utilization. It could also be used as a starting
+	point for a video acquisition plugin. Hold down the
+	alt/option key when selecting the <code>Monitor Memory</code>
+	command and the plugin will use a 640x480 window
+	and display the frame rate. Click on the status bar in the
+	ImageJ window to force the JVM to do garbage collection.
+*/
 public class MemoryMonitor implements PlugIn {
 	int width = 200;
 	int height = 75;
@@ -20,21 +26,7 @@ public class MemoryMonitor implements PlugIn {
 	int value;
 	int max = 12*1204*1024; // 12MB
 
-	void showAbout() {
-		IJ.showMessage("About MemoryMonitor...",
-			"This plugin continuously plots ImageJ's memory\n" +
-			"utilization. It could also be used as a starting\n" +
-			"point for a video acquisition plugin. Hold down the\n" +
-			"alt/option key when selecting the \"Monitor Memory\"\n" +
-			"command and the plugin will use a 640x480 window\n" +
-			"and display the frame rate. Click on the status bar in the\n" +
-			"ImageJ window to force the JVM to do garbage collection."
-		);
-	}
-
 	public void run(String arg) {
-		if (arg.equals("about"))
-			{showAbout(); return;}
 		if (IJ.altKeyDown()) {
 			// simulate frame grabber
 			width = 640;
@@ -45,6 +37,7 @@ public class MemoryMonitor implements PlugIn {
 		ip.fill();
 	 	ip.setColor(Color.black);
 		ip.setFont(new Font("SansSerif",Font.PLAIN,12));
+		ip.setAntialiasedText(true);
 		ip.snapshot();
 		ImagePlus imp = new ImagePlus("Memory", ip);
 		ImageWindow.centerNextImage();
@@ -70,7 +63,8 @@ public class MemoryMonitor implements PlugIn {
 	}
 	
     void showValue() {
-    	String s = (value/1024)+"K";
+    	double value2 = value/(1024.0*1024.0);
+    	String s = IJ.d2s(value2,value2>50?0:2)+"MB";
     	if (width==640) {
 			elapsedTime = System.currentTimeMillis()-startTime;
 			if (elapsedTime>0) {

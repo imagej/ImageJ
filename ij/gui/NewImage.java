@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.awt.event.*;
+import java.util.*;
 import ij.*;
 import ij.process.*;
 import ij.plugin.frame.Editor;
@@ -14,14 +15,22 @@ public class NewImage {
 	public static final int GRAY8=0, GRAY16=1, GRAY32=2, RGB=3;
 	public static final int FILL_WHITE=0, FILL_BLACK=1, FILL_RAMP=2;
 	
-    private static String name = "Untitled";
-    private static int width = 400;
-    private static int height = 400;
-    private static int slices = 1;
-    private static int type = GRAY8;
-    private static int fillWith = FILL_WHITE;
+    static final String NAME = "new.name";
+    static final String TYPE = "new.type";
+    static final String FILL = "new.fill";
+	static final String WIDTH = "new.width";
+	static final String HEIGHT = "new.height";
+	static final String SLICES = "new.slices";
+
+    private static String name = Prefs.getString(NAME, "Untitled");
+    private static int width = Prefs.getInt(WIDTH, 400);
+    private static int height = Prefs.getInt(HEIGHT, 400);
+    private static int slices = Prefs.getInt(SLICES, 1);
+    private static int type = Prefs.getInt(TYPE, GRAY8);
+    private static int fillWith = Prefs.getInt(FILL, FILL_WHITE);
     private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
     private static String[] fill = {"White", "Black", "Ramp", "Clipboard"};
+    
 	
     public NewImage() {
     	openImage();
@@ -212,6 +221,10 @@ public class NewImage {
 		}
 
 	boolean showDialog() {
+		if (type<GRAY8|| type>RGB)
+			type = GRAY8;
+		if (fillWith<FILL_WHITE||fillWith>FILL_RAMP)
+			fillWith = FILL_WHITE;
 		GenericDialog gd = new GenericDialog("New...", IJ.getInstance());
 		gd.addStringField("Name:", name, 12);
 		gd.addChoice("Type:", types, types[type]);
@@ -248,4 +261,14 @@ public class NewImage {
 		catch(OutOfMemoryError e) {IJ.outOfMemory("New...");}
 	}
 	
+	/** Called when ImageJ quits. */
+	public static void savePreferences(Properties prefs) {
+		prefs.put(NAME, name);
+		prefs.put(TYPE, Integer.toString(type));
+		prefs.put(FILL, Integer.toString(fillWith));
+		prefs.put(WIDTH, Integer.toString(width));
+		prefs.put(HEIGHT, Integer.toString(height));
+		prefs.put(SLICES, Integer.toString(slices));
+	}
+
 }

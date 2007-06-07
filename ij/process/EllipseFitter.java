@@ -64,7 +64,7 @@ public class Ellipse_Fitter implements PlugInFilter {
 
 
 /** This class fits an ellipse to an ROI. */
-class EllipseFitter {
+public class EllipseFitter {
 
 	static final double HALFPI = 1.5707963267949;
 	
@@ -86,6 +86,14 @@ class EllipseFitter {
 	/** Angle in radians */
 	public double theta;
 	
+	/** Initialized by makeRoi() */
+	public int[] xCoordinates;
+	/** Initialized by makeRoi() */
+	public int[] yCoordinates;
+	/** Initialized by makeRoi() */
+	public int nCoordinates = 0;
+
+	
 	private int bitCount;
 	private double  xsum, ysum, x2sum, y2sum, xysum;
 	private int[] mask;
@@ -95,6 +103,7 @@ class EllipseFitter {
 	private double   u20, u02, u11;  //central moments
 	private ImageProcessor ip;
 	private double pw, ph;
+	private boolean record;
 
 	/** Fits an ellipse to the current ROI. The fit parameters are returned in public fields. */
 	public void fit(ImageProcessor ip, ImageStatistics stats) {
@@ -293,21 +302,44 @@ class EllipseFitter {
 			txmin[y] = (int)Math.round(j1 - j2);
 			txmax[y] = (int)Math.round(j1 + j2);
 		}
-		xsave = txmin[ymax - 1];  //i.e. abs(ymin+1) 
+		if (record) {
+			xCoordinates[nCoordinates] = xc + txmin[ymax - 1];
+			yCoordinates[nCoordinates] = yc + ymin;
+			nCoordinates++;
+		} else
+			ip.moveTo(xc + txmin[ymax - 1], yc + ymin);
 		for (int y=ymin; y<ymax; y++) {
 			x = y<0?txmax[-y]:-txmin[y];
-			ip.moveTo(xc + xsave, yc + y);
-			ip.lineTo(xc + x, yc + y);
-			xsave = x;
+			if (record) {
+				xCoordinates[nCoordinates] = xc + x;
+				yCoordinates[nCoordinates] = yc + y;
+				nCoordinates++;
+			} else
+				ip.lineTo(xc + x, yc + y);
 		}
 		for (int y=ymax; y>ymin; y--) {
 			x = y<0?txmin[-y]:-txmax[y];
-			ip.moveTo(xc + xsave, yc + y);
-			ip.lineTo(xc + x, yc + y);
-			xsave = x;
+			if (record) {
+				xCoordinates[nCoordinates] = xc + x;
+				yCoordinates[nCoordinates] = yc + y;
+				nCoordinates++;
+			} else
+				ip.lineTo(xc + x, yc + y);
 		}
 	}
-
+	
+	/** Generates the xCoordinates, yCoordinates public arrays 
+		that can be used to create an ROI. */
+	public void makeRoi(ImageProcessor ip) {
+		record = true;
+		int size = ip.getHeight()*3;
+		xCoordinates = new int[size];
+		yCoordinates = new int[size];
+		nCoordinates = 0;
+		drawEllipse(ip);
+		record = false;
+	}
+	
 	private double sqr(double x) {
 		return x*x;
 	}
