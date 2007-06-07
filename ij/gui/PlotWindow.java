@@ -9,6 +9,7 @@ import java.util.*;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
+import ij.text.TextWindow;
 
 
 /** This class is an extended ImageWindow that displays line graphs. */
@@ -306,29 +307,32 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	void showList() {
+		StringBuffer sb = new StringBuffer();
+		String headings;
 		if (errorBars !=null) {
 			if (saveXValues)
-				IJ.setColumnHeadings("X\tY\tErrorBar");
+				headings = "X\tY\tErrorBar";
 			else
-				IJ.setColumnHeadings("Y\tErrorBar");
+				headings = "Y\tErrorBar";
 			for (int i=0; i<nPoints; i++) {
 				if (saveXValues)
-					IJ.write(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\t"+d2s(errorBars[i]));
+					sb.append(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\t"+d2s(errorBars[i])+"\n");
 				else
-					IJ.write(d2s(yValues[i])+"\t"+d2s(errorBars[i]));
+					sb.append(d2s(yValues[i])+"\t"+d2s(errorBars[i])+"\n");
 			}
 		} else {
 			if (saveXValues)
-				IJ.setColumnHeadings("X\tY");
+				headings = "X\tY";
 			else
-				IJ.setColumnHeadings("Y");
+				headings = "Y";
 			for (int i=0; i<nPoints; i++) {
 				if (saveXValues)
-					IJ.write(d2s(xValues[i])+"\t"+d2s(yValues[i]));
+					sb.append(d2s(xValues[i])+"\t"+d2s(yValues[i])+"\n");
 				else
-					IJ.write(d2s(yValues[i]));
+					sb.append(d2s(yValues[i])+"\n");
 			}
 		}
+		TextWindow tw = new TextWindow("Plot Values", headings, sb.toString(), 200, 400);
 		if (autoClose)
 			{imp.changes=false; close();}
 	}

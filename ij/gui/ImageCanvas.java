@@ -82,6 +82,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imp.updateImage();
 			}
 			Image img = imp.getImage();
+
 			if (img!=null)
 				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
@@ -169,12 +170,16 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void setMagnification(double magnification) {
 		this.magnification = magnification;
 		ImageWindow win = imp.getWindow();
-		if (magnification>1.0)
-			win.setTitle(imp.getTitle() + " (" + (int)magnification + ":1)");
-		else if (magnification<1.0)
-			win.setTitle(imp.getTitle() + " (1:" + (int)(1/magnification) + ")");
-		else
-			win.setTitle(imp.getTitle());
+		String scale = "";
+		if (magnification!=1.0) {
+			double percent = magnification*100.0;
+			
+			if (percent==(int)percent)
+				scale = " (" + IJ.d2s(percent,0) + "%)";
+			else
+				scale = " (" + IJ.d2s(percent,1) + "%)";
+		}
+		win.setTitle(imp.getTitle()+scale);
 	}
 		
 	public Rectangle getSrcRect() {
@@ -200,18 +205,45 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
+	private static final double[] zoomLevels = {
+		1/32.0, 1/24.0, 1/16.0, 1/12.0, 1/8.0,
+		1/6.0, 1/4.0, 1/3.0, 1/2.0, 0.75, 1.0,
+		2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0, 24.0, 32.0 };
+	
+	static double getLowerZoomLevel(double currentMag) {
+		double newMag = zoomLevels[0];
+		for (int i = 0; i < zoomLevels.length; i++) {
+		if (zoomLevels[i] < currentMag)
+			newMag = zoomLevels[i];
+		else
+			break;
+		}
+		return newMag;
+	}
+
+	static double getHigherZoomLevel(double currentMag) {
+		double newMag = 32.0;
+		for (int i = zoomLevels.length - 1; i >= 0; i--) {
+			if (zoomLevels[i] > currentMag)
+				newMag = zoomLevels[i];
+			else
+				break;
+		}
+		return newMag;
+	}
+
 	/** Zooms in by making the window bigger. If we can't
 	make it bigger, then make the srcRect smaller.*/
 	public void zoomIn(int x, int y) {
 		if (magnification>=32)
 			return;
-		double newMag = magnification*2;
-		if (1.0/newMag==imp.getWindow().getOriginalScale()) {
+		double newMag = getHigherZoomLevel(magnification);
+		if (newMag==imp.getWindow().getInitialMagnification()) {
 			unzoom();
 			return;
 		}
-		int newWidth = dstWidth*2;
-		int newHeight = dstHeight*2;
+		int newWidth = (int)(dstWidth*newMag/magnification);
+		int newHeight = (int)(dstHeight*newMag/magnification);
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		ImageWindow win = imp.getWindow();
 		Point loc = win.getLocationOnScreen();
@@ -242,8 +274,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void zoomOut(int x, int y) {
 		if (magnification<=0.03125)
 			return;
-		double newMag = magnification/2;
-		if (newMag==1.0) {
+		double newMag = getLowerZoomLevel(magnification);
+		if (newMag==imp.getWindow().getInitialMagnification()) {
 			unzoom();
 			return;
 		}
@@ -274,14 +306,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	void unzoom() {
-		if (magnification==1.0)
+		double imag = imp.getWindow().getInitialMagnification();
+		if (magnification==imag)
 			return;
-		setMagnification(1.0);
+		setMagnification(imag);
 		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
 		ImageWindow win = imp.getWindow();
-		int scale = win.getOriginalScale();
-		setMagnification(1.0/scale);
-		setDrawingSize(imageWidth/scale, imageHeight/scale);
+		setDrawingSize((int)(imageWidth*imag), (int)(imageHeight*imag));
 		win.pack();
 		repaint();
 	}

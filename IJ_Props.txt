@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.25
+# Version 1.26
 
 # Popup Menu
 popup01=Undo
@@ -89,14 +89,14 @@ rotate05="Arbitrarily...",ij.plugin.filter.Rotator
 
 # Plugins installed in the Image/Benchmarks submenu
 benchmarks01="Run Benchmark",ij.plugin.filter.Benchmark("run")
-benchmarks02="Show Benchmark results...",ij.plugin.filter.Benchmark("show")
-benchmarks03=-
-benchmarks04="Waves",ij.plugin.filter.Waves("run")
-benchmarks05="Show Waves Results...",ij.plugin.filter.Waves("show")
-benchmarks06=-
+benchmarks02="Run Without Screen Updates",ij.plugin.filter.Benchmark("no-updates")
+benchmarks03="Benchmark Results...",ij.plugin.filter.Benchmark("show")
+benchmarks04="JVM Comparison...",ij.plugin.filter.Benchmark("jvm")
+benchmarks05=-
+benchmarks06="Waves",ij.plugin.filter.Waves("run")
 benchmarks07="Particles...",ij.plugin.filter.Benchmark("particles")
 benchmarks08="Macro 1",ij.plugin.filter.Macro1
-benchmarks09="Macro 2",ij.plugin.filter.Macro2
+#benchmarks09="Macro 2",ij.plugin.filter.Macro2
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Fire",ij.plugin.LutLoader("fire")
@@ -107,13 +107,16 @@ lookup05="3-3-2 RGB",ij.plugin.LutLoader("3-3-2 RGB")
 lookup06="Red",ij.plugin.LutLoader("red")
 lookup07="Green",ij.plugin.LutLoader("green")
 lookup08="Blue",ij.plugin.LutLoader("blue")
-lookup09="Red/Green",ij.plugin.LutLoader("redgreen")
-lookup10=-
-lookup11="Invert LUT",ij.plugin.LutLoader("invert")
+lookup09="Cyan",ij.plugin.LutLoader("cyan")
+lookup10="Magenta",ij.plugin.LutLoader("magenta")
+lookup11="Yellow",ij.plugin.LutLoader("yellow")
+lookup12="Red/Green",ij.plugin.LutLoader("redgreen")
+lookup13=-
+lookup14="Invert LUT",ij.plugin.LutLoader("invert")
 
 # Plug-ins installed in the Process/Noise submenu
 noise01="Add Noise",ij.plugin.filter.Filters("add")
-noise02="Add More Noise",ij.plugin.filter.Filters("addmore")
+noise02="Add Specified Noise...",ij.plugin.filter.Filters("noise")
 noise03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
 noise04="Despeckle",ij.plugin.filter.Filters("median")
 
@@ -198,7 +201,7 @@ plug-in07=-
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...[P]",ij.plugin.frame.ControlPanel
-utilities02="Properties...",ij.plugin.JavaProperties
+utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="Commands...",ij.plugin.CommandLister
 utilities04="Shortcuts...",ij.plugin.CommandLister("shortcuts")
 utilities05="Threads...",ij.plugin.ThreadLister

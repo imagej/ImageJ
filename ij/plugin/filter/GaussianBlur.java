@@ -37,8 +37,12 @@ public class GaussianBlur implements PlugInFilter {
 			{canceled=true; IJ.beep(); return;}
 		slice++;
 		if (slice==1) {
-			if (imp.getType()==ImagePlus.GRAY32 && imp.getStackSize()==1)
+			if (imp.getType()==ImagePlus.GRAY32 && imp.getStackSize()==1) {
 				Undo.setup(Undo.COMPOUND_FILTER, imp);
+				blur(ip, radius);
+				Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+				return;
+			}
 		} else
 			IJ.showStatus("Gaussian Blur: "+slice+"/"+imp.getStackSize());
 		blur(ip, radius);

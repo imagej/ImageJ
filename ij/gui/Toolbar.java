@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.*;
 import ij.*;
+import ij.plugin.frame.Recorder;
 
 /** The ImageJ toolbar. */
 public class Toolbar extends Canvas implements MouseListener {
@@ -261,10 +262,9 @@ public class Toolbar extends Canvas implements MouseListener {
 	}
 
 	public void setTool(int tool) {
-		if (tool==current)
+		if (tool==current || tool<0 || tool>DROPPER
+		|| (tool==SPARE1&&spareTip==null))
 			return;
-		if (tool<0 || tool>NUM_TOOLS)
-			throw new IllegalArgumentException();
 		current = tool;
 		down[current] = true;
 		down[previous] = false;
@@ -274,6 +274,8 @@ public class Toolbar extends Canvas implements MouseListener {
 		g.dispose();
 		showMessage(current);
 		previous = current;
+		if (Recorder.record)
+			Recorder.record("setTool", current);
 	}
 	
 	/** Obsolete. Use getForegroundColor(). */
@@ -319,8 +321,6 @@ public class Toolbar extends Canvas implements MouseListener {
 		for (int i=0; i<NUM_TOOLS; i++)
 			if (x>i*SIZE && x<i*SIZE+SIZE)
 				newTool = i;
-		if ((newTool==SPARE1&&spareTip==null) || newTool>DROPPER)
-			return;
 		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=500;
  		mouseDownTime = System.currentTimeMillis();
 		if (!doubleClick) {

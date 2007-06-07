@@ -21,12 +21,12 @@ with this source as long as I get credit for my work and you
 offer your changes to me so I can possibly add them to the
 "official" version.
 
-@author Wayne Rasband <wayne@codon.nih.gov>
+@author Wayne Rasband (wayne@codon.nih.gov)
 */
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.25s";
+	public static final String VERSION = "1.26t";
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
@@ -100,7 +100,8 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.error(err1);
 		if (err2!=null)
 			IJ.error(err2);
-		//requestFocus();
+		if (IJ.isMacintosh())
+			IJ.runPlugIn("QuitHandler", "");
 	}
     
 	void showResults() {
@@ -227,6 +228,7 @@ public class ImageJ extends Frame implements ActionListener,
 			((PlugInFilter)theFilter).run(ip);
 			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
 				ip.reset(mask);  //restore image outside irregular roi
+			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
 		} else {
        		Undo.reset(); // can't undo stack operations
 			int n = stack.getSize();
@@ -239,31 +241,34 @@ public class ImageJ extends Frame implements ActionListener,
 			ip = imp.getProcessor();
 			double minThreshold = ip.getMinThreshold();
 			double maxThreshold = ip.getMaxThreshold();
+			ip = stack.getProcessor(1);
+			ip.setLineWidth(Line.getWidth());
+			boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
+				&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
+			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
+			boolean doGarbageCollection = IJ.isWindows() && !IJ.isJava2();
 			for (int i=1; i<=n; i++) {
-				ip = stack.getProcessor(i);
-				boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
-					&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
-				if (doMasking)
-					ip.snapshot();
+				ip.setPixels(stack.getPixels(i));
 				ip.setRoi(r);
 				ip.setMask(mask);
 				ip.setCalibrationTable(cTable);
-				if (minThreshold!=ImageProcessor.NO_THRESHOLD)
-					ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
+				if (doMasking)
+					ip.snapshot();
 				((PlugInFilter)theFilter).run(ip);
 				if (doMasking)
 					ip.reset(mask);
+				if (doGarbageCollection && (i%10==0))
+					System.gc();
 				IJ.showProgress((double)i/n);
-				System.gc();
-				Thread.yield();
 			}
-			int current = imp.getCurrentSlice();
-			imp.setProcessor(null,stack.getProcessor(current));
+			//int current = imp.getCurrentSlice();
+			//imp.setProcessor(null,stack.getProcessor(current));
 			if (roi!=null)
 				imp.setRoi(roi);
 			IJ.showProgress(1.0);
+			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", n);
 		}
-		IJ.showTime(imp, imp.getStartTime(), cmd + ": ");
 		if ((capabilities&PlugInFilter.NO_CHANGES)==0) {
 			imp.changes = true;
 	 		imp.updateAndDraw();
@@ -301,7 +306,10 @@ public class ImageJ extends Frame implements ActionListener,
  			else if (thePlugIn instanceof PlugInFilter)
 				runFilterPlugIn(thePlugIn, commandName, arg);
 		}
-		catch (ClassNotFoundException e) {IJ.error("Plugin not found: "+className);}
+		catch (ClassNotFoundException e) {
+			if (!className.equals("QuitHandler"))
+				IJ.error("Plugin not found: "+className);
+		}
 		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {IJ.error("Unable to load plugin (acc)");}
 		return thePlugIn;
@@ -451,36 +459,6 @@ public class ImageJ extends Frame implements ActionListener,
 	public void windowDeiconified(WindowEvent e) {}
 	public void windowIconified(WindowEvent e) {}
 	public void windowOpened(WindowEvent e) {}
-
-	/**Copies text from the ImageJ window to the system clipboard. Returns 0 if the system clipboard
-	is not available or no text is selected. Clears the selection if "cut" is true.*/
-	/*
-	public int copyText(boolean cut) {
-		boolean isActiveWindow = getFocusOwner()!=null;
-		if (!isActiveWindow)
-			return 0;
-		else {
-			int count =  textPanel.copySelection();
-			if (cut && count>0) textPanel.clearSelection();
-			textPanel.resetSelection();
-			return count;
-		}
-	}
-	*/
-	
-	/** Clears text from the ImageJ window. Returns
-		false if the ImageJ window is not active. */
-	/*
-	public boolean clearText() {
-		boolean isActiveWindow = getFocusOwner()!=null;
-		if (!isActiveWindow)
-			return false;
-		else {
-			textPanel.clearSelection();
-			return true;
-		}
-	}
-	*/
 	
 	/** Adds the specified class to a Vector to keep it from being
 		garbage collected, causing static fields to be reset. */
@@ -490,7 +468,7 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	/** Called by ImageJ when the user selects Quit. */
-	void quit() {
+	public void quit() {
 		if (applet==null)
 			Prefs.savePreferences();
 		if (!WindowManager.closeAllWindows())
@@ -511,6 +489,9 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
     public static void main(String args[]) {
+    	//if (args!=null)
+    	//	for (int i=0; i<args.length; i++)
+    	//		System.out.println(i+" "+args[i]);
 		new ImageJ(null);
     }
 

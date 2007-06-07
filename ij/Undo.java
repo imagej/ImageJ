@@ -15,6 +15,7 @@ public class Undo {
 	public static final int TYPE_CONVERSION = 2;
 	public static final int PASTE = 3;
 	public static final int COMPOUND_FILTER = 4;
+	public static final int COMPOUND_FILTER_DONE = 5;
 	
 	private static int whatToUndo = NOTHING;
 	private static int imageID;
@@ -22,11 +23,21 @@ public class Undo {
 	
 	
 	public static void setup(int what, ImagePlus imp) {
+		if (imp==null)
+			{reset(); return;}
+		if (what==FILTER && whatToUndo==COMPOUND_FILTER)
+				return;
+		//IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
+		if (what==COMPOUND_FILTER_DONE) {
+			if (whatToUndo==COMPOUND_FILTER)
+				whatToUndo = what;
+			return;
+		}
 		whatToUndo = what;
 		imageID = imp.getID();
 		if (what==TYPE_CONVERSION)
 			ipCopy = imp.getProcessor();
-		if (what==COMPOUND_FILTER) {
+		else if (what==COMPOUND_FILTER) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip!=null)
 				ipCopy = ip.duplicate();
@@ -34,7 +45,6 @@ public class Undo {
 				ipCopy = null;
 		} else
 			ipCopy = null;
-		//IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
 	}
 	
 	
@@ -63,6 +73,7 @@ public class Undo {
 	    		break;
 			case TYPE_CONVERSION:
 			case COMPOUND_FILTER:
+			case COMPOUND_FILTER_DONE:
 				if (ipCopy!=null)
 					imp.setProcessor(null, ipCopy);
 	    		break;

@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.Calibration;
 
 /** This plugin animates stacks. */
 public class Animator implements PlugIn {
@@ -86,6 +87,9 @@ public class Animator implements PlugIn {
 		long time, nextTime=System.currentTimeMillis();
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		int sliceIncrement = 1;
+		Calibration cal = imp.getCalibration();
+		if (cal.frameInterval!=0.0)
+			animationSpeed = 1.0/cal.frameInterval;
 		while (swin.running) {
 			time = System.currentTimeMillis();
 			if (time<nextTime)
@@ -114,6 +118,9 @@ public class Animator implements PlugIn {
 	void doOptions() {
 		boolean start = !swin.running;
 		boolean saveOscillate = oscillate;
+		Calibration cal = imp.getCalibration();
+		if (cal.frameInterval!=0.0)
+			animationSpeed = 1.0/cal.frameInterval;
 		GenericDialog gd = new GenericDialog("Animation Options");
 		gd.addNumericField("Speed (1-100fps):", animationSpeed, 0);
 		gd.addCheckbox("Loop Back and Forth", oscillate);
@@ -127,6 +134,8 @@ public class Animator implements PlugIn {
 		if (speed>100.0) speed = 100.0;
 		if (speed<1.0) speed = 1.0;
 		animationSpeed = speed;
+		if (animationSpeed!=0.0)
+			cal.frameInterval = 1.0/animationSpeed;
 		if (start && !swin.running)
 			startAnimation();
 	}

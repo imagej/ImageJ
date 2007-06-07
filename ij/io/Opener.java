@@ -21,7 +21,7 @@ public class Opener {
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
 		"jpg","gif","lut","bmp","zip","java","roi","txt","png","t&d"};
 	private static String defaultDirectory = null;
-	private int fileType;
+	private static int fileType;
 
 
 	public Opener() {
@@ -36,11 +36,16 @@ public class Opener {
 		OpenDialog od = new OpenDialog("Open...", "");
 		String directory = od.getDirectory();
 		String name = od.getFileName();
-		if (name==null)
-			return;
-		String path = directory + name;
+		if (name!=null)
+			open(directory+name);
+	}
+
+	/** Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
+		roi, or text file. Displays an error message if the specified file
+		is not in one of the supported formats. */
+	public void open(String path) {
 		IJ.showStatus("Opening: " + path);
-		ImagePlus imp = openImage(directory, name);
+		ImagePlus imp = openImage(path);
 		if (imp!=null)
 			imp.show();
 		else {
@@ -57,7 +62,7 @@ public class Opener {
 					File file = new File(path);
 					if (file.length()<28000) {
 						Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
-						if (ed!=null) ed.open(directory, name);
+						if (ed!=null) ed.open(getDir(path), getName(path));
 					} else
 						new TextWindow(path,400,450);
 					break;
@@ -485,8 +490,7 @@ public class Opener {
 			return BMP;
 				
 		// PNG
-		if (b0==137 && b1==80 && b2==78 && b3==71
-      	&& !System.getProperty("java.version").startsWith("1.1"))
+		if (b0==137 && b1==80 && b2==78 && b3==71 && IJ.isJava2())
 			return PNG;
 				
 		// ZIP containing a TIFF

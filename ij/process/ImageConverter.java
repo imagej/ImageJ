@@ -10,7 +10,8 @@ import ij.measure.*;
 public class ImageConverter {
 	private ImagePlus imp;
 	private int type;
-	private static boolean doScaling = Prefs.getBoolean(Prefs.SCALE_CONVERSIONS,true);
+	//private static boolean doScaling = Prefs.getBoolean(Prefs.SCALE_CONVERSIONS,true);
+	private static boolean doScaling = true;
 
 	/** Constructs an ImageConverter based on an ImagePlus object. */
 	public ImageConverter(ImagePlus imp) {

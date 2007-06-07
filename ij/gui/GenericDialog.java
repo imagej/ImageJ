@@ -26,7 +26,9 @@ TextListener, FocusListener, ItemListener, KeyListener {
 	private String macroOptions;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
-    	window as the parent frame or the ImageJ frame if no image windows are open. */
+    	image window as the parent frame or the ImageJ frame if no image windows
+    	are open. Dialog parameters are recorded by ImageJ's command recorder but
+    	this requires that the first word of each label be unique. */
 	public GenericDialog(String title) {
 		this(title, WindowManager.getCurrentImage()!=null?
 			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance());
@@ -51,7 +53,8 @@ TextListener, FocusListener, ItemListener, KeyListener {
 	//	IJ.write(s);
 	//}
 
-	/** Adds a numeric field.
+	/** Adds a numeric field. The first word of the label must be
+		unique or command recording will not work.
 	* @param label			the label
 	* @param defaultValue	value to be initially displayed
 	* @param digits			number of digits to right of decimal point
@@ -479,7 +482,7 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 2;
-		c.insets = new Insets(20, 0, 0, 0);
+		c.insets = new Insets(15, 0, 0, 0);
 		grid.setConstraints(buttons, c);
 		add(buttons);
 		pack();
@@ -528,7 +531,8 @@ TextListener, FocusListener, ItemListener, KeyListener {
 	public void keyTyped(KeyEvent e) {}
 
 	public Insets getInsets() {
-    	return new Insets(40, 20, 20, 20);
+    	Insets i= super.getInsets();
+    	return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
 	}
 
     public void paint(Graphics g) {

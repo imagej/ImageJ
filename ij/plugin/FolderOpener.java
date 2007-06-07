@@ -69,7 +69,7 @@ public class FolderOpener implements PlugIn {
 					if (ip.getMax()>max) max = ip.getMax();
 					stack.addSlice(imp.getTitle(), ip);
 				}
-				System.gc();
+				//System.gc();
 			}
 		} catch(OutOfMemoryError e) {
 			IJ.outOfMemory("FolderOpener");

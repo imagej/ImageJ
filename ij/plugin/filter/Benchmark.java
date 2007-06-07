@@ -9,21 +9,23 @@ public class Benchmark implements PlugInFilter{
 
 	String arg;
 	ImagePlus imp;
-
+	boolean showUpdates;
+	int counter;
+	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 	
 		if (arg.equals("show"))
 			{showBenchmarkResults(); return DONE;}
 
+		if (arg.equals("jvm"))
+			{showJVMComparison(); return DONE;}
+
 		if (arg.equals("particles"))
 			{showParticlesResults(); return DONE;}
 
 		this.arg = arg;
-		if (arg.equals("draw"))
-			return DOES_ALL;
-		else
-			return DOES_ALL-DOES_32+NO_CHANGES;
+		return DOES_ALL+NO_CHANGES;
 	}
 
 	public void run(ImageProcessor ip) {
@@ -49,53 +51,61 @@ public class Benchmark implements PlugInFilter{
 			return;
 		}
 		
+		showUpdates = !arg.equals("no-updates");
+		
 		ip.setInterpolate(false);
 		for (int i=0; i <4; i++) {
 			ip.invert();
-			imp.updateAndDraw();
+			updateScreen(imp);
 		}
 		for (int i=0; i <4; i++) {
 			ip.flipVertical();
-			imp.updateAndDraw();
+			updateScreen(imp);
 		}
-		ip.flipHorizontal(); imp.updateAndDraw();
-		ip.flipHorizontal(); imp.updateAndDraw();
+		ip.flipHorizontal(); updateScreen(imp);
+		ip.flipHorizontal(); updateScreen(imp);
 		for (int i=0; i <6; i++) {
 			ip.smooth();
-			imp.updateAndDraw();
+			updateScreen(imp);
 		}
 		ip.reset();
 		for (int i=0; i <6; i++) {
 			ip.sharpen();
-			imp.updateAndDraw();
+			updateScreen(imp);
 		}
 		ip.reset();
-		ip.smooth(); imp.updateAndDraw();
-		ip.findEdges(); imp.updateAndDraw();
-		ip.invert(); imp.updateAndDraw();
-		ip.autoThreshold(); imp.updateAndDraw();
+		ip.smooth(); updateScreen(imp);
+		ip.findEdges(); updateScreen(imp);
+		ip.invert(); updateScreen(imp);
+		ip.autoThreshold(); updateScreen(imp);
 		ip.reset();
-		ip.medianFilter(); imp.updateAndDraw();
+		ip.medianFilter(); updateScreen(imp);
 		for (int i=0; i <360; i +=15) {
 			ip.reset();
 			ip.rotate(i);
-			imp.updateAndDraw();
+			updateScreen(imp);
 		}
 		double scale = 1.5;
 		for (int i=0; i <8; i++) {
 			ip.reset();
 			ip.scale(scale, scale);
-			imp.updateAndDraw();
+			updateScreen(imp);
 			scale = scale*1.5;
 		}
 		for (int i=0; i <12; i++) {
 			ip.reset();
 			scale = scale/1.5;
 			ip.scale(scale, scale);
-			imp.updateAndDraw();
+			updateScreen(imp);
 		}
 		ip.reset();
-		imp.updateAndDraw();
+		updateScreen(imp);
+	}
+	
+	void updateScreen(ImagePlus imp) {
+		if (showUpdates)
+			imp.updateAndDraw();
+		IJ.showStatus((counter++) + "/"+72);
 	}
 
 	void showBenchmarkResults() {
@@ -104,23 +114,55 @@ public class Benchmark implements PlugInFilter{
 		tw.append("Time in seconds needed to perform 62 image processing");
 		tw.append("operations on the 512x512 \"Mandrill\" image");
 		tw.append("---------------------------------------------------------");
+		tw.append(" 2.7   Xeon/1.7 (2X), WinXP  IE 6.0");
 		tw.append(" 3.3   Pentium 4/1.4, Win2K  IE 5.0");
 		tw.append(" 5.3   Pentium 3/750, Win98  IE 5.0");
 		tw.append(" 5.6   Pentium 4/1.4, Win2K  JDK 1.3");
 		tw.append(" 6.0   Pentium 3/750, Win98  Netscape 4.7");
 		tw.append(" 8.6   PPC G4/400, MacOS     MRJ 2.2");
-		tw.append(" 9.1   Pentium 2/400, Win95  JRE 1.1.8");
-		tw.append(" 9.2   Pentium 2/400, Win95  IE 4.0");
 		tw.append(" 9.8   Pentium 2/400, Linux  IBM JDK 1.1.8");
-		tw.append("  11   Pentium 2/400, Win95  JDK 1.2 (24% slower)");
-		tw.append("  11   Pentium 2/400, Win95  Netscape 4.5");
+		tw.append("  11   Pentium 2/400, Win95  JRE 1.1.8");
+		tw.append("  12   Pentium 2/400, Win95  IE 5.5");
+		tw.append("  12   Pentium 2/400, Win95  JDK 1.3");
+		tw.append("  13   Pentium 2/400, Win95  Netscape 4.5");
 		tw.append("  14   PPC G3/300, MacOS     MRJ 2.1");
-		tw.append("  21   Pentium 2/400, Win95  JDK 1.3 (>2 times slower!!)");
 		tw.append("  38   PPC 604/132, MacOS    MRJ 2.1ea2");
 		tw.append("  61   PPC 604/132, MacOS    MRJ 2.0");
 		tw.append("  89   Pentium/100, Win95    JRE 1.1.6");
 		tw.append("  96   Pentium/400, Linux    Sun JDK 1.2.2 (17 with JIT)");
 		tw.append("");
+	}
+	
+	void showJVMComparison() {
+		TextWindow tw = new TextWindow("JVM Comparison", "", 500, 550);
+		tw.setFont(new Font("Monospaced", Font.PLAIN, 12));
+	
+		tw.append("   JVM           Benchmark  No Updates  Waves(fps) Particles");
+		tw.append("");
+		tw.append("PC (JRE 1.1.8)     11.5        8.7         16         44");
+		tw.append("PC (MS Java)       12.3        9.6         19         38");
+		tw.append("PC (JDK 1.3)       13.2       11.8         20         34");
+		tw.append("PC (JDK 1.4b2)     14.2       10.0         13         37");
+		tw.append("Mac OS 8/9)         8.7        6.4         19         35");
+		tw.append("Mac OS X           24.7!      12.1         13         41");
+		tw.append("Linux (IBM 1.1.8)  10.8        8.8         15         46");
+		tw.append("Linux (Sun 1.3.1)  13.2       11.5         17         13!");
+		tw.append("");
+		tw.append("'Benchmark' is the time needed to perform 72 image processing");
+		tw.append("operations on a 512x512 RGB image with the screen updated");
+		tw.append("after each operation. Lower is better.");
+		tw.append("");
+		tw.append("'No Updates' is the time needed to perform 72 image processing");
+		tw.append("operations with no screen updates. Lower is better.");
+		tw.append("");
+		tw.append("'Waves' is the animation rate in frames per second using");
+		tw.append("a 512x512 RGB image. Higher is better.");
+		tw.append("");
+		tw.append("'Particles' is the time needed to measure the location and");
+		tw.append("size of 5097 particles in a 2000x1000 binary image. Lower");
+		tw.append("is better.");
+		tw.append("");
+		tw.append("Test were run on 400Mhz machines. The Linux machine has 2 CPUs.");
 	}
 	
 	void showParticlesResults() {

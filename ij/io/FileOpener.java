@@ -196,6 +196,14 @@ public class FileOpener {
 			cal.frameInterval = fi.frameInterval;
 		}
 		
+		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+			if (cal==null) cal = new Calibration(imp);
+			double[] coeff = new double[2];
+			coeff[0] = -32768.0;
+			coeff[1] = 1.0;
+			cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+		}
+		
 		if (cal!=null)
 			imp.setCalibration(cal);
 	}

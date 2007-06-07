@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.awt.List;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -15,7 +16,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	Panel panel;
 	static Frame instance;
-	List list;
+	java.awt.List list;
 	Hashtable rois = new Hashtable();
 
 	public RoiManager() {
@@ -234,6 +235,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int[] index = list.getSelectedIndexes();
 		if (index.length==0)
 			return error("At least one ROI must be selected from the list.");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Undo.setup(Undo.COMPOUND_FILTER, imp);
 		for (int i=0; i<index.length; i++) {
 			if (restore(index[i])) {
 				IJ.run("Fill");
@@ -241,6 +244,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			} else
 				break;
 		}
+		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		return true;
 	}	
 	
@@ -248,6 +252,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int[] index = list.getSelectedIndexes();
 		if (index.length==0)
 			return error("At least one ROI must be selected from the list.");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Undo.setup(Undo.COMPOUND_FILTER, imp);
 		for (int i=0; i<index.length; i++) {
 			if (restore(index[i])) {
 				IJ.run("Draw");
@@ -255,6 +261,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			} else
 				break;
 		}
+		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		return true;
 	}
 		

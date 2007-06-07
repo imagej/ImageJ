@@ -38,11 +38,17 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		else if (arg.equals("3-3-2 RGB"))
 			nColors = rgb332(fi.reds, fi.greens, fi.blues);
 		else if (arg.equals("red"))
-			nColors = oneColor(0, fi.reds, fi.greens, fi.blues);
+			nColors = primaryColor(4, fi.reds, fi.greens, fi.blues);
 		else if (arg.equals("green"))
-			nColors = oneColor(1, fi.reds, fi.greens, fi.blues);
+			nColors = primaryColor(2, fi.reds, fi.greens, fi.blues);
 		else if (arg.equals("blue"))
-			nColors = oneColor(2, fi.reds, fi.greens, fi.blues);
+			nColors = primaryColor(1, fi.reds, fi.greens, fi.blues);
+		else if (arg.equals("cyan"))
+			nColors = primaryColor(3, fi.reds, fi.greens, fi.blues);
+		else if (arg.equals("magenta"))
+			nColors = primaryColor(5, fi.reds, fi.greens, fi.blues);
+		else if (arg.equals("yellow"))
+			nColors = primaryColor(6, fi.reds, fi.greens, fi.blues);
 		else if (arg.equals("redgreen"))
 			nColors = redGreen(fi.reds, fi.greens, fi.blues);
 		if (nColors>0) {
@@ -123,13 +129,13 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		return 256;
 	}
 	
-	int oneColor(int color, byte[] reds, byte[] greens, byte[] blues) {
+	int primaryColor(int color, byte[] reds, byte[] greens, byte[] blues) {
 		for (int i=0; i<256; i++) {
-			if (color==0)
+			if ((color&4)!=0)
 				reds[i] = (byte)i;
-			else if (color==1)
+			if ((color&2)!=0)
 				greens[i] = (byte)i;
-			else
+			if ((color&1)!=0)
 				blues[i] = (byte)i;
 		}
 		return 256;

@@ -474,10 +474,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			found = histogram[i] > threshold;
 		} while (!found && i>0);
 		int hmax = i;
-		if (hmax>hmin) {
+		if (hmax>=hmin) {
 			imp.killRoi();
 			min = stats.histMin+hmin*stats.binSize;
 			max = stats.histMin+hmax*stats.binSize;
+			if (min==max)
+				{min=stats.min; max=stats.max;}
 			ip.setMinAndMax(min, max);
 		} else {
 			reset(imp, ip);

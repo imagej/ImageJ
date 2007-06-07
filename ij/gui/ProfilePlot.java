@@ -47,9 +47,10 @@ public class ProfilePlot {
 		yLabel = cal.getValueUnit();
 		ImageProcessor ip = imp.getProcessor();
 		ip.setCalibrationTable(cal.getCTable());
-		if (roiType==Roi.LINE)
+		if (roiType==Roi.LINE) {
+			ip.setInterpolate(true);
 			profile = ((Line)roi).getPixels();
-		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
+		} else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
 			profile = getIrregularProfile(roi, ip);
 		else if (averageHorizontally)
 			profile = getRowAverageProfile(roi.getBoundingRect(), cal, ip);
@@ -151,6 +152,7 @@ public class ProfilePlot {
 		double[] profile = new double[rect.height];
 		double[] aLine;
 		
+		ip.setInterpolate(false);
 		for (int x=rect.x; x<rect.x+rect.width; x++) {
 			aLine = ip.getLine(x, rect.y, x, rect.y+rect.height-1);
 			for (int i=0; i<rect.height; i++)
@@ -167,6 +169,7 @@ public class ProfilePlot {
 		double[] profile = new double[rect.width];
 		double[] aLine;
 		
+		ip.setInterpolate(false);
 		for (int y=rect.y; y<rect.y+rect.height; y++) {
 			aLine = ip.getLine(rect.x, y, rect.x+rect.width-1, y);
 			for (int i=0; i<rect.width; i++)
@@ -184,30 +187,75 @@ public class ProfilePlot {
 		Rectangle r = roi.getBoundingRect();
 		int xbase = r.x;
 		int ybase = r.y;
-		int index = 0;
 		double length = 0.0;
 		double segmentLength;
 		int xdelta, ydelta, iLength;
 		double[] segmentLengths = new double[n];
+		int[] dx = new int[n];
+		int[] dy = new int[n];
 		for (int i=0; i<(n-1); i++) {
 			xdelta = x[i+1] - x[i];
 			ydelta = y[i+1] - y[i];
 			segmentLength = Math.sqrt(xdelta*xdelta+ydelta*ydelta);
 			length += segmentLength;
 			segmentLengths[i] = segmentLength;
+			dx[i] = xdelta;
+			dy[i] = ydelta;
 		}
-		double[] values = new double[(int)length+1];
-		double[] segmentValues;
-		length = 0.0;
-		for (int i=0; i<(n-1); i++) {
-			segmentValues = ip.getLine(x[i]+xbase, y[i]+ybase, x[i+1]+xbase, y[i+1]+ybase);
-			for (int j=0; j<segmentValues.length; j++)
-				values[index+j] = segmentValues[j];
-			length += segmentLengths[i];
-			index = (int)length;
+		double[] values = new double[(int)length];
+		double leftOver = 1.0;
+		double distance = 0.0;
+		int index;
+		double oldx=xbase, oldy=ybase;
+		for (int i=0; i<n; i++) {
+			double len = segmentLengths[i];
+			if (len==0.0)
+				continue;
+			double xinc = dx[i]/len;
+			double yinc = dy[i]/len;
+			double start = 1.0-leftOver;
+			double rx = xbase+x[i]+start*xinc;
+			double ry = ybase+y[i]+start*yinc;
+			double len2 = len - start;
+			int n2 = (int)len2;
+			//double d=0;;
+			//IJ.write("new segment: "+IJ.d2s(xinc)+" "+IJ.d2s(yinc)+" "+IJ.d2s(len)+" "+IJ.d2s(len2)+" "+IJ.d2s(n2)+" "+IJ.d2s(leftOver));
+			for (int j=0; j<=n2; j++) {
+				index = (int)distance+j;
+				if (index<values.length)
+					values[index] = ip.getInterpolatedValue(rx, ry);
+				//d = Math.sqrt((rx-oldx)*(rx-oldx)+(ry-oldy)*(ry-oldy));
+				//IJ.write(IJ.d2s(rx)+"    "+IJ.d2s(ry)+"    "+IJ.d2s(d));
+				//oldx = rx; oldy = ry;
+				rx += xinc;
+				ry += yinc;
+			}
+			distance += len;
+			leftOver = len2 - n2;
 		}
+
 		return values;
+
 	}
+
+	private double[] getLineSegment(ImageProcessor ip, double x1, double y1, double x2, double y2) {
+		double dx = x2-x1;
+		double dy = y2-y1;
+		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
+		double xinc = dx/n;
+		double yinc = dy/n;
+		n++;
+		double[] data = new double[n];
+		double rx = x1;
+		double ry = y1;
+		for (int i=0; i<n; i++) {
+			data[i] = ip.getInterpolatedValue(rx, ry);
+			rx += xinc;
+			ry += yinc;
+		}
+		return data;
+	}
+	
 
 	void findMinAndMax() {
 		if (profile==null) return;

@@ -63,7 +63,7 @@ public class JavaProperties implements PlugIn {
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		tw.append("  screen size: " + d.width + "x" + d.height);
 		String mem = IJ.freeMemory();
-		tw.append("  memory"+mem.substring(6,mem.length()));
+		tw.append("  memory in use"+mem.substring(6,mem.length()));
 	}
 	
 	void show(String property) {

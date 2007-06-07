@@ -82,6 +82,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		return new String(sb);
 	}
 
+	public static void record(String method, int a1) {
+		if (textArea==null)
+			return;
+		textArea.append(method+"("+a1+");\n");
+	}
+
 	public static void record(String method, int a1, int a2) {
 		if (textArea==null)
 			return;

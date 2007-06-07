@@ -25,7 +25,7 @@ public class Prefs {
 	public static final String ROICOLOR = "roicolor";
 	public static final String JPEG = "jpeg";
 	public static final String USE_POINTER = "pcursor";
-	public static final String SCALE_CONVERSIONS = "scale";
+	//public static final String SCALE_CONVERSIONS = "scale";
 	
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
@@ -170,7 +170,7 @@ public class Prefs {
 			prefs.put(BCOLOR, Tools.c2hex(Toolbar.getBackgroundColor()));
 			prefs.put(JPEG, Integer.toString(JpegEncoder.getQuality()));
 			prefs.put(USE_POINTER, ImageCanvas.usePointer?"true":"false");
-			prefs.put(SCALE_CONVERSIONS, ImageConverter.getDoScaling()?"true":"false");
+			//prefs.put(SCALE_CONVERSIONS, ImageConverter.getDoScaling()?"true":"false");
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);

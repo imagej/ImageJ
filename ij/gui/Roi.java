@@ -346,12 +346,13 @@ public class Roi extends Object implements Cloneable {
 		} else
 			value = "";
 		Calibration cal = imp.getCalibration();
+		String size;
 		if (cal.scaled())
-			IJ.showStatus("Location = (" + IJ.d2s(x*cal.pixelWidth) + "," + IJ.d2s(y*cal.pixelHeight)
-			+ "), width=" + IJ.d2s(width*cal.pixelWidth) + ", height=" + IJ.d2s(height*cal.pixelHeight)+value);
+			size = ", w="+IJ.d2s(width*cal.pixelWidth)+" ("+width+"), h="
+			+IJ.d2s(height*cal.pixelHeight)+" ("+height+")";
 		else
-			IJ.showStatus("Location = ("+x+","+y+"), width="+width+", height="+height+value);
-
+			size = ", width="+width+", height="+height;
+		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 	
 	

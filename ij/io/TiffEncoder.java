@@ -224,7 +224,19 @@ public class TiffEncoder {
 			}
 			sb.append("vunit="+fi.valueUnit+"\n");
 		}
+		if (fi.nImages>1) {
+			if (fi.pixelDepth!=0.0 && fi.pixelDepth!=1.0)
+				sb.append("spacing="+fi.pixelDepth+"\n");
+			if (fi.frameInterval!=0.0) {
+				double fps = 1.0/fi.frameInterval;
+				if ((int)fps==fps)
+					sb.append("fps="+(int)fps+"\n");
+				else
+					sb.append("fps="+fps+"\n");
+			}
+		}
 		sb.append("");
+		//ij.IJ.write(new String(sb));
 		description = new String(sb).getBytes();
 		description[description.length-1] = 0; 
 	}

@@ -38,6 +38,8 @@ public class ColorProcessor extends ImageProcessor {
 	
 	/**Creates a ColorProcessor from a pixel array. */
 	public ColorProcessor(int width, int height, int[] pixels) {
+		if (width*height!=pixels.length)
+			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
 		createColorModel();
@@ -52,8 +54,16 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	public Image createImage() {
-		imageSource = new MemoryImageSource(width, height, cm, pixels, 0, width);
-		Image img = Toolkit.getDefaultToolkit().createImage(imageSource);
+		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
+			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
+			source.setAnimated(true);
+			source.setFullBufferUpdates(true);
+			img = Toolkit.getDefaultToolkit().createImage(source);
+		} else if (newPixels) {
+			source.newPixels(pixels, cm, 0, width);
+			newPixels = false;
+		} else
+			source.newPixels();
 		return img;
 	}
 
@@ -186,15 +196,33 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
+	public int getUncheckedPixel(int x, int y) {
+		return pixels[y*width+x];
+	}
+
+
 	/** Calls getPixelValue(x,y). */
 	public double getInterpolatedPixel(double x, double y) {
-		return getPixelValue((int)(x+0.5), (int)(y+0.5));
+		int ix = (int)(x+0.5);
+		int iy = (int)(y+0.5);
+		if (ix<0) ix = 0;
+		if (ix>=width) ix = width-1;
+		if (iy<0) iy = 0;
+		if (iy>=height) iy = height-1;
+		return getPixelValue(ix, iy);
 	}
 
 	/** Stores the specified value at (x,y). */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = value;
+	}
+
+
+	/** Stores the specified value at (x,y) without
+		varifying that x and y are within range. */
+	public void putUncheckedPixel(int x, int y, int value) {
+		pixels[y*width + x] = value;
 	}
 
 
@@ -235,8 +263,8 @@ public class ColorProcessor extends ImageProcessor {
 
 	public void setPixels(Object pixels) {
 		this.pixels = (int[])pixels;
+		resetPixels(pixels);
 		snapshotPixels = null;
-		imageSource = null;
 	}
 
 
@@ -536,12 +564,12 @@ public class ColorProcessor extends ImageProcessor {
 		double yScale = (double)dstHeight/roiHeight;
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		int[] pixels2 = (int[])ip2.getPixels();
-		double xs, ys=0.0;
+		double xs, ys;
 		int index1, index2;
 		for (int y=0; y<=dstHeight-1; y++) {
+			ys = (y-dstCenterY)/yScale + srcCenterY;
 			index1 = width*(int)ys;
 			index2 = y*dstWidth;
-			ys = (y-dstCenterY)/yScale + srcCenterY;
 			for (int x=0; x<=dstWidth-1; x++) {
 				xs = (x-dstCenterX)/xScale + srcCenterX;
 				if (interpolate)
@@ -562,51 +590,9 @@ public class ColorProcessor extends ImageProcessor {
 	public void rotate(double angle) {
         if (angle%360==0)
         	return;
-		if (interpolate) {
-			rotateInterpolated(angle);
-			return;
-		}
-        int[] pixels2 = (int[])getPixelsCopy();
-		int centerX = roiX + roiWidth/2;
-		int centerY = roiY + roiHeight/2;
-		int width = this.width;  //Local variables are faster than instance variables
-        int height = this.height;
-        int roiX = this.roiX;
-        int xMax = roiX + this.roiWidth - 1;
-        int SCALE = 1024;
-
-        //Convert from degrees to radians and calculate cos and sin of angle
-        //Negate the angle to make sure the rotation is clockwise
-        double angleRadians = -angle/(180.0/Math.PI);
-        int ca = (int)(Math.cos(angleRadians)*SCALE);
-        int sa = (int)(Math.sin(angleRadians)*SCALE);
-        int temp1 = centerY*sa - centerX*ca;
-        int temp2 = -centerX*sa - centerY*ca;
-        
-        for (int y=roiY; y<(roiY + roiHeight); y++) {
-            int index = y*width + roiX;
-            int temp3 = (temp1 - y*sa)/SCALE + centerX;
-            int temp4 = (temp2 + y*ca)/SCALE + centerY;
-            for (int x=roiX; x<=xMax; x++) {
-                //int xs = (int)((x-centerX)*ca-(y-centerY)*sa)+centerX;
-                //int ys = (int)((y-centerY)*ca+(x-centerX)*sa)+centerY;
-                int xs = (x*ca)/SCALE + temp3;
-                int ys = (x*sa)/SCALE + temp4;
-                if ((xs>=0) && (xs<width) && (ys>=0) && (ys<height))
-                	  pixels[index++] = pixels2[width*ys+xs];
-                else
-                	  pixels[index++] = bgColor;
-            }
-		if (y%20==0)
-			showProgress((double)(y-roiY)/roiHeight);
-        }
-		hideProgress();
-	}
-
-	private void rotateInterpolated(double angle) {
 		int[] pixels2 = (int[])getPixelsCopy();
-		double centerX = roiX + roiWidth/2.0;
-		double centerY = roiY + roiHeight/2.0;
+		double centerX = roiX + (roiWidth-1)/2.0;
+		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
 		
 		double angleRadians = -angle/(180.0/Math.PI);
@@ -615,7 +601,8 @@ public class ColorProcessor extends ImageProcessor {
 		double tmp1 = centerY*sa-centerX*ca;
 		double tmp2 = -centerX*sa-centerY*ca;
 		double tmp3, tmp4, xs, ys;
-		int index, xsi, ysi;
+		int index, ixs, iys;
+		double dwidth = width, dheight=height;
 		
 		for (int y=roiY; y<(roiY + roiHeight); y++) {
 			index = y*width + roiX;
@@ -624,17 +611,40 @@ public class ColorProcessor extends ImageProcessor {
 			for (int x=roiX; x<=xMax; x++) {
 				xs = x*ca + tmp3;
 				ys = x*sa + tmp4;
-				if ((xs>=0.0) && (xs<width) && (ys>=0.0) && (ys<height))
-				  	pixels[index++] = getInterpolatedPixel(xs, ys, pixels2);
-				else
+				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
+					if (interpolate)
+				  		pixels[index++] = getInterpolatedPixel(xs, ys, pixels2);
+				  	else {
+				  		ixs = (int)(xs+0.5);
+				  		iys = (int)(ys+0.5);
+				  		if (ixs>=width) ixs = width - 1;
+				  		if (iys>=height) iys = height -1;
+						pixels[index++] = pixels2[width*iys+ixs];
+					}
+				} else
 					pixels[index++] = bgColor;
 			}
-			if (y%20==0)
+			if (y%30==0)
 			showProgress((double)(y-roiY)/roiHeight);
 		}
 		hideProgress();
 	}
 
+	public void flipVertical() {
+		int index1,index2;
+		int tmp;
+		for (int y=0; y<roiHeight/2; y++) {
+			index1 = (roiY+y)*width+roiX;
+			index2 = (roiY+roiHeight-1-y)*width+roiX;
+			for (int i=0; i<roiWidth; i++) {
+				tmp = pixels[index1];
+				pixels[index1++] = pixels[index2];
+				pixels[index2++] = tmp;
+			}
+		}
+		newSnapshot = false;
+	}
+	
 	/** 3x3 convolution contributed by Glynne Casteel. */
 	public void convolve3x3(int[] kernel) {
 		int p1, p2, p3, p4, p5, p6, p7, p8, p9;

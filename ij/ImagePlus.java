@@ -221,12 +221,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public void updateAndDraw() {
-		if (ip == null)
-			return;
-		if (win!=null)
-			win.getCanvas().setImageUpdated();
-		draw();
-		Thread.yield();
+		if (ip != null) {
+			if (win!=null)
+				win.getCanvas().setImageUpdated();
+			draw();
+		}
 	}
 	
 	/** Calls draw to draw the image and also repaints the
@@ -256,18 +255,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		has generated new image. Do not call at other times because 
 		flushing the image while it's being painted can hang the JVM. */
 	public void updateImage() {
-		if (ip!=null) {
-			//if (img!=null)
-			//	img.flush();
-			//img = ip.createImage();
-			if (img==null)
-				img = ip.createImage();
-			else {
- 				img.flush();
- 				if (img.getSource()!=ip.getImageSource())
-					img = ip.createImage();
-  			}
-		}
+		if (ip!=null)
+			img = ip.createImage();
 	}
 
 	/** Closes the window, if any, that is displaying this image. */
@@ -349,6 +338,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Replaces the ImageProcessor, if any, with the one specified.
 		Set 'title' to null to leave the image title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
+		if (stack!=null && stack.getSize()<2)
+			stack = null;
+		setProcessor2(title, ip);
+	}
+	
+	void setProcessor2(String title, ImageProcessor ip) {
 		if (title!=null) this.title = title;
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
@@ -356,8 +351,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 			int stackSize = stack.getSize();
 			if (stackSize<currentSlice)
 				currentSlice = 1;
-			if (stackSize<2)
-				stack = null;
 		}
 		img = ip.createImage();
 		boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
@@ -386,7 +379,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				repaintWindow();
 		}
 	}
-	
+
 	/** Replaces the stack, if any, with the one specified.
 		Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack stack) {
@@ -400,7 +393,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     	ImageProcessor ip = stack.getProcessor(currentSlice);
     	boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
     	this.stack = stack;
-    	setProcessor(title, ip);
+    	setProcessor2(title, ip);
 		if (stackSize>1 && win!=null
 		&& (!(win instanceof StackWindow) || resetCurrentSlice || dimensionsChanged))
 			win = new StackWindow(this);   // replaces this window
@@ -927,6 +920,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     		fi.pixelHeight = cal.pixelHeight;
      		fi.pixelDepth = cal.pixelDepth;
    			fi.unit = cal.getUnit();
+   			fi.frameInterval = cal.frameInterval;
     	}
     	if (cal.calibrated()) {
     		fi.calibrationFunction = cal.getFunction();
@@ -1004,15 +998,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip = null;
 		}
 		if (stack!=null) {
-		Object[] arrays = stack.getImageArray();
+			Object[] arrays = stack.getImageArray();
 			if (arrays!=null)
 				for (int i=0; i<arrays.length; i++)
 					arrays[i] = null;
 		}
-		if (img!=null) {
-			img.flush();
-			img = null;
-		}
+		img = null;
 		System.gc();
 	}
 	
@@ -1078,15 +1069,21 @@ public class ImagePlus implements ImageObserver, Measurements {
     	ImagePlus subclasses.
     */
     public void mouseMoved(int x, int y) {
-		Calibration cal = getCalibration();
-		if (cal.scaled())
-			IJ.showStatus("Location = (" + IJ.d2s(cal.getX(x))
-				+ "," + IJ.d2s(cal.getY(y)) + ")" + showValue(x,y,cal));
-		else
-			IJ.showStatus("Location = (" + x + "," + y + ")" + showValue(x,y,cal));
+		IJ.showStatus(getLocationAsString(x,y) + getValueAsString(x,y));
 	}
 	
-    private String showValue(int x, int y, Calibration cal) {
+    /** Converts the current cursor location to a string. */
+    public String getLocationAsString(int x, int y) {
+		Calibration cal = getCalibration();
+		if (cal.scaled())
+			return " x="+IJ.d2s(cal.getX(x))+" ("+x+")"
+			+", y="+IJ.d2s(cal.getY(y))+" ("+y+")";
+		else
+			return " x="+x+", y=" + y;
+    }
+    
+    private String getValueAsString(int x, int y) {
+		Calibration cal = getCalibration();
     	int[] v = getPixel(x, y);
 		switch (getType()) {
 			case GRAY8: case GRAY16:
@@ -1110,5 +1107,3 @@ public class ImagePlus implements ImageObserver, Measurements {
     }
 
 }
-
-

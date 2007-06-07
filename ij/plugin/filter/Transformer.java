@@ -15,7 +15,7 @@ public class Transformer implements PlugInFilter {
 		this.arg = arg;
 		this.imp = imp;
 		if (arg.equals("fliph") || arg.equals("flipv"))
-			return DOES_ALL+NO_UNDO;
+			return IJ.setupDialog(imp, DOES_ALL+NO_UNDO);
 		else
 			return DOES_ALL+NO_UNDO+NO_CHANGES;
 	}
@@ -23,14 +23,12 @@ public class Transformer implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 
 		if (arg.equals("fliph")) {
-			StackProcessor sp = new StackProcessor(imp.getStack(), ip);
-			sp.flipHorizontal();
+			ip.flipHorizontal();
 			return;
 		}
 		
 		if (arg.equals("flipv")) {
-			StackProcessor sp = new StackProcessor(imp.getStack(), ip);
-			sp.flipVertical();
+			ip.flipVertical();
 			return;
 		}
 		

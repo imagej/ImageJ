@@ -10,6 +10,9 @@ public class Filters implements PlugInFilter {
 	
 	private String arg;
 	private ImagePlus imp;
+	private static double sd = 25.0;
+	private int slice;
+	private boolean canceled;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -59,8 +62,22 @@ public class Filters implements PlugInFilter {
 	 		return;
 	 	}
 	 	
-	 	if (arg.equals("addmore")) {
-	 		ip.noise(75.0);
+	 	if (arg.equals("noise")) {
+	 		if (canceled)
+	 			return;
+	 		slice++;
+	 		if (slice==1) {
+				GenericDialog gd = new GenericDialog("Gaussian Noise");
+				gd.addNumericField("Standard Deviation:", sd, 2);
+				gd.showDialog();
+				if (gd.wasCanceled()) {
+					canceled = true;
+					return;
+				}
+				sd = gd.getNextNumber();
+			}
+	 		ip.noise(sd);
+	 		IJ.register(Filters.class);
 	 		return;
 	 	}
 	 	

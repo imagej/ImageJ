@@ -8,57 +8,66 @@ import ij.io.*;
 import ij.process.*;
 
 
-/** This plugin opens a tab-delimeted text file as an image.
-	If 'arg' is empty, it displays a file open dialog and opens
-	and displays the file. If 'arg' is a path, it opens the 
-	specified file and the calling routine can display it using
-	"((ImagePlus)IJ.runPlugIn("ij.plugin.TextReader", path)).show()".
-	*/
-public class TextReader extends ImagePlus implements PlugIn {
-
-	private static String defaultDirectory;
+/** This plugin opens a tab-delimeted text file as an image. */
+public class TextReader implements PlugIn {
 	int words = 0, chars = 0, lines = 0;
+	String directory, name, path;
 	
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("Acquire Text Image...", arg);
-		String directory = od.getDirectory();
-		String name = od.getFileName();
-		if (name==null)
-			return;
-		String path = directory + name;
-		
-		IJ.showStatus("Opening: " + path);
-		ImageProcessor ip;
+		if (showDialog()) {
+			IJ.showStatus("Opening: " + path);
+			ImageProcessor ip = open(path);
+			if (ip!=null)
+				new ImagePlus(name, ip).show();
+		}
+	}
+	
+	boolean showDialog() {
+		OpenDialog od = new OpenDialog("Open Text Image...", null);
+		directory = od.getDirectory();
+		name = od.getFileName();
+		if (name!=null)
+			path = directory + name;
+		return name!=null;
+	}
+	
+	/** Displays a file open dialog and opens the specified
+		text file as a float image. */
+	public ImageProcessor open(){
+		if (showDialog())
+			return open(path);
+		else
+			return null;
+	}
+	
+	/** Opens the specified text file as a float image. */
+	public ImageProcessor open(String path){
+		ImageProcessor ip = null;
 		try {
-			ip = openFile(path);
+			words = chars = lines = 0;
+			Reader r = new BufferedReader(new FileReader(path));
+			countLines(r);
+			r.close();
+			r = new BufferedReader(new FileReader(path));
+			int width = words/lines;
+			float[] pixels = new float[width*lines];
+			ip = new FloatProcessor(width, lines, pixels, null);
+			read(r, width*lines, pixels);
+			ip.resetMinAndMax();
 		}
 		catch (Exception e) {
 			IJ.showMessage("TextReader", e.getMessage());
-			return;
+			ip = null;
 		}
-
-    	setProcessor(name, ip);
-    	if (arg.equals(""))
-    		show();
-	}
-	
-
-	public ImageProcessor openFile(String path) throws IOException {
-		words = chars = lines = 0;
-		Reader r = new BufferedReader(new FileReader(path));
-		countLines(r);
-		r.close();
-		r = new BufferedReader(new FileReader(path));
-		int width = words/lines;
-		//IJ.write("" + lines + " " + words + " " + " "+width);
-		float[] pixels = new float[width*lines];
-		ImageProcessor ip = new FloatProcessor(width, lines, pixels, null);
-		read(r, width*lines, pixels);
-		ip.resetMinAndMax();
 		return ip;
 	}
+	
+	/** Returns the file name. */
+	public String getName() {
+		return name;
+	}
 
-	public void countLines(Reader r) throws IOException {
+	void countLines(Reader r) throws IOException {
 		StreamTokenizer tok = new StreamTokenizer(r);
 		int width=1;
 
@@ -83,7 +92,7 @@ public class TextReader extends ImagePlus implements PlugIn {
 		}
 	}
 
-	public void read(Reader r, int size, float[] pixels) throws IOException {
+	void read(Reader r, int size, float[] pixels) throws IOException {
 		StreamTokenizer tok = new StreamTokenizer(r);
 		tok.resetSyntax();
 		tok.wordChars(33, 255);

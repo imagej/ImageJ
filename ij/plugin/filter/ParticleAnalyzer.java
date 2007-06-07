@@ -6,6 +6,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.text.*;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 
@@ -50,7 +51,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	private static int staticMinSize = 1;
 	private static int staticMaxSize = 999999;
-	private static int staticOptions = Prefs.getInt(OPTIONS,SHOW_SUMMARY+CLEAR_WORKSHEET);
+	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
 	private static int staticBins = Prefs.getInt(BINS,20);
 	
 	private static final int NOTHING=0,OUTLINES=1,FILLED=2,ELLIPSES=3;
@@ -60,6 +61,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected ImagePlus imp;
 	protected ResultsTable rt;
 	protected Analyzer analyzer;
+	protected int slice;
+	protected boolean processStack;
+	protected boolean showResults,showSummary,excludeEdgeParticles,
+		showSizeDistribution,resetCounter,showProgress;
 
 	private int level1, level2;
 	private int minSize;
@@ -71,19 +76,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private String arg;
 	private int fillColor;
 	private boolean thresholdingLUT;
-	private boolean showResults,showSummary,excludeEdgeParticles,
-		showSizeDistribution,resetCounter,showProgress;
 	private ImageProcessor ip2;
 	private int width,height;
-	private int slice;
 	private boolean canceled;
 	private ImageStack outlines;
 	private IndexColorModel customLut;
-	private boolean processStack;
+	private int particleCount;
+	private TextWindow tw;
 	
 	
 	/** Construct a ParticleAnalyzer.
-		@param options	a flag word created by ORing SHOW_RESULTS, SHOW_SUMMARY, etc.
+		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
 		@param measurements	a flag word created by ORing constants defined in the Measurements interface
 		@param rt		a ResultsTable where the measurements will be stored
 		@param minSize	the smallest particle size in pixels
@@ -108,10 +111,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ParticleAnalyzer.class);
+		if (imp==null)
+			{IJ.noImage();return DONE;}
 		if (!showDialog())
 			return DONE;
 		int flags = IJ.setupDialog(imp, DOES_8G+NO_CHANGES+NO_UNDO);
 		processStack = (flags&DOES_STACKS)!=0;
+		imp.startTiming();
 		return flags;
 	}
 
@@ -119,8 +125,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (canceled)
 			return;
 		slice++;
-		if (slice==1)
-			imp.startTiming();
 		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
 		analyze(imp, ip);
@@ -142,7 +146,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		//gd.addCheckbox("Show Outlines", (options&SHOW_OUTLINES)!=0);
 		gd.addCheckbox("Exclude Edge Particles", (options&EXCLUDE_EDGE_PARTICLES)!=0);
 		gd.addCheckbox("Size Distribution", (options&SHOW_SIZE_DISTRIBUTION)!=0);
-		gd.addCheckbox("Clear Worksheet", (options&CLEAR_WORKSHEET)!=0);
+		gd.addCheckbox("Clear Results Table", (options&CLEAR_WORKSHEET)!=0);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -234,6 +238,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			measurements = Analyzer.getMeasurements();
 		if (showChoice==ELLIPSES)
 			measurements |= ELLIPSE;
+		particleCount = 0;
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -258,6 +263,15 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		imp.killRoi();
 		ip.setRoi(null);
 		ip.reset();
+		if (processStack) {
+			String aLine = slice+"\t"+particleCount;
+			if (tw==null) {
+				String title = "Counts of "+imp.getShortTitle();
+				String headings = "Slice\tCount";
+				tw = new TextWindow(title, headings, aLine, 180, 360);
+			} else
+				tw.append(aLine);
+		}
 		if (!canceled)
 			showResults();
 		return true;
@@ -313,6 +327,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				include = false;
 		int[] mask = ip.getMask();
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {
+			particleCount++;
 			saveResults(stats, roi);
 			if (showChoice!=NOTHING)
 				drawParticle(ip2, roi, stats, mask);
@@ -371,18 +386,19 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int count = rt.getCounter();
 		if (count==0)
 			return;
-		//if (!showResults && rt==Analyzer.getResultsTable())
-		//	IJ.write("threshold: "+level1+"-"+level2);
-		//	IJ.write("count: "+IJ.d2s(count,0));
-		//}
-		if (showSizeDistribution && slice==imp.getStackSize()) {
+		if (!showResults && !processStack && rt==Analyzer.getResultsTable()) {
+			IJ.write("threshold: "+level1+"-"+level2);
+			IJ.write("count: "+particleCount);
+		}
+		boolean lastSlice = !processStack||slice==imp.getStackSize();
+		if (showSizeDistribution && lastSlice) {
 			float[] areas = rt.getColumn(ResultsTable.AREA);
 			if (areas!=null) {
 				ImageProcessor ip = new FloatProcessor(count, 1, areas, null);
 				new HistogramWindow("Particle Size Distribution", new ImagePlus("",ip), sizeBins);
 			}
 		}
-		if (outlines!=null && (!processStack||slice==imp.getStackSize()))
+		if (outlines!=null && lastSlice)
 			new ImagePlus("Drawing of "+imp.getShortTitle(), outlines).show();
 	}
 	

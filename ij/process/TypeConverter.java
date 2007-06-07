@@ -87,7 +87,6 @@ public class TypeConverter {
 		int c, r, g, b;
 		int[] pixels32;
 		byte[] pixels8;
-		ColorModel cm;
 		Image img8;
 		
 		//get RGB pixels

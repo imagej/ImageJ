@@ -52,7 +52,7 @@ public class Line extends Roi {
 		g.setColor(ROIColor);
 		x1=x+x1R; y1=y+y1R; x2=x+x2R; y2=y+y2R;
 		g.drawLine(ic.screenX(x1), ic.screenY(y1), ic.screenX(x2), ic.screenY(y2));
-		IJ.showStatus("("+x2 + "," + y2 + "), angle=" + IJ.d2s(getAngle(x1,y1,x2,y2)) + ", length=" + IJ.d2s(getLength()));
+		IJ.showStatus(imp.getLocationAsString(x2,y2)+", angle=" + IJ.d2s(getAngle(x1,y1,x2,y2)) + ", length=" + IJ.d2s(getLength()));
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
 	}

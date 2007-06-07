@@ -26,7 +26,9 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 			IJ.showMessage("ZAxisProfiler", "This command does not work with line selections.");
 			return;
 		}
-		float[] y = getZAxisProfile(roi);
+		double minThreshold = ip.getMinThreshold();
+		double maxThreshold = ip.getMaxThreshold();
+		float[] y = getZAxisProfile(roi, minThreshold, maxThreshold);
 		if (y!=null) {
 			float[] x = new float[y.length];
 			for (int i=0; i<x.length; i++)
@@ -36,7 +38,7 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		}			
 	}
 		
-	float[] getZAxisProfile(Roi roi) {
+	float[] getZAxisProfile(Roi roi, double minThreshold, double maxThreshold) {
 		ImageStack stack = imp.getStack();
 		int size = stack.getSize();
 		float[] values = new float[size];
@@ -53,6 +55,8 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 		}
 		for (int i=1; i<=size; i++) {
 			ImageProcessor ip = stack.getProcessor(i);
+			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
 			ip.setRoi(r);
 			ip.setMask(mask);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, cal);

@@ -53,12 +53,14 @@ public class CommandLister implements PlugIn {
 	}
 	
 	void showList(String title, String headings, Vector v) {
-		TextWindow tw = new TextWindow(title, "", 300, 400);
-		tw.getTextPanel().setColumnHeadings(headings);
 		String[] list = new String[v.size()];
 		v.copyInto((String[])list);
 		StringSorter.sort(list);
-		for (int i=0; i<list.length; i++)
-			tw.append(list[i]);
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<list.length; i++) {
+			sb.append(list[i]);
+			sb.append("\n");
+		}
+		TextWindow tw = new TextWindow(title, headings, sb.toString(), 300, 400);
 	}
 }

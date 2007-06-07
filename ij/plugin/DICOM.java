@@ -72,13 +72,6 @@ public class DICOM extends ImagePlus implements PlugIn {
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
-			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-				Calibration cal = imp.getCalibration();
-				double[] coeff = new double[2];
-				coeff[0] = -32768.0;
-				coeff[1] = 1.0;
-				cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
-			}
 			if (dd.windowWidth>0.0) {
 				ImageProcessor ip = imp.getProcessor();
 				double min = dd.windowCenter-dd.windowWidth/2;
@@ -93,13 +86,35 @@ public class DICOM extends ImagePlus implements PlugIn {
 				setStack(fileName, imp.getStack());
 			else
 				setProcessor(fileName, imp.getProcessor());
-			setCalibration(imp.getCalibration());
+			Calibration cal = imp.getCalibration();
+			if (fi.fileType==FileInfo.GRAY16_SIGNED&&imp.getStackSize()==1)
+				convertToUnsigned(cal);
+			setCalibration(cal);
 			setProperty("Info", dd.getDicomInfo());
 			if (arg.equals("")) show();
 		} else
 			IJ.showMessage("DicomDecoder","Unable to decode DICOM header.");
 		IJ.showStatus("");
 	}
+
+	/** Convert 16-bit signed to unsigned if all pixels>=0. */
+	void convertToUnsigned(Calibration cal) {
+		ImageProcessor ip = getProcessor();
+		short[] pixels = (short[])ip.getPixels();
+		int min = Integer.MAX_VALUE;
+		int value;
+		for (int i=0; i<pixels.length; i++) {
+			value = pixels[i]&0xffff;
+			if (value<min)
+				min = value;
+		}
+		if (min>=32768) {
+			for (int i=0; i<pixels.length; i++)
+				pixels[i] = (short)(pixels[i]-32768);
+			cal.setFunction(Calibration.NONE, null, "Gray Value");
+		}
+	}
+
 }
 
 
@@ -437,7 +452,8 @@ class DicomDecoder {
 				fi.fileType = FileInfo.RGB;
 			else if (planarConfiguration==1)
 				fi.fileType = FileInfo.RGB_PLANAR;
-		}
+		} else if (photoInterpretation.endsWith("1 "))
+				fi.whiteIsZero = true;
 		
 		if (IJ.debugMode) {
 			IJ.write("width: " + fi.width);

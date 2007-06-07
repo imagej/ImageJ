@@ -55,7 +55,6 @@ public class Menus {
 	static int nPlugins;
 	private static Hashtable shortcuts = new Hashtable();
 	private static Vector pluginsPrefs = new Vector();
-	private static Font font; // = new Font("Dialog", Font.PLAIN, 14);
 	static int windowMenuItems2; // non-image windows listed in Window menu + separator
 	static String error;
 	
@@ -64,15 +63,11 @@ public class Menus {
 		applet = appletInstance;
 	}
 
-	Menu createMenu(String name) {
-		Menu m = new Menu(name);
-		if (font!=null) m.setFont(font);
-		return m;
-	}
-	
 	String addMenuBar() {
 		error = null;
-		Menu file = createMenu("File");
+		mbar = new MenuBar();
+		
+		Menu file = new Menu("File");
 		addItem(file, "New...", KeyEvent.VK_N, false);
 		addItem(file, "Open...", KeyEvent.VK_O, false);
 		addSubMenu(file, "Open Samples");
@@ -87,8 +82,9 @@ public class Menus {
 		addPlugInItem(file, "Print...", "ij.plugin.filter.Printer(\"print\")", KeyEvent.VK_P, false);
 		file.addSeparator();
 		addItem(file, "Quit",  0, false);
+		mbar.add(file);
 		
-		Menu edit = createMenu("Edit");
+		Menu edit = new Menu("Edit");
 		addItem(edit, "Undo", KeyEvent.VK_Z, false);
 		edit.addSeparator();
 		addItem(edit, "Cut", KeyEvent.VK_X, false);
@@ -107,9 +103,10 @@ public class Menus {
 		addPlugInItem(edit, "Invert", "ij.plugin.filter.Filters(\"invert\")", KeyEvent.VK_I, true);
 		edit.addSeparator();
 		addSubMenu(edit, "Options");
+		mbar.add(edit);
 		
-		Menu image = createMenu("Image");
-		Menu imageType = createMenu("Type");
+		Menu image = new Menu("Image");
+		Menu imageType = new Menu("Type");
 			gray8Item = addCheckboxItem(imageType, "8-bit", "ij.plugin.Converter(\"8-bit\")");
 			gray16Item = addCheckboxItem(imageType, "16-bit", "ij.plugin.Converter(\"16-bit\")");
 			gray32Item = addCheckboxItem(imageType, "32-bit", "ij.plugin.Converter(\"32-bit\")");
@@ -123,6 +120,7 @@ public class Menus {
 		image.addSeparator();
 		addSubMenu(image, "Adjust");
 		addPlugInItem(image, "Show Info...", "ij.plugin.filter.Info", KeyEvent.VK_I, false);
+		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", 0, false);
 		addSubMenu(image, "Benchmarks");
 		addSubMenu(image, "Stacks");
 		image.addSeparator();
@@ -134,8 +132,9 @@ public class Menus {
 		image.addSeparator();
 		addSubMenu(image, "Lookup Tables");
 		addPlugInItem(image, "Colors...", "ij.plugin.Colors", 0, false);
-
-		Menu process = createMenu("Process");
+		mbar.add(image);
+		
+		Menu process = new Menu("Process");
 		addPlugInItem(process, "Smooth", "ij.plugin.filter.Filters(\"smooth\")", KeyEvent.VK_S, true);
 		addPlugInItem(process, "Sharpen", "ij.plugin.filter.Filters(\"sharpen\")", 0, false);
 		addPlugInItem(process, "Find Edges", "ij.plugin.filter.Filters(\"edge\")", KeyEvent.VK_F, true);
@@ -149,8 +148,9 @@ public class Menus {
 		addPlugInItem(process, "Image Calculator...", "ij.plugin.ImageCalculator", 0, false);
 		addPlugInItem(process, "Subtract Background...", "ij.plugin.filter.BackgroundSubtracter", 0, false);
 		addItem(process, "Repeat Command", KeyEvent.VK_R, true);
+		mbar.add(process);
 		
-		Menu analyze = createMenu("Analyze");
+		Menu analyze = new Menu("Analyze");
 		addPlugInItem(analyze, "Measure", "ij.plugin.filter.Analyzer", KeyEvent.VK_M, false);
 		addPlugInItem(analyze, "Analyze Particles...", "ij.plugin.filter.ParticleAnalyzer", 0, false);
 		addPlugInItem(analyze, "Summarize", "ij.plugin.filter.Analyzer(\"sum\")", 0, false);
@@ -164,33 +164,28 @@ public class Menus {
 		addPlugInItem(analyze, "Show LUT", "ij.plugin.filter.LutViewer", 0, false);
 		addSubMenu(analyze, "Gels");
 		toolsMenu = addSubMenu(analyze, "Tools");
+		mbar.add(analyze);
 
-		window = createMenu("Window");
+		addPluginsMenu();
+		if (applet==null)
+			installPlugins();
+		mbar.add(pluginsMenu);
+		
+		window = new Menu("Window");
 		addItem(window, "ImageJ [enter]", 0, false);
 		addItem(window, "Put Behind [tab]", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);
 		window.addSeparator();
+		mbar.add(window);
 
-		Menu help = createMenu("Help");
+		Menu help = new Menu("Help");
 		aboutMenu = addSubMenu(help, "About Plugins");
 		help.addSeparator();
 		addPlugInItem(help, "ImageJ Web Site...", "ij.plugin.BrowserLauncher", 0, false);
 		addPlugInItem(help, "About ImageJ...", "ij.plugin.SimpleCommands(\"about\")", 0, false);
-		
-		addPluginsMenu();
-		if (applet==null)
-			installPlugins();
-		
-		mbar = new MenuBar();
-		mbar.add(file);
-		mbar.add(edit);
-		mbar.add(image);
-		mbar.add(process);
-		mbar.add(analyze);
-		mbar.add(pluginsMenu);
-		mbar.add(window);
 		mbar.setHelpMenu(help);
+		
 		ij.setMenuBar(mbar);
 		return error;
 	}
@@ -210,7 +205,6 @@ public class Menus {
 				shortcuts.put(new Integer(shortcut),label);
 			}
 		}
-		if (font!=null) item.setFont(font);
 		menu.add(item);
 		item.addActionListener(ij);
 	}
@@ -235,7 +229,7 @@ public class Menus {
 		String value;
 		String key = name.toLowerCase();
 		int index;
- 		Menu submenu=createMenu(name);
+ 		Menu submenu=new Menu(name);
  
 		index = key.indexOf(' ');
 		if (index>0)
@@ -288,7 +282,7 @@ public class Menus {
 	void addPluginsMenu() {
 		String value,label,className;
 		int index;
-		pluginsMenu = createMenu("Plugins");
+		pluginsMenu = new Menu("Plugins");
 		for (int count=1; count<100; count++) {
 			value = Prefs.getString("plug-in" + (count/10)%10 + count%10);
 			if (value==null)
@@ -456,7 +450,7 @@ public class Menus {
 			//className = className.replace('/', '.');
 			if (submenu==null || !submenuName.equals(dir)) {
  				submenuName = dir;
- 				submenu = createMenu(submenuName);
+ 				submenu = new Menu(submenuName);
  				pluginsMenu.add(submenu);
 			}
 			menu = submenu;
@@ -465,7 +459,6 @@ public class Menus {
 		String command = className.replace('_',' ');
 		command.trim();
 		MenuItem item = new MenuItem(command);
-		if (font!=null) item.setFont(font);
 		menu.add(item);
 		item.addActionListener(ij);
 		pluginsTable.put(command, className);

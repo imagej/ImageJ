@@ -11,6 +11,7 @@ public class Filler implements PlugInFilter {
 	Roi roi;
 	ImagePlus imp;
 	int sliceCount;
+	int[] mask;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -21,7 +22,7 @@ public class Filler implements PlugInFilter {
 		IJ.register(Filler.class);
 		int baseCapabilities = DOES_ALL+ROI_REQUIRED;
 	 	if (arg.equals("clear")) {
-	 		if (isTextRoi)
+	 		if (isTextRoi || isLineSelection())
 				return baseCapabilities;
 			else
 				return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
@@ -80,24 +81,9 @@ public class Filler implements PlugInFilter {
 		}
  		sliceCount++;
  		Rectangle r = ip.getRoi();
- 		int[] mask = imp.getMask();
- 		if (mask==null) {
- 			mask = new int[r.width*r.height];
- 			for (int i=0; i<mask.length; i++)
- 				mask[i] = ImageProcessor.BLACK;
- 		}
- 		// duplicate mask (needed because getMask caches masks)
- 		int[] mask2 = new int[mask.length];
- 		for (int i=0; i<mask.length; i++)
- 			mask2[i] = mask[i];
- 		mask = mask2;
-  		// invert mask
- 		for (int i=0; i<mask.length; i++)
- 			if (mask[i]==ImageProcessor.BLACK)
- 				mask[i] = 0xFFFFFFFF;
- 			else
- 				mask[i] = ImageProcessor.BLACK;
- 		ip.setColor(Toolbar.getBackgroundColor());
+ 		if (mask==null)
+ 			makeMask(ip, r);
+  		ip.setColor(Toolbar.getBackgroundColor());
  		int stackSize = imp.getStackSize();
  		if (stackSize>1)
  			ip.snapshot();
@@ -123,4 +109,25 @@ public class Filler implements PlugInFilter {
 		}
 	}
 
+	public void makeMask(ImageProcessor ip, Rectangle r) {
+ 		mask = imp.getMask();
+ 		if (mask==null) {
+ 			mask = new int[r.width*r.height];
+ 			for (int i=0; i<mask.length; i++)
+ 				mask[i] = ImageProcessor.BLACK;
+ 		} else {
+ 			// duplicate mask (needed because getMask caches masks)
+ 			int[] mask2 = new int[mask.length];
+ 			for (int i=0; i<mask.length; i++)
+ 				mask2[i] = mask[i];
+ 			mask = mask2;
+ 		}
+  		// invert mask
+ 		for (int i=0; i<mask.length; i++) {
+ 			if (mask[i]==ImageProcessor.BLACK)
+ 				mask[i] = 0xFFFFFFFF;
+ 			else
+ 				mask[i] = ImageProcessor.BLACK;
+ 		}
+ 	}
 }

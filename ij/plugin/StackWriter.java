@@ -112,7 +112,7 @@ public class StackWriter implements PlugIn {
 				if (!(new FileSaver(tmp).saveAsText(path)))
 					break;
 			}
-			System.gc();
+			//System.gc();
 		}
 		IJ.showStatus("");
 		IJ.showProgress(1.0);

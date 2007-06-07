@@ -146,11 +146,14 @@ public class ResultsTable {
 		return TABLE_FULL;
 	}
 	
-	/**	Returns the value of the given column and row,
-		where 0<=column<MAX_COLUMNS and 0<=row<counter
-		and the column must not be null. */
+	/**	Returns the value of the given column and row, where
+		column must be greater than or equal zero and less than
+		MAX_COLUMNS and row must be greater than or equal zero
+		and less than counter. */
 	public float getValue(int column, int row) {
-		if (column>=MAX_COLUMNS || columns[column]==null || row>=counter)
+		if (columns[column]==null)
+			throw new IllegalArgumentException("Column not defined: "+column);
+		if (column>=MAX_COLUMNS || row>=counter)
 			throw new IllegalArgumentException("Index out of range: "+column+","+row);
 		return columns[column][row];
 	}
@@ -184,6 +187,13 @@ public class ResultsTable {
 			}
 		}
 		return new String(sb);
+	}
+
+	/** Returns the heading of the specified column or null if the column is empty. */
+	public String getColumnHeading(int column) {
+		if ((column<0) || (column>=MAX_COLUMNS))
+			throw new IllegalArgumentException("Index out of range: "+column);
+		return headings[column];
 	}
 
 	/** Returns a tab-delimited string representing the
@@ -240,7 +250,7 @@ public class ResultsTable {
 	}
 	
 	public String toString() {
-		return ("ctr="+counter);
+		return ("ctr="+counter+", hdr="+getColumnHeadings());
 	}
 	
 }

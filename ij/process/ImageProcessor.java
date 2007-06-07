@@ -22,6 +22,7 @@ public abstract class ImageProcessor extends Object {
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12;
 	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4;
 	static final double rWeight = 0.299, gWeight = 0.587, bWeight = 0.114;
+	static final String WRONG_LENGTH = "(width*height) != pixels.length";
 	
 	int fgColor = 0;
 	protected int lineWidth = 1;
@@ -42,12 +43,14 @@ public abstract class ImageProcessor extends Object {
 	protected ColorModel cm;
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
 	protected byte[] rLUT2, gLUT2, bLUT2; // LUT as modified by setMinAndMax and setThreshold
-	protected ImageProducer imageSource;
-	protected boolean interpolate = false;
+	protected boolean interpolate;
 	protected double minThreshold=NO_THRESHOLD, maxThreshold=NO_THRESHOLD;
 	protected int histogramSize = 256;
 	protected float[] cTable;
 	protected boolean lutAnimation;
+	protected MemoryImageSource source;
+	protected Image img;
+	protected boolean newPixels;
 	
 	protected void showProgress(double percentDone) {
 		if (progressBar!=null)
@@ -87,7 +90,7 @@ public abstract class ImageProcessor extends Object {
 		this.cm = cm;
 		baseCM = null;
 		rLUT1 = rLUT2 = null;
-		imageSource = null;
+		newPixels = true;
 		inversionTested = false;
 		minThreshold = NO_THRESHOLD;
 	}
@@ -126,7 +129,7 @@ public abstract class ImageProcessor extends Object {
 			blues2[i] = (byte)(blues[mapSize-i-1]&255);
 		}
 		cm = new IndexColorModel(8, mapSize, reds2, greens2, blues2); 
-		imageSource = null;
+		newPixels = true;
 		baseCM = null;
 		rLUT1 = rLUT2 = null;
 		inversionTested = false;
@@ -207,7 +210,11 @@ public abstract class ImageProcessor extends Object {
 	/** Returns the largest displayed pixel value. */
 	public abstract double getMax();
 
-	/** This image will be displayed by mapping min-max to 0-255. */
+	/** This image will be displayed by mapping pixel values in the
+		range min-max to screen values in the range 0-255. For
+		byte images, this mapping is done by updating the LUT. For
+		short and float images, it's done by generating 8-bit AWT
+		images. For RGB images, it's done by changing the pixel values. */
 	public abstract void setMinAndMax(double min, double max);
 
 	/** For short and float images, recalculates the min and max
@@ -218,6 +225,7 @@ public abstract class ImageProcessor extends Object {
 	/** Sets the lower and upper threshold levels. If 'lutUdate' is true,
 		recalculates the LUT. Thresholding of RGB images is not supported. */
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
+		//ij.IJ.write("setThreshold: "+" "+minThreshold+" "+maxThreshold+" "+lutUpdate);
 		if (this instanceof ColorProcessor)
 			return;
 		this.minThreshold = minThreshold;
@@ -268,7 +276,7 @@ public abstract class ImageProcessor extends Object {
 			}
 
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
-		imageSource = null;
+		newPixels = true;
 	}
 
 	/** Disables thresholding. */
@@ -280,7 +288,7 @@ public abstract class ImageProcessor extends Object {
 		}
 		rLUT1 = rLUT2 = null;
 		inversionTested = false;
-		imageSource = null;
+		newPixels = true;
 	}
 
 	/** Returns the lower threshold level. Returns NO_THRESHOLD
@@ -446,7 +454,10 @@ public abstract class ImageProcessor extends Object {
 		double ry = y1;
 		if (interpolate)
 			for (int i=0; i<n; i++) {
-				data[i] = getInterpolatedPixel(rx, ry);
+				if (cTable!=null)
+					data[i] = getInterpolatedValue(rx, ry);
+				else
+					data[i] = getInterpolatedPixel(rx, ry);
 				rx += xinc;
 				ry += yinc;
 			}
@@ -461,11 +472,8 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Returns the pixel values along the horizontal line starting at (x,y). */
 	public void getRow(int x, int y, int[] data, int length) {
-		//if (x>=0 && (x+length)<=width && y>=0 && y<height)
-		//	((ShortProcessor)this).getRow2(x, y, data, length);
-		//else
-			for (int i=0; i<length; i++)
-				data[i] = getPixel(x++, y);
+		for (int i=0; i<length; i++)
+			data[i] = getPixel(x++, y);
 	}
 
 	/** Returns the pixel values down the column starting at (x,y). */
@@ -598,11 +606,6 @@ public abstract class ImageProcessor extends Object {
 		return fontMetrics.stringWidth(s);
 	}
 
-	/** Returns the ImageProducer used by the image returned by createImage(). */
-	public ImageProducer getImageSource() {
-		return imageSource;
-	}
-		
 	/** Replaces each pixel with the 3x3 neighborhood mean. */
 	public void smooth() {
 		filter(BLUR_MORE);
@@ -622,7 +625,8 @@ public abstract class ImageProcessor extends Object {
 	}
 
 	/** Flips the image or ROI vertically. */
-	public void flipVertical() {
+	public abstract void flipVertical();
+	/* {
 		int[] row1 = new int[roiWidth];
 		int[] row2 = new int[roiWidth];
 		for (int y=0; y<roiHeight/2; y++) {
@@ -633,6 +637,7 @@ public abstract class ImageProcessor extends Object {
 		}
 		newSnapshot = false;
 	}
+	*/
 
 	/** Flips the image or ROI horizontally. */
 	public void flipHorizontal() {
@@ -729,11 +734,24 @@ public abstract class ImageProcessor extends Object {
 
 	/** Returns the value of the pixel at (x,y). For RGB images, the
 		argb values are packed in an int. For float images, the
-		the value must be converted using Float.intBitsToFloat().*/
+		the value must be converted using Float.intBitsToFloat().
+		Returns zero if either the x or y coodinate is out of range. */
 	public abstract int getPixel(int x, int y);
 	
+	/** Returns the value of the pixel at (x,y) without checking
+		that x and y are within range. For RGB images, the
+		argb values are packed in an int. For float images, the
+		the value must be converted using Float.intBitsToFloat().
+	*/
+	public abstract int getUncheckedPixel(int x, int y);
+
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
+
+	/** For color and float images, this is the same as getInterpolatedPixel(). */
+	public double getInterpolatedValue(double x, double y) {
+		return getInterpolatedPixel(x, y);
+	}
 
 	/** Stores the specified value at (x,y). For RGB images, the
 		argb values are packed in 'value'. For float images,
@@ -741,6 +759,13 @@ public abstract class ImageProcessor extends Object {
 		using Float.floatToIntBits(). */
 	public abstract void putPixel(int x, int y, int value);
 	
+	/** Stores the specified value at (x,y) withoutchecking that
+		x and y are within range. For RGB images, the
+		argb values are packed in 'value'. For float images,
+		'value' is expected to be a float converted to an int
+		using Float.floatToIntBits(). */
+	public abstract void putUncheckedPixel(int x, int y, int value);
+
 	/** Returns the value of the pixel at (x,y). For byte and short
 		images, returns a calibrated value if a calibration table
 		has been  set using setCalibraionTable(). For RGB images,
@@ -889,8 +914,20 @@ public abstract class ImageProcessor extends Object {
 		of the image. */
 	public void setLutAnimation(boolean lutAnimation) {
 		this.lutAnimation = lutAnimation;
+		newPixels = true;
 	}
 	
+	void resetPixels(Object pixels) {
+		if (pixels==null) {
+			if (img!=null) {
+				img.flush();
+				img = null;
+			}
+			source = null;
+		}
+		newPixels = true;
+	}
+
 	/** Convertes this processor to a ByteProcessor. */
 	public ImageProcessor convertToByte(boolean doScaling) {
 		TypeConverter tc = new TypeConverter(this, doScaling);

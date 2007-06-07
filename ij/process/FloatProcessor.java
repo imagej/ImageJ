@@ -20,6 +20,8 @@ public class FloatProcessor extends ImageProcessor {
 	/** Creates a new FloatProcessor using the specified pixel array and ColorModel.
 		Set 'cm' to null to use the default grayscale LUT. */
 	public FloatProcessor(int width, int height, float[] pixels, ColorModel cm) {
+		if (width*height!=pixels.length)
+			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
 		this.pixels = pixels;
@@ -34,6 +36,22 @@ public class FloatProcessor extends ImageProcessor {
 		this(width, height, new float[width*height], null);
 	}
 
+	/** Creates a FloatProcessor from an int array using the default grayscale LUT. */
+	public FloatProcessor(int width, int height, int[] pixels) {
+		this(width, height);
+		for (int i=0; i<pixels.length; i++)
+			this.pixels[i] = (float)(pixels[i]);
+		findMinAndMax();
+	}
+	
+	/** Creates a FloatProcessor from a double array using the default grayscale LUT. */
+	public FloatProcessor(int width, int height, double[] pixels) {
+		this(width, height);
+		for (int i=0; i<pixels.length; i++)
+			this.pixels[i] = (float)Math.round(pixels[i]);
+		findMinAndMax();
+	}
+	
 	/**
 	Calculates the minimum and maximum pixel value for the entire image. 
 	Returns without doing anything if fixedScale has been set true as a result
@@ -94,16 +112,14 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	public Image createImage() {
-		boolean rescale = !lutAnimation || pixels8==null;
-		lutAnimation = false;
-		if (pixels8==null)
-			pixels8 = new byte[width*height];
-		if (cm==null)
-			makeDefaultColorModel();
-		float value;
-		int ivalue;
-		float scale = 255f/(max-min);
-		if (rescale)
+		boolean firstTime = pixels8==null;
+		if (firstTime || !lutAnimation) {
+			// scale from float to 8-bits
+			if (pixels8==null)
+				pixels8 = new byte[width*height];
+			float value;
+			int ivalue;
+			float scale = 255f/(max-min);
 			for (int i=0; i<width*height; i++) {
 				value = pixels[i]-min;
 				if (value<0f) value = 0f;
@@ -111,8 +127,21 @@ public class FloatProcessor extends ImageProcessor {
 				if (ivalue>255) ivalue = 255;
 				pixels8[i] = (byte)ivalue;
 			}
-	    ImageProducer p = new MemoryImageSource(width, height, cm, pixels8, 0, width);
-	    return Toolkit.getDefaultToolkit().createImage(p);
+		}
+		lutAnimation = false;
+		if (cm==null)
+			makeDefaultColorModel();
+		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
+			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
+			source.setAnimated(true);
+			source.setFullBufferUpdates(true);
+			img = Toolkit.getDefaultToolkit().createImage(source);
+		} else if (newPixels) {
+			source.newPixels(pixels8, cm, 0, width);
+			newPixels = false;
+		} else
+			source.newPixels();
+	    return img;
 	}
 	
 	/** Returns a new, blank FloatProcessor with the specified width and height. */
@@ -161,26 +190,37 @@ public class FloatProcessor extends ImageProcessor {
 		Float.intBitsToFloat(). */
 	public int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
-			return Float.floatToIntBits(pixels[y*width + x]);
+			return Float.floatToIntBits(pixels[y*width+x]);
 		else
 			return 0;
 	}
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
-	public double getInterpolatedPixel(double x, double y) {
-		int basex = (int)x;
-		int basey = (int)y;
-		if (basex>=0 && (basex+1)<width && basey>=0 && (basey+1)<height)
-			return getInterpolatedPixel(x, y, pixels);
-		else
-			return 0f;
+	public int getUncheckedPixel(int x, int y) {
+		return Float.floatToIntBits(pixels[y*width+x]);
 	}
 
+	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	public double getInterpolatedPixel(double x, double y) {
+		if (x<0.0) x = 0.0;
+		if (x>=width-1.0) x = width-1.001;
+		if (y<0.0) y = 0.0;
+		if (y>=height-1.0) y = height-1.001;
+		return getInterpolatedPixel(x, y, pixels);
+	}
+		
 	/** Stores the specified value at (x,y). The value is expected to be a
 		float that has been converted to an int using Float.floatToIntBits(). */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = Float.intBitsToFloat(value);
+	}
+
+	/** Stores the specified value at (x,y) without varifying
+		that x and y are within range. The value is expected to
+		be a float that has been converted to an int using
+		Float.floatToIntBits(). */
+	public void putUncheckedPixel(int x, int y, int value) {
+		pixels[y*width + x] = Float.intBitsToFloat(value);
 	}
 
 	/** Stores the specified real value at (x,y). */
@@ -208,7 +248,7 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	public Object getPixelsCopy() {
-		if (newSnapshot)
+		if (newSnapshot && snapshotPixels!=null)
 			return snapshotPixels;
 		else {
 			float[] pixels2 = new float[width*height];
@@ -219,7 +259,10 @@ public class FloatProcessor extends ImageProcessor {
 
 	public void setPixels(Object pixels) {
 		this.pixels = (float[])pixels;
+		resetPixels(pixels);
 		snapshotPixels = null;
+		if (pixels==null)
+			pixels8 = null;
 	}
 
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
@@ -244,7 +287,7 @@ public class FloatProcessor extends ImageProcessor {
 	
 	private void process(int op, double value) {
 		float c, v1, v2;
-		
+		boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
 		c = (float)value;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
@@ -304,7 +347,8 @@ public class FloatProcessor extends ImageProcessor {
 			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		findMinAndMax();
+		if (resetMinMax)
+			findMinAndMax();
     }
 
 	public void invert() {process(INVERT, 0.0);}
@@ -443,8 +487,8 @@ public class FloatProcessor extends ImageProcessor {
 	*/
 	public void rotate(double angle) {
 		float[] pixels2 = (float[])getPixelsCopy();
-		double centerX = roiX + roiWidth/2.0;
-		double centerY = roiY + roiHeight/2.0;
+		double centerX = roiX + (roiWidth-1)/2.0;
+		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
 		
 		double angleRadians = -angle/(180.0/Math.PI);
@@ -453,7 +497,8 @@ public class FloatProcessor extends ImageProcessor {
 		double tmp1 = centerY*sa-centerX*ca;
 		double tmp2 = -centerX*sa-centerY*ca;
 		double tmp3, tmp4, xs, ys;
-		int index, xsi, ysi;
+		int index, ixs, iys;
+		double dwidth=width,dheight=height;
 		
 		for (int y=roiY; y<(roiY + roiHeight); y++) {
 			index = y*width + roiX;
@@ -462,11 +507,16 @@ public class FloatProcessor extends ImageProcessor {
 			for (int x=roiX; x<=xMax; x++) {
 				xs = x*ca + tmp3;
 				ys = x*sa + tmp4;
-				if ((xs>=0.0) && (xs<width) && (ys>=0.0) && (ys<height)) {
+				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
 					if (interpolate)
 				  		pixels[index++] = (float)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
-				  	else
-						pixels[index++] = pixels2[width*(int)ys+(int)xs];
+				  	else {
+				  		ixs = (int)(xs+0.5);
+				  		iys = (int)(ys+0.5);
+				  		if (ixs>=width) ixs = width - 1;
+				  		if (iys>=height) iys = height -1;
+						pixels[index++] = pixels2[width*iys+ixs];
+					}
     			} else
 					pixels[index++] = 0;
 			}
@@ -476,6 +526,21 @@ public class FloatProcessor extends ImageProcessor {
 		hideProgress();
 	}
 
+	public void flipVertical() {
+		int index1,index2;
+		float tmp;
+		for (int y=0; y<roiHeight/2; y++) {
+			index1 = (roiY+y)*width+roiX;
+			index2 = (roiY+roiHeight-1-y)*width+roiX;
+			for (int i=0; i<roiWidth; i++) {
+				tmp = pixels[index1];
+				pixels[index1++] = pixels[index2];
+				pixels[index2++] = tmp;
+			}
+		}
+		newSnapshot = false;
+	}
+	
     public void noise(double range) {
 		Random rnd=new Random();
 
@@ -583,12 +648,12 @@ public class FloatProcessor extends ImageProcessor {
 		double yScale = (double)dstHeight/roiHeight;
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		float[] pixels2 = (float[])ip2.getPixels();
-		double xs, ys=0.0;
+		double xs, ys;
 		int index1, index2;
 		for (int y=0; y<=dstHeight-1; y++) {
+			ys = (y-dstCenterY)/yScale + srcCenterY;
 			index1 = width*(int)ys;
 			index2 = y*dstWidth;
-			ys = (y-dstCenterY)/yScale + srcCenterY;
 			for (int x=0; x<=dstWidth-1; x++) {
 				xs = (x-dstCenterX)/xScale + srcCenterX;
 				if (interpolate)

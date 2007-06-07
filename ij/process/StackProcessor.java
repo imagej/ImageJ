@@ -36,17 +36,19 @@ public class StackProcessor {
     		case INVERT: s="Invert: "; break;
     		case APPLY_TABLE: s="Apply: "; break;
     	}
+ 	   	ImageProcessor ip2 = stack.getProcessor(1);
+ 	   	ip2.setRoi(this.ip.getRoi());
 	    for (int i=1; i<=nSlices; i++) {
     		showStatus(s,i,nSlices);
- 	    	ImageProcessor ip = stack.getProcessor(i);
+	    	ip2.setPixels(stack.getPixels(i));
 	    	if (nSlices==1 && i==1 && command==SCALE)
-	    		ip.snapshot();
+	    		ip2.snapshot();
 	    	switch (command) {
-	    		case FLIPH: ip.flipHorizontal(); break;
-	    		case FLIPV: ip.flipVertical(); break;
-	    		case SCALE: ip.scale(xScale, yScale); break;
-	    		case INVERT: ip.invert(); break;
-	    		case APPLY_TABLE: ip.applyTable(table); break;
+	    		case FLIPH: ip2.flipHorizontal(); break;
+	    		case FLIPV: ip2.flipVertical(); break;
+	    		case SCALE: ip2.scale(xScale, yScale); break;
+	    		case INVERT: ip2.invert(); break;
+	    		case APPLY_TABLE: ip2.applyTable(table); break;
 	    	}
 			IJ.showProgress((double)i/nSlices);
 	    }
@@ -88,7 +90,7 @@ public class StackProcessor {
 	    		ip.setPixels(stack.getPixels(1));
 	    		String label = stack.getSliceLabel(1);
 	    		stack.deleteSlice(1);
-				System.gc();
+				//System.gc();
 				ip2 = ip.resize(newWidth, newHeight);
 				if (ip2!=null)
 					stack2.addSlice(label, ip2);
@@ -112,7 +114,7 @@ public class StackProcessor {
     		ip.setPixels(stack.getPixels(1));
     		String label = stack.getSliceLabel(1);
     		stack.deleteSlice(1);
-			System.gc();
+			//System.gc();
 			if (clockwise)
 				ip2 = ip.rotateRight();
 			else

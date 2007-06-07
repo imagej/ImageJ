@@ -26,8 +26,7 @@ public class ImageReader {
 	}
 	
 	void eofError() {
-		if (eofErrorCount++==1)
-			IJ.write("<<End of file exceeded>>");
+		eofErrorCount++;
 	}
 
 	byte[] read8bitImage(InputStream in) throws IOException {
@@ -54,6 +53,7 @@ public class ImageReader {
 			IJ.showProgress(progress);
 	}
 	
+	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -69,25 +69,33 @@ public class ImageReader {
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
-				if (count==-1) {eofError(); return pixels;}
+				if (count==-1) {
+					eofError();
+					if (fi.fileType==FileInfo.GRAY16_SIGNED)
+						for (int i=base; i<pixels.length; i++)
+							pixels[i] = (short)32768;
+					return pixels;
+				}
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
 			showProgress((double)totalRead/byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
-			int j = 0;
-			if (fi.intelByteOrder)
-				for (int i=base; i < (base+pixelsRead); i++) {
-					value = ((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff);
-					pixels[i] = (short)value;
-					j += 2;
-				}
-			else
-				for (int i=base; i < (base+pixelsRead); i++) {
-					value = ((buffer[j]&0xff)<<8) | (buffer[j+1]&0xff);
-					pixels[i] = (short)value;
-					j += 2;
-				}
+			if (fi.intelByteOrder) {
+				if (fi.fileType==FileInfo.GRAY16_SIGNED)
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)((((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff))+32768);
+				else
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)(((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff));
+			} else {
+				if (fi.fileType==FileInfo.GRAY16_SIGNED)
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)((((buffer[j]&0xff)<<8) | (buffer[j+1]&0xff))+32768);
+				else
+					for (int i=base,j=0; i<(base+pixelsRead); i++,j+=2)
+						pixels[i] = (short)(((buffer[j]&0xff)<<8) | (buffer[j+1]&0xff));
+			}
 			base += pixelsRead;
 		}
 		return pixels;
@@ -255,11 +263,6 @@ public class ImageReader {
 					skip(in);
 					return (Object)read8bitImage(in);
 				case FileInfo.GRAY16_SIGNED:
-					bytesPerPixel = 2;
-					skip(in);
-					short[] pixels = read16bitImage(in);
-					convertToUnsigned(pixels);
-					return (Object)pixels;
 				case FileInfo.GRAY16_UNSIGNED:
 					bytesPerPixel = 2;
 					skip(in);
@@ -324,24 +327,6 @@ public class ImageReader {
 		return readPixels(is);
 	}
 	
-	/** If the pixel array contains any value less than zero than
-		32768 is added to all values. The file type is changed to
-		GRAY16_UNSIGNED if 32768 is not added to the pixel values. */
-	void convertToUnsigned(short[] pixels) {
-		int min = Integer.MAX_VALUE;
-		int value;
-		for (int i=0; i<pixels.length; i++) {
-			value = pixels[i];
-			if (value<min)
-				min = value;
-		}
-		if (min<0 || fi.fileFormat==FileInfo.FITS) {
-			for (int i=0; i<pixels.length; i++)
-				pixels[i] = (short)(pixels[i]+32768);
-		} else
-			fi.fileType = FileInfo.GRAY16_UNSIGNED;			
-	}
-
  	void expandBitmap(byte[] pixels) {
  		int scan=width/8;
 		int pad = width%8;

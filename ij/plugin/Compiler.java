@@ -62,7 +62,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		String classpath = System.getProperty("java.class.path");
 		//IJ.write("classpath: " + classpath);
 		output.reset();
-		boolean compiled = javac.compile(new String[] {"-classpath",classpath,path});
+		boolean compiled = javac.compile(new String[] {"-deprecation","-classpath",classpath,path});
 		String s = output.toString();
 		boolean errors = (!compiled || (s!=null && s.length()>0));
 		if (errors)

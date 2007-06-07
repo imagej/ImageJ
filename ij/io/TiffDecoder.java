@@ -177,6 +177,16 @@ public class TiffDecoder {
 		n = getNumber(props,"images");
 		if (n!=null && n.doubleValue()>1.0)
 			fi.nImages = (int)n.doubleValue();
+		if (fi.nImages>1) {
+			n = getNumber(props,"spacing");
+			double spacing = n!=null?n.doubleValue():0.0;
+			if (spacing!=0.0)
+				fi.pixelDepth = spacing;
+			n = getNumber(props,"fps");
+			double fps = n!=null?n.doubleValue():0.0;
+			if (fps!=0.0)
+				fi.frameInterval = 1.0/fps;
+		}
 	}
 
 	private Double getNumber(Properties props, String key) {
@@ -329,7 +339,8 @@ public class TiffDecoder {
 			count = getInt();
 			value = getValue(fieldType, count);
 			if (debugMode) dumpTag(tag, count, value, fi);
-			if (tag==0) return null;
+			//ij.IJ.write(i+"/"+nEntries+" "+tag + ", count=" + count + ", value=" + value);
+			//if (tag==0) return null;
 			switch (tag) {
 				case IMAGE_WIDTH: 
 					fi.width = value;

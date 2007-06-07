@@ -19,6 +19,8 @@ public class ShortProcessor extends ImageProcessor {
 	/** Creates a new ShortProcessor using the specified pixel array and ColorModel.
 		Set 'cm' to null to use the default grayscale LUT. */
 	public ShortProcessor(int width, int height, short[] pixels, ColorModel cm) {
+		if (width*height!=pixels.length)
+			throw new IllegalArgumentException(WRONG_LENGTH);
 		this.width = width;
 		this.height = height;
 		this.pixels = pixels;
@@ -63,13 +65,11 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
-		boolean rescale = !lutAnimation || pixels8==null;
-		lutAnimation = false;
-		if (pixels8==null)
-			pixels8 = new byte[width*height];
-		if (cm==null)
-			makeDefaultColorModel();
-		if (rescale) {
+		boolean firstTime = pixels8==null;
+		if (firstTime || !lutAnimation) {
+			// scale from 16-bits to 8-bits
+			if (pixels8==null)
+				pixels8 = new byte[width*height];
 			int value;
 			double scale = 255.0/(max-min);
 			for (int i=0; i < width*height; i++) {
@@ -80,10 +80,22 @@ public class ShortProcessor extends ImageProcessor {
 				pixels8[i] = (byte)value;
 			}
 		}
-	    ImageProducer p = new MemoryImageSource(width, height, cm, pixels8, 0, width);
-	    return Toolkit.getDefaultToolkit().createImage(p);
+		lutAnimation = false;
+		if (cm==null)
+			makeDefaultColorModel();
+		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
+			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
+			source.setAnimated(true);
+			source.setFullBufferUpdates(true);
+			img = Toolkit.getDefaultToolkit().createImage(source);
+		} else if (newPixels) {
+			source.newPixels(pixels8, cm, 0, width);
+			newPixels = false;
+		} else
+			source.newPixels();
+	    return img;
 	}
-	
+
 	/** Returns a new, blank ShortProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {
 		ImageProcessor ip2 = new ShortProcessor(width, height, new short[width*height], getColorModel());
@@ -169,28 +181,46 @@ public class ShortProcessor extends ImageProcessor {
 	}
 
 	public int getPixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height) {
-			int value = pixels[y*width + x]&0xffff;
-			return value;
-		} else
+		if (x>=0 && x<width && y>=0 && y<height)
+			return pixels[y*width+x]&0xffff;
+		else
 			return 0;
+	}
+
+	public int getUncheckedPixel(int x, int y) {
+		return pixels[y*width+x]&0xffff;
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
-		int basex = (int)x;
-		int basey = (int)y;
-		if (basex>=0 && (basex+1)<width && basey>=0 && (basey+1)<height)
-			return getInterpolatedPixel(x, y, pixels);
-		else
-			return 0f;
+		if (x<0.0) x = 0.0;
+		if (x>=width-1.0) x = width-1.001;
+		if (y<0.0) y = 0.0;
+		if (y>=height-1.0) y = height-1.001;
+		return getInterpolatedPixel(x, y, pixels);
 	}
+
+	/** Uses bilinear interpolation to find the calibrated
+		pixel value at real coordinates (x,y). */
+		public double getInterpolatedValue(double x, double y) {
+			double value = getInterpolatedPixel(x, y);
+			if (cTable==null)
+				return value;
+			else
+				return cTable[(int)(value+0.5)]; 
+		}
 
 	/** Stores the specified value at (x,y). */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			pixels[y*width + x] = (short)value;
 		}
+	}
+
+	/** Stores the specified value at (x,y) without
+		varifying that x and y are within range. */
+	public void putUncheckedPixel(int x, int y, int value) {
+		pixels[y*width + x] = (short)value;
 	}
 
 	/** Stores the specified real value at (x,y). */
@@ -235,7 +265,10 @@ public class ShortProcessor extends ImageProcessor {
 
 	public void setPixels(Object pixels) {
 		this.pixels = (short[])pixels;
+		resetPixels(pixels);
 		snapshotPixels = null;
+		if (pixels==null)
+			pixels8 = null;
 	}
 
 	void getRow2(int x, int y, int[] data, int length) {
@@ -277,6 +310,7 @@ public class ShortProcessor extends ImageProcessor {
 	private void process(int op, double value) {
 		int v1, v2;
 		double range = max-min;
+		boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
 		
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
@@ -346,7 +380,8 @@ public class ShortProcessor extends ImageProcessor {
 			if (y%20==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
-		findMinAndMax();
+		if (resetMinMax)
+			findMinAndMax();
 		showProgress(1.0);
     }
 
@@ -492,8 +527,8 @@ public class ShortProcessor extends ImageProcessor {
 	*/
 	public void rotate(double angle) {
 		short[] pixels2 = (short[])getPixelsCopy();
-		double centerX = roiX + roiWidth/2.0;
-		double centerY = roiY + roiHeight/2.0;
+		double centerX = roiX + (roiWidth-1)/2.0;
+		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
 		
 		double angleRadians = -angle/(180.0/Math.PI);
@@ -502,7 +537,8 @@ public class ShortProcessor extends ImageProcessor {
 		double tmp1 = centerY*sa-centerX*ca;
 		double tmp2 = -centerX*sa-centerY*ca;
 		double tmp3, tmp4, xs, ys;
-		int index, xsi, ysi;
+		int index, ixs, iys;
+		double dwidth=width,dheight=height;
 		
 		for (int y=roiY; y<(roiY + roiHeight); y++) {
 			index = y*width + roiX;
@@ -511,20 +547,40 @@ public class ShortProcessor extends ImageProcessor {
 			for (int x=roiX; x<=xMax; x++) {
 				xs = x*ca + tmp3;
 				ys = x*sa + tmp4;
-				if ((xs>=0.0) && (xs<width) && (ys>=0.0) && (ys<height)) {
+				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
 					if (interpolate)
 				  		pixels[index++] = (short)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
-				  	else
-						pixels[index++] = pixels2[width*(int)ys+(int)xs];
+				  	else {
+				  		ixs = (int)(xs+0.5);
+				  		iys = (int)(ys+0.5);
+				  		if (ixs>=width) ixs = width - 1;
+				  		if (iys>=height) iys = height -1;
+						pixels[index++] = pixels2[width*iys+ixs];
+					}
     			} else
 					pixels[index++] = 0;
 			}
-			if (y%20==0)
+			if (y%30==0)
 			showProgress((double)(y-roiY)/roiHeight);
 		}
 		hideProgress();
 	}
 
+	public void flipVertical() {
+		int index1,index2;
+		short tmp;
+		for (int y=0; y<roiHeight/2; y++) {
+			index1 = (roiY+y)*width+roiX;
+			index2 = (roiY+roiHeight-1-y)*width+roiX;
+			for (int i=0; i<roiWidth; i++) {
+				tmp = pixels[index1];
+				pixels[index1++] = pixels[index2];
+				pixels[index2++] = tmp;
+			}
+		}
+		newSnapshot = false;
+	}
+	
 	/** Scales the image or selection using the specified scale factors.
 		@see ImageProcessor#setInterpolate
 	*/
@@ -604,12 +660,12 @@ public class ShortProcessor extends ImageProcessor {
 		double yScale = (double)dstHeight/roiHeight;
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		short[] pixels2 = (short[])ip2.getPixels();
-		double xs, ys=0.0;
+		double xs, ys;
 		int index1, index2;
 		for (int y=0; y<=dstHeight-1; y++) {
+			ys = (y-dstCenterY)/yScale + srcCenterY;
 			index1 = width*(int)ys;
 			index2 = y*dstWidth;
-			ys = (y-dstCenterY)/yScale + srcCenterY;
 			for (int x=0; x<=dstWidth-1; x++) {
 				xs = (x-dstCenterX)/xScale + srcCenterX;
 				if (interpolate)

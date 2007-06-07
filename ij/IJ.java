@@ -22,7 +22,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname;
-	private static boolean isMac, isWin;
+	private static boolean isMac, isWin, isJava2;
 	private static boolean altDown, spaceDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -31,6 +31,7 @@ public class IJ {
 		osname = System.getProperty("os.name");
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
+		isJava2 = !System.getProperty("java.version").startsWith("1.1");
 	}
 			
 	static void init(ImageJ imagej, Applet theApplet) {
@@ -107,6 +108,7 @@ public class IJ {
 		Executer e = new Executer(command);
 		e.run();
 		macroRunning = false;
+		Macro.setOptions(null);
 		testAbort();
 	}
 
@@ -200,8 +202,8 @@ public class IJ {
 		showMessage("Message", msg);
 	}
 
-	/** Displays a message in a dialog box titled "Error". Writes
-		to the Java console if ImageJ is not present. */
+	/** Displays a message in a dialog box titled "ImageJ". Writes
+		to the Java console if the ImageJ window is not present. */
 	public static void error(String msg) {
 		if (ij!=null)
 			new MessageDialog(ij, "ImageJ", msg);
@@ -267,10 +269,14 @@ public class IJ {
 	}
 	
 	public static void showTime(ImagePlus imp, long start, String str) {
+		showTime(imp, start, str, 1);
+	}
+	
+	static void showTime(ImagePlus imp, long start, String str, int nslices) {
 	    long elapsedTime = System.currentTimeMillis() - start;
 		double seconds = elapsedTime / 1000.0;
 		long pixels = imp.getWidth() * imp.getHeight();
-		int rate = (int)((double)pixels/seconds);
+		int rate = (int)((double)pixels*nslices/seconds);
 		String str2;
 		if (rate>1000000000)
 			str2 = "";
@@ -280,7 +286,7 @@ public class IJ {
 			str2 = ", "+d2s(rate/1000000.0,1)+" million pixels/second";
 		showStatus(str+seconds+" seconds"+str2);
 	}
-	
+
 	/** Converts a number to a formatted string using
 		2 digits to the right of the decimal point. */
 	public static String d2s(double n) {
@@ -372,6 +378,11 @@ public class IJ {
 		return isWin;
 	}
 	
+	/** Returns true if ImageJ is running on Java 2. */
+	public static boolean isJava2() {
+		return isJava2;
+	}
+	
 	/** Displays an error message and returns false if the
 		ImageJ version is less than the one specified. */
 	public static boolean versionLessThan(String version) {
@@ -429,8 +440,16 @@ public class IJ {
 	public static void makeLine(int x1, int y1, int x2, int y2) {
 		ImagePlus img = getImage();
 		getImage().setRoi(new Line(x1, y1, x2, y2, img));
+		//wait(100);
 	}
 	
+	/** Sets the minimum and maximum displayed pixel values. */
+	public static void setMinAndMax(double min, double max) {
+		ImagePlus img = getImage();
+		img.getProcessor().setMinAndMax(min, max);
+		img.updateAndDraw();
+	}
+
 	/** Sets the lower and upper threshold levels. */
 	public static void setThreshold(double lowerThreshold, double upperThresold) {
 		ImagePlus img = getImage();
@@ -477,6 +496,12 @@ public class IJ {
 	/** Sets the background color. */
 	public static void setBackgroundColor(int red, int green, int blue) {
 		Toolbar.setBackgroundColor(new Color(red, green, blue));
+	}
+
+	/** Switches to the specified tool, where id = Toolbar.RECTANGLE (0),
+		Toolbar.OVAL (1), etc. */
+	public static void setTool(int id) {
+		Toolbar.getInstance().setTool(id);
 	}
 
 	private static ImagePlus getImage() {

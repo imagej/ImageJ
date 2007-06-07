@@ -25,27 +25,29 @@ public class Convolver implements PlugInFilter {
  		IJ.register(Convolver.class);
 		this.imp = imp;
 		canceled = false;
-		return IJ.setupDialog(imp, DOES_ALL);
+		if (imp==null)
+			{IJ.noImage(); return DONE;}
+		kernel = getKernel();
+		if (kernel==null)
+			return DONE;
+		if ((kw&1)==0) {
+			IJ.showMessage("Convolver","The kernel must be square and have an\n"
+				+"odd width. This kernel is "+kw+"x"+kh+".");
+			return DONE;
+		}
+		int flags = IJ.setupDialog(imp, DOES_ALL);
+		if ((flags&DONE)!=0)
+			return DONE;
+		win = imp.getWindow();
+		win.running = true;
+		IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
+		imp.startTiming();
+		return flags;
 	}
 
 	public void run(ImageProcessor ip) {
 		if (canceled)
 			return;
-		if (slice==1) {
-			kernel = getKernel();
-			if (kernel==null)
-				{canceled=true; return;}
-			if ((kw&1)==0) {
-				IJ.showMessage("Convolver","The kernel must be square and have an\n"
-					+"odd width. This kernel is "+kw+"x"+kh+".");
-				canceled = true;
-				return;
-			}
-			win = imp.getWindow();
-			win.running = true;
-			IJ.showStatus("Convolve: "+kw+"x"+kh+" kernel");
-			imp.startTiming();
-		}
 		if (win.running!=true)
 			{canceled=true; return;}
 		convolve(ip, kernel, kw, kh);
@@ -188,7 +190,7 @@ public class Convolver implements PlugInFilter {
 				for(int v=-vc; v <= vc; v++) {
 					offset = x+(y+v)*width;
 					for(int u = -uc; u <= uc; u++) {
-						if (true)
+						if (edgePixel)
    							sum += getPixel(x+u, y+v, pixels2, width, height)*kernel[i++];
      					else
  							sum += pixels2[offset+u]*kernel[i++];

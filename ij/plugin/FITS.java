@@ -20,17 +20,20 @@ public class FITS extends ImagePlus implements PlugIn {
 		if (fileName==null)
 			return;
 		IJ.showStatus("Opening: " + directory + fileName);
-		FitsDecoder decoder = new FitsDecoder(directory, fileName);
+		FitsDecoder fd = new FitsDecoder(directory, fileName);
 		FileInfo fi = null;
-		try {fi = decoder.getInfo();}
+		try {fi = fd.getInfo();}
 		catch (IOException e) {}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
 			ImageProcessor ip = imp.getProcessor();
 			setProcessor(fileName, ip);
-			setCalibration(imp.getCalibration());
-			setProperty("Info", decoder.getHeaderInfo());
+			Calibration cal = imp.getCalibration();
+			if (fi.fileType==FileInfo.GRAY16_SIGNED && fd.bscale==1.0 && fd.bzero==32768.0)
+				cal.setFunction(Calibration.NONE, null, "Gray Value");
+			setCalibration(cal);
+			setProperty("Info", fd.getHeaderInfo());
 			if (arg.equals("")) show();
 		} else
 			IJ.error("This does not appear to be a FITS file.");
@@ -43,7 +46,7 @@ class FitsDecoder {
 	private String directory, fileName;
 	private DataInputStream f;
 	private StringBuffer info = new StringBuffer(512);
-	private double bscale, bzero;
+	double bscale, bzero;
 
 	public FitsDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -97,14 +100,6 @@ class FitsDecoder {
 		} while (!s.startsWith("END"));
 		f.close();
 		fi.offset = 2880+2880*((count*80)/2880);
-		if (fi.fileType==FileInfo.GRAY16_SIGNED && !(bscale==1.0&&bzero==32768.0)) {
-			double[] coeff = new double[2];
-			coeff[0] = -32768.0;
-			coeff[1] = 1.0;
-    		fi.calibrationFunction = Calibration.STRAIGHT_LINE;
-     		fi.coefficients = coeff;
-    		fi.valueUnit = "gray value";
-		}
 		return fi;
 	}
 

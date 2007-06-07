@@ -8,6 +8,7 @@ import java.awt.event.*;
 public class Profiler implements PlugInFilter {
 
 	ImagePlus imp;
+	static boolean verticalProfile;
 
 	public int setup(String arg, ImagePlus imp) {
 		if (arg.equals("set"))
@@ -17,7 +18,7 @@ public class Profiler implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		boolean averageHorizontally = IJ.altKeyDown();
+		boolean averageHorizontally = verticalProfile || IJ.altKeyDown();
 		new ProfilePlot(imp, averageHorizontally).createWindow();
 	}
 
@@ -33,6 +34,7 @@ public class Profiler implements PlugInFilter {
 		gd.addCheckbox("Fixed Y-axis Scale", fixedScale);
 		gd.addCheckbox("Do Not Save X-Values", !PlotWindow.saveXValues);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
+		gd.addCheckbox("Vertical Profile", verticalProfile);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -41,6 +43,7 @@ public class Profiler implements PlugInFilter {
 		fixedScale = gd.getNextBoolean();
 		PlotWindow.saveXValues = !gd.getNextBoolean();
 		PlotWindow.autoClose = gd.getNextBoolean();
+		verticalProfile = gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {
@@ -48,6 +51,7 @@ public class Profiler implements PlugInFilter {
 			ymax = 0.0;
 		}
 		ProfilePlot.setMinAndMax(ymin, ymax);
+		IJ.register(Profiler.class);
 	}
 		
 }

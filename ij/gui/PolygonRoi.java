@@ -153,7 +153,7 @@ public class PolygonRoi extends Roi {
 			if (angle1>0.0)
 				angle = ", angle=" + IJ.d2s(degrees);
 		}
-		IJ.showStatus("  (" + ox + "," + oy + ")" + angle);
+		IJ.showStatus(imp.getLocationAsString(ox,oy) + angle);
 	}
 
 	void finishPolygon() {

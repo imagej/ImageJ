@@ -36,7 +36,7 @@ public class Scaler implements PlugInFilter {
 		xscale = gd.getNextNumber();
 		yscale = gd.getNextNumber();
 		if (gd.invalidNumber()) {
-			IJ.error("Width or height are invalid.");
+			IJ.error("X or Y scale are invalid.");
 			return;
 		}
 		if (xscale > 25.0) xscale = 25.0;

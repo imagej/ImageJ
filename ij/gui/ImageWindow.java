@@ -16,19 +16,20 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	protected ImagePlus imp;
 	protected ImageJ ij;
 	protected ImageCanvas ic;
-	private int originalScale = 1;
+	private double initialMagnification = 1;
 	protected static ImagePlus clipboard;
 	protected boolean closed;
 		
 	private static final int XINC = 8;
 	private static final int YINC = 12;
 	private static final int TEXT_GAP = 10;
+	private static final int MENU_BAR_HEIGHT = 40;
 	private static int xbase = -1;
 	private static int ybase;
 	private static int xloc;
 	private static int yloc;
 	private static int count;
-	private static int defaultYLoc = IJ.isMacintosh()?5:32;
+	//private static int defaultYLoc = IJ.isMacintosh()?5:32;
 	
 	/** This variable is set false if the user clicks in this
 		window, presses the escape key, or closes the window. */
@@ -85,22 +86,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		int height = imp.getHeight();
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
-		Rectangle ijBounds = ij!=null?ij.getBounds():new Rectangle(10,defaultYLoc,0,0);
-		if (IJ.isMacintosh())
-			ijBounds.height += 24;
 		if (xbase==-1) {
+			Rectangle ijBounds = ij!=null?ij.getBounds():new Rectangle(10,5,0,0);
+			if (IJ.isMacintosh())
+				ijBounds.height += 24;
 			count = 0;
 			xbase = 5;
-			ybase = ijBounds.y<defaultYLoc?ijBounds.y:defaultYLoc;
-			if (ybase<0) ybase = 0;
+			ybase = ijBounds.y+ijBounds.height;
+			if (ybase>140) ybase = ijBounds.height;
 			xloc = xbase;
 			yloc = ybase;
 		}
-		if (ijBounds.y<40 && (xloc+width)>ijBounds.x && yloc<(ybase+ijBounds.height))
-			yloc = ijBounds.y+ijBounds.height;
 		int x = xloc;
 		int y = yloc;
-		setLocation(x, y);
 		xloc += XINC;
 		yloc += YINC;
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -110,20 +108,26 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			yloc = ybase;
 		}
 
-		int adjustedHeight = (this instanceof StackWindow)?height+20:height;
-		int scale = 1;
-		while (xbase+XINC*4+width/scale>screen.width || ybase+YINC*4+adjustedHeight/scale>screen.height)
-			scale *=2;
-		ic.setMagnification(1.0/scale);
-		if (scale>1) {
-			originalScale = scale;
-			ic.setDrawingSize(width/scale, height/scale);
+		int taskbarHeight = IJ.isWindows()?30:0;
+		int sliderHeight = (this instanceof StackWindow)?20:0;
+		int screenHeight = screen.height-MENU_BAR_HEIGHT-taskbarHeight-sliderHeight;
+		double mag = 1;
+		while (xbase+XINC*4+width*mag>screen.width || ybase+height*mag>screenHeight)
+			mag = ImageCanvas.getLowerZoomLevel(mag);
+		ic.setMagnification(mag);
+		
+		if (mag<1.0) {
+			initialMagnification = mag;
+			ic.setDrawingSize((int)(width*mag), (int)(height*mag));
 		}
+		if (y+height*mag>screenHeight)
+			y = ybase;
+		setLocation(x, y);
 	}
 	
 
-	public int getOriginalScale() {
-		return originalScale;
+	public double getInitialMagnification() {
+		return initialMagnification;
 	}
 	
 	/** Override Container getInsets() to make room for some text above the image. */
@@ -264,17 +268,18 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	}
 	
 	public void windowClosing(WindowEvent e) {
-		if (IJ.getInstance()!=null)
+		if (IJ.getInstance()!=null) {
+			WindowManager.setCurrentWindow(this);
 			IJ.doCommand("Close");
-		else {
+		} else {
 			setVisible(false);
 			dispose();
 		}
 	}
 	
 	public void windowClosed(WindowEvent e) {}
-	public void focusLost(FocusEvent e) {}
 	public void windowDeactivated(WindowEvent e) {}
+	public void focusLost(FocusEvent e) {}
 	public void windowDeiconified(WindowEvent e) {}
 	public void windowIconified(WindowEvent e) {}
 	public void windowOpened(WindowEvent e) {}

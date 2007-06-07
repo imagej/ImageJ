@@ -21,10 +21,13 @@ public class WindowManager {
 		//if (IJ.debugMode && win!=null)
 		//	IJ.write(win.getImagePlus().getTitle()+": setCurrentWindow (previous="+(currentWindow!=null?currentWindow.getImagePlus().getTitle():"null") + ")");
 		if (currentWindow!=null) {
-			// free up pixel buffers used by current window
+			// free up pixel buffers AWT Image resources used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
 			if (imp!=null && imp.lockSilently()) {
 				imp.trimProcessor();
+				Image img = imp.getImage();
+				if (img!=null)
+					img.flush();
 				if (!Converter.newWindowCreated)
 					imp.saveRoi();
 				Converter.newWindowCreated = false;
@@ -177,7 +180,7 @@ public class WindowManager {
     
 	/** Activates the next window on the window list. */
 	public static void putBehind() {
-		//if (IJ.debugMode) IJ.write("putBehind");
+		if (IJ.debugMode) IJ.write("putBehind");
 		if(imageList.size()<1 || currentWindow==null)
 			return;
 		int index = imageList.indexOf(currentWindow);
