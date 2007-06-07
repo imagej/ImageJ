@@ -9,8 +9,7 @@ public class FileInfo {
 	public static final int GRAY8 = 0;
 	
 	/**	16-bit signed integer (-32768-32767). Imported signed images
-		with any negative pixel values are converted to unsigned by 
-		adding 32768. */
+		are converted to unsigned by adding 32768. */
 	public static final int GRAY16_SIGNED = 1;
 	
 	/** 16-bit unsigned integer (0-65535). */
@@ -41,6 +40,9 @@ public class FileInfo {
 	/** 24-bit interleaved BGR. Import only. */
 	public static final int BGR = 10;
 	
+	/**	32-bit unsigned integer. Imported 32-bit integer images are
+		converted to floating-point. */
+	public static final int GRAY32_UNSIGNED = 11;
 	
 	// File formats
 	public static final int UNKNOWN = 0;
@@ -101,7 +103,7 @@ public class FileInfo {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
-			case GRAY32_INT: case GRAY32_FLOAT: case ARGB: return 4;
+			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			default: return 0;
 		}
@@ -128,6 +130,7 @@ public class FileInfo {
 			case GRAY16_SIGNED: return "short";
 			case GRAY16_UNSIGNED: return "ushort";
 			case GRAY32_INT: return "int";
+			case GRAY32_UNSIGNED: return "uint";
 			case GRAY32_FLOAT: return "float";
 			case COLOR8: return "byte+lut";
 			case RGB: return "RGB";

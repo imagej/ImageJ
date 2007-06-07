@@ -22,7 +22,13 @@ public class TextRoi extends Roi {
 
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
-		theText[0] = "Type, then"; //v1.24g
+        ImageWindow win = imp.getWindow();
+        double mag = (win!=null)?win.getCanvas().getMagnification():1.0;
+        if (mag>1.0)
+            mag = 1.0;
+        if (size<(12/mag))
+        	size = (int)(12/mag);
+		theText[0] = "Type, then";
 		theText[1] = "Ctl+D";
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;

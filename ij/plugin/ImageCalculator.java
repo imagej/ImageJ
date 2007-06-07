@@ -169,7 +169,7 @@ public class ImageCalculator implements PlugIn {
 		try {
 			for (int i=1; i<=n; i++) {
 				ImageProcessor ip1 = stack1.getProcessor(i);
-				ip1.setRoi(null); 
+				ip1.resetRoi(); 
 				ImageProcessor ip2 = ip1.crop(); 
 				stack2.addSlice(stack1.getSliceLabel(i), ip2);
 			}

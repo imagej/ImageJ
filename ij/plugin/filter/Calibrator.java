@@ -77,7 +77,8 @@ public class Calibrator implements PlugInFilter, Measurements {
 		GenericDialog gd = new GenericDialog("Calibrate...");
 		gd.addChoice("Function:", functions, defaultChoice);
 		gd.addStringField("Unit:", unit, 16);
-		gd.addTextAreas(xText, yText, 12, 10);
+		gd.addTextAreas(xText, yText, 20, 14);
+		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
 		gd.addCheckbox("Global Calibration", global);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.showDialog();
@@ -100,6 +101,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		boolean is16Bits = imp.getType()==ImagePlus.GRAY16;
 		double[] parameters = null;
 		double[] x=null, y=null;
+		boolean zeroClip=false;;
 		if (choiceIndex<=0) {
 			if (oldFunction==Calibration.NONE&&!yText.equals("")&&!xText.equals(""))
 				IJ.showMessage("Calibrator", "Please select a function");
@@ -107,7 +109,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		} else if (choiceIndex<=nFits) {
 			function = choiceIndex - 1;
 			if (function>0 && is16Bits) {
-				IJ.error("Curve fitting currently not supported on 16-bit images.");
+				IJ.error("Calibration of 16-bit images, except with straight\nline functions, is currently not supported.");
 				return;
 			}
 			x = getData(xText);
@@ -117,6 +119,9 @@ public class Calibrator implements PlugInFilter, Measurements {
 				if (parameters==null)
 					return;
 			}
+			zeroClip = true;
+			for (int i=0; i<y.length; i++)
+				if (y[i]<0.0) zeroClip = false;
 		} else if (choiceIndex==inverterIndex) {
 			function = Calibration.STRAIGHT_LINE;
 			parameters = new double[2];
@@ -134,7 +139,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 			function = Calibration.UNCALIBRATED_OD;
 			unit = "Uncalibrated OD";
 		}
-		cal.setFunction(function, parameters, unit);
+		cal.setFunction(function, parameters, unit, zeroClip);
 		if (global)
 			imp.setGlobalCalibration(cal);
 		else {
@@ -149,11 +154,14 @@ public class Calibrator implements PlugInFilter, Measurements {
 	double[] doCurveFitting(double[] x, double[] y, int fitType) {
 		if (x.length!=y.length || y.length==0) {
 			IJ.showMessage("Calibrator",
-				"To create a calibration curve, the left column must\n"+
-				"contain a list of measured mean pixel values and the\n"+
-				"right column must contain the same number of calibration\n"+
-				"standard values. Use the Measure command to add mean\n"+
-				"pixel value measurements to the left column.\n"
+				"To create a calibration curve, the left column must\n"
+				+"contain a list of measured mean pixel values and the\n"
+				+"right column must contain the same number of calibration\n"
+				+"standard values. Use the Measure command to add mean\n"
+				+"pixel value measurements to the left column.\n"
+				+" \n"
+				+"    Left column: "+x.length+" values\n"
+				+"    Right column: "+y.length+" values\n"
 				);
 			return null;
 		}
@@ -162,7 +170,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		if (imp.getType()==ImagePlus.GRAY16)
 			xmax=65535.0; 
 		else
-			xmax=255.0; 
+			xmax=255.0;
 		double[] a = Tools.getMinMax(y);
 		double ymin=a[0], ymax=a[1]; 
 		CurveFitter cf = new CurveFitter(x, y);
@@ -174,6 +182,7 @@ public class Calibrator implements PlugInFilter, Measurements {
 		//IJ.write("function: "+cf.fList[fitType]);
 		int np = cf.getNumParams();
 		double[] p = cf.getParams();
+
 		double sumResidualsSqr = p[np];
 		//IJ.write("sum of residuals: "+IJ.d2s(Math.sqrt(sumResidualsSqr),6));
 		double sumY = 0.0;

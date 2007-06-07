@@ -18,10 +18,11 @@ import java.awt.event.*;
 public class ZProjector implements PlugIn {
     public static final int AVG_METHOD = 0; 
     public static final int MAX_METHOD = 1;
-    public static final int SUM_METHOD = 2;
-	public static final int SD_METHOD = 3;
+    public static final int MIN_METHOD = 2;
+    public static final int SUM_METHOD = 3;
+	public static final int SD_METHOD = 4;
 	public static final String[] METHODS = 
-		{"Average Intensity", "Max Intensity", "Sum Slices", "Standard Deviation"}; 
+		{"Average Intensity", "Max Intensity", "Min Intensity", "Sum Slices", "Standard Deviation"}; 
     private static int method = AVG_METHOD;
 
     private static final int BYTE_TYPE  = 0; 
@@ -215,6 +216,8 @@ public class ZProjector implements PlugIn {
 	    	return new AverageIntensity(fp, stopSlice-startSlice+1); 
 		else if(method==MAX_METHOD)
 	    	return new MaxIntensity(fp); 
+		else if(method==MIN_METHOD)
+	    	return new MinIntensity(fp); 
 		else if(method==SD_METHOD)
 	    	return new StandardDeviation(fp, stopSlice-startSlice+1); 
 		else {
@@ -371,6 +374,44 @@ public class ZProjector implements PlugIn {
 		}
 		
     } // end MaxIntensity
+
+     /** Compute min intensity projection. */
+    class MinIntensity extends RayFunction {
+ 		private FloatProcessor fp;
+    	private float[] fpixels;
+ 		private int len; 
+
+		/** Simple constructor since no preprocessing is necessary. */
+		public MinIntensity(FloatProcessor fp) {
+			fpixels = (float[])fp.getPixels();
+			len = fpixels.length;
+			for (int i=0; i<len; i++)
+				fpixels[i] = Float.MAX_VALUE;
+		}
+
+		public void projectSlice(byte[] pixels) {
+	    	for(int i=0; i<len; i++) {
+				if((pixels[i]&0xff)<fpixels[i])
+		    		fpixels[i] = (pixels[i]&0xff); 
+	    	}
+		}
+
+		public void projectSlice(short[] pixels) {
+	    	for(int i=0; i<len; i++) {
+				if((pixels[i]&0xffff)<fpixels[i])
+		    		fpixels[i] = pixels[i]&0xffff;
+	    	}
+		}
+
+		public void projectSlice(float[] pixels) {
+	    	for(int i=0; i<len; i++) {
+				if(pixels[i]<fpixels[i])
+		    		fpixels[i] = pixels[i]; 
+	    	}
+		}
+		
+    } // end MaxIntensity
+
 
     /** Compute standard deviation projection. */
     class StandardDeviation extends RayFunction {

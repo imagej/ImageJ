@@ -12,6 +12,7 @@ import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.text.*;
+import ij.macro.Interpreter;
 
 /**
 This frame is the main ImageJ class.
@@ -26,7 +27,7 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.28u";
+	public static final String VERSION = "1.29w";
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
@@ -39,8 +40,6 @@ public class ImageJ extends Frame implements ActionListener,
 	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
-	private static PluginClassLoader classLoader;
-	private boolean notVerified = true;
 	
 	boolean hotkey;
 	
@@ -58,7 +57,6 @@ public class ImageJ extends Frame implements ActionListener,
 		Menus m = new Menus(this, applet);
 		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
-		notVerified = true;		
 		setLayout(new GridLayout(2, 1));
 		
 		// Tool bar
@@ -98,14 +96,20 @@ public class ImageJ extends Frame implements ActionListener,
 		pack();
 		setResizable(false);
 		show();
-		if (IJ.isMacOSX())
-			pack(); // hack needed for window to display correctly Mac OS X
+		if (IJ.isMacOSX()) { // hack needed for window to display correctly Mac OS X
+			setLocation(loc.x+1, loc.y+1);
+			setLocation(loc.x, loc.y);			
+			pack(); 
+		}
 		if (err1!=null)
 			IJ.error(err1);
 		if (err2!=null)
 			IJ.error(err2);
 		if (IJ.isMacintosh())
 			IJ.runPlugIn("QuitHandler", "");
+		if (IJ.isJava2() && applet==null) {
+			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
+		}
 	}
     
 	void showResults() {
@@ -160,163 +164,12 @@ public class ImageJ extends Frame implements ActionListener,
 		new Executer(name, WindowManager.getCurrentImage());
     }
         
-	void wrongType(int capabilities) {
-		String s = "This command requires an image of type:\n \n";
-		if ((capabilities&PlugInFilter.DOES_8G)!=0) s +=  "    8-bit grayscale\n";
-		if ((capabilities&PlugInFilter.DOES_8C)!=0) s +=  "    8-bit color\n";
-		if ((capabilities&PlugInFilter.DOES_16)!=0) s +=  "    16-bit grayscale\n";
-		if ((capabilities&PlugInFilter.DOES_32)!=0) s +=  "    32-bit (float) grayscale\n";
-		if ((capabilities&PlugInFilter.DOES_RGB)!=0) s += "    RGB color\n";
-		IJ.error(s);
-	}
-	
 	public void runFilterPlugIn(Object theFilter, String cmd, String arg) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		int capabilities = ((PlugInFilter)theFilter).setup(arg, imp);
-		if ((capabilities&PlugInFilter.DONE)!=0)
-			return;
-		if ((capabilities&PlugInFilter.NO_IMAGE_REQUIRED)!=0)
-			{((PlugInFilter)theFilter).run(null); return;}
-		if (imp==null)
-			{IJ.noImage(); return;}
-		if ((capabilities&PlugInFilter.ROI_REQUIRED)!=0 && imp.getRoi()==null)
-			{IJ.error("Selection required"); return;}
-		if ((capabilities&PlugInFilter.STACK_REQUIRED)!=0 && imp.getStackSize()==1)
-			{IJ.error("Stack required"); return;}
-		int type = imp.getType();
-		switch (type) {
-			case ImagePlus.GRAY8:
-				if ((capabilities&PlugInFilter.DOES_8G)==0)
-					{wrongType(capabilities); return;}
-				break;
-			case ImagePlus.COLOR_256:
-				if ((capabilities&PlugInFilter.DOES_8C)==0)
-					{wrongType(capabilities); return;}
-				break;
-			case ImagePlus.GRAY16:
-				if ((capabilities&PlugInFilter.DOES_16)==0)
-					{wrongType(capabilities); return;}
-				break;
-			case ImagePlus.GRAY32:
-				if ((capabilities&PlugInFilter.DOES_32)==0)
-					{wrongType(capabilities); return;}
-				break;
-			case ImagePlus.COLOR_RGB:
-				if ((capabilities&PlugInFilter.DOES_RGB)==0)
-					{wrongType(capabilities); return;}
-				break;
-		}
-		int slices = imp.getStackSize();
-		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
-		if (!imp.lock())
-			return; // exit if image is in use
-		imp.startTiming();
-		IJ.showStatus(cmd + "...");
-		ImageProcessor ip;
-		ImageStack stack = null;
-		if (slices>1)
-			stack = imp.getStack();
-		int[] mask = null;
-		float[] cTable = imp.getCalibration().getCTable();
-		if (slices==1 || !doesStacks) {
-			ip = imp.getProcessor();
-			mask = imp.getMask();
-			if ((capabilities&PlugInFilter.NO_UNDO)!=0)
-				Undo.reset();
-			else {
-				Undo.setup(Undo.FILTER, imp);
-				ip.snapshot();
-			}
-			//ip.setMask(mask);
-			ip.setCalibrationTable(cTable);
-			((PlugInFilter)theFilter).run(ip);
-			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
-				ip.reset(ip.getMask());  //restore image outside irregular roi
-			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
-		} else {
-       		Undo.reset(); // can't undo stack operations
-			int n = stack.getSize();
-			int currentSlice = imp.getCurrentSlice();
-			Rectangle r = null;
-			Roi roi = imp.getRoi();
-			if (roi!=null && roi.getType()<Roi.LINE)
-				r = roi.getBoundingRect();
-			mask = imp.getMask();
-			ip = imp.getProcessor();
-			double minThreshold = ip.getMinThreshold();
-			double maxThreshold = ip.getMaxThreshold();
-			ip = stack.getProcessor(1);
-			ip.setLineWidth(Line.getWidth());
-			boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
-				&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
-			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
-				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
-			boolean doGarbageCollection = IJ.isWindows() && !IJ.isJava2();
-			for (int i=1; i<=n; i++) {
-				ip.setPixels(stack.getPixels(i));
-				ip.setMask(mask);
-				ip.setRoi(r);
-				ip.setCalibrationTable(cTable);
-				if (doMasking)
-					ip.snapshot();
-				((PlugInFilter)theFilter).run(ip);
-				if (doMasking)
-					ip.reset(mask);
-				if (doGarbageCollection && (i%10==0))
-					System.gc();
-				IJ.showProgress((double)i/n);
-			}
-			if (roi!=null)
-				imp.setRoi(roi);
-			IJ.showProgress(1.0);
-			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", n);
-		}
-		if ((capabilities&PlugInFilter.NO_CHANGES)==0) {
-			imp.changes = true;
-			if (slices>1 && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32))
-				imp.getProcessor().resetMinAndMax();
-	 		imp.updateAndDraw();
-	 	}
-		ImageWindow win = imp.getWindow();
-		if (win!=null)
-			win.running = false;
-		imp.unlock();
+		IJ.runFilterPlugIn(theFilter, cmd, arg);
 	}
         
 	public Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
-		if (applet!=null)
-			return null;
-		String pluginsDir = Menus.getPlugInsPath();
-		if (pluginsDir==null)
-			return null;
-		if (notVerified) {
-			// check for duplicate classes in the plugins folder
-			IJ.runPlugIn("ij.plugin.ClassChecker", "");
-			notVerified = false;
-		}
-		PluginClassLoader loader;
-		if (createNewLoader)
-			loader = new PluginClassLoader(pluginsDir);
-		else {
-			if (classLoader==null)
-				classLoader = new PluginClassLoader(pluginsDir);
-			loader = classLoader;
-		}
-		Object thePlugIn = null;
-		try { 
-			thePlugIn = (loader.loadClass(className)).newInstance(); 
- 			if (thePlugIn instanceof PlugIn)
-				((PlugIn)thePlugIn).run(arg);
- 			else if (thePlugIn instanceof PlugInFilter)
-				runFilterPlugIn(thePlugIn, commandName, arg);
-		}
-		catch (ClassNotFoundException e) {
-			if (className.indexOf('_')!=-1)
-				IJ.error("Plugin not found: "+className);
-		}
-		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
-		catch (IllegalAccessException e) {IJ.error("Unable to load plugin (acc)");}
-		return thePlugIn;
+		return IJ.runUserPlugIn(commandName, className, arg, createNewLoader);	
 	} 
 	
 	/** Return the current list of modifier keys. */
@@ -339,7 +192,7 @@ public class ImageJ extends Frame implements ActionListener,
 			hotkey = false;
 			if (cmd!=null)
 				doCommand(cmd);
-			if (IJ.debugMode) IJ.log("actionPerformed: "+cmd);
+			if (IJ.debugMode) IJ.log("actionPerformed: "+e);
 		}
 	}
 
@@ -432,6 +285,7 @@ public class ImageJ extends Frame implements ActionListener,
 					if (imp!=null)
 						imp.getWindow().running = false;
 					Macro.abort();
+					Interpreter.abort();
 					return;
 				case KeyEvent.VK_ENTER: this.toFront(); return;
 				default: break;
@@ -478,11 +332,14 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Called by ImageJ when the user selects Quit. */
 	public void quit() {
-		if (applet==null)
-			Prefs.savePreferences();
+		//IJ.log("closeAllWindows");
 		if (!WindowManager.closeAllWindows())
 			return;
+		//IJ.log("savePreferences");
+		if (applet==null)
+			Prefs.savePreferences();
 		setVisible(false);
+		//IJ.log("dispose");
 		dispose();
 		if (applet==null)
 			System.exit(0);
@@ -502,7 +359,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if (ij==null || (ij!=null && !ij.isShowing()))
 			new ImageJ(null);
     	if (args!=null) {
-    		for (int i=1; i<args.length; i++) {
+    		for (int i=0; i<args.length; i++) {
     			//IJ.log(i+" "+args[i]);
     			Opener opener = new Opener();
     			ImagePlus imp = opener.openImage(args[i]);

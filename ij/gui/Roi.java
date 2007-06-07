@@ -121,6 +121,18 @@ public class Roi extends Object implements Cloneable {
 		return 2.0*width*pw+2.0*height*ph;
 	}
 	
+	/** Returns Feret's diameter, the greatest distance between 
+		any two points along the ROI boundary. */
+	public double getFeretsDiameter() {
+		double pw=1.0, ph=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			pw = cal.pixelWidth;
+			ph = cal.pixelHeight;
+		}
+		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
+	}
+
 	public Rectangle getBoundingRect() {
 		return new Rectangle(x, y, width, height);
 	}
@@ -253,9 +265,16 @@ public class Roi extends Object implements Cloneable {
 				clipHeight += (int)(1/mag);
 			}
 		}
-		if (clipboard!=null && type!=RECTANGLE) {
-			clipWidth += 5;
-			clipHeight += 5;
+		if (type!=RECTANGLE) {
+			if (clipboard==null) {
+				clipWidth += 2;
+				clipHeight += 2;
+				clipX -= 1;
+				clipY -= 1;
+			} else {
+				clipWidth += 5;
+				clipHeight += 5;
+			}
 		}
 	}
 		

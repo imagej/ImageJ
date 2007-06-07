@@ -92,18 +92,21 @@ public class FolderOpener implements PlugIn {
 						stack = new ImageStack(width, height, cm);
 				}
 				if (imp==null)
-					IJ.write(list[i] + ": unable to open");
+					IJ.log(list[i] + ": unable to open");
 				else if (imp.getWidth()!=width || imp.getHeight()!=height)
-					IJ.write(list[i] + ": wrong dimensions");
+					IJ.log(list[i] + ": wrong dimensions");
 				else if (imp.getType()!=type)
-					IJ.write(list[i] + ": wrong type");
+					IJ.log(list[i] + ": wrong type");
 				else {
 					count = stack.getSize()+1;
 					IJ.showStatus(count+"/"+n);
 					IJ.showProgress((double)count/n);
 					ImageProcessor ip = imp.getProcessor();
-					if (grayscale)
+					if (grayscale) {
+						if (nonStandardLut(ip))
+							ip = new ColorProcessor(imp.getImage());
 						ip = ip.convertToByte(true);
+					}
 					if (halfSize)
 						ip = ip.resize(width/2, height/2);
 					if (ip.getMin()<min) min = ip.getMin();
@@ -127,6 +130,35 @@ public class FolderOpener implements PlugIn {
 		IJ.showProgress(1.0);
 	}
 	
+	boolean nonStandardLut(ImageProcessor ip) {
+		ColorModel cm = ip.getColorModel();
+		if (!(cm instanceof IndexColorModel))
+			return false;
+		IndexColorModel icm = (IndexColorModel)cm;
+		int mapSize = icm.getMapSize();
+		if (mapSize!=256)
+			return true;
+		byte[] reds = new byte[256];
+		byte[] greens = new byte[256];
+		byte[] blues = new byte[256];
+		icm.getReds(reds); 
+		icm.getGreens(greens); 
+		icm.getBlues(blues); 
+		boolean isStandard = true;
+		int inc = (reds[1]&255) - (reds[0]&255);
+		for (int i=0; i<256; i++) {
+			if ((reds[i] != greens[i]) || (greens[i] != blues[i])) {
+				isStandard = false;
+				break;
+			}
+			if (i>0 && ((reds[i]&255)-(reds[i-1]&255))!=inc) {
+				isStandard = false;
+				break;
+			}
+		}
+		return !isStandard;
+	}
+	
 	boolean showDialog(ImagePlus imp, String[] list) {
 		int fileCount = list.length;
 		FolderOpenerDialog gd = new FolderOpenerDialog("Sequence Options", imp, list);
@@ -134,7 +166,7 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Starting Image: ", 1, 0);
 		gd.addNumericField("Increment: ", 1, 0);
 		gd.addStringField("File Name Contains: ", "");
-		gd.addCheckbox("Convert to 8-bits", grayscale);
+		gd.addCheckbox("Convert to 8-bit Grayscale", grayscale);
 		gd.addCheckbox("Open 1/2 Size", halfSize);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.showDialog();
@@ -244,7 +276,7 @@ class FolderOpenerDialog extends GenericDialog {
 		if (d!=null)
 			return (int)d.doubleValue();
 		else
-			return 0;;
+			return 0;
       }
 
 }

@@ -25,9 +25,9 @@ public class Undo {
 	public static void setup(int what, ImagePlus imp) {
 		if (imp==null)
 			{reset(); return;}
+		//IJ.log(imp.getTitle() + ": set up undo (" + what + ")");
 		if (what==FILTER && whatToUndo==COMPOUND_FILTER)
 				return;
-		//IJ.log(imp.getTitle() + ": set up undo (" + what + ")");
 		if (what==COMPOUND_FILTER_DONE) {
 			if (whatToUndo==COMPOUND_FILTER)
 				whatToUndo = what;
@@ -58,11 +58,11 @@ public class Undo {
 
 	public static void undo() {
 		ImagePlus imp = WindowManager.getCurrentImage();
+		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")  "+(imageID!=imp.getID()));
 		if (imageID!=imp.getID()) {
 			reset();
 			return;
 		}
-		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")");
 		switch (whatToUndo) {
 			case FILTER:
 				ImageProcessor ip = imp.getProcessor();

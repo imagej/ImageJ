@@ -116,10 +116,31 @@ public class FileOpener {
 		if (show) imp.show();
 		imp.setFileInfo(fi);
 		setCalibration(imp);
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.getMin()==ip.getMax())  // find stack min and max if first slice is blank
+			setStackDisplayRange(imp);
 		IJ.showProgress(1.0);
 		return imp;
 	}
 
+	void setStackDisplayRange(ImagePlus imp) {
+		ImageStack stack = imp.getStack();
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
+		int n = stack.getSize();
+		for (int i=1; i<=n; i++) {
+			IJ.showStatus("Calculating stack min and max: "+i+"/"+n);
+			ImageProcessor ip = stack.getProcessor(i);
+			ip.resetMinAndMax();
+			if (ip.getMin()<min)
+				min = ip.getMin();
+			if (ip.getMax()>max)
+				max = ip.getMax();
+		}
+		imp.getProcessor().setMinAndMax(min, max);
+		imp.updateAndDraw();
+	}
+	
 	/** Restores original disk or network version of image. */
 	public void revertToSaved(ImagePlus imp) {
 		Image img;

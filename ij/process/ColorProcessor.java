@@ -28,7 +28,7 @@ public class ColorProcessor extends ImageProcessor {
 		} catch (InterruptedException e){};
 		createColorModel();
 		fgColor = 0xff000000; //black
-		setRoi(null);
+		resetRoi();
 	}
 
 	/**Creates a blank ColorProcessor of the specified dimensions. */
@@ -44,7 +44,7 @@ public class ColorProcessor extends ImageProcessor {
 		this.height = height;
 		createColorModel();
 		fgColor = 0xff000000; //black
-		setRoi(null);
+		resetRoi();
 		this.pixels = pixels;
 	}
 
@@ -111,7 +111,12 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Uses a table look-up to map the pixels in this image from min-max to 0-255. */
 	public void setMinAndMax(double min, double max) {
-		if (max<=min)
+		setMinAndMax(min, max, 7);
+	}
+
+
+	public void setMinAndMax(double min, double max, int channels) {
+		if (max<min)
 			return;
 		this.min = (int)min;
 		this.max = (int)max;
@@ -127,9 +132,11 @@ public class ColorProcessor extends ImageProcessor {
 			lut[i] = v;
 		}
 		reset();
-		applyTable(lut);
+		if (channels==7)
+			applyTable(lut);
+		else
+			applyTable(lut, channels);
 	}
-
 
 	public void snapshot() {
 		snapshotWidth = width;
@@ -193,6 +200,11 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
+	/** Returns a reference to the snapshot pixel array. Used by the ContrastAdjuster. */
+	public Object getSnapshotPixels() {
+		return snapshotPixels;
+	}
+
 	public int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x];
@@ -234,7 +246,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Stores the specified value at (x,y). */
 	public void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
-			pixels[y*width + x] = value;
+			pixels[y*width + x] = value|0xff000000;
 	}
 
 	/** Stores the specified real grayscale value at (x,y).
@@ -350,21 +362,59 @@ public class ColorProcessor extends ImageProcessor {
 	/* Filters start here */
 
 	public void applyTable(int[] lut) {
+		int c, r, g, b;
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				int c = pixels[i];
-				int r = lut[(c&0xff0000)>>16];
-				int g = lut[(c&0xff00)>>8];
-				int b = lut[c&0xff];
-				pixels[i] = (c&0xff000000) + (r<<16) + (g<<8) + b;
+				c = pixels[i];
+				r = lut[(c&0xff0000)>>16];
+				g = lut[(c&0xff00)>>8];
+				b = lut[c&0xff];
+				pixels[i] = 0xff000000 + (r<<16) + (g<<8) + b;
 				i++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
 		hideProgress();
 	}
+	
+	public void applyTable(int[] lut, int channels) {
+		int c, r=0, g=0, b=0;
+		for (int y=roiY; y<(roiY+roiHeight); y++) {
+			int i = y * width + roiX;
+			for (int x=roiX; x<(roiX+roiWidth); x++) {
+				c = pixels[i];
+				if (channels==4) {
+					r = lut[(c&0xff0000)>>16];
+					g = (c&0xff00)>>8;
+					b = c&0xff;
+				} else if (channels==2) {
+					r = (c&0xff0000)>>16;
+					g = lut[(c&0xff00)>>8];
+					b = c&0xff;
+				} else if (channels==1) {
+					r = (c&0xff0000)>>16;
+					g = (c&0xff00)>>8;
+					b = lut[c&0xff];
+				} else if ((channels&6)==6) {
+					r = lut[(c&0xff0000)>>16];
+					g = lut[(c&0xff00)>>8];
+					b = c&0xff;
+				} else if ((channels&5)==5) {
+					r = lut[(c&0xff0000)>>16];
+					g = (c&0xff00)>>8;
+					b = lut[c&0xff];
+				} else if ((channels&3)==3) {
+					r = (c&0xff0000)>>16;
+					g = lut[(c&0xff00)>>8];
+					b = lut[c&0xff];
+				}
+				pixels[i] = 0xff000000 + (r<<16) + (g<<8) + b;
+				i++;
+			}
+		}
+		hideProgress();
+	}
+
 	/** Fills the current rectangular ROI. */
 	public void fill() {
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
@@ -492,9 +542,13 @@ public class ColorProcessor extends ImageProcessor {
 		boolean checkCoordinates = (xScale < 1.0) || (yScale < 1.0);
 		int index1, index2, xsi, ysi;
 		double ys, xs;
+		double xlimit = width-1.0, xlimit2 = width-1.001;
+		double ylimit = height-1.0, ylimit2 = height-1.001;
 		for (int y=ymin; y<=ymax; y++) {
 			ys = (y-yCenter)/yScale + yCenter;
 			ysi = (int)ys;
+			if (ys<0.0) ys = 0.0;			
+			if (ys>=ylimit) ys = ylimit2;
 			index1 = y*width + xmin;
 			index2 = width*(int)ys;
 			for (int x=xmin; x<=xmax; x++) {
@@ -503,9 +557,11 @@ public class ColorProcessor extends ImageProcessor {
 				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ys>ymax)))
 					pixels[index1++] = (byte)bgColor;
 				else {
-					if (interpolate)
+					if (interpolate) {
+						if (xs<0.0) xs = 0.0;
+						if (xs>=xlimit) xs = xlimit2;
 						pixels[index1++] = getInterpolatedPixel(xs, ys, pixels2);
-					else
+					} else
 						pixels[index1++] = pixels2[index2+xsi];
 				}
 			}
@@ -536,8 +592,6 @@ public class ColorProcessor extends ImageProcessor {
 		int offset = ybase * width + xbase;
 		
 		int lowerLeft = pixels[offset];
-		if ((xbase>=(width-1))||(ybase>=(height-1)))
-			return lowerLeft;
 		int rll = (lowerLeft&0xff0000)>>16;
 		int gll = (lowerLeft&0xff00)>>8;
 		int bll = lowerLeft&0xff;
@@ -582,19 +636,31 @@ public class ColorProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
+		double xlimit = width-1.0, xlimit2 = width-1.001;
+		double ylimit = height-1.0, ylimit2 = height-1.001;
+		if (interpolate) {
+			dstCenterX += xScale/2.0;
+			dstCenterY += yScale/2.0;
+		}
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		int[] pixels2 = (int[])ip2.getPixels();
 		double xs, ys;
 		int index1, index2;
 		for (int y=0; y<=dstHeight-1; y++) {
 			ys = (y-dstCenterY)/yScale + srcCenterY;
+			if (interpolate) {
+				if (ys<0.0) ys = 0.0;
+				if (ys>=ylimit) ys = ylimit2;
+			}
 			index1 = width*(int)ys;
 			index2 = y*dstWidth;
 			for (int x=0; x<=dstWidth-1; x++) {
 				xs = (x-dstCenterX)/xScale + srcCenterX;
-				if (interpolate)
+				if (interpolate) {
+					if (xs<0.0) xs = 0.0;
+					if (xs>=xlimit) xs = xlimit2;
 					pixels2[index2++] = getInterpolatedPixel(xs, ys, pixels);
-				else
+				} else
 		  			pixels2[index2++] = pixels[index1+(int)xs];
 			}
 			if (y%20==0)
@@ -623,6 +689,8 @@ public class ColorProcessor extends ImageProcessor {
 		double tmp3, tmp4, xs, ys;
 		int index, ixs, iys;
 		double dwidth = width, dheight=height;
+		double xlimit = width-1.0, xlimit2 = width-1.001;
+		double ylimit = height-1.0, ylimit2 = height-1.001;
 		
 		for (int y=roiY; y<(roiY + roiHeight); y++) {
 			index = y*width + roiX;
@@ -632,9 +700,13 @@ public class ColorProcessor extends ImageProcessor {
 				xs = x*ca + tmp3;
 				ys = x*sa + tmp4;
 				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-					if (interpolate)
+					if (interpolate) {
+						if (xs<0.0) xs = 0.0;
+						if (xs>=xlimit) xs = xlimit2;
+						if (ys<0.0) ys = 0.0;			
+						if (ys>=ylimit) ys = ylimit2;
 				  		pixels[index++] = getInterpolatedPixel(xs, ys, pixels2);
-				  	else {
+				  	} else {
 				  		ixs = (int)(xs+0.5);
 				  		iys = (int)(ys+0.5);
 				  		if (ixs>=width) ixs = width - 1;

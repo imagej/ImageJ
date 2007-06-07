@@ -19,7 +19,7 @@ public class Convolver implements PlugInFilter {
 	ImageWindow win;
 	boolean isLineRoi;
 	
-	static String kernelText = ".0625  .125  .0625\n.125    .25    .125\n.0625  .125  .0625";
+	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
 	static boolean normalize = true;
 
 	public int setup(String arg, ImagePlus imp) {
@@ -54,7 +54,7 @@ public class Convolver implements PlugInFilter {
 		if (win.running!=true)
 			{canceled=true; return;}
 		if (isLineRoi)
-			ip.setRoi(null);
+			ip.resetRoi();
 		convolve(ip, kernel, kw, kh);
 		if (slice>1)
 			IJ.showStatus("Convolve: "+slice+"/"+imp.getStackSize());

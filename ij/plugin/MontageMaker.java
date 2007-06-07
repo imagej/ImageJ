@@ -88,7 +88,12 @@ public class MontageMaker implements PlugIn {
 		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor))
 			blackBackground = true;
 		if (blackBackground) {
-			montage.setColor(Color.black);
+			float[] cTable = imp.getCalibration().getCTable();
+		    boolean signed16Bit = cTable!=null && cTable[0]==-32768;
+			if (signed16Bit)
+				montage.setValue(32768);
+			else
+				montage.setColor(Color.black);
 			montage.fill();
 			montage.setColor(Color.white);
 		} else {

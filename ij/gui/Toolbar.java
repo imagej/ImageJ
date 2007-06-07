@@ -50,6 +50,7 @@ public class Toolbar extends Canvas implements MouseListener {
 	private Color darker = gray.darker();
 	private Color evenDarker = darker.darker();
 
+
 	public Toolbar() {
 		down = new boolean[NUM_TOOLS];
 		resetButtons();

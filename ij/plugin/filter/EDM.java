@@ -15,25 +15,25 @@ public class EDM implements PlugInFilter {
 	int[] levelStart;
 	int[] levelOffset;
 	int[] histogram;
+	int slice;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		this.arg = arg;
-		return DOES_8G+NO_CHANGES;
+        return IJ.setupDialog(imp, DOES_8G);
 	}
 	
 	public void run(ImageProcessor ip) {
+		slice++;
 		ImageStatistics stats = imp.getStatistics();
-		if (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
+		if (slice==1 && stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
 			IJ.error("8-bit binary image (0 and 255) required.");
 			return;
 		}
 		ImageProcessor ip2 = makeEDM(ip);
-		if (arg.equals("points")) {
+		if (arg.equals("points"))
 			findUltimatePoints(ip2);
-			new ImagePlus("Ultimate Points", ip2).show();
-		} else
-			new ImagePlus("EDM", ip2).show();
+		ip.copyBits(ip2, 0, 0, Blitter.COPY);
 	}
 
 

@@ -282,6 +282,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void show(String statusMessage) {
 		if (win!=null)
 			return;
+		if (ij==null && IJ.macroRunning()) {
+			WindowManager.setTempCurrentImage(this);
+			return;
+		}
 		if (img==null && ip!=null)
 			img = ip.createImage();
 		if ((img!=null) && (width>=0) && (height>=0)) {
@@ -341,8 +345,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Replaces the ImageProcessor, if any, with the one specified.
 		Set 'title' to null to leave the image title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
-		if (stack!=null && stack.getSize()<2)
+		if (stack!=null && stack.getSize()<2) {
 			stack = null;
+			currentSlice = 1;
+		}
 		setProcessor2(title, ip);
 	}
 	
@@ -444,7 +450,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (roi!=null && roi.getType()<Roi.LINE)
 			ip.setRoi(roi.getBoundingRect());
 		else
-			ip.setRoi(null);
+			ip.resetRoi();
 	}
 	
 	public boolean isProcessor() {
@@ -483,7 +489,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private int maskCount;
 	
 	/** For images with irregular ROIs, returns a binary mask, otherwise, returns
-		null. Pixels inside the mask have a value of ImageProcessor.BLACK. */
+		null. Mask pixels have a value of ImageProcessor.BLACK. The size of the
+		mask array is rw*rh, where rw and rh are the width and height of the ROI's 
+		bounding rectangle.*/
 	public int[] getMask () {
 		int[] mask = null;
 		if (roi!=null && roi.getType()<Roi.LINE) {
@@ -610,6 +618,18 @@ public class ImagePlus implements ImageObserver, Measurements {
     	return imageType;
     }
 
+    /** Returns the bit depth, 8, 16, 24 (RGB) or 32. RGB images actually use 32 bits per pixel. */
+    public int getBitDepth() {
+    	int bitDepth = 0;
+    	switch (imageType) {
+	    	case GRAY8: case COLOR_256: bitDepth=8; break;
+	    	case GRAY16: bitDepth=16; break;
+	    	case GRAY32: bitDepth=32; break;
+	    	case COLOR_RGB: bitDepth=24; break;
+    	}
+    	return bitDepth;
+    }
+    
     protected void setType(int type) {
     	if ((type<0) || (type>COLOR_RGB))
     		return;
@@ -858,7 +878,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			saveRoi();
 			roi = null;
 			if (ip!=null)
-			ip.setRoi(null);
+			ip.resetRoi();
 			draw();
 		}
 	}
@@ -1008,7 +1028,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Sets the image arrays to null to help the garbage collector
 		do its job. Does nothing if the image is locked. */
-	public void flush() {
+	public synchronized void flush() {
 		if (locked)
 			return;
 		if (ip!=null) {
@@ -1070,8 +1090,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			calibration = null;
 		else {
 			calibration = cal.copy();
-			if (imageType==GRAY32 || imageType==COLOR_RGB)
-				calibration.disableDensityCalibration();
+			calibration.setImage(this);
 		}
    }
 

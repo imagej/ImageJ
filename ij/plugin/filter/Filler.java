@@ -99,7 +99,7 @@ public class Filler implements PlugInFilter {
  		ip.fill();
  		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
  		ip.fill();
- 		ip.setRoi(null);
+ 		ip.resetRoi();
  		if (sliceCount==stackSize) {
 			ip.setColor(Toolbar.getForegroundColor());
 			Roi roi = imp.getRoi();

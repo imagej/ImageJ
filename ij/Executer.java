@@ -190,7 +190,10 @@ public class Executer implements Runnable {
 			IJ.noImage();
 		else {
 			ImageWindow win = imp.getWindow();
-			if (win!=null) win.close();
+			if (win!=null)
+				win.close();
+			else if (IJ.macroRunning())
+					WindowManager.setTempCurrentImage(null);
 		}
 	}
 

@@ -51,7 +51,7 @@ public class GaussianBlur implements PlugInFilter {
 		} else
 			IJ.showStatus("Gaussian Blur: "+slice+"/"+imp.getStackSize());
 		if (isLineRoi)
-			ip.setRoi(null);
+			ip.resetRoi();
 		blur(ip, radius);
 	}
 	

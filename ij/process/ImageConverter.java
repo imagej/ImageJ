@@ -27,7 +27,7 @@ public class ImageConverter {
 		if (type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
 			ImageProcessor ip = imp.getProcessor();
 			imp.setProcessor(null, ip.convertToByte(doScaling));
-			imp.getCalibration().disableDensityCalibration();
+			imp.setCalibration(imp.getCalibration()); //update calibration
 		} else {
 			ImageProcessor ip;
 			if (imp.getType()==ImagePlus.COLOR_RGB)
@@ -45,7 +45,7 @@ public class ImageConverter {
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
 		imp.setProcessor(null, ip.convertToShort(doScaling));
-		imp.getCalibration().disableDensityCalibration();
+		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 
 	/** Converts this ImagePlus to 32-bit grayscale. */
@@ -57,14 +57,14 @@ public class ImageConverter {
 		Calibration cal = imp.getCalibration();
 		ip.setCalibrationTable(cal.getCTable());
 		imp.setProcessor(null, ip.convertToFloat());
-		cal.disableDensityCalibration();
+		imp.setCalibration(cal); //update calibration
 	}
 
 	/** Converts this ImagePlus to RGB. */
 	public void convertToRGB() {
 		ImageProcessor ip = imp.getProcessor();
 		imp.setProcessor(null, ip.convertToRGB());
-		imp.getCalibration().disableDensityCalibration();
+		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 	
 	/** Converts an RGB image to an RGB (red, green and blue) stack. */

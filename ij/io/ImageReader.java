@@ -127,9 +127,10 @@ public class ImageReader {
 			if (fi.intelByteOrder)
 				for (int i=base; i < (base+pixelsRead); i++) {
 					tmp = (int)(((buffer[j+3]&0xff)<<24) | ((buffer[j+2]&0xff)<<16) | ((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff));
-					if (fi.fileType==FileInfo.GRAY32_FLOAT) {
+					if (fi.fileType==FileInfo.GRAY32_FLOAT)
 						pixels[i] = Float.intBitsToFloat(tmp);
-					}
+					else if (fi.fileType==FileInfo.GRAY32_UNSIGNED)
+						pixels[i] = (float)(tmp&0xffffffffL);
 					else
 						pixels[i] = tmp;
 					j += 4;
@@ -139,6 +140,8 @@ public class ImageReader {
 					tmp = (int)(((buffer[j]&0xff)<<24) | ((buffer[j+1]&0xff)<<16) | ((buffer[j+2]&0xff)<<8) | (buffer[j+3]&0xff));
 					if (fi.fileType==FileInfo.GRAY32_FLOAT)
 						pixels[i] = Float.intBitsToFloat(tmp);
+					else if (fi.fileType==FileInfo.GRAY32_UNSIGNED)
+						pixels[i] = (float)(tmp&0xffffffffL);
 					else
 						pixels[i] = tmp;
 					j += 4;
@@ -268,6 +271,7 @@ public class ImageReader {
 					skip(in);
 					return (Object)read16bitImage(in);
 				case FileInfo.GRAY32_INT:
+				case FileInfo.GRAY32_UNSIGNED:
 				case FileInfo.GRAY32_FLOAT:
 					bytesPerPixel = 4;
 					skip(in);

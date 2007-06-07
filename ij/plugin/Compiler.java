@@ -25,7 +25,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	 }
 	 
 	void edit() {
-		if (open("", "Edit, Compile and Run Plugin...")) {
+		if (open("", "Open macro or plugin")) {
 			Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 			if (ed!=null) ed.open(dir, name);
 		}
@@ -48,8 +48,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 			}
 		} catch (NoClassDefFoundError e) {
 			IJ.error("This JVM does not include the javac compiler. Javac is\n"
-				+"included with the Windows and Linux versions of ImageJ.\n"
- 				+"Mac OS 9 users must install Apple's Java SDK.");
+					+"included with the Windows, OS X and Linux versions of\n"
+ 					+"ImageJ. Mac OS 9 users must install Apple's Java SDK.");
  			return false;
 		}
 		return true;
@@ -62,7 +62,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		output.reset();
 		boolean compiled = javac.compile(new String[] {"-deprecation","-classpath",classpath,path});
 		String s = output.toString();
-		boolean errors = (!compiled || (s!=null && s.length()>0));
+		boolean errors = (!compiled || areErrors(s));
 		if (errors)
 			showErrors(s);
 		else
@@ -70,6 +70,13 @@ public class Compiler implements PlugIn, FilenameFilter {
 		return compiled;
 	 }
 
+	boolean areErrors(String s) {
+		boolean errors = s!=null && s.length()>0;
+		if (errors && s.startsWith("Note: sun.tools.javac") && s.indexOf("error")==-1)
+			errors = false;
+		return errors;
+	}
+	
 	void showErrors(String s) {
 		if (errors==null || !errors.isVisible())
 			errors = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
@@ -100,8 +107,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 			okay = name!=null;
 			dir = fd.getDirectory();
 			fd.dispose();
-			if (okay && !(name.endsWith(".java")||name.endsWith(".txt"))) {
-				IJ.error("File name must end with \".java\".");
+			if (okay && !(name.endsWith(".java")||name.endsWith(".txt")||name.endsWith(".macro"))) {
+				IJ.error("File name must end with \".java\", \".macro\" or \".txt\".");
 				okay = false;
 			}
 		} else {
@@ -127,7 +134,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	// only show files with names ending in ".java"
 	// doesn't work with Windows
 	public boolean accept(File dir, String name) {
-		return name.endsWith(".java");
+		return name.endsWith(".java")||name.endsWith(".macro")||name.endsWith(".txt");
 	}
 	
 	// run the plugin using a new class loader
@@ -155,7 +162,8 @@ class PlugInExecuter implements Runnable {
 
 	public void run() {
 		try {
-			IJ.getInstance().runUserPlugIn(plugin, plugin, "", true);
+			ImageJ ij = IJ.getInstance();
+			if (ij!=null) ij.runUserPlugIn(plugin, plugin, "", true);
 		} catch(Throwable e) {
 			IJ.showStatus("");
 			IJ.showProgress(1.0);

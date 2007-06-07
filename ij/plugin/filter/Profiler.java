@@ -30,10 +30,10 @@ public class Profiler implements PlugInFilter {
 		boolean wasFixedScale = fixedScale;
 		
 		GenericDialog gd = new GenericDialog("Profile Plot Options", IJ.getInstance());
-		gd.addNumericField("Plot Width:", PlotWindow.plotWidth, 0);
-		gd.addNumericField("Plot Height:", PlotWindow.plotHeight, 0);
-		gd.addNumericField("Y Min:", ymin, 2);
-		gd.addNumericField("Y Max:", ymax, 2);
+		gd.addNumericField("Width (pixels):", PlotWindow.plotWidth, 0);
+		gd.addNumericField("Height (pixels):", PlotWindow.plotHeight, 0);
+		gd.addNumericField("Minimum Y:", ymin, 2);
+		gd.addNumericField("Maximum Y:", ymax, 2);
 		gd.addCheckbox("Fixed Y-axis Scale", fixedScale);
 		gd.addCheckbox("Do Not Save X-Values", !PlotWindow.saveXValues);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);

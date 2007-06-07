@@ -115,7 +115,7 @@ public class ScaleBar implements PlugIn {
         int y = yloc;
         ip.setRoi(x, y, barWidthInPixels, barHeightInPixels);
         ip.fill();
-        ip.setRoi(null);
+        ip.resetRoi();
 
         int fontType = boldText?Font.BOLD:Font.PLAIN;
         ip.setFont(new Font("SansSerif", fontType, fontSize));

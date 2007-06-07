@@ -38,6 +38,7 @@ public class StackProcessor {
     	}
  	   	ImageProcessor ip2 = stack.getProcessor(1);
  	   	ip2.setRoi(this.ip.getRoi());
+	    ip2.setInterpolate(this.ip.getInterpolate());
 	    for (int i=1; i<=nSlices; i++) {
     		showStatus(s,i,nSlices);
 	    	ip2.setPixels(stack.getPixels(i));

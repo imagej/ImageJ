@@ -327,11 +327,10 @@ public abstract class ImageProcessor extends Object {
 
 	/** Defines a rectangular region of interest and sets
 		the mask to null if this ROI is not the same size
-		as the previous one. Use a null argument to 
-		set the ROI to the entire image. */
+		as the previous one. */
 	public void setRoi(Rectangle roi) {
 		if (roi==null)
-			setRoi(0, 0, width, height);
+			resetRoi();
 		else
 			setRoi(roi.x, roi.y, roi.width, roi.height);
 	}
@@ -371,6 +370,13 @@ public abstract class ImageProcessor extends Object {
 		yMax = Math.min(roiY + roiHeight - 1, height - 2);
 	}
 	
+	/** Sets the ROI (Region of Interest) to the entire image. */
+	public void resetRoi() {
+		roiX=0; roiY=0; roiWidth=width; roiHeight=height;
+		xMin=1; xMax=width-2; yMin=1; yMax=height-2;
+		mask=null; 
+	}
+
 	/** Returns a Rectangle that represents the current
 		region of interest. */
 	public Rectangle getRoi() {
@@ -401,6 +407,11 @@ public abstract class ImageProcessor extends Object {
 		rotate() and getLine() to do bilinear interpolation. */
 	public void setInterpolate(boolean interpolate) {
 		this.interpolate = interpolate;
+	}
+
+	/** Returns the value of the interpolate field. */
+	public boolean getInterpolate() {
+		return interpolate;
 	}
 
 	/** Obsolete. */
@@ -634,6 +645,8 @@ public abstract class ImageProcessor extends Object {
 		if (s.equals(""))
 			return;
 		setupFrame();
+		if (ij.IJ.isMacOSX())
+			s += " ";
 		int w =  getStringWidth(s);
 		//if (antialiasedText)
 		//	w = boldFont?(int)(1.15*w):(int)(1.08*w);
@@ -649,7 +662,7 @@ public abstract class ImageProcessor extends Object {
 			Java2.setAntialiasedText(g, true);
 			setRoi(cx,cy-h,w,h);
 			ImageProcessor ip = crop();
-			setRoi(null);
+			resetRoi();
 			g.drawImage(ip.createImage(), 0, 0, null);
 			g.setColor(drawingColor);
 			g.drawString(s, 0, h-descent);
@@ -682,8 +695,7 @@ public abstract class ImageProcessor extends Object {
 			setRoi(cx,cy-h,w,h);
 			fill(getMask());
 		}
-		setRoi(null);
-		setMask(null);
+		resetRoi();
 		cy += h;
 	}
 
@@ -981,7 +993,7 @@ public abstract class ImageProcessor extends Object {
 		FIND_EDGES, etc.) determines the filter type. */
 	public abstract void filter(int type);
 	
-	/** A 3x3 median filter. */
+	/** A 3x3 median filter. Requires 8-bit or RGB image. */
 	public abstract void medianFilter();
 	
     /** Adds random noise to the image or ROI.
@@ -996,7 +1008,7 @@ public abstract class ImageProcessor extends Object {
 	/** Returns a duplicate of this image. */
 	public ImageProcessor duplicate() {
 		Rectangle saveRoi = getRoi();
-		setRoi(null);
+		resetRoi();
 		ImageProcessor ip2 = crop();
 		setRoi(saveRoi);
 		return ip2;
@@ -1029,10 +1041,10 @@ public abstract class ImageProcessor extends Object {
 		for float images. */
 	public abstract int[] getHistogram();
 	
-	/** Erodes the image or ROI using a 3x3 maximum filter. */
+	/** Erodes the image or ROI using a 3x3 maximum filter. Requires 8-bit or RGB image. */
 	public abstract void erode();
 	
-	/** Dilates the image or ROI using a 3x3 minimum filter. */
+	/** Dilates the image or ROI using a 3x3 minimum filter. Requires 8-bit or RGB image. */
 	public abstract void dilate();
 	
 	/** For 16 and 32 bit processors, set 'lutAnimation' true

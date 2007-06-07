@@ -85,10 +85,9 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 
 	public ImageProcessor openFile(String path) throws IOException {
 		InputStream is = new BufferedInputStream(new FileInputStream(path));
-		//This was a failed attempt to avoid the "deprecated" message
-		//Reader r = new InputStreamReader(is);
-		//StreamTokenizer tok = new StreamTokenizer(r);
-		StreamTokenizer tok = new StreamTokenizer(is);
+		StreamTokenizer tok = new StreamTokenizer(is); //deprecated, but it works
+		//Reader r = new BufferedReader(new InputStreamReader(is));
+		//StreamTokenizer tok = new StreamTokenizer(r);  // doesn't work
 		tok.resetSyntax();
 		tok.wordChars(33, 255);
 		tok.whitespaceChars(0, ' ');
@@ -97,7 +96,10 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		tok.commentChar('#');
 		openHeader(tok);
 		if (sixteenBits)
-			return open16bitRawImage(is, width, height);
+			if(rawBits)
+				return open16bitRawImage(is, width, height);
+			else
+				return open16bitAsciiImage(tok, width, height);
 		else {
 			byte[] pixels = new byte[width*height];
 			ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
@@ -120,12 +122,13 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 		int maxValue = getInt(tok);
 		if (width==-1 || height==-1 || maxValue==-1)
 			throw new IOException("Error opening PGM header..");
-		sixteenBits = rawBits && maxValue>255;
+		if(maxValue > 255)
+			sixteenBits = true;
+		else
+			sixteenBits = false;
 		String msg = "The maximum gray value is larger than ";
 		if (sixteenBits && maxValue>65535)
 			throw new IOException(msg + "65535.");
-		if (!sixteenBits && maxValue>255)
-			throw new IOException(msg + "255.");
 	}
 
 	public void openAsciiImage(StreamTokenizer tok, int size, byte[] pixels) throws IOException {
@@ -158,6 +161,23 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 			pixels[i] = (short)(((bytes[j]&0xff)<<8) | (bytes[j+1]&0xff)); //big endian
 		return new ShortProcessor(width, height, pixels, null);
    	}
+	
+	public ImageProcessor open16bitAsciiImage(StreamTokenizer tok,
+	int width, int height) throws IOException {
+		int i = 0;
+		int size = width * height;
+		int inc = size/20; // Progress update interval
+		short[] pixels = new short[size];
+		while (tok.nextToken() != tok.TT_EOF) {
+			if (tok.ttype==tok.TT_NUMBER) {
+				pixels[i++] = (short)(((int)tok.nval)&65535);
+				if (i%inc==0)
+					IJ.showProgress(0.5+((double)i/size)/2.0);
+			}
+		}
+		IJ.showProgress(1.0);
+		return new ShortProcessor(width, height, pixels, null);
+	}
 	
 	String getWord(StreamTokenizer tok) throws IOException {
 		while (tok.nextToken() != tok.TT_EOF) {

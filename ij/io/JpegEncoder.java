@@ -38,7 +38,7 @@ public class JpegEncoder {
     static int Quality,defaultQuality=75;
     int code;
     
-    static {setQuality(ij.Prefs.getInt("jpeg",defaultQuality));}
+    static {setQuality(ij.Prefs.getInt(ij.Prefs.JPEG, defaultQuality));}
     
     public static int[] jpegNaturalOrder = {
           0,  1,  8, 16,  9,  2,  3, 10,

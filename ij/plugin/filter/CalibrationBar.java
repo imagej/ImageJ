@@ -367,7 +367,7 @@ public class CalibrationBar implements PlugInFilter {
             ip.setRoi(x, y, win_width, (int)(WIN_HEIGHT*zoom + 2*(int)(YMARGIN*zoom)) );
             ip.fill();
         }
-        ip.setRoi(null);
+        ip.resetRoi();
 
         drawColorBar(ip,x,y);
         imp.updateAndDraw();

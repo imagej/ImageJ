@@ -49,7 +49,7 @@ public class Menus {
 	private static String pluginsPath;
 	private static Menu pluginsMenu, importMenu, saveAsMenu, shortcutsMenu,
 		aboutMenu, filtersMenu, toolsMenu, utilitiesMenu;
-	private static Hashtable pluginsTable = new Hashtable();
+	private static Hashtable pluginsTable;
 	
 	static Menu window;
 	static int nPlugins;
@@ -65,6 +65,7 @@ public class Menus {
 
 	String addMenuBar() {
 		error = null;
+		pluginsTable = new Hashtable();
 		
 		Menu file = new Menu("File");
 		addItem(file, "New...", KeyEvent.VK_N, false);
@@ -119,6 +120,7 @@ public class Menus {
 		addPlugInItem(image, "Show Info...", "ij.plugin.filter.Info", KeyEvent.VK_I, false);
 		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", 0, false);
 		addSubMenu(image, "Benchmarks");
+		addSubMenu(image, "Color");
 		addSubMenu(image, "Stacks");
 		image.addSeparator();
 		addPlugInItem(image, "Crop", "ij.plugin.filter.Resizer(\"crop\")", 0, false);
@@ -188,7 +190,8 @@ public class Menus {
 		mbar.add(pluginsMenu);
 		mbar.add(window);
 		mbar.setHelpMenu(help);
-		ij.setMenuBar(mbar);
+		if (ij!=null)
+			ij.setMenuBar(mbar);
 		
 		return error;
 	}
@@ -624,9 +627,11 @@ public class Menus {
 
 	/** Changes the name of an item in the Window menu. */
 	public static synchronized void updateWindowMenuItem(String oldLabel, String newLabel) {
+		if (oldLabel.equals(newLabel))
+			return;
 		int first = WINDOW_MENU_ITEMS;
 		int last = window.getItemCount()-1;
-		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last);
+		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last+" "+oldLabel+" "+newLabel);
 		for (int i=first; i<=last; i++) {
 			MenuItem item = window.getItem(i);
 			//IJ.write(i+" "+item.getLabel()+" "+newLabel);

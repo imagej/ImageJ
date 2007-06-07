@@ -4,32 +4,71 @@ import ij.*;
 import ij.gui.*;
 import ij.plugin.frame.Editor;
 
-/** This class creates new plugins in Java source form. */
+/** This class creates a new macro or the Java source for a new plugin. */
 public class NewPlugin implements PlugIn {
 
-	public static final int PLUGIN=0, PLUGIN_FILTER=1, PLUGIN_FRAME=2;
+	public static final int MACRO=0, PLUGIN=1, PLUGIN_FILTER=2, PLUGIN_FRAME=3;
 	
-    private static int type = PLUGIN;
-    private static String name = "Plugin_.java";
-    private static String[] types = {"Plugin", "Filter", "Frame"};
+    private static int type = MACRO;
+    private static String name = "Macro";
+    private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame"};
     
     public void run(String arg) {
 		if (arg.equals("")&&!showDialog())
 			return;
-		if (arg.equals(""))
-    		createPlugin(name, type, arg);
-    	else
+		if (!arg.equals(""))
+			type = PLUGIN;
+		if (arg.equals("")) {
+			if (type==MACRO)
+    			createMacro(name);
+    		else
+    			createPlugin(name, type, arg);
+    	} else
     		createPlugin("Macro_.java", type, arg);
     	IJ.register(NewPlugin.class);
     }
     
-	public void createPlugin(String name, int type, String methods) {
+	public void createMacro(String name) {
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+		if (ed==null)
+			return;
+		if (name.endsWith(".java"))
+			name = name.substring(0, name.length()-5);
+		if (name.endsWith("_"))
+			name = name.substring(0, name.length()-1);
+		if (!(name.endsWith(".txt") || name.endsWith(".macro")))
+			name += ".txt";
+		String text = "";
+		text += "// This is an ImageJ macro. Run it by typing ctrl-R.\n";
+		text += "// If there is a selection, only the selection runs.\n";
+		text += "  \n";
+		text += "  var n = 2\n";
+		text += "  \"n = \"+n\n";
+		text += "  \"(n+3)/2 = \"+(n+3)/2+\",   sqrt(n) = \"+sqrt(n)\n";
+		text += "  \"1.234567 to 3 decimal places is \"+d2s(1.234567,3)\n";
+		text += "  \"1023 in hex is \"+toHex(1023)\n";
+		text += "  \"3ff in decimal is \"+0x3ff\n";
+		text += "  \n";
+		text += "  var w=400, h=w/2;\n";
+		text += "  \"opening \"+w+\"x\"+h+\" image...\"\n";
+		text += "  run(\"New...\",  \"name=Test fill=Ramp width=\"+w+\" height=\"+h);\n";
+		text += "  run(\"AND...\", \"value=11100000\");\n";
+		text += "  run(\"Find Edges\");\n";
+		text += "  run(\"Invert\");\n";
+		ed.create(name, text);
+	}
+
+	public void createPlugin(String name, int type, String methods) {
+  		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
 		String pluginName = name;
 		if (!(name.endsWith(".java") || name.endsWith(".JAVA")))
 			pluginName += ".java";
+		if (name.indexOf('_')==-1) {
+			pluginName = pluginName.substring(0, pluginName.length()-5);
+			pluginName = pluginName + "_.java";
+		}
 		String className = pluginName.substring(0,pluginName.length()-5);
 		String text = "";
 		text += "import ij.*;\n";

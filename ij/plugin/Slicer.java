@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import ij.measure.*;
+import ij.plugin.filter.RGBStackSplitter;
 
 /** Implements the Image/Stacks/Reslice command. */
 public class Slicer implements PlugIn {
@@ -13,6 +14,7 @@ public class Slicer implements PlugIn {
     private double outputZSpacing = 1.0; 
     private int outputSlices = 1;
     private ImageWindow win;
+	private boolean noRoi;
 
     public void run(String arg) {
         ImagePlus imp = WindowManager.getCurrentImage();
@@ -31,16 +33,60 @@ public class Slicer implements PlugIn {
         win = imp.getWindow();
         if (win!=null) win.running = true;
         long startTime = System.currentTimeMillis();
+        ImagePlus imp2 = null;
+        if (imp.getType()==ImagePlus.COLOR_RGB)
+        	imp2 = resliceRGB(imp);
+        else
+        	imp2 = reslice(imp);
+        if (imp2==null)
+        	return;
+        imp2.setCalibration(imp.getCalibration());
+        Calibration cal = imp2.getCalibration();
+        cal.pixelDepth = outputZSpacing*cal.pixelWidth;
+        imp2.show();
+        if (noRoi)
+            imp.killRoi();
+        else
+           imp.draw(); 
+        if (win!=null) win.running = false;
+        IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");
+    }
+
+    public ImagePlus resliceRGB(ImagePlus imp) {
+        Roi roi = imp.getRoi();
+        RGBStackSplitter splitter = new RGBStackSplitter();
+        splitter.split(imp.getStack(), true);
+        IJ.showStatus("Slicer: RGB split");
+        ImagePlus red = new ImagePlus("Red", splitter.red);
+        ImagePlus green = new ImagePlus("Green", splitter.green);
+        ImagePlus blue = new ImagePlus("Blue", splitter.blue);
+        red.setRoi(roi); green.setRoi(roi); blue.setRoi(roi);
+        Calibration cal = imp.getCalibration();
+        red.setCalibration(cal); green.setCalibration(cal); blue.setCalibration(cal);
+        IJ.showStatus("Slicer: reslicing red");
+        red = reslice(red);
+        IJ.showStatus("Slicer: reslicing green");
+        green = reslice(green);
+        IJ.showStatus("Slicer: reslicing blue");
+        blue = reslice(blue);
+        int w = red.getWidth(), h = red.getHeight(), d = red.getStackSize();
+        RGBStackMerge merge = new RGBStackMerge();
+        IJ.showStatus("Slicer: RGB merge");
+        ImageStack stack = merge.mergeStacks(w, h, d, red.getStack(), green.getStack(), blue.getStack(), true);
+        return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
+    }
+
+    public ImagePlus reslice(ImagePlus imp) {
         Roi roi = imp.getRoi();
         int roiType = roi!=null?roi.getType():0;
         if (roi==null || roiType==Roi.RECTANGLE || roiType==Roi.LINE)
-            reslice(imp);
+            return resliceRectOrLine(imp);
         else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
-            resliceDiagonally(imp);
-        else
+            return resliceDiagonally(imp);
+        else {
             IJ.showMessage("Reslice...", "Line or rectangular selection required");
-        if (win!=null) win.running = false;
-        IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");
+            return null;
+        }
     }
 
    boolean showDialog(ImagePlus imp) {
@@ -55,7 +101,7 @@ public class Slicer implements PlugIn {
         gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3); 
         gd.addNumericField("Output Z Spacing ("+units+"):", outputSpacing, 3); 
         if (line)
-            gd.addNumericField("Output Slice Count:", outputSlices, 0);
+            gd.addNumericField("Slice Count:", outputSlices, 0);
         else 
            gd.addChoice("Start At:", starts, startAt);
         gd.showDialog(); 
@@ -71,14 +117,14 @@ public class Slicer implements PlugIn {
         return true;
     }
 
-    void reslice(ImagePlus imp) {
+    ImagePlus resliceRectOrLine(ImagePlus imp) {
         double x1 = 0.0;
         double y1 = 0.0;
         double x2 = 0.0;
         double y2 = 0.0;
         double xInc = 0.0;
         double yInc = 0.0;
-        boolean noRoi = false;
+        noRoi = false;
 
         Roi roi = imp.getRoi();
         if (roi==null) {
@@ -133,11 +179,11 @@ public class Slicer implements PlugIn {
                 xInc = -(dy/nrm); 
                 yInc = (dx/nrm);
        } else
-            return;
+            return null;
 
         if (outputSlices==0) {
            IJ.showMessage("Reslicer", "Output Z spacing ("+IJ.d2s(outputZSpacing,0)+" pixels) is too large.");
-           return;
+           return null;
         }
 
         ImageStack stack=null;
@@ -152,30 +198,16 @@ public class Slicer implements PlugIn {
             y1 += yInc;
             y2 += yInc;
             if (win!=null && !win.running)
-                {IJ.beep(); imp.draw(); return;}
+                {IJ.beep(); imp.draw(); return null;}
         }
-
-        ImagePlus imp2 = new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
-        imp2.setCalibration(imp.getCalibration());
-        Calibration cal = imp2.getCalibration();
-        cal.pixelDepth = outputZSpacing*cal.pixelWidth;
-        imp2.show();
-        if (noRoi)
-            imp.killRoi();
-        else
-           imp.draw(); 
+        
+        return new ImagePlus("Reslice of  "+imp.getShortTitle(), stack);
     }
 
-    void resliceDiagonally(ImagePlus imp) {
+    ImagePlus resliceDiagonally(ImagePlus imp) {
         ImageProcessor ip2 = getSlice(imp, 0.0, 0.0, 0.0, 0.0);
-        if (ip2!=null) {
-            ImagePlus imp2 = new ImagePlus("Reslice of  "+imp.getShortTitle(), ip2);
-            imp2.setCalibration(imp.getCalibration());
-           Calibration cal = imp2.getCalibration();
-           cal.pixelDepth = outputZSpacing*cal.pixelWidth;
-           imp2.show();
-        }         
-}
+        return new ImagePlus("Reslice of  "+imp.getShortTitle(), ip2);       
+    }
  
    ImageProcessor getSlice(ImagePlus imp, double x1, double y1, double x2, double y2) {
         Roi roi = imp.getRoi();

@@ -9,6 +9,8 @@ import ij.gui.*;
 /** Displays a window that allows the user to set the font, size and style. */
 public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 
+	private static String[] sizes = {"8","9","10","12","14","18","24","28","36","48","60","72"};
+	private static int[] isizes = {8,9,10,12,14,18,24,28,36,48,60,72};
 	private Panel panel;
 	private Choice font;
 	private Choice size;
@@ -27,34 +29,25 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		
 		font = new Choice();
 		String[] fonts = Toolkit.getDefaultToolkit().getFontList();
+		//String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(); //requires Java 2
 		for (int i=0; i<fonts.length; i++)
-			font.addItem(fonts[i]);
+			font.add(fonts[i]);
 		font.select(TextRoi.getFont());
 		font.addItemListener(this);
 		add(font);
 
 		size = new Choice();
-		size.addItem("8");
-		size.addItem("9");
-		size.addItem("10");
-		size.addItem("12");
-		size.addItem("14");
-		size.addItem("18");
-		size.addItem("24");
-		size.addItem("28");
-		size.addItem("36");
-		size.addItem("48");
-		size.addItem("60");
-		size.addItem("72");
-		size.select(""+TextRoi.getSize());
+		for (int i=0; i<sizes.length; i++)
+			size.add(sizes[i]);
+		size.select(getSizeIndex());
 		size.addItemListener(this);
 		add(size);
 		
 		style = new Choice();
-		style.addItem("Plain");
-		style.addItem("Bold");
-		style.addItem("Italic");
-		style.addItem("Bold+Italic");
+		style.add("Plain");
+		style.add("Bold");
+		style.add("Italic");
+		style.add("Bold+Italic");
 		int i = TextRoi.getStyle();
 		String s = "Plain";
 		if (i==Font.BOLD)
@@ -71,6 +64,16 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		GUI.center(this);
 		show();
 		IJ.register(Fonts.class);
+	}
+	
+	int getSizeIndex() {
+		int size = TextRoi.getSize();
+		int index=0;
+		for (int i=0; i<isizes.length; i++) {
+			if (size>=isizes[i])
+				index = i;
+		}
+		return index;
 	}
 	
 	public void itemStateChanged(ItemEvent e) {

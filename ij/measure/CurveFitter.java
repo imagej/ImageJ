@@ -369,7 +369,7 @@ public class CurveFitter {
         return simp[best];
     }
     
-    /** Returns residuals array ie. differences between data and curve */
+    /** Returns residuals array ie. differences between data and curve. */
     public double[] getResiduals() {
         double[] params = getParams();
         double[] residuals = new double[numPoints];

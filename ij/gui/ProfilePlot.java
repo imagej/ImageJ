@@ -207,7 +207,7 @@ public class ProfilePlot {
 		double leftOver = 1.0;
 		double distance = 0.0;
 		int index;
-		double oldx=xbase, oldy=ybase;
+		//double oldx=xbase, oldy=ybase;
 		for (int i=0; i<n; i++) {
 			double len = segmentLengths[i];
 			if (len==0.0)
@@ -227,6 +227,7 @@ public class ProfilePlot {
 					values[index] = ip.getInterpolatedValue(rx, ry);
 				//d = Math.sqrt((rx-oldx)*(rx-oldx)+(ry-oldy)*(ry-oldy));
 				//IJ.write(IJ.d2s(rx)+"    "+IJ.d2s(ry)+"    "+IJ.d2s(d));
+IJ.log(IJ.d2s(rx)+"    "+IJ.d2s(ry));
 				//oldx = rx; oldy = ry;
 				rx += xinc;
 				ry += yinc;

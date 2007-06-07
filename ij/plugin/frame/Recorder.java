@@ -17,7 +17,7 @@ import ij.measure.*;
 public class Recorder extends PlugInFrame implements PlugIn, ActionListener, ItemListener {
 
 	public static boolean record;
-	private Button makePlugin;
+	private Button makeMacro,makePlugin;
 	private Checkbox recordCB;
 	private String fitTypeStr = CurveFitter.fitList[0];
 	private static TextArea textArea;
@@ -38,11 +38,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		recordCB = new Checkbox("Record", record);
 		recordCB.addItemListener(this);
 		panel.add(recordCB);
+		makeMacro = new Button("Create Macro");
+		makeMacro.addActionListener(this);
+		panel.add(makeMacro);
 		makePlugin = new Button("Create Plugin");
 		makePlugin.addActionListener(this);
 		panel.add(makePlugin);
 		add("North", panel);
-		textArea = new TextArea("",20,80,TextArea.SCROLLBARS_VERTICAL_ONLY);
+		textArea = new TextArea("",15,60,TextArea.SCROLLBARS_VERTICAL_ONLY);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		add("Center", textArea);
 		pack();
@@ -194,12 +197,24 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ite
 		IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
 	}
 	
+	void createMacro() {
+		String text = textArea.getText();
+		if (text==null || text.equals(""))
+			return;
+		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
+		if (ed==null)
+			return;
+		ed.create("macro.txt", text);
+	}
+	
 	public void itemStateChanged(ItemEvent e) {
 		record = recordCB.getState();
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource()==makePlugin)
+		if (e.getSource()==makeMacro)
+			createMacro();
+		else if (e.getSource()==makePlugin)
 			createPlugin();
 	}
 

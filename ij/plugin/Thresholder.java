@@ -26,11 +26,14 @@ public class Thresholder implements PlugIn, Measurements {
 			{IJ.noImage(); return;}
 		//if (imp.getType()==ImagePlus.COLOR_RGB)
 		//	{IJ.error("RGB images are not supported."); return;}
-		if (imp.getStackSize()==1)
+		if (imp.getStackSize()==1) {
 			Undo.setup(Undo.COMPOUND_FILTER, imp);
-		else
+			applyThreshold(imp);
+			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+		} else {
 			Undo.reset();
-		applyThreshold(imp);
+			applyThreshold(imp);
+		}
 	}
 
 	void applyThreshold(ImagePlus imp) {
@@ -131,7 +134,7 @@ public class Thresholder implements PlugIn, Measurements {
 		}
 		imp.setStack(null, stack2);
 		imp.setSlice(currentSlice);
-		imp.getCalibration().disableDensityCalibration();
+		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 	
 	void autoThreshold(ImagePlus imp) {

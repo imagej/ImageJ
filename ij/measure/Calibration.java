@@ -55,12 +55,12 @@ public class Calibration {
 	
 	private boolean invertedLut;
 	private int bitDepth = 8;
+	private boolean zeroClip;
 
 	/** Constructs a new Calibration object using the default values. */ 
 	public Calibration(ImagePlus imp) {
 		if (imp!=null) {
-			if (imp.getType()==ImagePlus.GRAY16)
-				bitDepth = 16;
+			bitDepth = imp.getBitDepth();
 			invertedLut = imp.isInvertedLut();
 		}
 	}
@@ -121,22 +121,38 @@ public class Calibration {
  	
   	/** Sets the calibration function,  coefficient table and unit (e.g. "OD"). */
  	public void setFunction(int function, double[] coefficients, String unit) {
+ 		setFunction(function, coefficients, unit, false);
+ 	}
+ 	
+ 	public void setFunction(int function, double[] coefficients, String unit, boolean zeroClip) {
  		if (function==NONE)
  			{disableDensityCalibration(); return;}
  		if (coefficients==null && function>=STRAIGHT_LINE && function<=GAMMA_VARIATE)
  			return;
  		this.function = function;
  		this.coefficients = coefficients;
+ 		this.zeroClip = zeroClip;
  		if (unit!=null)
  			valueUnit = unit;
  		cTable = null;
  	}
+
+ 	/** Disables the density calibation if the specified image has a differenent bit depth. */
+ 	public void setImage(ImagePlus imp) {
+ 		if (imp==null)
+ 			return;
+ 		int type = imp.getType();
+ 		int newBitDepth = imp.getBitDepth();
+		if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB)
+			disableDensityCalibration();
+ 		bitDepth = newBitDepth;
+ 	}
  	
  	public void disableDensityCalibration() {
- 		function = NONE;
-  		coefficients = null;
-  		cTable = null;
- 		valueUnit = "Gray Value";
+		function = NONE;
+		coefficients = null;
+		cTable = null;
+		valueUnit = "Gray Value";
  	}
  	
 	/** Returns the density unit. */
@@ -171,14 +187,22 @@ public class Calibration {
  	void makeCTable() {
  		if (bitDepth==16)
  			{make16BitCTable(); return;}
+ 		if (bitDepth!=8)
+ 			return;
  		if (function==UNCALIBRATED_OD) {
  			cTable = new float[256];
 			for (int i=0; i<256; i++)
 				cTable[i] = (float)od(i);
 		} else if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
  			cTable = new float[256];
- 			for (int i=0; i<256; i++)
-				cTable[i] = (float)CurveFitter.f(function, coefficients, i);
+ 			double value;
+ 			for (int i=0; i<256; i++) {
+				value = CurveFitter.f(function, coefficients, i);
+				if (zeroClip && value<0.0)
+					cTable[i] = 0f;
+				else
+					cTable[i] = (float)value;
+			}
 		} else
  			cTable = null;
   	}
@@ -206,9 +230,13 @@ public class Calibration {
  	public double getCValue(int value) {
 		if (function==NONE)
 			return value;
-		if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null)
-			return CurveFitter.f(function, coefficients, value);
-		if (cTable==null)
+		if (function>=STRAIGHT_LINE && function<=GAMMA_VARIATE && coefficients!=null) {
+			double v = CurveFitter.f(function, coefficients, value);
+			if (zeroClip && v<0.0)
+				return 0.0;
+			else
+				return v;
+		} if (cTable==null)
 			makeCTable();
  		if (cTable!=null && value>=0 && value<cTable.length)
  			return cTable[value];
@@ -264,6 +292,7 @@ public class Calibration {
 		copy.cTable = cTable;
 		copy.invertedLut = invertedLut;
 		copy.bitDepth = bitDepth;
+		copy.zeroClip = zeroClip;
 		return copy;
 	}
 	

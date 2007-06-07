@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.28
+# Version 1.29
 
 # Popup Menu
 popup01=Undo
@@ -59,18 +59,36 @@ options09="Miscellaneous...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
-adjust02="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
-adjust03="Size...",ij.plugin.filter.Resizer
+adjust02="Window/Level...",ij.plugin.frame.ContrastAdjuster("wl")
+adjust03="Color Balance...",ij.plugin.frame.ContrastAdjuster("balance")
+adjust04="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
+adjust05="Size...",ij.plugin.filter.Resizer
+
+# Plugins installed in the Image/Benchmarks submenu
+benchmarks01="Run Benchmark",ij.plugin.filter.Benchmark("run")
+benchmarks02="Run Without Screen Updates",ij.plugin.filter.Benchmark("no-updates")
+benchmarks03="Benchmark Results...",ij.plugin.filter.Benchmark("show")
+benchmarks04="JVM Comparison...",ij.plugin.filter.Benchmark("jvm")
+benchmarks05=-
+benchmarks06="Waves",ij.plugin.filter.Waves("run")
+benchmarks07="Particles...",ij.plugin.filter.Benchmark("particles")
+benchmarks08="Macro 1",ij.plugin.filter.Macro1
+#benchmarks09="Macro 2",ij.plugin.filter.Macro2
+
+# Plugins installed in the Image/Color submenu
+color01="Convert Stack to RGB",ij.plugin.RGBStackConverter
+color02="RGB Split",ij.plugin.filter.RGBStackSplitter
+color03="RGB Merge...",ij.plugin.RGBStackMerge
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
 stacks02="Delete Slice",ij.plugin.StackEditor("delete")
 stacks03="Next Slice [>]",ij.plugin.Animator("next")
 stacks04="Previous Slice [<]",ij.plugin.Animator("previous")
-stacks05=-
-stacks06="Convert Images to Stack",ij.plugin.StackEditor("tostack")
-stacks07="Convert Stack to Images",ij.plugin.StackEditor("toimages")
-stacks08="Convert Stack to RGB",ij.plugin.RGBStackConverter
+stacks05="Set Slice...",ij.plugin.Animator("set")
+stacks06=-
+stacks07="Convert Images to Stack",ij.plugin.StackEditor("tostack")
+stacks08="Convert Stack to Images",ij.plugin.StackEditor("toimages")
 stacks09="Make Montage...",ij.plugin.MontageMaker
 stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Z Project...",ij.plugin.ZProjector
@@ -87,17 +105,6 @@ rotate02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
 rotate03="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 rotate04="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
 rotate05="Arbitrarily...",ij.plugin.filter.Rotator
-
-# Plugins installed in the Image/Benchmarks submenu
-benchmarks01="Run Benchmark",ij.plugin.filter.Benchmark("run")
-benchmarks02="Run Without Screen Updates",ij.plugin.filter.Benchmark("no-updates")
-benchmarks03="Benchmark Results...",ij.plugin.filter.Benchmark("show")
-benchmarks04="JVM Comparison...",ij.plugin.filter.Benchmark("jvm")
-benchmarks05=-
-benchmarks06="Waves",ij.plugin.filter.Waves("run")
-benchmarks07="Particles...",ij.plugin.filter.Benchmark("particles")
-benchmarks08="Macro 1",ij.plugin.filter.Macro1
-#benchmarks09="Macro 2",ij.plugin.filter.Macro2
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Fire",ij.plugin.LutLoader("fire")
@@ -197,7 +204,7 @@ tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
 plug-in01=>"Shortcuts"
 plug-in02=>"Utilities"
 plug-in03="Record... ",ij.plugin.frame.Recorder
-plug-in04="New... ",ij.plugin.NewPlugin
+plug-in04="New... [N]",ij.plugin.NewPlugin
 plug-in05="Edit...",ij.plugin.Compiler("edit")
 plug-in06="Compile and Run...",ij.plugin.Compiler
 plug-in07=-

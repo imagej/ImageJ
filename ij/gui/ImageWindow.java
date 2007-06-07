@@ -223,18 +223,18 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 					return false;
 			}
 		}
+		closed = true;
 		if (WindowManager.getWindowCount()==0)
 			{xloc = 0; yloc = 0;}
-		closed = true;
 		WindowManager.removeWindow(this);
 		setVisible(false);
 		dispose();
 		imp.flush();
 		//imp.setWindow(null);
+		//IJ.log("close: "+imp.getTitle());
 		return true;
 	}
 	
-
 	public ImagePlus getImagePlus() {
 		return imp;
 	}
@@ -260,11 +260,13 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	}
 	
 	public void focusGained(FocusEvent e) {
+		//IJ.log("focusGained: "+imp.getTitle());
 		WindowManager.setCurrentWindow(this);
 	}
 
 
 	public void windowActivated(WindowEvent e) {
+		//IJ.log("windowActivated: "+imp.getTitle());
 		if (IJ.isMacintosh() && IJ.getInstance()!=null)
 			this.setMenuBar(Menus.getMenuBar());
 		//if (IJ.debugMode) IJ.log(imp.getTitle() + ": Activated");
@@ -275,6 +277,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 	}
 	
 	public void windowClosing(WindowEvent e) {
+		//IJ.log("windowClosing: "+imp.getTitle()+" "+closed);
+		if (closed)
+			return;
 		if (IJ.getInstance()!=null) {
 			WindowManager.setCurrentWindow(this);
 			IJ.doCommand("Close");
@@ -322,6 +327,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
                 
 
 	public void paste() {
+		if (IJ.macroRunning())
+			IJ.wait(500);
 		if (clipboard==null)
 			return;
 		int cType = clipboard.getType();
@@ -361,7 +368,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 			roi = imp.getRoi();
 		}
 		roi.startPaste(clipboard);
-		Undo.setup(Undo.PASTE, imp);
+		if (IJ.macroRunning()) {
+			roi.endPaste();
+			imp.killRoi();
+		} else
+			Undo.setup(Undo.PASTE, imp);
 		imp.changes = true;
 		//Image img = clipboard.getImage();
 		//ImagePlus imp2 = new ImagePlus("Clipboard", img);

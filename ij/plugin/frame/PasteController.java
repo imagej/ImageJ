@@ -26,18 +26,18 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		
 		add(new Label(" Transfer Mode:"));
 		pasteMode = new Choice();
-		pasteMode.addItem("  Copy");
-		pasteMode.addItem("  Blend");
-		pasteMode.addItem("  Difference");
-		pasteMode.addItem("  Transparent");
-		pasteMode.addItem("  AND");
-		pasteMode.addItem("  OR");
-		pasteMode.addItem("  XOR");
-		pasteMode.addItem("  Add");
-		pasteMode.addItem("  Subtract");
-		pasteMode.addItem("  Multiply");
-		pasteMode.addItem("  Divide");
-		pasteMode.select("  Copy");
+		pasteMode.addItem("Copy");
+		pasteMode.addItem("Blend");
+		pasteMode.addItem("Difference");
+		pasteMode.addItem("Transparent");
+		pasteMode.addItem("AND");
+		pasteMode.addItem("OR");
+		pasteMode.addItem("XOR");
+		pasteMode.addItem("Add");
+		pasteMode.addItem("Subtract");
+		pasteMode.addItem("Multiply");
+		pasteMode.addItem("Divide");
+		pasteMode.select("Copy");
 		pasteMode.addItemListener(this);
 		add(pasteMode);
 		Roi.setPasteMode(Blitter.COPY);
@@ -65,6 +65,8 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 			case 10: mode = Blitter.DIVIDE; break;
 		}
 		Roi.setPasteMode(mode);
+		if (Recorder.record)
+			Recorder.record("setPasteMode", pasteMode.getSelectedItem());
 		ImagePlus imp = WindowManager.getCurrentImage();
 	}
 	

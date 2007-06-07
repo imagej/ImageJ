@@ -67,8 +67,15 @@ public class Opener {
 					} else
 						new TextWindow(path,400,450);
 					break;
-				case UNKNOWN:				
-					IJ.showMessage("Open...","This file does not appear to be a TIFF, JPEG, GIF, BMP, \nDICOM, FITS, PGM, ZIP, LUT, ROI or text format.");
+				case UNKNOWN:
+					String msg =
+						"File is not in TIFF, JPEG, GIF, BMP, DICOM, FITS, PGM, \n"
+						+"ZIP, LUT, ROI or text format, or it was not found.";
+					if (path!=null && path.length()<=64)
+						msg += " \n  \n   "+path;
+					IJ.showMessage("Opener", msg);
+					Macro.abort();
+					break;
 			}
 		}
 	}
@@ -77,7 +84,7 @@ public class Opener {
 	pgm, gif or jpeg image. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
-		if (!directory.endsWith(Prefs.separator))
+		if (directory.length()>0 && !directory.endsWith(Prefs.separator))
 			directory += Prefs.separator;
 		String path = directory+name;
 		fileType = getFileType(path,name);
@@ -508,8 +515,9 @@ public class Opener {
 			return ROI;
 			
 		// Text file
-		if (name.endsWith(".txt") || (b0>=32 && b0<=126 && b1>=32 && b1<=126
-			&& b2>=32 && b2<=126 && b3>=32 && b3<=126 && buf[8]>=32 && buf[8]<=126))
+		if (name.endsWith(".avi")) return UNKNOWN;
+		if (name.endsWith(".txt") || (b0>=32 && b0<=126 && b1>=32 && b1<=126  
+		&& b2>=32 && b2<=126 && b3>=32 && b3<=126 && buf[8]>=32 && buf[8]<=126))
 			return TEXT;
 
 		return UNKNOWN;

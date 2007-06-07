@@ -41,7 +41,7 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 		if (slice>1)
 			IJ.showStatus("Unsharp Mask: "+slice+"/"+imp.getStackSize());
 		if (isLineRoi)
-			ip.setRoi(null);
+			ip.resetRoi();
 		sharpen(ip, radius, weight);
 	}
 	

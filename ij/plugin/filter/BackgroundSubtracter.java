@@ -82,7 +82,7 @@ public class BackgroundSubtracter implements PlugInFilter {
  		if (imp!=null)
  			imp.killRoi();
  		else
- 			ip.setRoi(null);
+ 			ip.resetRoi();
  		ip.setProgressBar(null);
  		IJ.showProgress(0.0);
  		if (invert)

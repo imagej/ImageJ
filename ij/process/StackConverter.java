@@ -55,7 +55,7 @@ public class StackConverter {
 		}
 		imp.setStack(null, stack2);
 		imp.setSlice(currentSlice);
-		imp.getCalibration().disableDensityCalibration();
+		imp.setCalibration(imp.getCalibration()); //update calibration
 		IJ.showProgress(1.0);
 	}
 
@@ -141,7 +141,7 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
-		cal.disableDensityCalibration();
+		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 
 	/** Converts the Stack to RGB. */
@@ -167,7 +167,7 @@ public class StackConverter {
 		}
 		IJ.showProgress(1.0);
 		imp.setStack(null, stack2);
-		cal.disableDensityCalibration();
+		imp.setCalibration(imp.getCalibration()); //update calibration
 	}
 
 	/** Converts the stack to 8-bits indexed color. 'nColors' must

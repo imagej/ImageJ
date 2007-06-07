@@ -35,6 +35,7 @@ public class Resizer implements PlugInFilter {
 			Rectangle bounds = roi.getBoundingRect();
 			newWidth = bounds.width;
 			newHeight = bounds.height;
+			interpolate = false;
 		} else {
 			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
 			gd.addNumericField("New width (pixels):", newWidth, 0);

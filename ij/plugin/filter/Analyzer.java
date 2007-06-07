@@ -18,11 +18,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private int measurements;
 	private StringBuffer min,max,mean,sd;
 	
+	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
-		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,LIMIT,LABELS,INVERT_Y};
+		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
+		LIMIT,LABELS,INVERT_Y};
 
 	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,MARK_AND_COUNT=4;
-	private static int mode = UNDEFINED;
+	private static int mode = AREAS;
 	private static final String MEASUREMENTS = "measurements";
 	private static final String MARK_WIDTH = "mark.width";
 	private static final String PRECISION = "precision";
@@ -76,8 +78,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	void doSetDialog() {
 		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
-		String[] labels = new String[10];
-		boolean[] states = new boolean[10];
+		String[] labels = new String[12];
+		boolean[] states = new boolean[12];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
 		labels[1]="Mean Gray Value"; states[1]=(systemMeasurements&MEAN)!=0;
 		labels[2]="Standard Deviation"; states[2]=(systemMeasurements&STD_DEV)!=0;
@@ -88,7 +90,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[7]="Perimeter"; states[7]=(systemMeasurements&PERIMETER)!=0;
 		labels[8]="Bounding Rectangle"; states[8]=(systemMeasurements&RECT)!=0;
 		labels[9]="Fit Ellipse"; states[9]=(systemMeasurements&ELLIPSE)!=0;
-		gd.addCheckboxGroup(5, 2, labels, states);
+		labels[10]="Circularity"; states[10]=(systemMeasurements&CIRCULARITY)!=0;
+		labels[11]="Feret's Diameter"; states[11]=(systemMeasurements&FERET)!=0;
+		gd.addCheckboxGroup(6, 2, labels, states);
 		labels = new String[3];
 		states = new boolean[3];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
@@ -122,15 +126,20 @@ public class Analyzer implements PlugInFilter, Measurements {
 		boolean b = false;
 		for (int i=0; i<list.length; i++) {
 			//if (list[i]!=previous)
-				b = gd.getNextBoolean();
+			b = gd.getNextBoolean();
 			previous = list[i];
 			if (b)
 				systemMeasurements |= list[i];
 			else
 				systemMeasurements &= ~list[i];
 		}
-		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT)))
-			mode = UNDEFINED;
+		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))) {
+			if (IJ.macroRunning()) {
+				resetCounter();
+				mode = AREAS;
+			} else
+				mode = UNDEFINED;
+		}
 		if ((systemMeasurements&LABELS)==0)
 			systemRT.disableRowLabels();
 	}
@@ -255,13 +264,20 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.X_CENTER_OF_MASS,stats.xCenterOfMass);
 			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,updateY(stats.yCenterOfMass));
 		}
-		if ((measurements&PERIMETER)!=0) {
+		if ((measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0) {
 			double perimeter;
 			if (roi!=null)
 				perimeter = roi.getLength();
 			else
 				perimeter = 0.0;
-			rt.addValue(ResultsTable.PERIMETER,perimeter);
+			if ((measurements&PERIMETER)!=0) 
+				rt.addValue(ResultsTable.PERIMETER,perimeter);
+			if ((measurements&CIRCULARITY)!=0) {
+				double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.area/(perimeter*perimeter));
+				if (circularity>1.)
+					circularity = -1.0;
+				rt.addValue(ResultsTable.CIRCULARITY, circularity);
+			}
 		}
 		if ((measurements&RECT)!=0) {
 			rt.addValue(ResultsTable.ROI_X,stats.roiX);
@@ -274,6 +290,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.MINOR,stats.minor);
 			rt.addValue(ResultsTable.ANGLE,stats.angle);
 		}
+		if ((measurements&FERET)!=0)
+			rt.addValue(ResultsTable.FERET, roi!=null?roi.getFeretsDiameter():0.0);
 	}
 	
 	// Update centroid and center of mass y-coordinate
@@ -448,6 +466,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.MINOR);
 			add2(ResultsTable.ANGLE);
 		}
+		if ((measurements&CIRCULARITY)!=0)
+			add2(ResultsTable.CIRCULARITY);
+		if ((measurements&FERET)!=0)
+			add2(ResultsTable.FERET);
 	}
 
 	private void add2(int column) {

@@ -8,8 +8,7 @@ import ij.plugin.filter.*;
 import java.awt.event.*;
 import java.text.*;
 import java.util.Locale;	
-import java.awt.Color;	
-import java.awt.Frame;	
+import java.awt.*;	
 import java.applet.Applet;
 import ij.plugin.frame.Recorder;
 
@@ -28,7 +27,9 @@ public class IJ {
 	private static boolean macroRunning;
 	private static Thread previousThread;
 	private static TextPanel logPanel;
-		
+	private static boolean notVerified = true;		
+	private static PluginClassLoader classLoader;
+			
 	static {
 		osname = System.getProperty("os.name");
 		isWin = osname.startsWith("Windows");
@@ -60,7 +61,7 @@ public class IJ {
 		// and we are not running as an applet
 		if (!className.startsWith("ij") && applet==null) {
  			boolean createNewClassLoader = altKeyDown();
-			return ij.runUserPlugIn(commandName, className, arg, createNewClassLoader);
+			return runUserPlugIn(commandName, className, arg, createNewClassLoader);
 		}
 		Object thePlugIn=null;
 		try {
@@ -69,7 +70,7 @@ public class IJ {
  			if (thePlugIn instanceof PlugIn)
 				((PlugIn)thePlugIn).run(arg);
  			else
-				ij.runFilterPlugIn(thePlugIn, commandName, arg);
+				runFilterPlugIn(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
 			if (IJ.getApplet()==null)
@@ -80,6 +81,165 @@ public class IJ {
 		return thePlugIn;
 	}
 	       
+	static void runFilterPlugIn(Object theFilter, String cmd, String arg) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		int capabilities = ((PlugInFilter)theFilter).setup(arg, imp);
+		if ((capabilities&PlugInFilter.DONE)!=0)
+			return;
+		if ((capabilities&PlugInFilter.NO_IMAGE_REQUIRED)!=0)
+			{((PlugInFilter)theFilter).run(null); return;}
+		if (imp==null)
+			{IJ.noImage(); return;}
+		if ((capabilities&PlugInFilter.ROI_REQUIRED)!=0 && imp.getRoi()==null)
+			{IJ.error("Selection required"); return;}
+		if ((capabilities&PlugInFilter.STACK_REQUIRED)!=0 && imp.getStackSize()==1)
+			{IJ.error("Stack required"); return;}
+		int type = imp.getType();
+		switch (type) {
+			case ImagePlus.GRAY8:
+				if ((capabilities&PlugInFilter.DOES_8G)==0)
+					{wrongType(capabilities); return;}
+				break;
+			case ImagePlus.COLOR_256:
+				if ((capabilities&PlugInFilter.DOES_8C)==0)
+					{wrongType(capabilities); return;}
+				break;
+			case ImagePlus.GRAY16:
+				if ((capabilities&PlugInFilter.DOES_16)==0)
+					{wrongType(capabilities); return;}
+				break;
+			case ImagePlus.GRAY32:
+				if ((capabilities&PlugInFilter.DOES_32)==0)
+					{wrongType(capabilities); return;}
+				break;
+			case ImagePlus.COLOR_RGB:
+				if ((capabilities&PlugInFilter.DOES_RGB)==0)
+					{wrongType(capabilities); return;}
+				break;
+		}
+		int slices = imp.getStackSize();
+		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
+		if (!imp.lock())
+			return; // exit if image is in use
+		imp.startTiming();
+		IJ.showStatus(cmd + "...");
+		ImageProcessor ip;
+		ImageStack stack = null;
+		if (slices>1)
+			stack = imp.getStack();
+		int[] mask = null;
+		float[] cTable = imp.getCalibration().getCTable();
+		if (slices==1 || !doesStacks) {
+			ip = imp.getProcessor();
+			mask = imp.getMask();
+			if ((capabilities&PlugInFilter.NO_UNDO)!=0)
+				Undo.reset();
+			else {
+				Undo.setup(Undo.FILTER, imp);
+				ip.snapshot();
+			}
+			//ip.setMask(mask);
+			ip.setCalibrationTable(cTable);
+			((PlugInFilter)theFilter).run(ip);
+			if ((capabilities&PlugInFilter.SUPPORTS_MASKING)!=0)
+				ip.reset(ip.getMask());  //restore image outside irregular roi
+			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
+		} else {
+       		Undo.reset(); // can't undo stack operations
+			int n = stack.getSize();
+			int currentSlice = imp.getCurrentSlice();
+			Rectangle r = null;
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.getType()<Roi.LINE)
+				r = roi.getBoundingRect();
+			mask = imp.getMask();
+			ip = imp.getProcessor();
+			double minThreshold = ip.getMinThreshold();
+			double maxThreshold = ip.getMaxThreshold();
+			ip = stack.getProcessor(1);
+			ip.setLineWidth(Line.getWidth());
+			boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE 
+				&& (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
+			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
+			boolean doGarbageCollection = IJ.isWindows() && !IJ.isJava2();
+			for (int i=1; i<=n; i++) {
+				ip.setPixels(stack.getPixels(i));
+				ip.setMask(mask);
+				ip.setRoi(r);
+				ip.setCalibrationTable(cTable);
+				if (doMasking)
+					ip.snapshot();
+				((PlugInFilter)theFilter).run(ip);
+				if (doMasking)
+					ip.reset(mask);
+				if (doGarbageCollection && (i%10==0))
+					System.gc();
+				IJ.showProgress((double)i/n);
+			}
+			if (roi!=null)
+				imp.setRoi(roi);
+			IJ.showProgress(1.0);
+			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", n);
+		}
+		if ((capabilities&PlugInFilter.NO_CHANGES)==0) {
+			imp.changes = true;
+			if (slices>1 && (type==ImagePlus.GRAY16||type==ImagePlus.GRAY32))
+				imp.getProcessor().resetMinAndMax();
+	 		imp.updateAndDraw();
+	 	}
+		ImageWindow win = imp.getWindow();
+		if (win!=null)
+			win.running = false;
+		imp.unlock();
+	}
+        
+	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
+		if (applet!=null)
+			return null;
+		String pluginsDir = Menus.getPlugInsPath();
+		if (pluginsDir==null)
+			return null;
+		if (notVerified) {
+			// check for duplicate classes in the plugins folder
+			IJ.runPlugIn("ij.plugin.ClassChecker", "");
+			notVerified = false;
+		}
+		PluginClassLoader loader;
+		if (createNewLoader)
+			loader = new PluginClassLoader(pluginsDir);
+		else {
+			if (classLoader==null)
+				classLoader = new PluginClassLoader(pluginsDir);
+			loader = classLoader;
+		}
+		Object thePlugIn = null;
+		try { 
+			thePlugIn = (loader.loadClass(className)).newInstance(); 
+ 			if (thePlugIn instanceof PlugIn)
+				((PlugIn)thePlugIn).run(arg);
+ 			else if (thePlugIn instanceof PlugInFilter)
+				runFilterPlugIn(thePlugIn, commandName, arg);
+		}
+		catch (ClassNotFoundException e) {
+			if (className.indexOf('_')!=-1)
+				IJ.error("Plugin not found: "+className);
+		}
+		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
+		catch (IllegalAccessException e) {IJ.error("Unable to load plugin (acc)");}
+		return thePlugIn;
+	} 
+
+	static void wrongType(int capabilities) {
+		String s = "This command requires an image of type:\n \n";
+		if ((capabilities&PlugInFilter.DOES_8G)!=0) s +=  "    8-bit grayscale\n";
+		if ((capabilities&PlugInFilter.DOES_8C)!=0) s +=  "    8-bit color\n";
+		if ((capabilities&PlugInFilter.DOES_16)!=0) s +=  "    16-bit grayscale\n";
+		if ((capabilities&PlugInFilter.DOES_32)!=0) s +=  "    32-bit (float) grayscale\n";
+		if ((capabilities&PlugInFilter.DOES_RGB)!=0) s += "    RGB color\n";
+		IJ.error(s);
+	}
+	
     /** Starts executing a menu command in a separete thread and returns immediately. */
 	public static void doCommand(String command) {
 		if (ij!=null)
@@ -89,6 +249,8 @@ public class IJ {
     /** Runs an ImageJ command. Does not return until 
     	the command has finished executing. */
 	public static void run(String command) {
+		if (ij==null && Menus.getCommands()==null)
+			init();
 		Macro.abort = false;
 		Macro.setOptions(null);
 		macroRunning = true;
@@ -102,6 +264,8 @@ public class IJ {
 		GenericDialog and OpenDialog classes. Does not return until
 		the command has finished executing. */
 	public static void run(String command, String options) {
+		if (ij==null && Menus.getCommands()==null)
+			init();
 		Macro.abort = false;
 		Macro.setOptions(options);
 		Thread thread = Thread.currentThread();
@@ -119,6 +283,12 @@ public class IJ {
 		macroRunning = false;
 		Macro.setOptions(null);
 		testAbort();
+	}
+	
+	static void init() {
+		Menus m = new Menus(null, null);
+		Prefs.load(m, null);
+		m.addMenuBar();
 	}
 
 	private static void testAbort() {
@@ -154,7 +324,7 @@ public class IJ {
 
 	/** Displays a line of text in the "Log" window. Uses
 		System.out.println if ImageJ is not present. */
-	public static void log(String s) {
+	public static synchronized void log(String s) {
 		if (logPanel==null && ij!=null) {
 			TextWindow logWindow = new TextWindow("Log", "", 300, 200);
 			logPanel = logWindow.getTextPanel();
@@ -206,8 +376,10 @@ public class IJ {
 		Macro.abort();
 	}
 
-	/**	Updates the progress bar. Does nothing if the
-		ImageJ window is not present. */
+	/**	Updates the progress bar, where 0<=progress<=1.0. The progress bar is 
+	not displayed if the time between the first and second calls to this method
+	is less than 30 milliseconds. It is erased if progress>=1.0. Does nothing 
+	if the ImageJ window is not present. */
 	public static void showProgress(double progress) {
 		if (progressBar!=null) progressBar.show(progress);
 	}
@@ -249,16 +421,22 @@ public class IJ {
 	public static final int CANCELED = Integer.MIN_VALUE;
 
 	/** Allows the user to enter a number in a dialog box. Returns the	
-	    value IJ.CANCELED (-2,147,483,648) if the user cancels the dialog box*/
-	public static double getNumber(String prompt, double defaultNumber) {
+	    value IJ.CANCELED (-2,147,483,648) if the user cancels the dialog box. 
+	    Returns 'defaultValue' if the user enters an invalid number. */
+	public static double getNumber(String prompt, double defaultValue) {
 		Frame win = WindowManager.getCurrentWindow();
 		if (win==null) win = ij;
-		GenericDialog gd = new GenericDialog("Enter a Number", win);
-		gd.addNumericField(prompt, defaultNumber, 0);
+		GenericDialog gd = new GenericDialog("", win);
+		int decimalPlaces = (int)defaultValue==defaultValue?0:2;
+		gd.addNumericField(prompt, defaultValue, decimalPlaces);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return CANCELED;
-		return gd.getNextNumber();
+		double v = gd.getNextNumber();
+		if (gd.invalidNumber())
+			return defaultValue;
+		else
+			return v;
 	}
 
 	/** Allows the user to enter a string in a dialog box. Returns
@@ -266,7 +444,7 @@ public class IJ {
 	public static String getString(String prompt, String defaultString) {
 		Frame win = WindowManager.getCurrentWindow();
 		if (win==null) win = ij;
-		GenericDialog gd = new GenericDialog("Enter a String", win);
+		GenericDialog gd = new GenericDialog("", win);
 		gd.addStringField(prompt, defaultString, 20);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -418,7 +596,7 @@ public class IJ {
 	public static boolean versionLessThan(String version) {
 		boolean lessThan = ImageJ.VERSION.compareTo(version)<0;
 		if (lessThan)
-			error("This plugin requires ImageJ "+version+" or later.");
+			error("This plugin or macro requires ImageJ "+version+" or later.");
 		return lessThan;
 	}
 	
@@ -428,7 +606,7 @@ public class IJ {
 		if the user selects "Cancel".
 	*/
 	public static int setupDialog(ImagePlus imp, int flags) {
-		if (imp==null||ij.hotkey||hideProcessStackDialog)
+		if (imp==null || (ij!=null&&ij.hotkey) || hideProcessStackDialog)
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
@@ -503,35 +681,60 @@ public class IJ {
 	/** Activates the specified image. */
 	public static void selectWindow(String title) {
 		int[] wList = WindowManager.getIDList();
-		if (wList==null)
+		if (wList==null) {
+			noImage();
 			return;
-		String[] titles = new String[wList.length];
+		}
 		for (int i=0; i<wList.length; i++) {
 			ImagePlus imp = WindowManager.getImage(wList[i]);
-			//IJ.write(i+" "+imp);
 			if (imp!=null) {
 				if (imp.getTitle().equals(title)) {
 					ImageWindow win = imp.getWindow();
 					if (win!=null) {
-						//IJ.write("toFront: "+imp);
 						win.toFront();
-						IJ.wait(50);
-						WindowManager.setCurrentWindow(win);
+						long start = System.currentTimeMillis();
+						while (true) {
+							wait(10);
+							imp = WindowManager.getCurrentImage();
+							if (imp==null) {
+								showMessage("Macro Error", "Image not found: \""+title+"\"");
+								throw new RuntimeException("Macro canceled");
+							};
+							if (imp.getTitle().equals(title))
+								return; // specified image is now active
+							if ((System.currentTimeMillis()-start)>2000) {
+								 // 2 second timeout
+								 WindowManager.setCurrentWindow(win);
+								return;
+							}
+						}
 					}
-					return;
 				}
 			}
-		}
+		}		
 	}
 	
 	/** Sets the foreground color. */
 	public static void setForegroundColor(int red, int green, int blue) {
-		Toolbar.setForegroundColor(new Color(red, green, blue));
+		setColor(red, green, blue, true);
 	}
 
 	/** Sets the background color. */
 	public static void setBackgroundColor(int red, int green, int blue) {
-		Toolbar.setBackgroundColor(new Color(red, green, blue));
+		setColor(red, green, blue, false);
+	}
+	
+	static void setColor(int red, int green, int blue, boolean foreground) {
+	    if (red<0) red=0; if (green<0) green=0; if (blue<0) blue=0; 
+	    if (red>255) red=255; if (green>255) green=255; if (blue>255) blue=255;  
+		Color c = new Color(red, green, blue);
+		if (foreground) {
+			Toolbar.setForegroundColor(c);
+			ImagePlus img = WindowManager.getCurrentImage();
+			if (img!=null)
+				img.getProcessor().setColor(c);
+		} else
+			Toolbar.setBackgroundColor(c);
 	}
 
 	/** Switches to the specified tool, where id = Toolbar.RECTANGLE (0),
@@ -558,7 +761,33 @@ public class IJ {
 		return w.npoints;
 	}
 	
-	private static ImagePlus getImage() {
+	/** Sets the transfer mode used by the <i>Edit/Paste</i> command, where mode is "Copy", "Blend", "Average", "Difference", 
+		"Transparent", "AND", "OR", "XOR", "Add", "Subtract", "Multiply", or "Divide". */
+	public static void setPasteMode(String mode) {
+		mode = mode.toLowerCase(Locale.US);
+		int m = Blitter.COPY;
+		if (mode.startsWith("ble") || mode.startsWith("ave"))
+			m = Blitter.AVERAGE;
+		else if (mode.startsWith("diff"))
+			m = Blitter.DIFFERENCE;
+		else if (mode.startsWith("tran"))
+			m = Blitter.COPY_TRANSPARENT;
+		else if (mode.startsWith("and"))
+			m = Blitter.AND;
+		else if (mode.startsWith("or"))
+			m = Blitter.OR;
+		else if (mode.startsWith("xor"))
+			m = Blitter.XOR;
+		else if (mode.startsWith("sub"))
+			m = Blitter.SUBTRACT;
+		else if (mode.startsWith("add"))
+			m = Blitter.ADD;
+		else if (mode.startsWith("div"))
+			m = Blitter.DIVIDE;
+		Roi.setPasteMode(m);
+	}
+
+	public static ImagePlus getImage() {
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {
 			IJ.noImage();

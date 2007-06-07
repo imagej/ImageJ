@@ -9,7 +9,9 @@ import ij.process.*;
 import ij.io.*;
 
 
-/**Writes the XY coordinates of all black pixels in the active image to a text file.*/
+/** Writes the XY coordinates and pixel values of all non-background pixels
+	to a tab-delimited text file. Backround is assumed to be the value of
+	the pixel in the upper left corner of the image. */
 public class XYCoordinates implements PlugInFilter {
 
 	ImagePlus imp;
@@ -22,7 +24,20 @@ public class XYCoordinates implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		float background = ip.getPixelValue(0,0);
+		double background = ip.getPixelValue(0,0);
+		String bg;
+		if (ip instanceof ColorProcessor) {
+			int c = ip.getPixel(0,0);
+			int r = (c&0xff0000)>>16;
+			int g = (c&0xff00)>>8;
+			int b = c&0xff;
+			bg = r+","+g+","+b;
+		} else {
+			if ((int)background==background)
+				bg = IJ.d2s(background,0);
+			else
+				bg = ""+background;
+		}
 		imp.killRoi();
 		
 		boolean okay = IJ.showMessageWithCancel("XY_Coordinates", 
@@ -33,7 +48,7 @@ public class XYCoordinates implements PlugInFilter {
 			+ " \n"
 			+ "    Width: " + width + "\n"
 			+ "    Height: " + height + "\n"
-			+ "    Background value: " + background + "\n"
+			+ "    Background value: " + bg + "\n"
 			);
 		if (!okay)
 			return;
@@ -65,15 +80,15 @@ public class XYCoordinates implements PlugInFilter {
 				v = ip.getPixelValue(x,y);
 				if (v!=background) {
 					if (type==ImagePlus.GRAY32)
-						pw.print(x+" "+(height-1-y)+" "+v+ls);
+						pw.print(x+"\t"+(height-1-y)+"\t"+v+ls);
 					else if (type==ImagePlus.COLOR_RGB) {
 						c = ip.getPixel(x,y);
 						r = (c&0xff0000)>>16;
 						g = (c&0xff00)>>8;
 						b = c&0xff;
-						pw.print(x+" "+(height-1-y)+" "+r+" "+g+" "+b+ls);
+						pw.print(x+"\t"+(height-1-y)+"\t"+r+"\t"+g+"\t"+b+ls);
 					} else
-						pw.print(x+" "+(height-1-y)+" "+(int)v+ls);
+						pw.print(x+"\t"+(height-1-y)+"\t"+(int)v+ls);
 					count++;
 				}
 			}

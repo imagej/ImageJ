@@ -1,10 +1,11 @@
 package ij.process;
+import ij.Prefs;
 import java.awt.*;
 
 /** This class does bit blitting of 32-bit floating-point images. */
 public class FloatBlitter implements Blitter {
 
-	public static float divideByZeroValue = Float.MAX_VALUE;
+	public static float divideByZeroValue = (float)Prefs.getDouble(Prefs.DIV_BY_ZERO_VALUE, Float.MAX_VALUE);
 	
 	private FloatProcessor ip;
 	private int width, height;

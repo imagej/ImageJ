@@ -46,7 +46,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		add(panel);
 		
 		pack();
-		list.delItem(0);
+		list.remove(0);
 		GUI.center(this);
 		show();
 	}
@@ -139,7 +139,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return error("At least one ROI in the list must be selected.");
 		for (int i=index.length-1; i>=0; i--) {
 			rois.remove(list.getItem(index[i]));
-			list.delItem(index[i]);
+			list.remove(index[i]);
 		}
 		return true;
 	}

@@ -5,8 +5,8 @@
   <target name="compile" description="Compile everything.">
     <!-- First, ensure the build directory exists. -->
     <mkdir dir="build" />
-    <!-- Build everything -->
-    <javac srcdir="." destdir="build">
+    <!-- Build everything; add debug="on" to debug -->
+    <javac srcdir="." destdir="build" optimize="on">
       <!-- The plugins directory only needs to be present at runtime,
            not at build time. -->
       <exclude name="plugins/*" />
@@ -56,22 +56,6 @@
            use="true"
            windowtitle="ImageJ API">
     </javadoc>
-  </target>
-
-  <target name="zap" description="Delete .DS_Store files created by OS X.">
-    <delete file=".DS_Store" />
-    <delete file="images/.DS_Store" />
-    <delete file="plugins/.DS_Store" />
-    <delete file="ij/.DS_Store" />
-    <delete file="ij/gui/.DS_Store" />
-    <delete file="ij/io/.DS_Store" />
-    <delete file="ij/measure/.DS_Store" />
-    <delete file="ij/plugin/filter/.DS_Store" />
-    <delete file="ij/plugin/frame/.DS_Store" />
-    <delete file="ij/plugin/.DS_Store" />
-    <delete file="ij/process/.DS_Store" />
-    <delete file="ij/text/.DS_Store" />
-    <delete file="ij/util/.DS_Store" />
   </target>
 
 </project>

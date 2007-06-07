@@ -56,7 +56,7 @@ public class RankFilters implements PlugInFilter {
                         {canceled=true; IJ.beep(); return;}
 
 				if (isLineRoi)
-					ip.setRoi(null);
+					ip.resetRoi();
                 rank(ip, radius, filterType);
                 if (slice>1)
                         IJ.showStatus(title+": "+slice+"/"+imp.getStackSize());

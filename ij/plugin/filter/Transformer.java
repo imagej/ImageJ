@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -39,9 +40,15 @@ public class Transformer implements PlugInFilter {
 	    		s2 = sp.rotateRight();
 	    	else
 	    		s2 = sp.rotateLeft();
+	    	Calibration cal1 = imp.getCalibration();
 	    	imp.changes = false;
 	    	imp.getWindow().close();
-	    	new ImagePlus(imp.getTitle(), s2).show();
+	    	ImagePlus imp2 = new ImagePlus(imp.getTitle(), s2);
+	    	imp2.setCalibration(cal1);
+	    	Calibration cal2 = imp2.getCalibration();
+	    	cal2.pixelWidth = cal1.pixelHeight;
+	    	cal2.pixelHeight = cal1.pixelWidth;
+	    	imp2.show();
 			return;
 		}
 	}

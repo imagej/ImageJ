@@ -25,7 +25,7 @@ public class ShortProcessor extends ImageProcessor {
 		this.height = height;
 		this.pixels = pixels;
 		this.cm = cm;
-		setRoi(null);
+		resetRoi();
 		if (pixels!=null)
 			findMinAndMax();
 		fgColor = max;
@@ -37,12 +37,14 @@ public class ShortProcessor extends ImageProcessor {
 		this(width, height, new short[width*height], null);
 	}
 
-	/** Obsolete. Images are always unsigned. */
+	/** Obsolete. 16 bit images are normally unsigned but signed images can be used by
+		subtracting 32768 and using a calibration function to restore the original values. */
 	public ShortProcessor(int width, int height, short[] pixels, ColorModel cm, boolean unsigned) {
 		this(width, height, pixels, cm);
 	}
 
-	/** Obsolete. Images are always unsigned. */
+	/** Obsolete. 16 bit images are normally unsigned but signed images can be used by
+		subtracting 32768 and using a calibration function to restore the original values. */
 	public ShortProcessor(int width, int height,  boolean unsigned) {
 		this(width, height);
 	}
@@ -546,6 +548,10 @@ public class ShortProcessor extends ImageProcessor {
 		double tmp3, tmp4, xs, ys;
 		int index, ixs, iys;
 		double dwidth=width,dheight=height;
+		double xlimit = width-1.0, xlimit2 = width-1.001;
+		double ylimit = height-1.0, ylimit2 = height-1.001;
+		// zero is 32768 for signed images
+		int background = cTable!=null && cTable[0]==-32768?32768:0; 
 		
 		for (int y=roiY; y<(roiY + roiHeight); y++) {
 			index = y*width + roiX;
@@ -555,9 +561,13 @@ public class ShortProcessor extends ImageProcessor {
 				xs = x*ca + tmp3;
 				ys = x*sa + tmp4;
 				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-					if (interpolate)
+					if (interpolate) {
+						if (xs<0.0) xs = 0.0;
+						if (xs>=xlimit) xs = xlimit2;
+						if (ys<0.0) ys = 0.0;			
+						if (ys>=ylimit) ys = ylimit2;
 				  		pixels[index++] = (short)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
-				  	else {
+				  	} else {
 				  		ixs = (int)(xs+0.5);
 				  		iys = (int)(ys+0.5);
 				  		if (ixs>=width) ixs = width - 1;
@@ -565,7 +575,7 @@ public class ShortProcessor extends ImageProcessor {
 						pixels[index++] = pixels2[width*iys+ixs];
 					}
     			} else
-					pixels[index++] = 0;
+					pixels[index++] = (short)background;
 			}
 			if (y%30==0)
 			showProgress((double)(y-roiY)/roiHeight);
@@ -616,9 +626,13 @@ public class ShortProcessor extends ImageProcessor {
 		boolean checkCoordinates = (xScale < 1.0) || (yScale < 1.0);
 		int index1, index2, xsi, ysi;
 		double ys, xs;
+		double xlimit = width-1.0, xlimit2 = width-1.001;
+		double ylimit = height-1.0, ylimit2 = height-1.001;
 		for (int y=ymin; y<=ymax; y++) {
 			ys = (y-yCenter)/yScale + yCenter;
 			ysi = (int)ys;
+			if (ys<0.0) ys = 0.0;			
+			if (ys>=ylimit) ys = ylimit2;
 			index1 = y*width + xmin;
 			index2 = width*(int)ys;
 			for (int x=xmin; x<=xmax; x++) {
@@ -627,9 +641,11 @@ public class ShortProcessor extends ImageProcessor {
 				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ys>ymax)))
 					pixels[index1++] = (short)min;
 				else {
-					if (interpolate)
+					if (interpolate) {
+						if (xs<0.0) xs = 0.0;
+						if (xs>=xlimit) xs = xlimit2;
 						pixels[index1++] = (short)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
-					else
+					} else
 						pixels[index1++] = pixels2[index2+xsi];
 				}
 			}
@@ -647,8 +663,6 @@ public class ShortProcessor extends ImageProcessor {
 		double yFraction = y - ybase;
 		int offset = ybase * width + xbase;
 		int lowerLeft = pixels[offset]&0xffff;
-		if ((xbase>=(width-1))||(ybase>=(height-1)))
-			return lowerLeft;
 		int lowerRight = pixels[offset + 1]&0xffff;
 		int upperRight = pixels[offset + width + 1]&0xffff;
 		int upperLeft = pixels[offset + width]&0xffff;
@@ -665,19 +679,31 @@ public class ShortProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
+		if (interpolate) {
+			dstCenterX += xScale/2.0;
+			dstCenterY += yScale/2.0;
+		}
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		short[] pixels2 = (short[])ip2.getPixels();
 		double xs, ys;
+		double xlimit = width-1.0, xlimit2 = width-1.001;
+		double ylimit = height-1.0, ylimit2 = height-1.001;
 		int index1, index2;
 		for (int y=0; y<=dstHeight-1; y++) {
 			ys = (y-dstCenterY)/yScale + srcCenterY;
+			if (interpolate) {
+				if (ys<0.0) ys = 0.0;
+				if (ys>=ylimit) ys = ylimit2;
+			}
 			index1 = width*(int)ys;
 			index2 = y*dstWidth;
 			for (int x=0; x<=dstWidth-1; x++) {
 				xs = (x-dstCenterX)/xScale + srcCenterX;
-				if (interpolate)
+				if (interpolate) {
+					if (xs<0.0) xs = 0.0;
+					if (xs>=xlimit) xs = xlimit2;
 					pixels2[index2++] = (short)(getInterpolatedPixel(xs, ys, pixels)+0.5);
-				else
+				} else
 		  			pixels2[index2++] = pixels[index1+(int)xs];
 			}
 			if (y%20==0)

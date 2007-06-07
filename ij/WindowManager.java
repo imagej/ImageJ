@@ -28,8 +28,8 @@ public class WindowManager {
 			if (imp!=null && imp.lockSilently()) {
 				imp.trimProcessor();
 				Image img = imp.getImage();
-				if (img!=null)
-					img.flush();
+				//if (img!=null)
+				//	img.flush();
 				if (!Converter.newWindowCreated)
 					imp.saveRoi();
 				Converter.newWindowCreated = false;
@@ -173,7 +173,7 @@ public class WindowManager {
 	/** Closes all image windows. Stops and returns false if any "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		while (imageList.size()>0) {
-			ImagePlus imp = ((ImageWindow)imageList.elementAt(0)).getImagePlus();
+			//ImagePlus imp = ((ImageWindow)imageList.elementAt(0)).getImagePlus();
 			//IJ.write("Closing: " + imp.getTitle() + " " + imageList.size());
 			if (!((ImageWindow)imageList.elementAt(0)).close())
 				return false;
@@ -217,10 +217,13 @@ public class WindowManager {
 				return;
 			}
 		}
+		int lastSpace = menuItemLabel.lastIndexOf(' ');
+		if (lastSpace>0) // remove image size (e.g., " 90K")
+			menuItemLabel = menuItemLabel.substring(0, lastSpace);
 		for (int i=0; i<imageList.size(); i++) {
 			ImageWindow win = (ImageWindow)imageList.elementAt(i);
 			String title = win.getImagePlus().getTitle();
-			if (menuItemLabel.startsWith(title)) {
+			if (menuItemLabel.equals(title)) {
 				setCurrentWindow(win);
 				win.toFront();
 				int index = imageList.indexOf(win);

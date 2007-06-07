@@ -33,11 +33,15 @@ public class Animator implements PlugIn {
 		slice = imp.getCurrentSlice();
 		IJ.register(Animator.class);
 		
-		if (arg.equals("options"))
-			{doOptions(); return;}
+		if (arg.equals("options")) {
+			doOptions();
+			return;
+		}
 			
-		if (arg.equals("start"))
-			{startAnimation(); return;}
+		if (arg.equals("start")) {
+			startAnimation();
+			return;
+		}
 
 		if (swin.running) // "stop", "next" and "previous" all stop animation
 			stopAnimation();
@@ -47,30 +51,17 @@ public class Animator implements PlugIn {
 		}
 			
 		if (arg.equals("next")) {
-			if (!imp.lock()) return;
-			if (IJ.altKeyDown())
-				slice += 10;
-			else
-				slice++;
-			if (slice>nSlices)
-				slice = nSlices;
-			swin.showSlice(slice);
-			imp.updateStatusbarValue();
-			imp.unlock();
+			nextSlice();
 			return;
 		}
 		
 		if (arg.equals("previous")) {
-			if (!imp.lock()) return;
-			if (IJ.altKeyDown())
-				slice -= 10;
-			else
-				slice--;
-			if (slice<1)
-				slice = 1;
-			swin.showSlice(slice);
-			imp.updateStatusbarValue();
-			imp.unlock();
+			previousSlice();
+			return;
+		}
+		
+		if (arg.equals("set")) {
+			setSlice();
 			return;
 		}
 	}
@@ -142,6 +133,42 @@ public class Animator implements PlugIn {
 			startAnimation();
 	}
 	
+	void nextSlice() {
+		if (!imp.lock())
+			return;
+		if (IJ.altKeyDown())
+			slice += 10;
+		else
+			slice++;
+		if (slice>nSlices)
+			slice = nSlices;
+		swin.showSlice(slice);
+		imp.updateStatusbarValue();
+		imp.unlock();
+	}
+	
+	void previousSlice() {
+		if (!imp.lock())
+			return;
+		if (IJ.altKeyDown())
+			slice -= 10;
+		else
+			slice--;
+		if (slice<1)
+			slice = 1;
+		swin.showSlice(slice);
+		imp.updateStatusbarValue();
+		imp.unlock();
+	}
+
+	void setSlice() {
+        GenericDialog gd = new GenericDialog("Set Slice");
+        gd.addNumericField("Slice Number (1-"+nSlices+"):", slice, 0);
+        gd.showDialog();
+        if (!gd.wasCanceled())
+        	imp.setSlice((int)gd.getNextNumber());
+	}
+
 	/** Returns the current animation speed in frames per second. */
 	public static double getFrameRate() {
 		return animationSpeed;

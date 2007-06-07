@@ -10,6 +10,7 @@ import ij.plugin.frame.Recorder;
 
 	private String dir;
 	private String name;
+	private boolean recordPath;
 	private static String defaultDirectory;
 	
 	/** Displays a file open dialog with 'title' as
@@ -35,6 +36,7 @@ import ij.plugin.frame.Recorder;
 				dir = fd.getDirectory();
 				defaultDirectory = dir;
 			}
+			recordPath = true;
 			fd.dispose();
 			if (ij==null)
 				parent.dispose();
@@ -49,6 +51,7 @@ import ij.plugin.frame.Recorder;
 				dir = "";
 				name = path;
 			}
+			recordPath = IJ.macroRunning();
 		}
 		IJ.register(OpenDialog.class);
 	}
@@ -60,7 +63,7 @@ import ij.plugin.frame.Recorder;
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
-		if (Recorder.record)
+		if (Recorder.record && recordPath)
 			Recorder.recordPath(dir+name);
 		return name;
 	}

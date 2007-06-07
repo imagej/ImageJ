@@ -84,13 +84,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imageUpdated = false;
 				imp.updateImage();
 			}
-			Image img = imp.getImage();
 			if (IJ.isJava2()) {
 				if (magnification<1.0)
 					 Java2.setBilinearInterpolation(g, true);
 				else if (IJ.isMacOSX())
 					Java2.setBilinearInterpolation(g, false);
 			}
+			Image img = imp.getImage();
 			if (img!=null)
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);

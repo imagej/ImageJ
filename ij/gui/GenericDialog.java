@@ -31,12 +31,12 @@ TextListener, FocusListener, ItemListener, KeyListener {
     	this requires that the first word of each label be unique. */
 	public GenericDialog(String title) {
 		this(title, WindowManager.getCurrentImage()!=null?
-			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance());
+			(Frame)WindowManager.getCurrentImage().getWindow():IJ.getInstance()!=null?IJ.getInstance():new Frame());
 	}
 
     /** Creates a new GenericDialog using the specified title and parent frame. */
     public GenericDialog(String title, Frame parent) {
-		super(parent, title, true);
+		super(parent==null?new Frame():parent, title, true);
 		grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);
@@ -356,7 +356,8 @@ TextListener, FocusListener, ItemListener, KeyListener {
 		return d;
 	}
 
-	/** Returns true if one or more of the numeric fields contained an invalid number. */
+	/** Returns true if one or more of the numeric fields contained an  
+		invalid number. Must be called after calls to getNextNumber(). */
    public boolean invalidNumber() {
     	boolean wasInvalid = invalidNumber;
     	invalidNumber = false;
@@ -442,20 +443,28 @@ TextListener, FocusListener, ItemListener, KeyListener {
     }
     
   	/** Returns the contents of the next text area. */
-   public String getNextText() {
-    	String text;
-    	if (textArea1!=null) {
+	public String getNextText() {
+		String text;
+		if (textArea1!=null) {
 			textArea1.selectAll();
 			text = textArea1.getText();
 			textArea1 = null;
-    	} else if (textArea2!=null) {
+			if (macro)
+				text = Macro.getValue(macroOptions, "text1", text);
+			if (Recorder.record)
+				Recorder.recordOption("text1", text.replace('\n',' '));
+		} else if (textArea2!=null) {
 			textArea2.selectAll();
 			text = textArea2.getText();
 			textArea2 = null;
+			if (macro)
+				text = Macro.getValue(macroOptions, "text2", text);
+			if (Recorder.record)
+				Recorder.recordOption("text2", text.replace('\n',' '));
 		} else
 			text = null;
 		return text;
-    }
+	}
 
   	/** Displays this dialog box. */
     public void showDialog() {

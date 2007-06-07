@@ -11,6 +11,9 @@ import ij.gui.*;
 import ij.plugin.filter.*;
 import ij.process.ImageConverter;
 import ij.plugin.Animator;
+import ij.process.FloatBlitter;
+import ij.plugin.GelAnalyzer;
+
 /**
 This class contains the ImageJ preferences, which are 
 loaded from the "IJ_Props.txt" and "IJ_Prefs.txt" files.
@@ -29,7 +32,7 @@ public class Prefs {
 	public static final String FPS = "fps";
 	public static final String ANTIALIASING = "antialiasing";
 	public static final String INTERPOLATE = "interpolate";
-	
+    public static final String DIV_BY_ZERO_VALUE = "div-by-zero";   	
 	
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
@@ -37,6 +40,7 @@ public class Prefs {
 	public static boolean antialiasedText = true;
 	/** Display images scaled <100% using bilinear interpolation? */
 	public static boolean interpolateScaledImages;
+	/** Gel Analyzer options */
 
 	static Properties prefs = new Properties();
 	static Properties props = new Properties(prefs);
@@ -47,7 +51,7 @@ public class Prefs {
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
 	*/
-	public static String load(ImageJ ij, Applet applet) {
+	public static String load(Object ij, Applet applet) {
 		InputStream f = ij.getClass().getResourceAsStream("/"+PROPS_NAME);
 		if (applet!=null)
 			return loadAppletProps(f,applet);
@@ -183,12 +187,14 @@ public class Prefs {
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(ANTIALIASING, antialiasedText?"true":"false");
 			prefs.put(INTERPOLATE, interpolateScaledImages?"true":"false");
+			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));		
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
 			ParticleAnalyzer.savePreferences(prefs);
 			Analyzer.savePreferences(prefs);
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
+			GelAnalyzer.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			savePrefs(prefs, path);
 		} catch (Exception e) {
