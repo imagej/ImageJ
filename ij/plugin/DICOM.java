@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.*;
 import ij.*;
 import ij.io.*;
+import ij.process.*;
 import ij.util.Tools;
 import ij.measure.Calibration;
 
@@ -78,6 +79,16 @@ public class DICOM extends ImagePlus implements PlugIn {
 				coeff[1] = 1.0;
 				cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 			}
+			if (dd.windowWidth>0.0) {
+				ImageProcessor ip = imp.getProcessor();
+				double min = dd.windowCenter-dd.windowWidth/2;
+				double max = dd.windowCenter+dd.windowWidth/2;
+				if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+					min += 32768.0;
+					max += 32768.0;
+				}
+				ip.setMinAndMax(min, max);
+			}
 			if (imp.getStackSize()>1)
 				setStack(fileName, imp.getStack());
 			else
@@ -105,6 +116,8 @@ class DicomDecoder {
 	private static final int COLUMNS = 0x00280011;
 	private static final int PIXEL_SPACING = 0x00280030;
 	private static final int BITS_ALLOCATED = 0x00280100;
+	private static final int WINDOW_CENTER = 0x00281050;
+	private static final int WINDOW_WIDTH = 0x00281051;
 	private static final int RED_PALETTE = 0x00281201;
 	private static final int GREEN_PALETTE = 0x00281202;
 	private static final int BLUE_PALETTE = 0x00281203;
@@ -133,6 +146,7 @@ class DicomDecoder {
  	private StringBuffer dicomInfo = new StringBuffer(1000);
  	private boolean dicmFound; // "DICM" found at offset 128
  	private boolean oddLocations;  // one or more tags at odd locations
+	double windowCenter, windowWidth;
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -363,6 +377,16 @@ class DicomDecoder {
 					if (pixelRepresentation==1)
 						fi.fileType = FileInfo.GRAY16_SIGNED;
 					addInfo(tag, pixelRepresentation);
+					break;
+				case WINDOW_CENTER:
+					String center = getString(elementLength);
+					windowCenter = s2d(center);
+					addInfo(tag, center);
+					break;
+				case WINDOW_WIDTH:
+					String width = getString(elementLength);
+					windowWidth = s2d(width);
+					addInfo(tag, width);
 					break;
 				case RED_PALETTE:
 					fi.reds = getLut(elementLength);
@@ -679,7 +703,7 @@ class DicomDictionary {
 		"00180035=TMIntervention Drug Start Time",
 		"00180040=ISCine Rate",
 		"00180050=DSSlice Thickness",
-		"00180060=DSKVP",
+		"00180060=DSkVp",
 		"00180070=ISCounts Accumulated",
 		"00180071=CSAcquisition Termination Condition",
 		"00180072=DSEffective Series Duration",
@@ -757,7 +781,17 @@ class DicomDictionary {
 		"00181150=ISExposure Time",
 		"00181151=ISX-ray Tube Current",
 		"00181152=ISExposure",
+		"00181153=ISExposure in uAs",
+		"00181154=DSAverage Pulse Width",
+		"00181155=CSRadiation Setting",
+		"00181156=CSRectification Type",
+		"0018115A=CSRadiation Mode",
+		"0018115E=DSImage Area Dose Product",
 		"00181160=SHFilter Type",
+		"00181161=LOType of Filters",
+		"00181162=DSIntensifier Size",
+		"00181164=DSImager Pixel Spacing",
+		"00181166=CSGrid",
 		"00181170=ISGenerator Power",
 		"00181180=SHCollimator/grid Name",
 		"00181181=CSCollimator Type",
@@ -765,14 +799,17 @@ class DicomDictionary {
 		"00181183=DSX Focus Center",
 		"00181184=DSY Focus Center",
 		"00181190=DSFocal Spot(s)",
+		"00181191=CSAnode Target Material",
+		"001811A0=DSBody Part Thickness",
+		"001811A2=DSCompression Force",
 		"00181200=DADate of Last Calibration",
 		"00181201=TMTime of Last Calibration",
 		"00181210=SHConvolution Kernel",
 		"00181242=ISActual Frame Duration",
 		"00181243=ISCount Rate",
 		"00181250=SHReceiving Coil",
-		"00181151=SHTransmitting Coil",
-		"00181160=SHScreen Type",
+		"00181251=SHTransmitting Coil",
+		"00181260=SHPlate Type",
 		"00181261=LOPhosphor Type",
 		"00181300=ISScan Velocity",
 		"00181301=CSWhole Body Technique",
@@ -789,6 +826,31 @@ class DicomDictionary {
 		"00181403=CSCassette Size",
 		"00181404=USExposures on Plate",
 		"00181405=ISRelative X-ray Exposure",
+		"00181450=CSColumn Angulation",
+		"00181500=CSPositioner Motion",
+		"00181508=CSPositioner Type",
+		"00181510=DSPositioner Primary Angle",
+		"00181511=DSPositioner Secondary Angle",
+		"00181520=DSPositioner Primary Angle Increment",
+		"00181521=DSPositioner Secondary Angle Increment",
+		"00181530=DSDetector Primary Angle",
+		"00181531=DSDetector Secondary Angle",
+		"00181600=CSShutter Shape",
+		"00181602=ISShutter Left Vertical Edge",
+		"00181604=ISShutter Right Vertical Edge",
+		"00181606=ISShutter Upper Horizontal Edge",
+		"00181608=ISShutter Lower Horizontal Edge",
+		"00181610=ISCenter of Circular Shutter",
+		"00181612=ISRadius of Circular Shutter",
+		"00181620=ISVertices of the Polygonal Shutter",
+		"00181700=ISCollimator Shape",
+		"00181702=ISCollimator Left Vertical Edge",
+		"00181704=ISCollimator Right Vertical Edge",
+		"00181706=ISCollimator Upper Horizontal Edge",
+		"00181708=ISCollimator Lower Horizontal Edge",
+		"00181710=ISCenter of Circular Collimator",
+		"00181712=ISRadius of Circular Collimator",
+		"00181720=ISVertices of the Polygonal Collimator",
 		"00185000=SHOutput Power",
 		"00185010=LOTransducer Data",
 		"00185012=DSFocus Depth",
@@ -803,6 +865,7 @@ class DicomDictionary {
 		"00185050=ISDepth of Scan Field",
 		"00185100=CSPatient Position",
 		"00185101=CSView Position",
+		"00185104=SQProjection Eponymous Name Code Sequence",
 		"00185210=DSImage Transformation Matrix",
 		"00185212=DSImage Translation Vector",
 		"00186000=DSSensitivity",
@@ -834,7 +897,7 @@ class DicomDictionary {
 		"00186040=ULTM-Line Position X1",
 		"00186042=ULTM-Line Position Y1",
 		"00186044=USPixel Component Organization",
-		"00186046=ULPixel Component Organization",
+		"00186046=ULPixel Component Mask",
 		"00186048=ULPixel Component Range Start",
 		"0018604A=ULPixel Component Range Stop",
 		"0018604C=USPixel Component Physical Units",
@@ -842,6 +905,46 @@ class DicomDictionary {
 		"00186050=ULNumber of Table Break Points",
 		"00186052=ULTable of X Break Points",
 		"00186054=FDTable of Y Break Points",
+		"00186056=ULNumber of Table Entries",
+		"00186058=ULTable of Pixel Values",
+		"0018605A=ULTable of Parameter Values",
+		"00187000=CSDetector Conditions Nominal Flag",
+		"00187001=DSDetector Temperature",
+		"00187004=CSDetector Type",
+		"00187005=CSDetector Configuration",
+		"00187006=LTDetector Description",
+		"00187008=LTDetector Mode",
+		"0018700A=SHDetector ID",
+		"0018700C=DADate of Last Detector Calibration",
+		"0018700E=TMTime of Last Detector Calibration",
+		"00187010=ISExposures on Detector Since Last Calibration",
+		"00187011=ISExposures on Detector Since Manufactured",
+		"00187012=DSDetector Time Since Last Exposure",
+		"00187014=DSDetector Active Time",
+		"00187016=DSDetector Activation Offset From Exposure",
+		"0018701A=DSDetector Binning",
+		"00187020=DSDetector Element Physical Size",
+		"00187022=DSDetector Element Spacing",
+		"00187024=CSDetector Active Shape",
+		"00187026=DSDetector Active Dimension(s)",
+		"00187028=DSDetector Active Origin",
+		"00187030=DSField of View Origin",
+		"00187032=DSField of View Rotation",
+		"00187034=CSField of View Horizontal Flip",
+		"00187040=LTGrid Absorbing Material",
+		"00187041=LTGrid Spacing Material",
+		"00187042=DSGrid Thickness",
+		"00187044=DSGrid Pitch",
+		"00187046=ISGrid Aspect Ratio",
+		"00187048=DSGrid Period",
+		"0018704C=DSGrid Focal Distance",
+		"00187050=LTFilter Material LT",
+		"00187052=DSFilter Thickness Minimum",
+		"00187054=DSFilter Thickness Maximum",
+		"00187060=CSExposure Control Mode",
+		"00187062=LTExposure Control Mode Description",
+		"00187064=CSExposure Status",
+		"00187065=DSPhototimer Setting",
 
 		"0020000D=UIStudy Instance UID",
 		"0020000E=UISeries Instance UID",
@@ -924,5 +1027,6 @@ class DicomDictionary {
 		"FFFEE00D=DLItem Delimitation Item",
 		"FFFEE0DD=DLSequence Delimitation Item"
 	};
+
 }
 

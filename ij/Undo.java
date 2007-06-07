@@ -1,6 +1,7 @@
 /**Implements the Edit/Undo command.*/
 
 package ij;
+import ij.process.*;
 import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
@@ -13,58 +14,62 @@ public class Undo {
 	public static final int FILTER = 1;
 	public static final int TYPE_CONVERSION = 2;
 	public static final int PASTE = 3;
-	public static final int TRANSFORMATION = 4;
+	public static final int COMPOUND_FILTER = 4;
 	
 	private static int whatToUndo = NOTHING;
-	private static ImagePlus imp = null;
-	private static Image imageCopy = null;
+	private static int imageID;
+	private static ImageProcessor ipCopy = null;
 	
 	
-	public static void setup(int what, ImagePlus imagePlus) {
+	public static void setup(int what, ImagePlus imp) {
 		whatToUndo = what;
-		imp = imagePlus;
+		imageID = imp.getID();
 		if (what==TYPE_CONVERSION)
-			imageCopy = imp.getImage();
-		else
-			imageCopy = null;
-		//if (IJ.debugMode) IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
+			ipCopy = imp.getProcessor();
+		if (what==COMPOUND_FILTER) {
+			ImageProcessor ip = imp.getProcessor();
+			if (ip!=null)
+				ipCopy = ip.duplicate();
+			else
+				ipCopy = null;
+		} else
+			ipCopy = null;
+		//IJ.write(imp.getTitle() + ": set up undo (" + what + ")");
 	}
 	
 	
 	public static void reset() {
 		whatToUndo = NOTHING;
-		if (imp!=null)
-			imp.trimProcessor();
-		imp = null;
-		imageCopy = null;
-		//if (IJ.debugMode) IJ.write("Undo: reset");
+		imageID = 0;
+		ipCopy = null;
+		//IJ.write("Undo: reset");
 	}
 	
 
 	public static void undo() {
-		if (imp!=WindowManager.getCurrentImage() && whatToUndo!=TRANSFORMATION)
-			imp = null;
-		if (imp==null)
-			{reset(); return;}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imageID!=imp.getID()) {
+			reset();
+			return;
+		}
+		//IJ.write(imp.getTitle() + ": undo (" + whatToUndo + ")");
 		switch (whatToUndo) {
 			case FILTER:
-				imp.undoFilter();
+				ImageProcessor ip = imp.getProcessor();
+				if (ip!=null) {
+					ip.reset();
+					imp.updateAndDraw();
+				}
 	    		break;
 			case TYPE_CONVERSION:
-				imp.setImage(imageCopy);
-		    	imp.repaintWindow();
-				//if (IJ.debugMode) IJ.write(imp.getTitle() + ": undo type conversion");
+			case COMPOUND_FILTER:
+				if (ipCopy!=null)
+					imp.setProcessor(null, ipCopy);
 	    		break;
 			case PASTE:
 				Roi roi = imp.getRoi();
 				if (roi!=null)
 					roi.abortPaste();
-	    		break;
-			case TRANSFORMATION:
-				ImagePlus iplus = WindowManager.getCurrentImage();
-				if (iplus!=null && !iplus.changes)
-					iplus.getWindow().close();
-				new ImagePlus(imp.getTitle(), imp.getProcessor()).show();
 	    		break;
     	}
     	reset();

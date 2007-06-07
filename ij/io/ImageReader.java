@@ -163,12 +163,18 @@ public class ImageReader {
 			totalRead += bufferSize;
 			showProgress((double)totalRead/byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
+			boolean bgr = fi.fileType==FileInfo.BGR;
 			int j = 0;
 			for (int i=base; i<(base+pixelsRead); i++) {
+				if (bytesPerPixel==4)
+					j++; // ignore alfa byte
 				r = buffer[j++]&0xff;
 				g = buffer[j++]&0xff;
 				b = buffer[j++]&0xff;
-				pixels[i] = 0xff000000 | (r<<16) | (g<<8) | b;
+				if (bgr)
+					pixels[i] = 0xff000000 | (b<<16) | (g<<8) | r;
+				else
+					pixels[i] = 0xff000000 | (r<<16) | (g<<8) | b;
 			}
 			base += pixelsRead;
 		}
@@ -264,7 +270,9 @@ public class ImageReader {
 					skip(in);
 					return (Object)read32bitImage(in);
 				case FileInfo.RGB:
-					bytesPerPixel = 3;
+				case FileInfo.BGR:
+				case FileInfo.ARGB:
+					bytesPerPixel = fi.fileType==FileInfo.ARGB?4:3;
 					skip(in);
 					return (Object)readChunkyRGB(in);
 				case FileInfo.RGB_PLANAR:

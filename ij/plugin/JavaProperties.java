@@ -57,6 +57,7 @@ public class JavaProperties implements PlugIn {
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
 		String prefsDir = osName.indexOf("Windows",0)>-1?userDir:userHome;
+		tw.append("  version: "+IJ.getInstance().VERSION);
 		tw.append("  prefs dir: "+prefsDir);
 		tw.append("  plugins dir: "+Menus.getPlugInsPath());
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();

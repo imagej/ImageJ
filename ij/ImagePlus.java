@@ -327,6 +327,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		width = newWidth;
 		height = newHeight;
 		ip = null;
+		stack = null;
 		LookUpTable lut = new LookUpTable(img);
 		int type;
 		if (lut.getMapSize() > 0) {
@@ -351,8 +352,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (title!=null) this.title = title;
 		this.ip = ip;
 		if (ij!=null) ip.setProgressBar(ij.getProgressBar());
-		if (stack!=null && stack.getSize()<currentSlice)
-			currentSlice = 1;
+		if (stack!=null) {
+			int stackSize = stack.getSize();
+			if (stackSize<currentSlice)
+				currentSlice = 1;
+			if (stackSize<2)
+				stack = null;
+		}
 		img = ip.createImage();
 		boolean dimensionsChanged = width!=ip.getWidth() || height!=ip.getHeight();
 		if (dimensionsChanged)
@@ -765,11 +771,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 
+	/** Obsolete */
 	void undoFilter() {
 		if (ip!=null) {
 			ip.reset();
 			updateAndDraw();
-			if (IJ.debugMode) IJ.write(getTitle() + ": undo filter");
 		}
 	}
 
@@ -875,6 +881,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	void revert() {
 		if (getStackSize()>1) // can't revert stacks
 			return;
+		if (roi!=null)
+			roi.endPaste();
 		trimProcessor();
 		FileInfo fi = getOriginalFileInfo();
 		if (fi!=null && fi.fileFormat!=FileInfo.UNKNOWN)

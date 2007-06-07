@@ -31,7 +31,7 @@ public class TextEncoder {
 		int height = ip.getHeight();
 		int inc = height/20;
 		if (inc<1) inc = 1;
-		IJ.showStatus("Exporting as text...");
+		//IJ.showStatus("Exporting as text...");
 		double value;
 		for (int y=0; y<height; y++) {
 			for (int x=0; x<width; x++) {
@@ -48,7 +48,7 @@ public class TextEncoder {
 		}
 		pw.close();
 		IJ.showProgress(1.0);
-		IJ.showStatus("");
+		//IJ.showStatus("");
 	}
 	
 }

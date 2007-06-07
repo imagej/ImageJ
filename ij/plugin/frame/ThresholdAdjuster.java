@@ -549,6 +549,10 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
     public void windowClosing(WindowEvent e) {
 		super.windowClosing(e);
 		instance = null;
+		done = true;
+		synchronized(this) {
+			notify();
+		}
 	}
 
 } // ThresholdAdjuster class

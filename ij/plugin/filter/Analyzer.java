@@ -19,8 +19,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private StringBuffer min,max,mean,sd;
 	
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
-		MIN_MAX,CENTROID,CENTROID,CENTER_OF_MASS,CENTER_OF_MASS,
-		PERIMETER,RECT,RECT,RECT,RECT,LIMIT,LABELS};
+		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,LIMIT,LABELS};
+	//private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
+	//	MIN_MAX,CENTROID,CENTROID,CENTER_OF_MASS,CENTER_OF_MASS,
+	//	PERIMETER,RECT,RECT,RECT,RECT,LIMIT,LABELS,ELLIPSE,ELLIPSE,ELLIPSE};
 
 	private static final int UNDEFINED=0,AREAS=1,LENGTHS=2,ANGLES=3,MARK_AND_COUNT=4;
 	private static int mode = UNDEFINED;
@@ -77,8 +79,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	void doSetDialog() {
 		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
-		String[] labels = new String[9];
-		boolean[] states = new boolean[9];
+		String[] labels = new String[10];
+		boolean[] states = new boolean[10];
 		labels[0]="Area"; states[0]=(systemMeasurements&AREA)!=0;
 		labels[1]="Mean Gray Value"; states[1]=(systemMeasurements&MEAN)!=0;
 		labels[2]="Standard Deviation"; states[2]=(systemMeasurements&STD_DEV)!=0;
@@ -88,6 +90,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[6]="Center of Mass"; states[6]=(systemMeasurements&CENTER_OF_MASS)!=0;
 		labels[7]="Perimeter"; states[7]=(systemMeasurements&PERIMETER)!=0;
 		labels[8]="Bounding Rectangle"; states[8]=(systemMeasurements&RECT)!=0;
+		labels[9]="Fit Ellipse"; states[9]=(systemMeasurements&ELLIPSE)!=0;
 		gd.addCheckboxGroup(5, 2, labels, states);
 		labels = new String[2];
 		states = new boolean[2];
@@ -120,7 +123,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int previous = 0;
 		boolean b = false;
 		for (int i=0; i<list.length; i++) {
-			if (list[i]!=previous)
+			//if (list[i]!=previous)
 				b = gd.getNextBoolean();
 			previous = list[i];
 			if (b)
@@ -268,6 +271,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
 			rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
 		}
+		if ((measurements&ELLIPSE)!=0) {
+			rt.addValue(ResultsTable.MAJOR,stats.major);
+			rt.addValue(ResultsTable.MINOR,stats.minor);
+			rt.addValue(ResultsTable.ANGLE,stats.angle);
+		}
 	}
 	
 	String getFileName() {
@@ -408,6 +416,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.ROI_Y);
 			add2(ResultsTable.ROI_WIDTH);
 			add2(ResultsTable.ROI_HEIGHT);
+		}
+		if ((measurements&ELLIPSE)!=0) {
+			add2(ResultsTable.MAJOR);
+			add2(ResultsTable.MINOR);
+			add2(ResultsTable.ANGLE);
 		}
 	}
 

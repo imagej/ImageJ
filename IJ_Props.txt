@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.21
+# Version 1.25
 
 # Popup Menu
 popup01=Undo
@@ -21,7 +21,7 @@ popup09=Draw
 
 # Plugins installed in the File/Import submenu
 import01="Raw...",ij.plugin.Raw
-import02="All As Stack...",ij.plugin.FolderOpener
+import02="Image Sequence...",ij.plugin.FolderOpener
 import03="LUT... ",ij.plugin.LutLoader
 import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader
@@ -38,20 +38,23 @@ save03="Jpeg...",ij.plugin.filter.Writer("jpeg")
 save04="Text Image...",ij.plugin.filter.Writer("text")
 save05="ZIP...",ij.plugin.filter.Writer("zip")
 save06="Raw Data...",ij.plugin.filter.Writer("raw")
-save07="LUT...",ij.plugin.filter.Writer("lut")
-save08="ROI...",ij.plugin.filter.RoiWriter
-save09="XY Coordinates...",ij.plugin.filter.XYWriter
-save10="Measurements...",ij.plugin.MeasurementsWriter
-#save11="QuickTime Movie... ",QT_Movie_Writer
+save07="Image Sequence... ",ij.plugin.StackWriter
+save08="LUT...",ij.plugin.filter.Writer("lut")
+save09="ROI...",ij.plugin.filter.RoiWriter
+save10="XY Coordinates...",ij.plugin.filter.XYWriter
+save11="Measurements...",ij.plugin.MeasurementsWriter
+#save12="QuickTime Movie... ",QT_Movie_Writer
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("width")
 options02="JPEG Quality...",ij.plugin.Options("quality")
 options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
-options05="ROI Color...",ij.plugin.RoiColor
-options06="Crosshair...",ij.plugin.Options("cross")
-options07="Miscellaneous...",ij.plugin.Options("misc")
+options05="Foreground Color...",ij.plugin.frame.ColorSelector("fore")
+options06="Background Color...",ij.plugin.frame.ColorSelector("back")
+options07="ROI Color...",ij.plugin.frame.ColorSelector("roi")
+options08="Crosshair...",ij.plugin.Options("cross")
+options09="Miscellaneous...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
@@ -72,15 +75,14 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Z Project...",ij.plugin.ZProjector
 stacks12="3D Project...",ij.plugin.filter.Projector
 stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks14="Save Slices as Files...",ij.plugin.StackWriter
-stacks15=-
-stacks16="Start Animation [=]",ij.plugin.Animator("start")
-stacks17="Stop Animation",ij.plugin.Animator("stop")
-stacks18="Animation Options...",ij.plugin.Animator("options")
+stacks14=-
+stacks15="Start Animation [=]",ij.plugin.Animator("start")
+stacks16="Stop Animation",ij.plugin.Animator("stop")
+stacks17="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Rotate submenu
-rotate01="Flip Horizonal",ij.plugin.filter.Transformer("fliph")
-rotate02="Flip Vertical",ij.plugin.filter.Transformer("flipv")
+rotate01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")
+rotate02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
 rotate03="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 rotate04="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
 rotate05="Arbitrarily...",ij.plugin.filter.Rotator
@@ -155,10 +157,18 @@ math08="Min...",ij.plugin.filter.ImageMath("min")
 math09="Max...",ij.plugin.filter.ImageMath("max")
 math10="Gamma...",ij.plugin.filter.ImageMath("gamma")
 math11="Log",ij.plugin.filter.ImageMath("log")
-math12="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
+math12="Square",ij.plugin.filter.ImageMath("sqr")
+math13="Square Root",ij.plugin.filter.ImageMath("sqrt")
+math14="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
 
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver
+filters02="Gaussian Blur...",ij.plugin.filter.GaussianBlur
+filters03="Median...",ij.plugin.filter.RankFilters("median")
+filters04="Mean...",ij.plugin.filter.RankFilters("mean")
+filters05="Minimum...",ij.plugin.filter.RankFilters("min")
+filters06="Maximum...",ij.plugin.filter.RankFilters("max")
+filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
 
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")
@@ -175,22 +185,24 @@ tools01="Save XY Coordinates...",ij.plugin.filter.XYCoordinates
 tools02="Fractal Box Count...",ij.plugin.filter.FractalBoxCounter
 tools03="Analyze Line Graph",ij.plugin.filter.LineGraphAnalyzer
 tools04="Do Curve Fitting...",ij.plugin.frame.Fitter
+tools05="ROI Manager...",ij.plugin.frame.RoiManager
 
 # Plugins installed in the Plugins menu
 plug-in01=>"Shortcuts"
 plug-in02=>"Utilities"
-plug-in03="New... ",ij.plugin.NewPlugin
-plug-in04="Edit...",ij.plugin.Compiler("edit")
-plug-in05="Compile and Run...",ij.plugin.Compiler
-plug-in06=-
+plug-in03="Record... ",ij.plugin.frame.Recorder
+plug-in04="New... ",ij.plugin.NewPlugin
+plug-in05="Edit...",ij.plugin.Compiler("edit")
+plug-in06="Compile and Run...",ij.plugin.Compiler
+plug-in07=-
 
 # Plugins installed in the Plugins/Utilities submenu
-utilities01="Panel...[P]",ij.plugin.frame.ControlPanel
-utilities02="List Threads...",ij.plugin.ThreadLister
-utilities03="List Java Properties...",ij.plugin.JavaProperties
-utilities04="List Commands...",ij.plugin.CommandLister
-utilities05="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
-utilities06="Unlock Image",ij.plugin.Unlocker
+utilities01="Control Panel...[P]",ij.plugin.frame.ControlPanel
+utilities02="Properties...",ij.plugin.JavaProperties
+utilities03="Commands...",ij.plugin.CommandLister
+utilities04="Shortcuts...",ij.plugin.CommandLister("shortcuts")
+utilities05="Threads...",ij.plugin.ThreadLister
+utilities06="Unlock Image",ij.plugin.SimpleCommands("unlock")
 utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
 
 # Plugins installed in the Plugins/Shortcuts submenu
@@ -221,22 +233,21 @@ open08="Ceretec Sagittals (12K)",ij.plugin.URLOpener("cer-sag.gif")
 open09="Clown (14K)",ij.plugin.URLOpener("clown.jpg")
 open10="Diatoms (60K)",ij.plugin.URLOpener("Diatoms.jpg")
 open11="Dot Blots (30K)",ij.plugin.URLOpener("Dot_Blots.jpg")
-open12="Enhance Me (25K)",ij.plugin.URLOpener("enhance-me.gif")
-open13="Fibroblast Cell Nucleus (17K)",ij.plugin.URLOpener("Fibroblast_Cell_Nucleus.jpg")
-open14="Fluorescent Cells (58K)",ij.plugin.URLOpener("FluorescentCells.jpg")
-open15="Gel (105K)",ij.plugin.URLOpener("gel.gif")
-open16="Lena (47K)",ij.plugin.URLOpener("lena.gif")
-open17="Line Graph (21K)",ij.plugin.URLOpener("LineGraph.jpg")
-open18="Mandrill (70K)",ij.plugin.URLOpener("baboon.jpg")
-open19="MRI Scan (48K)",ij.plugin.URLOpener("mri.gif")
-#open20="MRI Stack (1MB)",ij.plugin.RawReader("mri-stack.tif 186 226 27 8 768 whiteiszero")
-open20="MRI Stack (528K)",ij.plugin.URLOpener("mri-stack.zip")
-#open21="M51 Galaxy (323K, 16-bits)",ij.plugin.RawReader("m51.raw 320 510 1 16 0")
-open21="M51 Galaxy (177K, 16-bits)",ij.plugin.URLOpener("m51.zip")
-open22="Particles (75K)",ij.plugin.URLOpener("particles.gif")
-open23="PET Scan (11K)",ij.plugin.URLOpener("PET_Scan.gif")
-#open24="Scala Media Stack (159K)",ij.plugin.RawReader("scala-media.tif 84 54 36 8 768 whiteiszero")
-open24="Scala Media Stack (48K)",ij.plugin.URLOpener("scala-media.zip")
-open25="TEM Filter (112K)",ij.plugin.URLOpener("TEM_filter_sample.jpg")
-open26="Tree Rings (48K)",ij.plugin.URLOpener("Tree_Rings.jpg")
+open12="Embryos (42K)",ij.plugin.URLOpener("embryos.jpg")
+open13="Enhance Me (25K)",ij.plugin.URLOpener("enhance-me.gif")
+open14="Fibroblast Cell Nucleus (17K)",ij.plugin.URLOpener("Fibroblast_Cell_Nucleus.jpg")
+open15="Fluorescent Cells (58K)",ij.plugin.URLOpener("FluorescentCells.jpg")
+open16="Gel (105K)",ij.plugin.URLOpener("gel.gif")
+open17="Leaf (36K)",ij.plugin.URLOpener("leaf.jpg")
+open18="Lena (47K)",ij.plugin.URLOpener("lena.gif")
+open19="Line Graph (21K)",ij.plugin.URLOpener("LineGraph.jpg")
+open20="Mandrill (70K)",ij.plugin.URLOpener("baboon.jpg")
+open21="MRI Scan (48K)",ij.plugin.URLOpener("mri.gif")
+open22="MRI Stack (528K)",ij.plugin.URLOpener("mri-stack.zip")
+open23="M51 Galaxy (177K, 16-bits)",ij.plugin.URLOpener("m51.zip")
+open24="Particles (75K)",ij.plugin.URLOpener("particles.gif")
+open25="PET Scan (11K)",ij.plugin.URLOpener("PET_Scan.gif")
+open26="Scala Media Stack (48K)",ij.plugin.URLOpener("scala-media.zip")
+open27="TEM Filter (112K)",ij.plugin.URLOpener("TEM_filter_sample.jpg")
+open28="Tree Rings (48K)",ij.plugin.URLOpener("Tree_Rings.jpg")
 

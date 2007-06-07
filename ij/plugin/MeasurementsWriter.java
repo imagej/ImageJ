@@ -6,9 +6,11 @@ import ij.text.TextPanel;
 public class MeasurementsWriter implements PlugIn {
 
 	public void run(String arg) {
-		TextPanel tp = IJ.getTextPanel();
-		if (tp!=null)
-			tp.saveAs(arg);
+		if (IJ.isResultsWindow()) {
+			TextPanel tp = IJ.getTextPanel();
+			if (tp!=null)
+				tp.saveAs(arg);
+		}
 	}
 	
 }

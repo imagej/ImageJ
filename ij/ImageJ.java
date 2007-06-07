@@ -26,22 +26,22 @@ offer your changes to me so I can possibly add them to the
 public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener {
 
-	public static final String VERSION = "1.24t";
+	public static final String VERSION = "1.25s";
 
-	private static final String IJ_X="ij.x",IJ_Y="ij.y",IJ_WIDTH="ij.width",IJ_HEIGHT="ij.height";
+	private static final String IJ_X="ij.x",IJ_Y="ij.y";
+	private static final String RESULTS_X="results.x",RESULTS_Y="results.y",
+		RESULTS_WIDTH="results.width",RESULTS_HEIGHT="results.height";
 	
 	private Toolbar toolbar;
 	private Panel statusBar;
 	private ProgressBar progressBar;
 	private Label statusLine;
-	private TextPanel textPanel;
 	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private static PluginClassLoader classLoader;
 	private boolean notVerified = true;
-	private static boolean wasMaximized;
-
+	
 	/** Creates a new ImageJ frame. */
 	public ImageJ() {
 		this(null);
@@ -57,13 +57,12 @@ public class ImageJ extends Frame implements ActionListener,
 		String err2 = m.addMenuBar();
 		m.installPopupMenu(this);
 		notVerified = true;		
-
+		setLayout(new GridLayout(2, 1));
+		
 		// Tool bar
-		Panel panel = new Panel();
-		panel.setLayout(new GridLayout(2, 1));
 		toolbar = new Toolbar();
 		toolbar.addKeyListener(this);
-		panel.add(toolbar);
+		add(toolbar);
 
 		// Status bar
 		statusBar = new Panel();
@@ -74,50 +73,43 @@ public class ImageJ extends Frame implements ActionListener,
 		statusLine.addKeyListener(this);
 		statusLine.addMouseListener(this);
 		statusBar.add("Center", statusLine);
-		progressBar = new ProgressBar(90, 16);
+		progressBar = new ProgressBar(100, 18);
 		progressBar.addKeyListener(this);
 		progressBar.addMouseListener(this);
 		statusBar.add("East", progressBar);
-		panel.add(statusBar);
-		add("North", panel);
+		statusBar.setSize(toolbar.getPreferredSize());
+		add(statusBar);
 
-		// Text panel
-		textPanel = new TextPanel();
-		textPanel.setTitle("results.txt");
-		textPanel.setBackground(Color.white);
-		textPanel.setFont(new Font("Monospaced", Font.PLAIN, 12));
-		//Dimension tbSize = toolbar.getPreferredSize();
-		//textPanel.setSize(tbSize.width+10, 250);
-		textPanel.addKeyListener(this);
-		add("Center", textPanel);
-		IJ.init(this, applet, textPanel);
-		IJ.write("ImageJ "+VERSION);
-		if (err1!=null)
-			IJ.write("<<"+err1+">>");
-		if (err2!=null)
-			IJ.write("<<"+err2+">>");
-
-		IJ.showStatus("  " + Menus.nPlugins + " plugin commands installed");
+		IJ.init(this, applet);
+		IJ.showStatus("Version "+VERSION + " ("+ Menus.nPlugins + " commands)");
  		addKeyListener(this);
  		addWindowListener(this);
  		
-		setResizable(true);
-		//pack();
 		Point loc = getPreferredLocation();
-		int ijWidth = Prefs.getInt(IJ_WIDTH,0);
-		int ijHeight = Prefs.getInt(IJ_HEIGHT,0);
-		if (ijWidth<=100 || ijHeight<=10) {
-			Dimension tbSize = toolbar.getPreferredSize();
-			ijWidth = tbSize.width+10;
-			ijHeight = 230;
-		}
-		setBounds(loc.x, loc.y, ijWidth, ijHeight);
+		Dimension tbSize = toolbar.getPreferredSize();
+		int ijWidth = tbSize.width+10;
+		int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		setIcon();
+		setBounds(loc.x, loc.y, ijWidth, ijHeight); //needed for pack to work
+		pack();
+		setLocation(loc.x, loc.y);
+		setResizable(false);
 		setVisible(true);
-		requestFocus();
+		if (err1!=null)
+			IJ.error(err1);
+		if (err2!=null)
+			IJ.error(err2);
+		//requestFocus();
 	}
     
+	void showResults() {
+		TextWindow resultsWindow = new TextWindow("Results", "", 300, 200);
+		TextPanel textPanel = resultsWindow.getTextPanel();
+		textPanel.addKeyListener(this);
+		IJ.setTextPanel(textPanel);
+	}
+	
 	void setIcon() {
 		URL url = this .getClass() .getResource("/microscope.gif"); 
 		if (url==null)
@@ -309,9 +301,9 @@ public class ImageJ extends Frame implements ActionListener,
  			else if (thePlugIn instanceof PlugInFilter)
 				runFilterPlugIn(thePlugIn, commandName, arg);
 		}
-		catch (ClassNotFoundException e) {IJ.write("Plugin not found: "+className);}
-		catch (InstantiationException e) {IJ.write("Unable to load plugin (ins)");}
-		catch (IllegalAccessException e) {IJ.write("Unable to load plugin (acc)");}
+		catch (ClassNotFoundException e) {IJ.error("Plugin not found: "+className);}
+		catch (InstantiationException e) {IJ.error("Unable to load plugin (ins)");}
+		catch (IllegalAccessException e) {IJ.error("Unable to load plugin (acc)");}
 		return thePlugIn;
 	} 
 	
@@ -441,31 +433,17 @@ public class ImageJ extends Frame implements ActionListener,
 	public void keyTyped(KeyEvent e) {}
 
 	public void windowClosing(WindowEvent e) {
-		doCommand("Quit");
+		boolean quit = true;
+		if (Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS)
+			quit = IJ.showMessageWithCancel("ImageJ",
+				"Are you sure you want to quit ImageJ?");
+		if (quit)
+			doCommand("Quit");
 	}
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh())
 			this.setMenuBar(Menus.getMenuBar());
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		Dimension window = getSize();
-		//if (IJ.debugMode) IJ.write("screen: "+screen);
-		//if (IJ.debugMode) IJ.write("Window: "+window);
-		boolean bigWindow = window.width>=screen.width;
-		if (bigWindow) {
-			//ImagePlus imp = WindowManager.getCurrentImage();
-			//if (imp!=null)
-			//	imp.getWindow().toFront();
-			if (!wasMaximized) {
-				wasMaximized = true;
-				IJ.beep();
-				IJ.showMessage("Error",
-					"The \"ImageJ\" window should not be maximized!\n"
-					+"Instead, make it as small as possible and position\n"
-					+"it so as to minimize overlap of image windows."
-					);
-			}
-		}
 	}
 	
 	public void windowClosed(WindowEvent e) {}
@@ -476,6 +454,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/**Copies text from the ImageJ window to the system clipboard. Returns 0 if the system clipboard
 	is not available or no text is selected. Clears the selection if "cut" is true.*/
+	/*
 	public int copyText(boolean cut) {
 		boolean isActiveWindow = getFocusOwner()!=null;
 		if (!isActiveWindow)
@@ -487,9 +466,11 @@ public class ImageJ extends Frame implements ActionListener,
 			return count;
 		}
 	}
+	*/
 	
 	/** Clears text from the ImageJ window. Returns
 		false if the ImageJ window is not active. */
+	/*
 	public boolean clearText() {
 		boolean isActiveWindow = getFocusOwner()!=null;
 		if (!isActiveWindow)
@@ -499,6 +480,7 @@ public class ImageJ extends Frame implements ActionListener,
 			return true;
 		}
 	}
+	*/
 	
 	/** Adds the specified class to a Vector to keep it from being
 		garbage collected, causing static fields to be reset. */
@@ -522,11 +504,10 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Called once when ImageJ quits. */
 	public void savePreferences(Properties prefs) {
 		Point loc = getLocation();
-		Dimension size = getSize();
 		prefs.put(IJ_X, Integer.toString(loc.x));
 		prefs.put(IJ_Y, Integer.toString(loc.y));
-		prefs.put(IJ_WIDTH, Integer.toString(size.width));
-		prefs.put(IJ_HEIGHT, Integer.toString(size.height));
+		//prefs.put(IJ_WIDTH, Integer.toString(size.width));
+		//prefs.put(IJ_HEIGHT, Integer.toString(size.height));
 	}
 
     public static void main(String args[]) {
@@ -535,4 +516,3 @@ public class ImageJ extends Frame implements ActionListener,
 
 
 } //class ImageJ
-

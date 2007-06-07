@@ -8,11 +8,13 @@ import ij.process.*;
 /** Oval region of interest */
 public class OvalRoi extends Roi {
 
+	/** Creates a new OvalRoi. The ImagePlus argument can be null. */
 	public OvalRoi(int x, int y, int width, int height, ImagePlus imp) {
 		super(x, y, width, height, imp);
 		type = OVAL;
 	}
 
+	/** Starts the process of creating a user-defined OvalRoi. */
 	public OvalRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
 		type = OVAL;

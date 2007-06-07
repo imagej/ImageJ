@@ -12,11 +12,12 @@ public class ResultsTable {
 	
 	public static final int AREA=0, MEAN=1, STD_DEV=2, MODE=3, MIN=4, MAX=5,
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
-		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14; 
+		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
+		MAJOR=15, MINOR=16, ANGLE=17; 
 
 	private String[] headings = new String[MAX_COLUMNS];
 	private String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
-		"X","Y","XM","YM","Perim.","BX","BY","Width","Height"};
+		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle"};
 	private int counter;
 	private float[][] columns = new float[MAX_COLUMNS][];
 	private String[] rowLabels;

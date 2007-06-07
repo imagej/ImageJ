@@ -34,6 +34,7 @@ public class ShortBlitter implements Blitter {
 		if (!r1.intersects(r2))
 			return;
 		srcPixels = (short [])ip.getPixels();
+//new ij.ImagePlus("srcPixels", new ShortProcessor(srcWidth, srcHeight, srcPixels, null)).show();
 		r1 = r1.intersection(r2);
 		xSrcBase = (xloc<0)?-xloc:0;
 		ySrcBase = (yloc<0)?-yloc:0;

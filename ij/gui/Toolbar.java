@@ -24,11 +24,11 @@ public class Toolbar extends Canvas implements MouseListener {
 	public static final int DROPPER = 13;
 	//public static final int NONE = 100;
 
-	private static final int NUM_TOOLS = IJ.isMacintosh()?14:19;
+	private static final int NUM_TOOLS = 20;
 	private static final int SIZE = 22;
 	private static final int OFFSET = 3;
 
-	private Dimension ps;
+	private Dimension ps = new Dimension(SIZE*NUM_TOOLS, SIZE);
 	private boolean[] down;
 	private static int current;
 	private int previous;
@@ -38,6 +38,7 @@ public class Toolbar extends Canvas implements MouseListener {
 	private Graphics g;
 	private static Toolbar instance;
 	private int mpPrevious = RECTANGLE;
+	private String spareTip;
 
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
@@ -49,26 +50,23 @@ public class Toolbar extends Canvas implements MouseListener {
 	private Color evenDarker = darker.darker();
 
 	public Toolbar() {
-		ps = new Dimension(SIZE*NUM_TOOLS, SIZE);
 		down = new boolean[NUM_TOOLS];
 		resetButtons();
 		down[0] = true;
 		setForeground(foregroundColor);
 		setBackground(gray);
+		//setBackground(Color.red);
 		addMouseListener(this);
 		instance = this;
 	}
 
 	/** Returns the ID of the current tool (Toolbar.RECTANGLE,
-		Toolbar.OVAL, etc.). Returns Toolbar.NONE if no tool is
-		selected. */
+		Toolbar.OVAL, etc.). */
 	public static int getToolId() {
-		//if (current==10 || current>DROPPER)
-		//	return NONE;
-		//else
 		return current;
 	}
 
+	/** Returns a reference to the ImageJ toolbar. */
 	public static Toolbar getInstance() {
 		return instance;
 	}
@@ -230,6 +228,10 @@ public class Toolbar extends Canvas implements MouseListener {
 				IJ.showStatus("Color picker (" + foregroundColor.getRed() + ","
 				+ foregroundColor.getGreen() + "," + foregroundColor.getBlue() + ")");
 				return;
+			case SPARE1:
+				if (spareTip!=null)
+					IJ.showStatus(spareTip);
+				return;
 			default:
 				IJ.showStatus("");
 				return;
@@ -317,6 +319,8 @@ public class Toolbar extends Canvas implements MouseListener {
 		for (int i=0; i<NUM_TOOLS; i++)
 			if (x>i*SIZE && x<i*SIZE+SIZE)
 				newTool = i;
+		if ((newTool==SPARE1&&spareTip==null) || newTool>DROPPER)
+			return;
 		boolean doubleClick = newTool==current && (System.currentTimeMillis()-mouseDownTime)<=500;
  		mouseDownTime = System.currentTimeMillis();
 		if (!doubleClick) {
@@ -383,6 +387,15 @@ public class Toolbar extends Canvas implements MouseListener {
 
 	public Dimension getMinimumSize(){
 		return ps;
+	}
+	
+	/** Enables the unused tool between the text and zoom tools.
+		The specified string is displayed in the status bar when
+		the user enables this tool. Returns the tool ID. Future
+		versions may support multiple tools and custom icons. */
+	public int addTool(String toolTip) {
+		spareTip = toolTip;
+		return SPARE1;
 	}
 
 }

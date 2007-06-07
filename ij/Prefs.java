@@ -26,8 +26,10 @@ public class Prefs {
 	public static final String JPEG = "jpeg";
 	public static final String USE_POINTER = "pcursor";
 	public static final String SCALE_CONVERSIONS = "scale";
-
-	static String separator = System.getProperty("file.separator");
+	
+	/** file.separator system property */
+	public static String separator = System.getProperty("file.separator");
+	
 	static Properties prefs = new Properties();
 	static Properties props = new Properties(prefs);
 	static String prefsDir;

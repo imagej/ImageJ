@@ -18,8 +18,11 @@ public class GUI {
 		//ij.IJ.write("screen: "+screen);
 		//ij.IJ.write("window: "+window);
 	}
+	
 	/** Creates a white AWT Image image of the specified size. */
 	public static Image createBlankImage(int width, int height) {
+		if (width==0 || height==0)
+			throw new IllegalArgumentException("");
 		ImageJ ij = IJ.getInstance();
 		Color c = ij.getBackground();
 		ij.setBackground(Color.white);

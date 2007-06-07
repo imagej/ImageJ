@@ -22,7 +22,7 @@ import ij.plugin.frame.Recorder;
 		        continue the scan
 	</pre>
 */
-public class ParticleAnalyzer implements PlugInFilter {
+public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	/** Display results in the ImageJ console. */
 	public static final int SHOW_RESULTS = 1;
@@ -53,8 +53,8 @@ public class ParticleAnalyzer implements PlugInFilter {
 	private static int staticOptions = Prefs.getInt(OPTIONS,SHOW_SUMMARY+CLEAR_WORKSHEET);
 	private static int staticBins = Prefs.getInt(BINS,20);
 	
-	private static final int NOTHING=0,OUTLINES=1,FILLED=2;
-	private static String[] showStrings = {"Nothing","Outlines","Filled"};
+	private static final int NOTHING=0,OUTLINES=1,FILLED=2,ELLIPSES=3;
+	private static String[] showStrings = {"Nothing","Outlines","Filled","Ellipses"};
 	private static int showChoice;
 	
 	protected ImagePlus imp;
@@ -78,6 +78,8 @@ public class ParticleAnalyzer implements PlugInFilter {
 	private int slice;
 	private boolean canceled;
 	private ImageStack outlines;
+	private IndexColorModel customLut;
+	private boolean processStack;
 	
 	
 	/** Construct a ParticleAnalyzer.
@@ -108,7 +110,9 @@ public class ParticleAnalyzer implements PlugInFilter {
 		IJ.register(ParticleAnalyzer.class);
 		if (!showDialog())
 			return DONE;
-		return IJ.setupDialog(imp, DOES_8G+NO_CHANGES+NO_UNDO);
+		int flags = IJ.setupDialog(imp, DOES_8G+NO_CHANGES+NO_UNDO);
+		processStack = (flags&DOES_STACKS)!=0;
+		return flags;
 	}
 
 	public void run(ImageProcessor ip) {
@@ -117,7 +121,7 @@ public class ParticleAnalyzer implements PlugInFilter {
 		slice++;
 		if (slice==1)
 			imp.startTiming();
-		if (imp.getStackSize()>1)
+		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
 		analyze(imp, ip);
 	}
@@ -195,6 +199,11 @@ public class ParticleAnalyzer implements PlugInFilter {
 			if (slice==1)
 				outlines = new ImageStack(width, height);
 			ip2 = new ByteProcessor(width, height);
+			if (showChoice==OUTLINES) {
+				if (customLut==null)
+					makeCustomLut();
+				ip2.setColorModel(customLut);
+			}
 			outlines.addSlice(null, ip2);
 			ip2.setColor(Color.white);
 			ip2.fill();
@@ -223,6 +232,8 @@ public class ParticleAnalyzer implements PlugInFilter {
 			win.running = true;
 		if (measurements==0)
 			measurements = Analyzer.getMeasurements();
+		if (showChoice==ELLIPSES)
+			measurements |= ELLIPSE;
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -295,16 +306,16 @@ public class ParticleAnalyzer implements PlugInFilter {
 		ip.setRoi(r);
 		if (r.width>1 && r.height>1)ip.setMask(roi.getMask());
 		ip.setColor(fillColor);
-		ImageStatistics s = new ByteStatistics(ip,measurements,calibration);
+		ImageStatistics stats = new ByteStatistics(ip,measurements,calibration);
 		boolean include = true;
 		if (excludeEdgeParticles &&
 		(r.x==0||r.y==0||r.x+r.width==width||r.y+r.height==height))
 				include = false;
 		int[] mask = ip.getMask();
-		if (s.pixelCount>=minSize && s.pixelCount<=maxSize && include) {
-			saveResults(s, roi);
+		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {
+			saveResults(stats, roi);
 			if (showChoice!=NOTHING)
-				drawParticle(ip2, roi, mask);
+				drawParticle(ip2, roi, stats, mask);
 		}
 		ip.fill(mask);
 	}
@@ -319,10 +330,12 @@ public class ParticleAnalyzer implements PlugInFilter {
 	
 	/** Draws a selected particle in a separate image.  This is
 		another method subclasses may want to override. */
-	protected void drawParticle(ImageProcessor ip2, Roi roi, int[] mask) {
+	protected void drawParticle(ImageProcessor ip2, Roi roi,
+	ImageStatistics stats, int[] mask) {
 		switch (showChoice) {
 			case FILLED: drawFilledParticle(ip2, roi, mask); break;
-			case OUTLINES: drawOutline(roi, rt.getCounter()); break;
+			case OUTLINES: drawOutline(ip2, roi, rt.getCounter()); break;
+			case ELLIPSES: drawEllipse(ip2, stats, rt.getCounter()); break;
 			default:
 		}
 	}
@@ -333,19 +346,25 @@ public class ParticleAnalyzer implements PlugInFilter {
 		ip.fill(mask);
 	}
 
-	void drawOutline(Roi roi, int count) {
+	void drawOutline(ImageProcessor ip, Roi roi, int count) {
 		Rectangle r = roi.getBoundingRect();
 		int nPoints = ((PolygonRoi)roi).getNCoordinates();
 		int[] xp = ((PolygonRoi)roi).getXCoordinates();
 		int[] yp = ((PolygonRoi)roi).getYCoordinates();
 		int x=r.x, y=r.y;
-		ip2.moveTo(x+xp[0], y+yp[0]);
+		ip.setValue(0.0);
+		ip.moveTo(x+xp[0], y+yp[0]);
 		for (int i=1; i<nPoints; i++)
-			ip2.lineTo(x+xp[i], y+yp[i]);
-		ip2.lineTo(x+xp[0], y+yp[0]);
+			ip.lineTo(x+xp[i], y+yp[i]);
+		ip.lineTo(x+xp[0], y+yp[0]);
 		String s = IJ.d2s(count,0);
-		ip2.moveTo(r.x+r.width/2-ip2.getStringWidth(s)/2, r.y+r.height/2+4);
-		ip2.drawString(s);
+		ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
+		ip.setValue(1.0);
+		ip.drawString(s);
+	}
+
+	void drawEllipse(ImageProcessor ip, ImageStatistics stats, int count) {
+		stats.drawEllipse(ip);
 	}
 
 	void showResults() {
@@ -363,10 +382,24 @@ public class ParticleAnalyzer implements PlugInFilter {
 				new HistogramWindow("Particle Size Distribution", new ImagePlus("",ip), sizeBins);
 			}
 		}
-		if (outlines!=null && slice==imp.getStackSize())
+		if (outlines!=null && (!processStack||slice==imp.getStackSize()))
 			new ImagePlus("Drawing of "+imp.getShortTitle(), outlines).show();
 	}
 	
+	void makeCustomLut() {
+		IndexColorModel cm = (IndexColorModel)LookUpTable.createGrayscaleColorModel(false);
+		byte[] reds = new byte[256];
+		byte[] greens = new byte[256];
+		byte[] blues = new byte[256];
+		cm.getReds(reds);
+		cm.getGreens(greens);
+		cm.getBlues(blues);
+		reds[1] =(byte) 255;
+		greens[1] = (byte)0;
+		blues[1] = (byte)0;
+		customLut = new IndexColorModel(8, 256, reds, greens, blues);
+	}
+
 	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		prefs.put(OPTIONS, Integer.toString(staticOptions));

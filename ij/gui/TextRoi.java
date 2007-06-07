@@ -77,6 +77,8 @@ public class TextRoi extends Roi {
 	
 	/** Returns a mask that can be used to draw the text on an image. */
 	public int[] getMask() {
+		if (width==0 || height==0)
+			return null;
 		Image img = GUI.createBlankImage(width, height);
 		Graphics g = img.getGraphics();
 		g.setColor(Color.black);
@@ -166,6 +168,9 @@ public class TextRoi extends Roi {
 		if (firstMouseUp) {
 			adjustSize();
 			firstMouseUp = false;
+		} else {
+			if (width<5 || height<5)
+				imp.killRoi();
 		}
 	}
 	

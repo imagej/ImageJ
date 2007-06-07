@@ -59,6 +59,17 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		addPopupMenu();
 	}
   
+	/** Constructs a new TextPanel. */
+	public TextPanel(String title) {
+		this();
+		if (title.equals("Results")) {
+			pm.addSeparator();
+			addPopupItem("Clear Results");
+			addPopupItem("Summarize");
+			addPopupItem("Set Measurements...");
+		}
+	}
+
 	void addPopupMenu() {
 		pm=new PopupMenu();
 		addPopupItem("Save As...");
@@ -68,12 +79,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		addPopupItem("Clear");
 		addPopupItem("Select All");
 		addPopupItem("Copy All");
-		if (getParent()==IJ.getInstance()) {
-			pm.addSeparator();
-			addPopupItem("Clear Results");
-			addPopupItem("Summarize");
-			addPopupItem("Set Measurements...");
-		}
 		add(pm);
 	}
 	
@@ -273,29 +278,35 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void keyTyped (KeyEvent e) {}
   
 	public void actionPerformed (ActionEvent e) {
-		String o=e.getActionCommand();
-		if (o.equals("Save As..."))
+		String cmd=e.getActionCommand();
+		doCommand(cmd);
+	}
+
+ 	void doCommand(String cmd) {
+ 		if (cmd==null)
+ 			return;
+		if (cmd.equals("Save As..."))
 			saveAs("");
-		else if (o.equals("Cut"))
+		else if (cmd.equals("Cut"))
 			{copySelection();clearSelection();}
-		else if (o.equals("Copy"))
+		else if (cmd.equals("Copy"))
 			copySelection();
-		else if (o.equals("Clear"))
+		else if (cmd.equals("Clear"))
 			clearSelection();
-		else if (o.equals("Select All"))
+		else if (cmd.equals("Select All"))
 			selectAll();
-		else if (o.equals("Copy All")) {
+		else if (cmd.equals("Copy All")) {
 			selectAll();
 			copySelection();
 			resetSelection();		
-		} else if (o.equals("Summarize"))
+		} else if (cmd.equals("Summarize"))
 			IJ.doCommand("Summarize");
-		else if (o.equals("Clear Results"))
+		else if (cmd.equals("Clear Results"))
 			IJ.doCommand("Clear Results");
-		else if (o.equals("Set Measurements..."))
+		else if (cmd.equals("Set Measurements..."))
 			IJ.doCommand("Set Measurements...");
-	}
-
+ 	}
+ 	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
 
 	void select(int x,int y) {
@@ -358,7 +369,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (selStart==0 && selEnd==(iRowCount-1)) {
 			vData.removeAllElements();
 			iRowCount = 0;
-			if (IJ.getTextPanel()==this) {
+			if (IJ.isResultsWindow() && IJ.getTextPanel()==this) {
 				Analyzer.setSaved();
 				Analyzer.resetCounter();
 			}
@@ -423,7 +434,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		save(pw);
 		pw.close();
-		if (IJ.getTextPanel()==this)
+		if (IJ.isResultsWindow() && IJ.getTextPanel()==this)
 			Analyzer.setSaved();
 		IJ.showStatus("");
 	}

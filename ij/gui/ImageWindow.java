@@ -85,17 +85,19 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener 
 		int height = imp.getHeight();
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
-		Point ijLoc = ij!=null?ij.getLocation():new Point(10,defaultYLoc);
+		Rectangle ijBounds = ij!=null?ij.getBounds():new Rectangle(10,defaultYLoc,0,0);
+		if (IJ.isMacintosh())
+			ijBounds.height += 24;
 		if (xbase==-1) {
 			count = 0;
 			xbase = 5;
-			ybase = ijLoc.y<defaultYLoc?ijLoc.y:defaultYLoc;
+			ybase = ijBounds.y<defaultYLoc?ijBounds.y:defaultYLoc;
 			if (ybase<0) ybase = 0;
 			xloc = xbase;
 			yloc = ybase;
 		}
-		if (ijLoc.y<40 && (xloc+width)>ijLoc.x && yloc<(ybase+70))
-			yloc = ijLoc.y+70;
+		if (ijBounds.y<40 && (xloc+width)>ijBounds.x && yloc<(ybase+ijBounds.height))
+			yloc = ijBounds.y+ijBounds.height;
 		int x = xloc;
 		int y = yloc;
 		setLocation(x, y);

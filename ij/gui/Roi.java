@@ -32,6 +32,7 @@ public class Roi extends Object implements Cloneable {
 	protected boolean constrain = false;
 	protected boolean updateFullWindow;
 
+	/** Creates a new rectangular Roi. The ImagePlus argument can be null. */
 	public Roi(int x, int y, int width, int height, ImagePlus imp) {
 		setImage(imp);
 		if (width>xMax) width = xMax;
@@ -46,15 +47,17 @@ public class Roi extends Object implements Cloneable {
 		clipWidth = width;
 		clipHeight = height;
 		state = NORMAL;
-		Graphics g = ic.getGraphics();
-		draw(g);
-		g.dispose();
 		type = RECTANGLE;
+		if (ic!=null) {
+			Graphics g = ic.getGraphics();
+			draw(g);
+			g.dispose();
+		}
 	}
 	
+	/** Starts the process of creating a user-defined rectangular Roi. */
 	public Roi(int x, int y, ImagePlus imp) {
-		if (imp!=null)
-			setImage(imp);
+		setImage(imp);
 		setLocation(x, y);
 		width = 0;
 		height = 0;
@@ -76,11 +79,17 @@ public class Roi extends Object implements Cloneable {
 	
 	public void setImage(ImagePlus imp) {
 		this.imp = imp;
-		ImageWindow win = imp.getWindow();
-		if (win!=null)
-			ic = win.getCanvas();
-		xMax = imp.getWidth();
-		yMax = imp.getHeight();
+		if (imp==null) {
+			ic = null;
+			xMax = 99999;
+			yMax = 99999;
+		} else {
+			ImageWindow win = imp.getWindow();
+			if (win!=null)
+				ic = win.getCanvas();
+			xMax = imp.getWidth();
+			yMax = imp.getHeight();
+		}
 	}
 	
 	public int getType() {

@@ -13,7 +13,7 @@ public class UnsharpMask implements PlugInFilter, Measurements {
 	private int slice;
 	private boolean canceled;
 	private ImageWindow win;
-	private static double radius = 3;
+	private static double radius = 2;
 	private static double weight = 0.6;
 	
 	public int setup(String arg, ImagePlus imp) {

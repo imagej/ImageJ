@@ -36,7 +36,8 @@ public class ImportDialog {
 	private static int options;
     private static boolean whiteIsZero,intelByteOrder,openAll;
     private static String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
-    	"32-bit Integer", "32-bit Real", "24-bit RGB", "24-bit RGB Planar"};
+		"32-bit Integer", "32-bit Real", "24-bit RGB", "24-bit RGB Planar", 
+		"24-bit BGR", "32-bit ARGB", "1-bit Bitmap"};
     	
     static {
     	options = Prefs.getInt(OPTIONS,0);
@@ -55,6 +56,8 @@ public class ImportDialog {
 	}
 
 	boolean showDialog() {
+		if (choiceSelection>=types.length)
+			choiceSelection = 0;
 		GenericDialog gd = new GenericDialog("Import...", IJ.getInstance());
 		gd.addChoice("Image Type:", types, types[choiceSelection]);
 		gd.addNumericField("Width (pixels):", width, 0);
@@ -165,6 +168,12 @@ public class ImportDialog {
 			fi.fileType = FileInfo.RGB;
 		else if (imageType.equals("24-bit RGB Planar"))
 			fi.fileType = FileInfo.RGB_PLANAR;
+		else if (imageType.equals("24-bit BGR"))
+			fi.fileType = FileInfo.BGR;
+		else if (imageType.equals("32-bit ARGB"))
+			fi.fileType = FileInfo.ARGB;
+		else if (imageType.equals("1-bit Bitmap"))
+			fi.fileType = FileInfo.BITMAP;
 		else
 			fi.fileType = FileInfo.GRAY8;
 		if (IJ.debugMode) IJ.write("ImportDialog: "+fi);

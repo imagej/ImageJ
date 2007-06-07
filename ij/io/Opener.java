@@ -19,7 +19,7 @@ public class Opener {
 	private static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
 		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA=10,ROI=11,TEXT=12,PNG=13,TIFF_AND_DICOM=14;
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
-		"jpg","gif","lut","bmp","zip","java","roi","txt"};
+		"jpg","gif","lut","bmp","zip","java","roi","txt","png","t&d"};
 	private static String defaultDirectory = null;
 	private int fileType;
 
@@ -71,6 +71,8 @@ public class Opener {
 	pgm, gif or jpeg image. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
+		if (!directory.endsWith(Prefs.separator))
+			directory += Prefs.separator;
 		String path = directory+name;
 		fileType = getFileType(path,name);
 		if (IJ.debugMode)
@@ -405,6 +407,18 @@ public class Opener {
 		return imp;
 	}
 	
+	/** Attempts to open the specified file as an ROI, returning null if unsuccessful. */
+	public Roi openRoi(String path) {
+		Roi roi = null;
+		RoiDecoder rd = new RoiDecoder(path);
+		try {roi = rd.getRoi();}
+		catch (IOException e) {
+			IJ.showMessage("RoiDecoder", e.getMessage());
+			return null;
+		}
+		return roi;
+	}
+
 	/**
 	Attempts to determinate the image file type by looking for
 	'magic numbers' or text strings in the header.
@@ -423,13 +437,18 @@ public class Opener {
 		int b0=buf[0]&255, b1=buf[1]&255, b2=buf[2]&255, b3=buf[3]&255;
 		//IJ.write("getFileType: "+ name+" "+b0+" "+b1+" "+b2+" "+b3);
 		
+		 // Combined TIFF and DICOM created by GE Senographe scanners
+		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77
+		&& ((b0==73 && b1==73)||(b0==77 && b1==77)))
+			return TIFF_AND_DICOM;
+
 		 // Big-endian TIFF ("MM")
 		if (b0==73 && b1==73 && b2==42 && b3==0)
-			return TIFF;
+				return TIFF;
 
 		 // Little-endian TIFF ("II")
 		if (b0==77 && b1==77 && b2==0 && b3==42)
-			return TIFF;
+				return TIFF;
 
 		 // JPEG
 		if (b0==255 && b1==216 && b2==255)
@@ -441,10 +460,7 @@ public class Opener {
 
 		 // DICOM ("DICM" at offset 128)
 		if (buf[128]==68 && buf[129]==73 && buf[130]==67 && buf[131]==77) {
-			if (b0==73 && b1==73 && b2==42 && b3==00)
-				return TIFF_AND_DICOM;
-			else
-				return DICOM;
+			return DICOM;
 		}
 
  		// ACR/NEMA with first tag = (00008,00xx)

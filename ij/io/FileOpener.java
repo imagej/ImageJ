@@ -67,6 +67,8 @@ public class FileOpener {
        			imp = new ImagePlus(fi.fileName, ip);
 				break;
 			case FileInfo.RGB:
+			case FileInfo.BGR:
+			case FileInfo.ARGB:
 			case FileInfo.RGB_PLANAR:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
@@ -146,6 +148,7 @@ public class FileOpener {
 		switch (fi.fileType) {
 			case FileInfo.GRAY8:
 			case FileInfo.COLOR8:
+			case FileInfo.BITMAP:
 				ip = new ByteProcessor(width, height, (byte[])pixels, cm);
 		        imp.setProcessor(null, ip);
 				break;
@@ -160,6 +163,8 @@ public class FileOpener {
         		imp.setProcessor(null, ip);
 				break;
 			case FileInfo.RGB:
+			case FileInfo.BGR:
+			case FileInfo.ARGB:
 			case FileInfo.RGB_PLANAR:
 	    		img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
 		        imp.setImage(img);

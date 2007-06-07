@@ -6,6 +6,7 @@ import ij.gui.*;
 import ij.io.*;
 import ij.util.*;
 import ij.plugin.frame.Editor;
+import ij.text.TextWindow;
 
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
@@ -171,7 +172,7 @@ class PlugInExecuter implements Runnable {
 			String s = caw.toString();
 			if (IJ.isMacintosh())
 				s = Tools.fixNewLines(s);
-			IJ.write(s);
+			new TextWindow("Exception", s, 350, 250);
 		}
 	}
 

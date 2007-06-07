@@ -21,6 +21,12 @@ public class ImageStatistics implements Measurements {
 	public double roiX, roiY, roiWidth, roiHeight;
 	/** Uncalibrated mean */
 	public double umean;
+	/** Length of major axis of fitted ellipse */
+	public double major;
+	/** Length of minor axis of fitted ellipse */
+	public double minor;
+	/** Angle in degrees of fitted ellipse */
+	public double angle;
 	
 	public double histMin;
 	public double histMax;
@@ -31,6 +37,9 @@ public class ImageStatistics implements Measurements {
 	protected int width, height;
 	protected int rx, ry, rw, rh;
 	protected double pw, ph;
+	
+	EllipseFitter ef;
+
 	
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
 		if (ip instanceof ByteProcessor)
@@ -140,6 +149,25 @@ public class ImageStatistics implements Measurements {
 		}
 		xCentroid = ((double)xsum/count+0.5)*pw;
 		yCentroid = ((double)ysum/count+0.5)*pw;
+	}
+	
+	void fitEllipse(ImageProcessor ip) {
+		if (ef==null)
+			ef = new EllipseFitter();
+		ef.fit(ip, this);
+		double psize = pw==ph?pw:0.0;
+		major = ef.major*psize;
+		minor = ef.minor*psize;
+		angle = ef.angle;
+		xCentroid = ef.xCenter*pw;
+		yCentroid = ef.yCenter*ph;
+		//if (ij.IJ.altKeyDown())
+		//	ef.drawEllipse(ip);
+	}
+	
+	public void drawEllipse(ImageProcessor ip) {
+		if (ef!=null)
+			ef.drawEllipse(ip);
 	}
 	
 }

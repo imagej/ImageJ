@@ -213,6 +213,9 @@ public class Calibration {
 		copy.pixelHeight = pixelHeight;
 		copy.pixelDepth = pixelDepth;
 		copy.frameInterval = frameInterval;
+		copy.xOrigin = xOrigin;
+		copy.yOrigin = yOrigin;
+		copy.invertY = invertY;
 		copy.unit = unit;
 		copy.units = units;
 		copy.valueUnit = valueUnit;

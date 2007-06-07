@@ -1,0 +1,60 @@
+<!-- Ant makefile for ImageJ -->
+
+<project name="ImageJ" default="run">
+
+  <target name="compile" description="Compile everything.">
+    <!-- First, ensure the build directory exists. -->
+    <mkdir dir="build" />
+
+    <!-- Detect if javac is available. -->
+    <available property="compiler.available"
+               classname="sun.tools.javac.Main" />
+
+    <!-- Detect if Quicktime support is available. -->
+    <available property="quicktime.available"
+               classname="quicktime.QTSession" />
+
+    <!-- Detect if Twain support is available. -->
+    <available property="twain.available"
+               classname="SK.gnome.twain.TwainEx" />
+
+    <!-- Build everything, selectively excluding optional packages. -->
+    <javac srcdir="source" destdir="build">
+      <exclude name="ij/plugin/twain/*" unless="twain.available" />
+      <exclude name="ij/plugin/quicktime/*" unless="quicktime.available" />
+      <exclude name="ij/plugin/Compiler.java" unless="compiler.available" />
+
+      <!-- The plugins directory only needs to be present at runtime,
+           not at build time. -->
+      <exclude name="plugins/*" />
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile"
+          description="Build ij.jar.">
+    <!-- Copy needed files into the build directory. -->
+    <copy file="source/IJ_Props.txt" todir="build" />
+    <copy file="source/frame-icon.gif" tofile="build/microscope.gif" />
+
+    <!-- Build ij.jar. -->
+    <jar jarfile="ij.jar" basedir="build"
+         manifest="source/MANIFEST.MF" />
+  </target>
+
+  <target name="clean"
+          description="Delete the build files.">
+    <delete dir="build" />
+  </target>
+
+  <target name="distclean" depends="clean"
+          description="Delete the build files and ij.jar.">
+    <delete file="ij.jar" />
+  </target>
+
+  <target name="run" depends="dist"
+          description="Build and run ImageJ.">
+    <java jar="ij.jar" fork="yes" />
+  </target>
+
+</project>
+

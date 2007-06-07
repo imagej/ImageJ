@@ -15,7 +15,7 @@ public class Slicer implements PlugIn{
     private int number; 
 
     private double zscale;
-    private static int swidth = 1; 
+    private int swidth = 1; 
     private static boolean interpolate = true; 
 
     // Parameters used throughout processing.
@@ -67,7 +67,14 @@ public class Slicer implements PlugIn{
 	long tstart = System.currentTimeMillis(); 
 
 	if(!imp.lock()) return;   // exit if in use
-	ImagePlus oimg = sliceImage(imp, roi); 
+	ImagePlus oimg = sliceImage(imp, roi);
+	if (imp.getType()!=ImagePlus.COLOR_RGB) {
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
+		ip = oimg.getProcessor();
+		ip.setMinAndMax(min, max);
+	}
 	imp.unlock(); 
 
 	// Show slice image.
@@ -237,12 +244,13 @@ public class Slicer implements PlugIn{
 		int ivalue;
 		boolean interpolateLine = interpolate && (xinc!=1.0 || yinc!=0.0);
 
+		//IJ.write(interpolateLine+" "+xinc+" "+yinc);
 		if (oip instanceof FloatProcessor) {
 			for(int n=0; n<number; ++n) {
 			    if (interpolateLine)
 			    	value = ip.getInterpolatedPixel(rx, ry);
 			    else
-			     	value = ip.getPixel((int)(rx+0.5),(int)(ry+0.5)); 
+			     	value = ip.getPixelValue((int)(rx+0.5),(int)(ry+0.5)); 
 			    rx += xinc; 
 			    ry += yinc; 
 			    oip.putPixelValue(n, row, value);
@@ -274,7 +282,7 @@ public class Slicer implements PlugIn{
     		Line line = (Line)roi;
 			dx = line.x2 - line.x1; 
 			dy = line.y2 - line.y1; 
-			number = (int)Math.round(Math.sqrt(dx*dx+dy*dy))+1; // width of output image.
+			number = (int)(Math.round(Math.sqrt(dx*dx+dy*dy))+0.5); // width of output image.
 			xinc = (double)dx/number; 
 			yinc = (double)dy/number; 
 			xstart = line.x1; ystart = line.y1; 

@@ -6,7 +6,8 @@ import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;	
+import java.text.*;
+import java.util.Locale;	
 import java.awt.Color;	
 import java.awt.Frame;	
 import java.applet.Applet;
@@ -32,11 +33,10 @@ public class IJ {
 		isMac = !isWin && osname.startsWith("Mac");
 	}
 			
-	static void init(ImageJ imagej, Applet theApplet, TextPanel tp) {
+	static void init(ImageJ imagej, Applet theApplet) {
 		ij = imagej;
 		applet = theApplet;
 		progressBar = ij.getProgressBar();
-		textPanel = tp;
 	}
 
 	/**Returns a reference to the "ImageJ" frame.*/
@@ -130,25 +130,41 @@ public class IJ {
 		if (ij!=null) ij.showStatus(s);
 	}
 
-	/** Displays a line of text in the ImageJ window. Uses
+	/** Displays a line of text in the "Results" window. Uses
 		System.out.println if ImageJ is not present. */
 	public static void write(String s) {
+		if (textPanel==null && ij!=null)
+			ij.showResults();
 		if (textPanel!=null)
 				textPanel.append(s);
 		else
 			System.out.println(s);
 	}
 
-	/** Clears the worksheet and sets the column headings to
+	/** Clears the "Results" window and sets the column headings to
 		those in the tab-delimited 'headings' String. */
 	public static void setColumnHeadings(String headings) {
+		if (textPanel==null && ij!=null)
+			ij.showResults();
 		if (textPanel!=null)
 			textPanel.setColumnHeadings(headings);
 	}
 
-	/** Returns a reference to the ImageJ text panel. */
+	/** Returns true if the "Results" window is open. */
+	public static boolean isResultsWindow() {
+		return textPanel!=null;
+	}
+	
+	/** Returns a reference to the "Results" window TextPanel.
+		Opens the "Results" window if it is currently not open. */
 	public static TextPanel getTextPanel() {
+		if (textPanel==null && ij!=null)
+			ij.showResults();
 		return textPanel;
+	}
+	
+	public static void setTextPanel(TextPanel tp) {
+		textPanel = tp;
 	}
 
 	/**Displays a "no images are open" dialog box.*/
@@ -157,9 +173,10 @@ public class IJ {
 		Macro.abort();
 	}
 
-	/**Displays an "out of memory" message in the ImageJ window.*/
+	/** Displays an "out of memory" message to the "Results" window.*/
 	public static void outOfMemory(String name) {
-		write("<<" + name + ": out of memory>>");
+		write("<<"+name + ": out of memory>>");
+		Macro.abort();
 	}
 
 	/**	Updates the progress bar. Does nothing if the
@@ -270,7 +287,8 @@ public class IJ {
 		return d2s(n, 2);
 	}
 	
-	private static DecimalFormat df = new DecimalFormat("0.00");
+	private static DecimalFormat df =
+		new DecimalFormat("0.00", new DecimalFormatSymbols(Locale.US));
 	private static int dfDigits = 2;
 
 	/** Converts a number to a rounded formatted string.
@@ -318,7 +336,7 @@ public class IJ {
 		return altDown;
 	}
 
-	static void setKeyDown(int key) {
+	public static void setKeyDown(int key) {
 		switch (key) {
 			case KeyEvent.VK_ALT:
 				altDown=true;
@@ -332,7 +350,7 @@ public class IJ {
 		}
 	}
 	
-	static void setKeyUp(int key) {
+	public static void setKeyUp(int key) {
 		switch (key) {
 			case KeyEvent.VK_ALT: altDown=false; break;
 			case KeyEvent.VK_SPACE: {

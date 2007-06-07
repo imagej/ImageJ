@@ -57,7 +57,6 @@ public class PluginClassLoader extends ClassLoader {
 	}
 
 	Class loadFromSubdirectory(String path, String name) {
-		String separator = System.getProperty("file.separator");
 		File f = new File(path);
 		String[] list = f.list();
 		if (list!=null) {

@@ -7,7 +7,7 @@ import ij.plugin.frame.Recorder;
 
 /** This class is a customizable modal dialog box. */
 public class GenericDialog extends Dialog implements ActionListener,
-TextListener, FocusListener, ItemListener {
+TextListener, FocusListener, ItemListener, KeyListener {
 
 	protected Vector defaultValues,defaultText,numberField,stringField,checkbox,choice;
 	protected Component theLabel;
@@ -40,6 +40,7 @@ TextListener, FocusListener, ItemListener {
 		setLayout(grid);
 		macroOptions = Macro.getOptions();
 		macro = macroOptions!=null;
+		addKeyListener(this);
     }
     
 	//void showFields(String id) {
@@ -76,6 +77,7 @@ TextListener, FocusListener, ItemListener {
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
+		tf.addKeyListener(this);
 		numberField.addElement(tf);
 		defaultValues.addElement(new Double(defaultValue));
 		defaultText.addElement(tf.getText());
@@ -133,6 +135,7 @@ TextListener, FocusListener, ItemListener {
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
+		tf.addKeyListener(this);
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		grid.setConstraints(tf, c);
@@ -161,6 +164,7 @@ TextListener, FocusListener, ItemListener {
 		grid.setConstraints(cb, c);
 		cb.setState(defaultValue);
 		cb.addItemListener(this);
+		cb.addKeyListener(this);
 		add(cb);
 		checkbox.addElement(cb);
 		//ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
@@ -225,6 +229,7 @@ TextListener, FocusListener, ItemListener {
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
 		Choice thisChoice = new Choice();
+		thisChoice.addKeyListener(this);
 		for (int i=0; i<items.length; i++)
 			thisChoice.addItem(items[i]);
 		thisChoice.select(defaultItem);
@@ -244,6 +249,7 @@ TextListener, FocusListener, ItemListener {
 			theLabel = new MultiLineLabel(text);
 		else
 			theLabel = new Label(text);
+		//theLabel.addKeyListener(this);
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
@@ -414,11 +420,16 @@ TextListener, FocusListener, ItemListener {
 		int index = thisChoice.getSelectedIndex();
 		if (macro) {
 			String label = (String)labels.get((Object)thisChoice);
-			String item = thisChoice.getSelectedItem();
-			item = Macro.getValue(macroOptions, label, item);
+			String oldItem = thisChoice.getSelectedItem();
+			int oldIndex = thisChoice.getSelectedIndex();
+			String item = Macro.getValue(macroOptions, label, oldItem);
 			thisChoice.select(item);
 			index = thisChoice.getSelectedIndex();
-			//IJ.write("getNextChoiceIndex: "+label+"  "+item);
+			if (index==oldIndex && !item.equals(oldItem)) {
+				IJ.showMessage(getTitle(), "\""+item+"\" is not a vaid choice for \""+label+"\"");
+				Macro.abort();
+			}
+
 		}	
 		if (Recorder.record)
 			recordOption(thisChoice, thisChoice.getSelectedItem());
@@ -504,6 +515,17 @@ TextListener, FocusListener, ItemListener {
 		if (c instanceof TextField)
 			((TextField)c).select(0,0);
 	}
+
+ 	public void keyPressed(KeyEvent e) {
+		int keyCode = e.getKeyCode();
+		IJ.setKeyDown(keyCode);
+	}
+
+	public void keyReleased(KeyEvent e) {
+		IJ.setKeyUp(e.getKeyCode());
+	}
+		
+	public void keyTyped(KeyEvent e) {}
 
 	public Insets getInsets() {
     	return new Insets(40, 20, 20, 20);

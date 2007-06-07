@@ -21,7 +21,9 @@ public class FloatStatistics extends ImageStatistics {
 		getStatistics(ip);
 		if ((mOptions&MODE)!=0)
 			getMode();
-		if ((mOptions&CENTROID)!=0)
+		if ((mOptions&ELLIPSE)!=0)
+			fitEllipse(ip);
+		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip);
 		if ((mOptions&CENTER_OF_MASS)!=0)
 			getCenterOfMass(ip);

@@ -29,7 +29,7 @@ public class Menus {
 	public static final char TOOLS_MENU = 't';
 	public static final char UTILITIES_MENU = 'u';
 		
-	public static final int WINDOW_MENU_ITEMS = 3; // fixed items at top of Window menu
+	public static final int WINDOW_MENU_ITEMS = 5; // fixed items at top of Window menu
 	
 	public static final int NORMAL_RETURN = 0;
 	public static final int COMMAND_IN_USE = -1;
@@ -168,6 +168,8 @@ public class Menus {
 		window = createMenu("Window");
 		addItem(window, "ImageJ [enter]", 0, false);
 		addItem(window, "Put Behind [tab]", 0, false);
+		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
+		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);
 		window.addSeparator();
 
 		Menu help = createMenu("Help");
@@ -385,13 +387,12 @@ public class Menus {
 		if (homeDir.endsWith("plugins"))
 			pluginsPath = homeDir;
 		else {
-			String separator = Prefs.getFileSeparator();
 			String pluginsDir = System.getProperty("plugins.dir");
 			if (pluginsDir==null)
 				pluginsDir = homeDir;
 			else if (pluginsDir.equals("user.home"))
 				pluginsDir = System.getProperty("user.home");
-			pluginsPath = pluginsDir+separator+"plugins"+separator;
+			pluginsPath = pluginsDir+Prefs.separator+"plugins"+Prefs.separator;
 		}
 		File f = new File(pluginsPath);
 		if (f!=null && !f.isDirectory()) {

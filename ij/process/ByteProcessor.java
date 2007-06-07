@@ -75,7 +75,6 @@ public class ByteProcessor extends ImageProcessor {
 			for (int xs=0; xs<roiWidth; xs++)
 				pixels2[offset1++] = pixels[offset2++];
 		}
-		//System.arraycopy(pixels, roiX+ys*width, pixels2, (ys-roiY)*roiWidth, roiWidth);
         return ip2;
 	}
 	
@@ -210,6 +209,8 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	public void setPixels(Object pixels) {
+		if (pixels!=null && (((byte[])pixels).length!=this.pixels.length))
+			throw new IllegalArgumentException("");
 		this.pixels = (byte[])pixels;
 		snapshotPixels = null;
 		imageSource = null;
@@ -477,7 +478,7 @@ public class ByteProcessor extends ImageProcessor {
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
-				int RandomBrightness = (int)(rnd.nextGaussian()*range);
+				int RandomBrightness = (int)Math.round(rnd.nextGaussian()*range);
 				v = (pixels[i] & 0xff) + RandomBrightness;
 				if (v < 0)
 					v = 0;

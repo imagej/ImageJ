@@ -10,7 +10,7 @@ import ij.gui.*;
 public class StackWriter implements PlugIn {
 
 	//private static String defaultDirectory = null;
-	private static String[] choices = {"Tiff","Gif","Jpeg","Raw"};
+	private static String[] choices = {"Tiff","Gif","Jpeg","Raw","Zip","Text"};
 	private static String fileType = "Tiff";
 	private static int ndigits = 4;
 	private static boolean useLabels;
@@ -56,6 +56,10 @@ public class StackWriter implements PlugIn {
 			extension = ".gif";
 		else if (fileType.equals("Raw"))
 			extension = ".raw";
+		else if (fileType.equals("Zip"))
+			extension = ".zip";
+		else if (fileType.equals("Text"))
+			extension = ".txt";
 		
 		String digits = getDigits(number);
 		SaveDialog sd = new SaveDialog("Save Image Sequence", name+digits+extension, extension);
@@ -66,6 +70,7 @@ public class StackWriter implements PlugIn {
 		
 		ImageStack stack = imp.getStack();
 		ImagePlus tmp = new ImagePlus();
+		tmp.setTitle(imp.getTitle());
 		int nSlices = stack.getSize();
 		String path,label=null;
 		for (int i=1; i<=nSlices; i++) {
@@ -98,6 +103,13 @@ public class StackWriter implements PlugIn {
 					break;
 			} else if (fileType.equals("Raw")) {
 				if (!(new FileSaver(tmp).saveAsRaw(path)))
+					break;
+			} else if (fileType.equals("Zip")) {
+				tmp.setTitle(name+digits+extension);
+				if (!(new FileSaver(tmp).saveAsZip(path)))
+					break;
+			} else if (fileType.equals("Text")) {
+				if (!(new FileSaver(tmp).saveAsText(path)))
 					break;
 			}
 			System.gc();

@@ -9,6 +9,7 @@ import ij.io.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.*;
+import ij.text.TextWindow;
 import ij.plugin.frame.Recorder;
 
 /** Runs menu commands in a separate thread.*/
@@ -72,12 +73,32 @@ public class Executer implements Runnable {
 				PrintWriter pw = new PrintWriter(caw);
 				e.printStackTrace(pw);
 				String s = caw.toString();
-				if (IJ.isMacintosh())
+				if (IJ.isMacintosh()) {
+					if (s.indexOf("ThreadDeath")>0)
+						return;
 					s = Tools.fixNewLines(s);
-				IJ.write(s);
+				}
+				new TextWindow("Exception", s, 350, 250);
 			}
 		}
 	}
+	
+	/*
+	void save(String s) {
+		PrintWriter pw = null;
+		try {
+			FileOutputStream fos = new FileOutputStream("exception.txt");
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			pw = new PrintWriter(bos);
+		}
+		catch (IOException e) {
+			IJ.error("" + e);
+			return;
+		}
+		pw.println(s);
+		pw.close();
+	}
+	*/
 
     public void runCommand(String cmd, ImagePlus imp) {
 		if (cmd.equals("New..."))
@@ -157,9 +178,7 @@ public class Executer implements Runnable {
 	}
 
 	void copy(ImagePlus imp, boolean cut) {
-		if (ij.copyText(cut)>0)
-			return;
-		else if (imp==null) {
+		if (imp==null) {
 	 		IJ.noImage();
 	 		return;
 	 	} else

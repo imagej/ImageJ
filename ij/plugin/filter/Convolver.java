@@ -176,20 +176,19 @@ public class Convolver implements PlugInFilter {
  		int progress = Math.max(height/25,1);
 		double sum;
 		int offset, i;
-		boolean edgePixel;  
+		boolean edgePixel;
+		int xedge = width-uc;
+		int yedge = height-vc;
 		for(int y=0; y<height; y++) {
 			if (y%progress ==0) IJ.showProgress((double)y/height);
-			//IJ.write(""+y);
-			edgePixel = y<vc || y>=height+vc;
 			for(int x=0; x<width; x++) {
 				sum = 0.0;
 				i = 0;
-				if (x<uc || x>=height+uc)
-					edgePixel = true;
+				edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
 				for(int v=-vc; v <= vc; v++) {
 					offset = x+(y+v)*width;
 					for(int u = -uc; u <= uc; u++) {
-						if (edgePixel)
+						if (true)
    							sum += getPixel(x+u, y+v, pixels2, width, height)*kernel[i++];
      					else
  							sum += pixels2[offset+u]*kernel[i++];

@@ -19,7 +19,31 @@ public class PolygonRoi extends Roi {
 	private double angle1=-1.0, degrees=-1.0;
 	long mouseUpTime = 0;
 
-	/** Creates a new user-generated polygon or polyline ROI. */
+	/** Creates a new polygon or polyline ROI from x and y coordinate arrays.
+		The ImagePlus argument can be null. Type must be Roi.POLYGON, Roi.FREEROI,
+		Roi.TRACED_ROI or Roi.POLYLINE.*/
+	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
+		super(0, 0, imp);
+		if (type==POLYGON)
+			this.type = POLYGON;
+		else if (type==FREEROI)
+			this.type = FREEROI;
+		else if (type==TRACED_ROI)
+			this.type = TRACED_ROI;
+		else if (type==POLYLINE)
+			this.type = POLYLINE;
+		else
+			throw new IllegalArgumentException("Invalid type");
+		maxPoints = xPoints.length;
+		xp = xPoints;
+		yp = yPoints;
+		xp2 = new int[maxPoints];
+		yp2 = new int[maxPoints];
+		this.nPoints = nPoints;
+		finishPolygon();
+	}
+
+	/** Starts the process of creating a new user-generated polygon or polyline ROI. */
 	public PolygonRoi(int ox, int oy, ImagePlus imp) {
 		super(ox, oy, imp);
 		int tool = Toolbar.getToolId();
@@ -53,35 +77,9 @@ public class PolygonRoi extends Roi {
 		state = CONSTRUCTING;
 	}
 
-
-	/** Creates a new polygon or polyline ROI from x and y coordinate arrays.
-		Type must be Roi.POLYGON, Roi.FREEROI, Roi.TRACED_ROI or Roi.POLYLINE. */
-	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
-		super(0, 0, imp);
-		if (type==POLYGON)
-			this.type = POLYGON;
-		else if (type==FREEROI)
-			this.type = FREEROI;
-		else if (type==TRACED_ROI)
-			this.type = TRACED_ROI;
-		else if (type==POLYLINE)
-			this.type = POLYLINE;
-		else
-			throw new IllegalArgumentException("Invalid type");
-		maxPoints = xPoints.length;
-		xp = xPoints;
-		yp = yPoints;
-		xp2 = new int[maxPoints];
-		yp2 = new int[maxPoints];
-		this.nPoints = nPoints;
-		finishPolygon();
-	}
-
-
 	private void drawStartBox() {
 		g.drawRect(ic.screenX(startX)-4, ic.screenY(startY)-4, 8, 8);
 	}
-	
 	
 	public void draw(Graphics g) {
 		if (state!=CONSTRUCTING) {
@@ -97,7 +95,6 @@ public class PolygonRoi extends Roi {
 		}
 	}
 
-
 	public void drawPixels() {
 		ImageProcessor ip = imp.getProcessor();
 		ip.moveTo(x+xp[0], y+yp[0]);
@@ -108,7 +105,6 @@ public class PolygonRoi extends Roi {
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
 	}
-
 
 	protected void grow(int x, int y) {
 	// Overrides grow() in Roi class
@@ -128,7 +124,6 @@ public class PolygonRoi extends Roi {
 				yp2[i] = ic.screenY(yp[i]+y);
 			}
 	}
-
 
 	void handleMouseMove(int ox, int oy) {
 	// Do rubber banding
@@ -160,7 +155,6 @@ public class PolygonRoi extends Roi {
 		}
 		IJ.showStatus("  (" + ox + "," + oy + ")" + angle);
 	}
-
 
 	void finishPolygon() {
 		Polygon poly = new Polygon(xp, yp, nPoints);
@@ -199,7 +193,6 @@ public class PolygonRoi extends Roi {
 			g.drawLine(ic.screenX(xp[i]), ic.screenY(yp[i]), ic.screenX(xp[i+1]), ic.screenY(yp[i+1]));
 	}
 	
-	
 	protected void handleMouseUp(int sx, int sy) {
 		if (state!=CONSTRUCTING)
 			return;
@@ -222,7 +215,6 @@ public class PolygonRoi extends Roi {
  			mouseUpTime = System.currentTimeMillis();		}
 	}
 
-
 	public boolean contains(int x, int y) {
 		if (!super.contains(x, y))
 			return false;
@@ -232,9 +224,8 @@ public class PolygonRoi extends Roi {
 		}
 	}
 	
-	
 	public int[] getMask() {
-		if (type==POLYLINE || type==FREELINE)
+		if (type==POLYLINE || type==FREELINE || width==0 || height==0)
 			return null;
 		Image img = GUI.createBlankImage(width, height);
 		Graphics g = img.getGraphics();

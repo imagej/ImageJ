@@ -7,7 +7,7 @@ import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 
-/** Saves images in tiff, gif, jpeg and raw format. */
+/** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
 
 	private static String defaultDirectory = null;

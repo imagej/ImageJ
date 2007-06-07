@@ -34,7 +34,9 @@ public class ByteStatistics extends ImageStatistics {
 			else
 				getRawMinAndMax(minThreshold, maxThreshold);
 		}
-		if ((mOptions&CENTROID)!=0)
+		if ((mOptions&ELLIPSE)!=0)
+			fitEllipse(ip);
+		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&CENTER_OF_MASS)!=0)
 			getCenterOfMass(ip, minThreshold, maxThreshold, cTable);
@@ -135,6 +137,5 @@ public class ByteStatistics extends ImageStatistics {
 			}
 		}
 	}
-
-
+	
 }

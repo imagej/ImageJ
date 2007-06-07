@@ -35,6 +35,12 @@ public class FileInfo {
 	/* 1-bit black and white. Import only. */
 	public static final int BITMAP = 8;
 	
+	/* 32-bit interleaved ARGB. Import only. */
+	public static final int ARGB = 9;
+	
+	/* 24-bit interleaved BGR. Import only. */
+	public static final int BGR = 10;
+	
 	
 	// File formats
 	public static final int UNKNOWN = 0;
@@ -88,8 +94,8 @@ public class FileInfo {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
-			case GRAY32_INT: case GRAY32_FLOAT: return 4;
-			case RGB: case RGB_PLANAR: return 3;
+			case GRAY32_INT: case GRAY32_FLOAT: case ARGB: return 4;
+			case RGB: case RGB_PLANAR: case BGR: return 3;
 			default: return 0;
 		}
 	}
@@ -120,6 +126,8 @@ public class FileInfo {
 			case RGB: return "RGB";
 			case RGB_PLANAR: return "RGB(p)";
 			case BITMAP: return "bitmap";
+			case ARGB: return "ARGB";
+			case BGR: return "BGR";
 			default: return "";
     	}
     }

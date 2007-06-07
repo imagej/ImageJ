@@ -78,11 +78,14 @@ public class MontageMaker implements PlugIn {
 		int height = (int)(stackHeight*scale);
 		int montageWidth = width*columns;
 		int montageHeight = height*rows;
-		ImageProcessor montage = imp.getProcessor().createProcessor(montageWidth, montageHeight);
+		ImageProcessor ip = imp.getProcessor();
+		ImageProcessor montage = ip.createProcessor(montageWidth, montageHeight);
 		ImageStatistics is = imp.getStatistics();
-		boolean blackBackground = is.mode<128;
+		boolean blackBackground = is.mode<200;
 		if (imp.isInvertedLut())
 			blackBackground = !blackBackground;
+		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor))
+			blackBackground = true;
 		if (blackBackground) {
 			montage.setColor(Color.black);
 			montage.fill();
@@ -98,7 +101,9 @@ public class MontageMaker implements PlugIn {
 		ImageProcessor aSlice;
 	    int slice = first;
 		while (slice<=last) {
-			aSlice = stack.getProcessor(slice).resize(width, height);
+			aSlice = stack.getProcessor(slice);
+			if (scale!=1.0)
+				aSlice = aSlice.resize(width, height);
 			montage.insert(aSlice, x, y);
 			if (borders) drawBorder(montage, x, y, width, height);
 			if (labels) drawLabel(montage, slice, x, y, width, height);

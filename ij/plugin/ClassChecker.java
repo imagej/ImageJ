@@ -7,8 +7,7 @@ import java.util.*;
 /** Checks for duplicate class files in the plugins directory and deletes older duplicates. */
 public class ClassChecker implements PlugIn {
 
-	String separator = Prefs.getFileSeparator();
-	char separatorChar = separator.charAt(0);
+	char separatorChar = Prefs.separator.charAt(0);
 
 	public void run(String arg) {
 		deleteDuplicates();
@@ -101,7 +100,7 @@ public class ClassChecker implements PlugIn {
 		String[] list = f.list();
 		if (list==null)
 			return;
-		dir += separator;
+		dir += Prefs.separator;
 		for (int i=0; i<list.length; i++) {
 			String name = list[i];
 			if (name.endsWith(".class")) {

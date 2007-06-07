@@ -61,7 +61,15 @@ public class Info implements PlugInFilter {
 	    			s += "Bits per pixel: 16 (unsigned short)\n";
 	    		} else
 	    			s += "Bits per pixel: 32 (float)\n";
-		    	s += "Display range: " + IJ.d2s(ip.getMin()) + " - " + IJ.d2s(ip.getMax()) + "\n";
+				s += "Display range: ";
+				int places = type==ImagePlus.GRAY16?0:2;
+				double min = ip.getMin();
+				double max = ip.getMax();
+	    		if (cal.calibrated()) {
+	    			min = cal.getCValue((int)min);
+	    			max = cal.getCValue((int)max);
+	    		}
+		    	s += IJ.d2s(min,places) + " - " + IJ.d2s(max,places) + "\n";
 	    		break;
 	    	case ImagePlus.COLOR_256:
 	    		s += "Bits per pixel: 8 (color LUT)\n";
