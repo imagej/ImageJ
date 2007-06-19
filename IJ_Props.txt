@@ -74,7 +74,7 @@ selection10=-
 selection11="Rotate...",ij.plugin.Selection("rotate")
 selection12="Enlarge...",ij.plugin.Selection("enlarge")
 selection13="Make Band...",ij.plugin.Selection("band")
-selection14="Specify...",ij.plugin.filter.SpecifyROI
+selection14="Specify...",ij.plugin.SpecifyROI
 selection15="Add to Manager [t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
@@ -86,7 +86,7 @@ options05="Point Tool...",ij.plugin.Colors("point")
 options06="Colors...",ij.plugin.Colors
 options07="Appearance...",ij.plugin.Options("display")
 options08="Conversions...",ij.plugin.Options("conv")
-options09="Memory...",ij.plugin.Memory
+options09="Memory and Threads...",ij.plugin.Memory
 options10="Misc...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
@@ -159,7 +159,9 @@ lookup15="Red/Green",ij.plugin.LutLoader("redgreen")
 noise01="Add Noise",ij.plugin.filter.Filters("add")
 noise02="Add Specified Noise...",ij.plugin.filter.Filters("noise")
 noise03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
-noise04="Despeckle",ij.plugin.filter.RankFilters("despeckle")
+noise04=-
+noise05="Despeckle",ij.plugin.filter.RankFilters("despeckle")
+noise06="Remove Outliers...",ij.plugin.filter.RankFilters("outliers")
 
 # Plugins installed in the Process/Shadows submenu
 shadows01="North",ij.plugin.filter.Shadows("north")
@@ -264,7 +266,7 @@ plug-in06="Compile and Run...",ij.plugin.Compiler
 plug-in07=-
 #plug-in08=>"User_Plugins"
 
-# Install user plugins located in ij.jar
+# Install user plugins located in ij.jar to Plugins>User Plugins submenu
 #user_plugins01="Red And Blue",RedAndBlue_
 #user_plugins02="Inverter",Inverter_
 

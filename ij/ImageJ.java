@@ -67,7 +67,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.38t";
+	public static final String VERSION = "1.38u";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -217,7 +217,7 @@ public class ImageJ extends Frame implements ActionListener,
     }
         
 	public void runFilterPlugIn(Object theFilter, String cmd, String arg) {
-		IJ.runFilterPlugIn(theFilter, cmd, arg);
+		new PlugInFilterRunner(theFilter, cmd, arg);
 	}
         
 	public Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {

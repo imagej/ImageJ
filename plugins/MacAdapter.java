@@ -3,11 +3,12 @@ import ij.*;
 import ij.io.*;
 import com.apple.mrj.*;
 import com.apple.eawt.*;
+import java.util.Vector;
 
 /**	This Mac specific plugin handles the "About" and "Quit" items in the Apple menu and opens
 	 files dropped on ImageJ and files with creator code "imgJ" that are double-clicked. */ 
 public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
-    String path;
+	static Vector paths = new Vector();
 
 	public void run(String arg) {
 		Application app = new Application();
@@ -21,7 +22,7 @@ public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
 	}
 
 	public void handleOpenFile(ApplicationEvent event) {
-		path = event.getFilename();
+		paths.add(event.getFilename());
 		Thread thread = new Thread(this, "Open");
 		thread.setPriority(thread.getPriority()-1);
 		thread.start();
@@ -36,8 +37,9 @@ public class MacAdapter implements PlugIn, ApplicationListener, Runnable {
 	}
   
     public void run() {
-        if (path!=null)
-		(new Opener()).openAndAddToRecent(path);
+        if (paths.size() > 0) {
+			(new Opener()).openAndAddToRecent((String) paths.remove(0));
+		}
     }
 
 	public void handleOpenApplication(ApplicationEvent event) {}

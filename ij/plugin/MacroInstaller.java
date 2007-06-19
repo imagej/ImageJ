@@ -79,7 +79,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
 		}
-		if (pgm.hasVars() && pgm.getGlobals()==null)
+		if (pgm.hasVars() && pgm.macroCount()>0 && pgm.getGlobals()==null)
 			new Interpreter().saveGlobals(pgm);
 		for (int i=0; i<code.length; i++) {
 			token = code[i]&TOK_MASK;

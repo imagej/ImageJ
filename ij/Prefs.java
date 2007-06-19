@@ -1,4 +1,5 @@
 package ij;
+import ij.util.Java2;
 import java.io.*;
 import java.util.*;
 import java.applet.*;
@@ -34,6 +35,7 @@ public class Prefs {
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
     public static final String NOISE_SD = "noise.sd";
     public static final String MENU_SIZE = "menu.size";
+    public static final String THREADS = "threads";
 	public static final String KEY_PREFIX = ".";
  
 	private static final int USE_POINTER=1, ANTIALIASING=2, INTERPOLATE=4, ONE_HUNDRED_PERCENT=8,
@@ -86,6 +88,7 @@ public class Prefs {
 	static String prefsDir;
 	static String imagesURL;
 	static String homeDir; // ImageJ folder
+	static int threads;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -173,6 +176,8 @@ public class Prefs {
 
 	/** Sets the path to the ImageJ directory. */
 	static void setHomeDir(String path) {
+		if (path.endsWith(File.separator))
+			path = path.substring(0, path.length()-1);
 		homeDir = path;
 	}
 
@@ -273,7 +278,7 @@ public class Prefs {
 			Properties prefs = new Properties();
 			String dir = OpenDialog.getDefaultDirectory();
 			if (dir!=null)
-				prefs.put(DIR_IMAGE, escapeBackSlashes(dir));
+				prefs.put(DIR_IMAGE, dir);
 			prefs.put(ROICOLOR, Tools.c2hex(Roi.getColor()));
 			prefs.put(FCOLOR, Tools.c2hex(Toolbar.getForegroundColor()));
 			prefs.put(BCOLOR, Tools.c2hex(Toolbar.getBackgroundColor()));
@@ -281,6 +286,7 @@ public class Prefs {
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
 			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));
+			if (threads>1) prefs.put(THREADS, Integer.toString(threads));
 			if (IJ.isMacOSX()) useJFileChooser = false;
 			saveOptions(prefs);
 			savePluginPrefs(prefs);
@@ -295,10 +301,10 @@ public class Prefs {
 			String path = prefsDir+separator+PREFS_NAME;
 			savePrefs(prefs, path);
 		} catch (Throwable t) {
-			//CharArrayWriter caw = new CharArrayWriter();
-			//PrintWriter pw = new PrintWriter(caw);
-			//e.printStackTrace(pw);
-			//IJ.write(caw.toString());
+			CharArrayWriter caw = new CharArrayWriter();
+			PrintWriter pw = new PrintWriter(caw);
+			t.printStackTrace(pw);
+			IJ.log(caw.toString());
 			IJ.log("<Unable to save preferences>");
 			IJ.wait(3000);
 		}
@@ -439,38 +445,33 @@ public class Prefs {
 		while (e.hasMoreElements()) {
 			String key = (String) e.nextElement();
 			if (key.indexOf(KEY_PREFIX) == 0)
-				prefs.put(key, escapeBackSlashes(ijPrefs.getProperty(key)));
+				prefs.put(key, ijPrefs.getProperty(key));
 		}
 	}
 
 	public static void savePrefs(Properties prefs, String path) throws IOException{
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
-		PrintWriter pw = new PrintWriter(bos);
-		pw.println("# ImageJ "+ImageJ.VERSION+" Preferences");
-		pw.println("# "+new Date());
-		pw.println("");
-		for (Enumeration e=prefs.keys(); e.hasMoreElements();) {
-			String key = (String)e.nextElement();
-			pw.print(key);
-			pw.write('=');
-			pw.println((String)prefs.get(key));
-		}
-		pw.close();
-	}
-
-	static String escapeBackSlashes(String s) {
-		if (s.indexOf('\\')==-1)
-			return s;
-		StringBuffer sb = new StringBuffer(s.length()+10);
-		char[] chars = s.toCharArray();
-		for (int i=0; i<chars.length; i++) {
-			sb.append(chars[i]);
-			if (chars[i]=='\\')
-				sb.append('\\');
-		}
-		return sb.toString();
+		prefs.store(bos, "ImageJ "+ImageJ.VERSION+" Preferences");
+		bos.close();
 	}
 	
+	/** Returns the number of threads used by PlugInFilters to process stacks. */
+	public static int getThreads() {
+		if (threads==0) {
+			threads = getInt(THREADS, 0);
+			int processors = Runtime.getRuntime().availableProcessors();
+			if (threads<1 || threads>processors) threads = processors;
+		}
+		return threads;
+	}
+	
+	/** Sets the number of threads (1-32) used by PlugInFilters to process stacks. */
+	public static void setThreads(int n) {
+		if (n<1) n = 1;
+		if (n>32) n = 32;
+		threads = n;
+	}
+
 }
 

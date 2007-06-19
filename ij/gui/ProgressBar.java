@@ -12,12 +12,8 @@ public class ProgressBar extends Canvas {
 	private int canvasWidth, canvasHeight;
 	private int x, y, width, height;
 	private double percent;
-	private long startTime;
-	private int count;
+    private long lastTime = 0;
 	private boolean showBar;
-	private boolean negativeProgress;
-	private boolean stackMode;
-	private boolean macroMode;
 	
 	private Color barColor = Color.gray;
 	private Color fillColor = new Color(204,204,255);
@@ -44,60 +40,36 @@ public class ProgressBar extends Canvas {
 		g.setColor(frameBrighter);
 		g.drawLine(x+1, y+height, x+width, y+height);
 		g.drawLine(x+width, y, x+width, y+height-1);
-    }    
+    }
+       
+ 	/**	Updates the progress bar, where percent should run from 0 to 1. */
+    public void show(double percent) {
+        show(percent, false);
+    }
 
-	/**	Updates the progress bar, where the length of the bar is set to
-		(<code>currentValue+1)/finalValue</code> of the maximum bar length.
-		The bar is erased if <code>currentValue&gt;=finalValue</code>. 
-		Does nothing if the ImageJ window is not present. */
-	public void show(int currentValue, int finalValue) {
-		if (currentValue>=finalValue) {
-			showBar = macroMode = stackMode = false;
-		} else {
-			percent = Math.min((currentValue+1)/(double)finalValue, 1.0);
-			showBar = true;
-			if (Interpreter.isBatchMode()) macroMode = true;
-		}
-		repaint();
-	}
-
-	/** Updates the progress bar. It is not displayed if
-		the time between the first and second calls to 'show'
-		is less than 20 milliseconds. It is erased when show
-		is passed a percent value >= 1.0. */
-	public void show(double percent) {
-		if (stackMode) return;
-		if (macroMode) {
-			if (percent>=1.0 && !Interpreter.isBatchMode())
-				macroMode = false;
-			else
-				return;
-		}
-		count++;
-    	if (count==1) {
-			//ij.IJ.log("");
-			//ij.IJ.log("1st call");
-    		startTime = System.currentTimeMillis();
-    		showBar = false;
-    	}
-		else if (count==2) {
-			long time2 = System.currentTimeMillis();
-			//ij.IJ.log("2nd call: "+(time2 - startTime) + "ms");
-			if ((time2 - startTime)>=20)
-				showBar = true;
-		}
-		
-		negativeProgress = percent<this.percent;
-		this.percent = percent;
-    	if (percent>=1.0) {
-			//ij.IJ.log("total calls: "+count);
-			count = 0;
+	/**	Updates the progress bar, where percent should run from 0 to 1.
+	 *  <code>percent = 1.0</code> erases the bar.
+     *  The bar is updated only if more than 90 ms have passed since
+     *  the last call. Does nothing if the ImageJ window is not present.
+     * @param percent   Length of the progress bar to display (0...1)
+     * @param showInBatchMode Whether the progress bar should be shown in
+     * batch mode.
+     */
+    public void show(double percent, boolean showInBatchMode) {
+        if (!showInBatchMode && Interpreter.isBatchMode()) return;
+        if (percent>=1.0) {     //clear the progress bar
 			percent = 0.0;
 			showBar = false;
 			repaint();
-    	} else if (showBar)
-    		repaint();
-	}
+            return;
+        }
+        long time = System.currentTimeMillis();
+        if (time - lastTime < 90 && percent != 1.0) return;
+        lastTime = time;
+        showBar = true;
+		this.percent = percent;
+        repaint();
+    }
 
 	public void update(Graphics g) {
 		paint(g);
@@ -117,21 +89,17 @@ public class ProgressBar extends Canvas {
     	if (percent<0.0)
     		percent = 0.0;
     	int barEnd = (int)(width*percent);
-		if (negativeProgress) {
-			g.setColor(fillColor);
-			g.fillRect(barEnd+2, y, width-barEnd, height);
-		} else {
+//		if (negativeProgress) {
+//			g.setColor(fillColor);
+//			g.fillRect(barEnd+2, y, width-barEnd, height);
+//		} else {
 			g.setColor(barColor);
 			g.fillRect(x, y, barEnd, height);
-		}
+//		}
     }
     
     public Dimension getPreferredSize() {
         return new Dimension(canvasWidth, canvasHeight);
-    }
-    
-    public void setStackMode(boolean mode) {
-    	stackMode = mode;
     }
 
 }

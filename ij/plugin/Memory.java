@@ -23,24 +23,29 @@ public class Memory implements PlugIn {
 	void changeMemoryAllocation() {
 		IJ.maxMemory(); // forces IJ to cache old limit
 		int max = (int)(getMemorySetting()/1048576L);
-		if (max==0)
-			{showError(); return;}
+		boolean unableToSet = max==0;
+		if (max==0) max = (int)(maxMemory()/1048576L);
 		GenericDialog gd = new GenericDialog("Memory");
 		gd.addNumericField("Maximum Memory: ", max, 0, 4, "MB");
+        gd.addNumericField("Parallel Threads for Stacks", Prefs.getThreads(), 0);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		int max2 = (int)gd.getNextNumber();
+        Prefs.setThreads((int)gd.getNextNumber());
 		if (gd.invalidNumber()) {
 			IJ.showMessage("Memory", "The number entered was invalid.");
 			return;
 		}
+		if (unableToSet && max2!=max)
+			{showError(); return;}
 		if (max2<32 && IJ.isMacOSX()) max2 = 32;
 		if (max2<8 && IJ.isWindows()) max2 = 8;
 		if (max2==max) return;
 		if (max2>=1700) {
 			if (!IJ.showMessageWithCancel("Memory", 
-			"Note: setting the memory limit to a value greater\n"
-			+"than 1700MB may cause ImageJ to fail to start."))
+			"Note: setting the memory limit to a value\n"
+			+"greater than 1700MB on a 32-bit system\n"
+			+"may cause ImageJ to fail to start."))
 				return;
 		}
 		try {

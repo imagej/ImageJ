@@ -5,11 +5,32 @@
 </head>
 <body>
 
-<li> <u>1.38t, 25 May 2007</u>
+<li> <u>1.38u, 15 June 2007</u>
 <ul>
-<li> Fixed a bug that caused <i>File&gt;Revert</i> to fail on images that 
-had been re-saved in TIFF format.
-
+<li> 	Michael Schmid added preview options to the <i>Gaussian Blue</i> and <i>Unsharp Mask</i> filters,
+speeded up (by up to 100 times!) and added preview options to the <i>Median</i>, <i>Mean</i>, <i>Minimun</i>, 
+<i>Maximum</i> and <i>Variance</i> filters,
+and contributed the new <i>Process&gt;Noise&gt;Remove Outliers</i> command.
+<li> Added a preview option to <i>Process&gt;Filter&gt;Convolve</i> and 
+removed the square kernel restriction.
+<li> Results tables are no longer limited to 150 columns.
+<li> The makeLine() macro function now accepts a 5th argument that specifies the line width.
+<li> Fixed a bug that causes entries in the <i>File&gt;Open Recent</i> submenu to not be
+stored correctly in the preferences file if they contained non-ascii characters.
+<li> Fixed a bug that could cause an exception when using the
+<i>Edit&gt;Selection&gt;Create Selection</i> command.
+<li> Ulf Dittmer fixed a bug on Mac OS X that could cause
+the same image to be opened repeatedly when several images 
+were dragged onto the ImageJ icon. 
+<li>  Fixed a bug, introduced in v1.38s, that caused a
+delay when running a command for the first time.
+<li> Fixed a bug on Windows that caused the Prefs.getHomeDir(), Menus.getPlugInsPath(), Menus.getMacrosPath()
+ methods and the getDirectory() macro function to sometimes return paths containing double path separators.
+<li> Fixed a bug that caused <i>File&gt;Export&gt;Image Sequence</i> to fail when "Use Slice Labels as File Names" was checked in the dialog
+and the names contained multiple periods.
+<li> Fixed a bug that sometimes caused text files containing the word "macro" to not open.
+<li> Fixed a bug that could cause the ROI Manager "Multi Measure" function, and the Multi_Measure plugin, to fail
+when the were a large number of ROIs.
 </ul>
 
 </body>

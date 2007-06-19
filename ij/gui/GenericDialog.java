@@ -5,6 +5,8 @@ import java.util.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.ScreenGrabber;
+import ij.plugin.filter.PlugInFilter;
+import ij.plugin.filter.PlugInFilterRunner;
 import ij.util.Tools;
 
 /**
@@ -42,7 +44,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
 	private Button cancel, okay;
-    private boolean wasCanceled;
+    private boolean wasCanceled, wasOKed;
     private int y;
     private int nfIndex, sfIndex, cbIndex, choiceIndex;
 	private GridBagLayout grid;
@@ -58,7 +60,12 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	private int topInset, leftInset, bottomInset;
     private boolean customInsets;
     private int[] sliderIndexes;
-
+    private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
+    private Vector dialogListeners;             // the Objects to notify on user input
+    private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
+    private String previewLabel = " Preview";
+    private final static String previewRunning = "wait...";
+    private boolean recorderOn;         // whether recording is allowed
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -225,12 +232,19 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			saveLabel(tf, label);
 		y++;
     }
-    
 	/** Adds a checkbox.
 	* @param label			the label
 	* @param defaultValue	the initial state
 	*/
     public void addCheckbox(String label, boolean defaultValue) {
+        addCheckbox(label, defaultValue, false);
+    }
+
+    /** Adds a checkbox; does not make it recordable if isPreview is true.
+     * With isPreview true, the checkbox can be referred to as previewCheckbox
+     * from hereon.
+     */
+    private void addCheckbox(String label, boolean defaultValue, boolean isPreview) {
     	String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
@@ -250,12 +264,47 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		add(cb);
 		checkbox.addElement(cb);
 		//ij.IJ.write("addCheckbox: "+ y+" "+cbIndex);
-		if (Recorder.record || macro)
+        if (!isPreview &&(Recorder.record || macro)) //preview checkbox is not recordable
 			saveLabel(cb, label);
+        if (isPreview) previewCheckbox = cb;
 		y++;
     }
-    
-	/** Adds a group of checkboxs using a grid layout.
+
+    /** Adds a checkbox labelled "Preview" for "automatic" preview.
+     * The reference to this checkbox can be retrieved by getPreviewCheckbox()
+     * and it provides the additional method previewRunning for optical
+     * feedback while preview is prepared.
+     * PlugInFilters can have their "run" method automatically called for
+     * preview under the following conditions:
+     * - the PlugInFilter must pass a reference to itself (i.e., "this") as an
+     *   argument to the AddPreviewCheckbox
+     * - it must implement the DialogListener interface and set the filter
+     *   parameters in the dialogItemChanged method.
+     * - it must have DIALOG and PREVIEW set in its flags.
+     * A previewCheckbox is always off when the filter is started and does not get
+     * recorded by the Macro Recorder.
+     *
+     * @param pfr A reference to the PlugInFilterRunner calling the PlugInFilter
+     * if automatic preview is desired, null otherwise.
+     */
+    public void addPreviewCheckbox(PlugInFilterRunner pfr) {
+        if (previewCheckbox != null) return;
+        this.pfr = pfr;
+        addCheckbox(previewLabel, false, true);
+    }
+
+    /** Add the preview checkbox with user-defined label; for details see the
+     *  addPreviewCheckbox method with standard "Preview" label
+     * Note that a GenericDialog can have only one PreviewCheckbox
+     */
+    public void addPreviewCheckbox(PlugInFilterRunner pfr, String label) {
+        if (previewCheckbox != null) return;
+        previewLabel = label;
+        this.pfr = pfr;
+        addCheckbox(previewLabel, false, true);
+    }
+
+    /** Adds a group of checkboxs using a grid layout.
 	* @param rows			the number of rows
 	* @param columns		the number of columns
 	* @param labels			the labels
@@ -356,19 +405,15 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	* @param rows	the number of columns
 	*/
     public void addTextAreas(String text1, String text2, int rows, int columns) {
-    	if (textArea1!=null)
-    		return;
+    	if (textArea1!=null) return;
     	Panel panel = new Panel();
 		textArea1 = new TextArea(text1,rows,columns,TextArea.SCROLLBARS_NONE);
 		if (IJ.isLinux()) textArea1.setBackground(Color.white);
-		//textArea1.setBackground(Color.white);
-		//textArea1.append(text1);
+		textArea1.addTextListener(this);
 		panel.add(textArea1);
 		if (text2!=null) {
 			textArea2 = new TextArea(text2,rows,columns,TextArea.SCROLLBARS_NONE);
 			if (IJ.isLinux()) textArea2.setBackground(Color.white);
-			//textArea2.setBackground(Color.white);
-			//textArea2.append(text2);
 			panel.add(textArea2);
 		}
 		c.gridx = 0; c.gridy = y;
@@ -507,6 +552,22 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			return new Insets(top, left, bottom, right);
 	}
 
+    /** Add an Object implementing the DialogListener interface. This object will
+     * be notified by its dialogItemChanged method of input to the dialog. The first
+     * DialogListener will be also called after the user has typed 'OK' or if the
+     * dialog has been invoked by a macro; it should read all input fields of the
+     * dialog.
+     * For other listeners, the OK button will not cause a call to dialogItemChanged;
+     * the CANCEL button will never cause such a call.
+     * @param dl the Object that wants to listen.
+     */    
+    public void addDialogListener(DialogListener dl) {
+        if (dialogListeners == null)
+            dialogListeners = new Vector();
+        dialogListeners.addElement(dl);
+        if (IJ.debugMode) IJ.log("GenericDialog: Listener added: "+dl);
+    }
+
 	/** Returns true if the user clicks on "Cancel". */
     public boolean wasCanceled() {
     	if (wasCanceled)
@@ -514,6 +575,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     	return wasCanceled;
     }
     
+	/** Returns true if the user has clicked on "OK". */
+    public boolean wasOKed() {
+    	return wasOKed;
+    }
+
 	/** Returns the contents of the next numeric field. */
    public double getNextNumber() {
 		if (numberField==null)
@@ -547,7 +613,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
                 }
 			}
 		}
-		if (Recorder.record)
+		if (recorderOn)
 			recordOption(tf, trim(theText));
 		nfIndex++;
 		return value;
@@ -611,7 +677,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			theText = Macro.getValue(macroOptions, label, theText);
 			//IJ.write("getNextString: "+label+"  "+theText);
 		}	
-		if (Recorder.record)
+		if (recorderOn)
 			recordOption(tf, theText);
 		sfIndex++;
 		return theText;
@@ -622,7 +688,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		if (checkbox==null)
 			return false;
 		Checkbox cb = (Checkbox)(checkbox.elementAt(cbIndex));
-		if (Recorder.record)
+		if (recorderOn)
 			recordCheckboxOption(cb);
 		boolean state = cb.getState();
 		if (macro) {
@@ -670,7 +736,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			item = Macro.getValue(macroOptions, label, item);
 			//IJ.write("getNextChoice: "+label+"  "+item);
 		}	
-		if (Recorder.record)
+		if (recorderOn)
 			recordOption(thisChoice, item);
 		choiceIndex++;
 		return item;
@@ -692,7 +758,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			if (index==oldIndex && !item.equals(oldItem))
 				IJ.error(getTitle(), "\""+item+"\" is not a valid choice for \""+label+"\"");
 		}	
-		if (Recorder.record)
+		if (recorderOn)
 			recordOption(thisChoice, thisChoice.getSelectedItem());
 		choiceIndex++;
 		return index;
@@ -702,20 +768,28 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	public String getNextText() {
 		String text;
 		if (textArea1!=null) {
-			textArea1.selectAll();
+			//textArea1.selectAll();
 			text = textArea1.getText();
-			textArea1 = null;
+			//textArea1 = null;
 			if (macro)
 				text = Macro.getValue(macroOptions, "text1", text);
-			if (Recorder.record)
-				Recorder.recordOption("text1", text.replace('\n',' '));
+			if (recorderOn) {
+				String text2 = text;
+				String cmd = Recorder.getCommand();
+				if (cmd!=null && cmd.equals("Convolve...")) {
+					text2 = text.replaceAll("\n","\\\\n");
+					if (!text.endsWith("\n")) text2 = text2 + "\\\\n";
+				} else
+					text2 = text.replace('\n',' ');
+				Recorder.recordOption("text1", text2);
+			}
 		} else if (textArea2!=null) {
 			textArea2.selectAll();
 			text = textArea2.getText();
-			textArea2 = null;
+			//textArea2 = null;
 			if (macro)
 				text = Macro.getValue(macroOptions, "text2", text);
-			if (Recorder.record)
+			if (recorderOn)
 				Recorder.recordOption("text2", text.replace('\n',' '));
 		} else
 			text = null;
@@ -724,55 +798,70 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
   	/** Displays this dialog box. */
     public void showDialog() {
-		nfIndex = 0;
-		sfIndex = 0;
-		cbIndex = 0;
-		choiceIndex = 0;
 		if (macro) {
 			//IJ.write("showDialog: "+macroOptions);
 			dispose();
-			return;
-		}
-    	if (stringField!=null&&numberField==null) {
-    		TextField tf = (TextField)(stringField.elementAt(0));
-    		tf.selectAll();
-    	}
-		Panel buttons = new Panel();
-    	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		cancel = new Button("Cancel");
-		cancel.addActionListener(this);
-		cancel.addKeyListener(this);
-		okay = new Button("  OK  ");
-		okay.addActionListener(this);
-		okay.addKeyListener(this);
-		if (IJ.isMacintosh()) {
-			buttons.add(cancel);
-			buttons.add(okay);
 		} else {
-			buttons.add(okay);
-			buttons.add(cancel);
-		}
-		c.gridx = 0; c.gridy = y;
-		c.anchor = GridBagConstraints.EAST;
-		c.gridwidth = 2;
-		c.insets = new Insets(15, 0, 0, 0);
-		grid.setConstraints(buttons, c);
-		add(buttons);
-        if (IJ.isMacintosh())
-        	setResizable(false);
-		pack();
-		setup();
-		GUI.center(this);
-		show();
-		IJ.wait(100); // work around for Sun/WinNT bug
+            if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
+                pfr.setDialog(this);
+            if (stringField!=null&&numberField==null) {
+                TextField tf = (TextField)(stringField.elementAt(0));
+                tf.selectAll();
+            }
+            Panel buttons = new Panel();
+            buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            cancel = new Button("Cancel");
+            cancel.addActionListener(this);
+            cancel.addKeyListener(this);
+            okay = new Button("  OK  ");
+            okay.addActionListener(this);
+            okay.addKeyListener(this);
+            if (IJ.isMacintosh()) {
+                buttons.add(cancel);
+                buttons.add(okay);
+            } else {
+                buttons.add(okay);
+                buttons.add(cancel);
+            }
+            c.gridx = 0; c.gridy = y;
+            c.anchor = GridBagConstraints.EAST;
+            c.gridwidth = 2;
+            c.insets = new Insets(15, 0, 0, 0);
+            grid.setConstraints(buttons, c);
+            add(buttons);
+            if (IJ.isMacintosh())
+                setResizable(false);
+            pack();
+            setup();
+            GUI.center(this);
+            show();
+            recorderOn = Recorder.record;
+        }
+        /* For plugins that read their input only via dialogItemChanged, call it at least once */
+        if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
+            resetCounters();
+            ((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
+            recorderOn = false;
+        }
+        resetCounters();
+		if (!macro) IJ.wait(100); // work around for Sun/WinNT bug
 		//EventQueue.invokeLater(new Runnable () {
 		//	public void run () { 
 		//		show(); 
 		//}}); 
 
   	}
-  	
-  	/** Returns the Vector containing the numeric TextFields. */
+
+    /** Reset the counters before reading the dialog parameters */
+    private void resetCounters() {
+        nfIndex = 0;        //##prepare for readout
+		sfIndex = 0;
+		cbIndex = 0;
+		choiceIndex = 0;
+        invalidNumber = false;
+}
+
+/** Returns the Vector containing the numeric TextFields. */
   	public Vector getNumericFields() {
   		return numberField;
   	}
@@ -813,15 +902,32 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
   		return theLabel;
   	}
 
-	protected void setup() {
+    /** Returns a reference to the Preview Checkbox. */
+    public Checkbox getPreviewCheckbox() {
+        return previewCheckbox;
+    }
+
+    /** optical feedback whether preview is running by switching from
+     * "Preview" to "wait..."
+     */
+    public void previewRunning(boolean isRunning) {
+        if (previewCheckbox != null) {
+            previewCheckbox.setLabel(isRunning ? previewRunning : previewLabel);
+            if (IJ.isMacOSX()) repaint();   //workaround OSX 10.4 refresh bug
+        }
+    }
+
+    protected void setup() {
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source==okay || source==cancel) {
 			wasCanceled = source==cancel;
+			wasOKed = source==okay;
 			closeDialog();
-		}
+		} else
+            notifyListeners(e);
 	}
 
 	void closeDialog() {
@@ -830,6 +936,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	}
 	
 	public void textValueChanged(TextEvent e) {
+        notifyListeners(e); 
 		if (slider==null) return;
 		Object source = e.getSource();
 		for (int i=0; i<slider.size(); i++) {
@@ -847,6 +954,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	}
 
 	public void itemStateChanged(ItemEvent e) {
+        notifyListeners(e); 
 	}
 
 	public void focusGained(FocusEvent e) {
@@ -901,6 +1009,34 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			}
 		}
 	}
+
+    /** Notify any DialogListeners of changes having occurred
+     *  If a listener returns false, do not call further listeners and disable
+     *  the OK button and preview Checkbox (if it exists).
+     *  For PlugInFilters, this ensures that the PlugInFilterRunner,
+     *  which listens as the last one, is not called if the PlugInFilter has
+     *  detected invalid parameters. Thus, unnecessary calling the run(ip) method
+     *  of the PlugInFilter for preview is avoided in that case.
+     */
+    private void notifyListeners(AWTEvent e) {
+        if (dialogListeners == null) return;
+        boolean everythingOk = true;
+        for (int i=0; everythingOk && i<dialogListeners.size(); i++)
+            try {
+                resetCounters();
+                if (!((DialogListener)dialogListeners.elementAt(i)).dialogItemChanged(this, e))
+                    everythingOk = false; }         // disable further listeners if false (invalid parameters) returned
+            catch (Exception err) {                 // for exceptions, don't cover the input by a window but
+                IJ.beep();                          // show them at in the "Log"
+                IJ.log("ERROR: "+err+"\nin DialogListener of "+dialogListeners.elementAt(i)+
+                "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
+            }
+        boolean workaroundOSXbug = IJ.isMacOSX() && !okay.isEnabled() && everythingOk;
+        if (previewCheckbox != null)
+            previewCheckbox.setEnabled(everythingOk);
+        okay.setEnabled(everythingOk);
+        if(workaroundOSXbug) repaint(); // OSX 10.4 bug delays update of enabled until the next input
+    }
 
 	public void paint(Graphics g) {
 		super.paint(g);

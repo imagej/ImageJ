@@ -1325,7 +1325,7 @@ public class Menus {
 		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {
 			String key = "plugin" + (index/10)%10 + index%10;
 			String value = (String)en.nextElement();
-			prefs.put(key, Prefs.escapeBackSlashes(value));
+			prefs.put(key, value);
 			index++;
 		}
 		int n = openRecentMenu.getItemCount();
@@ -1333,7 +1333,7 @@ public class Menus {
 			String key = ""+i;
 			if (key.length()==1) key = "0"+key;
 			key = "recent"+key;
-			prefs.put(key, Prefs.escapeBackSlashes(openRecentMenu.getItem(i).getLabel()));
+			prefs.put(key, openRecentMenu.getItem(i).getLabel());
 		}
 		prefs.put(Prefs.MENU_SIZE, Integer.toString(fontSize));
 	}

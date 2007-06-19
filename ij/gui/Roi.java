@@ -544,7 +544,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
     void modifyRoi() {
-    	if (previousRoi==null || previousRoi.modState==NO_MODS)
+    	if (previousRoi==null || previousRoi.modState==NO_MODS || imp==null)
     		return;
 		//IJ.log("modifyRoi: "+ type+"  "+modState+" "+previousRoi.type+"  "+previousRoi.modState);
     	if (type==POINT || previousRoi.getType()==POINT) {

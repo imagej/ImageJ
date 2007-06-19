@@ -11,11 +11,12 @@ import java.awt.*;
 */
 public class ResultsTable implements Cloneable {
 
+	/** Obsolete; use getLastColumn(). */
 	public static final int MAX_COLUMNS = 150;
 	
 	public static final int COLUMN_NOT_FOUND = -1;
 	public static final int COLUMN_IN_USE = -2;
-	public static final int TABLE_FULL = -3;
+	public static final int TABLE_FULL = -3; // no longer used
 	
 	public static final int AREA=0, MEAN=1, STD_DEV=2, MODE=3, MIN=4, MAX=5,
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
@@ -26,11 +27,12 @@ public class ResultsTable implements Cloneable {
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
 		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice"};
 
-	private String[] headings = new String[MAX_COLUMNS];
-	private int counter;
-	private double[][] columns = new double[MAX_COLUMNS][];
-	private String[] rowLabels;
 	private int maxRows = 100; // will be increased as needed
+	private int maxColumns = MAX_COLUMNS; // will be increased as needed
+	private String[] headings = new String[maxColumns];
+	private int counter;
+	private double[][] columns = new double[maxColumns][];
+	private String[] rowLabels;
 	private int lastColumn = -1;
 	private	StringBuffer sb;
 	private int precision = 3;
@@ -67,6 +69,17 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
+	public synchronized void addColumns() {
+			String[] tmp1 = new String[maxColumns*2];
+			System.arraycopy(headings, 0, tmp1, 0, maxColumns);
+			headings = tmp1;
+			double[][] tmp2 = new double[maxColumns*2][];
+			for (int i=0; i<maxColumns; i++)
+				tmp2[i] = columns[i];
+			columns = tmp2;
+			maxColumns *= 2;
+	}
+	
 	/** Returns the current value of the measurement counter. */
 	public int getCounter() {
 		return counter;
@@ -74,8 +87,10 @@ public class ResultsTable implements Cloneable {
 	
 	/** Adds a value to the end of the given column. Counter must be >0.*/
 	public void addValue(int column, double value) {
-		if ((column<0) || (column>=MAX_COLUMNS))
-			throw new IllegalArgumentException("Index out of range: "+column);
+		if (column<0)
+			throw new IllegalArgumentException("Column<0");
+		if (column>=maxColumns)
+			addColumns();
 		if (counter==0)
 			throw new IllegalArgumentException("Counter==0");
 		if (columns[column]==null) {
@@ -91,11 +106,8 @@ public class ResultsTable implements Cloneable {
 		does not exist, it is created.  Counter must be >0. */
 	public void addValue(String column, double value) {
 		int index = getColumnIndex(column);
-		if (index==COLUMN_NOT_FOUND) {
+		if (index==COLUMN_NOT_FOUND)
 			index = getFreeColumn(column);
-			if (index==TABLE_FULL)
-				throw new IllegalArgumentException("table is full");
-		}
 		addValue(index, value);
 	}
 	
@@ -132,7 +144,7 @@ public class ResultsTable implements Cloneable {
 	/** Returns a copy of the given column as a float array.
 		Returns null if the column is empty. */
 	public float[] getColumn(int column) {
-		if ((column<0) || (column>=MAX_COLUMNS))
+		if ((column<0) || (column>=maxColumns))
 			throw new IllegalArgumentException("Index out of range: "+column);
 		if (columns[column]==null)
 			return null;
@@ -146,7 +158,7 @@ public class ResultsTable implements Cloneable {
 	
 	/** Returns true if the specified column exists and is not empty. */
 	public boolean columnExists(int column) {
-		if ((column<0) || (column>=MAX_COLUMNS))
+		if ((column<0) || (column>=maxColumns))
 			return false;
 		else
 			return columns[column]!=null;
@@ -165,9 +177,8 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Sets the heading of the the first available column and
-		returns that column's index. Returns COLUMN_IN_USE if this
-		is a duplicate heading. Returns TABLE_FULL if there
-		are no free columns. */
+		returns that column's index. Returns COLUMN_IN_USE
+		 if this is a duplicate heading. */
 	public int getFreeColumn(String heading) {
 		for(int i=0; i<headings.length; i++) {
 			if (headings[i]==null) {
@@ -179,18 +190,22 @@ public class ResultsTable implements Cloneable {
 			if (headings[i].equals(heading))
 				return COLUMN_IN_USE;
 		}
-		return TABLE_FULL;
+		addColumns();
+		lastColumn++;
+		columns[lastColumn] = new double[maxRows];
+		headings[lastColumn] = heading;
+		return lastColumn;
 	}
 	
 	/**	Returns the value of the given column and row, where
-		column must be greater than or equal zero and less than
-		MAX_COLUMNS and row must be greater than or equal zero
-		and less than counter. */
+		column must be less than or equal the value returned by
+		getLastColumn() and row must be greater than or equal
+		zero and less than the value returned by getCounter(). */
 	public double getValueAsDouble(int column, int row) {
+		if (column>=maxColumns || row>=counter)
+			throw new IllegalArgumentException("Index out of range: "+column+","+row);
 		if (columns[column]==null)
 			throw new IllegalArgumentException("Column not defined: "+column);
-		if (column>=MAX_COLUMNS || row>=counter)
-			throw new IllegalArgumentException("Index out of range: "+column+","+row);
 		return columns[column][row];
 	}
 	
@@ -233,17 +248,19 @@ public class ResultsTable implements Cloneable {
 		int col = getColumnIndex(column);
 		if (col==COLUMN_NOT_FOUND) {
 			col = getFreeColumn(column);
-			if (col==TABLE_FULL)
-				throw new IllegalArgumentException("Too many columns (>"+(MAX_COLUMNS)+")");
 		}
 		setValue(col, row, value);
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0&lt;=column&lt;MAX_COLUMNS and 0<=row<counter. */
+		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;counter. */
 	public void setValue(int column, int row, double value) {
-		if ((column<0) || (column>=MAX_COLUMNS))
-			throw new IllegalArgumentException("Column out of range: "+column);
+		if (column<0)
+			throw new IllegalArgumentException("Column<0");
+		if (column>=maxColumns)
+			addColumns();
+		if (column>=maxColumns)
+			throw new IllegalArgumentException("Column out of range");
 		if (row>=counter)
 			throw new IllegalArgumentException("row>=counter");
 		if (columns[column]==null) {
@@ -272,7 +289,7 @@ public class ResultsTable implements Cloneable {
 
 	/** Returns the heading of the specified column or null if the column is empty. */
 	public String getColumnHeading(int column) {
-		if ((column<0) || (column>=MAX_COLUMNS))
+		if ((column<0) || (column>=maxColumns))
 			throw new IllegalArgumentException("Index out of range: "+column);
 		return headings[column];
 	}
@@ -349,12 +366,17 @@ public class ResultsTable implements Cloneable {
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
-		for (int i=0; i<MAX_COLUMNS; i++) {
+		for (int i=0; i<=lastColumn; i++) {
 			columns[i] = null;
 			headings[i] = null;
 		}
 		lastColumn = -1;
 		rowLabels = null;
+	}
+	
+	/** Returns the index of the last used column, or -1 if no columns are used. */
+	public int getLastColumn() {
+		return lastColumn;
 	}
 
 	/** Displays the contents of this ResultsTable in a window with the specified title. 

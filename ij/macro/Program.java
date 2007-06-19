@@ -16,6 +16,7 @@ public class Program implements MacroConstants {
 	int[] code = new int[maxProgramSize];
 	Variable[] globals;
 	boolean hasVars;
+	int macroCount;
     Hashtable menus;
     // run keyboard shortcut macros on event dispatch thread?
 	boolean queueCommands; 
@@ -145,6 +146,10 @@ public class Program implements MacroConstants {
 
 	public boolean hasVars() {
 		return hasVars;
+	}
+
+	public int macroCount() {
+		return macroCount;
 	}
 
 	public String decodeToken(int token) {

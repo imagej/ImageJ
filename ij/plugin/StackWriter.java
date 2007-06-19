@@ -97,13 +97,7 @@ public class StackWriter implements PlugIn {
 			digits = getDigits(number++);
 			if (useLabels) {
 				label = stack.getShortSliceLabel(i);
-				if (label!=null && label.equals(""))
-					label = null;
-				if (label!=null) {
-					int index = label.lastIndexOf(".");
-					if (index>=0)
-						label = label.substring(0, index);
-				}
+				if (label!=null && label.equals("")) label = null;
 			}
 			if (label==null)
 				path = directory+name+digits+extension;

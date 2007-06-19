@@ -672,7 +672,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					Roi roi = imp.getRoi();
 					ImageStatistics stats = imp.getStatistics(measurements);
 					aSys.saveResults(stats, roi); //Save measurements in system results table;
-					for (int j=0; j<ResultsTable.MAX_COLUMNS; j++){
+					for (int j=0; j<=rtSys.getLastColumn(); j++){
 						float[] col = rtSys.getColumn(j);
 						String head = rtSys.getColumnHeading(j);
 						if (head!=null && col!=null && !head.equals("Slice"))
@@ -697,7 +697,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Analyzer analyzer = new Analyzer(imp, measurements, rt);
 		analyzer.saveResults(stats, null);
 		int count = 0;
-		for (int i=0; i<ResultsTable.MAX_COLUMNS; i++) {
+		for (int i=0; i<=rt.getLastColumn(); i++) {
 			float[] col = rt.getColumn(i);
 			String head = rt.getColumnHeading(i);
 			if (head!=null && col!=null)

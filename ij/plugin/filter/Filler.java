@@ -82,7 +82,7 @@ public class Filler implements PlugInFilter, Measurements {
 			if (isStraightLine() && Line.getWidth()>1)
 				ip.fillPolygon(roi.getPolygon());
 			else
-				roi.drawPixels();
+				roi.drawPixels(ip);
 		} else
 	 		ip.fill(); // fill with foreground color
 	}

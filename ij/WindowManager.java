@@ -308,14 +308,17 @@ public class WindowManager {
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null && ij.quitting() && IJ.getApplet()==null)
 			return true;
-		//System.out.println("closeAllWindows2");
 		Frame[] list = getNonImageWindows();
 		for (int i=0; i<list.length; i++) {
 			Frame frame = list[i];
 			if (frame instanceof PlugInFrame)
 				((PlugInFrame)frame).close();
 			else if (frame instanceof TextWindow)
-			((TextWindow)frame).close();
+				((TextWindow)frame).close();
+			else {
+				frame.setVisible(false);
+				frame.dispose();
+			}
 		}
 		return true;
     }

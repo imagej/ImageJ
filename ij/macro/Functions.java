@@ -604,6 +604,12 @@ public class Functions implements MacroConstants, Measurements {
 			int n = 2;
 			while (interp.token==',' && n<max) {
 				x[n] = (int)Math.round(interp.getExpression());
+				if (n==2 && interp.nextToken()==')') {
+					interp.getRightParen();
+					Line.setWidth((int)x[n]);
+					IJ.makeLine(x1, y1, x2, y2);
+					return;
+				}
 				interp.getComma();
 				y[n] = (int)Math.round(interp.getExpression());
 				interp.getToken();
@@ -1828,14 +1834,15 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void showProgress() {
+		ij.gui.ProgressBar progressBar = IJ.getInstance().getProgressBar();
 		interp.getLeftParen();
 		double arg1 = interp.getExpression();
 		if (interp.nextToken()==',') {
 			interp.getComma();
 			double arg2 = interp.getExpression();
-			IJ.showProgress((int)arg1, (int)arg2);						
+			if (progressBar!=null) progressBar.show((arg1+1.0)/arg2, true);						
 		} else 
-			IJ.showProgress(arg1);			
+			if (progressBar!=null) progressBar.show(arg1, true);
 		interp.getRightParen();
 		interp.showingProgress = true; 	
 	}

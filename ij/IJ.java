@@ -130,7 +130,7 @@ public class IJ {
  			if (thePlugIn instanceof PlugIn)
 				((PlugIn)thePlugIn).run(arg);
  			else
-				runFilterPlugIn(thePlugIn, commandName, arg);
+				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
 			if (IJ.getApplet()==null)
@@ -140,142 +140,6 @@ public class IJ {
 		catch (IllegalAccessException e) {log("Unable to load plugin, possibly \nbecause it is not public.");}
 		redirectErrorMessages = false;
 		return thePlugIn;
-	}
-	       
-	static void runFilterPlugIn(Object theFilter, String cmd, String arg) {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		int capabilities = ((PlugInFilter)theFilter).setup(arg, imp);
-		if ((capabilities&PlugInFilter.DONE)!=0)
-			return;
-		if ((capabilities&PlugInFilter.NO_IMAGE_REQUIRED)!=0)
-			{((PlugInFilter)theFilter).run(null); return;}
-		if (imp==null)
-			{IJ.noImage(); return;}
-		Roi roi = imp.getRoi();
-		if ((capabilities&PlugInFilter.ROI_REQUIRED)!=0 && roi==null)
-			{error("Selection required"); return;}
-		if ((capabilities&PlugInFilter.STACK_REQUIRED)!=0 && imp.getStackSize()==1)
-			{error("Stack required"); return;}
-		int type = imp.getType();
-		switch (type) {
-			case ImagePlus.GRAY8:
-				if ((capabilities&PlugInFilter.DOES_8G)==0)
-					{wrongType(capabilities, cmd); return;}
-				break;
-			case ImagePlus.COLOR_256:
-				if ((capabilities&PlugInFilter.DOES_8C)==0)
-					{wrongType(capabilities, cmd); return;}
-				break;
-			case ImagePlus.GRAY16:
-				if ((capabilities&PlugInFilter.DOES_16)==0)
-					{wrongType(capabilities, cmd); return;}
-				break;
-			case ImagePlus.GRAY32:
-				if ((capabilities&PlugInFilter.DOES_32)==0)
-					{wrongType(capabilities, cmd); return;}
-				break;
-			case ImagePlus.COLOR_RGB:
-				if ((capabilities&PlugInFilter.DOES_RGB)==0)
-					{wrongType(capabilities, cmd); return;}
-				break;
-		}
-		boolean changes = (capabilities&PlugInFilter.NO_CHANGES)==0;
-		boolean snapshotRequired = (capabilities&PlugInFilter.SNAPSHOT)!=0;
-		if (roi!=null) roi.endPaste();
-		int slices = imp.getStackSize();
-		boolean doesStacks = (capabilities&PlugInFilter.DOES_STACKS)!=0;
-		boolean convertToFloat = (capabilities&PlugInFilter.CONVERT_TO_FLOAT)!=0 && type!=ImagePlus.GRAY32;
-		if (!imp.lock())
-			return; // exit if image is in use
-		imp.startTiming();
-		IJ.showStatus(cmd + "...");
-		ImageProcessor ip;
-		ImageStack stack = null;
-		if (slices>1)
-			stack = imp.getStack();
-		float[] cTable = imp.getCalibration().getCTable();
-		ImageProcessor mask = imp.getMask();
-		boolean supportsMasking = (capabilities&PlugInFilter.SUPPORTS_MASKING)!=0;
-		if (slices==1 || !doesStacks) {
-			ip = imp.getProcessor();
-			boolean disableUndo = Prefs.disableUndo && !(roi!=null&&roi.getType()!=Roi.RECTANGLE&&supportsMasking);
-			if ((capabilities&PlugInFilter.NO_UNDO)!=0 || !changes || disableUndo) {
-				Undo.reset();
-				if (snapshotRequired && !convertToFloat) ip.snapshot();
-			} else {
-				Undo.setup(Undo.FILTER, imp);
-				ip.snapshot();
-			}
-			ip.setCalibrationTable(cTable);
-			if (convertToFloat) {
-				FloatProcessor fp = null;
-				for (int i=0; i<ip.getNChannels(); i++) {
-					fp = ip.toFloat(i, fp);
-					if (snapshotRequired) fp.snapshot();
-					((PlugInFilter)theFilter).run(fp);
-					ip.setPixels(i, fp);
-				}
-			} else
-				((PlugInFilter)theFilter).run(ip);
-			if (supportsMasking)
-				ip.reset(ip.getMask());  //restore image outside irregular roi
-			if (changes) ip.resetBinaryThreshold();
-			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", 1);
-		} else {
-       		Undo.reset(); // can't undo stack operations
-			int n = stack.getSize();
-			int currentSlice = imp.getCurrentSlice();
-			Rectangle r = null;
-			if (roi!=null && roi.isArea())
-				r = roi.getBounds();
-			ip = imp.getProcessor();
-			double minThreshold = ip.getMinThreshold();
-			double maxThreshold = ip.getMaxThreshold();
-			ip = stack.getProcessor(1);
-			ip.setLineWidth(Line.getWidth());
-			boolean doMasking = roi!=null && roi.getType()!=Roi.RECTANGLE  && supportsMasking;
-			if (minThreshold!=ImageProcessor.NO_THRESHOLD)
-				ip.setThreshold(minThreshold,maxThreshold,ImageProcessor.NO_LUT_UPDATE);
-			ip.setMask(mask);
-			ip.setRoi(r);
-			ip.setCalibrationTable(cTable);
-			IJ.resetEscape();
-			int p1=1, p2=n;
-			if (convertToFloat && imp.getBitDepth()==24) p2*=3;
-			if (progressBar!=null) progressBar.setStackMode(true);
-			for (int i=1; i<=n; i++) {
-				ip.setPixels(stack.getPixels(i));
-				if (doMasking||(snapshotRequired&&!convertToFloat)) ip.snapshot();
-				if (convertToFloat) {
-					FloatProcessor fp = null;
-					for (int j=0; j<ip.getNChannels(); j++) {
-						fp = ip.toFloat(j, fp);
-						if (snapshotRequired) fp.snapshot();
-						((PlugInFilter)theFilter).run(fp);
-						ip.setPixels(j, fp);
-						IJ.showProgress(p1++, p2);
-					}
-				} else {
-					((PlugInFilter)theFilter).run(ip);
-					IJ.showProgress(p1++, p2);
-				}
-				if (doMasking) ip.reset(ip.getMask());
-				if (IJ.escapePressed()) {IJ.beep(); break;}
-			}
-			if (roi!=null) imp.setRoi(roi);
-			IJ.showProgress(n, n);
-			IJ.showTime(imp, imp.getStartTime(), cmd + ": ", n);
-		}
-		if (changes) {
-			imp.changes = true;
-	 		imp.updateAndDraw();
-	 	}
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			win.running = false;
-			win.running2 = false;
-		}
-		imp.unlock();
 	}
         
 	static Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
@@ -293,7 +157,7 @@ public class IJ {
  			if (thePlugIn instanceof PlugIn)
 				((PlugIn)thePlugIn).run(arg);
  			else if (thePlugIn instanceof PlugInFilter)
-				runFilterPlugIn(thePlugIn, commandName, arg);
+				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
 			if (className.indexOf('_')!=-1 && !suppressPluginNotFoundError)
@@ -521,18 +385,20 @@ public class IJ {
 	}
 
 	/**	Updates the progress bar, where 0<=progress<=1.0. The progress bar is 
-	not displayed if the time between the first and second calls to this method
-	is less than 30 milliseconds. It is erased if progress>=1.0. Does nothing 
+	not shown in BatchMode and erased if progress>=1.0. The progress bar is
+    updated only if more than 90 ms have passes since the last call. Does nothing 
 	if the ImageJ window is not present. */
 	public static void showProgress(double progress) {
-		if (progressBar!=null) progressBar.show(progress);
+		if (progressBar!=null) progressBar.show(progress, false);
 	}
 
-	/**	Updates the progress bar, where bar-length = (currentIndex/finalIndex)*total-length.
-	The bar is erased if currentIndex>=finalIndex. Does nothing 
-	if the ImageJ window is not present. */
-	public static void showProgress(int currentIndex, int finalIndex) {
-		if (progressBar!=null) progressBar.show(currentIndex, finalIndex);
+	/**	Updates the progress bar, where the length of the bar is set to
+    (<code>currentValue+1)/finalValue</code> of the maximum bar length.
+    The bar is erased if <code>currentValue&gt;=finalValue</code>. 
+    The bar is updated only if more than 90 ms have passed since the last call.
+    Does nothing if the ImageJ window is not present. */
+    public static void showProgress(int currentIndex, int finalIndex) {
+		if (progressBar!=null) progressBar.show((currentIndex+1.0)/(double)finalIndex, true);
 	}
 
 	/** Displays a message in a dialog box titled "Message".
@@ -663,7 +529,7 @@ public class IJ {
 		showTime(imp, start, str, 1);
 	}
 	
-	static void showTime(ImagePlus imp, long start, String str, int nslices) {
+	public static void showTime(ImagePlus imp, long start, String str, int nslices) {
 		if (Interpreter.isBatchMode()) return;
 	    long elapsedTime = System.currentTimeMillis() - start;
 		double seconds = elapsedTime / 1000.0;
@@ -1397,9 +1263,15 @@ public class IJ {
 	/** Returns the size, in pixels, of the primary display. */
 	public static Dimension getScreenSize() {
 		if (screenSize==null) {
+			if (isWindows()) { // GraphicsEnvironment.getConfigurations is *very* slow on Windows
+				screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				return screenSize;
+			}
 			if (GraphicsEnvironment.isHeadless())
 				screenSize = new Dimension(0, 0);
 			else {
+				// Can't use Toolkit.getScreenSize() on Linux because it returns 
+				// size of all displays rather than just the primary display.
 				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 				GraphicsDevice[] gd = ge.getScreenDevices();
 				GraphicsConfiguration[] gc = gd[0].getConfigurations();

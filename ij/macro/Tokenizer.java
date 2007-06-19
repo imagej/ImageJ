@@ -171,10 +171,11 @@ public class Tokenizer implements MacroConstants {
 					int type = symbol.getFunctionType();
 					if (type==0) {
 						tok = symbol.type;
-						if (tok==FUNCTION)
-							hasUserFunctions = true;
-						if (tok==VAR)
-							pgm.hasVars = true;
+						switch (tok) {
+							case FUNCTION: hasUserFunctions=true; break;
+							case VAR: pgm.hasVars=true; break;
+							case MACRO: pgm.macroCount++; break;
+						}
 					} else
 						tok = type;
 					tok += pgm.symTabLoc<<TOK_SHIFT;

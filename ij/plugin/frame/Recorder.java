@@ -82,6 +82,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		//IJ.log("setCommand: "+command+" "+Thread.currentThread().getName());
 	}
 
+	/** Returns the name of the command currently being recorded, or null. */
+	public static String getCommand() {
+		return commandName;
+	}
+
 	static String fixPath (String path) {
 		StringBuffer sb = new StringBuffer();
 		char c;
