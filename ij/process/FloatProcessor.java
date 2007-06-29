@@ -238,6 +238,14 @@ public class FloatProcessor extends ImageProcessor {
 		pixels[y*width + x] = Float.intBitsToFloat(value);
 	}
 
+	public final int get(int index) {
+		return Float.floatToIntBits(pixels[index]);
+	}
+
+	public final void set(int index, int value) {
+		pixels[index] = Float.intBitsToFloat(value);
+	}
+
 	public final float getf(int x, int y) {
 		return pixels[y*width+x];
 	}
@@ -245,6 +253,15 @@ public class FloatProcessor extends ImageProcessor {
 	public final void setf(int x, int y, float value) {
 		pixels[y*width + x] = value;
 	}
+
+	public final float getf(int index) {
+		return pixels[index];
+	}
+	
+	public final void setf(int index, float value) {
+		pixels[index] = value;
+	}
+
 
     /** Returns the value of the pixel at (x,y) in a
     	one element int array. iArray is an optiona
@@ -400,8 +417,6 @@ public class FloatProcessor extends ImageProcessor {
 				}
 				pixels[i++] = v2;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
 		if (resetMinMax)
 			findMinAndMax();
@@ -782,14 +797,16 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
-		if (minThreshold!=NO_THRESHOLD && max>min) {
+		if (minThreshold==NO_THRESHOLD)
+			{resetThreshold(); return;}
+		if (max>min) {
 			double minT = Math.round(((minThreshold-min)/(max-min))*255.0);
 			double maxT = Math.round(((maxThreshold-min)/(max-min))*255.0);
-			super.setThreshold(minT, maxT, lutUpdate);
-			this.minThreshold = minThreshold;
-			this.maxThreshold = maxThreshold;
+			super.setThreshold(minT, maxT, lutUpdate); // update LUT
 		} else
 			super.resetThreshold();
+		this.minThreshold = Math.round(minThreshold);
+		this.maxThreshold = Math.round(maxThreshold);
 	}
 
 	/** Performs a convolution operation using the specified kernel. */

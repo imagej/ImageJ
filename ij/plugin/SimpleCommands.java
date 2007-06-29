@@ -21,6 +21,8 @@ public class SimpleCommands implements PlugIn {
 			reset();
 		else if (arg.equals("about"))
 			aboutPluginsHelp();
+		else if (arg.equals("install"))
+			installation();
 	}
 
 	void reset() {
@@ -75,6 +77,17 @@ public class SimpleCommands implements PlugIn {
 		
 	void search() {
 		searchArg = IJ.runMacroFile("ij.jar:Search", searchArg);
+	}
+	
+	void installation() {
+		String url = "http://rsb.info.nih.gov/ij/docs/install/";
+		if (IJ.isMacintosh())
+			url += "osx.html";
+		else if (IJ.isWindows())
+			url += "windows.html";
+		else if (IJ.isLinux())
+			url += "linux.html";
+		IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 	}
 
 	void aboutPluginsHelp() {

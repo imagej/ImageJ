@@ -18,7 +18,7 @@ public class ThreadLister implements PlugIn {
 		PrintWriter pw = new PrintWriter(caw);
 		try {
 			listAllThreads(pw);
-			new TextWindow("Threads", caw.toString(), 300, 300);
+			new TextWindow("Threads", caw.toString(), 420, 420);
 		} catch
 			(Exception e) {}
 	}

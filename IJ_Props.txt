@@ -86,7 +86,7 @@ options05="Point Tool...",ij.plugin.Colors("point")
 options06="Colors...",ij.plugin.Colors
 options07="Appearance...",ij.plugin.Options("display")
 options08="Conversions...",ij.plugin.Options("conv")
-options09="Memory and Threads...",ij.plugin.Memory
+options09="Memory & Threads...",ij.plugin.Memory
 options10="Misc...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
@@ -129,7 +129,7 @@ rotate01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")
 rotate02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
 rotate03="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 rotate04="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
-rotate05="Arbitrarily...",ij.plugin.Rotator
+rotate05="Arbitrarily...",ij.plugin.filter.Rotator
 
 # Plugins installed in the Image/Zoom submenu
 zoom01="In[+]",ij.plugin.Zoom("in")

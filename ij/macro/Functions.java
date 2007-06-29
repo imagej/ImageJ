@@ -2249,21 +2249,21 @@ public class Functions implements MacroConstants, Measurements {
 		double lower, upper;
 		if (unbalanced) {
 			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
-				{lower=threshold; upper=stats.max;}
+				{lower=threshold; upper=255.0;}
 			else
-				{lower=stats.min; upper=threshold;}
+				{lower=0.0; upper=threshold;}
 		} else {
 			if (ip.isInvertedLut())
-				{lower=threshold; upper=255;}
+				{lower=threshold; upper=255.0;}
 			else
-				{lower=0; upper=threshold;}
+				{lower=0.0; upper=threshold;}
 		}
 		if (notByteData) {
 			if (max>min) {
 				lower = min + (lower/255.0)*(max-min);
 				upper = min + (upper/255.0)*(max-min);
 			} else
-				lower = ImageProcessor.NO_THRESHOLD;
+				lower = upper = min;
 		}
 		if (imp.getBitDepth()==16) {
 			Calibration cal = imp.getCalibration();

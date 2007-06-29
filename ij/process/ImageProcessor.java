@@ -1164,16 +1164,28 @@ public abstract class ImageProcessor extends Object {
 		Returns zero if either the x or y coodinate is out of range. */
 	public abstract int getPixel(int x, int y);
 	
+	public int getPixelCount() {
+		return width*height;
+	}
+
 	/** This is a faster version of getPixel() that does not do bounds checking. */
 	public abstract int get(int x, int y);
 	
+	public abstract int get(int index);
+
 	/** This is a faster version of putPixel() that does not clip  
 		out of range values and does not do bounds checking. */
 	public abstract void set(int x, int y, int value);
 
+	public abstract void set(int index, int value);
+
 	public abstract float getf(int x, int y);
 	
+	public abstract float getf(int index);
+
 	public abstract void setf(int x, int y, float value);
+
+	public abstract void setf(int index, float value);
 
 	public int[][] getIntArray() {
 		int[][] a = new int [width][height];

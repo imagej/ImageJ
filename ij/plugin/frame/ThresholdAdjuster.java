@@ -290,14 +290,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		double lower, upper;
 		if (unbalanced) {
 			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
-				{minThreshold=threshold; maxThreshold=stats.max;}
+				{minThreshold=threshold; maxThreshold=255.0;}
 			else
-				{minThreshold=stats.min; maxThreshold=threshold;}
+				{minThreshold=0.0; maxThreshold=threshold;}
 		} else {
 			if (ip.isInvertedLut())
-				{minThreshold=threshold; maxThreshold=255;}
+				{minThreshold=threshold; maxThreshold=255.0;}
 			else
-				{minThreshold=0; maxThreshold=threshold;}
+				{minThreshold=0.0; maxThreshold=threshold;}
 		}
 		if (Recorder.record)
 			Recorder.record("setAutoThreshold");
@@ -312,7 +312,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 				minThreshold = min + (minThreshold/255.0)*(max-min);
 				maxThreshold = min + (maxThreshold/255.0)*(max-min);
 			} else
-				minThreshold = ImageProcessor.NO_THRESHOLD;
+				minThreshold = maxThreshold = min;
 		}
 		ip.setThreshold(minThreshold, maxThreshold, lutColor);
 	}

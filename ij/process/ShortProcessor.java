@@ -79,7 +79,6 @@ public class ShortProcessor extends ImageProcessor {
 			if (value>max)
 				max = value;
 		}
-		showProgress(1.0);
 	}
 
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
@@ -226,12 +225,28 @@ public class ShortProcessor extends ImageProcessor {
 		pixels[y*width + x] = (short)value;
 	}
 
+	public final int get(int index) {
+		return pixels[index]&0xffff;
+	}
+
+	public final void set(int index, int value) {
+		pixels[index] = (short)value;
+	}
+
 	public final float getf(int x, int y) {
 		return pixels[y*width+x]&0xffff;
 	}
 
 	public final void setf(int x, int y, float value) {
 		pixels[y*width + x] = (short)value;
+	}
+
+	public final float getf(int index) {
+		return pixels[index]&0xffff;
+	}
+
+	public final void setf(int index, float value) {
+		pixels[index] = (short)value;
 	}
 
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
@@ -440,12 +455,9 @@ public class ShortProcessor extends ImageProcessor {
 					v2 = 65535;
 				pixels[i++] = (short)v2;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
 		if (resetMinMax)
 			findMinAndMax();
-		showProgress(1.0);
     }
 
 	public void invert() {
@@ -857,16 +869,18 @@ public class ShortProcessor extends ImageProcessor {
 	}
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
-		if (minThreshold!=NO_THRESHOLD && max>min) {
-            if (minThreshold<0.0) minThreshold = 0.0;
-            if (maxThreshold>65535.0) maxThreshold = 65535.0;
+		if (minThreshold==NO_THRESHOLD)
+			{resetThreshold(); return;}
+		if (minThreshold<0.0) minThreshold = 0.0;
+		if (maxThreshold>65535.0) maxThreshold = 65535.0;
+		if (max>min) {
 			double minT = Math.round(((minThreshold-min)/(max-min))*255.0);
 			double maxT = Math.round(((maxThreshold-min)/(max-min))*255.0);
-			super.setThreshold(minT, maxT, lutUpdate);
-			this.minThreshold = Math.round(minThreshold);
-			this.maxThreshold = Math.round(maxThreshold);
+			super.setThreshold(minT, maxT, lutUpdate); // update LUT
 		} else
 			super.resetThreshold();
+		this.minThreshold = Math.round(minThreshold);
+		this.maxThreshold = Math.round(maxThreshold);
 	}
 
 	/** Performs a convolution operation using the specified kernel. */

@@ -46,7 +46,7 @@ public class ProgressBar extends Canvas {
     public void show(double percent) {
         show(percent, false);
     }
-
+    
 	/**	Updates the progress bar, where percent should run from 0 to 1.
 	 *  <code>percent = 1.0</code> erases the bar.
      *  The bar is updated only if more than 90 ms have passed since

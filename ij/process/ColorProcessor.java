@@ -267,12 +267,27 @@ public class ColorProcessor extends ImageProcessor {
 		pixels[y*width + x] = value;
 	}
 
+	public final int get(int index) {
+		return pixels[index];
+	}
+	public final void set(int index, int value) {
+		pixels[index] = value;
+	}
+
 	public final float getf(int x, int y) {
 		return pixels[y*width+x];
 	}
 
 	public final void setf(int x, int y, float value) {
 		pixels[y*width + x] = (int)value;
+	}
+
+	public final float getf(int index) {
+		return pixels[index];
+	}
+
+	public final void setf(int index, float value) {
+		pixels[index] = (int)value;
 	}
 
     /** Returns the 3 samples for the pixel at (x,y) in an array of int.

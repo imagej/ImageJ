@@ -189,6 +189,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imageLoaded = false;
 		if (!comp.prepareImage(img, this)) {
 			double progress;
+			waitStart = System.currentTimeMillis();
 			while (!imageLoaded && !errorLoadingImage) {
 				//IJ.showStatus(imageUpdateY+" "+imageUpdateW);
 				IJ.wait(30);
@@ -198,13 +199,19 @@ public class ImagePlus implements ImageObserver, Measurements {
 						progress = 1.0 - (progress-1.0);
 						if (progress<0.0) progress = 0.9;
 					}
-					IJ.showProgress(progress);
+					showProgress(progress);
 				}
 			}
-			IJ.showProgress(1.0);
+			showProgress(1.0);
 		}
 	}
 	
+	long waitStart;
+	private void showProgress(double percent) {
+		if ((System.currentTimeMillis()-waitStart)>500L)
+			IJ.showProgress(percent);
+	}
+
 	/** Draws the image. If there is an ROI, its
 		outline is also displayed.  Does nothing if there
 		is no window associated with this image (i.e. show()
