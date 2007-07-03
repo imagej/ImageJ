@@ -87,10 +87,10 @@ public class ResultsTable implements Cloneable {
 	
 	/** Adds a value to the end of the given column. Counter must be >0.*/
 	public void addValue(int column, double value) {
-		if (column<0)
-			throw new IllegalArgumentException("Column<0");
 		if (column>=maxColumns)
 			addColumns();
+		if (column<0 || column>=maxColumns)
+			throw new IllegalArgumentException("Column out of range");
 		if (counter==0)
 			throw new IllegalArgumentException("Counter==0");
 		if (columns[column]==null) {
@@ -255,11 +255,9 @@ public class ResultsTable implements Cloneable {
 	/** Sets the value of the given column and row, where
 		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;counter. */
 	public void setValue(int column, int row, double value) {
-		if (column<0)
-			throw new IllegalArgumentException("Column<0");
 		if (column>=maxColumns)
 			addColumns();
-		if (column>=maxColumns)
+		if (column<0 || column>=maxColumns)
 			throw new IllegalArgumentException("Column out of range");
 		if (row>=counter)
 			throw new IllegalArgumentException("row>=counter");
@@ -366,7 +364,7 @@ public class ResultsTable implements Cloneable {
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
-		for (int i=0; i<=lastColumn; i++) {
+		for (int i=0; i<maxColumns; i++) {
 			columns[i] = null;
 			headings[i] = null;
 		}

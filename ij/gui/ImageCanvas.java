@@ -1000,6 +1000,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
+		if (shape==null)
+			{setDisplayList(null); return;}
 		Roi roi = new ShapeRoi(shape);
 		Vector list = new Vector();
 		list.addElement(roi);

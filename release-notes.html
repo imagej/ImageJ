@@ -5,18 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.38v, 22 June 2007</u>
+<li> <u>1.38w, 2 July 2007</u>
 <ul>
-<li> Added preview and grid options to <i>Image&gt;Rotate&gt;Arbitrarily</i>.
-<li> Added the <i>Help&gt;Installation</i> command.
-<li> Added the get(int), set(int,int), getf(int), setf(int,float) and getPixelCount() ImageProcessor methods
-for reading and writing pixels using a pixel array index instead of x and y coordinates.
-<li> Fixed bugs in <i>Image&gt;Adjust&gt;Threshold</i> and the setThreshold()
-and setAutoThreshold() macro functions that caused the threshold to not be
-set correctly on blank 16-bit and 32-bit images.
-<li> Fixed bugs that could cause <i>Process&gt;Binary&gt;Convert to Mask</i> to fail
-on 16-bit and 32-bit stacks with blank slices, 
-or with high dynamic range 16 and 32 bit images.
+<li> Fixed a bug, introduced in v1.38u, that caused the
+<a href="http://imagescience.bigr.nl/meijering/software/transformj/">TransformJ</a>
+ plugins to throw an exception.
+<li> Fixed a bug, introduced in v1.38u, that caused the
+<a href="http://www.gcsca.net/IJ/Dynamic.html">Dynamic Threshold</a>
+ plugin to throw an exception.
 </ul>
 
 </body>

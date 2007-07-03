@@ -665,10 +665,6 @@ public class Opener {
  		if ((b0==8||b0==2) && b1==0 && b3==0 && !name.endsWith(".spe")) 	
   			 	return DICOM;
 
-		// FITS ("SIMP")
-		if ((b0==83 && b1==73 && b2==77 && b3==80) || name.endsWith(".fits.gz"))
-			return FITS;
-			
 		// PGM ("P1", "P4", "P2", "P5", "P3" or "P6")
 		if (b0==80&&(b1==49||b1==52||b1==50||b1==53||b1==51||b1==54)&&(b2==10||b2==13||b2==32||b2==9))
 			return PGM;
@@ -685,6 +681,10 @@ public class Opener {
 		if (name.endsWith(".zip"))
 			return ZIP;
 
+		// FITS ("SIMP")
+		if ((b0==83 && b1==73 && b2==77 && b3==80) || name.endsWith(".fts.gz") || name.endsWith(".fits.gz"))
+			return FITS;
+			
 		// Java source file or text file
 		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm"))
 			return JAVA_OR_TEXT;

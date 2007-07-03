@@ -575,9 +575,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     	return wasCanceled;
     }
     
-	/** Returns true if the user has clicked on "OK". */
+	/** Returns true if the user has clicked on "OK" or a macro is running. */
     public boolean wasOKed() {
-    	return wasOKed;
+    	return wasOKed || macro;
     }
 
 	/** Returns the contents of the next numeric field. */

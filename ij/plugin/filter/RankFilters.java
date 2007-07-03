@@ -238,6 +238,13 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		} // for y
 	}
 
+	public void rank(ImageProcessor ip, double radius, int rankType) {
+		makeKernel(radius);
+		FloatProcessor fp = ip.toFloat(0, null);
+        doFiltering(fp, kRadius, lineRadius, rankType, BRIGHT_OUTLIERS, 50f);
+        ip.setPixels(0, fp);
+	}
+
 	/** Get max (or -min if sign=-1) within the kernel area.
 	 *  @param xCache0 points to cache element equivalent to x
 	 *  @param ignoreRight should be 0 for analyzing all data or 1 for leaving out the row at the right

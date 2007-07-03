@@ -71,7 +71,7 @@ class FitsDecoder {
         fi.offset = 0;
 
         InputStream is = new FileInputStream(directory + fileName);
-        if (fileName.toLowerCase().endsWith(".gz")) is= new GZIPInputStream(is);
+        if (fileName.toLowerCase().endsWith(".gz")) is = new GZIPInputStream(is);
         f = new DataInputStream(is);
         String line = getString(80);
         info.append(line+"\n");
@@ -82,7 +82,7 @@ class FitsDecoder {
             count++;
             line = getString(80);
 			info.append(line+"\n");
-
+  
             // Cut the key/value pair
 			int index = line.indexOf ( "=" );
 
@@ -145,7 +145,7 @@ class FitsDecoder {
 
     String getString(int length) throws IOException {
         byte[] b = new byte[length];
-        f.read(b);
+        f.readFully(b);
         return new String(b);
     }
 

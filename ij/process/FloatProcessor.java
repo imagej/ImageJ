@@ -805,8 +805,8 @@ public class FloatProcessor extends ImageProcessor {
 			super.setThreshold(minT, maxT, lutUpdate); // update LUT
 		} else
 			super.resetThreshold();
-		this.minThreshold = Math.round(minThreshold);
-		this.maxThreshold = Math.round(maxThreshold);
+		this.minThreshold = minThreshold;
+		this.maxThreshold = maxThreshold;
 	}
 
 	/** Performs a convolution operation using the specified kernel. */
