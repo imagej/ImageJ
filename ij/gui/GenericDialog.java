@@ -46,7 +46,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	private Button cancel, okay;
     private boolean wasCanceled, wasOKed;
     private int y;
-    private int nfIndex, sfIndex, cbIndex, choiceIndex;
+    private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex;
 	private GridBagLayout grid;
 	private GridBagConstraints c;
 	private boolean firstNumericField=true;
@@ -764,13 +764,13 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		return index;
     }
     
-  	/** Returns the contents of the next text area. */
+  	/** Returns the contents of the next textarea. */
 	public String getNextText() {
 		String text;
-		if (textArea1!=null) {
+		if (textAreaIndex==0 && textArea1!=null) {
 			//textArea1.selectAll();
 			text = textArea1.getText();
-			//textArea1 = null;
+			textAreaIndex++;
 			if (macro)
 				text = Macro.getValue(macroOptions, "text1", text);
 			if (recorderOn) {
@@ -783,10 +783,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 					text2 = text.replace('\n',' ');
 				Recorder.recordOption("text1", text2);
 			}
-		} else if (textArea2!=null) {
+		} else if (textAreaIndex==1 && textArea2!=null) {
 			textArea2.selectAll();
 			text = textArea2.getText();
-			//textArea2 = null;
+			textAreaIndex++;
 			if (macro)
 				text = Macro.getValue(macroOptions, "text2", text);
 			if (recorderOn)
@@ -854,10 +854,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
     /** Reset the counters before reading the dialog parameters */
     private void resetCounters() {
-        nfIndex = 0;        //##prepare for readout
+        nfIndex = 0;        // prepare for readout
 		sfIndex = 0;
 		cbIndex = 0;
 		choiceIndex = 0;
+		textAreaIndex = 0;
         invalidNumber = false;
 }
 

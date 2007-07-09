@@ -73,9 +73,17 @@ public class SaveDialog {
 	String addExtension(String name, String extension) {
 		if (name!=null && extension!=null) {
 			int dotIndex = name.lastIndexOf(".");
-			if (dotIndex>=0)
-				name = name.substring(0, dotIndex) + extension;
-			else
+			if (dotIndex>=0 && (name.length()-dotIndex)<=5) {
+				boolean hasDigits = false;
+				for (int i=name.length()-1; i>dotIndex; i--) {
+					if (Character.isDigit(name.charAt(i)))
+						{hasDigits=true; break;}
+				}
+				if (hasDigits)
+					name += extension;
+				else
+					name = name.substring(0, dotIndex) + extension;
+			} else
 				name += extension;
 		}
 		return name;

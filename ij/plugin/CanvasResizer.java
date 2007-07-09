@@ -106,7 +106,7 @@ public class CanvasResizer implements PlugIn {
 				ipNew.setColor(colorBack);
 			ipNew.fill();
 			ipNew.insert(stackOld.getProcessor(i), xOff, yOff);
-			stackNew.addSlice(null, ipNew);
+			stackNew.addSlice(stackOld.getSliceLabel(i), ipNew);
 		}
 		return stackNew;
 	}
