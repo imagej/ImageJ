@@ -147,6 +147,7 @@ public class Line extends Roi {
 
 	/** Draws this line in the image. */
 	public void draw(Graphics g) {
+		if (ic==null) return;
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;

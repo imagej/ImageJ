@@ -595,6 +595,8 @@ public class Interpreter implements MacroConstants {
 		while (!finished && !done) {
 			if (token==';')
 				finished = true;
+			else if (token==ELSE||token==PREDEFINED_FUNCTION)
+				error("';' expected");
 			else
 				getToken();
 		}

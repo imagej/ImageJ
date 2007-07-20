@@ -78,7 +78,7 @@ public class ScaleBar implements PlugIn {
         String units = cal.getUnits();
         // Handle Digital Micrograph unit microns
         if (units.equals("micron"))
-            units = "µm";
+            units = IJ.micronSymbol+"m";
         double pixelWidth = cal.pixelWidth;
         if (pixelWidth==0.0)
             pixelWidth = 1.0;
@@ -158,7 +158,7 @@ public class ScaleBar implements PlugIn {
         // Handle Digital Micrograph unit microns
         String units = imp.getCalibration().getUnits();
         if (units.equals("microns"))
-            units = "µm";
+            units = IJ.micronSymbol+"m";
         String label = IJ.d2s(barWidth, digits) + " "+ units;
         int swidth = hideText?0:ip.getStringWidth(label);
         int xoffset = (barWidthInPixels - swidth)/2;

@@ -67,20 +67,20 @@ public class JavaProperties implements PlugIn {
 		String userDir = System.getProperty("user.dir");
 		String userHome = System.getProperty("user.home");
 		String osName = System.getProperty("os.name");
-		sb.append("  IJ.getVersion(): "+IJ.getVersion()+"\n");
-		sb.append("  IJ.isJava2(): "+IJ.isJava2()+"\n");
-		sb.append("  IJ.isJava14(): "+IJ.isJava14()+"\n");
-		sb.append("  IJ.isJava15(): "+IJ.isJava15()+"\n");
-		sb.append("  IJ.isJava16(): "+IJ.isJava16()+"\n");
-		sb.append("  IJ.isLinux(): "+IJ.isLinux()+"\n");
-		sb.append("  IJ.isMacintosh(): "+IJ.isMacintosh()+"\n");
-		sb.append("  IJ.isMacOSX(): "+IJ.isMacOSX()+"\n");
-		sb.append("  IJ.isWindows() "+IJ.isWindows()+"\n");
-		sb.append("  IJ.isVista(): "+IJ.isVista()+"\n");
-		sb.append("  Menus.getPlugInsPath(): "+Menus.getPlugInsPath()+"\n");
-		sb.append("  Menus.getMacrosPath(): "+Menus.getMacrosPath()+"\n");
-		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
-		sb.append("  Prefs.getHomeDir(): "+Prefs.getHomeDir()+"\n");
+		sb.append("  IJ.getVersion: "+IJ.getVersion()+"\n");
+		sb.append("  IJ.isJava2: "+IJ.isJava2()+"\n");
+		sb.append("  IJ.isJava14: "+IJ.isJava14()+"\n");
+		sb.append("  IJ.isJava15: "+IJ.isJava15()+"\n");
+		sb.append("  IJ.isJava16: "+IJ.isJava16()+"\n");
+		sb.append("  IJ.isLinux: "+IJ.isLinux()+"\n");
+		sb.append("  IJ.isMacintosh: "+IJ.isMacintosh()+"\n");
+		sb.append("  IJ.isMacOSX: "+IJ.isMacOSX()+"\n");
+		sb.append("  IJ.isWindows: "+IJ.isWindows()+"\n");
+		sb.append("  IJ.isVista: "+IJ.isVista()+"\n");
+		sb.append("  Menus.getPlugInsPath: "+Menus.getPlugInsPath()+"\n");
+		sb.append("  Menus.getMacrosPath: "+Menus.getMacrosPath()+"\n");
+		sb.append("  Prefs.getHomeDir: "+Prefs.getHomeDir()+"\n");
+		sb.append("  Prefs.getThreads: "+Prefs.getThreads()+" (cores="+Runtime.getRuntime().availableProcessors()+")\n");	
 		sb.append("  Prefs.open100Percent: "+Prefs.open100Percent+"\n");		
 		sb.append("  Prefs.blackBackground: "+Prefs.blackBackground+"\n");		
 		sb.append("  Prefs.useJFileChooser: "+Prefs.useJFileChooser+"\n");		
@@ -101,9 +101,10 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = IJ.getScreenSize();
 		sb.append("  Screen size: " + d.width + "x" + d.height+"\n");
+		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
 		if (IJ.altKeyDown())
 			doFullDump();
-		TextWindow tw = new TextWindow("Properties", new String(sb), 300, 400);
+		TextWindow tw = new TextWindow("Properties", new String(sb), 400, 500);
 	}
 	
 	void show(String property) {

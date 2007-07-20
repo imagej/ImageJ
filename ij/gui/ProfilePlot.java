@@ -36,7 +36,7 @@ public class ProfilePlot {
 		this.imp = imp;
 		Roi roi = imp.getRoi();
 		if (roi==null) {
-			IJ.error("Selection required.");
+			IJ.error("Profile Plot", "Selection required.");
 			return;
 		}
 		int roiType = roi.getType();

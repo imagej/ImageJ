@@ -81,7 +81,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
     }
     
     boolean decodeKernel(String text) {
-    	if (Macro.getOptions()!=null && text.indexOf("\\n")==-1)
+    	if (Macro.getOptions()!=null && !hasNewLine(text))
     		return decodeSquareKernel(text);
 		String[] rows = Tools.split(text, "\n");
 		kh = rows.length;
@@ -115,6 +115,13 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		return true;
     }
     
+	boolean hasNewLine(String text) {
+		for (int i=0; i<text.length(); i++) {
+			if (text.charAt(i)=='\n') return true;
+		}
+		return false;
+	}
+
     boolean decodeSquareKernel(String text) {
 		String[] values = Tools.split(text);
 		int n = values.length;
@@ -142,8 +149,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			return false;
 		}
 	}
-
-
+	
 	/** Creates a panel containing "Save...", "Save..." and "Preview" buttons. */
 	Panel makeButtonPanel(GenericDialog gd) {
 		Panel buttons = new Panel();

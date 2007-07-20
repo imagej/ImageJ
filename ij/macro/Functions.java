@@ -1094,6 +1094,8 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] getProfile() {
 		interp.getParens();
 		ImagePlus imp = getImage();
+		if (imp.getRoi()==null)
+			interp.error("Selection required");
 		ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
 		double[] array = pp.getProfile();
 		if (array==null)
@@ -2171,11 +2173,24 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setLocation() {
 		int x = (int)getFirstArg();
-		int y = (int)getLastArg();
+		int y = (int)getNextArg();
+		int width=0, height=0;
+		if (interp.nextToken()==',') {
+			width = (int)getNextArg();
+			height = (int)getNextArg();
+		}
+		interp.getRightParen();
 		ImagePlus imp = getImage();
 		ImageWindow win =imp.getWindow();
-		if (win!=null)
-			win.setLocation(x, y);
+		if (win!=null) {
+			if (width==0&&height==0)
+				win.setLocation(x, y);
+			else {
+				win.setBounds(x, y, width, height);
+				//Insets i = win.getInsets();
+				//win.setBounds(x+i.left, y+i.top, width+i.left+i.right, height+i.top+i.bottom);
+			}
+		}
 	}
 	
 	void setSlice() {
@@ -2390,8 +2405,7 @@ public class Functions implements MacroConstants, Measurements {
 				{tp.append(s); return;}
 			String nstr = s.substring(7, cindex);
 			int line = (int)Tools.parseDouble(nstr, -1);
-			if (line<0 || line>25)
-				{tp.append(s); return;}
+			if (line<0) interp.error("Row<0");
 			int count = tp.getLineCount();
 			while (line>=count) {
 				tp.append("");

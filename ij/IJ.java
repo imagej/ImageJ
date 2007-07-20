@@ -24,9 +24,9 @@ public class IJ {
 	public static boolean debugMode;
 	public static boolean hideProcessStackDialog;
 	    
-    public static final char micronSymbol = (char)181;
-    public static final char angstromSymbol = (char)197;
-    public static final char degreeSymbol = (char)176;
+    public static final char micronSymbol = '\u00B5';
+    public static final char angstromSymbol = '\u00C5';
+    public static final char degreeSymbol = '\u00B0';
 
 	private static ImageJ ij;
 	private static java.applet.Applet applet;

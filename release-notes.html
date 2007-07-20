@@ -5,17 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.38x, 9 July 2007</u>
+<li> <u>1.39a, 20 July 2007</u>
 <ul>
-<li> Fixed a bug, introduced in v1.38u, that caused the <i>Analyze&gt;Calibrate</i>
-command to fail.
-<li> Fixed a bug that caused a macro error if the 
-<i>File&gt;Import&gt;Results</i> dialog was canceled.
-<li>Fixed a bug that caused image names to be truncated 
-when saving if the name contained a period followed by a
-digit or more than four characters.
-<li> Fixed a bug that caused stack metadata to be lost after use of
-the <i>Image&gt;Adjust&gt;Canvas Size</i> command.
+<li>Added the "Avoid Interpolation" option to <i>Image&gt;Stacks&gt;Reslice</i>, based on
+a patch contributed by Adrian Daerr. 
+<li> The setLocation() macro function now accepts optional width and height
+arguments.
+<li> ImageProcessor.drawString() no longer instantiates a java.awt.Frame, which
+caused an exception when running in "headless" mode.
+<li> Fixed a bug that caused missing semicolons 
+in if-else statements to not be detected.
+<li> Fixed a bug, introduced in v1.38, that caused the makeLine() macro
+function to fail when the line length was zero.
+<li> Fixed a bug that caused table updates using print("[Table]", "\\Update<i>n</i>:"+values)
+to fail when <i>n</i> was greater than 25.
 </ul>
 
 </body>

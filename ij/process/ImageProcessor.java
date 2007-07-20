@@ -43,7 +43,7 @@ public abstract class ImageProcessor extends Object {
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
-	static Frame frame;
+	//static Frame frame;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -71,6 +71,7 @@ public abstract class ImageProcessor extends Object {
 	protected int lutUpdateMode;
 	protected WritableRaster raster;
 	protected BufferedImage image;
+	protected BufferedImage fmImage;
 	protected ColorModel cm2;
 	protected SampleModel sampleModel;
 	protected static IndexColorModel defaultColorModel;
@@ -799,12 +800,14 @@ public abstract class ImageProcessor extends Object {
 
 	/** Draws an elliptical shape. */
 	public void drawOval(int x, int y, int width, int height) {
+		if ((long)width*height>4*this.width*this.height) return;
 		OvalRoi oval = new OvalRoi(x, y, width, height);
 		drawPolygon(oval.getPolygon());
 	}
 
 	/** Fills an elliptical shape. */
 	public void fillOval(int x, int y, int width, int height) {
+		if ((long)width*height>4*this.width*this.height) return;
 		OvalRoi oval = new OvalRoi(x, y, width, height);
 		fillPolygon(oval.getPolygon());
 	}
@@ -861,17 +864,14 @@ public abstract class ImageProcessor extends Object {
 	}
     private ImageProcessor dotMask;
 
-	private void setupFrame() {
-		if (frame==null) {
-			frame = new Frame();
-			frame.pack();
-			frame.setBackground(Color.white);
-		}
+	private void setupFontMetrics() {
+		if (fmImage==null)
+			fmImage=new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 		if (font==null)
 			font = new Font("SansSerif", Font.PLAIN, 12);
 		if (fontMetrics==null) {
-			frame.setFont(font);
-			fontMetrics = frame.getFontMetrics(font);
+			Graphics g = fmImage.getGraphics();
+			fontMetrics = g.getFontMetrics(font);
 		}
 	}
 
@@ -879,7 +879,7 @@ public abstract class ImageProcessor extends Object {
         Draws multiple lines if the string contains newline characters. */
 	public void drawString(String s) {
 		if (s==null || s.equals("")) return;
-		setupFrame();
+		setupFontMetrics();
 		if (ij.IJ.isMacOSX()) s += " ";
 		if (s.indexOf("\n")==-1)
 			drawString2(s);
@@ -899,12 +899,8 @@ public abstract class ImageProcessor extends Object {
 			cxx -= w;
 		int h =  fontMetrics.getHeight();
 		if (w<=0 || h<=0) return;
-		Image img;
-		if (ij.IJ.isLinux() && ij.IJ.isJava2())
-			img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-		else
-			img = frame.createImage(w, h);
-		Graphics g = img.getGraphics();
+		Image bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		Graphics g = bi.getGraphics();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
@@ -919,7 +915,7 @@ public abstract class ImageProcessor extends Object {
 			g.setColor(drawingColor);
 			g.drawString(s, 0, h-descent);
 			g.dispose();
-			ip = new ColorProcessor(img);
+			ip = new ColorProcessor(bi);
 			if (this instanceof ByteProcessor) {
 				ip = ip.convertToByte(false);
 				if (isInvertedLut()) ip.invert();
@@ -938,7 +934,7 @@ public abstract class ImageProcessor extends Object {
 		g.setColor(Color.black);
 		g.drawString(s, 0, h-descent);
 		g.dispose();
-		ImageProcessor ip = new ColorProcessor(img);
+		ImageProcessor ip = new ColorProcessor(bi);
 		ImageProcessor textMask = ip.convertToByte(false);
 		byte[] mpixels = (byte[])textMask.getPixels();
 		//new ij.ImagePlus("textmask",textMask).show();
@@ -984,14 +980,14 @@ public abstract class ImageProcessor extends Object {
 
 	/** Returns the width in pixels of the specified string. */
 	public int getStringWidth(String s) {
-		setupFrame();
+		setupFontMetrics();
 		int w;
 		if (antialiasedText) {
-			Graphics g = frame.getGraphics();
+			Graphics g = fmImage.getGraphics();
 			if (g==null) {
-				frame = null;
-				setupFrame();
-				g = frame.getGraphics();
+				fmImage = null;
+				setupFontMetrics();
+				g = fmImage.getGraphics();
 			}
 			Java2.setAntialiasedText(g, true);
 			w = Java2.getStringWidth(s, fontMetrics, g);
@@ -1003,7 +999,7 @@ public abstract class ImageProcessor extends Object {
 	
 	/** Returns the current FontMetrics. */
 	public FontMetrics getFontMetrics() {
-		setupFrame();
+		setupFontMetrics();
 		return fontMetrics;
 	}
 

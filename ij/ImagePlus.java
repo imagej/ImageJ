@@ -1034,7 +1034,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				{killRoi(); return;}
 		}
 		Rectangle bounds = newRoi.getBounds();
-		if (bounds.width==0 && bounds.height==0 && newRoi.getType()!=Roi.POINT)
+		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE))
 			{killRoi(); return;}
 		roi = newRoi;
 		if (ip!=null) {
