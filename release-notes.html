@@ -5,20 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.39a, 20 July 2007</u>
+<li> <u>1.39b, 23 July 2007</u>
 <ul>
-<li>Added the "Avoid Interpolation" option to <i>Image&gt;Stacks&gt;Reslice</i>, based on
-a patch contributed by Adrian Daerr. 
-<li> The setLocation() macro function now accepts optional width and height
-arguments.
-<li> ImageProcessor.drawString() no longer instantiates a java.awt.Frame, which
-caused an exception when running in "headless" mode.
-<li> Fixed a bug that caused missing semicolons 
-in if-else statements to not be detected.
-<li> Fixed a bug, introduced in v1.38, that caused the makeLine() macro
-function to fail when the line length was zero.
-<li> Fixed a bug that caused table updates using print("[Table]", "\\Update<i>n</i>:"+values)
-to fail when <i>n</i> was greater than 25.
+<li> With FFT images, <i>Analyze&gt;Measure</i> records the polar coordinates of point  
+selections.
+<li> Added the <i>More&gt;&gt;Options</i> dialog to the Roi Manager, which contains an 
+"Associate ROIs with Slices in 'Show All' Mode" checkbox.
+<li> Added a clone() method to the ImagePlus class.
+<li> Fixed a bug, introduced in v1.39a, that caused the drawString() function to fail
+on Windows when drawing non-antialiased text.
 </ul>
 
 </body>

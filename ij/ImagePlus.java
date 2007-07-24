@@ -1611,6 +1611,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return locked;
 	}
 	
+	public Object clone() {
+		try {return super.clone();}
+		catch (CloneNotSupportedException e) {return null;}
+	}
+
     public String toString() {
     	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
     }

@@ -2405,7 +2405,7 @@ public class Functions implements MacroConstants, Measurements {
 				{tp.append(s); return;}
 			String nstr = s.substring(7, cindex);
 			int line = (int)Tools.parseDouble(nstr, -1);
-			if (line<0) interp.error("Row<0");
+			if (line<0) interp.error("Row index<0 or NaN");
 			int count = tp.getLineCount();
 			while (line>=count) {
 				tp.append("");

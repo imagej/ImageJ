@@ -304,6 +304,17 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue("X", cal.getX(x));
 			rt.addValue("Y", cal.getY(y, imp.getHeight()));
 			rt.addValue("Z", cal.getZ(imp.getCurrentSlice()-1));
+			if (imp.getProperty("FHT")!=null) {
+				double center = imp.getWidth()/2.0;
+				y = imp.getHeight()-y-1;
+				double r = Math.sqrt((x-center)*(x-center) + (y-center)*(y-center));
+				if (r<1.0) r = 1.0;
+				double theta = Math.atan2(y-center, x-center);
+				theta = theta*180.0/Math.PI;
+				if (theta<0) theta = 360.0+theta;
+				rt.addValue("R", (imp.getWidth()/r)*cal.pixelWidth);
+				rt.addValue("Theta", theta);
+			}
 			rt.addValue("Value", value);
 			displayResults();
 		}

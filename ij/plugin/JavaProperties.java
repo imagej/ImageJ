@@ -80,7 +80,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Menus.getPlugInsPath: "+Menus.getPlugInsPath()+"\n");
 		sb.append("  Menus.getMacrosPath: "+Menus.getMacrosPath()+"\n");
 		sb.append("  Prefs.getHomeDir: "+Prefs.getHomeDir()+"\n");
-		sb.append("  Prefs.getThreads: "+Prefs.getThreads()+" (cores="+Runtime.getRuntime().availableProcessors()+")\n");	
+		sb.append("  Prefs.getThreads: "+Prefs.getThreads()+cores());	
 		sb.append("  Prefs.open100Percent: "+Prefs.open100Percent+"\n");		
 		sb.append("  Prefs.blackBackground: "+Prefs.blackBackground+"\n");		
 		sb.append("  Prefs.useJFileChooser: "+Prefs.useJFileChooser+"\n");		
@@ -105,6 +105,14 @@ public class JavaProperties implements PlugIn {
 		if (IJ.altKeyDown())
 			doFullDump();
 		TextWindow tw = new TextWindow("Properties", new String(sb), 400, 500);
+	}
+	
+	String cores() {
+		int cores = Runtime.getRuntime().availableProcessors();
+		if (cores==1)
+			return " (1 core)\n";
+		else
+			return " ("+cores+" cores)\n";
 	}
 	
 	void show(String property) {

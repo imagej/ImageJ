@@ -9,7 +9,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
 import ij.macro.*;
 import ij.*;
-import ij.util.Java2;
+import ij.util.*;
 import java.awt.event.*;
 import java.util.*;
 
@@ -154,10 +154,23 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
-			drawRoi(g, roi, i);
+			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
+				int slice = getSliceNumber(roi.getName());
+				if (slice==-1 || slice==imp.getCurrentSlice())
+					drawRoi(g, roi, i);
+			} else
+				drawRoi(g, roi, i);
 		}
     }
     
+	int getSliceNumber(String label) {
+		if (label==null) return -1;
+		int slice = -1;
+		if (label.length()>4 && label.charAt(4)=='-' && label.length()>=14)
+			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
+		return slice;
+	}
+
     void drawDisplayList(Graphics g) {
 		initGraphics(g, listColor);
     	int n = displayList.size();

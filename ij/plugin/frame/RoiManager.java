@@ -102,6 +102,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Specify...");
 		addPopupItem("Remove Slice Info");
 		addPopupItem("Help");
+		addPopupItem("Options...");
 		add(pm);
 	}
 
@@ -167,6 +168,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			removeSliceInfo();
 		else if (command.equals("Help"))
 			help();
+		else if (command.equals("Options..."))
+			options();
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -844,6 +847,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void help() {
 		String macro = "run('URL...', 'url=http://rsb.info.nih.gov/ij/docs/menus/analyze.html#manager');";
 		new MacroRunner(macro);
+	}
+
+	void options() {
+		GenericDialog gd = new GenericDialog("Options");
+		gd.addCheckbox("Associate ROIs with Slices in \"Show All\" Mode", Prefs.showAllSliceOnly);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		Prefs.showAllSliceOnly = gd.getNextBoolean();
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) imp.draw();
 	}
 
 	void split() {

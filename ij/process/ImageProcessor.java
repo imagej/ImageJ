@@ -926,11 +926,9 @@ public abstract class ImageProcessor extends Object {
 			return;
 		}
 		
-		if (ij.IJ.isMacOSX() || (ij.IJ.isLinux()&&ij.IJ.isJava2())) {
-			Java2.setAntialiasedText(g, false);
-			g.setColor(Color.white);
-			g.fillRect(0, 0, w, h);
-		}
+		Java2.setAntialiasedText(g, false);
+		g.setColor(Color.white);
+		g.fillRect(0, 0, w, h);
 		g.setColor(Color.black);
 		g.drawString(s, 0, h-descent);
 		g.dispose();
