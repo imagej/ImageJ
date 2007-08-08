@@ -15,6 +15,13 @@ import java.util.*;
 	(if y/x aspect ratio != 1 in source image) one dimension in the output is not
 	homogeneous (i.e. pixelWidth not the same everywhere).
 */
+
+// Note: some comments throughout this file contain {get|set}{Height|Width|Depth}
+// calls. These comments provide additional Java source code for a possible patch
+// when a future release of ImageJ adds these methods to the Calibration class.
+// Slicer (which by essence permutates dimensions) can then be made to swap 
+// units correctly by uncommenting comments that contain these calls.
+
 public class Slicer implements PlugIn, TextListener, ItemListener {
 
 	private static final String[] starts = {"Top", "Left", "Bottom", "Right"};

@@ -5,15 +5,32 @@
 </head>
 <body>
 
-<li> <u>1.39b, 23 July 2007</u>
+<li> <u>1.39c, 7 August 2007</u>
 <ul>
-<li> With FFT images, <i>Analyze&gt;Measure</i> records the polar coordinates of point  
-selections.
-<li> Added the <i>More&gt;&gt;Options</i> dialog to the Roi Manager, which contains an 
-"Associate ROIs with Slices in 'Show All' Mode" checkbox.
-<li> Added a clone() method to the ImagePlus class.
-<li> Fixed a bug, introduced in v1.39a, that caused the drawString() function to fail
-on Windows when drawing non-antialiased text.
+<li> Added a "Set Color" button to the ROI Manager's <i>More&gt;&gt;Options</i> dialog 
+that sets the color used in "Show All" mode.
+<li> The selection brush tool now adds to the selection if you click in it 
+and subtracts from it if you click outside it. Or hold down the shift key to 
+add to the selection or hold the alt key down to subtract from it. 
+<li> The 
+<a href="http://rsb.info.nih.gov/ij/macros/MacroExtensions.txt">MacroExtension interface</a>,
+contributed by Shannon Stewman, allows 
+plugins to add functions to the macro language. As an example, the Image5D_Extensions plugin 
+(<a href="http://rsb.info.nih.gov/ij/plugins/download/Image5D_Extensions.java">source</a>,
+<a href="http://rsb.info.nih.gov/ij/plugins/download/Image5D_Extensions.class">.class</a>)
+adds functions to the macro language that deal with the Image5D plugin 
+(querying and setting the channel, frame, display mode), and the
+<a href="http://rsb.info.nih.gov/ij/macros/Image5dMacros.txt">Image5dMacros</a>
+use these functions.
+<li> Fixed a bug, introduced in 1.38q, that caused TIFF stacks saved by the Image5D plugin to be corrupted.
+<li> Fixed a bug that caused an exception when an Image5D stack was duplicated.
+<li> Johannes Schindelin contributed a patch that provides a better error message and a stack trace when
+a method called by the call() macro function throws an exception.
+<li> Johannes Schindelin contributed patches that fix bugs in the Roi Manager "Split" command.
+<li> Fixed a bug that caused 48-bit RGB TIFFs created by ImageJ to not open correctly in other applications.
+<li> Michael Schmid fixed a bug in the <i>Process&gt;Binary&gt;Watershed</i> that could 
+cause particles to disappear. A test image is
+<a href="http://rsb.info.nih.gov/ij/images/watershed-problem.gif">available</a>.
 </ul>
 
 </body>

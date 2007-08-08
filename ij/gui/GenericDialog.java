@@ -837,6 +837,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
             show();
             recorderOn = Recorder.record;
         }
+		if (!macro) IJ.wait(50); // work around for Sun/WinNT bug
         /* For plugins that read their input only via dialogItemChanged, call it at least once */
         if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
             resetCounters();
@@ -844,12 +845,6 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
             recorderOn = false;
         }
         resetCounters();
-		if (!macro) IJ.wait(100); // work around for Sun/WinNT bug
-		//EventQueue.invokeLater(new Runnable () {
-		//	public void run () { 
-		//		show(); 
-		//}}); 
-
   	}
 
     /** Reset the counters before reading the dialog parameters */

@@ -58,7 +58,7 @@ public class TiffEncoder {
 				break;
 			case FileInfo.RGB48:
 				bitsPerSample = 16;
-				photoInterp = fi.whiteIsZero?0:1;
+				photoInterp = 2;
 				samplesPerPixel = 3;
 				bytesPerPixel = 6;
 				fi.nImages /= 3;
@@ -154,8 +154,10 @@ public class TiffEncoder {
 			extraMetaDataEntries = fi.metaData.length;
 			nTypes += extraMetaDataEntries;
 			metaDataEntries += extraMetaDataEntries;
-			for (int i=0; i<extraMetaDataEntries; i++)
-				size += fi.metaData.length;
+			for (int i=0; i<extraMetaDataEntries; i++) {
+                if (fi.metaData[i]!=null)
+                    size += fi.metaData[i].length;
+            }
 		}
 		if (metaDataEntries>0) metaDataEntries++; // add entry for header
 		int hdrSize = 4 + nTypes*8;

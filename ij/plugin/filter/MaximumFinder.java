@@ -6,21 +6,24 @@ import ij.process.*;
 import java.awt.*;
 import java.util.*;
 
-/** This ImageJ plug-in filter creates a mask where the local maxima of the
- * current image are marked (255; unmarked pixels 0).
- * The plug-in can also create watershed-segmented particles (assume a
- * landscape of inverted heights: maxima of the images are now water sinks.
+/** This ImageJ plug-in filter finds the maxima (or minima) of an image.
+ * It can create a mask where the local maxima of the current image are
+ * marked (255; unmarked pixels 0).
+ * The plug-in can also create watershed-segmented particles: Assume a
+ * landscape of inverted heights, i.e., maxima of the image are now water sinks.
  * For each point in the image, the sink that the water goes to determines which
  * particle it belongs to.
- * Pixels with a level below the lower threshold can be left unprocessed.
+ * When finding maxima (not minima), pixels with a level below the lower threshold
+ * can be left unprocessed.
  *
- * This plugin works with ROIs, including non-rectangular ROIs.
+ * Except for segmentation, this plugin works with ROIs, including non-rectangular ROIs.
  * Since this plug-in creates a separate output image it processes
  *    only single images or slices, no stacks.
  *
  * version 09-Nov-2006 Michael Schmid
  * version 21-Nov-2006 Wayne Rasband. Adds "Display Point Selection" option and "Count" output type.
  * version 28-May-2007 Michael Schmid. Preview added, bugfix: minima of calibrated images, uses Arrays.sort (Java2 required)
+ * version 07-Aug-2007 Michael Schmid. Fixed a bug that could delete particles when doing watershed segmentation of an EDM.
  */
 
 public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
@@ -137,7 +140,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 return false;               // if faulty input is not detected during preview, "cancel" quits
             thresholdWarningShown = true;
             useMinThreshold = false;
-            ((Checkbox)(checkboxes.elementAt(1))).setState(false); //set checkbox
+            ((Checkbox)(checkboxes.elementAt(1))).setState(false); //reset "Above Lower Threshold" checkbox
         }
         if (!gd.getPreviewCheckbox().getState())
             messageArea.setText("");        // no "nnn Maxima" message when not previewing
@@ -166,7 +169,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 			threshold = ImageProcessor.NO_THRESHOLD;    //don't care about threshold when finding minima
             float[] cTable = ip.getCalibrationTable();
 			ip = ip.duplicate();
-            if (cTable==null) {                 //invert calibration table for calibrated images
+            if (cTable==null) {                 //invert image for finding minima of uncalibrated images
                 ip.invert();
             } else {                            //we are using getPixelValue, so the CalibrationTable must be inverted
                 float[] invertedCTable = new float[cTable.length];
@@ -179,7 +182,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         ByteProcessor outIp = null;
         outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
         if (outIp == null) return;              //cancelled by user or previewing or no output image
-        if (!Prefs.blackBackground)             //normally, we use an inverted LUT, "active" pixels black (255) - like a mask
+        if (!Prefs.blackBackground)             //normally, output has an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();
         String resultName;
         if (outputType == SEGMENTED)            //Segmentation required
@@ -204,7 +207,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value from the ridge to a higher maximum
      * @param threshold      minimum height of a maximum (uncalibrated); for no minimum height set it to ImageProcessor.NO_THRESHOLD
-     * @param outputType     What to mark in output image: SINGLE_POINTS, MAXIMA_EXACT, IN_TOLERANCE or SEGMENTED
+     * @param outputType     What to mark in output image: SINGLE_POINTS, IN_TOLERANCE or SEGMENTED. No output image is created for
+     *                       output types POINT_SELECTION and COUNT.
      * @param excludeOnEdges Whether to exclude edge maxima
      * @param isEDM          Whether the image is a 16-bit Euclidian Distance Map
      * @return               A new byteProcessor with a normal (uninverted) LUT where the marked points
@@ -250,10 +254,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         if (outputType == SEGMENTED) {                  //Segmentation required, convert to 8bit (also for 8-bit images, since the calibration may have a negative slope)
             //create 8-bit image from ip with background 0 and maximum areas 255
             outIp = make8bit(ip, typeP, isEDM, globalMin, globalMax, threshold);
+            //if (IJ.debugMode) new ImagePlus("pixel types precleanup", typeP.duplicate()).show();
             cleanupMaxima(outIp, typeP, maxPoints);     //eliminate all the small maxima (i.e. those outside MAX_AREA)
-            //new ImagePlus("pixel types", typeP).show();
-            //if (IJ.debugMode) 
-            //new ImagePlus("pre-watershed", outIp.duplicate()).show();
+            //if (IJ.debugMode) new ImagePlus("pixel types postcleanup", typeP).show();
+            //if (IJ.debugMode) new ImagePlus("pre-watershed", outIp.duplicate()).show();
             if (!watershedSegment(outIp))               //do watershed segmentation
                 return null;                            //if user-cancelled, return
             if (!isEDM) cleanupExtraLines(outIp);       //eliminate lines due to local minima (none in EDM)
@@ -276,17 +280,18 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         }
 
         return outIp;
-    } // public ByteProcessor MaximumFinder
+    } // public ByteProcessor findMaxima
 
-    /** find all local maxima (irrespective whether they finally qualify as maxima or not)
-     * @param ip the image to be analyzed
-     * @param typeP A byte image, same size as ip, where the maximum points are mrked as MAXIMUM
-     * @param excludeEdgesNow whether to exclude edge pixels
-     * @param isEDM whether ip is a 16-bit Euclidian distance map
-     * @param globalMin the minimum value of the image or roi
-     * @param threshold the threshold (calibrated) below which no pixels are processed. Ignored if ImageProcessor.NO_THRESHOLD
-     * @return an array of x, y coordinates and heights, sorted by height. Do not use the positions of these points in typeP (marked as MAXIMUM there).
-     * returns null if the thread is interrupted.
+    /** Find all local maxima (irrespective whether they finally qualify as maxima or not)
+     * @param ip    The image to be analyzed
+     * @param typeP A byte image, same size as ip, where the maximum points are marked as MAXIMUM
+     *              (do not use it as output: for rois, the points are shifted w.r.t. the input image)
+     * @param excludeEdgesNow Whether to exclude edge pixels
+     * @param isEDM     Whether ip is a 16-bit Euclidian distance map
+     * @param globalMin The minimum value of the image or roi
+     * @param threshold The threshold (calibrated) below which no pixels are processed. Ignored if ImageProcessor.NO_THRESHOLD
+     * @return          An array of x, y coordinates and heights, sorted by height. Returns null if the thread is interrupted.
+     * Note: Do not use the positions of the points marked as MAXIMUM in typeP, they are invalid for images with a roi.
      */    
    MaxPoint[] getSortedMaxPoints(ImageProcessor ip, ByteProcessor typeP, boolean excludeEdgesNow, boolean isEDM, float globalMin, double threshold) {
         int width = ip.getWidth();
@@ -298,16 +303,24 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         Thread thread = Thread.currentThread();
         for (int y=roi.y, i=0; y<roi.y+roi.height; y++) {         // find local maxima now
             if (y%50==0 && thread.isInterrupted()) return null;
-            for (int x=roi.x; x<roi.x+roi.width; x++, i++) {      //  (don't care for roi now; output will be restricted to the roi at the very end)
-                float v = ip.getPixelValue(x, y);
+            for (int x=roi.x; x<roi.x+roi.width; x++, i++) {      // for better performance with rois, restrict search to roi
+                float v = ip.getPixelValue(x,y);
+                float vTrue = isEDM ? trueEdmHeight(x,y,ip) : v;  // for 16-bit EDMs, use interpolated ridge height
                 if (v==globalMin) continue;
                 if (excludeEdgesNow && (x==0 || x==width-1 || y==0 || y==height-1)) continue;
                 if (checkThreshold && v<threshold) continue;
                 boolean isMax = true;
-                for (int d=0; d<8; d++) {
+                /* check wheter we have a local maximum.
+                 Note: For a 16-bit EDM, we need all maxima: those of the EDM-corrected values
+                 (needed by findMaxima) and those of the raw values (needed by cleanupMaxima) */
+                for (int d=0; d<8; d++) {                         // compare with the 8 neighbor pixels
                     if (isWithin(ip, x, y, d)) {
-                        if (ip.getPixelValue(x+dirXoffset[d], y+dirYoffset[d]) > v)
+                        float vNeighbor = ip.getPixelValue(x+dirXoffset[d], y+dirYoffset[d]);
+                        float vNeighborTrue = isEDM ? trueEdmHeight(x+dirXoffset[d], y+dirYoffset[d], ip) : vNeighbor;
+                        if (vNeighbor > v && vNeighborTrue > vTrue) {
                             isMax = false;
+                            break;
+                        }
                     }
                 }
                 if (isMax) {
@@ -334,7 +347,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
    /** Check all maxima in list maxPoints, mark type of the points in typeP
     * @param ip             the image to be analyzed
-    * @param typeP          here the point types are marked.
+    * @param typeP          8-bit image, here the point types are marked by type: MAX_POINT, etc.
     * @param maxPoints      input: a list of all local maxima, sorted by height
     * @param excludeEdgesNow whether to avoid edge maxima
     * @param isEDM          whether ip is a 16-bit Euclidian distance map
@@ -356,7 +369,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             float v = maxPoints[iMax].value;
             if (v==globalMin) break;
             int offset = maxPoints[iMax].x + width*maxPoints[iMax].y;
-            if ((types[offset]&PROCESSED)!=0)       //this maximum has been reached from another one, skip it
+        if ((types[offset]&PROCESSED)!=0)       //this maximum has been reached from another one, skip it
                 continue;
             xList[0] = maxPoints[iMax].x;           //we create a list of connected points and start the list
             yList[0] = maxPoints[iMax].y;           //  at the current maximum
@@ -562,7 +575,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * touched (or the plateau of a previously eliminated maximum leads to a marked maximum).
      * Then set all the points above this value to this value
      * @param outIp     the image containing the pixel values
-     * @param typeP     the types of the pixels are mekred here
+     * @param typeP     the types of the pixels are marked here
      * @param maxPoints array containing the coordinates of all maxima that might be relevant
      */    
     void cleanupMaxima(ByteProcessor outIp, ByteProcessor typeP, MaxPoint[] maxPoints) {
@@ -620,9 +633,9 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 types[offset] |= ELIMINATED;        //mark as processed: there can't be a local maximum in this area
             }
         } // for all maxima iMax
-    }
+    } // void cleanupMaxima
 
-    /** Delete  single dots and lines ending somewhere within a segmented particle
+    /** Delete single dots and lines ending somewhere within a segmented particle
      * Needed for post-processing watershed-segmented images that can have local minima
      * @param ip 8-bit image with background = 0, lines between 1 and 254 and segmented particles = 255
      */    
@@ -662,7 +675,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 } // if v<255 && v>0
             } // for x
         } // for y
-    } //cleanupExtraLines
+    } // void cleanupExtraLines
 
     /** analyze the neighbors of a pixel (x, y) in a byte image; pixels <255 are
      * considered part of lines.
@@ -703,7 +716,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         else if (whiteNeighbors==8)
             result = IS_DOT;
         return result;
-    } //isLineEnd
+    } // int isLineOrDot
 
     /** after watershed, set all pixels in the background and segmentation lines to 0
      */
@@ -749,7 +762,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             if ((types[x+y*width]&MAX_AREA) != 0 && pixels[x+y*width] != 0)
                 deleteParticle(x,y,ip,wand);            
         }
-    }
+    } //void deleteEdgeParticles
+
     /** delete a particle (set from value 255 to current fill value).
      * Position x,y must be within the particle
      */
@@ -766,7 +780,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         ip.reset(ip.getMask());
     }
 
-        /** Do watershed segmentation on a byte image, with the start points (maxima)
+    /** Do watershed segmentation on a byte image, with the start points (maxima)
      * set to 255 and the background set to 0. The image should not have any local maxima
      * other than the marked ones. Local minima will lead to artifacts that can be removed
      * later. On output, all particles will be set to 255, segmentation lines remain at their
@@ -860,7 +874,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             new ImagePlus("Segmentation Movie", movie).show();
         IJ.showProgress(1.0);
         return true;
-    }
+    } // boolean watershedSegment
+
     /** Creates the lookup table used by the watershed function for dilating the particles.
      * The algorithm allows dilation in both straight and diagonal directions.
      * There is an entry in the table for each possible 3x3 neighborhood:
@@ -904,7 +919,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             }
         }
         return table;
-    } // makeFateTable
+    } // int[] makeFateTable
 
     /** dilate the UEP on one level by one pixel in the direction specified by step, i.e., set pixels to 255
      * @param level the level of the EDM that should be processed (all other pixels are untouched)
@@ -1010,8 +1025,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         int width = ip.getWidth();
         int height = ip.getHeight();
         dirOffset = new int[] { -width, -width+1, +1, +width+1, +width, +width-1,   -1, -width-1 };
-        dirXoffset = new int[] {    0,       1,     1,     1,       0,      -1,      -1,    -1    };
-        dirYoffset = new int[] {   -1,      -1,     0,     1,       1,       1,       0,    -1,   };
+        dirXoffset = new int[] {    0,      1,     1,     1,        0,     -1,      -1,    -1    };
+        dirYoffset = new int[] {   -1,     -1,     0,     1,        1,      1,       0,    -1,   };
     }
     
     /** returns whether the neighbor in a given direction is within the image
@@ -1047,7 +1062,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         }
         return false;   //to make the compiler happy :-)
     } // isWithin
-    
+
     /** Coordinates and the value of a local maximum.
      *  Implemented as a class for easy sorting of an array of maxima by pixel value
      **/
@@ -1055,7 +1070,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         float value;
         short x;
         short y;
-        
+
         /** a constructor filling in the data */
         MaxPoint(short x, short y, float value) {
             this.x = x;
@@ -1070,8 +1085,8 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             else if (diff == 0f) return 0;
             else return -1;
         }
-    }
-    
+    } // end of inner class MaxPoint
+
 } // end of class MaximumFinder
 
 

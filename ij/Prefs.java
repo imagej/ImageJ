@@ -30,6 +30,7 @@ public class Prefs {
 	public static final String FCOLOR = "fcolor";
 	public static final String BCOLOR = "bcolor";
 	public static final String ROICOLOR = "roicolor";
+	public static final String SHOW_ALL_COLOR = "showcolor";
 	public static final String JPEG = "jpeg";
 	public static final String FPS = "fps";
     public static final String DIV_BY_ZERO_VALUE = "div-by-zero";
@@ -283,6 +284,7 @@ public class Prefs {
 			if (dir!=null)
 				prefs.put(DIR_IMAGE, dir);
 			prefs.put(ROICOLOR, Tools.c2hex(Roi.getColor()));
+			prefs.put(SHOW_ALL_COLOR, Tools.c2hex(ImageCanvas.getShowAllColor()));
 			prefs.put(FCOLOR, Tools.c2hex(Toolbar.getForegroundColor()));
 			prefs.put(BCOLOR, Tools.c2hex(Toolbar.getBackgroundColor()));
 			prefs.put(JPEG, Integer.toString(JpegWriter.getQuality()));

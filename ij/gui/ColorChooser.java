@@ -20,6 +20,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
     /** Constructs a ColorChooser using the specified title and initial color. */
     public ColorChooser(String title, Color initialColor, boolean useHSB) {
     	this.title = title;
+    	if (initialColor==null) initialColor = Color.black;
     	this.initialColor = initialColor;
     	red = initialColor.getRed();
     	green = initialColor.getGreen();

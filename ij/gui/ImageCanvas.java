@@ -34,7 +34,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int sx2, sy2;
 	private boolean disablePopupMenu;
 	private boolean showAllROIs;
-	private static Color showAllColor, zoomIndicatorColor;
+	private static Color zoomIndicatorColor;
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
@@ -43,6 +43,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private Color listColor;
     private BasicStroke listStroke;
     private static final int LIST_OFFSET = 100000;
+    private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(128, 255, 255));
+    private static Color labelColor;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -180,16 +182,24 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     
     void initGraphics(Graphics g, Color c) {
-		if (showAllColor==null) {
-			showAllColor = new Color(128, 255, 255);
+		if (smallFont==null) {
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);
 			largeFont = new Font("SansSerif", Font.PLAIN, 12);
+		}
+		if (labelColor==null) {
+			int red = showAllColor.getRed();
+			int green = showAllColor.getGreen();
+			int blue = showAllColor.getBlue();
+			if ((red+green+blue)/3<128)
+				labelColor = Color.white;
+			else
+				labelColor = Color.black;
 		}
 		if (c!=null) {
 			g.setColor(c);
 			if (listStroke!=null) ((Graphics2D)g).setStroke(listStroke);
 		} else
-		g.setColor(showAllColor);
+			g.setColor(showAllColor);
     }
     
     void drawRoi(Graphics g, Roi roi, int index) {
@@ -243,7 +253,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
 		if (!drawingList)
 			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h-3);
-		g.setColor(Color.black);
+		g.setColor(labelColor);
 		g.drawString(label, x, y-2);
 		g.setColor(showAllColor);
 	} 
@@ -1005,6 +1015,23 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return showAllROIs;
 	}
 	
+	/** Returns the color used for "Show All" mode. */
+	public static Color getShowAllColor() {
+			return showAllColor;
+	}
+
+	/** Sets the color used used for "Show All" mode. */
+	public static void setShowAllColor(Color c) {
+		if (c==null) return;
+		showAllColor = c;
+		labelColor = null;
+		ImagePlus img = WindowManager.getCurrentImage();
+		if (img!=null) {
+			ImageCanvas ic = img.getCanvas();
+			if (ic!=null && ic.getShowAllROIs()) img.draw();
+		}
+	}
+
 	public void setDisplayList(Vector list) {
 		displayList = list;
 		labelListItems = true;

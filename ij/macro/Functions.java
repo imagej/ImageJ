@@ -8,7 +8,7 @@ import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 import ij.text.*;
 import ij.io.*;
-import ij.util.Tools;
+import ij.util.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
@@ -228,6 +228,8 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_RESULT_LABEL: str = getResultLabel(); break;
 			case CALL: str = call(); break;
 			case STRING: str = doString(); break;
+			case EXT: str = doExt(); break;
+			case EXEC: str = exec(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3035,6 +3037,16 @@ public class Functions implements MacroConstants, Measurements {
 		try {
 			Object obj = m.invoke(null, args);
 			return obj!=null?obj.toString():null;
+		} catch(InvocationTargetException e) {
+			CharArrayWriter caw = new CharArrayWriter();
+			PrintWriter pw = new PrintWriter(caw);
+			e.getCause().printStackTrace(pw);
+			String s = caw.toString();
+			if (IJ.getInstance()!=null)
+				new TextWindow("Exception", s, 350, 250);
+			else
+				IJ.log(s);
+			return null;
 		} catch(Exception e) {
 			IJ.log("Call error ("+e+")");
 			return null;
@@ -3283,6 +3295,51 @@ public class Functions implements MacroConstants, Measurements {
 		channels.setValue(dim[2]);
 		slices.setValue(dim[3]);
 		frames.setValue(dim[4]);
+	}
+
+	public static void registerExtensions(MacroExtension extensions) {
+		Interpreter interp = Interpreter.getInstance();
+		if (interp==null) {
+			IJ.error("Macro must be running to install macro extensions");
+			return;
+		}
+		interp.pgm.extensionRegistry = new Hashtable();
+		ExtensionDescriptor[] descriptors = extensions.getExtensionFunctions();
+		for (int i=0; i<descriptors.length; ++i)
+			interp.pgm.extensionRegistry.put(descriptors[i].name, descriptors[i]);
+	}
+	
+	String doExt() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION || interp.token==PREDEFINED_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		ExtensionDescriptor desc = null;
+		if (pgm.extensionRegistry!=null)
+			desc = (ExtensionDescriptor) pgm.extensionRegistry.get(name);
+		if (desc == null) {
+			interp.error("Unrecognized Ext function "+name);
+			return null;
+		}
+		return desc.dispatch(this);
+	}
+	
+	String exec() {
+		String cmd = getStringArg();
+		StringBuffer sb = new StringBuffer(256);
+		try {                                                                                             
+			Process p = Runtime.getRuntime().exec(cmd);       
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));  
+			String line;                                                                                  
+			while ((line=reader.readLine())!=null)                                                
+        		sb.append(line+"\n");                                                                 
+		} catch (Exception e) {                                                                         
+    		sb.append(e.getMessage()+"\n");                                                                          
+		}
+		return sb.toString(); 
 	}
 
 } // class Functions

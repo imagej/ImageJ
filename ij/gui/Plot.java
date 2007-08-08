@@ -463,7 +463,7 @@ public class Plot {
         }
         FontMetrics fm = ip.getFontMetrics();
         int x = LEFT_MARGIN;
-        int y = y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
+        int y = TOP_MARGIN + frame.height + fm.getAscent() + 6;
         if ((flags&X_NUMBERS)==0) {                 //simply note x-axis min&max
             int digits = getDigits(xMin, xMax);
             ip.drawString(IJ.d2s(xMin,digits), x, y);

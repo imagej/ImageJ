@@ -574,7 +574,7 @@ public class ShapeRoi extends Roi {
 	/**Checks whether the specified coordinates are inside a on this ROI's shape boundaries.*/
 	public boolean contains(int x, int y) {
 		if(shape==null) return false;
-		return shape.contains(x-this.x, y-this.y); //wsr
+		return shape.contains(x-this.x, y-this.y);
 	}
 
 	/**Returns the maximum Feret diameter (i.e., the largest distance between the shape's boundaries).
@@ -1025,7 +1025,7 @@ public class ShapeRoi extends Roi {
 					yCoords.add(new Integer(((Integer)yCoords.elementAt(0)).intValue()));
 				}
 				if (rois!=null) {
-					roiType = shapeToRoi?TRACED_ROI:guessType(count, linesOnly, curvesOnly, closed);
+					roiType = shapeToRoi?TRACED_ROI:guessType(count+1, linesOnly, curvesOnly, closed);
 					Roi r = createRoi(xCoords, yCoords, roiType);
 					if (r!=null)
 						rois.addElement(r);
@@ -1049,48 +1049,26 @@ public class ShapeRoi extends Roi {
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
 		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
-        aTx.translate(x, y); //wsr
+        aTx.translate(x, y);
 		((Graphics2D)g).draw(aTx.createTransformedShape(shape));
-		//if (savedRois!=null) drawLines(g);
+		if (Toolbar.getToolId()==Toolbar.OVAL) drawRoiBrush(g);
 		showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}
 
- 	/** Non-destructively draws the shape of this object on the associated ImagePlus.
-		2007/03/12: Uses a scaled graphics object as proposed by Albert Cardona . */
-	/*
-   public void draw(Graphics g) {
-		   if(ic==null) return;
-		   g.setColor(instanceColor!=null?instanceColor:ROIColor);
-		   mag = ic.getMagnification();
-		   Rectangle r = ic.getSrcRect();
-		   final Graphics2D g2d = (Graphics2D)g;
-		   g2d.scale(mag, mag);
-		   g2d.translate(x-r.x, y-r.y);
-		   g2d.draw(shape);
-		   g2d.translate(-x+r.x, -y+r.y);
-		   g2d.scale(1/mag, 1/mag);
-		   if (state==MOVING) showStatus();
-		   if (updateFullWindow) {
-				   updateFullWindow = false;
-				   imp.draw();
-		   }
-   }
-   */
-
-	void drawLines(Graphics g) {
-		Roi[] rois = getRois();
-		//IJ.log("drawLines: "+rois.length);
-		for (int i=0; i<rois.length; i++) {
-			int type = rois[i].getType();
-			if (type==Roi.LINE) {
-				Line line = (Line)rois[i];
-				g.drawLine(ic.screenX(line.x1), ic.screenX(line.x1), ic.screenX(line.x2), ic.screenY(line.y2));
-			}
-		}
+	public void drawRoiBrush(Graphics g) {
+		int size = Toolbar.getBrushSize();
+		if (size==0) return;
+		int flags = ic.getModifiers();
+		if ((flags&16)==0) return; // exit if mouse button up
+		size = (int)(size*mag);
+		Point p = ic.getCursorLoc();
+		int sx = ic.screenX(p.x);
+		int sy = ic.screenY(p.y);
+		g.drawOval(sx-size/2, sy-size/2, size, size);
 	}
-
+	
 	/**Draws the shape of this object onto the specified ImageProcessor.
 	 * <br> This method will always draw a flattened version of the actual shape
 	 * (i.e., all curve segments will be approximated by line segments).

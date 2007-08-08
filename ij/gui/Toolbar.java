@@ -644,14 +644,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				}
 			}
 			setTool2(newTool);
-			if (current==OVAL && (e.isPopupTrigger() || e.isMetaDown())) {
+			if (current==OVAL && (e.isPopupTrigger()||e.isMetaDown())) {
 				ovalItem.setState(!brushEnabled);
 				brushItem.setState(brushEnabled);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				ovalPopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
 			}
-			if (isLine(current) && (e.isPopupTrigger() || e.isMetaDown())) {
+			if (isLine(current) && (e.isPopupTrigger()||e.isMetaDown())) {
 				straightLineItem.setState(lineType==LINE);
 				polyLineItem.setState(lineType==POLYLINE);
 				freeLineItem.setState(lineType==FREELINE);
@@ -759,6 +759,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	boolean isLine(int tool) {
 		return tool==LINE || tool==POLYLINE || tool==FREELINE;
 	}
+	
+	// Returns the line type (LINE, POLYLINE or FREELINE). 
+	//public int getLineType() {
+	//	return lineType;
+	//}
 	
 	public void restorePreviousTool() {
 		setTool2(mpPrevious);

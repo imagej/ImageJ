@@ -29,7 +29,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean macro;
 	boolean ignoreInterrupts;
 	PopupMenu pm;
-	Button moreButton;
+	Button moreButton, colorButton;
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
 
@@ -170,6 +170,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			help();
 		else if (command.equals("Options..."))
 			options();
+		else if (command.equals("Set Color..."))
+			setShowAllColor();
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -850,13 +852,33 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void options() {
-		GenericDialog gd = new GenericDialog("Options");
-		gd.addCheckbox("Associate ROIs with Slices in \"Show All\" Mode", Prefs.showAllSliceOnly);
+		Color c = ImageCanvas.getShowAllColor();
+		GenericDialog gd = new GenericDialog("\"Show All\" Options");
+		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
+		gd.addCheckbox("Associate ROIs with Slices", Prefs.showAllSliceOnly);
 		gd.showDialog();
-		if (gd.wasCanceled()) return;
+		if (gd.wasCanceled()) {
+			if (c!=ImageCanvas.getShowAllColor())
+				ImageCanvas.setShowAllColor(c);
+			return;
+		}
 		Prefs.showAllSliceOnly = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();
+	}
+
+	Panel makeButtonPanel(GenericDialog gd) {
+		Panel panel = new Panel();
+    	//buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+		colorButton = new Button("Set Color...");
+		colorButton.addActionListener(this);
+		panel.add(colorButton);
+		return panel;
+	}
+	
+	void setShowAllColor() {
+            ColorChooser cc = new ColorChooser("\"Show All\" Color", ImageCanvas.getShowAllColor() ,  false);
+            ImageCanvas.setShowAllColor(cc.getColor());
 	}
 
 	void split() {
@@ -867,12 +889,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error("Image with composite selection required");
 			return;
 		}
+		boolean record = Recorder.record;
+		Recorder.record = false;
 		Roi[] rois = ((ShapeRoi)roi).getRois();
 		for (int i=0; i<rois.length; i++) {
 			imp.setRoi(rois[i]);
 			add(false);
 		}
-		//if (Recorder.record) Recorder.record("roiManager", "Split");
+		Recorder.record = record;
+		if (Recorder.record) Recorder.record("roiManager", "Split");
 	}
 	
 	void showAll() {

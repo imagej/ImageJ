@@ -740,10 +740,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Sets the 3rd, 4th and 5th dimensions, where 
 	<code>nChannels</code>*<code>nSlices</code>*<code>nFrames</code> 
-	must be the same as the stack size. */
+	must be equal to the stack size. */
 	public void setDimensions(int nChannels, int nSlices, int nFrames) {
-		if (nChannels*nSlices*nFrames!=getImageStackSize() && ip!=null)
-			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
+		if (nChannels*nSlices*nFrames!=getImageStackSize() && ip!=null) {
+			//throw new IllegalArgumentException("channels*slices*frames!=stackSize");
+			nChannels = 1;
+			nSlices = getImageStackSize();
+			nFrames = 1;
+		}
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;

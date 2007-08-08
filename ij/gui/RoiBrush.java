@@ -4,8 +4,11 @@ import java.awt.*;
 
 /** Implements the ROI Brush tool.*/
 class RoiBrush implements Runnable {
+	static int ADD=0, SUBTRACT=1;
+	static int leftClick=16, alt=9, shift=1;
 	private Polygon poly;
 	private Point previousP;
+	private int mode = ADD;
  
 	RoiBrush() {
 		Thread thread = new Thread(this, "RoiBrush");
@@ -21,8 +24,10 @@ class RoiBrush implements Runnable {
 		Roi roi = img.getRoi();
 		if (roi!=null && !roi.isArea())
 			img.killRoi();
-		Point p;
-		int flags, leftClick=16, alt=9;
+		Point p = ic.getCursorLoc();
+		if (roi!=null && !roi.contains(p.x, p.y))
+			mode = SUBTRACT;
+		int flags;
 		while (true) {
 			p = ic.getCursorLoc();
 			if (p.equals(previousP))
@@ -30,7 +35,11 @@ class RoiBrush implements Runnable {
 			previousP = p;
 			flags = ic.getModifiers();
 			if ((flags&leftClick)==0) return;
-			if ((flags&alt)==0)
+			if ((flags&shift)!=0)
+				mode = ADD;
+			else if ((flags&alt)!=0)
+				mode = SUBTRACT;
+			if (mode==ADD)
 				addCircle(img, p.x, p.y, size);
 			else
 				subtractCircle(img, p.x, p.y, size);

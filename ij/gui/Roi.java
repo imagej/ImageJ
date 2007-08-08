@@ -540,6 +540,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			else
 				Recorder.record("makeRectangle", x, y, width, height);
 		}
+		if (Toolbar.getToolId()==Toolbar.OVAL&&Toolbar.getBrushSize()>0)  {
+			int flags = ic!=null?ic.getModifiers():16;
+			if ((flags&16)==0) // erase ROI Brush
+				{imp.draw(); return;}
+		}
 		modifyRoi();
 	}
 
