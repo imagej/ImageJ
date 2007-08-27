@@ -39,6 +39,7 @@ public class Functions implements MacroConstants, Measurements {
     boolean altKeyDown, shiftKeyDown;
     boolean antialiasedText;
     StringBuffer buffer;
+    RoiManager roiManager;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -590,15 +591,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void makeLine() {
-		int x1 = (int)Math.round(getFirstArg());
-		int y1 = (int)Math.round(getNextArg());
-		int x2 = (int)Math.round(getNextArg());
+		double x1d = getFirstArg();
+		double y1d = getNextArg();
+		double x2d = getNextArg();
 		interp.getComma();
-		int y2 = (int)Math.round(interp.getExpression());
+		double y2d = interp.getExpression();
 		interp.getToken();
 		if (interp.token==')')
-			IJ.makeLine(x1, y1, x2, y2);
+			IJ.makeLine(x1d, y1d, x2d, y2d);
 		else {
+			int x1 = (int)Math.round(x1d);
+			int y1 = (int)Math.round(y1d);
+			int x2 = (int)Math.round(x2d);
+			int y2 = (int)Math.round(y2d);
 			int max = 200;
 			int[] x = new int[max];
 			int[] y = new int[max];
@@ -1973,9 +1978,13 @@ public class Functions implements MacroConstants, Measurements {
 			index = (int)getLastArg();
 		else
 			interp.getRightParen();
-		if (RoiManager.getInstance()==null)
-			IJ.run("ROI Manager...");
-		RoiManager rm = RoiManager.getInstance();
+		if (RoiManager.getInstance()==null&&roiManager==null) {
+			if (Interpreter.isBatchMode())
+				roiManager = new RoiManager(true);
+			else
+				IJ.run("ROI Manager...");
+		}
+		RoiManager rm = roiManager!=null?roiManager:RoiManager.getInstance();
 		if (rm==null)
 			interp.error("ROI Manager not found");
 		if (twoArgCommand)
@@ -2144,6 +2153,7 @@ public class Functions implements MacroConstants, Measurements {
 		IJ.showProgress(0, 0);
 		ImagePlus imp2 = WindowManager.getCurrentImage();
 		WindowManager.setTempCurrentImage(null);
+		roiManager = null;
 		if (sarg==null) {  //false
 			interp.setBatchMode(false);
 			displayBatchModeImage(imp2);
@@ -2829,6 +2839,8 @@ public class Functions implements MacroConstants, Measurements {
 			return openAsString();
 		else if (name.equals("openUrlAsString"))
 			return openUrlAsString();
+		else if (name.equals("openDialog"))
+			return openDialog();
 		else if (name.equals("close"))
 			return closeFile();
 		else if (name.equals("separator")) {
@@ -2892,6 +2904,17 @@ public class Functions implements MacroConstants, Measurements {
 			return true;
 	}
 	
+	String openDialog() {
+		String title = getStringArg();
+		OpenDialog od = new OpenDialog(title, null);
+		String directory = od.getDirectory();
+		String name = od.getFileName();
+		if (name==null)
+			return "";
+		else
+			return directory+name;
+	}
+
 	void setSelectionName() {
 		Roi roi = getImage().getRoi();
 		if (roi==null)
@@ -3043,7 +3066,7 @@ public class Functions implements MacroConstants, Measurements {
 			e.getCause().printStackTrace(pw);
 			String s = caw.toString();
 			if (IJ.getInstance()!=null)
-				new TextWindow("Exception", s, 350, 250);
+				new TextWindow("Exception", s, 400, 400);
 			else
 				IJ.log(s);
 			return null;
@@ -3317,11 +3340,16 @@ public class Functions implements MacroConstants, Measurements {
 		if (!(interp.token==WORD || interp.token==STRING_FUNCTION || interp.token==NUMERIC_FUNCTION || interp.token==PREDEFINED_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
+		if (name.equals("install")) {
+			Object plugin = IJ.runPlugIn(getStringArg(), "");
+			if (plugin==null) interp.error("Plugin not found");
+			return null;
+		}
 		ExtensionDescriptor desc = null;
 		if (pgm.extensionRegistry!=null)
 			desc = (ExtensionDescriptor) pgm.extensionRegistry.get(name);
 		if (desc == null) {
-			interp.error("Unrecognized Ext function "+name);
+			interp.error("Unrecognized Ext function");
 			return null;
 		}
 		return desc.dispatch(this);

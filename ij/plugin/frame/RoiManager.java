@@ -20,6 +20,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
 	static final int MENU=0, COMMAND=1, MULTI=2;
+	static int rows = 15;
+	static boolean allowMultipleSelections = true; 
 	Panel panel;
 	static Frame instance;
 	java.awt.List list;
@@ -41,15 +43,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		}
 		instance = this;
+		list = new List(rows, allowMultipleSelections);
+		showWindow();
+	}
+	
+	public RoiManager(boolean hideWindow) {
+		super("ROI Manager");
+		list = new List(rows, allowMultipleSelections);
+	}
+
+	void showWindow() {
 		ImageJ ij = IJ.getInstance();
  		addKeyListener(ij);
  		addMouseListener(this);
 		addMouseWheelListener(this);
 		WindowManager.addWindow(this);
 		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
-		int rows = 15;
-		boolean allowMultipleSelections = true; //IJ.isMacintosh();
-		list = new List(rows, allowMultipleSelections);
 		list.add("012345678901234");
 		list.addItemListener(this);
  		list.addKeyListener(ij);
@@ -77,7 +86,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		GUI.center(this);
 		show();
 	}
-	
+
 	void addButton(String label) {
 		Button b = new Button(label);
 		b.addActionListener(this);

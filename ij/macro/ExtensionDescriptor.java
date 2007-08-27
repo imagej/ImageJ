@@ -1,8 +1,5 @@
 package ij.macro;
-
 import ij.IJ;
-
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class ExtensionDescriptor {
@@ -43,86 +40,8 @@ public class ExtensionDescriptor {
   
   public static ExtensionDescriptor newDescriptor(String theName, MacroExtension theHandler, int t1, int t2, int t3, int t4) {
     return newDescriptor(theName, theHandler, new int[] {t1, t2, t3, t4});
-  }
-  
-  private static class ReflectedHandler implements MacroExtension {
-    String extName;
-    Object instance;
-    Method method;
+  }  
     
-    public ReflectedHandler(String theExtName, Object theInstance, Method theMethod) {
-      this.extName = theExtName;
-      this.instance = theInstance;
-      this.method = theMethod;
-    }
-    
-    /** This method intentionally returns nothing.  This object only handles calls.
-     * 
-     */  
-    public ExtensionDescriptor[] getExtensionFunctions() {
-      return new ExtensionDescriptor[0];
-    }
-    
-    public String handleExtension(String name, Object[] args) {
-      if (!name.equals(extName)) 
-        throw new RuntimeException("Invalid handler for extension function "+name+" (only handles "+extName+")");
-      
-      try {
-        Object result = method.invoke(instance, args);
-        if (result==null) return null;
-        return result.toString();
-      } catch (Exception e) {
-        e.printStackTrace();
-        IJ.error("Error invoking extension function "+extName+": "+e.getMessage());
-        return null;
-      } 
-    }
-    
-    
-  }
-  
-  
-  // look for methods starting with 'extfunc_' that have the correct arguments
-  public static ExtensionDescriptor[] reflectFunctions(String theName, Object instance) {
-    Method[] methods = instance.getClass().getMethods();
-    
-    ArrayList descriptors = new ArrayList();
-
-    for (int i=0; i < methods.length; ++i) {
-      String methodName = methods[i].getName();
-      if (methodName.startsWith("extfunc_")) {
-        String extName = methodName.substring(8);
-        IJ.log("extension function "+extName);
-        
-        Class[] parameters = methods[i].getParameterTypes();
-        
-        int[] argTypes = new int[parameters.length];
-        
-        for (int j=0; j < parameters.length; ++j) {
-          if (parameters[j] == Double.class || parameters[j] == Double.TYPE) {
-            argTypes[j] = MacroExtension.ARG_NUMBER;
-          } else if (parameters[j] == Double[].class || parameters[j] == double[].class) {
-            argTypes[j] = MacroExtension.ARG_NUMBER+MacroExtension.ARG_OUTPUT;
-          } else if (parameters[j] == String.class) {
-            argTypes[j] = MacroExtension.ARG_STRING;
-          } else if (parameters[j] == String[].class) {
-            argTypes[j] = MacroExtension.ARG_STRING+MacroExtension.ARG_OUTPUT;
-          } else if (parameters[j] == Object[].class) {
-            argTypes[j] = MacroExtension.ARG_ARRAY;
-          } else {
-            throw new RuntimeException("Unsupported parameter type in extension function: "+parameters[j]);
-          }
-        }
-        
-        ReflectedHandler handler = new ReflectedHandler(extName, instance, methods[i]);
-        ExtensionDescriptor desc = new ExtensionDescriptor(extName, argTypes, handler);
-        descriptors.add(desc);
-      }
-    }
-    
-    return (ExtensionDescriptor[]) descriptors.toArray(new ExtensionDescriptor[0]);
-  }
-  
   public static ExtensionDescriptor newDescriptor(String theName, MacroExtension theHandler, Integer[] types) {
     int[] argTypes = new int[types.length];
     for (int i=0; i < types.length; ++i) {
@@ -240,10 +159,8 @@ public class ExtensionDescriptor {
         v = func.getVariable();
       } else {
         v = new Variable();
-        
         switch (getRawType(argTypes[i])) {
         case MacroExtension.ARG_STRING:
-          
           v.setString(func.getString());
           break;
         case MacroExtension.ARG_NUMBER:
@@ -359,7 +276,6 @@ public class ExtensionDescriptor {
           break;
         }
       }
-      
       args[i] = ExtensionDescriptor.convertVariable(interp, argTypes[i], vArgs[i]);
     }
     

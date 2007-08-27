@@ -15,22 +15,14 @@ import java.util.*;
 	(if y/x aspect ratio != 1 in source image) one dimension in the output is not
 	homogeneous (i.e. pixelWidth not the same everywhere).
 */
-
-// Note: some comments throughout this file contain {get|set}{Height|Width|Depth}
-// calls. These comments provide additional Java source code for a possible patch
-// when a future release of ImageJ adds these methods to the Calibration class.
-// Slicer (which by essence permutates dimensions) can then be made to swap 
-// units correctly by uncommenting comments that contain these calls.
-
 public class Slicer implements PlugIn, TextListener, ItemListener {
 
 	private static final String[] starts = {"Top", "Left", "Bottom", "Right"};
 	private static String startAt = starts[0];
 	private static boolean rotate;
 	private static boolean flip;
-	private boolean nointerpolate;
-	private double sampleSpacing;
-	private String sampleUnit;
+	private static boolean nointerpolate;
+	private double inputZSpacing = 1.0;
 	private double outputZSpacing = 1.0;
 	private int outputSlices = 1;
 	private boolean noRoi;
@@ -70,7 +62,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				IJ.error("Reslice...", "Line or rectangular selection required");
 				return;
 		 }
-		 double savePixelDepth = imp.getCalibration().pixelDepth;
 		 if (!showDialog(imp))
 				return;
 		 long startTime = System.currentTimeMillis();
@@ -88,8 +79,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				imp.killRoi();
 		else
 				imp.draw();
-		if (savePixelDepth!=1.0)
-			imp.getCalibration().pixelDepth = savePixelDepth;
 		IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");
 	}
 
@@ -104,8 +93,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				tmpCal.pixelHeight = 1.0;
 				tmpCal.pixelDepth = 1.0;
 				imp.setCalibration(tmpCal);
-				outputZSpacing = 1.0;
+				inputZSpacing = outputZSpacing = 1.0;
 		 }
+		double zSpacing = inputZSpacing/imp.getCalibration().pixelWidth;
 		 if (roi==null || roiType==Roi.RECTANGLE || roiType==Roi.LINE) {
 				imp2 = resliceRectOrLine(imp);
 		 } else {// we assert roiType==Roi.POLYLINE || roiType==Roi.FREELINE
@@ -114,109 +104,47 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				ImageProcessor ip2 = getSlice(imp, 0.0, 0.0, 0.0, 0.0, status);
 				imp2 = new ImagePlus("Reslice of "+imp.getShortTitle(), ip2);
 		 }
-		 if (nointerpolate) {// restore calibration
+		 if (nointerpolate) // restore calibration
 				imp.setCalibration(origCal);
-		 }
 		 // create Calibration for new stack
 		 // start from previous cal and swap appropriate fields
-		 imp2.setCalibration(imp.getCalibration());
-		 Calibration cal = imp2.getCalibration();
-		 // along which direction did we slice ? (important if AR != 1)
-		 if (roi==null || roiType==Roi.RECTANGLE) {
-				if (startAt.equals(starts[0]) || startAt.equals(starts[2])) {
-					// sliced vertically (from top or bottom)
-					sampleSpacing = origCal.pixelWidth;
-					// sampleUnit = origCal.getWidthUnit();
-					// Z <- Y
-					cal.pixelDepth = origCal.pixelHeight;
-					cal.zOrigin = origCal.yOrigin;
-					// cal.setDepthUnit(origCal.getHeightUnit());
+		 boolean horizontal = false;
+		 boolean vertical = false;
+		if (roi==null || roiType==Roi.RECTANGLE) {
+			if (startAt.equals(starts[0]) || startAt.equals(starts[2]))
+				horizontal = true;
+			else
+				vertical = true;
+		} 
+		if (roi!=null && roiType==Roi.LINE) {
+			Line l = (Line)roi;
+			horizontal  = (l.y2-l.y1)==0;
+			vertical = (l.x2-l.x1)==0;
+		}
+		imp2.setCalibration(imp.getCalibration());
+		Calibration cal = imp2.getCalibration();
+		if (horizontal) {
+			cal.pixelWidth = origCal.pixelWidth;
+			cal.pixelHeight = origCal.pixelDepth/zSpacing;
+			cal.pixelDepth = origCal.pixelHeight*outputZSpacing;
+		} else if (vertical) {
+			cal.pixelWidth = origCal.pixelDepth/zSpacing;
+			cal.pixelHeight = origCal.pixelHeight;
+			cal.pixelDepth = origCal.pixelWidth*outputZSpacing;;
+		} else { // oblique line, polyLine or freeline
+				if (origCal.pixelHeight==origCal.pixelWidth) {
+					cal.pixelWidth=cal.pixelHeight=origCal.pixelDepth/zSpacing;
+					cal.pixelDepth = origCal.pixelWidth*outputZSpacing;
 				} else {
-					// sliced horizontally (from left or right)
-					sampleSpacing = origCal.pixelHeight;
-					// sampleUnit = origCal.getHeightUnit();
-					// Z <- X
-					cal.pixelDepth = origCal.pixelWidth;
-					cal.zOrigin = origCal.xOrigin;
-					// cal.setDepthUnit(origCal.getWidthUnit());
+					cal.pixelWidth=cal.pixelHeight=cal.pixelDepth=1.0;
+					cal.setUnit("pixel");
 				}
-		 } else if (roiType==Roi.LINE) {
-				Line l = (Line)roi;
-				double dx = l.x2 - l.x1;
-				double dy = l.y2 - l.y1;
-				if (dy == 0) {// horizontal line
-					sampleSpacing = origCal.pixelWidth;
-					// sampleUnit = origCal.getWidthUnit();
-					// Z <- Y
-					cal.pixelDepth = origCal.pixelHeight;
-					cal.zOrigin = origCal.yOrigin;
-					// cal.setDepthUnit(origCal.getHeightUnit());
-				} else if (dx == 0) {// vertical line
-					sampleSpacing = origCal.pixelHeight;
-					// sampleUnit = origCal.getHeightUnit();
-					// Z <- X
-					cal.pixelDepth = origCal.pixelWidth;
-					cal.zOrigin = origCal.xOrigin;
-					// cal.setDepthUnit(origCal.getWidthUnit());
-				} else /* if (origCal.getHeightUnit().equals(origCal.getWidthUnit())) */ {
-				// units identical: we can measure lengths of oblique lines
-					double nrm = Math.sqrt(dx*dx + dy*dy);
-					double w = origCal.pixelWidth;
-					double h = origCal.pixelHeight;
-					sampleSpacing = Math.sqrt(dx*dx*w*w+dy*dy*h*h)/nrm;
-					// sampleUnit = origCal.getHeightUnit();
-					cal.pixelDepth = Math.sqrt(dy*dy*w*w+dx*dx*h*h)/nrm;
-					cal.zOrigin = 0.0;
-					// cal.setDepthUnit(sampleUnit);
-				//} else {// incomensurable axis
-				//		sampleSpacing = 1.0;
-				//		sampleUnit = "pixel";
-				//		cal.pixelDepth = 1.0;
-				//		cal.zOrigin = 0.0;
-				//		cal.setDepthUnit("pixel");
-				}
-		 } else {
-				// aspect ratio 1 & units identical ?
-				if (/*origCal.getHeightUnit().equals(origCal.getWidthUnit()) &&*/
-					origCal.pixelHeight == origCal.pixelWidth) {
-					sampleSpacing = origCal.pixelHeight;
-					// sampleUnit = origCal.getHeightUnit();
-				} else {
-					sampleSpacing = 1.0;
-					sampleUnit = "pixel";
-				}
-				// (POLY|FREE)LINE ROI: single slice, Z has no meaning
-				cal.pixelDepth = 1.0;
-				cal.zOrigin = 0.0;
-				// cal.setDepthUnit("pixel");
 		 }
-		 // X <- sampleSpacing
-		 cal.pixelWidth = sampleSpacing;
-		 cal.xOrigin = 0.0;
-		 //cal.setWidthUnit(sampleUnit);
-		 // Y <- Z
-		 cal.pixelHeight = origCal.pixelDepth;
-		 cal.yOrigin = origCal.zOrigin;
-		 // cal.setHeightUnit(origCal.getDepthUnit());
-		 if (!nointerpolate) {
-				cal.pixelDepth = outputZSpacing*cal.pixelDepth;
-		 }
-		 // if rotated flip X and Y
-		 double swapDouble1, swapDouble2;
-		 String swapString;
-		 if (rotate) {
-				// save X info
-				swapDouble1 = cal.pixelWidth;
-				swapDouble2 = cal.xOrigin;
-				// swapString = cal.getWidthUnit();
-				// X <- Y
+		 double tmp;
+		 if (rotate) {// if rotated flip X and Y
+				tmp = cal.pixelWidth;
 				cal.pixelWidth = cal.pixelHeight;
-				cal.xOrigin = cal.yOrigin;
-				// cal.setWidthUnit(cal.getHeightUnit());
-				// Y <- X (saved)
-				cal.pixelHeight = swapDouble1;
-				cal.yOrigin = swapDouble2;
-				// cal.setHeightUnit(swapString);
+				cal.pixelHeight = tmp;
 		 }
 		 return imp2;
 	}
@@ -241,6 +169,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 gd.addCheckbox("Flip Vertically", flip);
 		 gd.addCheckbox("Rotate 90 Degrees", rotate);
 		 gd.addCheckbox("Avoid Interpolation", nointerpolate);
+		 gd.setInsets(0, 32, 10);
+		 gd.addMessage("(use 1.0 for spacings)");
 		 gd.addMessage(getSize(cal.pixelDepth,outputSpacing,outputSlices)+"				");
 		 fields = gd.getNumericFields();
 		 for (int i=0; i<fields.size(); i++)
@@ -251,13 +181,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 gd.showDialog();
 		 if (gd.wasCanceled())
 				return false;
-		 cal.pixelDepth = gd.getNextNumber();
+		 inputZSpacing = gd.getNextNumber();
 		 if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
-		 /* the following line should use pixelHeight if reslice is
-			* from top/bottom */
-		 //if (startAt.equals(starts[0]) || startAt.equals(starts[2])) {
-		 //	outputZSpacing = gd.getNextNumber()/cal.pixelHeight;
-		 //else
 		 outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
 		 if (line) {
 				outputSlices = (int)gd.getNextNumber();
@@ -357,16 +282,14 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				if (virtualStack)
 					status = outputSlices>1?(i+1)+"/"+outputSlices+", ":"";
 				ImageProcessor ip = getSlice(imp, x1, y1, x2, y2, status);
+				//IJ.log(i+" "+x1+" "+y1+" "+x2+" "+y2+"   "+ip);
 				if (isStack) drawLine(x1, y1, x2, y2, imp);
 				if (stack2==null) {
 					stack2 = createOutputStack(imp, ip);
 					if (stack2==null || stack2.getSize()<outputSlices) return null; // out of memory
 				}
 				stack2.setPixels(ip.getPixels(), i+1);
-				x1 += xInc;
-				x2 += xInc;
-				y1 += yInc;
-				y2 += yInc;
+				x1+=xInc; x2+=xInc; y1+=yInc; y2+=yInc;
 				if (IJ.escapePressed())
 					{IJ.beep(); imp.draw(); return null;}
 		 }
@@ -397,7 +320,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 ImageProcessor ip,ip2=null;
 		 float[] line = null;
 		 boolean ortho = (int)x1==x1&&(int)y1==y1&&x1==x2||y1==y2;
-		 //IJ.log("ortho: "+ortho);
+		 boolean vertical = x1==x2;
+		 if (rotate) vertical = !vertical;
 		 for (int i=0; i<stackSize; i++) {
 				ip = stack.getProcessor(flip?stackSize-i:i+1);
 				if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
@@ -406,7 +330,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 					line = getOrthoLine(ip, (int)x1, (int)y1, (int)x2, (int)y2, line);
 				else
 					line = getLine(ip, x1, y1, x2, y2, line);
-				if (rotate) {
+				if (vertical) {
 					if (i==0) ip2 = ip.createProcessor(stackSize, line.length);
 					putColumn(ip2, i, 0, line, line.length);
 				} else {
@@ -416,10 +340,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				if (status!=null) IJ.showStatus("Slicing: "+status +i+"/"+stackSize);
 		 }
 		 Calibration cal = imp.getCalibration();
-		 double zSpacing = cal.pixelDepth/cal.pixelWidth;
+		 double zSpacing = inputZSpacing/cal.pixelWidth;
 		 if (zSpacing!=1.0) {
 				ip2.setInterpolate(true);
-				if (rotate)
+				if (vertical)
 					ip2 = ip2.resize((int)(stackSize*zSpacing), line.length);
 				else
 					ip2 = ip2.resize(line.length, (int)(stackSize*zSpacing));
@@ -553,7 +477,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private float[] getOrthoLine(ImageProcessor ip, int x1, int y1, int x2, int y2, float[] data) {
 		 int dx = x2-x1;
 		 int dy = y2-y1;
-		 int n = Math.max(dx, dy);
+		 int n = Math.max(Math.abs(dx), Math.abs(dy));
 		 if (data==null) data = new float[n];
 		 int xinc = dx/n;
 		 int yinc = dy/n;
@@ -651,11 +575,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			if (outSpacing>0&&!nointerpolate) size *= inSpacing/outSpacing;
 		} else
 			size = gLength*count*stackSize;
-		//Calibration cal = imp.getCalibration();
-		//double zSpacing = inSpacing/cal.pixelWidth;
-		//if (nointerpolate) zSpacing = 1.0;
-		//if (zSpacing!=0.0 && zSpacing!=1.0)
-		//	size *= zSpacing;
 		int bits = imp.getBitDepth();
 		switch (bits) {
 			case 16: size*=2; break;

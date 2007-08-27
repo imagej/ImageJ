@@ -233,10 +233,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			}
     		s += "; ";
 		}
-		
     	int type = imp.getType();
     	Calibration cal = imp.getCalibration();
-    	if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0)
+    	if (cal.scaled())
     		s += IJ.d2s(imp.getWidth()*cal.pixelWidth,2) + "x" + IJ.d2s(imp.getHeight()*cal.pixelHeight,2)
  			+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
     	else

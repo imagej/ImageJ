@@ -16,7 +16,7 @@ public final class RandomAccessStream extends InputStream {
 
     private InputStream src;
     private RandomAccessFile ras;
-    private int pointer;
+    private long pointer;
     private Vector data;
     private int length;
     private boolean foundEOS;
@@ -24,7 +24,7 @@ public final class RandomAccessStream extends InputStream {
     /** Constructs a RandomAccessStream from an InputStream. Seeking
 		backwards is supported using a memory cache. */
 	public RandomAccessStream(InputStream inputstream) {
-        pointer = 0;
+        pointer = 0L;
         data = new Vector();
         length = 0;
         foundEOS = false;
@@ -40,14 +40,21 @@ public final class RandomAccessStream extends InputStream {
     	if (ras!=null)
     		return (int)ras.getFilePointer();
     	else
+        	return (int)pointer;
+    }
+
+    public long getLongFilePointer() throws IOException {
+    	if (ras!=null)
+    		return ras.getFilePointer();
+    	else
         	return pointer;
     }
 
     public int read() throws IOException {
     	if (ras!=null)
     		return ras.read();
-        int l = pointer + 1;
-        int l1 = readUntil(l);
+        long l = pointer + 1L;
+        long l1 = readUntil(l);
         if(l1 >= l) {
             byte abyte0[] = (byte[])data.elementAt((int)(pointer>>BLOCK_SHIFT));
             return abyte0[(int)(pointer++ & BLOCK_MASK)] & 0xff;
@@ -64,8 +71,8 @@ public final class RandomAccessStream extends InputStream {
             throw new IndexOutOfBoundsException();
         if(len == 0)
             return 0;
-        int l = readUntil(pointer+len);
-        if(l<=pointer)
+        long l = readUntil(pointer+len);
+        if (l<=pointer)
             return -1;
         else {
             byte abyte1[] = (byte[])data.elementAt((int)(pointer >> BLOCK_SHIFT));
@@ -89,7 +96,7 @@ public final class RandomAccessStream extends InputStream {
         } while (read<len);
     }
 
-    private int readUntil(int l) throws IOException {
+    private long readUntil(long l) throws IOException {
         if(l<length)
             return l;
         if(foundEOS)
@@ -117,12 +124,20 @@ public final class RandomAccessStream extends InputStream {
         return length;
     }
 
+    public void seek(long loc) throws IOException {
+    	if (ras!=null)
+    		{ras.seek(loc); return;}
+        if(loc < 0)
+			pointer = 0L;
+        else
+            pointer = loc;
+    }
+
     public void seek(int loc) throws IOException {
-		//if (ij.IJ.debugMode) ij.IJ.log("seek: "+loc);
     	if (ras!=null)
     		{ras.seek(loc&0xffffffff); return;}
         if(loc < 0)
-			pointer = 0;
+			pointer = 0L;
         else
             pointer = loc;
     }

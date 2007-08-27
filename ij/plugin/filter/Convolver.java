@@ -228,11 +228,13 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				for(int v=-vc; v <= vc; v++) {
 					offset = x+(y+v)*width;
 					for(int u = -uc; u <= uc; u++) {
-						if (edgePixel)
-   							sum += getPixel(x+u, y+v, pixels2, width, height)*kernel[i++];
-     					else
- 							sum += pixels2[offset+u]*kernel[i++];
-        				}
+						if (edgePixel) {
+ 							if (i>=kernel.length) // work around for JIT compiler bug on Linux
+ 								IJ.log("kernel index error: "+i);
+							sum += getPixel(x+u, y+v, pixels2, width, height)*kernel[i++];
+						} else
+							sum += pixels2[offset+u]*kernel[i++];
+					}
 		    	}
 				pixels[x+y*width] = (float)(sum*scale);
 			}

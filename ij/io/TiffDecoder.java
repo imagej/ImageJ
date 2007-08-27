@@ -121,7 +121,7 @@ public class TiffDecoder {
 	
 	void getColorMap(int offset, FileInfo fi) throws IOException {
 		byte[] colorTable16 = new byte[768*2];
-		int saveLoc = in.getFilePointer();
+		long saveLoc = in.getLongFilePointer();
 		in.seek(offset);
 		in.readFully(colorTable16);
 		in.seek(saveLoc);
@@ -146,7 +146,7 @@ public class TiffDecoder {
 		if (count<=0)
 			return null;
 		byte[] bytes = new byte[count];
-		int saveLoc = in.getFilePointer();
+		long saveLoc = in.getLongFilePointer();
 		in.seek(offset);
 		in.readFully(bytes);
 		in.seek(saveLoc);
@@ -176,7 +176,7 @@ public class TiffDecoder {
 	}
 
 	void decodeNIHImageHeader(int offset, FileInfo fi) throws IOException {
-		int saveLoc = in.getFilePointer();
+		long saveLoc = in.getLongFilePointer();
 		
 		in.seek(offset+12);
 		int version = in.readShort();
@@ -290,7 +290,7 @@ public class TiffDecoder {
 	}
 
 	double getRational(int loc) throws IOException {
-		int saveLoc = in.getFilePointer();
+		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
 		int numerator = getInt();
 		int denominator = getInt();
@@ -330,7 +330,7 @@ public class TiffDecoder {
 					if (count==1)
 						fi.stripOffsets = new int[] {value};
 					else {
-						int saveLoc = in.getFilePointer();
+						long saveLoc = in.getLongFilePointer();
 						in.seek(value);
 						fi.stripOffsets = new int[count];
 						for (int c=0; c<count; c++) {
@@ -346,7 +346,7 @@ public class TiffDecoder {
 					if (count==1)
 						fi.stripLengths = new int[] {value};
 					else {
-						int saveLoc = in.getFilePointer();
+						long saveLoc = in.getLongFilePointer();
 						in.seek(value);
 						fi.stripLengths = new int[count];
 						for (int c=0; c<count; c++)
@@ -375,7 +375,7 @@ public class TiffDecoder {
 							else
 								error("Unsupported BitsPerSample: " + value);
 						} else if (count==3) {
-							int saveLoc = in.getFilePointer();
+							long saveLoc = in.getLongFilePointer();
 							in.seek(value);
 							int bitDepth = getShort();
 							if (!(bitDepth==8||bitDepth==16))
@@ -473,7 +473,7 @@ public class TiffDecoder {
 						decodeNIHImageHeader(value, fi);
 					break;
  				case META_DATA_BYTE_COUNTS: 
-					int saveLoc = in.getFilePointer();
+					long saveLoc = in.getLongFilePointer();
 					in.seek(value);
 					metaDataCounts = new int[count];
 					for (int c=0; c<count; c++)
@@ -500,7 +500,7 @@ public class TiffDecoder {
 		if (metaDataCounts==null || metaDataCounts.length==0)
 			return;
 		int maxTypes = 10;
-		int saveLoc = in.getFilePointer();
+		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
 		int n = metaDataCounts.length;
 		int hdrSize = metaDataCounts[0];

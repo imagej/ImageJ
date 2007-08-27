@@ -16,8 +16,7 @@ public class Line extends Roi {
 	private double xHandleOffset, yHandleOffset;
 	private double startxd, startyd;
 
-	/** Creates a new straight line selection using the specified
-		starting and ending screen coordinates. */
+	/*
 	public Line(int ox1, int oy1, int ox2, int oy2) {
 		//this(ox1, oy1, null);
 		super(ox1, oy1, null);
@@ -26,6 +25,28 @@ public class Line extends Roi {
 		grow(ox2, oy2);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+		state = NORMAL;
+	}
+	*/
+
+	/** Creates a new straight line selection using the specified
+		starting and ending offscreen integer coordinates. */
+	public Line(int ox1, int oy1, int ox2, int oy2) {
+		this((double)ox1, (double)oy1, (double)ox2, (double)oy2);
+	}
+
+	/** Creates a new straight line selection using the specified
+		starting and ending offscreen double coordinates. */
+	public Line(double ox1, double oy1, double ox2, double oy2) {
+		super((int)ox1, (int)oy1, 0, 0);
+		type = LINE;
+		x1d=ox1; y1d=oy1; x2d=ox2; y2d=oy2; 
+		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
+		x=(int)Math.min(x1d,x2d); y=(int)Math.min(y1d,y2d);
+		x1R=x1d-x; y1R=y1d-y; x2R=x2d-x; y2R=y2d-y;
+		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
+		updateClipRect();
+		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
 		state = NORMAL;
 	}
 

@@ -161,8 +161,8 @@ public class FileSaver {
 
 	public static boolean okForGif(ImagePlus imp) {
 		int type = imp.getType();
-		if (type==ImagePlus.COLOR_RGB || type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
-			IJ.error("To save as Gif, the image must be \"8-bit\" or \"8-bit Color\".");
+		if (type==ImagePlus.COLOR_RGB) {
+			IJ.error("To save as Gif, the image must be converted to \"8-bit Color\".");
 			return false;
 		} else
 			return true;
@@ -184,19 +184,11 @@ public class FileSaver {
 	/** Save the image in Gif format using the specified path. Returns
 		false if the image is not 8-bits or there is an I/O error. */
 	public boolean saveAsGif(String path) {
-		if (!okForGif(imp))
-			return false;
-		try {
-			byte[] pixels = (byte[])imp.getProcessor().getPixels();
-			GifEncoder encoder = new GifEncoder(fi.width, fi.height, pixels, fi.reds, fi.greens, fi.blues);
-			OutputStream output = new BufferedOutputStream(new FileOutputStream(path));
-			encoder.write(output);
-			output.close();
-		}
-		catch (IOException e) {
-			showErrorMessage(e);
-			return false;
-		}
+		if (!okForGif(imp)) return false;
+		ImagePlus tempImage = WindowManager.getTempCurrentImage();
+		WindowManager.setTempCurrentImage(imp);
+		IJ.runPlugIn("ij.plugin.GifWriter", path);
+		WindowManager.setTempCurrentImage(tempImage);
 		updateImp(fi, fi.GIF_OR_JPG);
 		return true;
 	}

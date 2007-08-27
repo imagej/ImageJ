@@ -1235,6 +1235,8 @@ public abstract class ImageProcessor extends Object {
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). 
 		Returns zero if the (x, y) is not inside the image. */
 	public final double getInterpolatedValue(double x, double y) {
+		if (x<0.0 || x>=width-1.0 || y<0.0 || y>=height-1.0)
+			return getInterpolatedEdgeValue(x, y);
 		int xbase = (int)x;
 		int ybase = (int)y;
 		double xFraction = x - xbase;
@@ -1248,6 +1250,30 @@ public abstract class ImageProcessor extends Object {
 		double upperAverage = upperLeft + xFraction * (upperRight - upperLeft);
 		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
 		return lowerAverage + yFraction * (upperAverage - lowerAverage);
+	}
+
+	private final double getInterpolatedEdgeValue(double x, double y) {
+		int xbase = (int)x;
+		int ybase = (int)y;
+		double xFraction = x - xbase;
+		double yFraction = y - ybase;
+		if (xFraction<0.0) xFraction = 0.0;
+		if (yFraction<0.0) yFraction = 0.0;
+		double lowerLeft = getEdgeValue(xbase, ybase);
+		double lowerRight = getEdgeValue(xbase+1, ybase);
+		double upperRight = getEdgeValue(xbase+1, ybase+1);
+		double upperLeft = getEdgeValue(xbase, ybase+1);
+		double upperAverage = upperLeft + xFraction * (upperRight - upperLeft);
+		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
+		return lowerAverage + yFraction * (upperAverage - lowerAverage);
+	}
+
+	private float getEdgeValue(int x, int y) {
+		if (x<=0) x = 0;
+		if (x>=width) x = width-1;
+		if (y<=0) y = 0;
+		if (y>=height) y = height-1;
+		return getPixelValue(x, y);
 	}
 
 	/** Stores the specified value at (x,y). Does

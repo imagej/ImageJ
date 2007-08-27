@@ -797,55 +797,54 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	}
 
   	/** Displays this dialog box. */
-    public void showDialog() {
-		if (macro) {
-			//IJ.write("showDialog: "+macroOptions);
+	public void showDialog() {
+		if (macro)
 			dispose();
-		} else {
-            if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
-                pfr.setDialog(this);
-            if (stringField!=null&&numberField==null) {
-                TextField tf = (TextField)(stringField.elementAt(0));
-                tf.selectAll();
-            }
-            Panel buttons = new Panel();
-            buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-            cancel = new Button("Cancel");
-            cancel.addActionListener(this);
-            cancel.addKeyListener(this);
-            okay = new Button("  OK  ");
-            okay.addActionListener(this);
-            okay.addKeyListener(this);
-            if (IJ.isMacintosh()) {
-                buttons.add(cancel);
-                buttons.add(okay);
-            } else {
-                buttons.add(okay);
-                buttons.add(cancel);
-            }
-            c.gridx = 0; c.gridy = y;
-            c.anchor = GridBagConstraints.EAST;
-            c.gridwidth = 2;
-            c.insets = new Insets(15, 0, 0, 0);
-            grid.setConstraints(buttons, c);
-            add(buttons);
-            if (IJ.isMacintosh())
-                setResizable(false);
-            pack();
-            setup();
-            GUI.center(this);
-            show();
-            recorderOn = Recorder.record;
-        }
-		if (!macro) IJ.wait(50); // work around for Sun/WinNT bug
-        /* For plugins that read their input only via dialogItemChanged, call it at least once */
-        if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
-            resetCounters();
-            ((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
-            recorderOn = false;
-        }
-        resetCounters();
-  	}
+		else {
+			if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
+			pfr.setDialog(this);
+			if (stringField!=null&&numberField==null) {
+				TextField tf = (TextField)(stringField.elementAt(0));
+				tf.selectAll();
+			}
+			Panel buttons = new Panel();
+			buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+			cancel = new Button("Cancel");
+			cancel.addActionListener(this);
+			cancel.addKeyListener(this);
+			okay = new Button("  OK  ");
+			okay.addActionListener(this);
+			okay.addKeyListener(this);
+			if (IJ.isMacintosh()) {
+				buttons.add(cancel);
+				buttons.add(okay);
+			} else {
+				buttons.add(okay);
+				buttons.add(cancel);
+			}
+			c.gridx = 0; c.gridy = y;
+			c.anchor = GridBagConstraints.EAST;
+			c.gridwidth = 2;
+			c.insets = new Insets(15, 0, 0, 0);
+			grid.setConstraints(buttons, c);
+			add(buttons);
+			if (IJ.isMacintosh())
+			setResizable(false);
+			pack();
+			setup();
+			GUI.center(this);
+			show();
+			recorderOn = Recorder.record;
+			IJ.wait(50); // work around for Sun/WinNT bug
+		}
+		/* For plugins that read their input only via dialogItemChanged, call it at least once */
+		if (!wasCanceled && dialogListeners!=null && dialogListeners.size()>0) {
+			resetCounters();
+			((DialogListener)dialogListeners.elementAt(0)).dialogItemChanged(this,null);
+			recorderOn = false;
+		}
+		resetCounters();
+	}
 
     /** Reset the counters before reading the dialog parameters */
     private void resetCounters() {
