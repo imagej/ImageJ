@@ -1,16 +1,21 @@
 package ij.gui;
+import ij.*;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
-import ij.*;
 
 /** This class is an extended ImageWindow used to display image stacks. */
 public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
-	protected Scrollbar sliceSelector;
+	protected Scrollbar channelSelector, sliceSelector, frameSelector;
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
+	boolean viewIn5D;
+	int nChannels=1, nSlices=1, nFrames=1;
+	int c=1, z=1, t=1;
+	
 
 	public StackWindow(ImagePlus imp) {
 		this(imp, null);
@@ -21,17 +26,53 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		// add slice selection slider
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
+		nSlices = stackSize;
+		viewIn5D = imp.getOpenAsHyperVolume();
+		imp.setOpenAsHyperVolume(false);
+		if (viewIn5D) {
+			int[] dim = imp.getDimensions();
+			nChannels = dim[2];
+			nSlices = dim[3];
+			nFrames = dim[4];
+		}
+		if (nSlices==stackSize) viewIn5D = false;
 		addMouseWheelListener(this);
-		sliceSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, stackSize+1);
-		add(sliceSelector);
 		ImageJ ij = IJ.getInstance();
-		if (ij!=null) sliceSelector.addKeyListener(ij);
-		sliceSelector.addAdjustmentListener(this);
-		sliceSelector.setFocusable(false); // prevents scroll bar from blinking on Windows
-		int blockIncrement = stackSize/10;
-		if (blockIncrement<1) blockIncrement = 1;
-		sliceSelector.setUnitIncrement(1);
-		sliceSelector.setBlockIncrement(blockIncrement);
+		if (nChannels>1) {
+			channelSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, nChannels+1);
+			Panel panel = new Panel(new BorderLayout(2, 0));
+			//panel.add(new Label("c"), BorderLayout.WEST);
+			//panel.add(channelSelector, BorderLayout.CENTER);
+			add(channelSelector);
+			if (ij!=null) channelSelector.addKeyListener(ij);
+			channelSelector.addAdjustmentListener(this);
+			channelSelector.setFocusable(false); // prevents scroll bar from blinking on Windows
+			channelSelector.setUnitIncrement(1);
+			channelSelector.setBlockIncrement(1);
+		}
+		if (nSlices>1) {
+			sliceSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, nSlices+1);
+			add(sliceSelector);
+			if (ij!=null) sliceSelector.addKeyListener(ij);
+			sliceSelector.addAdjustmentListener(this);
+			sliceSelector.setFocusable(false);
+			int blockIncrement = nSlices/10;
+			if (blockIncrement<1) blockIncrement = 1;
+			sliceSelector.setUnitIncrement(1);
+			sliceSelector.setBlockIncrement(blockIncrement);
+		}
+		if (nFrames>1) {
+			frameSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, nFrames+1);
+			add(frameSelector);
+			if (ij!=null) frameSelector.addKeyListener(ij);
+			frameSelector.addAdjustmentListener(this);
+			frameSelector.setFocusable(false);
+			int blockIncrement = nFrames/10;
+			if (blockIncrement<1) blockIncrement = 1;
+			frameSelector.setUnitIncrement(1);
+			frameSelector.setBlockIncrement(blockIncrement);
+		}
+		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
 		pack();
 		show();
 		int previousSlice = imp.getCurrentSlice();
@@ -43,8 +84,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
-		if (!running2){
-			slice = sliceSelector.getValue();
+		if (!running2) {
+			//slice = sliceSelector.getValue();
+			if (e.getSource()==channelSelector)
+				c = channelSelector.getValue();
+			else if (e.getSource()==sliceSelector)
+				z = sliceSelector.getValue();
+			else if (e.getSource()==frameSelector)
+				t = frameSelector.getValue();
+			slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
+			//IJ.log(slice+" "+c+" "+z+" "+t);
 			notify();
 		}
 	}
@@ -53,6 +102,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent event) {
+		if (viewIn5D) return;
 		synchronized(this) {
 			int slice = imp.getCurrentSlice() + event.getWheelRotation();
 			if (slice<1)
@@ -81,6 +131,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
+		if (viewIn5D) return;
 		int stackSize = imp.getStackSize();
 		int max = sliceSelector.getMaximum();
 		if (max!=(stackSize+1))
@@ -103,5 +154,70 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			}
 		}
 	}
+	
+	public String createSubtitle() {
+		String s = super.createSubtitle();
+		if (!viewIn5D) return s;
+    	s="";
+		if (nChannels>1) {
+			s += "c:"+c+"/"+nChannels;
+			if (nSlices==1&&nFrames==1)
+				s += "; ";
+			else
+				s += " ";
+		}
+		if (nSlices>1) {
+			s += "z:"+z+"/"+nSlices;
+			if (nFrames==1)
+				s += "; ";
+			else
+				s += " ";
+		}
+		if (nFrames>1) {
+			s += "t:"+t+"/"+nFrames;
+			s += "; ";
+		}
+		if (running2) return s;
+    	int type = imp.getType();
+    	Calibration cal = imp.getCalibration();
+    	if (cal.scaled())
+    		s += IJ.d2s(imp.getWidth()*cal.pixelWidth,2) + "x" + IJ.d2s(imp.getHeight()*cal.pixelHeight,2)
+ 			+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
+    	else
+    		s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
+		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
+    	switch (type) {
+	    	case ImagePlus.GRAY8:
+	    	case ImagePlus.COLOR_256:
+	    		s += "8-bit";
+	    		break;
+	    	case ImagePlus.GRAY16:
+	    		s += "16-bit";
+				size *= 2;
+	    		break;
+	    	case ImagePlus.GRAY32:
+	    		s += "32-bit";
+				size *= 4;
+	    		break;
+	    	case ImagePlus.COLOR_RGB:
+	    		s += "RGB";
+				size *= 4;
+	    		break;
+    	}
+    	if (imp.isInvertedLut())
+    		s += " (inverting LUT)";
+    	if (size>=10000)    	
+    		s += "; " + (int)Math.round(size/1024.0) + "MB";
+    	else if (size>=1024) {
+    		double size2 = size/1024.0;
+    		s += "; " + IJ.d2s(size2,(int)size2==size2?0:1) + "MB";
+    	} else
+    		s += "; " + size + "K";
+    	return s;
+    }
+    
+    public boolean is5D() {
+    	return viewIn5D;
+    }
 
 }

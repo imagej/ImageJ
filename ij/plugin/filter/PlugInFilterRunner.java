@@ -53,7 +53,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
             roi = imp.getRoi();
             if (roi!=null) roi.endPaste();              // prepare the image: finish previous paste operation (if any)
             if (!imp.lock()) return;                    // exit if image is in use
-            nPasses = imp.getProcessor().getNChannels();
+			nPasses = ((flags&PlugInFilter.CONVERT_TO_FLOAT)!=0) ? imp.getProcessor().getNChannels():1;
         }
         if (theFilter instanceof ExtendedPlugInFilter) { // calling showDialog required?
             flags = ((ExtendedPlugInFilter)theFilter).showDialog(imp, command, this);  // D I A L O G (may include preview)

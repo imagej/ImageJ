@@ -617,7 +617,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
     	it from the previous selection. Called by the IJ.doWand() method, and the makeRectangle(), 
     	makeOval(), makePolygon() and makeSelection() macro functions. */
     public void update(boolean add, boolean subtract) {
-     	if (!IJ.isJava2() || previousRoi==null) return;
+     	if (previousRoi==null) return;
     	if (add) {
 			previousRoi.modState = ADD_TO_ROI;
    			modifyRoi();

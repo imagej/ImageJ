@@ -96,7 +96,7 @@ public class AVIWriter implements PlugInFilter {
         String fileDir = sd.getDirectory();
         file = new File(fileDir + fileName);
         raFile = new RandomAccessFile(file, "rw");
-        if (IJ.isJava2()) raFile.setLength(0);
+        raFile.setLength(0);
         imp.startTiming();
         writeString("RIFF"); // signature
         saveFileSize = raFile.getFilePointer();
@@ -371,8 +371,7 @@ public class AVIWriter implements PlugInFilter {
     }
     
     public void createLUT() {
-        LookUpTable lut = imp.createLut();
-        IndexColorModel cm = (IndexColorModel)lut.getColorModel();
+        IndexColorModel cm = (IndexColorModel)imp.getProcessor().getCurrentColorModel();
         int mapSize = cm.getMapSize();
         lutWrite = new byte[4*256];
         for (int i = 0; i<256; i++) {

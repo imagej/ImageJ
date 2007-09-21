@@ -61,7 +61,7 @@ public class ColorProcessor extends ImageProcessor {
 	
 	public Image createImage() {
 		if (ij.IJ.isJava16()) return createBufferedImage();
-		if (source==null || (ij.IJ.isMacintosh()&&!ij.IJ.isJava2())) {
+		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
 			source.setFullBufferUpdates(true);

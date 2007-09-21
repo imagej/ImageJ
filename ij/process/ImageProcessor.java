@@ -969,8 +969,7 @@ public abstract class ImageProcessor extends Object {
 		test requires Java 2 and an 8 bit or RGB image. Antialiasing does not
 		work with 8-bit images that are not using 0-255 display range. */
 	public void setAntialiasedText(boolean antialiasedText) {
-		if (antialiasedText && ij.IJ.isJava2() &&
-		(((this instanceof ByteProcessor)&&getMin()==0.0&&getMax()==255.0) || (this instanceof ColorProcessor)))
+		if (antialiasedText && (((this instanceof ByteProcessor)&&getMin()==0.0&&getMax()==255.0) || (this instanceof ColorProcessor)))
 			this.antialiasedText = true;
 		else
 			this.antialiasedText = false;

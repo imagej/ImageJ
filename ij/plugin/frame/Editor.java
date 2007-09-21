@@ -211,16 +211,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void open(String dir, String name) {
 		path = dir+name;
 		File file = new File(path);
-		int size = (int)file.length();
-		if (size>MAX_SIZE && !(IJ.isJava2()||IJ.isMacintosh())) {
-			IJ.error("This file is too large for ImageJ to open.\n"
-				+" \n"
-				+"	  File size: "+size+" bytes\n"
-				+"	  Max. size: "+MAX_SIZE+" bytes");
-			dispose();
-			return;
-		}
-
 		try {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(file));

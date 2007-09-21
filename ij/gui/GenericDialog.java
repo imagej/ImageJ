@@ -798,9 +798,10 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
   	/** Displays this dialog box. */
 	public void showDialog() {
-		if (macro)
+		if (macro) {
 			dispose();
-		else {
+			recorderOn = Recorder.record && Recorder.recordInMacros;
+		} else {
 			if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
 			pfr.setDialog(this);
 			if (stringField!=null&&numberField==null) {
@@ -983,7 +984,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
 		boolean meta = (flags & KeyEvent.META_MASK) != 0;
 		boolean shift = (flags & e.SHIFT_MASK) != 0;
-		if (keyCode==KeyEvent.VK_G && shift && (control||meta) && IJ.isJava2())
+		if (keyCode==KeyEvent.VK_G && shift && (control||meta))
 			new ScreenGrabber().run(""); 
 	}
 		

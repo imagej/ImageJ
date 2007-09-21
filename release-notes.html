@@ -5,19 +5,27 @@
 </head>
 <body>
 
-<li> <u>1.39d, 23 August 2007</u>
+<li> <u>1.39e, 21 September 2007</u>
 <ul>
-<li> Added the "Gif Transparent Index" field to <i>Edit&gt;Options&gt;Input-Output</i>,
-which allows the user to specify the transparent color used when saving in GIF format.
-<li> <i>File&gt;Save As&gt;Gif</i> now saves stacks as animated Gifs.
-<li> RoiManager function calls are now faster in batch mode macros. On Windows, the
-<a href="http://rsb.info.nih.gov/ij/macros/RoiManagerSpeedTest.txt">RoiManagerSpeedTest</a>
-macro is 10 times faster.
-<li> <i>Edit&gt;Selection&gt;Rotate</i> and the makeLine() macro function 
-no longer convert coordinate values to integers.
-<li> Added seek(long) and getLongFilePointer() methods to the RandomAccessStream class.
-<li> Fixed bugs in <i>Image&gt;Stacks&gt;Reslice</i>
-<li> Fixed a bug that caused incorrect interpolated line profiles along image edges.
+<li> Added the <i>Image&gt;Stacks&gt;Stack to HyperVolume</i> and <i>HyperVolume to Stack</i>
+commands, which are based on the Stack_to_Image5D class in Joachim Walter's
+Image5D plugin.
+<li> Extended the StackWindow class to support hypervolumes (4D and 5D stacks).
+Use the
+<a href="http://rsb.info.nih.gov/ij/macros/HyperVolume_Maker.txt">HyperVolume Maker</a>
+macro to create sample hypervolumes.
+<li> Toolbar menu commands are now recorded.
+<li> The setLocation(x,y) macro function now moves non-image windows.
+<li> Added the getValue("foreground.color") and getValue("background.color") macro functions.
+<li> Added the setOption("OpenAsHyperVolume", boolean) macro function.
+<li> Added the setOpenAsHyperVolume(boolean) and getOpenAsHyperVolume() methods to
+the ImagePlus class.
+<li> As a work around for a problem on Linux where dialog boxes are sometimes slow to open,
+run ImageJ using the Motif toolkit with<br>
+&nbsp;&nbsp;&nbsp;<i>java -Dawt.toolkit=sun.awt.motif.MToolkit -jar ij.jar</i>
+<li> Fixed a bug, introduced in v1.38, that caused the threshold color to not be taken
+into account when saving in AVI format.
+<li> Fixed a bug that sometimes caused toolbar menus to not display currectly on Linux.
 </ul>
 
 </body>

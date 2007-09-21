@@ -64,7 +64,6 @@ public class Opener {
 		that ImageJ's File/Open command uses to open files if
 		"Open/Save Using JFileChooser" is checked in EditOptions/Misc. */
 	public void openMultiple() {
-		if (!IJ.isJava2()) return;
 		Java2.setSystemLookAndFeel();
 		// run JFileChooser in a separate thread to avoid possible thread deadlocks
 		try {
@@ -138,15 +137,14 @@ public class Opener {
 						break;
 					}
 					File file = new File(path);
-					boolean betterTextArea = IJ.isJava2() || IJ.isMacintosh();
 					int maxSize = 250000;
 					long size = file.length();
-					if (size>=28000 && betterTextArea) {
+					if (size>=28000) {
 						String osName = System.getProperty("os.name");
 						if (osName.equals("Windows 95") || osName.equals("Windows 98") || osName.equals("Windows Me"))
 							maxSize = 60000;
 					}
-					if (size<28000 || (betterTextArea && size<maxSize)) {
+					if (size<maxSize) {
 						Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 						if (ed!=null) ed.open(getDir(path), getName(path));
 					} else

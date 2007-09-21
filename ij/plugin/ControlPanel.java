@@ -83,12 +83,7 @@ public class ControlPanel implements PlugIn
 
 	//private static String pcpDir=null;
 
-	public ControlPanel()
-	{
-		if (!IJ.isJava2()) { //wsr
-			IJ.error("This command requires Java 1.2 or later");
-			return;
-		}
+	public ControlPanel() {
 		requireDoubleClick = !(IJ.isWindows() || IJ.isMacintosh());
 		Java2.setSystemLookAndFeel();
 	}
@@ -114,14 +109,9 @@ public class ControlPanel implements PlugIn
 	 *
 	 */
 	public void run(String arg) {
-		//IJ.write("***** MARK *****");
-		if (!IJ.isJava2()) //wsr
-			return;
 		currentArg = (arg.length()==0) ? defaultArg : arg;
 		argLength = currentArg.length();
-// 		IJ.getInstance().setControlPanel(this);
 		load();
-		//IJ.write("thread: "+Thread.currentThread().getName());
 	}
 
 

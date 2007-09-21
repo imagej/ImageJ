@@ -195,6 +195,7 @@ public class Functions implements MacroConstants, Measurements {
 			case ROI_MANAGER: value = roiManager(); break;
 			case TOOL_ID: interp.getParens(); value = Toolbar.getToolId(); break;
 			case IS: value = is(); break;
+			case GET_VALUE: value = getValue(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -680,18 +681,43 @@ public class Functions implements MacroConstants, Measurements {
 		return imageType;
 	}
 
-	double getPixel() {
+	void setPixel() {
 		interp.getLeftParen();
 		int a1 = (int)interp.getExpression();
 		interp.getComma();
-		int a2 = (int)interp.getExpression();
-		interp.getRightParen();
-		double value = 0.0;
+		double a2 = interp.getExpression();
+		interp.getToken();
+		if (interp.token==',') {
+			double a3 = interp.getExpression();
+			interp.getRightParen();
+			if (getType()==ImagePlus.GRAY32)
+				getProcessor().putPixelValue(a1, (int)a2, a3);
+			else
+				getProcessor().putPixel(a1, (int)a2, (int)a3);
+		} else {
+			if (interp.token!=')') interp.error("')' expected");
+			getProcessor().setf(a1, (float)a2);
+		}
+		updateNeeded = true;
+	}
+
+	double getPixel() {
+		interp.getLeftParen();
+		int a1 = (int)interp.getExpression();
 		ImageProcessor ip = getProcessor();
-		if (getType()==ImagePlus.GRAY32)
-			value = ip.getPixelValue(a1, a2);
-		else
-			value = ip.getPixel(a1, a2);
+		double value = 0.0;
+		interp.getToken();
+		if (interp.token==',') {
+			int a2 = (int)interp.getExpression();
+			interp.getRightParen();
+			if (getType()==ImagePlus.GRAY32)
+				value = ip.getPixelValue(a1, a2);
+			else
+				value = ip.getPixel(a1, a2);
+		} else {
+			if (interp.token!=')') interp.error("')' expected");
+			value = ip.getf(a1);
+		}
 		return value;
 	}
 	
@@ -705,21 +731,6 @@ public class Functions implements MacroConstants, Measurements {
 		this.defaultIP = stack.getProcessor(z+1);		
 	}
 	
-	void setPixel() {
-		interp.getLeftParen();
-		int a1 = (int)interp.getExpression();
-		interp.getComma();
-		int a2 = (int)interp.getExpression();
-		interp.getComma();
-		double a3 = interp.getExpression();
-		interp.getRightParen();
-		if (getType()==ImagePlus.GRAY32)
-			getProcessor().putPixelValue(a1, a2, a3);
-		else
-			getProcessor().putPixel(a1, a2, (int)a3);
-		updateNeeded = true;
-	}
-
 	void moveTo() {
 		interp.getLeftParen();
 		int a1 = (int)(interp.getExpression()+0.5);
@@ -2192,16 +2203,15 @@ public class Functions implements MacroConstants, Measurements {
 			height = (int)getNextArg();
 		}
 		interp.getRightParen();
-		ImagePlus imp = getImage();
-		ImageWindow win =imp.getWindow();
-		if (win!=null) {
-			if (width==0&&height==0)
-				win.setLocation(x, y);
-			else {
-				win.setBounds(x, y, width, height);
-				//Insets i = win.getInsets();
-				//win.setBounds(x+i.left, y+i.top, width+i.left+i.right, height+i.top+i.bottom);
-			}
+		if (width==0&&height==0) {
+			Frame frame = WindowManager.getFrontWindow();
+			if (frame!=null)
+				frame.setLocation(x, y);
+		} else {
+			ImagePlus imp = getImage();
+			ImageWindow win = imp.getWindow();
+			if (win!=null)
+				win.setLocationAndSize(x, y, width, height);
 		}
 	}
 	
@@ -3080,11 +3090,8 @@ public class Functions implements MacroConstants, Measurements {
  	Variable[] getFontList() {
 		interp.getParens();
 		String fonts[] = null;
-		if (IJ.isJava2()) {
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			fonts = ge.getAvailableFontFamilyNames();
-		} else
-			fonts = Toolkit.getDefaultToolkit().getFontList();
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		fonts = ge.getAvailableFontFamilyNames();
 		if (fonts==null) return null;
     	Variable[] array = new Variable[fonts.length];
     	for (int i=0; i<fonts.length; i++)
@@ -3147,6 +3154,8 @@ public class Functions implements MacroConstants, Measurements {
 			pgm.queueCommands = state;
 		else if (arg1.equals("disableundo"))
 			Prefs.disableUndo = state;
+		else if (arg1.equals("openashypervolume"))
+			getImage().setOpenAsHyperVolume(state);
 		else
 			interp.error("Invalid option");
 	}
@@ -3356,18 +3365,63 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String exec() {
-		String cmd = getStringArg();
+		String[] cmd;
 		StringBuffer sb = new StringBuffer(256);
+		String arg1 = getFirstString();
+		if (interp.nextNonEolToken()==',') {
+			Vector v = new Vector();
+			v.add(arg1);
+			do
+				v.add(getNextString());
+			while (interp.nextNonEolToken()==',');
+			cmd = new String[v.size()];
+			v.copyInto((String[])cmd);
+		} else
+			cmd = Tools.split(arg1);
+		interp.getRightParen();
+		boolean openingDoc = cmd.length==2&&cmd[0].equals("open") || cmd.length==5&&cmd[3].equals("excel.exe");
+		if (openingDoc&&IJ.isWindows()) {
+			String path = cmd[1];
+			if (path.startsWith("http://")||path.startsWith("HTTP://")) {
+				cmd = new String[4];
+				cmd[2] = "start";
+				cmd[3] = path;
+			} else {
+				cmd = new String[3];
+				cmd[2] = path;
+			}
+			cmd[0] = "cmd";
+			cmd[1] = "/c";
+		}
+		BufferedReader reader = null;
 		try {                                                                                             
-			Process p = Runtime.getRuntime().exec(cmd);       
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));  
-			String line;                                                                                  
-			while ((line=reader.readLine())!=null)                                                
-        		sb.append(line+"\n");                                                                 
+			Process p = Runtime.getRuntime().exec(cmd);   
+			if (openingDoc) return null;
+			reader = new BufferedReader(new InputStreamReader(p.getInputStream()));  
+			String line; int count=1;                                                                                
+			while ((line=reader.readLine())!=null)  {                                              
+        		sb.append(line+"\n");
+        		if (count++==1&&line.startsWith("Microsoft Windows"))
+        			break; // user probably ran 'cmd' without /c option
+        	}                                                             
 		} catch (Exception e) {                                                                         
     		sb.append(e.getMessage()+"\n");                                                                          
+		} finally {
+			if (reader!=null) try {reader.close();} catch (IOException e) {}
 		}
 		return sb.toString(); 
+	}
+
+	double getValue() {
+		String key = getStringArg();
+		if (key.indexOf("foreground")!=-1)
+			return Toolbar.getForegroundColor().getRGB()&0xffffff;
+		else if (key.indexOf("background")!=-1)
+			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
+		else {
+			interp.error("Invalid key");
+			return 0.0;
+		}
 	}
 
 } // class Functions

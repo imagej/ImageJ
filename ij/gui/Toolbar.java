@@ -87,9 +87,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		down = new boolean[NUM_TOOLS];
 		resetButtons();
 		down[0] = true;
-		setForeground(foregroundColor);
+		setForeground(Color.black);
 		setBackground(gray);
-		//setBackground(Color.red);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
@@ -747,7 +746,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	void drawTool(int tool, boolean drawDown) {
 		down[tool] = drawDown;
 		Graphics g = this.getGraphics();
-		if (!drawDown && Prefs.antialiasedTools && IJ.isJava2()) {
+		if (!drawDown && Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}
@@ -942,7 +941,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         }
         if (tool==current) setTool(RECTANGLE);
     }
-
+    
 	/** Used by the MacroInstaller class to install macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
 	    if (id==0) {

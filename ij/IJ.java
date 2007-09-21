@@ -224,6 +224,10 @@ public class IJ {
 			command = "Appearance...";
 		else if (command.equals("Start Animation"))
 			command = "Start Animation [\\]";
+		else if (command.equals("Convert Images to Stack"))
+			command = "Images to Stack";
+		else if (command.equals("Convert Stack to Images"))
+			command = "Stack to Images";
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);
@@ -416,7 +420,7 @@ public class IJ {
 			return;
 		}
 		if (ij!=null) {
-			if (msg!=null && msg.startsWith("<html>") && isJava2())
+			if (msg!=null && msg.startsWith("<html>"))
 				new HTMLDialog(title, msg);
 			else
 				new MessageDialog(ij, title, msg);
@@ -664,7 +668,7 @@ public class IJ {
 	
 	/** Returns true if this machine is a Macintosh running OS X. */
 	public static boolean isMacOSX() {
-		return isMacintosh() && isJava2();
+		return isMacintosh();
 	}
 
 	/** Returns true if this machine is running Windows. */
@@ -672,7 +676,7 @@ public class IJ {
 		return isWin;
 	}
 	
-	/** Returns true if ImageJ is running on Java 2. */
+	/** Always returns true. */
 	public static boolean isJava2() {
 		return isJava2;
 	}

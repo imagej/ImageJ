@@ -345,8 +345,11 @@ public class FileOpener {
 			if (slices==0) slices = 1;
 			if (frames==0) frames = 1;
 			//IJ.log("setCalibration: "+channels+"  "+slices+"  "+frames);
-			if (channels*slices*frames==stackSize)
+			if (channels*slices*frames==stackSize) {
 				imp.setDimensions(channels, slices, frames);
+				if (slices!=stackSize)
+					imp.setOpenAsHyperVolume(true);
+			}
 		}
 	}
 

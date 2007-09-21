@@ -109,8 +109,7 @@ public class TextRoi extends Roi {
 		int sy = ic.screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
-		if (IJ.isJava2())
-			Java2.setAntialiasedText(g, antialiasedText);
+		Java2.setAntialiasedText(g, antialiasedText);
 		if (font==null)
 			adjustSize();
 		Font font = getCurrentFont();
@@ -196,8 +195,7 @@ public class TextRoi extends Roi {
 		double mag = ic.getMagnification();
 		Font font = getCurrentFont();
 		Graphics g = ic.getGraphics();
-		if (IJ.isJava2())
-			Java2.setAntialiasedText(g, true);
+		Java2.setAntialiasedText(g, true);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
@@ -228,10 +226,7 @@ public class TextRoi extends Roi {
 	}
 
 	int stringWidth(String s, FontMetrics metrics, Graphics g) {
-		if (IJ.isJava2())
-			return Java2.getStringWidth(s, metrics, g);
-		else
-			return  metrics.stringWidth(s);
+		return Java2.getStringWidth(s, metrics, g);
 	}
 
 }

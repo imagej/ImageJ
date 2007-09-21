@@ -17,15 +17,12 @@ import javax.swing.filechooser.*;
  	public DirectoryChooser(String title) {
  		if (IJ.isMacOSX() && IJ.isJava14())
 			getDirectoryUsingFileDialog(title);
- 		else if (IJ.isJava2()) {
+ 		else {
  			if (EventQueue.isDispatchThread())
  				getDirectoryUsingJFileChooserOnThisThread(title);
  			else
  				getDirectoryUsingJFileChooser(title);
- 		} else {
-			OpenDialog od = new OpenDialog(title, null);
-			directory = od.getDirectory();
-		}
+ 		}
  	}
  	
 	// runs JFileChooser on event dispatch thread to avoid possible thread deadlocks

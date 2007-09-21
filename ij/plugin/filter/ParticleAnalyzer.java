@@ -60,6 +60,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Add particles to ROI Manager. */
 	public static final int ADD_TO_MANAGER = 2048;
 
+	/** Display image containing binary masks of measured paticles. */
+	public static final int SHOW_MASKS = 4096;
 
 	static final String OPTIONS = "ap.options";
 	
@@ -322,6 +324,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
 		if ((options&SHOW_OUTLINES)!=0)
 			showChoice = OUTLINES;
+		if ((options&SHOW_MASKS)!=0)
+			showChoice = MASKS;
 		if ((options&SHOW_NONE)!=0)
 			showChoice = NOTHING;
 		ip.snapshot();

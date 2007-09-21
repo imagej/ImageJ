@@ -9,6 +9,7 @@ import ij.text.*;
 import ij.util.Tools;
 import ij.io.*;
 import ij.macro.MacroConstants;
+import ij.plugin.frame.Recorder;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 import java.util.*;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
 /** This plugin implements the Plugins/Macros/Install Macros command. It is also used by the Editor
@@ -324,6 +325,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public boolean runMenuTool(String name, String command) {
 		for (int i=0; i<nMacros; i++) {
 			if (macroNames[i].startsWith(name)) {
+				Recorder.recordInMacros = true;
 				new MacroRunner(pgm, macroStarts[i], name, command);
 				return true;
 			}

@@ -320,8 +320,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 ImageProcessor ip,ip2=null;
 		 float[] line = null;
 		 boolean ortho = (int)x1==x1&&(int)y1==y1&&x1==x2||y1==y2;
-		 boolean vertical = x1==x2;
-		 if (rotate) vertical = !vertical;
+		//boolean vertical = x1==x2 && (roi==null||roiType==Roi.RECTANGLE);
+		//if (rotate) vertical = !vertical;
 		 for (int i=0; i<stackSize; i++) {
 				ip = stack.getProcessor(flip?stackSize-i:i+1);
 				if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
@@ -330,7 +330,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 					line = getOrthoLine(ip, (int)x1, (int)y1, (int)x2, (int)y2, line);
 				else
 					line = getLine(ip, x1, y1, x2, y2, line);
-				if (vertical) {
+				if (rotate) {
 					if (i==0) ip2 = ip.createProcessor(stackSize, line.length);
 					putColumn(ip2, i, 0, line, line.length);
 				} else {
@@ -343,7 +343,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 double zSpacing = inputZSpacing/cal.pixelWidth;
 		 if (zSpacing!=1.0) {
 				ip2.setInterpolate(true);
-				if (vertical)
+				if (rotate)
 					ip2 = ip2.resize((int)(stackSize*zSpacing), line.length);
 				else
 					ip2 = ip2.resize(line.length, (int)(stackSize*zSpacing));

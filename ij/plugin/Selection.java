@@ -307,8 +307,6 @@ public class Selection implements PlugIn, Measurements {
 	}
 
 	void createSelectionFromMask(ImagePlus imp) {
-		if (!IJ.isJava2())
-			{IJ.error("Create Selection", "Java 1.2 or later required"); return;}
 		ImageProcessor ip = imp.getProcessor();
 		if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
 			IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
@@ -332,8 +330,6 @@ public class Selection implements PlugIn, Measurements {
 	}
 
 	void invert(ImagePlus imp) {
-		if (!IJ.isJava2())
-			{IJ.error("Inverse", "Java 1.2 or later required"); return;}
 		Roi roi = imp.getRoi();
 		if (roi==null || !roi.isArea())
 			{IJ.error("Inverse", "Area selection required"); return;}

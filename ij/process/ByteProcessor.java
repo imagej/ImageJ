@@ -17,7 +17,6 @@ public class ByteProcessor extends ImageProcessor {
 	private int bgColor = 255; //white
 	private boolean bgColorSet;
 	private int min=0, max=255;
-	private boolean brokenNewPixels = ij.IJ.isMacintosh()&&!ij.IJ.isJava2();
 
     private int binaryCount, binaryBackground;
 
@@ -71,7 +70,7 @@ public class ByteProcessor extends ImageProcessor {
 		if (ij.IJ.isJava16()) return createBufferedImage();
 		if (cm==null)
 			cm = getDefaultColorModel();
-		if (source==null || brokenNewPixels) {
+		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
 			source.setFullBufferUpdates(true);

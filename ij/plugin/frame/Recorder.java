@@ -41,6 +41,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		WindowManager.addWindow(this);
 		instance = this;
 		record = true;
+		recordInMacros = false;
 		Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER, 2, 0));
 		panel.add(new Label("Name:"));
 		macroName = new TextField(defaultName,15);
@@ -74,7 +75,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		not open or the command being recorded has called IJ.run(). 
 	*/
 	public static void setCommand(String command) {
-		if (textArea==null || (Thread.currentThread().getName().startsWith("Run$_")&&!recordInMacros))
+		boolean isMacro = Thread.currentThread().getName().startsWith("Run$_");
+		if (textArea==null || (isMacro&&!recordInMacros))
 			return;
 		commandName = command;
 		commandOptions = null;
@@ -186,7 +188,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			commandOptions = key+"="+value;
 		else
 			commandOptions += " "+key+"="+value;
-		//IJ.write("  "+key+"="+value);
 	}
 
 	public static void recordPath(String key, String path) {

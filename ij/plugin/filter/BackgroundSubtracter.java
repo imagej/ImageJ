@@ -253,7 +253,7 @@ public class BackgroundSubtracter implements PlugInFilter {
 		int swidth = width/shrinkfactor;
 		int sheight = height/shrinkfactor;
 		ImageProcessor ip2 = ip.duplicate();
-		ip2.smooth();
+		//ip2.smooth();
 		IJ.showProgress(0.1);
 		ImageProcessor smallImage = ip.createProcessor(swidth, sheight);
 		int xmaskmin, ymaskmin, min, thispixel;

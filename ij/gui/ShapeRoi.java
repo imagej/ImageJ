@@ -113,7 +113,6 @@ public class ShapeRoi extends Roi {
 	 */
 	ShapeRoi(Roi r, double flatness, double maxerror, boolean forceAngle, boolean forceTrace, boolean flatten, int maxPoly) {
 		super(r.startX, r.startY, r.width, r.height);
-		if(!IJ.isJava2()) return;
 		this.type = COMPOSITE;
 		this.flatness = flatness;
 		this.maxerror = maxerror;
@@ -137,7 +136,6 @@ public class ShapeRoi extends Roi {
 		points. Depending on the type, a segment uses from 1 to 7 elements of the array. */
 	public ShapeRoi(float[] shapeArray) {
 		super(0,0,null);
-		if(!IJ.isJava2()) return;
 		shape = makeShapeFromArray(shapeArray);
 		Rectangle r = shape.getBounds();
 		x = r.x;

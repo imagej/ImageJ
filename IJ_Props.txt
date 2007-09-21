@@ -105,6 +105,7 @@ color04="RGB Merge...",ij.plugin.RGBStackMerge
 color05="Show LUT",ij.plugin.filter.LutViewer
 color06="Edit LUT...",ij.plugin.LUT_Editor
 color07="Color Picker...[K]",ij.plugin.ColorPicker
+
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
 stacks02="Delete Slice",ij.plugin.StackEditor("delete")
@@ -112,17 +113,20 @@ stacks03="Next Slice [>]",ij.plugin.Animator("next")
 stacks04="Previous Slice [<]",ij.plugin.Animator("previous")
 stacks05="Set Slice...",ij.plugin.Animator("set")
 stacks06=-
-stacks07="Convert Images to Stack",ij.plugin.StackEditor("tostack")
-stacks08="Convert Stack to Images",ij.plugin.StackEditor("toimages")
-stacks09="Make Montage...",ij.plugin.MontageMaker
-stacks10="Reslice [/]...",ij.plugin.Slicer
-stacks11="Z Project...",ij.plugin.ZProjector
-stacks12="3D Project...",ij.plugin.filter.Projector
-stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks14=-
-stacks15="Start Animation [\\]",ij.plugin.Animator("start")
-stacks16="Stop Animation",ij.plugin.Animator("stop")
-stacks17="Animation Options...",ij.plugin.Animator("options")
+stacks07="Images to Stack",ij.plugin.StackEditor("tostack")
+stacks08="Stack to Images",ij.plugin.StackEditor("toimages")
+stacks09="Stack to HyperVolume...",ij.plugin.StackEditor("stackto5d")
+stacks10="HyperVolume to Stack",ij.plugin.StackEditor("5dtostack")
+stacks11=-
+stacks12="Make Montage...",ij.plugin.MontageMaker
+stacks13="Reslice [/]...",ij.plugin.Slicer
+stacks14="Z Project...",ij.plugin.ZProjector
+stacks15="3D Project...",ij.plugin.filter.Projector
+stacks16="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
+stacks17=-
+stacks18="Start Animation [\\]",ij.plugin.Animator("start")
+stacks19="Stop Animation",ij.plugin.Animator("stop")
+stacks20="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Rotate submenu
 rotate01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")

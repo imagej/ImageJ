@@ -224,7 +224,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     		ImageStack stack = imp.getStack();
     		int currentSlice = imp.getCurrentSlice();
     		s += currentSlice+"/"+nSlices;
-    		boolean isLabel = false;
     		String label = stack.getShortSliceLabel(currentSlice);
     		if (label!=null && label.length()>0)
     			s += " (" + label + ")";
@@ -498,6 +497,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     public static void centerNextImage() {
     	centerOnScreen = true;
     }
+    
+    /** Moves and resizes this window. Changes the 
+    	 magnification so the image fills the window. */
+    public void setLocationAndSize(int x, int y, int width, int height) {
+		setBounds(x, y, width, height);
+		getCanvas().fitToWindow();
+		pack();
+	}
 
 	/** Overrides the setBounds() method in Component so
 		we can find out when the window is resized. */

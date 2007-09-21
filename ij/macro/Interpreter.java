@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.Macro_Runner;
+import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
@@ -118,6 +119,7 @@ public class Interpreter implements MacroConstants {
 		else
 			doBlock(); 
 		finishUp();
+		Recorder.recordInMacros = false;
 	}
 	
 	/** Saves global variablesk. */
@@ -924,10 +926,7 @@ public class Interpreter implements MacroConstants {
 
 	double compareStrings(String s1, String s2, int op) {
 		int result;
-		if (IJ.isJava2())
-			result = s1.compareToIgnoreCase(s2);
-		else
-			result = s1.toLowerCase().compareTo(s2.toLowerCase());
+		result = s1.compareToIgnoreCase(s2);
 		double v1 = 0.0;
 		switch (op) {
 			case EQ:

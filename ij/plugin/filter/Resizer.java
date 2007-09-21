@@ -41,7 +41,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 		origHeight = r.height;
 		sizeToHeight=false;
 	    boolean restoreRoi = crop && roi!=null && roi.getType()!=Roi.RECTANGLE;
-		if (roi!=null && IJ.isJava2()) {
+		if (roi!=null) {
 			Rectangle b = roi.getBounds();
 			int w = ip.getWidth();
 			int h = ip.getHeight();

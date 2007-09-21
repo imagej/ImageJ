@@ -220,10 +220,7 @@ public class FileSaver {
 		Object jpegWriter = null;
 		ImagePlus tempImage = WindowManager.getTempCurrentImage();
 		WindowManager.setTempCurrentImage(imp);
-		if (IJ.isJava2())
-			IJ.runPlugIn("ij.plugin.JpegWriter", path);
-		else
-			IJ.runPlugIn("Jpeg_Writer", path);		
+		IJ.runPlugIn("ij.plugin.JpegWriter", path);
 		WindowManager.setTempCurrentImage(tempImage);
 		if (!(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
 			updateImp(fi, fi.GIF_OR_JPG);

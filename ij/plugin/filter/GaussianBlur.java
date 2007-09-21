@@ -39,6 +39,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     private ImagePlus imp;              // The ImagePlus of the setup call, needed to get the spatial calibration
     private boolean hasScale = false;   // whether the image has an x&y scale
     private int nPasses = 1;            // The number of passes (filter directions * color channels * stack slices)
+	private int nChannels = 1;        // The number of color channels
     private int pass;                   // Current pass
     
     /** Default constructor */
@@ -66,6 +67,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
         String options = Macro.getOptions();
         boolean oldMacro = false;
+		nChannels = imp.getProcessor().getNChannels();
         if  (options!=null) {
             if (options.indexOf("radius=") >= 0) {  // ensure compatibility with old macros
                 oldMacro = true;                    // specifying "radius=", not "sigma=
@@ -106,7 +108,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
      *  filter operations required.
      */
     public void setNPasses(int nPasses) {
-        this.nPasses = 2 * nPasses;
+        this.nPasses = 2 * nChannels * nPasses;
         pass = 0;
     }
 

@@ -18,8 +18,6 @@ public class Printer implements PlugInFilter, Printable {
 	private static int fontSize = 12;
 
 	public int setup(String arg, ImagePlus imp) {
-		if (!IJ.isJava2())
-			{IJ.error("Print", "Printing requires Java 1.2 or later"); return DONE;}
 		if (arg.equals("setup"))
 			{pageSetup(); return DONE;}
 		this.imp = imp;

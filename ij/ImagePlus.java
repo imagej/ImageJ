@@ -87,6 +87,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean errorLoadingImage;
 	private static ImagePlus clipboard;
 	private static Vector listeners = new Vector();
+	private boolean openAsHyperVolume;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -697,10 +698,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			double magnification = win.getCanvas().getMagnification();
 			if (magnification!=1.0) {
 				double percent = magnification*100.0;
-				if (percent==(int)percent)
-					scale = " (" + IJ.d2s(percent,0) + "%)";
-				else
-					scale = " (" + IJ.d2s(percent,1) + "%)";
+				int digits = percent>100.0||percent==(int)percent?0:1;
+				scale = " (" + IJ.d2s(percent,digits) + "%)";
 			}
 			win.setTitle(title+scale);
     	}
@@ -747,11 +746,25 @@ public class ImagePlus implements ImageObserver, Measurements {
 			nChannels = 1;
 			nSlices = getImageStackSize();
 			nFrames = 1;
+			if (is5D()) {
+				setOpenAsHyperVolume(false);
+				new StackWindow(this);
+			}
 		}
+		boolean updateWin = is5D() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
+		if (updateWin) {
+			if (nSlices!=getImageStackSize())
+				setOpenAsHyperVolume(true);
+			new StackWindow(this);
+		}
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
+	}
+	
+	boolean is5D() {
+		return win!=null && win instanceof StackWindow && ((StackWindow)win).is5D();
 	}
 
 	/** Returns the number of channels. */
@@ -1615,6 +1628,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return locked;
 	}
 	
+	public void setOpenAsHyperVolume(boolean openAsHV) {
+		openAsHyperVolume = openAsHV;
+	}
+	
+	public boolean getOpenAsHyperVolume() {
+		return openAsHyperVolume;
+	}
+
 	public Object clone() {
 		try {return super.clone();}
 		catch (CloneNotSupportedException e) {return null;}

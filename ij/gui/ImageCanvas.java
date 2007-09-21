@@ -127,8 +127,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imageUpdated = false;
 				imp.updateImage();
 			}
-			if (IJ.isJava2())
-				Java2.setBilinearInterpolation(g, Prefs.interpolateScaledImages);
+			Java2.setBilinearInterpolation(g, Prefs.interpolateScaledImages);
 			Image img = imp.getImage();
 			if (img!=null)
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
@@ -301,8 +300,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				imp.updateImage();
 			}
 			Graphics offScreenGraphics = offScreenImage.getGraphics();
-			if (IJ.isJava2())
-				Java2.setBilinearInterpolation(offScreenGraphics, Prefs.interpolateScaledImages);
+			Java2.setBilinearInterpolation(offScreenGraphics, Prefs.interpolateScaledImages);
 			Image img = imp.getImage();
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
@@ -443,6 +441,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		
 	void setMagnification2(double magnification) {
 		if (magnification>32.0) magnification = 32.0;
+		if (magnification<0.03125) magnification = 0.03125;
 		this.magnification = magnification;
 		imp.setTitle(imp.getTitle());
 	}
@@ -465,6 +464,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			win.setMaximizedBounds(new Rectangle(0, 0, screen.width, screen.height));
 			maxBoundsReset = true;
 		}
+		if (IJ.altKeyDown())
+			{fitToWindow(); return;}
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight) {
 			if (width>imageWidth*magnification)
 				width = (int)(imageWidth*magnification);
@@ -480,6 +481,19 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			repaint();
 		}
 		//IJ.log("resizeCanvas2: "+srcRect+" "+dstWidth+"  "+dstHeight+" "+width+"  "+height);
+	}
+	
+	public void fitToWindow() {
+			ImageWindow win = imp.getWindow();
+			if (win==null) return;
+			Rectangle bounds = win.getBounds();
+			Insets insets = win.getInsets();
+			int sliderHeight = (win instanceof StackWindow)?20:0;
+			double xmag = (double)(bounds.width-10)/srcRect.width;
+			double ymag = (double)(bounds.height-(10+insets.top+sliderHeight))/srcRect.height;
+			setMagnification(Math.min(xmag, ymag));
+			srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
+			setDrawingSize((int)(imageWidth*magnification), (int)(imageHeight*magnification));
 	}
     
     void setMaxBounds() {

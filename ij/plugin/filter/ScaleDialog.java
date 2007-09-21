@@ -115,8 +115,7 @@ class SetScaleDialog extends GenericDialog {
 	}
 
     protected void setup() {
-    	if (IJ.isJava2())
-    		initialScale += "          ";
+    	initialScale += "          ";
    		setScale(initialScale);
     }
  	

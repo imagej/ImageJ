@@ -29,21 +29,15 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 		
 		font = new Choice();
-		if (IJ.isJava2()) {
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			String[] fonts = ge.getAvailableFontFamilyNames();
-			font.add("SansSerif");
-			font.add("Serif");
-			font.add("Monospaced");
-			for (int i=0; i<fonts.length; i++) {
-				String f = fonts[i];
-				if (!(f.equals("SansSerif")||f.equals("Serif")||f.equals("Monospaced")))
-					font.add(f);
-			}
-		} else {
-			String[] fonts = Toolkit.getDefaultToolkit().getFontList();
-			for (int i=0; i<fonts.length; i++)
-				font.add(fonts[i]);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String[] fonts = ge.getAvailableFontFamilyNames();
+		font.add("SansSerif");
+		font.add("Serif");
+		font.add("Monospaced");
+		for (int i=0; i<fonts.length; i++) {
+			String f = fonts[i];
+			if (!(f.equals("SansSerif")||f.equals("Serif")||f.equals("Monospaced")))
+				font.add(f);
 		}
 		font.select(TextRoi.getFont());
 		font.addItemListener(this);

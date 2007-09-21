@@ -45,9 +45,15 @@ public class Calibration implements Cloneable {
 	/** Calibration function coefficients */
 	private double[] coefficients;
 		
-	/* Distance unit (e.g. 'cm', 'inch') */
+	/* Default distance unit (e.g. 'cm', 'inch') */
 	private String unit = "pixel";
 	
+	/* Y distance unit */
+	private String yunit;
+
+	/* Z distance unit */
+	private String zunit;
+
 	/* Distance units (e.g. 'microns', 'inches') */
 	private String units;
 
@@ -86,7 +92,7 @@ public class Calibration implements Cloneable {
 		return pixelWidth!=1.0 || pixelHeight!=1.0 || pixelDepth!=1.0;
 	}
 	
-   	/** Sets the length unit (e.g. "mm", "inch"). */
+   	/** Sets the default length unit (e.g. "mm", "inch"). */
  	public void setUnit(String unit) {
  		if (unit==null || unit.equals(""))
  			this.unit = "pixel";
@@ -95,11 +101,41 @@ public class Calibration implements Cloneable {
  		units = null;
  	}
  	
- 	/** Returns the length unit (e.g. "micron", "inch"). */
+   	/** Sets the X length unit. */
+ 	public void setXUnit(String unit) {
+		setUnit(unit);
+	}
+
+   	/** Sets the Y length unit. */
+ 	public void setYUnit(String unit) {
+ 		yunit = unit;
+	}
+
+   	/** Sets the Z length unit. */
+ 	public void setZUnit(String unit) {
+ 		zunit = unit;
+	}
+
+ 	/** Returns the default length unit (e.g. "micron", "inch"). */
  	public String getUnit() {
  		return unit;
  	}
  	
+ 	/** Returns the X length unit. */
+ 	public String getXUnit() {
+ 		return unit;
+ 	}
+
+ 	/** Returns the Y length unit, or the default unit if 'yunit' is null. */
+ 	public String getYUnit() {
+ 		return yunit!=null?yunit:unit;
+ 	}
+
+ 	/** Returns the Z length unit, or the default unit if 'zunit' is null. */
+ 	public String getZUnit() {
+ 		return zunit!=null?zunit:unit;
+ 	}
+
 	/** Returns the plural form of the length unit (e.g. "microns", "inches"). */
  	public String getUnits() {
  		if (units==null) {
