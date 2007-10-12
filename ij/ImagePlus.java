@@ -332,7 +332,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		'statusMessage' in the status bar. */
 	public void show(String statusMessage) {
 		if (win!=null) return;
-		if ((IJ.macroRunning() && ij==null) || Interpreter.isBatchMode()) {
+		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
 			ImagePlus img = WindowManager.getCurrentImage();
 			if (img!=null) img.saveRoi();
 			WindowManager.setTempCurrentImage(this);
@@ -353,8 +353,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (roi!=null) roi.setImage(this);
 			draw();
 			IJ.showStatus(statusMessage);
-			if (IJ.macroRunning()) { // wait for image to become activated
-				//IJ.log("Waiting for image to be activated");
+			if (IJ.isMacro()) { // wait for window to be activated
 				long start = System.currentTimeMillis();
 				while (!activated) {
 					IJ.wait(5);
@@ -363,7 +362,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 						break; // 2 second timeout
 					}
 				}
-				//IJ.log(""+(System.currentTimeMillis()-start));
 			}
 			notifyListeners(OPENED);
 		}
@@ -746,25 +744,27 @@ public class ImagePlus implements ImageObserver, Measurements {
 			nChannels = 1;
 			nSlices = getImageStackSize();
 			nFrames = 1;
-			if (is5D()) {
-				setOpenAsHyperVolume(false);
+			if (isHyperVolume()) {
+				setOpenAsHypervolume(false);
 				new StackWindow(this);
+				setSlice(1);
 			}
 		}
-		boolean updateWin = is5D() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
+		boolean updateWin = isHyperVolume() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
 		if (updateWin) {
 			if (nSlices!=getImageStackSize())
-				setOpenAsHyperVolume(true);
+				setOpenAsHypervolume(true);
 			new StackWindow(this);
+			setSlice(1);
 		}
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 	
-	boolean is5D() {
-		return win!=null && win instanceof StackWindow && ((StackWindow)win).is5D();
+	public boolean isHyperVolume() {
+		return win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperVolume();
 	}
 
 	/** Returns the number of channels. */
@@ -1161,12 +1161,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
 		if (!(isFileInfo || url!=null))
 			return;
-		if (ij!=null && changes && isFileInfo && !Interpreter.isBatchMode() && !IJ.macroRunning() && !IJ.altKeyDown()) {
+		if (ij!=null && changes && isFileInfo && !Interpreter.isBatchMode() && !IJ.isMacro() && !IJ.altKeyDown()) {
 			if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))
 				return;
 		}
-		if (roi!=null)
+		Roi saveRoi = null;
+		if (roi!=null) {
 			roi.endPaste();
+			saveRoi = (Roi)roi.clone();
+		}
 		trimProcessor();
 		if (isFileInfo && !(url!=null&&(fi.directory==null||fi.directory.equals(""))))
 			new FileOpener(fi).revertToSaved(this);
@@ -1189,6 +1192,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				setTitle(getTitle().substring(6));
 		}
 		ContrastAdjuster.update();
+		if (saveRoi!=null) setRoi(saveRoi);
 		repaintWindow();
 		IJ.showStatus("");
 		changes = false;
@@ -1568,7 +1572,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				setRoi(xCenter-w/2, yCenter-h/2, w, h);
 			roi = getRoi();
 		} 
-		if (IJ.macroRunning()) {
+		if (IJ.isMacro()) {
 			//non-interactive paste
 			int pasteMode = Roi.getCurrentPasteMode();
 			boolean nonRect = roi.getType()!=Roi.RECTANGLE;
@@ -1628,11 +1632,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return locked;
 	}
 	
-	public void setOpenAsHyperVolume(boolean openAsHV) {
+	public void setOpenAsHypervolume(boolean openAsHV) {
 		openAsHyperVolume = openAsHV;
 	}
 	
-	public boolean getOpenAsHyperVolume() {
+	public boolean getOpenAsHypervolume() {
 		return openAsHyperVolume;
 	}
 

@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.plugin.filter.*;
 import ij.measure.Calibration;
 import ij.plugin.frame.Recorder;
+import ij.macro.Interpreter;
 
 /** This plugin implements the Process/Image Calculator command. */
 public class ImageCalculator implements PlugIn {
@@ -265,5 +266,5 @@ public class ImageCalculator implements PlugIn {
 		}
 		return img3;
 	}
-
+	
 }

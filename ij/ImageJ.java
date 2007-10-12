@@ -35,7 +35,7 @@ The following command line options are recognized by ImageJ:
      Example3: e81*.tif
 
   -ijpath path
-     Specified the path to the directory containing the plugins directory
+     Specifies the path to the directory containing the plugins directory
      Example: -ijpath /Applications/ImageJ
 
   -port<n>
@@ -67,7 +67,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.39e";
+	public static final String VERSION = "1.39f";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);

@@ -695,7 +695,6 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			String label = (String)labels.get((Object)cb);
 			String key = Macro.trimKey(label);
 			state = isMatch(macroOptions, key+" ");
-			//state = macroOptions.indexOf(key+" ")>=0;
 		}
 		cbIndex++;
 		return state;
@@ -703,6 +702,9 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     
     // Returns true if s2 is in s1 and not in a bracketed literal (e.g., "[literal]")
     boolean isMatch(String s1, String s2) {
+    	if (s1.startsWith(s2))
+    		return true;
+    	s2 = " " + s2;
     	int len1 = s1.length();
     	int len2 = s2.length();
     	boolean match, inLiteral=false;

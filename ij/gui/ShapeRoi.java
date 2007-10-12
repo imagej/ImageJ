@@ -1044,6 +1044,7 @@ public class ShapeRoi extends Roi {
 		if(ic==null) return;
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
+		if (stroke!=null) ((Graphics2D)g).setStroke(stroke);
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
 		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);

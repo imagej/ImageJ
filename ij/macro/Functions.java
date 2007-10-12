@@ -196,6 +196,7 @@ public class Functions implements MacroConstants, Measurements {
 			case TOOL_ID: interp.getParens(); value = Toolbar.getToolId(); break;
 			case IS: value = is(); break;
 			case GET_VALUE: value = getValue(); break;
+			case HV: value = doHyperVolume(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -1854,7 +1855,8 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void showProgress() {
-		ij.gui.ProgressBar progressBar = IJ.getInstance().getProgressBar();
+		ImageJ ij = IJ.getInstance();
+		ij.gui.ProgressBar progressBar = ij!=null?ij.getProgressBar():null;
 		interp.getLeftParen();
 		double arg1 = interp.getExpression();
 		if (interp.nextToken()==',') {
@@ -2155,6 +2157,7 @@ public class Functions implements MacroConstants, Measurements {
 			interp.calledMacro = false;
 		resetImage();
 		if (enterBatchMode)  { // true
+			if (interp.isBatchMode()) return;
 			interp.setBatchMode(true);
 			ImagePlus tmp = WindowManager.getTempCurrentImage();
 			if (tmp!=null)
@@ -2846,7 +2849,9 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("open"))
 			return openFile();
 		else if (name.equals("openAsString"))
-			return openAsString();
+			return openAsString(false);
+		else if (name.equals("openAsRawString"))
+			return openAsString(true);
 		else if (name.equals("openUrlAsString"))
 			return openUrlAsString();
 		else if (name.equals("openDialog"))
@@ -2867,7 +2872,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("rename")) {
 			File f1 = new File(getFirstString());
 			File f2 = new File(getLastString());
-			if (isValid(f1) && isValid(f2)) 
+			if (checkPath(f1) && checkPath(f2)) 
 				return f1.renameTo(f2)?"1":"0";
 			else
 				return "0";
@@ -2914,6 +2919,15 @@ public class Functions implements MacroConstants, Measurements {
 			return true;
 	}
 	
+	boolean checkPath(File f) {
+		String path = f.getPath();
+		if (path.equals("0") || path.equals("NaN")) {
+				interp.error("Invalid path");
+				return false;
+		} else
+			return true;
+	}
+
 	String openDialog() {
 		String title = getStringArg();
 		OpenDialog od = new OpenDialog(title, null);
@@ -2975,7 +2989,7 @@ public class Functions implements MacroConstants, Measurements {
 		return "~0~";
 	}
 
-	String openAsString() {
+	String openAsString(boolean raw) {
 		String path = getStringArg();
 		if (path.equals("")) {
 			OpenDialog od = new OpenDialog("OpenAsString...", "");
@@ -2991,12 +3005,23 @@ public class Functions implements MacroConstants, Measurements {
 		try {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(file));
-			while (true) {
-				String s=r.readLine();
-				if (s==null)
-					break;
-				else
-					sb.append(s+"\n");
+			if (raw) {
+				int max = path.endsWith(".txt")?10485760:5000;
+				while (sb.length()<max) {
+					int c=r.read();
+					if (c==-1)
+						break;
+					else
+						sb.append((char)c);
+				}
+			} else {
+				while (true) {
+					String s=r.readLine();
+					if (s==null)
+						break;
+					else
+						sb.append(s+"\n");
+				}
 			}
 			r.close();
 			str = new String(sb);
@@ -3155,7 +3180,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg1.equals("disableundo"))
 			Prefs.disableUndo = state;
 		else if (arg1.equals("openashypervolume"))
-			getImage().setOpenAsHyperVolume(state);
+			getImage().setOpenAsHypervolume(state);
 		else
 			interp.error("Invalid option");
 	}
@@ -3422,6 +3447,51 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Invalid key");
 			return 0.0;
 		}
+	}
+
+	double doHyperVolume() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (interp.token!=WORD && interp.token!=PREDEFINED_FUNCTION)
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("isHyperVolume"))
+			return getImage().isHyperVolume()?1.0:0.0;
+		ImagePlus imp = getImage();
+		if (!imp.isHyperVolume())
+			interp.error("HyperVolume required");
+		StackWindow win = (StackWindow)imp.getWindow();
+		if (name.equals("getPosition"))
+			getPosition(win);
+		else if (name.equals("setPosition"))
+			setPosition(win);
+		else if (name.equals("setChannel"))
+			win.setPosition((int)getArg(), win.getHVSlice(), win.getHVFrame());
+		else if (name.equals("setSlice"))
+			win.setPosition(win.getHVChannel(), (int)getArg(), win.getHVFrame());
+		else if (name.equals("setFrame"))
+			win.setPosition(win.getHVChannel(), win.getHVSlice(), (int)getArg());
+		else
+			interp.error("Unrecognized HV function");
+		return Double.NaN;
+	}
+
+	void getPosition(StackWindow win) {
+		Variable channel = getFirstVariable();
+		Variable slice = getNextVariable();
+		Variable frame = getLastVariable();
+		channel.setValue(win.getHVChannel());
+		slice.setValue(win.getHVSlice());
+		frame.setValue(win.getHVFrame());
+	}
+
+	void setPosition(StackWindow win) {
+		int channel = (int)getFirstArg();
+		int slice = (int)getNextArg();
+		int frame = (int)getLastArg();
+		win.setPosition(channel, slice, frame);
 	}
 
 } // class Functions

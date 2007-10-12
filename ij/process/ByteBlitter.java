@@ -74,6 +74,16 @@ public class ByteBlitter implements Blitter {
 						pixels[dstIndex++] = (byte)dst;
 					}
 					break;
+				case COPY_ZERO_TRANSPARENT:
+					for (int i=r1.width; --i>=0;) {
+						src = srcPixels[srcIndex++]&255;
+						if (src==0)
+							dst = pixels[dstIndex];
+						else
+							dst = src;
+						pixels[dstIndex++] = (byte)dst;
+					}
+					break;
 				case ADD:
 					for (int i=r1.width; --i>=0;) {
 						dst = (srcPixels[srcIndex++]&255)+(pixels[dstIndex]&255);

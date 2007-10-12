@@ -326,7 +326,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		return value;
 	}
 	
-	/** Use by GenericDialog to determine if any options have been recorded. */
+	/** Used by GenericDialog to determine if any options have been recorded. */
 	static public String getCommandOptions() {
 		return commandOptions;
 	}

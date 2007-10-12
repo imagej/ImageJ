@@ -9,7 +9,7 @@
     <javac srcdir="." destdir="build" optimize="on" source="1.4" target="1.4" debug="on">
       <!-- The plugins directory only needs to be 
              present at runtime, not at build time. -->
-      <exclude name="plugins/**" />
+      <exclude name="plugins/**"/>
     </javac>
   </target>
   

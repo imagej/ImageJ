@@ -12,7 +12,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
-	boolean viewIn5D;
+	boolean hypervolume;
 	int nChannels=1, nSlices=1, nFrames=1;
 	int c=1, z=1, t=1;
 	
@@ -27,15 +27,15 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
 		nSlices = stackSize;
-		viewIn5D = imp.getOpenAsHyperVolume();
-		imp.setOpenAsHyperVolume(false);
-		if (viewIn5D) {
+		hypervolume = imp.getOpenAsHypervolume();
+		imp.setOpenAsHypervolume(false);
+		if (hypervolume) {
 			int[] dim = imp.getDimensions();
 			nChannels = dim[2];
 			nSlices = dim[3];
 			nFrames = dim[4];
 		}
-		if (nSlices==stackSize) viewIn5D = false;
+		if (nSlices==stackSize) hypervolume = false;
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
@@ -72,8 +72,12 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			frameSelector.setUnitIncrement(1);
 			frameSelector.setBlockIncrement(blockIncrement);
 		}
+		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
+			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
 		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
 		pack();
+		ic = imp.getCanvas();
+		if (ic!=null) ic.setMaxBounds();
 		show();
 		int previousSlice = imp.getCurrentSlice();
 		imp.setSlice(1);
@@ -92,17 +96,20 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				z = sliceSelector.getValue();
 			else if (e.getSource()==frameSelector)
 				t = frameSelector.getValue();
-			slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
-			//IJ.log(slice+" "+c+" "+z+" "+t);
+			updatePosition();
 			notify();
 		}
+	}
+	
+	void updatePosition() {
+		slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent event) {
-		if (viewIn5D) return;
+		if (hypervolume) return;
 		synchronized(this) {
 			int slice = imp.getCurrentSlice() + event.getWheelRotation();
 			if (slice<1)
@@ -131,7 +138,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
-		if (viewIn5D) return;
+		if (hypervolume) return;
 		int stackSize = imp.getStackSize();
 		int max = sliceSelector.getMaximum();
 		if (max!=(stackSize+1))
@@ -157,7 +164,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	public String createSubtitle() {
 		String s = super.createSubtitle();
-		if (!viewIn5D) return s;
+		if (!hypervolume) return s;
     	s="";
 		if (nChannels>1) {
 			s += "c:"+c+"/"+nChannels;
@@ -216,8 +223,48 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	return s;
     }
     
-    public boolean is5D() {
-    	return viewIn5D;
+    public boolean isHyperVolume() {
+    	return hypervolume;
+    }
+    
+    public int getHVChannel() {
+    	return c;
     }
 
+    public int getHVSlice() {
+    	return z;
+    }
+
+    public int getHVFrame() {
+    	return t;
+    }
+
+    public void setPosition(int channel, int slice, int frame) {
+    	if (channel<1) channel = 1;
+    	if (channel>nChannels) channel = nChannels;
+    	if (slice<1) slice = 1;
+    	if (slice>nSlices) slice = nSlices;
+    	if (frame<1) frame = 1;
+    	if (frame>nFrames) frame = nFrames;
+    	if (channelSelector!=null && channel!=c) {
+    		c = channel;
+			channelSelector.setValue(channel);
+		}
+    	if (sliceSelector!=null && slice!=z) {
+    		z = slice;
+			sliceSelector.setValue(slice);
+		}
+    	if (frameSelector!=null && frame!=t) {
+    		t = frame;
+			frameSelector.setValue(frame);
+		}
+    	updatePosition();
+		if (this.slice>0) {
+			int s = this.slice;
+			this.slice = 0;
+			if (s!=imp.getCurrentSlice())
+				imp.setSlice(s);
+		}
+    }
+    
 }

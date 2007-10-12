@@ -95,12 +95,17 @@
            exit("Cannot shrink by more than 255 pixels"); 
        id = getImageID(); 
        setBatchMode(true); 
-       getBoundingRect(xbase, ybase, width, height);
-       if (xbase<=0 || ybase<=0 || xbase+width>=getWidth || ybase+height>=getHeight)
-          exit("Cannot shrink selections touching image edge"); 
+       width = getWidth();
+       height = getHeight();
+       getBoundingRect(xbase, ybase, roiWidth, roiHeight);
+       touchingEdge = xbase<=0||ybase<=0||xbase+roiWidth>=width||ybase+roiHeight>=height;
        run("Options...", "iterations=1 count=1"); 
        run("Create Mask");
-       run("Distance Map"); 
+       if (touchingEdge)
+           run("Canvas Size...", "width="+width+2+" height="+height+2+" position=Center zero");
+       run("Distance Map");
+       if (touchingEdge)
+           run("Canvas Size...", "width="+width+" height="+height+" position=Center zero");
        setThreshold(n+1, 255);
        run("Create Selection");
        close(); 

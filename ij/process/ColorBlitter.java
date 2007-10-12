@@ -53,19 +53,21 @@ public class ColorBlitter implements Blitter {
 		int c1, c2, r1, g1, b1, r2, g2, b2;
 		int src, dst;
 		
-		if (mode==COPY || mode==COPY_TRANSPARENT) {
+		if (mode==COPY||mode==COPY_TRANSPARENT|| mode==COPY_ZERO_TRANSPARENT) {
 			for (int y=rect1.y; y<(rect1.y+rect1.height); y++) {
 				srcIndex = (y-yloc)*srcWidth + (rect1.x-xloc);
 				dstIndex = y * width + rect1.x;
-				if (mode==COPY)
+				int trancolor = mode==COPY_ZERO_TRANSPARENT?0:transparent;
+				if (mode==COPY) {
 					for (int i=rect1.width; --i>=0;)
 						pixels[dstIndex++] = srcPixels[srcIndex++];
-				else
+				} else {
 					for (int i=rect1.width; --i>=0;) {
 						src = srcPixels[srcIndex++];
 						dst = pixels[dstIndex];
-						pixels[dstIndex++] = (src&0xffffff)==transparent?dst:src;
+						pixels[dstIndex++] = (src&0xffffff)==trancolor?dst:src;
 					}
+				} 
 			}
 			return;
 		}

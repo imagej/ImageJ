@@ -74,7 +74,8 @@ public class Menus {
 	private static Hashtable menusTable; // Submenus of Plugins menu
 	private int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private boolean addSorted;
-	private  static int fontSize = Prefs.getInt(Prefs.MENU_SIZE, 14);
+	private static int defaultFontSize = IJ.isWindows()?14:0;
+	private static int fontSize = Prefs.getInt(Prefs.MENU_SIZE, defaultFontSize);
 	private static Font menuFont;
 	static boolean jnlp; // true when using Java WebStart
 		

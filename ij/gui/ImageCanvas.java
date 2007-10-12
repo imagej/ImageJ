@@ -453,7 +453,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	void setSrcRect(Rectangle srcRect) {
 		this.srcRect = srcRect;
 	}
-	
+		
 	/** Enlarge the canvas if the user enlarges the window. */
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();
@@ -674,6 +674,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setMagnification(imag);
         setMaxBounds();
 		win.pack();
+		setMaxBounds();
 		repaint();
 	}
 		
@@ -1048,8 +1049,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public void setDisplayList(Vector list) {
 		displayList = list;
-		labelListItems = true;
 		listColor = null;
+		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getInstanceColor()!=null)
+			labelListItems = false;
+		else
+			labelListItems = true;
 		repaint();
 	}
 

@@ -348,7 +348,7 @@ public class FileOpener {
 			if (channels*slices*frames==stackSize) {
 				imp.setDimensions(channels, slices, frames);
 				if (slices!=stackSize)
-					imp.setOpenAsHyperVolume(true);
+					imp.setOpenAsHypervolume(true);
 			}
 		}
 	}

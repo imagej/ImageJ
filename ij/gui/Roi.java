@@ -45,6 +45,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
 	protected Color instanceColor;
+	protected BasicStroke stroke;
+
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -718,6 +720,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		overrides the global color set by the static setColor() method. */
 	public void setInstanceColor(Color c) {
 		instanceColor = c;
+	}
+
+	/** Returns the the color used to draw the ROI outline or null if the default color is being used. */
+	public Color getInstanceColor() {
+		return instanceColor;
+	}
+
+	/** Sets the width of lines used to draw composite ROIs. */
+	public void setLineWidth(int width) {
+		this.stroke = new BasicStroke(width);
+	}
+
+	/** Sets the Stroke used to draw composite ROIs. */
+	public void setStroke(BasicStroke stroke) {
+		this.stroke = stroke;
 	}
 
 	/** Returns the name of this ROI, or null. */

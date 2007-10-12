@@ -248,9 +248,15 @@ public class IJ {
 			abort();
 	}
 
-	/** Returns true if either of the IJ.run() methods is executing. */
+	/** Returns true if the run(), open() or newImage() method is executing. */
 	public static boolean macroRunning() {
 		return macroRunning;
+	}
+
+	/** Returns true if a macro is running, or if the run(), open() 
+		or newImage() method is executing. */
+	public static boolean isMacro() {
+		return macroRunning || Interpreter.getInstance()!=null;
 	}
 
 	/**Returns the Applet that created this ImageJ or null if running as an application.*/
@@ -971,7 +977,7 @@ public class IJ {
 	}
 	
 	/** Sets the transfer mode used by the <i>Edit/Paste</i> command, where mode is "Copy", "Blend", "Average", "Difference", 
-		"Transparent", "AND", "OR", "XOR", "Add", "Subtract", "Multiply", or "Divide". */
+		"Transparent", "Transparent2", "AND", "OR", "XOR", "Add", "Subtract", "Multiply", or "Divide". */
 	public static void setPasteMode(String mode) {
 		mode = mode.toLowerCase(Locale.US);
 		int m = Blitter.COPY;
@@ -979,6 +985,8 @@ public class IJ {
 			m = Blitter.AVERAGE;
 		else if (mode.startsWith("diff"))
 			m = Blitter.DIFFERENCE;
+		else if (mode.startsWith("transparent2"))
+			m = Blitter.COPY_ZERO_TRANSPARENT;
 		else if (mode.startsWith("tran"))
 			m = Blitter.COPY_TRANSPARENT;
 		else if (mode.startsWith("and"))

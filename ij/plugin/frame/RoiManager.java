@@ -329,7 +329,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (replacing)
 				msg = "Replace items on the list?";
 			canceled = false;
-			if (!IJ.macroRunning() && !macro) {
+			if (!IJ.isMacro() && !macro) {
 				YesNoCancelDialog d = new YesNoCancelDialog(this, "ROI Manager", msg);
 				if (d.cancelPressed())
 					{canceled = true; return false;}

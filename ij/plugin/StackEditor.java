@@ -7,17 +7,13 @@ import ij.macro.Interpreter;
 import ij.io.FileInfo;
 
 
-/** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands.
-*/
+/** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
 public class StackEditor implements PlugIn {
-    static final int C=0, Z=1, T=2;
 	ImagePlus imp;
 	int nSlices, width, height;
 
 	public void run(String arg) {
-		imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{IJ.noImage(); return;}
+		imp = IJ.getImage();
     	nSlices = imp.getStackSize();
     	width = imp.getWidth();
     	height = imp.getHeight();
@@ -30,10 +26,6 @@ public class StackEditor implements PlugIn {
     		deleteSlice();
     	else if (arg.equals("toimages"))
     		convertStackToImages(imp);
-    	else if (arg.equals("stackto5d"))
-    		convertStackTo5D(imp);
-    	else if (arg.equals("5dtostack"))
-    		convert5DToStack(imp);
 	}
 
 	void addSlice() {
@@ -148,7 +140,7 @@ public class StackEditor implements PlugIn {
 			return;
 		ImageStack stack = imp.getStack();
 		int size = stack.getSize();
-		if (size>30 && !IJ.macroRunning()) {
+		if (size>30 && !IJ.isMacro()) {
 			boolean ok = IJ.showMessageWithCancel("Convert to Images?",
 			"Are you sure you want to convert this\nstack to "
 			+size+" separate windows?");
@@ -180,120 +172,5 @@ public class StackEditor implements PlugIn {
 		return imp.getShortTitle()+"-"+digits.substring(digits.length()-4,digits.length());
 	}
 	
-	/** Displays the current stack in a 5D window. Based on the 
-		Stack_to_Image5D class in Joachim Walter's Image5D plugin. */
-	void convertStackTo5D(ImagePlus imp) {
-        int nChannels = imp.getNChannels();
-        int nSlices = imp.getNSlices();
-        int nFrames = imp.getNFrames();
-		int stackSize = imp.getStackSize();
-		if (stackSize==1) {
-			IJ.error("Stack to 5D", "Stack required");
-			return;
-		}
-
-		// The choices that are initially displayed:
-		// c, z, t and the respective dimension sizes.
-		int first=C, middle=Z, last=T;
-		int nFirst=nChannels;
-		int nMiddle=nSlices;
-		int nLast=nFrames;
-        
-        // Different choices, if only one dimension is >1
-        if (nChannels<=1 && nSlices<=1 && nFrames>1) {
-            first = T; middle = Z; last = C;
-            nFirst = stackSize; nMiddle = 1; nLast = 1;
-        } else if (nChannels<=1 && nFrames<=1 && nSlices>1) {
-            first = Z; middle = C; last = T;
-            nFirst = stackSize; nMiddle = 1; nLast = 1;
-        }
-		
-		String[] dimensions = new String[] {"c", "z", "t"};
-		boolean goOn = true;
-		do {
-		    goOn = true;
-			GenericDialog gd = new GenericDialog("Convert Stack to 5D");
-			gd.addChoice("3rd Dimension:", dimensions, dimensions[first]);
-			gd.addChoice("4th Dimension:", dimensions, dimensions[middle]);
-			gd.addNumericField("3rd_Dimension_Size:", nFirst, 0, 8, "");
-			gd.addNumericField("4th_Dimension_Size:", nMiddle, 0, 8, "");
-			gd.showDialog();
-			if (gd.wasCanceled()) return;
-	
-			first = gd.getNextChoiceIndex();
-			middle = gd.getNextChoiceIndex();
-			nFirst = (int) gd.getNextNumber();
-			nMiddle = (int) gd.getNextNumber();
-			if (first==middle) {
-				IJ.error("Please do not select two identical dimensions!");
-				goOn = false;
-                continue;
-			}
-            
-            // Determine type of third dimension.
-            boolean[] thirdChoice = {true, true, true};
-            thirdChoice[first] = false;
-            thirdChoice[middle] = false;
-            for (int i=0; i<3; i++) {
-                if (thirdChoice[i]) {
-                    last = i;
-                    break;
-                }
-            }
-
-            double dLast = (double) stackSize / (double) nFirst / (double) nMiddle;
-			nLast = (int) dLast;
-			if (nLast != dLast) {
-				IJ.error("channels*slices*frames!=stackSize");
-				goOn = false;
-                continue;
-			}
-		
-		} while(goOn == false);
-		
-		nChannels=1;
-        nSlices=1;
-        nFrames=1;
-		switch (first) {
-			case 0: nChannels = nFirst; break;
-			case 1: nSlices = nFirst; break;
-			case 2: nFrames = nFirst; break;
-		}		
-		switch (middle) {
-			case 0: nChannels = nMiddle; break;
-			case 1: nSlices = nMiddle; break;
-			case 2: nFrames = nMiddle; break;
-		}		
-		switch (last) {
-			case 0: nChannels = nLast; break;
-			case 1: nSlices = nLast; break;
-			case 2: nFrames = nLast; break;
-		}
-				
-		Object[] images1 = imp.getStack().getImageArray();
-		Object[] images2 = new Object[images1.length];
-		System.arraycopy(images1, 0, images2, 0, images1.length);
-		int[] index = new int[3];
-		for (index[2]=0; index[2]<nFrames; ++index[2]) {
-			for (index[1]=0; index[1]<nSlices; ++index[1]) {
-				for (index[0]=0; index[0]<nChannels; ++index[0]) {
-					//img5d.setCurrentPosition(0, 0, index[0], index[1], index[2]);
-					int dstIndex = index[0] + index[1]*nChannels + index[2]*nChannels*nSlices;
-					int srcIndex = index[first] + index[middle]*nFirst + index[last]*nFirst*nMiddle;
-					//img5d.setPixels(imp.getStack().getPixels(stackPosition));
-					images1[dstIndex] = images2[srcIndex];
-				}
-			}
-		}
-		imp.setDimensions(index[0], index[1], index[2]);
-		imp.setOpenAsHyperVolume(true);
-		new StackWindow(imp);
-	}
-
-	void convert5DToStack(ImagePlus imp) {
-		imp.setOpenAsHyperVolume(false);
-		new StackWindow(imp);
-	}
-
 }
 

@@ -13,14 +13,13 @@ import java.awt.event.KeyEvent;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
-	private static sun.tools.javac.Main javac;
+	private static com.sun.tools.javac.Main javac;
 	private static ByteArrayOutputStream output;
 	private static String dir, name;
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
 
 	public void run(String arg) {
-		IJ.register(Compiler.class);
 		if (arg.equals("edit"))
 			edit();
 		else
@@ -35,8 +34,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void compileAndRun(String path) {
-		if (!isJavac())
-			return;
 		if (IJ.altKeyDown()) {
 			IJ.setKeyUp(KeyEvent.VK_ALT);
 			GenericDialog gd = new GenericDialog("Compile and Run");
@@ -47,9 +44,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 		}
 		if (!open(path, "Compile and Run Plugin..."))
 			return;
-		if (name.endsWith(".class"))
+		if (name.endsWith(".class")) {
 			runPlugin(name.substring(0, name.length()-1));
-		else if (compile(dir+name))
+			return;
+		}
+		if (!isJavac()) return;
+		if (compile(dir+name))
 			runPlugin(name);
 	}
 	 
@@ -57,7 +57,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		try {
 			if (javac==null) {
 				output = new ByteArrayOutputStream(4096);
-				javac = new sun.tools.javac.Main(output, "javac");
+				javac=new com.sun.tools.javac.Main();
 			}
 		} catch (NoClassDefFoundError e) {
 			IJ.error("This JVM does not include the javac compiler.\n"
@@ -81,7 +81,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 			arguments = new String[] {"-g", "-deprecation", "-classpath", classpath, path};
 		else
 			arguments = new String[] {"-deprecation", "-classpath", classpath, path};
-		boolean compiled = javac.compile(arguments);
+		boolean compiled = javac.compile(arguments, new PrintWriter(output))==0;
 		String s = output.toString();
 		boolean errors = (!compiled || areErrors(s));
 		if (errors)
@@ -93,8 +93,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 
 	boolean areErrors(String s) {
 		boolean errors = s!=null && s.length()>0;
-		if (errors && s.startsWith("Note: sun.tools.javac") && s.indexOf("error")==-1)
-			errors = false;
+		//if(errors&&s.startsWith("Note:com.sun.tools.javac")&&s.indexOf("error")==-1)
+		//	errors = false;
 		return errors;
 	}
 	

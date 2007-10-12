@@ -30,6 +30,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		pasteMode.addItem("Blend");
 		pasteMode.addItem("Difference");
 		pasteMode.addItem("Transparent");
+		pasteMode.addItem("Transparent2");
 		pasteMode.addItem("AND");
 		pasteMode.addItem("OR");
 		pasteMode.addItem("XOR");
@@ -58,15 +59,16 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 			case 1: mode = Blitter.AVERAGE; break;
 			case 2: mode = Blitter.DIFFERENCE; break;
 			case 3: mode = Blitter.COPY_TRANSPARENT; break;
-			case 4: mode = Blitter.AND; break;
-			case 5: mode = Blitter.OR; break;
-			case 6: mode = Blitter.XOR; break;
-			case 7: mode = Blitter.ADD; break;
-			case 8: mode = Blitter.SUBTRACT; break;
-			case 9: mode = Blitter.MULTIPLY; break;
-			case 10: mode = Blitter.DIVIDE; break;
-			case 11: mode = Blitter.MIN; break;
-			case 12: mode = Blitter.MAX; break;
+			case 4: mode = Blitter.COPY_ZERO_TRANSPARENT; break;
+			case 5: mode = Blitter.AND; break;
+			case 6: mode = Blitter.OR; break;
+			case 7: mode = Blitter.XOR; break;
+			case 8: mode = Blitter.ADD; break;
+			case 9: mode = Blitter.SUBTRACT; break;
+			case 10: mode = Blitter.MULTIPLY; break;
+			case 11: mode = Blitter.DIVIDE; break;
+			case 12: mode = Blitter.MIN; break;
+			case 13: mode = Blitter.MAX; break;
 		}
 		Roi.setPasteMode(mode);
 		if (Recorder.record)

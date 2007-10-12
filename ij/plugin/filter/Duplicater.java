@@ -3,6 +3,7 @@ import java.awt.*;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.macro.Interpreter;
 
 /** This plugin implements ImageJ's Image/Duplicate command. */
 public class Duplicater implements PlugInFilter {
@@ -67,6 +68,8 @@ public class Duplicater implements PlugInFilter {
 		imp2.setStack(newTitle, stack2);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
+		if (imp.isHyperVolume())
+			imp2.setOpenAsHypervolume(true);
 		return imp2;
 	}
 	

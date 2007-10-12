@@ -37,7 +37,7 @@ public class FileSaver {
             directory = ofi.directory;
 			String path = directory+name;
 			File f = new File(path);
-			if (!IJ.macroRunning() && f!=null && f.exists()) {
+			if (!IJ.isMacro() && f!=null && f.exists()) {
 				if (!IJ.showMessageWithCancel("Save as TIFF", "The file "+ofi.fileName+" already exists.\nDo you want to replace it?"))
 					return false;
 			}

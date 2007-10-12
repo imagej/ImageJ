@@ -77,7 +77,6 @@ public class CompositeImage extends ImagePlus {
 			if (ip!=null)
 				img = ip.createImage();
 			return;
-
 		}
 	
 		if (cip!=null && cip[0].getWidth()!=width||cip[0].getHeight()!=height||(pixels!=null&&pixels.length!=nChannels)) {

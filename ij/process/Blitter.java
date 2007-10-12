@@ -45,6 +45,10 @@ public interface Blitter {
 	
 	/** dst=max(dst,src) */
 	public static final int MAX = 13;
+	
+	/** Copies with zero pixels transparent. */
+	public static final int COPY_ZERO_TRANSPARENT = 14;
+
 
 	/** Sets the transparent color used in the COPY_TRANSPARENT
 		mode (default is Color.white). */

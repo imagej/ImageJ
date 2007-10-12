@@ -529,7 +529,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public void close() {
 		boolean okayToClose = true;
 		ImageJ ij = IJ.getInstance();
-		if (!getTitle().equals("Errors") && changes && !IJ.macroRunning() && ij!=null && !ij.quitting()) {
+		if (!getTitle().equals("Errors") && changes && !IJ.isMacro() && ij!=null && !ij.quitting()) {
 			String msg = "Save changes to \"" + getTitle() + "\"?";
 			YesNoCancelDialog d = new YesNoCancelDialog(this, "Editor", msg);
 			if (d.cancelPressed())
