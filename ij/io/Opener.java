@@ -591,6 +591,9 @@ public class Opener {
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.open(false);
 		//IJ.showStatus("");
+		int c = imp.getNChannels();
+		if (c>1 && c<8 && imp.getOpenAsHyperStack())
+			imp = new CompositeImage(imp, CompositeImage.COLORS);
 		return imp;
 	}
 	

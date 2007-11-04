@@ -1,8 +1,6 @@
 package ij.plugin;
 import ij.*;
-//import ij.process.*;
 import ij.gui.*;
-//import java.awt.*;
 import java.io.*;
 import ij.util.Tools;
 import java.lang.reflect.*;
@@ -13,6 +11,7 @@ public class Memory implements PlugIn {
 	String s;
 	int index1, index2;
 	File f;
+	boolean fileMissing;
 
 	public void run(String arg) {
 		changeMemoryAllocation();
@@ -85,8 +84,16 @@ public class Memory implements PlugIn {
 		int max = (int)(maxMemory()/1048576L);
 		String msg =
 			   "ImageJ is unable to change the memory limit. For \n"
-			+ "more information, refer to the installation notes. \n"
+			+ "more information, refer to the installation notes at\n \n"
+			+ "    http://rsb.info.nih.gov/ij/docs/install/\n"
 			+ " \n";
+		if (fileMissing) {
+			if (IJ.isMacOSX())
+				msg += "The ImageJ application (ImageJ.app) was not found.\n \n";
+			else if (IJ.isWindows())
+				msg += "ImageJ.cfg not found.\n \n";
+			fileMissing = false;
+		}
 		if (max>0)
 			msg += "Current limit: " + max + "MB";
 		IJ.showMessage("Memory", msg);
@@ -95,7 +102,10 @@ public class Memory implements PlugIn {
 	long getMemorySetting(String file) {
 		String path = Prefs.getHomeDir()+File.separator+file;
 		f = new File(path);
-		if (!f.exists()) return 0L;
+		if (!f.exists()) {
+			fileMissing = true;
+			return 0L;
+		}
 		long max = 0L;
 		try {
 			int size = (int)f.length();

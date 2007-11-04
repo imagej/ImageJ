@@ -6,25 +6,35 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.plugin.frame.ContrastAdjuster;
 
-public class Composite_Image implements PlugIn {
+/** This plugin imlements the Image/Color/Make Composite command. */
+public class CompositeConverter implements PlugIn {
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
-		if (imp instanceof CompositeImage)
+		if (imp.isComposite()) {
+			CompositeImage ci = (CompositeImage)imp;
+			if (ci.getMode()!=CompositeImage.COMPOSITE) {
+				ci.setMode(CompositeImage.COMPOSITE);
+				ci.updateAndDraw();
+			}
 			return;
+		}
 		int z = imp.getStackSize();
+		int c = imp.getNChannels();
+		if (c==1) c = z;
 		if (imp.getBitDepth()==24) {
 			if (z>1)
 				convertRGBToCompositeStack(imp);
 			else {
 				imp.hide();
-				new CompositeImage(imp, 3).show();
+				new CompositeImage(imp, CompositeImage.COMPOSITE).show();
 			}
-		} else if (z>=2 && z<=7) {
+		} else if (c>=2 && c<=7) {
+			CompositeImage ci = new CompositeImage(imp, CompositeImage.COLORS);
+			new StackWindow(ci);
 			imp.hide();
-			new CompositeImage(imp, z).show();
 		} else
-			IJ.error("To convert to composite color, the current image must be\n a stack with fewer than 8 slices or be in RGB format.");
+			IJ.error("To create a composite, the current image must be\n a stack with fewer than 8 slices or be in RGB format.");
 	}
 	
 	void convertRGBToCompositeStack(ImagePlus imp) {
@@ -44,13 +54,16 @@ public class Composite_Image implements PlugIn {
 			stack2.addSlice(null, G);
 			stack2.addSlice(null, B);
 		}
+		n *= 3;
+		imp.changes = false;
+		ImageWindow win = imp.getWindow();
+		Point loc = win!=null?win.getLocation():null;
+		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
+		imp2.setDimensions(3, n/3, 1);
+ 		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+		new StackWindow(imp2);
 		imp.changes = false;
 		imp.close();
-		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
- 		imp2 = new CompositeImage(imp2, 3);
-		imp2.setDimensions(3, n, 1);
-		imp2.setOpenAsHypervolume(true);
-		new StackWindow(imp2);
 	}
 
 }

@@ -10,8 +10,8 @@ import ij.macro.Interpreter;
 /** This plugin implements the Process/Image Calculator command. */
 public class ImageCalculator implements PlugIn {
 
-	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy"};
-	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy"};
+	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy", "Transparent Zero"};
+	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy", "trans-z"};
 	private static int operator;
 	private static String title1 = "";
 	private static String title2 = "";
@@ -230,6 +230,7 @@ public class ImageCalculator implements PlugIn {
 			case 9: mode = Blitter.AVERAGE; break;
 			case 10: mode = Blitter.DIFFERENCE; break;
 			case 11: mode = Blitter.COPY; break;
+			case 12: mode = Blitter.COPY_ZERO_TRANSPARENT; break;
 		}
 		return mode;
 	}

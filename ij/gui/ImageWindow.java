@@ -8,7 +8,7 @@ import ij.*;
 import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
-import ij.plugin.frame.Recorder;
+import ij.plugin.frame.*;
 import ij.macro.Interpreter;
 
 /** A frame for displaying images. */
@@ -25,7 +25,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	protected boolean closed;
 	private boolean newCanvas;
 	private boolean unzoomWhenMinimizing = true;
-	Rectangle maxBounds;
+	Rectangle maxBounds, maxWindowBounds;
 
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -126,6 +126,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		Rectangle maxWindow = getMaxWindow();
+		if (maxWindow.x==maxWindow.width)  // work around for Linux bug
+			maxWindow = new Rectangle(0, maxWindow.y, maxWindow.width, maxWindow.height);
 		if (WindowManager.getWindowCount()<=1)
 			xbase = -1;
 		if (width>maxWindow.width/2 && xbase>maxWindow.x+5+XINC*6)
@@ -154,8 +156,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		double mag = 1;
 		while (xbase+XINC*4+width*mag>maxWindow.width || ybase+height*mag>screenHeight) {
 			double mag2 = ImageCanvas.getLowerZoomLevel(mag);
-			if (mag2==mag)
-				break;
+			if (mag2==mag) break;
 			mag = mag2;
 		}
 		
@@ -208,8 +209,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     public void drawInfo(Graphics g) {
         if (textGap!=0) {
 			Insets insets = super.getInsets();
-			if (imp instanceof CompositeImage)
-				g.setColor(((CompositeImage)imp).getChannelColor());
+			if (imp.isComposite()) {
+				CompositeImage ci = (CompositeImage)imp;
+				if (ci.getMode()==CompositeImage.COMPOSITE)
+					g.setColor(ci.getChannelColor());
+			}
 			g.drawString(createSubtitle(), 5, insets.top+TEXT_GAP);
 		}
     }
@@ -232,12 +236,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		}
     	int type = imp.getType();
     	Calibration cal = imp.getCalibration();
-    	if (cal.scaled())
+    	if (cal.scaled()) {
     		s += IJ.d2s(imp.getWidth()*cal.pixelWidth,2) + "x" + IJ.d2s(imp.getHeight()*cal.pixelHeight,2)
  			+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
-    	else
+    	} else
     		s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
-		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
+		long size = ((long)imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024L;
     	switch (type) {
 	    	case ImagePlus.GRAY8:
 	    	case ImagePlus.COLOR_256:
@@ -245,23 +249,23 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	    		break;
 	    	case ImagePlus.GRAY16:
 	    		s += "16-bit";
-				size *= 2;
+				size *= 2L;
 	    		break;
 	    	case ImagePlus.GRAY32:
 	    		s += "32-bit";
-				size *= 4;
+				size *= 4L;
 	    		break;
 	    	case ImagePlus.COLOR_RGB:
 	    		s += "RGB";
-				size *= 4;
+				size *= 4L;
 	    		break;
     	}
     	if (imp.isInvertedLut())
     		s += " (inverting LUT)";
-    	if (size>=10000)    	
-    		s += "; " + (int)Math.round(size/1024.0) + "MB";
-    	else if (size>=1024) {
-    		double size2 = size/1024.0;
+    	if (size>=10000L)    	
+    		s += "; " + (int)Math.round(size/1024L) + "MB";
+    	else if (size>=1024L) {
+    		double size2 = size/1024L;
     		s += "; " + IJ.d2s(size2,(int)size2==size2?0:1) + "MB";
     	} else
     		s += "; " + size + "K";
@@ -348,6 +352,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		double iAspectRatio = width/height;
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle maxWindow = ge.getMaximumWindowBounds();
+		maxWindowBounds = maxWindow;
 		if (iAspectRatio/((double)maxWindow.width/maxWindow.height)>0.75) {
 			maxWindow.y += 22;  // uncover ImageJ menu bar
 			maxWindow.height -= 22;
@@ -419,6 +424,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		imp.setActivated(); // notify ImagePlus that image has been activated
 		if (!closed && !quitting && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
+		Frame channels = Channels.getInstance();
+		if (channels!=null && imp.isComposite())
+			((Channels)channels).update();
 	}
 	
 	public void windowClosing(WindowEvent e) {

@@ -12,7 +12,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
-	boolean hypervolume;
+	boolean hyperStack;
 	int nChannels=1, nSlices=1, nFrames=1;
 	int c=1, z=1, t=1;
 	
@@ -27,15 +27,15 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
 		nSlices = stackSize;
-		hypervolume = imp.getOpenAsHypervolume();
-		imp.setOpenAsHypervolume(false);
-		if (hypervolume) {
+		hyperStack = imp.getOpenAsHyperStack();
+		imp.setOpenAsHyperStack(false);
+		if (hyperStack) {
 			int[] dim = imp.getDimensions();
 			nChannels = dim[2];
 			nSlices = dim[3];
 			nFrames = dim[4];
 		}
-		if (nSlices==stackSize) hypervolume = false;
+		if (nSlices==stackSize) hyperStack = false;
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
@@ -109,7 +109,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent event) {
-		if (hypervolume) return;
+		if (hyperStack) return;
 		synchronized(this) {
 			int slice = imp.getCurrentSlice() + event.getWheelRotation();
 			if (slice<1)
@@ -138,7 +138,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
-		if (hypervolume) return;
+		if (hyperStack) return;
 		int stackSize = imp.getStackSize();
 		int max = sliceSelector.getMaximum();
 		if (max!=(stackSize+1))
@@ -164,7 +164,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	public String createSubtitle() {
 		String s = super.createSubtitle();
-		if (!hypervolume) return s;
+		if (!hyperStack) return s;
     	s="";
 		if (nChannels>1) {
 			s += "c:"+c+"/"+nChannels;
@@ -223,19 +223,19 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	return s;
     }
     
-    public boolean isHyperVolume() {
-    	return hypervolume;
+    public boolean isHyperStack() {
+    	return hyperStack;
     }
     
-    public int getHVChannel() {
+    public int getHSChannel() {
     	return c;
     }
 
-    public int getHVSlice() {
+    public int getHSSlice() {
     	return z;
     }
 
-    public int getHVFrame() {
+    public int getHSFrame() {
     	return t;
     }
 

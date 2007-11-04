@@ -49,7 +49,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private Font font = new Font("Helvetica", Font.PLAIN, 12);
 	private static int options;
 	private int defaultDigits = -1;
-	private boolean realNumbers;
+	private boolean realXValues;
 	private int xdigits, ydigits;
 	private int markSize = 5;
 	private static Plot staticPlot;
@@ -318,18 +318,23 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	void initDigits() {
-		ydigits = Analyzer.getPrecision();
-		if (ydigits==0)
-			ydigits = 2;
+		int setDigits = Analyzer.getPrecision();
+		if (ydigits!=9 || setDigits>=6) {
+			ydigits = setDigits;
+			if (ydigits==0) ydigits = 2;
+		}
 		if (ydigits!=defaultDigits) {
-			realNumbers = false;
-			for (int i=0; i<plot.xValues.length; i++) {
-				if ((int)plot.xValues[i]!=plot.xValues[i])
-					realNumbers = true;
-			}
+			realXValues = false;
+			for (int i=0; i<plot.xValues.length; i++)
+				if ((int)plot.xValues[i]!=plot.xValues[i]) realXValues = true;
+			boolean realYValues = false;
+			for (int i=0; i<plot.yValues.length; i++)
+				if ((int)plot.yValues[i]!=plot.yValues[i]) realYValues = true;
+			if (setDigits<6&&realYValues) ydigits = 9;
+			if (!realYValues) ydigits = 0;
 			defaultDigits = ydigits;
 		}
-		xdigits =  realNumbers?ydigits:0;
+		xdigits =  realXValues?ydigits:0;
 	}
 		
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}

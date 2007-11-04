@@ -419,6 +419,7 @@ public class WindowManager {
 		for (int i=0; i<list.length; i++) {
 			ImagePlus imp2 = getImage(list[i]);
 			if (imp2!=null) {
+				imp2.setTitle(imp2.getTitle()); // update "(G)" flag (global calibration)
 				ImageWindow win = imp2.getWindow();
 				if (win!=null) win.repaint();
 			}

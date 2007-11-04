@@ -29,8 +29,8 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		pasteMode.addItem("Copy");
 		pasteMode.addItem("Blend");
 		pasteMode.addItem("Difference");
-		pasteMode.addItem("Transparent");
-		pasteMode.addItem("Transparent2");
+		pasteMode.addItem("Transparent White");
+		pasteMode.addItem("Transparent Zero");
 		pasteMode.addItem("AND");
 		pasteMode.addItem("OR");
 		pasteMode.addItem("XOR");

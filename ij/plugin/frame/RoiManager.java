@@ -22,6 +22,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	static final int MENU=0, COMMAND=1, MULTI=2;
 	static int rows = 15;
 	static boolean allowMultipleSelections = true; 
+	static String moreButtonLabel = "More "+'\u00bb';
 	Panel panel;
 	static Frame instance;
 	java.awt.List list;
@@ -78,7 +79,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Measure");
 		addButton("Deselect");
 		addButton("Show All");
-		addButton("More >>");
+		addButton(moreButtonLabel);
 		add(panel);		
 		addPopupMenu();
 		pack();
@@ -92,7 +93,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		b.addActionListener(this);
 		b.addKeyListener(IJ.getInstance());
  		b.addMouseListener(this);
- 		if (label.equals("More >>")) moreButton = b;
+ 		if (label.equals(moreButtonLabel)) moreButton = b;
 		panel.add(b);
 	}
 
@@ -155,7 +156,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawOrFill(LABEL);
 		else if (command.equals("Deselect"))
 			select(-1);
-		else if (command.equals("More >>")) {
+		else if (command.equals(moreButtonLabel)) {
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);

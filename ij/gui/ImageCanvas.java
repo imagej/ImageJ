@@ -135,7 +135,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (showAllROIs) showAllROIs(g);
 			if (displayList!=null) drawDisplayList(g);
 			if (roi != null) roi.draw(g);
-			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
+			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(g);
 			if (IJ.debugMode) showFrameRate(g);
 		}
@@ -213,6 +213,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.setColor(c);
 			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
 		} else {
+			Color c = index==-1?roi.getInstanceColor():null;
+			Color saveg = null;
+			if (c!=null) {
+				saveg = g.getColor();
+				g.setColor(c);
+			}
 			Polygon p = roi.getPolygon();
 			int x1=0, y1=0, x2=0, y2=0;
 			for (int j=0; j<p.npoints; j++) {
@@ -227,6 +233,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				g.drawLine(x1, y1, x0, y0);
 			}
 			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
+			if (saveg!=null) g.setColor(saveg);
 		}
     }
     
@@ -458,12 +465,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();
 		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+"  "+win.maxBounds);
-		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10) {
-			// Works around problem that prevented window from being larger than maximized size
-			Dimension screen = IJ.getScreenSize();
-			win.setMaximizedBounds(new Rectangle(0, 0, screen.width, screen.height));
-			maxBoundsReset = true;
-		}
+		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10)
+			resetMaxBounds(); // Works around problem that prevented window from being larger than maximized size
 		if (IJ.altKeyDown())
 			{fitToWindow(); return;}
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight) {
@@ -536,8 +539,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		be made bigger, then make the source rectangle 
 		(srcRect) smaller and center it at (x,y). */
 	public void zoomIn(int x, int y) {
-		if (magnification>=32)
-			return;
+		if (magnification>=32) return;
 		double newMag = getHigherZoomLevel(magnification);
 		int newWidth = (int)(imageWidth*newMag);
 		int newHeight = (int)(imageHeight*newMag);
@@ -552,6 +554,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		} else
 			adjustSourceRect(newMag, x, y);
 		repaint();
+		if (srcRect.width<imageWidth || srcRect.height<imageHeight)
+			resetMaxBounds();
 	}
 	
 	void adjustSourceRect(double newMag, int x, int y) {
@@ -570,6 +574,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		srcRect = r;
 		setMagnification(newMag);
 		//IJ.log("adjustSourceRect2: "+srcRect+" "+dstWidth+"  "+dstHeight);
+	}
+	
+	void resetMaxBounds() {
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			win.setMaximizedBounds(win.maxWindowBounds);
+			maxBoundsReset = true;
+		}
 	}
 	
 	protected Dimension canEnlarge(int newWidth, int newHeight) {

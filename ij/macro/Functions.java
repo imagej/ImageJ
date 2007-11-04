@@ -196,7 +196,7 @@ public class Functions implements MacroConstants, Measurements {
 			case TOOL_ID: interp.getParens(); value = Toolbar.getToolId(); break;
 			case IS: value = is(); break;
 			case GET_VALUE: value = getValue(); break;
-			case HV: value = doHyperVolume(); break;
+			case HS: value = doHyperStack(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -2990,7 +2990,11 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String openAsString(boolean raw) {
-		String path = getStringArg();
+		int max = 100000;
+		String path = getFirstString();
+		if (raw && interp.nextToken()==',')
+			max = (int)getNextArg();
+		interp.getRightParen();			
 		if (path.equals("")) {
 			OpenDialog od = new OpenDialog("OpenAsString...", "");
 			String directory = od.getDirectory();
@@ -3006,7 +3010,6 @@ public class Functions implements MacroConstants, Measurements {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(file));
 			if (raw) {
-				int max = path.endsWith(".txt")?10485760:5000;
 				while (sb.length()<max) {
 					int c=r.read();
 					if (c==-1)
@@ -3179,8 +3182,8 @@ public class Functions implements MacroConstants, Measurements {
 			pgm.queueCommands = state;
 		else if (arg1.equals("disableundo"))
 			Prefs.disableUndo = state;
-		else if (arg1.equals("openashypervolume"))
-			getImage().setOpenAsHypervolume(state);
+		else if (arg1.startsWith("openashyper"))
+			getImage().setOpenAsHyperStack(true);
 		else
 			interp.error("Invalid option");
 	}
@@ -3449,7 +3452,7 @@ public class Functions implements MacroConstants, Measurements {
 		}
 	}
 
-	double doHyperVolume() {
+	double doHyperStack() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
@@ -3457,24 +3460,24 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!=WORD && interp.token!=PREDEFINED_FUNCTION)
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		if (name.equals("isHyperVolume"))
-			return getImage().isHyperVolume()?1.0:0.0;
+		if (name.equals("isHyperStack"))
+			return getImage().isHyperStack()?1.0:0.0;
 		ImagePlus imp = getImage();
-		if (!imp.isHyperVolume())
-			interp.error("HyperVolume required");
+		if (!imp.isHyperStack())
+			interp.error("HyperStack required");
 		StackWindow win = (StackWindow)imp.getWindow();
 		if (name.equals("getPosition"))
 			getPosition(win);
 		else if (name.equals("setPosition"))
 			setPosition(win);
 		else if (name.equals("setChannel"))
-			win.setPosition((int)getArg(), win.getHVSlice(), win.getHVFrame());
+			win.setPosition((int)getArg(), win.getHSSlice(), win.getHSFrame());
 		else if (name.equals("setSlice"))
-			win.setPosition(win.getHVChannel(), (int)getArg(), win.getHVFrame());
+			win.setPosition(win.getHSChannel(), (int)getArg(), win.getHSFrame());
 		else if (name.equals("setFrame"))
-			win.setPosition(win.getHVChannel(), win.getHVSlice(), (int)getArg());
+			win.setPosition(win.getHSChannel(), win.getHSSlice(), (int)getArg());
 		else
-			interp.error("Unrecognized HV function");
+			interp.error("Unrecognized HS function");
 		return Double.NaN;
 	}
 
@@ -3482,9 +3485,9 @@ public class Functions implements MacroConstants, Measurements {
 		Variable channel = getFirstVariable();
 		Variable slice = getNextVariable();
 		Variable frame = getLastVariable();
-		channel.setValue(win.getHVChannel());
-		slice.setValue(win.getHVSlice());
-		frame.setValue(win.getHVFrame());
+		channel.setValue(win.getHSChannel());
+		slice.setValue(win.getHSSlice());
+		frame.setValue(win.getHSFrame());
 	}
 
 	void setPosition(StackWindow win) {

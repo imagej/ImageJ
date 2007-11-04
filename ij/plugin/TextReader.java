@@ -60,6 +60,7 @@ public class TextReader implements PlugIn {
             String msg = e.getMessage();
             if (msg==null || msg.equals(""))
                 msg = ""+e;
+			IJ.showProgress(1.0);
             if (!hideErrorMessages) 
             	IJ.error("TextReader", msg);
             ip = null;
@@ -95,7 +96,7 @@ public class TextReader implements PlugIn {
                     if (lines==1)
                         width = wordsPerLine;
                     else if (wordsPerLine!=0 && wordsPerLine!=wordsInPreviousLine)
-                         throw new IOException("Line "+lines+ " is not the same length as the first line.");
+                        throw new IOException("Line "+lines+ " is not the same length as the first line.");
                     if (wordsPerLine!=0)
                         wordsInPreviousLine = wordsPerLine;
                     wordsPerLine = 0;

@@ -224,10 +224,16 @@ public class IJ {
 			command = "Appearance...";
 		else if (command.equals("Start Animation"))
 			command = "Start Animation [\\]";
-		else if (command.equals("Convert Images to Stack"))
-			command = "Images to Stack";
-		else if (command.equals("Convert Stack to Images"))
-			command = "Stack to Images";
+		else if (command.startsWith("Convert")) {
+			if (command.equals("Convert Images to Stack"))
+				command = "Images to Stack";
+			else if (command.equals("Convert Stack to Images"))
+				command = "Stack to Images";
+			else if (command.equals("Convert Stack to RGB"))
+				command = "Stack to RGB";
+			else if (command.equals("Convert to Composite"))
+				command = "Make Composite";
+		}
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);
@@ -985,7 +991,7 @@ public class IJ {
 			m = Blitter.AVERAGE;
 		else if (mode.startsWith("diff"))
 			m = Blitter.DIFFERENCE;
-		else if (mode.startsWith("transparent2"))
+		else if (mode.startsWith("transparent zero"))
 			m = Blitter.COPY_ZERO_TRANSPARENT;
 		else if (mode.startsWith("tran"))
 			m = Blitter.COPY_TRANSPARENT;

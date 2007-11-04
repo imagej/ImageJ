@@ -5,43 +5,27 @@
 </head>
 <body>
 
-<li> <u>1.39f, 9 October 2007</u>
+<li> <u>1.39g, 29 October 2007</u>
 <ul>
-<li> Michiel Schmid contributed an improved <i>Process&gt;Subtract Background</i>
-command with new "Create Background", "Disable Smoothing" and "Preview" dialog options.
-<li> Added the "Transparent2" mode (zero pixels are transparent) to
-<i>Edit&gt;Paste Control</i>.
-<li> Maximized windows use more of the screen on OS X and Windows.
-<li> When shrinking selections, <i>Edit&gt;Selection&gt;Enlarge</i> 
-now works with selections touching the image edge.
-<li> <i>File&gt;Revert</i> no longer deletes the selection.
-<li> <i>Plugins&gt;Compile and Run</i> now runs compiled plugins
-(.class files) without the Java compiler (usually in tools.jar) being present.
-And, thanks to Johannes Schindelin, it uses
-com.sun.tools.javac instead of the deprecated sun.tools.javac.
-<li> On Linux, the preferences file (IJ_Prefs.txt) is saved in the .imagej 
-directory and the menu font size is no longer set to 14 points.
-<li> The ImageCanvas.setDisplayList(Vector) method now accepts a list
-of ShapeRois with differing colors and line widths
-(<a href="download/MultiColor_Graphic_Overlay.java">example</a>).
-<li> Added the File.openAsRawString(path) macro function.
-Refer to the
-<a href="http://rsb.info.nih.gov/ij/macros/First10Bytes.txt">First10Bytes</a>
-and
-<a href="http://rsb.info.nih.gov/ij/macros/ZapGremlins.txt">ZapGremlins</a>
-macros for examples.
-<li> Added the COPY_ZERO_TRANSPARENT constant to the Blitter class.
-<li> Added the IJ.isMacro() method, which returns true if a macro is running
-or an IJ.run() method is executing.
-<li> Added the getInstanceColor() and setStroke() methods to the Roi class.
-<li> Fixed a bug that could cause the imageCalculator() macro function
-to return before the output window had opened.
-<li> Fixed a bug that could cause a boolean variable in a macro run() call
-to trigger the inclusion of other boolean variables. 
-<li> Fixed a bug that caused an exception if showProgress() was
-called in a macro run from the command line using the -batch option.
-<li> Fixed a bug that could cause the image count to increase by one if
-the setBatchMode(true) macro function was called twice in succession.
+<li> Added the <i>Image&gt;HyperStacks</i> submenu, which contains <i>New HyperStack...</i>,
+<i>Stack to HyperStack...</i>, <i>HyperStack to Stack</i> and<i>Channels...</i> commands.
+<li> Added a "Transparent Zero" (zero pixels are transparent) 
+operator to <i>Process&gt;Image Calculator</i> and to <i>Edit&gt;Paste Control</i>.
+<li> The "List", "Save" and "Copy" options in profile plot windows use 9 
+decimal places for y values if "Decimal Places" in the <i>Analyze&gt;Set Measurements</i>
+dialog is less than 6.
+<li> Maximizing a zoomed image causes it, if needed, to fill the screen.
+<li> "(G)" is displayed in all image title bars if the "Global" flag is set in 
+<i>Analyze&gt;Set Scale</i>, <i>Analyze&gt;Calibrate</i> or
+<i>Image&gt;Properties</i>.
+<li> Custom tables now use the <i>File Extension for Tables</i> 
+default extension specified in <i>Edit&gt;Options&gt;Input/Output</i>.
+<li> Use the -port0 command line option and ImageJ will not start the
+SocketListener not check for other instances.
+<li> Fixed a bug that caused the memory size displayed in the sub-title of
+stacks larger than 2GB to be incorrect.
+<li> Fixed a bug that caused <i>File&gt;Import&gt;Text Image</i> to leave the 
+progress bar in an invalid state if there was an error.
 </ul>
 
 </body>

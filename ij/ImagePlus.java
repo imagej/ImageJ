@@ -87,7 +87,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean errorLoadingImage;
 	private static ImagePlus clipboard;
 	private static Vector listeners = new Vector();
-	private boolean openAsHyperVolume;
+	private boolean openAsHyperStack;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -692,6 +692,8 @@ public class ImagePlus implements ImageObserver, Measurements {
     	if (win!=null) {
     		if (ij!=null)
 				Menus.updateWindowMenuItem(this.title, title);
+			String global = getGlobalCalibration()!=null?" (G)":"";
+				
 			String scale = "";
 			double magnification = win.getCanvas().getMagnification();
 			if (magnification!=1.0) {
@@ -699,7 +701,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				int digits = percent>100.0||percent==(int)percent?0:1;
 				scale = " (" + IJ.d2s(percent,digits) + "%)";
 			}
-			win.setTitle(title+scale);
+			win.setTitle(title+global+scale);
     	}
     	this.title = title;
     }
@@ -739,32 +741,33 @@ public class ImagePlus implements ImageObserver, Measurements {
 	<code>nChannels</code>*<code>nSlices</code>*<code>nFrames</code> 
 	must be equal to the stack size. */
 	public void setDimensions(int nChannels, int nSlices, int nFrames) {
+		//IJ.log("setDimensions: "+nChannels+" "+nSlices+" "+nFrames+" "+getImageStackSize());
 		if (nChannels*nSlices*nFrames!=getImageStackSize() && ip!=null) {
 			//throw new IllegalArgumentException("channels*slices*frames!=stackSize");
 			nChannels = 1;
 			nSlices = getImageStackSize();
 			nFrames = 1;
-			if (isHyperVolume()) {
-				setOpenAsHypervolume(false);
+			if (isHyperStack()) {
+				setOpenAsHyperStack(false);
 				new StackWindow(this);
 				setSlice(1);
 			}
 		}
-		boolean updateWin = isHyperVolume() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
+		boolean updateWin = isHyperStack() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
 		if (updateWin) {
 			if (nSlices!=getImageStackSize())
-				setOpenAsHypervolume(true);
+				setOpenAsHyperStack(true);
 			new StackWindow(this);
 			setSlice(1);
 		}
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 	
-	public boolean isHyperVolume() {
-		return win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperVolume();
+	public boolean isHyperStack() {
+		return win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperStack();
 	}
 
 	/** Returns the number of channels. */
@@ -988,9 +991,43 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return currentSlice;
 	}
 	
+	public int getChannel() {
+		if (isHyperStack())
+			return ((StackWindow)win).getHSChannel();
+		else
+			return getCurrentSlice();
+	}
+	
+	public int getSlice() {
+		if (isHyperStack())
+			return ((StackWindow)win).getHSSlice();
+		else if (compositeImage)
+			return 1;
+		else
+			return getCurrentSlice();
+	}
+
+	public int getFrame() {
+		if (isHyperStack())
+			return ((StackWindow)win).getHSFrame();
+		else if (compositeImage)
+			return 1;
+		else
+			return getCurrentSlice();
+	}
+
 	public void killStack() {
 		stack = null;
 		trimProcessor();
+	}
+	
+	public void setStackPosition(int channel, int slice, int frame) {
+		if (isHyperStack())
+			((StackWindow)win).setPosition(channel, slice, frame);
+		else {
+			int position = (frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel;
+			setSlice(position);
+		}
 	}
 			
 	/** Activates the specified slice. The index must be >= 1
@@ -1023,6 +1060,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 				}
 				ContrastAdjuster.update();
 			}
+			if (imageType==COLOR_RGB)
+				ContrastAdjuster.update();
 			if (!Interpreter.isBatchMode())
 				updateAndRepaintWindow();
 		}
@@ -1632,12 +1671,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return locked;
 	}
 	
-	public void setOpenAsHypervolume(boolean openAsHV) {
-		openAsHyperVolume = openAsHV;
+	public void setOpenAsHyperStack(boolean openAsHyperStack) {
+		this.openAsHyperStack = openAsHyperStack;
 	}
 	
-	public boolean getOpenAsHypervolume() {
-		return openAsHyperVolume;
+	public boolean getOpenAsHyperStack() {
+		return openAsHyperStack;
+	}
+	
+	public boolean isComposite() {
+		return compositeImage;
 	}
 
 	public Object clone() {

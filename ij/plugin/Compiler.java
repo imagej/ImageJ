@@ -76,11 +76,20 @@ public class Compiler implements PlugIn, FilenameFilter {
 			classpath += File.pathSeparator + f.getParent();
 		//IJ.log("classpath: " + classpath);
 		output.reset();
-		String[] arguments;
+		Vector v = new Vector();
 		if (generateDebuggingInfo)
-			arguments = new String[] {"-g", "-deprecation", "-classpath", classpath, path};
-		else
-			arguments = new String[] {"-deprecation", "-classpath", classpath, path};
+			v.addElement("-g");
+		if (IJ.isJava16()) {
+			// needed so plugin will run on Java 1.5
+			v.addElement("-source 1.5");
+			v.addElement("-target 1.5");
+		}
+		v.addElement("-deprecation");
+		v.addElement("-classpath");
+		v.addElement(classpath);
+		v.addElement(path);
+		String[] arguments = new String[v.size()];
+		v.copyInto((String[])arguments);
 		boolean compiled = javac.compile(arguments, new PrintWriter(output))==0;
 		String s = output.toString();
 		boolean errors = (!compiled || areErrors(s));

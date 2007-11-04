@@ -537,7 +537,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		} else
 			stats = imp.getStatistics();
 		Color color = Color.gray;
-		if (imp instanceof CompositeImage)
+		if (imp.isComposite())
 			color = ((CompositeImage)imp).getChannelColor();
 		plot.setHistogram(stats, color);
 	}

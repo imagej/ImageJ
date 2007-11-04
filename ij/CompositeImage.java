@@ -4,10 +4,12 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.image.*;
 import ij.plugin.*;
-import ij.plugin.frame.ContrastAdjuster;
+import ij.plugin.frame.*;
 
 public class CompositeImage extends ImagePlus {
 
+	public static final int COMPOSITE=1, COLORS=2, GRAYSCALE=3, TRANSPARENT=4;
+	static final int MAX_CHANNELS = 7;
 	int[] awtImagePixels;
 	boolean newPixels;
 	MemoryImageSource imageSource;
@@ -17,28 +19,57 @@ public class CompositeImage extends ImagePlus {
 	ImageProcessor[] cip;
 	Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
 	int currentChannel = 0;
+	int currentSlice = 1;
+	int currentFrame = 1;
 	static int count;
 	boolean singleChannel;
+	boolean[] active = new boolean[MAX_CHANNELS];
+	int mode = COLORS;
+	int bitDepth;
 
-	public CompositeImage(ImagePlus imp, int channels) {
+	public CompositeImage(ImagePlus imp) {
+		this(imp, COLORS);
+	}
+
+	public CompositeImage(ImagePlus imp, int mode) {
+		this.mode = mode;
+		int channels = imp.getNChannels();
+		bitDepth = getBitDepth();
+		if (IJ.debugMode) IJ.log("CompositeImage: "+imp+" "+mode+" "+channels);
 		//count++; if (count==1) throw new IllegalArgumentException("");
 		ImageStack stack2;
 		boolean isRGB = imp.getBitDepth()==24;
-		if (isRGB)
+		if (isRGB) {
+			if (imp.getStackSize()>1)
+				throw new IllegalArgumentException("RGB stacks not supported");
 			stack2 = getRGBStack(imp);
-		else
+		} else
 			stack2 = imp.getStack();
 		int stackSize = stack2.getSize();
+		if (channels==1 && isRGB) channels = 3;
+		if (channels==1 && stackSize<8) channels = stackSize;
 		if (channels<2 || (stackSize%channels)!=0)
 			throw new IllegalArgumentException("channels<2 or stacksize not multiple of channels");
 		compositeImage = true;
-		setDimensions(channels, stackSize/channels, 1);
+		int z = imp.getNSlices();
+		int t = imp.getNFrames();
+		if (channels==stackSize || channels*z*t!=stackSize)
+			setDimensions(channels, stackSize/channels, 1);
+		else
+			setDimensions(channels, z, t);
 		setup(channels, stack2);
 		setStack(imp.getTitle(), stack2);
 		setCalibration(imp.getCalibration());
+		setFileInfo(imp.getOriginalFileInfo());
 		Object info = imp.getProperty("Info");
 		if (info!=null)
 			setProperty("Info", imp.getProperty("Info"));
+		if (mode==COMPOSITE) {
+			for (int i=0; i<MAX_CHANNELS; i++)
+				active[i] = true;
+		} else
+			active[0] = true;
+		setOpenAsHyperStack(true);
 	}
 
 	public Image getImage() {
@@ -48,8 +79,10 @@ public class CompositeImage extends ImagePlus {
 	}
 	
 	public void updateChannelAndDraw() {
-		singleChannel = true;
-		updateAndDraw();
+		if (active[currentChannel]) {
+			singleChannel = true;
+			updateAndDraw();
+		}
 	}
 	
 	public ImageProcessor getChannelProcessor() {
@@ -69,8 +102,9 @@ public class CompositeImage extends ImagePlus {
 		int imageSize = width*height;
 		int nChannels = getNChannels();
 		int redValue, greenValue, blueValue;
-		int slice = getCurrentSlice();
+		int ch = getChannel();
 		
+		if (IJ.debugMode) IJ.log("CompositeImage.updateImage: "+ch+"/"+nChannels+" "+currentSlice+" "+currentFrame);
 		if (nChannels==1) {
 			pixels = null;
 			awtImagePixels = null;
@@ -79,24 +113,36 @@ public class CompositeImage extends ImagePlus {
 			return;
 		}
 	
-		if (cip!=null && cip[0].getWidth()!=width||cip[0].getHeight()!=height||(pixels!=null&&pixels.length!=nChannels)) {
+		if (cip!=null && cip[0].getWidth()!=width||cip[0].getHeight()!=height||(pixels!=null&&pixels.length!=nChannels)||getBitDepth()!=bitDepth) {
 			setup(nChannels, getStack());
 			pixels = null;
 			awtImagePixels = null;
-			if (slice>nChannels) {
+			if (ch>nChannels) {
 				setSlice(1);
-				slice = 1;
+				ch = 1;
 			}
+			bitDepth = getBitDepth();
 		}
-		if (slice>nChannels) slice = nChannels;
-
-		if (slice-1!=currentChannel) {
-			currentChannel = slice-1;
+		if (ch>nChannels) ch = nChannels;
+		
+		boolean newChannel = false;
+		if (ch-1!=currentChannel) {
+			currentChannel = ch-1;
 			getProcessor().setMinAndMax(cip[currentChannel].getMin(), cip[currentChannel].getMax());
 			ContrastAdjuster.update();
+			newChannel = true;
 		}
-		//IJ.log(nChannels+" "+slice+" "+currentChannel);
+		//IJ.log(nChannels+" "+ch+" "+currentChannel+"  "+newChannel);
 				
+		if (isHyperStack() && (getSlice()!=currentSlice||getFrame()!=currentFrame)) {
+			currentSlice = getSlice();
+			currentFrame = getFrame();
+			int position = (currentFrame-1)*nChannels*getNSlices() + (currentSlice-1)*nChannels + 1;
+			for (int i=0; i<nChannels; ++i) {
+				cip[i].setPixels(getStack().getProcessor(position+i).getPixels());
+			}
+		}
+
 		if (awtImagePixels == null) {
 			awtImagePixels = new int[imageSize];
 			newPixels = true;
@@ -106,6 +152,20 @@ public class CompositeImage extends ImagePlus {
 			pixels = new int[nChannels][];
 			for (int i=0; i<nChannels; ++i)
 				pixels[i] = new int[imageSize];
+		}
+		
+		if (mode ==TRANSPARENT) {
+			createBlitterImage(nChannels);
+			return;
+		}
+		
+		if (mode==COLORS || mode==GRAYSCALE) {
+			for (int i=0; i<MAX_CHANNELS; i++)
+				active[i] = i==currentChannel?true:false;
+			if (newChannel) {
+				Frame channels = Channels.getInstance();
+				if (channels!=null) ((Channels)channels).update();
+			}
 		}
 		
 		ImageProcessor ip = getProcessor();
@@ -146,12 +206,14 @@ public class CompositeImage extends ImagePlus {
 			for (int i=0; i<imageSize; ++i) {
 				redValue=0; greenValue=0; blueValue=0;
 				for (int j=0; j<nChannels; ++j) {
-					redValue += (pixels[j][i]>>16)&0xff;
-					greenValue += (pixels[j][i]>>8)&0xff;
-					blueValue += (pixels[j][i])&0xff; 
-					if (redValue>255) redValue = 255;
-					if (greenValue>255) greenValue = 255;
-					if (blueValue>255) blueValue = 255;
+					if (active[j]) {
+						redValue += (pixels[j][i]>>16)&0xff;
+						greenValue += (pixels[j][i]>>8)&0xff;
+						blueValue += (pixels[j][i])&0xff; 
+						if (redValue>255) redValue = 255;
+						if (greenValue>255) greenValue = 255;
+						if (blueValue>255) blueValue = 255;
+					}
 				}
 				awtImagePixels[i] = (redValue<<16) | (greenValue<<8) | (blueValue);
 			}
@@ -168,8 +230,27 @@ public class CompositeImage extends ImagePlus {
 			newPixels = false;
 		} else
 			imageSource.newPixels();	
-		if (img == null && awtImage!=null)
+		if (img==null && awtImage!=null)
 			img = awtImage;
+		singleChannel = false;
+	}
+	
+	void createBlitterImage(int n) {
+		ImageProcessor ip = cip[n-1].duplicate();
+		if (ip instanceof FloatProcessor){
+			FloatBlitter fb = new FloatBlitter((FloatProcessor)ip);
+			for (int i=1; i<n; i++)
+				fb.copyBits(cip[i], 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
+		} else if (ip instanceof ByteProcessor){
+			ByteBlitter bb = new ByteBlitter((ByteProcessor)ip);
+			for (int i=1; i<n; i++)
+				bb.copyBits(cip[i], 0, 0, Blitter.OR);
+		} else if (ip instanceof ShortProcessor){
+			ShortBlitter sb = new ShortBlitter((ShortProcessor)ip);
+			for (int i=n-2; i>=0; i--)
+				sb.copyBits(cip[i], 0, 0, Blitter. OR);
+		}
+		img = ip.createImage();
 		singleChannel = false;
 	}
 
@@ -209,7 +290,7 @@ public class CompositeImage extends ImagePlus {
 	}
 	
 	public Color getChannelColor() {
-		int index = getCurrentSlice()-1;
+		int index = getChannel()-1;
 		if (index<colors.length && colors[index]!=Color.white)
 			return colors[index];
 		else;
@@ -235,6 +316,39 @@ public class CompositeImage extends ImagePlus {
 			return 0.0;
 		else
 			return cip[channel-1].getMax();
+	}
+	
+	public boolean[] getActiveChannels() {
+		return active;
+	}
+	
+	public void setMode(int mode) {
+		if (mode<0 || mode>TRANSPARENT) return;
+		for (int i=0; i<MAX_CHANNELS; i++)
+			active[i] = true;
+		if (this.mode==TRANSPARENT && mode!=TRANSPARENT)
+			img = null;
+		if ((this.mode==GRAYSCALE&&mode!=GRAYSCALE) || (this.mode==TRANSPARENT&&mode!=TRANSPARENT)) {
+		   for (int i=0; i<cip.length; ++i) {
+				cip[i].setColorModel(createModelFromColor(colors[i]));
+			}
+		}
+		this.mode = mode;
+		if (mode==COLORS || mode==GRAYSCALE) {
+			for (int i=0; i<MAX_CHANNELS; i++)
+				active[i] = i==currentChannel?true:false;
+		}
+		if (mode==GRAYSCALE || mode==TRANSPARENT) {
+		   for (int i=0; i<cip.length; ++i) {
+				cip[i].setColorModel(createModelFromColor(colors[3]));
+			}
+		}
+		Frame channels = Channels.getInstance();
+		if (channels!=null) ((Channels)channels).update();
+	}
+
+	public int getMode() {
+		return mode;
 	}
 
 }

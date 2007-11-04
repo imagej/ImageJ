@@ -68,8 +68,8 @@ public class Duplicater implements PlugInFilter {
 		imp2.setStack(newTitle, stack2);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
-		if (imp.isHyperVolume())
-			imp2.setOpenAsHypervolume(true);
+		if (imp.isHyperStack())
+			imp2.setOpenAsHyperStack(true);
 		return imp2;
 	}
 	

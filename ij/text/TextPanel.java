@@ -592,7 +592,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		boolean isResults = IJ.isResultsWindow() && IJ.getTextPanel()==this;
 		if (path.equals("")) {
 			IJ.wait(10);
-			String ext = isResults?Prefs.get("options.ext", ".xls"):".txt";
+			boolean hasHeadings = !getColumnHeadings().equals("");
+			String ext = isResults||hasHeadings?Prefs.get("options.ext", ".xls"):".txt";
 			SaveDialog sd = new SaveDialog("Save as Text", title, ext);
 			String file = sd.getFileName();
 			if (file == null) return false;

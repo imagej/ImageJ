@@ -98,10 +98,10 @@ adjust05="Size...",ij.plugin.filter.Resizer
 adjust06="Canvas Size...",ij.plugin.CanvasResizer
 
 # Plugins installed in the Image/Color submenu
-color01="Convert Stack to RGB",ij.plugin.RGBStackConverter
-color02="Convert to Composite",ij.plugin.Composite_Image
-color03="RGB Split",ij.plugin.filter.RGBStackSplitter
-color04="RGB Merge...",ij.plugin.RGBStackMerge
+color01="RGB Split",ij.plugin.filter.RGBStackSplitter
+color02="RGB Merge...",ij.plugin.RGBStackMerge
+color03="Stack to RGB",ij.plugin.RGBStackConverter
+color04="Make Composite",ij.plugin.CompositeConverter
 color05="Show LUT",ij.plugin.filter.LutViewer
 color06="Edit LUT...",ij.plugin.LUT_Editor
 color07="Color Picker...[K]",ij.plugin.ColorPicker
@@ -115,18 +115,21 @@ stacks05="Set Slice...",ij.plugin.Animator("set")
 stacks06=-
 stacks07="Images to Stack",ij.plugin.StackEditor("tostack")
 stacks08="Stack to Images",ij.plugin.StackEditor("toimages")
-stacks09="Stack to HyperVolume...",ij.plugin.HyperVolumeConverter("stacktohv")
-stacks10="HyperVolume to Stack",ij.plugin.HyperVolumeConverter("hvtostack")
-stacks11=-
-stacks12="Make Montage...",ij.plugin.MontageMaker
-stacks13="Reslice [/]...",ij.plugin.Slicer
-stacks14="Z Project...",ij.plugin.ZProjector
-stacks15="3D Project...",ij.plugin.filter.Projector
-stacks16="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks17=-
-stacks18="Start Animation [\\]",ij.plugin.Animator("start")
-stacks19="Stop Animation",ij.plugin.Animator("stop")
-stacks20="Animation Options...",ij.plugin.Animator("options")
+stacks09="Make Montage...",ij.plugin.MontageMaker
+stacks10="Reslice [/]...",ij.plugin.Slicer
+stacks11="Z Project...",ij.plugin.ZProjector
+stacks12="3D Project...",ij.plugin.filter.Projector
+stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
+stacks14=-
+stacks15="Start Animation [\\]",ij.plugin.Animator("start")
+stacks16="Stop Animation",ij.plugin.Animator("stop")
+stacks17="Animation Options...",ij.plugin.Animator("options")
+
+# Plugins installed in the Image/HyperStacks submenu
+hyperstacks01="New HyperStack...",ij.plugin.HyperStackConverter("new")
+hyperstacks02="Stack to HyperStack...",ij.plugin.HyperStackConverter("stacktohs")
+hyperstacks03="HyperStack to Stack",ij.plugin.HyperStackConverter("hstostack")
+hyperstacks04="Channels...[Z]",ij.plugin.frame.Channels
 
 # Plugins installed in the Image/Rotate submenu
 rotate01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")

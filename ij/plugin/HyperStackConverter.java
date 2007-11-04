@@ -7,34 +7,40 @@ import ij.macro.Interpreter;
 import ij.io.FileInfo;
 
 
-/** Implements the "Stack to HyperVolume", "RGB to HyperVolume" 
-	and "HyperVolume to Stack" commands. */
-public class HyperVolumeConverter implements PlugIn {
+/** Implements the "Stack to HyperStack", "RGB to HyperStack" 
+	and "HyperStack to Stack" commands. */
+public class HyperStackConverter implements PlugIn {
 	static final int C=0, Z=1, T=2;
 	static final int CZT=0, CTZ=1, ZCT=2, ZTC=3, TCZ=4, TZC=5;
     static final String[] orders = {"xyczt (default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
     static int order = CZT;
 
 	public void run(String arg) {
+		if (arg.equals("new"))
+		{newHyperStack(); return;}
 		ImagePlus imp = IJ.getImage();
-    	if (arg.equals("stacktohv"))
-    		convertStackToHV(imp);
-    	else if (arg.equals("hvtostack"))
-    		convertHVToStack(imp);
+    	if (arg.equals("stacktohs"))
+    		convertStackToHS(imp);
+    	else if (arg.equals("hstostack"))
+    		convertHSToStack(imp);
 	}
 	
-	/** Displays the current stack in a HyperVolume window. Based on the 
+	/** Displays the current stack in a HyperStack window. Based on the 
 		Stack_to_Image5D class in Joachim Walter's Image5D plugin. */
-	void convertStackToHV(ImagePlus imp) {
+	void convertStackToHS(ImagePlus imp) {
         int nChannels = imp.getNChannels();
         int nSlices = imp.getNSlices();
         int nFrames = imp.getNFrames();
 		int stackSize = imp.getStackSize();
 		if (stackSize==1) {
-			IJ.error("Stack to HyperVolume", "Stack required");
+			IJ.error("Stack to HyperStack", "Stack required");
 			return;
 		}
-		GenericDialog gd = new GenericDialog("Convert to HyperVolume");
+		if (imp.getBitDepth()==24) {
+			run("Make Composite");
+			return;
+		}
+		GenericDialog gd = new GenericDialog("Convert to HyperStack");
 		gd.addChoice("Order:", orders, orders[order]);
 		gd.addNumericField("Channels (c):", nChannels, 0);
 		gd.addNumericField("Slices (z):", nSlices, 0);
@@ -46,16 +52,19 @@ public class HyperVolumeConverter implements PlugIn {
 		nSlices = (int) gd.getNextNumber();
 		nFrames = (int) gd.getNextNumber();
 		if (nChannels*nSlices*nFrames!=stackSize) {
-			IJ.error("HyperVolume Converter", "channels x slices x frames <> stack size");
+			IJ.error("HyperStack Converter", "channels x slices x frames <> stack size");
 			return;
 		}
 		imp.setDimensions(nChannels, nSlices, nFrames);
 		if (order!=CZT && imp.getStack().isVirtual())
-			IJ.error("HyperVolume Converter", "Virtual stacks must by in XYCZT order.");
+			IJ.error("HyperStack Converter", "Virtual stacks must by in XYCZT order.");
 		else {
 			shuffle(imp, order);
-			imp.setOpenAsHypervolume(true);
-			new StackWindow(imp);
+			ImagePlus imp2 = imp;
+			if (nChannels>1 && imp.getBitDepth()!=24)
+				imp2 = new CompositeImage(imp);
+			new StackWindow(imp2);
+			imp.hide();
 		}
 	}
 
@@ -102,9 +111,23 @@ public class HyperVolumeConverter implements PlugIn {
 		}
 	}
 
-	void convertHVToStack(ImagePlus imp) {
-		imp.setOpenAsHypervolume(false);
-		new StackWindow(imp);
+	void convertHSToStack(ImagePlus imp) {
+		if (!imp.isHyperStack()) return;
+		ImagePlus imp2 = imp;
+		if (imp.isComposite()) {
+			ImageStack stack = imp.getStack();
+			imp2 = imp.createImagePlus();
+			imp2.setStack(imp.getTitle(), stack);
+			int[] dim = imp.getDimensions();
+			imp2.setDimensions(dim[2], dim[3], dim[4]);
+		}
+		imp2.setOpenAsHyperStack(false);
+		new StackWindow(imp2);
+		imp.hide();
+	}
+	
+	void newHyperStack() {
+		IJ.runMacroFile("ij.jar:HyperStackMaker", "");
 	}
 	
 }

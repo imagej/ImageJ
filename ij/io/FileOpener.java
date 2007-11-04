@@ -104,7 +104,8 @@ public class FileOpener {
 				stack.addSlice("Green", pixelArray[1]);
 				stack.addSlice("Blue", pixelArray[2]);
         		imp = new ImagePlus(fi.fileName, stack);
-        		imp = new CompositeImage(imp, 3);
+        		imp.setOpenAsHyperStack(true);
+        		imp.setDimensions(3, 1, 1);
         		imp.getProcessor().resetMinAndMax();
 				break;
 		}
@@ -348,7 +349,7 @@ public class FileOpener {
 			if (channels*slices*frames==stackSize) {
 				imp.setDimensions(channels, slices, frames);
 				if (slices!=stackSize)
-					imp.setOpenAsHypervolume(true);
+					imp.setOpenAsHyperStack(true);
 			}
 		}
 	}

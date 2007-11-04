@@ -32,7 +32,7 @@ public class URLOpener implements PlugIn {
 				WindowManager.checkForDuplicateName = true;
 				FileInfo fi = imp.getOriginalFileInfo();
 				if (fi!=null && fi.fileType==FileInfo.RGB48)
-					imp = new CompositeImage(imp, 3);
+					imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
 				imp.show();
 			}
 			return;
@@ -60,7 +60,7 @@ public class URLOpener implements PlugIn {
 			WindowManager.checkForDuplicateName = true;
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (fi!=null && fi.fileType==FileInfo.RGB48)
-				imp = new CompositeImage(imp, 3);
+				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
 			imp.show();
 			IJ.showStatus("");
 		}

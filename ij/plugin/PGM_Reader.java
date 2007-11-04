@@ -97,7 +97,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
         show();
         if (sixteenBits && stack.getSize()==3) {
         	WindowManager.setTempCurrentImage(this);
-        	IJ.run("Convert Stack to RGB");
+        	IJ.run("Stack to RGB");
         }
     }
 

@@ -148,7 +148,7 @@ public class StackEditor implements PlugIn {
 				{imp.unlock(); return;}
 		}
 		Calibration cal = imp.getCalibration();
-		CompositeImage cimg = imp instanceof CompositeImage?(CompositeImage)imp:null;
+		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
