@@ -25,10 +25,8 @@ public class CompositeConverter implements PlugIn {
 		if (imp.getBitDepth()==24) {
 			if (z>1)
 				convertRGBToCompositeStack(imp);
-			else {
-				imp.hide();
-				new CompositeImage(imp, CompositeImage.COMPOSITE).show();
-			}
+			else
+				convertRGBToCompositeImage(imp);
 		} else if (c>=2 && c<=7) {
 			CompositeImage ci = new CompositeImage(imp, CompositeImage.COLORS);
 			new StackWindow(ci);
@@ -37,6 +35,16 @@ public class CompositeConverter implements PlugIn {
 			IJ.error("To create a composite, the current image must be\n a stack with fewer than 8 slices or be in RGB format.");
 	}
 	
+	void convertRGBToCompositeImage(ImagePlus imp) {
+			ImageWindow win = imp.getWindow();
+			Point loc = win!=null?win.getLocation():null;
+			ImagePlus imp2 = new CompositeImage(imp, CompositeImage.COMPOSITE);
+			imp.hide();
+			imp2.show();
+			ImageWindow win2 = imp2.getWindow();
+			if (loc!=null&&win2!=null) win2.setLocation(loc);
+	}
+
 	void convertRGBToCompositeStack(ImagePlus imp) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();

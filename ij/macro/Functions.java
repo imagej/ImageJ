@@ -1494,8 +1494,12 @@ public class Functions implements MacroConstants, Measurements {
 			r[i] = (byte)reds[i];
 			g[i] = (byte)greens[i];
 			b[i] = (byte)blues[i];
-		}		
-		ip.setColorModel(new IndexColorModel(8, length, r, g, b));
+		}
+		IndexColorModel icm = new IndexColorModel(8, length, r, g, b);
+		if (imp.isComposite())
+			((CompositeImage)imp).setChannelColorModel(icm);
+		else
+			ip.setColorModel(icm);
 		imp.updateAndDraw();
 		updateNeeded = false;
 	}

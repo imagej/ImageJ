@@ -5,6 +5,8 @@ import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
+import java.awt.image.ColorModel;
+
 
 
 /** Implements the "Stack to HyperStack", "RGB to HyperStack" 
@@ -120,6 +122,8 @@ public class HyperStackConverter implements PlugIn {
 			imp2.setStack(imp.getTitle(), stack);
 			int[] dim = imp.getDimensions();
 			imp2.setDimensions(dim[2], dim[3], dim[4]);
+			ColorModel cm = ((CompositeImage)imp).getDefaultColorModel();
+			if (cm!=null) imp2.getProcessor().setColorModel(cm);
 		}
 		imp2.setOpenAsHyperStack(false);
 		new StackWindow(imp2);

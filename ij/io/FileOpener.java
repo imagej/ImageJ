@@ -104,9 +104,9 @@ public class FileOpener {
 				stack.addSlice("Green", pixelArray[1]);
 				stack.addSlice("Blue", pixelArray[2]);
         		imp = new ImagePlus(fi.fileName, stack);
-        		imp.setOpenAsHyperStack(true);
         		imp.setDimensions(3, 1, 1);
         		imp.getProcessor().resetMinAndMax();
+        		imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
 				break;
 		}
 		imp.setFileInfo(fi);

@@ -1680,7 +1680,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	public boolean isComposite() {
-		return compositeImage;
+		return compositeImage && getNChannels()>1;
 	}
 
 	public Object clone() {

@@ -104,6 +104,8 @@ public class ImageConverter {
 		stack.addSlice("Blue", B);
 		imp.setStack(null, stack);
 		imp.setDimensions(3, 1, 1);
+		if (imp.isComposite())
+			((CompositeImage)imp).setMode(CompositeImage.GRAYSCALE);
 	}
 
 	/** Converts an RGB image to a HSB (hue, saturation and brightness) stack. */

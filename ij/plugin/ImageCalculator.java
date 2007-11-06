@@ -10,7 +10,7 @@ import ij.macro.Interpreter;
 /** This plugin implements the Process/Image Calculator command. */
 public class ImageCalculator implements PlugIn {
 
-	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy", "Transparent Zero"};
+	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy", "Transparent-zero"};
 	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy", "trans-z"};
 	private static int operator;
 	private static String title1 = "";

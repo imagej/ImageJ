@@ -5,27 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.39g, 29 October 2007</u>
+<li> <u>1.39h, 5 November 2007</u>
 <ul>
-<li> Added the <i>Image&gt;HyperStacks</i> submenu, which contains <i>New HyperStack...</i>,
-<i>Stack to HyperStack...</i>, <i>HyperStack to Stack</i> and<i>Channels...</i> commands.
-<li> Added a "Transparent Zero" (zero pixels are transparent) 
-operator to <i>Process&gt;Image Calculator</i> and to <i>Edit&gt;Paste Control</i>.
-<li> The "List", "Save" and "Copy" options in profile plot windows use 9 
-decimal places for y values if "Decimal Places" in the <i>Analyze&gt;Set Measurements</i>
-dialog is less than 6.
-<li> Maximizing a zoomed image causes it, if needed, to fill the screen.
-<li> "(G)" is displayed in all image title bars if the "Global" flag is set in 
-<i>Analyze&gt;Set Scale</i>, <i>Analyze&gt;Calibrate</i> or
-<i>Image&gt;Properties</i>.
-<li> Custom tables now use the <i>File Extension for Tables</i> 
-default extension specified in <i>Edit&gt;Options&gt;Input/Output</i>.
-<li> Use the -port0 command line option and ImageJ will not start the
-SocketListener not check for other instances.
-<li> Fixed a bug that caused the memory size displayed in the sub-title of
-stacks larger than 2GB to be incorrect.
-<li> Fixed a bug that caused <i>File&gt;Import&gt;Text Image</i> to leave the 
-progress bar in an invalid state if there was an error.
+<li> Added the HS.isHyperStack(), HS.getPosition(), HS.setPosition(),
+HS.setChannel(), HS.setSlice() and HS.setFrame() macro functions
+(<a href="http://rsb.info.nih.gov/ij/macros/HyperStackDemo.txt">example</a>).
+
+<li> Fixed a bug, introduced in 1.39g, that caused <i>Plugins&gt;Compile and Run</i> to fail when using Java 1.6.
 </ul>
 
 </body>

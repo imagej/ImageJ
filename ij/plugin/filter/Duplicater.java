@@ -70,6 +70,8 @@ public class Duplicater implements PlugInFilter {
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
+		if (imp.isComposite())
+			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
 		return imp2;
 	}
 	

@@ -592,7 +592,7 @@ public class Opener {
 		imp = fo.open(false);
 		//IJ.showStatus("");
 		int c = imp.getNChannels();
-		if (c>1 && c<8 && imp.getOpenAsHyperStack())
+		if (c>1 && c<8 && imp.getOpenAsHyperStack() && !imp.isComposite())
 			imp = new CompositeImage(imp, CompositeImage.COLORS);
 		return imp;
 	}
@@ -738,28 +738,10 @@ public class Opener {
 	
 	void openRGB48(ImagePlus imp) {
 			isRGB48 = false;
-			ImageStack stack = imp.getStack();
-			ImageStack stack1 = imp.createEmptyStack();
-			ImageStack stack2 = imp.createEmptyStack();
-			ImageStack stack3 = imp.createEmptyStack();
-			int n = imp.getStackSize()/3;
-			for (int i=0; i<n; i++) {
-				stack1.addSlice(null, stack.getProcessor(1));
-				stack.deleteSlice(1);
-				stack2.addSlice(null, stack.getProcessor(1));
-				stack.deleteSlice(1);
-				stack3.addSlice(null, stack.getProcessor(1));
-				stack.deleteSlice(1);
-			}
-			ImagePlus imp1 = new ImagePlus("Red-"+imp.getTitle(), stack1);
-			imp1.getProcessor().resetMinAndMax();
-			imp1.show();
-			ImagePlus imp2 = new ImagePlus("Green-"+imp.getTitle(), stack2);
-			imp2.getProcessor().resetMinAndMax();
-			imp2.show();
-			ImagePlus imp3 = new ImagePlus("Blue-"+imp.getTitle(), stack3);
-			imp3.getProcessor().resetMinAndMax();
-			imp3.show();
+			int stackSize = imp.getStackSize();
+			imp.setDimensions(3, stackSize/3, 1);
+			imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+			imp.show();
 	}
 	
 	/** The "Opening: path" status message is not displayed in silent mode. */
