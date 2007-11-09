@@ -378,7 +378,6 @@ public class GelAnalyzer implements PlugIn {
 			show("Data needed to outline lanes is no longer available.");
 			return;
 		}
-		//IJ.write("outlining lane "+x);
 		int lineWidth = (int)(1.0/gel.getCanvas().getMagnification());
 		if (lineWidth<1)
 			lineWidth = 1;
@@ -481,6 +480,7 @@ class PlotsCanvas extends ImageCanvas {
 	double[] measured = new double[MAX_PEAKS];
 	Rectangle[] rect = new Rectangle[MAX_PEAKS];
 	int counter;
+	ResultsTable rt;
 
 	public PlotsCanvas(ImagePlus imp) {
 		super(imp);
@@ -498,8 +498,11 @@ class PlotsCanvas extends ImageCanvas {
 		if (Toolbar.getToolId()!=Toolbar.WAND || IJ.spaceBarDown())
 			return;
 		ImageStatistics s = imp.getStatistics();
-		if (counter==0)
-			IJ.setColumnHeadings(" \tArea");
+		if (counter==0) {
+			rt = ResultsTable.getResultsTable();
+			rt.reset();
+		}
+		//IJ.setColumnHeadings(" \tArea");
 		double perimeter = roi.getLength();
 		String error = "";
 		double circularity = 4.0*Math.PI*(s.pixelCount/(perimeter*perimeter));
@@ -514,7 +517,10 @@ class PlotsCanvas extends ImageCanvas {
 		// adjustment for small peaks from NIH Image gel macros
 
 		int places = cal.scaled()?3:0;
-		IJ.write((counter+1)+"\t"+IJ.d2s(area, places)+error);
+		rt.incrementCounter();
+		rt.addValue("Area", area);
+		rt.show("Results");
+		// IJ.write((counter+1)+"\t"+IJ.d2s(area, places)+error);
 		measured[counter] = area;
 		if (counter<MAX_PEAKS)
 			counter++;
@@ -576,7 +582,9 @@ class PlotsCanvas extends ImageCanvas {
 	}
 
 	void displayPercentages() {
-		IJ.setColumnHeadings(" \tarea\tpercent");
+		ResultsTable rt = ResultsTable.getResultsTable();
+		rt.reset();
+		//IJ.setColumnHeadings(" \tarea\tpercent");
 		double total = 0.0;
 		for (int i=0; i<counter; i++)
 			total += measured[i];
@@ -586,8 +594,12 @@ class PlotsCanvas extends ImageCanvas {
 		}
 		for (int i=0; i<counter; i++) {
 			double percent = (measured[i]/total)*100;
-			IJ.write((i+1)+"\t"+IJ.d2s(measured[i],3)+"\t"+IJ.d2s(percent,3));
+			rt.incrementCounter();
+			rt.addValue("Area", measured[i]);
+			rt.addValue("Percent", percent);
+			//IJ.write((i+1)+"\t"+IJ.d2s(measured[i],3)+"\t"+IJ.d2s(percent,3));
 		}
+		rt.show("Results");
 	}
 
 	void debug() {

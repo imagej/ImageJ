@@ -35,6 +35,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			nSlices = dim[3];
 			nFrames = dim[4];
 		}
+		//IJ.log("StackWindow: "+hyperStack+" "+nChannels+" "+nSlices+" "+nFrames);
 		if (nSlices==stackSize) hyperStack = false;
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();

@@ -12,6 +12,7 @@ public class Memory implements PlugIn {
 	int index1, index2;
 	File f;
 	boolean fileMissing;
+	boolean sixtyFourBit;
 
 	public void run(String arg) {
 		changeMemoryAllocation();
@@ -40,7 +41,7 @@ public class Memory implements PlugIn {
 		if (max2<32 && IJ.isMacOSX()) max2 = 32;
 		if (max2<8 && IJ.isWindows()) max2 = 8;
 		if (max2==max) return;
-		if (max2>=1700) {
+		if (max2>=170 && !sixtyFourBit) {
 			if (!IJ.showMessageWithCancel("Memory", 
 			"Note: setting the memory limit to a value\n"
 			+"greater than 1700MB on a 32-bit system\n"
@@ -75,6 +76,10 @@ public class Memory implements PlugIn {
 		long max = 0L;
 		if (IJ.isMacOSX()) {
 			max = getMemorySetting("ImageJ.app/Contents/Info.plist");
+			if (max==0L) {
+				max = getMemorySetting("ImageJ64.app/Contents/Info.plist");
+				if (max!=0L) sixtyFourBit = true;
+			}
 		} else
 			max = getMemorySetting("ImageJ.cfg");		
 		return max;

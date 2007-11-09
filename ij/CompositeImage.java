@@ -19,8 +19,9 @@ public class CompositeImage extends ImagePlus {
 	int[][] pixels;
 	ImageProcessor[] cip;
 	Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
-	IndexColorModel[] colorModel;
+	ExtendedColorModel[] colorModel;
 	int currentChannel = -1;
+	int previousChannel;
 	int currentSlice = 1;
 	int currentFrame = 1;
 	static int count;
@@ -107,7 +108,7 @@ public class CompositeImage extends ImagePlus {
 
 	void setupColorModels(int channels) {
 		if (colorModel==null || colorModel.length<channels) {
-			colorModel = new IndexColorModel[channels];
+			colorModel = new ExtendedColorModel[channels];
 			for (int i=0; i<channels; ++i)
 				colorModel[i] = createModelFromColor(colors[i]);
 		}
@@ -123,6 +124,7 @@ public class CompositeImage extends ImagePlus {
 		if (ch>nChannels) ch = nChannels;
 		boolean newChannel = false;
 		if (ch-1!=currentChannel) {
+			previousChannel = currentChannel;
 			currentChannel = ch-1;
 			newChannel = true;
 		}
@@ -134,7 +136,14 @@ public class CompositeImage extends ImagePlus {
 					if (defaultColorModel==null)
 						defaultColorModel = ip.getColorModel();
 					setupColorModels(nChannels);
+					ExtendedColorModel cm = colorModel[currentChannel];
 					ip.setColorModel(colorModel[currentChannel]);
+					if (previousChannel!=-1) {
+						colorModel[previousChannel].min = ip.getMin();
+						colorModel[previousChannel].max = ip.getMax();
+					}
+					if (!(cm.min==0.0&&cm.max==0.0))
+						ip.setMinAndMax(cm.min, cm.max);
 				}
 				Frame channels = Channels.getInstance();
 				for (int i=0; i<MAX_CHANNELS; i++)
@@ -309,7 +318,7 @@ public class CompositeImage extends ImagePlus {
 		return stack;
 	}
 
-	public static IndexColorModel createModelFromColor(Color color) {
+	public static ExtendedColorModel createModelFromColor(Color color) {
 		byte[] rLut = new byte[256];
 		byte[] gLut = new byte[256];
 		byte[] bLut = new byte[256];
@@ -324,7 +333,7 @@ public class CompositeImage extends ImagePlus {
 			gLut[i] = (byte)(i*gIncr);
 			bLut[i] = (byte)(i*bIncr);
 		}
-		return new IndexColorModel(8, 256, rLut, gLut, bLut);
+		return new ExtendedColorModel(8, 256, rLut, gLut, bLut);
 	}
 	
 	public Color getChannelColor() {
@@ -396,18 +405,33 @@ public class CompositeImage extends ImagePlus {
 		return defaultColorModel;
 	}
 
-	public void setChannelColorModel(IndexColorModel icm) {
+	public void setChannelColorModel(IndexColorModel cm) {
 		if (mode==GRAYSCALE) {
 			if (defaultColorModel!=null)
-				defaultColorModel = icm;
-			getProcessor().setColorModel(icm);
+				defaultColorModel = cm;
+			getProcessor().setColorModel(cm);
 		} else {
 			if (currentChannel==-1) return;
-			colorModel[currentChannel] = icm;
+			byte[] reds = new byte[256];
+			byte[] greens = new byte[256];
+			byte[] blues = new byte[256];
+			cm.getReds(reds);
+			cm.getGreens(greens);
+			cm.getBlues(blues);
+			colorModel[currentChannel] = new ExtendedColorModel(8, cm.getMapSize(), reds, greens, blues);
 			if (mode==COMPOSITE)
-				cip[currentChannel].setColorModel(icm);
+				cip[currentChannel].setColorModel(cm);
 			currentChannel = -1;
 		}
 	}
 
+}
+
+class ExtendedColorModel extends IndexColorModel {
+	double min, max;
+	
+    public ExtendedColorModel(int bits, int size, byte r[], byte g[], byte b[]) {
+    	super(bits, size, r, g, b);
+	}
+	
 }

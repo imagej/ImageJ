@@ -207,12 +207,12 @@ public class Opener {
 			case PGM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
-			case JPEG: case GIF:
+			case JPEG: case GIF: case PNG:
 				imp = openJpegOrGif(directory, name);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
-			case PNG:
-				imp = openUsingImageIO(directory+name);
-				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
+			//case PNG: // no longer used because ImageIO did not correctly open some 8-bit PNGs
+			//	imp = openUsingImageIO(directory+name);
+			//	if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
 			case BMP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;

@@ -14,7 +14,7 @@ import java.awt.image.ColorModel;
 public class HyperStackConverter implements PlugIn {
 	static final int C=0, Z=1, T=2;
 	static final int CZT=0, CTZ=1, ZCT=2, ZTC=3, TCZ=4, TZC=5;
-    static final String[] orders = {"xyczt (default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
+    static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
     static int order = CZT;
 
 	public void run(String arg) {
@@ -63,10 +63,10 @@ public class HyperStackConverter implements PlugIn {
 		else {
 			shuffle(imp, order);
 			ImagePlus imp2 = imp;
-			if (nChannels>1 && imp.getBitDepth()!=24)
+			if (nChannels>1 && nChannels<8 && imp.getBitDepth()!=24)
 				imp2 = new CompositeImage(imp);
 			new StackWindow(imp2);
-			imp.hide();
+			if (imp!=imp2) imp.hide();
 		}
 	}
 
