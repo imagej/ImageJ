@@ -96,5 +96,5 @@ public class SimpleCommands implements PlugIn {
 			"to this submenu. There is an example at\n \n"+
 			"http://rsb.info.nih.gov/ij/plugins/jar-demo.html");
 	}
-
+	
 }

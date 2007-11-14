@@ -65,6 +65,7 @@ public class HyperStackConverter implements PlugIn {
 			ImagePlus imp2 = imp;
 			if (nChannels>1 && nChannels<8 && imp.getBitDepth()!=24)
 				imp2 = new CompositeImage(imp);
+			imp2.setOpenAsHyperStack(true);
 			new StackWindow(imp2);
 			if (imp!=imp2) imp.hide();
 		}
@@ -127,7 +128,7 @@ public class HyperStackConverter implements PlugIn {
 		}
 		imp2.setOpenAsHyperStack(false);
 		new StackWindow(imp2);
-		imp.hide();
+		if (imp!=imp2) imp.hide();
 	}
 	
 	void newHyperStack() {

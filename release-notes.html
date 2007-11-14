@@ -5,17 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.39i, 8 November 2007</u>
+<li> <u>1.39j, 14 November 2007</u>
 <ul>
-<li> Updated to support <A HREF="http://rsb.info.nih.gov/ij/download/osx/ImageJ64.zip">ImageJ64</A>
-is a launcher for Mac OS X Leopard that runs ImageJ in 64-bit mode.
-It requires a Mac with a 64-bit Intel processor and
-at least 3 GB of memory.
-<li> Column headers are now included when copying data from the Results window.
-<li> Tables created by <i>Analyze&gt;Gels</i> are now compatible with the nResults() 
-and getResult() macro functions.
-<li> Reverted to reading PNGs using Toolkit.createImage(), rather than ImageIO, which is much slower and does
-not correctly read some 8-bit PNGs.
+<li> <i>Image&gt;Duplicate</i> preserves non-rectangular area selections.
+<li> Thanks to a patch by Johannes Schindelin, the macro language now accepts numbers in
+scientific notation.
+<li> <i>Plugins&gt;Compile and Run</i> uses the -Xlint:unchecked option on Java 1.5 and later.
+<li>Fixed a bug that prevented <i>Image&gt;Adjust&gt;Brightness/Contrast</i>,
+<i>Window/Level</i> and <i>Color Balance</i> from opening if
+another adjustment tool was already open.
+<li> Fixed a bug that caused the Roi Manager to sometimes not work as expected 
+when more than 9999 ROIs were added to it by the particle analyzer.
+<li> Fixed several ImageListener interface problems.
+<li> Fixed a bug that caused <i>File&gt;New&gt;Image</i> to display an invalid
+message in the status bar when opening stacks larger than 2GB.
+<li> Fixed a bug that caused <i>Plugins&gt;Utilities&gt;Memory Monitor</i> to not
+work correctly when using more than 2GB.
 </ul>
 
 </body>

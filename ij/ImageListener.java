@@ -1,6 +1,8 @@
 package ij;
 
-public interface ImageListener {
+	/** Plugins that implement this interface are notified when
+		an image window is opened, closed or updated. */
+	public interface ImageListener {
 
 	public void imageOpened(ImagePlus imp);
 

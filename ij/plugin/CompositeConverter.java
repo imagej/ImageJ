@@ -29,7 +29,7 @@ public class CompositeConverter implements PlugIn {
 				convertRGBToCompositeImage(imp);
 		} else if (c>=2 && c<=7) {
 			CompositeImage ci = new CompositeImage(imp, CompositeImage.COLORS);
-			new StackWindow(ci);
+			ci.show();
 			imp.hide();
 		} else
 			IJ.error("To create a composite, the current image must be\n a stack with fewer than 8 slices or be in RGB format.");
@@ -69,7 +69,7 @@ public class CompositeConverter implements PlugIn {
 		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
 		imp2.setDimensions(3, n/3, 1);
  		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
-		new StackWindow(imp2);
+		imp2.show();
 		imp.changes = false;
 		imp.close();
 	}

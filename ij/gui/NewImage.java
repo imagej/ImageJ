@@ -43,7 +43,7 @@ public class NewImage {
 		long bytesPerPixel = 1;
 		if (type==GRAY16) bytesPerPixel = 2;
 		else if (type==GRAY32||type==RGB) bytesPerPixel = 4;
-		long size = (width*height*nSlices*bytesPerPixel);
+		long size = (long)width*height*nSlices*bytesPerPixel;
 		String size2 = size/(1024*1024)+"MB ("+width+"x"+height+"x"+nSlices+")";
 		if ((options&CHECK_AVAILABLE_MEMORY)!=0) {
 			long max = IJ.maxMemory(); // - 100*1024*1024;

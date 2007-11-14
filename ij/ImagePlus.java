@@ -242,11 +242,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		nothing if there is no window associated with
 		this image (i.e. show() has not been called).*/
 	public void updateAndDraw() {
-		if (ip != null) {
-			if (win!=null)
+		if (ip!=null) {
+			if (win!=null) {
 				win.getCanvas().setImageUpdated();
+				if (listeners.size()>0) notifyListeners(UPDATED);
+			}
 			draw();
-			if (listeners.size()>0) notifyListeners(UPDATED);
 		}
 	}
 	
@@ -510,11 +511,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 			win = new ImageWindow(this, getCanvas());   // replaces this window
 		else if (dimensionsChanged && !stackSizeChanged)
 			win.updateImage(this);
-		else if (stackSize>1 && !(win instanceof StackWindow))
+		else if (stackSize>1 && !(win instanceof StackWindow)) {
+			if (isHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
-		else if (stackSize>1 && dimensionsChanged)
+		} else if (stackSize>1 && dimensionsChanged) {
+			if (isHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
-		else
+		} else
 			repaintWindow();
 		if (resetCurrentSlice) setSlice(currentSlice);
     }
@@ -1333,9 +1336,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 		do its job. Does nothing if the image is locked or a
 		setIgnoreFlush(true) call has been made. */
 	public synchronized void flush() {
-		notifyListeners(CLOSED);
 		if (locked || ignoreFlush)
 			return;
+		notifyListeners(CLOSED);
 		if (ip!=null) {
 			ip.setPixels(null);
 			ip = null;

@@ -85,8 +85,9 @@ public class Compiler implements PlugIn, FilenameFilter {
 			v.addElement("1.5");
 			v.addElement("-target");
 			v.addElement("1.5");
-			v.addElement("-Xlint:unchecked");
 		}
+		if (IJ.isJava15())
+			v.addElement("-Xlint:unchecked");
 		v.addElement("-deprecation");
 		v.addElement("-classpath");
 		v.addElement(classpath);

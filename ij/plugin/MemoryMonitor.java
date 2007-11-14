@@ -21,10 +21,10 @@ public class MemoryMonitor implements PlugIn {
 	ImageProcessor ip;
 	int frames;
 	ImageCanvas ic;
-	float[] mem;
+	double[] mem;
 	int index;
 	long value;
-	int max = 12*1204*1024; // 12MB
+	double max = 12*1204*1024; // 12MB
 	long maxMemory = IJ.maxMemory();
 
 	public void run(String arg) {
@@ -46,7 +46,7 @@ public class MemoryMonitor implements PlugIn {
 		imp.lock();
 		ImageWindow win = imp.getWindow();
 		ic = win.getCanvas();
-		mem = new float[width+1];
+		mem = new double[width+1];
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		startTime = System.currentTimeMillis();
 		win.running = true;
@@ -83,15 +83,15 @@ public class MemoryMonitor implements PlugIn {
 	}
 
 	void updatePixels() {
-		long used = IJ.currentMemory();
-		if (frames%10==0) value=used;
-		if (used>0.9*max) max*=2;
-		mem[index++] = (float)used;
+		double used = IJ.currentMemory();
+		if (frames%10==0) value = (long)used;
+		if (used>0.9*max) max *= 2.0;
+		mem[index++] = used;
 		if (index==mem.length) index = 0;
 		ip.reset();
 		int index2 = index+1;
 		if (index2==mem.length) index2 = 0;
-		double scale = (double)height/max;
+		double scale = height/max;
 		ip.moveTo(0, height-(int)(mem[index2]*scale));
 		for (int x=1; x<width; x++) {
 			index2++;

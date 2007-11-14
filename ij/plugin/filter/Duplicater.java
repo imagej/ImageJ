@@ -29,6 +29,7 @@ public class Duplicater implements PlugInFilter {
 		if (newTitle==null)
 			return;
 		ImagePlus imp2;
+		Roi roi = imp.getRoi();
 		if (duplicateStack)
 			imp2 = duplicateStack(imp, newTitle);
 		else {
@@ -45,8 +46,9 @@ public class Duplicater implements PlugInFilter {
 					imp2.setProperty("Info", label);
 			}
 		}
-		//imp.killRoi();
 		imp2.show();
+		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
+			imp2.restoreRoi();
 	}
                 
 	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {

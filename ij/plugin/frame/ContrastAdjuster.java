@@ -54,6 +54,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	Font sanFont = new Font("SansSerif", Font.PLAIN, 12);
 	int channels = 7; // RGB
 	Choice choice;
+	boolean updatingRGBStack;
 
 
 	public ContrastAdjuster() {
@@ -71,8 +72,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 
 		if (instance!=null) {
-			instance.toFront();
-			return;
+			if (!instance.getTitle().equals(getTitle())) {
+				ContrastAdjuster ca = (ContrastAdjuster)instance;
+				Prefs.saveLocation(LOC_KEY, ca.getLocation());
+				ca.close();
+			} else {
+				instance.toFront();
+				return;
+			}
 		}
 		instance = this;
 		IJ.register(ContrastAdjuster.class);
@@ -627,6 +634,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		"NOTE: There is no Undo for this operation."))
 			return;
  		ImageProcessor mask = imp.getMask();
+ 		updatingRGBStack = true;
 		for (int i=1; i<=n; i++) {
 			if (i!=current) {
 				imp.setSlice(i);
@@ -638,6 +646,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			}
 		}
 		imp.setSlice(current);
+ 		updatingRGBStack = false;
 		imp.changes = true;
 		if (Recorder.record)
 			Recorder.record("run", "Apply LUT", "stack");
@@ -879,11 +888,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
     public static void update() {
 		if (instance!=null) {
 			ContrastAdjuster ca = ((ContrastAdjuster)instance);
-			ca.previousImageID = 0;
-			ca.setup();
+			if (!ca.updatingRGBStack) {
+				ca.previousImageID = 0;
+				ca.setup();
+			}
 		}
     }
-
+    
 } // ContrastAdjuster class
 
 

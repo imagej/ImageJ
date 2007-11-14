@@ -41,7 +41,7 @@ public class Memory implements PlugIn {
 		if (max2<32 && IJ.isMacOSX()) max2 = 32;
 		if (max2<8 && IJ.isWindows()) max2 = 8;
 		if (max2==max) return;
-		if (max2>=170 && !sixtyFourBit) {
+		if (max2>=1700 && !sixtyFourBit) {
 			if (!IJ.showMessageWithCancel("Memory", 
 			"Note: setting the memory limit to a value\n"
 			+"greater than 1700MB on a 32-bit system\n"
@@ -74,11 +74,13 @@ public class Memory implements PlugIn {
 	public long getMemorySetting() {
 		if (IJ.getApplet()!=null) return 0L;
 		long max = 0L;
+		String vmName = System.getProperty("java.vm.name");
+		sixtyFourBit = vmName!=null && vmName.indexOf("64")!=-1;  //xx
 		if (IJ.isMacOSX()) {
-			max = getMemorySetting("ImageJ.app/Contents/Info.plist");
-			if (max==0L) {
+			if (sixtyFourBit)
 				max = getMemorySetting("ImageJ64.app/Contents/Info.plist");
-				if (max!=0L) sixtyFourBit = true;
+			if (max==0L) {
+				max = getMemorySetting("ImageJ.app/Contents/Info.plist");
 			}
 		} else
 			max = getMemorySetting("ImageJ.cfg");		

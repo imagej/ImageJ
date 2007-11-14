@@ -280,7 +280,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int len = name.length();
 		if (len>=14 && name.charAt(4)=='-' && name.charAt(9)=='-' )
 			isStandard = true;
+		else if (len>=17 && name.charAt(5)=='-' && name.charAt(11)=='-' )
+			isStandard = true;
 		else if (len>=9 && name.charAt(4)=='-')
+			isStandard = true;
+		else if (len>=11 && name.charAt(5)=='-')
 			isStandard = true;
 		return isStandard;
 	}
@@ -430,8 +434,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	int getSliceNumber(String label) {
 		int slice = -1;
-		if (label.length()>4 && label.charAt(4)=='-' && label.length()>=14)
+		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
 			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
+		else if (label.length()>=17 && label.charAt(5)=='-' && label.charAt(11)=='-')
+			slice = (int)Tools.parseDouble(label.substring(0,5),-1);
+		else if (label.length()>=20 && label.charAt(6)=='-' && label.charAt(13)=='-')
+			slice = (int)Tools.parseDouble(label.substring(0,6),-1);
 		return slice;
 	}
 	

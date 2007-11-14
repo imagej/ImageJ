@@ -29,6 +29,7 @@ public class CompositeImage extends ImagePlus {
 	boolean[] active = new boolean[MAX_CHANNELS];
 	int mode = COLORS;
 	int bitDepth;
+	boolean customLut;
 
 	public CompositeImage(ImagePlus imp) {
 		this(imp, COLORS);
@@ -84,7 +85,7 @@ public class CompositeImage extends ImagePlus {
 	
 	public void updateChannelAndDraw() {
 		if (currentChannel!=-1 && active[currentChannel]) {
-			singleChannel = true;
+			if (!customLut) singleChannel = true;
 			updateAndDraw();
 		}
 	}
@@ -144,6 +145,7 @@ public class CompositeImage extends ImagePlus {
 					}
 					if (!(cm.min==0.0&&cm.max==0.0))
 						ip.setMinAndMax(cm.min, cm.max);
+					ContrastAdjuster.update();
 				}
 				Frame channels = Channels.getInstance();
 				for (int i=0; i<MAX_CHANNELS; i++)
@@ -333,14 +335,24 @@ public class CompositeImage extends ImagePlus {
 			gLut[i] = (byte)(i*gIncr);
 			bLut[i] = (byte)(i*bIncr);
 		}
-		return new ExtendedColorModel(8, 256, rLut, gLut, bLut);
+		ExtendedColorModel ecm = new ExtendedColorModel(8, 256, rLut, gLut, bLut);
+		return ecm;
 	}
 	
 	public Color getChannelColor() {
-		int index = getChannel()-1;
-		if (index<colors.length && colors[index]!=Color.white)
-			return colors[index];
-		else;
+		if (colorModel==null || currentChannel==-1)
+			return Color.black;
+		IndexColorModel cm = colorModel[currentChannel];
+		if (cm==null)
+			return Color.black;
+		int index = cm.getMapSize() - 1;
+		int r = cm.getRed(index);
+		int g = cm.getGreen(index);
+		int b = cm.getBlue(index);
+		//IJ.log(index+" "+r+" "+g+" "+b);
+		if (r<100 || g<100 || b<100)
+			return new Color(r, g, b);
+		else
 			return Color.black;
 	}
 
@@ -419,9 +431,15 @@ public class CompositeImage extends ImagePlus {
 			cm.getGreens(greens);
 			cm.getBlues(blues);
 			colorModel[currentChannel] = new ExtendedColorModel(8, cm.getMapSize(), reds, greens, blues);
-			if (mode==COMPOSITE)
-				cip[currentChannel].setColorModel(cm);
+			if (mode==COMPOSITE) {
+				cip[currentChannel].setColorModel(colorModel[currentChannel] );
+				imageSource = null;
+				newPixels = true;
+				img = null;
+			}
 			currentChannel = -1;
+			customLut = true;
+			ContrastAdjuster.update();
 		}
 	}
 
