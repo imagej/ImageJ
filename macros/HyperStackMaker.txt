@@ -4,6 +4,7 @@
   Dialog.create("HyperStack");
   Dialog.addString("Title:", title);
   Dialog.addChoice("Type:", newArray("8-bit", "16-bit", "32-bit", "RGB"));
+  Dialog.addChoice("Display Mode:", newArray("Composite", "Color", "Grayscale"), "Color");
   Dialog.addNumber("Width:", 300);
   Dialog.addNumber("Height:", 200);
   Dialog.addNumber("Channels (c):", 3);
@@ -13,6 +14,7 @@
   Dialog.show;
   title = Dialog.getString();
   type = Dialog.getChoice();
+  mode = Dialog.getChoice();
   width = Dialog.getNumber;
   height = Dialog.getNumber;
   c = Dialog.getNumber;
@@ -62,7 +64,7 @@
   }
   setSlice(1);
   if (c>1 && c<8 && bitDepth!=24)
-     run("Make Composite");
+     run("Make Composite", "display="+mode);
   setOption("OpenAsHyperStack", true);
   setBatchMode(false);
 

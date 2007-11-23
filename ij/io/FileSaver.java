@@ -524,6 +524,19 @@ public class FileSaver {
 		int frames = imp.getNFrames();
 		if (frames>1)
 			sb.append("frames="+frames+"\n");
+		if (imp.isHyperStack()) sb.append("hyperstack=true\n");
+		/*
+		if (imp.isComposite()) {
+			int mode = ((CompositeImage)imp).getMode();
+			String smode = null;
+			switch (mode) {
+				case CompositeImage.COMPOSITE: smode = "comp"; break;
+				case CompositeImage.COLORS: smode = "color"; break;
+				case CompositeImage.GRAYSCALE: smode = "gray"; break;
+			}
+			sb.append("mode="+smode+"\n");
+		}
+		*/
 		if (fi.unit!=null)
 			sb.append("unit="+fi.unit+"\n");
 		if (fi.valueUnit!=null && fi.calibrationFunction!=Calibration.CUSTOM) {

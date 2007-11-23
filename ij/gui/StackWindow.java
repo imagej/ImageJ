@@ -39,6 +39,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
 		//IJ.log("StackWindow: "+hyperStack+" "+nChannels+" "+nSlices+" "+nFrames);
 		if (nSlices==stackSize) hyperStack = false;
+		if (nChannels*nSlices*nFrames!=stackSize) hyperStack = false;
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
@@ -268,6 +269,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			if (s!=imp.getCurrentSlice())
 				imp.setSlice(s);
 		}
+    }
+    
+    public boolean validDimensions() {
+    	int c = imp.getNChannels();
+    	int z = imp.getNSlices();
+    	int t = imp.getNFrames();
+    	if (c!=nChannels||z!=nSlices||t!=nFrames||c*z*t!=imp.getStackSize())
+    		return false;
+    	else
+    		return true;
     }
     
 }

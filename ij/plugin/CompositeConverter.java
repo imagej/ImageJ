@@ -28,7 +28,13 @@ public class CompositeConverter implements PlugIn {
 			else
 				convertRGBToCompositeImage(imp);
 		} else if (c>=2 && c<=7) {
-			CompositeImage ci = new CompositeImage(imp, CompositeImage.COLORS);
+			String[] modes = {"Composite", "Color", "Grayscale"};
+			GenericDialog gd = new GenericDialog("Make Composite");
+			gd.addChoice("Display Mode:", modes, modes[0]);
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			int mode = gd.getNextChoiceIndex();
+			CompositeImage ci = new CompositeImage(imp, mode+1);
 			ci.show();
 			imp.hide();
 		} else

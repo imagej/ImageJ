@@ -507,6 +507,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     	this.stack = stack;
     	setProcessor2(title, ip, stack);
 		if (win==null) return;
+		boolean invalidDimensions = isHyperStack() && !((StackWindow)win).validDimensions();
 		if (stackSize==1 && win instanceof StackWindow)
 			win = new ImageWindow(this, getCanvas());   // replaces this window
 		else if (dimensionsChanged && !stackSizeChanged)
@@ -514,7 +515,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		else if (stackSize>1 && !(win instanceof StackWindow)) {
 			if (isHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
-		} else if (stackSize>1 && dimensionsChanged) {
+		} else if (stackSize>1 && (dimensionsChanged||invalidDimensions)) {
 			if (isHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 		} else

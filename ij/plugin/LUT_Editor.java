@@ -398,9 +398,11 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
             }
             scale(reds2, greens2, blues2, 256);
         }
-        ColorModel cm = new IndexColorModel(8, 256, reds2, greens2, blues2);
+        IndexColorModel cm = new IndexColorModel(8, 256, reds2, greens2, blues2);
         ImageProcessor ip = imp.getChannelProcessor();
         ip.setColorModel(cm);
+        if (imp.isComposite())
+        	((CompositeImage)imp).setChannelColorModel(cm);
         if (imp.getStackSize()>1 && !imp.isComposite())
             imp.getStack().setColorModel(cm);
         imp.updateAndDraw();

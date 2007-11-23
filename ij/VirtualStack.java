@@ -10,6 +10,9 @@ public class VirtualStack extends ImageStack {
 	int nSlices;
 	String[] names;
 	
+	/** Default constructor. */
+	public VirtualStack() { }
+
 	/** Creates a new, empty virtual stack. */
 	public VirtualStack(int width, int height, ColorModel cm, String path) {
 		super(width, height, cm);

@@ -429,7 +429,7 @@ public class TiffDecoder {
 						if (bpp==6)
 							error("ImageJ cannot open 48-bit LZW compressed TIFFs");
 						fi.compression = FileInfo.LZW;
-					} else if (value!=1 && value!=7) {
+					} else if (value!=1 && !(value==7&&fi.width<500)) {
 						// don't abort with Spot camera compressed (7) thumbnails
 						// otherwise, this is an unknown compression type
 						fi.compression = FileInfo.COMPRESSION_UNKNOWN;
@@ -438,8 +438,11 @@ public class TiffDecoder {
 					}
 					break;
 				case PREDICTOR:
-					if (value==2 && fi.compression==FileInfo.LZW)
+					if (value==2 && fi.compression==FileInfo.LZW) {
+						if (fi.fileType==FileInfo.GRAY16_UNSIGNED)
+							error("16-bit LZW differencing compression not supported");
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
+					}
 					break;
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)

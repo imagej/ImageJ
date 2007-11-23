@@ -42,17 +42,20 @@ public class HyperStackConverter implements PlugIn {
 			run("Make Composite");
 			return;
 		}
+		String[] modes = {"Composite", "Color", "Grayscale"};
 		GenericDialog gd = new GenericDialog("Convert to HyperStack");
 		gd.addChoice("Order:", orders, orders[order]);
 		gd.addNumericField("Channels (c):", nChannels, 0);
 		gd.addNumericField("Slices (z):", nSlices, 0);
-		gd.addNumericField("Frame (t):", nFrames, 0);
+		gd.addNumericField("Frames (t):", nFrames, 0);
+		gd.addChoice("Display Mode:", modes, modes[1]);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		order = gd.getNextChoiceIndex();
 		nChannels = (int) gd.getNextNumber();
 		nSlices = (int) gd.getNextNumber();
 		nFrames = (int) gd.getNextNumber();
+		int mode = gd.getNextChoiceIndex();
 		if (nChannels*nSlices*nFrames!=stackSize) {
 			IJ.error("HyperStack Converter", "channels x slices x frames <> stack size");
 			return;
@@ -63,8 +66,9 @@ public class HyperStackConverter implements PlugIn {
 		else {
 			shuffle(imp, order);
 			ImagePlus imp2 = imp;
-			if (nChannels>1 && nChannels<8 && imp.getBitDepth()!=24)
-				imp2 = new CompositeImage(imp);
+			if (nChannels>1 && nChannels<8 && imp.getBitDepth()!=24) {
+				imp2 = new CompositeImage(imp, mode+1);
+			}
 			imp2.setOpenAsHyperStack(true);
 			new StackWindow(imp2);
 			if (imp!=imp2) imp.hide();

@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.Properties;
 
 /** This class consists of public fields that describe an image file. */
-public class FileInfo {
+public class FileInfo implements Cloneable {
 
 	/** 8-bit unsigned integer (0-255). */
 	public static final int GRAY8 = 0;
@@ -186,5 +186,10 @@ public class FileInfo {
 			default: return "";
     	}
     }
+
+	public synchronized Object clone() {
+		try {return super.clone();}
+		catch (CloneNotSupportedException e) {return null;}
+	}
 
 }

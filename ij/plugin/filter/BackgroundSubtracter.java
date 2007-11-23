@@ -25,16 +25,17 @@ by sliding a parabola against them. Obtaining the hull needs the parabola for a
 given direction to be applied multiple times (after doing the other directions);
 in this respect the current code is a compromise between accuracy and speed.
 
-For noise rejection, the image used for calculating the background is slightly
-smoothened (3x3 average). This can result in negative values after background
-subtraction. Smoothing can be disabled.
+For noise rejection, a 3x3 maximum of the background is applied and therafter
+the image used for calculating the background is slightly smoothened (3x3 average).
+This can result in negative values after background subtraction. Smoothing can be
+disabled.
 
 Additional code has been added to avoid subtracting corner objects as a background
 (note that a paraboloid or ball would always touch the 4 corner pixels and thus make
 them background pixels). This code assumes that corner particles reach less than
 1/4 of the image size into the image.
 
-Current code by Michael Schmid, 09-Oct-2007.
+Current code by Michael Schmid, 21-Nov-2007.
 */
 public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListener {
     /* parameters from the dialog: */
@@ -193,8 +194,12 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             for (int i=0; i<pixels.length; i++)
                 pixels[i] = -pixels[i];
 
-        if (doPresmooth)
-            fp.smooth();
+        float shiftBy = 0;
+        if (doPresmooth) {
+            shiftBy = (float)maximum3x3(fp, cache); //3x3 maximum to remove dust etc.
+            //IJ.log("shiftBy="+shiftBy);
+            fp.smooth();                            //smoothing to remove noise
+        }
         if (correctCorners)
             correctCorners(fp, coeff2, cache, nextPoint);   //modify corner data, avoids subtracting corner particles
 
@@ -213,7 +218,10 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
         if (invert)
             for (int i=0; i<pixels.length; i++)
-                pixels[i] = -pixels[i];
+                pixels[i] = -(pixels[i] - shiftBy);
+        else if (doPresmooth)
+            for (int i=0; i<pixels.length; i++)
+                pixels[i] -= shiftBy;   //correct for shift by 3x3 maximum
 
         if (!createBackground)          //subtract the background now
             for (int i=0; i<pixels.length; i++)
@@ -428,6 +436,39 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         if (pixels[width*height-1] > corners[3]/3) pixels[width*height-1] = corners[3]/3;
         //new ImagePlus("corner corrected",fp.duplicate()).show();
     } //void correctCorners
+
+    /** Replace the pixels by the maximum in a 3x3 neighborhood.
+     *  Returns the average change of the pixel value by this operation
+     */
+    double maximum3x3(FloatProcessor fp, float[] cache) {
+        int width = fp.getWidth();
+        int height = fp.getHeight();
+        double shiftBy = 0;
+        float[] pixels = (float[])fp.getPixels();
+        for (int y=0; y<height; y++) {
+            System.arraycopy(pixels, y*width, cache, 0, width);
+            shiftBy += maximum3(pixels, cache, width, y*width, 1);
+        }
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++)
+                cache[y] = pixels[x+y*width];
+            shiftBy += maximum3(pixels, cache, height, x, width);
+        }
+        return shiftBy/width/height;
+    }
+
+    double maximum3(float[] pixels, float[] cache, int length, int pixel0, int inc) {
+        double shiftBy = 0;
+        for (int i=0, p=pixel0; i<length; i++,p+=inc) {
+            float v1 = cache[i>0 ? i-1 : 0];
+            float v3 = cache[i<length-1 ? i+1 : length-1];
+            float max = v1 > v3 ? v1 : v3;
+            if (cache[i] > max) max = cache[i];
+            shiftBy += max - cache[i];
+            pixels[p] = max;
+        }
+        return shiftBy;
+    }
 
     public void setNPasses(int nPasses) {
         if (isRGB && separateColors) nPasses *= 3;

@@ -181,7 +181,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (data.equals("")) 
 				break;
 		}
-		if (isShowing()) {
+		if (isShowing()) {  // && !(ij.macro.Interpreter.isBatchMode()&&title.equals("Results"))
 			updateDisplay();
 			unsavedLines = true;
 		}

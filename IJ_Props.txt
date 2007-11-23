@@ -35,6 +35,7 @@ import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader
 import06="Results...",ij.plugin.SimpleCommands("import")
 import07="URL...",ij.plugin.URLOpener
+import08="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
 #import08="TWAIN...",ij.plugin.twain.Twain
 #import09="Capture Video...",QT_Capture
 #import10="QuickTime Movie...",Movie_Opener

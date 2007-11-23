@@ -3234,8 +3234,12 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().isLocked()?1.0:0.0;
 		else if (arg.indexOf("invert")!=-1)
 			state = getImage().isInvertedLut()?1.0:0.0;
-		else
-			interp.error("Argument must be 'locked' or 'Inverted LUT'");
+		else if (arg.indexOf("hyper")!=-1)
+			state = getImage().isHyperStack()?1.0:0.0;
+		else {
+			state = Double.NaN;
+			interp.error("Argument must be 'locked', 'Inverted LUT' or 'HyperStack'");
+		}
 		return state;
 	}
 

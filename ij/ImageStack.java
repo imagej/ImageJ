@@ -22,6 +22,9 @@ public class ImageStack {
 	private double max;
 	private float[] cTable;
 	
+	/** Default constructor. */
+	public ImageStack() { }
+
 	/** Creates a new, empty image stack. */
 	public ImageStack(int width, int height) {
 		this(width, height, null);

@@ -5,22 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.39j, 14 November 2007</u>
+<li> <u>1.39k, 21 November 2007</u>
 <ul>
-<li> <i>Image&gt;Duplicate</i> preserves non-rectangular area selections.
-<li> Thanks to a patch by Johannes Schindelin, the macro language now accepts numbers in
-scientific notation.
-<li> <i>Plugins&gt;Compile and Run</i> uses the -Xlint:unchecked option on Java 1.5 and later.
-<li>Fixed a bug that prevented <i>Image&gt;Adjust&gt;Brightness/Contrast</i>,
-<i>Window/Level</i> and <i>Color Balance</i> from opening if
-another adjustment tool was already open.
-<li> Fixed a bug that caused the Roi Manager to sometimes not work as expected 
-when more than 9999 ROIs were added to it by the particle analyzer.
-<li> Fixed several ImageListener interface problems.
-<li> Fixed a bug that caused <i>File&gt;New&gt;Image</i> to display an invalid
-message in the status bar when opening stacks larger than 2GB.
-<li> Fixed a bug that caused <i>Plugins&gt;Utilities&gt;Memory Monitor</i> to not
-work correctly when using more than 2GB.
+<li> Added the <i>File&gt;Import&gt;TIFF Virtual Stack</i> command.
+<li> Added a "Display Mode" drop down menu to the
+<i>Image&gt;HyperStacks&gt;New HyperStack</i> and
+<i>Stack to HyperStack</i> dialogs.
+<li> ImageJ displays a better error message when the user attempts
+to open a JPEG compressed TIFF.
+<li> Added the is("HyperStack") macro function.
 </ul>
 
 </body>

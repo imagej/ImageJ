@@ -87,7 +87,7 @@ public class ImageReader {
 	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
-		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+		if (fi.compression == FileInfo.LZW)
 			return readCompressed16bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -171,16 +171,6 @@ public class ImageReader {
 					for (int i=base,j=0; i<pmax; i++,j+=2)
 						pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
 			}
-			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
-				// CTR: 16-bit differencing expands the bytes into 16-bit words,
-				// takes the difference, then repacks the results into two bytes again.
-				// I believe doing the differencing here will work, but I did not have
-				// any 16-bit or 48-bit LZW TIFFs with differencing, so this code is
-				// untested.
-				for (int b=base+1; b<pmax; b++) {
-					pixels[b] += last;
-					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
-				}
 			base += pixelsRead;
 			showProgress(k+1, fi.stripOffsets.length);
 		}
