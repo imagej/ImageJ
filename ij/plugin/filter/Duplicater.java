@@ -85,7 +85,7 @@ public class Duplicater implements PlugInFilter {
 		GenericDialog gd = new GenericDialog(title, win);
 		gd.addStringField(prompt, defaultString, 20);
 		if (stackSize>1)
-			gd.addCheckbox("Duplicate Entire Stack", duplicateStack);
+			gd.addCheckbox("Duplicate Entire Stack", duplicateStack||imp.isComposite());
 		else
 			duplicateStack = false;
 		gd.showDialog();

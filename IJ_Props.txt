@@ -35,7 +35,8 @@ import04="Text Image... ",ij.plugin.TextReader
 import05="Text File... ",ij.plugin.TextFileReader
 import06="Results...",ij.plugin.SimpleCommands("import")
 import07="URL...",ij.plugin.URLOpener
-import08="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
+import08="Stack From List...",ij.plugin.ListVirtualStack
+import09="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
 #import08="TWAIN...",ij.plugin.twain.Twain
 #import09="Capture Video...",QT_Capture
 #import10="QuickTime Movie...",Movie_Opener
@@ -130,6 +131,7 @@ stacks17="Animation Options...",ij.plugin.Animator("options")
 hyperstacks01="New HyperStack...",ij.plugin.HyperStackConverter("new")
 hyperstacks02="Stack to HyperStack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="HyperStack to Stack",ij.plugin.HyperStackConverter("hstostack")
+hyperstacks03="Split Channels...",ij.plugin.HyperStackConverter("split")
 hyperstacks04="Channels...[Z]",ij.plugin.frame.Channels
 
 # Plugins installed in the Image/Rotate submenu

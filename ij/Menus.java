@@ -149,6 +149,7 @@ public class Menus {
 		addPlugInItem(image, "Duplicate...", "ij.plugin.filter.Duplicater", KeyEvent.VK_D, true);
 		addPlugInItem(image, "Rename...", "ij.plugin.SimpleCommands(\"rename\")", 0, false);
 		addPlugInItem(image, "Scale...", "ij.plugin.Scaler", KeyEvent.VK_E, false);
+		addPlugInItem(image, "Translate...", "ij.plugin.filter.Translator", 0, false);
 		addSubMenu(image, "Rotate");
 		addSubMenu(image, "Zoom");
 		image.addSeparator();

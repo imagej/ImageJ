@@ -5,15 +5,25 @@
 </head>
 <body>
 
-<li> <u>1.39k, 21 November 2007</u>
+<li> <u>1.39l, 7 December 2007</u>
 <ul>
-<li> Added the <i>File&gt;Import&gt;TIFF Virtual Stack</i> command.
-<li> Added a "Display Mode" drop down menu to the
-<i>Image&gt;HyperStacks&gt;New HyperStack</i> and
-<i>Stack to HyperStack</i> dialogs.
-<li> ImageJ displays a better error message when the user attempts
-to open a JPEG compressed TIFF.
-<li> Added the is("HyperStack") macro function.
+<li> Added the <i>Image&gt;Translate</i> command.
+<li> Added the <i>Image&gt;HyperStacks&gt;Split Channels</i> command.
+<li> Added the <i>File&gt;Import&gt;Stack From List</i> command.
+<li> Added a "Use Virtual Stack" option to <i>File&gt;Import&gt;Raw</i>.
+<li> The <i>File&gt;Import&gt;TIFF Virtual Stack</i> command works with HyperStacks.
+<li> B&C settings for each channel in HyperStack and CompositeImages are now saved.
+<li> Changed the Histogram x-axis label from 0-256 to 0-255 for 8-bit and RGB images.
+<li> Added the setTool(name) and roiManager("Multi Measure") macro functions.
+<li> Added the getSelectedRoisAsArray() method to the RoiManager class
+and made the getSliceNumber() method public.
+<li> ImageListeners are now notified when the <i>Revert</i> command is used.
+<li> Fixed a bug that caused the ROI Manager More>>Fill, More>>Draw and More>>Label commands
+to sometimes not work correctly with selected ROIs.
+<li> Fixed a bug that could cause an invalid error message when opening
+gzip compressed FITS and raw images.
+<li> Worked around a bug with 64-bit Java on OS X that caused ImageJ
+to crash when open a Web page.
 </ul>
 
 </body>

@@ -5,11 +5,23 @@ import ij.gui.*;
 import ij.io.*;
 import java.awt.*;
 import java.io.*;
+import java.util.Properties;
 
-/** This plugin opens a multi-page TIFF file as a virtual stack. */
+/** This plugin opens a multi-page TIFF file as a virtual stack. It
+	implements the File/Import/TIFF Virtual Stack command. */
 public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	FileInfo[] info;
-	int nSlices;
+	int nImages;
+	
+	/* Default constructor. */
+	public FileInfoVirtualStack() {}
+
+	/* Constructs a FileInfoVirtualStack from a FileInfo object. */
+	public FileInfoVirtualStack(FileInfo fi) {
+		info = new FileInfo[1];
+		info[0] = fi;
+		open();
+	}
 
 	public void run(String arg) {
 		OpenDialog  od = new OpenDialog("Open TIFF", arg);
@@ -33,8 +45,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			IJ.error("Virtual Stack", "This does not appear to be a TIFF stack");
 			return;
 		}
+		open();
+	}
+	
+	void open() {
 		FileInfo fi = info[0];
-		//IJ.log(""+fi);
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
 			info = new FileInfo[n];
@@ -45,35 +60,70 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 				info[i].offset = fi.offset + i*(size + fi.gapBetweenImages);
 			}
 		}
-		nSlices = info.length;
-		FileOpener fo = new FileOpener(info[0]);
+		nImages = info.length;
+		FileOpener fo = new FileOpener(info[0] );
 		ImagePlus imp = fo.open(false);
+		Properties props = fo.decodeDescriptionString(fi);
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
+		imp2.setFileInfo(fi);
 		if (imp!=null) {
 			imp2.setCalibration(imp.getCalibration());
-			int[] dim = imp.getDimensions();
-			imp2.setDimensions(dim[2], dim[3], dim[4]);
-			IJ.log(dim[2]+"  "+dim[3]+"  "+dim[4]);
+			int channels = getInt(props,"channels");
+			int slices = getInt(props,"slices");
+			int frames = getInt(props,"frames");
+			if (channels*slices*frames==nImages) {
+				imp2.setDimensions(channels, slices, frames);
+				if (getBoolean(props, "hyperstack"))
+					imp2.setOpenAsHyperStack(true);
+			}
+			if (channels>1 && fi.description!=null) {
+				int mode = CompositeImage.COMPOSITE;
+				if (fi.description.indexOf("mode=color")!=-1)
+					mode = CompositeImage.COLOR;
+				else if (fi.description.indexOf("mode=gray")!=-1)
+					mode = CompositeImage.GRAYSCALE;
+				imp2 = new CompositeImage(imp2, mode);
+			}
 		}
 		imp2.show();
 	}
 
-	/** Deletes the specified slice, were 1<=n<=nslices. */
+	int getInt(Properties props, String key) {
+		Double n = getNumber(props, key);
+		return n!=null?(int)n.doubleValue():1;
+	}
+
+	Double getNumber(Properties props, String key) {
+		String s = props.getProperty(key);
+		if (s!=null) {
+			try {
+				return Double.valueOf(s);
+			} catch (NumberFormatException e) {}
+		}	
+		return null;
+	}
+
+	boolean getBoolean(Properties props, String key) {
+		String s = props.getProperty(key);
+		return s!=null&&s.equals("true")?true:false;
+	}
+
+	/** Deletes the specified image, were 1<=n<=nImages. */
 	public void deleteSlice(int n) {
-		if (n<1 || n>nSlices)
+		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (nSlices<1) return;
-		for (int i=n; i<nSlices; i++)
+		if (nImages<1) return;
+		for (int i=n; i<nImages; i++)
 			info[i-1] = info[i];
-		info[nSlices-1] = null;
-		nSlices--;
+		info[nImages-1] = null;
+		nImages--;
 	}
 	
-	/** Returns an ImageProcessor for the specified slice,
-		were 1<=n<=nslices. Returns null if the stack is empty.
+	/** Returns an ImageProcessor for the specified image,
+		were 1<=n<=nImages. Returns null if the stack is empty.
 	*/
 	public ImageProcessor getProcessor(int n) {
-		if (n<1 || n>nSlices)
+		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		info[n-1].nImages = 1; // why is this needed?
 		FileOpener fo = new FileOpener(info[n-1]);
@@ -84,9 +134,9 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			return null;
 	 }
  
-	 /** Returns the number of slices in this stack. */
+	 /** Returns the number of images in this stack. */
 	public int getSize() {
-		return nSlices;
+		return nImages;
 	}
 
 	/** Returns null. */
@@ -94,4 +144,12 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		 return null;
 	}
 
+	public int getWidth() {
+		return info[0].width;
+	}
+	
+	public int getHeight() {
+		return info[0].height;
+	}
+    
 }

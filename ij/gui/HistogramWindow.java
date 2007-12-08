@@ -241,12 +241,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.setAntialiasedText(true);
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
+		double range = hmax-hmin;
 		if (fixedRange&&!cal.calibrated()&&hmin==0&&hmax==255)
-			{hmin=0; hmax=256;}
+			range = 256;
 		ip.drawString(d2s(hmin), x - 4, y);
 		ip.drawString(d2s(hmax), x + HIST_WIDTH - getWidth(hmax, ip) + 10, y);
         
-		double binWidth = (hmax-hmin)/stats.nBins;
+		double binWidth = range/stats.nBins;
 		binWidth = Math.abs(binWidth);
 		boolean showBins = binWidth!=1.0 || !fixedRange;
 		int col1 = XMARGIN + 5;

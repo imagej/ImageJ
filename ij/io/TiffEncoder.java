@@ -149,6 +149,13 @@ public class TiffEncoder {
 			if (nSliceLabels>0) nTypes++;
 			metaDataEntries += nSliceLabels;
 		}
+
+		if (fi.displayRanges!=null) {
+			metaDataEntries++;
+			size += fi.displayRanges.length*8;
+			nTypes++;
+		}
+
 		if (fi.metaDataTypes!=null && fi.metaData!=null && fi.metaData[0]!=null
 		&& fi.metaDataTypes.length==fi.metaData.length) {
 			extraMetaDataEntries = fi.metaData.length;
@@ -275,32 +282,39 @@ public class TiffEncoder {
 		out.write(colorTable16);
 	}
 	
-	/** Writes image metadata ("info" image propery, stack slice labels
-		and extra metadata) following the image and any color palette. */
+	/** Writes image metadata ("info" image propery, 
+		stack slice labels and extra metadata). */
 	void writeMetaData(DataOutputStream out) throws IOException {
 	
 		// write byte counts
 		int nTypes = 0;
 		if (fi.info!=null) nTypes++;
 		if (nSliceLabels>0) nTypes++;
+		if (fi.displayRanges!=null) nTypes++;
 		nTypes += extraMetaDataEntries;
 		out.writeInt(4+nTypes*8); // header size	
 		if (fi.info!=null)
 			out.writeInt(fi.info.length()*2);
 		for (int i=0; i<nSliceLabels; i++)
 			out.writeInt(fi.sliceLabels[i].length()*2);
+		if (fi.displayRanges!=null)
+			out.writeInt(fi.displayRanges.length*8);
 		for (int i=0; i<extraMetaDataEntries; i++)
 			out.writeInt(fi.metaData[i].length);	
 		
 		// write header
-		out.writeInt(0x494a494a); // magic number ("IJIJ")
+		out.writeInt(TiffDecoder.MAGIC_NUMBER); // "IJIJ"
 		if (fi.info!=null) {
-			out.writeInt(0x696e666f); // type="info"
+			out.writeInt(TiffDecoder.INFO); // type="info"
 			out.writeInt(1); // count
 		}
 		if (nSliceLabels>0) {
-			out.writeInt(0x6c61626c); // type="labl"
+			out.writeInt(TiffDecoder.LABELS); // type="labl"
 			out.writeInt(nSliceLabels); // count
+		}
+		if (fi.displayRanges!=null) {
+			out.writeInt(TiffDecoder.RANGES); // type="rang"
+			out.writeInt(1); // count
 		}
 		for (int i=0; i<extraMetaDataEntries; i++) {
 			out.writeInt(fi.metaDataTypes[i]);
@@ -312,6 +326,10 @@ public class TiffEncoder {
 			out.writeChars(fi.info);
 		for (int i=0; i<nSliceLabels; i++)
 			out.writeChars(fi.sliceLabels[i]);
+		if (fi.displayRanges!=null) {
+			for (int i=0; i<fi.displayRanges.length; i++)
+				out.writeDouble(fi.displayRanges[i]);
+		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			out.write(fi.metaData[i]); 
 					

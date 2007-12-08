@@ -103,6 +103,7 @@ public class FileSaver {
 			fi.info = (String)info;
 		fi.description = getDescriptionString();
 		fi.sliceLabels = imp.getStack().getSliceLabels();
+		if (imp.isComposite()) saveDisplayRanges(imp, fi);
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -115,6 +116,17 @@ public class FileSaver {
 		}
 		updateImp(fi, fi.TIFF);
 		return true;
+	}
+	
+	void  saveDisplayRanges (ImagePlus imp, FileInfo fi) {
+		CompositeImage ci = (CompositeImage)imp;
+		int channels = imp.getNChannels();
+		fi.displayRanges = new double[channels*2];
+		for (int i=1; i<=channels; i++) {
+			ExtendedColorModel cm = ci.getChannelColorModel(i);
+			fi.displayRanges[(i-1)*2] = cm.min;
+			fi.displayRanges[(i-1)*2+1] = cm.max;
+		}	
 	}
 
 	/** Uses a save file dialog to save the image or stack as a TIFF
@@ -143,6 +155,7 @@ public class FileSaver {
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
 		fi.sliceLabels = imp.getStack().getSliceLabels();
+		if (imp.isComposite()) saveDisplayRanges(imp, fi);
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));
@@ -525,18 +538,16 @@ public class FileSaver {
 		if (frames>1)
 			sb.append("frames="+frames+"\n");
 		if (imp.isHyperStack()) sb.append("hyperstack=true\n");
-		/*
 		if (imp.isComposite()) {
 			int mode = ((CompositeImage)imp).getMode();
-			String smode = null;
+			String s = null;
 			switch (mode) {
-				case CompositeImage.COMPOSITE: smode = "comp"; break;
-				case CompositeImage.COLORS: smode = "color"; break;
-				case CompositeImage.GRAYSCALE: smode = "gray"; break;
+				case CompositeImage.COMPOSITE: s="composite"; break;
+				case CompositeImage.COLOR: s="color"; break;
+				case CompositeImage.GRAYSCALE: s="gray"; break;
 			}
-			sb.append("mode="+smode+"\n");
+			sb.append("mode="+s+"\n");
 		}
-		*/
 		if (fi.unit!=null)
 			sb.append("unit="+fi.unit+"\n");
 		if (fi.valueUnit!=null && fi.calibrationFunction!=Calibration.CUSTOM) {

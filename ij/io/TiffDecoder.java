@@ -47,6 +47,12 @@ public class TiffDecoder {
 	static final int SHORT = 3;
 	static final int LONG = 4;
 
+	// metadata types
+	static final int MAGIC_NUMBER = 0x494a494a;  // "IJIJ"
+	static final int INFO = 0x696e666f;  // "info" (Info image property)
+	static final int LABELS = 0x6c61626c;  // "labl" (slice labels)
+	static final int RANGES = 0x72616e67;  // "rang" (display ranges)
+
 	private String directory;
 	private String name;
 	private String url;
@@ -160,8 +166,8 @@ public class TiffDecoder {
 	public void saveImageDescription(byte[] description, FileInfo fi) {
 		if (description.length<7)
 			return;
-		if (ij.IJ.debugMode)
-			ij.IJ.log("Image Description: " + new String(description).replace('\n',' '));
+		if (debugMode)
+			dInfo += "Image Description: " + new String(description).replace('\n',' ')+"\n";
         String id = new String(description);
 		fi.description = id;
         int index1 = id.indexOf("images=");
@@ -510,28 +516,38 @@ public class TiffDecoder {
 		if (hdrSize<12 || hdrSize>804)
 			{in.seek(saveLoc); return;}
 		int magicNumber = getInt();
-		if (magicNumber!=0x494a494a)  // "IJIJ"
+		if (magicNumber!=MAGIC_NUMBER)  // "IJIJ"
 			{in.seek(saveLoc); return;}
 		int nTypes = (hdrSize-4)/8;
 		int[] types = new int[nTypes];
 		int[] counts = new int[nTypes];
 		
+		if (debugMode) dInfo += "Metadata:\n";
 		int extraMetaDataEntries = 0;
 		for (int i=0; i<nTypes; i++) {
 			types[i] = getInt();
 			counts[i] = getInt();
 			if (types[i]<0xffffff)
 				extraMetaDataEntries += counts[i];
+			if (debugMode) {
+				String id = "";
+				if (types[i]==INFO) id = " (Info property)";
+				if (types[i]==LABELS) id = " (slice labels)";
+				if (types[i]==RANGES) id = " (display ranges)";
+				dInfo += "   "+i+" "+Integer.toHexString(types[i])+" "+Integer.toHexString(counts[i])+id+"\n";
+			}
 		}
 		fi.metaDataTypes = new int[extraMetaDataEntries];
 		fi.metaData = new byte[extraMetaDataEntries][];
 		int start = 1;
 		int eMDindex = 0;
 		for (int i=0; i<nTypes; i++) {
-			if (types[i]==0x696e666f)  // "info"
-				getInfoProperty(start, start+counts[i]-1, fi);
-			else if (types[i]==0x6c61626c)  // "labl"
+			if (types[i]==INFO)
+				getInfoProperty(start, fi);
+			else if (types[i]==LABELS)
 				getSliceLabels(start, start+counts[i]-1, fi);
+			else if (types[i]==RANGES)
+				getDisplayRanges(start, fi);
 			else if (types[i]<0xffffff) {
 				for (int j=start; j<start+counts[i]; j++) { 
 					int len = metaDataCounts[j]; 
@@ -540,13 +556,14 @@ public class TiffDecoder {
 					fi.metaDataTypes[eMDindex] = types[i]; 
 					eMDindex++; 
 				} 
-			}
+			} else
+				skipUnknownType(start, start+counts[i]-1);
 			start += counts[i];
 		}
 		in.seek(saveLoc);
 	}
 
-	void getInfoProperty(int first, int last, FileInfo fi) throws IOException {
+	void getInfoProperty(int first, FileInfo fi) throws IOException {
 		int len = metaDataCounts[first];
 	    byte[] buffer = new byte[len];
 		in.readFully(buffer, len);
@@ -575,11 +592,28 @@ public class TiffDecoder {
 		}
 	}
 
+	void getDisplayRanges(int first, FileInfo fi) throws IOException {
+		int n = metaDataCounts[first]/8;
+		fi.displayRanges = new double[n];
+		for (int i=0; i<n; i++)
+			fi.displayRanges[i] = in.readDouble();
+	}
+
 	void error(String message) throws IOException {
 		if (in!=null) in.close();
 		throw new IOException(message);
 	}
 	
+	void skipUnknownType(int first, int last) throws IOException {
+	    byte[] buffer = new byte[metaDataCounts[first]];
+		for (int i=first; i<=last; i++) {
+			int len = metaDataCounts[i];
+            if (len>buffer.length)
+                buffer = new byte[len];
+            in.readFully(buffer, len);
+		}
+	}
+
 	public void enableDebugging() {
 		debugMode = true;
 	}

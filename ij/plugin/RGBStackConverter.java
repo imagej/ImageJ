@@ -12,7 +12,7 @@ public class RGBStackConverter implements PlugIn {
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		int size = imp.getStackSize();
 		if ((size<2||size>3) && cimg==null) {
-			IJ.error("2 or 3 slice stack, or composite color stack, required");
+			IJ.error("A 2 or 3 image stack, or a HyperStack, required");
 			return;
 		}
 		int type = imp.getType();
@@ -64,7 +64,7 @@ public class RGBStackConverter implements PlugIn {
 				win.setPosition(win.getHSChannel(), i, win.getHSFrame());
 			else
 				win.setPosition(win.getHSChannel(), win.getHSSlice(), i);
-			IJ.wait(100);
+			IJ.wait(250);
 			stack.addSlice(null, new ColorProcessor(imp.getImage()));
 		}
 		ImagePlus imp2 = imp.createImagePlus();

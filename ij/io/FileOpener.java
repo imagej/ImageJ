@@ -106,7 +106,15 @@ public class FileOpener {
         		imp = new ImagePlus(fi.fileName, stack);
         		imp.setDimensions(3, 1, 1);
         		imp.getProcessor().resetMinAndMax();
-        		imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+				imp.setFileInfo(fi);
+				int mode = CompositeImage.COMPOSITE;
+				if (fi.description!=null) {
+					if (fi.description.indexOf("mode=color")!=-1)
+					mode = CompositeImage.COLOR;
+					else if (fi.description.indexOf("mode=gray")!=-1)
+					mode = CompositeImage.GRAYSCALE;
+				}
+        		imp = new CompositeImage(imp, mode);
 				break;
 		}
 		imp.setFileInfo(fi);
@@ -290,7 +298,7 @@ public class FileOpener {
  			imp.getLocalCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 		}
 		
-		Properties props = decodeDescriptionString();
+		Properties props = decodeDescriptionString(fi);
 		Calibration cal = imp.getCalibration();
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
 			cal.pixelWidth = fi.pixelWidth;
@@ -365,6 +373,7 @@ public class FileOpener {
 	/** Returns an InputStream for the image described by this FileInfo. */
 	public InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
 		InputStream is = null;
+		boolean gzip = fi.fileName!=null && (fi.fileName.endsWith(".gz")||fi.fileName.endsWith(".GZ"));
 		if (fi.inputStream!=null)
 			is = fi.inputStream;
 		else if (fi.url!=null && !fi.url.equals(""))
@@ -373,13 +382,13 @@ public class FileOpener {
 			if (fi.directory.length()>0 && !fi.directory.endsWith(Prefs.separator))
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
+		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;
 		    if (f==null || f.isDirectory() || !validateFileInfo(f, fi))
 		    	is = null;
 		    else
 				is = new FileInputStream(f);
 		}
-		if (is!=null && (fi.fileName.endsWith(".gz")||fi.fileName.endsWith(".GZ")))
-			is = new GZIPInputStream(is);
+		if (is!=null && gzip) is = new GZIPInputStream(is);
 		return is;
 	}
 	
@@ -447,7 +456,7 @@ public class FileOpener {
 		return pixels;
 	}
 
-	Properties decodeDescriptionString() {
+	public Properties decodeDescriptionString(FileInfo fi) {
 		if (fi.description==null || fi.description.length()<7)
 			return null;
 		if (IJ.debugMode)
@@ -505,7 +514,5 @@ public class FileOpener {
 		String s = props.getProperty(key);
 		return s!=null&&s.equals("true")?true:false;
 	}
-
-	
 
 }

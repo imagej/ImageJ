@@ -319,14 +319,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			{min2=0.0; max2=255.0;}
 		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
-			ip.resetMinAndMax();
+			imp.resetDisplayRange();
 			defaultMin = ip.getMin();
 			defaultMax = ip.getMax();
 		} else {
 			defaultMin = 0;
 			defaultMax = 255;
 		}
-		setMinAndMax(ip, min2, max2);
+		setMinAndMax(imp, min2, max2);
 		min = ip.getMin();
 		max = ip.getMax();
 		if (IJ.debugMode) {
@@ -360,11 +360,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		autoThreshold = 0;
 	}
 	
-	void setMinAndMax(ImageProcessor ip, double min, double max) {
-		if (channels!=7 && ip instanceof ColorProcessor)
-			((ColorProcessor)ip).setMinAndMax(min, max, channels);
+	void setMinAndMax(ImagePlus imp, double min, double max) {
+		if (channels!=7 && imp.getType()==ImagePlus.COLOR_RGB)
+			imp.setDisplayRange(min, max, channels);
 		else
-			ip.setMinAndMax(min, max);
+			imp.setDisplayRange(min, max);
 	}
 
 	void updatePlot() {
@@ -454,7 +454,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			max = defaultMax;
 		if (min>max)
 			max = min;
-		setMinAndMax(ip, min, max);
+		setMinAndMax(imp, min, max);
 		if (min==max)
 			setThreshold(ip);
 		if (RGBImage) doMasking(imp, ip);
@@ -468,7 +468,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			min = defaultMin;
 		if (max<min)
 			min = max;
-		setMinAndMax(ip, min, max);
+		setMinAndMax(imp, min, max);
 		if (min==max)
 			setThreshold(ip);
 		if (RGBImage) doMasking(imp, ip);
@@ -480,7 +480,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		double width = max-min;
 		min = center - width/2.0;
 		max = center + width/2.0;
-		setMinAndMax(ip, min, max);
+		setMinAndMax(imp, min, max);
 		if (min==max)
 			setThreshold(ip);
 		if (RGBImage) doMasking(imp, ip);
@@ -500,7 +500,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			min = center-(0.5*range)/slope;
 			max = center+(0.5*range)/slope;
 		}
-		setMinAndMax(ip, min, max);
+		setMinAndMax(imp, min, max);
 		if (RGBImage) doMasking(imp, ip);
 		updateScrollBars(contrastSlider, false);
 	}
@@ -509,7 +509,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
  		if (RGBImage)
 			ip.reset();
 		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
-			ip.resetMinAndMax();
+			imp.resetDisplayRange();
 			defaultMin = ip.getMin();
 			defaultMax = ip.getMax();
 			plot.defaultMin = defaultMin;
@@ -517,7 +517,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		min = defaultMin;
 		max = defaultMax;
-		setMinAndMax(ip, min, max);
+		setMinAndMax(imp, min, max);
 		updateScrollBars(null, false);
 		plotHistogram(imp);
 		autoThreshold = 0;
@@ -640,7 +640,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				imp.setSlice(i);
 				ImageProcessor ip = imp.getProcessor();
 				if (mask!=null) ip.snapshot();
-				setMinAndMax(ip, min, max);
+				setMinAndMax(imp, min, max);
 				ip.reset(mask);
 				IJ.showProgress((double)i/n);
 			}
@@ -699,7 +699,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			max = stats.histMin+hmax*stats.binSize;
 			if (min==max)
 				{min=stats.min; max=stats.max;}
-			setMinAndMax(ip, min, max);
+			setMinAndMax(imp, min, max);
 		} else {
 			reset(imp, ip);
 			return;
@@ -737,7 +737,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if (maxValue>=minValue) {
 			min = minValue;
 			max = maxValue;
-			setMinAndMax(ip, min, max);
+			setMinAndMax(imp, min, max);
 			updateScrollBars(null, false);
 			if (RGBImage) doMasking(imp, ip);
 			if (propagate)
@@ -778,7 +778,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if (maxValue>=minValue) {
 			min = minValue;
 			max = maxValue;
-			setMinAndMax(ip, minValue, maxValue);
+			setMinAndMax(imp, minValue, maxValue);
 			updateScrollBars(null, false);
 			if (RGBImage) doMasking(imp, ip);
 			if (propagate)

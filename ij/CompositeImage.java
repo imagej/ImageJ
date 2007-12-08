@@ -1,20 +1,20 @@
 package ij;
 import ij.process.*;
 import ij.gui.*;
-import java.awt.*;
-import java.awt.image.*;
 import ij.plugin.*;
 import ij.plugin.frame.*;
+import ij.io.FileInfo;
+import java.awt.*;
+import java.awt.image.*;
 
 public class CompositeImage extends ImagePlus {
 
-	public static final int COMPOSITE=1, COLORS=2, GRAYSCALE=3, TRANSPARENT=4;
-	static final int MAX_CHANNELS = 7;
+	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
+	public static final int MAX_CHANNELS = 7;
 	int[] awtImagePixels;
 	boolean newPixels;
 	MemoryImageSource imageSource;
 	ColorModel imageColorModel;
-	ColorModel defaultColorModel;
 	Image awtImage;
 	int[][] pixels;
 	ImageProcessor[] cip;
@@ -27,12 +27,13 @@ public class CompositeImage extends ImagePlus {
 	static int count;
 	boolean singleChannel;
 	boolean[] active = new boolean[MAX_CHANNELS];
-	int mode = COLORS;
+	int mode = COLOR;
 	int bitDepth;
 	boolean customLut;
+	double[] displayRanges;
 
 	public CompositeImage(ImagePlus imp) {
-		this(imp, COLORS);
+		this(imp, COLOR);
 	}
 
 	public CompositeImage(ImagePlus imp, int mode) {
@@ -40,7 +41,6 @@ public class CompositeImage extends ImagePlus {
 		int channels = imp.getNChannels();
 		bitDepth = getBitDepth();
 		if (IJ.debugMode) IJ.log("CompositeImage: "+imp+" "+mode+" "+channels);
-		//count++; if (count==1) throw new IllegalArgumentException("");
 		ImageStack stack2;
 		boolean isRGB = imp.getBitDepth()==24;
 		if (isRGB) {
@@ -51,9 +51,11 @@ public class CompositeImage extends ImagePlus {
 			stack2 = imp.getStack();
 		int stackSize = stack2.getSize();
 		if (channels==1 && isRGB) channels = 3;
-		if (channels==1 && stackSize<8) channels = stackSize;
+		if (channels==1 && stackSize<=MAX_CHANNELS) channels = stackSize;
 		if (channels<2 || (stackSize%channels)!=0)
 			throw new IllegalArgumentException("channels<2 or stacksize not multiple of channels");
+		if (mode==COMPOSITE && channels>MAX_CHANNELS)
+			this.mode = COLOR;
 		compositeImage = true;
 		int z = imp.getNSlices();
 		int t = imp.getNFrames();
@@ -61,10 +63,14 @@ public class CompositeImage extends ImagePlus {
 			setDimensions(channels, stackSize/channels, 1);
 		else
 			setDimensions(channels, z, t);
-		//setup(channels, stack2);
 		setStack(imp.getTitle(), stack2);
 		setCalibration(imp.getCalibration());
-		setFileInfo(imp.getOriginalFileInfo());
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi!=null) {
+			displayRanges = fi.displayRanges;
+			fi.displayRanges = null;
+		}
+		setFileInfo(fi);
 		Object info = imp.getProperty("Info");
 		if (info!=null)
 			setProperty("Info", imp.getProperty("Info"));
@@ -84,10 +90,8 @@ public class CompositeImage extends ImagePlus {
 	}
 	
 	public void updateChannelAndDraw() {
-		if (currentChannel!=-1 && active[currentChannel]) {
 			if (!customLut) singleChannel = true;
 			updateAndDraw();
-		}
 	}
 	
 	public ImageProcessor getChannelProcessor() {
@@ -99,19 +103,36 @@ public class CompositeImage extends ImagePlus {
 
 	void setup(int channels, ImageStack stack2) {
 		setupColorModels(channels);
-       	cip = new ImageProcessor[channels];
-        for (int i=0; i<channels; ++i) {
-			cip[i] = stack2.getProcessor(i+1);
-			cip[i].resetMinAndMax();
-			cip[i].setColorModel(colorModel[i]);
+		if (mode==COMPOSITE) {
+			cip = new ImageProcessor[channels];
+			for (int i=0; i<channels; ++i) {
+				cip[i] = stack2.getProcessor(i+1);
+				cip[i].setColorModel(colorModel[i]);
+				cip[i].setMinAndMax(colorModel[i].min, colorModel[i].max);
+			}
 		}
 	}
 
 	void setupColorModels(int channels) {
 		if (colorModel==null || colorModel.length<channels) {
+			if (displayRanges!=null && channels!=displayRanges.length/2)
+				displayRanges = null;
 			colorModel = new ExtendedColorModel[channels];
-			for (int i=0; i<channels; ++i)
-				colorModel[i] = createModelFromColor(colors[i]);
+			ExtendedColorModel ecm = channels>MAX_CHANNELS?createModelFromColor(Color.white):null;
+			for (int i=0; i<channels; ++i) {
+				if (i<MAX_CHANNELS)
+					colorModel[i] = createModelFromColor(colors[i]);
+				else
+					colorModel[i] = (ExtendedColorModel)ecm.clone();
+				if (displayRanges!=null) {
+					colorModel[i].min = displayRanges[i*2];
+					colorModel[i].max = displayRanges[i*2+1];
+				} else {
+					colorModel[i].min = ip.getMin();
+					colorModel[i].max = ip.getMax();
+				}
+			}
+			displayRanges = null;
 		}
 	}
 
@@ -133,20 +154,13 @@ public class CompositeImage extends ImagePlus {
 		ImageProcessor ip = getProcessor();
 		if (mode!=COMPOSITE) {
 			if (newChannel) {
-				if (mode==COLORS) {
-					if (defaultColorModel==null)
-						defaultColorModel = ip.getColorModel();
-					setupColorModels(nChannels);
-					ExtendedColorModel cm = colorModel[currentChannel];
-					ip.setColorModel(colorModel[currentChannel]);
-					if (previousChannel!=-1) {
-						colorModel[previousChannel].min = ip.getMin();
-						colorModel[previousChannel].max = ip.getMax();
-					}
-					if (!(cm.min==0.0&&cm.max==0.0))
-						ip.setMinAndMax(cm.min, cm.max);
-					ContrastAdjuster.update();
-				}
+				setupColorModels(nChannels);
+				ExtendedColorModel cm = colorModel[currentChannel];
+				if (mode==COLOR)
+					ip.setColorModel(cm);
+				if (!(cm.min==0.0&&cm.max==0.0))
+					ip.setMinAndMax(cm.min, cm.max);
+				ContrastAdjuster.update();
 				Frame channels = Channels.getInstance();
 				for (int i=0; i<MAX_CHANNELS; i++)
 					active[i] = i==currentChannel?true:false;
@@ -202,20 +216,6 @@ public class CompositeImage extends ImagePlus {
 			pixels = new int[nChannels][];
 			for (int i=0; i<nChannels; ++i)
 				pixels[i] = new int[imageSize];
-		}
-		
-		if (mode ==TRANSPARENT) {
-			createBlitterImage(nChannels);
-			return;
-		}
-		
-		if (mode==COLORS || mode==GRAYSCALE) {
-			for (int i=0; i<MAX_CHANNELS; i++)
-				active[i] = i==currentChannel?true:false;
-			if (newChannel) {
-				Frame channels = Channels.getInstance();
-				if (channels!=null) ((Channels)channels).update();
-			}
 		}
 		
 		cip[currentChannel].setMinAndMax(ip.getMin(),ip.getMax());
@@ -335,12 +335,12 @@ public class CompositeImage extends ImagePlus {
 			gLut[i] = (byte)(i*gIncr);
 			bLut[i] = (byte)(i*bIncr);
 		}
-		ExtendedColorModel ecm = new ExtendedColorModel(8, 256, rLut, gLut, bLut);
+		ExtendedColorModel ecm = new ExtendedColorModel(rLut, gLut, bLut);
 		return ecm;
 	}
 	
 	public Color getChannelColor() {
-		if (colorModel==null || currentChannel==-1)
+		if (colorModel==null || currentChannel==-1 || mode==GRAYSCALE)
 			return Color.black;
 		IndexColorModel cm = colorModel[currentChannel];
 		if (cm==null)
@@ -363,32 +363,20 @@ public class CompositeImage extends ImagePlus {
 			return cip[channel-1];
 	}
 
-	public double getMin(int channel) {
-		if (cip==null || channel>cip.length)
-			return 0.0;
-		else
-			return cip[channel-1].getMin();
-	}
-
-	public double getMax(int channel) {
-		if (cip==null || channel>cip.length)
-			return 0.0;
-		else
-			return cip[channel-1].getMax();
-	}
-	
 	public boolean[] getActiveChannels() {
 		return active;
 	}
 	
 	public void setMode(int mode) {
 		if (mode<0 || mode>TRANSPARENT) return;
+		if (mode==COMPOSITE && getNChannels()>MAX_CHANNELS)
+			mode = COLOR;
 		for (int i=0; i<MAX_CHANNELS; i++)
 			active[i] = true;
 		if (this.mode!=COMPOSITE && mode==COMPOSITE)
 			img = null;
 		this.mode = mode;
-		if (mode==COLORS || mode==GRAYSCALE) {
+		if (mode==COLOR || mode==GRAYSCALE) {
 			if (cip!=null) {
 				for (int i=0; i<cip.length; i++) {
 					if (cip[i]!=null) cip[i].setPixels(null);
@@ -401,10 +389,8 @@ public class CompositeImage extends ImagePlus {
 			awtImage = null;
 			currentChannel = -1;
 		}
-		if (mode==GRAYSCALE || mode==TRANSPARENT) {
-			if (defaultColorModel!=null)
-				getProcessor().setColorModel(defaultColorModel);
-		}
+		if (mode==GRAYSCALE || mode==TRANSPARENT)
+			ip.setColorModel(ip.getDefaultColorModel());
 		Frame channels = Channels.getInstance();
 		if (channels!=null) ((Channels)channels).update();
 	}
@@ -413,24 +399,12 @@ public class CompositeImage extends ImagePlus {
 		return mode;
 	}
 	
-	public ColorModel getDefaultColorModel() {
-		return defaultColorModel;
-	}
-
 	public void setChannelColorModel(IndexColorModel cm) {
-		if (mode==GRAYSCALE) {
-			if (defaultColorModel!=null)
-				defaultColorModel = cm;
+		if (mode==GRAYSCALE)
 			getProcessor().setColorModel(cm);
-		} else {
+		else {
 			if (currentChannel==-1) return;
-			byte[] reds = new byte[256];
-			byte[] greens = new byte[256];
-			byte[] blues = new byte[256];
-			cm.getReds(reds);
-			cm.getGreens(greens);
-			cm.getBlues(blues);
-			colorModel[currentChannel] = new ExtendedColorModel(8, cm.getMapSize(), reds, greens, blues);
+			colorModel[currentChannel] = constructECM(cm);
 			if (mode==COMPOSITE) {
 				cip[currentChannel].setColorModel(colorModel[currentChannel] );
 				imageSource = null;
@@ -442,14 +416,38 @@ public class CompositeImage extends ImagePlus {
 			ContrastAdjuster.update();
 		}
 	}
-
-}
-
-class ExtendedColorModel extends IndexColorModel {
-	double min, max;
 	
-    public ExtendedColorModel(int bits, int size, byte r[], byte g[], byte b[]) {
-    	super(bits, size, r, g, b);
+    ExtendedColorModel constructECM(IndexColorModel cm) {
+		byte[] reds = new byte[256];
+		byte[] greens = new byte[256];
+		byte[] blues = new byte[256];
+		cm.getReds(reds);
+		cm.getGreens(greens);
+		cm.getBlues(blues);
+		return new ExtendedColorModel(8, cm.getMapSize(), reds, greens, blues);
+	}
+
+	/* Returns the ExtendedColorModel used by the specified channel. */
+	public ExtendedColorModel getChannelColorModel(int channel) {
+		if (channel<1 || channel>colorModel.length)
+			throw new IllegalArgumentException("Channel out of range");
+		return colorModel[channel-1];
 	}
 	
+	public void setDisplayRange(double min, double max) {
+		ip.setMinAndMax(min, max);
+		if (currentChannel!=-1) {
+			colorModel[currentChannel].min = min;
+			colorModel[currentChannel].max = max;
+		}
+	}
+
+	public void resetDisplayRange() {
+		ip.resetMinAndMax();
+		if (currentChannel!=-1) {
+			colorModel[currentChannel].min = ip.getMin();
+			colorModel[currentChannel].max = ip.getMax();
+		}
+	}
+
 }

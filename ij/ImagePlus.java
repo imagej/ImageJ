@@ -696,6 +696,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     	if (win!=null) {
     		if (ij!=null)
 				Menus.updateWindowMenuItem(this.title, title);
+			String virtual = stack!=null && stack.isVirtual()?" (V)":"";
 			String global = getGlobalCalibration()!=null?" (G)":"";
 				
 			String scale = "";
@@ -705,7 +706,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				int digits = percent>100.0||percent==(int)percent?0:1;
 				scale = " (" + IJ.d2s(percent,digits) + "%)";
 			}
-			win.setTitle(title+global+scale);
+			win.setTitle(title+virtual+global+scale);
     	}
     	this.title = title;
     }
@@ -1025,7 +1026,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		trimProcessor();
 	}
 	
-	public void setStackPosition(int channel, int slice, int frame) {
+	public void setPosition(int channel, int slice, int frame) {
 		if (isHyperStack())
 			((StackWindow)win).setPosition(channel, slice, frame);
 		else {
@@ -1239,6 +1240,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		repaintWindow();
 		IJ.showStatus("");
 		changes = false;
+		notifyListeners(UPDATED);
     }
     
     /** Returns a FileInfo object containing information, including the
@@ -1685,6 +1687,21 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	public boolean isComposite() {
 		return compositeImage && getNChannels()>1;
+	}
+
+	public void setDisplayRange(double min, double max) {
+		ip.setMinAndMax(min, max);
+	}
+
+	public void setDisplayRange(double min, double max, int channels) {
+		if (ip instanceof ColorProcessor)
+			((ColorProcessor)ip).setMinAndMax(min, max, channels);
+		else
+			ip.setMinAndMax(min, max);
+	}
+
+	public void resetDisplayRange() {
+		ip.resetMinAndMax();
 	}
 
 	public Object clone() {

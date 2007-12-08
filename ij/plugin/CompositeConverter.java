@@ -10,6 +10,7 @@ import ij.plugin.frame.ContrastAdjuster;
 public class CompositeConverter implements PlugIn {
 
 	public void run(String arg) {
+		String[] modes = {"Composite", "Color", "Grayscale"};
 		ImagePlus imp = IJ.getImage();
 		if (imp.isComposite()) {
 			CompositeImage ci = (CompositeImage)imp;
@@ -19,26 +20,30 @@ public class CompositeConverter implements PlugIn {
 			}
 			return;
 		}
+		String mode = modes[0];
 		int z = imp.getStackSize();
 		int c = imp.getNChannels();
-		if (c==1) c = z;
+		if (c==1) {
+			c = z;
+			imp.setDimensions(c, 1, 1);
+			if (c>7) mode = modes[2];
+		}
 		if (imp.getBitDepth()==24) {
 			if (z>1)
 				convertRGBToCompositeStack(imp);
 			else
 				convertRGBToCompositeImage(imp);
-		} else if (c>=2 && c<=7) {
-			String[] modes = {"Composite", "Color", "Grayscale"};
+		} else if (c>=2) {
 			GenericDialog gd = new GenericDialog("Make Composite");
-			gd.addChoice("Display Mode:", modes, modes[0]);
+			gd.addChoice("Display Mode:", modes, mode);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
-			int mode = gd.getNextChoiceIndex();
-			CompositeImage ci = new CompositeImage(imp, mode+1);
+			int index = gd.getNextChoiceIndex();
+			CompositeImage ci = new CompositeImage(imp, index+1);
 			ci.show();
 			imp.hide();
 		} else
-			IJ.error("To create a composite, the current image must be\n a stack with fewer than 8 slices or be in RGB format.");
+			IJ.error("To create a composite, the current image must be\n a stack with at least 2 channels or be in RGB format.");
 	}
 	
 	void convertRGBToCompositeImage(ImagePlus imp) {

@@ -11,7 +11,8 @@ import java.awt.event.KeyEvent;
 public class Executer implements Runnable {
 
 	private static String previousCommand;
-
+	private static CommandListener listener;
+	
 	private String command;
 	private Thread thread;
 	
@@ -40,6 +41,10 @@ public class Executer implements Runnable {
 
 	public void run() {
 		if (command==null) return;
+		if (listener!=null) {
+			command = listener.commandExecuting(command);
+			if (command==null) return;
+		}
 		try {
 			if (Recorder.record) {
 				Recorder.setCommand(command);
@@ -113,6 +118,19 @@ public class Executer implements Runnable {
 		return previousCommand;
 	}
 	
+	public static boolean setListener(CommandListener commandListener) {
+		if (commandListener!=null && listener!=null)
+				return false;
+		else {
+			listener = commandListener;
+			return true;
+		}
+	}
+	
+	public static CommandListener getListener() {
+		return listener;
+	}
+
 }
 
 

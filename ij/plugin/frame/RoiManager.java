@@ -432,7 +432,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
-	int getSliceNumber(String label) {
+	/** Returns the slice number associated with the specified name,
+		or -1 if the name does not include a slice number. */
+	public int getSliceNumber(String label) {
 		int slice = -1;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
 			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
@@ -601,7 +603,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
-
 		int nLines = 0;
 		boolean allSliceOne = true;
 		for (int i=0; i<indexes.length; i++) {
@@ -614,7 +615,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error("All items must be areas or all must be lines.");
 			return false;
 		}
-						
 		int nSlices = 1;
 		if (mode==MULTI)
 			nSlices = imp.getStackSize();
@@ -638,6 +638,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (Recorder.record) Recorder.record("roiManager", "Measure");
 		return true;
 	}	
+	
+	/*
+	void showIndexes(int[] indexes) {
+		for (int i=0; i<indexes.length; i++) {
+			String label = list.getItem(indexes[i]);
+			Roi roi = (Roi)rois.get(label);
+			IJ.log(i+" "+roi.getName());
+		}
+	}
+	*/
 
 	/* This method performs measurements for several ROI's in a stack
 		and arranges the results with one line per slice.  By constast, the 
@@ -657,22 +667,27 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int measurements = Analyzer.getMeasurements();
 
 		int nSlices = imp.getStackSize();
-		GenericDialog gd = new GenericDialog("Multi Measure");
-		if (nSlices>1)
-			gd.addCheckbox("Measure All "+nSlices+" Slices", measureAll);
-		gd.addCheckbox("One Row Per Slice", onePerSlice);
-		int columns = getColumnCount(imp, measurements)*indexes.length;
-		String str = nSlices==1?"this option":"both options";
-		gd.setInsets(10, 25, 0);
-		gd.addMessage(
-			"Enabling "+str+" will result\n"+
-			"in a table with "+columns+" columns."
-		);
-		gd.showDialog();
-		if (gd.wasCanceled()) return false;
-		if (nSlices>1)
-			measureAll = gd.getNextBoolean();
-		onePerSlice = gd.getNextBoolean();
+		if (IJ.isMacro()) {
+			if (nSlices>1) measureAll = true;
+			onePerSlice = true;
+		} else {
+			GenericDialog gd = new GenericDialog("Multi Measure");
+			if (nSlices>1)
+				gd.addCheckbox("Measure All "+nSlices+" Slices", measureAll);
+			gd.addCheckbox("One Row Per Slice", onePerSlice);
+			int columns = getColumnCount(imp, measurements)*indexes.length;
+			String str = nSlices==1?"this option":"both options";
+			gd.setInsets(10, 25, 0);
+			gd.addMessage(
+				"Enabling "+str+" will result\n"+
+				"in a table with "+columns+" columns."
+			);
+			gd.showDialog();
+			if (gd.wasCanceled()) return false;
+			if (nSlices>1)
+				measureAll = gd.getNextBoolean();
+			onePerSlice = gd.getNextBoolean();
+		}
 		if (!measureAll) nSlices = 1;
 		int currentSlice = imp.getCurrentSlice();
 		if (!onePerSlice)
@@ -711,6 +726,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.setSlice(currentSlice);
 		if (indexes.length>1)
 			IJ.run("Select None");
+		if (Recorder.record) Recorder.record("roiManager", "Multi Measure");
 		return true;
 	}
 	
@@ -742,7 +758,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Filler filler = mode==LABEL?new Filler():null;
 		int slice = imp.getCurrentSlice();
 		for (int i=0; i<indexes.length; i++) {
-			String name = list.getItem(i);
+			String name = list.getItem(indexes[i]);
 			Roi roi = (Roi)rois.get(name);
 			int type = roi.getType();
 			if (roi==null) continue;
@@ -1007,7 +1023,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		return array;
 	}
-		
+	
+	/** Returns the selected ROIs as an array, or
+		all the ROIs if none are selected. */
+	public Roi[] getSelectedRoisAsArray() {
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+		int n = indexes.length;
+		Roi[] array = new Roi[n];
+		for (int i=0; i<n; i++) {
+			String label = list.getItem(indexes[i]);
+			array[i] = (Roi)rois.get(label);
+		}
+		return array;
+	}
+			
 	/** Returns the name of the selection with the specified index.
 		Can be called from a macro using
 		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
@@ -1024,8 +1055,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Fill", "Deselect", "Select All", "Combine", "Split" or "Sort" command. Returns false if <code>cmd</code> 
-		is not one of these strings. */
+		"Fill", "Deselect", "Select All", "Combine", "Split", "Sort" or "Multi Measure" command. 
+		Returns false if <code>cmd</code>  is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
 		macro = true;
@@ -1052,6 +1083,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (cmd.equals("sort"))
 			sort();
+		else if (cmd.startsWith("multi"))
+			multiMeasure();
 		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);

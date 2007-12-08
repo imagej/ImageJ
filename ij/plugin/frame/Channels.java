@@ -8,7 +8,7 @@ import java.awt.event.*;
 /** Displays the ImageJ Channels window. */
 public class Channels extends PlugInFrame implements PlugIn, ItemListener, ActionListener {
 
-	private static String[] modes = {"Composite", "Color", "Graycale"};
+	private static String[] modes = {"Composite", "Color", "Grayscale"};
 	private static String moreLabel = "More "+'\u00bb';
 	//private String[] title = {"Red", "Green", "Blue"};
 	private Choice choice;
@@ -46,6 +46,8 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 
 		CompositeImage ci = getImage();
 		int nCheckBoxes = ci!=null?ci.getNChannels():3;
+		if (nCheckBoxes>CompositeImage.MAX_CHANNELS)
+			nCheckBoxes = CompositeImage.MAX_CHANNELS;
 		checkbox = new Checkbox[nCheckBoxes];
 		for (int i=0; i<nCheckBoxes; i++) {
 			checkbox[i] = new Checkbox("Channel "+(i+1), true);
@@ -85,7 +87,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		if (ci==null) return;
 		int n = checkbox.length;
 		int nChannels = ci.getNChannels();
-		if (nChannels!=n) {
+		if (nChannels!=n && nChannels<=CompositeImage.MAX_CHANNELS) {
 			instance = null;
 			location = getLocation();
 			close();
@@ -98,7 +100,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		int index = 0;
 		switch (ci.getMode()) {
 			case CompositeImage.COMPOSITE: index=0; break;
-			case CompositeImage.COLORS: index=1; break;
+			case CompositeImage.COLOR: index=1; break;
 			case CompositeImage.GRAYSCALE: index=2; break;
 		}
 		choice.select(index);
@@ -125,7 +127,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 			int channels = imp.getNChannels();
 			if (channels==1 && imp.getStackSize()<=4)
 				channels = imp.getStackSize();
-			if (imp.getBitDepth()==24 || (channels>1&&channels<8)) {
+			if (imp.getBitDepth()==24 || (channels>1&&channels<CompositeImage.MAX_CHANNELS)) {
 				GenericDialog gd = new GenericDialog(imp.getTitle(), this);
 				gd.addMessage("Convert to multi-channel composite image?");
 				gd.showDialog();
@@ -145,7 +147,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 			int index = ((Choice)source).getSelectedIndex();
 			switch (index) {
 				case 0: ci.setMode(CompositeImage.COMPOSITE); break;
-				case 1: ci.setMode(CompositeImage.COLORS); break;
+				case 1: ci.setMode(CompositeImage.COLOR); break;
 				case 2: ci.setMode(CompositeImage.GRAYSCALE); break;
 			}
 			ci.updateAndDraw();
@@ -157,7 +159,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 						boolean[] active = ci.getActiveChannels();
 						active[i] = cb.getState();
 					} else
-						imp.setStackPosition(i+1, imp.getSlice(), imp.getFrame());
+						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());
 					ci.updateAndDraw();
 					return;
 				}

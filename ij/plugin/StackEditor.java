@@ -150,11 +150,18 @@ public class StackEditor implements PlugIn {
 		}
 		Calibration cal = imp.getCalibration();
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
+		if (imp.getNChannels()!=imp.getStackSize()) cimg = null;
 		for (int i=1; i<=size; i++) {
 			String label = stack.getShortSliceLabel(i);
 			String title = label!=null&&!label.equals("")?label:getTitle(imp, i);
 			ImageProcessor ip = stack.getProcessor(i);
-			if (cimg!=null) ip.setMinAndMax(cimg.getMin(i),cimg.getMax(i));
+			if (cimg!=null) {
+				ExtendedColorModel cm = cimg.getChannelColorModel(i);
+				if (cm!=null) {
+					ip.setColorModel(cm);
+					ip.setMinAndMax(cm.min, cm.max);
+				}
+			}
 			ImagePlus imp2 = new ImagePlus(title, ip);
 			imp2.setCalibration(cal);
 			imp2.show();

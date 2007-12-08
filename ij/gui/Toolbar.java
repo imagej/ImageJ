@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.*;
 import java.io.File;
-import java.util.Hashtable;
+import java.util.*;
 import ij.*;
 import ij.plugin.frame.Recorder; 
 import ij.plugin.frame.Editor; 
@@ -467,8 +467,48 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		drawButtons(g);
 	}
 
+	public boolean setTool(String name) { 
+		name = name.toLowerCase(Locale.US);
+		boolean ok = true;
+		if (name.indexOf("rect")!=-1)
+			setTool(RECTANGLE);
+		else if (name.indexOf("ellip")!=-1 || name.indexOf("oval")!=-1) {
+			brushEnabled = false;
+			setTool(OVAL);
+		} else if (name.indexOf("brush")!=-1) {
+			brushEnabled = true;
+			setTool(OVAL);
+		} else if (name.indexOf("polygon")!=-1)
+			setTool(POLYGON);
+		else if (name.indexOf("polyline")!=-1)
+			setTool(POLYLINE);
+		else if (name.indexOf("freeline")!=-1)
+			setTool(FREELINE);
+		else if (name.indexOf("line")!=-1)
+			setTool(LINE);
+		else if (name.indexOf("free")!=-1)
+			setTool(FREEROI);
+		else if (name.indexOf("point")!=-1)
+			setTool(POINT);
+		else if (name.indexOf("wand")!=-1)
+			setTool(WAND);
+		else if (name.indexOf("text")!=-1)
+			setTool(TEXT);
+		else if (name.indexOf("hand")!=-1)
+			setTool(HAND);
+		else if (name.indexOf("zoom")!=-1)
+			setTool(MAGNIFIER);
+		else if (name.indexOf("dropper")!=-1||name.indexOf("color")!=-1)
+			setTool(DROPPER);
+		else if (name.indexOf("angle")!=-1)
+			setTool(ANGLE);
+		else
+			ok = false;
+		return ok;
+	}
+	
 	public void setTool(int tool) {
-		if (tool==current || tool<0 || tool>=NUM_TOOLS)
+		if ((tool==current&&tool!=OVAL) || tool<0 || tool>=NUM_TOOLS)
 			return;
 		if (tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) {
 			if (names[tool]==null)
@@ -479,9 +519,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (isLine(tool)) lineType = tool;
 		setTool2(tool);
 	}
-	
+		
 	private void setTool2(int tool) {
-		if (tool==current || !isValidTool(tool)) return;
+		if ((tool==current&&tool!=OVAL) || !isValidTool(tool)) return;
 		current = tool;
 		down[current] = true;
 		down[previous] = false;

@@ -152,11 +152,14 @@ public class Opener {
 					break;
 				case UNKNOWN:
 					String msg =
-						"File is not in TIFF, JPEG, GIF, BMP, DICOM, FITS, PGM, \n"+
-						"ZIP, LUT, ROI or text format, a reader plugin for this\n"+
-						"format is not installed, or it was not found.";
-					if (path!=null && path.length()<=64)
-						msg += " \n  \n   "+path;
+						"File is not in a supported format, a reader\n"+
+						"plugin is not available, or it was not found.";
+					if (path!=null) {
+						if (path.length()>64)
+							path = (new File(path)).getName();
+						if (path.length()<=64)
+							msg += " \n  \n"+path;
+					}
 					if (openUsingPlugins)
 						msg += "\n \nNOTE: The \"OpenUsingPlugins\" option is set.";
 					IJ.error("Opener", msg);
@@ -590,10 +593,17 @@ public class Opener {
 		}
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.open(false);
-		//IJ.showStatus("");
 		int c = imp.getNChannels();
-		if (c>1 && c<8 && imp.getOpenAsHyperStack() && !imp.isComposite())
-			imp = new CompositeImage(imp, CompositeImage.COLORS);
+		if (c>1 && imp.getOpenAsHyperStack() && !imp.isComposite()) {
+			int mode = CompositeImage.COLOR;
+			if (info[0].description!=null) {
+				if (info[0].description.indexOf("mode=composite")!=-1)
+					mode = CompositeImage.COMPOSITE;
+				else if (info[0].description.indexOf("mode=gray")!=-1)
+					mode = CompositeImage.GRAYSCALE;
+			}
+			imp = new CompositeImage(imp, mode);
+		}
 		return imp;
 	}
 	

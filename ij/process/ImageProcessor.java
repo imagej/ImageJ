@@ -305,7 +305,7 @@ public abstract class ImageProcessor extends Object {
 	/** Sets the default fill/draw value. */
 	public abstract void setValue(double value);
 
-	/** Sets the background fill value used by the rotate() and scale() methods. */
+	/** Sets the background fill value used by the rotate(), scale() and translate() methods. */
 	public abstract void setBackgroundValue(double value);
 
 	/** Returns the smallest displayed pixel value. */
@@ -1432,6 +1432,26 @@ public abstract class ImageProcessor extends Object {
 	*/
   	public abstract void rotate(double angle);
   		
+	/**  Moves the image or selection vertically or horizontally by a specified 
+	      number of pixels. Positive x values move the image or selection to the 
+	      right, negative values move it to the left. Positive y values move the 
+	      image or selection down, negative values move it up.
+	*/
+  	public void translate(int xOffset, int yOffset, boolean eraseBackground) {
+  		ImageProcessor ip2 = this.duplicate();
+  		if (eraseBackground) {
+  			Rectangle roi = getRoi();
+  			resetRoi();
+  			setValue(0);
+  			fill();
+  			setRoi(roi);
+  		}
+		for (int y=roiY; y<(roiY + roiHeight); y++) {
+			for (int x=roiX; x<(roiX + roiWidth); x++)
+				putPixel(x+xOffset, y+yOffset, ip2.getPixel(x, y));
+		}
+  	}
+
 	/** Returns the histogram of the image or ROI. Returns
 		a luminosity histogram for RGB images and null
 		for float images. */

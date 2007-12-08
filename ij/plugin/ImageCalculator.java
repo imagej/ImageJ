@@ -11,7 +11,7 @@ import ij.macro.Interpreter;
 public class ImageCalculator implements PlugIn {
 
 	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy", "Transparent-zero"};
-	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy", "trans-z"};
+	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy", "zero"};
 	private static int operator;
 	private static String title1 = "";
 	private static String title2 = "";

@@ -21,7 +21,8 @@
   z = Dialog.getNumber;
   t = Dialog.getNumber;
   label = Dialog.getCheckbox;
-  setBatchMode(true);
+  batch = call("ij.macro.Interpreter.isBatchMode");
+  if (batch=="false") setBatchMode(true);
   if (label)
      type = type + " ramp";
   else
@@ -63,10 +64,10 @@
      }
   }
   setSlice(1);
-  if (c>1 && c<8 && bitDepth!=24)
+  if (c>1 && bitDepth!=24)
      run("Make Composite", "display="+mode);
   setOption("OpenAsHyperStack", true);
-  setBatchMode(false);
+  if (batch=="false") setBatchMode(false);
 
   function pad(n) {
       str = toString(n);

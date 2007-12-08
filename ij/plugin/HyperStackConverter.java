@@ -25,6 +25,8 @@ public class HyperStackConverter implements PlugIn {
     		convertStackToHS(imp);
     	else if (arg.equals("hstostack"))
     		convertHSToStack(imp);
+    	else if (arg.equals("split"))
+			IJ.runMacroFile("ij.jar:SplitChannels", "");
 	}
 	
 	/** Displays the current stack in a HyperStack window. Based on the 
@@ -66,7 +68,7 @@ public class HyperStackConverter implements PlugIn {
 		else {
 			shuffle(imp, order);
 			ImagePlus imp2 = imp;
-			if (nChannels>1 && nChannels<8 && imp.getBitDepth()!=24) {
+			if (nChannels>1 && imp.getBitDepth()!=24) {
 				imp2 = new CompositeImage(imp, mode+1);
 			}
 			imp2.setOpenAsHyperStack(true);
@@ -127,8 +129,8 @@ public class HyperStackConverter implements PlugIn {
 			imp2.setStack(imp.getTitle(), stack);
 			int[] dim = imp.getDimensions();
 			imp2.setDimensions(dim[2], dim[3], dim[4]);
-			ColorModel cm = ((CompositeImage)imp).getDefaultColorModel();
-			if (cm!=null) imp2.getProcessor().setColorModel(cm);
+			ImageProcessor ip2 = imp2.getProcessor();
+			ip2.setColorModel(ip2.getDefaultColorModel());
 		}
 		imp2.setOpenAsHyperStack(false);
 		new StackWindow(imp2);
