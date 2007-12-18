@@ -650,12 +650,12 @@ public class Opener {
 		 // Big-endian TIFF ("MM")
         if (name.endsWith(".lsm"))
         		return UNKNOWN; // The LSM  Reader plugin opens these files
-		if (b0==73 && b1==73 && b2==42 && b3==0)
-				return TIFF;
+		if (b0==73 && b1==73 && b2==42 && b3==0 && !name.endsWith(".flex"))
+			return TIFF;
 
 		 // Little-endian TIFF ("II")
 		if (b0==77 && b1==77 && b2==0 && b3==42)
-				return TIFF;
+			return TIFF;
 
 		 // JPEG
 		if (b0==255 && b1==216 && b2==255)

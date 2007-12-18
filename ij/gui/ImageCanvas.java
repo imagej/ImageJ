@@ -45,6 +45,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private static final int LIST_OFFSET = 100000;
     private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(128, 255, 255));
     private static Color labelColor;
+    private int resetMaxBoundsCount;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -464,9 +465,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	/** Enlarge the canvas if the user enlarges the window. */
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();
-		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+"  "+win.maxBounds);
-		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10)
-			resetMaxBounds(); // Works around problem that prevented window from being larger than maximized size
+		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+" "+dstWidth+"  "+dstHeight+" "+win.maxBounds);
+		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10) {
+			if (!(resetMaxBoundsCount==0 && win instanceof StackWindow))
+				resetMaxBounds(); // Works around problem that prevented window from being larger than maximized size
+			resetMaxBoundsCount++;
+		}
 		if (IJ.altKeyDown())
 			{fitToWindow(); return;}
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight) {
@@ -508,6 +512,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
         }
     }
 
+	void resetMaxBounds() {
+		ImageWindow win = imp.getWindow();
+		if (win!=null) {
+			win.setMaximizedBounds(win.maxWindowBounds);
+			maxBoundsReset = true;
+		}
+	}
+	
 	private static final double[] zoomLevels = {
 		1/72.0, 1/48.0, 1/32.0, 1/24.0, 1/16.0, 1/12.0, 
 		1/8.0, 1/6.0, 1/4.0, 1/3.0, 1/2.0, 0.75, 1.0, 1.5,
@@ -574,14 +586,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		srcRect = r;
 		setMagnification(newMag);
 		//IJ.log("adjustSourceRect2: "+srcRect+" "+dstWidth+"  "+dstHeight);
-	}
-	
-	void resetMaxBounds() {
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			win.setMaximizedBounds(win.maxWindowBounds);
-			maxBoundsReset = true;
-		}
 	}
 	
 	protected Dimension canEnlarge(int newWidth, int newHeight) {

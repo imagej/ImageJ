@@ -9,6 +9,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.Editor;
+import ij.text.TextWindow;
 	
 /**	Copies and pastes images to the clipboard. Java 1.4 or later is 
 	required to copy to or paste from the system clipboard. */
@@ -108,8 +109,11 @@ public class Clipboard implements PlugIn, Transferable {
 				IJ.showStatus("");
 			} else
 				IJ.error("Unable to find an image on the system clipboard");
-		} catch (Throwable t) {
-			IJ.showStatus(""+t);
+		} catch (Throwable e) {
+			CharArrayWriter caw = new CharArrayWriter();
+			PrintWriter pw = new PrintWriter(caw);
+			e.printStackTrace(pw);
+			new TextWindow("Exception", caw.toString(), 350, 250);
 		}
 	}
 	
@@ -272,7 +276,9 @@ public class Clipboard implements PlugIn, Transferable {
 			Object producer= con.newInstance(new Object[] { iDrawer, d });
 			if (producer instanceof ImageProducer)
 				return(Toolkit.getDefaultToolkit().createImage((ImageProducer)producer));
-		} catch (Exception e) {IJ.showStatus("QuickTime for java error");}
+		} catch (Exception e) {
+			IJ.showStatus("QuickTime for java error");
+		}
 		return null;
     }
 

@@ -167,64 +167,26 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 	
 	public String createSubtitle() {
-		String s = super.createSubtitle();
-		if (!hyperStack) return s;
-    	s="";
+		String subtitle = super.createSubtitle();
+		if (!hyperStack) return subtitle;
+    	String s="";
 		if (nChannels>1) {
 			s += "c:"+c+"/"+nChannels;
-			if (nSlices==1&&nFrames==1)
-				s += "; ";
-			else
-				s += " ";
+			if (nSlices>1||nFrames>1) s += " ";
 		}
 		if (nSlices>1) {
 			s += "z:"+z+"/"+nSlices;
-			if (nFrames==1)
-				s += "; ";
-			else
-				s += " ";
+			if (nFrames>1) s += " ";
 		}
-		if (nFrames>1) {
+		if (nFrames>1)
 			s += "t:"+t+"/"+nFrames;
-			s += "; ";
-		}
-		if (running2) return s;
-    	int type = imp.getType();
-    	Calibration cal = imp.getCalibration();
-    	if (cal.scaled())
-    		s += IJ.d2s(imp.getWidth()*cal.pixelWidth,2) + "x" + IJ.d2s(imp.getHeight()*cal.pixelHeight,2)
- 			+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
-    	else
-    		s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
-		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
-    	switch (type) {
-	    	case ImagePlus.GRAY8:
-	    	case ImagePlus.COLOR_256:
-	    		s += "8-bit";
-	    		break;
-	    	case ImagePlus.GRAY16:
-	    		s += "16-bit";
-				size *= 2;
-	    		break;
-	    	case ImagePlus.GRAY32:
-	    		s += "32-bit";
-				size *= 4;
-	    		break;
-	    	case ImagePlus.COLOR_RGB:
-	    		s += "RGB";
-				size *= 4;
-	    		break;
-    	}
-    	if (imp.isInvertedLut())
-    		s += " (inverting LUT)";
-    	if (size>=10000)    	
-    		s += "; " + (int)Math.round(size/1024.0) + "MB";
-    	else if (size>=1024) {
-    		double size2 = size/1024.0;
-    		s += "; " + IJ.d2s(size2,(int)size2==size2?0:1) + "MB";
-    	} else
-    		s += "; " + size + "K";
-    	return s;
+		if (running2) return subtitle;
+		int index = subtitle.indexOf(";");
+		if (index!=-1)
+			subtitle = subtitle.substring(index, subtitle.length());
+		else
+			subtitle = "";
+    	return s + subtitle;
     }
     
     public boolean isHyperStack() {

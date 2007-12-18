@@ -1686,7 +1686,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	public boolean isComposite() {
-		return compositeImage && getNChannels()>1;
+		return compositeImage && getNChannels()>1 && (this instanceof CompositeImage);
 	}
 
 	public void setDisplayRange(double min, double max) {

@@ -5,25 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.39l, 7 December 2007</u>
+<li> <u>1.39m, 17 December 2007</u>
 <ul>
-<li> Added the <i>Image&gt;Translate</i> command.
-<li> Added the <i>Image&gt;HyperStacks&gt;Split Channels</i> command.
-<li> Added the <i>File&gt;Import&gt;Stack From List</i> command.
-<li> Added a "Use Virtual Stack" option to <i>File&gt;Import&gt;Raw</i>.
-<li> The <i>File&gt;Import&gt;TIFF Virtual Stack</i> command works with HyperStacks.
-<li> B&C settings for each channel in HyperStack and CompositeImages are now saved.
-<li> Changed the Histogram x-axis label from 0-256 to 0-255 for 8-bit and RGB images.
-<li> Added the setTool(name) and roiManager("Multi Measure") macro functions.
-<li> Added the getSelectedRoisAsArray() method to the RoiManager class
-and made the getSliceNumber() method public.
-<li> ImageListeners are now notified when the <i>Revert</i> command is used.
-<li> Fixed a bug that caused the ROI Manager More>>Fill, More>>Draw and More>>Label commands
-to sometimes not work correctly with selected ROIs.
-<li> Fixed a bug that could cause an invalid error message when opening
-gzip compressed FITS and raw images.
+<li> For stacks larger than 1GB, memory usage displayed
+in the image subtitle is in gigabytes.
+<li> The title of the <i>Edit&gt;Options&gt;Memory and Threads</i> dialog is "Memory (32-bit)" on 
+32-bit systems and "Memory (64-bit)" on 64-bit systems.
+<li> Added the IJ.is64Bit() method.
+<li> Big-endian TIFF files with names ending in .flex are passed to the Bio-Formats plugin.
+<li> Fixed a bug, introduced in 1.39l, that caused the <i>Stack to HyperStack</i>
+command to not appear in the <i>Image&gt;HyperStacks&gt;</i> submenu.
+<li> Fixed a bug that sometimes caused the maximize button to not work as expected with stacks.
 <li> Worked around a bug with 64-bit Java on OS X that caused ImageJ
 to crash when open a Web page.
+<li> Fixed a bug with <i>Plugins&gt;Utilities&gt;Memory Monitor</i> that
+caused an exception of a batch mode macro was running.
 </ul>
 
 </body>

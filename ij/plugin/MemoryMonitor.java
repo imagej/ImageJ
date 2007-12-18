@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -28,6 +29,7 @@ public class MemoryMonitor implements PlugIn {
 	long maxMemory = IJ.maxMemory();
 
 	public void run(String arg) {
+		if (Interpreter.isBatchMode()) return;
 		if (IJ.altKeyDown()) {
 			// simulate frame grabber
 			width = 640;

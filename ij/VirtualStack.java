@@ -95,6 +95,11 @@ public class VirtualStack extends ImageStack {
 		return imp.getProcessor();
 	 }
  
+	/** Currently not implemented */
+	public int saveChanges(int n) {
+		return -1;
+	}
+
 	 /** Returns the number of slices in this stack. */
 	public int getSize() {
 		return nSlices;

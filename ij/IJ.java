@@ -32,8 +32,8 @@ public class IJ {
 	private static java.applet.Applet applet;
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
-	private static String osname;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isLinux, isVista;
+	private static String osname, osarch;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isLinux, isVista, is64Bit;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -716,6 +716,13 @@ public class IJ {
 	/** Returns true if ImageJ is running on Windows Vista. */
 	public static boolean isVista() {
 		return isVista;
+	}
+	
+	/** Returns true if ImageJ is running a 64-bit version of Java. */
+	public static boolean is64Bit() {
+		if (osarch==null)
+			osarch = System.getProperty("os.arch");
+		return osarch!=null && osarch.indexOf("64")!=-1;
 	}
 
 	/** Displays an error message and returns false if the

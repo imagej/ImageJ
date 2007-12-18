@@ -25,7 +25,7 @@ public class Memory implements PlugIn {
 		int max = (int)(getMemorySetting()/1048576L);
 		boolean unableToSet = max==0;
 		if (max==0) max = (int)(maxMemory()/1048576L);
-		GenericDialog gd = new GenericDialog("Memory");
+		GenericDialog gd = new GenericDialog("Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)"));
 		gd.addNumericField("Maximum Memory: ", max, 0, 4, "MB");
         gd.addNumericField("Parallel Threads for Stacks", Prefs.getThreads(), 0);
 		gd.showDialog();
@@ -41,7 +41,7 @@ public class Memory implements PlugIn {
 		if (max2<32 && IJ.isMacOSX()) max2 = 32;
 		if (max2<8 && IJ.isWindows()) max2 = 8;
 		if (max2==max) return;
-		if (max2>=1700 && !sixtyFourBit) {
+		if (max2>=1700 && !IJ.is64Bit()) {
 			if (!IJ.showMessageWithCancel("Memory", 
 			"Note: setting the memory limit to a value\n"
 			+"greater than 1700MB on a 32-bit system\n"
@@ -74,10 +74,8 @@ public class Memory implements PlugIn {
 	public long getMemorySetting() {
 		if (IJ.getApplet()!=null) return 0L;
 		long max = 0L;
-		String vmName = System.getProperty("java.vm.name");
-		sixtyFourBit = vmName!=null && vmName.indexOf("64")!=-1;  //xx
 		if (IJ.isMacOSX()) {
-			if (sixtyFourBit)
+			if (IJ.is64Bit())
 				max = getMemorySetting("ImageJ64.app/Contents/Info.plist");
 			if (max==0L) {
 				max = getMemorySetting("ImageJ.app/Contents/Info.plist");

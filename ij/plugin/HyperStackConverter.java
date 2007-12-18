@@ -41,7 +41,7 @@ public class HyperStackConverter implements PlugIn {
 			return;
 		}
 		if (imp.getBitDepth()==24) {
-			run("Make Composite");
+			new CompositeConverter().run("color");
 			return;
 		}
 		String[] modes = {"Composite", "Color", "Grayscale"};

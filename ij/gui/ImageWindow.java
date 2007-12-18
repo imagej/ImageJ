@@ -25,7 +25,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	protected boolean closed;
 	private boolean newCanvas;
 	private boolean unzoomWhenMinimizing = true;
-	Rectangle maxBounds, maxWindowBounds;
+	Rectangle maxWindowBounds; // largest possible window on this screen
+	Rectangle maxBounds; // Size of this window after it is maximized
 
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -241,7 +242,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
  			+ " " + cal.getUnits() + " (" + imp.getWidth() + "x" + imp.getHeight() + "); ";
     	} else
     		s += imp.getWidth() + "x" + imp.getHeight() + " pixels; ";
-		long size = ((long)imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024L;
+		double size = ((double)imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024.0;
     	switch (type) {
 	    	case ImagePlus.GRAY8:
 	    	case ImagePlus.COLOR_256:
@@ -249,27 +250,30 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	    		break;
 	    	case ImagePlus.GRAY16:
 	    		s += "16-bit";
-				size *= 2L;
+				size *= 2.0;
 	    		break;
 	    	case ImagePlus.GRAY32:
 	    		s += "32-bit";
-				size *= 4L;
+				size *= 4.0;
 	    		break;
 	    	case ImagePlus.COLOR_RGB:
 	    		s += "RGB";
-				size *= 4L;
+				size *= 4.0;
 	    		break;
     	}
     	if (imp.isInvertedLut())
     		s += " (inverting LUT)";
-    	if (size>=10000L)    	
-    		s += "; " + (int)Math.round(size/1024L) + "MB";
-    	else if (size>=1024L) {
-    		double size2 = size/1024L;
-    		s += "; " + IJ.d2s(size2,(int)size2==size2?0:1) + "MB";
-    	} else
-    		s += "; " + size + "K";
-    	return s;
+   		String s2=null, s3=null;
+    	if (size<1024.0)
+    		{s2=IJ.d2s(size,0); s3="K";}
+    	else if (size<10000.0)
+     		{s2=IJ.d2s(size/1024.0,1); s3="MB";}
+    	else if (size<1048576.0)
+    		{s2=IJ.d2s(Math.round(size/1024.0),0); s3="MB";}
+	   	else
+    		{s2=IJ.d2s(size/1048576.0,1); s3="GB";}
+    	if (s2.endsWith(".0")) s2 = s2.substring(0, s2.length()-2);
+     	return s+"; "+s2+s3;
     }
 
     public void paint(Graphics g) {
