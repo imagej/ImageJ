@@ -102,7 +102,6 @@ public class StackProcessor {
 	    		ip.setPixels(stack.getPixels(1));
 	    		String label = stack.getSliceLabel(1);
 	    		stack.deleteSlice(1);
-				//System.gc();
 				ip2 = ip.resize(newWidth, newHeight);
 				if (ip2!=null)
 					stack2.addSlice(label, ip2);
@@ -143,7 +142,6 @@ public class StackProcessor {
     		ip.setPixels(stack.getPixels(1));
     		String label = stack.getSliceLabel(1);
     		stack.deleteSlice(1);
-			//System.gc();
 			if (clockwise)
 				ip2 = ip.rotateRight();
 			else

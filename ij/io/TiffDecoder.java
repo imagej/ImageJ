@@ -52,6 +52,7 @@ public class TiffDecoder {
 	static final int INFO = 0x696e666f;  // "info" (Info image property)
 	static final int LABELS = 0x6c61626c;  // "labl" (slice labels)
 	static final int RANGES = 0x72616e67;  // "rang" (display ranges)
+	static final int LUTS = 0x6c757473;  // "luts" (channel LUTs)
 
 	private String directory;
 	private String name;
@@ -534,7 +535,8 @@ public class TiffDecoder {
 				if (types[i]==INFO) id = " (Info property)";
 				if (types[i]==LABELS) id = " (slice labels)";
 				if (types[i]==RANGES) id = " (display ranges)";
-				dInfo += "   "+i+" "+Integer.toHexString(types[i])+" "+Integer.toHexString(counts[i])+id+"\n";
+				if (types[i]==LUTS) id = " (luts)";
+				dInfo += "   "+i+" "+Integer.toHexString(types[i])+" "+counts[i]+id+"\n";
 			}
 		}
 		fi.metaDataTypes = new int[extraMetaDataEntries];
@@ -548,6 +550,8 @@ public class TiffDecoder {
 				getSliceLabels(start, start+counts[i]-1, fi);
 			else if (types[i]==RANGES)
 				getDisplayRanges(start, fi);
+			else if (types[i]==LUTS)
+				getLuts(start, start+counts[i]-1, fi);
 			else if (types[i]<0xffffff) {
 				for (int j=start; j<start+counts[i]; j++) { 
 					int len = metaDataCounts[j]; 
@@ -597,6 +601,17 @@ public class TiffDecoder {
 		fi.displayRanges = new double[n];
 		for (int i=0; i<n; i++)
 			fi.displayRanges[i] = in.readDouble();
+	}
+
+	void getLuts(int first, int last, FileInfo fi) throws IOException {
+		fi.channelLuts = new byte[last-first+1][];
+	    int index = 0;
+		for (int i=first; i<=last; i++) {
+			int len = metaDataCounts[i];
+			fi.channelLuts[index] = new byte[len];
+            in.readFully(fi.channelLuts[index], len);
+            index++;
+		}
 	}
 
 	void error(String message) throws IOException {

@@ -101,7 +101,6 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 		FHT fht = new FHT(ip2);
 		fht.setShowProgress(false);
 		fht.transform();
-		System.gc();
 		IJ.showProgress(9,20);
 		//new ImagePlus("after fht",ip2.crop()).show();	
 
@@ -146,7 +145,6 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 			ip.copyBits(ip2, roiRect.x, roiRect.y, Blitter.COPY);
 		}
 		ip.resetMinAndMax();
-		System.gc();		
 		IJ.showProgress(20,20);
 	}
 	

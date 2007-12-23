@@ -1355,7 +1355,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 					arrays[i] = null;
 		}
 		img = null;
-		System.gc();
+		//System.gc();
 	}
 	
 	/** Set <code>ignoreFlush true</code> to not have the pixel 

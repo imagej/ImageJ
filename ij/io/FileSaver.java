@@ -103,7 +103,7 @@ public class FileSaver {
 			fi.info = (String)info;
 		fi.description = getDescriptionString();
 		fi.sliceLabels = imp.getStack().getSliceLabels();
-		if (imp.isComposite()) saveDisplayRanges(imp, fi);
+		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -118,14 +118,24 @@ public class FileSaver {
 		return true;
 	}
 	
-	void  saveDisplayRanges (ImagePlus imp, FileInfo fi) {
+	void  saveDisplayRangesAndLuts(ImagePlus imp, FileInfo fi) {
 		CompositeImage ci = (CompositeImage)imp;
 		int channels = imp.getNChannels();
 		fi.displayRanges = new double[channels*2];
 		for (int i=1; i<=channels; i++) {
-			ExtendedColorModel cm = ci.getChannelColorModel(i);
-			fi.displayRanges[(i-1)*2] = cm.min;
-			fi.displayRanges[(i-1)*2+1] = cm.max;
+			LUT lut = ci.getChannelLut(i);
+			fi.displayRanges[(i-1)*2] = lut.min;
+			fi.displayRanges[(i-1)*2+1] = lut.max;
+		}
+		if (ci.hasCustomLuts()) {
+			fi.channelLuts = new byte[channels][];
+			for (int i=0; i<channels; i++) {
+				LUT lut = ci.getChannelLut(i+1);
+				byte[] bytes = lut.getBytes();
+				if (bytes==null)
+					{fi.channelLuts=null; break;}
+				fi.channelLuts[i] = bytes;
+			}
 		}	
 	}
 
@@ -155,7 +165,7 @@ public class FileSaver {
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
 		fi.sliceLabels = imp.getStack().getSliceLabels();
-		if (imp.isComposite()) saveDisplayRanges(imp, fi);
+		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));

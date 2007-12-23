@@ -81,7 +81,6 @@ public class GifWriter implements PlugIn {
 				return;
 			}
 
-			System.gc();
 		}
 		ge.finish();
 		IJ.showStatus("");

@@ -5,21 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.39m, 17 December 2007</u>
+<li> <u>1.39n, 21 December 2007</u>
 <ul>
-<li> For stacks larger than 1GB, memory usage displayed
-in the image subtitle is in gigabytes.
-<li> The title of the <i>Edit&gt;Options&gt;Memory and Threads</i> dialog is "Memory (32-bit)" on 
-32-bit systems and "Memory (64-bit)" on 64-bit systems.
-<li> Added the IJ.is64Bit() method.
-<li> Big-endian TIFF files with names ending in .flex are passed to the Bio-Formats plugin.
-<li> Fixed a bug, introduced in 1.39l, that caused the <i>Stack to HyperStack</i>
-command to not appear in the <i>Image&gt;HyperStacks&gt;</i> submenu.
-<li> Fixed a bug that sometimes caused the maximize button to not work as expected with stacks.
-<li> Worked around a bug with 64-bit Java on OS X that caused ImageJ
-to crash when open a Web page.
-<li> Fixed a bug with <i>Plugins&gt;Utilities&gt;Memory Monitor</i> that
-caused an exception of a batch mode macro was running.
+<li> Custom channel LUTs are saved in the TIFF header.
+<li> The <i>Image&gt;Adjust&gt;Brightness/Contrast</i> "Auto" option no longer deletes the selection.
+<li> The radius used by the <i>Median</i>, <i>Mean</i>, <i>Minimum</i>, <i>Maximum</i> and <i>Variance</i> filters
+is not longer limited to 100 pixels.
+<li> Increased the width of the "Maximum Memory" field in <i>Edit&gt;Options&gt;Memory</i>
+from 4 to 5 digits to allow easy entry of values greater than 9999 (9.8GB).
+<li> Removed the System.gc() call, which sometimes 
+caused long pauses when closing images, from ImagePlus.flush().
 </ul>
 
 </body>

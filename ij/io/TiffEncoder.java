@@ -20,7 +20,8 @@ public class TiffEncoder {
 	private long stackSize;
 	private byte[] description;
 	private int metaDataSize;
-	private int metaDataEntries;
+	private int nMetaDataTypes;
+	private int nMetaDataEntries;
 	private int nSliceLabels;
 	private int extraMetaDataEntries;
 	private int scaleSize;
@@ -87,9 +88,9 @@ public class TiffEncoder {
 		ifdSize = 2 + nEntries*12 + 4;
 		int descriptionSize = description!=null?description.length:0;
 		scaleSize = fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0?SCALE_DATA_SIZE:0;
-		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + metaDataEntries*4 + metaDataSize;
+		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + nMetaDataEntries*4 + metaDataSize;
 		fi.offset = (int)imageOffset;
-		//ij.IJ.log(imageOffset+", "+ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize+", "+metaDataEntries*4+", "+metaDataSize);
+		//ij.IJ.log(imageOffset+", "+ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize+", "+nMetaDataEntries*4+", "+metaDataSize);
 	}
 	
 	/** Saves the image as a TIFF file. The DataOutputStream is not closed.
@@ -129,11 +130,11 @@ public class TiffEncoder {
 	int getMetaDataSize() {
         //if (stackSize+IMAGE_START>0xffffffffL) return 0;
 		nSliceLabels = 0;
-		metaDataEntries = 0;
+		nMetaDataEntries = 0;
 		int size = 0;
 		int nTypes = 0;
 		if (fi.info!=null) {
-			metaDataEntries = 1;
+			nMetaDataEntries = 1;
 			size = fi.info.length()*2;
 			nTypes++;
 		}
@@ -147,28 +148,38 @@ public class TiffEncoder {
 					break;
 			}
 			if (nSliceLabels>0) nTypes++;
-			metaDataEntries += nSliceLabels;
+			nMetaDataEntries += nSliceLabels;
 		}
 
 		if (fi.displayRanges!=null) {
-			metaDataEntries++;
+			nMetaDataEntries++;
 			size += fi.displayRanges.length*8;
 			nTypes++;
+		}
+
+		if (fi.channelLuts!=null) {
+			for (int i=0; i<fi.channelLuts.length; i++) {
+                if (fi.channelLuts[i]!=null)
+                    size += fi.channelLuts[i].length;
+            }
+			nTypes++;
+			nMetaDataEntries += fi.channelLuts.length;
 		}
 
 		if (fi.metaDataTypes!=null && fi.metaData!=null && fi.metaData[0]!=null
 		&& fi.metaDataTypes.length==fi.metaData.length) {
 			extraMetaDataEntries = fi.metaData.length;
 			nTypes += extraMetaDataEntries;
-			metaDataEntries += extraMetaDataEntries;
+			nMetaDataEntries += extraMetaDataEntries;
 			for (int i=0; i<extraMetaDataEntries; i++) {
                 if (fi.metaData[i]!=null)
                     size += fi.metaData[i].length;
             }
 		}
-		if (metaDataEntries>0) metaDataEntries++; // add entry for header
+		if (nMetaDataEntries>0) nMetaDataEntries++; // add entry for header
 		int hdrSize = 4 + nTypes*8;
 		if (size>0) size += hdrSize;
+		nMetaDataTypes = nTypes;
 		return size;
 	}
 	
@@ -237,9 +248,9 @@ public class TiffEncoder {
 			tagDataOffset += MAP_SIZE*2;
 		}
 		if (metaDataSize>0) {
-			writeEntry(out, TiffDecoder.META_DATA_BYTE_COUNTS, 4, metaDataEntries, tagDataOffset);
-			writeEntry(out, TiffDecoder.META_DATA, 1, metaDataSize, tagDataOffset+4*metaDataEntries);
-			tagDataOffset += metaDataEntries*4 + metaDataSize;
+			writeEntry(out, TiffDecoder.META_DATA_BYTE_COUNTS, 4, nMetaDataEntries, tagDataOffset);
+			writeEntry(out, TiffDecoder.META_DATA, 1, metaDataSize, tagDataOffset+4*nMetaDataEntries);
+			tagDataOffset += nMetaDataEntries*4 + metaDataSize;
 		}
 		out.writeInt(nextIFD);
 	}
@@ -283,26 +294,26 @@ public class TiffEncoder {
 	}
 	
 	/** Writes image metadata ("info" image propery, 
-		stack slice labels and extra metadata). */
+		stack slice labels, channel display ranges and luts,
+		and extra metadata). */
 	void writeMetaData(DataOutputStream out) throws IOException {
 	
-		// write byte counts
-		int nTypes = 0;
-		if (fi.info!=null) nTypes++;
-		if (nSliceLabels>0) nTypes++;
-		if (fi.displayRanges!=null) nTypes++;
-		nTypes += extraMetaDataEntries;
-		out.writeInt(4+nTypes*8); // header size	
+		// write byte counts (META_DATA_BYTE_COUNTS tag)
+		out.writeInt(4+nMetaDataTypes*8); // header size	
 		if (fi.info!=null)
 			out.writeInt(fi.info.length()*2);
 		for (int i=0; i<nSliceLabels; i++)
 			out.writeInt(fi.sliceLabels[i].length()*2);
 		if (fi.displayRanges!=null)
 			out.writeInt(fi.displayRanges.length*8);
+		if (fi.channelLuts!=null) {
+			for (int i=0; i<fi.channelLuts.length; i++)
+				out.writeInt(fi.channelLuts[i].length);
+		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			out.writeInt(fi.metaData[i].length);	
 		
-		// write header
+		// write header (META_DATA tag header)
 		out.writeInt(TiffDecoder.MAGIC_NUMBER); // "IJIJ"
 		if (fi.info!=null) {
 			out.writeInt(TiffDecoder.INFO); // type="info"
@@ -316,12 +327,16 @@ public class TiffEncoder {
 			out.writeInt(TiffDecoder.RANGES); // type="rang"
 			out.writeInt(1); // count
 		}
+		if (fi.channelLuts!=null) {
+			out.writeInt(TiffDecoder.LUTS); // type="luts"
+			out.writeInt(fi.channelLuts.length); // count
+		}
 		for (int i=0; i<extraMetaDataEntries; i++) {
 			out.writeInt(fi.metaDataTypes[i]);
 			out.writeInt(1); // count
 		}
 		
-		// write data
+		// write data (META_DATA tag body)
 		if (fi.info!=null)
 			out.writeChars(fi.info);
 		for (int i=0; i<nSliceLabels; i++)
@@ -329,6 +344,10 @@ public class TiffEncoder {
 		if (fi.displayRanges!=null) {
 			for (int i=0; i<fi.displayRanges.length; i++)
 				out.writeDouble(fi.displayRanges[i]);
+		}
+		if (fi.channelLuts!=null) {
+			for (int i=0; i<fi.channelLuts.length; i++)
+				out.write(fi.channelLuts[i]);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			out.write(fi.metaData[i]); 

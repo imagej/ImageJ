@@ -88,7 +88,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			threshold = gd.getNextNumber();
 			whichOutliers = gd.getNextChoiceIndex();
 		}
-        if (gd.invalidNumber() || radius<0 || radius>100 || (filterType==OUTLIERS && threshold <0))
+        if (gd.invalidNumber() || radius<0 || (filterType==OUTLIERS && threshold <0))
             return false;
 		makeKernel(radius);				//determine the kernel size once for all channels&slices
         return true;

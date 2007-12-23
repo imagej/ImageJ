@@ -52,7 +52,6 @@ public class StackConverter {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);
 			stack1.deleteSlice(1);
-			//System.gc();
 			ip.setMinAndMax(min, max);
 			boolean scale = ImageConverter.getDoScaling();
 			stack2.addSlice(label, ip.convertToByte(scale));
@@ -80,7 +79,6 @@ public class StackConverter {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);
 			stack1.deleteSlice(1);
-			//System.gc();
 			if (ip instanceof ByteProcessor)
 				ip = new ColorProcessor(ip.createImage());
 			boolean scale = ImageConverter.getDoScaling();
@@ -113,7 +111,6 @@ public class StackConverter {
 			ip1 = stack1.getProcessor(1);
 			ip2 = ip1.convertToShort(scale);
 			stack1.deleteSlice(1);
-			//System.gc();
 			stack2.addSlice(label, ip2);
 			if ((i%inc)==0) {
 				IJ.showProgress((double)i/nSlices);
@@ -144,7 +141,6 @@ public class StackConverter {
 			ip1.setCalibrationTable(cal.getCTable());
 			ip2 = ip1.convertToFloat();
 			stack1.deleteSlice(1);
-			//System.gc();
 			stack2.addSlice(label, ip2);
 			if ((i%inc)==0) {
 				IJ.showProgress((double)i/nSlices);
@@ -171,8 +167,6 @@ public class StackConverter {
 			label = stack1.getSliceLabel(i);
 			ip1 = stack1.getProcessor(i);
 			ip2 = ip1.convertToRGB();
-			//stack1.deleteSlice(1);
-			//System.gc();
 			stack2.addSlice(label, ip2);
 			if ((i%inc)==0) {
 				IJ.showProgress((double)i/nSlices);

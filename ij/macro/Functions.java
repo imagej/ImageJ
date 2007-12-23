@@ -1495,11 +1495,11 @@ public class Functions implements MacroConstants, Measurements {
 			g[i] = (byte)greens[i];
 			b[i] = (byte)blues[i];
 		}
-		IndexColorModel icm = new IndexColorModel(8, length, r, g, b);
+		LUT lut = new LUT(8, length, r, g, b);
 		if (imp.isComposite())
-			((CompositeImage)imp).setChannelColorModel(icm);
+			((CompositeImage)imp).setChannelLut(lut);
 		else
-			ip.setColorModel(icm);
+			ip.setColorModel(lut);
 		imp.updateAndDraw();
 		updateNeeded = false;
 	}
