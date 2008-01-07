@@ -167,8 +167,6 @@ public class TiffDecoder {
 	public void saveImageDescription(byte[] description, FileInfo fi) {
 		if (description.length<7)
 			return;
-		if (debugMode)
-			dInfo += "Image Description: " + new String(description).replace('\n',' ')+"\n";
         String id = new String(description);
 		fi.description = id;
         int index1 = id.indexOf("images=");

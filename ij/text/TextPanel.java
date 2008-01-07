@@ -465,7 +465,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (selStart==-1 || selEnd==-1)
 			return copyAll();
 		StringBuffer sb = new StringBuffer();
-		if (labels!=null && !labels.equals("") && selStart==0 && selEnd==iRowCount-1) {
+		if (Prefs.copyColumnHeaders && labels!=null && !labels.equals("") && selStart==0 && selEnd==iRowCount-1) {
 			sb.append(labels);
 			sb.append('\n');
 		}

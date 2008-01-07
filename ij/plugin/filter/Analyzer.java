@@ -695,10 +695,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		umeans = null;
 		systemRT.reset();
 		unsavedMeasurements = false;
-		if (tp!=null) {
-			tp.selectAll();
-			tp.clearSelection();
-		}
+		if (tp!=null) tp.clear();
 		summarized = false;
 		return true;
 	}

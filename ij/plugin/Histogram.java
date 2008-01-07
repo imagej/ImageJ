@@ -132,7 +132,7 @@ public class Histogram implements PlugIn, TextListener {
 					return flags;
 			}
 			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(),
-				"Histogram", "Include all "+stackSize+" slices?");
+				"Histogram", "Include all "+stackSize+" images?");
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {

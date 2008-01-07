@@ -45,8 +45,12 @@ public class ZProjector implements PlugIn {
     private int startSlice = 1;
     /** Projection ends at this slice. */
     private int stopSlice = 1;
+    /** Project all time points? */
+    private static boolean allTimeFrames;
     
-    private String color = ""; 
+    private String color = "";
+    private boolean isHyperStack;
+    private int increment = 1;
 
     public ZProjector() {
     }
@@ -106,10 +110,11 @@ public class ZProjector implements PlugIn {
 		}
 
 		// Set default bounds.
+		isHyperStack = imp.isHyperStack()&&imp.getNSlices()>1;
 		startSlice = 1; 
-		stopSlice  = imp.getStackSize(); 
+		stopSlice  = isHyperStack?imp.getNSlices():imp.getStackSize(); 
 
-		// Build control dialog.
+		// Build control dialog
 		GenericDialog gd = buildControlDialog(startSlice,stopSlice); 
 		gd.showDialog(); 
 		if(gd.wasCanceled()) return; 
@@ -118,8 +123,11 @@ public class ZProjector implements PlugIn {
 		long tstart = System.currentTimeMillis();
 		setStartSlice((int)gd.getNextNumber()); 
 		setStopSlice((int)gd.getNextNumber()); 
-		method = gd.getNextChoiceIndex(); 
-		if (imp.getType()==ImagePlus.COLOR_RGB) {
+		method = gd.getNextChoiceIndex();
+		if (isHyperStack) {
+			boolean allTimeFrames = imp.getNFrames()>1?gd.getNextBoolean():false;
+			doHyperStackProjection(allTimeFrames);
+		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
 			if(method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
 	    		IJ.error("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
 	    		imp.unlock(); 
@@ -129,7 +137,7 @@ public class ZProjector implements PlugIn {
 		} else 
 			doProjection(); 
 
-		if(arg.equals("")) {
+		if(arg.equals("") && projImage!=null) {
 			long tstop = System.currentTimeMillis();
 			projImage.setCalibration(imp.getCalibration()); 
 	    	projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
@@ -170,11 +178,10 @@ public class ZProjector implements PlugIn {
     protected GenericDialog buildControlDialog(int start, int stop) {
 		GenericDialog gd = new GenericDialog("ZProjection",IJ.getInstance()); 
 		gd.addNumericField("Start slice:",startSlice,0/*digits*/); 
-		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/); 
-
-		// Different kinds of projections.
+		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/);
 		gd.addChoice("Projection Type", METHODS, METHODS[method]); 
-
+		if (isHyperStack && imp.getNFrames()>1)
+			gd.addCheckbox("All Time Frames", allTimeFrames); 
 		return gd; 
     }
 
@@ -186,7 +193,6 @@ public class ZProjector implements PlugIn {
 			projImage = doMedianProjection();
 			return;
 		} 
-			 
 		
 		// Create new float processor for projected pixels.
 		FloatProcessor fp = new FloatProcessor(imp.getWidth(),imp.getHeight()); 
@@ -212,7 +218,7 @@ public class ZProjector implements PlugIn {
 		}
 
 		// Do the projection.
-		for(int n=startSlice; n<=stopSlice; n++) {
+		for(int n=startSlice; n<=stopSlice; n+=increment) {
 	    	IJ.showStatus("ZProjection " + color +": " + n + "/" + stopSlice);
 	    	IJ.showProgress(n-startSlice, stopSlice-startSlice);
 	    	projectSlice(stack.getPixels(n), rayFunc, ptype);
@@ -234,6 +240,39 @@ public class ZProjector implements PlugIn {
 		if(projImage==null)
 	    	IJ.error("ZProjection - error computing projection.");
     }
+
+	void doHyperStackProjection(boolean allTimeFrames) {
+		int start = startSlice;
+		int stop = stopSlice;
+		int firstFrame = 1;
+		int lastFrame = imp.getNFrames();
+		if (!allTimeFrames)
+			firstFrame = lastFrame = imp.getFrame();
+		ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = lastFrame-firstFrame+1;
+		increment = channels;
+		for (int frame=firstFrame; frame<=lastFrame; frame++) {
+			for (int channel=1; channel<=channels; channel++) {
+				startSlice = (frame-1)*channels*slices + (start-1)*channels + channel;
+				stopSlice = (frame-1)*channels*slices + (stop-1)*channels + channel;
+				//IJ.log(startSlice+" "+stopSlice+" "+increment);
+				doProjection();
+				stack.addSlice(null, projImage.getProcessor());
+			}
+		}
+        projImage = new ImagePlus(makeTitle(), stack);
+        projImage.setDimensions(channels, 1, frames);
+        if (channels>1) {
+        	int mode = CompositeImage.COMPOSITE;
+        	if (imp.isComposite())
+        		mode = ((CompositeImage)imp).getMode();
+        	projImage = new CompositeImage(projImage, mode);
+        }
+        if (frames>1)
+        	projImage.setOpenAsHyperStack(true);
+	}
 
  	private RayFunction getRayFunction(int method, FloatProcessor fp) {
  		switch (method) {
@@ -311,10 +350,12 @@ public class ZProjector implements PlugIn {
     ImagePlus doMedianProjection() {
     	IJ.showStatus("Calculating median...");
     	ImageStack stack = imp.getStack();
-    	int nSlices = stopSlice - startSlice + 1;
+    	int nSlices = 0;
+    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
+    		nSlices++;
     	ImageProcessor[] slices = new ImageProcessor[nSlices];
     	int index = 0;
-    	for (int slice=startSlice; slice<=stopSlice; slice++)
+    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
     		slices[index++] = stack.getProcessor(slice);
     	ImageProcessor ip2 = slices[0].duplicate();
     	ip2 = ip2.convertToFloat();
@@ -380,36 +421,6 @@ public class ZProjector implements PlugIn {
 		}
 		return true;
 	}
-
-
-	/*
-	final float median(float[] a) {
-		int nValues = a.length;
-		int nv1b2 = (nValues-1)/2;
-		int i,j;
-		int l=0;
-		int m=nValues-1;
-		float med=a[nv1b2];
-		float dum;
-		
-		while (l<m) {
-			i=l ;
-			j=m ;
-			do {
-				while (a[i]<med) i++;
-				while (med<a[j]) j--;
-				dum=a[j];
-				a[j]=a[i];
-				a[i]=dum;
-				i++ ; j-- ;
-			} while ((j>=nv1b2) && (i<=nv1b2)) ;
-			if (j<nv1b2) l=i;
-			if (nv1b2<i) m=j;
-			med=a[nv1b2];
-		}
-		return med;
-	}
-	*/
 
      /** Abstract class that specifies structure of ray
 	function. Preprocessing should be done in derived class
@@ -596,7 +607,6 @@ public class ZProjector implements PlugIn {
 		}
 
     } // end StandardDeviation
-
 
 }  // end ZProjection
 

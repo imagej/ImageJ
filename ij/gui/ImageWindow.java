@@ -185,8 +185,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle maxWindow = ge.getMaximumWindowBounds();
 		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
-		maxWindow.y += ijSize.height;
-		maxWindow.height -= ijSize.height;
+		if (maxWindow.height>600) {
+			maxWindow.y += ijSize.height;
+			maxWindow.height -= ijSize.height;
+		}
 		return maxWindow;
 	}
 

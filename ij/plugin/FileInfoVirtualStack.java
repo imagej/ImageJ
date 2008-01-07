@@ -53,11 +53,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
 			info = new FileInfo[n];
-			int size = fi.width*fi.height*fi.getBytesPerPixel();
+			long size = fi.width*fi.height*fi.getBytesPerPixel();
 			for (int i=0; i<n; i++) {
 				info[i] = (FileInfo)fi.clone();
 				info[i].nImages = 1;
-				info[i].offset = fi.offset + i*(size + fi.gapBetweenImages);
+				info[i].longOffset = (long)fi.offset + i*(size + fi.gapBetweenImages);
 			}
 		}
 		nImages = info.length;
@@ -66,7 +66,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		Properties props = fo.decodeDescriptionString(fi);
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setFileInfo(fi);
-		if (imp!=null) {
+		if (imp!=null && props!=null) {
 			imp2.setCalibration(imp.getCalibration());
 			int channels = getInt(props,"channels");
 			int slices = getInt(props,"slices");

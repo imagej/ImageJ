@@ -734,7 +734,7 @@ public class IJ {
 		return lessThan;
 	}
 	
-	/** Displays a "Process all slices?" dialog. Returns
+	/** Displays a "Process all images?" dialog. Returns
 		'flags'+PlugInFilter.DOES_STACKS if the user selects "Yes",
 		'flags' if the user selects "No" and PlugInFilter.DONE
 		if the user selects "Cancel".
@@ -752,7 +752,7 @@ public class IJ {
 					return flags;
 			}
 			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
-				"Process Stack?", "Process all "+stackSize+" slices?  There is\n"
+				"Process Stack?", "Process all "+stackSize+" images?  There is\n"
 				+"no Undo if you select \"Yes\".");
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
