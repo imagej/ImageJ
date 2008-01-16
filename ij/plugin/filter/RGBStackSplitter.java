@@ -14,6 +14,10 @@ public class RGBStackSplitter implements PlugInFilter {
 
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
+        if (imp!=null && imp.isComposite()) {
+        	IJ.run("Split Channels...");
+        	return DONE;
+        }
         return DOES_RGB+NO_UNDO;
     }
 

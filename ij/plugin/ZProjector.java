@@ -51,6 +51,7 @@ public class ZProjector implements PlugIn {
     private String color = "";
     private boolean isHyperStack;
     private int increment = 1;
+    private int sliceCount;
 
     public ZProjector() {
     }
@@ -125,7 +126,7 @@ public class ZProjector implements PlugIn {
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex();
 		if (isHyperStack) {
-			boolean allTimeFrames = imp.getNFrames()>1?gd.getNextBoolean():false;
+			allTimeFrames = imp.getNFrames()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
 		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
 			if(method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
@@ -189,6 +190,9 @@ public class ZProjector implements PlugIn {
     public void doProjection() {
 		if(imp==null)
 			return;
+		sliceCount = 0;
+    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
+    		sliceCount++;
 		if (method==MEDIAN_METHOD) {
 			projImage = doMedianProjection();
 			return;
@@ -277,13 +281,13 @@ public class ZProjector implements PlugIn {
  	private RayFunction getRayFunction(int method, FloatProcessor fp) {
  		switch (method) {
  			case AVG_METHOD: case SUM_METHOD:
-	    		return new AverageIntensity(fp, stopSlice-startSlice+1); 
+	    		return new AverageIntensity(fp, sliceCount); 
 			case MAX_METHOD:
 	    		return new MaxIntensity(fp);
 	    	case MIN_METHOD:
 	    		return new MinIntensity(fp); 
 			case SD_METHOD:
-	    		return new StandardDeviation(fp, stopSlice-startSlice+1); 
+	    		return new StandardDeviation(fp, sliceCount); 
 			default:
 	    		IJ.error("ZProjection - unknown method.");
 	    		return null;
@@ -350,23 +354,20 @@ public class ZProjector implements PlugIn {
     ImagePlus doMedianProjection() {
     	IJ.showStatus("Calculating median...");
     	ImageStack stack = imp.getStack();
-    	int nSlices = 0;
-    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
-    		nSlices++;
-    	ImageProcessor[] slices = new ImageProcessor[nSlices];
+    	ImageProcessor[] slices = new ImageProcessor[sliceCount];
     	int index = 0;
     	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
     		slices[index++] = stack.getProcessor(slice);
     	ImageProcessor ip2 = slices[0].duplicate();
     	ip2 = ip2.convertToFloat();
-    	float[] values = new float[nSlices];
+    	float[] values = new float[sliceCount];
     	int width = ip2.getWidth();
     	int height = ip2.getHeight();
     	int inc = Math.min(height/30, 1);
     	for (int y=0; y<height; y++) {
     		if (y%inc==0) IJ.showProgress(y, height-1);
     		for (int x=0; x<width; x++) {
-    			for (int i=0; i<nSlices; i++)
+    			for (int i=0; i<sliceCount; i++)
     				values[i] = slices[i].getPixelValue(x, y);
     			ip2.putPixelValue(x, y, median(values));
     		}

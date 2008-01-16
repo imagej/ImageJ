@@ -5,22 +5,27 @@
 </head>
 <body>
 
-<li> <u>1.39o, 7 January 2008</u>
+<li> <u>1.39p, 15 January 2008</u>
 <ul>
-<li> <i>Image&gt;Stacks&gt;Z project</i> works with HyperStacks.
-<li> Custom channel LUTs are saved in the TIFF header.
-<li> Added the "Copy Column Headers" option to <i>Edit&gt;Options&gt;Input/Output</i>.
-<li> The <i>Image&gt;Adjust&gt;Brightness/Contrast</i> "Auto" option no longer deletes the selection.
-<li> Image windows open at the top of the screen on systems that have a screen 
-height of 600 pixels or less (e.g., the Eee PC).
-<li>  Increased the maximum radius in Median, Mean, Minimum, Maximum and 
-Variance filters from 100 to 1000 pixels.
-<li> Increased the width of the "Maximum Memory" field in <i>Edit&gt;Options&gt;Memory & Threads</i>
-from 4 to 5 digits to allow easy entry of values greater than 9999 (9.8GB).
-<li> Removed the System.gc() call, which sometimes 
-caused long pauses when closing images, from ImagePlus.flush().
-<li> Fixed a bug that could cause a bogus "Selection required" message when closing the Results
-window or using the <i>Analyze&gt;Clear Results</i> command.
+<li> <i>Image&gt;Stacks&gt;Z Project</i> works with HyperStacks.
+<li> <i>Image&gt;HyperStacks&gt;New HyperStack</i> settings are saved in the preferences file.
+<li> Added a "Sliding Paraboloid" option to <i>Process&gt;Subtract Background</i>.
+<li> Added a "Create Composite" option to <i>Image&gt;Color&gt;RGB Merge</i>.
+<li> <i>Image&gt;Color&gt;RGB Split</i> works with composite images.
+<li> <i>Process&gt;Smooth</i>, <i>Process&gt;Sharpen</i> and <i>Process&gt;Find Edges</i>
+ now process edge pixels of 16-bit and 32-bit images thanks to code contributed by Michael Schmid.
+<li> Composite images (e.g., <i>File&gt;Open Samples&gt;HeLa Cells</i>) use less memory.
+<li> 48 bit PPM files open as 16 bits per channel composite images.
+<li> 16-bit images use less memory when running Java 1.6 or later.
+<li> The getInfo("window.contents") macro function
+works with the Recorder.
+<li> Added the is("batch mode") macro function.
+<li> Fixed a bug with <i>Image&gt;Rotate&gt;Arbitrarily</i>
+that caused it to sometimes clip the image when "Enlarge Image to Fit Result" was enabled.
+<li> Fixed a bug that caused <i>Image&gt;HyperStacks&gt;New HyperStack</i>
+to fail when ImageJ was running as an applet.
+<li> Fixed a memory leak bug in ByteProcessor.resetMinAndMax() when not running on
+Java 1.6 or later.
 </ul>
 
 </body>

@@ -5,6 +5,7 @@ import ij.gui.*;
 
 public class RGBStackMerge implements PlugIn {
 
+    private static boolean createComposite = true;
     private ImagePlus imp;
     private byte[] blank;
  
@@ -30,26 +31,31 @@ public class RGBStackMerge implements PlugIn {
         String none = "*None*";
         titles[wList.length] = none;
 
-        GenericDialog gd = new GenericDialog("RGB Merge");
+        GenericDialog gd = new GenericDialog("Color Merge");
         gd.addChoice("Red:", titles, titles[0]);
         gd.addChoice("Green:", titles, titles[1]);
         String title3 = titles.length>2?titles[2]:none;
         gd.addChoice("Blue:", titles, title3);
-        gd.addCheckbox("Keep source images", false);
-        gd.showDialog();
+        String title4 = titles.length>3?titles[3]:none;
+        gd.addChoice("Gray:", titles, title4);
+		gd.addCheckbox("Create Composite", createComposite);
+        gd.addCheckbox("Keep Source Images", false);
+		gd.showDialog();
         if (gd.wasCanceled())
             return;
-        int[] index = new int[3];
+        int[] index = new int[4];
         index[0] = gd.getNextChoiceIndex();
         index[1] = gd.getNextChoiceIndex();
         index[2] = gd.getNextChoiceIndex();
+        index[3] = gd.getNextChoiceIndex();
+        createComposite = gd.getNextBoolean();
         boolean keep = gd.getNextBoolean();
 
-        ImagePlus[] image = new ImagePlus[3];
+        ImagePlus[] image = new ImagePlus[4];
         int stackSize = 0;
         int width = 0;
         int height = 0;
-        for (int i=0; i<3; i++) {
+         for (int i=0; i<4; i++) {
             if (index[i]<wList.length) {
                 image[i] = WindowManager.getImage(wList[index[i]]);
                 width = image[i].getWidth();
@@ -61,17 +67,13 @@ public class RGBStackMerge implements PlugIn {
             IJ.error("There must be at least one source image or stack.");
             return;
         }
-        for (int i=0; i<3; i++) {
+        for (int i=0; i<4; i++) {
             ImagePlus img = image[i];
             if (img!=null) {
                 if (img.getStackSize()!=stackSize) {
                     IJ.error("The source stacks must all have the same number of slices.");
                     return;
                 }
-                //if (!(img.getType()==ImagePlus.GRAY8||img.getType()==ImagePlus.COLOR_RGB)) {
-                //    IJ.error("The source stacks must be 8-bit grayscale or RGB.");
-                //    return;
-                //}
                 if (img.getWidth()!=width || image[i].getHeight()!=height) {
                     IJ.error("The source images or stacks must have the same width and height.");
                     return;
@@ -79,23 +81,70 @@ public class RGBStackMerge implements PlugIn {
             }
         }
 
-        ImageStack red = image[0]!=null?image[0].getStack():null;
-        ImageStack green = image[1]!=null?image[1].getStack():null;
-        ImageStack blue = image[2]!=null?image[2].getStack():null;
-        ImageStack rgb = mergeStacks(width, height, stackSize, red, green, blue, keep);
-        if (!keep)
-            for (int i=0; i<3; i++) {
-                if (image[i]!=null) {
-                    image[i].changes = false;
-                    image[i].close();
-                }
-            }
-        ImagePlus imp2 = new ImagePlus("RGB", rgb);
-        if (image[0]!=null)
-            imp2.setCalibration(image[0].getCalibration());
-        imp2.show();
-    }
+		ImageStack red = image[0]!=null?image[0].getStack():null;
+		ImageStack green = image[1]!=null?image[1].getStack():null;
+		ImageStack blue = image[2]!=null?image[2].getStack():null;
+		ImageStack gray = image[3]!=null?image[3].getStack():null;
+		String options = Macro.getOptions();
+		if  (options!=null && options.indexOf("gray=")==-1)
+			gray = null; // ensure compatibility with old macros
+        ImagePlus imp2;
+        if (gray!=null)
+        	createComposite = true;
+        for (int i=0; i<4; i++) {
+        	if (image[i]!=null && image[i].getBitDepth()==24)
+        		createComposite = false;
+        }
+		if (createComposite) {
+			ImageStack[] stacks = new ImageStack[4];
+			stacks[0]=red; stacks[1]=green; stacks[2]=blue; stacks[3]=gray;
+			imp2 = createComposite(width, height, stackSize, stacks, keep);
+		} else {
+			ImageStack rgb = mergeStacks(width, height, stackSize, red, green, blue, keep);
+			imp2 = new ImagePlus("RGB", rgb);
+		}
+		if (image[0]!=null)
+			imp2.setCalibration(image[0].getCalibration());
+		if (!keep) {
+			for (int i=0; i<4; i++) {
+				if (image[i]!=null) {
+					image[i].changes = false;
+					image[i].close();
+				}
+			}
+		}
+		imp2.show();
+     }
     
+	public ImagePlus createComposite(int w, int h, int d, ImageStack[] stacks, boolean keep) {
+		ImageStack composite = new ImageStack(w, h);
+		int n = stacks.length;
+		int[] index = new int[n];
+		int channels = 0;
+		for (int i=0; i<n; i++) {
+			index[i] = 1;
+			if (stacks[i]!=null) channels++;
+		}
+		for (int i=0; i<d; i++) {
+			for (int j=0; j<n; j++) {
+				if (stacks[j]!=null) {
+					ImageProcessor ip = stacks[j].getProcessor(index[j]);
+					if (keep) ip = ip.duplicate();
+					composite.addSlice(null, ip);
+					if (keep)
+						index[j]++;
+					else
+						if (stacks[j]!=null) stacks[j].deleteSlice(1);
+				}
+			}
+		}
+		ImagePlus imp2 = new ImagePlus("Composite", composite);
+		imp2.setDimensions(channels, d, 1);
+		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+		if (d>1) imp2.setOpenAsHyperStack(true);
+		return imp2;
+	}
+
     public ImageStack mergeStacks(int w, int h, int d, ImageStack red, ImageStack green, ImageStack blue, boolean keep) {
         ImageStack rgb = new ImageStack(w, h);
         int inc = d/10;

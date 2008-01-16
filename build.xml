@@ -35,14 +35,14 @@
 
   <target name="run" depends="build" description="Build and run ImageJ.">
     <copy file="ij.jar" toDir=".." />
-    <java maxmemory="256m" jar="ij.jar" fork="yes" />
+    <java maxmemory="640m" jar="ij.jar" fork="yes" />
   </target>
     
 
   <target name="run2" depends="build" description="Build and run ImageJ.">
     <!-- Run in ImageJ directory -->
     <copy file="ij.jar" toDir=".." />
-    <java maxmemory="256m" dir=".." jar="ij.jar" fork="yes" />
+    <java maxmemory="640m" dir=".." jar="ij.jar" fork="yes" />
   </target>
 
   <target name="zip" depends="clean" description="Build zrc.zip.">

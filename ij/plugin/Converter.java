@@ -14,7 +14,9 @@ public class Converter implements PlugIn {
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			if (imp.lock()) { //v1.24f
+			if (imp.isComposite() && arg.equals("RGB Color"))
+				(new RGBStackConverter()).run("");
+			else if (imp.lock()) {
 				convert(arg);
 				imp.unlock();
 			}

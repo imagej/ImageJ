@@ -137,22 +137,8 @@ public class FloatProcessor extends ImageProcessor {
 
 	public Image createImage() {
 		boolean firstTime = pixels8==null;
-		if (firstTime || !lutAnimation) {
-			// scale from float to 8-bits
-			int size = width*height;
-			if (pixels8==null)
-				pixels8 = new byte[size];
-			float value;
-			int ivalue;
-			float scale = 255f/(max-min);
-			for (int i=0; i<size; i++) {
-				value = pixels[i]-min;
-				if (value<0f) value = 0f;
-				ivalue = (int)(value*scale);
-				if (ivalue>255) ivalue = 255;
-				pixels8[i] = (byte)ivalue;
-			}
-		}
+		if (firstTime || !lutAnimation)
+			create8BitImage();
 		if (cm==null)
 			makeDefaultColorModel();
 		if (source==null) {
@@ -167,6 +153,24 @@ public class FloatProcessor extends ImageProcessor {
 			source.newPixels();
 		lutAnimation = false;
 	    return img;
+	}
+	
+	byte[] create8BitImage() {
+		// scale from float to 8-bits
+		int size = width*height;
+		if (pixels8==null)
+			pixels8 = new byte[size];
+		float value;
+		int ivalue;
+		float scale = 255f/(max-min);
+		for (int i=0; i<size; i++) {
+			value = pixels[i]-min;
+			if (value<0f) value = 0f;
+			ivalue = (int)(value*scale);
+			if (ivalue>255) ivalue = 255;
+			pixels8[i] = (byte)ivalue;
+		}
+		return pixels8;
 	}
 	
 	/** Returns a new, blank FloatProcessor with the specified width and height. */
@@ -464,104 +468,104 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 
-	/** 3x3 convolution contributed by Glynne Casteel. */
+	/** Does 3x3 convolution. */
 	public void convolve3x3(int[] kernel) {
-		float p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		float k1=kernel[0], k2=kernel[1], k3=kernel[2],
-		      k4=kernel[3], k5=kernel[4], k6=kernel[5],
-		      k7=kernel[6], k8=kernel[7], k9=kernel[8];
+		filter3x3(CONVOLVE, kernel);
+	}
 
-		float scale = 0f;
-		for (int i=0; i<kernel.length; i++)
-			scale += kernel[i];
-		if (scale==0) scale = 1f;
+	/** Filters using a 3x3 neighborhood. */
+	public void filter(int type) {
+		filter3x3(type, null);
+	}
+
+    /** 3x3 filter operations, code partly based on 3x3 convolution code
+     *  contributed by Glynne Casteel. */
+    void filter3x3(int type, int[] kernel) {
+		float v1, v2, v3;           //input pixel values around the current pixel
+        float v4, v5, v6;
+        float v7, v8, v9;
+        float k1=0f, k2=0f, k3=0f;  //kernel values (used for CONVOLVE only)
+        float k4=0f, k5=0f, k6=0f;
+        float k7=0f, k8=0f, k9=0f;
+        float scale = 0f;
+        if (type==CONVOLVE) {
+            k1=kernel[0]; k2=kernel[1]; k3=kernel[2];
+            k4=kernel[3]; k5=kernel[4]; k6=kernel[5];
+		    k7=kernel[6]; k8=kernel[7]; k9=kernel[8];
+    		for (int i=0; i<kernel.length; i++)
+    			scale += kernel[i];
+    		if (scale==0) scale = 1f;
+            scale = 1f/scale; //multiplication factor (multiply is faster than divide)
+        }
 		int inc = roiHeight/25;
 		if (inc<1) inc = 1;
 		
 		float[] pixels2 = (float[])getPixelsCopy();
-		int offset;
-		float sum;
-        int rowOffset = width;
-		for (int y=yMin; y<=yMax; y++) {
-			offset = xMin + y * width;
-			p1 = 0f;
-			p2 = pixels2[offset-rowOffset-1];
-			p3 = pixels2[offset-rowOffset];
-			p4 = 0f;
-			p5 = pixels2[offset-1];
-			p6 = pixels2[offset];
-			p7 = 0f;
-			p8 = pixels2[offset+rowOffset-1];
-			p9 = pixels2[offset+rowOffset];
+		//float[] pixels2 = (float[])getPixelsCopy();
+        int xEnd = roiX + roiWidth;
+        int yEnd = roiY + roiHeight;
+		for (int y=roiY; y<yEnd; y++) {
+			int p  = roiX + y*width;            //points to current pixel
+            int p6 = p - (roiX>0 ? 1 : 0);      //will point to v6, currently lower
+            int p3 = p6 - (y>0 ? width : 0);    //will point to v3, currently lower
+            int p9 = p6 + (y<height-1 ? width : 0); // ...  to v9, currently lower
+            v2 = pixels2[p3];
+            v5 = pixels2[p6];
+            v8 = pixels2[p9];
+            if (roiX>0) { p3++; p6++; p9++; }
+            v3 = pixels2[p3];
+            v6 = pixels2[p6];
+            v9 = pixels2[p9];
 
-			for (int x=xMin; x<=xMax; x++) {
-				p1 = p2; p2 = p3;
-				p3 = pixels2[offset-rowOffset+1];
-				p4 = p5; p5 = p6;
-				p6 = pixels2[offset+1];
-				p7 = p8; p8 = p9;
-				p9 = pixels2[offset+rowOffset+1];
-				sum = k1*p1 + k2*p2 + k3*p3
-				    + k4*p4 + k5*p5 + k6*p6
-				    + k7*p7 + k8*p8 + k9*p9;
-				sum /= scale;
-				pixels[offset++] = sum;
+            switch (type) {
+                case BLUR_MORE:
+    			for (int x=roiX; x<xEnd; x++,p++) {
+                    if (x<width-1) { p3++; p6++; p9++; }
+    				v1 = v2; v2 = v3;
+    				v3 = pixels2[p3];
+    				v4 = v5; v5 = v6;
+    				v6 = pixels2[p6];
+    				v7 = v8; v8 = v9;
+    				v9 = pixels2[p9];
+                    pixels[p] = (v1+v2+v3+v4+v5+v6+v7+v8+v9)*0.11111111f; //0.111... = 1/9
+                }
+                break;
+                case FIND_EDGES:
+    			for (int x=roiX; x<xEnd; x++,p++) {
+                    if (x<width-1) { p3++; p6++; p9++; }
+    				v1 = v2; v2 = v3;
+    				v3 = pixels2[p3];
+    				v4 = v5; v5 = v6;
+    				v6 = pixels2[p6];
+    				v7 = v8; v8 = v9;
+    				v9 = pixels2[p9];
+                    float sum1 = v1 + 2*v2 + v3 - v7 - 2*v8 - v9;
+                    float sum2 = v1  + 2*v4 + v7 - v3 - 2*v6 - v9;
+                    pixels[p] = (float)Math.sqrt(sum1*sum1 + sum2*sum2);
+                }
+                break;
+                case CONVOLVE:
+    			for (int x=roiX; x<xEnd; x++,p++) {
+                    if (x<width-1) { p3++; p6++; p9++; }
+    				v1 = v2; v2 = v3;
+    				v3 = pixels2[p3];
+    				v4 = v5; v5 = v6;
+    				v6 = pixels2[p6];
+    				v7 = v8; v8 = v9;
+    				v9 = pixels2[p9];
+                    float sum = k1*v1 + k2*v2 + k3*v3
+                              + k4*v4 + k5*v5 + k6*v6
+                              + k7*v7 + k8*v8 + k9*v9;
+                    sum *= scale;
+                    pixels[p] = sum;
+                }
+                break;
 			}
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
 		showProgress(1.0);
-	}
-
-	/** Filters using a 3x3 neighborhood. */
-	public void filter(int type) {
-		float p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
-		
-		float[] pixels2 = (float[])getPixelsCopy();
-		int offset;
-		float sum1, sum2;
-        int rowOffset = width;
-		for (int y=yMin; y<=yMax; y++) {
-			offset = xMin + y * width;
-			p1 = 0f;
-			p2 = pixels2[offset-rowOffset-1];
-			p3 = pixels2[offset-rowOffset];
-			p4 = 0f;
-			p5 = pixels2[offset-1];
-			p6 = pixels2[offset];
-			p7 = 0f;
-			p8 = pixels2[offset+rowOffset-1];
-			p9 = pixels2[offset+rowOffset];
-
-			for (int x=xMin; x<=xMax; x++) {
-				p1 = p2; p2 = p3;
-				p3 = pixels2[offset-rowOffset+1];
-				p4 = p5; p5 = p6;
-				p6 = pixels2[offset+1];
-				p7 = p8; p8 = p9;
-				p9 = pixels2[offset+rowOffset+1];
-
-				switch (type) {
-					case BLUR_MORE:
-						pixels[offset++] = (p1+p2+p3+p4+p5+p6+p7+p8+p9)/9f;
-						break;
-					case FIND_EDGES:
-	        			sum1 = p1 + 2*p2 + p3 - p7 - 2*p8 - p9;
-	        			sum2 = p1  + 2*p4 + p7 - p3 - 2*p6 - p9;
-	        			pixels[offset++] = (float)Math.sqrt(sum1*sum1 + sum2*sum2);
-	        			break;
-				}
-			}
-			if (y%inc==0)
-				showProgress((double)(y-roiY)/roiHeight);
-		}
-		if (type==BLUR_MORE)
-			showProgress(1.0);
-		else
-			findMinAndMax();
-	}
+    }
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
 		@see ImageProcessor#setInterpolate

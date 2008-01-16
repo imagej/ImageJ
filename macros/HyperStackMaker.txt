@@ -1,16 +1,30 @@
 // This macro implements the Image>HyperStacks>New HyperStack command.
 
+  defaults = "8-bit Color 300 200 3 10 5 1";
+  if (is("applet"))
+      prefs = split(defaults);
+  else
+      prefs = split(call("ij.Prefs.get", "hyperstack.new", defaults));
+  if(prefs.length<8) prefs = split(defaults);
+  type = prefs[0];
+  mode = prefs[1];
+  width = parseInt(prefs[2]);
+  height = parseInt(prefs[3]);
+  c = parseInt(prefs[4]);
+  z = parseInt(prefs[5]);
+  t = parseInt(prefs[6]);
+  label = parseInt(prefs[7]);
   title = "HyperStack";
   Dialog.create("HyperStack");
   Dialog.addString("Title:", title);
-  Dialog.addChoice("Type:", newArray("8-bit", "16-bit", "32-bit", "RGB"));
-  Dialog.addChoice("Display Mode:", newArray("Composite", "Color", "Grayscale"), "Color");
-  Dialog.addNumber("Width:", 300);
-  Dialog.addNumber("Height:", 200);
-  Dialog.addNumber("Channels (c):", 3);
-  Dialog.addNumber("Slices (z):",10);
-  Dialog.addNumber("Frames (t):", 5);
-  Dialog.addCheckbox("Label Images", true);
+  Dialog.addChoice("Type:", newArray("8-bit", "16-bit", "32-bit", "RGB"), type);
+  Dialog.addChoice("Display Mode:", newArray("Composite", "Color", "Grayscale"), mode);
+  Dialog.addNumber("Width:", width);
+  Dialog.addNumber("Height:", height);
+  Dialog.addNumber("Channels (c):", c);
+  Dialog.addNumber("Slices (z):", z);
+  Dialog.addNumber("Frames (t):", t);
+  Dialog.addCheckbox("Label Images", label);
   Dialog.show;
   title = Dialog.getString();
   type = Dialog.getChoice();
@@ -21,13 +35,13 @@
   z = Dialog.getNumber;
   t = Dialog.getNumber;
   label = Dialog.getCheckbox;
-  batch = call("ij.macro.Interpreter.isBatchMode");
-  if (batch=="false") setBatchMode(true);
+  batch = is("Batch Mode");
+  if (!batch) setBatchMode(true);
   if (label)
-     type = type + " ramp";
+     type2 = type + " ramp";
   else
-     type = type + " black";
-  newImage(title, type, width, height, c*z*t);
+     type2 = type + " black";
+  newImage(title, type2, width, height, c*z*t);
   run("Properties...", "channels="+c+" slices="+z+" frames="+t);
   showStatus("");
   channel=1; slice=1; frame=1;
@@ -67,7 +81,12 @@
   if (c>1 && bitDepth!=24)
      run("Make Composite", "display="+mode);
   setOption("OpenAsHyperStack", true);
-  if (batch=="false") setBatchMode(false);
+  if (!batch) setBatchMode(false);
+  prefs = type+" "+mode+" "+width+" "+height+" "+c+" "+z+" "+t+" "+label;
+  if (!is("applet"))
+      call("ij.Prefs.set", "hyperstack.new", prefs);
+  exit;
+
 
   function pad(n) {
       str = toString(n);

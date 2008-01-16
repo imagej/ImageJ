@@ -12,6 +12,7 @@ public class Executer implements Runnable {
 
 	private static String previousCommand;
 	private static CommandListener listener;
+	private static Vector listeners = new Vector();
 	
 	private String command;
 	private Thread thread;
@@ -41,9 +42,12 @@ public class Executer implements Runnable {
 
 	public void run() {
 		if (command==null) return;
-		if (listener!=null) {
-			command = listener.commandExecuting(command);
-			if (command==null) return;
+		if (listeners.size()>0) synchronized (listeners) {
+			for (int i=0; i<listeners.size(); i++) {
+				CommandListener listener = (CommandListener)listeners.elementAt(i);
+				command = listener.commandExecuting(command);
+				if (command==null) return;
+			}
 		}
 		try {
 			if (Recorder.record) {
@@ -118,17 +122,14 @@ public class Executer implements Runnable {
 		return previousCommand;
 	}
 	
-	public static boolean setListener(CommandListener commandListener) {
-		if (commandListener!=null && listener!=null)
-				return false;
-		else {
-			listener = commandListener;
-			return true;
-		}
+	/** Adds the specified command listener. */
+	public static void addCommandListener(CommandListener listener) {
+		listeners.addElement(listener);
 	}
 	
-	public static CommandListener getListener() {
-		return listener;
+	/** Removes the specified command listener. */
+	public static void removeCommandListener(CommandListener listener) {
+		listeners.removeElement(listener);
 	}
 
 }

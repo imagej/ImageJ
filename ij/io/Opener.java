@@ -209,7 +209,12 @@ public class Opener {
 				if (imp.getWidth()!=0) return imp; else return null;
 			case PGM:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.PGM_Reader", path);
-				if (imp.getWidth()!=0) return imp; else return null;
+				if (imp.getWidth()!=0) {
+					if (imp.getStackSize()==3 && imp.getBitDepth()==16)
+						imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+					return imp;
+				} else
+					return null;
 			case JPEG: case GIF: case PNG:
 				imp = openJpegOrGif(directory, name);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;

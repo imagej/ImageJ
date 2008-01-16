@@ -67,9 +67,8 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	public Image createImage() {
+		if (cm==null) cm = getDefaultColorModel();
 		if (ij.IJ.isJava16()) return createBufferedImage();
-		if (cm==null)
-			cm = getDefaultColorModel();
 		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
@@ -84,8 +83,6 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	Image createBufferedImage() {
-		if (cm==null)
-			cm = getDefaultColorModel();
 		if (raster==null) {
 			SampleModel sm = getIndexSampleModel();
 			DataBuffer db = new DataBufferByte(pixels, width*height, 0);
@@ -378,6 +375,7 @@ public class ByteProcessor extends ImageProcessor {
 		}
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 		newPixels = true;
+		if (min==0.0 && max==255.0) source = null;
 		minThreshold = NO_THRESHOLD;
 	}
 
@@ -1095,6 +1093,10 @@ public class ByteProcessor extends ImageProcessor {
 			pixels[i] = (byte)value;
 		}
 		setMinAndMax(fp.getMin(), fp.getMax());
+	}
+	
+	byte[] create8BitImage() {
+		return pixels;
 	}
 
 }

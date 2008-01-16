@@ -393,4 +393,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		instance = null;	
 	}
 
+	public String getText() {
+		if (textArea==null)
+			return "";
+		else
+			return textArea.getText();
+	}
+
 }

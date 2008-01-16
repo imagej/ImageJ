@@ -93,12 +93,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
         fi.directory = directory;
         fi.fileName = name;
         setFileInfo(fi);
-        if (arg.equals(""))
-        show();
-        if (sixteenBits && stack.getSize()==3) {
-        	WindowManager.setTempCurrentImage(this);
-        	IJ.run("Stack to RGB");
-        }
+        if (arg.equals("")) show();
     }
 
     public ImageStack openFile(String path) throws IOException {

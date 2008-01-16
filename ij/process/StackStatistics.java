@@ -133,6 +133,9 @@ public class StackStatistics extends ImageStatistics {
         histMin = cal.getRawValue(histMin); 
         histMax =  cal.getRawValue(histMax);
         binSize = (histMax-histMin)/nBins;
+        int bits = imp.getBitDepth();
+        if (histMin==0.0 && histMax==256.0 && (bits==8||bits==24))
+        	histMax = 255.0;
         dmode = getMode(cal);
         IJ.showStatus("");
         IJ.showProgress(1.0);

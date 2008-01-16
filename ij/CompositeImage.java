@@ -11,12 +11,14 @@ public class CompositeImage extends ImagePlus {
 
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3, TRANSPARENT=4;
 	public static final int MAX_CHANNELS = 7;
-	int[] awtImagePixels;
+	int[] rgbPixels;
 	boolean newPixels;
 	MemoryImageSource imageSource;
-	ColorModel imageColorModel;
 	Image awtImage;
-	int[][] pixels;
+	WritableRaster rgbRaster;
+	SampleModel rgbSampleModel;
+	BufferedImage rgbImage;
+	ColorModel rgbCM;
 	ImageProcessor[] cip;
 	Color[] colors = {Color.red, Color.green, Color.blue, Color.white, Color.cyan, Color.magenta, Color.yellow};
 	LUT[] lut;
@@ -179,18 +181,16 @@ public class CompositeImage extends ImagePlus {
 
 		if (nChannels==1) {
 			cip = null;
-			pixels = null;
-			awtImagePixels = null;
+			rgbPixels = null;
 			awtImage = null;
 			if (ip!=null)
 				img = ip.createImage();
 			return;
 		}
 	
-		if (cip==null||cip[0].getWidth()!=width||cip[0].getHeight()!=height||(pixels!=null&&pixels.length!=nChannels)||getBitDepth()!=bitDepth) {
+		if (cip==null||cip[0].getWidth()!=width||cip[0].getHeight()!=height||getBitDepth()!=bitDepth) {
 			setup(nChannels, getStack());
-			pixels = null;
-			awtImagePixels = null;
+			rgbPixels = null;
 			if (currentChannel>=nChannels) {
 				setSlice(1);
 				currentChannel = 0;
@@ -214,83 +214,75 @@ public class CompositeImage extends ImagePlus {
 			}
 		}
 
-		if (awtImagePixels == null) {
-			awtImagePixels = new int[imageSize];
+		if (rgbPixels == null) {
+			rgbPixels = new int[imageSize];
 			newPixels = true;
 			imageSource = null;
-		}
-		if (pixels==null || pixels.length!=nChannels || pixels[0].length!=imageSize) {
-			pixels = new int[nChannels][];
-			for (int i=0; i<nChannels; ++i)
-				pixels[i] = new int[imageSize];
+			rgbRaster = null;
+			rgbImage = null;
 		}
 		
 		cip[currentChannel].setMinAndMax(ip.getMin(),ip.getMax());
-		if (singleChannel) {
-			PixelGrabber pg = new PixelGrabber(cip[currentChannel].createImage(), 0, 0, width, height, pixels[currentChannel], 0, width);
-			try { pg.grabPixels();}
-			catch (InterruptedException e){};
-		} else {
-			for (int i=0; i<nChannels; ++i) {
-				PixelGrabber pg = new PixelGrabber(cip[i].createImage(), 0, 0, width, height, pixels[i], 0, width);
-				try { pg.grabPixels();}
-				catch (InterruptedException e){};
-			}
-		}
 		if (singleChannel && nChannels<=3) {
 			switch (currentChannel) {
-				case 0:
-					for (int i=0; i<imageSize; ++i) {
-						redValue = (pixels[0][i]>>16)&0xff;
-						awtImagePixels[i] = (awtImagePixels[i]&0xff00ffff) | (redValue<<16);
-					}
-					break;
-				case 1:
-					for (int i=0; i<imageSize; ++i) {
-						greenValue = (pixels[1][i]>>8)&0xff;
-						awtImagePixels[i] = (awtImagePixels[i]&0xffff00ff) | (greenValue<<8);
-					}
-					break;
-				case 2:
-					for (int i=0; i<imageSize; ++i) {
-						blueValue = pixels[2][i]&0xff;
-						awtImagePixels[i] = (awtImagePixels[i]&0xffffff00) | blueValue;
-					}
-					break;
+				case 0: cip[0].updateComposite(rgbPixels, 1); break;
+				case 1: cip[1].updateComposite(rgbPixels, 2); break;
+				case 2: cip[2].updateComposite(rgbPixels, 3); break;
 			}
 		} else {
-			for (int i=0; i<imageSize; ++i) {
-				redValue=0; greenValue=0; blueValue=0;
-				for (int j=0; j<nChannels; ++j) {
-					if (active[j]) {
-						redValue += (pixels[j][i]>>16)&0xff;
-						greenValue += (pixels[j][i]>>8)&0xff;
-						blueValue += (pixels[j][i])&0xff; 
-						if (redValue>255) redValue = 255;
-						if (greenValue>255) greenValue = 255;
-						if (blueValue>255) blueValue = 255;
-					}
-				}
-				awtImagePixels[i] = (redValue<<16) | (greenValue<<8) | (blueValue);
+			if (active[0])
+				cip[0].updateComposite(rgbPixels, 4);
+			else
+				{for (int i=1; i<imageSize; i++) rgbPixels[i] = 0;}
+			for (int i=1; i<nChannels; i++) {
+				if (active[i]) cip[i].updateComposite(rgbPixels, 5);
 			}
 		}
-		if (imageSource==null) {
-			imageColorModel = new DirectColorModel(32, 0xff0000, 0xff00, 0xff);
-			imageSource = new MemoryImageSource(width, height, imageColorModel, awtImagePixels, 0, width);
-			imageSource.setAnimated(true);
-			imageSource.setFullBufferUpdates(true);
-			awtImage = Toolkit.getDefaultToolkit().createImage(imageSource);
-			newPixels = false;
-		} else if (newPixels){
-			imageSource.newPixels(awtImagePixels, imageColorModel, 0, width);
-			newPixels = false;
-		} else
-			imageSource.newPixels();	
+		if (IJ.isJava16())
+			createBufferedImage();
+		else
+			createImage();
 		if (img==null && awtImage!=null)
 			img = awtImage;
 		singleChannel = false;
 	}
 	
+	void createImage() {
+		if (imageSource==null) {
+			rgbCM = new DirectColorModel(32, 0xff0000, 0xff00, 0xff);
+			imageSource = new MemoryImageSource(width, height, rgbCM, rgbPixels, 0, width);
+			imageSource.setAnimated(true);
+			imageSource.setFullBufferUpdates(true);
+			awtImage = Toolkit.getDefaultToolkit().createImage(imageSource);
+			newPixels = false;
+		} else if (newPixels){
+			imageSource.newPixels(rgbPixels, rgbCM, 0, width);
+			newPixels = false;
+		} else
+			imageSource.newPixels();	
+	}
+
+	/** Uses less memory but only works correctly with Java 1.6 and later. */
+	void createBufferedImage() {
+		if (rgbSampleModel==null)
+			rgbSampleModel = getRGBSampleModel();
+		if (rgbRaster==null) {
+			DataBuffer dataBuffer = new DataBufferInt(rgbPixels, width*height, 0);
+			rgbRaster = Raster.createWritableRaster(rgbSampleModel, dataBuffer, null);
+		}
+		if (rgbImage==null)
+			rgbImage = new BufferedImage(rgbCM, rgbRaster, false, null);
+		awtImage = rgbImage;
+	}
+
+	SampleModel getRGBSampleModel() {
+		rgbCM = new DirectColorModel(24, 0xff0000, 0xff00, 0xff);
+		WritableRaster wr = rgbCM.createCompatibleWritableRaster(1, 1);
+		SampleModel sampleModel = wr.getSampleModel();
+		sampleModel = sampleModel.createCompatibleSampleModel(width, height);
+		return sampleModel;
+	}
+
 	void createBlitterImage(int n) {
 		ImageProcessor ip = cip[n-1].duplicate();
 		if (ip instanceof FloatProcessor){
@@ -403,8 +395,7 @@ public class CompositeImage extends ImagePlus {
 				}
 			}
 			cip = null;
-			pixels = null;
-			awtImagePixels = null;
+			rgbPixels = null;
 			awtImage = null;
 			currentChannel = -1;
 		}

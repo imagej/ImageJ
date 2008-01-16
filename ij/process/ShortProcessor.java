@@ -11,8 +11,8 @@ public class ShortProcessor extends ImageProcessor {
 
 	private int min, max, snapshotMin, snapshotMax;
 	private short[] pixels;
-	private short[] snapshotPixels;
 	private byte[] pixels8;
+	private short[] snapshotPixels;
 	private byte[] LUT;
 	private boolean fixedScale;
 
@@ -84,23 +84,12 @@ public class ShortProcessor extends ImageProcessor {
 	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
 		boolean firstTime = pixels8==null;
-		if (firstTime || !lutAnimation) {
-			// scale from 16-bits to 8-bits
-			int size = width*height;
-			if (pixels8==null)
-				pixels8 = new byte[size];
-			int value;
-			double scale = 256.0/(max-min+1);
-			for (int i=0; i<size; i++) {
-				value = (pixels[i]&0xffff)-min;
-				if (value<0) value = 0;
-				value = (int)(value*scale);
-				if (value>255) value = 255;
-				pixels8[i] = (byte)value;
-			}
-		}
+		if (firstTime || !lutAnimation)
+			create8BitImage();
 		if (cm==null)
 			makeDefaultColorModel();
+		if (ij.IJ.isJava16())
+			return createBufferedImage();
 		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
 			source.setAnimated(true);
@@ -113,6 +102,37 @@ public class ShortProcessor extends ImageProcessor {
 			source.newPixels();
 		lutAnimation = false;
 	    return img;
+	}
+	
+	// create 8-bit image by linearly scaling from 16-bits to 8-bits
+	byte[] create8BitImage() {
+		int size = width*height;
+		if (pixels8==null)
+			pixels8 = new byte[size];
+		int value;
+		double scale = 256.0/(max-min+1);
+		for (int i=0; i<size; i++) {
+			value = (pixels[i]&0xffff)-min;
+			if (value<0) value = 0;
+			value = (int)(value*scale);
+			if (value>255) value = 255;
+			pixels8[i] = (byte)value;
+		}
+		return pixels8;
+	}
+
+	Image createBufferedImage() {
+		if (raster==null) {
+			SampleModel sm = getIndexSampleModel();
+			DataBuffer db = new DataBufferByte(pixels8, width*height, 0);
+			raster = Raster.createWritableRaster(sm, db, null);
+		}
+		if (image==null || cm!=cm2) {
+			image = new BufferedImage(cm, raster, false, null);
+			cm2 = cm;
+		}
+		lutAnimation = false;
+		return image;
 	}
 
 	/** Returns a new, blank ShortProcessor with the specified width and height. */
@@ -336,6 +356,7 @@ public class ShortProcessor extends ImageProcessor {
 		resetPixels(pixels);
 		if (pixels==null) snapshotPixels = null;
 		if (pixels==null) pixels8 = null;
+		raster = null;
 	}
 
 	void getRow2(int x, int y, int[] data, int length) {
@@ -506,108 +527,106 @@ public class ShortProcessor extends ImageProcessor {
 		}
 	}
 
-	/** 3x3 convolution contributed by Glynne Casteel. */
+	/** Does 3x3 convolution. */
 	public void convolve3x3(int[] kernel) {
-		int p1, p2, p3,
-		    p4, p5, p6,
-		    p7, p8, p9;
-		int k1=kernel[0], k2=kernel[1], k3=kernel[2],
-		    k4=kernel[3], k5=kernel[4], k6=kernel[5],
-		    k7=kernel[6], k8=kernel[7], k9=kernel[8];
-
-		int scale = 0;
-		for (int i=0; i<kernel.length; i++)
-			scale += kernel[i];
-		if (scale==0) scale = 1;
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
-		
-		short[] pixels2 = (short[])getPixelsCopy();
-		int offset, sum;
-        int rowOffset = width;
-		for (int y=yMin; y<=yMax; y++) {
-			offset = xMin + y * width;
-			p1 = 0;
-			p2 = pixels2[offset-rowOffset-1]&0xffff;
-			p3 = pixels2[offset-rowOffset]&0xffff;
-			p4 = 0;
-			p5 = pixels2[offset-1]&0xffff;
-			p6 = pixels2[offset]&0xffff;
-			p7 = 0;
-			p8 = pixels2[offset+rowOffset-1]&0xffff;
-			p9 = pixels2[offset+rowOffset]&0xffff;
-
-			for (int x=xMin; x<=xMax; x++) {
-				p1 = p2; p2 = p3;
-				p3 = pixels2[offset-rowOffset+1]&0xffff;
-				p4 = p5; p5 = p6;
-				p6 = pixels2[offset+1]&0xffff;
-				p7 = p8; p8 = p9;
-				p9 = pixels2[offset+rowOffset+1]&0xffff;
-				sum = k1*p1 + k2*p2 + k3*p3
-				    + k4*p4 + k5*p5 + k6*p6
-				    + k7*p7 + k8*p8 + k9*p9;
-				sum /= scale;
-				if(sum>65535) sum = 65535;
-				if(sum<0) sum= 0;
-				pixels[offset++] = (short)sum;
-			}
-			if (y%inc==0)
-				showProgress((double)(y-roiY)/roiHeight);
-		}
-		showProgress(1.0);
+		filter3x3(CONVOLVE, kernel);
 	}
 
 	/** Filters using a 3x3 neighborhood. */
 	public void filter(int type) {
-		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
-		
-		short[] pixels2 = (short[])getPixelsCopy();
-		int offset, sum1, sum2, sum=0;
-        int rowOffset = width;
-		for (int y=yMin; y<=yMax; y++) {
-			offset = xMin + y * width;
-			p1 = 0;
-			p2 = pixels2[offset-rowOffset-1]&0xffff;
-			p3 = pixels2[offset-rowOffset]&0xffff;
-			p4 = 0;
-			p5 = pixels2[offset-1]&0xffff;
-			p6 = pixels2[offset]&0xffff;
-			p7 = 0;
-			p8 = pixels2[offset+rowOffset-1]&0xffff;
-			p9 = pixels2[offset+rowOffset]&0xffff;
-
-			for (int x=xMin; x<=xMax; x++) {
-				p1 = p2; p2 = p3;
-				p3 = pixels2[offset-rowOffset+1]&0xffff;
-				p4 = p5; p5 = p6;
-				p6 = pixels2[offset+1]&0xffff;
-				p7 = p8; p8 = p9;
-				p9 = pixels2[offset+rowOffset+1]&0xffff;
-
-				switch (type) {
-					case BLUR_MORE:
-						sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9)/9;
-						break;
-					case FIND_EDGES:
-	        			sum1 = p1 + 2*p2 + p3 - p7 - 2*p8 - p9;
-	        			sum2 = p1  + 2*p4 + p7 - p3 - 2*p6 - p9;
-	        			sum = (int)Math.sqrt(sum1*sum1 + sum2*sum2);
-	        			break;
-				}
-				
-				pixels[offset++] = (short)sum;
-			}
-			if (y%inc==0)
-				showProgress((double)(y-roiY)/roiHeight);
-		}
-		if (type==BLUR_MORE)
-			showProgress(1.0);
-		else
-			findMinAndMax();
+		filter3x3(type, null);
 	}
+
+    /** 3x3 filter operations, code partly based on 3x3 convolution code
+     *  contributed by Glynne Casteel. */
+    void filter3x3(int type, int[] kernel) {
+        int v1, v2, v3;           //input pixel values around the current pixel
+        int v4, v5, v6;
+        int v7, v8, v9;
+        int k1=0, k2=0, k3=0;  //kernel values (used for CONVOLVE only)
+        int k4=0, k5=0, k6=0;
+        int k7=0, k8=0, k9=0;
+        int scale = 0;
+        if (type==CONVOLVE) {
+            k1=kernel[0]; k2=kernel[1]; k3=kernel[2];
+            k4=kernel[3]; k5=kernel[4]; k6=kernel[5];
+            k7=kernel[6]; k8=kernel[7]; k9=kernel[8];
+            for (int i=0; i<kernel.length; i++)
+                scale += kernel[i];
+            if (scale==0) scale = 1;
+        }
+        int inc = roiHeight/25;
+        if (inc<1) inc = 1;
+
+        short[] pixels2 = (short[])getPixelsCopy();
+        int xEnd = roiX + roiWidth;
+        int yEnd = roiY + roiHeight;
+        for (int y=roiY; y<yEnd; y++) {
+            int p  = roiX + y*width;            //points to current pixel
+            int p6 = p - (roiX>0 ? 1 : 0);      //will point to v6, currently lower
+            int p3 = p6 - (y>0 ? width : 0);    //will point to v3, currently lower
+            int p9 = p6 + (y<height-1 ? width : 0); // ...  to v9, currently lower
+            v2 = pixels2[p3]&0xffff;
+            v5 = pixels2[p6]&0xffff;
+            v8 = pixels2[p9]&0xffff;
+            if (roiX>0) { p3++; p6++; p9++; }
+            v3 = pixels2[p3]&0xffff;
+            v6 = pixels2[p6]&0xffff;
+            v9 = pixels2[p9]&0xffff;
+
+            switch (type) {
+                case BLUR_MORE:
+                for (int x=roiX; x<xEnd; x++,p++) {
+                    if (x<width-1) { p3++; p6++; p9++; }
+                    v1 = v2; v2 = v3;
+                    v3 = pixels2[p3]&0xffff;
+                    v4 = v5; v5 = v6;
+                    v6 = pixels2[p6]&0xffff;
+                    v7 = v8; v8 = v9;
+                    v9 = pixels2[p9]&0xffff;
+                    pixels[p] = (short)((v1+v2+v3+v4+v5+v6+v7+v8+v9+4)/9);
+                }
+                break;
+                case FIND_EDGES:
+                for (int x=roiX; x<xEnd; x++,p++) {
+                    if (x<width-1) { p3++; p6++; p9++; }
+                    v1 = v2; v2 = v3;
+                    v3 = pixels2[p3]&0xffff;
+                    v4 = v5; v5 = v6;
+                    v6 = pixels2[p6]&0xffff;
+                    v7 = v8; v8 = v9;
+                    v9 = pixels2[p9]&0xffff;
+                    double sum1 = v1 + 2*v2 + v3 - v7 - 2*v8 - v9;
+                    double sum2 = v1  + 2*v4 + v7 - v3 - 2*v6 - v9;
+                    double result = Math.sqrt(sum1*sum1 + sum2*sum2)+0.5;
+                    if (result>65535.0) result = 65535.0;
+                    pixels[p] = (short)result;
+                }
+                break;
+                case CONVOLVE:
+                for (int x=roiX; x<xEnd; x++,p++) {
+                    if (x<width-1) { p3++; p6++; p9++; }
+                    v1 = v2; v2 = v3;
+                    v3 = pixels2[p3]&0xffff;
+                    v4 = v5; v5 = v6;
+                    v6 = pixels2[p6]&0xffff;
+                    v7 = v8; v8 = v9;
+                    v9 = pixels2[p9]&0xffff;
+                    int sum = k1*v1 + k2*v2 + k3*v3
+                            + k4*v4 + k5*v5 + k6*v6
+                            + k7*v7 + k8*v8 + k9*v9;
+                    sum = (sum+scale/2)/scale;   //scale/2 for rounding
+                    if(sum>65535) sum = 65535;
+                    if(sum<0) sum = 0;
+                    pixels[p] = (short)sum;
+                }
+                break;
+            }
+            if (y%inc==0)
+                showProgress((double)(y-roiY)/roiHeight);
+        }
+        showProgress(1.0);
+    }
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
 		@see ImageProcessor#setInterpolate

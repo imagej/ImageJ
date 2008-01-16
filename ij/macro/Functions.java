@@ -1265,6 +1265,8 @@ public class Functions implements MacroConstants, Measurements {
 			return tp.getText();			
 		} else if (frame!=null && frame instanceof Editor) {
 			return ((Editor)frame).getText();			
+		} else if (frame!=null && frame instanceof Recorder) {
+			return ((Recorder)frame).getText();			
 		} else
 			return getImageInfo();
 	}
@@ -3236,6 +3238,10 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().isInvertedLut()?1.0:0.0;
 		else if (arg.indexOf("hyper")!=-1)
 			state = getImage().isHyperStack()?1.0:0.0;
+		else if (arg.indexOf("batch")!=-1)
+			state = Interpreter.isBatchMode()?1.0:0.0;
+		else if (arg.indexOf("applet")!=-1)
+			state = IJ.getApplet()!=null?1.0:0.0;
 		else {
 			state = Double.NaN;
 			interp.error("Argument must be 'locked', 'Inverted LUT' or 'HyperStack'");
@@ -3473,15 +3479,14 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("getDimensions"))
 			{getDimensions(); return Double.NaN;}
 		ImagePlus imp = getImage();
+		if (name.equals("setPosition"))
+			{setPosition(imp); return Double.NaN;}
+		if (name.equals("getPosition"))
+			{getPosition(imp); return Double.NaN;}
 		if (!imp.isHyperStack() && !(Interpreter.isBatchMode()&&imp.getStackSize()>1))
 			interp.error("HyperStack required");
 		StackWindow win = (StackWindow)imp.getWindow();
-		if (name.equals("getPosition")) {
-			if (!imp.isHyperStack()) interp.error("HyperStack required");
-			getPosition(win);
-		} else if (name.equals("setPosition"))
-			setPosition(imp);
-		else if (name.equals("setDimensions"))
+		if (name.equals("setDimensions"))
 			setDimensions(imp);
 		else if (name.equals("setChannel"))
 			imp.setPosition((int)getArg(), win.getHSSlice(), win.getHSFrame());
@@ -3494,13 +3499,18 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 
-	void getPosition(StackWindow win) {
+	void getPosition(ImagePlus imp) {
 		Variable channel = getFirstVariable();
 		Variable slice = getNextVariable();
 		Variable frame = getLastVariable();
-		channel.setValue(win.getHSChannel());
-		slice.setValue(win.getHSSlice());
-		frame.setValue(win.getHSFrame());
+		int c = imp.getChannel();
+		int z = imp.getSlice();
+		int t = imp.getFrame();
+		if (c*z*t>imp.getStackSize())
+			{c=1; z=imp.getCurrentSlice(); t=1;}
+		channel.setValue(c);
+		slice.setValue(z);
+		frame.setValue(t);
 	}
 
 	void setPosition(ImagePlus img) {

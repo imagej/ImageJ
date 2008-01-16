@@ -1156,6 +1156,9 @@ public class ColorProcessor extends ImageProcessor {
 	public void invertLut() {
 	}
 	
+	public void updateComposite(int[] rgbPixels, int channel) {
+	}
+
 	/** Not implemented. */
 	public void threshold(int level) {}
 	
@@ -1205,6 +1208,9 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
+	byte[] create8BitImage() {
+		return null;
+	}
 
 }
 
