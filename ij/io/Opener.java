@@ -228,20 +228,10 @@ public class Opener {
 				return openZip(path);
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
-				if (path.endsWith("Thumbs.db")) {
-					fileType = CUSTOM;
-					return null;
-				}
-				imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
-				if (imp==null) return null;
-				if (imp.getWidth()>0 && imp.getHeight()>0) {
-					fileType = CUSTOM;
-					return imp;
-				} else {
-					if (imp.getWidth()==-1)
-						fileType = CUSTOM; // plugin opened image so don't display error
-					return null;
-				}
+				int[] wrap = new int[] {fileType};
+				imp = openWithHandleExtraFileTypes(path, wrap);
+				fileType = wrap[0];
+				return imp;
 			default:
 				return null;
 		}
@@ -283,8 +273,13 @@ public class Opener {
 	 	    else if (url.endsWith(".dcm")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
-			} else
-				imp = openJpegOrGifUsingURL(name, u);
+			} else {
+				String lurl = url.toLowerCase();
+				if (lurl.endsWith(".jpg") || lurl.endsWith(".gif") || lurl.endsWith(".png"))
+					imp = openJpegOrGifUsingURL(name, u);
+				else
+					imp = openWithHandleExtraFileTypes(url, new int[]{0});
+			}
 			IJ.showStatus("");
 			return imp;
     	} catch (Exception e) {
@@ -296,6 +291,25 @@ public class Opener {
 	   	} 
 	}
 	
+	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileType) {
+		ImagePlus imp = null;
+		if (path.endsWith(".db")) {
+			// skip hidden Thumbs.db files on Windows
+			fileType[0] = CUSTOM;
+			return null;
+		}
+		imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
+		if (imp==null) return null;
+		if (imp.getWidth()>0 && imp.getHeight()>0) {
+			fileType[0] = CUSTOM;
+			return imp;
+		} else {
+			if (imp.getWidth()==-1)
+				fileType[0] = CUSTOM; // plugin opened image so don't display error
+			return null;
+		}
+	}
+
 	/** Opens the ZIP compressed TIFF at the specified URL. */
 	ImagePlus openZipUsingUrl(URL url) throws IOException {
 		URLConnection uc = url.openConnection();
@@ -447,12 +461,18 @@ public class Opener {
 						IJ.showProgress(1.0);
 						return null;
 					}
+					if (info[i].compression>=FileInfo.LZW) {
+						fi.stripOffsets = info[i].stripOffsets;
+						fi.stripLengths = info[i].stripLengths;
+					}
 					pixels = reader.readPixels(is, skip);
 					if (pixels==null) break;
 					loc += imageSize+skip;
 					if (i<(info.length-1)) {
 						skip = info[i+1].offset-loc;
-						if (skip<0) throw new IOException("Images are not in order");
+						if (info[i+1].compression>=FileInfo.LZW) skip = 0;
+						if (skip<0)
+							throw new IOException("Images are not in order");
 					}
 					if (fi.fileType==FileInfo.RGB48) {
 						Object[] pixels2 = (Object[])pixels;
@@ -467,7 +487,8 @@ public class Opener {
 				is.close();
 			}
 			catch (Exception e) {
-				IJ.log("" + e);
+				IJ.log("TiffDecoder: " + e);
+				e.printStackTrace();
 			}
 			catch(OutOfMemoryError e) {
 				IJ.outOfMemory(fi.fileName);
@@ -746,8 +767,12 @@ public class Opener {
 		    File f = new File(fi.directory + fi.fileName);
 		    if (f==null || f.isDirectory())
 		    	return null;
-		    else
-				return new FileInputStream(f);
+		    else {
+		    	InputStream is = new FileInputStream(f);
+		    	if (fi.compression>=FileInfo.LZW && fi.fileType==FileInfo.RGB_PLANAR)
+		    		is = new RandomAccessStream(is);
+				return is;
+			}
 		}
 	}
 	

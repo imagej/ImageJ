@@ -32,10 +32,6 @@ public class Tokenizer implements MacroConstants {
         } while (token!=EOF);
         if (hasUserFunctions)
         	addUserFunctions();
-        if (IJ.debugMode) {
-            pgm.dumpSymbolTable();
-            pgm.dumpProgram();
-        }
         return pgm;
     }
 

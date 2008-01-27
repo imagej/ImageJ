@@ -35,6 +35,7 @@ public class CompositeImage extends ImagePlus {
 	double[] displayRanges;
 	byte[][] channelLuts;
 	boolean customLuts;
+	boolean syncChannels;
 
 	public CompositeImage(ImagePlus imp) {
 		this(imp, COLOR);
@@ -97,10 +98,20 @@ public class CompositeImage extends ImagePlus {
 	}
 	
 	public void updateChannelAndDraw() {
-			if (!customLut) singleChannel = true;
-			updateAndDraw();
+		if (!customLut) singleChannel = true;
+		updateAndDraw();
 	}
 	
+	public void updateAllChannelsAndDraw() {
+		if (mode!=COMPOSITE)
+			updateChannelAndDraw();
+		else {
+			syncChannels = true;
+			singleChannel = false;
+			updateAndDraw();
+		}
+	}
+
 	public ImageProcessor getChannelProcessor() {
 		if (cip!=null && currentChannel!=-1)
 			return cip[currentChannel];
@@ -230,6 +241,13 @@ public class CompositeImage extends ImagePlus {
 				case 2: cip[2].updateComposite(rgbPixels, 3); break;
 			}
 		} else {
+			if (syncChannels) {
+				ImageProcessor ip2 = getProcessor();
+				double min=ip2.getMin(), max=ip2.getMax();
+				for (int i=0; i<nChannels; i++)
+					cip[i].setMinAndMax(min, max);
+				syncChannels = false;
+			}
 			if (active[0])
 				cip[0].updateComposite(rgbPixels, 4);
 			else

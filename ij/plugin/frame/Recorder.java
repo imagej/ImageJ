@@ -264,11 +264,18 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 				else 
 					textArea.append("run(\""+name+"\", \""+commandOptions+"\");\n");
 			} else {
-				if (name.equals("Threshold..."))
+				if (name.equals("Threshold...") || name.equals("Fonts..."))
 					textArea.append("//run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
-				else {
+				else if (name.equals("Draw")) {
+					ImagePlus imp = WindowManager.getCurrentImage();
+					Roi roi = imp.getRoi();
+					if (roi!=null && (roi instanceof TextRoi))
+						textArea.append(((TextRoi)roi).getMacroCode(imp.getProcessor()));
+					else
+						textArea.append("run(\""+name+"\");\n");
+				} else {
 					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
 						textArea.append("setKeyDown(\"alt\"); ");
 					textArea.append("run(\""+name+"\");\n");

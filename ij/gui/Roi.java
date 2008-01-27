@@ -539,7 +539,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				Recorder.record("makeLine", line.x1, line.y1, line.x2, line.y2);
 			} else if (type==OVAL)
 				Recorder.record("makeOval", x, y, width, height);
-			else
+			else if (!(this instanceof TextRoi))
 				Recorder.record("makeRectangle", x, y, width, height);
 		}
 		if (Toolbar.getToolId()==Toolbar.OVAL&&Toolbar.getBrushSize()>0)  {

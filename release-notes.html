@@ -5,27 +5,28 @@
 </head>
 <body>
 
-<li> <u>1.39p, 15 January 2008</u>
+<li> <u>1.39q, 26 January 2008</u>
 <ul>
-<li> <i>Image&gt;Stacks&gt;Z Project</i> works with HyperStacks.
-<li> <i>Image&gt;HyperStacks&gt;New HyperStack</i> settings are saved in the preferences file.
-<li> Added a "Sliding Paraboloid" option to <i>Process&gt;Subtract Background</i>.
-<li> Added a "Create Composite" option to <i>Image&gt;Color&gt;RGB Merge</i>.
-<li> <i>Image&gt;Color&gt;RGB Split</i> works with composite images.
-<li> <i>Process&gt;Smooth</i>, <i>Process&gt;Sharpen</i> and <i>Process&gt;Find Edges</i>
- now process edge pixels of 16-bit and 32-bit images thanks to code contributed by Michael Schmid.
-<li> Composite images (e.g., <i>File&gt;Open Samples&gt;HeLa Cells</i>) use less memory.
-<li> 48 bit PPM files open as 16 bits per channel composite images.
-<li> 16-bit images use less memory when running Java 1.6 or later.
-<li> The getInfo("window.contents") macro function
-works with the Recorder.
-<li> Added the is("batch mode") macro function.
-<li> Fixed a bug with <i>Image&gt;Rotate&gt;Arbitrarily</i>
-that caused it to sometimes clip the image when "Enlarge Image to Fit Result" was enabled.
-<li> Fixed a bug that caused <i>Image&gt;HyperStacks&gt;New HyperStack</i>
-to fail when ImageJ was running as an applet.
-<li> Fixed a memory leak bug in ByteProcessor.resetMinAndMax() when not running on
-Java 1.6 or later.
+<li> When using the<i>Image&gt;Adjust&gt;Brightness/Contrast</i> tool,
+ hold the shift key down to simultaneously adjust all channels of a composite image
+(e.g., <i>File&gt;Open Samples&gt;HeLa Cells</i>).
+<li> Clicking "Apply" in <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
+ propagates the current composite image display range to the other channels.
+<li> <i>Image&gt;Adjust&gt;Color Balance</i> works with composite images.
+<li> The text tool is recorded.
+<li> ImageJ now opens LZW-compressed RGB planar TIFFs.
+<li> Stefan Woerz added Gaussian fitting to the CurveFitter class.
+<li> "Maximize" works better with HyperStacks and windows with button panels.
+<li> Albert Cardona added 
+<a href="http://rsb.info.nih.gov/ij/plugins/file-handler.html">HandleExtraFileTypes</a>
+support for <i>File&gt;Import&gt;URL</i>.
+<li> Added the is("Virtual Stack") macro function.
+<li> Fixed a bug that caused files in folders dropped onto ImageJ
+to not be sorted in numeric order.
+<li> Fixed a bug in <i>File&gt;Import&gt;Raw</i> (ImageReader class) that
+caused it to not correctly handle EOF errors with data types other than 8-bit.
+<li> Fixed a bug in the PGM_Reader that caused pixel intensities of imported
+48-bit images to differ slightly from the expected values.
 </ul>
 
 </body>

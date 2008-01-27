@@ -58,7 +58,9 @@ public class ImageReader {
 		int current = 0;
 		byte last = 0;
 		for (int i=0; i<fi.stripOffsets.length; i++) {
-			if (i > 0) {
+			if (in instanceof RandomAccessStream)
+				((RandomAccessStream)in).seek(fi.stripOffsets[i]);
+			else if (i > 0) {
 				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
 				if (skip > 0) in.skip(skip);
 			}
@@ -104,11 +106,11 @@ public class ImageReader {
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
 				if (count==-1) {
+					if (bufferCount>0)
+						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					totalRead = byteCount;
 					eofError();
-					if (fi.fileType==FileInfo.GRAY16_SIGNED)
-						for (int i=base; i<pixels.length; i++)
-							pixels[i] = (short)32768;
-					return pixels;
+					break;
 				}
 				bufferCount += count;
 			}
@@ -193,7 +195,13 @@ public class ImageReader {
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
-				if (count==-1) {eofError(); return pixels;}
+				if (count==-1) {
+					if (bufferCount>0)
+						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					totalRead = byteCount;
+					eofError();
+					break;
+				}
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
@@ -244,7 +252,13 @@ public class ImageReader {
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
-				if (count==-1) {eofError(); return pixels;}
+				if (count==-1) {
+					if (bufferCount>0)
+						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					totalRead = byteCount;
+					eofError();
+					break;
+				}
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
@@ -285,7 +299,13 @@ public class ImageReader {
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
-				if (count==-1) {eofError(); return pixels;}
+				if (count==-1) {
+					if (bufferCount>0)
+						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					totalRead = byteCount;
+					eofError();
+					break;
+				}
 				bufferCount += count;
 			}
 			totalRead += bufferSize;
@@ -375,6 +395,8 @@ public class ImageReader {
 	}
 
 	int[] readPlanarRGB(InputStream in) throws IOException {
+		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+			return readCompressedPlanarRGBImage(in);
 		DataInputStream dis = new DataInputStream(in);
 		int planeSize = nPixels; // 1/3 image size
 		byte[] buffer = new byte[planeSize];
@@ -407,6 +429,27 @@ public class ImageReader {
 		return pixels;
 	}
 
+	int[] readCompressedPlanarRGBImage(InputStream in) throws IOException {
+		int[] pixels = new int[nPixels];
+		int r, g, b;
+		nPixels *= 3; // read all 3 planes
+		byte[] buffer = readCompressed8bitImage(in);
+		nPixels /= 3;
+		for (int i=0; i<nPixels; i++) {
+			r = buffer[i]&0xff;
+			pixels[i] = 0xff000000 | (r<<16);
+		}
+		for (int i=0; i<nPixels; i++) {
+			g = buffer[nPixels+i]&0xff;
+			pixels[i] |= g<<8;
+		}
+		for (int i=0; i<nPixels; i++) {
+			b = buffer[nPixels*2+i]&0xff;
+			pixels[i] |= b;
+		}
+		return pixels;
+	}
+
 	private void showProgress(int current, int last) {
 		if (showProgressBar && (System.currentTimeMillis()-startTime)>500L)
 			IJ.showProgress(current, last);
@@ -434,7 +477,13 @@ public class ImageReader {
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
-				if (count==-1) {eofError(); return stack;}
+				if (count==-1) {
+					if (bufferCount>0)
+						for (int i=bufferCount; i<bufferSize; i++) buffer[i] = 0;
+					totalRead = byteCount;
+					eofError();
+					break;
+				}
 				bufferCount += count;
 			}
 			totalRead += bufferSize;

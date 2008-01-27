@@ -3229,24 +3229,24 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	double is() {
-		double state = 0.0;
+		boolean state = false;
 		String arg = getStringArg();
 		arg = arg.toLowerCase(Locale.US);
 		if (arg.equals("locked"))
-			state = getImage().isLocked()?1.0:0.0;
+			state = getImage().isLocked();
 		else if (arg.indexOf("invert")!=-1)
-			state = getImage().isInvertedLut()?1.0:0.0;
+			state = getImage().isInvertedLut();
 		else if (arg.indexOf("hyper")!=-1)
-			state = getImage().isHyperStack()?1.0:0.0;
+			state = getImage().isHyperStack();
 		else if (arg.indexOf("batch")!=-1)
-			state = Interpreter.isBatchMode()?1.0:0.0;
+			state = Interpreter.isBatchMode();
 		else if (arg.indexOf("applet")!=-1)
-			state = IJ.getApplet()!=null?1.0:0.0;
-		else {
-			state = Double.NaN;
+			state = IJ.getApplet()!=null;
+		else if (arg.indexOf("virtual")!=-1)
+			state = getImage().getStack().isVirtual();
+		else
 			interp.error("Argument must be 'locked', 'Inverted LUT' or 'HyperStack'");
-		}
-		return state;
+		return state?1.0:0.0;
 	}
 
 	Variable[] getList() {
@@ -3483,6 +3483,10 @@ public class Functions implements MacroConstants, Measurements {
 			{setPosition(imp); return Double.NaN;}
 		if (name.equals("getPosition"))
 			{getPosition(imp); return Double.NaN;}
+		if (name.equals("getFrameRate"))
+			{interp.getParens(); return imp.getCalibration().fps;}
+		if (name.equals("setFrameRate"))
+			{imp.getCalibration().fps=getArg(); return Double.NaN;}
 		if (!imp.isHyperStack() && !(Interpreter.isBatchMode()&&imp.getStackSize()>1))
 			interp.error("HyperStack required");
 		StackWindow win = (StackWindow)imp.getWindow();

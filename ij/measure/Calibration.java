@@ -388,28 +388,6 @@ public class Calibration implements Cloneable {
  	 	
 	/** Returns a clone of this object. */
 	public Calibration copy() {
-		/*
-		Calibration copy = new Calibration();
-		copy.pixelWidth = pixelWidth;
-		copy.pixelHeight = pixelHeight;
-		copy.pixelDepth = pixelDepth;
-		copy.frameInterval = frameInterval;
-		copy.fps = fps;
-		copy.xOrigin = xOrigin;
-		copy.yOrigin = yOrigin;
-		copy.zOrigin = zOrigin;
-		copy.info = info;
-		copy.unit = unit;
-		copy.units = units;
-		copy.valueUnit = valueUnit;
-		copy.timeUnit = timeUnit;
-		copy.function = function;
-		copy.coefficients = coefficients;
-		copy.cTable = cTable;
-		copy.invertedLut = invertedLut;
-		copy.bitDepth = bitDepth;
-		copy.zeroClip = zeroClip;
-		*/
 		return (Calibration)clone();
 	}
 	

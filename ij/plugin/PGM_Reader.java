@@ -98,113 +98,116 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 
     public ImageStack openFile(String path) throws IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(path));
-        StreamTokenizer tok = new StreamTokenizer(is); //deprecated, but it works
-        //Reader r = new BufferedReader(new InputStreamReader(is));
-        //StreamTokenizer tok = new StreamTokenizer(r);  // doesn't work
-        tok.resetSyntax();
-        tok.wordChars(33, 255);
-        tok.whitespaceChars(0, ' ');
-        tok.parseNumbers();
-        tok.eolIsSignificant(true);
-        tok.commentChar('#');
-        openHeader(tok);
-		//IJ.log("PGM_Reader: w="+width+",h="+height+",raw="+rawBits+",16bits="+sixteenBits+",color="+isColor+",b&w="+isBlackWhite+",max="+maxValue);
-        	
-        if (!isColor && sixteenBits) { // 16-bit grayscale
-            if (rawBits) {
-                ImageProcessor ip = open16bitRawImage(is, width, height);
-                ImageStack stack = new ImageStack(width, height);
-                stack.addSlice("", ip);
-        	    return stack;
-            } else {
-                ImageProcessor ip = open16bitAsciiImage(tok, width, height);
-                ImageStack stack = new ImageStack(width, height);
-                stack.addSlice("", ip);
-        	    return stack;
-            }
-        }
-        
-		if (!isColor) { // 8-bit grayscale
-			byte[] pixels = new byte[width * height];
-			ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
-			if (rawBits)
-				openRawImage(is, width * height, pixels);
-			else
-				openAsciiImage(tok, width * height, pixels);
-			for (int i = pixels.length - 1; i >= 0; i--) {
-				if (isBlackWhite) {
-					if (rawBits) {
-						if (i < (pixels.length / 8)) {
-							for (int bit = 7; bit >= 0; bit--) {
-								pixels[8 * i + 7 - bit] = (byte) ((pixels[i] & ((int) Math.pow(2, bit))) == 0 ? 255 : 0);
+        try {
+			StreamTokenizer tok = new StreamTokenizer(is); //deprecated, but it works
+			//Reader r = new BufferedReader(new InputStreamReader(is));
+			//StreamTokenizer tok = new StreamTokenizer(r);  // doesn't work
+			tok.resetSyntax();
+			tok.wordChars(33, 255);
+			tok.whitespaceChars(0, ' ');
+			tok.parseNumbers();
+			tok.eolIsSignificant(true);
+			tok.commentChar('#');
+			openHeader(tok);
+			//IJ.log("PGM_Reader: w="+width+",h="+height+",raw="+rawBits+",16bits="+sixteenBits+",color="+isColor+",b&w="+isBlackWhite+",max="+maxValue);
+				
+			if (!isColor && sixteenBits) { // 16-bit grayscale
+				if (rawBits) {
+					ImageProcessor ip = open16bitRawImage(is, width, height);
+					ImageStack stack = new ImageStack(width, height);
+					stack.addSlice("", ip);
+					return stack;
+				} else {
+					ImageProcessor ip = open16bitAsciiImage(tok, width, height);
+					ImageStack stack = new ImageStack(width, height);
+					stack.addSlice("", ip);
+					return stack;
+				}
+			}
+			
+			if (!isColor) { // 8-bit grayscale
+				byte[] pixels = new byte[width * height];
+				ImageProcessor ip = new ByteProcessor(width, height, pixels, null);
+				if (rawBits)
+					openRawImage(is, width * height, pixels);
+				else
+					openAsciiImage(tok, width * height, pixels);
+				for (int i = pixels.length - 1; i >= 0; i--) {
+					if (isBlackWhite) {
+						if (rawBits) {
+							if (i < (pixels.length / 8)) {
+								for (int bit = 7; bit >= 0; bit--) {
+									pixels[8 * i + 7 - bit] = (byte) ((pixels[i] & ((int) Math.pow(2, bit))) == 0 ? 255 : 0);
+								}
 							}
-						}
+						} else
+							pixels[i] = (byte) (pixels[i] == 0 ? 255 : 0);
 					} else
-						pixels[i] = (byte) (pixels[i] == 0 ? 255 : 0);
-				} else
-					pixels[i] = (byte) (0xff & (255 * (int) (0xff & pixels[i]) / maxValue));
+						pixels[i] = (byte) (0xff & (255 * (int) (0xff & pixels[i]) / maxValue));
+				}
+				ImageStack stack = new ImageStack(width, height);
+				stack.addSlice("", ip);
+				return stack;
+			}
+			
+			if (!sixteenBits) { // 8-bit color
+				int[] pixels = new int[width * height];
+				byte[] bytePixels = new byte[3 * width * height];
+				ImageProcessor ip = new ColorProcessor(width, height, pixels);
+				if (rawBits)
+					openRawImage(is, 3 * width * height, bytePixels);
+				else
+					openAsciiImage(tok, 3 * width * height, bytePixels);
+				for (int i = 0; i < width * height; i++) {
+					int r = (int) (0xff & bytePixels[i * 3]);
+					int g = (int) (0xff & bytePixels[i * 3 + 1]);
+					int b = (int) (0xff & bytePixels[i * 3 + 2]);
+					r = (r * 255 / maxValue) << 16;
+					g = (g * 255 / maxValue) << 8;
+					b = (b * 255 / maxValue);
+					pixels[i] = 0xFF000000 | r | g | b;
+				}
+				ImageStack stack = new ImageStack(width, height);
+				stack.addSlice("", ip);
+				return stack;
+			}
+			
+			// 16-bit raw color
+			short[] red = new short[width*height];
+			short[] green = new short[width*height];
+			short[] blue = new short[width*height];
+			if (rawBits) {
+				byte[] bytePixels = new byte[6*width*height];
+				openRawImage(is, 6*width*height, bytePixels);
+				for (int i=0; i<width*height; i++) {
+					int r1 = 0xff & bytePixels[i*6];
+					int r2 = 0xff & bytePixels[i*6+1];
+					int g1 = 0xff & bytePixels[i*6+2];
+					int g2 = 0xff & bytePixels[i*6+3];
+					int b1 = 0xff & bytePixels[i*6+ 4];
+					int b2 = 0xff & bytePixels[i*6+5];
+					red[i] = (short) (0xffff & (r1*256+r2));
+					green[i] = (short) (0xffff & (g1*256+g2));
+					blue[i] = (short) (0xffff & (b1*256+b2));
+				}
+			} else {
+				ImageProcessor ip = open16bitAsciiImage(tok, 3*width, height);
+				short[] pixels = (short[])ip.getPixels();
+				for (int i=0; i<width*height; i++) {
+					red[i] = (short)(pixels[i*3]&0xffffff);
+					green[i] = (short)(pixels[i*3+1]&0xffffff);
+					blue[i] = (short)(pixels[i*3+2]&0xffffff);
+				}
 			}
 			ImageStack stack = new ImageStack(width, height);
-			stack.addSlice("", ip);
+			stack.addSlice("red", new ShortProcessor(width, height, red, null));
+			stack.addSlice("green", new ShortProcessor(width, height, green, null));
+			stack.addSlice("blue", new ShortProcessor(width, height, blue, null));
 			return stack;
-		}
-		
-		if (!sixteenBits) { // 8-bit color
-			int[] pixels = new int[width * height];
-			byte[] bytePixels = new byte[3 * width * height];
-			ImageProcessor ip = new ColorProcessor(width, height, pixels);
-			if (rawBits)
-				openRawImage(is, 3 * width * height, bytePixels);
-			else
-				openAsciiImage(tok, 3 * width * height, bytePixels);
-			for (int i = 0; i < width * height; i++) {
-				int r = (int) (0xff & bytePixels[i * 3]);
-				int g = (int) (0xff & bytePixels[i * 3 + 1]);
-				int b = (int) (0xff & bytePixels[i * 3 + 2]);
-				r = (r * 255 / maxValue) << 16;
-				g = (g * 255 / maxValue) << 8;
-				b = (b * 255 / maxValue);
-				pixels[i] = 0xFF000000 | r | g | b;
-			}
-			ImageStack stack = new ImageStack(width, height);
-			stack.addSlice("", ip);
-			return stack;
-		}
-		
-		// 16-bit raw color
-		short[] red = new short[width*height];
-		short[] green = new short[width*height];
-		short[] blue = new short[width*height];
-		if (rawBits) {
-			byte[] bytePixels = new byte[6*width*height];
-			openRawImage(is, 6*width*height, bytePixels);
-			for (int i=0; i<width*height; i++) {
-				int r1 = 0xff & bytePixels[i*6];
-				int r2 = 0xff & bytePixels[i*6+1];
-				int g1 = 0xff & bytePixels[i*6+2];
-				int g2 = 0xff & bytePixels[i*6+3];
-				int b1 = 0xff & bytePixels[i*6+ 4];
-				int b2 = 0xff & bytePixels[i*6+5];
-				red[i] = (short) (0xffff & (r1*255+r2));
-				green[i] = (short) (0xffff & (g1*255+g2));
-				blue[i] = (short) (0xffff & (b1*255+b2));
-			}
-		} else {
-            ImageProcessor ip = open16bitAsciiImage(tok, 3*width, height);
-            short[] pixels = (short[])ip.getPixels();
-			for (int i=0; i<width*height; i++) {
-				red[i] = (short)(pixels[i*3]&0xffffff);
-				green[i] = (short)(pixels[i*3+1]&0xffffff);
-				blue[i] = (short)(pixels[i*3+2]&0xffffff);
-			}
-		}
-		ImageStack stack = new ImageStack(width, height);
-		stack.addSlice("red", new ShortProcessor(width, height, red, null));
-		stack.addSlice("green", new ShortProcessor(width, height, green, null));
-		stack.addSlice("blue", new ShortProcessor(width, height, blue, null));
-		return stack;
-		
-    }
+        } finally {
+            if (is!=null) is.close();
+        }
+   }
 
     public void openHeader(StreamTokenizer tok) throws IOException {
         String magicNumber = getWord(tok);

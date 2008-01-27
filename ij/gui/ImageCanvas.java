@@ -507,7 +507,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
         if (maxBoundsReset) {
             maxBoundsReset = false;
             ImageWindow win = imp.getWindow();
-            if (win!=null && !IJ.isLinux())
+            if (win!=null && !IJ.isLinux() && win.maxBounds!=null)
                 win.setMaximizedBounds(win.maxBounds);
         }
     }

@@ -54,7 +54,7 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 		    Dimension d = m.getSize();
-		    if (i==0)
+		    if (i==0 || d.height>60)
 		    	x2 = x + (width - d.width)/2;
 			m.setLocation(x2, y);
 			y += vgap + d.height;

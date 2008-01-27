@@ -420,6 +420,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case TEXT:
 				IJ.showStatus("Text tool");
+				TextRoi.recordSetFont();
 				return;
 			case MAGNIFIER:
 				IJ.showStatus("Magnifying glass (or use \"+\" and \"-\" keys)");

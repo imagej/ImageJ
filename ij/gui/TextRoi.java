@@ -16,6 +16,7 @@ public class TextRoi extends Roi {
 	private static int size = 18;
 	private static Font font;
 	private static boolean antialiasedText = true;
+	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
@@ -157,11 +158,13 @@ public class TextRoi extends Roi {
 
 	/** Sets the font face, size and style. */
 	public static void setFont(String fontName, int fontSize, int fontStyle) {
+		recordSetFont = true;
 		setFont(fontName, fontSize, fontStyle, true);
 	}
 	
 	/** Sets the font face, size, style and antialiasing mode. */
 	public static void setFont(String fontName, int fontSize, int fontStyle, boolean antialiased) {
+		recordSetFont = true;
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
@@ -175,7 +178,6 @@ public class TextRoi extends Roi {
 		}
 	}
 
-	//v1.24g
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (firstMouseUp) {
@@ -188,7 +190,7 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Increases the size of the rectangle so it's large
-		enough to hold the text. */ //v1.24g
+		enough to hold the text. */ 
 	void adjustSize() {
 		if (ic==null)
 			return;
@@ -227,6 +229,37 @@ public class TextRoi extends Roi {
 
 	int stringWidth(String s, FontMetrics metrics, Graphics g) {
 		return Java2.getStringWidth(s, metrics, g);
+	}
+	
+	public String getMacroCode(ImageProcessor ip) {
+		String code = "";
+		if (recordSetFont) {
+			String options = "";
+			if (style==Font.BOLD)
+				options += "bold";
+			if (style==Font.ITALIC)
+				options += " italic";
+			if (antialiasedText)
+				options += " antialiased";
+			if (options.equals(""))
+				options = "plain";
+			code += "setFont(\""+name+"\", "+size+", \""+options+"\");\n";
+			recordSetFont = false;
+		}
+		FontMetrics metrics = ip.getFontMetrics();
+		int fontHeight = metrics.getHeight();
+		String text = "";
+		for (int i=0; i<MAX_LINES; i++) {
+			if (theText[i]==null) break;
+			text += theText[i];
+			if (theText[i+1]!=null) text += "\\n";
+		}
+		code += "drawString(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
+		return (code);
+	}
+	
+	public static void recordSetFont() {
+		recordSetFont = true;
 	}
 
 }

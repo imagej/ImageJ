@@ -19,7 +19,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	public static final String LOC_KEY = "b&c.loc";
 	static final int AUTO_THRESHOLD = 5000;
-	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "RGB"};
+	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
 	
 	ContrastPlot plot = new ContrastPlot();
@@ -355,6 +355,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			updateScrollBars(null, true);
 		} else
 			updateScrollBars(null, false);
+		if (balance && imp.isComposite()) {
+			int channel = imp.getChannel();
+			if (channel<=4) {
+				choice.select(channel-1);
+				channels = channelConstants[channel-1];
+			}
+		}
 		if (!doReset)
 			plotHistogram(imp);
 		autoThreshold = 0;
@@ -544,7 +551,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		} else
 			stats = imp.getStatistics();
 		Color color = Color.gray;
-		if (imp.isComposite())
+		if (imp.isComposite() && !(balance&&channels==7))
 			color = ((CompositeImage)imp).getChannelColor();
 		plot.setHistogram(stats, color);
 	}
@@ -565,6 +572,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				if (Recorder.record) Recorder.record("run", "Apply LUT");
 			}
 			imp.unlock();
+			return;
+		}
+		if (imp.isComposite()) {
+			imp.unlock();
+			((CompositeImage)imp).updateAllChannelsAndDraw();
 			return;
 		}
 		if (imp.getType()!=ImagePlus.GRAY8) {
@@ -847,7 +859,10 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		updatePlot();
 		updateLabels(imp, ip);
-		imp.updateChannelAndDraw();
+		if ((IJ.shiftKeyDown()||(balance && channels==7)) && imp.isComposite()) {
+			((CompositeImage)imp).updateAllChannelsAndDraw();
+		} else
+			imp.updateChannelAndDraw();
 		if (RGBImage)
 			imp.unlock();
 	}
@@ -874,7 +889,17 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 
 	public synchronized  void itemStateChanged(ItemEvent e) {
-		channels = channelConstants[choice.getSelectedIndex()];
+		int index = choice.getSelectedIndex();
+		channels = channelConstants[index];
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null && imp.isComposite()) {
+			if (index+1<=imp.getNChannels()) 
+				imp.setPosition(index+1, imp.getSlice(), imp.getFrame());
+			else {
+				choice.select(channelLabels.length-1);
+				channels = 7;
+			}
+		}
 		doReset = true;
 		notify();
 	}

@@ -102,13 +102,12 @@ public class Interpreter implements MacroConstants {
 
 	/** Interprets the specified tokenized macro starting at the specified location. */
 	public void runMacro(Program pgm, int macroLoc, String macroName) {
+		calledMacro = true;
 		this.pgm = pgm;
 		this.macroName = macroName;
 		pc = macroLoc-1;
 		previousInstance = instance;
 		instance = this;
-		batchMode = false;
-		imageTable = null;
 		//IJ.showStatus("interpreting");
 		pushGlobals();
 		if (func==null)
