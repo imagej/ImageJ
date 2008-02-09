@@ -28,7 +28,7 @@ public class ColorStatistics extends ImageStatistics {
 		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)
 			calculateMoments(ip);
 		if ((mOptions&MEDIAN)!=0)
-			calculateMedian(histogram, 0, cal);
+			calculateMedian(histogram, 0, 255, cal);
 	}
 
 	void calculateMoments(ImageProcessor ip) {

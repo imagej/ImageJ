@@ -5,28 +5,24 @@
 </head>
 <body>
 
-<li> <u>1.39q, 26 January 2008</u>
+<li> <u>1.39r, 8 February 2008</u>
 <ul>
-<li> When using the<i>Image&gt;Adjust&gt;Brightness/Contrast</i> tool,
- hold the shift key down to simultaneously adjust all channels of a composite image
-(e.g., <i>File&gt;Open Samples&gt;HeLa Cells</i>).
-<li> Clicking "Apply" in <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
- propagates the current composite image display range to the other channels.
-<li> <i>Image&gt;Adjust&gt;Color Balance</i> works with composite images.
-<li> The text tool is recorded.
-<li> ImageJ now opens LZW-compressed RGB planar TIFFs.
-<li> Stefan Woerz added Gaussian fitting to the CurveFitter class.
-<li> "Maximize" works better with HyperStacks and windows with button panels.
-<li> Albert Cardona added 
-<a href="http://rsb.info.nih.gov/ij/plugins/file-handler.html">HandleExtraFileTypes</a>
-support for <i>File&gt;Import&gt;URL</i>.
-<li> Added the is("Virtual Stack") macro function.
-<li> Fixed a bug that caused files in folders dropped onto ImageJ
-to not be sorted in numeric order.
-<li> Fixed a bug in <i>File&gt;Import&gt;Raw</i> (ImageReader class) that
-caused it to not correctly handle EOF errors with data types other than 8-bit.
-<li> Fixed a bug in the PGM_Reader that caused pixel intensities of imported
-48-bit images to differ slightly from the expected values.
+<li> Added the "or Enter Pattern [regular expression]" text field to the
+<i>File&gt;Import&gt;Image Sequence</i> dialog box.
+<li> <i>Plugins&gt;Compile and Run</i> adds .jar files without an underscore in
+the name to the compiler's classpath.
+<li> The <i>Image&gt;Stacks&gt;Set Slice</i> command, the ROI Manager, and the setSlice() macro function
+were updated to work with HyperStacks.
+<li> <i>Image&gt;Show Info</i> displays the image ID.
+<li> Added the waitForUser(string), waitForUser(title, string), matches(string, regex) 
+and is("composite") macro functions.
+<li> Added an optional second argument to the toString() macro function that specifies the number of decimal places.
+<li> Fixed a bug that resulted in incorrect measured median values for thresholded images when "Limit to Threshold" was  enabled
+in <i>Analyze&gt;Set Measurements</i>.
+<li> Fixed a bug that caused the information displayed by 
+<i>Image&gt;Show Info</i> (e.g., DICOM tags) to be incorrect for images opened with <i>File&gt;Open Next</i>.
+<li> Thanks to Stefan Starke, fixed a bug the caused the call() macro function to fail
+when ImageJ was running as a signed applet.
 </ul>
 
 </body>

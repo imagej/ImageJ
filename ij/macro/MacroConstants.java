@@ -39,7 +39,8 @@ public interface MacroConstants {
 		NEW_IMAGE=370, SAVE_AS=371, SAVE=372, SET_AUTO_THRESHOLD=373, RENAME=374, GET_BOUNDS=375, FILL_RECT=376,
 		GET_RAW_STATISTICS=377, FLOOD_FILL=378, RESTORE_PREVIOUS_TOOL=379, SET_VOXEL_SIZE=380, GET_LOCATION_AND_SIZE=381,
 		GET_DATE_AND_TIME=382, SET_METADATA=383, CALCULATOR=384, SET_RGB_WEIGHTS=385, MAKE_POLYGON=386, SET_SELECTION_NAME=387,
-		DRAW_RECT=388, DRAW_OVAL=389, FILL_OVAL=390, SET_OPTION=391, SHOW_TEXT=392, SET_SELECTION_LOC=393, GET_DIMENSIONS=394;
+		DRAW_RECT=388, DRAW_OVAL=389, FILL_OVAL=390, SET_OPTION=391, SHOW_TEXT=392, SET_SELECTION_LOC=393, GET_DIMENSIONS=394,
+		WAIT_FOR_USER=395;
 	static final String[] functions = {"run","invert","selectWindow","wait", "beep", "resetMinAndMax", "resetThreshold",
 		"print", "write", "doWand", "setMinAndMax", "setThreshold", "setTool",
 		"setForegroundColor", "setBackgroundColor", "makeLine", "makeOval", "makeRectangle",
@@ -54,7 +55,8 @@ public interface MacroConstants {
 		"newImage", "saveAs", "save", "setAutoThreshold", "rename", "getSelectionBounds", "fillRect",
 		"getRawStatistics", "floodFill", "restorePreviousTool", "setVoxelSize", "getLocationAndSize",
 		"getDateAndTime", "setMetadata", "imageCalculator", "setRGBWeights", "makePolygon", "setSelectionName",
-		"drawRect", "drawOval", "fillOval", "setOption", "showText", "setSelectionLocation", "getDimensions"};
+		"drawRect", "drawOval", "fillOval", "setOption", "showText", "setSelectionLocation", "getDimensions",
+		"waitForUser"};
 	static final int[] functionIDs = {RUN, INVERT, SELECT, WAIT, BEEP, RESET_MIN_MAX, RESET_THRESHOLD,
 		PRINT, WRITE,	 DO_WAND, SET_MIN_MAX, SET_THRESHOLD, SET_TOOL,
 		SET_FOREGROUND, SET_BACKGROUND, MAKE_LINE, MAKE_OVAL, MAKE_RECTANGLE,
@@ -69,7 +71,8 @@ public interface MacroConstants {
 		NEW_IMAGE, SAVE_AS, SAVE, SET_AUTO_THRESHOLD, RENAME, GET_BOUNDS, FILL_RECT,
 		GET_RAW_STATISTICS, FLOOD_FILL, RESTORE_PREVIOUS_TOOL, SET_VOXEL_SIZE, GET_LOCATION_AND_SIZE,
 		GET_DATE_AND_TIME, SET_METADATA, CALCULATOR, SET_RGB_WEIGHTS, MAKE_POLYGON, SET_SELECTION_NAME,
-		DRAW_RECT, DRAW_OVAL, FILL_OVAL, SET_OPTION, SHOW_TEXT, SET_SELECTION_LOC, GET_DIMENSIONS};
+		DRAW_RECT, DRAW_OVAL, FILL_OVAL, SET_OPTION, SHOW_TEXT, SET_SELECTION_LOC, GET_DIMENSIONS,
+		WAIT_FOR_USER};
 
 	// Numeric functions
 	static final int GET_PIXEL=1000, ABS=1001, COS=1002, EXP=1003, FLOOR=1004, LOG=1005, MAX_OF=1006, MIN_OF=1007, POW=1008,
@@ -79,7 +82,7 @@ public interface MacroConstants {
 		IS_ACTIVE=1029, INDEX_OF=1030, LAST_INDEX_OF=1031, CHAR_CODE_AT=1032, GET_BOOLEAN=1033,
 		STARTS_WITH=1034, ENDS_WITH=1035, ATAN2=1036, IS_NAN=1037, GET_ZOOM=1038, PARSE_INT=1039, PARSE_FLOAT=1040,
 		IS_KEY_DOWN=1041, GET_SLICE_NUMBER=1042, SCREEN_WIDTH=1043, SCREEN_HEIGHT=1044, CALIBRATE=1045,
-		ASIN=1046, ACOS=1047, ROI_MANAGER=1048, TOOL_ID=1049, IS=1050, GET_VALUE=1051, STACK=1052;
+		ASIN=1046, ACOS=1047, ROI_MANAGER=1048, TOOL_ID=1049, IS=1050, GET_VALUE=1051, STACK=1052, MATCHES=1053;
 	static final String[] numericFunctions = { "getPixel", "abs", "cos", "exp", "floor", "log", "maxOf", "minOf", "pow",
 		"round", "sin", "sqrt", "tan", "getTime", "getWidth", "getHeight", "random",
 		"getResult", "getResultsCount", "getNumber", "nImages", "nSlices", 
@@ -87,7 +90,7 @@ public interface MacroConstants {
 		"isActive", "indexOf", "lastIndexOf", "charCodeAt", "getBoolean",
 		"startsWith", "endsWith", "atan2", "isNaN", "getZoom", "parseInt", "parseFloat",
 		"isKeyDown", "getSliceNumber", "screenWidth", "screenHeight", "calibrate",
-		"asin", "acos", "roiManager", "toolID", "is", "getValue", "Stack"};
+		"asin", "acos", "roiManager", "toolID", "is", "getValue", "Stack", "matches"};
 	static final int[] numericFunctionIDs = {GET_PIXEL, ABS, COS, EXP, FLOOR, LOG, MAX_OF, MIN_OF, POW,
 		ROUND, SIN, SQRT, TAN, GET_TIME, GET_WIDTH, GET_HEIGHT, RANDOM,
 		GET_RESULT, GET_COUNT, GET_NUMBER, NIMAGES, NSLICES,
@@ -95,7 +98,7 @@ public interface MacroConstants {
 		IS_ACTIVE, INDEX_OF, LAST_INDEX_OF, CHAR_CODE_AT, GET_BOOLEAN,
 		STARTS_WITH, ENDS_WITH, ATAN2, IS_NAN, GET_ZOOM, PARSE_INT, PARSE_FLOAT,
 		IS_KEY_DOWN, GET_SLICE_NUMBER, SCREEN_WIDTH, SCREEN_HEIGHT, CALIBRATE,
-		ASIN, ACOS, ROI_MANAGER, TOOL_ID, IS, GET_VALUE, STACK};
+		ASIN, ACOS, ROI_MANAGER, TOOL_ID, IS, GET_VALUE, STACK, MATCHES};
 
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,

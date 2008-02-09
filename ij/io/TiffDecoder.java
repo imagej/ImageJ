@@ -456,8 +456,12 @@ public class TiffDecoder {
 				case SAMPLE_FORMAT:
 					if (fi.fileType==FileInfo.GRAY32_INT && value==FLOATING_POINT)
 						fi.fileType = FileInfo.GRAY32_FLOAT;
-					if (fi.fileType==FileInfo.GRAY16_UNSIGNED && value==SIGNED)
-						fi.fileType = FileInfo.GRAY16_SIGNED;
+					if (fi.fileType==FileInfo.GRAY16_UNSIGNED) {
+						if (value==SIGNED)
+							fi.fileType = FileInfo.GRAY16_SIGNED;
+						if (value==FLOATING_POINT)
+							error("ImageJ cannot open16-bit float TIFFs");
+					}
 					break;
 				case IMAGE_DESCRIPTION: 
 					if (ifdCount==1) {

@@ -1284,7 +1284,7 @@ public class IJ {
 				}
 			}
 			if (pluginsDir==null)
-				return ClassLoader.getSystemClassLoader();
+				return IJ.class.getClassLoader();
 			else {
 				if (Menus.jnlp)
 					classLoader = new PluginClassLoader(pluginsDir, true);

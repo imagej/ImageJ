@@ -416,9 +416,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null || roi==null)
 			return false;
         if (setSlice) {
-            int slice = getSliceNumber(label);
-            if (slice>=1 && slice<=imp.getStackSize())
-                imp.setSlice(slice);
+            int n = getSliceNumber(label);
+            if (n>=1 && n<=imp.getStackSize()) {
+            	if (imp.isHyperStack())
+                	imp.setPosition(n);
+                else
+                	imp.setSlice(n);
+            }
         }
         Roi roi2 = (Roi)roi.clone();
 		Calibration cal = imp.getCalibration();

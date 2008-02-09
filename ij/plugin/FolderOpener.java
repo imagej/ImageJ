@@ -19,6 +19,7 @@ public class FolderOpener implements PlugIn {
 	private static boolean virtualStack;
 	private int n, start, increment;
 	private String filter;
+	private boolean isRegex;
 	private FileInfo fi;
 	private String info1;
 
@@ -75,14 +76,19 @@ public class FolderOpener implements PlugIn {
 			if (filter!=null) {
 				int filteredImages = 0;
   				for (int i=0; i<list.length; i++) {
- 					if (list[i].indexOf(filter)>=0)
- 						filteredImages++;
+					if (isRegex&&list[i].matches(filter))
+						filteredImages++;
+					else if (list[i].indexOf(filter)>=0)
+						filteredImages++;
  					else
  						list[i] = null;
  				}
   				if (filteredImages==0) {
-  					IJ.error("None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
-  					return;
+  					if (isRegex)
+  						IJ.error("Import Sequence", "None of the file names match the regular expression.");
+  					else
+   						IJ.error("Import Sequence", "None of the "+list.length+" files contain\n the string '"+filter+"' in their name.");
+ 					return;
   				}
   				String[] list2 = new String[filteredImages];
   				int j = 0;
@@ -218,9 +224,9 @@ public class FolderOpener implements PlugIn {
 		gd.addNumericField("Number of Images:", fileCount, 0);
 		gd.addNumericField("Starting Image:", 1, 0);
 		gd.addNumericField("Increment:", 1, 0);
-		//gd.addMessage("");
-		gd.addStringField("File Name Contains:", "");
 		gd.addNumericField("Scale Images:", scale, 0, 4, "%");
+		gd.addStringField("File Name Contains:", "", 10);
+		gd.addStringField("or Enter Pattern:", "", 10);
 		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addCheckbox("Sort Names Numerically", sortFileNames);
@@ -238,6 +244,11 @@ public class FolderOpener implements PlugIn {
 		if (scale<5.0) scale = 5.0;
 		if (scale>100.0) scale = 100.0;
 		filter = gd.getNextString();
+		String regex = gd.getNextString();
+		if (!regex.equals("")) {
+			filter = regex;
+			isRegex = true;
+		}
 		convertToGrayscale = gd.getNextBoolean();
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
@@ -320,6 +331,7 @@ class FolderOpenerDialog extends GenericDialog {
 	int fileCount;
  	boolean eightBits, rgb;
  	String[] list;
+ 	boolean isRegex;
 
 	public FolderOpenerDialog(String title, ImagePlus imp, String[] list) {
 		super(title);
@@ -378,11 +390,19 @@ class FolderOpenerDialog extends GenericDialog {
 		if (inc<1) inc = 1;
  		TextField tf = (TextField)stringField.elementAt(0);
  		String filter = tf.getText();
+		tf = (TextField)stringField.elementAt(1);
+  		String regex = tf.getText();
+		if (!regex.equals("")) {
+			filter = regex;
+			isRegex = true;
+		}
  		if (!filter.equals("") && !filter.equals("*")) {
  			int n2 = 0;
- 			for (int i=0; i<list.length; i++) {
- 				if (list[i].indexOf(filter)>=0)
- 					n2++;
+			for (int i=0; i<list.length; i++) {
+				if (isRegex&&list[i].matches(filter))
+					n2++;
+				else if (list[i].indexOf(filter)>=0)
+					n2++;
 			}
 			if (n2<n) n = n2;
  		}

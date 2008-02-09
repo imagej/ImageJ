@@ -107,6 +107,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	void updatePosition() {
 		slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
+		imp.updatePosition(c, z, t);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -193,25 +194,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	return hyperStack;
     }
     
-    public int getHSChannel() {
-    	return c;
-    }
-
-    public int getHSSlice() {
-    	return z;
-    }
-
-    public int getHSFrame() {
-    	return t;
-    }
-
     public void setPosition(int channel, int slice, int frame) {
-    	if (channel<1) channel = 1;
-    	if (channel>nChannels) channel = nChannels;
-    	if (slice<1) slice = 1;
-    	if (slice>nSlices) slice = nSlices;
-    	if (frame<1) frame = 1;
-    	if (frame>nFrames) frame = nFrames;
     	if (channelSelector!=null && channel!=c) {
     		c = channel;
 			channelSelector.setValue(channel);

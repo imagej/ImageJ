@@ -228,7 +228,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	ImageProcessor setup(ImagePlus imp) {
 		ImageProcessor ip;
 		int type = imp.getType();
-		if (type==ImagePlus.COLOR_RGB)
+		if (type==ImagePlus.COLOR_RGB || (imp.isComposite()&&((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE))
 			return null;
 		ip = imp.getProcessor();
 		boolean minMaxChange = false;		
@@ -565,7 +565,10 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (ip==null) {
 			imp.unlock();
 			IJ.beep();
-			IJ.showStatus("RGB images cannot be thresholded");
+			if (imp.isComposite())
+				IJ.showStatus("\"Composite\" mode images cannot be thresholded");
+			else
+				IJ.showStatus("RGB images cannot be thresholded");
 			return;
 		}
 		//IJ.write("setup: "+(imp==null?"null":imp.getTitle()));

@@ -105,8 +105,7 @@ import java.io.*;
 	public static double parseDouble(String s, double defaultValue) {
 		if (s==null) return defaultValue;
 		try {
-			Double d = new Double(s);
-			defaultValue = d.doubleValue();
+			defaultValue = Double.parseDouble(s);
 		} catch (NumberFormatException e) {}
 		return defaultValue;			
 	}

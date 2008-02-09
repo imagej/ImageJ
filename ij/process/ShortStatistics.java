@@ -43,7 +43,7 @@ public class ShortStatistics extends ImageStatistics {
 		if ((mOptions&MIN_MAX)!=0 && cTable!=null)
 			getCalibratedMinAndMax(hist, (int)min, (int)max, cTable);
 		if ((mOptions&MEDIAN)!=0)
-			calculateMedian(hist, (int)histMin, cal);
+			calculateMedian(hist, minThreshold, maxThreshold, cal);
 		if ((mOptions&AREA_FRACTION)!=0)
 			calculateAreaFraction(ip, hist);
 	}

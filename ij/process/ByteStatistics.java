@@ -41,7 +41,7 @@ public class ByteStatistics extends ImageStatistics {
 		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)
 			calculateMoments(ip, minThreshold, maxThreshold, cTable);
 		if ((mOptions&MEDIAN)!=0)
-			calculateMedian(histogram, 0, cal);
+			calculateMedian(histogram, minThreshold, maxThreshold, cal);
 		if ((mOptions&AREA_FRACTION)!=0)
 			calculateAreaFraction(ip, histogram);
 	}

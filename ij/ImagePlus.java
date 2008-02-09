@@ -88,6 +88,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private static ImagePlus clipboard;
 	private static Vector listeners = new Vector();
 	private boolean openAsHyperStack;
+	private int[] position = {1,1,1};
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -450,7 +451,7 @@ public class ImagePlus implements ImageObserver, Measurements {
             throw new IllegalArgumentException("ip wrong size");
 		if (stackSize<=1) {
 			stack = null;
-			currentSlice = 1;
+			setCurrentSlice(1);
 		}
 		setProcessor2(title, ip, null);
 	}
@@ -462,7 +463,7 @@ public class ImagePlus implements ImageObserver, Measurements {
         int stackSize = 1;
 		if (stack!=null) {
 			stackSize = stack.getSize();
-			if (currentSlice>stackSize) currentSlice = stackSize;
+			if (currentSlice>stackSize) setCurrentSlice(stackSize);
 		}
 		img = null;
 		boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth() || height!=ip.getHeight());
@@ -497,10 +498,9 @@ public class ImagePlus implements ImageObserver, Measurements {
    		if (stackSize==0)
    			throw new IllegalArgumentException("Stack is empty");
     	boolean stackSizeChanged = this.stack!=null && stackSize!=getStackSize();
-    	if (currentSlice<1) currentSlice = 1;
+    	if (currentSlice<1) setCurrentSlice(1);
     	boolean resetCurrentSlice = currentSlice>stackSize;
-    	if (resetCurrentSlice)
-    		currentSlice = stackSize;
+    	if (resetCurrentSlice) setCurrentSlice(stackSize);
 		//IJ.log("setStack: "+stack+"  "+stackSizeChanged+"  "+resetCurrentSlice);
     	ImageProcessor ip = stack.getProcessor(currentSlice);
     	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
@@ -855,11 +855,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
     }
 
-	/** Adds a key-value pair to this image's properties. */
+	/** Adds a key-value pair to this image's properties. The key
+		is removed from the properties table if value is null. */
 	public void setProperty(String key, Object value) {
 		if (properties==null)
 			properties = new Properties();
-		properties.put(key, value);
+		if (value==null)
+			properties.remove(key);
+		else
+			properties.put(key, value);
 	}
 		
 	/** Returns the property associated with 'key'. May return null. */
@@ -991,34 +995,29 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the current stack slice number or 1 if
 		this is a single image. */
 	public int getCurrentSlice() {
-		if (currentSlice<1) currentSlice = 1;
-		if (currentSlice>getStackSize()) currentSlice = getStackSize();
+		if (currentSlice<1) setCurrentSlice(1);
+		if (currentSlice>getStackSize()) setCurrentSlice(getStackSize());
 		return currentSlice;
 	}
 	
+	final void setCurrentSlice(int slice) {
+		currentSlice = slice;
+		int stackSize = getStackSize();
+		if (nChannels==stackSize) updatePosition(currentSlice, 1, 1);
+		if (nSlices==stackSize) updatePosition(1, currentSlice, 1);
+		if (nFrames==stackSize) updatePosition(1, 1, currentSlice);
+	}
+
 	public int getChannel() {
-		if (isHyperStack())
-			return ((StackWindow)win).getHSChannel();
-		else
-			return getCurrentSlice();
+		return position[0];
 	}
 	
 	public int getSlice() {
-		if (isHyperStack())
-			return ((StackWindow)win).getHSSlice();
-		else if (compositeImage)
-			return 1;
-		else
-			return getCurrentSlice();
+		return position[1];
 	}
 
 	public int getFrame() {
-		if (isHyperStack())
-			return ((StackWindow)win).getHSFrame();
-		else if (compositeImage)
-			return 1;
-		else
-			return getCurrentSlice();
+		return position[2];
 	}
 
 	public void killStack() {
@@ -1027,12 +1026,26 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	public void setPosition(int channel, int slice, int frame) {
-		if (isHyperStack())
+   		if (channel<1) channel = 1;
+    	if (channel>nChannels) channel = nChannels;
+    	if (slice<1) slice = 1;
+    	if (slice>nSlices) slice = nSlices;
+    	if (frame<1) frame = 1;
+    	if (frame>nFrames) frame = nFrames;
+		if (isHyperStack() && !Interpreter.isBatchMode())
 			((StackWindow)win).setPosition(channel, slice, frame);
 		else {
-			int position = (frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel;
-			setSlice(position);
+			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
+			updatePosition(channel, slice, frame);
 		}
+	}
+	
+	public void setPosition(int n) {
+		int[] dim = getDimensions();
+		int c = ((n-1)%dim[2])+1;
+		int z = (((n-1)/dim[2])%dim[3])+1;
+		int t = (((n-1)/(dim[2]*dim[3]))%dim[4])+1;
+		setPosition(c, z, t);
 	}
 			
 	/** Activates the specified slice. The index must be >= 1
@@ -1050,7 +1063,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (isProcessor())
 				stack.setPixels(ip.getPixels(),currentSlice);
 			ip = getProcessor();
-			currentSlice = index;
+			setCurrentSlice(index);
 			Object pixels = stack.getPixels(currentSlice);
 			if (pixels!=null) {
 				ip.setSnapshotPixels(null);
@@ -1535,8 +1548,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 				+"an area selection, or no selection.");
 			return;
 		}
+		boolean batchMode = Interpreter.isBatchMode();
 		String msg = (cut)?"Cut":"Copy";
-		IJ.showStatus(msg+ "ing...");
+		if (!batchMode) IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = getProcessor();
 		ImageProcessor ip2;	
 		Roi roi2 = null;	
@@ -1568,7 +1582,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 		//Roi roi3 = clipboard.getRoi();
 		//IJ.log("copy: "+clipboard +" "+ "roi3="+(roi3!=null?""+roi3:""));
-		IJ.showStatus(msg + ": " + (clipboard.getWidth()*clipboard.getHeight()*bytesPerPixel)/1024 + "k");
+		if (!batchMode) 
+			IJ.showStatus(msg + ": " + (clipboard.getWidth()*clipboard.getHeight()*bytesPerPixel)/1024 + "k");
     }
                 
 
@@ -1702,6 +1717,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	public void resetDisplayRange() {
 		ip.resetMinAndMax();
+	}
+	
+	public void updatePosition(int c, int z, int t) {
+		position[0] = c;
+		position[1] = z;
+		position[2] = t;
 	}
 
 	public Object clone() {

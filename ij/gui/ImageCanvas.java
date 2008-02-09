@@ -467,7 +467,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImageWindow win = imp.getWindow();
 		//IJ.log("resizeCanvas: "+srcRect+" "+imageWidth+"  "+imageHeight+" "+width+"  "+height+" "+dstWidth+"  "+dstHeight+" "+win.maxBounds);
 		if (!maxBoundsReset&& (width>dstWidth||height>dstHeight)&&win!=null&&win.maxBounds!=null&&width!=win.maxBounds.width-10) {
-			if (!(resetMaxBoundsCount==0 && win instanceof StackWindow))
+			if (resetMaxBoundsCount!=0)
 				resetMaxBounds(); // Works around problem that prevented window from being larger than maximized size
 			resetMaxBoundsCount++;
 		}
@@ -503,18 +503,20 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setDrawingSize((int)(imageWidth*magnification), (int)(imageHeight*magnification));
 	}
     
-    void setMaxBounds() {
-        if (maxBoundsReset) {
-            maxBoundsReset = false;
-            ImageWindow win = imp.getWindow();
-            if (win!=null && !IJ.isLinux() && win.maxBounds!=null)
-                win.setMaximizedBounds(win.maxBounds);
-        }
-    }
+	void setMaxBounds() {
+		if (maxBoundsReset) {
+			maxBoundsReset = false;
+			ImageWindow win = imp.getWindow();
+			if (win!=null && !IJ.isLinux() && win.maxBounds!=null) {
+				win.setMaximizedBounds(win.maxBounds);
+				win.setMaxBoundsTime = System.currentTimeMillis();
+			}
+		}
+	}
 
 	void resetMaxBounds() {
 		ImageWindow win = imp.getWindow();
-		if (win!=null) {
+		if (win!=null && (System.currentTimeMillis()-win.setMaxBoundsTime)>500L) {
 			win.setMaximizedBounds(win.maxWindowBounds);
 			maxBoundsReset = true;
 		}

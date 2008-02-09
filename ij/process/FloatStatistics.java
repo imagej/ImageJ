@@ -37,7 +37,7 @@ public class FloatStatistics extends ImageStatistics {
 			if (Double.isInfinite(binSize)||Double.isNaN(binSize))
 				median = 0.0;
 			else {
-				calculateMedian(histogram, 0, null);
+				calculateMedian(histogram, 0, histogram.length-1, null);
 				median = histMin + median*binSize;
 				if (binSize!=1.0) median += binSize/2.0; 
 			}       	

@@ -188,15 +188,14 @@ public class ImageStatistics implements Measurements {
 			ef.drawEllipse(ip);
 	}
 	
-	void calculateMedian(int[] hist, int start, Calibration cal) {
-		//ij.IJ.log("calculateMedian: "+start+"  "+hist.length+"  "+pixelCount);
+	void calculateMedian(int[] hist, int first, int last, Calibration cal) {
+		//ij.IJ.log("calculateMedian: "+first+"  "+last+"  "+hist.length+"  "+pixelCount);
 		double sum = 0;
-		int i = start-1;
+		int i = first-1;
 		double halfCount = pixelCount/2.0;
-		int max = hist.length==65536?65535:255;
 		do {
 			sum += hist[++i];
-		} while (sum<=halfCount && i<max);
+		} while (sum<=halfCount && i<last);
 		median = cal!=null?cal.getCValue(i):i;
 	}
 	

@@ -74,12 +74,7 @@ public class SaveDialog {
 		if (name!=null && extension!=null) {
 			int dotIndex = name.lastIndexOf(".");
 			if (dotIndex>=0 && (name.length()-dotIndex)<=5) {
-				boolean hasDigits = false;
-				for (int i=name.length()-1; i>dotIndex; i--) {
-					if (Character.isDigit(name.charAt(i)))
-						{hasDigits=true; break;}
-				}
-				if (hasDigits)
+				if (dotIndex+1<name.length() && Character.isDigit(name.charAt(dotIndex+1)))
 					name += extension;
 				else
 					name = name.substring(0, dotIndex) + extension;

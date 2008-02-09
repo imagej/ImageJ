@@ -57,6 +57,7 @@ public class Functions implements MacroConstants, Measurements {
 	int measurements;
 	int decimalPlaces;
 	boolean blackBackground;
+	static Dialog waitForUserDialog;
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -152,6 +153,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SHOW_TEXT: showText(); break;
 			case SET_SELECTION_LOC: setSelectionLocation(); break;
 			case GET_DIMENSIONS: getDimensions(); break;
+			case WAIT_FOR_USER: waitForUser(); break;
 		}
 	}
 	
@@ -197,6 +199,7 @@ public class Functions implements MacroConstants, Measurements {
 			case IS: value = is(); break;
 			case GET_VALUE: value = getValue(); break;
 			case STACK: value = doStack(); break;
+			case MATCHES: value = matches(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -221,7 +224,7 @@ public class Functions implements MacroConstants, Measurements {
 			case TO_UPPER_CASE: str = getStringArg().toUpperCase(Locale.US); break;
 			case RUN_MACRO: str = runMacro(false); break;
 			case EVAL: str = runMacro(true); break;
-			case TO_STRING: str = getStringArg(); break;
+			case TO_STRING: str = doToString(); break;
 			case REPLACE: str = replace(); break;
 			case DIALOG: str = doDialog(); break;
 			case GET_METADATA: str = getMetadata(); break;
@@ -2232,8 +2235,12 @@ public class Functions implements MacroConstants, Measurements {
 			return;
 		else if (n<1 || n>nSlices)
 			interp.error("Argument must be >=1 and <="+nSlices);
-		else
-			imp.setSlice(n);
+		else {
+			if (imp.isHyperStack())
+				imp.setPosition(n);
+			else
+				imp.setSlice(n);
+		}
 		resetImage();
 	}
 	
@@ -2569,19 +2576,8 @@ public class Functions implements MacroConstants, Measurements {
 		String s3 = getLastString();
 		if (s2.length()==1 && s3.length()==1)
 			return s1.replace(s2.charAt(0), s3.charAt(0));
-		else if (IJ.isJava14()) {
-			try {
-				// Call replaceAll() using reflection so this class can be compiled with Java 1.3
-				Class StringClass = s1.getClass();
-				Method replaceAll = StringClass.getDeclaredMethod("replaceAll", new Class[] {String.class, String.class});
-				Object arglist[]=new Object[2]; arglist[0]=s2; arglist[1]=s3;
- 				return (String)replaceAll.invoke(s1, arglist);
-			} catch (Exception e) {
-				interp.error("Regular expression error:\n \n"+e);
-			}
-		} else
-			interp.error("Java 1.4 or later required for multi-character replace");
-		return null;
+		else
+			return s1.replaceAll(s2, s3);
 	}
 	
 	void floodFill() {
@@ -2964,6 +2960,10 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String openFile() {
+		if (writer!=null) {
+			interp.error("Currently, only one file can be open at a time");
+			return"";
+		}
 		String path = getFirstString();
 		String defaultName = null;
 		if (interp.nextToken()==')')
@@ -2981,8 +2981,6 @@ public class Functions implements MacroConstants, Measurements {
 			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")||path.endsWith(".ijm")))
 				interp.error("File exists and suffix is not '.txt', '.java', etc.");
 		}
-		if (writer!=null) writer.close();
-		writer = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(path);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -3244,6 +3242,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = IJ.getApplet()!=null;
 		else if (arg.indexOf("virtual")!=-1)
 			state = getImage().getStack().isVirtual();
+		else if (arg.indexOf("composite")!=-1)
+			state = getImage().isComposite();
 		else
 			interp.error("Argument must be 'locked', 'Inverted LUT' or 'HyperStack'");
 		return state?1.0:0.0;
@@ -3487,17 +3487,16 @@ public class Functions implements MacroConstants, Measurements {
 			{interp.getParens(); return imp.getCalibration().fps;}
 		if (name.equals("setFrameRate"))
 			{imp.getCalibration().fps=getArg(); return Double.NaN;}
-		if (!imp.isHyperStack() && !(Interpreter.isBatchMode()&&imp.getStackSize()>1))
-			interp.error("HyperStack required");
-		StackWindow win = (StackWindow)imp.getWindow();
+		if (imp.getStackSize()==1)
+			interp.error("Stack required");
 		if (name.equals("setDimensions"))
 			setDimensions(imp);
 		else if (name.equals("setChannel"))
-			imp.setPosition((int)getArg(), win.getHSSlice(), win.getHSFrame());
+			imp.setPosition((int)getArg(), imp.getSlice(), imp.getFrame());
 		else if (name.equals("setSlice"))
-			imp.setPosition(win.getHSChannel(), (int)getArg(), win.getHSFrame());
+			imp.setPosition(imp.getChannel(), (int)getArg(), imp.getFrame());
 		else if (name.equals("setFrame"))
-			imp.setPosition(win.getHSChannel(), win.getHSSlice(), (int)getArg());
+			imp.setPosition(imp.getChannel(), imp.getSlice(), (int)getArg());
 		else
 			interp.error("Unrecognized Stack function");
 		return Double.NaN;
@@ -3540,6 +3539,47 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			IJ.setTool((int)interp.getExpression());
 		interp.getRightParen();
+	}
+
+	String doToString() {
+		String s = null;
+		double value = getFirstArg();
+		interp.getToken();
+		if (interp.token==',') {
+			s = IJ.d2s(value, (int)interp.getExpression());
+			interp.getToken();
+		} else {
+			s = Double.toString(value);
+			if ((int)value==value)
+				s = IJ.d2s(value, 0);
+			else
+				s = Double.toString(value);
+		}
+		if (interp.token!=')') interp.error("')' expected");
+		return s;
+	}
+	
+	double matches() {
+		String str = getFirstString();
+		String regex = getLastString();
+		boolean matches = str.matches(regex);
+		return matches?1.0:0.0;
+	}
+	
+	void waitForUser() {
+		if (waitForUserDialog!=null && waitForUserDialog.isVisible())
+			interp.error("Duplicate call");
+		String title = getFirstString();
+		String text;
+		if (interp.nextToken()==',')
+			text = getLastString();
+		else {
+			text = title;
+			title = "Action Required";
+			interp.getRightParen();
+		}
+		waitForUserDialog = new WaitForUserDialog(title, text);
+		waitForUserDialog.show();
 	}
 
 } // class Functions

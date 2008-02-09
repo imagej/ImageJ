@@ -70,12 +70,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 
 	boolean compile(String path) {
 		IJ.showStatus("compiling: "+path);
-		String classpath = System.getProperty("java.class.path");
-		File f = new File(path);
-		if (f!=null)  // add directory containing file to classpath
-			classpath += File.pathSeparator + f.getParent();
-		//IJ.log("classpath: " + classpath);
 		output.reset();
+		String classpath = getClassPath(path);
 		Vector v = new Vector();
 		if (generateDebuggingInfo)
 			v.addElement("-g");
@@ -94,6 +90,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 		v.addElement(path);
 		String[] arguments = new String[v.size()];
 		v.copyInto((String[])arguments);
+		if (IJ.debugMode) {
+			String str = "javac";
+			for (int i=0; i<arguments.length; i++)
+				str += " "+arguments[i];
+			IJ.log(str);
+		}
 		boolean compiled = javac.compile(arguments, new PrintWriter(output))==0;
 		String s = output.toString();
 		boolean errors = (!compiled || areErrors(s));
@@ -103,6 +105,42 @@ public class Compiler implements PlugIn, FilenameFilter {
 			IJ.showStatus("done");
 		return compiled;
 	 }
+	 
+	 // Returns a string containing the Java classpath, 
+	 // the path to the directory containing the plugin, 
+	 // and paths to any .jar files in the plugins folder.
+	 String getClassPath(String path) {
+		long start = System.currentTimeMillis();
+	 	StringBuffer sb = new StringBuffer();
+		sb.append(System.getProperty("java.class.path"));
+		File f = new File(path);
+		if (f!=null)  // add directory containing file to classpath
+			sb.append(File.pathSeparator + f.getParent());
+		String pluginsDir = Menus.getPlugInsPath();
+		if (pluginsDir!=null)
+			addJars(pluginsDir, sb);
+		return sb.toString();
+	 }
+	 
+	// Adds .jar files in plugins folder, and subfolders, to the classpath
+	void addJars(String path, StringBuffer sb) {
+		String[] list = null;
+		File f = new File(path);
+		if (f.exists() && f.isDirectory())
+			list = f.list();
+		if (list==null) return;
+		if (!path.endsWith(File.separator))
+			path += File.separator;
+		for (int i=0; i<list.length; i++) {
+			File f2 = new File(path+list[i]);
+			if (f2.isDirectory())
+				addJars(path+list[i], sb);
+			else if (list[i].endsWith(".jar")&& list[i].indexOf("_")==-1) {
+				sb.append(File.pathSeparator+path+list[i]);
+				if (IJ.debugMode) IJ.log("javac: "+path+list[i]);
+			}
+		}
+	}
 
 	boolean areErrors(String s) {
 		boolean errors = s!=null && s.length()>0;

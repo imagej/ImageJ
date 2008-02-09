@@ -87,6 +87,7 @@ public class NextImageOpener implements PlugIn {
 		imp0.setStack(newTitle, imp2.getStack());
 		imp0.setCalibration(imp2.getCalibration());
 		imp0.setFileInfo(imp2.getOriginalFileInfo());
+		imp0.setProperty ("Info", imp2.getProperty ("Info"));
 		ImageWindow win = imp0.getWindow();
 		if (win!=null) win.repaint();
 		return "ok";

@@ -73,6 +73,7 @@ public class Info implements PlugInFilter {
 	    	if (nSlices>1)
 	    		s += "Depth:  " + nSlices + " pixels\n";
 	    }
+	    s += "ID: "+imp.getID()+"\n";
 	    String zOrigin = nSlices>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
 	    s += "Coordinate origin:  " + d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin+"\n";
 	    int type = imp.getType();

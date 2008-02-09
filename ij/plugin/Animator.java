@@ -183,8 +183,13 @@ public class Animator implements PlugIn {
         GenericDialog gd = new GenericDialog("Set Slice");
         gd.addNumericField("Slice Number (1-"+nSlices+"):", slice, 0);
         gd.showDialog();
-        if (!gd.wasCanceled())
-        	imp.setSlice((int)gd.getNextNumber());
+        if (!gd.wasCanceled()) {
+        	int n = (int)gd.getNextNumber();
+        	if (imp.isHyperStack())
+        		imp.setPosition(n);
+        	else
+        		imp.setSlice(n);
+        }
 	}
 
 	/** Returns the current animation speed in frames per second. */

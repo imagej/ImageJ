@@ -25,9 +25,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	protected boolean closed;
 	private boolean newCanvas;
 	private boolean unzoomWhenMinimizing = true;
-	double maxBoundsMag;
 	Rectangle maxWindowBounds; // largest possible window on this screen
 	Rectangle maxBounds; // Size of this window after it is maximized
+	long setMaxBoundsTime;
 
 	private static final int XINC = 8;
 	private static final int YINC = 12;
@@ -340,7 +340,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         pack();
 		repaint();
 		maxBounds = getMaximumBounds();
-		if (!IJ.isLinux()) setMaximizedBounds(maxBounds);
+		//if (!IJ.isLinux()) {
+			setMaximizedBounds(maxBounds);
+			setMaxBoundsTime = System.currentTimeMillis();
+		//}
 	}
 
 	public ImageCanvas getCanvas() {
@@ -368,14 +371,15 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		double maxHeight = maxWindow.height-extraSize.height;
 		double mAspectRatio = maxWidth/maxHeight;
 		int wWidth, wHeight;
+		double mag;
 		if (iAspectRatio>=mAspectRatio) {
-			maxBoundsMag = maxWidth/width;
+			mag = maxWidth/width;
 			wWidth = maxWindow.width;
-			wHeight = (int)(height*maxBoundsMag+extraSize.height);
+			wHeight = (int)(height*mag+extraSize.height);
 		} else {
-			maxBoundsMag = maxHeight/height;
+			mag = maxHeight/height;
 			wHeight = maxWindow.height;
-			wWidth = (int)(width*maxBoundsMag+extraSize.width);
+			wWidth = (int)(width*mag+extraSize.width);
 		}
 		int xloc = (int)(maxWidth-wWidth)/2;
 		if (xloc<0) xloc = 0;
@@ -384,10 +388,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	
 	Dimension getExtraSize() {
 		Insets insets = getInsets();
-		int extraWidth = insets.left+insets.right + 5;
-		int extraHeight = insets.top+insets.bottom + 5;
+		int extraWidth = insets.left+insets.right + 10;
+		int extraHeight = insets.top+insets.bottom + 10;
+		if (extraHeight==20) extraHeight = 42;
 		int members = getComponentCount();
-		if (IJ.debugMode) IJ.log("getExtraHeight: "+members+" "+insets.top+" "+insets.bottom);
+		if (IJ.debugMode) IJ.log("getExtraSize: "+members+" "+insets);
 		for (int i=1; i<members; i++) {
 		    Component m = getComponent(i);
 		    Dimension d = m.getPreferredSize();
@@ -401,21 +406,35 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		comp = super.add(comp);
 		if (IJ.debugMode) IJ.log("add: "+comp);
 		maxBounds = getMaximumBounds();
-		if (!IJ.isLinux()) setMaximizedBounds(maxBounds);
+		//if (!IJ.isLinux()) {
+			setMaximizedBounds(maxBounds);
+			setMaxBoundsTime = System.currentTimeMillis();
+		//}
 		return comp;
 	}
 	
+	//public void setMaximizedBounds(Rectangle r) {
+	//	super.setMaximizedBounds(r);
+	//	IJ.log("setMaximizedBounds: "+r+" "+getMaximizedBounds());
+	//	if (getMaximizedBounds().x==0)
+	//		throw new IllegalArgumentException("");
+	//}
+	
 	public void maximize() {
-		if (maxBounds==null || maxBoundsMag==0.0)
+		if (maxBounds==null)
 			return;
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		double aspectRatio = (double)width/height;
-		if (IJ.debugMode) IJ.log("maximize: "+maxBoundsMag+" "+ic.getMagnification()+" "+maxBounds);
-		if (maxBoundsMag>ic.getMagnification() || aspectRatio<0.5 || aspectRatio>2.0) {
-			ic.setMagnification2(maxBoundsMag);
+		Dimension extraSize = getExtraSize();
+		int extraHeight = extraSize.height;
+		double mag = (double)(maxBounds.height-extraHeight)/height;
+		if (IJ.debugMode) IJ.log("maximize: "+mag+" "+ic.getMagnification()+" "+maxBounds);
+		setSize(getMaximizedBounds().width, getMaximizedBounds().height);
+		if (mag>ic.getMagnification() || aspectRatio<0.5 || aspectRatio>2.0) {
+			ic.setMagnification2(mag);
 			ic.setSrcRect(new Rectangle(0, 0, width, height));
-			ic.setDrawingSize((int)(width*maxBoundsMag), (int)(height*maxBoundsMag));
+			ic.setDrawingSize((int)(width*mag), (int)(height*mag));
 			validate();
 			unzoomWhenMinimizing = true;
 		} else

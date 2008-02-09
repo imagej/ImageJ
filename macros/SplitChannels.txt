@@ -1,14 +1,10 @@
 // This macro implements the Image>HyperStacks>Split Channels command.
 
-  batch = call("ij.macro.Interpreter.isBatchMode");
+  batch = is("batch mode");
   Stack.getDimensions(w, h, channels, slices, frames);
   if (channels==1)
        exit("Multi-channel stack required");
-  //if (slices==1 && frames==1) {
-  //    run("Duplicate...", "title=["+getTitle+"]");
-  //    exit;
- // }
-  if (batch=="false") setBatchMode(true);
+  if (!batch) setBatchMode(true);
   Dialog.create("Split");
   Dialog.addCheckbox("Split All "+channels+" Channels", false);
   Dialog.show;
@@ -23,9 +19,11 @@
   }
   type = bitDepth;
   id1 = getImageID;
+  Stack.getPosition(c1, z1, t1);
   for (c=first; c<=last; c++) {
       title = "Channel "+c;
       newImage(title, type, w, h, slices*frames);
+      showStatus("Splitting channel "+c);
       if (slices>1 || frames>1)
           Stack.setDimensions(1, slices, frames);
       id2 = getImageID;
@@ -51,4 +49,6 @@
           }
       }
   }
-  if (batch=="false")  setBatchMode("exit and display");
+  selectImage(id1);
+  Stack.setPosition(c1, z1, t1);
+  if (!batch)  setBatchMode("exit and display");
