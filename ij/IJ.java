@@ -574,7 +574,7 @@ public class IJ {
 	/** Converts a number to a rounded formatted string.
 		The 'decimalPlaces' argument specifies the number of
 		digits to the right of the decimal point (0-9). */
-	public static String d2s(double n, int decimalPlaces) {
+	public static synchronized String d2s(double n, int decimalPlaces) {
 		if (Double.isNaN(n))
 			return "NaN";
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor

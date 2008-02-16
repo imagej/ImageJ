@@ -306,6 +306,7 @@ utilities07="Reset...",ij.plugin.SimpleCommands("reset")
 utilities08="Monitor Memory...",ij.plugin.MemoryMonitor
 utilities09="Search...",ij.plugin.SimpleCommands("search")
 utilities10="Capture Screen [G]",ij.plugin.ScreenGrabber
+utilities11="Upgrade ImageJ...",ij.plugin.ImageJ_Updater
 
 # Plugins installed in the Help/About submenu
 about01="About This Submenu...",ij.plugin.SimpleCommands("about")

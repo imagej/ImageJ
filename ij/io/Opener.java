@@ -275,8 +275,10 @@ public class Opener {
 				if (imp!=null && imp.getWidth()==0) imp = null;
 			} else {
 				String lurl = url.toLowerCase();
-				if (lurl.endsWith(".jpg") || lurl.endsWith(".gif") || lurl.endsWith(".png"))
+				if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
 					imp = openJpegOrGifUsingURL(name, u);
+				else if (lurl.endsWith(".png"))
+					imp = openPngUsingURL(name, u);
 				else
 					imp = openWithHandleExtraFileTypes(url, new int[]{0});
 			}
@@ -344,6 +346,21 @@ public class Opener {
 			return null;
 	}
 
+	ImagePlus openPngUsingURL(String title, URL url) {
+		if (url==null) return null;
+		Image img = null;
+		try {
+			img = ImageIO.read(url);
+		} catch (IOException e) {
+			IJ.log(""+e);
+		}
+		if (img!=null) {
+			ImagePlus imp = new ImagePlus(title, img);
+			return imp;
+		} else
+			return null;
+	}
+
 	ImagePlus openJpegOrGif(String dir, String name) {
 	   	ImagePlus imp = null;
 		Image img = Toolkit.getDefaultToolkit().createImage(dir+name);
@@ -352,6 +369,8 @@ public class Opener {
  				imp = new ImagePlus(name, img);
  			} catch (IllegalStateException e) {
 				return null; // error loading image				
+ 			} catch (IllegalArgumentException e) {
+ 				return openUsingImageIO(dir+name); // open 16-bit PNGs using ImageIO		
  			} 
 	    	if (imp.getType()==ImagePlus.COLOR_RGB)
 	    		convertGrayJpegTo8Bits(imp);

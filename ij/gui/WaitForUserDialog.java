@@ -32,14 +32,14 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         add(button, c);
 		setResizable(false);
 		pack();
-		center();
+		GUI.center(this);
 		if (IJ.isJava15()) try {
 			// Call setAlwaysOnTop() using reflection so this class can be compiled with Java 1.4
 			Class windowClass = Class.forName("java.awt.Window");
 			Method setAlwaysOnTop = windowClass.getDeclaredMethod("setAlwaysOnTop", new Class[] {Boolean.TYPE});
 			Object[] arglist = new Object[1]; arglist[0]=new Boolean(true);
 			setAlwaysOnTop.invoke(this, arglist);
-		} catch (Exception e) {IJ.log(""+e);}
+		} catch (Exception e) { }
 	}
 	
 	public WaitForUserDialog(String text) {
@@ -48,6 +48,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 
 	public void show() {
 		super.show();
+		IJ.beep();
 		synchronized(this) {  //wait for OK
 			try {wait();}
 			catch(InterruptedException e) {return;}
@@ -56,20 +57,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	
 	static Frame getFrame() {
 		Frame win = WindowManager.getCurrentWindow();
-		if (win==null || !IJ.isJava15()) win = IJ.getInstance();
+		if (win==null) win = IJ.getInstance();
 		return win;
 	}
 
-	void center() {
-		ImageJ ij = IJ.getInstance();
-		if (ij==null) return;
-		Rectangle bounds = ij.getBounds();
-		Dimension size = getSize();
-		int x = bounds.x + bounds.width/2-size.width/2;
-		int y = bounds.y + bounds.height/2-size.height/2;
-		setLocation(x, y);
-	}
-	
     public void close() {
         synchronized(this) { notify(); }
 		setVisible(false);

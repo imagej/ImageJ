@@ -60,8 +60,9 @@ import javax.swing.filechooser.*;
 		Java2.setSystemLookAndFeel();
 		try {
 			JFileChooser chooser = new JFileChooser();
-			if (defaultDir!=null) 
+			if (defaultDir!=null) {
 				chooser.setCurrentDirectory(new File(defaultDir));
+			}
 			chooser.setDialogTitle(title);
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setApproveButtonText("Select");
@@ -86,11 +87,12 @@ import javax.swing.filechooser.*;
  		boolean saveUseJFC = Prefs.useJFileChooser;
  		Prefs.useJFileChooser = false;
 		System.setProperty("apple.awt.fileDialogForDirectories", "true");
-		OpenDialog od = new OpenDialog(title, null);
+		OpenDialog od = new OpenDialog(title, defaultDir, null);
 		if (od.getDirectory()==null)
 			directory = null;
 		else
 			directory = od.getDirectory() + od.getFileName() + "/";
+		defaultDir = directory;
 		System.setProperty("apple.awt.fileDialogForDirectories", "false");
  		Prefs.useJFileChooser = saveUseJFC;
 	}
@@ -101,4 +103,10 @@ import javax.swing.filechooser.*;
  		return directory;
  	}
  	
+    /** Sets the default directory presented in the dialog. */
+    public static void setDefaultDirectory(String dir) {
+    	if (dir==null || (new File(dir)).isDirectory())
+        	defaultDir = dir;
+    }
+
 }

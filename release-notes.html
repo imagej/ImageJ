@@ -5,24 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.39r, 8 February 2008</u>
+<li> <u>1.39s, 14 February 2008</u>
 <ul>
-<li> Added the "or Enter Pattern [regular expression]" text field to the
-<i>File&gt;Import&gt;Image Sequence</i> dialog box.
-<li> <i>Plugins&gt;Compile and Run</i> adds .jar files without an underscore in
-the name to the compiler's classpath.
-<li> The <i>Image&gt;Stacks&gt;Set Slice</i> command, the ROI Manager, and the setSlice() macro function
-were updated to work with HyperStacks.
-<li> <i>Image&gt;Show Info</i> displays the image ID.
-<li> Added the waitForUser(string), waitForUser(title, string), matches(string, regex) 
-and is("composite") macro functions.
-<li> Added an optional second argument to the toString() macro function that specifies the number of decimal places.
-<li> Fixed a bug that resulted in incorrect measured median values for thresholded images when "Limit to Threshold" was  enabled
-in <i>Analyze&gt;Set Measurements</i>.
-<li> Fixed a bug that caused the information displayed by 
-<i>Image&gt;Show Info</i> (e.g., DICOM tags) to be incorrect for images opened with <i>File&gt;Open Next</i>.
-<li> Thanks to Stefan Starke, fixed a bug the caused the call() macro function to fail
-when ImageJ was running as a signed applet.
+<li> Added the <i>Plugins&gt;Utilities&gt;Update ImageJ</i>command.
+<li> Added the DirectoryChooser.setDefaultDirectory() method.
+<li> <i>File&gt;Import&gt;URL</i> now correctly opens 16-bit PNGs.
+<li> Fixed a bug, introduced in v1.39i, that sometimes caused an exception
+when opening 16-bit PNGs.
+<li> Fixed a bug that caused the B&C and W&L tools to record incorrect
+setMinAndMax() calls with signed 16-bit images.
+<li> Fixed a thread synchronization bug that could cause the IJ.d2s()
+method to create numbers with the wrong number of decimal places.
 </ul>
 
 </body>

@@ -307,7 +307,23 @@ public class ShapeRoi extends Roi {
 				for (int i=1; i<nCoords; i++)
 					((GeneralPath)shape).lineTo((float)xCoords[i],(float)yCoords[i]);
 				break;
-			case Roi.COMPOSITE: shape = ShapeRoi.cloneShape(((ShapeRoi)roi).getShape()); break;
+			case Roi.POINT:
+				ImageProcessor mask = roi.getMask();
+				byte[] maskPixels = (byte[])mask.getPixels();
+				Rectangle maskBounds = roi.getBounds();
+				int maskWidth = mask.getWidth();
+				Area area = new Area();
+				for (int y=0; y<mask.getHeight(); y++) {
+					int yOffset = y*maskWidth;
+					for (int x=0; x<maskWidth; x++) {
+						if (maskPixels[x+yOffset]!=0)
+							area.add(new Area(new Rectangle(x+maskBounds.x, y+maskBounds.y, 1, 1)));
+					}
+				}
+				shape = area;
+				break;
+			case Roi.COMPOSITE: shape = ShapeRoi.cloneShape(((ShapeRoi)roi).getShape());
+				break;
 			default:
 				throw new IllegalArgumentException("Roi type not supported");
 		}
