@@ -1253,6 +1253,12 @@ public class Functions implements MacroConstants, Measurements {
 				return label!=null?label:"";
 			} else if (key.equals("window.contents")) {
 				return getWindowContents();
+			} else if (key.equals("image.description")) {
+				String description = "";
+				FileInfo fi = getImage().getOriginalFileInfo();
+				if (fi!=null) description = fi.description;
+				if  (description==null) description = "";
+				return description;
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}

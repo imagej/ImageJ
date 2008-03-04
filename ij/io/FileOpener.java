@@ -32,6 +32,7 @@ public class FileOpener {
 
 	private FileInfo fi;
 	private int width, height;
+	private static boolean showConflictMessage = true;
 
 	public FileOpener(FileInfo fi) {
 		this.fi = fi;
@@ -300,11 +301,13 @@ public class FileOpener {
 		
 		Properties props = decodeDescriptionString(fi);
 		Calibration cal = imp.getCalibration();
+		boolean calibrated = false;
 		if (fi.pixelWidth>0.0 && fi.unit!=null) {
 			cal.pixelWidth = fi.pixelWidth;
 			cal.pixelHeight = fi.pixelHeight;
 			cal.pixelDepth = fi.pixelDepth;
 			cal.setUnit(fi.unit);
+			calibrated = true;
 		}
 		
 		if (fi.valueUnit!=null) {
@@ -313,8 +316,12 @@ public class FileOpener {
 			|| f==Calibration.UNCALIBRATED_OD) {
 				boolean zeroClip = props!=null && props.getProperty("zeroclip", "false").equals("true");	
 				cal.setFunction(f, fi.coefficients, fi.valueUnit, zeroClip);
+				calibrated = true;
 			}
 		}
+		
+		if (calibrated)
+			checkForCalibrationConflict(imp, cal);
 		
 		if (fi.frameInterval!=0.0)
 			cal.frameInterval = fi.frameInterval;
@@ -360,6 +367,29 @@ public class FileOpener {
 					imp.setOpenAsHyperStack(true);
 			}
 		}
+	}
+
+		
+	void checkForCalibrationConflict(ImagePlus imp, Calibration cal) {
+		Calibration gcal = imp.getGlobalCalibration();
+		if  (gcal==null || !showConflictMessage)
+			return;
+		if (cal.pixelWidth==gcal.pixelWidth && cal.getUnit().equals(gcal.getUnit()))
+			return;
+		GenericDialog gd = new GenericDialog(imp.getTitle());
+		gd.addMessage("The calibration of this image conflicts\nwith the current global calibration.");
+		gd.addCheckbox("Disable_Global Calibration", true);
+		gd.addCheckbox("Disable_these Messages", false);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		boolean disable = gd.getNextBoolean();
+		if (disable) {
+			imp.setGlobalCalibration(null);
+			imp.setCalibration(cal);
+			WindowManager.repaintImageWindows();
+		}
+		boolean dontShow = gd.getNextBoolean();
+		if (dontShow) showConflictMessage = false;
 	}
 
 	/** Returns an IndexColorModel for the image specified by this FileInfo. */
@@ -513,6 +543,10 @@ public class FileOpener {
 	private boolean getBoolean(Properties props, String key) {
 		String s = props.getProperty(key);
 		return s!=null&&s.equals("true")?true:false;
+	}
+	
+	public static void setShowConflictMessage(boolean b) {
+		showConflictMessage = b;
 	}
 
 }

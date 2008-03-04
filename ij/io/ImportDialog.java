@@ -40,6 +40,7 @@ public class ImportDialog {
     private static boolean whiteIsZero,intelByteOrder;
     private static boolean virtual;
     private boolean openAll;
+    private static FileInfo lastFileInfo;
     private static String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
 		"32-bit Signed", "32-bit Unsigned", "32-bit Real", "64-bit Real", "24-bit RGB", 
 		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "1-bit Bitmap"};
@@ -213,6 +214,7 @@ public class ImportDialog {
 		else
 			fi.fileType = FileInfo.GRAY8;
 		if (IJ.debugMode) IJ.log("ImportDialog: "+fi);
+		lastFileInfo = (FileInfo)fi.clone();
 		return fi;
 	}
 
@@ -232,6 +234,12 @@ public class ImportDialog {
 		//if (openAll)
 		//	options |= OPEN_ALL;
 		prefs.put(OPTIONS, Integer.toString(options));
+	}
+	
+	/** Returns the FileInfo object used to import the last raw image,
+		or null if a raw image has not been imported. */
+	public static FileInfo getLastFileInfo() {
+		return lastFileInfo;
 	}
 
 }

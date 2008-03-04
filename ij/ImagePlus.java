@@ -538,6 +538,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return win;
 	}
 	
+	/** Returns true if this image is currently being displayed in a window. */
+	public boolean isVisible() {
+		return win!=null && win.isVisible();
+	}
+
 	/** This method should only be called from an ImageWindow. */
 	public void setWindow(ImageWindow win) {
 		this.win = win;

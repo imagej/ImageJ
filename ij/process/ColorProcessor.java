@@ -776,7 +776,7 @@ public class ColorProcessor extends ImageProcessor {
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
 		if (interpolate) {
-			if (xScale<=0.25)
+			if (xScale<=0.25 && yScale<=0.25)
 				return makeThumbnail(dstWidth, dstHeight, 0.6);
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;

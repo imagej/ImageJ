@@ -5,17 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.39s, 14 February 2008</u>
+<li> <u>1.39t, 3 March 2008</u>
 <ul>
-<li> Added the <i>Plugins&gt;Utilities&gt;Update ImageJ</i>command.
-<li> Added the DirectoryChooser.setDefaultDirectory() method.
-<li> <i>File&gt;Import&gt;URL</i> now correctly opens 16-bit PNGs.
-<li> Fixed a bug, introduced in v1.39i, that sometimes caused an exception
-when opening 16-bit PNGs.
-<li> Fixed a bug that caused the B&C and W&L tools to record incorrect
-setMinAndMax() calls with signed 16-bit images.
-<li> Fixed a thread synchronization bug that could cause the IJ.d2s()
-method to create numbers with the wrong number of decimal places.
+<li> The histogram in the <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
+window is now always updated when the B&C window is activated.
+<li> Added the "Are the lanes really horizontal?" dialog to the
+<i>Analyze&gt;Gels&gt;Select First Lane</i> command.
+<li> An error message is displayed when a calibrated is opened and
+"Global" calibration is enabled.
+<li> PNGs are again opened using ImageIO, which fixes several bugs
+(introduced in v1.39i) that caused 16-bit and RGB PNGs to not open or to
+not open correctly.
+<li> Added the getInfo("image.description") macro function.
+<li> Added the ImportDialog.getLastFileInfo() method.
+<li> Fixed a bug that caused <i>File&gt;Import&gt;URL</i> to fail to open
+GIF, JPEG, PNG and DICOM files with uppercase extensions.
+<li> Fixed several bugs in <i>Edit&gt;Selection&gt;Specify</i>, thanks to 
+patches contributed by Joachim Wesner.
+<li> Fixed a bug in <i>Image&gt;Scale</i> that could cause
+a blank result if the source was an RGB image. the x scale was less
+than 0.25 and the y scale was greater than 0.5.
 </ul>
 
 </body>

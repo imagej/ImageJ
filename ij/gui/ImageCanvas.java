@@ -1079,6 +1079,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (shape==null)
 			{setDisplayList(null); return;}
 		Roi roi = new ShapeRoi(shape);
+		roi.setInstanceColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		displayList = list;
@@ -1086,6 +1087,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		listColor = color;
 		listStroke = stroke;
 		repaint();
+	}
+	
+	public Vector getDisplayList() {
+		return displayList;
 	}
 
 	/** Called by IJ.showStatus() to prevent status bar text from

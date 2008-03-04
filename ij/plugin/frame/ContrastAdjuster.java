@@ -902,6 +902,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	public void windowActivated(WindowEvent e) {
 		super.windowActivated(e);
+		previousImageID = 0; // user may have modified image
 		setup();
 		WindowManager.setWindow(this);
 	}

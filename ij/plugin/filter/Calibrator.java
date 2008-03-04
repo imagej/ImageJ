@@ -173,6 +173,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			WindowManager.repaintImageWindows();
 		else
 			imp.repaintWindow();
+		if (global2 && global2!=global1)
+			FileOpener.setShowConflictMessage(true);
 		if (function!=Calibration.NONE)
 			showPlot(x, y, cal, fitGoodness);
 	}

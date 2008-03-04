@@ -321,8 +321,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		int index = value.indexOf('=');
 		if (index>=0)
 			value = value.substring(index+1);
-		if (value.startsWith("["))
-			value = value.substring(1, value.length()-1);
+		if (value.startsWith("[")) {
+			int index2 = value.indexOf(']');
+			if (index2==-1) index2 = value.length();
+			value = value.substring(1, index2);
+		} else {
+			index = value.indexOf(' ');
+			if (index!=-1)
+				value = value.substring(0, index);
+		}
 		return value;
 	}
 

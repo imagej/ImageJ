@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
+import ij.io.FileOpener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -157,6 +158,8 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			WindowManager.repaintImageWindows();
 		else
 			imp.repaintWindow();
+		if (global2 && global2!=global1)
+			FileOpener.setShowConflictMessage(true);
 	}
 	
 	String validateInterval(String interval) {

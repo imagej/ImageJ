@@ -215,12 +215,12 @@ public class Opener {
 					return imp;
 				} else
 					return null;
-			case JPEG: case GIF: case PNG:
+			case JPEG: case GIF:
 				imp = openJpegOrGif(directory, name);
 				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
-			//case PNG: // no longer used because ImageIO did not correctly open some 8-bit PNGs
-			//	imp = openUsingImageIO(directory+name);
-			//	if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
+			case PNG: 
+				imp = openUsingImageIO(directory+name);
+				if (imp!=null&&imp.getWidth()!=0) return imp; else return null;
 			case BMP:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.BMP_Reader", path);
 				if (imp.getWidth()!=0) return imp; else return null;
@@ -270,14 +270,14 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 	 	    else if (url.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-	 	    else if (url.endsWith(".dcm")) {
+	 	    else if (url.endsWith(".dcm") || url.endsWith(".DCM")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
 			} else {
 				String lurl = url.toLowerCase();
-				if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
+				if (lurl.endsWith(".jpg") || lurl.endsWith(".gif") || lurl.endsWith(".JPG") || lurl.endsWith(".GIF"))
 					imp = openJpegOrGifUsingURL(name, u);
-				else if (lurl.endsWith(".png"))
+				else if (lurl.endsWith(".png") || lurl.endsWith(".PNG"))
 					imp = openPngUsingURL(name, u);
 				else
 					imp = openWithHandleExtraFileTypes(url, new int[]{0});
@@ -368,10 +368,8 @@ public class Opener {
  			try {
  				imp = new ImagePlus(name, img);
  			} catch (IllegalStateException e) {
-				return null; // error loading image				
- 			} catch (IllegalArgumentException e) {
- 				return openUsingImageIO(dir+name); // open 16-bit PNGs using ImageIO		
- 			} 
+				return null; // error loading image
+			}				
 	    	if (imp.getType()==ImagePlus.COLOR_RGB)
 	    		convertGrayJpegTo8Bits(imp);
 	    	FileInfo fi = new FileInfo();

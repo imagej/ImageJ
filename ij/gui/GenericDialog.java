@@ -44,6 +44,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
 	private Button cancel, okay;
+	private String okLabel = "  OK  ";
     private boolean wasCanceled, wasOKed;
     private int y;
     private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex;
@@ -544,6 +545,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     	customInsets = true;
     }
     
+    /** Sets a replacement label for the "OK" button. */
+    public void setOKLabel(String label) {
+    	okLabel = label;
+    }
+
 	Insets getInsets(int top, int left, int bottom, int right) {
 		if (customInsets) {
 			customInsets = false;
@@ -815,7 +821,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			cancel = new Button("Cancel");
 			cancel.addActionListener(this);
 			cancel.addKeyListener(this);
-			okay = new Button("  OK  ");
+			okay = new Button(okLabel);
 			okay.addActionListener(this);
 			okay.addKeyListener(this);
 			if (IJ.isMacintosh()) {

@@ -9,12 +9,21 @@ import ij.util.Tools;
 
 /**
  *      This plugin implements the Edit/Selection/Specify command.<p>
+
+ *      New update, correctly handling existing oval ROIs, the case that 
+ *      "Centered" is already selected when the plugin starts, and always 
+ *      restoring the original ROI when the dialog is cancelled (JW, 2008/02/22)
+ *
  *      Enhancing the original plugin created by Jeffrey Kuhn, this one takes,
  *      in addition to width and height and the option to have an oval ROI from 
  *      the original program, x & y coordinates, slice number, and the option to have
  *      the x & y coordinates centered or in default top left corner of ROI.
  *      The original creator is Jeffrey Kuhn, The University of Texas at Austin,
  *	    jkuhn@ccwf.cc.utexas.edu
+ *
+ *      @author Joachim Wesner
+ *      @author Leica Microsystems CMS GmbH
+ *      @author joachim.wesner@leica-microsystems.com
  *
  *      @author Anthony Padua
  *      @author Duke University Medical Center, Department of Radiology
@@ -45,12 +54,16 @@ public class SpecifyROI implements PlugIn, DialogListener {
         iHeight = r.height;
         iXROI = r.x;
         iYROI = r.y;
-        if (roi==null) {
+        if (roi==null) { // No existing ROI, make default
         	iWidth /= 2;
         	iHeight /= 2;
         	iXROI += iWidth/2;
         	iYROI += iHeight/2; 
         }
+	  if (centered) {	// Make iXROI and iYROI consistent when centered mode is active
+        	iXROI += iWidth/2;
+        	iYROI += iHeight/2; 
+	  }
         iSlice = imp.getCurrentSlice();
         showDialog();
      }
@@ -63,6 +76,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
     void showDialog() {
     	Roi roi = imp.getRoi();
     	boolean rectOrOval = roi!=null && (roi.getType()==Roi.RECTANGLE||roi.getType()==Roi.OVAL);
+	oval = rectOrOval && (roi.getType()==Roi.OVAL);	// Handle existing oval ROI
     	if (roi==null || !rectOrOval)
     		drawRoi();
         GenericDialog gd = new GenericDialog("Specify");
@@ -80,7 +94,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
         if (gd.wasCanceled()) {
         	 if (roi==null)
         		imp.killRoi();
-        	 else if (!rectOrOval)
+        	 else // *ALWAYS* restore initial ROI when cancelled
         		imp.setRoi(roi);
         }
     }
