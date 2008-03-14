@@ -445,14 +445,16 @@ public class CompositeImage extends ImagePlus {
 		if (mode==GRAYSCALE)
 			getProcessor().setColorModel(table);
 		else {
-			if (currentChannel==-1) return;
-			double min = lut[currentChannel].min;
-			double max = lut[currentChannel].max;
-			lut[currentChannel] = table;
-			lut[currentChannel].min = min;
-			lut[currentChannel].max = max;
-			if (mode==COMPOSITE) {
-				cip[currentChannel].setColorModel(lut[currentChannel] );
+			int channel = getChannel()-1;
+			if (channel>=getNChannels()) return;
+			if (lut==null) setupLuts(getNChannels());
+			double min = lut[channel].min;
+			double max = lut[channel].max;
+			lut[channel] = table;
+			lut[channel].min = min;
+			lut[channel].max = max;
+			if (mode==COMPOSITE && cip!=null && channel<cip.length) {
+				cip[channel].setColorModel(lut[channel] );
 				imageSource = null;
 				newPixels = true;
 				img = null;

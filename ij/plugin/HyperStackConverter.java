@@ -77,7 +77,7 @@ public class HyperStackConverter implements PlugIn {
 		}
 	}
 
-	/** Changes the dimension order of a 3D or 4D stack from 
+	/** Changes the dimension order of a 4D or 5D stack from 
 		the specified order (CTZ, ZCT, ZTC, TCZ or TZC) to 
 		the XYCZT order used by ImageJ. */
 	public void shuffle(ImagePlus imp, int order) {

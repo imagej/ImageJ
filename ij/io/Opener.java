@@ -162,6 +162,7 @@ public class Opener {
 					}
 					if (openUsingPlugins)
 						msg += "\n \nNOTE: The \"OpenUsingPlugins\" option is set.";
+					IJ.wait(IJ.isMacro()?500:100); // work around for OS X thread deadlock problem
 					IJ.error("Opener", msg);
 					error = true;
 					break;
@@ -637,7 +638,8 @@ public class Opener {
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.open(false);
 		int c = imp.getNChannels();
-		if (c>1 && imp.getOpenAsHyperStack() && !imp.isComposite()) {
+		boolean composite = c>1 && info[0].description!=null && info[0].description.indexOf("mode=")!=-1;
+		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite()) {
 			int mode = CompositeImage.COLOR;
 			if (info[0].description!=null) {
 				if (info[0].description.indexOf("mode=composite")!=-1)

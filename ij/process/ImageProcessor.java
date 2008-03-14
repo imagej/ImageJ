@@ -1726,7 +1726,7 @@ public abstract class ImageProcessor extends Object {
 	}
 	
 	// method and variables used by updateComposite()
-	abstract byte[]  create8BitImage();
+	byte[]  create8BitImage() {return null;}
 	private byte[] bytes;
 	private int[] reds, greens, blues;
 

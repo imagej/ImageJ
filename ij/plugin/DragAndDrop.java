@@ -1,6 +1,6 @@
 package ij.plugin;
 import ij.*;
-import ij.gui.YesNoCancelDialog;
+import ij.gui.*;
 import ij.io.*;
 import java.io.*;
 import java.awt.datatransfer.*;
@@ -88,30 +88,44 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		private void openFile(File f) {
 			try {
 				if (null == f) return;
-				String tmp = f.getCanonicalPath();
+				String path = f.getCanonicalPath();
 				if (f.exists()) {
-					if (f.isDirectory()) {
-						String[] names = f.list();
-						YesNoCancelDialog yn = new YesNoCancelDialog(IJ.getInstance(), "Open folder?", "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?");
-						if (yn.yesPressed()) {
-							IJ.run("Image Sequence...", "open=[" + tmp + "/] sort");
-						} else if (!yn.cancelPressed()) {
-							for (int k=0; k<names.length; k++) {
-								IJ.redirectErrorMessages();
-								if (!names[k].startsWith("."))
-									(new Opener()).open(tmp + "/" + names[k]);
-							}
-						}
-					} else {
-						(new Opener()).openAndAddToRecent(tmp);
+					if (f.isDirectory())
+						openDirectory(f, path);
+					else {
+						(new Opener()).openAndAddToRecent(path);
 						OpenDialog.setLastDirectory(f.getParent()+File.separator);
 						OpenDialog.setLastName(f.getName());
 					}
 				} else {
-					IJ.log("File not found: " + tmp);
+					IJ.log("File not found: " + path);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		
+		private void openDirectory(File f, String path) {
+			String[] names = f.list();
+			String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
+			GenericDialog gd = new GenericDialog("Open Folder?");
+			gd.setInsets(10,5,0);
+			gd.addMessage(msg);
+			gd.setInsets(15,35,0);
+			gd.addCheckbox("Use Virtual Stack", false);
+			gd.enableYesNoCancel();
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			if (gd.wasOKed()) {
+				String options  = (gd.getNextBoolean()?" use":"")+" sort";
+				IJ.run("Image Sequence...", "open=[" + path + "/]"+options);
+			} else {
+				for (int k=0; k<names.length; k++) {
+					IJ.redirectErrorMessages();
+					if (!names[k].startsWith("."))
+						(new Opener()).open(path + "/" + names[k]);
+				}
+			}
+		}
+		
 }

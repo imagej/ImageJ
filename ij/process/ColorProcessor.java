@@ -1208,9 +1208,5 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	byte[] create8BitImage() {
-		return null;
-	}
-
 }
 

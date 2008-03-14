@@ -5,26 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.39t, 3 March 2008</u>
+<li> <u>1.39u, 12 March 2008</u>
 <ul>
-<li> The histogram in the <i>Image&gt;Adjust&gt;Brightness/Contrast</i>
-window is now always updated when the B&C window is activated.
-<li> Added the "Are the lanes really horizontal?" dialog to the
-<i>Analyze&gt;Gels&gt;Select First Lane</i> command.
-<li> An error message is displayed when a calibrated is opened and
-"Global" calibration is enabled.
-<li> PNGs are again opened using ImageIO, which fixes several bugs
-(introduced in v1.39i) that caused 16-bit and RGB PNGs to not open or to
-not open correctly.
-<li> Added the getInfo("image.description") macro function.
-<li> Added the ImportDialog.getLastFileInfo() method.
-<li> Fixed a bug that caused <i>File&gt;Import&gt;URL</i> to fail to open
-GIF, JPEG, PNG and DICOM files with uppercase extensions.
-<li> Fixed several bugs in <i>Edit&gt;Selection&gt;Specify</i>, thanks to 
-patches contributed by Joachim Wesner.
-<li> Fixed a bug in <i>Image&gt;Scale</i> that could cause
-a blank result if the source was an RGB image. the x scale was less
-than 0.25 and the y scale was greater than 0.5.
+<li> <i>Image&gt;Stacks&gt;Start Animation</i> now works with HyperStacks.
+<li> Added a "Use Virtual Stack" option to the dialog displayed when a folder
+is dragged and dropped on the ImageJ window.
+<li> The Gel Analyzer displays an error message if the user clicks
+with the wand tool and the shift key is down.
+<li> The command recorder now records blank string fields as "key=[]" because
+run() option strings containing "key= " are problematic.
+<li> Fixed a bug that could cause incorrect centroid
+calculation on an 8-bit image with a non-rectangular selection larger than ~4 megapixels.
+<li> Worked around a bug that could cause a thread deadlock
+in macros attempting to open a non-existant file.
 </ul>
 
 </body>

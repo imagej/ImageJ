@@ -512,6 +512,12 @@ class PlotsCanvas extends ImageCanvas {
 			Roi.setColor(Color.yellow);
 		if (Toolbar.getToolId()!=Toolbar.WAND || IJ.spaceBarDown())
 			return;
+		if (IJ.shiftKeyDown()) {
+			IJ.showMessage("Gel Analyzer", "Unable to measure area because shift key is down.");
+			imp.killRoi();
+			counter = 0;
+			return;
+		}
 		ImageStatistics s = imp.getStatistics();
 		if (counter==0) {
 			rt = ResultsTable.getResultsTable();

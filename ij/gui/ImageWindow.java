@@ -228,8 +228,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     		int currentSlice = imp.getCurrentSlice();
     		s += currentSlice+"/"+nSlices;
     		String label = stack.getShortSliceLabel(currentSlice);
-    		if (label!=null && label.length()>0 && !imp.isHyperStack())
+    		if (label!=null && label.length()>0) {
+    			if (imp.isHyperStack()) label = label.replace(';', ' ');
     			s += " (" + label + ")";
+    		}
 			if ((this instanceof StackWindow) && running2) {
 				return s;
 			}

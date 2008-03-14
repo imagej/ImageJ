@@ -1725,6 +1725,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	public void updatePosition(int c, int z, int t) {
+		//IJ.log("updatePosition: "+c+", "+z+", "+t);
 		position[0] = c;
 		position[1] = z;
 		position[2] = t;

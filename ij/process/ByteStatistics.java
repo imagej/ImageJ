@@ -80,7 +80,8 @@ public class ByteStatistics extends ImageStatistics {
 		byte[] pixels = (byte[])ip.getPixels();
 		byte[] mask = ip.getMaskArray();
 		boolean limit = minThreshold>0 || maxThreshold<255;
-		int count=0, xsum=0, ysum=0,i,mi,v;
+		double xsum=0, ysum=0;
+		int count=0,i,mi,v;
 		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
 			i = y*width + rx;
 			mi = my*rw;
@@ -102,8 +103,8 @@ public class ByteStatistics extends ImageStatistics {
 				i++;
 			}
 		}
-		xCentroid = (double)xsum/count+0.5;
-		yCentroid = (double)ysum/count+0.5;
+		xCentroid = xsum/count+0.5;
+		yCentroid = ysum/count+0.5;
 		if (cal!=null) {
 			xCentroid = cal.getX(xCentroid);
 			yCentroid = cal.getY(yCentroid, height);

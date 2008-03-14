@@ -86,6 +86,69 @@ public class Animator implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		if (cal.fps!=0.0)
 			animationRate = cal.fps;
+		int frames = imp.getNFrames();
+		int slices = imp.getNSlices();
+		
+		if (imp.isHyperStack() && frames>1) {
+			int frame = imp.getFrame();
+			first = 1;
+			last = frames;
+			while (swin.running2) {
+				time = System.currentTimeMillis();
+				if (time<nextTime)
+					IJ.wait((int)(nextTime-time));
+				else
+					Thread.yield();
+				nextTime += (long)(1000.0/animationRate);
+				frame += sliceIncrement;
+				if (frame<first) {
+					frame = first+1;
+					sliceIncrement = 1;
+				}
+				if (frame>last) {
+					if (cal.loop) {
+						frame = last-1;
+						sliceIncrement = -1;
+					} else {
+						frame = first;
+						sliceIncrement = 1;
+					}
+				}
+				imp.setPosition(imp.getChannel(), imp.getSlice(), frame);
+			}
+			return;
+		}
+
+		if (imp.isHyperStack() && slices>1) {
+			slice = imp.getSlice();
+			first = 1;
+			last = slices;
+			while (swin.running2) {
+				time = System.currentTimeMillis();
+				if (time<nextTime)
+					IJ.wait((int)(nextTime-time));
+				else
+					Thread.yield();
+				nextTime += (long)(1000.0/animationRate);
+				slice += sliceIncrement;
+				if (slice<first) {
+					slice = first+1;
+					sliceIncrement = 1;
+				}
+				if (slice>last) {
+					if (cal.loop) {
+						slice = last-1;
+						sliceIncrement = -1;
+					} else {
+						slice = first;
+						sliceIncrement = 1;
+					}
+				}
+				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
+			}
+			return;
+		}
+		
 		while (swin.running2) {
 			time = System.currentTimeMillis();
 			if (time<nextTime)
@@ -109,12 +172,20 @@ public class Animator implements PlugIn {
 			}
 			swin.showSlice(slice);
 		}
+		
 	}
 
 	void doOptions() {
-		if (firstFrame<1 || firstFrame>nSlices || lastFrame<1 || lastFrame>nSlices) {
+		if (firstFrame<1 || firstFrame>nSlices || lastFrame<1 || lastFrame>nSlices)
+			{firstFrame=1; lastFrame=nSlices;}
+		if (imp.isHyperStack()) {
+			int frames = imp.getNFrames();
+			int slices = imp.getNSlices();
 			firstFrame = 1;
-			lastFrame = nSlices;
+			if (frames>1)
+				lastFrame = frames;
+			else if (slices>1)
+				lastFrame=slices;
 		}
 		boolean start = !swin.running2;
 		Calibration cal = imp.getCalibration();

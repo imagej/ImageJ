@@ -181,11 +181,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
 		if (nFrames>1)
 			s += "t:"+t+"/"+nFrames;
-		if (running2) return subtitle;
+		if (running2) return s;
 		int index = subtitle.indexOf(";");
-		if (index!=-1)
+		if (index!=-1) {
+			int index2 = subtitle.indexOf("(");
+			if (index2>=0 && index2<index && subtitle.length()>index2+4 && !subtitle.substring(index2+1, index2+4).equals("ch:")) {
+				index = index2;
+				s = s + " ";
+			}
 			subtitle = subtitle.substring(index, subtitle.length());
-		else
+		} else
 			subtitle = "";
     	return s + subtitle;
     }

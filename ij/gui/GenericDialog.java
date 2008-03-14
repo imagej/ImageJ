@@ -43,7 +43,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
-	private Button cancel, okay;
+	private Button cancel, okay, no;
 	private String okLabel = "  OK  ";
     private boolean wasCanceled, wasOKed;
     private int y;
@@ -67,6 +67,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     private String previewLabel = " Preview";
     private final static String previewRunning = "wait...";
     private boolean recorderOn;         // whether recording is allowed
+    private boolean yesNoCancel;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -550,6 +551,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
     	okLabel = label;
     }
 
+    /** Make this a "Yes No Cancel" dialog. */
+    public void enableYesNoCancel() {
+    	yesNoCancel = true;
+    }
+
 	Insets getInsets(int top, int left, int bottom, int right) {
 		if (customInsets) {
 			customInsets = false;
@@ -574,7 +580,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
         if (IJ.debugMode) IJ.log("GenericDialog: Listener added: "+dl);
     }
 
-	/** Returns true if the user clicks on "Cancel". */
+	/** Returns true if the user clicked on "Cancel". */
     public boolean wasCanceled() {
     	if (wasCanceled)
     		Macro.abort();
@@ -635,6 +641,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
 	private void recordOption(Component component, String value) {
 		String label = (String)labels.get((Object)component);
+		if (value.equals("")) value = "[]";
 		Recorder.recordOption(label, value);
 	}
 
@@ -821,14 +828,22 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			cancel = new Button("Cancel");
 			cancel.addActionListener(this);
 			cancel.addKeyListener(this);
+			if (yesNoCancel) {
+				okLabel = " Yes ";
+				no = new Button(" No ");
+				no.addActionListener(this);
+				no.addKeyListener(this);
+			}
 			okay = new Button(okLabel);
 			okay.addActionListener(this);
 			okay.addKeyListener(this);
 			if (IJ.isMacintosh()) {
+				if (yesNoCancel) buttons.add(no);
 				buttons.add(cancel);
 				buttons.add(okay);
 			} else {
 				buttons.add(okay);
+				if (yesNoCancel) buttons.add(no);;
 				buttons.add(cancel);
 			}
 			c.gridx = 0; c.gridy = y;
@@ -838,7 +853,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			grid.setConstraints(buttons, c);
 			add(buttons);
 			if (IJ.isMacintosh())
-			setResizable(false);
+				setResizable(false);
 			pack();
 			setup();
 			GUI.center(this);
@@ -926,7 +941,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
-		if (source==okay || source==cancel) {
+		if (source==okay || source==cancel | source==no) {
 			wasCanceled = source==cancel;
 			wasOKed = source==okay;
 			closeDialog();
