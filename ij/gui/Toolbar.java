@@ -509,9 +509,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void setTool(int tool) {
-		if ((tool==current&&tool!=OVAL) || tool<0 || tool>=NUM_TOOLS)
+		if ((tool==current&&tool!=OVAL) || tool<0 || tool>=NUM_TOOLS-1)
 			return;
-		if (tool==SPARE1||(tool>=SPARE2&&tool<=SPARE9)) {
+		if (tool==SPARE1||(tool>=SPARE2&&tool<=SPARE8)) {
 			if (names[tool]==null)
 				names[tool] = "Spare tool"; // enable tool
 			if (names[tool].indexOf("Action Tool")!=-1)

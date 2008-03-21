@@ -180,7 +180,7 @@ public class CompositeImage extends ImagePlus {
 					ip.setColorModel(cm);
 				if (!(cm.min==0.0&&cm.max==0.0))
 					ip.setMinAndMax(cm.min, cm.max);
-				ContrastAdjuster.update();
+				if (!IJ.isMacro()) ContrastAdjuster.update();
 				Frame channels = Channels.getInstance();
 				for (int i=0; i<MAX_CHANNELS; i++)
 					active[i] = i==currentChannel?true:false;
@@ -212,7 +212,7 @@ public class CompositeImage extends ImagePlus {
 		
 		if (newChannel) {
 			getProcessor().setMinAndMax(cip[currentChannel].getMin(), cip[currentChannel].getMax());
-			ContrastAdjuster.update();
+			if (!IJ.isMacro()) ContrastAdjuster.update();
 		}
 		//IJ.log(nChannels+" "+ch+" "+currentChannel+"  "+newChannel);
 				
@@ -368,9 +368,9 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public Color getChannelColor() {
-		if (lut==null || currentChannel==-1 || mode==GRAYSCALE)
+		if (lut==null || mode==GRAYSCALE)
 			return Color.black;
-		IndexColorModel cm = lut[currentChannel];
+		IndexColorModel cm = lut[getChannelIndex()];
 		if (cm==null)
 			return Color.black;
 		int index = cm.getMapSize() - 1;
@@ -427,6 +427,15 @@ public class CompositeImage extends ImagePlus {
 		return mode;
 	}
 	
+	public String getModeAsString() {
+		switch (mode) {
+			case COMPOSITE: return "composite";
+			case COLOR: return "color";
+			case GRAYSCALE: return "gray";
+		}
+		return "";
+	}
+	
 	/* Returns the LUT used by the specified channel. */
 	public LUT getChannelLut(int channel) {
 		if (channel<1 || channel>lut.length)
@@ -436,8 +445,14 @@ public class CompositeImage extends ImagePlus {
 	
 	/* Returns the LUT used by the current channel. */
 	public LUT getChannelLut() {
-		if (currentChannel==-1) return null;
-		return lut[currentChannel];
+		return lut[getChannelIndex()];
+	}
+	
+	int getChannelIndex() {
+		int channels = getNChannels();
+		if (lut==null) setupLuts(channels);
+		int index = getChannel()-1;
+		return index;
 	}
 	
 	/* Sets the LUT of the current channel. */
@@ -445,23 +460,21 @@ public class CompositeImage extends ImagePlus {
 		if (mode==GRAYSCALE)
 			getProcessor().setColorModel(table);
 		else {
-			int channel = getChannel()-1;
-			if (channel>=getNChannels()) return;
-			if (lut==null) setupLuts(getNChannels());
-			double min = lut[channel].min;
-			double max = lut[channel].max;
-			lut[channel] = table;
-			lut[channel].min = min;
-			lut[channel].max = max;
-			if (mode==COMPOSITE && cip!=null && channel<cip.length) {
-				cip[channel].setColorModel(lut[channel] );
+			int c = getChannelIndex();
+			double min = lut[c].min;
+			double max = lut[c].max;
+			lut[c] = table;
+			lut[c].min = min;
+			lut[c].max = max;
+			if (mode==COMPOSITE && cip!=null && c<cip.length) {
+				cip[c].setColorModel(lut[c] );
 				imageSource = null;
 				newPixels = true;
 				img = null;
 			}
 			currentChannel = -1;
 			customLut = true;
-			ContrastAdjuster.update();
+			if (!IJ.isMacro()) ContrastAdjuster.update();
 		}
 		customLuts = true;
 	}
@@ -476,21 +489,27 @@ public class CompositeImage extends ImagePlus {
 		cm.getBlues(blues);
 		setChannelLut(new LUT(8, cm.getMapSize(), reds, greens, blues));
 	}
-
+	
 	public void setDisplayRange(double min, double max) {
 		ip.setMinAndMax(min, max);
-		if (currentChannel!=-1) {
-			lut[currentChannel].min = min;
-			lut[currentChannel].max = max;
-		}
+		int c = getChannelIndex();
+		lut[c].min = min;
+		lut[c].max = max;
+	}
+
+	public double getDisplayRangeMin() {
+		return lut[getChannelIndex()].min;
+	}
+
+	public double getDisplayRangeMax() {
+		return lut[getChannelIndex()].max;
 	}
 
 	public void resetDisplayRange() {
 		ip.resetMinAndMax();
-		if (currentChannel!=-1) {
-			lut[currentChannel].min = ip.getMin();
-			lut[currentChannel].max = ip.getMax();
-		}
+		int c = getChannelIndex();
+		lut[c].min = ip.getMin();
+		lut[c].max = ip.getMax();
 	}
 	
 	public boolean hasCustomLuts() {

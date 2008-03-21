@@ -72,7 +72,7 @@ public class StackStatistics extends ImageStatistics {
 			IJ.showStatus("Calculating stack histogram...");
 			IJ.showProgress(slice/2, size);
 			ip = stack.getProcessor(slice);
-			ip.setCalibrationTable(cTable);
+			//ip.setCalibrationTable(cTable);
 			for (int y=ry, my=0; y<(ry+rh); y++, my++) {
 				int i = y * width + rx;
 				int mi = my * rw;

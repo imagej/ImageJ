@@ -34,6 +34,7 @@
               if (z==1 && t==1) {
                   getVoxelSize(vw, vh, vd, unit);
                   getLut(reds, greens, blues);
+                  getMinAndMax(min, max);
               }
               run("Copy");
               selectImage(id2);
@@ -41,8 +42,8 @@
               run("Paste");
               if (z==1 && t==1) {
                   setVoxelSize(vw, vh, vd, unit);
-                  resetMinAndMax();
-                  //setLut(reds, greens, blues);
+                  setLut(reds, greens, blues);
+                  setMinAndMax(min, max);
               }
               if (z==slices && t==frames)
                   run("Select None");

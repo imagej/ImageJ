@@ -755,6 +755,7 @@ public class Interpreter implements MacroConstants {
 			Variable v2 = runUserFunction();
 			if (v2==null)
 				error("No return value");
+			if (done) return;
 			int type = v2.getType();
 			if (type==Variable.VALUE)
 				v1.setValue(v2.getValue());

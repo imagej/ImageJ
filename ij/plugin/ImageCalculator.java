@@ -147,8 +147,6 @@ public class ImageCalculator implements PlugIn {
 		Undo.reset();
 		ImageStack stack1 = img1.getStack();
 		StackProcessor sp = new StackProcessor(stack1, img1.getProcessor());
-		Calibration cal2 = img2.getCalibration();
-		img2.getProcessor().setCalibrationTable(cal2.getCTable());
 		try {
 			if (size2==1)
 				sp.copyBits(img2.getProcessor(), 0, 0, mode);
@@ -173,7 +171,7 @@ public class ImageCalculator implements PlugIn {
 		Calibration cal1 = img1.getCalibration();
 		Calibration cal2 = img2.getCalibration();
 		if (createWindow)
-			ip1 = createNewImage(ip1, ip2, cal1);
+			ip1 = createNewImage(ip1, ip2);
 		else {
 			ImageWindow win = img1.getWindow();
 			if (win!=null)
@@ -181,10 +179,7 @@ public class ImageCalculator implements PlugIn {
 			ip1.snapshot();
 			Undo.setup(Undo.FILTER, img1);
 		}
-		if (floatResult) {
-			ip2.setCalibrationTable(cal2.getCTable());
-			ip2 = ip2.convertToFloat();
-		}
+		if (floatResult) ip2 = ip2.convertToFloat();
 		try {
 			ip1.copyBits(ip2, 0, 0, mode);
 		}
@@ -202,12 +197,11 @@ public class ImageCalculator implements PlugIn {
 			img1.updateAndDraw();
 	}
 
-	ImageProcessor createNewImage(ImageProcessor ip1, ImageProcessor ip2, Calibration cal) {
+	ImageProcessor createNewImage(ImageProcessor ip1, ImageProcessor ip2) {
 		int width = Math.min(ip1.getWidth(), ip2.getWidth());
 		int height = Math.min(ip1.getHeight(), ip2.getHeight());
 		ImageProcessor ip3 = ip1.createProcessor(width, height);
 		if (floatResult) {
-			ip1.setCalibrationTable(cal.getCTable());
 			ip1 = ip1.convertToFloat();
 			ip3 = ip3.convertToFloat();
 		}

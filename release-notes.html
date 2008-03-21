@@ -5,19 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.39u, 12 March 2008</u>
+<li> <u>1.40a, 21 March 2008</u>
 <ul>
-<li> <i>Image&gt;Stacks&gt;Start Animation</i> now works with HyperStacks.
-<li> Added a "Use Virtual Stack" option to the dialog displayed when a folder
-is dragged and dropped on the ImageJ window.
-<li> The Gel Analyzer displays an error message if the user clicks
-with the wand tool and the shift key is down.
-<li> The command recorder now records blank string fields as "key=[]" because
-run() option strings containing "key= " are problematic.
-<li> Fixed a bug that could cause incorrect centroid
-calculation on an 8-bit image with a non-rectangular selection larger than ~4 megapixels.
-<li> Worked around a bug that could cause a thread deadlock
-in macros attempting to open a non-existant file.
+<li> Added the Stack.setDisplayMode(string) and Stack.getDisplayMode(string) 
+macro funcions.
+<li> Added the setSelection(start, end) method to the TextPanel class.
+<li> Fixed numerious hyperstack and composite image bugs.
 </ul>
 
 </body>

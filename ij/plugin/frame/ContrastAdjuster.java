@@ -253,11 +253,9 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	void setup() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			//IJ.write("setup");
-			ImageProcessor ip = imp.getProcessor();
 			setup(imp);
 			updatePlot();
-			updateLabels(imp, ip);
+			updateLabels(imp);
 			imp.updateAndDraw();
 		}
 	}
@@ -314,21 +312,21 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	 		previousSnapshot = ((ColorProcessor)ip).getSnapshotPixels();
 	 	} else
 			previousSnapshot = null;
-		double min2 = ip.getMin();
-		double max2 = ip.getMax();
+		double min2 = imp.getDisplayRangeMin();
+		double max2 = imp.getDisplayRangeMax();
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			{min2=0.0; max2=255.0;}
 		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
 			imp.resetDisplayRange();
-			defaultMin = ip.getMin();
-			defaultMax = ip.getMax();
+			defaultMin = imp.getDisplayRangeMin();
+			defaultMax = imp.getDisplayRangeMax();
 		} else {
 			defaultMin = 0;
 			defaultMax = 255;
 		}
 		setMinAndMax(imp, min2, max2);
-		min = ip.getMin();
-		max = ip.getMax();
+		min = imp.getDisplayRangeMin();
+		max = imp.getDisplayRangeMax();
 		if (IJ.debugMode) {
 			IJ.log("min: " + min);
 			IJ.log("max: " + max);
@@ -380,9 +378,9 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		plot.repaint();
 	}
 	
-	void updateLabels(ImagePlus imp, ImageProcessor ip) {
-		double min = ip.getMin();
-		double max = ip.getMax();
+	void updateLabels(ImagePlus imp) {
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();;
 		int type = imp.getType();
 		Calibration cal = imp.getCalibration();
 		boolean realValue = type==ImagePlus.GRAY32;
@@ -517,8 +515,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			ip.reset();
 		if ((ip instanceof ShortProcessor) || (ip instanceof FloatProcessor)) {
 			imp.resetDisplayRange();
-			defaultMin = ip.getMin();
-			defaultMax = ip.getMax();
+			defaultMin = imp.getDisplayRangeMin();
+			defaultMax = imp.getDisplayRangeMax();
 			plot.defaultMin = defaultMin;
 			plot.defaultMax = defaultMax;
 		}
@@ -586,8 +584,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			return;
 		}
 		int[] table = new int[256];
-		int min = (int)ip.getMin();
-		int max = (int)ip.getMax();
+		int min = (int)imp.getDisplayRangeMin();
+		int max = (int)imp.getDisplayRangeMax();
 		for (int i=0; i<256; i++) {
 			if (i<=min)
 				table[i] = 0;
@@ -729,8 +727,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 	
 	void setMinAndMax(ImagePlus imp, ImageProcessor ip) {
-		min = ip.getMin();
-		max = ip.getMax();
+		min = imp.getDisplayRangeMin();
+		max = imp.getDisplayRangeMax();
 		Calibration cal = imp.getCalibration();
 		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
 		double minValue = cal.getCValue(min);
@@ -772,8 +770,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 
 	void setWindowLevel(ImagePlus imp, ImageProcessor ip) {
-		min = ip.getMin();
-		max = ip.getMax();
+		min = imp.getDisplayRangeMin();
+		max = imp.getDisplayRangeMax();
 		Calibration cal = imp.getCalibration();
 		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
 		double minValue = cal.getCValue(min);
@@ -876,7 +874,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			case CONTRAST: adjustContrast(imp, ip, cvalue); break;
 		}
 		updatePlot();
-		updateLabels(imp, ip);
+		updateLabels(imp);
 		if ((IJ.shiftKeyDown()||(balance && channels==7)) && imp.isComposite()) {
 			((CompositeImage)imp).updateAllChannelsAndDraw();
 		} else

@@ -49,7 +49,7 @@ public class ProfilePlot {
 		units = cal.getUnits();
 		yLabel = cal.getValueUnit();
 		ImageProcessor ip = imp.getProcessor();
-		ip.setCalibrationTable(cal.getCTable());
+		//ip.setCalibrationTable(cal.getCTable());
 		if (roiType==Roi.LINE)
 			profile = getStraightLineProfile(roi, cal, ip);
 		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)

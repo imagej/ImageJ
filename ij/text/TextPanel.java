@@ -577,6 +577,19 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tc.repaint();
 	}
 	
+	/** Creates a selection. */
+	public void setSelection (int startLine, int endLine) {
+		if (startLine>endLine) endLine = startLine;
+		if (startLine<0) startLine = 0;
+		if (endLine<0) endLine = 0;
+		if (startLine>=iRowCount) startLine = iRowCount-1;
+		if (endLine>=iRowCount) endLine = iRowCount-1;
+		selOrigin = startLine;
+		selStart = startLine;
+		selEnd = endLine;
+		tc.repaint();
+	}
+
 	/** Writes all the text in this TextPanel to a file. */
 	public void save(PrintWriter pw) {
 		resetSelection();

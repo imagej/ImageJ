@@ -639,7 +639,7 @@ public class Opener {
 		imp = fo.open(false);
 		int c = imp.getNChannels();
 		boolean composite = c>1 && info[0].description!=null && info[0].description.indexOf("mode=")!=-1;
-		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite()) {
+		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
 			int mode = CompositeImage.COLOR;
 			if (info[0].description!=null) {
 				if (info[0].description.indexOf("mode=composite")!=-1)
@@ -651,7 +651,6 @@ public class Opener {
 		}
 		return imp;
 	}
-	
 	
 	/** Attempts to open the specified ROI, returning null if unsuccessful. */
 	public Roi openRoi(String path) {

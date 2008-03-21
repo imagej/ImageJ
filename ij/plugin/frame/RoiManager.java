@@ -35,6 +35,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	Button moreButton, colorButton;
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
+	int prevID;
 
 
 	public RoiManager() {
@@ -230,10 +231,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
 				int slice2 = getSliceNumber(label);
-				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()))
+				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode())
 					return false;
 			}
 		}
+		prevID = imp.getID();
 		String name = roi.getName();
 		if (isStandardName(name))
 			name = null;

@@ -138,7 +138,7 @@ public class StackConverter {
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip1 = stack1.getProcessor(1);
-			ip1.setCalibrationTable(cal.getCTable());
+			//ip1.setCalibrationTable(cal.getCTable());
 			ip2 = ip1.convertToFloat();
 			stack1.deleteSlice(1);
 			stack2.addSlice(label, ip2);

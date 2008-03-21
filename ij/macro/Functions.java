@@ -366,6 +366,13 @@ public class Functions implements MacroConstants, Measurements {
 		return arg==0?false:true;
 	}
 
+	final Variable getVariableArg() {
+		interp.getLeftParen();
+		Variable v = getVariable();
+		interp.getRightParen();
+		return v;
+	}
+
 	final Variable getFirstVariable() {
 		interp.getLeftParen();
 		return getVariable();
@@ -1470,17 +1477,23 @@ public class Functions implements MacroConstants, Measurements {
 		Variable greens = getNextArrayVariable();
 		Variable blues = getLastArrayVariable();
 		resetImage();
-		ImageProcessor ip = getProcessor();
-		if (ip instanceof ColorProcessor)
-			interp.error("Non-RGB image expected");
-		IndexColorModel cm = (IndexColorModel)ip.getColorModel();
+		ImagePlus imp = getImage();
+		IndexColorModel cm = null;
+		if (imp.isComposite())
+			cm = ((CompositeImage)imp).getChannelLut();
+		else {
+			ImageProcessor ip = imp.getProcessor();
+			if (ip instanceof ColorProcessor)
+				interp.error("Non-RGB image expected");
+			cm = (IndexColorModel)ip.getColorModel();
+		}
 		int mapSize = cm.getMapSize();
 		byte[] rLUT = new byte[mapSize];
 		byte[] gLUT = new byte[mapSize];
 		byte[] bLUT = new byte[mapSize];
 		cm.getReds(rLUT); 
 		cm.getGreens(gLUT); 
-		cm.getBlues(bLUT); 
+		cm.getBlues(bLUT);
 		reds.setArray(new Variable(rLUT).getArray());
 		greens.setArray(new Variable(gLUT).getArray());
 		blues.setArray(new Variable(bLUT).getArray());
@@ -2073,9 +2086,8 @@ public class Functions implements MacroConstants, Measurements {
 		Variable min = getFirstVariable();
 		Variable max = getLastVariable();
 		ImagePlus imp = getImage();
-		ImageProcessor ip = imp.getProcessor();
-		double v1 = ip.getMin();
-		double v2 = ip.getMax();
+		double v1 = imp.getDisplayRangeMin();
+		double v2 = imp.getDisplayRangeMax();
 		if (imp.getBitDepth()==16) {
 			Calibration cal = imp.getCalibration();
 			v1 = cal.getCValue(v1); 
@@ -3121,7 +3133,7 @@ public class Functions implements MacroConstants, Measurements {
 		} catch(Exception e) {
 			IJ.log("Call error ("+e+")");
 			return null;
-		}
+		} 
 			
  	}
  	
@@ -3503,9 +3515,38 @@ public class Functions implements MacroConstants, Measurements {
 			imp.setPosition(imp.getChannel(), (int)getArg(), imp.getFrame());
 		else if (name.equals("setFrame"))
 			imp.setPosition(imp.getChannel(), imp.getSlice(), (int)getArg());
+		else if (name.equals("setDisplayMode"))
+			setDisplayMode(imp, getStringArg());
+		else if (name.equals("getDisplayMode"))
+			getDisplayMode(imp);
 		else
 			interp.error("Unrecognized Stack function");
 		return Double.NaN;
+	}
+	
+	void setDisplayMode(ImagePlus imp, String mode) {
+		mode = mode.toLowerCase(Locale.US);
+		if (!imp.isComposite())
+			interp.error("Composite image required");
+		int m = -1;
+		if (mode.equals("composite"))
+			m = CompositeImage.COMPOSITE;
+		else if (mode.equals("color"))
+			m = CompositeImage.COLOR;
+		else if (mode.startsWith("gray"))
+			m = CompositeImage.GRAYSCALE;
+		if (m==-1) 
+			interp.error("Invalid mode");
+		((CompositeImage)imp).setMode(m);
+		imp.updateAndDraw();
+	}
+	
+	void getDisplayMode(ImagePlus imp) {
+		Variable v = getVariableArg();
+		String mode = "";
+		if (imp.isComposite())
+			mode = ((CompositeImage)imp).getModeAsString();
+		v.setString(mode);
 	}
 
 	void getPosition(ImagePlus imp) {
@@ -3548,18 +3589,12 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String doToString() {
-		String s = null;
-		double value = getFirstArg();
+		String s = getFirstString();
 		interp.getToken();
 		if (interp.token==',') {
+			double value = Tools.parseDouble(s);
 			s = IJ.d2s(value, (int)interp.getExpression());
 			interp.getToken();
-		} else {
-			s = Double.toString(value);
-			if ((int)value==value)
-				s = IJ.d2s(value, 0);
-			else
-				s = Double.toString(value);
 		}
 		if (interp.token!=')') interp.error("')' expected");
 		return s;

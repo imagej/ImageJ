@@ -549,14 +549,8 @@ public class FileSaver {
 			sb.append("frames="+frames+"\n");
 		if (imp.isHyperStack()) sb.append("hyperstack=true\n");
 		if (imp.isComposite()) {
-			int mode = ((CompositeImage)imp).getMode();
-			String s = null;
-			switch (mode) {
-				case CompositeImage.COMPOSITE: s="composite"; break;
-				case CompositeImage.COLOR: s="color"; break;
-				case CompositeImage.GRAYSCALE: s="gray"; break;
-			}
-			sb.append("mode="+s+"\n");
+			String mode = ((CompositeImage)imp).getModeAsString();
+			sb.append("mode="+mode+"\n");
 		}
 		if (fi.unit!=null)
 			sb.append("unit="+fi.unit+"\n");

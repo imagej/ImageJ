@@ -285,7 +285,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		Polygon p = roi.getPolygon();
 		ImageProcessor ip = imp.getProcessor();
 		Calibration cal = imp.getCalibration();
-		ip.setCalibrationTable(cal.getCTable());
+		//ip.setCalibrationTable(cal.getCTable());
 		for (int i=0; i<p.npoints; i++) {
 			incrementCounter();
 			int x = p.xpoints[i];
