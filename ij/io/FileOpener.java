@@ -33,6 +33,7 @@ public class FileOpener {
 	private FileInfo fi;
 	private int width, height;
 	private static boolean showConflictMessage = true;
+	private double minValue, maxValue;
 
 	public FileOpener(FileInfo fi) {
 		this.fi = fi;
@@ -98,6 +99,7 @@ public class FileOpener {
 				break;
 			case FileInfo.RGB48:
 			case FileInfo.RGB48_PLANAR:
+				boolean planar = fi.fileType==FileInfo.RGB48_PLANAR;
 				Object[] pixelArray = (Object[])readPixels(fi);
 				if (pixelArray==null) return null;
 				ImageStack stack = new ImageStack(width, height);
@@ -106,7 +108,8 @@ public class FileOpener {
 				stack.addSlice("Blue", pixelArray[2]);
         		imp = new ImagePlus(fi.fileName, stack);
         		imp.setDimensions(3, 1, 1);
-        		imp.getProcessor().resetMinAndMax();
+        		if (planar)
+        			imp.getProcessor().resetMinAndMax();
 				imp.setFileInfo(fi);
 				int mode = CompositeImage.COMPOSITE;
 				if (fi.description!=null) {
@@ -116,12 +119,21 @@ public class FileOpener {
 					mode = CompositeImage.GRAYSCALE;
 				}
         		imp = new CompositeImage(imp, mode);
+        		if (!planar) {
+        			for (int c=1; c<=3; c++) {
+        				imp.setPosition(c, 1, 1);
+        				imp.setDisplayRange(minValue, maxValue);
+        			}
+       				imp.setPosition(1, 1, 1);
+        		}
 				break;
 		}
 		imp.setFileInfo(fi);
 		setCalibration(imp);
 		if (fi.info!=null)
 			imp.setProperty("Info", fi.info);
+		if (fi.sliceLabels!=null&&fi.sliceLabels.length==1&&fi.sliceLabels[0]!=null)
+			imp.setProperty("Label", fi.sliceLabels[0]);
 		if (show) imp.show();
 		return imp;
 	}
@@ -469,6 +481,8 @@ public class FileOpener {
 				return null;
 			ImageReader reader = new ImageReader(fi);
 			pixels = reader.readPixels(is);
+			minValue = reader.min;
+			maxValue = reader.max;
 			is.close();
 		}
 		catch (Exception e) {

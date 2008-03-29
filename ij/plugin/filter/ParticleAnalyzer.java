@@ -16,13 +16,13 @@ import ij.util.Tools;
 	<p>
 	<pre>
 	for each line do
-	    for each pixel in this line do
-	        if the pixel value is "inside" the threshold range then
-	            trace the edge to mark the object
-	            do the measurement
-		        fill the object with a color outside the threshold range
-		    else
-		        continue the scan
+		for each pixel in this line do
+			if the pixel value is "inside" the threshold range then
+				trace the edge to mark the object
+				do the measurement
+				fill the object with a color outside the threshold range
+			else
+				continue the scan
 	</pre>
 */
 public class ParticleAnalyzer implements PlugInFilter, Measurements {
@@ -33,11 +33,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Obsolete */
 	public static final int SHOW_SUMMARY = 2;
 	
-	/** Display image containing outlines of measured paticles. */
+	/** Display image containing outlines of measured particles. */
 	public static final int SHOW_OUTLINES = 4;
 	
 	/** Do not measure particles touching edge of image. */
 	public static final int EXCLUDE_EDGE_PARTICLES = 8;
+	
+	/** Display image containing grayscales masks that identify measured particles. */
+	public static final int SHOW_ROI_MASKS = 16;
 	
 	/** Display a progress bar. */
 	public static final int SHOW_PROGRESS = 32;
@@ -60,7 +63,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Add particles to ROI Manager. */
 	public static final int ADD_TO_MANAGER = 2048;
 
-	/** Display image containing binary masks of measured paticles. */
+	/** Display image containing binary masks of measured particles. */
 	public static final int SHOW_MASKS = 4096;
 
 	static final String OPTIONS = "ap.options";
@@ -72,10 +75,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static double staticMinSize = 0.0;
 	private static double staticMaxSize = DEFAULT_MAX_SIZE;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
-	private static String[] showStrings = {"Nothing","Outlines","Masks","Ellipses"};
+	private static String[] showStrings = {"Nothing","Outlines","Masks","Ellipses", "Count Masks"};
 	private static double minCircularity=0.0, maxCircularity=1.0;
 		
-	protected static final int NOTHING=0,OUTLINES=1,MASKS=2,ELLIPSES=3;
+	protected static final int NOTHING=0,OUTLINES=1,MASKS=2,ELLIPSES=3,ROI_MASKS=4;
 	protected static int showChoice;
 	protected ImagePlus imp;
 	protected ResultsTable rt;
@@ -100,6 +103,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private ImageStack outlines;
 	private IndexColorModel customLut;
 	private int particleCount;
+	private int maxParticleCount = 0;
 	private int totalCount;
 	private TextWindow tw;
 	private Wand wand;
@@ -109,8 +113,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private ImagePlus redirectImp;
 	private ImageProcessor redirectIP;
 	private PolygonFiller pf;
-    private Roi saveRoi;
-    private int beginningCount;
+	private Roi saveRoi;
+	private int beginningCount;
 	private Rectangle r;
 	private ImageProcessor mask;
 	private double totalArea;
@@ -122,7 +126,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Constructs a ParticleAnalyzer.
 		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
-		@param measurements	a flag word created by ORing constants defined in the Measurements interface
+		@param measurements a flag word created by ORing constants defined in the Measurements interface
 		@param rt		a ResultsTable where the measurements will be stored
 		@param minSize	the smallest particle size in pixels
 		@param maxSize	the largest particle size in pixels
@@ -164,9 +168,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int flags = IJ.setupDialog(imp, baseFlags);
 		processStack = (flags&DOES_STACKS)!=0;
 		slice = 0;
-        saveRoi = imp.getRoi();
-        if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
-        	polygon = saveRoi.getPolygon();
+		saveRoi = imp.getRoi();
+		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
+			polygon = saveRoi.getPolygon();
 		imp.startTiming();
 		return flags;
 	}
@@ -178,11 +182,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
 		if (!analyze(imp, ip))
-            canceled = true;
+			canceled = true;
 		if (slice==imp.getStackSize()) {
 			imp.updateAndDraw();
-            if (saveRoi!=null) imp.setRoi(saveRoi);
-        }
+			if (saveRoi!=null) imp.setRoi(saveRoi);
+		}
 	}
 	
 	/** Displays a modal options dialog. */
@@ -322,6 +326,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		recordStarts = (options&RECORD_STARTS)!=0;
 		addToManager = (options&ADD_TO_MANAGER)!=0;
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
+		if ((options&SHOW_ROI_MASKS)!=0)
+			showChoice = ROI_MASKS;
 		if ((options&SHOW_OUTLINES)!=0)
 			showChoice = OUTLINES;
 		if ((options&SHOW_MASKS)!=0)
@@ -341,14 +347,19 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				redirectIP = redirectImp.getProcessor();
 		}
 		if (!setThresholdLevels(imp, ip))
-            return false;
+			return false;
 		width = ip.getWidth();
 		height = ip.getHeight();
 		if (showChoice!=NOTHING) {
 			if (slice==1)
 				outlines = new ImageStack(width, height);
-			drawIP = new ByteProcessor(width, height);
-			if (showChoice==MASKS)
+			if (showChoice==ROI_MASKS)
+				drawIP = new ShortProcessor(width, height);
+			else
+				drawIP = new ByteProcessor(width, height);
+			if (showChoice==ROI_MASKS)
+				{} // Place holder for now...
+			else if (showChoice==MASKS)
 				drawIP.invertLut();
 			else if (showChoice==OUTLINES) {
 				if (customLut==null)
@@ -358,7 +369,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 			}
 			outlines.addSlice(null, drawIP);
-			drawIP.setColor(Color.white);
+
+			if (showChoice==ROI_MASKS)
+				drawIP.setColor(Color.black);
+			else
+				drawIP.setColor(Color.white);
 			drawIP.fill();
 			drawIP.setColor(Color.black);
 		}
@@ -371,7 +386,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			analyzer = new Analyzer(imp, measurements, rt);
 		if (resetCounter && slice==1) {
 			if (!Analyzer.resetCounter())
-                return false;
+				return false;
 		}
 		beginningCount = Analyzer.getCounter();
 
@@ -403,16 +418,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			measurements = Analyzer.getMeasurements();
 		if (showChoice==ELLIPSES)
 			measurements |= ELLIPSE;
-		measurements &= ~LIMIT;  // ignore "Limit to Threshold"
+		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
 		roiNeedsImage = (measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0 || (measurements&FERET)!=0;
 		particleCount = 0;
 		wand = new Wand(ip);
 		pf = new PolygonFiller();
 		if (floodFill) {
-            ImageProcessor ipf = ip.duplicate();
-            ipf.setValue(fillColor);
-            ff = new FloodFiller(ipf);
-        }
+			ImageProcessor ipf = ip.duplicate();
+			ipf.setValue(fillColor);
+			ff = new FloodFiller(ipf);
+		}
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -446,6 +461,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			ImageCanvas ic = imp.getCanvas();
 			if (ic!=null) ic.setShowAllROIs(true);
 		}
+		maxParticleCount = (particleCount > maxParticleCount) ? particleCount : maxParticleCount;
 		totalCount += particleCount;
 		if (!canceled)
 			showResults();
@@ -493,7 +509,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		ip.setRoi(r);
- 		if (excludeEdgeParticles && polygon!=null) {
+		if (excludeEdgeParticles && polygon!=null) {
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, MIN_MAX, null);
 			if (fillColor>=stats.min && fillColor<=stats.max) {
 				double replaceColor = level1-1.0;
@@ -512,23 +528,23 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					}
 				}
 			}
- 		}
+		}
 		ip.setValue(fillColor);		
 		if (mask!=null) {
 			mask = mask.duplicate();
 			mask.invert();
 			ip.fill(mask);
- 		} 		
- 		ip.setRoi(0, 0, r.x, height);
- 		ip.fill();
- 		ip.setRoi(r.x, 0, r.width, r.y);
- 		ip.fill();
- 		ip.setRoi(r.x, r.y+r.height, r.width, height-(r.y+r.height));
- 		ip.fill();
- 		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
- 		ip.fill();
- 		ip.resetRoi();
-		//IJ.log("erase: "+fillColor+"  "+level1+"  "+level2+"  "+excludeEdgeParticles);
+		}		
+		ip.setRoi(0, 0, r.x, height);
+		ip.fill();
+		ip.setRoi(r.x, 0, r.width, r.y);
+		ip.fill();
+		ip.setRoi(r.x, r.y+r.height, r.width, height-(r.y+r.height));
+		ip.fill();
+		ip.setRoi(r.x+r.width, 0, width-(r.x+r.width), height);
+		ip.fill();
+		ip.resetRoi();
+		//IJ.log("erase: "+fillColor+"	"+level1+"	"+level2+"	"+excludeEdgeParticles);
 		//(new ImagePlus("ip2", ip.duplicate())).show();
 		return true;
 	}
@@ -639,7 +655,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			double perimeter = roi.getLength();
 			double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.pixelCount/(perimeter*perimeter));
 			if (circularity>1.0) circularity = 1.0;
-			//IJ.log(circularity+"  "+perimeter+"  "+stats.area);
+			//IJ.log(circularity+"	"+perimeter+"  "+stats.area);
 			if (circularity<minCircularity || circularity>maxCircularity) include = false;
 		}
 		if (stats.pixelCount>=minSize && stats.pixelCount<=maxSize && include) {
@@ -655,20 +671,20 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		ip.fill(mask);
 	}
 
-    ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
-    	switch (imageType2) {
-        	case BYTE:
-            	return new ByteStatistics(ip, mOptions, cal);
-        	case SHORT:
-            	return new ShortStatistics(ip, mOptions, cal);
-            case FLOAT:
-            	return new FloatStatistics(ip, mOptions, cal);
-            case RGB:
-            	return new ColorStatistics(ip, mOptions, cal);
+	ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
+		switch (imageType2) {
+			case BYTE:
+				return new ByteStatistics(ip, mOptions, cal);
+			case SHORT:
+				return new ShortStatistics(ip, mOptions, cal);
+			case FLOAT:
+				return new FloatStatistics(ip, mOptions, cal);
+			case RGB:
+				return new ColorStatistics(ip, mOptions, cal);
 			default:
 				return null;
 		}
-    }
+	}
 
 	/** Saves statistics for one particle in a results table. This is
 		a method subclasses may want to override. */
@@ -700,7 +716,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			analyzer.displayResults();
 	}
 	
-	/** Draws a selected particle in a separate image.  This is
+	/** Draws a selected particle in a separate image.	This is
 		another method subclasses may want to override. */
 	protected void drawParticle(ImageProcessor drawIP, Roi roi,
 	ImageStatistics stats, ImageProcessor mask) {
@@ -708,6 +724,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			case MASKS: drawFilledParticle(drawIP, roi, mask); break;
 			case OUTLINES: drawOutline(drawIP, roi, rt.getCounter()); break;
 			case ELLIPSES: drawEllipse(drawIP, stats, rt.getCounter()); break;
+			case ROI_MASKS: drawRoiFilledParticle(drawIP, roi, mask, rt.getCounter()); break;
 			default:
 		}
 	}
@@ -739,6 +756,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		stats.drawEllipse(ip);
 	}
 
+	void drawRoiFilledParticle(ImageProcessor ip, Roi roi, ImageProcessor mask, int count) {
+		int grayLevel = (count < 65535) ? count : 65535;
+		ip.setValue((double) grayLevel); 
+		ip.setRoi(roi.getBounds());
+		ip.fill(mask);
+	}
+
 	void showResults() {
 		int count = rt.getCounter();
 		if (count==0)
@@ -749,7 +773,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		//}
 		if (outlines!=null && lastSlice) {
 			String title = imp!=null?imp.getTitle():"Outlines";
-			String prefix = showChoice==MASKS?"Mask of ":"Drawing of ";
+			String prefix;
+			if (showChoice == MASKS)
+				prefix = "Mask of ";
+			else if (showChoice == ROI_MASKS)
+				prefix = "Count Masks of ";
+			else
+				prefix = "Drawing of ";
+
+			drawIP.setMinAndMax(0, maxParticleCount);
+			outlines.update(drawIP);
+					   
 			new ImagePlus(prefix+title, outlines).show();
 		}
 		if (showResults && !processStack) {

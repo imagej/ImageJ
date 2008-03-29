@@ -5,12 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.40a, 21 March 2008</u>
+<li> <u>1.40b, 28 March 2008</u>
 <ul>
-<li> Added the Stack.setDisplayMode(string) and Stack.getDisplayMode(string) 
-macro funcions.
-<li> Added the setSelection(start, end) method to the TextPanel class.
-<li> Fixed numerious hyperstack and composite image bugs.
+<li> Added the <i>Image&gt;HyperStacks&gt;Reduce Dimensionality</i> command, 
+based on Jerome Mutterer's
+<a href="http://rsb.info.nih.gov/ij/macros/Reduce_HyperStack.txt">Reduce HyperStack</a>
+macro.
+<li> Thanks to Alden Dima, added the "Count Mask" option to the
+particle analyzer, which generates masks filled with a pixel value
+corresponding to the particle count.
+<li> Removed the <i>Image&gt;HyperStacks&gt;Split Channels</i> command. Instead,
+use <i>Image&gt;Color&gt;RGB Split</i>.
+<li> The <i>Image&gt;Color&gt;RGB Split</i> command, when working
+with composite images, is faster and uses less memory, and it no longer
+displays a dialog box.
+<li> Added the setMetadata("Info", string), getMetadata("Info"), 
+setMetadata("Label", string) and getMetadata("Label") macro functions. 
+<li> Fixed a bug, introduced in v1.39s, that could cause ImageJ to 
+deadlock (hang) when opening a dialog box, especially on Java 1.5.0.
+<li> Fixed a bug that caused some 48-bit interleaved RGB TIFFs to
+not display correctly.
 </ul>
 
 </body>

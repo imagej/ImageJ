@@ -28,7 +28,9 @@ public class ImageJ_Updater implements PlugIn {
 		int count = list.length + 2;
 		String[] versions = new String[count];
 		String[] urls = new String[count];
-		versions[0] = "v"+getUpgradeVersion()+" (latest version)";
+		String uv = getUpgradeVersion();
+		if (uv==null) return;
+		versions[0] = "v"+uv+" (latest version)";
 		urls[0] = "http://rsb.info.nih.gov/ij/upgrade/ij.jar";
 		if (versions[0]==null) return;
 		for (int i=1; i<count-1; i++) {

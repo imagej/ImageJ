@@ -30,6 +30,15 @@ public class ImageStack {
 		this(width, height, null);
 	}
 	
+	/** Creates a new image stack with a capacity of 'size'. */
+	public ImageStack(int width, int height, int size) {
+		this.width = width;
+		this.height = height;
+		stack = new Object[size];
+		label = new String[size];
+		nSlices = size;
+	}
+
 	/** Creates a new, empty image stack. */
 	public ImageStack(int width, int height, ColorModel cm) {
 		this.width = width;
@@ -151,8 +160,6 @@ public class ImageStack {
 	/** Assigns a pixel array to the specified slice,
 		were 1<=n<=nslices. */
 	public void setPixels(Object pixels, int n) {
-		if (pixels==null) 
-			throw new IllegalArgumentException("'pixels' is null!");
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
 		stack[n-1] = pixels;

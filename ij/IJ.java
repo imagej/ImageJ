@@ -567,45 +567,36 @@ public class IJ {
 		return d2s(n, 2);
 	}
 	
-	private static DecimalFormat df =
-		new DecimalFormat("0.00", new DecimalFormatSymbols(Locale.US));
-	private static int dfDigits = 2;
+	private static DecimalFormat[] df;
 
 	/** Converts a number to a rounded formatted string.
 		The 'decimalPlaces' argument specifies the number of
 		digits to the right of the decimal point (0-9). */
-	public static synchronized String d2s(double n, int decimalPlaces) {
+	public static String d2s(double n, int decimalPlaces) {
 		if (Double.isNaN(n))
 			return "NaN";
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		double np = n;
-		boolean negative = n<0.0;
-		if (negative) np = -n;
+		if (n<0.0) np = -n;
 		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d)
 			return Float.toString((float)n); // use scientific notation
-		double whole = Math.round(np * Math.pow(10, decimalPlaces));
-		double rounded = whole/Math.pow(10, decimalPlaces);
-		if (negative)
-			rounded = -rounded;
+		if (df==null) {
+			df = new DecimalFormat[10];
+			df[0] = new DecimalFormat("0");
+			df[1] = new DecimalFormat("0.0");
+			df[2] = new DecimalFormat("0.00");
+			df[3] = new DecimalFormat("0.000");
+			df[4] = new DecimalFormat("0.0000");
+			df[5] = new DecimalFormat("0.00000");
+			df[6] = new DecimalFormat("0.000000");
+			df[7] = new DecimalFormat("0.0000000");
+			df[8] = new DecimalFormat("0.00000000");
+			df[9] = new DecimalFormat("0.000000000");
+		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
-		if (decimalPlaces!=dfDigits)
-			switch (decimalPlaces) {
-				case 0: df.applyPattern("0"); dfDigits=0; break;
-				case 1: df.applyPattern("0.0"); dfDigits=1; break;
-				case 2: df.applyPattern("0.00"); dfDigits=2; break;
-				case 3: df.applyPattern("0.000"); dfDigits=3; break;
-				case 4: df.applyPattern("0.0000"); dfDigits=4; break;
-				case 5: df.applyPattern("0.00000"); dfDigits=5; break;
-				case 6: df.applyPattern("0.000000"); dfDigits=6; break;
-				case 7: df.applyPattern("0.0000000"); dfDigits=7; break;
-				case 8: df.applyPattern("0.00000000"); dfDigits=8; break;
-				case 9: df.applyPattern("0.000000000"); dfDigits=9; break;
-			}
-		String s = df.format(rounded);
-		//if (s.length()>12) s = Float.toString((float)n); // use scientific notation
-		return s;
+		return df[decimalPlaces].format(n);
 	}
 
 	/** Adds the specified class to a Vector to keep it from being garbage

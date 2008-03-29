@@ -78,6 +78,12 @@ public class FileSaver {
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
 		fi.description = getDescriptionString();
+		Object label = imp.getProperty("Label");
+		if (label!=null && (label instanceof String)) {
+			fi.sliceLabels = new String[1];
+			fi.sliceLabels[0] = (String)label;
+		}
+		fi.description = getDescriptionString();
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));

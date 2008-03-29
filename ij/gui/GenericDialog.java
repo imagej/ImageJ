@@ -915,8 +915,8 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
   		return textArea2;
   	}
   	
-  	/** Returns a reference to the Label or MultiLineLabel created
-  		by addMessage(), or null if addMessage() was not called. */
+  	/** Returns a reference to the Label or MultiLineLabel created by the
+  		last addMessage() call, or null if addMessage() was not called. */
   	public Component getMessage() {
   		return theLabel;
   	}

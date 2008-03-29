@@ -25,8 +25,6 @@ public class HyperStackConverter implements PlugIn {
     		convertStackToHS(imp);
     	else if (arg.equals("hstostack"))
     		convertHSToStack(imp);
-    	else if (arg.equals("split"))
-			IJ.runMacroFile("ij.jar:SplitChannels", "");
 	}
 	
 	/** Displays the current stack in a HyperStack window. Based on the 

@@ -2762,30 +2762,60 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setMetadata() {
-		String metadata = getStringArg();
+		String metadata = null;
+		String arg1 = getFirstString();
+		boolean oneArg = false;
+		if (interp.nextNonEolToken()==',')
+			metadata = getLastString();
+		else
+			interp.getRightParen();
+		boolean isInfo = false;
+		if (metadata==null) {
+			metadata = arg1;
+			oneArg = true;
+			if (metadata.startsWith("Info:")) {
+				metadata = metadata.substring(5);
+				isInfo = true;
+			}
+		} else
+			isInfo = arg1.startsWith("info") || arg1.startsWith("Info");
 		ImagePlus imp = getImage();
-		boolean isImageMetaData = false;
-		if (metadata.startsWith("Info:")) {
-			metadata = metadata.substring(5);
-			isImageMetaData = true;
-		}
-		if (imp.getStackSize()==1 || isImageMetaData)
+		if (isInfo)
 			imp.setProperty("Info", metadata);
 		else {
-			imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
-			if (!Interpreter.isBatchMode())
-				imp.repaintWindow();
+			if (imp.getStackSize()==1) {
+				if (oneArg)
+					imp.setProperty("Info", metadata);
+				else {
+					imp.setProperty("Label", metadata);
+					if (!Interpreter.isBatchMode()) imp.repaintWindow();
+				}
+			} else {
+				imp.getStack().setSliceLabel(metadata, imp.getCurrentSlice());
+				if (!Interpreter.isBatchMode()) imp.repaintWindow();
+			}
 		}
 	}
 
 	String getMetadata() {
-		interp.getParens();
+		String type = "label";
+		boolean noArg = true;
+		if (interp.nextNonEolToken()=='(' && interp.nextNextNonEolToken()!=')') {
+			type = getStringArg().toLowerCase(Locale.US);
+			noArg = false;
+		} else
+			interp.getParens();
 		ImagePlus imp = getImage();
-		String metadata;
-		if (imp.getStackSize()==1) 
+		String metadata = null;
+		if (type.indexOf("label")!=-1) {
+			if (imp.getStackSize()==1) {
+				metadata = (String)imp.getProperty("Label");
+				if (metadata==null && noArg)
+					metadata = (String)imp.getProperty("Info");
+			} else 
+				metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		} else
 			metadata = (String)imp.getProperty("Info");
-		else
-			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
 		if (metadata==null) metadata = "";
 		return metadata;
 	}

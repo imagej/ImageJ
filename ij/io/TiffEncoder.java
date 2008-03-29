@@ -138,7 +138,7 @@ public class TiffEncoder {
 			size = fi.info.length()*2;
 			nTypes++;
 		}
-		if (fi.nImages>1 && fi.sliceLabels!=null) {
+		if (fi.sliceLabels!=null) {
 			int max = fi.sliceLabels.length;
 			for (int i=0; i<fi.nImages&&i<max; i++) {
 				if (fi.sliceLabels[i]!=null&&fi.sliceLabels[i].length()>0) {

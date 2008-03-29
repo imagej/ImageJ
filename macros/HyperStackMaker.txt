@@ -55,7 +55,7 @@
          fillRect(0, 0, width, yloc);
          fillRect(0, yloc+15, width, height-(yloc+15));
          setColor(255, 255, 255);
-         drawString("ch="+pad(channel)+", z="+pad(slice)+", t="+pad(frame), 5, yloc);
+         drawString("c="+pad(channel)+", z="+pad(slice)+", t="+pad(frame), 5, yloc);
          if (i<=c) {
              setFont("SansSerif", 12, "antialiased");
              msg = "Press shift-z (Image>HyperStacks>Channels)\n"+

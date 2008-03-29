@@ -131,7 +131,7 @@ stacks17="Animation Options...",ij.plugin.Animator("options")
 hyperstacks01="New HyperStack...",ij.plugin.HyperStackConverter("new")
 hyperstacks02="Stack to HyperStack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="HyperStack to Stack",ij.plugin.HyperStackConverter("hstostack")
-hyperstacks04="Split Channels...",ij.plugin.HyperStackConverter("split")
+hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
 hyperstacks05="Channels...[Z]",ij.plugin.frame.Channels
 
 # Plugins installed in the Image/Rotate submenu

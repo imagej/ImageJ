@@ -501,7 +501,6 @@ public class ImagePlus implements ImageObserver, Measurements {
     	if (currentSlice<1) setCurrentSlice(1);
     	boolean resetCurrentSlice = currentSlice>stackSize;
     	if (resetCurrentSlice) setCurrentSlice(stackSize);
-		//IJ.log("setStack: "+stack+"  "+stackSizeChanged+"  "+resetCurrentSlice);
     	ImageProcessor ip = stack.getProcessor(currentSlice);
     	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
     	this.stack = stack;
@@ -851,6 +850,15 @@ public class ImagePlus implements ImageObserver, Measurements {
     	return bitDepth;
     }
     
+    /** Returns the number of bytes per pixel. */
+    public int getBytesPerPixel() {
+    	switch (imageType) {
+	    	case GRAY16: return 2;
+	    	case GRAY32: case COLOR_RGB: return 4;
+	    	default: return 1;
+    	}
+	}
+
     protected void setType(int type) {
     	if ((type<0) || (type>COLOR_RGB))
     		return;
@@ -1045,6 +1053,28 @@ public class ImagePlus implements ImageObserver, Measurements {
 		else {
 			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
 			updatePosition(channel, slice, frame);
+		}
+	}
+	
+	public int getStackIndex(int channel, int slice, int frame) {	
+   		if (channel<1) channel = 1;
+    	if (channel>nChannels) channel = nChannels;
+    	if (slice<1) slice = 1;
+    	if (slice>nSlices) slice = nSlices;
+    	if (frame<1) frame = 1;
+    	if (frame>nFrames) frame = nFrames;
+		return (frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel;
+	}
+	
+	/* Hack needed to make the HyperStackReducer work. */
+	public void resetStack() {
+		if (currentSlice==1 && stack!=null && stack.getSize()>0) {
+			ColorModel cm = ip.getColorModel();
+			double min = ip.getMin();
+			double max = ip.getMax();
+			ip = stack.getProcessor(1);
+			ip.setColorModel(cm);
+			ip.setMinAndMax(min, max);
 		}
 	}
 	
