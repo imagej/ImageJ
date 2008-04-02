@@ -51,11 +51,11 @@ public class CompositeImage extends ImagePlus {
 		ImageStack stack2;
 		boolean isRGB = imp.getBitDepth()==24;
 		if (isRGB) {
-			if (imp.getStackSize()>1)
+			if (imp.getImageStackSize()>1)
 				throw new IllegalArgumentException("RGB stacks not supported");
 			stack2 = getRGBStack(imp);
 		} else
-			stack2 = imp.getStack();
+			stack2 = imp.getImageStack();
 		int stackSize = stack2.getSize();
 		if (channels==1 && isRGB) channels = 3;
 		if (channels==1 && stackSize<=MAX_CHANNELS) channels = stackSize;
@@ -74,7 +74,7 @@ public class CompositeImage extends ImagePlus {
 		setCalibration(imp.getCalibration());
 		FileInfo fi = imp.getOriginalFileInfo();
 		if (fi!=null) {
-			displayRanges = fi.displayRanges;
+			displayRanges = fi.displayRanges; ////////////////////////
 			channelLuts = fi.channelLuts;
 			fi.displayRanges = null;
 		}
@@ -135,6 +135,8 @@ public class CompositeImage extends ImagePlus {
 		if (lut==null || lut.length<channels) {
 			if (displayRanges!=null && channels!=displayRanges.length/2)
 				displayRanges = null;
+			if (displayRanges==null&&ip.getMin()==0.0&&ip.getMax()==0.0)
+				ip.resetMinAndMax();
 			lut = new LUT[channels];
 			LUT lut2 = channels>MAX_CHANNELS?createLutFromColor(Color.white):null;
 			for (int i=0; i<channels; ++i) {
@@ -200,7 +202,7 @@ public class CompositeImage extends ImagePlus {
 		}
 	
 		if (cip==null||cip[0].getWidth()!=width||cip[0].getHeight()!=height||getBitDepth()!=bitDepth) {
-			setup(nChannels, getStack());
+			setup(nChannels, getImageStack());
 			rgbPixels = null;
 			if (currentChannel>=nChannels) {
 				setSlice(1);
@@ -221,7 +223,7 @@ public class CompositeImage extends ImagePlus {
 			currentFrame = getFrame();
 			int position = (currentFrame-1)*nChannels*getNSlices() + (currentSlice-1)*nChannels + 1;
 			for (int i=0; i<nChannels; ++i) {
-				cip[i].setPixels(getStack().getProcessor(position+i).getPixels());
+				cip[i].setPixels(getImageStack().getProcessor(position+i).getPixels());
 			}
 		}
 
@@ -453,6 +455,10 @@ public class CompositeImage extends ImagePlus {
 		if (lut==null) setupLuts(channels);
 		int index = getChannel()-1;
 		return index;
+	}
+	
+	public void reset() {
+		setup(getNChannels(), getImageStack());
 	}
 	
 	/* Sets the LUT of the current channel. */

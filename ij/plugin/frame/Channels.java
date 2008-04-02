@@ -36,7 +36,12 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		c.gridwidth = 1;
 		c.fill = GridBagConstraints.BOTH;
 		c.anchor = GridBagConstraints.CENTER;
-		c.insets = new Insets(10, 15, 10, 15);
+		int margin = 32;
+		if (IJ.isVista())
+			margin = 40;
+		else if (IJ.isMacOSX())
+			margin = 18;
+		c.insets = new Insets(10, margin, 10, margin);
 		choice = new Choice();
 		for (int i=0; i<modes.length; i++)
 			choice.addItem(modes[i]);
@@ -185,10 +190,14 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		return instance;
 	}
 		
-	public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+	public void close() {
+		super.close();
 		instance = null;
 		location = getLocation();
+	}
+	
+	public void windowClosing(WindowEvent e) {
+		close();
 	}
 
 }

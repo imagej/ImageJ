@@ -3549,6 +3549,8 @@ public class Functions implements MacroConstants, Measurements {
 			setDisplayMode(imp, getStringArg());
 		else if (name.equals("getDisplayMode"))
 			getDisplayMode(imp);
+		else if (name.equals("swap"))
+			swapStackImages(imp);
 		else
 			interp.error("Unrecognized Stack function");
 		return Double.NaN;
@@ -3571,6 +3573,33 @@ public class Functions implements MacroConstants, Measurements {
 		imp.updateAndDraw();
 	}
 	
+	void swapStackImages(ImagePlus imp) {
+		int n1 = (int)getFirstArg();
+		int n2 = (int)getLastArg();
+		ImageStack stack = imp.getStack();
+		int size = stack.getSize();
+		if (n1<1||n1>size||n2<1||n2>size)
+			interp.error("Argument out of range");
+		Object pixels = stack.getPixels(n1);
+		String label = stack.getSliceLabel(n1);
+		stack.setPixels(stack.getPixels(n2), n1);
+		stack.setSliceLabel(stack.getSliceLabel(n2), n1);
+		stack.setPixels(pixels, n2);
+		stack.setSliceLabel(label, n2);
+		int current = imp.getCurrentSlice();
+		if (imp.isComposite()) {
+			CompositeImage ci = (CompositeImage)imp;
+			if (ci.getMode()==CompositeImage.COMPOSITE) {
+				ci.reset();
+				imp.updateAndDraw();
+				imp.repaintWindow();
+				return;
+			}
+		}
+		if (n1==current || n2==current)
+			imp.setStack(null, stack);
+	}
+
 	void getDisplayMode(ImagePlus imp) {
 		Variable v = getVariableArg();
 		String mode = "";

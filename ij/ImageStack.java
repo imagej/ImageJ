@@ -183,7 +183,7 @@ public class ImageStack {
 		the number of slices currently in the stack. Returns null
 		if the stack is empty or the label of the first slice is null.  */
 	public String[] getSliceLabels() {
-		if (nSlices==0 || label[0]==null)
+		if (nSlices==0)
 			return null;
 		else
 			return label;

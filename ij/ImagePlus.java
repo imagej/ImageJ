@@ -132,6 +132,7 @@ public class ImagePlus implements ImageObserver, Measurements {
      		setCalibration(imp.getCalibration());
      		properties = imp.getProperties();
      		setFileInfo(imp.getOriginalFileInfo());
+     		setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
    			if (isURL)
    				this.url = pathOrURL;
    			ID = --currentID;
@@ -1535,13 +1536,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 		//y = Analyzer.updateY(y, height);
 		if (!IJ.altKeyDown()) {
 			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
-			if (getStackSize()>1)
-				s += ", z="+d2s(cal.getZ(getCurrentSlice()-1));
+			if (getStackSize()>1) {
+				int z = isHyperStack()?getSlice()-1:getCurrentSlice()-1;
+				s += ", z="+d2s(cal.getZ(z));
+			}
 			return s;
 		} else {
 			String s =  " x="+x+", y=" + y;
-			if (getStackSize()>1)
-				s += ", z=" + (getCurrentSlice()-1);
+			if (getStackSize()>1) {
+				int z = isHyperStack()?getSlice()-1:getCurrentSlice()-1;
+				s += ", z=" + z;
+			}
 			return s;
 		}
     }

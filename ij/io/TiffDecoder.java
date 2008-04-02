@@ -586,15 +586,18 @@ public class TiffDecoder {
 	    byte[] buffer = new byte[metaDataCounts[first]];
 		for (int i=first; i<=last; i++) {
 			int len = metaDataCounts[i];
-            if (len>buffer.length)
-                buffer = new byte[len];
-            in.readFully(buffer, len);
-            len /= 2;
-			char[] chars = new char[len];
-			for (int j=0, k=0; j<len; j++)
-                chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
-			fi.sliceLabels[index++] = new String(chars);
-			//ij.IJ.log(i+"  "+fi.sliceLabels[i-1]+"  "+len);
+			if (len>0) {
+				if (len>buffer.length)
+					buffer = new byte[len];
+				in.readFully(buffer, len);
+				len /= 2;
+				char[] chars = new char[len];
+				for (int j=0, k=0; j<len; j++)
+					chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+				fi.sliceLabels[index++] = new String(chars);
+				//ij.IJ.log(i+"  "+fi.sliceLabels[i-1]+"  "+len);
+			} else
+				fi.sliceLabels[index++] = null;
 		}
 	}
 

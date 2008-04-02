@@ -343,16 +343,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 	
 	public void keyPressed(KeyEvent e) {
-		//boolean cutCopyOK = (e.isControlDown()||e.isMetaDown())
-		//	&& selStart!=-1 && selEnd!=-1;
-		//if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_C)
-		//	copySelection();
-		//else if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_X) 
-		//	{if (copySelection()>0) clearSelection();}
-		//else if (cutCopyOK && e.getKeyCode()==KeyEvent.VK_A) 
-		//	selectAll();
-		//else if (keyListener!=null)
-		//	keyListener.keyPressed(e);
 		int key = e.getKeyCode();
 		if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
@@ -454,6 +444,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc.repaint();
 		selLine=r;
 	}
+
+    /** Converts a y coordinate in pixels into a row index. */
+    public int rowIndex(int y) {
+        if (y > tc.getSize().height)
+        	return -1;
+        else
+        	return (y/iRowHeight)-1+iFirstRow;
+    }
 
 	/**
 	Copies the current selection to the system clipboard. 

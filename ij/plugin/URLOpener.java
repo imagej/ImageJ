@@ -33,6 +33,14 @@ public class URLOpener implements PlugIn {
 				FileInfo fi = imp.getOriginalFileInfo();
 				if (fi!=null && fi.fileType==FileInfo.RGB48)
 					imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+				else if (imp.getNChannels()>1 && fi!=null && fi.description!=null && fi.description.indexOf("mode=")!=-1) {
+					int mode = CompositeImage.COLOR;
+					if (fi.description.indexOf("mode=composite")!=-1)
+						mode = CompositeImage.COMPOSITE;
+					else if (fi.description.indexOf("mode=gray")!=-1)
+						mode = CompositeImage.GRAYSCALE;
+					imp = new CompositeImage(imp, mode);
+				}
 				imp.show();
 			}
 			return;

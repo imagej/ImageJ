@@ -111,9 +111,18 @@ public class ZProjector implements PlugIn {
 		}
 
 		// Set default bounds.
-		isHyperStack = imp.isHyperStack()&&imp.getNSlices()>1;
+		isHyperStack = imp.isHyperStack();
 		startSlice = 1; 
-		stopSlice  = isHyperStack?imp.getNSlices():imp.getStackSize(); 
+		if (isHyperStack) {
+			int nSlices = imp.getNSlices();
+			if (nSlices>1)
+				stopSlice = nSlices;
+			else
+				stopSlice = imp.getNFrames();
+		} else
+			stopSlice  = imp.getStackSize();
+			
+
 
 		// Build control dialog
 		GenericDialog gd = buildControlDialog(startSlice,stopSlice); 
@@ -126,7 +135,7 @@ public class ZProjector implements PlugIn {
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex();
 		if (isHyperStack) {
-			allTimeFrames = imp.getNFrames()>1?gd.getNextBoolean():false;
+			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
 		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
 			if(method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
@@ -181,7 +190,7 @@ public class ZProjector implements PlugIn {
 		gd.addNumericField("Start slice:",startSlice,0/*digits*/); 
 		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/);
 		gd.addChoice("Projection Type", METHODS, METHODS[method]); 
-		if (isHyperStack && imp.getNFrames()>1)
+		if (isHyperStack && imp.getNFrames()>1&& imp.getNSlices()>1)
 			gd.addCheckbox("All Time Frames", allTimeFrames); 
 		return gd; 
     }
@@ -255,6 +264,10 @@ public class ZProjector implements PlugIn {
 		ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
+		if (slices==1) {
+			slices = imp.getNFrames();
+			firstFrame = lastFrame = 1;
+		}
 		int frames = lastFrame-firstFrame+1;
 		increment = channels;
 		for (int frame=firstFrame; frame<=lastFrame; frame++) {

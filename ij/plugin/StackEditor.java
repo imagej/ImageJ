@@ -59,10 +59,11 @@ public class StackEditor implements PlugIn {
 		if (!imp.lock()) return;
 		ImageStack stack = imp.getStack();
 		int n = imp.getCurrentSlice();
-		String label = stack.getSliceLabel(n);
  		stack.deleteSlice(n);
- 		if (stack.getSize()==1 && label!=null)
- 			imp.setProperty("Label", label);
+ 		if (stack.getSize()==1) {
+			String label = stack.getSliceLabel(1);
+ 			if (label!=null) imp.setProperty("Label", label);
+ 		}
 		imp.setStack(null, stack);
  		if (n--<1) n = 1;
 		imp.setSlice(n);

@@ -85,7 +85,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		}
 
 		/** Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually. */
-		private void openFile(File f) {
+		public void openFile(File f) {
 			try {
 				if (null == f) return;
 				String path = f.getCanonicalPath();

@@ -976,15 +976,16 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	public int[] getHistogram(ImageProcessor mask) {
-		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+		int rx=roiX, ry=roiY, rw=roiWidth, rh=roiHeight;
+		if (mask.getWidth()!=rw||mask.getHeight()!=rh)
 			throw new IllegalArgumentException(maskSizeError(mask));
 		int v;
 		int[] histogram = new int[256];
 		byte[] mpixels = (byte[])mask.getPixels();
-		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
-			int i = y * width + roiX;
-			int mi = my * roiWidth;
-			for (int x=roiX; x<(roiX+roiWidth); x++) {
+		for (int y=ry, my=0; y<(ry+rh); y++, my++) {
+			int i = y*width + rx;
+			int mi = my*rw;
+			for (int x=rx; x<(rx+rw); x++) {
 				if (mpixels[mi++]!=0) {
 					v = pixels[i] & 0xff;
 					histogram[v]++;

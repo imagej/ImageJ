@@ -582,17 +582,18 @@ public class IJ {
 		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d)
 			return Float.toString((float)n); // use scientific notation
 		if (df==null) {
+			DecimalFormatSymbols dfs = new DecimalFormatSymbols(Locale.US);
 			df = new DecimalFormat[10];
-			df[0] = new DecimalFormat("0");
-			df[1] = new DecimalFormat("0.0");
-			df[2] = new DecimalFormat("0.00");
-			df[3] = new DecimalFormat("0.000");
-			df[4] = new DecimalFormat("0.0000");
-			df[5] = new DecimalFormat("0.00000");
-			df[6] = new DecimalFormat("0.000000");
-			df[7] = new DecimalFormat("0.0000000");
-			df[8] = new DecimalFormat("0.00000000");
-			df[9] = new DecimalFormat("0.000000000");
+			df[0] = new DecimalFormat("0", dfs);
+			df[1] = new DecimalFormat("0.0", dfs);
+			df[2] = new DecimalFormat("0.00", dfs);
+			df[3] = new DecimalFormat("0.000", dfs);
+			df[4] = new DecimalFormat("0.0000", dfs);
+			df[5] = new DecimalFormat("0.00000", dfs);
+			df[6] = new DecimalFormat("0.000000", dfs);
+			df[7] = new DecimalFormat("0.0000000", dfs);
+			df[8] = new DecimalFormat("0.00000000", dfs);
+			df[9] = new DecimalFormat("0.000000000", dfs);
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;

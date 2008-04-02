@@ -16,7 +16,7 @@ public class RGBStackConverter implements PlugIn {
 			return;
 		}
 		int type = imp.getType();
-		if (!(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY16)) {
+		if (cimg==null && !(type==ImagePlus.GRAY8 || type==ImagePlus.GRAY16)) {
 			IJ.error("8-bit or 16-bit grayscale stack required");
 			return;
 		}

@@ -139,16 +139,23 @@ public class TiffEncoder {
 			nTypes++;
 		}
 		if (fi.sliceLabels!=null) {
-			int max = fi.sliceLabels.length;
-			for (int i=0; i<fi.nImages&&i<max; i++) {
-				if (fi.sliceLabels[i]!=null&&fi.sliceLabels[i].length()>0) {
-					nSliceLabels++;
-					size += fi.sliceLabels[i].length()*2;
-				} else
+			int max = Math.min(fi.sliceLabels.length, fi.nImages);
+			boolean isNonNullLabel = false;
+			for (int i=0; i<max; i++) {
+				if (fi.sliceLabels[i]!=null) {
+					isNonNullLabel = true;
 					break;
+				}
 			}
-			if (nSliceLabels>0) nTypes++;
-			nMetaDataEntries += nSliceLabels;
+			if (isNonNullLabel) {
+				for (int i=0; i<max; i++) {
+					nSliceLabels++;
+					if (fi.sliceLabels[i]!=null)
+						size += fi.sliceLabels[i].length()*2;
+				}
+				if (nSliceLabels>0) nTypes++;
+				nMetaDataEntries += nSliceLabels;
+			}
 		}
 
 		if (fi.displayRanges!=null) {
@@ -302,8 +309,12 @@ public class TiffEncoder {
 		out.writeInt(4+nMetaDataTypes*8); // header size	
 		if (fi.info!=null)
 			out.writeInt(fi.info.length()*2);
-		for (int i=0; i<nSliceLabels; i++)
-			out.writeInt(fi.sliceLabels[i].length()*2);
+		for (int i=0; i<nSliceLabels; i++) {
+			if (fi.sliceLabels[i]==null)
+				out.writeInt(0);
+			else
+				out.writeInt(fi.sliceLabels[i].length()*2);
+		}
 		if (fi.displayRanges!=null)
 			out.writeInt(fi.displayRanges.length*8);
 		if (fi.channelLuts!=null) {
@@ -339,8 +350,10 @@ public class TiffEncoder {
 		// write data (META_DATA tag body)
 		if (fi.info!=null)
 			out.writeChars(fi.info);
-		for (int i=0; i<nSliceLabels; i++)
-			out.writeChars(fi.sliceLabels[i]);
+		for (int i=0; i<nSliceLabels; i++) {
+			if (fi.sliceLabels[i]!=null)
+				out.writeChars(fi.sliceLabels[i]);
+		}
 		if (fi.displayRanges!=null) {
 			for (int i=0; i<fi.displayRanges.length; i++)
 				out.writeDouble(fi.displayRanges[i]);
