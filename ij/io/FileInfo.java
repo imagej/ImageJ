@@ -125,6 +125,7 @@ public class FileInfo implements Cloneable {
 	public byte[][] metaData;
 	public double[] displayRanges;
 	public byte[][] channelLuts;
+	public int samplesPerPixel;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {
@@ -136,6 +137,7 @@ public class FileInfo implements Cloneable {
     	url = "";
 	    nImages = 1;
 		compression = COMPRESSION_NONE;
+		samplesPerPixel = 1;
     }
     
 	/** Returns the number of bytes used per pixel. */
@@ -165,7 +167,8 @@ public class FileInfo implements Cloneable {
 			+ ", Intel=" + (intelByteOrder?"t":"f")
 			+ ", lutSize=" + lutSize
 			+ ", comp=" + compression
-			+ ", ranges=" + (displayRanges!=null?""+displayRanges.length/2:"null");
+			+ ", ranges=" + (displayRanges!=null?""+displayRanges.length/2:"null")
+			+ ", samples=" + samplesPerPixel;
     }
     
     private String getType() {

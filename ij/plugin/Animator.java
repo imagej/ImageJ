@@ -195,7 +195,7 @@ public class Animator implements PlugIn {
 			animationRate = 1.0/cal.frameInterval;
 		int decimalPlaces = (int)animationRate==animationRate?0:1;
 		GenericDialog gd = new GenericDialog("Animation Options");
-		gd.addNumericField("Speed (0.1-100 fps):", animationRate, decimalPlaces);
+		gd.addNumericField("Speed (0.1-1000 fps):", animationRate, decimalPlaces);
 		gd.addNumericField("First Frame:", firstFrame, 0);
 		gd.addNumericField("Last Frame:", lastFrame, 0);
 		gd.addCheckbox("Loop Back and Forth", cal.loop);
@@ -213,7 +213,7 @@ public class Animator implements PlugIn {
 			{firstFrame=0; lastFrame=0;}
 		cal.loop = gd.getNextBoolean();
 		start = gd.getNextBoolean();
-		if (speed>100.0) speed = 100.0;
+		if (speed>1000.0) speed = 1000.0;
 		if (speed<0.1) speed = 0.1;
 		animationRate = speed;
 		if (animationRate!=0.0)

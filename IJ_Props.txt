@@ -127,10 +127,10 @@ stacks15="Start Animation [\\]",ij.plugin.Animator("start")
 stacks16="Stop Animation",ij.plugin.Animator("stop")
 stacks17="Animation Options...",ij.plugin.Animator("options")
 
-# Plugins installed in the Image/HyperStacks submenu
-hyperstacks01="New HyperStack...",ij.plugin.HyperStackConverter("new")
-hyperstacks02="Stack to HyperStack...",ij.plugin.HyperStackConverter("stacktohs")
-hyperstacks03="HyperStack to Stack",ij.plugin.HyperStackConverter("hstostack")
+# Plugins installed in the Image/Hyperstacks submenu
+hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
+hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
+hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
 hyperstacks05="Channels...[Z]",ij.plugin.frame.Channels
 
@@ -334,7 +334,7 @@ open12="Dot Blot (7K)",ij.plugin.URLOpener("Dot_Blot.jpg")
 open13="Embryos (42K)",ij.plugin.URLOpener("embryos.jpg")
 open14="Enhance Me (25K)",ij.plugin.URLOpener("enhance-me.gif")
 open15="Fibroblast Cell Nucleus (17K)",ij.plugin.URLOpener("Fibroblast_Cell_Nucleus.jpg")
-open16="Fluorescent Cells (58K)",ij.plugin.URLOpener("FluorescentCells.jpg")
+open16="Fluorescent Cells (400K)",ij.plugin.URLOpener("FluorescentCells.zip")
 open17="Gel (105K)",ij.plugin.URLOpener("gel.gif")
 open18="HeLa Cells (1.3M, 48-bit RGB)",ij.plugin.URLOpener("hela-cells.zip")
 open19="Leaf (36K)",ij.plugin.URLOpener("leaf.jpg")

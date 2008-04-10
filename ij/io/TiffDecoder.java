@@ -393,14 +393,9 @@ public class TiffDecoder {
 						}
 						break;
 				case SAMPLES_PER_PIXEL:
+					fi.samplesPerPixel = value;
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = FileInfo.RGB;
-					else if (!(value==1||value==3)) {
-						String msg = "Unsupported SamplesPerPixel: " + value;
-						if (value==4)
-							msg += " \n \n" + "ImageJ cannot open CMYK and RGB+alpha TIFFs";
-						error(msg);
-					}
 					break;
 				case X_RESOLUTION:
 					double xScale = getRational(value); 
@@ -424,9 +419,15 @@ public class TiffDecoder {
 					break;
 				case PLANAR_CONFIGURATION:
 					if (value==2 && fi.fileType==FileInfo.RGB48)
-							 fi.fileType = FileInfo.RGB48_PLANAR;
+							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
 					if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
+					if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
+						String msg = "Unsupported interleaved SamplesPerPixel: " + fi.samplesPerPixel;
+						if (value==4)
+							msg += " \n \n" + "ImageJ cannot open CMYK and RGB+alpha TIFFs";
+						error(msg);
+					}
 					break;
 				case COMPRESSION:
 					if (value==5) { // LZW compression is handled
@@ -443,11 +444,8 @@ public class TiffDecoder {
 					}
 					break;
 				case PREDICTOR:
-					if (value==2 && fi.compression==FileInfo.LZW) {
-						if (fi.fileType==FileInfo.GRAY16_UNSIGNED)
-							error("16-bit LZW differencing compression not supported");
+					if (value==2 && fi.compression==FileInfo.LZW)
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
-					}
 					break;
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)

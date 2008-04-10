@@ -339,7 +339,7 @@ public class CompositeImage extends ImagePlus {
 		return stack;
 	}
 
-	LUT createLutFromColor(Color color) {
+	public LUT createLutFromColor(Color color) {
 		byte[] rLut = new byte[256];
 		byte[] gLut = new byte[256];
 		byte[] bLut = new byte[256];

@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import java.awt.Color;
 
 public class RGBStackMerge implements PlugIn {
 
@@ -99,6 +100,7 @@ public class RGBStackMerge implements PlugIn {
 			ImageStack[] stacks = new ImageStack[4];
 			stacks[0]=red; stacks[1]=green; stacks[2]=blue; stacks[3]=gray;
 			imp2 = createComposite(width, height, stackSize, stacks, keep);
+			if (imp2==null) return;
 		} else {
 			ImageStack rgb = mergeStacks(width, height, stackSize, red, green, blue, keep);
 			imp2 = new ImagePlus("RGB", rgb);
@@ -121,9 +123,18 @@ public class RGBStackMerge implements PlugIn {
 		int n = stacks.length;
 		int[] index = new int[n];
 		int channels = 0;
+		boolean customColors = false;
 		for (int i=0; i<n; i++) {
 			index[i] = 1;
-			if (stacks[i]!=null) channels++;
+			if (stacks[i]!=null) {
+				channels++;
+				if (i>0 && stacks[i-1]==null)
+					customColors = true;
+			}
+		}
+		if (channels<2) {
+            IJ.error("At least 2 channels required");
+            return null;
 		}
 		for (int i=0; i<d; i++) {
 			for (int j=0; j<n; j++) {
@@ -141,6 +152,22 @@ public class RGBStackMerge implements PlugIn {
 		ImagePlus imp2 = new ImagePlus("Composite", composite);
 		imp2.setDimensions(channels, d, 1);
 		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+		if (customColors) {
+			Color[] colors = {Color.red, Color.green, Color.blue, Color.white};
+			CompositeImage ci = (CompositeImage)imp2;
+			int color = 0;
+			int c = 1;
+			for (int i=0; i<n; i++) {
+				if (stacks[i]!=null && c<=n) {
+					ci.setPosition(c, 1, 1);
+					LUT lut = ci.createLutFromColor(colors[color]);
+					ci.setChannelLut(lut);
+					c++;
+				}
+				color++;
+			}
+			ci.setPosition(1, 1, 1);
+		}
 		if (d>1) imp2.setOpenAsHyperStack(true);
 		return imp2;
 	}

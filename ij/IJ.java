@@ -233,6 +233,13 @@ public class IJ {
 				command = "Stack to RGB";
 			else if (command.equals("Convert to Composite"))
 				command = "Make Composite";
+		} else if (command.indexOf("HyperStack")!=-1) {
+			if (command.equals("New HyperStack..."))
+				command = "New Hyperstack...";
+			else if (command.equals("Stack to HyperStack..."))
+				command = "Stack to Hyperstack...";
+			else if (command.equals("HyperStack to Stack"))
+				command = "Hyperstack to Stack";
 		}
 		previousThread = thread;
 		macroRunning = true;

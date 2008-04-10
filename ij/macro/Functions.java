@@ -2037,7 +2037,7 @@ public class Functions implements MacroConstants, Measurements {
 				rm.select(index, shiftKeyDown, altKeyDown);
 				shiftKeyDown = altKeyDown = false;
 			} else
-				roiManagerSelect(rm, index);
+				rm.select(index);
 		} else if (cmd.equals("count"))
 			countOrIndex = rm.getList().getItemCount();
 		else if (cmd.equals("index"))
@@ -2047,23 +2047,6 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Invalid ROI Manager command");
 		}
 		return countOrIndex;			
-	}
-	
-	void roiManagerSelect(RoiManager rm, int index) {
-		int delay = 1;
-		long start = System.currentTimeMillis();
-		while (true) {
-			rm.select(index);
-			if (delay>1) IJ.wait(delay);
-			if (rm.getList().isIndexSelected(index))
-				break;
-			//IJ.log(index+" "+delay);
-			rm.select(-1); // deselect all
-			IJ.wait(delay);
-			delay *= 2; if (delay>32) delay=32;
-			if ((System.currentTimeMillis()-start)>1000L)
-				interp.error("Failed to select");
-		}
 	}
 	
 	void setFont() {
@@ -3293,7 +3276,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg.indexOf("composite")!=-1)
 			state = getImage().isComposite();
 		else
-			interp.error("Argument must be 'locked', 'Inverted LUT' or 'HyperStack'");
+			interp.error("Argument must be 'locked', 'Inverted LUT' or 'Hyperstack'");
 		return state?1.0:0.0;
 	}
 
@@ -3522,7 +3505,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!=WORD && interp.token!=PREDEFINED_FUNCTION)
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		if (name.equals("isHyperStack"))
+		if (name.equals("isHyperstack")||name.equals("isHyperStack"))
 			return getImage().isHyperStack()?1.0:0.0;
 		else if (name.equals("getDimensions"))
 			{getDimensions(); return Double.NaN;}

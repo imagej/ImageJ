@@ -90,7 +90,7 @@ public class ImageReader {
 	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
-		if (fi.compression == FileInfo.LZW)
+		if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressed16bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -143,7 +143,10 @@ public class ImageReader {
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			if (k > 0) {
+			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
+			if (in instanceof RandomAccessStream)
+				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
+			else if (k > 0) {
 				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
 				if (skip > 0) in.skip(skip);
 			}
@@ -173,6 +176,17 @@ public class ImageReader {
 				else
 					for (int i=base,j=0; i<pmax; i++,j+=2)
 						pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
+			}
+			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING) {
+				// CTR: 16-bit differencing expands the bytes into 16-bit words,
+				// takes the difference, then repacks the results into two bytes again.
+				// I believe doing the differencing here will work, but I did not have
+				// any 16-bit or 48-bit LZW TIFFs with differencing, so this code is
+				// untested.
+				for (int b=base+1; b<pmax; b++) {
+					pixels[b] += last;
+					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
+				}
 			}
 			base += pixelsRead;
 			showProgress(k+1, fi.stripOffsets.length);

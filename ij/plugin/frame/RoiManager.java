@@ -186,7 +186,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	public void itemStateChanged(ItemEvent e) {
-		//IJ.log("itemStateChanged: "+e.getItem().toString()+"  "+e+"  "+ignoreInterrupts);
 		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
 			int index = 0;
             try {index = Integer.parseInt(e.getItem().toString());}
@@ -260,7 +259,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	/** Adds the specified ROI to the list. The third argument ('n') will 
-		be used form the first part of the ROI lable if it is >= 0. */
+		be used to form the first part of the ROI lable if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (roi==null) return;
 		String label = getLabel(imp, roi, n);
@@ -989,7 +988,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (e.getID()==WindowEvent.WINDOW_CLOSING) {
 			instance = null;	
 		}
-		ignoreInterrupts = false;
+		if (!IJ.isMacro())
+			ignoreInterrupts = false;
 	}
 	
 	/** Returns a reference to the ROI Manager
@@ -1095,8 +1095,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
 		} else if (cmd.equals("reset")) {
+			if (IJ.isMacOSX() && IJ.isMacro())
+				ignoreInterrupts = true;
 			list.removeAll();
 			rois.clear();
+		} else if (cmd.equals("debug")) {
+			//IJ.log("Debug: "+debugCount);
+			//for (int i=0; i<debugCount; i++)
+    		//	IJ.log(debug[i]);
 		} else
 			ok = false;
 		macro = false;
@@ -1133,6 +1139,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return false;
 	}
 	
+	//public static String[] debug = new String[100000];
+	//public static int debugCount;
+	
 	public void select(int index) {
 		int n = list.getItemCount();
 		if (index<0) {
@@ -1140,14 +1149,24 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (list.isSelected(i)) list.deselect(i);
 			return;
 		}
+		if (index>=n) return;
 		boolean mm = list.isMultipleMode();
 		if (mm) list.setMultipleMode(false);
-		if (index<n) {
+		int delay = 1;
+		long start = System.currentTimeMillis();
+		while (true) {
 			list.select(index);
-			restore(index, true);	
-			if (!Interpreter.isBatchMode())
-				IJ.wait(10);
+			if (delay>1) IJ.wait(delay);
+			if (list.isIndexSelected(index))
+				break;
+			for (int i=0; i<n; i++)
+				if (list.isSelected(i)) list.deselect(i);
+			IJ.wait(delay);
+			delay *= 2; if (delay>32) delay=32;
+			if ((System.currentTimeMillis()-start)>1000L)
+				error("Failed to select ROI "+index);
 		}
+		restore(index, true);	
 		if (mm) list.setMultipleMode(true);
 	}
 	

@@ -5,20 +5,20 @@
 </head>
 <body>
 
-<li> <u>1.40c, 2 April 2008</u>
+<li> <u>1.40d, 9 April 2008</u>
 <ul>
-<li> <i>Image&gt;Stacks&gt;Z Project</i> now works with t-series HyperStacks.
-<li> <i>Image&gt;HyperStacks&gt;Stack to HyperStack </i> will
-now convert an Image5D to a HyperStack.
-<li> Added the <i>File&gt;Open Samples&gt;Organ of Corti</i>
-sample HyperStack, courtesy of Glen MacDonald.
-<li> Added the Stack.swap(n1,n2) macro function.
-<li> Fixed a bug, introduced in v1.40b, that caused decimal points to be 
-replaced with commas on European systems.
-<li> Fixed a bug that caused stack slice labels after the first null
-label to not be saved.
-<li> Fixed a bug that made it impossible to open the Channels window after 
-it had been closed by WindowManager.closeAllWindows().
+<li> Converted the FluorescentCells sample image into a 3 channel
+composite image.
+<li> The Image Calculator now creates a hyperstack when the input
+is a hyperstack.
+<li> Fixed a bug that could cause macros not running in batch mode that are
+using the particle anlyzer on a stack to not run reliably.
+<li> Fixed a bug that caused reading of LZW compressed TIFF stacks to fail.
+<li> Fixed a bug that caused the LSM Reader to not correctly open LSM files 
+using LZW with differencing compression.
+<li> Fixed a bug that caused <i>Image&gt;Color&gt;RGB Merge</i>, 
+when creating a composite image, to sometimes not use
+expected channel colors.
 </ul>
 
 </body>

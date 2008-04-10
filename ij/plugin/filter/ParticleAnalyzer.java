@@ -625,7 +625,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			PolygonRoi proi = (PolygonRoi)roi;
 			pf.setPolygon(proi.getXCoordinates(), proi.getYCoordinates(), proi.getNCoordinates());
 			ip2.setMask(pf.getMask(r.width, r.height));
-			if (floodFill) ff.particleAnalyzerFill(x,y, level1, level2, ip2.getMask(), r);
+			if (floodFill) ff.particleAnalyzerFill(x, y, level1, level2, ip2.getMask(), r);
 		}
 		ip2.setRoi(r);
 		ip.setValue(fillColor);

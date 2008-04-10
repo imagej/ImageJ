@@ -430,7 +430,12 @@ public class FileOpener {
 		    else
 				is = new FileInputStream(f);
 		}
-		if (is!=null && gzip) is = new GZIPInputStream(is);
+		if (is!=null) {
+		    if (fi.compression>=FileInfo.LZW)
+				is = new RandomAccessStream(is);
+			else if (gzip)
+				is = new GZIPInputStream(is);
+		}
 		return is;
 	}
 	

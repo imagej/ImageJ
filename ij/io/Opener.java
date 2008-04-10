@@ -457,7 +457,7 @@ public class Opener {
 		else {
 			ColorModel cm = createColorModel(fi);
 			ImageStack stack = new ImageStack(fi.width, fi.height, cm);
-			Object pixels;
+			Object pixels = null;
 			int skip = fi.offset;
 			int imageSize = fi.width*fi.height*fi.getBytesPerPixel();
 			if (info[0].fileType==FileInfo.GRAY12_UNSIGNED) {
@@ -468,11 +468,14 @@ public class Opener {
 				imageSize = scan*fi.height;
 			}
 			int loc = 0;
+			int nChannels = 1;
 			try {
 				InputStream is = createInputStream(fi);
 				ImageReader reader = new ImageReader(fi);
 				IJ.resetEscape();
 				for (int i=0; i<info.length; i++) {
+					nChannels = 1;
+					Object[] channels = null;
 					IJ.showStatus("Reading: " + (i+1) + "/" + info.length);
 					if (IJ.escapePressed()) {
 						IJ.beep();
@@ -483,9 +486,17 @@ public class Opener {
 						fi.stripOffsets = info[i].stripOffsets;
 						fi.stripLengths = info[i].stripLengths;
 					}
-					pixels = reader.readPixels(is, skip);
-					if (pixels==null) break;
-					loc += imageSize+skip;
+					if (info[i].samplesPerPixel>1 && !(info[i].getBytesPerPixel()==3||info[i].getBytesPerPixel()==6)) {
+						nChannels = fi.samplesPerPixel;
+						channels = new Object[nChannels];
+						for (int c=0; c<nChannels; c++) {
+							pixels = reader.readPixels(is, c==0?skip:0);
+							channels[c] = pixels;
+						}
+					} else 
+						pixels = reader.readPixels(is, skip);
+					if (pixels==null && channels==null) break;
+					loc += imageSize*nChannels+skip;
 					if (i<(info.length-1)) {
 						skip = info[i+1].offset-loc;
 						if (info[i+1].compression>=FileInfo.LZW) skip = 0;
@@ -498,6 +509,11 @@ public class Opener {
 						stack.addSlice(null, pixels2[1]);					
 						stack.addSlice(null, pixels2[2]);
 						isRGB48 = true;					
+					} else if (nChannels>1) {
+						for (int c=0; c<nChannels; c++) {
+							if (channels[c]!=null)
+								stack.addSlice(null, channels[c]);
+						}
 					} else
 						stack.addSlice(null, pixels);					
 					IJ.showProgress(i, info.length);
@@ -527,6 +543,12 @@ public class Opener {
 			ImagePlus imp = new ImagePlus(fi.fileName, stack);
 			new FileOpener(fi).setCalibration(imp);
 			imp.setFileInfo(fi);
+			int stackSize = stack.getSize();
+			if (nChannels>1 && (stackSize%nChannels)==0) {
+				imp.setDimensions(nChannels, stackSize/nChannels, 1);
+				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+				imp.setOpenAsHyperStack(true);
+			}
 			IJ.showProgress(1.0);
 			return imp;
 		}
@@ -787,7 +809,7 @@ public class Opener {
 		    	return null;
 		    else {
 		    	InputStream is = new FileInputStream(f);
-		    	if (fi.compression>=FileInfo.LZW && fi.fileType==FileInfo.RGB_PLANAR)
+		    	if (fi.compression>=FileInfo.LZW)
 		    		is = new RandomAccessStream(is);
 				return is;
 			}
