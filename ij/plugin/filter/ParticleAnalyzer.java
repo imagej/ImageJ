@@ -75,7 +75,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static double staticMinSize = 0.0;
 	private static double staticMaxSize = DEFAULT_MAX_SIZE;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
-	private static String[] showStrings = {"Nothing","Outlines","Masks","Ellipses", "Count Masks"};
+	private static String[] showStrings = {"Nothing", "Outlines", "Masks", "Ellipses", "Count Masks"};
 	private static double minCircularity=0.0, maxCircularity=1.0;
 		
 	protected static final int NOTHING=0,OUTLINES=1,MASKS=2,ELLIPSES=3,ROI_MASKS=4;
@@ -144,6 +144,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		this.minCircularity = minCirc;
 		this.maxCircularity = maxCirc;
 		slice = 1;
+		if ((options&SHOW_ROI_MASKS)!=0)
+			showChoice = ROI_MASKS;
+		if ((options&SHOW_OUTLINES)!=0)
+			showChoice = OUTLINES;
+		if ((options&SHOW_MASKS)!=0)
+			showChoice = MASKS;
+		if ((options&SHOW_NONE)!=0)
+			showChoice = NOTHING;
 	}
 	
 	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
@@ -326,14 +334,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		recordStarts = (options&RECORD_STARTS)!=0;
 		addToManager = (options&ADD_TO_MANAGER)!=0;
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
-		if ((options&SHOW_ROI_MASKS)!=0)
-			showChoice = ROI_MASKS;
-		if ((options&SHOW_OUTLINES)!=0)
-			showChoice = OUTLINES;
-		if ((options&SHOW_MASKS)!=0)
-			showChoice = MASKS;
-		if ((options&SHOW_NONE)!=0)
-			showChoice = NOTHING;
 		ip.snapshot();
 		ip.setProgressBar(null);
 		if (Analyzer.isRedirectImage()) {

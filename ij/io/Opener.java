@@ -739,7 +739,7 @@ public class Opener {
 		}
 
  		// ACR/NEMA with first tag = 00002,00xx or 00008,00xx
- 		if ((b0==8||b0==2) && b1==0 && b3==0 && !name.endsWith(".spe")) 	
+ 		if ((b0==8||b0==2) && b1==0 && b3==0 && !name.endsWith(".spe") && !name.equals("fid")) 	
   			 	return DICOM;
 
 		// PGM ("P1", "P4", "P2", "P5", "P3" or "P6")

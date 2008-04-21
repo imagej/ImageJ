@@ -149,8 +149,18 @@ public class Animator implements PlugIn {
 			return;
 		}
 		
+		long startTime=System.currentTimeMillis();
+		int count = 0;
+		double fps = 0.0;
 		while (swin.running2) {
 			time = System.currentTimeMillis();
+			count++;
+			if (time>startTime+1000L) {
+				startTime=System.currentTimeMillis();
+				fps=count;
+				count=0;
+			}
+			IJ.showStatus((int)(fps+0.5) + " fps");
 			if (time<nextTime)
 				IJ.wait((int)(nextTime-time));
 			else

@@ -26,6 +26,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	}  
 	    
 	public void drop(DropTargetDropEvent dtde)  {
+		if (IJ.debugMode) IJ.log("DragAndDrop.drop: "+dtde);
 		dtde.acceptDrop(DnDConstants.ACTION_COPY);
 		try  {
 			Transferable t = dtde.getTransferable();
@@ -69,6 +70,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	    } 
 
 	    public void dragEnter(DropTargetDragEvent dtde)  {
+			if (IJ.debugMode) IJ.log("DragAndDrop.dragEnter: "+dtde);
 			dtde.acceptDrag(DnDConstants.ACTION_COPY);
 	    }
 
@@ -86,6 +88,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 
 		/** Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually. */
 		public void openFile(File f) {
+			if (IJ.debugMode) IJ.log("DragAndDrop.open: "+f);
 			try {
 				if (null == f) return;
 				String path = f.getCanonicalPath();
@@ -101,7 +104,11 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 					IJ.log("File not found: " + path);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				CharArrayWriter caw = new CharArrayWriter();
+				PrintWriter pw = new PrintWriter(caw);
+				e.printStackTrace(pw);
+				String s = caw.toString();
+				new ij.text.TextWindow("Exception", s, 400, 300);
 			}
 		}
 		
