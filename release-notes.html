@@ -5,20 +5,24 @@
 </head>
 <body>
 
-<li> <u>1.40d, 9 April 2008</u>
+<li> <u>1.40e, 15 April 2008</u>
 <ul>
-<li> Converted the FluorescentCells sample image into a 3 channel
-composite image.
-<li> The Image Calculator now creates a hyperstack when the input
-is a hyperstack.
-<li> Fixed a bug that could cause macros not running in batch mode that are
-using the particle anlyzer on a stack to not run reliably.
-<li> Fixed a bug that caused reading of LZW compressed TIFF stacks to fail.
-<li> Fixed a bug that caused the LSM Reader to not correctly open LSM files 
-using LZW with differencing compression.
-<li> Fixed a bug that caused <i>Image&gt;Color&gt;RGB Merge</i>, 
-when creating a composite image, to sometimes not use
-expected channel colors.
+<li> While creating a straight line selection, hold down the alt key to force the two points that
+define it to have integer coordinate values.
+<li> Results table labels now include the file name extension.
+<li> Set the JPEG Quality in <i>Edit&gt;Options&gt;Input/Output</i> to 100% 
+to disable color sub-sampling, reducing the likelihood of artifacts.
+<li> The DPI of images saved in JPEG format is set to the scale defined in
+<i>Analyze&gt;Set Scale</i> if the unit of length is "inch".
+<li> Added the setOption("Display Labels", boolean) and setOption("Limit to Threshold", boolean)
+macro functions.
+<li> Added the Analyzer.setMeasurement(int, boolean) method.
+<li> Worked around a OSX Leopard/Java 1.5 bug that caused dialogs boxes to return default
+text and numeric field values when the return key was pressed.
+<li>  Fixed a bug that caused the LSM Reader to not correctly open 16-bit files using 
+LZW compression with differencing.
+<li> Fixed a bug that caused saving in BMP format to fail with
+16-bit and 32-bit images.
 </ul>
 
 </body>

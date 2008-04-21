@@ -1205,11 +1205,14 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] initNewArray() {
 		Vector vector = new Vector();
 		int size = 0;
+		boolean stringArray = false;
 		do {
 		    Variable v = new Variable();
-			if (interp.nextNonEolToken()==STRING_CONSTANT)
+		    int tok = interp.nextNonEolToken();
+			if (tok==STRING_CONSTANT||tok==STRING_FUNCTION||(tok==WORD&&stringArray)) {
 				v.setString(getString());
-			else
+				stringArray = true;
+			} else
 				v.setValue(interp.getExpression());
 			vector.addElement(v);
 			size++;
@@ -3219,8 +3222,15 @@ public class Functions implements MacroConstants, Measurements {
 			Prefs.disableUndo = state;
 		else if (arg1.startsWith("openashyper"))
 			getImage().setOpenAsHyperStack(true);
+		else if (arg1.startsWith("display lab"))
+			Analyzer.setMeasurement(LABELS, state);
+		else if (arg1.startsWith("limit to"))
+			Analyzer.setMeasurement(LIMIT, state);
 		else
 			interp.error("Invalid option");
+	}
+	
+	void setMeasurementOption(String option) {
 	}
 	
 	void showText() {

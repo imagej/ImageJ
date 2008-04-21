@@ -84,9 +84,10 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		if (ic!=null) ic.setMaxBounds();
 		show();
 		int previousSlice = imp.getCurrentSlice();
-		imp.setSlice(1);
 		if (previousSlice>1 && previousSlice<=stackSize)
 			imp.setSlice(previousSlice);
+		else
+			imp.setSlice(1);
 		thread = new Thread(this, "SliceSelector");
 		thread.start();
 	}

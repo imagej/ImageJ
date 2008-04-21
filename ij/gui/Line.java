@@ -86,6 +86,10 @@ public class Line extends Roi {
 		x=(int)Math.min(x+x1R,xend); y=(int)Math.min(y+y1R,yend);
 		x1R=xstart-x; y1R=ystart-y;
 		x2R=xend-x; y2R=yend-y;
+		if (IJ.altKeyDown()) {
+			x1R=(int)Math.round(x1R); y1R=(int)Math.round(y1R);
+			x2R=(int)Math.round(x2R); y2R=(int)Math.round(y2R);
+		}
 		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
 		if (width<1) width=1; if (height<1) height=1;
 		updateClipRect();

@@ -460,9 +460,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 				if (rImp!=null) s = rImp.getTitle();				
 			} else
 				s = imp.getTitle();
-			int len = s.length();
-			if (len>4 && s.charAt(len-4)=='.' && !Character.isDigit(s.charAt(len-1)))
-				s = s.substring(0,len-4); 
+			//int len = s.length();
+			//if (len>4 && s.charAt(len-4)=='.' && !Character.isDigit(s.charAt(len-1)))
+			//	s = s.substring(0,len-4); 
 			Roi roi = imp.getRoi();
 			String roiName = roi!=null?roi.getName():null;
 			if (roiName!=null)
@@ -704,14 +704,22 @@ public class Analyzer implements PlugInFilter, Measurements {
 		unsavedMeasurements = b;
 	}
 	
-	// Returns the measurements defined in the Set Measurements dialog. */
+	// Returns the measurement options defined in the Set Measurements dialog. */
 	public static int getMeasurements() {
 		return systemMeasurements;
 	}
 
-	// Sets the system-wide measurements. */
+	/** Sets the system-wide measurement options. */
 	public static void setMeasurements(int measurements) {
 		systemMeasurements = measurements;
+	}
+
+	/** Sets the specified system-wide measurement option. */
+	public static void setMeasurement(int option, boolean state) {
+			if (state)
+				systemMeasurements |= option;
+			else
+				systemMeasurements &= ~option;
 	}
 
 	/** Called once when ImageJ quits. */

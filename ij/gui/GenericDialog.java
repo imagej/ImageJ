@@ -811,7 +811,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		return text;
 	}
 
-  	/** Displays this dialog box. */
+	/** Displays this dialog box. */
 	public void showDialog() {
 		if (macro) {
 			dispose();
@@ -853,11 +853,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 			grid.setConstraints(buttons, c);
 			add(buttons);
 			if (IJ.isMacintosh())
-				setResizable(false);
+			setResizable(false);
 			pack();
 			setup();
 			GUI.center(this);
-			show();
+			setVisible(true);
 			recorderOn = Recorder.record;
 			IJ.wait(50); // work around for Sun/WinNT bug
 		}
@@ -944,16 +944,11 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		if (source==okay || source==cancel | source==no) {
 			wasCanceled = source==cancel;
 			wasOKed = source==okay;
-			closeDialog();
+			dispose();
 		} else
             notifyListeners(e);
 	}
 
-	void closeDialog() {
-		setVisible(false);
-		dispose();
-	}
-	
 	public void textValueChanged(TextEvent e) {
         notifyListeners(e); 
 		if (slider==null) return;
@@ -991,14 +986,28 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 	public void keyPressed(KeyEvent e) { 
 		int keyCode = e.getKeyCode(); 
 		IJ.setKeyDown(keyCode); 
-		if (keyCode==KeyEvent.VK_ENTER && textArea1==null) 
-			closeDialog(); 
-		else if (keyCode==KeyEvent.VK_ESCAPE) { 
+		if (keyCode==KeyEvent.VK_ENTER && textArea1==null) {
+			wasOKed = true;
+			if (IJ.isMacOSX()&&IJ.isJava15())
+				accessTextFields();
+			dispose();
+		} else if (keyCode==KeyEvent.VK_ESCAPE) { 
 			wasCanceled = true; 
-			closeDialog(); 
+			dispose(); 
 			IJ.resetEscape();
 		} 
 	} 
+
+	void accessTextFields() {
+		if (stringField!=null) {
+			for (int i=0; i<stringField.size(); i++)
+				((TextField)(stringField.elementAt(i))).getText();
+		}
+		if (numberField!=null) {
+			for (int i=0; i<numberField.size(); i++)
+				((TextField)(numberField.elementAt(i))).getText();
+		}
+	}
 
 	public void keyReleased(KeyEvent e) {
 		int keyCode = e.getKeyCode();
