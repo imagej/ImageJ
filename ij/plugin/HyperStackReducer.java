@@ -38,7 +38,6 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		int c1 = imp.getChannel();
 		int z1 = imp.getSlice();
 		int t2 = imp.getFrame();
-		int mode = imp.isComposite()?((CompositeImage)imp).getMode():-1;
 		if (!showDialog())
 			return;
 		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
@@ -57,8 +56,10 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		imp2.setDimensions(channels2, slices2, frames2);
 		reduce(imp2);
 		imp2.setOpenAsHyperStack(true);
-		if (channels2>1 && imp.isComposite())
-			imp2 = new CompositeImage(imp2, mode);
+		if (channels2>1 && imp.isComposite()) {
+			imp2 = new CompositeImage(imp2, 0);
+			((CompositeImage)imp2).copyLuts(imp);
+		}
 		imp2.show();
 		if (!keep) {
 			imp.changes = false;

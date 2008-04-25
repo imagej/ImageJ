@@ -277,7 +277,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			return;
 		}
 		int threshold = ip.getAutoThreshold(stats.histogram);
-		//IJ.log(threshold+"  "+stats.min+"  "+stats.max+"  "+stats.dmode);
+		int modifiedModeCount = stats.histogram[stats.mode];
+		stats.histogram[stats.mode] = plot.originalModeCount;
 		int count1=0, count2=0;
 		for (int i=0; i<256; i++) {
 			if (i<threshold)
@@ -285,6 +286,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			else
 				count2 += stats.histogram[i];
 		}
+		stats.histogram[stats.mode] = modifiedModeCount;
 		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
 		//IJ.log(unbalanced+"  "+count1+"  "+count2);
 		double lower, upper;
@@ -627,6 +629,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	Image os;
 	Graphics osg;
 	int mode;
+	int originalModeCount;
 	double stackMin, stackMax;
 	
 	public ThresholdPlot() {
@@ -667,6 +670,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
 		int maxCount2 = 0;
 		histogram = stats.histogram;
+		originalModeCount = histogram[stats.mode];
 		for (int i = 0; i < stats.nBins; i++)
 			if ((histogram[i] > maxCount2) && (i != stats.mode))
 				maxCount2 = histogram[i];

@@ -103,7 +103,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				} else {
 					IJ.log("File not found: " + path);
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				CharArrayWriter caw = new CharArrayWriter();
 				PrintWriter pw = new PrintWriter(caw);
 				e.printStackTrace(pw);

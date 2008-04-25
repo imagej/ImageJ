@@ -88,10 +88,12 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		IJ.showProgress(1.0);
+		if (imp.isComposite()) {
+			imp2 = new CompositeImage(imp2, 0);
+			((CompositeImage)imp2).copyLuts(imp);
+		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
-		if (imp.isComposite())
-			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
 		imp2.show();
 		imp2.changes = true;
 	}

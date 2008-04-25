@@ -29,6 +29,12 @@ public abstract class ImageProcessor extends Object {
 	public static final int CENTER_JUSTIFY = 1;
 	/** Right justify text. */
 	public static final int RIGHT_JUSTIFY = 2;
+	
+	/** Isodata thresholding method */
+	public static final int ISODATA = 0;
+
+	/** Modified isodata method used in Image/Adjust/Threshold tool */
+	public static final int ISODATA2 = 1;
 
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
@@ -402,6 +408,73 @@ public abstract class ImageProcessor extends Object {
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 		newPixels = true;
 		source = null;
+	}
+
+	/** Automatically sets the lower and upper threshold levels, where 'method'
+		 must be ISODATA or ISODATA2 and 'lutUpdate' must be RED_LUT,
+		 BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.
+	*/
+	public void setAutoThreshold(int method, int lutUpdate) {
+		if (method<0 || method>ISODATA2)
+			throw new IllegalArgumentException("Invalid thresholding method");
+		if (this instanceof ColorProcessor)
+			return;
+		double min=0.0, max=0.0;
+		boolean notByteData = !(this instanceof ByteProcessor);
+		ImageProcessor ip2 = this;
+		if (notByteData) {
+			resetMinAndMax();
+			min = getMin(); max = getMax();
+			ip2 = convertToByte(true);	
+		}
+		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
+		int[] histogram = stats.histogram;
+		int originalModeCount = histogram[stats.mode];
+		if (method==ISODATA2) {
+			int maxCount2 = 0;
+			for (int i = 0; i<stats.nBins; i++) {
+				if ((histogram[i] > maxCount2) && (i!=stats.mode))
+					maxCount2 = histogram[i];
+			}
+			int hmax = stats.maxCount;
+			if ((hmax>(maxCount2 * 2)) && (maxCount2 != 0)) {
+				hmax = (int)(maxCount2 * 1.5);
+				histogram[stats.mode] = hmax;
+        		}
+		}
+		int threshold = ip2.getAutoThreshold(stats.histogram);
+		histogram[stats.mode] = originalModeCount;
+		int count1=0, count2=0;
+		for (int i=0; i<256; i++) {
+			if (i<threshold)
+				count1 += stats.histogram[i];
+			else
+				count2 += stats.histogram[i];
+		}
+		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
+		double lower, upper;
+		if (unbalanced) {
+			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
+				{lower=threshold; upper=255.0;}
+			else
+				{lower=0.0; upper=threshold;}
+		} else {
+			if (isInvertedLut())
+				{lower=threshold; upper=255.0;}
+			else
+				{lower=0.0; upper=threshold;}
+		}
+		if (notByteData) {
+			if (max>min) {
+				lower = min + (lower/255.0)*(max-min);
+				upper = min + (upper/255.0)*(max-min);
+			} else
+				lower = upper = min;
+		}
+		setThreshold(lower, upper, lutUpdate);
+		if (notByteData && lutUpdate!=NO_LUT_UPDATE)
+			setLutAnimation(true);
 	}
 
 	/** Disables thresholding. */

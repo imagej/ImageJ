@@ -157,6 +157,19 @@ public class CompositeImage extends ImagePlus {
 			displayRanges = null;
 		}
 	}
+	
+	public void resetDisplayRanges() {
+		int channels = getNChannels();
+		ImageStack stack2 = getImageStack();
+		if (lut==null || channels!=lut.length || channels>stack2.getSize() || channels>MAX_CHANNELS)
+			return;
+		for (int i=0; i<channels; ++i) {
+			ImageProcessor ip2 = stack2.getProcessor(i+1);
+			ip2.resetMinAndMax();
+			lut[i].min = ip2.getMin();
+			lut[i].max = ip2.getMax();
+		}
+	}
 
 	public void updateImage() {
 		int imageSize = width*height;
@@ -442,14 +455,49 @@ public class CompositeImage extends ImagePlus {
 	public LUT getChannelLut(int channel) {
 		if (channel<1 || channel>lut.length)
 			throw new IllegalArgumentException("Channel out of range");
+		int channels = getNChannels();
+		if (lut==null) setupLuts(channels);
 		return lut[channel-1];
 	}
 	
 	/* Returns the LUT used by the current channel. */
 	public LUT getChannelLut() {
-		return lut[getChannelIndex()];
+		int c = getChannelIndex();
+		return lut[c];
 	}
 	
+	/* Returns a copy of this image's channel LUTs as an array. */
+	public LUT[] getLuts() {
+		int channels = getNChannels();
+		if (lut==null) setupLuts(channels);
+		LUT[] luts = new LUT[channels];
+		for (int i=0; i<channels; i++)
+			luts[i] = (LUT)lut[i].clone();
+		return luts;
+	}
+
+	/** Copies the LUTs and display mode of 'imp' to this image. Does
+		nothing if 'imp' is not a CompositeImage or 'imp' and this
+		image do not have the same number of channels. */
+	public void copyLuts(ImagePlus imp) {
+		int channels = getNChannels();
+		if (!imp.isComposite() || imp.getNChannels()!=channels)
+			return;
+		CompositeImage ci = (CompositeImage)imp;
+		LUT[] luts = ci.getLuts();
+		if (luts!=null && luts.length==channels) {
+			lut = luts;
+			cip = null;
+		}
+		int mode2 = ci.getMode();
+		setMode(mode2);
+		if (mode2==COMPOSITE) {
+			boolean[] active2 = ci.getActiveChannels();
+			for (int i=0; i<MAX_CHANNELS; i++)
+				active[i] = active2[i];
+		}
+	}
+
 	int getChannelIndex() {
 		int channels = getNChannels();
 		if (lut==null) setupLuts(channels);

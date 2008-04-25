@@ -189,6 +189,12 @@ public class Thresholder implements PlugIn, Measurements {
 		ImageStack stack = imp.getStack();
 		stack.setColorModel(LookUpTable.createGrayscaleColorModel(!Prefs.blackBackground));
 		imp.setStack(null, stack);
+		if (imp.isComposite()) {
+			CompositeImage ci = (CompositeImage)imp;
+			ci.setMode(CompositeImage.GRAYSCALE);
+			ci.resetDisplayRanges();
+			ci.updateAndDraw();
+		}
 		imp.getProcessor().setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		IJ.showStatus("");
 		imp.unlock();
@@ -227,6 +233,12 @@ public class Thresholder implements PlugIn, Measurements {
 		stack.setColorModel(LookUpTable.createGrayscaleColorModel(!Prefs.blackBackground));
 		imp.setStack(null, stack);
 		imp.getProcessor().setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		if (imp.isComposite()) {
+			CompositeImage ci = (CompositeImage)imp;
+			ci.setMode(CompositeImage.GRAYSCALE);
+			ci.resetDisplayRanges();
+			ci.updateAndDraw();
+		}
 		IJ.showStatus("");
 	}
 
@@ -263,15 +275,9 @@ public class Thresholder implements PlugIn, Measurements {
 	}
 
 	void autoThreshold(ImageProcessor ip) {
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, MIN_MAX+MODE, null);
-		int threshold = ((ByteProcessor)ip).getAutoThreshold();
-		if ((stats.max-stats.mode)<(stats.mode-stats.min)) {
-			minThreshold = 0.0;
-			maxThreshold = threshold;
-		} else {
-			minThreshold = threshold;
-			maxThreshold = 255.0;
-		}
+		ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.NO_LUT_UPDATE);
+		minThreshold = ip.getMinThreshold();
+		maxThreshold = ip.getMaxThreshold();
  	}
 
 }

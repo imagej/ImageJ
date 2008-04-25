@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.40g, 21 April 2008</u>
+<li> <u>1.41a, 21 April 2008</u>
 <ul>
 <li> The Java version is displayed in the status bar on startup.
 <li> Fixed a bug that caused images saved in TIFF format to have their
@@ -13,6 +13,16 @@ contents shifted left if the "Info" property was set to an empty string.
 <li> Fixed a bug, introduced in v1.40c,  that caused stacks saved in TIFF format to have their
 contents shifted left if any slice had a blank label and all
 other slice labels where null.
+
+<li> The <i>Duplicate</i>, <i>Scale</i>, <i>Adjust&gt;Size</i>, <i>Z Project</i>,
+<i>Reduce Dimensionality</i>, <i>Image Calculator</i>,  <i>Make Binary</i> and 
+<i>Convert to Mask</i> commands now work
+correctly with hyperstacks that have custom channel LUTs.
+<li> The <i>Edit&gt;Copy to System</i> command works with composite color images.
+<li> Fixed a bug that caused the setAutoThreshold() macro function to sometimes
+not produce the same result as the "Auto" button in the "Threshold" window.
+<li> Fixed a bug that caused the getLut() macro function to throw an exception
+when attempting to retrieve a LUT from a composite image in batch mode
 </ul>
 
 </body>

@@ -258,8 +258,10 @@ public class ImageCalculator implements PlugIn {
 		if (img3.getStackSize()==n) {
 			int[] dim = img1.getDimensions();
 			img3.setDimensions(dim[2], dim[3], dim[4]);
-			if (img1.isComposite())
-				img3 = new CompositeImage(img3, ((CompositeImage)img1).getMode());
+			if (img1.isComposite()) {
+				img3 = new CompositeImage(img3, 0);
+				((CompositeImage)img3).copyLuts(img1);
+			}
 			if (img1.isHyperStack())
 				img3.setOpenAsHyperStack(true);
 		}

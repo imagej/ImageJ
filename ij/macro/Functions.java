@@ -2280,54 +2280,13 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setAutoThreshold() {
 		interp.getParens();
-		ImagePlus imp = getImage();
+		ImagePlus img = getImage();
 		ImageProcessor ip = getProcessor();
-		double min=0.0, max=0.0;
-		boolean notByteData = !(ip instanceof ByteProcessor);
-		if (notByteData) {
-			if (ip instanceof ColorProcessor)
-				interp.error("Non-RGB image expected");
-			ip.resetMinAndMax();
-			min = ip.getMin(); max = ip.getMax();
-			ip = new ByteProcessor(ip.createImage());
-		}
-		ip.setRoi(imp.getRoi());
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
-		int threshold = ip.getAutoThreshold(stats.histogram);
-		int count1=0, count2=0;
-		for (int i=0; i<256; i++) {
-			if (i<threshold)
-				count1 += stats.histogram[i];
-			else
-				count2 += stats.histogram[i];
-		}
-		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
-		//IJ.log(unbalanced+"  "+count1+"  "+count2);
-		double lower, upper;
-		if (unbalanced) {
-			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
-				{lower=threshold; upper=255.0;}
-			else
-				{lower=0.0; upper=threshold;}
-		} else {
-			if (ip.isInvertedLut())
-				{lower=threshold; upper=255.0;}
-			else
-				{lower=0.0; upper=threshold;}
-		}
-		if (notByteData) {
-			if (max>min) {
-				lower = min + (lower/255.0)*(max-min);
-				upper = min + (upper/255.0)*(max-min);
-			} else
-				lower = upper = min;
-		}
-		if (imp.getBitDepth()==16) {
-			Calibration cal = imp.getCalibration();
-			lower = cal.getCValue(lower); 
-			upper = cal.getCValue(upper); 
-		}
-		IJ.setThreshold(lower, upper);
+		if (ip instanceof ColorProcessor)
+			interp.error("Non-RGB image expected");
+		ip.setRoi(img.getRoi());
+		ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
+		img.updateAndDraw();
 		resetImage();
 	}
 	

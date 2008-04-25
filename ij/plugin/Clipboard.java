@@ -11,8 +11,7 @@ import ij.gui.*;
 import ij.plugin.frame.Editor;
 import ij.text.TextWindow;
 	
-/**	Copies and pastes images to the clipboard. Java 1.4 or later is 
-	required to copy to or paste from the system clipboard. */
+/**	Copies and pastes images to the clipboard. */
 public class Clipboard implements PlugIn, Transferable {
 	static java.awt.datatransfer.Clipboard clipboard;
 	
@@ -60,25 +59,20 @@ public class Clipboard implements PlugIn, Transferable {
 		}
 	}
 
-	boolean setup() {
-		if (!IJ.isJava14()) {
-			IJ.error("Clipboard", "Java 1.4 or later required");
-			return false;
-		}
+	void setup() {
 		if (clipboard==null)
 			clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		return true;
 	}
 	
 	void copyToSystem() {
-		if (!setup()) return;
+		setup();
 		try {
 			clipboard.setContents(this, null);
 		} catch (Throwable t) {}
 	}
 	
 	void showSystemClipboard() {
-		if (!setup()) return;
+		setup();
 		IJ.showStatus("Opening system clipboard...");
 		try {
 			Transferable transferable = clipboard.getContents(null);
@@ -129,8 +123,13 @@ public class Clipboard implements PlugIn, Transferable {
 		if (!isDataFlavorSupported(flavor))
 			throw new UnsupportedFlavorException(flavor);
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if ( imp != null) {
-			ImageProcessor ip = imp.getProcessor();
+		if (imp!=null) {
+			ImageProcessor ip;
+			if (imp.isComposite()) {
+				ip = new ColorProcessor(imp.getImage());
+				ip.setRoi(imp.getRoi());
+			} else	
+				ip = imp.getProcessor();
 			ip = ip.crop();
 			int w = ip.getWidth();
 			int h = ip.getHeight();

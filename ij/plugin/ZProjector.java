@@ -138,7 +138,7 @@ public class ZProjector implements PlugIn {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
 		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
-			if(method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
+			if (method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
 	    		IJ.error("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
 	    		imp.unlock(); 
 	    		return; 
@@ -282,10 +282,10 @@ public class ZProjector implements PlugIn {
         projImage = new ImagePlus(makeTitle(), stack);
         projImage.setDimensions(channels, 1, frames);
         if (channels>1) {
-        	int mode = CompositeImage.COMPOSITE;
-        	if (imp.isComposite())
-        		mode = ((CompositeImage)imp).getMode();
-        	projImage = new CompositeImage(projImage, mode);
+           	projImage = new CompositeImage(projImage, 0);
+        	((CompositeImage)projImage).copyLuts(imp);
+      		if (method==SUM_METHOD || method==SD_METHOD)
+        			((CompositeImage)projImage).resetDisplayRanges();
         }
         if (frames>1)
         	projImage.setOpenAsHyperStack(true);
