@@ -133,7 +133,7 @@ public class TiffEncoder {
 		nMetaDataEntries = 0;
 		int size = 0;
 		int nTypes = 0;
-		if (fi.info!=null) {
+		if (fi.info!=null && fi.info.length()>0) {
 			nMetaDataEntries = 1;
 			size = fi.info.length()*2;
 			nTypes++;
@@ -142,7 +142,7 @@ public class TiffEncoder {
 			int max = Math.min(fi.sliceLabels.length, fi.nImages);
 			boolean isNonNullLabel = false;
 			for (int i=0; i<max; i++) {
-				if (fi.sliceLabels[i]!=null) {
+				if (fi.sliceLabels[i]!=null && fi.sliceLabels[i].length()>0) {
 					isNonNullLabel = true;
 					break;
 				}
@@ -307,7 +307,7 @@ public class TiffEncoder {
 	
 		// write byte counts (META_DATA_BYTE_COUNTS tag)
 		out.writeInt(4+nMetaDataTypes*8); // header size	
-		if (fi.info!=null)
+		if (fi.info!=null && fi.info.length()>0)
 			out.writeInt(fi.info.length()*2);
 		for (int i=0; i<nSliceLabels; i++) {
 			if (fi.sliceLabels[i]==null)
