@@ -73,6 +73,7 @@ public class RGBStackConverter implements PlugIn {
 
 	void compositeImageToRGB(CompositeImage imp, String title) {
 		ImagePlus imp2 = imp.createImagePlus();
+		imp.updateImage();
 		imp2.setProcessor(title, new ColorProcessor(imp.getImage()));
 		imp2.show();
 	}

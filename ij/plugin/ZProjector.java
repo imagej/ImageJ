@@ -49,7 +49,7 @@ public class ZProjector implements PlugIn {
     private static boolean allTimeFrames;
     
     private String color = "";
-    private boolean isHyperStack;
+    private boolean isHyperstack;
     private int increment = 1;
     private int sliceCount;
 
@@ -93,13 +93,14 @@ public class ZProjector implements PlugIn {
 
     public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
+		int stackSize = imp.getStackSize();
 		if(imp==null) {
 	    	IJ.noImage(); 
 	    	return; 
 		}
 
 		//  Make sure input image is a stack.
-		if(imp.getStackSize()==1) {
+		if(stackSize==1) {
 	    	IJ.error("ZProjection", "Stack required"); 
 	    	return; 
 		}
@@ -111,16 +112,20 @@ public class ZProjector implements PlugIn {
 		}
 
 		// Set default bounds.
-		isHyperStack = imp.isHyperStack();
+		int frames = imp.getNFrames();
+		int slices = imp.getNSlices();
+		isHyperstack = imp.isHyperStack()||( ij.macro.Interpreter.isBatchMode()&&((frames>1&&frames<stackSize)||(slices>1&&slices<stackSize)));
+		if (imp.getType()==ImagePlus.COLOR_RGB)
+			isHyperstack = false;
 		startSlice = 1; 
-		if (isHyperStack) {
+		if (isHyperstack) {
 			int nSlices = imp.getNSlices();
 			if (nSlices>1)
 				stopSlice = nSlices;
 			else
 				stopSlice = imp.getNFrames();
 		} else
-			stopSlice  = imp.getStackSize();
+			stopSlice  = stackSize;
 			
 
 
@@ -134,7 +139,7 @@ public class ZProjector implements PlugIn {
 		setStartSlice((int)gd.getNextNumber()); 
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex();
-		if (isHyperStack) {
+		if (isHyperstack) {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
 		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
@@ -190,7 +195,7 @@ public class ZProjector implements PlugIn {
 		gd.addNumericField("Start slice:",startSlice,0/*digits*/); 
 		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/);
 		gd.addChoice("Projection Type", METHODS, METHODS[method]); 
-		if (isHyperStack && imp.getNFrames()>1&& imp.getNSlices()>1)
+		if (isHyperstack && imp.getNFrames()>1&& imp.getNSlices()>1)
 			gd.addCheckbox("All Time Frames", allTimeFrames); 
 		return gd; 
     }
@@ -222,11 +227,11 @@ public class ZProjector implements PlugIn {
 		// more general use of ImageProcessor's getPixelValue and
 		// putPixel methods.
 		int ptype; 
-		if(stack.getProcessor(1) instanceof ByteProcessor)       ptype = BYTE_TYPE; 
+		if(stack.getProcessor(1) instanceof ByteProcessor) ptype = BYTE_TYPE; 
 		else if(stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
 		else if(stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
 		else {
-	    	IJ.error("ZProjector: Unknown processor type."); 
+	    	IJ.error("ZProjector: Non-RGB stack required"); 
 	    	return; 
 		}
 

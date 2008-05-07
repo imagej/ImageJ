@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.Macro_Runner;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.RoiManager;
 import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
@@ -1617,6 +1618,18 @@ public class Interpreter implements MacroConstants {
  	public static String getAdditionalFunctions() {
  		return additionalFunctions;
 	} 
+	
+	/** Returns the batch mode RoiManager instance. */
+	public static RoiManager getBatchModeRoiManager() {
+		Interpreter interp = getInstance();
+		if (interp!=null && isBatchMode() && RoiManager.getInstance()==null) {
+			if (interp.func.roiManager==null)
+				interp.func.roiManager = new RoiManager(true);
+			return interp.func.roiManager;
+		} else
+			return null;
+	}
+	
 
 } // class Interpreter
 

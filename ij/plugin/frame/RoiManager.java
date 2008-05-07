@@ -35,6 +35,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	Button moreButton, colorButton;
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
+	static boolean restoreCentered;
 	int prevID;
 
 
@@ -181,7 +182,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			help();
 		else if (command.equals("Options..."))
 			options();
-		else if (command.equals("Set Color..."))
+		else if (command.equals("\"Show All\" Color..."))
 			setShowAllColor();
 	}
 
@@ -431,6 +432,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0)
 			roi2.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
 		int width= imp.getWidth(), height=imp.getHeight();
+		if (restoreCentered) {
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null) {
+				Rectangle r1 = ic.getSrcRect();
+				Rectangle r2 = roi2.getBounds();
+				roi2.setLocation(r1.x+r1.width/2-r2.width/2, r1.y+r1.height/2-r2.height/2);
+			}
+		}
 		if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0)
 			roi2.setLocation((width-r.width)/2, (height-r.height)/2);
 		imp.setRoi(roi2);
@@ -892,9 +901,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	void options() {
 		Color c = ImageCanvas.getShowAllColor();
-		GenericDialog gd = new GenericDialog("\"Show All\" Options");
+		GenericDialog gd = new GenericDialog("Options");
 		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
-		gd.addCheckbox("Associate ROIs with Slices", Prefs.showAllSliceOnly);
+		gd.addCheckbox("Associate \"Show All\" ROIs with Slices", Prefs.showAllSliceOnly);
+		gd.addCheckbox("Restore ROIs Centered", restoreCentered);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			if (c!=ImageCanvas.getShowAllColor())
@@ -902,6 +912,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		}
 		Prefs.showAllSliceOnly = gd.getNextBoolean();
+		restoreCentered = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();
 	}
@@ -909,7 +920,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	Panel makeButtonPanel(GenericDialog gd) {
 		Panel panel = new Panel();
     	//buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		colorButton = new Button("Set Color...");
+		colorButton = new Button("\"Show All\" Color...");
 		colorButton.addActionListener(this);
 		panel.add(colorButton);
 		return panel;

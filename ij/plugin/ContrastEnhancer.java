@@ -43,11 +43,13 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 
 	boolean showDialog(ImagePlus imp) {
 		int bitDepth = imp.getBitDepth();
+		boolean composite = imp.isComposite();
+		if (composite) stackSize = 1;
 		Roi roi = imp.getRoi();
-		boolean areaRoi = roi!=null && roi.isArea();
+		boolean areaRoi = roi!=null && roi.isArea() && !composite;
 		GenericDialog gd = new GenericDialog("Enhance Contrast");
 		gd.addNumericField("Saturated Pixels:", saturated, 1, 4, "%");
-		if (bitDepth!=24)
+		if (bitDepth!=24 && !composite)
 			gd.addCheckbox("Normalize", normalize);
 		if (areaRoi) {
 			String label = bitDepth==24?"Update Entire Image":"Update All When Normalizing";
@@ -55,14 +57,15 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		}
 		gd.addCheckbox("Equalize Histogram", equalize);
 		if (stackSize>1) {
-			gd.addCheckbox("Normalize_All "+stackSize+" Slices", processStack);
+			if (!composite)
+				gd.addCheckbox("Normalize_All "+stackSize+" Slices", processStack);
 			gd.addCheckbox("Use Stack Histogram", useStackHistogram);
 		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		saturated = gd.getNextNumber();
-		if (bitDepth!=24)
+		if (bitDepth!=24 && !composite)
 			normalize = gd.getNextBoolean();
 		else
 			normalize = false;
@@ -101,7 +104,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			ip.setRoi(imp.getRoi());
 			if (stats==null)
 				stats = ImageStatistics.getStatistics(ip, MIN_MAX, null);
-			stretchHistogram(ip, saturated, stats);
+			if (imp.isComposite())
+				stretchCompositeImageHistogram((CompositeImage)imp, saturated, stats);
+			else
+				stretchHistogram(ip, saturated, stats);
 		}
 	}
 	
@@ -111,6 +117,58 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	}
 
 	public void stretchHistogram(ImageProcessor ip, double saturated, ImageStatistics stats) {
+		int[] a = getMinAndMax(ip, saturated, stats);
+		int hmin=a[0], hmax=a[1];
+		//IJ.log(hmin+" "+hmax+" "+threshold);
+		if (hmax>hmin) {
+			double min = stats.histMin+hmin*stats.binSize;
+			double max = stats.histMin+hmax*stats.binSize;
+			if (!updateSelectionOnly)
+				ip.resetRoi();
+			if (normalize)
+				normalize(ip, min, max);
+			else {
+				if (updateSelectionOnly) {
+					ImageProcessor mask = ip.getMask();
+					if (mask!=null) ip.snapshot();
+					ip.setMinAndMax(min, max);
+					if (mask!=null) ip.reset(mask);
+				} else
+					ip.setMinAndMax(min, max);
+			}
+		}
+	}
+	
+	void stretchCompositeImageHistogram(CompositeImage imp, double saturated, ImageStatistics stats) {
+		ImageProcessor ip = imp.getProcessor();
+		int[] a = getMinAndMax(ip, saturated, stats);
+		int hmin=a[0], hmax=a[1];
+		if (hmax>hmin) {
+			double min = stats.histMin+hmin*stats.binSize;
+			double max = stats.histMin+hmax*stats.binSize;
+			imp.setDisplayRange(min, max);
+		}
+		/*
+		int channels = imp.getNChannels();b
+		int channel = imp.getChannel();
+		int slice = imp.getSlice();
+		int frame = imp.getFrame();
+		for (int c=1; c<=channels; c++) {
+			imp.setPosition(c, slice, frame);
+			ImageProcessor ip = imp.getProcessor();
+			int[] a = getMinAndMax(ip, saturated, stats);
+			int hmin=a[0], hmax=a[1];
+			if (hmax>hmin) {
+				double min = stats.histMin+hmin*stats.binSize;
+				double max = stats.histMin+hmax*stats.binSize;
+				imp.setDisplayRange(min, max);
+			}
+		}
+		imp.setPosition(channel, slice, frame);
+		*/
+	}
+
+	int[] getMinAndMax(ImageProcessor ip, double saturated, ImageStatistics stats) {
 		int hmin, hmax;
 		int threshold;
 		int[] histogram = stats.histogram;		
@@ -137,25 +195,9 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			//IJ.log(i+" "+count+" "+found);
 		} while (!found && i>0);
 		hmax = i;
-				
-		//IJ.log(hmin+" "+hmax+" "+threshold);
-		if (hmax>hmin) {
-			double min = stats.histMin+hmin*stats.binSize;
-			double max = stats.histMin+hmax*stats.binSize;
-			if (!updateSelectionOnly)
-				ip.resetRoi();
-			if (normalize)
-				normalize(ip, min, max);
-			else {
-				if (updateSelectionOnly) {
-					ImageProcessor mask = ip.getMask();
-					if (mask!=null) ip.snapshot();
-					ip.setMinAndMax(min, max);
-					if (mask!=null) ip.reset(mask);
-				} else
-					ip.setMinAndMax(min, max);
-			}
-		}
+		int[] a = new int[2];
+		a[0]=hmin; a[1]=hmax;
+		return a;
 	}
 	
 	void normalize(ImageProcessor ip, double min, double max) {
@@ -201,7 +243,6 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			v *= scale;
 			if (v>1.0) v = 1.0;
 			pixels[i] = (float)v;
-		
 		}
 	}
 

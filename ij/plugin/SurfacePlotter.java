@@ -97,9 +97,9 @@ public class SurfacePlotter implements PlugIn {
 		//gd.addNumericField("Plot Width (pixels):", plotWidth, 0);
 		//gd.addNumericField("Angle (-90-90 degrees):", angleInDegrees, 0);
 		gd.addNumericField("Polygon Multiplier (10-200%):", polygonMultiplier, 0);
-		gd.addCheckbox("Draw Wireframe", showWireframe);
+		gd.addCheckbox("Draw_Wireframe", showWireframe);
 		gd.addCheckbox("Shade", showGrayscale);
-		gd.addCheckbox("Draw Axis", showAxis);
+		gd.addCheckbox("Draw_Axis", showAxis);
 		gd.addCheckbox("Source Background is Lighter", whiteBackground);
 		gd.addCheckbox("Fill Plot Background with Black", blackFill);
 		gd.addCheckbox("One Polygon Per Line", oneToOne);

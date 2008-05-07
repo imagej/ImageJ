@@ -3501,6 +3501,8 @@ public class Functions implements MacroConstants, Measurements {
 			setDisplayMode(imp, getStringArg());
 		else if (name.equals("getDisplayMode"))
 			getDisplayMode(imp);
+		else if (name.equals("setActiveChannels"))
+			setActiveChannels(imp, getStringArg());
 		else if (name.equals("swap"))
 			swapStackImages(imp);
 		else
@@ -3508,6 +3510,19 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
+	void setActiveChannels(ImagePlus imp, String channels) {
+		if (!imp.isComposite())
+			interp.error("Composite image required");
+		boolean[] active = ((CompositeImage)imp).getActiveChannels();
+		for (int i=0; i<CompositeImage.MAX_CHANNELS; i++) {
+			boolean b = false;
+			if (channels.length()>i && channels.charAt(i)=='1')
+				b = true;
+			active[i] = b;
+		}
+		imp.updateAndDraw();
+	}
+
 	void setDisplayMode(ImagePlus imp, String mode) {
 		mode = mode.toLowerCase(Locale.US);
 		if (!imp.isComposite())

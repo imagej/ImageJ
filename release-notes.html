@@ -5,24 +5,42 @@
 </head>
 <body>
 
-<li> <u>1.41a, 21 April 2008</u>
+<li> <u>1.41b, 6 May 2008</u>
 <ul>
-<li> The Java version is displayed in the status bar on startup.
-<li> Fixed a bug that caused images saved in TIFF format to have their
-contents shifted left if the "Info" property was set to an empty string.
-<li> Fixed a bug, introduced in v1.40c,  that caused stacks saved in TIFF format to have their
-contents shifted left if any slice had a blank label and all
-other slice labels where null.
-
-<li> The <i>Duplicate</i>, <i>Scale</i>, <i>Adjust&gt;Size</i>, <i>Z Project</i>,
-<i>Reduce Dimensionality</i>, <i>Image Calculator</i>,  <i>Make Binary</i> and 
-<i>Convert to Mask</i> commands now work
-correctly with hyperstacks that have custom channel LUTs.
-<li> The <i>Edit&gt;Copy to System</i> command works with composite color images.
-<li> Fixed a bug that caused the setAutoThreshold() macro function to sometimes
-not produce the same result as the "Auto" button in the "Threshold" window.
-<li> Fixed a bug that caused the getLut() macro function to throw an exception
-when attempting to retrieve a LUT from a composite image in batch mode
+<li>  Incorporated Michael Schmid's 
+<a href="http://rsb.info.nih.gov/ij/plugins/avi-reader.html">AVI Reader</a>
+plugin. AVI files can now be opened using <i>File&gt;Open</i>,
+<i>File&gt;Import&gt;AVI</i> and drag and drop.
+<li> To reduce the size of the Plugins menu, JAR files that implement fewer than four
+Plugins submenu commands are installed in the submenu that corresponds the
+the folder containing the JAR file.
+In addition, single plugins distributed as ZIP archives are installed in 
+the "Miscellaneous" submenu.
+<li> Johannes Hermen and Christian Mol added the ability
+to parse float header values to the DICOM reader and contributed a 2652 tag dictionary
+(<a href="http://rsb.info.nih.gov/ij/download/docs/DICOM_Dictionary.txt">DICOM_Dictionary.txt</a>)
+that the DICOM reader will use if it is copied to the ImageJ folder.
+<li> The DICOM reader uses the value of the "Slice Thickness" tag for 
+voxel depth if the "Slice Spacing" tag is missing.
+<li> The particle analyzer, when run from a batch mode macro, no longer
+opens the ROI Manager window when "Add to Manager" is enabled,
+resulting in faster and more reliable operation.
+<li> <i>Process&gt;Enhance Contrast</i> works with composite
+color images.
+<li> The minimum plot size that can be set in
+<i>Edit&gt;Options&gt;Profile Plot Options</i> was reduced from 300x100 to 100x50.
+<li> Added the "Restore ROIs Centered" option to the ROI Manager's 
+More>>Options command.
+<li> Added the Stack.setActiveChannels() macro function.
+<li> Fixed a bug that could cause an exception when saving composite
+color images.
+<li> Fixed a bug that caused composite color images with custom LUTs 
+to revert to the default LUTs after resaving.
+<li> Fixed a bug that caused Z projection of hyperstacks to fail in batch
+mode macros.
+<li> Fixed a bug that caused ImageJ to not correctly read ImageJ TIFF stacks modified by LibTIFF.
+<li> Fixed a bug that caused macros using <i>Analyze&gt;Surface Plot</i> plot with both the
+"Draw Wireframe" and "Draw Axis" options to fail.
 </ul>
 
 </body>

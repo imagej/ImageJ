@@ -13,6 +13,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.frame.*;
 import ij.plugin.DICOM;
+import ij.plugin.AVI_Reader;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import java.awt.event.KeyEvent;
@@ -25,9 +26,9 @@ public class Opener {
 
 	public static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
 		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,
-		TIFF_AND_DICOM=14,CUSTOM=15;
+		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16; // don't forget to also update 'types'
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
-		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d"};
+		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","avi"};
 	private static String defaultDirectory = null;
 	private static int fileType;
 	private boolean error;
@@ -227,6 +228,9 @@ public class Opener {
 				if (imp.getWidth()!=0) return imp; else return null;
 			case ZIP:
 				return openZip(path);
+			case AVI:
+				AVI_Reader reader = (AVI_Reader)IJ.runPlugIn("ij.plugin.AVI_Reader", path);
+				return reader.getImagePlus();
 			case UNKNOWN: case TEXT:
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
 				int[] wrap = new int[] {fileType};
@@ -786,6 +790,10 @@ public class Opener {
 		if ((b0==66 && b1==77)||name.endsWith(".dib"))
 			return BMP;
 				
+		// AVI
+		if (name.endsWith(".avi"))
+			return AVI;
+
 		return UNKNOWN;
 	}
 

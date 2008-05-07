@@ -756,6 +756,10 @@ public class IJ {
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
+		    	if (imp.getStack().isVirtual()) {
+		    		error("Custom code is required to process virtual stacks.");
+					return PlugInFilter.DONE;
+		    	}
 				if (Recorder.record)
 					Recorder.recordOption("stack");
 				return flags+PlugInFilter.DOES_STACKS;

@@ -417,6 +417,9 @@ public class TiffDecoder {
 					} else if (value==3)
 						fi.unit = "cm";
 					break;
+				case SOFTWARE:
+					fi.nImages = 0; // file not created by ImageJ so look at all the IFDs
+					break;
 				case PLANAR_CONFIGURATION:
 					if (value==2 && fi.fileType==FileInfo.RGB48)
 							 fi.fileType = FileInfo.GRAY16_UNSIGNED;

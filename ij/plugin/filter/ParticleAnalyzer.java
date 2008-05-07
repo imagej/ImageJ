@@ -10,6 +10,7 @@ import ij.text.*;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
+import ij.macro.Interpreter;
 import ij.util.Tools;
 
 /** Implements ImageJ's Analyze Particles command.
@@ -700,13 +701,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (addToManager) {
 			if (roiManager==null) {
-				Frame frame = WindowManager.getFrame("ROI Manager");
-				if (frame==null)
-					IJ.run("ROI Manager...");
-				frame = WindowManager.getFrame("ROI Manager");
-				if (frame==null || !(frame instanceof RoiManager))
-					{addToManager=false; return;}
-				roiManager = (RoiManager)frame;
+				if (Macro.getOptions()!=null && Interpreter.isBatchMode())
+					roiManager = Interpreter.getBatchModeRoiManager();
+				if (roiManager==null) {
+					Frame frame = WindowManager.getFrame("ROI Manager");
+					if (frame==null)
+						IJ.run("ROI Manager...");
+					frame = WindowManager.getFrame("ROI Manager");
+					if (frame==null || !(frame instanceof RoiManager))
+						{addToManager=false; return;}
+					roiManager = (RoiManager)frame;
+				}
 				if (resetCounter)
 					roiManager.runCommand("reset");
 			}

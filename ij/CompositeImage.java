@@ -140,9 +140,10 @@ public class CompositeImage extends ImagePlus {
 			lut = new LUT[channels];
 			LUT lut2 = channels>MAX_CHANNELS?createLutFromColor(Color.white):null;
 			for (int i=0; i<channels; ++i) {
-				if (channelLuts!=null && i<channelLuts.length)
+				if (channelLuts!=null && i<channelLuts.length) {
 					lut[i] = createLutFromBytes(channelLuts[i]);
-				else if (i<MAX_CHANNELS)
+					customLuts = true;
+				} else if (i<MAX_CHANNELS)
 					lut[i] = createLutFromColor(colors[i]);
 				else
 					lut[i] = (LUT)lut2.clone();
@@ -169,6 +170,13 @@ public class CompositeImage extends ImagePlus {
 			lut[i].min = ip2.getMin();
 			lut[i].max = ip2.getMax();
 		}
+	}
+
+	public void updateAndDraw() {
+		updateImage();
+		if (win!=null)
+			notifyListeners(UPDATED);
+		draw();
 	}
 
 	public void updateImage() {
@@ -453,10 +461,10 @@ public class CompositeImage extends ImagePlus {
 	
 	/* Returns the LUT used by the specified channel. */
 	public LUT getChannelLut(int channel) {
-		if (channel<1 || channel>lut.length)
-			throw new IllegalArgumentException("Channel out of range");
 		int channels = getNChannels();
 		if (lut==null) setupLuts(channels);
+		if (channel<1 || channel>lut.length)
+			throw new IllegalArgumentException("Channel out of range");
 		return lut[channel-1];
 	}
 	
