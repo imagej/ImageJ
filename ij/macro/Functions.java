@@ -2645,6 +2645,8 @@ public class Functions implements MacroConstants, Measurements {
 				gd.addNumericField(prompt, defaultNumber, decimalPlaces, columns, units);
 			} else if (name.equals("addCheckbox")) {
 				gd.addCheckbox(getFirstString(), getLastArg()==1?true:false);
+			} else if (name.equals("addCheckboxGroup")) {
+				addCheckboxGroup(gd);
 			} else if (name.equals("addMessage")) {
 				gd.addMessage(getStringArg());
 			} else if (name.equals("addChoice")) {
@@ -2686,6 +2688,21 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
+	void addCheckboxGroup(GenericDialog gd) {
+		int rows = (int)getFirstArg();
+		int columns = (int)getNextArg();
+		interp.getComma();
+		String[] labels = getStringArray();
+		int n = labels.length;
+		double[] dstates = getLastArray();
+		if (n!=dstates.length)
+			interp.error("labels.length!=states.length");
+		boolean[] states = new boolean[n];
+		for (int i=0; i<n; i++)
+			states[i] = dstates[i]==1.0?true:false;
+		gd.addCheckboxGroup(rows, columns, labels, states);
+	}
+
 	void getDateAndTime() {
 		Variable year = getFirstVariable();
 		Variable month = getNextVariable();

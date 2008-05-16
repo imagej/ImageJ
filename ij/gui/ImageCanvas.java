@@ -165,11 +165,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
     }
     
-	int getSliceNumber(String label) {
-		if (label==null) return -1;
+	public int getSliceNumber(String label) {
 		int slice = -1;
-		if (label.length()>4 && label.charAt(4)=='-' && label.length()>=14)
+		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
 			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
+		else if (label.length()>=17 && label.charAt(5)=='-' && label.charAt(11)=='-')
+			slice = (int)Tools.parseDouble(label.substring(0,5),-1);
+		else if (label.length()>=20 && label.charAt(6)=='-' && label.charAt(13)=='-')
+			slice = (int)Tools.parseDouble(label.substring(0,6),-1);
 		return slice;
 	}
 

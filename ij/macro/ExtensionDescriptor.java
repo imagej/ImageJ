@@ -196,18 +196,20 @@ public class ExtensionDescriptor {
 
     switch (type) {
     case MacroExtension.ARG_STRING:
-      if (var.getType() != Variable.STRING) {
-        interp.error("expected string, but variable type is "+getVariableTypename(var.getType()));
+      if (!output && var.getType()!=Variable.STRING) {
+        interp.error("Expected string, but variable type is "+getVariableTypename(var.getType()));
         return null;
       }
       if (output) {
-        return new String[] { var.getString() };
+      	String s = var.getString();
+      	if (s==null) s = "";
+        return new String[] { s };
       } else {
         return var.getString();
       }
     case MacroExtension.ARG_NUMBER:
       if (var.getType() != Variable.VALUE) {
-        interp.error("expected number, but variable type is "+getVariableTypename(var.getType()));
+        interp.error("Expected number, but variable type is "+getVariableTypename(var.getType()));
         return null;
       }
       if (output) {
@@ -217,7 +219,7 @@ public class ExtensionDescriptor {
       }
     case MacroExtension.ARG_ARRAY:
       if (var.getType() != Variable.ARRAY) {
-        interp.error("expected array, but variable type is "+getVariableTypename(var.getType()));
+        interp.error("Expected array, but variable type is "+getVariableTypename(var.getType()));
         return null;
       }
       return convertArray(var.getArray());
@@ -260,10 +262,10 @@ public class ExtensionDescriptor {
       vArgs = parseArgumentList(func);
     }
     
-    for (int i=0; i < vArgs.length; ++i) {
-      Variable v = vArgs[i];
-      System.err.println("variable is "+(v!= null?v.toString():"(null)"));
-    }
+    //for (int i=0; i < vArgs.length; ++i) {
+    //  Variable v = vArgs[i];
+    //  System.err.println("variable is "+(v!= null?v.toString():"(null)"));
+    //}
     
     Object[] args = new Object[ argTypes.length ];
     // check variable types...

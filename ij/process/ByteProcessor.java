@@ -66,6 +66,17 @@ public class ByteProcessor extends ImageProcessor {
 		this.cm = cm;
 	}
 
+	/** Creates a ByteProcessor from a TYPE_BYTE_GRAY BufferedImage. */
+	public ByteProcessor(BufferedImage bi) {
+		if (bi.getType()!=BufferedImage.TYPE_BYTE_GRAY)
+			throw new IllegalArgumentException("Type!=TYPE_BYTE_GRAYY");
+		WritableRaster raster = bi.getRaster();
+		DataBuffer buffer = raster.getDataBuffer();
+		pixels = ((DataBufferByte) buffer).getData();
+		width = raster.getWidth();
+		height = raster.getHeight();
+	}
+
 	public Image createImage() {
 		if (cm==null) cm = getDefaultColorModel();
 		if (ij.IJ.isJava16()) return createBufferedImage();

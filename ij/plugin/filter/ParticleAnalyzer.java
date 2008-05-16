@@ -367,7 +367,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					makeCustomLut();
 				drawIP.setColorModel(customLut);
 				drawIP.setFont(new Font("SansSerif", Font.PLAIN, 9));
-
 			}
 			outlines.addSlice(null, drawIP);
 
@@ -785,10 +784,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				prefix = "Count Masks of ";
 			else
 				prefix = "Drawing of ";
-
-			drawIP.setMinAndMax(0, maxParticleCount);
 			outlines.update(drawIP);
-					   
 			new ImagePlus(prefix+title, outlines).show();
 		}
 		if (showResults && !processStack) {

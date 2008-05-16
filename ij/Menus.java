@@ -1087,18 +1087,19 @@ public class Menus {
 	/** Removes the specified item from the Window menu. */
 	static synchronized void removeWindowMenuItem(int index) {
 		//IJ.log("removeWindowMenuItem: "+index+" "+windowMenuItems2+" "+window.getItemCount());
-		if (ij==null)
-			return;
-		if (index>=0 && index<window.getItemCount()) {
-			window.remove(WINDOW_MENU_ITEMS+index);
-			if (index<windowMenuItems2) {
-				windowMenuItems2--;
-				if (windowMenuItems2==1) {
-					window.remove(WINDOW_MENU_ITEMS);
-					windowMenuItems2 = 0;
+		if (ij==null) return;
+		try {
+			if (index>=0 && index<window.getItemCount()) {
+				window.remove(WINDOW_MENU_ITEMS+index);
+				if (index<windowMenuItems2) {
+					windowMenuItems2--;
+					if (windowMenuItems2==1) {
+						window.remove(WINDOW_MENU_ITEMS);
+						windowMenuItems2 = 0;
+					}
 				}
 			}
-		}
+		} catch (Exception e) {}
 	}
 
 	/** Changes the name of an item in the Window menu. */

@@ -409,6 +409,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (bi.getType()==BufferedImage.TYPE_USHORT_GRAY) {
 				setProcessor(null, new ShortProcessor(bi));
 				return;
+			} else if (bi.getType()==BufferedImage.TYPE_BYTE_GRAY) {
+				setProcessor(null, new ByteProcessor(bi));
+				return;
 			}
 		}
 		roi = null;
@@ -1403,12 +1406,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 			roi.setImage(null);
 		if (stack!=null) {
 			Object[] arrays = stack.getImageArray();
-			if (arrays!=null)
+			if (arrays!=null) {
 				for (int i=0; i<arrays.length; i++)
 					arrays[i] = null;
+			}
 		}
 		img = null;
-		//System.gc();
+		if (stack!=null||WindowManager.getWindowCount()==0) {
+			if (IJ.debugMode) IJ.log("System.gc()");
+			System.gc();
+		}
 	}
 	
 	/** Set <code>ignoreFlush true</code> to not have the pixel 
@@ -1744,6 +1751,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return openAsHyperStack;
 	}
 	
+	/** Returns true if this is a CompositeImage. */
 	public boolean isComposite() {
 		return compositeImage && getNChannels()>1 && (this instanceof CompositeImage);
 	}

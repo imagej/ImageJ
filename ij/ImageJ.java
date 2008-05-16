@@ -69,7 +69,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.41b";
+	public static final String VERSION = "1.41c";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -186,8 +186,24 @@ public class ImageJ extends Frame implements ActionListener,
 		IJ.showStatus("ImageJ "+VERSION + "/"+java+" ("+ m.nPlugins + " commands, " + m.nMacros + str);
 		if (applet==null && !embedded)
 			new SocketListener();
+		configureProxy();
  	}
     	
+	void configureProxy() {
+		String server = Prefs.get("proxy.server", null);
+		if (server==null||server.equals("")) return;
+		int port = (int)Prefs.get("proxy.port", 0);
+		if (port==0) return;
+		String user = Prefs.get("proxy.user", null);	
+		Properties props = System.getProperties();
+		props.put("proxySet", "true");
+		props.put("http.proxyHost", server);
+		props.put("http.proxyPort", ""+port);
+		if (user!=null)
+			props.put("http.proxyUser", user);
+		//IJ.log(server+"  "+port+"  "+user);
+	}
+	
     void setIcon() throws Exception {
 		URL url = this.getClass().getResource("/microscope.gif");
 		if (url==null) return;

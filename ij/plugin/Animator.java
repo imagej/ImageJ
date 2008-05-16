@@ -86,6 +86,8 @@ public class Animator implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		if (cal.fps!=0.0)
 			animationRate = cal.fps;
+		if (animationRate<0.1)
+			animationRate = 1.0;
 		int frames = imp.getNFrames();
 		int slices = imp.getNSlices();
 		
@@ -203,7 +205,7 @@ public class Animator implements PlugIn {
 			animationRate = cal.fps;
 		else if (cal.frameInterval!=0.0 && cal.getTimeUnit().equals("sec"))
 			animationRate = 1.0/cal.frameInterval;
-		int decimalPlaces = (int)animationRate==animationRate?0:1;
+		int decimalPlaces = (int)animationRate==animationRate?0:3;
 		GenericDialog gd = new GenericDialog("Animation Options");
 		gd.addNumericField("Speed (0.1-1000 fps):", animationRate, decimalPlaces);
 		gd.addNumericField("First Frame:", firstFrame, 0);
@@ -224,7 +226,7 @@ public class Animator implements PlugIn {
 		cal.loop = gd.getNextBoolean();
 		start = gd.getNextBoolean();
 		if (speed>1000.0) speed = 1000.0;
-		if (speed<0.1) speed = 0.1;
+		//if (speed<0.1) speed = 0.1;
 		animationRate = speed;
 		if (animationRate!=0.0)
 			cal.fps = animationRate;

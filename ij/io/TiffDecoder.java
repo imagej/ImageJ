@@ -19,6 +19,7 @@ public class TiffDecoder {
 	public static final int PHOTO_INTERP = 262;
 	public static final int IMAGE_DESCRIPTION = 270;
 	public static final int STRIP_OFFSETS = 273;
+	public static final int ORIENTATION = 274;
 	public static final int SAMPLES_PER_PIXEL = 277;
 	public static final int ROWS_PER_STRIP = 278;
 	public static final int STRIP_BYTE_COUNT = 279;
@@ -268,6 +269,7 @@ public class TiffDecoder {
 			case IMAGE_WIDTH: name="ImageWidth"; break;
 			case IMAGE_LENGTH: name="ImageLength"; break;
 			case STRIP_OFFSETS: name="StripOffsets"; break;
+			case ORIENTATION: name="Orientation"; break;
 			case PHOTO_INTERP: name="PhotoInterp"; break;
 			case IMAGE_DESCRIPTION: name="ImageDescription"; break;
 			case BITS_PER_SAMPLE: name="BitsPerSample"; break;
@@ -417,9 +419,6 @@ public class TiffDecoder {
 					} else if (value==3)
 						fi.unit = "cm";
 					break;
-				case SOFTWARE:
-					fi.nImages = 0; // file not created by ImageJ so look at all the IFDs
-					break;
 				case PLANAR_CONFIGURATION:
 					if (value==2 && fi.fileType==FileInfo.RGB48)
 							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
@@ -469,6 +468,9 @@ public class TiffDecoder {
 						byte[] s = getString(count,value);
 						if (s!=null) saveImageDescription(s,fi);
 					}
+					break;
+				case ORIENTATION:
+					fi.nImages = 0; // file not created by ImageJ so look at all the IFDs
 					break;
 				case METAMORPH1: case METAMORPH2:
 					if (name.indexOf(".STK")>0 || name.indexOf(".stk")>0) {

@@ -717,11 +717,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			return;
 		}
 		updateScrollBars(null, false);
-		if (roi!=null) {
-			ImageProcessor mask = roi.getMask();
-			if (mask!=null)
-				ip.reset(mask);
-		}
+		//if (roi!=null) { ???
+		//	ImageProcessor mask = roi.getMask();
+		//	if (mask!=null)
+		//		ip.reset(mask);
+		//}
 		if (Recorder.record)
 			Recorder.record("run", "Enhance Contrast", "saturated=0.5");
 	}

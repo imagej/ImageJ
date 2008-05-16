@@ -246,8 +246,9 @@ class DicomDecoder {
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
 		this.fileName = fileName;
+		String path = null;
 		if (dictionary==null) {
-			String path = Prefs.getHomeDir()+File.separator+"DICOM_Dictionary.txt";
+			path = Prefs.getHomeDir()+File.separator+"DICOM_Dictionary.txt";
 			File f = new File(path);
 			if (f.exists()) try {
 				dictionary = new Properties();
@@ -262,7 +263,7 @@ class DicomDecoder {
 		if (dictionary==null) {
 			DicomDictionary d = new DicomDictionary();
 			dictionary = d.getDictionary();
-			if (IJ.debugMode) IJ.log("DicomDecoder: using "+dictionary.size()+" tag built in dictionary");
+			if (IJ.debugMode) IJ.log("DicomDecoder: "+path+" not found; using "+dictionary.size()+" tag built in dictionary");
 		}
 	}
   
@@ -720,11 +721,19 @@ class DicomDecoder {
 			return id+": "+value;
 		switch (vr) {
 			case FD:
-				value = Double.toString(getDouble());
+				if (FD==8)
+					value = Double.toString(getDouble());
+				else
+					for (int i=0; i<elementLength; i++) getByte();
 				break;
 			case FL:
-				value = Float.toString(getFloat());
+				if (FD==8)
+					value = Float.toString(getFloat());
+				else
+					for (int i=0; i<elementLength; i++) getByte();
 				break;
+			case UT:
+				throw new IOException("ImageJ cannot read UT (unlimited text) DICOMs");
 			case AE: case AS: case AT: case CS: case DA: case DS: case DT:  case IS: case LO: 
 			case LT: case PN: case SH: case ST: case TM: case UI:
 				value = getString(elementLength);
@@ -843,6 +852,7 @@ class DicomDictionary {
 		
 		"00080005=CSSpecific Character Set",
 		"00080008=CSImage Type",
+		"00080010=CSRecognition Code",
 		"00080012=DAInstance Creation Date",
 		"00080013=TMInstance Creation Time",
 		"00080014=UIInstance Creator UID",
@@ -860,6 +870,7 @@ class DicomDictionary {
 		"00080033=TMImage Time",
 		"00080034=TMOverlay Time",
 		"00080035=TMCurve Time",
+		"00080041=LOData Set Subtype",
 		"00080042=CSNuclear Medicine Series Type",
 		"00080050=SHAccession Number",
 		"00080052=CSQuery/Retrieve Level",
@@ -867,6 +878,7 @@ class DicomDictionary {
 		"00080058=AEFailed SOP Instance UID List",
 		"00080060=CSModality",
 		"00080064=CSConversion Type",
+		"00080068=CSPresentation Intent Type",
 		"00080070=LOManufacturer",
 		"00080080=LOInstitution Name",
 		"00080081=STInstitution Address",
@@ -877,11 +889,13 @@ class DicomDictionary {
 		"00080100=SHCode Value",
 		"00080102=SHCoding Scheme Designator",
 		"00080104=LOCode Meaning",
+		"00080201=SHTimezone Offset From UTC",
 		"00081010=SHStation Name",
 		"00081030=LOStudy Description",
 		"00081032=SQProcedure Code Sequence",
 		"0008103E=LOSeries Description",
 		"00081040=LOInstitutional Department Name",
+		"00081048=PNPhysician(s) of Record",
 		"00081050=PNAttending Physician's Name",
 		"00081060=PNName of Physician(s) Reading Study",
 		"00081070=PNOperator's Name",
@@ -1214,10 +1228,13 @@ class DicomDictionary {
 		"00200020=CSPatient Orientation",
 		"00200022=USOverlay Number",
 		"00200024=USCurve Number",
+		"00200030=DSImage Position",
 		"00200032=DSImage Position (Patient)",
 		"00200037=DSImage Orientation (Patient)",
+		"00200050=DSLocation",
 		"00200052=UIFrame of Reference UID",
 		"00200060=CSLaterality",
+		"00200070=LOImage Geometry Type",
 		"00200080=UIMasking Image UID",
 		"00200100=ISTemporal Position Identifier",
 		"00200105=ISNumber of Temporal Positions",
@@ -1256,6 +1273,10 @@ class DicomDictionary {
 		"00280108=USSmallest Pixel Value in Series",
 		"00280109=USLargest Pixel Value in Series",
 		"00280120=USPixel Padding Value",
+		"00280300=CSQuality Control Image",
+		"00280301=CSBurned In Annotation",
+		"00281040=CSPixel Intensity Relationship",
+		"00281041=SSPixel Intensity Relationship Sign",
 		"00281050=DSWindow Center",
 		"00281051=DSWindow Width",
 		"00281052=DSRescale Intercept",
@@ -1268,6 +1289,7 @@ class DicomDictionary {
 		"00281201=USRed Palette Color Lookup Table Data",
 		"00281202=USGreen Palette Color Lookup Table Data",
 		"00281203=USBlue Palette Color Lookup Table Data",
+		"00282110=CSLossy Image Compression",
 		"00283000=SQModality LUT Sequence",
 		"00283002=USLUT Descriptor",
 		"00283003=LOLUT Explanation",

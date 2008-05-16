@@ -179,7 +179,9 @@ public class CompositeImage extends ImagePlus {
 		draw();
 	}
 
-	public void updateImage() {
+static int counter =1;
+
+	public synchronized void updateImage() {
 		int imageSize = width*height;
 		int nChannels = getNChannels();
 		int redValue, greenValue, blueValue;
