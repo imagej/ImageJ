@@ -96,10 +96,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 		title="null";
     }
     
-    /** Constructs an ImagePlus from an AWT Image. The first argument
-		will be used as the title of the window that displays the image.
-		Throws an IllegalStateException if an error occurs 
-		while loading the image. */
+    /** Constructs an ImagePlus from an Image or BufferedImage. The first 
+		argument will be used as the title of the window that displays the image.
+		Throws an IllegalStateException if an error occurs while loading the image. */
     public ImagePlus(String title, Image img) {
 		this.title = title;
     	ID = --currentID;
@@ -388,13 +387,21 @@ public class ImagePlus implements ImageObserver, Measurements {
 		activated = true;
 	}
 		
-	/** Returns the current AWT image. */
+	/** Returns this image as a AWT image. */
 	public Image getImage() {
 		if (img==null && ip!=null)
 			img = ip.createImage();
 		return img;
 	}
 		
+	/** Returns this image as a BufferedImage. */
+	public BufferedImage getBufferedImage() {
+		if (isComposite())
+			return (new ColorProcessor(getImage())).getBufferedImage();
+		else
+			return ip.getBufferedImage();
+	}
+
 	/** Returns this image's unique numeric ID. */
 	public int getID() {
 		return ID;

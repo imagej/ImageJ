@@ -145,7 +145,13 @@ public class Plot {
         this.yMin = yMin;
         this.yMax = yMax;
         fixedYScale = true;
-        if (initialized) setScale();
+		if (initialized) {
+			ip.setColor(Color.white);
+			ip.resetRoi();
+			ip.fill();
+			ip.setColor(Color.black);
+			setScaleAndDrawAxisLabels();
+		}
     }
 
     /** Sets the canvas size (i.e., size of the resulting ImageProcessor).
@@ -167,23 +173,22 @@ public class Plot {
         setup();
         switch(shape) {
             case CIRCLE: case X:  case BOX: case TRIANGLE: case CROSS: case DOT:
+                ip.setClipRect(frame);
                 for (int i=0; i<x.length; i++) {
                     int xt = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
                     int yt = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-                    if (xt>=frame.x && yt>=frame.y && xt<=frame.x+frame.width && yt<=frame.y+frame.height)
-                        drawShape(shape, xt, yt, markSize);
+                    drawShape(shape, xt, yt, markSize);
                 }
+               ip.setClipRect(null);
                 break;
             case LINE:
-                ip.setClipRect(frame);
                 int xts[] = new int[x.length];
                 int yts[] = new int[y.length];
                 for (int i=0; i<x.length; i++) {
                     xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
                     yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
                 }
-                drawPolyline(ip, xts, yts, x.length);
-                ip.setClipRect(null);
+                drawPolyline(ip, xts, yts, x.length, true);
                 break;
         }
         multiplePlots = true;
@@ -324,23 +329,23 @@ public class Plot {
             frameHeight = plotHeight;
         }
         frame = new Rectangle(LEFT_MARGIN, TOP_MARGIN, frameWidth, frameHeight);
-        setScale();
-        if (PlotWindow.noGridLines)
-        	drawAxisLabels();
-        else
-        	drawTicksEtc();
+        setScaleAndDrawAxisLabels();
     }
     
-    void setScale() {
-        if ((xMax-xMin)==0.0)
-            xScale = 1.0;
-        else
-            xScale = frame.width/(xMax-xMin);
-        if ((yMax-yMin)==0.0)
-            yScale = 1.0;
-        else
-            yScale = frame.height/(yMax-yMin);
-    }
+	void setScaleAndDrawAxisLabels() {
+		if ((xMax-xMin)==0.0)
+			xScale = 1.0;
+		else
+			xScale = frame.width/(xMax-xMin);
+		if ((yMax-yMin)==0.0)
+			yScale = 1.0;
+		else
+			yScale = frame.height/(yMax-yMin);
+		if (PlotWindow.noGridLines)
+			drawAxisLabels();
+		else
+			drawTicksEtc();
+	}
     
     void drawAxisLabels() {
 		int digits = getDigits(yMin, yMax);
@@ -522,15 +527,13 @@ public class Plot {
         setup();
         
         if (drawPending) {
-            ip.setClipRect(frame);
             int xpoints[] = new int[nPoints];
             int ypoints[] = new int[nPoints];
             for (int i=0; i<nPoints; i++) {
                 xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
                 ypoints[i] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin)*yScale);
             }
-            drawPolyline(ip, xpoints, ypoints, nPoints);
-            ip.setClipRect(null);
+            drawPolyline(ip, xpoints, ypoints, nPoints, true);
             if (this.errorBars != null) {
                 xpoints = new int[2];
                 ypoints = new int[2];
@@ -538,21 +541,25 @@ public class Plot {
                     xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
                     ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
                     ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
-                    drawPolyline(ip, xpoints,ypoints, 2);
+                    drawPolyline(ip, xpoints,ypoints, 2, false);
                 }
             }
         }
         
         if (ip instanceof ColorProcessor)
             ip.setColor(Color.black);
+        if (lineWidth>5) ip.setLineWidth(5);
         ip.drawRect(frame.x, frame.y, frame.width+1, frame.height+1);
+        ip.setLineWidth(lineWidth);
     }
     
-    void drawPolyline(ImageProcessor ip, int[] x, int[] y, int n) {
-        ip.moveTo(x[0], y[0]);
-        for (int i=0; i<n; i++)
-            ip.lineTo(x[i], y[i]);
-    }
+	void drawPolyline(ImageProcessor ip, int[] x, int[] y, int n, boolean clip) {
+		if (clip) ip.setClipRect(frame);
+		ip.moveTo(x[0], y[0]);
+		for (int i=0; i<n; i++)
+			ip.lineTo(x[i], y[i]);
+		if (clip) ip.setClipRect(null);
+	}
     
     void drawYLabel(String yLabel, int x, int y, int height, FontMetrics fm) {
         if (yLabel.equals(""))
@@ -619,8 +626,8 @@ public class Plot {
 
     /** Displays the plot in a PlotWindow and returns a reference to the PlotWindow. */
     public PlotWindow show() {
-        draw();
-        if (Prefs.useInvertingLut && (ip instanceof ByteProcessor) && !Interpreter.isBatchMode() && IJ.getInstance()!=null) {
+         draw();
+         if (Prefs.useInvertingLut && (ip instanceof ByteProcessor) && !Interpreter.isBatchMode() && IJ.getInstance()!=null) {
             ip.invertLut();
             ip.invert();
         }
@@ -631,7 +638,6 @@ public class Plot {
             return null;
         }
         ImageWindow.centerNextImage();
-        
         return new PlotWindow(this);
     }
 

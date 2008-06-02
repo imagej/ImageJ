@@ -91,17 +91,32 @@ public class ImageWriter {
 			int index2 = 0;
 			int index1 = line*fi.width;
 			int value;
-			for (int i=0; i<fi.width; i++) {
-				value = r[index1];
-				buffer[index2++] = (byte)(value>>>8);
-				buffer[index2++] = (byte)value;
-				value = g[index1];
-				buffer[index2++] = (byte)(value>>>8);
-				buffer[index2++] = (byte)value;
-				value = b[index1];
-				buffer[index2++] = (byte)(value>>>8);
-				buffer[index2++] = (byte)value;
-				index1++;
+			if (fi.intelByteOrder) {
+				for (int i=0; i<fi.width; i++) {
+					value = r[index1];
+					buffer[index2++] = (byte)value;
+					buffer[index2++] = (byte)(value>>>8);
+					value = g[index1];
+					buffer[index2++] = (byte)value;
+					buffer[index2++] = (byte)(value>>>8);
+					value = b[index1];
+					buffer[index2++] = (byte)value;
+					buffer[index2++] = (byte)(value>>>8);
+					index1++;
+				}
+			} else {
+				for (int i=0; i<fi.width; i++) {
+					value = r[index1];
+					buffer[index2++] = (byte)(value>>>8);
+					buffer[index2++] = (byte)value;
+					value = g[index1];
+					buffer[index2++] = (byte)(value>>>8);
+					buffer[index2++] = (byte)value;
+					value = b[index1];
+					buffer[index2++] = (byte)(value>>>8);
+					buffer[index2++] = (byte)value;
+					index1++;
+				}
 			}
 			out.write(buffer, 0, count);
 		}

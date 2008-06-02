@@ -200,6 +200,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_VALUE: value = getValue(); break;
 			case STACK: value = doStack(); break;
 			case MATCHES: value = matches(); break;
+			case GET_STRING_WIDTH: value = getStringWidth(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -567,7 +568,7 @@ public class Functions implements MacroConstants, Measurements {
         	interp.getRightParen();
         	return;
 		}
-		double arg1 = (int)interp.getExpression();
+		double arg1 = interp.getExpression();
 		if (interp.nextToken()==')')
 			{interp.getRightParen(); setColor(arg1); return;}
 		int red=(int)arg1, green=(int)getNextArg(), blue=(int)getLastArg();
@@ -2804,6 +2805,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		ImageCalculator ic = new ImageCalculator();
 		ic.calculate(operator, img1, img2);
+		resetImage();
 	}
 
 	void setRGBWeights() {
@@ -3664,6 +3666,13 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		waitForUserDialog = new WaitForUserDialog(title, text);
 		waitForUserDialog.show();
+	}
+	
+	double getStringWidth() {
+		resetImage();
+		ImageProcessor ip = getProcessor();
+		setFont(ip);
+		return ip.getStringWidth(getStringArg()); 
 	}
 
 } // class Functions

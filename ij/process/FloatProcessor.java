@@ -173,6 +173,11 @@ public class FloatProcessor extends ImageProcessor {
 		return pixels8;
 	}
 	
+	/** Returns this image as an 8-bit BufferedImage. */
+	public BufferedImage getBufferedImage() {
+		return convertToByte(true).getBufferedImage();
+	}
+
 	/** Returns a new, blank FloatProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {
 		ImageProcessor ip2 = new FloatProcessor(width, height, new float[width*height], getColorModel());

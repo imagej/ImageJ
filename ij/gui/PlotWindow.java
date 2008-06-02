@@ -318,23 +318,35 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	void initDigits() {
+		int digits = 2;
 		int setDigits = Analyzer.getPrecision();
 		if (ydigits!=9 || setDigits>=6) {
 			ydigits = setDigits;
 			if (ydigits==0) ydigits = 2;
+			digits = ydigits;
 		}
 		if (ydigits!=defaultDigits) {
 			realXValues = false;
-			for (int i=0; i<plot.xValues.length; i++)
-				if ((int)plot.xValues[i]!=plot.xValues[i]) realXValues = true;
+			for (int i=0; i<plot.xValues.length; i++) {
+				if ((int)plot.xValues[i]!=plot.xValues[i]) {
+					realXValues = true;
+					break;
+				}
+			}
 			boolean realYValues = false;
-			for (int i=0; i<plot.yValues.length; i++)
-				if ((int)plot.yValues[i]!=plot.yValues[i]) realYValues = true;
+			for (int i=0; i<plot.yValues.length; i++) {
+				if ((int)plot.yValues[i]!=plot.yValues[i]) {
+					realYValues = true;
+					break;
+				}
+			}
 			if (setDigits<6&&realYValues) ydigits = 9;
 			if (!realYValues) ydigits = 0;
 			defaultDigits = ydigits;
 		}
 		xdigits =  realXValues?ydigits:0;
+		if (xdigits==0 && plot.xValues.length>=2 && (plot.xValues[1]-plot.xValues[0])<1.0)
+			xdigits = digits;
 	}
 		
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}

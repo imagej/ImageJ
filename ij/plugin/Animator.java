@@ -237,13 +237,26 @@ public class Animator implements PlugIn {
 	void nextSlice() {
 		if (!imp.lock())
 			return;
-		if (IJ.altKeyDown())
-			slice += 10;
-		else
-			slice++;
-		if (slice>nSlices)
-			slice = nSlices;
-		swin.showSlice(slice);
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack && imp.getNChannels()>1) {
+			int c = imp.getChannel() + 1;
+			int channels = imp.getNChannels();
+			if (c>channels) c = channels;
+			swin.setPosition(c, imp.getSlice(), imp.getFrame());
+		} else if (hyperstack && imp.getNSlices()>1) {
+			int z = imp.getSlice() + 1;
+			int slices = imp.getNSlices();
+			if (z>slices) z = slices;
+			swin.setPosition(imp.getNChannels(), z, imp.getFrame());
+		} else {
+			if (IJ.altKeyDown())
+				slice += 10;
+			else
+				slice++;
+			if (slice>nSlices)
+				slice = nSlices;
+			swin.showSlice(slice);
+		}
 		imp.updateStatusbarValue();
 		imp.unlock();
 	}
@@ -251,13 +264,24 @@ public class Animator implements PlugIn {
 	void previousSlice() {
 		if (!imp.lock())
 			return;
-		if (IJ.altKeyDown())
-			slice -= 10;
-		else
-			slice--;
-		if (slice<1)
-			slice = 1;
-		swin.showSlice(slice);
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack && imp.getNChannels()>1) {
+			int c = imp.getChannel() - 1;
+			if (c<1) c = 1;
+			swin.setPosition(c, imp.getSlice(), imp.getFrame());
+		} else if (hyperstack && imp.getNSlices()>1) {
+			int z = imp.getSlice() - 1;
+			if (z<1) z = 1;
+			swin.setPosition(imp.getNChannels(), z, imp.getFrame());
+		} else {
+			if (IJ.altKeyDown())
+				slice -= 10;
+			else
+				slice--;
+			if (slice<1)
+				slice = 1;
+			swin.showSlice(slice);
+		}
 		imp.updateStatusbarValue();
 		imp.unlock();
 	}

@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /** Writes a stack as an animated Gif */
 public class GifWriter implements PlugIn {
-	static int transparentIndex = -1;
+	static int transparentIndex = Prefs.getTransparentIndex();
    
 	public void run(String path) {
 		ImagePlus imp = IJ.getImage();
@@ -87,17 +87,6 @@ public class GifWriter implements PlugIn {
 		IJ.showProgress(1.0);
 	}
 	
-	/** Sets the transparent index (0-255), or set to -1 to disable transparency. */
-	public static void setTransparentIndex(int index) {
-		if (index<-1 || index>255) index = -1;
-		transparentIndex = index;
-	}
-
-	/** Returns the transparent index (0-255), or -1 if transparency is disabled. */
-	public static int getTransparentIndex() {
-		return transparentIndex;
-	}
-
 }
 
 

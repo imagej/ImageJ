@@ -733,10 +733,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		int digits = (ip instanceof FloatProcessor)||cal.calibrated()?2:0;
 		double minValue = cal.getCValue(min);
 		double maxValue = cal.getCValue(max);
+		int channels = imp.getNChannels();
 		GenericDialog gd = new GenericDialog("Set Min and Max");
 		gd.addNumericField("Minimum Displayed Value: ", minValue, digits);
 		gd.addNumericField("Maximum Displayed Value: ", maxValue, digits);
 		gd.addCheckbox("Propagate to all open images", false);
+		if (imp.isComposite())
+			gd.addCheckbox("Propagate to all "+channels+" channels", false);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -745,6 +748,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		minValue = cal.getRawValue(minValue);
 		maxValue = cal.getRawValue(maxValue);
 		boolean propagate = gd.getNextBoolean();
+		boolean allChannels = imp.isComposite()&&gd.getNextBoolean();
 		if (maxValue>=minValue) {
 			min = minValue;
 			max = maxValue;
@@ -753,6 +757,15 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			if (RGBImage) doMasking(imp, ip);
 			if (propagate)
 				IJ.runMacroFile("ij.jar:PropagateMinAndMax");
+			if (allChannels) {
+				int channel = imp.getChannel();
+				for (int c=1; c<=channels; c++) {
+					imp.setPosition(c, imp.getSlice(), imp.getFrame());
+					imp.setDisplayRange(min, max);
+				}
+				imp.setPosition(channel, imp.getSlice(), imp.getFrame());
+				imp.updateAndDraw();
+			}
 			if (Recorder.record) {
 				if (imp.getBitDepth()==32)
 					Recorder.record("setMinAndMax", min, max);

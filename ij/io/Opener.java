@@ -394,6 +394,7 @@ public class Opener {
 			if (img==null) return null;
 			imp = new ImagePlus(f.getName(), img);
 		} catch (Exception e) {
+			IJ.log(""+e);
 			return null; // error loading image				
 		} 
 		FileInfo fi = new FileInfo();

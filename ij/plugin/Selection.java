@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.RoiManager;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
@@ -343,6 +344,8 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	void addToRoiManager(ImagePlus imp) {
+		if (IJ.macroRunning() &&  Interpreter.isBatchModeRoiManager())
+			IJ.error("run(\"Add to Manager\") may not work in batch mode macros");
 		Frame frame = WindowManager.getFrame("ROI Manager");
 		if (frame==null)
 			IJ.run("ROI Manager...");

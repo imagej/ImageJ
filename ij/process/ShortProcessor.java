@@ -135,6 +135,21 @@ public class ShortProcessor extends ImageProcessor {
 		return image;
 	}
 
+	/** Returns this image as an 8-bit BufferedImage . */
+	public BufferedImage getBufferedImage() {
+		return convertToByte(true).getBufferedImage();
+	}
+
+	/** Returns a copy of this image as a TYPE_USHORT_GRAY BufferedImage. */
+	public BufferedImage get16BitBufferedImage() {
+        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
+        Raster raster = bi.getData();
+        DataBufferUShort db = (DataBufferUShort)raster.getDataBuffer();
+        System.arraycopy(getPixels(), 0, db.getData(), 0, db.getData().length);
+        bi.setData(raster);
+        return bi;
+	}
+
 	/** Returns a new, blank ShortProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {
 		ImageProcessor ip2 = new ShortProcessor(width, height, new short[width*height], getColorModel());

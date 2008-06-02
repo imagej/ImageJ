@@ -82,20 +82,21 @@ public class Options implements PlugIn {
 	void io() {
 		GenericDialog gd = new GenericDialog("I/O Options");
 		gd.addNumericField("JPEG Quality (0-100):", JpegWriter.getQuality(), 0, 3, "");
-		gd.addNumericField("GIF Transparent Index (0-255):", GifWriter.getTransparentIndex(), 0, 3, "");
+		gd.addNumericField("GIF and PNG Transparent Index:", Prefs.getTransparentIndex(), 0, 3, "");
 		gd.addStringField("File Extension for Tables:", Prefs.get("options.ext", ".xls"), 4);
 		gd.addCheckbox("Use JFileChooser to Open/Save", Prefs.useJFileChooser);
-		gd.addCheckbox("Export Raw in Intel Byte Order", Prefs.intelByteOrder);
+		gd.addCheckbox("Save TIFF and Raw in Intel Byte Order", Prefs.intelByteOrder);
 		gd.addCheckbox("Copy Column Headers", Prefs.copyColumnHeaders);
+		gd.addCheckbox("Copy Row Numbers", !Prefs.noRowNumbers);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		int quality = (int)gd.getNextNumber();
-		int transparentIndex = (int)gd.getNextNumber();
 		if (quality<0) quality = 0;
 		if (quality>100) quality = 100;
 		JpegWriter.setQuality(quality);
-		GifWriter.setTransparentIndex(transparentIndex);
+		int transparentIndex = (int)gd.getNextNumber();
+		Prefs.setTransparentIndex(transparentIndex);
 		String extension = gd.getNextString();
 		if (!extension.startsWith("."))
 			extension = "." + extension;
@@ -103,6 +104,7 @@ public class Options implements PlugIn {
 		Prefs.useJFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
+		Prefs.noRowNumbers = !gd.getNextBoolean();
 		return;
 	}
 

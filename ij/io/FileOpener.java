@@ -119,7 +119,7 @@ public class FileOpener {
 					mode = CompositeImage.GRAYSCALE;
 				}
         		imp = new CompositeImage(imp, mode);
-        		if (!planar) {
+        		if (!planar && fi.displayRanges==null) {
         			for (int c=1; c<=3; c++) {
         				imp.setPosition(c, 1, 1);
         				imp.setDisplayRange(minValue, maxValue);

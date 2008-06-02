@@ -673,10 +673,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				if (name.indexOf("Unused Tool")!=-1)
 					return;
 				if (name.indexOf("Action Tool")!=-1) {
-					drawTool(newTool, true);
-					IJ.wait(50);
-					drawTool(newTool, false);
-					runMacroTool(newTool);
+					if (e.isPopupTrigger()||e.isMetaDown()) {
+						name = name.endsWith(" ")?name:name+" ";
+						macroInstaller.runMacroTool(name+"Options");
+					} else {
+						drawTool(newTool, true);
+						IJ.wait(50);
+						drawTool(newTool, false);
+						runMacroTool(newTool);
+					}
 					return;
 				} else {	
 					name = name.endsWith(" ")?name:name+" ";
@@ -684,20 +689,25 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				}
 			}
 			setTool2(newTool);
-			if (current==OVAL && (e.isPopupTrigger()||e.isMetaDown())) {
+			boolean isRightClick = e.isPopupTrigger()||e.isMetaDown();
+			if (current==OVAL && isRightClick) {
 				ovalItem.setState(!brushEnabled);
 				brushItem.setState(brushEnabled);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				ovalPopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
 			}
-			if (isLine(current) && (e.isPopupTrigger()||e.isMetaDown())) {
+			if (isLine(current) && isRightClick) {
 				straightLineItem.setState(lineType==LINE);
 				polyLineItem.setState(lineType==POLYLINE);
 				freeLineItem.setState(lineType==FREELINE);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				linePopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
+			}
+			if (isMacroTool(current) && isRightClick) {
+				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
+				macroInstaller.runMacroTool(name+"Options");
 			}
 		} else {
 			if (isMacroTool(current)) {

@@ -105,6 +105,11 @@ public class ByteProcessor extends ImageProcessor {
 		}
 		return image;
 	}
+	
+	/** Returns this image as a BufferedImage. */
+	public BufferedImage getBufferedImage() {
+		return (BufferedImage)createBufferedImage();
+	}
 
 	/** Returns a new, blank ByteProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {

@@ -115,14 +115,21 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent event) {
-		if (hyperStack) return;
 		synchronized(this) {
-			int slice = imp.getCurrentSlice() + event.getWheelRotation();
-			if (slice<1)
-				slice = 1;
-			else if (slice>imp.getStack().getSize())
-				slice = imp.getStack().getSize();
-			imp.setSlice(slice);
+			int rotation = event.getWheelRotation();
+			if (hyperStack) {
+				if (rotation>0)
+					IJ.runPlugIn("ij.plugin.Animator", "next");
+				else if (rotation<0)
+					IJ.runPlugIn("ij.plugin.Animator", "previous");
+			} else {
+				int slice = imp.getCurrentSlice() + rotation;
+				if (slice<1)
+					slice = 1;
+				else if (slice>imp.getStack().getSize())
+					slice = imp.getStack().getSize();
+				imp.setSlice(slice);
+			}
 		}
 	}
 
@@ -172,16 +179,18 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		String subtitle = super.createSubtitle();
 		if (!hyperStack) return subtitle;
     	String s="";
-		if (nChannels>1) {
-			s += "c:"+c+"/"+nChannels;
-			if (nSlices>1||nFrames>1) s += " ";
+    	int[] dim = imp.getDimensions();
+    	int channels=dim[2], slices=dim[3], frames=dim[4];
+		if (channels>1) {
+			s += "c:"+imp.getChannel()+"/"+channels;
+			if (slices>1||frames>1) s += " ";
 		}
-		if (nSlices>1) {
-			s += "z:"+z+"/"+nSlices;
-			if (nFrames>1) s += " ";
+		if (slices>1) {
+			s += "z:"+imp.getSlice()+"/"+slices;
+			if (frames>1) s += " ";
 		}
-		if (nFrames>1)
-			s += "t:"+t+"/"+nFrames;
+		if (frames>1)
+			s += "t:"+imp.getFrame()+"/"+frames;
 		if (running2) return s;
 		int index = subtitle.indexOf(";");
 		if (index!=-1) {

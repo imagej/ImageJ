@@ -40,7 +40,7 @@ public class CompositeImage extends ImagePlus {
 	public CompositeImage(ImagePlus imp) {
 		this(imp, COLOR);
 	}
-
+	
 	public CompositeImage(ImagePlus imp, int mode) {
 		if (mode<COMPOSITE || mode>GRAYSCALE)
 			mode = COLOR;
@@ -74,9 +74,8 @@ public class CompositeImage extends ImagePlus {
 		setCalibration(imp.getCalibration());
 		FileInfo fi = imp.getOriginalFileInfo();
 		if (fi!=null) {
-			displayRanges = fi.displayRanges; ////////////////////////
+			displayRanges = fi.displayRanges; 
 			channelLuts = fi.channelLuts;
-			fi.displayRanges = null;
 		}
 		setFileInfo(fi);
 		Object info = imp.getProperty("Info");
@@ -179,8 +178,6 @@ public class CompositeImage extends ImagePlus {
 		draw();
 	}
 
-static int counter =1;
-
 	public synchronized void updateImage() {
 		int imageSize = width*height;
 		int nChannels = getNChannels();
@@ -227,6 +224,7 @@ static int counter =1;
 		if (cip==null||cip[0].getWidth()!=width||cip[0].getHeight()!=height||getBitDepth()!=bitDepth) {
 			setup(nChannels, getImageStack());
 			rgbPixels = null;
+			rgbSampleModel = null;
 			if (currentChannel>=nChannels) {
 				setSlice(1);
 				currentChannel = 0;

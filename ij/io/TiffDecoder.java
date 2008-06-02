@@ -88,14 +88,26 @@ public class TiffDecoder {
 			return ((b1 << 24) + (b2 << 16) + (b3 << 8) + b4);
 	}
 
-	int getShort() throws IOException {
+	final int getShort() throws IOException {
 		int b1 = in.read();
 		int b2 = in.read();
 		if (littleEndian)
-			return ((b2 << 8) + b1);
+			return ((b2<<8) + b1);
 		else
-			return ((b1 << 8) + b2);
+			return ((b1<<8) + b2);
 	}
+
+    final long readLong() throws IOException {
+    	if (littleEndian)
+        	return ((long)getInt()&0xffffffffL) + ((long)getInt()<<32);
+        else
+			return ((long)getInt()<<32) + ((long)getInt()&0xffffffffL);
+        	//return in.read()+(in.read()<<8)+(in.read()<<16)+(in.read()<<24)+(in.read()<<32)+(in.read()<<40)+(in.read()<<48)+(in.read()<<56);
+    }
+
+    final double readDouble() throws IOException {
+        return Double.longBitsToDouble(readLong());
+    }
 
 	int OpenImageFileHeader() throws IOException {
 	// Open 8-byte Image File Header at start of file.
@@ -115,14 +127,15 @@ public class TiffDecoder {
 		return offset;
 	}
 		
+int counter=1;
+	
 	int getValue(int fieldType, int count) throws IOException {
 		int value = 0;
 		int unused;
 		if (fieldType==SHORT && count==1) {
-				value = getShort();
-				unused = getShort();
-		}
-		else
+			value = getShort();
+			unused = getShort();
+		} else
 			value = getInt();
 		return value;
 	}	
@@ -578,8 +591,13 @@ public class TiffDecoder {
 		in.readFully(buffer, len);
 		len /= 2;
 		char[] chars = new char[len];
-		for (int j=0, k=0; j<len; j++)
-			chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+		if (littleEndian) {
+			for (int j=0, k=0; j<len; j++)
+				chars[j] = (char)(buffer[k++] + (buffer[k++]<<8));
+		} else {
+			for (int j=0, k=0; j<len; j++)
+				chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+		}
 		fi.info = new String(chars);
 	}
 
@@ -595,8 +613,13 @@ public class TiffDecoder {
 				in.readFully(buffer, len);
 				len /= 2;
 				char[] chars = new char[len];
-				for (int j=0, k=0; j<len; j++)
-					chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+				if (littleEndian) {
+					for (int j=0, k=0; j<len; j++)
+						chars[j] = (char)(buffer[k++] + (buffer[k++]<<8));
+				} else {
+					for (int j=0, k=0; j<len; j++)
+						chars[j] = (char)((buffer[k++]<<8) + buffer[k++]);
+				}
 				fi.sliceLabels[index++] = new String(chars);
 				//ij.IJ.log(i+"  "+fi.sliceLabels[i-1]+"  "+len);
 			} else
@@ -608,7 +631,7 @@ public class TiffDecoder {
 		int n = metaDataCounts[first]/8;
 		fi.displayRanges = new double[n];
 		for (int i=0; i<n; i++)
-			fi.displayRanges[i] = in.readDouble();
+			fi.displayRanges[i] = readDouble();
 	}
 
 	void getLuts(int first, int last, FileInfo fi) throws IOException {

@@ -555,7 +555,8 @@ public class Menus {
 						if (firstComma>8 && firstQuote>firstComma && !pluginsDir) {
 							String submenuName = s.substring(8, firstComma);
 							String prefix = "";
-							if (submenuName.startsWith("Extend")||submenuName.startsWith("Particle"))
+							// "Extended Depth of Field" and "Particle Detector & Tracker" plugins
+							if (submenuName.startsWith("Extend")||submenuName.startsWith("Particle D"))
 								prefix = submenuName+": ";
 							//IJ.log(nEntries+" "+nEntries2+" "+jar+" "+s+"  "+submenuName);
 							s = "Plugins, \""+prefix+s.substring(firstQuote+1, s.length());

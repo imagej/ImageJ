@@ -750,7 +750,7 @@ class DicomDecoder {
 				break;
 			case IMPLICIT_VR:
 				value = getString(elementLength);
-				if (elementLength<=4 || elementLength>44) value=null;
+				if (elementLength>44) value=null;
 				break;
 			case SQ:
 				value = "";

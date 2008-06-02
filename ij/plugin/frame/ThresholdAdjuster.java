@@ -665,7 +665,9 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			ip = ip.convertToByte(true);
 			ip.setColorModel(ip.getDefaultColorModel());
 		}
-		ip.setRoi(imp.getRoi());
+		Roi roi = imp.getRoi();
+		if (roi!=null && !roi.isArea()) roi = null;
+		ip.setRoi(roi);
 		if (stats==null)
 			stats = ImageStatistics.getStatistics(ip, AREA+MIN_MAX+MODE, null);
 		int maxCount2 = 0;

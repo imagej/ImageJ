@@ -43,7 +43,7 @@ public class Prefs {
 		BLACK_BACKGROUND=16, JFILE_CHOOSER=32, UNUSED=64, BLACK_CANVAS=128, WEIGHTED=256, 
 		AUTO_MEASURE=512, REQUIRE_CONTROL=1024, USE_INVERTING_LUT=2048, ANTIALIASED_TOOLS=4096,
 		INTEL_BYTE_ORDER=8192, DOUBLE_BUFFER=16384, NO_POINT_LABELS=32768, NO_BORDER=65536,
-		SHOW_ALL_SLICE_ONLY=131072, COPY_HEADERS=262144; 
+		SHOW_ALL_SLICE_ONLY=131072, COPY_HEADERS=262144, NO_ROW_NUMBERS=524288; 
     public static final String OPTIONS = "prefs.options";
 
 	/** file.separator system property */
@@ -88,6 +88,8 @@ public class Prefs {
 	public static boolean showAllSliceOnly;
 	/** Include column headers when copying tables to clipboard. */
 	public static boolean copyColumnHeaders;
+	/** Do not include row numbers when copying tables to clipboard. */
+	public static boolean noRowNumbers;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -95,6 +97,7 @@ public class Prefs {
 	static String imagesURL;
 	static String homeDir; // ImageJ folder
 	static int threads;
+	static int transparentIndex = -1;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -345,6 +348,7 @@ public class Prefs {
 		noBorder = (options&NO_BORDER)!=0;
 		showAllSliceOnly = (options&SHOW_ALL_SLICE_ONLY)!=0;
 		copyColumnHeaders = (options&COPY_HEADERS)!=0;
+		noRowNumbers = (options&NO_ROW_NUMBERS)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -356,7 +360,8 @@ public class Prefs {
 			+ (useInvertingLut?USE_INVERTING_LUT:0) + (antialiasedTools?ANTIALIASED_TOOLS:0)
 			+ (intelByteOrder?INTEL_BYTE_ORDER:0) + (doubleBuffer?DOUBLE_BUFFER:0)
 			+ (noPointLabels?NO_POINT_LABELS:0) + (noBorder?NO_BORDER:0)
-			+ (showAllSliceOnly?SHOW_ALL_SLICE_ONLY:0) + (copyColumnHeaders?COPY_HEADERS:0);
+			+ (showAllSliceOnly?SHOW_ALL_SLICE_ONLY:0) + (copyColumnHeaders?COPY_HEADERS:0)
+			+ (noRowNumbers?NO_ROW_NUMBERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 
@@ -486,6 +491,19 @@ public class Prefs {
 		if (n>32) n = 32;
 		threads = n;
 	}
+	
+	/** Sets the transparent index (0-255), or set to -1 to disable transparency. */
+	public static void setTransparentIndex(int index) {
+		if (index<-1 || index>255) index = -1;
+		transparentIndex = index;
+	}
+
+	/** Returns the transparent index (0-255), or -1 if transparency is disabled. */
+	public static int getTransparentIndex() {
+		return transparentIndex;
+	}
+
+
 
 }
 

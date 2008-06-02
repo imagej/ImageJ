@@ -820,7 +820,8 @@ public abstract class ImageProcessor extends Object {
 		if (lineWidth<1) lineWidth = 1;
 	}
 		
-	/** Draws a line from the current drawing location to (x,y). */
+		
+	/** Draws a line from the current drawing location to (x2,y2). */
 	public void lineTo(int x2, int y2) {
 		int dx = x2-cx;
 		int dy = y2-cy;
@@ -844,7 +845,7 @@ public abstract class ImageProcessor extends Object {
 			x += xinc;
 			y += yinc;
 		} while (--n>0);
-		if (lineWidth>2) resetRoi();
+		//if (lineWidth>2) resetRoi();
 	}
 		
 	/** Draws a line from (x1,y1) to (x2,y2). */
@@ -914,7 +915,7 @@ public abstract class ImageProcessor extends Object {
 		double r = lineWidth/2.0;
 		int xmin=(int)(xcenter-r+0.5), ymin=(int)(ycenter-r+0.5);
 		int xmax=xmin+lineWidth, ymax=ymin+lineWidth;
-		if (xmin<0 || ymin<0 || xmax>=width || ymax>=height) {
+		if (xmin<clipXMin || ymin<clipYMin || xmax>clipXMax || ymax>clipYMax ) {
 			// draw edge dot
 			double r2 = r*r;
 			r -= 0.5;
@@ -924,7 +925,7 @@ public abstract class ImageProcessor extends Object {
 				for (int x=xmin; x<xmax; x++) {
 					xx = x-xoffset; yy = y-yoffset;
 					if (xx*xx+yy*yy<=r2)
-					drawPixel(x, y);
+						drawPixel(x, y);
 				}
 			}
 		} else {
@@ -936,6 +937,7 @@ public abstract class ImageProcessor extends Object {
 			fill(dotMask);
 		}
 	}
+	
     private ImageProcessor dotMask;
 
 	private void setupFontMetrics() {
@@ -1433,6 +1435,14 @@ public abstract class ImageProcessor extends Object {
 	/** Returns a copy of this image is the form of an AWT Image. */
 	public abstract Image createImage();
 	
+	/** Returns this image as a BufferedImage. */
+	public BufferedImage getBufferedImage() {
+		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = (Graphics2D)bi.getGraphics();
+		g.drawImage(createImage(), 0, 0, null);
+		return bi;
+	}
+
 	/** Returns a new, blank processor with the specified width and height. */
 	public abstract ImageProcessor createProcessor(int width, int height);
 	

@@ -384,7 +384,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			IJ.doCommand("Clear Results");
 		else if (cmd.equals("Set Measurements..."))
 			IJ.doCommand("Set Measurements...");
- 		else if (cmd.equals("Set File Extension..."))
+ 		else if (cmd.equals("Options..."))
 			IJ.doCommand("Input/Output...");
 	}
  	
@@ -464,12 +464,26 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			return copyAll();
 		StringBuffer sb = new StringBuffer();
 		if (Prefs.copyColumnHeaders && labels!=null && !labels.equals("") && selStart==0 && selEnd==iRowCount-1) {
-			sb.append(labels);
+			if (Prefs.noRowNumbers) {
+				String s = labels;
+				int index = s.indexOf("\t");
+				if (index!=-1)
+					s = s.substring(index+1, s.length());
+				sb.append(s);
+			} else
+				sb.append(labels);
 			sb.append('\n');
 		}
 		for (int i=selStart; i<=selEnd; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
-			sb.append(chars);
+			if (Prefs.noRowNumbers) {
+				String s = new String(chars);
+				int index = s.indexOf("\t");
+				if (index!=-1)
+					s = s.substring(index+1, s.length());
+				sb.append(s);
+			} else
+				sb.append(chars);
 			if (i<selEnd || selEnd>selStart) sb.append('\n');
 		}
 		String s = new String(sb);
