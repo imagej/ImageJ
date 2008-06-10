@@ -767,8 +767,8 @@ public class Opener {
 		if ((b0==83 && b1==73 && b2==77 && b3==80) || name.endsWith(".fts.gz") || name.endsWith(".fits.gz"))
 			return FITS;
 			
-		// Java source file or text file
-		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm"))
+		// Java source file, text file or macro
+		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js"))
 			return JAVA_OR_TEXT;
 
 		// ImageJ, NIH Image, Scion Image for Windows ROI

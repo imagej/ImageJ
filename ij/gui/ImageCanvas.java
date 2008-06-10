@@ -359,7 +359,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     */
 
-	/** Returns the current cursor location. */
+	/** Returns the current cursor location in image coordinates. */
 	public Point getCursorLoc() {
 		return new Point(xMouse, yMouse);
 	}
@@ -685,6 +685,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 
+	/** Implements the Image/Zoom/Original Scale command. */
 	public void unzoom() {
 		double imag = imp.getWindow().getInitialMagnification();
 		if (magnification==imag)
@@ -699,6 +700,22 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 		
+	/** Implements the Image/Zoom/View 100% command. */
+	public void zoom100Percent() {
+		double imag = imp.getWindow().getInitialMagnification();
+		if (magnification<imag)
+			unzoom();
+		while(magnification<1.0)
+			zoomIn(imageWidth/2, imageHeight/2);
+		int x=xMouse, y=yMouse;
+		if (x<0 || x>imageWidth) x = 0;
+		if (y<0 || y>imageHeight) y = 0;
+		int sx = screenX(x);
+		int sy = screenY(y);
+		adjustSourceRect(1.0, sx, sy);
+		repaint();
+	}
+	
 	protected void scroll(int sx, int sy) {
 		int ox = xSrcStart + (int)(sx/magnification);  //convert to offscreen coordinates
 		int oy = ySrcStart + (int)(sy/magnification);

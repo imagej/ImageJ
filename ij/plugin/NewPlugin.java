@@ -59,7 +59,7 @@ public class NewPlugin implements PlugIn {
 			name = name.substring(0, name.length()-5);
 		//if (name.endsWith("_"))
 		//	name = name.substring(0, name.length()-1);
-		if (type==MACRO && !(name.endsWith(".txt")))
+		if (type==MACRO && !(name.endsWith(".txt")||name.endsWith(".js")))
 			name += ".txt";
 		ed.create(name, "");
 	}

@@ -5,50 +5,35 @@
 </head>
 <body>
 
-<li> <u>1.41d, 28 May 2008</u>
+<li> <u>1.41e, 10 June 2008</u>
 <ul>
-<li> Mark Longair contributed the <i>Plugins&gt;Utilities&gt;Find Commands</i>
-command, which provides a dialog for interactively finding ImageJ commands by
-typing a substring of the command name. One can simply type "l" (launch), a few
-letters for disambiguation and then 'enter' to run the matching command.
-<li> Gabriel Landini contributed an improved version of 
-<i>Process&gt;Binary&gt;File Holes</i> that is up to 100 times faster.
-<li> The <i>Image&gt;Stacks&gt;Make Montage</i> command now
-works with composite color images.
-<li> Enable the "Save TIFF and Raw in Intel Byte Order" option in
-<i>Edit&gt;Options&gt;Input/Output</i> to save images
-as little-endian TIFF files.
-<li> <i>File&gt;Save As&gt;PNG</i> saves 8, 16 and 32 bit images as 8-bit PNGs, and it
-now works with composite color images.
-<li> Changed the "GIF Transparent Index (0-255)" field in <i>Edit&gt;Options&gt;Input/Output</i> 
-to "GIF and PNG Transparent Index".
-<li> The "<" and ">" keys and the mouse wheel now change hyperstack channels.
-<li> Added the "Copy Row Numbers" option to the 
-<i>Edit&gt;Options&gt;Input/Output</i> dialog box.
-<li> Changed the Results window
-<i>File&gt;Set File Extension</i> menu item to <i>File&gt;Options</i>.
-<li> Right-clicking on a macro tool runs a macro with the name &lt;tool name&gt;+" Options".
-<li> DICOM IMPLICIT_VR tags with a length less than 4 are now displayed in the <i>Image&gt;Show Info</i>
-window.
-<li> Added the <i>Neuron (1.6M, 5 channels)</i> sample image,
-which was contributed by John Alexander. Open the image and
-press "i" (<i>Image&gt;Show Info</i>) to get a description.
-<li> Added the getStringWidth(string) macro function.
-<li> Added getBufferedImage() methods to the ImagePlus and ImageProcessor classes.
-<li> Added a get16BitBufferedImage() method to the ShortProcessor class.
-<li> Fixed a bug that caused <i>Image&gt;Crop </i> to fail with merged
-composite images when using Java 1.6.
-<li> Fixed a bugs in the Plot class (Plot.* macro functions) that caused
-incorrect axis labeling if setLimits() was not called first and caused lines
-and shapes wider than three pixels to sometimes be drawn outside the
-plot frame.
-<li> Fixed a bug in the imageCalculator() macro function that sometimes caused
-the result image to not be the currently selected image.
-<li> Fixed a bug in the setColor() macro function that caused it to always
-convert the argument to an integer.
-<li> Fixed a bug in the <i>Image&gt;Adjust&gt;Threshold</i> tool that
-caused the "Auto" feature to not work correctly on images with line
-selections.
+<li>Michael Schmid added the ability to save using
+<a href="http://en.wikipedia.org/wiki/Motion_JPEG">Motion JPEG</a>
+and
+<a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">PNG</a>
+compression to
+the <i>File&gt;Save As&gt;AVI</i> command and added the ability to read JPEG and PNG
+compressed AVIs to the <i>File&gt;Open</i> command.
+<li> Added the <i>Macros&gt;Evaluate JavaScript</i> command to the macro editor. This command
+requires Java 1.6, which has the Mozilla 
+<a href="http://www.mozilla.org/rhino/">Rhino</a> 
+JavaScript interpreter built in
+ (<a href="http://rsb.info.nih.gov/ij/macros/JavaScriptExample.js">example</a>).
+<li> Added the <i>Help&gt;Update ImageJ</i> command, which duplicates the
+<i>Plugins&gt;Utilities&gt;Update ImageJ</i> command.
+<li> Jerome Mutterer contributed the macro editor's new <i>Macros&gt;Find Functions</i> command.
+<li> <i>Edit&gt;Selection&gt;Rotate</i> works with composite selections.
+<li> <i>Edit&gt;Selection&gt;Restore Selection</i> works with non-rectangular 
+selections that extend beyond the boundary of the destination image.
+<li> The getStatistics() and getRawStatistics() macro functions 
+now work with line selections.
+<li> The File.delete() macro function now returns "1" (true) if the file or directory was
+successfully deleted. The "1" will be displayed in the Log window if 
+File.delete() is not called in an assignment or 'if' statement.
+<li> Single .class plugins in a directory are not moved to the MIscellaneous 
+menu if there is a least one underscore in the directory name.
+<li> Fixed a bug that sometimes caused 16-bit signed
+stacks to not be correctly converted to 32-bits.
 </ul>
 
 </body>

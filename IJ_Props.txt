@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.38
+# Version 1.41
 
 # Popup Menu
 popup01=Undo
@@ -51,7 +51,7 @@ save04="Text Image...",ij.plugin.filter.Writer("text")
 save05="ZIP...",ij.plugin.filter.Writer("zip")
 save06="Raw Data...",ij.plugin.filter.Writer("raw")
 save07="Image Sequence... ",ij.plugin.StackWriter
-save08="AVI... ",ij.plugin.filter.AVIWriter
+save08="AVI... ",ij.plugin.filter.AVI_Writer
 save09="BMP...",ij.plugin.filter.Writer("bmp")
 save10="PNG...",ij.plugin.filter.Writer("png")
 save11="PGM...",ij.plugin.filter.Writer("pgm")
@@ -146,10 +146,11 @@ rotate05="Arbitrarily...",ij.plugin.filter.Rotator
 # Plugins installed in the Image/Zoom submenu
 zoom01="In[+]",ij.plugin.Zoom("in")
 zoom02="Out[-]",ij.plugin.Zoom("out")
-zoom03="View 100%",ij.plugin.Zoom("100%")
-zoom04="Original Scale",ij.plugin.Zoom("orig")
+zoom03="Original Scale[4]",ij.plugin.Zoom("orig")
+zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")
 #zoom06="Maximize",ij.plugin.Zoom("max")
+
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")
 lookup02="Apply LUT",ij.plugin.filter.LutApplier
@@ -308,7 +309,7 @@ utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
 utilities08="Search...",ij.plugin.SimpleCommands("search")
 utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
 utilities10="Find Commands... [l]",ij.plugin.CommandFinder
-utilities11="Update ImageJ...",ij.plugin.ImageJ_Updater
+utilities11="Update ImageJ... ",ij.plugin.ImageJ_Updater
 
 # Plugins installed in the Help/About submenu
 about01="About This Submenu...",ij.plugin.SimpleCommands("about")

@@ -33,6 +33,7 @@ public class Options implements PlugIn {
 		//gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
 		gd.addCheckbox("Antialiased_Tool Icons", Prefs.antialiasedTools);
 		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
+		gd.addCheckbox("Move Isolated Plugins to Misc. Menu", Prefs.moveToMisc);
 		gd.addCheckbox("Debug Mode", IJ.debugMode);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -62,6 +63,7 @@ public class Options implements PlugIn {
 		Prefs.antialiasedTools = antialiasedTools;
 		if (change) Toolbar.getInstance().repaint();
 		Prefs.requireControlKey = gd.getNextBoolean();
+		Prefs.moveToMisc = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}
 

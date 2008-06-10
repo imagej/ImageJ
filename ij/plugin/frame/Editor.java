@@ -124,8 +124,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			setMenuBar(mb);
 		
 		m = new Menu("Font");
-		m.add(new MenuItem("Make Text Smaller", new MenuShortcut(KeyEvent.VK_J)));
-		m.add(new MenuItem("Make Text Larger", new MenuShortcut(KeyEvent.VK_K)));
+		m.add(new MenuItem("Make Text Smaller", new MenuShortcut(KeyEvent.VK_N)));
+		m.add(new MenuItem("Make Text Larger", new MenuShortcut(KeyEvent.VK_M)));
 		m.addSeparator();
 		monospaced = new CheckboxMenuItem("Monospaced Font", Prefs.get(FONT_MONO, false));
 		if ((options&MONOSPACED)!=0) monospaced.setState(true);
@@ -161,13 +161,16 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
-		if (name.endsWith(".txt") || name.endsWith(".ijm") || name.indexOf(".")==-1) {
+		if (name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js")|| name.indexOf(".")==-1) {
 			// 'baseCount' in MacroInstaller must be updated if items are added to this menu
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
 			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_E)));
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
+			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
+			macrosMenu.addSeparator();
+			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J)));
 			macrosMenu.addSeparator();
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
@@ -292,6 +295,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	void runMacro() {
+		if (getTitle().endsWith(".js"))
+			{evaluateJavaScript(); return;}
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -302,6 +307,21 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		new MacroRunner(text);
 	}
 	
+	void evaluateJavaScript() {
+		if (!IJ.isJava16()) {
+			IJ.error("Macro Editor", "Java 1.6 or later is required to evaluate JavaScript");
+			return;
+		}
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		String text;
+		if (start==end)
+			text = ta.getText();
+		else
+			text = ta.getSelectedText();
+		IJ.runPlugIn("JavaScriptEvaluator", text);
+	}
+
 	void evaluateLine() {
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
@@ -459,11 +479,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				runMacro();
 		else if ("Evaluate Line".equals(what))
 				evaluateLine();
+		else if ("Evaluate JavaScript".equals(what))
+				evaluateJavaScript();
 		else if ("Abort Macro".equals(what)) {
 				Interpreter.abort();
 				IJ.beep();		
 		} else if ("Install Macros".equals(what))
 				installMacros(ta.getText(), true);
+		else if ("Function Finder...".equals(what))
+			new FunctionFinder();
 		else if ("Print...".equals(what))
 			print();
 		else if (what.startsWith("Paste"))

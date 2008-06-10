@@ -366,6 +366,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			ProfilePlot profile = new ProfilePlot(imp);
 			double[] values = profile.getProfile();
 			ImageProcessor ip2 = new FloatProcessor(values.length, 1, values);
+			if (roi.getType()==Roi.LINE) {
+				Line l = (Line)roi;
+				if ((l.y1==l.y2||l.x1==l.x2)&&l.x1==l.x1d&& l.y1==l.y1d&& l.x2==l.x2d&& l.y2==l.y2d)
+					ip2.setRoi(0, 0, ip2.getWidth()-1, 1);
+			}
 			ImageStatistics stats = ImageStatistics.getStatistics(ip2, MEAN+STD_DEV+MODE+MIN_MAX, null);
 			if ((measurements&MEAN)!=0) rt.addValue(ResultsTable.MEAN,stats.mean);
 			if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);

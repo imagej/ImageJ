@@ -1248,7 +1248,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (Roi.previousRoi!=null) {
 			Roi pRoi = Roi.previousRoi;
 			Rectangle r = pRoi.getBounds();
-			if (r.width<=width || r.height<=height) { // will it fit in this image?
+			if (r.width<=width || r.height<=height || isSmaller(pRoi)) { // will it (mostly) fit in this image?
 				roi = (Roi)pRoi.clone();
 				roi.setImage(this);
 				if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0) // does it need to be moved?
@@ -1258,6 +1258,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 				draw();
 			}
 		}
+	}
+	
+	boolean isSmaller(Roi r) {
+		ImageProcessor mask = r.getMask();
+		if (mask==null) return false;
+		mask.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		ImageStatistics stats = ImageStatistics.getStatistics(mask, MEAN+LIMIT, null);
+		return stats.area<=width*height;
 	}
 	
 	/** Implements the File/Revert command. */

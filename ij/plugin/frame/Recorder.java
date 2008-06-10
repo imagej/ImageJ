@@ -293,7 +293,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			|| commandName.equals("Text Image...")
 			|| commandName.equals("ZIP...")
 			|| commandName.equals("Raw Data...")
-			|| commandName.equals("AVI... ")
 			|| commandName.equals("BMP...")
 			|| commandName.equals("PNG...")
 			|| commandName.equals("PGM...")

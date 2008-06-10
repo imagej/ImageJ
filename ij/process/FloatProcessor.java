@@ -85,6 +85,7 @@ public class FloatProcessor extends ImageProcessor {
 	@see #getMin()
 	*/
 	public void findMinAndMax() {
+		//ij.IJ.log("findMinAndMax: "+fixedScale);
 		if (fixedScale)
 			return;
 		min = Float.MAX_VALUE;

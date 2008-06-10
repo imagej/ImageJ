@@ -650,7 +650,7 @@ public class Interpreter implements MacroConstants {
 				int token2 = pgm.code[pc+4];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("exists")||name.equals("isDirectory")||name.equals("length")
-				||name.equals("getLength")||name.equals("rename"))
+				||name.equals("getLength")||name.equals("rename")||name.equals("delete"))
 					return STRING_FUNCTION;
 			}
 			return Variable.STRING;

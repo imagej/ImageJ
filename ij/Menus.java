@@ -209,6 +209,8 @@ public class Menus {
 		addPlugInItem(help, "Macro Language...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/macros.html\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/functions.html\")", 0, false);
 		help.addSeparator();
+		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
+		help.addSeparator();
 		aboutMenu = addSubMenu(help, "About Plugins");
 		addPlugInItem(help, "About ImageJ...", "ij.plugin.AboutBox", 0, false);
 				
@@ -847,7 +849,7 @@ public class Menus {
 				otherCount++;
 			}
 		}
-		if (classCount==1 && otherCount==0) {
+		if (Prefs.moveToMisc && classCount==1 && otherCount==0 && dir.indexOf("_")==-1) {
 			v.remove(dir+className);
 			v.addElement("Misc:"+dir+className);
 		}
@@ -864,7 +866,7 @@ public class Menus {
 		String command = className;
 		if (slashIndex>0) {
 			String dir = className.substring(0, slashIndex);
-			if (dir.startsWith("Misc:")) {
+			if (Prefs.moveToMisc && dir.startsWith("Misc:")) {
 				dir = "Miscellaneous";
 				className = className.substring(5, className.length());
 				slashIndex -= 5;
