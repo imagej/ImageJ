@@ -56,7 +56,7 @@ public class RGBStackMerge implements PlugIn {
         int stackSize = 0;
         int width = 0;
         int height = 0;
-         for (int i=0; i<4; i++) {
+        for (int i=0; i<4; i++) {
             if (index[i]<wList.length) {
                 image[i] = WindowManager.getImage(wList[index[i]]);
                 width = image[i].getWidth();
@@ -75,9 +75,28 @@ public class RGBStackMerge implements PlugIn {
                     IJ.error("The source stacks must all have the same number of slices.");
                     return;
                 }
+                if (img.isHyperStack()) {
+              		if (img.isComposite()) {
+              			CompositeImage ci = (CompositeImage)img;
+              			if (ci.getMode()!=CompositeImage.COMPOSITE) {
+              				ci.setMode(CompositeImage.COMPOSITE);
+              				img.updateAndDraw();
+              				IJ.run("Channels Tool...");
+              				return;
+              			}
+              		}
+                    IJ.error("Source stacks cannot be hyperstacks.");
+                    return;
+                }
                 if (img.getWidth()!=width || image[i].getHeight()!=height) {
                     IJ.error("The source images or stacks must have the same width and height.");
                     return;
+                }
+                if (createComposite) {
+					for (int j=0; j<4; j++) {
+						if (j!=i && image[j]!=null && img==image[j])
+							createComposite = false;
+					}
                 }
             }
         }

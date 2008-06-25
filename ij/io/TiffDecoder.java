@@ -32,6 +32,7 @@ public class TiffDecoder {
 	public static final int PREDICTOR = 317;
 	public static final int COLOR_MAP = 320;
 	public static final int SAMPLE_FORMAT = 339;
+	public static final int JPEG_TABLES = 347;
 	public static final int METAMORPH1 = 33628;
 	public static final int METAMORPH2 = 33629;
 	public static final int IPLAB = 34122;
@@ -127,8 +128,6 @@ public class TiffDecoder {
 		return offset;
 	}
 		
-int counter=1;
-	
 	int getValue(int fieldType, int count) throws IOException {
 		int value = 0;
 		int unused;
@@ -299,6 +298,7 @@ int counter=1;
 			case PREDICTOR: name="Predictor"; break; 
 			case COLOR_MAP: name="ColorMap"; break; 
 			case SAMPLE_FORMAT: name="SampleFormat"; break; 
+			case JPEG_TABLES: name="JPEGTables"; break; 
 			case NIH_IMAGE_HDR: name="NIHImageHeader"; break; 
 			case META_DATA_BYTE_COUNTS: name="MetaDataByteCounts"; break; 
 			case META_DATA: name="MetaData"; break; 
@@ -450,9 +450,9 @@ int counter=1;
 						if (bpp==6)
 							error("ImageJ cannot open 48-bit LZW compressed TIFFs");
 						fi.compression = FileInfo.LZW;
-					} else if (value!=1 && !(value==7&&fi.width<500)) {
-						// don't abort with Spot camera compressed (7) thumbnails
-						// otherwise, this is an unknown compression type
+					} else if (value==7)
+						fi.compression = FileInfo.JPEG;
+					else if (value!=1) {
 						fi.compression = FileInfo.COMPRESSION_UNKNOWN;
 						error("ImageJ cannot open TIFF files " +
 							"compressed in this fashion ("+value+")");
@@ -475,6 +475,10 @@ int counter=1;
 						if (value==FLOATING_POINT)
 							error("ImageJ cannot open16-bit float TIFFs");
 					}
+					break;
+				case JPEG_TABLES:
+					if (fi.compression==FileInfo.JPEG)
+						error("Cannot open JPEG-compressed TIFFs with separate tables");
 					break;
 				case IMAGE_DESCRIPTION: 
 					if (ifdCount==1) {

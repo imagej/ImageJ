@@ -36,7 +36,6 @@ public class AVI_Writer implements PlugInFilter {
 
     //compression options: dialog parameters
     private static int      compressionIndex = 0; //0=none, 1=PNG, 2=JPEG
-    private static boolean  convertToRGB = true; //many readers cannot handle grayscale. Always true for JPEG 
     private static int      jpegQuality = 90;    //0 is worst, 100 best
     private final static String[] COMPRESSION_STRINGS = new String[] {"Uncompressed", "PNG", "JPEG"};
     private final static int[] COMPRESSION_TYPES = new int[] {NO_COMPRESSION, PNG_COMPRESSION, JPEG_COMPRESSION};
@@ -72,7 +71,7 @@ public class AVI_Writer implements PlugInFilter {
         String fileDir = sd.getDirectory();
         
         try {
-            writeImage(imp, fileDir + fileName, COMPRESSION_TYPES[compressionIndex],convertToRGB, jpegQuality);
+            writeImage(imp, fileDir + fileName, COMPRESSION_TYPES[compressionIndex], jpegQuality);
             IJ.showStatus("");
         } catch (IOException e) {
             IJ.error("AVI Writer", "An error occured writing the file.\n \n" + e);
@@ -88,14 +87,12 @@ public class AVI_Writer implements PlugInFilter {
  		int decimalPlaces = (int) fps == fps?0:1;
         GenericDialog gd = new GenericDialog("Save as AVI...");
         gd.addChoice("Compression:", COMPRESSION_STRINGS, COMPRESSION_STRINGS[compressionIndex]);
-        gd.addCheckbox("Convert to RGB (best compatibility)", convertToRGB);
         gd.addNumericField("JPEG Quality (0-100):", jpegQuality, 0, 3, "");
 		gd.addNumericField("Frame Rate:", fps, decimalPlaces, 3, "fps");
         gd.showDialog();                            // user input (or reading from macro) happens here
         if (gd.wasCanceled())                       // dialog cancelled?
             return false;
         compressionIndex = gd.getNextChoiceIndex();
-        convertToRGB = gd.getNextBoolean();
         jpegQuality = (int)gd.getNextNumber();
         fps = gd.getNextNumber();
         if (fps<=1.0) fps = 1.0;
@@ -105,7 +102,7 @@ public class AVI_Writer implements PlugInFilter {
     }
 
     /** Writes an ImagePlus (stack) as AVI file. */
-    public void writeImage (ImagePlus imp, String path, int compression, boolean convertToRGB, int jpegQuality)
+    public void writeImage (ImagePlus imp, String path, int compression, int jpegQuality)
             throws IOException {
         if (compression!=NO_COMPRESSION && compression!=JPEG_COMPRESSION && compression!=PNG_COMPRESSION)
             throw new IllegalArgumentException("Unsupported Compression 0x"+Integer.toHexString(compression));
@@ -125,7 +122,7 @@ public class AVI_Writer implements PlugInFilter {
         yDim = dimensions[1];   //image height
         if (isComposite) dimensions[2] = 1; //don't step through the channels of a composite image
         zDim = dimensions[2]*dimensions[3]*dimensions[4]; //number of frames in video
-        if (imp.getType()==ImagePlus.COLOR_RGB || isComposite || convertToRGB || biCompression==JPEG_COMPRESSION)
+        if (imp.getType()==ImagePlus.COLOR_RGB || isComposite || biCompression==JPEG_COMPRESSION)
             bytesPerPixel = 3;  //color and JPEG-compressed files
         else
             bytesPerPixel = 1;  //gray 8, 16, 32 bit and indexed color: all written as 8 bit
@@ -159,10 +156,8 @@ public class AVI_Writer implements PlugInFilter {
         writeInt(0);            // dwInitialFrames -Initial frame for interleaved files.
                                 // Noninterleaved files should specify 0.
         writeInt(1);            // dwStreams - number of streams in the file - here 1 video and zero audio.
-        writeInt(frameDataSize);  // dwSuggestedBufferSize - Suggested buffer size for reading the file.
-                                // Generally, this size should be large enough to contain the largest
-                                // chunk in the file.
-        writeInt(xDim);         // dwWidth - image width in pixels
+        writeInt(0);      // dwSuggestedBufferSize 
+         writeInt(xDim);         // dwWidth - image width in pixels
         writeInt(yDim);         // dwHeight - image height in pixels
         writeInt(0);            // dwReserved[4]
         writeInt(0);
@@ -185,7 +180,6 @@ public class AVI_Writer implements PlugInFilter {
         writeInt(0);            // dwStart - this field is usually set to zero
         writeInt(zDim);         // dwLength - playing time of AVI file as defined by scale and rate
                                 // Set equal to the number of frames
-        long dwSuggestedBufferSizePointer = raFile.getFilePointer(); //remember where to write the next item:
         writeInt(0);            // dwSuggestedBufferSize for reading the stream.
                                 // Typically, this contains a value corresponding to the largest chunk
                                 // in a stream.
@@ -210,7 +204,7 @@ public class AVI_Writer implements PlugInFilter {
         writeShort((short)(8*bytesPerPixel)); // biBitCount - number of bits per pixel #
         writeInt(biCompression); // biCompression - type of compression used (uncompressed: NO_COMPRESSION=0)
         int biSizeImage =       // Image Buffer. Quicktime needs 3 bytes also for 8-bit png
-                xDim*yDim*bytesPerPixel;//(biCompression==NO_COMPRESSION ? bytesPerPixel : 3);
+                (biCompression==NO_COMPRESSION)?0:xDim*yDim*bytesPerPixel;
         writeInt(biSizeImage);  // biSizeImage (buffer size for decompressed mage) may be 0 for uncompressed data
         writeInt(0);            // biXPelsPerMeter - horizontal resolution in pixels per meter
         writeInt(0);            // biYPelsPerMeter - vertical resolution in pixels per meter
@@ -281,10 +275,6 @@ public class AVI_Writer implements PlugInFilter {
             //}
         }
         chunkEndWriteSize();                // LIST 'movi' finished (nesting level 1)
-        long pointer = raFile.getFilePointer();
-        raFile.seek(dwSuggestedBufferSizePointer);
-        writeInt(maxChunkLength);           // write dwSuggestedBufferSize = size of largest chunk
-        raFile.seek(pointer);
 
         //  W r i t e   I n d e x
         writeString("idx1");    // Write the idx1 chunk
@@ -379,18 +369,6 @@ public class AVI_Writer implements PlugInFilter {
         //IJ.log("BufferdImage Type="+bufferedImage.getType()); // 1=RGB, 13=indexed
         if (biCompression == JPEG_COMPRESSION) {
             jpegEncoder = JPEGCodec.createJPEGEncoder(raOutputStream);
-            JPEGEncodeParam param = jpegEncoder.getDefaultJPEGEncodeParam(bufferedImage);
-            if (jpegQuality==100) { // for best quality, disable color subsampling
-                param.setQuality(1f, true);
-                param.setHorizontalSubsampling(1, 1);
-                param.setHorizontalSubsampling(2, 1);
-                param.setVerticalSubsampling(1, 1);
-                param.setVerticalSubsampling(2, 1);
-            } else {
-                float q = jpegQuality==99 ? 1f : jpegQuality/100f;
-                param.setQuality(q, true);
-            }
-            jpegEncoder.setJPEGEncodeParam(param);
             jpegEncoder.encode(bufferedImage);  
         } else //if (biCompression == PNG_COMPRESSION)
             ImageIO.write(bufferedImage, "png", raOutputStream);

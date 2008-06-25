@@ -103,10 +103,8 @@ public class StackWriter implements PlugIn {
 				path = directory+name+digits+extension;
 			else
 				path = directory+label+extension;
-			WindowManager.setTempCurrentImage(imp2);
-			IJ.saveAs(format, path);
+			IJ.saveAs(imp2, format, path);
 		}
-		WindowManager.setTempCurrentImage(null);
 		IJ.showStatus("");
 		IJ.showProgress(1.0);
 		IJ.register(StackWriter.class);

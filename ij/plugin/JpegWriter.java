@@ -22,8 +22,7 @@ public class JpegWriter implements PlugIn {
 
     public void run(String arg) {
         ImagePlus imp = WindowManager.getCurrentImage();
-        if (imp==null)
-	 return;
+        if (imp==null) return;
         imp.startTiming();
         saveAsJpeg(imp,arg);
         IJ.showTime(imp, imp.getStartTime(), "JpegWriter: ");

@@ -26,7 +26,7 @@ public class SaveDialog {
 		if (isMacro())
 			return;
 		String defaultDir = OpenDialog.getDefaultDirectory();
-		defaultName = addExtension(defaultName, extension);
+		defaultName = setExtension(defaultName, extension);
 		if (Prefs.useJFileChooser)
 			jSave(title, defaultDir, defaultName);
 		else
@@ -43,7 +43,7 @@ public class SaveDialog {
 		ext = extension;
 		if (isMacro())
 			return;
-		defaultName = addExtension(defaultName, extension);
+		defaultName = setExtension(defaultName, extension);
 		if (Prefs.useJFileChooser)
 			jSave(title, defaultDir, defaultName);
 		else
@@ -70,17 +70,17 @@ public class SaveDialog {
 		return false;
 	}
 	
-	String addExtension(String name, String extension) {
-		if (name!=null && extension!=null) {
-			int dotIndex = name.lastIndexOf(".");
-			if (dotIndex>=0 && (name.length()-dotIndex)<=5) {
-				if (dotIndex+1<name.length() && Character.isDigit(name.charAt(dotIndex+1)))
-					name += extension;
-				else
-					name = name.substring(0, dotIndex) + extension;
-			} else
+	public static String setExtension(String name, String extension) {
+		if (name==null || extension==null)
+			return name;
+		int dotIndex = name.lastIndexOf(".");
+		if (dotIndex>=0 && (name.length()-dotIndex)<=5) {
+			if (dotIndex+1<name.length() && Character.isDigit(name.charAt(dotIndex+1)))
 				name += extension;
-		}
+			else
+				name = name.substring(0, dotIndex) + extension;
+		} else
+			name += extension;
 		return name;
 	}
 	

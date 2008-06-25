@@ -114,7 +114,7 @@ public class ShortProcessor extends ImageProcessor {
 		for (int i=0; i<size; i++) {
 			value = (pixels[i]&0xffff)-min;
 			if (value<0) value = 0;
-			value = (int)(value*scale);
+			value = (int)(value*scale+0.5);
 			if (value>255) value = 255;
 			pixels8[i] = (byte)value;
 		}

@@ -47,8 +47,8 @@ public class URLOpener implements PlugIn {
 		}
 		
 		GenericDialog gd = new GenericDialog("Enter a URL");
-		gd.addMessage("Enter URL of a TIFF, JPEG, GIF, PNG or DICOM image");
-		gd.addStringField("URL:", url, 40);
+		gd.addMessage("Enter URL of an image, macro or web page");
+		gd.addStringField("URL:", url, 45);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -60,7 +60,7 @@ public class URLOpener implements PlugIn {
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url.substring(0, url.length()-1));
 		else if (url.endsWith(".html") || url.endsWith(".htm") ||  url.indexOf(".html#")>0)
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
-		else if (url.endsWith(".txt")||url.endsWith(".ijm"))
+		else if (url.endsWith(".txt")||url.endsWith(".ijm")||url.endsWith(".js")||url.endsWith(".java"))
 			openTextFile(url, false);
 		else {
 			IJ.showStatus("Opening: " + url);
@@ -94,8 +94,12 @@ public class URLOpener implements PlugIn {
 		if (sb!=null) {
 			if (install)
 				(new MacroInstaller()).install(new String(sb));
-			else
+			else {
+				int index = urlString.lastIndexOf("/");
+				if (index!=-1 && index<=urlString.length()-1)
+					urlString = urlString.substring(index+1);
 				(new Editor()).create(urlString, new String(sb));
+			}
 		}
 	}
  

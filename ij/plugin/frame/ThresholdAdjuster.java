@@ -8,7 +8,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
-import ij.plugin.filter.Analyzer;
+import ij.plugin.filter.*;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
@@ -39,6 +39,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	int previousImageID;
 	int previousImageType;
 	double previousMin, previousMax;
+	int previousSlice;
 	ImageJ ij;
 	double minThreshold, maxThreshold;  // 0-255
 	Scrollbar minSlider, maxSlider;
@@ -233,6 +234,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		ip = imp.getProcessor();
 		boolean minMaxChange = false;		
         boolean not8Bits = type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32;
+		int slice = imp.getCurrentSlice();
 		if (not8Bits) {
 			if (ip.getMin()==plot.stackMin && ip.getMax()==plot.stackMax)
 				minMaxChange = false;
@@ -240,7 +242,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 				minMaxChange = true;
 	 			previousMin = ip.getMin();
 	 			previousMax = ip.getMax();
-	 		}
+	 		} else if (slice!=previousSlice)
+	 			minMaxChange = true;
 		}
 		int id = imp.getID();
 		if (minMaxChange || id!=previousImageID || type!=previousImageType) {
@@ -267,6 +270,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 	 	previousImageID = id;
 	 	previousImageType = type;
+	 	previousSlice = slice;
 	 	return ip;
 	}
 	
@@ -279,19 +283,30 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		int threshold = ip.getAutoThreshold(stats.histogram);
 		int modifiedModeCount = stats.histogram[stats.mode];
 		stats.histogram[stats.mode] = plot.originalModeCount;
-		int count1=0, count2=0;
-		for (int i=0; i<256; i++) {
-			if (i<threshold)
-				count1 += stats.histogram[i];
-			else
-				count2 += stats.histogram[i];
-		}
 		stats.histogram[stats.mode] = modifiedModeCount;
-		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
-		//IJ.log(unbalanced+"  "+count1+"  "+count2);
 		double lower, upper;
-		if (unbalanced) {
-			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
+		float[] hist = new float[256];
+		for (int i=0; i<256; i++)
+			hist[i] = stats.histogram[i];
+		FloatProcessor fp = new FloatProcessor(256, 1, hist, null);
+		GaussianBlur gb = new GaussianBlur();
+		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
+		//new ImagePlus("hist", fp).show();
+		float max=0f, sum=0f, mean, count;
+		int mode = 0;
+		for (int i=0; i<256; i++) {
+			count = hist[i];
+			sum += count;
+			if (count>max) {
+				max = count;
+				mode = i;
+			}
+		}
+		double avg = sum/256.0;
+		if (IJ.debugMode)
+			IJ.log("ratio="+IJ.d2s(max/avg,2)+", max= "+max+" , avg="+IJ.d2s(avg,2)+", mode="+mode);
+		if (max/avg>1.5) {
+			if ((stats.max-mode)>(mode-stats.min))
 				{minThreshold=threshold; maxThreshold=255.0;}
 			else
 				{minThreshold=0.0; maxThreshold=threshold;}

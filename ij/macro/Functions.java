@@ -40,6 +40,7 @@ public class Functions implements MacroConstants, Measurements {
     boolean antialiasedText;
     StringBuffer buffer;
     RoiManager roiManager;
+    Properties props;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -237,6 +238,7 @@ public class Functions implements MacroConstants, Measurements {
 			case STRING: str = doString(); break;
 			case EXT: str = doExt(); break;
 			case EXEC: str = exec(); break;
+			case LIST: str = doList(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3693,6 +3695,55 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		setFont(ip);
 		return ip.getStringWidth(getStringArg()); 
+	}
+
+	String doList() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION))
+			interp.error("Function name expected: ");
+		if (props==null)
+			props = new Properties();
+		String value = null;
+		String name = interp.tokenString;
+		if (name.equals("set")||name.equals("put"))
+			props.setProperty(getFirstString(), getLastString());
+		else if (name.equals("clear")||name.equals("reset"))
+			props.clear();
+		else if (name.equals("setList"))
+			setProperties();
+		else if (name.equals("getList"))
+			value = getProperties();
+		else if (name.equals("get")) {
+			value = props.getProperty(getStringArg());
+			value = value!=null?value:"";
+		} else if (name.equals("size")||name.equals("getSize")) {
+			interp.getParens();
+			value = ""+props.size();
+		} else
+			interp.error("Unrecognized List function");
+		return value;
+	}
+	
+	void setProperties() {
+		String list = getStringArg();
+		props.clear();
+		try {
+			InputStream is = new ByteArrayInputStream(list.getBytes("utf-8"));
+			props.load(is);
+		} catch(Exception e) {
+			interp.error(""+e);
+		}
+	}
+	
+	String getProperties() {
+		interp.getParens();
+		String list = props.toString();
+		list = list.substring(1, list.length()-1);
+		list = list.replaceAll(", ", "\n");
+		return list;
 	}
 
 } // class Functions

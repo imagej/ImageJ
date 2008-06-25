@@ -1,7 +1,10 @@
 package ij.io;
+import ij.*;
+import ij.process.*;
 import java.io.*;
 import java.net.*;
-import ij.*;  //??
+import java.awt.image.BufferedImage;
+import com.sun.image.codec.jpeg.*;
 
 /** Reads raw 8-bit, 16-bit or 32-bit (float or RGB)
 	images from a stream or URL. */
@@ -292,8 +295,10 @@ public class ImageReader {
 	}
 
 	int[] readChunkyRGB(InputStream in) throws IOException {
-		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)
+		if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING)
 			return readCompressedChunkyRGB(in);
+		else if (fi.compression==FileInfo.JPEG)
+			return readJPEG(in);
 		int pixelsRead;
 		bufferSize = 24*width;
 		byte[] buffer = new byte[bufferSize];
@@ -404,6 +409,13 @@ public class ImageReader {
 		}
 		return pixels;
 	}
+	
+	int[] readJPEG(InputStream in) throws IOException {
+		BufferedImage bi = JPEGCodec.createJPEGDecoder(in).decodeAsBufferedImage();
+		ImageProcessor ip =  new ColorProcessor(bi);
+		return (int[])ip.getPixels();
+	}
+
 
 	int[] readPlanarRGB(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING)

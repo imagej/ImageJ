@@ -47,14 +47,23 @@ public class TypeConverter {
 
 	/** Converts a ShortProcessor to a ByteProcessor. */
 	ByteProcessor convertShortToByte() {
+		int size = width*height;
+		short[] pixels16 = (short[])ip.getPixels();
+		byte[] pixels8 = new byte[size];
 		if (doScaling) {
-			Image img = ip.createImage();
-			return new ByteProcessor(img);
+			int value, min=(int)ip.getMin(), max=(int)ip.getMax();
+			double scale = 256.0/(max-min+1);
+			for (int i=0; i<size; i++) {
+				value = (pixels16[i]&0xffff)-min;
+				if (value<0) value = 0;
+				value = (int)(value*scale+0.5);
+				if (value>255) value = 255;
+				pixels8[i] = (byte)value;
+			}
+			return new ByteProcessor(width, height, pixels8, ip.getCurrentColorModel());
 		} else {
-			short[] pixels16 = (short[])ip.getPixels();
-			byte[] pixels8 = new byte[width*height];
 			int value;
-			for (int i=0; i<width*height; i++) {
+			for (int i=0; i<size; i++) {
 				value = pixels16[i]&0xffff;
 				if (value>255) value = 255;
 				pixels8[i] = (byte)value;

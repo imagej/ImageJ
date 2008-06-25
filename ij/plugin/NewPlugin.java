@@ -4,15 +4,16 @@ import ij.*;
 import ij.gui.*;
 import ij.plugin.frame.Editor;
 import ij.text.TextWindow;
+import ij.io.SaveDialog;
 
 /** This class creates a new macro or the Java source for a new plugin. */
 public class NewPlugin implements PlugIn {
 
-	public static final int MACRO=0, PLUGIN=1, PLUGIN_FILTER=2, PLUGIN_FRAME=3, TEXT_FILE=4, TABLE=5;
+	public static final int MACRO=0, JAVASCRIPT=1, PLUGIN=2, PLUGIN_FILTER=3, PLUGIN_FRAME=4, TEXT_FILE=5, TABLE=6;
 	
     private static int type = MACRO;
     private static String name = "Macro";
-    private static String[] types = {"Macro", "Plugin", "Plugin Filter", "Plugin Frame", "Text File", "Table"};
+    private static String[] types = {"Macro", "JavaScript", "Plugin", "Plugin Filter", "Plugin Frame", "Text File", "Table"};
     private static int rows = 16;
     private static int columns = 60;
     private static boolean monospaced;
@@ -32,7 +33,7 @@ public class NewPlugin implements PlugIn {
 			arg = "";
 		}
 		if (arg.equals("")) {
-			if (type==MACRO || type==TEXT_FILE) {
+			if (type==MACRO || type==TEXT_FILE || type==JAVASCRIPT) {
 				if (type==TEXT_FILE && name.equals("Macro"))
 					name = "Untitled.txt";
     			createMacro(name);
@@ -55,12 +56,12 @@ public class NewPlugin implements PlugIn {
 	public void createMacro(String name) {
 		int options = (monospaced?Editor.MONOSPACED:0)+(menuBar?Editor.MENU_BAR:0);
 		ed = new Editor(rows, columns, 0, options);
-		if (name.endsWith(".java"))
-			name = name.substring(0, name.length()-5);
-		//if (name.endsWith("_"))
-		//	name = name.substring(0, name.length()-1);
-		if (type==MACRO && !(name.endsWith(".txt")||name.endsWith(".js")))
-			name += ".txt";
+		if (type==MACRO && !name.endsWith(".txt"))
+			name = SaveDialog.setExtension(name, ".txt");
+		else if (type==JAVASCRIPT && !name.endsWith(".js")) {
+			if (name.equals("Macro")) name = "script";
+			name = SaveDialog.setExtension(name, ".js");
+		}
 		ed.create(name, "");
 	}
 	
@@ -84,15 +85,8 @@ public class NewPlugin implements PlugIn {
 			}
 		}
 		String pluginName = name;
-		if (!(name.endsWith(".java") || name.endsWith(".JAVA"))) {
-			if (pluginName.endsWith(".txt"))
-				pluginName = pluginName.substring(0, pluginName.length()-4);
-			pluginName += ".java";
-		}
-		//if (name.indexOf('_')==-1) {
-		//	pluginName = pluginName.substring(0, pluginName.length()-5);
-		//	pluginName = pluginName + "_.java";
-		//}
+		if (!(name.endsWith(".java") || name.endsWith(".JAVA")))
+			name = SaveDialog.setExtension(name, ".java");
 		String className = pluginName.substring(0, pluginName.length()-5);
 		String text = "";
 		text += "import ij.*;\n";

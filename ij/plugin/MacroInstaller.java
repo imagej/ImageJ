@@ -9,14 +9,14 @@ import ij.text.*;
 import ij.util.Tools;
 import ij.io.*;
 import ij.macro.MacroConstants;
-import ij.plugin.frame.Recorder;
+import ij.plugin.frame.*;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 import java.util.*;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
 /** This plugin implements the Plugins/Macros/Install Macros command. It is also used by the Editor
 	class to install macro in menus and by the ImageJ class to install macros at startup. */
 public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
-	public static final int MAX_SIZE = 28000, MAX_MACROS=75, XINC=10, YINC=18;
+	public static final int MAX_SIZE = 28000, MAX_MACROS=100, XINC=10, YINC=18;
 	public static final char commandPrefix = '^';
 	static final String commandPrefixS = "^";
 	
@@ -75,7 +75,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macroStarts = new int[MAX_MACROS];
 		macroNames = new String[MAX_MACROS];
 		int itemCount = macrosMenu.getItemCount();
-		int baseCount = macrosMenu==Menus.getMacrosMenu()?5:5;
+		int baseCount = macrosMenu==Menus.getMacrosMenu()?5:Editor.MACROS_MENU_ITEMS;
 		if (itemCount>baseCount) {
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);

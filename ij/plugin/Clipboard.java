@@ -156,8 +156,7 @@ public class Clipboard implements PlugIn, Transferable {
 				roi = (Roi)roi.clone();
 				roi.setLocation(0, 0);
 				imp2.setRoi(roi);
-				WindowManager.setTempCurrentImage(imp2);
-				IJ.run("Clear Outside");
+				IJ.run(imp2, "Clear Outside", null);
 				imp2.killRoi();
 			}
 			WindowManager.checkForDuplicateName = true;          

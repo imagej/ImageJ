@@ -6,6 +6,7 @@ import java.awt.image.*;
 import java.lang.reflect.*; 
 import ij.gui.*;
 import ij.util.*;
+import ij.plugin.filter.GaussianBlur;
 
 /**
 This abstract class is the superclass for classes that process
@@ -409,7 +410,7 @@ public abstract class ImageProcessor extends Object {
 		newPixels = true;
 		source = null;
 	}
-
+	
 	/** Automatically sets the lower and upper threshold levels, where 'method'
 		 must be ISODATA or ISODATA2 and 'lutUpdate' must be RED_LUT,
 		 BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.
@@ -423,9 +424,13 @@ public abstract class ImageProcessor extends Object {
 		boolean notByteData = !(this instanceof ByteProcessor);
 		ImageProcessor ip2 = this;
 		if (notByteData) {
+			ImageProcessor mask = ip2.getMask();
+			Rectangle rect = ip2.getRoi();
 			resetMinAndMax();
 			min = getMin(); max = getMax();
-			ip2 = convertToByte(true);	
+			ip2 = convertToByte(true);
+			ip2.setMask(mask);
+			ip2.setRoi(rect);	
 		}
 		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
@@ -445,17 +450,26 @@ public abstract class ImageProcessor extends Object {
 		}
 		int threshold = ip2.getAutoThreshold(stats.histogram);
 		histogram[stats.mode] = originalModeCount;
-		int count1=0, count2=0;
+		float[] hist = new float[256];
+		for (int i=0; i<256; i++)
+			hist[i] = stats.histogram[i];
+		FloatProcessor fp = new FloatProcessor(256, 1, hist, null);
+		GaussianBlur gb = new GaussianBlur();
+		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
+		float maxCount=0f, sum=0f, mean, count;
+		int mode = 0;
 		for (int i=0; i<256; i++) {
-			if (i<threshold)
-				count1 += stats.histogram[i];
-			else
-				count2 += stats.histogram[i];
+			count = hist[i];
+			sum += count;
+			if (count>maxCount) {
+				maxCount = count;
+				mode = i;
+			}
 		}
-		boolean unbalanced = (double)count1/count2>1.25 || (double)count2/count1>1.25;
+		double avg = sum/256.0;
 		double lower, upper;
-		if (unbalanced) {
-			if ((stats.max-stats.dmode)>(stats.dmode-stats.min))
+		if (maxCount/avg>1.5) {
+			if ((stats.max-mode)>(mode-stats.min))
 				{lower=threshold; upper=255.0;}
 			else
 				{lower=0.0; upper=threshold;}

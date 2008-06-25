@@ -957,7 +957,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             msg = e.getMessage();
         else
             msg = e + "\n" + e.getStackTrace()[0]+"\n"+e.getStackTrace()[1];
-        return("An error occurred reading the file.\n \n" + msg);
+        if (msg.indexOf("Huffman table")!=-1)
+            return "Cannot open M_JPEG AVIs that are missing Huffman tables";
+        else
+           return "An error occurred reading the file.\n \n" + msg;
     }
 
     void updateProgress() throws IOException {

@@ -102,13 +102,15 @@ adjust05="Size...",ij.plugin.filter.Resizer
 adjust06="Canvas Size...",ij.plugin.CanvasResizer
 
 # Plugins installed in the Image/Color submenu
-color01="RGB Split",ij.plugin.filter.RGBStackSplitter
-color02="RGB Merge...",ij.plugin.RGBStackMerge
-color03="Stack to RGB",ij.plugin.RGBStackConverter
-color04="Make Composite",ij.plugin.CompositeConverter
-color05="Show LUT",ij.plugin.filter.LutViewer
-color06="Edit LUT...",ij.plugin.LUT_Editor
-color07="Color Picker...[K]",ij.plugin.ColorPicker
+color01="Split Channels",ij.plugin.filter.RGBStackSplitter
+color02="Merge Channels...",ij.plugin.RGBStackMerge
+color03="Channels Tool... ",ij.plugin.frame.Channels
+color04=-
+color05="Stack to RGB",ij.plugin.RGBStackConverter
+color06="Make Composite",ij.plugin.CompositeConverter
+color07="Show LUT",ij.plugin.filter.LutViewer
+color08="Edit LUT...",ij.plugin.LUT_Editor
+color09="Color Picker...[K]",ij.plugin.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")
@@ -134,7 +136,7 @@ hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
 hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
-hyperstacks05="Channels...[Z]",ij.plugin.frame.Channels
+hyperstacks05="Channels Tool...[Z]",ij.plugin.frame.Channels
 
 # Plugins installed in the Image/Rotate submenu
 rotate01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")

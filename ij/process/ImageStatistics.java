@@ -217,5 +217,9 @@ public class ImageStatistics implements Measurements {
 		}
 		areaFraction = sum*100.0/total;
 	}
+	
+	public String toString() {
+		return "stats[count="+pixelCount+", mean="+mean+", min="+min+", max="+max+"]";
+	}
 
 }

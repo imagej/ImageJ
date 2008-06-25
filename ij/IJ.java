@@ -11,11 +11,12 @@ import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import java.awt.event.*;
 import java.text.*;
-import java.util.Locale;	
+import java.util.*;	
 import java.awt.*;	
 import java.applet.Applet;
 import java.io.*;
 import java.lang.reflect.*;
+
 
 /** This class consists of static utility methods. */
 public class IJ {
@@ -46,6 +47,8 @@ public class IJ {
 	private static boolean redirectErrorMessages;
 	private static boolean suppressPluginNotFoundError;
 	private static Dimension screenSize;
+	private static Hashtable commandTable;
+
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -106,6 +109,14 @@ public class IJ {
 	/** Runs the specified macro file. */
 	public static String runMacroFile(String name) {
 		return runMacroFile(name, null);
+	}
+
+	/** Runs the specified plugin using the specified image. */
+	public static Object runPlugIn(ImagePlus imp, String className, String arg) {
+		WindowManager.setTempCurrentImage(imp);
+		Object o = runPlugIn("", className, arg);
+		WindowManager.setTempCurrentImage(null);
+		return o;
 	}
 
 	/** Runs the specified plugin and returns a reference to it. */
@@ -205,7 +216,7 @@ public class IJ {
 		GenericDialog and OpenDialog classes. Does not return until
 		the command has finished executing. */
 	public static void run(String command, String options) {
-		//IJ.log("run: "+command+" "+Thread.currentThread().getName());
+		//IJ.log("run1: "+command+" "+Thread.currentThread().hashCode());
 		if (ij==null && Menus.getCommands()==null)
 			init();
 		Macro.abort = false;
@@ -216,31 +227,7 @@ public class IJ {
 			if (!name.startsWith("Run$_"))
 				thread.setName("Run$_"+name);
 		}
-		if (command.equals("New..."))
-			command = "Image...";
-		else if (command.equals("Threshold"))
-			command = "Make Binary";
-		else if (command.equals("Display..."))
-			command = "Appearance...";
-		else if (command.equals("Start Animation"))
-			command = "Start Animation [\\]";
-		else if (command.startsWith("Convert")) {
-			if (command.equals("Convert Images to Stack"))
-				command = "Images to Stack";
-			else if (command.equals("Convert Stack to Images"))
-				command = "Stack to Images";
-			else if (command.equals("Convert Stack to RGB"))
-				command = "Stack to RGB";
-			else if (command.equals("Convert to Composite"))
-				command = "Make Composite";
-		} else if (command.indexOf("HyperStack")!=-1) {
-			if (command.equals("New HyperStack..."))
-				command = "New Hyperstack...";
-			else if (command.equals("Stack to HyperStack..."))
-				command = "Stack to Hyperstack...";
-			else if (command.equals("HyperStack to Stack"))
-				command = "Hyperstack to Stack";
-		}
+		command = convert(command);
 		previousThread = thread;
 		macroRunning = true;
 		Executer e = new Executer(command);
@@ -248,8 +235,43 @@ public class IJ {
 		macroRunning = false;
 		Macro.setOptions(null);
 		testAbort();
+		//IJ.log("run2: "+command+" "+Thread.currentThread().hashCode());
 	}
 	
+	/** Converts commands that have been renamed so 
+		macros using the old names continue to work. */
+	private static String convert(String command) {
+		if (commandTable==null) {
+			commandTable = new Hashtable(23); // initial capacity should be increased as needed
+			commandTable.put("New...", "Image...");
+			commandTable.put("Threshold", "Make Binary");
+			commandTable.put("Display...", "Appearance...");
+			commandTable.put("Start Animation", "Start Animation [\\]");
+			commandTable.put("Convert Images to Stack", "Images to Stack");
+			commandTable.put("Convert Stack to Images", "Stack to Images");
+			commandTable.put("Convert Stack to RGB", "Stack to RGB");
+			commandTable.put("Convert to Composite", "Make Composite");
+			commandTable.put("New HyperStack...", "New Hyperstack...");
+			commandTable.put("Stack to HyperStack...", "Stack to Hyperstack...");
+			commandTable.put("HyperStack to Stack", "Hyperstack to Stack");
+			commandTable.put("RGB Split", "Split Channels");
+			commandTable.put("RGB Merge...", "Merge Channels...");
+			commandTable.put("Channels...", "Channels Tool...");
+		}
+		String command2 = (String)commandTable.get(command);
+		if (command2!=null)
+			return command2;
+		else
+			return command;
+	}
+
+    /** Runs an ImageJ command using the specified image and options. */
+	public static void run(ImagePlus imp, String command, String options) {
+		if (imp!=null) WindowManager.setTempCurrentImage(imp);
+		run(command, options);
+		if (imp!=null) WindowManager.setTempCurrentImage(null);
+	}
+
 	static void init() {
 		Menus m = new Menus(null, null);
 		Prefs.load(m, null);
@@ -452,7 +474,10 @@ public class IJ {
 		if the ImageJ window is not present.*/
 	public static void error(String msg) {
 		showMessage("ImageJ", msg);
-		Macro.abort();
+		if (Thread.currentThread().getName().endsWith("JavaScript"))
+			throw new RuntimeException(Macro.MACRO_CANCELED);
+		else
+			Macro.abort();
 	}
 	
 	/**	Displays a message in a dialog box with the specified title.
@@ -1036,7 +1061,7 @@ public class IJ {
 
 	/** Returns a reference to the active image. Displays an error
 		message and aborts the macro if no images are open. */
-	public static ImagePlus getImage() {
+	public static ImagePlus getImage() {  //ts
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {
 			IJ.noImage();
@@ -1127,12 +1152,18 @@ public class IJ {
 		return (new Opener()).openImage(path);
 	}
 
-	/** Saves an image, lookup table, selection or text window to the specified file path. 
+	/** Saves the current image, lookup table, selection or text window to the specified file path. 
 		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
 	public static void save(String path) {
+		save(null, path);
+	}
+
+	/** Saves the specified image, lookup table or selection to the specified file path. 
+		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
+	public static void save(ImagePlus imp, String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1)
-			saveAs(path.substring(dotLoc+1), path);
+			saveAs(imp, path.substring(dotLoc+1), path);
 		else
 			error("The save() macro function requires a file name extension.\n \n"+path);
 	}
@@ -1143,6 +1174,13 @@ public class IJ {
 		"xy Coordinates" or "text".  If <code>path</code> is null or an emply string, a file
 		save dialog is displayed. */
  	public static void saveAs(String format, String path) {
+ 		saveAs(null, format, path);
+ 	}
+
+	/* Saves the specified image. The format argument must be "tiff",  
+		"jpeg", "gif", "zip", "raw", "avi", "bmp", "fits", "pgm", "png", 
+		"text image", "lut", "selection" or "xy Coordinates". */
+ 	public static void saveAs(ImagePlus imp, String format, String path) {
 		if (format==null) return;
 		if (path!=null && path.length()==0) path = null;
 		format = format.toLowerCase(Locale.US);
@@ -1199,7 +1237,7 @@ public class IJ {
 		if (path==null)
 			run(format);
 		else
-			run(format, "save=["+path+"]");
+			run(imp, format, "save=["+path+"]");
 	}
 
 	static String updateExtension(String path, String extension) {

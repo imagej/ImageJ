@@ -4,6 +4,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.awt.datatransfer.*;																																																																																													
+import java.lang.reflect.*;
 import ij.*;
 import ij.gui.*;
 import ij.util.Tools;
@@ -18,8 +19,17 @@ import ij.io.SaveDialog;
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	TextListener, ClipboardOwner, MacroConstants {
 	
-	public static final int MAX_SIZE=28000, MAX_MACROS=50, XINC=10, YINC=18;
+	public static String JavaScriptIncludes =
+		"importPackage(Packages.ij);"+
+		"importPackage(Packages.ij.gui);"+
+		"importPackage(Packages.ij.process);"+
+		"importPackage(Packages.ij.measure);"+
+		"importPackage(java.awt);"+
+		"importClass(java.lang.System);"+
+		"function print(s) {IJ.log(s);};\n";
+	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
+	public static final int MACROS_MENU_ITEMS = 6;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	private TextArea ta;
@@ -162,7 +172,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
 		if (name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js")|| name.indexOf(".")==-1) {
-			// 'baseCount' in MacroInstaller must be updated if items are added to this menu
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
 			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_E)));
@@ -170,8 +179,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.addSeparator();
-			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J)));
+			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
 			macrosMenu.addSeparator();
+			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
 			if (text.indexOf("macro ")!=-1)
@@ -308,10 +318,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	void evaluateJavaScript() {
-		if (!IJ.isJava16()) {
-			IJ.error("Macro Editor", "Java 1.6 or later is required to evaluate JavaScript");
-			return;
-		}
+		if (!getTitle().endsWith(".js"))
+			setTitle(SaveDialog.setExtension(getTitle(), ".js"));
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -319,7 +327,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		IJ.runPlugIn("JavaScriptEvaluator", text);
+		if (text.equals("")) return;
+		if (IJ.isJava16() && !IJ.isMacOSX()) {
+			IJ.runPlugIn("JavaScriptEvaluator", text);
+			return;
+		} else {
+			Object js = IJ.runPlugIn("JavaScript", JavaScriptIncludes+text);
+			if (js==null)
+				IJ.error("JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \nrsb.info.nih.gov/ij/download/tools/JavaScript.jar");
+		}
 	}
 
 	void evaluateLine() {
@@ -479,8 +495,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				runMacro();
 		else if ("Evaluate Line".equals(what))
 				evaluateLine();
-		else if ("Evaluate JavaScript".equals(what))
-				evaluateJavaScript();
 		else if ("Abort Macro".equals(what)) {
 				Interpreter.abort();
 				IJ.beep();		
@@ -488,6 +502,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				installMacros(ta.getText(), true);
 		else if ("Function Finder...".equals(what))
 			new FunctionFinder();
+		else if ("Evaluate JavaScript".equals(what))
+			evaluateJavaScript();
 		else if ("Print...".equals(what))
 			print();
 		else if (what.startsWith("Paste"))

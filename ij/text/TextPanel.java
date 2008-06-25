@@ -119,7 +119,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			sColHead=new String[1];
 			sColHead[0] = "";
 		} else {
-			sColHead = Tools.split(labels, "\t");
+			if (labels.endsWith("\t"))
+				this.labels = labels.substring(0, labels.length()-1);
+			sColHead = Tools.split(this.labels, "\t");
         	iColCount = sColHead.length;
 		}
 		flush();
@@ -476,14 +478,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		for (int i=selStart; i<=selEnd; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
+			String s = new String(chars);
+			if (s.endsWith("\t"))
+				s = s.substring(0, s.length()-1);
 			if (Prefs.noRowNumbers) {
-				String s = new String(chars);
 				int index = s.indexOf("\t");
 				if (index!=-1)
 					s = s.substring(index+1, s.length());
 				sb.append(s);
 			} else
-				sb.append(chars);
+				sb.append(s);
 			if (i<selEnd || selEnd>selStart) sb.append('\n');
 		}
 		String s = new String(sb);
@@ -609,7 +613,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			pw.println(labels);
 		for (int i=0; i<iRowCount; i++) {
 			char[] chars = (char[])(vData.elementAt(i));
-			pw.println(new String(chars));
+			String s = new String(chars);
+			if (s.endsWith("\t"))
+				s = s.substring(0, s.length()-1);
+			pw.println(s);
 		}
 		unsavedLines = false;
 	}

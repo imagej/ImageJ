@@ -256,6 +256,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
                 convolveLine(cache, pixels, gaussKernel, readFrom, readTo, writeFrom, writeTo, pixel0, pointInc);
             }
         }
+        showProgress(1.0);
         return;
     }
 

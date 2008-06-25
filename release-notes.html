@@ -5,35 +5,22 @@
 </head>
 <body>
 
-<li> <u>1.41e, 10 June 2008</u>
+<li> <u>1.41f, 24 June 2008</u>
 <ul>
-<li>Michael Schmid added the ability to save using
-<a href="http://en.wikipedia.org/wiki/Motion_JPEG">Motion JPEG</a>
-and
-<a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">PNG</a>
-compression to
-the <i>File&gt;Save As&gt;AVI</i> command and added the ability to read JPEG and PNG
-compressed AVIs to the <i>File&gt;Open</i> command.
-<li> Added the <i>Macros&gt;Evaluate JavaScript</i> command to the macro editor. This command
-requires Java 1.6, which has the Mozilla 
-<a href="http://www.mozilla.org/rhino/">Rhino</a> 
-JavaScript interpreter built in
- (<a href="http://rsb.info.nih.gov/ij/macros/JavaScriptExample.js">example</a>).
-<li> Added the <i>Help&gt;Update ImageJ</i> command, which duplicates the
-<i>Plugins&gt;Utilities&gt;Update ImageJ</i> command.
-<li> Jerome Mutterer contributed the macro editor's new <i>Macros&gt;Find Functions</i> command.
-<li> <i>Edit&gt;Selection&gt;Rotate</i> works with composite selections.
-<li> <i>Edit&gt;Selection&gt;Restore Selection</i> works with non-rectangular 
-selections that extend beyond the boundary of the destination image.
-<li> The getStatistics() and getRawStatistics() macro functions 
-now work with line selections.
-<li> The File.delete() macro function now returns "1" (true) if the file or directory was
-successfully deleted. The "1" will be displayed in the Log window if 
-File.delete() is not called in an assignment or 'if' statement.
-<li> Single .class plugins in a directory are not moved to the MIscellaneous 
-menu if there is a least one underscore in the directory name.
-<li> Fixed a bug that sometimes caused 16-bit signed
-stacks to not be correctly converted to 32-bits.
+<li> The <i>File&gt;Import&gt;URL</i> command now opens
+Java (.java) and javaScript (.js) programs.
+<li> Added the IJ.run(ImagePlus, command, options), 
+IJ.save(ImagePlus, path) and IJ.saveAs(ImagePlus, format, path) methods.
+<li> Renamed the <i>Image&gt;Color&gt;RGB Split</i> and <i>RGB Merge</i>
+to <i>Split Channels</i> and <i>Merge Channels</i>.
+<li> Added a redundent <i>Image&gt;Color&gt;Channels Tool</i> command.
+<li> Added a "JavaScript" type to the <i>Plugins&gt;New</i> dialog.
+<li> Added the List.set(key,value), List.get(key), List.size, List.clear,
+List.setList(string) and List.getList macro functions.
+<li> Fixed bug that could cause <i>Image&gt;Color&gt;RGB Merge</i>
+to throw an exception of one of the input images was a hyperstack.
+<li> Fixed a bug that caused an extra tab at the end of Results window lines copied 
+to the clipboard are saved as a text file.
 </ul>
 
 </body>

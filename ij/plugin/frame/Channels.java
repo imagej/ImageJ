@@ -73,7 +73,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		pm=new PopupMenu();
 		addPopupItem("Make Composite");
 		addPopupItem("Convert to RGB");
-		addPopupItem("Open HeLa Cells");
+		addPopupItem("Split Channels");
 		add(pm);
 
 		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
@@ -180,8 +180,6 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 			pm.show(this, bloc.x, bloc.y);
 		} else if (command.equals("Convert to RGB"))
 			IJ.doCommand("Stack to RGB");
-		else if (command.equals("Open HeLa Cells"))
-			IJ.doCommand("HeLa Cells (1.3M, 48-bit RGB)");
 		else
 			IJ.doCommand(command);
 	}

@@ -37,7 +37,7 @@ public class Interpreter implements MacroConstants {
 	int startOfLocals = 0;
 
 	static Interpreter instance, previousInstance;
-	static boolean batchMode;
+	public static boolean batchMode;
 	static Vector imageTable; // images opened in batch mode
 	boolean done;
 	Program pgm;

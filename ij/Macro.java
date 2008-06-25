@@ -9,14 +9,16 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.Locale;
+import java.util.Hashtable;
 
 /** The class contains static methods that perform macro operations. */
 public class Macro {
 
 	public static final String MACRO_CANCELED = "Macro canceled";
 
-	//public static boolean record;
-	private static String currentOptions;
+	// A table of Thread as keys and String as values, so  
+	// Macro options are local to each calling thread.
+	static private Hashtable table = new Hashtable();
 	static boolean abort;
 
 	public static boolean open(String path) {
@@ -69,24 +71,44 @@ public class Macro {
 	public static void abort() {
 		abort = true;
 		//IJ.log("Abort: "+Thread.currentThread().getName());
-        if (Thread.currentThread().getName().endsWith("Macro$"))
-           throw new RuntimeException(MACRO_CANCELED);
+		if (Thread.currentThread().getName().endsWith("Macro$")) {
+			table.remove(Thread.currentThread());
+			throw new RuntimeException(MACRO_CANCELED);
+		}
 	}
 
-	/** If a command started using run(name, options) is running, 
+	/** If a command started using run(name, options) is running,
+		and the current thread is the same thread,
 		returns the options string, otherwise, returns null.
-		@see ij.gui.GenericDialog  
-		@see ij.io.OpenDialog 
+		@see ij.gui.GenericDialog
+		@see ij.io.OpenDialog
 	*/
 	public static String getOptions() {
-		if (currentOptions!=null && Thread.currentThread().getName().startsWith("Run$_"))
-			return currentOptions+" ";
-		else
+		//IJ.log("getOptions: "+Thread.currentThread().hashCode()); //ts
+		if (Thread.currentThread().getName().startsWith("Run$_")) {
+			Object options = table.get(Thread.currentThread());
+			return options==null?null:options+" ";
+		} else
 			return null;
 	}
 
+	/** Define a set of Macro options for the current Thread. */
 	public static void setOptions(String options) {
-		currentOptions = options;
+		//IJ.log("setOptions: "+Thread.currentThread().hashCode()+" "+options); //ts
+		if (options==null || options.equals(""))
+			table.remove(Thread.currentThread());
+		else
+			table.put(Thread.currentThread(), options);
+	}
+
+	/** Define a set of Macro options for a Thread. */
+	public static void setOptions(Thread thread, String options) {
+		if (null==thread)
+			throw new RuntimeException("Need a non-null thread instance");
+		if (null==options)
+			table.remove(thread);
+		else
+			table.put(thread, options);
 	}
 
 	public static String getValue(String options, String key, String defaultValue) {
