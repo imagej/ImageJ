@@ -13,6 +13,7 @@ import java.lang.reflect.*;
 public class WaitForUserDialog extends Dialog implements ActionListener, KeyListener {
 	protected Button button;
 	protected MultiLineLabel label;
+	static protected int xloc=-1, yloc=-1;
 	
 	public WaitForUserDialog(String title, String text) {
 		super(getFrame(), title, false);
@@ -32,7 +33,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         add(button, c);
 		setResizable(false);
 		pack();
-		GUI.center(this);
+		if (xloc==-1)
+			GUI.center(this);
+		else
+			setLocation(xloc, yloc);
 		if (IJ.isJava15()) try {
 			// Call setAlwaysOnTop() using reflection so this class can be compiled with Java 1.4
 			Class windowClass = Class.forName("java.awt.Window");
@@ -63,6 +67,8 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 
     public void close() {
         synchronized(this) { notify(); }
+        xloc = getLocation().x;
+        yloc = getLocation().y;
 		setVisible(false);
 		dispose();
     }

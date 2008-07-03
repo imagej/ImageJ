@@ -269,12 +269,21 @@ public class PluginClassLoader extends ClassLoader {
             classBytes = loadFromSubdirectory(path, name);
             if (classBytes == null) {
                 // Attempt to get the class data from the JAR files.
+                if (name.startsWith("java.")||name.startsWith("ij."))
+					return null;
                 for (int i=0; i<jarFiles.size(); i++) {
                     try {
                         File jf = (File)jarFiles.elementAt(i);
                         classBytes = loadClassFromJar(jf.getPath(), name);
-                        if (classBytes != null)
+ 						//IJ.log(i+"  "+name+"  "+classBytes);             
+                        if (classBytes!=null) {
+							if (i!=0) {
+                        		Object o = jarFiles.elementAt(0);
+                        		jarFiles.insertElementAt(jarFiles.elementAt(i), 0);
+                        		jarFiles.insertElementAt(o, i);
+                        	}
                             return classBytes;
+                        }
                     }
                     catch (Exception e) {
                         //no problem, try the next one

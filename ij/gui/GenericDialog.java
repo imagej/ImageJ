@@ -35,8 +35,8 @@ import ij.util.Tools;
 * to spaces when the dialog is displayed. For example, change the checkbox labels
 * "Show Quality" and "Show Residue" to "Show_Quality" and "Show_Residue".
 */
-public class GenericDialog extends Dialog implements ActionListener,
-TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
+public class GenericDialog extends Dialog implements ActionListener, TextListener, 
+FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	public static final int MAX_SLIDERS = 25;
 	protected Vector numberField, stringField, checkbox, choice, slider;
@@ -94,6 +94,7 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		macroOptions = Macro.getOptions();
 		macro = macroOptions!=null;
 		addKeyListener(this);
+		addWindowListener(this);
     }
     
 	//void showFields(String id) {
@@ -1100,4 +1101,16 @@ TextListener, FocusListener, ItemListener, KeyListener, AdjustmentListener {
 		}
 	}
     	
+    public void windowClosing(WindowEvent e) {
+		wasCanceled = true; 
+		dispose(); 
+    }
+    
+    public void windowActivated(WindowEvent e) {}
+    public void windowOpened(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+
 }

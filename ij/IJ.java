@@ -257,6 +257,7 @@ public class IJ {
 			commandTable.put("RGB Split", "Split Channels");
 			commandTable.put("RGB Merge...", "Merge Channels...");
 			commandTable.put("Channels...", "Channels Tool...");
+			commandTable.put("New... ", "Table...");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

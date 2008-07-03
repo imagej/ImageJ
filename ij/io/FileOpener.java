@@ -384,7 +384,7 @@ public class FileOpener {
 		
 	void checkForCalibrationConflict(ImagePlus imp, Calibration cal) {
 		Calibration gcal = imp.getGlobalCalibration();
-		if  (gcal==null || !showConflictMessage)
+		if  (gcal==null || !showConflictMessage || IJ.isMacro())
 			return;
 		if (cal.pixelWidth==gcal.pixelWidth && cal.getUnit().equals(gcal.getUnit()))
 			return;

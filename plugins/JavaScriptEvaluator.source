@@ -1,17 +1,10 @@
 import ij.plugin.*;
 import ij.*;
+import ij.plugin.frame.Editor;
 import javax.script.*;
 
 /** Implements the macro editor's Macros/Evaluate JavaScript command. */
 public class JavaScriptEvaluator implements PlugIn, Runnable  {
-	static String includes =
-		"importPackage(Packages.ij);"+
-		"importPackage(Packages.ij.gui);"+
-		"importPackage(Packages.ij.process);"+
-		"importPackage(Packages.ij.measure);"+
-		"importPackage(java.awt);"+
-		"importClass(java.lang.System);"+
-		"function print(s) {IJ.log(s);};\n";
 	Thread thread;
 	String script;
 
@@ -19,7 +12,6 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 		if (script.equals("")) return;
 		if (!IJ.isJava16())
 			{IJ.error("Java 1.6 or later required"); return;}
-		//script = "IJ.log(''+IJ.getImage().getBufferedImage());";
 		this.script = script;
 		thread = new Thread(this, "JavaScript"); 
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
@@ -32,7 +24,7 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 			ScriptEngine engine = scriptEngineManager.getEngineByName("ECMAScript");
 			if (engine == null)
 				{IJ.error("Could not find JavaScript engine"); return;}
-			engine.eval(includes+script);
+			engine.eval(Editor.JavaScriptIncludes+script);
 		} catch(Throwable e) {
 			String msg = e.getMessage();
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EcmaError: "))

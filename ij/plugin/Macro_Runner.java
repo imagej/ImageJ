@@ -4,6 +4,7 @@ import ij.io.*;
 import ij.macro.*;
 import ij.text.*;
 import ij.util.*;
+import ij.plugin.frame.Editor;
 import java.io.*;
 
 /** Opens and runs a macro file. */
@@ -109,7 +110,10 @@ public class Macro_Runner implements PlugIn {
 			in.read(buffer, 0, size);
 			String macro = new String(buffer, 0, size, "ISO8859_1");
 			in.close();
-			return runMacro(macro, arg);
+			if (name.endsWith(".js"))
+				return runJavaScript(macro);
+			else
+				return runMacro(macro, arg);
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());
@@ -179,6 +183,17 @@ public class Macro_Runner implements PlugIn {
 			return runMacro(macro, arg);
 		else
 			return null;
+	}
+	
+	String runJavaScript(String text) {
+		if (IJ.isJava16() && !IJ.isMacOSX())
+			IJ.runPlugIn("JavaScriptEvaluator", text);
+		else {
+			Object js = IJ.runPlugIn("JavaScript", Editor.JavaScriptIncludes+text);
+			if (js==null)
+				IJ.error(Editor.JS_NOT_FOUND);
+		}
+		return null;
 	}
 
 }

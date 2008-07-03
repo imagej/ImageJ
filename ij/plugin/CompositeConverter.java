@@ -18,6 +18,7 @@ public class CompositeConverter implements PlugIn {
 				ci.setMode(CompositeImage.COMPOSITE);
 				ci.updateAndDraw();
 			}
+			if (!IJ.isMacro()) IJ.run("Channels Tool...");
 			return;
 		}
 		String mode = modes[0];
@@ -33,6 +34,7 @@ public class CompositeConverter implements PlugIn {
 				convertRGBToCompositeStack(imp, arg);
 			else
 				convertRGBToCompositeImage(imp);
+			if (!IJ.isMacro()) IJ.run("Channels Tool...");
 		} else if (c>=2) {
 			GenericDialog gd = new GenericDialog("Make Composite");
 			gd.addChoice("Display Mode:", modes, mode);
@@ -42,6 +44,7 @@ public class CompositeConverter implements PlugIn {
 			CompositeImage ci = new CompositeImage(imp, index+1);
 			ci.show();
 			imp.hide();
+			if (!IJ.isMacro()) IJ.run("Channels Tool...");
 		} else
 			IJ.error("To create a composite, the current image must be\n a stack with at least 2 channels or be in RGB format.");
 	}

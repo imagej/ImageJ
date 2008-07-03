@@ -16,6 +16,8 @@ public class NewPlugin implements PlugIn {
     private static String[] types = {"Macro", "JavaScript", "Plugin", "Plugin Filter", "Plugin Frame", "Text File", "Table"};
     private static int rows = 16;
     private static int columns = 60;
+    private static int tableWidth = 350;
+    private static int tableHeight = 250;
     private static boolean monospaced;
     private boolean menuBar = true;
 	private Editor ed;
@@ -26,23 +28,49 @@ public class NewPlugin implements PlugIn {
 	private boolean saveMonospaced = monospaced;
     
     public void run(String arg) {
-		if (arg.equals("")&&!showDialog())
-			return;
-		if (arg.equals("text")) {
-			type = TEXT_FILE;
-			arg = "";
+    	type = -1;
+    	if (arg.startsWith("text")||arg.equals("")) {
+    		type = TEXT_FILE;
+    		name = "Untitled.txt";
+    	} else if (arg.equals("macro")) {
+    		type = MACRO;
+    		name = "Macro.txt";
+    	} else if (arg.equals("javascript")) {
+    		type = JAVASCRIPT;
+    		name = "Script.js";
+     	} else if (arg.equals("plugin")) {
+    		type = PLUGIN;
+    		name = "My_Plugin.java";
+    	} else if (arg.equals("frame")) {
+    		type = PLUGIN_FRAME;
+    		name = "Plugin_Frame.java";
+    	} else if (arg.equals("filter")) {
+    		type = PLUGIN_FILTER;
+    		name = "Filter_Plugin.java";
+    	} else if (arg.equals("table")) {
+			String options = Macro.getOptions();
+			if  (IJ.isMacro() && options!=null && options.indexOf("[Text File]")!=-1) {
+    			type = TEXT_FILE;
+    			name = "Untitled.txt";
+    			arg = "text+dialog";
+    		} else {
+    			type = TABLE;
+    			name = "Table";
+    		}
+    	}
+    	if (arg.equals("text+dialog") || type==TABLE) {
+			if (!showDialog()) return;
 		}
-		if (arg.equals("")) {
-			if (type==MACRO || type==TEXT_FILE || type==JAVASCRIPT) {
-				if (type==TEXT_FILE && name.equals("Macro"))
-					name = "Untitled.txt";
-    			createMacro(name);
-    		} else if (type==TABLE) {
-    			createTextWindow();
-    		} else
-    			createPlugin(name, type, arg);
-    	} else
+		if (type==-1)
     		createPlugin("Converted_Macro.java", PLUGIN, arg);
+		else if (type==MACRO || type==TEXT_FILE || type==JAVASCRIPT) {
+			if (type==TEXT_FILE && name.equals("Macro"))
+				name = "Untitled.txt";
+			createMacro(name);
+		} else if (type==TABLE)
+			createTable();
+		else
+			createPlugin(name, type, arg);
     	if (IJ.macroRunning()) {
 			type = saveType;
 			name = saveName;
@@ -50,7 +78,6 @@ public class NewPlugin implements PlugIn {
 			columns = saveColumns;
 			monospaced = saveMonospaced;
     	}
-    	IJ.register(NewPlugin.class);
     }
     
 	public void createMacro(String name) {
@@ -65,25 +92,13 @@ public class NewPlugin implements PlugIn {
 		ed.create(name, "");
 	}
 	
-	void createTextWindow() {
-		String tableName = name;
-		if (tableName.equals("Macro")) tableName = "Table";
-		if (columns<128 || rows<75 )
-			new TextWindow(tableName, "", 350, 250);
-		else
-			new TextWindow(tableName, "", columns, rows);
+	void createTable() {
+			new TextWindow(name, "", tableWidth, tableHeight);
 	}
 
 	public void createPlugin(String name, int type, String methods) {
   		ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null) return;
-		if (name.equals("Macro") || name.equals("Macro.txt") || name.equals("Untitled.txt")) {
-			switch (type) {
-				case PLUGIN: name = "My_Plugin.java"; break;
-				case PLUGIN_FILTER:  name = "Filter_Plugin.java"; break;
-				case PLUGIN_FRAME:  name = "Plugin_Frame.java"; break;
-			}
-		}
 		String pluginName = name;
 		if (!(name.endsWith(".java") || name.endsWith(".JAVA")))
 			name = SaveDialog.setExtension(name, ".java");
@@ -100,7 +115,7 @@ public class NewPlugin implements PlugIn {
 				text += "public class "+className+" implements PlugIn {\n";
 				text += "\n";
 				text += "\tpublic void run(String arg) {\n";
-				if (methods.equals(""))
+				if (methods.equals("plugin"))
 					text += "\t\tIJ.showMessage(\""+className+"\",\"Hello world!\");\n";
 				else
 					text += methods;
@@ -146,29 +161,56 @@ public class NewPlugin implements PlugIn {
 	}
 	
 	public boolean showDialog() {
-		GenericDialog gd = new GenericDialog("New Text Window");
+		String title;
+		String widthUnit, heightUnit;
+		int width, height;
+		if (type==TABLE) {
+			title = "New Table";
+			name = "Table";
+			width = tableWidth;
+			height = tableHeight;
+			widthUnit = "pixels";
+			heightUnit = "pixels";
+		} else {
+			title = "New Text Window";
+			name = "Untitled";
+			width = columns;
+			height = rows;
+			widthUnit = "characters";
+			heightUnit = "lines";
+		}
+		GenericDialog gd = new GenericDialog(title);
 		gd.addStringField("Name:", name, 16);
-		gd.addChoice("Type:", types, types[type]);
 		gd.addMessage("");
-		gd.addNumericField("Width:", columns, 0, 3, "characters");
-		gd.addNumericField("Height:", rows, 0, 3, "lines");
-		gd.setInsets(5, 30, 0);
-		gd.addCheckbox("Menu Bar", menuBar);
-		gd.setInsets(0, 30, 0);
-		gd.addCheckbox("Monospaced Font", monospaced);
+		gd.addNumericField("Width:", width, 0, 3, widthUnit);
+		gd.addNumericField("Height:", height, 0, 3, heightUnit);
+		if (type!=TABLE) {
+			gd.setInsets(5, 30, 0);
+			gd.addCheckbox("Menu Bar", menuBar);
+			gd.setInsets(0, 30, 0);
+			gd.addCheckbox("Monospaced Font", monospaced);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
 		name = gd.getNextString();
-		type = gd.getNextChoiceIndex();
-		columns = (int)gd.getNextNumber();
-		rows = (int)gd.getNextNumber();
-		menuBar = gd.getNextBoolean();
-		monospaced = gd.getNextBoolean();
-		if (rows<1) rows = 1;
-		if (type!=TABLE && rows>100) rows = 100;
-		if (columns<1) columns = 1;
-		if (type!=TABLE && columns>200) columns = 200;
+		width = (int)gd.getNextNumber();
+		height = (int)gd.getNextNumber();
+		if (width<1) width = 1;
+		if (height<1) height = 1;
+		if (type!=TABLE) {
+			menuBar = gd.getNextBoolean();
+			monospaced = gd.getNextBoolean();
+			columns = width;
+			rows = height;
+			if (rows>100) rows = 100;
+			if (columns>200) columns = 200;
+		} else {
+			tableWidth = width;
+			tableHeight = height;
+			if (tableWidth<128) tableWidth = 128;
+			if (tableHeight<75) tableHeight = 75;
+		}
 		return true;
 	}
 	

@@ -1134,8 +1134,13 @@ public class Menus {
 	public static synchronized void addOpenRecentItem(String path) {
 		if (ij==null) return;
 		int count = openRecentMenu.getItemCount();
-		if (count>0 && openRecentMenu.getItem(0).getLabel().equals(path))
-			return;
+		for (int i=0; i<count; ) {
+			if (openRecentMenu.getItem(i).getLabel().equals(path)) {
+				openRecentMenu.remove(i);
+				count--;
+			} else
+				i++;
+		}
 		if (count==MAX_OPEN_RECENT_ITEMS)
 			openRecentMenu.remove(MAX_OPEN_RECENT_ITEMS-1);
 		MenuItem item = new MenuItem(path);

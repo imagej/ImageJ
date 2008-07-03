@@ -9,6 +9,9 @@ import java.awt.event.*;
 public class Channels extends PlugInFrame implements PlugIn, ItemListener, ActionListener {
 
 	private static String[] modes = {"Composite", "Color", "Grayscale"};
+	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
+		"Edit LUT...", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
+
 	private static String moreLabel = "More "+'\u00bb';
 	//private String[] title = {"Red", "Green", "Blue"};
 	private Choice choice;
@@ -71,9 +74,8 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		update();
 
 		pm=new PopupMenu();
-		addPopupItem("Make Composite");
-		addPopupItem("Convert to RGB");
-		addPopupItem("Split Channels");
+		for (int i=0; i<menuItems.length; i++)
+			addPopupItem(menuItems[i]);
 		add(pm);
 
 		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts

@@ -33,7 +33,7 @@ public class FolderOpener implements PlugIn {
 		if (list==null)
 			return;
 		String title = directory;
-		if (title.endsWith(File.separator))
+		if (title.endsWith(File.separator) || title.endsWith("/"))
 			title = title.substring(0, title.length()-1);
 		int index = title.lastIndexOf(File.separatorChar);
 		if (index!=-1) title = title.substring(index + 1);

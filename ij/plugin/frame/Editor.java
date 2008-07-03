@@ -24,9 +24,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(Packages.ij.gui);"+
 		"importPackage(Packages.ij.process);"+
 		"importPackage(Packages.ij.measure);"+
+		"importPackage(java.lang);"+
 		"importPackage(java.awt);"+
-		"importClass(java.lang.System);"+
-		"function print(s) {IJ.log(s);};\n";
+		"function print(s) {IJ.log(s);};";
+	public static String JS_NOT_FOUND = 
+		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \nrsb.info.nih.gov/ij/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 6;
@@ -333,8 +335,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			return;
 		} else {
 			Object js = IJ.runPlugIn("JavaScript", JavaScriptIncludes+text);
-			if (js==null)
-				IJ.error("JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \nrsb.info.nih.gov/ij/download/tools/JavaScript.jar");
+			if (js==null) IJ.error(JS_NOT_FOUND);
 		}
 	}
 

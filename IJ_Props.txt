@@ -275,11 +275,10 @@ tools07="Calibration Bar...",ij.plugin.filter.CalibrationBar
 plug-in01=>"Macros"
 plug-in02=>"Shortcuts"
 plug-in03=>"Utilities"
-plug-in04="New... ",ij.plugin.NewPlugin
-plug-in05="Edit...",ij.plugin.Compiler("edit")
-plug-in06="Compile and Run...",ij.plugin.Compiler
-plug-in07=-
-#plug-in08=>"User_Plugins"
+plug-in04=>"New_"
+plug-in05="Compile and Run...",ij.plugin.Compiler
+plug-in06=-
+#plug-in07=>"User_Plugins"
 
 # Install user plugins located in ij.jar to Plugins>User Plugins submenu
 #user_plugins01="Red And Blue",RedAndBlue_
@@ -312,6 +311,17 @@ utilities08="Search...",ij.plugin.SimpleCommands("search")
 utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
 utilities10="Find Commands... [l]",ij.plugin.CommandFinder
 utilities11="Update ImageJ... ",ij.plugin.ImageJ_Updater
+
+# Plugins installed in the Plugins/New submenu
+new_01="Macro",ij.plugin.NewPlugin("macro")
+new_02="JavaScript",ij.plugin.NewPlugin("javascript")
+new_03=-
+new_04="Plugin",ij.plugin.NewPlugin("plugin")
+new_05="Plugin Frame",ij.plugin.NewPlugin("frame")
+new_06="Plugin Filter",ij.plugin.NewPlugin("filter")
+new_07=-
+new_08="Text Window...",ij.plugin.NewPlugin("text+dialog")
+new_09="Table...",ij.plugin.NewPlugin("table")
 
 # Plugins installed in the Help/About submenu
 about01="About This Submenu...",ij.plugin.SimpleCommands("about")

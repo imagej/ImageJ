@@ -22,7 +22,9 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	public void run(String arg) {
 		ImageJ ij = IJ.getInstance();
 		ij.setDropTarget(null);
-		DropTarget dropTarget = new DropTarget(ij, this);
+		new DropTarget(ij, this);
+		new DropTarget(Toolbar.getInstance(), this);
+		new DropTarget(ij.getStatusBar(), this);
 	}  
 	    
 	public void drop(DropTargetDropEvent dtde)  {

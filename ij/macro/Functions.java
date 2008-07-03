@@ -3708,7 +3708,10 @@ public class Functions implements MacroConstants, Measurements {
 			props = new Properties();
 		String value = null;
 		String name = interp.tokenString;
-		if (name.equals("set")||name.equals("put"))
+		if (name.equals("get")) {
+			value = props.getProperty(getStringArg());
+			value = value!=null?value:"";
+		} else if (name.equals("set")||name.equals("add")||name.equals("put"))
 			props.setProperty(getFirstString(), getLastString());
 		else if (name.equals("clear")||name.equals("reset"))
 			props.clear();
@@ -3716,10 +3719,7 @@ public class Functions implements MacroConstants, Measurements {
 			setProperties();
 		else if (name.equals("getList"))
 			value = getProperties();
-		else if (name.equals("get")) {
-			value = props.getProperty(getStringArg());
-			value = value!=null?value:"";
-		} else if (name.equals("size")||name.equals("getSize")) {
+		else if (name.equals("size")||name.equals("getSize")) {
 			interp.getParens();
 			value = ""+props.size();
 		} else

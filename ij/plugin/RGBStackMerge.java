@@ -81,7 +81,7 @@ public class RGBStackMerge implements PlugIn {
               			if (ci.getMode()!=CompositeImage.COMPOSITE) {
               				ci.setMode(CompositeImage.COMPOSITE);
               				img.updateAndDraw();
-              				IJ.run("Channels Tool...");
+              				if (!IJ.isMacro()) IJ.run("Channels Tool...");
               				return;
               			}
               		}
