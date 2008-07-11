@@ -1,0 +1,28 @@
+<html>
+<head>
+<link rel="stylesheet" href="../docs/ij.css" type="text/css"/>
+<title>Release Notes</title>
+</head>
+<body>
+
+<li> <u>1.41h, 10 July 2008</u>
+<ul>
+<li>  JavaScript programs with an underscore in the name and a ".js" extension
+are installed in the Plugins menu at startup.
+<li>  Opens 16-bit grayscale AVIs created by 
+MIL (Matrox Imaging Library), thanks to a patch by Reinhard Mayr.
+<li> Fixed a bug that caused selections extending beyond the image
+boundary to not be correctly copied to the clipboard.
+<li> Fixed a bug that caused the round() macro function to not work
+correctly with NaN and infinite arguments.
+<li> Fixed a bug that caused images to no longer be displayed after 
+aborting a batch mode macro by pressing Esc.
+<li> Fixed a bug that caused the
+<a href="http://rsb.info.nih.gov/ij/developer/macro/functions.html#setOption">setOption("QueueMacros",true)</a>
+macro function to not work as expectde with macros using a function key shortcut.
+<li> Fixed a bug that caused the ROI Manager "Update" option to hold a
+reference to the image, preventing it from being garbage collected.
+</ul>
+
+</body>
+</html>
