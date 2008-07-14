@@ -286,12 +286,13 @@ plug-in06=-
 
 
 # Plugins installed in the Plugins/Macros submenu
-# 'baseCount' in MacroInstaller must be updated if more items are added
+# 'MACROS_MENU_COMMANDS' in MacroInstaller must be updated when items are added
 macros01="Install...[M]",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
-macros03="Startup Macros...",ij.plugin.Commands("startup")
-macros04="Record...",ij.plugin.frame.Recorder
-macros05=-
+macros03="Edit...",ij.plugin.Compiler("edit")
+macros04="Startup Macros...",ij.plugin.Commands("startup")
+macros05="Record...",ij.plugin.frame.Recorder
+macros06=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
 shortcuts01="Create Shortcut... ",ij.plugin.Hotkeys("install")
