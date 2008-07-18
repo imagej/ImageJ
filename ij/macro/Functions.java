@@ -155,6 +155,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SET_SELECTION_LOC: setSelectionLocation(); break;
 			case GET_DIMENSIONS: getDimensions(); break;
 			case WAIT_FOR_USER: waitForUser(); break;
+			case MAKE_POINT: makePoint(); break;
 		}
 	}
 	
@@ -271,7 +272,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EXP: return Math.exp(arg);
 			case FLOOR: return Math.floor(arg);
 			case LOG: return Math.log(arg);
-			case ROUND: return Math.round(arg);
+			case ROUND: return Math.floor(arg + 0.5);
 			case SIN: return Math.sin(arg);
 			case SQRT: return Math.sqrt(arg);
 			case TAN: return Math.tan(arg);
@@ -1113,13 +1114,21 @@ public class Functions implements MacroConstants, Measurements {
 		if (roi==null)
 			interp.error("Selection required");
 		Polygon p = roi.getPolygon();
-    	Variable[] xa = new Variable[p.npoints];
-    	for (int i=0; i<p.npoints; i++)
-    		xa[i] = new Variable(p.xpoints[i]);
+		FloatPolygon fp = roi.getFloatPolygon();
+		Variable[] xa = new Variable[p.npoints];
+		Variable[] ya = new Variable[p.npoints];
+		if (fp!=null) { //spline fit polygon
+			for (int i=0; i<p.npoints; i++)
+			xa[i] = new Variable(fp.xpoints[i]);
+			for (int i=0; i<p.npoints; i++)
+			ya[i] = new Variable(fp.ypoints[i]);
+		} else {
+			for (int i=0; i<p.npoints; i++)
+			xa[i] = new Variable(p.xpoints[i]);
+			for (int i=0; i<p.npoints; i++)
+			ya[i] = new Variable(p.ypoints[i]);
+		}
 		xCoordinates.setArray(xa);
-    	Variable[] ya = new Variable[p.npoints];
-    	for (int i=0; i<p.npoints; i++)
-    		ya[i] = new Variable(p.ypoints[i]);
 		yCoordinates.setArray(ya);
 	}
 	
@@ -2317,7 +2326,7 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				n = Integer.parseInt(s, radix);
 		} catch (NumberFormatException e) {
-			n = NaN;
+			n = Double.NaN;
 		}
 		return n;			
 	}
@@ -3744,6 +3753,33 @@ public class Functions implements MacroConstants, Measurements {
 		list = list.substring(1, list.length()-1);
 		list = list.replaceAll(", ", "\n");
 		return list;
+	}
+
+	void makePoint() {
+		int x = (int)getFirstArg();
+		interp.getComma();
+		int y = (int)interp.getExpression();
+		interp.getToken();
+		if (interp.token==')')
+			IJ.makePoint(x, y);
+		else {
+			int max = 200;
+			int[] xpoints = new int[max];
+			int[] ypoints = new int[max];
+			xpoints[0]=x; ypoints[0]=y;
+			int n = 2;
+			while (interp.token==',' && n<max) {
+				xpoints[n-1] = (int)Math.round(interp.getExpression());
+				interp.getComma();
+				ypoints[n-1] = (int)Math.round(interp.getExpression());
+				interp.getToken();
+				n++;
+			}
+			if (n==max && interp.token!=')')
+				interp.error("More than "+max+" points");
+			getImage().setRoi(new PointRoi(xpoints, ypoints, n));
+		}
+		resetImage(); 
 	}
 
 } // class Functions

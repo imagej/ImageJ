@@ -19,6 +19,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public static final int MAX_SIZE = 28000, MAX_MACROS=100, XINC=10, YINC=18;
 	public static final char commandPrefix = '^';
 	static final String commandPrefixS = "^";
+	static final int MACROS_MENU_COMMANDS = 6; // number of commands in Plugins>Macros submenu
 	
 	private int[] macroStarts;
 	private String[] macroNames;
@@ -75,7 +76,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macroStarts = new int[MAX_MACROS];
 		macroNames = new String[MAX_MACROS];
 		int itemCount = macrosMenu.getItemCount();
-		int baseCount = macrosMenu==Menus.getMacrosMenu()?5:Editor.MACROS_MENU_ITEMS;
+		int baseCount = macrosMenu==Menus.getMacrosMenu()?MACROS_MENU_COMMANDS:Editor.MACROS_MENU_ITEMS;
 		if (itemCount>baseCount) {
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
@@ -349,10 +350,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public static void runMacroShortcut(String name) {
 		if (instance==null) return;
 		if (name.startsWith(commandPrefixS))
-		name = name.substring(1);
+			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
-			if (name.equals(instance.macroNames[i]))
+			if (name.equals(instance.macroNames[i])) {
 				(new MacroRunner()).runShortcut(instance.pgm, instance.macroStarts[i], name);
+				return;
+			}
 		}
 	}
 

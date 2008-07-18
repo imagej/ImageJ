@@ -825,6 +825,11 @@ public class IJ {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 	
+	/** Creates a point selection. */
+	public static void makePoint(int x, int y) {
+		getImage().setRoi(new PointRoi(x, y));
+	}
+
 	/** Creates a straight line selection using double coordinates. */
 	public static void makeLine(double x1, double y1, double x2, double y2) {
 		getImage().setRoi(new Line(x1, y1, x2, y2));

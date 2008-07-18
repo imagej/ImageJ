@@ -492,7 +492,10 @@ public class Menus {
 			menu = getPluginsSubmenu(dir);
 		}
 		String command = name.replace('_',' ');
-		command = command.substring(0, command.length()-4); //remove ".txt" or ".ijm"
+		if (command.endsWith(".js"))
+			command = command.substring(0, command.length()-3); //remove ".js"
+		else
+			command = command.substring(0, command.length()-4); //remove ".txt" or ".ijm"
 		command.trim();
 		if (pluginsTable.get(command)!=null) // duplicate command?
 			command = command + " Macro";
@@ -803,7 +806,7 @@ public class Menus {
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(pluginsPath + name);
-			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm"))) {
+			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm")||name.endsWith(".js"))) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(name);
 			} else {
@@ -843,7 +846,7 @@ public class Menus {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(f.getPath() + File.separator + name);
 				otherCount++;
-			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm"))) {
+			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm")||name.endsWith(".js"))) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(dir + name);
 				otherCount++;

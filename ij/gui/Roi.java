@@ -29,6 +29,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public static Roi previousRoi;
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
 	protected static int pasteMode = Blitter.COPY;
+	protected static int lineWidth = 1;
 	
 	protected int type;
 	protected int xMax, yMax;
@@ -46,6 +47,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected Color handleColor = Color.white;
 	protected Color instanceColor;
 	protected BasicStroke stroke;
+
 
 
 	/** Creates a new rectangular Roi. */
@@ -192,6 +194,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return new Polygon(xpoints, ypoints, 4);
 	}
 
+	public FloatPolygon getFloatPolygon() {
+		return null;
+	}
+	
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
 		(www.eckelobjects.com) for a good description of object cloning. */
 	public synchronized Object clone() {
@@ -294,7 +300,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		startX = xNew;
 		startY = yNew;
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (lineWidth>1 && isLine())
+			imp.draw();
+		else
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x;
 		oldY = y;
 		oldWidth = width;

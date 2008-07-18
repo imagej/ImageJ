@@ -5,19 +5,33 @@
 </head>
 <body>
 
-<li> <u>1.41g, 1 July 2008</u>
+<li> <u>1.41h, 18 July 2008</u>
 <ul>
-<li> Dialogs can now be canceled by clicking on the close box.
-<li>  Added <i>Merge Channels</i>, <i>Edit LUT</i>, <i>Red</i>, <i>Green</i>, <i>Blue</i>, <i>Cyan</i>, <i>Magenta</i>,
- <i>Yellow</i> and <i>Grays</i> command to the <i>More&#xbb; </i>menu in the "Channels" tool.
- <li> Split the <i>Plugins&gt;New</i> command into a submenu with <i>Macro</i>, <i>JavaScript</i>, <i>Plugin</i>, <i>Plugin Filter</i>,
- <i>Plugin Frame</i>, <i>Text Window</i> and <i>Table</i> commands.
-<li> Thanks to a patch by Ulf Dittmer, the <i>File&gt;Open Recent</i> menu 
-no longer lists files multiple times.
-<li> The "The calibration of this image conflicts with the current global calibration."
-warning message is not displayed for images opened in macros.
-<li> The waitForUser() macro function remembers the dialog box location.
-<li> The PlugInClassLoader loads classes from JAR files faster.
+<li> Added the <i>Plugins&gt;Macros&gt;Edit</i> command, which replaces the <i>Plugins&gt;Edit</i> command
+removed in v1.41g. There is also a plugin version of the <i>Edit</i>
+at <a href="http://rsb.info.nih.gov/ij/plugins/download/jars/Edit_.jar">rsb.info.nih.gov/ij/plugins/download/jars/Edit_.jar</a>.
+<li>  JavaScript programs with an underscore in the name and a ".js" extension
+are installed in the Plugins menu at startup.
+<li> Virtual stacks imported using <i>File&gt;Import&gt;Image Sequence</i> now include the slice label metadata.
+<li>  Opens 16-bit grayscale AVIs created by 
+MIL (Matrox Imaging Library), thanks to a patch by Reinhard Mayr.
+<li> Added the run("Fit Spline", "straighten") macro function, which converts a line selection to one
+defined by points spaced one pixel apart
+(<a href="http://rsb.info.nih.gov/ij/macros/examples/PlotSplineFitLine.txt">example</a>).
+<li> The point selection tool is now recordable.
+<li> The ROI Manager "Combine" function works with point selections.
+<li> Added the addPoint(x,y) macro function and IJ.addPoint(x,y) method.
+<li> Fixed a bug that caused selections extending beyond the image
+boundary to not be correctly copied to the clipboard.
+<li> Fixed a bug that caused the round() macro function to not work
+correctly with NaN and infinite arguments.
+<li> Fixed a bug that caused images to no longer be displayed after 
+aborting a batch mode macro by pressing Esc.
+<li> Fixed a bug that caused the
+<a href="http://rsb.info.nih.gov/ij/developer/macro/functions.html#setOption">setOption("QueueMacros",true)</a>
+macro function to not work as expectde with macros using a function key shortcut.
+<li> Fixed a bug that caused the ROI Manager "Update" option to hold a
+reference to the image, preventing it from being garbage collected.
 </ul>
 
 </body>

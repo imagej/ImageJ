@@ -1626,8 +1626,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (roi!=null && roi.getType()!=Roi.RECTANGLE) {
 			roi2 = (Roi)roi.clone();
 			Rectangle r = roi.getBounds();
-			if (r.x<0 || r.y<0) {
-				roi2.setLocation(Math.min(r.x,0), Math.min(r.y,0));
+			if (r.x<0 || r.y<0 || r.x+r.width>width || r.y+r.height>height) {
+				roi2 = new ShapeRoi(roi2);
+				ShapeRoi image = new ShapeRoi(new Roi(0, 0, width, height));
+				roi2 = image.and((ShapeRoi)roi2);
 			}
 		}
 		clipboard = new ImagePlus("Clipboard", ip2);

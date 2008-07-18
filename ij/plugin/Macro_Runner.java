@@ -126,11 +126,11 @@ public class Macro_Runner implements PlugIn {
     	Returns the String value returned by the macro or null if the macro does not
     	return a value. */
 	public String runMacro(String macro, String arg) {
+		Interpreter interp = new Interpreter();
 		try {
-			Interpreter interp = new Interpreter();
 			return interp.run(macro, arg);
 		} catch(Throwable e) {
-			Interpreter.abort();
+			Interpreter.abort(interp);
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
 			ImagePlus imp = WindowManager.getCurrentImage();

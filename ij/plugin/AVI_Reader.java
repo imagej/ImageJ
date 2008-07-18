@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 /** ImageJ Plugin for reading an AVI file into an image stack
  *  (one slice per video frame)
  *
- *  Version 2008-06-08 by Michael Schmid, based on a plugin by
+ *  Version 2008-07-03 by Michael Schmid, based on a plugin by
  *  Daniel Marsh and Wayne Rasband
  *
  * Restrictions and Notes:
@@ -36,6 +36,12 @@ import javax.imageio.ImageIO;
  *        For standard behavior, use "Brightness&Contrast", Press "Set",
  *        enter "Min." 16, "Max." 235, and press "Apply".
  * Version History:
+ *   2008-07-03
+ *      - Support for 16bit AVIs coded by MIL (Matrox Imaging Library)
+ *   2008-06-08
+ *      - Support for png and jpeg/mjpg encoded files added
+ *      - Retrieves animation speed from image frame rate
+ *      - Exception handling without multiple error messages
  *   2008-04-29
  *      - Support for several other formats added, especially some YUV
  *        (also named YCbCr) formats
@@ -50,10 +56,6 @@ import javax.imageio.ImageIO;
  *      - Added a public method 'getStack' that does not create an image window
  *      - More compact code, especially for reading the header (rewritten)
  *      - In the code, bitmapinfo items have their canonical names
- *   2008-06-08
- *      - Support for png and jpeg/mjpg encoded files added
- *      - Retrieves animation speed from image frame rate
- *      - Exception handling without multiple error messages
  *
  * The AVI format looks like this:
  * RIFF                     RIFF HEADER
@@ -99,6 +101,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private final static int   NO_COMPRESSION_Y8 = 0x20203859; //'Y8  ' -another name for Y800
     private final static int   NO_COMPRESSION_GREY=0x59455247;//'GREY' -another name for Y800
     private final static int   NO_COMPRESSION_Y16= 0x20363159; //'Y16 ' -a name for 16-bit uncompressed grayscale
+    private final static int   NO_COMPRESSION_MIL= 0x204c494d; //'MIL ' - Matrox Imaging Library
     private final static int   AYUV_COMPRESSION  = 0x56555941; //'AYUV' -uncompressed, but alpha, Y, U, V bytes
     private final static int   UYVY_COMPRESSION  = 0x59565955; //'UYVY' - 4:2:2 with byte order u y0 v y1
     private final static int   Y422_COMPRESSION  = 0x564E5955; //'Y422' -another name for of UYVY
@@ -222,6 +225,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             return;
         }
         imp = new ImagePlus(fileName, stack);
+        if (imp.getBitDepth()==16)
+        	imp.getProcessor().resetMinAndMax();
         setFramesPerSecond(imp);
         if (arg.equals(""))
         	imp.show();
@@ -300,6 +305,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         if (pixels == null) return null; //failed
         if (pixels instanceof byte[])
             return new ByteProcessor(dwWidth, biHeight, (byte[])pixels, cm);
+        else if (pixels instanceof short[])
+            return new ShortProcessor(dwWidth, biHeight, (short[])pixels, cm);
         else
             return new ColorProcessor(dwWidth, biHeight, (int[])pixels);
     }
@@ -567,6 +574,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 allowedBitCount = 8;
                 break;
             case NO_COMPRESSION_Y16:
+            case NO_COMPRESSION_MIL:
                 dataCompression = NO_COMPRESSION;
                 allowedBitCount = 16;
                 break;
@@ -755,9 +763,13 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         Object pixels = null;
         byte[] bPixels = null;
         int[] cPixels = null;
+        short[] sPixels = null;
         if (biBitCount <=8 || convertToGray) {
             bPixels = new byte[dwWidth * biHeight];
             pixels = bPixels;
+        } else if (biBitCount == 16) {
+            sPixels = new short[dwWidth * biHeight];
+            pixels = sPixels;
         } else {
             cPixels = new int[dwWidth * biHeight];
             pixels = cPixels;
@@ -769,6 +781,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 unpack8bit(rawData, rawOffset, bPixels, offset, dwWidth);
             else if (convertToGray)
                 unpackGray(rawData, rawOffset, bPixels, offset, dwWidth);
+            else if (biBitCount==16)
+                unpackShort(rawData, rawOffset, sPixels, offset, dwWidth);
             else
                 unpack(rawData, rawOffset, cPixels, offset, dwWidth);
             rawOffset += scanLineSize;
@@ -803,6 +817,15 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 pixels[j++] = rawData[k];   //Non-standard: no scaling from 16-235 to 0-255 here
                 k+=step;
             }
+        }
+    }
+
+    /** For one line: Unpack 16bit grayscale data and convert to short array for ShortProcessor */
+    void unpackShort(byte[] rawData, int rawOffset, short[] pixels, int shortOffset, int w) {
+        int  j     = shortOffset;
+        int  k     = rawOffset;
+        for (int i = 0; i < w; i++) {
+            pixels[j++] = (short) ((int)(rawData[k++] & 0xFF)| (((int)(rawData[k++] & 0xFF))<<8));
         }
     }
 

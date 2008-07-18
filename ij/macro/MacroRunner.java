@@ -96,15 +96,15 @@ public class MacroRunner implements Runnable {
 	}
 
 	public void run() {
+		Interpreter interp = new Interpreter();
+		interp.argument = argument;
 		try {
-			Interpreter interp = new Interpreter();
-			interp.argument = argument;
 			if (pgm==null)
 				interp.run(macro);
 			else
 				interp.runMacro(pgm, address, name);
 		} catch(Throwable e) {
-			Interpreter.abort();
+			Interpreter.abort(interp);
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
 			ImagePlus imp = WindowManager.getCurrentImage();

@@ -1526,19 +1526,20 @@ public class Interpreter implements MacroConstants {
 	
 	/** Aborts currently running macro. */
 	public static void abort() {
-		abort2(instance);
+		abort(instance);
 	}
 	
 	/** Aborts the macro that was running when this one started. */
 	static void abortPrevious() {
 		if (previousInstance!=null) {
-			abort2(previousInstance);
+			abort(previousInstance);
 			IJ.beep();
 			previousInstance = null;
 		}
 	}
 
-	private static void abort2(Interpreter interpreter) {
+	/** Aborts the specified macro. */
+	public static void abort(Interpreter interpreter) {
 		if (interpreter!=null) {
 			if (!interpreter.calledMacro) {
 				batchMode = false;

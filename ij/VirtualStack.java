@@ -9,6 +9,7 @@ public class VirtualStack extends ImageStack {
 	String path;
 	int nSlices;
 	String[] names;
+	String[] labels;
 	
 	/** Default constructor. */
 	public VirtualStack() { }
@@ -18,6 +19,7 @@ public class VirtualStack extends ImageStack {
 		super(width, height, cm);
 		this.path = path;
 		names = new String[INITIAL_SIZE];
+		labels = new String[INITIAL_SIZE];
 		//IJ.log("VirtualStack: "+path);
 	}
 
@@ -31,6 +33,9 @@ public class VirtualStack extends ImageStack {
 			String[] tmp = new String[nSlices*2];
 			System.arraycopy(names, 0, tmp, 0, nSlices);
 			names = tmp;
+			tmp = new String[nSlices*2];
+			System.arraycopy(labels, 0, tmp, 0, nSlices);
+			labels = tmp;
 		}
 		names[nSlices-1] = name;
 	}
@@ -90,6 +95,7 @@ public class VirtualStack extends ImageStack {
 			int h = imp.getHeight();
 			int type = imp.getType();
 			ColorModel cm = imp.getProcessor().getColorModel();
+			labels[n-1] = (String)imp.getProperty("Info");
 		} else
 			return null;
 		return imp.getProcessor();
@@ -105,9 +111,15 @@ public class VirtualStack extends ImageStack {
 		return nSlices;
 	}
 
-	/** Returns the file name of the Nth image. */
+	/** Returns the label of the Nth image. */
 	public String getSliceLabel(int n) {
-		 return names[n-1];
+		String label = labels[n-1];
+		if (label==null)
+			return names[n-1];
+		else if (label.length()<=60)
+			return label;
+		else
+			return names[n-1]+"\n"+label;
 	}
 	
 	/** Returns null. */

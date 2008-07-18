@@ -10,22 +10,15 @@ import ij.io.SaveDialog;
 public class NewPlugin implements PlugIn {
 
 	public static final int MACRO=0, JAVASCRIPT=1, PLUGIN=2, PLUGIN_FILTER=3, PLUGIN_FRAME=4, TEXT_FILE=5, TABLE=6;
-	
-    private static int type = MACRO;
-    private static String name = "Macro";
-    private static String[] types = {"Macro", "JavaScript", "Plugin", "Plugin Filter", "Plugin Frame", "Text File", "Table"};
     private static int rows = 16;
     private static int columns = 60;
     private static int tableWidth = 350;
     private static int tableHeight = 250;
-    private static boolean monospaced;
+    private int type = MACRO;
+    private String name = "Macro.txt";
+    private boolean monospaced;
     private boolean menuBar = true;
 	private Editor ed;
-	private int saveType = type;
-	private String saveName = name;
-	private int saveRows = rows;
-	private int saveColumns = columns;
-	private boolean saveMonospaced = monospaced;
     
     public void run(String arg) {
     	type = -1;
@@ -58,6 +51,7 @@ public class NewPlugin implements PlugIn {
     			name = "Table";
     		}
     	}
+    	menuBar = true;
     	if (arg.equals("text+dialog") || type==TABLE) {
 			if (!showDialog()) return;
 		}
@@ -71,13 +65,6 @@ public class NewPlugin implements PlugIn {
 			createTable();
 		else
 			createPlugin(name, type, arg);
-    	if (IJ.macroRunning()) {
-			type = saveType;
-			name = saveName;
-			rows = saveRows;
-			columns = saveColumns;
-			monospaced = saveMonospaced;
-    	}
     }
     
 	public void createMacro(String name) {
@@ -186,7 +173,7 @@ public class NewPlugin implements PlugIn {
 		gd.addNumericField("Height:", height, 0, 3, heightUnit);
 		if (type!=TABLE) {
 			gd.setInsets(5, 30, 0);
-			gd.addCheckbox("Menu Bar", menuBar);
+			gd.addCheckbox("Menu Bar", true);
 			gd.setInsets(0, 30, 0);
 			gd.addCheckbox("Monospaced Font", monospaced);
 		}
