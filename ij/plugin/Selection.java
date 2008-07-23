@@ -77,23 +77,19 @@ public class Selection implements PlugIn, Measurements {
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
 			{IJ.error("Spline", "Polygon or polyline selection required"); return;}
 		PolygonRoi p = (PolygonRoi)roi;
-		double length = getLength(p);
 		if (!segmentedSelection)
-			p = trimPolygon(p, length);
-		int evaluationPoints = (int)(length/2.0);
-		ImageCanvas ic = imp.getCanvas();
-		if (ic!=null) {
-			double mag = ic.getMagnification();
-			if (mag<1.0)
-				evaluationPoints *= mag;;
-		}
-		if (evaluationPoints<100)
-			evaluationPoints = 100;
-		p.fitSpline(evaluationPoints);
+			p = trimPolygon(p, getUncalibratedLength(p));
+		String options = Macro.getOptions();
+		if (options!=null && options.indexOf("straighten")!=-1)
+			p.fitSplineForStraightening();
+		else if (options!=null && options.indexOf("remove")!=-1)
+			p.removeSplineFit();
+		else
+			p.fitSpline();
 		imp.draw();		
 	}
 	
-	double getLength(PolygonRoi roi) {
+	double getUncalibratedLength(PolygonRoi roi) {
 		Calibration cal = imp.getCalibration();
 		double spw=cal.pixelWidth, sph=cal.pixelHeight;
 		cal.pixelWidth=1.0; cal.pixelHeight=1.0;

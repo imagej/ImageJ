@@ -22,20 +22,20 @@ import ij.gui.*;
 public class CurveFitter {    
     public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
     EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9,
-    RODBARD2=10, EXP_WITH_OFFSET=11, GAUSSIAN=12;
+    RODBARD2=10, EXP_WITH_OFFSET=11, GAUSSIAN=12, EXP_RECOVERY=13;
     
     public static final int IterFactor = 500;
     
     public static final String[] fitList = {"Straight Line","2nd Degree Polynomial",
     "3rd Degree Polynomial", "4th Degree Polynomial","Exponential","Power",
     "log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)","Rodbard (NIH Image)",
-    "Exponential with Offset","Gaussian"};
+    "Exponential with Offset","Gaussian", "Exponential Recovery"}; // fList must also be updated
     
     public static final String[] fList = {"y = a+bx","y = a+bx+cx^2",
     "y = a+bx+cx^2+dx^3", "y = a+bx+cx^2+dx^3+ex^4","y = a*exp(bx)","y = ax^b",
     "y = a*ln(bx)", "y = d+(a-d)/(1+(x/c)^b)", "y = a*(x-b)^c*exp(-(x-b)/d)",
     "y = a+b*ln(x-c)", "y = d+(a-d)/(1+(x/c)^b)", "y = a*exp(-bx) + c", 
-    "y = a + (b-a)*exp(-(x-c)*(x-c)/(2*d*d))"};
+    "y = a + (b-a)*exp(-(x-c)*(x-c)/(2*d*d))", "y=a*(1-exp(-b*x)) + c"}; 
            
     private static final double alpha = -1.0;	  // reflection coefficient
     private static final double beta = 0.5;	  // contraction coefficient
@@ -77,7 +77,7 @@ public class CurveFitter {
     }
     
     public void doFit(int fitType, boolean showSettings) {
-        if (fitType<STRAIGHT_LINE || fitType>GAUSSIAN)
+        if (fitType<STRAIGHT_LINE || fitType>EXP_RECOVERY)
             throw new IllegalArgumentException("Invalid fit type");
         int saveFitType = fitType;
         if (fitType==RODBARD2) {
@@ -232,6 +232,11 @@ public class CurveFitter {
                 simp[0][1] = 0.01;
                 simp[0][2] = 0.1;
                 break;            
+            case EXP_RECOVERY:
+                simp[0][0] = 0.1;
+                simp[0][1] = 0.01;
+                simp[0][2] = 0.1;
+                break;            
             case GAUSSIAN:
                 simp[0][0] = miny;   // a0
                 simp[0][1] = maxy;   // a1
@@ -359,6 +364,7 @@ public class CurveFitter {
             case LOG2: return 3;
             case EXP_WITH_OFFSET: return 3;
             case GAUSSIAN: return 4;
+            case EXP_RECOVERY: return 3;
         }
         return 0;
     }
@@ -379,6 +385,8 @@ public class CurveFitter {
                 return p[0]*Math.exp(p[1]*x);
             case EXP_WITH_OFFSET:
                 return p[0]*Math.exp(p[1]*x*-1)+p[2];
+            case EXP_RECOVERY:
+                return p[0]*(1-Math.exp(-p[1]*x))+p[2];
             case GAUSSIAN:
                 return p[0]+(p[1]-p[0])*Math.exp(-(x-p[2])*(x-p[2])/(2.0*p[3]*p[3]));
             case POWER:

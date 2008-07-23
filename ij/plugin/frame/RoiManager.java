@@ -817,6 +817,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (indexes.length==0)
 			indexes = getAllIndexes();
+		int nPointRois = 0;
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+			if (roi.getType()==Roi.POINT)
+				nPointRois++;
+			else
+				break;
+		}
+		if (nPointRois==indexes.length)
+			combinePoints(imp, indexes);
+		else
+			combineRois(imp, indexes);
+		if (Recorder.record) Recorder.record("roiManager", "Combine");
+	}
+	
+	void combineRois(ImagePlus imp, int[] indexes) {
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
@@ -846,7 +862,29 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (s1!=null)
 			imp.setRoi(s1);
-		if (Recorder.record) Recorder.record("roiManager", "Combine");
+	}
+
+	void combinePoints(ImagePlus imp, int[] indexes) {
+		int n = indexes.length;
+		Polygon[] p = new Polygon[n];
+		int points = 0;
+		for (int i=0; i<n; i++) {
+			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+			p[i] = roi.getPolygon();
+			points += p[i].npoints;
+		}
+		if (points==0) return;
+		int[] xpoints = new int[points];
+		int[] ypoints = new int[points];
+		int index = 0;
+		for (int i=0; i<p.length; i++) {
+			for (int j=0; j<p[i].npoints; j++) {
+				xpoints[index] = p[i].xpoints[j];
+				ypoints[index] = p[i].ypoints[j];
+				index++;
+			}	
+		}
+		imp.setRoi(new PointRoi(xpoints, ypoints, xpoints.length));
 	}
 
 	void addParticles() {

@@ -44,6 +44,8 @@ public class FreehandRoi extends PolygonRoi {
 		int ymin = Math.min(y1, y2);
 		int ymax = Math.max(y1, y2);
 		int margin = 4;
+		if (lineWidth>margin && isLine())
+			margin = lineWidth;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0) margin = (int)(margin/mag);

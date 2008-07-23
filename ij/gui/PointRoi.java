@@ -7,6 +7,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import java.awt.event.KeyEvent;
+import ij.plugin.frame.Recorder;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -31,6 +32,9 @@ public class PointRoi extends PolygonRoi {
 		setImage(imp);
 		width=1; height=1;
 		if (imp!=null) imp.draw(x-5, y-5, width+10, height+10);
+		if (Recorder.record) 
+			Recorder.record("makePoint", x, y);
+
 	}
 
 	static int[] makeXArray(int value, ImagePlus imp) {
