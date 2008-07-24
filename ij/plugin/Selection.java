@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
+import ij.plugin.filter.GaussianBlur;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
@@ -102,6 +103,8 @@ public class Selection implements PlugIn, Measurements {
 		int[] x = roi.getXCoordinates();
 		int[] y = roi.getYCoordinates();
 		int n = roi.getNCoordinates();
+		x = smooth(x, n);
+		y = smooth(y, n);
 		float[] curvature = getCurvature(x, y, n);
 		Rectangle r = roi.getBounds();
 		double threshold = rodbard(length);
@@ -145,6 +148,17 @@ public class Selection implements PlugIn, Measurements {
 		return y+44.0;
     }
 
+	int[] smooth(int[] a, int n) {
+		FloatProcessor fp = new FloatProcessor(n, 1);
+		for (int i=0; i<n; i++)
+			fp.putPixelValue(i, 0, a[i]);
+		GaussianBlur gb = new GaussianBlur();
+		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
+		for (int i=0; i<n; i++)
+			a[i] = (int)Math.round(fp.getPixelValue(i, 0));
+		return a;
+	}
+	
 	float[] getCurvature(int[] x, int[] y, int n) {
 		float[] x2 = new float[n];
 		float[] y2 = new float[n];

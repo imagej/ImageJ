@@ -827,7 +827,14 @@ public class IJ {
 	
 	/** Creates a point selection. */
 	public static void makePoint(int x, int y) {
-		getImage().setRoi(new PointRoi(x, y));
+		ImagePlus img = getImage();
+		Roi roi = img.getRoi();
+		if (shiftKeyDown() && roi!=null && roi.getType()==Roi.POINT) {
+			Polygon p = roi.getPolygon();
+			p.addPoint(x, y);
+			img.setRoi(new PointRoi(p.xpoints, p.ypoints, p.npoints));
+		} else
+			img.setRoi(new PointRoi(x, y));
 	}
 
 	/** Creates a straight line selection using double coordinates. */

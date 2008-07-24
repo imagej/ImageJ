@@ -603,7 +603,7 @@ public class PolygonRoi extends Roi {
 		xpoints[0] = xSpline[0];
 		ypoints[0] = ySpline[0];
 		int n=1, n2;
-		double inc = 0.001;
+		double inc = 0.01;
 		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
 		double x, y, lastx, lasty, x1, y1, x2=xSpline[0], y2=ySpline[0];
 		for (int i=1; i<splinePoints; i++) {

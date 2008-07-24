@@ -3180,13 +3180,8 @@ public class Functions implements MacroConstants, Measurements {
 			while ((line=br.readLine()) != null)
 				sb.append (line + "\n");
 			in.close ();
-		} catch (IOException e) {
-			String msg = ""+e;
-			if (msg.indexOf("UnknownHost")!=-1 || msg.indexOf("FileNotFound")!=-1)
-				return "";
-			else
-				interp.error(msg);
-			sb = null;
+		} catch (Exception e) {
+			return("<Error: "+e+">");
 		}
 		if (sb!=null)
 			return new String(sb);
@@ -3757,28 +3752,8 @@ public class Functions implements MacroConstants, Measurements {
 
 	void makePoint() {
 		int x = (int)getFirstArg();
-		interp.getComma();
-		int y = (int)interp.getExpression();
-		interp.getToken();
-		if (interp.token==')')
-			IJ.makePoint(x, y);
-		else {
-			int max = 200;
-			int[] xpoints = new int[max];
-			int[] ypoints = new int[max];
-			xpoints[0]=x; ypoints[0]=y;
-			int n = 2;
-			while (interp.token==',' && n<max) {
-				xpoints[n-1] = (int)Math.round(interp.getExpression());
-				interp.getComma();
-				ypoints[n-1] = (int)Math.round(interp.getExpression());
-				interp.getToken();
-				n++;
-			}
-			if (n==max && interp.token!=')')
-				interp.error("More than "+max+" points");
-			getImage().setRoi(new PointRoi(xpoints, ypoints, n));
-		}
+		int y = (int)getLastArg();
+		IJ.makePoint(x, y);
 		resetImage(); 
 	}
 
