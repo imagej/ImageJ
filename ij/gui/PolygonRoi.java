@@ -586,39 +586,91 @@ public class PolygonRoi extends Roi {
 		fitSpline(evaluationPoints);
 	}
 	
-	public void removeSplneFit() {
+	public void removeSplineFit() {
 		xSpline = null;
 		ySpline = null;
 	}
 	
+	/** Returns 'true' if this selection has been fitted with a spline. */
+	public boolean isSplineFit() {
+		return xSpline!=null;
+	}
+
 	public void fitSplineForStraightening() {
 		fitSpline((int)getUncalibratedLength()*2);
 		float[] xpoints = new float[splinePoints*2];
 		float[] ypoints = new float[splinePoints*2];
 		xpoints[0] = xSpline[0];
 		ypoints[0] = ySpline[0];
+		int n=1, n2;
+		double inc = 0.01;
+		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
+		double x, y, lastx, lasty, x1, y1, x2=xSpline[0], y2=ySpline[0];
+		for (int i=1; i<splinePoints; i++) {
+			x1=x2; y1=y2;
+			x=x1; y=y1;
+			x2=xSpline[i]; y2=ySpline[i];
+			dx = x2-x1;
+			dy = y2-y1;
+			distance = Math.sqrt(dx*dx+dy*dy);
+			xinc = dx*inc/distance;
+			yinc = dy*inc/distance;
+			lastx=xpoints[n-1]; lasty=ypoints[n-1];
+			n2 = (int)(dx/xinc);
+			do {
+				dx = x-lastx;
+				dy = y-lasty;
+				distance2 = Math.sqrt(dx*dx+dy*dy);
+				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
+				if (distance2>=1.0-inc/2.0 && n<xpoints.length-1) {
+					xpoints[n] = (float)x;
+					ypoints[n] = (float)y;
+					//IJ.log("--- "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"  "+n);
+					n++;
+					lastx=x; lasty=y;
+				}
+				x += xinc;
+				y += yinc;
+			} while (--n2>0);
+		}
+		xSpline = xpoints;
+		ySpline = ypoints;
+		splinePoints = n;
+	}
+
+	public void fitSplineForStraightening2() {
+		fitSpline((int)getUncalibratedLength()*2);
+		float[] xpoints = new float[splinePoints*2];
+		float[] ypoints = new float[splinePoints*2];
+		xpoints[0] = xSpline[0];
+		ypoints[0] = ySpline[0];
 		int n = 1, n2;
-		double distance=0.0, dx=0.0, dy=0.0, fraction, x=0.0, y=0.0, xinc, yinc;
+		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, fraction, x=0.0, y=0.0, xinc, yinc;
 		double next=1.0;  // distance to next point along path
 		for (int i=1; i<splinePoints; i++) {
-			dx = xSpline[i]-xSpline[i-1];
-			dy = ySpline[i]-ySpline[i-1];
+			dx = xSpline[i]-xpoints[n-1];
+			dy = ySpline[i]-ypoints[n-1];
 			distance = Math.sqrt(dx*dx+dy*dy);
-			//if (i<10) IJ.log(i+"   "+IJ.d2s(xSpline[i],2)+"   "+IJ.d2s(ySpline[i],2)+"   "+IJ.d2s(dx,2)+"   "+IJ.d2s(dy,2)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(next,2)+"   "+IJ.d2s(next/distance,2));
-			if (distance<next)
+IJ.log("--- "+i+"   "+IJ.d2s(xSpline[i],2)+"   "+IJ.d2s(ySpline[i],2)+"   "+IJ.d2s(dx,2)+"   "+IJ.d2s(dy,2)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(next,2)+"   "+IJ.d2s(next/distance,2));
+			if (distance<next) {
 				next = next - distance;
-			else {
-			    fraction = next/distance;
+IJ.log("--- "+i+"distance<next "+distance+"  "+next);
+			} else {
+				dx = xSpline[i]-xSpline[i-1];
+				dy = ySpline[i]-ySpline[i-1];
+				distance2 = Math.sqrt(dx*dx+dy*dy);
+			    fraction = next/distance2;
 				x= xSpline[i-1]+dx*fraction;
 				y = ySpline[i-1]+dy*fraction;
-				n2 = 1 + (int)(distance-next);
+				n2 = 1 + (int)(distance2-next);
+IJ.log("--- "+i+"   "+fraction+"  "+IJ.d2s(x,2)+"  "+IJ.d2s(y,2)+"  "+n2);
 				if (n2==1) {
 					xpoints[n] = (float)x;
 					ypoints[n] = (float)y;
 					n++;
 				} else {
-					xinc = dx/distance;
-					yinc = dy/distance;
+					xinc = dx/distance2;
+					yinc = dy/distance2;
 					do {
 						xpoints[n] = (float)x;
 						ypoints[n] = (float)y;
@@ -629,11 +681,10 @@ public class PolygonRoi extends Roi {
 					} while (--n2>0);
 				}
 				next = 1.0-(distance-next);
-				//dx = xpoints[n]-xpoints[n-1];
-				//dy = ypoints[n]-ypoints[n-1];
-				//float distance2 = (float)Math.sqrt(dx*dx+dy*dy);
-				//if (i<10) IJ.log(n+"   "+IJ.d2s(xpoints[n],2) +"   "+IJ.d2s(ypoints[n],2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(xSpline[i-1],2)+"   "+IJ.d2s(ySpline[i-1],2));
-				//n++;
+dx = xpoints[n-1]-xpoints[n-2];
+dy = ypoints[n-1]-ypoints[n-2];
+float distance3 = (float)Math.sqrt(dx*dx+dy*dy);
+IJ.log((n-1)+"   "+IJ.d2s(xpoints[n-1],2) +"   "+IJ.d2s(ypoints[n-1],2)+"   "+IJ.d2s(distance3,2)+"   "+IJ.d2s(xSpline[i-2],2)+"   "+IJ.d2s(ySpline[i-2],2));
 			}
 		}
 		if (next<0.5) {
@@ -656,7 +707,7 @@ public class PolygonRoi extends Roi {
 		cal.pixelWidth=spw; cal.pixelHeight=sph;
 		return length;
 	}
-
+	
 	protected void handleMouseUp(int sx, int sy) {
 		if (state==MOVING)
 			{state = NORMAL; return;}				

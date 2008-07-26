@@ -504,6 +504,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setMagnification(Math.min(xmag, ymag));
 			srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
 			setDrawingSize((int)(imageWidth*magnification), (int)(imageHeight*magnification));
+			getParent().doLayout();
 	}
     
 	void setMaxBounds() {

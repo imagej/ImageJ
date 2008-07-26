@@ -225,7 +225,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return false;
 		}
 		int n = list.getItemCount();
-		if (n>0) {
+		if (n>0 && !IJ.isMacro()) {
 			// check for duplicate
 			String label = list.getItem(n-1);
 			Roi roi2 = (Roi)rois.get(label);

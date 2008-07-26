@@ -93,6 +93,8 @@ public class Prefs {
 	public static boolean noRowNumbers;
 	/** Move isolated plugins to Miscellaneous submenu. */
 	public static boolean moveToMisc;
+	/** Assume values in dialog boxes are in pixels */
+	public static boolean unitIsPixel;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

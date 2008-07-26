@@ -121,6 +121,7 @@ public class SaveDialog {
 		else {
 			dir = fc.getCurrentDirectory().getPath()+File.separator;
 			name = fc.getName(f);
+			name = setExtension(name, ext);
 		}
 	}
 
@@ -155,6 +156,7 @@ public class SaveDialog {
 					else {
 						dir = fc.getCurrentDirectory().getPath()+File.separator;
 						name = fc.getName(f);
+						name = setExtension(name, ext);
 					}
 				}
 			});
@@ -172,6 +174,7 @@ public class SaveDialog {
 			fd.setDirectory(defaultDir);
 		fd.show();
 		name = fd.getFile();
+		name = setExtension(name, ext);
 		dir = fd.getDirectory();
 		if (name==null)
 			Macro.abort();

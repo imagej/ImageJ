@@ -1804,7 +1804,11 @@ public class Functions implements MacroConstants, Measurements {
 	String substring() {
 		String s = getFirstString();
 		int index1 = (int)getNextArg();
-		int index2 = (int)getLastArg();
+		int index2 = s.length();
+		if (interp.nextToken()==',')
+			index2 = (int)getLastArg();
+		else
+			interp.getRightParen();			
 		if (index1>index2)
 			interp.error("beginIndex>endIndex");
 		checkIndex(index1, 0, s.length());
@@ -3180,13 +3184,8 @@ public class Functions implements MacroConstants, Measurements {
 			while ((line=br.readLine()) != null)
 				sb.append (line + "\n");
 			in.close ();
-		} catch (IOException e) {
-			String msg = ""+e;
-			if (msg.indexOf("UnknownHost")!=-1 || msg.indexOf("FileNotFound")!=-1)
-				return "";
-			else
-				interp.error(msg);
-			sb = null;
+		} catch (Exception e) {
+			return("<Error: "+e+">");
 		}
 		if (sb!=null)
 			return new String(sb);
@@ -3196,11 +3195,14 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setOption() {
 		String arg1 = getFirstString();
-		interp.getComma();
-		double arg2 = interp.getBooleanExpression();
-		interp.checkBoolean(arg2);
+		boolean state = true;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			double arg2 = interp.getBooleanExpression();
+			interp.checkBoolean(arg2);
+			state = arg2==0?false:true;
+		}
 		interp.getRightParen();
-		boolean state = arg2==0?false:true;
 		arg1 = arg1.toLowerCase(Locale.US);
 		if (arg1.equals("disablepopupmenu")) {
 			ImageCanvas ic = getImage().getCanvas();
@@ -3235,6 +3237,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(MEAN, state);
 		else if (arg1.startsWith("std"))
 			Analyzer.setMeasurement(STD_DEV, state);
+		else if (arg1.equals("unitispixel"))
+			Prefs.unitIsPixel = state;
 		else
 			interp.error("Invalid option");
 	}
@@ -3294,6 +3298,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().getStack().isVirtual();
 		else if (arg.indexOf("composite")!=-1)
 			state = getImage().isComposite();
+		else if (arg.equals("unitispixel"))
+			state = Prefs.unitIsPixel;
 		else
 			interp.error("Argument must be 'locked', 'Inverted LUT' or 'Hyperstack'");
 		return state?1.0:0.0;
@@ -3757,28 +3763,8 @@ public class Functions implements MacroConstants, Measurements {
 
 	void makePoint() {
 		int x = (int)getFirstArg();
-		interp.getComma();
-		int y = (int)interp.getExpression();
-		interp.getToken();
-		if (interp.token==')')
-			IJ.makePoint(x, y);
-		else {
-			int max = 200;
-			int[] xpoints = new int[max];
-			int[] ypoints = new int[max];
-			xpoints[0]=x; ypoints[0]=y;
-			int n = 2;
-			while (interp.token==',' && n<max) {
-				xpoints[n-1] = (int)Math.round(interp.getExpression());
-				interp.getComma();
-				ypoints[n-1] = (int)Math.round(interp.getExpression());
-				interp.getToken();
-				n++;
-			}
-			if (n==max && interp.token!=')')
-				interp.error("More than "+max+" points");
-			getImage().setRoi(new PointRoi(xpoints, ypoints, n));
-		}
+		int y = (int)getLastArg();
+		IJ.makePoint(x, y);
 		resetImage(); 
 	}
 
