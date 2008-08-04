@@ -113,10 +113,14 @@ public class IJ {
 
 	/** Runs the specified plugin using the specified image. */
 	public static Object runPlugIn(ImagePlus imp, String className, String arg) {
-		WindowManager.setTempCurrentImage(imp);
-		Object o = runPlugIn("", className, arg);
-		WindowManager.setTempCurrentImage(null);
-		return o;
+		if (imp!=null) {
+			ImagePlus temp = WindowManager.getTempCurrentImage();
+			WindowManager.setTempCurrentImage(imp);
+			Object o = runPlugIn("", className, arg);
+			WindowManager.setTempCurrentImage(temp);
+			return o;
+		} else
+			return runPlugIn(className, arg);
 	}
 
 	/** Runs the specified plugin and returns a reference to it. */
@@ -266,11 +270,15 @@ public class IJ {
 			return command;
 	}
 
-    /** Runs an ImageJ command using the specified image and options. */
+	/** Runs an ImageJ command using the specified image and options. */
 	public static void run(ImagePlus imp, String command, String options) {
-		if (imp!=null) WindowManager.setTempCurrentImage(imp);
-		run(command, options);
-		if (imp!=null) WindowManager.setTempCurrentImage(null);
+		if (imp!=null) {
+			ImagePlus temp = WindowManager.getTempCurrentImage();
+			WindowManager.setTempCurrentImage(imp);
+			run(command, options);
+			WindowManager.setTempCurrentImage(temp);
+		} else
+			run(command, options);
 	}
 
 	static void init() {

@@ -7,6 +7,8 @@
   if (isNaN(pixels)) exit("Distance is invalid: "+getArgument());
   saveSettings();
   getPixelSize(unit, pixelWidth, pixelHeight);
+  if (is("UnitIsPixel"))
+      {pixelWidth=1; unit="pixels";}
   n = pixels*pixelWidth;
   decimalPlaces = 0;
   if (floor(n)!=n) decimalPlaces = 2;

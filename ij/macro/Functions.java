@@ -1804,7 +1804,11 @@ public class Functions implements MacroConstants, Measurements {
 	String substring() {
 		String s = getFirstString();
 		int index1 = (int)getNextArg();
-		int index2 = (int)getLastArg();
+		int index2 = s.length();
+		if (interp.nextToken()==',')
+			index2 = (int)getLastArg();
+		else
+			interp.getRightParen();			
 		if (index1>index2)
 			interp.error("beginIndex>endIndex");
 		checkIndex(index1, 0, s.length());
@@ -3191,11 +3195,14 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setOption() {
 		String arg1 = getFirstString();
-		interp.getComma();
-		double arg2 = interp.getBooleanExpression();
-		interp.checkBoolean(arg2);
+		boolean state = true;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			double arg2 = interp.getBooleanExpression();
+			interp.checkBoolean(arg2);
+			state = arg2==0?false:true;
+		}
 		interp.getRightParen();
-		boolean state = arg2==0?false:true;
 		arg1 = arg1.toLowerCase(Locale.US);
 		if (arg1.equals("disablepopupmenu")) {
 			ImageCanvas ic = getImage().getCanvas();
@@ -3230,6 +3237,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(MEAN, state);
 		else if (arg1.startsWith("std"))
 			Analyzer.setMeasurement(STD_DEV, state);
+		else if (arg1.equals("unitispixel"))
+			Prefs.unitIsPixel = state;
 		else
 			interp.error("Invalid option");
 	}
@@ -3289,6 +3298,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().getStack().isVirtual();
 		else if (arg.indexOf("composite")!=-1)
 			state = getImage().isComposite();
+		else if (arg.equals("unitispixel"))
+			state = Prefs.unitIsPixel;
 		else
 			interp.error("Argument must be 'locked', 'Inverted LUT' or 'Hyperstack'");
 		return state?1.0:0.0;

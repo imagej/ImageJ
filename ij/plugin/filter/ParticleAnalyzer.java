@@ -212,7 +212,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (maxSize==999999) maxSize = DEFAULT_MAX_SIZE;
 		options = staticOptions;
 		String unit = cal.getUnit();
-		if (unit.equals("inch")) {
+		if (unit.equals("inch") || Prefs.unitIsPixel) {
 			unit = "pixel";
 			unitSquared = 1.0;
 		}

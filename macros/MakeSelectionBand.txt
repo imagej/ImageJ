@@ -6,6 +6,8 @@
   pixels = parseFloat(getArgument());
   if (isNaN(pixels)) exit("Distance is invalid: "+getArgument());
   getPixelSize(unit, pixelWidth, pixelHeight);
+  if (is("UnitIsPixel"))
+      {pixelWidth=1; unit="pixels";}
   size = pixels*pixelWidth;
   decimalPlaces = 0;
   if (floor(size)!=size) decimalPlaces = 2;

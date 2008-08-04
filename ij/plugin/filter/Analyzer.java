@@ -640,7 +640,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&FERET)!=0)
 			add2(ResultsTable.FERET);
 		if ((measurements&INTEGRATED_DENSITY)!=0)
-			add2(ResultsTable.FERET);
+			add2(ResultsTable.INTEGRATED_DENSITY);
 		if ((measurements&MEDIAN)!=0)
 			add2(ResultsTable.MEDIAN);
 		if ((measurements&SKEWNESS)!=0)
