@@ -1271,6 +1271,30 @@ public class IJ {
 		return path;
 	}
 
+	/** Saves a string as a file. Returns an error message 
+		if there is  an exception, otherwise returns null. */
+	public static String saveString(String string, String path) {
+		return write(string, path, false);
+	}
+
+	/** Appends a string to the end of a file. A newline character ("\n") 
+		is added to the end of the string before it is written. Returns an  
+		error message if there is an exception, otherwise returns null. */
+	public static String append(String string, String path) {
+		return write(string+"\n", path, true);
+	}
+
+	private static String write(String string, String path, boolean append) {
+		try {
+			BufferedWriter out = new BufferedWriter(new FileWriter(path, append));
+			out.write(string);
+			out.close();
+		} catch (IOException e) {
+			return ""+e;
+		}
+		return null;
+	}
+
 	 /** Creates a new imagePlus. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
 		 In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
 	 	and <code>height</code> specify the width and height of the image in pixels.  

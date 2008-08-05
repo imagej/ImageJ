@@ -44,8 +44,8 @@ public class Straightener implements PlugIn {
 			ip2 = straighten(imp, width);
 		(new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2)).show();
 		imp.setRoi(roi);
-		//if (type!=Roi.LINE && !((PolygonRoi)roi).isSplineFit())
-		//	((PolygonRoi)roi).fitSpline();
+		if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit())
+			((PolygonRoi)roi).fitSpline();
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	

@@ -1,13 +1,4 @@
 package ij.io;
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.URL;
-import java.net.*;
-import java.util.zip.*;
-import java.util.Locale;
-import javax.swing.*;
-import javax.swing.filechooser.*;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
@@ -16,6 +7,16 @@ import ij.plugin.DICOM;
 import ij.plugin.AVI_Reader;
 import ij.text.TextWindow;
 import ij.util.Java2;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+import java.net.URL;
+import java.net.*;
+import java.util.Hashtable;
+import java.util.zip.*;
+import java.util.Locale;
+import javax.swing.*;
+import javax.swing.filechooser.*;
 import java.awt.event.KeyEvent;
 import javax.imageio.ImageIO;
 
@@ -37,6 +38,12 @@ public class Opener {
 	private String omDirectory;
 	private File[] omFiles;
 	private static boolean openUsingPlugins;
+	private static boolean bioformats;
+
+	static {
+		Hashtable commands = Menus.getCommands();
+		bioformats = commands!=null && commands.get("Bio-Formats Importer")!=null;
+	}
 
 	public Opener() {
 	}
@@ -721,7 +728,7 @@ public class Opener {
 		 // Big-endian TIFF ("MM")
         if (name.endsWith(".lsm"))
         		return UNKNOWN; // The LSM  Reader plugin opens these files
-		if (b0==73 && b1==73 && b2==42 && b3==0 && !name.endsWith(".flex"))
+		if (b0==73 && b1==73 && b2==42 && b3==0 && !(bioformats&&name.endsWith(".flex")))
 			return TIFF;
 
 		 // Little-endian TIFF ("II")

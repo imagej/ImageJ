@@ -2919,6 +2919,14 @@ public class Functions implements MacroConstants, Measurements {
 				return f1.renameTo(f2)?"1":"0";
 			else
 				return "0";
+		} else if (name.equals("append")) {
+			String err = IJ.append(getFirstString(), getLastString());
+			if (err!=null) interp.error(err);
+			return null;
+		} else if (name.equals("saveString")) {
+			String err = IJ.saveString(getFirstString(), getLastString());
+			if (err!=null) interp.error(err);
+			return null;
 		}
 		File f = new File(getStringArg());
 		if (name.equals("getLength")||name.equals("length"))
