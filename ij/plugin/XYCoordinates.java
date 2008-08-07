@@ -16,6 +16,8 @@ import ij.gui.*;
 public class XYCoordinates implements PlugIn {
 
 	static boolean processStack;
+	static boolean invertY;
+	static boolean suppress;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -23,18 +25,15 @@ public class XYCoordinates implements PlugIn {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		double background = ip.getPixelValue(0,0);
-		String bg;
-		if (ip instanceof ColorProcessor) {
+		String bg = " \n";
+		boolean rgb = imp.getBitDepth()==24;
+		if (rgb) {
 			int c = ip.getPixel(0,0);
 			int r = (c&0xff0000)>>16;
 			int g = (c&0xff00)>>8;
 			int b = c&0xff;
 			bg = r+","+g+","+b;
-		} else {
-			if ((int)background==background)
-				bg = IJ.d2s(background,0);
-			else
-				bg = ""+background;
+		    bg = " \n    Background value: " + bg + "\n";
 		}
 		imp.killRoi();
 		
@@ -42,21 +41,32 @@ public class XYCoordinates implements PlugIn {
 		String msg =
 			"This plugin writes to a text file the XY coordinates and\n"
 			+ "pixel value of all non-background pixels. Backround\n"
-			+ "is assumed to be the value of the pixel in the\n"
-			+ "upper left corner of the image.\n"
-			+ " \n"
-			+ "    Width: " + width + "\n"
-			+ "    Height: " + height + "\n"
-			+ (slices>1?"    Depth: " + slices + "\n":"")
-			+ "    Background value: " + bg + "\n";
+			+ "defaults to be the value of the pixel in the upper\n"
+			+ "left corner of the image.\n"
+			+ bg;
 				
 		GenericDialog gd = new GenericDialog("Save XY Coordinates");
 		gd.addMessage(msg);
-		if (slices>1)
+		int digits = (int)background==background?0:4;
+		if (!rgb) {
+			gd.setInsets(5, 35, 3);
+			gd.addNumericField("Background Value:", background, digits);
+		}
+		gd.setInsets(10, 35, 0);
+		gd.addCheckbox("Invert Y Coordinates", invertY);
+		gd.setInsets(0, 35, 0);
+		gd.addCheckbox("Suppress Log Output", suppress);
+		if (slices>1) {
+			gd.setInsets(0, 35, 0);
 			gd.addCheckbox("Process all "+slices+" images", processStack);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		if (!rgb)
+			background = gd.getNextNumber();
+		invertY = gd.getNextBoolean();
+		suppress = gd.getNextBoolean();
 		if (slices>1)
 			processStack = gd.getNextBoolean();
 		else
@@ -88,20 +98,21 @@ public class XYCoordinates implements PlugIn {
 		for (int z=0; z<slices; z++) {
 			if (slices>1) ip = stack.getProcessor(z+1);
 			String zstr = slices>1?z+"\t":"";
-			for (int y=height-1; y>=0; y--) {
+			for (int i=0; i<height; i++) {
+				int y = invertY?i:height-1-i;
 				for (int x=0; x<width; x++) {
 					v = ip.getPixelValue(x,y);
 					if (v!=background) {
 						if (type==ImagePlus.GRAY32)
-							pw.println(x+"\t"+(height-1-y)+"\t"+zstr+v);
-						else if (type==ImagePlus.COLOR_RGB) {
+							pw.println(x+"\t"+(invertY?y:height-1-y)+"\t"+zstr+v);
+						else if (rgb) {
 							c = ip.getPixel(x,y);
 							r = (c&0xff0000)>>16;
 							g = (c&0xff00)>>8;
 							b = c&0xff;
-							pw.println(x+"\t"+(height-1-y)+"\t"+zstr+r+"\t"+g+"\t"+b);
+							pw.println(x+"\t"+(invertY?y:height-1-y)+"\t"+zstr+r+"\t"+g+"\t"+b);
 						} else
-							pw.println(x+"\t"+(height-1-y)+"\t"+zstr+(int)v);
+							pw.println(x+"\t"+(invertY?y:height-1-y)+"\t"+zstr+(int)v);
 						count++;
 					}
 				} // x
@@ -109,7 +120,8 @@ public class XYCoordinates implements PlugIn {
 			} // y
 			if (slices>1) IJ.showProgress(z+1, slices);
 			String img = slices>1?"-"+(z+1):"";
-			IJ.log(imp.getTitle() + img+": " + count + " pixels (" + IJ.d2s(count*100.0/(width*height)) + "%)\n");
+			if (!suppress)
+				IJ.log(imp.getTitle() + img+": " + count + " pixels (" + IJ.d2s(count*100.0/(width*height)) + "%)\n");
 			count = 0;
 		} // z
 		IJ.showProgress(1.0);

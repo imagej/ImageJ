@@ -5,15 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.41j, 5 August 2008</u>
+<li> <u>1.41j, 7 August 2008</u>
 <ul>
 <li> File&gt;Save As&gt;Image Sequence exports 
 hyperstacks as C/Z/T labeled files (e.g., "name_t01_z01_c01").
+<li> Added a "Background Value" field and "Invert Y Coordinates" and "Suppress Log Output" 
+options to the <i>Analyze&gt;Tools&gt;Save XY Coordinates</i> dialog box.
 <li> The ROI Manager "Deselect" option is recorded.
 <li> Added the File.saveString(string,path) and File.append(string,path)
 macro functions, and corresponding IJ.saveString() and IJ.append() methods.
 <li> Fixed a bug, introduced in v1.41f, that could cause batch mode
 macros using to fail.
+<li> Fixed a bug that could cause LZW-compressed TIFFs to be incorrectly decoded.
 <li> Fixed a bug that sometimes caused the wrong selection to be copied
 when duplicating stacks with non-rectangular selections.
 <li> Fixed a bug that caused a "Data chunk size too short" error when

@@ -100,6 +100,7 @@ public class FileInfo implements Cloneable {
 	public int compression;
     public int[] stripOffsets; 
     public int[] stripLengths; 
+    public int rowsPerStrip;
 	public int lutSize;
 	public byte[] reds;
 	public byte[] greens;

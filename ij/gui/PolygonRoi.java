@@ -190,7 +190,7 @@ public class PolygonRoi extends Roi {
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.25f);
 		g2d.setComposite(ac);
-		g2d.setStroke(new BasicStroke((float)(lineWidth*ic.getMagnification())));
+		g2d.setStroke(new BasicStroke((float)(lineWidth*ic.getMagnification()),BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND));
 		g2d.draw(path);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f);
@@ -330,8 +330,8 @@ public class PolygonRoi extends Roi {
 		if (Recorder.record && userCreated && (type==POLYGON||type==POLYLINE||type==ANGLE))
 			Recorder.recordRoi(getPolygon(), type);
 		if (type!=POINT) modifyRoi();
-		if (type==POLYLINE && lineWidth>1)
-			fitSpline();
+		//if (type==POLYLINE && lineWidth>1)
+		//	fitSpline();
 	}
 	
     protected void moveHandle(int sx, int sy) {

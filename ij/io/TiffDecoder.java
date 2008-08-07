@@ -362,6 +362,9 @@ public class TiffDecoder {
 					}
 					fi.offset = count > 0 ? fi.stripOffsets[0] : value;
 					break;
+				case ROWS_PER_STRIP:
+					fi.rowsPerStrip = value;
+					break;
 				case STRIP_BYTE_COUNT:
 					if (count==1)
 						fi.stripLengths = new int[] {value};
