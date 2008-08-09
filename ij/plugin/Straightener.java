@@ -29,27 +29,23 @@ public class Straightener implements PlugIn {
 		int type = roi.getType();
 		if (type==Roi.FREELINE)
 			IJ.run(imp, "Fit Spline", "");
-		else if (type==Roi.LINE) {
-			Line.setWidth(1);
-			Polygon p = roi.getPolygon();
-			Line.setWidth(width);
-			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
-		}
 		ImageProcessor ip2;
 		if (imp.getBitDepth()==24)
 			ip2 = straightenRGB(imp, width);
 		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
 			ip2 = straightenComposite(imp, width);
+		else if (roi.getType()==Roi.LINE)
+			ip2 = straightenStraightLine(imp, width);
 		else
 			ip2 = straighten(imp, width);
 		(new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2)).show();
 		imp.setRoi(roi);
-		//if (type!=Roi.LINE && !((PolygonRoi)roi).isSplineFit())
-		//	((PolygonRoi)roi).fitSpline();
+		if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit())
+			((PolygonRoi)roi).fitSpline();
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	
-	ImageProcessor straighten(ImagePlus imp, int width) {
+	public ImageProcessor straighten(ImagePlus imp, int width) {
 		PolygonRoi roi = (PolygonRoi)imp.getRoi();
 		boolean isSpline = roi.isSplineFit();
 		int type = roi.getType();
@@ -106,6 +102,16 @@ public class Straightener implements PlugIn {
 		return ip2;
 	}
 	
+	public ImageProcessor straightenStraightLine(ImagePlus imp, int width) {
+		Line.setWidth(1);
+		Polygon p = imp.getRoi().getPolygon();
+		Line.setWidth(width);
+		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
+		ImageProcessor ip2 = straighten(imp, width);
+		imp.setRoi(new Line(p.xpoints[0], p.ypoints[0], p.xpoints[1], p.ypoints[1]));
+		return ip2;
+	}
+	
 	ImageProcessor straightenRGB(ImagePlus imp, int width) {
 		int w=imp.getWidth(), h=imp.getHeight();
 		int size = w*h;
@@ -127,7 +133,7 @@ public class Straightener implements PlugIn {
         red = red.convertToByte(false);
         green = green.convertToByte(false);
         blue = blue.convertToByte(false);
-       cp2.setRGB((byte[])red.getPixels(), (byte[])green.getPixels(), (byte[])blue.getPixels());
+        cp2.setRGB((byte[])red.getPixels(), (byte[])green.getPixels(), (byte[])blue.getPixels());
         imp.setRoi(imp2.getRoi());
         return cp2;
  	}

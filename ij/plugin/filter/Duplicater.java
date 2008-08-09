@@ -44,6 +44,10 @@ public class Duplicater implements PlugInFilter {
 				String label = stack.getSliceLabel(imp.getCurrentSlice());
 				if (label!=null && label.indexOf('\n')>0)
 					imp2.setProperty("Info", label);
+				if (imp.isComposite()) {
+					LUT lut = ((CompositeImage)imp).getChannelLut();
+					imp2.getProcessor().setColorModel(lut);
+				}
 			}
 		}
 		imp2.show();

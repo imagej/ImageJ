@@ -2,6 +2,7 @@ package ij.gui;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.Straightener;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.KeyEvent;
@@ -178,7 +179,7 @@ public class Line extends Roi {
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.3f);
 			g2d.setComposite(ac);
-			g2d.setStroke(new BasicStroke((float)(lineWidth*ic.getMagnification())));
+			g2d.setStroke(new BasicStroke((float)(lineWidth*ic.getMagnification()),BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL));
 			g2d.draw(path);
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 			ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f);
@@ -217,11 +218,11 @@ public class Line extends Roi {
 	/** Returns the pixel values along this line. */
 	public double[] getPixels() {
 			double[] profile;
-			ImageProcessor ip = imp.getProcessor();
-			if (lineWidth==1)
+			if (lineWidth==1) {
+				ImageProcessor ip = imp.getProcessor();
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
-			else {
-				ImageProcessor ip2 = rotateWideLine(ip);
+			} else {
+				ImageProcessor ip2 = (new Straightener()).straightenStraightLine(imp,lineWidth);
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
 				profile = new double[width];
@@ -238,6 +239,7 @@ public class Line extends Roi {
 			return profile;
 	}
 	
+	/*
 	ImageProcessor rotateWideLine(ImageProcessor ip) {
 		int width = (int)Math.round(getRawLength());
 		int height = lineWidth;
@@ -269,6 +271,7 @@ public class Line extends Roi {
 		}
 		return ip2;
 	}
+	*/
 
 	public Polygon getPolygon() {
 		Polygon p = new Polygon();

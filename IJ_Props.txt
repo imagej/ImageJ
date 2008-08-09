@@ -101,6 +101,7 @@ adjust03="Color Balance...",ij.plugin.frame.ContrastAdjuster("balance")
 adjust04="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
 adjust05="Size...",ij.plugin.filter.Resizer
 adjust06="Canvas Size...",ij.plugin.CanvasResizer
+adjust07="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 
 # Plugins installed in the Image/Color submenu
 color01="Split Channels",ij.plugin.filter.RGBStackSplitter

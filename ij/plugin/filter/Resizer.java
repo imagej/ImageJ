@@ -118,14 +118,10 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
     				imp.setCalibration(cal);
     			}
 	    		imp.setStack(null, s2);
-	    		//imp.show();
-	    		if (restoreRoi) {
-	    			imp.restoreRoi();
-	    			roi = imp.getRoi();
-	    			if (roi!=null) {
-	    				roi.setLocation(0, 0);
-	    				imp.draw();
-	    			}
+	    		if (restoreRoi && roi!=null) {
+	    			roi.setLocation(0, 0);
+	    			imp.setRoi(roi);
+	    			imp.draw();
 	    		}
 	    	}
 	    	if (nSlices>1 && newSize<nSlices)

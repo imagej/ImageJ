@@ -5,6 +5,7 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.measure.*;
+import ij.plugin.Straightener;
 
 /** Creates a density profile plot of a rectangular selection or line selection. */
 public class ProfilePlot {
@@ -52,9 +53,13 @@ public class ProfilePlot {
 		//ip.setCalibrationTable(cal.getCTable());
 		if (roiType==Roi.LINE)
 			profile = getStraightLineProfile(roi, cal, ip);
-		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE)
-			profile = getIrregularProfile(roi, ip, cal);
-		else if (averageHorizontally)
+		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
+			int lineWidth = Line.getWidth();
+			if (lineWidth==1)
+				profile = getIrregularProfile(roi, ip, cal);
+			else
+				profile = getWideLineProfile(imp, lineWidth);
+		} else if (averageHorizontally)
 			profile = getRowAverageProfile(roi.getBounds(), cal, ip);
 		else
 			profile = getColumnAverageProfile(roi.getBounds(), ip);
@@ -261,11 +266,26 @@ public class ProfilePlot {
 			distance += len;
 			leftOver = len2 - n2;
 		}
-
 		return values;
-
 	}
 
+	double[] getWideLineProfile(ImagePlus imp, int lineWidth) {
+		ImageProcessor ip2 = (new Straightener()).straighten(imp, lineWidth);
+		int width = ip2.getWidth();
+		int height = ip2.getHeight();
+		profile = new double[width];
+		double[] aLine;
+		ip2.setInterpolate(false);
+		for (int y=0; y<height; y++) {
+			aLine = ip2.getLine(0, y, width-1, y);
+			for (int i=0; i<width; i++)
+				profile[i] += aLine[i];
+		}
+		for (int i=0; i<width; i++)
+			profile[i] /= height;
+		return profile;
+	}
+	
 	void findMinAndMax() {
 		if (profile==null) return;
 		double min = Double.MAX_VALUE;

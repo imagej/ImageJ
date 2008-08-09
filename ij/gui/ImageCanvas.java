@@ -494,17 +494,20 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	public void fitToWindow() {
-			ImageWindow win = imp.getWindow();
-			if (win==null) return;
-			Rectangle bounds = win.getBounds();
-			Insets insets = win.getInsets();
-			int sliderHeight = (win instanceof StackWindow)?20:0;
-			double xmag = (double)(bounds.width-10)/srcRect.width;
-			double ymag = (double)(bounds.height-(10+insets.top+sliderHeight))/srcRect.height;
-			setMagnification(Math.min(xmag, ymag));
-			srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
-			setDrawingSize((int)(imageWidth*magnification), (int)(imageHeight*magnification));
-			getParent().doLayout();
+		ImageWindow win = imp.getWindow();
+		if (win==null) return;
+		Rectangle bounds = win.getBounds();
+		Insets insets = win.getInsets();
+		int sliderHeight = (win instanceof StackWindow)?20:0;
+		double xmag = (double)(bounds.width-10)/srcRect.width;
+		double ymag = (double)(bounds.height-(10+insets.top+sliderHeight))/srcRect.height;
+		setMagnification(Math.min(xmag, ymag));
+		int width=(int)(imageWidth*magnification);
+		int height=(int)(imageHeight*magnification);
+		if (width==dstWidth&&height==dstHeight) return;
+		srcRect=new Rectangle(0,0,imageWidth, imageHeight);
+		setDrawingSize(width, height);
+		getParent().doLayout();
 	}
     
 	void setMaxBounds() {

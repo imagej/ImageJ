@@ -3,7 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
-import ij.plugin.frame.RoiManager;
+import ij.plugin.frame.*;
 import ij.macro.Interpreter;
 import ij.plugin.filter.GaussianBlur;
 import java.awt.*;
@@ -87,7 +87,8 @@ public class Selection implements PlugIn, Measurements {
 			p.removeSplineFit();
 		else
 			p.fitSpline();
-		imp.draw();		
+		imp.draw();
+		LineWidthAdjuster.update();	
 	}
 	
 	double getUncalibratedLength(PolygonRoi roi) {

@@ -128,8 +128,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			cal.pixelHeight = origCal.pixelDepth/zSpacing;
 			cal.pixelDepth = origCal.pixelHeight*outputZSpacing;
 		} else if (vertical) {
-			cal.pixelWidth = origCal.pixelDepth/zSpacing;
-			cal.pixelHeight = origCal.pixelHeight;
+			cal.pixelWidth = origCal.pixelHeight;
+			cal.pixelHeight = origCal.pixelDepth/zSpacing;
+			//cal.pixelWidth = origCal.pixelDepth/zSpacing;
+			//cal.pixelHeight = origCal.pixelHeight;
 			cal.pixelDepth = origCal.pixelWidth*outputZSpacing;;
 		} else { // oblique line, polyLine or freeline
 				if (origCal.pixelHeight==origCal.pixelWidth) {

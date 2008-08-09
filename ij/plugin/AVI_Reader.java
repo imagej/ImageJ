@@ -688,7 +688,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             long size = readInt() & SIZE_MASK;
             long pos = raFile.getFilePointer();
             long nextPos = pos + size;
-            if (type==type0xdb || type==type0xdc) {
+            if ((type==type0xdb || type==type0xdc) && size>0) {
                 updateProgress();
                 if (verbose)
                     IJ.log("movie data '"+fourccString(type)+"' "+posSizeString(size)+timeString());
@@ -751,14 +751,13 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     /** Read a fixed-length frame (RandomAccessFile rFile, long filePos, int size)
      *  return the pixels array of the resulting image
      */
-    private Object readFixedLengthFrame (RandomAccessFile rFile, int size)  throws Exception, IOException{
-        if (size < scanLineSize*biHeight)   //check minimum size (fixed frame length format)
+    private Object readFixedLengthFrame (RandomAccessFile rFile, int size)  throws Exception, IOException {
+         if (size < scanLineSize*biHeight) 
             throw new Exception("Data chunk size "+size+" too short ("+(scanLineSize*biHeight)+" required)");
         byte[] rawData = new byte[size];
         int  n  = rFile.read(rawData, 0, size);
         if (n < rawData.length)
             throw new Exception("Frame ended prematurely after " + n + " bytes");
-
         boolean topDown = flipVertical ? !dataTopDown : dataTopDown;
         Object pixels = null;
         byte[] bPixels = null;

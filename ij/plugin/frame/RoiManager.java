@@ -1196,6 +1196,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index<0) {
 			for (int i=0; i<n; i++)
 				if (list.isSelected(i)) list.deselect(i);
+			if (Recorder.record) Recorder.record("roiManager", "Deselect");
 			return;
 		}
 		if (index>=n) return;

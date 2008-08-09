@@ -77,16 +77,17 @@ public class ImageReader {
 				left -= r;
 			}
 			byteArray = lzwUncompress(byteArray);
+			int length = byteArray.length;
+			length = length - (length%fi.width);
 			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING) {
-				for (int b=0; b<byteArray.length; b++) {
+				for (int b=0; b<length; b++) {
 					byteArray[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
 				}
 			}
-			int length = byteArray.length;
 			if (current+length>pixels.length) length = pixels.length-current;
 			System.arraycopy(byteArray, 0, pixels, current, length);
-			current += byteArray.length;
+			current += length;
 			showProgress(i+1, fi.stripOffsets.length);
 		}
 		return pixels;
@@ -143,6 +144,7 @@ public class ImageReader {
 	}
 	
 	short[] readCompressed16bitImage(InputStream in) throws IOException {
+		in = new DataInputStream(in);
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
@@ -164,6 +166,7 @@ public class ImageReader {
 			}
 			byteArray = lzwUncompress(byteArray);
 			int pixelsRead = byteArray.length/bytesPerPixel;
+			pixelsRead = pixelsRead - (pixelsRead%fi.width);
 			int pmax = base+pixelsRead;
 			if (pmax > nPixels) pmax = nPixels;
 			if (fi.intelByteOrder) {
@@ -392,6 +395,7 @@ public class ImageReader {
 			}
 			int k = 0;
 			int pixelsRead = byteArray.length/bytesPerPixel;
+			pixelsRead = pixelsRead - (pixelsRead%fi.width);
 			int pmax = base+pixelsRead;
 			if (pmax > nPixels) pmax = nPixels;
 			for (int j=base; j<pmax; j++) {
@@ -787,7 +791,7 @@ public class ImageReader {
 		}
 		return out.toByteArray();
 	}
- 
+	 
 	/*
 	void debug(String label, InputStream in) {
 		int offset = -1;
@@ -801,6 +805,7 @@ public class ImageReader {
 	*/
 
 }
+
 
 /** A growable array of bytes. */
 class ByteVector {
