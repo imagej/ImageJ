@@ -41,6 +41,7 @@ public class Functions implements MacroConstants, Measurements {
     StringBuffer buffer;
     RoiManager roiManager;
     Properties props;
+    CurveFitter fitter;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -240,6 +241,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EXT: str = doExt(); break;
 			case EXEC: str = exec(); break;
 			case LIST: str = doList(); break;
+			case FIT: str = doFit(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3774,6 +3776,70 @@ public class Functions implements MacroConstants, Measurements {
 		int y = (int)getLastArg();
 		IJ.makePoint(x, y);
 		resetImage(); 
+	}
+
+	String doFit() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION))
+			interp.error("Function name expected: ");
+		if (props==null)
+			props = new Properties();
+		String value = null;
+		String name = interp.tokenString;
+		if (name.equals("doFit"))
+			return fitCurve();
+		else if (name.equals("nEquations")) {
+			interp.getParens();
+			return ""+CurveFitter.fitList.length;
+		} else if (name.equals("name")) {
+			int fit = (int)getArg();
+			checkIndex(fit, 0, CurveFitter.fitList.length-1);
+			return ""+CurveFitter.fitList[fit];
+		}
+		if (fitter==null)
+			interp.error("No fit");
+		if (name.equals("f"))
+			return ""+CurveFitter.f(fitter.getFit(), fitter.getParams(), getArg());
+		else if (name.equals("plot")) {
+			interp.getParens();
+			Fitter.plot(fitter);
+			return null;
+		} else if (name.equals("nParams")) {
+			interp.getParens();
+			return ""+fitter.getNumParams();
+		} else if (name.equals("p")) {
+			int index = (int)getArg();
+			checkIndex(index, 0, fitter.getNumParams()-1);
+			double[] p = fitter.getParams();
+			return ""+p[index];
+		}
+		return value;
+	}
+	
+	String fitCurve() {
+		interp.getLeftParen();
+		int fit = -1;
+		if (isStringArg()) {
+			String name = getString().toLowerCase(Locale.US);
+			String[] list = CurveFitter.fitList;
+			for (int i=0; i<list.length; i++) {
+				if (name.equals(list[i].toLowerCase(Locale.US))) {
+					fit = i;
+					break;
+				}
+			}
+			if (fit==-1)
+				interp.error("Unrecognized fit");
+		} else
+			fit = (int)interp.getExpression();
+		double[] x = getNextArray();
+		double[] y = getLastArray();
+		fitter = new CurveFitter(x, y);
+		fitter.doFit(fit, false);
+		return ""+fitter.getRSquared();
 	}
 
 } // class Functions

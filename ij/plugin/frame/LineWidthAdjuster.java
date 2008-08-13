@@ -24,7 +24,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	boolean done;
 	TextField tf;
 	Checkbox checkbox;
-	int id;
 
 	public LineWidthAdjuster() {
 		super("Line Width");
@@ -113,30 +112,28 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 				Line.setWidth(value);
 				if (setText) tf.setText(""+value);
 				setText = false;
-				ImagePlus imp = WindowManager.getCurrentImage();
-				if (imp!=null) {
-					Roi roi = imp.getRoi();
-					if (roi!=null && roi.isLine())
-						{imp.draw(); id = imp.getID();}
-				}
+				updateWindows();
 			}
 		}
 	}
 	
+    void updateWindows() {
+		int[] list = WindowManager.getIDList();
+		if (list==null) return;
+		for (int i=0; i<list.length; i++) {
+			ImagePlus imp = WindowManager.getImage(list[i]);
+			if (imp!=null) {
+				Roi roi = imp.getRoi();
+				if (roi!=null && roi.isLine())
+					imp.draw();
+			}
+		}
+	}
+
 	boolean isSplineFit() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return false;
 		Roi roi = imp.getRoi();
-		if (roi==null) {
-			imp = WindowManager.getImage(id);
-			if (imp==null) return false;
-			roi = imp.getRoi();
-			ImageWindow win = imp.getWindow();
-			if (win!=null) {
-				WindowManager.setCurrentWindow(win);
-				//win.toFront();
-			}
-		}
 		if (roi==null) return false;
 		if (!(roi instanceof PolygonRoi)) return false;
 		return ((PolygonRoi)roi).isSplineFit();

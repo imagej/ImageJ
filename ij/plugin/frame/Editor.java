@@ -534,7 +534,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Save Settings".equals(what))
 			saveSettings();
 		else if ("New...".equals(what))
-			IJ.run("New... ");
+			IJ.run("Text Window");
 		else if ("Open...".equals(what))
 			IJ.open();
 		else
