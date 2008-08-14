@@ -83,7 +83,7 @@ public interface MacroConstants {
 		STARTS_WITH=1034, ENDS_WITH=1035, ATAN2=1036, IS_NAN=1037, GET_ZOOM=1038, PARSE_INT=1039, PARSE_FLOAT=1040,
 		IS_KEY_DOWN=1041, GET_SLICE_NUMBER=1042, SCREEN_WIDTH=1043, SCREEN_HEIGHT=1044, CALIBRATE=1045,
 		ASIN=1046, ACOS=1047, ROI_MANAGER=1048, TOOL_ID=1049, IS=1050, GET_VALUE=1051, STACK=1052, MATCHES=1053,
-		GET_STRING_WIDTH=1054;
+		GET_STRING_WIDTH=1054, FIT=1055;
 	static final String[] numericFunctions = { "getPixel", "abs", "cos", "exp", "floor", "log", "maxOf", "minOf", "pow",
 		"round", "sin", "sqrt", "tan", "getTime", "getWidth", "getHeight", "random",
 		"getResult", "getResultsCount", "getNumber", "nImages", "nSlices", 
@@ -92,7 +92,7 @@ public interface MacroConstants {
 		"startsWith", "endsWith", "atan2", "isNaN", "getZoom", "parseInt", "parseFloat",
 		"isKeyDown", "getSliceNumber", "screenWidth", "screenHeight", "calibrate",
 		"asin", "acos", "roiManager", "toolID", "is", "getValue", "Stack", "matches",
-		"getStringWidth"};
+		"getStringWidth", "Fit"};
 	static final int[] numericFunctionIDs = {GET_PIXEL, ABS, COS, EXP, FLOOR, LOG, MAX_OF, MIN_OF, POW,
 		ROUND, SIN, SQRT, TAN, GET_TIME, GET_WIDTH, GET_HEIGHT, RANDOM,
 		GET_RESULT, GET_COUNT, GET_NUMBER, NIMAGES, NSLICES,
@@ -101,24 +101,24 @@ public interface MacroConstants {
 		STARTS_WITH, ENDS_WITH, ATAN2, IS_NAN, GET_ZOOM, PARSE_INT, PARSE_FLOAT,
 		IS_KEY_DOWN, GET_SLICE_NUMBER, SCREEN_WIDTH, SCREEN_HEIGHT, CALIBRATE,
 		ASIN, ACOS, ROI_MANAGER, TOOL_ID, IS, GET_VALUE, STACK, MATCHES,
-		GET_STRING_WIDTH};
+		GET_STRING_WIDTH, FIT};
 
 	// String functions
 	static final int D2S=2000, TO_HEX=2001, TO_BINARY=2002, GET_TITLE=2003, GET_STRING=2004, SUBSTRING=2005,
 		FROM_CHAR_CODE=2006, GET_INFO=2007, GET_DIRECTORY=2008, GET_ARGUMENT=2009, GET_IMAGE_INFO=2010,
 		TO_LOWER_CASE=2011, TO_UPPER_CASE=2012, RUN_MACRO=2013, EVAL=2014, TO_STRING=2015, REPLACE=2016,
 		DIALOG=2017, GET_METADATA=2018, FILE=2019, SELECTION_NAME=2020, GET_VERSION=2021, GET_RESULT_LABEL=2022,
-		CALL=2023, STRING=2024, EXT=2025, EXEC=2026, LIST=2027, FIT=2028;
+		CALL=2023, STRING=2024, EXT=2025, EXEC=2026, LIST=2027;
 	static final String[] stringFunctions = {"d2s", "toHex", "toBinary", "getTitle", "getString", "substring",
 		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo", 
 		"toLowerCase", "toUpperCase", "runMacro", "eval", "toString", "replace",
 		"Dialog", "getMetadata", "File", "selectionName", "getVersion", "getResultLabel",
-		"call", "String", "Ext", "exec", "List", "Fit"};
+		"call", "String", "Ext", "exec", "List"};
 	static final int[] stringFunctionIDs = {D2S, TO_HEX, TO_BINARY, GET_TITLE, GET_STRING, SUBSTRING,
 		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO,
 		TO_LOWER_CASE, TO_UPPER_CASE, RUN_MACRO, EVAL, TO_STRING, REPLACE,
 		DIALOG, GET_METADATA, FILE, SELECTION_NAME, GET_VERSION, GET_RESULT_LABEL,
-		CALL, STRING, EXT, EXEC, LIST, FIT};
+		CALL, STRING, EXT, EXEC, LIST};
 
 	// Array functions
 	static final int GET_PROFILE=3000, NEW_ARRAY=3001, SPLIT=3002, GET_FILE_LIST=3003,

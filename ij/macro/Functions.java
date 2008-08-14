@@ -204,6 +204,7 @@ public class Functions implements MacroConstants, Measurements {
 			case STACK: value = doStack(); break;
 			case MATCHES: value = matches(); break;
 			case GET_STRING_WIDTH: value = getStringWidth(); break;
+			case FIT: value = fit(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -241,7 +242,6 @@ public class Functions implements MacroConstants, Measurements {
 			case EXT: str = doExt(); break;
 			case EXEC: str = exec(); break;
 			case LIST: str = doList(); break;
-			case FIT: str = doFit(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3778,7 +3778,7 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage(); 
 	}
 
-	String doFit() {
+	double fit() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
@@ -3787,39 +3787,39 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Function name expected: ");
 		if (props==null)
 			props = new Properties();
-		String value = null;
 		String name = interp.tokenString;
 		if (name.equals("doFit"))
 			return fitCurve();
+		else if (name.equals("getEquation"))
+			return getEquation();
 		else if (name.equals("nEquations")) {
 			interp.getParens();
-			return ""+CurveFitter.fitList.length;
-		} else if (name.equals("name")) {
-			int fit = (int)getArg();
-			checkIndex(fit, 0, CurveFitter.fitList.length-1);
-			return ""+CurveFitter.fitList[fit];
+			return CurveFitter.fitList.length;
 		}
 		if (fitter==null)
 			interp.error("No fit");
 		if (name.equals("f"))
-			return ""+CurveFitter.f(fitter.getFit(), fitter.getParams(), getArg());
+			return CurveFitter.f(fitter.getFit(), fitter.getParams(), getArg());
 		else if (name.equals("plot")) {
 			interp.getParens();
 			Fitter.plot(fitter);
-			return null;
+			return Double.NaN;
 		} else if (name.equals("nParams")) {
 			interp.getParens();
-			return ""+fitter.getNumParams();
+			return fitter.getNumParams();
 		} else if (name.equals("p")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, fitter.getNumParams()-1);
 			double[] p = fitter.getParams();
-			return ""+p[index];
+			return p[index];
+		} else if (name.equals("rSquared")) {
+			interp.getParens();
+			return fitter.getRSquared();
 		}
-		return value;
+		return Double.NaN;
 	}
 	
-	String fitCurve() {
+	double fitCurve() {
 		interp.getLeftParen();
 		int fit = -1;
 		if (isStringArg()) {
@@ -3839,8 +3839,18 @@ public class Functions implements MacroConstants, Measurements {
 		double[] y = getLastArray();
 		fitter = new CurveFitter(x, y);
 		fitter.doFit(fit, false);
-		return ""+fitter.getRSquared();
+		return Double.NaN;
 	}
 
+	double getEquation() {
+		int index = (int)getFirstArg();
+		Variable name = getNextVariable();
+		Variable formula = getLastVariable();
+		checkIndex(index, 0, CurveFitter.fitList.length-1);
+		name.setString(CurveFitter.fitList[index]);
+		formula.setString(CurveFitter.fList[index]);
+		return Double.NaN;
+	}
+	
 } // class Functions
 

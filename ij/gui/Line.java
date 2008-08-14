@@ -239,40 +239,6 @@ public class Line extends Roi {
 			return profile;
 	}
 	
-	/*
-	ImageProcessor rotateWideLine(ImageProcessor ip) {
-		int width = (int)Math.round(getRawLength());
-		int height = lineWidth;
-		ImageProcessor ip2 = new FloatProcessor(width, height);
-		double angle = Math.atan2(y1d-y2d, x2d-x1d);
-		double srcWidth = (double)ip.getWidth();
-		double srcHeight = (double)ip.getHeight();
-		Polygon p = getPolygon();
-		int sxbase = p.xpoints[1];
-		int sybase = p.ypoints[1];
-		double r, theta, sx, sy;
-		for (int dy=0; dy<height; dy++) {
-			for (int dx=0; dx<width; dx++) {
-				r = Math.sqrt(dx*dx+dy*dy);
-				theta = Math.atan2(dy, dx);
-				theta += angle;
-				sx = sxbase + r*Math.cos(theta);
-				sy = sybase - r*Math.sin(theta);
-				//if (dy==height/2 && dx==width/2) IJ.log(""+angle+"  "+dx+"  "+dy+"  "+sx+"  "+sy+"  "+r +"  "+"  "+theta+"  "+sy);
-				if (sx>srcWidth || sy>srcHeight || sy<0.0 || sx<0.0 )
-					ip2.putPixelValue(dx, dy, 0.0);
-				else
-					ip2.putPixelValue(dx, dy, ip.getInterpolatedValue(sx, sy));
-			}
-		}
-		if (IJ.altKeyDown()) {
-			ip2.resetMinAndMax();
-			new ImagePlus("Rotated Line", ip2).show();
-		}
-		return ip2;
-	}
-	*/
-
 	public Polygon getPolygon() {
 		Polygon p = new Polygon();
 		if (lineWidth==1) {
@@ -339,7 +305,7 @@ public class Line extends Roi {
 
 	public static void setWidth(int w) {
 		if (w<1) w = 1;
-		if (w>200) w = 200;
+		if (w>500) w = 500;
 		lineWidth = w;
 	}
 	

@@ -177,8 +177,14 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	}
 	
 	public static void update() {
-		if (instance!=null)
-			instance.checkbox.setState(instance.isSplineFit());
+		if (instance==null) return;
+		instance.checkbox.setState(instance.isSplineFit());
+		int sliderWidth = instance.slider.getValue();
+		int lineWidth = Line.getWidth();
+		if (lineWidth!=sliderWidth && lineWidth<=200) {
+			instance.slider.setValue(lineWidth);
+			instance.tf.setText(""+lineWidth);
+		}
 	}
 
 } 
