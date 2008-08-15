@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.Calibration;
 import java.awt.*;
 
 /** This plugin implements the Edit/Selection/Straighten command. */
@@ -38,10 +39,16 @@ public class Straightener implements PlugIn {
 			ip2 = straightenStraightLine(imp, width);
 		else
 			ip2 = straighten(imp, width);
-		(new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2)).show();
+		ImagePlus imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2);
+		Calibration cal = imp.getCalibration();
+		if (cal.pixelWidth==cal.pixelHeight)
+			imp2.setCalibration(cal);
+		imp2.show();
 		imp.setRoi(roi);
-		if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit())
+		if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
 			((PolygonRoi)roi).fitSpline();
+			imp.draw();
+		}
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	

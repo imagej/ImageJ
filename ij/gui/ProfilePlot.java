@@ -270,6 +270,7 @@ public class ProfilePlot {
 	}
 
 	double[] getWideLineProfile(ImagePlus imp, int lineWidth) {
+		Roi roi = (Roi)imp.getRoi().clone();
 		ImageProcessor ip2 = (new Straightener()).straighten(imp, lineWidth);
 		int width = ip2.getWidth();
 		int height = ip2.getHeight();
@@ -283,6 +284,11 @@ public class ProfilePlot {
 		}
 		for (int i=0; i<width; i++)
 			profile[i] /= height;
+		imp.setRoi(roi);
+		if (roi.getType()==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
+			((PolygonRoi)roi).fitSpline();
+			imp.draw();
+		}
 		return profile;
 	}
 	
