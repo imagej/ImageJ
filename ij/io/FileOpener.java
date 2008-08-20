@@ -434,7 +434,7 @@ public class FileOpener {
 		    if (fi.compression>=FileInfo.LZW)
 				is = new RandomAccessStream(is);
 			else if (gzip)
-				is = new GZIPInputStream(is);
+				is = new GZIPInputStream(is, 50000);
 		}
 		return is;
 	}

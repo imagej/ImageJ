@@ -223,6 +223,7 @@ public class Line extends Roi {
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
 				ImageProcessor ip2 = (new Straightener()).straightenStraightLine(imp,lineWidth);
+				if (ip2==null) return null;
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
 				profile = new double[width];
@@ -305,7 +306,15 @@ public class Line extends Roi {
 
 	public static void setWidth(int w) {
 		if (w<1) w = 1;
-		if (w>500) w = 500;
+		int max = 500;
+		if (w>max) {
+			ImagePlus imp2 = WindowManager.getCurrentImage();
+			if (imp2!=null) {
+				max = Math.max(max, imp2.getWidth());
+				max = Math.max(max, imp2.getHeight());
+			}
+			if (w>max) w = max;
+		}
 		lineWidth = w;
 	}
 	

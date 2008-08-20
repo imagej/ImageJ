@@ -1,4 +1,17 @@
-/* -*- mode: java; c-basic-offset: 8; indent-tabs-mode: t; tab-width: 8 -*- */
+/** This plugin implements the Plugins/Utilities/Find Commands 
+    command. It provides an easy user interface to finding commands 
+    you might know the name of without having to go through
+    all the menus.  If you type a part of a command name, the box
+    below will only show commands that match that substring (case
+    insensitively).  If only a single command matches then that
+    command can be run by hitting Enter.  If multiple commands match,
+    they can be selected by selecting with the mouse and clicking
+    "Run"; alternatively hitting the up or down arrows will move the
+    keyboard focus to the list and the selected command can be run
+    with Enter.
+
+    @author Mark Longair <mark-imagej@longair.net>
+ */
 
 package ij.plugin;
 
@@ -11,20 +24,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Set;
-
-/** This is a plugin that provides an easy user interface to finding
-    commands you might know the name of without having to go through
-    all the menus.  If you type a part of a command name, the box
-    below will only show commands that match that substring (case
-    insensitively).  If only a single command matches then that
-    command can be run by hitting Enter.  If multiple commands match,
-    they can be selected by selecting with the mouse and clicking
-    "Run"; alternatively hitting the up or down arrows will move the
-    keyboard focus to the list and the selected command can be run
-    with Enter.
-
-    @author Mark Longair <mark-imagej@longair.net>
- */
 
 public class CommandFinder implements PlugIn, TextListener, ActionListener, WindowListener, KeyListener, ItemListener {
 
@@ -46,8 +45,8 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 	TextField prompt;
 	List completions;
 	Button runButton;
-	Button cancelButton;
-	Checkbox fullInfoCheckbox;
+	Button closeButton;
+	Checkbox fullInfoCheckbox, closeCheckbox;
 	Hashtable commandsHash;
 	String [] commands;
 	Hashtable listLabelToCommand;
@@ -91,7 +90,7 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 				return;
 			}
 			runFromLabel(selected);
-		} else if (source == cancelButton) {
+		} else if (source == closeButton) {
 			d.dispose();
 		}
 	}
@@ -116,7 +115,8 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 			IJ.error("BUG: nothing to run found for '"+listLabel+"'");
 			return;
 		}
-		d.dispose();
+		if (closeCheckbox.getState())
+			d.dispose();
 	}
 
 	public void keyPressed(KeyEvent ke) {
@@ -160,7 +160,7 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 				if (selected!=null)
 					runFromLabel(selected);
 			}
-		} else if (source==cancelButton) {
+		} else if (source==closeButton) {
 			if (key==KeyEvent.VK_ENTER)
 				d.dispose();
 		}
@@ -266,10 +266,10 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		d.setLayout(new BorderLayout());
 		d.addWindowListener(this);
 
-		fullInfoCheckbox = new Checkbox(
-			"Show full information for each command",
-			false);
+		fullInfoCheckbox = new Checkbox("Show full information", false);
 		fullInfoCheckbox.addItemListener(this);
+		closeCheckbox = new Checkbox("Close when running", true);
+		closeCheckbox.addItemListener(this);
 
 		Panel northPanel = new Panel();
 
@@ -290,22 +290,23 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		d.add(completions, BorderLayout.CENTER);
 
 		runButton = new Button("Run");
-		cancelButton = new Button("Cancel");
+		closeButton = new Button("Close");
 
 		runButton.addActionListener(this);
-		cancelButton.addActionListener(this);
+		closeButton.addActionListener(this);
 		runButton.addKeyListener(this);
-		cancelButton.addKeyListener(this);
+		closeButton.addKeyListener(this);
 
 		Panel southPanel = new Panel();
 		southPanel.setLayout(new BorderLayout());
 
 		Panel optionsPanel = new Panel();
 		optionsPanel.add(fullInfoCheckbox);
+		optionsPanel.add(closeCheckbox);
 
 		Panel buttonsPanel = new Panel();
 		buttonsPanel.add(runButton);
-		buttonsPanel.add(cancelButton);
+		buttonsPanel.add(closeButton);
 
 		southPanel.add(optionsPanel, BorderLayout.CENTER);
 		southPanel.add(buttonsPanel, BorderLayout.SOUTH);

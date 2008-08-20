@@ -161,6 +161,7 @@ public class ProfilePlot {
 			ip.setInterpolate(PlotWindow.interpolate);
 			Line line = (Line)roi;
 			double[] values = line.getPixels();
+			if (values==null) return null;
 			if (cal!=null && cal.pixelWidth!=cal.pixelHeight) {
 				double dx = cal.pixelWidth*(line.x2 - line.x1);
 				double dy = cal.pixelHeight*(line.y2 - line.y1);

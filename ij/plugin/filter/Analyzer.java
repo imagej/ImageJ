@@ -365,6 +365,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (moreParams) {
 			ProfilePlot profile = new ProfilePlot(imp);
 			double[] values = profile.getProfile();
+			if (values==null) return;
 			ImageProcessor ip2 = new FloatProcessor(values.length, 1, values);
 			if (roi.getType()==Roi.LINE) {
 				Line l = (Line)roi;

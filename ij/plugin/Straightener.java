@@ -31,7 +31,7 @@ public class Straightener implements PlugIn {
 		if (type==Roi.FREELINE)
 			IJ.run(imp, "Fit Spline", "");
 		ImageProcessor ip2;
-		if (imp.getBitDepth()==24)
+		if (imp.getBitDepth()==24 && roi.getType()!=Roi.LINE)
 			ip2 = straightenRGB(imp, width);
 		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
 			ip2 = straightenComposite(imp, width);
@@ -39,6 +39,8 @@ public class Straightener implements PlugIn {
 			ip2 = straightenStraightLine(imp, width);
 		else
 			ip2 = straighten(imp, width);
+		if (ip2==null)
+			return;
 		ImagePlus imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2);
 		Calibration cal = imp.getCalibration();
 		if (cal.pixelWidth==cal.pixelHeight)
@@ -54,9 +56,11 @@ public class Straightener implements PlugIn {
 	
 	public ImageProcessor straighten(ImagePlus imp, int width) {
 		PolygonRoi roi = (PolygonRoi)imp.getRoi();
+		if (roi==null) return null;
 		boolean isSpline = roi.isSplineFit();
 		int type = roi.getType();
 		roi.fitSplineForStraightening();
+		if (roi.getNCoordinates()<2) return null;
 		FloatPolygon p = roi.getFloatPolygon();
 		int n = p.npoints;
 		ImageProcessor ip = imp.getProcessor();
@@ -114,7 +118,7 @@ public class Straightener implements PlugIn {
 		Polygon p = imp.getRoi().getPolygon();
 		Line.setWidth(width);
 		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
-		ImageProcessor ip2 = straighten(imp, width);
+		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straighten(imp, width);
 		imp.setRoi(new Line(p.xpoints[0], p.ypoints[0], p.xpoints[1], p.ypoints[1]));
 		return ip2;
 	}
@@ -130,12 +134,15 @@ public class Straightener implements PlugIn {
         ImagePlus imp2 = new ImagePlus("red", new ByteProcessor(w, h, r, null));
         imp2.setRoi((Roi)imp.getRoi().clone());
         ImageProcessor red = straighten(imp2, width);
+        if (red==null) return null;
         imp2 = new ImagePlus("green", new ByteProcessor(w, h, g, null));
         imp2.setRoi((Roi)imp.getRoi().clone());
         ImageProcessor green = straighten(imp2, width);
+        if (green==null) return null;
         imp2 = new ImagePlus("blue", new ByteProcessor(w, h, b, null));
         imp2.setRoi((Roi)imp.getRoi().clone());
         ImageProcessor blue = straighten(imp2, width);
+        if (blue==null) return null;
         ColorProcessor cp2 = new ColorProcessor(red.getWidth(), red.getHeight());
         red = red.convertToByte(false);
         green = green.convertToByte(false);

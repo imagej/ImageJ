@@ -51,7 +51,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		c.ipadx = 0;  // reset
 		c.gridx = 1;
 		c.insets = new Insets(margin, 5, margin, 15);
-		tf = new TextField(""+Line.getWidth(), 3);
+		tf = new TextField(""+Line.getWidth(), 4);
 		tf.addTextListener(this);
 		grid.setConstraints(tf, c);
     	panel.add(tf);

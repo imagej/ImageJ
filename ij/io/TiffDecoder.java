@@ -490,7 +490,7 @@ public class TiffDecoder {
 					fi.nImages = 0; // file not created by ImageJ so look at all the IFDs
 					break;
 				case METAMORPH1: case METAMORPH2:
-					if (name.indexOf(".STK")>0 || name.indexOf(".stk")>0) {
+					if ((name.indexOf(".STK")>0||name.indexOf(".stk")>0) && fi.compression==FileInfo.COMPRESSION_NONE) {
 						if (tag==METAMORPH2)
 							fi.nImages=count;
 						else
