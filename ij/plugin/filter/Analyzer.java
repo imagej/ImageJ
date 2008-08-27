@@ -8,6 +8,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.text.*;
 import ij.plugin.MeasurementsWriter;
+import ij.plugin.Straightener;
 import ij.util.Tools;
 import ij.macro.Interpreter;
 
@@ -356,23 +357,37 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addLabel("Label", getFileName());
 		rt.addValue("Length", roi.getLength());
 		double angle = 0.0;
-		if (roi.getType()==Roi.LINE) {
+		boolean straightLine = roi.getType()==Roi.LINE;
+		if (straightLine) {
 			Line l = (Line)roi;
 			angle = roi.getAngle(l.x1, l.y1, l.x2, l.y2);
 		}
 		rt.addValue("Angle", angle);
-		boolean moreParams = (measurements&MEAN)!=0||(measurements&STD_DEV)!=0||(measurements&MODE)!=0||(measurements&MIN_MAX)!=0;
+		boolean moreParams = (measurements&MEAN)!=0||(measurements&STD_DEV)!=0||(measurements&MODE)!=0||(measurements&MIN_MAX)!=0||(measurements&AREA)!=0;
+		int lineWidth = Line.getWidth();
 		if (moreParams) {
-			ProfilePlot profile = new ProfilePlot(imp);
-			double[] values = profile.getProfile();
-			if (values==null) return;
-			ImageProcessor ip2 = new FloatProcessor(values.length, 1, values);
-			if (roi.getType()==Roi.LINE) {
-				Line l = (Line)roi;
-				if ((l.y1==l.y2||l.x1==l.x2)&&l.x1==l.x1d&& l.y1==l.y1d&& l.x2==l.x2d&& l.y2==l.y2d)
-					ip2.setRoi(0, 0, ip2.getWidth()-1, 1);
+			ImageProcessor ip2;
+			Rectangle saveR = null;
+			if (straightLine && lineWidth>1) {
+				ip2 = imp.getProcessor();
+				saveR = ip2.getRoi();
+				ip2.setRoi(roi.getPolygon());
+			} else if (lineWidth>1)
+				ip2 = (new Straightener()).straighten(imp, lineWidth);
+			else {
+				ProfilePlot profile = new ProfilePlot(imp);
+				double[] values = profile.getProfile();
+				if (values==null) return;
+				ip2 = new FloatProcessor(values.length, 1, values);
+				if (straightLine) {
+					Line l = (Line)roi;
+					if ((l.y1==l.y2||l.x1==l.x2)&&l.x1==l.x1d&& l.y1==l.y1d&& l.x2==l.x2d&& l.y2==l.y2d)
+						ip2.setRoi(0, 0, ip2.getWidth()-1, 1);
+				}
 			}
-			ImageStatistics stats = ImageStatistics.getStatistics(ip2, MEAN+STD_DEV+MODE+MIN_MAX, null);
+			ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, null);
+			if (saveR!=null) ip2.setRoi(saveR);
+			if ((measurements&AREA)!=0) rt.addValue(ResultsTable.AREA,stats.area);
 			if ((measurements&MEAN)!=0) rt.addValue(ResultsTable.MEAN,stats.mean);
 			if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);
 			if ((measurements&MODE)!=0) rt.addValue(ResultsTable.MODE, stats.dmode);

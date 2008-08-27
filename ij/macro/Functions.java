@@ -552,8 +552,10 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setForegroundColor() {
+		int lineWidth = getProcessor().getLineWidth();
 		IJ.setForegroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
-		resetImage(); 
+		resetImage();
+		getProcessor().setLineWidth(lineWidth);
 		defaultColor = null;
 		defaultValue = Double.NaN;
 	}
@@ -2531,7 +2533,20 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		ImageStatistics stats = null;
 		Roi roi = imp.getRoi();
-		if (roi!=null && roi.isLine()) {
+		int lineWidth = Line.getWidth();
+		if (roi!=null && roi.isLine() && lineWidth>1) {
+			ImageProcessor ip2;
+			if (roi.getType()==Roi.LINE) {
+				ip2 = ip;
+				Rectangle saveR = ip2.getRoi();
+				ip2.setRoi(roi.getPolygon());
+				stats = ImageStatistics.getStatistics(ip2, params, cal);
+				ip2.setRoi(saveR);
+			} else {
+				ip2 = (new Straightener()).straighten(imp, lineWidth);
+				stats = ImageStatistics.getStatistics(ip2, params, cal);
+			}
+		} else if (roi!=null && roi.isLine()) {
 			ProfilePlot profile = new ProfilePlot(imp);
 			double[] values = profile.getProfile();
 			ImageProcessor ip2 = new FloatProcessor(values.length, 1, values);

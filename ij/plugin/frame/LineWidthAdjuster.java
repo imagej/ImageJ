@@ -15,7 +15,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	Runnable, AdjustmentListener, TextListener, ItemListener {
 
 	public static final String LOC_KEY = "line.loc";
-	int sliderRange = 200;
+	int sliderRange = 300;
 	Scrollbar slider;
 	int value;
 	boolean setText;

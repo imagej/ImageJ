@@ -61,8 +61,8 @@ public class Interpreter implements MacroConstants {
 		}
 		Tokenizer tok = new Tokenizer();
 		Program pgm = tok.tokenize(macro);
-		if (pgm.hasVars)
-			saveGlobals2(pgm);
+		//if (pgm.hasVars)  // why is this needed???????
+		//	saveGlobals2(pgm);
 		run(pgm);
 	}
 
@@ -122,7 +122,7 @@ public class Interpreter implements MacroConstants {
 		Recorder.recordInMacros = false;
 	}
 	
-	/** Saves global variablesk. */
+	/** Saves global variables. */
 	public void saveGlobals(Program pgm) {
 		saveGlobals2(pgm);
 	}

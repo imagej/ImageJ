@@ -833,8 +833,12 @@ public abstract class ImageProcessor extends Object {
 		lineWidth = width;
 		if (lineWidth<1) lineWidth = 1;
 	}
-		
-		
+				
+	/** Returns the current line width. */
+	public int getLineWidth() {
+		return lineWidth;
+	}
+
 	/** Draws a line from the current drawing location to (x2,y2). */
 	public void lineTo(int x2, int y2) {
 		int dx = x2-cx;

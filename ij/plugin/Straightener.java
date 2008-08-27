@@ -36,7 +36,7 @@ public class Straightener implements PlugIn {
 		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
 			ip2 = straightenComposite(imp, width);
 		else if (roi.getType()==Roi.LINE)
-			ip2 = straightenStraightLine(imp, width);
+			ip2 = rotateLine(imp, width);
 		else
 			ip2 = straighten(imp, width);
 		if (ip2==null)
@@ -113,7 +113,7 @@ public class Straightener implements PlugIn {
 		return ip2;
 	}
 	
-	public ImageProcessor straightenStraightLine(ImagePlus imp, int width) {
+	public ImageProcessor rotateLine(ImagePlus imp, int width) {
 		Line.setWidth(1);
 		Polygon p = imp.getRoi().getPolygon();
 		Line.setWidth(width);

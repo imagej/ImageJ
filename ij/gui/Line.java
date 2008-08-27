@@ -222,7 +222,7 @@ public class Line extends Roi {
 				ImageProcessor ip = imp.getProcessor();
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
-				ImageProcessor ip2 = (new Straightener()).straightenStraightLine(imp,lineWidth);
+				ImageProcessor ip2 = (new Straightener()).rotateLine(imp,lineWidth);
 				if (ip2==null) return null;
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
