@@ -474,16 +474,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		double maxValue = ip.getMax();
 		if (level1<minValue) level1 = minValue;
 		if (level2>maxValue) level2 = maxValue;
-		boolean outOfRange = level1<minDisplay || level2>maxDisplay;
-		if (outOfRange)
-			plot.setHistogram(imp, false);
-		else
-			ip.setMinAndMax(minDisplay, maxDisplay);
-			
-		minThreshold = scaleDown(ip,level1);
-		maxThreshold = scaleDown(ip,level2);
-		scaleUpAndSet(ip, minThreshold, maxThreshold);
-		updateScrollBars();
+		IJ.wait(500);
+		ip.setThreshold(level1, level2, lutColor);	
+		setup(imp);
+		//boolean outOfRange = level1<minDisplay || level2>maxDisplay;
+		//if (outOfRange)
+		//	plot.setHistogram(imp, false);
+		//else
+		//	ip.setMinAndMax(minDisplay, maxDisplay);
 		if (Recorder.record) {
 			if (imp.getBitDepth()==32)
 				Recorder.record("setThreshold", ip.getMinThreshold(), ip.getMaxThreshold());
