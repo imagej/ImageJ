@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
+import ij.plugin.frame.LineWidthAdjuster;
 import java.awt.*;
 
 /** This plugin implements most of the commands
@@ -71,6 +72,7 @@ public class Options implements PlugIn {
 		int width = (int)IJ.getNumber("Line Width:", Line.getWidth());
 		if (width==IJ.CANCELED) return;
 		Line.setWidth(width);
+		LineWidthAdjuster.update();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null && imp.isProcessor()) {
 			ImageProcessor ip = imp.getProcessor();

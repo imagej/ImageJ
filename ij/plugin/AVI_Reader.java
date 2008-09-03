@@ -11,9 +11,10 @@ import java.util.*;
 import com.sun.image.codec.jpeg.*;
 import javax.imageio.ImageIO;
 
-/** ImageJ Plugin for reading an AVI file into an image stack
+/** <pre>
+ * ImageJ Plugin for reading an AVI file into an image stack
  *  (one slice per video frame)
- *
+ * 
  *  Version 2008-07-03 by Michael Schmid, based on a plugin by
  *  Daniel Marsh and Wayne Rasband
  *
@@ -72,7 +73,7 @@ import javax.imageio.ImageIO;
  *   | |  |-dataSubchunks   RAW DATA: '??wb' for audio, '??db' and '??dc' for uncompressed and
  *   |                      compressed video, respectively. "??" denotes stream number, usually "00" or "01"
  *   |-idx1                 AVI INDEX (required by some programs, ignored in this plugin)
-
+ * </pre>
  */
 
 public class AVI_Reader extends VirtualStack implements PlugIn {
@@ -766,7 +767,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         if (biBitCount <=8 || convertToGray) {
             bPixels = new byte[dwWidth * biHeight];
             pixels = bPixels;
-        } else if (biBitCount == 16) {
+        } else if (biBitCount == 16 && dataCompression == NO_COMPRESSION) {
             sPixels = new short[dwWidth * biHeight];
             pixels = sPixels;
         } else {
@@ -780,7 +781,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 unpack8bit(rawData, rawOffset, bPixels, offset, dwWidth);
             else if (convertToGray)
                 unpackGray(rawData, rawOffset, bPixels, offset, dwWidth);
-            else if (biBitCount==16)
+            else if (biBitCount==16 && dataCompression == NO_COMPRESSION)
                 unpackShort(rawData, rawOffset, sPixels, offset, dwWidth);
             else
                 unpack(rawData, rawOffset, cPixels, offset, dwWidth);

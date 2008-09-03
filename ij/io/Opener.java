@@ -113,7 +113,7 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
-        boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1;
+        boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.startsWith("http://");
         if (!fullPath && IJ.getInstance()!=null) {
             String workingDir = OpenDialog.getDefaultDirectory();
             if (workingDir!=null)

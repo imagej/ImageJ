@@ -300,7 +300,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", sb.toString(), 200, 400);
 		}
 	}
-
+	
 	protected void copyToClipboard() {
 		Clipboard systemClipboard = null;
 		try {systemClipboard = getToolkit().getSystemClipboard();}
@@ -368,6 +368,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	
 	public int[] getHistogram() {
 		return histogram;
+	}
+
+	public double[] getXValues() {
+		double[] values = new double[stats.nBins];
+		for (int i=0; i<stats.nBins; i++)
+			values[i] = cal.getCValue(stats.histMin+i*stats.binSize);
+		return values;
 	}
 
 }

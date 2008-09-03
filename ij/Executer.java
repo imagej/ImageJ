@@ -97,7 +97,7 @@ public class Executer implements Runnable {
 					className = className.substring(0, argStart);
 				}
 			}
-			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner")) {
+			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner") && !Menus.getShortcuts().contains("*"+cmd)) {
     			IJ.open(IJ.getDirectory("plugins")+arg);
 				IJ.setKeyUp(KeyEvent.VK_SHIFT);		
     		} else

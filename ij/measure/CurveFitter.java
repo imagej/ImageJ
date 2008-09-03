@@ -28,7 +28,7 @@ public class CurveFitter {
     
     public static final String[] fitList = {"Straight Line","2nd Degree Polynomial",
     "3rd Degree Polynomial", "4th Degree Polynomial","Exponential","Power",
-    "log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)","Rodbard (NIH Image)",
+    "Log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)","Rodbard (NIH Image)",
     "Exponential with Offset","Gaussian", "Exponential Recovery"}; // fList must also be updated
     
     public static final String[] fList = {"y = a+bx","y = a+bx+cx^2",
@@ -610,4 +610,17 @@ public class CurveFitter {
         return index;
     }
     
+	public double[] getXPoints() {
+		return xData;
+	}
+	
+	public double[] getYPoints() {
+		return yData;
+	}
+	
+	public int getFit() {
+		return fit;
+	}
+
+
 }

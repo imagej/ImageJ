@@ -74,16 +74,22 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		this.fitType = fitType;
 		if (!getData())
 			return;
-		double[] a = Tools.getMinMax(x);
-		double xmin=a[0], xmax=a[1]; 
-		a = Tools.getMinMax(y);
-		double ymin=a[0], ymax=a[1]; 
 		cf = new CurveFitter(x, y);
 		//double[] params = {0.4, 3.0, 4.6, 44.0};
 		//cf.setInitialParameters(params);
 		cf.doFit(fitType, settings.getState());
 		IJ.log(cf.getResultString());
-
+		plot(cf);
+	}
+	
+	public static void plot(CurveFitter cf) {
+		int fit = cf.getFit();
+		double[] x = cf.getXPoints();
+		double[] y = cf.getYPoints();
+		double[] a = Tools.getMinMax(x);
+		double xmin=a[0], xmax=a[1]; 
+		a = Tools.getMinMax(y);
+		double ymin=a[0], ymax=a[1]; 
 		float[] px = new float[100];
 		float[] py = new float[100];
 		double inc = (xmax-xmin)/99.0;
@@ -93,14 +99,26 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 			tmp += inc;
 		}
 		for (int i=0; i<100; i++)
-			py[i] = (float)CurveFitter.f(fitType, cf.getParams(), px[i]);
+			py[i] = (float)CurveFitter.f(fit, cf.getParams(), px[i]);
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);
 		ymax = Math.max(ymax, a[1]);
-		PlotWindow pw = new PlotWindow(cf.fList[fitType],"X","Y",px,py);
-		pw.setLimits(xmin,xmax,ymin,ymax);
+		PlotWindow pw = new PlotWindow(cf.fList[fit],"X","Y",px,py);
+		pw.setLimits(xmin, xmax, ymin, ymax);
 		pw.addPoints(x, y, PlotWindow.CIRCLE);
-		//pw.addLabel(0.02, 0.1, cf.fList[fitType]);
+		double yloc = 0.1;
+		double yinc = 0.085;
+		pw.addLabel(0.02, yloc, cf.fitList[fit]); yloc+=yinc;
+		pw.addLabel(0.02, yloc, cf.fList[fit]);  yloc+=yinc;
+        double[] p = cf.getParams();
+        int n = cf.getNumParams();
+        char pChar = 'a';
+        for (int i = 0; i < n; i++) {
+			pw.addLabel(0.02, yloc, pChar+"="+IJ.d2s(p[i],4));
+			yloc+=yinc;
+			pChar++;
+        }
+		pw.addLabel(0.02, yloc, "R^2="+IJ.d2s(cf.getRSquared(),3));  yloc+=yinc;
 		pw.draw();									
 	}
 	

@@ -18,6 +18,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public static final String LOC_KEY = "results.loc";
 	public static final String WIDTH_KEY = "results.width";
 	public static final String HEIGHT_KEY = "results.height";
+	public static final String LOG_LOC_KEY = "log.loc";
 	static final String FONT_SIZE = "tw.font.size";
 	static final String FONT_ANTI= "tw.font.anti";
 	TextPanel textPanel;
@@ -72,8 +73,12 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			loc = Prefs.getLocation(LOC_KEY);
 			w = (int)Prefs.get(WIDTH_KEY, 0.0);
 			h = (int)Prefs.get(HEIGHT_KEY, 0.0);
+		} else if (title.equals("Log")) {
+			loc = Prefs.getLocation(LOG_LOC_KEY);
+			w = width;
+			h = height;
 		}
-		if (loc!=null && w>0 && h>0) {
+		if (loc!=null&&w>0 && h>0) {
 			setSize(w, h);
 			setLocation(loc);
 		} else {
@@ -230,6 +235,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			Prefs.set(WIDTH_KEY, d.width);
 			Prefs.set(HEIGHT_KEY, d.height);
 		} else if (getTitle().equals("Log")) {
+			Prefs.saveLocation(LOG_LOC_KEY, getLocation());
 			IJ.debugMode = false;
 			IJ.log("\\Closed");
 		} else if (textPanel!=null && textPanel.rt!=null) {

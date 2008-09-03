@@ -203,9 +203,9 @@ public class Menus {
 		addPlugInItem(help, "Search Website...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/search.html\")", 0, false);
 		addPlugInItem(help, "List Archives...", "ij.plugin.BrowserLauncher(\"https://list.nih.gov/archives/imagej.html\")", 0, false);
 		help.addSeparator();
+		addPlugInItem(help, "Resources...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/index.html\")", 0, false);
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/macros/\")", 0, false);
-		addPlugInItem(help, "Source Code...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/source/\")", 0, false);
 		addPlugInItem(help, "Macro Language...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/macros.html\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/functions.html\")", 0, false);
 		help.addSeparator();

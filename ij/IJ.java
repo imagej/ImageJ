@@ -1153,7 +1153,9 @@ public class IJ {
 
 	/** Opens and displays a tiff, dicom, fits, pgm, jpeg, bmp, gif, lut, 
 		roi, or text file. Displays an error message if the specified file
-		is not in one of the supported formats, or if it is not found. */
+		is not in one of the supported formats, or if it is not found.
+		With 1.41k or later, opens images specified by a URL.
+		*/
 	public static void open(String path) {
 		if (ij==null && Menus.getCommands()==null) init();
 		Opener o = new Opener();

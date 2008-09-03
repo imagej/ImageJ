@@ -9,6 +9,7 @@ import ij.gui.*;
 /** Displays a window that allows the user to set the font, size and style. */
 public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 
+	public static final String LOC_KEY = "fonts.loc";
 	private static String[] sizes = {"8","9","10","12","14","18","24","28","36","48","60","72"};
 	private static int[] isizes = {8,9,10,12,14,18,24,28,36,48,60,72};
 	private Panel panel;
@@ -72,7 +73,11 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		checkbox.addItemListener(this);
 
 		pack();
-		GUI.center(this);
+		Point loc = Prefs.getLocation(LOC_KEY);
+		if (loc!=null)
+			setLocation(loc);
+		else
+			GUI.center(this);
 		show();
 		IJ.register(Fonts.class);
 	}
@@ -103,8 +108,9 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 	}
 	
     public void windowClosing(WindowEvent e) {
-		super.windowClosing(e);
+	 	close();
 		instance = null;
+		Prefs.saveLocation(LOC_KEY, getLocation());
 	}
 
 }

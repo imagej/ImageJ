@@ -17,6 +17,7 @@ import ij.measure.*;
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener {
 
+	public static final String LOC_KEY = "manager.loc";
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
 	static final int MENU=0, COMMAND=1, MULTI=2;
@@ -86,7 +87,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupMenu();
 		pack();
 		list.remove(0);
-		GUI.center(this);
+		Point loc = Prefs.getLocation(LOC_KEY);
+		if (loc!=null)
+			setLocation(loc);
+		else
+			GUI.center(this);
 		show();
 	}
 
@@ -1256,6 +1261,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     public void close() {
     	super.close();
     	instance = null;
+		Prefs.saveLocation(LOC_KEY, getLocation());
     }
     
     public void mousePressed (MouseEvent e) {

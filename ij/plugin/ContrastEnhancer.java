@@ -12,13 +12,9 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	boolean classicEqualization;
 	int stackSize;
 	boolean updateSelectionOnly;
-	
-	static boolean equalize;
-	static boolean normalize;
-	static boolean processStack;
-	static boolean useStackHistogram;
-	static boolean entireImage;
+	boolean equalize, normalize, processStack, useStackHistogram, entireImage;
 	static double saturated = 0.5;
+	static boolean gEqualize, gNormalize;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -42,6 +38,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	}
 
 	boolean showDialog(ImagePlus imp) {
+		equalize=gEqualize; normalize=gNormalize;
 		int bitDepth = imp.getBitDepth();
 		boolean composite = imp.isComposite();
 		if (composite) stackSize = 1;
@@ -82,6 +79,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (saturated>100.0) saturated = 100;
 		if (processStack)
 			normalize = true;
+		gEqualize=equalize; gNormalize=normalize;
 		return true;
 	}
  

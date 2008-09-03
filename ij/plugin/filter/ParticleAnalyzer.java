@@ -212,7 +212,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (maxSize==999999) maxSize = DEFAULT_MAX_SIZE;
 		options = staticOptions;
 		String unit = cal.getUnit();
-		if (unit.equals("inch") || Prefs.unitIsPixel) {
+		if (unit.equals("inch")) {
 			unit = "pixel";
 			unitSquared = 1.0;
 		}
@@ -255,7 +255,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (gd.wasCanceled())
 			return false;
 			
-		String[] minAndMax = Tools.split(gd.getNextString(), " -");
+		String size = gd.getNextString();
+		if (size.indexOf("p")!=-1) { // unit is "pixel"?
+			size = size.replaceAll("p", "");
+			unitSquared = 1.0;
+		}
+		String[] minAndMax = Tools.split(size, " -");
 		double mins = Tools.parseDouble(minAndMax[0]);
 		double maxs = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;
 		minSize = Double.isNaN(mins)?DEFAULT_MIN_SIZE:mins/unitSquared;

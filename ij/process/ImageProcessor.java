@@ -833,8 +833,12 @@ public abstract class ImageProcessor extends Object {
 		lineWidth = width;
 		if (lineWidth<1) lineWidth = 1;
 	}
-		
-		
+				
+	/** Returns the current line width. */
+	public int getLineWidth() {
+		return lineWidth;
+	}
+
 	/** Draws a line from the current drawing location to (x2,y2). */
 	public void lineTo(int x2, int y2) {
 		int dx = x2-cx;
@@ -1324,8 +1328,12 @@ public abstract class ImageProcessor extends Object {
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). 
 		Returns zero if the (x, y) is not inside the image. */
 	public final double getInterpolatedValue(double x, double y) {
-		if (x<0.0 || x>=width-1.0 || y<0.0 || y>=height-1.0)
-			return getInterpolatedEdgeValue(x, y);
+		if (x<0.0 || x>=width-1.0 || y<0.0 || y>=height-1.0) {
+			if (x<-1.0 || x>=width || y<=1.0 || y>=height)
+				return 0.0;
+			else
+				return getInterpolatedEdgeValue(x, y);
+		}
 		int xbase = (int)x;
 		int ybase = (int)y;
 		double xFraction = x - xbase;
