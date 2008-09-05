@@ -932,7 +932,6 @@ public class Menus {
 	
 	/** Updates the Image/Type and Window menus. */
 	public static void updateMenus() {
-	
 		if (ij==null) return;
 		gray8Item.setState(false);
 		gray16Item.setState(false);
@@ -1388,6 +1387,19 @@ public class Menus {
 			prefs.put(key, openRecentMenu.getItem(i).getLabel());
 		}
 		prefs.put(Prefs.MENU_SIZE, Integer.toString(fontSize));
+	}
+	
+	public static void updateImageJMenus() {
+		shortcuts = new Hashtable();
+		pluginsPrefs = new Vector();
+		jarFiles = macroFiles = null;
+		menusTable = null;
+		Menus m = new Menus(IJ.getInstance(), IJ.getApplet());
+		String err = m.addMenuBar();
+		m.installPopupMenu(IJ.getInstance());
+		m.installStartupMacroSet();
+		if (err!=null) IJ.error(err);
+		IJ.showStatus(m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
 
 }

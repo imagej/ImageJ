@@ -314,6 +314,7 @@ utilities08="Search...",ij.plugin.SimpleCommands("search")
 utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
 utilities10="Find Commands... [l]",ij.plugin.CommandFinder
 utilities11="Update ImageJ... ",ij.plugin.ImageJ_Updater
+utilities12="Update Menus",ij.plugin.ImageJ_Updater("menus")
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

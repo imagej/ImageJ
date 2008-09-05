@@ -609,6 +609,7 @@ public class IJ {
 	}
 	
 	private static DecimalFormat[] df;
+	private static DecimalFormatSymbols dfs;
 
 	/** Converts a number to a rounded formatted string.
 		The 'decimalPlaces' argument specifies the number of
@@ -620,10 +621,8 @@ public class IJ {
 			return "3.4e38";
 		double np = n;
 		if (n<0.0) np = -n;
-		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d)
-			return (new DecimalFormat("0.###E0")).format(n); // use scientific notation
 		if (df==null) {
-			DecimalFormatSymbols dfs = new DecimalFormatSymbols(Locale.US);
+			dfs = new DecimalFormatSymbols(Locale.US);
 			df = new DecimalFormat[10];
 			df[0] = new DecimalFormat("0", dfs);
 			df[1] = new DecimalFormat("0.0", dfs);
@@ -636,6 +635,8 @@ public class IJ {
 			df[8] = new DecimalFormat("0.00000000", dfs);
 			df[9] = new DecimalFormat("0.000000000", dfs);
 		}
+		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d)
+			return (new DecimalFormat("0.###E0",dfs)).format(n); // use scientific notation
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
 		return df[decimalPlaces].format(n);

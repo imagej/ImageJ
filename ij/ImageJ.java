@@ -676,5 +676,5 @@ public class ImageJ extends Frame implements ActionListener,
 			Prefs.set(TextWindow.HEIGHT_KEY, d.height);
 		}
 	}
-
+	
 }
