@@ -7,10 +7,21 @@
 
 <li> <u>1.41l, 8 September 2008</u>
 <ul>
-<li> Added the <i>Help&gt;Update Menus</i> command.
+<li> Added the <i>Help&gt;Update Menus</i> command, which allows
+plugins to be installed and/or removed without restarting ImageJ.
+<li> The Particle Analyzer's "Summarize" displays the average particle mean, mode,
+perimeter, major axis, minor axis, angle, circularity, Feret diameter, 
+integrated density, median, skewness and kurtosis if the corresponding option
+is enabled in the <i>Analyze&gt;Set Measurements</i> dialog.
+<li> Frederic Hessman contributed an improved version of the <i>File&gt;Save As&gt;FITS</i>
+command that preserves any existing FITS header.
+<li> The <i>Image&gt;Stacks&gt;Stack to Images</i> command no longer discards 
+slice labels (e.g., DICOM headers).
 <li> Numbers displayed using scientific notation in plots, histograms
 and in the Results window now use a maximum of 3 decimal places.
-<li> Fixed a bug the caused the <i>Process&gt;Binary&gt;Erode</i> and <i>Dilate</i>
+<li> The <i>File&gt;Save As&gt;AVI</i>
+command now accepts frame rates as low as 0.5 (2 seconds per frame).
+<li> Fixed a bug that caused the <i>Process&gt;Binary&gt;Erode</i> and <i>Dilate</i>
 commands to throw an exception with one pixel wide images.
 </ul>
 

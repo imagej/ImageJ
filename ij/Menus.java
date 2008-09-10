@@ -206,10 +206,10 @@ public class Menus {
 		addPlugInItem(help, "Resources...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/index.html\")", 0, false);
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/macros/\")", 0, false);
-		addPlugInItem(help, "Macro Language...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/macros.html\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/functions.html\")", 0, false);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
+		addPlugInItem(help, "Update Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
 		help.addSeparator();
 		aboutMenu = addSubMenu(help, "About Plugins");
 		addPlugInItem(help, "About ImageJ...", "ij.plugin.AboutBox", 0, false);
@@ -1396,8 +1396,8 @@ public class Menus {
 		menusTable = null;
 		Menus m = new Menus(IJ.getInstance(), IJ.getApplet());
 		String err = m.addMenuBar();
-		m.installPopupMenu(IJ.getInstance());
-		m.installStartupMacroSet();
+		//m.installPopupMenu(IJ.getInstance());
+		//m.installStartupMacroSet();
 		if (err!=null) IJ.error(err);
 		IJ.showStatus(m.nPlugins + " commands, " + m.nMacros + " macros");
 	}

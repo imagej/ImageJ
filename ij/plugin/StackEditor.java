@@ -171,6 +171,9 @@ public class StackEditor implements PlugIn {
 			}
 			ImagePlus imp2 = new ImagePlus(title, ip);
 			imp2.setCalibration(cal);
+			String info = stack.getSliceLabel(i);
+			if (info!=null && !info.equals(label))
+				imp2.setProperty("Info", info);
 			imp2.show();
 		}
 		imp.changes = false;
