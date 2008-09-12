@@ -2,6 +2,8 @@ package ij.measure;
 import ij.*;
 import ij.plugin.filter.Analyzer;
 import ij.text.*;
+import ij.process.*;
+import ij.gui.Roi;
 import java.awt.*;
 
 /** This is a table for storing measurement results as columns of numeric values. 
@@ -410,6 +412,52 @@ public class ResultsTable implements Cloneable {
 				sb.append(getRowAsString(i)+"\n");
 			tp.append(new String(sb));
 		}
+	}
+	
+	public void update(int measurements, Roi roi) {
+		ResultsTable rt2 = new ResultsTable();
+		Analyzer analyzer = new Analyzer(null, measurements, rt2);
+		ImageProcessor ip = new ByteProcessor(1, 1);
+		ImageStatistics stats = new ByteStatistics(ip, measurements, null);
+		analyzer.saveResults(stats, roi);
+		//IJ.log(rt2.getColumnHeadings());
+		int last = rt2.getLastColumn();
+		//IJ.log("update1: "+last+"  "+getMaxColumns());
+		while (last+1>=getMaxColumns()) {
+			addColumns();
+		//IJ.log("addColumns: "+getMaxColumns());
+		}
+		if (last<getLastColumn()) {
+			last=getLastColumn();
+			if (last>=rt2.getMaxColumns())
+				last = rt2.getMaxColumns() - 1;
+		}
+		for (int i=0; i<=last; i++) {
+			//IJ.log(i+"  "+rt2.getColumn(i)+"  "+columns[i]+"  "+rt2.getColumnHeading(i)+"  "+getColumnHeading(i));
+			if (rt2.getColumn(i)!=null && columns[i]==null) {
+				columns[i] = new double[maxRows];
+				headings[i] = rt2.getColumnHeading(i);
+				if (i>lastColumn) lastColumn = i;
+			} else if (rt2.getColumn(i)==null && columns[i]!=null) {
+				columns[i] = null;
+				headings[i] = "---";
+			}
+		}
+		if (rt2.getRowLabels()==null)
+			rowLabels = null;
+		else if (rt2.getRowLabels()!=null && rowLabels==null) {
+			rowLabels = new String[maxRows];
+			rowLabelHeading = "Label";
+		}
+		if (getCounter()>0) show("Results");
+	}
+	
+	int getMaxColumns() {
+		return maxColumns;
+	}
+	
+	String[] getRowLabels() {
+		return rowLabels;
 	}
 	
 	/** Creates a copy of this ResultsTable. */

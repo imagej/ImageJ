@@ -450,9 +450,9 @@ public class TiffDecoder {
 						if (bpp==6)
 							error("ImageJ cannot open 48-bit LZW compressed TIFFs");
 						fi.compression = FileInfo.LZW;
-					} else if (value==7)
-						fi.compression = FileInfo.JPEG;
-					else if (value!=1) {
+					} else if (value!=1 && !(value==7&&fi.width<500)) {
+						// don't abort with Spot camera compressed (7) thumbnails
+						// otherwise, this is an unknown compression type
 						fi.compression = FileInfo.COMPRESSION_UNKNOWN;
 						error("ImageJ cannot open TIFF files " +
 							"compressed in this fashion ("+value+")");

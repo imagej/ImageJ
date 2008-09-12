@@ -5,6 +5,7 @@ import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
+import java.awt.Dimension;
 
 
 /** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
