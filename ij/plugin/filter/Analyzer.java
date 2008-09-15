@@ -309,8 +309,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			boolean update = false;
 			int index = rt.getColumnIndex("Length");
 			if (index<0 || !rt.columnExists(index)) update=true;
-			index = rt.getColumnIndex("Angle");
-			if (index<0 || !rt.columnExists(index)) update=true;
+			if (roi.getType()==Roi.LINE) {
+				index = rt.getColumnIndex("Angle");
+				if (index<0 || !rt.columnExists(index)) update=true;
+			}
 			if (update) rt.update(measurements, roi);
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
@@ -407,12 +409,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (roi!=null) {
 			if (roi.isLine()) {
 				rt.addValue("Length", roi.getLength());
-				double angle = 0.0;
 				if (roi.getType()==Roi.LINE) {
+					double angle = 0.0;
 					Line l = (Line)roi;
 					angle = roi.getAngle(l.x1, l.y1, l.x2, l.y2);
+					rt.addValue("Angle", angle);
 				}
-				rt.addValue("Angle", angle);
 			} else if (roi.getType()==Roi.ANGLE)
 				rt.addValue("Angle", ((PolygonRoi)roi).getAngle());
 			else if (roi.getType()==Roi.POINT)

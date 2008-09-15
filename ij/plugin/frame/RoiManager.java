@@ -622,17 +622,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
-		int nLines = 0;
 		boolean allSliceOne = true;
 		for (int i=0; i<indexes.length; i++) {
 			String label = list.getItem(indexes[i]);
 			if (getSliceNumber(label)>1) allSliceOne = false;
 			Roi roi = (Roi)rois.get(label);
-			if (roi.isLine()) nLines++;
-		}
-		if (nLines>0 && nLines!=indexes.length) {
-			error("All items must be areas or all must be lines.");
-			return false;
 		}
 		int nSlices = 1;
 		if (mode==MULTI)

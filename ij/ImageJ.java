@@ -93,6 +93,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private long keyPressedTime, actionPerformedTime;
 	private String lastKeyCommand;
 	private boolean embedded;
+	private boolean windowClosed;
 	
 	boolean hotkey;
 	
@@ -447,6 +448,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void windowClosing(WindowEvent e) {
 		doCommand("Quit");
+		windowClosed = true;
 	}
 
 	public void windowActivated(WindowEvent e) {
@@ -637,11 +639,12 @@ public class ImageJ extends Frame implements ActionListener,
 				}
 			}
 		}
-		if (!changes && Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS && !(IJ.macroRunning()&&WindowManager.getImageCount()==0)) {
+		if (windowClosed && !changes && Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS && !(IJ.macroRunning()&&WindowManager.getImageCount()==0)) {
 			GenericDialog gd = new GenericDialog("ImageJ", this);
 			gd.addMessage("Are you sure you want to quit ImageJ?");
 			gd.showDialog();
 			quitting = !gd.wasCanceled();
+			windowClosed = false;
 		}
 		if (!quitting)
 			return;

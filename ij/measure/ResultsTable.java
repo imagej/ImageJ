@@ -32,6 +32,7 @@ public class ResultsTable implements Cloneable {
 	private int maxRows = 100; // will be increased as needed
 	private int maxColumns = MAX_COLUMNS; // will be increased as needed
 	private String[] headings = new String[maxColumns];
+	private boolean[] keep = new boolean[maxColumns];
 	private int counter;
 	private double[][] columns = new double[maxColumns][];
 	private String[] rowLabels;
@@ -79,6 +80,9 @@ public class ResultsTable implements Cloneable {
 			for (int i=0; i<maxColumns; i++)
 				tmp2[i] = columns[i];
 			columns = tmp2;
+			boolean[] tmp3 = new boolean[maxColumns*2];
+			System.arraycopy(keep, 0, tmp3, 0, maxColumns);
+			keep = tmp3;
 			maxColumns *= 2;
 	}
 	
@@ -111,6 +115,7 @@ public class ResultsTable implements Cloneable {
 		if (index==COLUMN_NOT_FOUND)
 			index = getFreeColumn(column);
 		addValue(index, value);
+		keep[index] = true;
 	}
 	
 	/** Adds a label to the beginning of the current row. Counter must be >0. */
@@ -369,6 +374,7 @@ public class ResultsTable implements Cloneable {
 		for (int i=0; i<maxColumns; i++) {
 			columns[i] = null;
 			headings[i] = null;
+			keep[i] = false;
 		}
 		lastColumn = -1;
 		rowLabels = null;
@@ -438,10 +444,8 @@ public class ResultsTable implements Cloneable {
 				columns[i] = new double[maxRows];
 				headings[i] = rt2.getColumnHeading(i);
 				if (i>lastColumn) lastColumn = i;
-			} else if (rt2.getColumn(i)==null && columns[i]!=null) {
+			} else if (rt2.getColumn(i)==null && columns[i]!=null && !keep[i])
 				columns[i] = null;
-				headings[i] = "---";
-			}
 		}
 		if (rt2.getRowLabels()==null)
 			rowLabels = null;
