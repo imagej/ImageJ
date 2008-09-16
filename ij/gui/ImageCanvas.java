@@ -60,6 +60,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private Image offScreenImage;
 	private int offScreenWidth = 0;
 	private int offScreenHeight = 0;
+	private boolean mouseExited = true;
 	
 	
 	public ImageCanvas(ImagePlus imp) {
@@ -373,6 +374,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void setCursor(int sx, int sy, int ox, int oy) {
 		xMouse = ox;
 		yMouse = oy;
+		mouseExited = false;
 		Roi roi = imp.getRoi();
 		ImageWindow win = imp.getWindow();
 		if (win==null)
@@ -721,32 +723,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				zoomOut(imageWidth/2, imageHeight/2);
 		} else
 			return;
-		//int sx = screenX(srcRect.x+srcRect.width/2);
-		//int sy = screenY(srcRect.y+srcRect.height/2);
-		//int sx = screenX(imageWidth/2);
-		//int sy = screenY(imageHeight/2);
 		int x=xMouse, y=yMouse;
-IJ.log(x+"  "+y);
-		if (x<0 || x>imageWidth) x = imageWidth/2;
-		if (y<0 || y>imageHeight) y = imageHeight/2;
+		if (mouseExited) {
+			x = imageWidth/2;
+			y = imageHeight/2;
+		}
 		int sx = screenX(x);
 		int sy = screenY(y);
 		adjustSourceRect(1.0, sx, sy);
 		repaint();
-		/*
-		double imag = imp.getWindow().getInitialMagnification();
-		if (magnification<imag)
-			unzoom();
-		while(magnification<1.0)
-			zoomIn(imageWidth/2, imageHeight/2);
-		int x=xMouse, y=yMouse;
-		if (x<0 || x>imageWidth) x = 0;
-		if (y<0 || y>imageHeight) y = 0;
-		int sx = screenX(x);
-		int sy = screenY(y);
-		adjustSourceRect(1.0, sx, sy);
-		repaint();
-		*/
 	}
 	
 	protected void scroll(int sx, int sy) {
@@ -983,6 +968,7 @@ IJ.log(x+"  "+y);
 		if (win!=null)
 			setCursor(defaultCursor);
 		IJ.showStatus("");
+		mouseExited = true;
 	}
 
 	/*
