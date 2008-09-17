@@ -78,6 +78,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
 	private static String[] showStrings = {"Nothing", "Outlines", "Masks", "Ellipses", "Count Masks"};
 	private static double minCircularity=0.0, maxCircularity=1.0;
+	private static String prevHdr;
 		
 	protected static final int NOTHING=0,OUTLINES=1,MASKS=2,ELLIPSES=3,ROI_MASKS=4;
 	protected static int showChoice;
@@ -89,6 +90,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	protected boolean showResults,excludeEdgeParticles,showSizeDistribution,
 		resetCounter,showProgress, recordStarts, displaySummary, floodFill, addToManager;
 		
+	private String summaryHdr = "Slice\tCount\tTotal Area\tAverage Size\tArea Fraction";
 	private double level1, level2;
 	private double minSize;
 	private double maxSize;
@@ -122,8 +124,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private FloodFiller ff;
 	private Polygon polygon;
 	private RoiManager roiManager;
-
-
+		
 	
 	/** Constructs a ParticleAnalyzer.
 		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
@@ -481,33 +482,83 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			label = imp.getStack().getShortSliceLabel(slice);
 			label = label!=null&&!label.equals("")?label:""+slice;
 		}
-		String aLine;
-		if (areas!=null) {
-			double sum = 0.0;
-			int start = areas.length-particleCount;
-			if (start<0)
-				return;
-			for (int i=start; i<areas.length; i++)
-				sum += areas[i];
-			int places = Analyzer.getPrecision();
-			Calibration cal = imp.getCalibration();
-			String total = "\t"+IJ.d2s(sum,places);
-			String average = "\t"+IJ.d2s(sum/particleCount,places);
-			String fraction = "\t"+IJ.d2s(sum*100.0/totalArea,1);
-			aLine = label+"\t"+particleCount+total+average+fraction;
-		} else
-			aLine = label+"\t"+particleCount;
+		String aLine = null;
+		if (areas==null) return;
+		double sum = 0.0;
+		int start = areas.length-particleCount;
+		if (start<0)
+			return;
+		for (int i=start; i<areas.length; i++)
+			sum += areas[i];
+		int places = Analyzer.getPrecision();
+		Calibration cal = imp.getCalibration();
+		String total = "\t"+IJ.d2s(sum,places);
+		String average = "\t"+IJ.d2s(sum/particleCount,places);
+		String fraction = "\t"+IJ.d2s(sum*100.0/totalArea,1);
+		aLine = label+"\t"+particleCount+total+average+fraction;
+		aLine = addMeans(aLine, start);
 		if (slices==1) {
 			Frame frame = WindowManager.getFrame("Summary");
-			if (frame!=null && (frame instanceof TextWindow))
+			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
 				tw = (TextWindow)frame;
 		}
 		if (tw==null) {
 			String title = slices==1?"Summary":"Summary of "+imp.getTitle();
-			String headings = "Slice\tCount\tTotal Area\tAverage Size\tArea Fraction";
-			tw = new TextWindow(title, headings, aLine, 450, 300);
+			tw = new TextWindow(title, summaryHdr, aLine, 450, 300);
+			prevHdr = summaryHdr;
 		} else
 			tw.append(aLine);
+	}
+
+	String addMeans(String line, int start) {
+		if ((measurements&MEAN)!=0) line=addMean(ResultsTable.MEAN, line, start);
+		if ((measurements&MODE)!=0) line=addMean(ResultsTable.MODE, line, start);
+		if ((measurements&PERIMETER)!=0)
+			line=addMean(ResultsTable.PERIMETER, line, start);
+		if ((measurements&ELLIPSE)!=0) {
+			line=addMean(ResultsTable.MAJOR, line, start);
+			line=addMean(ResultsTable.MINOR, line, start);
+			line=addMean(ResultsTable.ANGLE, line, start);
+		}
+		if ((measurements&CIRCULARITY)!=0)
+			line=addMean(ResultsTable.CIRCULARITY, line, start);
+		if ((measurements&FERET)!=0)
+			line=addMean(ResultsTable.FERET, line, start);
+		if ((measurements&INTEGRATED_DENSITY)!=0)
+			line=addMean(ResultsTable.INTEGRATED_DENSITY, line, start);
+		if ((measurements&MEDIAN)!=0)
+			line=addMean(ResultsTable.MEDIAN, line, start);
+		if ((measurements&SKEWNESS)!=0)
+			line=addMean(ResultsTable.SKEWNESS, line, start);
+		if ((measurements&KURTOSIS)!=0)
+			line=addMean(ResultsTable.KURTOSIS, line, start);
+		return line;
+	}
+
+	private String addMean(int column, String line, int start) {
+		float[] c = column>=0?rt.getColumn(column):null;
+		if (c!=null) {
+			ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
+			if (ip==null) return line;
+			ip.setRoi(start, 0, ip.getWidth()-start, 1);
+			ip = ip.crop();
+			ImageStatistics stats = new FloatStatistics(ip);
+			if (stats==null)
+				return line;
+			line += n(stats.mean);
+		} else
+			line += "-\t";
+		summaryHdr += "\t"+rt.getColumnHeading(column);
+		return line;
+	}
+
+	String n(double n) {
+		String s;
+		if (Math.round(n)==n)
+			s = IJ.d2s(n,0);
+		else
+			s = IJ.d2s(n, Analyzer.getPrecision());
+		return "\t"+s;
 	}
 
 	boolean eraseOutsideRoi(ImageProcessor ip, Rectangle r, ImageProcessor mask) {
@@ -777,9 +828,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (count==0)
 			return;
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
-		//if (displaySummary && lastSlice && rt==Analyzer.getResultsTable() && imp!=null) {
-		//	showSummary();
-		//}
 		if (outlines!=null && lastSlice) {
 			String title = imp!=null?imp.getTitle():"Outlines";
 			String prefix;
@@ -799,43 +847,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
 	}
 	
-	void showSummary() {
-		String s = "";
-		s += "Threshold: ";
-		if ((int)level1==level1 && (int)level2==level2)
-			s += (int)level1+"-"+(int)level2+"\n";
-		else
-			s += IJ.d2s(level1,2)+"-"+IJ.d2s(level2,2)+"\n";
-		s += "Count: " + totalCount+"\n";
-		float[] areas = rt.getColumn(ResultsTable.AREA);
-		String aLine;
-		if (areas!=null) {
-			double sum = 0.0;
-			int start = areas.length-totalCount;
-			if (start<0)
-				return;
-			for (int i=start; i<areas.length; i++)
-				sum += areas[i];
-			int places = Analyzer.getPrecision();
-			Calibration cal = imp.getCalibration();
-			String unit = cal.getUnit();
-			String total = IJ.d2s(sum,places);
-			s += "Total Area: "+total+" "+unit+"^2\n";
-			String average = IJ.d2s(sum/totalCount,places);
-			s += "Average Size: "+IJ.d2s(sum/totalCount,places)+" "+unit+"^2\n";
-			if (processStack) totalArea *= imp.getStackSize();
-			String fraction = IJ.d2s(sum*100.0/totalArea, Math.max(places,2));
-			s += "Area Fraction: "+fraction+"%";
-			aLine = " "+"\t"+totalCount+"\t"+total+"\t"+average+"\t"+fraction;
-		} else
-			aLine = " "+"\t"+totalCount;			
-		if (tw!=null) {
-			tw.append("");
-			tw.append(aLine);
-		} else
-			new TextWindow("Summary of "+imp.getTitle(), s, 300, 200);
-	}
-
 	int getColumnID(String name) {
 		int id = rt.getFreeColumn(name);
 		if (id==ResultsTable.COLUMN_IN_USE)

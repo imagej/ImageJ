@@ -60,6 +60,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private Image offScreenImage;
 	private int offScreenWidth = 0;
 	private int offScreenHeight = 0;
+	private boolean mouseExited = true;
 	
 	
 	public ImageCanvas(ImagePlus imp) {
@@ -373,6 +374,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void setCursor(int sx, int sy, int ox, int oy) {
 		xMouse = ox;
 		yMouse = oy;
+		mouseExited = false;
 		Roi roi = imp.getRoi();
 		ImageWindow win = imp.getWindow();
 		if (win==null)
@@ -706,14 +708,26 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		
 	/** Implements the Image/Zoom/View 100% command. */
 	public void zoom100Percent() {
+		if (magnification==1.0)
+			return;
 		double imag = imp.getWindow().getInitialMagnification();
-		if (magnification<imag)
+		if (magnification!=imag)
 			unzoom();
-		while(magnification<1.0)
-			zoomIn(imageWidth/2, imageHeight/2);
+		if (magnification==1.0)
+			return;
+		if (magnification<1.0) {
+			while (magnification<1.0)
+				zoomIn(imageWidth/2, imageHeight/2);
+		} else if (magnification>1.0) {
+			while (magnification>1.0)
+				zoomOut(imageWidth/2, imageHeight/2);
+		} else
+			return;
 		int x=xMouse, y=yMouse;
-		if (x<0 || x>imageWidth) x = 0;
-		if (y<0 || y>imageHeight) y = 0;
+		if (mouseExited) {
+			x = imageWidth/2;
+			y = imageHeight/2;
+		}
 		int sx = screenX(x);
 		int sy = screenY(y);
 		adjustSourceRect(1.0, sx, sy);
@@ -954,6 +968,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (win!=null)
 			setCursor(defaultCursor);
 		IJ.showStatus("");
+		mouseExited = true;
 	}
 
 	/*

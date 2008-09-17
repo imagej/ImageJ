@@ -490,6 +490,10 @@ public class ByteProcessor extends ImageProcessor {
 		if (inc<1) inc = 1;
 		
 		byte[] pixels2 = (byte[])getPixelsCopy();
+		if (width==1) {
+        	filterEdge(type, pixels2, roiHeight, roiX, roiY, 0, 1);
+        	return;
+		}
 		int offset, sum1, sum2=0, sum=0;
         int[] values = new int[10];
         if (type==MEDIAN_FILTER) values = new int[10];

@@ -12,6 +12,8 @@ import java.lang.reflect.*;
 public class ImageJ_Updater implements PlugIn {
 
 	public void run(String arg) {
+		if (arg.equals("menus"))
+			{updateMenus(); return;}
 		if (IJ.getApplet()!=null) return;
 		File file = new File(Prefs.getHomeDir() + File.separator + "ij.jar");
 		if (isMac() && !file.exists())
@@ -198,6 +200,10 @@ public class ImageJ_Updater implements PlugIn {
 	
 	void error(String msg) {
 		IJ.error("ImageJ Updater", msg);
+	}
+	
+	void updateMenus() {
+		Menus.updateImageJMenus();
 	}
 
 }

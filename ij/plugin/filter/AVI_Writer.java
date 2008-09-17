@@ -95,7 +95,7 @@ public class AVI_Writer implements PlugInFilter {
         compressionIndex = gd.getNextChoiceIndex();
         jpegQuality = (int)gd.getNextNumber();
         fps = gd.getNextNumber();
-        if (fps<=1.0) fps = 1.0;
+        if (fps<=0.5) fps = 0.5;
         if (fps>60.0) fps = 60.0;
 		imp.getCalibration().fps = fps;
 		return true;
@@ -395,7 +395,7 @@ public class AVI_Writer implements PlugInFilter {
         double rate = imp.getCalibration().fps;
         if (rate==0.0)
             rate = Animator.getFrameRate();
-        if (rate<=1.0) rate = 1.0;
+        if (rate<=0.5) rate = 0.5;
         if (rate>60.0) rate = 60.0;
         return rate;
     }

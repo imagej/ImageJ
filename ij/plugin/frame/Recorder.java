@@ -169,14 +169,25 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void recordRoi(Polygon p, int type) {
 		if (textArea==null) return;
-		String method = type==Roi.POLYGON?"makePolygon":"makeLine";
-		StringBuffer args = new StringBuffer();
-		for (int i=0; i<p.npoints; i++) {
-			args.append(p.xpoints[i]+",");
-			args.append(""+p.ypoints[i]);
-			if (i!=p.npoints-1) args.append(",");
+		if (type==Roi.ANGLE) {
+			String xarr = "newArray(", yarr="newArray(";
+			xarr += p.xpoints[0]+",";
+			yarr += p.ypoints[0]+",";
+			xarr += p.xpoints[1]+",";
+			yarr += p.ypoints[1]+",";
+			xarr += p.xpoints[2]+")";
+			yarr += p.ypoints[2]+")";
+			textArea.append("makeSelection(\"angle\","+xarr+","+yarr+");\n");
+		} else {
+			String method = type==Roi.POLYGON?"makePolygon":"makeLine";
+			StringBuffer args = new StringBuffer();
+			for (int i=0; i<p.npoints; i++) {
+				args.append(p.xpoints[i]+",");
+				args.append(""+p.ypoints[i]);
+				if (i!=p.npoints-1) args.append(",");
+			}
+			textArea.append(method+"("+args.toString()+");\n");
 		}
-		textArea.append(method+"("+args.toString()+");\n");
 	}
 
 	public static void recordOption(String key, String value) {
