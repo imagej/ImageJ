@@ -3,7 +3,6 @@ import ij.*;
 import ij.gui.*;
 import java.io.*;
 import ij.util.Tools;
-import java.lang.reflect.*;
 
 
 /** This plugin implements the Edit/Options/Memory command. */

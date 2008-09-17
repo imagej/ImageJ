@@ -6,7 +6,6 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.awt.image.*;
-import java.lang.reflect.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.io.*;
@@ -69,7 +68,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.41l";
+	public static final String VERSION = "1.41m";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);

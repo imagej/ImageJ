@@ -132,6 +132,7 @@ public class IJ {
 	static Object runPlugIn(String commandName, String className, String arg) {
 		if (IJ.debugMode)
 			IJ.log("runPlugin: "+className+" "+arg);
+		if (arg==null) arg = "";
 		// Use custom classloader if this is a user plugin
 		// and we are not running as an applet
 		if (!className.startsWith("ij") && applet==null) {
@@ -794,7 +795,13 @@ public class IJ {
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
 		    	if (imp.getStack().isVirtual()) {
-		    		error("Custom code is required to process virtual stacks.");
+		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
+		    		String msg =
+						"Custom code required to process this virtual stack\n"+
+						"(e.g., \"Process Virtual Stack\" macro) or it must be\n"+
+						"converted to a normal stack using Image>Duplicate,\n"+
+						"which will require "+size+"MB of additional memory.";
+		    		error(msg);
 					return PlugInFilter.DONE;
 		    	}
 				if (Recorder.record)
@@ -806,7 +813,7 @@ public class IJ {
 		}
 		return flags;
 	}
-	
+		
 	/** Creates a rectangular selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeRectangle(int x, int y, int width, int height) {

@@ -4,7 +4,6 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.awt.datatransfer.*;																																																																																													
-import java.lang.reflect.*;
 import ij.*;
 import ij.gui.*;
 import ij.util.Tools;

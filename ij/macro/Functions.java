@@ -3001,14 +3001,13 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("dateLastModified"))
 			return (new Date(f.lastModified())).toString();
 		else if (name.equals("delete")) {
-			String ok = null;
-			if (isValid(f)) ok=f.delete()?"1":"0";
-			return ok;
+			return f.delete()?"1":"0";
 		} else
 			interp.error("Unrecognized File function "+name);
 		return null;
 	}
 	
+	/*
 	boolean isValid(File f) {
 		String path = f.getPath();
 		if (path.equals("0") || path.equals("NaN") )
@@ -3022,6 +3021,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			return true;
 	}
+	*/
 	
 	boolean checkPath(File f) {
 		String path = f.getPath();
@@ -3159,8 +3159,20 @@ public class Functions implements MacroConstants, Measurements {
 		// get class and method name
 		String fullName = getFirstString();
 		int dot = fullName.lastIndexOf('.');
-		if(dot<0)
-			interp.error("Expected 'classname.methodname'");
+		if(dot<0) {
+			String arg = fullName.toLowerCase(Locale.US);
+			if (arg.equals("javascript") || arg.equals("js")) {
+				String script = getLastString();
+				if (IJ.isJava16() && !IJ.isMacOSX())
+					IJ.runPlugIn("JavaScriptEvaluator", script);
+				else {
+					Object js = IJ.runPlugIn("JavaScript", Editor.JavaScriptIncludes+script);
+					if (js==null) interp.error(Editor.JS_NOT_FOUND);
+				}
+				return null;
+			} else
+				interp.error("'classname.methodname', 'javascript' or 'js' expected");
+		}
 		String className = fullName.substring(0,dot);
 		String methodName = fullName.substring(dot+1);
 
