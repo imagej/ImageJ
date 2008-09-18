@@ -25,24 +25,30 @@ public class FileSaver {
 		fi = imp.getFileInfo();
 	}
 
-	/** Resaves the image. Calls saveAsTiff() if this is a new image, not a TIFF, a 
-		stack or if the image was loaded using a URL. Returns false if saveAsTiff() is
+	/** Resaves the image. Calls saveAsTiff() if this is a new image, not a TIFF,
+		or if the image was loaded using a URL. Returns false if saveAsTiff() is
 		called and the user selects cancel in the file save dialog box. */
 	public boolean save() {
 		FileInfo ofi = null;
 		if (imp!=null) ofi = imp.getOriginalFileInfo();
 		boolean validName = ofi!=null && imp.getTitle().equals(ofi.fileName);
-		if (validName && ofi.fileFormat==FileInfo.TIFF && imp.getStackSize()==1 && ofi.nImages==1 && (ofi.url==null||ofi.url.equals(""))) {
+		if (validName && ofi.fileFormat==FileInfo.TIFF && ofi.directory!=null && !ofi.directory.equals("") && (ofi.url==null||ofi.url.equals(""))) {
             name = imp.getTitle();
             directory = ofi.directory;
 			String path = directory+name;
 			File f = new File(path);
-			if (!IJ.isMacro() && f!=null && f.exists()) {
+			if (f==null || !f.exists())
+				return saveAsTiff();
+			if (!IJ.isMacro()) {
 				if (!IJ.showMessageWithCancel("Save as TIFF", "The file "+ofi.fileName+" already exists.\nDo you want to replace it?"))
 					return false;
 			}
 			IJ.showStatus("Saving "+path);
-		    return saveAsTiff(path);
+			if (imp.getStackSize()>1) {
+				IJ.saveAs("tif", path);
+				return true;
+			} else
+		    	return saveAsTiff(path);
 		} else
 			return saveAsTiff();
 	}

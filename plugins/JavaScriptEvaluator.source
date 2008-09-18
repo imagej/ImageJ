@@ -8,6 +8,7 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	Thread thread;
 	String script;
 
+	// run script in separate thread
 	public void run(String script) {
 		if (script.equals("")) return;
 		if (!IJ.isJava16())
@@ -16,6 +17,13 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 		thread = new Thread(this, "JavaScript"); 
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
 		thread.start();
+	}
+
+	// run script in current thread
+	public String run(String script, String arg) {
+		this.script = script;
+		run();
+		return null;
 	}
 
 	public void run() {

@@ -2500,12 +2500,39 @@ public class Functions implements MacroConstants, Measurements {
 			arg = getString();
 		}
 		interp.getRightParen();
-		if (eval)
-			return IJ.runMacro(name, arg);
-		else
+		if (eval) {
+			if (arg!=null && (name.equals("script")||name.equals("js")))
+				return evalScript(arg);
+			else
+				return IJ.runMacro(name, arg);
+		} else
 			return IJ.runMacroFile(name, arg);
 	}
 
+	String evalScript(String script) {
+		Object js = null;
+		if (IJ.isJava16() && !IJ.isMacOSX())
+			js = IJ.runPlugIn("JavaScriptEvaluator", "");
+		else {
+			js = IJ.runPlugIn("JavaScript", "");
+			script = Editor.JavaScriptIncludes+script;
+		}
+		if (js==null) interp.error(Editor.JS_NOT_FOUND);
+		String arg = "";
+		try {
+			Class c = js.getClass();
+			Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
+			String s = (String)m.invoke(js, new Object[] {script, arg});			
+		} catch(Exception e) {
+			String msg = ""+e;
+			if (msg.indexOf("NoSuchMethod")!=0)
+				msg = "\"JavaScript.jar\" (rsb.info.nih.gov/ij/download/tools/JavaScript.jar)\nis outdated";
+			interp.error(msg);
+			return null;
+		}
+		return null;
+	}
+ 	
 	void setThreshold() {
 		double lower = getFirstArg();
 		double upper = getNextArg();
@@ -3160,18 +3187,8 @@ public class Functions implements MacroConstants, Measurements {
 		String fullName = getFirstString();
 		int dot = fullName.lastIndexOf('.');
 		if(dot<0) {
-			String arg = fullName.toLowerCase(Locale.US);
-			if (arg.equals("javascript") || arg.equals("js")) {
-				String script = getLastString();
-				if (IJ.isJava16() && !IJ.isMacOSX())
-					IJ.runPlugIn("JavaScriptEvaluator", script);
-				else {
-					Object js = IJ.runPlugIn("JavaScript", Editor.JavaScriptIncludes+script);
-					if (js==null) interp.error(Editor.JS_NOT_FOUND);
-				}
-				return null;
-			} else
-				interp.error("'classname.methodname', 'javascript' or 'js' expected");
+			interp.error("'classname.methodname' expected");
+			return null;
 		}
 		String className = fullName.substring(0,dot);
 		String methodName = fullName.substring(dot+1);
