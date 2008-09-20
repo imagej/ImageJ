@@ -132,6 +132,7 @@ public class IJ {
 	static Object runPlugIn(String commandName, String className, String arg) {
 		if (IJ.debugMode)
 			IJ.log("runPlugin: "+className+" "+arg);
+		if (arg==null) arg = "";
 		// Use custom classloader if this is a user plugin
 		// and we are not running as an applet
 		if (!className.startsWith("ij") && applet==null) {
@@ -635,8 +636,12 @@ public class IJ {
 			df[8] = new DecimalFormat("0.00000000", dfs);
 			df[9] = new DecimalFormat("0.000000000", dfs);
 		}
-		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d)
-			return (new DecimalFormat("0.###E0",dfs)).format(n); // use scientific notation
+		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d) {
+			if (Double.isInfinite(n))
+				return ""+n;
+			else
+				return (new DecimalFormat("0.###E0",dfs)).format(n); // use scientific notation
+		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
 		return df[decimalPlaces].format(n);
@@ -794,7 +799,13 @@ public class IJ {
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
 		    	if (imp.getStack().isVirtual()) {
-		    		error("Custom code is required to process virtual stacks.");
+		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
+		    		String msg =
+						"Custom code is required to process this virtual stack\n"+
+						"(e.g., \"Process Virtual Stack\" macro) or it must be\n"+
+						"converted to a normal stack using Image>Duplicate,\n"+
+						"which will require "+size+"MB of additional memory.";
+		    		error(msg);
 					return PlugInFilter.DONE;
 		    	}
 				if (Recorder.record)
@@ -806,7 +817,7 @@ public class IJ {
 		}
 		return flags;
 	}
-	
+		
 	/** Creates a rectangular selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeRectangle(int x, int y, int width, int height) {

@@ -23,7 +23,8 @@ public class FloodFiller {
 		isFloat = ip instanceof FloatProcessor;
 	}
 
-	/** Does a 4-connected flood fill. */
+	/** Does a 4-connected flood fill using the current fill/draw
+		value, which is defined by ImageProcessor.setValue(). */
 	public boolean fill(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
@@ -62,7 +63,8 @@ public class FloodFiller {
 		}        
 	}
 	
-	/** Does a 8-connected flood fill. */
+	/** Does a 8-connected flood fill using the current fill/draw
+		value, which is defined by ImageProcessor.setValue(). */
 	public boolean fill8(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();

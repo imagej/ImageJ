@@ -3,7 +3,6 @@ package ij.process;
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.lang.reflect.*; 
 import ij.gui.*;
 import ij.util.*;
 import ij.plugin.filter.GaussianBlur;

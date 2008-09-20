@@ -113,7 +113,7 @@ public class ProfilePlot {
         for (int i=0; i<n; i++)
         	yValues[i] = (float)profile[i];
 		boolean fixedYScale = fixedMin!=0.0 || fixedMax!=0.0;
-		Plot plot = new Plot("Plot of "+imp.getShortTitle(), xLabel, yLabel, xValues, yValues);
+		Plot plot = new Plot("Plot of "+getShortTitle(imp), xLabel, yLabel, xValues, yValues);
 		if (fixedYScale) {
 			double[] a = Tools.getMinMax(xValues);
 			plot.setLimits(a[0],a[1],fixedMin,fixedMax);
@@ -121,6 +121,14 @@ public class ProfilePlot {
 		plot.show();
 	}
 	
+	String getShortTitle(ImagePlus imp) {
+		String title = imp.getTitle();
+		int index = title.lastIndexOf('.');
+		if (index>0 && (title.length()-index)<=5)
+			title = title.substring(0, index);
+		return title;
+    }
+
 	/** Returns the profile plot data. */
 	public double[] getProfile() {
 		return profile;

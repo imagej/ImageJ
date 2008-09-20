@@ -2500,12 +2500,39 @@ public class Functions implements MacroConstants, Measurements {
 			arg = getString();
 		}
 		interp.getRightParen();
-		if (eval)
-			return IJ.runMacro(name, arg);
-		else
+		if (eval) {
+			if (arg!=null && (name.equals("script")||name.equals("js")))
+				return evalScript(arg);
+			else
+				return IJ.runMacro(name, arg);
+		} else
 			return IJ.runMacroFile(name, arg);
 	}
 
+	String evalScript(String script) {
+		Object js = null;
+		if (IJ.isJava16() && !IJ.isMacOSX())
+			js = IJ.runPlugIn("JavaScriptEvaluator", "");
+		else {
+			js = IJ.runPlugIn("JavaScript", "");
+			script = Editor.JavaScriptIncludes+script;
+		}
+		if (js==null) interp.error(Editor.JS_NOT_FOUND);
+		String arg = "";
+		try {
+			Class c = js.getClass();
+			Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
+			String s = (String)m.invoke(js, new Object[] {script, arg});			
+		} catch(Exception e) {
+			String msg = ""+e;
+			if (msg.indexOf("NoSuchMethod")!=0)
+				msg = "\"JavaScript.jar\" (rsb.info.nih.gov/ij/download/tools/JavaScript.jar)\nis outdated";
+			interp.error(msg);
+			return null;
+		}
+		return null;
+	}
+ 	
 	void setThreshold() {
 		double lower = getFirstArg();
 		double upper = getNextArg();
@@ -3001,14 +3028,13 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("dateLastModified"))
 			return (new Date(f.lastModified())).toString();
 		else if (name.equals("delete")) {
-			String ok = null;
-			if (isValid(f)) ok=f.delete()?"1":"0";
-			return ok;
+			return f.delete()?"1":"0";
 		} else
 			interp.error("Unrecognized File function "+name);
 		return null;
 	}
 	
+	/*
 	boolean isValid(File f) {
 		String path = f.getPath();
 		if (path.equals("0") || path.equals("NaN") )
@@ -3022,6 +3048,7 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			return true;
 	}
+	*/
 	
 	boolean checkPath(File f) {
 		String path = f.getPath();
@@ -3159,8 +3186,10 @@ public class Functions implements MacroConstants, Measurements {
 		// get class and method name
 		String fullName = getFirstString();
 		int dot = fullName.lastIndexOf('.');
-		if(dot<0)
-			interp.error("Expected 'classname.methodname'");
+		if(dot<0) {
+			interp.error("'classname.methodname' expected");
+			return null;
+		}
 		String className = fullName.substring(0,dot);
 		String methodName = fullName.substring(dot+1);
 
