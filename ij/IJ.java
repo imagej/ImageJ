@@ -779,7 +779,7 @@ public class IJ {
 		if the user selects "Cancel".
 	*/
 	public static int setupDialog(ImagePlus imp, int flags) {
-		if (imp==null || (ij!=null&&ij.hotkey) || hideProcessStackDialog)
+		if (imp==null || (ij!=null&&ij.hotkey))
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
@@ -792,7 +792,9 @@ public class IJ {
 				else
 					return flags;
 			}
-			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
+			if (hideProcessStackDialog)
+				return flags;
+ 			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
 				"Process Stack?", "Process all "+stackSize+" images?  There is\n"
 				+"no Undo if you select \"Yes\".");
 			if (d.cancelPressed())

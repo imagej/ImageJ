@@ -213,7 +213,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 	
 	void showPlot(double[] x, double[] y, Calibration cal, String rSquared) {
-		if (!cal.calibrated())
+		if (!cal.calibrated() || (IJ.macroRunning()&&Macro.getOptions()!=null))
 			return;
 		int xmin,xmax,range;
 		float[] ctable = cal.getCTable();

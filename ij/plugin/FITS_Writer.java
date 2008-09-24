@@ -68,22 +68,22 @@ public class FITS_Writer implements PlugIn {
 	void createHeader(String path, ImageProcessor ip, int numBytes) {
 		int numCards = 5;
 		String bitperpix = "";
-		if (numBytes==2) {bitperpix = "				  16";}
-		else if (numBytes==4) {bitperpix = "				 -32";}
-		else if (numBytes==1) {bitperpix = "				   8";}
-		appendFile(writeCard("SIMPLE", "				   T", "Created by ImageJ FITS_Writer Version 2008-09-07"), path);
-		appendFile(writeCard("BITPIX", bitperpix, ""), path);
-		appendFile(writeCard("NAXIS", "				   2", ""), path);
-		appendFile(writeCard("NAXIS1", "				 "+ip.getWidth(), "image width"), path);
-		appendFile(writeCard("NAXIS2", "				 "+ip.getHeight(), "image height"), path);
-		int fillerSize = 2880 - ((numCards*80+3) % 2880);
+		if (numBytes==2) {bitperpix = "                  16";}
+		else if (numBytes==4) {bitperpix = "                 -32";}
+		else if (numBytes==1) {bitperpix = "                   8";}
+ 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer 2008-09-07"), path);
+ 		appendFile(writeCard("BITPIX", bitperpix, ""), path);
+ 		appendFile(writeCard("NAXIS", "                   2", ""), path);
+ 		appendFile(writeCard("NAXIS1", "                 "+ip.getWidth(), "image width"), path);
+ 		appendFile(writeCard("NAXIS2", "                 "+ip.getHeight(), "image height"), path);
+ 		int fillerSize = 2880 - ((numCards*80+3) % 2880);
 		char[] end = new char[3];
 		end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
 		char[] filler = new char[fillerSize];
 		for (int i = 0; i < fillerSize; i++)
 			filler[i] = ' ';
-		appendFile(end, path);
-		appendFile(filler, path);
+ 		appendFile(end, path);
+ 		appendFile(filler, path);
 	}
 
 	/**
@@ -235,14 +235,14 @@ public class FITS_Writer implements PlugIn {
 		String bitperpix = "";
 
 		// THIS STUFF NEEDS TO BE MADE CONFORMAL WITH THE PRESENT IMAGE
-		if (numBytes==2) {bitperpix = "				  16";}
-		else if (numBytes==4) {bitperpix = "				 -32";}
-		else if (numBytes==1) {bitperpix = "				   8";}
-		appendFile(writeCard("SIMPLE", "				   T", "Created by ImageJ FITS_Writer Vers. 2008-09-07"), path);
-		appendFile(writeCard("BITPIX", bitperpix, ""), path);
-		appendFile(writeCard("NAXIS", "				   2", ""), path);
-		appendFile(writeCard("NAXIS1", "				 "+ip.getWidth(), "image width"), path);
-		appendFile(writeCard("NAXIS2", "				 "+ip.getHeight(), "image height"), path);
+		if (numBytes==2) {bitperpix = "                  16";}
+		else if (numBytes==4) {bitperpix = "                 -32";}
+		else if (numBytes==1) {bitperpix = "                   8";}
+ 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer 2008-09-07"), path);
+ 		appendFile(writeCard("BITPIX", bitperpix, ""), path);
+ 		appendFile(writeCard("NAXIS", "                   2", ""), path);
+		appendFile(writeCard("NAXIS1", "                 "+ip.getWidth(), "image width"), path);
+ 		appendFile(writeCard("NAXIS2", "                 "+ip.getHeight(), "image height"), path);
 
 		// APPEND THE REST OF THE HEADER
 		char[] card;
