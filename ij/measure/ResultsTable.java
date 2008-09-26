@@ -342,7 +342,7 @@ public class ResultsTable implements Cloneable {
 	
 	String n(double n) {
 		String s;
-		if (Math.round(n)==n)
+		if (Math.round(n)==n && precision>=0)
 			s = IJ.d2s(n,0);
 		else
 			s = IJ.d2s(n,precision);

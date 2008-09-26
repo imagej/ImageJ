@@ -610,6 +610,7 @@ public class IJ {
 	}
 	
 	private static DecimalFormat[] df;
+	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
 
 	/** Converts a number to a rounded formatted string.
@@ -636,11 +637,28 @@ public class IJ {
 			df[8] = new DecimalFormat("0.00000000", dfs);
 			df[9] = new DecimalFormat("0.000000000", dfs);
 		}
-		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d) {
+		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
+			if (decimalPlaces<0) {
+				decimalPlaces = -decimalPlaces;
+				if (decimalPlaces>9) decimalPlaces=9;
+			} else
+				decimalPlaces = 3;
+			if (sf==null) {
+				sf = new DecimalFormat[10];
+				sf[1] = new DecimalFormat("0.#E0",dfs);
+				sf[2] = new DecimalFormat("0.##E0",dfs);
+				sf[3] = new DecimalFormat("0.###E0",dfs);
+				sf[4] = new DecimalFormat("0.####E0",dfs);
+				sf[5] = new DecimalFormat("0.#####E0",dfs);
+				sf[6] = new DecimalFormat("0.######E0",dfs);
+				sf[7] = new DecimalFormat("0.#######E0",dfs);
+				sf[8] = new DecimalFormat("0.########E0",dfs);
+				sf[9] = new DecimalFormat("0.#########E0",dfs);
+			}
 			if (Double.isInfinite(n))
 				return ""+n;
 			else
-				return (new DecimalFormat("0.###E0",dfs)).format(n); // use scientific notation
+				return sf[decimalPlaces].format(n); // use scientific notation
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
