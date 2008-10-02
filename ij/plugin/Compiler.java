@@ -13,15 +13,21 @@ import java.awt.event.KeyEvent;
 /** Compiles and runs plugins using the javac compiler. */
 public class Compiler implements PlugIn, FilenameFilter {
 
+	private static final int TARGET14=0, TARGET15=1, TARGET16=2,  TARGET17=3;
+	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7"};
+	private static final String TARGET_KEY = "javac.target";
 	private static com.sun.tools.javac.Main javac;
 	private static ByteArrayOutputStream output;
 	private static String dir, name;
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
+	private static int target = (int)Prefs.get(TARGET_KEY, TARGET15);
 
 	public void run(String arg) {
 		if (arg.equals("edit"))
 			edit();
+		else if (arg.equals("options"))
+			showDialog();
 		else
 			compileAndRun(arg);
 	 }
@@ -34,14 +40,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 	
 	void compileAndRun(String path) {
-		if (IJ.altKeyDown()) {
-			IJ.setKeyUp(KeyEvent.VK_ALT);
-			GenericDialog gd = new GenericDialog("Compile and Run");
-			gd.addCheckbox("Generate Debugging Info (javac -g)", generateDebuggingInfo);
-			gd.showDialog();
-			if (gd.wasCanceled()) return;
-			generateDebuggingInfo = gd.getNextBoolean();
-		}
 		if (!open(path, "Compile and Run Plugin..."))
 			return;
 		if (name.endsWith(".class")) {
@@ -75,15 +73,14 @@ public class Compiler implements PlugIn, FilenameFilter {
 		Vector v = new Vector();
 		if (generateDebuggingInfo)
 			v.addElement("-g");
-		if (IJ.isJava16()) {
-			// needed so plugin will run on Java 1.5
+		if (IJ.isJava15()) {
+			validateTarget();
 			v.addElement("-source");
-			v.addElement("1.5");
+			v.addElement(targets[target]);
 			v.addElement("-target");
-			v.addElement("1.5");
-		}
-		if (IJ.isJava15())
+			v.addElement(targets[target]);
 			v.addElement("-Xlint:unchecked");
+		}
 		v.addElement("-deprecation");
 		v.addElement("-classpath");
 		v.addElement(classpath);
@@ -213,6 +210,29 @@ public class Compiler implements PlugIn, FilenameFilter {
 	void runPlugin(String name) {
 		name = name.substring(0,name.length()-5); // remove ".java"
 		new PlugInExecuter(name);
+	}
+	
+	public void showDialog() {
+		validateTarget();
+		GenericDialog gd = new GenericDialog("Compile and Run");
+		gd.addChoice("Target: ", targets, targets[target]);
+		gd.setInsets(15,5,0);
+		gd.addCheckbox("Generate Debugging Info (javac -g)", generateDebuggingInfo);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		target = gd.getNextChoiceIndex();		
+		generateDebuggingInfo = gd.getNextBoolean();
+		validateTarget();
+	}
+	
+	void validateTarget() {
+		if (target<0 || target>TARGET17)
+			target = TARGET15;
+		if ((target>TARGET16&&!IJ.isJava17()) || (target>TARGET15&&!IJ.isJava16()))
+			target = TARGET15;
+		if (!IJ.isJava15())
+			target = TARGET14;
+		Prefs.set(TARGET_KEY, target);
 	}
 	
 }

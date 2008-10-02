@@ -69,7 +69,7 @@ public class Menus {
     private boolean isJarErrorHeading;
 	private boolean installingJars, duplicateCommand;
 	private static Vector jarFiles;  // JAR files in plugins folder with "_" in their name
-	private static Vector macroFiles;  // Macro files in plugins folder with "_" in their name
+	private static Vector macroFiles;  // Macros and scripts in the plugins folder
 	private int importCount, saveAsCount, toolsCount, optionsCount;
 	private static Hashtable menusTable; // Submenus of Plugins menu
 	private int userPluginsIndex; // First user plugin or submenu in Plugins menu
@@ -806,7 +806,7 @@ public class Menus {
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(pluginsPath + name);
-			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm")||name.endsWith(".js"))) {
+			} else if ((hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm") || name.endsWith(".js")) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(name);
 			} else {
@@ -846,7 +846,7 @@ public class Menus {
 				if (jarFiles==null) jarFiles = new Vector();
 				jarFiles.addElement(f.getPath() + File.separator + name);
 				otherCount++;
-			} else if (hasUnderscore && (name.endsWith(".txt")||name.endsWith(".ijm")||name.endsWith(".js"))) {
+			} else if ((hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm") || name.endsWith(".js")) {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(dir + name);
 				otherCount++;

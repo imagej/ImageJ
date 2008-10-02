@@ -34,7 +34,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isLinux, isVista, is64Bit;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isJava17, isLinux, isVista, is64Bit;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -62,6 +62,7 @@ public class IJ {
 			isJava14 = version.compareTo("1.3")>0;
 			isJava15 = version.compareTo("1.4")>0;
 			isJava16 = version.compareTo("1.5")>0;
+			isJava17 = version.compareTo("1.6")>0;
 		}
 	}
 			
@@ -645,15 +646,15 @@ public class IJ {
 				decimalPlaces = 3;
 			if (sf==null) {
 				sf = new DecimalFormat[10];
-				sf[1] = new DecimalFormat("0.#E0",dfs);
-				sf[2] = new DecimalFormat("0.##E0",dfs);
-				sf[3] = new DecimalFormat("0.###E0",dfs);
-				sf[4] = new DecimalFormat("0.####E0",dfs);
-				sf[5] = new DecimalFormat("0.#####E0",dfs);
-				sf[6] = new DecimalFormat("0.######E0",dfs);
-				sf[7] = new DecimalFormat("0.#######E0",dfs);
-				sf[8] = new DecimalFormat("0.########E0",dfs);
-				sf[9] = new DecimalFormat("0.#########E0",dfs);
+				sf[1] = new DecimalFormat("0.0E0",dfs);
+				sf[2] = new DecimalFormat("0.00E0",dfs);
+				sf[3] = new DecimalFormat("0.000E0",dfs);
+				sf[4] = new DecimalFormat("0.0000E0",dfs);
+				sf[5] = new DecimalFormat("0.00000E0",dfs);
+				sf[6] = new DecimalFormat("0.000000E0",dfs);
+				sf[7] = new DecimalFormat("0.0000000E0",dfs);
+				sf[8] = new DecimalFormat("0.00000000E0",dfs);
+				sf[9] = new DecimalFormat("0.000000000E0",dfs);
 			}
 			if (Double.isInfinite(n))
 				return ""+n;
@@ -763,6 +764,11 @@ public class IJ {
 	/** Returns true if ImageJ is running on a Java 1.6 or greater JVM. */
 	public static boolean isJava16() {
 		return isJava16;
+	}
+
+	/** Returns true if ImageJ is running on a Java 1.7 or greater JVM. */
+	public static boolean isJava17() {
+		return isJava17;
 	}
 
 	/** Returns true if ImageJ is running on Linux. */

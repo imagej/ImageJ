@@ -101,7 +101,7 @@ public class Macro_Runner implements PlugIn {
 			//IJ.log("runMacroFile: "+file.getAbsolutePath()+"  "+name+"  "+size);
 		}
 		if (size<=0) {
-            IJ.error("RunMacro", "Macro file not found:\n \n"+name2);
+            IJ.error("RunMacro", "Macro or script not found:\n \n"+name2);
 			return null;
 		}
 		try {

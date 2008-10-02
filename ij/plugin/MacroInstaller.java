@@ -139,6 +139,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			else
 				anonymousName =fileName;
 			macrosMenu.add(new MenuItem(anonymousName));
+			macroNames[0] = anonymousName;
 			nMacros = 1;
 		}
 		String word = nMacros==1?" macro":" macros";
