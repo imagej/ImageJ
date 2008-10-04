@@ -930,11 +930,11 @@ public class IJ {
 				mode = ImageProcessor.NO_LUT_UPDATE;
 		}
 		ImagePlus img = getImage();
-		if (img.getBitDepth()==16) {
-			Calibration cal = img.getCalibration();
-			lowerThreshold = cal.getRawValue(lowerThreshold); 
-			upperThreshold = cal.getRawValue(upperThreshold); 
-		}
+		Calibration cal = img.getCalibration();
+IJ.log(lowerThreshold+"  "+upperThreshold);
+		lowerThreshold = cal.getRawValue(lowerThreshold); 
+		upperThreshold = cal.getRawValue(upperThreshold); 
+IJ.log(lowerThreshold+"  "+upperThreshold);
 		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
 		if (mode != ImageProcessor.NO_LUT_UPDATE) {
 			img.getProcessor().setLutAnimation(true);
