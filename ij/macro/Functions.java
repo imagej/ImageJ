@@ -1557,12 +1557,11 @@ public class Functions implements MacroConstants, Measurements {
 		if (t1==ImageProcessor.NO_THRESHOLD) {
 			t1 = -1;
 			t2 = -1;
-		} else if (imp.getBitDepth()==16) {
+		} else {
 			Calibration cal = imp.getCalibration();
 			t1 = cal.getCValue(t1); 
 			t2 = cal.getCValue(t2); 
 		}
-
 		lower.setValue(t1);
 		upper.setValue(t2);
 	}
@@ -2130,11 +2129,9 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		double v1 = imp.getDisplayRangeMin();
 		double v2 = imp.getDisplayRangeMax();
-		if (imp.getBitDepth()==16) {
-			Calibration cal = imp.getCalibration();
-			v1 = cal.getCValue(v1); 
-			v2 = cal.getCValue(v2); 
-		}
+		Calibration cal = imp.getCalibration();
+		v1 = cal.getCValue(v1); 
+		v2 = cal.getCValue(v2); 
 		min.setValue(v1);
 		max.setValue(v2);
 	}

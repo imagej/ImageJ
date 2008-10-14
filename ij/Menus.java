@@ -1399,6 +1399,7 @@ public class Menus {
 		//m.installPopupMenu(IJ.getInstance());
 		//m.installStartupMacroSet();
 		if (err!=null) IJ.error(err);
+		IJ.setClassLoader(null);
 		IJ.showStatus(m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
 

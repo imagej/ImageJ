@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.41n, 2 October 2008</u>
+<li> <u>1.41n, 14 October 2008</u>
 <li> Added the <i>Edit&gt;Options&gt;Compiler</i> command.
 <li> Added a "Scientific Notation" option to the <i>Analyze&gt;Set Options</i> dialog box.
 <li> Files  in the plugins folder with ".ijm" and ".js" extensions
@@ -13,6 +13,9 @@ no longer require an "_" in the name to be installed in the Plugins menu.
 <li> JPEGs are saved using ImageIO if the JpegWriter class is removed,
 allowing ImageJ to be compiled with the OpenJDK.
 <li> The d2s() macro function uses scientific notation of the second argument is negative.
+<li> <i>Help&gt;Update Menus</i> resets the plugin class loader.
+<li> Fixed bugs that caused the setThreshold(), getThreshold() and setMinAndMax() macro
+functions to not work correctly with intensity calibrated 8-bit images.
 <li> Fixed a bug, introduced in v1.41l, that caused <i>File&gt;Save As&gt;FITS</i>
 to create FITS files that could not be opened by some other FITS readers.
 <li> Fixed a bug that caused the calibration plot to be displayed when 

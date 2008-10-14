@@ -891,11 +891,9 @@ public class IJ {
 	/** Sets the minimum and maximum displayed pixel values. */
 	public static void setMinAndMax(double min, double max) {
 		ImagePlus img = getImage();
-		if (img.getBitDepth()==16) {
-			Calibration cal = img.getCalibration();
-			min = cal.getRawValue(min); 
-			max = cal.getRawValue(max); 
-		}
+		Calibration cal = img.getCalibration();
+		min = cal.getRawValue(min); 
+		max = cal.getRawValue(max); 
 		img.setDisplayRange(min, max);
 		img.updateAndDraw();
 	}
@@ -931,10 +929,8 @@ public class IJ {
 		}
 		ImagePlus img = getImage();
 		Calibration cal = img.getCalibration();
-IJ.log(lowerThreshold+"  "+upperThreshold);
 		lowerThreshold = cal.getRawValue(lowerThreshold); 
 		upperThreshold = cal.getRawValue(upperThreshold); 
-IJ.log(lowerThreshold+"  "+upperThreshold);
 		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
 		if (mode != ImageProcessor.NO_LUT_UPDATE) {
 			img.getProcessor().setLutAnimation(true);
@@ -1453,4 +1449,8 @@ IJ.log(lowerThreshold+"  "+upperThreshold);
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
+	static void setClassLoader(ClassLoader loader) {
+		classLoader = loader;
+	}
+
 }
