@@ -293,6 +293,13 @@ public class ShortProcessor extends ImageProcessor {
 		return getInterpolatedPixel(x, y, pixels);
 	}
 
+	final public int getPixelInterpolated(double x,double y) {
+		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+			return 0;
+		else
+			return(int)Math.round(getInterpolatedPixel(x, y, pixels));
+	}
+
 	/** Stores the specified value at (x,y). Does
 		nothing if (x,y) is outside the image boundary.
 		Values outside the range 0-65535 are clipped.

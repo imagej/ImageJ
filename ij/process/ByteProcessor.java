@@ -232,7 +232,14 @@ public class ByteProcessor extends ImageProcessor {
 		return getInterpolatedPixel(x, y, pixels);
 	}
 
-	public float getPixelValue(int x, int y) {
+	final public int getPixelInterpolated(double x, double y) {
+		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+			return 0;
+		else
+			return (int)Math.round(getInterpolatedPixel(x, y, pixels));
+	}
+	
+ 	public float getPixelValue(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			if (cTable==null)
 				return pixels[y*width + x]&0xff;

@@ -82,7 +82,9 @@ public class ImageJ_Updater implements PlugIn {
 		String url = "http://rsb.info.nih.gov/ij/notes.html";
 		String notes = openUrlAsString(url, 20);
 		if (notes==null) {
-			error("Unable to open release notes at "+url);
+			error("Unable to connect to rsb.info.nih.gov/ij/. You may\n"
+				+"need to use the Edit>Options>Proxy Settings...\n"
+				+"command to configure ImageJ to use a proxy server.");
 			return null;
 		}
 		int index = notes.indexOf("Version ");

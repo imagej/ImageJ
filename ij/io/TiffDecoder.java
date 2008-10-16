@@ -5,8 +5,8 @@ import java.util.*;
 import java.net.*;
 
 /**
-Decodes single and multi-image TIFF files. LZW decompression
-code contributed by Curtis Rueden.
+Decodes single and multi-image TIFF files. The LZW decompression
+code was contributed by Curtis Rueden.
 */
 public class TiffDecoder {
 
@@ -342,6 +342,7 @@ public class TiffDecoder {
 			switch (tag) {
 				case IMAGE_WIDTH: 
 					fi.width = value;
+					fi.intelByteOrder = littleEndian;
 					break;
 				case IMAGE_LENGTH: 
 					fi.height = value;
@@ -381,16 +382,13 @@ public class TiffDecoder {
 						if (count==1) {
 							if (value==8)
 								fi.fileType = FileInfo.GRAY8;
-							else if (value==16) {
+							else if (value==16)
 								fi.fileType = FileInfo.GRAY16_UNSIGNED;
-								fi.intelByteOrder = littleEndian;
-							} else if (value==32) {
+							else if (value==32)
 								fi.fileType = FileInfo.GRAY32_INT;
-								fi.intelByteOrder = littleEndian;
-							} else if (value==12) {
+							else if (value==12)
 								fi.fileType = FileInfo.GRAY12_UNSIGNED;
-								fi.intelByteOrder = littleEndian;
-							} else if (value==1)
+							else if (value==1)
 								fi.fileType = FileInfo.BITMAP;
 							else
 								error("Unsupported BitsPerSample: " + value);
@@ -400,10 +398,8 @@ public class TiffDecoder {
 							int bitDepth = getShort();
 							if (!(bitDepth==8||bitDepth==16))
 								error("ImageJ can only open 8 and 16 bit/channel RGB images ("+bitDepth+")");
-							if (bitDepth==16) {
-								fi.intelByteOrder = littleEndian;
+							if (bitDepth==16)
 								fi.fileType = FileInfo.RGB48;
-							}
 							in.seek(saveLoc);
 						}
 						break;
@@ -435,12 +431,13 @@ public class TiffDecoder {
 				case PLANAR_CONFIGURATION:
 					if (value==2 && fi.fileType==FileInfo.RGB48)
 							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
-					if (value==2 && fi.fileType==FileInfo.RGB)
+					else if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
-					if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
+					else if (value==1 && fi.samplesPerPixel==4)
+						fi.fileType = FileInfo.ARGB;
+					else if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
 						String msg = "Unsupported interleaved SamplesPerPixel: " + fi.samplesPerPixel;
-						if (value==4)
-							msg += " \n \n" + "ImageJ cannot open CMYK and RGB+alpha TIFFs";
+						//if (fi.samplesPerPixel==4) msg += " \n \n" + "ImageJ cannot open CMYK TIFFs";
 						error(msg);
 					}
 					break;

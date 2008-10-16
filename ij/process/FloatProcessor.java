@@ -296,6 +296,13 @@ public class FloatProcessor extends ImageProcessor {
 		return getInterpolatedPixel(x, y, pixels);
 	}
 		
+	final public int getPixelInterpolated(double x, double y) {
+		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+			return 0;
+		else
+			return Float.floatToIntBits((float)getInterpolatedPixel(x, y, pixels));
+	}
+
 	/** Stores the specified value at (x,y). The value is expected to be a
 		float that has been converted to an int using Float.floatToIntBits(). */
 	public void putPixel(int x, int y, int value) {

@@ -309,7 +309,7 @@ public class ColorProcessor extends ImageProcessor {
 		putPixel(x, y, (r<<16)+(g<<8)+b);
 	}
 
-	/** Calls getPixelValue(x,y). */
+ 	/** Calls getPixelValue(x,y). */
 	public double getInterpolatedPixel(double x, double y) {
 		int ix = (int)(x+0.5);
 		int iy = (int)(y+0.5);
@@ -318,6 +318,13 @@ public class ColorProcessor extends ImageProcessor {
 		if (iy<0) iy = 0;
 		if (iy>=height) iy = height-1;
 		return getPixelValue(ix, iy);
+	}
+
+	final public int getPixelInterpolated(double x,double y) {
+		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+			return 0;
+		else
+			return getInterpolatedPixel(x, y, pixels);
 	}
 
 	/** Stores the specified value at (x,y). */
