@@ -193,13 +193,13 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
             ip.setRoi(roi);
         else
             ip.setRoi((Roi)null);
-        if (imp.getStackSize()>1) {
-            ImageProcessor ip2 = imp.getProcessor();
-            double minThreshold = ip2.getMinThreshold();
-			double maxThreshold = ip2.getMaxThreshold();
-            if (minThreshold!=ImageProcessor.NO_THRESHOLD)
-				ip.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
-        }
+        //if (imp.getStackSize()>1) {
+        //    ImageProcessor ip2 = imp.getProcessor();
+        //    double minThreshold = ip2.getMinThreshold();
+		//	double maxThreshold = ip2.getMaxThreshold();
+        //    if (minThreshold!=ImageProcessor.NO_THRESHOLD)
+		//		ip.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
+        //}
         //float[] cTable = imp.getCalibration().getCTable();
         //ip.setCalibrationTable(cTable);
     }

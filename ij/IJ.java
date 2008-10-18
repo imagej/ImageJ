@@ -20,6 +20,7 @@ import java.lang.reflect.*;
 
 /** This class consists of static utility methods. */
 public class IJ {
+	public static final String URL = "http://rsb.info.nih.gov/ij";
 	public static final int ALL_KEYS = 0x32;
 	
 	public static boolean debugMode;
@@ -34,7 +35,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isLinux, isVista, is64Bit;
+	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isJava17, isLinux, isVista, is64Bit;
 	private static boolean altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -62,6 +63,7 @@ public class IJ {
 			isJava14 = version.compareTo("1.3")>0;
 			isJava15 = version.compareTo("1.4")>0;
 			isJava16 = version.compareTo("1.5")>0;
+			isJava17 = version.compareTo("1.6")>0;
 		}
 	}
 			
@@ -149,7 +151,7 @@ public class IJ {
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
-			if (IJ.getApplet()==null)
+			if (IJ.getApplet()==null && className.indexOf("JpegWriter")==-1)
 				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
@@ -432,7 +434,7 @@ public class IJ {
 			log("<used. Instructions for making more>");
 			log("<available can be found in the \"Memory\" >");
 			log("<sections of the installation notes at>");
-			log("<http://rsb.info.nih.gov/ij/docs/install/>");
+			log("<"+IJ.URL+"/docs/install/>");
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 			memMessageDisplayed = true;
 		}
@@ -610,6 +612,7 @@ public class IJ {
 	}
 	
 	private static DecimalFormat[] df;
+	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
 
 	/** Converts a number to a rounded formatted string.
@@ -636,11 +639,28 @@ public class IJ {
 			df[8] = new DecimalFormat("0.00000000", dfs);
 			df[9] = new DecimalFormat("0.000000000", dfs);
 		}
-		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d) {
+		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
+			if (decimalPlaces<0) {
+				decimalPlaces = -decimalPlaces;
+				if (decimalPlaces>9) decimalPlaces=9;
+			} else
+				decimalPlaces = 3;
+			if (sf==null) {
+				sf = new DecimalFormat[10];
+				sf[1] = new DecimalFormat("0.0E0",dfs);
+				sf[2] = new DecimalFormat("0.00E0",dfs);
+				sf[3] = new DecimalFormat("0.000E0",dfs);
+				sf[4] = new DecimalFormat("0.0000E0",dfs);
+				sf[5] = new DecimalFormat("0.00000E0",dfs);
+				sf[6] = new DecimalFormat("0.000000E0",dfs);
+				sf[7] = new DecimalFormat("0.0000000E0",dfs);
+				sf[8] = new DecimalFormat("0.00000000E0",dfs);
+				sf[9] = new DecimalFormat("0.000000000E0",dfs);
+			}
 			if (Double.isInfinite(n))
 				return ""+n;
 			else
-				return (new DecimalFormat("0.###E0",dfs)).format(n); // use scientific notation
+				return sf[decimalPlaces].format(n); // use scientific notation
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
@@ -747,6 +767,11 @@ public class IJ {
 		return isJava16;
 	}
 
+	/** Returns true if ImageJ is running on a Java 1.7 or greater JVM. */
+	public static boolean isJava17() {
+		return isJava17;
+	}
+
 	/** Returns true if ImageJ is running on Linux. */
 	public static boolean isLinux() {
 		return isLinux;
@@ -779,7 +804,7 @@ public class IJ {
 		if the user selects "Cancel".
 	*/
 	public static int setupDialog(ImagePlus imp, int flags) {
-		if (imp==null || (ij!=null&&ij.hotkey) || hideProcessStackDialog)
+		if (imp==null || (ij!=null&&ij.hotkey))
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
@@ -792,7 +817,9 @@ public class IJ {
 				else
 					return flags;
 			}
-			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
+			if (hideProcessStackDialog)
+				return flags;
+ 			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
 				"Process Stack?", "Process all "+stackSize+" images?  There is\n"
 				+"no Undo if you select \"Yes\".");
 			if (d.cancelPressed())
@@ -865,11 +892,9 @@ public class IJ {
 	/** Sets the minimum and maximum displayed pixel values. */
 	public static void setMinAndMax(double min, double max) {
 		ImagePlus img = getImage();
-		if (img.getBitDepth()==16) {
-			Calibration cal = img.getCalibration();
-			min = cal.getRawValue(min); 
-			max = cal.getRawValue(max); 
-		}
+		Calibration cal = img.getCalibration();
+		min = cal.getRawValue(min); 
+		max = cal.getRawValue(max); 
 		img.setDisplayRange(min, max);
 		img.updateAndDraw();
 	}
@@ -904,11 +929,9 @@ public class IJ {
 				mode = ImageProcessor.NO_LUT_UPDATE;
 		}
 		ImagePlus img = getImage();
-		if (img.getBitDepth()==16) {
-			Calibration cal = img.getCalibration();
-			lowerThreshold = cal.getRawValue(lowerThreshold); 
-			upperThreshold = cal.getRawValue(upperThreshold); 
-		}
+		Calibration cal = img.getCalibration();
+		lowerThreshold = cal.getRawValue(lowerThreshold); 
+		upperThreshold = cal.getRawValue(upperThreshold); 
 		img.getProcessor().setThreshold(lowerThreshold, upperThreshold, mode);
 		if (mode != ImageProcessor.NO_LUT_UPDATE) {
 			img.getProcessor().setLutAnimation(true);
@@ -1427,4 +1450,8 @@ public class IJ {
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
+	static void setClassLoader(ClassLoader loader) {
+		classLoader = loader;
+	}
+
 }

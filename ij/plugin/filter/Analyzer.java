@@ -25,7 +25,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
 		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,SLICE,
-		LIMIT,LABELS,INVERT_Y};
+		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION};
 
 	private static final String MEASUREMENTS = "measurements";
 	private static final String MARK_WIDTH = "mark.width";
@@ -46,7 +46,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	public Analyzer() {
 		rt = systemRT;
-		rt.setPrecision(precision);
+		rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 		measurements = systemMeasurements;
 	}
 	
@@ -126,11 +126,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[17]="Slice Number"; states[17]=(systemMeasurements&SLICE)!=0;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(10, 2, labels, states);
-		labels = new String[3];
-		states = new boolean[3];
+		labels = new String[4];
+		states = new boolean[4];
 		labels[0]="Limit to Threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
 		labels[1]="Display Label"; states[1]=(systemMeasurements&LABELS)!=0;
 		labels[2]="Invert Y Coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
+		labels[3]="Scientific Notation"; states[3]=(systemMeasurements&SCIENTIFIC_NOTATION)!=0;;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(2, 2, labels, states);
 		gd.setInsets(15, 0, 0);
@@ -150,7 +151,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (prec>9) prec = 9;
 		if (prec!=precision) {
 			precision = prec;
-			rt.setPrecision(precision);
+			rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 			if (IJ.isResultsWindow()) {
 				IJ.setColumnHeadings("");
 				updateHeadings();
@@ -171,16 +172,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				systemMeasurements &= ~list[i];
 		}
-		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))) {
+		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))&&IJ.isResultsWindow()) {
+				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 				rt.update(systemMeasurements, imp!=null?imp.getRoi():null);
-			/*
-			if (IJ.macroRunning()) {
-				unsavedMeasurements = false;
-				reset();
-				mode = AREAS;
-			} else
-				mode = UNDEFINED;
-			*/
 		}
 		if ((systemMeasurements&LABELS)==0)
 			systemRT.disableRowLabels();
@@ -272,6 +266,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measurePoint(Roi roi) {
 		if (rt.getCounter()>0) {
+			if (!IJ.isResultsWindow()) reset();
 			boolean update = false;
 			int index = rt.getColumnIndex("X");
 			if (index<0 || !rt.columnExists(index)) update=true;
@@ -292,6 +287,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measureAngle(Roi roi) {
 		if (rt.getCounter()>0) {
+			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("Angle");
 			if (index<0 || !rt.columnExists(index))
 				rt.update(measurements, roi);
@@ -306,6 +302,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	void measureLength(Roi roi) {
 		if (rt.getCounter()>0) {
+			if (!IJ.isResultsWindow()) reset();
 			boolean update = false;
 			int index = rt.getColumnIndex("Length");
 			if (index<0 || !rt.columnExists(index)) update=true;

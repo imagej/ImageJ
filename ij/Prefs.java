@@ -14,7 +14,6 @@ import ij.process.ImageConverter;
 import ij.plugin.Animator;
 import ij.process.FloatBlitter;
 import ij.plugin.GelAnalyzer;
-import ij.plugin.JpegWriter;
 import ij.process.ColorProcessor;
 
 /**
@@ -295,7 +294,7 @@ public class Prefs {
 			prefs.put(SHOW_ALL_COLOR, Tools.c2hex(ImageCanvas.getShowAllColor()));
 			prefs.put(FCOLOR, Tools.c2hex(Toolbar.getForegroundColor()));
 			prefs.put(BCOLOR, Tools.c2hex(Toolbar.getBackgroundColor()));
-			prefs.put(JPEG, Integer.toString(JpegWriter.getQuality()));
+			prefs.put(JPEG, Integer.toString(FileSaver.getJpegQuality()));
 			prefs.put(FPS, Double.toString(Animator.getFrameRate()));
 			prefs.put(DIV_BY_ZERO_VALUE, Double.toString(FloatBlitter.divideByZeroValue));
 			prefs.put(NOISE_SD, Double.toString(Filters.getSD()));

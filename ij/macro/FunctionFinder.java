@@ -23,7 +23,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
     public FunctionFinder() {
         String exists = IJ.runMacro("return File.exists(getDirectory('macros')+'functions.html');");
         if (exists=="0")	{
-            String installLocalMacroFunctionsFile = "functions = File.openUrlAsString('http://rsb.info.nih.gov/ij/developer/macro/functions.html');\n"+
+            String installLocalMacroFunctionsFile = "functions = File.openUrlAsString('"+IJ.URL+"/developer/macro/functions.html');\n"+
                     "f = File.open(getDirectory('macros')+'functions.html');\n"+
                     "print (f, functions);\n"+
                     "File.close(f);";

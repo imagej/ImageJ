@@ -16,7 +16,7 @@ import ij.gui.*;
  *  getResultString() method.
  *  Kieran Holland (holki659 at student.otago.ac.nz)
  *
- *	2008/01/21: Modified to do Gaussian fitting by Stefan Wörz (s.woerz at dkfz.de).
+ *	2008/01/21: Modified to do Gaussian fitting by Stefan Woerz (s.woerz at dkfz.de).
  *
  */
 public class CurveFitter {    

@@ -863,7 +863,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					"set to view its source code.\n"+
 					" \n"+
 					"Several example tool sets are available at\n"+
-					"<http://rsb.info.nih.gov/ij/macros/toolsets/>."
+					"<"+IJ.URL+"/macros/toolsets/>."
 					);
 				return;
 			} else if (label.endsWith("*")) {

@@ -1557,12 +1557,11 @@ public class Functions implements MacroConstants, Measurements {
 		if (t1==ImageProcessor.NO_THRESHOLD) {
 			t1 = -1;
 			t2 = -1;
-		} else if (imp.getBitDepth()==16) {
+		} else {
 			Calibration cal = imp.getCalibration();
 			t1 = cal.getCValue(t1); 
 			t2 = cal.getCValue(t2); 
 		}
-
 		lower.setValue(t1);
 		upper.setValue(t2);
 	}
@@ -1961,7 +1960,7 @@ public class Functions implements MacroConstants, Measurements {
 		usePointerCursor = Prefs.usePointerCursor;
 		hideProcessStackDialog = IJ.hideProcessStackDialog;
 		divideByZeroValue = FloatBlitter.divideByZeroValue;
-		jpegQuality = JpegWriter.getQuality();
+		jpegQuality = FileSaver.getJpegQuality();
 		lineWidth = Line.getWidth();
 		doScaling = ImageConverter.getDoScaling();
 		weightedColor = Prefs.weightedColor;
@@ -1991,7 +1990,7 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.usePointerCursor = usePointerCursor;
 		IJ.hideProcessStackDialog = hideProcessStackDialog;
 		FloatBlitter.divideByZeroValue = divideByZeroValue;
-		JpegWriter.setQuality(jpegQuality);
+		FileSaver.setJpegQuality(jpegQuality);
 		Line.setWidth(lineWidth);
 		ImageConverter.setDoScaling(doScaling);
 		if (weightedColor!=Prefs.weightedColor) {
@@ -2130,11 +2129,9 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		double v1 = imp.getDisplayRangeMin();
 		double v2 = imp.getDisplayRangeMax();
-		if (imp.getBitDepth()==16) {
-			Calibration cal = imp.getCalibration();
-			v1 = cal.getCValue(v1); 
-			v2 = cal.getCValue(v2); 
-		}
+		Calibration cal = imp.getCalibration();
+		v1 = cal.getCValue(v1); 
+		v2 = cal.getCValue(v2); 
 		min.setValue(v1);
 		max.setValue(v2);
 	}
@@ -2526,7 +2523,7 @@ public class Functions implements MacroConstants, Measurements {
 		} catch(Exception e) {
 			String msg = ""+e;
 			if (msg.indexOf("NoSuchMethod")!=0)
-				msg = "\"JavaScript.jar\" (rsb.info.nih.gov/ij/download/tools/JavaScript.jar)\nis outdated";
+				msg = "\"JavaScript.jar\" ("+IJ.URL+"/download/tools/JavaScript.jar)\nis outdated";
 			interp.error(msg);
 			return null;
 		}

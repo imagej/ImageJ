@@ -50,12 +50,12 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		boolean global2;
 		int digits = cal.pixelWidth<1.0||cal.pixelHeight<1.0||cal.pixelDepth<1.0?7:4;
 		GenericDialog gd = new GenericDialog(imp.getTitle());
-		gd.addNumericField("Width:", imp.getWidth(), 0);
-		gd.addNumericField("Height:", imp.getHeight(), 0);
-		gd.addNumericField("Channels:", channels, 0);
+		gd.addNumericField("Channels (c):", channels, 0);
 		gd.addNumericField("Slices (z):", slices, 0);
 		gd.addNumericField("Frames (t):", frames, 0);
-		gd.setInsets(10, 0, 5);
+		gd.setInsets(0, 5, 0);
+		gd.addMessage("Note: c*z*t must equal "+stackSize);
+		gd.setInsets(15, 0, 0);
 		gd.addStringField("Unit of Length:", cal.getUnit());
 		gd.addNumericField("Pixel_Width:", cal.pixelWidth, digits, 8, null);
 		gd.addNumericField("Pixel_Height:", cal.pixelHeight, digits, 8, null);
@@ -75,9 +75,9 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.setInsets(5, 20, 0);
 		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
-		pixelWidthField  = (TextField)nfields.elementAt(5);
-		pixelHeightField  = (TextField)nfields.elementAt(6);
-		pixelDepthField  = (TextField)nfields.elementAt(7);
+		pixelWidthField  = (TextField)nfields.elementAt(3);
+		pixelHeightField  = (TextField)nfields.elementAt(4);
+		pixelDepthField  = (TextField)nfields.elementAt(5);
         for (int i=0; i<nfields.size(); i++)
             ((TextField)nfields.elementAt(i)).addTextListener(this);
         sfields = gd.getStringFields();
@@ -90,18 +90,12 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
- 		double width = gd.getNextNumber();
- 		double height = gd.getNextNumber();
  		channels = (int)gd.getNextNumber();
  		if (channels<1) channels = 1;
  		slices = (int)gd.getNextNumber();
  		if (slices<1) slices = 1;
  		frames = (int)gd.getNextNumber();
  		if (frames<1) frames = 1;
- 		if (width!=imp.getWidth() || height!=imp.getHeight()) {
- 			IJ.error("Properties", "Use Image>Adjust>Size to change the image size.");
- 			return;
- 		}
  		if (channels*slices*frames==stackSize)
  			imp.setDimensions(channels, slices, frames);
  		else
@@ -234,13 +228,6 @@ public class ImageProperties implements PlugInFilter, TextListener {
    	public void textValueChanged(TextEvent e) {
    		textChangedCount++;
 		Object source = e.getSource();
-		TextField widthField  = (TextField)nfields.elementAt(0);
-        int width = (int)Tools.parseDouble(widthField.getText(),-99);
-        //if (width!=imp.getWidth()) widthField.setText(IJ.d2s(imp.getWidth(),0));
-        
-       TextField heightField  = (TextField)nfields.elementAt(1);
-        int height = (int)Tools.parseDouble(heightField.getText(),-99);
-        //if (height!=imp.getHeight()) heightField.setText(IJ.d2s(imp.getHeight(),0));
         
         int channels = (int)Tools.parseDouble(((TextField)nfields.elementAt(2)).getText(),-99);
         int depth = (int)Tools.parseDouble(((TextField)nfields.elementAt(3)).getText(),-99);
