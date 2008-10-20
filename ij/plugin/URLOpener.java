@@ -14,7 +14,7 @@ import ij.plugin.frame.Editor;
 */
 public class URLOpener implements PlugIn {
 
-	private static String url = "http://rsb.info.nih.gov/ij/images/clown.gif";
+	private static String url = IJ.URL+"/images/clown.gif";
 
 	/** If 'urlOrName' is a URL, opens the image at that URL. If it is
 		a file name, opens the image with that name from the 'images.location'

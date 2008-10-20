@@ -2523,7 +2523,7 @@ public class Functions implements MacroConstants, Measurements {
 		} catch(Exception e) {
 			String msg = ""+e;
 			if (msg.indexOf("NoSuchMethod")!=0)
-				msg = "\"JavaScript.jar\" (rsb.info.nih.gov/ij/download/tools/JavaScript.jar)\nis outdated";
+				msg = "\"JavaScript.jar\" ("+IJ.URL+"/download/tools/JavaScript.jar)\nis outdated";
 			interp.error(msg);
 			return null;
 		}

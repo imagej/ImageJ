@@ -80,7 +80,7 @@ public class SimpleCommands implements PlugIn {
 	}
 	
 	void installation() {
-		String url = "http://rsb.info.nih.gov/ij/docs/install/";
+		String url = IJ.URL+"/docs/install/";
 		if (IJ.isMacintosh())
 			url += "osx.html";
 		else if (IJ.isWindows())
@@ -94,7 +94,7 @@ public class SimpleCommands implements PlugIn {
 		IJ.showMessage("\"About Plugins\" Submenu", 
 			"Plugins packaged as JAR files can add entries\n"+
 			"to this submenu. There is an example at\n \n"+
-			"http://rsb.info.nih.gov/ij/plugins/jar-demo.html");
+			IJ.URL+"/plugins/jar-demo.html");
 	}
 	
 }

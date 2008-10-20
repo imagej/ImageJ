@@ -26,29 +26,29 @@ public class ImageJ_Updater implements PlugIn {
 			error("No write access: "+file.getPath());
 			return;
 		}
-		String[] list = openUrlAsList("http://rsb.info.nih.gov/ij/download/jars/list.txt");
+		String[] list = openUrlAsList(IJ.URL+"/download/jars/list.txt");
 		int count = list.length + 2;
 		String[] versions = new String[count];
 		String[] urls = new String[count];
 		String uv = getUpgradeVersion();
 		if (uv==null) return;
 		versions[0] = "v"+uv+" (latest version)";
-		urls[0] = "http://rsb.info.nih.gov/ij/upgrade/ij.jar";
+		urls[0] = IJ.URL+"/upgrade/ij.jar";
 		if (versions[0]==null) return;
 		for (int i=1; i<count-1; i++) {
 			versions[i] = list[i-1];
-			urls[i] = "http://rsb.info.nih.gov/ij/download/jars/ij"
+			urls[i] = IJ.URL+"/download/jars/ij"
 				+versions[i].substring(1,2)+versions[i].substring(3,6)+".jar";
 		}
 		versions[count-1] = "daily build";
-		urls[count-1] = "http://rsb.info.nih.gov/ij/ij.jar";
+		urls[count-1] = IJ.URL+"/ij.jar";
 		int choice = showDialog(versions);
 		if (choice==-1) return;
 		if (!versions[choice].startsWith("daily") && versions[choice].compareTo("v1.39s")<0
 		&& Menus.getCommands().get("ImageJ Updater")==null) {
 			String msg = "This command is not available in versions of ImageJ prior\n"+
 			"to 1.39s so you will need to install the plugin version at\n"+
-			"<http://rsb.info.nih.gov/ij/plugins/imagej-updater.html>.";
+			"<"+IJ.URL+"/plugins/imagej-updater.html>.";
 			if (!IJ.showMessageWithCancel("Update ImageJ", msg))
 				return;
 		}
@@ -58,6 +58,8 @@ public class ImageJ_Updater implements PlugIn {
 			Prefs.savePreferences();
 		// if (!renameJar(file)) return; // doesn't work on Vista
 		saveJar(file, jar);
+		if (choice<count-1) // force macro Function Finder to download fresh list
+			new File(IJ.getDirectory("macros")+"functions.html").delete();
 		System.exit(0);
 	}
 
@@ -79,11 +81,11 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	String getUpgradeVersion() {
-		String url = "http://rsb.info.nih.gov/ij/notes.html";
+		String url = IJ.URL+"/notes.html";
 		String notes = openUrlAsString(url, 20);
 		if (notes==null) {
-			error("Unable to connect to rsb.info.nih.gov/ij/. You may\n"
-				+"need to use the Edit>Options>Proxy Settings...\n"
+			error("Unable to connect to "+IJ.URL+". You\n"
+				+"may need to use the Edit>Options>Proxy Settings\n"
 				+"command to configure ImageJ to use a proxy server.");
 			return null;
 		}

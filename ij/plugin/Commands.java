@@ -94,7 +94,7 @@ public class Commands implements PlugIn {
 	void openStartupMacros() {
 		Applet applet = IJ.getApplet();
 		if (applet!=null) {
-			IJ.run("URL...", "url=http://rsb.info.nih.gov/ij/applet/StartupMacros.txt");
+			IJ.run("URL...", "url="+IJ.URL+"/applet/StartupMacros.txt");
 		} else {
 			String path = IJ.getDirectory("macros")+"/StartupMacros.txt";
 			File f = new File(path);

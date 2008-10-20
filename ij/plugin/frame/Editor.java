@@ -27,7 +27,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.awt);"+
 		"function print(s) {IJ.log(s);};";
 	public static String JS_NOT_FOUND = 
-		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \nrsb.info.nih.gov/ij/download/tools/JavaScript.jar";
+		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
 	public static final int MACROS_MENU_ITEMS = 6;

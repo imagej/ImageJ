@@ -197,16 +197,16 @@ public class Menus {
 
 		Menu help = new Menu("Help");
 		addPlugInItem(help, "ImageJ Website...", "ij.plugin.BrowserLauncher", 0, false);
-		addPlugInItem(help, "ImageJ News...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/notes.html\")", 0, false);
-		addPlugInItem(help, "Documentation...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/docs\")", 0, false);
+		addPlugInItem(help, "ImageJ News...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/notes.html\")", 0, false);
+		addPlugInItem(help, "Documentation...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/docs\")", 0, false);
 		addPlugInItem(help, "Installation...", "ij.plugin.SimpleCommands(\"install\")", 0, false);
-		addPlugInItem(help, "Search Website...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/search.html\")", 0, false);
+		addPlugInItem(help, "Search Website...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/search.html\")", 0, false);
 		addPlugInItem(help, "List Archives...", "ij.plugin.BrowserLauncher(\"https://list.nih.gov/archives/imagej.html\")", 0, false);
 		help.addSeparator();
-		addPlugInItem(help, "Resources...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/index.html\")", 0, false);
-		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/plugins\")", 0, false);
-		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/macros/\")", 0, false);
-		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\"http://rsb.info.nih.gov/ij/developer/macro/functions.html\")", 0, false);
+		addPlugInItem(help, "Resources...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/index.html\")", 0, false);
+		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
+		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
+		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
 		addPlugInItem(help, "Update Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);

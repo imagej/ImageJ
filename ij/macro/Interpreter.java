@@ -61,8 +61,8 @@ public class Interpreter implements MacroConstants {
 		}
 		Tokenizer tok = new Tokenizer();
 		Program pgm = tok.tokenize(macro);
-		//if (pgm.hasVars)  // why is this needed???????
-		//	saveGlobals2(pgm);
+		if (pgm.hasVars && pgm.hasFunctions)
+			saveGlobals2(pgm);
 		run(pgm);
 	}
 

@@ -80,6 +80,7 @@ public class FileInfo implements Cloneable {
 	public static final int LZW = 2;
 	public static final int LZW_WITH_DIFFERENCING = 3;
 	public static final int JPEG = 4;
+	public static final int PACK_BITS = 5;
 	
 	/* File format (TIFF, GIF_OR_JPG, BMP, etc.). Used by the File/Revert command */
 	public int fileFormat;
@@ -99,7 +100,8 @@ public class FileInfo implements Cloneable {
     public boolean intelByteOrder;
 	public int compression;
     public int[] stripOffsets; 
-    public int[] stripLengths; 
+    public int[] stripLengths;
+    public int rowsPerStrip;
 	public int lutSize;
 	public byte[] reds;
 	public byte[] greens;

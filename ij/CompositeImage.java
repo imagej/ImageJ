@@ -86,7 +86,8 @@ public class CompositeImage extends ImagePlus {
 				active[i] = true;
 		} else
 			active[0] = true;
-		if (!(channels==3&&stackSize==3))
+		//if (!(channels==3&&stackSize==3))
+		if (channels!=stackSize)
 			setOpenAsHyperStack(true);
 	}
 

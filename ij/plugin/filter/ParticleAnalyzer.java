@@ -124,6 +124,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private FloodFiller ff;
 	private Polygon polygon;
 	private RoiManager roiManager;
+	private ImagePlus outputImage;
+	private boolean hideOutputImage;
 		
 	
 	/** Constructs a ParticleAnalyzer.
@@ -341,6 +343,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		recordStarts = (options&RECORD_STARTS)!=0;
 		addToManager = (options&ADD_TO_MANAGER)!=0;
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
+		outputImage = null;
 		ip.snapshot();
 		ip.setProgressBar(null);
 		if (Analyzer.isRedirectImage()) {
@@ -838,7 +841,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			else
 				prefix = "Drawing of ";
 			outlines.update(drawIP);
-			new ImagePlus(prefix+title, outlines).show();
+			outputImage = new ImagePlus(prefix+title, outlines);
+			if (!hideOutputImage) outputImage.show();
 		}
 		if (showResults && !processStack) {
 			Analyzer.firstParticle = beginningCount;
@@ -847,6 +851,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			Analyzer.firstParticle = Analyzer.lastParticle = 0;
 	}
 	
+	/** Returns the "Outlines", "Masks", "Elipses" or "Count Masks" image,
+		or null if "Nothing" is selected in the "Show:" menu. */
+	public ImagePlus getOutputImage() {
+		return outputImage;
+	}
+
+	/** Set 'hideOutputImage' true to not display the "Show:" image. */
+	public void setHideOutputImage(boolean hideOutputImage) {
+		this.hideOutputImage = hideOutputImage;
+	}
+
 	int getColumnID(String name) {
 		int id = rt.getFreeColumn(name);
 		if (id==ResultsTable.COLUMN_IN_USE)

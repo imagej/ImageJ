@@ -20,6 +20,7 @@ import java.lang.reflect.*;
 
 /** This class consists of static utility methods. */
 public class IJ {
+	public static final String URL = "http://rsb.info.nih.gov/ij";
 	public static final int ALL_KEYS = 0x32;
 	
 	public static boolean debugMode;
@@ -433,7 +434,7 @@ public class IJ {
 			log("<used. Instructions for making more>");
 			log("<available can be found in the \"Memory\" >");
 			log("<sections of the installation notes at>");
-			log("<http://rsb.info.nih.gov/ij/docs/install/>");
+			log("<"+IJ.URL+"/docs/install/>");
 			log(">>>>>>>>>>>>>>>>>>>>>>>>>>>");
 			memMessageDisplayed = true;
 		}

@@ -58,7 +58,7 @@ public class NewImage {
 					+ "Memory in use: "+IJ.freeMemory()+"\n \n"	
 					+ "More information can be found in the \"Memory\"\n"
 					+ "sections of the ImageJ installation notes at\n"
-					+ "\"http://rsb.info.nih.gov/ij/docs/install/\".");
+					+ "\""+IJ.URL+"/docs/install/\".");
 					return false;
 				}
 			}

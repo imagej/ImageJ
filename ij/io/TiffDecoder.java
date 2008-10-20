@@ -408,6 +408,9 @@ public class TiffDecoder {
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = FileInfo.RGB;
 					break;
+				case ROWS_PER_STRIP:
+					fi.rowsPerStrip = value;
+					break;
 				case X_RESOLUTION:
 					double xScale = getRational(value); 
 					if (xScale!=0.0) fi.pixelWidth = 1.0/xScale; 
@@ -442,11 +445,13 @@ public class TiffDecoder {
 					}
 					break;
 				case COMPRESSION:
-					if (value==5) { // LZW compression is handled
+					if (value==5) { // LZW compression
 						int bpp = fi.getBytesPerPixel();
 						if (bpp==6)
 							error("ImageJ cannot open 48-bit LZW compressed TIFFs");
 						fi.compression = FileInfo.LZW;
+					} else if (value==32773) { // PackBits compression
+						fi.compression = FileInfo.PACK_BITS;
 					} else if (value!=1 && !(value==7&&fi.width<500)) {
 						// don't abort with Spot camera compressed (7) thumbnails
 						// otherwise, this is an unknown compression type

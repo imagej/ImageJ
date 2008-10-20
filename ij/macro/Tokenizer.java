@@ -10,7 +10,6 @@ public class Tokenizer implements MacroConstants {
     private String tokenString;
     private double tokenValue;
     private Program pgm;
-    private boolean hasUserFunctions;
 
 
     /** Uses a StreamTokenizer to convert an ImageJ macro file into a token stream. */
@@ -30,7 +29,7 @@ public class Tokenizer implements MacroConstants {
             getToken();
             addToken();
         } while (token!=EOF);
-        if (hasUserFunctions)
+        if (pgm.hasFunctions)
         	addUserFunctions();
         return pgm;
     }
@@ -170,7 +169,7 @@ public class Tokenizer implements MacroConstants {
 					if (type==0) {
 						tok = symbol.type;
 						switch (tok) {
-							case FUNCTION: hasUserFunctions=true; break;
+							case FUNCTION: pgm.hasFunctions=true; break;
 							case VAR: pgm.hasVars=true; break;
 							case MACRO: pgm.macroCount++; break;
 						}

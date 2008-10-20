@@ -62,7 +62,7 @@ public class BrowserLauncher implements PlugIn {
 	public void run(String theURL) {
 		if (error) return;
 		if (theURL==null || theURL.equals(""))
-			theURL = "http://rsb.info.nih.gov/ij/";
+			theURL = IJ.URL;
 		Applet applet = IJ.getApplet();
 		if (applet!=null) {
 			try {

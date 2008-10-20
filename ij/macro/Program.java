@@ -15,7 +15,7 @@ public class Program implements MacroConstants {
     static Symbol[] systemTable;
 	int[] code = new int[maxProgramSize];
 	Variable[] globals;
-	boolean hasVars;
+	boolean hasVars, hasFunctions;
 	int macroCount;
     Hashtable menus;
     // run keyboard shortcut macros on event dispatch thread?
