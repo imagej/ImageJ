@@ -3,7 +3,8 @@ import ij.*;
 import ij.plugin.frame.Editor;
 import javax.script.*;
 
-/** Implements the macro editor's Macros/Evaluate JavaScript command. */
+/** Implements the macro editor's Macros/Evaluate JavaScript command 
+	on Macs and on systems not running Java 1.6 or later. */
 public class JavaScriptEvaluator implements PlugIn, Runnable  {
 	Thread thread;
 	String script;
