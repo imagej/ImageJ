@@ -141,6 +141,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 
 	boolean areErrors(String s) {
 		boolean errors = s!=null && s.length()>0;
+		if(errors && s.indexOf("1 warning")>0 && s.indexOf("[deprecation] show()")>0)
+			errors = false;
 		//if(errors&&s.startsWith("Note:com.sun.tools.javac")&&s.indexOf("error")==-1)
 		//	errors = false;
 		return errors;

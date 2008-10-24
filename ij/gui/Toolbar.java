@@ -586,6 +586,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
+	/** Returns the size of the brush tool or 0 if the brush tool is not enabled. */
 	public static int getBrushSize() {
 		if (brushEnabled)
 			return brushSize;
@@ -593,6 +594,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return 0;
 	}
 
+	/** Set the size of the brush tool, which must be greater than 4. */
+	public static void setBrushSize(int size) {
+		brushSize = size;
+		if (brushSize<5) brushSize = 5;
+		Prefs.set(BRUSH_SIZE, brushSize);
+	}
+	
 	static void repaintTool(int tool) {
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();

@@ -172,7 +172,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
-		if (name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js")|| name.indexOf(".")==-1) {
+		boolean macroExtension = name.endsWith(".txt") || name.endsWith(".ijm");
+		if (macroExtension || name.endsWith(".js")|| name.indexOf(".")==-1) {
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
 			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_E)));
@@ -185,7 +186,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
-			if (text.indexOf("macro ")!=-1)
+			if (macroExtension && text.indexOf("macro ")!=-1)
 				installMacros(text, false);				
 		} else {
 			fileMenu.addSeparator();

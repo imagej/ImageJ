@@ -58,6 +58,8 @@ public class ImageJ_Updater implements PlugIn {
 			Prefs.savePreferences();
 		// if (!renameJar(file)) return; // doesn't work on Vista
 		saveJar(file, jar);
+		if (choice<count-1) // force macro Function Finder to download fresh list
+			new File(IJ.getDirectory("macros")+"functions.html").delete();
 		System.exit(0);
 	}
 

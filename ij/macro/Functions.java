@@ -3222,10 +3222,27 @@ public class Functions implements MacroConstants, Measurements {
 			}
 			m = c.getMethod(methodName,argClasses);
 		} catch(Exception ex) {
+			m = null;
+		}
+		if (m==null && args.length>0) {
+			try {
+				Class[] argClasses = new Class[args.length];
+				for(int i=0;i<args.length;i++) {
+					double value = Tools.parseDouble((String)args[i]);
+					if (!Double.isNaN(value)) {
+						args[i] = new Integer((int)value);
+						argClasses[i] = int.class;
+					} else
+						argClasses[i] = args[i].getClass();
+				}
+				m = c.getMethod(methodName,argClasses);
+			} catch(Exception ex) {
+				m = null;
+			}
+		}
+		if (m==null)
 			interp.error("Could not find the method "+methodName+" with "+
 				     args.length+" parameter(s) in class "+className);
-			return null;
-		}
 
 		try {
 			Object obj = m.invoke(null, args);
