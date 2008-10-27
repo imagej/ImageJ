@@ -132,6 +132,14 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 
+	 	if (arg.equals("set")) {
+	 		if (first) addValue = getValue("Set", "Value: ", addValue, 0);
+	 		if (canceled) return;
+	 		ip.setValue(addValue);
+			ip.fill();
+			return;
+		}
+
 	 	if (arg.equals("log")) {
 			ip.log();
 			return;

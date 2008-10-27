@@ -1131,6 +1131,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 				ContrastAdjuster.update();
 			if (!Interpreter.isBatchMode())
 				updateAndRepaintWindow();
+			else
+				img = null;
 		}
 	}
 

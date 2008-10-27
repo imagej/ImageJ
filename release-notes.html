@@ -5,19 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.41o, 22 October 2008</u>
+<li> <u>1.41o, 27 October 2008</u>
 <ul>
+<li> Added the <i>Process&gt;Math&gt;Set</i> command.
+<li> Added the 4200x4200 "NileBend" image to the <i>File&gt;Open Samples</i> menu.
 <li> <i>Help&gt;Update ImageJ</i>, except when updating to the
 "daily build", deletes "functions.html" in the macros folder,
 which forces the macro editor's <i>Macros&gt;Function Finder</i>
 command to download a fresh copy.
-<li> The call() macro function can now call static methods that have
+<li> The call() macro function can now call static methods with
 integer arguments.
 <li> Added the getOutputImage() and setHideOutputImage(boolean) 
 methods to the ParticleAnalyzer class.
 <li> Added the Toolbar.setBrushSize() method.
 <li> Fixed a bug, introduced in v1.41k, that caused macro functions not in
 an installed macro set to not be able to write to global (var) variables.
+<li> Fixed a bug that caused the ImagePlus.getImage() method to return
+the wrong image in batch mode stack processing macros.
+<li> Fixed a bug that caused the first slice and frame to always be displayed after
+using <i>Image&gt;Hyperstack&gt;Channels Tool</i> to switch a hyperstack
+to "Composite" mode.
 </ul>
 
 </body>

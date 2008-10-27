@@ -128,6 +128,7 @@ public class CompositeImage extends ImagePlus {
 				cip[i].setColorModel(lut[i]);
 				cip[i].setMinAndMax(lut[i].min, lut[i].max);
 			}
+			currentSlice = currentFrame = 1;
 		}
 	}
 
