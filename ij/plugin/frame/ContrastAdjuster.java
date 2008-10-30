@@ -20,6 +20,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	public static final String LOC_KEY = "b&c.loc";
 	static final int AUTO_THRESHOLD = 5000;
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
+	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
 	
 	ContrastPlot plot = new ContrastPlot();
@@ -182,14 +183,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			c.gridy = y++;
 			c.insets = new Insets(5, 10, 0, 10);
 			choice = new Choice();
-			for (int i=0; i<channelLabels.length; i++)
-				choice.addItem(channelLabels[i]);
+			addBalanceChoices();
 			gridbag.setConstraints(choice, c);
 			choice.addItemListener(this);
 			choice.addKeyListener(ij);		
 			add(choice);
 		}
-
+	
 		// buttons
 		int trim = IJ.isMacOSX()?20:0;
 		panel = new Panel();
@@ -231,6 +231,17 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		setup();
 	}
 		
+	void addBalanceChoices() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null && imp.isComposite()) {
+			for (int i=0; i<altChannelLabels.length; i++)
+				choice.addItem(altChannelLabels[i]);
+		} else {
+			for (int i=0; i<channelLabels.length; i++)
+				choice.addItem(channelLabels[i]);
+		}
+	}
+
 	void addLabel(String text, Label label2) {
 		if (label2==null&&IJ.isMacOSX()) text += "    ";
 		panel = new Panel();
@@ -353,11 +364,22 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			updateScrollBars(null, true);
 		} else
 			updateScrollBars(null, false);
-		if (balance && imp.isComposite()) {
-			int channel = imp.getChannel();
-			if (channel<=4) {
-				choice.select(channel-1);
-				channels = channelConstants[channel-1];
+		if (balance) {
+			if (imp.isComposite()) {
+				int channel = imp.getChannel();
+				if (channel<=4) {
+					choice.select(channel-1);
+					channels = channelConstants[channel-1];
+				}
+				if (choice.getItem(0).equals("Red")) {
+					choice.removeAll();
+					addBalanceChoices();
+				}
+			} else { // not composite
+				if (choice.getItem(0).equals("Channel 1")) {
+					choice.removeAll();
+					addBalanceChoices();
+				}
 			}
 		}
 		if (!doReset)
@@ -760,11 +782,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			if (allChannels) {
 				int channel = imp.getChannel();
 				for (int c=1; c<=channels; c++) {
-					imp.setPosition(c, imp.getSlice(), imp.getFrame());
+					imp.setPositionWithoutUpdate(c, imp.getSlice(), imp.getFrame());
 					imp.setDisplayRange(min, max);
 				}
+				((CompositeImage)imp).reset();
 				imp.setPosition(channel, imp.getSlice(), imp.getFrame());
-				imp.updateAndDraw();
 			}
 			if (Recorder.record) {
 				if (imp.getBitDepth()==32)
@@ -929,8 +951,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				choice.select(channelLabels.length-1);
 				channels = 7;
 			}
-		}
-		doReset = true;
+		} else
+			doReset = true;
 		notify();
 	}
 

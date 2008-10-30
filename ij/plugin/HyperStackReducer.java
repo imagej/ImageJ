@@ -81,7 +81,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		for (int c=1; c<=channels; c++) {
 			if (channels==1) c = c1;
 			LUT lut = imp.isComposite()?((CompositeImage)imp).getChannelLut():null;
-			imp.setPosition(c, 1, 1);
+			imp.setPositionWithoutUpdate(c, 1, 1);
 			ImageProcessor ip = imp.getProcessor();
 			double min = ip.getMin();
 			double max = ip.getMax();

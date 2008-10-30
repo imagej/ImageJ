@@ -89,6 +89,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private static Vector listeners = new Vector();
 	private boolean openAsHyperStack;
 	private int[] position = {1,1,1};
+	private boolean noUpdateMode;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -1067,6 +1068,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
+	public void setPositionWithoutUpdate(int channel, int slice, int frame) {
+		noUpdateMode = true;
+		setPosition(channel, slice, frame);
+		noUpdateMode = false;
+	}
+	
 	public int getStackIndex(int channel, int slice, int frame) {	
    		if (channel<1) channel = 1;
     	if (channel>nChannels) channel = nChannels;
@@ -1129,7 +1136,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
-			if (!Interpreter.isBatchMode())
+			if (!Interpreter.isBatchMode() && !noUpdateMode)
 				updateAndRepaintWindow();
 			else
 				img = null;
