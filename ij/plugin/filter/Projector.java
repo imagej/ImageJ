@@ -27,8 +27,8 @@ public class Projector implements PlugInFilter {
 	String[] axisList = {"X-Axis", "Y-Axis", "Z-Axis"};
 	String[] methodList = {"Nearest Point", "Brightest Point", "Mean Value"};
 	
-	private static int axisOfRotation = xAxis;
-	private static int projectionMethod = nearestPoint;
+	private static int axisOfRotation = yAxis;
+	private static int projectionMethod = brightestPoint;
 
 	private double sliceInterval = 1.0; // pixels
 	private static int initAngle = 0;
@@ -56,12 +56,15 @@ public class Projector implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		IJ.register(Projector.class);
+		if (imp!=null && imp.isHyperStack()) {
+				IJ.error("3D Project", "Hyperstacks are currently not supported. Convert to\nRGB using Image>Type>RGB Color and try again.");
+	    		return DONE; 
+		}
 		return DOES_8G+DOES_RGB+STACK_REQUIRED+NO_CHANGES;
 	}
 	
 	public void run(ImageProcessor ip) {
-		if(ip.isInvertedLut()) {
+		if (ip.isInvertedLut()) {
 	    	if (!IJ.showMessageWithCancel("3D Project", ZProjector.lutMessage))
 	    		return; 
 		}

@@ -128,6 +128,7 @@ public class CompositeImage extends ImagePlus {
 				cip[i].setColorModel(lut[i]);
 				cip[i].setMinAndMax(lut[i].min, lut[i].max);
 			}
+			currentSlice = currentFrame = 1;
 		}
 	}
 
@@ -268,8 +269,11 @@ public class CompositeImage extends ImagePlus {
 			if (syncChannels) {
 				ImageProcessor ip2 = getProcessor();
 				double min=ip2.getMin(), max=ip2.getMax();
-				for (int i=0; i<nChannels; i++)
+				for (int i=0; i<nChannels; i++) {
 					cip[i].setMinAndMax(min, max);
+					lut[i].min = min;
+					lut[i].max = max;
+				}
 				syncChannels = false;
 			}
 			if (active[0])

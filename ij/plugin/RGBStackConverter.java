@@ -58,14 +58,15 @@ public class RGBStackConverter implements PlugIn {
 		int n = frames;
 		if (n==1) n = slices;
 		ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
+		int c=imp.getChannel(), z=imp.getSlice(), t=imp.getFrame();
 		for (int i=1; i<=n; i++) {
 			if (frames==1)
-				imp.setPosition(imp.getChannel(), i, imp.getFrame());
+				imp.setPositionWithoutUpdate(imp.getChannel(), i, imp.getFrame());
 			else
-				imp.setPosition(imp.getChannel(), imp.getSlice(), i);
-			IJ.wait(250);
+				imp.setPositionWithoutUpdate(imp.getChannel(), imp.getSlice(), i);
 			stack.addSlice(null, new ColorProcessor(imp.getImage()));
 		}
+		imp.setPosition(c, z, t);
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack(title, stack);
 		imp2.show();

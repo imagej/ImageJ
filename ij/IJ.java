@@ -1205,9 +1205,15 @@ public class IJ {
 	/** Open the specified file as a tiff, bmp, dicom, fits, pgm, gif 
 		or jpeg image and returns an ImagePlus object if successful.
 		Calls HandleExtraFileTypes plugin if the file type is not recognised.
+		Displays a file open dialog if 'path' is null or an empty string.
 		Note that 'path' can also be a URL. */
 	public static ImagePlus openImage(String path) {
 		return (new Opener()).openImage(path);
+	}
+
+	/** Opens an image using a file open dialog and returns it as an ImagePlus object. */
+	public static ImagePlus openImage() {
+		return openImage(null);
 	}
 
 	/** Saves the current image, lookup table, selection or text window to the specified file path. 

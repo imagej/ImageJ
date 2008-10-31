@@ -433,6 +433,7 @@ public class ShortProcessor extends ImageProcessor {
 				switch(op) {
 					case INVERT:
 						v2 = max2 - (v1 - min2);
+						//v2 = 65535 - (v1+offset);
 						break;
 					case FILL:
 						v2 = fgColor2;
