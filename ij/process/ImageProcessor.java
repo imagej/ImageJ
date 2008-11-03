@@ -1004,6 +1004,8 @@ public abstract class ImageProcessor extends Object {
 			setRoi(cxx, cy-h, w, h);
 			ImageProcessor ip = crop();
 			resetRoi();
+			if (ip.getWidth()==0||ip.getHeight()==0)
+				return;
 			g.drawImage(ip.createImage(), 0, 0, null);
 			g.setColor(drawingColor);
 			g.drawString(s, 0, h-descent);

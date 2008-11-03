@@ -250,9 +250,16 @@ public class Opener {
 	}
 	
 	/** Attempts to open the specified file as a tiff, bmp, dicom, fits,
-	pgm, gif or jpeg. Returns an ImagePlus object if successful. */
+		pgm, gif or jpeg. Displays a file open dialog if 'path' is null or
+		an empty string. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String path) {
-		if (path==null || path.equals("")) return null;
+		if (path==null || path.equals("")) {
+			OpenDialog od = new OpenDialog("Open", "");
+			String dir = od.getDirectory();
+			String name = od.getFileName();
+			if (name==null) return null;
+			path = dir+name;
+		}
 		ImagePlus img = null;
 		if (path.indexOf("://")>0)
 			img = openURL(path);

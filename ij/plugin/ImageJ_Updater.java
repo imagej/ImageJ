@@ -32,22 +32,23 @@ public class ImageJ_Updater implements PlugIn {
 		String[] urls = new String[count];
 		String uv = getUpgradeVersion();
 		if (uv==null) return;
-		versions[0] = "v"+uv+" (latest version)";
+		versions[0] = "v"+uv;
 		urls[0] = IJ.URL+"/upgrade/ij.jar";
 		if (versions[0]==null) return;
 		for (int i=1; i<count-1; i++) {
-			versions[i] = list[i-1];
+			String version = list[i-1];
+			versions[i] = version.substring(0,version.length()-1); // remove letter
 			urls[i] = IJ.URL+"/download/jars/ij"
-				+versions[i].substring(1,2)+versions[i].substring(3,6)+".jar";
+				+version.substring(1,2)+version.substring(3,6)+".jar";
 		}
 		versions[count-1] = "daily build";
 		urls[count-1] = IJ.URL+"/ij.jar";
 		int choice = showDialog(versions);
 		if (choice==-1) return;
-		if (!versions[choice].startsWith("daily") && versions[choice].compareTo("v1.39s")<0
+		if (!versions[choice].startsWith("daily") && versions[choice].compareTo("v1.39")<0
 		&& Menus.getCommands().get("ImageJ Updater")==null) {
 			String msg = "This command is not available in versions of ImageJ prior\n"+
-			"to 1.39s so you will need to install the plugin version at\n"+
+			"to 1.39 so you will need to install the plugin version at\n"+
 			"<"+IJ.URL+"/plugins/imagej-updater.html>.";
 			if (!IJ.showMessageWithCancel("Update ImageJ", msg))
 				return;

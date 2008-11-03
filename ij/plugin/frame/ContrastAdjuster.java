@@ -385,6 +385,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if (!doReset)
 			plotHistogram(imp);
 		autoThreshold = 0;
+		if (imp.isComposite())
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
 	}
 	
 	void setMinAndMax(ImagePlus imp, double min, double max) {
@@ -910,7 +912,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		updatePlot();
 		updateLabels(imp);
-		if ((IJ.shiftKeyDown()||(balance && channels==7)) && imp.isComposite()) {
+		if ((IJ.shiftKeyDown()||(balance&&channels==7)) && imp.isComposite()) {
 			((CompositeImage)imp).updateAllChannelsAndDraw();
 		} else
 			imp.updateChannelAndDraw();
