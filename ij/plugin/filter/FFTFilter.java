@@ -8,7 +8,7 @@ import java.awt.*;
 import java.util.*;
 
 /** 
-This class implements the Process/FFT/bandpass Filter command. It started out as 
+This class implements the Process/FFT/Bandpass Filter command. It is based on 
 Joachim Walter's FFT Filter plugin at "http://rsb.info.nih.gov/ij/plugins/fft-filter.html".
 2001/10/29: First Version (JW)
 2003/02/06: 1st bugfix (works in macros/plugins, works on stacks, overwrites image(=>filter)) (JW)
@@ -155,9 +155,9 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 			IJ.showStatus(msg);
 	}
 
-	/** Puts imageprocessor (ROI) into a new imageprocessor of size width x height y at position (x,y).
+	/** Puts ImageProcessor (ROI) into a new ImageProcessor of size width x height y at position (x,y).
 	The image is mirrored around its edges to avoid wrap around effects of the FFT. */
-	ImageProcessor tileMirror(ImageProcessor ip, int width, int height, int x, int y) {
+	public ImageProcessor tileMirror(ImageProcessor ip, int width, int height, int x, int y) {
 			
 		if (x < 0 || x > (width -1) || y < 0 || y > (height -1)) {
 			IJ.error("Image to be tiled is out of bounds.");

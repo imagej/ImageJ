@@ -203,8 +203,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	
 	/** Displays a modal options dialog. */
 	public boolean showDialog() {
-		Calibration cal = imp!=null?imp.getCalibration():(new Calibration());
-		double unitSquared = cal.pixelWidth*cal.pixelHeight;
+		//Calibration cal = imp!=null?imp.getCalibration():(new Calibration());
+		//double unitSquared = cal.pixelWidth*cal.pixelHeight;
+		double unitSquared = 1.0;
 		if (Macro.getOptions()!=null) {
 			boolean oldMacro = updateMacroOptions();
 			if (oldMacro) unitSquared = 1.0;
@@ -214,12 +215,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		maxSize = staticMaxSize;
 		if (maxSize==999999) maxSize = DEFAULT_MAX_SIZE;
 		options = staticOptions;
-		String unit = cal.getUnit();
-		if (unit.equals("inch")) {
-			unit = "pixel";
-			unitSquared = 1.0;
-		}
-		String units = unit+"^2";
+		//String unit = cal.getUnit();
+		//if (unit.equals("inch")) {
+		//	unit = "pixel";
+		//	unitSquared = 1.0;
+		//}
+		//String units = unit+"^2";
+		String units = "pixel^2";
 		int places = 0;
 		double cmin = minSize*unitSquared;
 		if ((int)cmin!=cmin) places = 2;
@@ -259,10 +261,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			return false;
 			
 		String size = gd.getNextString();
-		if (size.indexOf("p")!=-1) { // unit is "pixel"?
-			size = size.replaceAll("p", "");
-			unitSquared = 1.0;
-		}
+		//if (size.indexOf("p")!=-1) { // unit is "pixel"?
+		//	size = size.replaceAll("p", "");
+		//	unitSquared = 1.0;
+		//}
 		String[] minAndMax = Tools.split(size, " -");
 		double mins = Tools.parseDouble(minAndMax[0]);
 		double maxs = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;
