@@ -403,7 +403,7 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		
 		if (cmd!=null && !cmd.equals("")) {
-			if (cmd.equals("Fill"))
+			if (cmd.equals("Fill")||cmd.equals("Draw"))
 				hotkey = true;
 			if (cmd.charAt(0)==MacroInstaller.commandPrefix)
 				MacroInstaller.runMacroShortcut(cmd);

@@ -33,6 +33,7 @@ public class ScaleDialog implements PlugInFilter {
 		String scale = "<no scale>";
 		int digits = 2;
 		//IJ.log("ScaleDialog: "+isCalibrated);
+		Roi roi = imp.getRoi();
 		if (isCalibrated) {
 			measured = 1.0/cal.pixelWidth;
 			digits = Tools.getDecimalPlaces(measured, measured);
@@ -40,9 +41,7 @@ public class ScaleDialog implements PlugInFilter {
 			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 			unit = cal.getUnit();
 			scale = IJ.d2s(measured,digits)+" pixels/"+unit;
-		}
-		Roi roi = imp.getRoi();
-		if (roi!=null && (roi instanceof Line)) {
+		} else if (roi!=null && (roi instanceof Line)) {
 			measured = ((Line)roi).getRawLength();
 			known = 0.0;
 		}
@@ -104,7 +103,7 @@ public class ScaleDialog implements PlugInFilter {
 	Panel makeButtonPanel(SetScaleDialog gd) {
 		Panel panel = new Panel();
     	panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		gd.unscaleButton = new Button("Reset to Pixels");
+		gd.unscaleButton = new Button("Remove Scale");
 		gd.unscaleButton.addActionListener(gd);
 		panel.add(gd.unscaleButton);
 		return panel;
