@@ -916,15 +916,24 @@ public class ShortProcessor extends ImageProcessor {
 		if (minThreshold<0.0) minThreshold = 0.0;
 		if (maxThreshold>65535.0) maxThreshold = 65535.0;
 		if (max>min) {
-			double minT = Math.round(((minThreshold-min)/(max-min))*255.0);
-			double maxT = Math.round(((maxThreshold-min)/(max-min))*255.0);
+			// scale to 0-255 using same method as create8BitImage()
+			double scale = 256.0/(max-min+1);
+			double minT = minThreshold-min;
+			if (minT<0) minT = 0;
+			minT = (int)(minT*scale+0.5);
+			if (minT>255) minT = 255;
+			//ij.IJ.log("setThreshold: "+minT+" "+Math.round(((minThreshold-min)/(max-min))*255.0));
+			double maxT = maxThreshold-min;
+			if (maxT<0) maxT = 0;
+			maxT = (int)(maxT*scale+0.5);
+			if (maxT>255) maxT = 255;
 			super.setThreshold(minT, maxT, lutUpdate); // update LUT
 		} else
 			super.resetThreshold();
 		this.minThreshold = Math.round(minThreshold);
 		this.maxThreshold = Math.round(maxThreshold);
 	}
-
+	
 	/** Performs a convolution operation using the specified kernel. */
 	public void convolve(float[] kernel, int kernelWidth, int kernelHeight) {
 		ImageProcessor ip2 = convertToFloat();
