@@ -18,6 +18,8 @@ import java.util.ArrayList;
      
 public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	private Iterator iterator;
+	private static boolean convertToRGB;
+	private static boolean virtualStack;
 	
 	public void run(String arg) {
 		ImageJ ij = IJ.getInstance();
@@ -117,16 +119,22 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		private void openDirectory(File f, String path) {
 			String[] names = f.list();
 			String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
-			GenericDialog gd = new GenericDialog("Open Folder?");
+			GenericDialog gd = new GenericDialog("Open Folder");
 			gd.setInsets(10,5,0);
 			gd.addMessage(msg);
 			gd.setInsets(15,35,0);
-			gd.addCheckbox("Use Virtual Stack", false);
+			gd.addCheckbox("Convert to RGB", convertToRGB);
+			gd.setInsets(0,35,0);
+			gd.addCheckbox("Use Virtual Stack", virtualStack);
 			gd.enableYesNoCancel();
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 			if (gd.wasOKed()) {
-				String options  = (gd.getNextBoolean()?" use":"")+" sort";
+				convertToRGB = gd.getNextBoolean();
+				virtualStack = gd.getNextBoolean();
+				String options  = " sort";
+				if (convertToRGB) options += " convert_to_rgb";
+				if (virtualStack) options += " use";
 				IJ.run("Image Sequence...", "open=[" + path + "/]"+options);
 			} else {
 				for (int k=0; k<names.length; k++) {

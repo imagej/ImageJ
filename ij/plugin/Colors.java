@@ -120,7 +120,8 @@ public class Colors implements PlugIn, ItemListener {
 		gd.addNumericField("Mark Width:", Analyzer.markWidth, 0, 2, "pixels");
 		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
 		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
-		gd.addCheckbox("Label Points", !Prefs.noPointLabels);
+		gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
+		gd.addCheckbox("Label Shift-Click Points", !Prefs.noPointLabels);
 		gd.addChoice("Selection Color:", colors, sname);
 		Vector choices = gd.getChoices();
 		schoice = (Choice)choices.elementAt(0);
@@ -140,10 +141,12 @@ public class Colors implements PlugIn, ItemListener {
 		Analyzer.markWidth = width;
 		Prefs.pointAutoMeasure = gd.getNextBoolean();
 		Prefs.pointAutoNextSlice = gd.getNextBoolean();
+		Prefs.pointAddToManager = gd.getNextBoolean();
 		Prefs.noPointLabels = !gd.getNextBoolean();
 		sname = gd.getNextChoice();
 		sc2 = getColor(sname, Color.yellow);
-		if (Prefs.pointAutoNextSlice) Prefs.pointAutoMeasure = true;
+		if (Prefs.pointAutoNextSlice&&!Prefs.pointAddToManager)
+			Prefs.pointAutoMeasure = true;
 		if (Prefs.noPointLabels!=saveNoPointLabels) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) imp.draw();

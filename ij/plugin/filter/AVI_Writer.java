@@ -246,6 +246,7 @@ public class AVI_Writer implements PlugInFilter {
         //  W r i t e   f r a m e   d a t a
         for (int z=0; z<zDim; z++) {
             IJ.showProgress(z, zDim);
+            IJ.showStatus(z+"/"+zDim);
             ImageProcessor ip = null;      // get the image to write ...
             if (isComposite) {
                 int frame = z/dimensions[3] + 1;

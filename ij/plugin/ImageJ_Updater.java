@@ -208,7 +208,12 @@ public class ImageJ_Updater implements PlugIn {
 	}
 	
 	void updateMenus() {
-		Menus.updateImageJMenus();
+		if (IJ.debugMode) {
+			long start = System.currentTimeMillis();
+			Menus.updateImageJMenus();
+			IJ.log("Update Menus: "+(System.currentTimeMillis()-start)+" ms");
+		} else
+			Menus.updateImageJMenus();
 	}
 
 }
