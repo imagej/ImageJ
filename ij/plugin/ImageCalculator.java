@@ -49,7 +49,7 @@ public class ImageCalculator implements PlugIn {
 		gd.addChoice("Image2:", titles, defaultItem);
 		//gd.addStringField("Result:", "Result", 10);
 		gd.addCheckbox("Create New Window", createWindow);
-		gd.addCheckbox("32-bit Result", floatResult);
+		gd.addCheckbox("32-bit (float) Result", floatResult);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
