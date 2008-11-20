@@ -90,6 +90,7 @@ public class Info implements PlugInFilter {
 	    		if (imp.isInvertedLut())
 	    			lut = "inverting " + lut;
 	    		s += "(" + lut + ")\n";
+				s += "Display range: "+(int)ip.getMin()+"-"+(int)ip.getMax()+"\n";
 	    		break;
 	    	case ImagePlus.GRAY16: case ImagePlus.GRAY32:
 	    		if (type==ImagePlus.GRAY16) {

@@ -340,15 +340,15 @@ public class ImageReader {
 						r = buffer[j++]&0xff;
 						g = buffer[j++]&0xff;
 					} else if (fi.intelByteOrder) {
-						b = buffer[j++]&0xff;
-						g = buffer[j++]&0xff;
 						r = buffer[j++]&0xff;
+						g = buffer[j++]&0xff;
+						b = buffer[j++]&0xff;
 						j++; // ignore alfa byte
 					} else {
 						j++; // ignore alfa byte
-						r = buffer[j++]&0xff;
-						g = buffer[j++]&0xff;
 						b = buffer[j++]&0xff;
+						g = buffer[j++]&0xff;
+						r = buffer[j++]&0xff;
 					}
 				} else {
 					r = buffer[j++]&0xff;
@@ -401,15 +401,15 @@ public class ImageReader {
 			for (int j=base; j<pmax; j++) {
 				if (bytesPerPixel==4) {
 					if (fi.intelByteOrder) {
-						blue = byteArray[k++]&0xff;
-						green = byteArray[k++]&0xff;
 						red = byteArray[k++]&0xff;
+						green = byteArray[k++]&0xff;
+						blue = byteArray[k++]&0xff;
 						k++; // ignore alfa byte
 					} else {
 						k++; // ignore alfa byte
-						red = byteArray[k++]&0xff;
-						green = byteArray[k++]&0xff;
 						blue = byteArray[k++]&0xff;
+						green = byteArray[k++]&0xff;
+						red = byteArray[k++]&0xff;
 					}
 				} else {
 					red = byteArray[k++]&0xff;

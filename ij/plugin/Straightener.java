@@ -7,6 +7,7 @@ import java.awt.*;
 
 /** This plugin implements the Edit/Selection/Straighten command. */
 public class Straightener implements PlugIn {
+	static boolean processStack;
 
  	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -18,30 +19,36 @@ public class Straightener implements PlugIn {
 		int width = Line.getWidth();
 		int originalWidth = width;
 		boolean isMacro = IJ.macroRunning();
-		if (width==1 || isMacro) {
+		int stackSize = imp.getStackSize();
+		if (stackSize==1) processStack = false;
+		if (width==1 || isMacro || stackSize>1) {
+			if (width==1) width = 20;
 			GenericDialog gd = new GenericDialog("Straightener");
-			gd.addNumericField("Line Width:", 20, 0, 3, "pixels");
+			gd.addNumericField("Line Width:", width, 0, 3, "pixels");
+			if (stackSize>1)
+				gd.addCheckbox("Process Entire Stack", processStack);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 			width = (int)gd.getNextNumber();
 			Line.setWidth(width);
+			if (stackSize>1)
+				processStack = gd.getNextBoolean();
 		}
 		roi = (Roi)imp.getRoi().clone();
 		int type = roi.getType();
 		if (type==Roi.FREELINE)
 			IJ.run(imp, "Fit Spline", "");
-		ImageProcessor ip2;
-		if (imp.getBitDepth()==24 && roi.getType()!=Roi.LINE)
-			ip2 = straightenRGB(imp, width);
-		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
-			ip2 = straightenComposite(imp, width);
-		else if (roi.getType()==Roi.LINE)
-			ip2 = rotateLine(imp, width);
-		else
-			ip2 = straighten(imp, width);
-		if (ip2==null)
+		ImageProcessor ip2 = null;
+		ImagePlus imp2 = null;
+		if (processStack) {
+			ImageStack stack2 = straightenStack(imp, roi, width);
+			imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), stack2);
+		} else {
+			ip2 = straighten(imp, roi, width);
+			imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2);
+		}
+		if (imp2==null)
 			return;
-		ImagePlus imp2 = new ImagePlus(WindowManager.getUniqueName(imp.getTitle()), ip2);
 		Calibration cal = imp.getCalibration();
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
@@ -54,7 +61,36 @@ public class Straightener implements PlugIn {
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	
-	public ImageProcessor straighten(ImagePlus imp, int width) {
+	public ImageProcessor straighten(ImagePlus imp, Roi roi, int width) {
+		ImageProcessor ip2;
+		if (imp.getBitDepth()==24 && roi.getType()!=Roi.LINE)
+			ip2 = straightenRGB(imp, width);
+		else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
+			ip2 = straightenComposite(imp, width);
+		else if (roi.getType()==Roi.LINE)
+			ip2 = rotateLine(imp, width);
+		else
+			ip2 = straightenLine(imp, width);
+		return ip2;
+	}
+		
+	public ImageStack straightenStack(ImagePlus imp, Roi roi, int width) {
+		int current = imp.getCurrentSlice();
+		int n = imp.getStackSize();
+		ImageStack stack2 = null;
+		for (int i=1; i<=n; i++) {
+			IJ.showProgress(i, n);
+			imp.setSlice(i);
+			ImageProcessor ip2 = straighten(imp, roi, width);
+			if (stack2==null)
+				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
+			stack2.addSlice(null, ip2);
+		}
+		imp.setSlice(current);
+		return stack2;
+	}
+
+	public ImageProcessor straightenLine(ImagePlus imp, int width) {
 		PolygonRoi roi = (PolygonRoi)imp.getRoi();
 		if (roi==null) return null;
 		boolean isSpline = roi.isSplineFit();
@@ -74,6 +110,7 @@ public class Straightener implements PlugIn {
 		if (width==1)
 			ip2.putPixelValue(0, 0, ip.getInterpolatedValue(x2, y2));
 		for (int i=0; i<n; i++) {
+			if (!processStack&&(i%10)==0) IJ.showProgress(i, n);
 			x1=x2; y1=y2;
 			x2=p.xpoints[i]; y2=p.ypoints[i];
 			if (distances!=null) distances.putPixelValue(i, 0, (float)Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)));
@@ -95,6 +132,7 @@ public class Straightener implements PlugIn {
 				y += dx;
 			} while (--n2>0);
 		}
+		if (!processStack) IJ.showProgress(n, n);
 		imp.updateAndDraw();
 		if (!isSpline) {
 			if (type==Roi.FREELINE)
@@ -118,7 +156,7 @@ public class Straightener implements PlugIn {
 		Polygon p = imp.getRoi().getPolygon();
 		Line.setWidth(width);
 		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
-		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straighten(imp, width);
+		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straightenLine(imp, width);
 		imp.setRoi(new Line(p.xpoints[0], p.ypoints[0], p.xpoints[1], p.ypoints[1]));
 		return ip2;
 	}
@@ -133,15 +171,15 @@ public class Straightener implements PlugIn {
 		cp.getRGB(r, g, b);
         ImagePlus imp2 = new ImagePlus("red", new ByteProcessor(w, h, r, null));
         imp2.setRoi((Roi)imp.getRoi().clone());
-        ImageProcessor red = straighten(imp2, width);
+        ImageProcessor red = straightenLine(imp2, width);
         if (red==null) return null;
         imp2 = new ImagePlus("green", new ByteProcessor(w, h, g, null));
         imp2.setRoi((Roi)imp.getRoi().clone());
-        ImageProcessor green = straighten(imp2, width);
+        ImageProcessor green = straightenLine(imp2, width);
         if (green==null) return null;
         imp2 = new ImagePlus("blue", new ByteProcessor(w, h, b, null));
         imp2.setRoi((Roi)imp.getRoi().clone());
-        ImageProcessor blue = straighten(imp2, width);
+        ImageProcessor blue = straightenLine(imp2, width);
         if (blue==null) return null;
         ColorProcessor cp2 = new ColorProcessor(red.getWidth(), red.getHeight());
         red = red.convertToByte(false);

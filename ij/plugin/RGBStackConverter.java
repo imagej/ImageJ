@@ -47,12 +47,14 @@ public class RGBStackConverter implements PlugIn {
 			compositeImageToRGB(imp, title);
 			return;
 		}
-		YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Convert to RGB", "Convert entire HyperStack?");
-		if (d.cancelPressed())
-			return;
-		else if (!d.yesPressed()) {
-			compositeImageToRGB(imp, title);
-			return;
+		if (!IJ.isMacro()) {
+			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Convert to RGB", "Convert entire HyperStack?");
+			if (d.cancelPressed())
+				return;
+			else if (!d.yesPressed()) {
+				compositeImageToRGB(imp, title);
+				return;
+			}
 		}
 		if (!imp.isHyperStack()) return;
 		int n = frames;

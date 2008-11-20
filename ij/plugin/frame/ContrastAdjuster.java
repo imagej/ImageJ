@@ -758,7 +758,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		double minValue = cal.getCValue(min);
 		double maxValue = cal.getCValue(max);
 		int channels = imp.getNChannels();
-		GenericDialog gd = new GenericDialog("Set Min and Max");
+		GenericDialog gd = new GenericDialog("Set Display Range");
 		gd.addNumericField("Minimum Displayed Value: ", minValue, digits);
 		gd.addNumericField("Maximum Displayed Value: ", maxValue, digits);
 		gd.addCheckbox("Propagate to all open images", false);

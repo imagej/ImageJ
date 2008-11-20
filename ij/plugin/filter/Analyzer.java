@@ -51,7 +51,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	/** Constructs a new Analyzer using the specified ImagePlus object
-		and the system-wide measurement options and results table. */
+		and the current measurement options and default results table. */
 	public Analyzer(ImagePlus imp) {
 		this();
 		this.imp = imp;
@@ -83,6 +83,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	public void run(ImageProcessor ip) {
 		measure();
+		displayResults();
 	}
 
 	void doSetDialog() {
@@ -180,7 +181,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			systemRT.disableRowLabels();
 	}
 	
-	void measure() {
+	/** Measures the image or selection and adds the results to the default results table. */
+	public void measure() {
 		String sliceHdr = rt.getColumnHeading(ResultsTable.SLICE);
 		if (sliceHdr==null || sliceHdr.charAt(0)!='S') {
 			if (!reset()) return;
@@ -208,7 +210,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (!IJ.isResultsWindow())
 			reset();
 		saveResults(stats, roi);
-		displayResults();
 	}
 	
 	boolean reset() {
@@ -280,7 +281,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			ip.setRoi(p.xpoints[i], p.ypoints[i], 1, 1);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp.getCalibration());
 			saveResults(stats, new PointRoi(p.xpoints[i], p.ypoints[i]));
-			displayResults();
+			if (i!=p.npoints-1) displayResults();
 		}
 		//IJ.write(rt.getCounter()+"\t"+n(cal.getX(x))+n(cal.getY(y))+n(value));
 	}
@@ -296,7 +297,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		ip.setRoi(roi.getPolygon());
 		ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp.getCalibration());
 		saveResults(stats, roi);
-		displayResults();
 		//IJ.write(rt.getCounter()+"\t"+n(((PolygonRoi)roi).getAngle()));
 	}
 	
@@ -321,7 +321,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			saveR = ip2.getRoi();
 			ip2.setRoi(roi.getPolygon());
 		} else if (lineWidth>1)
-			ip2 = (new Straightener()).straighten(imp, lineWidth);
+			ip2 = (new Straightener()).straightenLine(imp, lineWidth);
 		else {
 			ProfilePlot profile = new ProfilePlot(imp);
 			double[] values = profile.getProfile();
@@ -336,11 +336,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, null);
 		if (saveR!=null) ip2.setRoi(saveR);
 		saveResults(stats, roi);
-		displayResults();
 	}
 	
 	/** Saves the measurements specified in the "Set Measurements" dialog,
-		or by calling setMeasurements(), in the system results table.
+		or by calling setMeasurements(), in the default results table.
 	*/
 	public void saveResults(ImageStatistics stats, Roi roi) {
 		if (rt.getColumnHeading(ResultsTable.SLICE)==null)
@@ -489,7 +488,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return s;
 	}
 
-	/** Writes the last row in the results table to the ImageJ window. */
+	/** Writes the last row in the system results table to the Results window. */
 	public void displayResults() {
 		int counter = rt.getCounter();
 		if (counter==1)
@@ -710,7 +709,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return umeans;
 	}
 
-	/** Returns the ImageJ results table. This table should only
+	/** Returns the default results table. This table should only
 		be displayed in a the "Results" window. */
 	public static ResultsTable getResultsTable() {
 		return systemRT;

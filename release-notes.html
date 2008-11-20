@@ -5,20 +5,32 @@
 </head>
 <body>
 
-<li> <u>1.42a, 30 October 2008</u>
+<li> <u>1.42b, 20 November 2008</u>
 <ul>
-<li> Added the 4200x4200 "NileBend" image to the <i>File&gt;Open Samples</i> menu.
-<li> The <i>Image&gt;Color&gt;Stack to RGB</i> command is faster.
-<li> Fixed a bug that caused the "Propagate to all n channels" option in the
-<li> Fixed bugs that caused <i>Image&gt;Adjust&gt;Color Balance</i> to not
-work correctly with composite color images.
-<li> The IJ.openImage(path) method displays a file open dialog if the 'path' argument
-is omitted or it is an empty string.
-<li>Fixed bugs that caused the <i>Adjust&gt;Brightness/Contrast</i> and <i>Adjust&gt;Window/Level</i> "Set"
-option to not work as expected with composite color images.
-<li> Fixed a bug that caused the first slice and frame to always be displayed after
-using <i>Image&gt;Hyperstack&gt;Channels Tool</i> to switch a hyperstack
-to "Composite" mode.
+<li> The <i>Edit&gt;Selection&gt;Straighten</i> command works with stacks.
+<li> Added an "Add to ROI Manager" option to the <i>Edit&gt;Options&gt;Point Tool</i> dialog box.
+<li> The "Convert to RGB" option in the <i>File&gt;Import&gt;Image Sequence</i> dialog now
+works with the "Use Virtual Stack" option.
+<li> Added a "Convert to RGB" option to the dialog box that is displayed when a folder
+is dragged and dropped onto the "ImageJ" window.
+<li> <i>Edit&gt;Draw</i> displays a "Process Stack" dialog  when operating on a stack.
+Use the "d" shortcut to avoid this dialog.
+<li> <i>Image&gt;Show Info</i> now displays the display range of 8-bit images.
+<li> <i>Process&gt;FFT&gt;Custom Filter</i> now mirrors the image around its
+edges to avoid wrap around artifacts.
+<li> The ROI Manager "Multi Measure" function now works with line and (single) point selections.
+<li> Renamed the "Reset" button in the <i>Analyze&gt;Set Scale</i> dialog to
+"Remove Scale" and changed the unit that is displayed with unscaled images from "cm" to "pixel".
+<li> Image window activations are recorded.
+<li> 16-bit composite color images are now correctly converted to 8-bits.
+<li> Fixed a bug, introduced in 1.41n, that caused <i>Process&gt;Math&gt;NaN Background</i>
+to fail with stacks.
+<li> Fixed a bug that caused <i>Analyze&gt;Tools&gt;Calibration Bar</i> 
+to throw an exception on Windows if the default calibration
+bar was taller than the image.
+<li> Fixed a bug that caused virtual stacks to hang if the backing folder contained images that
+were not all the same size and type.
+<li> Fixed a bug that caused indexed 8-bit grayscale images to not be correctly converted to 16 and 32 bits.
 </ul>
 
 </body>

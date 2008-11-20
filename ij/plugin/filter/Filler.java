@@ -29,7 +29,7 @@ public class Filler implements PlugInFilter, Measurements {
 			else
 				return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
 		} else if (arg.equals("draw"))
-				return baseCapabilities;
+				return IJ.setupDialog(imp,baseCapabilities);
 		else if (arg.equals("label")) {
 				if (Analyzer.firstParticle<Analyzer.lastParticle)
 					return baseCapabilities-ROI_REQUIRED;
@@ -89,7 +89,7 @@ public class Filler implements PlugInFilter, Measurements {
 	 			 		
 	public void draw(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
-		roi.drawPixels();
+		roi.drawPixels(ip);
 		if (IJ.altKeyDown())
 			drawLabel(ip);
  	}

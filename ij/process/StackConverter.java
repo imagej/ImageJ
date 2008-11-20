@@ -48,10 +48,16 @@ public class StackConverter {
 		double max = ip.getMax();
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
+	    LUT[] luts = imp.isComposite()?((CompositeImage)imp).getLuts():null;
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);
 			stack1.deleteSlice(1);
+			if (luts!=null) {
+				int index = (i-1)%luts.length;
+				min = luts[index].min;
+				max = luts[index].max;
+			}
 			ip.setMinAndMax(min, max);
 			boolean scale = ImageConverter.getDoScaling();
 			stack2.addSlice(label, ip.convertToByte(scale));
@@ -61,8 +67,12 @@ public class StackConverter {
 			}
 		}
 		imp.setStack(null, stack2);
-		imp.setSlice(currentSlice);
 		imp.setCalibration(imp.getCalibration()); //update calibration
+		if (imp.isComposite()) {
+			((CompositeImage)imp).resetDisplayRanges();
+			((CompositeImage)imp).updateAllChannelsAndDraw();
+		}
+		imp.setSlice(currentSlice);
 		IJ.showProgress(1.0);
 	}
 

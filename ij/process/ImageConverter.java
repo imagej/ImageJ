@@ -65,7 +65,6 @@ public class ImageConverter {
 		ImageProcessor ip = imp.getProcessor();
 		imp.trimProcessor();
 		Calibration cal = imp.getCalibration();
-		//ip.setCalibrationTable(cal.getCTable());
 		imp.setProcessor(null, ip.convertToFloat());
 		imp.setCalibration(cal); //update calibration
 	}

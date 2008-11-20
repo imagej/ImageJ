@@ -102,7 +102,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void record(String method, String arg) {
 		if (textArea==null) return;
-		textArea.append(method+"(\""+arg+"\");\n");
+		if (commandName!=null && method.equals("selectWindow"))
+			return;
+		else
+			textArea.append(method+"(\""+arg+"\");\n");
 	}
 
 	public static void record(String method, String arg1, String arg2) {

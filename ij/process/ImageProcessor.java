@@ -299,6 +299,32 @@ public abstract class ImageProcessor extends Object {
 		//ij.IJ.log("isPseudoColorLut: "+(isPseudoColor) + " " + stdDev);
 		return isPseudoColor;
 	}
+	
+	/** Returns true if the image is using the default grayscale LUT. */
+	public boolean isDefaultLut() {
+		if (cm==null)
+			makeDefaultColorModel();
+		if (!(cm instanceof IndexColorModel))
+			return false;
+    	IndexColorModel icm = (IndexColorModel)cm;
+		int mapSize = icm.getMapSize();
+		if (mapSize!=256)
+			return false;
+		byte[] reds = new byte[mapSize];
+		byte[] greens = new byte[mapSize];
+		byte[] blues = new byte[mapSize];	
+		icm.getReds(reds); 
+		icm.getGreens(greens); 
+		icm.getBlues(blues);
+		boolean isDefault = true;
+		for (int i=0; i<mapSize; i++) {
+			if ((reds[i]&255)!=i || (greens[i]&255)!=i || (blues[i]&255)!=i) {
+				isDefault = false;
+				break;
+			}
+		}
+		return isDefault;
+	}
 
 	/** Sets the default fill/draw value to the pixel
 		value closest to the specified color. */
@@ -1004,6 +1030,8 @@ public abstract class ImageProcessor extends Object {
 			setRoi(cxx, cy-h, w, h);
 			ImageProcessor ip = crop();
 			resetRoi();
+			if (ip.getWidth()==0||ip.getHeight()==0)
+				return;
 			g.drawImage(ip.createImage(), 0, 0, null);
 			g.setColor(drawingColor);
 			g.drawString(s, 0, h-descent);

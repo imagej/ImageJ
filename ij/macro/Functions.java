@@ -2603,7 +2603,7 @@ public class Functions implements MacroConstants, Measurements {
 				stats = ImageStatistics.getStatistics(ip2, params, cal);
 				ip2.setRoi(saveR);
 			} else {
-				ip2 = (new Straightener()).straighten(imp, lineWidth);
+				ip2 = (new Straightener()).straightenLine(imp, lineWidth);
 				stats = ImageStatistics.getStatistics(ip2, params, cal);
 			}
 		} else if (roi!=null && roi.isLine()) {

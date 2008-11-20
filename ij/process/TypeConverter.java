@@ -138,11 +138,16 @@ public class TypeConverter {
 
 	/** Converts a ByteProcessor to a ShortProcessor. */
 	ShortProcessor convertByteToShort() {
+		if (!ip.isDefaultLut() && !ip.isColorLut() && !ip.isInvertedLut()) {
+			// apply custom LUT
+			ip = convertToRGB();
+			ip = convertRGBToByte();
+			return (ShortProcessor)convertByteToShort();
+		}
 		byte[] pixels8 = (byte[])ip.getPixels();
 		short[] pixels16 = new short[width * height];
-		for (int i=0,j=0; i<width*height; i++) {
+		for (int i=0,j=0; i<width*height; i++)
 			pixels16[i] = (short)(pixels8[i]&0xff);
-		}
 	    return new ShortProcessor(width, height, pixels16, ip.getColorModel());
 	}
 
@@ -192,16 +197,22 @@ public class TypeConverter {
 		@see ImageProcessor.setCalibrationTable
 	 */
 	FloatProcessor convertByteToFloat(float[] cTable) {
+		if (!ip.isDefaultLut() && !ip.isColorLut() && !ip.isInvertedLut()) {
+			// apply custom LUT
+			ip = convertToRGB();
+			ip = convertRGBToByte();
+			return (FloatProcessor)convertByteToFloat(null);
+		}
 		byte[] pixels8 = (byte[])ip.getPixels();
-		boolean invertedLut = ip.isInvertedLut();
 		float[] pixels32 = new float[width*height];
 		int value;
-		if (cTable!=null && cTable.length==256)
+		if (cTable!=null && cTable.length==256) {
 			for (int i=0; i<width*height; i++)
 				pixels32[i] = cTable[pixels8[i]&255];
-		else
+		} else {
 			for (int i=0; i<width*height; i++)
 				pixels32[i] = pixels8[i]&255;
+		}
 	    ColorModel cm = ip.getColorModel();
 	    return new FloatProcessor(width, height, pixels32, cm);
 	}
@@ -212,7 +223,6 @@ public class TypeConverter {
 	 */
 	FloatProcessor convertShortToFloat(float[] cTable) {
 		short[] pixels16 = (short[])ip.getPixels();
-		boolean invertedLut = false; //imp.isInvertedLut();
 		float[] pixels32 = new float[width*height];
 		int value;
 		if (cTable!=null && cTable.length==65536)

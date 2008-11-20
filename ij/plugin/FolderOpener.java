@@ -127,9 +127,10 @@ public class FolderOpener implements PlugIn {
 					if (convertToRGB) bitDepth = 24;
 					if (convertToGrayscale) bitDepth = 8;
 					ColorModel cm = imp.getProcessor().getColorModel();
-					if (virtualStack)
+					if (virtualStack) {
 						stack = new VirtualStack(width, height, cm, directory);
-					else if (scale<100.0)						
+						((VirtualStack)stack).setBitDepth(bitDepth);
+					} else if (scale<100.0)						
 						stack = new ImageStack((int)(width*scale/100.0), (int)(height*scale/100.0), cm);
 					else
 						stack = new ImageStack(width, height, cm);
@@ -153,25 +154,27 @@ public class FolderOpener implements PlugIn {
 				for (int slice=1; slice<=inputStack.getSize(); slice++) {
 					ImageProcessor ip = inputStack.getProcessor(slice);
 					int bitDepth2 = imp.getBitDepth();
-					if (convertToRGB) {
-						ip = ip.convertToRGB();
-						bitDepth2 = 24;
-					} else if(convertToGrayscale) {
-						ip = ip.convertToByte(true);
-						bitDepth2 = 8;
-					}
-					if (bitDepth2!=bitDepth) {
-						if (bitDepth==8) {
-							ip = ip.convertToByte(true);
-							bitDepth2 = 8;
-						} else if (bitDepth==24) {
+					if (!virtualStack) {
+						if (convertToRGB) {
 							ip = ip.convertToRGB();
 							bitDepth2 = 24;
+						} else if (convertToGrayscale) {
+							ip = ip.convertToByte(true);
+							bitDepth2 = 8;
 						}
-					}
-					if (bitDepth2!=bitDepth) {
-						IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
-						break;
+						if (bitDepth2!=bitDepth) {
+							if (bitDepth==8) {
+								ip = ip.convertToByte(true);
+								bitDepth2 = 8;
+							} else if (bitDepth==24) {
+								ip = ip.convertToRGB();
+								bitDepth2 = 24;
+							}
+						}
+						if (bitDepth2!=bitDepth) {
+							IJ.log(list[i] + ": wrong bit depth; "+bitDepth+" expected, "+bitDepth2+" found");
+							break;
+						}
 					}
 					if (slice==1) count++;
 					IJ.showStatus(count+"/"+n);
@@ -253,11 +256,8 @@ public class FolderOpener implements PlugIn {
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
 		virtualStack = gd.getNextBoolean();
-		if (virtualStack) {
-			convertToGrayscale = false;
-			convertToRGB = false;
+		if (virtualStack)
 			scale = 100.0;
-		}
 		return true;
 	}
 

@@ -41,6 +41,8 @@ public class WindowManager {
 		Undo.reset();
 		currentWindow = win;
 		Menus.updateMenus();
+		if (Recorder.record)
+			Recorder.record("selectWindow", win.getImagePlus().getTitle());
 	}
 	
 	/** Returns the active ImageWindow. */
@@ -424,8 +426,6 @@ public class WindowManager {
 					MenuItem mi = Menus.window.getItem(j);
 					((CheckboxMenuItem)mi).setState((j-start)==index);						
 				}
-				if (Recorder.record)
-					Recorder.record("selectWindow", title);
 				break;
 			}
 		}
