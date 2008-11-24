@@ -49,10 +49,8 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		stackSize = imp!=null?imp.getStackSize():0;
 		Roi roi = imp.getRoi();
 		Calibration cal = imp.getCalibration();
-//if (roi!=null) IJ.log(""+width+" "+roi.getBounds()+" "+prevRoi+" "+cal.pixelWidth+" "+prevPixelWidth);
 		if (roi!=null && roi.getBounds().equals(prevRoi) && cal.pixelWidth==prevPixelWidth)
 			roi = null;
-//IJ.log(""+roi+" "+validDialogValues());
 		if (roi!=null) {
     		boolean rectOrOval = roi!=null && (roi.getType()==Roi.RECTANGLE||roi.getType()==Roi.OVAL);
     		oval = rectOrOval && (roi.getType()==Roi.OVAL);	// Handle existing oval ROI
@@ -70,8 +68,8 @@ public class SpecifyROI implements PlugIn, DialogListener {
     	} else if (!validDialogValues()) {
 			width = imp.getWidth()/2;
 			height = imp.getHeight()/2;
-			xRoi += width/4;
-			yRoi += height/4; 
+			xRoi = width/2;
+			yRoi = height/2; 
 		}
 		if (centered) {	// Make xRoi and yRoi consistent when centered mode is active
 			xRoi += width/2.0;

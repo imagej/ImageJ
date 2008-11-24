@@ -1016,7 +1016,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
-	void handleRoiMouseDown(MouseEvent e) {
+	protected void handleRoiMouseDown(MouseEvent e) {
 		int sx = e.getX();
 		int sy = e.getY();
 		int ox = offScreenX(sx);
