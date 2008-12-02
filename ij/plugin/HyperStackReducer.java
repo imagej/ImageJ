@@ -24,6 +24,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	}
 
 	public void run(String arg) {
+//IJ.log("HyperStackReducer-1");
 		imp = IJ.getImage();
 		if (!(imp.isHyperStack() || imp.isComposite())) {
 			IJ.error("Reducer", "HyperStack required");
@@ -40,6 +41,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		int t2 = imp.getFrame();
 		if (!showDialog())
 			return;
+//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
 		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
      	int bitDepth = imp.getBitDepth();
 		int size = channels2*slices2*frames2;
@@ -53,6 +55,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			imp2 = new ImagePlus(title2, stack2);
 			stack2.setPixels(null, 1);
 		}
+//IJ.log("HyperStackReducer-3");
 		imp2.setDimensions(channels2, slices2, frames2);
 		reduce(imp2);
 		imp2.setOpenAsHyperStack(true);
@@ -61,6 +64,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			((CompositeImage)imp2).copyLuts(imp);
 		}
 		imp2.show();
+//IJ.log("HyperStackReducer-4");
 		if (!keep) {
 			imp.changes = false;
 			imp.close();

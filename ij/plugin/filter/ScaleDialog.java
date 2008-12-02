@@ -29,24 +29,32 @@ public class ScaleDialog implements PlugInFilter {
 		Calibration cal = imp.getCalibration();
 		Calibration calOrig = cal.copy();
 		boolean isCalibrated = cal.scaled();
+		String length = "0.00";
 		
 		String scale = "<no scale>";
 		int digits = 2;
 		//IJ.log("ScaleDialog: "+isCalibrated);
 		Roi roi = imp.getRoi();
-		if (isCalibrated) {
-			measured = 1.0/cal.pixelWidth;
-			digits = Tools.getDecimalPlaces(measured, measured);
-			known = 1.0;
-			aspectRatio = cal.pixelHeight/cal.pixelWidth;
-			unit = cal.getUnit();
-			scale = IJ.d2s(measured,digits)+" pixels/"+unit;
-		} else if (roi!=null && (roi instanceof Line)) {
+		if (roi!=null && (roi instanceof Line)) {
 			measured = ((Line)roi).getRawLength();
-			known = 0.0;
+			length = IJ.d2s(measured, 2);
+		}
+		if (isCalibrated) {
+			if (measured!=0.0)
+				known = measured*cal.pixelWidth;
+			else {
+				measured = 1.0/cal.pixelWidth;
+				known = 1.0;
+			}
+			double dscale = measured/known;
+			digits = Tools.getDecimalPlaces(dscale, dscale);
+			unit = cal.getUnit();
+			scale = IJ.d2s(dscale, digits)+" pixels/"+unit;
+			aspectRatio = cal.pixelHeight/cal.pixelWidth;
 		}
 		
-		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale);
+		digits = Tools.getDecimalPlaces(measured, measured);
+		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale, length);
 		gd.addNumericField("Distance in Pixels:", measured, digits, 8, null);
 		gd.addNumericField("Known Distance:", known, 2, 8, null);
 		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1, 8, null);
@@ -68,24 +76,26 @@ public class ScaleDialog implements PlugInFilter {
         else if (unit.equals("A"))
         	unit = ""+IJ.angstromSymbol;
  		global2 = gd.getNextBoolean();
-		if (measured!=0.0 && known==0.0) {
-			imp.setGlobalCalibration(global2?cal:null);
-			return;
-		}
+		//if (measured!=0.0 && known==0.0) {
+		//	imp.setGlobalCalibration(global2?cal:null);
+		//	return;
+		//}
 		if (measured==known && unit.equals("unit"))
 			unit = "pixel";
-		if (measured<=0.0 || unit.startsWith("pixel") || unit.startsWith("Pixel") || unit.equals("")) {
+		if (measured<=0.0 || known<=0.0 || unit.startsWith("pixel") || unit.startsWith("Pixel") || unit.equals("")) {
 			cal.pixelWidth = 1.0;
 			cal.pixelHeight = 1.0;
 			cal.pixelDepth = 1.0;
 			cal.setUnit("pixel");
 		} else {
-			cal.pixelWidth = known/measured;
+			if (gd.scaleChanged) {
+				cal.pixelWidth = known/measured;
+				cal.pixelDepth = cal.pixelWidth;
+			}
 			if (aspectRatio!=0.0)
 				cal.pixelHeight = cal.pixelWidth*aspectRatio;
 			else
 				cal.pixelHeight = cal.pixelWidth;
-			cal.pixelDepth = cal.pixelWidth;
 			cal.setUnit(unit);
 		}
 		if (!cal.equals(calOrig))
@@ -115,10 +125,13 @@ class SetScaleDialog extends GenericDialog {
 	static final String NO_SCALE = "<no scale>";
 	String initialScale;
 	Button unscaleButton;
+	String length;
+	boolean scaleChanged;
 
-	public SetScaleDialog(String title, String scale) {
+	public SetScaleDialog(String title, String scale, String length) {
 		super(title);
 		initialScale = scale;
+		this.length = length;
 	}
 
     protected void setup() {
@@ -127,6 +140,9 @@ class SetScaleDialog extends GenericDialog {
     }
  	
  	public void textValueChanged(TextEvent e) {
+		Object source = e.getSource();
+		if (source==numberField.elementAt(0) || source==numberField.elementAt(1))
+			scaleChanged = true;
  		Double d = getValue(((TextField)numberField.elementAt(0)).getText());
  		if (d==null)
  			{setScale(NO_SCALE); return;}
@@ -156,11 +172,14 @@ class SetScaleDialog extends GenericDialog {
 	public void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
 		if (e.getSource()==unscaleButton) {
-			((TextField)numberField.elementAt(0)).setText("0.00");
+			((TextField)numberField.elementAt(0)).setText(length);
 			((TextField)numberField.elementAt(1)).setText("0.00");
 			((TextField)numberField.elementAt(2)).setText("1.0");
 			((TextField)stringField.elementAt(0)).setText("pixel");
 			setScale(NO_SCALE);
+			scaleChanged = true;
+			if (IJ.isMacOSX())
+				{setVisible(false); setVisible(true);}
 		}
 	}
 
