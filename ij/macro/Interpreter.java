@@ -50,6 +50,7 @@ public class Interpreter implements MacroConstants {
 	double[] rgbWeights;
 	boolean inPrint;
 	static String additionalFunctions;
+	static Debugger debugger;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -198,6 +199,10 @@ public class Interpreter implements MacroConstants {
 
 	final void doStatement() {
 		getToken();
+		if (debugger!=null && !done) {
+			debugger.debug(this);
+			if (done) token = EOF;
+		}
 		switch (token) {
 			case VAR:
 				doVar();
@@ -1641,6 +1646,32 @@ public class Interpreter implements MacroConstants {
 	public static boolean isBatchModeRoiManager() {
 		Interpreter interp = getInstance();
 		return interp!=null && isBatchMode() && interp.func.roiManager!=null;
+	}
+	
+	public static void setDebugger(Debugger d) {
+		debugger = d;
+	}
+	
+	public int getLineNumber() {
+		int savePC = pc;
+		int saveToken = token;
+		int saveTokenAddress = tokenAddress;
+		double saveTokenValue = tokenValue;
+		String saveTokenString = tokenString;
+		lineNumber = 1;
+		pc = -1;
+		ignoreEOL = false;
+		while(pc<savePC) {
+			getToken();
+			if (token==EOL) lineNumber++;
+		}
+		ignoreEOL = true;
+		pc = savePC;
+		token = saveToken ;
+		tokenAddress = saveTokenAddress;
+		tokenValue = saveTokenValue;
+		tokenString = saveTokenString;
+		return lineNumber;
 	}
 
 } // class Interpreter

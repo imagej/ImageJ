@@ -16,7 +16,7 @@ import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, ClipboardOwner, MacroConstants {
+	TextListener, ClipboardOwner, MacroConstants, Debugger {
 	
 	public static String JavaScriptIncludes =
 		"importPackage(Packages.ij);"+
@@ -30,7 +30,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
-	public static final int MACROS_MENU_ITEMS = 6;
+	public static final int MACROS_MENU_ITEMS = 9;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	private TextArea ta;
@@ -56,7 +56,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private boolean dontShowWindow;
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
     private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
-    private CheckboxMenuItem monospaced;
+    private CheckboxMenuItem monospaced, debug;
     private static boolean caseSensitive = true;
     private static boolean wholeWords;
     private boolean isMacroWindow;
@@ -180,6 +180,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
+			debug = new CheckboxMenuItem("Debug", false);
+			debug.addItemListener(this);
+			macrosMenu.add(debug);
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
 			macrosMenu.addSeparator();
@@ -187,7 +190,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
 			if (macroExtension && text.indexOf("macro ")!=-1)
-				installMacros(text, false);				
+				installMacros(text, false);	
 		} else {
 			fileMenu.addSeparator();
 			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
@@ -316,8 +319,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
+		setupDebugger();
 		new MacroRunner(text);
 	}
+	
+	void setupDebugger() {
+		if (debug.getState()) {
+			Interpreter.setDebugger(this);
+			IJ.resetEscape();
+		} else
+			Interpreter.setDebugger(null);
+	}
+
 	
 	void evaluateJavaScript() {
 		if (!getTitle().endsWith(".js"))
@@ -537,8 +550,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.run("Text Window");
 		else if ("Open...".equals(what))
 			IJ.open();
-		else
+		else {
+			setupDebugger();
 			installer.runMacro(what);
+		}
 	}
 
 	public void textValueChanged(TextEvent evt) {
@@ -583,6 +598,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			dispose();
 			WindowManager.removeWindow(this);
 			nWindows--;
+			Interpreter.setDebugger(null);
 		}
 	}
 
@@ -820,6 +836,30 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	//public void keyReleased(KeyEvent e) {}
 	//public void keyTyped(KeyEvent e) {}
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
+	
+	public int debug(Interpreter interp) {
+		//IJ.log("debug: "+interp.getLineNumber());
+		if (IJ.escapePressed())
+			interp.abort();
+		int n = interp.getLineNumber();
+		String text = ta.getText();
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		int count=1, start=0, end = chars.length;
+		for (int i=0; i<chars.length; i++) {
+			if (chars[i]=='\n') count++;
+			if (count==n && start==0)
+				start=i+1;
+			else if (count==n+1) {
+				end=i;
+				break;
+			}
+		}
+		if (start==1) start = 0;
+		ta.select(start, end);
+		IJ.wait(100);
+		return 0;
+	}
 
 }
 

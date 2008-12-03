@@ -249,7 +249,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			gd.setInsets(5, 0, 0);
 		gd.addStringField("Size ("+units+"):", minStr+"-"+maxStr, 12);
 		if (scaled) {
-			gd.setInsets(0, 50, 5);
+			gd.setInsets(0, 40, 5);
 			gd.addCheckbox("Pixel Units", pixelUnits);
 		}
 		gd.addStringField("Circularity:", IJ.d2s(minCircularity)+"-"+IJ.d2s(maxCircularity), 12);

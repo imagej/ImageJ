@@ -552,10 +552,14 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setForegroundColor() {
-		int lineWidth = getProcessor().getLineWidth();
+		boolean isImage = WindowManager.getCurrentImage()!=null;
+		int lineWidth = 0;
+		if (isImage)
+			lineWidth = getProcessor().getLineWidth();
 		IJ.setForegroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
 		resetImage();
-		getProcessor().setLineWidth(lineWidth);
+		if (isImage)
+			getProcessor().setLineWidth(lineWidth);
 		defaultColor = null;
 		defaultValue = Double.NaN;
 	}
@@ -2768,6 +2772,8 @@ public class Functions implements MacroConstants, Measurements {
 					defaultChoice = choices[0];
 				interp.getRightParen();
 				gd.addChoice(prompt, choices, defaultChoice);
+			} else if (name.equals("setInsets")) {
+				gd.setInsets((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
 			} else if (name.equals("show")) {
 				interp.getParens();
 				gd.showDialog();

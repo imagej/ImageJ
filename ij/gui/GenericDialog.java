@@ -69,7 +69,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private boolean recorderOn;         // whether recording is allowed
     private boolean yesNoCancel;
     private char echoChar;
-    private boolean unitIsPixel;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -629,11 +628,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (theText.equals(originalText))
 			value = defaultValue;
 		else {
-			int index = theText.indexOf("p");
-			if (index!=-1) {
-				unitIsPixel = true;
-				theText = theText.replaceAll("p", "");
-			}
 			Double d = getValue(theText);
 			if (d!=null)
 				value = d.doubleValue();
@@ -950,11 +944,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         return previewCheckbox;
     }
     
-    /** Returns 'true' if any numeric field contained a 'p'. */
-    public boolean unitIsPixel() {
-    	return unitIsPixel();
-    }
-
     /** optical feedback whether preview is running by switching from
      * "Preview" to "wait..."
      */

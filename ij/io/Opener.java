@@ -321,6 +321,15 @@ public class Opener {
 		}
 		imp = (ImagePlus)IJ.runPlugIn("HandleExtraFileTypes", path);
 		if (imp==null) return null;
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi==null) {
+			fi = new FileInfo();
+			fi.width = imp.getWidth();
+			fi.height = imp.getHeight();
+			fi.directory = getDir(path);
+			fi.fileName = getName(path);
+			imp.setFileInfo(fi);
+		}
 		if (imp.getWidth()>0 && imp.getHeight()>0) {
 			fileType[0] = CUSTOM;
 			return imp;
