@@ -891,11 +891,17 @@ public class IJ {
 
 	/** Sets the minimum and maximum displayed pixel values. */
 	public static void setMinAndMax(double min, double max) {
+		setMinAndMax(min, max, 7);
+	}
+
+	/** Sets the minimum and maximum displayed pixel values on the specified RGB
+	channels, where 4=red, 2=green and 1=blue. */
+	public static void setMinAndMax(double min, double max, int channels) {
 		ImagePlus img = getImage();
 		Calibration cal = img.getCalibration();
 		min = cal.getRawValue(min); 
 		max = cal.getRawValue(max); 
-		img.setDisplayRange(min, max);
+		img.setDisplayRange(min, max, channels);
 		img.updateAndDraw();
 	}
 

@@ -557,6 +557,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			sd.append("\t");
 		}
 		summarizeAreas();
+		int index = rt.getColumnIndex("Angle");
+		if (rt.columnExists(index)) add2(index);
+		index = rt.getColumnIndex("Length");
+		if (rt.columnExists(index)) add2(index);
 		TextPanel tp = IJ.getTextPanel();
 		if (tp!=null) {
 			String worksheetHeadings = tp.getColumnHeadings();		

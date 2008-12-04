@@ -1804,8 +1804,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return ip.getMax();
 	}
 
-	/** The Image/Adjust/Color Balance tool uses this method to adjust RGB images. 
-	    With non-RGB images it is identical to setDisplayRange(min, max). */
+	/**	Sets the display range of specified channels in an RGB image, where 4=red,
+		2=green, 1=blue, 6=red+green, etc. With non-RGB images, this method is
+		identical to setDisplayRange(min, max).  This method is used by the 
+		Image/Adjust/Color Balance tool . */
 	public void setDisplayRange(double min, double max, int channels) {
 		if (ip instanceof ColorProcessor)
 			((ColorProcessor)ip).setMinAndMax(min, max, channels);

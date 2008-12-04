@@ -60,6 +60,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private static boolean caseSensitive = true;
     private static boolean wholeWords;
     private boolean isMacroWindow;
+    private int debugStart, debugEnd;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -180,7 +181,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
-			debug = new CheckboxMenuItem("Debug", false);
+			debug = new CheckboxMenuItem("Debug Mode", false);
 			debug.addItemListener(this);
 			macrosMenu.add(debug);
 			macrosMenu.addSeparator();
@@ -312,6 +313,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	void runMacro() {
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
+		setupDebugger();
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -319,11 +321,14 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		setupDebugger();
 		new MacroRunner(text);
 	}
 	
 	void setupDebugger() {
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		if (start==debugStart && end==debugEnd)
+			ta.select(start, start);
 		if (debug.getState()) {
 			Interpreter.setDebugger(this);
 			IJ.resetEscape();
@@ -845,19 +850,21 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
-		int count=1, start=0, end = chars.length;
+		int count=1;
+		debugStart=0;
+		debugEnd = chars.length;
 		for (int i=0; i<chars.length; i++) {
 			if (chars[i]=='\n') count++;
-			if (count==n && start==0)
-				start=i+1;
+			if (count==n && debugStart==0)
+				debugStart=i+1;
 			else if (count==n+1) {
-				end=i;
+				debugEnd=i;
 				break;
 			}
 		}
-		if (start==1) start = 0;
-		ta.select(start, end);
-		IJ.wait(100);
+		if (debugStart==1) debugStart = 0;
+		ta.select(debugStart, debugEnd);
+		IJ.wait(200);
 		return 0;
 	}
 
