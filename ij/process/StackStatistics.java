@@ -13,7 +13,11 @@ public class StackStatistics extends ImageStatistics {
 	}
 
 	public StackStatistics(ImagePlus imp, int nBins, double histMin, double histMax) {
-		doCalculations(imp, nBins, histMin, histMax);
+		int bits = imp.getBitDepth();
+		if ((bits==8||bits==24) && nBins==256 && histMin==0.0 && histMax==256.0)
+			sumSliceHistograms(imp);
+		else
+			doCalculations(imp, nBins, histMin, histMax);
 	}
 
     void doCalculations(ImagePlus imp,  int bins, double histogramMin, double histogramMax) {
@@ -140,6 +144,35 @@ public class StackStatistics extends ImageStatistics {
         IJ.showStatus("");
         IJ.showProgress(1.0);
     }
+    
+	void sumSliceHistograms(ImagePlus imp) {
+		Calibration cal = imp.getCalibration();
+		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
+		int minThreshold = 0;
+		int maxThreshold = 255;
+		ImageProcessor ip = imp.getProcessor();
+		if (limitToThreshold && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+			minThreshold = (int)ip.getMinThreshold();
+			maxThreshold = (int)ip.getMaxThreshold();
+		}
+		ImageStack stack = imp.getStack();
+		Roi roi = imp.getRoi();
+		histogram = new int[256];
+		int n = stack.getSize();
+		for (int slice=1; slice<=n; slice++) {
+			IJ.showProgress(slice, n);
+			ip = stack.getProcessor(slice);
+			if (roi!=null) ip.setRoi(roi);
+			int[] hist = ip.getHistogram();
+			for (int i=0; i<256; i++)
+				histogram[i] += hist[i];
+		}
+		pw=1.0; ph=1.0;
+		getRawStatistics(minThreshold, maxThreshold);
+		getRawMinAndMax(minThreshold, maxThreshold);
+		IJ.showStatus("");
+		IJ.showProgress(1.0);
+	}
 
    double getMode(Calibration cal) {
         int count;

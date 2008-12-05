@@ -65,7 +65,6 @@ public class ImageStatistics implements Measurements {
 		while ((histogram[min] == 0) && (min < 255))
 			min++;
 		this.min = min;
-			
 		int max = maxThreshold;
 		while ((histogram[max] == 0) && (max > 0))
 			max--;
