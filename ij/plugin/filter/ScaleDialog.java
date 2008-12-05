@@ -88,7 +88,7 @@ public class ScaleDialog implements PlugInFilter {
 			cal.pixelDepth = 1.0;
 			cal.setUnit("pixel");
 		} else {
-			if (gd.scaleChanged) {
+			if (gd.scaleChanged || IJ.macroRunning()) {
 				cal.pixelWidth = known/measured;
 				cal.pixelDepth = cal.pixelWidth;
 			}

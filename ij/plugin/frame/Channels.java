@@ -158,6 +158,15 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 				case 2: ci.setMode(CompositeImage.GRAYSCALE); break;
 			}
 			ci.updateAndDraw();
+			if (Recorder.record) {
+				String mode = null;
+				switch (index) {
+					case 0: mode="composite"; break;
+					case 1: mode="color"; break;
+					case 2: mode="grayscale"; break;
+				}
+				Recorder.record("Stack.setDisplayMode", mode);
+			}
 		} else if (source instanceof Checkbox) {
 			for (int i=0; i<checkbox.length; i++) {
 				Checkbox cb = (Checkbox)source;
@@ -165,8 +174,17 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 					if (ci.getMode()==CompositeImage.COMPOSITE) {
 						boolean[] active = ci.getActiveChannels();
 						active[i] = cb.getState();
-					} else
+						if (Recorder.record) {
+							String str = "";
+							for (int c=0; c<ci.getNChannels(); c++)
+								str += active[c]?"1":"0";
+							Recorder.record("Stack.setActiveChannels", str);
+						}
+					} else {
 						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());
+						if (Recorder.record)
+							Recorder.record("Stack.setChannel", i+1);
+					}
 					ci.updateAndDraw();
 					return;
 				}

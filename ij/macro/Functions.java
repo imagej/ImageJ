@@ -77,7 +77,7 @@ public class Functions implements MacroConstants, Measurements {
 			case PRINT: print(); break;
 			case WRITE: IJ.write(getStringArg()); break;
 			case DO_WAND: IJ.doWand((int)getFirstArg(), (int)getLastArg()); resetImage(); break;
-			case SET_MIN_MAX: IJ.setMinAndMax(getFirstArg(), getLastArg()); resetImage(); break;
+			case SET_MIN_MAX: setMinAndMax(); break;
 			case SET_THRESHOLD: setThreshold(); break;
 			case SET_TOOL: setTool(); break;
 			case SET_FOREGROUND: setForegroundColor(); break;
@@ -3946,6 +3946,20 @@ public class Functions implements MacroConstants, Measurements {
 		name.setString(CurveFitter.fitList[index]);
 		formula.setString(CurveFitter.fList[index]);
 		return Double.NaN;
+	}
+	
+	void setMinAndMax() {
+		double min = getFirstArg();
+		double max = getNextArg();
+		int channels = 7;
+		if (interp.nextToken()==',') {
+			channels = (int)getLastArg();
+			if (getImage().getBitDepth()!=24)
+				interp.error("RGB image required");
+		} else
+			interp.getRightParen();
+		IJ.setMinAndMax(min, max, channels);
+		resetImage();
 	}
 	
 } // class Functions
