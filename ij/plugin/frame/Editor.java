@@ -7,16 +7,15 @@ import java.awt.datatransfer.*;
 import ij.*;
 import ij.gui.*;
 import ij.util.Tools;
-import ij.text.TextWindow;
+import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
 import ij.plugin.NewPlugin;
 import ij.io.SaveDialog;
 
-
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, ClipboardOwner, MacroConstants, Debugger {
+	TextListener, ClipboardOwner, MacroConstants {
 	
 	public static String JavaScriptIncludes =
 		"importPackage(Packages.ij);"+
@@ -30,7 +29,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
-	public static final int MACROS_MENU_ITEMS = 9;
+	public static final int MACROS_MENU_ITEMS = 8;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	private TextArea ta;
@@ -61,6 +60,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private static boolean wholeWords;
     private boolean isMacroWindow;
     private int debugStart, debugEnd;
+    private static TextWindow variablesWindow;
+    private boolean step;
+    private int previousLine;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -181,15 +183,25 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
-			debug = new CheckboxMenuItem("Debug Mode", false);
-			debug.addItemListener(this);
-			macrosMenu.add(debug);
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
 			macrosMenu.addSeparator();
 			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
+			if (!name.endsWith(".js")) {
+				Menu debugMenu = new Menu("Debug");			
+				//debug = new CheckboxMenuItem("Debug Mode", false);
+				//debugMenu.add(debug);
+				debugMenu.add(new MenuItem("Debug Macro", new MenuShortcut(KeyEvent.VK_1)));
+				debugMenu.add(new MenuItem("Step", new MenuShortcut(KeyEvent.VK_2)));
+				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_3)));
+				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_4)));
+				debugMenu.add(new MenuItem("Run", new MenuShortcut(KeyEvent.VK_5)));
+				debugMenu.add(new MenuItem("Abort", new MenuShortcut(KeyEvent.VK_6)));
+				debugMenu.addActionListener(this);
+				mb.add(debugMenu);
+			}
 			if (macroExtension && text.indexOf("macro ")!=-1)
 				installMacros(text, false);	
 		} else {
@@ -313,7 +325,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	void runMacro() {
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
-		setupDebugger();
+		//setupDebugger();
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -330,10 +342,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (start==debugStart && end==debugEnd)
 			ta.select(start, start);
 		if (debug.getState()) {
-			Interpreter.setDebugger(this);
+			Interpreter.setEditor(this);
 			IJ.resetEscape();
 		} else
-			Interpreter.setDebugger(null);
+			Interpreter.setEditor(null);
 	}
 
 	
@@ -512,7 +524,26 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				compileAndRun();
 		else if ("Run Macro".equals(what))
 				runMacro();
-		else if ("Evaluate Line".equals(what))
+		else if ("Debug Macro".equals(what)) {
+			if (enableDebugging())
+				runMacro();
+		} else if ("Step".equals(what)) {
+			step = true;
+			setDebugMode(Interpreter.STEP);
+		} else if ("Trace".equals(what)) {
+			step = true;
+			setDebugMode(Interpreter.TRACE);
+		} else if ("Fast Trace".equals(what)) {
+			step = true;
+			setDebugMode(Interpreter.FAST_TRACE);
+		} else if ("Run".equals(what)) {
+			step = true;
+			setDebugMode(Interpreter.RUN);
+		} else if ("Abort".equals(what)) {
+				step = true;
+				Interpreter.abort();
+				IJ.beep();		
+		} else if ("Evaluate Line".equals(what))
 				evaluateLine();
 		else if ("Abort Macro".equals(what)) {
 				Interpreter.abort();
@@ -556,9 +587,31 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Open...".equals(what))
 			IJ.open();
 		else {
-			setupDebugger();
+			//setupDebugger();
+			//if (IJ.altKeyDown()) {
+			//	if (enableDebugging())
+			//		installer.runMacro(what);
+			//} else
 			installer.runMacro(what);
 		}
+	}
+	
+	final boolean enableDebugging() {
+			step = true;
+			if (Interpreter.getInstance()!=null)
+				{IJ.beep(); return false;}
+			int start = ta.getSelectionStart();
+			int end = ta.getSelectionEnd();
+			if (start==debugStart && end==debugEnd)
+				ta.select(start, start);
+			Interpreter.setEditor(this);
+			return true;
+	}
+	
+	final void setDebugMode(int mode) {
+		Interpreter interp = Interpreter.getInstance();
+		if (interp!=null)
+			interp.setDebugMode(mode);
 	}
 
 	public void textValueChanged(TextEvent evt) {
@@ -579,7 +632,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	/** Override windowActivated in PlugInFrame to
 		prevent Mac menu bar from being installed. */
 	public void windowActivated(WindowEvent e) {
-		WindowManager.setWindow(this);
+		//if (!debug.getState())
+			WindowManager.setWindow(this);
 	}
 
 	public void windowClosing(WindowEvent e) {
@@ -603,7 +657,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			dispose();
 			WindowManager.removeWindow(this);
 			nWindows--;
-			Interpreter.setDebugger(null);
+			Interpreter.setEditor(null);
 		}
 	}
 
@@ -842,11 +896,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	//public void keyTyped(KeyEvent e) {}
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
 	
-	public int debug(Interpreter interp) {
+	public int debug(Interpreter interp, int mode) {
 		//IJ.log("debug: "+interp.getLineNumber());
+		if (mode==Interpreter.RUN)
+			return 0;
 		if (IJ.escapePressed())
 			interp.abort();
+		if (!isActive())
+			toFront();
 		int n = interp.getLineNumber();
+		if (n==previousLine)
+			{previousLine=0; return 0;}
+		previousLine = n;
 		String text = ta.getText();
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
@@ -864,9 +925,49 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		if (debugStart==1) debugStart = 0;
 		ta.select(debugStart, debugEnd);
-		IJ.wait(200);
+		updateVariables(interp.getVariables());
+		if (mode==Interpreter.STEP) {
+			step = false;
+			while (!step) {
+				if (Interpreter.getInstance()!=interp) {
+					interp.abort();
+					break;
+				}
+				IJ.wait(5);
+			}
+		} else {
+			if (mode==Interpreter.FAST_TRACE)
+				IJ.wait(5);
+			else
+				IJ.wait(150);
+		}
 		return 0;
 	}
-
+	
+	void updateVariables(String[] variables) {
+		if (variablesWindow!=null && !variablesWindow.isShowing()) {
+			Interpreter.setEditor(null);
+			variablesWindow = null;
+			return;
+		}
+		if (variablesWindow==null)
+			variablesWindow = new TextWindow("Variables", "Name\tValue", "", 300, 300);
+		TextPanel panel = variablesWindow.getTextPanel();
+		int n = variables.length;
+		if (n==0) {
+			panel.clear();
+			return;
+		}
+		int lines = panel.getLineCount();
+		for (int i=0; i<lines; i++) {
+			if (i<n)
+				panel.setLine(i, variables[i]);
+			else
+				panel.setLine(i, "");
+		}
+		for (int i=lines; i<n; i++)
+			variablesWindow.append(variables[i]);
+	}
+	
 }
 

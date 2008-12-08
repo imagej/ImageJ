@@ -42,7 +42,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
             }
         }
         if (c==0) {
-        	IJ.error("Image/macros/functions.html is corrupted");
+        	IJ.error("ImageJ/macros/functions.html is corrupted");
         	return;
         }
         

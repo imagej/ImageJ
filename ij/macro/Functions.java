@@ -242,6 +242,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EXT: str = doExt(); break;
 			case EXEC: str = exec(); break;
 			case LIST: str = doList(); break;
+			case DEBUG: str = doDebug(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -3962,5 +3963,26 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 	}
 	
+	String doDebug() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD || interp.token==PREDEFINED_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (interp.editor==null)
+			interp.error("Macro editor not available");
+		if (name.equals("run"))
+			interp.setDebugMode(Interpreter.RUN);
+		else if (name.equals("break"))
+			interp.setDebugMode(Interpreter.BREAK);
+		else if (name.equals("step"))
+			interp.setDebugMode(Interpreter.STEP);
+		else if (name.equals("trace"))
+			interp.setDebugMode(Interpreter.TRACE);
+		return null;
+	}
+
 } // class Functions
 
