@@ -55,7 +55,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private boolean dontShowWindow;
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
     private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
-    private CheckboxMenuItem monospaced, debug;
+    private CheckboxMenuItem monospaced;
     private static boolean caseSensitive = true;
     private static boolean wholeWords;
     private boolean isMacroWindow;
@@ -63,6 +63,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private static TextWindow variablesWindow;
     private boolean step;
     private int previousLine;
+    private static Editor instance;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -82,8 +83,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (fontSize>=sizes.length) fontSize = sizes.length-1;
         setFont();
 		positionWindow();
-		//display("Test.java", "");
-		IJ.register(Editor.class);
 	}
 	
 	void addMenuBar(int options) {
@@ -191,8 +190,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			mb.add(macrosMenu);
 			if (!name.endsWith(".js")) {
 				Menu debugMenu = new Menu("Debug");			
-				//debug = new CheckboxMenuItem("Debug Mode", false);
-				//debugMenu.add(debug);
 				debugMenu.add(new MenuItem("Debug Macro", new MenuShortcut(KeyEvent.VK_1)));
 				debugMenu.add(new MenuItem("Step", new MenuShortcut(KeyEvent.VK_2)));
 				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_3)));
@@ -322,10 +319,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 	
-	void runMacro() {
+	final void runMacro(boolean debug) {
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
-		//setupDebugger();
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -333,21 +329,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getText();
 		else
 			text = ta.getSelectedText();
-		new MacroRunner(text);
+		new MacroRunner(text, debug?this:null);
 	}
-	
-	void setupDebugger() {
-		int start = ta.getSelectionStart();
-		int end = ta.getSelectionEnd();
-		if (start==debugStart && end==debugEnd)
-			ta.select(start, start);
-		if (debug.getState()) {
-			Interpreter.setEditor(this);
-			IJ.resetEscape();
-		} else
-			Interpreter.setEditor(null);
-	}
-
 	
 	void evaluateJavaScript() {
 		if (!getTitle().endsWith(".js"))
@@ -373,7 +356,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		if (end>start)
-			{runMacro(); return;}
+			{runMacro(false); return;}
 		String text = ta.getText();
 		while (start>0) {
 			start--;
@@ -387,7 +370,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		ta.setSelectionStart(start);
 		ta.setSelectionEnd(end);
-		runMacro();
+		runMacro(false);
 	}
 
 	void print () {
@@ -516,17 +499,24 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			ta.setCaretPosition(start+s.length());
 	}
 
-	public void actionPerformed(ActionEvent evt) {
-		String what = evt.getActionCommand();
+	public void actionPerformed(ActionEvent e) {
+		String what = e.getActionCommand();
+		int flags = e.getModifiers();
+		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
+
 		if ("Save".equals(what))
 			save();
 		else if ("Compile and Run".equals(what))
 				compileAndRun();
-		else if ("Run Macro".equals(what))
-				runMacro();
-		else if ("Debug Macro".equals(what)) {
+		else if ("Run Macro".equals(what)) {
+			abortAnyRunningMacro();
+			if (altKeyDown) {
+				if (enableDebugging()) runMacro(true);
+			} else
+				runMacro(false);
+		} else if ("Debug Macro".equals(what)) {
 			if (enableDebugging())
-				runMacro();
+				runMacro(true);
 		} else if ("Step".equals(what)) {
 			step = true;
 			setDebugMode(Interpreter.STEP);
@@ -587,12 +577,21 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Open...".equals(what))
 			IJ.open();
 		else {
-			//setupDebugger();
-			//if (IJ.altKeyDown()) {
-			//	if (enableDebugging())
-			//		installer.runMacro(what);
-			//} else
-			installer.runMacro(what);
+			abortAnyRunningMacro();
+			if (altKeyDown) {
+				if (enableDebugging())
+					installer.runMacro(what, this);
+			} else
+				installer.runMacro(what, null);
+		}
+	}
+	
+	final void abortAnyRunningMacro() {
+		Interpreter interp = Interpreter.getInstance();
+		if (interp!=null) {
+			interp.abort(interp);
+			interp.setEditor(null);
+			step = true;
 		}
 	}
 	
@@ -604,7 +603,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			int end = ta.getSelectionEnd();
 			if (start==debugStart && end==debugEnd)
 				ta.select(start, start);
-			Interpreter.setEditor(this);
 			return true;
 	}
 	
@@ -632,8 +630,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	/** Override windowActivated in PlugInFrame to
 		prevent Mac menu bar from being installed. */
 	public void windowActivated(WindowEvent e) {
-		//if (!debug.getState())
 			WindowManager.setWindow(this);
+			instance = this;
 	}
 
 	public void windowClosing(WindowEvent e) {
@@ -657,7 +655,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			dispose();
 			WindowManager.removeWindow(this);
 			nWindows--;
-			Interpreter.setEditor(null);
+			instance = null;
 		}
 	}
 
@@ -913,7 +911,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		chars = text.toCharArray();
 		int count=1;
 		debugStart=0;
-		debugEnd = chars.length;
+		int len = chars.length;
+		debugEnd = len;
 		for (int i=0; i<chars.length; i++) {
 			if (chars[i]=='\n') count++;
 			if (count==n && debugStart==0)
@@ -924,6 +923,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			}
 		}
 		if (debugStart==1) debugStart = 0;
+		if ((debugStart==0||debugStart==len) && debugEnd==len)
+			return 0; // skip code added with Interpreter.setAdditionalFunctions()
 		ta.select(debugStart, debugEnd);
 		updateVariables(interp.getVariables());
 		if (mode==Interpreter.STEP) {
@@ -946,7 +947,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	void updateVariables(String[] variables) {
 		if (variablesWindow!=null && !variablesWindow.isShowing()) {
-			Interpreter.setEditor(null);
+			Interpreter interp = Interpreter.getInstance();
+			if (interp!=null) interp.setEditor(null);
 			variablesWindow = null;
 			return;
 		}
@@ -967,6 +969,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		for (int i=lines; i<n; i++)
 			variablesWindow.append(variables[i]);
+	}
+	
+	public static Editor getInstance() {
+		return instance;
 	}
 	
 }

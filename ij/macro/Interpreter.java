@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
 
-	public static final int NONE=0, STEP=1, TRACE=2, FAST_TRACE=3, BREAK=5, RUN=5;  // debugging modes
+	public static final int NONE=0, STEP=1, TRACE=2, FAST_TRACE=3, RUN=4;  // debugging modes
 	static final int STACK_SIZE=1000;
 	static final int MAX_ARGS=20;
 
@@ -50,7 +50,7 @@ public class Interpreter implements MacroConstants {
 	double[] rgbWeights;
 	boolean inPrint;
 	static String additionalFunctions;
-	static Editor editor;
+	Editor editor;
 	int debugMode = NONE;
 
 	/** Interprets the specified string. */
@@ -99,7 +99,6 @@ public class Interpreter implements MacroConstants {
 		   getToken();
 		   getToken();
 		}
-		if (editor!=null) debugMode = STEP;
 		doStatements();
 		finishUp();
 	}
@@ -117,7 +116,6 @@ public class Interpreter implements MacroConstants {
 		if (func==null)
 			func = new Functions(this, pgm);
 		func.plot = null;
-		if (editor!=null) debugMode = STEP;
 		if (macroLoc==0)
 			doStatements();
 		else
@@ -1532,7 +1530,6 @@ public class Interpreter implements MacroConstants {
 		if (rgbWeights!=null)
 			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
 		if (func.writer!=null) func.writer.close();
-		editor = null;
 	}
 	
 	/** Aborts currently running macro. */
@@ -1654,8 +1651,12 @@ public class Interpreter implements MacroConstants {
 		return interp!=null && isBatchMode() && interp.func.roiManager!=null;
 	}
 	
-	public static void setEditor(Editor ed) {
+	public void setEditor(Editor ed) {
 		editor = ed;
+		if (ed!=null)
+			debugMode = STEP;
+		else
+			debugMode = NONE;
 	}
 	
 	public void setDebugMode(int mode) {

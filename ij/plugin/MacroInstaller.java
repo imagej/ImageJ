@@ -103,7 +103,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 						toolCount++;
 					} else if (name.startsWith("AutoRun")) {
 						if (autoRunCount==0 && !openingStartupMacrosInEditor) {
-							new MacroRunner(pgm, macroStarts[count], name, null);
+							new MacroRunner(pgm, macroStarts[count], name, (String)null);
 							if (name.equals("AutoRunAndHide"))
 								autoRunAndHideCount++;
 						}
@@ -317,7 +317,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public boolean runMacroTool(String name) {
 		for (int i=0; i<nMacros; i++) {
 			if (macroNames[i].startsWith(name)) {
-				new MacroRunner(pgm, macroStarts[i], name, null);
+				new MacroRunner(pgm, macroStarts[i], name, (String)null);
 				return true;
 			}
 		}
@@ -341,7 +341,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			name = name.substring(1);
 		for (int i=0; i<instance.nMacros; i++) {
 			if (name.equals(instance.macroNames[i])) {
-				new MacroRunner(instance.pgm, instance.macroStarts[i], name, null);
+				new MacroRunner(instance.pgm, instance.macroStarts[i], name, (String)null);
 				return true;
 			}
 		}
@@ -361,14 +361,18 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	public void runMacro(String name) {
+		runMacro(name, null);
+	}
+
+	public void runMacro(String name, Editor editor) {
+		//IJ.log("runMacro: "+name+"  "+editor);
 		if (anonymousName!=null && name.equals(anonymousName)) {
-			//IJ.log("runMacro: "+anonymousName);
-			new MacroRunner(pgm, 0, anonymousName, null);
+			new MacroRunner(pgm, 0, anonymousName, editor);
 			return;
 		}
 		for (int i=0; i<nMacros; i++)
 			if (name.equals(macroNames[i])) {
-				new MacroRunner(pgm, macroStarts[i], name, null);
+				new MacroRunner(pgm, macroStarts[i], name, editor);
 				return;
 			}
 	}

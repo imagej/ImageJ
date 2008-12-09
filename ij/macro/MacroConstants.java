@@ -113,7 +113,7 @@ public interface MacroConstants {
 		"fromCharCode", "getInfo", "getDirectory", "getArgument", "getImageInfo", 
 		"toLowerCase", "toUpperCase", "runMacro", "eval", "toString", "replace",
 		"Dialog", "getMetadata", "File", "selectionName", "getVersion", "getResultLabel",
-		"call", "String", "Ext", "exec", "List", "Debug"};
+		"call", "String", "Ext", "exec", "List", "debug"};
 	static final int[] stringFunctionIDs = {D2S, TO_HEX, TO_BINARY, GET_TITLE, GET_STRING, SUBSTRING,
 		FROM_CHAR_CODE, GET_INFO, GET_DIRECTORY, GET_ARGUMENT, GET_IMAGE_INFO,
 		TO_LOWER_CASE, TO_UPPER_CASE, RUN_MACRO, EVAL, TO_STRING, REPLACE,
