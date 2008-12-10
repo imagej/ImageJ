@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
 public class Interpreter implements MacroConstants {
 
-	public static final int NONE=0, STEP=1, TRACE=2, FAST_TRACE=3, RUN=4;  // debugging modes
+	public static final int NONE=0, STEP=1, TRACE=2, FAST_TRACE=3, RUN=4, RUN_TO_CARET=5;  // debugging modes
 	static final int STACK_SIZE=1000;
 	static final int MAX_ARGS=20;
 
@@ -52,6 +52,7 @@ public class Interpreter implements MacroConstants {
 	static String additionalFunctions;
 	Editor editor;
 	int debugMode = NONE;
+	boolean showDebugFunctions;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -1554,6 +1555,7 @@ public class Interpreter implements MacroConstants {
 				imageTable = null;
 			}
 			interpreter.done = true;
+			instance = null;
 			IJ.showStatus("Macro aborted");
 		}
 	}
@@ -1686,14 +1688,28 @@ public class Interpreter implements MacroConstants {
 	}
 
 	public String[] getVariables() {
-		if (topOfStack<0) return new String[0];
-		String[] variables = new String[topOfStack+1];
+		int nImages = WindowManager.getImageCount();
+		if (nImages>0) showDebugFunctions = true;
+		int nFunctions = showDebugFunctions?3:0;
+		String[] variables = new String[topOfStack+1+nFunctions];
+		if (showDebugFunctions) {
+			String title = null;
+			if (nImages>0) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (imp!=null) title = imp.getTitle();
+			}
+			if (debugMode==STEP) System.gc();
+			variables[0] = "FreeMemory()\t" + IJ.freeMemory();
+			variables[1] = "nImages()\t" + nImages;
+			variables[2] = "getTitle()\t" + (title!=null?"\""+title+"\"":"");
+		}
 		String name;
+		int index = nFunctions;
 		for (int i=0; i<=topOfStack; i++) {
 			name = pgm.table[stack[i].symTabIndex].str;
 			if (i<=topOfGlobals)
 				name += " (g)";
-			variables[i] = name + "\t" + stack[i];
+			variables[index++] = name + "\t" + stack[i];
 		}
 		return variables;
 	}

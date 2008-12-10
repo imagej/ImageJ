@@ -13,6 +13,7 @@ import java.awt.image.*;
 		static final int SMALL_FONT=14, LARGE_FONT=30;
 
 	public void run(String arg) {
+		System.gc();
 		int lines = 7;
 		String[] text = new String[lines];
 		text[0] = "ImageJ "+ImageJ.VERSION;

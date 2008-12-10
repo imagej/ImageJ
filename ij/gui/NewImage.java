@@ -52,6 +52,7 @@ public class NewImage {
 				long available = max - inUse;
 				//IJ.log(size/(1024*1024)+"  "+available/(1024*1024));
 				if (size>available) {
+					System.gc();
 					IJ.error("Out of Memory", "There is not enough free memory to allocate a \n"
 					+ size2+" stack.\n \n"
 					+ "Memory available: "+available/(1024*1024)+"MB\n"		

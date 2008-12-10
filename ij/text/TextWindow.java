@@ -78,7 +78,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			loc = Prefs.getLocation(LOG_LOC_KEY);
 			w = width;
 			h = height;
-		} else if (title.equals("Variables")) {
+		} else if (title.equals("Debug")) {
 			loc = Prefs.getLocation(DEBUG_LOC_KEY);
 			w = width;
 			h = height;
@@ -243,7 +243,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			Prefs.saveLocation(LOG_LOC_KEY, getLocation());
 			IJ.debugMode = false;
 			IJ.log("\\Closed");
-		} else if (getTitle().equals("Variables")) {
+		} else if (getTitle().equals("Debug")) {
 			Prefs.saveLocation(DEBUG_LOC_KEY, getLocation());
 		} else if (textPanel!=null && textPanel.rt!=null) {
 			if (!saveContents()) return;

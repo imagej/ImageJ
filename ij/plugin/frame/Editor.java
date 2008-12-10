@@ -60,10 +60,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private static boolean wholeWords;
     private boolean isMacroWindow;
     private int debugStart, debugEnd;
-    private static TextWindow variablesWindow;
+    private static TextWindow debugWindow;
     private boolean step;
     private int previousLine;
     private static Editor instance;
+    private int runToLine;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -195,7 +196,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_3)));
 				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_4)));
 				debugMenu.add(new MenuItem("Run", new MenuShortcut(KeyEvent.VK_5)));
-				debugMenu.add(new MenuItem("Abort", new MenuShortcut(KeyEvent.VK_6)));
+				debugMenu.add(new MenuItem("Run to Insertion Point", new MenuShortcut(KeyEvent.VK_6)));
+				debugMenu.add(new MenuItem("Abort", new MenuShortcut(KeyEvent.VK_7)));
 				debugMenu.addActionListener(this);
 				mb.add(debugMenu);
 			}
@@ -517,28 +519,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		} else if ("Debug Macro".equals(what)) {
 			if (enableDebugging())
 				runMacro(true);
-		} else if ("Step".equals(what)) {
-			step = true;
+		} else if ("Step".equals(what))
 			setDebugMode(Interpreter.STEP);
-		} else if ("Trace".equals(what)) {
-			step = true;
+		else if ("Trace".equals(what))
 			setDebugMode(Interpreter.TRACE);
-		} else if ("Fast Trace".equals(what)) {
-			step = true;
+		else if ("Fast Trace".equals(what))
 			setDebugMode(Interpreter.FAST_TRACE);
-		} else if ("Run".equals(what)) {
-			step = true;
+		else if ("Run".equals(what))
 			setDebugMode(Interpreter.RUN);
-		} else if ("Abort".equals(what)) {
-				step = true;
+		else if ("Run to Insertion Point".equals(what))
+			runToInsertionPoint();
+		else if ("Abort".equals(what) || "Abort Macro".equals(what)) {
 				Interpreter.abort();
 				IJ.beep();		
 		} else if ("Evaluate Line".equals(what))
 				evaluateLine();
-		else if ("Abort Macro".equals(what)) {
-				Interpreter.abort();
-				IJ.beep();		
-		} else if ("Install Macros".equals(what))
+		else if ("Install Macros".equals(what))
 				installMacros(ta.getText(), true);
 		else if ("Function Finder...".equals(what))
 			new FunctionFinder();
@@ -586,12 +582,49 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 	}
 	
+	final void runToInsertionPoint() {
+		Interpreter interp = Interpreter.getInstance();
+		if (interp==null)
+			IJ.beep();
+		else {
+			runToLine = getCurrentLine();
+			//IJ.log("runToLine: "+runToLine);
+			setDebugMode(Interpreter.RUN_TO_CARET);
+		}
+	}
+		
+	final int getCurrentLine() {
+		int pos = ta.getCaretPosition();
+		int currentLine = 0;
+		String text = ta.getText();
+		if (IJ.isWindows() && !IJ.isVista())
+			text = text.replaceAll("\r\n", "\n");
+		char[] chars = new char[text.length()];
+		chars = text.toCharArray();
+		int count=0;
+		int start=0, end=0;
+		int len = chars.length;
+		for (int i=0; i<len; i++) {
+			if (chars[i]=='\n') {
+				count++;
+				start = end;
+				end = i;
+				if (pos>=start && pos<end) {
+					currentLine = count;
+					break;
+				}
+			}
+		}
+		if (currentLine==0 && pos>end)
+			currentLine = count;
+		return currentLine;
+	}
+
 	final void abortAnyRunningMacro() {
 		Interpreter interp = Interpreter.getInstance();
 		if (interp!=null) {
 			interp.abort(interp);
 			interp.setEditor(null);
-			step = true;
 		}
 	}
 	
@@ -607,9 +640,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	final void setDebugMode(int mode) {
+		step = true;
 		Interpreter interp = Interpreter.getInstance();
-		if (interp!=null)
+		if (interp!=null) {
+			interp.setEditor(this);
 			interp.setDebugMode(mode);
+		}
 	}
 
 	public void textValueChanged(TextEvent evt) {
@@ -898,22 +934,29 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		//IJ.log("debug: "+interp.getLineNumber());
 		if (mode==Interpreter.RUN)
 			return 0;
-		if (IJ.escapePressed())
-			interp.abort();
 		if (!isActive())
 			toFront();
 		int n = interp.getLineNumber();
 		if (n==previousLine)
 			{previousLine=0; return 0;}
 		previousLine = n;
+		if (mode==Interpreter.RUN_TO_CARET) {
+			if (n==runToLine) {
+				mode = Interpreter.STEP;
+				interp.setDebugMode(mode);
+			} else
+				return 0;
+		}
 		String text = ta.getText();
+		if (IJ.isWindows() && !IJ.isVista())
+			text = text.replaceAll("\r\n", "\n");
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
 		int count=1;
 		debugStart=0;
 		int len = chars.length;
 		debugEnd = len;
-		for (int i=0; i<chars.length; i++) {
+		for (int i=0; i<len; i++) {
 			if (chars[i]=='\n') count++;
 			if (count==n && debugStart==0)
 				debugStart=i+1;
@@ -930,8 +973,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (mode==Interpreter.STEP) {
 			step = false;
 			while (!step) {
-				if (Interpreter.getInstance()!=interp) {
-					interp.abort();
+				if (interp!=Interpreter.getInstance()) {
+					interp.setDebugMode(Interpreter.RUN);
 					break;
 				}
 				IJ.wait(5);
@@ -946,15 +989,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	void updateVariables(String[] variables) {
-		if (variablesWindow!=null && !variablesWindow.isShowing()) {
+		if (debugWindow!=null && !debugWindow.isShowing()) {
 			Interpreter interp = Interpreter.getInstance();
 			if (interp!=null) interp.setEditor(null);
-			variablesWindow = null;
+			debugWindow = null;
 			return;
 		}
-		if (variablesWindow==null)
-			variablesWindow = new TextWindow("Variables", "Name\tValue", "", 300, 300);
-		TextPanel panel = variablesWindow.getTextPanel();
+		if (debugWindow==null)
+			debugWindow = new TextWindow("Debug", "Name\tValue", "", 300, 400);
+		TextPanel panel = debugWindow.getTextPanel();
 		int n = variables.length;
 		if (n==0) {
 			panel.clear();
@@ -968,7 +1011,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				panel.setLine(i, "");
 		}
 		for (int i=lines; i<n; i++)
-			variablesWindow.append(variables[i]);
+			debugWindow.append(variables[i]);
 	}
 	
 	public static Editor getInstance() {

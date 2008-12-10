@@ -296,6 +296,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void mousePressed(MouseEvent e) {
 		Undo.reset();
+		System.gc();
 		IJ.showStatus("Memory: "+IJ.freeMemory());
 		if (IJ.debugMode)
 			IJ.log("Windows: "+WindowManager.getWindowCount());

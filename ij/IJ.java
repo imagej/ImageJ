@@ -555,7 +555,6 @@ public class IJ {
 		the  available memory is in use. This is the string
 		displayed when the user clicks in the status bar. */
 	public static String freeMemory() {
-		System.gc();
 		long inUse = currentMemory();
 		String inUseStr = inUse<10000*1024?inUse/1024L+"K":inUse/1048576L+"MB";
 		String maxStr="";
