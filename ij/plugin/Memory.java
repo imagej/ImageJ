@@ -24,7 +24,8 @@ public class Memory implements PlugIn {
 		int max = (int)(getMemorySetting()/1048576L);
 		boolean unableToSet = max==0;
 		if (max==0) max = (int)(maxMemory()/1048576L);
-		GenericDialog gd = new GenericDialog("Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)"));
+		String title = "Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)");
+		GenericDialog gd = new GenericDialog(title);
 		gd.addNumericField("Maximum Memory:", max, 0, 5, "MB");
         gd.addNumericField("Parallel Threads for Stacks:", Prefs.getThreads(), 0, 5, "");
 		gd.showDialog();
@@ -41,11 +42,21 @@ public class Memory implements PlugIn {
 		if (max2<8 && IJ.isWindows()) max2 = 8;
 		if (max2==max) return;
 		int limit = IJ.isWindows()?1600:1700;
+		String OSXInfo = "";
+		if (IJ.isMacOSX())
+			OSXInfo = "\n \nOn Max OS X, use\n"
+				+"/Applications/Utilities/Java/Java Preferences\n"
+				+"to switch to a 64-bit version of Java. You may\n"
+				+"also need to run \"ImageJ64\" instead of \"ImageJ\".";
 		if (max2>=limit && !IJ.is64Bit()) {
-			if (!IJ.showMessageWithCancel("Memory", 
+			if (!IJ.showMessageWithCancel(title, 
 			"Note: setting the memory limit to a value\n"
 			+"greater than "+limit+"MB on a 32-bit system\n"
-			+"may cause ImageJ to fail to start."))
+			+"may cause ImageJ to fail to start. The title of\n"
+			+"the Edit>Options>Memory & Threads dialog\n"
+			+"box changes to \"Memory (64-bit)\" when ImageJ\n"
+			+"is running on a 64-bit version of Java."
+			+ OSXInfo));
 				return;
 		}
 		try {

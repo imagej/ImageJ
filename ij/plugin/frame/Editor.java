@@ -511,13 +511,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Compile and Run".equals(what))
 				compileAndRun();
 		else if ("Run Macro".equals(what)) {
-			abortAnyRunningMacro();
 			if (altKeyDown) {
-				if (enableDebugging()) runMacro(true);
+				enableDebugging();
+				runMacro(true);
 			} else
 				runMacro(false);
 		} else if ("Debug Macro".equals(what)) {
-			if (enableDebugging())
+				enableDebugging();
 				runMacro(true);
 		} else if ("Step".equals(what))
 			setDebugMode(Interpreter.STEP);
@@ -573,10 +573,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else if ("Open...".equals(what))
 			IJ.open();
 		else {
-			abortAnyRunningMacro();
 			if (altKeyDown) {
-				if (enableDebugging())
-					installer.runMacro(what, this);
+				enableDebugging();
+				installer.runMacro(what, this);
 			} else
 				installer.runMacro(what, null);
 		}
@@ -620,23 +619,17 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		return currentLine;
 	}
 
-	final void abortAnyRunningMacro() {
-		Interpreter interp = Interpreter.getInstance();
-		if (interp!=null) {
-			interp.abort(interp);
-			interp.setEditor(null);
-		}
-	}
-	
-	final boolean enableDebugging() {
+	final void enableDebugging() {
 			step = true;
-			if (Interpreter.getInstance()!=null)
-				{IJ.beep(); return false;}
+			Interpreter interp = Interpreter.getInstance();
+			if (interp!=null && interp.getEditor()==this) {
+				interp.abort();
+				IJ.wait(100);
+			}
 			int start = ta.getSelectionStart();
 			int end = ta.getSelectionEnd();
 			if (start==debugStart && end==debugEnd)
 				ta.select(start, start);
-			return true;
 	}
 	
 	final void setDebugMode(int mode) {
@@ -928,12 +921,18 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	//public void keyReleased(KeyEvent e) {}
 	//public void keyTyped(KeyEvent e) {}
+	
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
 	
 	public int debug(Interpreter interp, int mode) {
-		//IJ.log("debug: "+interp.getLineNumber());
+		if (IJ.debugMode)
+			IJ.log("debug: "+interp.getLineNumber()+"  "+mode+"  "+interp);
 		if (mode==Interpreter.RUN)
 			return 0;
+		if (!isVisible()) { // abort macro if user closes window
+			interp.abortMacro();
+			return 0;
+		}
 		if (!isActive())
 			toFront();
 		int n = interp.getLineNumber();
@@ -972,13 +971,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		updateVariables(interp.getVariables());
 		if (mode==Interpreter.STEP) {
 			step = false;
-			while (!step) {
-				if (interp!=Interpreter.getInstance()) {
-					interp.setDebugMode(Interpreter.RUN);
-					break;
-				}
+			while (!step && !interp.done() && isVisible())
 				IJ.wait(5);
-			}
 		} else {
 			if (mode==Interpreter.FAST_TRACE)
 				IJ.wait(5);

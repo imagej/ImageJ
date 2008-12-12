@@ -2492,7 +2492,7 @@ public class Functions implements MacroConstants, Measurements {
 		else interp.error("Invalid key");
 		return value;
 	}
-
+	
 	String runMacro(boolean eval) {
 		interp.getLeftParen();
 		String name = getString();
@@ -3964,7 +3964,11 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String debug() {
-		String arg = getStringArg().toLowerCase(Locale.US);
+		String arg = "break";
+		if (interp.nextToken()=='(')
+			arg = getStringArg().toLowerCase(Locale.US);
+		else
+			interp.getParens();
 		if (interp.editor==null) {
 			Editor ed = Editor.getInstance();
 			if (ed==null)

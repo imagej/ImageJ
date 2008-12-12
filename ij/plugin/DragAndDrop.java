@@ -143,6 +143,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 						(new Opener()).open(path + "/" + names[k]);
 				}
 			}
+			IJ.register(DragAndDrop.class);
 		}
 		
 }

@@ -201,7 +201,7 @@ public class Interpreter implements MacroConstants {
 
 	final void doStatement() {
 		getToken();
-		if (debugMode!=NONE && editor!=null && !done)
+		if (debugMode!=NONE && editor!=null && !done && token!=';' && token!=FUNCTION)
 			editor.debug(this, debugMode);
 		switch (token) {
 			case VAR:
@@ -1535,29 +1535,33 @@ public class Interpreter implements MacroConstants {
 	
 	/** Aborts currently running macro. */
 	public static void abort() {
-		abort(instance);
+		if (instance!=null)
+			instance.abortMacro();
 	}
 	
 	/** Aborts the macro that was running when this one started. */
 	static void abortPrevious() {
 		if (previousInstance!=null) {
-			abort(previousInstance);
+			previousInstance.abortMacro();
 			IJ.beep();
 			previousInstance = null;
 		}
 	}
 
-	/** Aborts the specified macro. */
-	public static void abort(Interpreter interpreter) {
-		if (interpreter!=null) {
-			if (!interpreter.calledMacro) {
-				batchMode = false;
-				imageTable = null;
-			}
-			interpreter.done = true;
-			instance = null;
-			IJ.showStatus("Macro aborted");
+	/** Absolete, replaced by abortMacro(). */
+	public static void abort(Interpreter interp) {
+		if (interp!=null)
+			interp.abortMacro();
+	}
+	
+	/** Aborts this macro. */
+	public void abortMacro() {
+		if (!calledMacro) {
+			batchMode = false;
+			imageTable = null;
 		}
+		done = true;
+		IJ.showStatus("Macro aborted");
 	}
 
 	public static Interpreter getInstance() {
@@ -1712,6 +1716,16 @@ public class Interpreter implements MacroConstants {
 			variables[index++] = name + "\t" + stack[i];
 		}
 		return variables;
+	}
+
+	// Returns 'true' if this macro has finished or if it was aborted. */
+	public boolean done() {
+		return done;
+	}
+
+	// Returns the Editor, if any, associated with this macro. */
+	public Editor getEditor() {
+		return editor;
 	}
 
 } // class Interpreter
