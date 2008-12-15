@@ -193,6 +193,7 @@ public class Opener {
 		the file type is unrecognised. */
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
+		FileOpener.setSilentMode(silentMode);
 		if (directory.length()>0 && !directory.endsWith(Prefs.separator))
 			directory += Prefs.separator;
 		String path = directory+name;
@@ -504,7 +505,8 @@ public class Opener {
 				for (int i=0; i<info.length; i++) {
 					nChannels = 1;
 					Object[] channels = null;
-					IJ.showStatus("Reading: " + (i+1) + "/" + info.length);
+					if (!silentMode)
+						IJ.showStatus("Reading: " + (i+1) + "/" + info.length);
 					if (IJ.escapePressed()) {
 						IJ.beep();
 						IJ.showProgress(1.0);

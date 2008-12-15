@@ -1555,6 +1555,7 @@ public class Functions implements MacroConstants, Measurements {
 	void getThreshold() {
 		Variable lower = getFirstVariable();
 		Variable upper = getLastVariable();
+		resetImage();
 		ImagePlus imp = getImage();
 		ImageProcessor ip = getProcessor();
 		double t1 = ip.getMinThreshold();
@@ -2131,6 +2132,7 @@ public class Functions implements MacroConstants, Measurements {
 	void getMinAndMax() {
 		Variable min = getFirstVariable();
 		Variable max = getLastVariable();
+		resetImage();
 		ImagePlus imp = getImage();
 		double v1 = imp.getDisplayRangeMin();
 		double v2 = imp.getDisplayRangeMax();
@@ -3407,9 +3409,19 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().getStack().isVirtual();
 		else if (arg.indexOf("composite")!=-1)
 			state = getImage().isComposite();
+		else if (arg.indexOf("caps")!=-1)
+			state = getCapsLockState();
 		else
-			interp.error("Argument must be 'locked', 'Inverted LUT' or 'Hyperstack'");
+			interp.error("Invalid argument");
 		return state?1.0:0.0;
+	}
+
+	final boolean getCapsLockState() {
+		boolean capsDown = false;
+		try {
+			capsDown = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
+		} catch(Exception e) {}
+		return capsDown;
 	}
 
 	Variable[] getList() {
@@ -3978,14 +3990,14 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		if (arg.equals("run"))
 			interp.setDebugMode(Interpreter.RUN);
-		else if (arg.equals("step") || arg.equals("break"))
+		else if (arg.equals("break"))
 			interp.setDebugMode(Interpreter.STEP);
 		else if (arg.equals("trace"))
 			interp.setDebugMode(Interpreter.TRACE);
 		else if (arg.indexOf("fast")!=-1)
 			interp.setDebugMode(Interpreter.FAST_TRACE);
 		else
-			interp.error("Argument must be 'run', 'step', 'break', 'trace' or 'fast-trace'");
+			interp.error("Argument must be 'run', 'break', 'trace' or 'fast-trace'");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		return null;
 	}

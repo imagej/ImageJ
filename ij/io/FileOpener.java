@@ -34,6 +34,7 @@ public class FileOpener {
 	private int width, height;
 	private static boolean showConflictMessage = true;
 	private double minValue, maxValue;
+	private static boolean silentMode;
 
 	public FileOpener(FileInfo fi) {
 		this.fi = fi;
@@ -149,17 +150,20 @@ public class FileOpener {
 			if (is==null) return null;
 			IJ.resetEscape();
 			for (int i=1; i<=fi.nImages; i++) {
-				IJ.showStatus("Reading: " + i + "/" + fi.nImages);
+				if (!silentMode)
+					IJ.showStatus("Reading: " + i + "/" + fi.nImages);
 				if (IJ.escapePressed()) {
 					IJ.beep();
 					IJ.showProgress(1.0);
+					silentMode = false;
 					return null;
 				}
 				pixels = reader.readPixels(is, skip);
 				if (pixels==null) break;
 				stack.addSlice(null, pixels);
 				skip = fi.gapBetweenImages;
-				IJ.showProgress(i, fi.nImages);
+				if (!silentMode)
+					IJ.showProgress(i, fi.nImages);
 			}
 			is.close();
 		}
@@ -170,7 +174,7 @@ public class FileOpener {
 			IJ.outOfMemory(fi.fileName);
 			stack.trim();
 		}
-		IJ.showProgress(1.0);
+		if (!silentMode) IJ.showProgress(1.0);
 		if (stack.getSize()==0)
 			return null;
 		if (fi.sliceLabels!=null && fi.sliceLabels.length<=stack.getSize()) {
@@ -186,7 +190,8 @@ public class FileOpener {
 		ImageProcessor ip = imp.getProcessor();
 		if (ip.getMin()==ip.getMax())  // find stack min and max if first slice is blank
 			setStackDisplayRange(imp);
-		IJ.showProgress(1.0);
+		if (!silentMode) IJ.showProgress(1.0);
+		silentMode = false;
 		return imp;
 	}
 
@@ -196,7 +201,8 @@ public class FileOpener {
 		double max = -Double.MAX_VALUE;
 		int n = stack.getSize();
 		for (int i=1; i<=n; i++) {
-			IJ.showStatus("Calculating stack min and max: "+i+"/"+n);
+			if (!silentMode)
+				IJ.showStatus("Calculating stack min and max: "+i+"/"+n);
 			ImageProcessor ip = stack.getProcessor(i);
 			ip.resetMinAndMax();
 			if (ip.getMin()<min)
@@ -567,5 +573,10 @@ public class FileOpener {
 	public static void setShowConflictMessage(boolean b) {
 		showConflictMessage = b;
 	}
+	
+	static void setSilentMode(boolean mode) {
+		silentMode = mode;
+	}
+
 
 }
