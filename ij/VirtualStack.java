@@ -5,12 +5,12 @@ import java.awt.image.ColorModel;
 
 /** This class represents an array of disk-resident images. */
 public class VirtualStack extends ImageStack {
-	static final int INITIAL_SIZE = 100;
-	String path;
-	int nSlices;
-	String[] names;
-	String[] labels;
-	int bitDepth;
+	private static final int INITIAL_SIZE = 100;
+	private String path;
+	private int nSlices;
+	private String[] names;
+	private String[] labels;
+	private int bitDepth;
 	
 	/** Default constructor. */
 	public VirtualStack() { }
@@ -166,7 +166,6 @@ public class VirtualStack extends ImageStack {
 	public void setBitDepth(int bitDepth) {
 		this.bitDepth = bitDepth;
 	}
-
 
 } 
 
