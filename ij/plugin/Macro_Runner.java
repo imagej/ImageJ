@@ -130,7 +130,7 @@ public class Macro_Runner implements PlugIn {
 		try {
 			return interp.run(macro, arg);
 		} catch(Throwable e) {
-			Interpreter.abort(interp);
+			interp.abortMacro();
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
 			ImagePlus imp = WindowManager.getCurrentImage();

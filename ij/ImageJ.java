@@ -68,7 +68,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.42d";
+	public static final String VERSION = "1.42e";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -296,6 +296,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void mousePressed(MouseEvent e) {
 		Undo.reset();
+		System.gc();
 		IJ.showStatus("Memory: "+IJ.freeMemory());
 		if (IJ.debugMode)
 			IJ.log("Windows: "+WindowManager.getWindowCount());

@@ -16,6 +16,7 @@ public class HyperStackConverter implements PlugIn {
 	static final int CZT=0, CTZ=1, ZCT=2, ZTC=3, TCZ=4, TZC=5;
     static final String[] orders = {"xyczt(default)", "xyctz", "xyzct", "xyztc", "xytcz", "xytzc"};
     static int order = CZT;
+    static boolean splitRGB = true;
 
 	public void run(String arg) {
 		if (arg.equals("new"))
@@ -38,10 +39,7 @@ public class HyperStackConverter implements PlugIn {
 			IJ.error("Stack to HyperStack", "Stack required");
 			return;
 		}
-		if (imp.getBitDepth()==24) {
-			new CompositeConverter().run("color");
-			return;
-		}
+		boolean rgb = imp.getBitDepth()==24;
 		String[] modes = {"Composite", "Color", "Grayscale"};
 		GenericDialog gd = new GenericDialog("Convert to HyperStack");
 		gd.addChoice("Order:", orders, orders[order]);
@@ -49,6 +47,10 @@ public class HyperStackConverter implements PlugIn {
 		gd.addNumericField("Slices (z):", nSlices, 0);
 		gd.addNumericField("Frames (t):", nFrames, 0);
 		gd.addChoice("Display Mode:", modes, modes[1]);
+		if (rgb) {
+			gd.setInsets(15, 0, 0);
+			gd.addCheckbox("Convert RGB to 3 Channel Hyperstack", splitRGB);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		order = gd.getNextChoiceIndex();
@@ -56,6 +58,16 @@ public class HyperStackConverter implements PlugIn {
 		nSlices = (int) gd.getNextNumber();
 		nFrames = (int) gd.getNextNumber();
 		int mode = gd.getNextChoiceIndex();
+		if (rgb)
+			splitRGB = gd.getNextBoolean();
+		if (rgb && splitRGB==true) {
+			new CompositeConverter().run(mode==0?"composite":"color");
+			return;
+		}
+		if (rgb && nChannels>1) {
+			IJ.error("HyperStack Converter", "RGB stacks are limited to one channel");
+			return;
+		}
 		if (nChannels*nSlices*nFrames!=stackSize) {
 			IJ.error("HyperStack Converter", "channels x slices x frames <> stack size");
 			return;

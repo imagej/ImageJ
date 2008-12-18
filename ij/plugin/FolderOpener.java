@@ -184,7 +184,7 @@ public class FolderOpener implements PlugIn {
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
 					String label2 = label;
-					if (depth>1) label2 = ""+slice;
+					if (depth>1) label2 = null;
 					if (virtualStack) {
 						if (slice==1) ((VirtualStack)stack).addSlice(list[i]);
 					} else

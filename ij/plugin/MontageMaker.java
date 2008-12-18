@@ -15,6 +15,7 @@ public class MontageMaker implements PlugIn {
 	private static boolean label;
 	private static boolean useForegroundColor;
 	private static int saveID;
+	private static int saveStackSize;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -41,11 +42,12 @@ public class MontageMaker implements PlugIn {
 		makeMontage(imp);
 		imp.updateImage();
 		saveID = imp.getID();
+		IJ.register(MontageMaker.class);
 	}
 	
 	public void makeMontage(ImagePlus imp) {
 			int nSlices = imp.getStackSize();
-			if (columns==0 || imp.getID()!=saveID) {
+			if (columns==0 || !(imp.getID()==saveID || nSlices==saveStackSize)) {
 				columns = (int)Math.sqrt(nSlices);
 				rows = columns;
 				int n = nSlices - columns*rows;
@@ -59,6 +61,7 @@ public class MontageMaker implements PlugIn {
 				first = 1;
 				last = nSlices;
 			}
+			saveStackSize = nSlices;
 			
 			GenericDialog gd = new GenericDialog("Make Montage", IJ.getInstance());
 			gd.addNumericField("Columns:", columns, 0);

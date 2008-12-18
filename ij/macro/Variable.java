@@ -96,15 +96,23 @@ class Variable implements MacroConstants {
     		return VALUE;
     }
 
-    public String toString() {
-    	String s = "";
-    	if (array!=null)
-    		s += "array["+array.length+"]";
-    	else if (str!=null)
-    		s += str;
-    	else
-    		s += ""+value;    	
-        return s+" "+symTabIndex;
-    }
+	public String toString() {
+		String s = "";
+		if (array!=null)
+			s += "array["+array.length+"]";
+		else if (str!=null) {
+			s = str;
+			if (s.length()>50)
+				s = s.substring(0, 50)+"...";
+			s = s.replaceAll("\n", " | ");
+			s = "\""+s+"\"";
+		} else {
+			if (value==(int)value)
+				s += (int)value;
+			else
+				s += ij.IJ.d2s(value,4);
+		}
+		return s;
+	}
     
 } // class Variable

@@ -431,7 +431,7 @@ public class TiffDecoder {
 					} else if (value==3)
 						fi.unit = "cm";
 					break;
-				case PLANAR_CONFIGURATION:
+				case PLANAR_CONFIGURATION:  // 1=chunky, 2=planar
 					if (value==2 && fi.fileType==FileInfo.RGB48)
 							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
 					else if (value==2 && fi.fileType==FileInfo.RGB)
@@ -440,7 +440,6 @@ public class TiffDecoder {
 						fi.fileType = FileInfo.ARGB;
 					else if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
 						String msg = "Unsupported interleaved SamplesPerPixel: " + fi.samplesPerPixel;
-						//if (fi.samplesPerPixel==4) msg += " \n \n" + "ImageJ cannot open CMYK TIFFs";
 						error(msg);
 					}
 					break;

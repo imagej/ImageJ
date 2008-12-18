@@ -5,15 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.42d, 5 December 2008</u>
+<li> <u>1.42e, 17 December 2008</u>
 <ul>
-<li> Added the <i>Macros&gt;Debug Mode</i> checkbox menu item to the macro editor.
-<li> The <i>Image&gt;Colors&gt;Channels Tool</i> is recorded.
-<li> Added the setMinAndMax(min,max,channels) macro function.
-<li> Fixed a bug, introduced in v1.42c, that caused the run("Set Scale...", options)
-macro function to fail.
-<li> Fixed a bug, introduced in v1.38, that caused the threshold to be reset 
-when clearing or filling a stack slice.
+<li> Added a "Debug" menu to the macro editor.
+<li> Histograms of 8-bit and RGB stacks are much faster.
+<li> Added the is("Caps Lock Set") macro function.
+<li> The save() and saveAs() macro functions work with text editor windows.
+<li> Fixed a rounding error with histograms of RGB stacks.
+<li> Fixed a bug that sometimes caused ImageJ to create 
+TIFF stacks that could cause Matlab to crash.
+<li> Fixed a bug in <i>File&gt;Save As&gt;FITS</i> that could cause an error
+when resaving a FITS file.
 </ul>
 
 </body>

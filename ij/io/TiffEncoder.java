@@ -116,16 +116,22 @@ public class TiffEncoder {
 		if (metaDataSize>0)
 			writeMetaData(out);
 		new ImageWriter(fi).write(out);
-        if (nextIFD>0L) {
-            for (int i=2; i<=fi.nImages; i++) {
-                if (i==fi.nImages)
-                    nextIFD = 0;
-                else
-                    nextIFD += ifdSize;
-                imageOffset += imageSize;
-                writeIFD(out, (int)imageOffset, (int)nextIFD);
-            }
-        }
+		if (nextIFD>0L) {
+			int ifdSize2 = ifdSize;
+			if (metaDataSize>0) {
+				metaDataSize = 0;
+				nEntries -= 2;
+				ifdSize2 -= 2*12;
+			}
+			for (int i=2; i<=fi.nImages; i++) {
+				if (i==fi.nImages)
+					nextIFD = 0;
+				else
+					nextIFD += ifdSize2;
+				imageOffset += imageSize;
+				writeIFD(out, (int)imageOffset, (int)nextIFD);
+			}
+		}
 	}
 	
 	public void write(DataOutputStream out) throws IOException {

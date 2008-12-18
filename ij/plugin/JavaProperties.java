@@ -102,6 +102,7 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");
 		Dimension d = IJ.getScreenSize();
 		sb.append("  Screen size: " + d.width + "x" + d.height+"\n");
+		System.gc();
 		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
 		if (IJ.altKeyDown())
 			doFullDump();

@@ -546,6 +546,16 @@ public class CompositeImage extends ImagePlus {
 		customLuts = true;
 	}
 	
+	/* Sets the LUT of the specified channel using a clone of 'table'. */
+	public void setChannelLut(LUT table, int channel) {
+		int channels = getNChannels();
+		if (lut==null) setupLuts(channels);
+		if (channel<1 || channel>lut.length)
+			throw new IllegalArgumentException("Channel out of range");
+		lut[channel-1] = (LUT)table.clone();
+		cip = null;
+	}
+
 	/* Sets the IndexColorModel of the current channel. */
 	public void setChannelColorModel(IndexColorModel cm) {
 		byte[] reds = new byte[256];
