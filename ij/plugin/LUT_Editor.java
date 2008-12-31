@@ -224,6 +224,7 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
         x = (e.getX());
         y = (e.getY());
         finalC =  getMouseZone(x,y);
+		IJ.showStatus("index=" + finalC);
         repaint();
     }
 
