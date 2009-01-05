@@ -47,8 +47,13 @@ public class RGBStackConverter implements PlugIn {
 			compositeImageToRGB(imp, title);
 			return;
 		}
+		String msg = null;
+		if (frames>1)
+			msg = "Convert all "+frames+" frames?";
+		else
+			msg = "Convert all "+slices+" slices?";
 		if (!IJ.isMacro()) {
-			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Convert to RGB", "Convert entire HyperStack?");
+			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Convert to RGB", msg);
 			if (d.cancelPressed())
 				return;
 			else if (!d.yesPressed()) {
@@ -71,6 +76,8 @@ public class RGBStackConverter implements PlugIn {
 		imp.setPosition(c, z, t);
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack(title, stack);
+		Object info = imp.getProperty("Info");
+		if (info!=null) imp2.setProperty("Info", info);
 		imp2.show();
 	}
 

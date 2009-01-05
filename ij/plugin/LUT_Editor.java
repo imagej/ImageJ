@@ -14,6 +14,7 @@ public class LUT_Editor implements PlugIn, ActionListener{
     private ImagePlus imp;
     Button openButton, saveButton, resizeButton, invertButton;
     ColorPanel colorPanel;
+    int bitDepth;
 
     public void run(String args) {
      	ImagePlus imp = WindowManager.getCurrentImage();
@@ -21,10 +22,16 @@ public class LUT_Editor implements PlugIn, ActionListener{
     		IJ.showMessage("LUT Editor", "No images are open");
     		return;
     	}
-    	if (imp.getBitDepth()==24) {
+    	bitDepth = imp.getBitDepth();
+    	if (bitDepth==24) {
     		IJ.showMessage("LUT Editor", "RGB images do not use LUTs");
     		return;
     	}
+    	if (bitDepth!=8) {
+    		imp.getProcessor().resetMinAndMax();
+    		imp.updateAndDraw();
+    	}
+    	
         colorPanel = new ColorPanel(imp);
     	if (colorPanel.getMapSize()!=256) {
     		IJ.showMessage("LUT Editor", "LUT must have 256 entries");
@@ -94,6 +101,7 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
      private boolean updateLut;
      private static String[] choices = {"Replication","Interpolation", "Spline Fitting"};
      private static String scaleMethod = choices[1];
+     private int bitDepth;
      
      ColorPanel(ImagePlus imp) {
          setup(imp);
@@ -105,6 +113,7 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
            return;
         }
         this.imp  =  imp;
+        bitDepth = imp.getBitDepth();
         ImageProcessor ip = imp.getChannelProcessor();
         IndexColorModel cm = (IndexColorModel)ip.getColorModel();
         origin = cm;
@@ -224,7 +233,7 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
         x = (e.getX());
         y = (e.getY());
         finalC =  getMouseZone(x,y);
-		IJ.showStatus("index=" + finalC);
+		IJ.showStatus("index=" + getIndex(finalC));
         repaint();
     }
 
@@ -236,9 +245,23 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
            int red = reds[entry]&255;
            int green = greens[entry]&255;
            int blue = blues[entry]&255;
-           IJ.showStatus("index=" + entry + ", color=" + red + "," + green + "," + blue);
+           IJ.showStatus("index=" + getIndex(entry) + ", color=" + red + "," + green + "," + blue);
         } else
            IJ.showStatus("");
+    }
+    
+    final String getIndex(int index) {
+    	if (bitDepth==8)
+    		return (""+index);
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
+		Calibration cal = imp.getCalibration();
+		min = cal.getCValue(min); 
+		max = cal.getCValue(max); 
+		double value = min + (index/255.0)*(max-min);
+		int digits = (max-min)<100?2:0;
+			return (index+" ("+IJ.d2s(value,digits)+")");
     }
 
     void open() {

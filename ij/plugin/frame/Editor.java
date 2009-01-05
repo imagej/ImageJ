@@ -970,7 +970,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if ((debugStart==0||debugStart==len) && debugEnd==len)
 			return 0; // skip code added with Interpreter.setAdditionalFunctions()
 		ta.select(debugStart, debugEnd);
-		updateVariables(interp.getVariables());
+		if (debugWindow!=null && !debugWindow.isShowing()) {
+			interp.setEditor(null);
+			debugWindow = null;
+		} else
+			debugWindow = interp.updateDebugWindow(interp.getVariables(), debugWindow);
 		if (mode==Interpreter.STEP) {
 			step = false;
 			while (!step && !interp.done() && isVisible())
@@ -983,33 +987,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		return 0;
 	}
-	
-	void updateVariables(String[] variables) {
-		if (debugWindow!=null && !debugWindow.isShowing()) {
-			Interpreter interp = Interpreter.getInstance();
-			if (interp!=null) interp.setEditor(null);
-			debugWindow = null;
-			return;
-		}
-		if (debugWindow==null)
-			debugWindow = new TextWindow("Debug", "Name\tValue", "", 300, 400);
-		TextPanel panel = debugWindow.getTextPanel();
-		int n = variables.length;
-		if (n==0) {
-			panel.clear();
-			return;
-		}
-		int lines = panel.getLineCount();
-		for (int i=0; i<lines; i++) {
-			if (i<n)
-				panel.setLine(i, variables[i]);
-			else
-				panel.setLine(i, "");
-		}
-		for (int i=lines; i<n; i++)
-			debugWindow.append(variables[i]);
-	}
-	
+		
 	public static Editor getInstance() {
 		return instance;
 	}

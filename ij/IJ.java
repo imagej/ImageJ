@@ -1312,7 +1312,8 @@ public class IJ {
 	static String updateExtension(String path, String extension) {
 		if (path==null) return null;
 		int dotIndex = path.lastIndexOf(".");
-		if (dotIndex>=0)
+		int separatorIndex = path.lastIndexOf(File.separator);
+		if (dotIndex>=0 && dotIndex>separatorIndex && (path.length()-dotIndex)<=5)
 			path = path.substring(0, dotIndex) + extension;
 		else
 			path += extension;

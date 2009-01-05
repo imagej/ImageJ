@@ -1696,7 +1696,7 @@ public abstract class ImageProcessor extends Object {
 		}
 		
 		int movingIndex = min;
-		int inc = Math.min(max/40, 1);
+		int inc = Math.max(max/40, 1);
 		do {
 			sum1=sum2=sum3=sum4=0.0;
 			for (int i=min; i<=movingIndex; i++) {

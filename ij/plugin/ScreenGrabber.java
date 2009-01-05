@@ -5,17 +5,17 @@ import ij.gui.*;
 import java.awt.*;
 
 /** This plugin implements the Plugins/Utilities/Capture Screen
-	and Plugins/Utilities/Capture Image commands. */
+    and Plugins/Utilities/Capture Image commands. */
 public class ScreenGrabber implements PlugIn {
     
-    public void run(String arg) {
-    	ImagePlus imp = null;
-    	if (arg.equals("image"))
-    		imp = captureImage();
-    	else
-			imp = captureScreen();
-    	if (imp!=null) imp.show();
-    }
+	public void run(String arg) {
+		ImagePlus imp = null;
+		if (arg.equals("image"))
+		imp = captureImage();
+		else
+		imp = captureScreen();
+		if (imp!=null) imp.show();
+	}
     
 	/** Captures the entire screen and returns it as an ImagePlus. */
 	public ImagePlus captureScreen() {
@@ -41,6 +41,8 @@ public class ScreenGrabber implements PlugIn {
 		try {
 			ImageWindow win = imp.getWindow();
 			if (win==null) return null;
+			win.toFront();
+			IJ.wait(500);
 			Point loc = win.getLocation();
 			ImageCanvas ic = win.getCanvas();
 			Rectangle bounds = ic.getBounds();

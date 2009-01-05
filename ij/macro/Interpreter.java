@@ -5,6 +5,7 @@ import ij.gui.*;
 import ij.plugin.Macro_Runner;
 import ij.plugin.frame.*;
 import ij.util.Tools;
+import ij.text.*;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
@@ -53,6 +54,7 @@ public class Interpreter implements MacroConstants {
 	Editor editor;
 	int debugMode = NONE;
 	boolean showDebugFunctions;
+	static boolean showVariables;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -1046,6 +1048,7 @@ public class Interpreter implements MacroConstants {
 
 	void error (String message) {
 		boolean showMessage = !done;
+		String[] variables = showMessage?getVariables():null;
 		token = EOF;
 		tokenString = "";
 		IJ.showStatus("");
@@ -1057,10 +1060,51 @@ public class Interpreter implements MacroConstants {
 			String line = getErrorLine();
 			if (line.length()>120)
 				line = line.substring(0,119)+"...";
-			IJ.showMessage("Macro Error", message+" in line "+lineNumber+".\n \n"+line);
+			showError("Macro Error", message+" in line "+lineNumber+".\n \n"+line, variables);
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
 		done = true;
+	}
+	
+	void showError(String title, String msg, String[] variables) {
+		GenericDialog gd = new GenericDialog(title);
+		gd.setInsets(6,5,0);
+		gd.addMessage(msg);
+		gd.setInsets(15,30,5);
+		gd.addCheckbox("Show \"Debug\" Window", showVariables);
+		gd.hideCancelButton();
+		gd.showDialog();
+		showVariables = gd.getNextBoolean();
+		if (!gd.wasCanceled() && showVariables)
+			updateDebugWindow(variables, null);
+	}
+
+	public TextWindow updateDebugWindow(String[] variables, TextWindow debugWindow) {
+		if (debugWindow==null) {
+			Frame f = WindowManager.getFrame("Debug");
+			if (f!=null && (f instanceof TextWindow)) {
+				debugWindow = (TextWindow)f;
+				debugWindow.toFront();
+			}
+		}
+		if (debugWindow==null)
+			debugWindow = new TextWindow("Debug", "Name\tValue", "", 300, 400);
+		TextPanel panel = debugWindow.getTextPanel();
+		int n = variables.length;
+		if (n==0) {
+			panel.clear();
+			return debugWindow;
+		}
+		int lines = panel.getLineCount();
+		for (int i=0; i<lines; i++) {
+			if (i<n)
+				panel.setLine(i, variables[i]);
+			else
+				panel.setLine(i, "");
+		}
+		for (int i=lines; i<n; i++)
+			debugWindow.append(variables[i]);
+		return debugWindow;
 	}
 
 	String getErrorLine() {

@@ -273,6 +273,16 @@ public class ImageJ extends Frame implements ActionListener,
 				new RecentOpener(cmd); // open image in separate thread
 				return;
 			}
+			int flags = e.getModifiers();
+			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
+			if ((flags & Event.ALT_MASK)!=0)
+				IJ.setKeyDown(KeyEvent.VK_ALT);
+			else
+				IJ.setKeyUp(KeyEvent.VK_ALT);
+			if ((flags & Event.SHIFT_MASK)!=0)
+				IJ.setKeyDown(KeyEvent.VK_SHIFT);
+			else
+				IJ.setKeyUp(KeyEvent.VK_SHIFT);
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
