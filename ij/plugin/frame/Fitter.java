@@ -103,13 +103,13 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);
 		ymax = Math.max(ymax, a[1]);
-		PlotWindow pw = new PlotWindow(cf.fList[fit],"X","Y",px,py);
+		PlotWindow pw = new PlotWindow(cf.getFunction(),"X","Y",px,py);
 		pw.setLimits(xmin, xmax, ymin, ymax);
 		pw.addPoints(x, y, PlotWindow.CIRCLE);
 		double yloc = 0.1;
 		double yinc = 0.085;
-		pw.addLabel(0.02, yloc, cf.fitList[fit]); yloc+=yinc;
-		pw.addLabel(0.02, yloc, cf.fList[fit]);  yloc+=yinc;
+		pw.addLabel(0.02, yloc, cf.getName()); yloc+=yinc;
+		pw.addLabel(0.02, yloc, cf.getFunction());  yloc+=yinc;
         double[] p = cf.getParams();
         int n = cf.getNumParams();
         char pChar = 'a';

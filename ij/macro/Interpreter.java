@@ -1761,7 +1761,7 @@ public class Interpreter implements MacroConstants {
 		}
 		return variables;
 	}
-
+	
 	// Returns 'true' if this macro has finished or if it was aborted. */
 	public boolean done() {
 		return done;
