@@ -55,6 +55,7 @@ public class Interpreter implements MacroConstants {
 	int debugMode = NONE;
 	boolean showDebugFunctions;
 	static boolean showVariables;
+	boolean wasError;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -104,6 +105,14 @@ public class Interpreter implements MacroConstants {
 		}
 		doStatements();
 		finishUp();
+	}
+
+	/** Runs an existing macro starting at location 0. */
+	public void run() {
+		topOfStack = topOfGlobals;
+		done = false;
+		pc = -1;
+		doStatements();
 	}
 
 	/** Interprets the specified tokenized macro starting at the specified location. */
@@ -1063,6 +1072,7 @@ public class Interpreter implements MacroConstants {
 			showError("Macro Error", message+" in line "+lineNumber+".\n \n"+line, variables);
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
+		wasError = true;
 		done = true;
 	}
 	
@@ -1770,6 +1780,32 @@ public class Interpreter implements MacroConstants {
 	// Returns the Editor, if any, associated with this macro. */
 	public Editor getEditor() {
 		return editor;
+	}
+
+	// Returns 'true' if this macro generated an error and was aborted. */
+	public boolean wasError() {
+		return wasError;
+	}
+
+	public void setVariable(String name, double value) {
+		int index;
+		for (int i=0; i<=topOfStack; i++) {
+			index = stack[i].symTabIndex;
+			if (pgm.table[index].str.equals(name)) {
+				stack[i].setValue(value);
+				break;
+			}
+		}
+	}
+
+	public double getVariable(String name) {
+		int index;
+		for (int i=0; i<=topOfStack; i++) {
+			index = stack[i].symTabIndex;
+			if (pgm.table[index].str.equals(name))
+				return stack[i].getValue();
+		}
+		return Double.NaN;
 	}
 
 } // class Interpreter

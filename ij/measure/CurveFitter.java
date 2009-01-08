@@ -61,8 +61,10 @@ public class CurveFitter {
     private int restarts; 	// number of times to restart simplex after first soln.
     private double maxError;     // maximum error tolerance
 	private double[] initialParams; // user specified initial parameters
-	private static String customFunction;
+	private String customFunction;
 	private static int customParamCount;
+	private static Interpreter macro;
+	private double[] initialValues;
 	
     /** Construct a new CurveFitter. */
     public CurveFitter (double[] xData, double[] yData) {
@@ -175,7 +177,7 @@ public class CurveFitter {
         fitType = saveFitType;
     }
         
-	public int doCustomFit(String function, boolean showSettings) {
+	public int doCustomFit(String function, double[] initialValues, boolean showSettings) {
 		customFunction = null;
 		customParamCount = 0;
 		Program pgm = (new Tokenizer()).tokenize(function);
@@ -189,10 +191,19 @@ public class CurveFitter {
 		if (customParamCount==0)
 			return 0;
 		customFunction = function;
+		String code =
+			function+";\n"+
+			"function dummy() {};"+
+			"var x, a, b, c, d, e;\n";
+		macro = new Interpreter();
+		macro.run(code);
+		if (macro.wasError())
+			return 0;
+		this.initialValues = initialValues;
 		doFit(CUSTOM, showSettings);
 		return customParamCount;
 	}
-    
+
     /** Pop up a dialog allowing control over simplex starting parameters */
     private void settingsDialog() {
         GenericDialog gd = new GenericDialog("Simplex Fitting Options", IJ.getInstance());
@@ -324,13 +335,15 @@ public class CurveFitter {
                 simp[0][2] = 0.0;
                 break;
            case CUSTOM:
-                if (customFunction==null)
+                if (macro==null)
                 	throw new IllegalArgumentException("No custom function!");
-                simp[0][0] = 1.0;
-                if (numParams>1) simp[0][1] = 1.0;
-                if (numParams>2) simp[0][2] = 1.0;
-                if (numParams>3) simp[0][3] = 1.0;
-                if (numParams>4) simp[0][4] = 1.0;
+                if (initialValues!=null && initialValues.length>=numParams) {
+                	for (int i=0; i<numParams; i++)
+                		simp[0][i] = initialValues[i];
+                } else {
+                	for (int i=0; i<numParams; i++)
+                		simp[0][i] = 1.0;
+                }
                 break;
         }
     }
@@ -463,31 +476,19 @@ public class CurveFitter {
 				}
 				return y;
 			case CUSTOM:
-				return evaluate(p, x);
+				macro.setVariable("x", x);
+				macro.setVariable("a", p[0]);
+				if (customParamCount>1) macro.setVariable("b", p[1]);
+				if (customParamCount>2) macro.setVariable("c", p[2]);
+				if (customParamCount>3) macro.setVariable("d", p[3]);
+				if (customParamCount>4) macro.setVariable("e", p[4]);
+				macro.run();
+				return macro.getVariable("y");
             default:
                 return 0.0;
         }
     }
     
-	static final double evaluate(double[] p, double x) {
-		String macro = "args = split(getArgument);\n"+
-			"n=args.length;\n"+
-			"x=parseFloat(args[0]);\n"+
-			"if (n>1) a=parseFloat(args[1]);\n"+
-			"if (n>2) b=parseFloat(args[2]);\n"+
-			"if (n>3) c=parseFloat(args[3]);\n"+
-			"if (n>4) d=parseFloat(args[4]);\n"+
-			"if (n>5) e=parseFloat(args[5]);\n"+
-			customFunction+";\n"+
-			"return toString(y);";
-			String arg = x+" ";
-			for (int i=0; i<customParamCount; i++)
-				arg += p[i]+" ";
-			String y = IJ.runMacro(macro, arg);
-			//IJ.log("evaluate: "+arg+"  "+y);
-			return Tools.parseDouble(y, 0.0);
-    }
-
     /** Get the set of parameter values from the best corner of the simplex */
     public double[] getParams() {
         order();

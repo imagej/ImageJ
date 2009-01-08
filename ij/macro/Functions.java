@@ -3932,6 +3932,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getLeftParen();
 		int fit = -1;
 		String name = null;
+		double[] initialValues = null;
 		if (isStringArg()) {
 			name = getString().toLowerCase(Locale.US);
 			String[] list = CurveFitter.fitList;
@@ -3941,15 +3942,22 @@ public class Functions implements MacroConstants, Measurements {
 					break;
 				}
 			}
-			if (fit==-1&&!name.startsWith("y"))
+			boolean isCustom = name.indexOf("y=")!=-1 || name.indexOf("y =")!=-1;
+			if (fit==-1&&!isCustom)
 				interp.error("Unrecognized fit");
 		} else
 			fit = (int)interp.getExpression();
 		double[] x = getNextArray();
-		double[] y = getLastArray();
+		interp.getComma();
+		double[] y = getNumericArray();
+		if (interp.nextNonEolToken()==',') {
+			interp.getComma();
+			initialValues = getNumericArray();
+		}
+		interp.getRightParen();
 		fitter = new CurveFitter(x, y);
 		if (fit==-1 && name!=null) {
-			int params = fitter.doCustomFit(name, false);
+			int params = fitter.doCustomFit(name, initialValues, false);
 			if (params==0)
 				interp.error("Invalid custom function");
 		} else
