@@ -102,8 +102,8 @@ class Variable implements MacroConstants {
 			s += "array["+array.length+"]";
 		else if (str!=null) {
 			s = str;
-			if (s.length()>50)
-				s = s.substring(0, 50)+"...";
+			if (s.length()>80)
+				s = s.substring(0, 80)+"...";
 			s = s.replaceAll("\n", " | ");
 			s = "\""+s+"\"";
 		} else {

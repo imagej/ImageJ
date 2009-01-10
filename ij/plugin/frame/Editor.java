@@ -179,7 +179,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (macroExtension || name.endsWith(".js")|| name.indexOf(".")==-1) {
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
-			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_E)));
+			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_Y)));
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
@@ -191,13 +191,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			mb.add(macrosMenu);
 			if (!name.endsWith(".js")) {
 				Menu debugMenu = new Menu("Debug");			
-				debugMenu.add(new MenuItem("Debug Macro", new MenuShortcut(KeyEvent.VK_1)));
-				debugMenu.add(new MenuItem("Step", new MenuShortcut(KeyEvent.VK_2)));
-				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_3)));
-				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_4)));
-				debugMenu.add(new MenuItem("Run", new MenuShortcut(KeyEvent.VK_5)));
-				debugMenu.add(new MenuItem("Run to Insertion Point", new MenuShortcut(KeyEvent.VK_6)));
-				debugMenu.add(new MenuItem("Abort", new MenuShortcut(KeyEvent.VK_7)));
+				debugMenu.add(new MenuItem("Debug Macro", new MenuShortcut(KeyEvent.VK_D)));
+				debugMenu.add(new MenuItem("Step", new MenuShortcut(KeyEvent.VK_E)));
+				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_T)));
+				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_T,true)));
+				debugMenu.add(new MenuItem("Run"));
+				debugMenu.add(new MenuItem("Run to Insertion Point"));
+				debugMenu.add(new MenuItem("Abort"));
 				debugMenu.addActionListener(this);
 				mb.add(debugMenu);
 			}
@@ -970,7 +970,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if ((debugStart==0||debugStart==len) && debugEnd==len)
 			return 0; // skip code added with Interpreter.setAdditionalFunctions()
 		ta.select(debugStart, debugEnd);
-		updateVariables(interp.getVariables());
+		if (debugWindow!=null && !debugWindow.isShowing()) {
+			interp.setEditor(null);
+			debugWindow = null;
+		} else
+			debugWindow = interp.updateDebugWindow(interp.getVariables(), debugWindow);
 		if (mode==Interpreter.STEP) {
 			step = false;
 			while (!step && !interp.done() && isVisible())
@@ -983,33 +987,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		return 0;
 	}
-	
-	void updateVariables(String[] variables) {
-		if (debugWindow!=null && !debugWindow.isShowing()) {
-			Interpreter interp = Interpreter.getInstance();
-			if (interp!=null) interp.setEditor(null);
-			debugWindow = null;
-			return;
-		}
-		if (debugWindow==null)
-			debugWindow = new TextWindow("Debug", "Name\tValue", "", 300, 400);
-		TextPanel panel = debugWindow.getTextPanel();
-		int n = variables.length;
-		if (n==0) {
-			panel.clear();
-			return;
-		}
-		int lines = panel.getLineCount();
-		for (int i=0; i<lines; i++) {
-			if (i<n)
-				panel.setLine(i, variables[i]);
-			else
-				panel.setLine(i, "");
-		}
-		for (int i=lines; i<n; i++)
-			debugWindow.append(variables[i]);
-	}
-	
+		
 	public static Editor getInstance() {
 		return instance;
 	}

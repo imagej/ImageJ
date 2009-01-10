@@ -15,7 +15,6 @@ public class ColorChooser implements TextListener, AdjustmentListener {
     int red, green, blue;
     boolean useHSB;
     String title;
-    boolean mono;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public ColorChooser(String title, Color initialColor, boolean useHSB) {
@@ -25,7 +24,6 @@ public class ColorChooser implements TextListener, AdjustmentListener {
     	red = initialColor.getRed();
     	green = initialColor.getGreen();
     	blue = initialColor.getBlue();
-    	mono = red==green && green==blue;
     	this.useHSB = useHSB;
     }
     
@@ -68,14 +66,6 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 			if (source==sliders.elementAt(i)) {
 				Scrollbar sb = (Scrollbar)source;
 				TextField tf = (TextField)colors.elementAt(i);
-				if (i==0 && mono) { // red
-					String red = tf.getText();
-					TextField tf1 = (TextField)colors.elementAt(1);
-					TextField tf2 = (TextField)colors.elementAt(2);
-					tf1.setText(red);
-					tf2.setText(red);
-				}
-				if (i!=0) mono = false;
 			}
 		}
 	}

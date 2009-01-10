@@ -42,6 +42,8 @@ public class Functions implements MacroConstants, Measurements {
     RoiManager roiManager;
     Properties props;
     CurveFitter fitter;
+    boolean showFitDialog;
+    boolean logFitResults;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -3904,11 +3906,17 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("nEquations")) {
 			interp.getParens();
 			return CurveFitter.fitList.length;
+		} else if (name.equals("showDialog")) {
+			showFitDialog = true;
+			return Double.NaN;
+		} else if (name.equals("logResults")) {
+			logFitResults = true;
+			return Double.NaN;
 		}
 		if (fitter==null)
 			interp.error("No fit");
 		if (name.equals("f"))
-			return CurveFitter.f(fitter.getFit(), fitter.getParams(), getArg());
+			return fitter.f(fitter.getParams(), getArg());
 		else if (name.equals("plot")) {
 			interp.getParens();
 			Fitter.plot(fitter);
@@ -3931,8 +3939,10 @@ public class Functions implements MacroConstants, Measurements {
 	double fitCurve() {
 		interp.getLeftParen();
 		int fit = -1;
+		String name = null;
+		double[] initialValues = null;
 		if (isStringArg()) {
-			String name = getString().toLowerCase(Locale.US);
+			name = getString().toLowerCase(Locale.US);
 			String[] list = CurveFitter.fitList;
 			for (int i=0; i<list.length; i++) {
 				if (name.equals(list[i].toLowerCase(Locale.US))) {
@@ -3940,14 +3950,33 @@ public class Functions implements MacroConstants, Measurements {
 					break;
 				}
 			}
-			if (fit==-1)
+			boolean isCustom = name.indexOf("y=")!=-1 || name.indexOf("y =")!=-1;
+			if (fit==-1&&!isCustom)
 				interp.error("Unrecognized fit");
 		} else
 			fit = (int)interp.getExpression();
 		double[] x = getNextArray();
-		double[] y = getLastArray();
+		interp.getComma();
+		double[] y = getNumericArray();
+		if (interp.nextNonEolToken()==',') {
+			interp.getComma();
+			initialValues = getNumericArray();
+		}
+		interp.getRightParen();
 		fitter = new CurveFitter(x, y);
-		fitter.doFit(fit, false);
+		long startTime = System.currentTimeMillis();
+		if (fit==-1 && name!=null) {
+			int params = fitter.doCustomFit(name, initialValues, showFitDialog);
+			if (params==0)
+				interp.error("Invalid custom function");
+		} else
+			fitter.doFit(fit, showFitDialog);
+		if (logFitResults) {
+			IJ.log(fitter.getResultString());
+  			IJ.log("Time: "+(System.currentTimeMillis()-startTime)+"ms");
+			logFitResults = false;
+		}
+		showFitDialog = false;
 		return Double.NaN;
 	}
 

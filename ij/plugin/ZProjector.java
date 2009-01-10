@@ -1,17 +1,15 @@
 package ij.plugin; 
-
 import ij.*; 
 import ij.gui.GenericDialog; 
 import ij.process.*;
 import ij.plugin.filter.*; 
+import ij.measure.Measurements;
 import java.lang.*; 
 import java.awt.*; 
 import java.awt.event.*; 
 
-
 /** This plugin performs a z-projection of the input stack. Type of
-    output image is same as type of input image. Both maximum and
-    average intensity projections are supported. 
+    output image is same as type of input image.
 
     @author Patrick Kelly <phkelly@ucsd.edu> */
 
@@ -143,11 +141,11 @@ public class ZProjector implements PlugIn {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
 		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
-			if (method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
-	    		IJ.error("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
-	    		imp.unlock(); 
-	    		return; 
-			}
+			//if (method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
+	    	//	IJ.error("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
+	    	//	imp.unlock(); 
+	    	//	return; 
+			//}
 			doRGBProjection();
 		} else 
 			doProjection(); 
@@ -369,30 +367,6 @@ public class ZProjector implements PlugIn {
 		}
     }
     
-    ImagePlus doMedianProjection() {
-    	IJ.showStatus("Calculating median...");
-    	ImageStack stack = imp.getStack();
-    	ImageProcessor[] slices = new ImageProcessor[sliceCount];
-    	int index = 0;
-    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
-    		slices[index++] = stack.getProcessor(slice);
-    	ImageProcessor ip2 = slices[0].duplicate();
-    	ip2 = ip2.convertToFloat();
-    	float[] values = new float[sliceCount];
-    	int width = ip2.getWidth();
-    	int height = ip2.getHeight();
-    	int inc = Math.min(height/30, 1);
-    	for (int y=0; y<height; y++) {
-    		if (y%inc==0) IJ.showProgress(y, height-1);
-    		for (int x=0; x<width; x++) {
-    			for (int i=0; i<sliceCount; i++)
-    				values[i] = slices[i].getPixelValue(x, y);
-    			ip2.putPixelValue(x, y, median(values));
-    		}
-    	}
-  		return new ImagePlus(makeTitle(), ip2);
-    }
-    
     String makeTitle() {
     	String prefix = "AVG_";
  		switch (method) {
@@ -405,6 +379,30 @@ public class ZProjector implements PlugIn {
     	return WindowManager.makeUniqueName(prefix+imp.getTitle());
     }
 
+	ImagePlus doMedianProjection() {
+		IJ.showStatus("Calculating median...");
+		ImageStack stack = imp.getStack();
+		ImageProcessor[] slices = new ImageProcessor[sliceCount];
+		int index = 0;
+		for (int slice=startSlice; slice<=stopSlice; slice+=increment)
+			slices[index++] = stack.getProcessor(slice);
+		ImageProcessor ip2 = slices[0].duplicate();
+		ip2 = ip2.convertToFloat();
+		float[] values = new float[sliceCount];
+		int width = ip2.getWidth();
+		int height = ip2.getHeight();
+		int inc = Math.max(height/30, 1);
+		for (int y=0; y<height; y++) {
+			if (y%inc==0) IJ.showProgress(y, height-1);
+			for (int x=0; x<width; x++) {
+				for (int i=0; i<sliceCount; i++)
+				values[i] = slices[i].getPixelValue(x, y);
+				ip2.putPixelValue(x, y, median(values));
+			}
+		}
+		return new ImagePlus(makeTitle(), ip2);
+	}
+
 	float median(float[] a) {
 		sort(a);
 		int length = a.length;
@@ -413,8 +411,7 @@ public class ZProjector implements PlugIn {
 		else
 			return a[length/2]; // odd
 	}
-
-
+	
 	void sort(float[] a) {
 		if (!alreadySorted(a))
 			sort(a, 0, a.length - 1);
@@ -440,6 +437,51 @@ public class ZProjector implements PlugIn {
 		}
 		return true;
 	}
+
+/*
+    ImagePlus doModeProjection() {
+    	IJ.showStatus("Calculating mode...");
+    	ImageStack stack = imp.getStack();
+    	ImageProcessor[] slices = new ImageProcessor[sliceCount];
+    	int index = 0;
+    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
+    		slices[index++] = stack.getProcessor(slice);
+    	ImageProcessor ip2 = slices[0].duplicate();
+    	ip2 = ip2.convertToShort(false);
+    	short[] values = new short[sliceCount];
+    	int width = ip2.getWidth();
+    	int height = ip2.getHeight();
+    	int inc = Math.max(height/30, 1);
+    	for (int y=0; y<height; y++) {
+    		if (y%inc==0) IJ.showProgress(y, height-1);
+    		for (int x=0; x<width; x++) {
+    			for (int i=0; i<sliceCount; i++)
+    				values[i] = (short)slices[i].getPixel(x, y);
+    			ip2.putPixel(x, y, mode(values));
+    		}
+    	}
+  		return new ImagePlus(makeTitle(), ip2);
+    }
+    
+    ImageProcessor modeProcessor=null;
+
+	int mode(short[] a) {
+		if (modeProcessor==null)
+			modeProcessor = new ShortProcessor(a.length, 1, a, null);
+		else
+			modeProcessor.setPixels(a);
+		int[] histogram = modeProcessor.getHistogram();
+		int count, mode=0, maxCount=0;
+		for (int i=0; i<histogram.length; i++) {
+			count = histogram[i];
+			if (count>maxCount) {
+				maxCount = count;
+				mode = i;
+			}
+		}
+		return mode;
+	}
+*/
 
      /** Abstract class that specifies structure of ray
 	function. Preprocessing should be done in derived class

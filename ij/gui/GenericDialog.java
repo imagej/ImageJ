@@ -69,6 +69,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private boolean recorderOn;         // whether recording is allowed
     private boolean yesNoCancel;
     private char echoChar;
+    private boolean hideCancelButton;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -573,6 +574,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void enableYesNoCancel() {
     	yesNoCancel = true;
     }
+    
+    /** No not display "Cancel" button. */
+    public void hideCancelButton() {
+    	hideCancelButton = true;
+    }
 
 	Insets getInsets(int top, int left, int bottom, int right) {
 		if (customInsets) {
@@ -857,12 +863,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			okay.addKeyListener(this);
 			if (IJ.isMacintosh()) {
 				if (yesNoCancel) buttons.add(no);
-				buttons.add(cancel);
+				if (! hideCancelButton)
+					buttons.add(cancel);
 				buttons.add(okay);
 			} else {
 				buttons.add(okay);
 				if (yesNoCancel) buttons.add(no);;
-				buttons.add(cancel);
+				if (! hideCancelButton)
+					buttons.add(cancel);
 			}
 			c.gridx = 0; c.gridy = y;
 			c.anchor = GridBagConstraints.EAST;

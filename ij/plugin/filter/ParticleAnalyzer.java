@@ -786,7 +786,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				if (resetCounter)
 					roiManager.runCommand("reset");
 			}
-			roiManager.add(imp, roi, Analyzer.getCounter());
+			roiManager.add(imp, roi, rt.getCounter());
 		}
 		if (showResults)
 			analyzer.displayResults();

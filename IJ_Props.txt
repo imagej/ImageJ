@@ -314,8 +314,9 @@ utilities06="Reset...",ij.plugin.SimpleCommands("reset")
 utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
 utilities08="Search...",ij.plugin.SimpleCommands("search")
 utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
-utilities10="Find Commands... [l]",ij.plugin.CommandFinder
-utilities11="Update ImageJ... ",ij.plugin.ImageJ_Updater
+utilities10="Capture Image",ij.plugin.ScreenGrabber("image")
+utilities11="Find Commands... [l]",ij.plugin.CommandFinder
+utilities12="Update ImageJ... ",ij.plugin.ImageJ_Updater
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

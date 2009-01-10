@@ -218,7 +218,7 @@ public class FractalBoxCounter implements PlugInFilter {
 			tmp += inc;
 		}
 		for (int i=0; i<100; i++)
-			py[i] = (float)CurveFitter.f(CurveFitter.STRAIGHT_LINE, p, px[i]);
+			py[i] = (float)cf.f(p, px[i]);
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);
 		ymax = Math.max(ymax, a[1]);

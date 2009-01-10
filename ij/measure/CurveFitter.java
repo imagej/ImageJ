@@ -1,6 +1,8 @@
 package ij.measure;
 import ij.*;
 import ij.gui.*;
+import ij.macro.*;
+import ij.util.Tools;
 
 /** Curve fitting class based on the Simplex method described
  *  in the article "Fitting Curves to Data" in the May 1984
@@ -24,12 +26,14 @@ public class CurveFitter {
     EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9,
     RODBARD2=10, EXP_WITH_OFFSET=11, GAUSSIAN=12, EXP_RECOVERY=13;
     
+    private static final int CUSTOM = 20;
+    
     public static final int IterFactor = 500;
     
     public static final String[] fitList = {"Straight Line","2nd Degree Polynomial",
     "3rd Degree Polynomial", "4th Degree Polynomial","Exponential","Power",
     "Log","Rodbard", "Gamma Variate", "y = a+b*ln(x-c)","Rodbard (NIH Image)",
-    "Exponential with Offset","Gaussian", "Exponential Recovery"}; // fList must also be updated
+    "Exponential with Offset","Gaussian", "Exponential Recovery"}; // fList and doFit() must also be updated
     
     public static final String[] fList = {"y = a+bx","y = a+bx+cx^2",
     "y = a+bx+cx^2+dx^3", "y = a+bx+cx^2+dx^3+ex^4","y = a*exp(bx)","y = ax^b",
@@ -57,6 +61,10 @@ public class CurveFitter {
     private int restarts; 	// number of times to restart simplex after first soln.
     private double maxError;     // maximum error tolerance
 	private double[] initialParams; // user specified initial parameters
+	private String customFormula;
+	private int customParamCount;
+	private Interpreter macro;
+	private double[] initialValues;
 	
     /** Construct a new CurveFitter. */
     public CurveFitter (double[] xData, double[] yData) {
@@ -77,7 +85,7 @@ public class CurveFitter {
     }
     
     public void doFit(int fitType, boolean showSettings) {
-        if (fitType<STRAIGHT_LINE || fitType>EXP_RECOVERY)
+        if (fitType<STRAIGHT_LINE || (fitType>EXP_RECOVERY&&fitType!=CUSTOM))
             throw new IllegalArgumentException("Invalid fit type");
         int saveFitType = fitType;
         if (fitType==RODBARD2) {
@@ -169,8 +177,60 @@ public class CurveFitter {
         fitType = saveFitType;
     }
         
-    /** Initialise the simplex
-     */
+	public int doCustomFit(String equation, double[] initialValues, boolean showSettings) {
+		customFormula = null;
+		customParamCount = 0;
+		Program pgm = (new Tokenizer()).tokenize(equation);
+		if (pgm.lookupWord("y")==null) return 0;
+		if (pgm.lookupWord("x")==null) return 0;
+		String[] params = {"a","b","c","d","e"};
+		for (int i=0; i<params.length; i++) {
+		if (pgm.lookupWord(params[i])!=null)
+			customParamCount++;
+		}
+		if (customParamCount==0)
+			return 0;
+		customFormula = equation;
+		String code =
+			equation+";\n"+
+			"function dummy() {}\n"+
+			"var x, a, b, c, d, e;\n";
+		macro = new Interpreter();
+		macro.run(code);
+		if (macro.wasError())
+			return 0;
+		this.initialValues = initialValues;
+		doFit(CUSTOM, showSettings);
+		return customParamCount;
+	}
+
+    /** Pop up a dialog allowing control over simplex starting parameters */
+    private void settingsDialog() {
+        GenericDialog gd = new GenericDialog("Simplex Fitting Options");
+        gd.addMessage("Function name: " + getName() + "\n" +
+        "Formula: " + getFormula());
+        char pChar = 'a';
+        for (int i = 0; i < numParams; i++) {
+            gd.addNumericField("Initial "+(new Character(pChar)).toString()+":", simp[0][i], 2);
+            pChar++;
+        }
+        gd.addNumericField("Maximum iterations:", maxIter, 0);
+        gd.addNumericField("Number of restarts:", restarts, 0);
+        gd.addNumericField("Error tolerance [1*10^(-x)]:", -(Math.log(maxError)/Math.log(10)), 0);
+        gd.showDialog();
+        if (gd.wasCanceled() || gd.invalidNumber()) {
+            IJ.error("Parameter setting canceled.\nUsing default parameters.");
+        }
+        // Parametres:
+        for (int i = 0; i < numParams; i++) {
+            simp[0][i] = gd.getNextNumber();
+        }
+        maxIter = (int) gd.getNextNumber();
+        restarts = (int) gd.getNextNumber();
+        maxError = Math.pow(10.0, -gd.getNextNumber());
+    }
+
+    /** Initialise the simplex */
     void initialize() {
         // Calculate some things that might be useful for predicting parametres
         numParams = getNumParams();
@@ -274,35 +334,20 @@ public class CurveFitter {
                 simp[0][1] = 0.05;
                 simp[0][2] = 0.0;
                 break;
+           case CUSTOM:
+                if (macro==null)
+                	throw new IllegalArgumentException("No custom formula!");
+                if (initialValues!=null && initialValues.length>=numParams) {
+                	for (int i=0; i<numParams; i++)
+                		simp[0][i] = initialValues[i];
+                } else {
+                	for (int i=0; i<numParams; i++)
+                		simp[0][i] = 1.0;
+                }
+                break;
         }
     }
-    
-    /** Pop up a dialog allowing control over simplex starting parameters */
-    private void settingsDialog() {
-        GenericDialog gd = new GenericDialog("Simplex Fitting Options", IJ.getInstance());
-        gd.addMessage("Function name: " + fitList[fit] + "\n" +
-        "Formula: " + fList[fit]);
-        char pChar = 'a';
-        for (int i = 0; i < numParams; i++) {
-            gd.addNumericField("Initial "+(new Character(pChar)).toString()+":", simp[0][i], 2);
-            pChar++;
-        }
-        gd.addNumericField("Maximum iterations:", maxIter, 0);
-        gd.addNumericField("Number of restarts:", restarts, 0);
-        gd.addNumericField("Error tolerance [1*10^(-x)]:", -(Math.log(maxError)/Math.log(10)), 0);
-        gd.showDialog();
-        if (gd.wasCanceled() || gd.invalidNumber()) {
-            IJ.error("Parameter setting canceled.\nUsing default parameters.");
-        }
-        // Parametres:
-        for (int i = 0; i < numParams; i++) {
-            simp[0][i] = gd.getNextNumber();
-        }
-        maxIter = (int) gd.getNextNumber();
-        restarts = (int) gd.getNextNumber();
-        maxError = Math.pow(10.0, -gd.getNextNumber());
-    }
-    
+        
     /** Restart the simplex at the nth vertex */
     void restart(int n) {
         // Copy nth vertice of simplex to first vertice
@@ -349,7 +394,7 @@ public class CurveFitter {
         }
     }
         
-    /** Get number of parameters for current fit function */
+    /** Get number of parameters for current fit formula */
     public int getNumParams() {
         switch (fit) {
             case STRAIGHT_LINE: return 2;
@@ -365,11 +410,27 @@ public class CurveFitter {
             case EXP_WITH_OFFSET: return 3;
             case GAUSSIAN: return 4;
             case EXP_RECOVERY: return 3;
+            case CUSTOM: return customParamCount;
         }
         return 0;
     }
         
-    /** Returns "fit" function value for parameters "p" at "x" */
+	/** Returns formula value for parameters 'p' at 'x' */
+	public double f(double[] p, double x) {
+		if (fit==CUSTOM) {
+			macro.setVariable("x", x);
+			macro.setVariable("a", p[0]);
+			if (customParamCount>1) macro.setVariable("b", p[1]);
+			if (customParamCount>2) macro.setVariable("c", p[2]);
+			if (customParamCount>3) macro.setVariable("d", p[3]);
+			if (customParamCount>4) macro.setVariable("e", p[4]);
+			macro.run();
+			return macro.getVariable("y");
+		} else
+			return f(fit, p, x);
+	}
+
+   /** Returns 'fit' formula value for parameters "p" at "x" */
     public static double f(int fit, double[] p, double x) {
     	double y;
         switch (fit) {
@@ -433,24 +494,29 @@ public class CurveFitter {
                 return 0.0;
         }
     }
-
+    
     /** Get the set of parameter values from the best corner of the simplex */
     public double[] getParams() {
         order();
         return simp[best];
     }
     
-    /** Returns residuals array ie. differences between data and curve. */
-    public double[] getResiduals() {
+	/** Returns residuals array ie. differences between data and curve. */
+	public double[] getResiduals() {
 		int saveFit = fit;
 		if (fit==RODBARD2) fit=RODBARD;
-        double[] params = getParams();
-        double[] residuals = new double[numPoints];
-        for (int i = 0; i < numPoints; i++)
-            residuals[i] = yData[i] - f(fit, params, xData[i]);
-        fit = saveFit;
-        return residuals;
-    }
+		double[] params = getParams();
+		double[] residuals = new double[numPoints];
+		if (fit==CUSTOM) {
+			for (int i=0; i<numPoints; i++)
+				residuals[i] = yData[i] - f(params, xData[i]);
+		} else {
+			for (int i=0; i<numPoints; i++)
+				residuals[i] = yData[i] - f(fit, params, xData[i]);
+		}
+		fit = saveFit;
+		return residuals;
+	}
     
     /* Last "parametre" at each vertex of simplex is sum of residuals
      * for the curve described by that vertex
@@ -515,31 +581,35 @@ public class CurveFitter {
      * for easy output.
      */
     public String getResultString() {
-        StringBuffer results = new StringBuffer("\nNumber of iterations: " + getIterations() +
+        String results =  "\nFormula: " + getFormula() +
+        "\nNumber of iterations: " + getIterations() +
         "\nMaximum number of iterations: " + getMaxIterations() +
         "\nSum of residuals squared: " + IJ.d2s(getSumResidualsSqr(),4) +
         "\nStandard deviation: " + IJ.d2s(getSD(),4) +
         "\nR^2: " + IJ.d2s(getRSquared(),4) +
-        "\nParameters:");
+        "\nParameters:";
         char pChar = 'a';
         double[] pVal = getParams();
         for (int i = 0; i < numParams; i++) {
-            results.append("\n  " + pChar + " = " + IJ.d2s(pVal[i],4));
+            results += ("\n  " + pChar + " = " + IJ.d2s(pVal[i],4));
             pChar++;
         }
-        return results.toString();
+        return results;
     }
         
     double sqr(double d) { return d * d; }
     
-    /** Adds sum of square of residuals to end of array of parameters */
-    void sumResiduals (double[] x) {
-        x[numParams] = 0.0;
-        for (int i = 0; i < numPoints; i++) {
-            x[numParams] = x[numParams] + sqr(f(fit,x,xData[i])-yData[i]);
-            //        if (IJ.debugMode) ij.IJ.log(i+" "+x[n-1]+" "+f(fit,x,xData[i])+" "+yData[i]);
-        }
-    }
+	/** Adds sum of square of residuals to end of array of parameters */
+	void sumResiduals (double[] x) {
+		x[numParams] = 0.0;
+		if (fit==CUSTOM) {
+			for (int i=0; i<numPoints; i++)
+			x[numParams] = x[numParams] + sqr(f(x,xData[i])-yData[i]);
+		} else {
+			for (int i=0; i<numPoints; i++)
+			x[numParams] = x[numParams] + sqr(f(fit,x,xData[i])-yData[i]);
+		}
+	}
 
     /** Keep the "next" vertex */
     void newVertex() {
@@ -622,5 +692,18 @@ public class CurveFitter {
 		return fit;
 	}
 
+	public String getName() {
+		if (fit==CUSTOM)
+			return "Custom";
+		else
+			return fitList[fit];
+	}
 
+	public String getFormula() {
+		if (fit==CUSTOM)
+			return customFormula;
+		else
+			return fList[fit];
+	}
+	
 }

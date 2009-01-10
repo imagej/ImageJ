@@ -76,8 +76,23 @@ public class Executer implements Runnable {
 						return;
 					s = Tools.fixNewLines(s);
 				}
+				int w=350, h=250;
+				if (s.indexOf("UnsupportedClassVersionError")!=-1) {
+					if (s.indexOf("version 49.0")!=-1) {
+						s = e + "\n \nThis plugin requires Java 1.5 or later.";
+						w=700; h=150;
+					}
+					if (s.indexOf("version 50.0")!=-1) {
+						s = e + "\n \nThis plugin requires Java 1.6 or later.";
+						w=700; h=150;
+					}
+					if (s.indexOf("version 51.0")!=-1) {
+						s = e + "\n \nThis plugin requires Java 1.7 or later.";
+						w=700; h=150;
+					}
+				}
 				if (IJ.getInstance()!=null)
-					new TextWindow("Exception", s, 350, 250);
+					new TextWindow("Exception", s, w, h);
 				else
 					IJ.log(s);
 			}
