@@ -5,28 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.42f, 9 January 2009</u>
+<li> <u>1.42g, 12 January 2009</u>
 <ul>
-<li> Added the <i>Plugins&gt;Utilities&gt;Capture Image</i> command.
-<li> Added a "Show 'Debug' Window" option to macro error messages.
-<li> Added a "*Custom*" (user-defined) fit option to <i>Analyze&gt;Tools&gt;CurveFitting</i>.
-<li> Reported UnsupportedClassVersion exceptions include the line
-"This plugin requires Java 1.x or later."
-<li> The LUT Editor (<i>Image&gt;Color&gt;Edit LUT</i>) displays the ending index in 
-the status bar as the user drags to select a range.
-<li> LUT Editor color pickers no longer move the 
-green and blue sliders when the red slider is moved.
-<li> The Fit.doFit() macro function will now fit a user-defined formula to a set of data points
-(<a href="http://rsb.info.nih.gov/ij/macros/examples/UserDefinedCurveFits.txt">examples</a>).
-<li> Added the Fit.showDialog and Fit.logResults macro functions.
- <li> ImageJ no longer throws an exception when opening DICOMs with
- UT (unlimited text) tags.
-<li> Fixed a bug on Windows, introduced in v1.42e,  that made it impossible to
-enter some characters accessed using AltGr key (e.g., "{") into macro editor windows.
-<li> Fixed a bug in the particle analyzer that caused it to sometimes
-not correctly add particles to the ROI Manager.
-<li> Fixed a bug in the saveAs() macro function that sometimes caused it to fail
- if the path contained a period and the file name did not have an extension.
+<li> Fixed a bug, introduced in v1.42f, that caused commands in the
+<i>Plugins&gt;Macros</i> submenu to fail to work and caused extra commands
+to be added to the <i>Plugins&gt;Utilities</i> submenu.
 </ul>
 
 </body>

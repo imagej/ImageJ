@@ -256,8 +256,9 @@ class PlugInExecuter implements Runnable {
 
 	public void run() {
 		try {
-			ImageJ ij = IJ.getInstance();
 			IJ.resetEscape();
+			IJ.runPlugIn("ij.plugin.ClassChecker", "");
+			ImageJ ij = IJ.getInstance();
 			if (ij!=null) ij.runUserPlugIn(plugin, plugin, "", true);
 		} catch(Throwable e) {
 			IJ.showStatus("");
