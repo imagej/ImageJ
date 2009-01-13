@@ -5,25 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.42f, 5 January 2009</u>
+<li> <u>1.42h, 13 January 2009</u>
 <ul>
-<li> Added the <i>Plugins&gt;Utilities&gt;Capture Image</i> command.
-<li> Added a "Show 'Debug' Window" option to macro error messages.
-<li> Reported UnsupportedClassVersion exceptions include the line
-"This plugin requires Java 1.x or later."
-<li> The LUT Editor (<i>Image&gt;Color&gt;Edit LUT</i>) displays the ending index in 
-the status bar as the user drags to select a range.
-<li> LUT Editor color pickers no longer move the 
-green and blue sliders when the red slider is moved.
- <li> ImageJ no longer throws an exception when opening DICOMs with
- UT (unlimited text) tags.
-<li> Fixed a bug on Windows, introduced in v1.42e,  that made it impossible to
-enter some characters accessed using AltGr key (e.g., "{") into macro editor windows.
-<li> Fixed a bug in the particle analyzer that caused it to sometimes
-not correctly add particles to the ROI Manager.
-<li> Fixed a bug in the saveAs() macro function that sometimes caused it to fail
- if the path contained a period and the file name did not have an extension.
+<li> The curve fitter (<i>Analyze&gt;Tools&gt;Curve Fitting</i>) works better when using the default settings
+(<a href="http://rsb.info.nih.gov/ij/macros/examples/RodbardSigmoidFit.txt">example</a>).
+<li> An updated Menus class, contributed by Johannes Schindelin, provides better Fiji compatibility and
+allows plugins to be installed in more menus.
+<li> Added the centerDialogMethod() to the GenericDialog class
+(<a href="http://rsb.info.nih.gov/ij/plugins/download/misc/Place_Dialog.java">example</a>).
 </ul>
 
+<a href="http://rsb.info.nih.gov/ij">Home</a>
 </body>
 </html>

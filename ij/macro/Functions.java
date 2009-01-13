@@ -42,6 +42,8 @@ public class Functions implements MacroConstants, Measurements {
     RoiManager roiManager;
     Properties props;
     CurveFitter fitter;
+    boolean showFitDialog;
+    boolean logFitResults;
     
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -3904,11 +3906,17 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("nEquations")) {
 			interp.getParens();
 			return CurveFitter.fitList.length;
+		} else if (name.equals("showDialog")) {
+			showFitDialog = true;
+			return Double.NaN;
+		} else if (name.equals("logResults")) {
+			logFitResults = true;
+			return Double.NaN;
 		}
 		if (fitter==null)
 			interp.error("No fit");
 		if (name.equals("f"))
-			return CurveFitter.f(fitter.getFit(), fitter.getParams(), getArg());
+			return fitter.f(fitter.getParams(), getArg());
 		else if (name.equals("plot")) {
 			interp.getParens();
 			Fitter.plot(fitter);
@@ -3957,11 +3965,16 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		fitter = new CurveFitter(x, y);
 		if (fit==-1 && name!=null) {
-			int params = fitter.doCustomFit(name, initialValues, false);
+			int params = fitter.doCustomFit(name, initialValues, showFitDialog);
 			if (params==0)
 				interp.error("Invalid custom function");
 		} else
-			fitter.doFit(fit, false);
+			fitter.doFit(fit, showFitDialog);
+		if (logFitResults) {
+			IJ.log(fitter.getResultString());
+			logFitResults = false;
+		}
+		showFitDialog = false;
 		return Double.NaN;
 	}
 

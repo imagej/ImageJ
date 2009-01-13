@@ -129,10 +129,11 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Z Project...",ij.plugin.ZProjector
 stacks12="3D Project...",ij.plugin.filter.Projector
 stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks14=-
-stacks15="Start Animation [\\]",ij.plugin.Animator("start")
-stacks16="Stop Animation",ij.plugin.Animator("stop")
-stacks17="Animation Options...",ij.plugin.Animator("options")
+stacks14="Remove Slices...",ij.plugin.SliceRemover
+stacks15=-
+stacks16="Start Animation [\\]",ij.plugin.Animator("start")
+stacks17="Stop Animation",ij.plugin.Animator("stop")
+stacks18="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
@@ -281,7 +282,7 @@ plug-in02=>"Shortcuts"
 plug-in03=>"Utilities"
 plug-in04=>"New_"
 plug-in05="Compile and Run...",ij.plugin.Compiler
-plug-in06=-
+#plug-in06=-
 #plug-in07=>"User_Plugins"
 
 # Install user plugins located in ij.jar to Plugins>User Plugins submenu
