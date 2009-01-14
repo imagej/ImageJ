@@ -28,7 +28,7 @@ public class CurveFitter {
 	
 	private static final int CUSTOM = 20;
 	
-	public static final int IterFactor = 600;
+	public static final int IterFactor = 500;
 	
 	public static final String[] fitList = {"Straight Line","2nd Degree Polynomial",
 	"3rd Degree Polynomial", "4th Degree Polynomial","Exponential","Power",

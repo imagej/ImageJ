@@ -277,19 +277,16 @@ public class ImageJ extends Frame implements ActionListener,
 			}
 			int flags = e.getModifiers();
 			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
-			if ((flags & Event.ALT_MASK)!=0)
-				IJ.setKeyDown(KeyEvent.VK_ALT);
-			else
-				IJ.setKeyUp(KeyEvent.VK_ALT);
-			if ((flags & Event.SHIFT_MASK)!=0)
-				IJ.setKeyDown(KeyEvent.VK_SHIFT);
-			else
-				IJ.setKeyUp(KeyEvent.VK_SHIFT);
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
-			if (cmd!=null && (ellapsedTime>=200L||!cmd.equals(lastKeyCommand)))
+			if (cmd!=null && (ellapsedTime>=200L||!cmd.equals(lastKeyCommand))) {
+				if ((flags & Event.ALT_MASK)!=0)
+					IJ.setKeyDown(KeyEvent.VK_ALT);
+				if ((flags & Event.SHIFT_MASK)!=0)
+					IJ.setKeyDown(KeyEvent.VK_SHIFT);
 				doCommand(cmd);
+			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
 		}

@@ -56,6 +56,7 @@ public class Executer implements Runnable {
 				Recorder.saveCommand();
 			} else
 				runCommand(command);
+			IJ.setKeyUp(IJ.ALL_KEYS);		
 		} catch(Throwable e) {
 			IJ.showStatus("");
 			IJ.showProgress(1.0);
@@ -112,10 +113,9 @@ public class Executer implements Runnable {
 					className = className.substring(0, argStart);
 				}
 			}
-			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner") && !Menus.getShortcuts().contains("*"+cmd)) {
+			if (IJ.shiftKeyDown() && className.startsWith("ij.plugin.Macro_Runner") && !Menus.getShortcuts().contains("*"+cmd))
     			IJ.open(IJ.getDirectory("plugins")+arg);
-				IJ.setKeyUp(KeyEvent.VK_SHIFT);		
-    		} else
+    		else
 				IJ.runPlugIn(cmd, className, arg);
 		} else {
 			// Is this command in Plugins>Macros?

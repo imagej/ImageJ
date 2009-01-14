@@ -505,7 +505,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
 		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
-
+		if (IJ.debugMode) IJ.log("actionPerformed: "+e);
+		
 		if ("Save".equals(what))
 			save();
 		else if ("Compile and Run".equals(what))
