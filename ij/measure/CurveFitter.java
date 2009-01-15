@@ -699,7 +699,7 @@ public class CurveFitter {
 
 	public String getName() {
 		if (fit==CUSTOM)
-			return "Custom";
+			return "User-defined";
 		else
 			return fitList[fit];
 	}

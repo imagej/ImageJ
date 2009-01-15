@@ -97,12 +97,6 @@ public class Interpreter implements MacroConstants {
 			func = new Functions(this, pgm);
 		func.plot = null;
 		//IJ.showStatus("interpreting");
-		while (pgm.code[pc+1]==EOL) pc++; // skip comments
-		if ((pgm.code[pc+1]&0xff)==MACRO && (pgm.code[pc+2]&0xff)==STRING_CONSTANT) {
-		   // run macro instead of skipping over it
-		   getToken();
-		   getToken();
-		}
 		doStatements();
 		finishUp();
 	}
@@ -246,7 +240,7 @@ public class Interpreter implements MacroConstants {
 				doDo();
 				return;
 			case MACRO:
-				skipMacro();
+				runFirstMacro();
 				return;
 			case FUNCTION:
 				skipFunction();
@@ -625,6 +619,13 @@ public class Interpreter implements MacroConstants {
 		getToken(); // skip function id
 		skipParens();
 		skipBlock();
+	}
+
+	void runFirstMacro() {
+		getToken(); // skip macro label
+		doBlock(); 
+		done = true;
+		finishUp();
 	}
 
 	void skipMacro() {
