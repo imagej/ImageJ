@@ -967,6 +967,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				break;
 			}
 		}
+		//IJ.log("debug: "+debugStart+"  "+debugEnd+"  "+len+"  "+count);
 		if (debugStart==1) debugStart = 0;
 		if ((debugStart==0||debugStart==len) && debugEnd==len)
 			return 0; // skip code added with Interpreter.setAdditionalFunctions()

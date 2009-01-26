@@ -214,7 +214,6 @@ public class ColorProcessor extends ImageProcessor {
 		return snapshotPixels;
 	}
 
-
 	/** Fills pixels that are within roi and part of the mask.
 		Does nothing if the mask is not the same as the the ROI. */
 	public void fill(ImageProcessor mask) {
@@ -480,8 +479,7 @@ public class ColorProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		if (!((ip instanceof ColorProcessor) | (ip instanceof ByteProcessor)))
-			throw new IllegalArgumentException("8-bit or RGB image required");
+		ip = ip.convertToRGB();
 		new ColorBlitter(this).copyBits(ip, xloc, yloc, mode);
 	}
 

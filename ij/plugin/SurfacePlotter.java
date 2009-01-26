@@ -12,6 +12,7 @@ import ij.measure.*;
 
 public class SurfacePlotter implements PlugIn {
 
+	static final int fontSize = 14;
 	static int plotWidth = 350;
 	static int polygonMultiplier = 100;
 	static boolean oneToOne;
@@ -260,6 +261,7 @@ public class SurfacePlotter implements PlugIn {
 	}
 
 	void drawAndLabelAxis(ImageProcessor ip, ImageProcessor ip2, Rectangle roi) {			
+		ip2.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
 		if(!blackFill)	
 			ip2.setColor(Color.black);
 		else
@@ -298,10 +300,10 @@ public class SurfacePlotter implements PlugIn {
 		s = String.valueOf( (double) Math.round(max*10)/10);
 		w =  ip.getFontMetrics().stringWidth(s);
 		h =  ip.getFontMetrics().getHeight();
-		ip2.drawString(s, (int) p1x-15-w, (int) p1y-255 +h/2);	//ybase+5+h+(int ( yinc2/xinc *10));
+		ip2.drawString(s, (int) p1x-18-w, (int) p1y-255 +h/2);	//ybase+5+h+(int ( yinc2/xinc *10));
 		s = String.valueOf( (double) Math.round(min*10)/10);
 		w =  ip2.getFontMetrics().stringWidth(s);
-		ip2.drawString(s, (int) p1x-15-w, (int) p1y +h/2);
+		ip2.drawString(s, (int) p1x-18-w, (int) p1y +h/2);
 		
 		//x-axis
 		s = (double) Math.round(roi.height*cal.pixelHeight*10)/10+" "+cal.getUnits();
@@ -384,6 +386,7 @@ public class SurfacePlotter implements PlugIn {
 		if(ipW>w)
 			tW = ipW;
 		ImageProcessor ipText = new ByteProcessor(tW, ipH);
+		ipText.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
 		ipText.setColor(Color.white);
 		ipText.fill();
 		ipText.setColor(Color.black);

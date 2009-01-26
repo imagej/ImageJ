@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.42h, 15 January 2009</u>
+<li> <u>1.42h, 26 January 2009</u>
 <ul>
-<li> Tweaked the curve fitter's (<i>Analyze&gt;Tools&gt;Curve Fitting</i>) default settings
-so that it works better
+<li> Added the <i>Process&gt;Math&gt;Equation</i> command.
+<li> An image being pasted no longer has to be the same type as the receiving image.
+<li> Tweaked the default settings in the curve fitter (<i>Analyze&gt;Tools&gt;Curve Fitting</i>) 
+so that it is more likely to converge
 (<a href="http://rsb.info.nih.gov/ij/macros/examples/RodbardSigmoidFit.txt">example</a>).
 <li> Lines in the Results and Log windows can be deleted by pressing the backspace key.
 <li> An updated Menus class, contributed by Johannes Schindelin, provides better Fiji compatibility and
@@ -18,6 +20,12 @@ allows plugins to be installed in more menus.
 <li> Fixed a bug that caused the <i>Macro&gt;Run Macro</i> and <i>Debug&gt;Debug Macro</i>
 commands in the macro editor to not run the first macro in a macro set with global variables
 (<a href="http://rsb.info.nih.gov/ij/macros/examples/RunOrDebugFirstMacro.txt">example</a>).
+<li> Fixed a bug on the Mac that caused the macro debugger to fail to work with macros pasted from
+the system clipboard using <i>File&gt;New&gt;System Clipboard</i>.
+<li> Fixed a bug with the Convolver.convolve() method that caused it to throw an exception
+if it passed a non-float image.
+<li> Fixed a bug with the Fit.doFit() macro function that caused to throw an exception of the arrays
+were not the same length.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

@@ -396,8 +396,7 @@ public class ShortProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		if (!(ip instanceof ShortProcessor))
-			throw new IllegalArgumentException("16-bit image required");
+		ip = ip.convertToShort(false);
 		new ShortBlitter(this).copyBits(ip, xloc, yloc, mode);
 	}
 

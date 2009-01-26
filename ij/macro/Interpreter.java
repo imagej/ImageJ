@@ -101,11 +101,11 @@ public class Interpreter implements MacroConstants {
 		finishUp();
 	}
 
-	/** Runs an existing macro starting at location 0. */
-	public void run() {
+	/** Runs an existing macro starting at the specified program counter location. */
+	public void run(int location) {
 		topOfStack = topOfGlobals;
 		done = false;
-		pc = -1;
+		pc = location-1;
 		doStatements();
 	}
 

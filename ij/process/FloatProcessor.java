@@ -362,8 +362,7 @@ public class FloatProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		//if (!(ip instanceof FloatProcessor))
-		//	throw new IllegalArgumentException("32-bit (real) image required");
+		ip = ip.convertToFloat();
 		new FloatBlitter(this).copyBits(ip, xloc, yloc, mode);
 	}
 
@@ -454,7 +453,6 @@ public class FloatProcessor extends ImageProcessor {
 	public void abs() {process(ABS, 0.0);}
 	public void min(double value) {process(MINIMUM, value);}
 	public void max(double value) {process(MAXIMUM, value);}
-
 
 
 	/** Fills the current rectangular ROI. */
