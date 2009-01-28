@@ -2,7 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.macro.Interpreter;
+import ij.macro.*;
 import java.awt.*;
 
 /** This plugin implements ImageJ's Process/Math submenu. */
@@ -23,8 +23,9 @@ public class ImageMath implements PlugInFilter {
 	private static String andValue = defaultAndValue;
 	private static final double defaultGammaValue = 0.5;
 	private static double gammaValue = defaultGammaValue;
-	private static String equation = "v2=255-v1";
-	private Interpreter macro;
+	private static String macro = "v = 255-v";
+	private Interpreter interp;
+	private int w, h, w2, h2;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -198,8 +199,8 @@ public class ImageMath implements PlugInFilter {
 			return;
 		}
 
-	 	if (arg.equals("equation")) {
-			applyEquation(ip);
+	 	if (arg.equals("macro")) {
+			applyMacro(ip);
 			return;
 		}
 
@@ -265,39 +266,51 @@ public class ImageMath implements PlugInFilter {
 		return;
 	}
 	
-	void applyEquation(ImageProcessor ip) {
-		int PCStart = 19;
+	void applyMacro(ImageProcessor ip) {
+		int PCStart = 25;
+		boolean hasX=false, hasA=false, hasD=false;
 		if (image==1) {
-			String eqn = getEquation(equation);
-			if (eqn==null) return;
+			String macro2 = getMacro(macro);
+			if (macro2==null) return;
+			macro = macro2;
+			Program pgm = (new Tokenizer()).tokenize(macro);
+			hasX = pgm.lookupWord("x")!=null;
+			hasA = pgm.lookupWord("a")!=null;
+			hasD = pgm.lookupWord("d")!=null;
+			w = imp.getWidth();
+			h = imp.getHeight();
+			w2 = w/2;
+			h2 = h/2;
 			String code =
-				"var v1,v2,x,y,z;\n"+
+				"var v,x,y,z,w,h,d,a;\n"+
 				"function dummy() {}\n"+
-				eqn+";\n"; // code starts at program counter location 19
-			macro = new Interpreter();
-			macro.run(code);
-			if (macro.wasError())
+				macro2+";\n"; // code starts at program counter location 25
+			interp = new Interpreter();
+			interp.run(code);
+			if (interp.wasError())
 				return;
-			equation = eqn;
+			interp.setVariable("w", w);
+			interp.setVariable("h", h);
 		}
-		macro.setVariable("z", image-1);
-		boolean hasX = equation.indexOf("x")!=-1;
+		interp.setVariable("z", image-1);
 		int bitDepth = imp.getBitDepth();
 		Rectangle r = ip.getRoi();
 		int inc = r.height/50;
 		if (inc<1) inc = 1;
-		double v1;
+		double v;
 		if (bitDepth==8) {
 			for (int y=r.y; y<(r.y+r.height); y++) {
 				if (image==1 && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
-				macro.setVariable("y", y);
+				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
-					v1 = ip.getPixel(x, y);
-					macro.setVariable("v1", v1);
-					if (hasX) macro.setVariable("x", x);
-					macro.run(PCStart);
-					ip.putPixel(x, y, (int)macro.getVariable("v2"));
+					v = ip.getPixel(x, y);
+					interp.setVariable("v", v);
+					if (hasX) interp.setVariable("x", x);
+					if (hasA) interp.setVariable("a", getA(x,y));
+					if (hasD) interp.setVariable("d", getD(x,y));
+					interp.run(PCStart);
+					ip.putPixel(x, y, (int)interp.getVariable("v"));
 				}
 			}
 		} else if (bitDepth==24) {
@@ -305,24 +318,25 @@ public class ImageMath implements PlugInFilter {
 			for (int y=r.y; y<(r.y+r.height); y++) {
 				if (image==1 && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
-				macro.setVariable("y", y);
+				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
-					if (hasX) macro.setVariable("x", x);
+					if (hasX) interp.setVariable("x", x);
+					if (hasD) interp.setVariable("d", getD(x,y));
 					rgb = ip.getPixel(x, y);
 					red = (rgb&0xff0000)>>16;
 					green = (rgb&0xff00)>>8;
 					blue = rgb&0xff;
-					macro.setVariable("v1", red);
-					macro.run(PCStart);
-					red = (int)macro.getVariable("v2");
+					interp.setVariable("v", red);
+					interp.run(PCStart);
+					red = (int)interp.getVariable("v");
 					if (red<0) red=0; if (red>255) red=255;
-					macro.setVariable("v1", green);
-					macro.run(PCStart);
-					green= (int)macro.getVariable("v2");
+					interp.setVariable("v", green);
+					interp.run(PCStart);
+					green= (int)interp.getVariable("v");
 					if (green<0) green=0; if (green>255) green=255;
-					macro.setVariable("v1", blue);
-					macro.run(PCStart);
-					blue = (int)macro.getVariable("v2");
+					interp.setVariable("v", blue);
+					interp.run(PCStart);
+					blue = (int)interp.getVariable("v");
 					if (blue<0) blue=0; if (blue>255) blue=255;
 					rgb = 0xff000000 | ((red&0xff)<<16) | ((green&0xff)<<8) | blue&0xff;
 					ip.putPixel(x, y, rgb);
@@ -332,13 +346,15 @@ public class ImageMath implements PlugInFilter {
 			for (int y=r.y; y<(r.y+r.height); y++) {
 				if (image==1 && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
-				macro.setVariable("y", y);
+				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
-					v1 = ip.getPixelValue(x, y);
-					macro.setVariable("v1", v1);
-					if (hasX) macro.setVariable("x", x);
-					macro.run(PCStart);
-					ip.putPixelValue(x, y, macro.getVariable("v2"));
+					v = ip.getPixelValue(x, y);
+					interp.setVariable("v", v);
+					if (hasX) interp.setVariable("x", x);
+					if (hasA) interp.setVariable("a", getA(x,y));
+					if (hasD) interp.setVariable("d", getD(x,y));
+					interp.run(PCStart);
+					ip.putPixelValue(x, y, interp.getVariable("v"));
 				}
 			}
 		}
@@ -347,10 +363,24 @@ public class ImageMath implements PlugInFilter {
 		if (image==imp.getCurrentSlice())
 			ip.resetMinAndMax();
 	}
+	
+	final double getD(int x, int y) {
+          double dx = x - w2; 
+          double dy = y - h2;
+          return Math.sqrt(dx*dx + dy*dy);
+	}
+	
+	final double getA(int x, int y) {
+		double angle = Math.atan2((h-y-1)-h2, x-w2);
+		if (angle<0) angle += 2*Math.PI;
+		return angle;
+	}
 
-	String getEquation(String equation) {
-			GenericDialog gd = new GenericDialog("Equation");
-			gd.addStringField("Eqn: ", equation, 35);
+	String getMacro(String macro) {
+			GenericDialog gd = new GenericDialog("Expression");
+			gd.addStringField("Code:", macro, 35);
+			gd.setInsets(5,40,0);
+			gd.addMessage("v=pixel value, x=x-coordinate, y=y-coordinate\nw=image width, h=image height, a=angle\nd=distance from center\n");
 			gd.showDialog();
 			if (image==1) imp.startTiming();
 			canceled = gd.wasCanceled();
