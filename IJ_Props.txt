@@ -233,7 +233,7 @@ math15="Square Root",ij.plugin.filter.ImageMath("sqrt")
 math16="Reciprocal",ij.plugin.filter.ImageMath("reciprocal")
 math17="NaN Background",ij.plugin.filter.ImageMath("nan")
 math18="Abs",ij.plugin.filter.ImageMath("abs")
-math19="Expression...",ij.plugin.filter.ImageMath("macro")
+math19="Macro...",ij.plugin.filter.ImageMath("macro")
 
 # Plugins installed in the Process/FFT submenu
 fft01="FFT",ij.plugin.FFT("fft")

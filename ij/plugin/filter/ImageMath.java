@@ -8,6 +8,7 @@ import java.awt.*;
 /** This plugin implements ImageJ's Process/Math submenu. */
 public class ImageMath implements PlugInFilter {
 	
+	public static final String MACRO_KEY = "math.macro";
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
@@ -23,9 +24,10 @@ public class ImageMath implements PlugInFilter {
 	private static String andValue = defaultAndValue;
 	private static final double defaultGammaValue = 0.5;
 	private static double gammaValue = defaultGammaValue;
-	private static String macro = "v = 255-v";
+	private static String macro = Prefs.get(MACRO_KEY, "v = v+(sin(x/(w/25))+sin(y/(h/25)))*40");
 	private Interpreter interp;
 	private int w, h, w2, h2;
+	boolean hasX, hasA, hasD;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -266,9 +268,9 @@ public class ImageMath implements PlugInFilter {
 		return;
 	}
 	
+	// a=round(a/10); if (a%2==0) v=0;
 	void applyMacro(ImageProcessor ip) {
 		int PCStart = 25;
-		boolean hasX=false, hasA=false, hasD=false;
 		if (image==1) {
 			String macro2 = getMacro(macro);
 			if (macro2==null) return;
@@ -289,6 +291,7 @@ public class ImageMath implements PlugInFilter {
 			interp.run(code);
 			if (interp.wasError())
 				return;
+			Prefs.set(MACRO_KEY, macro);
 			interp.setVariable("w", w);
 			interp.setVariable("h", h);
 		}
@@ -298,19 +301,26 @@ public class ImageMath implements PlugInFilter {
 		int inc = r.height/50;
 		if (inc<1) inc = 1;
 		double v;
+		int index, v2;
 		if (bitDepth==8) {
+			byte[] pixels1 = (byte[])ip.getPixelsCopy();
+			byte[] pixels2 = (byte[])ip.getPixels();
 			for (int y=r.y; y<(r.y+r.height); y++) {
 				if (image==1 && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
-					v = ip.getPixel(x, y);
+					index = y*w+x;
+					v = pixels1[index]&255;
 					interp.setVariable("v", v);
 					if (hasX) interp.setVariable("x", x);
 					if (hasA) interp.setVariable("a", getA(x,y));
 					if (hasD) interp.setVariable("d", getD(x,y));
 					interp.run(PCStart);
-					ip.putPixel(x, y, (int)interp.getVariable("v"));
+					v2 = (int)interp.getVariable("v");
+					if (v2<0) v2 = 0;
+					if (v2>255) v2 = 255;
+					pixels2[index] = (byte)v2;
 				}
 			}
 		} else if (bitDepth==24) {
@@ -321,6 +331,7 @@ public class ImageMath implements PlugInFilter {
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
 					if (hasX) interp.setVariable("x", x);
+					if (hasA) interp.setVariable("a", getA(x,y));
 					if (hasD) interp.setVariable("d", getD(x,y));
 					rgb = ip.getPixel(x, y);
 					red = (rgb&0xff0000)>>16;
@@ -373,11 +384,11 @@ public class ImageMath implements PlugInFilter {
 	final double getA(int x, int y) {
 		double angle = Math.atan2((h-y-1)-h2, x-w2);
 		if (angle<0) angle += 2*Math.PI;
-		return angle;
+		return angle*180/Math.PI;
 	}
 
 	String getMacro(String macro) {
-			GenericDialog gd = new GenericDialog("Expression");
+			GenericDialog gd = new GenericDialog("Macro");
 			gd.addStringField("Code:", macro, 35);
 			gd.setInsets(5,40,0);
 			gd.addMessage("v=pixel value, x=x-coordinate, y=y-coordinate\nw=image width, h=image height, a=angle\nd=distance from center\n");
