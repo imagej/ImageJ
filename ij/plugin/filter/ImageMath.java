@@ -24,10 +24,10 @@ public class ImageMath implements PlugInFilter {
 	private static String andValue = defaultAndValue;
 	private static final double defaultGammaValue = 0.5;
 	private static double gammaValue = defaultGammaValue;
-	private static String macro = Prefs.get(MACRO_KEY, "v = v+(sin(x/(w/25))+sin(y/(h/25)))*40");
+	private static String macro = Prefs.get(MACRO_KEY, "v=v+50*sin(a*PI/180+d/5)");
 	private Interpreter interp;
 	private int w, h, w2, h2;
-	boolean hasX, hasA, hasD;
+	boolean hasX, hasA, hasD, hasGetPixel;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
@@ -268,17 +268,29 @@ public class ImageMath implements PlugInFilter {
 		return;
 	}
 	
+	// first default: v = v+(sin(x/(w/25))+sin(y/(h/25)))*40
 	// a=round(a/10); if (a%2==0) v=0;
+	// cone: v=d
+	// translate: v=getPixel(x+10,y+10)
+	// flip vertically: v=getPixel(x,h-y-1)
+	// spiral: v=(sin(d/10+a*PI/180)+1)*128
+	// spiral on image: v=v+50*sin(a*PI/180+d/5)
 	void applyMacro(ImageProcessor ip) {
 		int PCStart = 25;
 		if (image==1) {
 			String macro2 = getMacro(macro);
 			if (macro2==null) return;
+			if (macro2.indexOf("=")==-1) {
+				IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
+				canceled = true;
+				return;
+			}
 			macro = macro2;
 			Program pgm = (new Tokenizer()).tokenize(macro);
 			hasX = pgm.lookupWord("x")!=null;
 			hasA = pgm.lookupWord("a")!=null;
 			hasD = pgm.lookupWord("d")!=null;
+			hasGetPixel = pgm.lookupWord("getPixel")!=null;
 			w = imp.getWidth();
 			h = imp.getHeight();
 			w2 = w/2;
@@ -303,8 +315,10 @@ public class ImageMath implements PlugInFilter {
 		double v;
 		int index, v2;
 		if (bitDepth==8) {
-			byte[] pixels1 = (byte[])ip.getPixelsCopy();
-			byte[] pixels2 = (byte[])ip.getPixels();
+			byte[] pixels1 = (byte[])ip.getPixels();
+			byte[] pixels2 = pixels1;
+			if (hasGetPixel)
+				pixels2 = new byte[w*h];
 			for (int y=r.y; y<(r.y+r.height); y++) {
 				if (image==1 && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
@@ -323,6 +337,7 @@ public class ImageMath implements PlugInFilter {
 					pixels2[index] = (byte)v2;
 				}
 			}
+			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
 		} else if (bitDepth==24) {
 			int rgb, red, green, blue;
 			for (int y=r.y; y<(r.y+r.height); y++) {

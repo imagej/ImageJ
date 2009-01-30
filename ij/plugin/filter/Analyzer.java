@@ -622,8 +622,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&CIRCULARITY)!=0)
 			add2(ResultsTable.CIRCULARITY);
-		if ((measurements&FERET)!=0)
+		if ((measurements&FERET)!=0) {
 			add2(ResultsTable.FERET);
+			add2(ResultsTable.MIN_FERET);
+		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			add2(ResultsTable.INTEGRATED_DENSITY);
 		if ((measurements&MEDIAN)!=0)

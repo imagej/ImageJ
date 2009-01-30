@@ -740,7 +740,7 @@ public class Functions implements MacroConstants, Measurements {
 				value = ip.getPixelValue(a1, a2);
 			else
 				value = ip.getPixel(a1, a2);
-		} else {
+	} else {
 			if (interp.token!=')') interp.error("')' expected");
 			value = ip.getf(a1);
 		}

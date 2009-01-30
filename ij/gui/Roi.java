@@ -165,11 +165,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
 	}
 
-	/** Finds the length (maximum caliper/Feret diameter) and width 
-		(minimum caliper/Feret diameter) of this ROI. */
+	/** Caculates "Feret" (maximum caliper width) and 
+		"MinFeret" (minimum caliper width). */
 	public double[] rotateCalipers() {
-		Shape shape = getPolygon();
-		if (shape == null) return null;
+		Polygon poly = getPolygon();
+		if (poly == null) return null;
+		Shape shape = makeConvexHull(poly);
 		double min=0.0, max=0.0;
 		double diam;
 		double pw = 1.0, ph = 1.0;
@@ -196,6 +197,62 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		a[0] = min;
 		a[1] = max;
 		return a;
+	}
+	
+	Polygon makeConvexHull(Polygon poly) {
+		int n = poly.npoints;
+		int[] xCoordinates = poly.xpoints;
+		int[] yCoordinates = poly.ypoints;
+		Rectangle r = poly.getBounds();
+		int xbase = r.x;
+		int ybase = r.y;
+		int[] xx = new int[n];
+		int[] yy = new int[n];
+		int n2 = 0;
+		int smallestY = 99999;
+		int x, y;
+		for (int i=0; i<n; i++) {
+			y = yCoordinates[i];
+			if (y<smallestY)
+			smallestY = y;
+		}
+		int smallestX = 99999;
+		int p1 = 0;
+		for (int i=0; i<n; i++) {
+			x = xCoordinates[i];
+			y = yCoordinates[i];
+			if (y==smallestY && x<smallestX) {
+				smallestX = x;
+				p1 = i;
+			}
+		}
+		int pstart = p1;
+		int x1, y1, x2, y2, x3, y3, p2, p3;
+		int determinate;
+		do {
+			x1 = xCoordinates[p1];
+			y1 = yCoordinates[p1];
+			p2 = p1+1; if (p2==n) p2=0;
+			x2 = xCoordinates[p2];
+			y2 = yCoordinates[p2];
+			p3 = p2+1; if (p3==n) p3=0;
+			do {
+				x3 = xCoordinates[p3];
+				y3 = yCoordinates[p3];
+				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
+				if (determinate>0)
+					{x2=x3; y2=y3; p2=p3;}
+				p3 += 1;
+				if (p3==n) p3 = 0;
+			} while (p3!=p1);
+			if (n2<n) { 
+				xx[n2] = xbase + x1;
+				yy[n2] = ybase + y1;
+				n2++;
+			}
+			p1 = p2;
+		} while (p1!=pstart);
+		return new Polygon(xx, yy, n2);
 	}
 
 	/** Return this selection's bounding rectangle. */
