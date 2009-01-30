@@ -10,6 +10,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.Editor;
 import ij.text.TextWindow;
+import ij.util.Tools;
 	
 /**	Copies and pastes images to the clipboard. */
 public class Clipboard implements PlugIn, Transferable {
@@ -97,6 +98,8 @@ public class Clipboard implements PlugIn, Transferable {
 				new ImagePlus("Clipboard", bi).show();
 			} else if (textSupported) {
 				String text = (String)transferable.getTransferData(DataFlavor.stringFlavor);
+				if (IJ.isMacintosh())
+					text = Tools.fixNewLines(text);
 				Editor ed = new Editor();
 				ed.setSize(600, 300);
 				ed.create("Clipboard", text);

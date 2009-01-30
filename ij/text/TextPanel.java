@@ -346,7 +346,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
-		if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
+		if (key==KeyEvent.VK_BACK_SPACE)
+			clearSelection();
+		else if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
 		
 	}

@@ -3963,8 +3963,9 @@ public class Functions implements MacroConstants, Measurements {
 			initialValues = getNumericArray();
 		}
 		interp.getRightParen();
+		if (x.length!=y.length)
+			interp.error("Arrays not same length");
 		fitter = new CurveFitter(x, y);
-		long startTime = System.currentTimeMillis();
 		if (fit==-1 && name!=null) {
 			int params = fitter.doCustomFit(name, initialValues, showFitDialog);
 			if (params==0)
@@ -3973,7 +3974,6 @@ public class Functions implements MacroConstants, Measurements {
 			fitter.doFit(fit, showFitDialog);
 		if (logFitResults) {
 			IJ.log(fitter.getResultString());
-  			IJ.log("Time: "+(System.currentTimeMillis()-startTime)+"ms");
 			logFitResults = false;
 		}
 		showFitDialog = false;

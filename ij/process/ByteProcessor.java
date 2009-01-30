@@ -410,8 +410,7 @@ public class ByteProcessor extends ImageProcessor {
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {
-		if (!(ip instanceof ByteProcessor || ip instanceof ColorProcessor))
-			throw new IllegalArgumentException("8-bit or RGB image required");
+		ip = ip.convertToByte(true);
 		new ByteBlitter(this).copyBits(ip, xloc, yloc, mode);
 	}
 

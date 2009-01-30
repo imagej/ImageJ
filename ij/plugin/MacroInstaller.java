@@ -402,11 +402,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		MenuContainer parent = item.getParent();
 		if (parent instanceof PopupMenu) {
 			for (int i=0; i<nMacros; i++) {
-				if (macroNames[i].equals("Popup Menu"))
-					{new MacroRunner(pgm, macroStarts[i], "Popup Menu", cmd); return; }
+				if (macroNames[i].equals("Popup Menu")) {
+					new MacroRunner(pgm, macroStarts[i], "Popup Menu", cmd);
+					return;
+				}
 			}
-		} else
-			runMacro(cmd);
+		}
+		runMacro(cmd);
 	}
 
 } 

@@ -3,6 +3,7 @@ package ij.gui;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -162,6 +163,39 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			ph = cal.pixelHeight;
 		}
 		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
+	}
+
+	/** Finds the length (maximum caliper/Feret diameter) and width 
+		(minimum caliper/Feret diameter) of this ROI. */
+	public double[] rotateCalipers() {
+		Shape shape = getPolygon();
+		if (shape == null) return null;
+		double min=0.0, max=0.0;
+		double diam;
+		double pw = 1.0, ph = 1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			pw = cal.pixelWidth;
+			ph = cal.pixelHeight;
+		}
+		Rectangle2D r;
+		Shape s = null;
+		AffineTransform at = new AffineTransform();
+		for (int i=0; i<271; i++) {
+			at.rotate(1.0);
+			s = at.createTransformedShape(shape);
+			r = s.getBounds2D();
+			max = Math.max(max, Math.max(pw*r.getWidth(), ph*r.getHeight()));
+			diam = Math.min(pw*r.getWidth(), ph*r.getHeight());
+			if (i==0)
+				min = diam;
+			else
+				min = Math.min(min, diam);
+		}
+		double[] a = new double[2];
+		a[0] = min;
+		a[1] = max;
+		return a;
 	}
 
 	/** Return this selection's bounding rectangle. */

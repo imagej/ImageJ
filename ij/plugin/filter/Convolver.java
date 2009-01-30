@@ -163,14 +163,30 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		return buttons;
 	}
 
+	/** Convolves <code>ip</code> with a kernel of width <code>kw</code> and
+		height <code>kh</code>. Returns false if the user cancels the operation. */
 	public boolean convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		if (canceled || kw*kh!=kernel.length) return false;
 		if ((kw&1)!=1 || (kh&1)!=1)
 			throw new IllegalArgumentException("Kernel width or height not odd ("+kw+"x"+kh+")");
+		boolean notFloat = !(ip instanceof FloatProcessor);
+		ImageProcessor ip2 = ip;
+		if (notFloat) {
+			if (ip2 instanceof ColorProcessor) 
+				throw new IllegalArgumentException("RGB images not supported");
+			ip2 = ip2.convertToFloat();
+		}
 		if (kw==1 || kh==1)
-			convolveFloat1D(ip, kernel, kw, kh);
+			convolveFloat1D(ip2, kernel, kw, kh);
 		else
-			convolveFloat(ip, kernel, kw, kh);
+			convolveFloat(ip2, kernel, kw, kh);
+		if (notFloat) {
+			if (ip instanceof ByteProcessor)
+				ip2 = ip2.convertToByte(false);
+			else
+				ip2 = ip2.convertToShort(false);
+			ip.setPixels(ip2.getPixels());
+		}
 		return !canceled;
 	}
 	
@@ -178,7 +194,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		normalize = normalizeKernel;
 	}
 
-	/** Convolves the image <code>ip</code> with a kernel of width 
+	/** Convolves the float image <code>ip</code> with a kernel of width 
 		<code>kw</code> and height <code>kh</code>. Returns false if 
 		the user cancels the operation by pressing 'Esc'. */
 	public boolean convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {

@@ -505,7 +505,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
 		boolean altKeyDown = (flags & Event.ALT_MASK)!=0;
-
+		if (IJ.debugMode) IJ.log("actionPerformed: "+e);
+		
 		if ("Save".equals(what))
 			save();
 		else if ("Compile and Run".equals(what))
@@ -966,6 +967,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				break;
 			}
 		}
+		//IJ.log("debug: "+debugStart+"  "+debugEnd+"  "+len+"  "+count);
 		if (debugStart==1) debugStart = 0;
 		if ((debugStart==0||debugStart==len) && debugEnd==len)
 			return 0; // skip code added with Interpreter.setAdditionalFunctions()

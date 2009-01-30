@@ -393,8 +393,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.MINOR,stats.minor);
 			rt.addValue(ResultsTable.ANGLE,stats.angle);
 		}
-		if ((measurements&FERET)!=0)
-			rt.addValue(ResultsTable.FERET, roi!=null?roi.getFeretsDiameter():0.0);
+		if ((measurements&FERET)!=0) {
+			double minFeret=0.0, maxFeret=0.0;
+			if (roi!=null) {
+				double[] a = roi.rotateCalipers();
+				if (a!=null) {
+					minFeret = a[0];
+					maxFeret = a[1];
+				}
+			}
+			rt.addValue(ResultsTable.FERET, maxFeret);
+			rt.addValue(ResultsTable.MIN_FERET, minFeret);
+		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			rt.addValue(ResultsTable.INTEGRATED_DENSITY,stats.area*stats.mean);
 		if ((measurements&MEDIAN)!=0) rt.addValue(ResultsTable.MEDIAN, stats.median);

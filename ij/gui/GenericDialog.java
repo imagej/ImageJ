@@ -70,6 +70,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private boolean yesNoCancel;
     private char echoChar;
     private boolean hideCancelButton;
+    private boolean centerDialog = true;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -882,7 +883,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			setResizable(false);
 			pack();
 			setup();
-			GUI.center(this);
+			if (centerDialog) GUI.center(this);
 			setVisible(true);
 			recorderOn = Recorder.record;
 			IJ.wait(50); // work around for Sun/WinNT bug
@@ -960,6 +961,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
             previewCheckbox.setLabel(isRunning ? previewRunning : previewLabel);
             if (IJ.isMacOSX()) repaint();   //workaround OSX 10.4 refresh bug
         }
+    }
+    
+    /** Display dialog centered on the primary screen? */
+    public void centerDialog(boolean b) {
+    	centerDialog = b;
     }
 
     protected void setup() {

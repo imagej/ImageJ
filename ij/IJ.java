@@ -21,7 +21,7 @@ import java.lang.reflect.*;
 /** This class consists of static utility methods. */
 public class IJ {
 	public static final String URL = "http://rsb.info.nih.gov/ij";
-	public static final int ALL_KEYS = 0x32;
+	public static final int ALL_KEYS = -1;
 	
 	public static boolean debugMode;
 	public static boolean hideProcessStackDialog;
@@ -689,7 +689,7 @@ public class IJ {
 	}
 
 	public static void setKeyDown(int key) {
-		//IJ.showStatus("setKeyDown: "+key);
+		if (debugMode) IJ.log("setKeyDown: "+key);
 		switch (key) {
 			case KeyEvent.VK_ALT:
 				altDown=true;
@@ -712,7 +712,7 @@ public class IJ {
 	}
 	
 	public static void setKeyUp(int key) {
-		//IJ.showStatus("setKeyUp: "+key);
+		if (debugMode) IJ.log("setKeyUp: "+key);
 		switch (key) {
 			case KeyEvent.VK_ALT: altDown=false; break;
 			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;
@@ -899,8 +899,11 @@ public class IJ {
 		ImagePlus img = getImage();
 		Calibration cal = img.getCalibration();
 		min = cal.getRawValue(min); 
-		max = cal.getRawValue(max); 
-		img.setDisplayRange(min, max, channels);
+		max = cal.getRawValue(max);
+		if (channels==7)
+			img.setDisplayRange(min, max);
+		else
+			img.setDisplayRange(min, max, channels);
 		img.updateAndDraw();
 	}
 

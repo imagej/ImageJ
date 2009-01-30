@@ -68,7 +68,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.42g";
+	public static final String VERSION = "1.42h";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -277,19 +277,16 @@ public class ImageJ extends Frame implements ActionListener,
 			}
 			int flags = e.getModifiers();
 			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
-			if ((flags & Event.ALT_MASK)!=0)
-				IJ.setKeyDown(KeyEvent.VK_ALT);
-			else
-				IJ.setKeyUp(KeyEvent.VK_ALT);
-			if ((flags & Event.SHIFT_MASK)!=0)
-				IJ.setKeyDown(KeyEvent.VK_SHIFT);
-			else
-				IJ.setKeyUp(KeyEvent.VK_SHIFT);
 			hotkey = false;
 			actionPerformedTime = System.currentTimeMillis();
 			long ellapsedTime = actionPerformedTime-keyPressedTime;
-			if (cmd!=null && (ellapsedTime>=200L||!cmd.equals(lastKeyCommand)))
+			if (cmd!=null && (ellapsedTime>=200L||!cmd.equals(lastKeyCommand))) {
+				if ((flags & Event.ALT_MASK)!=0)
+					IJ.setKeyDown(KeyEvent.VK_ALT);
+				if ((flags & Event.SHIFT_MASK)!=0)
+					IJ.setKeyDown(KeyEvent.VK_SHIFT);
 				doCommand(cmd);
+			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
 		}

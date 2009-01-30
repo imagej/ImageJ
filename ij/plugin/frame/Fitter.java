@@ -34,7 +34,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	static CurveFitter cf;
 	static int fitType;
 	static String equation = "y = a + b*x + c*x*x";
-	static final int CUSTOM = 100;
+	static final int USER_DEFINED = 100;
 
 	public Fitter() {
 		super("Curve Fitter");
@@ -43,7 +43,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		fit = new Choice();
 		for (int i=0; i<CurveFitter.fitList.length; i++)
 			fit.addItem(CurveFitter.fitList[i]);
-		fit.addItem("*Custom*");
+		fit.addItem("*User-defined*");
 		fit.addItemListener(this);
 		panel.add(fit);
 		doIt = new Button(" Fit ");
@@ -75,12 +75,12 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 
 	public void doFit(int fitType) {
 		if (fitType>=CurveFitter.fitList.length)
-			fitType = CUSTOM;
+			fitType = USER_DEFINED;
 		this.fitType = fitType;
 		if (!getData())
 			return;
 		cf = new CurveFitter(x, y);
-		if (fitType==CUSTOM) {
+		if (fitType==USER_DEFINED) {
 			String eqn = getEquation();
 			if (eqn==null) return;
 			int params = cf.doCustomFit(eqn, null, settings.getState());
