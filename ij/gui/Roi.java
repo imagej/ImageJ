@@ -156,95 +156,78 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Returns Feret's diameter, the greatest distance between 
 		any two points along the ROI boundary. */
 	public double getFeretsDiameter() {
-		double pw=1.0, ph=1.0;
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			pw = cal.pixelWidth;
-			ph = cal.pixelHeight;
-		}
-		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
+		double[] a = getFeretValues();
+		return a!=null?a[0]:0.0;
 	}
 
 	/** Caculates "Feret" (maximum caliper width), "FeretAngle"
-		and "MinFeret" (minimum caliper width). */
-	public double[] getFeretValues(boolean extras) {
-		Shape shape;
-		double min=0.0, diameter=0.0, max2=0.0, breadth=0.0, angle=0.0;
+		and "MinFeret" (minimum caliper width). */	
+	public double[] getFeretValues() {
+		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0;
 		int p1=0, p2=0;
-		boolean isShapeRoi = this instanceof ShapeRoi;
 		double pw=1.0, ph=1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		Polygon poly = null;
-		if (isShapeRoi)
-			shape = ((ShapeRoi)this).getShape();
-		else {
-			poly = getPolygon();
-			if (poly==null) return null;
-			shape = makeConvexHull(poly);
-			double w2=pw*pw, h2=ph*ph;
-			double dx, dy, d;
-			for (int i=0; i<poly.npoints; i++) {
-				for (int j=i; j<poly.npoints; j++) {
-					dx = poly.xpoints[i] - poly.xpoints[j];
-					dy = poly.ypoints[i] - poly.ypoints[j];
-					d = Math.sqrt(dx*dx*w2 + dy*dy*h2);
-					if (d>diameter) {diameter=d; p1=i; p2=j;}
-				}
+		Polygon poly = getPolygon();
+		if (poly==null) return null;
+		poly = makeConvexHull(poly);
+		double w2=pw*pw, h2=ph*ph;
+		double dx, dy, d;
+		for (int i=0; i<poly.npoints; i++) {
+			for (int j=i; j<poly.npoints; j++) {
+				dx = poly.xpoints[i] - poly.xpoints[j];
+				dy = poly.ypoints[i] - poly.ypoints[j];
+				d = Math.sqrt(dx*dx*w2 + dy*dy*h2);
+				if (d>diameter) {diameter=d; p1=i; p2=j;}
 			}
 		}
-		if (extras) {
-			double diam;
-			Rectangle2D r, maxRect=null;
-			Shape s = null;
-			r = shape.getBounds2D();
-			double cx = r.getX() + r.getWidth()/2;
-			double cy = r.getY() + r.getHeight()/2;
-			AffineTransform at = new AffineTransform();
-			at.translate(cx, cy);
-			for (int i=0; i<181; i++) {
-				at.rotate(Math.PI/180.0);
-				s = at.createTransformedShape(shape);
-				r = s.getBounds2D();
-				//if (isShapeRoi) {
-				//	max2 = Math.diameter(r.getWidth(), r.getHeight());
-				//	if (max2>diameter) {
-				//		diameter = max2;
-				//		maxRect = r;
-				//		angle = i;
-				//	}
-				//}
-				diam = Math.min(pw*r.getWidth(), ph*r.getHeight());
-				if (i==0)
-					min = diam;
-				else
-					min = Math.min(min, diam);
-			}
+		Rectangle r = getBounds();
+		double cx = r.x + r.width/2.0;
+		double cy = r.y + r.height/2.0;
+		int n = poly.npoints;
+		double[] x = new double[n];
+		double[] y = new double[n];
+		for (int i=0; i<n; i++) {
+			x[i] = poly.xpoints[i] - cx;
+			y[i] = poly.ypoints[i] - cy;
 		}
-		if (poly!=null) {
-			double x1=poly.xpoints[p1], y1=poly.ypoints[p1];
-			double x2=poly.xpoints[p2], y2=poly.ypoints[p2];
-			if (x1>x2) {
-				double tx1=x1, ty1=y1;
-				x1=x2; y1=y2; x2=tx1; y2=ty1;
+		double xr, yr;
+		for (int a=0; a<=180; a++) {
+			double cos = Math.cos(a*Math.PI/180.0);
+			double sin = Math.sin(a*Math.PI/180.0);
+			double xmin=Double.MAX_VALUE, ymin=Double.MAX_VALUE;
+			double xmax=-Double.MAX_VALUE, ymax=-Double.MAX_VALUE;
+			for (int i=0; i<n; i++) {
+				xr = cos*x[i] - sin*y[i];
+				yr = sin*x[i] + cos*y[i];
+				if (xr<xmin) xmin = xr;
+				if (xr>xmax) xmax = xr;
+				if (yr<ymin) ymin = yr;
+				if (yr>ymax) ymax = yr;
 			}
-			double dx = x2-x1;
-			double dy = y1-y2;
-			angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
-			breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
+			double width = xmax - xmin;
+			double height = ymax - ymin;
+			double min2 = Math.min(width, height);
+			min = Math.min(min, min2);
 		}
-		//IJ.log("angle: "+angle);
-		//imp.getProcessor().drawLine((int)x1, (int)y1, (int)x2, (int)y2);
-		//imp.getProcessor().drawString("s", (int)x1, (int)y1);
-		//imp.updateAndDraw();
-		double[] a = new double[4];
+		double x1=poly.xpoints[p1], y1=poly.ypoints[p1];
+		double x2=poly.xpoints[p2], y2=poly.ypoints[p2];
+		if (x1>x2) {
+			double tx1=x1, ty1=y1;
+			x1=x2; y1=y2; x2=tx1; y2=ty1;
+		}
+		dx=x2-x1; dy=y1-y2;
+		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
+		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
+		if (pw==ph)
+		min *= pw;
+		double[] a = new double[3];
 		a[0] = diameter;
-		a[1] = breadth;
-		a[2] = angle;
-		a[3] = min;
+		a[1] = angle;
+		a[2] = min;
 		return a;
 	}
 	

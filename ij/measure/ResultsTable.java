@@ -25,10 +25,10 @@ public class ResultsTable implements Cloneable {
 		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
 		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19, INTEGRATED_DENSITY=20,
 		MEDIAN=21, SKEWNESS=22, KURTOSIS=23, AREA_FRACTION=24, SLICE=25,
-		FERET_BREADTH=26, FERET_ANGLE=27;
+		FERET_ANGLE=26, MIN_FERET=27;
 	private static final String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
-		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice", "FeretBreadth", "FeretAngle"};
+		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice", "FeretAngle", "MinFeret"};
 
 	private int maxRows = 100; // will be increased as needed
 	private int maxColumns = MAX_COLUMNS; // will be increased as needed

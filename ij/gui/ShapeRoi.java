@@ -591,70 +591,51 @@ public class ShapeRoi extends Roi {
 		return shape.contains(x-this.x, y-this.y);
 	}
 
-	/**Returns the maximum Feret diameter (i.e., the largest distance between the shape's boundaries).
-	 *<br> This method returns the maximum between the width or height of the bounding rectangles
-	 * of the rotating shape with one degree up to 270 degres, which effectively means the maximum
-	 * of its projections in R2.
-	 */
-	public double getFeretsDiameter() {
-		if(shape == null) return 0.0;
-		double result = 0.0;
-		double pw = 1.0, ph = 1.0;
-		if(imp!=null) {
+	/** Caculates "Feret" (maximum caliper width) and "MinFeret" (minimum caliper width). */	
+	public double[] getFeretValues() {
+		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0;
+		int p1=0, p2=0;
+		double pw=1.0, ph=1.0;
+		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		Rectangle2D sr = shape.getBounds2D();
-		double cx = sr.getX() + sr.getWidth()/2;
-		double cy = sr.getY() + sr.getHeight()/2;
-		double alpha = 1.0;
-		Rectangle2D r;
+		Shape shape = getShape();
 		Shape s = null;
+		Rectangle2D r = shape.getBounds2D();
+		double cx = r.getX() + r.getWidth()/2;
+		double cy = r.getY() + r.getHeight()/2;
 		AffineTransform at = new AffineTransform();
-		for (int i=0; i<271; i++) {
-			at.rotate(1.0);
+		at.translate(cx, cy);
+		for (int i=0; i<181; i++) {
+			at.rotate(Math.PI/180.0);
 			s = at.createTransformedShape(shape);
 			r = s.getBounds2D();
-			result = Math.max(result, Math.max(pw*r.getWidth(), ph*r.getHeight()));
+			double max2 = Math.max(r.getWidth(), r.getHeight());
+			if (max2>diameter) {
+				diameter = max2*pw;
+				//angle = i;
+			}
+			double min2 = Math.min(r.getWidth(), r.getHeight());
+			min = Math.min(min, min2);
 		}
-		return result;
+		if (pw!=ph) {
+			diameter = 0.0;
+			angle = 0.0;
+		}
+		if (pw==ph)
+			min *= pw;
+		else {
+			min = 0.0;
+			angle = 0.0;
+		}
+		double[] a = new double[3];
+		a[0] = diameter;
+		a[1] = angle;
+		a[2] = min;
+		return a;
 	}
-
-	/**Returns the minimum Feret diameter (i.e., the smallest distance between the shape's boundaries).
-	 *<br> This method returns the minimum between the width or height of the bounding rectangles
-	 * of the rotating shape with one degree up to 270 degres, which effectively means the minimum
-	 * of its projections in R2.
-	 */
-	/*
-	public double getMinFeret() {
-		if(shape == null) return 0.0;
-		double result = 0.0;
-		double pw = 1.0, ph = 1.0;
-		if(imp!=null) {
-			Calibration cal = imp.getCalibration();
-			pw = cal.pixelWidth;
-			ph = cal.pixelHeight;
-		}
-		Rectangle2D sr = shape.getBounds2D();
-		double cx = sr.getX() + sr.getWidth()/2;
-		double cy = sr.getY() + sr.getHeight()/2;
-		double alpha = 1.0;
-		double diam = 0.0;
-		Rectangle2D r;
-		Shape s = null;
-		AffineTransform at = new AffineTransform();
-		for (int i=0; i<271; i++) {
-			at.rotate(1.0);
-			s = at.createTransformedShape(shape);
-			r = s.getBounds2D();
-			diam = Math.min(pw*r.getWidth(), ph*r.getHeight());
-			if(i==0) result = diam;
-			else result = Math.min(result,diam);
-		}
-		return result;
-	}
-	*/
 
 	/**Returns the length of this shape (perimeter, if shape is closed). */
 	public double getLength() {

@@ -396,20 +396,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&FERET)!=0) {
 			boolean extras = true;
-			double FeretDiameter=0.0, feretAngle=0.0, feretBreadth=0.0, minFeret=0.0;
+			double FeretDiameter=0.0, feretAngle=0.0, minFeret=0.0;
 			if (roi!=null) {
-				double[] a = roi.getFeretValues(extras);
+				double[] a = roi.getFeretValues();
 				if (a!=null) {
 					FeretDiameter = a[0];
-					feretBreadth = a[1];
-					feretAngle = a[2];
-					minFeret = a[3];
+					feretAngle = a[1];
+					minFeret = a[2];
 				}
 			}
 			rt.addValue(ResultsTable.FERET, FeretDiameter);
-			rt.addValue(ResultsTable.FERET_BREADTH, feretBreadth);
 			rt.addValue(ResultsTable.FERET_ANGLE, feretAngle);
-			if (extras) rt.addValue("MinFeret", minFeret);
+			rt.addValue(ResultsTable.MIN_FERET, minFeret);
 		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			rt.addValue(ResultsTable.INTEGRATED_DENSITY,stats.area*stats.mean);
@@ -630,8 +628,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.CIRCULARITY);
 		if ((measurements&FERET)!=0) {
 			add2(ResultsTable.FERET);
-			add2(ResultsTable.FERET_BREADTH);
 			add2(ResultsTable.FERET_ANGLE);
+			add2(ResultsTable.MIN_FERET);
 		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			add2(ResultsTable.INTEGRATED_DENSITY);

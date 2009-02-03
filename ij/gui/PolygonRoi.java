@@ -906,28 +906,6 @@ public class PolygonRoi extends Roi {
 		return length;
 	}
 	
-	/** Returns Feret's diameter, the greatest distance between 
-		any two points along the ROI boundary. */
-	public double getFeretsDiameter() {
-		double w2=1.0, h2=1.0;
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			w2 = cal.pixelWidth*cal.pixelWidth;
-			h2 = cal.pixelHeight*cal.pixelHeight;
-		}
-		double diameter = 0.0, dx, dy, d;
-		for (int i=0; i<nPoints; i++) {
-			for (int j=i; j<nPoints; j++) {
-				dx = xp[i] - xp[j];
-				dy = yp[i] - yp[j];
-				d = Math.sqrt(dx*dx*w2 + dy*dy*h2);
-				if (d>diameter)
-					diameter = d;
-			}
-		}
-		return diameter;
-	}
-
 	/** Returns the angle in degrees between the first two segments of this polyline.*/
 	public double getAngle() {
 		return degrees;
