@@ -3352,6 +3352,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(MEAN, state);
 		else if (arg1.startsWith("std"))
 			Analyzer.setMeasurement(STD_DEV, state);
+		else if (arg1.startsWith("show"))
+			Analyzer.setOption(arg1, state);
 		else
 			interp.error("Invalid option");
 	}

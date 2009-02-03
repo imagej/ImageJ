@@ -399,7 +399,7 @@ public class ImageMath implements PlugInFilter {
 	final double getA(int x, int y) {
 		double angle = Math.atan2((h-y-1)-h2, x-w2);
 		if (angle<0) angle += 2*Math.PI;
-		return angle*180/Math.PI;
+		return angle;
 	}
 
 	String getMacro(String macro) {

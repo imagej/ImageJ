@@ -43,6 +43,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	static int firstParticle, lastParticle;
 	private static boolean summarized;
 	private static boolean switchingModes;
+	private static boolean showMin = true;
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -357,7 +358,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);
 		if ((measurements&MODE)!=0) rt.addValue(ResultsTable.MODE, stats.dmode);
 		if ((measurements&MIN_MAX)!=0) {
-			rt.addValue(ResultsTable.MIN,stats.min);
+			if (showMin) rt.addValue(ResultsTable.MIN,stats.min);
 			rt.addValue(ResultsTable.MAX,stats.max);
 		}
 		if ((measurements&CENTROID)!=0) {
@@ -394,16 +395,21 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.ANGLE,stats.angle);
 		}
 		if ((measurements&FERET)!=0) {
-			double minFeret=0.0, maxFeret=0.0;
+			boolean extras = true;
+			double FeretDiameter=0.0, feretAngle=0.0, feretBreadth=0.0, minFeret=0.0;
 			if (roi!=null) {
-				double[] a = roi.rotateCalipers();
+				double[] a = roi.getFeretValues(extras);
 				if (a!=null) {
-					minFeret = a[0];
-					maxFeret = a[1];
+					FeretDiameter = a[0];
+					feretBreadth = a[1];
+					feretAngle = a[2];
+					minFeret = a[3];
 				}
 			}
-			rt.addValue(ResultsTable.FERET, maxFeret);
-			rt.addValue(ResultsTable.MIN_FERET, minFeret);
+			rt.addValue(ResultsTable.FERET, FeretDiameter);
+			rt.addValue(ResultsTable.FERET_BREADTH, feretBreadth);
+			rt.addValue(ResultsTable.FERET_ANGLE, feretAngle);
+			if (extras) rt.addValue("MinFeret", minFeret);
 		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			rt.addValue(ResultsTable.INTEGRATED_DENSITY,stats.area*stats.mean);
@@ -596,7 +602,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&STD_DEV)!=0) add2(ResultsTable.STD_DEV);
 		if ((measurements&MODE)!=0) add2(ResultsTable.MODE);
 		if ((measurements&MIN_MAX)!=0) {
-			add2(ResultsTable.MIN);
+			if (showMin) add2(ResultsTable.MIN);
 			add2(ResultsTable.MAX);
 		}
 		if ((measurements&CENTROID)!=0) {
@@ -624,7 +630,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.CIRCULARITY);
 		if ((measurements&FERET)!=0) {
 			add2(ResultsTable.FERET);
-			add2(ResultsTable.MIN_FERET);
+			add2(ResultsTable.FERET_BREADTH);
+			add2(ResultsTable.FERET_ANGLE);
 		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			add2(ResultsTable.INTEGRATED_DENSITY);
@@ -764,6 +771,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		systemRT.setDefaultHeadings();
 	}
 
+	public static void setOption(String option, boolean b) {
+		if (option.indexOf("min")!=-1)
+			showMin = b;;
+	}
 
 }
 	

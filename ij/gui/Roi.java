@@ -165,37 +165,86 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
 	}
 
-	/** Caculates "Feret" (maximum caliper width) and 
-		"MinFeret" (minimum caliper width). */
-	public double[] rotateCalipers() {
-		Polygon poly = getPolygon();
-		if (poly == null) return null;
-		Shape shape = makeConvexHull(poly);
-		double min=0.0, max=0.0;
-		double diam;
-		double pw = 1.0, ph = 1.0;
+	/** Caculates "Feret" (maximum caliper width), "FeretAngle"
+		and "MinFeret" (minimum caliper width). */
+	public double[] getFeretValues(boolean extras) {
+		Shape shape;
+		double min=0.0, diameter=0.0, max2=0.0, breadth=0.0, angle=0.0;
+		int p1=0, p2=0;
+		boolean isShapeRoi = this instanceof ShapeRoi;
+		double pw=1.0, ph=1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		Rectangle2D r;
-		Shape s = null;
-		AffineTransform at = new AffineTransform();
-		for (int i=0; i<271; i++) {
-			at.rotate(1.0);
-			s = at.createTransformedShape(shape);
-			r = s.getBounds2D();
-			max = Math.max(max, Math.max(pw*r.getWidth(), ph*r.getHeight()));
-			diam = Math.min(pw*r.getWidth(), ph*r.getHeight());
-			if (i==0)
-				min = diam;
-			else
-				min = Math.min(min, diam);
+		Polygon poly = null;
+		if (isShapeRoi)
+			shape = ((ShapeRoi)this).getShape();
+		else {
+			poly = getPolygon();
+			if (poly==null) return null;
+			shape = makeConvexHull(poly);
+			double w2=pw*pw, h2=ph*ph;
+			double dx, dy, d;
+			for (int i=0; i<poly.npoints; i++) {
+				for (int j=i; j<poly.npoints; j++) {
+					dx = poly.xpoints[i] - poly.xpoints[j];
+					dy = poly.ypoints[i] - poly.ypoints[j];
+					d = Math.sqrt(dx*dx*w2 + dy*dy*h2);
+					if (d>diameter) {diameter=d; p1=i; p2=j;}
+				}
+			}
 		}
-		double[] a = new double[2];
-		a[0] = min;
-		a[1] = max;
+		if (extras) {
+			double diam;
+			Rectangle2D r, maxRect=null;
+			Shape s = null;
+			r = shape.getBounds2D();
+			double cx = r.getX() + r.getWidth()/2;
+			double cy = r.getY() + r.getHeight()/2;
+			AffineTransform at = new AffineTransform();
+			at.translate(cx, cy);
+			for (int i=0; i<181; i++) {
+				at.rotate(Math.PI/180.0);
+				s = at.createTransformedShape(shape);
+				r = s.getBounds2D();
+				//if (isShapeRoi) {
+				//	max2 = Math.diameter(r.getWidth(), r.getHeight());
+				//	if (max2>diameter) {
+				//		diameter = max2;
+				//		maxRect = r;
+				//		angle = i;
+				//	}
+				//}
+				diam = Math.min(pw*r.getWidth(), ph*r.getHeight());
+				if (i==0)
+					min = diam;
+				else
+					min = Math.min(min, diam);
+			}
+		}
+		if (poly!=null) {
+			double x1=poly.xpoints[p1], y1=poly.ypoints[p1];
+			double x2=poly.xpoints[p2], y2=poly.ypoints[p2];
+			if (x1>x2) {
+				double tx1=x1, ty1=y1;
+				x1=x2; y1=y2; x2=tx1; y2=ty1;
+			}
+			double dx = x2-x1;
+			double dy = y1-y2;
+			angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
+			breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
+		}
+		//IJ.log("angle: "+angle);
+		//imp.getProcessor().drawLine((int)x1, (int)y1, (int)x2, (int)y2);
+		//imp.getProcessor().drawString("s", (int)x1, (int)y1);
+		//imp.updateAndDraw();
+		double[] a = new double[4];
+		a[0] = diameter;
+		a[1] = breadth;
+		a[2] = angle;
+		a[3] = min;
 		return a;
 	}
 	
@@ -253,6 +302,27 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			p1 = p2;
 		} while (p1!=pstart);
 		return new Polygon(xx, yy, n2);
+	}
+	
+	double getFeretBreadth(Shape shape, double angle, double x1, double y1, double x2, double y2) {
+		double cx = x1 + (x2-x1)/2;
+		double cy = y1 + (y2-y1)/2;
+		AffineTransform at = new AffineTransform();
+		at.rotate(angle*Math.PI/180.0, cx, cy);
+		Shape s = at.createTransformedShape(shape);
+		Rectangle2D r = s.getBounds2D();
+		return Math.min(r.getWidth(), r.getHeight());
+		/*
+		ShapeRoi roi2 = new ShapeRoi(s);
+		Roi[] rois = roi2.getRois();
+		if (rois!=null && rois.length>0) {
+			Polygon p = rois[0].getPolygon();
+			ImageProcessor ip = imp.getProcessor();
+			for (int i=0; i<p.npoints-1; i++)
+				ip.drawLine(p.xpoints[i], p.ypoints[i], p.xpoints[i+1], p.ypoints[i+1]);
+			imp.updateAndDraw();
+		}
+		*/
 	}
 
 	/** Return this selection's bounding rectangle. */

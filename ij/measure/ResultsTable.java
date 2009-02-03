@@ -24,10 +24,11 @@ public class ResultsTable implements Cloneable {
 		X_CENTROID=6, Y_CENTROID=7, X_CENTER_OF_MASS=8, Y_CENTER_OF_MASS=9,
 		PERIMETER=10, ROI_X=11, ROI_Y=12, ROI_WIDTH=13, ROI_HEIGHT=14,
 		MAJOR=15, MINOR=16, ANGLE=17, CIRCULARITY=18, FERET=19, INTEGRATED_DENSITY=20,
-		MEDIAN=21, SKEWNESS=22, KURTOSIS=23, AREA_FRACTION=24, SLICE=25, MIN_FERET=26;
+		MEDIAN=21, SKEWNESS=22, KURTOSIS=23, AREA_FRACTION=24, SLICE=25,
+		FERET_BREADTH=26, FERET_ANGLE=27;
 	private static final String[] defaultHeadings = {"Area","Mean","StdDev","Mode","Min","Max",
 		"X","Y","XM","YM","Perim.","BX","BY","Width","Height","Major","Minor","Angle",
-		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice", "MinFeret"};
+		"Circ.", "Feret", "IntDen", "Median","Skew","Kurt", "%Area", "Slice", "FeretBreadth", "FeretAngle"};
 
 	private int maxRows = 100; // will be increased as needed
 	private int maxColumns = MAX_COLUMNS; // will be increased as needed
@@ -148,8 +149,8 @@ public class ResultsTable implements Cloneable {
 		rowLabels = null;
 	}
 	
-	/** Returns a copy of the given column as a float array.
-		Returns null if the column is empty. */
+	/** Returns a copy of the given column as a float array,
+		or null if the column is empty. */
 	public float[] getColumn(int column) {
 		if ((column<0) || (column>=maxColumns))
 			throw new IllegalArgumentException("Index out of range: "+column);
@@ -163,6 +164,21 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
+	/** Returns a copy of the given column as a double array,
+		or null if the column is empty. */
+	public double[] getColumnAsDoubles(int column) {
+		if ((column<0) || (column>=maxColumns))
+			throw new IllegalArgumentException("Index out of range: "+column);
+		if (columns[column]==null)
+			return null;
+		else {
+			double[] data = new double[counter];
+			for (int i=0; i<counter; i++)
+				data[i] = columns[column][i];
+			return data;
+		}
+	}
+
 	/** Returns true if the specified column exists and is not empty. */
 	public boolean columnExists(int column) {
 		if ((column<0) || (column>=maxColumns))
