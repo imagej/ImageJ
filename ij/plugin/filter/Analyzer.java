@@ -385,14 +385,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 				if (circularity>1.0) circularity = 1.0;
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
 				Polygon ch = null;
-				if (roi!=null && roi.isArea() && roi.getType()!=Roi.COMPOSITE)
+				boolean isArea = roi!=null && roi.isArea();
+				if (isArea && roi.getType()!=Roi.COMPOSITE)
 					ch = roi.getConvexHull();
+				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
+				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.pixelCount/(Math.PI*stats.major*stats.major):0.0);
 				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):0.0);
-				//int type = roi.getType();
-				//if (type==Roi.RECTANGLE || type==Roi.OVAL || type==Roi.COMPOSITE)
-				//	type = Roi.POLYGON;
-				//Roi roi2 = new PolygonRoi(ch.xpoints, ch.ypoints, ch.npoints, type);
-				//rt.addValue("Convexity", roi2.getLength()/perimeter);
+				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
 		if ((measurements&RECT)!=0) {
@@ -443,8 +442,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 				savePoints(roi);
 		}
 	}
-	
-	double getArea(Polygon p) {
+		
+	final double getArea(Polygon p) {
 		int carea = 0;
 		int iminus1;
 		for (int i=0; i<p.npoints; i++) {
@@ -454,6 +453,32 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		return (Math.abs(carea/2.0));
 	}
+	
+	/*
+	final double getConvexPerimeter(Roi roi, Polygon ch) {
+		if (roi==null || ch==null || !(roi instanceof PolygonRoi))
+			return 0.0;
+		int[] xp = ((PolygonRoi)roi).getXCoordinates();
+		int[] yp = ((PolygonRoi)roi).getYCoordinates();
+		int n = ((PolygonRoi)roi).getNCoordinates();
+		double perim = getPerimeter(xp, yp, n);
+		double convexPerim = getPerimeter(ch.xpoints, ch.ypoints, ch.npoints);
+		return convexPerim;
+	}
+	
+	final double getPerimeter(int[] xp, int yp[], int n) {
+		double dx, dy, perim=0.0;
+		for (int i=0; i<n-1; i++) {
+			dx = xp[i+1]-xp[i];
+			dy = yp[i+1]-yp[i];
+			perim += Math.sqrt(dx*dx+dy*dy);
+		}
+		dx = xp[n-1] - xp[0];
+		dy = yp[n-1] - yp[0];
+		perim += Math.sqrt(dx*dx+dy*dy);
+		return perim;
+	}
+	*/
 	
 	void savePoints(Roi roi) {
 		if (imp==null) {
@@ -647,15 +672,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.MINOR);
 			add2(ResultsTable.ANGLE);
 		}
-		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
+		if ((measurements&SHAPE_DESCRIPTORS)!=0)
 			add2(ResultsTable.CIRCULARITY);
-			add2(ResultsTable.SOLIDITY);
-		}
-		if ((measurements&FERET)!=0) {
+		if ((measurements&FERET)!=0)
 			add2(ResultsTable.FERET);
-			add2(ResultsTable.FERET_ANGLE);
-			add2(ResultsTable.MIN_FERET);
-		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			add2(ResultsTable.INTEGRATED_DENSITY);
 		if ((measurements&MEDIAN)!=0)
@@ -666,6 +686,17 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.KURTOSIS);
 		if ((measurements&AREA_FRACTION)!=0)
 			add2(ResultsTable.AREA_FRACTION);
+		if ((measurements&SLICE)!=0)
+			add2(ResultsTable.SLICE);
+		if ((measurements&FERET)!=0) {
+			add2(ResultsTable.FERET_ANGLE);
+			add2(ResultsTable.MIN_FERET);
+		}
+		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
+			add2(ResultsTable.ASPECT_RATIO);
+			add2(ResultsTable.ROUNDNESS);
+			add2(ResultsTable.SOLIDITY);
+		}
 	}
 
 	private void add2(int column) {
