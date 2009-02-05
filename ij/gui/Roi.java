@@ -171,9 +171,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		Polygon poly = getPolygon();
+		Polygon poly = getConvexHull();
 		if (poly==null) return null;
-		poly = makeConvexHull(poly);
 		double w2=pw*pw, h2=ph*ph;
 		double dx, dy, d;
 		for (int i=0; i<poly.npoints; i++) {
@@ -221,6 +220,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		dx=x2-x1; dy=y1-y2;
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
+		if (angle<0) angle = 180.0 + angle;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
 		if (pw==ph)
 		min *= pw;
@@ -231,60 +231,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return a;
 	}
 	
-	Polygon makeConvexHull(Polygon poly) {
-		int n = poly.npoints;
-		int[] xCoordinates = poly.xpoints;
-		int[] yCoordinates = poly.ypoints;
-		Rectangle r = poly.getBounds();
-		int xbase = r.x;
-		int ybase = r.y;
-		int[] xx = new int[n];
-		int[] yy = new int[n];
-		int n2 = 0;
-		int smallestY = 99999;
-		int x, y;
-		for (int i=0; i<n; i++) {
-			y = yCoordinates[i];
-			if (y<smallestY)
-			smallestY = y;
-		}
-		int smallestX = 99999;
-		int p1 = 0;
-		for (int i=0; i<n; i++) {
-			x = xCoordinates[i];
-			y = yCoordinates[i];
-			if (y==smallestY && x<smallestX) {
-				smallestX = x;
-				p1 = i;
-			}
-		}
-		int pstart = p1;
-		int x1, y1, x2, y2, x3, y3, p2, p3;
-		int determinate;
-		do {
-			x1 = xCoordinates[p1];
-			y1 = yCoordinates[p1];
-			p2 = p1+1; if (p2==n) p2=0;
-			x2 = xCoordinates[p2];
-			y2 = yCoordinates[p2];
-			p3 = p2+1; if (p3==n) p3=0;
-			do {
-				x3 = xCoordinates[p3];
-				y3 = yCoordinates[p3];
-				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
-				if (determinate>0)
-					{x2=x3; y2=y3; p2=p3;}
-				p3 += 1;
-				if (p3==n) p3 = 0;
-			} while (p3!=p1);
-			if (n2<n) { 
-				xx[n2] = xbase + x1;
-				yy[n2] = ybase + y1;
-				n2++;
-			}
-			p1 = p2;
-		} while (p1!=pstart);
-		return new Polygon(xx, yy, n2);
+	public Polygon getConvexHull() {
+		return getPolygon();
 	}
 	
 	double getFeretBreadth(Shape shape, double angle, double x1, double y1, double x2, double y2) {

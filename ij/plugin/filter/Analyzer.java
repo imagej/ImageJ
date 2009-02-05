@@ -23,7 +23,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
-		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
+		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,SHAPE_DESCRIPTORS, FERET,
 		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,SLICE,
 		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION};
 
@@ -104,7 +104,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		ImagePlus tImp = WindowManager.getImage(redirectTarget);
 		String target = tImp!=null?tImp.getTitle():NONE;
-		
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null && macroOptions.indexOf("circularity ")!=-1)
+			Macro.setOptions(macroOptions.replaceAll("circularity ", "shape "));
+
  		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
 		String[] labels = new String[18];
 		boolean[] states = new boolean[18];
@@ -118,7 +121,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[7]="Perimeter"; states[7]=(systemMeasurements&PERIMETER)!=0;
 		labels[8]="Bounding Rectangle"; states[8]=(systemMeasurements&RECT)!=0;
 		labels[9]="Fit Ellipse"; states[9]=(systemMeasurements&ELLIPSE)!=0;
-		labels[10]="Circularity"; states[10]=(systemMeasurements&CIRCULARITY)!=0;
+		labels[10]="Shape Descriptors"; states[10]=(systemMeasurements&SHAPE_DESCRIPTORS)!=0;
 		labels[11]="Feret's Diameter"; states[11]=(systemMeasurements&FERET)!=0;
 		labels[12]="Integrated Density"; states[12]=(systemMeasurements&INTEGRATED_DENSITY)!=0;
 		labels[13]="Median"; states[13]=(systemMeasurements&MEDIAN)!=0;
@@ -217,7 +220,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		boolean ok = true;
 		if (rt.getCounter()>0)
 			ok = resetCounter();
-		if (ok && rt.getColumnHeading(ResultsTable.SLICE)==null)
+		if (ok && rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			rt.setDefaultHeadings();
 		return ok;
 	}
@@ -343,7 +346,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		or by calling setMeasurements(), in the default results table.
 	*/
 	public void saveResults(ImageStatistics stats, Roi roi) {
-		if (rt.getColumnHeading(ResultsTable.SLICE)==null)
+		if (rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			reset();
 		incrementCounter();
 		int counter = rt.getCounter();
@@ -369,7 +372,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.X_CENTER_OF_MASS,stats.xCenterOfMass);
 			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,stats.yCenterOfMass);
 		}
-		if ((measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0) {
+		if ((measurements&PERIMETER)!=0 || (measurements&SHAPE_DESCRIPTORS)!=0) {
 			double perimeter;
 			if (roi!=null)
 				perimeter = roi.getLength();
@@ -377,10 +380,19 @@ public class Analyzer implements PlugInFilter, Measurements {
 				perimeter = 0.0;
 			if ((measurements&PERIMETER)!=0) 
 				rt.addValue(ResultsTable.PERIMETER,perimeter);
-			if ((measurements&CIRCULARITY)!=0) {
+			if ((measurements&SHAPE_DESCRIPTORS)!=0) {
 				double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.area/(perimeter*perimeter));
 				if (circularity>1.0) circularity = 1.0;
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
+				Polygon ch = null;
+				if (roi!=null && roi.isArea() && roi.getType()!=Roi.COMPOSITE)
+					ch = roi.getConvexHull();
+				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):0.0);
+				//int type = roi.getType();
+				//if (type==Roi.RECTANGLE || type==Roi.OVAL || type==Roi.COMPOSITE)
+				//	type = Roi.POLYGON;
+				//Roi roi2 = new PolygonRoi(ch.xpoints, ch.ypoints, ch.npoints, type);
+				//rt.addValue("Convexity", roi2.getLength()/perimeter);
 			}
 		}
 		if ((measurements&RECT)!=0) {
@@ -430,6 +442,17 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
 		}
+	}
+	
+	double getArea(Polygon p) {
+		int carea = 0;
+		int iminus1;
+		for (int i=0; i<p.npoints; i++) {
+			iminus1 = i-1;
+			if (iminus1<0) iminus1=p.npoints-1;
+			carea += (p.xpoints[i]+p.xpoints[iminus1])*(p.ypoints[i]-p.ypoints[iminus1]);
+		}
+		return (Math.abs(carea/2.0));
 	}
 	
 	void savePoints(Roi roi) {
@@ -624,8 +647,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.MINOR);
 			add2(ResultsTable.ANGLE);
 		}
-		if ((measurements&CIRCULARITY)!=0)
+		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
 			add2(ResultsTable.CIRCULARITY);
+			add2(ResultsTable.SOLIDITY);
+		}
 		if ((measurements&FERET)!=0) {
 			add2(ResultsTable.FERET);
 			add2(ResultsTable.FERET_ANGLE);
