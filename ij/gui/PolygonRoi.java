@@ -594,6 +594,8 @@ public class PolygonRoi extends Roi {
 		return xSpline!=null;
 	}
 
+	/* Creates a spline fitted polygon with one pixel segment lengths 
+		that can be retrieved using the getFloatPolygon() method. */
 	public void fitSplineForStraightening() {
 		fitSpline((int)getUncalibratedLength()*2);
 		float[] xpoints = new float[splinePoints*2];
@@ -614,7 +616,8 @@ public class PolygonRoi extends Roi {
 			xinc = dx*inc/distance;
 			yinc = dy*inc/distance;
 			lastx=xpoints[n-1]; lasty=ypoints[n-1];
-			n2 = (int)(dx/xinc);
+			//n2 = (int)(dx/xinc);
+			n2 = (int)(distance/inc);
 			if (splinePoints==2) n2++;
 			do {
 				dx = x-lastx;
@@ -637,7 +640,7 @@ public class PolygonRoi extends Roi {
 		splinePoints = n;
 	}
 
-	double getUncalibratedLength() {
+	public double getUncalibratedLength() {
 		if (imp==null) return nPoints/2;
 		Calibration cal = imp.getCalibration();
 		double spw=cal.pixelWidth, sph=cal.pixelHeight;
@@ -936,7 +939,11 @@ public class PolygonRoi extends Roi {
 		else
 			return yp;
 	}
-
+	
+	public Polygon getNonSplineCoordinates() {
+		return new Polygon(xp, yp, nPoints);
+	}
+		
 	/** Returns this PolygonRoi as a Polygon. 
 		@see ij.process.ImageProcessor#setRoi
 		@see ij.process.ImageProcessor#drawPolygon

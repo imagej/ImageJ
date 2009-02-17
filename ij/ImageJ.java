@@ -68,7 +68,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.42i";
+	public static final String VERSION = "1.42j";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -184,7 +184,7 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		m.installStartupMacroSet();
 		String str = m.getMacroCount()==1?" macro)":" macros)";
-		String java = "Java "+System.getProperty("java.version");
+		String java = "Java "+System.getProperty("java.version")+(IJ.is64Bit()?" [64-bit]":" [32-bit]");
 		IJ.showStatus("ImageJ "+VERSION + "/"+java+" ("+ m.getPluginCount() + " commands, " + m.getMacroCount() + str);
 		if (applet==null && !embedded)
 			new SocketListener();

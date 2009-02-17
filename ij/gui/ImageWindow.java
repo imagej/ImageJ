@@ -215,7 +215,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				if (ci.getMode()==CompositeImage.COMPOSITE)
 					g.setColor(ci.getChannelColor());
 			}
-			g.drawString(createSubtitle(), 5, insets.top+TEXT_GAP);
+			g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
 		}
     }
     

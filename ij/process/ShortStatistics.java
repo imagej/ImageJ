@@ -53,7 +53,6 @@ public class ShortStatistics extends ImageStatistics {
 		while ((hist[min]==0) && (min<65535))
 			min++;
 		this.min = min;
-			
 		int max = maxThreshold;
 		while ((hist[max]==0) && (max>0))
 			max--;

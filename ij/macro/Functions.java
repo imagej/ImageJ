@@ -1400,7 +1400,8 @@ public class Functions implements MacroConstants, Measurements {
 		x.setValue(p.x);
 		y.setValue(p.y);
 		z.setValue(imp.getCurrentSlice()-1);
-		flags.setValue(ic.getModifiers());
+		Roi roi = imp.getRoi();
+		flags.setValue(ic.getModifiers()+((roi!=null)&&roi.contains(p.x,p.y)?32:0));
 	}
 	
 	void getLine() {
@@ -3840,7 +3841,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION))
+		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION||interp.token==NUMERIC_FUNCTION))
 			interp.error("Function name expected: ");
 		if (props==null)
 			props = new Properties();
@@ -3849,6 +3850,9 @@ public class Functions implements MacroConstants, Measurements {
 		if (name.equals("get")) {
 			value = props.getProperty(getStringArg());
 			value = value!=null?value:"";
+		} else if (name.equals("getValue")) {
+			value = props.getProperty(getStringArg());
+			if (value==null) interp.error("Value not found");
 		} else if (name.equals("set")||name.equals("add")||name.equals("put"))
 			props.setProperty(getFirstString(), getLastString());
 		else if (name.equals("clear")||name.equals("reset"))
@@ -3860,11 +3864,34 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("size")||name.equals("getSize")) {
 			interp.getParens();
 			value = ""+props.size();
-		} else
+		} else if (name.equals("setMeasurements"))
+			setMeasurements();
+		else
 			interp.error("Unrecognized List function");
 		return value;
 	}
 	
+	void setMeasurements() {
+		interp.getParens();
+		props.clear();
+		ImagePlus imp = getImage();
+		int measurements = AREA+MEAN+STD_DEV+MODE+MIN_MAX+
+			CENTROID+CENTER_OF_MASS+PERIMETER+RECT+
+			ELLIPSE+SHAPE_DESCRIPTORS+FERET+INTEGRATED_DENSITY+
+			MEDIAN+SKEWNESS+KURTOSIS+AREA_FRACTION;
+		ImageStatistics stats = imp.getStatistics(measurements);
+		ResultsTable rt = new ResultsTable();
+		Analyzer analyzer = new Analyzer(imp, measurements, rt);
+		analyzer.saveResults(stats, imp.getRoi());
+		for (int i=0; i<=rt.getLastColumn(); i++) {
+			if (rt.columnExists(i)) {
+				String name = rt.getColumnHeading(i);
+				String value = ""+rt.getValueAsDouble(i, 0);
+				props.setProperty(name, value);
+			}
+		}
+	}
+
 	void setProperties() {
 		String list = getStringArg();
 		props.clear();

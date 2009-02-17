@@ -389,16 +389,24 @@ public class Analyzer implements PlugInFilter, Measurements {
 				if (isArea && roi.getType()!=Roi.COMPOSITE)
 					ch = roi.getConvexHull();
 				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
-				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.pixelCount/(Math.PI*stats.major*stats.major):0.0);
+				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.area/(Math.PI*stats.major*stats.major):0.0);
 				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):0.0);
 				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
 		if ((measurements&RECT)!=0) {
-			rt.addValue(ResultsTable.ROI_X,stats.roiX);
-			rt.addValue(ResultsTable.ROI_Y,stats.roiY);
-			rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
-			rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
+			if (roi!=null && roi.isLine()) {
+				Rectangle bounds = roi.getBounds();
+				rt.addValue(ResultsTable.ROI_X, bounds.x);
+				rt.addValue(ResultsTable.ROI_Y, bounds.y);
+				rt.addValue(ResultsTable.ROI_WIDTH, bounds.width);
+				rt.addValue(ResultsTable.ROI_HEIGHT, bounds.height);
+			} else {
+				rt.addValue(ResultsTable.ROI_X,stats.roiX);
+				rt.addValue(ResultsTable.ROI_Y,stats.roiY);
+				rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
+				rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
+			}
 		}
 		if ((measurements&ELLIPSE)!=0) {
 			rt.addValue(ResultsTable.MAJOR,stats.major);
@@ -827,7 +835,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 
 	public static void setOption(String option, boolean b) {
 		if (option.indexOf("min")!=-1)
-			showMin = b;;
+			showMin = b;
 	}
 
 }

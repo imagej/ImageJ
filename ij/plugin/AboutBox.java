@@ -20,7 +20,7 @@ import java.awt.image.*;
 		text[1] = "Wayne Rasband";
 		text[2] = "National Institutes of Health, USA";
 		text[3] = IJ.URL;
-		text[4] = "Java "+System.getProperty("java.version");
+		text[4] = "Java "+System.getProperty("java.version")+(IJ.is64Bit()?" (64-bit)":" (32-bit)");
 		text[5] = IJ.freeMemory();
 		text[6] = "ImageJ is in the public domain";
 		ImageProcessor ip = null;
