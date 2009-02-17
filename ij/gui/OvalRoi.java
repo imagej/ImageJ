@@ -193,17 +193,5 @@ public class OvalRoi extends Roi {
 		}
 		return Math.PI*(width*pw+height*ph)/2.0;
 	}
-	
-	/** Returns Feret's diameter, the greatest distance between 
-		any two points along the ROI boundary. */
-	public double getFeretsDiameter() {
-		double pw=1.0, ph=1.0;
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			pw = cal.pixelWidth;
-			ph = cal.pixelHeight;
-		}
-		return width*pw>=height*ph?width*pw:height*ph;
-	}
-	
+		
 }

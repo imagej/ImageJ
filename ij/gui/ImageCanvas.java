@@ -459,6 +459,30 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imp.setTitle(imp.getTitle());
 	}
 
+	/*
+	public void setMagnification(double mag, int x, int y) {
+		if (mag>32.0) magnification = 32.0;
+		if (mag<0.03125) mag = 0.03125;
+		int newWidth = (int)(imageWidth*mag);
+		int newHeight = (int)(imageHeight*mag);
+		Dimension newSize = canEnlarge(newWidth, newHeight);
+		if (newSize!=null) {
+			setDrawingSize(newSize.width, newSize.height);
+			if (newSize.width!=newWidth || newSize.height!=newHeight)
+				adjustSourceRect(mag, x, y);
+			else
+				setMagnification(mag);
+			imp.getWindow().pack();
+		} else
+			adjustSourceRect(mag, x, y);
+		repaint();
+		if (srcRect.width<imageWidth || srcRect.height<imageHeight)
+			resetMaxBounds();
+		this.magnification = magnification;
+		imp.setTitle(imp.getTitle());
+	}
+	*/
+
 	public Rectangle getSrcRect() {
 		return srcRect;
 	}

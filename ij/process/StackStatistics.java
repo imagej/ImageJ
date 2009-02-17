@@ -9,13 +9,15 @@ import java.awt.*;
 public class StackStatistics extends ImageStatistics {
 	
 	public StackStatistics(ImagePlus imp) {
-		doCalculations(imp, 256, 0.0, 0.0);
+		this(imp, 256, 0.0, 0.0);
 	}
 
 	public StackStatistics(ImagePlus imp, int nBins, double histMin, double histMax) {
 		int bits = imp.getBitDepth();
 		if ((bits==8||bits==24) && nBins==256 && histMin==0.0 && histMax==256.0)
-			sumSliceHistograms(imp);
+			sum8BitHistograms(imp);
+		else if (bits==16 && nBins==256 && histMin==0.0 && histMax==0.0 && !imp.getCalibration().calibrated())
+			sum16BitHistograms(imp);
 		else
 			doCalculations(imp, nBins, histMin, histMax);
 	}
@@ -145,7 +147,7 @@ public class StackStatistics extends ImageStatistics {
         IJ.showProgress(1.0);
     }
     
-	void sumSliceHistograms(ImagePlus imp) {
+	void sum8BitHistograms(ImagePlus imp) {
 		Calibration cal = imp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		int minThreshold = 0;
@@ -174,17 +176,91 @@ public class StackStatistics extends ImageStatistics {
 		IJ.showProgress(1.0);
 	}
 
+	void sum16BitHistograms(ImagePlus imp) {
+		Calibration cal = imp.getCalibration();
+		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
+		int minThreshold = 0;
+		int maxThreshold = 65535;
+		ImageProcessor ip = imp.getProcessor();
+		if (limitToThreshold && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
+			minThreshold = (int)ip.getMinThreshold();
+			maxThreshold = (int)ip.getMaxThreshold();
+		}
+		ImageStack stack = imp.getStack();
+		Roi roi = imp.getRoi();
+		int[] hist16 = new int[65536];
+		int n = stack.getSize();
+		for (int slice=1; slice<=n; slice++) {
+			IJ.showProgress(slice, n);
+			ip = stack.getProcessor(slice);
+			if (roi!=null) ip.setRoi(roi);
+			int[] hist = ip.getHistogram();
+			for (int i=0; i<65536; i++)
+				hist16[i] += hist[i];
+		}
+		pw=1.0; ph=1.0;
+		getRaw16BitMinAndMax(hist16, minThreshold, maxThreshold);
+		get16BitStatistics(hist16, (int)min, (int)max);
+		IJ.showStatus("");
+		IJ.showProgress(1.0);
+	}
+	
+	void getRaw16BitMinAndMax(int[] hist, int minThreshold, int maxThreshold) {
+		int min = minThreshold;
+		while ((hist[min]==0) && (min<65535))
+			min++;
+		this.min = min;
+		int max = maxThreshold;
+		while ((hist[max]==0) && (max>0))
+			max--;
+		this.max = max;
+	}
+
+	void get16BitStatistics(int[] hist, int min, int max) {
+		int count;
+		double value;
+		double sum = 0.0;
+		double sum2 = 0.0;
+		nBins = 256;
+		histMin = min; 
+		histMax = max;
+		binSize = (histMax-histMin)/nBins;
+		double scale = 1.0/binSize;
+		int hMin = (int)histMin;
+		histogram = new int[nBins]; // 256 bin histogram
+		int index;
+        maxCount = 0;
+		for (int i=min; i<=max; i++) {
+			count = hist[i];
+			pixelCount += count;
+			value = i;
+			sum += value*count;
+			sum2 += (value*value)*count;
+			index = (int)(scale*(i-hMin));
+			if (index>=nBins)
+				index = nBins-1;
+			histogram[index] += count;
+		}
+		area = pixelCount*pw*ph;
+		mean = sum/pixelCount;
+		umean = mean;
+		dmode = getMode(null);
+		calculateStdDev(pixelCount, sum, sum2);
+	}
+
    double getMode(Calibration cal) {
         int count;
         maxCount = 0;
-        for (int i = 0; i < nBins; i++) {
+        for (int i=0; i<nBins; i++) {
             count = histogram[i];
             if (count > maxCount) {
                 maxCount = count;
                 mode = i;
             }
         }
-       return cal.getCValue(histMin+mode*binSize);
+        double tmode = histMin+mode*binSize;
+        if (cal!=null) tmode = cal.getCValue(tmode);
+       return tmode;
     }
     
 }

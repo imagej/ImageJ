@@ -526,14 +526,25 @@ public class ImagePlus implements ImageObserver, Measurements {
 		else if (stackSize>1 && !(win instanceof StackWindow)) {
 			if (isHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
+			setPosition(1, 1, 1);
 		} else if (stackSize>1 && (dimensionsChanged||invalidDimensions)) {
 			if (isHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
+			setPosition(1, 1, 1);
 		} else
 			repaintWindow();
 		if (resetCurrentSlice) setSlice(currentSlice);
     }
     
+	public void setStack(ImageStack stack, int nChannels, int nSlices, int nFrames) {
+		if (nChannels*nSlices*nFrames!=stack.getSize())
+			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
+		this.nChannels = nChannels;
+		this.nSlices = nSlices;
+		this.nFrames = nFrames;
+		setStack(null, stack);
+	}
+
 	/**	Saves this image's FileInfo so it can be later
 		retieved using getOriginalFileInfo(). */
 	public void setFileInfo(FileInfo fi) {

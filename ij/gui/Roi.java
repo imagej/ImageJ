@@ -156,46 +156,104 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Returns Feret's diameter, the greatest distance between 
 		any two points along the ROI boundary. */
 	public double getFeretsDiameter() {
+		double[] a = getFeretValues();
+		return a!=null?a[0]:0.0;
+	}
+
+	/** Caculates "Feret" (maximum caliper width), "FeretAngle"
+		and "MinFeret" (minimum caliper width). */	
+	public double[] getFeretValues() {
+		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0;
+		int p1=0, p2=0;
 		double pw=1.0, ph=1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
-		return Math.sqrt(width*width*pw*pw+height*height*ph*ph);
-	}
-
-	/** Finds the length (maximum caliper/Feret diameter) and width 
-		(minimum caliper/Feret diameter) of this ROI. */
-	public double[] rotateCalipers() {
-		Shape shape = getPolygon();
-		if (shape == null) return null;
-		double min=0.0, max=0.0;
-		double diam;
-		double pw = 1.0, ph = 1.0;
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			pw = cal.pixelWidth;
-			ph = cal.pixelHeight;
+		Polygon poly = getConvexHull();
+		if (poly==null) return null;
+		double w2=pw*pw, h2=ph*ph;
+		double dx, dy, d;
+		for (int i=0; i<poly.npoints; i++) {
+			for (int j=i; j<poly.npoints; j++) {
+				dx = poly.xpoints[i] - poly.xpoints[j];
+				dy = poly.ypoints[i] - poly.ypoints[j];
+				d = Math.sqrt(dx*dx*w2 + dy*dy*h2);
+				if (d>diameter) {diameter=d; p1=i; p2=j;}
+			}
 		}
-		Rectangle2D r;
-		Shape s = null;
-		AffineTransform at = new AffineTransform();
-		for (int i=0; i<271; i++) {
-			at.rotate(1.0);
-			s = at.createTransformedShape(shape);
-			r = s.getBounds2D();
-			max = Math.max(max, Math.max(pw*r.getWidth(), ph*r.getHeight()));
-			diam = Math.min(pw*r.getWidth(), ph*r.getHeight());
-			if (i==0)
-				min = diam;
-			else
-				min = Math.min(min, diam);
+		Rectangle r = getBounds();
+		double cx = r.x + r.width/2.0;
+		double cy = r.y + r.height/2.0;
+		int n = poly.npoints;
+		double[] x = new double[n];
+		double[] y = new double[n];
+		for (int i=0; i<n; i++) {
+			x[i] = poly.xpoints[i] - cx;
+			y[i] = poly.ypoints[i] - cy;
 		}
-		double[] a = new double[2];
-		a[0] = min;
-		a[1] = max;
+		double xr, yr;
+		for (int a=0; a<=180; a++) {
+			double cos = Math.cos(a*Math.PI/180.0);
+			double sin = Math.sin(a*Math.PI/180.0);
+			double xmin=Double.MAX_VALUE, ymin=Double.MAX_VALUE;
+			double xmax=-Double.MAX_VALUE, ymax=-Double.MAX_VALUE;
+			for (int i=0; i<n; i++) {
+				xr = cos*x[i] - sin*y[i];
+				yr = sin*x[i] + cos*y[i];
+				if (xr<xmin) xmin = xr;
+				if (xr>xmax) xmax = xr;
+				if (yr<ymin) ymin = yr;
+				if (yr>ymax) ymax = yr;
+			}
+			double width = xmax - xmin;
+			double height = ymax - ymin;
+			double min2 = Math.min(width, height);
+			min = Math.min(min, min2);
+		}
+		double x1=poly.xpoints[p1], y1=poly.ypoints[p1];
+		double x2=poly.xpoints[p2], y2=poly.ypoints[p2];
+		if (x1>x2) {
+			double tx1=x1, ty1=y1;
+			x1=x2; y1=y2; x2=tx1; y2=ty1;
+		}
+		dx=x2-x1; dy=y1-y2;
+		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
+		if (angle<0) angle = 180.0 + angle;
+		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
+		if (pw==ph)
+		min *= pw;
+		double[] a = new double[3];
+		a[0] = diameter;
+		a[1] = angle;
+		a[2] = min;
 		return a;
+	}
+	
+	public Polygon getConvexHull() {
+		return getPolygon();
+	}
+	
+	double getFeretBreadth(Shape shape, double angle, double x1, double y1, double x2, double y2) {
+		double cx = x1 + (x2-x1)/2;
+		double cy = y1 + (y2-y1)/2;
+		AffineTransform at = new AffineTransform();
+		at.rotate(angle*Math.PI/180.0, cx, cy);
+		Shape s = at.createTransformedShape(shape);
+		Rectangle2D r = s.getBounds2D();
+		return Math.min(r.getWidth(), r.getHeight());
+		/*
+		ShapeRoi roi2 = new ShapeRoi(s);
+		Roi[] rois = roi2.getRois();
+		if (rois!=null && rois.length>0) {
+			Polygon p = rois[0].getPolygon();
+			ImageProcessor ip = imp.getProcessor();
+			for (int i=0; i<p.npoints-1; i++)
+				ip.drawLine(p.xpoints[i], p.ypoints[i], p.xpoints[i+1], p.ypoints[i+1]);
+			imp.updateAndDraw();
+		}
+		*/
 	}
 
 	/** Return this selection's bounding rectangle. */

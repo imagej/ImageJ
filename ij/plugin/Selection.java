@@ -211,48 +211,9 @@ public class Selection implements PlugIn, Measurements {
 		int type = roi!=null?roi.getType():-1;
 		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON||type==Roi.POINT))
 			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
-		imp.setRoi(makeConvexHull(imp, (PolygonRoi)roi));
-	}
-
-	// Finds the convex hull using the gift wrap algorithm
-	Roi makeConvexHull(ImagePlus imp, PolygonRoi roi) {
-		int n = roi.getNCoordinates();
-		int[] xCoordinates = roi.getXCoordinates();
-		int[] yCoordinates = roi.getYCoordinates();
-		Rectangle r = roi.getBounds();
-		int xbase = r.x;
-		int ybase = r.y;
-		int[] xx = new int[n];
-		int[] yy = new int[n];
-		int n2 = 0;
-		int p1 = findFirstPoint(xCoordinates, yCoordinates, n, imp); 
-		int pstart = p1;
-		int x1, y1, x2, y2, x3, y3, p2, p3;
-		int determinate;
-		do {
-			x1 = xCoordinates[p1];
-			y1 = yCoordinates[p1];
-			p2 = p1+1; if (p2==n) p2=0;
-			x2 = xCoordinates[p2];
-			y2 = yCoordinates[p2];
-			p3 = p2+1; if (p3==n) p3=0;
-			do {
-				x3 = xCoordinates[p3];
-				y3 = yCoordinates[p3];
-				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
-				if (determinate>0)
-					{x2=x3; y2=y3; p2=p3;}
-				p3 += 1;
-				if (p3==n) p3 = 0;
-			} while (p3!=p1);
-			if (n2<n) { 
-				xx[n2] = xbase + x1;
-				yy[n2] = ybase + y1;
-				n2++;
-			}
-			p1 = p2;
-		} while (p1!=pstart);
-		return new PolygonRoi(xx, yy, n2, roi.POLYGON);
+		Polygon p = roi.getConvexHull();
+		if (p!=null)
+			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
 	}
 	
 	// Finds the index of the upper right point that is guaranteed to be on convex hull

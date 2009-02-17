@@ -658,17 +658,22 @@ public class Interpreter implements MacroConstants {
 			return Variable.STRING;
 		if (tok==STRING_FUNCTION) {
 			int address = rightSideToken>>TOK_SHIFT;
-			if (pgm.table[address].type==DIALOG) {
+			int type = pgm.table[address].type;
+			if (type==DIALOG) {
 				int token2 = pgm.code[pc+4];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("getNumber") || name.equals("getCheckbox"))
 					return STRING_FUNCTION; 
-			} else if (pgm.table[address].type==FILE) {
+			} else if (type==FILE) {
 				int token2 = pgm.code[pc+4];
 				String name = pgm.table[token2>>TOK_SHIFT].str;
 				if (name.equals("exists")||name.equals("isDirectory")||name.equals("length")
 				||name.equals("getLength")||name.equals("rename")||name.equals("delete"))
 					return STRING_FUNCTION;
+			} else if (type==LIST) {
+				int token2 = pgm.code[pc+4];
+				String name = pgm.table[token2>>TOK_SHIFT].str;
+				if (name.equals("getValue")) return STRING_FUNCTION;
 			}
 			return Variable.STRING;
 		}

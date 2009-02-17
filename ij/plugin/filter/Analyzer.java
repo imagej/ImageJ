@@ -23,7 +23,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
-		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,CIRCULARITY, FERET,
+		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,SHAPE_DESCRIPTORS, FERET,
 		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,SLICE,
 		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION};
 
@@ -43,6 +43,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	static int firstParticle, lastParticle;
 	private static boolean summarized;
 	private static boolean switchingModes;
+	private static boolean showMin = true;
 	
 	public Analyzer() {
 		rt = systemRT;
@@ -103,7 +104,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		ImagePlus tImp = WindowManager.getImage(redirectTarget);
 		String target = tImp!=null?tImp.getTitle():NONE;
-		
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null && macroOptions.indexOf("circularity ")!=-1)
+			Macro.setOptions(macroOptions.replaceAll("circularity ", "shape "));
+
  		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
 		String[] labels = new String[18];
 		boolean[] states = new boolean[18];
@@ -117,7 +121,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[7]="Perimeter"; states[7]=(systemMeasurements&PERIMETER)!=0;
 		labels[8]="Bounding Rectangle"; states[8]=(systemMeasurements&RECT)!=0;
 		labels[9]="Fit Ellipse"; states[9]=(systemMeasurements&ELLIPSE)!=0;
-		labels[10]="Circularity"; states[10]=(systemMeasurements&CIRCULARITY)!=0;
+		labels[10]="Shape Descriptors"; states[10]=(systemMeasurements&SHAPE_DESCRIPTORS)!=0;
 		labels[11]="Feret's Diameter"; states[11]=(systemMeasurements&FERET)!=0;
 		labels[12]="Integrated Density"; states[12]=(systemMeasurements&INTEGRATED_DENSITY)!=0;
 		labels[13]="Median"; states[13]=(systemMeasurements&MEDIAN)!=0;
@@ -216,7 +220,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		boolean ok = true;
 		if (rt.getCounter()>0)
 			ok = resetCounter();
-		if (ok && rt.getColumnHeading(ResultsTable.SLICE)==null)
+		if (ok && rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			rt.setDefaultHeadings();
 		return ok;
 	}
@@ -342,7 +346,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		or by calling setMeasurements(), in the default results table.
 	*/
 	public void saveResults(ImageStatistics stats, Roi roi) {
-		if (rt.getColumnHeading(ResultsTable.SLICE)==null)
+		if (rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			reset();
 		incrementCounter();
 		int counter = rt.getCounter();
@@ -357,7 +361,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&STD_DEV)!=0) rt.addValue(ResultsTable.STD_DEV,stats.stdDev);
 		if ((measurements&MODE)!=0) rt.addValue(ResultsTable.MODE, stats.dmode);
 		if ((measurements&MIN_MAX)!=0) {
-			rt.addValue(ResultsTable.MIN,stats.min);
+			if (showMin) rt.addValue(ResultsTable.MIN,stats.min);
 			rt.addValue(ResultsTable.MAX,stats.max);
 		}
 		if ((measurements&CENTROID)!=0) {
@@ -368,7 +372,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.X_CENTER_OF_MASS,stats.xCenterOfMass);
 			rt.addValue(ResultsTable.Y_CENTER_OF_MASS,stats.yCenterOfMass);
 		}
-		if ((measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0) {
+		if ((measurements&PERIMETER)!=0 || (measurements&SHAPE_DESCRIPTORS)!=0) {
 			double perimeter;
 			if (roi!=null)
 				perimeter = roi.getLength();
@@ -376,17 +380,33 @@ public class Analyzer implements PlugInFilter, Measurements {
 				perimeter = 0.0;
 			if ((measurements&PERIMETER)!=0) 
 				rt.addValue(ResultsTable.PERIMETER,perimeter);
-			if ((measurements&CIRCULARITY)!=0) {
+			if ((measurements&SHAPE_DESCRIPTORS)!=0) {
 				double circularity = perimeter==0.0?0.0:4.0*Math.PI*(stats.area/(perimeter*perimeter));
 				if (circularity>1.0) circularity = 1.0;
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
+				Polygon ch = null;
+				boolean isArea = roi!=null && roi.isArea();
+				if (isArea && roi.getType()!=Roi.COMPOSITE)
+					ch = roi.getConvexHull();
+				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
+				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.area/(Math.PI*stats.major*stats.major):0.0);
+				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):0.0);
+				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
 		if ((measurements&RECT)!=0) {
-			rt.addValue(ResultsTable.ROI_X,stats.roiX);
-			rt.addValue(ResultsTable.ROI_Y,stats.roiY);
-			rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
-			rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
+			if (roi!=null && roi.isLine()) {
+				Rectangle bounds = roi.getBounds();
+				rt.addValue(ResultsTable.ROI_X, bounds.x);
+				rt.addValue(ResultsTable.ROI_Y, bounds.y);
+				rt.addValue(ResultsTable.ROI_WIDTH, bounds.width);
+				rt.addValue(ResultsTable.ROI_HEIGHT, bounds.height);
+			} else {
+				rt.addValue(ResultsTable.ROI_X,stats.roiX);
+				rt.addValue(ResultsTable.ROI_Y,stats.roiY);
+				rt.addValue(ResultsTable.ROI_WIDTH,stats.roiWidth);
+				rt.addValue(ResultsTable.ROI_HEIGHT,stats.roiHeight);
+			}
 		}
 		if ((measurements&ELLIPSE)!=0) {
 			rt.addValue(ResultsTable.MAJOR,stats.major);
@@ -394,15 +414,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.ANGLE,stats.angle);
 		}
 		if ((measurements&FERET)!=0) {
-			double minFeret=0.0, maxFeret=0.0;
+			boolean extras = true;
+			double FeretDiameter=0.0, feretAngle=0.0, minFeret=0.0;
 			if (roi!=null) {
-				double[] a = roi.rotateCalipers();
+				double[] a = roi.getFeretValues();
 				if (a!=null) {
-					minFeret = a[0];
-					maxFeret = a[1];
+					FeretDiameter = a[0];
+					feretAngle = a[1];
+					minFeret = a[2];
 				}
 			}
-			rt.addValue(ResultsTable.FERET, maxFeret);
+			rt.addValue(ResultsTable.FERET, FeretDiameter);
+			rt.addValue(ResultsTable.FERET_ANGLE, feretAngle);
 			rt.addValue(ResultsTable.MIN_FERET, minFeret);
 		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
@@ -427,6 +450,43 @@ public class Analyzer implements PlugInFilter, Measurements {
 				savePoints(roi);
 		}
 	}
+		
+	final double getArea(Polygon p) {
+		int carea = 0;
+		int iminus1;
+		for (int i=0; i<p.npoints; i++) {
+			iminus1 = i-1;
+			if (iminus1<0) iminus1=p.npoints-1;
+			carea += (p.xpoints[i]+p.xpoints[iminus1])*(p.ypoints[i]-p.ypoints[iminus1]);
+		}
+		return (Math.abs(carea/2.0));
+	}
+	
+	/*
+	final double getConvexPerimeter(Roi roi, Polygon ch) {
+		if (roi==null || ch==null || !(roi instanceof PolygonRoi))
+			return 0.0;
+		int[] xp = ((PolygonRoi)roi).getXCoordinates();
+		int[] yp = ((PolygonRoi)roi).getYCoordinates();
+		int n = ((PolygonRoi)roi).getNCoordinates();
+		double perim = getPerimeter(xp, yp, n);
+		double convexPerim = getPerimeter(ch.xpoints, ch.ypoints, ch.npoints);
+		return convexPerim;
+	}
+	
+	final double getPerimeter(int[] xp, int yp[], int n) {
+		double dx, dy, perim=0.0;
+		for (int i=0; i<n-1; i++) {
+			dx = xp[i+1]-xp[i];
+			dy = yp[i+1]-yp[i];
+			perim += Math.sqrt(dx*dx+dy*dy);
+		}
+		dx = xp[n-1] - xp[0];
+		dy = yp[n-1] - yp[0];
+		perim += Math.sqrt(dx*dx+dy*dy);
+		return perim;
+	}
+	*/
 	
 	void savePoints(Roi roi) {
 		if (imp==null) {
@@ -596,7 +656,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&STD_DEV)!=0) add2(ResultsTable.STD_DEV);
 		if ((measurements&MODE)!=0) add2(ResultsTable.MODE);
 		if ((measurements&MIN_MAX)!=0) {
-			add2(ResultsTable.MIN);
+			if (showMin) add2(ResultsTable.MIN);
 			add2(ResultsTable.MAX);
 		}
 		if ((measurements&CENTROID)!=0) {
@@ -620,7 +680,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.MINOR);
 			add2(ResultsTable.ANGLE);
 		}
-		if ((measurements&CIRCULARITY)!=0)
+		if ((measurements&SHAPE_DESCRIPTORS)!=0)
 			add2(ResultsTable.CIRCULARITY);
 		if ((measurements&FERET)!=0)
 			add2(ResultsTable.FERET);
@@ -634,6 +694,17 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.KURTOSIS);
 		if ((measurements&AREA_FRACTION)!=0)
 			add2(ResultsTable.AREA_FRACTION);
+		if ((measurements&SLICE)!=0)
+			add2(ResultsTable.SLICE);
+		if ((measurements&FERET)!=0) {
+			add2(ResultsTable.FERET_ANGLE);
+			add2(ResultsTable.MIN_FERET);
+		}
+		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
+			add2(ResultsTable.ASPECT_RATIO);
+			add2(ResultsTable.ROUNDNESS);
+			add2(ResultsTable.SOLIDITY);
+		}
 	}
 
 	private void add2(int column) {
@@ -762,6 +833,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		systemRT.setDefaultHeadings();
 	}
 
+	public static void setOption(String option, boolean b) {
+		if (option.indexOf("min")!=-1)
+			showMin = b;
+	}
 
 }
 	

@@ -64,10 +64,10 @@ public class RoiEncoder {
 		int n=0;
 		int[] x=null,y=null;
 		if (roi instanceof PolygonRoi) {
-			PolygonRoi p = (PolygonRoi)roi;
-			n = p.getNCoordinates();
-			x = p.getXCoordinates();
-			y = p.getYCoordinates();
+			Polygon p = ((PolygonRoi)roi).getNonSplineCoordinates();
+			n = p.npoints;
+			x = p.xpoints;
+			y = p.ypoints;
 		}
 		data = new byte[HEADER_SIZE+n*4];
 		

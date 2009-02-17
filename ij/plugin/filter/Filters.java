@@ -22,7 +22,12 @@ public class Filters implements PlugInFilter {
 			if (roi!=null && !roi.isArea())
 				imp.killRoi(); // ignore any line selection
 		}
-		return IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
+		int flags = IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
+		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1) {
+				invert16BitStack(imp);
+				return DONE;
+		}
+		return flags;
 	}
 
 	public void run(ImageProcessor ip) {
@@ -77,6 +82,27 @@ public class Filters implements PlugInFilter {
 	 		return;
 	 	}
         	 	
+	}
+	
+	void invert16BitStack(ImagePlus imp) {
+		imp.killRoi();
+		imp.getCalibration().disableDensityCalibration();
+		ImageStatistics stats = new StackStatistics(imp);
+		ImageStack stack = imp.getStack();
+		int nslices = stack.getSize();
+		int min=(int)stats.min, range=(int)(stats.max-stats.min);
+		int n = imp.getWidth()*imp.getHeight();
+		for (int slice=1; slice<=nslices; slice++) {
+			ImageProcessor ip = stack.getProcessor(slice);
+			short[] pixels = (short[])ip.getPixels();
+			for (int i=0; i<n; i++) {
+				int before = pixels[i]&0xffff;
+				pixels[i] = (short)(range-((pixels[i]&0xffff)-min));
+			}
+		}
+		imp.setStack(null, stack);
+		imp.setDisplayRange(0, range);
+		imp.updateAndDraw();
 	}
 	
 	/** Returns the default standard deviation used by Process/Noise/Add Specified Noise. */

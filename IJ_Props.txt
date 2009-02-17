@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.41
+# Version 1.42
 
 # Popup Menu
 popup01=Undo
@@ -129,7 +129,7 @@ stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Z Project...",ij.plugin.ZProjector
 stacks12="3D Project...",ij.plugin.filter.Projector
 stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks14="Remove Slices...",ij.plugin.SliceRemover
+stacks14="Reduce Size...",ij.plugin.StackReducer
 stacks15=-
 stacks16="Start Animation [\\]",ij.plugin.Animator("start")
 stacks17="Stop Animation",ij.plugin.Animator("stop")

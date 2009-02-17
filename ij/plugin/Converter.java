@@ -42,6 +42,7 @@ public class Converter implements PlugIn {
 	 	ImageWindow win = imp.getWindow();
 		try {
  			if (stack!=null) {
+ 				boolean wasVirtual = stack.isVirtual();
 				// do stack conversions
 		    	if (stack.isRGB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertRGBStackToRGB();
@@ -61,8 +62,8 @@ public class Converter implements PlugIn {
 		    		int nColors = getNumber();
 		    		if (nColors!=0)
 						new StackConverter(imp).convertToIndexedColor(nColors);
-				}
-		    	else throw new IllegalArgumentException();
+				} else throw new IllegalArgumentException();
+				if (wasVirtual) imp.setTitle(imp.getTitle());
 			} else {
 				// do single image conversions
 				Undo.setup(Undo.TYPE_CONVERSION, imp);

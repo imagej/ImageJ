@@ -507,6 +507,8 @@ public class ImageReader {
 				if (skip>0) dis.skip(skip);
 			}
 			int len = fi.stripLengths[i];
+			int bytesToGo = (nPixels-pixel)*channels*2;
+			if (len>bytesToGo) len = bytesToGo;
 			byte[] buffer = new byte[len];
 			dis.readFully(buffer);
 			int value;

@@ -5,30 +5,40 @@
 </head>
 <body>
 
-<li> <u>1.42h, 29 January 2009</u>
+<li> <u>1.42i, 17 February 2009</u>
 <ul>
-<li> Added the <i>Process&gt;Math&gt;Math</i> command.
-<li> An image being pasted no longer has to be the same type as the receiving image.
-<li> Minimum Feret diameter (aka minimum caliper diameter) is displayed when "Feret's Diameter"
- is checked in <i>Analyze&gt;Set Measurements</i>
-<li> Tweaked the default settings in the curve fitter (<i>Analyze&gt;Tools&gt;Curve Fitting</i>) 
-so that it is more likely to converge
-(<a href="http://rsb.info.nih.gov/ij/macros/examples/RodbardSigmoidFit.txt">example</a>).
-<li> Lines in the Results and Log windows can be deleted by pressing the backspace key.
-<li> An updated Menus class, contributed by Johannes Schindelin, provides better Fiji compatibility and
-allows plugins to be installed in more menus.
-<li> Added the centerDialogMethod() to the GenericDialog class
-(<a href="http://rsb.info.nih.gov/ij/plugins/download/misc/Place_Dialog.java">example</a>).
-<li> Fixed a bug that caused the <i>Macro&gt;Run Macro</i> and <i>Debug&gt;Debug Macro</i>
-commands in the macro editor to not run the first macro in a macro set with global variables
-(<a href="http://rsb.info.nih.gov/ij/macros/examples/RunOrDebugFirstMacro.txt">example</a>).
-<li> Fixed a bug on the Mac that caused the macro debugger to fail to work with macros pasted from
-the system clipboard using <i>File&gt;New&gt;System Clipboard</i>.
-<li> Fixed a bug with the Convolver.convolve() method that caused it to throw an exception
-if it passed a non-float image.
-<li> Fixed a bug with the Fit.doFit() macro function that caused to throw an exception of the arrays
-were not the same length.
-</ul>
+<li> Added the <i>Image&gt;Stacks&gt;Reduce Size</i> command.
+<li> Circularity (4pi*area/perimeter^2) , aspect ratio (major axis/minor axis), roundness (4*area/pi*major axis<sup>2</sup>) 
+and solidarity (area/convex area) are displayed 
+when "Shape Descriptors" is enabled in <i>Analyze&gt;Set Measurements</i>.
+<li>The angle of the Feret's diameter is displayed
+when "Feret's Diameter" is enabled in <i>Analyze&gt;Set Measurements</i>.
+<li> Histograms of 16-bit stacks are generated much faster.
+<li> <i>Edit&gt;Invert</i> inverts 16-bit stacks based on the stack min and max.
+<li> <i>File&gt;Save As&gt;Selection</i> now saves only the base coordinates of spline fit selections.
+<li> The frame interval and unit set in <i>Image&gt;Properties</i> are now saved with both single
+images and stacks.
+<li> Added "(32-bit)" or "(64-bit)" to the Java version displayed in the <i>Help&gt;About ImageJ</i>
+window and in the status bar on startup and when the cursor is over an unused toolbar slot.
+<li> Added the List.setMeasurements() and List.getValue() macro functions
+(<a href="http://rsb.info.nih.gov/ij/macros/DrawEllipse.txt">example</a>).
+<li> The getCursorLoc() macro function sets a flag bit when the cursor is inside an
+area selection
+(<a href="http://rsb.info.nih.gov/ij/macros/GetCursorLocDemo.txt">example</a>).
+<li> Added the setOption("ShowMin", boolean) macro function.
+<li> Added the getNonSplineCoordinates() and getUncalibratedLength() methods to the PolygonRoi class.
+<li> Fixed a bug that caused the "(V)" in the title bar to remain after type converting a virtual stack.
+<li> Fixed a bug in <i>Analyze&gt;Measure</i> that caused the bounding rectangle 
+to not be calculated correctly for line selections.
+<li> Fixed a bug on Windows Vista that caused the first few characters of the image subtitle
+to be cut off.
+<li> Rob Lewis Fixed a bug that caused <i>File&gt;Import&gt;URL</i> to throw an exception when opening
+DICOMs with headers larger than 200,000 bytes.
+<li> Berthold Daum fixed a bug that sometimes caused an exception 
+when opening 48-bit RGB TIFFs.
+<li> Greg Joss fixed a bug that sometimes caused <i>Edit&gt;Selection&gt;Straighten</i>
+to not work correctly.
+ </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
 </body>

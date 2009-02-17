@@ -462,8 +462,9 @@ class DicomDecoder {
 		String photoInterpretation = "";
 				
 		if (inputStream!=null) {
+			// Use large buffer to allow URL stream to be reset after reading header
 			f = inputStream;
-			f.mark(200000);
+			f.mark(400000);
 		} else
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		if (IJ.debugMode) {

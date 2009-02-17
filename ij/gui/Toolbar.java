@@ -436,7 +436,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Angle tool");
 				return;
 			default:
-				IJ.showStatus("ImageJ "+IJ.getVersion()+" / Java "+System.getProperty("java.version"));
+				IJ.showStatus("ImageJ "+IJ.getVersion()+" / Java "+System.getProperty("java.version")+(IJ.is64Bit()?" (64-bit)":" (32-bit)"));
 				return;
 		}
 	}

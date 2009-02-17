@@ -441,7 +441,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (showChoice==ELLIPSES)
 			measurements |= ELLIPSE;
 		measurements &= ~LIMIT;	 // ignore "Limit to Threshold"
-		roiNeedsImage = (measurements&PERIMETER)!=0 || (measurements&CIRCULARITY)!=0 || (measurements&FERET)!=0;
+		roiNeedsImage = (measurements&PERIMETER)!=0 || (measurements&SHAPE_DESCRIPTORS)!=0 || (measurements&FERET)!=0;
 		particleCount = 0;
 		wand = new Wand(ip);
 		pf = new PolygonFiller();
@@ -474,6 +474,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
+		if (showResults)
+			rt.show("Results");
 		imp.killRoi();
 		ip.resetRoi();
 		ip.reset();
@@ -536,10 +538,15 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			line=addMean(ResultsTable.MINOR, line, start);
 			line=addMean(ResultsTable.ANGLE, line, start);
 		}
-		if ((measurements&CIRCULARITY)!=0)
+		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
 			line=addMean(ResultsTable.CIRCULARITY, line, start);
-		if ((measurements&FERET)!=0)
+			line=addMean(ResultsTable.SOLIDITY, line, start);
+		}
+		if ((measurements&FERET)!=0) {
 			line=addMean(ResultsTable.FERET, line, start);
+			line=addMean(ResultsTable.FERET_ANGLE, line, start);
+			line=addMean(ResultsTable.MIN_FERET, line, start);
+		}
 		if ((measurements&INTEGRATED_DENSITY)!=0)
 			line=addMean(ResultsTable.INTEGRATED_DENSITY, line, start);
 		if ((measurements&MEDIAN)!=0)
@@ -788,8 +795,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 			roiManager.add(imp, roi, rt.getCounter());
 		}
-		if (showResults)
-			analyzer.displayResults();
+		//if (showResults)
+		//	analyzer.displayResults();
 	}
 	
 	/** Draws a selected particle in a separate image.	This is
