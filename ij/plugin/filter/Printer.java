@@ -85,7 +85,8 @@ public class Printer implements PlugInFilter, Printable {
 		int dstY = pageY+margin;
 		Image img = ip.createImage();
 		double pageWidth = pf.getImageableWidth()-2*margin;
-		double pageHeight = pf.getImageableHeight()-2*margin;		if (label && pageWidth-dstWidth<fontSize+5) {
+		double pageHeight = pf.getImageableHeight()-2*margin;
+		if (label && pageWidth-dstWidth<fontSize+5) {
 			dstY += fontSize+5;
 			pageHeight -= fontSize+5;
 		}	

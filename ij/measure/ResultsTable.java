@@ -43,6 +43,7 @@ public class ResultsTable implements Cloneable {
 	private	StringBuffer sb;
 	private int precision = 3;
 	private String rowLabelHeading = "";
+	private boolean updating;
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -121,6 +122,13 @@ public class ResultsTable implements Cloneable {
 		keep[index] = true;
 	}
 	
+	/** Adds a label to the beginning of the current row. Counter must be >0. */
+	public void addLabel(String label) {
+		if (rowLabelHeading.equals(""))
+			rowLabelHeading = "Label";
+		addLabel(rowLabelHeading, label);
+	}
+
 	/** Adds a label to the beginning of the current row. Counter must be >0. */
 	public void addLabel(String columnHeading, String label) {
 		if (counter==0)
@@ -403,6 +411,32 @@ public class ResultsTable implements Cloneable {
 		return lastColumn;
 	}
 
+	/** Adds the last row in this table to the Results window without updating it. */
+	public void addResults() {
+		if (counter==1)
+			IJ.setColumnHeadings(getColumnHeadings());		
+		TextPanel textPanel = IJ.getTextPanel();
+		String s = getRowAsString(counter-1);
+		if (textPanel!=null)
+				textPanel.appendWithoutUpdate(s);
+		else
+			System.out.println(s);
+	}
+
+	/** Updates the Results window. */
+	public void updateResults() {
+		TextPanel textPanel = IJ.getTextPanel();
+		if (textPanel!=null) {
+			updating = true;
+			textPanel.updateDisplay();
+			updating = false;
+		}
+	}
+	
+	public boolean updating() {
+		return updating;
+	}
+
 	/** Displays the contents of this ResultsTable in a window with the specified title. 
 		Opens a new window if there is no open text window with this title. The title must
 		be "Results" if this table was obtained using ResultsTable.getResultsTable
@@ -424,7 +458,7 @@ public class ResultsTable implements Cloneable {
 			if (frame!=null && frame instanceof TextWindow)
 				win = (TextWindow)frame;
 			else
-				win = new TextWindow(windowTitle, "", 300, 200);
+				win = new TextWindow(windowTitle, "", 400, 300);
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 		}
