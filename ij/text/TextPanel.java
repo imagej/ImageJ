@@ -141,6 +141,22 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		return labels==null?"":labels;
 	}
 	
+	public synchronized void updateColumnHeadings(String labels) {
+		this.labels = labels;
+		if (labels.equals("")) {
+			iColCount = 1;
+			sColHead=new String[1];
+			sColHead[0] = "";
+		} else {
+			if (labels.endsWith("\t"))
+				this.labels = labels.substring(0, labels.length()-1);
+			sColHead = Tools.split(this.labels, "\t");
+        	iColCount = sColHead.length;
+			iColWidth=new int[iColCount];
+			columnsManuallyAdjusted = false;
+		}
+	}
+
 	public void setFont(Font font, boolean antialiased) {
 		tc.fFont = font;
 		tc.iImage = null;
@@ -215,8 +231,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		adjustVScroll();
 		if (iColCount>1 && iRowCount<=10 && !columnsManuallyAdjusted)
 			iColWidth[0] = 0; // forces column width calculation
-		if (iRowCount>9999 && rt!=null && rt.updating())
-			iColWidth[0] = 0;
 		tc.repaint();
 	}
 

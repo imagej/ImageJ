@@ -1,6 +1,6 @@
 package ij.macro;
 
-class Variable implements MacroConstants {
+class Variable implements MacroConstants, Cloneable {
 	static final int VALUE=0, ARRAY=1, STRING=2;
     int symTabIndex;
     private double value;
@@ -115,4 +115,9 @@ class Variable implements MacroConstants {
 		return s;
 	}
     
+	public synchronized Object clone() {
+		try {return super.clone();}
+		catch (CloneNotSupportedException e) {return null;}
+	}
+
 } // class Variable

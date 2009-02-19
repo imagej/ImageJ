@@ -43,7 +43,6 @@ public class ResultsTable implements Cloneable {
 	private	StringBuffer sb;
 	private int precision = 3;
 	private String rowLabelHeading = "";
-	private boolean updating;
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -427,16 +426,11 @@ public class ResultsTable implements Cloneable {
 	public void updateResults() {
 		TextPanel textPanel = IJ.getTextPanel();
 		if (textPanel!=null) {
-			updating = true;
+			textPanel.updateColumnHeadings(getColumnHeadings());		
 			textPanel.updateDisplay();
-			updating = false;
 		}
 	}
 	
-	public boolean updating() {
-		return updating;
-	}
-
 	/** Displays the contents of this ResultsTable in a window with the specified title. 
 		Opens a new window if there is no open text window with this title. The title must
 		be "Results" if this table was obtained using ResultsTable.getResultsTable

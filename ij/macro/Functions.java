@@ -262,6 +262,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_FONT_LIST: array = getFontList(); break;
 			case NEW_MENU: array = newMenu(); break;
 			case GET_LIST: array = getList(); break;
+			case ARRAY_FUNC: array = doArray(); break;
 			default:
 				array = null;
 				interp.error("Array function expected");
@@ -4060,6 +4061,69 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Argument must be 'run', 'break', 'trace' or 'fast-trace'");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		return null;
+	}
+	
+	Variable[] doArray() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("copy"))
+			return copyArray();
+		else if (name.equals("trim"))
+			return trimArray();
+		else if (name.equals("sort"))
+			return sortArray();
+		else
+			interp.error("Unrecognized Stack function");
+		return null;
+	}
+
+	Variable[] copyArray() {
+		interp.getLeftParen();
+		Variable[] a1 = getArray();
+		interp.getRightParen();
+		Variable[] a2 = new Variable[a1.length];
+		for (int i=0; i<a1.length; i++)
+			a2[i] = (Variable)a1[i].clone();
+		return a2;
+	}
+	
+	Variable[] trimArray() {
+		interp.getLeftParen();
+		Variable[] a1 = getArray();
+		int len = a1.length;
+		int size = (int)getLastArg();
+		if (size<0) size = 0;
+		if (size>len) size = len;
+		Variable[] a2 = new Variable[size];
+		for (int i=0; i<size; i++)
+			a2[i] = (Variable)a1[i].clone();
+		return a2;
+	}
+
+	Variable[] sortArray() {
+		interp.getLeftParen();
+		Variable[] a1 = getArray();
+		interp.getRightParen();
+		int len = a1.length;
+		Variable[] a2 = new Variable[len];
+		String[] s = new String[len];
+		for (int i=0; i<len; i++) {
+			String t = a1[i].getString();
+			if (t==null)
+				t = ""+a1[i].getValue();
+			s[i] = t;
+		}
+		StringSorter.sort(s);
+		for (int i=0; i<len; i++) {
+			a2[i] = new Variable();
+			a2[i].setString(s[i]);
+		}
+		return a2;
 	}
 
 } // class Functions
