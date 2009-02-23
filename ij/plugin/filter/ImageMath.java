@@ -65,8 +65,9 @@ public class ImageMath implements PlugInFilter {
 
 	 	if (arg.equals("div")) {
 	 		if (image==1) mulValue = getValue("Divide", "Value: ", mulValue, 2);
-	 		if (canceled) return;
-			if (mulValue!=0.0) ip.multiply(1.0/mulValue);
+	 		if (canceled || (mulValue==0.0&&imp.getBitDepth()!=32))
+	 			return;
+			ip.multiply(1.0/mulValue);
 			return;
 		}
 

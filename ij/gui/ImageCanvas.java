@@ -1183,8 +1183,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			&& roi.getState()==roi.CONSTRUCTING
 			&& type!=roi.POINT)
 				imp.killRoi();
-			else
+			else {
 				roi.handleMouseUp(e.getX(), e.getY());
+				if (roi.getType()==Roi.LINE && roi.getLength()==0.0)
+					imp.killRoi();
+			}
 		}
 	}
 

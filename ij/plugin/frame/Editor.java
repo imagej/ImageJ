@@ -17,11 +17,17 @@ import ij.io.SaveDialog;
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	TextListener, ClipboardOwner, MacroConstants {
 	
+	/** ImportPackage statements added in front of scripts. Contains no 
+	newlines so that lines numbers in error messages are not changed. */
 	public static String JavaScriptIncludes =
 		"importPackage(Packages.ij);"+
 		"importPackage(Packages.ij.gui);"+
 		"importPackage(Packages.ij.process);"+
 		"importPackage(Packages.ij.measure);"+
+		"importPackage(Packages.ij.util);"+
+		"importPackage(Packages.ij.plugin);"+
+		"importPackage(Packages.ij.plugin.filter);"+
+		"importPackage(Packages.ij.plugin.frame);"+
 		"importPackage(java.lang);"+
 		"importPackage(java.awt);"+
 		"function print(s) {IJ.log(s);};";

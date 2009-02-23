@@ -262,6 +262,7 @@ public class Interpreter implements MacroConstants {
 				inPrint = false;
 				if (s!=null && !s.equals("NaN")) IJ.log(s);
 				return;
+			case ARRAY_FUNCTION: func.getArrayFunction(pgm.table[tokenAddress].type); break;
 			case EOF: break;
 			default:
 				error("Statement cannot begin with '"+pgm.decodeToken(token, tokenAddress)+"'");

@@ -211,7 +211,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (stats==null) return;
 		} else
 			stats = imp.getStatistics(measurements);
-		if (!IJ.isResultsWindow())
+		if (!IJ.isResultsWindow() && IJ.getInstance()!=null)
 			reset();
 		saveResults(stats, roi);
 	}

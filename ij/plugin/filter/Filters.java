@@ -23,7 +23,7 @@ public class Filters implements PlugInFilter {
 				imp.killRoi(); // ignore any line selection
 		}
 		int flags = IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
-		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1) {
+		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1 && arg.equals("invert")) {
 				invert16BitStack(imp);
 				return DONE;
 		}

@@ -1,5 +1,4 @@
- package ij;
-
+package ij;
 import java.awt.*;
 import java.awt.image.*;
 import java.net.URL;
@@ -1065,6 +1064,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	public void setPosition(int channel, int slice, int frame) {
+		verifyDimensions();
    		if (channel<1) channel = 1;
     	if (channel>nChannels) channel = nChannels;
     	if (slice<1) slice = 1;
