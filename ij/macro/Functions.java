@@ -2523,11 +2523,10 @@ public class Functions implements MacroConstants, Measurements {
 		Object js = null;
 		if (IJ.isJava16() && !IJ.isMacOSX())
 			js = IJ.runPlugIn("JavaScriptEvaluator", "");
-		else {
+		else
 			js = IJ.runPlugIn("JavaScript", "");
-			script = Editor.JavaScriptIncludes+script;
-		}
 		if (js==null) interp.error(Editor.JS_NOT_FOUND);
+		script = Editor.getJSPrefix("")+script;
 		String arg = "";
 		try {
 			Class c = js.getClass();
@@ -3666,10 +3665,15 @@ public class Functions implements MacroConstants, Measurements {
 			{setPosition(imp); return Double.NaN;}
 		if (name.equals("getPosition"))
 			{getPosition(imp); return Double.NaN;}
+		Calibration cal = imp.getCalibration();
 		if (name.equals("getFrameRate"))
-			{interp.getParens(); return imp.getCalibration().fps;}
+			{interp.getParens(); return cal.fps;}
 		if (name.equals("setFrameRate"))
-			{imp.getCalibration().fps=getArg(); return Double.NaN;}
+			{cal.fps=getArg(); return Double.NaN;}
+		if (name.equals("setTUnit"))
+			{cal.setTimeUnit(getStringArg()); return Double.NaN;}
+		if (name.equals("setZUnit"))
+			{cal.setZUnit(getStringArg()); return Double.NaN;}
 		if (imp.getStackSize()==1)
 			interp.error("Stack required");
 		if (name.equals("setDimensions"))

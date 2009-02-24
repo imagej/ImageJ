@@ -31,6 +31,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.lang);"+
 		"importPackage(java.awt);"+
 		"function print(s) {IJ.log(s);};";
+
 	public static String JS_NOT_FOUND = 
 		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
@@ -351,11 +352,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
+		text = getJSPrefix("") + text;
 		if (IJ.isJava16() && !IJ.isMacOSX()) {
 			IJ.runPlugIn("JavaScriptEvaluator", text);
 			return;
 		} else {
-			Object js = IJ.runPlugIn("JavaScript", JavaScriptIncludes+text);
+			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null) IJ.error(JS_NOT_FOUND);
 		}
 	}
@@ -998,6 +1000,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		
 	public static Editor getInstance() {
 		return instance;
+	}
+	
+	public static String getJSPrefix(String arg) {
+		if (arg==null) arg = "";
+		return JavaScriptIncludes+"function getArgument() {return \""+arg+"\";};";
 	}
 	
 }

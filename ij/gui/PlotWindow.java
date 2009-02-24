@@ -189,7 +189,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		add(buttons);
 		plot.draw();
 		pack();
-		coordinates.setText(""); 
+		coordinates.setText("                    ");
 		ImageProcessor ip = plot.getProcessor();
 		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
 			imp.setProcessor(null, ip);

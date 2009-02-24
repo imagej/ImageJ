@@ -45,7 +45,7 @@ The following command line options are recognized by ImageJ:
      Example 3: -port0 (do not check for another instance)
 
   -macro path [arg]
-     Runs a macro, passing it an optional argument
+     Runs a macro or script, passing it an optional argument
      Example 1: -macro analyze.ijm
      Example 2: -macro analyze /Users/wayne/images/stack1
 

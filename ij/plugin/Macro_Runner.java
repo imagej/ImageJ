@@ -111,7 +111,7 @@ public class Macro_Runner implements PlugIn {
 			String macro = new String(buffer, 0, size, "ISO8859_1");
 			in.close();
 			if (name.endsWith(".js"))
-				return runJavaScript(macro);
+				return runJavaScript(macro, arg);
 			else
 				return runMacro(macro, arg);
 		}
@@ -185,11 +185,12 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	String runJavaScript(String text) {
+	String runJavaScript(String text, String arg) {
+		text = Editor.getJSPrefix(arg)+text;
 		if (IJ.isJava16() && !IJ.isMacOSX())
 			IJ.runPlugIn("JavaScriptEvaluator", text);
 		else {
-			Object js = IJ.runPlugIn("JavaScript", Editor.JavaScriptIncludes+text);
+			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null)
 				IJ.error(Editor.JS_NOT_FOUND);
 		}

@@ -38,7 +38,7 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 			ScriptEngine engine = scriptEngineManager.getEngineByName("ECMAScript");
 			if (engine == null)
 				{IJ.error("Could not find JavaScript engine"); return;}
-			engine.eval(Editor.JavaScriptIncludes+script);
+			engine.eval(script);
 		} catch(Throwable e) {
 			String msg = e.getMessage();
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EcmaError: "))
