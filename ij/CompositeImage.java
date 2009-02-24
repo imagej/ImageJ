@@ -459,7 +459,7 @@ public class CompositeImage extends ImagePlus {
 		switch (mode) {
 			case COMPOSITE: return "composite";
 			case COLOR: return "color";
-			case GRAYSCALE: return "gray";
+			case GRAYSCALE: return "grayscale";
 		}
 		return "";
 	}

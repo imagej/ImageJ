@@ -475,7 +475,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (showProgress)
 			IJ.showProgress(1.0);
 		if (showResults)
-			rt.show("Results");
+			rt.updateResults();
 		imp.killRoi();
 		ip.resetRoi();
 		ip.reset();
@@ -795,8 +795,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 			roiManager.add(imp, roi, rt.getCounter());
 		}
-		//if (showResults)
-		//	analyzer.displayResults();
+		if (showResults)
+			rt.addResults();
 	}
 	
 	/** Draws a selected particle in a separate image.	This is

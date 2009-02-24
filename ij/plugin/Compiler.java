@@ -176,8 +176,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 						IJ.error("File name must end with \".java\" or \".class\".");
 						okay = false;
 					}
-				} else if (!(lcName.endsWith(".java")||lcName.endsWith(".txt")||lcName.endsWith(".ijm"))) {
-					IJ.error("File name must end with \".java\" or \".txt\".");
+				} else if (!(lcName.endsWith(".java")||lcName.endsWith(".txt")||lcName.endsWith(".ijm")||lcName.endsWith(".js"))) {
+					IJ.error("File name must end with \".java\", \".txt\" or \".js\".");
 					okay = false;
 				}
 			}

@@ -262,6 +262,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_FONT_LIST: array = getFontList(); break;
 			case NEW_MENU: array = newMenu(); break;
 			case GET_LIST: array = getList(); break;
+			case ARRAY_FUNC: array = doArray(); break;
 			default:
 				array = null;
 				interp.error("Array function expected");
@@ -659,7 +660,8 @@ public class Functions implements MacroConstants, Measurements {
 	void makeOval() {
 		Roi previousRoi = getImage().getRoi();
 		if (shiftKeyDown||altKeyDown) getImage().saveRoi();
-		IJ.makeOval((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
+		IJ.makeOval((int)Math.round(getFirstArg()), (int)Math.round(getNextArg()),
+			(int)Math.round(getNextArg()), (int)Math.round(getLastArg()));
 		Roi roi = getImage().getRoi();
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
@@ -669,7 +671,8 @@ public class Functions implements MacroConstants, Measurements {
 	void makeRectangle() {
 		Roi previousRoi = getImage().getRoi();
 		if (shiftKeyDown||altKeyDown) getImage().saveRoi();
-		IJ.makeRectangle((int)getFirstArg(), (int)getNextArg(), (int)getNextArg(), (int)getLastArg());
+		IJ.makeRectangle((int)Math.round(getFirstArg()), (int)Math.round(getNextArg()),
+			(int)Math.round(getNextArg()), (int)Math.round(getLastArg()));
 		Roi roi = getImage().getRoi();
 		if (previousRoi!=null && roi!=null)
 			updateRoi(roi);
@@ -4058,6 +4061,133 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Argument must be 'run', 'break', 'trace' or 'fast-trace'");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		return null;
+	}
+	
+	Variable[] doArray() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==PREDEFINED_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("copy"))
+			return copyArray();
+		else if (name.equals("trim"))
+			return trimArray();
+		else if (name.equals("sort"))
+			return sortArray();
+		else if (name.equals("getStatistics"))
+			return getArrayStatistics();
+		else if (name.equals("fill"))
+			return fillArray();
+		else
+			interp.error("Unrecognized Stack function");
+		return null;
+	}
+
+	Variable[] copyArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getRightParen();
+		return duplicate(a);
+	}
+	
+	Variable[] duplicate(Variable[] a1) {
+		Variable[] a2 = new Variable[a1.length];
+		for (int i=0; i<a1.length; i++)
+			a2[i] = (Variable)a1[i].clone();
+		return a2;
+	}
+		
+	Variable[] trimArray() {
+		interp.getLeftParen();
+		Variable[] a1 = getArray();
+		int len = a1.length;
+		int size = (int)getLastArg();
+		if (size<0) size = 0;
+		if (size>len) size = len;
+		Variable[] a2 = new Variable[size];
+		for (int i=0; i<size; i++)
+			a2[i] = (Variable)a1[i].clone();
+		return a2;
+	}
+
+	Variable[] sortArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getRightParen();
+		int len = a.length;
+		int nNumbers = 0;
+		for (int i=0; i<len; i++) {
+			if (a[i].getString()==null) nNumbers++;
+		}
+		if (nNumbers==len) {
+			double[] d = new double[len];
+			for (int i=0; i<len; i++)
+				d[i] = a[i].getValue();
+			Arrays.sort(d);
+			for (int i=0; i<len; i++)
+				a[i].setValue(d[i]);
+		} else if (nNumbers==0) {
+			String[] s = new String[len];
+			for (int i=0; i<len; i++)
+				s[i] = a[i].getString();
+			StringSorter.sort(s);
+			for (int i=0; i<len; i++)
+				a[i].setString(s[i]);
+		} else
+			interp.error("Mixed strings and numbers");
+		return a;
+	}
+	
+	Variable[] getArrayStatistics() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		Variable minv = getNextVariable();
+		Variable maxv=null, mean=null, std=null;
+		interp.getToken();
+		int arg = 1;
+		while (interp.token==',') {
+			arg++;
+			switch (arg) {
+				case 2: maxv = getVariable(); break;
+				case 3: mean = getVariable(); break;
+				case 4: std = getVariable(); break;
+				default: interp.error("')' expected");
+			}
+			interp.getToken();
+		}
+		if (interp.token!=')') interp.error("')' expected");
+		int n = a.length;
+		double sum=0.0, sum2=0.0, value;
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i=0; i<n; i++) {
+			value = a[i].getValue();
+			sum += value;
+			sum2 += value*value;
+			if (value<min) min = value;
+			if (value>max) max = value;
+		}
+		minv.setValue(min);
+		if (maxv!=null) maxv.setValue(max);
+		if (mean!=null) mean.setValue(sum/n);
+		if (std!=null) {
+      			double stdDev = (n*sum2-sum*sum)/n;
+			stdDev = Math.sqrt(stdDev/(n-1.0));
+			std.setValue(stdDev);
+		}
+		return a;
+	}
+
+	Variable[] fillArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		double v = getLastArg();
+		for (int i=0; i<a.length; i++)
+			a[i].setValue(v);
+		return a;
 	}
 
 } // class Functions

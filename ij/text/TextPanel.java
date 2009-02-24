@@ -141,6 +141,22 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		return labels==null?"":labels;
 	}
 	
+	public synchronized void updateColumnHeadings(String labels) {
+		this.labels = labels;
+		if (labels.equals("")) {
+			iColCount = 1;
+			sColHead=new String[1];
+			sColHead[0] = "";
+		} else {
+			if (labels.endsWith("\t"))
+				this.labels = labels.substring(0, labels.length()-1);
+			sColHead = Tools.split(this.labels, "\t");
+        	iColCount = sColHead.length;
+			iColWidth=new int[iColCount];
+			columnsManuallyAdjusted = false;
+		}
+	}
+
 	public void setFont(Font font, boolean antialiased) {
 		tc.fFont = font;
 		tc.iImage = null;
@@ -189,14 +205,28 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 	}
 	
-	/** Adds a single line to the end of this TextPanel without updating the display. */
-	void appendWithoutUpdate(String data) {
-		char[] chars = data.toCharArray();
-		vData.addElement(chars);
-		iRowCount++;
+	/** Adds strings contained in an ArrayList to the end of this TextPanel. */
+	public void append(ArrayList list) {
+		if (list==null) return;
+		if (vData==null) setColumnHeadings("");
+		for (int i=0; i<list.size(); i++)
+			appendWithoutUpdate((String)list.get(i));
+		if (isShowing()) {
+			updateDisplay();
+			unsavedLines = true;
+		}
 	}
 
-	void updateDisplay() {
+	/** Adds a single line to the end of this TextPanel without updating the display. */
+	public void appendWithoutUpdate(String data) {
+		if (vData!=null) {
+			char[] chars = data.toCharArray();
+			vData.addElement(chars);
+			iRowCount++;
+		}
+	}
+
+	public void updateDisplay() {
 		iY=iRowHeight*(iRowCount+1);
 		adjustVScroll();
 		if (iColCount>1 && iRowCount<=10 && !columnsManuallyAdjusted)
