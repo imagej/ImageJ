@@ -45,12 +45,13 @@ The following command line options are recognized by ImageJ:
      Example 3: -port0 (do not check for another instance)
 
   -macro path [arg]
-     Runs a macro or script, passing it an optional argument
+     Runs a macro or script, passing it an optional argument,
+     which can be retieved using getArgument()
      Example 1: -macro analyze.ijm
      Example 2: -macro analyze /Users/wayne/images/stack1
 
   -batch path [arg]
-    Runs a macro in batch (no GUI) mode, passing it an optional argument.
+    Runs a macro or script in batch (no GUI) mode, passing it an optional argument.
     ImageJ exits when the macro finishes.
 
   -eval "macro code"

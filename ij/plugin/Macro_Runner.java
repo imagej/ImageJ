@@ -6,6 +6,7 @@ import ij.text.*;
 import ij.util.*;
 import ij.plugin.frame.Editor;
 import java.io.*;
+import java.lang.reflect.*;
 
 /** Opens and runs a macro file. */
 public class Macro_Runner implements PlugIn {
@@ -185,14 +186,27 @@ public class Macro_Runner implements PlugIn {
 			return null;
 	}
 	
-	String runJavaScript(String text, String arg) {
-		text = Editor.getJSPrefix(arg)+text;
+	/** Runs a script on the current thread, passing 'arg', which
+		the script can retrieve using the getArgument() function.*/
+	public String runJavaScript(String script, String arg) {
+		if (arg==null) arg = "";
+		Object js = null;
 		if (IJ.isJava16() && !IJ.isMacOSX())
-			IJ.runPlugIn("JavaScriptEvaluator", text);
-		else {
-			Object js = IJ.runPlugIn("JavaScript", text);
-			if (js==null)
-				IJ.error(Editor.JS_NOT_FOUND);
+			js = IJ.runPlugIn("JavaScriptEvaluator", "");
+		else
+			js = IJ.runPlugIn("JavaScript", "");
+		if (js==null) IJ.error(Editor.JS_NOT_FOUND);
+		script = Editor.getJSPrefix(arg)+script;
+		try {
+			Class c = js.getClass();
+			Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
+			String s = (String)m.invoke(js, new Object[] {script, arg});			
+		} catch(Exception e) {
+			String msg = ""+e;
+			if (msg.indexOf("NoSuchMethod")!=0)
+				msg = "\"JavaScript.jar\" ("+IJ.URL+"/download/tools/JavaScript.jar)\nis outdated";
+			IJ.error(msg);
+			return null;
 		}
 		return null;
 	}

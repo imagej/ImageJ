@@ -2512,36 +2512,13 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		if (eval) {
 			if (arg!=null && (name.equals("script")||name.equals("js")))
-				return evalScript(arg);
+				return (new Macro_Runner()).runJavaScript(arg, "");
 			else
 				return IJ.runMacro(name, arg);
 		} else
 			return IJ.runMacroFile(name, arg);
 	}
 
-	String evalScript(String script) {
-		Object js = null;
-		if (IJ.isJava16() && !IJ.isMacOSX())
-			js = IJ.runPlugIn("JavaScriptEvaluator", "");
-		else
-			js = IJ.runPlugIn("JavaScript", "");
-		if (js==null) interp.error(Editor.JS_NOT_FOUND);
-		script = Editor.getJSPrefix("")+script;
-		String arg = "";
-		try {
-			Class c = js.getClass();
-			Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
-			String s = (String)m.invoke(js, new Object[] {script, arg});			
-		} catch(Exception e) {
-			String msg = ""+e;
-			if (msg.indexOf("NoSuchMethod")!=0)
-				msg = "\"JavaScript.jar\" ("+IJ.URL+"/download/tools/JavaScript.jar)\nis outdated";
-			interp.error(msg);
-			return null;
-		}
-		return null;
-	}
- 	
 	void setThreshold() {
 		double lower = getFirstArg();
 		double upper = getNextArg();

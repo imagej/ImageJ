@@ -94,12 +94,13 @@ public class IJ {
 		return mr.runMacro(macro, arg);
 	}
 
-	/** Runs the specified macro file or script. The file is assumed to be in the macros 
-		folder unless <code>name</code> is a full path. ".txt"  is
+	/** Runs the specified macro or script file in the current thread.
+		The file is assumed to be in the macros folder
+ 		unless <code>name</code> is a full path. ".txt"  is
     	added if <code>name</code> does not have an extension.
 		The optional string argument (<code>arg</code>) can be retrieved in the called 
 		macro or script (v1.42k or later) using the getArgument() function. 
-		Returns any string value returned by the macro or null. Scripts always return null.
+		Returns any string value returned by the macro, or null. Scripts always return null.
 		The equivalent macro function is runMacro(). */
 	public static String runMacroFile(String name, String arg) {
 		if (ij==null && Menus.getCommands()==null)
@@ -1180,10 +1181,7 @@ public class IJ {
 		} else {
 			DirectoryChooser dc = new DirectoryChooser(title);
 			String dir = dc.getDirectory();
-			if (dir==null)
-				Macro.abort();
-			else if (Recorder.record)
-				Recorder.record("getDirectory", dir);
+			if (dir==null) Macro.abort();
 			return dir;
 		}
 	}

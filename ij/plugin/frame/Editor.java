@@ -1003,7 +1003,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	public static String getJSPrefix(String arg) {
-		if (arg==null) arg = "";
 		return JavaScriptIncludes+"function getArgument() {return \""+arg+"\";};";
 	}
 	
