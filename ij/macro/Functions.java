@@ -1685,6 +1685,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 		    addPlotText(); 
 		    return;
+		} else if (name.equals("drawLine")) {
+		    drawPlotLine(); 
+		    return;
 		} else if (name.equals("setColor")) {
 		    setPlotColor(); 
 		    return;
@@ -1803,6 +1806,14 @@ public class Functions implements MacroConstants, Measurements {
 		double y = getLastArg();
 		plot.setJustification(justification);
 		plot.addLabel(x, y, str);
+	}
+
+	void drawPlotLine() {
+		double x1 = getFirstArg();
+		double y1 = getNextArg();
+		double x2 = getNextArg();
+		double y2 = getLastArg();
+		plot.drawLine(x1, y1, x2, y2);
 	}
 
 	void setPlotColor() {

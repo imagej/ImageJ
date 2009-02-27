@@ -69,7 +69,6 @@ public class JavaProperties implements PlugIn {
 		String osName = System.getProperty("os.name");
 		sb.append("  IJ.getVersion: "+IJ.getVersion()+"\n");
 		sb.append("  IJ.isJava2: "+IJ.isJava2()+"\n");
-		sb.append("  IJ.isJava14: "+IJ.isJava14()+"\n");
 		sb.append("  IJ.isJava15: "+IJ.isJava15()+"\n");
 		sb.append("  IJ.isJava16: "+IJ.isJava16()+"\n");
 		sb.append("  IJ.isLinux: "+IJ.isLinux()+"\n");

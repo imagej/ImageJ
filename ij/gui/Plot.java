@@ -306,6 +306,16 @@ public class Plot {
         markSize = lineWidth==1?5:7;
     }
     
+	/* Draws a line using the coordinate system defined by setLimits(). */
+	public void drawLine(double x1, double y1, double x2, double y2) {
+		setup();
+		int ix1 = LEFT_MARGIN + (int)Math.round((x1-xMin)*xScale);
+		int iy1 = TOP_MARGIN + frameHeight - (int)Math.round((y1-yMin)*yScale);
+		int ix2 = LEFT_MARGIN + (int)Math.round((x2-xMin)*xScale);
+		int iy2 = TOP_MARGIN + frameHeight - (int)Math.round((y2-yMin)*yScale);
+		ip.drawLine(ix1, iy1, ix2, iy2);
+	}
+
     /** Changes the font. */
     public void changeFont(Font font) {
         setup();

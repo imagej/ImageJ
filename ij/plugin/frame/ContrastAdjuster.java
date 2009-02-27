@@ -246,7 +246,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if (label2==null&&IJ.isMacOSX()) text += "    ";
 		panel = new Panel();
 		c.gridy = y++;
-		int bottomInset = IJ.isMacOSX() && IJ.isJava14()?4:0;
+		int bottomInset = IJ.isMacOSX()?4:0;
 		c.insets = new Insets(0, 10, bottomInset, 0);
 		gridbag.setConstraints(panel, c);
         panel.setLayout(new FlowLayout(label2==null?FlowLayout.CENTER:FlowLayout.LEFT, 0, 0));
@@ -1092,7 +1092,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 
 
 class TrimmedLabel extends Label {
-	int trim = IJ.isMacOSX() && IJ.isJava14()?0:6;
+	int trim = IJ.isMacOSX()?0:6;
 
     public TrimmedLabel(String title) {
         super(title);

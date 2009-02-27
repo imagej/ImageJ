@@ -176,8 +176,7 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		if (IJ.isMacintosh()&&applet==null) { 
 			Object qh = null; 
-			if (IJ.isJava14()) 
-				qh = IJ.runPlugIn("MacAdapter", ""); 
+			qh = IJ.runPlugIn("MacAdapter", ""); 
 			if (qh==null) 
 				IJ.runPlugIn("QuitHandler", ""); 
 		} 

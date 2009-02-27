@@ -5,11 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.42k, 25 February 2009</u>
+<li> <u>1.42k, 27 February 2009</u>
 <ul>
 <li> Scripts can be passed a string argument when called from the command
  line (using the -macro or -batch options) or using the IJ.runMacroFile() method.
  Scripts can use the getArgument() function to retrieve the argument.
+ <li> Removed the "Input Slice Spacing" field from the <i>Image&gt;Stacks&gt;Reslice</i>
+ dialog box.
+<li> <i>File&gt;Import&gt;URL</i> opens JPEG, PNG and GIF images from URLs based 
+on either the extension or the content type.
+<li> Added the Plot.drawLine(x1,y1,x2,y2) macro function.
 <li> Added the Stack.setTUnit(string) and Stack.setZUnit(string) macro functions.
 <li> Julian Cooper fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that somethimes caused the preview
 rectangle did not accurately show the extent when starting with a line selection.
@@ -18,6 +23,9 @@ rectangle did not accurately show the extent when starting with a line selection
 in plot windows.
 <li> Fixed a bug that caused scripts called from the command line using the
 -batch option to fail to run.
+<li> Fixed a bug that caused getDirecory() calls to not be recorded on Linux and Windows.
+<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Reslice</i> to not work correctly
+with signed 16-bit stacks.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

@@ -308,10 +308,6 @@ public class FileSaver {
 		Returns false if the user selects cancel. Requires
 		java 1.4 or later. */
 	public boolean saveAsPng() {
-		if (!IJ.isJava14()) {
-			IJ.error("Save As PNG", "Java 1.4 or later required");
-			return false;
-		}
 		String path = getPath("PNG", ".png");
 		if (path==null)
 			return false;

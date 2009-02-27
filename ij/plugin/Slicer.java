@@ -26,7 +26,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private double outputZSpacing = 1.0;
 	private int outputSlices = 1;
 	private boolean noRoi;
-	private boolean rgb;
+	private boolean rgb, notFloat;
 	private Vector fields, checkboxes;
 	private Label message;
 	private ImagePlus imp;
@@ -67,6 +67,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 long startTime = System.currentTimeMillis();
 		 ImagePlus imp2 = null;
 		 rgb = imp.getType()==ImagePlus.COLOR_RGB;
+		 notFloat = !rgb && imp.getType()!=ImagePlus.GRAY32;
 		 imp2 = reslice(imp);
 		 if (imp2==null)
 				return;
@@ -400,7 +401,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				for (int j=0; j<=n2; j++) {
 					index = (int)distance+j;
 					if (index<values.length) {
-						 if (rgb) {
+						 if (notFloat)
+								values[index] = (float)ip.getInterpolatedPixel(rx, ry);
+						 else if (rgb) {
 								int rgbPixel = ((ColorProcessor)ip).getInterpolatedRGBPixel(rx, ry);
 								values[index] = Float.intBitsToFloat(rgbPixel&0xffffff);
 						 } else
@@ -468,7 +471,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 double rx = x1;
 		 double ry = y1;
 		 for (int i=0; i<n; i++) {
-				if (rgb) {
+		 		if (notFloat)
+					data[i] = (float)ip.getInterpolatedPixel(rx, ry);
+				else if (rgb) {
 					int rgbPixel = ((ColorProcessor)ip).getInterpolatedRGBPixel(rx, ry);
 					data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
 				} else
@@ -489,7 +494,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 int rx = x1;
 		 int ry = y1;
 		 for (int i=0; i<n; i++) {
-				if (rgb) {
+		 		if (notFloat)
+					data[i] = (float)ip.getPixel(rx, ry);
+				else if (rgb) {
 					int rgbPixel = ((ColorProcessor)ip).getPixel(rx, ry);
 					data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
 				} else

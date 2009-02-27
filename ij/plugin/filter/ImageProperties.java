@@ -33,7 +33,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 	
 	void showDialog(ImagePlus imp) {
 		String options = Macro.getOptions();
-		if (options!=null && IJ.isJava14()) {
+		if (options!=null ) {
 			String options2 = options.replaceAll(" depth=", " slices=");
 			options2 = options2.replaceAll(" interval=", " frame=");
 			Macro.setOptions(options2);

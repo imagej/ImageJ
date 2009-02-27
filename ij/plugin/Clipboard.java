@@ -46,12 +46,9 @@ public class Clipboard implements PlugIn, Transferable {
 	}
 	
 	void paste() {
-		if (ImagePlus.getClipboard()==null) {
-			if (IJ.isJava14())
-				showSystemClipboard();
-			else
-				IJ.noImage();
-		} else {
+		if (ImagePlus.getClipboard()==null)
+			showSystemClipboard();
+		else {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null)
 				imp.paste();
