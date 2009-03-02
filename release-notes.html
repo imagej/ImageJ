@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.42k, 27 February 2009</u>
+<li> <u>1.42k, 2 March 2009</u>
 <ul>
+<li> <i>Image&gt;Type&gt;RGB Color</i> will convert the channels in a multichannel composite 
+color stack to an RGB stack if the number of channels is the same as the number of images in the
+stack and the display mode, set with the "Channels" tool, is "Color" or "Grayscale".
 <li> Scripts can be passed a string argument when called from the command
  line (using the -macro or -batch options) or using the IJ.runMacroFile() method.
  Scripts can use the getArgument() function to retrieve the argument.
@@ -26,6 +29,10 @@ in plot windows.
 <li> Fixed a bug that caused getDirecory() calls to not be recorded on Linux and Windows.
 <li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Reslice</i> to not work correctly
 with signed 16-bit stacks.
+<li> Fixed bugs the caused batch mode macros that used
+<i>Process&gt;Math&gt;Macro</i> or did user-defined curve fitting to fail.
+<li> Fixed a bug on Windows that sometimes caused paste operations in the macro editor
+to not insert the text in the correct location.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

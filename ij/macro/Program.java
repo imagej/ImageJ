@@ -98,7 +98,7 @@ public class Program implements MacroConstants {
 	}
 
 	/** Looks up a word in the symbol table. Returns null if the word is not found. */
-	public Symbol lookupWord(String str) {
+	Symbol lookupWord(String str) {
         //IJ.log("lookupWord: "+str);
 		Symbol symbol;
 		String symStr;
@@ -250,4 +250,18 @@ public class Program implements MacroConstants {
         return menus;
     }
 
+	// Returns 'true' if this macro program contains the specified word. */
+	public boolean hasWord(String word) {
+		int token, tokenAddress;
+		for (int i=0; i<code.length; i++) {
+			token = code[i];
+			if (token<=127 ||token==EOL) continue;
+			if (token==EOF) return false;
+			tokenAddress = token>>TOK_SHIFT;
+			String str = table[tokenAddress].str;
+			if (str!=null && str.equals(word)) return true;
+		}
+		return false;
+	}
+	
 } // Program

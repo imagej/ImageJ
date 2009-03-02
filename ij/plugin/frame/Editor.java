@@ -72,6 +72,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private int previousLine;
     private static Editor instance;
     private int runToLine;
+    private boolean fixedLineEndings;
 	
 	public Editor() {
 		this(16, 60, 0, MENU_BAR);
@@ -178,6 +179,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	public void create(String name, String text) {
+		if (text!=null && text.length()>0) fixedLineEndings = true;
 		ta.append(text);
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
 		ta.setCaretPosition(0);
@@ -502,6 +504,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		catch  (Exception e)  {
 			s  = e.toString( );
 		}
+		if (!fixedLineEndings && IJ.isWindows()) {
+			String text = ta.getText();
+			int len = text.length();
+			text = text.replaceAll("\r\n", "\n");
+			if (text.length()!=len) ta.setText(text);
+		}
+		fixedLineEndings = true;
 		int start = ta.getSelectionStart( );
 		int end = ta.getSelectionEnd( );
 		ta.replaceRange(s, start, end);
