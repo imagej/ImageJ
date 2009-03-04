@@ -1,6 +1,5 @@
 package ij.gui;
 import ij.macro.Interpreter;
-
 import java.awt.*;
 import java.awt.image.*;
 

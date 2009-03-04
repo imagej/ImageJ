@@ -315,6 +315,7 @@ public class ImageMath implements PlugInFilter {
 			interp.setVariable("w", w);
 			interp.setVariable("h", h);
 		}
+		boolean showProgress = image==1 && !Interpreter.isBatchMode();
 		interp.setVariable("z", image-1);
 		int bitDepth = imp.getBitDepth();
 		Rectangle r = ip.getRoi();
@@ -328,7 +329,7 @@ public class ImageMath implements PlugInFilter {
 			if (hasGetPixel)
 				pixels2 = new byte[w*h];
 			for (int y=r.y; y<(r.y+r.height); y++) {
-				if (image==1 && y%inc==0)
+				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
@@ -353,7 +354,7 @@ public class ImageMath implements PlugInFilter {
 			if (hasGetPixel)
 				pixels2 = new int[w*h];
 			for (int y=r.y; y<(r.y+r.height); y++) {
-				if (image==1 && y%inc==0)
+				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
@@ -390,7 +391,7 @@ public class ImageMath implements PlugInFilter {
 			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
 		} else {
 			for (int y=r.y; y<(r.y+r.height); y++) {
-				if (image==1 && y%inc==0)
+				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
@@ -404,7 +405,7 @@ public class ImageMath implements PlugInFilter {
 				}
 			}
 		}
-		if (image==1)
+		if (showProgress)
 			IJ.showProgress(1.0);
 		if (image==imp.getCurrentSlice())
 			ip.resetMinAndMax();

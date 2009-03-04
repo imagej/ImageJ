@@ -101,6 +101,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setDrawingSize(ic.dstWidth, ic.dstHeight);
 	}
 
+	public void setSourceRect(Rectangle r) {
+		srcRect = r;
+	}
+
 	public void setDrawingSize(int width, int height) {
 	    dstWidth = width;
 	    dstHeight = height;
