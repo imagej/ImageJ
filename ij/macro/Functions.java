@@ -1685,6 +1685,9 @@ public class Functions implements MacroConstants, Measurements {
 		} else if (name.equals("addText") || name.equals("drawLabel")) {
 		    addPlotText(); 
 		    return;
+		} else if (name.equals("drawLine")) {
+		    drawPlotLine(); 
+		    return;
 		} else if (name.equals("setColor")) {
 		    setPlotColor(); 
 		    return;
@@ -1803,6 +1806,14 @@ public class Functions implements MacroConstants, Measurements {
 		double y = getLastArg();
 		plot.setJustification(justification);
 		plot.addLabel(x, y, str);
+	}
+
+	void drawPlotLine() {
+		double x1 = getFirstArg();
+		double y1 = getNextArg();
+		double x2 = getNextArg();
+		double y2 = getLastArg();
+		plot.drawLine(x1, y1, x2, y2);
 	}
 
 	void setPlotColor() {
@@ -2512,37 +2523,13 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		if (eval) {
 			if (arg!=null && (name.equals("script")||name.equals("js")))
-				return evalScript(arg);
+				return (new Macro_Runner()).runJavaScript(arg, "");
 			else
 				return IJ.runMacro(name, arg);
 		} else
 			return IJ.runMacroFile(name, arg);
 	}
 
-	String evalScript(String script) {
-		Object js = null;
-		if (IJ.isJava16() && !IJ.isMacOSX())
-			js = IJ.runPlugIn("JavaScriptEvaluator", "");
-		else {
-			js = IJ.runPlugIn("JavaScript", "");
-			script = Editor.JavaScriptIncludes+script;
-		}
-		if (js==null) interp.error(Editor.JS_NOT_FOUND);
-		String arg = "";
-		try {
-			Class c = js.getClass();
-			Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
-			String s = (String)m.invoke(js, new Object[] {script, arg});			
-		} catch(Exception e) {
-			String msg = ""+e;
-			if (msg.indexOf("NoSuchMethod")!=0)
-				msg = "\"JavaScript.jar\" ("+IJ.URL+"/download/tools/JavaScript.jar)\nis outdated";
-			interp.error(msg);
-			return null;
-		}
-		return null;
-	}
- 	
 	void setThreshold() {
 		double lower = getFirstArg();
 		double upper = getNextArg();
@@ -3666,10 +3653,15 @@ public class Functions implements MacroConstants, Measurements {
 			{setPosition(imp); return Double.NaN;}
 		if (name.equals("getPosition"))
 			{getPosition(imp); return Double.NaN;}
+		Calibration cal = imp.getCalibration();
 		if (name.equals("getFrameRate"))
-			{interp.getParens(); return imp.getCalibration().fps;}
+			{interp.getParens(); return cal.fps;}
 		if (name.equals("setFrameRate"))
-			{imp.getCalibration().fps=getArg(); return Double.NaN;}
+			{cal.fps=getArg(); return Double.NaN;}
+		if (name.equals("setTUnit"))
+			{cal.setTimeUnit(getStringArg()); return Double.NaN;}
+		if (name.equals("setZUnit"))
+			{cal.setZUnit(getStringArg()); return Double.NaN;}
 		if (imp.getStackSize()==1)
 			interp.error("Stack required");
 		if (name.equals("setDimensions"))

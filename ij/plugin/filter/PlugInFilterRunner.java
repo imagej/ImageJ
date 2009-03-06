@@ -328,7 +328,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
     public void run() {
         Thread thread = Thread.currentThread();
         try {
-            if (thread == previewThread)
+            if (thread==previewThread)
                 runPreview();
             else if (slicesForThread!=null && slicesForThread.containsKey(thread)) {
                 int[] range = (int[])slicesForThread.get(thread);
@@ -336,14 +336,20 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
             } else
                 IJ.error("PlugInFilterRunner internal error:\nunsolicited background thread");
         } catch (Exception err) {
-            IJ.beep();
-            IJ.log("ERROR: "+err+"\nin "+thread.getName()+
-            "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4  
+			if (thread==previewThread) {
+				previewThread = null;
+				gd.previewRunning(false);
+			}
+        	String msg = ""+err;
+        	if (msg.indexOf(Macro.MACRO_CANCELED)==-1) {
+				IJ.beep();
+				IJ.log("ERROR: "+msg+"\nin "+thread.getName()+
+					"\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4 
+			}
         }
     }
             
-    /** The background thread for preview
-     */
+    /** The background thread for preview */
     private void runPreview() {
         if (IJ.debugMode) IJ.log("preview thread started; imp="+imp.getTitle());
         Thread thread = Thread.currentThread();
@@ -358,7 +364,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         }
         boolean previewDataOk = false;
         while(bgPreviewOn) {
-            if (previewCheckboxOn) gd.previewRunning(true);// optical feedback
+            if (previewCheckboxOn) gd.previewRunning(true); // visual feedback
             interruptable: {
                 if (imp.getRoi() != originalRoi) {
                     imp.setRoi(originalRoi);        // restore roi; the PlugInFilter may have affected it
@@ -429,7 +435,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
             previewThread.setPriority(Thread.currentThread().getPriority());
         } catch (Exception e) {}
         synchronized (this) {
-            bgPreviewOn = false;                //tell a possible background thread to terminate
+            bgPreviewOn = false;     //tell a possible background thread to terminate
             notify();                           //(but finish processing unless interrupted)
         }
         try {previewThread.join();}             //wait until the background thread is done
@@ -481,7 +487,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
                 killPreview();
                 return true;
             } else
-            previewThread.interrupt();              //all other changes: restart calculating preview (with new parameters)
+				previewThread.interrupt();  //all other changes: restart calculating preview (with new parameters)
         }
         return true;
     }

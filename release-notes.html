@@ -5,23 +5,43 @@
 </head>
 <body>
 
-<li> <u>1.42j, 23 February 2009</u>
+<li> <u>1.42k, 6 March 2009</u>
 <ul>
-<li> <i>Analyze&gt;Analyze Particles</i> is faster because results are no longer continuosly displayed.
-<li> With 32-bit (float) images, <i>Process&gt;Math&gt;Divide</i> creates <i>Infinity</i>, <i>-Infinity</i> or <i>NaN</i> 
-pixels when the source pixels are positive, negative or zero.
-<li> Min and Max values in the Results window are infinite if the image contains <i>Infinity</i> or <i>-Infinity</i> values.
-<li> Added the Array.copy(), Array.getStatistics(), Array.sort() and Array.trim() macro functions.
-<li> The "Process Stack?" dialog is no longer displayed in macros that call run()
-without the optional options argument.
-<li> Values passed to the makeRectangle() and makeOval() macro functions are rounded.
-<li> The addResults() and updateResults() methods in the ResultsTable class
-allow values to be added to the "Results" window more quickly.
-<li> Fixed a bug, introduced in 1.42i, that caused the <i>Smooth</i>, <i>Sharpen</i> and <i>Find Edges</i>
-commands to invert16-bit stacks.
-<li> Fixed a bug that caused the Stack.setSlice() macro function to sometimes 
-not work correctly in batch mode macros.
- </ul>
+<li> Added the <i>Image&gt;Zoom&gt;Exact</i> command, 
+which is based on Albert Cardona's
+<a href="http://albert.rierol.net/software.html">ZoomExact</a>
+plugin.
+<li> <i>Process&gt;Math&gt;</i> commands now support "Preview" and use
+parallel threads when processing stacks.
+<li> <i>Image&gt;Type&gt;RGB Color</i> will convert the channels in a multichannel composite 
+color stack to an RGB stack if the number of channels is the same as the number of images in the
+stack and the display mode, set with the "Channels" tool, is "Color" or "Grayscale".
+<li> Scripts can be passed a string argument when called from the command
+ line (using the -macro or -batch options) or using the IJ.runMacroFile() method.
+ Scripts can use the getArgument() function to retrieve the argument.
+ <li> Removed the "Input Slice Spacing" field from the <i>Image&gt;Stacks&gt;Reslice</i>
+ dialog box.
+<li> <i>File&gt;Import&gt;URL</i> opens JPEG, PNG and GIF images from URLs based 
+on either the extension or the content type.
+<li> Added the Plot.drawLine(x1,y1,x2,y2) macro function.
+<li> Added the Stack.setTUnit(string) and Stack.setZUnit(string) macro functions.
+<li> Julian Cooper fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that somethimes caused the preview
+rectangle did not accurately show the extent when starting with a line selection.
+<li> Berthold Daum fixed a bug that caused ImageJ to fail to open 48-bit TIFFs created by
+RawTherapee program.
+<li> Fixed a bug that caused run("Measure") to not work as expected when used in -batch command line macros.
+<li> Fixed a bug that sometimes caused the cursor X and Y coordinates to not be displayed
+in plot windows.
+<li> Fixed a bug that caused scripts called from the command line using the
+-batch option to fail to run.
+<li> Fixed a bug that caused getDirecory() calls to not be recorded on Linux and Windows.
+<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Reslice</i> to not work correctly
+with signed 16-bit stacks.
+<li> Fixed bugs the caused batch mode macros that used
+<i>Process&gt;Math&gt;Macro</i> or did user-defined curve fitting to fail.
+<li> Fixed a bug on Windows that sometimes caused paste operations in the macro editor
+to not insert the text in the correct location.
+</ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
 </body>

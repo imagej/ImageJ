@@ -316,7 +316,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
      * Note that a GenericDialog can have only one PreviewCheckbox
      */
     public void addPreviewCheckbox(PlugInFilterRunner pfr, String label) {
-        if (previewCheckbox != null)
+        if (previewCheckbox!=null)
         	return;
     	ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
@@ -953,11 +953,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         return previewCheckbox;
     }
     
-    /** optical feedback whether preview is running by switching from
-     * "Preview" to "wait..."
+    /** Used by PlugInFilterRunner to provide visable feedback whether preview
+    	is running or not by switching from "Preview" to "wait..."
      */
     public void previewRunning(boolean isRunning) {
-        if (previewCheckbox != null) {
+        if (previewCheckbox!=null) {
             previewCheckbox.setLabel(isRunning ? previewRunning : previewLabel);
             if (IJ.isMacOSX()) repaint();   //workaround OSX 10.4 refresh bug
         }
@@ -1092,10 +1092,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
                 "\nat "+(err.getStackTrace()[0])+"\nfrom "+(err.getStackTrace()[1]));  //requires Java 1.4
             }
         boolean workaroundOSXbug = IJ.isMacOSX() && !okay.isEnabled() && everythingOk;
-        if (previewCheckbox != null)
+        if (previewCheckbox!=null)
             previewCheckbox.setEnabled(everythingOk);
         okay.setEnabled(everythingOk);
-        if(workaroundOSXbug) repaint(); // OSX 10.4 bug delays update of enabled until the next input
+        if (workaroundOSXbug) repaint(); // OSX 10.4 bug delays update of enabled until the next input
     }
 
 	public void paint(Graphics g) {

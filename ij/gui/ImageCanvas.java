@@ -101,6 +101,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setDrawingSize(ic.dstWidth, ic.dstHeight);
 	}
 
+	public void setSourceRect(Rectangle r) {
+		srcRect = r;
+	}
+
 	public void setDrawingSize(int width, int height) {
 	    dstWidth = width;
 	    dstHeight = height;
@@ -1183,8 +1187,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			&& roi.getState()==roi.CONSTRUCTING
 			&& type!=roi.POINT)
 				imp.killRoi();
-			else
+			else {
 				roi.handleMouseUp(e.getX(), e.getY());
+				if (roi.getType()==Roi.LINE && roi.getLength()==0.0)
+					imp.killRoi();
+			}
 		}
 	}
 

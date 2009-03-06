@@ -30,6 +30,8 @@ public class Zoom implements PlugIn{
     		ic.zoom100Percent();
 		else if (arg.equals("to"))
 			zoomToSelection(imp, ic);
+		else if (arg.equals("set"))
+			setZoom(imp, ic);
 		else if (arg.equals("max")) {
 			ImageWindow win = imp.getWindow();
 			win.setBounds(win.getMaximumBounds());
@@ -56,6 +58,28 @@ public class Zoom implements PlugIn{
 			mag = ic.getHigherZoomLevel(cmag);
 			w = imp.getWindow().getBounds();
 		}
+	}
+	
+	/** Based on Albert Cardona's ZoomExact plugin:
+		http://albert.rierol.net/software.html */
+	void setZoom(ImagePlus imp, ImageCanvas ic) {
+		ImageWindow win = imp.getWindow();
+		GenericDialog gd = new GenericDialog("Set Zoom");
+		gd.addNumericField("Zoom (%): ", ic.getMagnification() * 200, 0);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		double mag = gd.getNextNumber()/100.0;
+		if (mag<=0.0) mag = 1.0;
+		win.getCanvas().setMagnification(mag);
+		double w = imp.getWidth()*mag;
+		double h = imp.getHeight()*mag;
+		Dimension screen = IJ.getScreenSize();
+		if (w>screen.width-20) w = screen.width - 20;  // does it fit?
+		if (h>screen.height-50) h = screen.height - 50;
+		ic.setSourceRect(new Rectangle(0, 0, (int)(w/mag), (int)(h/mag)));
+		ic.setDrawingSize((int)w, (int)h);
+		win.pack();
+		ic.repaint();
 	}
 	
 }

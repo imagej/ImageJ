@@ -6,13 +6,13 @@ import ij.macro.*;
 import java.awt.*;
 
 /** This plugin implements ImageJ's Process/Math submenu. */
-public class ImageMath implements PlugInFilter {
+public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	public static final String MACRO_KEY = "math.macro";
+	private int flags = DOES_ALL|SUPPORTS_MASKING|PARALLELIZE_STACKS|KEEP_PREVIEW;
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
-	private int image;
 	private double lower;
 	private double upper;
 	
@@ -24,56 +24,50 @@ public class ImageMath implements PlugInFilter {
 	private static String andValue = defaultAndValue;
 	private static final double defaultGammaValue = 0.5;
 	private static double gammaValue = defaultGammaValue;
-	private static String macro = Prefs.get(MACRO_KEY, "v=v+50*sin(a*PI/180+d/5)");
+	private static String macro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
 	private Interpreter interp;
 	private int w, h, w2, h2;
-	boolean hasX, hasA, hasD, hasGetPixel;
+	private boolean hasX, hasA, hasD, hasGetPixel;
+	private String macro2;
+	private PlugInFilterRunner pfr;
+	private GenericDialog gd;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(ImageMath.class);
-		return IJ.setupDialog(imp, DOES_ALL+SUPPORTS_MASKING);
+		return flags;
 	}
 
 	public void run(ImageProcessor ip) {
+		imp.startTiming();
 		double value;
 	 	if (canceled)
 	 		return;
-	 	image++;
 	 	
 	 	if (arg.equals("add")) {
-	 		if (image==1) addValue = getValue("Add", "Value: ", addValue, 0);
-	 		if (canceled) return;
 			ip.add(addValue);
 			return;
 		}
 
 	 	if (arg.equals("sub")) {
-	 		if (image==1) addValue = getValue("Subtract", "Value: ", addValue, 0);
-	 		if (canceled) return;
 			ip.add(-addValue);
 			return;
 		}
 
 	 	if (arg.equals("mul")) {
-	 		if (image==1) mulValue = getValue("Multiply", "Value: ", mulValue, 2);
-	 		if (canceled) return;
 			ip.multiply(mulValue);
 			return;
 		}
 
 	 	if (arg.equals("div")) {
-	 		if (image==1) mulValue = getValue("Divide", "Value: ", mulValue, 2);
-	 		if (canceled || (mulValue==0.0&&imp.getBitDepth()!=32))
+	 		if (mulValue==0.0&&imp.getBitDepth()!=32)
 	 			return;
 			ip.multiply(1.0/mulValue);
 			return;
 		}
 
 	 	if (arg.equals("and")) {
-	 		if (image==1) andValue = getBinaryValue("AND", "Value (binary): ", andValue);
-	 		if (canceled) return;
 	 		try {
 				ip.and(Integer.parseInt(andValue,2));
 			} catch (NumberFormatException e) {
@@ -84,8 +78,6 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("or")) {
-	 		if (image==1) andValue = getBinaryValue("OR", "Value (binary): ", andValue);
-	 		if (canceled) return;
 	 		try {
 				ip.or(Integer.parseInt(andValue,2));
 			} catch (NumberFormatException e) {
@@ -96,8 +88,6 @@ public class ImageMath implements PlugInFilter {
 		}
 			
 	 	if (arg.equals("xor")) {
-	 		if (image==1) andValue = getBinaryValue("XOR", "Value (binary): ", andValue);
-	 		if (canceled) return;
 	 		try {
 				ip.xor(Integer.parseInt(andValue,2));
 			} catch (NumberFormatException e) {
@@ -108,8 +98,6 @@ public class ImageMath implements PlugInFilter {
 		}
 		
 	 	if (arg.equals("min")) {
-	 		if (image==1) minValue = getValue("Min", "Value: ", minValue, 0);
-	 		if (canceled) return;
 	 		ip.min(minValue);
 			if (!(ip instanceof ByteProcessor))
 				ip.resetMinAndMax();
@@ -117,8 +105,6 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("max")) {
-	 		if (image==1) maxValue = getValue("Max", "Value: ", maxValue, 0);
-	 		if (canceled) return;
 	 		ip.max(maxValue);
 			if (!(ip instanceof ByteProcessor))
 				ip.resetMinAndMax();
@@ -126,9 +112,7 @@ public class ImageMath implements PlugInFilter {
 		}
 
 	 	if (arg.equals("gamma")) {
-	 		if (image==1) gammaValue = getValue("Gamma", "Value (0.1-5.0): ", gammaValue, 2);
-	 		if (canceled) return;
-	 		if (gammaValue<0.1 || gammaValue>5.0) {
+	 		if ((gammaValue<0.1 || gammaValue>5.0) && !previewing()) {
 	 			IJ.error("Gamma must be between 0.1 and 5.0");
 	 			gammaValue = defaultGammaValue;
 	 			return;
@@ -139,9 +123,6 @@ public class ImageMath implements PlugInFilter {
 
 	 	if (arg.equals("set")) {
 	 		boolean rgb = ip instanceof ColorProcessor;
-	 		String prompt = rgb?"Value (0-255): ":"Value: ";
-	 		if (image==1) addValue = getValue("Set", prompt, addValue, 0);
-	 		if (canceled) return;
 			if (rgb) {
 				if (addValue>255.0) addValue=255.0;
 				if (addValue<0.0) addValue=0.0;
@@ -209,7 +190,11 @@ public class ImageMath implements PlugInFilter {
 
 	}
 	
-	boolean isFloat(ImageProcessor ip) {
+	boolean previewing() {
+		return gd!=null && gd.getPreviewCheckbox().getState();
+	}
+ 
+ 	boolean isFloat(ImageProcessor ip) {
 		if (!(ip instanceof FloatProcessor)) {
 			IJ.error("32-bit float image required");
 			canceled = true;
@@ -218,34 +203,28 @@ public class ImageMath implements PlugInFilter {
 			return true;
 	}
 	
-	double getValue (String title, String prompt, double defaultValue, int digits) {
-			int places = Analyzer.getPrecision();
-			if (digits>0 || (int)defaultValue!=defaultValue)
-				digits = Math.max(places, 1);
-			GenericDialog gd = new GenericDialog(title);
-			gd.addNumericField(prompt, defaultValue, digits, 8, null);
-			gd.showDialog();
-			if (image==1) imp.startTiming();
-			canceled = gd.wasCanceled();
-			if (canceled)
-				return defaultValue;
-			return gd.getNextNumber();
+	void getValue (String title, String prompt, double defaultValue, int digits) {
+		int places = Analyzer.getPrecision();
+		if (digits>0 || (int)defaultValue!=defaultValue)
+			digits = Math.max(places, 1);
+		gd = new GenericDialog(title);
+		gd.addNumericField(prompt, defaultValue, digits, 8, null);
+		gd.addPreviewCheckbox(pfr);
+		gd.addDialogListener(this);
+		gd.showDialog();
 	}
 
-	String getBinaryValue (String title, String prompt, String defaultValue) {
-			GenericDialog gd = new GenericDialog(title);
-			gd.addStringField(prompt, defaultValue);
-			gd.showDialog();
-			if (image==1) imp.startTiming();
-			canceled = gd.wasCanceled();
-			if (canceled)
-				return defaultValue;
-			return gd.getNextString();
+	void getBinaryValue (String title, String prompt, String defaultValue) {
+		gd = new GenericDialog(title);
+		gd.addStringField(prompt, defaultValue);
+		gd.addPreviewCheckbox(pfr);
+		gd.addDialogListener(this);
+		gd.showDialog();
 	}
 
 	/** Set non-thresholded pixels in a float image to NaN. */
 	void setBackgroundToNaN(ImageProcessor ip) {
-		if (image==1) {
+		if (true) {
 			lower = ip.getMinThreshold();
 			upper = ip.getMaxThreshold();
 			if (lower==ImageProcessor.NO_THRESHOLD || !(ip instanceof FloatProcessor)) {
@@ -276,39 +255,45 @@ public class ImageMath implements PlugInFilter {
 	// flip vertically: v=getPixel(x,h-y-1)
 	// spiral: v=(sin(d/10+a*PI/180)+1)*128
 	// spiral on image: v=v+50*sin(a*PI/180+d/5)
+	// spiral rotation: a+=PI+d*PI/360; v=getPixel(d*cos(a)+w/2,d*sin(a)+h/2);
+	// v=sin(log(d)*8 + a) * sin(a*8)
+	// v=(a * 40.74 + d) % 32
+	// v=floor((a * 40.75 + 1) % 2)
+	// v=sin(x) * sin(y)
+	// v=cos(0.2*x) + sin(0.2*y)
+
 	void applyMacro(ImageProcessor ip) {
 		int PCStart = 25;
-		if (image==1) {
-			String macro2 = getMacro(macro);
-			if (macro2==null) return;
-			if (macro2.indexOf("=")==-1) {
+		if (macro2==null) return;
+		if (macro2.indexOf("=")==-1) {
+			if (!previewing())
 				IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
-				canceled = true;
-				return;
-			}
-			macro = macro2;
-			Program pgm = (new Tokenizer()).tokenize(macro);
-			hasX = pgm.lookupWord("x")!=null;
-			hasA = pgm.lookupWord("a")!=null;
-			hasD = pgm.lookupWord("d")!=null;
-			hasGetPixel = pgm.lookupWord("getPixel")!=null;
-			w = imp.getWidth();
-			h = imp.getHeight();
-			w2 = w/2;
-			h2 = h/2;
-			String code =
-				"var v,x,y,z,w,h,d,a;\n"+
-				"function dummy() {}\n"+
-				macro2+";\n"; // code starts at program counter location 25
-			interp = new Interpreter();
-			interp.run(code);
-			if (interp.wasError())
-				return;
-			Prefs.set(MACRO_KEY, macro);
-			interp.setVariable("w", w);
-			interp.setVariable("h", h);
+			canceled = true;
+			return;
 		}
-		interp.setVariable("z", image-1);
+		macro = macro2;
+		Program pgm = (new Tokenizer()).tokenize(macro);
+		hasX = pgm.hasWord("x");
+		hasA = pgm.hasWord("a");
+		hasD = pgm.hasWord("d");
+		hasGetPixel = pgm.hasWord("getPixel");
+		w = imp.getWidth();
+		h = imp.getHeight();
+		w2 = w/2;
+		h2 = h/2;
+		String code =
+			"var v,x,y,z,w,h,d,a;\n"+
+			"function dummy() {}\n"+
+			macro2+";\n"; // code starts at program counter location 25
+		interp = new Interpreter();
+		interp.run(code, null);
+		if (interp.wasError())
+			return;
+		Prefs.set(MACRO_KEY, macro);
+		interp.setVariable("w", w);
+		interp.setVariable("h", h);
+		boolean showProgress = pfr.getSliceNumber()==1 && !Interpreter.isBatchMode();
+		interp.setVariable("z", 0);
 		int bitDepth = imp.getBitDepth();
 		Rectangle r = ip.getRoi();
 		int inc = r.height/50;
@@ -321,7 +306,7 @@ public class ImageMath implements PlugInFilter {
 			if (hasGetPixel)
 				pixels2 = new byte[w*h];
 			for (int y=r.y; y<(r.y+r.height); y++) {
-				if (image==1 && y%inc==0)
+				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
@@ -341,37 +326,49 @@ public class ImageMath implements PlugInFilter {
 			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
 		} else if (bitDepth==24) {
 			int rgb, red, green, blue;
+			int[] pixels1 = (int[])ip.getPixels();
+			int[] pixels2 = pixels1;
+			if (hasGetPixel)
+				pixels2 = new int[w*h];
 			for (int y=r.y; y<(r.y+r.height); y++) {
-				if (image==1 && y%inc==0)
+				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
 					if (hasX) interp.setVariable("x", x);
 					if (hasA) interp.setVariable("a", getA(x,y));
 					if (hasD) interp.setVariable("d", getD(x,y));
-					rgb = ip.getPixel(x, y);
-					red = (rgb&0xff0000)>>16;
-					green = (rgb&0xff00)>>8;
-					blue = rgb&0xff;
-					interp.setVariable("v", red);
-					interp.run(PCStart);
-					red = (int)interp.getVariable("v");
-					if (red<0) red=0; if (red>255) red=255;
-					interp.setVariable("v", green);
-					interp.run(PCStart);
-					green= (int)interp.getVariable("v");
-					if (green<0) green=0; if (green>255) green=255;
-					interp.setVariable("v", blue);
-					interp.run(PCStart);
-					blue = (int)interp.getVariable("v");
-					if (blue<0) blue=0; if (blue>255) blue=255;
-					rgb = 0xff000000 | ((red&0xff)<<16) | ((green&0xff)<<8) | blue&0xff;
-					ip.putPixel(x, y, rgb);
+					index = y*w+x;
+					rgb = pixels1[index];
+					if (hasGetPixel) {
+						interp.setVariable("v", rgb);
+						interp.run(PCStart);
+						rgb = (int)interp.getVariable("v");
+					} else {
+						red = (rgb&0xff0000)>>16;
+						green = (rgb&0xff00)>>8;
+						blue = rgb&0xff;
+						interp.setVariable("v", red);
+						interp.run(PCStart);
+						red = (int)interp.getVariable("v");
+						if (red<0) red=0; if (red>255) red=255;
+						interp.setVariable("v", green);
+						interp.run(PCStart);
+						green= (int)interp.getVariable("v");
+						if (green<0) green=0; if (green>255) green=255;
+						interp.setVariable("v", blue);
+						interp.run(PCStart);
+						blue = (int)interp.getVariable("v");
+						if (blue<0) blue=0; if (blue>255) blue=255;
+						rgb = 0xff000000 | ((red&0xff)<<16) | ((green&0xff)<<8) | blue&0xff;
+					}
+					pixels2[index] = rgb;
 				}
 			}
+			if (hasGetPixel) System.arraycopy(pixels2, 0, pixels1, 0, w*h);
 		} else {
 			for (int y=r.y; y<(r.y+r.height); y++) {
-				if (image==1 && y%inc==0)
+				if (showProgress && y%inc==0)
 					IJ.showProgress(y-r.y, r.height);
 				interp.setVariable("y", y);
 				for (int x=r.x; x<(r.x+r.width); x++) {
@@ -385,9 +382,9 @@ public class ImageMath implements PlugInFilter {
 				}
 			}
 		}
-		if (image==1)
+		if (showProgress)
 			IJ.showProgress(1.0);
-		if (image==imp.getCurrentSlice())
+		if (pfr.getSliceNumber()==1)
 			ip.resetMinAndMax();
 	}
 	
@@ -403,17 +400,80 @@ public class ImageMath implements PlugInFilter {
 		return angle;
 	}
 
-	String getMacro(String macro) {
-			GenericDialog gd = new GenericDialog("Macro");
-			gd.addStringField("Code:", macro, 35);
-			gd.setInsets(5,40,0);
-			gd.addMessage("v=pixel value, x=x-coordinate, y=y-coordinate\nw=image width, h=image height, a=angle\nd=distance from center\n");
-			gd.showDialog();
-			if (image==1) imp.startTiming();
-			canceled = gd.wasCanceled();
-			if (canceled)
-				return null;
-			return gd.getNextString();
+	void getMacro(String macro) {
+		gd = new GenericDialog("Macro");
+		gd.addStringField("Code:", macro, 42);
+		gd.setInsets(0,40,0);
+		gd.addMessage("v=pixel value, x=x-coordinate, y=y-coordinate\nw=image width, h=image height, a=angle\nd=distance from center\n");
+		gd.setInsets(5,40,0);
+		gd.addPreviewCheckbox(pfr);
+		gd.addDialogListener(this);
+		gd.showDialog();
+	}
+
+    public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
+		this.pfr = pfr;
+	 	if (arg.equals("macro"))
+			getMacro(macro);
+    	else if (arg.equals("add"))
+	 		getValue("Add", "Value: ", addValue, 0);
+	 	else if (arg.equals("sub"))
+	 		getValue("Subtract", "Value: ", addValue, 0);
+	 	else if (arg.equals("mul"))
+	 		getValue("Multiply", "Value: ", mulValue, 2);
+	 	else if (arg.equals("div"))
+	 		getValue("Divide", "Value: ", mulValue, 2);
+	 	else if (arg.equals("and"))
+	 		getBinaryValue("AND", "Value (binary): ", andValue);
+	 	else if (arg.equals("or"))
+	 		getBinaryValue("OR", "Value (binary): ", andValue);
+	 	else if (arg.equals("xor"))
+	 		getBinaryValue("XOR", "Value (binary): ", andValue);
+	 	else if (arg.equals("min"))
+	 		getValue("Min", "Value: ", minValue, 0);
+	 	else if (arg.equals("max"))
+	 		getValue("Max", "Value: ", maxValue, 0);
+	 	else if (arg.equals("gamma"))
+	 		getValue("Gamma", "Value (0.1-5.0): ", gammaValue, 2);
+	 	else if (arg.equals("set")) {
+	 		boolean rgb = imp.getBitDepth()==24;
+	 		String prompt = rgb?"Value (0-255): ":"Value: ";
+	 		getValue("Set", prompt, addValue, 0);
+		}
+		if (gd!=null && gd.wasCanceled()) {
+			canceled = true;
+			return DONE;
+		} else
+ 			return IJ.setupDialog(imp, flags);
+   }
+
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+	 	if (arg.equals("macro")) {
+	 		String str = gd.getNextString();
+			if (previewing() && macro2!=null && !str.equals(macro2))
+				gd.getPreviewCheckbox().setState(false);
+			macro2 = str;
+    	} else if (arg.equals("add")||arg.equals("sub")||arg.equals("set"))
+			addValue = gd.getNextNumber();
+	 	else if (arg.equals("mul")||arg.equals("div"))
+	 		mulValue = gd.getNextNumber();
+	 	else if (arg.equals("and")||arg.equals("or")||arg.equals("xor"))
+	 		andValue = gd.getNextString();
+	 	else if (arg.equals("min"))
+	 		minValue = gd.getNextNumber();
+	 	else if (arg.equals("max"))
+	 		maxValue = gd.getNextNumber();
+	 	else if (arg.equals("gamma"))
+	 		gammaValue = gd.getNextNumber();
+		if (gd.invalidNumber()) {
+			if (gd.wasOKed()) IJ.error("Value is invalid.");
+			canceled = true;
+			return false;
+		}
+		return true;
+	}
+
+	public void setNPasses(int nPasses) {
 	}
 
 }

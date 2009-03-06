@@ -1,5 +1,4 @@
- package ij;
-
+package ij;
 import java.awt.*;
 import java.awt.image.*;
 import java.net.URL;

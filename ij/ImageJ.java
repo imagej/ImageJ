@@ -45,12 +45,13 @@ The following command line options are recognized by ImageJ:
      Example 3: -port0 (do not check for another instance)
 
   -macro path [arg]
-     Runs a macro, passing it an optional argument
+     Runs a macro or script, passing it an optional argument,
+     which can be retieved using getArgument()
      Example 1: -macro analyze.ijm
      Example 2: -macro analyze /Users/wayne/images/stack1
 
   -batch path [arg]
-    Runs a macro in batch (no GUI) mode, passing it an optional argument.
+    Runs a macro or script in batch (no GUI) mode, passing it an optional argument.
     ImageJ exits when the macro finishes.
 
   -eval "macro code"
@@ -68,7 +69,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.42j";
+	public static final String VERSION = "1.42k";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -175,8 +176,7 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		if (IJ.isMacintosh()&&applet==null) { 
 			Object qh = null; 
-			if (IJ.isJava14()) 
-				qh = IJ.runPlugIn("MacAdapter", ""); 
+			qh = IJ.runPlugIn("MacAdapter", ""); 
 			if (qh==null) 
 				IJ.runPlugIn("QuitHandler", ""); 
 		} 

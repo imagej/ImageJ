@@ -12,16 +12,23 @@ import javax.swing.filechooser.*;
  public class DirectoryChooser {
  	private String directory;
  	private static String defaultDir;
+ 	private String title;
  
  	/** Display a dialog using the specified title. */
  	public DirectoryChooser(String title) {
- 		if (IJ.isMacOSX() && IJ.isJava14())
+ 		this.title = title;
+ 		if (IJ.isMacOSX())
 			getDirectoryUsingFileDialog(title);
  		else {
- 			if (EventQueue.isDispatchThread())
- 				getDirectoryUsingJFileChooserOnThisThread(title);
- 			else
- 				getDirectoryUsingJFileChooser(title);
+			String macroOptions = Macro.getOptions();
+			if (macroOptions!=null)
+				directory = Macro.getValue(macroOptions, title, null);
+			if (directory==null) {
+ 				if (EventQueue.isDispatchThread())
+ 					getDirectoryUsingJFileChooserOnThisThread(title);
+ 				else
+ 					getDirectoryUsingJFileChooser(title);
+ 			}
  		}
  	}
  	
@@ -100,6 +107,8 @@ import javax.swing.filechooser.*;
  	/** Returns the directory selected by the user. */
  	public String getDirectory() {
  		//IJ.log("getDirectory: "+directory);
+		if (Recorder.record && !IJ.isMacOSX())
+			Recorder.recordPath(title, directory);
  		return directory;
  	}
  	

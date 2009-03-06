@@ -406,7 +406,7 @@ public class TiffDecoder {
 				case SAMPLES_PER_PIXEL:
 					fi.samplesPerPixel = value;
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
-						fi.fileType = FileInfo.RGB;
+						fi.fileType = fi.fileType==FileInfo.GRAY16_UNSIGNED?FileInfo.RGB48:FileInfo.RGB;
 					break;
 				case ROWS_PER_STRIP:
 					fi.rowsPerStrip = value;

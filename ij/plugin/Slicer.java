@@ -26,7 +26,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private double outputZSpacing = 1.0;
 	private int outputSlices = 1;
 	private boolean noRoi;
-	private boolean rgb;
+	private boolean rgb, notFloat;
 	private Vector fields, checkboxes;
 	private Label message;
 	private ImagePlus imp;
@@ -67,6 +67,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 long startTime = System.currentTimeMillis();
 		 ImagePlus imp2 = null;
 		 rgb = imp.getType()==ImagePlus.COLOR_RGB;
+		 notFloat = !rgb && imp.getType()!=ImagePlus.GRAY32;
 		 imp2 = reslice(imp);
 		 if (imp2==null)
 				return;
@@ -156,14 +157,17 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 String units = cal.getUnits();
 		 if (cal.pixelWidth==0.0)
 				cal.pixelWidth = 1.0;
+		 inputZSpacing = cal.pixelDepth;
 		 double outputSpacing = cal.pixelDepth;
 		 Roi roi = imp.getRoi();
 		 boolean line = roi!=null && roi.getType()==Roi.LINE;
-		 if (line)
-				saveLineInfo(roi);
+		 if (line) saveLineInfo(roi);
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null && macroOptions.indexOf("output=")!=-1)
+			Macro.setOptions(macroOptions.replaceAll("output=", "slice="));
 		 GenericDialog gd = new GenericDialog("Reslice");
-		 gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3);
-		 gd.addNumericField("Output Z Spacing ("+units+"):", outputSpacing, 3);
+		 //gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3);
+		 gd.addNumericField("Slice Spacing ("+units+"):", outputSpacing, 3);
 		 if (line)
 				gd.addNumericField("Slice Count:", outputSlices, 0);
 		 else
@@ -183,8 +187,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 gd.showDialog();
 		 if (gd.wasCanceled())
 				return false;
-		 inputZSpacing = gd.getNextNumber();
-		 if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
+		 //inputZSpacing = gd.getNextNumber();
+		 //if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
 		 outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
 		 if (line) {
 				outputSlices = (int)gd.getNextNumber();
@@ -397,7 +401,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				for (int j=0; j<=n2; j++) {
 					index = (int)distance+j;
 					if (index<values.length) {
-						 if (rgb) {
+						 if (notFloat)
+								values[index] = (float)ip.getInterpolatedPixel(rx, ry);
+						 else if (rgb) {
 								int rgbPixel = ((ColorProcessor)ip).getInterpolatedRGBPixel(rx, ry);
 								values[index] = Float.intBitsToFloat(rgbPixel&0xffffff);
 						 } else
@@ -465,7 +471,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 double rx = x1;
 		 double ry = y1;
 		 for (int i=0; i<n; i++) {
-				if (rgb) {
+		 		if (notFloat)
+					data[i] = (float)ip.getInterpolatedPixel(rx, ry);
+				else if (rgb) {
 					int rgbPixel = ((ColorProcessor)ip).getInterpolatedRGBPixel(rx, ry);
 					data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
 				} else
@@ -486,7 +494,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 int rx = x1;
 		 int ry = y1;
 		 for (int i=0; i<n; i++) {
-				if (rgb) {
+		 		if (notFloat)
+					data[i] = (float)ip.getPixel(rx, ry);
+				else if (rgb) {
 					int rgbPixel = ((ColorProcessor)ip).getPixel(rx, ry);
 					data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
 				} else
@@ -517,15 +527,15 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	}
 
 	void updateSize() {
-		 double inSpacing = Tools.parseDouble(((TextField)fields.elementAt(0)).getText(),0.0);
-		 double outSpacing = Tools.parseDouble(((TextField)fields.elementAt(1)).getText(),0.0);
+		 //double inSpacing = Tools.parseDouble(((TextField)fields.elementAt(0)).getText(),0.0);
+		 double outSpacing = Tools.parseDouble(((TextField)fields.elementAt(0)).getText(),0.0);
 		 int count = 0;
-		 boolean lineSelection = fields.size()==3;
+		 boolean lineSelection = fields.size()==2;
 		 if (lineSelection) {
-				count = (int)Tools.parseDouble(((TextField)fields.elementAt(2)).getText(), 0.0);
+				count = (int)Tools.parseDouble(((TextField)fields.elementAt(1)).getText(), 0.0);
 				if (count>0) makePolygon(count, outSpacing);
 		 }
-		 String size = getSize(inSpacing, outSpacing, count);
+		 String size = getSize(inputZSpacing, outSpacing, count);
 		 message.setText(size);
 	}
 
@@ -542,22 +552,25 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	}
 
 	void makePolygon(int count, double outSpacing) {
-		 int[] x = new int[4];
-		 int[] y = new int[4];
-		 x[0] = (int)gx1;
-		 y[0] = (int)gy1;
-		 x[1] = (int)gx2;
-		 y[1] = (int)gy2;
-		 double dx = gx2 - gx1;
-		 double dy = gy2 - gy1;
-		 double nrm = Math.sqrt(dx*dx + dy*dy)/outSpacing;
-		 double xInc = -(dy/nrm);
-		 double yInc = (dx/nrm);
-		 x[2] = x[1] + (int)(xInc*count);
-		 y[2] = y[1] + (int)(yInc*count);
-		 x[3] = x[0] + (int)(xInc*count);
-		 y[3] = y[0] + (int)(yInc*count);
-		 imp.setRoi(new PolygonRoi(x, y, 4, PolygonRoi.FREEROI));
+		int[] x = new int[4];
+		int[] y = new int[4];
+		Calibration cal = imp.getCalibration();
+		double cx = cal.pixelWidth;	//corrects preview for x calibration
+		double cy = cal.pixelHeight;	//corrects preview for y calibration
+		x[0] = (int)gx1;
+		y[0] = (int)gy1;
+		x[1] = (int)gx2;
+		y[1] = (int)gy2;
+		double dx = gx2 - gx1;
+		double dy = gy2 - gy1;
+		double nrm = Math.sqrt(dx*dx + dy*dy)/outSpacing;
+		double xInc = -(dy/(cx*nrm));	//cx scales the x increment
+		double yInc = (dx/(cy*nrm));	//cy scales the y increment
+		x[2] = x[1] + (int)(xInc*count);
+		y[2] = y[1] + (int)(yInc*count);
+		x[3] = x[0] + (int)(xInc*count);
+		y[3] = y[0] + (int)(yInc*count);
+		imp.setRoi(new PolygonRoi(x, y, 4, PolygonRoi.FREEROI));
 	}
 
 	int getOutputStackSize(double inSpacing, double outSpacing, int count) {

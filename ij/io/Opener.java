@@ -285,19 +285,25 @@ public class Opener {
 				throw new MalformedURLException("Invalid URL: "+url);
 			URL u = new URL(url);
 			IJ.showStatus(""+url);
+			String lurl = url.toLowerCase(Locale.US);
 			ImagePlus imp = null;
-		    if (url.endsWith(".tif") || url.endsWith(".TIF"))
+		    if (lurl.endsWith(".tif"))
 				imp = openTiff(u.openStream(), name);
-	 	    else if (url.endsWith(".zip"))
+	 	    else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-	 	    else if (url.endsWith(".dcm") || url.endsWith(".DCM")) {
+	 	    else if (lurl.endsWith(".dcm")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
-			} else {
-				String lurl = url.toLowerCase();
-				if (lurl.endsWith(".jpg") || lurl.endsWith(".gif") || lurl.endsWith(".JPG") || lurl.endsWith(".GIF"))
+			} else if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
+				imp = openJpegOrGifUsingURL(name, u);
+			else if (lurl.endsWith(".png"))
+				imp = openPngUsingURL(name, u);
+			else {
+				URLConnection uc = u.openConnection();
+				String type = uc.getContentType();
+				if (type!=null && (type.equals("image/jpeg")||type.equals("image/gif")))
 					imp = openJpegOrGifUsingURL(name, u);
-				else if (lurl.endsWith(".png") || lurl.endsWith(".PNG"))
+				else if (type!=null && type.equals("image/png"))
 					imp = openPngUsingURL(name, u);
 				else
 					imp = openWithHandleExtraFileTypes(url, new int[]{0});
@@ -312,6 +318,12 @@ public class Opener {
 			return null;
 	   	} 
 	}
+	
+		//for (int i=1;; i++) {
+		//	String header = uc.getHeaderField(i);
+		//	if (header==null) break;
+		//	IJ.log(uc.getHeaderFieldKey(i) + " " + header);
+		//}
 	
 	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileType) {
 		ImagePlus imp = null;
