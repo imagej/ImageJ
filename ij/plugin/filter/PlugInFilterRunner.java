@@ -336,7 +336,13 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
             } else
                 IJ.error("PlugInFilterRunner internal error:\nunsolicited background thread");
         } catch (Exception err) {
-            //if (thread==previewThread) killPreview();
+			if (thread==previewThread) {
+				gd.previewRunning(false);
+				//IJ.wait(100); // needed on Macs
+				//previewCheckbox.setState(false);
+				bgPreviewOn = false;
+				previewThread = null;
+			}
         	String msg = ""+err;
         	if (msg.indexOf(Macro.MACRO_CANCELED)==-1) {
 				IJ.beep();
@@ -346,8 +352,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         }
     }
             
-    /** The background thread for preview
-     */
+    /** The background thread for preview */
     private void runPreview() {
         if (IJ.debugMode) IJ.log("preview thread started; imp="+imp.getTitle());
         Thread thread = Thread.currentThread();
@@ -362,7 +367,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         }
         boolean previewDataOk = false;
         while(bgPreviewOn) {
-            if (previewCheckboxOn) gd.previewRunning(true);// optical feedback
+            if (previewCheckboxOn) gd.previewRunning(true); // visual feedback
             interruptable: {
                 if (imp.getRoi() != originalRoi) {
                     imp.setRoi(originalRoi);        // restore roi; the PlugInFilter may have affected it

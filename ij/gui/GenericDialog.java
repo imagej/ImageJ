@@ -133,12 +133,19 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
+		boolean custom = customInsets;
 		if (firstNumericField)
 			c.insets = getInsets(5, 0, 3, 0);
 		else
 			c.insets = getInsets(0, 0, 3, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
+		if (custom) {
+			if (firstNumericField)
+				c.insets = getInsets(5, 0, 3, 0);
+			else
+				c.insets = getInsets(0, 0, 3, 0);
+		}
 
 		if (numberField==null) {
 			numberField = new Vector(5);

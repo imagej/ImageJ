@@ -350,6 +350,8 @@ public class PolygonRoi extends Roi {
 			oldWidth = width; oldHeight = height;
 		} else {
 			resetBoundingRect();
+			if (type==POINT && width==0 && height==0)
+				{width=1; height=1;}
 			updateClipRectAndDraw();
 		}
 		String angle = type==ANGLE?getAngleAsString():"";

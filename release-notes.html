@@ -5,40 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.42k, 4 March 2009</u>
+<li> <u>1.42l, 10 March 2009</u>
 <ul>
-<li> Added the <i>Image&gt;Zoom&gt;Exact</i> command, 
-which is based on Albert Cardona's
-<a href="http://albert.rierol.net/software.html">ZoomExact</a>
-plugin.
-<li> <i>Image&gt;Type&gt;RGB Color</i> will convert the channels in a multichannel composite 
-color stack to an RGB stack if the number of channels is the same as the number of images in the
-stack and the display mode, set with the "Channels" tool, is "Color" or "Grayscale".
-<li> Scripts can be passed a string argument when called from the command
- line (using the -macro or -batch options) or using the IJ.runMacroFile() method.
- Scripts can use the getArgument() function to retrieve the argument.
- <li> Removed the "Input Slice Spacing" field from the <i>Image&gt;Stacks&gt;Reslice</i>
- dialog box.
-<li> <i>File&gt;Import&gt;URL</i> opens JPEG, PNG and GIF images from URLs based 
-on either the extension or the content type.
-<li> Added the Plot.drawLine(x1,y1,x2,y2) macro function.
-<li> Added the Stack.setTUnit(string) and Stack.setZUnit(string) macro functions.
-<li> Julian Cooper fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that somethimes caused the preview
-rectangle did not accurately show the extent when starting with a line selection.
-<li> Berthold Daum fixed a bug that caused ImageJ to fail to open 48-bit TIFFs created by
-RawTherapee program.
-<li> Fixed a bug that caused run("Measure") to not work as expected when used in -batch command line macros.
-<li> Fixed a bug that sometimes caused the cursor X and Y coordinates to not be displayed
-in plot windows.
-<li> Fixed a bug that caused scripts called from the command line using the
--batch option to fail to run.
-<li> Fixed a bug that caused getDirecory() calls to not be recorded on Linux and Windows.
-<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Reslice</i> to not work correctly
-with signed 16-bit stacks.
-<li> Fixed bugs the caused batch mode macros that used
-<i>Process&gt;Math&gt;Macro</i> or did user-defined curve fitting to fail.
-<li> Fixed a bug on Windows that sometimes caused paste operations in the macro editor
-to not insert the text in the correct location.
+<li> The range of images to be copied can be specified when
+duplicating a stack using <i>Image&gt;Duplicate</i>.
+<li> The search command in the text editor remembers the
+"Case Sensitive" setting.
+<li> Fixed a bug that could cause an exception when opening
+24-bit BMP images.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

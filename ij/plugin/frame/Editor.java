@@ -39,10 +39,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	public static final int MACROS_MENU_ITEMS = 8;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
+	static final String CASE_SENSITIVE= "editor.case-sensitive";
 	private TextArea ta;
 	private String path;
 	private boolean changes;
 	private static String searchString = "";
+	private static boolean caseSensitive = Prefs.get(CASE_SENSITIVE, true);
 	private static int lineNumber = 1;
 	private static int xoffset, yoffset;
 	private static int nWindows;
@@ -63,7 +65,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
     private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
     private CheckboxMenuItem monospaced;
-    private static boolean caseSensitive = true;
     private static boolean wholeWords;
     private boolean isMacroWindow;
     private int debugStart, debugEnd;
@@ -762,6 +763,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			s = gd.getNextString();
 			caseSensitive = gd.getNextBoolean();
 			wholeWords = gd.getNextBoolean();
+			Prefs.set(CASE_SENSITIVE, caseSensitive);
 		}
 		if (s.equals(""))
 			return;
