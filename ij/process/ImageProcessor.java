@@ -35,6 +35,9 @@ public abstract class ImageProcessor extends Object {
 
 	/** Modified isodata method used in Image/Adjust/Threshold tool */
 	public static final int ISODATA2 = 1;
+	
+	/** Interpolation methods */
+	public static final int NEAREST_NEIGHBOR=0, BILINEAR=1, BICUBIC=2;
 
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
@@ -63,6 +66,7 @@ public abstract class ImageProcessor extends Object {
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
 	protected byte[] rLUT2, gLUT2, bLUT2; // LUT as modified by setMinAndMax and setThreshold
 	protected boolean interpolate;
+	protected int interpolationMethod = BILINEAR;
 	protected double minThreshold=NO_THRESHOLD, maxThreshold=NO_THRESHOLD;
 	protected int histogramSize = 256;
 	protected double histogramMin, histogramMax;
@@ -699,6 +703,10 @@ public abstract class ImageProcessor extends Object {
 		rotate() and getLine() to do bilinear interpolation. */
 	public void setInterpolate(boolean interpolate) {
 		this.interpolate = interpolate;
+		if (interpolate)
+			interpolationMethod = ij.Prefs.bicubicInterpolation?BICUBIC:BILINEAR;
+		else
+			interpolationMethod = NEAREST_NEIGHBOR;
 	}
 
 	/** Returns the value of the interpolate field. */
@@ -1381,6 +1389,32 @@ public abstract class ImageProcessor extends Object {
 		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
 		return lowerAverage + yFraction * (upperAverage - lowerAverage);
 	}
+
+	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
+		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
+		int v0 = (int) Math.floor(y0);
+		double q = 0;
+		for (int j = 0; j <= 3; j++) {
+			int v = v0 - 1 + j;
+			double p = 0;
+			for (int i = 0; i <= 3; i++) {
+				int u = u0 - 1 + i;
+				p = p + ip2.getPixel(u,v) * cubic(x0 - u);
+			}
+			q = q + p * cubic(y0 - v);
+		}
+		return q;
+	}
+	
+	double cubic(double x) {
+		if (x < 0) x = -x;
+		double z = 0;
+		if (x < 1)
+			z = 1.5*x*x*x + -2.5*x*x + 1.0;
+		else if (x < 2)
+			z = -0.5*x*x*x + 2.5*x*x - 4.0*x + 2.0;
+		return z;
+	}	
 
 	private final double getInterpolatedEdgeValue(double x, double y) {
 		int xbase = (int)x;

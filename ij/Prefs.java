@@ -94,6 +94,8 @@ public class Prefs {
 	public static boolean moveToMisc;
 	/** Add points to ROI Manager. */
 	public static boolean pointAddToManager;
+	/** Use bicubic interpolation instead on bilinear. */
+	public static boolean bicubicInterpolation;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

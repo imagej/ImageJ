@@ -133,20 +133,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
-		boolean custom = customInsets;
 		if (firstNumericField)
 			c.insets = getInsets(5, 0, 3, 0);
 		else
 			c.insets = getInsets(0, 0, 3, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
-		if (custom) {
-			if (firstNumericField)
-				c.insets = getInsets(5, 0, 3, 0);
-			else
-				c.insets = getInsets(0, 0, 3, 0);
-		}
-
 		if (numberField==null) {
 			numberField = new Vector(5);
 			defaultValues = new Vector(5);
@@ -221,6 +213,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy = y;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
+		boolean custom = customInsets;
 		if (stringField==null) {
 			stringField = new Vector(4);
 			c.insets = getInsets(5, 0, 5, 0);
@@ -228,7 +221,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			c.insets = getInsets(0, 0, 5, 0);
 		grid.setConstraints(theLabel, c);
 		add(theLabel);
-
+		if (custom) {
+			if (stringField.size()==0)
+				c.insets = getInsets(5, 0, 5, 0);
+			else
+				c.insets = getInsets(0, 0, 5, 0);
+		}
 		TextField tf = new TextField(defaultText, columns);
 		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.setEchoChar(echoChar);

@@ -15,7 +15,7 @@ public class Duplicater implements PlugInFilter, TextListener {
 	boolean duplicateSubstack;
 	int first, last;
 	Checkbox checkbox;
-	TextField firstField, lastField;
+	TextField rangeField;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -123,7 +123,7 @@ public class Duplicater implements PlugInFilter, TextListener {
 		int stackSize = imp.getStackSize();
 		if (win==null)
 			win = IJ.getInstance();
-		duplicateSubstack = stackSize==imp.getNSlices()||stackSize==imp.getNFrames();
+		duplicateSubstack = stackSize>1 && (stackSize==imp.getNSlices()||stackSize==imp.getNFrames());
 		GenericDialog gd = new GenericDialog(title, win);
 		gd.addStringField(prompt, defaultString, duplicateSubstack?15:20);
 		if (stackSize>1) {
@@ -131,14 +131,10 @@ public class Duplicater implements PlugInFilter, TextListener {
 			gd.addCheckbox(msg, duplicateStack||imp.isComposite());
 			if (duplicateSubstack) {
 				gd.setInsets(2, 30, 3);
-				gd.addNumericField("First:", 1, 0);
-				gd.setInsets(0, 30, 3);
-				gd.addNumericField("Last:", stackSize, 0);
-				Vector v = gd.getNumericFields();
-				firstField = (TextField)v.elementAt(0);
-				firstField.addTextListener(this);
-				lastField = (TextField)v.elementAt(1);
-				lastField.addTextListener(this);
+				gd.addStringField("Range:", "1-"+stackSize);
+				Vector v = gd.getStringFields();
+				rangeField = (TextField)v.elementAt(0);
+				rangeField.addTextListener(this);
 				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 			}
 		} else
@@ -150,8 +146,11 @@ public class Duplicater implements PlugInFilter, TextListener {
 		if (stackSize>1) {
 			duplicateStack = gd.getNextBoolean();
 			if (duplicateStack && duplicateSubstack) {
-				first = (int)gd.getNextNumber();
-				last = (int)gd.getNextNumber();
+				String[] range = Tools.split(gd.getNextString(), " -");
+				double d1 = Tools.parseDouble(range[0]);
+				double d2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+				first = Double.isNaN(d1)?1:(int)d1;
+				last = Double.isNaN(d2)?stackSize:(int)d2;
 				if (first<1) first = 1;
 				if (last>stackSize) last = stackSize;
 				if (first>last) {first=1; last=stackSize;}
@@ -164,10 +163,7 @@ public class Duplicater implements PlugInFilter, TextListener {
 	}
 	
 	public void textValueChanged(TextEvent e) {
-		if (Tools.parseDouble(firstField.getText())>1.0)
-			checkbox.setState(true);
-		if (Tools.parseDouble(lastField.getText())<imp.getStackSize())
-			checkbox.setState(true);
+		checkbox.setState(true);
 	}
 
 	

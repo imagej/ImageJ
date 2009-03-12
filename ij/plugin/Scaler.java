@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-/** This plugin implements the Edit/Scale command. */
+/** This plugin implements the Image/Scale command. */
 public class Scaler implements PlugIn, TextListener, FocusListener {
     private ImagePlus imp;
     private static String xstr = "0.5";

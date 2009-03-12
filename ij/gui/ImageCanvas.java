@@ -1053,15 +1053,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int handle = roi!=null?roi.isHandle(sx, sy):-1;		
 		setRoiModState(e, roi, handle);
 		if (roi!=null) {
+			if (handle>=0) {
+				roi.mouseDownInHandle(handle, sx, sy);
+				return;
+			}
 			Rectangle r = roi.getBounds();
 			int type = roi.getType();
 			if (type==Roi.RECTANGLE && r.width==imp.getWidth() && r.height==imp.getHeight()
 			&& roi.getPasteMode()==Roi.NOT_PASTING) {
 				imp.killRoi();
-				return;
-			}
-			if (handle>=0) {
-				roi.mouseDownInHandle(handle, sx, sy);
 				return;
 			}
 			if (roi.contains(ox, oy)) {

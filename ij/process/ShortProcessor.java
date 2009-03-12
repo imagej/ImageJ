@@ -655,6 +655,9 @@ public class ShortProcessor extends ImageProcessor {
 	*/
 	public void rotate(double angle) {
 		short[] pixels2 = (short[])getPixelsCopy();
+		ImageProcessor ip2 = null;
+		if (interpolationMethod==BICUBIC)
+			ip2 = new ShortProcessor(getWidth(), getHeight(), pixels2, null);
 		double centerX = roiX + (roiWidth-1)/2.0;
 		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
@@ -672,32 +675,49 @@ public class ShortProcessor extends ImageProcessor {
 		// zero is 32768 for signed images
 		int background = cTable!=null && cTable[0]==-32768?32768:0; 
 		
-		for (int y=roiY; y<(roiY + roiHeight); y++) {
-			index = y*width + roiX;
-			tmp3 = tmp1 - y*sa + centerX;
-			tmp4 = tmp2 + y*ca + centerY;
-			for (int x=roiX; x<=xMax; x++) {
-				xs = x*ca + tmp3;
-				ys = x*sa + tmp4;
-				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-					if (interpolate) {
-						if (xs<0.0) xs = 0.0;
-						if (xs>=xlimit) xs = xlimit2;
-						if (ys<0.0) ys = 0.0;			
-						if (ys>=ylimit) ys = ylimit2;
-				  		pixels[index++] = (short)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
-				  	} else {
-				  		ixs = (int)(xs+0.5);
-				  		iys = (int)(ys+0.5);
-				  		if (ixs>=width) ixs = width - 1;
-				  		if (iys>=height) iys = height -1;
-						pixels[index++] = pixels2[width*iys+ixs];
-					}
-    			} else
-					pixels[index++] = (short)background;
+		if (interpolationMethod==BICUBIC) {
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				index = y*width + roiX;
+				tmp3 = tmp1 - y*sa + centerX;
+				tmp4 = tmp2 + y*ca + centerY;
+				for (int x=roiX; x<=xMax; x++) {
+					xs = x*ca + tmp3;
+					ys = x*sa + tmp4;
+					int value = (int)(getBicubicInterpolatedPixel(xs, ys, ip2)+0.5);
+					if (value<0) value = 0;
+					if (value>65535) value = 65535;
+					pixels[index++] = (short)value;
+				}
+				if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 			}
-			if (y%30==0)
-			showProgress((double)(y-roiY)/roiHeight);
+		} else {
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				index = y*width + roiX;
+				tmp3 = tmp1 - y*sa + centerX;
+				tmp4 = tmp2 + y*ca + centerY;
+				for (int x=roiX; x<=xMax; x++) {
+					xs = x*ca + tmp3;
+					ys = x*sa + tmp4;
+					if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
+						if (interpolationMethod==BILINEAR) {
+							if (xs<0.0) xs = 0.0;
+							if (xs>=xlimit) xs = xlimit2;
+							if (ys<0.0) ys = 0.0;			
+							if (ys>=ylimit) ys = ylimit2;
+							pixels[index++] = (short)(getInterpolatedPixel(xs, ys, pixels2)+0.5);
+						} else {
+							ixs = (int)(xs+0.5);
+							iys = (int)(ys+0.5);
+							if (ixs>=width) ixs = width - 1;
+							if (iys>=height) iys = height -1;
+							pixels[index++] = pixels2[width*iys+ixs];
+						}
+					} else
+						pixels[index++] = (short)background;
+				}
+				if (y%30==0)
+				showProgress((double)(y-roiY)/roiHeight);
+			}
 		}
 		showProgress(1.0);
 	}

@@ -553,10 +553,15 @@ public class ColorProcessor extends ImageProcessor {
 
 
 	public final int RGB_NOISE=0, RGB_MEDIAN=1, RGB_FIND_EDGES=2,
-		RGB_ERODE=3, RGB_DILATE=4, RGB_THRESHOLD=5;
+		RGB_ERODE=3, RGB_DILATE=4, RGB_THRESHOLD=5, RGB_ROTATE=6,
+		RGB_SCALE=7, RGB_RESIZE=8;
 
- 	/** Performs the specified 3x3 filter on the reg, green and blue planes. */
+ 	/** Performs the specified filter on the red, green and blue planes of this image. */
  	public void filterRGB(int type, double arg) {
+ 		filterRGB(type, arg, 0.0);
+ 	}
+
+ 	final ImageProcessor filterRGB(int type, double arg, double arg2) {
 		showProgress(0.01);
 		byte[] R = new byte[width*height];
 		byte[] G = new byte[width*height];
@@ -570,6 +575,9 @@ public class ColorProcessor extends ImageProcessor {
 		g.setRoi(roi);
 		ByteProcessor b = new ByteProcessor(width, height, B, null);
 		b.setRoi(roi);
+		r.setBackgroundValue((bgColor&0xff0000)>>16);
+		g.setBackgroundValue((bgColor&0xff00)>>8);
+		b.setBackgroundValue(bgColor&0xff);
 		
 		showProgress(0.15);
 		switch (type) {
@@ -603,6 +611,28 @@ public class ColorProcessor extends ImageProcessor {
 				g.autoThreshold(); showProgress(0.65);
 				b.autoThreshold(); showProgress(0.90);
 				break;
+			case RGB_ROTATE:
+				r.rotate(arg); showProgress(0.40);
+				g.rotate(arg); showProgress(0.65);
+				b.rotate(arg); showProgress(0.90);
+				break;
+			case RGB_SCALE:
+				r.scale(arg, arg2); showProgress(0.40);
+				g.scale(arg, arg2); showProgress(0.65);
+				b.scale(arg, arg2); showProgress(0.90);
+				break;
+			case RGB_RESIZE:
+				int w=(int)arg, h=(int)arg2;
+				ImageProcessor r2 = r.resize(w, h); showProgress(0.40);
+				ImageProcessor g2 = g.resize(w, h); showProgress(0.65);
+				ImageProcessor b2 = b.resize(w, h); showProgress(0.90);
+				R = (byte[])r2.getPixels();
+				G = (byte[])g2.getPixels();
+				B = (byte[])b2.getPixels();
+				ColorProcessor ip2 = new ColorProcessor(w, h);
+				ip2.setRGB(R, G, B);
+				showProgress(1.0);
+				return ip2;
 		}
 		
 		R = (byte[])r.getPixels();
@@ -611,6 +641,7 @@ public class ColorProcessor extends ImageProcessor {
 		
 		setRGB(R, G, B);
 		showProgress(1.0);
+		return null;
 	}
 
    public void noise(double range) {
@@ -642,6 +673,10 @@ public class ColorProcessor extends ImageProcessor {
 		@see ImageProcessor#setInterpolate
 	*/
 	public void scale(double xScale, double yScale) {
+        if (interpolationMethod==BICUBIC) {
+        	filterRGB(RGB_SCALE, xScale, yScale);
+        	return;
+        }
 		double xCenter = roiX + roiWidth/2.0;
 		double yCenter = roiY + roiHeight/2.0;
 		int xmin, xmax, ymin, ymax;
@@ -772,6 +807,8 @@ public class ColorProcessor extends ImageProcessor {
 		@see ImageProcessor#setInterpolate
 	*/
 	public ImageProcessor resize(int dstWidth, int dstHeight) {
+        if (interpolationMethod==BICUBIC)
+        	return filterRGB(RGB_RESIZE, dstWidth, dstHeight);
 		double srcCenterX = roiX + roiWidth/2.0;
 		double srcCenterY = roiY + roiHeight/2.0;
 		double dstCenterX = dstWidth/2.0;
@@ -861,6 +898,10 @@ public class ColorProcessor extends ImageProcessor {
 	public void rotate(double angle) {
         if (angle%360==0)
         	return;
+        if (interpolationMethod==BICUBIC) {
+        	filterRGB(RGB_ROTATE, angle);
+        	return;
+        }
 		int[] pixels2 = (int[])getPixelsCopy();
 		double centerX = roiX + (roiWidth-1)/2.0;
 		double centerY = roiY + (roiHeight-1)/2.0;
@@ -906,7 +947,7 @@ public class ColorProcessor extends ImageProcessor {
 		}
 		showProgress(1.0);
 	}
-
+	
 	public void flipVertical() {
 		int index1,index2;
 		int tmp;
