@@ -583,6 +583,9 @@ public class FloatProcessor extends ImageProcessor {
 	*/
 	public void rotate(double angle) {
 		float[] pixels2 = (float[])getPixelsCopy();
+		ImageProcessor ip2 = null;
+		if (interpolationMethod==BICUBIC)
+			ip2 = new FloatProcessor(getWidth(), getHeight(), pixels2, null);
 		double centerX = roiX + (roiWidth-1)/2.0;
 		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
@@ -594,36 +597,51 @@ public class FloatProcessor extends ImageProcessor {
 		double tmp2 = -centerX*sa-centerY*ca;
 		double tmp3, tmp4, xs, ys;
 		int index, ixs, iys;
-		double dwidth=width,dheight=height;
-		double xlimit = width-1.0, xlimit2 = width-1.001;
-		double ylimit = height-1.0, ylimit2 = height-1.001;
 		
-		for (int y=roiY; y<(roiY + roiHeight); y++) {
-			index = y*width + roiX;
-			tmp3 = tmp1 - y*sa + centerX;
-			tmp4 = tmp2 + y*ca + centerY;
-			for (int x=roiX; x<=xMax; x++) {
-				xs = x*ca + tmp3;
-				ys = x*sa + tmp4;
-				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-					if (interpolate) {
-						if (xs<0.0) xs = 0.0;
-						if (xs>=xlimit) xs = xlimit2;
-						if (ys<0.0) ys = 0.0;			
-						if (ys>=ylimit) ys = ylimit2;
-				  		pixels[index++] = (float)getInterpolatedPixel(xs, ys, pixels2);
-				  	} else {
-				  		ixs = (int)(xs+0.5);
-				  		iys = (int)(ys+0.5);
-				  		if (ixs>=width) ixs = width - 1;
-				  		if (iys>=height) iys = height -1;
-						pixels[index++] = pixels2[width*iys+ixs];
-					}
-    			} else
-					pixels[index++] = 0;
+		if (interpolationMethod==BICUBIC) {
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				index = y*width + roiX;
+				tmp3 = tmp1 - y*sa + centerX;
+				tmp4 = tmp2 + y*ca + centerY;
+				for (int x=roiX; x<=xMax; x++) {
+					xs = x*ca + tmp3;
+					ys = x*sa + tmp4;
+					double value = getBicubicInterpolatedPixel(xs, ys, ip2);
+					pixels[index++] = (short)value;
+				}
+				if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 			}
-			if (y%20==0)
-			showProgress((double)(y-roiY)/roiHeight);
+		} else {
+			double dwidth=width,dheight=height;
+			double xlimit = width-1.0, xlimit2 = width-1.001;
+			double ylimit = height-1.0, ylimit2 = height-1.001;
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				index = y*width + roiX;
+				tmp3 = tmp1 - y*sa + centerX;
+				tmp4 = tmp2 + y*ca + centerY;
+				for (int x=roiX; x<=xMax; x++) {
+					xs = x*ca + tmp3;
+					ys = x*sa + tmp4;
+					if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
+						if (interpolate) {
+							if (xs<0.0) xs = 0.0;
+							if (xs>=xlimit) xs = xlimit2;
+							if (ys<0.0) ys = 0.0;			
+							if (ys>=ylimit) ys = ylimit2;
+							pixels[index++] = (float)getInterpolatedPixel(xs, ys, pixels2);
+						} else {
+							ixs = (int)(xs+0.5);
+							iys = (int)(ys+0.5);
+							if (ixs>=width) ixs = width - 1;
+							if (iys>=height) iys = height -1;
+							pixels[index++] = pixels2[width*iys+ixs];
+						}
+					} else
+						pixels[index++] = 0;
+				}
+				if (y%30==0)
+				showProgress((double)(y-roiY)/roiHeight);
+			}
 		}
 		showProgress(1.0);
 	}
@@ -789,6 +807,36 @@ public class FloatProcessor extends ImageProcessor {
 		showProgress(1.0);
 		return ip2;
 	}
+
+	/** This method is from Chapter 16 of "Digital Image Processing:
+		An Algorithmic Introduction Using Java" by Burger and Burge
+		(http://www.imagingbook.com/). */
+	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
+		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
+		int v0 = (int) Math.floor(y0);
+		double q = 0;
+		for (int j = 0; j <= 3; j++) {
+			int v = v0 - 1 + j;
+			double p = 0;
+			for (int i = 0; i <= 3; i++) {
+				int u = u0 - 1 + i;
+				p = p + ip2.getPixelValue(u,v) * cubic(x0 - u);
+			}
+			q = q + p * fcubic(y0 - v);
+		}
+		return q;
+	}
+	
+	static final double a = 1.0;
+	final double fcubic(double x) {
+		if (x < 0.0) x = -x;
+		double z = 0.0;
+		if (x < 1.0) 
+			z = x*x*(x*(-a+2.0) + (a-3.0)) + 1.0;
+		else if (x < 2.0) 
+			z = -a*x*x*x + 5.0*a*x*x - 8.0*a*x + 4.0*a;
+		return z;
+	}	
 
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {

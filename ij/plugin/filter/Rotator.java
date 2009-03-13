@@ -10,16 +10,17 @@ import java.awt.geom.*;
 public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	private int flags = DOES_ALL|SUPPORTS_MASKING|PARALLELIZE_STACKS;
 	private static double angle = 15.0;
-	private static boolean interpolate = true;
 	private static boolean fillWithBackground;
 	private static boolean enlarge;
 	private static int gridLines = 1;
 	private ImagePlus imp;
 	private int bitDepth;
-	boolean canEnlarge;
-	boolean isEnlarged;
-	GenericDialog gd;
-	PlugInFilterRunner pfr;
+	private boolean canEnlarge;
+	private boolean isEnlarged;
+	private GenericDialog gd;
+	private PlugInFilterRunner pfr;
+	private String[] methods = ImageProcessor.getInterpolationMethods();
+	private static int interpolationMethod = ImageProcessor.BILINEAR;
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -46,7 +47,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			else
 				ip = imp.getStack().getProcessor(slice);
 		}
-		ip.setInterpolate(interpolate);
+		ip.setInterpolationMethod(interpolationMethod);
 		if (fillWithBackground) {
 			Color bgc = Toolbar.getBackgroundColor();
 			if (bitDepth==8)
@@ -103,10 +104,18 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
 		this.pfr = pfr;
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null) {
+			if (macroOptions.indexOf(" interpolate")!=-1)
+				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
+			else if (macroOptions.indexOf(" interpolation=")==-1)
+				macroOptions = macroOptions+" interpolation=[Nearest Neighbor]";
+			Macro.setOptions(macroOptions);
+		}
 		gd = new GenericDialog("Rotate", IJ.getInstance());
-		gd.addNumericField("Angle (degrees): ", angle, (int)angle==angle?1:2);
-		gd.addNumericField("Grid Lines: ", gridLines, 0);
-		gd.addCheckbox("Interpolate", interpolate);
+		gd.addNumericField("Angle (degrees):", angle, (int)angle==angle?1:2);
+		gd.addNumericField("Grid Lines:", gridLines, 0);
+		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		if (bitDepth==8 || bitDepth==24)
 			gd.addCheckbox("Fill with Background Color", fillWithBackground);
 		if (canEnlarge)
@@ -135,7 +144,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			return false;
 		}
 		gridLines = (int)gd.getNextNumber();
-		interpolate = gd.getNextBoolean();
+		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
 			fillWithBackground = gd.getNextBoolean();
 		if (canEnlarge)

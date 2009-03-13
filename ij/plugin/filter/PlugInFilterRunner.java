@@ -338,8 +338,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         } catch (Exception err) {
 			if (thread==previewThread) {
 				gd.previewRunning(false);
-				//IJ.wait(100); // needed on Macs
-				//previewCheckbox.setState(false);
+				IJ.wait(100); // needed on Macs
+				previewCheckbox.setState(false);
 				bgPreviewOn = false;
 				previewThread = null;
 			}

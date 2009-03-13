@@ -36,7 +36,6 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Move Isolated Plugins to Misc. Menu", Prefs.moveToMisc);
 		gd.addCheckbox("Debug Mode", IJ.debugMode);
-		gd.addCheckbox("Bicubic Interpolation", Prefs.bicubicInterpolation);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -67,7 +66,6 @@ public class Options implements PlugIn {
 		Prefs.requireControlKey = gd.getNextBoolean();
 		Prefs.moveToMisc = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
-		Prefs.bicubicInterpolation= gd.getNextBoolean();
 	}
 
 	void lineWidth() {

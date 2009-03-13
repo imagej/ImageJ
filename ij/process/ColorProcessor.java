@@ -578,6 +578,9 @@ public class ColorProcessor extends ImageProcessor {
 		r.setBackgroundValue((bgColor&0xff0000)>>16);
 		g.setBackgroundValue((bgColor&0xff00)>>8);
 		b.setBackgroundValue(bgColor&0xff);
+		r.setInterpolationMethod(interpolationMethod);
+		g.setInterpolationMethod(interpolationMethod);
+		b.setInterpolationMethod(interpolationMethod);
 		
 		showProgress(0.15);
 		switch (type) {
@@ -612,19 +615,28 @@ public class ColorProcessor extends ImageProcessor {
 				b.autoThreshold(); showProgress(0.90);
 				break;
 			case RGB_ROTATE:
+				ij.IJ.showStatus("Rotating red");
 				r.rotate(arg); showProgress(0.40);
+				ij.IJ.showStatus("Rotating green");
 				g.rotate(arg); showProgress(0.65);
+				ij.IJ.showStatus("Rotating blue");
 				b.rotate(arg); showProgress(0.90);
 				break;
 			case RGB_SCALE:
+				ij.IJ.showStatus("Scaling red");
 				r.scale(arg, arg2); showProgress(0.40);
+				ij.IJ.showStatus("Scaling green");
 				g.scale(arg, arg2); showProgress(0.65);
+				ij.IJ.showStatus("Scaling blue");
 				b.scale(arg, arg2); showProgress(0.90);
 				break;
 			case RGB_RESIZE:
 				int w=(int)arg, h=(int)arg2;
+				ij.IJ.showStatus("Resizing red");
 				ImageProcessor r2 = r.resize(w, h); showProgress(0.40);
+				ij.IJ.showStatus("Resizing green");
 				ImageProcessor g2 = g.resize(w, h); showProgress(0.65);
+				ij.IJ.showStatus("Resizing blue");
 				ImageProcessor b2 = b.resize(w, h); showProgress(0.90);
 				R = (byte[])r2.getPixels();
 				G = (byte[])g2.getPixels();
@@ -893,7 +905,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
-		@see ImageProcessor#setInterpolate
+		@see ImageProcessor#setInterpolationMethod
 	*/
 	public void rotate(double angle) {
         if (angle%360==0)
@@ -926,7 +938,7 @@ public class ColorProcessor extends ImageProcessor {
 				xs = x*ca + tmp3;
 				ys = x*sa + tmp4;
 				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-					if (interpolate) {
+					if (interpolationMethod==BILINEAR) {
 						if (xs<0.0) xs = 0.0;
 						if (xs>=xlimit) xs = xlimit2;
 						if (ys<0.0) ys = 0.0;			

@@ -25,7 +25,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private static final double defaultGammaValue = 0.5;
 	private static double gammaValue = defaultGammaValue;
 	private static String macro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
-	private Interpreter interp;
 	private int w, h, w2, h2;
 	private boolean hasX, hasA, hasD, hasGetPixel;
 	private String macro2;
@@ -264,8 +263,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		int PCStart = 25;
 		if (macro2==null) return;
 		if (macro2.indexOf("=")==-1) {
-			if (!previewing())
-				IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
+			IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
 			canceled = true;
 			return;
 		}
@@ -283,7 +281,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 			"var v,x,y,z,w,h,d,a;\n"+
 			"function dummy() {}\n"+
 			macro2+";\n"; // code starts at program counter location 25
-		interp = new Interpreter();
+		Interpreter interp = new Interpreter();
 		interp.run(code, null);
 		if (interp.wasError())
 			return;
@@ -291,7 +289,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		interp.setVariable("w", w);
 		interp.setVariable("h", h);
 		boolean showProgress = pfr.getSliceNumber()==1 && !Interpreter.isBatchMode();
-		interp.setVariable("z", 0);
+		interp.setVariable("z", pfr.getSliceNumber()-1);
 		int bitDepth = imp.getBitDepth();
 		Rectangle r = ip.getRoi();
 		int inc = r.height/50;
@@ -402,7 +400,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		gd = new GenericDialog("Macro");
 		gd.addStringField("Code:", macro, 42);
 		gd.setInsets(0,40,0);
-		gd.addMessage("v=pixel value, x=x-coordinate, y=y-coordinate\nw=image width, h=image height, a=angle\nd=distance from center\n");
+		gd.addMessage("v=pixel value, x,y&z=pixel coordinates, w=image width,\nh=image height, a=angle, d=distance from center\n");
 		gd.setInsets(5,40,0);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);

@@ -15,7 +15,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
     private static String ystr = "0.5";
     private static int newWidth, newHeight;
     private static boolean newWindow = true;
-    private static boolean interpolate = true;
+	private static int interpolationMethod = ImageProcessor.BILINEAR;
+	private String[] methods = ImageProcessor.getInterpolationMethods();
     private static boolean fillWithBackground;
     private static boolean processStack = true;
     private double xscale;
@@ -37,9 +38,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (!showDialog(ip))
 			return;
 		if (ip.getWidth()>1 && ip.getHeight()>1)
-			ip.setInterpolate(interpolate);
+			ip.setInterpolationMethod(interpolationMethod);
 		else
-			ip.setInterpolate(false);
+			ip.setInterpolationMethod(ImageProcessor.NEAREST_NEIGHBOR);
 		ip.setBackgroundValue(bgValue);
 		imp.startTiming();
 		try {
@@ -61,9 +62,9 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	    ImageStack stack1 = imp.getStack();
 	    ImageStack stack2 = new ImageStack(newWidth, newHeight);
  		ImageProcessor ip1, ip2;
- 		boolean interp = interpolate;
+ 		int method = interpolationMethod;
  		if (imp.getWidth()==1 || imp.getHeight()==1)
- 			interp = false;
+ 			method = ImageProcessor.NEAREST_NEIGHBOR;
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("Scale: " + i + "/" + nSlices);
 			ip1 = stack1.getProcessor(i);
@@ -72,7 +73,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				ip1.setRoi(r);
 				ip1 = ip1.crop();
 			}
-			ip1.setInterpolate(interp);
+			ip1.setInterpolationMethod(method);
 			ip2 = ip1.resize(newWidth, newHeight);
 			if (ip2!=null)
 				stack2.addSlice(label, ip2);
@@ -131,6 +132,14 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	}
 	
 	boolean showDialog(ImageProcessor ip) {
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null) {
+			if (macroOptions.indexOf(" interpolate")!=-1)
+				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
+			else if (macroOptions.indexOf(" interpolation=")==-1)
+				macroOptions = macroOptions+" interpolation=[Nearest Neighbor]";
+			Macro.setOptions(macroOptions);
+		}
 		int bitDepth = imp.getBitDepth();
 		boolean isStack = imp.getStackSize()>1;
         r = ip.getRoi();
@@ -162,7 +171,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		widthField = (TextField)fields.elementAt(2);
 		heightField = (TextField)fields.elementAt(3);
         fieldWithFocus = xField;
-		gd.addCheckbox("Interpolate", interpolate);
+		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		if (bitDepth==8 || bitDepth==24)
 			gd.addCheckbox("Fill with Background Color", fillWithBackground);
 		if (isStack)
@@ -193,7 +202,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newWidth = (int)(r.width*xscale);
 			newHeight = (int)(r.height*yscale);
 		}
-		interpolate = gd.getNextBoolean();
+		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
 			fillWithBackground = gd.getNextBoolean();
 		if (isStack)

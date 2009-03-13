@@ -957,7 +957,7 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
-		@see ImageProcessor#setInterpolate
+		@see ImageProcessor#setInterpolationMethod
 	*/
 	public void rotate(double angle) {
         if (angle%360==0)

@@ -1,5 +1,4 @@
 package ij.process;
-
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
@@ -52,6 +51,7 @@ public abstract class ImageProcessor extends Object {
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
+	private static String[] interpolationMethods;
 	//static Frame frame;
 		
     ProgressBar progressBar;
@@ -65,7 +65,7 @@ public abstract class ImageProcessor extends Object {
 	protected ColorModel cm;
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
 	protected byte[] rLUT2, gLUT2, bLUT2; // LUT as modified by setMinAndMax and setThreshold
-	protected boolean interpolate;
+	protected boolean interpolate;  // replaced by interpolationMethod
 	protected int interpolationMethod = BILINEAR;
 	protected double minThreshold=NO_THRESHOLD, maxThreshold=NO_THRESHOLD;
 	protected int histogramSize = 256;
@@ -699,14 +699,25 @@ public abstract class ImageProcessor extends Object {
 		progressBar = pb;
 	}
 
-	/** Setting 'interpolate' true causes scale(), resize(),
-		rotate() and getLine() to do bilinear interpolation. */
+	/** This method has been replaced by setInterpolationMethod(). */
 	public void setInterpolate(boolean interpolate) {
 		this.interpolate = interpolate;
-		if (interpolate)
-			interpolationMethod = ij.Prefs.bicubicInterpolation?BICUBIC:BILINEAR;
-		else
-			interpolationMethod = NEAREST_NEIGHBOR;
+		interpolationMethod = interpolate?BILINEAR:NEAREST_NEIGHBOR;
+	}
+
+	/** Use this method to set the interpolation method (NEAREST_NEIGHBOR, 
+		 BILINEAR or BICUBIC) used by scale(), resize() and rotate(). */
+	public void setInterpolationMethod(int method) {
+		if (method<NEAREST_NEIGHBOR || method>BICUBIC)
+			throw new IllegalArgumentException("Invalid interpolation method");
+		interpolationMethod = method;
+		interpolate = method!=NEAREST_NEIGHBOR?true:false;
+	}
+	
+	public static String[] getInterpolationMethods() {
+		if (interpolationMethods==null)
+			interpolationMethods = new String[] {"Nearest Neighbor", "Bilinear", "Bicubic"};
+		return interpolationMethods;
 	}
 
 	/** Returns the value of the interpolate field. */
@@ -1390,6 +1401,9 @@ public abstract class ImageProcessor extends Object {
 		return lowerAverage + yFraction * (upperAverage - lowerAverage);
 	}
 
+	/** This method is from Chapter 16 of "Digital Image Processing:
+		An Algorithmic Introduction Using Java" by Burger and Burge
+		(http://www.imagingbook.com/). */
 	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
 		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
 		int v0 = (int) Math.floor(y0);
@@ -1406,7 +1420,20 @@ public abstract class ImageProcessor extends Object {
 		return q;
 	}
 	
-	double cubic(double x) {
+	static final double a = 1.0;
+	final double cubic(double x) {
+		if (x < 0.0) x = -x;
+		double z = 0.0;
+		if (x < 1.0) 
+			z = x*x*(x*(-a+2.0) + (a-3.0)) + 1.0;
+		else if (x < 2.0) 
+			z = -a*x*x*x + 5.0*a*x*x - 8.0*a*x + 4.0*a;
+		return z;
+	}	
+
+	/*
+		// a = 0.5
+	double cubic2(double x) {
 		if (x < 0) x = -x;
 		double z = 0;
 		if (x < 1)
@@ -1414,7 +1441,8 @@ public abstract class ImageProcessor extends Object {
 		else if (x < 2)
 			z = -0.5*x*x*x + 2.5*x*x - 4.0*x + 2.0;
 		return z;
-	}	
+	}
+	*/	
 
 	private final double getInterpolatedEdgeValue(double x, double y) {
 		int xbase = (int)x;
