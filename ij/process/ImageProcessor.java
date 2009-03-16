@@ -1420,7 +1420,7 @@ public abstract class ImageProcessor extends Object {
 		return q;
 	}
 	
-	static final double a = 1.0;
+	static final double a = 0.5; // Catmull-Rom interpolation
 	final double cubic(double x) {
 		if (x < 0.0) x = -x;
 		double z = 0.0;

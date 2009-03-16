@@ -58,6 +58,10 @@ public class Converter implements PlugIn {
 					new StackConverter(imp).convertToGray32();
 				else if (item.equals("RGB Color"))
 					new StackConverter(imp).convertToRGB();
+				else if (item.equals("RGB Stack"))
+					new StackConverter(imp).convertToRGBHyperstack();
+				else if (item.equals("HSB Stack"))
+					new StackConverter(imp).convertToHSBHyperstack();
 		    	else if (item.equals("8-bit Color")) {
 		    		int nColors = getNumber();
 		    		if (nColors!=0)
@@ -128,8 +132,8 @@ public class Converter implements PlugIn {
 			"8-bit Color -> RGB Color\n" +
 			"RGB Color -> 8-bit (grayscale)*\n" +
 			"RGB Color -> 8-bit Color*\n" +
-			"RGB Color -> RGB Stack\n" +
-			"RGB Color -> HSB Stack\n" +
+			"RGB Color -> RGB Stack*\n" +
+			"RGB Color -> HSB Stack*\n" +
 			"RGB Stack -> RGB Color\n" +
 			"HSB Stack -> RGB Color\n" +
 			" \n" +

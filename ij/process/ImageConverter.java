@@ -119,20 +119,8 @@ public class ImageConverter {
 			cp = (ColorProcessor)imp.getProcessor();
 		else
 			cp = new ColorProcessor(imp.getImage());
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		byte[] H = new byte[width*height];
-		byte[] S = new byte[width*height];
-		byte[] B = new byte[width*height];
-		cp.getHSB(H, S, B);
+		ImageStack stack = cp.getHSBStack();
 		imp.trimProcessor();
-
-		//create stack and select hue channel
-		ColorModel cm = LookUpTable.createGrayscaleColorModel(false);
-		ImageStack stack = new ImageStack(width, height, cm);
-		stack.addSlice("Hue", H);
-		stack.addSlice("Saturation", S);
-		stack.addSlice("Brightness", B);
 		imp.setStack(null, stack);
 		imp.setDimensions(3, 1, 1);
 		//IJ.showProgress(1.0);

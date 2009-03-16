@@ -133,7 +133,7 @@ public class Duplicater implements PlugInFilter, TextListener {
 				gd.setInsets(2, 30, 3);
 				gd.addStringField("Range:", "1-"+stackSize);
 				Vector v = gd.getStringFields();
-				rangeField = (TextField)v.elementAt(0);
+				rangeField = (TextField)v.elementAt(1);
 				rangeField.addTextListener(this);
 				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
 			}

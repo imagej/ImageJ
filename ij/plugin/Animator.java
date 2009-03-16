@@ -208,8 +208,10 @@ public class Animator implements PlugIn {
 		int decimalPlaces = (int)animationRate==animationRate?0:3;
 		GenericDialog gd = new GenericDialog("Animation Options");
 		gd.addNumericField("Speed (0.1-1000 fps):", animationRate, decimalPlaces);
-		gd.addNumericField("First Frame:", firstFrame, 0);
-		gd.addNumericField("Last Frame:", lastFrame, 0);
+		if (!imp.isHyperStack()) {
+			gd.addNumericField("First Frame:", firstFrame, 0);
+			gd.addNumericField("Last Frame:", lastFrame, 0);
+		}
 		gd.addCheckbox("Loop Back and Forth", cal.loop);
 		gd.addCheckbox("Start Animation", start);
 		gd.showDialog();
@@ -219,8 +221,10 @@ public class Animator implements PlugIn {
 			return;
 		}
 		double speed = gd.getNextNumber();
-		firstFrame = (int)gd.getNextNumber();
-		lastFrame = (int)gd.getNextNumber();
+		if (!imp.isHyperStack()) {
+			firstFrame = (int)gd.getNextNumber();
+			lastFrame = (int)gd.getNextNumber();
+		}
 		if (firstFrame==1 && lastFrame==nSlices)
 			{firstFrame=0; lastFrame=0;}
 		cal.loop = gd.getNextBoolean();
@@ -240,14 +244,19 @@ public class Animator implements PlugIn {
 		boolean hyperstack = imp.isHyperStack();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
-		if (hyperstack && channels>1 && !(slices>1&&IJ.shiftKeyDown())) {
+		int frames = imp.getNFrames();
+		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.spaceBarDown()||IJ.altKeyDown()))) {
 			int c = imp.getChannel() + 1;
 			if (c>channels) c = channels;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());
-		} else if (hyperstack && slices>1) {
+		} else if (hyperstack && slices>1 && !(frames>1&&IJ.altKeyDown())) {
 			int z = imp.getSlice() + 1;
 			if (z>slices) z = slices;
 			swin.setPosition(imp.getChannel(), z, imp.getFrame());
+		} else if (hyperstack && frames>1) {
+			int t = imp.getFrame() + 1;
+			if (t>frames) t = frames;
+			swin.setPosition(imp.getChannel(), imp.getSlice(), t);
 		} else {
 			if (IJ.altKeyDown())
 				slice += 10;
@@ -261,20 +270,26 @@ public class Animator implements PlugIn {
 		imp.unlock();
 	}
 	
+	
 	void previousSlice() {
 		if (!imp.lock())
 			return;
 		boolean hyperstack = imp.isHyperStack();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
-		if (hyperstack && channels>1 && !(slices>1&&IJ.shiftKeyDown())) {
+		int frames = imp.getNFrames();
+		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.spaceBarDown()||IJ.altKeyDown()))) {
 			int c = imp.getChannel() - 1;
 			if (c<1) c = 1;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());
-		} else if (hyperstack &&slices>1) {
+		} else if (hyperstack && slices>1 && !(frames>1&&IJ.altKeyDown())) {
 			int z = imp.getSlice() - 1;
 			if (z<1) z = 1;
 			swin.setPosition(imp.getChannel(), z, imp.getFrame());
+		} else if (hyperstack && frames>1) {
+			int t = imp.getFrame() - 1;
+			if (t<1) t = 1;
+			swin.setPosition(imp.getChannel(), imp.getSlice(), t);
 		} else {
 			if (IJ.altKeyDown())
 				slice -= 10;

@@ -4,6 +4,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
+import ij.ImageStack;
 
 /**
 This is an 32-bit RGB image and methods that operate on that image.. Based on the ImageProcessor class from
@@ -403,6 +404,22 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 	
+	/** Returns an ImageStack with three 8-bit slices,
+	    representing hue, saturation and brightness */
+	public ImageStack getHSBStack() {
+		int width = getWidth();
+		int height = getHeight();
+		byte[] H = new byte[width*height];
+		byte[] S = new byte[width*height];
+		byte[] B = new byte[width*height];
+		getHSB(H, S, B);
+		ColorModel cm = getDefaultColorModel();
+		ImageStack stack = new ImageStack(width, height, cm);
+		stack.addSlice("Hue", H);
+		stack.addSlice("Saturation", S);
+		stack.addSlice("Brightness", B);
+		return stack;
+	}
 
 	/** Returns brightness as a FloatProcessor. */
 	public FloatProcessor getBrightness() {

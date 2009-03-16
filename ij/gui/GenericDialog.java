@@ -158,7 +158,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 1; c.gridy = y;
 		c.anchor = GridBagConstraints.WEST;
 		tf.setEditable(true);
-		if (firstNumericField) tf.selectAll();
+		//if (firstNumericField) tf.selectAll();
 		firstNumericField = false;
 		if (units==null||units.equals("")) {
 			grid.setConstraints(tf, c);
@@ -493,7 +493,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		defaultValues.addElement(new Double(defaultValue));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
-		if (firstNumericField && firstSlider) tf.selectAll();
+		//if (firstNumericField && firstSlider) tf.selectAll();
 		firstSlider = false;
 		
     	Panel panel = new Panel();
@@ -849,10 +849,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
 			pfr.setDialog(this);
-			if (stringField!=null&&numberField==null) {
-				TextField tf = (TextField)(stringField.elementAt(0));
-				tf.selectAll();
-			}
+			//if (stringField!=null&&numberField==null) {
+			//	TextField tf = (TextField)(stringField.elementAt(0));
+			//	tf.selectAll();
+			//}
 			Panel buttons = new Panel();
 			buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 			cancel = new Button("Cancel");
@@ -1106,16 +1106,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	public void paint(Graphics g) {
 		super.paint(g);
 		if (firstPaint) {
-			if (numberField!=null) {
+			if (numberField!=null && IJ.isMacOSX()) {
+				// work around for bug on Intel Macs that caused 1st field to be un-editable
 				TextField tf = (TextField)(numberField.elementAt(0));
-				tf.requestFocus();
-				if (IJ.isMacOSX()) {
-					// work around for bug on Intel Macs that caused 1st field to be un-editable
-					tf.setEditable(false);
-					tf.setEditable(true);
-				}
-			} else if (stringField==null)
-				okay.requestFocus();
+				tf.setEditable(false);
+				tf.setEditable(true);
+			}
 			firstPaint = false;
 		}
 	}
