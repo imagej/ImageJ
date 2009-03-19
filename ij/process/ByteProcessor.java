@@ -117,6 +117,7 @@ public class ByteProcessor extends ImageProcessor {
 		ip2 =  new ByteProcessor(width, height, new byte[width*height], getColorModel());
 		if (baseCM!=null)
 			ip2.setMinAndMax(min, max);
+		ip2.setInterpolationMethod(interpolationMethod);
 		return ip2;
 	}
 
@@ -233,10 +234,18 @@ public class ByteProcessor extends ImageProcessor {
 	}
 
 	final public int getPixelInterpolated(double x, double y) {
-		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
-			return 0;
-		else
-			return (int)Math.round(getInterpolatedPixel(x, y, pixels));
+		if (interpolationMethod==BILINEAR) {
+			if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+				return 0;
+			else
+				return (int)Math.round(getInterpolatedPixel(x, y, pixels));
+		} else if (interpolationMethod==BICUBIC) {
+			int value = (int)(getBicubicInterpolatedPixel(x, y, this)+0.5);
+			if (value<0) value = 0;
+			if (value>255) value = 255;
+			return value;
+		} else
+			return getPixel((int)(x+0.5), (int)(y+0.5));
 	}
 	
  	public float getPixelValue(int x, int y) {

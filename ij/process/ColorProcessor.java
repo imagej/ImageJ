@@ -100,7 +100,9 @@ public class ColorProcessor extends ImageProcessor {
 		int[] pixels = new int[width*height];
 		for (int i=0; i<width*height; i++)
 			pixels[i] = -1;
-		return new ColorProcessor(width, height, pixels);
+		ImageProcessor ip2 = new ColorProcessor(width, height, pixels);
+		ip2.setInterpolationMethod(interpolationMethod);
+		return ip2;
 	}
 
 	public Color getColor(int x, int y) {
@@ -569,9 +571,9 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 
-	public final int RGB_NOISE=0, RGB_MEDIAN=1, RGB_FIND_EDGES=2,
+	public static final int RGB_NOISE=0, RGB_MEDIAN=1, RGB_FIND_EDGES=2,
 		RGB_ERODE=3, RGB_DILATE=4, RGB_THRESHOLD=5, RGB_ROTATE=6,
-		RGB_SCALE=7, RGB_RESIZE=8;
+		RGB_SCALE=7, RGB_RESIZE=8, RGB_TRANSLATE=9;
 
  	/** Performs the specified filter on the red, green and blue planes of this image. */
  	public void filterRGB(int type, double arg) {
@@ -662,6 +664,14 @@ public class ColorProcessor extends ImageProcessor {
 				ip2.setRGB(R, G, B);
 				showProgress(1.0);
 				return ip2;
+			case RGB_TRANSLATE:
+				ij.IJ.showStatus("Translating red");
+				r.translate(arg, arg2); showProgress(0.40);
+				ij.IJ.showStatus("Translating green");
+				g.translate(arg, arg2); showProgress(0.65);
+				ij.IJ.showStatus("Translating blue");
+				b.translate(arg, arg2); showProgress(0.90);
+				break;
 		}
 		
 		R = (byte[])r.getPixels();

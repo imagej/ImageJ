@@ -154,6 +154,7 @@ public class ShortProcessor extends ImageProcessor {
 	public ImageProcessor createProcessor(int width, int height) {
 		ImageProcessor ip2 = new ShortProcessor(width, height, new short[width*height], getColorModel());
 		ip2.setMinAndMax(getMin(), getMax());
+		ip2.setInterpolationMethod(interpolationMethod);
 		return ip2;
 	}
 
@@ -293,11 +294,19 @@ public class ShortProcessor extends ImageProcessor {
 		return getInterpolatedPixel(x, y, pixels);
 	}
 
-	final public int getPixelInterpolated(double x,double y) {
-		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
-			return 0;
-		else
-			return(int)Math.round(getInterpolatedPixel(x, y, pixels));
+	final public int getPixelInterpolated(double x, double y) {
+		if (interpolationMethod==BILINEAR) {
+			if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+				return 0;
+			else
+				return (int)Math.round(getInterpolatedPixel(x, y, pixels));
+		} else if (interpolationMethod==BICUBIC) {
+			int value = (int)(getBicubicInterpolatedPixel(x, y, this)+0.5);
+			if (value<0) value = 0;
+			if (value>65535) value = 65535;
+			return value;
+		} else
+			return getPixel((int)(x+0.5), (int)(y+0.5));
 	}
 
 	/** Stores the specified value at (x,y). Does

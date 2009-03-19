@@ -183,6 +183,7 @@ public class FloatProcessor extends ImageProcessor {
 	public ImageProcessor createProcessor(int width, int height) {
 		ImageProcessor ip2 = new FloatProcessor(width, height, new float[width*height], getColorModel());
 		ip2.setMinAndMax(getMin(), getMax());
+		ip2.setInterpolationMethod(interpolationMethod);
 		return ip2;
 	}
 
@@ -297,10 +298,15 @@ public class FloatProcessor extends ImageProcessor {
 	}
 		
 	final public int getPixelInterpolated(double x, double y) {
-		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
-			return 0;
+		if (interpolationMethod==BILINEAR) {
+			if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+				return 0;
+			else
+				return Float.floatToIntBits((float)getInterpolatedPixel(x, y, pixels));
+		} else if (interpolationMethod==BICUBIC)
+			return Float.floatToIntBits((float)getBicubicInterpolatedPixel(x, y, this));
 		else
-			return Float.floatToIntBits((float)getInterpolatedPixel(x, y, pixels));
+			return getPixel((int)(x+0.5), (int)(y+0.5));
 	}
 
 	/** Stores the specified value at (x,y). The value is expected to be a

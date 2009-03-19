@@ -596,6 +596,18 @@ public class PolygonRoi extends Roi {
 		return xSpline!=null;
 	}
 
+		/*
+		xSpline = new float[nPoints];
+		ySpline = new float[nPoints];
+		for (int i=1; i<nPoints; i++) {
+			xSpline[i] = xp[i];
+			ySpline[i] = yp[i];
+		}
+		splinePoints = nPoints;
+		float[] xpoints = new float[splinePoints*10];
+		float[] ypoints = new float[splinePoints*10];
+		*/
+
 	/* Creates a spline fitted polygon with one pixel segment lengths 
 		that can be retrieved using the getFloatPolygon() method. */
 	public void fitSplineForStraightening() {

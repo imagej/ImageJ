@@ -140,6 +140,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		m.addSeparator();
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
 		m.add(new MenuItem("Zap Gremlins"));
+		m.add(new MenuItem("Copy to Image Info"));
 		m.addActionListener(this);
 		mb.add(m);
 		editMenu = m;
@@ -519,6 +520,22 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			ta.setCaretPosition(start+s.length());
 	}
 
+	void copyToInfo() { 
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) {
+			IJ.noImage();
+			return;
+		}
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		String text;
+		if (start==end)
+			text = ta.getText();
+		else
+			text = ta.getSelectedText();
+		imp.setProperty("Info", text);
+	}
+
 	public void actionPerformed(ActionEvent e) {
 		String what = e.getActionCommand();
 		int flags = e.getModifiers();
@@ -561,11 +578,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			evaluateJavaScript();
 		else if ("Print...".equals(what))
 			print();
-		else if (what.startsWith("Paste"))
+		else if (what.equals("Paste"))
 			paste();
-		else if (what.startsWith("Copy"))
+		else if (what.equals("Copy"))
 			copy();
-		else if (what.startsWith("Cut"))
+		else if (what.equals("Cut"))
 		   cut();
 		else if ("Save As...".equals(what))
 			saveAs();
@@ -591,6 +608,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.run("Text Window");
 		else if ("Open...".equals(what))
 			IJ.open();
+		else if (what.equals("Copy to Image Info"))
+			copyToInfo();
 		else {
 			if (altKeyDown) {
 				enableDebugging();

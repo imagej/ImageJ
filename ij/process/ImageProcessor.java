@@ -36,7 +36,7 @@ public abstract class ImageProcessor extends Object {
 	public static final int ISODATA2 = 1;
 	
 	/** Interpolation methods */
-	public static final int NEAREST_NEIGHBOR=0, BILINEAR=1, BICUBIC=2;
+	public static final int NEAREST_NEIGHBOR=0, NONE=0, BILINEAR=1, BICUBIC=2;
 
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
@@ -716,7 +716,7 @@ public abstract class ImageProcessor extends Object {
 	
 	public static String[] getInterpolationMethods() {
 		if (interpolationMethods==null)
-			interpolationMethods = new String[] {"Nearest Neighbor", "Bilinear", "Bicubic"};
+			interpolationMethods = new String[] {"None", "Bilinear", "Bicubic"};
 		return interpolationMethods;
 	}
 
@@ -1371,7 +1371,7 @@ public abstract class ImageProcessor extends Object {
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y).
+	/** Uses the current interpolation method to find the pixel value at real coordinates (x,y).
 		For RGB images, the argb values are packed in an int. For float images,
 		the value must be converted using Float.intBitsToFloat().  Returns zero
 		if the (x, y) is not inside the image. */
@@ -1638,19 +1638,31 @@ public abstract class ImageProcessor extends Object {
 	      right, negative values move it to the left. Positive y values move the 
 	      image or selection down, negative values move it up.
 	*/
-  	public void translate(int xOffset, int yOffset, boolean eraseBackground) {
+  	public void translate(double xOffset, double yOffset) {
   		ImageProcessor ip2 = this.duplicate();
-  		if (eraseBackground) {
-  			Rectangle roi = getRoi();
-  			resetRoi();
-  			setValue(0);
-  			fill();
-  			setRoi(roi);
-  		}
-		for (int y=roiY; y<(roiY + roiHeight); y++) {
-			for (int x=roiX; x<(roiX + roiWidth); x++)
-				putPixel(x+xOffset, y+yOffset, ip2.getPixel(x, y));
-		}
+		boolean integerOffsets = xOffset==(int)xOffset && yOffset==(int)yOffset;
+  		if (integerOffsets || interpolationMethod==NEAREST_NEIGHBOR) {
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				for (int x=roiX; x<(roiX + roiWidth); x++)
+					putPixel(x, y, ip2.getPixel(x-(int)xOffset, y-(int)yOffset));
+			}
+		} else {
+			if (interpolationMethod==BICUBIC && (this instanceof ColorProcessor))
+				((ColorProcessor)this).filterRGB(ColorProcessor.RGB_TRANSLATE, xOffset, yOffset);
+			else {
+				for (int y=roiY; y<(roiY + roiHeight); y++) {
+					if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
+					for (int x=roiX; x<(roiX + roiWidth); x++)
+						putPixel(x, y, ip2.getPixelInterpolated(x-xOffset, y-yOffset));
+				}
+				showProgress(1.0);
+			}
+		} 
+  	}
+  	
+  	/** Obsolete; replaced by translate(x,y). */
+  	public void translate(int xOffset, int yOffset, boolean eraseBackground) {
+		translate(xOffset, yOffset);
   	}
 
 	/** Returns the histogram of the image or ROI. Returns
