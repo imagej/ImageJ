@@ -40,15 +40,15 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 				title = imp.getTitle()+"-"+r.x+"-"+r.y;
 			} else
 				title = imp.getTitle()+"-0-0";
-			PlotWindow pw = new PlotWindow(title, "Slice", "Mean", x, y);
+			Plot plot = new Plot(title, "Slice", "Mean", x, y);
 			double ymin = ProfilePlot.getFixedMin();
 			double ymax= ProfilePlot.getFixedMax();
 			if (!(ymin==0.0 && ymax==0.0)) {
 				double[] a = Tools.getMinMax(x);
 				double xmin=a[0]; double xmax=a[1];
-				pw.setLimits(xmin, xmax, ymin, ymax);
+				plot.setLimits(xmin, xmax, ymin, ymax);
 			}
-			pw.draw();
+			plot.show();
 		}			
 	}
 		

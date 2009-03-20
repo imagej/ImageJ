@@ -2,7 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.Calibration;
+import ij.measure.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -119,8 +119,10 @@ public class MontageMaker implements PlugIn {
 		} else {
 			boolean whiteBackground = false;
 			if ((ip instanceof ByteProcessor) || (ip instanceof ColorProcessor)) {
-				ImageStatistics is = imp.getStatistics();
-				whiteBackground = is.mode>=200;
+				ip.setRoi(0, stackHeight-12, stackWidth, 12);
+				ImageStatistics stats = ImageStatistics.getStatistics(ip, Measurements.MODE, null);
+				ip.resetRoi();
+				whiteBackground = stats.mode>=200;
 				if (imp.isInvertedLut())
 					whiteBackground = !whiteBackground;
 			}

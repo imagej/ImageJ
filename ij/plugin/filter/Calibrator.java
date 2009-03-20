@@ -236,34 +236,34 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		double ymax = a[1];
 		int fit = cal.getFunction();
 		String unit = cal.getValueUnit();
-		PlotWindow pw = new PlotWindow("Calibration Function","pixel value",unit,px,py);
-		pw.setLimits(xmin,xmax,ymin,ymax);
+		Plot plot = new Plot("Calibration Function","pixel value",unit,px,py);
+		plot.setLimits(xmin,xmax,ymin,ymax);
 		if (x!=null&&y!=null&&x.length>0&&y.length>0)
-			pw.addPoints(x, y, PlotWindow.CIRCLE);
+			plot.addPoints(x, y, PlotWindow.CIRCLE);
 		double[] p = cal.getCoefficients();
 		if (fit<=Calibration.LOG2) {
-			drawLabel(pw, CurveFitter.fList[fit]);
+			drawLabel(plot, CurveFitter.fList[fit]);
 			ly += 0.04;
 		}
 		if (p!=null) {
 			int np = p.length;
-			drawLabel(pw, "a="+IJ.d2s(p[0],6));
-			drawLabel(pw, "b="+IJ.d2s(p[1],6));
+			drawLabel(plot, "a="+IJ.d2s(p[0],6));
+			drawLabel(plot, "b="+IJ.d2s(p[1],6));
 			if (np>=3)
-				drawLabel(pw, "c="+IJ.d2s(p[2],6));
+				drawLabel(plot, "c="+IJ.d2s(p[2],6));
 			if (np>=4)
-				drawLabel(pw, "d="+IJ.d2s(p[3],6));
+				drawLabel(plot, "d="+IJ.d2s(p[3],6));
 			if (np>=5)
-				drawLabel(pw, "e="+IJ.d2s(p[4],6));
+				drawLabel(plot, "e="+IJ.d2s(p[4],6));
 			ly += 0.04;
 		}
 		if (rSquared!=null)
-			{drawLabel(pw, "R^2="+rSquared); rSquared=null;}
-		pw.draw();
+			{drawLabel(plot, "R^2="+rSquared); rSquared=null;}
+		plot.show();
 	}
 
-	void drawLabel(PlotWindow pw, String label) {
-		pw.addLabel(lx, ly, label);
+	void drawLabel(Plot plot, String label) {
+		plot.addLabel(lx, ly, label);
 		ly += 0.08;
 	}
 	
