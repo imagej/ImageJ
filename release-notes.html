@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.42l, 20 March 2009</u>
+<li> <u>1.42l, 24 March 2009</u>
 <ul>
 <li> Added the option to do bicubic interpolation to
 <i>Image&gt;Rotate&gt;Arbitrarily</i>, <i>Image&gt;Scale</i>
@@ -14,11 +14,14 @@ and <i>Image&gt;Adjust&gt;Size</i>. The bicubic interpolation method is from Cha
 by Wilhelm Burger and Mark Burge, with the 'a' control parameter set to 0.5 (Catmull-Rom interpolation).
 <li> The range of images to be copied can be specified when
 duplicating a stack using <i>Image&gt;Duplicate</i>.
+<li> <i>Image&gt;Stacks&gt;Images to Stack</i> no longer requires that all images
+be the same type and size.
 <li> The <i>Image&gt;Translate</i> command works with sub-pixel offsets
 (<a href="http://rsb.info.nih.gov/ij/macros/examples/CorrectStackDrift.txt">example</a>).
 <li> <i>Image&gt;Stacks&gt;Make Montage</i> draws antialiased labels and
 allows the font size to be set in the dialog box.
 dialog box.
+<li> <i>File&gt;Import&gt;URL</i> replaces spaces in URLs with "%20".
 <li> Thanks to code contributed by Mark Longair,  <i>Image&gt;Type&gt;HSB Stack</i>
 now converts RGB stacks to a 3 channel (Hue, Saturation and Brightness) hyperstacks. 
 <li> <i>Image&gt;Type&gt;RGB Stack</i> now
@@ -30,6 +33,9 @@ to prompt; 3) press escape to close.
 <li> Added the <i>Edit&gt;Copy to Image Info</i> command to the text editor.
 <li> The search command in the text editor remembers the
 "Case Sensitive" setting.
+<li> Added the fill(Roi), fileOutside(Roi) and draw(Roi) methods to the
+ImageProcessor class
+(<a href="http://rsb.info.nih.gov/ij/macros/js/DrawFillDemo.js">example</a>).
 <li> Fixed a bug in <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i> that caused it to not
 work correctly in batch mode macros.
 <li> Fixed a bug that prevented the selection from being resized after

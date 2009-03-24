@@ -76,6 +76,7 @@ public class Filler implements PlugInFilter, Measurements {
 		ip.setColor(Toolbar.getForegroundColor());
 	}
 		
+	/** Obsolete; replaced by ImageProcessor.fill(Roi). */
 	public void fill(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
 		if (isLineSelection()) {
@@ -87,6 +88,7 @@ public class Filler implements PlugInFilter, Measurements {
 	 		ip.fill(); // fill with foreground color
 	}
 	 			 		
+	/** Obsolete; replaced by ImageProcessor.draw(Roi). */
 	public void draw(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
 		roi.drawPixels(ip);
@@ -173,6 +175,7 @@ public class Filler implements PlugInFilter, Measurements {
 		ip.drawString(label, x, y);
 	} 
 
+	/** Obsolete; replaced by ImageProcessor.fillOutside(Roi). */
 	public synchronized void clearOutside(ImageProcessor ip) {
 		if (isLineSelection()) {
 			IJ.error("\"Clear Outside\" does not work with line selections.");

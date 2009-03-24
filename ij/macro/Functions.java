@@ -3128,7 +3128,7 @@ public class Functions implements MacroConstants, Measurements {
 			max = (int)getNextArg();
 		interp.getRightParen();			
 		if (path.equals("")) {
-			OpenDialog od = new OpenDialog("OpenAsString...", "");
+			OpenDialog od = new OpenDialog("Open As String", "");
 			String directory = od.getDirectory();
 			String name = od.getFileName();
 			if (name==null) return "";

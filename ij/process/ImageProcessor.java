@@ -5,6 +5,8 @@ import java.awt.image.*;
 import ij.gui.*;
 import ij.util.*;
 import ij.plugin.filter.GaussianBlur;
+import ij.gui.Roi;
+import ij.gui.ShapeRoi;
 
 /**
 This abstract class is the superclass for classes that process
@@ -616,7 +618,7 @@ public abstract class ImageProcessor extends Object {
 		<code>PlugInFilter</code> interface.
 		@see ij.ImagePlus#getRoi
 	*/
-	public void setRoi(ij.gui.Roi roi) {
+	public void setRoi(Roi roi) {
 		if (roi==null)
 			resetRoi();
 		else {
@@ -1232,6 +1234,38 @@ public abstract class ImageProcessor extends Object {
 		Throws and IllegalArgumentException if the mask is null or
 		the size of the mask is not the same as the size of the ROI. */
 	public abstract void fill(ImageProcessor mask);
+
+	/** Fills an Roi. */
+	public void fill(Roi roi) {
+		ImageProcessor m = getMask();
+		Rectangle r = getRoi();
+		setRoi(roi);
+		fill(getMask());
+		setMask(m);
+		setRoi(r);
+	}
+
+	/** Fills outside an Roi. */
+	public void fillOutside(Roi roi) {
+		if (roi==null || !roi.isArea()) return;
+		ImageProcessor m = getMask();
+		Rectangle r = getRoi();
+		ShapeRoi s1, s2;
+		if (roi instanceof ShapeRoi)
+			s1 = (ShapeRoi)roi;
+		else
+			s1 = new ShapeRoi(roi);
+		s2 = new ShapeRoi(new Roi(0,0, width, height));
+		setRoi(s1.xor(s2));
+		fill(getMask());
+		setMask(m);
+		setRoi(r);
+	}
+
+	/** Draws an Roi. */
+	public void draw(Roi roi) {
+		roi.drawPixels(this);
+	}
 
 	/** Set a lookup table used by getPixelValue(), getLine() and
 		convertToFloat() to calibrate pixel values. The length of
