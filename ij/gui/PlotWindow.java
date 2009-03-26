@@ -13,7 +13,7 @@ import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
 
 
-/** This class is an extended ImageWindow that displays line graphs. */
+/** Obsolete; replaced by the Plot class. */
 public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner {
 
 	/** Display points using a circle 5 pixels in diameter. */

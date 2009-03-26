@@ -337,8 +337,11 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
                 IJ.error("PlugInFilterRunner internal error:\nunsolicited background thread");
         } catch (Exception err) {
 			if (thread==previewThread) {
-				previewThread = null;
 				gd.previewRunning(false);
+				IJ.wait(100); // needed on Macs
+				previewCheckbox.setState(false);
+				bgPreviewOn = false;
+				previewThread = null;
 			}
         	String msg = ""+err;
         	if (msg.indexOf(Macro.MACRO_CANCELED)==-1) {

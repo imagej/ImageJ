@@ -1,11 +1,12 @@
 package ij.process;
-
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
 import ij.util.*;
 import ij.plugin.filter.GaussianBlur;
+import ij.gui.Roi;
+import ij.gui.ShapeRoi;
 
 /**
 This abstract class is the superclass for classes that process
@@ -35,6 +36,9 @@ public abstract class ImageProcessor extends Object {
 
 	/** Modified isodata method used in Image/Adjust/Threshold tool */
 	public static final int ISODATA2 = 1;
+	
+	/** Interpolation methods */
+	public static final int NEAREST_NEIGHBOR=0, NONE=0, BILINEAR=1, BICUBIC=2;
 
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
@@ -49,6 +53,7 @@ public abstract class ImageProcessor extends Object {
 	protected FontMetrics fontMetrics;
 	protected boolean antialiasedText;
 	protected boolean boldFont;
+	private static String[] interpolationMethods;
 	//static Frame frame;
 		
     ProgressBar progressBar;
@@ -62,7 +67,8 @@ public abstract class ImageProcessor extends Object {
 	protected ColorModel cm;
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
 	protected byte[] rLUT2, gLUT2, bLUT2; // LUT as modified by setMinAndMax and setThreshold
-	protected boolean interpolate;
+	protected boolean interpolate;  // replaced by interpolationMethod
+	protected int interpolationMethod = BILINEAR;
 	protected double minThreshold=NO_THRESHOLD, maxThreshold=NO_THRESHOLD;
 	protected int histogramSize = 256;
 	protected double histogramMin, histogramMax;
@@ -612,7 +618,7 @@ public abstract class ImageProcessor extends Object {
 		<code>PlugInFilter</code> interface.
 		@see ij.ImagePlus#getRoi
 	*/
-	public void setRoi(ij.gui.Roi roi) {
+	public void setRoi(Roi roi) {
 		if (roi==null)
 			resetRoi();
 		else {
@@ -695,10 +701,25 @@ public abstract class ImageProcessor extends Object {
 		progressBar = pb;
 	}
 
-	/** Setting 'interpolate' true causes scale(), resize(),
-		rotate() and getLine() to do bilinear interpolation. */
+	/** This method has been replaced by setInterpolationMethod(). */
 	public void setInterpolate(boolean interpolate) {
 		this.interpolate = interpolate;
+		interpolationMethod = interpolate?BILINEAR:NEAREST_NEIGHBOR;
+	}
+
+	/** Use this method to set the interpolation method (NEAREST_NEIGHBOR, 
+		 BILINEAR or BICUBIC) used by scale(), resize() and rotate(). */
+	public void setInterpolationMethod(int method) {
+		if (method<NEAREST_NEIGHBOR || method>BICUBIC)
+			throw new IllegalArgumentException("Invalid interpolation method");
+		interpolationMethod = method;
+		interpolate = method!=NEAREST_NEIGHBOR?true:false;
+	}
+	
+	public static String[] getInterpolationMethods() {
+		if (interpolationMethods==null)
+			interpolationMethods = new String[] {"None", "Bilinear", "Bicubic"};
+		return interpolationMethods;
 	}
 
 	/** Returns the value of the interpolate field. */
@@ -1214,6 +1235,38 @@ public abstract class ImageProcessor extends Object {
 		the size of the mask is not the same as the size of the ROI. */
 	public abstract void fill(ImageProcessor mask);
 
+	/** Fills an Roi. */
+	public void fill(Roi roi) {
+		ImageProcessor m = getMask();
+		Rectangle r = getRoi();
+		setRoi(roi);
+		fill(getMask());
+		setMask(m);
+		setRoi(r);
+	}
+
+	/** Fills outside an Roi. */
+	public void fillOutside(Roi roi) {
+		if (roi==null || !roi.isArea()) return;
+		ImageProcessor m = getMask();
+		Rectangle r = getRoi();
+		ShapeRoi s1, s2;
+		if (roi instanceof ShapeRoi)
+			s1 = (ShapeRoi)roi;
+		else
+			s1 = new ShapeRoi(roi);
+		s2 = new ShapeRoi(new Roi(0,0, width, height));
+		setRoi(s1.xor(s2));
+		fill(getMask());
+		setMask(m);
+		setRoi(r);
+	}
+
+	/** Draws an Roi. */
+	public void draw(Roi roi) {
+		roi.drawPixels(this);
+	}
+
 	/** Set a lookup table used by getPixelValue(), getLine() and
 		convertToFloat() to calibrate pixel values. The length of
 		the table must be 256 for byte images and 65536 for short
@@ -1349,10 +1402,11 @@ public abstract class ImageProcessor extends Object {
 		putPixel(x, y, iArray[0]);
 	}
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	/** Uses the current interpolation method (bilinear or bicubic)
+		to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y).
+	/** Uses the current interpolation method to find the pixel value at real coordinates (x,y).
 		For RGB images, the argb values are packed in an int. For float images,
 		the value must be converted using Float.intBitsToFloat().  Returns zero
 		if the (x, y) is not inside the image. */
@@ -1381,6 +1435,49 @@ public abstract class ImageProcessor extends Object {
 		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
 		return lowerAverage + yFraction * (upperAverage - lowerAverage);
 	}
+
+	/** This method is from Chapter 16 of "Digital Image Processing:
+		An Algorithmic Introduction Using Java" by Burger and Burge
+		(http://www.imagingbook.com/). */
+	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
+		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
+		int v0 = (int) Math.floor(y0);
+		double q = 0;
+		for (int j = 0; j <= 3; j++) {
+			int v = v0 - 1 + j;
+			double p = 0;
+			for (int i = 0; i <= 3; i++) {
+				int u = u0 - 1 + i;
+				p = p + ip2.getPixel(u,v) * cubic(x0 - u);
+			}
+			q = q + p * cubic(y0 - v);
+		}
+		return q;
+	}
+	
+	static final double a = 0.5; // Catmull-Rom interpolation
+	final double cubic(double x) {
+		if (x < 0.0) x = -x;
+		double z = 0.0;
+		if (x < 1.0) 
+			z = x*x*(x*(-a+2.0) + (a-3.0)) + 1.0;
+		else if (x < 2.0) 
+			z = -a*x*x*x + 5.0*a*x*x - 8.0*a*x + 4.0*a;
+		return z;
+	}	
+
+	/*
+		// a = 0.5
+	double cubic2(double x) {
+		if (x < 0) x = -x;
+		double z = 0;
+		if (x < 1)
+			z = 1.5*x*x*x + -2.5*x*x + 1.0;
+		else if (x < 2)
+			z = -0.5*x*x*x + 2.5*x*x - 4.0*x + 2.0;
+		return z;
+	}
+	*/	
 
 	private final double getInterpolatedEdgeValue(double x, double y) {
 		int xbase = (int)x;
@@ -1576,19 +1673,31 @@ public abstract class ImageProcessor extends Object {
 	      right, negative values move it to the left. Positive y values move the 
 	      image or selection down, negative values move it up.
 	*/
-  	public void translate(int xOffset, int yOffset, boolean eraseBackground) {
+  	public void translate(double xOffset, double yOffset) {
   		ImageProcessor ip2 = this.duplicate();
-  		if (eraseBackground) {
-  			Rectangle roi = getRoi();
-  			resetRoi();
-  			setValue(0);
-  			fill();
-  			setRoi(roi);
-  		}
-		for (int y=roiY; y<(roiY + roiHeight); y++) {
-			for (int x=roiX; x<(roiX + roiWidth); x++)
-				putPixel(x+xOffset, y+yOffset, ip2.getPixel(x, y));
-		}
+		boolean integerOffsets = xOffset==(int)xOffset && yOffset==(int)yOffset;
+  		if (integerOffsets || interpolationMethod==NEAREST_NEIGHBOR) {
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				for (int x=roiX; x<(roiX + roiWidth); x++)
+					putPixel(x, y, ip2.getPixel(x-(int)xOffset, y-(int)yOffset));
+			}
+		} else {
+			if (interpolationMethod==BICUBIC && (this instanceof ColorProcessor))
+				((ColorProcessor)this).filterRGB(ColorProcessor.RGB_TRANSLATE, xOffset, yOffset);
+			else {
+				for (int y=roiY; y<(roiY + roiHeight); y++) {
+					if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
+					for (int x=roiX; x<(roiX + roiWidth); x++)
+						putPixel(x, y, ip2.getPixelInterpolated(x-xOffset, y-yOffset));
+				}
+				showProgress(1.0);
+			}
+		} 
+  	}
+  	
+  	/** Obsolete; replaced by translate(x,y). */
+  	public void translate(int xOffset, int yOffset, boolean eraseBackground) {
+		translate(xOffset, yOffset);
   	}
 
 	/** Returns the histogram of the image or ROI. Returns

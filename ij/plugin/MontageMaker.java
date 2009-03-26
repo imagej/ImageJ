@@ -2,7 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.Calibration;
+import ij.measure.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -16,6 +16,7 @@ public class MontageMaker implements PlugIn {
 	private static boolean useForegroundColor;
 	private static int saveID;
 	private static int saveStackSize;
+	private static int fontSize = 12;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -71,6 +72,7 @@ public class MontageMaker implements PlugIn {
 			gd.addNumericField("Last Slice:", last, 0);
 			gd.addNumericField("Increment:", inc, 0);
 			gd.addNumericField("Border Width:", borderWidth, 0);
+			gd.addNumericField("Font Size:", fontSize, 0);
 			gd.addCheckbox("Label Slices", label);
 			gd.addCheckbox("Use Foreground Color", useForegroundColor);
 			gd.showDialog();
@@ -83,6 +85,7 @@ public class MontageMaker implements PlugIn {
 			last = (int)gd.getNextNumber();
 			inc = (int)gd.getNextNumber();
 			borderWidth = (int)gd.getNextNumber();
+			fontSize = (int)gd.getNextNumber();
 			if (borderWidth<0) borderWidth = 0;
 			if (first<1) first = 1;
 			if (last>nSlices) last = nSlices;
@@ -116,8 +119,10 @@ public class MontageMaker implements PlugIn {
 		} else {
 			boolean whiteBackground = false;
 			if ((ip instanceof ByteProcessor) || (ip instanceof ColorProcessor)) {
-				ImageStatistics is = imp.getStatistics();
-				whiteBackground = is.mode>=200;
+				ip.setRoi(0, stackHeight-12, stackWidth, 12);
+				ImageStatistics stats = ImageStatistics.getStatistics(ip, Measurements.MODE, null);
+				ip.resetRoi();
+				whiteBackground = stats.mode>=200;
 				if (imp.isInvertedLut())
 					whiteBackground = !whiteBackground;
 			}
@@ -129,6 +134,9 @@ public class MontageMaker implements PlugIn {
 		montage.setColor(bgColor);
 		montage.fill();
 		montage.setColor(fgColor);
+		Dimension screen = IJ.getScreenSize();
+		montage.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
+		montage.setAntialiasedText(true);
 		ImageStack stack = imp.getStack();
 		int x = 0;
 		int y = 0;
@@ -188,8 +196,7 @@ public class MontageMaker implements PlugIn {
 		int swidth = montage.getStringWidth(label);
 		x += width/2 - swidth/2;
 		y += height;
-		montage.moveTo(x, y); 
-		montage.drawString(label);
+		montage.drawString(label, x, y);
 	}
 }
 

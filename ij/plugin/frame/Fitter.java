@@ -122,23 +122,23 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		a = Tools.getMinMax(py);
 		ymin = Math.min(ymin, a[0]);
 		ymax = Math.max(ymax, a[1]);
-		PlotWindow pw = new PlotWindow(cf.getFormula(),"X","Y",px,py);
-		pw.setLimits(xmin, xmax, ymin, ymax);
-		pw.addPoints(x, y, PlotWindow.CIRCLE);
+		Plot plot = new Plot(cf.getFormula(),"X","Y",px,py);
+		plot.setLimits(xmin, xmax, ymin, ymax);
+		plot.addPoints(x, y, PlotWindow.CIRCLE);
 		double yloc = 0.1;
 		double yinc = 0.085;
-		pw.addLabel(0.02, yloc, cf.getName()); yloc+=yinc;
-		pw.addLabel(0.02, yloc, cf.getFormula());  yloc+=yinc;
+		plot.addLabel(0.02, yloc, cf.getName()); yloc+=yinc;
+		plot.addLabel(0.02, yloc, cf.getFormula());  yloc+=yinc;
         double[] p = cf.getParams();
         int n = cf.getNumParams();
         char pChar = 'a';
         for (int i = 0; i < n; i++) {
-			pw.addLabel(0.02, yloc, pChar+"="+IJ.d2s(p[i],4));
+			plot.addLabel(0.02, yloc, pChar+"="+IJ.d2s(p[i],4));
 			yloc+=yinc;
 			pChar++;
         }
-		pw.addLabel(0.02, yloc, "R^2="+IJ.d2s(cf.getRSquared(),3));  yloc+=yinc;
-		pw.draw();									
+		plot.addLabel(0.02, yloc, "R^2="+IJ.d2s(cf.getRSquared(),3));  yloc+=yinc;
+		plot.show();									
 	}
 	
 	double sqr(double x) {return x*x;}

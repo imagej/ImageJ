@@ -350,6 +350,8 @@ public class PolygonRoi extends Roi {
 			oldWidth = width; oldHeight = height;
 		} else {
 			resetBoundingRect();
+			if (type==POINT && width==0 && height==0)
+				{width=1; height=1;}
 			updateClipRectAndDraw();
 		}
 		String angle = type==ANGLE?getAngleAsString():"";
@@ -593,6 +595,18 @@ public class PolygonRoi extends Roi {
 	public boolean isSplineFit() {
 		return xSpline!=null;
 	}
+
+		/*
+		xSpline = new float[nPoints];
+		ySpline = new float[nPoints];
+		for (int i=1; i<nPoints; i++) {
+			xSpline[i] = xp[i];
+			ySpline[i] = yp[i];
+		}
+		splinePoints = nPoints;
+		float[] xpoints = new float[splinePoints*10];
+		float[] ypoints = new float[splinePoints*10];
+		*/
 
 	/* Creates a spline fitted polygon with one pixel segment lengths 
 		that can be retrieved using the getFloatPolygon() method. */

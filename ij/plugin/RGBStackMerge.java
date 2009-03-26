@@ -65,14 +65,14 @@ public class RGBStackMerge implements PlugIn {
             }
         }
         if (width==0) {
-            IJ.error("There must be at least one source image or stack.");
+            IJ.error("Merge Channels", "There must be at least one source image or stack.");
             return;
         }
         for (int i=0; i<4; i++) {
             ImagePlus img = image[i];
             if (img!=null) {
                 if (img.getStackSize()!=stackSize) {
-                    IJ.error("The source stacks must all have the same number of slices.");
+                    IJ.error("Merge Channels",  "The source stacks must all have the same number of slices.");
                     return;
                 }
                 if (img.isHyperStack()) {
@@ -85,11 +85,11 @@ public class RGBStackMerge implements PlugIn {
               				return;
               			}
               		}
-                    IJ.error("Source stacks cannot be hyperstacks.");
+                    IJ.error("Merge Channels", "Source stacks cannot be hyperstacks.");
                     return;
                 }
                 if (img.getWidth()!=width || image[i].getHeight()!=height) {
-                    IJ.error("The source images or stacks must have the same width and height.");
+                    IJ.error("Merge Channels", "The source images or stacks must have the same width and height.");
                     return;
                 }
                 if (createComposite) {
@@ -152,7 +152,7 @@ public class RGBStackMerge implements PlugIn {
 			}
 		}
 		if (channels<2) {
-            IJ.error("At least 2 channels required");
+            IJ.error("Merge Channels", "At least 2 channels required");
             return null;
 		}
 		for (int i=0; i<d; i++) {

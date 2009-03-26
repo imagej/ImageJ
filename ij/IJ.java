@@ -817,8 +817,6 @@ public class IJ {
 				else
 					return flags;
 			}
-			if (macroRunning && macroOptions==null)
-				return flags;
 			if (hideProcessStackDialog)
 				return flags;
  			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),

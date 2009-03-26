@@ -21,12 +21,10 @@ public class Binary implements PlugInFilter {
 		this.arg = arg;
 		this.imp = imp;
 		IJ.register(Binary.class);
-		
 		if (arg.equals("options")) {
 			showDialog();
 			return DONE;
 		}
-		
 		if (imp!=null && (imp.getType()==ImagePlus.GRAY8 || imp.getType()==ImagePlus.COLOR_256)) {
 			ImageStatistics stats = imp.getStatistics();
 			if (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
@@ -34,6 +32,8 @@ public class Binary implements PlugInFilter {
 				return DONE;
 			}
 		}
+		if (imp!=null && arg.equals("skel"))
+			imp.killRoi();
 		return IJ.setupDialog(imp, DOES_8G+DOES_8C+SUPPORTS_MASKING);
 	}
 

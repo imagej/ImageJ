@@ -283,6 +283,8 @@ public class Opener {
 				name = url.substring(index+1);
 			else
 				throw new MalformedURLException("Invalid URL: "+url);
+			if (url.indexOf(" ")!=-1)
+				url = url.replaceAll(" ", "%20");
 			URL u = new URL(url);
 			IJ.showStatus(""+url);
 			String lurl = url.toLowerCase(Locale.US);

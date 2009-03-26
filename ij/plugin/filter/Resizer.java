@@ -15,7 +15,8 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
     private static int newWidth;
     private static int newHeight;
     private static boolean constrain = true;
-    private static boolean interpolate = true;
+	private static int interpolationMethod = ImageProcessor.BILINEAR;
+	private String[] methods = ImageProcessor.getInterpolationMethods();
     private Vector fields, checkboxes;
 	private double origWidth, origHeight;
 	private boolean sizeToHeight;
@@ -56,7 +57,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
 			newHeight = bounds.height;
-			interpolate = false;
+			interpolationMethod = ImageProcessor.NEAREST_NEIGHBOR;
 		} else {
 			if (newWidth==0 || newHeight==0) {
 				newWidth = (int)origWidth/2;
@@ -67,7 +68,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 			gd.addNumericField("Width (pixels):", newWidth, 0);
 			gd.addNumericField("Height (pixels):", newHeight, 0);
 			gd.addCheckbox("Constrain Aspect Ratio", constrain);
-			gd.addCheckbox("Interpolate", interpolate);
+			gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 			gd.addMessage("NOTE: Undo is not available");
 			fields = gd.getNumericFields();
 			for (int i=0; i<fields.size(); i++)
@@ -84,7 +85,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				return;
 			}
 			constrain = gd.getNextBoolean();
-			interpolate = gd.getNextBoolean();
+			interpolationMethod = gd.getNextChoiceIndex();
 			if (constrain && newWidth==0)
 				sizeToHeight = true;
 			if (newWidth<=0.0 && !constrain)  newWidth = 50;
@@ -98,9 +99,9 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				newHeight = (int)(newWidth*(origHeight/origWidth));
 		}
 		if (ip.getWidth()==1 || ip.getHeight()==1)
-			ip.setInterpolate(false);
+			ip.setInterpolationMethod(ImageProcessor.NEAREST_NEIGHBOR);
 		else
-			ip.setInterpolate(interpolate);
+			ip.setInterpolationMethod(interpolationMethod);
     	
 		int nSlices = imp.getStackSize();
 		try {

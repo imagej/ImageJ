@@ -452,7 +452,7 @@ public class Menus {
 					}
 				}
 			}
-			if (found) {
+			if (found && menu!=pluginsMenu) {
 				addPluginItem(menu, value);
 				pluginsPrefs.addElement(prefsValue);
 				if (className.endsWith("\")")) { // remove any argument
@@ -678,11 +678,8 @@ public class Menus {
 				if (readFromProps)
 					result = addSubMenu(parentMenu,
 							menuItemName);
-				else if (parentName.startsWith("Plugins") &&
-						menuSeparators != null)
-					addItemSorted(parentMenu, result,
-						parentName.equals("Plugins") ?
-							userPluginsIndex : 0);
+				else if (parentName.startsWith("Plugins") && menuSeparators != null)
+					addItemSorted(parentMenu, result, parentName.equals("Plugins")?userPluginsIndex:0);
 				else
 					parentMenu.add(result);
 				if (menuName.equals("File>Open Recent"))

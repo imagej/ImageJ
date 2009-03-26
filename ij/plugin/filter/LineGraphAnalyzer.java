@@ -7,7 +7,7 @@ import ij.plugin.filter.ParticleAnalyzer;
 import ij.measure.*;
 import ij.util.*;
 
-/** Implements ImageJ's Analyze/Analyze Line Graph command. */
+/** Implements ImageJ's Analyze/Tools/Analyze Line Graph command. */
 public class LineGraphAnalyzer implements PlugInFilter, Measurements  {
 	ImagePlus imp;
 
@@ -64,9 +64,9 @@ public class LineGraphAnalyzer implements PlugInFilter, Measurements  {
 		String units = " ("+cal.getUnits()+")";
 		String xLabel = "X"+units;
 		String yLabel = "Y"+units;
-		PlotWindow plot = new PlotWindow("Line Graph", xLabel, yLabel, x, y);
+		Plot plot = new Plot("Line Graph", xLabel, yLabel, x, y);
 		plot.setLimits(0.0, width*ph, 0.0, height*pw);				
-		plot.draw();				
+		plot.show();				
 	}
 	
 }

@@ -183,6 +183,7 @@ public class FloatProcessor extends ImageProcessor {
 	public ImageProcessor createProcessor(int width, int height) {
 		ImageProcessor ip2 = new FloatProcessor(width, height, new float[width*height], getColorModel());
 		ip2.setMinAndMax(getMin(), getMax());
+		ip2.setInterpolationMethod(interpolationMethod);
 		return ip2;
 	}
 
@@ -287,20 +288,31 @@ public class FloatProcessor extends ImageProcessor {
 		putPixelValue(x, y, iArray[0]);
 	}
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	/** Uses the current interpolation method to calculate
+		the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
-		if (x<0.0) x = 0.0;
-		if (x>=width-1.0) x = width-1.001;
-		if (y<0.0) y = 0.0;
-		if (y>=height-1.0) y = height-1.001;
-		return getInterpolatedPixel(x, y, pixels);
+		if (interpolationMethod==BILINEAR) {
+			if (x<0.0) x = 0.0;
+			if (x>=width-1.0) x = width-1.001;
+			if (y<0.0) y = 0.0;
+			if (y>=height-1.0) y = height-1.001;
+			return getInterpolatedPixel(x, y, pixels);
+		} else if (interpolationMethod==BICUBIC)
+			return getBicubicInterpolatedPixel(x, y, this);
+		else
+			return getPixel((int)(x+0.5), (int)(y+0.5));
 	}
 		
 	final public int getPixelInterpolated(double x, double y) {
-		if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
-			return 0;
+		if (interpolationMethod==BILINEAR) {
+			if (x<0.0 || y<0.0 || x>=width-1 || y>=height-1)
+				return 0;
+			else
+				return Float.floatToIntBits((float)getInterpolatedPixel(x, y, pixels));
+		} else if (interpolationMethod==BICUBIC)
+			return Float.floatToIntBits((float)getBicubicInterpolatedPixel(x, y, this));
 		else
-			return Float.floatToIntBits((float)getInterpolatedPixel(x, y, pixels));
+			return getPixel((int)(x+0.5), (int)(y+0.5));
 	}
 
 	/** Stores the specified value at (x,y). The value is expected to be a
@@ -583,6 +595,9 @@ public class FloatProcessor extends ImageProcessor {
 	*/
 	public void rotate(double angle) {
 		float[] pixels2 = (float[])getPixelsCopy();
+		ImageProcessor ip2 = null;
+		if (interpolationMethod==BICUBIC)
+			ip2 = new FloatProcessor(getWidth(), getHeight(), pixels2, null);
 		double centerX = roiX + (roiWidth-1)/2.0;
 		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;
@@ -594,36 +609,50 @@ public class FloatProcessor extends ImageProcessor {
 		double tmp2 = -centerX*sa-centerY*ca;
 		double tmp3, tmp4, xs, ys;
 		int index, ixs, iys;
-		double dwidth=width,dheight=height;
-		double xlimit = width-1.0, xlimit2 = width-1.001;
-		double ylimit = height-1.0, ylimit2 = height-1.001;
 		
-		for (int y=roiY; y<(roiY + roiHeight); y++) {
-			index = y*width + roiX;
-			tmp3 = tmp1 - y*sa + centerX;
-			tmp4 = tmp2 + y*ca + centerY;
-			for (int x=roiX; x<=xMax; x++) {
-				xs = x*ca + tmp3;
-				ys = x*sa + tmp4;
-				if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-					if (interpolate) {
-						if (xs<0.0) xs = 0.0;
-						if (xs>=xlimit) xs = xlimit2;
-						if (ys<0.0) ys = 0.0;			
-						if (ys>=ylimit) ys = ylimit2;
-				  		pixels[index++] = (float)getInterpolatedPixel(xs, ys, pixels2);
-				  	} else {
-				  		ixs = (int)(xs+0.5);
-				  		iys = (int)(ys+0.5);
-				  		if (ixs>=width) ixs = width - 1;
-				  		if (iys>=height) iys = height -1;
-						pixels[index++] = pixels2[width*iys+ixs];
-					}
-    			} else
-					pixels[index++] = 0;
+		if (interpolationMethod==BICUBIC) {
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				index = y*width + roiX;
+				tmp3 = tmp1 - y*sa + centerX;
+				tmp4 = tmp2 + y*ca + centerY;
+				for (int x=roiX; x<=xMax; x++) {
+					xs = x*ca + tmp3;
+					ys = x*sa + tmp4;
+					pixels[index++] = (float)getBicubicInterpolatedPixel(xs, ys, ip2);
+				}
+				if (y%30==0) showProgress((double)(y-roiY)/roiHeight);
 			}
-			if (y%20==0)
-			showProgress((double)(y-roiY)/roiHeight);
+		} else {
+			double dwidth=width,dheight=height;
+			double xlimit = width-1.0, xlimit2 = width-1.001;
+			double ylimit = height-1.0, ylimit2 = height-1.001;
+			for (int y=roiY; y<(roiY + roiHeight); y++) {
+				index = y*width + roiX;
+				tmp3 = tmp1 - y*sa + centerX;
+				tmp4 = tmp2 + y*ca + centerY;
+				for (int x=roiX; x<=xMax; x++) {
+					xs = x*ca + tmp3;
+					ys = x*sa + tmp4;
+					if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
+						if (interpolate) {
+							if (xs<0.0) xs = 0.0;
+							if (xs>=xlimit) xs = xlimit2;
+							if (ys<0.0) ys = 0.0;			
+							if (ys>=ylimit) ys = ylimit2;
+							pixels[index++] = (float)getInterpolatedPixel(xs, ys, pixels2);
+						} else {
+							ixs = (int)(xs+0.5);
+							iys = (int)(ys+0.5);
+							if (ixs>=width) ixs = width - 1;
+							if (iys>=height) iys = height -1;
+							pixels[index++] = pixels2[width*iys+ixs];
+						}
+					} else
+						pixels[index++] = 0;
+				}
+				if (y%30==0)
+				showProgress((double)(y-roiY)/roiHeight);
+			}
 		}
 		showProgress(1.0);
 	}
@@ -700,34 +729,48 @@ public class FloatProcessor extends ImageProcessor {
 			ymax = roiY + roiHeight - 1;
 		}
 		float[] pixels2 = (float[])getPixelsCopy();
+		ImageProcessor ip2 = null;
+		if (interpolationMethod==BICUBIC)
+			ip2 = new FloatProcessor(getWidth(), getHeight(), pixels2, null);
 		boolean checkCoordinates = (xScale < 1.0) || (yScale < 1.0);
 		int index1, index2, xsi, ysi;
 		double ys, xs;
-		double xlimit = width-1.0, xlimit2 = width-1.001;
-		double ylimit = height-1.0, ylimit2 = height-1.001;
-		for (int y=ymin; y<=ymax; y++) {
-			ys = (y-yCenter)/yScale + yCenter;
-			ysi = (int)ys;
-			if (ys<0.0) ys = 0.0;			
-			if (ys>=ylimit) ys = ylimit2;
-			index1 = y*width + xmin;
-			index2 = width*(int)ys;
-			for (int x=xmin; x<=xmax; x++) {
-				xs = (x-xCenter)/xScale + xCenter;
-				xsi = (int)xs;
-				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
-					pixels[index1++] = (float)min;
-				else {
-					if (interpolate) {
-						if (xs<0.0) xs = 0.0;
-						if (xs>=xlimit) xs = xlimit2;
-						pixels[index1++] = (float)getInterpolatedPixel(xs, ys, pixels2);
-					} else
-						pixels[index1++] = pixels2[index2+xsi];
+		if (interpolationMethod==BICUBIC) {
+			for (int y=ymin; y<=ymax; y++) {
+				ys = (y-yCenter)/yScale + yCenter;
+				index1 = y*width + xmin;
+				for (int x=xmin; x<=xmax; x++) {
+					xs = (x-xCenter)/xScale + xCenter;
+					pixels[index1++] = (float)getBicubicInterpolatedPixel(xs, ys, ip2);
 				}
+				if (y%30==0) showProgress((double)(y-ymin)/height);
 			}
-			if (y%20==0)
-			showProgress((double)(y-ymin)/height);
+		} else {
+			double xlimit = width-1.0, xlimit2 = width-1.001;
+			double ylimit = height-1.0, ylimit2 = height-1.001;
+			for (int y=ymin; y<=ymax; y++) {
+				ys = (y-yCenter)/yScale + yCenter;
+				ysi = (int)ys;
+				if (ys<0.0) ys = 0.0;			
+				if (ys>=ylimit) ys = ylimit2;
+				index1 = y*width + xmin;
+				index2 = width*(int)ys;
+				for (int x=xmin; x<=xmax; x++) {
+					xs = (x-xCenter)/xScale + xCenter;
+					xsi = (int)xs;
+					if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
+						pixels[index1++] = (float)min;
+					else {
+						if (interpolationMethod==BILINEAR) {
+							if (xs<0.0) xs = 0.0;
+							if (xs>=xlimit) xs = xlimit2;
+							pixels[index1++] = (float)getInterpolatedPixel(xs, ys, pixels2);
+						} else
+							pixels[index1++] = pixels2[index2+xsi];
+					}
+				}
+				if (y%30==0) showProgress((double)(y-ymin)/height);
+			}
 		}
 		showProgress(1.0);
 	}
@@ -756,40 +799,70 @@ public class FloatProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
-		if (interpolate) {
+		if (interpolationMethod!=NEAREST_NEIGHBOR) {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
 		ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
 		float[] pixels2 = (float[])ip2.getPixels();
 		double xs, ys;
-		double xlimit = width-1.0, xlimit2 = width-1.001;
-		double ylimit = height-1.0, ylimit2 = height-1.001;
-		int index1, index2;
-		for (int y=0; y<=dstHeight-1; y++) {
-			ys = (y-dstCenterY)/yScale + srcCenterY;
-			if (interpolate) {
-				if (ys<0.0) ys = 0.0;
-				if (ys>=ylimit) ys = ylimit2;
+		if (interpolationMethod==BICUBIC) {
+			for (int y=0; y<=dstHeight-1; y++) {
+				ys = (y-dstCenterY)/yScale + srcCenterY;
+				int index = y*dstWidth;
+				for (int x=0; x<=dstWidth-1; x++) {
+					xs = (x-dstCenterX)/xScale + srcCenterX;
+					pixels2[index++] = (float)getBicubicInterpolatedPixel(xs, ys, this);
+				}
+				if (y%30==0) showProgress((double)y/dstHeight);
 			}
-			index1 = width*(int)ys;
-			index2 = y*dstWidth;
-			for (int x=0; x<=dstWidth-1; x++) {
-				xs = (x-dstCenterX)/xScale + srcCenterX;
-				if (interpolate) {
-					if (xs<0.0) xs = 0.0;
-					if (xs>=xlimit) xs = xlimit2;
-					pixels2[index2++] = (float)getInterpolatedPixel(xs, ys, pixels);
-				} else
-		  			pixels2[index2++] = pixels[index1+(int)xs];
+		} else {
+			double xlimit = width-1.0, xlimit2 = width-1.001;
+			double ylimit = height-1.0, ylimit2 = height-1.001;
+			int index1, index2;
+			for (int y=0; y<=dstHeight-1; y++) {
+				ys = (y-dstCenterY)/yScale + srcCenterY;
+				if (interpolationMethod==BILINEAR) {
+					if (ys<0.0) ys = 0.0;
+					if (ys>=ylimit) ys = ylimit2;
+				}
+				index1 = width*(int)ys;
+				index2 = y*dstWidth;
+				for (int x=0; x<=dstWidth-1; x++) {
+					xs = (x-dstCenterX)/xScale + srcCenterX;
+					if (interpolationMethod==BILINEAR) {
+						if (xs<0.0) xs = 0.0;
+						if (xs>=xlimit) xs = xlimit2;
+						pixels2[index2++] = (float)getInterpolatedPixel(xs, ys, pixels);
+					} else
+						pixels2[index2++] = pixels[index1+(int)xs];
+				}
+				if (y%30==0) showProgress((double)y/dstHeight);
 			}
-			if (y%20==0)
-			showProgress((double)y/dstHeight);
 		}
 		showProgress(1.0);
 		return ip2;
 	}
 
+	/** This method is from Chapter 16 of "Digital Image Processing:
+		An Algorithmic Introduction Using Java" by Burger and Burge
+		(http://www.imagingbook.com/). */
+	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
+		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
+		int v0 = (int) Math.floor(y0);
+		double q = 0;
+		for (int j = 0; j <= 3; j++) {
+			int v = v0 - 1 + j;
+			double p = 0;
+			for (int i = 0; i <= 3; i++) {
+				int u = u0 - 1 + i;
+				p = p + ip2.getPixelValue(u,v) * cubic(x0 - u);
+			}
+			q = q + p * cubic(y0 - v);
+		}
+		return q;
+	}
+	
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {
 		int bestIndex = getBestIndex(color);

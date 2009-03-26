@@ -8,7 +8,7 @@ import ij.io.FileInfo;
 import java.awt.Dimension;
 
 
-/** Implements the AddSlice, DeleteSlice and "Convert Windows to Stack" commands. */
+/** Implements the AddSlice, DeleteSlice and "Stack to Images" commands. */
 public class StackEditor implements PlugIn {
 	ImagePlus imp;
 	int nSlices, width, height;
@@ -19,9 +19,7 @@ public class StackEditor implements PlugIn {
     	width = imp.getWidth();
     	height = imp.getHeight();
     	
-    	if (arg.equals("tostack"))
-    		convertImagesToStack();
-    	else if (arg.equals("add"))
+    	if (arg.equals("add"))
     		addSlice();
     	else if (arg.equals("delete"))
     		deleteSlice();
@@ -72,74 +70,7 @@ public class StackEditor implements PlugIn {
 	}
 
 	public void convertImagesToStack() {
-		int[] wList = WindowManager.getIDList();
-		if (wList==null) {
-			IJ.error("No images are open.");
-			return;
-		}
-
-		int count = 0;
-		ImagePlus[] image = new ImagePlus[wList.length];
-		for (int i=0; i<wList.length; i++) {
-			ImagePlus imp = WindowManager.getImage(wList[i]);
-			if (imp.getStackSize()==1)
-				image[count++] = imp;
-		}		
-		if (count<2) {
-			IJ.error("There must be at least two open images.");
-			return;
-		}
-
-		Calibration cal2 = image[0].getCalibration();
-		for (int i=0; i<(count-1); i++) {
-			if (image[i].getType()!=image[i+1].getType()) {
-				IJ.error("All open images must be the same type.");
-				return;
-			}
-			if (image[i].getWidth()!=image[i+1].getWidth()
-			|| image[i].getHeight()!=image[i+1].getHeight()) {
-				IJ.error("All open images must be the same size.");
-				return;
-			}
-			Calibration cal = image[i].getCalibration();
-			if (!image[i].getCalibration().equals(cal2))
-				cal2 = null;
-		}
-		
-		int width = image[0].getWidth();
-		int height = image[0].getHeight();
-		double min = Double.MAX_VALUE;
-		double max = -Double.MAX_VALUE;
-		ImageStack stack = new ImageStack(width, height);
-		FileInfo fi = image[0].getOriginalFileInfo();
-		if (fi!=null && fi.directory==null) fi = null;
-		for (int i=0; i<count; i++) {
-			ImageProcessor ip = image[i].getProcessor();
-			if (ip.getMin()<min) min = ip.getMin();
-			if (ip.getMax()>max) max = ip.getMax();
-            String label = image[i].getTitle();
-            String info = (String)image[i].getProperty("Info");
-            if (info!=null) label += "\n" + info;
-            if (fi!=null) {
-				FileInfo fi2 = image[i].getOriginalFileInfo();
-				if (fi2!=null && !fi.directory.equals(fi2.directory))
-					fi = null;
-            }
-            stack.addSlice(label, ip);
-			image[i].changes = false;
-			image[i].close();
-		}
-		ImagePlus imp = new ImagePlus("Stack", stack);
-		if (imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32)
-			imp.getProcessor().setMinAndMax(min, max);
-		if (cal2!=null)
-			imp.setCalibration(cal2);
-		if (fi!=null) {
-			fi.fileName = "";
-			fi.nImages = imp.getStackSize();
-			imp.setFileInfo(fi);
-		}
-		imp.show();
+		(new ImagesToStack()).run("");
 	}
 
 	public void convertStackToImages(ImagePlus imp) {

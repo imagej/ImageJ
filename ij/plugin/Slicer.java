@@ -136,10 +136,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			cal.pixelDepth = origCal.pixelWidth*outputZSpacing;;
 		} else { // oblique line, polyLine or freeline
 				if (origCal.pixelHeight==origCal.pixelWidth) {
-					cal.pixelWidth=cal.pixelHeight=origCal.pixelDepth/zSpacing;
+					cal.pixelWidth = cal.pixelHeight=origCal.pixelDepth/zSpacing;
 					cal.pixelDepth = origCal.pixelWidth*outputZSpacing;
 				} else {
-					cal.pixelWidth=cal.pixelHeight=cal.pixelDepth=1.0;
+					cal.pixelWidth = cal.pixelHeight=cal.pixelDepth=1.0;
 					cal.setUnit("pixel");
 				}
 		 }
@@ -154,6 +154,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 
 	boolean showDialog(ImagePlus imp) {
 		 Calibration cal = imp.getCalibration();
+		 if (cal.pixelDepth<0.0)
+		 	cal.pixelDepth = -cal.pixelDepth;
 		 String units = cal.getUnits();
 		 if (cal.pixelWidth==0.0)
 				cal.pixelWidth = 1.0;

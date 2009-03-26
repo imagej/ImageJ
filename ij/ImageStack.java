@@ -136,7 +136,10 @@ public class ImageStack {
 	}
 	
 	public Rectangle getRoi() {
-		return(this.roi);
+		if (roi==null)
+			return new Rectangle(0, 0, width, height);
+		else
+			return(roi);
 	}
 	
 	/** Updates this stack so its attributes, such as min, max,

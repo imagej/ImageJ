@@ -1017,6 +1017,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 		if (roi!=null)
 			s.setRoi(roi.getBounds());
+		else
+			s.setRoi(null);
 		return s;
 	}
 	
@@ -1162,6 +1164,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 
+	/** Returns the current selection, or null if there is no selection. */
 	public Roi getRoi() {
 		return roi;
 	}

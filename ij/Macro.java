@@ -115,10 +115,10 @@ public class Macro {
 		key = trimKey(key);
         key += '=';
 		int index=-1;
-		do {
+		do { // Require that key not be preceded by a letter
 			index = options.indexOf(key, ++index);
 			if (index<0) return defaultValue;
-		} while (index!=0&&options.charAt(index-1)!=' ');
+		} while (index!=0&&Character.isLetter(options.charAt(index-1)));
 		options = options.substring(index+key.length(), options.length());
 		if (options.charAt(0)=='\'') {
 			index = options.indexOf("'",1);

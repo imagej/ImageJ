@@ -8,7 +8,8 @@
     they can be selected by selecting with the mouse and clicking
     "Run"; alternatively hitting the up or down arrows will move the
     keyboard focus to the list and the selected command can be run
-    with Enter.
+    with Enter.  Double-clicking on a command in the list should
+    also run the appropriate command.
 
     @author Mark Longair <mark-imagej@longair.net>
  */
@@ -25,7 +26,18 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class CommandFinder implements PlugIn, TextListener, ActionListener, WindowListener, KeyListener, ItemListener {
+public class CommandFinder implements PlugIn, TextListener, ActionListener, WindowListener, KeyListener, ItemListener, MouseListener {
+
+	public CommandFinder() {
+		Toolkit toolkit=Toolkit.getDefaultToolkit();
+		Integer interval=(Integer)toolkit.getDesktopProperty("awt.multiClickInterval");
+		if (interval==null)
+			// Hopefully 300ms is a sensible default when the property
+			// is not available.
+			multiClickInterval=300;
+		else
+			multiClickInterval=interval.intValue();
+	}
 
 	class CommandAction {
 		CommandAction(String classCommand, MenuItem menuItem, String menuLocation) {
@@ -41,6 +53,9 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		}
 	}
 
+	int multiClickInterval;
+	long lastClickTime=Long.MIN_VALUE;
+	String lastClickedItem;
 	Dialog d;
 	TextField prompt;
 	List completions;
@@ -99,6 +114,27 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		populateList(prompt.getText());
 	}
 
+	public void mouseClicked(MouseEvent e) {
+		long now=System.currentTimeMillis();
+		String justClickedItem=completions.getSelectedItem();
+		// Is this fast enough to be a double-click?
+		long thisClickInterval=now-lastClickTime;
+		if (thisClickInterval<multiClickInterval) {
+			if (justClickedItem!=null&&
+			    lastClickedItem!=null&&
+			    justClickedItem.equals(lastClickedItem)) {
+				runFromLabel(justClickedItem);
+			}
+		}
+		lastClickTime=now;
+		lastClickedItem=justClickedItem;
+	}
+
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+
 	protected void runFromLabel(String listLabel) {
 		String command = (String)listLabelToCommand.get(listLabel);
 		CommandAction ca = (CommandAction)commandsHash.get(command);
@@ -123,7 +159,9 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		int key = ke.getKeyCode();
 		int items = completions.getItemCount();
 		Object source = ke.getSource();
-		if (source==prompt) {
+		if (key==KeyEvent.VK_ESCAPE) {
+			d.dispose();
+		} else if (source==prompt) {
 			/* If you hit enter in the text field, and
 			   there's only one command that matches, run
 			   that: */
@@ -145,6 +183,11 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 				if (items>0)
 					completions.select(0);
 			}
+		} else if (key==KeyEvent.VK_BACK_SPACE) {
+			/* If someone presses backspace they probably want to
+			   remove the last letter from the search string, so
+			   switch the focus back to the prompt: */
+			prompt.requestFocus();
 		} else if (source==completions) {
 			/* If you hit enter with the focus in the
 			   completions list, run the selected
@@ -288,6 +331,8 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		populateList("");
 
 		d.add(completions, BorderLayout.CENTER);
+		// Add a mouse listener so we can detect double-clicks
+		completions.addMouseListener(this);
 
 		runButton = new Button("Run");
 		closeButton = new Button("Close");
@@ -345,6 +390,7 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 		d.setLocation(initialX,initialY);
 
 		d.setVisible(true);
+		d.toFront();
 	}
 
 	/* Make sure that clicks on the close icon close the window: */
