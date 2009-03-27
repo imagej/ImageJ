@@ -137,7 +137,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			if (macroOptions.indexOf(" interpolate")!=-1)
 				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
 			else if (macroOptions.indexOf(" interpolation=")==-1)
-				macroOptions = macroOptions+" interpolation=[Nearest Neighbor]";
+				macroOptions = macroOptions+" interpolation=None";
 			Macro.setOptions(macroOptions);
 		}
 		int bitDepth = imp.getBitDepth();

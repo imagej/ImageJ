@@ -74,24 +74,34 @@ public class ImagesToStack implements PlugIn {
 				cal2 = null;
 		}
 		boolean sizesDiffer = width!=minWidth||height!=minHeight;
-		boolean showDialog = IJ.shiftKeyDown() || IJ.altKeyDown();
-		if (sizesDiffer||showDialog) {
-			String msg = "The "+count+" images differ in size (smallest="+minWidth+"x"+minHeight
-			+",\nlargest="+maxWidth+"x"+maxHeight+"). They will be converted\nto a stack using the specified method.";
+		boolean showDialog = true;
+		if (IJ.macroRunning() && Macro.getOptions()==null) {
+			if (sizesDiffer) {
+				IJ.error("Images are not all the same size");
+				return;
+			} 
+			showDialog = false;
+		}
+		if (showDialog) {
 			GenericDialog gd = new GenericDialog("Images to Stack");
 			if (sizesDiffer) {
+				String msg = "The "+count+" images differ in size (smallest="+minWidth+"x"+minHeight
+				+",\nlargest="+maxWidth+"x"+maxHeight+"). They will be converted\nto a stack using the specified method.";
 				gd.setInsets(0,0,5);
 				gd.addMessage(msg);
+				gd.addChoice("Method:", methods, methods[method]);
 			}
-			gd.addChoice("Method:", methods, methods[method]);
 			gd.addStringField("Title Contains:", "", 12);
-			gd.addCheckbox("Bicubic Interpolation", bicubic);
+			if (sizesDiffer)
+				gd.addCheckbox("Bicubic Interpolation", bicubic);
 			gd.addCheckbox("Keep Source Images", keep);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
-			method = gd.getNextChoiceIndex();
+			if (sizesDiffer)
+				method = gd.getNextChoiceIndex();
 			filter = gd.getNextString();
-			bicubic = gd.getNextBoolean();
+			if (sizesDiffer)
+				bicubic = gd.getNextBoolean();
 			keep = gd.getNextBoolean();
 		} else
 			keep = false;

@@ -36,7 +36,7 @@ public class IJ {
 	private static TextPanel textPanel;
 	private static String osname, osarch;
 	private static boolean isMac, isWin, isJava2, isJava14, isJava15, isJava16, isJava17, isLinux, isVista, is64Bit;
-	private static boolean altDown, spaceDown, shiftDown;
+	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
 	private static TextPanel logPanel;
@@ -679,6 +679,11 @@ public class IJ {
 		return spaceDown;
 	}
 
+	/** Returns true if the control key is down. */
+	public static boolean controlKeyDown() {
+		return controlDown;
+	}
+
 	/** Returns true if the alt key is down. */
 	public static boolean altKeyDown() {
 		return altDown;
@@ -692,6 +697,9 @@ public class IJ {
 	public static void setKeyDown(int key) {
 		if (debugMode) IJ.log("setKeyDown: "+key);
 		switch (key) {
+			case KeyEvent.VK_CONTROL:
+				controlDown=true;
+				break;
 			case KeyEvent.VK_ALT:
 				altDown=true;
 				break;
@@ -715,6 +723,7 @@ public class IJ {
 	public static void setKeyUp(int key) {
 		if (debugMode) IJ.log("setKeyUp: "+key);
 		switch (key) {
+			case KeyEvent.VK_CONTROL: controlDown=false; break;
 			case KeyEvent.VK_ALT: altDown=false; break;
 			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;
 			case KeyEvent.VK_SPACE: {
@@ -723,7 +732,7 @@ public class IJ {
 				if (win!=null) win.getCanvas().setCursor(-1,-1,-1,-1);
 				break;
 			}
-			case ALL_KEYS: altDown=shiftDown=spaceDown=false; break;
+			case ALL_KEYS: controlDown=altDown=shiftDown=spaceDown=false; break;
 		}
 	}
 	

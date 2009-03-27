@@ -1402,7 +1402,8 @@ public abstract class ImageProcessor extends Object {
 		putPixel(x, y, iArray[0]);
 	}
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	/** Uses the current interpolation method (bilinear or bicubic)
+		to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
 
 	/** Uses the current interpolation method to find the pixel value at real coordinates (x,y).

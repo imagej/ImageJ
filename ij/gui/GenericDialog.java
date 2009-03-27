@@ -317,15 +317,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     }
 
     /** Add the preview checkbox with user-defined label; for details see the
-     *  addPreviewCheckbox method with standard "Preview" label
-     * Note that a GenericDialog can have only one PreviewCheckbox
+     *  addPreviewCheckbox method with standard "Preview" label.
+     * Adds the checkbox when the current image is a CompositeImage
+     * in "Composite" mode, unlike the one argument version.
+     * Note that a GenericDialog can have only one PreviewCheckbox.
      */
     public void addPreviewCheckbox(PlugInFilterRunner pfr, String label) {
         if (previewCheckbox!=null)
         	return;
-    	ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
-			return;
+    	//ImagePlus imp = WindowManager.getCurrentImage();
+		//if (imp!=null && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
+		//	return;
         previewLabel = label;
         this.pfr = pfr;
         addCheckbox(previewLabel, false, true);
@@ -685,9 +687,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 
- 	protected Double getValue(String theText) {
+ 	protected Double getValue(String text) {
  		Double d;
- 		try {d = new Double(theText);}
+ 		try {d = new Double(text);}
 		catch (NumberFormatException e){
 			d = null;
 		}

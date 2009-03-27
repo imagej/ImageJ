@@ -30,7 +30,9 @@ import javax.swing.filechooser.*;
 		if (macroOptions!=null && (path==null||path.equals(""))) {
 			path = Macro.getValue(macroOptions, title, path);
 			if (path==null || path.equals(""))
-				path = Macro.getValue(macroOptions, "path", path);		
+				path = Macro.getValue(macroOptions, "path", path);
+			if ((path==null || path.equals("")) && title!=null && title.equals("Open As String"))
+				path = Macro.getValue(macroOptions, "OpenAsString", path);
 		}
 		if (path==null || path.equals("")) {
 			if (Prefs.useJFileChooser)

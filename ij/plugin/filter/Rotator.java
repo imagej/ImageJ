@@ -109,7 +109,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 			if (macroOptions.indexOf(" interpolate")!=-1)
 				macroOptions.replaceAll(" interpolate", " interpolation=Bilinear");
 			else if (macroOptions.indexOf(" interpolation=")==-1)
-				macroOptions = macroOptions+" interpolation=[Nearest Neighbor]";
+				macroOptions = macroOptions+" interpolation=None";
 			Macro.setOptions(macroOptions);
 		}
 		gd = new GenericDialog("Rotate", IJ.getInstance());

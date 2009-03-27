@@ -245,7 +245,7 @@ public class Animator implements PlugIn {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
-		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.spaceBarDown()||IJ.altKeyDown()))) {
+		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()))) {
 			int c = imp.getChannel() + 1;
 			if (c>channels) c = channels;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());
@@ -278,7 +278,7 @@ public class Animator implements PlugIn {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
-		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.spaceBarDown()||IJ.altKeyDown()))) {
+		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()))) {
 			int c = imp.getChannel() - 1;
 			if (c<1) c = 1;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());

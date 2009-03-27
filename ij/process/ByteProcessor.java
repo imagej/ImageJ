@@ -224,13 +224,19 @@ public class ByteProcessor extends ImageProcessor {
 
 	static double oldx, oldy;
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	/** Uses the current interpolation method to calculate
+		the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
-		if (x<0.0) x = 0.0;
-		if (x>=width-1.0) x = width-1.001;
-		if (y<0.0) y = 0.0;
-		if (y>=height-1.0) y = height-1.001;
-		return getInterpolatedPixel(x, y, pixels);
+		if (interpolationMethod==BILINEAR) {
+			if (x<0.0) x = 0.0;
+			if (x>=width-1.0) x = width-1.001;
+			if (y<0.0) y = 0.0;
+			if (y>=height-1.0) y = height-1.001;
+			return getInterpolatedPixel(x, y, pixels);
+		} else if (interpolationMethod==BICUBIC)
+			return getBicubicInterpolatedPixel(x, y, this);
+		else
+			return getPixel((int)(x+0.5), (int)(y+0.5));
 	}
 
 	final public int getPixelInterpolated(double x, double y) {
