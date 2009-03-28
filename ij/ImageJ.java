@@ -398,12 +398,21 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
 					Roi roi = null;
 					if (imp!=null) roi = imp.getRoi();
-					if (roi==null) return;
-					if ((flags & KeyEvent.ALT_MASK) != 0)
-						roi.nudgeCorner(keyCode);
-					else
-						roi.nudge(keyCode);
-					return;
+					if (roi==null) {
+						if (imp==null || imp.getStackSize()==1)
+							return;
+						if (keyCode==KeyEvent.VK_RIGHT)
+							cmd="Next Slice [>]";
+						else if (keyCode==KeyEvent.VK_LEFT)
+							cmd="Previous Slice [<]";
+						break;
+					} else {
+						if ((flags & KeyEvent.ALT_MASK) != 0)
+							roi.nudgeCorner(keyCode);
+						else
+							roi.nudge(keyCode);
+						return;
+					}
 				case KeyEvent.VK_ESCAPE:
 					abortPluginOrMacro(imp);
 					return;
