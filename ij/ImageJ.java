@@ -398,8 +398,9 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
 					Roi roi = null;
 					if (imp!=null) roi = imp.getRoi();
-					if (roi==null) {
-						if (imp==null || imp.getStackSize()==1)
+					int stackSize = imp.getStackSize();
+					if (roi==null || (stackSize>1&&IJ.shiftKeyDown())) {
+						if (imp==null || stackSize==1)
 							return;
 						if (keyCode==KeyEvent.VK_RIGHT)
 							cmd="Next Slice [>]";
