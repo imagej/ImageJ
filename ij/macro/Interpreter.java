@@ -25,7 +25,6 @@ public class Interpreter implements MacroConstants {
 	String tokenString;
 	boolean looseSyntax = true;
 	int lineNumber;
-	boolean ignoreEOL = true;
 	boolean statusUpdated;
 	boolean showingProgress;
 	boolean keysSet;
@@ -157,14 +156,11 @@ public class Interpreter implements MacroConstants {
 	}
 
 	final void getToken() {
-		if (done)
-			return;
+		if (done) return;
 		token = pgm.code[++pc];
 		//IJ.log(pc+" "+pgm.decodeToken(token));
 		if (token<=127)
 			return;
-		while (token==EOL && ignoreEOL)
-			token = pgm.code[++pc];
 		tokenAddress = token>>TOK_SHIFT;
 		token = token&TOK_MASK;
 		Symbol sym = pgm.table[tokenAddress];
@@ -177,20 +173,8 @@ public class Interpreter implements MacroConstants {
 		return pgm.code[pc+1]&TOK_MASK;
 	}
 
-	final int nextNonEolToken() {
-		int tok, i=1;
-		do {
-			tok = pgm.code[pc+i];
-			i++;
-		} while (tok==EOL);
-		return tok&TOK_MASK;
-	}
-
-	final int nextNextNonEolToken() {
-		int tok, i=1;
-		do tok = pgm.code[pc+(i++)]; while (tok==EOL);
-		do tok = pgm.code[pc+(i++)]; while (tok==EOL);
-		return tok&TOK_MASK;
+	final int nextNextToken() {
+		return pgm.code[pc+2]&TOK_MASK;
 	}
 
 	final void putTokenBack() {
@@ -861,10 +845,10 @@ public class Interpreter implements MacroConstants {
 			doStatement();
 		else
 			skipStatement();
-		int next = nextNonEolToken();
+		int next = nextToken();
 		if (next==';') {
 			getToken();
-			next = nextNonEolToken();
+			next = nextToken();
 		}
 		if (next==ELSE) {
 			getToken();
@@ -885,7 +869,7 @@ public class Interpreter implements MacroConstants {
 
 	final double getLogicalExpression() {
 		double v1 = getBooleanExpression();
-		int next = nextNonEolToken();
+		int next = nextToken();
 		if (!(next==LOGICAL_AND || next==LOGICAL_OR))
 			return v1;
 		checkBoolean(v1);
@@ -1124,29 +1108,21 @@ public class Interpreter implements MacroConstants {
 		return debugWindow;
 	}
 
-	String getErrorLine() {
+
+	String getErrorLine() {//n__
 		int savePC = pc;
-		lineNumber = 1;
-		ignoreEOL = false;
-		pc = -1;
-		int lineStart = -1;
-		while(pc<savePC) {
-			getToken();
-			if (token==EOL) {
-				lineNumber++;
-				lineStart = pc;
-			}
-		}
+		lineNumber = pgm.lineNumbers[pc];
+		while (pc>=0 && lineNumber==pgm.lineNumbers[pc])
+			pc--;   //go to beginning of line
+		if (lineNumber<=1)
+			pc = -1;
 		String line = "";
-		pc = lineStart;
 		getToken();
-		String str;
-		double v;
-		while (token!=EOL && !done) {
-			str = pgm.decodeToken(token, tokenAddress);
+		while (!done && lineNumber==pgm.lineNumbers[pc]) {
+			String str = pgm.decodeToken(token, tokenAddress);
 			if (pc==savePC)
-				str = "<"+str+">";
-			line += str+" ";
+				str = "<" + str + ">";
+			line += str + " ";
 			getToken();
 		}
 		return line;
@@ -1218,7 +1194,7 @@ public class Interpreter implements MacroConstants {
 		double value = getTerm();
 		int next;
 		while (true) {
-			next = nextNonEolToken();
+			next = nextToken();
 			if (next=='+') {
 				getToken();
 				value += getTerm();
@@ -1730,27 +1706,9 @@ public class Interpreter implements MacroConstants {
 		debugMode = mode;
 	}
 	
-	public int getLineNumber() {
-		int savePC = pc;
-		int saveToken = token;
-		int saveTokenAddress = tokenAddress;
-		double saveTokenValue = tokenValue;
-		String saveTokenString = tokenString;
-		lineNumber = 1;
-		pc = -1;
-		ignoreEOL = false;
-		while(pc<savePC) {
-			getToken();
-			if (token==EOL) lineNumber++;
-		}
-		ignoreEOL = true;
-		pc = savePC;
-		token = saveToken ;
-		tokenAddress = saveTokenAddress;
-		tokenValue = saveTokenValue;
-		tokenString = saveTokenString;
-		return lineNumber;
-	}
+	public int getLineNumber() {//n__
+        return pgm.lineNumbers[pc];
+    }
 
 	public String[] getVariables() {
 		int nImages = WindowManager.getImageCount();

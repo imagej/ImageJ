@@ -24,7 +24,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	}
 
 	public void run(String arg) {
-//IJ.log("HyperStackReducer-1");
+		//IJ.log("HyperStackReducer-1");
 		imp = IJ.getImage();
 		if (!(imp.isHyperStack() || imp.isComposite())) {
 			IJ.error("Reducer", "HyperStack required");
@@ -41,7 +41,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		int t2 = imp.getFrame();
 		if (!showDialog())
 			return;
-//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
+		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
 		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
      	int bitDepth = imp.getBitDepth();
 		int size = channels2*slices2*frames2;
@@ -55,7 +55,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			imp2 = new ImagePlus(title2, stack2);
 			stack2.setPixels(null, 1);
 		}
-//IJ.log("HyperStackReducer-3");
+		//IJ.log("HyperStackReducer-3");
 		imp2.setDimensions(channels2, slices2, frames2);
 		reduce(imp2);
 		imp2.setOpenAsHyperStack(true);
@@ -64,7 +64,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			((CompositeImage)imp2).copyLuts(imp);
 		}
 		imp2.show();
-//IJ.log("HyperStackReducer-4");
+		//IJ.log("HyperStackReducer-4");
 		if (!keep) {
 			imp.changes = false;
 			imp.close();
@@ -94,12 +94,15 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 				for (int t=1; t<=frames; t++) {
 					IJ.showProgress(i++, n);
 					if (frames==1) t = t1;
-					ip = stack.getProcessor(imp.getStackIndex(c, z, t));
+					int n1 = imp.getStackIndex(c, z, t);
+					ip = stack.getProcessor(n1);
+					String label = stack.getSliceLabel(n1);
 					int n2 = imp2.getStackIndex(c, z, t);
 					if (stack2.getPixels(n2)!=null)
 						stack2.getProcessor(n2).insert(ip, 0, 0);
 					else
 						stack2.setPixels(ip.getPixels(), n2);
+					stack2.setSliceLabel(label, n2);
 				}
 			}
 			if (lut!=null) {

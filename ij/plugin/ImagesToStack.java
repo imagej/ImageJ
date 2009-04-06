@@ -16,6 +16,13 @@ public class ImagesToStack implements PlugIn {
 	private static boolean bicubic;
 	private static boolean keep;
 	private String filter;
+	private int width, height;
+	private int maxWidth, maxHeight;
+	private int minWidth, minHeight;
+	private int minSize, maxSize;
+	private Calibration cal2;
+	private int stackType;
+	private ImagePlus[] image;
 
 	public void run(String arg) {
     	convertImagesToStack();
@@ -23,7 +30,6 @@ public class ImagesToStack implements PlugIn {
 
 	public void convertImagesToStack() {
 		boolean scale = false;
-		int stackType = 8;
 		int[] wList = WindowManager.getIDList();
 		if (wList==null) {
 			IJ.error("No images are open.");
@@ -31,7 +37,7 @@ public class ImagesToStack implements PlugIn {
 		}
 
 		int count = 0;
-		ImagePlus[] image = new ImagePlus[wList.length];
+		image = new ImagePlus[wList.length];
 		for (int i=0; i<wList.length; i++) {
 			ImagePlus imp = WindowManager.getImage(wList[i]);
 			if (imp.getStackSize()==1)
@@ -42,37 +48,8 @@ public class ImagesToStack implements PlugIn {
 			return;
 		}
 
-		int width = image[0].getWidth();
-		int height = image[0].getHeight();
-		int maxWidth = width;
-		int maxHeight = height;
-		int minWidth = width;
-		int minHeight = height;
-		int minSize = Integer.MAX_VALUE;
-		int maxSize = 0;
-		Calibration cal2 = image[0].getCalibration();
-		for (int i=0; i<count; i++) {
-			int type = image[i].getBitDepth();
-			if (type==24) type = rgb;
-			if (type>stackType) stackType = type;
-			int w=image[i].getWidth(), h=image[i].getHeight();
-			if (w>width) width = w;
-			if (h>height) height = h;
-			int size = w*h;
-			if (size<minSize) {
-				minSize = size;
-				minWidth = w;
-				minHeight = h;
-			}
-			if (size>maxSize) {
-				maxSize = size;
-				maxWidth = w;
-				maxHeight = h;
-			}
-			Calibration cal = image[i].getCalibration();
-			if (!image[i].getCalibration().equals(cal2))
-				cal2 = null;
-		}
+		filter = null;
+		count = findMinMaxSize(count);
 		boolean sizesDiffer = width!=minWidth||height!=minHeight;
 		boolean showDialog = true;
 		if (IJ.macroRunning() && Macro.getOptions()==null) {
@@ -103,6 +80,10 @@ public class ImagesToStack implements PlugIn {
 			if (sizesDiffer)
 				bicubic = gd.getNextBoolean();
 			keep = gd.getNextBoolean();
+			if (filter!=null && (filter.equals("") || filter.equals("*")))
+				filter = null;
+			if (filter!=null) 
+				count = findMinMaxSize(count);
 		} else
 			keep = false;
 		if (method==SCALE_SMALL) {
@@ -118,10 +99,7 @@ public class ImagesToStack implements PlugIn {
 		ImageStack stack = new ImageStack(width, height);
 		FileInfo fi = image[0].getOriginalFileInfo();
 		if (fi!=null && fi.directory==null) fi = null;
-		if (filter!=null && (filter.equals("") || filter.equals("*"))) filter = null;
 		for (int i=0; i<count; i++) {
-			if (filter!=null && image[i].getTitle().indexOf(filter)==-1)
-				continue;
 			ImageProcessor ip = image[i].getProcessor();
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();
@@ -183,6 +161,49 @@ public class ImagesToStack implements PlugIn {
 			imp.setFileInfo(fi);
 		}
 		imp.show();
+	}
+	
+	final int findMinMaxSize(int count) {
+		int index = 0;
+		stackType = 8;
+		width = 0;
+		height = 0;
+		cal2 = image[0].getCalibration();
+		maxWidth = 0;
+		maxHeight = 0;
+		minWidth = Integer.MAX_VALUE;
+		minHeight = Integer.MAX_VALUE;
+		minSize = Integer.MAX_VALUE;
+		maxSize = 0;
+		for (int i=0; i<count; i++) {
+			if (exclude(image[i].getTitle())) continue;
+			int type = image[i].getBitDepth();
+			if (type==24) type = rgb;
+			if (type>stackType) stackType = type;
+			int w=image[i].getWidth(), h=image[i].getHeight();
+			if (w>width) width = w;
+			if (h>height) height = h;
+			int size = w*h;
+			if (size<minSize) {
+				minSize = size;
+				minWidth = w;
+				minHeight = h;
+			}
+			if (size>maxSize) {
+				maxSize = size;
+				maxWidth = w;
+				maxHeight = h;
+			}
+			Calibration cal = image[i].getCalibration();
+			if (!image[i].getCalibration().equals(cal2))
+				cal2 = null;
+			image[index++] = image[i];
+		}
+		return index;
+	}
+
+	final boolean exclude(String title) {
+		return filter!=null && title!=null && title.indexOf(filter)==-1;
 	}
 	
 }

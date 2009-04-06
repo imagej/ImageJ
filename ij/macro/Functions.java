@@ -951,7 +951,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getLeftParen();
 		String column = getString();
 		int row = -1;
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			interp.getComma();
 			row = (int)interp.getExpression();
 		}
@@ -1161,8 +1161,8 @@ public class Functions implements MacroConstants, Measurements {
 
 	Variable[] newArray() {
 		interp.getLeftParen();
-		int next = interp.nextNonEolToken();
-		if (next==STRING_CONSTANT || interp.nextNextNonEolToken()==','
+		int next = interp.nextToken();
+		if (next==STRING_CONSTANT || interp.nextNextToken()==','
 		|| next=='-' || next==PI)
 			return initNewArray();
 		int size = (int)interp.getExpression();
@@ -1234,7 +1234,7 @@ public class Functions implements MacroConstants, Measurements {
 		boolean stringArray = false;
 		do {
 		    Variable v = new Variable();
-		    int tok = interp.nextNonEolToken();
+		    int tok = interp.nextToken();
 			if (tok==STRING_CONSTANT||tok==STRING_FUNCTION||(tok==WORD&&stringArray)) {
 				v.setString(getString());
 				stringArray = true;
@@ -1268,8 +1268,8 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String getInfo() {
-		if (interp.nextNextNonEolToken()==STRING_CONSTANT
-		|| (interp.nextNonEolToken()=='('&&interp.nextNextNonEolToken()!=')'))
+		if (interp.nextNextToken()==STRING_CONSTANT
+		|| (interp.nextToken()=='('&&interp.nextNextToken()!=')'))
 			return getInfo(getStringArg());
 		else {
 			interp.getParens();
@@ -2338,7 +2338,7 @@ public class Functions implements MacroConstants, Measurements {
 	void saveAs() {
 		String format = getFirstString();
 		String path =  null;
-		if (interp.nextNonEolToken()==',')
+		if (interp.nextToken()==',')
 			path = getLastString();
 		else
 			interp.getRightParen();
@@ -2399,7 +2399,7 @@ public class Functions implements MacroConstants, Measurements {
 	void print() {
 		interp.inPrint = true;
 		String s = getFirstString();
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			if (s.startsWith("[") && s.endsWith("]")) {
 				printToWindow(s);
 				return;
@@ -2418,7 +2418,7 @@ public class Functions implements MacroConstants, Measurements {
 			do {
 				sb.append(" ");
 				sb.append(getNextString());
-			} while (interp.nextNonEolToken()==',');
+			} while (interp.nextToken()==',');
 			s = sb.toString();
 		}
 		interp.getRightParen();
@@ -2516,7 +2516,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getLeftParen();
 		String name = getString();
 		String arg = null;
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			interp.getComma();
 			arg = getString();
 		}
@@ -2534,7 +2534,7 @@ public class Functions implements MacroConstants, Measurements {
 		double lower = getFirstArg();
 		double upper = getNextArg();
 		String mode = null;
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			interp.getComma();
 			mode = getString();
 		}
@@ -2654,7 +2654,7 @@ public class Functions implements MacroConstants, Measurements {
 		int x = (int)getFirstArg();
 		int y = (int)getNextArg();
 		boolean fourConnected = true;
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			String s = getLastString();
 			if (s.indexOf("8")!=-1)
 				fourConnected = false;
@@ -2733,7 +2733,7 @@ public class Functions implements MacroConstants, Measurements {
 				String label = getFirstString();
 				String defaultStr = getNextString();
 				int columns = 8;
-				if (interp.nextNonEolToken()==',')
+				if (interp.nextToken()==',')
 					columns = (int)getNextArg();
 				interp.getRightParen();
 				gd.addStringField(label, defaultStr, columns);
@@ -2743,7 +2743,7 @@ public class Functions implements MacroConstants, Measurements {
 				String prompt = getFirstString();
 				double defaultNumber = getNextArg();
 				int decimalPlaces = (int)defaultNumber==defaultNumber?0:3;
-				if (interp.nextNonEolToken()==',') {
+				if (interp.nextToken()==',') {
 					decimalPlaces = (int)getNextArg();
 					columns = (int)getNextArg();
 					units = getLastString();
@@ -2761,7 +2761,7 @@ public class Functions implements MacroConstants, Measurements {
 				interp.getComma();
 				String[] choices = getStringArray();
 				String defaultChoice = null;
-				if (interp.nextNonEolToken()==',') {
+				if (interp.nextToken()==',') {
 					interp.getComma();
 					defaultChoice = getString();
 				} else
@@ -2836,7 +2836,7 @@ public class Functions implements MacroConstants, Measurements {
 		String metadata = null;
 		String arg1 = getFirstString();
 		boolean oneArg = false;
-		if (interp.nextNonEolToken()==',')
+		if (interp.nextToken()==',')
 			metadata = getLastString();
 		else
 			interp.getRightParen();
@@ -2871,7 +2871,7 @@ public class Functions implements MacroConstants, Measurements {
 	String getMetadata() {
 		String type = "label";
 		boolean noArg = true;
-		if (interp.nextNonEolToken()=='(' && interp.nextNextNonEolToken()!=')') {
+		if (interp.nextToken()=='(' && interp.nextNextToken()!=')') {
 			type = getStringArg().toLowerCase(Locale.US);
 			noArg = false;
 		} else
@@ -3194,11 +3194,11 @@ public class Functions implements MacroConstants, Measurements {
 
 		// get optional string arguments
 		Object[] args = null;
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			Vector vargs = new Vector();
 			do
 				vargs.add(getNextString());
-			while (interp.nextNonEolToken()==',');
+			while (interp.nextToken()==',');
 			args = vargs.toArray();
 		}
 		interp.getRightParen();
@@ -3580,12 +3580,12 @@ public class Functions implements MacroConstants, Measurements {
 		String[] cmd;
 		StringBuffer sb = new StringBuffer(256);
 		String arg1 = getFirstString();
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			Vector v = new Vector();
 			v.add(arg1);
 			do
 				v.add(getNextString());
-			while (interp.nextNonEolToken()==',');
+			while (interp.nextToken()==',');
 			cmd = new String[v.size()];
 			v.copyInto((String[])cmd);
 		} else
@@ -3982,7 +3982,7 @@ public class Functions implements MacroConstants, Measurements {
 		double[] x = getNextArray();
 		interp.getComma();
 		double[] y = getNumericArray();
-		if (interp.nextNonEolToken()==',') {
+		if (interp.nextToken()==',') {
 			interp.getComma();
 			initialValues = getNumericArray();
 		}
