@@ -246,9 +246,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
      *  @param rankType May be MEAN, MIN, MAX, VARIANCE, or MEDIAN.
      */
     public void rank(ImageProcessor ip, double radius, int rankType) {
-        makeKernel(radius);
         FloatProcessor fp = null;
         for (int i=0; i<ip.getNChannels(); i++) {
+            makeKernel(radius);
             fp = ip.toFloat(i, fp);
             doFiltering(fp, kRadius, lineRadius, rankType, BRIGHT_OUTLIERS, 50f);
             ip.setPixels(i, fp);

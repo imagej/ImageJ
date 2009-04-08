@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.42m, 6 April 2009</u>
+<li> <u>1.42m, 8 April 2009</u>
 <ul>
 <li> When there is no selection, or the shift key is down, the arrow keys can
 substitute for "&lt;" and "&gt;" when navigating stacks and hyperstacks.
@@ -14,6 +14,13 @@ substitute for "&lt;" and "&gt;" when navigating stacks and hyperstacks.
 message line numbers to be invalid, with macros containing multiple line /*...*/ comments. 
 <li> Michael Schmid fixed a bug in the public RankFilters.rank() method that caused it
 to only process the red channel of RGB images.
+<li> Sylvain Mainguy fixed a bug that caused the cursor to change to a
+hand at the corners of the bounding box of composite selections.
+<li> Fixed a bug in <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> that caused it to not
+preserve image labels.
+<li> Fixed a bug that caused jar files containing class files with "_" in the
+name in subfolders and no plugins.config file (e.g., ImageJ_3D_Viewer.jar)
+to generate startup error messages.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

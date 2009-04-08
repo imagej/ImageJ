@@ -1073,7 +1073,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     	if (slice>nSlices) slice = nSlices;
     	if (frame<1) frame = 1;
     	if (frame>nFrames) frame = nFrames;
-		if (isHyperStack() && !Interpreter.isBatchMode())
+		if (isHyperStack())
 			((StackWindow)win).setPosition(channel, slice, frame);
 		else {
 			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
