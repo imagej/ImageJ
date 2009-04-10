@@ -172,7 +172,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			ph = cal.pixelHeight;
 		}
 		Polygon poly = getConvexHull();
-		if (poly==null) return null;
+		if (poly==null) {
+			poly = getPolygon();
+			if (poly==null) return null;
+		}
 		double w2=pw*pw, h2=ph*ph;
 		double dx, dy, d;
 		for (int i=0; i<poly.npoints; i++) {

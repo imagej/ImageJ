@@ -94,8 +94,10 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 				for (int t=1; t<=frames; t++) {
 					IJ.showProgress(i++, n);
 					if (frames==1) t = t1;
+					//ip = stack.getProcessor(n1);
+					imp.setPositionWithoutUpdate(c, z, t);
+					ip = imp.getProcessor();
 					int n1 = imp.getStackIndex(c, z, t);
-					ip = stack.getProcessor(n1);
 					String label = stack.getSliceLabel(n1);
 					int n2 = imp2.getStackIndex(c, z, t);
 					if (stack2.getPixels(n2)!=null)

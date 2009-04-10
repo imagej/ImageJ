@@ -1217,6 +1217,11 @@ public class ShapeRoi extends Roi {
 	public int isHandle(int sx, int sy) {
 		   return -1;
 	}
+	
+	/** Always returns null. */
+	public Polygon getConvexHull() {
+		return null;
+	}
 
     /*
     static Polygon poly;

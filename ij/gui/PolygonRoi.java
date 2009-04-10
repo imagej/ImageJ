@@ -1015,14 +1015,14 @@ public class PolygonRoi extends Roi {
 		int[] xx = new int[n];
 		int[] yy = new int[n];
 		int n2 = 0;
-		int smallestY = 99999;
+		int smallestY = Integer.MAX_VALUE;
 		int x, y;
 		for (int i=0; i<n; i++) {
 			y = yCoordinates[i];
 			if (y<smallestY)
 			smallestY = y;
 		}
-		int smallestX = 99999;
+		int smallestX = Integer.MAX_VALUE;
 		int p1 = 0;
 		for (int i=0; i<n; i++) {
 			x = xCoordinates[i];
@@ -1035,6 +1035,7 @@ public class PolygonRoi extends Roi {
 		int pstart = p1;
 		int x1, y1, x2, y2, x3, y3, p2, p3;
 		int determinate;
+		int count = 0;
 		do {
 			x1 = xCoordinates[p1];
 			y1 = yCoordinates[p1];
@@ -1055,6 +1056,9 @@ public class PolygonRoi extends Roi {
 				xx[n2] = xbase + x1;
 				yy[n2] = ybase + y1;
 				n2++;
+			} else {
+				count++;
+				if (count>10) return null;
 			}
 			p1 = p2;
 		} while (p1!=pstart);

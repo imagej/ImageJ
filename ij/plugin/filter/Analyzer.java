@@ -181,7 +181,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))&&IJ.isResultsWindow()) {
 				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
-				rt.update(systemMeasurements, imp!=null?imp.getRoi():null);
+				rt.update(systemMeasurements, imp, null);
 		}
 		if ((systemMeasurements&LABELS)==0)
 			systemRT.disableRowLabels();
@@ -189,8 +189,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	/** Measures the image or selection and adds the results to the default results table. */
 	public void measure() {
-		String sliceHdr = rt.getColumnHeading(ResultsTable.LAST_HEADING);
-		if (sliceHdr==null || sliceHdr.charAt(0)!='S') {
+		String lastHdr = rt.getColumnHeading(ResultsTable.LAST_HEADING);
+		if (lastHdr==null || lastHdr.charAt(0)!='S') {
 			if (!reset()) return;
 		}
 		firstParticle = lastParticle = 0;
@@ -276,7 +276,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("X");
 			if (index<0 || !rt.columnExists(index))
-				rt.update(measurements, roi);
+				rt.update(measurements, imp, roi);
 		}
 		Polygon p = roi.getPolygon();
 		for (int i=0; i<p.npoints; i++) {
@@ -294,7 +294,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("Angle");
 			if (index<0 || !rt.columnExists(index))
-				rt.update(measurements, roi);
+				rt.update(measurements, imp, roi);
 		}
 		ImageProcessor ip = imp.getProcessor();
 		ip.setRoi(roi.getPolygon());
@@ -313,7 +313,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				index = rt.getColumnIndex("Angle");
 				if (index<0 || !rt.columnExists(index)) update=true;
 			}
-			if (update) rt.update(measurements, roi);
+			if (update) rt.update(measurements, imp, roi);
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
 		int lineWidth = Line.getWidth();
@@ -385,11 +385,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
 				Polygon ch = null;
 				boolean isArea = roi!=null && roi.isArea();
-				if (isArea && roi.getType()!=Roi.COMPOSITE)
+				if (isArea)
 					ch = roi.getConvexHull();
 				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
 				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.area/(Math.PI*stats.major*stats.major):0.0);
-				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):0.0);
+				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):Double.NaN);
 				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
@@ -414,8 +414,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&FERET)!=0) {
 			boolean extras = true;
-			double FeretDiameter=0.0, feretAngle=0.0, minFeret=0.0;
-			if (roi!=null && stats.pixelCount>0) {
+			double FeretDiameter=Double.NaN, feretAngle=Double.NaN, minFeret=Double.NaN;
+			if (roi!=null) {
 				double[] a = roi.getFeretValues();
 				if (a!=null) {
 					FeretDiameter = a[0];
@@ -456,7 +456,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				if (index<0 || !rt.columnExists(index)) update=true;
 				rt.addValue("Slice", imp!=null?imp.getCurrentSlice():1.0);
 			}
-			if (update && rt==systemRT) rt.update(measurements, roi);
+			if (update && rt==systemRT) rt.update(measurements, imp, roi);
 		}
 		if (roi!=null) {
 			if (roi.isLine()) {

@@ -466,9 +466,10 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
-	public void update(int measurements, Roi roi) {
+	public void update(int measurements, ImagePlus imp, Roi roi) {
+		if (roi==null && imp!=null) roi = imp.getRoi();
 		ResultsTable rt2 = new ResultsTable();
-		Analyzer analyzer = new Analyzer(null, measurements, rt2);
+		Analyzer analyzer = new Analyzer(imp, measurements, rt2);
 		ImageProcessor ip = new ByteProcessor(1, 1);
 		ImageStatistics stats = new ByteStatistics(ip, measurements, null);
 		analyzer.saveResults(stats, roi);
