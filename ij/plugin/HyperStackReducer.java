@@ -92,7 +92,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			for (int z=1; z<=slices; z++) {
 				if (slices==1) z = z1;
 				for (int t=1; t<=frames; t++) {
-					IJ.showProgress(i++, n);
+					//IJ.showProgress(i++, n);
 					if (frames==1) t = t1;
 					//ip = stack.getProcessor(n1);
 					imp.setPositionWithoutUpdate(c, z, t);
@@ -123,40 +123,31 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 
 	boolean showDialog() {
 		GenericDialog gd = new GenericDialog("Reduce");
-        	gd.setInsets(10, 20, 5);
+		gd.setInsets(10, 20, 5);
 		gd.addMessage("Create Image With:");
 		gd.setInsets(0, 35, 0);
-		if (channels1!=1) gd.addCheckbox(channels1+" channels", true);
+		if (channels1!=1) gd.addCheckbox("Channels ("+channels1+")", true);
 		gd.setInsets(0, 35, 0);
-		if (slices1!=1) gd.addCheckbox(slices1+" slices", true);
+		if (slices1!=1) gd.addCheckbox("Slices ("+slices1+")", true);
 		gd.setInsets(0, 35, 0);
-		if (frames1!=1) gd.addCheckbox(frames1+" frames", true);
+		if (frames1!=1) gd.addCheckbox("Frames ("+frames1+")", true);
 		gd.setInsets(5, 20, 0);
 		gd.addMessage(getNewDimensions()+"      ");
 		gd.setInsets(15, 20, 0);
 		gd.addCheckbox("Keep Source", keep);
 		gd.addDialogListener(this);
 		gd.showDialog();
-		if (gd.wasCanceled()) return false;
+		if (gd.wasCanceled())
+			return false;
+		else
+			return true;
+	}
+
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		if (channels1!=1) channels2 = gd.getNextBoolean()?channels1:1;
 		if (slices1!=1) slices2 = gd.getNextBoolean()?slices1:1;
 		if (frames1!=1) frames2 = gd.getNextBoolean()?frames1:1;
 		keep = gd.getNextBoolean();
-		return true;
-	}
-
-	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-		if (e==null) return false;
-		Object source = e.getSource();
-		Checkbox cb = (source instanceof Checkbox)?(Checkbox)source:null;
-		if (cb==null) return true;
-		String label = cb.getLabel();
-		if (label.indexOf("channels")!=-1)
-			channels2 = cb.getState()?channels1:1;
-		if (label.indexOf("slices")!=-1)
-			slices2 = cb.getState()?slices1:1;
-		if (label.indexOf("frames")!=-1)
-			frames2 = cb.getState()?frames1:1;
 		((Label)gd.getMessage()).setText(getNewDimensions());
 		return true;
 	}

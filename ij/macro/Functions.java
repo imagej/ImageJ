@@ -3680,9 +3680,47 @@ public class Functions implements MacroConstants, Measurements {
 			setActiveChannels(imp, getStringArg());
 		else if (name.equals("swap"))
 			swapStackImages(imp);
+		else if (name.equals("getStatistics"))
+			getStackStatistics(imp, true);
 		else
 			interp.error("Unrecognized Stack function");
 		return Double.NaN;
+	}
+	
+	void getStackStatistics(ImagePlus imp, boolean calibrated) {
+		Variable count = getFirstVariable();
+		Variable mean=null, min=null, max=null, std=null, hist=null;
+		int params = AREA+MEAN+MIN_MAX;
+		interp.getToken();
+		int arg = 1;
+		while (interp.token==',') {
+			arg++;
+			switch (arg) {
+				case 2: mean = getVariable(); break;
+				case 3: min = getVariable(); break;
+				case 4: max = getVariable(); break;
+				case 5: std = getVariable(); params += STD_DEV; break;
+				case 6: hist = getArrayVariable(); break;
+				default: interp.error("')' expected");
+			}
+			interp.getToken();
+		}
+		if (interp.token!=')') interp.error("')' expected");
+		ImageStatistics stats = new StackStatistics(imp);
+		count.setValue(stats.pixelCount);
+		if (mean!=null) mean.setValue(stats.mean);
+		if (min!=null) min.setValue(stats.min);
+		if (max!=null) max.setValue(stats.max);
+		if (std!=null) std.setValue(stats.stdDev);
+		if (hist!=null) {
+			int[] histogram = stats.histogram;
+		    int bins = histogram.length;
+			Variable[] array = new Variable[bins];
+			int hmax = 255;
+			for (int i=0; i<=hmax; i++)
+				array[i] = new Variable(histogram[i]);
+			hist.setArray(array);
+		}
 	}
 	
 	void setActiveChannels(ImagePlus imp, String channels) {

@@ -61,7 +61,7 @@ public class RGBStackConverter implements PlugIn {
 				return;
 			}
 		}
-		if (!imp.isHyperStack()) return;
+		//if (!imp.isHyperStack()) return;
 		int n = frames;
 		if (n==1) n = slices;
 		ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());

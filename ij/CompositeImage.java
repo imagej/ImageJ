@@ -241,13 +241,12 @@ public class CompositeImage extends ImagePlus {
 		}
 		//IJ.log(nChannels+" "+ch+" "+currentChannel+"  "+newChannel);
 				
-		if (isHyperStack() && (getSlice()!=currentSlice||getFrame()!=currentFrame)) {
+		if (getSlice()!=currentSlice || getFrame()!=currentFrame) {
 			currentSlice = getSlice();
 			currentFrame = getFrame();
 			int position = (currentFrame-1)*nChannels*getNSlices() + (currentSlice-1)*nChannels + 1;
-			for (int i=0; i<nChannels; ++i) {
+			for (int i=0; i<nChannels; ++i)
 				cip[i].setPixels(getImageStack().getProcessor(position+i).getPixels());
-			}
 		}
 
 		if (rgbPixels == null) {
@@ -292,7 +291,7 @@ public class CompositeImage extends ImagePlus {
 			img = awtImage;
 		singleChannel = false;
 	}
-	
+		
 	void createImage() {
 		if (imageSource==null) {
 			rgbCM = new DirectColorModel(32, 0xff0000, 0xff00, 0xff);

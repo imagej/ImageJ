@@ -800,6 +800,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 	
+	/** Returns 'true' if this is a hyperstack currently being displayed in a StackWindow. */
 	public boolean isHyperStack() {
 		return win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperStack();
 	}
@@ -1066,6 +1067,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	public void setPosition(int channel, int slice, int frame) {
+		//IJ.log("setPosition: "+channel+"  "+slice+"  "+frame+"  "+noUpdateMode);
 		verifyDimensions();
    		if (channel<1) channel = 1;
     	if (channel>nChannels) channel = nChannels;
@@ -1117,22 +1119,21 @@ public class ImagePlus implements ImageObserver, Measurements {
 		setPosition(c, z, t);
 	}
 			
-	/** Activates the specified slice. The index must be >= 1
-		and <= N, where N in the number of slices in the stack.
-		Does nothing if this ImagePlus does not use a stack. */
-	public synchronized void setSlice(int index) {
-		if (stack==null || index==currentSlice) {
+	/** Displays the specified stack image, where 1<=n<=stackSize.
+		Does nothing if this image is not a stack. */
+	public synchronized void setSlice(int n) {
+		if (stack==null || n==currentSlice) {
 	    	updateAndRepaintWindow();
 			return;
 		}
-		if (index>=1 && index<=stack.getSize()) {
+		if (n>=1 && n<=stack.getSize()) {
 			Roi roi = getRoi();
 			if (roi!=null)
 				roi.endPaste();
 			if (isProcessor())
 				stack.setPixels(ip.getPixels(),currentSlice);
 			ip = getProcessor();
-			setCurrentSlice(index);
+			setCurrentSlice(n);
 			Object pixels = stack.getPixels(currentSlice);
 			if (pixels!=null) {
 				ip.setSnapshotPixels(null);
@@ -1143,17 +1144,25 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (IJ.altKeyDown() && !IJ.isMacro()) {
 				if (imageType==GRAY16 || imageType==GRAY32) {
 					ip.resetMinAndMax();
-					IJ.showStatus(index+": min="+ip.getMin()+", max="+ip.getMax());
+					IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
 				}
 				ContrastAdjuster.update();
 			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
-			if (!Interpreter.isBatchMode() && !noUpdateMode)
+			if (!(Interpreter.isBatchMode()||noUpdateMode))
 				updateAndRepaintWindow();
 			else
 				img = null;
 		}
+	}
+
+	/** Displays the specified stack image (1<=n<=stackSize)
+		without updating the display. */
+	public void setSliceWithoutUpdate(int n) {
+		noUpdateMode = true;
+		setSlice(n);
+		noUpdateMode = false;
 	}
 
 	/** Obsolete */
@@ -1170,9 +1179,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	/** Assigns the specified ROI to this image and displays it. Any existing
-		ROI is deleted if <code>roi</code> is null or its width or height is zero.
-		Sets the ImageProcessor mask to null. */
+		ROI is deleted if <code>roi</code> is null or its width or height is zero. */
 	public void setRoi(Roi newRoi) {
+		setRoi(newRoi, true);
+	}
+
+	/** Assigns 'newRoi'  to this image and displays it if 'updateDisplay' is true. */
+	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
 			{killRoi(); return;}
 		if (newRoi.isVisible()) {
@@ -1192,7 +1205,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 				ip.resetRoi();
 		}
 		roi.setImage(this);
-		draw();
+		if (updateDisplay) draw();
 	}
 	
 	/** Creates a rectangular selection. */

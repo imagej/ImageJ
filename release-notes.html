@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.42m, 10 April 2009</u>
+<li> <u>1.42m, 13 April 2009</u>
 <ul>
 <li> When there is no selection, or the shift key is down, the arrow keys can
 substitute for "&lt;" and "&gt;" when navigating stacks and hyperstacks.
@@ -26,6 +26,11 @@ to generate startup error messages.
 <li> Fixed a bug, introduced in 1.42i, that could cause ImageJ to hang when
 using the <i>Measure</i> command if "Shape Descriptors" or
 "Feret's Diameter" were enabled in <i>Set Measurements</i>.
+<li> Fixed bugs that caused the <i>Image&gt;Type&gt;RGB Color</i>, <i>Image&gt;Color&gt;Stack to RGB</i>
+and <i>File&gt;Save As&gt;AVI</i> commands to not work correctly with
+hyperstacks when called from batch mode macros.
+<li> Fixed bugs that caused <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> to not be
+macro compatible.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

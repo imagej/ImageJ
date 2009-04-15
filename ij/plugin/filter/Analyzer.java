@@ -871,6 +871,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (option.indexOf("min")!=-1)
 			showMin = b;
 	}
+	
+	public static void setResultsTable(ResultsTable rt) {
+		systemRT = rt;
+	}
 
 }
 	

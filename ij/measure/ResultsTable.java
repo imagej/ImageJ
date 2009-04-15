@@ -444,6 +444,8 @@ public class ResultsTable implements Cloneable {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
 			IJ.setColumnHeadings(tableHeadings);
+			if (this!=Analyzer.getResultsTable())
+				Analyzer.setResultsTable(this);
 			if (getCounter()>0)
 				Analyzer.setUnsavedMeasurements(true);
 		} else {
@@ -459,6 +461,7 @@ public class ResultsTable implements Cloneable {
 		tp.setResultsTable(this);
 		int n = getCounter();
 		if (n>0) {
+			if (tp.getLineCount()>0) tp.clear();
 			StringBuffer sb = new StringBuffer(n*tableHeadings.length());
 			for (int i=0; i<n; i++)
 				sb.append(getRowAsString(i)+"\n");

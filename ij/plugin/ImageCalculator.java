@@ -66,6 +66,17 @@ public class ImageCalculator implements PlugIn {
 		calculate(img1, img2, false);
 	}
 	
+	/* This method is used to implement the ImageCalculator() macro function. The 'params' argument ("add","subtract",
+	"multiply","divide", "and", "or", "xor", "min", "max", "average", "difference" or "copy") specifies the operation,
+	and 'img1' and 'img2' specify the operands. The  'params'  string can include up to three modifiers:
+	"create" (e.g., "add create") causes the result to be stored in a new window, "32-bit" causes the result
+	to be 32-bit floating-point and "stack" causes the entire stack to be processed. For example
+	<pre>
+       ImageCalculator ic = new ImageCalculator();
+       ic.calculate("divide create 32-bit", imp1, imp2);
+     </pre>
+      divides 'imp1' by i'mp2' and displays the result in a new 32-bit image.
+	*/
 	public void calculate(String params, ImagePlus img1, ImagePlus img2) {
 		if (img1==null || img2==null || params==null) return;
 		params = params.toLowerCase();
