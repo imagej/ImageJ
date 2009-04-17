@@ -144,6 +144,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+		if (IJ.isMacOSX()) IJ.wait(100);
 		if (channels1!=1) channels2 = gd.getNextBoolean()?channels1:1;
 		if (slices1!=1) slices2 = gd.getNextBoolean()?slices1:1;
 		if (frames1!=1) frames2 = gd.getNextBoolean()?frames1:1;

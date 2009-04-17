@@ -5,7 +5,12 @@ import ij.process.*;
 import ij.gui.*;
 
 /** Converts a 2 or 3 slice stack, or a hyperstack, to RGB. */
-public class RGBStackConverter implements PlugIn {
+public class RGBStackConverter implements PlugIn, DialogListener {
+	int channels1, slices1, frames1;
+	int slices2, frames2;
+	int width, height;
+	double imageSize;
+	static boolean keep = true;
 	
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -39,6 +44,76 @@ public class RGBStackConverter implements PlugIn {
 	}
 	
 	void compositeToRGB(CompositeImage imp, String title) {
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = imp.getNFrames();
+		int images = channels*slices*frames;
+		if (channels==images) {
+			compositeImageToRGB(imp, title);
+			return;
+		}
+		width = imp.getWidth();
+		height = imp.getHeight();
+		imageSize = width*height*4.0/(1024.0*1024.0);
+		channels1 = imp.getNChannels();
+		slices1 = slices2 = imp.getNSlices();
+		frames1 = frames2 = imp.getNFrames();
+		int c1 = imp.getChannel();
+		int z1 = imp.getSlice();
+		int t2 = imp.getFrame();
+		if (!showDialog())
+			return;
+		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
+		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
+ 		int size = slices2*frames2;
+		ImageStack stack2 = new ImageStack(width, height, size); // create empty stack
+		stack2.setPixels((new ColorProcessor(width,height)).getPixels(), 1); // can't create ImagePlus will null 1st image
+		ImagePlus imp2 = new ImagePlus(title2, stack2);
+		stack2.setPixels(null, 1);
+		imp2.setDimensions(1, slices2, frames2);
+		convertHyperstack(imp, imp2);
+		if (slices2>1 || frames2>1)
+			imp2.setOpenAsHyperStack(true);
+		imp2.show();
+		if (!keep) {
+			imp.changes = false;
+			imp.close();
+		}
+	}
+
+	public void convertHyperstack(ImagePlus imp, ImagePlus imp2) {
+		int slices = imp2.getNSlices();
+		int frames = imp2.getNFrames();
+		int c1 = imp.getChannel();
+		int z1 = imp.getSlice();
+		int t1 = imp.getFrame();
+		int i = 1;
+		int c = 1;
+		ImageStack stack = imp.getStack();
+		ImageStack stack2 = imp2.getStack();
+		imp.setPositionWithoutUpdate(c, 1, 1);
+		ImageProcessor ip = imp.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
+		for (int z=1; z<=slices; z++) {
+			if (slices==1) z = z1;
+			for (int t=1; t<=frames; t++) {
+				//IJ.showProgress(i++, n);
+				if (frames==1) t = t1;
+				//ip = stack.getProcessor(n1);
+				imp.setPositionWithoutUpdate(c, z, t);
+				Image img = imp.getImage();
+				int n2 = imp2.getStackIndex(c, z, t);
+				stack2.setPixels((new ColorProcessor(img)).getPixels(), n2);
+			}
+		}
+		imp.setPosition(c1, z1, t1);
+		imp2.resetStack();
+		imp2.setPosition(1, 1, 1);
+		imp2.setCalibration(imp.getCalibration());
+	}
+
+	void compositeToRGB2(CompositeImage imp, String title) {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
@@ -130,5 +205,43 @@ public class RGBStackConverter implements PlugIn {
 		ic.convertRGBStackToRGB();
 		imp2.show();
 	}
+	
+	boolean showDialog() {
+		GenericDialog gd = new GenericDialog("Convert to RGB");
+		gd.setInsets(10, 20, 5);
+		gd.addMessage("Create RGB Image With:");
+		gd.setInsets(0, 35, 0);
+		if (slices1!=1) gd.addCheckbox("Slices ("+slices1+")", true);
+		gd.setInsets(0, 35, 0);
+		if (frames1!=1) gd.addCheckbox("Frames ("+frames1+")", true);
+		gd.setInsets(5, 20, 0);
+		gd.addMessage(getNewDimensions()+"      ");
+		gd.setInsets(15, 20, 0);
+		gd.addCheckbox("Keep Source", keep);
+		gd.addDialogListener(this);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return false;
+		else
+			return true;
+	}
+
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+		if (IJ.isMacOSX()) IJ.wait(100);
+		if (slices1!=1) slices2 = gd.getNextBoolean()?slices1:1;
+		if (frames1!=1) frames2 = gd.getNextBoolean()?frames1:1;
+		keep = gd.getNextBoolean();
+		((Label)gd.getMessage()).setText(getNewDimensions());
+		return true;
+	}
+	
+	String getNewDimensions() {
+		String s1 = slices2>1?"x"+slices2:"";
+		String s2 = frames2>1?"x"+frames2:"";
+		String s = width+"x"+height+s1+s2;
+		s += " ("+(int)Math.round(imageSize*slices2*frames2)+"MB)";
+		return(s);
+	}
+
 	
 }

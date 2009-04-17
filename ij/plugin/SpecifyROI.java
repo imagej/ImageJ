@@ -152,6 +152,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 	}
     	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+		if (IJ.isMacOSX()) IJ.wait(100);
 		width = gd.getNextNumber();
 		height = gd.getNextNumber();
 		xRoi = gd.getNextNumber();	

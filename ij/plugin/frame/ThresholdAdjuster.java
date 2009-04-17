@@ -50,7 +50,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	int lutColor;	
 	static Choice choice;
 	boolean firstActivation;
-	boolean preset;
+	boolean useExistingTheshold;
 
 	public ThresholdAdjuster() {
 		super("Threshold");
@@ -184,7 +184,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		thread.start();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			preset = isThresholded(imp);
+			useExistingTheshold = isThresholded(imp);
 			setup(imp);
 		}
 	}
@@ -252,12 +252,13 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	 			minMaxChange = true;
 		}
 		int id = imp.getID();
-		if ((minMaxChange || id!=previousImageID || type!=previousImageType) && !preset) {
+		if (minMaxChange || id!=previousImageID || type!=previousImageType) {
             //IJ.log(minMaxChange +"  "+ (id!=previousImageID)+"  "+(type!=previousImageType));
-            if (not8Bits && minMaxChange) {
+            if (not8Bits && minMaxChange && !useExistingTheshold) {
                 ip.resetMinAndMax();
                 imp.updateAndDraw();
             }
+			useExistingTheshold = false;
 			invertedLut = imp.isInvertedLut();
 			minThreshold = ip.getMinThreshold();
 			maxThreshold = ip.getMaxThreshold();
@@ -277,7 +278,6 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	 	previousImageID = id;
 	 	previousImageType = type;
 	 	previousSlice = slice;
-	 	preset = false;
 	 	return ip;
 	}
 	
@@ -631,7 +631,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (imp!=null) {
 			if (!firstActivation) {
 				previousImageID = 0;
-				preset = isThresholded(imp);
+				useExistingTheshold = isThresholded(imp);
 				setup(imp);
 			}
 			firstActivation = false;

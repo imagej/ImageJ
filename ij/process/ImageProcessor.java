@@ -54,7 +54,9 @@ public abstract class ImageProcessor extends Object {
 	protected boolean antialiasedText;
 	protected boolean boldFont;
 	private static String[] interpolationMethods;
-	//static Frame frame;
+	// Over/Under tresholding colors
+	private static int overRed, overGreen=255, overBlue;
+	private static int underRed, underGreen, underBlue=255;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -427,13 +429,13 @@ public abstract class ImageProcessor extends Object {
 					bLUT2[i] = bLUT1[i];
 
 				} else if (i>t2) {
-					rLUT2[i] = (byte)0;
-					gLUT2[i] = (byte)255;
-					bLUT2[i] = (byte)0;
+					rLUT2[i] = (byte)overRed;
+					gLUT2[i] = (byte)overGreen;
+					bLUT2[i] = (byte)overBlue;
 				} else { 
-					rLUT2[i] = (byte)0;
-					gLUT2[i] = (byte)0; 
-					bLUT2[i] = (byte)255;
+					rLUT2[i] = (byte)underRed;
+					gLUT2[i] = (byte)underGreen; 
+					bLUT2[i] = (byte)underBlue;
 				}
 			}
 
@@ -1223,7 +1225,7 @@ public abstract class ImageProcessor extends Object {
 
 	/**	Fills the image or ROI bounding rectangle with the current fill/draw value. Use
 	*	fill(mask) to fill non-rectangular selections.
-	*	@see ImageProcessor fill(ImageProcessor)
+	*	@see ImageProcessor fill(Roi)
 	*/
 	public void fill() {
 		process(FILL, 0.0);
@@ -1270,7 +1272,9 @@ public abstract class ImageProcessor extends Object {
 	/** Set a lookup table used by getPixelValue(), getLine() and
 		convertToFloat() to calibrate pixel values. The length of
 		the table must be 256 for byte images and 65536 for short
-		images. RGB and float processors do not do calibration. */
+		images. RGB and float processors do not do calibration.
+		@see ij.measure.Calibration#setCTable
+	*/
 	public void setCalibrationTable(float[] cTable) {
 		this.cTable = cTable;
 	}
@@ -1994,5 +1998,17 @@ public abstract class ImageProcessor extends Object {
 		for (int i=0; i<mapSize; i++) blues[i] = tmp[i]&0xff;
 		cm2 = cm;
 	}
+	
+	/** Sets the upper Over/Under threshold color. Can be called from a macro,
+		e.g., call("ij.process.ImageProcessor.setOverColor", 0,255,255). */
+	public static void setOverColor(int red, int green, int blue) {
+		overRed=red; overGreen=green; overBlue=blue;
+	}
+
+	/** Set the lower Over/Under thresholding color. */
+	public static void setUnderColor(int red, int green, int blue) {
+		underRed=red; underGreen=green; underBlue=blue;
+	}
+
 
 }

@@ -57,6 +57,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				IJ.error("Reslice...", "Stack required");
 				return;
 		 }
+		 if (imp.isHyperStack()) {
+				IJ.error("Reslice...", "This command does not currently work with hyperstacks");
+				return;
+		 }
 		 // permissible ROI types: none,RECT,*LINE
 		 if (roi!=null && roiType!=Roi.RECTANGLE && roiType!=Roi.LINE && roiType!=Roi.POLYLINE && roiType!=Roi.FREELINE) {
 				IJ.error("Reslice...", "Line or rectangular selection required");
@@ -523,6 +527,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	}
 
 	public void itemStateChanged(ItemEvent e) {
+		if (IJ.isMacOSX()) IJ.wait(100);
 		Checkbox cb = (Checkbox)checkboxes.elementAt(2);
         nointerpolate = cb.getState();
         updateSize();
