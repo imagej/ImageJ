@@ -266,6 +266,20 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public ImageProcessor getChannelProcessor() {
 		return getProcessor();
 	}
+	
+	/* The CompositeImage class overrides this method  to
+		return, as an array, copies of this image's channel LUTs. */
+	public LUT[] getLuts() {
+		return null;
+		//ImageProcessor ip = getProcessor();
+		//ColorModel cm = ip.getColorModel();
+		//if (cm instanceof IndexColorModel) {
+		//	LUT[] luts = new LUT[1];
+		//	luts[0] = new LUT((IndexColorModel)cm, ip.getMin(), ip.getMax());
+		//	return luts;
+		//} else
+		//	return null;
+	}
 
 	/** Calls draw to draw the image and also repaints the
 		image window to force the information displayed above
@@ -517,17 +531,17 @@ public class ImagePlus implements ImageObserver, Measurements {
     	this.stack = stack;
     	setProcessor2(title, ip, stack);
 		if (win==null) return;
-		boolean invalidDimensions = isHyperStack() && !((StackWindow)win).validDimensions();
+		boolean invalidDimensions = isDisplayedHyperStack() && !((StackWindow)win).validDimensions();
 		if (stackSize==1 && win instanceof StackWindow)
 			win = new ImageWindow(this, getCanvas());   // replaces this window
 		else if (dimensionsChanged && !stackSizeChanged)
 			win.updateImage(this);
 		else if (stackSize>1 && !(win instanceof StackWindow)) {
-			if (isHyperStack()) setOpenAsHyperStack(true);
+			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
 			setPosition(1, 1, 1);
 		} else if (stackSize>1 && (dimensionsChanged||invalidDimensions)) {
-			if (isHyperStack()) setOpenAsHyperStack(true);
+			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 			setPosition(1, 1, 1);
 		} else
@@ -781,13 +795,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 			nChannels = 1;
 			nSlices = getImageStackSize();
 			nFrames = 1;
-			if (isHyperStack()) {
+			if (isDisplayedHyperStack()) {
 				setOpenAsHyperStack(false);
 				new StackWindow(this);
 				setSlice(1);
 			}
 		}
-		boolean updateWin = isHyperStack() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
+		boolean updateWin = isDisplayedHyperStack() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
@@ -800,8 +814,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
 	
-	/** Returns 'true' if this is a hyperstack currently being displayed in a StackWindow. */
+	/** Returns 'true' if this image is a hyperstack. */
 	public boolean isHyperStack() {
+		return (win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperStack()) || openAsHyperStack;
+	}
+
+	/** Returns 'true' if this is a hyperstack currently being displayed in a StackWindow. */
+	public boolean isDisplayedHyperStack() {
 		return win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperStack();
 	}
 
@@ -1075,7 +1094,7 @@ public class ImagePlus implements ImageObserver, Measurements {
     	if (slice>nSlices) slice = nSlices;
     	if (frame<1) frame = 1;
     	if (frame>nFrames) frame = nFrames;
-		if (isHyperStack())
+		if (isDisplayedHyperStack())
 			((StackWindow)win).setPosition(channel, slice, frame);
 		else {
 			setSlice((frame-1)*nChannels*nSlices + (slice-1)*nChannels + channel);
@@ -1483,7 +1502,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.ignoreFlush = ignoreFlush;
 	}
 	
-	/** Returns a new ImagePlus with this ImagePlus' attributes
+	/** Returns a new ImagePlus with this image's attributes
 		(e.g. spatial scale), but no image. */
 	public ImagePlus createImagePlus() {
 		ImagePlus imp2 = new ImagePlus();
@@ -1491,7 +1510,30 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imp2.setCalibration(getCalibration());
 		return imp2;
 	}
-
+	
+			
+ 	/** Returns a new hyperstack with this image's attributes
+		(e.g., width, height, spatial scale), but no image data. */
+	public ImagePlus createHyperStack(String title, int channels, int slices, int frames, int bitDepth) {
+		int size = channels*slices*frames;
+		ImageStack stack2 = new ImageStack(width, height, size); // create empty stack
+		ImageProcessor ip2 = null;
+		switch (bitDepth) {
+			case 8: ip2 = new ByteProcessor(width, height); break;
+			case 16: ip2 = new ShortProcessor(width, height); break;
+			case 24: ip2 = new ColorProcessor(width, height); break;
+			case 32: ip2 = new FloatProcessor(width, height); break;
+			default: throw new IllegalArgumentException("Invalid bit depth");
+		}
+		stack2.setPixels(ip2.getPixels(), 1); // can't create ImagePlus will null 1st image
+		ImagePlus imp2 = new ImagePlus(title, stack2);
+		stack2.setPixels(null, 1);
+		imp2.setDimensions(channels, slices, frames);
+		imp2.setCalibration(getCalibration());
+		imp2.setOpenAsHyperStack(true);
+		return imp2;
+	}
+		
 	/** Copies the calibration of the specified image to this image. */
 	public void copyScale(ImagePlus imp) {
 		if (imp!=null && globalCalibration==null)
@@ -1603,14 +1645,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (!IJ.altKeyDown()) {
 			String s = " x="+d2s(cal.getX(x)) + ", y=" + d2s(cal.getY(y,height));
 			if (getStackSize()>1) {
-				int z = isHyperStack()?getSlice()-1:getCurrentSlice()-1;
+				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
 				s += ", z="+d2s(cal.getZ(z));
 			}
 			return s;
 		} else {
 			String s =  " x="+x+", y=" + y;
 			if (getStackSize()>1) {
-				int z = isHyperStack()?getSlice()-1:getCurrentSlice()-1;
+				int z = isDisplayedHyperStack()?getSlice()-1:getCurrentSlice()-1;
 				s += ", z=" + z;
 			}
 			return s;

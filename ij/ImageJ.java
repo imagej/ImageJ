@@ -396,24 +396,26 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_COMMA: case 0xbc: cmd="Previous Slice [<]"; break;
 				case KeyEvent.VK_PERIOD: case 0xbe: cmd="Next Slice [>]"; break;
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
-					Roi roi = null;
-					if (imp!=null) roi = imp.getRoi();
-					int stackSize = imp.getStackSize();
-					if (roi==null || (stackSize>1&&IJ.shiftKeyDown())) {
-						if (imp==null || stackSize==1)
-							return;
-						if (keyCode==KeyEvent.VK_RIGHT)
+					if (imp==null) return;
+					Roi roi = imp.getRoi();
+					boolean stackKey = imp.getStackSize()>1 && (roi==null||IJ.shiftKeyDown());
+					boolean zoomKey = roi==null || IJ.shiftKeyDown() || IJ.controlKeyDown();
+					if (stackKey && keyCode==KeyEvent.VK_RIGHT)
 							cmd="Next Slice [>]";
-						else if (keyCode==KeyEvent.VK_LEFT)
+					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
-						break;
-					} else {
+					else if (zoomKey &&keyCode==KeyEvent.VK_DOWN)
+							cmd="Out";
+					else if (zoomKey && keyCode==KeyEvent.VK_UP)
+							cmd="In";
+					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK) != 0)
 							roi.nudgeCorner(keyCode);
 						else
 							roi.nudge(keyCode);
 						return;
 					}
+					break;
 				case KeyEvent.VK_ESCAPE:
 					abortPluginOrMacro(imp);
 					return;

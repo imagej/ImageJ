@@ -5,8 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.42m, 16 April 2009</u>
+<li> <u>1.42m, 21 April 2009</u>
 <ul>
+<li> The <i>Image&gt;Stacks&gt;Reslice</i> command works with hyperstacks.
+<li> The up and down arrow keys now substitute for the "+" and "-" keys when zooming in and out.
+The shift or control key must be held down if there is a selection.
 <li> When there is no selection, or the shift key is down, the arrow keys can
 substitute for "&lt;" and "&gt;" when navigating stacks and hyperstacks.
 <li> The <i>More&gt;&gt;Multi Threshold</i> command in the <i>ROI Manager</i> is much faster.
@@ -14,7 +17,7 @@ substitute for "&lt;" and "&gt;" when navigating stacks and hyperstacks.
 does not label the points regardless of the "Label Shift-Click Points" setting.
 <li> The <i>Adjust&gt;&gt;Threshold</i> tool saves the LUT mode ("Red", "B&W" or "Over/Under")
 in the preferences file.
-<li> Added the Stack.getStatistics() macro function.
+<li> Added the Stack.getStatistics(), is("changes") and getInfo("selection.name") macro functions.
 <li> Added the ImageProcessor.setOverColor() and setUnderColor() methods that can
 be called from a macro to set the Over/Under threshold colors
 (<a href="http://rsb.info.nih.gov/ij/macros/examples/SetOverUnderThresholdColors.txt">example</a>).

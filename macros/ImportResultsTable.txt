@@ -22,10 +22,9 @@
   if (k==1 || lines.length<2)
      {importResults(); exit;}
   items = split(lines[1]);
-  nonNumericItems = false;
-  for (i=0; i<items.length; i++) {
+  nonNumeric = false;
+  for (i=0; i<items.length; i++)
      if (isNaN(parseFloat(items[i]))) nonNumeric=true;
-  }
   if (nonNumeric)
       importTable();
   else

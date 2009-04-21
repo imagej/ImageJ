@@ -726,13 +726,14 @@ public class IJ {
 			case KeyEvent.VK_CONTROL: controlDown=false; break;
 			case KeyEvent.VK_ALT: altDown=false; break;
 			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;
-			case KeyEvent.VK_SPACE: {
+			case KeyEvent.VK_SPACE:
 				spaceDown=false;
 				ImageWindow win = WindowManager.getCurrentWindow();
 				if (win!=null) win.getCanvas().setCursor(-1,-1,-1,-1);
 				break;
-			}
-			case ALL_KEYS: controlDown=altDown=shiftDown=spaceDown=false; break;
+			case ALL_KEYS:
+				shiftDown=controlDown=altDown=spaceDown=false;
+				break;
 		}
 	}
 	

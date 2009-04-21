@@ -557,13 +557,7 @@ public class CompositeImage extends ImagePlus {
 
 	/* Sets the IndexColorModel of the current channel. */
 	public void setChannelColorModel(IndexColorModel cm) {
-		byte[] reds = new byte[256];
-		byte[] greens = new byte[256];
-		byte[] blues = new byte[256];
-		cm.getReds(reds);
-		cm.getGreens(greens);
-		cm.getBlues(blues);
-		setChannelLut(new LUT(8, cm.getMapSize(), reds, greens, blues));
+		setChannelLut(new LUT(cm,0.0,0.0));
 	}
 	
 	public void setDisplayRange(double min, double max) {

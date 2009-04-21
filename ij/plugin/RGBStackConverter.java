@@ -65,15 +65,9 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 			return;
 		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
 		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
- 		int size = slices2*frames2;
-		ImageStack stack2 = new ImageStack(width, height, size); // create empty stack
-		stack2.setPixels((new ColorProcessor(width,height)).getPixels(), 1); // can't create ImagePlus will null 1st image
-		ImagePlus imp2 = new ImagePlus(title2, stack2);
-		stack2.setPixels(null, 1);
-		imp2.setDimensions(1, slices2, frames2);
+		ImagePlus imp2 = imp.createHyperStack(title2, 1, slices2, frames2, 24);
 		convertHyperstack(imp, imp2);
-		if (slices2>1 || frames2>1)
-			imp2.setOpenAsHyperStack(true);
+		imp2.setOpenAsHyperStack(slices2>1||frames2>1);
 		imp2.show();
 		if (!keep) {
 			imp.changes = false;
@@ -110,7 +104,6 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		imp.setPosition(c1, z1, t1);
 		imp2.resetStack();
 		imp2.setPosition(1, 1, 1);
-		imp2.setCalibration(imp.getCalibration());
 	}
 
 	void compositeToRGB2(CompositeImage imp, String title) {
