@@ -91,7 +91,7 @@ public class Animator implements PlugIn {
 		int frames = imp.getNFrames();
 		int slices = imp.getNSlices();
 		
-		if (imp.isHyperStack() && frames>1) {
+		if (imp.isDisplayedHyperStack() && frames>1) {
 			int frame = imp.getFrame();
 			first = 1;
 			last = frames;
@@ -121,7 +121,7 @@ public class Animator implements PlugIn {
 			return;
 		}
 
-		if (imp.isHyperStack() && slices>1) {
+		if (imp.isDisplayedHyperStack() && slices>1) {
 			slice = imp.getSlice();
 			first = 1;
 			last = slices;
@@ -190,7 +190,7 @@ public class Animator implements PlugIn {
 	void doOptions() {
 		if (firstFrame<1 || firstFrame>nSlices || lastFrame<1 || lastFrame>nSlices)
 			{firstFrame=1; lastFrame=nSlices;}
-		if (imp.isHyperStack()) {
+		if (imp.isDisplayedHyperStack()) {
 			int frames = imp.getNFrames();
 			int slices = imp.getNSlices();
 			firstFrame = 1;
@@ -208,7 +208,7 @@ public class Animator implements PlugIn {
 		int decimalPlaces = (int)animationRate==animationRate?0:3;
 		GenericDialog gd = new GenericDialog("Animation Options");
 		gd.addNumericField("Speed (0.1-1000 fps):", animationRate, decimalPlaces);
-		if (!imp.isHyperStack()) {
+		if (!imp.isDisplayedHyperStack()) {
 			gd.addNumericField("First Frame:", firstFrame, 0);
 			gd.addNumericField("Last Frame:", lastFrame, 0);
 		}
@@ -221,7 +221,7 @@ public class Animator implements PlugIn {
 			return;
 		}
 		double speed = gd.getNextNumber();
-		if (!imp.isHyperStack()) {
+		if (!imp.isDisplayedHyperStack()) {
 			firstFrame = (int)gd.getNextNumber();
 			lastFrame = (int)gd.getNextNumber();
 		}
@@ -241,11 +241,11 @@ public class Animator implements PlugIn {
 	void nextSlice() {
 		if (!imp.lock())
 			return;
-		boolean hyperstack = imp.isHyperStack();
+		boolean hyperstack = imp.isDisplayedHyperStack();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
-		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.spaceBarDown()||IJ.altKeyDown()))) {
+		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()))) {
 			int c = imp.getChannel() + 1;
 			if (c>channels) c = channels;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());
@@ -274,11 +274,11 @@ public class Animator implements PlugIn {
 	void previousSlice() {
 		if (!imp.lock())
 			return;
-		boolean hyperstack = imp.isHyperStack();
+		boolean hyperstack = imp.isDisplayedHyperStack();
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
-		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.spaceBarDown()||IJ.altKeyDown()))) {
+		if (hyperstack && channels>1 && !((slices>1||frames>1)&&(IJ.controlKeyDown()||IJ.spaceBarDown()||IJ.altKeyDown()))) {
 			int c = imp.getChannel() - 1;
 			if (c<1) c = 1;
 			swin.setPosition(c, imp.getSlice(), imp.getFrame());
@@ -309,7 +309,7 @@ public class Animator implements PlugIn {
         gd.showDialog();
         if (!gd.wasCanceled()) {
         	int n = (int)gd.getNextNumber();
-        	if (imp.isHyperStack())
+        	if (imp.isDisplayedHyperStack())
         		imp.setPosition(n);
         	else
         		imp.setSlice(n);

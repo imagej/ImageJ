@@ -22,7 +22,7 @@ import java.util.*;
  *
  * version 09-Nov-2006 Michael Schmid
  * version 21-Nov-2006 Wayne Rasband. Adds "Display Point Selection" option and "Count" output type.
- * version 28-May-2007 Michael Schmid. Preview added, bugfix: minima of calibrated images, uses Arrays.sort (Java2 required)
+ * version 28-May-2007 Michael Schmid. Preview added, bugfix: minima of calibrated images, uses Arrays.sort
  * version 07-Aug-2007 Michael Schmid. Fixed a bug that could delete particles when doing watershed segmentation of an EDM.
  */
 
@@ -61,6 +61,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private Vector checkboxes;                      // a reference to the Checkboxes of the dialog
     private boolean thresholdWarningShown = false;  // whether the warning "can't find minima with thresholding" has been shown
     private Label messageArea;                      // reference to the textmessage area for displaying the number of maxima
+    private boolean noPointLabels;                 // save this setting so it can be restored on exit
     int [] dirOffset, dirXoffset, dirYoffset;       // offsets of neighbor pixels for addressing
     final static int IS_LINE=1;                     // a point on a line (as a return type of isLineOrDot)
     final static int IS_DOT=2;                      // an isolated point (as a return type of isLineOrDot)
@@ -83,6 +84,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      */
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
+		noPointLabels = Prefs.noPointLabels;
         return flags;
     }
 
@@ -154,6 +156,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param ip The image where maxima (or minima) should be found
      */
     public void run(ImageProcessor ip) {
+		Prefs.noPointLabels = true;
         Roi roi = imp.getRoi();
         if (outputType == POINT_SELECTION && !roiSaved) {
             imp.saveRoi(); // save previous selection so user can restore it
@@ -181,6 +184,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 		}
         ByteProcessor outIp = null;
         outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
+        if (!preview) Prefs.noPointLabels = noPointLabels;
         if (outIp == null) return;              //cancelled by user or previewing or no output image
         if (!Prefs.blackBackground)             //normally, output has an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();
@@ -201,7 +205,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         cal.disableDensityCalibration();
         maxImp.setCalibration(cal);             //keep the spatial calibration
         maxImp.show();
-    } //public void run
+     } //public void run
 
     /** Here the processing is done: Find the maxima of an image (does not find minima)
      * @param ip             The input image
@@ -216,7 +220,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      *                       Returns null if outputType does not require an output or if cancelled.
      */
     public ByteProcessor findMaxima(ImageProcessor ip, double tolerance, double threshold, int outputType, boolean excludeOnEdges, boolean isEDM) {
-        //new ImagePlus("find maxima input", ip.duplicate()).show();
         int width = ip.getWidth();
         int height = ip.getHeight();
         Rectangle roi = ip.getRoi();

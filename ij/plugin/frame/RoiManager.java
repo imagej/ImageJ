@@ -20,7 +20,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public static final String LOC_KEY = "manager.loc";
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
-	static final int MENU=0, COMMAND=1, MULTI=2;
+	static final int MENU=0, COMMAND=1;
 	static int rows = 15;
 	static boolean allowMultipleSelections = true; 
 	static String moreButtonLabel = "More "+'\u00bb';
@@ -38,7 +38,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	static boolean onePerSlice = true;
 	static boolean restoreCentered;
 	int prevID;
-
+	boolean noUpdateMode;
 
 	public RoiManager() {
 		super("ROI Manager");
@@ -425,7 +425,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         if (setSlice) {
             int n = getSliceNumber(label);
             if (n>=1 && n<=imp.getStackSize()) {
-            	if (imp.isHyperStack())
+            	if (imp.isHyperStack()||imp.isComposite())
                 	imp.setPosition(n);
                 else
                 	imp.setSlice(n);
@@ -447,8 +447,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (r.x>=width || r.y>=height || (r.x+r.width)<=0 || (r.y+r.height)<=0)
 			roi2.setLocation((width-r.width)/2, (height-r.height)/2);
-		imp.setRoi(roi2);
+		if (noUpdateMode) {
+			imp.setRoi(roi2, false);
+			noUpdateMode = false;
+		} else
+			imp.setRoi(roi2, true);
 		return true;
+	}
+	
+	boolean restoreWithoutUpdate(int index) {
+		noUpdateMode = true;
+		return restore(index, false);
 	}
 	
 	/** Returns the slice number associated with the specified name,
@@ -628,21 +637,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (getSliceNumber(label)>1) allSliceOne = false;
 			Roi roi = (Roi)rois.get(label);
 		}
-		int nSlices = 1;
-		if (mode==MULTI)
-			nSlices = imp.getStackSize();
 		int measurements = Analyzer.getMeasurements();
 		if (imp.getStackSize()>1)
 			Analyzer.setMeasurements(measurements|Measurements.SLICE);
 		int currentSlice = imp.getCurrentSlice();
-		for (int slice=1; slice<=nSlices; slice++) {
-			if (nSlices>1) imp.setSlice(slice);
-			for (int i=0; i<indexes.length; i++) {
-				if (restore(indexes[i], nSlices==1&&!allSliceOne))
-					IJ.run("Measure");
-				else
-					break;
-			}
+		for (int i=0; i<indexes.length; i++) {
+			if (restore(indexes[i], !allSliceOne))
+				IJ.run("Measure");
+			else
+				break;
 		}
 		imp.setSlice(currentSlice);
 		Analyzer.setMeasurements(measurements);
@@ -703,8 +706,24 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (!measureAll) nSlices = 1;
 		int currentSlice = imp.getCurrentSlice();
-		if (!onePerSlice)
-			return measure(MULTI);
+		
+		if (!onePerSlice) {
+			int measurements2 = nSlices>1?measurements|Measurements.SLICE:measurements;
+			ResultsTable rt = new ResultsTable();
+			Analyzer analyzer = new Analyzer(imp, measurements2, rt);
+			for (int slice=1; slice<=nSlices; slice++) {
+				if (nSlices>1) imp.setSliceWithoutUpdate(slice);
+				for (int i=0; i<indexes.length; i++) {
+					if (restoreWithoutUpdate(indexes[i]))
+						analyzer.measure();
+					else
+						break;
+				}
+			}
+			rt.show("Results");
+			if (nSlices>1) imp.setSlice(currentSlice);
+			return true;
+		}
 
 		Analyzer aSys = new Analyzer(imp); //System Analyzer
 		ResultsTable rtSys = Analyzer.getResultsTable();
@@ -714,11 +733,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int slice=1; slice<=nSlices; slice++) {
 			int sliceUse = slice;
 			if(nSlices == 1)sliceUse = currentSlice;
-			imp.setSlice(sliceUse);
+			imp.setSliceWithoutUpdate(sliceUse);
 			rtMulti.incrementCounter();
 			int roiIndex = 0;
 			for (int i=0; i<indexes.length; i++) {
-				if (restore(indexes[i], false)) {
+				if (restoreWithoutUpdate(indexes[i])) {
 					roiIndex++;
 					aSys.measure();
 					for (int j=0; j<=rtSys.getLastColumn(); j++){
@@ -737,9 +756,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				} else
 					break;
 			}
-			aMulti.displayResults();
-			aMulti.updateHeadings();
+			//aMulti.displayResults();
+			//aMulti.updateHeadings();
 		}
+		rtMulti.show("Results");
 
 		imp.setSlice(currentSlice);
 		if (indexes.length>1)

@@ -197,7 +197,7 @@ public class CurveFitter {
 		String code =
 			"var x, a, b, c, d, e;\n"+
 			"function dummy() {}\n"+
-			equation+";\n"; // starts at program counter location 21
+			equation+";\n"; // starts at program counter location 19
 		macro = new Interpreter();
 		macro.run(code, null);
 		if (macro.wasError())
@@ -428,7 +428,7 @@ public class CurveFitter {
 			if (customParamCount>2) macro.setVariable("c", p[2]);
 			if (customParamCount>3) macro.setVariable("d", p[3]);
 			if (customParamCount>4) macro.setVariable("e", p[4]);
-			macro.run(21);
+			macro.run(19);
 			return macro.getVariable("y");
 		} else
 			return f(fit, p, x);

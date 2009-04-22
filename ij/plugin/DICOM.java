@@ -722,13 +722,13 @@ class DicomDecoder {
 			return id+": "+value;
 		switch (vr) {
 			case FD:
-				if (FD==8)
+				if (elementLength==8)
 					value = Double.toString(getDouble());
 				else
 					for (int i=0; i<elementLength; i++) getByte();
 				break;
 			case FL:
-				if (FD==8)
+				if (elementLength==4)
 					value = Float.toString(getFloat());
 				else
 					for (int i=0; i<elementLength; i++) getByte();

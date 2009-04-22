@@ -1071,7 +1071,7 @@ public class ShortProcessor extends ImageProcessor {
 		float value;
 		int size = width*height;
 		for (int i=0; i<size; i++) {
-			value = fPixels[i] + 0.49999995f;
+			value = fPixels[i] + 0.5f;
 			if (value<0f) value = 0f;
 			if (value>65535f) value = 65535f;
 			pixels[i] = (short)value;

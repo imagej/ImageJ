@@ -1213,6 +1213,16 @@ public class ShapeRoi extends Roi {
 		return new ShapeRoi(new OvalRoi(x - width / 2, y - width / 2, width, width));
 	}
 
+	/** Always returns -1 since ShapeRois do not have handles. */
+	public int isHandle(int sx, int sy) {
+		   return -1;
+	}
+	
+	/** Always returns null. */
+	public Polygon getConvexHull() {
+		return null;
+	}
+
     /*
     static Polygon poly;
 	static ShapeRoi getCircularRoi(int x, int y, int width) {

@@ -28,7 +28,7 @@ public class StackEditor implements PlugIn {
 	}
 
 	void addSlice() {
-		if (imp.isHyperStack()) return;
+		if (imp.isDisplayedHyperStack()) return;
  		if (!imp.lock()) return;
 		int id = 0;
 		ImageStack stack = imp.getStack();
@@ -52,7 +52,7 @@ public class StackEditor implements PlugIn {
 	}
 	
 	void deleteSlice() {
-		if (imp.isHyperStack()) return;
+		if (imp.isDisplayedHyperStack()) return;
 		if (nSlices<2)
 			{IJ.error("\"Delete Slice\" requires a stack"); return;}
 		if (!imp.lock()) return;

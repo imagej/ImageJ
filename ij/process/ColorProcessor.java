@@ -1286,7 +1286,7 @@ public class ColorProcessor extends ImageProcessor {
 		int shift = 16 - 8*channelNumber;
 		int resetMask = 0xffffffff^(255<<shift);
 		for (int i=0; i<size; i++) {
-			value = fPixels[i] + 0.49999995f;
+			value = fPixels[i] + 0.5f;
 			if (value<0f) value = 0f;
 			if (value>255f) value = 255f;
 			pixels[i] = (pixels[i]&resetMask) | ((int)value<<shift);

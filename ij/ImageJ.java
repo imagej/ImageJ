@@ -69,7 +69,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.42l";
+	public static final String VERSION = "1.42m";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -376,8 +376,8 @@ public class ImageJ extends Frame implements ActionListener,
 		
 		if (cmd==null) {
 			switch (keyChar) {
-				case '<': cmd="Previous Slice [<]"; break;
-				case '>': cmd="Next Slice [>]"; break;
+				case '<': case ',': cmd="Previous Slice [<]"; break;
+				case '>': case '.': case ';': cmd="Next Slice [>]"; break;
 				case '+': case '=': cmd="In"; break;
 				case '-': cmd="Out"; break;
 				case '/': cmd="Reslice [/]..."; break;
@@ -396,14 +396,26 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_COMMA: case 0xbc: cmd="Previous Slice [<]"; break;
 				case KeyEvent.VK_PERIOD: case 0xbe: cmd="Next Slice [>]"; break;
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
-					Roi roi = null;
-					if (imp!=null) roi = imp.getRoi();
-					if (roi==null) return;
-					if ((flags & KeyEvent.ALT_MASK) != 0)
-						roi.nudgeCorner(keyCode);
-					else
-						roi.nudge(keyCode);
-					return;
+					if (imp==null) return;
+					Roi roi = imp.getRoi();
+					boolean stackKey = imp.getStackSize()>1 && (roi==null||IJ.shiftKeyDown());
+					boolean zoomKey = roi==null || IJ.shiftKeyDown() || IJ.controlKeyDown();
+					if (stackKey && keyCode==KeyEvent.VK_RIGHT)
+							cmd="Next Slice [>]";
+					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
+							cmd="Previous Slice [<]";
+					else if (zoomKey &&keyCode==KeyEvent.VK_DOWN)
+							cmd="Out";
+					else if (zoomKey && keyCode==KeyEvent.VK_UP)
+							cmd="In";
+					else if (roi!=null) {
+						if ((flags & KeyEvent.ALT_MASK) != 0)
+							roi.nudgeCorner(keyCode);
+						else
+							roi.nudge(keyCode);
+						return;
+					}
+					break;
 				case KeyEvent.VK_ESCAPE:
 					abortPluginOrMacro(imp);
 					return;

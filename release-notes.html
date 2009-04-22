@@ -5,43 +5,47 @@
 </head>
 <body>
 
-<li> <u>1.42l, 24 March 2009</u>
+<li> <u>1.42m, 21 April 2009</u>
 <ul>
-<li> Added the option to do bicubic interpolation to
-<i>Image&gt;Rotate&gt;Arbitrarily</i>, <i>Image&gt;Scale</i>
-and <i>Image&gt;Adjust&gt;Size</i>. The bicubic interpolation method is from Chapter 16 of 
-<a href="http://www.imagingbook.com/">Digital Image Processing: An Algorithmic Introduction Using Java</a>
-by Wilhelm Burger and Mark Burge, with the 'a' control parameter set to 0.5 (Catmull-Rom interpolation).
-<li> The range of images to be copied can be specified when
-duplicating a stack using <i>Image&gt;Duplicate</i>.
-<li> <i>Image&gt;Stacks&gt;Images to Stack</i> no longer requires that all images
-be the same type and size.
-<li> The <i>Image&gt;Translate</i> command works with sub-pixel offsets
-(<a href="http://rsb.info.nih.gov/ij/macros/examples/CorrectStackDrift.txt">example</a>).
-<li> <i>Image&gt;Stacks&gt;Make Montage</i> draws antialiased labels and
-allows the font size to be set in the dialog box.
-dialog box.
-<li> <i>File&gt;Import&gt;URL</i> replaces spaces in URLs with "%20".
-<li> Thanks to code contributed by Mark Longair,  <i>Image&gt;Type&gt;HSB Stack</i>
-now converts RGB stacks to a 3 channel (Hue, Saturation and Brightness) hyperstacks. 
-<li> <i>Image&gt;Type&gt;RGB Stack</i> now
-converts RGB stacks to a 3 channel (Red, Green and Blue) hyperstacks. 
-<li> Mark Longair made usability improvements to
-<i>Plugins&gt;Utilities&gt;Command Finder</i>:
-1) double-click to run a command; 2) press backspace to switch focus
-to prompt; 3) press escape to close.
-<li> Added the <i>Edit&gt;Copy to Image Info</i> command to the text editor.
-<li> The search command in the text editor remembers the
-"Case Sensitive" setting.
-<li> Added the fill(Roi), fileOutside(Roi) and draw(Roi) methods to the
-ImageProcessor class
-(<a href="http://rsb.info.nih.gov/ij/macros/js/DrawFillDemo.js">example</a>).
-<li> Fixed a bug in <i>Image&gt;Stacks&gt;Plot Z-axis Profile</i> that caused it to not
-work correctly in batch mode macros.
-<li> Fixed a bug that prevented the selection from being resized after
-using <i>Edit&gt;Selection&gt;Select All</i>.
-<li> Fixed a bug that could cause an exception when opening
-24-bit BMP images.
+<li> The <i>Image&gt;Stacks&gt;Reslice</i> command works with hyperstacks.
+<li> The up and down arrow keys now substitute for the "+" and "-" keys when zooming in and out.
+The shift or control key must be held down if there is a selection.
+<li> When there is no selection, or the shift key is down, the arrow keys can
+substitute for "&lt;" and "&gt;" when navigating stacks and hyperstacks.
+<li> The <i>More&gt;&gt;Multi Threshold</i> command in the <i>ROI Manager</i> is much faster.
+<li> When previewing point selections, <i>Process&gt;Binary&gt;Find Maxima</i>
+does not label the points regardless of the "Label Shift-Click Points" setting.
+<li> The <i>Adjust&gt;&gt;Threshold</i> tool saves the LUT mode ("Red", "B&W" or "Over/Under")
+in the preferences file.
+<li> Added the Stack.getStatistics(), is("changes"), getInfo("selection.name") and
+File.nameWithoutExtension macro functions.
+<li> Added the ImageProcessor.setOverColor() and setUnderColor() methods that can
+be called from a macro to set the Over/Under threshold colors
+(<a href="http://rsb.info.nih.gov/ij/macros/examples/SetOverUnderThresholdColors.txt">example</a>).
+<li> Norbert Vischer fixed a bug that caused the macro debugger to not work, and error
+message line numbers to be invalid, with macros containing multiple line /*...*/ comments. 
+<li> Michael Schmid fixed a bug in the public RankFilters.rank() method that caused it
+to only process the red channel of RGB images.
+<li> Sylvain Mainguy fixed a bug that caused the cursor to change to a
+hand at the corners of the bounding box of composite selections.
+<li> Fixed a bug that caused FL and FD DICOM VRs to not be correctly decoded.
+<li> Fixed a bug in <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> that caused it to not
+preserve image labels.
+<li> Fixed a bug that caused jar files containing class files with "_" in the
+name in subfolders and no plugins.config file (e.g., ImageJ_3D_Viewer.jar)
+to generate startup error messages.
+<li> Fixed a bug, introduced in 1.42i, that could cause ImageJ to hang when
+using the <i>Measure</i> command if "Shape Descriptors" or
+"Feret's Diameter" were enabled in <i>Set Measurements</i>.
+<li> Fixed bugs that caused the <i>Image&gt;Type&gt;RGB Color</i>, <i>Image&gt;Color&gt;Stack to RGB</i>
+and <i>File&gt;Save As&gt;AVI</i> commands to not work correctly with
+hyperstacks when called from batch mode macros.
+<li> Fixed bugs that caused <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> to not be
+macro compatible.
+<li> Fixed a bug that caused <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> to throw
+an exception when converting one channel Image5D stacks.
+<li> Fixed a bug that caused the <i>Adjust&gt;&gt;Threshold</i> tool to override
+existing threshold settings of 16 and 32 bit images.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

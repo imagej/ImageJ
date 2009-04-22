@@ -56,8 +56,9 @@ public class Executer implements Runnable {
 				Recorder.saveCommand();
 			} else
 				runCommand(command);
-			if (command.charAt(command.length()-1)!=']') // set keys up except for "<" and ">" shortcuts
-				IJ.setKeyUp(IJ.ALL_KEYS);	
+			int len = command.length();
+			if (command.charAt(len-1)!=']' && !(len<4&&(command.equals("In")||command.equals("Out"))))
+				IJ.setKeyUp(IJ.ALL_KEYS);  // set keys up except for "<", ">", "+" and "-" shortcuts
 		} catch(Throwable e) {
 			IJ.showStatus("");
 			IJ.showProgress(1.0);

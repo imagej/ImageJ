@@ -24,7 +24,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	// Order must agree with order of checkboxes in Set Measurements dialog box
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,SHAPE_DESCRIPTORS, FERET,
-		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,SLICE,
+		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,STACK_POSITION,
 		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION};
 
 	private static final String MEASUREMENTS = "measurements";
@@ -107,6 +107,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null && macroOptions.indexOf("circularity ")!=-1)
 			Macro.setOptions(macroOptions.replaceAll("circularity ", "shape "));
+		if (macroOptions!=null && macroOptions.indexOf("slice ")!=-1)
+			Macro.setOptions(macroOptions.replaceAll("slice ", "stack "));
 
  		GenericDialog gd = new GenericDialog("Set Measurements", IJ.getInstance());
 		String[] labels = new String[18];
@@ -128,7 +130,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[14]="Skewness"; states[14]=(systemMeasurements&SKEWNESS)!=0;
 		labels[15]="Kurtosis"; states[15]=(systemMeasurements&KURTOSIS)!=0;
 		labels[16]="Area_Fraction"; states[16]=(systemMeasurements&AREA_FRACTION)!=0;
-		labels[17]="Slice Number"; states[17]=(systemMeasurements&SLICE)!=0;
+		labels[17]="Stack Position"; states[17]=(systemMeasurements&STACK_POSITION)!=0;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(10, 2, labels, states);
 		labels = new String[4];
@@ -179,7 +181,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))&&IJ.isResultsWindow()) {
 				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
-				rt.update(systemMeasurements, imp!=null?imp.getRoi():null);
+				rt.update(systemMeasurements, imp, null);
 		}
 		if ((systemMeasurements&LABELS)==0)
 			systemRT.disableRowLabels();
@@ -187,8 +189,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 	
 	/** Measures the image or selection and adds the results to the default results table. */
 	public void measure() {
-		String sliceHdr = rt.getColumnHeading(ResultsTable.SLICE);
-		if (sliceHdr==null || sliceHdr.charAt(0)!='S') {
+		String lastHdr = rt.getColumnHeading(ResultsTable.LAST_HEADING);
+		if (lastHdr==null || lastHdr.charAt(0)!='S') {
 			if (!reset()) return;
 		}
 		firstParticle = lastParticle = 0;
@@ -272,12 +274,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 	void measurePoint(Roi roi) {
 		if (rt.getCounter()>0) {
 			if (!IJ.isResultsWindow()) reset();
-			boolean update = false;
 			int index = rt.getColumnIndex("X");
-			if (index<0 || !rt.columnExists(index)) update=true;
-			index = rt.getColumnIndex("Slice");
-			if (index<0 || !rt.columnExists(index)) update=true;
-			if (update) rt.update(measurements, roi);
+			if (index<0 || !rt.columnExists(index))
+				rt.update(measurements, imp, roi);
 		}
 		Polygon p = roi.getPolygon();
 		for (int i=0; i<p.npoints; i++) {
@@ -295,7 +294,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("Angle");
 			if (index<0 || !rt.columnExists(index))
-				rt.update(measurements, roi);
+				rt.update(measurements, imp, roi);
 		}
 		ImageProcessor ip = imp.getProcessor();
 		ip.setRoi(roi.getPolygon());
@@ -314,7 +313,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				index = rt.getColumnIndex("Angle");
 				if (index<0 || !rt.columnExists(index)) update=true;
 			}
-			if (update) rt.update(measurements, roi);
+			if (update) rt.update(measurements, imp, roi);
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
 		int lineWidth = Line.getWidth();
@@ -386,11 +385,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
 				Polygon ch = null;
 				boolean isArea = roi!=null && roi.isArea();
-				if (isArea && roi.getType()!=Roi.COMPOSITE)
+				if (isArea)
 					ch = roi.getConvexHull();
 				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
 				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.area/(Math.PI*stats.major*stats.major):0.0);
-				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):0.0);
+				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):Double.NaN);
 				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
@@ -415,7 +414,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&FERET)!=0) {
 			boolean extras = true;
-			double FeretDiameter=0.0, feretAngle=0.0, minFeret=0.0;
+			double FeretDiameter=Double.NaN, feretAngle=Double.NaN, minFeret=Double.NaN;
 			if (roi!=null) {
 				double[] a = roi.getFeretValues();
 				if (a!=null) {
@@ -434,7 +433,31 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&SKEWNESS)!=0) rt.addValue(ResultsTable.SKEWNESS, stats.skewness);
 		if ((measurements&KURTOSIS)!=0) rt.addValue(ResultsTable.KURTOSIS, stats.kurtosis);
 		if ((measurements&AREA_FRACTION)!=0) rt.addValue(ResultsTable.AREA_FRACTION, stats.areaFraction);
-		if ((measurements&SLICE)!=0) rt.addValue(ResultsTable.SLICE, imp!=null?imp.getCurrentSlice():1.0);
+		if ((measurements&STACK_POSITION)!=0) {
+			boolean update = false;
+			if (imp!=null && (imp.isHyperStack()||imp.isComposite())) {
+				if (imp.getNChannels()>1) {
+					int index = rt.getColumnIndex("Ch");
+					if (index<0 || !rt.columnExists(index)) update=true;
+					rt.addValue("Ch", imp.getChannel());
+				}
+				if (imp.getNSlices()>1) {
+					int index = rt.getColumnIndex("Slice");
+					if (index<0 || !rt.columnExists(index)) update=true;
+					rt.addValue("Slice", imp.getSlice());
+				}
+				if (imp.getNFrames()>1) {
+					int index = rt.getColumnIndex("Frame");
+					if (index<0 || !rt.columnExists(index)) update=true;
+					rt.addValue("Frame", imp.getFrame());
+				}
+			} else {
+				int index = rt.getColumnIndex("Slice");
+				if (index<0 || !rt.columnExists(index)) update=true;
+				rt.addValue("Slice", imp!=null?imp.getCurrentSlice():1.0);
+			}
+			if (update && rt==systemRT) rt.update(measurements, imp, roi);
+		}
 		if (roi!=null) {
 			if (roi.isLine()) {
 				rt.addValue("Length", roi.getLength());
@@ -513,7 +536,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		rt.addValue("X", cal.getX(x));
 		rt.addValue("Y", cal.getY(y, imp.getHeight()));
-		rt.addValue("Slice", cal.getZ(imp.getCurrentSlice()));
+		if (imp.isHyperStack() || imp.isComposite()) {
+			if (imp.getNChannels()>1)
+				rt.addValue("Ch", imp.getChannel());
+			if (imp.getNSlices()>1)
+				rt.addValue("Slice", imp.getSlice());
+			if (imp.getNFrames()>1)
+				rt.addValue("Frame", imp.getFrame());
+		} else
+			rt.addValue("Slice", cal.getZ(imp.getCurrentSlice()));
 		if (imp.getProperty("FHT")!=null) {
 			double center = imp.getWidth()/2.0;
 			y = imp.getHeight()-y-1;
@@ -694,8 +725,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.KURTOSIS);
 		if ((measurements&AREA_FRACTION)!=0)
 			add2(ResultsTable.AREA_FRACTION);
-		if ((measurements&SLICE)!=0)
+		if ((measurements&STACK_POSITION)!=0) {
+			add2(ResultsTable.CHANNEL);
 			add2(ResultsTable.SLICE);
+			add2(ResultsTable.FRAME);
+		}
 		if ((measurements&FERET)!=0) {
 			add2(ResultsTable.FERET_ANGLE);
 			add2(ResultsTable.MIN_FERET);
@@ -836,6 +870,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public static void setOption(String option, boolean b) {
 		if (option.indexOf("min")!=-1)
 			showMin = b;
+	}
+	
+	public static void setResultsTable(ResultsTable rt) {
+		systemRT = rt;
 	}
 
 }

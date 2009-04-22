@@ -133,6 +133,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			IJ.showMessage("Install Macros", (inUseCount==1?"This keyboard shortcut is":"These keyboard shortcuts are")
 			+ " already in use:"+shortcutsInUse);
 		if (nMacros==0 && fileName!=null) {
+			if (text==null||text.length()==0)
+				return;
 			int dotIndex = fileName.lastIndexOf('.');
 			if (dotIndex>0)
 				anonymousName = fileName.substring(0, dotIndex);

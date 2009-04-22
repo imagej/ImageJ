@@ -260,7 +260,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	// v=cos(0.2*x) + sin(0.2*y)
 
 	void applyMacro(ImageProcessor ip) {
-		int PCStart = 25;
+		int PCStart = 23;
 		if (macro2==null) return;
 		if (macro2.indexOf("=")==-1) {
 			IJ.error("The variable 'v' must be assigned a value (e.g., \"v=255-v\")");
@@ -280,7 +280,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		String code =
 			"var v,x,y,z,w,h,d,a;\n"+
 			"function dummy() {}\n"+
-			macro2+";\n"; // code starts at program counter location 25
+			macro2+";\n"; // code starts at program counter location 'PCStart'
 		Interpreter interp = new Interpreter();
 		interp.run(code, null);
 		if (interp.wasError())
