@@ -42,8 +42,7 @@ import ij.gui.*;
         imp.killRoi();                          //otherwise invert won't work as expected
         int[] histogram;
         slice++;
-        ImageStatistics stats = imp.getStatistics();
-        if (slice==1 && stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
+        if (!ip.isBinary()) {
             IJ.error("8-bit binary image (0 and 255) required.");
             return;
         }

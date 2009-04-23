@@ -1185,12 +1185,21 @@ public class ByteProcessor extends ImageProcessor {
 		float value;
 		int size = width*height;
 		for (int i=0; i<size; i++) {
-			value = fPixels[i] + 0.49999995f;
+			value = fPixels[i] + 0.5f;
 			if (value<0f) value = 0f;
 			if (value>255f) value = 255f;
 			pixels[i] = (byte)value;
 		}
 		setMinAndMax(fp.getMin(), fp.getMax());
+	}
+	
+	/** Returns 'true' if this is a binary image (8-bit-image with only 0 and 255). */
+	public boolean isBinary() {
+		for (int i=0; i<width*height; i++) {
+			if (pixels[i]!=0 && pixels[i]!=(byte)255)
+				return false;
+		}
+		return true;
 	}
 	
 	byte[] create8BitImage() {

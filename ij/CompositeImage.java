@@ -488,6 +488,16 @@ public class CompositeImage extends ImagePlus {
 		return luts;
 	}
 
+	/* Sets the channel LUTs with clones of the LUTs in 'luts'. */
+	public void setLuts(LUT[] luts) {
+		int channels = getNChannels();
+		if (lut==null) setupLuts(channels);
+		if (luts==null || luts.length<channels)
+			throw new IllegalArgumentException("Lut array is null or too small");
+		for (int i=0; i<channels; i++)
+			setChannelLut(luts[i], i+1);
+	}
+
 	/** Copies the LUTs and display mode of 'imp' to this image. Does
 		nothing if 'imp' is not a CompositeImage or 'imp' and this
 		image do not have the same number of channels. */

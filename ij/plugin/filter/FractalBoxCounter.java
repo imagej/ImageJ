@@ -73,8 +73,7 @@ public class FractalBoxCounter implements PlugInFilter {
 			maxBoxSize = Math.max(maxBoxSize, boxSizes[i]);
 		counts = new int[maxBoxSize*maxBoxSize+1];
 		imp.killRoi();
-		ImageStatistics stats = imp.getStatistics();
-		if (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount) {
+		if (!ip.isBinary()) {
 			IJ.error("8-bit binary image (0 and 255) required.");
 			return;
 		}

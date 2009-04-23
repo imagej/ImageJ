@@ -78,9 +78,13 @@ public class HyperStackConverter implements PlugIn {
 		else {
 			shuffle(imp, order);
 			ImagePlus imp2 = imp;
-			if (nChannels>1 && imp.getBitDepth()!=24)
+			if (nChannels>1 && imp.getBitDepth()!=24) {
+				LUT[] luts = imp.getLuts();
+				if (luts!=null && luts.length<nChannels) luts = null;
 				imp2 = new CompositeImage(imp, mode+1);
-			else if (imp.getClass().getName().indexOf("Image5D")!=-1) {
+				if (luts!=null)
+					((CompositeImage)imp2).setLuts(luts);
+			} else if (imp.getClass().getName().indexOf("Image5D")!=-1) {
 				imp2 = imp.createImagePlus();
 				imp2.setStack(imp.getTitle(), imp.getImageStack());
 				imp2.setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());

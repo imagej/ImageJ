@@ -285,10 +285,7 @@ public class Selection implements PlugIn, Measurements {
 			IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
 			return;
 		}
-		ImageStatistics stats = null;
-		if (imp.getBitDepth()==8)
-			stats = imp.getStatistics();
-		if (stats==null || (stats.histogram[0]+stats.histogram[255]!=stats.pixelCount)) {
+		if (!ip.isBinary()) {
 			IJ.error("Create Selection",
 				"This command creates a composite selection from\n"+
 				"a mask (8-bit binary image with white background)\n"+

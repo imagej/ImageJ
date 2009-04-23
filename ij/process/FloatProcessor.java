@@ -167,7 +167,7 @@ public class FloatProcessor extends ImageProcessor {
 		for (int i=0; i<size; i++) {
 			value = pixels[i]-min;
 			if (value<0f) value = 0f;
-			ivalue = (int)(value*scale);
+			ivalue = (int)((value*scale)+0.5f);
 			if (ivalue>255) ivalue = 255;
 			pixels8[i] = (byte)ivalue;
 		}

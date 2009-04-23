@@ -1295,7 +1295,7 @@ public class Functions implements MacroConstants, Measurements {
 				if (fi!=null) description = fi.description;
 				if  (description==null) description = "";
 				return description;
-			} else if (key.indexOf(".name")!=-1) {
+			} else if (key.equals("selection.name")||key.equals("roi.name")) {
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
@@ -2996,6 +2996,9 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getParens();
 			String lastName = OpenDialog.getLastName();
 			return lastName!=null?lastName:"";
+		} else if (name.equals("nameWithoutExtension")) {
+			interp.getParens();
+			return nameWithoutExtension();
 		} else if (name.equals("rename")) {
 			File f1 = new File(getFirstString());
 			File f2 = new File(getLastString());
@@ -3036,6 +3039,15 @@ public class Functions implements MacroConstants, Measurements {
 		} else
 			interp.error("Unrecognized File function "+name);
 		return null;
+	}
+	
+	String nameWithoutExtension() {
+		String name = OpenDialog.getLastName();
+		if (name==null) return "";
+		int dotIndex = name.lastIndexOf(".");
+		if (dotIndex>=0 && (name.length()-dotIndex)<=5)
+			name = name.substring(0, dotIndex);
+		return name;
 	}
 	
 	/*
@@ -3413,6 +3425,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getCapsLockState();
 		else if (arg.indexOf("changes")!=-1)
 			state = getImage().changes;
+		else if (arg.indexOf("binary")!=-1)
+			state = getProcessor().isBinary();
 		else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;

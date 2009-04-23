@@ -2009,6 +2009,12 @@ public abstract class ImageProcessor extends Object {
 	public static void setUnderColor(int red, int green, int blue) {
 		underRed=red; underGreen=green; underBlue=blue;
 	}
+	
+	/** Returns 'true' if this is a binary image (8-bit-image with only 0 and 255). */
+	public boolean isBinary() {
+		return false;
+	}
+
 
 
 }
