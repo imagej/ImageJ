@@ -1295,7 +1295,7 @@ public class Functions implements MacroConstants, Measurements {
 				if (fi!=null) description = fi.description;
 				if  (description==null) description = "";
 				return description;
-			} else if (key.indexOf(".name")!=-1) {
+			} else if (key.equals("selection.name")||key.equals("roi.name")) {
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
@@ -3425,6 +3425,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getCapsLockState();
 		else if (arg.indexOf("changes")!=-1)
 			state = getImage().changes;
+		else if (arg.indexOf("binary")!=-1)
+			state = getProcessor().isBinary();
 		else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;

@@ -1193,6 +1193,15 @@ public class ByteProcessor extends ImageProcessor {
 		setMinAndMax(fp.getMin(), fp.getMax());
 	}
 	
+	/** Returns 'true' if this is a binary image (8-bit-image with only 0 and 255). */
+	public boolean isBinary() {
+		for (int i=0; i<width*height; i++) {
+			if (pixels[i]!=0 && pixels[i]!=(byte)255)
+				return false;
+		}
+		return true;
+	}
+	
 	byte[] create8BitImage() {
 		return pixels;
 	}

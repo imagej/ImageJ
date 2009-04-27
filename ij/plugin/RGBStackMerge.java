@@ -75,7 +75,7 @@ public class RGBStackMerge implements PlugIn {
                     IJ.error("Merge Channels",  "The source stacks must all have the same number of slices.");
                     return;
                 }
-                if (img.isHyperStack()) {
+                if (img.isDisplayedHyperStack()) {
               		if (img.isComposite()) {
               			CompositeImage ci = (CompositeImage)img;
               			if (ci.getMode()!=CompositeImage.COMPOSITE) {

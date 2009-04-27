@@ -1324,9 +1324,12 @@ public class IJ {
 		if (path==null) return null;
 		int dotIndex = path.lastIndexOf(".");
 		int separatorIndex = path.lastIndexOf(File.separator);
-		if (dotIndex>=0 && dotIndex>separatorIndex && (path.length()-dotIndex)<=5)
-			path = path.substring(0, dotIndex) + extension;
-		else
+		if (dotIndex>=0 && dotIndex>separatorIndex && (path.length()-dotIndex)<=5) {
+			if (dotIndex+1<path.length() && Character.isDigit(path.charAt(dotIndex+1)))
+				path += extension;
+			else
+				path = path.substring(0, dotIndex) + extension;
+		} else
 			path += extension;
 		return path;
 	}
