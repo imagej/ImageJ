@@ -295,7 +295,8 @@ public class ImageStack {
 	}
 
 	public String toString() {
-		return ("width="+width+", height="+height+", nSlices="+nSlices+", cm="+cm);
+		String v = isVirtual()?"(V)":"";
+		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
 	}
 		
 }

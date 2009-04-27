@@ -816,7 +816,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Returns 'true' if this image is a hyperstack. */
 	public boolean isHyperStack() {
-		return (win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperStack()) || openAsHyperStack;
+		return isDisplayedHyperStack() || (openAsHyperStack&&getNDimensions()>3);
+	}
+	
+	/** Returns the number of dimensions (2, 3, 4 or 5). */
+	public int getNDimensions() {
+		int dimensions = 2;
+		int[] dim = getDimensions();
+		if (dim[2]>1) dimensions++;
+		if (dim[3]>1) dimensions++;
+		if (dim[4]>1) dimensions++;
+		return dimensions;
 	}
 
 	/** Returns 'true' if this is a hyperstack currently being displayed in a StackWindow. */

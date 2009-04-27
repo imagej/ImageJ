@@ -216,13 +216,15 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 boolean line = roi!=null && roi.getType()==Roi.LINE;
 		 if (line) saveLineInfo(roi);
 		String macroOptions = Macro.getOptions();
-		if (macroOptions!=null && macroOptions.indexOf("output=")!=-1)
+		if (macroOptions!=null && macroOptions.indexOf("output=")!=-1) {
 			Macro.setOptions(macroOptions.replaceAll("output=", "slice="));
-		 GenericDialog gd = new GenericDialog("Reslice");
+			Macro.setOptions(macroOptions.replaceAll("slice=", "slice_count="));
+		}
+		GenericDialog gd = new GenericDialog("Reslice");
 		 //gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3);
 		 gd.addNumericField("Slice Spacing ("+units+"):", outputSpacing, 3);
 		 if (line)
-				gd.addNumericField("Slice Count:", outputSlices, 0);
+				gd.addNumericField("Slice_Count:", outputSlices, 0);
 		 else
 				gd.addChoice("Start At:", starts, startAt);
 		 gd.addCheckbox("Flip Vertically", flip);

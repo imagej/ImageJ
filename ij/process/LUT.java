@@ -29,7 +29,7 @@ import java.awt.image.*;
 	}
 	
 	static byte[] getBlues(IndexColorModel cm) {
-		byte[] blues=new byte[256]; cm.getReds(blues); return blues;
+		byte[] blues=new byte[256]; cm.getBlues(blues); return blues;
 	}
 	
 	public byte[] getBytes() {

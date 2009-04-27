@@ -355,7 +355,7 @@ public class Opener {
 		}
 	}
 
-	/** Opens the ZIP compressed TIFF at the specified URL. */
+	/** Opens the ZIP compressed TIFF or DICOM at the specified URL. */
 	ImagePlus openZipUsingUrl(URL url) throws IOException {
 		URLConnection uc = url.openConnection();
 		int fileSize = uc.getContentLength(); // compressed size
