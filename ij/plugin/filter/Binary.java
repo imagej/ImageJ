@@ -128,7 +128,7 @@ public class Binary implements PlugInFilter {
 				edgePixels = true;
 		}
 		for (int y=0; y<height; y++) { // right edge
-			if (ip.getPixel(height-1, y)==foreground)
+			if (ip.getPixel(width-1, y)==foreground)
 				edgePixels = true;
 		}
 		return edgePixels;

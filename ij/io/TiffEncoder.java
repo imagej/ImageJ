@@ -243,8 +243,8 @@ public class TiffEncoder {
 		int tagDataOffset = HDR_SIZE + ifdSize;
 		writeShort(out, nEntries);
 		writeEntry(out, TiffDecoder.NEW_SUBFILE_TYPE, 4, 1, 0);
-		writeEntry(out, TiffDecoder.IMAGE_WIDTH,      3, 1, fi.width);
-		writeEntry(out, TiffDecoder.IMAGE_LENGTH,     3, 1, fi.height);
+		writeEntry(out, TiffDecoder.IMAGE_WIDTH, 4, 1, fi.width);
+		writeEntry(out, TiffDecoder.IMAGE_LENGTH, 4, 1, fi.height);
 		if (fi.fileType==FileInfo.RGB||fi.fileType==FileInfo.RGB48) {
 			writeEntry(out, TiffDecoder.BITS_PER_SAMPLE,  3, 3, tagDataOffset);
 			tagDataOffset += BPS_DATA_SIZE;
