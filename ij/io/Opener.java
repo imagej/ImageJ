@@ -703,6 +703,7 @@ public class Opener {
 		}
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.open(false);
+		if (imp==null) return null;
 		int c = imp.getNChannels();
 		boolean composite = c>1 && info[0].description!=null && info[0].description.indexOf("mode=")!=-1;
 		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {

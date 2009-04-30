@@ -30,12 +30,14 @@ public class PluginClassLoader extends ClassLoader {
      * @param path the path to the plugins directory.
      */
 	public PluginClassLoader(String path) {
+		if (IJ.debugMode) IJ.log("new ClassLoader: "+this);
 		init(path);
 	}
 	
 	/** This version of the constructor is used when ImageJ is launched using Java WebStart. */
 	public PluginClassLoader(String path, boolean callSuper) {
 		super(Thread.currentThread().getContextClassLoader());
+		if (IJ.debugMode) IJ.log("new ClassLoader (jnlp): "+this);
 		init(path);
 	}
 

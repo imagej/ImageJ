@@ -214,6 +214,7 @@ binary14=-
 binary15="Distance Map",ij.plugin.filter.EDM("edm")
 binary16="Ultimate Points",ij.plugin.filter.EDM("points")
 binary17="Watershed",ij.plugin.filter.EDM("watershed")
+binary18="Voronoi",ij.plugin.filter.EDM("voronoi")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")

@@ -123,12 +123,12 @@ public class OvalRoi extends Roi {
 		if (!super.contains(x, y))
 			return false;
 		else {
-			int twoDx = 2*x - (2*this.x+width-1);
-			int twoDy = 2*y - (2*this.y+height-1);
-			int twoRx = width;
-			int twoRy = height;
-			return (twoDx*twoDx/(double)(twoRx*twoRx)
-				+ twoDy*twoDy/(double)(twoRy*twoRy)) < 1;
+			double twoDx = 2*x - (2*this.x+width-1);
+			double twoDy = 2*y - (2*this.y+height-1);
+			double twoRx = width;
+			double twoRy = height;
+			return (twoDx*twoDx/(twoRx*twoRx)
+				+ twoDy*twoDy/(twoRy*twoRy)) < 1.0;
 		}
 	}
 		
