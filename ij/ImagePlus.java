@@ -1863,7 +1863,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Sets the display range of the current channel. With non-composite
 	    images it is identical to ip.setMinAndMax(min, max). */
 	public void setDisplayRange(double min, double max) {
-		ip.setMinAndMax(min, max);
+		if (ip!=null)
+			ip.setMinAndMax(min, max);
 	}
 
 	public double getDisplayRangeMin() {
@@ -1895,7 +1896,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		position[1] = z;
 		position[2] = t;
 	}
-
+	
 	public Object clone() {
 		try {return super.clone();}
 		catch (CloneNotSupportedException e) {return null;}

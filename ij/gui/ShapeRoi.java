@@ -1038,7 +1038,7 @@ public class ShapeRoi extends Roi {
 
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
-		if(ic==null) return;
+		if (ic==null) return;
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		if (stroke!=null) ((Graphics2D)g).setStroke(stroke);

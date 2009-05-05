@@ -126,14 +126,15 @@ stacks07="Images to Stack",ij.plugin.ImagesToStack
 stacks08="Stack to Images",ij.plugin.StackEditor("toimages")
 stacks09="Make Montage...",ij.plugin.MontageMaker
 stacks10="Reslice [/]...",ij.plugin.Slicer
-stacks11="Z Project...",ij.plugin.ZProjector
-stacks12="3D Project...",ij.plugin.filter.Projector
-stacks13="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks14="Reduce Size...",ij.plugin.StackReducer
-stacks15=-
-stacks16="Start Animation [\\]",ij.plugin.Animator("start")
-stacks17="Stop Animation",ij.plugin.Animator("stop")
-stacks18="Animation Options...",ij.plugin.Animator("options")
+stacks11="Orthogonal Views",ij.plugin.Orthogonal_Views
+stacks12="Z Project...",ij.plugin.ZProjector
+stacks13="3D Project...",ij.plugin.filter.Projector
+stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
+stacks15="Reduce Size...",ij.plugin.StackReducer
+stacks16=-
+stacks17="Start Animation [\\]",ij.plugin.Animator("start")
+stacks18="Stop Animation",ij.plugin.Animator("stop")
+stacks19="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
