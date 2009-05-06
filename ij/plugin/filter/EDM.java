@@ -45,7 +45,6 @@ import ij.gui.*;
  * Limitations:
  * Maximum image diagonal for EDM: 46340 pixels (sqrt(2^31)); if the particles are
  * dense enough it also works for width, height <=65534.
- * For the other output types, width and height must be <=32767 (MaximumFinder limit)
  *
  * Version 30-Apr-2008 Michael Schmid:  more accurate EDM algorithm,
  *                                      16-bit and float output possible,
