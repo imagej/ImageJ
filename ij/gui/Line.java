@@ -116,11 +116,29 @@ public class Line extends Roi {
 		double oy = ic.offScreenYD(sy);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		switch (activeHandle) {
-			case 0: x1d=ox; y1d=oy; break;
-			case 1: x2d=ox; y2d=oy; break;
+			case 0:
+                double dx = ox-x1d;
+                double dy = oy-y1d;
+                x1d=ox;
+                y1d=oy;
+                if(IJ.altKeyDown()){
+                    x2d -= dx;
+                    y2d -= dy;
+                }
+                break;
+			case 1:
+                dx = ox-x2d;
+                dy = oy-y2d;
+                x2d=ox;
+                y2d=oy;
+                if(IJ.altKeyDown()){
+                    x1d -= dx;
+                    y1d -= dy;
+                }
+                break;
 			case 2:
-				double dx = ox-(x1d+(x2d-x1d)/2);
-				double dy = oy-(y1d+(y2d-y1d)/2);
+				dx = ox-(x1d+(x2d-x1d)/2);
+				dy = oy-(y1d+(y2d-y1d)/2);
 				x1d+=dx; y1d+=dy; x2d+=dx; y2d+=dy;
 				if (lineWidth>1) {
 					x1d+=xHandleOffset; y1d+=yHandleOffset; 

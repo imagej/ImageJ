@@ -879,9 +879,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (IJ.shiftKeyDown())
 					zoomToSelection(ox, oy);
 				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
-					zoomOut(x, y);
+					IJ.run("Out");
 				else
-					zoomIn(x, y);
+					IJ.run("In");
 				break;
 			case Toolbar.HAND:
 				setupScroll(ox, oy);

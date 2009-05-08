@@ -4,6 +4,7 @@ import ij.gui.*;
 import ij.measure.*;
 import ij.process.*;
 import java.awt.*;
+import java.awt.image.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.util.*;
@@ -14,7 +15,7 @@ import java.util.*;
 * 		  IMEC
 * 
 * @acknowledgments Many thanks to Jerome Mutterer for the code contributions and testing.
-* 				   Thanks to Wayne Raspband for the code that properly handles the image magnification.
+* 				   Thanks to Wayne Rasband for the code that properly handles the image magnification.
 * 		
 * @version 		1.2 28 April 2009
 * 					- added support for arrow keys
@@ -58,7 +59,6 @@ public class Orthogonal_Views implements PlugIn,
 	 private ImagePlus imp;
 	 private ImageCanvas canvas;
 	 private static final int H_ROI=0, H_ZOOM=1;
-	 private static final String version="1.2";
 	 private ImagePlus xz_image=new ImagePlus(), yz_image=new ImagePlus(); 
 	 private ImageProcessor fp1, fp2;
 	 private static final String AX="AX", AY="AY", AZ="AZ", YROT="YROT", SPANELS="STICKY_PANELS"; 
@@ -79,7 +79,8 @@ public class Orthogonal_Views implements PlugIn,
 	private Updater updater = new Updater();
 	private double min, max;
 	private Dimension screen = IJ.getScreenSize();
-
+	private boolean flipXZ;
+	private boolean syncZoom = true;
 
 	 
 	public void run(String arg) {
@@ -113,26 +114,28 @@ public class Orthogonal_Views implements PlugIn,
 			addListeners(canvas);  
 			magnification= canvas.getMagnification();
 			if (!isProcessibleRoi) {
+				//if (imp.getCurrentSlice()==1)
+				//	imp.setSlice(imp.getStackSize()/2);
 				imp.setRoi(new PointRoi(imp.getWidth()/2,imp.getHeight()/2));
-				Toolbar.getInstance().setTool(Toolbar.POINT);	
+				Toolbar.getInstance().setTool(Toolbar.POINT);
 			}
 		} catch (NullPointerException ex) { 
 			return;
 		}
 		
-		if (IJ.versionLessThan("1.40)"))
-			return;
 		ImageStack is=imp.getStack();
 		calibrate();
-		if (createProcessors(is))
+		if (createProcessors(is)) {
+			if (ip.isColorLut() || ip.isInvertedLut()) {
+				ColorModel cm = ip.getColorModel();
+				fp1.setColorModel(cm);
+				fp2.setColorModel(cm);
+			}
 			update();
-		else
+		} else
 			dispose();
 	}
  
-	/**
-	 * @param canvass
-	 */
 	private void addListeners(ImageCanvas canvass) {
 		canvas.addMouseListener(this);
 		canvas.addMouseMotionListener(this);
@@ -146,7 +149,6 @@ public class Orthogonal_Views implements PlugIn,
 		ImagePlus.addImageListener(this);
 		Executer.addCommandListener(this);
 	}
-
 	 
 	private void calibrate() {
 		double arat=az/ax;
@@ -170,105 +172,79 @@ public class Orthogonal_Views implements PlugIn,
 		yz_image.setCalibration(cal_yz);
 	}
 
-	
-	/**
-	 * @param cal
-	 * @param p
-	 * @return
-	 */
-	public String getCoordString(Calibration cal, Point p) {
-		if (cal!=null) {
-			return "("+p.x +" ; "+p.y+") ("+ IJ.d2s(cal.getX(p.x),2)+" ; "+ IJ.d2s(cal.getX(p.y),2)+")";
-		} else {
-			return "("+p.x +" ; "+p.y+")";
-		}
-	}
-	
-	private void updateMagnification() {
-        double magnification= win.getCanvas().getMagnification(); 
+	private void updateMagnification(int x, int y) {
+        double magnification= win.getCanvas().getMagnification();
+        int z = imp.getCurrentSlice()-1;
         ImageWindow win1 = xz_image.getWindow();
         if (win1==null) return;
-        ImageCanvas ic = win1.getCanvas();
-         if (ic.getMagnification()!=magnification) {
-            ic.setMagnification(magnification);
-            double w = xz_image.getWidth()*magnification;
-            double h = xz_image.getHeight()*magnification;
-            if (w>screen.width-20) w = screen.width - 20;  // does it fit?
-            if (h>screen.height-50) h = screen.height - 50;
-            // ic.setSourceRect(new Rectangle(0, 0, (int)(w/magnification), (int)(h/magnification)));
-            ic.setDrawingSize((int)w, (int)h);
-            win1.pack();
-            ic.repaint();
+        ImageCanvas ic1 = win1.getCanvas();
+        double mag1 = ic1.getMagnification();
+        double arat = az/ax;
+		int zcoord=(int)(arat*z);
+		if (flipXZ) zcoord=(int)(arat*(imp.getStackSize()-z));
+        while (mag1<magnification) {
+        	ic1.zoomIn(x, zcoord);
+        	mag1 = ic1.getMagnification();
         }
-
-        ImageWindow  win2 = yz_image.getWindow();
-        if (win2 ==null) return;
-        ic = win2.getCanvas();
-        if (ic.getMagnification()!=magnification) {
-            ic.setMagnification(magnification);
-            double w = yz_image.getWidth()*magnification;
-            double h = yz_image.getHeight()*magnification;
-            if (w>screen.width-20) w = screen.width - 20;  // does it fit?
-            if (h>screen.height-50) h = screen.height - 50;
-           // ic.setSourceRect(new Rectangle(0, 0, (int)(w/magnification), (int)(h/magnification)));
-            ic.setDrawingSize((int)w, (int)h);
-            win2.pack();
-            ic.repaint();
+        while (mag1>magnification) {
+        	ic1.zoomOut(x, zcoord);
+        	mag1 = ic1.getMagnification();
+        }
+        ImageWindow win2 = yz_image.getWindow();
+        if (win2==null) return;
+        ImageCanvas ic2 = win2.getCanvas();
+        double mag2 = ic2.getMagnification();
+		zcoord=(int)(arat*z);
+        while (mag2<magnification) {
+        	ic2.zoomIn(zcoord,y);
+        	mag2 = ic2.getMagnification();
+        }
+        while (mag2>magnification) {
+        	ic2.zoomOut(zcoord,y);
+        	mag2 = ic2.getMagnification();
         }
 	}
 	
-	/**
-	 * @param p
-	 * @param is
-	 */
-	public void doProjections(Point p, ImageStack is) {
+	void updateViews(Point p, ImageStack is) {
 		if (fp1==null) return;
-		doXZprojection(p,is);
+		updateXZView(p,is);
 		
 		float arat=az/ax;
+		Calibration cal = imp.getCalibration();
 		if (arat!=1.0f) {
 			fp1.setInterpolate(true);
 			ImageProcessor sfp1=fp1.resize((int)(fp1.getWidth()*ax), (int)(fp1.getHeight()*arat));
 			sfp1.setMinAndMax(min, max);
-			xz_image.setProcessor("XZ-"+getCoordString(cal, p), sfp1);
+			xz_image.setProcessor("XZ "+p.y, sfp1);
 		} else {
 			fp1.setMinAndMax(min, max);
-	    		xz_image.setProcessor("XZ-"+getCoordString(cal, p), fp1);
+	    	xz_image.setProcessor("XZ "+p.y, fp1);
 		}
 			
-		//xz_image.show();
-		
-		/**********************************************************/
-	   
 		if (rotate)
-			doYZprojection(p,is);
+			updateYZView(p,is);
 		else
-			doZYprojection(p,is);
-		
-		
+			updateZYView(p,is);
+				
 		arat=az/ay;
 		if (arat!=1.0f) {
 			fp2.setInterpolate(true);
-			//fp2.scale(1.0f, arat);
 			if (rotate) {
 				ImageProcessor sfp2=fp2.resize( (int)(fp2.getWidth()*ay), (int)(fp2.getHeight()*arat));
 				sfp2.setMinAndMax(min, max);
-				yz_image.setProcessor("ZY-"+getCoordString(cal, p), sfp2);
+				yz_image.setProcessor("ZY "+p.x, sfp2);
 			}
 			else {
 				ImageProcessor sfp2=fp2.resize( (int)(fp2.getWidth()*arat), (int)(fp2.getHeight()*ay));
 				sfp2.setMinAndMax(min, max);
-				yz_image.setProcessor("YZ-"+getCoordString(cal, p), sfp2);
+				yz_image.setProcessor("YZ "+p.x, sfp2);
 			}
-			//IJ.log(" "+ is.getSize()*arat);
 		} else {
-			//fp2.resetMinAndMax();
-			if (rotate) {
-				yz_image.setProcessor("YZ-"+getCoordString(cal, p), fp2);
-			} else {
-				yz_image.setProcessor("ZY-"+getCoordString(cal, p), fp2);
-			
-			}
+			fp2.setMinAndMax(min, max);
+			if (rotate)
+				yz_image.setProcessor("YZ "+p.x, fp2);
+			else
+				yz_image.setProcessor("ZY "+p.x, fp2);
 		}
 		
 		calibrate();
@@ -279,7 +255,7 @@ public class Orthogonal_Views implements PlugIn,
 		 
 	}
 	
-	public void arrangeWindows(boolean sticky) {
+	void arrangeWindows(boolean sticky) {
 		Point loc = imp.getWindow().getLocation();
 		if ((xyImX!=loc.x)||(xyImY!=loc.y)) {
 			xyImX =  imp.getWindow().getLocation().x;
@@ -300,7 +276,7 @@ public class Orthogonal_Views implements PlugIn,
 	 * @param is - used to get the dimensions of the new ImageProcessors
 	 * @return
 	 */
-	public boolean createProcessors(ImageStack is) {
+	boolean createProcessors(ImageStack is) {
 		 //ImageStack is=imp.getStack();
 		ImageProcessor ip=is.getProcessor(1);
 		 int width= is.getWidth();
@@ -340,8 +316,7 @@ public class Orthogonal_Views implements PlugIn,
 				fp2=new ShortProcessor(zb,height);
 			return true;
 		}
-		
-		
+				
 		if (ip instanceof ColorProcessor) {
 			fp1=new ColorProcessor(width,za);
 			if (rotate)
@@ -353,93 +328,73 @@ public class Orthogonal_Views implements PlugIn,
 		return false;
 	}
 	
-	/**
-	 * @param p
-	 * @param is
-	 */
-	public void doXZprojection(Point p, ImageStack is) {
+	 void updateXZView(Point p, ImageStack is) {
 		int width= is.getWidth();
-
-		int ds=is.getSize();
+		int size=is.getSize();
 		ImageProcessor ip=is.getProcessor(1);
-
 	
 		int y=p.y;
 		 try {
 			 // XZ
-			 	if (ip instanceof FloatProcessor) {
-			 		 float[] newpix=new float[width*ds];
-					 
-					 for (int i=0;i<ds; i++) { 
-						 Object pixels=is.getPixels(i+1);
-						 //float[] pixels2=toFloatPixels(pixels);
-						 System.arraycopy(pixels, width*y, newpix, width*(ds-i-1), width);
-								 
-					 }
-			 			 
-					 fp1.setPixels(newpix);
-					 
-				}
-				
-				if (ip instanceof ByteProcessor) {
-					byte[] newpix=new byte[width*ds];
-					 
-					 for (int i=0;i<ds; i++) { 
-						 Object pixels=is.getPixels(i+1);
-						 //float[] pixels2=toFloatPixels(pixels);
-						 System.arraycopy(pixels, width*y, newpix, width*(ds-i-1), width);
-								 
-					 }
-			 			 
-					 fp1.setPixels(newpix);
-				 
-				}
-				
 				if (ip instanceof ShortProcessor) {
-					short[] newpix=new short[width*ds];
-					 
-					 for (int i=0;i<ds; i++) { 
+					short[] newpix=new short[width*size];
+					 for (int i=0; i<size; i++) { 
 						 Object pixels=is.getPixels(i+1);
-						 //float[] pixels2=toFloatPixels(pixels);
-						 System.arraycopy(pixels, width*y, newpix, width*(ds-i-1), width);
-								 
+						 if (flipXZ)
+						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+						 else
+						     System.arraycopy(pixels, width*y, newpix, width*i, width);
 					 }
-			 			 
 					 fp1.setPixels(newpix);
-				 
+					 return;
+				}
+								
+				if (ip instanceof ByteProcessor) {
+					byte[] newpix=new byte[width*size];
+					 for (int i=0;i<size; i++) { 
+						 Object pixels=is.getPixels(i+1);
+						  if (flipXZ)
+						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+						  else
+						     System.arraycopy(pixels, width*y, newpix, width*i, width);
+					 }
+					 fp1.setPixels(newpix);
+					 return;
 				}
 				
+			 	if (ip instanceof FloatProcessor) {
+			 		 float[] newpix=new float[width*size];
+					 for (int i=0; i<size; i++) { 
+						 Object pixels=is.getPixels(i+1);
+						  if (flipXZ)
+						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+						  else
+						     System.arraycopy(pixels, width*y, newpix, width*i, width);
+					 }
+					 fp1.setPixels(newpix);
+					 return;
+				}
 				
 				if (ip instanceof ColorProcessor) {
-					int[] newpix=new int[width*ds];
-					 
-					 for (int i=0;i<ds; i++) { 
+					int[] newpix=new int[width*size];
+					 for (int i=0;i<size; i++) { 
 						 Object pixels=is.getPixels(i+1);
-						 //float[] pixels2=toFloatPixels(pixels);
-						 System.arraycopy(pixels, width*y, newpix, width*(ds-i-1), width);
-								 
+					  	  if (flipXZ)
+						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+						  else
+						     System.arraycopy(pixels, width*y, newpix, width*i, width);
 					 }
-			 			 
 					 fp1.setPixels(newpix);
-
-					 
+					 return;
 				}
 		} //end try
 		catch (ArrayIndexOutOfBoundsException ex) {
 			IJ.log("XZ: ArrayIndexOutOfBoundsException occured");
 		}
-			       
-		   
-		
+			       		
 	}
 	
-	
-	
-	/**
-	 * @param p
-	 * @param is
-	 */
-	public void doYZprojection(Point p, ImageStack is) {
+	void updateYZView(Point p, ImageStack is) {
 		int width= is.getWidth();
 		int height=is.getHeight();
 		int ds=is.getSize();
@@ -464,10 +419,7 @@ public class Orthogonal_Views implements PlugIn,
 					 
 					//IJ.log("c" +c);	 
 				 }
-	
-		 			 
 				 fp2.setPixels(newpix);
-				 
 			}
 			
 			if (ip instanceof ByteProcessor) {
@@ -489,8 +441,6 @@ public class Orthogonal_Views implements PlugIn,
 					 
 					//IJ.log("c" +c);	 
 				 }
-	
-				
 		 			 
 				 fp2.setPixels(newpix);
 			 
@@ -519,11 +469,8 @@ public class Orthogonal_Views implements PlugIn,
 			 
 			}
 			
-			
 			if (ip instanceof ColorProcessor) {
 				int[] newpix=new int[ds*height];
-				 
-		
 			
 				// for (int i=ds-1;i>=0; i--) { 
 				 for (int i=0;i<ds; i++) { 
@@ -538,12 +485,9 @@ public class Orthogonal_Views implements PlugIn,
 					 
 					//IJ.log("c" +c);	 
 				 }
-				 
-				
 		 			 
 				 fp2.setPixels(newpix);
-	
-				 
+					 
 			}
 		} //end try
 		catch (ArrayIndexOutOfBoundsException ex) {
@@ -552,11 +496,7 @@ public class Orthogonal_Views implements PlugIn,
 
 	}
 	
-	/**
-	 * @param p
-	 * @param is
-	 */
-	public void doZYprojection(Point p, ImageStack is) {
+	void updateZYView(Point p, ImageStack is) {
 		int width= is.getWidth();
 		int height=is.getHeight();
 		int ds=is.getSize();
@@ -622,8 +562,7 @@ public class Orthogonal_Views implements PlugIn,
 				 fp2.setPixels(newpix);
 			 
 			}
-			
-			
+						
 			if (ip instanceof ColorProcessor) {
 				int[] newpix=new int[ds*height];
 				 
@@ -640,7 +579,6 @@ public class Orthogonal_Views implements PlugIn,
 				 }
 			 			 
 				 fp2.setPixels(newpix);
-	
 				 
 			}
 		} //end try
@@ -652,27 +590,18 @@ public class Orthogonal_Views implements PlugIn,
 	}
 	
  
-	/** draws the crosses in the images
-	 * @param imp
-	 * @param p
-	 * @param path
-	 */
-	public void drawCross(ImagePlus imp, Point p, GeneralPath path) {
+	/** draws the crosses in the images */
+	void drawCross(ImagePlus imp, Point p, GeneralPath path) {
 		int width=imp.getWidth();
 		int height=imp.getHeight();
-		float x = (p.x);
-		float y = (p.y);
-		path.moveTo(0, y);
+		float x = p.x;
+		float y = p.y;
+		path.moveTo(0f, y);
 		path.lineTo(width, y);
-		path.moveTo(x, 0);
-		path.lineTo(x, height);
-			
+		path.moveTo(x, 0f);
+		path.lineTo(x, height);	
 	}
 	 
-	 /**
-	 * @param imp
-	 * @return
-	 */
 	boolean showDialog(ImagePlus imp)   {
         if (imp==null) return true;
         GenericDialog gd=new GenericDialog("Parameters");
@@ -695,12 +624,7 @@ public class Orthogonal_Views implements PlugIn,
         return true;
 	 }
 	     
-     
-     /**
-     * @param imp
-     * @return
-     */
-    public boolean processibleRoi(ImagePlus imp) {
+    boolean processibleRoi(ImagePlus imp) {
     	// try {
     	   	roi = imp.getRoi();
     	       boolean ret=(roi!=null && ( //roi.getType()==Roi.LINE || 
@@ -726,7 +650,7 @@ public class Orthogonal_Views implements PlugIn,
          );
      }
      
-	public void dispose(){
+	void dispose(){
 		updater.quit();
 		updater = null;
 		canvas.removeMouseListener(this);
@@ -745,35 +669,11 @@ public class Orthogonal_Views implements PlugIn,
 		instance = null;
 	}
  	
- 	
-    /**
-     * @param code
-     */
-    void showHelp(int code) {
-     	String msg="";
-      	switch (code) {
-    		case H_ROI: {
-    			msg="Point selection required \n";
-    			break;}
-    		case H_ZOOM:{ 
-    			msg="Press q for quit";
-    			break;
-    		}
-    	}
-    	
-        IJ.showMessage("Help Stack Slicer v. " + version,
-         msg
-        );
-        
-    } /* showHelp */
-	
-    
     /* Saves the current settings of the plugin for further use
-     * 
      *
     * @param prefs - the current preferences
     */
-   public static void savePreferences(Properties prefs) {
+   static void savePreferences(Properties prefs) {
            prefs.put(AX, Double.toString(ax));
            prefs.put(AY, Double.toString(ay));
            prefs.put(AZ, Double.toString(az));
@@ -783,81 +683,30 @@ public class Orthogonal_Views implements PlugIn,
         
     //@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	//@Override
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	//@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	//@Override
 	public void mousePressed(MouseEvent e) {
-	
-		roi=imp.getRoi();
-		int x=0, y=0;
-		ImageStack is=imp.getStack();
-		 if (roi !=null && roi.getType()==Roi.POINT){
-			 Rectangle r=roi.getBounds();
-			  x=r.x;
-			  y=r.y;
-		 
-			Point p=new Point (x,y);
-			doProjections(p, is);
-		}
-
-		
+		update();
 	}
 
 	//@Override
 	public void mouseReleased(MouseEvent e) {
-		 
-		roi=imp.getRoi();
-		int x=0, y=0;
-		double arat=az/ax;
-		double brat=az/ay; 
-		
-		 if (roi !=null && roi.getType()==Roi.POINT){
-			 Rectangle r=roi.getBounds();
-			  x=r.x;
-			  y=r.y;
-		 
-		 
-			Point p=new Point (x,y);
-			if (canvas==null) return;
-			else {
-				GeneralPath path = new GeneralPath();
-				
-				drawCross(imp,p, path);
-				Color col=color;
-				
-				if (col==Color.black) {
-					canvas.setDisplayList(path, color, new BasicStroke(1));
-				}
-				//canvas.setDisplayList(path,Toolbar.getForegroundColor(), new BasicStroke(Toolbar.getBrushSize()));
-				else{
-					canvas.setDisplayList(path, color, new BasicStroke(Toolbar.getBrushSize()));
-				}
-		
-			}
-			updateCrosses(x, y, arat, brat);
-		 }
-		
 	}
 	
 	/**
 	 * Refresh the output windows. This is done by sending a signal 
 	 * to the Updater() thread. 
 	 */
-	public void update() {
+	void update() {
 		if (updater!=null)
 			updater.doUpdate();
 	}
@@ -870,8 +719,8 @@ public class Orthogonal_Views implements PlugIn,
 		ImageStack is=imp.getStack();
 		double arat=az/ax;
 		double brat=az/ay;
-		if (roi !=null && roi.getType()==Roi.POINT){
-			 Rectangle r=roi.getBounds();
+		if (roi !=null && roi.getType()==Roi.POINT) {
+			Rectangle r=roi.getBounds();
 			x=r.x;
 			y=r.y;
 			if (y>=height) y=height-1;
@@ -879,8 +728,7 @@ public class Orthogonal_Views implements PlugIn,
 			if (x<0) x=0;
 			if (y<0) y=0;
 			Point p=new Point (x,y);
-			//IJ.log("width: "+width +" height: "+ height +" "+ getCoordString(null, p));
-			doProjections(p, is);
+			updateViews(p, is);
 			if (canvas==null)
 				return;
 			else {
@@ -890,15 +738,16 @@ public class Orthogonal_Views implements PlugIn,
 			}
 			updateCrosses(x, y, arat, brat);
 		 }
-		updateMagnification();
+		if (syncZoom) updateMagnification(x, y);
 		arrangeWindows(sticky);
 	}
 
 	private void updateCrosses(int x, int y, double arat, double brat) {
 		Point p;
 		int z=imp.getNSlices();
-		int zlice=imp.getCurrentSlice()-1; //offset
-		int zcoord=(int)(arat*(z-zlice));
+		int zlice=imp.getCurrentSlice()-1;
+		int zcoord=(int)(arat*zlice);
+		if (flipXZ) zcoord=(int)(arat*(z-zlice));
 		p=new Point (x, zcoord);
 		ImageCanvas xz_canvas=xz_image.getCanvas();
 		if (xz_canvas==null) 
@@ -933,8 +782,6 @@ public class Orthogonal_Views implements PlugIn,
 
 	//@Override
 	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	//@Override
@@ -953,36 +800,14 @@ public class Orthogonal_Views implements PlugIn,
 
 	//@Override
 	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	//@Override
 	public void keyTyped(KeyEvent e) {
-		char c=e.getKeyChar();
-		//int code=e.getKeyCode();
-		//int modext=e.getModifiersEx();
-		//String modexts=e.getModifiersExText(modext);
-
-		switch (c) {
-			case 'q':{
-	    			dispose();
-	    			break;}
-			case '?':{
-					showHelp(H_ZOOM);
-					break;}
-	 
-		}
-		e.consume();
-	//IJ.log("modext "+modext+ " " + modexts+" key "+ c); // 64
-		
 	}
-
 
 	//@Override
 	public void actionPerformed(ActionEvent ev) {
-        String cmd = ev.getActionCommand();
-        if (cmd.equals("q")) dispose();
 	}
 
 	public void imageClosed(ImagePlus imp) {
@@ -993,62 +818,68 @@ public class Orthogonal_Views implements PlugIn,
 	}
 
 	public void imageUpdated(ImagePlus imp) {
-		ImageProcessor ip = imp.getProcessor();
-		min = ip.getMin();
-		max = ip.getMax();
-		update();
+		if (imp==this.imp) {
+			ImageProcessor ip = imp.getProcessor();
+			min = ip.getMin();
+			max = ip.getMax();
+			update();
+		}
 	}
 
 	public String commandExecuting(String command) {
 		if (command.equals("In")||command.equals("Out")) {
 			ImagePlus cimp = WindowManager.getCurrentImage();
-			if (cimp==null || cimp!=imp) return command;
-			IJ.runPlugIn("ij.plugin.Zoom", command.toLowerCase());
-			xyImX=0; xyImY=0;
-			update();
-			return null;
+			if (cimp==null) return command;
+			if (cimp==imp) {
+				IJ.runPlugIn("ij.plugin.Zoom", command.toLowerCase());
+				xyImX=0; xyImY=0;
+				update();
+				return null;
+			} else if (cimp==xz_image || cimp==yz_image) {
+				syncZoom = false;
+				return command;
+			} else
+				return command;
+		} else if (command.equals("Flip Vertically")&& xz_image!=null) {
+			if (xz_image==WindowManager.getCurrentImage()) {
+				flipXZ = !flipXZ;
+				update();
+				return null;
+			} else
+				return command;
 		} else
 			return command;
 	}
 
 	//@Override
 	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
 		 arrangeWindows(sticky);
 	}
 
 	//@Override
 	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
 	}
 
 	//@Override
 	public void windowClosing(WindowEvent e) {
-		// TODO Auto-generated method stub
 		dispose();		
 	}
 
 	//@Override
 	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		//arrangeWindows(sticky);
 	}
 
 	//@Override
 	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
 		 arrangeWindows(sticky);
 	}
 
 	//@Override
 	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
 	}
 
 	//@Override
 	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	//@Override
@@ -1064,13 +895,11 @@ public class Orthogonal_Views implements PlugIn,
 
 	//@Override
 	public void focusGained(FocusEvent e) {
-		// TODO Auto-generated method stub
 		arrangeWindows(sticky);
 	}
 
 	//@Override
 	public void focusLost(FocusEvent e) {
-		// TODO Auto-generated method stub
 		arrangeWindows(sticky);
 	}
 	

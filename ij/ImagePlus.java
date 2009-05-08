@@ -513,6 +513,7 @@ public class ImagePlus implements ImageObserver, Measurements {
                 win.updateImage(this);
 			else if (newStack==null)
 				repaintWindow();
+				draw();
 		}
 	}
 

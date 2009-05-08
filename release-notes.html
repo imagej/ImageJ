@@ -11,6 +11,10 @@
 Dimiter Prodanov's
 <a href="http://rsb.info.nih.gov/ij/plugins/stack-slicer/index.html">StackSlicer</a>
 plugin and Albert Codona's Updater class.
+<li> Thanks to Julian Cooper, a straight line selection can now be 
+rotated about its center by holding down the alt key.
+<li> <i>File&gt;Save As&gt;AVI</i> now works correctly with 5D hyperstacks
+(e.g., the <i>Mitosis</i> sample image).
 <li> Thanks to Michael Schmid, the
 <a href="http://rsb.info.nih.gov/ij/source/ij/plugin/filter/EDM.java">EDM algorithm</a>
 is more accurate,
@@ -18,6 +22,8 @@ there are options for 16-bit and float output, stacks are processed using
 multiple threads, and
 <a href="http://rsb.info.nih.gov/ij/docs/menus/process.html#voronoi">Voronoi diagrams</a>
  can be generated.
+ <li> Thanks to Michael Schmid, <i>Process&gt;Binary&gt;Find Maxima</i>
+ works with images>32768 pixels in width or height.
 <li> Added the <i>Mitosis (26MB, 5D Stack)</i> sample image, courtesy of
 Eric Griffis and Nico Stuurman.
 <li> Fixed a bug that caused images with a width or height greater than 65,535
@@ -30,6 +36,8 @@ stack download was aborted by pressing 'esc'.
 record an extra "\".
 <li> Fixed a bug that caused TIFF and RAW virtual stacks greater than 2GB to
 not open correctly.
+<li> Fixed a bug that could cause the measurent length of rapidly drawn freehand line selections
+to be incorrect.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

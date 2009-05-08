@@ -777,56 +777,32 @@ public class PolygonRoi extends Roi {
 			w2 = cal.pixelWidth*cal.pixelWidth;
 			h2 = cal.pixelHeight*cal.pixelHeight;
 		}
-		double x1,x2,x3,x4,y1,y2,y3,y4;
-		x2=xp[0]; x3=xp[0]; x4=xp[1];
-		y2=yp[0]; y3=yp[0]; y4=yp[1];
-		for (int i=0; i<(nPoints-1); i++) {
-			x1=x2; x2=x3; x3=x4;
-			y1=y2; y2=y3; y3=y4;;
-			if ((i+2)<nPoints) {
-				x4=xp[i+2];
-				y4=yp[i+2];
-			}
-			dx = (x4-x1)/3.0; // = (x2+x3+x4)/3-(x1+x2+x3)/3
-			dy = (y4-y1)/3.0; // = (y2+y3+y4)/3-(y1+y2+y3)/3
+		dx = (xp[0]+xp[1]+xp[2])/3.0-xp[0];
+		dy = (yp[0]+yp[1]+yp[2])/3.0-yp[0];
+		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
+		for (int i=1; i<nPoints-2; i++) {
+			dx = (xp[i+2]-xp[i-1])/3.0; // = (x[i]+x[i+1]+x[i+2])/3-(x[i-1]+x[i]+x[i+1])/3
+			dy = (yp[i+2]-yp[i-1])/3.0; // = (y[i]+y[i+1]+y[i+2])/3-(y[i-1]+y[i]+y[i+1])/3
 			length += Math.sqrt(dx*dx*w2+dy*dy*h2);
 		}
+		dx = xp[nPoints-1]-(xp[nPoints-3]+xp[nPoints-2]+xp[nPoints-1])/3.0;
+		dy = yp[nPoints-1]-(yp[nPoints-3]+yp[nPoints-2]+yp[nPoints-1])/3.0;
+		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
 		return length;
 	}
 
-	/** Returns the perimeter of this ROIs after
+	/** Returns the perimeter of this ROI after
 		smoothing using a 3-point running average.*/
 	double getSmoothedPerimeter() {
-		double length = 0.0;
-		double w2 = 1.0;
-		double h2 = 1.0;
-		double dx, dy;
+		double length = getSmoothedLineLength();
+		double w2=1.0, h2=1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			w2 = cal.pixelWidth*cal.pixelWidth;
 			h2 = cal.pixelHeight*cal.pixelHeight;
 		}
-		double x1,x2,x3,x4,y1,y2,y3,y4;
-		x2=xp[nPoints-1]; x3=xp[0]; x4=xp[1];
-		y2=yp[nPoints-1]; y3=yp[0]; y4=yp[1];
-		for (int i=0; i<(nPoints-1); i++) {
-			x1=x2; x2=x3; x3=x4;
-			y1=y2; y2=y3; y3=y4;;
-			if ((i+2)<nPoints) {
-				x4=xp[i+2];
-				y4=yp[i+2];
-			} else {
-				x4=xp[0];
-				y4=yp[0];
-			}
-			dx = (x4-x1)/3.0; // = (x2+x3+x4)/3-(x1+x2+x3)/3
-			dy = (y4-y1)/3.0; // = (y2+y3+y4)/3-(y1+y2+y3)/3
-			length += Math.sqrt(dx*dx*w2+dy*dy*h2);
-		}
-		x1=x2; x2=x3; x3=x4; x4=xp[1];
-		y1=y2; y2=y3; y3=y4; y4=yp[1];
-		dx = (x4-x1)/3.0;
-		dy = (y4-y1)/3.0;
+		double dx = xp[nPoints-1]-xp[0];
+		double dy = yp[nPoints-1]-yp[0];
 		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
 		return length;
 	}

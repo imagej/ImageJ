@@ -95,12 +95,9 @@ public class ColorProcessor extends ImageProcessor {
 		return sampleModel;
 	}
 
-	/** Returns a new, blank ShortProcessor with the specified width and height. */
+	/** Returns a new, blank ColorProcessor with the specified width and height. */
 	public ImageProcessor createProcessor(int width, int height) {
-		int[] pixels = new int[width*height];
-		for (int i=0; i<width*height; i++)
-			pixels[i] = -1;
-		ImageProcessor ip2 = new ColorProcessor(width, height, pixels);
+		ImageProcessor ip2 = new ColorProcessor(width, height);
 		ip2.setInterpolationMethod(interpolationMethod);
 		return ip2;
 	}

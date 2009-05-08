@@ -269,7 +269,6 @@ public abstract class ImageProcessor extends Object {
 		return isColor;
 	}
 
-
 	/** Returns true if this image uses a pseudocolor or grayscale LUT, 
 		in other words, is this an image that can be filtered. */
     public boolean isPseudoColorLut() {
