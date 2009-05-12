@@ -62,6 +62,7 @@ public class Functions implements MacroConstants, Measurements {
 	int decimalPlaces;
 	boolean blackBackground;
 	static Dialog waitForUserDialog;
+	int pasteMode;
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -1878,8 +1879,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();			
 		if (index1>index2)
 			interp.error("beginIndex>endIndex");
-		checkIndex(index1, 0, s.length()-1);
-		checkIndex(index2, 0, s.length()-1);
+		checkIndex(index1, 0, s.length());
+		checkIndex(index2, 0, s.length());
 		return s.substring(index1, index2);
 	}
 
@@ -2009,6 +2010,7 @@ public class Functions implements MacroConstants, Measurements {
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
 		blackBackground = Prefs.blackBackground;
+		pasteMode = Roi.getCurrentPasteMode();
 	}
 	
 	void restoreSettings() {
@@ -2039,6 +2041,7 @@ public class Functions implements MacroConstants, Measurements {
 		Analyzer.setPrecision(decimalPlaces);
 		ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);
 		Prefs.blackBackground = blackBackground;
+		Roi.setPasteMode(pasteMode);
 	}
 	
 	void setKeyDown() {

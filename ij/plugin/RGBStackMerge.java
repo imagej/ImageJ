@@ -56,12 +56,14 @@ public class RGBStackMerge implements PlugIn {
         int stackSize = 0;
         int width = 0;
         int height = 0;
+        int bitDepth = 0;
         for (int i=0; i<4; i++) {
             if (index[i]<wList.length) {
                 image[i] = WindowManager.getImage(wList[index[i]]);
                 width = image[i].getWidth();
                 height = image[i].getHeight();
                 stackSize = image[i].getStackSize();
+                bitDepth = image[i].getBitDepth();
             }
         }
         if (width==0) {
@@ -98,6 +100,11 @@ public class RGBStackMerge implements PlugIn {
 							createComposite = false;
 					}
                 }
+                if (createComposite && img.getBitDepth()!=bitDepth) {
+                    IJ.error("Merge Channels (Composite)", "The source images must all have the same bit depth.");
+                    return;
+                }
+
             }
         }
 

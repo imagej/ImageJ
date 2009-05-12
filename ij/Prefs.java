@@ -94,6 +94,9 @@ public class Prefs {
 	public static boolean moveToMisc;
 	/** Add points to ROI Manager. */
 	public static boolean pointAddToManager;
+	/** Extend the borders to foreground for binary erosions and closings. */
+	public static boolean padEdges;
+
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

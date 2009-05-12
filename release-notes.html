@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.42o, 5 May 2009</u>
+<li> <u>1.42o, 11 May 2009</u>
 <ul>
 <li> Added  the <i>Image&gt;Stacks&gt;Orthogonal Views</i> command, which is based on
 Dimiter Prodanov's
@@ -38,6 +38,12 @@ record an extra "\".
 not open correctly.
 <li> Fixed a bug that could cause the measurent length of rapidly drawn freehand line selections
 to be incorrect.
+<li> Fixed a bug that could cause the newImage() macro function to display
+a bogus "out of memory" error.
+<li> Fixed a bug that caused the TIFF reader to not correctly decode
+metadata containing non-ASCII characters.
+<li> Fixed a bug that caused <i>Image&gt;Color&gt;Merge Channels</i> to throw an
+exception of the source images were not all the save type.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
