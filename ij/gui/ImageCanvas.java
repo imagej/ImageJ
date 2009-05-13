@@ -61,6 +61,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int offScreenWidth = 0;
 	private int offScreenHeight = 0;
 	private boolean mouseExited = true;
+	private boolean customRoi;
 	
 	
 	public ImageCanvas(ImagePlus imp) {
@@ -873,6 +874,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (!(roi!=null && (roi.contains(ox, oy)||roi.isHandle(x, y)>=0)) && roiManagerSelect(x, y))
  				return;
 		}
+		
+		if (customRoi && displayList!=null)
+			return;
 
 		switch (toolID) {
 			case Toolbar.MAGNIFIER:
@@ -1134,6 +1138,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void setDisplayList(Vector list) {
 		displayList = list;
 		listColor = null;
+		if (list==null) customRoi = false;
 		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getInstanceColor()!=null)
 			labelListItems = false;
 		else
@@ -1157,6 +1162,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	public Vector getDisplayList() {
 		return displayList;
+	}
+	
+	public void setCustomRoi(boolean customRoi) {
+		this.customRoi = customRoi;
 	}
 
 	/** Called by IJ.showStatus() to prevent status bar text from

@@ -1048,7 +1048,7 @@ public class ShapeRoi extends Roi {
         aTx.translate(x, y);
 		((Graphics2D)g).draw(aTx.createTransformedShape(shape));
 		if (Toolbar.getToolId()==Toolbar.OVAL) drawRoiBrush(g);
-		showStatus();
+		if (imp!=null&&imp.getRoi()!=null) showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}

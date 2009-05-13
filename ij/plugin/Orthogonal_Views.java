@@ -40,48 +40,38 @@ import java.util.*;
 * The output images are calibrated, which allows measurements to be performed more easily. 
 */
 
-public class Orthogonal_Views implements PlugIn, 
-									 MouseListener, 
-									 MouseMotionListener, 
-									 KeyListener, 
-									 ActionListener,
-									 ImageListener,
-									 WindowListener,
-									 AdjustmentListener,
-									 MouseWheelListener,
-									 FocusListener,
-									 CommandListener
-									 {
+public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListener, KeyListener, ActionListener, 
+	ImageListener, WindowListener, AdjustmentListener, MouseWheelListener, FocusListener, CommandListener {
 
-	 private boolean isProcessibleRoi=false;
-	 private Roi roi;
-	 private ImageWindow win;
-	 private ImagePlus imp;
-	 private ImageCanvas canvas;
-	 private static final int H_ROI=0, H_ZOOM=1;
-	 private ImagePlus xz_image=new ImagePlus(), yz_image=new ImagePlus(); 
-	 private ImageProcessor fp1, fp2;
-	 private static final String AX="AX", AY="AY", AZ="AZ", YROT="YROT", SPANELS="STICKY_PANELS"; 
-	 private static float ax=(float)Prefs. getDouble(AX,1.0);
-	 private static float ay=(float)Prefs. getDouble(AY,1.0);
-	 private static float az=(float)Prefs. getDouble(AZ,1.0);
-	 //private static boolean rotate=(boolean)Prefs.getBoolean(YROT,false);
-	 //private static boolean sticky=(boolean)Prefs.getBoolean(SPANELS,false);
-	 private static boolean rotate=false;
-	 private static boolean sticky=true;
-
-	 private int xyImX = 0;
-	 private int xyImY = 0;
-	 private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
-	 private double magnification=1.0;
-	 private Color color = Roi.getColor();
+	private ImageWindow win;
+	private ImagePlus imp;
+	private ImageCanvas canvas;
+	private static final int H_ROI=0, H_ZOOM=1;
+	private ImagePlus xz_image, yz_image;
+	private static int xzID, yzID;
+	private ImageProcessor fp1, fp2;
+	private static final String AX="AX", AY="AY", AZ="AZ", YROT="YROT", SPANELS="STICKY_PANELS"; 
+	private static float ax=(float)Prefs. getDouble(AX,1.0);
+	private static float ay=(float)Prefs. getDouble(AY,1.0);
+	private static float az=(float)Prefs. getDouble(AZ,1.0);
+	//private static boolean rotate=(boolean)Prefs.getBoolean(YROT,false);
+	//private static boolean sticky=(boolean)Prefs.getBoolean(SPANELS,false);
+	private static boolean rotate=false;
+	private static boolean sticky=true;
+	
+	private int xyImX = 0;
+	private int xyImY = 0;
+	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
+	private double magnification=1.0;
+	private Color color = Roi.getColor();
 	private static Orthogonal_Views instance;
 	private Updater updater = new Updater();
 	private double min, max;
 	private Dimension screen = IJ.getScreenSize();
 	private boolean flipXZ;
 	private boolean syncZoom = true;
-
+	private Point crossLoc;
+	private boolean firstTime = true;
 	 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -90,9 +80,16 @@ public class Orthogonal_Views implements PlugIn,
 			return;
 		}
 		if (instance!=null && imp==instance.imp) {
-			IJ.log("instance!=null: "+imp+"  "+instance.imp);
+			//IJ.log("instance!=null: "+imp+"  "+instance.imp);
 			return;
 		}
+		yz_image = WindowManager.getImage(yzID);
+		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=imp.getBitDepth())
+			yz_image = new ImagePlus();
+		xz_image = WindowManager.getImage(xzID);
+		//if (xz_image!=null) IJ.log(imp+"  "+xz_image+"  "+xz_image.getHeight()+"  "+imp.getHeight()+"  "+xz_image.getBitDepth()+"  "+imp.getBitDepth());
+		if (xz_image==null || xz_image.getWidth()!=imp.getWidth() || xz_image.getBitDepth()!=imp.getBitDepth())
+			xz_image = new ImagePlus();
 		instance = this;
 		ImageProcessor ip = imp.getProcessor();
 		min = ip.getMin();
@@ -104,25 +101,12 @@ public class Orthogonal_Views implements PlugIn,
 		ax=1.0f;
 		ay=(float)(caly/calx);
 		az=(float)(calz/calx);
-		
-		try {
-			win = imp.getWindow();
-			//win.setResizable(false);
-			win.running = true;
-			isProcessibleRoi=processibleRoi(imp);
-			canvas = win.getCanvas();
-			addListeners(canvas);  
-			magnification= canvas.getMagnification();
-			if (!isProcessibleRoi) {
-				//if (imp.getCurrentSlice()==1)
-				//	imp.setSlice(imp.getStackSize()/2);
-				imp.setRoi(new PointRoi(imp.getWidth()/2,imp.getHeight()/2));
-				Toolbar.getInstance().setTool(Toolbar.POINT);
-			}
-		} catch (NullPointerException ex) { 
-			return;
-		}
-		
+		win = imp.getWindow();
+		canvas = win.getCanvas();
+		addListeners(canvas);  
+		magnification= canvas.getMagnification();
+		imp.killRoi();
+		crossLoc = new Point(imp.getWidth()/2,imp.getHeight()/2);
 		ImageStack is=imp.getStack();
 		calibrate();
 		if (createProcessors(is)) {
@@ -248,9 +232,15 @@ public class Orthogonal_Views implements PlugIn,
 		}
 		
 		calibrate();
+		if (yz_image.getWindow()==null) {
+			yz_image.show();
+			yz_image.getCanvas().addKeyListener(this);
+			yzID = yz_image.getID();
+		}
 		if (xz_image.getWindow()==null) {
 			xz_image.show();
-			yz_image.show();
+			xz_image.getCanvas().addKeyListener(this);
+			xzID = xz_image.getID();
 		}
 		 
 	}
@@ -260,15 +250,27 @@ public class Orthogonal_Views implements PlugIn,
 		if ((xyImX!=loc.x)||(xyImY!=loc.y)) {
 			xyImX =  imp.getWindow().getLocation().x;
 			xyImY =  imp.getWindow().getLocation().y;
-			ImageWindow win1 = xz_image.getWindow();
+			ImageWindow win1 = null;
+ 			long start = System.currentTimeMillis();
+ 			while (win1==null && (System.currentTimeMillis()-start)<=2500L) {
+				win1 = xz_image.getWindow();
+				if (win1==null) IJ.wait(50);
+			}
 			if (win1!=null)
  				win1.setLocation(xyImX,xyImY +imp.getWindow().getHeight());
- 			long start = System.currentTimeMillis();
  			ImageWindow win2 =null;
- 			while (win2==null && (System.currentTimeMillis()-start)<=2500L)
+ 			start = System.currentTimeMillis();
+ 			while (win2==null && (System.currentTimeMillis()-start)<=2500L) {
 				win2 = yz_image.getWindow();
+				if (win2==null) IJ.wait(50);
+			}
 			if (win2!=null)
  				win2.setLocation(xyImX+imp.getWindow().getWidth(),xyImY);
+ 			if (firstTime) {
+ 				imp.getWindow().toFront();
+ 				imp.setSlice(imp.getStackSize()/2);
+ 				firstTime = false;
+ 			}
 		}
 	}
 	
@@ -328,172 +330,114 @@ public class Orthogonal_Views implements PlugIn,
 		return false;
 	}
 	
-	 void updateXZView(Point p, ImageStack is) {
+	void updateXZView(Point p, ImageStack is) {
 		int width= is.getWidth();
 		int size=is.getSize();
 		ImageProcessor ip=is.getProcessor(1);
-	
+		
 		int y=p.y;
-		 try {
-			 // XZ
-				if (ip instanceof ShortProcessor) {
-					short[] newpix=new short[width*size];
-					 for (int i=0; i<size; i++) { 
-						 Object pixels=is.getPixels(i+1);
-						 if (flipXZ)
-						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
-						 else
-						     System.arraycopy(pixels, width*y, newpix, width*i, width);
-					 }
-					 fp1.setPixels(newpix);
-					 return;
-				}
-								
-				if (ip instanceof ByteProcessor) {
-					byte[] newpix=new byte[width*size];
-					 for (int i=0;i<size; i++) { 
-						 Object pixels=is.getPixels(i+1);
-						  if (flipXZ)
-						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
-						  else
-						     System.arraycopy(pixels, width*y, newpix, width*i, width);
-					 }
-					 fp1.setPixels(newpix);
-					 return;
-				}
-				
-			 	if (ip instanceof FloatProcessor) {
-			 		 float[] newpix=new float[width*size];
-					 for (int i=0; i<size; i++) { 
-						 Object pixels=is.getPixels(i+1);
-						  if (flipXZ)
-						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
-						  else
-						     System.arraycopy(pixels, width*y, newpix, width*i, width);
-					 }
-					 fp1.setPixels(newpix);
-					 return;
-				}
-				
-				if (ip instanceof ColorProcessor) {
-					int[] newpix=new int[width*size];
-					 for (int i=0;i<size; i++) { 
-						 Object pixels=is.getPixels(i+1);
-					  	  if (flipXZ)
-						     System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
-						  else
-						     System.arraycopy(pixels, width*y, newpix, width*i, width);
-					 }
-					 fp1.setPixels(newpix);
-					 return;
-				}
-		} //end try
-		catch (ArrayIndexOutOfBoundsException ex) {
-			IJ.log("XZ: ArrayIndexOutOfBoundsException occured");
+		// XZ
+		if (ip instanceof ShortProcessor) {
+			short[] newpix=new short[width*size];
+			for (int i=0; i<size; i++) { 
+				Object pixels=is.getPixels(i+1);
+				if (flipXZ)
+					System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+				else
+					System.arraycopy(pixels, width*y, newpix, width*i, width);
+			}
+			fp1.setPixels(newpix);
+			return;
 		}
-			       		
+		
+		if (ip instanceof ByteProcessor) {
+			byte[] newpix=new byte[width*size];
+			for (int i=0;i<size; i++) { 
+				Object pixels=is.getPixels(i+1);
+				if (flipXZ)
+					System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+				else
+					System.arraycopy(pixels, width*y, newpix, width*i, width);
+			}
+			fp1.setPixels(newpix);
+			return;
+		}
+		
+		if (ip instanceof FloatProcessor) {
+			float[] newpix=new float[width*size];
+			for (int i=0; i<size; i++) { 
+				Object pixels=is.getPixels(i+1);
+				if (flipXZ)
+					System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+				else
+					System.arraycopy(pixels, width*y, newpix, width*i, width);
+			}
+			fp1.setPixels(newpix);
+			return;
+		}
+		
+		if (ip instanceof ColorProcessor) {
+			int[] newpix=new int[width*size];
+			for (int i=0;i<size; i++) { 
+				Object pixels=is.getPixels(i+1);
+				if (flipXZ)
+					System.arraycopy(pixels, width*y, newpix, width*(size-i-1), width);
+				else
+					System.arraycopy(pixels, width*y, newpix, width*i, width);
+			}
+			fp1.setPixels(newpix);
+			return;
+		}
+		
 	}
 	
 	void updateYZView(Point p, ImageStack is) {
 		int width= is.getWidth();
 		int height=is.getHeight();
 		int ds=is.getSize();
-		//IJ.log("image size: " +ds*height);
 		ImageProcessor ip=is.getProcessor(1);
-
 		int x=p.x;
-		try {
-			if (ip instanceof FloatProcessor) {
-		 		 float[] newpix=new float[ds*height];
-				 //IJ.log("ds " +ds); 
-				 
-				// for (int i=ds-1;i>=0; i--) { 
-		 		 for (int i=0;i<ds; i++) { 
-					 float[] pixels= (float[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int j=0;j<height;j++) {
-					//	newpix[i*height + j] = pixels[x + j* width];
-						 newpix[(ds-i-1)*height + j] = pixels[x + j* width];
-		 			//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-				 fp2.setPixels(newpix);
+		
+		if (ip instanceof FloatProcessor) {
+			float[] newpix=new float[ds*height];
+			for (int i=0;i<ds; i++) { 
+				float[] pixels= (float[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int j=0;j<height;j++)
+					newpix[(ds-i-1)*height + j] = pixels[x + j* width];
 			}
-			
-			if (ip instanceof ByteProcessor) {
-			 
-				byte[] newpix=new byte[ds*height];
-				 
-				// int c=0;
-			
-				// for (int i=ds-1;i>=0; i--){ 
-				 for (int i=0;i<ds; i++) { 
-					 byte[] pixels= (byte[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int j=0;j<height;j++) {
-					//	newpix[i*height + j] = pixels[x + j* width];
-						 newpix[(ds-i-1)*height + j] = pixels[x + j* width];
-					//	c++;
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-		 			 
-				 fp2.setPixels(newpix);
-			 
-			}
-			
-			if (ip instanceof ShortProcessor) {
-				short[] newpix=new short[ds*height];
-				 
-				 //int c=0;
-				 //IJ.log("ds " +ds); 
-				 //for (int i=ds-1;i>=0; i--) { 
-				 for (int i=0;i<ds; i++) { 
-					 short[] pixels= (short[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					 //IJ.log("i "+i);
-					 for (int j=0;j<height;j++) {
-						//newpix[i*height + j] = pixels[x + j* width];
-						 newpix[(ds-i-1)*height + j] = pixels[x + j* width];
-						//c++;
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-		 			 
-				 fp2.setPixels(newpix);
-			 
-			}
-			
-			if (ip instanceof ColorProcessor) {
-				int[] newpix=new int[ds*height];
-			
-				// for (int i=ds-1;i>=0; i--) { 
-				 for (int i=0;i<ds; i++) { 
-					 int[] pixels= (int[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int j=0;j<height;j++) {
-						//fp2.putPixelValue(j, ds-i-1, (double)pixels3[x + j* width]);
-						//newpix[i*height + j] = pixels[x + j* width];
-						 newpix[(ds-i-1)*height + j] = pixels[x + j* width];
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-		 			 
-				 fp2.setPixels(newpix);
-					 
-			}
-		} //end try
-		catch (ArrayIndexOutOfBoundsException ex) {
-			IJ.log("YZ: ArrayIndexOutOfBoundsException occured");
+			fp2.setPixels(newpix);
 		}
-
+		
+		if (ip instanceof ByteProcessor) {
+			byte[] newpix=new byte[ds*height];
+			for (int i=0;i<ds; i++) { 
+				byte[] pixels= (byte[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int j=0;j<height;j++)
+					newpix[(ds-i-1)*height + j] = pixels[x + j* width];
+			}
+			fp2.setPixels(newpix);
+		}
+		
+		if (ip instanceof ShortProcessor) {
+			short[] newpix=new short[ds*height];
+			for (int i=0;i<ds; i++) { 
+				short[] pixels= (short[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int j=0;j<height;j++)
+					newpix[(ds-i-1)*height + j] = pixels[x + j* width];
+			}
+			fp2.setPixels(newpix);
+		}
+		
+		if (ip instanceof ColorProcessor) {
+			int[] newpix=new int[ds*height];
+			for (int i=0;i<ds; i++) { 
+				int[] pixels= (int[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int j=0;j<height;j++)
+					newpix[(ds-i-1)*height + j] = pixels[x + j* width];
+			}
+			fp2.setPixels(newpix);
+		}
+	
 	}
 	
 	void updateZYView(Point p, ImageStack is) {
@@ -501,92 +445,48 @@ public class Orthogonal_Views implements PlugIn,
 		int height=is.getHeight();
 		int ds=is.getSize();
 		ImageProcessor ip=is.getProcessor(1);
-
 		int x=p.x;
-		try {
-			if (ip instanceof FloatProcessor) {
-		 		 float[] newpix=new float[ds*height];
-			 
-				 for (int i=0;i<ds; i++) { 
-					 float[] pixels= (float[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int y=0;y<height;y++) {
-						newpix[i + y*ds] = pixels[x + y* width];
-					
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-		 			 
-				 fp2.setPixels(newpix);
-				 
+		
+		if (ip instanceof FloatProcessor) {
+			float[] newpix=new float[ds*height];
+			for (int i=0;i<ds; i++) { 
+				float[] pixels= (float[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int y=0;y<height;y++)
+					newpix[i + y*ds] = pixels[x + y* width];
 			}
-			
-			if (ip instanceof ByteProcessor) {
-			 
-				byte[] newpix=new byte[ds*height];
-				 
-				 for (int i=0;i<ds; i++) { 
-					 byte[] pixels= (byte[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int y=0;y<height;y++) {
-						newpix[i + y*ds] = pixels[x + y* width];
-					
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-		 			 
-				 fp2.setPixels(newpix);
-			 
-			}
-			
-			if (ip instanceof ShortProcessor) {
-				short[] newpix=new short[ds*height];
-				 
-				 //IJ.log("ds " +ds); 
-				 for (int i=0;i<ds; i++) { 
-					 short[] pixels= (short[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int y=0;y<height;y++) {
-						newpix[i + y*ds] = pixels[x + y* width];
-					
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-		 			 
-				 fp2.setPixels(newpix);
-			 
-			}
-						
-			if (ip instanceof ColorProcessor) {
-				int[] newpix=new int[ds*height];
-				 
-				 for (int i=0;i<ds; i++) { 
-					 int[] pixels= (int[]) is.getPixels(i+1);//toFloatPixels(pixels);
-					// Log("i "+i);
-					 for (int y=0;y<height;y++) {
-						newpix[i + y*ds] = pixels[x + y* width];
-				
-						//Log("j "+j);
-					}
-					 
-					//IJ.log("c" +c);	 
-				 }
-			 			 
-				 fp2.setPixels(newpix);
-				 
-			}
-		} //end try
-		catch (ArrayIndexOutOfBoundsException ex) {
-			IJ.log("ZY: ArrayIndexOutOfBoundsException occured");
-
+			fp2.setPixels(newpix);
 		}
-
+		
+		if (ip instanceof ByteProcessor) {
+			byte[] newpix=new byte[ds*height];
+			for (int i=0;i<ds; i++) { 
+				byte[] pixels= (byte[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int y=0;y<height;y++)
+					newpix[i + y*ds] = pixels[x + y* width];
+			}
+			fp2.setPixels(newpix);
+		}
+		
+		if (ip instanceof ShortProcessor) {
+			short[] newpix=new short[ds*height];
+			for (int i=0;i<ds; i++) { 
+				short[] pixels= (short[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int y=0;y<height;y++)
+					newpix[i + y*ds] = pixels[x + y* width];
+			}
+			fp2.setPixels(newpix);
+		}
+		
+		if (ip instanceof ColorProcessor) {
+			int[] newpix=new int[ds*height];
+			for (int i=0;i<ds; i++) { 
+				int[] pixels= (int[]) is.getPixels(i+1);//toFloatPixels(pixels);
+				for (int y=0;y<height;y++)
+					newpix[i + y*ds] = pixels[x + y* width];
+			}
+			fp2.setPixels(newpix);
+		}
+		
 	}
 	
  
@@ -624,23 +524,6 @@ public class Orthogonal_Views implements PlugIn,
         return true;
 	 }
 	     
-    boolean processibleRoi(ImagePlus imp) {
-    	// try {
-    	   	roi = imp.getRoi();
-    	       boolean ret=(roi!=null && ( //roi.getType()==Roi.LINE || 
-    	       						 roi.getType()==Roi.POINT
-    	       						 )
-    	       		   );
-    	       //Log("roi ret "+ ret);
-    	       return ret;
-    	 //} catch (NullPointerException ex) { 
-    	//	 return false;
-    	// }
-    }
-     
-     /**
-     * 
-     */
     void showAbout() {
          IJ.showMessage("About StackSlicer...",
 	         "This plugin projects dynamically orthogonal XZ and YZ views of a stack.\n" + 
@@ -657,10 +540,17 @@ public class Orthogonal_Views implements PlugIn,
 		canvas.removeMouseMotionListener(this);
 		canvas.removeKeyListener(this);
 		canvas.setDisplayList(null);
-       	ImageWindow win1 = xz_image.getWindow();
-        	if (win1!=null) win1.getCanvas().setDisplayList(null);
-       	ImageWindow win2 = yz_image.getWindow();
-        	if (win2!=null) win2.getCanvas().setDisplayList(null);
+		canvas.setCustomRoi(false);
+		ImageWindow win1 = xz_image.getWindow();
+		if (win1!=null) {
+			win1.getCanvas().setDisplayList(null);
+			win1.getCanvas().removeKeyListener(this);
+		}
+		ImageWindow win2 = yz_image.getWindow();
+		if (win2!=null) {
+			win2.getCanvas().setDisplayList(null);
+			win2.getCanvas().removeKeyListener(this);
+		}
 		ImagePlus.removeImageListener(this);
 		Executer.removeCommandListener(this);
 		win.removeWindowListener(this);
@@ -673,6 +563,7 @@ public class Orthogonal_Views implements PlugIn,
      *
     * @param prefs - the current preferences
     */
+   /*
    static void savePreferences(Properties prefs) {
            prefs.put(AX, Double.toString(ax));
            prefs.put(AY, Double.toString(ay));
@@ -680,6 +571,7 @@ public class Orthogonal_Views implements PlugIn,
            prefs.put(YROT, Boolean.toString(rotate));
            prefs.put(SPANELS, Boolean.toString(sticky));
    }
+   */
         
     //@Override
 	public void mouseClicked(MouseEvent e) {
@@ -695,6 +587,7 @@ public class Orthogonal_Views implements PlugIn,
 
 	//@Override
 	public void mousePressed(MouseEvent e) {
+		crossLoc = canvas.getCursorLoc();
 		update();
 	}
 
@@ -712,33 +605,24 @@ public class Orthogonal_Views implements PlugIn,
 	}
 	
 	private void exec() {
-		roi=imp.getRoi();
-		int x=0, y=0;
+		if (canvas==null) return;
 		int width=imp.getWidth();
 		int height=imp.getHeight();
 		ImageStack is=imp.getStack();
 		double arat=az/ax;
 		double brat=az/ay;
-		if (roi !=null && roi.getType()==Roi.POINT) {
-			Rectangle r=roi.getBounds();
-			x=r.x;
-			y=r.y;
-			if (y>=height) y=height-1;
-			if (x>=width) x=width-1;
-			if (x<0) x=0;
-			if (y<0) y=0;
-			Point p=new Point (x,y);
-			updateViews(p, is);
-			if (canvas==null)
-				return;
-			else {
-				GeneralPath path = new GeneralPath();
-				drawCross(imp, p, path);
-				canvas.setDisplayList(path, color, new BasicStroke(1));
-			}
-			updateCrosses(x, y, arat, brat);
-		 }
-		if (syncZoom) updateMagnification(x, y);
+		Point p=crossLoc;
+		if (p.y>=height) p.y=height-1;
+		if (p.x>=width) p.x=width-1;
+		if (p.x<0) p.x=0;
+		if (p.y<0) p.y=0;
+		updateViews(p, is);
+		GeneralPath path = new GeneralPath();
+		drawCross(imp, p, path);
+		canvas.setDisplayList(path, color, new BasicStroke(1));
+		canvas.setCustomRoi(true);
+		updateCrosses(p.x, p.y, arat, brat);
+		if (syncZoom) updateMagnification(p.x, p.y);
 		arrangeWindows(sticky);
 	}
 
@@ -750,9 +634,7 @@ public class Orthogonal_Views implements PlugIn,
 		if (flipXZ) zcoord=(int)(arat*(z-zlice));
 		p=new Point (x, zcoord);
 		ImageCanvas xz_canvas=xz_image.getCanvas();
-		if (xz_canvas==null) 
-			return;
-		else {
+		if (xz_canvas!=null) {
 			GeneralPath path = new GeneralPath();
 			drawCross(xz_image, p, path);
 			xz_canvas.setDisplayList(path, color, new BasicStroke(1));
@@ -765,18 +647,18 @@ public class Orthogonal_Views implements PlugIn,
 			p=new Point (zcoord, y);
 		}
 		ImageCanvas yz_canvas=yz_image.getCanvas();
-		if (yz_canvas==null) 
-			return;
-		else {
+		if (yz_canvas!=null) {
 			GeneralPath path = new GeneralPath();
 			drawCross(yz_image, p, path);
 			yz_canvas.setDisplayList(path, color, new BasicStroke(1));
 		}
+		IJ.showStatus(imp.getLocationAsString(crossLoc.x, crossLoc.y));
 	}
 
 	//@Override
 	public void mouseDragged(MouseEvent e) {
-		e.consume();
+		//e.consume();
+		crossLoc = canvas.getCursorLoc();
 		update();
 	}
 
@@ -787,15 +669,20 @@ public class Orthogonal_Views implements PlugIn,
 	//@Override
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
-		switch (key) {
-			case KeyEvent.VK_LEFT: ;
-			case KeyEvent.VK_RIGHT: ;
-			case KeyEvent.VK_UP: ;
-			case KeyEvent.VK_DOWN: {
-				update();
+		if (key==KeyEvent.VK_ESCAPE) {
+			IJ.beep();
+			dispose();
+		} else if (IJ.shiftKeyDown()) {
+			int width=imp.getWidth(), height=imp.getHeight();
+			switch (key) {
+				case KeyEvent.VK_LEFT: crossLoc.x--; if (crossLoc.x<0) crossLoc.x=0; break;
+				case KeyEvent.VK_RIGHT: crossLoc.x++; if (crossLoc.x>=width) crossLoc.x=width-1; break;
+				case KeyEvent.VK_UP: crossLoc.y--; if (crossLoc.y<0) crossLoc.y=0; break;
+				case KeyEvent.VK_DOWN: crossLoc.y++; if (crossLoc.y>=height) crossLoc.y=height-1; break;
+				default: return;
 			}
+			update();
 		}
-		e.consume();
 	}
 
 	//@Override
@@ -889,12 +776,13 @@ public class Orthogonal_Views implements PlugIn,
 		
 	//@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		e.consume();
 		update();
 	}
 
 	//@Override
 	public void focusGained(FocusEvent e) {
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null) canvas.requestFocus();
 		arrangeWindows(sticky);
 	}
 
@@ -903,6 +791,13 @@ public class Orthogonal_Views implements PlugIn,
 		arrangeWindows(sticky);
 	}
 	
+	public static ImagePlus getImage() {
+		if (instance!=null)
+			return instance.imp;
+		else
+			return null;
+	}
+
 	/**
 	 * This is a helper class for Othogonal_Views that delegates the
 	 * repainting of the destination windows to another thread.

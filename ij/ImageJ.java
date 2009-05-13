@@ -398,6 +398,8 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
 					if (imp==null) return;
 					Roi roi = imp.getRoi();
+					if (IJ.shiftKeyDown()&&imp==Orthogonal_Views.getImage())
+						return;
 					boolean stackKey = imp.getStackSize()>1 && (roi==null||IJ.shiftKeyDown());
 					boolean zoomKey = roi==null || IJ.shiftKeyDown() || IJ.controlKeyDown();
 					if (stackKey && keyCode==KeyEvent.VK_RIGHT)
