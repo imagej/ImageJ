@@ -825,7 +825,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				String cmd = Recorder.getCommand();
 				if (cmd!=null && cmd.equals("Convolve...")) {
 					text2 = text.replaceAll("\n","\\\\n");
-					if (!text.endsWith("\n")) text2 = text2 + "\\\\n";
+					if (!text.endsWith("\n")) text2 = text2 + "\\n";
 				} else
 					text2 = text.replace('\n',' ');
 				Recorder.recordOption("text1", text2);

@@ -544,8 +544,10 @@ public class FileOpener {
 			fi.nImages = (int)n.doubleValue();
 		if (fi.nImages>1) {
 			double spacing = getDouble(props,"spacing");
-			if (spacing!=0.0)
+			if (spacing!=0.0) {
+				if (spacing<0) spacing = -spacing;
 				fi.pixelDepth = spacing;
+			}
 		}
 		return props;
 	}

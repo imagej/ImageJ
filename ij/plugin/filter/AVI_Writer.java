@@ -116,12 +116,32 @@ public class AVI_Writer implements PlugInFilter {
         imp.startTiming();
 
         //  G e t   s t a c k   p r o p e r t i e s
-        int[] dimensions = imp.getDimensions();
         boolean isComposite = imp.isComposite();
-        xDim = dimensions[0];   //image width
-        yDim = dimensions[1];   //image height
-        if (isComposite) dimensions[2] = 1; //don't step through the channels of a composite image
-        zDim = dimensions[2]*dimensions[3]*dimensions[4]; //number of frames in video
+        boolean isHyperstack = imp.isHyperStack();
+        xDim = imp.getWidth();   //image width
+        yDim = imp.getHeight();   //image height
+        zDim = imp.getStackSize(); //number of frames in video
+		boolean saveFrames=false, saveSlices=false, saveChannels=false;
+        int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = imp.getNFrames();
+		int channel = imp.getChannel();
+		int slice = imp.getSlice();
+		int frame = imp.getFrame();
+		if (isHyperstack || isComposite) {
+			if (frames>1) {
+				saveFrames = true;
+				zDim = frames;
+			} else if (slices>1) {
+				saveSlices = true;
+				zDim = slices;
+			} else if (channels>1) {
+				saveChannels = true;
+				zDim = channels;
+			} else
+				isHyperstack = false;
+		}
+
         if (imp.getType()==ImagePlus.COLOR_RGB || isComposite || biCompression==JPEG_COMPRESSION)
             bytesPerPixel = 3;  //color and JPEG-compressed files
         else
@@ -248,12 +268,14 @@ public class AVI_Writer implements PlugInFilter {
             IJ.showProgress(z, zDim);
             IJ.showStatus(z+"/"+zDim);
             ImageProcessor ip = null;      // get the image to write ...
-            if (isComposite) {
-                int frame = z/dimensions[3] + 1;
-                int slice = z%dimensions[3] + 1;
-                //IJ.log("z="+z+"/"+zDim+"; frame="+frame+", slice="+slice);
-                imp.setPosition(imp.getChannel(), slice, frame);
-                ip = new ColorProcessor(imp.getImage());
+            if (isComposite || isHyperstack) {
+				if (saveFrames)
+					imp.setPositionWithoutUpdate(channel, slice, z+1);
+				else if (saveSlices)
+					imp.setPositionWithoutUpdate(channel, z+1, frame);
+				else if (saveChannels)
+					imp.setPositionWithoutUpdate(z+1, slice, frame);
+				ip = new ColorProcessor(imp.getImage());
             } else
                 ip = zDim==1 ? imp.getProcessor() : imp.getStack().getProcessor(z+1);
             int chunkPointer = (int)raFile.getFilePointer();
@@ -276,6 +298,8 @@ public class AVI_Writer implements PlugInFilter {
             //}
         }
         chunkEndWriteSize();                // LIST 'movi' finished (nesting level 1)
+		if (isComposite || isHyperstack)
+			imp.setPosition(channel, slice, frame);
 
         //  W r i t e   I n d e x
         writeString("idx1");    // Write the idx1 chunk

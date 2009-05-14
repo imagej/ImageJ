@@ -513,6 +513,7 @@ public class ImagePlus implements ImageObserver, Measurements {
                 win.updateImage(this);
 			else if (newStack==null)
 				repaintWindow();
+				draw();
 		}
 	}
 
@@ -816,7 +817,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Returns 'true' if this image is a hyperstack. */
 	public boolean isHyperStack() {
-		return (win!=null && win instanceof StackWindow && ((StackWindow)win).isHyperStack()) || openAsHyperStack;
+		return isDisplayedHyperStack() || (openAsHyperStack&&getNDimensions()>3);
+	}
+	
+	/** Returns the number of dimensions (2, 3, 4 or 5). */
+	public int getNDimensions() {
+		int dimensions = 2;
+		int[] dim = getDimensions();
+		if (dim[2]>1) dimensions++;
+		if (dim[3]>1) dimensions++;
+		if (dim[4]>1) dimensions++;
+		return dimensions;
 	}
 
 	/** Returns 'true' if this is a hyperstack currently being displayed in a StackWindow. */
@@ -1853,7 +1864,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Sets the display range of the current channel. With non-composite
 	    images it is identical to ip.setMinAndMax(min, max). */
 	public void setDisplayRange(double min, double max) {
-		ip.setMinAndMax(min, max);
+		if (ip!=null)
+			ip.setMinAndMax(min, max);
 	}
 
 	public double getDisplayRangeMin() {
@@ -1885,7 +1897,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		position[1] = z;
 		position[2] = t;
 	}
-
+	
 	public Object clone() {
 		try {return super.clone();}
 		catch (CloneNotSupportedException e) {return null;}

@@ -57,7 +57,10 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			for (int i=0; i<n; i++) {
 				info[i] = (FileInfo)fi.clone();
 				info[i].nImages = 1;
-				info[i].longOffset = (long)fi.offset + i*(size + fi.gapBetweenImages);
+				if(fi.longOffset>0)
+					info[i].longOffset = fi.longOffset + i*(size + fi.gapBetweenImages);
+				else
+					info[i].longOffset = (long)fi.offset + i*(size + fi.gapBetweenImages);
 			}
 		}
 		nImages = info.length;

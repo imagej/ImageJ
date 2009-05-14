@@ -93,8 +93,10 @@ public class RGBStackSplitter implements PlugInFilter {
 			stack2.setPixels(null, 1);
 			imp.setPosition(c, 1, 1);
 			imp2.setDimensions(1, slices, frames);
+			imp2.setCalibration(imp.getCalibration());
 			reducer.reduce(imp2);
-			imp2.setOpenAsHyperStack(true);
+			if (imp2.getNDimensions()>3)
+				imp2.setOpenAsHyperStack(true);
 			imp2.show();
 		}
 		imp.changes = false;

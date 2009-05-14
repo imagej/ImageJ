@@ -69,7 +69,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.42n";
+	public static final String VERSION = "1.42o";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -398,6 +398,8 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: // arrow keys
 					if (imp==null) return;
 					Roi roi = imp.getRoi();
+					if (IJ.shiftKeyDown()&&imp==Orthogonal_Views.getImage())
+						return;
 					boolean stackKey = imp.getStackSize()>1 && (roi==null||IJ.shiftKeyDown());
 					boolean zoomKey = roi==null || IJ.shiftKeyDown() || IJ.controlKeyDown();
 					if (stackKey && keyCode==KeyEvent.VK_RIGHT)

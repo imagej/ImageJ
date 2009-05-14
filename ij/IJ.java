@@ -136,12 +136,10 @@ public class IJ {
 		if (IJ.debugMode)
 			IJ.log("runPlugin: "+className+" "+arg);
 		if (arg==null) arg = "";
-		// Use custom classloader if this is a user plugin
-		// and we are not running as an applet
-		if (!className.startsWith("ij") && applet==null) {
- 			boolean createNewClassLoader = altKeyDown();
-			return runUserPlugIn(commandName, className, arg, createNewClassLoader);
-		}
+		// Load using custom classloader if this is a user 
+		// plugin and we are not running as an applet
+		if (!className.startsWith("ij") && applet==null)
+			return runUserPlugIn(commandName, className, arg, false);
 		Object thePlugIn=null;
 		try {
 			Class c = Class.forName(className);

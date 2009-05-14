@@ -62,6 +62,7 @@ public class Functions implements MacroConstants, Measurements {
 	int decimalPlaces;
 	boolean blackBackground;
 	static Dialog waitForUserDialog;
+	int pasteMode;
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -188,7 +189,7 @@ public class Functions implements MacroConstants, Measurements {
 			case IS_ACTIVE: value=isActive(); break;
 			case INDEX_OF: value=indexOf(); break;
 			case LAST_INDEX_OF: value=getFirstString().lastIndexOf(getLastString()); break;
-			case CHAR_CODE_AT: value=getFirstString().charAt((int)getLastArg()); break;
+			case CHAR_CODE_AT: value=charCodeAt(); break;
 			case GET_BOOLEAN: value=getBoolean(); break;
 			case STARTS_WITH: case ENDS_WITH: value = startsWithEndsWith(type); break;
 			case IS_NAN: value = Double.isNaN(getArg())?1:0; break;
@@ -2009,6 +2010,7 @@ public class Functions implements MacroConstants, Measurements {
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
 		blackBackground = Prefs.blackBackground;
+		pasteMode = Roi.getCurrentPasteMode();
 	}
 	
 	void restoreSettings() {
@@ -2039,6 +2041,7 @@ public class Functions implements MacroConstants, Measurements {
 		Analyzer.setPrecision(decimalPlaces);
 		ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);
 		Prefs.blackBackground = blackBackground;
+		Roi.setPasteMode(pasteMode);
 	}
 	
 	void setKeyDown() {
@@ -3139,10 +3142,13 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String openAsString(boolean raw) {
-		int max = 100000;
+		int max = 5000;
 		String path = getFirstString();
-		if (raw && interp.nextToken()==',')
+		boolean specifiedMax = false;
+		if (raw && interp.nextToken()==',') {
 			max = (int)getNextArg();
+			specifiedMax = true;
+		} 
 		interp.getRightParen();			
 		if (path.equals("")) {
 			OpenDialog od = new OpenDialog("Open As String", "");
@@ -3157,16 +3163,21 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("File not found");
 		try {
 			StringBuffer sb = new StringBuffer(5000);
-			BufferedReader r = new BufferedReader(new FileReader(file));
 			if (raw) {
-				while (sb.length()<max) {
-					int c=r.read();
-					if (c==-1)
-						break;
-					else
-						sb.append((char)c);
-				}
+				int len = (int)file.length();
+				if (max>len || (path.endsWith(".txt")&&!specifiedMax))
+					max = len;
+				InputStream in = new BufferedInputStream(new FileInputStream(path));
+				DataInputStream dis = new DataInputStream(in);
+				byte[] buffer = new byte[max];
+				dis.readFully(buffer);
+				dis.close();
+				char[] buffer2 = new char[buffer.length];
+				for (int i=0; i<buffer.length; i++)
+					buffer2[i] = (char)(buffer[i]&255);
+				str = new String(buffer2);
 			} else {
+				BufferedReader r = new BufferedReader(new FileReader(file));
 				while (true) {
 					String s=r.readLine();
 					if (s==null)
@@ -3174,9 +3185,9 @@ public class Functions implements MacroConstants, Measurements {
 					else
 						sb.append(s+"\n");
 				}
+				r.close();
+				str = new String(sb);
 			}
-			r.close();
-			str = new String(sb);
 		}
 		catch (Exception e) {
 			interp.error("File open error \n\""+e.getMessage()+"\"\n");
@@ -4244,6 +4255,13 @@ public class Functions implements MacroConstants, Measurements {
 		for (int i=0; i<a.length; i++)
 			a[i].setValue(v);
 		return a;
+	}
+	
+	double charCodeAt() {
+		String str = getFirstString();
+		int index = (int)getLastArg();
+		checkIndex(index, 0, str.length()-1);
+		return str.charAt(index);
 	}
 
 } // class Functions
