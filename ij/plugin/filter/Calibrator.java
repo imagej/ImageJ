@@ -83,7 +83,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			defaultChoice=NONE;
 			
 		String tmpText = getMeans();
-		if (!importedValues)	
+		if (!importedValues && !tmpText.equals(""))	
 			xText = tmpText;	
 		gd = new GenericDialog("Calibrate...");
 		gd.addChoice("Function:", functions, defaultChoice);

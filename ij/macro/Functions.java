@@ -1734,7 +1734,10 @@ public class Functions implements MacroConstants, Measurements {
 		float[] yvalues = new float[0];
 		ImagePlus imp = getImage();
 		ImageWindow win = imp.getWindow();
-		if (win!=null && win instanceof PlotWindow) {
+		if (imp.getProperty("XValues")!=null) {
+			xvalues = (float[])imp.getProperty("XValues");
+			yvalues = (float[])imp.getProperty("YValues");
+		} else if (win!=null && win instanceof PlotWindow) {
 			PlotWindow pw = (PlotWindow)win;
 			xvalues = pw.getXValues();
 			yvalues = pw.getYValues();

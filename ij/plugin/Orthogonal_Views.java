@@ -50,17 +50,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private ImagePlus xz_image, yz_image;
 	private static int xzID, yzID;
 	private ImageProcessor fp1, fp2;
-	private static final String AX="AX", AY="AY", AZ="AZ", YROT="YROT", SPANELS="STICKY_PANELS"; 
-	private static float ax=(float)Prefs. getDouble(AX,1.0);
-	private static float ay=(float)Prefs. getDouble(AY,1.0);
-	private static float az=(float)Prefs. getDouble(AZ,1.0);
+	private double ax, ay, az;
 	//private static boolean rotate=(boolean)Prefs.getBoolean(YROT,false);
 	//private static boolean sticky=(boolean)Prefs.getBoolean(SPANELS,false);
 	private static boolean rotate=false;
 	private static boolean sticky=true;
 	
-	private int xyImX = 0;
-	private int xyImY = 0;
+	private int xyX, xyY;
 	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
@@ -98,9 +94,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		double calx=cal.pixelWidth;
 		double caly=cal.pixelHeight;
 		double calz=cal.pixelDepth;
-		ax=1.0f;
-		ay=(float)(caly/calx);
-		az=(float)(calz/calx);
+		ax=1.0;
+		ay=caly/calx;
+		az=calz/calx;
 		win = imp.getWindow();
 		canvas = win.getCanvas();
 		addListeners(canvas);  
@@ -193,11 +189,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		if (fp1==null) return;
 		updateXZView(p,is);
 		
-		float arat=az/ax;
-		Calibration cal = imp.getCalibration();
-		if (arat!=1.0f) {
+		double arat=az/ax;
+		int width2 = (int)Math.round(fp1.getWidth()*ax);
+		int height2 = (int)Math.round(fp1.getHeight()*arat);
+		if (width2!=fp1.getWidth()||height2!=fp1.getHeight()) {
 			fp1.setInterpolate(true);
-			ImageProcessor sfp1=fp1.resize((int)(fp1.getWidth()*ax), (int)(fp1.getHeight()*arat));
+			ImageProcessor sfp1=fp1.resize(width2, height2);
 			sfp1.setMinAndMax(min, max);
 			xz_image.setProcessor("XZ "+p.y, sfp1);
 		} else {
@@ -211,24 +208,23 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			updateZYView(p,is);
 				
 		arat=az/ay;
-		if (arat!=1.0f) {
+		width2 = (int)Math.round(fp2.getWidth()*arat);
+		height2 = (int)Math.round(fp2.getHeight()*ay);
+		String title = "YZ ";
+		if (rotate) {
+			int tmp = width2;
+			width2 = height2;
+			height2 = tmp;
+			title = "ZY ";
+		}
+		if (width2!=fp2.getWidth()||height2!=fp2.getHeight()) {
 			fp2.setInterpolate(true);
-			if (rotate) {
-				ImageProcessor sfp2=fp2.resize( (int)(fp2.getWidth()*ay), (int)(fp2.getHeight()*arat));
-				sfp2.setMinAndMax(min, max);
-				yz_image.setProcessor("ZY "+p.x, sfp2);
-			}
-			else {
-				ImageProcessor sfp2=fp2.resize( (int)(fp2.getWidth()*arat), (int)(fp2.getHeight()*ay));
-				sfp2.setMinAndMax(min, max);
-				yz_image.setProcessor("YZ "+p.x, sfp2);
-			}
+			ImageProcessor sfp2=fp2.resize(width2, height2);
+			sfp2.setMinAndMax(min, max);
+			yz_image.setProcessor(title+p.x, sfp2);
 		} else {
 			fp2.setMinAndMax(min, max);
-			if (rotate)
-				yz_image.setProcessor("YZ "+p.x, fp2);
-			else
-				yz_image.setProcessor("ZY "+p.x, fp2);
+			yz_image.setProcessor(title+p.x, fp2);
 		}
 		
 		calibrate();
@@ -246,26 +242,28 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 	
 	void arrangeWindows(boolean sticky) {
-		Point loc = imp.getWindow().getLocation();
-		if ((xyImX!=loc.x)||(xyImY!=loc.y)) {
-			xyImX =  imp.getWindow().getLocation().x;
-			xyImY =  imp.getWindow().getLocation().y;
-			ImageWindow win1 = null;
+		ImageWindow xyWin = imp.getWindow();
+		if (xyWin==null) return;
+		Point loc = xyWin.getLocation();
+		if ((xyX!=loc.x)||(xyY!=loc.y)) {
+			xyX =  loc.x;
+			xyY =  loc.y;
+ 			ImageWindow yzWin =null;
  			long start = System.currentTimeMillis();
- 			while (win1==null && (System.currentTimeMillis()-start)<=2500L) {
-				win1 = xz_image.getWindow();
-				if (win1==null) IJ.wait(50);
+ 			while (yzWin==null && (System.currentTimeMillis()-start)<=2500L) {
+				yzWin = yz_image.getWindow();
+				if (yzWin==null) IJ.wait(50);
 			}
-			if (win1!=null)
- 				win1.setLocation(xyImX,xyImY +imp.getWindow().getHeight());
- 			ImageWindow win2 =null;
+			if (yzWin!=null)
+ 				yzWin.setLocation(xyX+xyWin.getWidth(), xyY);
+			ImageWindow xzWin =null;
  			start = System.currentTimeMillis();
- 			while (win2==null && (System.currentTimeMillis()-start)<=2500L) {
-				win2 = yz_image.getWindow();
-				if (win2==null) IJ.wait(50);
+ 			while (xzWin==null && (System.currentTimeMillis()-start)<=2500L) {
+				xzWin = xz_image.getWindow();
+				if (xzWin==null) IJ.wait(50);
 			}
-			if (win2!=null)
- 				win2.setLocation(xyImX+imp.getWindow().getWidth(),xyImY);
+			if (xzWin!=null)
+ 				xzWin.setLocation(xyX,xyY+xyWin.getHeight());
  			if (firstTime) {
  				imp.getWindow().toFront();
  				imp.setSlice(imp.getStackSize()/2);
@@ -279,19 +277,16 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	 * @return
 	 */
 	boolean createProcessors(ImageStack is) {
-		 //ImageStack is=imp.getStack();
 		ImageProcessor ip=is.getProcessor(1);
-		 int width= is.getWidth();
-		 int height=is.getHeight();
-		 int ds=is.getSize(); 
-		 float arat=1.0f;//az/ax;
-		 float brat=1.0f;//az/ay;
-		// float arat=az/ax;
-		// float brat=az/ay;
-		 int za=(int)(ds*arat);
-		 int zb=(int)(ds*brat);
-		 //IJ.log("za: "+za +" zb: "+zb);
-		  
+		int width= is.getWidth();
+		int height=is.getHeight();
+		int ds=is.getSize(); 
+		double arat=1.0;//az/ax;
+		double brat=1.0;//az/ay;
+		int za=(int)(ds*arat);
+		int zb=(int)(ds*brat);
+		//IJ.log("za: "+za +" zb: "+zb);
+		
 		if (ip instanceof FloatProcessor) {
 			fp1=new FloatProcessor(width,za);
 			if (rotate)
@@ -318,7 +313,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				fp2=new ShortProcessor(zb,height);
 			return true;
 		}
-				
+		
 		if (ip instanceof ColorProcessor) {
 			fp1=new ColorProcessor(width,za);
 			if (rotate)
@@ -502,6 +497,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		path.lineTo(x, height);	
 	}
 	 
+	/*
 	boolean showDialog(ImagePlus imp)   {
         if (imp==null) return true;
         GenericDialog gd=new GenericDialog("Parameters");
@@ -532,6 +528,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	         "Optionally the YZ image can be rotated at 90 deg."
          );
      }
+     */
      
 	void dispose(){
 		updater.quit();
@@ -558,21 +555,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		win.setResizable(true);
 		instance = null;
 	}
- 	
-    /* Saves the current settings of the plugin for further use
-     *
-    * @param prefs - the current preferences
-    */
-   /*
-   static void savePreferences(Properties prefs) {
-           prefs.put(AX, Double.toString(ax));
-           prefs.put(AY, Double.toString(ay));
-           prefs.put(AZ, Double.toString(az));
-           prefs.put(YROT, Boolean.toString(rotate));
-           prefs.put(SPANELS, Boolean.toString(sticky));
-   }
-   */
-        
+ 	        
     //@Override
 	public void mouseClicked(MouseEvent e) {
 	}
@@ -630,8 +613,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		Point p;
 		int z=imp.getNSlices();
 		int zlice=imp.getCurrentSlice()-1;
-		int zcoord=(int)(arat*zlice);
-		if (flipXZ) zcoord=(int)(arat*(z-zlice));
+		int zcoord=(int)Math.round(arat*zlice);
+		if (flipXZ) zcoord=(int)Math.round(arat*(z-zlice));
 		p=new Point (x, zcoord);
 		ImageCanvas xz_canvas=xz_image.getCanvas();
 		if (xz_canvas!=null) {
@@ -639,11 +622,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			drawCross(xz_image, p, path);
 			xz_canvas.setDisplayList(path, color, new BasicStroke(1));
 		}
-		zcoord=(int)(brat*(z-zlice));
+		zcoord=(int)Math.round(brat*(z-zlice));
 		if (rotate) 
 			p=new Point (y, zcoord);
 		else {
-			zcoord=(int)(arat*zlice);
+			zcoord=(int)Math.round(arat*zlice);
 			p=new Point (zcoord, y);
 		}
 		ImageCanvas yz_canvas=yz_image.getCanvas();
@@ -718,8 +701,22 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ImagePlus cimp = WindowManager.getCurrentImage();
 			if (cimp==null) return command;
 			if (cimp==imp) {
+				/*if (syncZoom) {
+					ImageWindow xyWin = cimp.getWindow();
+					if (xyWin==null) return command;
+					ImageCanvas ic = xyWin.getCanvas();
+					Dimension screen = IJ.getScreenSize();
+					int xyWidth = xyWin.getWidth();
+					ImageWindow yzWin = yz_image.getWindow();
+					double mag = ic.getHigherZoomLevel(ic.getMagnification());
+					if (yzWin!=null&&xyX+xyWidth+(int)(yzWin.getWidth()*mag)>screen.width) {
+						xyX = screen.width-xyWidth-(int)(yzWin.getWidth()*mag);
+						if (xyX<10) xyX = 10;
+						xyWin.setLocation(xyX, xyY);
+					}
+ 				}*/
 				IJ.runPlugIn("ij.plugin.Zoom", command.toLowerCase());
-				xyImX=0; xyImY=0;
+				xyX=0; xyY=0;
 				update();
 				return null;
 			} else if (cimp==xz_image || cimp==yz_image) {

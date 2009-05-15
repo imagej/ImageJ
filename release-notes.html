@@ -5,47 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.42o, 11 May 2009</u>
+<li> <u>1.42o, 15 May 2009</u>
 <ul>
-<li> Added  the <i>Image&gt;Stacks&gt;Orthogonal Views</i> command, which is based on
-Dimiter Prodanov's
-<a href="http://rsb.info.nih.gov/ij/plugins/stack-slicer/index.html">StackSlicer</a>
-plugin and Albert Codona's Updater class.
-<li> Thanks to Julian Cooper, a straight line selection can now be 
-rotated about its center by holding down the alt key.
-<li> <i>File&gt;Save As&gt;AVI</i> now works correctly with 5D hyperstacks
-(e.g., the <i>Mitosis</i> sample image).
-<li> Thanks to Michael Schmid, the
-<a href="http://rsb.info.nih.gov/ij/source/ij/plugin/filter/EDM.java">EDM algorithm</a>
-is more accurate,
-there are options for 16-bit and float output, stacks are processed using 
-multiple threads, and
-<a href="http://rsb.info.nih.gov/ij/docs/menus/process.html#voronoi">Voronoi diagrams</a>
- can be generated.
- <li> Thanks to Michael Schmid, <i>Process&gt;Binary&gt;Find Maxima</i>
- works with images>32768 pixels in width or height.
- <li> Gabriel Landini added the "Pad edges when eroding" option to
- <i>Process&gt;Binary&gt;Options</i>.
-<li> Added the <i>Mitosis (26MB, 5D Stack)</i> sample image, courtesy of
-Eric Griffis and Nico Stuurman.
-<li> Fixed a bug that caused images with a width or height greater than 65,535
-to not be correctly saved in TIFF format.
-<li> Fixed a bug in the File.openAsRawString() macro function that caused it to not
-correctly read bytes with values greater than 127.
-<li> Fixed a bug that caused an error message to be displayed when a URL
-stack download was aborted by pressing 'esc'.
-<li> Fixed a bug that caused <i>Process&gt;Filters&gt;Convolve</i> to sometimes
-record an extra "\".
-<li> Fixed a bug that caused TIFF and RAW virtual stacks greater than 2GB to
-not open correctly.
-<li> Fixed a bug that could cause the measurent length of rapidly drawn freehand line selections
-to be incorrect.
-<li> Fixed a bug that could cause the newImage() macro function to display
-a bogus "out of memory" error.
-<li> Fixed a bug that caused the TIFF reader to not correctly decode
-metadata containing non-ASCII characters.
-<li> Fixed a bug that caused <i>Image&gt;Color&gt;Merge Channels</i> to throw an
-exception of the source images were not all the save type.
+<li> Fixed a bug that caused the x values to be deleted in the <i>Analyze&gt;Calibrate</i> dialog box.
+<li> Fixed a bug that caused the Plot.getValues() macro function, when
+retrieving values from plot windows, to not work in batch mode macros.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

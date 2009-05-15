@@ -177,10 +177,6 @@ public class Selection implements PlugIn, Measurements {
 			indexes[i] = i;
 			curvature[i] = (float)Math.sqrt((x2[i]-x[i])*(x2[i]-x[i])+(y2[i]-y[i])*(y2[i]-y[i]));
 		}
-		//ImageProcessor ipc = new FloatProcessor(n, 1, curvature, null);
-		//ipc.convolve(kernel3, kernel3.length, 1);
-		//PlotWindow pw = new PlotWindow("Curvature", "X", "Y", indexes, curvature);
-		//pw.draw();											
 		return curvature;
 	}
 	
