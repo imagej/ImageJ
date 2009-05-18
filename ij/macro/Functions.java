@@ -2367,13 +2367,23 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setAutoThreshold() {
-		interp.getParens();
+		String method = null;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (isStringArg())
+				method = getString();
+			interp.getRightParen();
+		}
 		ImagePlus img = getImage();
 		ImageProcessor ip = getProcessor();
 		if (ip instanceof ColorProcessor)
 			interp.error("Non-RGB image expected");
 		ip.setRoi(img.getRoi());
-		ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
+		if (method!=null) {
+			try {ip.setAutoThreshold(method);}
+			catch (Exception e) { interp.error(""+e.getMessage());}
+		} else
+			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
 		img.updateAndDraw();
 		resetImage();
 	}
@@ -3472,6 +3482,12 @@ public class Functions implements MacroConstants, Measurements {
 				Frame frame = list[i];
 				array[i] = new Variable(0, 0.0, frame.getTitle());
 			}
+			return array;
+		} else if (key.equals("threshold.methods")) {
+			String[] list = AutoThresholder.getMethods();
+			Variable[] array = new Variable[list.length];
+			for (int i=0; i<list.length; i++)
+				array[i] = new Variable(0, 0.0, list[i]);
 			return array;
 		} else {
 			interp.error("Unvalid key");

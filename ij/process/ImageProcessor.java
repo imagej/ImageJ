@@ -443,6 +443,64 @@ public abstract class ImageProcessor extends Object {
 		source = null;
 	}
 	
+	public void setAutoThreshold(String method) {
+		if (method==null)
+			throw new IllegalArgumentException("Null method");
+		boolean darkBackground = method.indexOf("dark")!=-1;
+		int index = method.indexOf(" ");
+		if (index!=-1)
+			method = method.substring(0, index);
+		setAutoThreshold(method, darkBackground, RED_LUT);
+	}
+	
+	public void setAutoThreshold(String method, boolean darkBackground, int lutUpdate) {
+		if (method==null || (this instanceof ColorProcessor))
+			return;
+		if (method.equals("Default")) {
+			setAutoThreshold(ISODATA2, lutUpdate);
+			return;
+		}
+		double min=0.0, max=0.0;
+		boolean notByteData = !(this instanceof ByteProcessor);
+		ImageProcessor ip2 = this;
+		if (notByteData) {
+			ImageProcessor mask = ip2.getMask();
+			Rectangle rect = ip2.getRoi();
+			resetMinAndMax();
+			min = getMin(); max = getMax();
+			ip2 = convertToByte(true);
+			ip2.setMask(mask);
+			ip2.setRoi(rect);	
+		}
+		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
+		int[] histogram = stats.histogram;
+		AutoThresholder thresholder = new AutoThresholder();
+		int threshold = thresholder.getThreshold(method, stats.histogram);
+		double lower, upper;
+		if (darkBackground) {
+			if (isInvertedLut())
+				{lower=0.0; upper=threshold;}
+			else
+				{lower=threshold; upper=255.0;}
+		} else {
+			if (isInvertedLut())
+				{lower=threshold; upper=255.0;}
+			else
+				{lower=0.0; upper=threshold;}
+		}
+		if (notByteData) {
+			if (max>min) {
+				lower = min + (lower/255.0)*(max-min);
+				upper = min + (upper/255.0)*(max-min);
+			} else
+				lower = upper = min;
+		}
+		setThreshold(lower, upper, lutUpdate);
+		if (notByteData && lutUpdate!=NO_LUT_UPDATE)
+			setLutAnimation(true);
+	}
+
 	/** Automatically sets the lower and upper threshold levels, where 'method'
 		 must be ISODATA or ISODATA2 and 'lutUpdate' must be RED_LUT,
 		 BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.
