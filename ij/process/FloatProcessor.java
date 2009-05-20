@@ -634,7 +634,7 @@ public class FloatProcessor extends ImageProcessor {
 					xs = x*ca + tmp3;
 					ys = x*sa + tmp4;
 					if ((xs>=-0.01) && (xs<dwidth) && (ys>=-0.01) && (ys<dheight)) {
-						if (interpolate) {
+						if (interpolationMethod==BILINEAR) {
 							if (xs<0.0) xs = 0.0;
 							if (xs>=xlimit) xs = xlimit2;
 							if (ys<0.0) ys = 0.0;			
@@ -799,7 +799,7 @@ public class FloatProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
-		if (interpolationMethod!=NEAREST_NEIGHBOR) {
+		if (interpolationMethod!=NONE) {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}

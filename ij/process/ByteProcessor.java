@@ -888,7 +888,7 @@ public class ByteProcessor extends ImageProcessor {
 					if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 						pixels[index1++] = (byte)bgColor;
 					else {
-						if (interpolate) {
+						if (interpolationMethod==BILINEAR) {
 							if (xs<0.0) xs = 0.0;
 							if (xs>=xlimit) xs = xlimit2;
 							pixels[index1++] =(byte)((int)(getInterpolatedPixel(xs, ys, pixels2)+0.5)&255);
@@ -933,7 +933,7 @@ public class ByteProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
-		if (interpolate) {
+		if (interpolationMethod!=NONE) {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
@@ -961,7 +961,7 @@ public class ByteProcessor extends ImageProcessor {
 			double ylimit = height-1.0, ylimit2 = height-1.001;
 			for (int y=0; y<=dstHeight-1; y++) {
 				ys = (y-dstCenterY)/yScale + srcCenterY;
-				if (interpolate) {
+				if (interpolationMethod==BILINEAR) {
 					if (ys<0.0) ys = 0.0;
 					if (ys>=ylimit) ys = ylimit2;
 				}
@@ -969,7 +969,7 @@ public class ByteProcessor extends ImageProcessor {
 				index2 = y*dstWidth;
 				for (int x=0; x<=dstWidth-1; x++) {
 					xs = (x-dstCenterX)/xScale + srcCenterX;
-					if (interpolate) {
+					if (interpolationMethod==BILINEAR) {
 						if (xs<0.0) xs = 0.0;
 						if (xs>=xlimit) xs = xlimit2;
 						pixels2[index2++] = (byte)((int)(getInterpolatedPixel(xs, ys, pixels)+0.5)&255);

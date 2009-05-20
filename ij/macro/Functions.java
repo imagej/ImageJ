@@ -2777,6 +2777,8 @@ public class Functions implements MacroConstants, Measurements {
 				addCheckboxGroup(gd);
 			} else if (name.equals("addMessage")) {
 				gd.addMessage(getStringArg());
+			} else if (name.equals("addHelp")) {
+				gd.addHelp(getStringArg());
 			} else if (name.equals("addChoice")) {
 				String prompt = getFirstString();
 				interp.getComma();

@@ -8,6 +8,8 @@ import ij.plugin.ScreenGrabber;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.util.Tools;
+import ij.macro.MacroRunner;
+
 
 /**
  * This class is a customizable modal dialog box. Here is an example
@@ -43,7 +45,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText;
 	protected Component theLabel;
-	private Button cancel, okay, no;
+	private Button cancel, okay, no, help;
 	private String okLabel = "  OK  ";
     private boolean wasCanceled, wasOKed;
     private int y;
@@ -71,6 +73,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     private char echoChar;
     private boolean hideCancelButton;
     private boolean centerDialog = true;
+    private String helpURL;
 
     /** Creates a new GenericDialog with the specified title. Uses the current image
     	image window as the parent frame or the ImageJ frame if no image windows
@@ -869,12 +872,19 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			okay = new Button(okLabel);
 			okay.addActionListener(this);
 			okay.addKeyListener(this);
+			boolean addHelp = helpURL!=null;
+			if (addHelp) {
+				help = new Button("Help");
+				help.addActionListener(this);
+				help.addKeyListener(this);
+			}
 			if (IJ.isMacintosh()) {
+				if (addHelp) buttons.add(help);
 				if (yesNoCancel) buttons.add(no);
-				if (! hideCancelButton)
-					buttons.add(cancel);
+				if (!hideCancelButton) buttons.add(cancel);
 				buttons.add(okay);
 			} else {
+				if (addHelp) buttons.add(help);
 				buttons.add(okay);
 				if (yesNoCancel) buttons.add(no);;
 				if (! hideCancelButton)
@@ -984,10 +994,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			wasCanceled = source==cancel;
 			wasOKed = source==okay;
 			dispose();
-		} else
+		} else if (source==help)
+			showHelp();
+		else
             notifyListeners(e);
 	}
-
+	
 	public void textValueChanged(TextEvent e) {
         notifyListeners(e); 
 		if (slider==null) return;
@@ -1122,6 +1134,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		wasCanceled = true; 
 		dispose(); 
     }
+    
+    public void addHelp(String url) {
+    	helpURL = url;
+    }
+    
+    void showHelp() {
+		String macro = "run('URL...', 'url="+helpURL+"');";
+		new MacroRunner(macro);
+	}
     
     public void windowActivated(WindowEvent e) {}
     public void windowOpened(WindowEvent e) {}

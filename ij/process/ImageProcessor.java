@@ -70,7 +70,7 @@ public abstract class ImageProcessor extends Object {
 	protected byte[] rLUT1, gLUT1, bLUT1; // base LUT
 	protected byte[] rLUT2, gLUT2, bLUT2; // LUT as modified by setMinAndMax and setThreshold
 	protected boolean interpolate;  // replaced by interpolationMethod
-	protected int interpolationMethod = BILINEAR;
+	protected int interpolationMethod = NONE;
 	protected double minThreshold=NO_THRESHOLD, maxThreshold=NO_THRESHOLD;
 	protected int histogramSize = 256;
 	protected double histogramMin, histogramMax;
@@ -763,16 +763,16 @@ public abstract class ImageProcessor extends Object {
 	/** This method has been replaced by setInterpolationMethod(). */
 	public void setInterpolate(boolean interpolate) {
 		this.interpolate = interpolate;
-		interpolationMethod = interpolate?BILINEAR:NEAREST_NEIGHBOR;
+		interpolationMethod = interpolate?BILINEAR:NONE;
 	}
 
-	/** Use this method to set the interpolation method (NEAREST_NEIGHBOR, 
+	/** Use this method to set the interpolation method (NONE, 
 		 BILINEAR or BICUBIC) used by scale(), resize() and rotate(). */
 	public void setInterpolationMethod(int method) {
-		if (method<NEAREST_NEIGHBOR || method>BICUBIC)
+		if (method<NONE || method>BICUBIC)
 			throw new IllegalArgumentException("Invalid interpolation method");
 		interpolationMethod = method;
-		interpolate = method!=NEAREST_NEIGHBOR?true:false;
+		interpolate = method!=NONE?true:false;
 	}
 	
 	public static String[] getInterpolationMethods() {
@@ -1737,7 +1737,7 @@ public abstract class ImageProcessor extends Object {
   	public void translate(double xOffset, double yOffset) {
   		ImageProcessor ip2 = this.duplicate();
 		boolean integerOffsets = xOffset==(int)xOffset && yOffset==(int)yOffset;
-  		if (integerOffsets || interpolationMethod==NEAREST_NEIGHBOR) {
+  		if (integerOffsets || interpolationMethod==NONE) {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
 				for (int x=roiX; x<(roiX + roiWidth); x++)
 					putPixel(x, y, ip2.getPixel(x-(int)xOffset, y-(int)yOffset));

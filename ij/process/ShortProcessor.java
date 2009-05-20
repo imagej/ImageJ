@@ -847,7 +847,7 @@ public class ShortProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
-		if (interpolationMethod!=NEAREST_NEIGHBOR) {
+		if (interpolationMethod!=NONE) {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
@@ -872,7 +872,7 @@ public class ShortProcessor extends ImageProcessor {
 			int index1, index2;
 			for (int y=0; y<=dstHeight-1; y++) {
 				ys = (y-dstCenterY)/yScale + srcCenterY;
-				if (interpolate) {
+				if (interpolationMethod==BILINEAR) {
 					if (ys<0.0) ys = 0.0;
 					if (ys>=ylimit) ys = ylimit2;
 				}
