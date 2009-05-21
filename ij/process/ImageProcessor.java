@@ -145,15 +145,7 @@ public abstract class ImageProcessor extends Object {
 	}
 
 	protected void makeDefaultColorModel() {
-		byte[] rLUT = new byte[256];
-		byte[] gLUT = new byte[256];
-		byte[] bLUT = new byte[256];
-		for(int i=0; i<256; i++) {
-			rLUT[i]=(byte)i;
-			gLUT[i]=(byte)i;
-			bLUT[i]=(byte)i;
-		}
-		cm = new IndexColorModel(8, 256, rLUT, gLUT, bLUT);
+		cm = getDefaultColorModel();
 	}
 
 	/** Inverts the values in this image's LUT (indexed color model).

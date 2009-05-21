@@ -186,7 +186,7 @@ public class ImageJ extends Frame implements ActionListener,
 		String str = m.getMacroCount()==1?" macro)":" macros)";
 		String java = "Java "+System.getProperty("java.version")+(IJ.is64Bit()?" [64-bit]":" [32-bit]");
 		IJ.showStatus("ImageJ "+VERSION + "/"+java+" ("+ m.getPluginCount() + " commands, " + m.getMacroCount() + str);
-		if (applet==null && !embedded)
+		if (applet==null && !embedded && Prefs.runSocketListener)
 			new SocketListener();
 		configureProxy();
  	}

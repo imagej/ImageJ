@@ -43,7 +43,7 @@ public class Prefs {
 		AUTO_MEASURE=512, REQUIRE_CONTROL=1024, USE_INVERTING_LUT=2048, ANTIALIASED_TOOLS=4096,
 		INTEL_BYTE_ORDER=8192, DOUBLE_BUFFER=16384, NO_POINT_LABELS=32768, NO_BORDER=65536,
 		SHOW_ALL_SLICE_ONLY=131072, COPY_HEADERS=262144, NO_ROW_NUMBERS=524288,
-		MOVE_TO_MISC=1048576, ADD_TO_MANAGER=2097152; 
+		MOVE_TO_MISC=1048576, ADD_TO_MANAGER=2097152, RUN_SOCKET_LISTENER=4194304; 
     public static final String OPTIONS = "prefs.options";
 
 	/** file.separator system property */
@@ -96,6 +96,8 @@ public class Prefs {
 	public static boolean pointAddToManager;
 	/** Extend the borders to foreground for binary erosions and closings. */
 	public static boolean padEdges;
+	/** Run the SocketListener. */
+	public static boolean runSocketListener;
 
 
 	static Properties ijPrefs = new Properties();
@@ -358,6 +360,7 @@ public class Prefs {
 		noRowNumbers = (options&NO_ROW_NUMBERS)!=0;
 		moveToMisc = (options&MOVE_TO_MISC)!=0;
 		pointAddToManager = (options&ADD_TO_MANAGER)!=0;
+		runSocketListener = (options&RUN_SOCKET_LISTENER)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -371,7 +374,7 @@ public class Prefs {
 			+ (noPointLabels?NO_POINT_LABELS:0) + (noBorder?NO_BORDER:0)
 			+ (showAllSliceOnly?SHOW_ALL_SLICE_ONLY:0) + (copyColumnHeaders?COPY_HEADERS:0)
 			+ (noRowNumbers?NO_ROW_NUMBERS:0) + (moveToMisc?MOVE_TO_MISC:0)
-			+ (pointAddToManager?ADD_TO_MANAGER:0);
+			+ (pointAddToManager?ADD_TO_MANAGER:0) + (runSocketListener?RUN_SOCKET_LISTENER:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

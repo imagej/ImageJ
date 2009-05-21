@@ -26,16 +26,18 @@ public class Options implements PlugIn {
 				
 	// Miscellaneous Options
 	void miscOptions() {
-		String key = IJ.isMacintosh()?"Command":"Control";
+		String key = IJ.isMacintosh()?"command":"control";
 		GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
-		gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
-		gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
-		gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
+		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
+		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
+		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);
 		//gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
-		gd.addCheckbox("Antialiased_Tool Icons", Prefs.antialiasedTools);
-		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
-		gd.addCheckbox("Move Isolated Plugins to Misc. Menu", Prefs.moveToMisc);
-		gd.addCheckbox("Debug Mode", IJ.debugMode);
+		gd.addCheckbox("Antialiased_tool icons", Prefs.antialiasedTools);
+		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
+		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
+		gd.addCheckbox("Run socket listener", Prefs.runSocketListener);
+		gd.addCheckbox("Debug mode", IJ.debugMode);
+		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -65,6 +67,7 @@ public class Options implements PlugIn {
 		if (change) Toolbar.getInstance().repaint();
 		Prefs.requireControlKey = gd.getNextBoolean();
 		Prefs.moveToMisc = gd.getNextBoolean();
+		Prefs.runSocketListener = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}
 

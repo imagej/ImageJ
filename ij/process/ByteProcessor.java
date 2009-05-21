@@ -100,6 +100,7 @@ public class ByteProcessor extends ImageProcessor {
 			raster = Raster.createWritableRaster(sm, db, null);
 		}
 		if (image==null || cm!=cm2) {
+			if (cm==null) cm=getDefaultColorModel();
 			image = new BufferedImage(cm, raster, false, null);
 			cm2 = cm;
 		}
