@@ -57,6 +57,7 @@ public abstract class ImageProcessor extends Object {
 	// Over/Under tresholding colors
 	private static int overRed, overGreen=255, overBlue;
 	private static int underRed, underGreen, underBlue=255;
+	private static boolean useBicubic;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -755,9 +756,12 @@ public abstract class ImageProcessor extends Object {
 	/** This method has been replaced by setInterpolationMethod(). */
 	public void setInterpolate(boolean interpolate) {
 		this.interpolate = interpolate;
-		interpolationMethod = interpolate?BILINEAR:NONE;
+		if (interpolate)
+			interpolationMethod = useBicubic?BICUBIC:BILINEAR;
+		else
+			interpolationMethod = NONE;
 	}
-
+	
 	/** Use this method to set the interpolation method (NONE, 
 		 BILINEAR or BICUBIC) used by scale(), resize() and rotate(). */
 	public void setInterpolationMethod(int method) {
@@ -1468,6 +1472,8 @@ public abstract class ImageProcessor extends Object {
 	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). 
 		Returns zero if the (x, y) is not inside the image. */
 	public final double getInterpolatedValue(double x, double y) {
+		if (useBicubic)
+			return getBicubicInterpolatedPixel(x, y, this);
 		if (x<0.0 || x>=width-1.0 || y<0.0 || y>=height-1.0) {
 			if (x<-1.0 || x>=width || y<=1.0 || y>=height)
 				return 0.0;
@@ -1501,13 +1507,15 @@ public abstract class ImageProcessor extends Object {
 			double p = 0;
 			for (int i = 0; i <= 3; i++) {
 				int u = u0 - 1 + i;
-				p = p + ip2.getPixel(u,v) * cubic(x0 - u);
+				p = p + ip2.getBicubicPixel(u,v) * cubic(x0 - u);
 			}
 			q = q + p * cubic(y0 - v);
 		}
 		return q;
 	}
 	
+	abstract int getBicubicPixel(int x, int y);
+
 	static final double a = 0.5; // Catmull-Rom interpolation
 	final double cubic(double x) {
 		if (x < 0.0) x = -x;
@@ -2064,6 +2072,9 @@ public abstract class ImageProcessor extends Object {
 		return false;
 	}
 
-
+	/* This method is experimental and may be removed. */
+	public static void setUseBicubic(boolean b) {
+		useBicubic = b;
+	}
 
 }

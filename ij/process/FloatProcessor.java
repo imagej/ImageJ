@@ -234,7 +234,7 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Returns a pixel value that must be converted using
 		Float.intBitsToFloat(). */
-	public int getPixel(int x, int y) {
+	public final int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return Float.floatToIntBits(pixels[y*width+x]);
 		else
@@ -284,7 +284,7 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	/** Sets a pixel in the image using a one element int array. */
-	public void putPixel(int x, int y, int[] iArray) {
+	public final void putPixel(int x, int y, int[] iArray) {
 		putPixelValue(x, y, iArray[0]);
 	}
 
@@ -317,7 +317,7 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Stores the specified value at (x,y). The value is expected to be a
 		float that has been converted to an int using Float.floatToIntBits(). */
-	public void putPixel(int x, int y, int value) {
+	public final void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = Float.intBitsToFloat(value);
 	}
@@ -856,13 +856,25 @@ public class FloatProcessor extends ImageProcessor {
 			double p = 0;
 			for (int i = 0; i <= 3; i++) {
 				int u = u0 - 1 + i;
-				p = p + ip2.getPixelValue(u,v) * cubic(x0 - u);
+				p = p + Float.intBitsToFloat(ip2.getBicubicPixel(u,v)) * cubic(x0 - u);
 			}
 			q = q + p * cubic(y0 - v);
 		}
 		return q;
 	}
 	
+	final int getBicubicPixel(int x, int y) {
+		if (x<0)
+			{if (x==-1) x=0; else return 0;}
+		if (x>=width)
+			{if (x==width) x=width-1; else return 0;}
+		if (y<0)
+			{if (y==-1) y=0; else return 0;}
+		if (y>=height)
+			{if (y==height) y=height-1; else return 0;}
+		return Float.floatToIntBits(pixels[y*width+x]);
+	}
+
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {
 		int bestIndex = getBestIndex(color);

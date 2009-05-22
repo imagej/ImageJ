@@ -251,11 +251,15 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	public int getPixel(int x, int y) {
+	public final int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x];
 		else
 			return 0;
+	}
+
+	final int getBicubicPixel(int x, int y) {
+		return 0;
 	}
 
 	public final int get(int x, int y) {
@@ -303,7 +307,7 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Sets a pixel in the image using a 3 element (R, G and B)
 		int array of samples. */
-	public void putPixel(int x, int y, int[] iArray) {
+	public final void putPixel(int x, int y, int[] iArray) {
 		int r=iArray[0], g=iArray[1], b=iArray[2];
 		putPixel(x, y, (r<<16)+(g<<8)+b);
 	}
@@ -327,7 +331,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	/** Stores the specified value at (x,y). */
-	public void putPixel(int x, int y, int value) {
+	public final void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = value;
 	}

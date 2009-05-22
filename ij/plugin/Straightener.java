@@ -120,6 +120,9 @@ public class Straightener implements PlugIn {
 			}
 			float dx = x2-x1;
 			float dy = y1-y2;
+            float length = (float)Math.sqrt(dx*dx+dy*dy);
+            dx /= length;
+            dy /= length;
 			//IJ.log(i+"  "+x2+"  "+dy+"  "+(dy*width/2f)+"   "+y2+"  "+dx+"   "+(dx*width/2f));
 			float x = x2-dy*width/2f;
 			float y = y2-dx*width/2f;

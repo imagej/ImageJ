@@ -247,11 +247,23 @@ public class ShortProcessor extends ImageProcessor {
 		resetThreshold();
 	}
 
-	public int getPixel(int x, int y) {
+	public final int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x]&0xffff;
 		else
 			return 0;
+	}
+
+	final int getBicubicPixel(int x, int y) {
+		if (x<0)
+			{if (x==-1) x=0; else return 0;}
+		if (x>=width)
+			{if (x==width) x=width-1; else return 0;}
+		if (y<0)
+			{if (y==-1) y=0; else return 0;}
+		if (y>=height)
+			{if (y==height) y=height-1; else return 0;}
+		return pixels[y*width+x]&0xffff;
 	}
 
 	public final int get(int x, int y) {
@@ -320,7 +332,7 @@ public class ShortProcessor extends ImageProcessor {
 		nothing if (x,y) is outside the image boundary.
 		Values outside the range 0-65535 are clipped.
 	*/
-	public void putPixel(int x, int y, int value) {
+	public final void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			if (value>65535) value = 65535;
 			if (value<0) value = 0;
