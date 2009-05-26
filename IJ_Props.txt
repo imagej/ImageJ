@@ -134,11 +134,10 @@ stacks15=-
 stacks16="Label...",ij.plugin.filter.StackLabeler
 stacks17="Combine...",ij.plugin.StackCombiner
 stacks18="Concatenate...",ij.plugin.Concatenator
-stacks19="Reduce Size...",ij.plugin.StackReducer
-stacks20=-
-stacks21="Start Animation [\\]",ij.plugin.Animator("start")
-stacks22="Stop Animation",ij.plugin.Animator("stop")
-stacks23="Animation Options...",ij.plugin.Animator("options")
+stacks19=-
+stacks20="Start Animation [\\]",ij.plugin.Animator("start")
+stacks21="Stop Animation",ij.plugin.Animator("stop")
+stacks22="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")

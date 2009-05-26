@@ -140,13 +140,14 @@ public class Options implements PlugIn {
 		
 	void appearance() {
 		GenericDialog gd = new GenericDialog("Appearance", IJ.getInstance());
-		gd.addCheckbox("Interpolate Zoomed Images", Prefs.interpolateScaledImages);
-		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
-		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
-		gd.addCheckbox("No Image Border", Prefs.noBorder);
-		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);
-		gd.addCheckbox("Double Buffer Selections", Prefs.doubleBuffer);
-		gd.addNumericField("Menu Font Size:", Menus.getFontSize(), 0, 3, "points");
+		gd.addCheckbox("Interpolate zoomed images", Prefs.interpolateScaledImages);
+		gd.addCheckbox("Open images at 100%", Prefs.open100Percent);
+		gd.addCheckbox("Black canvas", Prefs.blackCanvas);
+		gd.addCheckbox("No image border", Prefs.noBorder);
+		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
+		gd.addCheckbox("Double buffer selections", Prefs.doubleBuffer);
+		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
+        gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;			

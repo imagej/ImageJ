@@ -884,11 +884,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (!hideCancelButton) buttons.add(cancel);
 				buttons.add(okay);
 			} else {
-				if (addHelp) buttons.add(help);
 				buttons.add(okay);
 				if (yesNoCancel) buttons.add(no);;
-				if (! hideCancelButton)
+				if (!hideCancelButton)
 					buttons.add(cancel);
+				if (addHelp) buttons.add(help);
 			}
 			c.gridx = 0; c.gridy = y;
 			c.anchor = GridBagConstraints.EAST;

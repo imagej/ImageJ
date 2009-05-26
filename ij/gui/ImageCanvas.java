@@ -856,7 +856,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		flags = e.getModifiers();
 		//IJ.log("Mouse pressed: " + e.isPopupTrigger() + "  " + ij.modifiers(flags));		
 		//if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
-		if (toolID!=Toolbar.MAGNIFIER && (e.isPopupTrigger() || (flags & Event.META_MASK)!=0)) {
+		if (toolID!=Toolbar.MAGNIFIER && e.isPopupTrigger()) {
 			handlePopupMenu(e);
 			return;
 		}

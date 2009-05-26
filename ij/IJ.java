@@ -691,12 +691,15 @@ public class IJ {
 	public static boolean shiftKeyDown() {
 		return shiftDown;
 	}
-
+	
 	public static void setKeyDown(int key) {
 		if (debugMode) IJ.log("setKeyDown: "+key);
 		switch (key) {
 			case KeyEvent.VK_CONTROL:
 				controlDown=true;
+				break;
+			case KeyEvent.VK_META:
+				if (isMacintosh()) controlDown=true;
 				break;
 			case KeyEvent.VK_ALT:
 				altDown=true;
@@ -717,11 +720,12 @@ public class IJ {
 			}
 		}
 	}
-	
+
 	public static void setKeyUp(int key) {
 		if (debugMode) IJ.log("setKeyUp: "+key);
 		switch (key) {
 			case KeyEvent.VK_CONTROL: controlDown=false; break;
+			case KeyEvent.VK_META: if (isMacintosh()) controlDown=false; break;
 			case KeyEvent.VK_ALT: altDown=false; break;
 			case KeyEvent.VK_SHIFT: shiftDown=false; if (debugMode) beep(); break;
 			case KeyEvent.VK_SPACE:

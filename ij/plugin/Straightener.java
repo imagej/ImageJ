@@ -104,9 +104,9 @@ public class Straightener implements PlugIn {
 		ImageProcessor distances = null;
 		if (IJ.debugMode)  distances = new FloatProcessor(n, 1);
 		float[] pixels = (float[])ip2.getPixels();
-		float x1, y1;
-		float x2=p.xpoints[0]-(p.xpoints[1]-p.xpoints[0]);
-		float y2=p.ypoints[0]-(p.ypoints[1]-p.ypoints[0]);
+		double x1, y1;
+		double x2=p.xpoints[0]-(p.xpoints[1]-p.xpoints[0]);
+		double y2=p.ypoints[0]-(p.ypoints[1]-p.ypoints[0]);
 		if (width==1)
 			ip2.putPixelValue(0, 0, ip.getInterpolatedValue(x2, y2));
 		for (int i=0; i<n; i++) {
@@ -118,14 +118,14 @@ public class Straightener implements PlugIn {
 				ip2.putPixelValue(i, 0, ip.getInterpolatedValue(x2, y2));
 				continue;
 			}
-			float dx = x2-x1;
-			float dy = y1-y2;
-            float length = (float)Math.sqrt(dx*dx+dy*dy);
+			double dx = x2-x1;
+			double dy = y1-y2;
+            double length = (float)Math.sqrt(dx*dx+dy*dy);
             dx /= length;
             dy /= length;
 			//IJ.log(i+"  "+x2+"  "+dy+"  "+(dy*width/2f)+"   "+y2+"  "+dx+"   "+(dx*width/2f));
-			float x = x2-dy*width/2f;
-			float y = y2-dx*width/2f;
+			double x = x2-dy*width/2.0;
+			double y = y2-dx*width/2.0;
 			int j = 0;
 			int n2 = width;
 			do {

@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
+import ij.measure.Measurements;
 import java.awt.*;
 
 /** This plugin implements the Image/Stacks/Label command. */
@@ -21,6 +22,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static int decimalPlaces = 0;
 	private static boolean textBeforeNumber;
 	private int fieldWidth;
+	private Color color;
 
 	public int setup(String arg, ImagePlus imp) {
 		if (imp!=null && imp.isHyperStack()) {
@@ -50,7 +52,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addStringField("Text:", text, 10);
 		gd.setInsets(10,20,0);
-        gd.addCheckbox("Text before number:", textBeforeNumber);
+        gd.addCheckbox("Text first", textBeforeNumber);
         gd.addPreviewCheckbox(pfr);
         gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
@@ -78,7 +80,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		if (gd.invalidNumber()) return false;
 		font = new Font("SansSerif", Font.PLAIN, fontSize);
 		time = start;
-		if (y<fontSize) y = fontSize;
+		if (y<fontSize) y = fontSize+5;
 		ImageProcessor ip = imp.getProcessor();
 		ip.setFont(font);
 		int stackSize = imp.getStackSize();
@@ -93,10 +95,20 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 
 	public void run(ImageProcessor ip) {
 		ip.setFont(font);
-		ip.setColor(Toolbar.getForegroundColor());
-		ip.setAntialiasedText(fontSize>=18);
 		String s = getString(time);
-		ip.moveTo(x+maxWidth-ip.getStringWidth(s), y);
+		int textWidth = ip.getStringWidth(s);
+		if (color==null) {
+			color = Toolbar.getForegroundColor();
+			if ((color.getRGB()&0xffffff)==0) {
+				ip.setRoi(x, y-fontSize, maxWidth+textWidth, fontSize);
+				double mean = ImageStatistics.getStatistics(ip, Measurements.MEAN, null).mean;
+				if (mean<50.0 && !ip.isInvertedLut()) color=Color.white;
+				ip.resetRoi();
+			}
+		}
+		ip.setColor(color); 
+		ip.setAntialiasedText(fontSize>=18);
+		ip.moveTo(x+maxWidth-textWidth, y);
 		ip.drawString(s);
 		time += interval;
 	}

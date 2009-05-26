@@ -1501,10 +1501,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 			}
 		}
 		img = null;
-		if (stack!=null||WindowManager.getWindowCount()==0) {
-			if (IJ.debugMode) IJ.log("System.gc()");
-			System.gc();
-		}
 	}
 	
 	/** Set <code>ignoreFlush true</code> to not have the pixel 
