@@ -124,17 +124,20 @@ stacks05="Set Slice...",ij.plugin.Animator("set")
 stacks06=-
 stacks07="Images to Stack",ij.plugin.ImagesToStack
 stacks08="Stack to Images",ij.plugin.StackEditor("toimages")
-stacks09="Make Montage...[M]",ij.plugin.MontageMaker
+stacks09="Make Montage...",ij.plugin.MontageMaker
 stacks10="Reslice [/]...",ij.plugin.Slicer
-stacks11="Orthogonal Views[y]",ij.plugin.Orthogonal_Views
+stacks11="Orthogonal Views",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.filter.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks15="Reduce Size...",ij.plugin.StackReducer
-stacks16=-
-stacks17="Start Animation [\\]",ij.plugin.Animator("start")
-stacks18="Stop Animation",ij.plugin.Animator("stop")
-stacks19="Animation Options...",ij.plugin.Animator("options")
+stacks15=-
+stacks16="Label...",ij.plugin.filter.StackLabeler
+stacks17="Combine...",ij.plugin.StackCombiner
+stacks18="Concatenate...",ij.plugin.Concatenator
+stacks19=-
+stacks20="Start Animation [\\]",ij.plugin.Animator("start")
+stacks21="Stop Animation",ij.plugin.Animator("stop")
+stacks22="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
@@ -296,7 +299,7 @@ plug-in05="Compile and Run...",ij.plugin.Compiler
 
 # Plugins installed in the Plugins/Macros submenu
 # 'MACROS_MENU_COMMANDS' in MacroInstaller must be updated when items are added
-macros01="Install...",ij.plugin.MacroInstaller
+macros01="Install...[M]",ij.plugin.MacroInstaller
 macros02="Run...",ij.plugin.Macro_Runner
 macros03="Edit...",ij.plugin.Compiler("edit")
 macros04="Startup Macros...",ij.plugin.Commands("startup")

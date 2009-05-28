@@ -235,6 +235,8 @@ public class ImageStack {
 			throw new IllegalArgumentException(outOfRange+n);
 		if (nSlices==0)
 			return null;
+		if (stack[0]==null)
+			throw new IllegalArgumentException("Pixel array is null");
 		if (stack[0] instanceof byte[])
 			ip = new ByteProcessor(width, height, null, cm);
 		else if (stack[0] instanceof short[])

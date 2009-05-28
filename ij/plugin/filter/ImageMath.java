@@ -13,8 +13,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
-	private double lower;
-	private double upper;
+	private double lower=-1.0, upper=-1.0;
 	
 	private static double addValue = 25;
 	private static double mulValue = 1.25;
@@ -221,7 +220,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 
 	/** Set non-thresholded pixels in a float image to NaN. */
 	void setBackgroundToNaN(ImageProcessor ip) {
-		if (true) {
+		if (lower==-1.0 && upper==-1.0) {
 			lower = ip.getMinThreshold();
 			upper = ip.getMaxThreshold();
 			if (lower==ImageProcessor.NO_THRESHOLD || !(ip instanceof FloatProcessor)) {

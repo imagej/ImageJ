@@ -40,7 +40,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (ip.getWidth()>1 && ip.getHeight()>1)
 			ip.setInterpolationMethod(interpolationMethod);
 		else
-			ip.setInterpolationMethod(ImageProcessor.NEAREST_NEIGHBOR);
+			ip.setInterpolationMethod(ImageProcessor.NONE);
 		ip.setBackgroundValue(bgValue);
 		imp.startTiming();
 		try {
@@ -64,7 +64,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
  		ImageProcessor ip1, ip2;
  		int method = interpolationMethod;
  		if (imp.getWidth()==1 || imp.getHeight()==1)
- 			method = ImageProcessor.NEAREST_NEIGHBOR;
+ 			method = ImageProcessor.NONE;
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("Scale: " + i + "/" + nSlices);
 			ip1 = stack1.getProcessor(i);

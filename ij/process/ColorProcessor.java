@@ -251,11 +251,15 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	public int getPixel(int x, int y) {
+	public final int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x];
 		else
 			return 0;
+	}
+
+	final int getBicubicPixel(int x, int y) {
+		return 0;
 	}
 
 	public final int get(int x, int y) {
@@ -303,7 +307,7 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Sets a pixel in the image using a 3 element (R, G and B)
 		int array of samples. */
-	public void putPixel(int x, int y, int[] iArray) {
+	public final void putPixel(int x, int y, int[] iArray) {
 		int r=iArray[0], g=iArray[1], b=iArray[2];
 		putPixel(x, y, (r<<16)+(g<<8)+b);
 	}
@@ -327,7 +331,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	/** Stores the specified value at (x,y). */
-	public void putPixel(int x, int y, int value) {
+	public final void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			pixels[y*width + x] = value;
 	}
@@ -752,7 +756,7 @@ public class ColorProcessor extends ImageProcessor {
 				if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 					pixels[index1++] = bgColor;
 				else {
-					if (interpolate) {
+					if (interpolationMethod==BILINEAR) {
 						if (xs<0.0) xs = 0.0;
 						if (xs>=xlimit) xs = xlimit2;
 						pixels[index1++] = getInterpolatedPixel(xs, ys, pixels2);
@@ -853,7 +857,7 @@ public class ColorProcessor extends ImageProcessor {
 		double yScale = (double)dstHeight/roiHeight;
 		double xlimit = width-1.0, xlimit2 = width-1.001;
 		double ylimit = height-1.0, ylimit2 = height-1.001;
-		if (interpolate) {
+		if (interpolationMethod==BILINEAR) {
 			if (xScale<=0.25 && yScale<=0.25)
 				return makeThumbnail(dstWidth, dstHeight, 0.6);
 			dstCenterX += xScale/2.0;
@@ -865,7 +869,7 @@ public class ColorProcessor extends ImageProcessor {
 		int index1, index2;
 		for (int y=0; y<=dstHeight-1; y++) {
 			ys = (y-dstCenterY)/yScale + srcCenterY;
-			if (interpolate) {
+			if (interpolationMethod==BILINEAR) {
 				if (ys<0.0) ys = 0.0;
 				if (ys>=ylimit) ys = ylimit2;
 			}
@@ -873,7 +877,7 @@ public class ColorProcessor extends ImageProcessor {
 			index2 = y*dstWidth;
 			for (int x=0; x<=dstWidth-1; x++) {
 				xs = (x-dstCenterX)/xScale + srcCenterX;
-				if (interpolate) {
+				if (interpolationMethod==BILINEAR) {
 					if (xs<0.0) xs = 0.0;
 					if (xs>=xlimit) xs = xlimit2;
 					pixels2[index2++] = getInterpolatedPixel(xs, ys, pixels);

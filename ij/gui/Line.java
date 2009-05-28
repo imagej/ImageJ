@@ -75,7 +75,7 @@ public class Line extends Roi {
 		x=(int)Math.min(x+x1R,xend); y=(int)Math.min(y+y1R,yend);
 		x1R=xstart-x; y1R=ystart-y;
 		x2R=xend-x; y2R=yend-y;
-		if (IJ.altKeyDown()) {
+		if (IJ.controlKeyDown()) {
 			x1R=(int)Math.round(x1R); y1R=(int)Math.round(y1R);
 			x2R=(int)Math.round(x2R); y2R=(int)Math.round(y2R);
 		}
@@ -121,7 +121,7 @@ public class Line extends Roi {
                 double dy = oy-y1d;
                 x1d=ox;
                 y1d=oy;
-                if(IJ.altKeyDown()){
+                if (IJ.controlKeyDown()){
                     x2d -= dx;
                     y2d -= dy;
                 }
@@ -131,7 +131,7 @@ public class Line extends Roi {
                 dy = oy-y2d;
                 x2d=ox;
                 y2d=oy;
-                if(IJ.altKeyDown()){
+                if (IJ.controlKeyDown()){
                     x1d -= dx;
                     y1d -= dy;
                 }

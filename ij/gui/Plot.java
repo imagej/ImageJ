@@ -644,6 +644,8 @@ public class Plot {
         if ((IJ.macroRunning() && IJ.getInstance()==null) || Interpreter.isBatchMode()) {
             ImagePlus imp = new ImagePlus(title, ip);
             WindowManager.setTempCurrentImage(imp);
+            imp.setProperty("XValues", xValues); //Allows values to be retrieved by 
+            imp.setProperty("YValues", yValues); // by Plot.getValues() macro function
             Interpreter.addBatchModeImage(imp);
             return null;
         }

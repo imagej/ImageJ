@@ -57,7 +57,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
 			newHeight = bounds.height;
-			interpolationMethod = ImageProcessor.NEAREST_NEIGHBOR;
+			interpolationMethod = ImageProcessor.NONE;
 		} else {
 			if (newWidth==0 || newHeight==0) {
 				newWidth = (int)origWidth/2;
@@ -99,7 +99,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				newHeight = (int)(newWidth*(origHeight/origWidth));
 		}
 		if (ip.getWidth()==1 || ip.getHeight()==1)
-			ip.setInterpolationMethod(ImageProcessor.NEAREST_NEIGHBOR);
+			ip.setInterpolationMethod(ImageProcessor.NONE);
 		else
 			ip.setInterpolationMethod(interpolationMethod);
     	

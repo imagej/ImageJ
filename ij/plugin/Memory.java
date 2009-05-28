@@ -26,8 +26,9 @@ public class Memory implements PlugIn {
 		if (max==0) max = (int)(maxMemory()/1048576L);
 		String title = "Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)");
 		GenericDialog gd = new GenericDialog(title);
-		gd.addNumericField("Maximum Memory:", max, 0, 5, "MB");
-        gd.addNumericField("Parallel Threads for Stacks:", Prefs.getThreads(), 0, 5, "");
+		gd.addNumericField("Maximum memory:", max, 0, 5, "MB");
+        gd.addNumericField("Parallel threads for stacks:", Prefs.getThreads(), 0, 5, "");
+        gd.addHelp(IJ.URL+"/docs/menus/edit.html#memory");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		int max2 = (int)gd.getNextNumber();

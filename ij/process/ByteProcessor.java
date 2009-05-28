@@ -100,6 +100,7 @@ public class ByteProcessor extends ImageProcessor {
 			raster = Raster.createWritableRaster(sm, db, null);
 		}
 		if (image==null || cm!=cm2) {
+			if (cm==null) cm=getDefaultColorModel();
 			image = new BufferedImage(cm, raster, false, null);
 			cm2 = cm;
 		}
@@ -206,11 +207,23 @@ public class ByteProcessor extends ImageProcessor {
 		}
 	}
 
-	public int getPixel(int x, int y) {
+	public final int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x]&0xff;
 		else
 			return 0;
+	}
+	
+	final int getBicubicPixel(int x, int y) {
+		if (x<0)
+			{if (x==-1) x=0; else return 0;}
+		if (x>=width)
+			{if (x==width) x=width-1; else return 0;}
+		if (y<0)
+			{if (y==-1) y=0; else return 0;}
+		if (y>=height)
+			{if (y==height) y=height-1; else return 0;}
+		return pixels[y*width+x]&0xff;
 	}
 	
 	public final int get(int x, int y) {return pixels[y*width+x]&0xff;}
@@ -302,7 +315,7 @@ public class ByteProcessor extends ImageProcessor {
 	/** Stores the specified value at (x,y). Does
 		nothing if (x,y) is outside the image boundary.
 		Values outside the range 0-255 are clipped. */
-	public void putPixel(int x, int y, int value) {
+	public final void putPixel(int x, int y, int value) {
 		if (x>=0 && x<width && y>=0 && y<height) {
 			if (value>255) value = 255;
 			if (value<0) value = 0;
@@ -888,7 +901,7 @@ public class ByteProcessor extends ImageProcessor {
 					if (checkCoordinates && ((xsi<xmin) || (xsi>xmax) || (ysi<ymin) || (ysi>ymax)))
 						pixels[index1++] = (byte)bgColor;
 					else {
-						if (interpolate) {
+						if (interpolationMethod==BILINEAR) {
 							if (xs<0.0) xs = 0.0;
 							if (xs>=xlimit) xs = xlimit2;
 							pixels[index1++] =(byte)((int)(getInterpolatedPixel(xs, ys, pixels2)+0.5)&255);
@@ -933,7 +946,7 @@ public class ByteProcessor extends ImageProcessor {
 		double dstCenterY = dstHeight/2.0;
 		double xScale = (double)dstWidth/roiWidth;
 		double yScale = (double)dstHeight/roiHeight;
-		if (interpolate) {
+		if (interpolationMethod!=NONE) {
 			dstCenterX += xScale/2.0;
 			dstCenterY += yScale/2.0;
 		}
@@ -961,7 +974,7 @@ public class ByteProcessor extends ImageProcessor {
 			double ylimit = height-1.0, ylimit2 = height-1.001;
 			for (int y=0; y<=dstHeight-1; y++) {
 				ys = (y-dstCenterY)/yScale + srcCenterY;
-				if (interpolate) {
+				if (interpolationMethod==BILINEAR) {
 					if (ys<0.0) ys = 0.0;
 					if (ys>=ylimit) ys = ylimit2;
 				}
@@ -969,7 +982,7 @@ public class ByteProcessor extends ImageProcessor {
 				index2 = y*dstWidth;
 				for (int x=0; x<=dstWidth-1; x++) {
 					xs = (x-dstCenterX)/xScale + srcCenterX;
-					if (interpolate) {
+					if (interpolationMethod==BILINEAR) {
 						if (xs<0.0) xs = 0.0;
 						if (xs>=xlimit) xs = xlimit2;
 						pixels2[index2++] = (byte)((int)(getInterpolatedPixel(xs, ys, pixels)+0.5)&255);

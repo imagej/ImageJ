@@ -11,6 +11,7 @@ import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
+import ij.macro.Interpreter;
 
 
 /** Obsolete; replaced by the Plot class. */
@@ -93,23 +94,17 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
      	noGridLines = (options&NO_GRID_LINES)!=0; 
    }
 
-	/** Construct a new PlotWindow.
-	* @param title			the window title
-	* @param xLabel			the x-axis label
-	* @param yLabel			the y-axis label
-	* @param xValues		the x-coodinates
-	* @param yValues		the y-coodinates
-	*/
+	/** Obsolete; replaced by the Plot class. */
 	public PlotWindow(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		super(createImage(title, xLabel, yLabel, xValues, yValues));
 		plot = staticPlot;
 	}
 
-	/** This version of the constructor excepts double arrays. */
+	/** Obsolete; replaced by the Plot class. */
 	public PlotWindow(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
 		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
 	}
-
+	
 	/** Creates a PlotWindow from a Plot object. */
 	PlotWindow(Plot plot) {
 		super(plot.getImagePlus());

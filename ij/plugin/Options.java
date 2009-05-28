@@ -26,16 +26,18 @@ public class Options implements PlugIn {
 				
 	// Miscellaneous Options
 	void miscOptions() {
-		String key = IJ.isMacintosh()?"Command":"Control";
+		String key = IJ.isMacintosh()?"command":"control";
 		GenericDialog gd = new GenericDialog("Miscellaneous Options", IJ.getInstance());
-		gd.addStringField("Divide by Zero Value:", ""+FloatBlitter.divideByZeroValue, 10);
-		gd.addCheckbox("Use Pointer Cursor", Prefs.usePointerCursor);
-		gd.addCheckbox("Hide \"Process Stack?\" Dialog", IJ.hideProcessStackDialog);
+		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
+		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
+		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);
 		//gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
-		gd.addCheckbox("Antialiased_Tool Icons", Prefs.antialiasedTools);
-		gd.addCheckbox("Require "+key+" Key for Shortcuts", Prefs.requireControlKey);
-		gd.addCheckbox("Move Isolated Plugins to Misc. Menu", Prefs.moveToMisc);
-		gd.addCheckbox("Debug Mode", IJ.debugMode);
+		gd.addCheckbox("Antialiased_tool icons", Prefs.antialiasedTools);
+		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
+		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
+		gd.addCheckbox("Run socket listener", Prefs.runSocketListener);
+		gd.addCheckbox("Debug mode", IJ.debugMode);
+		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -65,6 +67,7 @@ public class Options implements PlugIn {
 		if (change) Toolbar.getInstance().repaint();
 		Prefs.requireControlKey = gd.getNextBoolean();
 		Prefs.moveToMisc = gd.getNextBoolean();
+		Prefs.runSocketListener = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}
 
@@ -137,13 +140,14 @@ public class Options implements PlugIn {
 		
 	void appearance() {
 		GenericDialog gd = new GenericDialog("Appearance", IJ.getInstance());
-		gd.addCheckbox("Interpolate Zoomed Images", Prefs.interpolateScaledImages);
-		gd.addCheckbox("Open Images at 100%", Prefs.open100Percent);
-		gd.addCheckbox("Black Canvas", Prefs.blackCanvas);
-		gd.addCheckbox("No Image Border", Prefs.noBorder);
-		gd.addCheckbox("Use Inverting Lookup Table", Prefs.useInvertingLut);
-		gd.addCheckbox("Double Buffer Selections", Prefs.doubleBuffer);
-		gd.addNumericField("Menu Font Size:", Menus.getFontSize(), 0, 3, "points");
+		gd.addCheckbox("Interpolate zoomed images", Prefs.interpolateScaledImages);
+		gd.addCheckbox("Open images at 100%", Prefs.open100Percent);
+		gd.addCheckbox("Black canvas", Prefs.blackCanvas);
+		gd.addCheckbox("No image border", Prefs.noBorder);
+		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
+		gd.addCheckbox("Double buffer selections", Prefs.doubleBuffer);
+		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
+        gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;			

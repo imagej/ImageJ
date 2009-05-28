@@ -221,7 +221,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 		GenericDialog gd = new GenericDialog("Compile and Run");
 		gd.addChoice("Target: ", targets, targets[target]);
 		gd.setInsets(15,5,0);
-		gd.addCheckbox("Generate Debugging Info (javac -g)", generateDebuggingInfo);
+		gd.addCheckbox("Generate debugging info (javac -g)", generateDebuggingInfo);
+        gd.addHelp(IJ.URL+"/docs/menus/edit.html#compiler");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		target = gd.getNextChoiceIndex();		
