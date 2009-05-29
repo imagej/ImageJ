@@ -127,6 +127,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private RoiManager roiManager;
 	private ImagePlus outputImage;
 	private boolean hideOutputImage;
+	private int roiType;
 		
 	
 	/** Constructs a ParticleAnalyzer.
@@ -450,6 +451,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			ipf.setValue(fillColor);
 			ff = new FloodFiller(ipf);
 		}
+		roiType = Wand.getAllPoints()?Roi.FREEROI:Roi.TRACED_ROI;
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;
@@ -698,7 +700,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		wand.autoOutline(x,y, level1, level2);
 		if (wand.npoints==0)
 			{IJ.log("wand error: "+x+" "+y); return;}
-		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.TRACED_ROI);
+		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, roiType);
 		Rectangle r = roi.getBounds();
 		if (r.width>1 && r.height>1) {
 			PolygonRoi proi = (PolygonRoi)roi;

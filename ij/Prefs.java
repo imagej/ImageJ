@@ -99,7 +99,6 @@ public class Prefs {
 	/** Run the SocketListener. */
 	public static boolean runSocketListener;
 
-
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
 	static String prefsDir;

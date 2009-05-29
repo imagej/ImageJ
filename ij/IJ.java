@@ -1092,7 +1092,8 @@ public class IJ {
 			w.autoOutline(x, y, t1, ip.getMaxThreshold());
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
-			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+			int type = Wand.getAllPoints()?Roi.FREEROI:Roi.TRACED_ROI;
+			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, type);
 			img.killRoi();
 			img.setRoi(roi);
 			// add/subtract this ROI to the previous one if the shift/alt key is down

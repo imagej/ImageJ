@@ -7,7 +7,26 @@ import ij.process.*;
 /** This class implements ImageJ's wand (tracing) tool. */
 public class Wand {
 	static final int UP=0, DOWN=1, UP_OR_DOWN=2, LEFT=3, RIGHT=4, LEFT_OR_RIGHT=5, NA=6;
-	
+	static final int[] table = {
+		// 1234, 1=upper left pixel,  2=upper right, 3=lower left, 4=lower right
+		NA,			// 0000, should never happen
+		RIGHT,		// 000X,
+		DOWN,		// 00X0
+		RIGHT,		// 00XX
+		UP,			// 0X00
+		UP,			// 0X0X
+		UP_OR_DOWN, // 0XX0 Go up or down depending on current direction
+		UP,			// 0XXX
+		LEFT,		// X000
+		LEFT_OR_RIGHT, // X00X  Go left or right depending on current direction
+		DOWN,		// X0X0
+		RIGHT,		// X0XX
+		LEFT,		// XX00
+		LEFT,		// XX0X
+		DOWN,		// XXX0
+		NA,			// XXXX Should never happen
+	};
+
 	/** The number of points in the generated outline. */
 	public int npoints;
 	private int maxPoints = 1000; // will be increased if necessary
@@ -23,6 +42,8 @@ public class Wand {
 	private float[] fpixels;
 	private int width, height;
 	private float lowerThreshold, upperThreshold;
+	private static boolean allPoints;
+
 
 	/** Constructs a Wand object from an ImageProcessor. */
 	public Wand(ImageProcessor ip) {
@@ -39,34 +60,24 @@ public class Wand {
 	}
 	
 	private float getColorPixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			return cpixels[y*width + x];
-		else
-			return Float.MAX_VALUE;
+		return cpixels[y*width + x];
 	}
 
 	private float getBytePixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			return bpixels[y*width + x] & 0xff;
-		else
-			return Float.MAX_VALUE;
+		return bpixels[y*width + x] & 0xff;
 	}
 
 	private float getShortPixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			return spixels[y*width + x] & 0xffff;
-		else
-			return Float.MAX_VALUE;
+		return spixels[y*width + x] & 0xffff;
 	}
 
 	private float getFloatPixel(int x, int y) {
-		if (x>=0 && x<width && y>=0 && y<height)
-			return fpixels[y*width + x];
-		else
-			return Float.MAX_VALUE;
+		return fpixels[y*width + x];
 	}
 
 	private float getPixel(int x, int y) {
+        if (x<0 || x>=width || y<0 || y>=height)
+            return Float.MAX_VALUE;
 		if (bpixels!=null)
 			return getBytePixel(x,y);
 		else if (spixels!=null)
@@ -78,6 +89,8 @@ public class Wand {
 	}
 
 	private boolean inside(int x, int y) {
+        if (x<0 || x>=width || y<0 || y>=height)
+            return false;
 		float value;
 		if (bpixels!=null)
 			value = getBytePixel(x,y);
@@ -113,6 +126,13 @@ public class Wand {
 		return ((double)insideCount)/area>=0.75;
 	}
 	
+	/** Traces the boundary of the area with pixel values within
+		 'tolerance' of the value of the pixel at the starting location. */
+	public void autoOutline(int startX, int startY, double tolerance) {
+		double startValue = getPixel(startX, startY);
+		autoOutline(startX, startY, startValue-tolerance, startValue+tolerance);
+	}
+
 	/** Traces the boundary of an area of uniform color, where
 		'startX' and 'startY' are somewhere inside the area. The
 		boundary points are stored in the public xpoints and ypoints
@@ -144,7 +164,6 @@ public class Wand {
 		boundary points are stored in the public xpoints and ypoints fields.
 		This verson works more reliably than autoOutline(x, y). */
 	public void autoOutline(int startX, int startY, double lower, double upper) {
-		//IJ.log(startX+"  "+startY+"  "+lower+"  "+upper);
 		npoints = 0;
 		int x = startX;
 		int y = startY;
@@ -173,25 +192,6 @@ public class Wand {
 	}
 
 	void traceEdge(int xstart, int ystart, int startingDirection) {
-		int[] table = {
-						// 1234, 1=upper left pixel,  2=upper right, 3=lower left, 4=lower right
-			NA,			// 0000, should never happen
-			RIGHT,		// 000X,
-			DOWN,		// 00X0
-			RIGHT,		// 00XX
-			UP,			// 0X00
-			UP,			// 0X0X
-			UP_OR_DOWN, // 0XX0 Go up or down depending on current direction
-			UP,			// 0XXX
-			LEFT,		// X000
-			LEFT_OR_RIGHT, // X00X  Go left or right depending on current direction
-			DOWN,		// X0X0
-			RIGHT,		// X0XX
-			LEFT,		// XX00
-			LEFT,		// XX0X
-			DOWN,		// XXX0
-			NA,			// XXXX Should never happen
-			};
 		int index;
 		int newDirection;
 		int x = xstart;
@@ -202,11 +202,7 @@ public class Wand {
 		boolean UR = inside(x, y-1);	// upper right
 		boolean LL = inside(x-1, y);	// lower left
 		boolean LR = inside(x, y);		// lower right
-		//xpoints[0] = x;
-		//ypoints[0] = y;
 		int count = 0;
-	//IJ.write("");
-	//IJ.write(count + " " + x + " " + y + " " + direction + " " + insideValue);
 		do {
 			index = 0;
 			if (LR) index |= 1;
@@ -226,20 +222,19 @@ public class Wand {
 				else
 					newDirection = RIGHT;
 			}
-			if (newDirection!=direction) {
+			if (newDirection!=direction || allPoints) {
 				xpoints[count] = x;
 				ypoints[count] = y;
 				count++;
-			if (count==xpoints.length) {
-				int[] xtemp = new int[maxPoints*2];
-				int[] ytemp = new int[maxPoints*2];
-				System.arraycopy(xpoints, 0, xtemp, 0, maxPoints);
-				System.arraycopy(ypoints, 0, ytemp, 0, maxPoints);
-				xpoints = xtemp;
-				ypoints = ytemp;
-				maxPoints *= 2;
-			}
-		//if (count<10) IJ.write(count + " " + x + " " + y + " " + newDirection + " " + index);
+				if (count==xpoints.length) {
+					int[] xtemp = new int[maxPoints*2];
+					int[] ytemp = new int[maxPoints*2];
+					System.arraycopy(xpoints, 0, xtemp, 0, maxPoints);
+					System.arraycopy(ypoints, 0, ytemp, 0, maxPoints);
+					xpoints = xtemp;
+					ypoints = ytemp;
+					maxPoints *= 2;
+				}
 			}
 			switch (newDirection) {
 				case UP:
@@ -272,8 +267,15 @@ public class Wand {
 					break;
 			}
 			direction = newDirection;
-		} while ((x!=xstart || y!=ystart || direction!=startingDirection));
+		} while (x!=xstart || y!=ystart || direction!=startingDirection);
 		npoints = count;
 	}
+	
+	public static void setAllPoints(boolean b) {
+		allPoints = b;
+	}
 
+	public static boolean getAllPoints() {
+		return allPoints;
+	}
 }

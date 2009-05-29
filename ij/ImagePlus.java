@@ -319,11 +319,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		changes = false;
 		win.close();
 		win = null;
-		if (unlocked)
-			unlock();
+		if (unlocked) unlock();
 	}
 
-	/** Closes this image and sets the pixel arrays to null. To avoid the
+	/** Closes this image and sets the ImageProcessor to null. To avoid the
 		"Save changes?" dialog, first set the public 'changes' variable to false. */
 	public void close() {
 		ImageWindow win = getWindow();
@@ -471,6 +470,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Replaces the ImageProcessor, if any, with the one specified.
 		Set 'title' to null to leave the image title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
+        if (ip==null || ip.getPixels()==null)
+            throw new IllegalArgumentException("ip null or ip.getPixels() null");
         int stackSize = getStackSize();
         if (stackSize>1 && (ip.getWidth()!=width || ip.getHeight()!=height))
             throw new IllegalArgumentException("ip wrong size");
@@ -523,6 +524,9 @@ public class ImagePlus implements ImageObserver, Measurements {
    		int stackSize = stack.getSize();
    		if (stackSize==0)
    			throw new IllegalArgumentException("Stack is empty");
+   		Object[] arrays = stack.getImageArray();
+   		if (arrays==null || (arrays.length>0&&arrays[0]==null))
+   			throw new IllegalArgumentException("Stack pixel array null");
     	boolean stackSizeChanged = this.stack!=null && stackSize!=getStackSize();
     	if (currentSlice<1) setCurrentSlice(1);
     	boolean resetCurrentSlice = currentSlice>stackSize;
@@ -1480,19 +1484,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return !imageLoaded;
     }
 
-	/** Sets the image arrays to null to help the garbage collector
-		do its job. Does nothing if the image is locked or a
-		setIgnoreFlush(true) call has been made. */
+	/** Sets the ImageProcessor, Roi, AWT Image and stack image
+		arrays to null. Does nothing if the image is locked. */
 	public synchronized void flush() {
-		if (locked || ignoreFlush)
-			return;
+		if (locked || ignoreFlush) return;
 		notifyListeners(CLOSED);
-		if (ip!=null) {
-			ip.setPixels(null);
-			ip = null;
-		}
-		if (roi!=null)
-			roi.setImage(null);
+		ip = null;
+		if (roi!=null) roi.setImage(null);
+		roi = null;
 		if (stack!=null) {
 			Object[] arrays = stack.getImageArray();
 			if (arrays!=null) {
@@ -1500,11 +1499,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 					arrays[i] = null;
 			}
 		}
+		stack = null;
 		img = null;
 	}
 	
-	/** Set <code>ignoreFlush true</code> to not have the pixel 
-		data set to null when the window is closed. */
+	/** Obsolete */
 	public void setIgnoreFlush(boolean ignoreFlush) {
 		this.ignoreFlush = ignoreFlush;
 	}
