@@ -3390,7 +3390,7 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setOption(arg1, state);
 		else if (arg1.startsWith("bicubic"))
 			ImageProcessor.setUseBicubic(state);
-		else if (arg1.startsWith("wand"))
+		else if (arg1.startsWith("wand")||arg1.indexOf("points")!=-1)
 			Wand.setAllPoints(state);
 		else
 			interp.error("Invalid option");
