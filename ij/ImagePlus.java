@@ -521,14 +521,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Replaces the stack, if any, with the one specified.
 		Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack stack) {
-   		int stackSize = stack.getSize();
-   		if (stackSize==0)
-   			throw new IllegalArgumentException("Stack is empty");
-   		if (!stack.isVirtual()) {
-   			Object[] arrays = stack.getImageArray();
-   			if (arrays==null || (arrays.length>0&&arrays[0]==null))
-   				throw new IllegalArgumentException("Stack pixel array null");
-   		}
+		int stackSize = stack.getSize();
+		if (stackSize==0)
+			throw new IllegalArgumentException("Stack is empty");
+		if (!stack.isVirtual()) {
+			Object[] arrays = stack.getImageArray();
+			if (arrays==null || (arrays.length>0&&arrays[0]==null))
+				throw new IllegalArgumentException("Stack pixel array null");
+		}
     	boolean stackSizeChanged = this.stack!=null && stackSize!=getStackSize();
     	if (currentSlice<1) setCurrentSlice(1);
     	boolean resetCurrentSlice = currentSlice>stackSize;

@@ -76,7 +76,9 @@ public class Memory implements PlugIn {
 			String msg = 
 				   "Unable to update the file \"" + name + "\".\n"
 				+ " \n"
-				+ "\"" + error + "\"\n";
+				+ "\"" + error + "\"";
+			if (IJ.isVista())
+				msg += Prefs.vistaHint;
 			IJ.showMessage("Memory", msg);
 			return;
 		}
@@ -85,7 +87,7 @@ public class Memory implements PlugIn {
 			hint = "\nDelete the \"ImageJ.cfg\" file, located in the ImageJ folder,\nif ImageJ fails to start.";
 		IJ.showMessage("Memory", "The new " + max2 +"MB limit will take effect after ImageJ is restarted."+hint);		
 	}
-
+	
 	public long getMemorySetting() {
 		if (IJ.getApplet()!=null) return 0L;
 		long max = 0L;
@@ -116,6 +118,8 @@ public class Memory implements PlugIn {
 		}
 		if (max>0)
 			msg += "Current limit: " + max + "MB";
+		if (IJ.isVista())
+			msg += Prefs.vistaHint;
 		IJ.showMessage("Memory", msg);
 	}
 

@@ -1092,7 +1092,7 @@ public class IJ {
 			w.autoOutline(x, y, t1, ip.getMaxThreshold());
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
-			int type = Wand.getAllPoints()?Roi.FREEROI:Roi.TRACED_ROI;
+			int type = Wand.allPoints()?Roi.FREEROI:Roi.TRACED_ROI;
 			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, type);
 			img.killRoi();
 			img.setRoi(roi);

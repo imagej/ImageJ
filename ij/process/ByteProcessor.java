@@ -207,23 +207,11 @@ public class ByteProcessor extends ImageProcessor {
 		}
 	}
 
-	public final int getPixel(int x, int y) {
+	public int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x]&0xff;
 		else
 			return 0;
-	}
-	
-	final int getBicubicPixel(int x, int y) {
-		if (x<0)
-			{if (x==-1) x=0; else return 0;}
-		if (x>=width)
-			{if (x==width) x=width-1; else return 0;}
-		if (y<0)
-			{if (y==-1) y=0; else return 0;}
-		if (y>=height)
-			{if (y==height) y=height-1; else return 0;}
-		return pixels[y*width+x]&0xff;
 	}
 	
 	public final int get(int x, int y) {return pixels[y*width+x]&0xff;}
@@ -237,19 +225,18 @@ public class ByteProcessor extends ImageProcessor {
 
 	static double oldx, oldy;
 
-	/** Uses the current interpolation method to calculate
-		the pixel value at real coordinates (x,y). */
+	/** Uses the current interpolation method (BILINEAR or BICUBIC) 
+		to calculate the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
-		if (interpolationMethod==BILINEAR) {
+		if (interpolationMethod==BICUBIC)
+			return getBicubicInterpolatedPixel(x, y, this);
+		else {
 			if (x<0.0) x = 0.0;
 			if (x>=width-1.0) x = width-1.001;
 			if (y<0.0) y = 0.0;
 			if (y>=height-1.0) y = height-1.001;
 			return getInterpolatedPixel(x, y, pixels);
-		} else if (interpolationMethod==BICUBIC)
-			return getBicubicInterpolatedPixel(x, y, this);
-		else
-			return getPixel((int)(x+0.5), (int)(y+0.5));
+		}
 	}
 
 	final public int getPixelInterpolated(double x, double y) {
@@ -297,6 +284,11 @@ public class ByteProcessor extends ImageProcessor {
 		if (bgColor<0) bgColor = 0;
 		if (bgColor>255) bgColor = 255;
 		bgColorSet = true;
+	}
+
+	/** Returns the background fill value. */
+	public double getBackgroundValue() {
+		return bgColor;
 	}
 
 	/** Stores the specified real value at (x,y). Does
@@ -866,8 +858,10 @@ public class ByteProcessor extends ImageProcessor {
 		}
 		byte[] pixels2 = (byte[])getPixelsCopy();
 		ImageProcessor ip2 = null;
-		if (interpolationMethod==BICUBIC)
+		if (interpolationMethod==BICUBIC) {
 			ip2 = new ByteProcessor(getWidth(), getHeight(), pixels2, null);
+			ip2.setBackgroundValue(getBackgroundValue());
+		}
 		boolean checkCoordinates = (xScale < 1.0) || (yScale < 1.0);
 		int index1, index2, xsi, ysi;
 		double ys, xs;
@@ -1005,8 +999,10 @@ public class ByteProcessor extends ImageProcessor {
         	return;
 		byte[] pixels2 = (byte[])getPixelsCopy();
 		ImageProcessor ip2 = null;
-		if (interpolationMethod==BICUBIC)
+		if (interpolationMethod==BICUBIC) {
 			ip2 = new ByteProcessor(getWidth(), getHeight(), pixels2, null);
+			ip2.setBackgroundValue(getBackgroundValue());
+		}
 		double centerX = roiX + (roiWidth-1)/2.0;
 		double centerY = roiY + (roiHeight-1)/2.0;
 		int xMax = roiX + this.roiWidth - 1;

@@ -15,6 +15,7 @@ import ij.plugin.Animator;
 import ij.process.FloatBlitter;
 import ij.plugin.GelAnalyzer;
 import ij.process.ColorProcessor;
+import ij.text.TextWindow;
 
 /**
 This class contains the ImageJ preferences, which are 
@@ -45,6 +46,8 @@ public class Prefs {
 		SHOW_ALL_SLICE_ONLY=1<<17, COPY_HEADERS=1<<18, NO_ROW_NUMBERS=1<<19,
 		MOVE_TO_MISC=1<<20, ADD_TO_MANAGER=1<<21, RUN_SOCKET_LISTENER=1<<22; 
     public static final String OPTIONS = "prefs.options";
+    
+	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
 
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
@@ -323,12 +326,15 @@ public class Prefs {
 			}
 			savePrefs(prefs, path);
 		} catch (Throwable t) {
-			CharArrayWriter caw = new CharArrayWriter();
-			PrintWriter pw = new PrintWriter(caw);
-			t.printStackTrace(pw);
-			IJ.log(caw.toString());
-			IJ.log("<Unable to save preferences>");
-			IJ.wait(3000);
+			String msg = t.getMessage();
+			if (msg==null) msg = ""+t;
+			int delay = 4000;
+			if (IJ.isVista()) {
+				msg += vistaHint;
+				delay = 8000;
+			}
+			new TextWindow("Error Saving Preferences", msg, 500, 200);
+			IJ.wait(delay);
 		}
 	}
 

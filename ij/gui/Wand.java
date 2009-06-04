@@ -275,7 +275,7 @@ public class Wand {
 		allPoints = b;
 	}
 
-	public static boolean getAllPoints() {
+	public static boolean allPoints() {
 		return allPoints;
 	}
 }

@@ -451,7 +451,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			ipf.setValue(fillColor);
 			ff = new FloodFiller(ipf);
 		}
-		roiType = Wand.getAllPoints()?Roi.FREEROI:Roi.TRACED_ROI;
+		roiType = Wand.allPoints()?Roi.FREEROI:Roi.TRACED_ROI;
 
 		for (int y=r.y; y<(r.y+r.height); y++) {
 			offset = y*width;

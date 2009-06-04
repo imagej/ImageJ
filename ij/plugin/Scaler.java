@@ -220,12 +220,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				bgValue = ip.getBestIndex(bgc);
 			else if (bitDepth==24)
 				bgValue = bgc.getRGB();
-		} else {
-			if (bitDepth==8)
-				bgValue = ip.isInvertedLut()?0.0:255.0; // white
-			else if (bitDepth==24)
-				bgValue = 0xffffffff; // white
-		}
+		} else
+			bgValue = 0.0;
 		return true;
 	}
 

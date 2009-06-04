@@ -341,6 +341,9 @@ public abstract class ImageProcessor extends Object {
 	/** Sets the background fill value used by the rotate(), scale() and translate() methods. */
 	public abstract void setBackgroundValue(double value);
 
+	/** Returns the background fill value. */
+	public abstract double getBackgroundValue();
+
 	/** Returns the smallest displayed pixel value. */
 	public abstract double getMin();
 
@@ -1501,21 +1504,32 @@ public abstract class ImageProcessor extends Object {
 	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
 		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
 		int v0 = (int) Math.floor(y0);
+		if (u0<=0 || u0>=width-2 || v0<=0 || v0>=height-2)
+			return ip2.getBilinearInterpolatedPixel(x0, y0);
 		double q = 0;
 		for (int j = 0; j <= 3; j++) {
 			int v = v0 - 1 + j;
 			double p = 0;
 			for (int i = 0; i <= 3; i++) {
 				int u = u0 - 1 + i;
-				p = p + ip2.getBicubicPixel(u,v) * cubic(x0 - u);
+				p = p + ip2.get(u,v) * cubic(x0 - u);
 			}
 			q = q + p * cubic(y0 - v);
 		}
 		return q;
 	}
 	
-	abstract int getBicubicPixel(int x, int y);
-
+	final double getBilinearInterpolatedPixel(double x, double y) {
+		if (x>=-1 && x<width && y>=-1 && y<height) {
+			int method = interpolationMethod;
+			interpolationMethod = BILINEAR;
+			double value = getInterpolatedPixel(x, y);
+			interpolationMethod = method;
+			return value;
+		} else
+			return getBackgroundValue();
+	}
+	
 	static final double a = 0.5; // Catmull-Rom interpolation
 	final double cubic(double x) {
 		if (x < 0.0) x = -x;
