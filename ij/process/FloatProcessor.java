@@ -234,7 +234,7 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Returns a pixel value that must be converted using
 		Float.intBitsToFloat(). */
-	public final int getPixel(int x, int y) {
+	public int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return Float.floatToIntBits(pixels[y*width+x]);
 		else
@@ -288,19 +288,18 @@ public class FloatProcessor extends ImageProcessor {
 		putPixelValue(x, y, iArray[0]);
 	}
 
-	/** Uses the current interpolation method to calculate
-		the pixel value at real coordinates (x,y). */
+	/** Uses the current interpolation method (BILINEAR or BICUBIC) 
+		to calculate the pixel value at real coordinates (x,y). */
 	public double getInterpolatedPixel(double x, double y) {
-		if (interpolationMethod==BILINEAR) {
+		if (interpolationMethod==BICUBIC)
+			return getBicubicInterpolatedPixel(x, y, this);
+		else {
 			if (x<0.0) x = 0.0;
 			if (x>=width-1.0) x = width-1.001;
 			if (y<0.0) y = 0.0;
 			if (y>=height-1.0) y = height-1.001;
 			return getInterpolatedPixel(x, y, pixels);
-		} else if (interpolationMethod==BICUBIC)
-			return getBicubicInterpolatedPixel(x, y, this);
-		else
-			return getPixel((int)(x+0.5), (int)(y+0.5));
+		}
 	}
 		
 	final public int getPixelInterpolated(double x, double y) {
@@ -850,31 +849,21 @@ public class FloatProcessor extends ImageProcessor {
 	public double getBicubicInterpolatedPixel(double x0, double y0, ImageProcessor ip2) {
 		int u0 = (int) Math.floor(x0);	//use floor to handle negative coordinates too
 		int v0 = (int) Math.floor(y0);
+		if (u0<=0 || u0>=width-2 || v0<=0 || v0>=height-2)
+			return ip2.getBilinearInterpolatedPixel(x0, y0);
 		double q = 0;
 		for (int j = 0; j <= 3; j++) {
 			int v = v0 - 1 + j;
 			double p = 0;
 			for (int i = 0; i <= 3; i++) {
 				int u = u0 - 1 + i;
-				p = p + Float.intBitsToFloat(ip2.getBicubicPixel(u,v)) * cubic(x0 - u);
+				p = p + ip2.getf(u,v) * cubic(x0 - u);
 			}
 			q = q + p * cubic(y0 - v);
 		}
 		return q;
 	}
 	
-	final int getBicubicPixel(int x, int y) {
-		if (x<0)
-			{if (x==-1) x=0; else return 0;}
-		if (x>=width)
-			{if (x==width) x=width-1; else return 0;}
-		if (y<0)
-			{if (y==-1) y=0; else return 0;}
-		if (y>=height)
-			{if (y==height) y=height-1; else return 0;}
-		return Float.floatToIntBits(pixels[y*width+x]);
-	}
-
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {
 		int bestIndex = getBestIndex(color);
@@ -894,6 +883,11 @@ public class FloatProcessor extends ImageProcessor {
 
 	/** Does nothing. The rotate() and scale() methods always zero fill. */
 	public void setBackgroundValue(double value) {
+	}
+
+	/** Always returns 0. */
+	public double getBackgroundValue() {
+		return 0.0;
 	}
 
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {

@@ -128,6 +128,11 @@ public class ColorProcessor extends ImageProcessor {
 		bgColor = (int)value;
 	}
 
+	/** Returns the background fill value. */
+	public double getBackgroundValue() {
+		return bgColor;
+	}
+
 	/** Returns the smallest displayed pixel value. */
 	public double getMin() {
 		return min;
@@ -251,15 +256,11 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	public final int getPixel(int x, int y) {
+	public int getPixel(int x, int y) {
 		if (x>=0 && x<width && y>=0 && y<height)
 			return pixels[y*width+x];
 		else
 			return 0;
-	}
-
-	final int getBicubicPixel(int x, int y) {
-		return 0;
 	}
 
 	public final int get(int x, int y) {

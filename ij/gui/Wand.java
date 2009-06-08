@@ -7,7 +7,26 @@ import ij.process.*;
 /** This class implements ImageJ's wand (tracing) tool. */
 public class Wand {
 	static final int UP=0, DOWN=1, UP_OR_DOWN=2, LEFT=3, RIGHT=4, LEFT_OR_RIGHT=5, NA=6;
-	
+	static final int[] table = {
+		// 1234, 1=upper left pixel,  2=upper right, 3=lower left, 4=lower right
+		NA,			// 0000, should never happen
+		RIGHT,		// 000X,
+		DOWN,		// 00X0
+		RIGHT,		// 00XX
+		UP,			// 0X00
+		UP,			// 0X0X
+		UP_OR_DOWN, // 0XX0 Go up or down depending on current direction
+		UP,			// 0XXX
+		LEFT,		// X000
+		LEFT_OR_RIGHT, // X00X  Go left or right depending on current direction
+		DOWN,		// X0X0
+		RIGHT,		// X0XX
+		LEFT,		// XX00
+		LEFT,		// XX0X
+		DOWN,		// XXX0
+		NA,			// XXXX Should never happen
+	};
+
 	/** The number of points in the generated outline. */
 	public int npoints;
 	private int maxPoints = 1000; // will be increased if necessary
@@ -23,6 +42,8 @@ public class Wand {
 	private float[] fpixels;
 	private int width, height;
 	private float lowerThreshold, upperThreshold;
+	private static boolean allPoints;
+
 
 	/** Constructs a Wand object from an ImageProcessor. */
 	public Wand(ImageProcessor ip) {
@@ -171,25 +192,6 @@ public class Wand {
 	}
 
 	void traceEdge(int xstart, int ystart, int startingDirection) {
-		int[] table = {
-						// 1234, 1=upper left pixel,  2=upper right, 3=lower left, 4=lower right
-			NA,			// 0000, should never happen
-			RIGHT,		// 000X,
-			DOWN,		// 00X0
-			RIGHT,		// 00XX
-			UP,			// 0X00
-			UP,			// 0X0X
-			UP_OR_DOWN, // 0XX0 Go up or down depending on current direction
-			UP,			// 0XXX
-			LEFT,		// X000
-			LEFT_OR_RIGHT, // X00X  Go left or right depending on current direction
-			DOWN,		// X0X0
-			RIGHT,		// X0XX
-			LEFT,		// XX00
-			LEFT,		// XX0X
-			DOWN,		// XXX0
-			NA,			// XXXX Should never happen
-			};
 		int index;
 		int newDirection;
 		int x = xstart;
@@ -220,7 +222,7 @@ public class Wand {
 				else
 					newDirection = RIGHT;
 			}
-			if (newDirection!=direction) {
+			if (newDirection!=direction || allPoints) {
 				xpoints[count] = x;
 				ypoints[count] = y;
 				count++;
@@ -268,5 +270,12 @@ public class Wand {
 		} while (x!=xstart || y!=ystart || direction!=startingDirection);
 		npoints = count;
 	}
+	
+	public static void setAllPoints(boolean b) {
+		allPoints = b;
+	}
 
+	public static boolean allPoints() {
+		return allPoints;
+	}
 }

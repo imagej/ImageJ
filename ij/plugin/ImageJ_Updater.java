@@ -23,7 +23,9 @@ public class ImageJ_Updater implements PlugIn {
 			return;
 		}
 		if (!file.canWrite()) {
-			error("No write access: "+file.getPath());
+			String msg = "No write access: "+file.getPath();
+			if (IJ.isVista()) msg += Prefs.vistaHint;
+			error(msg);
 			return;
 		}
 		String[] list = openUrlAsList(IJ.URL+"/download/jars/list.txt");
