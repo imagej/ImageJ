@@ -954,10 +954,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return properties;
 	}
 		
-	/** Creates a LookUpTable object corresponding to this image. */
+	/** Creates a LookUpTable object that corresponds to this image. */
     public LookUpTable createLut() {
-    	return new LookUpTable(getProcessor().getColorModel());
-    }
+	ImageProcessor ip2 = getProcessor();
+		if (ip2!=null)
+			return new LookUpTable(ip2.getColorModel());
+		else
+			return new LookUpTable(LookUpTable.createGrayscaleColorModel(false));
+	}
     
 	/** Returns true is this image uses an inverting LUT that 
 		displays zero as white and 255 as black. */
@@ -1044,6 +1048,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (stack==null) {
 			s = createEmptyStack();
 			ImageProcessor ip2 = getProcessor();
+			if (ip2==null)
+				return s;
             String info = (String)getProperty("Info");
             String label = info!=null?getTitle()+"\n"+info:null;
 			s.addSlice(label, ip2);
