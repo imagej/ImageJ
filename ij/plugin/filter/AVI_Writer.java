@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
-import com.sun.image.codec.jpeg.*;
 import javax.imageio.ImageIO;
 
 /**
@@ -51,7 +50,6 @@ public class AVI_Writer implements PlugInFilter {
     private byte[]          bufferWrite;    //output buffer for image data
     private BufferedImage   bufferedImage;  //data source for writing compressed images
     private RaOutputStream  raOutputStream; //output stream for writing compressed images
-    private JPEGImageEncoder jpegEncoder;
     private long[]          sizePointers =  //a stack of the pointers to the chunk sizes (pointers are
                                 new long[5];//  remembered to write the sizes later, when they are known)
     private int             stackPointer;   //points to first free position in sizePointers stack
@@ -389,15 +387,14 @@ public class AVI_Writer implements PlugInFilter {
     }
 
     /** Write a frame as jpeg- or png-compressed image */
-    private void writeCompressedFrame(ImageProcessor ip) throws IOException {
-        BufferedImage bufferedImage = ip.getBufferedImage();
-        //IJ.log("BufferdImage Type="+bufferedImage.getType()); // 1=RGB, 13=indexed
-        if (biCompression == JPEG_COMPRESSION) {
-            jpegEncoder = JPEGCodec.createJPEGEncoder(raOutputStream);
-            jpegEncoder.encode(bufferedImage);  
-        } else //if (biCompression == PNG_COMPRESSION)
-            ImageIO.write(bufferedImage, "png", raOutputStream);
-    }
+	private void writeCompressedFrame(ImageProcessor ip) throws IOException {
+		BufferedImage bufferedImage = ip.getBufferedImage();
+		//IJ.log("BufferdImage Type="+bufferedImage.getType()); // 1=RGB, 13=indexed
+		if (biCompression == JPEG_COMPRESSION)
+			ImageIO.write(bufferedImage, "jpeg", raOutputStream);
+		else //if (biCompression == PNG_COMPRESSION)
+			ImageIO.write(bufferedImage, "png", raOutputStream);
+	}
 
     /** Write the color table entries (for 8 bit grayscale or indexed color).
      *  Byte order or LUT entries: blue byte, green byte, red byte, 0 byte */

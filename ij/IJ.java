@@ -138,7 +138,7 @@ public class IJ {
 		if (arg==null) arg = "";
 		// Load using custom classloader if this is a user 
 		// plugin and we are not running as an applet
-		if (!className.startsWith("ij") && applet==null)
+		if (!className.startsWith("ij.") && applet==null)
 			return runUserPlugIn(commandName, className, arg, false);
 		Object thePlugIn=null;
 		try {
