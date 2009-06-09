@@ -150,7 +150,7 @@ public class IJ {
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
 		catch (ClassNotFoundException e) {
-			if (IJ.getApplet()==null && className.indexOf("JpegWriter")==-1)
+			if (IJ.getApplet()==null)
 				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}

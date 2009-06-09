@@ -7,6 +7,7 @@ import ij.process.*;
 import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
+import ij.plugin.JpegWriter;
 import javax.imageio.*;
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
@@ -252,16 +253,8 @@ public class FileSaver {
 		@see getJpegQuality
 	*/
 	public boolean saveAsJpeg(String path) {
-		Object jpegWriter = null;
-		Object jpw = IJ.runPlugIn(imp, "ij.plugin.JpegWriter", path);
-		if (jpw==null) { // use ImageIO if JpegWriter is missing
-			try {
-				ImageIO.write(imp.getBufferedImage(), "jpg", new File(path));
-			} catch (Exception e) {
-				IJ.error(""+e);
-			}
-		}
-		if (!(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
+		String err = JpegWriter.save(imp, path, jpegQuality);
+		if (err==null && !(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
 			updateImp(fi, fi.GIF_OR_JPG);
 		return true;
 	}
