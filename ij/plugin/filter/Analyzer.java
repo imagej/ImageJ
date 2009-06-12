@@ -414,16 +414,21 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&FERET)!=0) {
 			boolean extras = true;
-			double FeretDiameter=Double.NaN, feretAngle=Double.NaN, minFeret=Double.NaN;
+			double FeretDiameter=Double.NaN, feretAngle=Double.NaN, minFeret=Double.NaN,
+				feretX=Double.NaN, feretY=Double.NaN;
 			if (roi!=null) {
 				double[] a = roi.getFeretValues();
 				if (a!=null) {
 					FeretDiameter = a[0];
 					feretAngle = a[1];
 					minFeret = a[2];
+					feretX = a[3];
+					feretY = a[4];
 				}
 			}
 			rt.addValue(ResultsTable.FERET, FeretDiameter);
+			rt.addValue(ResultsTable.FERET_X, feretX);
+			rt.addValue(ResultsTable.FERET_Y, feretY);
 			rt.addValue(ResultsTable.FERET_ANGLE, feretAngle);
 			rt.addValue(ResultsTable.MIN_FERET, minFeret);
 		}
@@ -731,6 +736,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.FRAME);
 		}
 		if ((measurements&FERET)!=0) {
+			add2(ResultsTable.FERET_X);
+			add2(ResultsTable.FERET_Y);
 			add2(ResultsTable.FERET_ANGLE);
 			add2(ResultsTable.MIN_FERET);
 		}

@@ -630,10 +630,12 @@ public class ShapeRoi extends Roi {
 			min = 0.0;
 			angle = 0.0;
 		}
-		double[] a = new double[3];
+		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;
 		a[2] = min;
+		a[3] = 0.0; // FeretX
+		a[4] = 0.0; // FeretY
 		return a;
 	}
 

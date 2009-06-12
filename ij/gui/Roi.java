@@ -161,9 +161,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Caculates "Feret" (maximum caliper width), "FeretAngle"
-		and "MinFeret" (minimum caliper width). */	
+		and "MinFeret" (minimum caliper width), "FeretX" and "FeretY". */	
 	public double[] getFeretValues() {
-		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0;
+		double min=Double.MAX_VALUE, diameter=0.0, angle=0.0, feretX=0.0, feretY=0.0;
 		int p1=0, p2=0;
 		double pw=1.0, ph=1.0;
 		if (imp!=null) {
@@ -221,16 +221,20 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			double tx1=x1, ty1=y1;
 			x1=x2; y1=y2; x2=tx1; y2=ty1;
 		}
+		feretX = x1*pw;
+		feretY = y1*ph;
 		dx=x2-x1; dy=y1-y2;
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
 		if (angle<0) angle = 180.0 + angle;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
 		if (pw==ph)
-		min *= pw;
-		double[] a = new double[3];
+			min *= pw;
+		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;
 		a[2] = min;
+		a[3] = feretX;
+		a[4] = feretY;
 		return a;
 	}
 	

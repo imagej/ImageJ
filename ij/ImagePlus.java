@@ -815,8 +815,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (updateWin) {
 			if (nSlices!=getImageStackSize())
 				setOpenAsHyperStack(true);
+			ip=null; img=null;
+			setPositionWithoutUpdate(getChannel(), getSlice(), getFrame());
+			if (isComposite()) ((CompositeImage)this).reset();
 			new StackWindow(this);
-			setSlice(1);
+			setPosition(getChannel(), getSlice(), getFrame());
 		}
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
@@ -1131,6 +1134,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		noUpdateMode = false;
 	}
 	
+	/** Returns that stack index (1-based) corresponding to the specified position. */
 	public int getStackIndex(int channel, int slice, int frame) {	
    		if (channel<1) channel = 1;
     	if (channel>nChannels) channel = nChannels;
@@ -1164,7 +1168,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Displays the specified stack image, where 1<=n<=stackSize.
 		Does nothing if this image is not a stack. */
 	public synchronized void setSlice(int n) {
-		if (stack==null || n==currentSlice) {
+		if (stack==null || (n==currentSlice&&ip!=null)) {
 	    	updateAndRepaintWindow();
 			return;
 		}
@@ -1177,10 +1181,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip = getProcessor();
 			setCurrentSlice(n);
 			Object pixels = stack.getPixels(currentSlice);
-			if (pixels!=null) {
+			if (ip!=null && pixels!=null) {
 				ip.setSnapshotPixels(null);
 				ip.setPixels(pixels);
-			}
+			} else
+				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
 			if (IJ.altKeyDown() && !IJ.isMacro()) {
