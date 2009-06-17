@@ -99,9 +99,9 @@ public class Binary implements PlugInFilter {
 		GenericDialog gd = new GenericDialog("Binary Options");
 		gd.addNumericField("Iterations (1-25):", iterations, 0, 3, "");
 		gd.addNumericField("Count (1-8):", count, 0, 3, "");
-		gd.addCheckbox("Black background", Prefs.blackBackground);
-		gd.addCheckbox("Pad edges when eroding", Prefs.padEdges);
-		gd.addChoice("EDM output:", outputTypes, outputTypes[EDM.getOutputType()]);
+		gd.addCheckbox("Black Background", Prefs.blackBackground);
+		gd.addCheckbox("Pad Edges When Eroding", Prefs.padEdges);
+		gd.addChoice("EDM Output:", outputTypes, outputTypes[EDM.getOutputType()]);
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		int n = (int)gd.getNextNumber();

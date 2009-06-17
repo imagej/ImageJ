@@ -544,9 +544,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 					return;
 				}
 				backgroundToNaN = gd.getNextBoolean();
-				if (backgroundToNaN)
+				if (backgroundToNaN) {
+					Recorder.recordInMacros = true;
  					IJ.run("NaN Background");
- 				else
+					Recorder.recordInMacros = false;
+ 				} else
  					runThresholdCommand();
  			} else
  				runThresholdCommand();
