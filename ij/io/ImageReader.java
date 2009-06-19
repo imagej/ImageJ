@@ -4,7 +4,7 @@ import ij.process.*;
 import java.io.*;
 import java.net.*;
 import java.awt.image.BufferedImage;
-import com.sun.image.codec.jpeg.*;
+import javax.imageio.ImageIO;
 
 /** Reads raw 8-bit, 16-bit or 32-bit (float or RGB)
 	images from a stream or URL. */
@@ -30,7 +30,7 @@ public class ImageReader {
 		this.fi = fi;
 	    width = fi.width;
 	    height = fi.height;
-	    skipCount = fi.longOffset>0?fi.longOffset:fi.offset;
+	    skipCount = fi.getOffset();
 	}
 	
 	void eofError() {
@@ -428,11 +428,10 @@ public class ImageReader {
 	}
 	
 	int[] readJPEG(InputStream in) throws IOException {
-		BufferedImage bi = JPEGCodec.createJPEGDecoder(in).decodeAsBufferedImage();
+		BufferedImage bi = ImageIO.read(in);
 		ImageProcessor ip =  new ColorProcessor(bi);
 		return (int[])ip.getPixels();
 	}
-
 
 	int[] readPlanarRGB(InputStream in) throws IOException {
 		if (fi.compression == FileInfo.LZW || fi.compression == FileInfo.LZW_WITH_DIFFERENCING || fi.compression==FileInfo.PACK_BITS)

@@ -5,11 +5,26 @@
 </head>
 <body>
 
-<li> <u>1.42q, 4 June 2009</u>
+<li> <u>1.43a, 18 June 2009</u>
 <ul>
-<li> Fixed bugs, introduced in v1.42p, that caused an exception when opening a virtual stack
-or when closing an Image5D stack.
-<li> Fixed a bug that caused bicubic intepolation edge artifacts.
+<li> Thanks to Michael Schmid, the wand tool now supports 4-connected 
+and 8-connected modes, and a tolerance can be specified. Double click
+on the tool icon to configure.
+<li> The <i>Image&gt;Stacks&gt;Delete Slice</i> command works
+with hyperstacks.
+<li> Added a "Name" field to the <i>Image&gt;Stacks&gt;Images to Stack</i> dialog box.
+<li> Thanks to Johannes Schindelin, <i>Help&gt;Update ImageJ</i> updates ij.jar files
+in non-standard locations, and those embedded in ImageJ64 on OS X.
+<li> ImageJ can now be compiled with OpenJDK, thanks to 
+Johannes Schindelin and Mark Longair.
+<li> Added the doWand(x,y,tolerance,mode) macro function and
+IJ.doWand(x,y,tolerance,mode) method.
+<li> Fixed a bug that caused plugins in packages with names starting
+with "ij" to sometimes not be found.
+<li> Fixed a bug that caused the Threshold tool "Apply" option to not be 
+recorded for 32-bit images with "Set Background Pixels to NaN" enabled.
+<li> Fixed a bug that caused uncompressed TIFF stacks larger than
+2GB to not open correctly.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

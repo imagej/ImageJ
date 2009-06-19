@@ -5,6 +5,7 @@ import java.util.Properties;
 import java.awt.image.*;
 import ij.process.ImageProcessor;
 import ij.measure.*;
+import ij.plugin.WandToolOptions;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
 import ij.macro.*;
@@ -912,9 +913,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					}
 				}
 				setRoiModState(e, roi, -1);
-				int npoints = IJ.doWand(ox, oy);
-				if (Recorder.record && npoints>0)
-					Recorder.record("doWand", ox, oy);
+				String mode = WandToolOptions.getMode();
+				double tolerance = WandToolOptions.getTolerance();
+				int npoints = IJ.doWand(ox, oy, tolerance, mode);
+				if (Recorder.record && npoints>0) {
+					if (tolerance==0.0 && mode.equals("Legacy"))
+						Recorder.record("doWand", ox, oy);
+					else
+						Recorder.recordString("doWand("+ox+", "+oy+", "+tolerance+", \""+mode+"\");\n");
+				}
 				break;
 			case Toolbar.OVAL:
 				if (Toolbar.getBrushSize()>0)

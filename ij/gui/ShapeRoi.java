@@ -630,15 +630,18 @@ public class ShapeRoi extends Roi {
 			min = 0.0;
 			angle = 0.0;
 		}
-		double[] a = new double[3];
+		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;
 		a[2] = min;
+		a[3] = 0.0; // FeretX
+		a[4] = 0.0; // FeretY
 		return a;
 	}
 
 	/**Returns the length of this shape (perimeter, if shape is closed). */
 	public double getLength() {
+		/*
 		if(shape==null) return 0.0;
 		Rectangle2D r2d = shape.getBounds2D();
 		double w = r2d.getWidth();
@@ -652,6 +655,8 @@ public class ShapeRoi extends Roi {
 		parsePath(pIter, par, null, null, null);
 		flatten = false;
 		return par[0];
+		*/
+		return 0.0;
 	}
 
 	/**Returns a flattened version of the path iterator for this ROi's shape*/

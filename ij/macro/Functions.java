@@ -79,7 +79,7 @@ public class Functions implements MacroConstants, Measurements {
 			case RESET_THRESHOLD: interp.getParens(); IJ.resetThreshold(); resetImage(); break;
 			case PRINT: print(); break;
 			case WRITE: IJ.write(getStringArg()); break;
-			case DO_WAND: IJ.doWand((int)getFirstArg(), (int)getLastArg()); resetImage(); break;
+			case DO_WAND: doWand(); break;
 			case SET_MIN_MAX: setMinAndMax(); break;
 			case SET_THRESHOLD: setThreshold(); break;
 			case SET_TOOL: setTool(); break;
@@ -4287,6 +4287,20 @@ public class Functions implements MacroConstants, Measurements {
 		int index = (int)getLastArg();
 		checkIndex(index, 0, str.length()-1);
 		return str.charAt(index);
+	}
+	
+	void doWand() {
+		int x = (int)getFirstArg();
+		int y = (int)getNextArg();
+		double tolerance = 0.0;
+		String mode = null;
+		if (interp.nextToken()==',') {
+			tolerance = getNextArg();
+			mode = getNextString();
+		}
+		interp.getRightParen();
+		IJ.doWand(x, y, tolerance, mode);
+		resetImage();
 	}
 
 } // class Functions

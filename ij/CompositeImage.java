@@ -31,7 +31,6 @@ public class CompositeImage extends ImagePlus {
 	boolean[] active = new boolean[MAX_CHANNELS];
 	int mode = COLOR;
 	int bitDepth;
-	boolean customLut;
 	double[] displayRanges;
 	byte[][] channelLuts;
 	boolean customLuts;
@@ -98,7 +97,7 @@ public class CompositeImage extends ImagePlus {
 	}
 	
 	public void updateChannelAndDraw() {
-		if (!customLut) singleChannel = true;
+		if (!customLuts) singleChannel = true;
 		updateAndDraw();
 	}
 	
@@ -244,7 +243,7 @@ public class CompositeImage extends ImagePlus {
 		if (getSlice()!=currentSlice || getFrame()!=currentFrame) {
 			currentSlice = getSlice();
 			currentFrame = getFrame();
-			int position = (currentFrame-1)*nChannels*getNSlices() + (currentSlice-1)*nChannels + 1;
+			int position = getStackIndex(1, currentSlice, currentFrame);
 			for (int i=0; i<nChannels; ++i)
 				cip[i].setPixels(getImageStack().getProcessor(position+i).getPixels());
 		}
@@ -549,7 +548,6 @@ public class CompositeImage extends ImagePlus {
 				img = null;
 			}
 			currentChannel = -1;
-			customLut = true;
 			if (!IJ.isMacro()) ContrastAdjuster.update();
 		}
 		customLuts = true;
