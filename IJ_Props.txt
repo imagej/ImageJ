@@ -87,13 +87,14 @@ options02="Input/Output...",ij.plugin.Options("io")
 options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
 options05="Point Tool...",ij.plugin.Colors("point")
-options06="Colors...",ij.plugin.Colors
-options07="Appearance...",ij.plugin.Options("display")
-options08="Conversions...",ij.plugin.Options("conv")
-options09="Memory & Threads...",ij.plugin.Memory
-options10="Proxy Settings...",ij.plugin.ProxySettings
-options11="Compiler...",ij.plugin.Compiler("options")
-options12="Misc...",ij.plugin.Options("misc")
+options06="Wand Tool...",ij.plugin.WandToolOptions
+options07="Colors...",ij.plugin.Colors
+options08="Appearance...",ij.plugin.Options("display")
+options09="Conversions...",ij.plugin.Options("conv")
+options10="Memory & Threads...",ij.plugin.Memory
+options11="Proxy Settings...",ij.plugin.ProxySettings
+options12="Compiler...",ij.plugin.Compiler("options")
+options13="Misc...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
@@ -324,7 +325,6 @@ utilities08="Search...",ij.plugin.SimpleCommands("search")
 utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
 utilities10="Capture Image",ij.plugin.ScreenGrabber("image")
 utilities11="Find Commands... [l]",ij.plugin.CommandFinder
-utilities12="Update ImageJ... ",ij.plugin.ImageJ_Updater
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

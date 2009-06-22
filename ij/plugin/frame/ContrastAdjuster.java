@@ -186,7 +186,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			addBalanceChoices();
 			gridbag.setConstraints(choice, c);
 			choice.addItemListener(this);
-			choice.addKeyListener(ij);		
+			//choice.addKeyListener(ij);		
 			add(choice);
 		}
 	

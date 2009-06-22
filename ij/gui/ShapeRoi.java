@@ -641,6 +641,7 @@ public class ShapeRoi extends Roi {
 
 	/**Returns the length of this shape (perimeter, if shape is closed). */
 	public double getLength() {
+		/*
 		if(shape==null) return 0.0;
 		Rectangle2D r2d = shape.getBounds2D();
 		double w = r2d.getWidth();
@@ -654,6 +655,8 @@ public class ShapeRoi extends Roi {
 		parsePath(pIter, par, null, null, null);
 		flatten = false;
 		return par[0];
+		*/
+		return 0.0;
 	}
 
 	/**Returns a flattened version of the path iterator for this ROi's shape*/

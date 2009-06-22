@@ -93,7 +93,7 @@ public class FileInfo implements Cloneable {
 	public String url;
     public int width;
     public int height;
-    public int offset=0;
+    public int offset=0;  // Use getOffset() to read
     public int nImages;
     public int gapBetweenImages;
     public boolean whiteIsZero;
@@ -122,7 +122,7 @@ public class FileInfo implements Cloneable {
 	public double frameInterval;
 	public String description;
 	// Use <i>longOffset</i> instead of <i>offset</i> when offset>2147483647.
-	public long longOffset;
+	public long longOffset;  // Use getOffset() to read
 	// Extra metadata to be stored in the TIFF header
 	public int[] metaDataTypes; // must be < 0xffffff
 	public byte[][] metaData;
@@ -141,6 +141,11 @@ public class FileInfo implements Cloneable {
 	    nImages = 1;
 		compression = COMPRESSION_NONE;
 		samplesPerPixel = 1;
+    }
+    
+    /** Returns the offset as a long. */
+    public final long getOffset() {
+    	return longOffset>0L?longOffset:((long)offset)&0xffffffffL;
     }
     
 	/** Returns the number of bytes used per pixel. */

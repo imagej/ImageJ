@@ -1080,16 +1080,34 @@ public class IJ {
 	/** Equivalent to clicking on the current image at (x,y) with the
 		wand tool. Returns the number of points in the resulting ROI. */
 	public static int doWand(int x, int y) {
+		return doWand(x, y, 0, null);
+	}
+
+	/** Traces the boundary of the area with pixel values within
+	* 'tolerance' of the value of the pixel at the starting location.
+	* 'tolerance' is in uncalibrated units.
+	* 'mode' can be "4-connected", "8-connected" or "Legacy".
+	* "Legacy" is for compatibility with previous versions of ImageJ;
+	* it is ignored if 'tolerance' > 0.
+	*/
+	public static int doWand(int x, int y, double tolerance, String mode) {
 		ImagePlus img = getImage();
 		ImageProcessor ip = img.getProcessor();
 		if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y)))
 			return 0;
+		int imode = Wand.LEGACY_MODE;
+		if (mode!=null) {
+			if (mode.startsWith("4"))
+				imode = Wand.FOUR_CONNECTED;
+			else if (mode.startsWith("8"))
+				imode = Wand.EIGHT_CONNECTED;
+		}
 		Wand w = new Wand(ip);
 		double t1 = ip.getMinThreshold();
-		if (t1==ImageProcessor.NO_THRESHOLD)
-			w.autoOutline(x, y);
+		if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0))
+			w.autoOutline(x, y, tolerance, imode);
 		else
-			w.autoOutline(x, y, t1, ip.getMaxThreshold());
+			w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
 		if (w.npoints>0) {
 			Roi previousRoi = img.getRoi();
 			int type = Wand.allPoints()?Roi.FREEROI:Roi.TRACED_ROI;

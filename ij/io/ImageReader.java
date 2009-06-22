@@ -30,7 +30,7 @@ public class ImageReader {
 		this.fi = fi;
 	    width = fi.width;
 	    height = fi.height;
-	    skipCount = fi.longOffset>0?fi.longOffset:fi.offset;
+	    skipCount = fi.getOffset();
 	}
 	
 	void eofError() {

@@ -1192,8 +1192,8 @@ public class ByteProcessor extends ImageProcessor {
 			fPixels[i] = pixels[i]&0xff;
 		fp.setRoi(getRoi());
 		fp.setMask(mask);
-		fp.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
 		fp.setMinAndMax(min, max);
+		fp.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
 		return fp;
 	}
 	

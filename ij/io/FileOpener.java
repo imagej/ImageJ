@@ -142,7 +142,7 @@ public class FileOpener {
 	/** Opens a stack of images. */
 	ImagePlus openStack(ColorModel cm, boolean show) {
 		ImageStack stack = new ImageStack(fi.width, fi.height, cm);
-		long skip = fi.longOffset>0?fi.longOffset:fi.offset;
+		long skip = fi.getOffset();
 		Object pixels;
 		try {
 			ImageReader reader = new ImageReader(fi);
@@ -446,15 +446,15 @@ public class FileOpener {
 	}
 	
 	static boolean validateFileInfo(File f, FileInfo fi) {
-		long offset = fi.longOffset>0?fi.longOffset:fi.offset;
+		long offset = fi.getOffset();
 		long length = 0;
 		if (fi.width<=0 || fi.height<0) {
 		   error("Width or height <= 0.", fi, offset, length);
 		   return false;
 		}
-		if (offset>=0 && offset<1000)
+		if (offset>=0 && offset<1000L)
 			 return true;
-		if (offset<0) {
+		if (offset<0L) {
 		   error("Offset is negative.", fi, offset, length);
 		   return false;
 		}

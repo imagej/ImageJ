@@ -15,9 +15,9 @@ public class Colors implements PlugIn, ItemListener {
 	private Color fc2, bc2, sc2;
 
  	public void run(String arg) {
-		if (arg.equals("point"))
-			pointToolOptions();
-		else
+ 		if (arg.equals("point"))
+ 			pointToolOptions();
+ 		else
 			showDialog();
 	}
 
@@ -158,6 +158,5 @@ public class Colors implements PlugIn, ItemListener {
 			Toolbar.getInstance().repaint();
 		}
 	}
-
 
 }

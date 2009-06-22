@@ -273,7 +273,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 					textArea.append("setSlice("+strip(commandOptions)+");\n");
 				else if (name.equals("Rename..."))
 					textArea.append("rename(\""+strip(commandOptions)+"\");\n");
-				else if (name.equals("Image Calculator..."))
+				else if (name.equals("Image Calculator...") || name.equals("Wand Tool..."))
 					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
 				else 
 					textArea.append("run(\""+name+"\", \""+commandOptions+"\");\n");
