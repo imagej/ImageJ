@@ -28,7 +28,10 @@ public class WandToolOptions implements PlugIn {
 		mode = gd.getNextChoice();
 		tolerance = gd.getNextNumber();
 		if (showCheckbox) {
-			if (gd.getNextBoolean()) IJ.run("Threshold...");
+			if (gd.getNextBoolean()) {
+				imp.killRoi();
+				IJ.run("Threshold...");
+			}
 		}
 	}
 	

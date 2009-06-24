@@ -1060,9 +1060,8 @@ public class ShortProcessor extends ImageProcessor {
 			fPixels[i] = pixels[i]&0xffff;
 		fp.setRoi(getRoi());
 		fp.setMask(mask);
-		fp.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
-		//##can be NO_LUT_UPDATE
 		fp.setMinAndMax(min, max);
+		fp.setThreshold(minThreshold, maxThreshold, ImageProcessor.NO_LUT_UPDATE);
 		return fp;
 	}
 	

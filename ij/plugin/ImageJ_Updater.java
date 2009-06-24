@@ -19,7 +19,7 @@ public class ImageJ_Updater implements PlugIn {
 		//if (isMac() && !file.exists())
 		//	file = new File(Prefs.getHomeDir() + File.separator + "ImageJ.app/Contents/Resources/Java/ij.jar");
 		URL url = getClass().getResource("/ij/IJ.class");
-		String ij_jar = url == null ? null : url.toString();
+		String ij_jar = url == null ? null : url.toString().replaceAll("%20", " ");
 		if (ij_jar==null || !ij_jar.startsWith("jar:file:")) {
 			error("Could not determine location of ij.jar");
 			return;
