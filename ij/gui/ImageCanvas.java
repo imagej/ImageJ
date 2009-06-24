@@ -875,7 +875,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (!(roi!=null && (roi.contains(ox, oy)||roi.isHandle(x, y)>=0)) && roiManagerSelect(x, y))
  				return;
 		}
-		
 		if (customRoi && displayList!=null)
 			return;
 
@@ -939,6 +938,26 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
+    boolean roiManagerSelect(int x, int y) {
+		RoiManager rm=RoiManager.getInstance();
+		if (rm==null) return false;
+		Hashtable rois = rm.getROIs();
+		java.awt.List list = rm.getList();
+		int n = list.getItemCount();
+		if (labelRects==null || labelRects.length!=n) return false;
+		for (int i=0; i<n; i++) {
+			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
+				//rm.select(i);
+				// this needs to run on a separate thread, at least on OS X
+				// "update2" does not clone the ROI so the "Show All"
+				// outline moves as the user moves the RO.
+				new ij.macro.MacroRunner("roiManager('select', "+i+"); roiManager('update2');");
+				return true;
+			}
+		}
+		return false;
+    }
+
 	void zoomToSelection(int x, int y) {
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		String macro =
@@ -954,24 +973,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			"run('To Selection');\n";
 		new MacroRunner(macro, x+" "+y);
 	}
-
-    boolean roiManagerSelect(int x, int y) {
-		RoiManager rm=RoiManager.getInstance();
-		if (rm==null) return false;
-		Hashtable rois = rm.getROIs();
-		java.awt.List list = rm.getList();
-		int n = list.getItemCount();
-		if (labelRects==null || labelRects.length!=n) return false;
-		for (int i=0; i<n; i++) {
-			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
-				//rm.select(i);
-				// this needs to run on a separate thread, at least on OS X
-				new ij.macro.MacroRunner("roiManager('select', "+i+"); roiManager('update');");
-				return true;
-			}
-		}
-		return false;
-    }
 
 	protected void setupScroll(int ox, int oy) {
 		xMouseStart = ox;

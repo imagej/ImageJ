@@ -15,6 +15,7 @@ public class ImagesToStack implements PlugIn {
 	private static int method = COPY_CENTER;
 	private static boolean bicubic;
 	private static boolean keep;
+	private static boolean titlesAsLabels = true;
 	private String filter;
 	private int width, height;
 	private int maxWidth, maxHeight;
@@ -74,6 +75,7 @@ public class ImagesToStack implements PlugIn {
 			gd.addStringField("Title Contains:", "", 12);
 			if (sizesDiffer)
 				gd.addCheckbox("Bicubic Interpolation", bicubic);
+			gd.addCheckbox("Use Titles as Labels", titlesAsLabels);
 			gd.addCheckbox("Keep Source Images", keep);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
@@ -83,6 +85,7 @@ public class ImagesToStack implements PlugIn {
 			filter = gd.getNextString();
 			if (sizesDiffer)
 				bicubic = gd.getNextBoolean();
+			titlesAsLabels = gd.getNextBoolean();
 			keep = gd.getNextBoolean();
 			if (filter!=null && (filter.equals("") || filter.equals("*")))
 				filter = null;
@@ -111,9 +114,11 @@ public class ImagesToStack implements PlugIn {
 			ImageProcessor ip = image[i].getProcessor();
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();
-            String label = image[i].getTitle();
-            String info = (String)image[i].getProperty("Info");
-            if (info!=null) label += "\n" + info;
+            String label = titlesAsLabels?image[i].getTitle():null;
+            if (label!=null) {
+            	String info = (String)image[i].getProperty("Info");
+				if (info!=null) label += "\n" + info;
+			}
             if (fi!=null) {
 				FileInfo fi2 = image[i].getOriginalFileInfo();
 				if (fi2!=null && !fi.directory.equals(fi2.directory))

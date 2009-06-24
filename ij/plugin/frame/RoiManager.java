@@ -142,7 +142,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (command.equals("Add [t]"))
 			add(shiftKeyDown, altKeyDown);
 		else if (command.equals("Update"))
-			update();
+			update(true);
 		else if (command.equals("Delete"))
 			delete(false);
 		else if (command.equals("Rename"))
@@ -365,7 +365,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 	
-	boolean update() {
+	boolean update(boolean clone) {
 		ImagePlus imp = getImage();
 		if (imp==null) return false;
 		ImageCanvas ic = imp.getCanvas();
@@ -381,7 +381,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index>=0) {
 			String name = list.getItem(index);
 			rois.remove(name);
-			rois.put(name, (Roi)roi.clone());
+			if (clone)
+				rois.put(name, (Roi)roi.clone());
+			else
+				rois.put(name, roi);
 		}
 		if (Recorder.record) Recorder.record("roiManager", "Update");
 		if (showingAll) imp.draw();
@@ -1145,7 +1148,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("add & draw"))
 			addAndDraw(false);
 		else if (cmd.equals("update"))
-			update();
+			update(true);
+		else if (cmd.equals("update2"))
+			update(false);
 		else if (cmd.equals("delete"))
 			delete(false);
 		else if (cmd.equals("measure"))
