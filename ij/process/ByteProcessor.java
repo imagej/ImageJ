@@ -622,14 +622,14 @@ public class ByteProcessor extends ImageProcessor {
 				
 				pixels[offset++] = (byte)sum;
 			}
-			if (y%inc==0)
-				showProgress((double)(y-roiY)/roiHeight);
+			//if (y%inc==0)
+			//	showProgress((double)(y-roiY)/roiHeight);
 		}
         if (xMin==1) filterEdge(type, pixels2, roiHeight, roiX, roiY, 0, 1);
         if (yMin==1) filterEdge(type, pixels2, roiWidth, roiX, roiY, 1, 0);
         if (xMax==width-2) filterEdge(type, pixels2, roiHeight, width-1, roiY, 0, 1);
         if (yMax==height-2) filterEdge(type, pixels2, roiWidth, roiX, height-1, 1, 0);
-		showProgress(1.0);
+		//showProgress(1.0);
 	}
 
 	void filterEdge(int type, byte[] pixels2, int n, int x, int y, int xinc, int yinc) {

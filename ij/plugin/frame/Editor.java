@@ -903,7 +903,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				sb.append('\n');
 			}
 		}
-		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", new String(sb));
+		String text2 = new String(sb);
+		text2 = text2.replaceAll("IJ.print", "IJ.log");
+		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", text2);
 		Editor ed = np.getEditor();
 		String title = getTitle();
 		if (title.equals("Macro.txt")||title.equals("Macro.ijm"))

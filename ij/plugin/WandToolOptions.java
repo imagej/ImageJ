@@ -8,8 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
-/** This plugin implements most of the Edit/Options/Point Tool 
-	and Edit/Options/Wand Tool commands. */
+/** This plugin implements the Edit/Options/Wand Tool command. */
 public class WandToolOptions implements PlugIn {
 	private static final String[] modes = {"Legacy", "4-connected", "8-connected"};
 	private static String mode = modes[0];

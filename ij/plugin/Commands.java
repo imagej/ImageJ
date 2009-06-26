@@ -51,9 +51,12 @@ public class Commands implements PlugIn {
 
     void save() {
     	ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null)
+		if (imp!=null) {
+			boolean locked = imp.isLocked();
+			if (!locked) imp.lock();
 			new FileSaver(imp).save();
-		else
+			if (!locked) imp.unlock();
+		} else
 			IJ.noImage();
 	}
 	

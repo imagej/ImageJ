@@ -1500,8 +1500,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Sets the ImageProcessor, Roi, AWT Image and stack image
 		arrays to null. Does nothing if the image is locked. */
 	public synchronized void flush() {
-		if (locked || ignoreFlush) return;
 		notifyListeners(CLOSED);
+		if (locked || ignoreFlush) return;
 		ip = null;
 		if (roi!=null) roi.setImage(null);
 		roi = null;
@@ -1516,7 +1516,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		img = null;
 	}
 	
-	/** Obsolete */
 	public void setIgnoreFlush(boolean ignoreFlush) {
 		this.ignoreFlush = ignoreFlush;
 	}
