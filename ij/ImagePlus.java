@@ -676,13 +676,44 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 
 	/** Returns an ImageStatistics object generated using the standard
-		measurement options (area, mean, mode, min and max). */
+		measurement options (area, mean, mode, min and max).
+		This plugin demonstrates how get the area, mean and max of the
+		current image or selection:
+		<pre>
+   public class Get_Statistics implements PlugIn {
+      public void run(String arg) {
+         ImagePlus imp = IJ.getImage();
+         ImageStatistics stats = imp.getStatistics();
+         IJ.log("Area: "+stats.area);
+         IJ.log("Mean: "+stats.mean);
+         IJ.log("Max: "+stats.max);
+      }
+   }
+		</pre>
+		@see ij.process.ImageStatistics
+		@see ij.process.ImageStatistics#getStatistics
+		*/
 	public ImageStatistics getStatistics() {
 		return getStatistics(AREA+MEAN+MODE+MIN_MAX);
 	}
 	
 	/** Returns an ImageStatistics object generated using the
-		 specified measurement options. */
+		specified measurement options. This plugin demonstrates how
+		get the area and centroid of the current selection:
+		<pre>
+   public class Get_Statistics implements PlugIn, Measurements {
+      public void run(String arg) {
+         ImagePlus imp = IJ.getImage();
+         ImageStatistics stats = imp.getStatistics(MEDIAN+CENTROID);
+         IJ.log("Median: "+stats.median);
+         IJ.log("xCentroid: "+stats.xCentroid);
+         IJ.log("yCentroid: "+stats.yCentroid);
+      }
+   }
+		</pre>
+		@see ij.process.ImageStatistics
+		@see ij.measure.Measurements
+	*/
 	public ImageStatistics getStatistics(int mOptions) {
 		return getStatistics(mOptions, 256, 0.0, 0.0);
 	}

@@ -2,7 +2,7 @@ package ij.process;
 import ij.measure.*;
 import java.awt.*;
 
-/** Statistics, including the histogram, of an image or image roi. */
+/** Statistics, including the histogram, of an image or selection. */
 public class ImageStatistics implements Measurements {
 
 	public int[] histogram;

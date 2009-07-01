@@ -41,8 +41,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
-	private static final int SIZE = 24;
-	private static final int OFFSET = 4;
+	private static final int SIZE = 26;
+	private static final int OFFSET = 5;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
 		
 	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS, SIZE);
@@ -197,7 +197,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		switch (tool) {
 			case RECTANGLE:
-				g.drawRect(x+1, y+2, 14, 11);
+				g.drawRect(x+1, y+2, 15, 12);
 				return;
 			case OVAL:
 				xOffset = x; yOffset = y;
@@ -205,11 +205,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					m(9,2); d(13,2); d(13,2); d(15,5); d(15,8);
 					d(13,10); d(10,10); d(8,13); d(4,13); 
 					d(2,11);  d(2,7); d(4,5); d(7,5); d(9,2);
-					drawTriangle(13,14);
-				} else {
-					g.drawOval(x+1, y+2, 14, 11);
-					drawTriangle(13,14);
-				}
+				} else
+					g.drawOval(x+1, y+2, 15, 12);
+				drawTriangle(15,14);
 				return;
 			case POLYGON:
 				xOffset = x+1; yOffset = y+3;
@@ -224,18 +222,19 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case LINE:
 				xOffset = x; yOffset = y;
-				m(0,10); d(16,4);
-				drawTriangle(11,13);
+				m(0,12); d(17,3);
+				//m(0,10); d(16,4);
+				drawTriangle(12,14);
 				return;
 			case POLYLINE:
 				xOffset = x; yOffset = y;
 				m(14,6); d(11,3); d(1,3); d(1,4); d(6,9); d(2,13);
-				drawTriangle(11,13);
+				drawTriangle(12,14);
 				return;
 			case FREELINE:
 				xOffset = x; yOffset = y;
 				m(16,4); d(14,6); d(12,6); d(9,3); d(8,3); d(6,7); d(2,11); d(1,11);
-				drawTriangle(11,13);
+				drawTriangle(12,14);
 				return;
 			case POINT:
 				xOffset = x; yOffset = y;
@@ -344,7 +343,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;
-			drawTriangle(13, 14);
+			drawTriangle(14, 14);
 		}
 	}
 	
