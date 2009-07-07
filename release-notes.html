@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.43c, 2 July 2009</u>
+<li> <u>1.43c, 7 July 2009</u>
 <ul>
 <li> Thanks to Olaf Freyer, ImageJ can now open 48-bit LZW compressed TIFFs.
 <li> Thanks to Michael Schmid, the
@@ -14,6 +14,7 @@ now has a "Preview" option.
 <li> Roi Manager "Show All" mode selections can again be moved by
 clicking on the selection's label and dragging.
 <li> Increased the size of toolbar icons from 24x24 to 26x26 pixels.
+<li> With composite images, <i>Image&gt;Show Info</i> adds a "Composite mode: mode" line to its output.
 <li> Added the GenericDialog.enableYesNoCancel(yesLabel,noLabel) method
 (<a href="http://rsb.info.nih.gov/ij/plugins/download/misc/Yes_No_Cancel_Demo.java">example</a>).
 <li> The setVoxelSize() macro function converts "um" units "&micro;m".
@@ -23,6 +24,9 @@ caused the getDirectory("temp") macro function to return paths like
 the expected "/tmp/".
 <li> Fixed a bug that caused <i>Image&gt;Show Info</i> to not display metadata of stacks
 opened using <i>File&gt;Import&gt;Stack from List</i>.
+<li> Fixed a bug that sometimes caused
+<i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> to not correctly
+set the active image.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

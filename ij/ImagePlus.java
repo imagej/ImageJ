@@ -1219,13 +1219,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if (IJ.altKeyDown() && !IJ.isMacro()) {
-				if (imageType==GRAY16 || imageType==GRAY32) {
-					ip.resetMinAndMax();
-					IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
-				}
-				ContrastAdjuster.update();
-			}
+			//if (IJ.altKeyDown() && !IJ.isMacro()) {
+			//	if (imageType==GRAY16 || imageType==GRAY32) {
+			//		ip.resetMinAndMax();
+			//		IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
+			//	}
+			//	ContrastAdjuster.update();
+			//}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
 			if (!(Interpreter.isBatchMode()||noUpdateMode))
