@@ -167,5 +167,10 @@ public class VirtualStack extends ImageStack {
 		this.bitDepth = bitDepth;
 	}
 
+	/** Returns the bit depth (8, 16, 24 or 32), or 0 if the bit depth is not known. */
+	public int getBitDepth() {
+		return bitDepth;
+	}
+
 } 
 

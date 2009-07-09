@@ -676,13 +676,44 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 
 	/** Returns an ImageStatistics object generated using the standard
-		measurement options (area, mean, mode, min and max). */
+		measurement options (area, mean, mode, min and max).
+		This plugin demonstrates how get the area, mean and max of the
+		current image or selection:
+		<pre>
+   public class Get_Statistics implements PlugIn {
+      public void run(String arg) {
+         ImagePlus imp = IJ.getImage();
+         ImageStatistics stats = imp.getStatistics();
+         IJ.log("Area: "+stats.area);
+         IJ.log("Mean: "+stats.mean);
+         IJ.log("Max: "+stats.max);
+      }
+   }
+		</pre>
+		@see ij.process.ImageStatistics
+		@see ij.process.ImageStatistics#getStatistics
+		*/
 	public ImageStatistics getStatistics() {
 		return getStatistics(AREA+MEAN+MODE+MIN_MAX);
 	}
 	
 	/** Returns an ImageStatistics object generated using the
-		 specified measurement options. */
+		specified measurement options. This plugin demonstrates how
+		get the area and centroid of the current selection:
+		<pre>
+   public class Get_Statistics implements PlugIn, Measurements {
+      public void run(String arg) {
+         ImagePlus imp = IJ.getImage();
+         ImageStatistics stats = imp.getStatistics(MEDIAN+CENTROID);
+         IJ.log("Median: "+stats.median);
+         IJ.log("xCentroid: "+stats.xCentroid);
+         IJ.log("yCentroid: "+stats.yCentroid);
+      }
+   }
+		</pre>
+		@see ij.process.ImageStatistics
+		@see ij.measure.Measurements
+	*/
 	public ImageStatistics getStatistics(int mOptions) {
 		return getStatistics(mOptions, 256, 0.0, 0.0);
 	}
@@ -1188,13 +1219,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if (IJ.altKeyDown() && !IJ.isMacro()) {
-				if (imageType==GRAY16 || imageType==GRAY32) {
-					ip.resetMinAndMax();
-					IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
-				}
-				ContrastAdjuster.update();
-			}
+			//if (IJ.altKeyDown() && !IJ.isMacro()) {
+			//	if (imageType==GRAY16 || imageType==GRAY32) {
+			//		ip.resetMinAndMax();
+			//		IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
+			//	}
+			//	ContrastAdjuster.update();
+			//}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
 			if (!(Interpreter.isBatchMode()||noUpdateMode))
@@ -1500,8 +1531,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Sets the ImageProcessor, Roi, AWT Image and stack image
 		arrays to null. Does nothing if the image is locked. */
 	public synchronized void flush() {
-		if (locked || ignoreFlush) return;
 		notifyListeners(CLOSED);
+		if (locked || ignoreFlush) return;
 		ip = null;
 		if (roi!=null) roi.setImage(null);
 		roi = null;
@@ -1516,7 +1547,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		img = null;
 	}
 	
-	/** Obsolete */
 	public void setIgnoreFlush(boolean ignoreFlush) {
 		this.ignoreFlush = ignoreFlush;
 	}

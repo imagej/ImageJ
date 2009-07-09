@@ -143,6 +143,12 @@ public class Info implements PlugInFilter {
 				if (frames>1)
 					s += "  Frame: " + imp.getFrame() + "/" + frames + "\n";
 			}
+			if (imp.isComposite()) {
+				if (!imp.isHyperStack() && channels>1)
+					s += "  Channels: " + channels + "\n";
+				String mode = ((CompositeImage)imp).getModeAsString();
+				s += "  Composite mode: \"" + mode + "\"\n";
+			}
 		}
 
 		if (ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD)

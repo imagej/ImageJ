@@ -5,18 +5,38 @@
 </head>
 <body>
 
-<li> <u>1.43b, 23 June 2009</u>
+<li> <u>1.43c, 8 July 2009</u>
 <ul>
-<li> Kevin Moll contributed an enhanced and simplfied PluginClassLoader
-that extends URLClassLoader.
-<li> Added the "Use Titles as Labels" checkbox to the
-<i>Image&gt;Stacks&gt;Images to Stack</i> dialog box.
-<li> Fixed a bug, introduced in v1.43a, that caused
-<i>Help&gt;Update ImageJ</i> to fail if the path to ij.jar contained a space.
+<li> Thanks to Olaf Freyer, ImageJ can now open 48-bit LZW compressed TIFFs.
+<li> Thanks to Michael Schmid, the
+<i>Process&gt;Binary&gt;Options</i> dialog box
+now has a "Preview" option.
+<li> Roi Manager "Show All" mode selections can again be moved by
+clicking on the selection's label and dragging.
+<li> Images can be dragged from a browser window and dropped on
+the ImageJ window.
+<li> "&lt;&lt;&lt;Drag and Drop&gt;&gt;&gt;" is displayed in the status bar
+when dragging and dropping and the cursor is over the drop site.
+<li> Increased the size of toolbar icons from 24x24 to 26x26 pixels.
+<li> With composite images, <i>Image&gt;Show Info</i> adds a "Composite mode: mode" line to its output.
+<li> Added the GenericDialog.enableYesNoCancel(yesLabel,noLabel) method
+(<a href="http://rsb.info.nih.gov/ij/plugins/download/misc/Yes_No_Cancel_Demo.java">example</a>).
+<li> The setVoxelSize() macro function converts "um" units "&micro;m".
+<li> Worked around a "feature" in the latest Mac OS X Java update that
+caused the getDirectory("temp") macro function to return paths like
+"/var/folders/C-/C-bqCJHiFxOuNwlNmBmRG1UNxXY/-Tmp-/" instead of
+the expected "/tmp/".
+<li> Fixed a bug, introduced in v1.43a, that caused the XStart and YStart values saved
+by the particle analyzer to be incorrect.
 <li> Fixed a bug that caused <i>Image&gt;Show Info</i> to not display metadata of stacks
-opened using <i>File&gt;Import&gt;TIFF Virtual Stack</i>.
-<li> Fixed a bug that sometimes caused the threshold limits to not be passed to PlugInFilters
-using the CONVERT_TO_FLOAT flag.
+opened using <i>File&gt;Import&gt;Stack from List</i>.
+<li> Fixed a bug that sometimes caused
+<i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> to not correctly
+set the active image.
+<li> Fixed a bug that caused the File.directory() macro function and
+OpenDialog.getLastDirectory() method to return a path to the luts
+directory after a LUT had been loaded from the
+<i>Image&gt;Lookup Tables</i> submenu.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

@@ -949,7 +949,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
 				//rm.select(i);
 				// this needs to run on a separate thread, at least on OS X
-				new ij.macro.MacroRunner("roiManager('select', "+i+"); roiManager('update');");
+				// "update2" does not clone the ROI so the "Show All"
+				// outline moves as the user moves the RO.
+				new ij.macro.MacroRunner("roiManager('select', "+i+"); roiManager('update2');");
 				return true;
 			}
 		}

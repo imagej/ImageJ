@@ -96,8 +96,11 @@ public class Calibration implements Cloneable {
  	public void setUnit(String unit) {
  		if (unit==null || unit.equals(""))
  			this.unit = "pixel";
- 		else
+ 		else {
+ 			if (unit.equals("um"))
+ 				unit = IJ.micronSymbol+"m";
  			this.unit = unit;
+ 		}
  		units = null;
  	}
  	

@@ -3,6 +3,7 @@ import ij.util.Tools;
 import ij.text.TextWindow;
 import ij.plugin.MacroInstaller;
 import ij.plugin.frame.Recorder;
+import ij.io.OpenDialog;
 import java.io.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
@@ -126,9 +127,11 @@ public class Executer implements Runnable {
 			// Is this command a LUT name?
 			String path = Prefs.getHomeDir()+File.separator+"luts"+File.separator+cmd+".lut";
 			File f = new File(path);
-			if (f.exists())
+			if (f.exists()) {
+				String dir = OpenDialog.getLastDirectory();
 				IJ.open(path);
-			else
+				OpenDialog.setLastDirectory(dir);
+			} else
 				IJ.error("Unrecognized command: " + cmd);
 	 	}
     }

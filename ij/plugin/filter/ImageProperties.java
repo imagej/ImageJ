@@ -103,9 +103,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
  				+")\n and frames ("+frames+") must equal the stack size ("+stackSize+").");
 
 		String unit = gd.getNextString();
-        if (unit.equals("um"))
-            unit = IJ.micronSymbol + "m";
-        else if (unit.equals("u"))
+        if (unit.equals("u"))
             unit = "" + IJ.micronSymbol;
         else if (unit.equals("A"))
         	unit = ""+IJ.angstromSymbol;

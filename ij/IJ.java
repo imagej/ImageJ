@@ -1198,6 +1198,7 @@ public class IJ {
 			return OpenDialog.getDefaultDirectory();
 		else if (title.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
+			if (isMacintosh()) dir = "/tmp/";
 			if (dir!=null && !dir.endsWith(File.separator)) dir += File.separator;
 			return dir;
 		} else if (title.equals("image")) {

@@ -10,10 +10,11 @@ import java.util.*;
 /** This plugin opens images specified by list of file paths as a virtual stack.
 	It implements the File/Import/Stack From List command. */
 public class ListVirtualStack extends VirtualStack implements PlugIn {
-	static boolean virtual;
-	String[] list;
-	int nImages;
-	int imageWidth, imageHeight;
+	private static boolean virtual;
+	private String[] list;
+	private String[] labels;
+	private int nImages;
+	private int imageWidth, imageHeight;
 
 	public void run(String arg) {
 		OpenDialog  od = new OpenDialog("Open Image List", arg);
@@ -22,6 +23,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		String  dir = od.getDirectory();
 		list = open(dir+name);
 		nImages = list.length;
+		labels = new String[nImages];
 		//for (int i=0; i<list.length; i++)
 		//	IJ.log(i+"  "+list[i]);
 		if (list.length==0) {
@@ -37,6 +39,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		if (imp==null) return;
 		imageWidth = imp.getWidth();
 		imageHeight = imp.getHeight();
+		setBitDepth(imp.getBitDepth());
 		ImageStack stack = this;
 		if (!showDialog(imp)) return;
 		if (!virtual)
@@ -75,7 +78,8 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			IJ.showProgress(i, n);
 			IJ.showStatus("Opening: "+i+"/"+n);
 			ImageProcessor ip2 = this.getProcessor(i);
-			stack2.addSlice(null, ip2);
+			if (ip2!=null)
+				stack2.addSlice(this.getSliceLabel(i), ip2);
 		}
 		return stack2;
 	}
@@ -87,7 +91,7 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			BufferedReader r = new BufferedReader(new FileReader(file));
 			while (true) {
 				String s=r.readLine();
-				if (s==null)
+				if (s==null || s.equals("") || s.startsWith(" "))
 					break;
 				else
 					v.addElement(s);
@@ -102,8 +106,6 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		}
 		return null;
 	}
-
-
 
 	/** Deletes the specified image, were 1<=n<=nslices. */
 	public void deleteSlice(int n) {
@@ -123,14 +125,31 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		ImagePlus imp = IJ.openImage(list[n-1]);
-		if (imp.getWidth()!=imageWidth || imp.getHeight()!=imageHeight) {
-			IJ.error("List Virtual Stack", "Image dimensions do not match:\n \n"+list[n-1]);
-			return null;
+		if (imp!=null) {
+			labels[n-1] = (new File(list[n-1])).getName()+"\n"+(String)imp.getProperty("Info");
+			ImageProcessor ip =  imp.getProcessor();
+			int bitDepth = getBitDepth();
+			if (imp.getBitDepth()!=bitDepth) {
+				switch (bitDepth) {
+					case 8: ip=ip.convertToByte(true); break;
+					case 16: ip=ip.convertToShort(true); break;
+					case 24:  ip=ip.convertToRGB(); break;
+					case 32: ip=ip.convertToFloat(); break;
+				}
+			}
+			if (ip.getWidth()!=imageWidth || ip.getHeight()!=imageHeight)
+			ip = ip.resize(imageWidth, imageHeight);
+			return ip;
+		} else {
+				ImageProcessor ip = null;
+				switch (getBitDepth()) {
+					case 8: ip=new ByteProcessor(imageWidth,imageHeight); break;
+					case 16: ip=new ShortProcessor(imageWidth,imageHeight); break;
+					case 24:  ip=new ColorProcessor(imageWidth,imageHeight); break;
+					case 32: ip=new FloatProcessor(imageWidth,imageHeight); break;
+				}
+			return ip;
 		}
-		if (imp!=null)
-			return imp.getProcessor();
-		else
-			return null;
 	 }
  
 	 /** Returns the number of images in this stack. */
@@ -142,7 +161,10 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	public String getSliceLabel(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		return (new File(list[n-1])).getName();
+		if (labels[n-1]!=null)
+			return labels[n-1];
+		else
+			return (new File(list[n-1])).getName();
 	}
 	
 	public int getWidth() {

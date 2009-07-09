@@ -321,12 +321,6 @@ public class Opener {
 	   	} 
 	}
 	
-		//for (int i=1;; i++) {
-		//	String header = uc.getHeaderField(i);
-		//	if (header==null) break;
-		//	IJ.log(uc.getHeaderFieldKey(i) + " " + header);
-		//}
-	
 	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileType) {
 		ImagePlus imp = null;
 		if (path.endsWith(".db")) {
