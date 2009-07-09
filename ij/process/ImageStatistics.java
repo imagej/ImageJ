@@ -33,6 +33,8 @@ public class ImageStatistics implements Measurements {
 	/** 65536 element histogram (16-bit images only) */
 	public int[] histogram16;
 	public double areaFraction;
+	/** Used internally by AnalyzeParticles */
+	public int xstart, ystart;
 	
 	public double histMin;
 	public double histMax;

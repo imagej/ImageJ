@@ -113,7 +113,12 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
-        boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.startsWith("http://");
+		boolean isURL = path.startsWith("http://");
+		if (isURL && !(path.endsWith(".jpg")||path.endsWith(".png")||path.endsWith(".gif"))) {
+			openTextURL(path);
+			return;
+		}
+        boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || isURL;
         if (!fullPath && IJ.getInstance()!=null) {
             String workingDir = OpenDialog.getDefaultDirectory();
             if (workingDir!=null)
@@ -321,11 +326,24 @@ public class Opener {
 	   	} 
 	}
 	
-		//for (int i=1;; i++) {
-		//	String header = uc.getHeaderField(i);
-		//	if (header==null) break;
-		//	IJ.log(uc.getHeaderFieldKey(i) + " " + header);
-		//}
+	/** Used by open() and IJ.open() to open text URLs. */
+	void openTextURL(String url) {
+		if (url.endsWith(".pdf")||url.endsWith(".zip"))
+			return;
+		String text = IJ.openUrlAsString(url);
+		String name = url.substring(7);
+		int index = name.lastIndexOf("/");
+		int len = name.length();
+		if (index==len-1)
+			name = name.substring(0, len-1);
+		else if (index!=-1 && index<len-1)
+			name = name.substring(index+1);
+		Editor ed = new Editor();
+		ed.setSize(600, 300);
+		ed.create(name, text);
+		IJ.showStatus("");
+	}
+
 	
 	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileType) {
 		ImagePlus imp = null;

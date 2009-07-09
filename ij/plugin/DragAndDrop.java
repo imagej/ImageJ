@@ -51,10 +51,12 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 					ArrayList list = new ArrayList();
 					while (null != (tmp = br.readLine())) {
 						tmp = java.net.URLDecoder.decode(tmp, "UTF-8");
-						if (tmp.startsWith("file://")) {
+						if (tmp.startsWith("file://"))
 							tmp = tmp.substring(7);
-						}
-						list.add(new File(tmp));
+						if (tmp.startsWith("http://"))
+							list.add(tmp);
+						else
+							list.add(new File(tmp));
 					}
 					this.iterator = list.iterator();
 					break;
@@ -74,20 +76,35 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	    } 
 
 	    public void dragEnter(DropTargetDragEvent dtde)  {
+	    	IJ.showStatus("<<Drag and Drop>>");
 			if (IJ.debugMode) IJ.log("DragAndDrop.dragEnter: "+dtde);
 			dtde.acceptDrag(DnDConstants.ACTION_COPY);
 	    }
 
 	    public void dragOver(DropTargetDragEvent e) {}
-	    public void dragExit(DropTargetEvent e) {}
+	    public void dragExit(DropTargetEvent e) {
+	    	IJ.showStatus("");
+	    }
 	    public void dropActionChanged(DropTargetDragEvent e) {}
 	    
 		public void run() {
 			Iterator iterator = this.iterator;
 			while(iterator.hasNext()) {
-				File file = (File)iterator.next();
-				openFile(file);
+				Object obj = iterator.next();
+				if (obj!=null && (obj instanceof String))
+					openURL((String)obj);
+				else
+					openFile((File)obj);
 			}
+		}
+		
+		/** Open a URL. */
+		private void openURL(String url) {
+			if (url==null) return;
+			if (url.endsWith(".jar") || url.endsWith(".class"))
+				IJ.log(url);
+			else
+				IJ.open(url);
 		}
 
 		/** Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually. */

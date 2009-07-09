@@ -16,6 +16,7 @@ import java.awt.*;
 import java.applet.Applet;
 import java.io.*;
 import java.lang.reflect.*;
+import java.net.*;
 
 
 /** This class consists of static utility methods. */
@@ -1252,6 +1253,34 @@ public class IJ {
 	/** Opens an image using a file open dialog and returns it as an ImagePlus object. */
 	public static ImagePlus openImage() {
 		return openImage(null);
+	}
+
+	/** Opens a URL and returns the contents as a string.
+		Returns "<Error: message>" if there an error, including
+		host or file not found. */
+	public static String openUrlAsString(String url) {
+		StringBuffer sb = null;
+		url = url.replaceAll(" ", "%20");
+		try {
+			URL u = new URL(url);
+			URLConnection uc = u.openConnection();
+			long len = uc.getContentLength();
+			if (len>1048576L)
+				return "<Error: file is larger than 1MB>";
+			InputStream in = u.openStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			sb = new StringBuffer() ;
+			String line;
+			while ((line=br.readLine()) != null)
+				sb.append (line + "\n");
+			in.close ();
+		} catch (Exception e) {
+			return("<Error: "+e+">");
+		}
+		if (sb!=null)
+			return new String(sb);
+		else
+			return "";
 	}
 
 	/** Saves the current image, lookup table, selection or text window to the specified file path. 

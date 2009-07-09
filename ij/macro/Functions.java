@@ -2998,7 +2998,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("openAsRawString"))
 			return openAsString(true);
 		else if (name.equals("openUrlAsString"))
-			return openUrlAsString();
+			return IJ.openUrlAsString(getStringArg());
 		else if (name.equals("openDialog"))
 			return openDialog();
 		else if (name.equals("close"))
@@ -3320,28 +3320,7 @@ public class Functions implements MacroConstants, Measurements {
     		array[i] = new Variable(0, 0.0, fonts[i]);
     	return array;
 	}
-	
-	String openUrlAsString() {
-		String urlString = getStringArg();
-		StringBuffer sb = null;
-		try {
-			URL url = new URL(urlString);
-			InputStream in = url.openStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			sb = new StringBuffer() ;
-			String line;
-			while ((line=br.readLine()) != null)
-				sb.append (line + "\n");
-			in.close ();
-		} catch (Exception e) {
-			return("<Error: "+e+">");
-		}
-		if (sb!=null)
-			return new String(sb);
-		else
-			return null;
-	}
-	
+		
 	void setOption() {
 		String arg1 = getFirstString();
 		boolean state = true;
@@ -3735,6 +3714,8 @@ public class Functions implements MacroConstants, Measurements {
 			getDisplayMode(imp);
 		else if (name.equals("setActiveChannels"))
 			setActiveChannels(imp, getStringArg());
+		else if (name.equals("getActiveChannels"))
+			getActiveChannels(imp);
 		else if (name.equals("swap"))
 			swapStackImages(imp);
 		else if (name.equals("getStatistics"))
@@ -3784,13 +3765,30 @@ public class Functions implements MacroConstants, Measurements {
 		if (!imp.isComposite())
 			interp.error("Composite image required");
 		boolean[] active = ((CompositeImage)imp).getActiveChannels();
-		for (int i=0; i<CompositeImage.MAX_CHANNELS; i++) {
+		for (int i=0; i<active.length; i++) {
 			boolean b = false;
 			if (channels.length()>i && channels.charAt(i)=='1')
 				b = true;
 			active[i] = b;
 		}
 		imp.updateAndDraw();
+	}
+
+	void getActiveChannels(ImagePlus imp) {
+		if (!imp.isComposite())
+			interp.error("Composite image required");
+		boolean[] active = ((CompositeImage)imp).getActiveChannels();
+		int n = active.length;
+		char[] chars = new char[n];
+		int nChannels = imp.getNChannels();
+		for (int i=0; i<n; i++) {
+			if (i<nChannels)
+				chars[i] = active[i]?'1':'0';
+			else
+				chars[i] = '0';
+		}
+		Variable channels = getVariableArg();
+		channels.setString(new String(chars));
 	}
 
 	void setDisplayMode(ImagePlus imp, String mode) {
