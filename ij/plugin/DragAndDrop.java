@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 
 /** This class opens images, roi's, luts and text files dragged and dropped on  the "ImageJ" window.
-     It requires Java 1.3.1 or later. Based on the Draw_And_Drop plugin by Eric Kischell (keesh@ieee.org).
+     It is ased on the Draw_And_Drop plugin by Eric Kischell (keesh@ieee.org).
      
      10 November 2006: Albert Cardona added Linux support and an  
      option to open all images in a dragged folder as a stack.
@@ -30,39 +30,42 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	}  
 	    
 	public void drop(DropTargetDropEvent dtde)  {
-		if (IJ.debugMode) IJ.log("DragAndDrop.drop: "+dtde);
 		dtde.acceptDrop(DnDConstants.ACTION_COPY);
 		try  {
 			Transferable t = dtde.getTransferable();
 			iterator = null;
-			if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-				Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
-				iterator = ((List)data).iterator();
-			} else {
-				// find a String path
-				DataFlavor[] flavors = t.getTransferDataFlavors();
-				for (int i=0; i<flavors.length; i++) {
-					if (!flavors[i].getRepresentationClass().equals(String.class)) continue;
+			DataFlavor[] flavors = t.getTransferDataFlavors();
+			if (IJ.debugMode) IJ.log("DragAndDrop.drop: "+flavors.length+" flavors");
+			for (int i=0; i<flavors.length; i++) {
+				if (IJ.debugMode) IJ.log("  flavor["+i+"]: "+flavors[i].getMimeType());
+				if (flavors[i].isFlavorJavaFileListType()) {
+					Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
+					iterator = ((List)data).iterator();
+					break;
+				} else if (flavors[i].isFlavorTextType()) {
 					Object ob = t.getTransferData(flavors[i]);
 					if (!(ob instanceof String)) continue;
 					String s = ob.toString().trim();
-					BufferedReader br = new BufferedReader(new StringReader(s));
-					String tmp;
 					ArrayList list = new ArrayList();
-					while (null != (tmp = br.readLine())) {
-						tmp = java.net.URLDecoder.decode(tmp, "UTF-8");
-						if (tmp.startsWith("file://"))
-							tmp = tmp.substring(7);
-						if (tmp.startsWith("http://"))
-							list.add(tmp);
-						else
-							list.add(new File(tmp));
+					if (s.startsWith("<html")) {
+						s = parseHTML(s);
+						if (IJ.debugMode) IJ.log("  url: "+s);
+						list.add(s);
+						this.iterator = list.iterator();
+						break;
 					}
+					if (IJ.debugMode) IJ.log("  content: "+s);
+					if (s.startsWith("file://"))
+						s = s.substring(7);
+					if (s.startsWith("http://"))
+						list.add(s);
+					else
+						list.add(new File(s));
 					this.iterator = list.iterator();
 					break;
 				}
 			}
-			if (null != iterator) {
+			if (iterator!=null) {
 				Thread thread = new Thread(this, "DrawAndDrop");
 				thread.setPriority(Math.max(thread.getPriority()-1, Thread.MIN_PRIORITY));
 				thread.start();
@@ -74,10 +77,27 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		}
 		dtde.dropComplete(true);
 	    } 
+	    
+	    private String parseHTML(String s) {
+	    	if (IJ.debugMode) IJ.log("parseHTML:\n"+s);
+	    	int index1 = s.indexOf("<a href=\"");
+	    	if (index1>0) {
+	    		int index2 = s.indexOf("\"", index1+9);
+	    		if (index2>0)
+	    			return s.substring(index1+9, index2);
+	    	}
+	    	index1 = s.indexOf("<img src=\"");
+	    	if (index1>0) {
+	    		int index2 = s.indexOf("\"", index1+10);
+	    		if (index2>0)
+	    			return s.substring(index1+10, index2);
+	    	}
+	    	return s;
+	    }
 
 	    public void dragEnter(DropTargetDragEvent dtde)  {
 	    	IJ.showStatus("<<Drag and Drop>>");
-			if (IJ.debugMode) IJ.log("DragAndDrop.dragEnter: "+dtde);
+			if (IJ.debugMode) IJ.log("DragAndDrop.dragEnter");
 			dtde.acceptDrag(DnDConstants.ACTION_COPY);
 	    }
 
@@ -100,6 +120,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		
 		/** Open a URL. */
 		private void openURL(String url) {
+			if (IJ.debugMode) IJ.log("DragAndDrop.openURL: "+url);
 			if (url==null) return;
 			if (url.endsWith(".jar") || url.endsWith(".class"))
 				IJ.log(url);
@@ -109,7 +130,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 
 		/** Open a file. If it's a directory, ask to open all images as a sequence in a stack or individually. */
 		public void openFile(File f) {
-			if (IJ.debugMode) IJ.log("DragAndDrop.open: "+f);
+			if (IJ.debugMode) IJ.log("DragAndDrop.openFile: "+f);
 			try {
 				if (null == f) return;
 				String path = f.getCanonicalPath();

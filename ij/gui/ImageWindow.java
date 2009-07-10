@@ -407,7 +407,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		int extraHeight = insets.top+insets.bottom + 10;
 		if (extraHeight==20) extraHeight = 42;
 		int members = getComponentCount();
-		if (IJ.debugMode) IJ.log("getExtraSize: "+members+" "+insets);
+		//if (IJ.debugMode) IJ.log("getExtraSize: "+members+" "+insets);
 		for (int i=1; i<members; i++) {
 		    Component m = getComponent(i);
 		    Dimension d = m.getPreferredSize();
@@ -419,7 +419,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 
 	public Component add(Component comp) {
 		comp = super.add(comp);
-		if (IJ.debugMode) IJ.log("add: "+comp);
 		maxBounds = getMaximumBounds();
 		//if (!IJ.isLinux()) {
 			setMaximizedBounds(maxBounds);
