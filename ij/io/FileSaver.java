@@ -546,7 +546,7 @@ public class FileSaver {
 			sb.append("mode="+mode+"\n");
 		}
 		if (fi.unit!=null)
-			sb.append("unit="+fi.unit+"\n");
+			sb.append("unit="+(fi.unit.equals("\u00B5m")?"um":fi.unit)+"\n");
 		if (fi.valueUnit!=null && fi.calibrationFunction!=Calibration.CUSTOM) {
 			sb.append("cf="+fi.calibrationFunction+"\n");
 			if (fi.coefficients!=null) {

@@ -46,21 +46,27 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 					Object ob = t.getTransferData(flavors[i]);
 					if (!(ob instanceof String)) continue;
 					String s = ob.toString().trim();
+					if (IJ.isLinux() && s.length()>1 && (int)s.charAt(1)==0)
+						s = fixLinuxString(s);
 					ArrayList list = new ArrayList();
-					if (s.startsWith("<html")) {
+					if (s.indexOf("<a href=\"")!=-1 || s.indexOf("<img src=\"")!=-1) {
 						s = parseHTML(s);
 						if (IJ.debugMode) IJ.log("  url: "+s);
 						list.add(s);
 						this.iterator = list.iterator();
 						break;
 					}
-					if (IJ.debugMode) IJ.log("  content: "+s);
-					if (s.startsWith("file://"))
-						s = s.substring(7);
-					if (s.startsWith("http://"))
-						list.add(s);
-					else
-						list.add(new File(s));
+					BufferedReader br = new BufferedReader(new StringReader(s));
+					String tmp;
+					while (null != (tmp = br.readLine())) {
+						tmp = java.net.URLDecoder.decode(tmp, "UTF-8");
+						if (tmp.startsWith("file://")) tmp = tmp.substring(7);
+						if (IJ.debugMode) IJ.log("  content: "+tmp);
+						if (tmp.startsWith("http://"))
+							list.add(s);
+						else
+							list.add(new File(tmp));
+                     }
 					this.iterator = list.iterator();
 					break;
 				}
@@ -76,18 +82,25 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			    return;
 		}
 		dtde.dropComplete(true);
-	    } 
+	    }
+	    
+	    private String fixLinuxString(String s) {
+	    	StringBuffer sb = new StringBuffer(200);
+	    	for (int i=0; i<s.length(); i+=2)
+	    		sb.append(s.charAt(i));
+	    	return new String(sb);
+	    }
 	    
 	    private String parseHTML(String s) {
 	    	if (IJ.debugMode) IJ.log("parseHTML:\n"+s);
 	    	int index1 = s.indexOf("<a href=\"");
-	    	if (index1>0) {
+	    	if (index1>=0) {
 	    		int index2 = s.indexOf("\"", index1+9);
 	    		if (index2>0)
 	    			return s.substring(index1+9, index2);
 	    	}
 	    	index1 = s.indexOf("<img src=\"");
-	    	if (index1>0) {
+	    	if (index1>=0) {
 	    		int index2 = s.indexOf("\"", index1+10);
 	    		if (index2>0)
 	    			return s.substring(index1+10, index2);

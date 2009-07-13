@@ -1177,10 +1177,10 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
-	/** Returns the path to the home ("user.home"), startup (ImageJ directory), plugins, macros, 
-		temp, current or image directory if <code>title</code> is "home", "startup", 
-		"plugins", "macros", "temp", "current" or "image", otherwise, displays a dialog 
-		and returns the path to the directory selected by the user. 
+	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
+		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
+		"imagej", "plugins", "macros", "luts", "temp", "current" or "image", otherwise, 
+		displays a dialog and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user
 		cancels the dialog box. Also aborts the macro if the user cancels
 		the dialog box.*/
@@ -1189,12 +1189,18 @@ public class IJ {
 			return Menus.getPlugInsPath();
 		else if (title.equals("macros"))
 			return Menus.getMacrosPath();
-		else if (title.equals("luts"))
-			return Prefs.getHomeDir()+File.separator+"luts"+File.separator;
-		else if (title.equals("home"))
+		else if (title.equals("luts")) {
+			String ijdir = getIJDir();
+			if (ijdir!=null)
+				return ijdir + "luts" + File.separator;
+			else
+				return null;
+		} else if (title.equals("home"))
 			return System.getProperty("user.home") + File.separator;
-		else if (title.equals("startup")||title.equals("imagej"))
+		else if (title.equals("startup"))
 			return Prefs.getHomeDir() + File.separator;
+		else if (title.equals("imagej"))
+			return getIJDir();
 		else if (title.equals("current"))
 			return OpenDialog.getDefaultDirectory();
 		else if (title.equals("temp")) {
@@ -1215,6 +1221,14 @@ public class IJ {
 			if (dir==null) Macro.abort();
 			return dir;
 		}
+	}
+	
+	private static String getIJDir() {
+		String path = Menus.getPlugInsPath();
+		if (path==null) return null;
+		String ijdir = (new File(path)).getParent();
+		if (ijdir!=null) ijdir += File.separator;
+		return ijdir;
 	}
 	
 	/** Displays a file open dialog box and then opens the tiff, dicom, 

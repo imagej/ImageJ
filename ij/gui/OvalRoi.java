@@ -28,6 +28,7 @@ public class OvalRoi extends Roi {
 	}
 
 	protected void moveHandle(int sx, int sy) {
+		double asp;
 		if (clipboard!=null) return;
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
@@ -35,6 +36,13 @@ public class OvalRoi extends Roi {
 		int x1=x, y1=y, x2=x+width, y2=y+height, xc=x+width/2, yc=y+height/2;
 		int w2 = (int)(0.14645*width);
 		int h2 = (int)(0.14645*height);
+		if (width > 7 && height > 7) {
+			asp = (double)width/(double)height;
+			asp_bk = asp;
+		} else {
+
+			asp = asp_bk;
+		}
 		switch (activeHandle) {
 			case 0: x=ox-w2; y=oy-h2; break;
 			case 1: y=oy; break;
@@ -54,7 +62,7 @@ public class OvalRoi extends Roi {
 		   height = y2-y;
 		else
 		   {height=1; y=y2;}
-		if (center) {
+		if(center) {
 			switch(activeHandle){
 				case 0:
 					width=(xc-x)*2;
@@ -91,27 +99,107 @@ public class OvalRoi extends Roi {
 					width=(xc-x)*2;
 					break;
 			}
-			if (x>=x2) {
+			if(x>=x2) {
 				width=1;
 				x=x2=xc;
 			}
-			if (y>=y2) {
+			if(y>=y2) {
 				height=1;
 				y=y2=yc;
 			}
+
 		}
 
-		if (constrain) {
-			if (activeHandle==1 || activeHandle==5)
-				width=height;
-			else
-				height=width;
-			if (center){
+		if(constrain) {
+
+			if(activeHandle==1 || activeHandle==5) width=height;
+			else height=width;
+
+
+			if(center){
 				x=xc-width/2;
 				y=yc-height/2;
 			}
+			if(x>=x2) {
+				width=1;
+				x=x2=xc;
+			}
+			if(y>=y2) {
+				height=1;
+				y=y2=yc;
+			}
+			switch(activeHandle){
+				case 0:
+					x=x2-width;
+					y=y2-height;
+					break;
+				case 1:
+					x=xc-width/2;
+					y=y2-height;
+					break;
+				case 2:
+					y=y2-height;
+					break;
+				case 3:
+					y=yc-height/2;
+					break;
+				case 5:
+					x=xc-width/2;
+					break;
+				case 6:
+					x=x2-width;
+					break;
+				case 7:
+					y=yc-height/2;
+					x=x2-width;
+					break;
+			}
 		}
-		
+
+		if(aspect && !constrain) {
+			if(activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
+			else height=(int)Math.rint((double)width/asp);
+			if(center){
+				x=xc-width/2;
+				y=yc-height/2;
+			}
+			switch(activeHandle){
+				case 0:
+					x=x2-width;
+					y=y2-height;
+					break;
+				case 1:
+					x=xc-width/2;
+					y=y2-height;
+					break;
+				case 2:
+					y=y2-height;
+					break;
+				case 3:
+					y=yc-height/2;
+					break;
+				case 5:
+					x=xc-width/2;
+					break;
+				case 6:
+					x=x2-width;
+					break;
+				case 7:
+					y=yc-height/2;
+					x=x2-width;
+					break;
+			}
+			// Attempt to preserve aspect ratio when roi very small:
+			if (width<8) {
+				if(width<1) width = 1;
+				height=(int)Math.rint((double)width/asp_bk);
+			}
+			if (height<8) {
+				if(height<1) height =1;
+				width=(int)Math.rint((double)height*asp_bk);
+			}
+		}
+
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
