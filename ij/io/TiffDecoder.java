@@ -673,7 +673,7 @@ public class TiffDecoder {
 		Vector info;
 				
 		if (in==null)
-			in = new RandomAccessStream(new RandomAccessFile(directory + name, "r"));
+			in = new RandomAccessStream(new RandomAccessFile(new File (directory, name), "r"));
 		info = new Vector();
 		ifdOffset = OpenImageFileHeader();
 		if (ifdOffset<0L) {

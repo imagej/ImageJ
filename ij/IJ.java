@@ -332,7 +332,7 @@ public class IJ {
 	}
 
 	private static void showResults() {
-		TextWindow resultsWindow = new TextWindow("Results", "", 300, 200);
+		TextWindow resultsWindow = new TextWindow("Results", "", 400, 250);
 		textPanel = resultsWindow.getTextPanel();
 		textPanel.setResultsTable(Analyzer.getResultsTable());
 		if (ij!=null)
@@ -342,7 +342,7 @@ public class IJ {
 	public static synchronized void log(String s) {
 		if (s==null) return;
 		if (logPanel==null && ij!=null) {
-			TextWindow logWindow = new TextWindow("Log", "", 350, 250);
+			TextWindow logWindow = new TextWindow("Log", "", 400, 250);
 			logPanel = logWindow.getTextPanel();
 			logPanel.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		}
