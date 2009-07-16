@@ -91,6 +91,7 @@ public class FileOpener {
 			case FileInfo.RGB:
 			case FileInfo.BGR:
 			case FileInfo.ARGB:
+			case FileInfo.ABGR:
 			case FileInfo.BARG:
 			case FileInfo.RGB_PLANAR:
 				pixels = readPixels(fi);
@@ -301,6 +302,7 @@ public class FileOpener {
 			case FileInfo.RGB:
 			case FileInfo.BGR:
 			case FileInfo.ARGB:
+			case FileInfo.ABGR:
 			case FileInfo.RGB_PLANAR:
 	    		img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
 		        imp.setImage(img);

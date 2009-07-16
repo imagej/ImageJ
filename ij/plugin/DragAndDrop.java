@@ -49,7 +49,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 					if (IJ.isLinux() && s.length()>1 && (int)s.charAt(1)==0)
 						s = fixLinuxString(s);
 					ArrayList list = new ArrayList();
-					if (s.indexOf("<a href=\"")!=-1 || s.indexOf("<img src=\"")!=-1) {
+					if (s.indexOf("href=\"")!=-1 || s.indexOf("src=\"")!=-1) {
 						s = parseHTML(s);
 						if (IJ.debugMode) IJ.log("  url: "+s);
 						list.add(s);
@@ -93,17 +93,17 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	    
 	    private String parseHTML(String s) {
 	    	if (IJ.debugMode) IJ.log("parseHTML:\n"+s);
-	    	int index1 = s.indexOf("<a href=\"");
+	    	int index1 = s.indexOf("href=\"");
 	    	if (index1>=0) {
-	    		int index2 = s.indexOf("\"", index1+9);
+	    		int index2 = s.indexOf("\"", index1+6);
 	    		if (index2>0)
-	    			return s.substring(index1+9, index2);
+	    			return s.substring(index1+6, index2);
 	    	}
-	    	index1 = s.indexOf("<img src=\"");
+	    	index1 = s.indexOf("src=\"");
 	    	if (index1>=0) {
-	    		int index2 = s.indexOf("\"", index1+10);
+	    		int index2 = s.indexOf("\"", index1+5);
 	    		if (index2>0)
-	    			return s.substring(index1+10, index2);
+	    			return s.substring(index1+5, index2);
 	    	}
 	    	return s;
 	    }
@@ -134,10 +134,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		/** Open a URL. */
 		private void openURL(String url) {
 			if (IJ.debugMode) IJ.log("DragAndDrop.openURL: "+url);
-			if (url==null) return;
-			if (url.endsWith(".jar") || url.endsWith(".class"))
-				IJ.log(url);
-			else
+			if (url!=null)
 				IJ.open(url);
 		}
 

@@ -150,15 +150,19 @@ public class TiffDecoder {
 		fi.greens = new byte[256];
 		fi.blues = new byte[256];
 		int j = 0;
-		if (littleEndian)
-			j++;
+		if (littleEndian) j++;
+		int sum = 0;
 		for (int i=0; i<256; i++) {
 			fi.reds[i] = colorTable16[j];
+			sum += fi.reds[i];
 			fi.greens[i] = colorTable16[512+j];
+			sum += fi.greens[i];
 			fi.blues[i] = colorTable16[1024+j];
+			sum += fi.blues[i];
 			j += 2;
 		}
-		fi.fileType = FileInfo.COLOR8;
+		if (sum!=0)
+			fi.fileType = FileInfo.COLOR8;
 	}
 	
 	byte[] getString(int count, long offset) throws IOException {
@@ -355,14 +359,13 @@ public class TiffDecoder {
 						long saveLoc = in.getLongFilePointer();
 						in.seek(lvalue);
 						fi.stripOffsets = new int[count];
-						for (int c=0; c<count; c++) {
+						for (int c=0; c<count; c++)
 							fi.stripOffsets[c] = getInt();
-							if (c > 0 && fi.stripOffsets[c]<fi.stripOffsets[c-1]&&fi.stripOffsets[c]>0)
-								error("Strip offsets are not in order");
-						}
 						in.seek(saveLoc);
 					}
 					fi.offset = count>0?fi.stripOffsets[0]:value;
+					if (count>1 && fi.stripOffsets[count-1]<fi.stripOffsets[0])
+						fi.offset = fi.stripOffsets[count-1];
 					break;
 				case STRIP_BYTE_COUNT:
 					if (count==1)
@@ -673,7 +676,7 @@ public class TiffDecoder {
 		Vector info;
 				
 		if (in==null)
-			in = new RandomAccessStream(new RandomAccessFile(new File (directory, name), "r"));
+			in = new RandomAccessStream(new RandomAccessFile(new File(directory, name), "r"));
 		info = new Vector();
 		ifdOffset = OpenImageFileHeader();
 		if (ifdOffset<0L) {

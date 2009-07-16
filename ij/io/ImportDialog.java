@@ -43,7 +43,7 @@ public class ImportDialog {
     private static FileInfo lastFileInfo;
     private static String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
 		"32-bit Signed", "32-bit Unsigned", "32-bit Real", "64-bit Real", "24-bit RGB", 
-		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "1-bit Bitmap"};
+		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "32-bit ABGR", "1-bit Bitmap"};
     	
     static {
     	options = Prefs.getInt(OPTIONS,0);
@@ -209,6 +209,8 @@ public class ImportDialog {
 			fi.fileType = FileInfo.GRAY24_UNSIGNED;
 		else if (imageType.equals("32-bit ARGB"))
 			fi.fileType = FileInfo.ARGB;
+		else if (imageType.equals("32-bit ABGR"))
+			fi.fileType = FileInfo.ABGR;
 		else if (imageType.equals("1-bit Bitmap"))
 			fi.fileType = FileInfo.BITMAP;
 		else

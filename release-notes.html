@@ -5,10 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.43d, 14 July 2009</u>
+<li> <u>1.43d, 16 July 2009</u>
 <ul>
-<li> Text files can now be dragged from a browser window
+<li> Thanks to Dimiter Prodanov, plugins (.jar and .class files)
+dragged from a browser window and dropped on the "ImageJ" window
+are installed and the ImageJ menus are updated.
+<li> Text files can be dragged from a browser window
 and dropped on the "ImageJ" window.
+<li> Thanks to Julian Cooper, the alt key constrains resizing to 
+the current aspect ratio for rectangle and oval selections, and 
+keeps the same length for line selections.
+<li> Added a "32-bit ABGR" option to the <i>File&gt;Import&gt;Raw</i>
+dialog box.
 <li> The ImageJ and Java version numbers are displayed when
 you click in the status bar.
 <li> Added the IJ.openUrlAsString() method.
@@ -17,6 +25,12 @@ be displayed correctly on Linux.
 <li> Fixed a bug that caused big-endian ARGB TIFFs to open incorrectly.
 <li> Fixed a bug that caused LUTs in the ImageJ/luts folder to not be
 added to the Image>Lookup Tables menu when running Fiji on OS X.
+<li> Fixed a bug that could cause Metamorph .stk files to open with
+an all zero LUT.
+<li> Fixed a bug that could cause ImageJ to generate an exception or fail
+to start if there was a corrupted jar file in the plugins folder.
+<li> Fixed a bug in the TIFF reader that could cause
+a "Strip offsets are not in order" error.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

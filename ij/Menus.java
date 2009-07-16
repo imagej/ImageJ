@@ -746,7 +746,9 @@ public class Menus {
 					return jarFile.getInputStream(entry);
 			}
 		}
-    	catch (Exception e) {}
+    	catch (Throwable e) {
+    		IJ.log(jar+": "+e);
+    	}
 		return autoGenerateConfigFile(jar);
 	}
 	
@@ -777,7 +779,9 @@ public class Menus {
 				}
 			}
 		}
-    	catch (Exception e) {}
+    	catch (Throwable e) {
+    		IJ.log(jar+": "+e);
+    	}
 		//IJ.log(""+(sb!=null?sb.toString():"null"));
 		if (sb==null)
 			return null;
@@ -1447,6 +1451,6 @@ public class Menus {
 		if (err!=null) IJ.error(err);
 		IJ.setClassLoader(null);
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
-		IJ.showStatus(m.nPlugins + " commands, " + m.nMacros + " macros");
+		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
 }

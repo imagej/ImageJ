@@ -149,7 +149,7 @@ public class ImageReader {
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
+			IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
@@ -339,6 +339,11 @@ public class ImageReader {
 						j++; // ignore alfa byte
 						r = buffer[j++]&0xff;
 						g = buffer[j++]&0xff;
+					} else if (fi.fileType==FileInfo.ABGR) {
+						b = buffer[j++]&0xff;
+						g = buffer[j++]&0xff;
+						r = buffer[j++]&0xff;
+						j++; // ignore alfa byte
 					} else {
 						r = buffer[j++]&0xff;
 						g = buffer[j++]&0xff;
@@ -706,6 +711,7 @@ public class ImageReader {
 				case FileInfo.RGB:
 				case FileInfo.BGR:
 				case FileInfo.ARGB:
+				case FileInfo.ABGR:
 				case FileInfo.BARG:
 					bytesPerPixel = fi.getBytesPerPixel();
 					skip(in);
