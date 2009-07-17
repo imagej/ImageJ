@@ -965,7 +965,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
   		return choice;
   	}
 
-  	/** Returns the sliders (Scrollbars). */
+  	/** Returns the Vector containing the sliders (Scrollbars). */
   	public Vector getSliders() {
   		return slider;
   	}
@@ -991,6 +991,16 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
         return previewCheckbox;
     }
     
+	/** Returns references to the "OK" ("Yes"), "Cancel", 
+		and if present, "No" buttons as an array. */
+	public Button[] getButtons() {
+  		Button[] buttons = new Button[3];
+  		buttons[0] = okay;
+  		buttons[1] = cancel;
+  		buttons[2] = no;
+		return buttons;
+  	}
+
     /** Used by PlugInFilterRunner to provide visable feedback whether preview
     	is running or not by switching from "Preview" to "wait..."
      */

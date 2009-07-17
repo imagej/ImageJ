@@ -119,7 +119,7 @@ public class Opener {
 			return;
 		}
 		if (path.endsWith(".jar") || path.endsWith(".class")) {
-				installPlugin(path);
+				(new PluginInstaller()).install(path);
 				return;
 		}
 
@@ -927,65 +927,4 @@ public class Opener {
 		return openUsingPlugins;
 	}
 	
-	void installPlugin(String path) {
-		boolean isURL = path.startsWith("http://");
-		byte[] data = null;
-		String name = path;
-		if (isURL) {
-			URL url = null;
-			try {
-				url = new URL(path);
-			} catch (Exception e) {
-				IJ.error(""+e);
-				return;
-			}
-			int index = path.lastIndexOf("/");
-			if (index!=-1 && index<=path.length()-1)
-					name = path.substring(index+1);
-			data = download(url);
-		} else
-			return;
-		SaveDialog sd = new SaveDialog("Save Plugin...", Menus.getPlugInsPath(), name, null);
-		String name2 = sd.getFileName();
-		if (name2==null) return;
-		String dir = sd.getDirectory();
-		boolean err = savePlugin(new File(dir,name), data);
-		if (!err) Menus.updateImageJMenus();
-	}
-	
-	boolean savePlugin(File f, byte[] data) {
-		try {
-			FileOutputStream out = new FileOutputStream(f);
-			out.write(data, 0, data.length);
-			out.close();
-		} catch (IOException e) {
-			IJ.error("Plugin Installer", ""+e);
-			return true;
-		}
-		return false;
-	}
-
-	byte[] download(URL url) {
-		byte[] data;
-		try {
-			URLConnection uc = url.openConnection();
-			int len = uc.getContentLength();
-			IJ.showStatus("Downloading "+url.getFile());
-			InputStream in = uc.getInputStream();
-			data = new byte[len];
-			int n = 0;
-			while (n < len) {
-				int count = in.read(data, n, len - n);
-				if (count<0)
-					throw new EOFException();
-				n += count;
-				IJ.showProgress(n, len);
-			}
-			in.close();
-		} catch (IOException e) {
-			return null;
-		}
-		return data;
-	}
-
 }
