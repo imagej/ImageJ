@@ -62,6 +62,9 @@ public class FileInfo implements Cloneable {
 	/** 48-bit planar RGB. Import only. */
 	public static final int RGB48_PLANAR = 17;	
 
+	/** 32-bit interleaved ABGR. Import only. */
+	public static final int ABGR = 18;
+
 	// File formats
 	public static final int UNKNOWN = 0;
 	public static final int RAW = 1;
@@ -153,7 +156,7 @@ public class FileInfo implements Cloneable {
 		switch (fileType) {
 			case GRAY8: case COLOR8: case BITMAP: return 1;
 			case GRAY16_SIGNED: case GRAY16_UNSIGNED: return 2;
-			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: return 4;
+			case GRAY32_INT: case GRAY32_UNSIGNED: case GRAY32_FLOAT: case ARGB: case GRAY24_UNSIGNED: case BARG: case ABGR:return 4;
 			case RGB: case RGB_PLANAR: case BGR: return 3;
 			case RGB48: case RGB48_PLANAR: return 6;
 			case GRAY64_FLOAT : return 8;
@@ -193,6 +196,7 @@ public class FileInfo implements Cloneable {
 			case RGB48: return "RGB48";
 			case BITMAP: return "bitmap";
 			case ARGB: return "ARGB";
+			case ABGR: return "ABGR";
 			case BGR: return "BGR";
 			case BARG: return "BARG";
 			case GRAY64_FLOAT: return "double";

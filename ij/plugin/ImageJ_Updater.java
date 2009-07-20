@@ -26,7 +26,7 @@ public class ImageJ_Updater implements PlugIn {
 		}
 		int exclamation = ij_jar.indexOf('!');
 		ij_jar = ij_jar.substring(9, exclamation);
-		if (IJ.debugMode) IJ.write("Updater: "+ij_jar);
+		if (IJ.debugMode) IJ.log("Updater: "+ij_jar);
 		File file = new File(ij_jar);
 		if (!file.exists()) {
 			error("File not found: "+file.getPath());

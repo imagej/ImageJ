@@ -125,7 +125,7 @@ public class Executer implements Runnable {
 			if (MacroInstaller.runMacroCommand(cmd))
 				return;
 			// Is this command a LUT name?
-			String path = Prefs.getHomeDir()+File.separator+"luts"+File.separator+cmd+".lut";
+			String path = IJ.getDirectory("luts")+cmd+".lut";
 			File f = new File(path);
 			if (f.exists()) {
 				String dir = OpenDialog.getLastDirectory();

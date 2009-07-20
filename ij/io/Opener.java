@@ -113,7 +113,17 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
-        boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || path.startsWith("http://");
+		boolean isURL = path.startsWith("http://");
+		if (isURL && isText(path)) {
+			openTextURL(path);
+			return;
+		}
+		if (path.endsWith(".jar") || path.endsWith(".class")) {
+				(new PluginInstaller()).install(path);
+				return;
+		}
+
+        boolean fullPath = path.startsWith("/") || path.startsWith("\\") || path.indexOf(":\\")==1 || isURL;
         if (!fullPath && IJ.getInstance()!=null) {
             String workingDir = OpenDialog.getDefaultDirectory();
             if (workingDir!=null)
@@ -176,6 +186,19 @@ public class Opener {
 					break;
 			}
 		}
+	}
+	
+	private boolean isText(String path) {
+		if (path.endsWith(".txt") || path.endsWith(".ijm") || path.endsWith(".java")
+		|| path.endsWith(".js") || path.endsWith(".html") || path.endsWith(".htm")
+		|| path.endsWith("/"))
+			return true;
+		int lastSlash = path.lastIndexOf("/");
+		if (lastSlash==-1) lastSlash = 0;
+		int dotIndex = path.indexOf(".", lastSlash+1);
+		if (dotIndex==-1 ||  (path.length()-dotIndex)>6)
+			return true;  // no extension
+		return false;
 	}
 	
 	/** Opens the specified file and adds it to the File/Open Recent menu.
@@ -320,6 +343,25 @@ public class Opener {
 			return null;
 	   	} 
 	}
+	
+	/** Used by open() and IJ.open() to open text URLs. */
+	void openTextURL(String url) {
+		if (url.endsWith(".pdf")||url.endsWith(".zip"))
+			return;
+		String text = IJ.openUrlAsString(url);
+		String name = url.substring(7);
+		int index = name.lastIndexOf("/");
+		int len = name.length();
+		if (index==len-1)
+			name = name.substring(0, len-1);
+		else if (index!=-1 && index<len-1)
+			name = name.substring(index+1);
+		Editor ed = new Editor();
+		ed.setSize(600, 300);
+		ed.create(name, text);
+		IJ.showStatus("");
+	}
+
 	
 	public ImagePlus openWithHandleExtraFileTypes(String path, int[] fileType) {
 		ImagePlus imp = null;
@@ -698,6 +740,9 @@ public class Opener {
 		FileOpener fo = new FileOpener(info[0]);
 		imp = fo.open(false);
 		if (imp==null) return null;
+		int[] offsets = info[0].stripOffsets;
+		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
+			ij.IJ.run(imp, "Flip Vertically", "stack");
 		int c = imp.getNChannels();
 		boolean composite = c>1 && info[0].description!=null && info[0].description.indexOf("mode=")!=-1;
 		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
@@ -882,5 +927,5 @@ public class Opener {
 	public static boolean getOpenUsingPlugins() {
 		return openUsingPlugins;
 	}
-
+	
 }

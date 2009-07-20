@@ -50,7 +50,7 @@ public class FileSaver {
 			}
 			IJ.showStatus("Saving "+path);
 			if (imp.getStackSize()>1) {
-				IJ.saveAs("tif", path);
+				IJ.saveAs(imp, "tif", path);
 				return true;
 			} else
 		    	return saveAsTiff(path);
@@ -546,7 +546,7 @@ public class FileSaver {
 			sb.append("mode="+mode+"\n");
 		}
 		if (fi.unit!=null)
-			sb.append("unit="+fi.unit+"\n");
+			sb.append("unit="+(fi.unit.equals("\u00B5m")?"um":fi.unit)+"\n");
 		if (fi.valueUnit!=null && fi.calibrationFunction!=Calibration.CUSTOM) {
 			sb.append("cf="+fi.calibrationFunction+"\n");
 			if (fi.coefficients!=null) {

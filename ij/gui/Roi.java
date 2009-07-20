@@ -40,9 +40,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected int clipX, clipY, clipWidth, clipHeight;
 	protected ImagePlus clipboard;
 	protected boolean constrain; // to be square
-    protected boolean center;
+	protected boolean center;
+	protected boolean aspect;
 	protected boolean updateFullWindow;
 	protected double mag = 1.0;
+	protected double asp_bk; //saves aspect ratio if resizing takes roi very small
 	protected String name;
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
@@ -352,7 +354,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldHeight = height;
 	}
 
-	protected void moveHandle(int sx, int sy) {	
+	protected void moveHandle(int sx, int sy) {
+		double asp;
 		if (clipboard!=null) return;
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
@@ -360,15 +363,38 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (ox>xMax) ox=xMax; if (oy>yMax) oy=yMax;
 		//IJ.log("moveHandle: "+activeHandle+" "+ox+" "+oy);
 		int x1=x, y1=y, x2=x1+width, y2=y+height, xc=x+width/2, yc=y+height/2;
+		if (width > 7 && height > 7) {
+			asp = (double)width/(double)height;
+			asp_bk = asp;
+		} else {
+			asp = asp_bk;
+		}
+		
 		switch (activeHandle) {
-			case 0: x=ox; y=oy; break;
-			case 1: y=oy; break;
-			case 2: x2=ox; y=oy; break;
-			case 3: x2=ox; break;
-			case 4: x2=ox; y2=oy; break;
-			case 5: y2=oy; break;
-			case 6: x=ox; y2=oy; break;
-			case 7: x=ox; break;
+			case 0:
+				x=ox; y=oy;
+				break;
+			case 1:
+				y=oy;
+				break;
+			case 2:
+				x2=ox; y=oy;
+				break;
+			case 3:
+				x2=ox;
+				break;
+			case 4:
+				x2=ox; y2=oy;
+				break;
+			case 5:
+				y2=oy;
+				break;
+			case 6:
+				x=ox; y2=oy;
+				break;
+			case 7:
+				x=ox;
+				break;
 		}
 		if (x<x2)
 		   width=x2-x;
@@ -379,8 +405,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		else
 		   {height=1; y=y2;}
 		
-		if (center) {
-			switch(activeHandle) {
+		if(center) {
+			switch(activeHandle){
 				case 0:
 					width=(xc-x)*2;
 					height=(yc-y)*2;
@@ -416,25 +442,107 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					width=(xc-x)*2;
 					break;
 			}
-			if (x>=x2) {
+			if(x>=x2) {
 				width=1;
 				x=x2=xc;
 			}
-			if (y>=y2) {
+			if(y>=y2) {
 				height=1;
 				y=y2=yc;
 			}
+
 		}
 		
-		if (constrain) {
-			if (activeHandle==1 || activeHandle==5)
-				width=height;
-			else
-				height=width;
+		if(constrain) {
+		
+			if(activeHandle==1 || activeHandle==5) width=height;
+			else height=width;
+		
 			if(center){
 				x=xc-width/2;
 				y=yc-height/2;
 			}
+			if(x>=x2) {
+				width=1;
+				x=x2=xc;
+			}
+			if(y>=y2) {
+				height=1;
+				y=y2=yc;
+			}
+			switch(activeHandle){
+				case 0:
+					x=x2-width;
+					y=y2-height;
+					break;
+				case 1:
+					x=xc-width/2;
+					y=y2-height;
+					break;
+				case 2:
+					y=y2-height;
+					break;
+				case 3:
+					y=yc-height/2;
+					break;
+				case 5:
+					x=xc-width/2;
+					break;
+				case 6:
+					x=x2-width;
+					break;
+				case 7:
+					y=yc-height/2;
+					x=x2-width;
+					break;
+			}
+		}
+
+		if(aspect && !constrain) {
+			if(activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
+			else height=(int)Math.rint((double)width/asp);
+			
+			switch(activeHandle){
+				case 0:
+					x=x2-width;
+					y=y2-height;
+					break;
+				case 1:
+					x=xc-width/2;
+					y=y2-height;
+					break;
+				case 2:
+					y=y2-height;
+					break;
+				case 3:
+					y=yc-height/2;
+					break;
+				case 5:
+					x=xc-width/2;
+					break;
+				case 6:
+					x=x2-width;
+					break;
+				case 7:
+					y=yc-height/2;
+					x=x2-width;
+					break;
+			}
+			if(center){
+				x=xc-width/2;
+				y=yc-height/2;
+			}
+			
+			// Attempt to preserve aspect ratio when roi very small:
+			if (width<8) {
+				if(width<1) width = 1;
+				height=(int)Math.rint((double)width/asp_bk);
+			}
+			if (height<8) {
+				if(height<1) height =1;
+				width=(int)Math.rint((double)height*asp_bk);
+			}
+			
 		}
 		
 		updateClipRect();
@@ -547,6 +655,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (ic==null) return;
 		constrain = (flags&Event.SHIFT_MASK)!=0;
 		center = (flags&Event.CTRL_MASK)!=0 || (IJ.isMacintosh()&&(flags&Event.META_MASK)!=0);
+		aspect = (flags&Event.ALT_MASK)!=0;
 		switch(state) {
 			case CONSTRUCTING:
 				grow(sx, sy);

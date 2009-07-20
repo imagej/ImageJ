@@ -152,10 +152,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
-			if (IJ.macroRunning()) {
-				IJ.error("Image is locked");
-				Macro.abort();
-			}
+			//if (IJ.macroRunning()) {
+			//	IJ.error("Image is locked");
+			//	Macro.abort();
+			//}
 			return false;
         } else {
         	locked = true;
@@ -606,15 +606,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	void setupProcessor() {
 		if (imageType==COLOR_RGB) {
-			if (ip == null || ip instanceof ByteProcessor) {
+			if (ip == null || ip instanceof ByteProcessor)
 				ip = new ColorProcessor(getImage());
-				if (IJ.debugMode) IJ.log(title + ": new ColorProcessor");
-			}
-		}
-		else if (ip==null || (ip instanceof ColorProcessor)) {
+		} else if (ip==null || (ip instanceof ColorProcessor))
 			ip = new ByteProcessor(getImage());
-			if (IJ.debugMode) IJ.log(title + ": new ByteProcessor");
-		}
 		if (roi!=null && roi.isArea())
 			ip.setRoi(roi.getBounds());
 		else

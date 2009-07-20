@@ -16,6 +16,7 @@ import java.awt.*;
 import java.applet.Applet;
 import java.io.*;
 import java.lang.reflect.*;
+import java.net.*;
 
 
 /** This class consists of static utility methods. */
@@ -331,7 +332,7 @@ public class IJ {
 	}
 
 	private static void showResults() {
-		TextWindow resultsWindow = new TextWindow("Results", "", 300, 200);
+		TextWindow resultsWindow = new TextWindow("Results", "", 400, 250);
 		textPanel = resultsWindow.getTextPanel();
 		textPanel.setResultsTable(Analyzer.getResultsTable());
 		if (ij!=null)
@@ -341,7 +342,7 @@ public class IJ {
 	public static synchronized void log(String s) {
 		if (s==null) return;
 		if (logPanel==null && ij!=null) {
-			TextWindow logWindow = new TextWindow("Log", "", 350, 250);
+			TextWindow logWindow = new TextWindow("Log", "", 400, 250);
 			logPanel = logWindow.getTextPanel();
 			logPanel.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		}
@@ -1176,10 +1177,10 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
-	/** Returns the path to the home ("user.home"), startup (ImageJ directory), plugins, macros, 
-		temp, current or image directory if <code>title</code> is "home", "startup", 
-		"plugins", "macros", "temp", "current" or "image", otherwise, displays a dialog 
-		and returns the path to the directory selected by the user. 
+	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
+		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
+		"imagej", "plugins", "macros", "luts", "temp", "current" or "image", otherwise, 
+		displays a dialog and returns the path to the directory selected by the user. 
 		Returns null if the specified directory is not found or the user
 		cancels the dialog box. Also aborts the macro if the user cancels
 		the dialog box.*/
@@ -1188,12 +1189,18 @@ public class IJ {
 			return Menus.getPlugInsPath();
 		else if (title.equals("macros"))
 			return Menus.getMacrosPath();
-		else if (title.equals("luts"))
-			return Prefs.getHomeDir()+File.separator+"luts"+File.separator;
-		else if (title.equals("home"))
+		else if (title.equals("luts")) {
+			String ijdir = getIJDir();
+			if (ijdir!=null)
+				return ijdir + "luts" + File.separator;
+			else
+				return null;
+		} else if (title.equals("home"))
 			return System.getProperty("user.home") + File.separator;
-		else if (title.equals("startup")||title.equals("imagej"))
+		else if (title.equals("startup"))
 			return Prefs.getHomeDir() + File.separator;
+		else if (title.equals("imagej"))
+			return getIJDir();
 		else if (title.equals("current"))
 			return OpenDialog.getDefaultDirectory();
 		else if (title.equals("temp")) {
@@ -1214,6 +1221,14 @@ public class IJ {
 			if (dir==null) Macro.abort();
 			return dir;
 		}
+	}
+	
+	private static String getIJDir() {
+		String path = Menus.getPlugInsPath();
+		if (path==null) return null;
+		String ijdir = (new File(path)).getParent();
+		if (ijdir!=null) ijdir += File.separator;
+		return ijdir;
 	}
 	
 	/** Displays a file open dialog box and then opens the tiff, dicom, 
@@ -1252,6 +1267,34 @@ public class IJ {
 	/** Opens an image using a file open dialog and returns it as an ImagePlus object. */
 	public static ImagePlus openImage() {
 		return openImage(null);
+	}
+
+	/** Opens a URL and returns the contents as a string.
+		Returns "<Error: message>" if there an error, including
+		host or file not found. */
+	public static String openUrlAsString(String url) {
+		StringBuffer sb = null;
+		url = url.replaceAll(" ", "%20");
+		try {
+			URL u = new URL(url);
+			URLConnection uc = u.openConnection();
+			long len = uc.getContentLength();
+			if (len>1048576L)
+				return "<Error: file is larger than 1MB>";
+			InputStream in = u.openStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			sb = new StringBuffer() ;
+			String line;
+			while ((line=br.readLine()) != null)
+				sb.append (line + "\n");
+			in.close ();
+		} catch (Exception e) {
+			return("<Error: "+e+">");
+		}
+		if (sb!=null)
+			return new String(sb);
+		else
+			return "";
 	}
 
 	/** Saves the current image, lookup table, selection or text window to the specified file path. 
