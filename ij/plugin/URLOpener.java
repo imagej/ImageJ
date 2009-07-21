@@ -58,10 +58,12 @@ public class URLOpener implements PlugIn {
 			url = "http://" + url;
 		if (url.endsWith("/"))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url.substring(0, url.length()-1));
-		else if (url.endsWith(".html") || url.endsWith(".htm") ||  url.indexOf(".html#")>0)
+		else if (url.endsWith(".html") || url.endsWith(".htm") ||  url.indexOf(".html#")>0 || noExtension(url))
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 		else if (url.endsWith(".txt")||url.endsWith(".ijm")||url.endsWith(".js")||url.endsWith(".java"))
 			openTextFile(url, false);
+		else if (url.endsWith(".jar")||url.endsWith(".class"))
+			IJ.open(url);
 		else {
 			IJ.showStatus("Opening: " + url);
 			ImagePlus imp = new ImagePlus(url);
@@ -73,6 +75,16 @@ public class URLOpener implements PlugIn {
 			IJ.showStatus("");
 		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd
+	}
+	
+	boolean noExtension(String url) {
+		int lastSlash = url.lastIndexOf("/");
+		if (lastSlash==-1) lastSlash = 0;
+		int dotIndex = url.indexOf(".", lastSlash+1);
+		if (dotIndex==-1 ||  (url.length()-dotIndex)>6)
+			return true;  // no extension
+		else
+			return false;
 	}
 	
 	void openTextFile(String urlString, boolean install) {

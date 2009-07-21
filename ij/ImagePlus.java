@@ -152,10 +152,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
-			if (IJ.macroRunning()) {
-				IJ.error("Image is locked");
-				Macro.abort();
-			}
+			//if (IJ.macroRunning()) {
+			//	IJ.error("Image is locked");
+			//	Macro.abort();
+			//}
 			return false;
         } else {
         	locked = true;

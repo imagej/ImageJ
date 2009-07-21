@@ -93,17 +93,17 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	    
 	    private String parseHTML(String s) {
 	    	if (IJ.debugMode) IJ.log("parseHTML:\n"+s);
-	    	int index1 = s.indexOf("href=\"");
-	    	if (index1>=0) {
-	    		int index2 = s.indexOf("\"", index1+6);
-	    		if (index2>0)
-	    			return s.substring(index1+6, index2);
-	    	}
-	    	index1 = s.indexOf("src=\"");
+	    	int index1 = s.indexOf("src=\"");
 	    	if (index1>=0) {
 	    		int index2 = s.indexOf("\"", index1+5);
 	    		if (index2>0)
 	    			return s.substring(index1+5, index2);
+	    	}
+	    	index1 = s.indexOf("href=\"");
+	    	if (index1>=0) {
+	    		int index2 = s.indexOf("\"", index1+6);
+	    		if (index2>0)
+	    			return s.substring(index1+6, index2);
 	    	}
 	    	return s;
 	    }

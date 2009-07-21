@@ -50,7 +50,7 @@ public class FileSaver {
 			}
 			IJ.showStatus("Saving "+path);
 			if (imp.getStackSize()>1) {
-				IJ.saveAs("tif", path);
+				IJ.saveAs(imp, "tif", path);
 				return true;
 			} else
 		    	return saveAsTiff(path);

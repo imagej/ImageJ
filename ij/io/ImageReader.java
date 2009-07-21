@@ -557,7 +557,7 @@ public class ImageReader {
 			int value;
 			int channel=0;
 			boolean intel = fi.intelByteOrder;
-			for (int base=0; base<len; base+=2) {
+			for (int base=0; base<len && pixel<nPixels; base+=2) {
 				if (intel)
 					value = ((buffer[base+1]&0xff)<<8) | (buffer[base]&0xff);
 				else

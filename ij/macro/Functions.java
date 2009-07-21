@@ -1279,7 +1279,9 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			if (key.equals("image.subtitle")) {
+			if (key.equals("micrometer.abbreviation"))
+				return "\u00B5m";
+			else if (key.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
 				ImageWindow win = imp.getWindow();
 				return win!=null?win.createSubtitle():"";
