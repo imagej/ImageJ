@@ -1006,6 +1006,8 @@ public class IJ {
 
 	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
+		if (title.equals("ImageJ")&&ij!=null)
+			{ij.toFront(); return;}
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis()-start<3000) { // 3 sec timeout
 			Frame frame = WindowManager.getFrame(title);
