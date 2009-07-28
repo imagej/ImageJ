@@ -62,7 +62,7 @@ public class Executer implements Runnable {
 				IJ.setKeyUp(IJ.ALL_KEYS);  // set keys up except for "<", ">", "+" and "-" shortcuts
 		} catch(Throwable e) {
 			IJ.showStatus("");
-			IJ.showProgress(1.0);
+			IJ.showProgress(1, 1);
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp!=null) imp.unlock();
 			String msg = e.getMessage();

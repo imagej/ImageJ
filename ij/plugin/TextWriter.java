@@ -25,7 +25,8 @@ public class TextWriter implements PlugIn {
 		} else {
 			IJ.error("Save As Text",
 				"This command requires a TextWindow, such\n"
-				+ "as the \"Log\" window, or an Editor window.");
+				+ "as the \"Log\" window, or an Editor window. Use\n"
+				+ "File>Save>Text Image to save an image as text.");
 		}
 	}
 	

@@ -455,7 +455,11 @@ public class IJ {
     The bar is updated only if more than 90 ms have passed since the last call.
     Does nothing if the ImageJ window is not present. */
     public static void showProgress(int currentIndex, int finalIndex) {
-		if (progressBar!=null) progressBar.show(currentIndex, finalIndex);
+		if (progressBar!=null) {
+			progressBar.show(currentIndex, finalIndex);
+			if (currentIndex==finalIndex)
+				progressBar.setBatchMode(false);
+		}
 	}
 
 	/** Displays a message in a dialog box titled "Message".

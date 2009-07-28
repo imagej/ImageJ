@@ -318,6 +318,7 @@ public class ImageJ extends Frame implements ActionListener,
 	public void mouseEntered(MouseEvent e) {}
 
  	public void keyPressed(KeyEvent e) {
+ 		//if (e.isConsumed()) return;
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
 		hotkey = false;

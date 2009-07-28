@@ -145,9 +145,10 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         } // end processing:
         if ((flags&PlugInFilter.FINAL_PROCESSING)!=0 && !IJ.escapePressed())
             ((PlugInFilter)theFilter).setup("final", imp);
-        if (IJ.escapePressed())
+        if (IJ.escapePressed()) {
             IJ.showStatus(command + " INTERRUPTED");
-        else
+        	IJ.showProgress(1,1);
+        } else
             IJ.showTime(imp, imp.getStartTime()-previewTime, command + ": ", doStack?slices:1);
         IJ.showProgress(1.0);
         if (ipChanged) {

@@ -195,10 +195,11 @@ public class Opener {
 			return true;
 		int lastSlash = path.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
-		int dotIndex = path.indexOf(".", lastSlash+1);
-		if (dotIndex==-1 ||  (path.length()-dotIndex)>6)
+		int lastDot = path.lastIndexOf(".");
+		if (lastDot==-1 || lastDot<lastSlash || (path.length()-lastDot)>6)
 			return true;  // no extension
-		return false;
+		else
+			return false;
 	}
 	
 	/** Opens the specified file and adds it to the File/Open Recent menu.

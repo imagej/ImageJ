@@ -63,6 +63,10 @@ save16="Measurements...",ij.plugin.MeasurementsWriter
 save17="Text...",ij.plugin.TextWriter
 #save18="QuickTime Movie... ",QT_Movie_Writer
 
+# Plugins installed in the File/Batch submenu
+batch01="Convert...",ij.plugin.BatchConvert
+batch02="Measure...",ij.plugin.BatchMeasure
+
 # Plugins installed in the Edit/Selection submenu
 selection01="Select All[a]",ij.plugin.Selection("all")
 selection02="Select None[A]",ij.plugin.Selection("none")

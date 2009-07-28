@@ -102,6 +102,7 @@ public class Menus {
 		getMenu("File>Open Samples", true);
 		addOpenRecentSubMenu(file);
 		Menu importMenu = getMenu("File>Import", true);
+		getMenu("File>Batch", true);
 		file.addSeparator();
 		addPlugInItem(file, "Close", "ij.plugin.Commands(\"close\")", KeyEvent.VK_W, false);
 		addPlugInItem(file, "Save", "ij.plugin.Commands(\"save\")", KeyEvent.VK_S, false);

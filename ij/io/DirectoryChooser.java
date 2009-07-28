@@ -50,7 +50,8 @@ import javax.swing.filechooser.*;
 						directory = dir.getPath();
 						if (!directory.endsWith(File.separator))
 							directory += File.separator;
-						defaultDir = directory;
+						if (directory!=null)
+							defaultDir = (new File(directory)).getParent();
 						String fileName = file.getName();
 						if (fileName.indexOf(":\\")!=-1)
 							directory = defaultDir = fileName;
@@ -79,7 +80,8 @@ import javax.swing.filechooser.*;
 				directory = dir.getPath();
 				if (!directory.endsWith(File.separator))
 					directory += File.separator;
-				defaultDir = directory;
+					if (directory!=null)
+						defaultDir = (new File(directory)).getParent();
 				String fileName = file.getName();
 				if (fileName.indexOf(":\\")!=-1)
 					directory = defaultDir = fileName;
@@ -99,7 +101,8 @@ import javax.swing.filechooser.*;
 			directory = null;
 		else
 			directory = od.getDirectory() + od.getFileName() + "/";
-		defaultDir = directory;
+		if (directory!=null)
+			defaultDir = (new File(directory)).getParent();
 		System.setProperty("apple.awt.fileDialogForDirectories", "false");
  		Prefs.useJFileChooser = saveUseJFC;
 	}
