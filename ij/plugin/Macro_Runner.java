@@ -124,8 +124,8 @@ public class Macro_Runner implements PlugIn {
 
     /** Opens and runs the specified macro on the current thread. Macros can
     	retrieve the optional string argument by calling the getArgument() macro function. 
-    	Returns the String value returned by the macro or null if the macro does not
-    	return a value. */
+    	Returns the String value returned by the macro, null if the macro does not
+    	return a value, or "[aborted]" if the macro was aborted due to an error. */
 	public String runMacro(String macro, String arg) {
 		Interpreter interp = new Interpreter();
 		try {
@@ -138,7 +138,7 @@ public class Macro_Runner implements PlugIn {
 			if (imp!=null) imp.unlock();
 			String msg = e.getMessage();
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
-				return null;
+				return  "[aborted]";
 			CharArrayWriter caw = new CharArrayWriter();
 			PrintWriter pw = new PrintWriter(caw);
 			e.printStackTrace(pw);
@@ -153,7 +153,7 @@ public class Macro_Runner implements PlugIn {
 					IJ.log(s);
 			}
 		}
-		return null;
+		return  "[aborted]";
 	}
 	
 	public String runMacroFromIJJar(String name, String arg) {

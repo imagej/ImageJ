@@ -64,8 +64,9 @@ save17="Text...",ij.plugin.TextWriter
 #save18="QuickTime Movie... ",QT_Movie_Writer
 
 # Plugins installed in the File/Batch submenu
-batch01="Convert...",ij.plugin.BatchConvert
-batch02="Measure...",ij.plugin.BatchMeasure
+batch01="Measure...",ij.plugin.BatchMeasure
+batch02="Convert...",ij.plugin.BatchConverter
+batch03="Process...",ij.plugin.BatchProcesser
 
 # Plugins installed in the Edit/Selection submenu
 selection01="Select All[a]",ij.plugin.Selection("all")

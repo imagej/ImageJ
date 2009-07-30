@@ -80,8 +80,9 @@ public class IJ {
 	}
 	
 	/** Runs the macro contained in the string <code>macro</code>.
-		Returns any string value returned by the macro, or null. 
-		The equivalent macro function is eval(). */
+		Returns any string value returned by the macro, null if the macro
+		does not return a value, or "[aborted]" if the macro was aborted
+		due to an error. The equivalent macro function is eval(). */
 	public static String runMacro(String macro) {
 		return runMacro(macro, "");
 	}
@@ -89,7 +90,9 @@ public class IJ {
 	/** Runs the macro contained in the string <code>macro</code>.
 		The optional string argument can be retrieved in the
 		called macro using the getArgument() macro function. 
-		Returns any string value returned by the macro, or null. */
+		Returns any string value returned by the macro, null if the macro
+		does not return a value, or "[aborted]" if the macro was aborted
+		due to an error.  */
 	public static String runMacro(String macro, String arg) {
 		Macro_Runner mr = new Macro_Runner();
 		return mr.runMacro(macro, arg);
