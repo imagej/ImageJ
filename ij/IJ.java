@@ -1408,8 +1408,9 @@ public class IJ {
 		return path;
 	}
 
-	/** Saves a string as a file. Returns an error message 
-		if there is  an exception, otherwise returns null. */
+	/** Saves a string as a file. Displays a file save dialog if
+		'path' is null or blank. Returns an error message 
+		if there is an exception, otherwise returns null. */
 	public static String saveString(String string, String path) {
 		return write(string, path, false);
 	}
@@ -1422,6 +1423,13 @@ public class IJ {
 	}
 
 	private static String write(String string, String path, boolean append) {
+		if (path==null || path.equals("")) {
+			String msg = append?"Append String...":"Save String...";
+			SaveDialog sd = new SaveDialog(msg, "Untitled", ".txt");
+			String name = sd.getFileName();
+			if (name==null) return null;
+			path = sd.getDirectory() + name;
+		}
 		try {
 			BufferedWriter out = new BufferedWriter(new FileWriter(path, append));
 			out.write(string);
@@ -1430,6 +1438,41 @@ public class IJ {
 			return ""+e;
 		}
 		return null;
+	}
+
+	/** Opens a text file as a string. Displays a file open dialog
+		if path is null or blank. Returns null if the user cancels
+		the file open dialog. If there is an error, returns a 
+		 message in the form "Error: message". */
+	public static String openAsString(String path) {
+		if (path==null || path.equals("")) {
+			OpenDialog od = new OpenDialog("Open As String", "");
+			String directory = od.getDirectory();
+			String name = od.getFileName();
+			if (name==null) return null;
+			path = directory + name;
+		}
+		String str = "";
+		File file = new File(path);
+		if (!file.exists())
+			return "Error: file not found";
+		try {
+			StringBuffer sb = new StringBuffer(5000);
+			BufferedReader r = new BufferedReader(new FileReader(file));
+			while (true) {
+				String s=r.readLine();
+				if (s==null)
+					break;
+				else
+					sb.append(s+"\n");
+			}
+			r.close();
+			str = new String(sb);
+		}
+		catch (Exception e) {
+			str = "Error: "+e.getMessage();
+		}
+		return str;
 	}
 
 	 /** Creates a new imagePlus. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
