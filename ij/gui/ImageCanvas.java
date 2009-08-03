@@ -465,30 +465,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imp.setTitle(imp.getTitle());
 	}
 
-	/*
-	public void setMagnification(double mag, int x, int y) {
-		if (mag>32.0) magnification = 32.0;
-		if (mag<0.03125) mag = 0.03125;
-		int newWidth = (int)(imageWidth*mag);
-		int newHeight = (int)(imageHeight*mag);
-		Dimension newSize = canEnlarge(newWidth, newHeight);
-		if (newSize!=null) {
-			setDrawingSize(newSize.width, newSize.height);
-			if (newSize.width!=newWidth || newSize.height!=newHeight)
-				adjustSourceRect(mag, x, y);
-			else
-				setMagnification(mag);
-			imp.getWindow().pack();
-		} else
-			adjustSourceRect(mag, x, y);
-		repaint();
-		if (srcRect.width<imageWidth || srcRect.height<imageHeight)
-			resetMaxBounds();
-		this.magnification = magnification;
-		imp.setTitle(imp.getTitle());
-	}
-	*/
-
 	public Rectangle getSrcRect() {
 		return srcRect;
 	}
@@ -634,7 +610,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImageWindow win = imp.getWindow();
 		if (win==null) return null;
 		Rectangle r1 = win.getBounds();
-
 		Insets insets = win.getInsets();
 		Point loc = getLocation();
 		if (loc.x>insets.left+5 || loc.y>insets.top+5) {
@@ -645,7 +620,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			r1.width = r1.width - dstWidth + newWidth+10;
 			r1.height = r1.height - dstHeight + newHeight+10;
 		}
-		Rectangle max = win.getMaxWindow();
+		Rectangle max = win.getMaxWindow(r1);
 		boolean fitsHorizontally = r1.x+r1.width<max.x+max.width;
 		boolean fitsVertically = r1.y+r1.height<max.y+max.height;
 		if (fitsHorizontally && fitsVertically)

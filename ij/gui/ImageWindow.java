@@ -127,7 +127,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private void setLocationAndSize(boolean updating) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Rectangle maxWindow = getMaxWindow();
+		Rectangle maxWindow = getMaxWindow(null);
 		if (maxWindow.x==maxWindow.width)  // work around for Linux bug
 			maxWindow = new Rectangle(0, maxWindow.y, maxWindow.width, maxWindow.height);
 		if (WindowManager.getWindowCount()<=1)
@@ -179,15 +179,38 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			pack();
 	}
 				
-	Rectangle getMaxWindow() {
+	Rectangle getMaxWindow(Rectangle wb) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		Rectangle maxWindow = ge.getMaximumWindowBounds();
-		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
-		if (maxWindow.height>600) {
-			maxWindow.y += ijSize.height;
-			maxWindow.height -= ijSize.height;
+		Rectangle bounds = ge.getMaximumWindowBounds();
+		if (wb!=null && (wb.x<0 || wb.y<0 || wb.x>bounds.x+bounds.width || wb.y>bounds.y+bounds.height)) {
+			Rectangle bounds2 = getSecondaryMonitorBounds(ge, wb);
+			if (bounds2!=null) return bounds2;
 		}
-		return maxWindow;
+		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
+		if (bounds.height>600) {
+			bounds.y += ijSize.height;
+			bounds.height -= ijSize.height;
+		}
+		return bounds;
+	}
+	
+	private Rectangle getSecondaryMonitorBounds(GraphicsEnvironment ge, Rectangle wb) {
+		//IJ.log("getSecondaryMonitorBounds "+wb);
+		if (wb.x+wb.width>0 || wb.y+wb.height>0)
+			return null;
+		GraphicsDevice[] gs = ge.getScreenDevices();
+		for (int j=0; j<gs.length; j++) { 
+			GraphicsDevice gd = gs[j];
+			GraphicsConfiguration[] gc = gd.getConfigurations();
+			for (int i=0; i<gc.length; i++) {
+				Rectangle bounds = gc[i].getBounds();
+				//IJ.log(j+" "+i+" "+bounds+"  "+bounds.contains(wb.x, wb.y));
+				if (bounds!=null && bounds.contains(wb.x, wb.y)) {
+					return bounds;
+				}
+			}
+		}		
+		return null;
 	}
 
 	public double getInitialMagnification() {
