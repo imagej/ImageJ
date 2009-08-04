@@ -16,13 +16,14 @@ import java.util.Vector;
 		private static String format = Prefs.get("batch.format", formats[0]);
 		private static final String[] code = {
 			"[Select from list]",
-			"Border",
+			"Add Border",
 			"Convert to RGB",
 			"Crop",
 			"Invert",
+			"Label",
 			"Measure",
 			"Resize",
-			"Text"
+			"Scale"
 		};
 		private static String macro = "";
 		private static int testImage;
@@ -175,11 +176,13 @@ import java.util.Vector;
 			code = "run(\"Measure\");\n";
 		else if (item.equals("Resize"))
 			code = "run(\"Size...\", \"width=0 height=480 constrain interpolation=Bicubic\");\n";
-		else if (item.equals("Text"))
+		else if (item.equals("Scale"))
+			code = "scale = 1.5;\nwidth = getWidth*scale;\nheight = getHeight*scale;\nrun(\"Size...\", \"width=\"+width+\" height=\"+height+\" interpolation=Bilinear\")\n";
+		else if (item.equals("Label"))
 			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"red\");\ndrawString(\"Hello\", 20, 30);\n";
 		else if (item.equals("Crop"))
 			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2)\";\nrun(\"Crop\");\n";
-		else if (item.equals("Border"))
+		else if (item.equals("Add Border"))
 			code = "run(\"Canvas Size...\", \"width=\"+getWidth+50+\" height=\"\n   +getHeight+50+\" position=Center zero\");\n";
 		else if (item.equals("Invert"))
 			code = "run(\"Invert\");\n";

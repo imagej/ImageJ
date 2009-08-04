@@ -127,7 +127,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private void setLocationAndSize(boolean updating) {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
-		Rectangle maxWindow = getMaxWindow(null);
+		Rectangle maxWindow = getMaxWindow(0,0);
 		if (maxWindow.x==maxWindow.width)  // work around for Linux bug
 			maxWindow = new Rectangle(0, maxWindow.y, maxWindow.width, maxWindow.height);
 		if (WindowManager.getWindowCount()<=1)
@@ -179,11 +179,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			pack();
 	}
 				
-	Rectangle getMaxWindow(Rectangle wb) {
+	Rectangle getMaxWindow(int xloc, int yloc) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = ge.getMaximumWindowBounds();
-		if (wb!=null && (wb.x<0 || wb.y<0 || wb.x>bounds.x+bounds.width || wb.y>bounds.y+bounds.height)) {
-			Rectangle bounds2 = getSecondaryMonitorBounds(ge, wb);
+		if (xloc>bounds.x+bounds.width || yloc>bounds.y+bounds.height) {
+			Rectangle bounds2 = getSecondaryMonitorBounds(ge, xloc, yloc);
 			if (bounds2!=null) return bounds2;
 		}
 		Dimension ijSize = ij!=null?ij.getSize():new Dimension(0,0);
@@ -194,25 +194,22 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		return bounds;
 	}
 	
-	private Rectangle getSecondaryMonitorBounds(GraphicsEnvironment ge, Rectangle wb) {
+	private Rectangle getSecondaryMonitorBounds(GraphicsEnvironment ge, int xloc, int yloc) {
 		//IJ.log("getSecondaryMonitorBounds "+wb);
-		if (wb.x+wb.width>0 || wb.y+wb.height>0)
-			return null;
 		GraphicsDevice[] gs = ge.getScreenDevices();
-		for (int j=0; j<gs.length; j++) { 
+		for (int j=0; j<gs.length; j++) {
 			GraphicsDevice gd = gs[j];
 			GraphicsConfiguration[] gc = gd.getConfigurations();
 			for (int i=0; i<gc.length; i++) {
 				Rectangle bounds = gc[i].getBounds();
 				//IJ.log(j+" "+i+" "+bounds+"  "+bounds.contains(wb.x, wb.y));
-				if (bounds!=null && bounds.contains(wb.x, wb.y)) {
+				if (bounds!=null && bounds.contains(xloc, yloc))
 					return bounds;
-				}
 			}
 		}		
 		return null;
 	}
-
+	
 	public double getInitialMagnification() {
 		return initialMagnification;
 	}

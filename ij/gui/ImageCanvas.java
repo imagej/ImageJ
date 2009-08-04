@@ -620,7 +620,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			r1.width = r1.width - dstWidth + newWidth+10;
 			r1.height = r1.height - dstHeight + newHeight+10;
 		}
-		Rectangle max = win.getMaxWindow(r1);
+		Rectangle max = win.getMaxWindow(r1.x, r1.y);
 		boolean fitsHorizontally = r1.x+r1.width<max.x+max.width;
 		boolean fitsVertically = r1.y+r1.height<max.y+max.height;
 		if (fitsHorizontally && fitsVertically)
