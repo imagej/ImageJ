@@ -97,8 +97,7 @@ public class Calibration implements Cloneable {
  		if (unit==null || unit.equals(""))
  			this.unit = "pixel";
  		else {
- 			if (unit.equals("um"))
- 				unit = IJ.micronSymbol+"m";
+ 			if (unit.equals("um")) unit = "\u00B5m";
  			this.unit = unit;
  		}
  		units = null;

@@ -171,6 +171,7 @@ public class Menus {
 		getMenu("Process>FFT", true);
 		Menu filtersMenu = getMenu("Process>Filters", true);
 		process.addSeparator();
+		getMenu("Process>Batch", true);
 		addPlugInItem(process, "Image Calculator...", "ij.plugin.ImageCalculator", 0, false);
 		addPlugInItem(process, "Subtract Background...", "ij.plugin.filter.BackgroundSubtracter", 0, false);
 		addItem(process, "Repeat Command", KeyEvent.VK_R, true);

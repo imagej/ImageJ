@@ -10,11 +10,9 @@ public class FloatProcessor extends ImageProcessor {
 
 	private float min, max, snapshotMin, snapshotMax;
 	private float[] pixels;
-	private byte[] pixels8;
+	protected byte[] pixels8;
 	private float[] snapshotPixels = null;
-	private byte[] LUT = null;
 	private float fillColor =  Float.MAX_VALUE;
-	//private float bgColor = Float.MIN_VALUE;
 	private boolean fixedScale = false;
 
 	/** Creates a new FloatProcessor using the specified pixel array and ColorModel.
@@ -156,7 +154,7 @@ public class FloatProcessor extends ImageProcessor {
 	    return img;
 	}
 	
-	byte[] create8BitImage() {
+	protected byte[] create8BitImage() {
 		// scale from float to 8-bits
 		int size = width*height;
 		if (pixels8==null)

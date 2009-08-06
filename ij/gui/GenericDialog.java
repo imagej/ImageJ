@@ -452,7 +452,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy = y;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
-		c.insets = new Insets(15, 20, 0, 0);
+		c.insets = getInsets(15, 20, 0, 0);
 		grid.setConstraints(panel, c);
 		add(panel);
 		y++;

@@ -90,6 +90,7 @@ public class MemoryMonitor implements PlugIn {
 		if (used>0.9*max) max *= 2.0;
 		mem[index++] = used;
 		if (index==mem.length) index = 0;
+		ip.setLineWidth(1);
 		ip.reset();
 		int index2 = index+1;
 		if (index2==mem.length) index2 = 0;

@@ -107,7 +107,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		}
 	}
 
-	/** Creates a panel containing "Save..." and "Save..." buttons. */
+	/** Creates a panel containing "Open..." and "Save..." buttons. */
 	Panel makeButtonPanel(GenericDialog gd) {
 		Panel buttons = new Panel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));

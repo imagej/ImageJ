@@ -106,7 +106,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
                     else
                         Undo.reset();
                 }
-                if ((flags&PlugInFilter.NO_CHANGES)==0) ip.resetBinaryThreshold();
+                if ((flags&PlugInFilter.NO_CHANGES)==0&&(flags&PlugInFilter.KEEP_THRESHOLD)==0)
+                	ip.resetBinaryThreshold();
             } else {  //  S T A C K
                 Undo.reset();    // no undo for processing a complete stack
                 IJ.resetEscape();
@@ -145,9 +146,10 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         } // end processing:
         if ((flags&PlugInFilter.FINAL_PROCESSING)!=0 && !IJ.escapePressed())
             ((PlugInFilter)theFilter).setup("final", imp);
-        if (IJ.escapePressed())
+        if (IJ.escapePressed()) {
             IJ.showStatus(command + " INTERRUPTED");
-        else
+        	IJ.showProgress(1,1);
+        } else
             IJ.showTime(imp, imp.getStartTime()-previewTime, command + ": ", doStack?slices:1);
         IJ.showProgress(1.0);
         if (ipChanged) {

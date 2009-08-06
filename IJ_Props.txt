@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.42
+# Version 1.43
 
 # Popup Menu
 popup01=Undo
@@ -264,6 +264,11 @@ filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
 filters08="Variance...",ij.plugin.filter.RankFilters("variance")
 filters09=-
 filters10="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
+
+# Plugins installed in the File/Batch submenu
+batch01="Measure...",ij.plugin.BatchMeasure
+batch02="Convert...",ij.plugin.BatchConverter
+batch03="Process...",ij.plugin.BatchProcesser
 
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")

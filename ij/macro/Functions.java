@@ -1279,7 +1279,9 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			if (key.equals("image.subtitle")) {
+			if (key.equals("micrometer.abbreviation"))
+				return "\u00B5m";
+			else if (key.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
 				ImageWindow win = imp.getWindow();
 				return win!=null?win.createSubtitle():"";
@@ -2093,6 +2095,12 @@ public class Functions implements MacroConstants, Measurements {
 			String path = getString();
 			interp.getRightParen();
 			IJ.open(path);
+			if (path!=null&&!path.equals("")) {
+				int index = path.lastIndexOf('/');
+				if (index==-1) path.lastIndexOf('\\');
+				String name = index>=0&&index<path.length()?path.substring(index+1):path;
+				OpenDialog.setLastName(name);
+			}
 		}
 		resetImage();
 	}

@@ -80,8 +80,9 @@ public class IJ {
 	}
 	
 	/** Runs the macro contained in the string <code>macro</code>.
-		Returns any string value returned by the macro, or null. 
-		The equivalent macro function is eval(). */
+		Returns any string value returned by the macro, null if the macro
+		does not return a value, or "[aborted]" if the macro was aborted
+		due to an error. The equivalent macro function is eval(). */
 	public static String runMacro(String macro) {
 		return runMacro(macro, "");
 	}
@@ -89,7 +90,9 @@ public class IJ {
 	/** Runs the macro contained in the string <code>macro</code>.
 		The optional string argument can be retrieved in the
 		called macro using the getArgument() macro function. 
-		Returns any string value returned by the macro, or null. */
+		Returns any string value returned by the macro, null if the macro
+		does not return a value, or "[aborted]" if the macro was aborted
+		due to an error.  */
 	public static String runMacro(String macro, String arg) {
 		Macro_Runner mr = new Macro_Runner();
 		return mr.runMacro(macro, arg);
@@ -455,7 +458,11 @@ public class IJ {
     The bar is updated only if more than 90 ms have passed since the last call.
     Does nothing if the ImageJ window is not present. */
     public static void showProgress(int currentIndex, int finalIndex) {
-		if (progressBar!=null) progressBar.show(currentIndex, finalIndex);
+		if (progressBar!=null) {
+			progressBar.show(currentIndex, finalIndex);
+			if (currentIndex==finalIndex)
+				progressBar.setBatchMode(false);
+		}
 	}
 
 	/** Displays a message in a dialog box titled "Message".
@@ -1006,6 +1013,8 @@ public class IJ {
 
 	/** Activates the window with the specified title. */
 	public static void selectWindow(String title) {
+		if (title.equals("ImageJ")&&ij!=null)
+			{ij.toFront(); return;}
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis()-start<3000) { // 3 sec timeout
 			Frame frame = WindowManager.getFrame(title);
@@ -1399,8 +1408,9 @@ public class IJ {
 		return path;
 	}
 
-	/** Saves a string as a file. Returns an error message 
-		if there is  an exception, otherwise returns null. */
+	/** Saves a string as a file. Displays a file save dialog if
+		'path' is null or blank. Returns an error message 
+		if there is an exception, otherwise returns null. */
 	public static String saveString(String string, String path) {
 		return write(string, path, false);
 	}
@@ -1413,6 +1423,13 @@ public class IJ {
 	}
 
 	private static String write(String string, String path, boolean append) {
+		if (path==null || path.equals("")) {
+			String msg = append?"Append String...":"Save String...";
+			SaveDialog sd = new SaveDialog(msg, "Untitled", ".txt");
+			String name = sd.getFileName();
+			if (name==null) return null;
+			path = sd.getDirectory() + name;
+		}
 		try {
 			BufferedWriter out = new BufferedWriter(new FileWriter(path, append));
 			out.write(string);
@@ -1421,6 +1438,41 @@ public class IJ {
 			return ""+e;
 		}
 		return null;
+	}
+
+	/** Opens a text file as a string. Displays a file open dialog
+		if path is null or blank. Returns null if the user cancels
+		the file open dialog. If there is an error, returns a 
+		 message in the form "Error: message". */
+	public static String openAsString(String path) {
+		if (path==null || path.equals("")) {
+			OpenDialog od = new OpenDialog("Open As String", "");
+			String directory = od.getDirectory();
+			String name = od.getFileName();
+			if (name==null) return null;
+			path = directory + name;
+		}
+		String str = "";
+		File file = new File(path);
+		if (!file.exists())
+			return "Error: file not found";
+		try {
+			StringBuffer sb = new StringBuffer(5000);
+			BufferedReader r = new BufferedReader(new FileReader(file));
+			while (true) {
+				String s=r.readLine();
+				if (s==null)
+					break;
+				else
+					sb.append(s+"\n");
+			}
+			r.close();
+			str = new String(sb);
+		}
+		catch (Exception e) {
+			str = "Error: "+e.getMessage();
+		}
+		return str;
 	}
 
 	 /** Creates a new imagePlus. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 

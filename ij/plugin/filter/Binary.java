@@ -28,7 +28,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     boolean previewing;
     boolean escapePressed;
     int foreground, background;
-    int flags = DOES_8G | DOES_8C | SUPPORTS_MASKING | PARALLELIZE_STACKS | KEEP_PREVIEW;
+    int flags = DOES_8G | DOES_8C | SUPPORTS_MASKING | PARALLELIZE_STACKS | KEEP_PREVIEW | KEEP_THRESHOLD;
     int nPasses;
 
     public int setup(String arg, ImagePlus imp) {
@@ -122,6 +122,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             doIterations(ip, "erode");
         }
         ip.setSnapshotCopyMode(false);
+        ip.setBinaryThreshold();
     }
 
     void doIterations (ImageProcessor ip, String mode) {

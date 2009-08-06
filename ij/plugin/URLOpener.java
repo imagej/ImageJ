@@ -80,8 +80,8 @@ public class URLOpener implements PlugIn {
 	boolean noExtension(String url) {
 		int lastSlash = url.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
-		int dotIndex = url.indexOf(".", lastSlash+1);
-		if (dotIndex==-1 ||  (url.length()-dotIndex)>6)
+		int lastDot = url.lastIndexOf(".");
+		if (lastDot==-1 || lastDot<lastSlash || (url.length()-lastDot)>6)
 			return true;  // no extension
 		else
 			return false;

@@ -130,6 +130,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 		} catch(OutOfMemoryError o) {
 			IJ.outOfMemory("Resize");
 		}
+		imp.changes = true;
 	}
 
     public void textValueChanged(TextEvent e) {

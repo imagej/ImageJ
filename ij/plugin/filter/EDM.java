@@ -111,16 +111,17 @@ public class EDM implements ExtendedPlugInFilter {
 //##arg="points";
 
         //processing type; default is 'EDM' (0)
-        if (arg.equals("watershed"))
+        if (arg.equals("watershed")) {
             processType = WATERSHED;
-        else if (arg.equals("points"))
+            flags += KEEP_THRESHOLD;
+        } else if (arg.equals("points"))
             processType = UEP;
         else if (arg.equals("voronoi"))
             processType = VORONOI;
 
         //output type
         if (processType != WATERSHED)           //Watershed always has output BYTE_OVERWRITE=0
-        outImageType = outputType;
+            outImageType = outputType;
         if (outImageType != BYTE_OVERWRITE)
             flags |= NO_CHANGES;
         return flags;
@@ -193,6 +194,7 @@ public class EDM implements ExtendedPlugInFilter {
         if (processType==WATERSHED) {
             if (background255) maxIp.invert();
             ip.copyBits(maxIp, 0, 0, Blitter.COPY);
+            ip.setBinaryThreshold();
         } else switch (outImageType) {          //for all these, output contains the values of the EDM
             case FLOAT:
                 outIp = floatEdm;

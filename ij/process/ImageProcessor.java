@@ -366,7 +366,7 @@ public abstract class ImageProcessor extends Object {
 		can be RED_LUT, BLACK_AND_WHITE_LUT, OVER_UNDER_LUT or NO_LUT_UPDATE.
 		Thresholding of RGB images is not supported. */
 	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
-		//ij.IJ.write("setThreshold: "+" "+minThreshold+" "+maxThreshold+" "+lutUpdate);
+		//ij.IJ.log("setThreshold: "+" "+minThreshold+" "+maxThreshold+" "+lutUpdate);
 		if (this instanceof ColorProcessor)
 			return;
 		this.minThreshold = minThreshold;
@@ -607,8 +607,27 @@ public abstract class ImageProcessor extends Object {
 		return lutUpdateMode;
 	}
 
+	/* Sets the threshold levels (non-visible) of an 8-bit mask based on
+		the state of Prefs.blackBackground and isInvertedLut().
+		@see ImageProcessor#resetBinaryThreshold	
+	*/
+	public void setBinaryThreshold() {
+		//ij.IJ.log("setMaskThreshold1");
+		if (!(this instanceof ByteProcessor)) return;
+		double t1=255.0, t2=255.0;
+		boolean invertedLut = isInvertedLut();
+		if ((invertedLut&&ij.Prefs.blackBackground) || (!invertedLut&&!ij.Prefs.blackBackground)) {
+			t1 = 0.0;
+			t2 = 0.0;
+		}
+		//ij.IJ.log("setMaskThreshold2 "+t1+" "+t2);
+		setThreshold(t1, t2, ImageProcessor.NO_LUT_UPDATE);
+	}
+
 	/** Resets the threshold if minThreshold=maxThreshold and lutUpdateMode=NO_LUT_UPDATE. 
-		This removes the invisible threshold set by the MakeBinary and Convert to Mask commands.*/
+		This removes the invisible threshold set by the MakeBinary and Convert to Mask commands.
+		@see ImageProcessor#setBinaryThreshold	
+	*/
 	public void resetBinaryThreshold() {
 		if (minThreshold==maxThreshold && lutUpdateMode==NO_LUT_UPDATE)
 			resetThreshold();
@@ -2090,5 +2109,5 @@ public abstract class ImageProcessor extends Object {
 	public static void setUseBicubic(boolean b) {
 		useBicubic = b;
 	}
-
+	
 }
