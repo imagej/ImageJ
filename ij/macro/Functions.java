@@ -3965,11 +3965,23 @@ public class Functions implements MacroConstants, Measurements {
 			value = ""+props.size();
 		} else if (name.equals("setMeasurements"))
 			setMeasurements();
+		else if (name.equals("setCommands"))
+			setCommands();
 		else
 			interp.error("Unrecognized List function");
 		return value;
 	}
 	
+	void setCommands() {
+		interp.getParens();
+		Hashtable commands = Menus.getCommands();
+		props = new Properties();
+		for (Enumeration en=commands.keys(); en.hasMoreElements();) {
+			String command = (String)en.nextElement();
+			props.setProperty(command, (String)commands.get(command));
+		}
+	}
+
 	void setMeasurements() {
 		interp.getParens();
 		props.clear();

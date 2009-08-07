@@ -106,7 +106,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
                     else
                         Undo.reset();
                 }
-                if ((flags&PlugInFilter.NO_CHANGES)==0) ip.resetBinaryThreshold();
+                if ((flags&PlugInFilter.NO_CHANGES)==0&&(flags&PlugInFilter.KEEP_THRESHOLD)==0)
+                	ip.resetBinaryThreshold();
             } else {  //  S T A C K
                 Undo.reset();    // no undo for processing a complete stack
                 IJ.resetEscape();

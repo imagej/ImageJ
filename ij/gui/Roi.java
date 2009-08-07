@@ -320,6 +320,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		if (constrain) {
 			// constrain selection to be square
+			if (!center)
+				{growConstrained(xNew, yNew); return;}
 			int dx, dy, d;
 			dx = xNew - x;
 			dy = yNew - y;
@@ -330,7 +332,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			xNew = x + d;
 			yNew = y + d;
 		}
-		
 		if (center) {
 			width = Math.abs(xNew - startX)*2;
 			height = Math.abs(yNew - startY)*2;
@@ -345,6 +346,29 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				if ((x+width) > xMax) width = xMax-x;
 				if ((y+height) > yMax) height = yMax-y;
 			}
+		}
+		updateClipRect();
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		oldX = x;
+		oldY = y;
+		oldWidth = width;
+		oldHeight = height;
+	}
+
+	private void growConstrained(int xNew, int yNew) {
+		int dx = xNew - startX;
+		int dy = yNew - startY;
+		width = height = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
+		if (type==RECTANGLE) {
+			x = (xNew>=startX)?startX:startX - width;
+			y = (yNew>=startY)?startY:startY - height;
+			if (x<0) x = 0;
+			if (y<0) y = 0;
+			if ((x+width) > xMax) width = xMax-x;
+			if ((y+height) > yMax) height = yMax-y;
+		} else {
+			x = startX + dx/2 - width/2;
+			y = startY + dy/2 - height/2;
 		}
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
@@ -454,10 +478,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		
 		if(constrain) {
-		
-			if(activeHandle==1 || activeHandle==5) width=height;
-			else height=width;
-		
+			if (activeHandle==1 || activeHandle==5)
+				width=height;
+			else
+				height=width;
 			if(center){
 				x=xc-width/2;
 				y=yc-height/2;

@@ -19,11 +19,13 @@ import java.util.Vector;
 			"Add Border",
 			"Convert to RGB",
 			"Crop",
+			"Gaussian Blur",
 			"Invert",
 			"Label",
 			"Measure",
 			"Resize",
-			"Scale"
+			"Scale",
+			"Unsharp Mask",
 		};
 		private static String macro = "";
 		private static int testImage;
@@ -45,12 +47,14 @@ import java.util.Vector;
 			error("Please choose an input folder");
 			return;
 		}
+		inputPath = addSeparator(inputPath);
 		File f1 = new File(inputPath);
 		if (!f1.exists() || !f1.isDirectory()) {
 			error("Input does not exist or is not a folder\n \n"+inputPath);
 			return;
 		}
 		String outputPath = outputDir.getText();
+		outputPath = addSeparator(outputPath);
 		File f2 = new File(outputPath);
 		if (!outputPath.equals("") && (!f2.exists() || !f2.isDirectory())) {
 			error("Output does not exist or is not a folder\n \n"+outputPath);
@@ -121,6 +125,13 @@ import java.util.Vector;
 		return !gd.wasCanceled();
 	}
 	
+	String addSeparator(String path) {
+		if (path.equals("")) return path;
+		if (!(path.endsWith("/")||path.endsWith("\\")))
+			path = path + File.separator;
+		return path;
+	}
+	
 	void validateFormat() {
 		boolean validFormat = false;
 		for (int i=0; i<formats.length; i++) {
@@ -186,9 +197,14 @@ import java.util.Vector;
 			code = "run(\"Canvas Size...\", \"width=\"+getWidth+50+\" height=\"\n   +getHeight+50+\" position=Center zero\");\n";
 		else if (item.equals("Invert"))
 			code = "run(\"Invert\");\n";
+		else if (item.equals("Gaussian Blur"))
+			code = "run(\"Gaussian Blur...\", \"sigma=2\");\n";
+		else if (item.equals("Unsharp Mask"))
+			code = "run(\"Unsharp Mask...\", \"radius=1 mask=0.60\");\n";
 		if (code!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());
+			if (IJ.isMacOSX()) ta.requestFocus();
 		}
 	}
 
@@ -244,6 +260,7 @@ import java.util.Vector;
 		//ta.selectAll();
 		String macro = ta.getText();
 		String inputPath = inputDir.getText();
+		inputPath = addSeparator(inputPath);
 		File f1 = new File(inputPath);
 		if (!f1.exists() || !f1.isDirectory()) {
 			error("Input does not exist or is not a folder\n \n"+inputPath);
