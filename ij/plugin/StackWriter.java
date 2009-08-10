@@ -48,14 +48,14 @@ public class StackWriter implements PlugIn {
 			}
 		}
 		
-		
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
 		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		if (!hyperstack)
 			gd.addNumericField("Start At:", startAt, 0);
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
-		gd.addCheckbox("Use Slice Labels as File Names", useLabels);
+		if (!hyperstack)
+			gd.addCheckbox("Use slice labels as file names", useLabels);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -65,8 +65,10 @@ public class StackWriter implements PlugIn {
 			startAt = (int)gd.getNextNumber();
 		if (startAt<0) startAt = 0;
 		ndigits = (int)gd.getNextNumber();
-		useLabels = gd.getNextBoolean();
-		if (useLabels) hyperstack = false;
+		if (!hyperstack)
+			useLabels = gd.getNextBoolean();
+		else
+			useLabels = false;
 		int number = 0;
 		if (ndigits<1) ndigits = 1;
 		if (ndigits>8) ndigits = 8;

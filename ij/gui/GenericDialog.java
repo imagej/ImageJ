@@ -8,7 +8,7 @@ import ij.plugin.ScreenGrabber;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.util.Tools;
-import ij.macro.MacroRunner;
+import ij.macro.*;
 
 
 /**
@@ -670,14 +670,20 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (d!=null)
 				value = d.doubleValue();
 			else {
-				invalidNumber = true;
-				errorMessage = "\""+theText+"\" is an invalid number";
-				value = 0.0;
-                if (macro) {
-                    IJ.error("Macro Error", "Numeric value expected in run() function\n \n"
-                        +"   Dialog: \""+getTitle()+"\"\n"
-                        +"   Label: \""+label+"\"\n"
-                        +"   Value: \""+theText+"\"");
+				// Is the value a macro variable?
+				if (theText.startsWith("&")) theText = theText.substring(1);
+				Interpreter interp = Interpreter.getInstance();
+				value = interp!=null?interp.getVariable(theText):Double.NaN;
+				if (Double.isNaN(value)) {
+					invalidNumber = true;
+					errorMessage = "\""+theText+"\" is an invalid number";
+					value = 0.0;
+					if (macro) {
+						IJ.error("Macro Error", "Numeric value expected in run() function\n \n"
+							+"   Dialog box title: \""+getTitle()+"\"\n"
+							+"   Key: \""+label.toLowerCase(Locale.US)+"\"\n"
+							+"   Value or variable name: \""+theText+"\"");
+					}
                 }
 			}
 		}
@@ -744,7 +750,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (macro) {
 			String label = (String)labels.get((Object)tf);
 			theText = Macro.getValue(macroOptions, label, theText);
-			//IJ.write("getNextString: "+label+"  "+theText);
+			if (theText!=null && (theText.startsWith("&")||label.toLowerCase(Locale.US).startsWith(theText))) {
+				// Is the value a macro variable?
+				if (theText.startsWith("&")) theText = theText.substring(1);
+				Interpreter interp = Interpreter.getInstance();
+				String s = interp!=null?interp.getStringVariable(theText):null;
+				if (s!=null) theText = s;
+			}
 		}	
 		if (recorderOn)
 			recordOption(tf, theText);
@@ -824,10 +836,23 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String oldItem = thisChoice.getSelectedItem();
 			int oldIndex = thisChoice.getSelectedIndex();
 			String item = Macro.getValue(macroOptions, label, oldItem);
+			if (item!=null && item.startsWith("&")) { // value is macro variable
+				item = item.substring(1);
+				Interpreter interp = Interpreter.getInstance();
+				String s = interp!=null?interp.getStringVariable(item):null;
+				if (s!=null) item = s;
+			}
 			thisChoice.select(item);
 			index = thisChoice.getSelectedIndex();
-			if (index==oldIndex && !item.equals(oldItem))
-				IJ.error(getTitle(), "\""+item+"\" is not a valid choice for \""+label+"\"");
+			if (index==oldIndex && !item.equals(oldItem)) {
+				// is value a macro variable?
+				Interpreter interp = Interpreter.getInstance();
+				String s = interp!=null?interp.getStringVariable(item):null;
+				if (s==null)
+					IJ.error(getTitle(), "\""+item+"\" is not a valid choice for \""+label+"\"");
+				else
+					item = s;
+			}
 		}	
 		if (recorderOn)
 			recordOption(thisChoice, thisChoice.getSelectedItem());

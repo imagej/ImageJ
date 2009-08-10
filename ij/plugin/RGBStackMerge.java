@@ -35,9 +35,9 @@ public class RGBStackMerge implements PlugIn {
         GenericDialog gd = new GenericDialog("Color Merge");
         gd.addChoice("Red:", titles, titles[0]);
         gd.addChoice("Green:", titles, titles[1]);
-        String title3 = titles.length>2?titles[2]:none;
+        String title3 = titles.length>2&&!IJ.macroRunning()?titles[2]:none;
         gd.addChoice("Blue:", titles, title3);
-        String title4 = titles.length>3?titles[3]:none;
+        String title4 = titles.length>3&&!IJ.macroRunning()?titles[3]:none;
         gd.addChoice("Gray:", titles, title4);
 		gd.addCheckbox("Create Composite", createComposite);
         gd.addCheckbox("Keep Source Images", false);
@@ -58,6 +58,7 @@ public class RGBStackMerge implements PlugIn {
         int height = 0;
         int bitDepth = 0;
         for (int i=0; i<4; i++) {
+			//IJ.log(i+"  "+index[i]+"  "+titles[index[i]]+"  "+wList.length);
             if (index[i]<wList.length) {
                 image[i] = WindowManager.getImage(wList[index[i]]);
                 width = image[i].getWidth();

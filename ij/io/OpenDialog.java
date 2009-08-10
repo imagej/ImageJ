@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.io.*;
 import javax.swing.*;
@@ -33,6 +34,13 @@ import javax.swing.filechooser.*;
 				path = Macro.getValue(macroOptions, "path", path);
 			if ((path==null || path.equals("")) && title!=null && title.equals("Open As String"))
 				path = Macro.getValue(macroOptions, "OpenAsString", path);
+			if (path!=null && path.indexOf(".")==-1 && !((new File(path)).exists())) {
+				// Is 'path' a macro variable?
+				if (path.startsWith("&")) path=path.substring(1);
+				Interpreter interp = Interpreter.getInstance();
+				String path2 = interp!=null?interp.getStringVariable(path):null;
+				if (path2!=null) path = path2;
+			}
 		}
 		if (path==null || path.equals("")) {
 			if (Prefs.useJFileChooser)

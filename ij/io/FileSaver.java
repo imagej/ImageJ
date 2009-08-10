@@ -298,8 +298,7 @@ public class FileSaver {
 	}
 
 	/** Save the image in PNG format using a save file dialog. 
-		Returns false if the user selects cancel. Requires
-		java 1.4 or later. */
+		Returns false if the user selects cancel. */
 	public boolean saveAsPng() {
 		String path = getPath("PNG", ".png");
 		if (path==null)
@@ -308,8 +307,7 @@ public class FileSaver {
 			return saveAsPng(path);
 	}
 
-	/** Save the image in PNG format using the specified path. 
-		Requires Java 1,4 or later. */
+	/** Save the image in PNG format using the specified path. */
 	public boolean saveAsPng(String path) {
 		IJ.runPlugIn(imp, "ij.plugin.PNG_Writer", path);
 		return true;
