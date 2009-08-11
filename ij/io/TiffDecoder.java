@@ -443,7 +443,7 @@ public class TiffDecoder {
 					else if (value==1 && fi.samplesPerPixel==4)
 						fi.fileType = FileInfo.ARGB;
 					else if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
-						String msg = "Unsupported interleaved SamplesPerPixel: " + fi.samplesPerPixel;
+						String msg = "Unsupported SamplesPerPixel: " + fi.samplesPerPixel;
 						error(msg);
 					}
 					break;

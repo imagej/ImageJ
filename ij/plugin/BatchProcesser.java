@@ -27,8 +27,8 @@ import java.util.Vector;
 			"Scale",
 			"Unsharp Mask",
 		};
-		private static String macro = "";
-		private static int testImage;
+		private String macro = "";
+		private int testImage;
 		private Button input, output, open, save, test;
 		private TextField inputDir, outputDir;
 		private GenericDialog gd;
@@ -188,13 +188,13 @@ import java.util.Vector;
 		else if (item.equals("Resize"))
 			code = "run(\"Size...\", \"width=0 height=480 constrain interpolation=Bicubic\");\n";
 		else if (item.equals("Scale"))
-			code = "scale = 1.5;\nwidth = getWidth*scale;\nheight = getHeight*scale;\nrun(\"Size...\", \"width=\"+width+\" height=\"+height+\" interpolation=Bilinear\")\n";
+			code = "scale=1.5;\nw=getWidth*scale; h=getHeight*scale;\nrun(\"Size...\", \"width=w height=h interpolation=Bilinear\");\n";
 		else if (item.equals("Label"))
 			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"red\");\ndrawString(\"Hello\", 20, 30);\n";
 		else if (item.equals("Crop"))
 			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2)\";\nrun(\"Crop\");\n";
 		else if (item.equals("Add Border"))
-			code = "run(\"Canvas Size...\", \"width=\"+getWidth+50+\" height=\"\n   +getHeight+50+\" position=Center zero\");\n";
+			code = "border=25;\nw=getWidth+border*2; h=getHeight+border*2;\nrun(\"Canvas Size...\", \"width=w height=h position=Center zero\");\n";
 		else if (item.equals("Invert"))
 			code = "run(\"Invert\");\n";
 		else if (item.equals("Gaussian Blur"))

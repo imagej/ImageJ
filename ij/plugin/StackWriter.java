@@ -126,6 +126,7 @@ public class StackWriter implements PlugIn {
 			if (useLabels) {
 				label = stack.getShortSliceLabel(i);
 				if (label!=null && label.equals("")) label = null;
+				if (label!=null) label = label.replaceAll("/","-");
 			}
 			if (label==null)
 				path = directory+name+digits+extension;

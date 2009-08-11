@@ -1303,6 +1303,11 @@ public class Functions implements MacroConstants, Measurements {
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
 				return name!=null?name:"";
+			} else if (key.equals("font.name")) {
+				resetImage();
+				ImageProcessor ip = getProcessor();
+				setFont(ip);
+				return ip.getFont().getName();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
@@ -2151,16 +2156,25 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setFont() {
 		String name = getFirstString();
-		int size = (int)getNextArg();
+		int size = 0;
 		int style = 0;
-		antialiasedText = false;
-		if (interp.nextToken()==',') {
-			String styles = getLastString().toLowerCase();
-			if (styles.indexOf("bold")!=-1) style += Font.BOLD;
-			if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
-			if (styles.indexOf("anti")!=-1) antialiasedText = true;
-		} else
+		if (name.equals("user")) {
+			name = TextRoi.getFont();
+			size = TextRoi.getSize();
+			style = TextRoi.getStyle();
+			antialiasedText = TextRoi.isAntialiased();
 			interp.getRightParen();
+		} else {
+			size = (int)getNextArg();
+			antialiasedText = false;
+			if (interp.nextToken()==',') {
+				String styles = getLastString().toLowerCase();
+				if (styles.indexOf("bold")!=-1) style += Font.BOLD;
+				if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
+				if (styles.indexOf("anti")!=-1) antialiasedText = true;
+			} else
+				interp.getRightParen();
+		}
 		font = new Font(name, style, size);
 		fontSet = false;
 	}
@@ -3674,7 +3688,17 @@ public class Functions implements MacroConstants, Measurements {
 			return Toolbar.getForegroundColor().getRGB()&0xffffff;
 		else if (key.indexOf("background")!=-1)
 			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
-		else {
+		else if (key.equals("font.size")) {
+			resetImage();
+			ImageProcessor ip = getProcessor();
+			setFont(ip);
+			return ip.getFont().getSize();
+		} else if (key.equals("font.height")) {
+			resetImage();
+			ImageProcessor ip = getProcessor();
+			setFont(ip);
+			return ip.getFontMetrics().getHeight();
+		} else {
 			interp.error("Invalid key");
 			return 0.0;
 		}
