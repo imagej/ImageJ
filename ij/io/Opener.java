@@ -27,9 +27,9 @@ public class Opener {
 
 	public static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
 		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,
-		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16; // don't forget to also update 'types'
+		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16, OJJ=17; // don't forget to also update 'types'
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
-		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","avi"};
+		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj"};
 	private static String defaultDirectory = null;
 	private static int fileType;
 	private boolean error;
@@ -167,6 +167,12 @@ public class Opener {
 						if (ed!=null) ed.open(getDir(path), getName(path));
 					} else
 						new TextWindow(path,400,450);
+					break;
+				case OJJ:  // ObjectJ project
+					if (Menus.getCommands().get("Open Project...")!=null)
+						IJ.run("Open...", "open=["+path+"]");
+					else
+						IJ.error("ObjectJ is not installed");
 					break;
 				case UNKNOWN:
 					String msg =
@@ -856,6 +862,10 @@ public class Opener {
 		if (b0==73 && b1==111) // "Iout"
 			return ROI;
 			
+		// ObjectJ project
+		if (name.endsWith(".ojj")) 
+			return OJJ;
+
         // Text file
         boolean isText = true;
         for (int i=0; i<10; i++) {
