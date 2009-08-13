@@ -1,5 +1,4 @@
 package ij.plugin.frame;
-//import ij.plugin.frame.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -55,8 +54,6 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	Font sanFont = new Font("SansSerif", Font.PLAIN, 12);
 	int channels = 7; // RGB
 	Choice choice;
-	boolean updatingRGBStack;
-
 
 	public ContrastAdjuster() {
 		super("B&C");
@@ -584,7 +581,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			imp.unlock();
 		if (!imp.lock())
 			return;
-		if (imp.getType()==ImagePlus.COLOR_RGB) {
+		if (RGBImage) {
 			if (imp.getStackSize()>1)
 				applyRGBStack(imp);
 			else {
@@ -668,19 +665,24 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		"NOTE: There is no Undo for this operation."))
 			return;
  		ImageProcessor mask = imp.getMask();
- 		updatingRGBStack = true;
+ 		Rectangle roi = imp.getRoi()!=null?imp.getRoi().getBounds():null;
+ 		ImageStack stack = imp.getStack();
 		for (int i=1; i<=n; i++) {
+			IJ.showProgress(i, n);
+			IJ.showStatus(i+"/"+n);
 			if (i!=current) {
-				imp.setSlice(i);
-				ImageProcessor ip = imp.getProcessor();
+				ImageProcessor ip = stack.getProcessor(i);
+				ip.setRoi(roi);
 				if (mask!=null) ip.snapshot();
-				setMinAndMax(imp, min, max);
-				ip.reset(mask);
-				IJ.showProgress((double)i/n);
+				if (channels!=7)
+					((ColorProcessor)ip).setMinAndMax(min, max, channels);
+				else
+					ip.setMinAndMax(min, max);
+				if (mask!=null) ip.reset(mask);
 			}
 		}
+		imp.setStack(null, stack);
 		imp.setSlice(current);
- 		updatingRGBStack = false;
 		imp.changes = true;
 		if (Recorder.record)
 			Recorder.record("run", "Apply LUT", "stack");
@@ -968,10 +970,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
     public static void update() {
 		if (instance!=null) {
 			ContrastAdjuster ca = ((ContrastAdjuster)instance);
-			if (!ca.updatingRGBStack) {
-				ca.previousImageID = 0;
-				ca.setup();
-			}
+			ca.previousImageID = 0;
+			ca.setup();
 		}
     }
     

@@ -169,7 +169,7 @@ public class Opener {
 						new TextWindow(path,400,450);
 					break;
 				case OJJ:  // ObjectJ project
-					if (Menus.getCommands().get("Open Project...")!=null)
+					if (Menus.getMenuBar().getMenu(6).getLabel().equals("ObjectJ"))
 						IJ.run("Open...", "open=["+path+"]");
 					else
 						IJ.error("ObjectJ is not installed");

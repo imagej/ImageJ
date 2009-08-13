@@ -15,12 +15,28 @@ public class TextRoi extends Roi {
 	private static int style = Font.PLAIN;
 	private static int size = 18;
 	private static Font font;
+	private Font instanceFont;
 	private static boolean antialiasedText = true;
 	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
+
+	/** Creates a new TextRoi.*/
+	public TextRoi(int x, int y, String text) {
+		this(x, y, text, null, null);
+		font = null;
+	}
+
+	/** Creates a new TextRoi.*/
+	public TextRoi(int x, int y, String text, Font font, Color color) {
+		super(x, y, 1, 1);
+		theText[0] = text;
+		instanceFont = font;
+		instanceColor = color;
+		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
+	}
 
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
@@ -76,6 +92,8 @@ public class TextRoi extends Roi {
 	}
 
 	Font getCurrentFont() {
+		if (instanceFont!=null)
+			return instanceFont;
 		double mag = ic.getMagnification();
 		if (font==null || mag!=previousMag) {
 			font = new Font(name, style, (int)(size*mag));
@@ -103,6 +121,7 @@ public class TextRoi extends Roi {
 
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
+if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
 		super.draw(g); // draw the rectangle
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		double mag = ic.getMagnification();
@@ -192,6 +211,7 @@ public class TextRoi extends Roi {
 	/** Increases the size of the rectangle so it's large
 		enough to hold the text. */ 
 	void adjustSize() {
+if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
 		if (ic==null)
 			return;
 		double mag = ic.getMagnification();
@@ -225,6 +245,7 @@ public class TextRoi extends Roi {
 			y = yMax-height;
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
+if (IJ.debugMode) IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 
 	int stringWidth(String s, FontMetrics metrics, Graphics g) {
