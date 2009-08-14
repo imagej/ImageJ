@@ -33,7 +33,7 @@ public class RGBStackSplitter implements PlugInFilter {
         Calibration cal = imp.getCalibration();
         split(imp.getStack(), keepSource);
         if (!keepSource)
-            {imp.unlock(); imp.close();}
+            {imp.unlock(); imp.changes=false; imp.close();}
         ImagePlus rImp = new ImagePlus(title+" (red)",red);
         rImp.setCalibration(cal);
         rImp.show();

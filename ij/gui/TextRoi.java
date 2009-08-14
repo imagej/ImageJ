@@ -27,6 +27,7 @@ public class TextRoi extends Roi {
 	public TextRoi(int x, int y, String text) {
 		this(x, y, text, null, null);
 		font = null;
+		firstChar = false;
 	}
 
 	/** Creates a new TextRoi.*/
