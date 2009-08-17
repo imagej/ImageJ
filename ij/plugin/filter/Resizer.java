@@ -14,6 +14,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 	private boolean crop;
     private static int newWidth;
     private static int newHeight;
+    private int newDepth;
     private static boolean constrain = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
@@ -53,6 +54,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				if (restoreRoi) imp.setRoi(roi);
 			}
 		}
+		int stackDepth= imp.getStackSize();
 		if (crop) {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
@@ -64,14 +66,20 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				newHeight = (int)origHeight/2;
 			}
 			if (constrain) newHeight = (int)(newWidth*(origHeight/origWidth));
+			if (stackDepth>1) {
+				newWidth = (int)origWidth;
+				newHeight = (int)origHeight;
+			}
 			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
 			gd.addNumericField("Width (pixels):", newWidth, 0);
 			gd.addNumericField("Height (pixels):", newHeight, 0);
+			if (stackDepth>1) 
+				gd.addNumericField("Depth (images):", stackDepth, 0);
 			gd.addCheckbox("Constrain Aspect Ratio", constrain);
 			gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 			gd.addMessage("NOTE: Undo is not available");
 			fields = gd.getNumericFields();
-			for (int i=0; i<fields.size(); i++)
+			for (int i=0; i<2; i++)
 				((TextField)fields.elementAt(i)).addTextListener(this);
 			checkboxes = gd.getCheckboxes();
 			((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
@@ -80,6 +88,8 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				return;
 			newWidth = (int)gd.getNextNumber();
 			newHeight = (int)gd.getNextNumber();
+			if (stackDepth>1) 
+				newDepth = (int)gd.getNextNumber();
 			if (gd.invalidNumber()) {
 				IJ.error("Width or height are invalid.");
 				return;
@@ -103,34 +113,153 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 		else
 			ip.setInterpolationMethod(interpolationMethod);
     	
-		int nSlices = imp.getStackSize();
-		try {
-	    	StackProcessor sp = new StackProcessor(imp.getStack(), ip);
-	    	ImageStack s2 = sp.resize(newWidth, newHeight);
-	    	int newSize = s2.getSize();
-	    	if (s2.getWidth()>0 && newSize>0) {
-	    		if (restoreRoi)
-	    			imp.killRoi();
-	    		//imp.hide();
-	    		Calibration cal = imp.getCalibration();
-	    		if (cal.scaled()) {
-    				cal.pixelWidth *= origWidth/newWidth;
-    				cal.pixelHeight *= origHeight/newHeight;
-    				imp.setCalibration(cal);
-    			}
-	    		imp.setStack(null, s2);
-	    		if (restoreRoi && roi!=null) {
-	    			roi.setLocation(0, 0);
-	    			imp.setRoi(roi);
-	    			imp.draw();
-	    		}
-	    	}
-	    	if (nSlices>1 && newSize<nSlices)
-	    		IJ.error("ImageJ ran out of memory causing \nthe last "+(nSlices-newSize)+" slices to be lost.");
-		} catch(OutOfMemoryError o) {
-			IJ.outOfMemory("Resize");
+		if (roi!=null || newWidth!=origWidth || newHeight!=origHeight) {
+			try {
+				StackProcessor sp = new StackProcessor(imp.getStack(), ip);
+				ImageStack s2 = sp.resize(newWidth, newHeight);
+				int newSize = s2.getSize();
+				if (s2.getWidth()>0 && newSize>0) {
+					if (restoreRoi)
+						imp.killRoi();
+					//imp.hide();
+					Calibration cal = imp.getCalibration();
+					if (cal.scaled()) {
+						cal.pixelWidth *= origWidth/newWidth;
+						cal.pixelHeight *= origHeight/newHeight;
+						imp.setCalibration(cal);
+					}
+					imp.setStack(null, s2);
+					if (restoreRoi && roi!=null) {
+						roi.setLocation(0, 0);
+						imp.setRoi(roi);
+						imp.draw();
+					}
+				}
+				if (stackDepth>1 && newSize<stackDepth)
+					IJ.error("ImageJ ran out of memory causing \nthe last "+(stackDepth-newSize)+" slices to be lost.");
+			} catch(OutOfMemoryError o) {
+				IJ.outOfMemory("Resize");
+			}
+			imp.changes = true;
 		}
-		imp.changes = true;
+		if (newDepth>0 && newDepth!=stackDepth) {
+			if (imp.isHyperStack()) {
+				IJ.error("ImageJ is not yet able to adjust hyperstack depths.");
+				return;
+			}
+			ImagePlus imp2 = resizeZ(imp, newDepth, interpolationMethod);
+			double min = ip.getMin();
+			double max = ip.getMax();
+			imp2.changes = true;
+			if (imp2!=null) imp.setStack(null, imp2.getStack());
+			Calibration cal = imp.getCalibration();
+			if (cal.scaled()) cal.pixelDepth *= (double)stackDepth/newDepth;
+			if (imp.getBitDepth()==16) {
+				imp.getProcessor().setMinAndMax(min, max);
+				imp.updateAndDraw();
+			}
+		}
+	}
+
+	/*
+	ImagePlus shrinkZ(ImagePlus imp, int newDepth) {
+		ImageStack stack = imp.getStack();
+		boolean virtual = stack.isVirtual();
+		int n = stack.getSize();
+		ImageStack stack2 = new ImageStack(stack.getWidth(), stack.getHeight());
+		for (int i=1; i<=n; i+=factor) {
+			if (virtual) IJ.showProgress(i, n);
+			stack2.addSlice(stack.getSliceLabel(i), stack.getProcessor(i));
+		}
+		imp.setStack(null, stack2);
+		if (virtual) {
+			IJ.showProgress(1.0);
+			imp.setTitle(imp.getTitle());
+		}
+		Calibration cal = imp.getCalibration();
+		if (cal.scaled()) cal.pixelDepth *= factor;
+	}
+	*/
+
+	ImagePlus resizeZ(ImagePlus imp, int newDepth, int interpolationMethod) {
+		ImageStack stack1 = imp.getStack();
+		int width = stack1.getWidth();
+		int height = stack1.getHeight();
+		int depth = stack1.getSize();
+		int bitDepth = imp.getBitDepth();
+		ImagePlus imp2 = IJ.createImage("", bitDepth+"-bit", width, height, newDepth);
+		if (imp2==null) return null;
+		ImageStack stack2 = imp2.getStack();
+		ImageProcessor ip = imp.getProcessor();
+		ImageProcessor xzPlane1 = ip.createProcessor(width, depth);
+		xzPlane1.setInterpolationMethod(interpolationMethod);
+		ImageProcessor xzPlane2;		
+		int[] line = new int[width];
+		IJ.showStatus("Z Scaling...");
+		for (int y=0; y<height; y++) {
+			IJ.showProgress(y, height-1);
+			for (int z=0; z<depth; z++) {
+				switch (bitDepth) {
+					case 8: getByteRow(stack1, y, z, width, line); break;
+					case 16: getShortRow(stack1, y, z, width, line); break;
+					case 24: getRGBRow(stack1, y+y, z, width, line); break;
+				}
+				xzPlane1.putRow(0, z, line, width);
+			}
+			//if (y==r.y) new ImagePlus("xzPlane", xzPlane1).show();
+			xzPlane2 = xzPlane1.resize(width, newDepth);
+			for (int z=0; z<newDepth; z++) {
+				xzPlane2.getRow(0, z, line, width);
+				switch (bitDepth) {
+					case 8: putByteRow(stack2, y, z, width, line); break;
+					case 16: putShortRow(stack2, y, z, width, line); break;
+					case 24: putRGBRow(stack2, y, z, width, line); break;
+				}
+			}
+		}
+		return imp2;
+	}
+
+	private void getByteRow(ImageStack stack, int y, int z, int width, int[] line) {
+		byte[] pixels = (byte[])stack.getPixels(z+1);
+		int j = y*width;
+		for (int i=0; i<width; i++)
+			line[i] = pixels[j++]&255;
+	}
+
+	private void getShortRow(ImageStack stack, int y, int z, int width, int[] line) {
+		short[] pixels = (short[])stack.getPixels(z+1);
+		int j = y*width;
+		for (int i=0; i<width; i++)
+			line[i] = pixels[j++]&0xffff;
+	}
+
+	private void putByteRow(ImageStack stack, int y, int z, int width, int[] line) {
+		byte[] pixels = (byte[])stack.getPixels(z+1);
+		int j = y*width;
+		for (int i=0; i<width; i++)
+			pixels[j++] = (byte)line[i];
+	}
+
+	private void putShortRow(ImageStack stack, int y, int z, int width, int[] line) {
+		short[] pixels = (short[])stack.getPixels(z+1);
+		int j = y*width;
+		for (int i=0; i<width; i++)
+			pixels[j++] = (short)line[i];
+	}
+
+	private void getRGBRow(ImageStack stack, int y, int z, int width, int[] line) {
+		int[] pixels = (int[])stack.getPixels(z+1);
+		int j = y*width;
+		for (int i=0; i<width; i++)
+			line[i] = pixels[j++];
+	}
+
+	private void putRGBRow(ImageStack stack, int y, int z, int width, int[] line) {
+		int[] pixels = (int[])stack.getPixels(z+1);
+		int j = y*width;
+		for (int i=0; i<width; i++)
+			pixels[j++] = line[i];
 	}
 
     public void textValueChanged(TextEvent e) {
