@@ -9,7 +9,8 @@ import ij.gui.*;
 import ij.measure.Calibration;
 import ij.process.*;
 
-/** Writes the slices of stack as separate files. */
+/** This plugin, which saves the images in a stack as separate files, 
+	implements the File/Save As/Image Sequence command. */
 public class StackWriter implements PlugIn {
 
 	//private static String defaultDirectory = null;
@@ -105,9 +106,10 @@ public class StackWriter implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		int nSlices = stack.getSize();
 		String path,label=null;
+		imp.lock();
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("writing: "+i+"/"+nSlices);
-			IJ.showProgress((double)i/nSlices);
+			IJ.showProgress(i, nSlices);
 			ImageProcessor ip = stack.getProcessor(i);
 			if (luts!=null && nChannels>1 && hyperstack) {
 				ip.setColorModel(luts[lutIndex++]);
@@ -134,8 +136,8 @@ public class StackWriter implements PlugIn {
 				path = directory+label+extension;
 			IJ.saveAs(imp2, format, path);
 		}
+		imp.unlock();
 		IJ.showStatus("");
-		IJ.showProgress(1.0);
 	}
 	
 	String getDigits(int n) {

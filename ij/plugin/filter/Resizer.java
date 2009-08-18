@@ -147,23 +147,33 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				IJ.error("ImageJ is not yet able to adjust hyperstack depths.");
 				return;
 			}
-			ImagePlus imp2 = resizeZ(imp, newDepth, interpolationMethod);
+			int bitDepth = imp.getBitDepth();
+			if (bitDepth==32) {
+				IJ.error("ImageJ is not yet able to adjust depth of 32-bit stacks.");
+				return;
+			}
+			ImagePlus imp2 = null;
+			if (newDepth<=stackDepth/2 && interpolationMethod==ImageProcessor.NONE)
+				imp2 = shrinkZ(imp, newDepth);
+			else
+				imp2 = resizeZ(imp, newDepth, interpolationMethod);
 			double min = ip.getMin();
 			double max = ip.getMax();
 			imp2.changes = true;
 			if (imp2!=null) imp.setStack(null, imp2.getStack());
 			Calibration cal = imp.getCalibration();
 			if (cal.scaled()) cal.pixelDepth *= (double)stackDepth/newDepth;
-			if (imp.getBitDepth()==16) {
+			if (bitDepth==16) {
 				imp.getProcessor().setMinAndMax(min, max);
 				imp.updateAndDraw();
 			}
+			imp.setTitle(imp.getTitle());
 		}
 	}
 
-	/*
 	ImagePlus shrinkZ(ImagePlus imp, int newDepth) {
 		ImageStack stack = imp.getStack();
+		int factor = imp.getStackSize()/newDepth;
 		boolean virtual = stack.isVirtual();
 		int n = stack.getSize();
 		ImageStack stack2 = new ImageStack(stack.getWidth(), stack.getHeight());
@@ -171,15 +181,8 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 			if (virtual) IJ.showProgress(i, n);
 			stack2.addSlice(stack.getSliceLabel(i), stack.getProcessor(i));
 		}
-		imp.setStack(null, stack2);
-		if (virtual) {
-			IJ.showProgress(1.0);
-			imp.setTitle(imp.getTitle());
-		}
-		Calibration cal = imp.getCalibration();
-		if (cal.scaled()) cal.pixelDepth *= factor;
+		return new ImagePlus("", stack2);
 	}
-	*/
 
 	ImagePlus resizeZ(ImagePlus imp, int newDepth, int interpolationMethod) {
 		ImageStack stack1 = imp.getStack();
@@ -202,7 +205,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				switch (bitDepth) {
 					case 8: getByteRow(stack1, y, z, width, line); break;
 					case 16: getShortRow(stack1, y, z, width, line); break;
-					case 24: getRGBRow(stack1, y+y, z, width, line); break;
+					case 24: getRGBRow(stack1, y, z, width, line); break;
 				}
 				xzPlane1.putRow(0, z, line, width);
 			}

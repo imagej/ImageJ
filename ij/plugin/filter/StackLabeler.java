@@ -20,7 +20,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static double interval = 1;
 	private static String text = "";
 	private static int decimalPlaces = 0;
-	private static boolean textBeforeNumber;
+	private static boolean zeroPad;
 	private int fieldWidth;
 	private Color color;
 
@@ -43,6 +43,11 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			if (fontSize<7) fontSize = 7;
 			if (fontSize>80) fontSize = 80;
 		}
+		if (IJ.macroRunning()) {
+			decimalPlaces = 0;
+		    interval=1;
+			text = "";
+		}
 		GenericDialog gd = new GenericDialog("StackLabeler");
 		gd.setInsets(2, 5, 0);
 		gd.addStringField("Starting value:", IJ.d2s(start,decimalPlaces));
@@ -52,7 +57,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addStringField("Text:", text, 10);
 		gd.setInsets(10,20,0);
-        gd.addCheckbox("Text first", textBeforeNumber);
+        gd.addCheckbox("Zero pad", zeroPad);
         gd.addPreviewCheckbox(pfr);
         gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
@@ -71,7 +76,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		y = (int)gd.getNextNumber();
 		fontSize = (int)gd.getNextNumber();
 		text = gd.getNextString();
-		textBeforeNumber = gd.getNextBoolean();
+		zeroPad = gd.getNextBoolean();
 		int index = str.indexOf(".");
 		if (index!=-1)
 			decimalPlaces = str.length()-index-1;
@@ -116,9 +121,9 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	String getString(double time) {
 		if (interval==0.0)
 			return text;
-		else if (textBeforeNumber && decimalPlaces==0)
+		else if (zeroPad && decimalPlaces==0)
 			return text+zeroFill((int)time);
-		else if (textBeforeNumber)
+		else if (zeroPad)
 			return text+IJ.d2s(time, decimalPlaces);
 		else
 			return IJ.d2s(time, decimalPlaces)+" "+text;
