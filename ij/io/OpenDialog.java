@@ -19,7 +19,7 @@ import javax.swing.filechooser.*;
 	private static String defaultDirectory;
 	private static Frame sharedFrame;
 	private String title;
-	static String lastDir, lastName;
+	private static String lastDir, lastName;
 
 	
 	/** Displays a file open dialog with 'title' as
@@ -188,7 +188,7 @@ import javax.swing.filechooser.*;
 		returned string always ends with the separator character ("/" or "\").*/
 	public static String getDefaultDirectory() {
 		if (defaultDirectory==null)
-			defaultDirectory = Prefs.getString(Prefs.DIR_IMAGE);
+			defaultDirectory = Prefs.getDefaultDirectory();
 		return defaultDirectory;
 	}
 

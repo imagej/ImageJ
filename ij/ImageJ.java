@@ -561,6 +561,7 @@ public class ImageJ extends Frame implements ActionListener,
 			if (arg.startsWith("-")) {
 				if ((arg.startsWith("-macro") || arg.startsWith("-batch")) && i+1<nArgs) {
 					String arg2 = i+2<nArgs?args[i+2]:null;
+					Prefs.commandLineMacro = true;
 					IJ.runMacroFile(args[i+1], arg2);
 					break;
 				} else if (arg.startsWith("-eval") && i+1<nArgs) {

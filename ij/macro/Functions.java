@@ -2102,7 +2102,8 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.open(path);
 			if (path!=null&&!path.equals("")) {
 				int index = path.lastIndexOf('/');
-				if (index==-1) path.lastIndexOf('\\');
+				if (index==-1)
+					index = path.lastIndexOf('\\');
 				String name = index>=0&&index<path.length()?path.substring(index+1):path;
 				OpenDialog.setLastName(name);
 			}
