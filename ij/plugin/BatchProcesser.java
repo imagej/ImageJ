@@ -106,7 +106,7 @@ import java.util.Vector;
 		
 	boolean showDialog() {
 		validateFormat();
-		gd = new GenericDialog("Batch Process");
+		gd = new NonBlockingGenericDialog("Batch Process");
 		addPanels(gd);
 		gd.setInsets(15, 0, 5);
 		gd.addChoice("Output Format:", formats, format);
@@ -278,14 +278,19 @@ import java.util.Vector;
 		if (imp==null) return;
 		WindowManager.setTempCurrentImage(imp);
 		String str = IJ.runMacro(macro, "");
+		Point loc = new Point(10, 30);
 		if (testImage!=0) {
 			ImagePlus imp2 = WindowManager.getImage(testImage);
-			if (imp2!=null)
-				{imp2.changes=false; imp2.close();}
+			if (imp2!=null) {
+				ImageWindow win = imp2.getWindow();
+				if (win!=null) loc = win.getLocation();
+				imp2.changes=false;
+				imp2.close();
+			}
 		}
 		imp.show();
 		ImageWindow iw = imp.getWindow();
-		if (iw!=null) iw.setLocation(10, 30);
+		if (iw!=null) iw.setLocation(loc);
 		testImage = imp.getID();
 	}
 

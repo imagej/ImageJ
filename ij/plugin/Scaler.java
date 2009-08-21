@@ -14,7 +14,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private ImagePlus imp;
 	private static String xstr = "0.5";
 	private static String ystr = "0.5";
-	private String zstr = "1,0";
+	private String zstr = "1.0";
 	private static int newWidth, newHeight;
 	private int newDepth;
 	private static boolean newWindow = true;
@@ -30,6 +30,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private TextField xField, yField, zField, widthField, heightField, depthField;
 	private Rectangle r;
 	private Object fieldWithFocus;
+	private int oldDepth;
 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -109,8 +110,16 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			imp2.setDimensions(dim[2], dim[3], dim[4]);
 			imp2.setOpenAsHyperStack(imp.isHyperStack());
 		}
-		if (newDepth>0 && newDepth!=nSlices)
+		if (newDepth>0 && newDepth!=oldDepth) {
 			imp2 = (new Resizer()).zScale(imp2, newDepth, interpolationMethod);
+			if (imp2==null) return;
+			if (imp.isComposite()) {
+				imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
+				((CompositeImage)imp2).copyLuts(imp);
+			}
+			if (imp.isHyperStack())
+				imp2.setOpenAsHyperStack(imp.isHyperStack());
+		}
 		if (imp2!=null) {
 			imp2.show();
 			imp2.changes = true;
@@ -161,7 +170,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		int bitDepth = imp.getBitDepth();
 		int stackSize = imp.getStackSize();
 		boolean isStack = stackSize>1;
-		int depth = stackSize;
+		oldDepth = stackSize;
 		if (isStack) {
 			xstr = "1.0";
 			ystr = "1.0";
@@ -189,8 +198,21 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		gd.setInsets(5, 0, 5);
 		gd.addStringField("Width (pixels):", ""+width);
 		gd.addStringField("Height (pixels):", ""+height);
-		if (isStack)
-			gd.addStringField("Depth (images):", ""+depth);
+		if (isStack) {
+			String label = "Depth (images):";
+			if (imp.isHyperStack()) {
+				int slices = imp.getNSlices();
+				int frames = imp.getNFrames();
+				if (slices==1&&frames>1) {
+					label = "Depth (frames):";
+					oldDepth = frames;
+				} else {
+					label = "Depth (slices):";
+					oldDepth = slices;
+				}
+			}
+			gd.addStringField(label, ""+oldDepth);
+		}
 		fields = gd.getStringFields();
 		for (int i=0; i<fields.size(); i++) {
 			((TextField)fields.elementAt(i)).addTextListener(this);
@@ -212,8 +234,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (bitDepth==8 || bitDepth==24)
 			gd.addCheckbox("Fill with Background Color", fillWithBackground);
 		if (isStack)
-			gd.addCheckbox("Process Entire Stack", processStack);
-		gd.addCheckbox("Create New Window", newWindow);
+			gd.addCheckbox("Process entire stack", processStack);
+		gd.addCheckbox("Create new window", newWindow);
 		title = WindowManager.getUniqueName(imp.getTitle());
 		gd.setInsets(10, 0, 0);
 		gd.addStringField("Title:", title, 12);
