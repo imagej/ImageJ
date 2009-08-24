@@ -24,9 +24,11 @@ popup12=Duplicate...
 
 # Plugins installed in the File/New submenu
 new01="Image...[n]",ij.plugin.Commands("new")
-new02="Text Window[N]",ij.plugin.NewPlugin("text")
-new03="Internal Clipboard",ij.plugin.Clipboard("show")
-new04="System Clipboard[V]",ij.plugin.Clipboard("showsys")
+new02="Hyperstack...",ij.plugin.HyperStackConverter("new")
+new03="Text Window[N]",ij.plugin.NewPlugin("text")
+new04="Internal Clipboard",ij.plugin.Clipboard("show")
+new05="System Clipboard[V]",ij.plugin.Clipboard("showsys")
+
 # Plugins installed in the File/Import submenu
 import01="Image Sequence...",ij.plugin.FolderOpener
 import02="Raw...",ij.plugin.Raw
@@ -101,7 +103,7 @@ adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
 adjust02="Window/Level...",ij.plugin.frame.ContrastAdjuster("wl")
 adjust03="Color Balance...",ij.plugin.frame.ContrastAdjuster("balance")
 adjust04="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
-adjust05="Size...",ij.plugin.filter.Resizer
+adjust05="Size...",ij.plugin.Resizer
 adjust06="Canvas Size...",ij.plugin.CanvasResizer
 adjust07="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 

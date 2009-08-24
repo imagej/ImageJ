@@ -1213,6 +1213,12 @@ public abstract class ImageProcessor extends Object {
 		return w;
 	}
 	
+	/** Returns the current font. */
+	public Font getFont() {
+		setupFontMetrics();
+		return font;
+	}
+
 	/** Returns the current FontMetrics. */
 	public FontMetrics getFontMetrics() {
 		setupFontMetrics();

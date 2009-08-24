@@ -1303,6 +1303,11 @@ public class Functions implements MacroConstants, Measurements {
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
 				return name!=null?name:"";
+			} else if (key.equals("font.name")) {
+				resetImage();
+				ImageProcessor ip = getProcessor();
+				setFont(ip);
+				return ip.getFont().getName();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
@@ -2097,7 +2102,8 @@ public class Functions implements MacroConstants, Measurements {
 			IJ.open(path);
 			if (path!=null&&!path.equals("")) {
 				int index = path.lastIndexOf('/');
-				if (index==-1) path.lastIndexOf('\\');
+				if (index==-1)
+					index = path.lastIndexOf('\\');
 				String name = index>=0&&index<path.length()?path.substring(index+1):path;
 				OpenDialog.setLastName(name);
 			}
@@ -2151,16 +2157,25 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void setFont() {
 		String name = getFirstString();
-		int size = (int)getNextArg();
+		int size = 0;
 		int style = 0;
-		antialiasedText = false;
-		if (interp.nextToken()==',') {
-			String styles = getLastString().toLowerCase();
-			if (styles.indexOf("bold")!=-1) style += Font.BOLD;
-			if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
-			if (styles.indexOf("anti")!=-1) antialiasedText = true;
-		} else
+		if (name.equals("user")) {
+			name = TextRoi.getFont();
+			size = TextRoi.getSize();
+			style = TextRoi.getStyle();
+			antialiasedText = TextRoi.isAntialiased();
 			interp.getRightParen();
+		} else {
+			size = (int)getNextArg();
+			antialiasedText = false;
+			if (interp.nextToken()==',') {
+				String styles = getLastString().toLowerCase();
+				if (styles.indexOf("bold")!=-1) style += Font.BOLD;
+				if (styles.indexOf("italic")!=-1) style += Font.ITALIC;
+				if (styles.indexOf("anti")!=-1) antialiasedText = true;
+			} else
+				interp.getRightParen();
+		}
 		font = new Font(name, style, size);
 		fontSet = false;
 	}
@@ -3674,7 +3689,17 @@ public class Functions implements MacroConstants, Measurements {
 			return Toolbar.getForegroundColor().getRGB()&0xffffff;
 		else if (key.indexOf("background")!=-1)
 			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
-		else {
+		else if (key.equals("font.size")) {
+			resetImage();
+			ImageProcessor ip = getProcessor();
+			setFont(ip);
+			return ip.getFont().getSize();
+		} else if (key.equals("font.height")) {
+			resetImage();
+			ImageProcessor ip = getProcessor();
+			setFont(ip);
+			return ip.getFontMetrics().getHeight();
+		} else {
 			interp.error("Invalid key");
 			return 0.0;
 		}
@@ -3965,11 +3990,23 @@ public class Functions implements MacroConstants, Measurements {
 			value = ""+props.size();
 		} else if (name.equals("setMeasurements"))
 			setMeasurements();
+		else if (name.equals("setCommands"))
+			setCommands();
 		else
 			interp.error("Unrecognized List function");
 		return value;
 	}
 	
+	void setCommands() {
+		interp.getParens();
+		Hashtable commands = Menus.getCommands();
+		props = new Properties();
+		for (Enumeration en=commands.keys(); en.hasMoreElements();) {
+			String command = (String)en.nextElement();
+			props.setProperty(command, (String)commands.get(command));
+		}
+	}
+
 	void setMeasurements() {
 		interp.getParens();
 		props.clear();

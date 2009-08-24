@@ -27,8 +27,8 @@ import java.util.Vector;
 			"Scale",
 			"Unsharp Mask",
 		};
-		private static String macro = "";
-		private static int testImage;
+		private String macro = "";
+		private int testImage;
 		private Button input, output, open, save, test;
 		private TextField inputDir, outputDir;
 		private GenericDialog gd;
@@ -106,7 +106,7 @@ import java.util.Vector;
 		
 	boolean showDialog() {
 		validateFormat();
-		gd = new GenericDialog("Batch Process");
+		gd = new NonBlockingGenericDialog("Batch Process");
 		addPanels(gd);
 		gd.setInsets(15, 0, 5);
 		gd.addChoice("Output Format:", formats, format);
@@ -188,13 +188,13 @@ import java.util.Vector;
 		else if (item.equals("Resize"))
 			code = "run(\"Size...\", \"width=0 height=480 constrain interpolation=Bicubic\");\n";
 		else if (item.equals("Scale"))
-			code = "scale = 1.5;\nwidth = getWidth*scale;\nheight = getHeight*scale;\nrun(\"Size...\", \"width=\"+width+\" height=\"+height+\" interpolation=Bilinear\")\n";
+			code = "scale=1.5;\nw=getWidth*scale; h=getHeight*scale;\nrun(\"Size...\", \"width=w height=h interpolation=Bilinear\");\n";
 		else if (item.equals("Label"))
 			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"red\");\ndrawString(\"Hello\", 20, 30);\n";
 		else if (item.equals("Crop"))
 			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2)\";\nrun(\"Crop\");\n";
 		else if (item.equals("Add Border"))
-			code = "run(\"Canvas Size...\", \"width=\"+getWidth+50+\" height=\"\n   +getHeight+50+\" position=Center zero\");\n";
+			code = "border=25;\nw=getWidth+border*2; h=getHeight+border*2;\nrun(\"Canvas Size...\", \"width=w height=h position=Center zero\");\n";
 		else if (item.equals("Invert"))
 			code = "run(\"Invert\");\n";
 		else if (item.equals("Gaussian Blur"))
@@ -278,14 +278,19 @@ import java.util.Vector;
 		if (imp==null) return;
 		WindowManager.setTempCurrentImage(imp);
 		String str = IJ.runMacro(macro, "");
+		Point loc = new Point(10, 30);
 		if (testImage!=0) {
 			ImagePlus imp2 = WindowManager.getImage(testImage);
-			if (imp2!=null)
-				{imp2.changes=false; imp2.close();}
+			if (imp2!=null) {
+				ImageWindow win = imp2.getWindow();
+				if (win!=null) loc = win.getLocation();
+				imp2.changes=false;
+				imp2.close();
+			}
 		}
 		imp.show();
 		ImageWindow iw = imp.getWindow();
-		if (iw!=null) iw.setLocation(10, 30);
+		if (iw!=null) iw.setLocation(loc);
 		testImage = imp.getID();
 	}
 

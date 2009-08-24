@@ -9,7 +9,8 @@ import ij.gui.*;
 import ij.measure.Calibration;
 import ij.process.*;
 
-/** Writes the slices of stack as separate files. */
+/** This plugin, which saves the images in a stack as separate files, 
+	implements the File/Save As/Image Sequence command. */
 public class StackWriter implements PlugIn {
 
 	//private static String defaultDirectory = null;
@@ -48,14 +49,14 @@ public class StackWriter implements PlugIn {
 			}
 		}
 		
-		
 		GenericDialog gd = new GenericDialog("Save Image Sequence");
 		gd.addChoice("Format:", choices, fileType);
 		gd.addStringField("Name:", name, 12);
 		if (!hyperstack)
 			gd.addNumericField("Start At:", startAt, 0);
 		gd.addNumericField("Digits (1-8):", ndigits, 0);
-		gd.addCheckbox("Use Slice Labels as File Names", useLabels);
+		if (!hyperstack)
+			gd.addCheckbox("Use slice labels as file names", useLabels);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -65,8 +66,10 @@ public class StackWriter implements PlugIn {
 			startAt = (int)gd.getNextNumber();
 		if (startAt<0) startAt = 0;
 		ndigits = (int)gd.getNextNumber();
-		useLabels = gd.getNextBoolean();
-		if (useLabels) hyperstack = false;
+		if (!hyperstack)
+			useLabels = gd.getNextBoolean();
+		else
+			useLabels = false;
 		int number = 0;
 		if (ndigits<1) ndigits = 1;
 		if (ndigits>8) ndigits = 8;
@@ -103,9 +106,10 @@ public class StackWriter implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		int nSlices = stack.getSize();
 		String path,label=null;
+		imp.lock();
 		for (int i=1; i<=nSlices; i++) {
 			IJ.showStatus("writing: "+i+"/"+nSlices);
-			IJ.showProgress((double)i/nSlices);
+			IJ.showProgress(i, nSlices);
 			ImageProcessor ip = stack.getProcessor(i);
 			if (luts!=null && nChannels>1 && hyperstack) {
 				ip.setColorModel(luts[lutIndex++]);
@@ -124,6 +128,7 @@ public class StackWriter implements PlugIn {
 			if (useLabels) {
 				label = stack.getShortSliceLabel(i);
 				if (label!=null && label.equals("")) label = null;
+				if (label!=null) label = label.replaceAll("/","-");
 			}
 			if (label==null)
 				path = directory+name+digits+extension;
@@ -131,8 +136,8 @@ public class StackWriter implements PlugIn {
 				path = directory+label+extension;
 			IJ.saveAs(imp2, format, path);
 		}
+		imp.unlock();
 		IJ.showStatus("");
-		IJ.showProgress(1.0);
 	}
 	
 	String getDigits(int n) {

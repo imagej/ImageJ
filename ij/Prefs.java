@@ -109,6 +109,7 @@ public class Prefs {
 	static String homeDir; // ImageJ folder
 	static int threads;
 	static int transparentIndex = -1;
+	static boolean commandLineMacro;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -200,6 +201,14 @@ public class Prefs {
 		if (path.endsWith(File.separator))
 			path = path.substring(0, path.length()-1);
 		homeDir = path;
+	}
+
+	/** Returns the default directory, if any, or null. */
+	public static String getDefaultDirectory() {
+		if (commandLineMacro)
+			return null;
+		else
+			return getString(DIR_IMAGE);
 	}
 
 	/** Finds an string in IJ_Props or IJ_Prefs.txt. */

@@ -323,8 +323,7 @@ public class IJ {
 			ic.setShowCursorStatus(s.length()==0?true:false);
 	}
 
-	/** Displays a line of text in the "Results" window. Writes to
-		System.out.println if the "ImageJ" frame is not present. */
+	/** Obsolete; replaced by IJ.log().*/
 	public static void write(String s) {
 		if (textPanel==null && ij!=null)
 			showResults();

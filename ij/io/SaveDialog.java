@@ -188,7 +188,7 @@ public class SaveDialog {
 	
 	/** Returns the selected directory. */
 	public String getDirectory() {
-		OpenDialog.lastDir = dir;
+		OpenDialog.setLastDirectory(dir);
 		return dir;
 	}
 	
@@ -196,7 +196,7 @@ public class SaveDialog {
 	public String getFileName() {
 		if (Recorder.record)
 			Recorder.recordPath(title, dir+name);
-		OpenDialog.lastName = name;
+		OpenDialog.setLastName(name);
 		return name;
 	}
 		

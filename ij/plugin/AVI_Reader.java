@@ -279,7 +279,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         return stack;
     }
 
-    /** Returns an ImageProcessor for the specified slice of this virtual stack (if it is one)
+    /** Returns an ImageProcessor for the specified frame of this virtual stack (if it is one)
         where 1<=n<=nslices. Returns null if no virtual stack or no slices.
     */
     public synchronized ImageProcessor getProcessor(int n) {
@@ -347,6 +347,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private boolean showDialog (String fileName) {
     	if (lastFrameNumber!=-1)
     		lastFrameNumber = dwTotalFrames;
+    	if (IJ.macroRunning()) {
+    		firstFrameNumber = 1;
+    		lastFrameNumber = dwTotalFrames;
+    	}
         GenericDialog gd = new GenericDialog("AVI Reader");
         gd.addNumericField("First Frame: ", firstFrameNumber, 0);
         gd.addNumericField("Last Frame: ", lastFrameNumber, 0, 6, "");

@@ -298,7 +298,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		ImageProcessor ip = imp.getProcessor();
 		ip.setRoi(roi.getPolygon());
-		ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp.getCalibration());
+		ImageStatistics stats = new ImageStatistics();
 		saveResults(stats, roi);
 		//IJ.write(rt.getCounter()+"\t"+n(((PolygonRoi)roi).getAngle()));
 	}

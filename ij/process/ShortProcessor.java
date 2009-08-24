@@ -1,4 +1,4 @@
-package ij.process;
+ package ij.process;
 
 import java.util.*;
 import java.awt.*;
