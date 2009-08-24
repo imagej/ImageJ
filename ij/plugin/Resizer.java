@@ -1,4 +1,4 @@
-package ij.plugin.filter;
+package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
@@ -8,36 +8,29 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-/** This plugin implements ImageJ's Resize command. */
-public class Resizer implements PlugInFilter, TextListener, ItemListener  {
+/** This plugin implements the Edit/Crop and Image/Adjust/Size commands. */
+public class Resizer implements PlugIn, TextListener, ItemListener  {
 	public static final int IN_PLACE=16, SCALE_T=32;
-	private ImagePlus imp;
-	private boolean crop;
     private static int newWidth;
     private static int newHeight;
-    private int newDepth;
     private static boolean constrain = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
     private Vector fields, checkboxes;
 	private double origWidth, origHeight;
 	private boolean sizeToHeight;
-	private boolean resizeT;
  
-	public int setup(String arg, ImagePlus imp) {
-		crop = arg.equals("crop");
-		this.imp = imp;
-		IJ.register(Resizer.class);
-		if (crop)
-			return DOES_ALL+ROI_REQUIRED+NO_CHANGES;
-		else
-			return DOES_ALL+NO_CHANGES;
-	}
-
-	public void run(ImageProcessor ip) {
+	public void run(String arg) {
+		boolean crop = arg.equals("crop");
+		ImagePlus imp = IJ.getImage();
+		ImageProcessor ip = imp.getProcessor();
 		Roi roi = imp.getRoi();
+		if (roi==null && crop) {
+			IJ.error("Crop", "Area selection required");
+			return;
+		}
 		if (roi!=null && roi.isLine()) {
-			IJ.error("The Crop and Adjust->Size commands\ndo not work with line selections.");
+			IJ.error("The Crop and Adjust>Size commands\ndo not work with line selections.");
 			return;
 		}
 		Rectangle r = ip.getRoi();
@@ -45,7 +38,6 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 		origHeight = r.height;
 		sizeToHeight=false;
 	    boolean restoreRoi = crop && roi!=null && roi.getType()!=Roi.RECTANGLE;
-		int oldDepth = imp.getStackSize();
 		if (roi!=null) {
 			Rectangle b = roi.getBounds();
 			int w = ip.getWidth();
@@ -57,7 +49,10 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				if (restoreRoi) imp.setRoi(roi);
 			}
 		}
-		int stackDepth= imp.getStackSize();
+		int stackSize= imp.getStackSize();
+		int z1 = imp.getStackSize();
+		int t1 = 0;
+		int z2=0, t2=0;
 		if (crop) {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
@@ -69,33 +64,24 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				newHeight = (int)origHeight/2;
 			}
 			if (constrain) newHeight = (int)(newWidth*(origHeight/origWidth));
-			if (stackDepth>1) {
+			if (stackSize>1) {
 				newWidth = (int)origWidth;
 				newHeight = (int)origHeight;
 			}
-			boolean hyper = imp.isHyperStack();
 			GenericDialog gd = new GenericDialog("Resize", IJ.getInstance());
 			gd.addNumericField("Width (pixels):", newWidth, 0);
 			gd.addNumericField("Height (pixels):", newHeight, 0);
-			if (stackDepth>1) {
-				String label = "Depth (images):";
-				if (hyper) {
-					int slices = imp.getNSlices();
-					int frames = imp.getNFrames();
-					if (slices==1&&frames>1) {
-						label = "Depth (frames):";
-						oldDepth = frames;
-					} else {
-						label = "Depth (slices):";
-						oldDepth = slices;
-					}
-				}
-				gd.addNumericField(label, oldDepth, 0);
+			if (imp.isHyperStack()) {
+				z1 = imp.getNSlices();
+				t1 = imp.getNFrames();
 			}
+			if (z1>1 && z1==stackSize)
+				gd.addNumericField("Depth (images):", z1, 0);
+			else if (z1>1 && z1<stackSize)
+				gd.addNumericField("Depth (slices):", z1, 0);
+			if (t1>1)
+				gd.addNumericField("Time (frames):", t1, 0);
 			gd.addCheckbox("Constrain aspect ratio", constrain);
-			boolean d5 = hyper && imp.getNSlices()>1 && imp.getNFrames()>1;
-			if (d5)
-				gd.addCheckbox("Resize_T dimension", false);
 			gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 			gd.addMessage("NOTE: Undo is not available");
 			fields = gd.getNumericFields();
@@ -108,15 +94,15 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				return;
 			newWidth = (int)gd.getNextNumber();
 			newHeight = (int)gd.getNextNumber();
-			if (stackDepth>1) 
-				newDepth = (int)gd.getNextNumber();
+			if (z1>1)
+				z2 = (int)gd.getNextNumber();
+			if (t1>1)
+				t2 = (int)gd.getNextNumber();
 			if (gd.invalidNumber()) {
 				IJ.error("Width or height are invalid.");
 				return;
 			}
 			constrain = gd.getNextBoolean();
-			if (d5)
-				resizeT = gd.getNextBoolean();
 			interpolationMethod = gd.getNextChoiceIndex();
 			if (constrain && newWidth==0)
 				sizeToHeight = true;
@@ -126,14 +112,15 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 		
 		if (!crop && constrain) {
 			if (sizeToHeight)
-				newWidth = (int)(newHeight*(origWidth/origHeight));
+				newWidth = (int)Math.round(newHeight*(origWidth/origHeight));
 			else
-				newHeight = (int)(newWidth*(origHeight/origWidth));
+				newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
 		}
 		if (ip.getWidth()==1 || ip.getHeight()==1)
 			ip.setInterpolationMethod(ImageProcessor.NONE);
 		else
 			ip.setInterpolationMethod(interpolationMethod);
+			
     	
 		if (roi!=null || newWidth!=origWidth || newHeight!=origHeight) {
 			try {
@@ -157,81 +144,150 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 						imp.draw();
 					}
 				}
-				if (stackDepth>1 && newSize<stackDepth)
-					IJ.error("ImageJ ran out of memory causing \nthe last "+(stackDepth-newSize)+" slices to be lost.");
+				if (stackSize>1 && newSize<stackSize)
+					IJ.error("ImageJ ran out of memory causing \nthe last "+(stackSize-newSize)+" slices to be lost.");
 			} catch(OutOfMemoryError o) {
 				IJ.outOfMemory("Resize");
 			}
 			imp.changes = true;
 		}
-		if (newDepth>0 && newDepth!=oldDepth)
-			zScale(imp, newDepth, interpolationMethod+IN_PLACE+(resizeT?SCALE_T:0));
+		
+		ImagePlus imp2 = null;
+		if (z2>0 && z2!=z1)
+			imp2 = zScale(imp, z2, interpolationMethod+IN_PLACE);
+		if (t2>0 && t2!=t1)
+			imp2 = zScale(imp2!=null?imp2:imp, t2, interpolationMethod+IN_PLACE+SCALE_T);
+		if (imp2!=null && imp2!=imp) {
+			imp2.show();
+			imp.changes = false;
+			imp.close();
+		}
 	}
 
 	public ImagePlus zScale(ImagePlus imp, int newDepth, int interpolationMethod) {
-		if (imp.isHyperStack())
-			return zScaleHyperstack(imp, newDepth, interpolationMethod);
-		boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
-		interpolationMethod = interpolationMethod&15;
-		int stackDepth = imp.getStackSize();
-		int bitDepth = imp.getBitDepth();
 		ImagePlus imp2 = null;
-		if (newDepth<=stackDepth/2 && interpolationMethod==ImageProcessor.NONE)
-			imp2 = shrinkZ(imp, newDepth, inPlace);
-		else
-			imp2 = resizeZ(imp, newDepth, interpolationMethod);
-		ImageProcessor ip = imp.getProcessor();
-		double min = ip.getMin();
-		double max = ip.getMax();
-		if (imp2!=null) {
-			imp.setStack(null, imp2.getStack());
-			imp.changes = true;
+		if (imp.isHyperStack())
+			imp2 = zScaleHyperstack(imp, newDepth, interpolationMethod);
+		else {
+			boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
+			interpolationMethod = interpolationMethod&15;
+			int stackSize = imp.getStackSize();
+			int bitDepth = imp.getBitDepth();
+			if (newDepth<=stackSize/2 && interpolationMethod==ImageProcessor.NONE)
+				imp2 = shrinkZ(imp, newDepth, inPlace);
+			else
+				imp2 = resizeZ(imp, newDepth, interpolationMethod);
+			if (imp2==null) return null;
+			ImageProcessor ip = imp.getProcessor();
+			double min = ip.getMin();
+			double max = ip.getMax();
+			if (bitDepth==16||bitDepth==32)
+				imp2.getProcessor().setMinAndMax(min, max);
 		}
-		Calibration cal = imp.getCalibration();
-		if (cal.scaled()) cal.pixelDepth *= (double)stackDepth/newDepth;
-		if (bitDepth==16||bitDepth==32) {
-			imp.getProcessor().setMinAndMax(min, max);
-			imp.updateAndDraw();
+		if (imp2==null) return null;
+		if (imp2!=imp && imp.isComposite()) {
+			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
+			((CompositeImage)imp2).copyLuts(imp);
 		}
-		imp.setTitle(imp.getTitle());
-		return imp;
+		imp2.setCalibration(imp.getCalibration());
+		Calibration cal = imp2.getCalibration();
+		if (cal.scaled()) cal.pixelDepth *= (double)imp.getNSlices()/imp2.getNSlices();
+		Object info = imp.getProperty("Info");
+		if (info!=null) imp2.setProperty("Info", info);
+		if (imp.isHyperStack())
+			imp2.setOpenAsHyperStack(imp.isHyperStack());
+		return imp2;
 	}
 
-	private ImagePlus zScaleHyperstack(ImagePlus imp, int newDepth, int interpolationMethod) {
+	private ImagePlus zScaleHyperstack(ImagePlus imp, int depth2, int interpolationMethod) {
 		boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
 		boolean scaleT = (interpolationMethod&SCALE_T)!=0;
+		interpolationMethod = interpolationMethod&15;
+		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
+		int slices2 = slices;
+		int frames2 = frames;
+		int bitDepth = imp.getBitDepth();
 		if (slices==1 && frames>1)
 			scaleT = true;
-		interpolationMethod = interpolationMethod&15;
-		int bitDepth = imp.getBitDepth();
-		ImagePlus imp2 = null;
-		double scale = (double)(newDepth-1)/slices;
-		if (scaleT) scale = (double)(newDepth-1)/frames;
-		if (scale<=0.5 /*&& interpolationMethod==ImageProcessor.NONE*/)
-			imp2 = shrinkHyperstack(imp, newDepth, inPlace, scaleT);
+		if (scaleT)
+			frames2 = depth2;
 		else
-			return null;
+			slices2 = depth2;
+		double scale = (double)(depth2-1)/slices;
+		if (scaleT) scale = (double)(depth2-1)/frames;
+		if (scale<=0.5 && interpolationMethod==ImageProcessor.NONE)
+			return shrinkHyperstack(imp, depth2, inPlace, scaleT);
+		ImageStack stack1 = imp.getStack();
+		int width = stack1.getWidth();
+		int height = stack1.getHeight();
+		ImagePlus imp2 = IJ.createImage(imp.getTitle(), bitDepth+"-bit", width, height, channels*slices2*frames2);
+		if (imp2==null) return null;
+		imp2.setDimensions(channels, slices2, frames2);
+		ImageStack stack2 = imp2.getStack();
 		ImageProcessor ip = imp.getProcessor();
-		double min = ip.getMin();
-		double max = ip.getMax();
-		if (imp2!=null) {
-			imp.setStack(imp2.getStack(), imp2.getNChannels(), imp2.getNSlices(), imp2.getNFrames());
-			imp.changes = true;
+		int count = 0;
+		if (scaleT) {
+			IJ.showStatus("T Scaling...");
+			ImageProcessor xtPlane1 = ip.createProcessor(width, frames);
+			xtPlane1.setInterpolationMethod(interpolationMethod);
+			ImageProcessor xtPlane2;		
+			Object xtpixels1 = xtPlane1.getPixels();
+			int last = slices*channels*height-1;
+			for (int z=1; z<=slices; z++) {
+				for (int c=1; c<=channels; c++) {
+					for (int y=0; y<height; y++) {
+						IJ.showProgress(count++, last);
+						for (int t=1; t<=frames; t++) {
+							int index = imp.getStackIndex(c, z, t);
+							//IJ.log("1: "+c+" "+z+" "+t+" "+index+" "+xzPlane1);
+							Object pixels1 = stack1.getPixels(index);
+							System.arraycopy(pixels1, y*width, xtpixels1, (t-1)*width, width);
+						}
+						xtPlane2 = xtPlane1.resize(width, depth2);
+						Object xtpixels2 = xtPlane2.getPixels();
+						for (int t=1; t<=frames2; t++) {
+							int index = imp2.getStackIndex(c, z, t);
+							//IJ.log("2: "+c+" "+z+" "+t+" "+index+" "+xzPlane2);
+							Object pixels2 = stack2.getPixels(index);
+							System.arraycopy(xtpixels2, (t-1)*width, pixels2, y*width, width);
+						}
+					}
+				}
+			}
+		} else {
+			IJ.showStatus("Z Scaling...");
+			ImageProcessor xzPlane1 = ip.createProcessor(width, slices);
+			xzPlane1.setInterpolationMethod(interpolationMethod);
+			ImageProcessor xzPlane2;		
+			Object xypixels1 = xzPlane1.getPixels();
+			int last = frames*channels*height-1;
+			for (int t=1; t<=frames; t++) {
+				for (int c=1; c<=channels; c++) {
+					for (int y=0; y<height; y++) {
+						IJ.showProgress(count++, last);
+						for (int z=1; z<=slices; z++) {
+							int index = imp.getStackIndex(c, z, t);
+							Object pixels1 = stack1.getPixels(index);
+							System.arraycopy(pixels1, y*width, xypixels1, (z-1)*width, width);
+						}
+						xzPlane2 = xzPlane1.resize(width, depth2);
+						Object xypixels2 = xzPlane2.getPixels();
+						for (int z=1; z<=slices2; z++) {
+							int index = imp2.getStackIndex(c, z, t);
+							Object pixels2 = stack2.getPixels(index);
+							System.arraycopy(xypixels2, (z-1)*width, pixels2, y*width, width);
+						}
+					}
+				}
+			}
 		}
-		Calibration cal = imp.getCalibration();
-		if (!scaleT && cal.scaled())
-			cal.pixelDepth *= (double)slices/newDepth;
-		if (bitDepth==16||bitDepth==32) {
-			imp.getProcessor().setMinAndMax(min, max);
-			imp.updateAndDraw();
-		}
-		imp.setTitle(imp.getTitle());
-		return imp;
+		imp2.setDimensions(channels, slices2, frames2);
+		return imp2;
 	}
 
-	public ImagePlus shrinkHyperstack(ImagePlus imp, int newDepth, boolean inPlace, boolean scaleT) {
+	private ImagePlus shrinkHyperstack(ImagePlus imp, int newDepth, boolean inPlace, boolean scaleT) {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
@@ -258,7 +314,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 				}
 			}
 		}
-		ImagePlus imp2 = new ImagePlus("", stack2);
+		ImagePlus imp2 = new ImagePlus(imp.getTitle(), stack2);
 		imp2.setDimensions(channels, slices2, frames2);
 		IJ.showProgress(1.0);
 		return imp2;
@@ -276,7 +332,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 			if (!inPlace) ip2 = ip2.duplicate();
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
-		return new ImagePlus("", stack2);
+		return new ImagePlus(imp.getTitle(), stack2);
 	}
 
 	private ImagePlus resizeZ(ImagePlus imp, int newDepth, int interpolationMethod) {
@@ -285,7 +341,7 @@ public class Resizer implements PlugInFilter, TextListener, ItemListener  {
 		int height = stack1.getHeight();
 		int depth = stack1.getSize();
 		int bitDepth = imp.getBitDepth();
-		ImagePlus imp2 = IJ.createImage("", bitDepth+"-bit", width, height, newDepth);
+		ImagePlus imp2 = IJ.createImage(imp.getTitle(), bitDepth+"-bit", width, height, newDepth);
 		if (imp2==null) return null;
 		ImageStack stack2 = imp2.getStack();
 		ImageProcessor ip = imp.getProcessor();

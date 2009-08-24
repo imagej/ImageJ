@@ -2,6 +2,9 @@ package ij.gui;
 import ij.IJ;
 import java.awt.event.ActionEvent;
 
+/** This is an xtension of GenericDialog that is non-model.
+ *	@author Johannes Schindelin
+ */
 public class NonBlockingGenericDialog extends GenericDialog {
 	public NonBlockingGenericDialog(String title) {
 		super(title, null);

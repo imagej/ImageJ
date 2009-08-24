@@ -213,10 +213,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     
     void drawRoi(Graphics g, Roi roi, int index) {
-		if (roi.getType()==Roi.COMPOSITE) {
+    	int type = roi.getType();
+    	if (type==Roi.COMPOSITE) {
 			roi.setImage(imp);
 			Color c = roi.getColor();
 			if (index==-1 && listColor!=null)
+				roi.setColor(listColor);
+			else
+				roi.setColor(showAllColor);
+			roi.draw(g);
+			roi.setColor(c);
+			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
+		} else if (type==Roi.RECTANGLE && (roi instanceof TextRoi)) {
+			roi.setImage(imp);
+			Color c = roi.getColor();
+			if (listColor!=null)
 				roi.setColor(listColor);
 			else
 				roi.setColor(showAllColor);
@@ -1147,6 +1158,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return displayList;
 	}
 	
+	public void createDisplayList(Roi roi) {
+		Vector list = new Vector();
+		list.addElement(roi);
+		setDisplayList(list);
+	}
+
 	public void setCustomRoi(boolean customRoi) {
 		this.customRoi = customRoi;
 	}

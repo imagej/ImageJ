@@ -4,7 +4,6 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
-import ij.plugin.filter.Resizer;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -95,31 +94,19 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				cal.pixelWidth *= 1.0/xscale;
 				cal.pixelHeight *= 1.0/yscale;
 			}
-			int[] dim = imp.getDimensions();
-			imp2.setDimensions(dim[2], dim[3], dim[4]);
 			IJ.showProgress(1.0);
-			if (imp.isComposite()) {
-				imp2 = new CompositeImage(imp2, 0);
-				((CompositeImage)imp2).copyLuts(imp);
-			}
-			if (imp.isHyperStack())
-				imp2.setOpenAsHyperStack(true);
-		} else {
+		} else
 			imp2.setStack(title, imp.getStack());
-			int[] dim = imp.getDimensions();
-			imp2.setDimensions(dim[2], dim[3], dim[4]);
-			imp2.setOpenAsHyperStack(imp.isHyperStack());
+		int[] dim = imp.getDimensions();
+		imp2.setDimensions(dim[2], dim[3], dim[4]);
+		if (imp.isComposite()) {
+			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
+			((CompositeImage)imp2).copyLuts(imp);
 		}
-		if (newDepth>0 && newDepth!=oldDepth) {
+		if (imp.isHyperStack())
+			imp2.setOpenAsHyperStack(true);
+		if (newDepth>0 && newDepth!=oldDepth)
 			imp2 = (new Resizer()).zScale(imp2, newDepth, interpolationMethod);
-			if (imp2==null) return;
-			if (imp.isComposite()) {
-				imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
-				((CompositeImage)imp2).copyLuts(imp);
-			}
-			if (imp.isHyperStack())
-				imp2.setOpenAsHyperStack(imp.isHyperStack());
-		}
 		if (imp2!=null) {
 			imp2.show();
 			imp2.changes = true;
