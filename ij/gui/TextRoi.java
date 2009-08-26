@@ -28,18 +28,27 @@ public class TextRoi extends Roi {
 		this(x, y, text, null, null);
 	}
 
-	/** Creates a new TextRoi.*/
-	public TextRoi(int x, int y, String text, Font font, Color color) {
+	/** Creates a new TextRoi with the specified location and Font.
+	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setNonScalable
+	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 */
+	public TextRoi(int x, int y, String text, Font font) {
 		super(x, y, 1, 1);
 		String[] lines = Tools.split(text, "\n");
 		int count = Math.min(lines.length, MAX_LINES);
 		for (int i=0; i<count; i++)
 			theText[i] = lines[i];
 		instanceFont = font;
-		instanceColor = color;
 		font = null;
 		firstChar = false;
 		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
+	}
+
+	/** Obsolete */
+	public TextRoi(int x, int y, String text, Font font, Color color) {
+		super(x, y, 1, 1);
+		IJ.error("TextRoi", "API has changed. See updated example at\nhttp://rsb.info.nih.gov/ij/macros/js/TextOverlay.js");
 	}
 
 	public TextRoi(int x, int y, ImagePlus imp) {
@@ -96,9 +105,13 @@ public class TextRoi extends Roi {
 	}
 
 	Font getCurrentFont() {
-		if (instanceFont!=null)
-			return instanceFont;
 		double mag = ic.getMagnification();
+		if (instanceFont!=null) {
+			if (nonScalable)
+				return instanceFont;
+			else
+				return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
+		}
 		if (font==null || mag!=previousMag) {
 			font = new Font(name, style, (int)(size*mag));
 			previousMag = mag;
@@ -131,8 +144,8 @@ public class TextRoi extends Roi {
 			super.draw(g); // draw the rectangle
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		double mag = ic.getMagnification();
-		int sx = ic.screenX(x);
-		int sy = ic.screenY(y);
+		int sx = nonScalable?x:ic.screenX(x);
+		int sy = nonScalable?y:ic.screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
 		Java2.setAntialiasedText(g, antialiasedText);

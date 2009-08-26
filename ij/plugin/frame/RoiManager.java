@@ -108,6 +108,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		pm=new PopupMenu();
 		//addPopupItem("Select All");
 		addPopupItem("Draw");
+		addPopupItem("Draw As Overlay");
 		addPopupItem("Fill");
 		addPopupItem("Label");
 		pm.addSeparator();
@@ -161,6 +162,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawOrFill(FILL);
 		else if (command.equals("Label"))
 			drawOrFill(LABEL);
+		else if (command.equals("Draw As Overlay"))
+			drawAsOverlay();
 		else if (command.equals("Deselect"))
 			select(-1);
 		else if (command.equals(moreButtonLabel)) {
@@ -834,6 +837,27 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 
+	void drawAsOverlay() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+		Color color = Toolbar.getForegroundColor();
+		Vector displayList = new Vector();
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+			roi = (Roi)roi.clone();
+			if (roi.getInstanceColor()==null)
+				roi.setInstanceColor(color);
+			displayList.addElement(roi);
+		}
+		ic.setShowAllROIs(false);
+		ic.setDisplayList(displayList);
+	}
+
 	void combine() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
@@ -1022,6 +1046,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
 		boolean showingROIs = ic.getShowAllROIs();
+		if (!showingROIs) ic.setDisplayList(null);
 		ic.setShowAllROIs(!showingROIs);
 		if (Recorder.record)
 			Recorder.recordString("setOption(\"Show All\","+(showingROIs?"false":"true")+");\n");

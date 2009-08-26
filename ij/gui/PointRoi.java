@@ -20,6 +20,11 @@ public class PointRoi extends PolygonRoi {
 		width+=1; height+=1;
 	}
 
+	/** Creates a new PointRoi from a Polygon. */
+	public PointRoi(Polygon poly) {
+		this(poly.xpoints, poly.ypoints, poly.npoints);
+	}
+
 	/** Creates a new PointRoi using the specified offscreen coordinates. */
 	public PointRoi(int ox, int oy) {
 		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);

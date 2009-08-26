@@ -214,7 +214,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
     void drawRoi(Graphics g, Roi roi, int index) {
     	int type = roi.getType();
-    	if (type==Roi.COMPOSITE) {
+    	if (type==Roi.COMPOSITE||type==Roi.POINT||(roi instanceof TextRoi)) {
 			roi.setImage(imp);
 			Color c = roi.getColor();
 			if (index==-1 && listColor!=null)
@@ -223,17 +223,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				roi.setColor(showAllColor);
 			roi.draw(g);
 			roi.setColor(c);
-			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
-		} else if (type==Roi.RECTANGLE && (roi instanceof TextRoi)) {
-			roi.setImage(imp);
-			Color c = roi.getColor();
-			if (listColor!=null)
-				roi.setColor(listColor);
-			else
-				roi.setColor(showAllColor);
-			roi.draw(g);
-			roi.setColor(c);
-			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
+			if (index>=0) {
+				g.setColor(showAllColor);
+				drawRoiLabel(g, index, roi.getBounds());
+			}
 		} else {
 			Color c = index==-1?roi.getInstanceColor():null;
 			Color saveg = null;
@@ -1129,6 +1122,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
+	/** Installs a list of ROIs ("display list") that will be drawn as an overly on this image.
+	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setLocation
+	 * @see ij.gui.Roi#setNonScalable
+	 */
 	public void setDisplayList(Vector list) {
 		displayList = list;
 		listColor = null;
@@ -1140,6 +1138,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 
+	/** Creates a single ShapeRoi display list from the specified 
+	 * Shape, Color and BasicStroke, and activates it.
+	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setLineWidth
+	 * @see ij.gui.Roi#setStroke
+	 */
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
 			{setDisplayList(null); return;}
@@ -1154,16 +1158,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 	
-	public Vector getDisplayList() {
-		return displayList;
-	}
-	
-	public void createDisplayList(Roi roi) {
+	/** Creates a single ROI display list from the specified 
+		ROI and Color, and activates it. */
+	public void setDisplayList(Roi roi, Color color) {
+		roi.setInstanceColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		setDisplayList(list);
 	}
 
+	/** Returns the current display list, or null if there is no display list. */
+	public Vector getDisplayList() {
+		return displayList;
+	}
+	
+	/** Allows plugins (e.g., Orthogonal_Views) to create a custom ROI using a display list. */
 	public void setCustomRoi(boolean customRoi) {
 		this.customRoi = customRoi;
 	}
