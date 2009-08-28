@@ -93,6 +93,8 @@ public class Straightener implements PlugIn {
 	public ImageProcessor straightenLine(ImagePlus imp, int width) {
 		PolygonRoi roi = (PolygonRoi)imp.getRoi();
 		if (roi==null) return null;
+		if (roi.getState()==Roi.CONSTRUCTING)
+			roi.exitConstructingMode();
 		boolean isSpline = roi.isSplineFit();
 		int type = roi.getType();
 		roi.fitSplineForStraightening();

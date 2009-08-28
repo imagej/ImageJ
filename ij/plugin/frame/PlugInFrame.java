@@ -28,8 +28,11 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 	}
 	
     public void windowClosing(WindowEvent e) {
-    	if (e.getSource()==this)
+    	if (e.getSource()==this) {
     		close();
+    		if (Recorder.record)
+    			Recorder.record("run", "Close");
+    	}
     }
     
     /** Closes this window. */
