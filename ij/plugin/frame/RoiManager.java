@@ -108,9 +108,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		pm=new PopupMenu();
 		//addPopupItem("Select All");
 		addPopupItem("Draw");
-		addPopupItem("Draw As Overlay");
 		addPopupItem("Fill");
 		addPopupItem("Label");
+		addPopupItem("Draw As Overlay");
+		addPopupItem("Remove Overlay");
 		pm.addSeparator();
 		addPopupItem("Combine");
 		addPopupItem("Split");
@@ -164,6 +165,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawOrFill(LABEL);
 		else if (command.equals("Draw As Overlay"))
 			drawAsOverlay();
+		else if (command.equals("Remove Overlay"))
+			removeOverlay();
 		else if (command.equals("Deselect"))
 			select(-1);
 		else if (command.equals(moreButtonLabel)) {
@@ -858,6 +861,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ic.setDisplayList(displayList);
 	}
 
+	void removeOverlay() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		ic.setDisplayList(null);
+	}
+
 	void combine() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
@@ -1046,7 +1057,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
 		boolean showingROIs = ic.getShowAllROIs();
-		if (!showingROIs) ic.setDisplayList(null);
 		ic.setShowAllROIs(!showingROIs);
 		if (Recorder.record)
 			Recorder.recordString("setOption(\"Show All\","+(showingROIs?"false":"true")+");\n");
