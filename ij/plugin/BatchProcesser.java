@@ -32,13 +32,12 @@ import java.util.Vector;
 		private TextField inputDir, outputDir;
 		private GenericDialog gd;
 		private Thread thread;
-		private ImageStack virtualStack;
+		private ImagePlus virtualStack;
 
 	public void run(String arg) {
 		if (arg.equals("stack")) {
-			ImagePlus imp = IJ.getImage();
-			virtualStack = imp.getStack();
-			if (!virtualStack.isVirtual()) {
+			virtualStack = IJ.getImage();
+			if (!virtualStack.getStack().isVirtual()) {
 				error("This command requires a virtual stack.");
 				return;
 			}
@@ -114,11 +113,12 @@ import java.util.Vector;
 	}
 	
 	void processVirtualStack(String outputPath) {
-		int n = virtualStack.getSize();
+		ImageStack stack = virtualStack.getStack();
+		int n = stack.getSize();
 		for (int i=1; i<=n; i++) {
 			if (IJ.escapePressed()) break;
 			IJ.showProgress(i, n);
-			ImageProcessor ip = virtualStack.getProcessor(i);
+			ImageProcessor ip = stack.getProcessor(i);
 			if (ip==null) return;
 			ImagePlus imp = new ImagePlus("", ip);
 			if (!macro.equals("")) {
@@ -344,11 +344,9 @@ import java.util.Vector;
 	}
 	
 	ImagePlus getVirtualStackImage() {
-		ImageProcessor ip = virtualStack.getProcessor(1);
-		if (ip!=null)
-			return new ImagePlus("", ip);
-		else
-			return null;
+		ImagePlus imp = virtualStack.createImagePlus();
+		imp.setProcessor("", virtualStack.getProcessor().duplicate());
+		return imp;
 	}
 
 	ImagePlus getFolderImage() {
