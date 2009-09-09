@@ -682,6 +682,7 @@ public class Opener {
 		ImagePlus imp = null;
 		try {
 			ZipInputStream in = new ZipInputStream(new FileInputStream(path));
+			if (in==null) return null;
 			ZipEntry entry = in.getNextEntry();
 			if (entry==null) return null;
 			String name = entry.getName();
@@ -703,6 +704,7 @@ public class Opener {
 			}
 		} catch (Exception e) {
 			IJ.error("ZipDecoder", ""+e);
+			return null;
 		}
 		File f = new File(path);
 		FileInfo fi = imp.getOriginalFileInfo();

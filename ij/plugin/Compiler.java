@@ -165,8 +165,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	 	boolean okay;
 		String fileName, directory;
 	 	if (path.equals("")) {
-			if (dir==null)
-				dir = Prefs.getHomeDir();
+			if (dir==null) dir = IJ.getDirectory("plugins");
 			OpenDialog od = new OpenDialog(msg, dir, name);
 			directory = od.getDirectory();
 			fileName = od.getFileName();

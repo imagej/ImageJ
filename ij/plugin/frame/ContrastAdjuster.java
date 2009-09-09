@@ -749,7 +749,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		//		ip.reset(mask);
 		//}
 		if (Recorder.record)
-			Recorder.record("run", "Enhance Contrast", "saturated=0.5");
+			Recorder.record("run", "Enhance Contrast", "saturated=0.35");
 	}
 	
 	void setMinAndMax(ImagePlus imp, ImageProcessor ip) {

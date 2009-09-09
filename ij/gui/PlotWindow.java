@@ -110,6 +110,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		super(plot.getImagePlus());
 		this.plot = plot;
 		draw();
+		//addComponentListener(this);
 	}
 
 	/** Called by the constructor to generate the image the plot will be drawn on.
@@ -391,6 +392,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	
+	//public void componentHidden(ComponentEvent e) {}
+	//public void componentMoved(ComponentEvent e) {}
+	//public void componentResized(ComponentEvent e) {
+	//	IJ.log("componentResized");
+	//}
+	//public void componentShown(ComponentEvent e) {}
+ 
 }
 
 

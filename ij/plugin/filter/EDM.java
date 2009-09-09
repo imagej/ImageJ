@@ -75,7 +75,7 @@ public class EDM implements ExtendedPlugInFilter {
     private int outImageType;           //output type; BYTE_OVERWRITE, BYTE, SHORT or FLOAT
     private ImageStack outStack;        //in case output should be a new stack
     private int processType;            //can be EDM, WATERSHED, UEP, VORONOI
-    private MaximumFinder maxFinder;    //we use only one MaximumFinder (nice progress bar)
+    private MaximumFinder maxFinder = new MaximumFinder();    //we use only one MaximumFinder (nice progress bar)
     private double progressDone;        //for progress bar, fraction of work done so far
     private int nPasses;                //for progress bar, how many images to process (sequentially or parallel threads)
     private boolean interrupted;        //whether watershed segmentation has been interrrupted by the user
@@ -142,8 +142,6 @@ public class EDM implements ExtendedPlugInFilter {
             IJ.error("8-bit binary image (0 and 255) required.");
             return DONE;
         }
-        if (USES_MAX_FINDER[processType])
-            maxFinder = new MaximumFinder();
         //processing routines assume background=0; image may be otherwise
         boolean invertedLut = imp.isInvertedLut();
         background255 = (invertedLut && Prefs.blackBackground) || (!invertedLut && !Prefs.blackBackground);
@@ -153,8 +151,7 @@ public class EDM implements ExtendedPlugInFilter {
         flags = IJ.setupDialog(imp, flags);
         if ((flags&DOES_STACKS)!=0 && outImageType!=BYTE_OVERWRITE) {
             outStack = new ImageStack(width, height, imp.getStackSize());
-            if (maxFinder != null)
-                maxFinder.setNPasses(imp.getStackSize());
+            maxFinder.setNPasses(imp.getStackSize());
         }
         return flags;
 
@@ -176,12 +173,10 @@ public class EDM implements ExtendedPlugInFilter {
         if (USES_MAX_FINDER[processType]) {
             if (processType == VORONOI) floatEdm.multiply(-1); //Voronoi starts from minima of EDM
             int maxOutputType = USES_WATERSHED[processType] ? MaximumFinder.SEGMENTED : MaximumFinder.SINGLE_POINTS;
-
             boolean isEDM = processType!=VORONOI;
             maxIp = maxFinder.findMaxima(floatEdm, MAXFINDER_TOLERANCE,
-                    ImageProcessor.NO_THRESHOLD, maxOutputType, false, isEDM);
-
-            if (maxIp == null) {                //segmentation cancelled by user?
+                ImageProcessor.NO_THRESHOLD, maxOutputType, false, isEDM);
+            if (maxIp == null) {  //segmentation cancelled by user?
                 interrupted = true;
                 return;
             } else if (processType != WATERSHED) {

@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
+import ij.io.OpenDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -24,6 +25,7 @@ import java.util.Vector;
 			"Measure",
 			"Resize",
 			"Scale",
+			"Show File Info",
 			"Unsharp Mask",
 		};
 		private String macro = "";
@@ -150,6 +152,7 @@ import java.util.Vector;
 	
 	void processFolder(String inputPath, String outputPath) {
 		String[] list = (new File(inputPath)).list();
+		int index = 0;
 		for (int i=0; i<list.length; i++) {
 			if (IJ.escapePressed()) break;
 			String path = inputPath + list[i];
@@ -163,7 +166,7 @@ import java.util.Vector;
 			if (imp==null) continue;
 			if (!macro.equals("")) {
 				WindowManager.setTempCurrentImage(imp);
-				String str = IJ.runMacro(macro, "");
+				String str = IJ.runMacro("i="+(index++)+";"+macro, "");
 				if (str!=null && str.equals("[aborted]")) break;
 			}
 			if (!outputPath.equals("")) {
@@ -257,6 +260,8 @@ import java.util.Vector;
 			code = "run(\"Gaussian Blur...\", \"sigma=2\");\n";
 		else if (item.equals("Unsharp Mask"))
 			code = "run(\"Unsharp Mask...\", \"radius=1 mask=0.60\");\n";
+		else if (item.equals("Show File Info"))
+			code = "path=File.directory+File.name;\ndate=File.dateLastModified(path);\nsize=File.length(path);\nprint(i+\", \"+getTitle+\", \"+date+\", \"+size);\n";
 		if (code!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());
@@ -322,8 +327,10 @@ import java.util.Vector;
 		ImagePlus imp = null;
 		if (virtualStack!=null)
 			imp = getVirtualStackImage();
-		else
+		else {
 			imp = getFolderImage();
+			macro = "i=0; " + macro;
+		}
 		if (imp==null) return;
 		WindowManager.setTempCurrentImage(imp);
 		String str = IJ.runMacro(macro, "");
@@ -361,7 +368,15 @@ import java.util.Vector;
 		String name = list[0];
 		if (name.startsWith(".")&&list.length>1) name = list[1];
 		String path = inputPath + name;
+		setDirAndName(path);
 		return IJ.openImage(path);
 	}
+	
+	void setDirAndName(String path) {
+		File f = new File(path);
+		OpenDialog.setLastDirectory(f.getParent()+File.separator);
+		OpenDialog.setLastName(f.getName());
+	}
+
 
 }

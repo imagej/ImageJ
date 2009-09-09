@@ -82,7 +82,7 @@ public class BrowserLauncher implements PlugIn {
 	public static void openURL(String url) throws IOException {
 		String errorMessage = "";
 		if (IJ.isMacOSX()) {
-			if (IJ.is64Bit())
+			if (IJ.isJava16())
 				IJ.runMacro("exec('open', '"+url+"')");
 			else {
 				try {
@@ -132,7 +132,7 @@ public class BrowserLauncher implements PlugIn {
 	 * required at runtime to locate the user's web browser.
 	 */
 	private static void loadClasses() {
-		if (IJ.isMacOSX() && !IJ.is64Bit() && IJ.getApplet()==null) {
+		if (IJ.isMacOSX() && !IJ.isJava16() && IJ.getApplet()==null) {
 			try {
 				if (new File("/System/Library/Java/com/apple/cocoa/application/NSWorkspace.class").exists()) {
 					ClassLoader classLoader = new URLClassLoader(new URL[]{new File("/System/Library/Java").toURL()});

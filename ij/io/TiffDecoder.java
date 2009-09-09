@@ -65,6 +65,7 @@ public class TiffDecoder {
 	private String dInfo;
 	private int ifdCount;
 	private int[] metaDataCounts;
+	private String tiffMetadata;
 		
 	public TiffDecoder(String directory, String name) {
 		this.directory = directory;
@@ -195,6 +196,15 @@ public class TiffDecoder {
                 if (n>1) fi.nImages = n;
             }
         }
+	}
+
+	public void saveMetadata(String type, byte[] data) {
+		if (data==null) return;
+        String str = type+": "+new String(data)+"\n";
+        if (tiffMetadata==null)
+        	tiffMetadata = str;
+        else
+        	tiffMetadata += str;
 	}
 
 	void decodeNIHImageHeader(int offset, FileInfo fi) throws IOException {
@@ -460,6 +470,18 @@ public class TiffDecoder {
 							"compressed in this fashion ("+value+")");
 					}
 					break;
+				case SOFTWARE:
+					if (ifdCount==1) {
+						byte[] s = getString(count, lvalue);
+						saveMetadata("Software", s);
+					}
+					break;
+				case DATE_TIME:
+					if (ifdCount==1) {
+						byte[] s = getString(count, lvalue);
+						saveMetadata("DateTime", s);
+					}
+					break;
 				case PREDICTOR:
 					if (value==2 && fi.compression==FileInfo.LZW)
 						fi.compression = FileInfo.LZW_WITH_DIFFERENCING;
@@ -710,6 +732,8 @@ public class TiffDecoder {
 				fi[0].inputStream = in;
 			} else
 				in.close();
+			if (fi[0].info==null)
+				fi[0].info = tiffMetadata;
 			return fi;
 		}
 	}
