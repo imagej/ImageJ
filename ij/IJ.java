@@ -1596,4 +1596,19 @@ public class IJ {
 		classLoader = loader;
 	}
 
+	public interface ExceptionHandler {
+		public void handle(Throwable e);
+	}
+
+	public static void displayStackTrace(Throwable e) {
+		CharArrayWriter caw = new CharArrayWriter();
+		PrintWriter pw = new PrintWriter(caw);
+		e.printStackTrace(pw);
+		String s = caw.toString();
+		if (getInstance()!=null)
+			new TextWindow("Exception", s, 350, 250);
+		else
+			log(s);
+	}
+
 }

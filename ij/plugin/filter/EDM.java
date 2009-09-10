@@ -93,24 +93,22 @@ public class EDM implements ExtendedPlugInFilter {
     //prefixes for titles of separate output images; for each processType:
     private static final String[] TITLE_PREFIX = new String[] {
             "EDM of ", null, "UEPs of ", "Voronoi of "};
-    private static final int NO_POINT = -1; //nearest point
+    private static final int NO_POINT = -1; //no nearest point in array of nearest points
     private static final double MAXFINDER_TOLERANCE = 0.5; //reasonable values are 0.3 ... 0.8;
                                     //segmentation is more aggressive with smaller values
     /** Output type (BYTE_OVERWRITE, BYTE, SHORT or FLOAT) */
     private static int outputType = BYTE_OVERWRITE;
-    
+
+    /** Prepare for processing; also called at the very end with argument 'final'
+     *  to show any newly created output image.
+     */
     public int setup (String arg, ImagePlus imp) {
         if (arg.equals("final")) {
             showOutput();
             return DONE;
         }
         this.imp = imp;
-//##uncomment for having this process type (default is EDM)
-//##arg="watershed";
-//##arg="voronoi";
-//##arg="points";
-
-        //processing type; default is 'EDM' (0)
+        //'arg' is processing type; default is 'EDM' (0)
         if (arg.equals("watershed")) {
             processType = WATERSHED;
             flags += KEEP_THRESHOLD;
@@ -121,31 +119,33 @@ public class EDM implements ExtendedPlugInFilter {
 
         //output type
         if (processType != WATERSHED)           //Watershed always has output BYTE_OVERWRITE=0
-            outImageType = outputType;
+            outImageType = outputType;          //otherwise use the static variable from setOutputType
         if (outImageType != BYTE_OVERWRITE)
             flags |= NO_CHANGES;
-        return flags;
-    }
 
-    /** Called by the PlugInFilterRunner if there is an 8-bit input image.
-     * Does checks, prepares for processing, asks the user in case of stack
+        //check image and prepare
+        if (imp != null) {
+            ImageProcessor ip = imp.getProcessor();
+            if (!ip.isBinary()) {
+                IJ.error("8-bit binary image (0 and 255) required.");
+                return DONE;
+            }
+            ip.resetRoi();
+            //processing routines assume background=0; image may be otherwise
+            boolean invertedLut = imp.isInvertedLut();
+            background255 = (invertedLut && Prefs.blackBackground) || (!invertedLut && !Prefs.blackBackground);
+        }
+        return flags;
+    } //public int setup
+
+    /** Called by the PlugInFilterRunner after setup.
+     *  Asks the user in case of a stack and prepares a separate ouptut stack if required
      */
 
     public int showDialog (ImagePlus imp, String command, PlugInFilterRunner pfr) {
         this.pfr = pfr;
         int width = imp.getWidth();
         int height= imp.getHeight();
-        //test whether we have a binary image
-        ImageProcessor ip = imp.getProcessor();
-        ip.resetRoi();
-        if (!ip.isBinary()) {
-            IJ.error("8-bit binary image (0 and 255) required.");
-            return DONE;
-        }
-        //processing routines assume background=0; image may be otherwise
-        boolean invertedLut = imp.isInvertedLut();
-        background255 = (invertedLut && Prefs.blackBackground) || (!invertedLut && !Prefs.blackBackground);
-
         //ask whether to process all slices of stack & prepare stack
         //(if required) for writing into it in parallel threads
         flags = IJ.setupDialog(imp, flags);
@@ -154,7 +154,6 @@ public class EDM implements ExtendedPlugInFilter {
             maxFinder.setNPasses(imp.getStackSize());
         }
         return flags;
-
     } //public int showDialog
 
     /** Called by the PlugInFilterRunner to process the image or one frame of a stack */
@@ -243,7 +242,7 @@ public class EDM implements ExtendedPlugInFilter {
      */
     public void toWatershed (ImageProcessor ip) {
         FloatProcessor floatEdm = makeFloatEDM(ip, 0, false);
-        ByteProcessor maxIp = new MaximumFinder().findMaxima(floatEdm, MAXFINDER_TOLERANCE,
+        ByteProcessor maxIp = maxFinder.findMaxima(floatEdm, MAXFINDER_TOLERANCE,
                 ImageProcessor.NO_THRESHOLD, MaximumFinder.SEGMENTED, false, true);
         if (maxIp != null) ip.copyBits(maxIp, 0, 0, Blitter.AND);
     }
@@ -440,14 +439,14 @@ public class EDM implements ExtendedPlugInFilter {
     
     /** Sets the output type (BYTE_OVERWRITE, BYTE, SHORT or FLOAT) */
     public static void setOutputType(int type) {
-    	if (type<BYTE_OVERWRITE || type>FLOAT)
-    		throw new IllegalArgumentException("Invalid type: "+type);
-    	outputType = type;
+        if (type<BYTE_OVERWRITE || type>FLOAT)
+            throw new IllegalArgumentException("Invalid type: "+type);
+        outputType = type;
     }
 
     /** Returns the current output type (BYTE_OVERWRITE, BYTE, SHORT or FLOAT) */
     public static int getOutputType() {
-    	return outputType;
+        return outputType;
     }
 
 }

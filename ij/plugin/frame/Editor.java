@@ -451,7 +451,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		} catch (EOFException eof) {
 	   // Fine, ignore
 		} catch (Throwable t) { // Anything else
-			t.printStackTrace();
+			IJ.displayStackTrace(t);
 		}
 	}
 	

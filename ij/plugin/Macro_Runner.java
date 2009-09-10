@@ -139,19 +139,7 @@ public class Macro_Runner implements PlugIn {
 			String msg = e.getMessage();
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
 				return  "[aborted]";
-			CharArrayWriter caw = new CharArrayWriter();
-			PrintWriter pw = new PrintWriter(caw);
-			e.printStackTrace(pw);
-			String s = caw.toString();
-			if (IJ.isMacintosh())
-				s = Tools.fixNewLines(s);
-			//Don't show exceptions resulting from window being closed
-			if (!(s.indexOf("NullPointerException")>=0 && s.indexOf("ij.process")>=0)) {
-				if (IJ.getInstance()!=null)
-					new ij.text.TextWindow("Exception", s, 350, 250);
-				else
-					IJ.log(s);
-			}
+			IJ.displayStackTrace(e);
 		}
 		return  "[aborted]";
 	}

@@ -607,8 +607,7 @@ public class Opener {
 				is.close();
 			}
 			catch (Exception e) {
-				IJ.log("TiffDecoder: " + e);
-				e.printStackTrace();
+				IJ.displayStackTrace(e);
 			}
 			catch(OutOfMemoryError e) {
 				IJ.outOfMemory(fi.fileName);

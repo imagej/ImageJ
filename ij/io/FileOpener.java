@@ -499,16 +499,8 @@ public class FileOpener {
 			is.close();
 		}
 		catch (Exception e) {
-			if (!Macro.MACRO_CANCELED.equals(e.getMessage())) {
-				CharArrayWriter caw = new CharArrayWriter();
-				PrintWriter pw = new PrintWriter(caw);
-				e.printStackTrace(pw);
-				String s = caw.toString();
-				if (IJ.getInstance()!=null)
-					new ij.text.TextWindow("Exception", s, 350, 250);
-				else
-					IJ.log(s);
-			}
+			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
+				IJ.displayStackTrace(e);
 		}
 		return pixels;
 	}

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.43g, 8 September 2009</u>
+<li> <u>1.43g, 10 September 2009</u>
 <ul>
 <li> Added the <i>Process&gt;Batch&gt;Virtual Stack</i> command.
 <li> Added the "Draw As Overlay" (display ROIs using a display list) and "Remove Overlay"
@@ -15,7 +15,7 @@ displayed in the ROI Manager "Show All" mode.
 <li> Tiff stacks with a .tif extension open as virtual stacks when dragged 
 and dropped on the ">>" tool.
 <li> <i>Image&gt;Show Info</i>, and the getMetadata() macro function,
-retrieve the DataTime and Software TIFF tags.
+retrieve the "DateTime" and "Software" TIFF tags.
 <li> <i>Plugins&gt;Compile and Run</i> defaults to the plugins
 directory instead of the ImageJ directory.
 <li> Added the ImageCanvas.setDisplayList(Roi,Color) method
@@ -24,6 +24,8 @@ directory instead of the ImageJ directory.
 command with segmented line selections wider than 1 pixel.
 <li> Fixed a bug that caused commands that opened a web page to fail on
 Mac OS X 10.6 when running the 32-bit version of Java 1.6.
+<li> Fixed a bug that caused "[aborted]" to be displayed in the Log
+window when a macro called using runMacro() was canceled.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
