@@ -29,6 +29,7 @@ public class TiffDecoder {
 	public static final int RESOLUTION_UNIT = 296;
 	public static final int SOFTWARE = 305;
 	public static final int DATE_TIME = 306;
+	public static final int ARTEST = 315;
 	public static final int HOST_COMPUTER = 316;
 	public static final int PREDICTOR = 317;
 	public static final int COLOR_MAP = 320;
@@ -316,6 +317,7 @@ public class TiffDecoder {
 			case RESOLUTION_UNIT: name="ResolutionUnit"; break;
 			case SOFTWARE: name="Software"; break;
 			case DATE_TIME: name="DateTime"; break;
+			case ARTEST: name="Artest"; break;
 			case HOST_COMPUTER: name="HostComputer"; break;
 			case PLANAR_CONFIGURATION: name="PlanarConfiguration"; break;
 			case COMPRESSION: name="Compression"; break; 
@@ -478,7 +480,7 @@ public class TiffDecoder {
 							"compressed in this fashion ("+value+")");
 					}
 					break;
-				case SOFTWARE: case DATE_TIME: case HOST_COMPUTER:
+				case SOFTWARE: case DATE_TIME: case HOST_COMPUTER: case ARTEST:
 					if (ifdCount==1) {
 						byte[] bytes = getString(count, lvalue);
 						String s = bytes!=null?new String(bytes):null;

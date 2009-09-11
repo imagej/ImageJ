@@ -1596,11 +1596,13 @@ public class IJ {
 		classLoader = loader;
 	}
 
-	public interface ExceptionHandler {
-		public void handle(Throwable e);
-	}
-
-	public static void displayStackTrace(Throwable e) {
+	/** Displays a stack trace. Use the setExceptionHandler 
+		method() to install a custom exception handler. */
+	public static void handleException(Throwable e) {
+		if (exceptionHandler!=null) {
+			exceptionHandler.handle(e);
+			return;
+		}
 		CharArrayWriter caw = new CharArrayWriter();
 		PrintWriter pw = new PrintWriter(caw);
 		e.printStackTrace(pw);
@@ -1610,5 +1612,16 @@ public class IJ {
 		else
 			log(s);
 	}
+
+	/** Installs a custom exception handler. */
+	public static void setExceptionHandler(ExceptionHandler handler) {
+		exceptionHandler = handler;
+	}
+
+	public interface ExceptionHandler {
+		public void handle(Throwable e);
+	}
+
+	static ExceptionHandler exceptionHandler;
 
 }

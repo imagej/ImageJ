@@ -133,7 +133,7 @@ public class MacroRunner implements Runnable {
 			String msg = e.getMessage();
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
 				return;
-			IJ.displayStackTrace(e);
+			IJ.handleException(e);
 		}
 	}
 

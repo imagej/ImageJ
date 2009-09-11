@@ -85,7 +85,7 @@ public class PNM_Writer implements PlugIn {
 			}
 			output.flush();
 		} catch(IOException e) {
-			IJ.displayStackTrace(e);
+			IJ.handleException(e);
 		}
 		IJ.showStatus("");
 	}

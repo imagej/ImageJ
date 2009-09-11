@@ -607,7 +607,7 @@ public class Opener {
 				is.close();
 			}
 			catch (Exception e) {
-				IJ.displayStackTrace(e);
+				IJ.handleException(e);
 			}
 			catch(OutOfMemoryError e) {
 				IJ.outOfMemory(fi.fileName);

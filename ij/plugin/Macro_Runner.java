@@ -139,7 +139,7 @@ public class Macro_Runner implements PlugIn {
 			String msg = e.getMessage();
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
 				return  "[aborted]";
-			IJ.displayStackTrace(e);
+			IJ.handleException(e);
 		}
 		return  "[aborted]";
 	}

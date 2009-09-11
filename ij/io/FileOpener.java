@@ -500,7 +500,7 @@ public class FileOpener {
 		}
 		catch (Exception e) {
 			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
-				IJ.displayStackTrace(e);
+				IJ.handleException(e);
 		}
 		return pixels;
 	}

@@ -174,7 +174,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				}
 			} catch (Throwable e) {
 				if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
-					IJ.displayStackTrace(e);
+					IJ.handleException(e);
 			}
 		}
 		

@@ -104,7 +104,7 @@ public class Clipboard implements PlugIn, Transferable {
 			} else
 				IJ.error("Unable to find an image on the system clipboard");
 		} catch (Throwable e) {
-			IJ.displayStackTrace(e);
+			IJ.handleException(e);
 		}
 	}
 	
