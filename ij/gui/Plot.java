@@ -401,6 +401,7 @@ public class Plot {
             }
             int digits = -(int)Math.floor(Math.log(step)/Math.log(10)+1e-6);
             if (digits < 0) digits = 0;
+            if (digits>5) digits = -3; // use scientific notation
             int y1 = TOP_MARGIN;
             int y2 = TOP_MARGIN+frame.height;
             int yNumbers = y2 + fontAscent + 7;
@@ -439,6 +440,7 @@ public class Plot {
             }
             int digits = -(int)Math.floor(Math.log(step)/Math.log(10)+1e-6);
             if (digits < 0) digits = 0;
+            if (digits>5) digits = -3; // use scientific notation
             int x1 = LEFT_MARGIN;
             int x2 = LEFT_MARGIN+frame.width;
             for (int i=0; i<=(i2-i1); i++) {
@@ -520,7 +522,7 @@ public class Plot {
             if (n<10.0) digits = 2;
             if (n<0.01) digits = 3;
             if (n<0.001) digits = 4;
-            if (n<0.0001) digits = 5;
+            if (n<0.0001) digits = -3; // use scientific notation
             return digits;
         }
     }
