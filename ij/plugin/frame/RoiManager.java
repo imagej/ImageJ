@@ -110,6 +110,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Draw");
 		addPopupItem("Fill");
 		addPopupItem("Label");
+		addPopupItem("Draw As Overlay");
+		addPopupItem("Remove Overlay");
 		pm.addSeparator();
 		addPopupItem("Combine");
 		addPopupItem("Split");
@@ -161,6 +163,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawOrFill(FILL);
 		else if (command.equals("Label"))
 			drawOrFill(LABEL);
+		else if (command.equals("Draw As Overlay"))
+			drawAsOverlay();
+		else if (command.equals("Remove Overlay"))
+			removeOverlay();
 		else if (command.equals("Deselect"))
 			select(-1);
 		else if (command.equals(moreButtonLabel)) {
@@ -832,6 +838,35 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (Recorder.record) Recorder.record("roiManager", str);
 		return true;
+	}
+
+	void drawAsOverlay() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+		Color color = Toolbar.getForegroundColor();
+		Vector displayList = new Vector();
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+			roi = (Roi)roi.clone();
+			if (roi.getInstanceColor()==null)
+				roi.setInstanceColor(color);
+			displayList.addElement(roi);
+		}
+		ic.setShowAllROIs(false);
+		ic.setDisplayList(displayList);
+	}
+
+	void removeOverlay() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		ic.setDisplayList(null);
 	}
 
 	void combine() {

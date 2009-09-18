@@ -8,16 +8,23 @@ import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import java.awt.event.KeyEvent;
 import ij.plugin.frame.Recorder;
+import ij.util.Java2;
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
-
-	static Font font;
+	private static Font font;
+	private static int fontSize = 9;
+	private double saveMag;
 	
 	/** Creates a new PointRoi using the specified arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
 		super(ox, oy, points, POINT);
 		width+=1; height+=1;
+	}
+
+	/** Creates a new PointRoi from a Polygon. */
+	public PointRoi(Polygon poly) {
+		this(poly.xpoints, poly.ypoints, poly.npoints);
 	}
 
 	/** Creates a new PointRoi using the specified offscreen coordinates. */
@@ -64,9 +71,16 @@ public class PointRoi extends PolygonRoi {
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
 		int size2 = HANDLE_SIZE/2;
-		if (!Prefs.noPointLabels) {
-			if (font==null) font = new Font("SansSerif", Font.PLAIN, 9);
+		if (!Prefs.noPointLabels && nPoints>1) {
+			fontSize = 9;
+			if (mag>1.0)
+				fontSize = (int)(((mag-1.0)/4.0+1.0)*9.0);
+			if (font==null || mag!=saveMag)
+				font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
+			if (fontSize>9)
+				Java2.setAntialiasedText(g, true);
+			saveMag = mag;
 		}
 		for (int i=0; i<nPoints; i++)
 			drawPoint(g, xp2[i]-size2, yp2[i]-size2, i+1);
@@ -82,7 +96,7 @@ public class PointRoi extends PolygonRoi {
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		g.fillRect(x+1,y+1,3,3);
 		if (!Prefs.noPointLabels && nPoints>1)
-			g.drawString(""+n, x+6, y+13); 
+			g.drawString(""+n, x+6, y+fontSize+4);
 		g.setColor(Color.black);
 		g.drawRect(x, y, 4, 4);
 	}

@@ -13,7 +13,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	int stackSize;
 	boolean updateSelectionOnly;
 	boolean equalize, normalize, processStack, useStackHistogram, entireImage;
-	static double saturated = 0.5;
+	static double saturated = 0.35;
 	static boolean gEqualize, gNormalize;
 
 	public void run(String arg) {

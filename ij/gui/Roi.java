@@ -50,7 +50,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected Color handleColor = Color.white;
 	protected Color instanceColor;
 	protected BasicStroke stroke;
-
+	protected boolean nonScalable;
 
 
 	/** Creates a new rectangular Roi. */
@@ -1023,6 +1023,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used. */
 	public Color getInstanceColor() {
 		return instanceColor;
+	}
+
+	/** Deteremines whether or not TextRois are drawn at a fixed window location. */
+	public void setNonScalable(boolean b) {
+		nonScalable = b;
 	}
 
 	/** Sets the width of lines used to draw composite ROIs. */

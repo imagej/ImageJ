@@ -50,12 +50,12 @@ public class XYCoordinates implements PlugIn {
 		int digits = (int)background==background?0:4;
 		if (!rgb) {
 			gd.setInsets(5, 35, 3);
-			gd.addNumericField("Background Value:", background, digits);
+			gd.addNumericField("Background value:", background, digits);
 		}
 		gd.setInsets(10, 35, 0);
-		gd.addCheckbox("Invert Y Coordinates", invertY);
+		gd.addCheckbox("Invert y coordinates off (0 at top of image)", invertY);
 		gd.setInsets(0, 35, 0);
-		gd.addCheckbox("Suppress Log Output", suppress);
+		gd.addCheckbox("Suppress Log output", suppress);
 		if (slices>1) {
 			gd.setInsets(0, 35, 0);
 			gd.addCheckbox("Process all "+slices+" images", processStack);

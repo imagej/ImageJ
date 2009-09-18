@@ -600,6 +600,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 	
+	public static int getButtonSize() {
+		return SIZE;
+	}
+	
 	static void repaintTool(int tool) {
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();

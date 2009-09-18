@@ -333,6 +333,13 @@ public class PolygonRoi extends Roi {
 		LineWidthAdjuster.update();
 	}
 	
+	public void exitConstructingMode() {
+		if (type==POLYLINE && state==CONSTRUCTING) {
+            addOffset();
+			finishPolygon();
+		}
+	}
+	
     protected void moveHandle(int sx, int sy) {
 		if (clipboard!=null) return;
 		int ox = ic.offScreenX(sx);

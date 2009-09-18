@@ -153,7 +153,6 @@ public class Tokenizer implements MacroConstants {
         } catch (Exception e) {
             return;
         }
-        // IJ.log("	  "+ret);
     }
 
     final void addToken() {
@@ -248,7 +247,6 @@ public class Tokenizer implements MacroConstants {
 	/** Adds user-defined functions to the symbol table. */
 	void addUserFunctions() {
 		int[] code = pgm.getCode();
-		Symbol[] symbolTable = pgm.getSymbolTable();
 		int nextToken, address, address2;
 		for (int i=0; i<code.length; i++) {
 			token = code[i]&TOK_MASK;
@@ -257,11 +255,11 @@ public class Tokenizer implements MacroConstants {
 				if (nextToken==WORD || (nextToken>=PREDEFINED_FUNCTION&&nextToken<=ARRAY_FUNCTION)) {
 					address = address2 = code[i+1]>>TOK_SHIFT;
 					if (nextToken!=WORD) { // override built in function
-                		pgm.addSymbol(new Symbol(WORD, symbolTable[address].str));
+                		pgm.addSymbol(new Symbol(WORD, pgm.getSymbolTable()[address].str));
                 		address2 = pgm.stLoc;
                 		code[i+1] = WORD + (address2<<TOK_SHIFT);
 					}
-					Symbol sym = symbolTable[address2];
+					Symbol sym = pgm.getSymbolTable()[address2];
 					sym.type = USER_FUNCTION;
 					sym.value = i+1;  //address of function
 					for (int j=0; j<code.length; j++) {
@@ -274,7 +272,7 @@ public class Tokenizer implements MacroConstants {
 						} else if (token==EOF)
 							break;
 					}
-					// IJ.log(pgm.decodeToken(nextToken, address));
+					//IJ.log(i+"  "+pgm.decodeToken(nextToken, address));
 				}					
 			} else if (token==EOF)
 				break;

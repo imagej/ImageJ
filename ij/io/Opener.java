@@ -321,12 +321,12 @@ public class Opener {
 				imp = openTiff(u.openStream(), name);
 			else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
-			else if (lurl.endsWith(".dcm")) {
+			else if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
+				imp = openJpegOrGifUsingURL(name, u);
+			else if (lurl.endsWith(".dcm") || lurl.endsWith(".ima")) {
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", url);
 				if (imp!=null && imp.getWidth()==0) imp = null;
-			} else if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
-				imp = openJpegOrGifUsingURL(name, u);
-			else if (lurl.endsWith(".png"))
+			} else if (lurl.endsWith(".png"))
 				imp = openPngUsingURL(name, u);
 			else {
 				URLConnection uc = u.openConnection();
@@ -607,8 +607,7 @@ public class Opener {
 				is.close();
 			}
 			catch (Exception e) {
-				IJ.log("TiffDecoder: " + e);
-				e.printStackTrace();
+				IJ.handleException(e);
 			}
 			catch(OutOfMemoryError e) {
 				IJ.outOfMemory(fi.fileName);
@@ -682,6 +681,7 @@ public class Opener {
 		ImagePlus imp = null;
 		try {
 			ZipInputStream in = new ZipInputStream(new FileInputStream(path));
+			if (in==null) return null;
 			ZipEntry entry = in.getNextEntry();
 			if (entry==null) return null;
 			String name = entry.getName();
@@ -703,6 +703,7 @@ public class Opener {
 			}
 		} catch (Exception e) {
 			IJ.error("ZipDecoder", ""+e);
+			return null;
 		}
 		File f = new File(path);
 		FileInfo fi = imp.getOriginalFileInfo();

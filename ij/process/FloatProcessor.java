@@ -51,7 +51,7 @@ public class FloatProcessor extends ImageProcessor {
 		findMinAndMax();
 	}
 	
-	/** Creates a FloatProcessor from a float[][] array using the default LUT. */
+	/** Creates a FloatProcessor from a 2D float array using the default LUT. */
 	public FloatProcessor(float[][] array) {
 		width = array.length;
 		height = array[0].length;

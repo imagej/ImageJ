@@ -2,7 +2,7 @@ package ij.gui;
 import java.awt.*;
 import ij.*;
 import ij.process.*;
-import ij.util.Java2;
+import ij.util.*;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -26,17 +26,29 @@ public class TextRoi extends Roi {
 	/** Creates a new TextRoi.*/
 	public TextRoi(int x, int y, String text) {
 		this(x, y, text, null, null);
-		font = null;
-		firstChar = false;
 	}
 
-	/** Creates a new TextRoi.*/
+	/** Creates a new TextRoi with the specified location and Font.
+	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setNonScalable
+	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 */
+	public TextRoi(int x, int y, String text, Font font) {
+		super(x, y, 1, 1);
+		String[] lines = Tools.split(text, "\n");
+		int count = Math.min(lines.length, MAX_LINES);
+		for (int i=0; i<count; i++)
+			theText[i] = lines[i];
+		instanceFont = font;
+		font = null;
+		firstChar = false;
+		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
+	}
+
+	/** Obsolete */
 	public TextRoi(int x, int y, String text, Font font, Color color) {
 		super(x, y, 1, 1);
-		theText[0] = text;
-		instanceFont = font;
-		instanceColor = color;
-		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
+		IJ.error("TextRoi", "API has changed. See updated example at\nhttp://rsb.info.nih.gov/ij/macros/js/TextOverlay.js");
 	}
 
 	public TextRoi(int x, int y, ImagePlus imp) {
@@ -93,9 +105,13 @@ public class TextRoi extends Roi {
 	}
 
 	Font getCurrentFont() {
-		if (instanceFont!=null)
-			return instanceFont;
 		double mag = ic.getMagnification();
+		if (instanceFont!=null) {
+			if (nonScalable)
+				return instanceFont;
+			else
+				return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
+		}
 		if (font==null || mag!=previousMag) {
 			font = new Font(name, style, (int)(size*mag));
 			previousMag = mag;
@@ -122,24 +138,29 @@ public class TextRoi extends Roi {
 
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
-if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
-		super.draw(g); // draw the rectangle
+		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
+		boolean interactive = instanceColor==null && instanceFont==null;
+		if (interactive)
+			super.draw(g); // draw the rectangle
 		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		double mag = ic.getMagnification();
-		int sx = ic.screenX(x);
-		int sy = ic.screenY(y);
+		int sx = nonScalable?x:ic.screenX(x);
+		int sy = nonScalable?y:ic.screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
 		Java2.setAntialiasedText(g, antialiasedText);
-		if (font==null)
+		if (font==null && interactive)
 			adjustSize();
 		Font font = getCurrentFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
 		g.setFont(font);
-		Rectangle r = g.getClipBounds();
-		g.setClip(sx, sy, swidth, sheight);
+		Rectangle r = null;
+		if (interactive) {
+			r = g.getClipBounds();
+			g.setClip(sx, sy, swidth, sheight);
+		}
 		int i = 0;
 		while (i<MAX_LINES && theText[i]!=null) {
 			g.drawString(theText[i], sx, sy+fontHeight-descent);
@@ -212,7 +233,7 @@ if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
 	/** Increases the size of the rectangle so it's large
 		enough to hold the text. */ 
 	void adjustSize() {
-if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
+		if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
 		if (ic==null)
 			return;
 		double mag = ic.getMagnification();
@@ -246,7 +267,7 @@ if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
 			y = yMax-height;
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
-if (IJ.debugMode) IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
+		if (IJ.debugMode) IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 
 	int stringWidth(String s, FontMetrics metrics, Graphics g) {

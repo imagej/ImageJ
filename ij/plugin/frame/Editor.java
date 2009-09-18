@@ -267,7 +267,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			changes = false;
 		}
 		catch (Exception e) {
-			IJ.error(e.getMessage());
+			IJ.handleException(e);
 			return;
 		}
 	}
@@ -451,7 +451,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		} catch (EOFException eof) {
 	   // Fine, ignore
 		} catch (Throwable t) { // Anything else
-			t.printStackTrace();
+			IJ.handleException(t);
 		}
 	}
 	

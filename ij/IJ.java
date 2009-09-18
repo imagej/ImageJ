@@ -622,7 +622,8 @@ public class IJ {
 
 	/** Converts a number to a rounded formatted string.
 		The 'decimalPlaces' argument specifies the number of
-		digits to the right of the decimal point (0-9). */
+		digits to the right of the decimal point (0-9). Uses
+		scientific notation if 'decimalPlaces is negative. */
 	public static String d2s(double n, int decimalPlaces) {
 		if (Double.isNaN(n))
 			return "NaN";
@@ -644,12 +645,9 @@ public class IJ {
 			df[8] = new DecimalFormat("0.00000000", dfs);
 			df[9] = new DecimalFormat("0.000000000", dfs);
 		}
-		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
-			if (decimalPlaces<0) {
-				decimalPlaces = -decimalPlaces;
-				if (decimalPlaces>9) decimalPlaces=9;
-			} else
-				decimalPlaces = 3;
+		if (decimalPlaces<0) {
+			decimalPlaces = -decimalPlaces;
+			if (decimalPlaces>9) decimalPlaces=9;
 			if (sf==null) {
 				sf = new DecimalFormat[10];
 				sf[1] = new DecimalFormat("0.0E0",dfs);
@@ -1595,5 +1593,34 @@ public class IJ {
 	static void setClassLoader(ClassLoader loader) {
 		classLoader = loader;
 	}
+
+	/** Displays a stack trace. Use the setExceptionHandler 
+		method() to override with a custom exception handler. */
+	public static void handleException(Throwable e) {
+		if (exceptionHandler!=null) {
+			exceptionHandler.handle(e);
+			return;
+		}
+		CharArrayWriter caw = new CharArrayWriter();
+		PrintWriter pw = new PrintWriter(caw);
+		e.printStackTrace(pw);
+		String s = caw.toString();
+		if (getInstance()!=null)
+			new TextWindow("Exception", s, 350, 250);
+		else
+			log(s);
+	}
+
+	/** Installs a custom exception handler that 
+		overrides the handleException() method. */
+	public static void setExceptionHandler(ExceptionHandler handler) {
+		exceptionHandler = handler;
+	}
+
+	public interface ExceptionHandler {
+		public void handle(Throwable e);
+	}
+
+	static ExceptionHandler exceptionHandler;
 
 }

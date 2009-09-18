@@ -201,7 +201,8 @@ public class ImageCalculator implements PlugIn {
 		if (!(ip1 instanceof ByteProcessor))
 			ip1.resetMinAndMax();
 		if (createWindow) {
-			ImagePlus img3 = new ImagePlus("Result of "+img1.getShortTitle(), ip1);
+			String title = WindowManager.getUniqueName(img1.getTitle());
+			ImagePlus img3 = new ImagePlus(title, ip1);
 			img3.setCalibration(cal1);
 			img3.show();
 		} else
@@ -264,7 +265,8 @@ public class ImageCalculator implements PlugIn {
 			stack2 = null;
 			return null;
 		}
-		ImagePlus img3 = new ImagePlus("Result of "+img1.getShortTitle(), stack2);
+		String title = WindowManager.getUniqueName(img1.getTitle());
+		ImagePlus img3 = new ImagePlus(title, stack2);
 		img3.setCalibration(cal);
 		if (img3.getStackSize()==n) {
 			int[] dim = img1.getDimensions();

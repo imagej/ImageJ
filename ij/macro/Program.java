@@ -14,7 +14,7 @@ public class Program implements MacroConstants {
 	Symbol[] table = new Symbol[maxSymbols];
     static Symbol[] systemTable;
 	int[] code = new int[maxProgramSize];
-	int[] lineNumbers = new int[maxProgramSize]; //n__
+	int[] lineNumbers = new int[maxProgramSize];
 	Variable[] globals;
 	boolean hasVars, hasFunctions;
 	int macroCount;

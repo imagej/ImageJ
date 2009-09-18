@@ -153,7 +153,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			x = x - frame.x;
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
-			value.setText("  Value: " + IJ.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits));
+			value.setText("  Value: " + ResultsTable.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits));
 			count.setText("  Count: " + histogram[index]);
 		} else {
 			value.setText("");
@@ -278,9 +278,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		else if (Double.isInfinite(d))
 			return("Infinity");
 		else if ((int)d==d)
-			return IJ.d2s(d,0);
+			return ResultsTable.d2s(d,0);
 		else
-			return IJ.d2s(d,decimalPlaces);
+			return ResultsTable.d2s(d,decimalPlaces);
 	}
 	
 	int getWidth(double d, ImageProcessor ip) {
@@ -292,11 +292,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
         String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
 			for (int i=0; i<stats.nBins; i++)
-				sb.append(i+"\t"+IJ.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
+				sb.append(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
 			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", sb.toString(), 200, 400);
 		} else {
 			for (int i=0; i<stats.nBins; i++)
-				sb.append(IJ.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
+				sb.append(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
 			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", sb.toString(), 200, 400);
 		}
 	}
@@ -311,7 +311,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		CharArrayWriter aw = new CharArrayWriter(stats.nBins*4);
 		PrintWriter pw = new PrintWriter(aw);
 		for (int i=0; i<stats.nBins; i++)
-			pw.print(IJ.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
+			pw.print(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
 		String text = aw.toString();
 		pw.close();
 		StringSelection contents = new StringSelection(text);

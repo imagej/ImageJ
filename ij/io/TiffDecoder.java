@@ -29,6 +29,8 @@ public class TiffDecoder {
 	public static final int RESOLUTION_UNIT = 296;
 	public static final int SOFTWARE = 305;
 	public static final int DATE_TIME = 306;
+	public static final int ARTEST = 315;
+	public static final int HOST_COMPUTER = 316;
 	public static final int PREDICTOR = 317;
 	public static final int COLOR_MAP = 320;
 	public static final int SAMPLE_FORMAT = 339;
@@ -65,6 +67,7 @@ public class TiffDecoder {
 	private String dInfo;
 	private int ifdCount;
 	private int[] metaDataCounts;
+	private String tiffMetadata;
 		
 	public TiffDecoder(String directory, String name) {
 		this.directory = directory;
@@ -182,9 +185,10 @@ public class TiffDecoder {
 		stacks, it also saves the number of images to avoid having to
 		decode an IFD for each image. */
 	public void saveImageDescription(byte[] description, FileInfo fi) {
-		if (description.length<7)
-			return;
         String id = new String(description);
+        if (!id.startsWith("ImageJ"))
+			saveMetadata(getName(IMAGE_DESCRIPTION), id);
+		if (id.length()<7) return;
 		fi.description = id;
         int index1 = id.indexOf("images=");
         if (index1>0) {
@@ -195,6 +199,15 @@ public class TiffDecoder {
                 if (n>1) fi.nImages = n;
             }
         }
+	}
+
+	public void saveMetadata(String name, String data) {
+		if (data==null) return;
+        String str = name+": "+data+"\n";
+        if (tiffMetadata==null)
+        	tiffMetadata = str;
+        else
+        	tiffMetadata += str;
 	}
 
 	void decodeNIHImageHeader(int offset, FileInfo fi) throws IOException {
@@ -279,6 +292,13 @@ public class TiffDecoder {
 	}
 	
 	void dumpTag(int tag, int count, int value, FileInfo fi) {
+		String name = getName(tag);
+		String cs = (count==1)?"":", count=" + count;
+		dInfo += "    " + tag + ", \"" + name + "\", value=" + value + cs + "\n";
+		//ij.IJ.log(tag + ", \"" + name + "\", value=" + value + cs + "\n");
+	}
+
+	String getName(int tag) {
 		String name;
 		switch (tag) {
 			case NEW_SUBFILE_TYPE: name="NewSubfileType"; break;
@@ -297,6 +317,8 @@ public class TiffDecoder {
 			case RESOLUTION_UNIT: name="ResolutionUnit"; break;
 			case SOFTWARE: name="Software"; break;
 			case DATE_TIME: name="DateTime"; break;
+			case ARTEST: name="Artest"; break;
+			case HOST_COMPUTER: name="HostComputer"; break;
 			case PLANAR_CONFIGURATION: name="PlanarConfiguration"; break;
 			case COMPRESSION: name="Compression"; break; 
 			case PREDICTOR: name="Predictor"; break; 
@@ -308,9 +330,7 @@ public class TiffDecoder {
 			case META_DATA: name="MetaData"; break; 
 			default: name="???"; break;
 		}
-		String cs = (count==1)?"":", count=" + count;
-		dInfo += "    " + tag + ", \"" + name + "\", value=" + value + cs + "\n";
-		//ij.IJ.log(tag + ", \"" + name + "\", value=" + value + cs + "\n");
+		return name;
 	}
 
 	double getRational(int loc) throws IOException {
@@ -458,6 +478,13 @@ public class TiffDecoder {
 						fi.compression = FileInfo.COMPRESSION_UNKNOWN;
 						error("ImageJ cannot open TIFF files " +
 							"compressed in this fashion ("+value+")");
+					}
+					break;
+				case SOFTWARE: case DATE_TIME: case HOST_COMPUTER: case ARTEST:
+					if (ifdCount==1) {
+						byte[] bytes = getString(count, lvalue);
+						String s = bytes!=null?new String(bytes):null;
+						saveMetadata(getName(tag), s);
 					}
 					break;
 				case PREDICTOR:
@@ -710,6 +737,8 @@ public class TiffDecoder {
 				fi[0].inputStream = in;
 			} else
 				in.close();
+			if (fi[0].info==null)
+				fi[0].info = tiffMetadata;
 			return fi;
 		}
 	}

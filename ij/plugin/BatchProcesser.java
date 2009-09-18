@@ -3,13 +3,13 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
+import ij.io.OpenDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
 
-/** This plugin implements the File/Batch/Convert command, 
-	which converts the images in a folder to a specified format. */
+/** This plugin implements the File/Batch/Macro and File/Batch/Virtual Stack commands. */
 	public class BatchProcesser implements PlugIn, ActionListener, ItemListener, Runnable {
 		private static final String MACRO_FILE_NAME = "BatchMacro.ijm";
 		private static final String[] formats = {"TIFF", "8-bit TIFF", "JPEG", "GIF", "PNG", "PGM", "BMP", "FITS", "Text Image", "ZIP", "Raw"};
@@ -25,6 +25,7 @@ import java.util.Vector;
 			"Measure",
 			"Resize",
 			"Scale",
+			"Show File Info",
 			"Unsharp Mask",
 		};
 		private String macro = "";
@@ -33,8 +34,16 @@ import java.util.Vector;
 		private TextField inputDir, outputDir;
 		private GenericDialog gd;
 		private Thread thread;
+		private ImagePlus virtualStack;
 
 	public void run(String arg) {
+		if (arg.equals("stack")) {
+			virtualStack = IJ.getImage();
+			if (!virtualStack.getStack().isVirtual()) {
+				error("This command requires a virtual stack.");
+				return;
+			}
+		}
 		String macroPath = IJ.getDirectory("macros")+MACRO_FILE_NAME;
 		macro = IJ.openAsString(macroPath);
 		if (macro==null || macro.startsWith("Error: ")) {
@@ -42,16 +51,19 @@ import java.util.Vector;
 			macro = "";
 		}
 		if (!showDialog()) return;
-		String inputPath = inputDir.getText();
-		if (inputPath.equals("")) {
-			error("Please choose an input folder");
-			return;
-		}
-		inputPath = addSeparator(inputPath);
-		File f1 = new File(inputPath);
-		if (!f1.exists() || !f1.isDirectory()) {
-			error("Input does not exist or is not a folder\n \n"+inputPath);
-			return;
+		String inputPath = null;
+		if (virtualStack==null) {
+			inputPath = inputDir.getText();
+			if (inputPath.equals("")) {
+				error("Please choose an input folder");
+				return;
+			}
+			inputPath = addSeparator(inputPath);
+			File f1 = new File(inputPath);
+			if (!f1.exists() || !f1.isDirectory()) {
+				error("Input does not exist or is not a folder\n \n"+inputPath);
+				return;
+			}
 		}
 		String outputPath = outputDir.getText();
 		outputPath = addSeparator(outputPath);
@@ -64,39 +76,16 @@ import java.util.Vector;
 			error("There is no macro code in the text area");
 			return;
 		}
-		String[] list = (new File(inputPath)).list();
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) ij.getProgressBar().setBatchMode(true);
 		IJ.resetEscape();
-		for (int i=0; i<list.length; i++) {
-			if (IJ.escapePressed()) break;
-			String path = inputPath + list[i];
-			if (IJ.debugMode) IJ.log(i+": "+path);
-			if ((new File(path)).isDirectory())
-				continue;
-			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI"))
-				continue;
-			IJ.showProgress(i+1, list.length);
-			ImagePlus imp = IJ.openImage(path);
-			if (imp==null) continue;
-			if (!macro.equals("")) {
-				WindowManager.setTempCurrentImage(imp);
-				String str = IJ.runMacro(macro, "");
-				if (str!=null && str.equals("[aborted]")) break;
-			}
-			if (!outputPath.equals("")) {
-				if (format.equals("8-bit TIFF") || format.equals("GIF")) {
-					if (imp.getBitDepth()==24)
-						IJ.run(imp, "8-bit Color", "number=256");
-					else
-						IJ.run(imp, "8-bit", "");
-				}
-				IJ.saveAs(imp, format, outputPath+list[i]);
-			}
-			imp.close();
-		}
+		if (virtualStack!=null)
+			processVirtualStack(outputPath);
+		else
+			processFolder(inputPath, outputPath);
 		IJ.showProgress(1,1);
-		Prefs.set("batch.input", inputDir.getText());
+		if (virtualStack==null)
+			Prefs.set("batch.input", inputDir.getText());
 		Prefs.set("batch.output", outputDir.getText());
 		Prefs.set("batch.format", format);
 		macro = gd.getTextArea1().getText();
@@ -125,6 +114,74 @@ import java.util.Vector;
 		return !gd.wasCanceled();
 	}
 	
+	void processVirtualStack(String outputPath) {
+		ImageStack stack = virtualStack.getStack();
+		int n = stack.getSize();
+		for (int i=1; i<=n; i++) {
+			if (IJ.escapePressed()) break;
+			IJ.showProgress(i, n);
+			ImageProcessor ip = stack.getProcessor(i);
+			if (ip==null) return;
+			ImagePlus imp = new ImagePlus("", ip);
+			if (!macro.equals("")) {
+				WindowManager.setTempCurrentImage(imp);
+				String str = IJ.runMacro(macro, "");
+				if (str!=null && str.equals("[aborted]")) break;
+			}
+			if (!outputPath.equals("")) {
+				if (format.equals("8-bit TIFF") || format.equals("GIF")) {
+					if (imp.getBitDepth()==24)
+						IJ.run(imp, "8-bit Color", "number=256");
+					else
+						IJ.run(imp, "8-bit", "");
+				}
+				IJ.saveAs(imp, format, outputPath+pad(i));
+			}
+			imp.close();
+		}
+		IJ.run("Image Sequence...", "open=[" + outputPath + "]"+" use");
+	}
+	
+	String pad(int n) {
+		String str = ""+n;
+		while (str.length()<5)
+		str = "0" + str;
+		return str;
+	}
+
+	
+	void processFolder(String inputPath, String outputPath) {
+		String[] list = (new File(inputPath)).list();
+		int index = 0;
+		for (int i=0; i<list.length; i++) {
+			if (IJ.escapePressed()) break;
+			String path = inputPath + list[i];
+			if (IJ.debugMode) IJ.log(i+": "+path);
+			if ((new File(path)).isDirectory())
+				continue;
+			if (list[i].startsWith(".")||list[i].endsWith(".avi")||list[i].endsWith(".AVI"))
+				continue;
+			IJ.showProgress(i+1, list.length);
+			ImagePlus imp = IJ.openImage(path);
+			if (imp==null) continue;
+			if (!macro.equals("")) {
+				WindowManager.setTempCurrentImage(imp);
+				String str = IJ.runMacro("i="+(index++)+";"+macro, "");
+				if (str!=null && str.equals("[aborted]")) break;
+			}
+			if (!outputPath.equals("")) {
+				if (format.equals("8-bit TIFF") || format.equals("GIF")) {
+					if (imp.getBitDepth()==24)
+						IJ.run(imp, "8-bit Color", "number=256");
+					else
+						IJ.run(imp, "8-bit", "");
+				}
+				IJ.saveAs(imp, format, outputPath+list[i]);
+			}
+			imp.close();
+		}
+	}
+	
 	String addSeparator(String path) {
 		if (path.equals("")) return path;
 		if (!(path.endsWith("/")||path.endsWith("\\")))
@@ -146,12 +203,14 @@ import java.util.Vector;
 	void addPanels(GenericDialog gd) {
 		Panel p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		input = new Button("Input...");
-		input.addActionListener(this);
-		p.add(input);
-		inputDir = new TextField(Prefs.get("batch.input", ""), 45);
-		p.add(inputDir);
-		gd.addPanel(p);
+		if (virtualStack==null) {
+			input = new Button("Input...");
+			input.addActionListener(this);
+			p.add(input);
+			inputDir = new TextField(Prefs.get("batch.input", ""), 45);
+			p.add(inputDir);
+			gd.addPanel(p);
+		}
 		p = new Panel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		output = new Button("Output...");
@@ -201,6 +260,8 @@ import java.util.Vector;
 			code = "run(\"Gaussian Blur...\", \"sigma=2\");\n";
 		else if (item.equals("Unsharp Mask"))
 			code = "run(\"Unsharp Mask...\", \"radius=1 mask=0.60\");\n";
+		else if (item.equals("Show File Info"))
+			code = "path=File.directory+File.name;\ndate=File.dateLastModified(path);\nsize=File.length(path);\nprint(i+\", \"+getTitle+\", \"+date+\", \"+size);\n";
 		if (code!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());
@@ -259,22 +320,17 @@ import java.util.Vector;
 		TextArea ta = gd.getTextArea1();
 		//ta.selectAll();
 		String macro = ta.getText();
-		String inputPath = inputDir.getText();
-		inputPath = addSeparator(inputPath);
-		File f1 = new File(inputPath);
-		if (!f1.exists() || !f1.isDirectory()) {
-			error("Input does not exist or is not a folder\n \n"+inputPath);
-			return;
-		}
 		if (macro.equals("")) {
 			error("There is no macro code in the text area");
 			return;
 		}
-		String[] list = (new File(inputPath)).list();
-		String name = list[0];
-		if (name.startsWith(".")&&list.length>1) name = list[1];
-		String path = inputPath + name;
-		ImagePlus imp = IJ.openImage(path);
+		ImagePlus imp = null;
+		if (virtualStack!=null)
+			imp = getVirtualStackImage();
+		else {
+			imp = getFolderImage();
+			macro = "i=0; " + macro;
+		}
 		if (imp==null) return;
 		WindowManager.setTempCurrentImage(imp);
 		String str = IJ.runMacro(macro, "");
@@ -293,5 +349,34 @@ import java.util.Vector;
 		if (iw!=null) iw.setLocation(loc);
 		testImage = imp.getID();
 	}
+	
+	ImagePlus getVirtualStackImage() {
+		ImagePlus imp = virtualStack.createImagePlus();
+		imp.setProcessor("", virtualStack.getProcessor().duplicate());
+		return imp;
+	}
+
+	ImagePlus getFolderImage() {
+		String inputPath = inputDir.getText();
+		inputPath = addSeparator(inputPath);
+		File f1 = new File(inputPath);
+		if (!f1.exists() || !f1.isDirectory()) {
+			error("Input does not exist or is not a folder\n \n"+inputPath);
+			return null;
+		}
+		String[] list = (new File(inputPath)).list();
+		String name = list[0];
+		if (name.startsWith(".")&&list.length>1) name = list[1];
+		String path = inputPath + name;
+		setDirAndName(path);
+		return IJ.openImage(path);
+	}
+	
+	void setDirAndName(String path) {
+		File f = new File(path);
+		OpenDialog.setLastDirectory(f.getParent()+File.separator);
+		OpenDialog.setLastName(f.getName());
+	}
+
 
 }

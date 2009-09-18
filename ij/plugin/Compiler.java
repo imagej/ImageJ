@@ -165,8 +165,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	 	boolean okay;
 		String fileName, directory;
 	 	if (path.equals("")) {
-			if (dir==null)
-				dir = Prefs.getHomeDir();
+			if (dir==null) dir = IJ.getDirectory("plugins");
 			OpenDialog od = new OpenDialog(msg, dir, name);
 			directory = od.getDirectory();
 			fileName = od.getFileName();
@@ -271,13 +270,7 @@ class PlugInExecuter implements Runnable {
 			String msg = e.getMessage();
 			if (e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED))
 				return;
-			CharArrayWriter caw = new CharArrayWriter();
-			PrintWriter pw = new PrintWriter(caw);
-			e.printStackTrace(pw);
-			String s = caw.toString();
-			if (IJ.isMacintosh())
-				s = Tools.fixNewLines(s);
-			new TextWindow("Exception", s, 350, 250);
+			IJ.handleException(e);
 		}
 	}
 
