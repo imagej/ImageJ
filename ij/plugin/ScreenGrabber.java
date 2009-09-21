@@ -51,8 +51,10 @@ public class ScreenGrabber implements PlugIn {
 			Rectangle r = new Rectangle(loc.x, loc.y, bounds.width, bounds.height);
 			Robot robot = new Robot();
 			Image img = robot.createScreenCapture(r);
-			if (img!=null)
-				imp2 = new ImagePlus("Grab of "+imp.getTitle(), img);
+			if (img!=null) {
+				String title = WindowManager.getUniqueName(imp.getTitle());
+				imp2 = new ImagePlus(title, img);
+			}
 		} catch(Exception e) {}
 		return imp2;
 	}

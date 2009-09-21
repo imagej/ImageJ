@@ -1439,6 +1439,8 @@ public abstract class ImageProcessor extends Object {
 
 	public abstract void setf(int index, float value);
 
+	/** Returns a copy of the pixel data as a 2D int array
+		with dimensions [x=0..width-1][y=0..height-1]. */
 	public int[][] getIntArray() {
 		int[][] a = new int [width][height];
 		for(int y=0; y<height; y++) {
@@ -1448,6 +1450,7 @@ public abstract class ImageProcessor extends Object {
 		return a; 
 	}
 
+	/** Replaces the pixel data with contents of the specified 2D int array. */
 	public void setIntArray(int[][] a) {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++)
@@ -1455,6 +1458,8 @@ public abstract class ImageProcessor extends Object {
 		}
 	}
 
+	/** Returns a copy of the pixel data as a 2D float 
+		array with dimensions [x=0..width-1][y=0..height-1]. */
 	public float[][] getFloatArray() {
 		float[][] a = new float[width][height];
 		for(int y=0; y<height; y++) {
@@ -1464,6 +1469,7 @@ public abstract class ImageProcessor extends Object {
 		return a; 
 	}
 
+	/** Replaces the pixel data with contents of the specified 2D float array. */
 	public void setFloatArray(float[][] a) {
 		for(int y=0; y<height; y++) {
 			for(int x=0; x<width; x++)
