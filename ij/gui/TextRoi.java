@@ -297,7 +297,8 @@ public class TextRoi extends Roi {
 			text += theText[i];
 			if (theText[i+1]!=null) text += "\\n";
 		}
-		code += "drawString(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
+		code += "makeText(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
+		code += "//drawString(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
 		return (code);
 	}
 	

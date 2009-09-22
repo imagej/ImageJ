@@ -859,6 +859,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		ic.setShowAllROIs(false);
 		ic.setDisplayList(displayList);
+		if (Recorder.record) Recorder.record("roiManager", "Draw as Overlay");
 	}
 
 	void removeOverlay() {
@@ -867,6 +868,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
 		ic.setDisplayList(null);
+		if (Recorder.record) Recorder.record("roiManager", "Remove Overlay");
 	}
 
 	void combine() {
@@ -1172,8 +1174,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Fill", "Deselect", "Select All", "Combine", "Split", "Sort" or "Multi Measure" command. 
-		Returns false if <code>cmd</code>  is not one of these strings. */
+		"Draw as Overlay", Remove Overlay", "Fill", "Deselect", "Select All", "Combine", "Split",
+		"Sort" or "Multi Measure" command.  Returns false if <code>cmd</code>
+		is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
 		macro = true;
@@ -1192,6 +1195,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			measure(COMMAND);
 		else if (cmd.equals("draw"))
 			drawOrFill(DRAW);
+		else if (cmd.equals("draw as overlay"))
+			drawAsOverlay();
+		else if (cmd.equals("remove overlay"))
+			removeOverlay();
 		else if (cmd.equals("fill"))
 			drawOrFill(FILL);
 		else if (cmd.equals("label"))

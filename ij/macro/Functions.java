@@ -160,6 +160,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_DIMENSIONS: getDimensions(); break;
 			case WAIT_FOR_USER: waitForUser(); break;
 			case MAKE_POINT: makePoint(); break;
+			case MAKE_TEXT: makeText(); break;
 		}
 	}
 	
@@ -4052,6 +4053,17 @@ public class Functions implements MacroConstants, Measurements {
 		int y = (int)getLastArg();
 		IJ.makePoint(x, y);
 		resetImage(); 
+	}
+
+	void makeText() {
+		String text = getFirstString();
+		int x = (int)getNextArg();
+		int y = (int)getLastArg();
+		ImagePlus imp = getImage();
+		Font font = this.font;
+		if (font==null) font = imp.getProcessor().getFont();
+		Roi roi = new TextRoi(x, y, text, font);
+		imp.setRoi(roi);
 	}
 
 	double fit() {

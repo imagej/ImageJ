@@ -1576,6 +1576,7 @@ public class IJ {
 				GraphicsDevice[] gd = ge.getScreenDevices();
 				GraphicsConfiguration[] gc = gd[0].getConfigurations();
 				Rectangle bounds = gc[0].getBounds();
+				//System.out.println("getScreenSize: "+bounds);
 				if (bounds.x==0&&bounds.y==0)
 					screenSize = new Dimension(bounds.width, bounds.height);
 				else
