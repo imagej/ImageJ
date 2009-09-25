@@ -2128,7 +2128,8 @@ public class Functions implements MacroConstants, Measurements {
 		String path = null;
 		int index=0;
 		double countOrIndex=Double.NaN;
-		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename");
+		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
+			||cmd.equals("set color")||cmd.equals("set line width");
 		boolean select = cmd.equals("select");
 		if (twoArgCommand)
 			path = getLastString();
@@ -4238,6 +4239,8 @@ public class Functions implements MacroConstants, Measurements {
 			return getArrayStatistics();
 		else if (name.equals("fill"))
 			return fillArray();
+		else if (name.equals("invert"))
+			return invertArray();
 		else
 			interp.error("Unrecognized Stack function");
 		return null;
@@ -4344,6 +4347,19 @@ public class Functions implements MacroConstants, Measurements {
 		double v = getLastArg();
 		for (int i=0; i<a.length; i++)
 			a[i].setValue(v);
+		return a;
+	}
+	
+	Variable[] invertArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getRightParen();
+		int n = a.length;
+		for (int i=0; i<n/2; i++) {
+			Variable temp = a[i];
+			a[i] = a[n-i-1];
+			a[n-i-1] = temp;
+		}
 		return a;
 	}
 	

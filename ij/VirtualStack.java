@@ -1,6 +1,7 @@
 package ij;
 import ij.process.*;
 import ij.io.*;
+import java.io.*;
 import java.awt.image.ColorModel;
 
 /** This class represents an array of disk-resident images. */
@@ -97,8 +98,11 @@ public class VirtualStack extends ImageStack {
 			int type = imp.getType();
 			ColorModel cm = imp.getProcessor().getColorModel();
 			labels[n-1] = (String)imp.getProperty("Info");
-		} else
-			return null;
+		} else {
+			File f = new File(path, names[n-1]);
+			String msg = f.exists()?"error opening ":"file not found: ";
+			throw new RuntimeException(msg+path+names[n-1]);
+		}
 		ImageProcessor ip = imp.getProcessor();
 		if (imp.getBitDepth()!=bitDepth) {
 			switch (bitDepth) {

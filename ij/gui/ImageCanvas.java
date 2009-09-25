@@ -3,7 +3,7 @@ package ij.gui;
 import java.awt.*;
 import java.util.Properties;
 import java.awt.image.*;
-import ij.process.ImageProcessor;
+import ij.process.*;
 import ij.measure.*;
 import ij.plugin.WandToolOptions;
 import ij.plugin.frame.Recorder;
@@ -13,6 +13,8 @@ import ij.*;
 import ij.util.*;
 import java.awt.event.*;
 import java.util.*;
+import java.awt.geom.*;
+
 
 /** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
@@ -216,13 +218,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     	int type = roi.getType();
     	if (type==Roi.COMPOSITE||type==Roi.POINT||(roi instanceof TextRoi)) {
 			roi.setImage(imp);
-			Color c = roi.getColor();
-			if (index==-1 && listColor!=null)
-				roi.setColor(listColor);
-			else
-				roi.setColor(showAllColor);
+			Color saveColor = roi.getInstanceColor();
+			if (index>0)
+				roi.setInstanceColor(showAllColor);
+			else if (listColor!=null)
+				roi.setInstanceColor(listColor);
 			roi.draw(g);
-			roi.setColor(c);
+			roi.setInstanceColor(saveColor);
 			if (index>=0) {
 				g.setColor(showAllColor);
 				drawRoiLabel(g, index, roi.getBounds());
@@ -234,20 +236,45 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				saveg = g.getColor();
 				g.setColor(c);
 			}
-			Polygon p = roi.getPolygon();
-			int x1=0, y1=0, x2=0, y2=0;
-			for (int j=0; j<p.npoints; j++) {
-				x2 = screenX(p.xpoints[j]);
-				y2 = screenY(p.ypoints[j]);
-				if (j>0) g.drawLine(x1, y1, x2, y2);
-				x1=x2; y1=y2;
+			GeneralPath path = new GeneralPath();
+			if (roi.getType()==Roi.OVAL) {
+				double mag = getMagnification();
+				Rectangle r = roi.getBounds();
+				float sw = (float)(r.width*mag);
+				float sh = (float)(r.height*mag);
+				float sx = screenX(r.x);
+				float sy = screenY(r.y);
+				path.append(new Ellipse2D.Float(sx, sy, sw, sh), false);
+			} else if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).isSplineFit()) {
+				FloatPolygon p = roi.getFloatPolygon();
+				path.moveTo(screenXD(p.xpoints[0]), screenYD(p.ypoints[0]));
+				for (int j=1; j<p.npoints; j++)
+					path.lineTo(screenXD(p.xpoints[j]), screenYD(p.ypoints[j]));
+				if (roi.isArea()&&p.npoints>0)
+					path.lineTo(screenXD(p.xpoints[0]), screenYD(p.ypoints[0]));
+			} else {
+				Polygon p = roi.getPolygon();
+				path.moveTo(screenX(p.xpoints[0]), screenY(p.ypoints[0]));
+				for (int j=1; j<p.npoints; j++)
+					path.lineTo(screenX(p.xpoints[j]), screenY(p.ypoints[j]));
+				if (roi.isArea()&&p.npoints>0)
+					path.lineTo(screenX(p.xpoints[0]), screenY(p.ypoints[0]));
 			}
-			if (roi.isArea()&&p.npoints>0) {
-				int x0 = screenX(p.xpoints[0]);
-				int y0 = screenY(p.ypoints[0]);
-				g.drawLine(x1, y1, x0, y0);
+			Graphics2D g2d = (Graphics2D)g;
+			BasicStroke stroke = roi.getStroke();
+			Stroke saveStroke = null;
+			if (stroke!=null) {
+				saveStroke = g2d.getStroke();
+				g2d.setStroke(stroke);
 			}
-			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
+			if (index==-1)
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2d.draw(path);
+			if (saveStroke!=null) g2d.setStroke(saveStroke);
+			if (index>=0)
+				drawRoiLabel(g, index, roi.getBounds());
+			else
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 			if (saveg!=null) g.setColor(saveg);
 		}
     }

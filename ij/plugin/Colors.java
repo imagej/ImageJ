@@ -10,7 +10,7 @@ import java.util.Vector;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
-	private String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
+	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
@@ -67,7 +67,7 @@ public class Colors implements PlugIn, ItemListener {
 		}
 	}
 	
-	String getColorName(Color c, String defaultName) {
+	public static String getColorName(Color c, String defaultName) {
 		String name = defaultName;
 		if (c.equals(Color.red)) name = colors[0];
 		else if (c.equals(Color.green)) name = colors[1];
@@ -81,7 +81,7 @@ public class Colors implements PlugIn, ItemListener {
 		return name;
 	}
 	
-	Color getColor(String name, Color defaultColor) {
+	public static Color getColor(String name, Color defaultColor) {
 		Color c = defaultColor;
 		if (name.equals(colors[0])) c = Color.red;
 		else if (name.equals(colors[1])) c = Color.green;

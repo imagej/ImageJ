@@ -152,7 +152,7 @@ hyperstacks05="Channels Tool...[Z]",ij.plugin.frame.Channels
 # Plugins installed in the Image/Transform submenu
 transform01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")
 transform02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
-transform03="Flip Stack",ij.plugin.StackReverser
+transform03="Flip Z",ij.plugin.StackReverser
 transform04="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 transform05="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
 transform06="Rotate...",ij.plugin.filter.Rotator

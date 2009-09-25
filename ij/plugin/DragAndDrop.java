@@ -33,42 +33,43 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 	    
 	public void drop(DropTargetDropEvent dtde)  {
 		dtde.acceptDrop(DnDConstants.ACTION_COPY);
+		DataFlavor[] flavors = null;
 		try  {
 			Transferable t = dtde.getTransferable();
 			iterator = null;
-			DataFlavor[] flavors = t.getTransferDataFlavors();
+			flavors = t.getTransferDataFlavors();
 			if (IJ.debugMode) IJ.log("DragAndDrop.drop: "+flavors.length+" flavors");
 			for (int i=0; i<flavors.length; i++) {
-				if (IJ.debugMode) IJ.log("  flavor["+i+"]: "+flavors[i].getMimeType());
-				if (flavors[i].isFlavorJavaFileListType()) {
-					Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
-					iterator = ((List)data).iterator();
+			if (IJ.debugMode) IJ.log("  flavor["+i+"]: "+flavors[i].getMimeType());
+			if (flavors[i].isFlavorJavaFileListType()) {
+				Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
+				iterator = ((List)data).iterator();
+				break;
+			} else if (flavors[i].isFlavorTextType()) {
+				Object ob = t.getTransferData(flavors[i]);
+				if (!(ob instanceof String)) continue;
+				String s = ob.toString().trim();
+				if (IJ.isLinux() && s.length()>1 && (int)s.charAt(1)==0)
+				s = fixLinuxString(s);
+				ArrayList list = new ArrayList();
+				if (s.indexOf("href=\"")!=-1 || s.indexOf("src=\"")!=-1) {
+					s = parseHTML(s);
+					if (IJ.debugMode) IJ.log("  url: "+s);
+					list.add(s);
+					this.iterator = list.iterator();
 					break;
-				} else if (flavors[i].isFlavorTextType()) {
-					Object ob = t.getTransferData(flavors[i]);
-					if (!(ob instanceof String)) continue;
-					String s = ob.toString().trim();
-					if (IJ.isLinux() && s.length()>1 && (int)s.charAt(1)==0)
-						s = fixLinuxString(s);
-					ArrayList list = new ArrayList();
-					if (s.indexOf("href=\"")!=-1 || s.indexOf("src=\"")!=-1) {
-						s = parseHTML(s);
-						if (IJ.debugMode) IJ.log("  url: "+s);
+				}
+				BufferedReader br = new BufferedReader(new StringReader(s));
+				String tmp;
+				while (null != (tmp = br.readLine())) {
+					tmp = java.net.URLDecoder.decode(tmp, "UTF-8");
+					if (tmp.startsWith("file://")) tmp = tmp.substring(7);
+					if (IJ.debugMode) IJ.log("  content: "+tmp);
+					if (tmp.startsWith("http://"))
 						list.add(s);
-						this.iterator = list.iterator();
-						break;
+					else
+						list.add(new File(tmp));
 					}
-					BufferedReader br = new BufferedReader(new StringReader(s));
-					String tmp;
-					while (null != (tmp = br.readLine())) {
-						tmp = java.net.URLDecoder.decode(tmp, "UTF-8");
-						if (tmp.startsWith("file://")) tmp = tmp.substring(7);
-						if (IJ.debugMode) IJ.log("  content: "+tmp);
-						if (tmp.startsWith("http://"))
-							list.add(s);
-						else
-							list.add(new File(tmp));
-                     }
 					this.iterator = list.iterator();
 					break;
 				}
@@ -80,11 +81,13 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			}
 		}
 		catch(Exception e)  {
-			    dtde.dropComplete(false);
-			    return;
+			dtde.dropComplete(false);
+			return;
 		}
 		dtde.dropComplete(true);
-	    }
+		if (flavors==null || flavors.length==0)
+			IJ.error("Drag and Drop ignored. Please try again.");
+	}
 	    
 	    private String fixLinuxString(String s) {
 	    	StringBuffer sb = new StringBuffer(200);

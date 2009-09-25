@@ -10,13 +10,13 @@ import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
+import ij.plugin.Colors;
 import ij.util.*;
 import ij.macro.*;
 import ij.measure.*;
 
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener {
-
 	public static final String LOC_KEY = "manager.loc";
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
@@ -26,6 +26,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	static String moreButtonLabel = "More "+'\u00bb';
 	Panel panel;
 	static Frame instance;
+	static int colorIndex;
 	java.awt.List list;
 	Hashtable rois = new Hashtable();
 	Roi roiCopy;
@@ -110,6 +111,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Draw");
 		addPopupItem("Fill");
 		addPopupItem("Label");
+		pm.addSeparator();
+		addPopupItem("Set Color and Width...");
 		addPopupItem("Draw As Overlay");
 		addPopupItem("Remove Overlay");
 		pm.addSeparator();
@@ -163,8 +166,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawOrFill(FILL);
 		else if (command.equals("Label"))
 			drawOrFill(LABEL);
+		else if (command.equals("Set Color and Width..."))
+			setColorAndLineWidth(null, 0);
 		else if (command.equals("Draw As Overlay"))
-			drawAsOverlay();
+			drawAsOverlay(null);
 		else if (command.equals("Remove Overlay"))
 			removeOverlay();
 		else if (command.equals("Deselect"))
@@ -840,14 +845,61 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return true;
 	}
 
-	void drawAsOverlay() {
+	void setColorAndLineWidth(Color color, int lineWidth) {
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+        if (indexes.length==0) return;
+        if (color==null && lineWidth==0) {
+			String label = list.getItem(indexes[0]);
+			Roi roi = (Roi)rois.get(label);
+			BasicStroke stroke = roi.getStroke();
+			if (stroke!=null)
+				lineWidth = (int)stroke.getLineWidth();
+			if (lineWidth==0) lineWidth = 1;
+			GenericDialog gd = new GenericDialog("Set Color and Width");
+			gd.addChoice("Color:", Colors.colors, Colors.colors[colorIndex]);
+			gd.addNumericField("Line Width: ", lineWidth, 0);
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			colorIndex = gd.getNextChoiceIndex();
+			lineWidth = (int)gd.getNextNumber();
+			color = Colors.getColor(Colors.colors[colorIndex], Toolbar.getForegroundColor());
+		}
+		for (int i=0; i<indexes.length; i++) {
+			String label = list.getItem(indexes[i]);
+			Roi roi = (Roi)rois.get(label);
+			if (color!=null) roi.setInstanceColor(color);
+			if (lineWidth!=0) roi.setLineWidth(lineWidth);
+		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		ImageCanvas ic = imp!=null?imp.getCanvas():null;
+		if (ic!=null && ic.getDisplayList()!=null) {
+			Vector displayList = ic.getDisplayList();
+			int[] indexes2 = null;
+			if (displayList.size()!=indexes.length) {
+				indexes2 = getAllIndexes();
+				if (displayList.size()!=indexes2.length) indexes2 = null;
+			}
+			drawAsOverlay(indexes2);
+			if (Recorder.record) {
+				Recorder.record("roiManager", "Set Color", Colors.getColorName(color, "red"));
+				Recorder.record("roiManager", "Set Line Width", lineWidth);
+			}
+		}
+	}
+	
+	void drawAsOverlay(int[] indexes) {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
-		int[] indexes = list.getSelectedIndexes();
-		if (indexes.length==0)
-			indexes = getAllIndexes();
+		imp.killRoi();
+		if (indexes==null) {
+			indexes = list.getSelectedIndexes();
+			if (indexes.length==0)
+				indexes = getAllIndexes();
+		}
 		Color color = Toolbar.getForegroundColor();
 		Vector displayList = new Vector();
 		for (int i=0; i<indexes.length; i++) {
@@ -1196,7 +1248,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("draw"))
 			drawOrFill(DRAW);
 		else if (cmd.equals("draw as overlay"))
-			drawAsOverlay();
+			drawAsOverlay(null);
 		else if (cmd.equals("remove overlay"))
 			removeOverlay();
 		else if (cmd.equals("fill"))
@@ -1214,6 +1266,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
+			IJ.wait(50);
 		} else if (cmd.equals("reset")) {
 			if (IJ.isMacOSX() && IJ.isMacro())
 				ignoreInterrupts = true;
@@ -1253,6 +1306,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return ok;
 		} else if (cmd.equals("rename")) {
 			rename(name);
+			macro = false;
+			return true;
+		} else if (cmd.equals("set color")) {
+			Color color = Colors.getColor(name, Toolbar.getForegroundColor());
+			setColorAndLineWidth(color, 0);
+			macro = false;
+			return true;
+		} else if (cmd.equals("set line width")) {
+			int lineWidth = (int)Tools.parseDouble(name, 0);
+			if (lineWidth!=0) setColorAndLineWidth(null, lineWidth);
 			macro = false;
 			return true;
 		}

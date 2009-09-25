@@ -1039,6 +1039,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void setStroke(BasicStroke stroke) {
 		this.stroke = stroke;
 	}
+	
+	/** Gets the Stroke used to draw composite ROIs. */
+	public BasicStroke getStroke() {
+		return stroke;
+	}
 
 	/** Returns the name of this ROI, or null. */
 	public String getName() {

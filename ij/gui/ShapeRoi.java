@@ -75,6 +75,7 @@ public class ShapeRoi extends Roi {
 	private boolean forceAngle = false;
 	
 	private Vector savedRois;
+	private static Stroke defaultStroke = new BasicStroke();
 
 
 	/** Constructs a ShapeRoi from an Roi. */
@@ -1056,6 +1057,7 @@ public class ShapeRoi extends Roi {
 		if (imp!=null&&imp.getRoi()!=null) showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
+		if (stroke!=null) ((Graphics2D)g).setStroke(defaultStroke);
 	}
 
 	public void drawRoiBrush(Graphics g) {

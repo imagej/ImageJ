@@ -2,17 +2,17 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 
-/** Implements the Image/Transform/Flip Stack command. */
+/** Implements the Image/Transform/Flip Z command. */
 public class StackReverser implements PlugIn {
 	
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		if (imp.getStackSize()==1) {
-			IJ.error("Flip Stack", "This command requires a stack");
+			IJ.error("Flip Z", "This command requires a stack");
 			return;
 		}
 		if (imp.isHyperStack()) {
-			IJ.error("Flip Stack", "The command does not currently work with hyperstacks.");
+			IJ.error("Flip Z", "The command does not currently work with hyperstacks.");
 			return;
 		}
 		flipStack(imp);
