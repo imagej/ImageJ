@@ -400,6 +400,7 @@ public class PolygonRoi extends Roi {
 		int handleSize = type==POINT?HANDLE_SIZE+8:HANDLE_SIZE;
 		if (handleSize<lineWidth && isLine()) handleSize= lineWidth;
 		int m = mag<1.0?(int)(handleSize/mag):handleSize;
+		m += getLineWidth();
 		imp.draw(xmin2-m, ymin2-m, xmax2-xmin2+m*2, ymax2-ymin2+m*2);
 	}
 

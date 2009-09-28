@@ -158,6 +158,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		initGraphics(g, null);
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
+		boolean drawLabels = rm.getDrawLabels();
 		int n = list.getItemCount();
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
@@ -168,9 +169,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
 				int slice = getSliceNumber(roi.getName());
 				if (slice==-1 || slice==imp.getCurrentSlice())
-					drawRoi(g, roi, i);
+					drawRoi(g, roi, drawLabels?i:-1);
 			} else
-				drawRoi(g, roi, i);
+				drawRoi(g, roi, drawLabels?i:-1);
 		}
     }
     
@@ -219,18 +220,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     	if (type==Roi.COMPOSITE||type==Roi.POINT||(roi instanceof TextRoi)) {
 			roi.setImage(imp);
 			Color saveColor = roi.getInstanceColor();
-			if (index>0)
-				roi.setInstanceColor(showAllColor);
-			else if (listColor!=null)
-				roi.setInstanceColor(listColor);
+			if (saveColor==null) {
+				if (index>=0 || listColor==null)
+					roi.setInstanceColor(showAllColor);
+				else
+					roi.setInstanceColor(listColor);
+			}
 			roi.draw(g);
 			roi.setInstanceColor(saveColor);
+			//roi.setImage(null);
 			if (index>=0) {
 				g.setColor(showAllColor);
 				drawRoiLabel(g, index, roi.getBounds());
 			}
 		} else {
-			Color c = index==-1?roi.getInstanceColor():null;
+			Color c = roi.getInstanceColor();
 			Color saveg = null;
 			if (c!=null) {
 				saveg = g.getColor();
@@ -271,11 +275,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.draw(path);
 			if (saveStroke!=null) g2d.setStroke(saveStroke);
+			if (saveg!=null) g.setColor(saveg);
 			if (index>=0)
 				drawRoiLabel(g, index, roi.getBounds());
 			else
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-			if (saveg!=null) g.setColor(saveg);
 		}
     }
     
@@ -1131,7 +1135,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public boolean getShowAllROIs() {
 		return showAllROIs;
 	}
-	
+
 	/** Returns the color used for "Show All" mode. */
 	public static Color getShowAllColor() {
 			return showAllColor;
@@ -1149,10 +1153,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
-	/** Installs a list of ROIs ("display list") that will be drawn as an overly on this image.
+	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
 	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setLineWidth
 	 * @see ij.gui.Roi#setLocation
 	 * @see ij.gui.Roi#setNonScalable
+	 * @see ij.gui.TextRoi#setBackgroundColor
 	 */
 	public void setDisplayList(Vector list) {
 		displayList = list;
@@ -1167,9 +1173,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Creates a single ShapeRoi display list from the specified 
 	 * Shape, Color and BasicStroke, and activates it.
+	 * @see #setDisplayList(Vector)
 	 * @see ij.gui.Roi#setInstanceColor
 	 * @see ij.gui.Roi#setLineWidth
-	 * @see ij.gui.Roi#setStroke
 	 */
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
@@ -1186,7 +1192,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	/** Creates a single ROI display list from the specified 
-		ROI and Color, and activates it. */
+		ROI and Color, and activates it.
+	 * @see #setDisplayList(Vector)
+	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setLineWidth
+	 * @see ij.gui.TextRoi#setBackgroundColor
+	 */
 	public void setDisplayList(Roi roi, Color color) {
 		roi.setInstanceColor(color);
 		Vector list = new Vector();

@@ -86,7 +86,9 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		}
 		dtde.dropComplete(true);
 		if (flavors==null || flavors.length==0)
-			IJ.error("Drag and Drop ignored. Please try again.");
+			IJ.error("Drag and Drop ignored. Please try again. You can avoid\n"
+			+"this problem, which occurs the first time a file is dropped,\n"
+			+"by dragging to the toolbar instead of the status bar.");
 	}
 	    
 	    private String fixLinuxString(String s) {

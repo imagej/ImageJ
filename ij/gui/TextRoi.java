@@ -14,14 +14,15 @@ public class TextRoi extends Roi {
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
 	private static int size = 18;
-	private static Font font;
-	private Font instanceFont;
+	private Font instanceFont, globalFont;
+	private static boolean newFont = true;
 	private static boolean antialiasedText = true;
 	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
+	private Color backgroundColor;
 
 	/** Creates a new TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -40,7 +41,6 @@ public class TextRoi extends Roi {
 		for (int i=0; i<count; i++)
 			theText[i] = lines[i];
 		instanceFont = font;
-		font = null;
 		firstChar = false;
 		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
 	}
@@ -92,11 +92,11 @@ public class TextRoi extends Roi {
 			// newline
 			if (cline<(MAX_LINES-1)) cline++;
 			theText[cline] = "";
-			adjustSize();
+			adjustSize(true);
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
-			adjustSize();
+			adjustSize(true);
 			updateClipRect();
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
 			firstChar = false;
@@ -112,11 +112,12 @@ public class TextRoi extends Roi {
 			else
 				return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
 		}
-		if (font==null || mag!=previousMag) {
-			font = new Font(name, style, (int)(size*mag));
+		if (newFont || mag!=previousMag) {
+			globalFont = new Font(name, style, (int)(size*mag));
 			previousMag = mag;
+			newFont = false;
 		}
-		return font;
+		return globalFont;
 	}
 	
 	/** Renders the text on the image. */
@@ -149,19 +150,26 @@ public class TextRoi extends Roi {
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
 		Java2.setAntialiasedText(g, antialiasedText);
-		if (font==null && interactive)
-			adjustSize();
+		if (newFont) 
+			adjustSize(true);
 		Font font = getCurrentFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
 		g.setFont(font);
 		Rectangle r = null;
-		if (interactive) {
-			r = g.getClipBounds();
-			g.setClip(sx, sy, swidth, sheight);
-		}
+		//if (interactive) {
+		r = g.getClipBounds();
+		g.setClip(sx, sy, swidth, sheight);
+		//}
 		int i = 0;
+		if (backgroundColor!=null) {
+			adjustSize(false);
+			Color c = g.getColor();
+			g.setColor(backgroundColor);
+			g.fillRect(x-5, y-5, x+width, y+height);
+			g.setColor(c);
+		}
 		while (i<MAX_LINES && theText[i]!=null) {
 			g.drawString(theText[i], sx, sy+fontHeight-descent);
 			i++;
@@ -197,20 +205,22 @@ public class TextRoi extends Roi {
 		return antialiasedText;
 	}
 
-	/** Sets the font face, size and style. */
+	/** Sets the global font face, size and style that will be used by
+		TextROIs interactively created using the text tool. */
 	public static void setFont(String fontName, int fontSize, int fontStyle) {
 		recordSetFont = true;
 		setFont(fontName, fontSize, fontStyle, true);
 	}
 	
-	/** Sets the font face, size, style and antialiasing mode. */
+	/** Sets the font face, size, style and antialiasing mode that will 
+		be used by TextROIs interactively created using the text tool. */
 	public static void setFont(String fontName, int fontSize, int fontStyle, boolean antialiased) {
 		recordSetFont = true;
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
 		antialiasedText = antialiased;
-		font = null;
+		newFont = true;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
@@ -219,10 +229,18 @@ public class TextRoi extends Roi {
 		}
 	}
 
+	/** Sets the background color used to draw this TextRoi when it is part of a display list.
+	 * @see ij.gui.ImageCanvas#setDisplayList(Vector)
+	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 */
+	public void setBackgroundColor(Color color) {
+		backgroundColor = color;
+	}
+
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (firstMouseUp) {
-			adjustSize();
+			adjustSize(true);
 			firstMouseUp = false;
 		} else {
 			if (width<5 || height<5)
@@ -232,12 +250,14 @@ public class TextRoi extends Roi {
 	
 	/** Increases the size of the rectangle so it's large
 		enough to hold the text. */ 
-	void adjustSize() {
+	void adjustSize(boolean draw) {
 		if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
 		if (ic==null)
 			return;
 		double mag = ic.getMagnification();
+		if (!draw && nonScalable) mag = 1.0;
 		Font font = getCurrentFont();
+		newFont = false;
 		Graphics g = ic.getGraphics();
 		Java2.setAntialiasedText(g, true);
 		FontMetrics metrics = g.getFontMetrics(font);
@@ -265,8 +285,10 @@ public class TextRoi extends Roi {
 			height = yMax;
 		if (y+height>yMax)
 			y = yMax-height;
-		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (draw) {
+			updateClipRect();
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
+		}
 		if (IJ.debugMode) IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 

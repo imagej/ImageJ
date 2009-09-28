@@ -109,12 +109,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		setImage(imp);
 	}
 
+	/** Set the location of the ROI in image coordinates. */
 	public void setLocation(int x, int y) {
-		//if (x<0) x = 0;
-		//if (y<0) y = 0;
-		//if ((x+width)>xMax) x = xMax-width;
-		//if ((y+height)>yMax) y = yMax-height;
-		//IJ.write(imp.getTitle() + ": Roi.setlocation(" + x + "," + y + ")");
 		this.x = x;
 		this.y = y;
 		startX = x; startY = y;
@@ -671,6 +667,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (mag<1.0)
 				m = (int)(3/mag);
 		}
+		m += getLineWidth();
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
 	 }
@@ -828,11 +825,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		
 	protected void handleMouseUp(int screenX, int screenY) {
 		state = NORMAL;
+		if (imp==null) return;
 		imp.draw(clipX-5, clipY-5, clipWidth+10, clipHeight+10);
 		if (Recorder.record) {
 			String method;
 			if (type==LINE) {
-				if (imp==null) return;
 				Line line = (Line)imp.getRoi();
 				Recorder.record("makeLine", line.x1, line.y1, line.x2, line.y2);
 			} else if (type==OVAL)
@@ -1015,7 +1012,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	/** Sets the color used by this ROI to draw its outline. This color, if not null, 
-		overrides the global color set by the static setColor() method. */
+	 * overrides the global color set by the static setColor() method.
+	 * @see #setLineWidth(int)
+	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 */
 	public void setInstanceColor(Color c) {
 		instanceColor = c;
 	}
@@ -1025,22 +1025,32 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return instanceColor;
 	}
 
-	/** Deteremines whether or not TextRois are drawn at a fixed window location. */
-	public void setNonScalable(boolean b) {
-		nonScalable = b;
+	/** Set 'nonScalable' true to have TextRois in a display 
+		list drawn at a fixed location  and size. */
+	public void setNonScalable(boolean nonScalable) {
+		this.nonScalable = nonScalable;
 	}
 
-	/** Sets the width of lines used to draw composite ROIs. */
+	/** Sets the width of the lines used to draw this ROI when
+	 * it is part of a display list or ROI Manager "Show All" list.
+	 * @see #setInstanceColor(Color)
+	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 */
 	public void setLineWidth(int width) {
 		this.stroke = new BasicStroke(width);
 	}
 
-	/** Sets the Stroke used to draw composite ROIs. */
+	/** Returns the lineWidth. */
+	public int getLineWidth() {
+		return stroke!=null?(int)stroke.getLineWidth():1;
+	}
+
+	/** Sets the Stroke used to draw this ROI. */
 	public void setStroke(BasicStroke stroke) {
 		this.stroke = stroke;
 	}
 	
-	/** Gets the Stroke used to draw composite ROIs. */
+	/** Returns the Stroke used to draw this ROI, or null if no Stroke is used. */
 	public BasicStroke getStroke() {
 		return stroke;
 	}

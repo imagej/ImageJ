@@ -277,11 +277,8 @@ public class CommandFinder implements PlugIn, TextListener, ActionListener, Wind
 
 		commandsHash = new Hashtable();
 
-		/* Find the "normal" commands; those which are
-		   registered plugins: */
-
-		Hashtable realCommandsHash = ij.Menus.getCommands();
-
+		/* Find the "normal" commands; those which are registered plugins: */
+		Hashtable realCommandsHash = (Hashtable)(Menus.getCommands().clone());
 		Set realCommandSet = realCommandsHash.keySet();
 
 		for (Iterator i = realCommandSet.iterator();
