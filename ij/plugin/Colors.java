@@ -68,6 +68,7 @@ public class Colors implements PlugIn, ItemListener {
 	}
 	
 	public static String getColorName(Color c, String defaultName) {
+		if (c==null) return defaultName;
 		String name = defaultName;
 		if (c.equals(Color.red)) name = colors[0];
 		else if (c.equals(Color.green)) name = colors[1];

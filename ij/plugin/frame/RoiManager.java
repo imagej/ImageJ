@@ -20,6 +20,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public static final String LOC_KEY = "manager.loc";
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
+	static final int TOGGLE=0, LABELS=1, NO_LABELS=2;
 	static final int MENU=0, COMMAND=1;
 	static int rows = 15;
 	static boolean allowMultipleSelections = true; 
@@ -161,7 +162,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Measure"))
 			measure(MENU);
 		else if (command.equals("Show All"))
-			showAll();
+			showAll(TOGGLE);
 		else if (command.equals("Draw"))
 			drawOrFill(DRAW);
 		else if (command.equals("Fill"))
@@ -881,13 +882,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		if (lineWidth>1 && !showingAll && imp!=null) {
-			showAll();
+			showAll(TOGGLE);
 			showingAll = true;
 		}
 		if (imp!=null && showingAll)
 			imp.draw();
 		if (Recorder.record) {
-			Recorder.record("roiManager", "Set Color", Colors.getColorName(color, "red"));
+			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
 			Recorder.record("roiManager", "Set Line Width", lineWidth);
 		}
 	}
@@ -904,9 +905,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			ic.setShowAllROIs(true);
 		} else
 			drawLabels = !drawLabels;
+		imp.killRoi();
 		imp.draw();
-		if (Recorder.record)  
-			Recorder.recordString("setOption(\"Show All With Labels\","+(drawLabels?"false":"true")+");\n");
+		if (Recorder.record)  {
+			if (drawLabels)
+				Recorder.record("roiManager", "Show All with labels");
+			else
+				Recorder.record("roiManager", "Show All without labels");
+		}
 	}
 	
 	public boolean getDrawLabels() {
@@ -1094,16 +1100,26 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (Recorder.record) Recorder.record("roiManager", "Split");
 	}
 	
-	void showAll() {
+	void showAll(int mode) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{error("There are no images open."); return;}
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
-		boolean showingROIs = ic.getShowAllROIs();
-		ic.setShowAllROIs(!showingROIs);
-		if (Recorder.record)
-			Recorder.recordString("setOption(\"Show All\","+(showingROIs?"false":"true")+");\n");
+		boolean showAll = ic.getShowAllROIs();
+		if (mode==LABELS) {
+			drawLabels = true;
+			showAll = true;
+		} else if (mode==NO_LABELS) {
+			drawLabels = false;
+			showAll = true;
+		} else {
+			showAll = !showAll;
+		}
+		if (showAll) imp.killRoi();
+		ic.setShowAllROIs(showAll);
+		if (Recorder.record && !IJ.isMacro())
+			Recorder.recordString("setOption(\"Show All\","+(!showAll?"false":"true")+");\n");
 		imp.draw();
 	}
 
@@ -1249,6 +1265,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			sort();
 		else if (cmd.startsWith("multi"))
 			multiMeasure();
+		else if (cmd.equals("show all with labels"))
+			showAll(LABELS);
+		else if (cmd.equals("show all without labels"))
+			showAll(NO_LABELS);
 		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);

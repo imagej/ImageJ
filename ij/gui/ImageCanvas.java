@@ -226,7 +226,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				else
 					roi.setInstanceColor(listColor);
 			}
-			roi.draw(g);
+			if (roi instanceof TextRoi)
+				((TextRoi)roi).drawText(g);
+			else
+				roi.draw(g);
 			roi.setInstanceColor(saveColor);
 			//roi.setImage(null);
 			if (index>=0) {
@@ -1128,10 +1131,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		disablePopupMenu = status;
 	}
 
+	/** Enables/disables the ROI Manager "Show All" mode. */
 	public void setShowAllROIs(boolean showAllROIs) {
 		this.showAllROIs = showAllROIs;
 	}
 
+	/** Returns the state of the ROI Manager "Show All" flag. */
 	public boolean getShowAllROIs() {
 		return showAllROIs;
 	}
