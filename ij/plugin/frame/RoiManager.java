@@ -227,15 +227,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (shiftKeyDown)
 			addAndDraw(altKeyDown);
 		else if (altKeyDown)
-			add(true);
+			addRoi(true);
 		else
-			add(false);
+			addRoi(false);
+	}
+	
+	boolean addRoi(boolean promptForName) {
+		return addRoi(promptForName, null, -1);
 	}
 
-	boolean add(boolean promptForName) {
+	boolean addRoi(boolean promptForName, Color color, int lineWidth) {
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
+		if (color==null && defaultColor!=null)
+			color = defaultColor;
+		if (lineWidth<0) lineWidth = defaultLineWidth;
+		if (lineWidth>100) lineWidth = 1;
 		Roi roi = imp.getRoi();
 		if (roi==null) {
 			error("The active image does not have a selection.");
@@ -270,13 +278,30 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Rectangle r = roiCopy.getBounds();
 			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
 		}
-		roiCopy.setLineWidth(defaultLineWidth);
-		if (defaultColor!=null)
-			roiCopy.setInstanceColor(defaultColor);
+		roiCopy.setLineWidth(lineWidth);
+		if (color!=null)
+			roiCopy.setInstanceColor(color);
 		rois.put(label, roiCopy);
 		updateShowAll();
-		if (Recorder.record) Recorder.record("roiManager", "Add");
+		if (Recorder.record)
+			recordAdd(defaultColor, defaultLineWidth);
 		return true;
+	}
+	
+	void recordAdd(Color color, int lineWidth) {
+		if (color!=null && lineWidth==1)
+			Recorder.recordString("roiManager(\"Add\", \""+getHex(color)+"\");\n");
+		else if (lineWidth>1)
+			Recorder.recordString("roiManager(\"Add\", \""+getHex(color)+"\", "+lineWidth+");\n");
+		else
+			Recorder.record("roiManager", "Add");
+	}
+	
+	String getHex(Color color) {
+		if (color==null) color = ImageCanvas.getShowAllColor();
+		String hex = Integer.toHexString(color.getRGB());
+		if (hex.length()==8) hex = hex.substring(2);
+		return hex;
 	}
 	
 	/** Adds the specified ROI to the list. The third argument ('n') will 
@@ -336,8 +361,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	void addAndDraw(boolean altKeyDown) {
 		if (altKeyDown) {
-			if (!add(true)) return;
-		} else if (!add(false))
+			if (!addRoi(true)) return;
+		} else if (!addRoi(false))
 			return;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Undo.setup(Undo.COMPOUND_FILTER, imp);
@@ -375,6 +400,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				list.remove(i);
 			}
 		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (count>1 && index.length==1 && imp!=null)
+			imp.killRoi();
 		updateShowAll();
 		if (Recorder.record) Recorder.record("roiManager", "Delete");
 		return true;
@@ -1077,7 +1105,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	void setShowAllColor() {
-            ColorChooser cc = new ColorChooser("\"Show All\" Color", ImageCanvas.getShowAllColor() ,  false);
+            ColorChooser cc = new ColorChooser("\"Show All\" Color", ImageCanvas.getShowAllColor(),  false);
             ImageCanvas.setShowAllColor(cc.getColor());
 	}
 
@@ -1094,7 +1122,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi[] rois = ((ShapeRoi)roi).getRois();
 		for (int i=0; i<rois.length; i++) {
 			imp.setRoi(rois[i]);
-			add(false);
+			addRoi(false);
 		}
 		Recorder.record = record;
 		if (Recorder.record) Recorder.record("roiManager", "Split");
@@ -1328,6 +1356,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return false;
 	}
 	
+	/** Adds the current selection to the ROI Manager, using the
+		specified color (a 6 digit hex string) and line width. */
+	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
+		Color color = Colors.getColor(hexColor, Color.gray);
+		if (color==Color.gray) {
+			if (hexColor==null || !(hexColor.length()==6 || hexColor.length()==8))
+				hexColor = getHex(null);
+			color = ImageCanvas.getShowAllColor();
+			hexColor = "#" + hexColor;
+			try {color=Color.decode(hexColor);}
+			catch(Exception e) { IJ.log(""+e);}
+		}
+		addRoi(false, color, (int)Math.round(lineWidth));
+		return true;	
+	}
+
 	//public static String[] debug = new String[100000];
 	//public static int debugCount;
 	

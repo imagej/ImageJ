@@ -2126,13 +2126,27 @@ public class Functions implements MacroConstants, Measurements {
 		String cmd = getFirstString();
 		cmd = cmd.toLowerCase();
 		String path = null;
+		String color = null;
+		double lineWidth = 1.0;
 		int index=0;
 		double countOrIndex=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
 			||cmd.equals("set color")||cmd.equals("set line width");
 		boolean select = cmd.equals("select");
+		boolean add = cmd.equals("add");
 		if (twoArgCommand)
 			path = getLastString();
+		else if (add) {
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				color = interp.getString();
+			}
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				lineWidth = interp.getExpression();
+			}
+			interp.getRightParen();
+		}
 		else if (select)
 			index = (int)getLastArg();
 		else
@@ -2148,6 +2162,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("ROI Manager not found");
 		if (twoArgCommand)
 			rm.runCommand(cmd, path);
+		else if (add)
+			rm.runCommand("Add", color, lineWidth);
 		else if (select) {
 			int n = rm.getList().getItemCount();
 			checkIndex(index, 0, n-1);
@@ -3991,9 +4007,10 @@ public class Functions implements MacroConstants, Measurements {
 			if (value==null) interp.error("Value not found");
 		} else if (name.equals("set")||name.equals("add")||name.equals("put"))
 			props.setProperty(getFirstString(), getLastString());
-		else if (name.equals("clear")||name.equals("reset"))
+		else if (name.equals("clear")||name.equals("reset")) {
+			interp.getParens();
 			props.clear();
-		else if (name.equals("setList"))
+		} else if (name.equals("setList"))
 			setProperties();
 		else if (name.equals("getList"))
 			value = getProperties();

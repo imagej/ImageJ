@@ -83,6 +83,7 @@ public class Colors implements PlugIn, ItemListener {
 	}
 	
 	public static Color getColor(String name, Color defaultColor) {
+		if (name==null) return defaultColor;
 		Color c = defaultColor;
 		if (name.equals(colors[0])) c = Color.red;
 		else if (name.equals(colors[1])) c = Color.green;

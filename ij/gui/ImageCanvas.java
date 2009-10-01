@@ -41,7 +41,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
-    private Vector displayList;
+    private Vector displayList, showAllList;
     private boolean labelListItems;
     private Color listColor;
     private BasicStroke listStroke;
@@ -154,7 +154,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
     void showAllROIs(Graphics g) {
 		RoiManager rm=RoiManager.getInstance();
-		if (rm==null) return;
+		if (rm==null) {
+			rm = Interpreter.getBatchModeRoiManager();
+			if (rm!=null && rm.getList().getItemCount()==0)
+				rm = null;
+		}
+		if (rm==null) {
+			if (showAllList!=null)
+				displayList = showAllList;
+			showAllROIs = false;
+			return;
+		}
 		initGraphics(g, null);
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
@@ -162,10 +172,16 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int n = list.getItemCount();
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
+		if (!drawLabels)
+			showAllList = new Vector();
+		else
+			showAllList = null;
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
+			if (showAllList!=null)
+				showAllList.addElement(roi);
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
 				int slice = getSliceNumber(roi.getName());
 				if (slice==-1 || slice==imp.getCurrentSlice())

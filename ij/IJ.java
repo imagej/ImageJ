@@ -812,7 +812,7 @@ public class IJ {
 	public static boolean versionLessThan(String version) {
 		boolean lessThan = ImageJ.VERSION.compareTo(version)<0;
 		if (lessThan)
-			error("This plugin or macro requires ImageJ "+version+" or later.");
+			error("This plugin or macro requires ImageJ "+version+" or later. Use\nHelp>Update ImageJ to upgrade to the latest version.");
 		return lessThan;
 	}
 	
