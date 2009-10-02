@@ -49,6 +49,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
 	protected Color instanceColor;
+	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
 
@@ -1023,6 +1024,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used. */
 	public Color getInstanceColor() {
 		return instanceColor;
+	}
+
+	/** Sets the color used to fill ROIs when they are in a display list.
+	 * @see ij.gui.ImageCanvas#setDisplayList(Vector)
+	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 */
+	public void setFillColor(Color color) {
+		fillColor = color;
+	}
+
+	/** Returns the the color used to fill this ROI when it is in a display, or null. */
+	public Color getFillColor() {
+		return fillColor;
 	}
 
 	/** Set 'nonScalable' true to have TextRois in a display 

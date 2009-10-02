@@ -97,6 +97,32 @@ public class Colors implements PlugIn, ItemListener {
 		return c;
 	}
 
+	public static Color decode(String hexColor) {
+		Color color = getColor(hexColor, Color.gray);
+		if (color==Color.gray) {
+			if (hexColor.startsWith("#"))
+				hexColor = hexColor.substring(1);
+			int len = hexColor.length();
+			if (!(len==6 || len==8))
+				hexColor = "00ffff";
+			float alpha = len==8?parseHex(hexColor.substring(0,2)):1f;
+			if (len==8)
+				hexColor = hexColor.substring(2);
+			float red = parseHex(hexColor.substring(0,2));
+			float green = parseHex(hexColor.substring(2,4));
+			float blue = parseHex(hexColor.substring(4,6));
+			color = new Color(red, green, blue, alpha);
+		}
+		return color;
+	}
+
+	private static float parseHex(String hex) {
+		float value = 0f;
+		try {value=Integer.parseInt(hex,16);}
+		catch(Exception e) { }
+		return value/255f;
+	}
+
 	public void itemStateChanged(ItemEvent e) {
 		Choice choice = (Choice)e.getSource();
 		String item = choice.getSelectedItem();

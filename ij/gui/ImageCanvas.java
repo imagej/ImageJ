@@ -254,6 +254,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			}
 		} else {
 			Color c = roi.getInstanceColor();
+			Color fillColor = roi.getFillColor();
+			if (fillColor!=null) c = fillColor;
 			Color saveg = null;
 			if (c!=null) {
 				saveg = g.getColor();
@@ -292,7 +294,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			}
 			if (index==-1)
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2d.draw(path);
+			if (fillColor!=null)
+				g2d.fill(path);
+			else
+				g2d.draw(path);
 			if (saveStroke!=null) g2d.setStroke(saveStroke);
 			if (saveg!=null) g.setColor(saveg);
 			if (index>=0)

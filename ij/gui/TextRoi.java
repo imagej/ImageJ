@@ -22,7 +22,6 @@ public class TextRoi extends Roi {
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
-	private Color backgroundColor;
 
 	/** Creates a new TextRoi.*/
 	public TextRoi(int x, int y, String text) {
@@ -169,11 +168,15 @@ public class TextRoi extends Roi {
 		int descent = metrics.getDescent();
 		g.setFont(font);
 		int i = 0;
-		if (backgroundColor!=null) {
+		if (fillColor!=null) {
 			updateBounds();
 			Color c = g.getColor();
-			g.setColor(backgroundColor);
-			g.fillRect(x-5, y-5, x+width, y+height);
+			int alpha = fillColor.getAlpha();
+ 			g.setColor(fillColor);
+ 			Graphics2D g2d = (Graphics2D)g;
+			int sw = nonScalable?width:(int)(ic.getMagnification()*width);
+			int sh = nonScalable?height:(int)(ic.getMagnification()*height);
+			g.fillRect(sx-5, sy-5, sx+sw, sy+sh);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {
@@ -232,14 +235,6 @@ public class TextRoi extends Roi {
 			if (roi instanceof TextRoi)
 				imp.draw();
 		}
-	}
-
-	/** Sets the background color used to draw this TextRoi when it is part of a display list.
-	 * @see ij.gui.ImageCanvas#setDisplayList(Vector)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
-	 */
-	public void setBackgroundColor(Color color) {
-		backgroundColor = color;
 	}
 
 	protected void handleMouseUp(int screenX, int screenY) {

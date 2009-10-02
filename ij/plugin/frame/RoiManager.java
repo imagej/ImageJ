@@ -878,6 +878,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void setColorAndLineWidth(Color color, int lineWidth) {
+		boolean setFillColor = false;
+		if (lineWidth==-1) {
+			setFillColor = true;
+			lineWidth = 0;
+		}
 		int[] indexes = list.getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
@@ -903,7 +908,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int i=0; i<indexes.length; i++) {
 			String label = list.getItem(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
-			if (color!=null) roi.setInstanceColor(color);
+			if (color!=null) {
+				if (setFillColor)
+					roi.setFillColor(color);
+				else
+					roi.setInstanceColor(color);
+			}
 			if (lineWidth!=0) roi.setLineWidth(lineWidth);
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -1343,8 +1353,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			macro = false;
 			return true;
 		} else if (cmd.equals("set color")) {
-			Color color = Colors.getColor(name, Toolbar.getForegroundColor());
+			Color color = Colors.decode(name);
 			setColorAndLineWidth(color, 0);
+			macro = false;
+			return true;
+		} else if (cmd.equals("set fill color")) {
+			Color color = Colors.decode(name);
+			setColorAndLineWidth(color, -1);
 			macro = false;
 			return true;
 		} else if (cmd.equals("set line width")) {
@@ -1359,21 +1374,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		Color color = Colors.getColor(hexColor, Color.gray);
-		if (color==Color.gray) {
-			if (hexColor==null || !(hexColor.length()==6 || hexColor.length()==8))
-				hexColor = getHex(null);
-			color = ImageCanvas.getShowAllColor();
-			hexColor = "#" + hexColor;
-			try {color=Color.decode(hexColor);}
-			catch(Exception e) { IJ.log(""+e);}
-		}
+		if (hexColor==null) hexColor = getHex(null);
+		Color color = Colors.decode(hexColor);
 		addRoi(false, color, (int)Math.round(lineWidth));
 		return true;	
 	}
-
-	//public static String[] debug = new String[100000];
-	//public static int debugCount;
 	
 	public void select(int index) {
 		int n = list.getItemCount();

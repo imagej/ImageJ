@@ -193,8 +193,11 @@ public class ByteProcessor extends ImageProcessor {
 			{fill(); return;}
 		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
 		int roiX=this.roiX, roiY=this.roiY;
-		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
-			return;
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight) {
+			mask = getMask();
+			if (mask==null||mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+				return;
+		}
 		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
