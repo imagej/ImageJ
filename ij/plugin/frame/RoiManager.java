@@ -218,7 +218,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			if (WindowManager.getCurrentImage()!=null) {
 				restore(index, true);
-				if (Recorder.record) Recorder.record("roiManager", "Select", index);
+				if (record()) Recorder.record("roiManager", "Select", index);
 			}
 		}
 	}
@@ -283,7 +283,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roiCopy.setInstanceColor(color);
 		rois.put(label, roiCopy);
 		updateShowAll();
-		if (Recorder.record)
+		if (record())
 			recordAdd(defaultColor, defaultLineWidth);
 		return true;
 	}
@@ -368,7 +368,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Undo.setup(Undo.COMPOUND_FILTER, imp);
 		IJ.run("Draw");
 		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
-		if (Recorder.record) Recorder.record("roiManager", "Add & Draw");
+		if (record()) Recorder.record("roiManager", "Add & Draw");
 	}
 	
 	boolean delete(boolean replacing) {
@@ -404,7 +404,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (count>1 && index.length==1 && imp!=null)
 			imp.killRoi();
 		updateShowAll();
-		if (Recorder.record) Recorder.record("roiManager", "Delete");
+		if (record()) Recorder.record("roiManager", "Delete");
 		return true;
 	}
 	
@@ -429,7 +429,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			else
 				rois.put(name, roi);
 		}
-		if (Recorder.record) Recorder.record("roiManager", "Update");
+		if (record()) Recorder.record("roiManager", "Update");
 		if (showingAll) imp.draw();
 		return true;
 	}
@@ -447,7 +447,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.put(name2, roi);
 		list.replaceItem(name2, index);
 		list.select(index);
-		if (Recorder.record) Recorder.record("roiManager", "Rename", name2);
+		if (record()) Recorder.record("roiManager", "Rename", name2);
 		return true;
 	}
 	
@@ -530,7 +530,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return;
 			path = directory + name;
 		}
-		if (Recorder.record) Recorder.record("roiManager", "Open", path);
+		if (record()) Recorder.record("roiManager", "Open", path);
 		if (path.endsWith(".zip")) {
 			openZip(path);
 			return;
@@ -665,7 +665,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			error(""+e);
 			return false;
 		}
-		if (Recorder.record) Recorder.record("roiManager", "Save", path);
+		if (record()) Recorder.record("roiManager", "Save", path);
 		return true;
 	}
 		
@@ -697,7 +697,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Analyzer.setMeasurements(measurements);
 		if (indexes.length>1)
 			IJ.run("Select None");
-		if (Recorder.record) Recorder.record("roiManager", "Measure");
+		if (record()) Recorder.record("roiManager", "Measure");
 		return true;
 	}	
 	
@@ -810,7 +810,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.setSlice(currentSlice);
 		if (indexes.length>1)
 			IJ.run("Select None");
-		if (Recorder.record) Recorder.record("roiManager", "Multi Measure");
+		if (record()) Recorder.record("roiManager", "Multi Measure");
 		return true;
 	}
 	
@@ -873,7 +873,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			case FILL: str="Fill"; break;
 			case LABEL: str="Label"; imp.updateAndDraw(); break;
 		}
-		if (Recorder.record) Recorder.record("roiManager", str);
+		if (record()) Recorder.record("roiManager", str);
 		return true;
 	}
 
@@ -925,7 +925,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (imp!=null && showingAll)
 			imp.draw();
-		if (Recorder.record) {
+		if (record()) {
 			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
 			Recorder.record("roiManager", "Set Line Width", lineWidth);
 		}
@@ -945,7 +945,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawLabels = !drawLabels;
 		imp.killRoi();
 		imp.draw();
-		if (Recorder.record)  {
+		if (record())  {
 			if (drawLabels)
 				Recorder.record("roiManager", "Show All with labels");
 			else
@@ -979,7 +979,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			combinePoints(imp, indexes);
 		else
 			combineRois(imp, indexes);
-		if (Recorder.record) Recorder.record("roiManager", "Combine");
+		if (record()) Recorder.record("roiManager", "Combine");
 	}
 	
 	void combineRois(ImagePlus imp, int[] indexes) {
@@ -1054,7 +1054,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		StringSorter.sort(labels);
 		for (int i=0; i<labels.length; i++)
 			list.add(labels[i]);
-		if (Recorder.record) Recorder.record("roiManager", "Sort");
+		if (record()) Recorder.record("roiManager", "Sort");
 	}
 	
 	void specify() {
@@ -1135,7 +1135,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			addRoi(false);
 		}
 		Recorder.record = record;
-		if (Recorder.record) Recorder.record("roiManager", "Split");
+		if (record()) Recorder.record("roiManager", "Split");
 	}
 	
 	void showAll(int mode) {
@@ -1385,7 +1385,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index<0) {
 			for (int i=0; i<n; i++)
 				if (list.isSelected(i)) list.deselect(i);
-			if (Recorder.record) Recorder.record("roiManager", "Deselect");
+			if (record()) Recorder.record("roiManager", "Deselect");
 			return;
 		}
 		if (index>=n) return;
@@ -1468,6 +1468,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
 		}
+	}
+
+	private boolean record() {
+		return Recorder.record && !IJ.isMacro();
 	}
 
  	public void mouseReleased (MouseEvent e) {}

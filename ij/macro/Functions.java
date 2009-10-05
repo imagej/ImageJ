@@ -57,7 +57,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean useJFileChooser,debugMode;
 	Color foregroundColor, backgroundColor, roiColor;
 	boolean pointAutoMeasure, requireControlKey, useInvertingLut;
-	boolean doubleBuffer, disablePopup;
+	boolean disablePopup;
 	int measurements;
 	int decimalPlaces;
 	boolean blackBackground;
@@ -2026,7 +2026,6 @@ public class Functions implements MacroConstants, Measurements {
 		pointAutoMeasure = Prefs.pointAutoMeasure;
 		requireControlKey = Prefs.requireControlKey;
 		useInvertingLut = Prefs.useInvertingLut;
-		doubleBuffer = Prefs.doubleBuffer;
 		saveSettingsCalled = true;
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
@@ -2053,7 +2052,6 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.blackCanvas = blackCanvas;
 		Prefs.useJFileChooser = useJFileChooser;
 		Prefs.useInvertingLut = useInvertingLut;
-		Prefs.doubleBuffer = doubleBuffer;
 		IJ.debugMode = debugMode;
 		Toolbar.setForegroundColor(foregroundColor);
 		Toolbar.setBackgroundColor(backgroundColor);

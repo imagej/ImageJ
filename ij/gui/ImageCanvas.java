@@ -127,10 +127,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
-		if (roi != null) {
-			roi.updatePaste();
-			if (Prefs.doubleBuffer && !IJ.isMacOSX())
-				{paintDoubleBuffered(g); return;}
+		if (roi!=null || showAllROIs || displayList!=null) {
+			if (roi!=null) roi.updatePaste();
+			if (!IJ.isMacOSX()) {
+				paintDoubleBuffered(g);
+				return;
+			}
 		}
 		try {
 			if (imageUpdated) {

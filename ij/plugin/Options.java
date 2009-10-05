@@ -140,7 +140,6 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Black canvas", Prefs.blackCanvas);
 		gd.addCheckbox("No image border", Prefs.noBorder);
 		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
-		gd.addCheckbox("Double buffer selections", Prefs.doubleBuffer);
 		gd.addCheckbox("Antialiased tool icons", Prefs.antialiasedTools);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
         gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
@@ -152,7 +151,6 @@ public class Options implements PlugIn {
 		boolean blackCanvas = gd.getNextBoolean();
 		boolean noBorder = gd.getNextBoolean();
 		boolean useInvertingLut = gd.getNextBoolean();
-		Prefs.doubleBuffer = gd.getNextBoolean();
 		boolean antialiasedTools = gd.getNextBoolean();
 		boolean change = antialiasedTools!=Prefs.antialiasedTools;
 		Prefs.antialiasedTools = antialiasedTools;
@@ -189,10 +187,6 @@ public class Options implements PlugIn {
 		if (useInvertingLut!=Prefs.useInvertingLut) {
 			invertLuts(useInvertingLut);
 			Prefs.useInvertingLut = useInvertingLut;
-		}
-		if (Prefs.doubleBuffer && IJ.isMacOSX()) {
-			IJ.error("Double-buffering is built into Mac OS X.");
-			Prefs.doubleBuffer = false;
 		}
 		if (menuSize!=Menus.getFontSize() && !IJ.isMacintosh()) {
 			Menus.setFontSize(menuSize);

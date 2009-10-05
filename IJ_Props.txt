@@ -155,7 +155,7 @@ transform02="Flip Vertically",ij.plugin.filter.Transformer("flipv")
 transform03="Flip Z",ij.plugin.StackReverser
 transform04="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 transform05="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
-transform06="Rotate...",ij.plugin.filter.Rotator
+transform06="Rotate... ",ij.plugin.filter.Rotator
 transform07="Translate...",ij.plugin.filter.Translator
 
 # Plugins installed in the Image/Zoom submenu

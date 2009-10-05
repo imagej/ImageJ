@@ -1102,8 +1102,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			wasCanceled = true; 
 			dispose(); 
 			IJ.resetEscape();
+		} else if (keyCode==KeyEvent.VK_W && (e.getModifiers()&Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())!=0) { 
+			wasCanceled = true; 
+			dispose(); 
 		} 
 	} 
+		
 
 	void accessTextFields() {
 		if (stringField!=null) {

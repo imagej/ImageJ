@@ -44,6 +44,7 @@ public class Menus {
 	
 	public static final int MAX_OPEN_RECENT_ITEMS = 15;
 
+	private static Menus instance;
 	private static MenuBar mbar;
 	private static CheckboxMenuItem gray8Item,gray16Item,gray32Item,
 			color256Item,colorRGBItem,RGBStackItem,HSBStackItem;
@@ -70,6 +71,7 @@ public class Menus {
     private boolean isJarErrorHeading;
 	private static boolean installingJars, duplicateCommand;
 	private static Vector jarFiles;  // JAR files in plugins folder with "_" in their name
+	private Map menuEntry2jarFile = new HashMap();
 	private static Vector macroFiles;  // Macro files in plugins folder with "_" in their name
 	private static int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private static boolean addSorted;
@@ -82,6 +84,7 @@ public class Menus {
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
 		applet = appletInstance;
+		instance = this;
 	}
 
 	String addMenuBar() {
@@ -540,6 +543,12 @@ public class Menus {
 		menu.add(item);
 	}
 	
+	public static String getJarFileForMenuEntry(String menuEntry) {
+		if (instance == null)
+			return null;
+		return (String)instance.menuEntry2jarFile.get(menuEntry);
+	}
+
 	/** Install plugins located in JAR files. */
 	void installJarPlugins() {
 		if (jarFiles==null)
@@ -632,11 +641,26 @@ public class Menus {
             addPluginItem(menu, s);
             addSorted = false;
         }
+		String menuEntry = s;
+		if (s.startsWith("\"")) {
+			int quote = s.indexOf('"', 1);
+			menuEntry = quote<0?s.substring(1):s.substring(1, quote);
+		} else {
+			int comma = s.indexOf(',');
+			if (comma > 0)
+				menuEntry = s.substring(0, comma);
+		}
 		if (duplicateCommand) {
 			if (jarError==null) jarError = "";
             addJarErrorHeading(jar);
-			jarError += "    Duplicate command: " + s + "\n";
-		}
+			String jar2 = (String)menuEntry2jarFile.get(menuEntry);
+			if (jar2 != null && jar2.startsWith(pluginsPath))
+				jar2 = jar2.substring(pluginsPath.length());
+			jarError += "    Duplicate command: " + s
+				+ (jar2 != null ? " (already in " + jar2 + ")"
+				   : "") + "\n";
+		} else
+			menuEntry2jarFile.put(menuEntry, jar);
 		duplicateCommand = false;
     }
     

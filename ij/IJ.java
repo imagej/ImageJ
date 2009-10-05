@@ -268,7 +268,7 @@ public class IJ {
 			commandTable.put("RGB Merge...", "Merge Channels...");
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
-			commandTable.put("Arbitrarily... ", "Rotate...");
+			commandTable.put("Arbitrarily... ", "Rotate... ");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
