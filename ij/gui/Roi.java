@@ -48,10 +48,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected String name;
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
-	protected Color instanceColor;
+	protected Color outlineColor;
+	protected Color instanceColor; //obsolete; replaced by outlineColor
 	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
+	protected boolean displayList;
 
 
 	/** Creates a new rectangular Roi. */
@@ -131,6 +133,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			xMax = imp.getWidth();
 			yMax = imp.getHeight();
 		}
+	}
+	
+	ImagePlus getImage() {
+		return imp;
 	}
 	
 	public int getType() {
@@ -701,20 +707,30 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		g.setColor(instanceColor!=null?instanceColor:ROIColor);
+		Color color = outlineColor!=null?outlineColor:ROIColor;
+		if (fillColor!=null) color = fillColor;
+		g.setColor(color);
 		mag = ic.getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
-		//if (x+width==imp.getWidth()) sw -= 1;
-		//if (y+height==imp.getHeight()) sh -= 1;
 		int sx1 = ic.screenX(x);
 		int sy1 = ic.screenY(y);
 		int sx2 = sx1+sw/2;
 		int sy2 = sy1+sh/2;
 		int sx3 = sx1+sw;
 		int sy3 = sy1+sh;
-		g.drawRect(sx1, sy1, sw, sh);
-		if (state!=CONSTRUCTING && clipboard==null) {
+		Graphics2D g2d = (Graphics2D)g;
+		Stroke saveStroke = null;
+		if (stroke!=null) {
+			saveStroke = g2d.getStroke();
+			g2d.setStroke(stroke);
+		}
+		if (fillColor!=null)
+			g.fillRect(sx1, sy1, sw, sh);
+		else
+			g.drawRect(sx1, sy1, sw, sh);
+		if (saveStroke!=null) g2d.setStroke(saveStroke);
+		if (state!=CONSTRUCTING && clipboard==null && !displayList) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1-size2, sy1-size2);
 			drawHandle(g, sx2-size2, sy1-size2);
@@ -729,6 +745,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (state!=NORMAL) showStatus();
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
+	}
+	
+	public void drawDisplayList(Graphics g) {
+		displayList = true;
+		draw(g);
+		displayList = false;
 	}
 	
 	void drawPreviousRoi(Graphics g) {
@@ -884,7 +906,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		else
 			roi2 = s1;
 		if (roi2!=null)
-			roi2.setName(previousRoi.getName());
+			roi2.copyAttributes(previousRoi);
 		imp.setRoi(roi2);
 		previousRoi = previous;
     }
@@ -1002,28 +1024,37 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return (180.0/Math.PI)*Math.atan2(dy, dx);
 	}
 	
-	/** Returns the color used for drawing ROI outlines. */
-	public static Color getColor() {
-		return ROIColor;
-	}
-
-	/** Sets the color used for ROI outlines to the specified value. */
+	/** Sets the default (global) color used for ROI outlines.
+	 * @see #getColor()
+	 * @see #setOutlineColor(Color)
+	 */
 	public static void setColor(Color c) {
 		ROIColor = c;
 	}
 	
+	/** Returns the default (global) color used for drawing ROI outlines.
+	 * @see #setColor(Color)
+	 * @see #getOutlineColor()
+	 */
+	public static Color getColor() {
+		return ROIColor;
+	}
+
 	/** Sets the color used by this ROI to draw its outline. This color, if not null, 
 	 * overrides the global color set by the static setColor() method.
+	 * @see #getOutlineColor()
 	 * @see #setLineWidth(int)
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
-	public void setInstanceColor(Color c) {
-		instanceColor = c;
+	public void setOutlineColor(Color c) {
+		outlineColor = c;
 	}
 
-	/** Returns the the color used to draw the ROI outline or null if the default color is being used. */
-	public Color getInstanceColor() {
-		return instanceColor;
+	/** Returns the the color used to draw the ROI outline or null if the default color is being used.
+	 * @see #setOutlineColor(Color)
+	 */
+	public Color getOutlineColor() {
+		return outlineColor;
 	}
 
 	/** Sets the color used to fill ROIs when they are in a display list.
@@ -1034,9 +1065,24 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		fillColor = color;
 	}
 
-	/** Returns the the color used to fill this ROI when it is in a display, or null. */
+	/** Returns the the color used to fill this ROI when it is in a display, or null.
+	 * @see #getOutlineColor()
+	 */
 	public Color getFillColor() {
 		return fillColor;
+	}
+	
+	/** Copy the attributes (outline color, fill color, outline width) 
+		of  'roi2' to the this selection. */
+	public void copyAttributes(Roi roi2) {
+		this.outlineColor = roi2.outlineColor;
+		this.fillColor = roi2.fillColor;
+		this.stroke = roi2.stroke;
+	}
+
+	/** Obsolete; replaced by setOutlineColor(). */
+	public void setInstanceColor(Color c) {
+		outlineColor = c;
 	}
 
 	/** Set 'nonScalable' true to have TextRois in a display 
@@ -1047,7 +1093,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Sets the width of the lines used to draw this ROI when
 	 * it is part of a display list or ROI Manager "Show All" list.
-	 * @see #setInstanceColor(Color)
+	 * @see #setOutlineColor(Color)
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
 	public void setLineWidth(int width) {
@@ -1115,7 +1161,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
     public boolean isLine() {
         return type>=LINE && type<=FREELINE;
     }
-
+    
 	/** Convenience method that converts Roi type to a human-readable form. */
 	public String getTypeAsString() {
 		String s="";

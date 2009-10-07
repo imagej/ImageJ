@@ -81,12 +81,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Add [t]");
 		addButton("Update");
 		addButton("Delete");
-		addButton("Rename");
+		addButton("Rename...");
 		addButton("Measure");
 		addButton("Deselect");
 		addButton("Show All");
-		addButton("Color");
 		addButton("Labels");
+		addButton("Color...");
 		addButton(moreButtonLabel);
 		add(panel);		
 		addPopupMenu();
@@ -153,9 +153,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			update(true);
 		else if (command.equals("Delete"))
 			delete(false);
-		else if (command.equals("Rename"))
+		else if (command.equals("Rename..."))
 			rename(null);
-		else if (command.equals("Color"))
+		else if (command.equals("Color..."))
 			setColorAndLineWidth(null, 0);
 		else if (command.equals("Labels"))
 			toggleLabels();
@@ -280,7 +280,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		roiCopy.setLineWidth(lineWidth);
 		if (color!=null)
-			roiCopy.setInstanceColor(color);
+			roiCopy.setOutlineColor(color);
 		rois.put(label, roiCopy);
 		updateShowAll();
 		if (record())
@@ -896,7 +896,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (lineWidth==0) lineWidth = defaultLineWidth;
 			GenericDialog gd = new GenericDialog("Set Color and Width");
 			gd.addChoice("Color:", Colors.colors, Colors.colors[colorIndex]);
-			gd.addNumericField("Line Width: ", lineWidth, 0);
+			gd.addNumericField("OutLine Width: ", lineWidth, 0);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 			colorIndex = gd.getNextChoiceIndex();
@@ -912,18 +912,23 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (setFillColor)
 					roi.setFillColor(color);
 				else
-					roi.setInstanceColor(color);
+					roi.setOutlineColor(color);
 			}
 			if (lineWidth!=0) roi.setLineWidth(lineWidth);
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
+		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
-		if (lineWidth>1 && !showingAll && imp!=null) {
+		if (roi!=null && !showingAll) {
+			if (lineWidth!=0) roi.setLineWidth(lineWidth);
+			if (color!=null) roi.setOutlineColor(color);
+		}
+		if (lineWidth>1 && !showingAll && roi==null) {
 			showAll(TOGGLE);
 			showingAll = true;
 		}
-		if (imp!=null && showingAll)
+		if (imp!=null && (imp.getRoi()!=null || showingAll))
 			imp.draw();
 		if (record()) {
 			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
@@ -1362,7 +1367,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			setColorAndLineWidth(color, -1);
 			macro = false;
 			return true;
-		} else if (cmd.equals("set line width")) {
+		} else if (cmd.equals("set line width")||cmd.equals("set outline width")) {
 			int lineWidth = (int)Tools.parseDouble(name, 0);
 			if (lineWidth!=0) setColorAndLineWidth(null, lineWidth);
 			macro = false;

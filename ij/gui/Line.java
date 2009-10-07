@@ -293,6 +293,9 @@ public class Line extends Roi {
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
 		if (ic==null) return;
+		Color color = outlineColor!=null?outlineColor:ROIColor;
+		if (fillColor!=null) color = fillColor;
+		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
 		int sx1 = ic.screenXD(x1d);
@@ -301,8 +304,7 @@ public class Line extends Roi {
 		int sy2 = ic.screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
-		g.setColor(instanceColor!=null?instanceColor:ROIColor);
-		if (lineWidth>1) {
+		if (lineWidth>1 && !displayList) {
 			Graphics2D g2d = (Graphics2D)g;
 			GeneralPath path = new GeneralPath();
 			path.moveTo(sx1, sy1);
@@ -317,10 +319,17 @@ public class Line extends Roi {
 			g2d.setStroke(new BasicStroke(1));
 			g2d.setComposite(ac);
 		}
+		Graphics2D g2d = (Graphics2D)g;
+		Stroke saveStroke = null;
+		if (stroke!=null) {
+			saveStroke = g2d.getStroke();
+			g2d.setStroke(stroke);
+		}
 		g.drawLine(sx1, sy1, sx2, sy2);
-		if (state!=CONSTRUCTING) {
+		if (saveStroke!=null) g2d.setStroke(saveStroke);
+		if (state!=CONSTRUCTING && !displayList) {
 			int size2 = HANDLE_SIZE/2;
-			handleColor=instanceColor!=null?instanceColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
+			handleColor=outlineColor!=null?outlineColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 		}

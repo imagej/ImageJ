@@ -235,27 +235,31 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
     void drawRoi(Graphics g, Roi roi, int index) {
     	int type = roi.getType();
-    	if (type==Roi.COMPOSITE||type==Roi.POINT||(roi instanceof TextRoi)) {
-			roi.setImage(imp);
-			Color saveColor = roi.getInstanceColor();
-			if (saveColor==null) {
-				if (index>=0 || listColor==null)
-					roi.setInstanceColor(showAllColor);
-				else
-					roi.setInstanceColor(listColor);
-			}
-			if (roi instanceof TextRoi)
-				((TextRoi)roi).drawText(g);
+		ImagePlus imp2 = roi.getImage();
+		roi.setImage(imp);
+		Color saveColor = roi.getOutlineColor();
+		if (saveColor==null) {
+			if (index>=0 || listColor==null)
+				roi.setOutlineColor(showAllColor);
 			else
-				roi.draw(g);
-			roi.setInstanceColor(saveColor);
-			//roi.setImage(null);
-			if (index>=0) {
-				g.setColor(showAllColor);
-				drawRoiLabel(g, index, roi.getBounds());
-			}
+				roi.setOutlineColor(listColor);
+		}
+		if (roi instanceof TextRoi)
+			((TextRoi)roi).drawText(g);
+		else
+			roi.drawDisplayList(g);
+		roi.setOutlineColor(saveColor);
+		if (index>=0) {
+			g.setColor(showAllColor);
+			drawRoiLabel(g, index, roi.getBounds());
+		}
+		if (imp2!=null)
+			roi.setImage(imp2);
+		else
+			roi.setImage(null);
+		/*
 		} else {
-			Color c = roi.getInstanceColor();
+			Color c = roi.getOutlineColor();
 			Color fillColor = roi.getFillColor();
 			if (fillColor!=null) c = fillColor;
 			Color saveg = null;
@@ -307,6 +311,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			else
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		}
+		*/
     }
     
 	void drawRoiLabel(Graphics g, int index, Rectangle r) {
@@ -1182,7 +1187,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
-	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setOutlineColor
 	 * @see ij.gui.Roi#setLineWidth
 	 * @see ij.gui.Roi#setLocation
 	 * @see ij.gui.Roi#setNonScalable
@@ -1192,7 +1197,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		displayList = list;
 		listColor = null;
 		if (list==null) customRoi = false;
-		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getInstanceColor()!=null)
+		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getOutlineColor()!=null)
 			labelListItems = false;
 		else
 			labelListItems = true;
@@ -1202,14 +1207,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	/** Creates a single ShapeRoi display list from the specified 
 	 * Shape, Color and BasicStroke, and activates it.
 	 * @see #setDisplayList(Vector)
-	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setOutlineColor
 	 * @see ij.gui.Roi#setLineWidth
 	 */
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
 			{setDisplayList(null); return;}
 		Roi roi = new ShapeRoi(shape);
-		roi.setInstanceColor(color);
+		roi.setOutlineColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		displayList = list;
@@ -1222,12 +1227,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	/** Creates a single ROI display list from the specified 
 		ROI and Color, and activates it.
 	 * @see #setDisplayList(Vector)
-	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setOutlineColor
 	 * @see ij.gui.Roi#setLineWidth
 	 * @see ij.gui.TextRoi#setBackgroundColor
 	 */
 	public void setDisplayList(Roi roi, Color color) {
-		roi.setInstanceColor(color);
+		roi.setOutlineColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		setDisplayList(list);

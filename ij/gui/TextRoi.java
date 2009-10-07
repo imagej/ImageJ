@@ -29,7 +29,7 @@ public class TextRoi extends Roi {
 	}
 
 	/** Creates a new TextRoi with the specified location and Font.
-	 * @see ij.gui.Roi#setInstanceColor
+	 * @see ij.gui.Roi#setOutlineColor
 	 * @see ij.gui.Roi#setNonScalable
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
@@ -155,7 +155,7 @@ public class TextRoi extends Roi {
 	}
 	
 	void drawText(Graphics g) {
-		g.setColor(instanceColor!=null?instanceColor:ROIColor);
+		g.setColor(outlineColor!=null?outlineColor:ROIColor);
 		Java2.setAntialiasedText(g, antialiasedText);
 		if (newFont || width==1)
 			updateBounds();
