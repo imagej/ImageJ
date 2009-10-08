@@ -280,7 +280,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		roiCopy.setLineWidth(lineWidth);
 		if (color!=null)
-			roiCopy.setOutlineColor(color);
+			roiCopy.setLineColor(color);
 		rois.put(label, roiCopy);
 		updateShowAll();
 		if (record())
@@ -896,7 +896,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (lineWidth==0) lineWidth = defaultLineWidth;
 			GenericDialog gd = new GenericDialog("Set Color and Width");
 			gd.addChoice("Color:", Colors.colors, Colors.colors[colorIndex]);
-			gd.addNumericField("OutLine Width: ", lineWidth, 0);
+			gd.addNumericField("Line Width: ", lineWidth, 0);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
 			colorIndex = gd.getNextChoiceIndex();
@@ -912,7 +912,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (setFillColor)
 					roi.setFillColor(color);
 				else
-					roi.setOutlineColor(color);
+					roi.setLineColor(color);
 			}
 			if (lineWidth!=0) roi.setLineWidth(lineWidth);
 		}
@@ -922,7 +922,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		if (roi!=null && !showingAll) {
 			if (lineWidth!=0) roi.setLineWidth(lineWidth);
-			if (color!=null) roi.setOutlineColor(color);
+			if (color!=null) roi.setLineColor(color);
 		}
 		if (lineWidth>1 && !showingAll && roi==null) {
 			showAll(TOGGLE);
@@ -1358,16 +1358,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			macro = false;
 			return true;
 		} else if (cmd.equals("set color")) {
-			Color color = Colors.decode(name);
+			Color color = Colors.decode(name, Color.cyan);
 			setColorAndLineWidth(color, 0);
 			macro = false;
 			return true;
 		} else if (cmd.equals("set fill color")) {
-			Color color = Colors.decode(name);
+			Color color = Colors.decode(name, Color.cyan);
 			setColorAndLineWidth(color, -1);
 			macro = false;
 			return true;
-		} else if (cmd.equals("set line width")||cmd.equals("set outline width")) {
+		} else if (cmd.equals("set line width")) {
 			int lineWidth = (int)Tools.parseDouble(name, 0);
 			if (lineWidth!=0) setColorAndLineWidth(null, lineWidth);
 			macro = false;
@@ -1380,7 +1380,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
 		if (hexColor==null) hexColor = getHex(null);
-		Color color = Colors.decode(hexColor);
+		Color color = Colors.decode(hexColor, Color.cyan);
 		addRoi(false, color, (int)Math.round(lineWidth));
 		return true;	
 	}

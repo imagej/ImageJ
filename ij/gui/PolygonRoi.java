@@ -110,7 +110,11 @@ public class PolygonRoi extends Roi {
 	public void draw(Graphics g) {
         updatePolygon();
 		Color color = outlineColor!=null?outlineColor:ROIColor;
-		if (fillColor!=null) color = fillColor;
+		boolean fill = false;
+		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {
+			color = fillColor;
+			fill = true;
+		}
 		g.setColor(color);
 		Graphics2D g2d = (Graphics2D)g;
 		Stroke saveStroke = null;
@@ -123,16 +127,16 @@ public class PolygonRoi extends Roi {
                 if (lineWidth>1)
                 	drawWideLine(g, xSpline, ySpline, splinePoints);
                 else
-                	drawSpline(g, xSpline, ySpline, splinePoints, false);
+                	drawSpline(g, xSpline, ySpline, splinePoints, false, fill);
             } else
-                	drawSpline(g, xSpline, ySpline, splinePoints, true);
+                	drawSpline(g, xSpline, ySpline, splinePoints, true, fill);
         } else {
             if (type==POLYLINE || type==FREELINE || type==ANGLE || state==CONSTRUCTING) {
                 if (lineWidth>1 && isLine())
                 	drawWideLine(g, toFloat(xp), toFloat(yp), nPoints);
                 g.drawPolyline(xp2, yp2, nPoints);
             } else {
-            	if (fillColor!=null)
+            	if (fill)
                 	g.fillPolygon(xp2, yp2, nPoints);
                 else
                 	g.drawPolygon(xp2, yp2, nPoints);
@@ -160,7 +164,7 @@ public class PolygonRoi extends Roi {
             {updateFullWindow = false; imp.draw();}
 	}
 	
- 	private void drawSpline(Graphics g, float[] xpoints, float[] ypoints, int npoints, boolean closed) {
+ 	private void drawSpline(Graphics g, float[] xpoints, float[] ypoints, int npoints, boolean closed, boolean fill) {
  		if (ic==null) return;
   		Rectangle srcRect = ic.getSrcRect();
  		float srcx=srcRect.x, srcy=srcRect.y;
@@ -179,7 +183,7 @@ public class PolygonRoi extends Roi {
 		}
 		if (closed)
 			path.lineTo((xpoints[0]-srcx+xf)*mag, (ypoints[0]-srcy+yf)*mag);
-		if (fillColor!=null)
+		if (fill)
 			g2d.fill(path);
 		else
 			g2d.draw(path);

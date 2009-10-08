@@ -31,6 +31,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
 	protected static int pasteMode = Blitter.COPY;
 	protected static int lineWidth = 1;
+	protected static Color defaultFillColor;
 	
 	protected int type;
 	protected int xMax, yMax;
@@ -83,6 +84,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			draw(g);
 			g.dispose();
 		}
+		fillColor = defaultFillColor;
 	}
 	
 	/** Creates a new rectangular Roi. */
@@ -104,6 +106,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		height = 0;
 		state = CONSTRUCTING;
 		type = RECTANGLE;
+		fillColor = defaultFillColor;
 	}
 	
 	/** Obsolete */
@@ -1026,7 +1029,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	/** Sets the default (global) color used for ROI outlines.
 	 * @see #getColor()
-	 * @see #setOutlineColor(Color)
+	 * @see #setLineColor(Color)
 	 */
 	public static void setColor(Color c) {
 		ROIColor = c;
@@ -1034,7 +1037,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	/** Returns the default (global) color used for drawing ROI outlines.
 	 * @see #setColor(Color)
-	 * @see #getOutlineColor()
+	 * @see #getLineColor()
 	 */
 	public static Color getColor() {
 		return ROIColor;
@@ -1042,18 +1045,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Sets the color used by this ROI to draw its outline. This color, if not null, 
 	 * overrides the global color set by the static setColor() method.
-	 * @see #getOutlineColor()
+	 * @see #getLineColor()
 	 * @see #setLineWidth(int)
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
-	public void setOutlineColor(Color c) {
+	public void setLineColor(Color c) {
 		outlineColor = c;
 	}
 
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used.
-	 * @see #setOutlineColor(Color)
+	 * @see #setLineColor(Color)
 	 */
-	public Color getOutlineColor() {
+	public Color getLineColor() {
 		return outlineColor;
 	}
 
@@ -1066,10 +1069,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Returns the the color used to fill this ROI when it is in a display, or null.
-	 * @see #getOutlineColor()
+	 * @see #getLineColor()
 	 */
 	public Color getFillColor() {
 		return fillColor;
+	}
+	
+	public static void setDefaultFillColor(Color color) {
+		defaultFillColor = color;
+	}
+	
+	public static Color getDefaultFillColor() {
+		return defaultFillColor;
 	}
 	
 	/** Copy the attributes (outline color, fill color, outline width) 
@@ -1080,7 +1091,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.stroke = roi2.stroke;
 	}
 
-	/** Obsolete; replaced by setOutlineColor(). */
+	/** Obsolete; replaced by setLineColor(). */
 	public void setInstanceColor(Color c) {
 		outlineColor = c;
 	}
@@ -1093,11 +1104,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Sets the width of the lines used to draw this ROI when
 	 * it is part of a display list or ROI Manager "Show All" list.
-	 * @see #setOutlineColor(Color)
+	 * @see #setLineColor(Color)
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
 	public void setLineWidth(int width) {
 		this.stroke = new BasicStroke(width);
+		if (width>1) fillColor = null;
 	}
 
 	/** Returns the lineWidth. */
