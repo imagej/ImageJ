@@ -1,70 +1,55 @@
-package ij.plugin.filter;
+package ij.plugin;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import ij.macro.Interpreter;
 import ij.util.Tools;
 
-/** This plugin implements ImageJ's Image/Duplicate command. */
-public class Duplicator implements PlugInFilter, TextListener {
-	ImagePlus imp;
-	static boolean duplicateStack;
-	boolean duplicateSubstack;
-	int first, last;
-	Checkbox checkbox;
-	TextField rangeField;
+/** This plugin implements the Image/Duplicate command.
+<pre>
+   // test script
+   img1 = IJ.getImage();
+   img2 = new Duplicator().duplicate(img1);
+   //img2 = new Duplicator().duplicateSubstack(img1,1,10);
+   img2.show();
+</pre>
+*/
+public class Duplicator implements PlugIn, TextListener {
+	private static boolean duplicateStack;
+	private boolean duplicateSubstack;
+	private int first, last;
+	private Checkbox checkbox;
+	private TextField rangeField;
 
-	public int setup(String arg, ImagePlus imp) {
-		this.imp = imp;
-		IJ.register(Duplicater.class);
-		return DOES_ALL+NO_CHANGES;
-	}
-
-	public void run(ImageProcessor ip) {
-		duplicate(imp);
-	}
-
-	public void duplicate(ImagePlus imp) {
+	public void run(String arg) {
+		ImagePlus imp = IJ.getImage();
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);
 		if (!IJ.altKeyDown()||stackSize>1)
-			newTitle = getString("Duplicate...", "Title: ", newTitle);
+			newTitle = showDialog(imp, "Duplicate...", "Title: ", newTitle);
 		if (newTitle==null)
 			return;
 		ImagePlus imp2;
 		Roi roi = imp.getRoi();
 		if (duplicateSubstack && (first>1||last<stackSize))
-			imp2 = duplicateSubstack(imp, newTitle, first, last);
+			imp2 = duplicateSubstack(imp, first, last);
 		else if (duplicateStack)
-			imp2 = duplicateStack(imp, newTitle);
-		else {
-			ImageProcessor ip2 = imp.getProcessor().crop();
-			imp2 = imp.createImagePlus();
-			imp2.setProcessor(newTitle, ip2);
-			String info = (String)imp.getProperty("Info");
-			if (info!=null)
-				imp2.setProperty("Info", info);
-			if (stackSize>1) {
-				ImageStack stack = imp.getStack();
-				String label = stack.getSliceLabel(imp.getCurrentSlice());
-				if (label!=null && label.indexOf('\n')>0)
-					imp2.setProperty("Info", label);
-				if (imp.isComposite()) {
-					LUT lut = ((CompositeImage)imp).getChannelLut();
-					imp2.getProcessor().setColorModel(lut);
-				}
-			}
-		}
+			imp2 = duplicate(imp);
+		else
+			imp2 = duplicateImage(imp);
+		imp2.setTitle(newTitle);
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
 			imp2.restoreRoi();
 	}
                 
-	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {
+	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
+	public ImagePlus duplicate(ImagePlus imp) {
+		if (imp.getStackSize()==1)
+			return duplicateImage(imp);
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isArea())
@@ -80,7 +65,7 @@ public class Duplicator implements PlugInFilter, TextListener {
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
 		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack(newTitle, stack2);
+		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		if (imp.isComposite()) {
@@ -92,7 +77,28 @@ public class Duplicator implements PlugInFilter, TextListener {
 		return imp2;
 	}
 	
-	public ImagePlus duplicateSubstack(ImagePlus imp, String newTitle, int first, int last) {
+	ImagePlus duplicateImage(ImagePlus imp) {
+		ImageProcessor ip2 = imp.getProcessor().crop();
+		ImagePlus imp2 = imp.createImagePlus();
+		imp2.setProcessor("DUP_"+imp.getTitle(), ip2);
+		String info = (String)imp.getProperty("Info");
+		if (info!=null)
+			imp2.setProperty("Info", info);
+		if (imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0)
+				imp2.setProperty("Info", label);
+			if (imp.isComposite()) {
+				LUT lut = ((CompositeImage)imp).getChannelLut();
+				imp2.getProcessor().setColorModel(lut);
+			}
+		}
+		return imp2;
+	}
+	
+	/** Returns a new stack containing a subrange of the specified stack. */
+	public ImagePlus duplicateSubstack(ImagePlus imp, int firstSlice, int lastSlice) {
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isArea())
@@ -101,14 +107,14 @@ public class Duplicator implements PlugInFilter, TextListener {
 		int height = rect!=null?rect.height:imp.getHeight();
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = new ImageStack(width, height, imp.getProcessor().getColorModel());
-		for (int i=first; i<=last; i++) {
+		for (int i=firstSlice; i<=lastSlice; i++) {
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
 		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack(newTitle, stack2);
+		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		int size = stack2.getSize();
 		boolean tseries = imp.getNFrames()==imp.getStackSize();
 		if (tseries)
@@ -118,13 +124,10 @@ public class Duplicator implements PlugInFilter, TextListener {
 		return imp2;
 	}
 
-	String getString(String title, String prompt, String defaultString) {
-		Frame win = imp.getWindow();
+	String showDialog(ImagePlus imp, String title, String prompt, String defaultString) {
 		int stackSize = imp.getStackSize();
-		if (win==null)
-			win = IJ.getInstance();
 		duplicateSubstack = stackSize>1 && (stackSize==imp.getNSlices()||stackSize==imp.getNFrames());
-		GenericDialog gd = new GenericDialog(title, win);
+		GenericDialog gd = new GenericDialog(title);
 		gd.addStringField(prompt, defaultString, duplicateSubstack?15:20);
 		if (stackSize>1) {
 			String msg = duplicateSubstack?"Duplicate Stack":"Duplicate Entire Stack";

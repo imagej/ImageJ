@@ -1,6 +1,7 @@
 package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
+import ij.plugin.Duplicator;
 
 /** Obsolete; replaced by Duplicator class. */
 public class Duplicater implements PlugInFilter {
@@ -12,21 +13,18 @@ public class Duplicater implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		Duplicator duplicator = new Duplicator();
-		duplicator.setup("", imp);
-		duplicator.duplicate(imp);
 	}
 
-	public void duplicate(ImagePlus imp) {
-		(new Duplicator()).duplicate(imp);
-	}
-                
 	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {
-		return (new Duplicator()).duplicateStack(imp, newTitle);
+		ImagePlus imp2 = (new Duplicator()).duplicate(imp);
+		imp2.setTitle(newTitle);
+		return imp2;
 	}
 	
 	public ImagePlus duplicateSubstack(ImagePlus imp, String newTitle, int first, int last) {
-		return (new Duplicator()).duplicateSubstack(imp, newTitle, first, last);
+		ImagePlus imp2 = (new Duplicator()).duplicateSubstack(imp, first, last);
+		imp2.setTitle(newTitle);
+		return imp2;
 	}
 
 }

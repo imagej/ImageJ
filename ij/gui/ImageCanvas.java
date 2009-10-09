@@ -144,9 +144,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
-			if (showAllROIs) showAllROIs(g);
 			if (displayList!=null) drawDisplayList(g);
 			if (roi != null) roi.draw(g);
+			if (showAllROIs) showAllROIs(g);
 			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(g);
 			if (IJ.debugMode) showFrameRate(g);
@@ -190,6 +190,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					drawRoi(g, roi, drawLabels?i:-1);
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
+			if (i<100 && drawLabels && imp!=null && roi==imp.getRoi()) {
+				Color lineColor = roi.getLineColor();
+				Color fillColor = roi.getFillColor();
+				int lineWidth = roi.getLineWidth();
+				roi.setLineColor(null);
+				roi.setFillColor(null);
+				roi.setLineWidth(1);
+				roi.draw(g);
+				roi.setLineColor(lineColor);
+				roi.setFillColor(fillColor);
+				roi.setLineWidth(lineWidth);
+			}
 		}
     }
     
@@ -389,9 +401,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
-			if (showAllROIs) showAllROIs(offScreenGraphics);
 			if (displayList!=null) drawDisplayList(offScreenGraphics);
 			if (roi!=null) roi.draw(offScreenGraphics);
+			if (showAllROIs) showAllROIs(offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);

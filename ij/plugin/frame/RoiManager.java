@@ -20,7 +20,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public static final String LOC_KEY = "manager.loc";
 	static final int BUTTONS = 10;
 	static final int DRAW=0, FILL=1, LABEL=2;
-	static final int TOGGLE=0, LABELS=1, NO_LABELS=2;
+	static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	static final int MENU=0, COMMAND=1;
 	static int rows = 15;
 	static boolean allowMultipleSelections = true; 
@@ -36,6 +36,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean ignoreInterrupts;
 	PopupMenu pm;
 	Button moreButton, colorButton;
+	Checkbox showAllCheckbox = new Checkbox("Show All", false);
+	Checkbox labelsCheckbox = new Checkbox("Labels", true);
+
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
 	static boolean restoreCentered;
@@ -43,7 +46,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean noUpdateMode;
 	int defaultLineWidth = 1;
 	Color defaultColor;
-	boolean drawLabels = true;
 
 	public RoiManager() {
 		super("ROI Manager");
@@ -84,10 +86,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Rename...");
 		addButton("Measure");
 		addButton("Deselect");
-		addButton("Show All");
-		addButton("Labels");
+		//addButton("Show All");
+		//addButton("Labels");
 		addButton("Color...");
 		addButton(moreButtonLabel);
+		showAllCheckbox.addItemListener(this);
+		panel.add(showAllCheckbox);
+		labelsCheckbox.addItemListener(this);
+		panel.add(labelsCheckbox);
 		add(panel);		
 		addPopupMenu();
 		pack();
@@ -157,12 +163,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rename(null);
 		else if (command.equals("Color..."))
 			setColorAndLineWidth(null, 0);
-		else if (command.equals("Labels"))
-			toggleLabels();
 		else if (command.equals("Measure"))
 			measure(MENU);
-		else if (command.equals("Show All"))
-			showAll(TOGGLE);
 		else if (command.equals("Draw"))
 			drawOrFill(DRAW);
 		else if (command.equals("Fill"))
@@ -204,6 +206,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	public void itemStateChanged(ItemEvent e) {
+		Object source = e.getSource();
+		if (source==showAllCheckbox) {
+			showAll(showAllCheckbox.getState()?SHOW_ALL:SHOW_NONE);
+			return;
+		}
+		if (source==labelsCheckbox) {
+			showAll(labelsCheckbox.getState()?LABELS:NO_LABELS);
+			return;
+		}
 		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
 			int index = 0;
             try {index = Integer.parseInt(e.getItem().toString());}
@@ -925,7 +936,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (color!=null) roi.setLineColor(color);
 		}
 		if (lineWidth>1 && !showingAll && roi==null) {
-			showAll(TOGGLE);
+			showAll(SHOW_ALL);
 			showingAll = true;
 		}
 		if (imp!=null && (imp.getRoi()!=null || showingAll))
@@ -935,31 +946,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Recorder.record("roiManager", "Set Line Width", lineWidth);
 		}
 	}
-		
-	void toggleLabels() {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{error("There are no images open."); return;}
-		ImageCanvas ic = imp.getCanvas();
-		if (ic==null) return;
-		boolean showingROIs = ic.getShowAllROIs();
-		if (!showingROIs) {
-			drawLabels = true;
-			ic.setShowAllROIs(true);
-		} else
-			drawLabels = !drawLabels;
-		imp.killRoi();
-		imp.draw();
-		if (record())  {
-			if (drawLabels)
-				Recorder.record("roiManager", "Show All with labels");
-			else
-				Recorder.record("roiManager", "Show All without labels");
-		}
-	}
-	
+			
 	public boolean getDrawLabels() {
-		return drawLabels;
+		return labelsCheckbox.getState();
 	}
 
 	void combine() {
@@ -1149,15 +1138,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			{error("There are no images open."); return;}
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
-		boolean showAll = ic.getShowAllROIs();
+		boolean showAll = mode==SHOW_ALL;
 		if (mode==LABELS) {
-			drawLabels = true;
 			showAll = true;
+			if (record())
+				Recorder.record("roiManager", "Show All with labels");
 		} else if (mode==NO_LABELS) {
-			drawLabels = false;
 			showAll = true;
-		} else {
-			showAll = !showAll;
+			if (record())
+				Recorder.record("roiManager", "Show All without labels");
 		}
 		if (showAll) imp.killRoi();
 		ic.setShowAllROIs(showAll);
@@ -1308,11 +1297,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			sort();
 		else if (cmd.startsWith("multi"))
 			multiMeasure();
-		else if (cmd.equals("show all with labels"))
+		else if (cmd.equals("show all with labels")) {
+			labelsCheckbox.setState(true);
 			showAll(LABELS);
-		else if (cmd.equals("show all without labels"))
+		} else if (cmd.equals("show all without labels")) {
+			labelsCheckbox.setState(false);
 			showAll(NO_LABELS);
-		else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
+		} else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
 			IJ.wait(50);

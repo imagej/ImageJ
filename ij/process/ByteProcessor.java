@@ -109,7 +109,13 @@ public class ByteProcessor extends ImageProcessor {
 	
 	/** Returns this image as a BufferedImage. */
 	public BufferedImage getBufferedImage() {
-		return (BufferedImage)createBufferedImage();
+		if (isDefaultLut()) {
+			BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+			Graphics g = bi.createGraphics();
+			g.drawImage(createImage(), 0, 0, null);
+			return bi;
+		} else
+			return (BufferedImage)createBufferedImage();
 	}
 
 	/** Returns a new, blank ByteProcessor with the specified width and height. */
