@@ -79,8 +79,8 @@ public class Prefs {
 	public static boolean antialiasedTools;
 	/** Export Raw using little-endian byte order. */
 	public static boolean intelByteOrder;
-	/** Double buffer display of selections. */
-	public static boolean doubleBuffer;
+	/** Double buffer display of selections and overlays. */
+	public static boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */
 	public static boolean noPointLabels = true;
 	/** Disable Edit/Undo command. */
@@ -368,7 +368,7 @@ public class Prefs {
 		useInvertingLut = (options&USE_INVERTING_LUT)!=0;
 		antialiasedTools = (options&ANTIALIASED_TOOLS)!=0;
 		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
-		doubleBuffer = (options&DOUBLE_BUFFER)!=0;
+		// doubleBuffer = (options&DOUBLE_BUFFER)!=0; // always double buffer
 		noPointLabels = (options&NO_POINT_LABELS)!=0;
 		noBorder = (options&NO_BORDER)!=0;
 		showAllSliceOnly = (options&SHOW_ALL_SLICE_ONLY)!=0;

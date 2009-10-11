@@ -57,7 +57,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean useJFileChooser,debugMode;
 	Color foregroundColor, backgroundColor, roiColor;
 	boolean pointAutoMeasure, requireControlKey, useInvertingLut;
-	boolean doubleBuffer, disablePopup;
+	boolean disablePopup;
 	int measurements;
 	int decimalPlaces;
 	boolean blackBackground;
@@ -160,6 +160,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_DIMENSIONS: getDimensions(); break;
 			case WAIT_FOR_USER: waitForUser(); break;
 			case MAKE_POINT: makePoint(); break;
+			case MAKE_TEXT: makeText(); break;
 		}
 	}
 	
@@ -1298,6 +1299,16 @@ public class Functions implements MacroConstants, Measurements {
 				if (fi!=null) description = fi.description;
 				if  (description==null) description = "";
 				return description;
+			} else if (key.equals("image.filename")) {
+				String name= "";
+				FileInfo fi = getImage().getOriginalFileInfo();
+				if (fi!=null && fi.fileName!=null) name= fi.fileName;
+				return name;
+			} else if (key.equals("image.directory")) {
+				String dir= "";
+				FileInfo fi = getImage().getOriginalFileInfo();
+				if (fi!=null && fi.directory!=null) dir= fi.directory;
+				return dir;
 			} else if (key.equals("selection.name")||key.equals("roi.name")) {
 				ImagePlus imp = getImage();
 				Roi roi = imp.getRoi();
@@ -2015,7 +2026,6 @@ public class Functions implements MacroConstants, Measurements {
 		pointAutoMeasure = Prefs.pointAutoMeasure;
 		requireControlKey = Prefs.requireControlKey;
 		useInvertingLut = Prefs.useInvertingLut;
-		doubleBuffer = Prefs.doubleBuffer;
 		saveSettingsCalled = true;
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
@@ -2042,7 +2052,6 @@ public class Functions implements MacroConstants, Measurements {
 		Prefs.blackCanvas = blackCanvas;
 		Prefs.useJFileChooser = useJFileChooser;
 		Prefs.useInvertingLut = useInvertingLut;
-		Prefs.doubleBuffer = doubleBuffer;
 		IJ.debugMode = debugMode;
 		Toolbar.setForegroundColor(foregroundColor);
 		Toolbar.setBackgroundColor(backgroundColor);
@@ -2115,13 +2124,27 @@ public class Functions implements MacroConstants, Measurements {
 		String cmd = getFirstString();
 		cmd = cmd.toLowerCase();
 		String path = null;
+		String color = null;
+		double lineWidth = 1.0;
 		int index=0;
 		double countOrIndex=Double.NaN;
-		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename");
+		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
+			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width");
 		boolean select = cmd.equals("select");
+		boolean add = cmd.equals("add");
 		if (twoArgCommand)
 			path = getLastString();
-		else if (select)
+		else if (add) {
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				color = interp.getString();
+			}
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				lineWidth = interp.getExpression();
+			}
+			interp.getRightParen();
+		} else if (select)
 			index = (int)getLastArg();
 		else
 			interp.getRightParen();
@@ -2136,6 +2159,8 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("ROI Manager not found");
 		if (twoArgCommand)
 			rm.runCommand(cmd, path);
+		else if (add)
+			rm.runCommand("Add", color, lineWidth);
 		else if (select) {
 			int n = rm.getList().getItemCount();
 			checkIndex(index, 0, n-1);
@@ -3358,7 +3383,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (arg1.equals("disablepopupmenu")) {
 			ImageCanvas ic = getImage().getCanvas();
 			if (ic!=null) ic.disablePopupMenu(state);
-		} else if (arg1.equals("show all")) {
+		} else if (arg1.startsWith("show all")) {
 			ImagePlus img = getImage();
 			ImageCanvas ic = img.getCanvas();
 			if (ic!=null) {
@@ -3979,9 +4004,10 @@ public class Functions implements MacroConstants, Measurements {
 			if (value==null) interp.error("Value not found");
 		} else if (name.equals("set")||name.equals("add")||name.equals("put"))
 			props.setProperty(getFirstString(), getLastString());
-		else if (name.equals("clear")||name.equals("reset"))
+		else if (name.equals("clear")||name.equals("reset")) {
+			interp.getParens();
 			props.clear();
-		else if (name.equals("setList"))
+		} else if (name.equals("setList"))
 			setProperties();
 		else if (name.equals("getList"))
 			value = getProperties();
@@ -4052,6 +4078,17 @@ public class Functions implements MacroConstants, Measurements {
 		int y = (int)getLastArg();
 		IJ.makePoint(x, y);
 		resetImage(); 
+	}
+
+	void makeText() {
+		String text = getFirstString();
+		int x = (int)getNextArg();
+		int y = (int)getLastArg();
+		ImagePlus imp = getImage();
+		Font font = this.font;
+		if (font==null) font = imp.getProcessor().getFont();
+		Roi roi = new TextRoi(x, y, text, font);
+		imp.setRoi(roi);
 	}
 
 	double fit() {
@@ -4216,6 +4253,8 @@ public class Functions implements MacroConstants, Measurements {
 			return getArrayStatistics();
 		else if (name.equals("fill"))
 			return fillArray();
+		else if (name.equals("invert"))
+			return invertArray();
 		else
 			interp.error("Unrecognized Stack function");
 		return null;
@@ -4322,6 +4361,19 @@ public class Functions implements MacroConstants, Measurements {
 		double v = getLastArg();
 		for (int i=0; i<a.length; i++)
 			a[i].setValue(v);
+		return a;
+	}
+	
+	Variable[] invertArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getRightParen();
+		int n = a.length;
+		for (int i=0; i<n/2; i++) {
+			Variable temp = a[i];
+			a[i] = a[n-i-1];
+			a[n-i-1] = temp;
+		}
 		return a;
 	}
 	

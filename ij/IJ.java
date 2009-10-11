@@ -268,6 +268,7 @@ public class IJ {
 			commandTable.put("RGB Merge...", "Merge Channels...");
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
+			commandTable.put("Arbitrarily... ", "Rotate... ");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -811,7 +812,7 @@ public class IJ {
 	public static boolean versionLessThan(String version) {
 		boolean lessThan = ImageJ.VERSION.compareTo(version)<0;
 		if (lessThan)
-			error("This plugin or macro requires ImageJ "+version+" or later.");
+			error("This plugin or macro requires ImageJ "+version+" or later. Use\nHelp>Update ImageJ to upgrade to the latest version.");
 		return lessThan;
 	}
 	
@@ -1576,6 +1577,7 @@ public class IJ {
 				GraphicsDevice[] gd = ge.getScreenDevices();
 				GraphicsConfiguration[] gc = gd[0].getConfigurations();
 				Rectangle bounds = gc[0].getBounds();
+				//System.out.println("getScreenSize: "+bounds);
 				if (bounds.x==0&&bounds.y==0)
 					screenSize = new Dimension(bounds.width, bounds.height);
 				else

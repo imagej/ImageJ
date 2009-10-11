@@ -3,7 +3,7 @@ package ij.gui;
 import java.awt.*;
 import java.util.Properties;
 import java.awt.image.*;
-import ij.process.ImageProcessor;
+import ij.process.*;
 import ij.measure.*;
 import ij.plugin.WandToolOptions;
 import ij.plugin.frame.Recorder;
@@ -13,6 +13,8 @@ import ij.*;
 import ij.util.*;
 import java.awt.event.*;
 import java.util.*;
+import java.awt.geom.*;
+
 
 /** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
@@ -39,7 +41,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
-    private Vector displayList;
+    private Vector displayList, showAllList;
     private boolean labelListItems;
     private Color listColor;
     private BasicStroke listStroke;
@@ -125,10 +127,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
-		if (roi != null) {
-			roi.updatePaste();
-			if (Prefs.doubleBuffer && !IJ.isMacOSX())
-				{paintDoubleBuffered(g); return;}
+		if (roi!=null || showAllROIs || displayList!=null) {
+			if (roi!=null) roi.updatePaste();
+			if (!IJ.isMacOSX()) {
+				paintDoubleBuffered(g);
+				return;
+			}
 		}
 		try {
 			if (imageUpdated) {
@@ -140,9 +144,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
-			if (showAllROIs) showAllROIs(g);
 			if (displayList!=null) drawDisplayList(g);
 			if (roi != null) roi.draw(g);
+			if (showAllROIs) showAllROIs(g);
 			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(g);
 			if (IJ.debugMode) showFrameRate(g);
@@ -152,23 +156,53 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
     void showAllROIs(Graphics g) {
 		RoiManager rm=RoiManager.getInstance();
-		if (rm==null) return;
+		if (rm==null) {
+			rm = Interpreter.getBatchModeRoiManager();
+			if (rm!=null && rm.getList().getItemCount()==0)
+				rm = null;
+		}
+		if (rm==null) {
+			if (showAllList!=null)
+				displayList = showAllList;
+			showAllROIs = false;
+			repaint();
+			return;
+		}
 		initGraphics(g, null);
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
+		boolean drawLabels = rm.getDrawLabels();
 		int n = list.getItemCount();
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
+		if (!drawLabels)
+			showAllList = new Vector();
+		else
+			showAllList = null;
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
+			if (showAllList!=null)
+				showAllList.addElement(roi);
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
 				int slice = getSliceNumber(roi.getName());
 				if (slice==-1 || slice==imp.getCurrentSlice())
-					drawRoi(g, roi, i);
+					drawRoi(g, roi, drawLabels?i:-1);
 			} else
-				drawRoi(g, roi, i);
+				drawRoi(g, roi, drawLabels?i:-1);
+			if (i<100 && drawLabels && imp!=null && roi==imp.getRoi() && !(roi instanceof TextRoi)) {
+				Color lineColor = roi.getLineColor();
+				Color fillColor = roi.getFillColor();
+				int lineWidth = roi.getLineWidth();
+				roi.setLineColor(null);
+				roi.setFillColor(null);
+				roi.setLineWidth(1);
+				roi.draw(g);
+				roi.setLineColor(lineColor);
+				roi.setFillColor(fillColor);
+				roi.setLineWidth(lineWidth);
+			}
 		}
     }
     
@@ -214,42 +248,83 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
     void drawRoi(Graphics g, Roi roi, int index) {
     	int type = roi.getType();
-    	if (type==Roi.COMPOSITE||type==Roi.POINT||(roi instanceof TextRoi)) {
-			roi.setImage(imp);
-			Color c = roi.getColor();
-			if (index==-1 && listColor!=null)
-				roi.setColor(listColor);
+		ImagePlus imp2 = roi.getImage();
+		roi.setImage(imp);
+		Color saveColor = roi.getLineColor();
+		if (saveColor==null) {
+			if (index>=0 || listColor==null)
+				roi.setLineColor(showAllColor);
 			else
-				roi.setColor(showAllColor);
-			roi.draw(g);
-			roi.setColor(c);
-			if (index>=0) {
-				g.setColor(showAllColor);
-				drawRoiLabel(g, index, roi.getBounds());
-			}
+				roi.setLineColor(listColor);
+		}
+		if (roi instanceof TextRoi)
+			((TextRoi)roi).drawText(g);
+		else
+			roi.drawDisplayList(g);
+		roi.setLineColor(saveColor);
+		if (index>=0) {
+			g.setColor(showAllColor);
+			drawRoiLabel(g, index, roi.getBounds());
+		}
+		if (imp2!=null)
+			roi.setImage(imp2);
+		else
+			roi.setImage(null);
+		/*
 		} else {
-			Color c = index==-1?roi.getInstanceColor():null;
+			Color c = roi.getLineColor();
+			Color fillColor = roi.getFillColor();
+			if (fillColor!=null) c = fillColor;
 			Color saveg = null;
 			if (c!=null) {
 				saveg = g.getColor();
 				g.setColor(c);
 			}
-			Polygon p = roi.getPolygon();
-			int x1=0, y1=0, x2=0, y2=0;
-			for (int j=0; j<p.npoints; j++) {
-				x2 = screenX(p.xpoints[j]);
-				y2 = screenY(p.ypoints[j]);
-				if (j>0) g.drawLine(x1, y1, x2, y2);
-				x1=x2; y1=y2;
+			GeneralPath path = new GeneralPath();
+			if (roi.getType()==Roi.OVAL) {
+				double mag = getMagnification();
+				Rectangle r = roi.getBounds();
+				float sw = (float)(r.width*mag);
+				float sh = (float)(r.height*mag);
+				float sx = screenX(r.x);
+				float sy = screenY(r.y);
+				path.append(new Ellipse2D.Float(sx, sy, sw, sh), false);
+			} else if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).isSplineFit()) {
+				FloatPolygon p = roi.getFloatPolygon();
+				path.moveTo(screenXD(p.xpoints[0]), screenYD(p.ypoints[0]));
+				for (int j=1; j<p.npoints; j++)
+					path.lineTo(screenXD(p.xpoints[j]), screenYD(p.ypoints[j]));
+				if (roi.isArea()&&p.npoints>0)
+					path.lineTo(screenXD(p.xpoints[0]), screenYD(p.ypoints[0]));
+			} else {
+				Polygon p = roi.getPolygon();
+				path.moveTo(screenX(p.xpoints[0]), screenY(p.ypoints[0]));
+				for (int j=1; j<p.npoints; j++)
+					path.lineTo(screenX(p.xpoints[j]), screenY(p.ypoints[j]));
+				if (roi.isArea()&&p.npoints>0)
+					path.lineTo(screenX(p.xpoints[0]), screenY(p.ypoints[0]));
 			}
-			if (roi.isArea()&&p.npoints>0) {
-				int x0 = screenX(p.xpoints[0]);
-				int y0 = screenY(p.ypoints[0]);
-				g.drawLine(x1, y1, x0, y0);
+			Graphics2D g2d = (Graphics2D)g;
+			BasicStroke stroke = roi.getStroke();
+			Stroke saveStroke = null;
+			if (stroke!=null) {
+				saveStroke = g2d.getStroke();
+				g2d.setStroke(stroke);
 			}
-			if (index>=0) drawRoiLabel(g, index, roi.getBounds());
+			if (index==-1)
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			if (fillColor!=null)
+				g2d.fill(path);
+			else
+				g2d.draw(path);
+			if (saveStroke!=null) g2d.setStroke(saveStroke);
 			if (saveg!=null) g.setColor(saveg);
+			if (index>=0)
+				drawRoiLabel(g, index, roi.getBounds());
+			else
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		}
+		*/
     }
     
 	void drawRoiLabel(Graphics g, int index, Rectangle r) {
@@ -327,9 +402,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
-			if (showAllROIs) showAllROIs(offScreenGraphics);
 			if (displayList!=null) drawDisplayList(offScreenGraphics);
 			if (roi!=null) roi.draw(offScreenGraphics);
+			if (showAllROIs) showAllROIs(offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
@@ -1097,14 +1172,16 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		disablePopupMenu = status;
 	}
 
+	/** Enables/disables the ROI Manager "Show All" mode. */
 	public void setShowAllROIs(boolean showAllROIs) {
 		this.showAllROIs = showAllROIs;
 	}
 
+	/** Returns the state of the ROI Manager "Show All" flag. */
 	public boolean getShowAllROIs() {
 		return showAllROIs;
 	}
-	
+
 	/** Returns the color used for "Show All" mode. */
 	public static Color getShowAllColor() {
 			return showAllColor;
@@ -1122,16 +1199,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
-	/** Installs a list of ROIs ("display list") that will be drawn as an overly on this image.
-	 * @see ij.gui.Roi#setInstanceColor
+	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
+	 * @see ij.gui.Roi#setLineColor
+	 * @see ij.gui.Roi#setLineWidth
 	 * @see ij.gui.Roi#setLocation
 	 * @see ij.gui.Roi#setNonScalable
+	 * @see ij.gui.TextRoi#setBackgroundColor
 	 */
 	public void setDisplayList(Vector list) {
 		displayList = list;
 		listColor = null;
 		if (list==null) customRoi = false;
-		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getInstanceColor()!=null)
+		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getLineColor()!=null)
 			labelListItems = false;
 		else
 			labelListItems = true;
@@ -1140,15 +1219,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Creates a single ShapeRoi display list from the specified 
 	 * Shape, Color and BasicStroke, and activates it.
-	 * @see ij.gui.Roi#setInstanceColor
+	 * @see #setDisplayList(Vector)
+	 * @see ij.gui.Roi#setLineColor
 	 * @see ij.gui.Roi#setLineWidth
-	 * @see ij.gui.Roi#setStroke
 	 */
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
 			{setDisplayList(null); return;}
 		Roi roi = new ShapeRoi(shape);
-		roi.setInstanceColor(color);
+		roi.setLineColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		displayList = list;
@@ -1159,9 +1238,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	/** Creates a single ROI display list from the specified 
-		ROI and Color, and activates it. */
+		ROI and Color, and activates it.
+	 * @see #setDisplayList(Vector)
+	 * @see ij.gui.Roi#setLineColor
+	 * @see ij.gui.Roi#setLineWidth
+	 * @see ij.gui.TextRoi#setBackgroundColor
+	 */
 	public void setDisplayList(Roi roi, Color color) {
-		roi.setInstanceColor(color);
+		roi.setLineColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		setDisplayList(list);

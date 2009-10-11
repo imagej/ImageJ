@@ -39,8 +39,8 @@ import java.util.Vector;
 	public void run(String arg) {
 		if (arg.equals("stack")) {
 			virtualStack = IJ.getImage();
-			if (!virtualStack.getStack().isVirtual()) {
-				error("This command requires a virtual stack.");
+			if (virtualStack.getStackSize()==1) {
+				error("This command requires a stack or virtual stack.");
 				return;
 			}
 		}

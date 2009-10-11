@@ -681,10 +681,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		pw.close();
 		if (isResults) {
 			Analyzer.setUnsavedMeasurements(false);
-			if (Recorder.record)
+			if (Recorder.record && !IJ.isMacro())
 				Recorder.record("saveAs", "Measurements", path);
 		} else {
-			if (Recorder.record)
+			if (Recorder.record && !IJ.isMacro())
 				Recorder.record("saveAs", "Text", path);
 		}
 		IJ.showStatus("");

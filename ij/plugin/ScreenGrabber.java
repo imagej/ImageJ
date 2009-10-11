@@ -4,17 +4,33 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 
-/** This plugin implements the Plugins/Utilities/Capture Screen
+/** This plugin implements the Image/Flatten, Plugins/Utilities/Capture Screen
     and Plugins/Utilities/Capture Image commands. */
 public class ScreenGrabber implements PlugIn {
-    
+
 	public void run(String arg) {
-		ImagePlus imp = null;
-		if (arg.equals("image"))
-		imp = captureImage();
+		ImagePlus imp2 = null;
+		if (arg.equals("image") || arg.equals("flatten"))
+			imp2 = captureImage();
 		else
-		imp = captureScreen();
-		if (imp!=null) imp.show();
+			imp2 = captureScreen();
+		if (imp2!=null)
+			imp2.show();
+		/*
+		if (imp2==null) return;
+		if (arg.equals("flatten")) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp==null) return;
+			if (imp.isHyperStack() || imp.isComposite())
+				imp2.show();
+			else {
+				Undo.setup(Undo.TYPE_CONVERSION, imp);
+				imp.setProcessor(null, imp2.getProcessor());
+				imp.killRoi();
+			}
+		} else
+			imp2.show();
+		*/
 	}
     
 	/** Captures the entire screen and returns it as an ImagePlus. */

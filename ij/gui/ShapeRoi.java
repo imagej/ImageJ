@@ -75,6 +75,7 @@ public class ShapeRoi extends Roi {
 	private boolean forceAngle = false;
 	
 	private Vector savedRois;
+	private static Stroke defaultStroke = new BasicStroke();
 
 
 	/** Constructs a ShapeRoi from an Roi. */
@@ -1044,21 +1045,30 @@ public class ShapeRoi extends Roi {
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
 		if (ic==null) return;
+		Color color = outlineColor!=null?outlineColor:ROIColor;
+		if (fillColor!=null) color = fillColor;
+		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
-		g.setColor(instanceColor!=null?instanceColor:ROIColor);
 		if (stroke!=null) ((Graphics2D)g).setStroke(stroke);
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
 		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
         aTx.translate(x, y);
-		((Graphics2D)g).draw(aTx.createTransformedShape(shape));
-		if (Toolbar.getToolId()==Toolbar.OVAL) drawRoiBrush(g);
+		Graphics2D g2d = (Graphics2D)g;
+		if (fillColor!=null)
+			g2d.fill(aTx.createTransformedShape(shape));
+		else
+			g2d.draw(aTx.createTransformedShape(shape));
+		if (stroke!=null) g2d.setStroke(defaultStroke);
+		if (Toolbar.getToolId()==Toolbar.OVAL)
+			drawRoiBrush(g);
 		if (imp!=null&&imp.getRoi()!=null) showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}
 
 	public void drawRoiBrush(Graphics g) {
+		g.setColor(ROIColor);
 		int size = Toolbar.getBrushSize();
 		if (size==0) return;
 		int flags = ic.getModifiers();
@@ -1104,12 +1114,16 @@ public class ShapeRoi extends Roi {
 		if(shape==null) return null;
 		if (cachedMask!=null && cachedMask.getPixels()!=null)
 			return cachedMask;
+		//Rectangle r = getBounds();
+		//if (r.x<0 || r.y<0) {
+		//	if (r.x<0) r.x = 0;
+		//	if (r.y<0) r.y = 0;
+		//	ShapeRoi clipRect = new ShapeRoi(new Roi(r.x,r.y,r.width,r.height));
+		//	setShape(getShape(this.or(clipRect)));
+		//}
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 		Graphics2D g2d = bi.createGraphics();
 		g2d.setColor(Color.white);
-		//AffineTransform at = new AffineTransform();
-		//at.translate(-x, -y);
-		//g2d.fill(at.createTransformedShape(shape));
 		g2d.fill(shape);
 		Raster raster = bi.getRaster();
 		DataBufferByte buffer = (DataBufferByte)raster.getDataBuffer();		

@@ -209,7 +209,9 @@ public class OvalRoi extends Roi {
 
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		g.setColor(instanceColor!=null?instanceColor:ROIColor);
+		Color color = outlineColor!=null?outlineColor:ROIColor;
+		if (fillColor!=null) color = fillColor;
+		g.setColor(color);
 		mag = ic.getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
@@ -221,8 +223,18 @@ public class OvalRoi extends Roi {
 		int sy2 = sy1+sh/2;
 		int sx3 = sx1+sw;
 		int sy3 = sy1+sh;
-		g.drawOval(sx1, sy1, sw, sh);
-		if (state!=CONSTRUCTING && clipboard==null) {
+		Graphics2D g2d = (Graphics2D)g;
+		Stroke saveStroke = null;
+		if (stroke!=null) {
+			saveStroke = g2d.getStroke();
+			g2d.setStroke(stroke);
+		}
+		if (fillColor!=null)
+			g.fillOval(sx1, sy1, sw, sh);
+		else
+			g.drawOval(sx1, sy1, sw, sh);
+		if (saveStroke!=null) g2d.setStroke(saveStroke);
+		if (state!=CONSTRUCTING && clipboard==null && !displayList) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1+sw2-size2, sy1+sh2-size2);
 			drawHandle(g, sx3-sw2-size2, sy1+sh2-size2);

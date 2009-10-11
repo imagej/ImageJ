@@ -1304,21 +1304,33 @@ public abstract class ImageProcessor extends Object {
 		return ("ip[width="+width+", height="+height+", min="+getMin()+", max="+getMax()+"]");
 	}
 
-	/**	Fills the image or ROI bounding rectangle with the current fill/draw value. Use
-	*	fill(mask) to fill non-rectangular selections.
-	*	@see ImageProcessor fill(Roi)
+	/** Fills the image or ROI bounding rectangle with the current fill/draw value. Use
+	*	fill(Roi) or fill(ip.getMask()) to fill non-rectangular selections.
+	*	@see #setColor(Color)
+	*	@see #setValue(double)
+	*	@see #fill(Roi)
 	*/
 	public void fill() {
 		process(FILL, 0.0);
 	}
 
-	/** Fills pixels that are within the ROI and part of the mask
-		(i.e. pixels that have a value=BLACK in the mask array). 
-		Throws and IllegalArgumentException if the mask is null or
-		the size of the mask is not the same as the size of the ROI. */
+	/** Fills pixels that are within the ROI bounding rectangle and part of 
+	*	the mask (i.e. pixels that have a value=BLACK in the mask array).
+	*	Use ip.getMask() to acquire the mask. 
+	*	Throws and IllegalArgumentException if the mask is null or
+	*	the size of the mask is not the same as the size of the ROI.
+	*	@see #setColor(Color)
+	*	@see #setValue(double)
+	*	@see #getMask
+	*	@see #fill(Roi)
+	*/
 	public abstract void fill(ImageProcessor mask);
 
-	/** Fills an Roi. */
+	/**	 Fills the ROI with the current fill/draw value. 
+	*	@see #setColor(Color)
+	*	@see #setValue(double)
+	*	@see #fill(Roi)
+	*/
 	public void fill(Roi roi) {
 		ImageProcessor m = getMask();
 		Rectangle r = getRoi();

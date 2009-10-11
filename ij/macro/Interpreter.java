@@ -1569,6 +1569,7 @@ public class Interpreter implements MacroConstants {
 		if (rgbWeights!=null)
 			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
 		if (func.writer!=null) func.writer.close();
+		func.roiManager = null;
 	}
 	
 	/** Aborts currently running macro. */

@@ -50,6 +50,8 @@ public class PluginClassLoader extends URLClassLoader {
 		if (list==null)
 			return;
 		for (int i=0; i<list.length; i++) {
+			if (list[i].equals(".rsrc"))
+				continue;
 			f=new File(path, list[i]);
 			if (f.isDirectory()) {
                 try {

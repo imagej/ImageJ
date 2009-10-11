@@ -10,7 +10,7 @@ import java.util.Vector;
 
 /** This plugin implements most of the Edit/Options/Colors command. */
 public class Colors implements PlugIn, ItemListener {
-	private String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
+	public static final String[] colors = {"red","green","blue","magenta","cyan","yellow","orange","black","white"};
 	private Choice fchoice, bchoice, schoice;
 	private Color fc2, bc2, sc2;
 
@@ -28,10 +28,13 @@ public class Colors implements PlugIn, ItemListener {
 		String bname = getColorName(bc, "white");
 		Color sc =Roi.getColor();
 		String sname = getColorName(sc, "yellow");
+		Color fillc = Roi.getDefaultFillColor();
+		String fillColor1 = fillc!=null?Integer.toHexString(fillc.getRGB()):"none";
 		GenericDialog gd = new GenericDialog("Colors");
 		gd.addChoice("Foreground:", colors, fname);
 		gd.addChoice("Background:", colors, bname);
 		gd.addChoice("Selection:", colors, sname);
+		gd.addStringField("ROI fill color: ", fillColor1);
 		Vector choices = gd.getChoices();
 		fchoice = (Choice)choices.elementAt(0);
 		bchoice = (Choice)choices.elementAt(1);
@@ -54,6 +57,17 @@ public class Colors implements PlugIn, ItemListener {
 		fname = gd.getNextChoice();
 		bname = gd.getNextChoice();
 		sname = gd.getNextChoice();
+		String fillColor2 = gd.getNextString();
+		if (!fillColor2.equals(fillColor1)) {
+			fillc = decode(fillColor2, null);
+			Roi.setDefaultFillColor(fillc);
+			ImagePlus imp = WindowManager.getCurrentImage();
+			Roi roi = imp!=null?imp.getRoi():null;
+			if (roi!=null) {
+				roi.setFillColor(fillc);
+				imp.draw();
+			}
+		}
 		fc2 = getColor(fname, Color.black);
 		bc2 = getColor(bname, Color.white);
 		sc2 = getColor(sname, Color.yellow);
@@ -67,7 +81,8 @@ public class Colors implements PlugIn, ItemListener {
 		}
 	}
 	
-	String getColorName(Color c, String defaultName) {
+	public static String getColorName(Color c, String defaultName) {
+		if (c==null) return defaultName;
 		String name = defaultName;
 		if (c.equals(Color.red)) name = colors[0];
 		else if (c.equals(Color.green)) name = colors[1];
@@ -81,7 +96,8 @@ public class Colors implements PlugIn, ItemListener {
 		return name;
 	}
 	
-	Color getColor(String name, Color defaultColor) {
+	public static Color getColor(String name, Color defaultColor) {
+		if (name==null) return defaultColor;
 		Color c = defaultColor;
 		if (name.equals(colors[0])) c = Color.red;
 		else if (name.equals(colors[1])) c = Color.green;
@@ -93,6 +109,32 @@ public class Colors implements PlugIn, ItemListener {
 		else if (name.equals(colors[7])) c = Color.black;
 		else if (name.equals(colors[8])) c = Color.white;
 		return c;
+	}
+
+	public static Color decode(String hexColor, Color defaultColor) {
+		Color color = getColor(hexColor, Color.gray);
+		if (color==Color.gray) {
+			if (hexColor.startsWith("#"))
+				hexColor = hexColor.substring(1);
+			int len = hexColor.length();
+			if (!(len==6 || len==8))
+				return defaultColor;
+			float alpha = len==8?parseHex(hexColor.substring(0,2)):1f;
+			if (len==8)
+				hexColor = hexColor.substring(2);
+			float red = parseHex(hexColor.substring(0,2));
+			float green = parseHex(hexColor.substring(2,4));
+			float blue = parseHex(hexColor.substring(4,6));
+			color = new Color(red, green, blue, alpha);
+		}
+		return color;
+	}
+
+	private static float parseHex(String hex) {
+		float value = 0f;
+		try {value=Integer.parseInt(hex,16);}
+		catch(Exception e) { }
+		return value/255f;
 	}
 
 	public void itemStateChanged(ItemEvent e) {

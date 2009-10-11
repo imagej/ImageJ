@@ -87,7 +87,7 @@ public class Commands implements PlugIn {
 			return;
 		}
 		imp.close();
-		if (Recorder.record) {
+		if (Recorder.record && !IJ.isMacro()) {
 			Recorder.record("close");
 			Recorder.setCommand(null); // don't record run("Close")
 		}

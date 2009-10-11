@@ -282,6 +282,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 					textArea.append("//run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
+				else if (name.equals("Add to Manager "))
+					;
 				else if (name.equals("Draw")) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					Roi roi = imp.getRoi();

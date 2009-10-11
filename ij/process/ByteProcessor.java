@@ -109,7 +109,13 @@ public class ByteProcessor extends ImageProcessor {
 	
 	/** Returns this image as a BufferedImage. */
 	public BufferedImage getBufferedImage() {
-		return (BufferedImage)createBufferedImage();
+		if (isDefaultLut()) {
+			BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+			Graphics g = bi.createGraphics();
+			g.drawImage(createImage(), 0, 0, null);
+			return bi;
+		} else
+			return (BufferedImage)createBufferedImage();
 	}
 
 	/** Returns a new, blank ByteProcessor with the specified width and height. */
@@ -193,8 +199,11 @@ public class ByteProcessor extends ImageProcessor {
 			{fill(); return;}
 		int roiWidth=this.roiWidth, roiHeight=this.roiHeight;
 		int roiX=this.roiX, roiY=this.roiY;
-		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
-			return;
+		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight) {
+			mask = getMask();
+			if (mask==null||mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
+				return;
+		}
 		byte[] mpixels = (byte[])mask.getPixels();
 		for (int y=roiY, my=0; y<(roiY+roiHeight); y++, my++) {
 			int i = y * width + roiX;
