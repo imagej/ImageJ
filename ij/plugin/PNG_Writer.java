@@ -42,7 +42,9 @@ public class PNG_Writer implements PlugIn {
 	public void writeImage(ImagePlus imp, String path, int transparentIndex) throws Exception {
 		if (transparentIndex>=0 && transparentIndex<=255 && imp.getBitDepth()==8)
 			writeImageWithTransparency(imp, path, transparentIndex);
-		else
+		else if (imp.getBitDepth() == 16)
+			write16gs(imp, path);
+        else
 			ImageIO.write(imp.getBufferedImage(), "png", new File(path));
 	}
     
@@ -67,5 +69,15 @@ public class PNG_Writer implements PlugIn {
 		ImageIO.write(bi, "png", new File(path));
 	}
 
+    void write16gs(ImagePlus imp, String path) throws Exception {
+        //IJ.showMessage("PNG Writer", "Writing " + imp.getBitDepth() + "bits\n \n");
+		int width = imp.getWidth();
+		int  height = imp.getHeight();
+		BufferedImage bi = new BufferedImage(
+                width, height, BufferedImage.TYPE_USHORT_GRAY);
+		Graphics2D g = (Graphics2D)bi.getGraphics();
+		g.drawImage(imp.getImage(), 0, 0, null);
+		File f = new File(path);
+		ImageIO.write(bi, "png", f);
+    }
 }
-

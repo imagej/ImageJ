@@ -165,6 +165,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (showAllList!=null)
 				displayList = showAllList;
 			showAllROIs = false;
+			repaint();
 			return;
 		}
 		initGraphics(g, null);
@@ -190,7 +191,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					drawRoi(g, roi, drawLabels?i:-1);
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
-			if (i<100 && drawLabels && imp!=null && roi==imp.getRoi()) {
+			if (i<100 && drawLabels && imp!=null && roi==imp.getRoi() && !(roi instanceof TextRoi)) {
 				Color lineColor = roi.getLineColor();
 				Color fillColor = roi.getFillColor();
 				int lineWidth = roi.getLineWidth();

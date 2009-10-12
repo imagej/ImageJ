@@ -18,7 +18,7 @@ import ij.measure.*;
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener {
 	public static final String LOC_KEY = "manager.loc";
-	static final int BUTTONS = 10;
+	static final int BUTTONS = 11;
 	static final int DRAW=0, FILL=1, LABEL=2;
 	static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	static final int MENU=0, COMMAND=1;
@@ -37,7 +37,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	PopupMenu pm;
 	Button moreButton, colorButton;
 	Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	Checkbox labelsCheckbox = new Checkbox("Labels", true);
+	Checkbox labelsCheckbox = new Checkbox("Show Labels", true);
 
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
@@ -69,14 +69,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
  		addMouseListener(this);
 		addMouseWheelListener(this);
 		WindowManager.addWindow(this);
-		setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
+		//setLayout(new FlowLayout(FlowLayout.CENTER,5,5));
+		setLayout(new BorderLayout());
 		list.add("012345678901234");
 		list.addItemListener(this);
  		list.addKeyListener(ij);
  		list.addMouseListener(this);
  		list.addMouseWheelListener(this);
 		if (IJ.isLinux()) list.setBackground(Color.white);
-		add(list);
+		add("Center", list);
 		panel = new Panel();
 		int nButtons = BUTTONS;
 		panel.setLayout(new GridLayout(nButtons, 1, 5, 0));
@@ -86,24 +87,28 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Rename...");
 		addButton("Measure");
 		addButton("Deselect");
-		//addButton("Show All");
-		//addButton("Labels");
-		addButton("Color...");
+		addButton("Properties...");
+		addButton("Flatten");
 		addButton(moreButtonLabel);
 		showAllCheckbox.addItemListener(this);
 		panel.add(showAllCheckbox);
 		labelsCheckbox.addItemListener(this);
 		panel.add(labelsCheckbox);
-		add(panel);		
+		add("East", panel);		
 		addPopupMenu();
 		pack();
+		Dimension size = getSize();
+		if (size.width>270)
+			setSize(size.width-40, size.height);
 		list.remove(0);
 		Point loc = Prefs.getLocation(LOC_KEY);
 		if (loc!=null)
 			setLocation(loc);
 		else
 			GUI.center(this);
+		list.setMultipleMode(true);
 		show();
+		list.setMultipleMode(true);
 	}
 
 	void addButton(String label) {
@@ -118,13 +123,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void addPopupMenu() {
 		pm=new PopupMenu();
 		//addPopupItem("Select All");
-		addPopupItem("Draw");
-		addPopupItem("Fill");
-		addPopupItem("Label");
-		pm.addSeparator();
 		addPopupItem("Open...");
 		addPopupItem("Save...");
-		pm.addSeparator();
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
@@ -161,16 +161,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			delete(false);
 		else if (command.equals("Rename..."))
 			rename(null);
-		else if (command.equals("Color..."))
+		else if (command.equals("Properties..."))
 			setColorAndLineWidth(null, 0);
+		else if (command.equals("Flatten"))
+			flatten();
 		else if (command.equals("Measure"))
 			measure(MENU);
-		else if (command.equals("Draw"))
-			drawOrFill(DRAW);
-		else if (command.equals("Fill"))
-			drawOrFill(FILL);
-		else if (command.equals("Label"))
-			drawOrFill(LABEL);
 		else if (command.equals("Open..."))
 			open(null);
 		else if (command.equals("Save..."))
@@ -878,13 +874,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) ic.setShowAllROIs(false);
 		imp.updateAndDraw();
-		String str=null;
-		switch (mode) {
-			case DRAW: str="Draw"; break;
-			case FILL: str="Fill"; break;
-			case LABEL: str="Label"; imp.updateAndDraw(); break;
-		}
-		if (record()) Recorder.record("roiManager", str);
 		return true;
 	}
 
@@ -945,6 +934,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
 			Recorder.record("roiManager", "Set Line Width", lineWidth);
 		}
+	}
+	
+	void flatten() {
+		if (WindowManager.getCurrentImage()==null)
+			IJ.noImage();
+		else if (list.getItemCount()==0)
+			error("The ROI list is empty");
+		else if (!showAllCheckbox.getState())
+			error("Not in \"Show All\" mode");
+		else
+			IJ.run("Flatten");
 	}
 			
 	public boolean getDrawLabels() {

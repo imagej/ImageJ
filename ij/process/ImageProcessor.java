@@ -7,6 +7,7 @@ import ij.util.*;
 import ij.plugin.filter.GaussianBlur;
 import ij.gui.Roi;
 import ij.gui.ShapeRoi;
+import ij.Prefs;
 
 /**
 This abstract class is the superclass for classes that process
@@ -404,19 +405,36 @@ public abstract class ImageProcessor extends Object {
 					bLUT2[i] = bLUT1[i];
 				}
 			}
-		else if (lutUpdate==BLACK_AND_WHITE_LUT)
+
+		else if (lutUpdate==BLACK_AND_WHITE_LUT) {
+			// updated in v1.43i by Gabriel Lindini to use blackBackground setting
+
+			byte  foreground = Prefs.blackBackground?(byte)255:(byte)0;
+
+			byte background = (byte)(255 - foreground);
+
 			for (int i=0; i<256; i++) {
+
 				if (i>=t1 && i<=t2) {
-					rLUT2[i] = (byte)0;
-					gLUT2[i] = (byte)0;
-					bLUT2[i] = (byte)0;
+
+					rLUT2[i] = foreground;
+
+					gLUT2[i] = foreground;
+
+					bLUT2[i] = foreground;
+
 				} else {
-					rLUT2[i] = (byte)255;
-					gLUT2[i] = (byte)255;
-					bLUT2[i] = (byte)255;
+
+					rLUT2[i] = background;
+
+					gLUT2[i] =background;
+
+					bLUT2[i] =background;
+
 				}
+
 			}
-		else
+		} else {
 			for (int i=0; i<256; i++) {
 				if (i>=t1 && i<=t2) {
 					rLUT2[i] = rLUT1[i];
@@ -433,6 +451,7 @@ public abstract class ImageProcessor extends Object {
 					bLUT2[i] = (byte)underBlue;
 				}
 			}
+		}
 
 		cm = new IndexColorModel(8, 256, rLUT2, gLUT2, bLUT2);
 		newPixels = true;
