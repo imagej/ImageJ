@@ -6,6 +6,8 @@ import ij.process.*;
 public class Resizer implements PlugInFilter {
  
 	public int setup(String arg, ImagePlus imp) {
+		if (imp!=null)
+			IJ.run(imp, "Resize...", "");
 		return DONE;
 	}
 

@@ -5,6 +5,8 @@ import ij.text.*;
 import ij.process.*;
 import ij.gui.Roi;
 import java.awt.*;
+import java.text.*;
+import java.util.Locale;
 
 /** This is a table for storing measurement results as columns of numeric values. 
 	Call the static ResultsTable.getResultsTable() method to get a reference to the 
@@ -369,12 +371,67 @@ public class ResultsTable implements Cloneable {
 	String n(double n) {
 		String s;
 		if (Math.round(n)==n && precision>=0)
-			s = IJ.d2s(n,0);
+			s = d2s(n, 0);
 		else
-			s = IJ.d2s(n,precision);
+			s = d2s(n, precision);
 		return s+"\t";
 	}
 		
+	private static DecimalFormat[] df;
+	private static DecimalFormat[] sf;
+	private static DecimalFormatSymbols dfs;
+
+	/** This is a version of IJ.d2s() that uses scientific notation for
+		small numbes that would otherwise display as zero. */
+	public static String d2s(double n, int decimalPlaces) {
+		if (Double.isNaN(n))
+			return "NaN";
+		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
+			return "3.4e38";
+		double np = n;
+		if (n<0.0) np = -n;
+		if (df==null) {
+			dfs = new DecimalFormatSymbols(Locale.US);
+			df = new DecimalFormat[10];
+			df[0] = new DecimalFormat("0", dfs);
+			df[1] = new DecimalFormat("0.0", dfs);
+			df[2] = new DecimalFormat("0.00", dfs);
+			df[3] = new DecimalFormat("0.000", dfs);
+			df[4] = new DecimalFormat("0.0000", dfs);
+			df[5] = new DecimalFormat("0.00000", dfs);
+			df[6] = new DecimalFormat("0.000000", dfs);
+			df[7] = new DecimalFormat("0.0000000", dfs);
+			df[8] = new DecimalFormat("0.00000000", dfs);
+			df[9] = new DecimalFormat("0.000000000", dfs);
+		}
+		if ((np<0.001 && np!=0.0 && np<1.0/Math.pow(10,decimalPlaces)) || np>999999999999d || decimalPlaces<0) {
+			if (decimalPlaces<0) {
+				decimalPlaces = -decimalPlaces;
+				if (decimalPlaces>9) decimalPlaces=9;
+			} else
+				decimalPlaces = 3;
+			if (sf==null) {
+				sf = new DecimalFormat[10];
+				sf[1] = new DecimalFormat("0.0E0",dfs);
+				sf[2] = new DecimalFormat("0.00E0",dfs);
+				sf[3] = new DecimalFormat("0.000E0",dfs);
+				sf[4] = new DecimalFormat("0.0000E0",dfs);
+				sf[5] = new DecimalFormat("0.00000E0",dfs);
+				sf[6] = new DecimalFormat("0.000000E0",dfs);
+				sf[7] = new DecimalFormat("0.0000000E0",dfs);
+				sf[8] = new DecimalFormat("0.00000000E0",dfs);
+				sf[9] = new DecimalFormat("0.000000000E0",dfs);
+			}
+			if (Double.isInfinite(n))
+				return ""+n;
+			else
+				return sf[decimalPlaces].format(n); // use scientific notation
+		}
+		if (decimalPlaces<0) decimalPlaces = 0;
+		if (decimalPlaces>9) decimalPlaces = 9;
+		return df[decimalPlaces].format(n);
+	}
+
 	/** Deletes the specified row. */
 	public synchronized void deleteRow(int row) {
 		if (counter==0 || row>counter-1) return;
