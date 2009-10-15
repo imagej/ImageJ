@@ -156,7 +156,7 @@ public class Menus {
 		addPlugInItem(image, "Duplicate...", "ij.plugin.Duplicator", KeyEvent.VK_D, true);
 		addPlugInItem(image, "Rename...", "ij.plugin.SimpleCommands(\"rename\")", 0, false);
 		addPlugInItem(image, "Scale...", "ij.plugin.Scaler", KeyEvent.VK_E, false);
-		addPlugInItem(image, "Flatten", "ij.plugin.SimpleCommands(\"flatten\")", 0, false);
+		addPlugInItem(image, "Flatten", "ij.plugin.SimpleCommands(\"flatten\")", KeyEvent.VK_F, true);
 		getMenu("Image>Transform", true);
 		getMenu("Image>Zoom", true);
 		image.addSeparator();
@@ -200,7 +200,7 @@ public class Menus {
 		addPluginsMenu();
 
 		Menu window = getMenu("Window");
-		addPlugInItem(window, "Show All", "ij.plugin.WindowOrganizer(\"show\")", KeyEvent.VK_F, true);
+		addPlugInItem(window, "Show All", "ij.plugin.WindowOrganizer(\"show\")", KeyEvent.VK_CLOSE_BRACKET, false);
 		addPlugInItem(window, "Put Behind [tab]", "ij.plugin.Commands(\"tab\")", 0, false);
 		addPlugInItem(window, "Cascade", "ij.plugin.WindowOrganizer(\"cascade\")", 0, false);
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);

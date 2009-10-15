@@ -106,9 +106,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			setLocation(loc);
 		else
 			GUI.center(this);
-		list.setMultipleMode(true);
 		show();
-		list.setMultipleMode(true);
+		if (IJ.isMacOSX() && IJ.isJava16()) {
+			list.setMultipleMode(false);
+			list.setMultipleMode(true);
+		}
 	}
 
 	void addButton(String label) {
@@ -1248,7 +1250,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return array;
 	}
 			
-	/** Returns the name of the selection with the specified index.
+	/** Returns the name of the ROI with the specified index.
 		Can be called from a macro using
 		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
 		Returns "null" if the Roi Manager is not open or index is

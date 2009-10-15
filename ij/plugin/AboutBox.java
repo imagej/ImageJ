@@ -16,7 +16,7 @@ import java.awt.image.*;
 		System.gc();
 		int lines = 7;
 		String[] text = new String[lines];
-		text[0] = "ImageJ "+ImageJ.VERSION;
+		text[0] = "ImageJ "+ImageJ.VERSION+ImageJ.BUILD;
 		text[1] = "Wayne Rasband";
 		text[2] = "National Institutes of Health, USA";
 		text[3] = IJ.URL;

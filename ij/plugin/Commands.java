@@ -88,7 +88,10 @@ public class Commands implements PlugIn {
 		}
 		imp.close();
 		if (Recorder.record && !IJ.isMacro()) {
-			Recorder.record("close");
+			if (Recorder.JSMode())
+				Recorder.recordCall2("IJ.getImage().close();");
+			else
+				Recorder.record("close");
 			Recorder.setCommand(null); // don't record run("Close")
 		}
 	}

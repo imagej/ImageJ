@@ -35,7 +35,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	private static String methodCall;
 
 	public Recorder() {
-		super("Recorder");
+		super("Macro Recorder");
 		if (instance!=null) {
 			instance.toFront();
 			return;
@@ -74,6 +74,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			setTitle("JavaScript Recorder");
 			if (macroName!=null)
 				macroName.setText("script");
+		} else {
+			setTitle("Macro Recorder");
+			if (macroName!=null)
+				macroName.setText("Macro");
 		}
 	}
 
@@ -114,11 +118,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	}
 
 	public static void record(String method, String arg) {
+		if (IJ.debugMode) IJ.log("record: "+method+"  "+arg);
 		if (textArea==null) return;
 		if (commandName!=null && method.equals("selectWindow"))
 			return;
-		else
+		else {
+			if (recordMethods&&method.equals("selectWindow"))
+				method = "IJ."+method;
 			textArea.append(method+"(\""+arg+"\");\n");
+		}
 	}
 
 	public static void record(String method, String arg1, String arg2) {
@@ -184,11 +192,17 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			textArea.append(str);
 	}
 
-	public static void recordMethod(String str) {
+	public static void recordCall(String call) {
+		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+IJ.macroRunning());
 		if (textArea!=null && recordMethods && !IJ.macroRunning())
-			methodCall = "//"+str+"\n";
+				methodCall = "//"+call+"\n";
 		else
 			methodCall = null;
+	}
+
+	public static void recordCall2(String call) {
+		if (textArea!=null && recordMethods && !IJ.macroRunning())
+			textArea.append(call+"\n");
 	}
 
 	public static void recordRoi(Polygon p, int type) {
@@ -412,6 +426,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	/** Temporarily disables path recording. */
 	public static void disablePathRecording() {
 		recordPath = false;
+	}
+	
+	public static boolean JSMode() {
+		return recordMethods;
 	}
 	
 	public void actionPerformed(ActionEvent e) {

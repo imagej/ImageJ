@@ -70,7 +70,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.43i";
-	public static final String build = "-6";
+	public static final String BUILD = "-7";
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -184,9 +184,8 @@ public class ImageJ extends Frame implements ActionListener,
 		if (applet==null)
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		m.installStartupMacroSet();
-		String str = m.getMacroCount()==1?" macro)":" macros)";
-		String java = "Java "+System.getProperty("java.version")+(IJ.is64Bit()?" [64-bit]":" [32-bit]");
-		IJ.showStatus("ImageJ "+VERSION + build + "/"+java+" ("+ m.getPluginCount() + " commands, " + m.getMacroCount() + str);
+		String str = m.getMacroCount()==1?" macro":" macros";
+		IJ.showStatus(version()+ m.getPluginCount() + " commands; " + m.getMacroCount() + str);
 		if (applet==null && !embedded && Prefs.runSocketListener)
 			new SocketListener();
 		configureProxy();
@@ -307,10 +306,13 @@ public class ImageJ extends Frame implements ActionListener,
 	public void mousePressed(MouseEvent e) {
 		Undo.reset();
 		System.gc();
-		String info = "ImageJ "+ImageJ.VERSION+"; Java "+System.getProperty("java.version")+(IJ.is64Bit()?" (64-bit); ":" (32-bit); ");
-		IJ.showStatus(info+IJ.freeMemory());
+		IJ.showStatus(version()+IJ.freeMemory());
 		if (IJ.debugMode)
 			IJ.log("Windows: "+WindowManager.getWindowCount());
+	}
+	
+	private String version() {
+		return "ImageJ "+VERSION+BUILD + "; "+"Java "+System.getProperty("java.version")+(IJ.is64Bit()?" [64-bit]":" [32-bit]; ");
 	}
 	
 	public void mouseReleased(MouseEvent e) {}

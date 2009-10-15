@@ -278,13 +278,15 @@ public class TextRoi extends Roi {
 		}
 		if (nullg) g.dispose();
 		width += 2;
-		if (x+width>xMax)
+		if (xMax!=0 && x+width>xMax)
 			x = xMax-width;
 		height = nLines*fontHeight+2;
-		if (height>yMax)
-			height = yMax;
-		if (y+height>yMax)
-			y = yMax-height;
+		if (yMax!=0) {
+			if (height>yMax)
+				height = yMax;
+			if (y+height>yMax)
+				y = yMax-height;
+		}
 		if (IJ.debugMode) IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 	

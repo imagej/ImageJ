@@ -1934,11 +1934,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 	
 	/** Returns a "flattened" version of this image, in RGB format. */
-	/** Returns a "flattened" version of this image, in RGB format. */
 	public ImagePlus flatten() {
 		ImagePlus imp2 = createImagePlus();
 		String title = "Flat_"+getTitle();
-		ImageCanvas ic2 = new ImageCanvas(this);
+		ImageCanvas ic2 = new ImageCanvas(imp2);
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());	
 		ImageCanvas ic = getCanvas();
@@ -1951,7 +1950,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		g.drawImage(getImage(), 0, 0, null);
 		ic2.paint(g);
 		imp2.flatteningCanvas = null;
-		if (Recorder.record) Recorder.recordMethod("img = IJ.getImage().flatten();");
+		if (Recorder.record) Recorder.recordCall("imp = IJ.getImage().flatten();");
 		return new ImagePlus(title, new ColorProcessor(bi));
 	}
 	

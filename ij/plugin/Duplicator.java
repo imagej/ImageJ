@@ -49,7 +49,7 @@ public class Duplicator implements PlugIn, TextListener {
                 
 	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
 	public ImagePlus run(ImagePlus imp) {
-   		if (Recorder.record) Recorder.recordMethod("img2 = new Duplicator().run(img1)");
+   		if (Recorder.record) Recorder.recordCall("imp2 = new Duplicator().run(imp1)");
 		if (imp.getStackSize()==1)
 			return duplicateImage(imp);
 		Rectangle rect = null;
@@ -123,7 +123,7 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setDimensions(1, 1, size);
 		else
 			imp2.setDimensions(1, size, 1);
-   		if (Recorder.record) Recorder.recordMethod("img2 = new Duplicator().run(img1, "+firstSlice+", "+lastSlice+")");
+   		if (Recorder.record) Recorder.recordCall("imp2 = new Duplicator().run(imp1, "+firstSlice+", "+lastSlice+")");
 		return imp2;
 	}
 
