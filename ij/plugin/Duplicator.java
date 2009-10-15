@@ -6,13 +6,14 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
+import ij.plugin.frame.Recorder;
 
 /** This plugin implements the Image/Duplicate command.
 <pre>
    // test script
    img1 = IJ.getImage();
-   img2 = new Duplicator().duplicate(img1);
-   //img2 = new Duplicator().duplicateSubstack(img1,1,10);
+   img2 = new Duplicator().run(img1);
+   //img2 = new Duplicator().run(img1,1,10);
    img2.show();
 </pre>
 */
@@ -35,9 +36,9 @@ public class Duplicator implements PlugIn, TextListener {
 		ImagePlus imp2;
 		Roi roi = imp.getRoi();
 		if (duplicateSubstack && (first>1||last<stackSize))
-			imp2 = duplicateSubstack(imp, first, last);
-		else if (duplicateStack)
-			imp2 = duplicate(imp);
+			imp2 = run(imp, first, last);
+		else if (duplicateStack || imp.getStackSize()==1)
+			imp2 = run(imp);
 		else
 			imp2 = duplicateImage(imp);
 		imp2.setTitle(newTitle);
@@ -47,7 +48,8 @@ public class Duplicator implements PlugIn, TextListener {
 	}
                 
 	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
-	public ImagePlus duplicate(ImagePlus imp) {
+	public ImagePlus run(ImagePlus imp) {
+   		if (Recorder.record) Recorder.recordMethod("img2 = new Duplicator().run(img1)");
 		if (imp.getStackSize()==1)
 			return duplicateImage(imp);
 		Rectangle rect = null;
@@ -98,7 +100,7 @@ public class Duplicator implements PlugIn, TextListener {
 	}
 	
 	/** Returns a new stack containing a subrange of the specified stack. */
-	public ImagePlus duplicateSubstack(ImagePlus imp, int firstSlice, int lastSlice) {
+	public ImagePlus run(ImagePlus imp, int firstSlice, int lastSlice) {
 		Rectangle rect = null;
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isArea())
@@ -121,6 +123,7 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setDimensions(1, 1, size);
 		else
 			imp2.setDimensions(1, size, 1);
+   		if (Recorder.record) Recorder.recordMethod("img2 = new Duplicator().run(img1, "+firstSlice+", "+lastSlice+")");
 		return imp2;
 	}
 

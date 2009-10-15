@@ -1304,7 +1304,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			}
 		}
 	}
-
+	
 	public void mouseMoved(MouseEvent e) {
 		if (ij==null) return;
 		int sx = e.getX();

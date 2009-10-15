@@ -91,12 +91,12 @@ public class TextRoi extends Roi {
 			// newline
 			if (cline<(MAX_LINES-1)) cline++;
 			theText[cline] = "";
-			updateBounds();
+			updateBounds(null);
 			updateText();
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
-			updateBounds();
+			updateBounds(null);
 			updateText();
 			firstChar = false;
 			return;
@@ -140,7 +140,7 @@ public class TextRoi extends Roi {
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
 		if (newFont || width==1)
-			updateBounds();
+			updateBounds(g);
 		super.draw(g); // draw the rectangle
 		double mag = ic.getMagnification();
 		int sx = ic.screenX(x);
@@ -158,7 +158,7 @@ public class TextRoi extends Roi {
 		g.setColor(outlineColor!=null?outlineColor:ROIColor);
 		Java2.setAntialiasedText(g, antialiasedText);
 		if (newFont || width==1)
-			updateBounds();
+			updateBounds(g);
 		double mag = ic.getMagnification();
 		int sx = nonScalable?x:ic.screenX(x);
 		int sy = nonScalable?y:ic.screenY(y);
@@ -169,7 +169,7 @@ public class TextRoi extends Roi {
 		g.setFont(font);
 		int i = 0;
 		if (fillColor!=null) {
-			updateBounds();
+			updateBounds(g);
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
@@ -240,7 +240,7 @@ public class TextRoi extends Roi {
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (firstMouseUp) {
-			updateBounds();
+			updateBounds(null);
 			updateText();
 			firstMouseUp = false;
 		} else {
@@ -250,14 +250,15 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
-	void updateBounds() {
+	void updateBounds(Graphics g) {
 		if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
 		if (ic==null) return;
 		double mag = ic.getMagnification();
 		if (nonScalable) mag = 1.0;
 		Font font = getCurrentFont();
 		newFont = false;
-		Graphics g = ic.getGraphics();
+		boolean nullg = g==null;
+		if (nullg) g = ic.getGraphics();
 		Java2.setAntialiasedText(g, true);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
@@ -275,7 +276,7 @@ public class TextRoi extends Roi {
 				width = w;
 			i++;
 		}
-		g.dispose();
+		if (nullg) g.dispose();
 		width += 2;
 		if (x+width>xMax)
 			x = xMax-width;

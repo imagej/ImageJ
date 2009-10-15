@@ -944,7 +944,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (!showAllCheckbox.getState())
 			error("Not in \"Show All\" mode");
 		else
-			IJ.run("Flatten");
+			IJ.doCommand("Flatten"); // run Image>Flatten in separate thread
 	}
 			
 	public boolean getDrawLabels() {

@@ -1946,11 +1946,11 @@ public abstract class ImageProcessor extends Object {
 		do {
 			sum1=sum2=sum3=sum4=0.0;
 			for (int i=min; i<=movingIndex; i++) {
-				sum1 += i*histogram[i];
+				sum1 += (double)i*histogram[i];
 				sum2 += histogram[i];
 			}
 			for (int i=(movingIndex+1); i<=max; i++) {
-				sum3 += i*histogram[i];
+				sum3 += (double)i*histogram[i];
 				sum4 += histogram[i];
 			}			
 			result = (sum1/sum2 + sum3/sum4)/2.0;

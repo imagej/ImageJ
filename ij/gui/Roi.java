@@ -966,6 +966,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
 		else
 			size = ", w="+width+", h="+height;
+		size += ", ar="+IJ.d2s((double)width/height,2);
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 		

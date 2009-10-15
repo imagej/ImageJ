@@ -11,6 +11,7 @@ import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 import ij.macro.Interpreter;
 import ij.plugin.frame.ContrastAdjuster;
+import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 
 /**
@@ -89,6 +90,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean openAsHyperStack;
 	private int[] position = {1,1,1};
 	private boolean noUpdateMode;
+	private ImageCanvas flatteningCanvas;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -595,7 +597,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the ImageCanvas being used to
 		display this image, or null. */
 	public ImageCanvas getCanvas() {
-		return win!=null?win.getCanvas():null;
+		return win!=null?win.getCanvas():flatteningCanvas;
 	}
 
 	/** Sets current foreground color. */
@@ -1929,6 +1931,28 @@ public class ImagePlus implements ImageObserver, Measurements {
 		position[0] = c;
 		position[1] = z;
 		position[2] = t;
+	}
+	
+	/** Returns a "flattened" version of this image, in RGB format. */
+	/** Returns a "flattened" version of this image, in RGB format. */
+	public ImagePlus flatten() {
+		ImagePlus imp2 = createImagePlus();
+		String title = "Flat_"+getTitle();
+		ImageCanvas ic2 = new ImageCanvas(this);
+		imp2.flatteningCanvas = ic2;
+		imp2.setRoi(getRoi());	
+		ImageCanvas ic = getCanvas();
+		if (ic!=null) {
+			ic2.setDisplayList(ic.getDisplayList());
+			ic2.setShowAllROIs(ic.getShowAllROIs());
+		}
+		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bi.getGraphics();
+		g.drawImage(getImage(), 0, 0, null);
+		ic2.paint(g);
+		imp2.flatteningCanvas = null;
+		if (Recorder.record) Recorder.recordMethod("img = IJ.getImage().flatten();");
+		return new ImagePlus(title, new ColorProcessor(bi));
 	}
 	
 	public Object clone() {
