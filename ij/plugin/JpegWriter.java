@@ -7,6 +7,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.Iterator;
 import javax.imageio.*;
+import javax.imageio.stream.*;
 
 /** The File/Save As/Jpeg command (FileSaver.saveAsJpeg() method) 
       uses this plugin to save images in JPEG format. */
@@ -43,7 +44,8 @@ public class JpegWriter implements PlugIn {
 			g.dispose();            
 			Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
 			ImageWriter writer = (ImageWriter)iter.next();
-			writer.setOutput(ImageIO.createImageOutputStream(new File(path)));
+			ImageOutputStream ios = ImageIO.createImageOutputStream(new File(path));
+			writer.setOutput(ios);
 			ImageWriteParam param = writer.getDefaultWriteParam();
 			param.setCompressionMode(param.MODE_EXPLICIT);
 			param.setCompressionQuality(quality/100f);
@@ -51,6 +53,8 @@ public class JpegWriter implements PlugIn {
 				param.setSourceSubsampling(1, 1, 0, 0);
 			IIOImage iioImage = new IIOImage(bi, null, null);
 			writer.write(null, iioImage, param);
+			ios.close();
+			writer.dispose();
 		} catch (Exception e) {
 			error = ""+e;
 			IJ.error("Jpeg Writer", ""+error);

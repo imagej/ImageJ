@@ -110,6 +110,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (IJ.isMacOSX() && IJ.isJava16()) {
 			list.setMultipleMode(false);
 			list.setMultipleMode(true);
+			//EventQueue.invokeLater(new Runnable() {
+			//	public void run() {
+			//		list.setMultipleMode(false);
+			//		list.setMultipleMode(true);
+			//	}
+			//});
 		}
 	}
 

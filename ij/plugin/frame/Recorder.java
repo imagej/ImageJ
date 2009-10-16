@@ -71,7 +71,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	public void run(String arg) {
 		recordMethods = arg!=null && arg.equals("methods");
 		if (recordMethods) {
-			setTitle("JavaScript Recorder");
+			setTitle("Script Recorder");
 			if (macroName!=null)
 				macroName.setText("script");
 		} else {
@@ -193,16 +193,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	}
 
 	public static void recordCall(String call) {
-		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+IJ.macroRunning());
-		if (textArea!=null && recordMethods && !IJ.macroRunning())
-				methodCall = "//"+call+"\n";
+		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
+		if ("Close".equals(commandName)||"Image Calculator...".equals(commandName)) {
+			textArea.append(call+"\n");
+			commandName = null;
+		} else if (textArea!=null && recordMethods && !IJ.macroRunning())
+			methodCall = "//"+call+"\n";
 		else
 			methodCall = null;
-	}
-
-	public static void recordCall2(String call) {
-		if (textArea!=null && recordMethods && !IJ.macroRunning())
-			textArea.append(call+"\n");
 	}
 
 	public static void recordRoi(Polygon p, int type) {
@@ -308,7 +306,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 					textArea.append("setSlice("+strip(commandOptions)+");\n");
 				else if (name.equals("Rename..."))
 					textArea.append("rename(\""+strip(commandOptions)+"\");\n");
-				else if (name.equals("Image Calculator...") || name.equals("Wand Tool..."))
+				else if (name.equals("Wand Tool..."))
 					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
 				else {
 					String prefix = recordMethods?"IJ.":"";
@@ -428,7 +426,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		recordPath = false;
 	}
 	
-	public static boolean JSMode() {
+	public static boolean scriptMode() {
 		return recordMethods;
 	}
 	

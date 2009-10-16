@@ -10,11 +10,11 @@ import ij.macro.Interpreter;
 /** This plugin implements the Process/Image Calculator command.
 <pre>
    // test script
-   img1 = IJ.openImage(IJ.getDirectory("home")+"stack1.tif");
-   img2 = IJ.openImage(IJ.getDirectory("home")+"stack2.tif");
-   ic = new ImageCalculator(); 
-   img3 = ic.run("average 32-bit create stack ", img1, img2);
-   if (img3!=null) img3.show();
+   imp1 = IJ.openImage("http://rsb.info.nih.gov/ij/images/boats.gif")
+   imp2 = IJ.openImage("http://rsb.info.nih.gov/ij/images/bridge.gif")
+   ic = new ImageCalculator()
+   imp3 = ic.run("Average create", imp1, imp2)
+   imp3.show()
 </pre>
 */
 public class ImageCalculator implements PlugIn {
@@ -159,7 +159,11 @@ public class ImageCalculator implements PlugIn {
 			if (createWindow) params += " create";
 			if (floatResult) params += " 32-bit";
 			if (stackOp) params += " stack";
-			Recorder.record("imageCalculator", params, img1.getTitle(), img2.getTitle());
+			if (Recorder.scriptMode())
+				Recorder.recordCall("ic = new ImageCalculator();\nimp3 = ic.run(\""+params+"\", imp1, imp2);");
+			else
+				Recorder.record("imageCalculator", params, img1.getTitle(), img2.getTitle());
+			Recorder.setCommand(null); // don't record run(...)
 		}
 		return img3;
 	}

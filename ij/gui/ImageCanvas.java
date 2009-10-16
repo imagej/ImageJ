@@ -130,7 +130,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Roi roi = imp.getRoi();
 		if (roi!=null || showAllROIs || displayList!=null) {
 			if (roi!=null) roi.updatePaste();
-			if (!IJ.isMacOSX()) {
+			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
 				return;
 			}
@@ -192,6 +192,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean drawLabels = rm.getDrawLabels();
 		currentRoi = null;
 		int n = list.getItemCount();
+    	if (IJ.debugMode) IJ.log("paint: drawing "+n+" \"Show All\" ROIs");
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
 		if (!drawLabels)
@@ -229,6 +230,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     void drawDisplayList(Graphics g) {
 		initGraphics(g, listColor);
     	int n = displayList.size();
+    	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
     	for (int i=0; i<n; i++)
     		drawRoi(g, (Roi)displayList.elementAt(i), labelListItems?i+LIST_OFFSET:-1);
     	if (listStroke!=null) ((Graphics2D)g).setStroke(new BasicStroke());

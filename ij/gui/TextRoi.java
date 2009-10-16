@@ -251,7 +251,7 @@ public class TextRoi extends Roi {
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
-		if (IJ.debugMode) IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
+		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
 		if (ic==null) return;
 		double mag = ic.getMagnification();
 		if (nonScalable) mag = 1.0;
@@ -287,7 +287,7 @@ public class TextRoi extends Roi {
 			if (y+height>yMax)
 				y = yMax-height;
 		}
-		if (IJ.debugMode) IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
+		//IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 	
 	void updateText() {

@@ -5,7 +5,7 @@ import java.net.URL;
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
-import ij.plugin.frame.Editor;
+import ij.plugin.frame.*;
 
 /** Opens TIFFs, ZIP compressed TIFFs, DICOMs, GIFs and JPEGs using a URL. 
 	TIFF file names must end in ".tif", ZIP file names must end 
@@ -27,6 +27,8 @@ public class URLOpener implements PlugIn {
 			else {
 				String url = urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
 				ImagePlus imp = new ImagePlus(url);
+				if (Recorder.record)
+					Recorder.recordCall("imp = IJ.openImage(\""+url+"\");");
 				if (imp.getType()==ImagePlus.COLOR_RGB)
 					Opener.convertGrayJpegTo8Bits(imp);
 				WindowManager.checkForDuplicateName = true;

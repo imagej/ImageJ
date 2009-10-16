@@ -316,7 +316,7 @@ macros02="Run...",ij.plugin.Macro_Runner
 macros03="Edit...",ij.plugin.Compiler("edit")
 macros04="Startup Macros...",ij.plugin.Commands("startup")
 macros05="Record Macro...",ij.plugin.frame.Recorder
-macros06="Record JavaScript...",ij.plugin.frame.Recorder("methods")
+macros06="Record Script...",ij.plugin.frame.Recorder("methods")
 macros07=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
