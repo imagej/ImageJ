@@ -130,6 +130,24 @@ public class Colors implements PlugIn, ItemListener {
 		return color;
 	}
 
+	/** Converts a hex color (e.g., "ffff00") into "red", "green", "yellow", etc.
+		Returns null if the color is not one of the eight primary colors. */
+	public static String hexToColor(String hex) {
+		if (hex==null) return null;
+		if (hex.startsWith("#"))
+			hex = hex.substring(1);
+		String color = null;
+		if (hex.equals("ff0000")) color = "red";
+		else if (hex.equals("00ff00")) color = "green";
+		else if (hex.equals("0000ff")) color = "blue";
+		else if (hex.equals("000000")) color = "black";
+		else if (hex.equals("ffffff")) color = "white";
+		else if (hex.equals("ffff00")) color = "yellow";
+		else if (hex.equals("00ffff")) color = "cyan";
+		else if (hex.equals("ff00ff")) color = "magenta";
+		return color;
+	}
+
 	private static float parseHex(String hex) {
 		float value = 0f;
 		try {value=Integer.parseInt(hex,16);}

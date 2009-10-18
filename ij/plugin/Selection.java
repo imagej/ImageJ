@@ -8,17 +8,22 @@ import ij.macro.Interpreter;
 import ij.plugin.filter.GaussianBlur;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Vector;
 
 
 
 /** This plugin implements the commands in the Edit/Section submenu. */
 public class Selection implements PlugIn, Measurements {
-	ImagePlus imp;
-	float[] kernel = {1f, 1f, 1f, 1f, 1f};
-	float[] kernel3 = {1f, 1f, 1f};
-	static String angle = "15"; // degrees
-	static String enlarge = "15"; // pixels
-	static String bandSize = "15"; // pixels
+	private ImagePlus imp;
+	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
+	private float[] kernel3 = {1f, 1f, 1f};
+	private static String angle = "15"; // degrees
+	private static String enlarge = "15"; // pixels
+	private static String bandSize = "15"; // pixels
+	private static boolean nonScalable;
+	private static Color linec, fillc;
+	private static int lineWidth = 1;
+	
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -44,6 +49,8 @@ public class Selection implements PlugIn, Measurements {
     		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
+    	else if (arg.equals("list"))
+    		createDisplayList(imp); 
     	else
     		runMacro(arg);
 	}
@@ -326,6 +333,47 @@ public class Selection implements PlugIn, Measurements {
 		if (altDown) IJ.setKeyDown(KeyEvent.VK_SHIFT);
 		rm.runCommand("add");
 		IJ.setKeyUp(IJ.ALL_KEYS);
+	}
+	
+	void createDisplayList(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null) {
+			IJ.error("Create Display List", "This command requires a selection.");
+			return;
+		}
+		if (roi.getLineColor()!=null) linec = roi.getLineColor();
+		if (linec==null) linec = Roi.getColor();
+		if (roi.getFillColor()!=null) fillc = roi.getFillColor();
+		int width = roi.getLineWidth();
+		if (width>1) lineWidth = width;
+		String lineColor = linec!=null?Integer.toHexString(linec.getRGB()):"none";
+		if (lineColor.length()==8 && lineColor.startsWith("ff"))
+			lineColor = lineColor.substring(2);
+		String lc = Colors.hexToColor(lineColor);
+		if (lc!=null) lineColor = lc;
+		String fillColor = fillc!=null?Integer.toHexString(fillc.getRGB()):"none";
+		if (IJ.isMacro()) fillColor = "none";
+		GenericDialog gd = new GenericDialog("Display List");
+		gd.addStringField("Line Color: ", lineColor);
+		gd.addNumericField("Width:", lineWidth, 0);
+		gd.addMessage("or");
+		gd.addMessage("");
+		gd.addStringField("Fill Color: ", fillColor);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		lineColor = gd.getNextString();
+		lineWidth = (int)gd.getNextNumber();
+		fillColor = gd.getNextString();
+		roi.setLineWidth(lineWidth);
+		linec = Colors.decode(lineColor, Roi.getColor());
+		roi.setLineColor(linec);
+		fillc = Colors.decode(fillColor, null);
+		roi.setFillColor(fillc);
+		ImageCanvas ic = imp.getCanvas();
+		Vector list = new Vector();
+		list.addElement(roi);
+		ic.setDisplayList(list);
+		imp.killRoi();
 	}
 
 }

@@ -75,13 +75,14 @@ selection06="Convex Hull",ij.plugin.Selection("hull")
 selection07="Make Inverse",ij.plugin.Selection("inverse")
 selection08="Create Mask",ij.plugin.Selection("mask")
 selection09="Create Selection",ij.plugin.Selection("from")
-selection10=-
-selection11="Rotate...",ij.plugin.Selection("rotate")
-selection12="Enlarge...",ij.plugin.Selection("enlarge")
-selection13="Make Band...",ij.plugin.Selection("band")
-selection14="Specify...",ij.plugin.SpecifyROI
-selection15="Straighten...",ij.plugin.Straightener
-selection16="Add to Manager [t]",ij.plugin.Selection("add")
+selection10="Create Display List...",ij.plugin.Selection("list")
+selection11=-
+selection12="Rotate...",ij.plugin.Selection("rotate")
+selection13="Enlarge...",ij.plugin.Selection("enlarge")
+selection14="Make Band...",ij.plugin.Selection("band")
+selection15="Specify...",ij.plugin.SpecifyROI
+selection16="Straighten...",ij.plugin.Straightener
+selection17="Add to Manager [t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
