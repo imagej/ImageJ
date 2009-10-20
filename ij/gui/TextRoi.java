@@ -29,7 +29,7 @@ public class TextRoi extends Roi {
 	}
 
 	/** Creates a new TextRoi with the specified location and Font.
-	 * @see ij.gui.Roi#setLineColor
+	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setNonScalable
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */

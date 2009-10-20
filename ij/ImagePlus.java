@@ -1954,6 +1954,44 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return new ImagePlus(title, new ColorProcessor(bi));
 	}
 	
+	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
+	 * @see ij.gui.Roi#setStrokeColor
+	 * @see ij.gui.Roi#setStrokeWidth
+	 * @see ij.gui.Roi#setFillColor
+	 * @see ij.gui.Roi#setLocation
+	 * @see ij.gui.Roi#setNonScalable
+	 */
+	public void setDisplayList(Vector list) {
+		ImageCanvas ic = getCanvas();
+		if (ic!=null) ic.setDisplayList(list);
+	}
+
+	/** Creates a single ShapeRoi display list from the specified 
+	 * Shape, Color and BasicStroke, and activates it.
+	 * @see #setDisplayList(Vector)
+	 * @see ij.gui.Roi#setStrokeColor
+	 * @see ij.gui.Roi#setStrokeWidth
+	 */
+	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
+		ImageCanvas ic = getCanvas();
+		if (ic!=null) ic.setDisplayList(shape, color, stroke);
+	}
+	
+	/** Creates a single ROI display list from the specified 
+		ROI, and activates it.
+	 * @see #setDisplayList(Vector)
+	 */
+	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
+		ImageCanvas ic = getCanvas();
+		if (ic==null) return;
+		roi.setStrokeColor(strokeColor);
+		roi.setStrokeWidth(strokeWidth);
+		roi.setFillColor(fillColor);
+		Vector list = new Vector();
+		list.addElement(roi);
+		ic.setDisplayList(list);
+	}
+
 	public Object clone() {
 		try {return super.clone();}
 		catch (CloneNotSupportedException e) {return null;}

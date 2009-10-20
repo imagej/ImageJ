@@ -311,6 +311,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		try { 
 			Roi r = (Roi)super.clone();
 			r.setImage(null);
+			r.setStroke(getStroke());
 			return r;
 		}
 		catch (CloneNotSupportedException e) {return null;}
@@ -677,7 +678,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (mag<1.0)
 				m = (int)(3/mag);
 		}
-		m += getLineWidth();
+		m += getStrokeWidth();
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
 	 }
@@ -1030,7 +1031,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	/** Sets the default (global) color used for ROI outlines.
 	 * @see #getColor()
-	 * @see #setLineColor(Color)
+	 * @see #setStrokeColor(Color)
 	 */
 	public static void setColor(Color c) {
 		ROIColor = c;
@@ -1038,7 +1039,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	/** Returns the default (global) color used for drawing ROI outlines.
 	 * @see #setColor(Color)
-	 * @see #getLineColor()
+	 * @see #getStrokeColor()
 	 */
 	public static Color getColor() {
 		return ROIColor;
@@ -1046,18 +1047,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Sets the color used by this ROI to draw its outline. This color, if not null, 
 	 * overrides the global color set by the static setColor() method.
-	 * @see #getLineColor()
-	 * @see #setLineWidth(int)
+	 * @see #getStrokeColor()
+	 * @see #setStrokeWidth(int)
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
-	public void setLineColor(Color c) {
+	public void setStrokeColor(Color c) {
 		outlineColor = c;
 	}
 
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used.
-	 * @see #setLineColor(Color)
+	 * @see #setStrokeColor(Color)
 	 */
-	public Color getLineColor() {
+	public Color getStrokeColor() {
 		return outlineColor;
 	}
 
@@ -1070,7 +1071,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Returns the the color used to fill this ROI when it is in a display, or null.
-	 * @see #getLineColor()
+	 * @see #getStrokeColor()
 	 */
 	public Color getFillColor() {
 		return fillColor;
@@ -1092,7 +1093,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.stroke = roi2.stroke;
 	}
 
-	/** Obsolete; replaced by setLineColor(). */
+	/** Obsolete; replaced by setStrokeColor(). */
 	public void setInstanceColor(Color c) {
 		outlineColor = c;
 	}
@@ -1105,16 +1106,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Sets the width of the lines used to draw this ROI when
 	 * it is part of a display list or ROI Manager "Show All" list.
-	 * @see #setLineColor(Color)
+	 * @see #setStrokeColor(Color)
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
-	public void setLineWidth(int width) {
+	public void setStrokeWidth(int width) {
 		this.stroke = new BasicStroke(width);
 		if (width>1) fillColor = null;
 	}
 
 	/** Returns the lineWidth. */
-	public int getLineWidth() {
+	public int getStrokeWidth() {
 		return stroke!=null?(int)stroke.getLineWidth():1;
 	}
 
