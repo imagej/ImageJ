@@ -109,7 +109,7 @@ public class PolygonRoi extends Roi {
 	
 	public void draw(Graphics g) {
         updatePolygon();
-		Color color = outlineColor!=null?outlineColor:ROIColor;
+		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean fill = false;
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {
 			color = fillColor;
@@ -153,7 +153,7 @@ public class PolygonRoi extends Roi {
                 drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);
             if (activeHandle<nPoints-1)
                 drawHandle(g, xp2[activeHandle+1]-size2, yp2[activeHandle+1]-size2);
-            handleColor=outlineColor!=null?outlineColor:ROIColor; drawHandle(g, xp2[0]-size2, yp2[0]-size2); handleColor=Color.white;
+            handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, xp2[0]-size2, yp2[0]-size2); handleColor=Color.white;
             for (int i=1; i<nPoints; i++)
                 drawHandle(g, xp2[i]-size2, yp2[i]-size2);
         }

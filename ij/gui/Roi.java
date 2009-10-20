@@ -49,8 +49,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected String name;
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
-	protected Color outlineColor;
-	protected Color instanceColor; //obsolete; replaced by outlineColor
+	protected Color  strokeColor;
+	protected Color instanceColor; //obsolete; replaced by  strokeColor
 	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
@@ -312,6 +312,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			Roi r = (Roi)super.clone();
 			r.setImage(null);
 			r.setStroke(getStroke());
+			r.setFillColor(getFillColor());
 			return r;
 		}
 		catch (CloneNotSupportedException e) {return null;}
@@ -711,7 +712,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		Color color = outlineColor!=null?outlineColor:ROIColor;
+		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		mag = ic.getMagnification();
@@ -1052,14 +1053,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
 	 */
 	public void setStrokeColor(Color c) {
-		outlineColor = c;
+		 strokeColor = c;
 	}
 
 	/** Returns the the color used to draw the ROI outline or null if the default color is being used.
 	 * @see #setStrokeColor(Color)
 	 */
 	public Color getStrokeColor() {
-		return outlineColor;
+		return  strokeColor;
 	}
 
 	/** Sets the color used to fill ROIs when they are in a display list.
@@ -1088,14 +1089,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Copy the attributes (outline color, fill color, outline width) 
 		of  'roi2' to the this selection. */
 	public void copyAttributes(Roi roi2) {
-		this.outlineColor = roi2.outlineColor;
+		this. strokeColor = roi2. strokeColor;
 		this.fillColor = roi2.fillColor;
 		this.stroke = roi2.stroke;
 	}
 
 	/** Obsolete; replaced by setStrokeColor(). */
 	public void setInstanceColor(Color c) {
-		outlineColor = c;
+		 strokeColor = c;
 	}
 
 	/** Set 'nonScalable' true to have TextRois in a display 

@@ -889,35 +889,42 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int[] indexes = list.getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
-        if (indexes.length==0) return;
+		int n = indexes.length;
+        if (n==0) return;
+		Roi rpRoi = null;
         if (color==null && lineWidth==0 && fillColor==null) {
 			String label = list.getItem(indexes[0]);
-			Roi roi = (Roi)rois.get(label);
-			if (indexes.length!=1)
-				roi = (Roi)roi.clone();
-			roi.setFillColor(fillColor);
-			RoiProperties rp = new RoiProperties(roi);
+			rpRoi = (Roi)rois.get(label);
+			if (n==1) fillColor =  rpRoi.getFillColor();
+			if (rpRoi.getStrokeColor()==null)
+				rpRoi.setStrokeColor(ImageCanvas.getShowAllColor());
+			rpRoi = (Roi) rpRoi.clone();
+			if (n>1)
+				rpRoi.setName("range: "+(indexes[0]+1)+"-"+(indexes[n-1]+1));
+			rpRoi.setFillColor(fillColor);
+			RoiProperties rp = new RoiProperties( rpRoi);
 			if (!rp.showDialog())
 				return;
-			lineWidth = roi.getStrokeWidth();
+			lineWidth =  rpRoi.getStrokeWidth();
 			defaultLineWidth = lineWidth;
-			color = roi.getStrokeColor();
-			fillColor = roi.getFillColor();
+			color =  rpRoi.getStrokeColor();
+			fillColor =  rpRoi.getFillColor();
 			defaultColor = color;
 		}
-		for (int i=0; i<indexes.length; i++) {
+		for (int i=0; i<n; i++) {
 			String label = list.getItem(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
-			if (color!=null) roi.setStrokeColor(color);
-			if (lineWidth!=0) roi.setStrokeWidth(lineWidth);
+			roi.setStrokeColor(color);
+			roi.setStrokeWidth(lineWidth);
+			if (n==1 && rpRoi!=null) rename(rpRoi.getName());
 			roi.setFillColor(fillColor);
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
-		if (roi!=null && !showingAll) {
+		if (roi!=null && (n==1||!showingAll)) {
 			if (lineWidth!=0) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
@@ -926,8 +933,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			showAll(SHOW_ALL);
 			showingAll = true;
 		}
-		if (imp!=null && (imp.getRoi()!=null || showingAll))
-			imp.draw();
+		if (imp!=null) imp.draw();
 		if (record()) {
 			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
 			Recorder.record("roiManager", "Set Line Width", lineWidth);

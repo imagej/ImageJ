@@ -165,8 +165,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				roi.setStrokeWidth(1);
 				roi.draw(g);
 				roi.setStrokeColor(lineColor);
-				roi.setFillColor(fillColor);
 				roi.setStrokeWidth(lineWidth);
+				roi.setFillColor(fillColor);
 				currentRoi = null;
 			} else
 				roi.draw(g);

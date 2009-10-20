@@ -209,7 +209,7 @@ public class OvalRoi extends Roi {
 
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		Color color = outlineColor!=null?outlineColor:ROIColor;
+		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		mag = ic.getMagnification();
