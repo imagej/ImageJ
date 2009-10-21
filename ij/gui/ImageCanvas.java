@@ -46,7 +46,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private Color listColor;
     private BasicStroke listStroke;
     private static final int LIST_OFFSET = 100000;
-    private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(128, 255, 255));
+    private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(0, 255, 255));
     private static Color labelColor;
     private int resetMaxBoundsCount;
     private Roi currentRoi;

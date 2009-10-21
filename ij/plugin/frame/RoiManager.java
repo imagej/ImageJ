@@ -892,10 +892,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int n = indexes.length;
         if (n==0) return;
 		Roi rpRoi = null;
+		String rpName = null;
         if (color==null && lineWidth==0 && fillColor==null) {
 			String label = list.getItem(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
-			if (n==1) fillColor =  rpRoi.getFillColor();
+			if (n==1) {
+				fillColor =  rpRoi.getFillColor();
+				rpName = rpRoi.getName();
+			}
 			if (rpRoi.getStrokeColor()==null)
 				rpRoi.setStrokeColor(ImageCanvas.getShowAllColor());
 			rpRoi = (Roi) rpRoi.clone();
@@ -917,9 +921,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
 			roi.setStrokeColor(color);
 			roi.setStrokeWidth(lineWidth);
-			if (n==1 && rpRoi!=null) rename(rpRoi.getName());
 			roi.setFillColor(fillColor);
 		}
+		if (rpRoi!=null && rpName!=null && !rpRoi.getName().equals(rpName))
+			rename(rpRoi.getName());
 		ImagePlus imp = WindowManager.getCurrentImage();
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		Roi roi = imp!=null?imp.getRoi():null;

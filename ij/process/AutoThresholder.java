@@ -19,24 +19,25 @@ public class AutoThresholder {
 		if (index<0) throw new IllegalArgumentException("Threshold method not found: \""+method+"\"");
 		int threshold = 0;
 		switch (index) {
-			case IJ_ISODATA: return IJIsoData(histogram);
-			case HUANG: return Huang(histogram);
-			case INTERMODES: return Intermodes(histogram);
-			case ISODATA: return IsoData(histogram);
-			case LI: return Li(histogram);
-			case MAXENTROPY: return MaxEntropy(histogram);
-			case MEAN: return Mean(histogram);
-			case MINERROR: return MinErrorI(histogram);
-			case MINIMUM: return Minimum(histogram);
-			case MOMENTS: return Moments(histogram);
-			case OTSU: return Otsu(histogram);
-			case PERCENTILE: return Percentile(histogram);
-			case RENYIENTROPY: return RenyiEntropy(histogram);
-			case SHANBHAG: return Shanbhag(histogram);
-			case TRIANGLE: return Triangle(histogram);
-			case YEN: return Yen(histogram);
+			case IJ_ISODATA: threshold =  IJIsoData(histogram); break;
+			case HUANG: threshold = Huang(histogram); break;
+			case INTERMODES: threshold = Intermodes(histogram); break;
+			case ISODATA: threshold = IsoData(histogram); break;
+			case LI: threshold = Li(histogram); break;
+			case MAXENTROPY: threshold = MaxEntropy(histogram); break;
+			case MEAN: threshold = Mean(histogram); break;
+			case MINERROR: threshold = MinErrorI(histogram); break;
+			case MINIMUM: threshold = Minimum(histogram); break;
+			case MOMENTS: threshold = Moments(histogram); break;
+			case OTSU: threshold = Otsu(histogram); break;
+			case PERCENTILE: threshold = Percentile(histogram); break;
+			case RENYIENTROPY: threshold = RenyiEntropy(histogram); break;
+			case SHANBHAG: threshold = Shanbhag(histogram); break;
+			case TRIANGLE: threshold = Triangle(histogram); break;
+			case YEN: threshold = Yen(histogram); break;
 		}
-		return -1;
+		if (threshold==-1) threshold = 0;
+		return threshold;
 	}
 	
 	final double log10(double x) {

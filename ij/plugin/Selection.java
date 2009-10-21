@@ -50,7 +50,7 @@ public class Selection implements PlugIn, Measurements {
     	else if (arg.equals("inverse"))
     		invert(imp); 
     	else if (arg.equals("properties"))
-    		{setProperties(imp.getRoi()); imp.draw();}
+    		{setProperties(imp.getRoi(), true); imp.draw();}
     	else if (arg.equals("overlay"))
     		createOverlay(imp.getRoi()); 
     	else
@@ -338,7 +338,7 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	void createOverlay(Roi roi) {
-		if (!setProperties(roi))
+		if (!setProperties(roi, false))
 			return;
 		ImageCanvas ic = imp.getCanvas();
 		Vector list = new Vector();
@@ -347,12 +347,13 @@ public class Selection implements PlugIn, Measurements {
 		imp.killRoi();
 	}
 	
-	boolean setProperties(Roi roi) {
+	boolean setProperties(Roi roi, boolean showName) {
 		if (roi==null) {
 			IJ.error("This command requires a selection.");
 			return false;
 		}
 		RoiProperties rp = new RoiProperties(roi);
+		rp.setShowName(showName);
 		return rp.showDialog();
 	}
 

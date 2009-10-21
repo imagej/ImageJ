@@ -6,6 +6,7 @@ import java.awt.*;
  /** Displays a dialog that allows the user to specify ROI properties such as color and line width. */
 public class RoiProperties {
 	private Roi roi;
+	private boolean showName = true;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public RoiProperties(Roi roi) {
@@ -37,24 +38,31 @@ public class RoiProperties {
 		String fillc = fillColor!=null?"#"+Integer.toHexString(fillColor.getRGB()):"none";
 		if (IJ.isMacro()) fillc = "none";
 		GenericDialog gd = new GenericDialog("Properties");
-		gd.addStringField(nameLabel, name, 15);
+		if (showName)
+			gd.addStringField(nameLabel, name, 15);
 		gd.addStringField("Stroke Color: ", linec);
 		gd.addNumericField("Width:", strokeWidth, 0);
 		gd.addMessage("");
 		gd.addStringField("Fill Color: ", fillc);
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
-		name = gd.getNextString();
+		if (showName) {
+			name = gd.getNextString();
+			if (!isRange) roi.setName(name.length()>0?name:null);
+		}
 		linec = gd.getNextString();
 		strokeWidth = (int)gd.getNextNumber();
 		fillc = gd.getNextString();
-		if (!isRange) roi.setName(name.length()>0?name:null);
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
 		roi.setStrokeWidth(strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		return true;
+    }
+    
+    public void setShowName(boolean showName) {
+    	this.showName = showName;
     }
     
 }

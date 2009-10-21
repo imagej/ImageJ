@@ -67,6 +67,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Display image containing binary masks of measured particles. */
 	public static final int SHOW_MASKS = 4096;
 
+	/** Use 4-connected particle tracing. */
+	public static final int FOUR_CONNECTED = 8192;
+
 	static final String OPTIONS = "ap.options";
 	
 	static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
@@ -128,8 +131,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private ImagePlus outputImage;
 	private boolean hideOutputImage;
 	private int roiType;
-		
-	
+	private int wandMode = Wand.LEGACY_MODE;
+
+			
 	/** Constructs a ParticleAnalyzer.
 		@param options	a flag word created by Oring SHOW_RESULTS, EXCLUDE_EDGE_PARTICLES, etc.
 		@param measurements a flag word created by ORing constants defined in the Measurements interface
@@ -158,6 +162,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			showChoice = MASKS;
 		if ((options&SHOW_NONE)!=0)
 			showChoice = NOTHING;
+		if ((options&FOUR_CONNECTED)!=0) {
+			wandMode = Wand.FOUR_CONNECTED;
+			options |= INCLUDE_HOLES;
+		}
 	}
 	
 	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
@@ -699,7 +707,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	void analyzeParticle(int x, int y, ImagePlus imp, ImageProcessor ip) {
 		//Wand wand = new Wand(ip);
 		ImageProcessor ip2 = redirectIP!=null?redirectIP:ip;
-		wand.autoOutline(x,y, level1, level2);
+		wand.autoOutline(x, y, level1, level2, wandMode);
 		if (wand.npoints==0)
 			{IJ.log("wand error: "+x+" "+y); return;}
 		Roi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, roiType);
