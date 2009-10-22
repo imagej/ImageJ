@@ -919,8 +919,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String label = list.getItem(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
-			roi.setStrokeColor(color);
-			roi.setStrokeWidth(lineWidth);
+			if (color!=null) roi.setStrokeColor(color);
+			if (lineWidth>0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 		}
 		if (rpRoi!=null && rpName!=null && !rpRoi.getName().equals(rpName))
@@ -946,12 +946,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	void flatten() {
-		if (WindowManager.getCurrentImage()==null)
-			IJ.noImage();
-		else if (list.getItemCount()==0)
-			error("The ROI list is empty");
-		else if (!showAllCheckbox.getState())
-			error("Not in \"Show All\" mode");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			{IJ.noImage(); return;}
+		ImageCanvas ic = imp.getCanvas();
+		if (!ic.getShowAllROIs() && ic.getDisplayList()==null && imp.getRoi()==null)
+			error("Image does not have an overlay or ROI");
 		else
 			IJ.doCommand("Flatten"); // run Image>Flatten in separate thread
 	}
@@ -1309,9 +1309,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (cmd.equals("show all with labels")) {
 			labelsCheckbox.setState(true);
 			showAll(LABELS);
+			if (Interpreter.isBatchMode()) IJ.wait(250);
 		} else if (cmd.equals("show all without labels")) {
 			labelsCheckbox.setState(false);
 			showAll(NO_LABELS);
+			if (Interpreter.isBatchMode()) IJ.wait(250);
 		} else if (cmd.equals("deselect")||cmd.indexOf("all")!=-1) {
 			if (IJ.isMacOSX()) ignoreInterrupts = true;
 			select(-1);
