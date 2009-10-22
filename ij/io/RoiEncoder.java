@@ -4,19 +4,21 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.awt.geom.*;
+
 
 /** Saves an ROI to a file or stream. RoiDecoder.java has a description of the file format.
 	@see ij.io.RoiDecoder
 	@see ij.plugin.RoiReader
 */
 public class RoiEncoder {
-	String path;
-	OutputStream f;
 	static final int HEADER_SIZE = 64;
-	static final int VERSION = 217;
-	final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
+	static final int VERSION = 218; // changed to 218 in v1.43i
+	private String path;
+	private OutputStream f;
+	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
 		traced=8, angle=9, point=10;
-	byte[] data;
+	private byte[] data;
 	
 	/** Creates an RoiEncoder using the specified path. */
 	public RoiEncoder(String path) {
@@ -51,7 +53,7 @@ public class RoiEncoder {
 			case Roi.POLYLINE: type=polyline; break;
 			case Roi.FREELINE: type=freeline; break;
 			case Roi.ANGLE: type=angle; break;
-			case Roi.COMPOSITE: type=rect; break;// shape array size (36-39) will be >0 to indicate composite type
+			case Roi.COMPOSITE: type=rect; break; // shape array size (36-39) will be >0 to indicate composite type
 			case Roi.POINT: type=point; break;
 			default: type = rect; break;
 		}
@@ -89,7 +91,20 @@ public class RoiEncoder {
 			putFloat(26, l.x2);
 			putFloat(30, l.y2);
 		}
-
+		
+		// save stroke width, stroke color and fill color (1.43i or later)
+		if (VERSION>=218) {
+			BasicStroke stroke = roi.getStroke();
+			if (stroke!=null)
+				putShort(34, (int)stroke.getLineWidth());
+			Color strokeColor = roi.getStrokeColor();
+			if (strokeColor!=null)
+				putInt(40, strokeColor.getRGB());
+			Color fillColor = roi.getFillColor();
+			if (fillColor!=null)
+				putInt(44, fillColor.getRGB());
+		}
+						
 		if (n>0) {
 			int base1 = 64;
 			int base2 = base1+2*n;

@@ -293,7 +293,7 @@ public class Line extends Roi {
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		Color color = outlineColor!=null?outlineColor:ROIColor;
+		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		//if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
@@ -329,7 +329,7 @@ public class Line extends Roi {
 		if (saveStroke!=null) g2d.setStroke(saveStroke);
 		if (state!=CONSTRUCTING && !displayList) {
 			int size2 = HANDLE_SIZE/2;
-			handleColor=outlineColor!=null?outlineColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
+			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 		}

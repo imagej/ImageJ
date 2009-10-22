@@ -16,13 +16,13 @@ public class Duplicater implements PlugInFilter {
 	}
 
 	public ImagePlus duplicateStack(ImagePlus imp, String newTitle) {
-		ImagePlus imp2 = (new Duplicator()).duplicate(imp);
+		ImagePlus imp2 = (new Duplicator()).run(imp);
 		imp2.setTitle(newTitle);
 		return imp2;
 	}
 	
 	public ImagePlus duplicateSubstack(ImagePlus imp, String newTitle, int first, int last) {
-		ImagePlus imp2 = (new Duplicator()).duplicateSubstack(imp, first, last);
+		ImagePlus imp2 = (new Duplicator()).run(imp, first, last);
 		imp2.setTitle(newTitle);
 		return imp2;
 	}

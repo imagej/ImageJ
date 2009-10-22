@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.plugin.frame.ThresholdAdjuster;
 import java.awt.*;
 
 /** Implements the Erode, Dilate, Open, Close, Outline, Skeletonize
@@ -80,7 +81,10 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     public boolean dialogItemChanged (GenericDialog gd, AWTEvent e) {
         iterations = (int)gd.getNextNumber();
         count = (int)gd.getNextNumber();
+        boolean bb = Prefs.blackBackground;
         Prefs.blackBackground = gd.getNextBoolean();
+        if ( Prefs.blackBackground!=bb)
+        	ThresholdAdjuster.update();
         Prefs.padEdges = gd.getNextBoolean();
         EDM.setOutputType(gd.getNextChoiceIndex());
         boolean isInvalid = gd.invalidNumber();

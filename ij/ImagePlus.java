@@ -11,6 +11,7 @@ import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 import ij.macro.Interpreter;
 import ij.plugin.frame.ContrastAdjuster;
+import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 
 /**
@@ -89,6 +90,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean openAsHyperStack;
 	private int[] position = {1,1,1};
 	private boolean noUpdateMode;
+	private ImageCanvas flatteningCanvas;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -595,7 +597,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the ImageCanvas being used to
 		display this image, or null. */
 	public ImageCanvas getCanvas() {
-		return win!=null?win.getCanvas():null;
+		return win!=null?win.getCanvas():flatteningCanvas;
 	}
 
 	/** Sets current foreground color. */
@@ -1931,6 +1933,65 @@ public class ImagePlus implements ImageObserver, Measurements {
 		position[2] = t;
 	}
 	
+	/** Returns a "flattened" version of this image, in RGB format. */
+	public ImagePlus flatten() {
+		ImagePlus imp2 = createImagePlus();
+		String title = "Flat_"+getTitle();
+		ImageCanvas ic2 = new ImageCanvas(imp2);
+		imp2.flatteningCanvas = ic2;
+		imp2.setRoi(getRoi());	
+		ImageCanvas ic = getCanvas();
+		if (ic!=null) {
+			ic2.setDisplayList(ic.getDisplayList());
+			ic2.setShowAllROIs(ic.getShowAllROIs());
+		}
+		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bi.getGraphics();
+		g.drawImage(getImage(), 0, 0, null);
+		ic2.paint(g);
+		imp2.flatteningCanvas = null;
+		if (Recorder.record) Recorder.recordCall("imp = IJ.getImage().flatten();");
+		return new ImagePlus(title, new ColorProcessor(bi));
+	}
+	
+	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
+	 * @see ij.gui.Roi#setStrokeColor
+	 * @see ij.gui.Roi#setStrokeWidth
+	 * @see ij.gui.Roi#setFillColor
+	 * @see ij.gui.Roi#setLocation
+	 * @see ij.gui.Roi#setNonScalable
+	 */
+	public void setDisplayList(Vector list) {
+		ImageCanvas ic = getCanvas();
+		if (ic!=null) ic.setDisplayList(list);
+	}
+
+	/** Creates a single ShapeRoi display list from the specified 
+	 * Shape, Color and BasicStroke, and activates it.
+	 * @see #setDisplayList(Vector)
+	 * @see ij.gui.Roi#setStrokeColor
+	 * @see ij.gui.Roi#setStrokeWidth
+	 */
+	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
+		ImageCanvas ic = getCanvas();
+		if (ic!=null) ic.setDisplayList(shape, color, stroke);
+	}
+	
+	/** Creates a single ROI display list from the specified 
+		ROI, and activates it.
+	 * @see #setDisplayList(Vector)
+	 */
+	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
+		ImageCanvas ic = getCanvas();
+		if (ic==null) return;
+		roi.setStrokeColor(strokeColor);
+		roi.setStrokeWidth(strokeWidth);
+		roi.setFillColor(fillColor);
+		Vector list = new Vector();
+		list.addElement(roi);
+		ic.setDisplayList(list);
+	}
+
 	public Object clone() {
 		try {return super.clone();}
 		catch (CloneNotSupportedException e) {return null;}

@@ -23,6 +23,8 @@ public class SimpleCommands implements PlugIn {
 			aboutPluginsHelp();
 		else if (arg.equals("install"))
 			installation();
+		else if (arg.equals("flatten"))
+			flatten();
 	}
 
 	void reset() {
@@ -39,9 +41,7 @@ public class SimpleCommands implements PlugIn {
 	}
 	
 	void unlock() {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{IJ.noImage(); return;}
+		ImagePlus imp = IJ.getImage();
 		boolean wasUnlocked = imp.lockSilently();
 		if (wasUnlocked)
 			IJ.showStatus("\""+imp.getTitle()+"\" is not locked");
@@ -63,9 +63,7 @@ public class SimpleCommands implements PlugIn {
 	}
 	
 	void rename() {
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null)
-			{IJ.noImage(); return;}
+		ImagePlus imp = IJ.getImage();
 		GenericDialog gd = new GenericDialog("Rename");
 		gd.addStringField("Title:", imp.getTitle(), 30);
 		gd.showDialog();
@@ -88,6 +86,13 @@ public class SimpleCommands implements PlugIn {
 		else if (IJ.isLinux())
 			url += "linux.html";
 		IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
+	}
+	
+	void flatten() {
+		ImagePlus imp = IJ.getImage();
+		ImagePlus imp2 = imp.flatten();
+		imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
+		imp2.show();
 	}
 
 	void aboutPluginsHelp() {

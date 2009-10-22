@@ -8,17 +8,22 @@ import ij.macro.Interpreter;
 import ij.plugin.filter.GaussianBlur;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Vector;
 
 
 
 /** This plugin implements the commands in the Edit/Section submenu. */
 public class Selection implements PlugIn, Measurements {
-	ImagePlus imp;
-	float[] kernel = {1f, 1f, 1f, 1f, 1f};
-	float[] kernel3 = {1f, 1f, 1f};
-	static String angle = "15"; // degrees
-	static String enlarge = "15"; // pixels
-	static String bandSize = "15"; // pixels
+	private ImagePlus imp;
+	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
+	private float[] kernel3 = {1f, 1f, 1f};
+	private static String angle = "15"; // degrees
+	private static String enlarge = "15"; // pixels
+	private static String bandSize = "15"; // pixels
+	private static boolean nonScalable;
+	private static Color linec, fillc;
+	private static int lineWidth = 1;
+	
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -44,6 +49,10 @@ public class Selection implements PlugIn, Measurements {
     		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
+    	else if (arg.equals("properties"))
+    		{setProperties(imp.getRoi(), true); imp.draw();}
+    	else if (arg.equals("overlay"))
+    		createOverlay(imp.getRoi()); 
     	else
     		runMacro(arg);
 	}
@@ -326,6 +335,26 @@ public class Selection implements PlugIn, Measurements {
 		if (altDown) IJ.setKeyDown(KeyEvent.VK_SHIFT);
 		rm.runCommand("add");
 		IJ.setKeyUp(IJ.ALL_KEYS);
+	}
+	
+	void createOverlay(Roi roi) {
+		if (!setProperties(roi, false))
+			return;
+		ImageCanvas ic = imp.getCanvas();
+		Vector list = new Vector();
+		list.addElement(roi);
+		ic.setDisplayList(list);
+		imp.killRoi();
+	}
+	
+	boolean setProperties(Roi roi, boolean showName) {
+		if (roi==null) {
+			IJ.error("This command requires a selection.");
+			return false;
+		}
+		RoiProperties rp = new RoiProperties(roi);
+		rp.setShowName(showName);
+		return rp.showDialog();
 	}
 
 }

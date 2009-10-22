@@ -3,6 +3,7 @@ import ij.gui.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.awt.Color;
 
 /*	ImageJ/NIH Image 64 byte ROI outline header
 	2 byte numbers are big-endian signed shorts
@@ -16,16 +17,18 @@ import java.net.*;
 	14-15	right
 	16-17	NCoordinates
 	18-33	x1,y1,x2,y2 (straight line)
-	34-35	line width (unused)
+	34-35	stroke width (v1.43i or later)
 	36-39   ShapeRoi size (type must be 1 if this value>0)
-	40-63	reserved (zero)
+	40-43   stroke color (v1.43i or later)
+	44-47   fill color (v1.43i or later)
+	48-63	reserved (zero)
 	64-67   x0, y0 (polygon)
 	68-71   x1, y1 
 	etc.
-	
+	.
 */
 
-/** Decodes an ImageJ, NIH Image or Scion Image ROI. */
+/** Decodes an ImageJ, NIH Image or Scion Image ROI file. */
 public class RoiDecoder {
 
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9, point=10;
@@ -140,6 +143,24 @@ public class RoiDecoder {
 			throw new IOException("Unrecognized ROI type: "+type);
 		}
 		roi.setName(name);
+		
+		// read stroke width, stroke color and fill color (1.43i or later)
+		if (RoiEncoder.VERSION>=218) {
+			int strokeWidth = getShort(34);
+			if (strokeWidth>0)
+				roi.setStrokeWidth(strokeWidth);
+			int strokeColor = getInt(40);
+			if (strokeColor!=0) {
+				int alpha = (strokeColor>>24)&0xff;
+				roi.setStrokeColor(new Color(strokeColor, alpha!=255));
+			}
+			int fillColor = getInt(44);
+			if (fillColor!=0) {
+				int alpha = (fillColor>>24)&0xff;
+				roi.setFillColor(new Color(fillColor, alpha!=255));
+			}
+		}
+
 		return roi;
 	}
 	

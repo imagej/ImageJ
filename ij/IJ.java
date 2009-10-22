@@ -269,6 +269,7 @@ public class IJ {
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
 			commandTable.put("Arbitrarily... ", "Rotate... ");
+			commandTable.put("Record...", "Record Macro...");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

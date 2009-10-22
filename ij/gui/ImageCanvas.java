@@ -46,9 +46,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private Color listColor;
     private BasicStroke listStroke;
     private static final int LIST_OFFSET = 100000;
-    private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(128, 255, 255));
+    private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(0, 255, 255));
     private static Color labelColor;
     private int resetMaxBoundsCount;
+    private Roi currentRoi;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -129,7 +130,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Roi roi = imp.getRoi();
 		if (roi!=null || showAllROIs || displayList!=null) {
 			if (roi!=null) roi.updatePaste();
-			if (!IJ.isMacOSX()) {
+			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
 				return;
 			}
@@ -145,8 +146,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (displayList!=null) drawDisplayList(g);
-			if (roi != null) roi.draw(g);
-			if (showAllROIs) showAllROIs(g);
+			if (showAllROIs) drawAllROIs(g);
+			if (roi!=null) drawRoi(roi, g);
 			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(g);
 			if (IJ.debugMode) showFrameRate(g);
@@ -154,7 +155,24 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
     }
     
-    void showAllROIs(Graphics g) {
+    private void drawRoi(Roi roi, Graphics g) {
+			if (roi==currentRoi) {
+				Color lineColor = roi.getStrokeColor();
+				Color fillColor = roi.getFillColor();
+				int lineWidth = roi.getStrokeWidth();
+				roi.setStrokeColor(null);
+				roi.setFillColor(null);
+				roi.setStrokeWidth(1);
+				roi.draw(g);
+				roi.setStrokeColor(lineColor);
+				roi.setStrokeWidth(lineWidth);
+				roi.setFillColor(fillColor);
+				currentRoi = null;
+			} else
+				roi.draw(g);
+    }
+    
+    void drawAllROIs(Graphics g) {
 		RoiManager rm=RoiManager.getInstance();
 		if (rm==null) {
 			rm = Interpreter.getBatchModeRoiManager();
@@ -172,7 +190,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
 		boolean drawLabels = rm.getDrawLabels();
+		currentRoi = null;
 		int n = list.getItemCount();
+    	if (IJ.debugMode) IJ.log("paint: drawing "+n+" \"Show All\" ROIs");
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
 		if (!drawLabels)
@@ -191,18 +211,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					drawRoi(g, roi, drawLabels?i:-1);
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
-			if (i<100 && drawLabels && imp!=null && roi==imp.getRoi() && !(roi instanceof TextRoi)) {
-				Color lineColor = roi.getLineColor();
-				Color fillColor = roi.getFillColor();
-				int lineWidth = roi.getLineWidth();
-				roi.setLineColor(null);
-				roi.setFillColor(null);
-				roi.setLineWidth(1);
-				roi.draw(g);
-				roi.setLineColor(lineColor);
-				roi.setFillColor(fillColor);
-				roi.setLineWidth(lineWidth);
-			}
+			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
+				currentRoi = roi;
 		}
     }
     
@@ -220,6 +230,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     void drawDisplayList(Graphics g) {
 		initGraphics(g, listColor);
     	int n = displayList.size();
+    	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
     	for (int i=0; i<n; i++)
     		drawRoi(g, (Roi)displayList.elementAt(i), labelListItems?i+LIST_OFFSET:-1);
     	if (listStroke!=null) ((Graphics2D)g).setStroke(new BasicStroke());
@@ -250,18 +261,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     	int type = roi.getType();
 		ImagePlus imp2 = roi.getImage();
 		roi.setImage(imp);
-		Color saveColor = roi.getLineColor();
+		Color saveColor = roi.getStrokeColor();
 		if (saveColor==null) {
 			if (index>=0 || listColor==null)
-				roi.setLineColor(showAllColor);
+				roi.setStrokeColor(showAllColor);
 			else
-				roi.setLineColor(listColor);
+				roi.setStrokeColor(listColor);
 		}
 		if (roi instanceof TextRoi)
 			((TextRoi)roi).drawText(g);
 		else
 			roi.drawDisplayList(g);
-		roi.setLineColor(saveColor);
+		roi.setStrokeColor(saveColor);
 		if (index>=0) {
 			g.setColor(showAllColor);
 			drawRoiLabel(g, index, roi.getBounds());
@@ -272,7 +283,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.setImage(null);
 		/*
 		} else {
-			Color c = roi.getLineColor();
+			Color c = roi.getStrokeColor();
 			Color fillColor = roi.getFillColor();
 			if (fillColor!=null) c = fillColor;
 			Color saveg = null;
@@ -403,8 +414,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (displayList!=null) drawDisplayList(offScreenGraphics);
-			if (roi!=null) roi.draw(offScreenGraphics);
-			if (showAllROIs) showAllROIs(offScreenGraphics);
+			if (showAllROIs) drawAllROIs(offScreenGraphics);
+			if (roi!=null) drawRoi(roi, offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
@@ -1199,35 +1210,24 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
-	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
-	 * @see ij.gui.Roi#setLineColor
-	 * @see ij.gui.Roi#setLineWidth
-	 * @see ij.gui.Roi#setLocation
-	 * @see ij.gui.Roi#setNonScalable
-	 * @see ij.gui.TextRoi#setBackgroundColor
-	 */
+	/** Obsolete; replaced by ImagePlus.setDisplayList(Vector). */
 	public void setDisplayList(Vector list) {
 		displayList = list;
 		listColor = null;
 		if (list==null) customRoi = false;
-		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getLineColor()!=null)
+		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getStrokeColor()!=null)
 			labelListItems = false;
 		else
 			labelListItems = true;
 		repaint();
 	}
 
-	/** Creates a single ShapeRoi display list from the specified 
-	 * Shape, Color and BasicStroke, and activates it.
-	 * @see #setDisplayList(Vector)
-	 * @see ij.gui.Roi#setLineColor
-	 * @see ij.gui.Roi#setLineWidth
-	 */
+	/** Obsolete; replaced by ImagePlus.setDisplayList(Shape, Color, BasicStroke). */
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
 			{setDisplayList(null); return;}
 		Roi roi = new ShapeRoi(shape);
-		roi.setLineColor(color);
+		roi.setStrokeColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		displayList = list;
@@ -1237,15 +1237,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 	
-	/** Creates a single ROI display list from the specified 
-		ROI and Color, and activates it.
-	 * @see #setDisplayList(Vector)
-	 * @see ij.gui.Roi#setLineColor
-	 * @see ij.gui.Roi#setLineWidth
-	 * @see ij.gui.TextRoi#setBackgroundColor
-	 */
+	/** Obsolete; replaced by ImagePlus.setDisplayList(Roi, Color, int, Color). */
 	public void setDisplayList(Roi roi, Color color) {
-		roi.setLineColor(color);
+		roi.setStrokeColor(color);
 		Vector list = new Vector();
 		list.addElement(roi);
 		setDisplayList(list);
@@ -1295,7 +1289,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			}
 		}
 	}
-
+	
 	public void mouseMoved(MouseEvent e) {
 		if (ij==null) return;
 		int sx = e.getX();

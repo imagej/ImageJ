@@ -251,7 +251,7 @@ import java.util.Vector;
 		else if (item.equals("Label"))
 			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"red\");\ndrawString(\"Hello\", 20, 30);\n";
 		else if (item.equals("Crop"))
-			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2)\";\nrun(\"Crop\");\n";
+			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2);\nrun(\"Crop\");\n";
 		else if (item.equals("Add Border"))
 			code = "border=25;\nw=getWidth+border*2; h=getHeight+border*2;\nrun(\"Canvas Size...\", \"width=w height=h position=Center zero\");\n";
 		else if (item.equals("Invert"))
