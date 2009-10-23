@@ -50,9 +50,9 @@ public class Selection implements PlugIn, Measurements {
     	else if (arg.equals("inverse"))
     		invert(imp); 
     	else if (arg.equals("properties"))
-    		{setProperties(imp.getRoi(), true); imp.draw();}
+    		{setProperties("Properties", imp.getRoi()); imp.draw();}
     	else if (arg.equals("overlay"))
-    		createOverlay(imp.getRoi()); 
+    		createOverlay(imp); 
     	else
     		runMacro(arg);
 	}
@@ -337,8 +337,24 @@ public class Selection implements PlugIn, Measurements {
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 	
-	void createOverlay(Roi roi) {
-		if (!setProperties(roi, false))
+	void createOverlay(ImagePlus imp) {
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null && IJ.macroRunning() && macroOptions.indexOf("remove")!=-1) {
+			imp.setDisplayList(null);
+			return;
+		}
+		Roi roi = imp.getRoi();
+		if (roi==null && imp.getDisplayList()!=null) {
+			GenericDialog gd = new GenericDialog("No Selection");
+			gd.addMessage("\"Create Overlay\" requires a selection.");
+			gd.setInsets(15, 40, 0);
+			gd.addCheckbox("Remove existing overlay", false);
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			if (gd.getNextBoolean()) imp.setDisplayList(null);
+			return;
+ 		}
+		if (!setProperties("Create Overlay", roi))
 			return;
 		ImageCanvas ic = imp.getCanvas();
 		Vector list = new Vector();
@@ -347,13 +363,12 @@ public class Selection implements PlugIn, Measurements {
 		imp.killRoi();
 	}
 	
-	boolean setProperties(Roi roi, boolean showName) {
+	boolean setProperties(String title, Roi roi) {
 		if (roi==null) {
 			IJ.error("This command requires a selection.");
 			return false;
 		}
-		RoiProperties rp = new RoiProperties(roi);
-		rp.setShowName(showName);
+		RoiProperties rp = new RoiProperties(title, roi);
 		return rp.showDialog();
 	}
 

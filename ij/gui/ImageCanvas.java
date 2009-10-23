@@ -1245,7 +1245,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setDisplayList(list);
 	}
 
-	/** Returns the current display list, or null if there is no display list. */
+	/** Obsolete; replaced by ImagePlus.getDisplayList(). */
 	public Vector getDisplayList() {
 		return displayList;
 	}

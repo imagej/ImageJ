@@ -255,15 +255,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
-		if (color==null && defaultColor!=null)
-			color = defaultColor;
-		if (lineWidth<0) lineWidth = defaultLineWidth;
-		if (lineWidth>100) lineWidth = 1;
 		Roi roi = imp.getRoi();
 		if (roi==null) {
 			error("The active image does not have a selection.");
 			return false;
 		}
+		if (color==null && roi.getStrokeColor()!=null)
+			color = roi.getStrokeColor();
+		else if (color==null && defaultColor!=null)
+			color = defaultColor;
+		if (lineWidth<0) {
+			int sw = roi.getStrokeWidth();
+			lineWidth = sw>1?sw:defaultLineWidth;
+		}
+		if (lineWidth>100) lineWidth = 1;
 		int n = list.getItemCount();
 		if (n>0 && !IJ.isMacro()) {
 			// check for duplicate
@@ -906,7 +911,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (n>1)
 				rpRoi.setName("range: "+(indexes[0]+1)+"-"+(indexes[n-1]+1));
 			rpRoi.setFillColor(fillColor);
-			RoiProperties rp = new RoiProperties( rpRoi);
+			RoiProperties rp = new RoiProperties("Properties", rpRoi);
 			if (!rp.showDialog())
 				return;
 			lineWidth =  rpRoi.getStrokeWidth();

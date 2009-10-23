@@ -1992,6 +1992,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		ic.setDisplayList(list);
 	}
 
+	/** Returns the current display list, or null if there is no display list. */
+	public Vector getDisplayList() {
+		ImageCanvas ic = getCanvas();
+		return ic!=null?ic.getDisplayList():null;
+	}
+
 	public Object clone() {
 		try {return super.clone();}
 		catch (CloneNotSupportedException e) {return null;}

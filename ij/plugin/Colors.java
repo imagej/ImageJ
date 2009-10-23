@@ -28,13 +28,10 @@ public class Colors implements PlugIn, ItemListener {
 		String bname = getColorName(bc, "white");
 		Color sc =Roi.getColor();
 		String sname = getColorName(sc, "yellow");
-		Color fillc = Roi.getDefaultFillColor();
-		String fillColor1 = fillc!=null?Integer.toHexString(fillc.getRGB()):"none";
 		GenericDialog gd = new GenericDialog("Colors");
 		gd.addChoice("Foreground:", colors, fname);
 		gd.addChoice("Background:", colors, bname);
 		gd.addChoice("Selection:", colors, sname);
-		gd.addStringField("ROI fill color: ", fillColor1);
 		Vector choices = gd.getChoices();
 		fchoice = (Choice)choices.elementAt(0);
 		bchoice = (Choice)choices.elementAt(1);
@@ -57,17 +54,6 @@ public class Colors implements PlugIn, ItemListener {
 		fname = gd.getNextChoice();
 		bname = gd.getNextChoice();
 		sname = gd.getNextChoice();
-		String fillColor2 = gd.getNextString();
-		if (!fillColor2.equals(fillColor1)) {
-			fillc = decode(fillColor2, null);
-			Roi.setDefaultFillColor(fillc);
-			ImagePlus imp = WindowManager.getCurrentImage();
-			Roi roi = imp!=null?imp.getRoi():null;
-			if (roi!=null) {
-				roi.setFillColor(fillc);
-				imp.draw();
-			}
-		}
 		fc2 = getColor(fname, Color.black);
 		bc2 = getColor(bname, Color.white);
 		sc2 = getColor(sname, Color.yellow);

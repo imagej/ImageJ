@@ -6,12 +6,15 @@ import java.awt.*;
  /** Displays a dialog that allows the user to specify ROI properties such as color and line width. */
 public class RoiProperties {
 	private Roi roi;
+	private String title;
 	private boolean showName = true;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
-    public RoiProperties(Roi roi) {
+    public RoiProperties(String title, Roi roi) {
     	if (roi==null)
     		throw new IllegalArgumentException("ROI is null");
+    	this.title = title;
+    	showName = title.startsWith("Prop");
     	this.roi = roi;
     }
     
@@ -37,7 +40,7 @@ public class RoiProperties {
 		if (lc!=null) linec = lc;
 		String fillc = fillColor!=null?"#"+Integer.toHexString(fillColor.getRGB()):"none";
 		if (IJ.isMacro()) fillc = "none";
-		GenericDialog gd = new GenericDialog("Properties");
+		GenericDialog gd = new GenericDialog(title);
 		if (showName)
 			gd.addStringField(nameLabel, name, 15);
 		gd.addStringField("Stroke Color: ", linec);
@@ -60,9 +63,5 @@ public class RoiProperties {
 		roi.setFillColor(fillColor);
 		return true;
     }
-    
-    public void setShowName(boolean showName) {
-    	this.showName = showName;
-    }
-    
+        
 }
