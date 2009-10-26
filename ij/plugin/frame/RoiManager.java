@@ -37,7 +37,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	PopupMenu pm;
 	Button moreButton, colorButton;
 	Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	Checkbox labelsCheckbox = new Checkbox("Show Labels", true);
+	Checkbox labelsCheckbox = new Checkbox("Edit Mode", false);
 
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
@@ -46,7 +46,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean noUpdateMode;
 	int defaultLineWidth = 1;
 	Color defaultColor;
-
+	boolean firstTime = true;
+	
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
@@ -212,11 +213,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
 		if (source==showAllCheckbox) {
+			if (firstTime)
+				labelsCheckbox.setState(true);
 			showAll(showAllCheckbox.getState()?SHOW_ALL:SHOW_NONE);
+			firstTime = false;
 			return;
 		}
 		if (source==labelsCheckbox) {
+			if (firstTime)
+				showAllCheckbox.setState(true);
 			showAll(labelsCheckbox.getState()?LABELS:NO_LABELS);
+			firstTime = false;
 			return;
 		}
 		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
@@ -1436,6 +1443,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setImage(imp);
 			roi.update(shiftKeyDown, altKeyDown);
 		}
+	}
+	
+	public void setEditMode(ImagePlus imp, boolean editMode) {
+		ImageCanvas ic = imp.getCanvas();
+		boolean showAll = false;
+		if (ic!=null) {
+			showAll = ic.getShowAllROIs() | editMode;
+			ic.setShowAllROIs(showAll);
+			imp.draw();
+		}
+		showAllCheckbox.setState(showAll);
+		labelsCheckbox.setState(editMode);
 	}
 	
 	void selectAll() {

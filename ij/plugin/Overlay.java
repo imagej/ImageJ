@@ -1,0 +1,185 @@
+package ij.plugin;
+import ij.*;
+import ij.process.*;
+import ij.gui.*;
+import ij.plugin.frame.RoiManager;
+import ij.macro.Interpreter;
+import java.util.Vector;
+import java.awt.Frame;
+
+/** This plugin implements the commands in the Image/Overlay menu. */
+public class Overlay implements PlugIn {
+	private static Vector displayList2;
+
+	public void run(String arg) {
+		if (arg.equals("add"))
+			add();
+		else if (arg.equals("image"))
+			addImage();
+		else if (arg.equals("flatten"))
+			flatten();
+		else if (arg.equals("hide"))
+			hide();
+		else if (arg.equals("show"))
+			show();
+		else if (arg.equals("from"))
+			fromRoiManager();
+		else if (arg.equals("to"))
+			toRoiManager();
+	}
+			
+	void add() {
+		ImagePlus imp = IJ.getImage();
+		String macroOptions = Macro.getOptions();
+		if (macroOptions!=null && IJ.macroRunning() && macroOptions.indexOf("remove")!=-1) {
+			imp.setDisplayList(null);
+			return;
+		}
+		Roi roi = imp.getRoi();
+		if (roi==null && imp.getDisplayList()!=null) {
+			GenericDialog gd = new GenericDialog("No Selection");
+			gd.addMessage("\"Overlay>Add\" requires a selection.");
+			gd.setInsets(15, 40, 0);
+			gd.addCheckbox("Remove existing overlay", false);
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+			if (gd.getNextBoolean()) imp.setDisplayList(null);
+			return;
+ 		}
+		if (roi==null) {
+			IJ.error("This command requires a selection.");
+			return;
+		}
+		roi = (Roi)roi.clone();
+		Vector list = imp.getDisplayList();
+		if (list!=null && list.size()>0) {
+			Roi roi2 = (Roi)list.get(list.size()-1);
+			roi.setStrokeColor(roi2.getStrokeColor());
+			roi.setStrokeWidth(roi2.getStrokeWidth());
+			roi.setFillColor(roi2.getFillColor());
+		}
+		if (!IJ.altKeyDown()) {
+			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
+			if (!rp.showDialog()) return;
+		}
+		if (list==null) list = new Vector();
+		list.addElement(roi);
+		imp.setDisplayList(list);
+		displayList2 = list;
+	}
+	
+	void addImage() {
+		ImagePlus imp = IJ.getImage();
+		int[] wList = WindowManager.getIDList();
+		if (wList==null || wList.length<2) {
+			IJ.error("Add Image...", "The command requires at least two open images.");
+			return;
+		}
+		String[] titles = new String[wList.length];
+		for (int i=0; i<wList.length; i++) {
+			ImagePlus imp2 = WindowManager.getImage(wList[i]);
+			titles[i] = imp2!=null?imp2.getTitle():"";
+		}
+		int index = 0;
+		if (imp.getID()==wList[0]) index = 1;
+		GenericDialog gd = new GenericDialog("Add Image...");
+		gd.addChoice("Image to add to overlay:", titles, titles[index]);
+		gd.addNumericField("X location:", 0, 0);
+		gd.addNumericField("Y location:", 0, 0);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		index = gd.getNextChoiceIndex();
+		int x = (int)gd.getNextNumber();
+		int y = (int)gd.getNextNumber();
+		ImagePlus overlay = WindowManager.getImage(wList[index]);
+		if (overlay==imp) {
+			IJ.error("Add Image...", "Image to be added cannot be the same as\n\""+imp.getTitle()+"\".");
+			return;
+		}
+		if (overlay.getWidth()>imp.getWidth() && overlay.getHeight()>imp.getHeight()) {
+			IJ.error("Add Image...", "Image to be added cannnot be larger than\n\""+imp.getTitle()+"\".");
+			return;
+		}		
+		Roi roi = new ImageRoi(x, y, overlay.getProcessor());
+		Vector list = imp.getDisplayList();
+		if (list==null) list = new Vector();
+		list.addElement(roi);
+		imp.setDisplayList(list);
+		displayList2 = list;
+	}
+
+	void hide() {
+		ImagePlus imp = IJ.getImage();
+		Vector list = imp.getDisplayList();
+		if (list!=null) {
+			displayList2 = list;
+			imp.setDisplayList(null);
+		}
+	}
+
+	void show() {
+		ImagePlus imp = IJ.getImage();
+		if (displayList2!=null)
+			imp.setDisplayList(displayList2);
+	}
+
+	void flatten() {
+		ImagePlus imp = IJ.getImage();
+		ImagePlus imp2 = imp.flatten();
+		imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
+		imp2.show();
+	}
+	
+	void fromRoiManager() {
+		ImagePlus imp = IJ.getImage();
+		RoiManager rm = RoiManager.getInstance();
+		if (rm==null) {
+			IJ.error("ROI Manager is not open");
+			return;
+		}
+		Roi[] rois = rm.getRoisAsArray();
+		if (rois.length==0) {
+			IJ.error("ROI Manager is empty");
+			return;
+		}
+		Vector list = new Vector();
+		for (int i=0; i<rois.length; i++)
+			list.addElement((Roi)rois[i].clone());
+		imp.setDisplayList(list);
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null) ic.setShowAllROIs(false);
+		rm.setEditMode(imp, false);
+		imp.killRoi();
+	}
+	
+	void toRoiManager() {
+		ImagePlus imp = IJ.getImage();
+		Vector list = imp.getDisplayList();
+		if (list==null) {
+			IJ.error("Overlay required");
+			return;
+		}
+		RoiManager rm = RoiManager.getInstance();
+		if (rm==null) {
+			if (Macro.getOptions()!=null && Interpreter.isBatchMode())
+				rm = Interpreter.getBatchModeRoiManager();
+			if (rm==null) {
+				Frame frame = WindowManager.getFrame("ROI Manager");
+				if (frame==null)
+					IJ.run("ROI Manager...");
+				frame = WindowManager.getFrame("ROI Manager");
+				if (frame==null || !(frame instanceof RoiManager))
+					return;
+				rm = (RoiManager)frame;
+			}
+		}
+		rm.runCommand("reset");
+		for (int i=0; i<list.size(); i++)
+			rm.add(imp, (Roi)list.get(i), i);
+		rm.setEditMode(imp, true);
+		if (rm.getCount()==list.size())
+			imp.setDisplayList(null);
+	}
+
+}

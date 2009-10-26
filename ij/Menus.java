@@ -156,9 +156,9 @@ public class Menus {
 		addPlugInItem(image, "Duplicate...", "ij.plugin.Duplicator", KeyEvent.VK_D, true);
 		addPlugInItem(image, "Rename...", "ij.plugin.SimpleCommands(\"rename\")", 0, false);
 		addPlugInItem(image, "Scale...", "ij.plugin.Scaler", KeyEvent.VK_E, false);
-		addPlugInItem(image, "Flatten", "ij.plugin.SimpleCommands(\"flatten\")", KeyEvent.VK_F, true);
 		getMenu("Image>Transform", true);
 		getMenu("Image>Zoom", true);
+		getMenu("Image>Overlay", true);
 		image.addSeparator();
 		getMenu("Image>Lookup Tables", true);
 		

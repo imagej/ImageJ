@@ -91,6 +91,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private int[] position = {1,1,1};
 	private boolean noUpdateMode;
 	private ImageCanvas flatteningCanvas;
+	private Vector displayList;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -368,6 +369,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			else
 				win = new ImageWindow(this);
 			if (roi!=null) roi.setImage(this);
+			if (displayList!=null && getCanvas()!=null)
+				getCanvas().setDisplayList(displayList);
 			draw();
 			IJ.showStatus(statusMessage);
 			if (IJ.isMacro()) { // wait for window to be activated
@@ -1941,10 +1944,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());	
 		ImageCanvas ic = getCanvas();
-		if (ic!=null) {
-			ic2.setDisplayList(ic.getDisplayList());
+		ic2.setDisplayList(getDisplayList());
+		if (ic!=null)
 			ic2.setShowAllROIs(ic.getShowAllROIs());
-		}
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics g = bi.getGraphics();
 		g.drawImage(getImage(), 0, 0, null);
@@ -1963,7 +1965,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 	 */
 	public void setDisplayList(Vector list) {
 		ImageCanvas ic = getCanvas();
-		if (ic!=null) ic.setDisplayList(list);
+		if (ic!=null) {
+			ic.setDisplayList(list);
+			displayList = null;
+		} else
+			displayList = list;
 	}
 
 	/** Creates a single ShapeRoi display list from the specified 
@@ -1995,7 +2001,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Returns the current display list, or null if there is no display list. */
 	public Vector getDisplayList() {
 		ImageCanvas ic = getCanvas();
-		return ic!=null?ic.getDisplayList():null;
+		if (ic!=null)
+			return ic.getDisplayList();
+		else
+			return displayList;
 	}
 
 	public Object clone() {
