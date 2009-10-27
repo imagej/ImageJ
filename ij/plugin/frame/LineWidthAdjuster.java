@@ -97,7 +97,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
         	notify();
         }
     }
-
 	void setup() {
 	}
 	

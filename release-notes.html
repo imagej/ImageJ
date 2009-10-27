@@ -5,28 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.43i, 22 October 2009</u>
+<li> <u>1.43j, 27 October 2009</u>
 <ul>
-<li> Added the <i>Edit&gt;Selection&gt;Create Overlay</i>
-(<a href="http://rsbweb.nih.gov/ij/macros/examples/TextOverlay.txt">example</a>)
-and <i>Properties</i> commands.
-<li> Added the <i>Plugins&gt;Macros&gt;Record Script</i> command.
-<li> Thanks to Jay Unruh, File>Import>Text Image
-opens images in comma-delimited text format.
-<li> Thanks to Gabriel Landini, the Thresholding tool's "B&W" mode now respects the
-"Black background" flag in <i>Process&gt;Binary&gt;Options</i>.
-<li> Added the "Flatten" button to the ROI Manager and removed the "Draw", "Fill" and "Label"
-commands from the "More&gt;&gt;" drop down menu.
-<li> The aspect ratio of rectangular and elliptical selections is displayed in
-the status bar as they are created and resized.
-<li> The "Transparent-zero" mode in <i>Edit&gt;Paste Control</i> and <i>Process&gt;Image Calculator</i>
-now works with 16-bit and 32-bit images.
-<li> Assigned the shift-f keyboard shortcut to <i>Image&gt;Flatten</i>
-and the "]" (close bracket) shortcut to <i>Window&gt;Show All</i>.
-<li> Added the ImagePlus.setDisplayList(Roi,Color,int,Color) method
-(<a href="http://rsb.info.nih.gov/ij/macros/js/TextOverlay.js">example</a>).
-<li> Worked around a bug with Java 1.6 on Mac OS X that caused multiple
-selection in the ROI Manager to not work.
+<li> Added the
+<a href="http://rsb.info.nih.gov/ij/docs/menus/image.html#overlay"><i>Image&gt;Overlay</i></a>
+submenu with <i>Add Selection</i>, <i>Add Image</i>,
+<i>Hide Overlay</i>, <i>Show Overlay</i>, <i>From ROI Manager</i>, <i>To ROI Manager</i>
+and <i>Flatten</i> commands
+(<a href="http://rsb.info.nih.gov/ij/macros/examples/MakeOverlay.txt">example</a>).
+<li> Added the
+<a href="http://rsb.info.nih.gov/ij/source/ij/gui/ImageRoi.java">ImageRoi</a> class
+(<a href="http://rsb.info.nih.gov/ij/macros/js/BufferedImageRoi.js">JavaScript example</a>).
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
+import java.awt.Rectangle;
 import java.util.Vector;
 import java.awt.Frame;
 
@@ -80,19 +81,33 @@ public class Overlay implements PlugIn {
 			ImagePlus imp2 = WindowManager.getImage(wList[i]);
 			titles[i] = imp2!=null?imp2.getTitle():"";
 		}
+		int x=0, y=0;
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.isArea()) {
+			Rectangle r = roi.getBounds();
+			x = r.x; y = r.y;
+		}
 		int index = 0;
 		if (imp.getID()==wList[0]) index = 1;
 		GenericDialog gd = new GenericDialog("Add Image...");
-		gd.addChoice("Image to add to overlay:", titles, titles[index]);
-		gd.addNumericField("X location:", 0, 0);
-		gd.addNumericField("Y location:", 0, 0);
+		gd.addChoice("Image to add:", titles, titles[index]);
+		gd.addNumericField("X location:", x, 0);
+		gd.addNumericField("Y location:", y, 0);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		index = gd.getNextChoiceIndex();
-		int x = (int)gd.getNextNumber();
-		int y = (int)gd.getNextNumber();
+		x = (int)gd.getNextNumber();
+		y = (int)gd.getNextNumber();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
+		if (wList.length==2) {
+			ImagePlus i1 = WindowManager.getImage(wList[0]);
+			ImagePlus i2 = WindowManager.getImage(wList[1]);
+			if (i2.getWidth()<i1.getWidth() && i2.getHeight()<i1.getHeight()) {
+				imp = i1;
+				overlay = i2;
+			}
+		}
 		if (overlay==imp) {
 			IJ.error("Add Image...", "Image to be added cannot be the same as\n\""+imp.getTitle()+"\".");
 			return;
@@ -101,7 +116,7 @@ public class Overlay implements PlugIn {
 			IJ.error("Add Image...", "Image to be added cannnot be larger than\n\""+imp.getTitle()+"\".");
 			return;
 		}		
-		Roi roi = new ImageRoi(x, y, overlay.getProcessor());
+		roi = new ImageRoi(x, y, overlay.getProcessor());
 		Vector list = imp.getDisplayList();
 		if (list==null) list = new Vector();
 		list.addElement(roi);

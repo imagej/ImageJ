@@ -3,8 +3,11 @@ import java.awt.*;
 import java.awt.image.*;//import ij.*;
 import ij.process.*;
 
-/** Image region of interest that can be added to 
-	a display list to create an image overlay. */
+/** Image region of interest that can be added
+     to a display list to create an image overlay. 
+     There is an example at
+     http://rsb.info.nih.gov/ij/source/ij/gui/ImageRoi.java
+*/
 public class ImageRoi extends Roi {
 	ImageProcessor ip;
 	BufferedImage bi;
@@ -29,7 +32,7 @@ public class ImageRoi extends Roi {
 		Image img = bi!=null?bi:ip.createImage();
 		int sx2 = ic.screenX(x+width);
 		int sy2 = ic.screenY(y+height);
-		g.drawImage(img, ic.screenX(x), ic.screenY(y), sx2, sy2, 0, 0, ip.getWidth(), ip.getHeight(), null);
+		g.drawImage(img, ic.screenX(x), ic.screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
  	}
 
 }
