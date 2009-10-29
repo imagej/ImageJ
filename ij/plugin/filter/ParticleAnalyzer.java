@@ -240,17 +240,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if ((int)cmin!=cmin) places = 2;
 		double cmax = maxSize*unitSquared;
 		if ((int)cmax!=cmax && cmax!=DEFAULT_MAX_SIZE) places = 2;
-		String minStr = IJ.d2s(cmin,places);
+		String minStr = ResultsTable.d2s(cmin,places);
 		if (minStr.indexOf("-")!=-1) {
 			for (int i=places; i<=6; i++) {
-				minStr = IJ.d2s(cmin, i);
+				minStr = ResultsTable.d2s(cmin, i);
 				if (minStr.indexOf("-")==-1) break;
 			}
 		}
-		String maxStr = IJ.d2s(cmax, places);
+		String maxStr = ResultsTable.d2s(cmax, places);
 		if (maxStr.indexOf("-")!=-1) {
 			for (int i=places; i<=6; i++) {
-				maxStr = IJ.d2s(cmax, i);
+				maxStr = ResultsTable.d2s(cmax, i);
 				if (maxStr.indexOf("-")==-1) break;
 			}
 		}
@@ -518,9 +518,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			sum += areas[i];
 		int places = Analyzer.getPrecision();
 		Calibration cal = imp.getCalibration();
-		String total = "\t"+IJ.d2s(sum,places);
-		String average = "\t"+IJ.d2s(sum/particleCount,places);
-		String fraction = "\t"+IJ.d2s(sum*100.0/totalArea,1);
+		String total = "\t"+ResultsTable.d2s(sum,places);
+		String average = "\t"+ResultsTable.d2s(sum/particleCount,places);
+		String fraction = "\t"+ResultsTable.d2s(sum*100.0/totalArea,1);
 		aLine = label+"\t"+particleCount+total+average+fraction;
 		aLine = addMeans(aLine, start);
 		if (slices==1) {
@@ -588,9 +588,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	String n(double n) {
 		String s;
 		if (Math.round(n)==n)
-			s = IJ.d2s(n,0);
+			s = ResultsTable.d2s(n,0);
 		else
-			s = IJ.d2s(n, Analyzer.getPrecision());
+			s = ResultsTable.d2s(n, Analyzer.getPrecision());
 		return "\t"+s;
 	}
 
@@ -836,7 +836,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		for (int i=1; i<nPoints; i++)
 			ip.lineTo(x+xp[i], y+yp[i]);
 		ip.lineTo(x+xp[0], y+yp[0]);
-		String s = IJ.d2s(count,0);
+		String s = ResultsTable.d2s(count,0);
 		ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
 		ip.setValue(1.0);
 		ip.drawString(s);

@@ -96,15 +96,24 @@ public class RoiEncoder {
 		if (VERSION>=218) {
 			BasicStroke stroke = roi.getStroke();
 			if (stroke!=null)
-				putShort(34, (int)stroke.getLineWidth());
+				putShort(RoiDecoder.STROKE_WIDTH, (int)stroke.getLineWidth());
 			Color strokeColor = roi.getStrokeColor();
 			if (strokeColor!=null)
-				putInt(40, strokeColor.getRGB());
+				putInt(RoiDecoder.STROKE_COLOR, strokeColor.getRGB());
 			Color fillColor = roi.getFillColor();
 			if (fillColor!=null)
-				putInt(44, fillColor.getRGB());
+				putInt(RoiDecoder.FILL_COLOR, fillColor.getRGB());
+			if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).isSplineFit()) {
+				int options = 0;
+				options |= RoiDecoder.SPLINE_FIT;
+				putShort(RoiDecoder.OPTIONS, options);
+			}
 		}
-						
+		
+		// save TextRoi
+		if (n==0 && roi instanceof TextRoi)
+			saveTextRoi((TextRoi)roi);
+			
 		if (n>0) {
 			int base1 = 64;
 			int base2 = base1+2*n;
@@ -142,6 +151,28 @@ public class RoiEncoder {
 		}
 		bout.write(data,0,data.length);
 		bout.flush();
+	}
+	
+	void saveTextRoi(TextRoi roi) {
+		Font font = roi.getCurrentFont();
+		String name = font.getName();
+		int size = font.getSize();
+		int style = font.getStyle();
+		String text = roi.getText();
+		int nameLength = name.length();
+		int textLength = text.length();
+		byte[] data2 = new byte[HEADER_SIZE+16+nameLength*2+textLength*2];
+		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
+		data = data2;
+		putShort(RoiDecoder.SUBTYPE, RoiDecoder.TEXT);
+		putInt(HEADER_SIZE, size);
+		putInt(HEADER_SIZE+4, style);
+		putInt(HEADER_SIZE+8, nameLength);
+		putInt(HEADER_SIZE+12, textLength);
+		for (int i=0; i<nameLength; i++)
+			putShort(HEADER_SIZE+16+i*2, name.charAt(i));
+		for (int i=0; i<textLength; i++)
+			putShort(HEADER_SIZE+16+nameLength*2+i*2, text.charAt(i));
 	}
 
     void putShort(int base, int v) {

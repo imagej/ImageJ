@@ -62,14 +62,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private String icon;
 	private MacroInstaller macroInstaller;
 	private int startupTime;
-	private PopupMenu ovalPopup, linePopup, switchPopup;
+	private PopupMenu ovalPopup, pointPopup, linePopup, switchPopup;
 	private CheckboxMenuItem ovalItem, brushItem;
+	private CheckboxMenuItem pointItem, multiPointItem;
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem;
 	private String currentSet = "Startup Macros";
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.white);
 	private static boolean brushEnabled;
+	private static boolean multiPointEnabled;
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
 	private int lineType = LINE;
 	
@@ -109,6 +111,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		brushItem.addItemListener(this);
 		ovalPopup.add(brushItem);
 		add(ovalPopup);
+
+		pointPopup = new PopupMenu();
+		if (Menus.getFontSize()!=0)
+			pointPopup.setFont(Menus.getFont());
+		pointItem = new CheckboxMenuItem("Point Tool", !multiPointEnabled);
+		pointItem.addItemListener(this);
+		pointPopup.add(pointItem);
+		multiPointItem = new CheckboxMenuItem("Multi-point Tool", multiPointEnabled);
+		multiPointItem.addItemListener(this);
+		pointPopup.add(multiPointItem);
+		add(pointPopup);
 
 		linePopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
@@ -238,11 +251,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case POINT:
 				xOffset = x; yOffset = y;
-				m(1,8); d(6,8); d(6,6); d(10,6); d(10,10); d(6,10); d(6,9);
-				m(8,1); d(8,5); m(11,8); d(15,8); m(8,11); d(8,15);
-				m(8,8); d(8,8);
-				g.setColor(Roi.getColor());
-				g.fillRect(x+7, y+7, 3, 3);
+				if (multiPointEnabled) {
+					drawPoint(1,3); drawPoint(9,1); drawPoint(15,5);
+					drawPoint(10,11); drawPoint(2,12);
+				} else {
+					xOffset = x; yOffset = y;
+					m(1,8); d(6,8); d(6,6); d(10,6); d(10,10); d(6,10); d(6,9);
+					m(8,1); d(8,5); m(11,8); d(15,8); m(8,11); d(8,15);
+					m(8,8); d(8,8);
+					g.setColor(Roi.getColor());
+					g.fillRect(x+7, y+7, 3, 3);
+				}
+				drawTriangle(14,14);
 				return;
 			case WAND:
 				xOffset = x+2; yOffset = y+2;
@@ -297,6 +317,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		g.setColor(triangleColor);
 		xOffset+=x; yOffset+=y;
 		m(0,0); d(4,0); m(1,1); d(3,1); dot(2,2);
+	}
+	
+	void drawPoint(int x, int y) {
+		g.setColor(toolColor);
+		m(x-3,y); d(x+3,y);
+		m(x,y-3); d(x,y+3);
+		g.setColor(Roi.getColor());
+		dot(x,y);
 	}
 	
 	void drawIcon(Graphics g, int tool, int x, int y) {
@@ -412,7 +440,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Freehand line selections");
 				return;
 			case POINT:
-				IJ.showStatus("Point selections (shift click for multiple points)");
+				if (multiPointEnabled)
+					IJ.showStatus("Point or *multi-point* selections");
+				else
+					IJ.showStatus("*Point* or multi-point selections");
 				return;
 			case WAND:
 				IJ.showStatus("Wand (tracing) tool");
@@ -708,6 +739,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				ovalPopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
 			}
+			if (current==POINT && isRightClick) {
+				pointItem.setState(!multiPointEnabled);
+				multiPointItem.setState(multiPointEnabled);
+				if (IJ.isMacOSX()) IJ.wait(10);
+				pointPopup.show(e.getComponent(),x,y);
+				mouseDownTime = 0L;
+			}
 			if (isLine(current) && isRightClick) {
 				straightLineItem.setState(lineType==LINE);
 				polyLineItem.setState(lineType==POLYLINE);
@@ -849,6 +887,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			brushEnabled = item==brushItem;
 			repaintTool(OVAL);
 			showMessage(OVAL);
+		} else if (item==pointItem || item==multiPointItem) {
+			multiPointEnabled = item==multiPointItem;
+			repaintTool(POINT);
+			showMessage(POINT);
 		} else if (item==straightLineItem) {
 			lineType = LINE;
 			setTool2(LINE);
