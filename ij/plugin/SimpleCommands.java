@@ -13,7 +13,7 @@ public class SimpleCommands implements PlugIn {
 	public void run(String arg) {
 		if (arg.equals("search"))
 			search();
-		if (arg.equals("import"))
+		else if (arg.equals("import"))
 			IJ.runMacroFile("ij.jar:ImportResultsTable");
 		else if (arg.equals("rename"))
 			rename();
@@ -23,8 +23,6 @@ public class SimpleCommands implements PlugIn {
 			aboutPluginsHelp();
 		else if (arg.equals("install"))
 			installation();
-		else if (arg.equals("flatten"))
-			flatten();
 	}
 
 	void reset() {
@@ -88,13 +86,6 @@ public class SimpleCommands implements PlugIn {
 		IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 	}
 	
-	void flatten() {
-		ImagePlus imp = IJ.getImage();
-		ImagePlus imp2 = imp.flatten();
-		imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
-		imp2.show();
-	}
-
 	void aboutPluginsHelp() {
 		IJ.showMessage("\"About Plugins\" Submenu", 
 			"Plugins packaged as JAR files can add entries\n"+

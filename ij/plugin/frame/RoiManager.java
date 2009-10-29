@@ -37,7 +37,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	PopupMenu pm;
 	Button moreButton, colorButton;
 	Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	Checkbox labelsCheckbox = new Checkbox("Show Labels", true);
+	Checkbox labelsCheckbox = new Checkbox("Edit Mode", false);
 
 	static boolean measureAll = true;
 	static boolean onePerSlice = true;
@@ -46,7 +46,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean noUpdateMode;
 	int defaultLineWidth = 1;
 	Color defaultColor;
-
+	boolean firstTime = true;
+	
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
@@ -212,11 +213,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
 		if (source==showAllCheckbox) {
+			if (firstTime)
+				labelsCheckbox.setState(true);
 			showAll(showAllCheckbox.getState()?SHOW_ALL:SHOW_NONE);
+			firstTime = false;
 			return;
 		}
 		if (source==labelsCheckbox) {
+			if (firstTime)
+				showAllCheckbox.setState(true);
 			showAll(labelsCheckbox.getState()?LABELS:NO_LABELS);
+			firstTime = false;
 			return;
 		}
 		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
@@ -255,15 +262,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
-		if (color==null && defaultColor!=null)
-			color = defaultColor;
-		if (lineWidth<0) lineWidth = defaultLineWidth;
-		if (lineWidth>100) lineWidth = 1;
 		Roi roi = imp.getRoi();
 		if (roi==null) {
 			error("The active image does not have a selection.");
 			return false;
 		}
+		if (color==null && roi.getStrokeColor()!=null)
+			color = roi.getStrokeColor();
+		else if (color==null && defaultColor!=null)
+			color = defaultColor;
+		if (lineWidth<0) {
+			int sw = roi.getStrokeWidth();
+			lineWidth = sw>1?sw:defaultLineWidth;
+		}
+		if (lineWidth>100) lineWidth = 1;
 		int n = list.getItemCount();
 		if (n>0 && !IJ.isMacro()) {
 			// check for duplicate
@@ -906,7 +918,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (n>1)
 				rpRoi.setName("range: "+(indexes[0]+1)+"-"+(indexes[n-1]+1));
 			rpRoi.setFillColor(fillColor);
-			RoiProperties rp = new RoiProperties( rpRoi);
+			RoiProperties rp = new RoiProperties("Properties", rpRoi);
 			if (!rp.showDialog())
 				return;
 			lineWidth =  rpRoi.getStrokeWidth();
@@ -1431,6 +1443,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setImage(imp);
 			roi.update(shiftKeyDown, altKeyDown);
 		}
+	}
+	
+	public void setEditMode(ImagePlus imp, boolean editMode) {
+		ImageCanvas ic = imp.getCanvas();
+		boolean showAll = false;
+		if (ic!=null) {
+			showAll = ic.getShowAllROIs() | editMode;
+			ic.setShowAllROIs(showAll);
+			imp.draw();
+		}
+		showAllCheckbox.setState(showAll);
+		labelsCheckbox.setState(editMode);
 	}
 	
 	void selectAll() {

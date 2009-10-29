@@ -169,6 +169,11 @@ public class TextRoi extends Roi {
 		g.setFont(font);
 		int i = 0;
 		if (fillColor!=null) {
+			if (getStrokeWidth()<10) {
+				Color saveFillColor = fillColor;
+				setStrokeWidth(10);
+				fillColor = saveFillColor;
+			}
 			updateBounds(g);
 			Color c = g.getColor();
 			int alpha = fillColor.getAlpha();
@@ -176,7 +181,7 @@ public class TextRoi extends Roi {
  			Graphics2D g2d = (Graphics2D)g;
 			int sw = nonScalable?width:(int)(ic.getMagnification()*width);
 			int sh = nonScalable?height:(int)(ic.getMagnification()*height);
-			g.fillRect(sx-5, sy-5, sx+sw, sy+sh);
+			g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {

@@ -677,7 +677,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0)
-				m = (int)(3/mag);
+				m = (int)(4.0/mag);
 		}
 		m += getStrokeWidth();
 		clipX-=m; clipY-=m;

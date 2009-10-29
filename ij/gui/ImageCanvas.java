@@ -231,8 +231,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		initGraphics(g, listColor);
     	int n = displayList.size();
     	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
-    	for (int i=0; i<n; i++)
+    	for (int i=0; i<n; i++) {
+    		if (displayList==null) break;
     		drawRoi(g, (Roi)displayList.elementAt(i), labelListItems?i+LIST_OFFSET:-1);
+    	}
     	if (listStroke!=null) ((Graphics2D)g).setStroke(new BasicStroke());
     }
     
@@ -1245,7 +1247,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setDisplayList(list);
 	}
 
-	/** Returns the current display list, or null if there is no display list. */
+	/** Obsolete; replaced by ImagePlus.getDisplayList(). */
 	public Vector getDisplayList() {
 		return displayList;
 	}
