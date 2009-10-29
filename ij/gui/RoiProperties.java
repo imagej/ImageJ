@@ -61,6 +61,8 @@ public class RoiProperties {
 		roi.setStrokeWidth(strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
+		if (strokeWidth>1)
+			Line.setWidth(1);
 		return true;
     }
         
