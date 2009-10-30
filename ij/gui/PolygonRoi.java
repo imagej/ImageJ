@@ -60,6 +60,12 @@ public class PolygonRoi extends Roi {
 		yp2 = new int[nPoints];
 		if (type==ANGLE && nPoints==3)
 			getAngleAsString();
+		if (type==POINT && Toolbar.getMultiPointMode()) {
+			Prefs.pointAutoMeasure = false;
+			Prefs.pointAutoNextSlice = false;
+			Prefs.pointAddToManager = false;
+			Prefs.noPointLabels = false;
+		}
 		finishPolygon();
 	}
 	

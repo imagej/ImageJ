@@ -167,7 +167,7 @@ public class Colors implements PlugIn, ItemListener {
 		gd.addCheckbox("Auto-Measure", Prefs.pointAutoMeasure);
 		gd.addCheckbox("Auto-Next Slice", Prefs.pointAutoNextSlice);
 		gd.addCheckbox("Add to ROI Manager", Prefs.pointAddToManager);
-		gd.addCheckbox("Label Shift-Click Points", !Prefs.noPointLabels);
+		gd.addCheckbox("Label Points", !Prefs.noPointLabels);
 		gd.addChoice("Selection Color:", colors, sname);
 		Vector choices = gd.getChoices();
 		schoice = (Choice)choices.elementAt(0);
