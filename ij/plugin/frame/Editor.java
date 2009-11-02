@@ -881,39 +881,40 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	void convertToPlugin() {
-		if (!(getTitle().endsWith(".txt")||getTitle().endsWith(".ijm"))) return;
+		if (!getTitle().endsWith(".js")) {
+			IJ.error("Editor", "File must have a \".js\" extension and have\nbeen created using the Script Recorder.");
+			return;
+		}
 		String text = ta.getText();
 		if (text==null || text.equals("")) {
 			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
 			return;
 		}
-		if (text.indexOf("{")>-1) {
-			IJ.showMessage("Convert to Plugin", "Conversion limited to recorder generated macro code.");
-			return;
-		}
 		StringTokenizer st = new StringTokenizer(text, "\n");
 		int n = st.countTokens();
+		boolean impDeclared = false;
 		String line;
 		StringBuffer sb = new StringBuffer();
 		for(int i=0; i<n; i++) {
 			line = st.nextToken();
 			if (line!=null && line.length()>3) {
-				if (line.equals("close();")) line = "run(\"Close\");";
-				sb.append("\t\tIJ.");
-				if (line.startsWith("//run"))
-					line = line.substring(2);
+				sb.append("\t\t");
+				if (line.startsWith("imp =") && !impDeclared) {
+					sb.append("ImagePlus ");
+					impDeclared = true;
+				}
 				sb.append(line);
 				sb.append('\n');
 			}
 		}
 		String text2 = new String(sb);
-		text2 = text2.replaceAll("IJ.print", "IJ.log");
+		text2 = text2.replaceAll("print", "IJ.log");
 		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", text2);
 		Editor ed = np.getEditor();
 		String title = getTitle();
-		if (title.equals("Macro.txt")||title.equals("Macro.ijm"))
-			title = "Converted_Macro";
-		if (title.endsWith(".txt")||title.endsWith(".ijm")) title = title.substring(0, title.length()-4);
+		if (title.equals("script.js"))
+			title = "Converted_Script";
+		if (title.endsWith(".js")) title = title.substring(0, title.length()-3);
 		if (title.indexOf('_')==-1) title += "_";
 		title += ".java";
 		ed.updateClassName(ed.getTitle(), title);

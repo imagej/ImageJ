@@ -34,7 +34,7 @@ public class Options implements PlugIn {
 		//gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
 		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
-		gd.addCheckbox("Run socket listener", Prefs.runSocketListener);
+		gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();

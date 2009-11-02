@@ -54,10 +54,11 @@ public class ScaleDialog implements PlugInFilter {
 		}
 		
 		digits = Tools.getDecimalPlaces(measured, measured);
+		int asDigits = aspectRatio==1.0?1:3;
 		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale, length);
 		gd.addNumericField("Distance in Pixels:", measured, digits, 8, null);
 		gd.addNumericField("Known Distance:", known, 2, 8, null);
-		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, 1, 8, null);
+		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, asDigits, 8, null);
 		gd.addStringField("Unit of Length:", unit);
 		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.EAST, new Insets(5, 0, 0, 0));
 		gd.setInsets(0, 30, 0);

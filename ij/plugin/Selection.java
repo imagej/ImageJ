@@ -59,8 +59,15 @@ public class Selection implements PlugIn, Measurements {
 	
 	void runMacro(String arg) {
 		Roi roi = imp.getRoi();
+		if (IJ.macroRunning()) {
+			String options = Macro.getOptions();
+			if (options!=null && (options.indexOf("grid=")!=-1||options.indexOf("interpolat")!=-1)) {
+				IJ.run("Rotate... ", options); // run Image>Transform>Rotate
+				return;
+			}
+		}
 		if (roi==null) {
-			IJ.error("Selection required");
+			IJ.error("Rotate>Selection", "This command requires a selection");
 			return;
 		}
 		roi = (Roi)roi.clone();

@@ -268,7 +268,7 @@ public class IJ {
 			commandTable.put("RGB Merge...", "Merge Channels...");
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
-			commandTable.put("Arbitrarily... ", "Rotate... ");
+			commandTable.put("Arbitrarily...", "Rotate... ");
 			commandTable.put("Record...", "Record Macro...");
 			commandTable.put("Create Overlay...", "Add Selection..."); // temporary
 		}
@@ -839,9 +839,9 @@ public class IJ {
 			}
 			if (hideProcessStackDialog)
 				return flags;
+			String note = ((flags&PlugInFilter.NO_CHANGES)==0)?" There is\nno Undo if you select \"Yes\".":"";
  			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
-				"Process Stack?", "Process all "+stackSize+" images?  There is\n"
-				+"no Undo if you select \"Yes\".");
+				"Process Stack?", "Process all "+stackSize+" images?"+note);
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
