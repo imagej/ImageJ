@@ -882,7 +882,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	void convertToPlugin() {
 		if (!getTitle().endsWith(".js")) {
-			IJ.error("Editor", "File must have a \".js\" extension and have\nbeen created using the Script Recorder.");
+			IJ.error("Editor", "This command requires a \".js\" file created by the Script Recorder.");
 			return;
 		}
 		String text = ta.getText();

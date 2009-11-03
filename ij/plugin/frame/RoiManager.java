@@ -23,6 +23,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
 	static final int MENU=0, COMMAND=1;
 	static int rows = 15;
+    static int lastNonShiftClick = -1;
 	static boolean allowMultipleSelections = true; 
 	static String moreButtonLabel = "More "+'\u00bb';
 	Panel panel;
@@ -186,9 +187,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);
-		} else if (command.equals("Select All"))
-			selectAll();
-		else if (command.equals("Combine"))
+		} else if (command.equals("Combine"))
 			combine();
 		else if (command.equals("Split"))
 			split();
@@ -228,16 +227,29 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
 			int index = 0;
+//IJ.log("item="+e.getItem()+" shift="+IJ.shiftKeyDown()+" ctrl="+IJ. controlKeyDown());
             try {index = Integer.parseInt(e.getItem().toString());}
             catch (NumberFormatException ex) {}
 			if (index<0) index = 0;
-			if (!IJ.shiftKeyDown() && !IJ.isMacintosh()) {
-				int[] indexes = list.getSelectedIndexes();
-				for (int i=0; i<indexes.length; i++) {
-					if (indexes[i]!=index)
-						list.deselect(indexes[i]);
-				}
-			}
+            if (!IJ.isMacintosh()) {      //handle shift-click, ctrl-click (on Mac, OS takes care of this)
+                if (!IJ.shiftKeyDown()) lastNonShiftClick = index;
+    			if (!IJ.shiftKeyDown() && !IJ.controlKeyDown()) {  //simple click, deselect everything else
+    				int[] indexes = list.getSelectedIndexes();
+    				for (int i=0; i<indexes.length; i++) {
+    					if (indexes[i]!=index)
+    						list.deselect(indexes[i]);
+    				}
+    			} else if (IJ.shiftKeyDown() && lastNonShiftClick>=0 && lastNonShiftClick<list.getItemCount()) {
+                    int firstIndex = Math.min(index, lastNonShiftClick);
+                    int lastIndex = Math.max(index, lastNonShiftClick);
+    				int[] indexes = list.getSelectedIndexes();
+    				for (int i=0; i<indexes.length; i++)
+    					if (indexes[i]<firstIndex || indexes[i]>lastIndex)
+    						list.deselect(indexes[i]);      //deselect everything else
+                    for (int i=firstIndex; i<=lastIndex; i++)
+                        list.select(i);                     //select range
+                }
+            }
 			if (WindowManager.getCurrentImage()!=null) {
 				restore(index, true);
 				if (record()) Recorder.record("roiManager", "Select", index);
@@ -1457,6 +1469,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		labelsCheckbox.setState(editMode);
 	}
 	
+	/*
 	void selectAll() {
 		boolean allSelected = true;
 		int count = list.getItemCount();
@@ -1471,6 +1484,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (!list.isSelected(i)) list.select(i);
 		}
 	}
+	*/
 
     /** Overrides PlugInFrame.close(). */
     public void close() {

@@ -1280,7 +1280,9 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			if (key.equals("micrometer.abbreviation"))
+			if (key.length()==9 && key.charAt(4)==',')
+				return getDicomTag(key);
+			else if (key.equals("micrometer.abbreviation"))
 				return "\u00B5m";
 			else if (key.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
@@ -1325,6 +1327,25 @@ public class Functions implements MacroConstants, Measurements {
 				catch (Exception e) {};
 				return value!=null?value:"";
 			}
+	}
+	
+	String getDicomTag(String tag) {
+		ImagePlus imp = getImage();
+		String metadata = null;
+		if (imp.getStackSize()==1) {
+			metadata = (String)imp.getProperty("Label");
+			if (metadata==null)
+				metadata = (String)imp.getProperty("Info");
+		} else 
+			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		if (metadata==null) return "";
+		int index1 = metadata.indexOf(tag);
+		if (index1==-1) return "";
+		index1 = metadata.indexOf(":", index1);
+		if (index1==-1) return "";
+		int index2 = metadata.indexOf("\n", index1);
+		String value = metadata.substring(index1+1, index2);
+		return value;
 	}
 	
 	String getWindowContents() {
