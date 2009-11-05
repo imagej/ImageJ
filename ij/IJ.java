@@ -9,6 +9,7 @@ import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
+import ij.measure.ResultsTable;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
@@ -408,6 +409,16 @@ public class IJ {
 		return textPanel!=null;
 	}
 	
+	/** Deletes 'row1' through 'row2' of the "Results" window. Arguments
+	     must be in the range 0-Analyzer.getCounter()-1. */
+	public static void deleteRows(int row1, int row2) {
+		int n = row2 - row1 + 1;
+		ResultsTable rt = Analyzer.getResultsTable();
+		for (int i=row1; i<row1+n; i++)
+			rt.deleteRow(row1);
+		rt.show("Results");
+	}
+
 	/** Returns a reference to the "Results" window TextPanel.
 		Opens the "Results" window if it is currently not open. */
 	public static TextPanel getTextPanel() {

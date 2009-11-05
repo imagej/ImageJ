@@ -247,6 +247,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EXEC: str = exec(); break;
 			case LIST: str = doList(); break;
 			case DEBUG: str = debug(); break;
+			case IJ_CALL: str = ijCall(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -4419,6 +4420,29 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		IJ.doWand(x, y, tolerance, mode);
 		resetImage();
+	}
+	
+	String ijCall() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==NUMERIC_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("deleteRows"))
+			IJ.deleteRows((int)getFirstArg(), (int)getLastArg());
+		else if (name.equals("log"))
+			IJ.log(getStringArg());
+		else if (name.equals("freeMemory"))
+			return IJ.freeMemory();
+		else if (name.equals("currentMemory"))
+			return ""+IJ.currentMemory();
+		else if (name.equals("maxMemory"))
+			return ""+IJ.maxMemory();
+		else
+			interp.error("Unrecognized function name");
+		return null;
 	}
 
 } // class Functions

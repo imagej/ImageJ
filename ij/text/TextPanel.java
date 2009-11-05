@@ -559,6 +559,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				IJ.error("Selection required");
 			return;
 		}
+		if (Recorder.record)
+			Recorder.recordString("IJ.deleteRows("+selStart+", "+selEnd+");\n");
 		if (selStart==0 && selEnd==(iRowCount-1)) {
 			vData.removeAllElements();
 			iRowCount = 0;
