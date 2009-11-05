@@ -1203,7 +1203,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Returns the color used for "Show All" mode. */
 	public static Color getShowAllColor() {
-			return showAllColor;
+		if (showAllColor!=null && showAllColor.getRGB()==0xff80ffff)
+			showAllColor = Color.cyan;
+		return showAllColor;
 	}
 
 	/** Sets the color used used for "Show All" mode. */

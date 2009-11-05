@@ -424,9 +424,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		String name = macroName.getText();
 		int dotIndex = name.lastIndexOf(".");
 		if (dotIndex>=0) name = name.substring(0, dotIndex);
-		if (scriptMode)
+		if (scriptMode) {
+			text = text + "imp.show();\n";
 			name += ".js";
-		else
+		} else
 			name += ".txt";
 		ed.createMacro(name, text);
 	}
