@@ -106,28 +106,20 @@ public class DICOM extends ImagePlus implements PlugIn {
 			ImagePlus imp = fo.open(false);
 			ImageProcessor ip = imp.getProcessor();
 			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-				//if (dd.rescaleSlope!=0.0&&dd.rescaleSlope!=1.0) 
-				//	ip.multiply(dd.rescaleSlope);
 				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
 					ip.add(dd.rescaleIntercept);
-			} else {
-				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0) {
-					double[] coeff = new double[2];
-					coeff[0] = dd.rescaleIntercept;
-					coeff[1] = dd.rescaleSlope;
- 					imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
-  				}
+			} else if (dd.rescaleIntercept!=0.0 && (dd.rescaleSlope==1.0||fi.fileType==FileInfo.GRAY8)) {
+				double[] coeff = new double[2];
+				coeff[0] = dd.rescaleIntercept;
+				coeff[1] = dd.rescaleSlope;
+				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 			}
-			//if (fi.fileType==FileInfo.GRAY16_SIGNED && imp.getStackSize()==1)
-			//	convertToUnsigned(imp, fi);
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
 				Calibration cal = imp.getCalibration();
-				if (cal.getCValue(0)!=0) {
-					min -= cal.getCValue(0);
-					max -= cal.getCValue(0);
-				}
+				min = cal.getRawValue(min);
+				max = cal.getRawValue(max);
 				ip.setMinAndMax(min, max);
 				if (IJ.debugMode) IJ.log("window: "+min+"-"+max);
 			}
@@ -871,6 +863,7 @@ class DicomDictionary {
 		"00080033=TMImage Time",
 		"00080034=TMOverlay Time",
 		"00080035=TMCurve Time",
+		"00080040=USData Set Type",
 		"00080041=LOData Set Subtype",
 		"00080042=CSNuclear Medicine Series Type",
 		"00080050=SHAccession Number",

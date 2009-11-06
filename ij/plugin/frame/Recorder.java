@@ -14,7 +14,7 @@ import ij.process.*;
 import ij.measure.*;
 
 /** This is ImageJ's macro recorder. */
-public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
+public class Recorder extends PlugInFrame implements PlugIn, ActionListener, ImageListener {
 
 	/** This variable is true if the recorder is running. */
 	public static boolean record;
@@ -32,8 +32,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	private static String defaultName = "Macro";
 	private static boolean recordPath = true;
 	private static boolean scriptMode;
-	private static boolean isImage;
 	private static boolean impDefined;
+	private static boolean imageUpdated;
+	private static int imageID;
 
 	public Recorder() {
 		super("Macro Recorder");
@@ -99,7 +100,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		commandName = command;
 		commandOptions = null;
 		recordPath = true;
-		isImage = scriptMode?(WindowManager.getCurrentImage()!=null):false;
+		imageUpdated = false;
+		imageID = 0;
+		if (scriptMode) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			imageID = imp!=null?imp.getID():0;
+			if (imageID!=0)
+				ImagePlus.addImageListener(instance);
+		}
 		//IJ.log("setCommand: "+command+" "+Thread.currentThread().getName());
 	}
 
@@ -200,8 +208,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		if (textArea!=null && scriptMode && !IJ.macroRunning()) {
 			textArea.append(call+"\n");
 			commandName = null;
-			isImage = false;
-			if (call.indexOf("imp =")!=-1) impDefined = true;
+ 			if (call.indexOf("imp =")!=-1) impDefined = true;
 		}
 	}
 	
@@ -294,7 +301,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	public static void saveCommand() {
 		String name = commandName;
 		if (name!=null) {
-			if (scriptMode && isImage && !impDefined && textArea!=null) {
+			if (scriptMode && imageID!=0 && !impDefined && textArea!=null) {
 				textArea.append("imp = IJ.getImage();\n");
 				impDefined = true;
 			}
@@ -319,7 +326,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
 				else {
 					String prefix = "run(";
-					if (scriptMode) prefix = isImage?"IJ.run(imp, ":"IJ.run(";
+					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 				}
 			} else {
@@ -340,7 +347,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
 						textArea.append("setKeyDown(\"alt\"); ");
 					if (scriptMode) {
-						String prefix = isImage?"IJ.run(imp, ":"IJ.run(";
+						String prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
 						textArea.append(prefix+"\""+name+"\", \"\");\n");
 					} else
 						textArea.append("run(\""+name+"\");\n");
@@ -349,7 +356,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		}
 		commandName = null;
 		commandOptions = null;
-		isImage = false;
+		if (imageID!=0) {
+			ImagePlus.removeImageListener(instance);
+			imageID = 0;
+		}
 	}
 	
 	static boolean isSaveAs() {
@@ -425,7 +435,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		int dotIndex = name.lastIndexOf(".");
 		if (dotIndex>=0) name = name.substring(0, dotIndex);
 		if (scriptMode) {
-			text = text + "imp.show();\n";
+			if (text.indexOf("imp =")!=-1 && !(text.indexOf("IJ.saveAs")!=-1||text.indexOf("imp.close")!=-1))
+				text = text + "imp.show();\n";
 			name += ".js";
 		} else
 			name += ".txt";
@@ -447,6 +458,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		else if (e.getSource()==help)
 			showHelp();
 	}
+
+	public void imageUpdated(ImagePlus imp) {
+		if (imp.getID()==imageID)
+			imageUpdated = true;
+	}
+
+	public void imageOpened(ImagePlus imp) { }
+
+	public void imageClosed(ImagePlus imp) { }
 
     void showHelp() {
     	IJ.showMessage("Recorder",
@@ -479,7 +499,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		record = false;
 		textArea = null;
 		commandName = null;
-		isImage = false;
 		impDefined = false;
 		instance = null;	
 	}
@@ -489,6 +508,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			return "";
 		else
 			return textArea.getText();
+	}
+	
+	public static Recorder getInstance() {
+		return instance;
 	}
 
 }
