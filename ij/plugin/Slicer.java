@@ -125,6 +125,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			horizontal  = (l.y2-l.y1)==0;
 			vertical = (l.x2-l.x1)==0;
 		}
+		if (imp2==null) return null;
 		imp2.setCalibration(imp.getCalibration());
 		Calibration cal = imp2.getCalibration();
 		if (horizontal) {
@@ -204,56 +205,71 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	}
 
 	boolean showDialog(ImagePlus imp) {
-		 Calibration cal = imp.getCalibration();
-		 if (cal.pixelDepth<0.0)
-		 	cal.pixelDepth = -cal.pixelDepth;
-		 String units = cal.getUnits();
-		 if (cal.pixelWidth==0.0)
-				cal.pixelWidth = 1.0;
-		 inputZSpacing = cal.pixelDepth;
-		 double outputSpacing = cal.pixelDepth;
-		 Roi roi = imp.getRoi();
-		 boolean line = roi!=null && roi.getType()==Roi.LINE;
-		 if (line) saveLineInfo(roi);
+		Calibration cal = imp.getCalibration();
+		if (cal.pixelDepth<0.0)
+			cal.pixelDepth = -cal.pixelDepth;
+		String units = cal.getUnits();
+		if (cal.pixelWidth==0.0)
+			cal.pixelWidth = 1.0;
+		inputZSpacing = cal.pixelDepth;
+		double outputSpacing = cal.pixelDepth;
+		Roi roi = imp.getRoi();
+		boolean line = roi!=null && roi.getType()==Roi.LINE;
+		if (line) saveLineInfo(roi);
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null && macroOptions.indexOf("output=")!=-1) {
 			Macro.setOptions(macroOptions.replaceAll("output=", "slice="));
 			Macro.setOptions(macroOptions.replaceAll("slice=", "slice_count="));
 		}
 		GenericDialog gd = new GenericDialog("Reslice");
-		 //gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3);
-		 gd.addNumericField("Slice Spacing ("+units+"):", outputSpacing, 3);
-		 if (line)
-				gd.addNumericField("Slice_Count:", outputSlices, 0);
-		 else
-				gd.addChoice("Start At:", starts, startAt);
-		 gd.addCheckbox("Flip Vertically", flip);
-		 gd.addCheckbox("Rotate 90 Degrees", rotate);
-		 gd.addCheckbox("Avoid Interpolation", nointerpolate);
-		 gd.setInsets(0, 32, 10);
-		 gd.addMessage("(use 1.0 for spacings)");
-		 gd.addMessage(getSize(cal.pixelDepth,outputSpacing,outputSlices)+"				");
-		 fields = gd.getNumericFields();
-		 for (int i=0; i<fields.size(); i++)
-				((TextField)fields.elementAt(i)).addTextListener(this);
+		//gd.addNumericField("Input Z Spacing ("+units+"):", cal.pixelDepth, 3);
+		gd.addNumericField("Slice Spacing ("+units+"):", outputSpacing, 3);
+		if (line)
+			gd.addNumericField("Slice_Count:", outputSlices, 0);
+		else
+			gd.addChoice("Start At:", starts, startAt);
+		gd.addCheckbox("Flip Vertically", flip);
+		gd.addCheckbox("Rotate 90 Degrees", rotate);
+		gd.addCheckbox("Avoid Interpolation", nointerpolate);
+		gd.setInsets(0, 32, 0);
+		gd.addMessage("(use 1.0 for spacings)");
+		gd.setInsets(15, 0, 0);
+		gd.addMessage("Voxel Size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)
+			+"x"+d2s(cal.pixelDepth)+" "+cal.getUnit());
+		gd.setInsets(5, 0, 0);
+		gd.addMessage("Output Size: "+getSize(cal.pixelDepth,outputSpacing,outputSlices)+"				");
+		fields = gd.getNumericFields();
+		for (int i=0; i<fields.size(); i++)
+			((TextField)fields.elementAt(i)).addTextListener(this);
 		checkboxes = gd.getCheckboxes();
-			((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
-		 message = (Label)gd.getMessage();
-		 gd.showDialog();
-		 if (gd.wasCanceled())
-				return false;
-		 //inputZSpacing = gd.getNextNumber();
-		 //if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
-		 outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
-		 if (line) {
-				outputSlices = (int)gd.getNextNumber();
-				imp.setRoi(roi);
-		 } else
-				startAt = gd.getNextChoice();
-		 flip = gd.getNextBoolean();
-		 rotate = gd.getNextBoolean();
-		 nointerpolate = gd.getNextBoolean();
+		((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
+		message = (Label)gd.getMessage();
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return false;
+		//inputZSpacing = gd.getNextNumber();
+		//if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
+		outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
+		if (line) {
+			outputSlices = (int)gd.getNextNumber();
+			imp.setRoi(roi);
+		} else
+			startAt = gd.getNextChoice();
+		flip = gd.getNextBoolean();
+		rotate = gd.getNextBoolean();
+		nointerpolate = gd.getNextBoolean();
 		return true;
+	}
+	
+	String d2s(double n) {
+		String s;
+		if (n==(int)n)
+			s = ResultsTable.d2s(n, 0);
+		else
+			s = ResultsTable.d2s(n, 2);
+		if (s.indexOf(".")!=-1 && s.endsWith("0"))
+			s = s.substring(0, s.length()-1);
+		return s;
 	}
 
 	void saveLineInfo(Roi roi) {
@@ -330,7 +346,8 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				return null;
 
 		 if (outputSlices==0) {
-				IJ.error("Reslicer", "Output Z spacing ("+IJ.d2s(outputZSpacing,0)+" pixels) is too large.");
+				IJ.error("Reslicer", "Output Z spacing ("+IJ.d2s(outputZSpacing,0)+" pixels) is too large.\n"
+					+"Is the voxel size in Image>Properties correct?.");
 				return null;
 		 }
 		 boolean virtualStack = imp.getStack().isVirtual();
@@ -592,7 +609,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				if (count>0) makePolygon(count, outSpacing);
 		 }
 		 String size = getSize(inputZSpacing, outSpacing, count);
-		 message.setText(size);
+		 message.setText("Output Size: "+size);
 	}
 
 	String getSize(double inSpacing, double outSpacing, int count) {

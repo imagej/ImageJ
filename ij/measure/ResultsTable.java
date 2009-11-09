@@ -350,7 +350,7 @@ public class ResultsTable implements Cloneable {
 		return new String(sb);
 	}
 	
-	/** Changes the heading of the given column. */
+	/** Obsolete; replaced by addValue(String,double) and setValue(String,int,double). */
 	public void setHeading(int column, String heading) {
 		if ((column<0) || (column>=headings.length))
 			throw new IllegalArgumentException("Column out of range: "+column);

@@ -243,7 +243,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (newHeight!=0 && (wstr.equals("-") || wstr.equals("0")))
 				newWidth= (int)(newHeight*(double)r.width/r.height);
 		if (newWidth==0 || newHeight==0) {
-			IJ.error("Invalid width or height entered");
+			IJ.error("Scaler", "Width or height is 0");
 			return false;
 		}
 		if (xscale>25.0) xscale = 25.0;

@@ -191,6 +191,8 @@ public class ImagesToStack implements PlugIn {
 		maxSize = 0;
 		for (int i=0; i<count; i++) {
 			if (exclude(image[i].getTitle())) continue;
+			if (image[i].getType()==ImagePlus.COLOR_256)
+				stackType = rgb;
 			int type = image[i].getBitDepth();
 			if (type==24) type = rgb;
 			if (type>stackType) stackType = type;

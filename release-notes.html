@@ -5,13 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.43k, 6 November 2009</u>
+<li> <u>1.43k, 9 November 2009</u>
 <ul>
 <li> Added the multi-point tool, which is enabled by right-clicking on the
 point tool.
 <li> The Script Recorder (<i>Plugins&gt;Macros&gt;Record Script</i>) now generates thread safe code.
 <li> Thanks to Michael Schmid, <i>Process&gt;Binary&gt;Find Maxima</i> has a
 "List" output option, and is faster.
+<lI> <i>File&gt;Import&gt;Image Sequence</i> sets the voxel depth equal to the pixel width.
+<lI> <i>Image&gt;Stacks&gt;Reslice</i> displays the voxel size in its dialog box.
 <li> Spline fit selections and Text selections can now be saved (using <i>File&gt;Save As&gt;Selection</i>)
 and restored (using <i>File&gt;Open</i> or drag and drop).
 <li> The <i>Edit&gt;Clear</i> command in the "Results" table is now recorded.
@@ -22,7 +24,11 @@ selection of mutltiple ROIs in the ROI Manager with a single shift click.
 <li> Michael Schmid fixed a bug in <i>Process&gt;Binary&gt;Find Maxima</i>,
 with "Segmented" output, that caused it to create extra invalid features.
 <li> Fixed a bug that could cause 8-bit DICOMs to not open correctly.
-<li> Fixed a bug that caused headings in empty custom results tables to not be displayed.
+<li> Fixed a bug that could cause headings in empty custom results tables to not be displayed.
+<li> Fixed a bug in <i>Image&gt;Stacks&gt;Images to Stack</i> that caused it do
+not work properly with 8-bit color images.
+<li> Fixed a bug in <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> that caused it
+to not shuffle the slice labels of stacks not in CZT order.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
