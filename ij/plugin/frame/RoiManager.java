@@ -18,35 +18,36 @@ import ij.measure.*;
 /** This plugin implements the Analyze/Tools/ROI Manager command. */
 public class RoiManager extends PlugInFrame implements ActionListener, ItemListener, MouseListener, MouseWheelListener {
 	public static final String LOC_KEY = "manager.loc";
-	static final int BUTTONS = 11;
-	static final int DRAW=0, FILL=1, LABEL=2;
-	static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
-	static final int MENU=0, COMMAND=1;
-	static int rows = 15;
-	static boolean allowMultipleSelections = true; 
-	static String moreButtonLabel = "More "+'\u00bb';
-	Panel panel;
-	static Frame instance;
-	static int colorIndex = 4;
-	java.awt.List list;
-	Hashtable rois = new Hashtable();
-	Roi roiCopy;
-	boolean canceled;
-	boolean macro;
-	boolean ignoreInterrupts;
-	PopupMenu pm;
-	Button moreButton, colorButton;
-	Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	Checkbox labelsCheckbox = new Checkbox("Edit Mode", false);
+	private static final int BUTTONS = 11;
+	private static final int DRAW=0, FILL=1, LABEL=2;
+	private static final int SHOW_ALL=0, SHOW_NONE=1, LABELS=2, NO_LABELS=3;
+	private static final int MENU=0, COMMAND=1;
+	private static int rows = 15;
+	private static int lastNonShiftClick = -1;
+	private static boolean allowMultipleSelections = true; 
+	private static String moreButtonLabel = "More "+'\u00bb';
+	private Panel panel;
+	private static Frame instance;
+	private static int colorIndex = 4;
+	private java.awt.List list;
+	private Hashtable rois = new Hashtable();
+	private Roi roiCopy;
+	private boolean canceled;
+	private boolean macro;
+	private boolean ignoreInterrupts;
+	private PopupMenu pm;
+	private Button moreButton, colorButton;
+	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
+	private Checkbox labelsCheckbox = new Checkbox("Edit Mode", false);
 
-	static boolean measureAll = true;
-	static boolean onePerSlice = true;
-	static boolean restoreCentered;
-	int prevID;
-	boolean noUpdateMode;
-	int defaultLineWidth = 1;
-	Color defaultColor;
-	boolean firstTime = true;
+	private static boolean measureAll = true;
+	private static boolean onePerSlice = true;
+	private static boolean restoreCentered;
+	private int prevID;
+	private boolean noUpdateMode;
+	private int defaultLineWidth = 1;
+	private Color defaultColor;
+	private boolean firstTime = true;
 	
 	public RoiManager() {
 		super("ROI Manager");
@@ -89,7 +90,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addButton("Measure");
 		addButton("Deselect");
 		addButton("Properties...");
-		addButton("Flatten");
+		addButton("Flatten [F]");
 		addButton(moreButtonLabel);
 		showAllCheckbox.addItemListener(this);
 		panel.add(showAllCheckbox);
@@ -172,7 +173,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rename(null);
 		else if (command.equals("Properties..."))
 			setProperties(null, 0, null);
-		else if (command.equals("Flatten"))
+		else if (command.equals("Flatten [F]"))
 			flatten();
 		else if (command.equals("Measure"))
 			measure(MENU);
@@ -186,9 +187,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);
-		} else if (command.equals("Select All"))
-			selectAll();
-		else if (command.equals("Combine"))
+		} else if (command.equals("Combine"))
 			combine();
 		else if (command.equals("Split"))
 			split();
@@ -228,16 +227,29 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (e.getStateChange()==ItemEvent.SELECTED && !ignoreInterrupts) {
 			int index = 0;
+			//IJ.log("item="+e.getItem()+" shift="+IJ.shiftKeyDown()+" ctrl="+IJ. controlKeyDown());
             try {index = Integer.parseInt(e.getItem().toString());}
             catch (NumberFormatException ex) {}
 			if (index<0) index = 0;
-			if (!IJ.shiftKeyDown() && !IJ.isMacintosh()) {
-				int[] indexes = list.getSelectedIndexes();
-				for (int i=0; i<indexes.length; i++) {
-					if (indexes[i]!=index)
-						list.deselect(indexes[i]);
-				}
-			}
+            if (!IJ.isMacintosh()) {      //handle shift-click, ctrl-click (on Mac, OS takes care of this)
+                if (!IJ.shiftKeyDown()) lastNonShiftClick = index;
+    			if (!IJ.shiftKeyDown() && !IJ.controlKeyDown()) {  //simple click, deselect everything else
+    				int[] indexes = list.getSelectedIndexes();
+    				for (int i=0; i<indexes.length; i++) {
+    					if (indexes[i]!=index)
+    						list.deselect(indexes[i]);
+    				}
+    			} else if (IJ.shiftKeyDown() && lastNonShiftClick>=0 && lastNonShiftClick<list.getItemCount()) {
+                    int firstIndex = Math.min(index, lastNonShiftClick);
+                    int lastIndex = Math.max(index, lastNonShiftClick);
+    				int[] indexes = list.getSelectedIndexes();
+    				for (int i=0; i<indexes.length; i++)
+    					if (indexes[i]<firstIndex || indexes[i]>lastIndex)
+    						list.deselect(indexes[i]);      //deselect everything else
+                    for (int i=firstIndex; i<=lastIndex; i++)
+                        list.select(i);                     //select range
+                }
+            }
 			if (WindowManager.getCurrentImage()!=null) {
 				restore(index, true);
 				if (record()) Recorder.record("roiManager", "Select", index);
@@ -1457,6 +1469,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		labelsCheckbox.setState(editMode);
 	}
 	
+	/*
 	void selectAll() {
 		boolean allSelected = true;
 		int count = list.getItemCount();
@@ -1471,6 +1484,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				if (!list.isSelected(i)) list.select(i);
 		}
 	}
+	*/
 
     /** Overrides PlugInFrame.close(). */
     public void close() {

@@ -19,7 +19,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public static final int MAX_SIZE = 28000, MAX_MACROS=100, XINC=10, YINC=18;
 	public static final char commandPrefix = '^';
 	static final String commandPrefixS = "^";
-	static final int MACROS_MENU_COMMANDS = 7; // number of commands in Plugins>Macros submenu
+	static final int MACROS_MENU_COMMANDS = 6; // number of commands in Plugins>Macros submenu
 	
 	private int[] macroStarts;
 	private String[] macroNames;

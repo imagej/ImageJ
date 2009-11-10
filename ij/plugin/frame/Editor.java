@@ -233,7 +233,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public void createMacro(String name, String text) {
 		create(name, text);
-		editMenu.add(new MenuItem("Convert to Plugin"));
 	}
 
 	void installMacros(String text, boolean installInPluginsMenu) {
@@ -599,8 +598,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			gotoLine();
 		else if ("Zap Gremlins".equals(what))
 			zapGremlins();
-		else if ("Convert to Plugin".equals(what))
-			convertToPlugin();
 		else if ("Make Text Larger".equals(what))
 			changeFontSize(true);
 		else if ("Make Text Smaller".equals(what))
@@ -878,46 +875,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	void selectAll() {
 		ta.selectAll();
-	}
-
-	void convertToPlugin() {
-		if (!(getTitle().endsWith(".txt")||getTitle().endsWith(".ijm"))) return;
-		String text = ta.getText();
-		if (text==null || text.equals("")) {
-			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
-			return;
-		}
-		if (text.indexOf("{")>-1) {
-			IJ.showMessage("Convert to Plugin", "Conversion limited to recorder generated macro code.");
-			return;
-		}
-		StringTokenizer st = new StringTokenizer(text, "\n");
-		int n = st.countTokens();
-		String line;
-		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<n; i++) {
-			line = st.nextToken();
-			if (line!=null && line.length()>3) {
-				if (line.equals("close();")) line = "run(\"Close\");";
-				sb.append("\t\tIJ.");
-				if (line.startsWith("//run"))
-					line = line.substring(2);
-				sb.append(line);
-				sb.append('\n');
-			}
-		}
-		String text2 = new String(sb);
-		text2 = text2.replaceAll("IJ.print", "IJ.log");
-		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", text2);
-		Editor ed = np.getEditor();
-		String title = getTitle();
-		if (title.equals("Macro.txt")||title.equals("Macro.ijm"))
-			title = "Converted_Macro";
-		if (title.endsWith(".txt")||title.endsWith(".ijm")) title = title.substring(0, title.length()-4);
-		if (title.indexOf('_')==-1) title += "_";
-		title += ".java";
-		ed.updateClassName(ed.getTitle(), title);
-		ed.setTitle(title);
 	}
     
     void changeFontSize(boolean larger) {

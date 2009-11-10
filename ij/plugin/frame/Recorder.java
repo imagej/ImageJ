@@ -1,4 +1,4 @@
-package ij.plugin.frame;
+ package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -14,7 +14,7 @@ import ij.process.*;
 import ij.measure.*;
 
 /** This is ImageJ's macro recorder. */
-public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
+public class Recorder extends PlugInFrame implements PlugIn, ActionListener, ImageListener, ItemListener {
 
 	/** This variable is true if the recorder is running. */
 	public static boolean record;
@@ -22,20 +22,25 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	/** Set this variable true to allow recording within IJ.run() calls. */
 	public static boolean recordInMacros;
 
+	private final static int MACRO=0, JAVASCRIPT=1, PLUGIN=2;
+	private final static String[] modes = {"Macro", "JavaScript", "Plugin"};
+	private Choice mode;
 	private Button makeMacro, help;
-	private TextField macroName;
+	private TextField fileName;
 	private String fitTypeStr = CurveFitter.fitList[0];
 	private static TextArea textArea;
-	private static Frame instance;
+	private static Recorder instance;
 	private static String commandName;
 	private static String commandOptions;
-	private static String defaultName = "Macro";
+	private static String defaultName = "Macro.ijm";
 	private static boolean recordPath = true;
-	private static boolean recordMethods;
-	private static String methodCall;
+	private static boolean scriptMode;
+	private static boolean impDefined;
+	private static boolean imageUpdated;
+	private static int imageID;
 
 	public Recorder() {
-		super("Macro Recorder");
+		super("Recorder");
 		if (instance!=null) {
 			instance.toFront();
 			return;
@@ -43,22 +48,30 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		WindowManager.addWindow(this);
 		instance = this;
 		record = true;
-		recordMethods = false;
+		scriptMode = false;
 		recordInMacros = false;
-		Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER, 2, 0));
-		panel.add(new Label("Name:"));
-		macroName = new TextField(defaultName,15);
-		panel.add(macroName);
-		panel.add(new Label("     "));
+		Panel panel = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.add(new Label("  Record:"));
+		mode = new Choice();
+		for (int i=0; i<modes.length; i++)
+			mode.addItem(modes[i]);
+		mode.addItemListener(this);
+		mode.select(Prefs.get("recorder.mode", modes[MACRO]));
+		panel.add(mode);
+		panel.add(new Label("    Name:"));
+		fileName = new TextField(defaultName, 15);
+		setFileName();
+		panel.add(fileName);
+		panel.add(new Label("   "));
 		makeMacro = new Button("Create");
 		makeMacro.addActionListener(this);
 		panel.add(makeMacro);
-		panel.add(new Label("     "));
+		panel.add(new Label("   "));
 		help = new Button("?");
 		help.addActionListener(this);
 		panel.add(help);
 		add("North", panel);
-		textArea = new TextArea("",15,60,TextArea.SCROLLBARS_VERTICAL_ONLY);
+		textArea = new TextArea("", 15, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		add("Center", textArea);
@@ -68,19 +81,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		IJ.register(Recorder.class);
 	}
 	
-	public void run(String arg) {
-		recordMethods = arg!=null && arg.equals("methods");
-		if (recordMethods) {
-			setTitle("Script Recorder");
-			if (macroName!=null)
-				macroName.setText("script");
-		} else {
-			setTitle("Macro Recorder");
-			if (macroName!=null)
-				macroName.setText("Macro");
-		}
-	}
-
 	public static void record(String method) {
 		if (textArea==null)
 			return;
@@ -97,7 +97,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		commandName = command;
 		commandOptions = null;
 		recordPath = true;
-		methodCall = null;
+		imageUpdated = false;
+		imageID = 0;
+		if (scriptMode) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			imageID = imp!=null?imp.getID():0;
+			if (imageID!=0)
+				ImagePlus.addImageListener(instance);
+		}
 		//IJ.log("setCommand: "+command+" "+Thread.currentThread().getName());
 	}
 
@@ -116,15 +123,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		}
 		return new String(sb);
 	}
-
+	
 	public static void record(String method, String arg) {
 		if (IJ.debugMode) IJ.log("record: "+method+"  "+arg);
-		if (textArea==null) return;
-		if (commandName!=null && method.equals("selectWindow"))
-			return;
-		else {
-			if (recordMethods&&method.equals("selectWindow"))
-				method = "IJ."+method;
+		boolean sw = method.equals("selectWindow");
+		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
+			if (method.equals("setTool"))
+				method = "//"+(scriptMode?"IJ.":"")+method;
 			textArea.append(method+"(\""+arg+"\");\n");
 		}
 	}
@@ -143,8 +148,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void record(String method, int a1) {
 		if (textArea==null) return;
-		if (method.equals("setTool"))
-			method = "//"+method;
 		textArea.append(method+"("+a1+");\n");
 	}
 
@@ -176,8 +179,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void record(String method, int a1, int a2, int a3, int a4) {
 		if (textArea==null) return;
-		if (recordMethods&&method.startsWith("make")) method = "IJ."+method;
-		textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+");\n");
+		if (scriptMode&&method.startsWith("make")) {
+			if (method.equals("makeRectangle"))
+				recordString("imp.setRoi("+a1+", "+a2+", "+a3+", "+a4+");\n");
+			else if (method.equals("makeOval"))
+				recordString("imp.setRoi(new OvalRoi("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+			else if (method.equals("makeLine"))
+				recordString("imp.setRoi(new Line("+a1+", "+a2+", "+a3+", "+a4+"));\n");
+		} else
+			textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+");\n");
 	}
 
 	public static void record(String method, String path, String args, int a1, int a2, int a3, int a4, int a5) {
@@ -194,15 +204,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 
 	public static void recordCall(String call) {
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
-		if ("Close".equals(commandName)||"Image Calculator...".equals(commandName)) {
+		if (textArea!=null && scriptMode && !IJ.macroRunning()) {
 			textArea.append(call+"\n");
 			commandName = null;
-		} else if (textArea!=null && recordMethods && !IJ.macroRunning())
-			methodCall = "//"+call+"\n";
-		else
-			methodCall = null;
+ 			if (call.indexOf("imp =")!=-1) impDefined = true;
+		}
 	}
-
+	
 	public static void recordRoi(Polygon p, int type) {
 		if (textArea==null) return;
 		if (type==Roi.ANGLE) {
@@ -292,27 +300,33 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 	public static void saveCommand() {
 		String name = commandName;
 		if (name!=null) {
+			if (scriptMode && imageID!=0 && !impDefined && textArea!=null) {
+				textArea.append("imp = IJ.getImage();\n");
+				impDefined = true;
+			}
 			if (commandOptions!=null) {
-				if (name.equals("Open..."))
-					textArea.append("open(\""+strip(commandOptions)+"\");\n");
-				else if (isSaveAs()) {
+				if (name.equals("Open...")) {
+					String s = scriptMode?"imp = IJ.openImage":"open";
+					textArea.append(s+"(\""+strip(commandOptions)+"\");\n");
+					if (scriptMode) impDefined = true;
+				} else if (isSaveAs()) {
 							if (name.endsWith("..."))
 									name= name.substring(0, name.length()-3);
 							String path = strip(commandOptions);
-							textArea.append("saveAs(\""+name+"\", \""+path+"\");\n");
+							String s = scriptMode?"IJ.saveAs(imp, ":"saveAs(";
+							textArea.append(s+"\""+name+"\", \""+path+"\");\n");
 				} else if (name.equals("Image..."))
 					appendNewImage();
 				else if (name.equals("Set Slice..."))
-					textArea.append("setSlice("+strip(commandOptions)+");\n");
+					textArea.append((scriptMode?"imp.":"")+"setSlice("+strip(commandOptions)+");\n");
 				else if (name.equals("Rename..."))
-					textArea.append("rename(\""+strip(commandOptions)+"\");\n");
+					textArea.append((scriptMode?"imp.setTitle":"rename")+"(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Wand Tool..."))
 					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
 				else {
-					String prefix = recordMethods?"IJ.":"";
-					textArea.append(prefix+"run(\""+name+"\", \""+commandOptions+"\");\n");
-					if (recordMethods&&methodCall!=null)
-							textArea.append(methodCall);
+					String prefix = "run(";
+					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
+					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 				}
 			} else {
 				if (name.equals("Threshold...") || name.equals("Fonts..."))
@@ -331,10 +345,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 				} else {
 					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
 						textArea.append("setKeyDown(\"alt\"); ");
-					if (recordMethods) {
-						textArea.append("IJ.run(\""+name+"\");\n");
-						if (methodCall!=null)
-							textArea.append(methodCall);
+					if (scriptMode) {
+						String prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
+						textArea.append(prefix+"\""+name+"\", \"\");\n");
 					} else
 						textArea.append("run(\""+name+"\");\n");
 				}
@@ -342,6 +355,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		}
 		commandName = null;
 		commandOptions = null;
+		if (imageID!=0) {
+			ImagePlus.removeImageListener(instance);
+			imageID = 0;
+		}
 	}
 	
 	static boolean isSaveAs() {
@@ -371,7 +388,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		int width = (int)Tools.parseDouble(Macro.getValue(options, "width", "512"));
 		int height = (int)Tools.parseDouble(Macro.getValue(options, "height", "512"));
 		int depth= (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
-		textArea.append("newImage(\""+title+"\", "+"\""+type+"\", "+width+", "+height+", "+depth+");\n");
+		textArea.append((scriptMode?"imp = IJ.createImage":"newImage")
+			+"(\""+title+"\", "+"\""+type+"\", "+width+", "+height+", "+depth+");\n");
+		if (scriptMode) impDefined = true;
 	}
 
 	static String strip(String value) {
@@ -411,23 +430,56 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
-		String name = macroName.getText();
+		String name = fileName.getText();
 		int dotIndex = name.lastIndexOf(".");
 		if (dotIndex>=0) name = name.substring(0, dotIndex);
-		if (recordMethods)
-			name += ".js";
-		else
-			name += ".txt";
+		if (scriptMode) {
+			if (text.indexOf("imp =")!=-1 && !(text.indexOf("IJ.saveAs")!=-1||text.indexOf("imp.close")!=-1))
+				text = text + "imp.show();\n";
+			if (mode.getSelectedItem().equals(modes[PLUGIN])) {
+				name += ".java";
+				createPlugin(text, name);
+				return;
+			} else
+				name += ".js";
+		} else
+			name += ".ijm";
 		ed.createMacro(name, text);
 	}
 	
+	void createPlugin(String text, String name) {
+		StringTokenizer st = new StringTokenizer(text, "\n");
+		int n = st.countTokens();
+		boolean impDeclared = false;
+		String line;
+		StringBuffer sb = new StringBuffer();
+		for(int i=0; i<n; i++) {
+			line = st.nextToken();
+			if (line!=null && line.length()>3) {
+				sb.append("\t\t");
+				if (line.startsWith("imp =") && !impDeclared) {
+					sb.append("ImagePlus ");
+					impDeclared = true;
+				}
+				sb.append(line);
+				sb.append('\n');
+			}
+		}
+		String text2 = new String(sb);
+		text2 = text2.replaceAll("print", "IJ.log");
+		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", text2);
+		Editor ed = np.getEditor();
+		ed.updateClassName(ed.getTitle(), name);
+		ed.setTitle(name);
+	}
+
 	/** Temporarily disables path recording. */
 	public static void disablePathRecording() {
 		recordPath = false;
 	}
 	
 	public static boolean scriptMode() {
-		return recordMethods;
+		return scriptMode;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -436,6 +488,30 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		else if (e.getSource()==help)
 			showHelp();
 	}
+
+	public void itemStateChanged(ItemEvent e) {
+		setFileName();
+	}
+	
+	void setFileName() {
+		String name = mode.getSelectedItem();
+		scriptMode = name.equals(modes[JAVASCRIPT])||name.equals(modes[PLUGIN]);
+		if (name.equals(modes[MACRO]))
+			fileName.setText("Macro.ijm");
+		else if (name.equals(modes[JAVASCRIPT]))
+			fileName.setText("script.js");
+		else
+			fileName.setText("My_Plugin.java");
+	}
+
+	public void imageUpdated(ImagePlus imp) {
+		if (imp.getID()==imageID)
+			imageUpdated = true;
+	}
+
+	public void imageOpened(ImagePlus imp) { }
+
+	public void imageClosed(ImagePlus imp) { }
 
     void showHelp() {
     	IJ.showMessage("Recorder",
@@ -453,9 +529,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			+"    To create a command, use File>Save As,\n"  
 			+"    add a '_' to the name, save in the \n" 
 			+"    plugins folder, and restart ImageJ.\n" 
-			+" \n"     
-			+"    Use Edit>Convert to Plugin to convert\n" 
-			+"    the macro to a plugin."
 		);
     }
     
@@ -468,7 +541,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 		record = false;
 		textArea = null;
 		commandName = null;
+		impDefined = false;
 		instance = null;	
+		Prefs.set("recorder.mode", mode.getSelectedItem());
 	}
 
 	public String getText() {
@@ -476,6 +551,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener {
 			return "";
 		else
 			return textArea.getText();
+	}
+	
+	public static Recorder getInstance() {
+		return instance;
 	}
 
 }

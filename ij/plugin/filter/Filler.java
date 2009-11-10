@@ -24,6 +24,10 @@ public class Filler implements PlugInFilter, Measurements {
 		IJ.register(Filler.class);
 		int baseCapabilities = DOES_ALL+ROI_REQUIRED;
 	 	if (arg.equals("clear")) {
+	 		if (roi!=null && roi.getType()==Roi.POINT) {
+	 			IJ.error("Clear", "Area selection required");
+	 			return DONE;
+	 		}
 	 		if (isTextRoi || isLineSelection())
 				return baseCapabilities;
 			else
@@ -37,7 +41,10 @@ public class Filler implements PlugInFilter, Measurements {
 					return baseCapabilities;
 		} else if (arg.equals("outside"))
 				return IJ.setupDialog(imp,baseCapabilities);
-		else
+		else if (arg.equals("fill") && roi.getType()==Roi.POINT) {
+	 			IJ.error("Fill", "Area selection required");
+	 			return DONE;
+	 	} else
 			return IJ.setupDialog(imp,baseCapabilities+SUPPORTS_MASKING);
 	}
 

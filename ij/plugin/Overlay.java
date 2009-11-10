@@ -5,6 +5,7 @@ import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
 import java.awt.Rectangle;
+import java.awt.Color;
 import java.util.Vector;
 import java.awt.Frame;
 
@@ -14,7 +15,7 @@ public class Overlay implements PlugIn {
 
 	public void run(String arg) {
 		if (arg.equals("add"))
-			add();
+			addSelection();
 		else if (arg.equals("image"))
 			addImage();
 		else if (arg.equals("flatten"))
@@ -29,7 +30,7 @@ public class Overlay implements PlugIn {
 			toRoiManager();
 	}
 			
-	void add() {
+	void addSelection() {
 		ImagePlus imp = IJ.getImage();
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null && IJ.macroRunning() && macroOptions.indexOf("remove")!=-1) {
@@ -59,6 +60,8 @@ public class Overlay implements PlugIn {
 			roi.setStrokeWidth(roi2.getStrokeWidth());
 			roi.setFillColor(roi2.getFillColor());
 		}
+		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
+		if (points) roi.setStrokeColor(Color.red);
 		if (!IJ.altKeyDown()) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
@@ -67,6 +70,7 @@ public class Overlay implements PlugIn {
 		list.addElement(roi);
 		imp.setDisplayList(list);
 		displayList2 = list;
+		if (points) imp.killRoi();
 	}
 	
 	void addImage() {

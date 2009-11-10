@@ -126,9 +126,13 @@ public class HyperStackConverter implements PlugIn {
 				break;
 		}
 		if (order!=CZT) {
-			Object[] images1 = imp.getImageStack().getImageArray();
+			ImageStack stack = imp.getImageStack();
+			Object[] images1 = stack.getImageArray();
 			Object[] images2 = new Object[images1.length];
 			System.arraycopy(images1, 0, images2, 0, images1.length);
+			String[] labels1 = stack.getSliceLabels();
+			String[] labels2 = new String[labels1.length];
+			System.arraycopy(labels1, 0, labels2, 0, labels1.length);
 			int[] index = new int[3];
 			for (index[2]=0; index[2]<nFrames; ++index[2]) {
 				for (index[1]=0; index[1]<nSlices; ++index[1]) {
@@ -136,6 +140,7 @@ public class HyperStackConverter implements PlugIn {
 						int dstIndex = index[0] + index[1]*nChannels + index[2]*nChannels*nSlices;
 						int srcIndex = index[first] + index[middle]*nFirst + index[last]*nFirst*nMiddle;
 						images1[dstIndex] = images2[srcIndex];
+						labels1[dstIndex] = labels2[srcIndex];
 					}
 				}
 			}

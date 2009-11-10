@@ -641,6 +641,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip.setCalibrationTable(cal.getCTable());
 		else
 			ip.setCalibrationTable(null);
+		if (Recorder.record) {
+			Recorder recorder = Recorder.getInstance();
+			if (recorder!=null) recorder.imageUpdated(this);
+		}
 		return ip;
 	}
 	

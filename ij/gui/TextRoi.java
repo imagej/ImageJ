@@ -103,7 +103,7 @@ public class TextRoi extends Roi {
 		}
 	}
 
-	Font getCurrentFont() {
+	Font getScaledFont() {
 		double mag = ic.getMagnification();
 		if (instanceFont!=null) {
 			if (nonScalable)
@@ -162,7 +162,7 @@ public class TextRoi extends Roi {
 		double mag = ic.getMagnification();
 		int sx = nonScalable?x:ic.screenX(x);
 		int sy = nonScalable?y:ic.screenY(y);
-		Font font = getCurrentFont();
+		Font font = getScaledFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
@@ -214,6 +214,14 @@ public class TextRoi extends Roi {
 		return style;
 	}
 	
+	/** Returns the current font. */
+	public Font getCurrentFont() {
+		if (instanceFont!=null)
+			return instanceFont;
+		else
+			return  new Font(name, style, size);
+	}
+	
 	public static boolean isAntialiased() {
 		return antialiasedText;
 	}
@@ -260,7 +268,7 @@ public class TextRoi extends Roi {
 		if (ic==null) return;
 		double mag = ic.getMagnification();
 		if (nonScalable) mag = 1.0;
-		Font font = getCurrentFont();
+		Font font = getScaledFont();
 		newFont = false;
 		boolean nullg = g==null;
 		if (nullg) g = ic.getGraphics();
@@ -332,6 +340,15 @@ public class TextRoi extends Roi {
 		code += "makeText(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
 		code += "//drawString(\""+text+"\", "+x+", "+(y+fontHeight)+");\n";
 		return (code);
+	}
+	
+	public String getText() {
+		String text = "";
+		for (int i=0; i<MAX_LINES; i++) {
+			if (theText[i]==null) break;
+			text += theText[i]+"\n";
+		}
+		return text;
 	}
 	
 	public static void recordSetFont() {

@@ -9,6 +9,7 @@ import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
+import ij.measure.ResultsTable;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
@@ -268,8 +269,7 @@ public class IJ {
 			commandTable.put("RGB Merge...", "Merge Channels...");
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
-			commandTable.put("Arbitrarily... ", "Rotate... ");
-			commandTable.put("Record...", "Record Macro...");
+			commandTable.put("Arbitrarily...", "Rotate... ");
 			commandTable.put("Create Overlay...", "Add Selection..."); // temporary
 		}
 		String command2 = (String)commandTable.get(command);
@@ -408,6 +408,16 @@ public class IJ {
 		return textPanel!=null;
 	}
 	
+	/** Deletes 'row1' through 'row2' of the "Results" window. Arguments
+	     must be in the range 0-Analyzer.getCounter()-1. */
+	public static void deleteRows(int row1, int row2) {
+		int n = row2 - row1 + 1;
+		ResultsTable rt = Analyzer.getResultsTable();
+		for (int i=row1; i<row1+n; i++)
+			rt.deleteRow(row1);
+		rt.show("Results");
+	}
+
 	/** Returns a reference to the "Results" window TextPanel.
 		Opens the "Results" window if it is currently not open. */
 	public static TextPanel getTextPanel() {
@@ -839,9 +849,9 @@ public class IJ {
 			}
 			if (hideProcessStackDialog)
 				return flags;
+			String note = ((flags&PlugInFilter.NO_CHANGES)==0)?" There is\nno Undo if you select \"Yes\".":"";
  			YesNoCancelDialog d = new YesNoCancelDialog(getInstance(),
-				"Process Stack?", "Process all "+stackSize+" images?  There is\n"
-				+"no Undo if you select \"Yes\".");
+				"Process Stack?", "Process all "+stackSize+" images?"+note);
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {

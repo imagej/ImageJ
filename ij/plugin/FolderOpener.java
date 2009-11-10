@@ -212,8 +212,18 @@ public class FolderOpener implements PlugIn {
 			fi.fileName = "";
 			fi.directory = directory;
 			imp2.setFileInfo(fi); // saves FileInfo of the first image
-			if (allSameCalibration)
-				imp2.setCalibration(cal); // use calibration from first image
+			if (allSameCalibration) {
+				// use calibration from first image
+				if (cal.pixelWidth!=1.0 && cal.pixelDepth==1.0)
+					cal.pixelDepth = cal.pixelWidth;
+				if (cal.pixelWidth<=0.0001 && cal.getUnit().equals("cm")) {
+					cal.pixelWidth *= 10000.0;
+					cal.pixelHeight *= 10000.0;
+					cal.pixelDepth *= 10000.0;
+					cal.setUnit("um");
+				}
+				imp2.setCalibration(cal);
+			}
 			if (imp2.getStackSize()==1 && info1!=null)
 				imp2.setProperty("Info", info1);
 			imp2.show();

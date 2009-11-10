@@ -8,7 +8,7 @@ import ij.measure.*;
 import ij.plugin.filter.Analyzer;
 import java.awt.event.KeyEvent;
 import ij.plugin.frame.Recorder;
-import ij.util.Java2;
+import ij.util.Java2; 
 
 /** This class represents a collection of points. */
 public class PointRoi extends PolygonRoi {
@@ -71,10 +71,11 @@ public class PointRoi extends PolygonRoi {
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
 		int size2 = HANDLE_SIZE/2;
-		if (!Prefs.noPointLabels && nPoints>1) {
+		if (!Prefs.noPointLabels && (nPoints>1||Toolbar.getMultiPointMode())) {
 			fontSize = 9;
 			if (mag>1.0)
-				fontSize = (int)(((mag-1.0)/4.0+1.0)*9.0);
+				fontSize = (int)(((mag-1.0)/3.0+1.0)*9.0);
+			if (fontSize>18) fontSize = 18;
 			if (font==null || mag!=saveMag)
 				font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
@@ -90,12 +91,12 @@ public class PointRoi extends PolygonRoi {
 	}
 
 	void drawPoint(Graphics g, int x, int y, int n) {
-		g.setColor(Color.white);
+		g.setColor(fillColor!=null?fillColor:Color.white);
 		g.drawLine(x-4, y+2, x+8, y+2);
 		g.drawLine(x+2, y-4, x+2, y+8);
-		g.setColor( strokeColor!=null? strokeColor:ROIColor);
+		g.setColor(strokeColor!=null?strokeColor:ROIColor);
 		g.fillRect(x+1,y+1,3,3);
-		if (!Prefs.noPointLabels && nPoints>1)
+		if (!Prefs.noPointLabels && (nPoints>1||Toolbar.getMultiPointMode()))
 			g.drawString(""+n, x+6, y+fontSize+4);
 		g.setColor(Color.black);
 		g.drawRect(x, y, 4, 4);
@@ -109,15 +110,15 @@ public class PointRoi extends PolygonRoi {
 		}
 	}
 	
-	/** Adds a point to this selection and return the result. */
+	/** Returns a copy of this PointRoi with a point at (x,y) added. */
 	public PointRoi addPoint(int x, int y) {
 		Polygon poly = getPolygon();
 		poly.addPoint(x, y);
 		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
-		//IJ.log("addPoint: "+((PointRoi)p).getNCoordinates());
+		IJ.showStatus("count="+poly.npoints);
 		return p;
 	}
-
+	
 	/** Subtract the points that intersect the specified ROI and return 
 		the result. Returns null if there are no resulting points. */
 	public PointRoi subtractPoints(Roi roi) {

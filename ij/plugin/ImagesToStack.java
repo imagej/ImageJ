@@ -112,6 +112,7 @@ public class ImagesToStack implements PlugIn {
 		if (fi!=null && fi.directory==null) fi = null;
 		for (int i=0; i<count; i++) {
 			ImageProcessor ip = image[i].getProcessor();
+			if (ip==null) break;
 			if (ip.getMin()<min) min = ip.getMin();
 			if (ip.getMax()>max) max = ip.getMax();
             String label = titlesAsLabels?image[i].getTitle():null;
@@ -190,6 +191,8 @@ public class ImagesToStack implements PlugIn {
 		maxSize = 0;
 		for (int i=0; i<count; i++) {
 			if (exclude(image[i].getTitle())) continue;
+			if (image[i].getType()==ImagePlus.COLOR_256)
+				stackType = rgb;
 			int type = image[i].getBitDepth();
 			if (type==24) type = rgb;
 			if (type>stackType) stackType = type;

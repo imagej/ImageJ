@@ -247,6 +247,7 @@ public class Functions implements MacroConstants, Measurements {
 			case EXEC: str = exec(); break;
 			case LIST: str = doList(); break;
 			case DEBUG: str = debug(); break;
+			case IJ_CALL: str = ijCall(); break;
 			default:
 				str="";
 				interp.error("String function expected");
@@ -1280,7 +1281,9 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			if (key.equals("micrometer.abbreviation"))
+			if (key.length()==9 && key.charAt(4)==',')
+				return getDicomTag(key);
+			else if (key.equals("micrometer.abbreviation"))
 				return "\u00B5m";
 			else if (key.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
@@ -1325,6 +1328,25 @@ public class Functions implements MacroConstants, Measurements {
 				catch (Exception e) {};
 				return value!=null?value:"";
 			}
+	}
+	
+	String getDicomTag(String tag) {
+		ImagePlus imp = getImage();
+		String metadata = null;
+		if (imp.getStackSize()==1) {
+			metadata = (String)imp.getProperty("Label");
+			if (metadata==null)
+				metadata = (String)imp.getProperty("Info");
+		} else 
+			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		if (metadata==null) return "";
+		int index1 = metadata.indexOf(tag);
+		if (index1==-1) return "";
+		index1 = metadata.indexOf(":", index1);
+		if (index1==-1) return "";
+		int index2 = metadata.indexOf("\n", index1);
+		String value = metadata.substring(index1+1, index2);
+		return value;
 	}
 	
 	String getWindowContents() {
@@ -4398,6 +4420,29 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		IJ.doWand(x, y, tolerance, mode);
 		resetImage();
+	}
+	
+	String ijCall() {
+		interp.getToken();
+		if (interp.token!='.')
+			interp.error("'.' expected");
+		interp.getToken();
+		if (!(interp.token==WORD||interp.token==NUMERIC_FUNCTION))
+			interp.error("Function name expected: ");
+		String name = interp.tokenString;
+		if (name.equals("deleteRows"))
+			IJ.deleteRows((int)getFirstArg(), (int)getLastArg());
+		else if (name.equals("log"))
+			IJ.log(getStringArg());
+		else if (name.equals("freeMemory"))
+			return IJ.freeMemory();
+		else if (name.equals("currentMemory"))
+			return ""+IJ.currentMemory();
+		else if (name.equals("maxMemory"))
+			return ""+IJ.maxMemory();
+		else
+			interp.error("Unrecognized function name");
+		return null;
 	}
 
 } // class Functions
