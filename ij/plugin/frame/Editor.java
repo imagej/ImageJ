@@ -233,7 +233,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public void createMacro(String name, String text) {
 		create(name, text);
-		editMenu.add(new MenuItem("Convert to Plugin"));
 	}
 
 	void installMacros(String text, boolean installInPluginsMenu) {
@@ -599,8 +598,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			gotoLine();
 		else if ("Zap Gremlins".equals(what))
 			zapGremlins();
-		else if ("Convert to Plugin".equals(what))
-			convertToPlugin();
 		else if ("Make Text Larger".equals(what))
 			changeFontSize(true);
 		else if ("Make Text Smaller".equals(what))
@@ -878,47 +875,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	void selectAll() {
 		ta.selectAll();
-	}
-
-	void convertToPlugin() {
-		if (!getTitle().endsWith(".js")) {
-			IJ.error("Editor", "This command requires a \".js\" file created by the Script Recorder.");
-			return;
-		}
-		String text = ta.getText();
-		if (text==null || text.equals("")) {
-			IJ.runPlugIn("ij.plugin.NewPlugin", " ");
-			return;
-		}
-		StringTokenizer st = new StringTokenizer(text, "\n");
-		int n = st.countTokens();
-		boolean impDeclared = false;
-		String line;
-		StringBuffer sb = new StringBuffer();
-		for(int i=0; i<n; i++) {
-			line = st.nextToken();
-			if (line!=null && line.length()>3) {
-				sb.append("\t\t");
-				if (line.startsWith("imp =") && !impDeclared) {
-					sb.append("ImagePlus ");
-					impDeclared = true;
-				}
-				sb.append(line);
-				sb.append('\n');
-			}
-		}
-		String text2 = new String(sb);
-		text2 = text2.replaceAll("print", "IJ.log");
-		NewPlugin np = (NewPlugin)IJ.runPlugIn("ij.plugin.NewPlugin", text2);
-		Editor ed = np.getEditor();
-		String title = getTitle();
-		if (title.equals("script.js"))
-			title = "Converted_Script";
-		if (title.endsWith(".js")) title = title.substring(0, title.length()-3);
-		if (title.indexOf('_')==-1) title += "_";
-		title += ".java";
-		ed.updateClassName(ed.getTitle(), title);
-		ed.setTitle(title);
 	}
     
     void changeFontSize(boolean larger) {

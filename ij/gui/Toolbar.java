@@ -544,6 +544,27 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return ok;
 	}
 	
+	String getName(int id) {
+		switch (id) {
+			case RECTANGLE: return "rectangle";
+			case OVAL: return brushEnabled?"brush":"oval";
+			case POLYGON: return "polygon";
+			case FREEROI: return "freehand";
+			case LINE: return "line";
+			case POLYLINE: return "polyline";
+			case FREELINE: return "freeline";
+			case ANGLE: return "angle";
+			case POINT: return Prefs.multiPointMode?"multipoint":"point";
+			case WAND: return "wand";
+			case TEXT: return "text";
+			case HAND: return "hand";
+			case MAGNIFIER: return "zoom";
+			case DROPPER: return "dropper";
+			default: return null;
+		}
+		
+	}
+	
 	public void setTool(int tool) {
 		if ((tool==current&&!(tool==OVAL||tool==POINT)) || tool<0 || tool>=NUM_TOOLS-1)
 			return;
@@ -573,8 +594,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		g.dispose();
 		showMessage(current);
 		previous = current;
-		if (Recorder.record)
-			Recorder.record("setTool", current);
+		if (Recorder.record) {
+			String name = getName(current);
+			if (name!=null) Recorder.record("setTool", name);
+		}
 		if (IJ.isMacOSX())
 			repaint();
 	}
