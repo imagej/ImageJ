@@ -136,7 +136,8 @@ public class RGBStackMerge implements PlugIn {
 		if	(options!=null && options.indexOf("gray=")==-1)
 			stacks[3] = null; // ensure compatibility with old macros
 		ImagePlus imp2;
-		if (stacks[3]!=null)
+		boolean fourChannelRGB = !createComposite && stacks[3]!=null;
+		if (fourChannelRGB)
 			createComposite = true;
 		for (int i=0; i<4; i++) {
 			if (images[i]!=null && images[i].getBitDepth()==24)
@@ -162,6 +163,8 @@ public class RGBStackMerge implements PlugIn {
 				}
 			}
 		}
+		if (fourChannelRGB)
+			imp2 = imp2.flatten();
 		imp2.show();
 	 }
 	

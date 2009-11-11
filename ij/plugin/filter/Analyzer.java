@@ -255,6 +255,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return rImp;
 	}
 
+	/** Set the "Redirect To" image. */
+	public static void setRedirectImage(ImagePlus imp) {
+		redirectTarget = imp.getID();
+		redirectTitle = imp.getTitle();
+	}
+
 	ImageStatistics getRedirectStats(int measurements, Roi roi) {
 		ImagePlus redirectImp = getRedirectImage(imp);
 		if (redirectImp==null)
