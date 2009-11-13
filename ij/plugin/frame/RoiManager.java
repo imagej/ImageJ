@@ -917,6 +917,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         if (n==0) return;
 		Roi rpRoi = null;
 		String rpName = null;
+		Font font = null;
         if (color==null && lineWidth==0 && fillColor==null) {
 			String label = list.getItem(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
@@ -938,7 +939,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color =  rpRoi.getStrokeColor();
 			fillColor =  rpRoi.getFillColor();
 			defaultColor = color;
+			if (rpRoi instanceof TextRoi)
+				font = ((TextRoi)rpRoi).getCurrentFont();
 		}
+		ImagePlus imp = WindowManager.getCurrentImage();
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
@@ -946,10 +950,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (color!=null) roi.setStrokeColor(color);
 			if (lineWidth>0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
+			if (roi!=null && (roi instanceof TextRoi)) {
+				roi.setImage(imp);
+				((TextRoi)roi).setCurrentFont(font);
+				roi.setImage(null);
+			}
 		}
 		if (rpRoi!=null && rpName!=null && !rpRoi.getName().equals(rpName))
 			rename(rpRoi.getName());
-		ImagePlus imp = WindowManager.getCurrentImage();
 		ImageCanvas ic = imp!=null?imp.getCanvas():null;
 		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
@@ -957,6 +965,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (lineWidth!=0) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
+			if (roi!=null && (roi instanceof TextRoi))
+				((TextRoi)roi).setCurrentFont(font);
 		}
 		if (lineWidth>1 && !showingAll && roi==null) {
 			showAll(SHOW_ALL);

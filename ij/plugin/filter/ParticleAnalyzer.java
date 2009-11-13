@@ -184,9 +184,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		IJ.register(ParticleAnalyzer.class);
 		if (imp==null)
 			{IJ.noImage();return DONE;}
+		if (imp.getBitDepth()==24 && !isBinaryRGB(imp)) {
+			IJ.error("Particle Analyzer",
+			"RGB images must be converted to binary using\n"
+			+"Process>Binary>Make Binary or thresholded\n"
+			+"using Image>Adjust>Color Threshold.");
+			return DONE;
+		}
 		if (!showDialog())
 			return DONE;
-		int baseFlags = DOES_8G+DOES_16+DOES_32+NO_CHANGES+NO_UNDO;
+		int baseFlags = DOES_ALL+NO_CHANGES+NO_UNDO;
 		int flags = IJ.setupDialog(imp, baseFlags);
 		processStack = (flags&DOES_STACKS)!=0;
 		slice = 0;
@@ -203,6 +210,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		slice++;
 		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
+		if (imp.getType()==ImagePlus.COLOR_RGB) {
+			ip = ip.convertToByte(false);
+			ip.setThreshold(0, 0, ImageProcessor.NO_LUT_UPDATE);
+		}
 		if (!analyze(imp, ip))
 			canceled = true;
 		if (slice==imp.getStackSize()) {
@@ -331,6 +342,17 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		return true;
 	}
 	
+	private boolean isBinaryRGB(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		int[] pixels = (int[])ip.getPixels();
+		int size = imp.getWidth()*imp.getHeight();
+		for (int i=0; i<size; i++) {
+			if ((pixels[i]&0xffffff)!=0 && (pixels[i]&0xffffff)!=0xffffff)
+				return false;
+		}
+		return true;
+	}
+
 	boolean updateMacroOptions() {
 		String options = Macro.getOptions();
 		int index = options.indexOf("maximum=");

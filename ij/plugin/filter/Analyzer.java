@@ -233,6 +233,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return redirectTarget!=0;
 	}
 	
+	/** Set the "Redirect To" image. Pass 'null' as the 
+	    argument to disable redirected sampling. */
+	public static void setRedirectImage(ImagePlus imp) {
+		if (imp==null) {
+			redirectTarget = 0;
+			redirectTitle = null;
+		} else {
+			redirectTarget = imp.getID();
+			redirectTitle = imp.getTitle();
+		}
+	}
+	
 	/** Returns the image selected in the "Redirect To:" popup
 		menu of the Analyze/Set Measurements dialog or null
 		if "None" is selected, the image was not found or the 
@@ -253,12 +265,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 			return null;
 		}
 		return rImp;
-	}
-
-	/** Set the "Redirect To" image. */
-	public static void setRedirectImage(ImagePlus imp) {
-		redirectTarget = imp.getID();
-		redirectTitle = imp.getTitle();
 	}
 
 	ImageStatistics getRedirectStats(int measurements, Roi roi) {

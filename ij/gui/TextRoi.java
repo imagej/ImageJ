@@ -222,6 +222,12 @@ public class TextRoi extends Roi {
 			return  new Font(name, style, size);
 	}
 	
+	/** Set the current (instance) font. */
+	public void setCurrentFont(Font font) {
+		instanceFont = font;
+		updateBounds(null);
+	}
+	
 	public static boolean isAntialiased() {
 		return antialiasedText;
 	}

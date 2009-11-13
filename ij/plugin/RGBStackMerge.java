@@ -139,6 +139,9 @@ public class RGBStackMerge implements PlugIn {
 		boolean fourChannelRGB = !createComposite && stacks[3]!=null;
 		if (fourChannelRGB)
 			createComposite = true;
+		
+		if (stacks[3]!=null)
+			createComposite = true;
 		for (int i=0; i<4; i++) {
 			if (images[i]!=null && images[i].getBitDepth()==24)
 				createComposite = false;

@@ -33,6 +33,11 @@ public class RoiProperties {
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
 		int width = roi.getStrokeWidth();
 		if (width>1) strokeWidth = width;
+		boolean isText = roi instanceof TextRoi;
+		if (isText) {
+			Font font = ((TextRoi)roi).getCurrentFont();
+			strokeWidth = font.getSize();
+		}
 		String linec = strokeColor!=null?"#"+Integer.toHexString(strokeColor.getRGB()):"none";
 		if (linec.length()==9 && linec.startsWith("#ff"))
 			linec = "#"+linec.substring(3);
@@ -44,7 +49,7 @@ public class RoiProperties {
 		if (showName)
 			gd.addStringField(nameLabel, name, 15);
 		gd.addStringField("Stroke Color: ", linec);
-		gd.addNumericField("Width:", strokeWidth, 0);
+		gd.addNumericField(isText?"Font Size":"Width:", strokeWidth, 0);
 		gd.addMessage("");
 		gd.addStringField("Fill Color: ", fillc);
 		gd.showDialog();
@@ -58,7 +63,14 @@ public class RoiProperties {
 		fillc = gd.getNextString();
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
-		roi.setStrokeWidth(strokeWidth);
+		if (isText) {
+			Font font = ((TextRoi)roi).getCurrentFont();
+			if (strokeWidth!=font.getSize()) {
+				font = new Font(font.getName(), font.getStyle(), strokeWidth);
+				((TextRoi)roi).setCurrentFont(font);
+			}
+		} else
+			roi.setStrokeWidth(strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (strokeWidth>1)

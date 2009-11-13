@@ -60,6 +60,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
 	public ThresholdAdjuster() {
 		super("Threshold");
+		ImagePlus cimp = WindowManager.getCurrentImage();
+		if (cimp!=null && cimp.getBitDepth()==24) {
+			IJ.run(cimp, "Color Threshold...", "");
+			return;
+		}
 		if (instance!=null) {
 			instance.toFront();
 			return;

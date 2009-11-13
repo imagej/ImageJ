@@ -104,9 +104,10 @@ adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
 adjust02="Window/Level...",ij.plugin.frame.ContrastAdjuster("wl")
 adjust03="Color Balance...",ij.plugin.frame.ContrastAdjuster("balance")
 adjust04="Threshold...[T]",ij.plugin.frame.ThresholdAdjuster
-adjust05="Size...",ij.plugin.Resizer
-adjust06="Canvas Size...",ij.plugin.CanvasResizer
-adjust07="Line Width... ",ij.plugin.frame.LineWidthAdjuster
+adjust05="Color Threshold...",ij.plugin.frame.ColorThresholder
+adjust06="Size...",ij.plugin.Resizer
+adjust07="Canvas Size...",ij.plugin.CanvasResizer
+adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 
 # Plugins installed in the Image/Color submenu
 color01="Split Channels",ij.plugin.filter.RGBStackSplitter
