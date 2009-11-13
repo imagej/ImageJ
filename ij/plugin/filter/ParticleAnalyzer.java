@@ -212,8 +212,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			imp.setSlice(slice);
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
 			ip = ip.convertToByte(false);
-			ip.setThreshold(0, 0, ImageProcessor.NO_LUT_UPDATE);
-		}
+			int t = Prefs.blackBackground?255:0;
+			ip.setThreshold(t, t, ImageProcessor.NO_LUT_UPDATE);
+		}		
 		if (!analyze(imp, ip))
 			canceled = true;
 		if (slice==imp.getStackSize()) {

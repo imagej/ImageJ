@@ -3,6 +3,7 @@ import java.awt.*;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
+import ij.macro.Interpreter;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -139,6 +140,7 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
+		if (Interpreter.isBatchMode() && ic.getDisplayList()!=null) return;
 		if (newFont || width==1)
 			updateBounds(g);
 		super.draw(g); // draw the rectangle

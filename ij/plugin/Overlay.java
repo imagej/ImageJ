@@ -66,7 +66,9 @@ public class Overlay implements PlugIn {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
-		if (list==null) list = new Vector();
+		String name = roi.getName();
+		boolean newOverlay = name!=null && name.equals("new-overlay");
+		if (list==null || newOverlay) list = new Vector();
 		list.addElement(roi);
 		imp.setDisplayList(list);
 		displayList2 = list;

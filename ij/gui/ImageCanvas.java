@@ -205,14 +205,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (roi==null) continue;
 			if (showAllList!=null)
 				showAllList.addElement(roi);
+			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
+				currentRoi = roi;
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
 				int slice = getSliceNumber(roi.getName());
 				if (slice==-1 || slice==imp.getCurrentSlice())
 					drawRoi(g, roi, drawLabels?i:-1);
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
-			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
-				currentRoi = roi;
 		}
     }
     
@@ -276,68 +276,16 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.drawDisplayList(g);
 		roi.setStrokeColor(saveColor);
 		if (index>=0) {
-			g.setColor(showAllColor);
+			if (roi==currentRoi)
+				g.setColor(Roi.getColor());
+			else
+				g.setColor(showAllColor);
 			drawRoiLabel(g, index, roi.getBounds());
 		}
 		if (imp2!=null)
 			roi.setImage(imp2);
 		else
 			roi.setImage(null);
-		/*
-		} else {
-			Color c = roi.getStrokeColor();
-			Color fillColor = roi.getFillColor();
-			if (fillColor!=null) c = fillColor;
-			Color saveg = null;
-			if (c!=null) {
-				saveg = g.getColor();
-				g.setColor(c);
-			}
-			GeneralPath path = new GeneralPath();
-			if (roi.getType()==Roi.OVAL) {
-				double mag = getMagnification();
-				Rectangle r = roi.getBounds();
-				float sw = (float)(r.width*mag);
-				float sh = (float)(r.height*mag);
-				float sx = screenX(r.x);
-				float sy = screenY(r.y);
-				path.append(new Ellipse2D.Float(sx, sy, sw, sh), false);
-			} else if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).isSplineFit()) {
-				FloatPolygon p = roi.getFloatPolygon();
-				path.moveTo(screenXD(p.xpoints[0]), screenYD(p.ypoints[0]));
-				for (int j=1; j<p.npoints; j++)
-					path.lineTo(screenXD(p.xpoints[j]), screenYD(p.ypoints[j]));
-				if (roi.isArea()&&p.npoints>0)
-					path.lineTo(screenXD(p.xpoints[0]), screenYD(p.ypoints[0]));
-			} else {
-				Polygon p = roi.getPolygon();
-				path.moveTo(screenX(p.xpoints[0]), screenY(p.ypoints[0]));
-				for (int j=1; j<p.npoints; j++)
-					path.lineTo(screenX(p.xpoints[j]), screenY(p.ypoints[j]));
-				if (roi.isArea()&&p.npoints>0)
-					path.lineTo(screenX(p.xpoints[0]), screenY(p.ypoints[0]));
-			}
-			Graphics2D g2d = (Graphics2D)g;
-			BasicStroke stroke = roi.getStroke();
-			Stroke saveStroke = null;
-			if (stroke!=null) {
-				saveStroke = g2d.getStroke();
-				g2d.setStroke(stroke);
-			}
-			if (index==-1)
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			if (fillColor!=null)
-				g2d.fill(path);
-			else
-				g2d.draw(path);
-			if (saveStroke!=null) g2d.setStroke(saveStroke);
-			if (saveg!=null) g.setColor(saveg);
-			if (index>=0)
-				drawRoiLabel(g, index, roi.getBounds());
-			else
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-		}
-		*/
     }
     
 	void drawRoiLabel(Graphics g, int index, Rectangle r) {

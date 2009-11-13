@@ -882,7 +882,10 @@ public class IJ {
 			getImage().killRoi();
 		else {
 			ImagePlus img = getImage();
-			img.setRoi(x, y, width, height);
+			if (Interpreter.isBatchMode())
+				img.setRoi(new Roi(x,y,width,height), false);
+			else
+				img.setRoi(x, y, width, height);
 		}
 	}
 	
