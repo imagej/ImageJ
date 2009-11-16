@@ -137,12 +137,16 @@ public class Overlay implements PlugIn {
 			displayList2 = list;
 			imp.setDisplayList(null);
 		}
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null) rm.runCommand("show none");
 	}
 
 	void show() {
 		ImagePlus imp = IJ.getImage();
 		if (displayList2!=null)
 			imp.setDisplayList(displayList2);
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null) rm.runCommand("show all");
 	}
 
 	void flatten() {

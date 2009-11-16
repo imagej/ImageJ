@@ -1,4 +1,4 @@
- package ij.plugin.frame;
+package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -130,7 +130,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
 			if (method.equals("setTool"))
 				method = "//"+(scriptMode?"IJ.":"")+method;
-			textArea.append(method+"(\""+arg+"\");\n");
+			else if (scriptMode && method.equals("roiManager"))
+				textArea.append("rm.runCommand(\""+arg+"\");\n");
+			else
+				textArea.append(method+"(\""+arg+"\");\n");
 		}
 	}
 
@@ -138,7 +141,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea==null) return;
 		if (arg1.equals("Open")||arg1.equals("Save")||method.equals("saveAs"))
 			arg2 = fixPath(arg2);
-		textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
+		if (!(scriptMode&&method.equals("roiManager")))
+			textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
 	}
 
 	public static void record(String method, String arg1, String arg2, String arg3) {
