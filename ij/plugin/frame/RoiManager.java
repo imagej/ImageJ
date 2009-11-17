@@ -502,7 +502,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.put(name2, roi);
 		list.replaceItem(name2, index);
 		list.select(index);
-		if (record()) Recorder.record("roiManager", "Rename", name2);
+		if (record())
+			Recorder.record("roiManager", "Rename", name2);
 		return true;
 	}
 	

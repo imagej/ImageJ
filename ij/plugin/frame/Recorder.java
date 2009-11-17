@@ -35,7 +35,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private static String defaultName = "Macro.ijm";
 	private static boolean recordPath = true;
 	private static boolean scriptMode;
-	private static boolean impDefined;
 	private static boolean imageUpdated;
 	private static int imageID;
 
@@ -141,10 +140,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea==null) return;
 		if (arg1.equals("Open")||arg1.equals("Save")||method.equals("saveAs"))
 			arg2 = fixPath(arg2);
-		if (!(scriptMode&&method.equals("roiManager")))
+		if (scriptMode&&method.equals("roiManager"))
+			textArea.append("rm.runCommand(\""+arg1+"\", \""+arg2+"\");\n");
+		else
 			textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
 	}
-
+	
 	public static void record(String method, String arg1, String arg2, String arg3) {
 		if (textArea==null) return;
 		textArea.append(method+"(\""+arg1+"\", \""+arg2+"\",\""+arg3+"\");\n");
@@ -211,8 +212,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (textArea!=null && scriptMode && !IJ.macroRunning()) {
 			textArea.append(call+"\n");
 			commandName = null;
- 			if (call.indexOf("imp =")!=-1) impDefined = true;
-		}
+ 		}
 	}
 	
 	public static void recordRoi(Polygon p, int type) {
@@ -304,15 +304,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public static void saveCommand() {
 		String name = commandName;
 		if (name!=null) {
-			if (scriptMode && imageID!=0 && !impDefined && textArea!=null) {
-				textArea.append("imp = IJ.getImage();\n");
-				impDefined = true;
-			}
 			if (commandOptions!=null) {
 				if (name.equals("Open...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
 					textArea.append(s+"(\""+strip(commandOptions)+"\");\n");
-					if (scriptMode) impDefined = true;
 				} else if (isSaveAs()) {
 							if (name.endsWith("..."))
 									name= name.substring(0, name.length()-3);
@@ -394,7 +389,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		int depth= (int)Tools.parseDouble(Macro.getValue(options, "slices", "1"));
 		textArea.append((scriptMode?"imp = IJ.createImage":"newImage")
 			+"(\""+title+"\", "+"\""+type+"\", "+width+", "+height+", "+depth+");\n");
-		if (scriptMode) impDefined = true;
 	}
 
 	static String strip(String value) {
@@ -434,13 +428,22 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
+		boolean plugin = mode.getSelectedItem().equals(modes[PLUGIN]);
 		String name = fileName.getText();
 		int dotIndex = name.lastIndexOf(".");
 		if (dotIndex>=0) name = name.substring(0, dotIndex);
 		if (scriptMode) {
-			if (text.indexOf("imp =")!=-1 && !(text.indexOf("IJ.saveAs")!=-1||text.indexOf("imp.close")!=-1))
+			if (text.indexOf("rm.")!=-1) {
+				text = (plugin?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
+				+ "if (rm==null) rm = new RoiManager();\n"
+				+ "rm.runCommand(\"reset\");\n"
+				+ text;
+			}
+			if (text.indexOf("imp =")==-1 && text.indexOf("IJ.openImage")==-1 && text.indexOf("IJ.createImage")==-1)
+				text = (plugin?"ImagePlus ":"") + "imp = IJ.getImage();\n" + text;
+			if (text.indexOf("imp =")!=-1 && !(text.indexOf("IJ.getImage")!=-1||text.indexOf("IJ.saveAs")!=-1||text.indexOf("imp.close")!=-1))
 				text = text + "imp.show();\n";
-			if (mode.getSelectedItem().equals(modes[PLUGIN])) {
+			if (plugin) {
 				name += ".java";
 				createPlugin(text, name);
 				return;
@@ -545,7 +548,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		record = false;
 		textArea = null;
 		commandName = null;
-		impDefined = false;
 		instance = null;	
 		Prefs.set("recorder.mode", mode.getSelectedItem());
 	}

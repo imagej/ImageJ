@@ -5,16 +5,25 @@
 </head>
 <body>
 
-<li> <u>1.43l, 13 November 2009</u>
+<li> <u>1.43l, 17 November 2009</u>
 <ul>
 <li> Gabriel Landini's Threshold_Colour plugin is now built in as the
 <i>Image&gt;Adjust&gt;Color Threshold</i> command.
 <li> Added the "New Overlay" checkbox to the 
 <i>Image&gt;Overlay&gt;Add Selection</i> dialog box
 (<a href="http://rsb.info.nih.gov/ij/macros/examples/BlinkingText.txt">example</a>).
+<li> The Recorder, in "JavaScipt" and "Plugin" mode, correctly
+records ROI Manager commands.
 <li> Added the Analyzer.setRedirectImage() method.
 <li> Fixed a bug that caused <i>Image&gt;Color&gt;Merge Channels</i> 
 to always create a composite image when merging four channels.
+<li> Fixed a bug related to passing path variables to export plugins by
+macros using "&varname" notation
+(<a href="http://rsb.info.nih.gov/ij/macros/ArgumentPassingDemo.txt">example</a>).
+<li> Gabriel Landini fixed a bug in <i>Image&gt;Adjust&gt;Threshold</i>
+that caused the mask created when "Dark Background" was enabled
+to not be identical to an inverted version the mask created when
+"Dark Background" was not enabled.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
