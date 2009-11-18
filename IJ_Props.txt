@@ -176,7 +176,8 @@ overlay03="Hide Overlay",ij.plugin.Overlay("hide")
 overlay04="Show Overlay",ij.plugin.Overlay("show")
 overlay05="From ROI Manager",ij.plugin.Overlay("from")
 overlay06="To ROI Manager",ij.plugin.Overlay("to")
-overlay07="Flatten[F]",ij.plugin.Overlay("flatten")
+overlay07="Remove Overlay",ij.plugin.Overlay("remove")
+overlay08="Flatten[F]",ij.plugin.Overlay("flatten")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")

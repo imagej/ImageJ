@@ -304,6 +304,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public static void saveCommand() {
 		String name = commandName;
 		if (name!=null) {
+			if (commandOptions==null && (name.equals("Fill")||name.equals("Clear")))
+				commandOptions = "slice";
 			if (commandOptions!=null) {
 				if (name.equals("Open...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";

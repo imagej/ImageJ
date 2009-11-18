@@ -1,6 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.process.*;
+import ij.plugin.frame.RoiManager;
 import ij.gui.*;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename

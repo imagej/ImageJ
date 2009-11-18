@@ -546,7 +546,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int x = p.xpoints[0];
 		int y = p.ypoints[0];
 		double value = ip.getPixelValue(x,y);
-		if (markWidth>0) {
+		if (markWidth>0 && !Toolbar.getMultiPointMode()) {
 			ip.setColor(Toolbar.getForegroundColor());
 			ip.setLineWidth(markWidth);
 			ip.moveTo(x,y);
@@ -576,8 +576,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue("R", (imp.getWidth()/r)*cal.pixelWidth);
 			rt.addValue("Theta", theta);
 		}
-		if ((measurements&MEAN)==0)
-			rt.addValue("Mean", value);
+		//if ((measurements&MEAN)==0)
+		//	rt.addValue("Mean", value);
 	}
 
 	String getFileName() {

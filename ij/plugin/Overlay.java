@@ -24,6 +24,8 @@ public class Overlay implements PlugIn {
 			hide();
 		else if (arg.equals("show"))
 			show();
+		else if (arg.equals("remove"))
+			remove();
 		else if (arg.equals("from"))
 			fromRoiManager();
 		else if (arg.equals("to"))
@@ -149,6 +151,14 @@ public class Overlay implements PlugIn {
 		if (rm!=null) rm.runCommand("show all");
 	}
 
+	void remove() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) imp.setDisplayList(null);
+		displayList2 = null;
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null) rm.runCommand("show none");
+	}
+
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
 		ImagePlus imp2 = imp.flatten();
@@ -206,5 +216,5 @@ public class Overlay implements PlugIn {
 		if (rm.getCount()==list.size())
 			imp.setDisplayList(null);
 	}
-
+	
 }

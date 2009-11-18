@@ -331,9 +331,9 @@ public abstract class ImageProcessor extends Object {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 
-	/** Obsolete (use setValue) */
+	/** Sets the default fill/draw value. Use setValue() with float images. */
 	public void setColor(int value) {
-		fgColor = value;
+		setValue(value);
 	}
 
 	/** Sets the default fill/draw value. */

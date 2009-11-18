@@ -660,7 +660,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 		
-	static boolean getMultiPointMode() {
+	/** Returns 'true' if the multi-point tool is enabled. */
+	public static boolean getMultiPointMode() {
 		return multiPointMode;
 	}
 
