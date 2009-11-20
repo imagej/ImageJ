@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.43l, 18 November 2009</u>
+<li> <u>1.43l, 20 November 2009</u>
 <ul>
 <li> Gabriel Landini's Threshold_Colour plugin is now built in as the
 <i>Image&gt;Adjust&gt;Color Threshold</i> command.
@@ -16,6 +16,8 @@
 <li> The Recorder, in "JavaScipt" and "Plugin" mode, correctly
 records ROI Manager commands.
 <li> Added the Analyzer.setRedirectImage() method.
+<li> The AVI Writer displays an error message if the user
+attempt to overwrite a virtual stack
 <li> Fixed a bug that caused <i>Image&gt;Color&gt;Merge Channels</i> 
 to always create a composite image when merging four channels.
 <li> Fixed a bug related to passing path variables to export plugins by
@@ -25,6 +27,10 @@ macros using "&varname" notation
 that caused the mask created when "Dark Background" was enabled
 to not be identical to an inverted version the mask created when
 "Dark Background" was not enabled.
+<li> Fixed a bug in <i>Analyze&gt;Calibrate</i> that could cause values copied
+into the dialog box from a webpage to be converted to zeros.
+<li> Fixed a bug that caused 8-bit images with pseudo-color LUTs to be incorrectly
+classified as type "8-bit Color" (ImagePlus.Color_256).
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

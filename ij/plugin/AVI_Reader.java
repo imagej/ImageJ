@@ -228,6 +228,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         if (imp.getBitDepth()==16)
         	imp.getProcessor().resetMinAndMax();
         setFramesPerSecond(imp);
+        FileInfo fi = new FileInfo();
+        fi.fileName = fileName;
+        fi.directory = fileDir;
+        imp.setFileInfo(fi);
         if (arg.equals(""))
         	imp.show();
         IJ.showTime(imp, startTime, "Read AVI in ", stack.getSize());

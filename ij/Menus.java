@@ -1032,7 +1032,6 @@ public class Menus {
     	if (type==ImagePlus.GRAY8) {
 			ImageProcessor ip = imp.getProcessor();
     		if (ip!=null && ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD && ip.isColorLut()) {
-    			type = ImagePlus.COLOR_256;
 	    		if (!ip.isPseudoColorLut())
 	    			imp.setType(ImagePlus.COLOR_256);
     		}

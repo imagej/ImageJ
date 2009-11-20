@@ -127,12 +127,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (IJ.debugMode) IJ.log("record: "+method+"  "+arg);
 		boolean sw = method.equals("selectWindow");
 		if (textArea!=null && !(scriptMode&&sw||commandName!=null&&sw)) {
-			if (method.equals("setTool"))
-				method = "//"+(scriptMode?"IJ.":"")+method;
-			else if (scriptMode && method.equals("roiManager"))
+			if (scriptMode && method.equals("roiManager"))
 				textArea.append("rm.runCommand(\""+arg+"\");\n");
-			else
+			else {
+				if (method.equals("setTool"))
+					method = "//"+(scriptMode?"IJ.":"")+method;
 				textArea.append(method+"(\""+arg+"\");\n");
+			}
 		}
 	}
 
@@ -217,7 +218,9 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	public static void recordRoi(Polygon p, int type) {
 		if (textArea==null) return;
-		if (type==Roi.ANGLE) {
+		if (scriptMode)
+			{recordScriptRoi(p,type); return;}
+		if (type==Roi.ANGLE||type==Roi.POINT) {
 			String xarr = "newArray(", yarr="newArray(";
 			xarr += p.xpoints[0]+",";
 			yarr += p.ypoints[0]+",";
@@ -225,7 +228,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			yarr += p.ypoints[1]+",";
 			xarr += p.xpoints[2]+")";
 			yarr += p.ypoints[2]+")";
-			textArea.append("makeSelection(\"angle\","+xarr+","+yarr+");\n");
+			String typeStr= type==Roi.ANGLE?"angle":"point";
+			textArea.append("makeSelection(\""+typeStr+"\","+xarr+","+yarr+");\n");
 		} else {
 			String method = type==Roi.POLYGON?"makePolygon":"makeLine";
 			StringBuffer args = new StringBuffer();
@@ -238,6 +242,40 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		}
 	}
 
+	public static void recordScriptRoi(Polygon p, int type) {
+		StringBuffer x = new StringBuffer();
+		for (int i=0; i<p.npoints; i++) {
+			x.append(p.xpoints[i]);
+			if (i!=p.npoints-1) x.append(",");
+		}
+		String xpoints = x.toString();
+		StringBuffer y = new StringBuffer();
+		for (int i=0; i<p.npoints; i++) {
+			y.append(p.ypoints[i]);
+			if (i!=p.npoints-1) y.append(",");
+		}
+		String ypoints = y.toString();
+		
+		boolean java = instance!=null && instance.mode.getSelectedItem().equals(modes[PLUGIN]);
+		if (java) {
+			textArea.append("int[] xpoints = {"+xpoints+"};\n");
+			textArea.append("int[] ypoints = {"+ypoints+"};\n");
+		} else {
+			textArea.append("xpoints = ["+xpoints+"];\n");
+			textArea.append("ypoints = ["+ypoints+"];\n");
+		}
+		String typeStr = "POLYGON";
+		switch (type) {
+			case Roi.POLYLINE: typeStr = "POLYLINE"; break;
+			case Roi.ANGLE: typeStr = "ANGLE"; break;
+		}
+		typeStr = "Roi."+typeStr;
+		if (type==Roi.POINT)
+			textArea.append("imp.setRoi(new PointRoi(xpoints,ypoints,"+p.npoints+"));\n");
+		else
+			textArea.append("imp.setRoi(new PolygonRoi(xpoints,ypoints,"+p.npoints+","+typeStr+"));\n");
+	}
+	
 	public static void recordOption(String key, String value) {
 		if (key==null) return;
 		key = trimKey(key);
@@ -336,7 +374,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
 				else if (name.equals("Add to Manager "))
 					;
-				else if (name.equals("Draw")) {
+				else if (name.equals("Draw")&&!scriptMode) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					Roi roi = imp.getRoi();
 					if (roi!=null && (roi instanceof TextRoi))
@@ -430,22 +468,22 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		Editor ed = (Editor)IJ.runPlugIn("ij.plugin.frame.Editor", "");
 		if (ed==null)
 			return;
-		boolean plugin = mode.getSelectedItem().equals(modes[PLUGIN]);
+		boolean java = mode.getSelectedItem().equals(modes[PLUGIN]);
 		String name = fileName.getText();
 		int dotIndex = name.lastIndexOf(".");
 		if (dotIndex>=0) name = name.substring(0, dotIndex);
 		if (scriptMode) {
 			if (text.indexOf("rm.")!=-1) {
-				text = (plugin?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
+				text = (java?"RoiManager ":"")+ "rm = RoiManager.getInstance();\n"
 				+ "if (rm==null) rm = new RoiManager();\n"
 				+ "rm.runCommand(\"reset\");\n"
 				+ text;
 			}
 			if (text.indexOf("imp =")==-1 && text.indexOf("IJ.openImage")==-1 && text.indexOf("IJ.createImage")==-1)
-				text = (plugin?"ImagePlus ":"") + "imp = IJ.getImage();\n" + text;
+				text = (java?"ImagePlus ":"") + "imp = IJ.getImage();\n" + text;
 			if (text.indexOf("imp =")!=-1 && !(text.indexOf("IJ.getImage")!=-1||text.indexOf("IJ.saveAs")!=-1||text.indexOf("imp.close")!=-1))
 				text = text + "imp.show();\n";
-			if (plugin) {
+			if (java) {
 				name += ".java";
 				createPlugin(text, name);
 				return;
