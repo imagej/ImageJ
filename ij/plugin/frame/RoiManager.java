@@ -1478,7 +1478,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if ((System.currentTimeMillis()-start)>1000L)
 				error("Failed to select ROI "+index);
 		}
-		if (imp==null) getImage();
+		if (imp==null) imp=getImage();
 		restore(imp, index, true);	
 		if (mm) list.setMultipleMode(true);
 	}

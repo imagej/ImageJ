@@ -544,6 +544,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return ok;
 	}
 	
+	/** Returns the name of the current tool. */
+	public static String getToolName() {
+		String name = instance.getName(current);
+		if (current>=SPARE1 && current<=SPARE9 && instance.names[current]!=null)
+			name = instance.names[current];
+		return name!=null?name:"";
+	}
+	
+	/** Returns the name of the specified tool. */
 	String getName(int id) {
 		switch (id) {
 			case RECTANGLE: return "rectangle";

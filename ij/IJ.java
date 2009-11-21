@@ -1100,6 +1100,11 @@ public class IJ {
 		return Toolbar.getInstance().setTool(name);
 	}
 
+	/** Returns the name of the current tool. */
+	public static String getToolName() {
+		return Toolbar.getToolName();
+	}
+
 	/** Equivalent to clicking on the current image at (x,y) with the
 		wand tool. Returns the number of points in the resulting ROI. */
 	public static int doWand(int x, int y) {

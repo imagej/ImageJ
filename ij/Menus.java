@@ -1031,9 +1031,9 @@ public class Menus {
     	}
     	if (type==ImagePlus.GRAY8) {
 			ImageProcessor ip = imp.getProcessor();
-    		if (ip!=null && ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD && ip.isColorLut()) {
-	    		if (!ip.isPseudoColorLut())
-	    			imp.setType(ImagePlus.COLOR_256);
+    		if (ip!=null && ip.getMinThreshold()==ImageProcessor.NO_THRESHOLD && ip.isColorLut() && !ip.isPseudoColorLut()) {
+    			type = ImagePlus.COLOR_256;
+	    		imp.setType(ImagePlus.COLOR_256);
     		}
     	}
     	switch (type) {
