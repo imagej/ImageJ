@@ -134,10 +134,6 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			function = Calibration.NONE;
 		} else if (choiceIndex<=nFits) {
 			function = choiceIndex - 1;
-			//if (function>0 && is16Bits) {
-			//	IJ.error("Calibrate", "Calibration of 16-bit images, except with straight\nline functions, is currently not supported.");
-			//	return;
-			//}
 			x = getData(xText);
 			y = getData(yText);
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {
@@ -300,6 +296,14 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 
 	double[] getData(String xData) {
+		int len = xData.length();
+		StringBuffer sb = new StringBuffer(len);
+		for (int i=0; i<len; i++) {
+			char c = xData.charAt(i);
+			if ((c>='0'&&c<='9') || c=='.' || c==',' || c=='\n' || c=='\r')
+				sb.append(c);
+		}
+		xData = sb.toString();
 		StringTokenizer st = new StringTokenizer(xData);
 		int nTokens = st.countTokens();
 		if (nTokens<1)

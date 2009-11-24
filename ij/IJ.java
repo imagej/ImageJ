@@ -882,7 +882,10 @@ public class IJ {
 			getImage().killRoi();
 		else {
 			ImagePlus img = getImage();
-			img.setRoi(x, y, width, height);
+			if (Interpreter.isBatchMode())
+				img.setRoi(new Roi(x,y,width,height), false);
+			else
+				img.setRoi(x, y, width, height);
 		}
 	}
 	
@@ -1095,6 +1098,11 @@ public class IJ {
 		"brush", etc. Returns 'false' if the name is not recognized. */
 	public static boolean setTool(String name) {
 		return Toolbar.getInstance().setTool(name);
+	}
+
+	/** Returns the name of the current tool. */
+	public static String getToolName() {
+		return Toolbar.getToolName();
 	}
 
 	/** Equivalent to clicking on the current image at (x,y) with the

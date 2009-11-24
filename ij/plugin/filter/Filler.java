@@ -41,7 +41,7 @@ public class Filler implements PlugInFilter, Measurements {
 					return baseCapabilities;
 		} else if (arg.equals("outside"))
 				return IJ.setupDialog(imp,baseCapabilities);
-		else if (arg.equals("fill") && roi.getType()==Roi.POINT) {
+		else if (roi!=null && roi.getType()==Roi.POINT && arg.equals("fill")) {
 	 			IJ.error("Fill", "Area selection required");
 	 			return DONE;
 	 	} else

@@ -4435,11 +4435,13 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("log"))
 			IJ.log(getStringArg());
 		else if (name.equals("freeMemory"))
-			return IJ.freeMemory();
+			{interp.getParens(); return IJ.freeMemory();}
 		else if (name.equals("currentMemory"))
-			return ""+IJ.currentMemory();
+			{interp.getParens(); return ""+IJ.currentMemory();}
 		else if (name.equals("maxMemory"))
-			return ""+IJ.maxMemory();
+			{interp.getParens(); return ""+IJ.maxMemory();}
+		else if (name.equals("getToolName"))
+			{interp.getParens(); return ""+IJ.getToolName();}
 		else
 			interp.error("Unrecognized function name");
 		return null;

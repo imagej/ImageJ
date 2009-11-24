@@ -4,14 +4,13 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
-import java.awt.Rectangle;
-import java.awt.Color;
+import java.awt.*;
 import java.util.Vector;
-import java.awt.Frame;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class Overlay implements PlugIn {
 	private static Vector displayList2;
+	private static boolean createImageRoi;
 
 	public void run(String arg) {
 		if (arg.equals("add"))
@@ -24,6 +23,8 @@ public class Overlay implements PlugIn {
 			hide();
 		else if (arg.equals("show"))
 			show();
+		else if (arg.equals("remove"))
+			remove();
 		else if (arg.equals("from"))
 			fromRoiManager();
 		else if (arg.equals("to"))
@@ -66,7 +67,9 @@ public class Overlay implements PlugIn {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
-		if (list==null) list = new Vector();
+		String name = roi.getName();
+		boolean newOverlay = name!=null && name.equals("new-overlay");
+		if (list==null || newOverlay) list = new Vector();
 		list.addElement(roi);
 		imp.setDisplayList(list);
 		displayList2 = list;
@@ -92,17 +95,29 @@ public class Overlay implements PlugIn {
 			x = r.x; y = r.y;
 		}
 		int index = 0;
-		if (imp.getID()==wList[0]) index = 1;
+		if (wList.length==2) {
+			ImagePlus i1 = WindowManager.getImage(wList[0]);
+			ImagePlus i2 = WindowManager.getImage(wList[1]);
+			if (i2.getWidth()<i1.getWidth() && i2.getHeight()<i1.getHeight())
+				index = 1;
+		} else if (imp.getID()==wList[0])
+			index = 1;
+
+
 		GenericDialog gd = new GenericDialog("Add Image...");
 		gd.addChoice("Image to add:", titles, titles[index]);
 		gd.addNumericField("X location:", x, 0);
 		gd.addNumericField("Y location:", y, 0);
+		gd.addNumericField("Opacity (0-100%):", 100, 0);
+		gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		index = gd.getNextChoiceIndex();
 		x = (int)gd.getNextNumber();
 		y = (int)gd.getNextNumber();
+		double opacity = gd.getNextNumber()/100.0;
+		createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
@@ -119,13 +134,22 @@ public class Overlay implements PlugIn {
 		if (overlay.getWidth()>imp.getWidth() && overlay.getHeight()>imp.getHeight()) {
 			IJ.error("Add Image...", "Image to be added cannnot be larger than\n\""+imp.getTitle()+"\".");
 			return;
-		}		
+		}
+		if (createImageRoi && x==0 && y==0) {
+			x = imp.getWidth()/2-overlay.getWidth()/2;
+			y = imp.getHeight()/2-overlay.getHeight()/2;
+		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
-		Vector list = imp.getDisplayList();
-		if (list==null) list = new Vector();
-		list.addElement(roi);
-		imp.setDisplayList(list);
-		displayList2 = list;
+		if (opacity!=1.0) ((ImageRoi)roi).setOpacity(opacity);
+		if (createImageRoi)
+			imp.setRoi(roi);
+		else {
+			Vector list = imp.getDisplayList();
+			if (list==null) list = new Vector();
+			list.addElement(roi);
+			imp.setDisplayList(list);
+			displayList2 = list;
+		}
 	}
 
 	void hide() {
@@ -135,12 +159,24 @@ public class Overlay implements PlugIn {
 			displayList2 = list;
 			imp.setDisplayList(null);
 		}
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null) rm.runCommand("show none");
 	}
 
 	void show() {
 		ImagePlus imp = IJ.getImage();
 		if (displayList2!=null)
 			imp.setDisplayList(displayList2);
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null) rm.runCommand("show all");
+	}
+
+	void remove() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) imp.setDisplayList(null);
+		displayList2 = null;
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null) rm.runCommand("show none");
 	}
 
 	void flatten() {
@@ -200,5 +236,5 @@ public class Overlay implements PlugIn {
 		if (rm.getCount()==list.size())
 			imp.setDisplayList(null);
 	}
-
+	
 }

@@ -544,6 +544,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return ok;
 	}
 	
+	/** Returns the name of the current tool. */
+	public static String getToolName() {
+		String name = instance.getName(current);
+		if (current>=SPARE1 && current<=SPARE9 && instance.names[current]!=null)
+			name = instance.names[current];
+		return name!=null?name:"";
+	}
+
+	/** Returns the name of the specified tool. */
 	String getName(int id) {
 		switch (id) {
 			case RECTANGLE: return "rectangle";
@@ -660,7 +669,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 		
-	static boolean getMultiPointMode() {
+	/** Returns 'true' if the multi-point tool is enabled. */
+	public static boolean getMultiPointMode() {
 		return multiPointMode;
 	}
 

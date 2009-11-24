@@ -8,6 +8,7 @@ public class RoiProperties {
 	private Roi roi;
 	private String title;
 	private boolean showName = true;
+	private boolean showCheckbox;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public RoiProperties(String title, Roi roi) {
@@ -15,6 +16,7 @@ public class RoiProperties {
     		throw new IllegalArgumentException("ROI is null");
     	this.title = title;
     	showName = title.startsWith("Prop");
+    	showCheckbox = title.equals("Add to Overlay");
     	this.roi = roi;
     }
     
@@ -33,6 +35,11 @@ public class RoiProperties {
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
 		int width = roi.getStrokeWidth();
 		if (width>1) strokeWidth = width;
+		boolean isText = roi instanceof TextRoi;
+		if (isText) {
+			Font font = ((TextRoi)roi).getCurrentFont();
+			strokeWidth = font.getSize();
+		}
 		String linec = strokeColor!=null?"#"+Integer.toHexString(strokeColor.getRGB()):"none";
 		if (linec.length()==9 && linec.startsWith("#ff"))
 			linec = "#"+linec.substring(3);
@@ -44,9 +51,11 @@ public class RoiProperties {
 		if (showName)
 			gd.addStringField(nameLabel, name, 15);
 		gd.addStringField("Stroke Color: ", linec);
-		gd.addNumericField("Width:", strokeWidth, 0);
+		gd.addNumericField(isText?"Font Size":"Width:", strokeWidth, 0);
 		gd.addMessage("");
 		gd.addStringField("Fill Color: ", fillc);
+		if (showCheckbox)
+			gd.addCheckbox("New Overlay", false);
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 		if (showName) {
@@ -56,11 +65,21 @@ public class RoiProperties {
 		linec = gd.getNextString();
 		strokeWidth = (int)gd.getNextNumber();
 		fillc = gd.getNextString();
+		boolean newOverlay = showCheckbox?gd.getNextBoolean():false;
+			
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
-		roi.setStrokeWidth(strokeWidth);
+		if (isText) {
+			Font font = ((TextRoi)roi).getCurrentFont();
+			if (strokeWidth!=font.getSize()) {
+				font = new Font(font.getName(), font.getStyle(), strokeWidth);
+				((TextRoi)roi).setCurrentFont(font);
+			}
+		} else
+			roi.setStrokeWidth(strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
+		if (newOverlay) roi.setName("new-overlay");
 		if (strokeWidth>1)
 			Line.setWidth(1);
 		return true;

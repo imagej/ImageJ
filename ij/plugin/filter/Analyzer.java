@@ -233,6 +233,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 		return redirectTarget!=0;
 	}
 	
+	/** Set the "Redirect To" image. Pass 'null' as the 
+	    argument to disable redirected sampling. */
+	public static void setRedirectImage(ImagePlus imp) {
+		if (imp==null) {
+			redirectTarget = 0;
+			redirectTitle = null;
+		} else {
+			redirectTarget = imp.getID();
+			redirectTitle = imp.getTitle();
+		}
+	}
+	
 	/** Returns the image selected in the "Redirect To:" popup
 		menu of the Analyze/Set Measurements dialog or null
 		if "None" is selected, the image was not found or the 
@@ -534,7 +546,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int x = p.xpoints[0];
 		int y = p.ypoints[0];
 		double value = ip.getPixelValue(x,y);
-		if (markWidth>0) {
+		if (markWidth>0 && !Toolbar.getMultiPointMode()) {
 			ip.setColor(Toolbar.getForegroundColor());
 			ip.setLineWidth(markWidth);
 			ip.moveTo(x,y);
@@ -564,8 +576,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue("R", (imp.getWidth()/r)*cal.pixelWidth);
 			rt.addValue("Theta", theta);
 		}
-		if ((measurements&MEAN)==0)
-			rt.addValue("Mean", value);
+		//if ((measurements&MEAN)==0)
+		//	rt.addValue("Mean", value);
 	}
 
 	String getFileName() {

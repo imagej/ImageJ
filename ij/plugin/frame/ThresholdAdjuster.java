@@ -60,6 +60,11 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
 	public ThresholdAdjuster() {
 		super("Threshold");
+		ImagePlus cimp = WindowManager.getCurrentImage();
+		if (cimp!=null && cimp.getBitDepth()==24) {
+			IJ.run(cimp, "Color Threshold...", "");
+			return;
+		}
 		if (instance!=null) {
 			instance.toFront();
 			return;
@@ -330,13 +335,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			if (invertedLut)
 				{minThreshold=0; maxThreshold=threshold;}
 			else
-				{minThreshold=threshold; maxThreshold=255;}
+				{minThreshold=threshold+1; maxThreshold=255;}
 		} else {
 			if (invertedLut)
-				{minThreshold=threshold; maxThreshold=255;}
+				{minThreshold=threshold+1; maxThreshold=255;}
 			else
 				{minThreshold=0; maxThreshold=threshold;}
 		}
+		if (minThreshold>255) minThreshold = 255;
 		if (Recorder.record) {
 			if (method.equals("Default"))
 				Recorder.record("setAutoThreshold");

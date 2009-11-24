@@ -1994,6 +1994,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
 		ImageCanvas ic = getCanvas();
 		if (ic==null) return;
+		if (fillColor!=null && strokeColor==null)
+			strokeColor = Color.black; // don't display labels
 		roi.setStrokeColor(strokeColor);
 		roi.setStrokeWidth(strokeWidth);
 		roi.setFillColor(fillColor);

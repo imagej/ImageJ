@@ -39,7 +39,7 @@ public class PointRoi extends PolygonRoi {
 		setImage(imp);
 		width=1; height=1;
 		if (imp!=null) imp.draw(x-5, y-5, width+10, height+10);
-		if (Recorder.record) 
+		if (Recorder.record && !Recorder.scriptMode()) 
 			Recorder.record("makePoint", x, y);
 
 	}

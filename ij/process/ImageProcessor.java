@@ -41,10 +41,10 @@ public abstract class ImageProcessor extends Object {
 	/** Interpolation methods */
 	public static final int NEAREST_NEIGHBOR=0, NONE=0, BILINEAR=1, BICUBIC=2;
 
+	public static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4, CONVOLVE=5;
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
 	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
 		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14;
-	static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4, CONVOLVE=5;
 	static final String WRONG_LENGTH = "width*height!=pixels.length";
 	
 	int fgColor = 0;
@@ -297,7 +297,8 @@ public abstract class ImageProcessor extends Object {
 			stdDev = 0.0;
 		boolean isPseudoColor = stdDev<20.0;
 		if ((int)stdDev==67) isPseudoColor = true; // "3-3-2 RGB" LUT
-		//ij.IJ.log("isPseudoColorLut: "+(isPseudoColor) + " " + stdDev);
+		if (ij.IJ.debugMode)
+			ij.IJ.log("isPseudoColorLut: "+(isPseudoColor) + " " + stdDev);
 		return isPseudoColor;
 	}
 	
@@ -331,9 +332,9 @@ public abstract class ImageProcessor extends Object {
 		value closest to the specified color. */
 	public abstract void setColor(Color color);
 
-	/** Obsolete (use setValue) */
+	/** Sets the default fill/draw value. Use setValue() with float images. */
 	public void setColor(int value) {
-		fgColor = value;
+		setValue(value);
 	}
 
 	/** Sets the default fill/draw value. */
@@ -1759,8 +1760,8 @@ public abstract class ImageProcessor extends Object {
 		3x3 integer convolution kernel. */
 	public abstract void convolve3x3(int[] kernel);
 	
-	/** A 3x3 filter operation, where the argument (BLUR_MORE, 
-		FIND_EDGES, etc.) determines the filter type. */
+	/** A 3x3 filter operation, where the argument (BLUR_MORE,  FIND_EDGES, 
+	     MEDIAN_FILTER, MIN or MAX) determines the filter type. */
 	public abstract void filter(int type);
 	
 	/** A 3x3 median filter. Requires 8-bit or RGB image. */
