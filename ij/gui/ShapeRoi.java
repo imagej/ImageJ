@@ -1157,8 +1157,8 @@ public class ShapeRoi extends Roi {
 	/**@return <strong><code>false</code></strong> if type equals {@link #NO_TYPE}. */
 	//public boolean isValid() { return type!=NO_TYPE; }
 
-	/**Retrieves a reference to the shape of <strong><code>this</code></strong>. */
-	Shape getShape(){ return shape; }
+	/**Returns a reference to the Shape that this ROI represents. */
+	public Shape getShape(){ return shape; }
 
 	/**Sets the <code>java.awt.Shape</code> object encapsulated by <strong><code>this</code></strong>
 	 * to the argument.

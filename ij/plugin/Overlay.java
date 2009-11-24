@@ -12,6 +12,7 @@ import java.awt.Frame;
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class Overlay implements PlugIn {
 	private static Vector displayList2;
+	private static boolean createImageRoi;
 
 	public void run(String arg) {
 		if (arg.equals("add"))
@@ -101,12 +102,14 @@ public class Overlay implements PlugIn {
 		gd.addChoice("Image to add:", titles, titles[index]);
 		gd.addNumericField("X location:", x, 0);
 		gd.addNumericField("Y location:", y, 0);
+		gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		index = gd.getNextChoiceIndex();
 		x = (int)gd.getNextNumber();
 		y = (int)gd.getNextNumber();
+		createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
@@ -123,13 +126,21 @@ public class Overlay implements PlugIn {
 		if (overlay.getWidth()>imp.getWidth() && overlay.getHeight()>imp.getHeight()) {
 			IJ.error("Add Image...", "Image to be added cannnot be larger than\n\""+imp.getTitle()+"\".");
 			return;
-		}		
+		}
+		if (createImageRoi && x==0 && y==0) {
+			x = imp.getWidth()/2-overlay.getWidth()/2;
+			y = imp.getHeight()/2-overlay.getHeight()/2;
+		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
-		Vector list = imp.getDisplayList();
-		if (list==null) list = new Vector();
-		list.addElement(roi);
-		imp.setDisplayList(list);
-		displayList2 = list;
+		if (createImageRoi)
+			imp.setRoi(roi);
+		else {
+			Vector list = imp.getDisplayList();
+			if (list==null) list = new Vector();
+			list.addElement(roi);
+			imp.setDisplayList(list);
+			displayList2 = list;
+		}
 	}
 
 	void hide() {
