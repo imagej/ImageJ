@@ -1201,6 +1201,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Vector list = new Vector();
 		list.addElement(roi);
 		setDisplayList(list);
+		labelListItems = false;
+	}
+	
+	public void labelDisplayListItems(boolean b) {
+		labelListItems = b;
 	}
 
 	/** Obsolete; replaced by ImagePlus.getDisplayList(). */

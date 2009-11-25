@@ -1124,32 +1124,7 @@ public class ShapeRoi extends Roi {
         return cachedMask;
 	}
 
-	/**********************************************************************************/
-	/***                               Field accessors                             ****/
-	/**********************************************************************************/
-
-	/**Retrieves the value of {@link #forceTrace} flag.*/
-	//public boolean getForceTrace() { return forceTrace; }
-
-	/**Retrieves the value of {@link #forceAngle} flag.*/
-	//public boolean getForceAngle() { return forceAngle; }
-
-	/**Retrieves the value of {@link #flatten} flag.*/
-	//public boolean getFlatten() { return flatten; }
-
-	/**Retrieves the value of {@link #flatness}*/
-	//public double getFlatness() { return flatness; }
-
-	/**Retrieves the value of {@link #maxerror}*/
-	//public double getMaxError() { return maxerror;}
-
-	/**Retrieves the value of {@link #maxPoly}*/
-	//public int getMaxPoly() { return maxPoly; }
-
-	/**@return <strong><code>false</code></strong> if type equals {@link #NO_TYPE}. */
-	//public boolean isValid() { return type!=NO_TYPE; }
-
-	/**Returns a reference to the Shape object encapsulated this ShapeRoi. */
+	/**Returns a reference to the Shape object encapsulated by this ShapeRoi. */
 	public Shape getShape() {
 		return shape;
 	}

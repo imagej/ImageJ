@@ -73,7 +73,7 @@ public class Overlay implements PlugIn {
 		list.addElement(roi);
 		imp.setDisplayList(list);
 		displayList2 = list;
-		if (points) imp.killRoi();
+		if (points || (roi instanceof ImageRoi)) imp.killRoi();
 	}
 	
 	void addImage() {
@@ -140,6 +140,7 @@ public class Overlay implements PlugIn {
 			y = imp.getHeight()/2-overlay.getHeight()/2;
 		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
+		roi.setName(overlay.getShortTitle());
 		if (opacity!=1.0) ((ImageRoi)roi).setOpacity(opacity);
 		if (createImageRoi)
 			imp.setRoi(roi);

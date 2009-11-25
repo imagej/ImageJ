@@ -934,6 +934,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi rpRoi = null;
 		String rpName = null;
 		Font font = null;
+		double opacity = -1;
         if (color==null && lineWidth==0 && fillColor==null) {
 			String label = list.getItem(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
@@ -957,6 +958,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			defaultColor = color;
 			if (rpRoi instanceof TextRoi)
 				font = ((TextRoi)rpRoi).getCurrentFont();
+			if (rpRoi instanceof ImageRoi)
+				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
 		for (int i=0; i<n; i++) {
@@ -971,6 +974,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				((TextRoi)roi).setCurrentFont(font);
 				roi.setImage(null);
 			}
+			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
+				((ImageRoi)roi).setOpacity(opacity);
 		}
 		if (rpRoi!=null && rpName!=null && !rpRoi.getName().equals(rpName))
 			rename(rpRoi.getName());
@@ -983,6 +988,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (fillColor!=null) roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi))
 				((TextRoi)roi).setCurrentFont(font);
+			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
+				((ImageRoi)roi).setOpacity(opacity);
 		}
 		if (lineWidth>1 && !showingAll && roi==null) {
 			showAll(SHOW_ALL);
