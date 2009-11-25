@@ -62,7 +62,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				BufferedReader br = new BufferedReader(new StringReader(s));
 				String tmp;
 				while (null != (tmp = br.readLine())) {
-					tmp = java.net.URLDecoder.decode(tmp, "UTF-8");
+					tmp = java.net.URLDecoder.decode(tmp.replaceAll("\\+","%2b"), "UTF-8");
 					if (tmp.startsWith("file://")) tmp = tmp.substring(7);
 					if (IJ.debugMode) IJ.log("  content: "+tmp);
 					if (tmp.startsWith("http://"))

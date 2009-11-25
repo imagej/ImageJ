@@ -121,15 +121,7 @@ public class ShapeRoi extends Roi {
 		this.forceTrace = forceTrace;
 		this.maxPoly= maxPoly;
 		this.flatten = flatten;
-		state = r.getState();
-		setImage(r.imp);
 		shape = roiToShape((Roi)r.clone());
-        //IJ.log("ShapeRoi:"+x+"  "+y);
-		if(ic!=null) {
-			Graphics g = ic.getGraphics();
-			draw(g);
-			g.dispose();
-		}
 	}
 
 	/** Constructs a ShapeRoi from an array of variable length path segments. Each
@@ -1157,8 +1149,10 @@ public class ShapeRoi extends Roi {
 	/**@return <strong><code>false</code></strong> if type equals {@link #NO_TYPE}. */
 	//public boolean isValid() { return type!=NO_TYPE; }
 
-	/**Returns a reference to the Shape that this ROI represents. */
-	public Shape getShape(){ return shape; }
+	/**Returns a reference to the Shape object encapsulated this ShapeRoi. */
+	public Shape getShape() {
+		return shape;
+	}
 
 	/**Sets the <code>java.awt.Shape</code> object encapsulated by <strong><code>this</code></strong>
 	 * to the argument.

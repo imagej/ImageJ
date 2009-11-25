@@ -4,10 +4,8 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
-import java.awt.Rectangle;
-import java.awt.Color;
+import java.awt.*;
 import java.util.Vector;
-import java.awt.Frame;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class Overlay implements PlugIn {
@@ -97,11 +95,20 @@ public class Overlay implements PlugIn {
 			x = r.x; y = r.y;
 		}
 		int index = 0;
-		if (imp.getID()==wList[0]) index = 1;
+		if (wList.length==2) {
+			ImagePlus i1 = WindowManager.getImage(wList[0]);
+			ImagePlus i2 = WindowManager.getImage(wList[1]);
+			if (i2.getWidth()<i1.getWidth() && i2.getHeight()<i1.getHeight())
+				index = 1;
+		} else if (imp.getID()==wList[0])
+			index = 1;
+
+
 		GenericDialog gd = new GenericDialog("Add Image...");
 		gd.addChoice("Image to add:", titles, titles[index]);
 		gd.addNumericField("X location:", x, 0);
 		gd.addNumericField("Y location:", y, 0);
+		gd.addNumericField("Opacity (0-100%):", 100, 0);
 		gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -109,6 +116,7 @@ public class Overlay implements PlugIn {
 		index = gd.getNextChoiceIndex();
 		x = (int)gd.getNextNumber();
 		y = (int)gd.getNextNumber();
+		double opacity = gd.getNextNumber()/100.0;
 		createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
@@ -132,6 +140,7 @@ public class Overlay implements PlugIn {
 			y = imp.getHeight()/2-overlay.getHeight()/2;
 		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
+		if (opacity!=1.0) ((ImageRoi)roi).setOpacity(opacity);
 		if (createImageRoi)
 			imp.setRoi(roi);
 		else {
