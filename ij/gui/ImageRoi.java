@@ -5,8 +5,7 @@ import java.awt.*;
 import java.awt.image.*;
 
 	/** An ImageRoi is an Roi that displays an image as an overlay. 
-	 * Multiple ImageRoi overlays can be created by using a display list. 
-	 * @see ij.ImagePlus#setDisplayList(Vector)
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 public class ImageRoi extends Roi {
 	private Image img;

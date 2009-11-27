@@ -8,7 +8,7 @@ import java.awt.*;
 import java.util.Vector;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
-public class Overlay implements PlugIn {
+public class OverlayCommands implements PlugIn {
 	private static Vector displayList2;
 	private static boolean createImageRoi;
 

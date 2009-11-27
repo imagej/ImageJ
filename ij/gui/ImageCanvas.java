@@ -41,10 +41,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private static Font smallFont, largeFont;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
-    private Vector displayList, showAllList;
-    private boolean labelListItems;
-    private Color listColor;
-    private BasicStroke listStroke;
+    private Overlay overlay, showAllList;
     private static final int LIST_OFFSET = 100000;
     private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(0, 255, 255));
     private static Color labelColor;
@@ -128,7 +125,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
     public void paint(Graphics g) {
 		Roi roi = imp.getRoi();
-		if (roi!=null || showAllROIs || displayList!=null) {
+		if (roi!=null || showAllROIs || overlay!=null) {
 			if (roi!=null) roi.updatePaste();
 			if (!IJ.isMacOSX() && imageWidth!=0) {
 				paintDoubleBuffered(g);
@@ -145,7 +142,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
  				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification), (int)(srcRect.height*magnification),
 				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
-			if (displayList!=null) drawDisplayList(g);
+			if (overlay!=null) drawOverlay(g);
 			if (showAllROIs) drawAllROIs(g);
 			if (roi!=null) drawRoi(roi, g);
 			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
@@ -181,7 +178,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		if (rm==null) {
 			if (showAllList!=null)
-				displayList = showAllList;
+				overlay= showAllList;
 			showAllROIs = false;
 			repaint();
 			return;
@@ -196,7 +193,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (labelRects==null || labelRects.length!=n)
 			labelRects = new Rectangle[n];
 		if (!drawLabels)
-			showAllList = new Vector();
+			showAllList = new Overlay();
 		else
 			showAllList = null;
 		for (int i=0; i<n; i++) {
@@ -204,7 +201,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
 			if (showAllList!=null)
-				showAllList.addElement(roi);
+				showAllList.add(roi);
 			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
 				currentRoi = roi;
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
@@ -227,15 +224,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return slice;
 	}
 
-    void drawDisplayList(Graphics g) {
-		initGraphics(g, listColor);
-    	int n = displayList.size();
+    void drawOverlay(Graphics g) {
+		initGraphics(g, overlay!=null?overlay.getColor():null);
+    	int n = overlay.size();
     	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
+    	boolean drawLabels = overlay.getDrawLabels();
+    	BasicStroke stroke = overlay.getStroke();
     	for (int i=0; i<n; i++) {
-    		if (displayList==null) break;
-    		drawRoi(g, (Roi)displayList.elementAt(i), labelListItems?i+LIST_OFFSET:-1);
+    		if (overlay==null) break;
+    		drawRoi(g, overlay.get(i), drawLabels?i+LIST_OFFSET:-1);
     	}
-    	if (listStroke!=null) ((Graphics2D)g).setStroke(new BasicStroke());
+    	if (stroke!=null) ((Graphics2D)g).setStroke(new BasicStroke());
     }
     
     void initGraphics(Graphics g, Color c) {
@@ -254,7 +253,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		if (c!=null) {
 			g.setColor(c);
-			if (listStroke!=null) ((Graphics2D)g).setStroke(listStroke);
+			BasicStroke stroke = overlay!=null?overlay.getStroke():null;
+			if (stroke!=null) ((Graphics2D)g).setStroke(stroke);
 		} else
 			g.setColor(showAllColor);
     }
@@ -264,6 +264,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImagePlus imp2 = roi.getImage();
 		roi.setImage(imp);
 		Color saveColor = roi.getStrokeColor();
+		Color listColor = overlay!=null?overlay.getColor():null;
 		if (saveColor==null) {
 			if (index>=0 || listColor==null)
 				roi.setStrokeColor(showAllColor);
@@ -363,7 +364,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (img!=null)
 				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
 					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
-			if (displayList!=null) drawDisplayList(offScreenGraphics);
+			if (overlay!=null) drawOverlay(offScreenGraphics);
 			if (showAllROIs) drawAllROIs(offScreenGraphics);
 			if (roi!=null) drawRoi(roi, offScreenGraphics);
 			if (srcRect.width<imageWidth ||srcRect.height<imageHeight)
@@ -890,7 +891,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (!(roi!=null && (roi.contains(ox, oy)||roi.isHandle(x, y)>=0)) && roiManagerSelect(x, y))
  				return;
 		}
-		if (customRoi && displayList!=null)
+		if (customRoi && overlay!=null)
 			return;
 
 		switch (toolID) {
@@ -1167,49 +1168,63 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (ic!=null && ic.getShowAllROIs()) img.draw();
 		}
 	}
+	
+	/** Use ImagePlus.setOverlay(ij.gui.Overlay). */
+	public void setOverlay(Overlay overlay) {
+		this.overlay = overlay;
+		repaint();
+	}
+	
+	/** Use ImagePlus.getOverlay(). */
+	public Overlay getOverlay() {
+		return overlay;
+	}
 
-	/** Obsolete; replaced by ImagePlus.setDisplayList(Vector). */
+	/** Obsolete; replaced by ImagePlus.setOverlay(ij.gui.Overlay). */
 	public void setDisplayList(Vector list) {
-		displayList = list;
-		listColor = null;
-		if (list==null) customRoi = false;
-		if (list!=null&&list.size()>0&&((Roi)list.elementAt(0)).getStrokeColor()!=null)
-			labelListItems = false;
+		if (list!=null) {
+			Overlay list2 = new Overlay();
+			for (int i=0; i<list.size(); i++)
+				list2.add((Roi)list.elementAt(i));
+			setOverlay(list2);
+		} else
+			setOverlay(null);
+		if (overlay!=null)
+			overlay.drawLabels(overlay.size()>0&&overlay.get(0).getStrokeColor()!=null);
 		else
-			labelListItems = true;
+			customRoi = false;
 		repaint();
 	}
 
-	/** Obsolete; replaced by ImagePlus.setDisplayList(Shape, Color, BasicStroke). */
+	/** Obsolete; replaced by ImagePlus.setOverlay(Shape, Color, BasicStroke). */
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
-			{setDisplayList(null); return;}
+			{setOverlay(null); return;}
 		Roi roi = new ShapeRoi(shape);
 		roi.setStrokeColor(color);
-		Vector list = new Vector();
-		list.addElement(roi);
-		displayList = list;
-		labelListItems = false;
-		listColor = color;
-		listStroke = stroke;
-		repaint();
+		Overlay list = new Overlay();
+		list.add(roi);
+		list.drawLabels(false);
+		list.setColor(color);
+		list.setStroke(stroke);
+		setOverlay(list);
 	}
 	
-	/** Obsolete; replaced by ImagePlus.setDisplayList(Roi, Color, int, Color). */
+	/** Obsolete; replaced by ImagePlus.setOverlay(Roi, Color, int, Color). */
 	public void setDisplayList(Roi roi, Color color) {
 		roi.setStrokeColor(color);
-		Vector list = new Vector();
-		list.addElement(roi);
-		setDisplayList(list);
-		labelListItems = false;
+		Overlay list = new Overlay();
+		list.add(roi);
+		list.drawLabels(false);
+		setOverlay(list);
 	}
 	
-	public void labelDisplayListItems(boolean b) {
-		labelListItems = b;
-	}
-
-	/** Obsolete; replaced by ImagePlus.getDisplayList(). */
+	/** Obsolete; replaced by ImagePlus.getOverlay(). */
 	public Vector getDisplayList() {
+		if (overlay==null) return null;
+		Vector displayList = new Vector();
+		for (int i=0; i<overlay.size(); i++)
+			displayList.addElement(overlay.get(i));
 		return displayList;
 	}
 	

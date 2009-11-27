@@ -30,7 +30,7 @@ public class GelAnalyzer implements PlugIn {
 	static boolean labelWithPercentages = (options&PERCENT)!=0;;
 	static boolean outlineLanes;
 	static boolean invertPeaks = (options&INVERT)!=0;
-	static Vector roiList;
+	static Overlay overlay;
 	boolean invertedLut;
 	
 	ImagePlus imp;
@@ -58,7 +58,7 @@ public class GelAnalyzer implements PlugIn {
 			if (plotsCanvas!=null)
 				plotsCanvas.reset();
 			ipLanes = null;
-			roiList = null;
+			overlay = null;
 			if (gel!=null) {
 				ImageCanvas ic = gel.getCanvas();
 				if (ic!=null) ic.setDisplayList(null);
@@ -202,7 +202,7 @@ public class GelAnalyzer implements PlugIn {
 			x[1] = rect.y;
 		gel = imp;
 		saveID = imp.getID();
-		roiList = null;
+		overlay = null;
 		updateRoiList(rect);
 	}
 
@@ -231,13 +231,12 @@ public class GelAnalyzer implements PlugIn {
 	
 	void updateRoiList(Rectangle rect) {
 			if (gel==null) return;
-			if (roiList==null) {
-				roiList = new Vector();
-				ImageCanvas ic = gel.getCanvas();
-				if (ic!=null) ic.setDisplayList(roiList);
+			if (overlay==null) {
+				overlay = new Overlay();
+				overlay.drawLabels(true);
 			}
-			roiList.addElement(new Roi(rect.x, rect.y, rect.width, rect.height, null));
-			gel.draw();
+			overlay.add(new Roi(rect.x, rect.y, rect.width, rect.height, null));
+			gel.setOverlay(overlay);
 	}
 
 	void plotLanes(ImagePlus imp, boolean replot) {
@@ -389,7 +388,7 @@ public class GelAnalyzer implements PlugIn {
 	}
 
 	void outlineLanes() {
-		if (gel==null || roiList==null) {
+		if (gel==null || overlay==null) {
 			show("Data needed to outline lanes is no longer available.");
 			return;
 		}
@@ -408,8 +407,8 @@ public class GelAnalyzer implements PlugIn {
 		lanes.changes = true;
 		lanes.setRoi(gel.getRoi());
 		gel.killRoi();
-		for (int i=0; i<roiList.size(); i++) {
-			Roi roi = (Roi)roiList.elementAt(i);
+		for (int i=0; i<overlay.size(); i++) {
+			Roi roi = overlay.get(i);
 			Rectangle r = roi.getBounds();
 			ipLanes.drawRect(r.x, r.y, r.width, r.height);
 			String s = ""+(i+1);

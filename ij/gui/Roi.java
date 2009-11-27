@@ -1052,7 +1052,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * overrides the global color set by the static setColor() method.
 	 * @see #getStrokeColor()
 	 * @see #setStrokeWidth(int)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeColor(Color c) {
 		 strokeColor = c;
@@ -1065,9 +1065,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return  strokeColor;
 	}
 
-	/** Sets the color used to fill ROIs when they are in a display list.
-	 * @see ij.gui.ImageCanvas#setDisplayList(Vector)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	/** Sets the color used to fill ROIs when they are in an overlay.
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setFillColor(Color color) {
 		fillColor = color;
@@ -1108,9 +1107,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Sets the width of the lines used to draw this ROI when
-	 * it is part of a display list or ROI Manager "Show All" list.
+	 * it is part of an Overlay list or ROI Manager "Show All" list.
 	 * @see #setStrokeColor(Color)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeWidth(int width) {
 		this.stroke = new BasicStroke(width);
