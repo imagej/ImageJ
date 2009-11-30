@@ -2016,6 +2016,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		setOverlay(shape, color, stroke);
 	}
 
+	/** Obsolete; replaced by setOverlay(Roi, Color, int, Color fill). */
+	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
+		setOverlay(roi, strokeColor, strokeWidth, fillColor);
+	}
+
 	/** Obsolete; replaced by setOverlay. */
 	public void setDisplayList(Vector list) {
 		if (list!=null) {

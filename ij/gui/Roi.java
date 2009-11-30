@@ -1131,6 +1131,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return stroke;
 	}
 
+    /** Obsolete; replaced by setStrokeWidth(int). */
+    public void setLineWidth(int width) {
+		setStrokeWidth(width) ;
+	}
+
 	/** Returns the name of this ROI, or null. */
 	public String getName() {
 		return name;

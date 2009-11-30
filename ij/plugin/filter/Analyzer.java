@@ -746,9 +746,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&AREA_FRACTION)!=0)
 			add2(ResultsTable.AREA_FRACTION);
 		if ((measurements&STACK_POSITION)!=0) {
-			add2(ResultsTable.CHANNEL);
-			add2(ResultsTable.SLICE);
-			add2(ResultsTable.FRAME);
+			int index = rt.getColumnIndex("Ch");
+			if (rt.columnExists(index)) add2(index);
+			index = rt.getColumnIndex("Slice");
+			if (rt.columnExists(index)) add2(index);
+			index = rt.getColumnIndex("Frame");
+			if (rt.columnExists(index)) add2(index);
 		}
 		if ((measurements&FERET)!=0) {
 			add2(ResultsTable.FERET_X);

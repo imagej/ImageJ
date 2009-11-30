@@ -1202,11 +1202,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			{setOverlay(null); return;}
 		Roi roi = new ShapeRoi(shape);
 		roi.setStrokeColor(color);
+		roi.setStroke(stroke);
 		Overlay list = new Overlay();
 		list.add(roi);
-		list.drawLabels(false);
-		list.setColor(color);
-		list.setStroke(stroke);
+		//list.drawLabels(false);
+		//list.setColor(color);
+		//list.setStroke(stroke);
 		setOverlay(list);
 	}
 	

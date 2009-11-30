@@ -65,20 +65,20 @@ public class Overlay {
     	label = b;
     }
 
+    boolean getDrawLabels() {
+    	return label;
+    }
+    
     ArrayList getArrayList() {
     	return list;
     }
     
-    Color getColor() {
+  Color getColor() {
     	return color;
     }
     
     void setColor(Color color) {
     	this.color = color;
-    }
-    
-    boolean getDrawLabels() {
-    	return label;
     }
     
     BasicStroke getStroke() {
