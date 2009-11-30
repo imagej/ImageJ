@@ -183,7 +183,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			repaint();
 			return;
 		}
-		initGraphics(g, null);
+		initGraphics(g);
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
 		boolean drawLabels = rm.getDrawLabels();
@@ -225,19 +225,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     void drawOverlay(Graphics g) {
-		initGraphics(g, overlay!=null?overlay.getColor():null);
-    	int n = overlay.size();
+		initGraphics(g);
+		Vector list = overlay.getVector();
+    	int n = list.size();
     	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
     	boolean drawLabels = overlay.getDrawLabels();
-    	BasicStroke stroke = overlay.getStroke();
     	for (int i=0; i<n; i++) {
     		if (overlay==null) break;
-    		drawRoi(g, overlay.get(i), drawLabels?i+LIST_OFFSET:-1);
+    		drawRoi(g, (Roi)list.get(i), drawLabels?i+LIST_OFFSET:-1);
     	}
-    	if (stroke!=null) ((Graphics2D)g).setStroke(new BasicStroke());
     }
     
-    void initGraphics(Graphics g, Color c) {
+    void initGraphics(Graphics g) {
 		if (smallFont==null) {
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);
 			largeFont = new Font("SansSerif", Font.PLAIN, 12);
@@ -251,12 +250,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			else
 				labelColor = Color.black;
 		}
-		if (c!=null) {
-			g.setColor(c);
-			BasicStroke stroke = overlay!=null?overlay.getStroke():null;
-			if (stroke!=null) ((Graphics2D)g).setStroke(stroke);
-		} else
-			g.setColor(showAllColor);
+		g.setColor(showAllColor);
     }
     
     void drawRoi(Graphics g, Roi roi, int index) {
@@ -264,13 +258,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		ImagePlus imp2 = roi.getImage();
 		roi.setImage(imp);
 		Color saveColor = roi.getStrokeColor();
-		Color listColor = overlay!=null?overlay.getColor():null;
-		if (saveColor==null) {
-			if (index>=0 || listColor==null)
-				roi.setStrokeColor(showAllColor);
-			else
-				roi.setStrokeColor(listColor);
-		}
+		if (saveColor==null)
+			roi.setStrokeColor(showAllColor);
 		if (roi instanceof TextRoi)
 			((TextRoi)roi).drawText(g);
 		else
@@ -1184,13 +1173,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public void setDisplayList(Vector list) {
 		if (list!=null) {
 			Overlay list2 = new Overlay();
-			for (int i=0; i<list.size(); i++)
-				list2.add((Roi)list.elementAt(i));
+			list2.setVector(list);
 			setOverlay(list2);
 		} else
 			setOverlay(null);
 		if (overlay!=null)
-			overlay.drawLabels(overlay.size()>0&&overlay.get(0).getStrokeColor()!=null);
+			overlay.drawLabels(overlay.size()>0&&overlay.get(0).getStrokeColor()==null);
 		else
 			customRoi = false;
 		repaint();
@@ -1205,9 +1193,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		roi.setStroke(stroke);
 		Overlay list = new Overlay();
 		list.add(roi);
-		//list.drawLabels(false);
-		//list.setColor(color);
-		//list.setStroke(stroke);
 		setOverlay(list);
 	}
 	
@@ -1216,7 +1201,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		roi.setStrokeColor(color);
 		Overlay list = new Overlay();
 		list.add(roi);
-		list.drawLabels(false);
 		setOverlay(list);
 	}
 	
@@ -1225,7 +1209,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (overlay==null) return null;
 		Vector displayList = new Vector();
 		for (int i=0; i<overlay.size(); i++)
-			displayList.addElement(overlay.get(i));
+			displayList.add(overlay.get(i));
 		return displayList;
 	}
 	

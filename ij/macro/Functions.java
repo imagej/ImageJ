@@ -4463,16 +4463,12 @@ public class Functions implements MacroConstants, Measurements {
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();
-		if (name.equals("size"))
+		if (name.equals("size")||name.equals("getSize"))
 			return size;
-		else if (name.equals("removeRoi")) {
+		else if (name.equals("removeSelection")||name.equals("removeRoi")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
 			overlay.remove(index);
-			imp.draw();
-			return Double.NaN;
-		} else if (name.equals("removeRoiAt")) {
-			overlay.remove((int)getFirstArg(), (int)getLastArg());
 			imp.draw();
 			return Double.NaN;
 		} else

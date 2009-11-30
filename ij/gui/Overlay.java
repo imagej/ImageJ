@@ -1,19 +1,21 @@
 package ij.gui;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Vector;
 import ij.*;
 
 public class Overlay {
-	private ArrayList list;
+	private Vector list;
     private boolean label;
-    private Color color;
-	private BasicStroke stroke;
     
     public Overlay() {
-    	list = new ArrayList();
+    	list = new Vector();
     }
     
     public void add(Roi roi) {
+    	list.add(roi);
+    }
+
+    public void addElement(Roi roi) {
     	list.add(roi);
     }
 
@@ -25,10 +27,10 @@ public class Overlay {
     	list.remove(roi);
     }
 
-    public void remove(int x, int y) {
-    	Roi roi = get(x, y);
-    	if (roi!=null) remove(roi);
-    }
+    //public void remove(int x, int y) {
+    //	Roi roi = get(x, y);
+    //	if (roi!=null) remove(roi);
+    //}
 
     public void clear() {
     	list.clear();
@@ -38,16 +40,16 @@ public class Overlay {
     	return (Roi)list.get(i);
     }
     
-    public synchronized Roi get(int x, int y) {
-     	for (int i=0; i<list.size(); i++) {
-    		Roi roi = (Roi)list.get(i);
-    		if (roi==null) return null;
-    		Rectangle bounds = roi.getBounds();
-    		if (bounds.x==x && bounds.y==y)
-    			return roi;
-    	}
-    	return null;
-    }
+    //public synchronized Roi get(int x, int y) {
+    // 	for (int i=0; i<list.size(); i++) {
+    //		Roi roi = (Roi)list.get(i);
+    //		if (roi==null) return null;
+    //		Rectangle bounds = roi.getBounds();
+    //		if (bounds.x==x && bounds.y==y)
+    //			return roi;
+    //	}
+    //	return null;
+    //}
 
     public int size() {
     	return list.size();
@@ -65,28 +67,10 @@ public class Overlay {
     	label = b;
     }
 
-    boolean getDrawLabels() {
-    	return label;
-    }
+    boolean getDrawLabels() {return label;}
     
-    ArrayList getArrayList() {
-    	return list;
-    }
-    
-  Color getColor() {
-    	return color;
-    }
-    
-    void setColor(Color color) {
-    	this.color = color;
-    }
-    
-    BasicStroke getStroke() {
-    	return stroke;
-    }
-    
-    void setStroke(BasicStroke stroke) {
-    	this.stroke = stroke;
-    }
-    
+    void setVector(Vector v) {list = v;}
+        
+    Vector getVector() {return list;}
+
 }

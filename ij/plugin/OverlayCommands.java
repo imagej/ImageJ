@@ -5,11 +5,10 @@ import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
 import java.awt.*;
-import java.util.Vector;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
-	private static Vector displayList2;
+	private static Overlay overlay2;
 	private static boolean createImageRoi;
 
 	public void run(String arg) {
@@ -35,18 +34,18 @@ public class OverlayCommands implements PlugIn {
 		ImagePlus imp = IJ.getImage();
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null && IJ.macroRunning() && macroOptions.indexOf("remove")!=-1) {
-			imp.setDisplayList(null);
+			imp.setOverlay(null);
 			return;
 		}
 		Roi roi = imp.getRoi();
-		if (roi==null && imp.getDisplayList()!=null) {
+		if (roi==null && imp.getOverlay()!=null) {
 			GenericDialog gd = new GenericDialog("No Selection");
 			gd.addMessage("\"Overlay>Add\" requires a selection.");
 			gd.setInsets(15, 40, 0);
 			gd.addCheckbox("Remove existing overlay", false);
 			gd.showDialog();
 			if (gd.wasCanceled()) return;
-			if (gd.getNextBoolean()) imp.setDisplayList(null);
+			if (gd.getNextBoolean()) imp.setOverlay(null);
 			return;
  		}
 		if (roi==null) {
@@ -54,9 +53,9 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		roi = (Roi)roi.clone();
-		Vector list = imp.getDisplayList();
-		if (list!=null && list.size()>0) {
-			Roi roi2 = (Roi)list.get(list.size()-1);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && overlay.size()>0) {
+			Roi roi2 = overlay.get(overlay.size()-1);
 			roi.setStrokeColor(roi2.getStrokeColor());
 			roi.setStrokeWidth(roi2.getStrokeWidth());
 			roi.setFillColor(roi2.getFillColor());
@@ -69,10 +68,10 @@ public class OverlayCommands implements PlugIn {
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
-		if (list==null || newOverlay) list = new Vector();
-		list.addElement(roi);
-		imp.setDisplayList(list);
-		displayList2 = list;
+		if (overlay==null || newOverlay) overlay = new Overlay();
+		overlay.add(roi);
+		imp.setOverlay(overlay);
+		overlay2 = overlay;
 		if (points || (roi instanceof ImageRoi)) imp.killRoi();
 	}
 	
@@ -145,20 +144,20 @@ public class OverlayCommands implements PlugIn {
 		if (createImageRoi)
 			imp.setRoi(roi);
 		else {
-			Vector list = imp.getDisplayList();
-			if (list==null) list = new Vector();
-			list.addElement(roi);
-			imp.setDisplayList(list);
-			displayList2 = list;
+			Overlay overlayList = imp.getOverlay();
+			if (overlayList==null) overlayList = new Overlay();
+			overlayList.add(roi);
+			imp.setOverlay(overlayList);
+			overlay2 = overlayList;
 		}
 	}
 
 	void hide() {
 		ImagePlus imp = IJ.getImage();
-		Vector list = imp.getDisplayList();
-		if (list!=null) {
-			displayList2 = list;
-			imp.setDisplayList(null);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null) {
+			overlay2 = overlay;
+			imp.setOverlay(null);
 		}
 		RoiManager rm = RoiManager.getInstance();
 		if (rm!=null) rm.runCommand("show none");
@@ -166,16 +165,16 @@ public class OverlayCommands implements PlugIn {
 
 	void show() {
 		ImagePlus imp = IJ.getImage();
-		if (displayList2!=null)
-			imp.setDisplayList(displayList2);
+		if (overlay2!=null)
+			imp.setOverlay(overlay2);
 		RoiManager rm = RoiManager.getInstance();
 		if (rm!=null) rm.runCommand("show all");
 	}
 
 	void remove() {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) imp.setDisplayList(null);
-		displayList2 = null;
+		if (imp!=null) imp.setOverlay(null);
+		overlay2 = null;
 		RoiManager rm = RoiManager.getInstance();
 		if (rm!=null) rm.runCommand("show none");
 	}
@@ -199,10 +198,10 @@ public class OverlayCommands implements PlugIn {
 			IJ.error("ROI Manager is empty");
 			return;
 		}
-		Vector list = new Vector();
+		Overlay overlay = new Overlay();
 		for (int i=0; i<rois.length; i++)
-			list.addElement((Roi)rois[i].clone());
-		imp.setDisplayList(list);
+			overlay.add((Roi)rois[i].clone());
+		imp.setOverlay(overlay);
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) ic.setShowAllROIs(false);
 		rm.setEditMode(imp, false);
@@ -211,8 +210,8 @@ public class OverlayCommands implements PlugIn {
 	
 	void toRoiManager() {
 		ImagePlus imp = IJ.getImage();
-		Vector list = imp.getDisplayList();
-		if (list==null) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null) {
 			IJ.error("Overlay required");
 			return;
 		}
@@ -231,11 +230,11 @@ public class OverlayCommands implements PlugIn {
 			}
 		}
 		rm.runCommand("reset");
-		for (int i=0; i<list.size(); i++)
-			rm.add(imp, (Roi)list.get(i), i);
+		for (int i=0; i<overlay.size(); i++)
+			rm.add(imp, overlay.get(i), i);
 		rm.setEditMode(imp, true);
-		if (rm.getCount()==list.size())
-			imp.setDisplayList(null);
+		if (rm.getCount()==overlay.size())
+			imp.setOverlay(null);
 	}
 	
 }

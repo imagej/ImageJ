@@ -201,11 +201,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		double[] x = new double[n];
 		double[] y = new double[n];
 		for (int i=0; i<n; i++) {
-			x[i] = poly.xpoints[i] - cx;
-			y[i] = poly.ypoints[i] - cy;
+			x[i] = (poly.xpoints[i]-cx)*pw;
+			y[i] = (poly.ypoints[i]-cy)*ph;
 		}
 		double xr, yr;
-		for (int a=0; a<=180; a++) {
+		for (double a=0; a<=90; a+=0.5) { // rotate calipers in 0.5 degree increments
 			double cos = Math.cos(a*Math.PI/180.0);
 			double sin = Math.sin(a*Math.PI/180.0);
 			double xmin=Double.MAX_VALUE, ymin=Double.MAX_VALUE;
@@ -235,8 +235,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
 		if (angle<0) angle = 180.0 + angle;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
-		if (pw==ph)
-			min *= pw;
 		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;
@@ -1100,7 +1098,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		 strokeColor = c;
 	}
 
-	/** Set 'nonScalable' true to have TextRois in a display 
+	/** Obsolete; replaced by setStrokeWidth(int). */
+	public void setLineWidth(int width) {
+		setStrokeWidth(width) ;
+	}
+        
+    /** Set 'nonScalable' true to have TextRois in a display 
 		list drawn at a fixed location  and size. */
 	public void setNonScalable(boolean nonScalable) {
 		this.nonScalable = nonScalable;
@@ -1129,11 +1132,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Returns the Stroke used to draw this ROI, or null if no Stroke is used. */
 	public BasicStroke getStroke() {
 		return stroke;
-	}
-
-    /** Obsolete; replaced by setStrokeWidth(int). */
-    public void setLineWidth(int width) {
-		setStrokeWidth(width) ;
 	}
 
 	/** Returns the name of this ROI, or null. */

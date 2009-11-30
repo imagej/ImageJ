@@ -2011,16 +2011,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return overlay;
 	}
 
-	/** Obsolete; replaced by setOverlay(Shape, Color, BasicStroke). */
-	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
-		setOverlay(shape, color, stroke);
-	}
-
-	/** Obsolete; replaced by setOverlay(Roi, Color, int, Color fill). */
-	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
-		setOverlay(roi, strokeColor, strokeWidth, fillColor);
-	}
-
 	/** Obsolete; replaced by setOverlay. */
 	public void setDisplayList(Vector list) {
 		if (list!=null) {
@@ -2039,6 +2029,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return ic.getDisplayList();
 		else
 			return null;
+	}
+
+	/** Obsolete; replaced by setOverlay(Shape, Color, BasicStroke). */
+	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
+		setOverlay(shape, color, stroke);
+	}
+
+	/** Obsolete; replaced by setOverlay(Roi, Color, int, Color fill). */
+	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
+		setOverlay(roi, strokeColor, strokeWidth, fillColor);
 	}
 
 	public Object clone() {
