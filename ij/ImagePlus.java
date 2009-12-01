@@ -1976,30 +1976,29 @@ public class ImagePlus implements ImageObserver, Measurements {
 			this.overlay = overlay;
 	}
 	
-	/** Creates an Overlay from the specified 
-	 * Shape, Color and BasicStroke, and activates it.
+	/** Creates an Overlay from the specified Shape, Color 
+	 * and BasicStroke, and assigns it to this image.
 	 * @see #setOverlay(ij.gui.Overlay)
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setStrokeWidth
 	 */
 	public void setOverlay(Shape shape, Color color, BasicStroke stroke) {
-		ImageCanvas ic = getCanvas();
-		if (ic!=null) ic.setDisplayList(shape, color, stroke);
+		if (shape==null)
+			{setOverlay(null); return;}
+		Roi roi = new ShapeRoi(shape);
+		roi.setStrokeColor(color);
+		roi.setStroke(stroke);
+		setOverlay(new Overlay(roi));
 	}
 	
-	/** Creates an Overlay from the specified ROI, and activates it.
+	/** Creates an Overlay from the specified ROI, and assigns it to this image.
 	 * @see #setOverlay(ij.gui.Overlay)
 	 */
 	public void setOverlay(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
-		ImageCanvas ic = getCanvas();
-		if (ic==null) return;
 		roi.setStrokeColor(strokeColor);
 		roi.setStrokeWidth(strokeWidth);
 		roi.setFillColor(fillColor);
-		Overlay list = new Overlay();
-		list.add(roi);
-		list.drawLabels(false);
-		setOverlay(list);
+		setOverlay(new Overlay(roi));
 	}
 
 	/** Returns the current overly, or null if this image does not have an overlay. */

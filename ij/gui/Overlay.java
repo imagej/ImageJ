@@ -11,6 +11,11 @@ public class Overlay {
     	list = new Vector();
     }
     
+    public Overlay(Roi roi) {
+    	list = new Vector();
+    	list.add(roi);
+    }
+
     public void add(Roi roi) {
     	list.add(roi);
     }
