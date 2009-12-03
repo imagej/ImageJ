@@ -232,6 +232,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (Macro.getOptions()!=null) {
 			boolean oldMacro = updateMacroOptions();
 			if (oldMacro) unitSquared = 1.0;
+			staticMinSize = 0.0;
+			staticMaxSize = DEFAULT_MAX_SIZE;
+			minCircularity=0.0; maxCircularity=1.0;
+			showChoice = NOTHING;
 		}
 		GenericDialog gd = new GenericDialog("Analyze Particles");
 		minSize = staticMinSize;

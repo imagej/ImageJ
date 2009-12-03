@@ -405,6 +405,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public int getModifiers() {
 		return flags;
 	}
+	
+	/** Returns the ImagePlus object that is associated with this ImageCanvas. */
+	public ImagePlus getImage() {
+		return imp;
+	}
 
 	/** Sets the cursor based on the current tool and cursor location. */
 	public void setCursor(int sx, int sy, int ox, int oy) {

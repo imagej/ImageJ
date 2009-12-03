@@ -501,9 +501,11 @@ public class ResultsTable implements Cloneable {
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
 		String tableHeadings = getColumnHeadings();		
 		TextPanel tp;
+		boolean newWindow = false;
 		if (windowTitle.equals("Results")) {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
+			newWindow = tp.getLineCount()==0;
 			IJ.setColumnHeadings(tableHeadings);
 			if (this!=Analyzer.getResultsTable())
 				Analyzer.setResultsTable(this);
@@ -518,6 +520,7 @@ public class ResultsTable implements Cloneable {
 				win = new TextWindow(windowTitle, "", 400, 300);
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
+			newWindow = tp.getLineCount()==0;
 		}
 		tp.setResultsTable(this);
 		int n = getCounter();
@@ -528,6 +531,7 @@ public class ResultsTable implements Cloneable {
 				sb.append(getRowAsString(i)+"\n");
 			tp.append(new String(sb));
 		}
+		if (newWindow) tp.scrollToTop();
 	}
 	
 	public void update(int measurements, ImagePlus imp, Roi roi) {

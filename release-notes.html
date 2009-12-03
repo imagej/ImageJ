@@ -5,10 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.43m, 1 December 2009</u>
+<li> <u>1.43m, 2 December 2009</u>
 <ul>
 <li> Thanks to Michael Schmid, "MinFeret" calculations are now
 more accurate and they correctly handle pixel aspect ratios not equal to 1.
+<li> When using the particle analyzer in a macro, the default values (0-Infinity, 0-1 and "Nothing")
+are assumed if the 'size', 'circularity' or 'show' options are omitted.
+<li> The updateResults() macro function and ResultsTable.show() method,
+when creating a new table, scroll to the top of the window
+(<a href="http://rsb.info.nih.gov/ij/macros/SineCosineTable.txt ">example</a>).
 <li> Added the Overlay.getSize() and Overlay.removeSelection() macro
 functions.
 <li> Added the ImagePlus.setOverlay(Overlay) method
