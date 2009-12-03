@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.ResultsTable;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
 	and Plugins/Utilities/Search commands. */
@@ -13,8 +14,8 @@ public class SimpleCommands implements PlugIn {
 	public void run(String arg) {
 		if (arg.equals("search"))
 			search();
-		else if (arg.equals("import"))
-			IJ.runMacroFile("ij.jar:ImportResultsTable");
+		else if (arg.equals("import")) 
+			openResultsTable("");
 		else if (arg.equals("rename"))
 			rename();
 		else if (arg.equals("reset"))
@@ -73,6 +74,15 @@ public class SimpleCommands implements PlugIn {
 		
 	void search() {
 		searchArg = IJ.runMacroFile("ij.jar:Search", searchArg);
+	}
+		
+	public static void openResultsTable(String path) {
+		try {
+			ResultsTable rt = ResultsTable.open(path);
+			if (rt!=null) rt.show("Results");
+		} catch(Exception e) {
+			IJ.error("Open Results", e.getMessage());
+		}
 	}
 	
 	void installation() {

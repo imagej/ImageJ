@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.43m, 2 December 2009</u>
+<li> <u>1.43m, 3 December 2009</u>
 <ul>
 <li> Thanks to Michael Schmid, "MinFeret" calculations are now
 more accurate and they correctly handle pixel aspect ratios not equal to 1.
+<li> Results tables (in tab-delimited format) with an ".xls" extension can be
+opened using File>Open and drag and drop.
 <li> When using the particle analyzer in a macro, the default values (0-Infinity, 0-1 and "Nothing")
 are assumed if the 'size', 'circularity' or 'show' options are omitted.
 <li> The updateResults() macro function and ResultsTable.show() method,
@@ -20,6 +22,7 @@ functions.
 (<a href="http://rsb.info.nih.gov/ij/macros/js/RoisToOverlay.js">example</a>).
 <li> Added the ImagePlus.setOverlay(Roi,Color,int,Color) method
 (<a href="http://rsb.info.nih.gov/ij/macros/js/TextOverlay3.js">example</a>).
+<li> Added the ResultsTable.open(path) method.
 <li> Fixed a bug that caused <i>Analyze&gt;Summarize</i> to somethimes 
 fail if "Stack Position"
 was enabled in <i>Analyze&gt;Set Measurements</i>.

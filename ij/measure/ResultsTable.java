@@ -4,9 +4,12 @@ import ij.plugin.filter.Analyzer;
 import ij.text.*;
 import ij.process.*;
 import ij.gui.Roi;
+import ij.util.Tools;
 import java.awt.*;
 import java.text.*;
 import java.util.Locale;
+import java.io.*;
+
 
 /** This is a table for storing measurement results as columns of numeric values. 
 	Call the static ResultsTable.getResultsTable() method to get a reference to the 
@@ -579,6 +582,38 @@ public class ResultsTable implements Cloneable {
 		return rowLabels;
 	}
 	
+	public static ResultsTable open(String path) throws IOException {
+		final String lineSeparator =  "\n";
+		final String cellSeparator =  ",\t";
+		String text =IJ.openAsString(path);
+		if (text.startsWith("Error:"))
+			throw new IOException("text.substring(7)");
+		String[] lines = Tools.split(text, lineSeparator);
+		if (lines.length==0)
+			throw new IOException("Table is empty or invalid");
+		String[] headings=Tools.split(lines[0], cellSeparator);
+		if (headings.length==1)
+			throw new IOException("This is not a tab or comma delimited text file.");
+		int numbersInHeadings = 0;
+		for (int i=0; i<headings.length; i++) {
+			if (headings[i].equals("NaN") || !Double.isNaN(Tools.parseDouble(headings[i])))
+				numbersInHeadings++;
+		}
+		int k = numbersInHeadings==headings.length?0:1;
+		if (k==0) {
+			for (int i=0; i<headings.length; i++)
+				headings[i] = "C"+(i+1);
+		}
+		ResultsTable rt = new ResultsTable();
+		for (int i=1; i<lines.length; i++) {
+			rt.incrementCounter();
+			String[] items=Tools.split(lines[i], cellSeparator);
+			for (int j=k; j<items.length; j++)
+				rt.addValue(headings[j], Tools.parseDouble(items[j]));
+		}
+		return rt;
+	}
+
 	/** Creates a copy of this ResultsTable. */
 	public synchronized Object clone() {
 		try { 
