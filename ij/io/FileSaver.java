@@ -112,8 +112,8 @@ public class FileSaver {
 	public boolean saveAsTiffStack(String path) {
 		if (fi.nImages==1)
 			{IJ.error("This is not a stack"); return false;}
-		if (fi.pixels==null && imp.getStack().isVirtual())
-			{IJ.error("Save As Tiff", "Virtual stacks not supported."); return false;}
+		if (imp.getStack().isVirtual())
+			fi.virtualStack = (VirtualStack)imp.getStack();
 		Object info = imp.getProperty("Info");
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
@@ -182,6 +182,8 @@ public class FileSaver {
 			fi.info = (String)info;
 		fi.sliceLabels = imp.getStack().getSliceLabels();
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
+		if (fi.nImages>1 && imp.getStack().isVirtual())
+			fi.virtualStack = (VirtualStack)imp.getStack();
 		try {
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(zos));

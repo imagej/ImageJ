@@ -5,8 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.43m, 3 December 2009</u>
+<li> <u>1.43m, 4 December 2009</u>
 <ul>
+<li> Virtual stacks can now be saved in TIFF format.
 <li> Thanks to Michael Schmid, "MinFeret" calculations are now
 more accurate and they correctly handle pixel aspect ratios not equal to 1.
 <li> Results tables (in tab-delimited format) with an ".xls" extension can be
@@ -19,10 +20,11 @@ when creating a new table, scroll to the top of the window
 <li> Added the Overlay.getSize() and Overlay.removeSelection() macro
 functions.
 <li> Added the ImagePlus.setOverlay(Overlay) method
-(<a href="http://rsb.info.nih.gov/ij/macros/js/RoisToOverlay.js">example</a>).
+(<a href="http://rsb.info.nih.gov/ij/macros/js/RoisToOverlay.js">JavaScript example</a>).
 <li> Added the ImagePlus.setOverlay(Roi,Color,int,Color) method
-(<a href="http://rsb.info.nih.gov/ij/macros/js/TextOverlay3.js">example</a>).
-<li> Added the ResultsTable.open(path) method.
+(<a href="http://rsb.info.nih.gov/ij/macros/js/TextOverlay3.js">JavaScript example</a>).
+<li> Added open(path) and saveAs(path) methods to the ResultsTable class
+(<a href="http://rsb.info.nih.gov/ij/macros/js/SaveAndOpenResultsTable.js">JavaScript example</a>).
 <li> Fixed a bug that caused <i>Analyze&gt;Summarize</i> to somethimes 
 fail if "Stack Position"
 was enabled in <i>Analyze&gt;Set Measurements</i>.

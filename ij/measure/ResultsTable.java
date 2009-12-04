@@ -5,6 +5,7 @@ import ij.text.*;
 import ij.process.*;
 import ij.gui.Roi;
 import ij.util.Tools;
+import ij.io.SaveDialog;
 import java.awt.*;
 import java.text.*;
 import java.util.Locale;
@@ -582,6 +583,8 @@ public class ResultsTable implements Cloneable {
 		return rowLabels;
 	}
 	
+	/** Opens a tab or comma delimited text file as a ResultsTable.
+	     Displays a file open dialog if 'path' is empty or null. */
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";
 		final String cellSeparator =  ",\t";
@@ -604,14 +607,39 @@ public class ResultsTable implements Cloneable {
 			for (int i=0; i<headings.length; i++)
 				headings[i] = "C"+(i+1);
 		}
+		boolean labels = k==1 && headings[1].equals("Label");
 		ResultsTable rt = new ResultsTable();
 		for (int i=1; i<lines.length; i++) {
 			rt.incrementCounter();
 			String[] items=Tools.split(lines[i], cellSeparator);
-			for (int j=k; j<items.length; j++)
-				rt.addValue(headings[j], Tools.parseDouble(items[j]));
+			for (int j=k; j<items.length; j++) {
+				if (j==1&&labels)
+					rt.addLabel(items[j]);
+				else
+					rt.addValue(headings[j], Tools.parseDouble(items[j]));
+			}
 		}
 		return rt;
+	}
+	
+	/** Saves this ResultsTable as a tab-delimited text file. Displays
+	     a file save dialog if 'path' is empty or null. */
+	public void saveAs(String path) throws IOException {
+		if (getCounter()==0) throw new IOException("Table is empty");
+		if (path==null || path.equals("")) {
+			SaveDialog sd = new SaveDialog("Save Results", "Results", ".xls");
+			String file = sd.getFileName();
+			if (file==null) return;
+			path = sd.getDirectory() + file;
+		}
+		PrintWriter pw = null;
+		FileOutputStream fos = new FileOutputStream(path);
+		BufferedOutputStream bos = new BufferedOutputStream(fos);
+		pw = new PrintWriter(bos);
+		pw.println(getColumnHeadings());
+		for (int i=0; i<getCounter(); i++)
+			pw.println(getRowAsString(i));
+		pw.close();
 	}
 
 	/** Creates a copy of this ResultsTable. */
