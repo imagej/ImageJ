@@ -1,6 +1,7 @@
 package ij.io;
 import java.io.*;
 import ij.*;  //??
+import ij.process.ImageProcessor;
 
 /** Writes a raw image described by a FileInfo object to an OutputStream. */
 public class ImageWriter {
@@ -42,9 +43,12 @@ public class ImageWriter {
 
 	void write8BitVirtualStack(OutputStream out, VirtualStack virtualStack)  throws IOException {
 		showProgressBar = false;
+		boolean flip = "FlipTheseImages".equals(fi.fileName);
 		for (int i=1; i<=fi.nImages; i++) {
 			IJ.showStatus("Writing: " + i + "/" + fi.nImages);
-			byte[] pixels = (byte[])virtualStack.getProcessor(i).getPixels();
+			ImageProcessor ip = virtualStack.getProcessor(i);
+			if (flip) ip.flipVertical();
+			byte[] pixels = (byte[])ip.getPixels();
 			write8BitImage(out, pixels);
 			IJ.showProgress((double)i/fi.nImages);
 		}
@@ -92,9 +96,12 @@ public class ImageWriter {
 
 	void write16BitVirtualStack(OutputStream out, VirtualStack virtualStack)  throws IOException {
 		showProgressBar = false;
+		boolean flip = "FlipTheseImages".equals(fi.fileName);
 		for (int i=1; i<=fi.nImages; i++) {
 			IJ.showStatus("Writing: " + i + "/" + fi.nImages);
-			short[] pixels = (short[])virtualStack.getProcessor(i).getPixels();
+			ImageProcessor ip = virtualStack.getProcessor(i);
+			if (flip) ip.flipVertical();
+			short[] pixels = (short[])ip.getPixels();
 			write16BitImage(out, pixels);
 			IJ.showProgress((double)i/fi.nImages);
 		}
@@ -188,9 +195,12 @@ public class ImageWriter {
 
 	void writeFloatVirtualStack(OutputStream out, VirtualStack virtualStack)  throws IOException {
 		showProgressBar = false;
+		boolean flip = "FlipTheseImages".equals(fi.fileName);
 		for (int i=1; i<=fi.nImages; i++) {
 			IJ.showStatus("Writing: " + i + "/" + fi.nImages);
-			float[] pixels = (float[])virtualStack.getProcessor(i).getPixels();
+			ImageProcessor ip = virtualStack.getProcessor(i);
+			if (flip) ip.flipVertical();
+			float[] pixels = (float[])ip.getPixels();
 			writeFloatImage(out, pixels);
 			IJ.showProgress((double)i/fi.nImages);
 		}
@@ -228,9 +238,12 @@ public class ImageWriter {
 
 	void writeRGBVirtualStack(OutputStream out, VirtualStack virtualStack)  throws IOException {
 		showProgressBar = false;
+		boolean flip = "FlipTheseImages".equals(fi.fileName);
 		for (int i=1; i<=fi.nImages; i++) {
 			IJ.showStatus("Writing: " + i + "/" + fi.nImages);
-			int[] pixels = (int[])virtualStack.getProcessor(i).getPixels();
+			ImageProcessor ip = virtualStack.getProcessor(i);
+			if (flip) ip.flipVertical();
+			int[] pixels = (int[])ip.getPixels();
 			writeRGBImage(out, pixels);
 			IJ.showProgress((double)i/fi.nImages);
 		}

@@ -602,20 +602,22 @@ public class ResultsTable implements Cloneable {
 			if (headings[i].equals("NaN") || !Double.isNaN(Tools.parseDouble(headings[i])))
 				numbersInHeadings++;
 		}
-		int k = numbersInHeadings==headings.length?0:1;
-		if (k==0) {
+		boolean allNumericHeadings = numbersInHeadings==headings.length;
+		if (allNumericHeadings) {
 			for (int i=0; i<headings.length; i++)
 				headings[i] = "C"+(i+1);
 		}
-		boolean labels = k==1 && headings[1].equals("Label");
+		int firstColumn = headings[0].equals(" ")?1:0;
+		int firstRow = allNumericHeadings?0:1;
+		boolean labels = firstColumn==1 && headings[1].equals("Label");
 		ResultsTable rt = new ResultsTable();
-		for (int i=1; i<lines.length; i++) {
+		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
 			String[] items=Tools.split(lines[i], cellSeparator);
-			for (int j=k; j<items.length; j++) {
+			for (int j=firstColumn; j<items.length; j++) {
 				if (j==1&&labels)
 					rt.addLabel(items[j]);
-				else
+				else if (j<headings.length)
 					rt.addValue(headings[j], Tools.parseDouble(items[j]));
 			}
 		}

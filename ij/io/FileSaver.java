@@ -394,9 +394,14 @@ public class FileSaver {
 		boolean signed16Bit = false;
 		Object[] stack = null;
 		int n = 0;
+		boolean virtualStack = imp.getStackSize()>1 && imp.getStack().isVirtual();
+		if (virtualStack) {
+			fi.virtualStack = (VirtualStack)imp.getStack();
+			if (imp.getProperty("AnalyzeFormat")!=null) fi.fileName="FlipTheseImages";
+		}
 		try {
 			signed16Bit = imp.getCalibration().isSigned16Bit();
-			if (signed16Bit) {
+			if (signed16Bit && !virtualStack) {
 				stack = (Object[])fi.pixels;
 				n = imp.getWidth()*imp.getHeight();
 				for (int slice=0; slice<fi.nImages; slice++) {
