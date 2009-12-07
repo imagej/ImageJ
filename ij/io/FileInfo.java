@@ -1,4 +1,5 @@
 package ij.io;
+import ij.VirtualStack;
 import java.io.*;
 import java.util.Properties;
 
@@ -114,6 +115,7 @@ public class FileInfo implements Cloneable {
 	public String[] sliceLabels;
 	public String info;
 	public InputStream inputStream;
+	public VirtualStack virtualStack;
 	
 	public double pixelWidth=1.0;
 	public double pixelHeight=1.0;

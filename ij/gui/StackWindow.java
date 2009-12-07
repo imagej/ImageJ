@@ -95,12 +95,16 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		if (!running2) {
 			//slice = sliceSelector.getValue();
-			if (e.getSource()==channelSelector)
+			if (e.getSource()==channelSelector) {
 				c = channelSelector.getValue();
-			else if (e.getSource()==sliceSelector)
+				if (c==imp.getChannel()) return;
+			} else if (e.getSource()==sliceSelector) {
 				z = sliceSelector.getValue();
-			else if (e.getSource()==frameSelector)
+				if (z==imp.getSlice()) return;
+			} else if (e.getSource()==frameSelector) {
 				t = frameSelector.getValue();
+				if (t==imp.getFrame()) return;
+			}
 			updatePosition();
 			notify();
 		}

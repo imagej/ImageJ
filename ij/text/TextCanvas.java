@@ -170,7 +170,7 @@ class TextCanvas extends Canvas {
 	}
 	
 	void calcAutoWidth(int column) {
-		if (tp.sColHead==null || column>=tp.iColWidth.length)
+		if (tp.sColHead==null || column>=tp.iColWidth.length || gImage==null)
 			return;
 		if(fMetrics==null)
 			fMetrics=gImage.getFontMetrics();

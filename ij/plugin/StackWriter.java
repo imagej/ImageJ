@@ -17,9 +17,9 @@ public class StackWriter implements PlugIn {
 	private static String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
 	private static String fileType = "TIFF";
 	private static int ndigits = 4;
-	private static int startAt;
 	private static boolean useLabels;
 	private static boolean firstTime = true;
+	private int startAt;
 	private boolean hyperstack;
 	private int[] dim;
 	//private static boolean startAtZero;

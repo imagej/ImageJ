@@ -32,7 +32,7 @@ public class TextRoi extends Roi {
 	/** Creates a new TextRoi with the specified location and Font.
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setNonScalable
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public TextRoi(int x, int y, String text, Font font) {
 		super(x, y, 1, 1);
@@ -362,5 +362,14 @@ public class TextRoi extends Roi {
 	public static void recordSetFont() {
 		recordSetFont = true;
 	}
-
+	
+	/** Returns a copy of this TextRoi. */
+	public synchronized Object clone() {
+		TextRoi tr = (TextRoi)super.clone();
+		tr.theText = new String[MAX_LINES];
+		for (int i=0; i<MAX_LINES; i++)
+			tr.theText[i] = theText[i];
+		return tr;
+	}
+        
 }

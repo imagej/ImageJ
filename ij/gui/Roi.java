@@ -201,11 +201,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		double[] x = new double[n];
 		double[] y = new double[n];
 		for (int i=0; i<n; i++) {
-			x[i] = poly.xpoints[i] - cx;
-			y[i] = poly.ypoints[i] - cy;
+			x[i] = (poly.xpoints[i]-cx)*pw;
+			y[i] = (poly.ypoints[i]-cy)*ph;
 		}
 		double xr, yr;
-		for (int a=0; a<=180; a++) {
+		for (double a=0; a<=90; a+=0.5) { // rotate calipers in 0.5 degree increments
 			double cos = Math.cos(a*Math.PI/180.0);
 			double sin = Math.sin(a*Math.PI/180.0);
 			double xmin=Double.MAX_VALUE, ymin=Double.MAX_VALUE;
@@ -235,8 +235,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		angle = (180.0/Math.PI)*Math.atan2(dy*ph, dx*pw);
 		if (angle<0) angle = 180.0 + angle;
 		//breadth = getFeretBreadth(poly, angle, x1, y1, x2, y2);
-		if (pw==ph)
-			min *= pw;
 		double[] a = new double[5];
 		a[0] = diameter;
 		a[1] = angle;
@@ -1052,7 +1050,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * overrides the global color set by the static setColor() method.
 	 * @see #getStrokeColor()
 	 * @see #setStrokeWidth(int)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeColor(Color c) {
 		 strokeColor = c;
@@ -1065,9 +1063,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return  strokeColor;
 	}
 
-	/** Sets the color used to fill ROIs when they are in a display list.
-	 * @see ij.gui.ImageCanvas#setDisplayList(Vector)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	/** Sets the color used to fill ROIs when they are in an overlay.
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setFillColor(Color color) {
 		fillColor = color;
@@ -1101,16 +1098,21 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		 strokeColor = c;
 	}
 
-	/** Set 'nonScalable' true to have TextRois in a display 
+	/** Obsolete; replaced by setStrokeWidth(int). */
+	public void setLineWidth(int width) {
+		setStrokeWidth(width) ;
+	}
+        
+    /** Set 'nonScalable' true to have TextRois in a display 
 		list drawn at a fixed location  and size. */
 	public void setNonScalable(boolean nonScalable) {
 		this.nonScalable = nonScalable;
 	}
 
 	/** Sets the width of the lines used to draw this ROI when
-	 * it is part of a display list or ROI Manager "Show All" list.
+	 * it is part of an Overlay list or ROI Manager "Show All" list.
 	 * @see #setStrokeColor(Color)
-	 * @see ij.gui.ImageCanvas#setDisplayList(Roi,Color)
+	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeWidth(int width) {
 		this.stroke = new BasicStroke(width);

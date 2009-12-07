@@ -91,7 +91,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private int[] position = {1,1,1};
 	private boolean noUpdateMode;
 	private ImageCanvas flatteningCanvas;
-	private Vector displayList;
+	private Overlay overlay;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -369,8 +369,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 			else
 				win = new ImageWindow(this);
 			if (roi!=null) roi.setImage(this);
-			if (displayList!=null && getCanvas()!=null)
-				getCanvas().setDisplayList(displayList);
+			if (overlay!=null && getCanvas()!=null)
+				getCanvas().setOverlay(overlay);
 			draw();
 			IJ.showStatus(statusMessage);
 			if (IJ.isMacro()) { // wait for window to be activated
@@ -1960,57 +1960,84 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return new ImagePlus(title, new ColorProcessor(bi));
 	}
 	
-	/** Installs a list of ROIs (a "display list") that will be drawn on this image as a non-destructive overlay.
+	/** Installs a list of ROIs that will be drawn on this image as a non-destructive overlay.
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setStrokeWidth
 	 * @see ij.gui.Roi#setFillColor
 	 * @see ij.gui.Roi#setLocation
 	 * @see ij.gui.Roi#setNonScalable
 	 */
-	public void setDisplayList(Vector list) {
+	public void setOverlay(Overlay overlay) {
 		ImageCanvas ic = getCanvas();
 		if (ic!=null) {
-			ic.setDisplayList(list);
-			displayList = null;
+			ic.setOverlay(overlay);
+			overlay = null;
 		} else
-			displayList = list;
+			this.overlay = overlay;
 	}
-
-	/** Creates a single ShapeRoi display list from the specified 
-	 * Shape, Color and BasicStroke, and activates it.
-	 * @see #setDisplayList(Vector)
+	
+	/** Creates an Overlay from the specified Shape, Color 
+	 * and BasicStroke, and assigns it to this image.
+	 * @see #setOverlay(ij.gui.Overlay)
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setStrokeWidth
 	 */
-	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
-		ImageCanvas ic = getCanvas();
-		if (ic!=null) ic.setDisplayList(shape, color, stroke);
+	public void setOverlay(Shape shape, Color color, BasicStroke stroke) {
+		if (shape==null)
+			{setOverlay(null); return;}
+		Roi roi = new ShapeRoi(shape);
+		roi.setStrokeColor(color);
+		roi.setStroke(stroke);
+		setOverlay(new Overlay(roi));
 	}
 	
-	/** Creates a single ROI display list from the specified 
-		ROI, and activates it.
-	 * @see #setDisplayList(Vector)
+	/** Creates an Overlay from the specified ROI, and assigns it to this image.
+	 * @see #setOverlay(ij.gui.Overlay)
 	 */
-	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
-		ImageCanvas ic = getCanvas();
-		if (ic==null) return;
-		if (fillColor!=null && strokeColor==null)
-			strokeColor = Color.black; // don't display labels
+	public void setOverlay(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
 		roi.setStrokeColor(strokeColor);
 		roi.setStrokeWidth(strokeWidth);
 		roi.setFillColor(fillColor);
-		Vector list = new Vector();
-		list.addElement(roi);
-		ic.setDisplayList(list);
+		setOverlay(new Overlay(roi));
 	}
 
-	/** Returns the current display list, or null if there is no display list. */
+	/** Returns the current overly, or null if this image does not have an overlay. */
+	public Overlay getOverlay() {
+		ImageCanvas ic = getCanvas();
+		if (ic!=null)
+			return ic.getOverlay();
+		else
+			return overlay;
+	}
+
+	/** Obsolete; replaced by setOverlay. */
+	public void setDisplayList(Vector list) {
+		if (list!=null) {
+			Overlay list2 = new Overlay();
+			for (int i=0; i<list.size(); i++)
+				list2.add((Roi)list.elementAt(i));
+			setOverlay(list2);
+		} else
+			setOverlay(null);
+	}
+
+	/** Obsolete; replaced by getOverlay(). */
 	public Vector getDisplayList() {
 		ImageCanvas ic = getCanvas();
 		if (ic!=null)
 			return ic.getDisplayList();
 		else
-			return displayList;
+			return null;
+	}
+
+	/** Obsolete; replaced by setOverlay(Shape, Color, BasicStroke). */
+	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
+		setOverlay(shape, color, stroke);
+	}
+
+	/** Obsolete; replaced by setOverlay(Roi, Color, int, Color fill). */
+	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
+		setOverlay(roi, strokeColor, strokeWidth, fillColor);
 	}
 
 	public Object clone() {

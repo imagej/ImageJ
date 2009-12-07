@@ -1464,7 +1464,7 @@ public class IJ {
 		 message in the form "Error: message". */
 	public static String openAsString(String path) {
 		if (path==null || path.equals("")) {
-			OpenDialog od = new OpenDialog("Open As String", "");
+			OpenDialog od = new OpenDialog("Open Text File", "");
 			String directory = od.getDirectory();
 			String name = od.getFileName();
 			if (name==null) return null;

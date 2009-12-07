@@ -4,9 +4,13 @@ import ij.plugin.filter.Analyzer;
 import ij.text.*;
 import ij.process.*;
 import ij.gui.Roi;
+import ij.util.Tools;
+import ij.io.SaveDialog;
 import java.awt.*;
 import java.text.*;
 import java.util.Locale;
+import java.io.*;
+
 
 /** This is a table for storing measurement results as columns of numeric values. 
 	Call the static ResultsTable.getResultsTable() method to get a reference to the 
@@ -501,9 +505,11 @@ public class ResultsTable implements Cloneable {
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
 		String tableHeadings = getColumnHeadings();		
 		TextPanel tp;
+		boolean newWindow = false;
 		if (windowTitle.equals("Results")) {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
+			newWindow = tp.getLineCount()==0;
 			IJ.setColumnHeadings(tableHeadings);
 			if (this!=Analyzer.getResultsTable())
 				Analyzer.setResultsTable(this);
@@ -518,6 +524,7 @@ public class ResultsTable implements Cloneable {
 				win = new TextWindow(windowTitle, "", 400, 300);
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
+			newWindow = tp.getLineCount()==0;
 		}
 		tp.setResultsTable(this);
 		int n = getCounter();
@@ -528,6 +535,7 @@ public class ResultsTable implements Cloneable {
 				sb.append(getRowAsString(i)+"\n");
 			tp.append(new String(sb));
 		}
+		if (newWindow) tp.scrollToTop();
 	}
 	
 	public void update(int measurements, ImagePlus imp, Roi roi) {
@@ -575,6 +583,67 @@ public class ResultsTable implements Cloneable {
 		return rowLabels;
 	}
 	
+	/** Opens a tab or comma delimited text file as a ResultsTable.
+	     Displays a file open dialog if 'path' is empty or null. */
+	public static ResultsTable open(String path) throws IOException {
+		final String lineSeparator =  "\n";
+		final String cellSeparator =  ",\t";
+		String text =IJ.openAsString(path);
+		if (text.startsWith("Error:"))
+			throw new IOException("text.substring(7)");
+		String[] lines = Tools.split(text, lineSeparator);
+		if (lines.length==0)
+			throw new IOException("Table is empty or invalid");
+		String[] headings=Tools.split(lines[0], cellSeparator);
+		if (headings.length==1)
+			throw new IOException("This is not a tab or comma delimited text file.");
+		int numbersInHeadings = 0;
+		for (int i=0; i<headings.length; i++) {
+			if (headings[i].equals("NaN") || !Double.isNaN(Tools.parseDouble(headings[i])))
+				numbersInHeadings++;
+		}
+		boolean allNumericHeadings = numbersInHeadings==headings.length;
+		if (allNumericHeadings) {
+			for (int i=0; i<headings.length; i++)
+				headings[i] = "C"+(i+1);
+		}
+		int firstColumn = headings[0].equals(" ")?1:0;
+		int firstRow = allNumericHeadings?0:1;
+		boolean labels = firstColumn==1 && headings[1].equals("Label");
+		ResultsTable rt = new ResultsTable();
+		for (int i=firstRow; i<lines.length; i++) {
+			rt.incrementCounter();
+			String[] items=Tools.split(lines[i], cellSeparator);
+			for (int j=firstColumn; j<items.length; j++) {
+				if (j==1&&labels)
+					rt.addLabel(items[j]);
+				else if (j<headings.length)
+					rt.addValue(headings[j], Tools.parseDouble(items[j]));
+			}
+		}
+		return rt;
+	}
+	
+	/** Saves this ResultsTable as a tab-delimited text file. Displays
+	     a file save dialog if 'path' is empty or null. */
+	public void saveAs(String path) throws IOException {
+		if (getCounter()==0) throw new IOException("Table is empty");
+		if (path==null || path.equals("")) {
+			SaveDialog sd = new SaveDialog("Save Results", "Results", ".xls");
+			String file = sd.getFileName();
+			if (file==null) return;
+			path = sd.getDirectory() + file;
+		}
+		PrintWriter pw = null;
+		FileOutputStream fos = new FileOutputStream(path);
+		BufferedOutputStream bos = new BufferedOutputStream(fos);
+		pw = new PrintWriter(bos);
+		pw.println(getColumnHeadings());
+		for (int i=0; i<getCounter(); i++)
+			pw.println(getRowAsString(i));
+		pw.close();
+	}
+
 	/** Creates a copy of this ResultsTable. */
 	public synchronized Object clone() {
 		try { 

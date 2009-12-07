@@ -5,8 +5,10 @@ import ij.process.*;
 import ij.plugin.frame.*;
 import ij.plugin.DICOM;
 import ij.plugin.AVI_Reader;
+import ij.plugin.SimpleCommands;
 import ij.text.TextWindow;
 import ij.util.Java2;
+import ij.measure.ResultsTable;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -27,9 +29,9 @@ public class Opener {
 
 	public static final int UNKNOWN=0,TIFF=1,DICOM=2,FITS=3,PGM=4,JPEG=5,
 		GIF=6,LUT=7,BMP=8,ZIP=9,JAVA_OR_TEXT=10,ROI=11,TEXT=12,PNG=13,
-		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16, OJJ=17; // don't forget to also update 'types'
+		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16, OJJ=17, TABLE=18; // don't forget to also update 'types'
 	private static final String[] types = {"unknown","tif","dcm","fits","pgm",
-		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj"};
+		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj","table"};
 	private static String defaultDirectory = null;
 	private static int fileType;
 	private boolean error;
@@ -171,6 +173,9 @@ public class Opener {
 					break;
 				case OJJ:  // ObjectJ project
 					IJ.runPlugIn("ObjectJ_", path);
+					break;
+				case TABLE:  // ImageJ Results table
+					openResultsTable(path);
 					break;
 				case UNKNOWN:
 					String msg =
@@ -712,7 +717,7 @@ public class Opener {
 		fi.directory = f.getParent()+File.separator;
 		return imp;
 	}
-	
+		
 	public String getName(String path) {
 		int i = path.lastIndexOf('/');
 		if (i==-1)
@@ -776,7 +781,17 @@ public class Opener {
 		}
 		return roi;
 	}
-
+	
+	/** Opens a tab or comma delimited text file in the Results window. */
+	public static void openResultsTable(String path) {
+		try {
+			ResultsTable rt = ResultsTable.open(path);
+			if (rt!=null) rt.show("Results");
+		} catch(IOException e) {
+			IJ.error("Open Results", e.getMessage());
+		}
+	}
+	
 	/**
 	Attempts to determine the image file type by looking for
 	'magic numbers' and the file name extension.
@@ -864,6 +879,10 @@ public class Opener {
 		// ObjectJ project
 		if (name.endsWith(".ojj")) 
 			return OJJ;
+
+		// Results table
+		if (name.endsWith(".xls")) 
+			return TABLE;
 
 		// Text file
 		boolean isText = true;

@@ -15,8 +15,8 @@ public class FolderOpener implements PlugIn {
 
 	private static boolean convertToGrayscale, convertToRGB;
 	private static boolean sortFileNames = true;
-	private static double scale = 100.0;
 	private static boolean virtualStack;
+	private double scale = 100.0;
 	private int n, start, increment;
 	private String filter;
 	private boolean isRegex;

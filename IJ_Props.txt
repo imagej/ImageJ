@@ -170,14 +170,14 @@ zoom06="Set... ",ij.plugin.Zoom("set")
 #zoom07="Maximize",ij.plugin.Zoom("max")
 
 # Plugins installed in the Image/Overlay submenu
-overlay01="Add Selection...[L]",ij.plugin.Overlay("add")
-overlay02="Add Image...",ij.plugin.Overlay("image")
-overlay03="Hide Overlay",ij.plugin.Overlay("hide")
-overlay04="Show Overlay",ij.plugin.Overlay("show")
-overlay05="From ROI Manager",ij.plugin.Overlay("from")
-overlay06="To ROI Manager",ij.plugin.Overlay("to")
-overlay07="Remove Overlay",ij.plugin.Overlay("remove")
-overlay08="Flatten[F]",ij.plugin.Overlay("flatten")
+overlay01="Add Selection...[L]",ij.plugin.OverlayCommands("add")
+overlay02="Add Image...",ij.plugin.OverlayCommands("image")
+overlay03="Hide Overlay",ij.plugin.OverlayCommands("hide")
+overlay04="Show Overlay",ij.plugin.OverlayCommands("show")
+overlay05="From ROI Manager",ij.plugin.OverlayCommands("from")
+overlay06="To ROI Manager",ij.plugin.OverlayCommands("to")
+overlay07="Remove Overlay",ij.plugin.OverlayCommands("remove")
+overlay08="Flatten[F]",ij.plugin.OverlayCommands("flatten")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")

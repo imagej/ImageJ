@@ -754,7 +754,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	public void setResultsTable(ResultsTable rt) {
 		this.rt = rt;
 	}
-
+	
+	public void scrollToTop() {
+		sbVert.setValue(0);
+		iY = 0;
+		for(int i=0;i<iColCount;i++)
+			tc.calcAutoWidth(i);
+		adjustHScroll();
+		tc.repaint();
+	}
+        
 	void flush() {
 		if (vData!=null)
 			vData.removeAllElements();

@@ -30,6 +30,8 @@ public class RoiProperties {
     	String nameLabel = isRange?"Range:":"Name:";
     	if (isRange) name = name.substring(7);
     	if (name==null) name = "";
+    	if (!isRange && (roi instanceof ImageRoi))
+    		return showImageDialog(name);
 		if (roi.getStrokeColor()!=null) strokeColor = roi.getStrokeColor();
 		if (strokeColor==null) strokeColor = Roi.getColor();
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
@@ -85,4 +87,21 @@ public class RoiProperties {
 		return true;
     }
         
+    public boolean showImageDialog(String name) {
+		GenericDialog gd = new GenericDialog(title);
+		gd.addStringField("Name:", name, 15);
+		gd.addNumericField("Opacity (0-100%):", ((ImageRoi)roi).getOpacity()*100.0, 0);
+		if (showCheckbox)
+			gd.addCheckbox("New Overlay", false);
+		gd.showDialog();
+		if (gd.wasCanceled()) return false;
+		name = gd.getNextString();
+		roi.setName(name.length()>0?name:null);
+		double opacity = gd.getNextNumber()/100.0;
+		((ImageRoi)roi).setOpacity(opacity);
+		boolean newOverlay = showCheckbox?gd.getNextBoolean():false;
+		if (newOverlay) roi.setName("new-overlay");
+		return true;
+    }
+
 }
