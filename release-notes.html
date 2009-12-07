@@ -5,35 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.43m, 7 December 2009</u>
+<li> <u>1.43n, 7 December 2009</u>
 <ul>
-<li> Virtual stacks can now be saved in TIFF, "raw", 
-<a href="http://rsb.info.nih.gov/ij/plugins/analyze.html">Analyze</a> and
-<a href="http://rsb.info.nih.gov/ij/plugins/nifti.html">NIfTI</a>
-format.
-<li> Thanks to Michael Schmid, "MinFeret" calculations are now
-more accurate and they correctly handle pixel aspect ratios not equal to 1.
-<li> Results tables (in tab-delimited format) with an ".xls" extension can be
-opened using File>Open and drag and drop.
-<li> When using the particle analyzer in a macro, the default values (0-Infinity, 0-1 and "Nothing")
-are assumed if the 'size', 'circularity' or 'show' options are omitted.
-<li> The updateResults() macro function and ResultsTable.show() method,
-when creating a new table, scroll to the top of the window
-(<a href="http://rsb.info.nih.gov/ij/macros/SineCosineTable.txt ">example</a>).
-<li> Added the Overlay.getSize() and Overlay.removeSelection() macro
-functions.
-<li> Added the ImagePlus.setOverlay(Overlay) method
-(<a href="http://rsb.info.nih.gov/ij/macros/js/RoisToOverlay.js">JavaScript example</a>).
-<li> Added the ImagePlus.setOverlay(Roi,Color,int,Color) method
-(<a href="http://rsb.info.nih.gov/ij/macros/js/TextOverlay3.js">JavaScript example</a>).
-<li> Added open(path) and saveAs(path) methods to the ResultsTable class
-(<a href="http://rsb.info.nih.gov/ij/macros/js/SaveAndOpenResultsTable.js">JavaScript example</a>).
-<li> Fixed a bug that caused <i>Analyze&gt;Summarize</i> to somethimes 
-fail if "Stack Position"
-was enabled in <i>Analyze&gt;Set Measurements</i>.
-<li> Volker Backer fixed a bug that sometimes caused the B&C adjuster 
-to work with the wrong channel of a composite color image after having changed
-the channel by dragging the channel selection slider.
+<li> The Command Finder (<i>Plugins&gt;Utilities&gt;Find Commands</i>) remembers
+the state of the "Close when running" checkbox.
+<li> Fixed a bug in the Command Finder that caused it to fail to run macros
+installed in the <i>Plugins&gt;Macros</i> submenu.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

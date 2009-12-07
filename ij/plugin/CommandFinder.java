@@ -103,7 +103,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	Hashtable commandsHash;
 	String [] commands;
 	Hashtable listLabelToCommand;
-	static boolean closeWhenRunning = true;
+	static boolean closeWhenRunning = Prefs.get("command-finder.close", true);
+;
 
 	protected String makeListLabel(String command, CommandAction ca, boolean fullInfo) {
 		if (fullInfo) {
@@ -156,7 +157,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		if (source==runButton) {
 			String selected = (String)completions.getSelectedValue();
 			if(selected==null) {
-				IJ.error("You must select a plugin to run");
+				IJ.error("Please select a command to run");
 				return;
 			}
 			runFromLabel(selected);
@@ -206,19 +207,19 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	protected void runFromLabel(String listLabel) {
 		String command = (String)listLabelToCommand.get(listLabel);
 		CommandAction ca = (CommandAction)commandsHash.get(command);
-		if (ca.classCommand != null ) {
-			IJ.showStatus("Running command "+ca.classCommand);
-			IJ.doCommand(command);
-		} else if (ca.menuItem != null) {
-			IJ.showStatus("Clicking menu item "+ca.menuLocation+" > "+command);
-			ActionEvent ae = new ActionEvent(ca.menuItem, ActionEvent.ACTION_PERFORMED, command);
-			ActionListener [] als = ca.menuItem.getActionListeners();
-			for (int i=0; i<als.length; ++i)
-				als[i].actionPerformed(ae);
-		} else {
-			IJ.error("BUG: nothing to run found for '"+listLabel+"'");
-			return;
-		}
+		//if (ca.classCommand != null ) {
+		IJ.showStatus("Running command "+ca.classCommand);
+		IJ.doCommand(command);
+		//} else if (ca.menuItem != null) {
+		//	IJ.showStatus("Clicking menu item "+ca.menuLocation+" > "+command);
+		//	ActionEvent ae = new ActionEvent(ca.menuItem, ActionEvent.ACTION_PERFORMED, command);
+		//	ActionListener [] als = ca.menuItem.getActionListeners();
+		//	for (int i=0; i<als.length; ++i)
+		//		als[i].actionPerformed(ae);
+		//} else {
+		//	IJ.error("BUG: nothing to run found for '"+listLabel+"'");
+		//	return;
+		//}
 		closeWhenRunning = closeCheckBox.isSelected();
 		if (closeWhenRunning)
 			d.dispose();
@@ -518,7 +519,8 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 	public void windowClosing(WindowEvent e) {
 		d.dispose();
-	}
+		Prefs.set("command-finder.close", closeWhenRunning);
+ }
 
 	public void windowActivated(WindowEvent e) { }
 	public void windowDeactivated(WindowEvent e) { }
