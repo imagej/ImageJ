@@ -72,7 +72,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	public void run(String arg) {
 		imp = IJ.getImage();
 		if (imp.getStackSize()==1) {
-			IJ.error("Othogonal Views", "The command requires a stack.");
+			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
 		}
 		if (instance!=null && imp==instance.imp) {

@@ -192,7 +192,7 @@ public class FileOpener {
 		if (ip.getMin()==ip.getMax())  // find stack min and max if first slice is blank
 			setStackDisplayRange(imp);
 		if (!silentMode) IJ.showProgress(1.0);
-		silentMode = false;
+		//silentMode = false;
 		return imp;
 	}
 
@@ -474,14 +474,18 @@ public class FileOpener {
 	}
 
 	static void error(String msg, FileInfo fi, long offset, long length) {
-		IJ.error("FileOpener", "FileInfo parameter error. \n"
+		String msg2 = "FileInfo parameter error. \n"
 			+msg + "\n \n"
 			+"  Width: " + fi.width + "\n"
 			+"  Height: " + fi.height + "\n"
 			+"  Offset: " + offset + "\n"
 			+"  Bytes/pixel: " + fi.getBytesPerPixel() + "\n"
-			+(length>0?"  File length: " + length + "\n":"")
-		);
+			+(length>0?"  File length: " + length + "\n":"");
+		if (silentMode) {
+			IJ.log("Error opening "+fi.directory+fi.fileName);
+			IJ.log(msg2);
+		} else
+			IJ.error("FileOpener", msg2);
 	}
 
 
