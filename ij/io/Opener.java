@@ -880,8 +880,8 @@ public class Opener {
 		if (name.endsWith(".ojj")) 
 			return OJJ;
 
-		// Results table
-		if (name.endsWith(".xls")) 
+		// Results table (tab-delimited or comma-separated tabular text)
+		if (name.endsWith(".xls") || name.endsWith(".csv")) 
 			return TABLE;
 
 		// Text file
