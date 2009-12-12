@@ -591,7 +591,8 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Opens a tab or comma delimited text file as a ResultsTable.
-	     Displays a file open dialog if 'path' is empty or null. */
+	     Displays a file open dialog if 'path' is empty or null.
+	     Displays non-numeric tables in a TextWindow and returns null. */
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";
 		final String cellSeparator =  ",\t";
@@ -617,6 +618,8 @@ public class ResultsTable implements Cloneable {
 		int firstColumn = headings[0].equals(" ")?1:0;
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
+		if (!labels && openNonNumericTable(path, lines, firstRow, cellSeparator))
+			return null;
 		ResultsTable rt = new ResultsTable();
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
@@ -631,8 +634,33 @@ public class ResultsTable implements Cloneable {
 		return rt;
 	}
 	
-	/** Saves this ResultsTable as a tab or comma (.csv) delimited text file. Displays
-	     a file save dialog if 'path' is empty or null. */
+	static boolean openNonNumericTable(String path, String[] lines, int firstRow, String cellSeparator) {
+		if (lines.length<=2) return false;
+		String[] items=Tools.split(lines[1], cellSeparator);
+		boolean allNumeric = true;
+		for (int i=0; i<items.length; i++) {
+			if (!items[i].equals("NaN") && Double.isNaN(Tools.parseDouble(items[i]))) {
+				allNumeric = false;
+				break;
+			}
+		}
+		boolean csv = path.endsWith(".csv");
+		if (allNumeric) return false;
+		if (csv) lines[0] = lines[0].replaceAll(",", "\t");
+		StringBuffer sb = new StringBuffer();
+		for (int i=1; i<lines.length; i++) {
+			sb.append(lines[i]);
+			sb.append("\n");
+		}
+		String str = sb.toString();
+		if (csv) str = str.replaceAll(",", "\t");
+		new TextWindow(new File(path).getName(), lines[0], str, 500, 400);
+		return true;
+	}
+	
+	/** Saves this ResultsTable as a tab or comma delimited text file. The table
+	     is saved as a CSV (comma-separated values) file if 'path' ends with ".csv".
+	     Displays a file save dialog if 'path' is empty or null. */
 	public void saveAs(String path) throws IOException {
 		if (getCounter()==0) throw new IOException("Table is empty");
 		if (path==null || path.equals("")) {
