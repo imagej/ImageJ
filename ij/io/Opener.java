@@ -184,8 +184,12 @@ public class Opener {
 					if (path!=null) {
 						if (path.length()>64)
 							path = (new File(path)).getName();
-						if (path.length()<=64)
-							msg += " \n	 \n"+path;
+						if (path.length()<=64) {
+							if (IJ.redirectingErrorMessages())
+								msg += " \n   "+path;
+							else
+								msg += " \n	 \n"+path;
+						}
 					}
 					if (openUsingPlugins)
 						msg += "\n \nNOTE: The \"OpenUsingPlugins\" option is set.";

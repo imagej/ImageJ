@@ -194,7 +194,8 @@ public class IJ {
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
- 		redirectErrorMessages = false;
+		if (redirectErrorMessages && !"HandleExtraFileTypes".equals(className))
+ 			redirectErrorMessages = false;
 		suppressPluginNotFoundError = false;
 		return thePlugIn;
 	} 
@@ -511,12 +512,14 @@ public class IJ {
 		console if ImageJ is not present. */
 	public static synchronized void error(String title, String msg) {
 		String title2 = title!=null?title:"ImageJ";
+		boolean abortMacro = title!=null;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
+			if (abortMacro && title.equals("Opener")) abortMacro = false;
 			redirectErrorMessages = false;
 		} else
 			showMessage(title2, msg);
-		if (title!=null) Macro.abort();
+		if (abortMacro) Macro.abort();
 	}
 
 	/** Displays a message in a dialog box with the specified title.
