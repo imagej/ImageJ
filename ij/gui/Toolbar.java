@@ -44,6 +44,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int SIZE = 26;
 	private static final int OFFSET = 5;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
+	private static final String ARC_SIZE = "toolbar.arc.size";
 		
 	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS, SIZE);
 	private boolean[] down;
@@ -75,6 +76,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static boolean multiPointMode = Prefs.multiPointMode;
 	private static boolean roundRectMode;
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
+	private static int arcSize = (int)Prefs.get(ARC_SIZE, 20);
 	private int lineType = LINE;
 	
 	private Color gray = ImageJ.backgroundColor;
@@ -225,7 +227,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case RECTANGLE:
 				xOffset = x; yOffset = y;
 				if (roundRectMode)
-					g.drawRoundRect(x+1, y+2, 15, 12, 7, 7);
+					g.drawRoundRect(x+1, y+2, 15, 12, 8, 8);
 				else
 					g.drawRect(x+1, y+2, 15, 12);
 				drawTriangle(15,14);
@@ -679,7 +681,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
-	/** Returns the size of the brush tool or 0 if the brush tool is not enabled. */
+	/** Returns the size of the brush tool, or 0 if the brush tool is not enabled. */
 	public static int getBrushSize() {
 		if (brushEnabled)
 			return brushSize;
@@ -694,14 +696,34 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 		
+	/** Returns the rounded rectangle arc size, or 0 if the rounded rectangle tool is not enabled. */
+	public static int getRoundRectArcSize() {
+		if (!roundRectMode)
+			return 0;
+		else
+			return arcSize;
+	}
+
+	/** Sets the rounded rectangle arc size (pixels). */
+	public static void setRoundRectArcSize(int size) {
+		if (size==0)
+			roundRectMode = false;
+		else {
+			arcSize = size;
+			Prefs.set(ARC_SIZE, arcSize);
+			roundRectMode = true;
+			Prefs.set(ARC_SIZE, arcSize);
+		}
+		repaintTool(RECTANGLE);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Roi roi = imp!=null?imp.getRoi():null;
+		if (roi!=null && roi.getType()==Roi.RECTANGLE)
+			roi.setRoundRectArcSize(roundRectMode?arcSize:0);
+	}
+
 	/** Returns 'true' if the multi-point tool is enabled. */
 	public static boolean getMultiPointMode() {
 		return multiPointMode;
-	}
-
-	/** Returns 'true' if the rounded-rect tool is enabled. */
-	public static boolean getRoundRectMode() {
-		return roundRectMode;
 	}
 
 	public static int getButtonSize() {
@@ -846,6 +868,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 			ImagePlus imp = WindowManager.getCurrentImage();
 			switch (current) {
+				case RECTANGLE:
+					if (roundRectMode)
+						showRoundRectDialog();
+					break;
 				case OVAL:
 					showBrushDialog();
 					break;
@@ -966,6 +992,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			roundRectMode = item==roundRectItem;
 			repaintTool(RECTANGLE);
 			showMessage(RECTANGLE);
+			ImagePlus imp = WindowManager.getCurrentImage();
+			Roi roi = imp!=null?imp.getRoi():null;
+			if (roi!=null && roi.getType()==Roi.RECTANGLE)
+				roi.setRoundRectArcSize(roundRectMode?arcSize:0);
 		} else if (item==ovalItem || item==brushItem) {
 			brushEnabled = item==brushItem;
 			repaintTool(OVAL);
@@ -1166,5 +1196,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 
+	void showRoundRectDialog() {
+		GenericDialog gd = new GenericDialog("Rounded Rectangle");
+		gd.addNumericField("Corner arc size:", arcSize, 0, 4, "pixels");
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		setRoundRectArcSize((int)gd.getNextNumber());
+	}
 
 }

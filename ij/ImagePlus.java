@@ -1307,10 +1307,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		killRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
-				if (Toolbar.getRoundRectMode())
-					roi = new Roi(sx, sy, this, 20);
-				else
-					roi = new Roi(sx, sy, this);
+				roi = new Roi(sx, sy, this, Toolbar.getRoundRectArcSize());
 				break;
 			case Toolbar.OVAL:
 				roi = new OvalRoi(sx, sy, this);

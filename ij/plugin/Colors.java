@@ -133,6 +133,17 @@ public class Colors implements PlugIn, ItemListener {
 		else if (hex.equals("ff00ff")) color = "magenta";
 		return color;
 	}
+	
+	/** Converts a Color into a string ("red", "green", #aa55ff, etc.). */
+	public static String colorToString(Color color) {
+		String str = color!=null?"#"+Integer.toHexString(color.getRGB()):"none";
+		if (str.length()==9 && str.startsWith("#ff"))
+			str = "#"+str.substring(3);
+		String str2 = hexToColor(str);
+		return str2!=null?str2:str;
+	}
+
+
 
 	private static float parseHex(String hex) {
 		float value = 0f;

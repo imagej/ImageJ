@@ -998,8 +998,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (imp!=null) imp.draw();
 		if (record()) {
-			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
-			Recorder.record("roiManager", "Set Line Width", lineWidth);
+			if (fillColor!=null)
+				Recorder.record("roiManager", "Set Fill Color", Colors.colorToString(fillColor));
+			else {
+				Recorder.record("roiManager", "Set Color", Colors.colorToString(color!=null?color:Color.red));
+				Recorder.record("roiManager", "Set Line Width", lineWidth);
+			}
 		}
 	}
 	

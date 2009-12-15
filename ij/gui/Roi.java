@@ -26,8 +26,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	int activeHandle;
 	int state;
 	int modState = NO_MODS;
-	int radius;
-	int gpx, gpy;
+	int arcSize;
 	
 	public static Roi previousRoi;
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
@@ -65,13 +64,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	/** Creates a new rounded rectangular Roi. */
-	public Roi(int x, int y, int width, int height, int radius) {
+	public Roi(int x, int y, int width, int height, int arcSize) {
 		setImage(null);
 		if (width<1) width = 1;
 		if (height<1) height = 1;
 		if (width>xMax) width = xMax;
 		if (height>yMax) height = yMax;
-		this.radius = radius;
+		this.arcSize = arcSize;
 		//setLocation(x, y);
 		this.x = x;
 		this.y = y;
@@ -108,7 +107,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	/** Starts the process of creating a user-defined rectangular Roi,
 		where sx and sy are the starting screen coordinates. */
-	public Roi(int sx, int sy, ImagePlus imp, int radius) {
+	public Roi(int sx, int sy, ImagePlus imp, int arcSize) {
 		setImage(imp);
 		int ox=sx, oy=sy;
 		if (ic!=null) {
@@ -116,7 +115,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			oy = ic.offScreenY(sy);
 		}
 		setLocation(ox, oy);
-		this.radius = radius;
+		this.arcSize = arcSize;
 		width = 0;
 		height = 0;
 		state = CONSTRUCTING;
@@ -745,12 +744,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			saveStroke = g2d.getStroke();
 			g2d.setStroke(stroke);
 		}
-		if (radius>0) {
-			int sradius = (int)Math.round(radius*mag);
+		if (arcSize>0) {
+			int sArcSize = (int)Math.round(arcSize*mag);
 			if (fillColor!=null)
-				g.fillRoundRect(sx1, sy1, sw, sh, sradius, sradius);
+				g.fillRoundRect(sx1, sy1, sw, sh, sArcSize, sArcSize);
 			else
-				g.drawRoundRect(sx1, sy1, sw, sh, sradius, sradius);
+				g.drawRoundRect(sx1, sy1, sw, sh, sArcSize, sArcSize);
 		} else {
 			if (fillColor!=null)
 				g.fillRect(sx1, sy1, sw, sh);
@@ -826,50 +825,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	*/
 	public void drawPixels(ImageProcessor ip) {
 		endPaste();
-		if (radius>0)
-			getShapeRoi().drawPixels(ip);
+		if (arcSize>0)
+			(new ShapeRoi(new RoundRectangle2D.Float(x, y, width, height, arcSize, arcSize))).drawPixels(ip);
 		else
 			ip.drawRect(x, y, width, height);
 		if (Line.getWidth()>1)
 			updateFullWindow = true;
-	}
-
-	/** Taken from the Fiji Rounded_Rectangle plugin. */
-	private ShapeRoi getShapeRoi() {
-		int radius = this.radius/2;
-		GeneralPath gp = new GeneralPath();
-		start(gp, x+radius, y);
-		quarterCircle(gp, radius, -90);
-		straight(gp, 0, height-2*radius);
-		quarterCircle(gp, radius, -180);
-		straight(gp, width-2*radius, 0);
-		quarterCircle(gp, radius, -270);
-		straight(gp, 0, 2*radius-height);
-		quarterCircle(gp, radius, 0);
-		gp.closePath();
-		return new ShapeRoi(gp);
-	}
-	
-	private void start(GeneralPath gp, int x, int y) {
-		gpx = x; gpy = y;
-		gp.moveTo(gpx, gpy);
-	}
-	
-	private void straight(GeneralPath gp, int x, int y) {
-		gpx += x; gpy += y;
-		gp.lineTo(gpx, gpy);
-	}
-	
-	private void quarterCircle(GeneralPath gp, int radius, int startAngle) {
-		final float kappa = (float)(4 * (Math.sqrt(2) - 1) / 3);
-		float dx = (float)Math.cos(Math.PI * startAngle / 180) * radius;
-		float dy = (float)Math.sin(Math.PI * startAngle / 180) * radius;
-		float x1 = gpx + (1 - kappa) * dy;
-		float y1 = gpy + (1 - kappa) * -dx;
-		gpx += dy - dx; gpy += -dx - dy;
-		float x2 = gpx + (1 - kappa) * dx;
-		float y2 = gpy + (1 - kappa) * dy;
-		gp.curveTo(x1, y1, x2, y2, gpx, gpy);
 	}
 	
 	public boolean contains(int x, int y) {
@@ -926,8 +887,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				Recorder.record("makeLine", line.x1, line.y1, line.x2, line.y2);
 			} else if (type==OVAL)
 				Recorder.record("makeOval", x, y, width, height);
-			else if (!(this instanceof TextRoi))
-				Recorder.record("makeRectangle", x, y, width, height);
+			else if (!(this instanceof TextRoi)) {
+				if (arcSize==0)
+					Recorder.record("makeRectangle", x, y, width, height);
+				else {
+					if (Recorder.scriptMode())
+						Recorder.recordCall("imp.setRoi(new Roi("+x+", "+y+", "+width+", "+height+", "+arcSize+"));");
+					else
+						Recorder.record("makeRectangle", x, y, width, height, arcSize);
+				}
+			}
 		}
 		if (Toolbar.getToolId()==Toolbar.OVAL&&Toolbar.getBrushSize()>0)  {
 			int flags = ic!=null?ic.getModifiers():16;
@@ -1038,8 +1007,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		
 	/** Always returns null for rectangular Roi's */
 	public ImageProcessor getMask() {
-		if (radius>0)
-			return getShapeRoi().getMask();
+		if (arcSize>0)
+			return (new ShapeRoi(new RoundRectangle2D.Float(x, y, width, height, arcSize, arcSize))).getMask();
 		else
 			return null;
 	}
@@ -1222,6 +1191,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			imp.updateAndDraw();
 	}
 	
+	/** Sets the rounded rectangle arc size (pixels). */
+	public void setRoundRectArcSize(int size) {
+		arcSize = size;
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			imp.updateAndDraw();
+	}
+
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
 		if no paste operation is in progress.
 		@see ij.process.Blitter
