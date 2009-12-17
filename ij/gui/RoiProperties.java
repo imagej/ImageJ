@@ -38,6 +38,7 @@ public class RoiProperties {
 		int width = roi.getStrokeWidth();
 		if (width>1) strokeWidth = width;
 		boolean isText = roi instanceof TextRoi;
+		boolean isLine = roi.isLine();
 		if (isText) {
 			Font font = ((TextRoi)roi).getCurrentFont();
 			strokeWidth = font.getSize();
@@ -54,8 +55,10 @@ public class RoiProperties {
 			gd.addStringField(nameLabel, name, 15);
 		gd.addStringField("Stroke Color: ", linec);
 		gd.addNumericField(isText?"Font Size":"Width:", strokeWidth, 0);
-		gd.addMessage("");
-		gd.addStringField("Fill Color: ", fillc);
+		if (!isLine) {
+			gd.addMessage("");
+			gd.addStringField("Fill Color: ", fillc);
+		}
 		if (showCheckbox)
 			gd.addCheckbox("New Overlay", false);
 		gd.showDialog();
@@ -66,7 +69,8 @@ public class RoiProperties {
 		}
 		linec = gd.getNextString();
 		strokeWidth = (int)gd.getNextNumber();
-		fillc = gd.getNextString();
+		if (!isLine)
+			fillc = gd.getNextString();
 		boolean newOverlay = showCheckbox?gd.getNextBoolean():false;
 			
 		strokeColor = Colors.decode(linec, Roi.getColor());

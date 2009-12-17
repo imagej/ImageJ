@@ -690,7 +690,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (mag<1.0)
 				m = (int)(4.0/mag);
 		}
-		if (type==POINT) m += 4;
+		if (type==POINT || type==LINE) m += 4;
 		m += getStrokeWidth();
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
@@ -1194,6 +1194,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Sets the rounded rectangle arc size (pixels). */
 	public void setRoundRectArcSize(int size) {
 		arcSize = size;
+		if (arcSize<0) arcSize = 0;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null)
 			imp.updateAndDraw();

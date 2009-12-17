@@ -67,7 +67,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private CheckboxMenuItem rectItem, roundRectItem;
 	private CheckboxMenuItem ovalItem, brushItem;
 	private CheckboxMenuItem pointItem, multiPointItem;
-	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem;
+	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
 	private String currentSet = "Startup Macros";
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
@@ -75,6 +75,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static boolean brushEnabled;
 	private static boolean multiPointMode = Prefs.multiPointMode;
 	private static boolean roundRectMode;
+	private static boolean arrowMode;
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
 	private static int arcSize = (int)Prefs.get(ARC_SIZE, 20);
 	private int lineType = LINE;
@@ -141,15 +142,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		linePopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			linePopup.setFont(Menus.getFont());
-		straightLineItem = new CheckboxMenuItem("Straight Lines", lineType==LINE);
+		straightLineItem = new CheckboxMenuItem("Straight Line", lineType==LINE&&!arrowMode);
 		straightLineItem.addItemListener(this);
 		linePopup.add(straightLineItem);
-		polyLineItem = new CheckboxMenuItem("Segmented Lines", lineType==POLYLINE);
+		polyLineItem = new CheckboxMenuItem("Segmented Line", lineType==POLYLINE);
 		polyLineItem.addItemListener(this);
 		linePopup.add(polyLineItem);
-		freeLineItem = new CheckboxMenuItem("Freehand Lines", lineType==FREELINE);
+		freeLineItem = new CheckboxMenuItem("Freehand Line", lineType==FREELINE);
 		freeLineItem.addItemListener(this);
 		linePopup.add(freeLineItem);
+		arrowItem = new CheckboxMenuItem("Arrow tool", lineType==LINE&&!arrowMode);
+		arrowItem.addItemListener(this);
+		linePopup.add(arrowItem);
 		add(linePopup);
 
 		switchPopup = new PopupMenu();
@@ -255,8 +259,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case LINE:
 				xOffset = x; yOffset = y;
-				m(0,12); d(17,3);
-				//m(0,10); d(16,4);
+				if (arrowMode) {
+					m(1,14); d(14,1); m(6,5); d(14,1); m(10,9); d(14,1); m(6,5); d(10,9);
+				} else {
+					m(0,12); d(17,3);
+				}
 				drawTriangle(12,14);
 				return;
 			case POLYLINE:
@@ -454,7 +461,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				IJ.showStatus("Freehand selections");
 				return;
 			case LINE:
-				IJ.showStatus("Straight line selections (right click for other types)");
+				if (arrowMode)
+					IJ.showStatus("Arrow tool");
+				else
+					IJ.showStatus("Straight line selections (right click for other types)");
 				return;
 			case POLYLINE:
 				IJ.showStatus("Segmented line selections");
@@ -542,9 +552,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			setTool(POLYLINE);
 		else if (name.indexOf("freeline")!=-1)
 			setTool(FREELINE);
-		else if (name.indexOf("line")!=-1)
+		else if (name.indexOf("line")!=-1) {
+			arrowMode = false;
 			setTool(LINE);
-		else if (name.indexOf("free")!=-1)
+		} else if (name.indexOf("arrow")!=-1) {
+			arrowMode = true;
+			setTool(LINE);
+		} else if (name.indexOf("free")!=-1)
 			setTool(FREEROI);
 		else if (name.indexOf("multi")!=-1) {
 			multiPointMode = true;
@@ -586,7 +600,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			case OVAL: return brushEnabled?"brush":"oval";
 			case POLYGON: return "polygon";
 			case FREEROI: return "freehand";
-			case LINE: return "line";
+			case LINE: return arrowMode?"arrow":"line";
 			case POLYLINE: return "polyline";
 			case FREELINE: return "freeline";
 			case ANGLE: return "angle";
@@ -615,10 +629,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 		
 	private void setTool2(int tool) {
-		if ((tool==current&&!(tool==OVAL||tool==POINT)) || !isValidTool(tool)) return;
+		if (!isValidTool(tool)) return;
 		current = tool;
 		down[current] = true;
-		down[previous] = false;
+		if (current!=previous)
+			down[previous] = false;
 		Graphics g = this.getGraphics();
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
@@ -706,12 +721,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	/** Sets the rounded rectangle arc size (pixels). */
 	public static void setRoundRectArcSize(int size) {
-		if (size==0)
+		if (size<=0)
 			roundRectMode = false;
 		else {
 			arcSize = size;
-			Prefs.set(ARC_SIZE, arcSize);
-			roundRectMode = true;
 			Prefs.set(ARC_SIZE, arcSize);
 		}
 		repaintTool(RECTANGLE);
@@ -849,9 +862,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				mouseDownTime = 0L;
 			}
 			if (isLine(current) && isRightClick) {
-				straightLineItem.setState(lineType==LINE);
+				straightLineItem.setState(lineType==LINE&&!arrowMode);
 				polyLineItem.setState(lineType==POLYLINE);
 				freeLineItem.setState(lineType==FREELINE);
+				arrowItem.setState(lineType==LINE&&arrowMode);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				linePopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
@@ -882,7 +896,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					break;
 				case LINE: case POLYLINE: case FREELINE:
-					IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
+					if (current==LINE && arrowMode) {
+						try {IJ.run("Properties... ");} // Edit>Selecetion>Properties
+						catch(Exception ex) {}
+					} else
+						IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
 					break;
 				case POINT:
 					if (multiPointMode) {
@@ -1007,6 +1025,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			showMessage(POINT);
 		} else if (item==straightLineItem) {
 			lineType = LINE;
+			arrowMode = false;
 			setTool2(LINE);
 			showMessage(LINE);
 		} else if (item==polyLineItem) {
@@ -1017,6 +1036,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			lineType = FREELINE;
 			setTool2(FREELINE);
 			showMessage(FREELINE);
+		} else if (item==arrowItem) {
+			lineType = LINE;
+			arrowMode = true;
+			setTool2(LINE);
+			showMessage(LINE);
 		} else {
 			String label = item.getActionCommand();
 			if (!label.equals("Help...")) currentSet = label;

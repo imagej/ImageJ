@@ -72,7 +72,7 @@ public class OverlayCommands implements PlugIn {
 		overlay.add(roi);
 		imp.setOverlay(overlay);
 		overlay2 = overlay;
-		if (points || (roi instanceof ImageRoi)) imp.killRoi();
+		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
 	}
 	
 	void addImage() {
