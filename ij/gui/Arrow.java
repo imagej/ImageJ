@@ -7,19 +7,21 @@ import java.awt.geom.*;
 
 /** This is an Roi subclass for creating and displaying arrows. */
 public class Arrow extends Line {
-	private static int defaultColor;
-	private static int defaultWidth = 2;
+	private static Color defaultColor = Roi.getColor();
+	private static double defaultWidth = 2.0;
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
 		lineWidth = 1;
-		setStrokeWidth(defaultWidth);
+		setStrokeWidth((float)defaultWidth);
 	}
 
 	public Arrow(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
-		lineWidth = 1;
-		setStrokeWidth(defaultWidth);
+		double mag = imp!=null&&imp.getCanvas()!=null?imp.getCanvas().getMagnification():1.0; 
+		if (mag>1.0) mag = 1.0;
+		setStrokeColor(defaultColor);
+		setStrokeWidth((float)(defaultWidth/mag));
 	}
 
 	/** Draws this arrow on the image. */
@@ -35,15 +37,8 @@ public class Arrow extends Line {
 		int sy2 = ic.screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
-		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
-		}
-		drawArrow(g2d, sx1, sy1, sx2, sy2);
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
-		if (state!=CONSTRUCTING && !displayList) {
+		drawArrow((Graphics2D)g, sx1, sy1, sx2, sy2);
+		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
@@ -56,10 +51,11 @@ public class Arrow extends Line {
 	}
 
 	void drawArrow(Graphics2D g, double x1, double y1, double x2, double y2) {
-		double arrowWidth = getStrokeWidth();
-		double size = 8+10*arrowWidth*0.5;
 		double mag = ic.getMagnification();
-		//if (mag>1.0) size *= mag;
+		Stroke saveStroke = g.getStroke();
+		g.setStroke(new BasicStroke((float)(getStrokeWidth()*mag)));
+		double arrowWidth = getStrokeWidth();
+		double size = 8+10*arrowWidth*mag*0.5;
 		double dx = x2-x1;
 		double dy = y2-y1;
 		double ra = Math.sqrt(dx*dx + dy*dy);
@@ -72,9 +68,10 @@ public class Arrow extends Line {
 		double y4 = Math.round(y3-dx*r);
 		double x5 = Math.round(x3-dy*r);
 		double y5 = Math.round(y3+dx*r);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (ra>size)
 			g.drawLine((int)x1, (int)y1, (int)(x2-dx*size), (int)(y2-dy*size));
-		//g.setStroke(new BasicStroke(1));
+		g.setStroke(saveStroke);
 		GeneralPath path = new GeneralPath();
 		path.moveTo((float)x4, (float)y4);
 		path.lineTo((float)x2, (float)y2);
@@ -84,7 +81,7 @@ public class Arrow extends Line {
 	}
 
 	public void drawPixels(ImageProcessor ip) {
-		int width = getStrokeWidth();
+		int width = (int)Math.round(getStrokeWidth());
 		ip.setLineWidth(width);
 		double size = 8+10*width*0.5;
 		double dx = x2-x1;
@@ -106,6 +103,24 @@ public class Arrow extends Line {
 		poly.addPoint((int)x5,(int)y5);
 		Roi roi = new PolygonRoi(poly, Roi.POLYGON);
 		ip.fill(roi);
+	}
+	
+	public static void setDefaultColor(Color color) {
+		if (color==null) color = Roi.getColor();
+		defaultColor = color;
+	}
+
+	public static Color getDefaultColor() {
+		return defaultColor;
+	}
+
+	public static void setDefaultWidth(double width) {
+		if (width<0.5) width = 0.5;
+		defaultWidth = width;
+	}
+
+	public static double getDefaultWidth() {
+		return defaultWidth;
 	}
 
 }

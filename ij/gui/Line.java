@@ -304,7 +304,7 @@ public class Line extends Roi {
 		int sy2 = ic.screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
-		if (lineWidth>1 && !displayList) {
+		if (lineWidth>1 && !overlay) {
 			Graphics2D g2d = (Graphics2D)g;
 			GeneralPath path = new GeneralPath();
 			path.moveTo(sx1, sy1);
@@ -327,7 +327,7 @@ public class Line extends Roi {
 		}
 		g.drawLine(sx1, sy1, sx2, sy2);
 		if (saveStroke!=null) g2d.setStroke(saveStroke);
-		if (state!=CONSTRUCTING && !displayList) {
+		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);

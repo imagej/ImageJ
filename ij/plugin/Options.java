@@ -22,6 +22,8 @@ public class Options implements PlugIn {
 			{conversions(); return;}
 		else if (arg.equals("display"))
 			{appearance(); return;}
+		else if (arg.equals("arrow"))
+			{arrowToolOptions(); return;}
 	}
 				
 	// Miscellaneous Options
@@ -214,6 +216,21 @@ public class Options implements PlugIn {
 				}
 			}
 		}
+	}
+	
+	void arrowToolOptions() {
+		double width = Arrow.getDefaultWidth();
+		int digits = (int)width==width?0:1;
+		Color color = Arrow.getDefaultColor();
+		GenericDialog gd = new GenericDialog("Arrow Tool");
+		gd.addStringField("Default_color: ", Colors.colorToString(color));
+		gd.addNumericField("Default_width:", width, digits, 6, "pixels");
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		width = gd.getNextNumber();
+		Arrow.setDefaultWidth(width);
+		String str = gd.getNextString();
+		Arrow.setDefaultColor(Colors.decode(str,null));
 	}
 
 } // class Options

@@ -154,7 +154,7 @@ public class PolygonRoi extends Roi {
         }
 		if (saveStroke!=null) g2d.setStroke(saveStroke);
         if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
-        && state!=CONSTRUCTING && clipboard==null && !displayList) {
+        && state!=CONSTRUCTING && clipboard==null && !overlay) {
             if (ic!=null) mag = ic.getMagnification();
             int size2 = HANDLE_SIZE/2;
             if (activeHandle>0)
@@ -428,7 +428,7 @@ public class PolygonRoi extends Roi {
 		int handleSize = type==POINT?HANDLE_SIZE+8:HANDLE_SIZE;
 		if (handleSize<lineWidth && isLine()) handleSize= lineWidth;
 		int m = mag<1.0?(int)(handleSize/mag):handleSize;
-		m += getStrokeWidth();
+		m = (int)(m*getStrokeWidth());
 		imp.draw(xmin2-m, ymin2-m, xmax2-xmin2+m*2, ymax2-ymin2+m*2);
 	}
 

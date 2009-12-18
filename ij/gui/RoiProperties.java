@@ -24,7 +24,7 @@ public class RoiProperties {
     public boolean showDialog() {
     	Color strokeColor = null;
     	Color fillColor = null;
-    	int strokeWidth = 1;
+    	double strokeWidth = 1.0;
     	String name= roi.getName();
     	boolean isRange = name!=null && name.startsWith("range: ");
     	String nameLabel = isRange?"Range:":"Name:";
@@ -35,8 +35,8 @@ public class RoiProperties {
 		if (roi.getStrokeColor()!=null) strokeColor = roi.getStrokeColor();
 		if (strokeColor==null) strokeColor = Roi.getColor();
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
-		int width = roi.getStrokeWidth();
-		if (width>1) strokeWidth = width;
+		double width = roi.getStrokeWidth();
+		if (width>1.0) strokeWidth = width;
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		if (isText) {
@@ -50,11 +50,12 @@ public class RoiProperties {
 		if (lc!=null) linec = lc;
 		String fillc = fillColor!=null?"#"+Integer.toHexString(fillColor.getRGB()):"none";
 		if (IJ.isMacro()) fillc = "none";
+		int digits = (int)strokeWidth==strokeWidth?0:1;
 		GenericDialog gd = new GenericDialog(title);
 		if (showName)
 			gd.addStringField(nameLabel, name, 15);
 		gd.addStringField("Stroke Color: ", linec);
-		gd.addNumericField(isText?"Font Size":"Width:", strokeWidth, 0);
+		gd.addNumericField(isText?"Font Size":"Width:", strokeWidth, digits);
 		if (!isLine) {
 			gd.addMessage("");
 			gd.addStringField("Fill Color: ", fillc);
@@ -68,7 +69,7 @@ public class RoiProperties {
 			if (!isRange) roi.setName(name.length()>0?name:null);
 		}
 		linec = gd.getNextString();
-		strokeWidth = (int)gd.getNextNumber();
+		strokeWidth = gd.getNextNumber();
 		if (!isLine)
 			fillc = gd.getNextString();
 		boolean newOverlay = showCheckbox?gd.getNextBoolean():false;
@@ -77,16 +78,16 @@ public class RoiProperties {
 		fillColor = Colors.decode(fillc, null);
 		if (isText) {
 			Font font = ((TextRoi)roi).getCurrentFont();
-			if (strokeWidth!=font.getSize()) {
-				font = new Font(font.getName(), font.getStyle(), strokeWidth);
+			if ((int)strokeWidth!=font.getSize()) {
+				font = new Font(font.getName(), font.getStyle(), (int)strokeWidth);
 				((TextRoi)roi).setCurrentFont(font);
 			}
 		} else
-			roi.setStrokeWidth(strokeWidth);
+			roi.setStrokeWidth((float)strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
-		if (strokeWidth>1)
+		if (strokeWidth>1.0)
 			Line.setWidth(1);
 		return true;
     }

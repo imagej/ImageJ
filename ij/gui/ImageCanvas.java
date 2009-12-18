@@ -156,7 +156,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (roi==currentRoi) {
 				Color lineColor = roi.getStrokeColor();
 				Color fillColor = roi.getFillColor();
-				int lineWidth = roi.getStrokeWidth();
+				float lineWidth = roi.getStrokeWidth();
 				roi.setStrokeColor(null);
 				roi.setFillColor(null);
 				roi.setStrokeWidth(1);
@@ -263,7 +263,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (roi instanceof TextRoi)
 			((TextRoi)roi).drawText(g);
 		else
-			roi.drawDisplayList(g);
+			roi.drawOverlay(g);
 		roi.setStrokeColor(saveColor);
 		if (index>=0) {
 			if (roi==currentRoi)

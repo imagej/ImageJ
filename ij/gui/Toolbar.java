@@ -897,7 +897,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					break;
 				case LINE: case POLYLINE: case FREELINE:
 					if (current==LINE && arrowMode) {
-						try {IJ.run("Properties... ");} // Edit>Selecetion>Properties
+						try {IJ.run("Arrow Tool...");} // Edit>Options>Arrow Tool
 						catch(Exception ex) {}
 					} else
 						IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");

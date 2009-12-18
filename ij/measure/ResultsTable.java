@@ -51,6 +51,7 @@ public class ResultsTable implements Cloneable {
 	private int precision = 3;
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
+	private boolean headingSet; 
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -310,6 +311,13 @@ public class ResultsTable implements Cloneable {
 
 	/** Returns a tab or comma delimited string containing the column headings. */
 	public String getColumnHeadings() {
+		if (headingSet && !rowLabelHeading.equals("")) { // workaround setHeading() bug
+			for (int i=0; i<=lastColumn; i++) {
+				if (columns[i]!=null && rowLabelHeading.equals(headings[i]))
+					{headings[i]=null; columns[i]=null;}
+			}
+			headingSet = false;
+		}
 		StringBuffer sb = new StringBuffer(200);
 		sb.append(" "+delimiter);
 		if (rowLabels!=null)
@@ -369,6 +377,7 @@ public class ResultsTable implements Cloneable {
 		if (columns[column]==null)
 			columns[column] = new double[maxRows];
 		if (column>lastColumn) lastColumn = column;
+		headingSet = true;
 	}
 	
 	/** Sets the headings used by the Measure command ("Area", "Mean", etc.). */

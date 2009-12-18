@@ -234,7 +234,7 @@ public class OvalRoi extends Roi {
 		else
 			g.drawOval(sx1, sy1, sw, sh);
 		if (saveStroke!=null) g2d.setStroke(saveStroke);
-		if (state!=CONSTRUCTING && clipboard==null && !displayList) {
+		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1+sw2-size2, sy1+sh2-size2);
 			drawHandle(g, sx3-sw2-size2, sy1+sh2-size2);

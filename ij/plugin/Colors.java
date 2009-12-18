@@ -143,8 +143,6 @@ public class Colors implements PlugIn, ItemListener {
 		return str2!=null?str2:str;
 	}
 
-
-
 	private static float parseHex(String hex) {
 		float value = 0f;
 		try {value=Integer.parseInt(hex,16);}

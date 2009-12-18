@@ -296,7 +296,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (color==null && defaultColor!=null)
 			color = defaultColor;
 		if (lineWidth<0) {
-			int sw = roi.getStrokeWidth();
+			int sw = (int)roi.getStrokeWidth();
 			lineWidth = sw>1?sw:defaultLineWidth;
 		}
 		if (lineWidth>100) lineWidth = 1;
@@ -952,7 +952,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			RoiProperties rp = new RoiProperties("Properties", rpRoi);
 			if (!rp.showDialog())
 				return;
-			lineWidth =  rpRoi.getStrokeWidth();
+			lineWidth =  (int)rpRoi.getStrokeWidth();
 			defaultLineWidth = lineWidth;
 			color =  rpRoi.getStrokeColor();
 			fillColor =  rpRoi.getFillColor();

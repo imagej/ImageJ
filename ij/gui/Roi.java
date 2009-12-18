@@ -55,7 +55,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected Color fillColor;
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
-	protected boolean displayList;
+	protected boolean overlay;
 
 
 	/** Creates a new rectangular Roi. */
@@ -691,7 +691,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				m = (int)(4.0/mag);
 		}
 		if (type==POINT || type==LINE) m += 4;
-		m += getStrokeWidth();
+		m = (int)(m*getStrokeWidth());
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
 	 }
@@ -757,7 +757,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				g.drawRect(sx1, sy1, sw, sh);
 		}
 		if (saveStroke!=null) g2d.setStroke(saveStroke);
-		if (state!=CONSTRUCTING && clipboard==null && !displayList) {
+		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1-size2, sy1-size2);
 			drawHandle(g, sx2-size2, sy1-size2);
@@ -774,10 +774,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			{updateFullWindow = false; imp.draw();}
 	}
 	
-	public void drawDisplayList(Graphics g) {
-		displayList = true;
+	public void drawOverlay(Graphics g) {
+		overlay = true;
 		draw(g);
-		displayList = false;
+		overlay = false;
 	}
 	
 	void drawPreviousRoi(Graphics g) {
@@ -1150,14 +1150,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * @see #setStrokeColor(Color)
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
-	public void setStrokeWidth(int width) {
+	public void setStrokeWidth(float width) {
 		this.stroke = new BasicStroke(width);
-		if (width>1) fillColor = null;
+		if (width>1f) fillColor = null;
 	}
 
 	/** Returns the lineWidth. */
-	public int getStrokeWidth() {
-		return stroke!=null?(int)stroke.getLineWidth():1;
+	public float getStrokeWidth() {
+		return stroke!=null?stroke.getLineWidth():1;
 	}
 
 	/** Sets the Stroke used to draw this ROI. */
