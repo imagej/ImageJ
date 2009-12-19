@@ -7,21 +7,14 @@ import java.awt.geom.*;
 
 /** This is an Roi subclass for creating and displaying arrows. */
 public class Arrow extends Line {
-	private static Color defaultColor = Roi.getColor();
-	private static double defaultWidth = 2.0;
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
-		lineWidth = 1;
-		setStrokeWidth((float)defaultWidth);
+		setStrokeWidth(2);
 	}
 
 	public Arrow(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
-		double mag = imp!=null&&imp.getCanvas()!=null?imp.getCanvas().getMagnification():1.0; 
-		if (mag>1.0) mag = 1.0;
-		setStrokeColor(defaultColor);
-		setStrokeWidth((float)(defaultWidth/mag));
 	}
 
 	/** Draws this arrow on the image. */
@@ -105,22 +98,8 @@ public class Arrow extends Line {
 		ip.fill(roi);
 	}
 	
-	public static void setDefaultColor(Color color) {
-		if (color==null) color = Roi.getColor();
-		defaultColor = color;
-	}
-
-	public static Color getDefaultColor() {
-		return defaultColor;
-	}
-
-	public static void setDefaultWidth(double width) {
-		if (width<0.5) width = 0.5;
-		defaultWidth = width;
-	}
-
-	public static double getDefaultWidth() {
-		return defaultWidth;
+	public boolean isDrawingTool() {
+		return true;
 	}
 
 }

@@ -188,7 +188,8 @@ class ColorGenerator extends ColorProcessor {
         drawLine(xa+9, ya+9, xa+4, ya+9);
         drawLine(xa+8, ya+8, xa+3, ya+8);
     }
-}
+    
+} // class ColorPicker
 
 class ColorCanvas extends ImageCanvas {
 

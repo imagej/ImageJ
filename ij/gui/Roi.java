@@ -37,6 +37,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected int type;
 	protected int xMax, yMax;
 	protected ImagePlus imp;
+	private int imageID;
 	protected ImageCanvas ic;
 	protected int oldX, oldY, oldWidth, oldHeight;
 	protected int clipX, clipY, clipWidth, clipHeight;
@@ -120,6 +121,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		height = 0;
 		state = CONSTRUCTING;
 		type = RECTANGLE;
+		if (isDrawingTool()) {
+			setStrokeColor(Toolbar.getForegroundColor());
+			if (!(this instanceof TextRoi)) {
+				double mag = imp!=null&&imp.getCanvas()!=null?imp.getCanvas().getMagnification():1.0; 
+				if (mag>1.0) mag = 1.0;
+				if (Line.getWidth()==1 && !Line.widthChanged)
+					Line.setWidth((int)(2.0/mag));
+				if (mag<1.0 && Line.getWidth()*mag<1.0)
+						Line.setWidth((int)(1.0/mag));
+				setStrokeWidth(Line.getWidth());
+			}
+		}
 		fillColor = defaultFillColor;
 	}
 
@@ -156,6 +169,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return imp;
 	}
 	
+	/** Returns the ID of the image associated with this ROI. */
+	public int getImageID() {
+		return imp!=null?imp.getID():imageID;
+	}
+
 	public int getType() {
 		return type;
 	}
@@ -325,6 +343,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			r.setImage(null);
 			r.setStroke(getStroke());
 			r.setFillColor(getFillColor());
+			r.imageID = getImageID();
 			return r;
 		}
 		catch (CloneNotSupportedException e) {return null;}
@@ -1216,16 +1235,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return pasteMode;
 	}
 	
-	/** Returns true if this is an area selection. */
+	/** Returns 'true' if this is an area selection. */
 	public boolean isArea() {
 		return (type>=RECTANGLE && type<=TRACED_ROI) || type==COMPOSITE;
 	}
 
-	/** Returns true if this is a line selection. */
+	/** Returns 'true' if this is a line selection. */
     public boolean isLine() {
         return type>=LINE && type<=FREELINE;
     }
     
+	/** Returns 'true' if this is an ROI primarily used from drawing
+		(e.g., Rounded Rectangle, TextRoi or Arrow). */
+    public boolean isDrawingTool() {
+        return arcSize>0;
+    }
+
 	/** Convenience method that converts Roi type to a human-readable form. */
 	public String getTypeAsString() {
 		String s="";

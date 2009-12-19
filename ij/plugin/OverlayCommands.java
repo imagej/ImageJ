@@ -54,7 +54,7 @@ public class OverlayCommands implements PlugIn {
 		}
 		roi = (Roi)roi.clone();
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && overlay.size()>0) {
+		if (overlay!=null && overlay.size()>0 && !roi.isDrawingTool()) {
 			Roi roi2 = overlay.get(overlay.size()-1);
 			roi.setStrokeColor(roi2.getStrokeColor());
 			roi.setStrokeWidth(roi2.getStrokeWidth());
@@ -62,7 +62,7 @@ public class OverlayCommands implements PlugIn {
 		}
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
-		if (!IJ.altKeyDown()) {
+		if (!IJ.altKeyDown() && !roi.isDrawingTool()) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
@@ -101,7 +101,6 @@ public class OverlayCommands implements PlugIn {
 				index = 1;
 		} else if (imp.getID()==wList[0])
 			index = 1;
-
 
 		GenericDialog gd = new GenericDialog("Add Image...");
 		gd.addChoice("Image to add:", titles, titles[index]);

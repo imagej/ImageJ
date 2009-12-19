@@ -87,7 +87,7 @@ public class RoiProperties {
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
-		if (strokeWidth>1.0)
+		if (strokeWidth>1.0 && !roi.isDrawingTool())
 			Line.setWidth(1);
 		return true;
     }

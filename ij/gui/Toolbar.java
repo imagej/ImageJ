@@ -673,7 +673,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			drawButton(this.getGraphics(), DROPPER);
 		}
 	}
-
+	
 	public static Color getForegroundColor() {
 		return foregroundColor;
 	}
@@ -682,6 +682,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (c!=null) {
 			foregroundColor = c;
 			repaintTool(DROPPER);
+			if (!IJ.isMacro()) setRoiColor(c);
 		}
 	}
 
@@ -696,6 +697,19 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
+	private static void setRoiColor(Color c) {
+		if (Roi.previousRoi==null) return;
+		int id = Roi.previousRoi.getImageID();
+		if (id>=0) return;
+		ImagePlus imp = WindowManager.getImage(id);
+		if (imp==null) return;
+		Roi roi = imp.getRoi();
+		if (roi!=null && (roi.isDrawingTool())) {
+			roi.setStrokeColor(c);
+			imp.draw();
+		}
+	}
+
 	/** Returns the size of the brush tool, or 0 if the brush tool is not enabled. */
 	public static int getBrushSize() {
 		if (brushEnabled)
@@ -896,11 +910,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					break;
 				case LINE: case POLYLINE: case FREELINE:
-					if (current==LINE && arrowMode) {
-						try {IJ.run("Arrow Tool...");} // Edit>Options>Arrow Tool
-						catch(Exception ex) {}
-					} else
-						IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
+					IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
 					break;
 				case POINT:
 					if (multiPointMode) {

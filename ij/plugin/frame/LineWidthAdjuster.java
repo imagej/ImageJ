@@ -100,7 +100,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	void setup() {
 	}
 	
-
 	// Separate thread that does the potentially time-consuming processing 
 	public void run() {
 		while (!done) {
@@ -112,7 +111,30 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 				if (setText) tf.setText(""+value);
 				setText = false;
 				updateWindows();
+				updateRois();
 			}
+		}
+	}
+	
+	private static void updateRois() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.isDrawingTool()) {
+				roi.setStrokeWidth(Line.getWidth());
+				imp.draw();
+				return;
+			}
+		}
+		if (Roi.previousRoi==null) return;
+		int id = Roi.previousRoi.getImageID();
+		if (id>=0) return;
+		imp = WindowManager.getImage(id);
+		if (imp==null) return;
+		Roi roi = imp.getRoi();
+		if (roi!=null && (roi.isDrawingTool())) {
+			roi.setStrokeWidth(Line.getWidth());
+			imp.draw();
 		}
 	}
 	
@@ -185,6 +207,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 			instance.tf.setText(""+lineWidth);
 		}
 	}
-
+	
 } 
 

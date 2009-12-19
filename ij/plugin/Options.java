@@ -22,8 +22,6 @@ public class Options implements PlugIn {
 			{conversions(); return;}
 		else if (arg.equals("display"))
 			{appearance(); return;}
-		else if (arg.equals("arrow"))
-			{arrowToolOptions(); return;}
 	}
 				
 	// Miscellaneous Options
@@ -218,6 +216,7 @@ public class Options implements PlugIn {
 		}
 	}
 	
+	/*
 	void arrowToolOptions() {
 		double width = Arrow.getDefaultWidth();
 		int digits = (int)width==width?0:1;
@@ -232,5 +231,6 @@ public class Options implements PlugIn {
 		String str = gd.getNextString();
 		Arrow.setDefaultColor(Colors.decode(str,null));
 	}
+	*/
 
 } // class Options

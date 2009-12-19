@@ -17,6 +17,7 @@ public class Line extends Roi {
 	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private double xHandleOffset, yHandleOffset;
 	private double startxd, startyd;
+	static boolean widthChanged;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
@@ -456,6 +457,7 @@ public class Line extends Roi {
 			if (w>max) w = max;
 		}
 		lineWidth = w;
+		widthChanged = true;
 	}
 	
 	/** Return the bounding rectangle of this line. */

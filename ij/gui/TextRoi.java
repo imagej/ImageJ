@@ -363,6 +363,10 @@ public class TextRoi extends Roi {
 		recordSetFont = true;
 	}
 	
+	public boolean isDrawingTool() {
+		return true;
+	}
+
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();
