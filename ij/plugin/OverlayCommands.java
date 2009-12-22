@@ -62,7 +62,7 @@ public class OverlayCommands implements PlugIn {
 		}
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
-		if (!IJ.altKeyDown() && !roi.isDrawingTool()) {
+		if (!IJ.altKeyDown() && !(roi instanceof Arrow)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
@@ -73,6 +73,7 @@ public class OverlayCommands implements PlugIn {
 		imp.setOverlay(overlay);
 		overlay2 = overlay;
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
+		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
 	
 	void addImage() {
@@ -148,6 +149,7 @@ public class OverlayCommands implements PlugIn {
 			overlayList.add(roi);
 			imp.setOverlay(overlayList);
 			overlay2 = overlayList;
+			Undo.setup(Undo.OVERLAY_ADDITION, imp);
 		}
 	}
 

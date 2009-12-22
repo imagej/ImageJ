@@ -162,9 +162,10 @@ public class ResultsTable implements Cloneable {
 		rowLabels[row] = label;
 	}
 	
-	/** Set the row label column to null. */
+	/** Set the row label column to null if the column label is "Label". */
 	public void disableRowLabels() {
-		rowLabels = null;
+		if (rowLabelHeading.equals("Label"))
+			rowLabels = null;
 	}
 	
 	/** Returns a copy of the given column as a float array,

@@ -17,6 +17,7 @@ public class Undo {
 	public static final int COMPOUND_FILTER = 4;
 	public static final int COMPOUND_FILTER_DONE = 5;
 	public static final int TRANSFORM = 6;
+	public static final int OVERLAY_ADDITION = 7;
 	
 	private static int whatToUndo = NOTHING;
 	private static int imageID;
@@ -54,13 +55,16 @@ public class Undo {
 				ipCopy = ip.duplicate();
 			else
 				ipCopy = null;
+		} else if (what==OVERLAY_ADDITION) {
+			impCopy = null;
+			ipCopy = null;
 		} else
 			ipCopy = null;
 	}
 	
 	
 	public static void reset() {
-		if (whatToUndo==COMPOUND_FILTER)
+		if (whatToUndo==COMPOUND_FILTER || whatToUndo==OVERLAY_ADDITION)
 			return;
 		whatToUndo = NOTHING;
 		imageID = 0;
@@ -73,7 +77,7 @@ public class Undo {
 	public static void undo() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")  "+(imageID!=imp.getID()));
-		if (imageID!=imp.getID()) {
+		if (imp==null || imageID!=imp.getID()) {
 			reset();
 			return;
 		}
@@ -106,6 +110,19 @@ public class Undo {
 				if (roi!=null)
 					roi.abortPaste();
 	    		break;
+			case OVERLAY_ADDITION:
+				Overlay overlay = imp.getOverlay();
+				if (overlay==null) 
+					{IJ.beep(); return;}
+				int size = overlay.size();
+				if (size>0) {
+					overlay.remove(size-1);
+					imp.draw();
+				} else {
+					IJ.beep();
+					return;
+				}
+	    		return; //don't reset
     	}
     	reset();
 	}

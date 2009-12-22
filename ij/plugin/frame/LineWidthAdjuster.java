@@ -110,21 +110,17 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 				Line.setWidth(value);
 				if (setText) tf.setText(""+value);
 				setText = false;
-				updateWindows();
-				updateRois();
+				updateRoi();
 			}
 		}
 	}
 	
-	private static void updateRois() {
+	private static void updateRoi() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi.isDrawingTool()) {
-				roi.setStrokeWidth(Line.getWidth());
-				imp.draw();
-				return;
-			}
+			if (roi!=null && roi.isLine())
+				{roi.updateWideLine(); imp.draw(); return;}
 		}
 		if (Roi.previousRoi==null) return;
 		int id = Roi.previousRoi.getImageID();
@@ -132,25 +128,12 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		imp = WindowManager.getImage(id);
 		if (imp==null) return;
 		Roi roi = imp.getRoi();
-		if (roi!=null && (roi.isDrawingTool())) {
-			roi.setStrokeWidth(Line.getWidth());
+		if (roi!=null && roi.isLine()) {
+			roi.updateWideLine();
 			imp.draw();
 		}
 	}
 	
-    void updateWindows() {
-		int[] list = WindowManager.getIDList();
-		if (list==null) return;
-		for (int i=0; i<list.length; i++) {
-			ImagePlus imp = WindowManager.getImage(list[i]);
-			if (imp!=null) {
-				Roi roi = imp.getRoi();
-				if (roi!=null && roi.isLine())
-					imp.draw();
-			}
-		}
-	}
-
 	boolean isSplineFit() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return false;

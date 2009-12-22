@@ -1486,7 +1486,7 @@ public class Functions implements MacroConstants, Measurements {
 		vy1.setValue(y1);
 		vx2.setValue(x2);
 		vy2.setValue(y2);				
-		lineWidth.setValue(Line.getWidth());				
+		lineWidth.setValue(roi!=null?roi.getStrokeWidth():1);				
 	}
 	
 	void getVoxelSize() {

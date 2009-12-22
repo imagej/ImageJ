@@ -148,6 +148,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		int oldMeasurements = systemMeasurements;
 		setOptions(gd);
 		int index = gd.getNextChoiceIndex();
 		redirectTarget = index==0?0:wList[index-1];
@@ -156,13 +157,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int prec = (int)gd.getNextNumber();
 		if (prec<0) prec = 0;
 		if (prec>9) prec = 9;
-		if (prec!=precision) {
+		boolean notationChanged = (oldMeasurements&SCIENTIFIC_NOTATION)!=(systemMeasurements&SCIENTIFIC_NOTATION);
+		if (prec!=precision || notationChanged) {
 			precision = prec;
 			rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
-			if (IJ.isResultsWindow()) {
-				IJ.setColumnHeadings("");
-				updateHeadings();
-			}
+			rt.show("Results");
 		}
 	}
 	
@@ -179,7 +178,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				systemMeasurements &= ~list[i];
 		}
-		if ((oldMeasurements&(~LIMIT))!=(systemMeasurements&(~LIMIT))&&IJ.isResultsWindow()) {
+		if ((oldMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
 				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 				rt.update(systemMeasurements, imp, null);
 		}
@@ -326,7 +325,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (update) rt.update(measurements, imp, roi);
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
-		int lineWidth = Line.getWidth();
+		int lineWidth = (int)Math.round(roi.getStrokeWidth());
 		ImageProcessor ip2;
 		Rectangle saveR = null;
 		if (straightLine && lineWidth>1) {
@@ -617,26 +616,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		IJ.write(rt.getRowAsString(counter-1));
 	}
 
-	/** Updates the displayed column headings. Does nothing if
-	    the results table headings and the displayed headings are
-        the same. Redisplays the results if the headings are
-        different and the results table is not empty. */
+	/** Redisplays the results table. */
 	public void updateHeadings() {
-		TextPanel tp = IJ.getTextPanel();
-		if (tp==null)
-			return;
-		String worksheetHeadings = tp.getColumnHeadings();		
-		String tableHeadings = rt.getColumnHeadings();		
-		if (worksheetHeadings.equals(tableHeadings))
-			return;
-		IJ.setColumnHeadings(tableHeadings);
-		int n = rt.getCounter();
-		if (n>0) {
-			StringBuffer sb = new StringBuffer(n*tableHeadings.length());
-			for (int i=0; i<n; i++)
-				sb.append(rt.getRowAsString(i)+"\n");
-			tp.append(new String(sb));
-		}
+		rt.show("Results");
 	}
 
 	/** Converts a number to a formatted string with a tab at the end. */

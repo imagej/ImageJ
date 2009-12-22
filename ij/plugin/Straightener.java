@@ -16,7 +16,7 @@ public class Straightener implements PlugIn {
 			IJ.error("Straightener", "Line selection required");
 			return;
 		}
-		int width = Line.getWidth();
+		int width = (int)Math.round(roi.getStrokeWidth());
 		int originalWidth = width;
 		boolean isMacro = IJ.macroRunning();
 		int stackSize = imp.getStackSize();

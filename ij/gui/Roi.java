@@ -57,6 +57,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected BasicStroke stroke;
 	protected boolean nonScalable;
 	protected boolean overlay;
+	protected boolean wideLine;
 
 
 	/** Creates a new rectangular Roi. */
@@ -1158,6 +1159,17 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		setStrokeWidth(width) ;
 	}
         
+	public void updateWideLine() {
+		if (isLine()) {
+			setStrokeWidth(lineWidth);
+			if (getStrokeColor()==null) {
+				Color c = getColor();
+				setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue(), 77));
+			}
+			wideLine = true;
+		}
+	}
+
     /** Set 'nonScalable' true to have TextRois in a display 
 		list drawn at a fixed location  and size. */
 	public void setNonScalable(boolean nonScalable) {
@@ -1170,7 +1182,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeWidth(float width) {
-		this.stroke = new BasicStroke(width);
+		//this.stroke = new BasicStroke(width);
+		this.stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 		if (width>1f) fillColor = null;
 	}
 
