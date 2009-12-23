@@ -128,16 +128,13 @@ public class PolygonRoi extends Roi {
 		}
 		g.setColor(color);
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
+		if (stroke!=null)
 			g2d.setStroke(getScaledStroke());
-		}
         if (xSpline!=null) {
             if (type==POLYLINE || type==FREELINE) {
                 drawSpline(g, xSpline, ySpline, splinePoints, false, fill);
                 if (wideLine) {
-                	g2d.setStroke(new BasicStroke(1));
+                	g2d.setStroke(onePixelWide);
                 	g.setColor(getColor());
                 	drawSpline(g, xSpline, ySpline, splinePoints, false, fill);
                 }
@@ -147,7 +144,7 @@ public class PolygonRoi extends Roi {
             if (type==POLYLINE || type==FREELINE || type==ANGLE || state==CONSTRUCTING) {
                 g.drawPolyline(xp2, yp2, nPoints);
                 if (wideLine) {
-                	g2d.setStroke(new BasicStroke(1));
+                	g2d.setStroke(onePixelWide);
                 	g.setColor(getColor());
                 	g.drawPolyline(xp2, yp2, nPoints);
                 }
@@ -160,7 +157,6 @@ public class PolygonRoi extends Roi {
             if (state==CONSTRUCTING && type!=FREEROI && type!=FREELINE)
                 drawStartBox(g);
         }
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
         if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
         && state!=CONSTRUCTING && clipboard==null && !overlay) {
             if (ic!=null) mag = ic.getMagnification();

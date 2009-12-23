@@ -53,12 +53,20 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		roi = (Roi)roi.clone();
+		if (roi.getStrokeColor()==null)
+			roi.setStrokeColor(Toolbar.getForegroundColor());
+		int width = Line.getWidth();
+		Rectangle bounds = roi.getBounds();
+		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
+		if (roi.getStroke()==null && width>1 && !tooWide)
+			roi.setStrokeWidth(Line.getWidth());
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && overlay.size()>0 && !roi.isDrawingTool()) {
 			Roi roi2 = overlay.get(overlay.size()-1);
-			roi.setStrokeColor(roi2.getStrokeColor());
-			roi.setStrokeWidth(roi2.getStrokeWidth());
-			roi.setFillColor(roi2.getFillColor());
+			if (roi.getStroke()==null)
+				roi.setStrokeWidth(roi2.getStrokeWidth());
+			if (roi.getFillColor()==null)
+				roi.setFillColor(roi2.getFillColor());
 		}
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);

@@ -260,7 +260,7 @@ public class FileOpener {
 			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS_Reader", path);
 			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
-	    	return;
+			return;
 		}
 
 		if (fi.fileFormat==fi.ZIP_ARCHIVE) {

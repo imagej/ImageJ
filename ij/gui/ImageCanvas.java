@@ -211,6 +211,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
 		}
+		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }
     
 	public int getSliceNumber(String label) {
@@ -234,6 +235,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     		if (overlay==null) break;
     		drawRoi(g, (Roi)list.get(i), drawLabels?i+LIST_OFFSET:-1);
     	}
+		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }
     
     void initGraphics(Graphics g) {
@@ -324,6 +326,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (zoomIndicatorColor==null)
 			zoomIndicatorColor = new Color(128, 128, 255);
 		g.setColor(zoomIndicatorColor);
+		((Graphics2D)g).setStroke(Roi.onePixelWide);
 		g.drawRect(x1, y1, w1, h1);
 		if (w2*h2<=200 || w2<10 || h2<10)
 			g.fillRect(x1+x2, y1+y2, w2, h2);

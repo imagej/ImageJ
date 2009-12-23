@@ -60,8 +60,12 @@ public class RoiProperties {
 			gd.addMessage("");
 			gd.addStringField("Fill Color: ", fillc);
 		}
-		if (showCheckbox)
+		if (showCheckbox) {
 			gd.addCheckbox("New Overlay", false);
+			gd.setInsets(15, 10, 0);
+			gd.addMessage("Use the alt-b shortcut\nto skip this dialog.");
+		}
+		
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 		if (showName) {

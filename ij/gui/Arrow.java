@@ -45,7 +45,6 @@ public class Arrow extends Line {
 
 	void drawArrow(Graphics2D g, double x1, double y1, double x2, double y2) {
 		double mag = ic.getMagnification();
-		Stroke saveStroke = g.getStroke();
 		g.setStroke(new BasicStroke((float)(getStrokeWidth()*mag)));
 		double arrowWidth = getStrokeWidth();
 		double size = 8+10*arrowWidth*mag*0.5;
@@ -64,7 +63,6 @@ public class Arrow extends Line {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (ra>size)
 			g.drawLine((int)x1, (int)y1, (int)(x2-dx*size), (int)(y2-dy*size));
-		g.setStroke(saveStroke);
 		GeneralPath path = new GeneralPath();
 		path.moveTo((float)x4, (float)y4);
 		path.lineTo((float)x2, (float)y2);

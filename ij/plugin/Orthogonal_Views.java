@@ -11,7 +11,7 @@ import java.util.*;
  
 /**
  * 
-* @author (C)Dimiter Prodanov
+* @author Dimiter Prodanov
 * 		  IMEC
 * 
 * @acknowledgments Many thanks to Jerome Mutterer for the code contributions and testing.

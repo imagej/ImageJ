@@ -29,6 +29,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	int arcSize;
 	
 	public static Roi previousRoi;
+	public static final BasicStroke onePixelWide = new BasicStroke(1);
 	protected static Color ROIColor = Prefs.getColor(Prefs.ROICOLOR,Color.yellow);
 	protected static int pasteMode = Blitter.COPY;
 	protected static int lineWidth = 1;
@@ -714,6 +715,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		m = (int)(m+getStrokeWidth());
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
+		//if (IJ.debugMode) IJ.log("updateClipRect: "+m+"  "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 	 }
 		
 	protected void handleMouseDrag(int sx, int sy, int flags) {
@@ -759,11 +761,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		int sx3 = sx1+sw;
 		int sy3 = sy1+sh;
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
+		if (stroke!=null)
 			g2d.setStroke(getScaledStroke());
-		}
 		if (arcSize>0) {
 			int sArcSize = (int)Math.round(arcSize*mag);
 			if (fillColor!=null)
@@ -776,7 +775,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			else
 				g.drawRect(sx1, sy1, sw, sh);
 		}
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
 		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1-size2, sy1-size2);
@@ -1167,12 +1165,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void updateWideLine(float width) {
 		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"  "+getType());
 		if (isLine()) {
+			wideLine = true;
 			setStrokeWidth(width);
 			if (getStrokeColor()==null) {
 				Color c = getColor();
 				setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue(), 77));
 			}
-			wideLine = true;
 		}
 	}
 
@@ -1189,7 +1187,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 */
 	public void setStrokeWidth(float width) {
 		//this.stroke = new BasicStroke(width);
-		this.stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+		if (wideLine)
+			this.stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+		else
+			this.stroke = new BasicStroke(width);
 		if (width>1f) fillColor = null;
 	}
 

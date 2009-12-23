@@ -298,21 +298,17 @@ public class Line extends Roi {
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = stroke;
+		if (stroke!=null)
 			g2d.setStroke(getScaledStroke());
-		}
 		g.drawLine(sx1, sy1, sx2, sy2);
 		if (wideLine) {
-			g2d.setStroke(new BasicStroke(1));
+			g2d.setStroke(onePixelWide);
 			g.setColor(getColor());
 			g.drawLine(sx1, sy1, sx2, sy2);
 		}
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
-			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
+			handleColor = strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 		}

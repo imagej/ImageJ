@@ -224,16 +224,12 @@ public class OvalRoi extends Roi {
 		int sx3 = sx1+sw;
 		int sy3 = sy1+sh;
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
+		if (stroke!=null) 
 			g2d.setStroke(getScaledStroke());
-		}
 		if (fillColor!=null)
 			g.fillOval(sx1, sy1, sw, sh);
 		else
 			g.drawOval(sx1, sy1, sw, sh);
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
 		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1+sw2-size2, sy1+sh2-size2);
