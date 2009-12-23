@@ -120,7 +120,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
 			if (roi!=null && roi.isLine())
-				{roi.updateWideLine(); imp.draw(); return;}
+				{roi.updateWideLine(Line.getWidth()); imp.draw(); return;}
 		}
 		if (Roi.previousRoi==null) return;
 		int id = Roi.previousRoi.getImageID();
@@ -129,7 +129,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		if (imp==null) return;
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isLine()) {
-			roi.updateWideLine();
+			roi.updateWideLine(Line.getWidth());
 			imp.draw();
 		}
 	}

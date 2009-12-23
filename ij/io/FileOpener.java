@@ -255,6 +255,14 @@ public class FileOpener {
 	    	return;
 		}
 
+		if (fi.fileFormat==fi.FITS) {
+			// restore FITS
+			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS_Reader", path);
+			if (imp2!=null)
+				imp.setProcessor(null, imp2.getProcessor());
+	    	return;
+		}
+
 		if (fi.fileFormat==fi.ZIP_ARCHIVE) {
 			// restore ".zip" file
 			ImagePlus imp2 = (new Opener()).openZip(path);

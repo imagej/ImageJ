@@ -157,10 +157,11 @@ public class Straightener implements PlugIn {
 	}
 	
 	public ImageProcessor rotateLine(ImagePlus imp, int width) {
-		Line.setWidth(1);
 		Roi roi = imp.getRoi();
+		float saveStrokeWidth = roi.getStrokeWidth();
+		roi.setStrokeWidth(1f);
 		Polygon p = roi.getPolygon();
-		Line.setWidth(width);
+		roi.setStrokeWidth(saveStrokeWidth);
 		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
 		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straightenLine(imp, width);
 		imp.setRoi(roi);

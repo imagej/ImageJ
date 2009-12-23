@@ -175,6 +175,7 @@ public class FileInfo implements Cloneable {
 			+ ", height=" + height
 			+ ", nImages=" + nImages
 			+ ", type=" + getType()
+			+ ", format=" + fileFormat
 			+ ", offset=" + getOffset()
 			+ ", whiteZero=" + (whiteIsZero?"t":"f")
 			+ ", Intel=" + (intelByteOrder?"t":"f")

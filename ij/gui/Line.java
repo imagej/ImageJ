@@ -53,7 +53,7 @@ public class Line extends Roi {
 		type = LINE;
 		int lineWidth = Line.getWidth();
 		if (!(this instanceof Arrow) && lineWidth>1)
-			updateWideLine();
+			updateWideLine(lineWidth);
 	}
 
 	/** Obsolete */
@@ -300,8 +300,8 @@ public class Line extends Roi {
 		Graphics2D g2d = (Graphics2D)g;
 		Stroke saveStroke = null;
 		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
+			saveStroke = stroke;
+			g2d.setStroke(getScaledStroke());
 		}
 		g.drawLine(sx1, sy1, sx2, sy2);
 		if (wideLine) {

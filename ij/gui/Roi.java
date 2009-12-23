@@ -711,7 +711,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				m = (int)(4.0/mag);
 		}
 		if (type==POINT || type==LINE) m += 4;
-		m = (int)(m*getStrokeWidth());
+		m = (int)(m+getStrokeWidth());
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
 	 }
@@ -762,7 +762,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		Stroke saveStroke = null;
 		if (stroke!=null) {
 			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
+			g2d.setStroke(getScaledStroke());
 		}
 		if (arcSize>0) {
 			int sArcSize = (int)Math.round(arcSize*mag);
@@ -847,9 +847,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		endPaste();
 		if (arcSize>0)
 			(new ShapeRoi(new RoundRectangle2D.Float(x, y, width, height, arcSize, arcSize))).drawPixels(ip);
-		else
+		else {
+			int saveWidth = ip.getLineWidth();
+			if (getStrokeWidth()>1f)
+				ip.setLineWidth((int)Math.round(getStrokeWidth()));
 			ip.drawRect(x, y, width, height);
-		if (Line.getWidth()>1)
+			ip.setLineWidth(saveWidth);
+		}
+		if (Line.getWidth()>1 || getStrokeWidth()>1)
 			updateFullWindow = true;
 	}
 	
@@ -1159,9 +1164,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		setStrokeWidth(width) ;
 	}
         
-	public void updateWideLine() {
+	public void updateWideLine(float width) {
+		//IJ.log("updateWideLine "+isLine()+"  "+isDrawingTool()+"  "+getType());
 		if (isLine()) {
-			setStrokeWidth(lineWidth);
+			setStrokeWidth(width);
 			if (getStrokeColor()==null) {
 				Color c = getColor();
 				setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue(), 77));
@@ -1200,6 +1206,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	/** Returns the Stroke used to draw this ROI, or null if no Stroke is used. */
 	public BasicStroke getStroke() {
 		return stroke;
+	}
+	
+	protected BasicStroke getScaledStroke() {
+		if (ic==null) return stroke;
+		float width = stroke.getLineWidth();
+		double mag = ic.getMagnification();
+		if (width>1 && mag!=1.0)
+			return new BasicStroke((float)(width*mag), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+		else
+			return stroke;
 	}
 
 	/** Returns the name of this ROI, or null. */

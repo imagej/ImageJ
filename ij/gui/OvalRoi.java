@@ -227,7 +227,7 @@ public class OvalRoi extends Roi {
 		Stroke saveStroke = null;
 		if (stroke!=null) {
 			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
+			g2d.setStroke(getScaledStroke());
 		}
 		if (fillColor!=null)
 			g.fillOval(sx1, sy1, sw, sh);
@@ -254,8 +254,14 @@ public class OvalRoi extends Roi {
 	/** Draws an outline of this OvalRoi on the image. */
 	public void drawPixels(ImageProcessor ip) {
 		Polygon p = getPolygon();
-		if (p.npoints>0) ip.drawPolygon(p);
-		if (Line.getWidth()>1)
+		if (p.npoints>0) {
+			int saveWidth = ip.getLineWidth();
+			if (getStrokeWidth()>1f)
+				ip.setLineWidth((int)Math.round(getStrokeWidth()));
+			ip.drawPolygon(p);
+			ip.setLineWidth(saveWidth);
+		}
+		if (Line.getWidth()>1 || getStrokeWidth()>1)
 			updateFullWindow = true;
 	}		
 

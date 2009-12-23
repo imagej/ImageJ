@@ -645,8 +645,9 @@ public class Functions implements MacroConstants, Measurements {
 				x[n] = (int)Math.round(interp.getExpression());
 				if (n==2 && interp.nextToken()==')') {
 					interp.getRightParen();
-					Line.setWidth((int)x[n]);
-					IJ.makeLine(x1, y1, x2, y2);
+					Roi line = new Line(x1, y1, x2, y2);
+					line.updateWideLine((float)x[n]);
+					getImage().setRoi(line);
 					return;
 				}
 				interp.getComma();
