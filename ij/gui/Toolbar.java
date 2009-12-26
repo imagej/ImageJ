@@ -907,7 +907,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					}
 					break;
 				case LINE: case POLYLINE: case FREELINE:
-					IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
+					if (current==LINE && arrowMode) {
+						IJ.doCommand("Arrow Tool...");
+					} else
+						IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
 					break;
 				case POINT:
 					if (multiPointMode) {

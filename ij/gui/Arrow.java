@@ -7,6 +7,7 @@ import java.awt.geom.*;
 
 /** This is an Roi subclass for creating and displaying arrows. */
 public class Arrow extends Line {
+	private static float defaultWidth = 2;
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
@@ -15,6 +16,7 @@ public class Arrow extends Line {
 
 	public Arrow(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
+		setStrokeWidth(defaultWidth);
 	}
 
 	/** Draws this arrow on the image. */
@@ -98,6 +100,14 @@ public class Arrow extends Line {
 	
 	public boolean isDrawingTool() {
 		return true;
+	}
+	
+	public static void setDefaultWidth(double width) {
+		defaultWidth = (float)width;
+	}
+
+	public static double getDefaultWidth() {
+		return defaultWidth;
 	}
 
 }
