@@ -7,16 +7,22 @@ import java.awt.geom.*;
 
 /** This is an Roi subclass for creating and displaying arrows. */
 public class Arrow extends Line {
+	public static final int FILLED=0, NOTCHED=1, OPEN=2;
+	public static final String[] styles = {"Filled", "Notched", "Open"};
+	private static int defaultStyle = FILLED;
 	private static float defaultWidth = 2;
+	private int style;
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
 		setStrokeWidth(2);
+		style = defaultStyle;
 	}
 
 	public Arrow(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
 		setStrokeWidth(defaultWidth);
+		style = defaultStyle;
 	}
 
 	/** Draws this arrow on the image. */
@@ -57,20 +63,32 @@ public class Arrow extends Line {
 		dy = dy/ra;
 		double x3 = x2-dx*size;
 		double y3 = y2-dy*size;
-		double r = 0.35*size;
+		double ratio = style==OPEN?0.45:0.35;
+		double r = ratio*size;
 		double x4 = Math.round(x3+dy*r);
 		double y4 = Math.round(y3-dx*r);
 		double x5 = Math.round(x3-dy*r);
 		double y5 = Math.round(y3+dx*r);
+		double x6 = x2-dx*0.85*size;
+		double y6 = y2-dy*0.85*size;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		if (ra>size)
-			g.drawLine((int)x1, (int)y1, (int)(x2-dx*size), (int)(y2-dy*size));
+		if (ra>size) {
+			double scale = style==OPEN?0.25:0.75;
+			g.drawLine((int)x1, (int)y1, (int)(x2-scale*dx*size), (int)(y2-scale*dy*size));
+		}
 		GeneralPath path = new GeneralPath();
 		path.moveTo((float)x4, (float)y4);
 		path.lineTo((float)x2, (float)y2);
 		path.lineTo((float)x5, (float)y5);
-		path.lineTo((float)x4, (float)y4);
-		g.fill(path);
+		if (style!=OPEN) {
+			if (style==NOTCHED)
+				path.lineTo((float)x6, (float)y6);
+			path.lineTo((float)x4, (float)y4);
+		}
+		if (style==OPEN) {
+			if (x1!=x2 || y1!=y2) g.draw(path);
+		} else
+			g.fill(path);
 	}
 
 	public void drawPixels(ImageProcessor ip) {
@@ -108,6 +126,18 @@ public class Arrow extends Line {
 
 	public static double getDefaultWidth() {
 		return defaultWidth;
+	}
+
+	public void setStyle(int style) {
+		this.style = style;
+	}
+
+	public static void setDefaultStyle(int style) {
+		defaultStyle = style;
+	}
+
+	public static int getDefaultStyle() {
+		return defaultStyle;
 	}
 
 }
