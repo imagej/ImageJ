@@ -5,14 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.43n, 25 December 2009</u>
+<li> <u>1.43n, 28 December 2009</u>
 <ul>
 <li> Added the rounded rectangle and arrow tools, which share
-space on the toolbar with the rectangle and line tools.
+space on the toolbar with the rectangle and line tools. The arrow tool was
+inspired by the Fiji arrow tool written by Jean-Yves Tinevez and Johannes Schindelin.
+<li> Selections (e.g., arrows) can be added to a non-destructive overlay by pressing "b", the new keyboard
+shortcut for the <i>Image&gt;Overlay&gt;Add Selection</i> command.
 <li> Added the <i>Edit&gt;Options&gt;Arrow Tool</i> command.
 <li> Added support for saving results tables as .csv (comma-separated values)
  files and for opening them using drag and drop. 
-<li> The color picker is no longer an ImageWindow and it remembers its location.
+<li> The color picker is no longer an ImageWindow, and it remembers its location.
 <li> Removed the "JPEG Quality" option (which wasn't working) from the <i>File&gt;Save As&gt;AVI</i>
 dialog box.
 <li> The ROI Manager works with stacks that have more than 9999 images.
@@ -25,6 +28,8 @@ is enabled by default.
 installed in the <i>Plugins&gt;Macros</i> submenu.
 <li> Fixed a bug that caused <i>File&gt;Revert</i> to vertically flip FITS images.
 <li> Fixed a bug that caused ImageJ to not correctly open some 16-bit TIFFs.
+<li> Fixed bugs that caused the lineTo() and drawLine() macro functions to not
+correctly draw lines with negative starting coordinates.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

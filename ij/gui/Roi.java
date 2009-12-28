@@ -59,6 +59,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
+	protected double headSize = 10;  // arrow head size (0-30)
+
 
 
 	/** Creates a new rectangular Roi. */
@@ -711,7 +713,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (mag<1.0)
 				m = (int)(4.0/mag);
 		}
-		if (type==POINT || type==LINE) m += 4;
+		if (type==POINT) m += 4;
+		if (type==LINE) {
+			m += 4;
+			if (headSize>10.0) m = (int)(m*(headSize/5.0));
+		}
 		m = (int)(m+getStrokeWidth()*2);
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;

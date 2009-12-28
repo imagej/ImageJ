@@ -12,17 +12,20 @@ public class Arrow extends Line {
 	private static int defaultStyle = FILLED;
 	private static float defaultWidth = 2;
 	private int style;
+	private static double defaultHeadSize = 10;  // 0-30;
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
 		setStrokeWidth(2);
 		style = defaultStyle;
+		headSize = defaultHeadSize;
 	}
 
 	public Arrow(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
 		setStrokeWidth(defaultWidth);
 		style = defaultStyle;
+		headSize = defaultHeadSize;
 	}
 
 	/** Draws this arrow on the image. */
@@ -53,9 +56,10 @@ public class Arrow extends Line {
 
 	void drawArrow(Graphics2D g, double x1, double y1, double x2, double y2) {
 		double mag = ic.getMagnification();
-		g.setStroke(new BasicStroke((float)(getStrokeWidth()*mag)));
 		double arrowWidth = getStrokeWidth();
+		g.setStroke(new BasicStroke((float)(arrowWidth*mag)));
 		double size = 8+10*arrowWidth*mag*0.5;
+		size = size*(headSize/10.0);
 		double dx = x2-x1;
 		double dy = y2-y1;
 		double ra = Math.sqrt(dx*dx + dy*dy);
@@ -138,6 +142,18 @@ public class Arrow extends Line {
 
 	public static int getDefaultStyle() {
 		return defaultStyle;
+	}
+
+	public void setHeadSize(double headSize) {
+		this.headSize = headSize;
+	}
+
+	public static void setDefaultHeadSize(double size) {
+		defaultHeadSize = size;
+	}
+
+	public static double getDefaultHeadSize() {
+		return defaultHeadSize;
 	}
 
 }
