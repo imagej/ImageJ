@@ -104,7 +104,7 @@ public class FileSaver {
 			showErrorMessage(e);
 			return false;
 		}
-		updateImp(fi, fi.TIFF);
+		updateImp(fi, FileInfo.TIFF);
 		return true;
 	}
 
@@ -130,7 +130,7 @@ public class FileSaver {
 			showErrorMessage(e);
 			return false;
 		}
-		updateImp(fi, fi.TIFF);
+		updateImp(fi, FileInfo.TIFF);
 		return true;
 	}
 	
@@ -196,7 +196,7 @@ public class FileSaver {
 			showErrorMessage(e);
 			return false;
 		}
-		updateImp(fi, fi.TIFF);
+		updateImp(fi, FileInfo.TIFF);
 		return true;
 	}
 
@@ -227,7 +227,7 @@ public class FileSaver {
 	public boolean saveAsGif(String path) {
 		if (!okForGif(imp)) return false;
 		IJ.runPlugIn(imp, "ij.plugin.GifWriter", path);
-		updateImp(fi, fi.GIF_OR_JPG);
+		updateImp(fi, FileInfo.GIF_OR_JPG);
 		return true;
 	}
 
@@ -257,7 +257,7 @@ public class FileSaver {
 	public boolean saveAsJpeg(String path) {
 		String err = JpegWriter.save(imp, path, jpegQuality);
 		if (err==null && !(imp.getType()==ImagePlus.GRAY16 || imp.getType()==ImagePlus.GRAY32))
-			updateImp(fi, fi.GIF_OR_JPG);
+			updateImp(fi, FileInfo.GIF_OR_JPG);
 		return true;
 	}
 
@@ -274,6 +274,7 @@ public class FileSaver {
 	/** Save the image in BMP format using the specified path. */
 	public boolean saveAsBmp(String path) {
 		IJ.runPlugIn(imp, "ij.plugin.BMP_Writer", path);
+		updateImp(fi, FileInfo.BMP);
 		return true;
 	}
 
@@ -296,6 +297,7 @@ public class FileSaver {
 		using the specified path. */
 	public boolean saveAsPgm(String path) {
 		IJ.runPlugIn(imp, "ij.plugin.PNM_Writer", path);
+		updateImp(fi, FileInfo.PGM);
 		return true;
 	}
 
@@ -312,6 +314,7 @@ public class FileSaver {
 	/** Save the image in PNG format using the specified path. */
 	public boolean saveAsPng(String path) {
 		IJ.runPlugIn(imp, "ij.plugin.PNG_Writer", path);
+		updateImp(fi, FileInfo.IMAGEIO);
 		return true;
 	}
 
@@ -330,6 +333,7 @@ public class FileSaver {
 	public boolean saveAsFits(String path) {
 		if (!okForFits(imp)) return false;
 		IJ.runPlugIn(imp, "ij.plugin.FITS_Writer", path);
+		updateImp(fi, FileInfo.FITS);
 		return true;
 	}
 

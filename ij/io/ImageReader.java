@@ -95,7 +95,8 @@ public class ImageReader {
 	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
-		if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING || fi.compression==FileInfo.PACK_BITS)
+		if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING
+		|| (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 			return readCompressed16bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -149,7 +150,7 @@ public class ImageReader {
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
+			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
@@ -793,10 +794,12 @@ public class ImageReader {
 	}
 	
 	byte[] uncompress(byte[] input) {
-			if (fi.compression==FileInfo.PACK_BITS)
-				return packBitsUncompress(input, fi.rowsPerStrip*fi.width*fi.getBytesPerPixel());
-			else
-				return lzwUncompress(input);
+		if (fi.compression==FileInfo.PACK_BITS)
+			return packBitsUncompress(input, fi.rowsPerStrip*fi.width*fi.getBytesPerPixel());
+		else if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING)
+			return lzwUncompress(input);
+		else
+			return input;
 	}
 
   /**

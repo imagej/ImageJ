@@ -296,7 +296,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (color==null && defaultColor!=null)
 			color = defaultColor;
 		if (lineWidth<0) {
-			int sw = roi.getStrokeWidth();
+			int sw = (int)roi.getStrokeWidth();
 			lineWidth = sw>1?sw:defaultLineWidth;
 		}
 		if (lineWidth>100) lineWidth = 1;
@@ -404,6 +404,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (xs.length()>digits) digits = xs.length();
 		String ys = "" + yc;
 		if (ys.length()>digits) digits = ys.length();
+		if (digits==4 && imp.getStackSize()>=10000) digits = 5;
 		xs = "000000" + xc;
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
@@ -951,7 +952,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			RoiProperties rp = new RoiProperties("Properties", rpRoi);
 			if (!rp.showDialog())
 				return;
-			lineWidth =  rpRoi.getStrokeWidth();
+			lineWidth =  (int)rpRoi.getStrokeWidth();
 			defaultLineWidth = lineWidth;
 			color =  rpRoi.getStrokeColor();
 			fillColor =  rpRoi.getFillColor();
@@ -997,8 +998,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (imp!=null) imp.draw();
 		if (record()) {
-			Recorder.record("roiManager", "Set Color", Colors.getColorName(color!=null?color:Color.red, "red"));
-			Recorder.record("roiManager", "Set Line Width", lineWidth);
+			if (fillColor!=null)
+				Recorder.record("roiManager", "Set Fill Color", Colors.colorToString(fillColor));
+			else {
+				Recorder.record("roiManager", "Set Color", Colors.colorToString(color!=null?color:Color.red));
+				Recorder.record("roiManager", "Set Line Width", lineWidth);
+			}
 		}
 	}
 	

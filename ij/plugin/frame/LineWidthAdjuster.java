@@ -100,7 +100,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	void setup() {
 	}
 	
-
 	// Separate thread that does the potentially time-consuming processing 
 	public void run() {
 		while (!done) {
@@ -111,24 +110,30 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 				Line.setWidth(value);
 				if (setText) tf.setText(""+value);
 				setText = false;
-				updateWindows();
+				updateRoi();
 			}
 		}
 	}
 	
-    void updateWindows() {
-		int[] list = WindowManager.getIDList();
-		if (list==null) return;
-		for (int i=0; i<list.length; i++) {
-			ImagePlus imp = WindowManager.getImage(list[i]);
-			if (imp!=null) {
-				Roi roi = imp.getRoi();
-				if (roi!=null && roi.isLine())
-					imp.draw();
-			}
+	private static void updateRoi() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi!=null && roi.isLine())
+				{roi.updateWideLine(Line.getWidth()); imp.draw(); return;}
+		}
+		if (Roi.previousRoi==null) return;
+		int id = Roi.previousRoi.getImageID();
+		if (id>=0) return;
+		imp = WindowManager.getImage(id);
+		if (imp==null) return;
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.isLine()) {
+			roi.updateWideLine(Line.getWidth());
+			imp.draw();
 		}
 	}
-
+	
 	boolean isSplineFit() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return false;
@@ -185,6 +190,6 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 			instance.tf.setText(""+lineWidth);
 		}
 	}
-
+	
 } 
 

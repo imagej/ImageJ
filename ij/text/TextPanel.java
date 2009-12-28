@@ -660,27 +660,35 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		'false' if the user cancels the save as dialog.*/
 	public boolean saveAs(String path) {
 		boolean isResults = IJ.isResultsWindow() && IJ.getTextPanel()==this;
-		if (path.equals("")) {
-			IJ.wait(10);
-			boolean hasHeadings = !getColumnHeadings().equals("");
-			String ext = isResults||hasHeadings?Prefs.get("options.ext", ".xls"):".txt";
-			SaveDialog sd = new SaveDialog("Save as Text", title, ext);
-			String file = sd.getFileName();
-			if (file == null) return false;
-			path = sd.getDirectory() + file;
+		if (rt!=null) {
+			try {
+				rt.saveAs(path);
+			} catch (IOException e) {
+				IJ.error(""+e);
+			}
+		} else {
+			if (path.equals("")) {
+				IJ.wait(10);
+				boolean hasHeadings = !getColumnHeadings().equals("");
+				String ext = isResults||hasHeadings?Prefs.get("options.ext", ".xls"):".txt";
+				SaveDialog sd = new SaveDialog("Save as Text", title, ext);
+				String file = sd.getFileName();
+				if (file == null) return false;
+				path = sd.getDirectory() + file;
+			}
+			PrintWriter pw = null;
+			try {
+				FileOutputStream fos = new FileOutputStream(path);
+				BufferedOutputStream bos = new BufferedOutputStream(fos);
+				pw = new PrintWriter(bos);
+			}
+			catch (IOException e) {
+				//IJ.write("" + e);
+				return true;
+			}
+			save(pw);
+			pw.close();
 		}
-		PrintWriter pw = null;
-		try {
-			FileOutputStream fos = new FileOutputStream(path);
-			BufferedOutputStream bos = new BufferedOutputStream(fos);
-			pw = new PrintWriter(bos);
-		}
-		catch (IOException e) {
-			//IJ.write("" + e);
-			return true;
-		}
-		save(pw);
-		pw.close();
 		if (isResults) {
 			Analyzer.setUnsavedMeasurements(false);
 			if (Recorder.record && !IJ.isMacro())

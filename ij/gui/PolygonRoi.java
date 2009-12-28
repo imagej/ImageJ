@@ -87,12 +87,13 @@ public class PolygonRoi extends Roi {
 	public PolygonRoi(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
 		int tool = Toolbar.getToolId();
-		if (tool==Toolbar.POLYGON)
-			type = POLYGON;
-		else if (tool==Toolbar.ANGLE)
-			type = ANGLE;
-		else
-			type = POLYLINE;
+		switch (tool) {
+			case Toolbar.POLYGON: type=POLYGON; break;
+			case Toolbar.FREEROI: type=FREEROI; break;
+			case Toolbar.FREELINE: type=FREELINE; break;
+			case Toolbar.ANGLE: type=ANGLE; break;
+			default: type = POLYLINE; break;
+		}
 		xp = new int[maxPoints];
 		yp = new int[maxPoints];
 		xp2 = new int[maxPoints];
@@ -108,6 +109,8 @@ public class PolygonRoi extends Roi {
 		clipHeight = 1;
 		state = CONSTRUCTING;
 		userCreated = true;
+		if (lineWidth>1 && isLine())
+			updateWideLine(lineWidth);
 	}
 
 	private void drawStartBox(Graphics g) {
@@ -125,24 +128,26 @@ public class PolygonRoi extends Roi {
 		}
 		g.setColor(color);
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
-		}
+		if (stroke!=null)
+			g2d.setStroke(getScaledStroke());
         if (xSpline!=null) {
             if (type==POLYLINE || type==FREELINE) {
-                if (lineWidth>1)
-                	drawWideLine(g, xSpline, ySpline, splinePoints);
-                else
+                drawSpline(g, xSpline, ySpline, splinePoints, false, fill);
+                if (wideLine) {
+                	g2d.setStroke(onePixelWide);
+                	g.setColor(getColor());
                 	drawSpline(g, xSpline, ySpline, splinePoints, false, fill);
+                }
             } else
-                	drawSpline(g, xSpline, ySpline, splinePoints, true, fill);
+                drawSpline(g, xSpline, ySpline, splinePoints, true, fill);
         } else {
             if (type==POLYLINE || type==FREELINE || type==ANGLE || state==CONSTRUCTING) {
-                if (lineWidth>1 && isLine())
-                	drawWideLine(g, toFloat(xp), toFloat(yp), nPoints);
                 g.drawPolyline(xp2, yp2, nPoints);
+                if (wideLine) {
+                	g2d.setStroke(onePixelWide);
+                	g.setColor(getColor());
+                	g.drawPolyline(xp2, yp2, nPoints);
+                }
             } else {
             	if (fill)
                 	g.fillPolygon(xp2, yp2, nPoints);
@@ -152,9 +157,8 @@ public class PolygonRoi extends Roi {
             if (state==CONSTRUCTING && type!=FREEROI && type!=FREELINE)
                 drawStartBox(g);
         }
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
         if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
-        && state!=CONSTRUCTING && clipboard==null && !displayList) {
+        && state!=CONSTRUCTING && clipboard==null && !overlay) {
             if (ic!=null) mag = ic.getMagnification();
             int size2 = HANDLE_SIZE/2;
             if (activeHandle>0)
@@ -197,36 +201,10 @@ public class PolygonRoi extends Roi {
 			g2d.draw(path);
 	}
 
- 	private void drawWideLine(Graphics g, float[] xpoints, float[] ypoints, int npoints) {
- 		if (ic==null) return;
- 		Rectangle srcRect = ic.getSrcRect();
- 		float srcx=srcRect.x, srcy=srcRect.y;
- 		float mag = (float)ic.getMagnification();
- 		float xf=x, yf=y;
-		Graphics2D g2d = (Graphics2D)g;
-		GeneralPath path = new GeneralPath();
-		if (mag==1f && srcx==0f && srcy==0f) {
-			path.moveTo(xpoints[0]+xf, ypoints[0]+yf);
-			for (int i=0; i<npoints; i++)
-				path.lineTo(xpoints[i]+xf, ypoints[i]+yf);
-		} else {
-			path.moveTo((xpoints[0]-srcx+xf)*mag, (ypoints[0]-srcy+yf)*mag);
-			for (int i=0; i<npoints; i++)
-				path.lineTo((xpoints[i]-srcx+xf)*mag, (ypoints[i]-srcy+yf)*mag);
-		}
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.25f);
-		g2d.setComposite(ac);
-		g2d.setStroke(new BasicStroke((float)(lineWidth*ic.getMagnification()),BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND));
-		g2d.draw(path);
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-		ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f);
-		g2d.setStroke(new BasicStroke(1));
-		g2d.setComposite(ac);
-		g2d.draw(path);
-	}
-
 	public void drawPixels(ImageProcessor ip) {
+		int saveWidth = ip.getLineWidth();
+		if (getStrokeWidth()>1f)
+			ip.setLineWidth((int)Math.round(getStrokeWidth()));
 		if (xSpline!=null) {
 			ip.moveTo(x+(int)(Math.floor(xSpline[0])+0.5), y+(int)Math.floor(ySpline[0]+0.5));
 			for (int i=1; i<splinePoints; i++)
@@ -240,8 +218,8 @@ public class PolygonRoi extends Roi {
 			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
 				ip.lineTo(x+xp[0], y+yp[0]);
 		}
-		if (xSpline!=null || (lineWidth>1&&isLine()))
-			updateFullWindow = true;
+		ip.setLineWidth(saveWidth);
+		updateFullWindow = true;
 	}
 
 	protected void grow(int sx, int sy) {
@@ -324,12 +302,11 @@ public class PolygonRoi extends Roi {
 		if (oy>ymax) ymax=oy;
 		//clip = new Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
 		int margin = 4;
-		if (lineWidth>margin && isLine())
-			margin = lineWidth;
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0) margin = (int)(margin/mag);
 		}
+		margin = (int)(margin+getStrokeWidth());
 		xp[nPoints-1] = ox-x;
 		yp[nPoints-1] = oy-y;
 		imp.draw(xmin-margin, ymin-margin, (xmax-xmin)+margin*2, (ymax-ymin)+margin*2);
@@ -377,10 +354,7 @@ public class PolygonRoi extends Roi {
 		if (xSpline!=null) {
 			fitSpline(splinePoints);
 			updateClipRect();
-			if (Line.getWidth()>1 && isLine())
-				imp.draw();
-			else
-				imp.draw(clipX, clipY, clipWidth, clipHeight);
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 			oldX = x; oldY = y;
 			oldWidth = width; oldHeight = height;
 		} else {
@@ -426,9 +400,9 @@ public class PolygonRoi extends Roi {
 		xClipMin=xmin; yClipMin=ymin; xClipMax=xmax; yClipMax=ymax;
 		double mag = ic.getMagnification();
 		int handleSize = type==POINT?HANDLE_SIZE+8:HANDLE_SIZE;
-		if (handleSize<lineWidth && isLine()) handleSize= lineWidth;
+		if (handleSize<getStrokeWidth() && isLine()) handleSize = (int)getStrokeWidth() ;
 		int m = mag<1.0?(int)(handleSize/mag):handleSize;
-		m += getStrokeWidth();
+		m = (int)(m*getStrokeWidth());
 		imp.draw(xmin2-m, ymin2-m, xmax2-xmin2+m*2, ymax2-ymin2+m*2);
 	}
 

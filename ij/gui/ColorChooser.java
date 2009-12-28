@@ -15,9 +15,14 @@ public class ColorChooser implements TextListener, AdjustmentListener {
     int red, green, blue;
     boolean useHSB;
     String title;
+    Frame frame;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public ColorChooser(String title, Color initialColor, boolean useHSB) {
+    	this(title, initialColor, useHSB, null);
+    }
+    
+    public ColorChooser(String title, Color initialColor, boolean useHSB, Frame frame) {
     	this.title = title;
     	if (initialColor==null) initialColor = Color.black;
     	this.initialColor = initialColor;
@@ -25,11 +30,12 @@ public class ColorChooser implements TextListener, AdjustmentListener {
     	green = initialColor.getGreen();
     	blue = initialColor.getBlue();
     	this.useHSB = useHSB;
+    	this.frame = frame;
     }
-    
+
     /** Displays a color selection dialog and returns the color selected by the user. */
     public Color getColor() {
-        GenericDialog gd = new GenericDialog(title);
+        GenericDialog gd = frame!=null?new GenericDialog(title, frame):new GenericDialog(title);
         gd.addSlider("Red:", 0, 255, red);
         gd.addSlider("Green:", 0, 255, green);
         gd.addSlider("Blue:", 0, 255, blue);

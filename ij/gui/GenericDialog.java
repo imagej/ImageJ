@@ -63,6 +63,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	private int topInset, leftInset, bottomInset;
     private boolean customInsets;
     private int[] sliderIndexes;
+    private double[] sliderScales;
     private Checkbox previewCheckbox;    // the "Preview" Checkbox, if any
     private Vector dialogListeners;             // the Objects to notify on user input
     private PlugInFilterRunner pfr;      // the PlugInFilterRunner for automatic preview
@@ -458,9 +459,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		y++;
     }
     
-   public void addSlider(String label, double minValue, double maxValue, double defaultValue) {
+	public void addSlider(String label, double minValue, double maxValue, double defaultValue) {
 		int columns = 4;
 		int digits = 0;
+		double scale = 1.0;
+		if ((maxValue-minValue)<=5.0 && (minValue!=(int)minValue||maxValue!=(int)maxValue)) {
+			scale = 20.0;
+			minValue *= scale;
+			maxValue *= scale;
+			defaultValue *= scale;
+			digits = 2;
+		}
    		String label2 = label;
    		if (label2.indexOf('_')!=-1)
    			label2 = label2.replace('_', ' ');
@@ -475,6 +484,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (slider==null) {
 			slider = new Vector(5);
 			sliderIndexes = new int[MAX_SLIDERS];
+			sliderScales = new double[MAX_SLIDERS];
 		}
 		Scrollbar s = new Scrollbar(Scrollbar.HORIZONTAL, (int)defaultValue, 1, (int)minValue, (int)maxValue+1);
 		slider.addElement(s);
@@ -488,7 +498,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		if (IJ.isWindows()) columns -= 2;
 		if (columns<1) columns = 1;
-		TextField tf = new TextField(IJ.d2s(defaultValue, digits), columns);
+		TextField tf = new TextField(IJ.d2s(defaultValue/scale, digits), columns);
 		if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
@@ -496,7 +506,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		tf.addKeyListener(this);
 		numberField.addElement(tf);
 		sliderIndexes[slider.size()-1] = numberField.size()-1;
-		defaultValues.addElement(new Double(defaultValue));
+		sliderScales[slider.size()-1] = scale;
+		defaultValues.addElement(new Double(defaultValue/scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
 		//if (firstNumericField && firstSlider) tf.selectAll();
@@ -1067,7 +1078,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				double value = Tools.parseDouble(tf.getText());
 				if (!Double.isNaN(value)) {
 					Scrollbar sb = (Scrollbar)slider.elementAt(i);
-					sb.setValue((int)value);
+					sb.setValue((int)(value*sliderScales[i]));
 				}	
 				//IJ.log(i+" "+tf.getText());
 			}
@@ -1144,7 +1155,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			if (source==slider.elementAt(i)) {
 				Scrollbar sb = (Scrollbar)source;
 				TextField tf = (TextField)numberField.elementAt(sliderIndexes[i]);
-				tf.setText(""+sb.getValue());
+				int digits = sliderScales[i]==1.0?0:2;
+				tf.setText(""+IJ.d2s(sb.getValue()/sliderScales[i],digits));
 			}
 		}
 	}

@@ -47,7 +47,7 @@ public class IJ {
 	private static boolean memMessageDisplayed;
 	private static long maxMemory;
 	private static boolean escapePressed;
-	private static boolean redirectErrorMessages;
+	private static boolean redirectErrorMessages, redirectErrorMessages2;
 	private static boolean suppressPluginNotFoundError;
 	private static Dimension screenSize;
 	private static Hashtable commandTable;
@@ -194,7 +194,8 @@ public class IJ {
 		}
 		catch (InstantiationException e) {error("Unable to load plugin (ins)");}
 		catch (IllegalAccessException e) {error("Unable to load plugin, possibly \nbecause it is not public.");}
- 		redirectErrorMessages = false;
+		if (redirectErrorMessages && !"HandleExtraFileTypes".equals(className))
+ 			redirectErrorMessages = false;
 		suppressPluginNotFoundError = false;
 		return thePlugIn;
 	} 
@@ -486,11 +487,6 @@ public class IJ {
 	/**	Displays a message in a dialog box with the specified title.
 		Writes the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
-		if (redirectErrorMessages) {
-			IJ.log(title + ": " + msg);
-			redirectErrorMessages = false;
-			return;
-		}
 		if (ij!=null) {
 			if (msg!=null && msg.startsWith("<html>"))
 				new HTMLDialog(title, msg);
@@ -504,7 +500,7 @@ public class IJ {
 		macro is running, it is aborted. Writes to the Java console
 		if the ImageJ window is not present.*/
 	public static void error(String msg) {
-		showMessage("ImageJ", msg);
+		error(null, msg);
 		if (Thread.currentThread().getName().endsWith("JavaScript"))
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 		else
@@ -515,8 +511,15 @@ public class IJ {
 		If a macro is running, it is aborted. Writes to the Java  
 		console if ImageJ is not present. */
 	public static synchronized void error(String title, String msg) {
-		showMessage(title, msg);
-		Macro.abort();
+		String title2 = title!=null?title:"ImageJ";
+		boolean abortMacro = title!=null;
+		if (redirectErrorMessages || redirectErrorMessages2) {
+			IJ.log(title2 + ": " + msg);
+			if (abortMacro && title.equals("Opener")) abortMacro = false;
+			redirectErrorMessages = false;
+		} else
+			showMessage(title2, msg);
+		if (abortMacro) Macro.abort();
 	}
 
 	/** Displays a message in a dialog box with the specified title.
@@ -1542,14 +1545,19 @@ public class IJ {
 		escapePressed = false;
 	}
 	
-	/** Causes IJ.error() and IJ.showMessage() output to be temporarily redirected to the "Log" window. */
+	/** Causes IJ.error() output to be temporarily redirected to the "Log" window. */
 	public static void redirectErrorMessages() {
 		redirectErrorMessages = true;
 	}
 	
+	/** Set 'true' and IJ.error() output will be redirected to the "Log" window. */
+	public static void redirectErrorMessages(boolean redirect) {
+		redirectErrorMessages2 = redirect;
+	}
+
 	/** Returns the state of the  'redirectErrorMessages' flag. The File/Import/Image Sequence command sets this flag.*/
 	public static boolean redirectingErrorMessages() {
-		return redirectErrorMessages;
+		return redirectErrorMessages || redirectErrorMessages2;
 	}
 
 	/** Temporarily suppress "plugin not found" errors. */

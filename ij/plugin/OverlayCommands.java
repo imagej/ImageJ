@@ -53,16 +53,24 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		roi = (Roi)roi.clone();
+		if (roi.getStrokeColor()==null)
+			roi.setStrokeColor(Toolbar.getForegroundColor());
+		int width = Line.getWidth();
+		Rectangle bounds = roi.getBounds();
+		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
+		if (roi.getStroke()==null && width>1 && !tooWide)
+			roi.setStrokeWidth(Line.getWidth());
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && overlay.size()>0) {
+		if (overlay!=null && overlay.size()>0 && !roi.isDrawingTool()) {
 			Roi roi2 = overlay.get(overlay.size()-1);
-			roi.setStrokeColor(roi2.getStrokeColor());
-			roi.setStrokeWidth(roi2.getStrokeWidth());
-			roi.setFillColor(roi2.getFillColor());
+			if (roi.getStroke()==null)
+				roi.setStrokeWidth(roi2.getStrokeWidth());
+			if (roi.getFillColor()==null)
+				roi.setFillColor(roi2.getFillColor());
 		}
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
-		if (!IJ.altKeyDown()) {
+		if (!IJ.altKeyDown() && !(roi instanceof Arrow)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
@@ -72,7 +80,8 @@ public class OverlayCommands implements PlugIn {
 		overlay.add(roi);
 		imp.setOverlay(overlay);
 		overlay2 = overlay;
-		if (points || (roi instanceof ImageRoi)) imp.killRoi();
+		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
+		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
 	
 	void addImage() {
@@ -101,7 +110,6 @@ public class OverlayCommands implements PlugIn {
 				index = 1;
 		} else if (imp.getID()==wList[0])
 			index = 1;
-
 
 		GenericDialog gd = new GenericDialog("Add Image...");
 		gd.addChoice("Image to add:", titles, titles[index]);
@@ -149,6 +157,7 @@ public class OverlayCommands implements PlugIn {
 			overlayList.add(roi);
 			imp.setOverlay(overlayList);
 			overlay2 = overlayList;
+			Undo.setup(Undo.OVERLAY_ADDITION, imp);
 		}
 	}
 

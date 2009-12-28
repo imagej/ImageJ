@@ -224,17 +224,13 @@ public class OvalRoi extends Roi {
 		int sx3 = sx1+sw;
 		int sy3 = sy1+sh;
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
-		}
+		if (stroke!=null) 
+			g2d.setStroke(getScaledStroke());
 		if (fillColor!=null)
 			g.fillOval(sx1, sy1, sw, sh);
 		else
 			g.drawOval(sx1, sy1, sw, sh);
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
-		if (state!=CONSTRUCTING && clipboard==null && !displayList) {
+		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			drawHandle(g, sx1+sw2-size2, sy1+sh2-size2);
 			drawHandle(g, sx3-sw2-size2, sy1+sh2-size2);
@@ -254,8 +250,14 @@ public class OvalRoi extends Roi {
 	/** Draws an outline of this OvalRoi on the image. */
 	public void drawPixels(ImageProcessor ip) {
 		Polygon p = getPolygon();
-		if (p.npoints>0) ip.drawPolygon(p);
-		if (Line.getWidth()>1)
+		if (p.npoints>0) {
+			int saveWidth = ip.getLineWidth();
+			if (getStrokeWidth()>1f)
+				ip.setLineWidth((int)Math.round(getStrokeWidth()));
+			ip.drawPolygon(p);
+			ip.setLineWidth(saveWidth);
+		}
+		if (Line.getWidth()>1 || getStrokeWidth()>1)
 			updateFullWindow = true;
 	}		
 

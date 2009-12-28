@@ -196,6 +196,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+");\n");
 	}
 
+	public static void record(String method, int a1, int a2, int a3, int a4, int a5) {
+		textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+", "+a5+");\n");
+	}
+	
 	public static void record(String method, String path, String args, int a1, int a2, int a3, int a4, int a5) {
 		if (textArea==null) return;
 		path = fixPath(path);
@@ -385,7 +389,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					if (IJ.altKeyDown() && (name.equals("Open Next")||name.equals("Plot Profile")))
 						textArea.append("setKeyDown(\"alt\"); ");
 					if (scriptMode) {
-						String prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
+						String prefix = imageUpdated||name.equals("Select None")?"IJ.run(imp, ":"IJ.run(";
 						textArea.append(prefix+"\""+name+"\", \"\");\n");
 					} else
 						textArea.append("run(\""+name+"\");\n");

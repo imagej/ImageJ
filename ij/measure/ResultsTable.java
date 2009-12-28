@@ -50,6 +50,8 @@ public class ResultsTable implements Cloneable {
 	private	StringBuffer sb;
 	private int precision = 3;
 	private String rowLabelHeading = "";
+	private char delimiter = '\t';
+	private boolean headingSet; 
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -160,9 +162,10 @@ public class ResultsTable implements Cloneable {
 		rowLabels[row] = label;
 	}
 	
-	/** Set the row label column to null. */
+	/** Set the row label column to null if the column label is "Label". */
 	public void disableRowLabels() {
-		rowLabels = null;
+		if (rowLabelHeading.equals("Label"))
+			rowLabels = null;
 	}
 	
 	/** Returns a copy of the given column as a float array,
@@ -307,18 +310,26 @@ public class ResultsTable implements Cloneable {
 		columns[column][row] = value;
 	}
 
-	/** Returns a tab-delimited string containing the column headings. */
+	/** Returns a tab or comma delimited string containing the column headings. */
 	public String getColumnHeadings() {
+		if (headingSet && !rowLabelHeading.equals("")) { // workaround setHeading() bug
+			for (int i=0; i<=lastColumn; i++) {
+				if (columns[i]!=null && rowLabelHeading.equals(headings[i]))
+					{headings[i]=null; columns[i]=null;}
+			}
+			headingSet = false;
+		}
 		StringBuffer sb = new StringBuffer(200);
-		sb.append(" \t");
+		sb.append(" "+delimiter);
 		if (rowLabels!=null)
-			sb.append(rowLabelHeading + "\t");
+			sb.append(rowLabelHeading + delimiter);
 		String heading;
 		for (int i=0; i<=lastColumn; i++) {
 			if (columns[i]!=null) {
 				heading = headings[i];
 				if (heading==null) heading ="---"; 
-				sb.append(heading + "\t");
+				sb.append(heading);
+				if (i!=lastColumn) sb.append(delimiter);
 			}
 		}
 		return new String(sb);
@@ -331,7 +342,7 @@ public class ResultsTable implements Cloneable {
 		return headings[column];
 	}
 
-	/** Returns a tab-delimited string representing the
+	/** Returns a tab or comma delimited string representing the
 		given row, where 0<=row<=counter-1. */
 	public String getRowAsString(int row) {
 		if ((row<0) || (row>=counter))
@@ -341,15 +352,20 @@ public class ResultsTable implements Cloneable {
 		else
 			sb.setLength(0);
 		sb.append(Integer.toString(row+1));
-		sb.append("\t");
+		sb.append(delimiter);
 		if (rowLabels!=null) {
-			if (rowLabels[row]!=null)
-				sb.append(rowLabels[row]);
-			sb.append("\t");
+			if (rowLabels[row]!=null) {
+				String label = rowLabels[row];
+				if (delimiter==',') label = label.replaceAll(",", ";");
+				sb.append(label);
+			}
+			sb.append(delimiter);
 		}
 		for (int i=0; i<=lastColumn; i++) {
-			if (columns[i]!=null)
+			if (columns[i]!=null) {
 				sb.append(n(columns[i][row]));
+				if (i!=lastColumn) sb.append(delimiter);
+			}
 		}
 		return new String(sb);
 	}
@@ -362,6 +378,7 @@ public class ResultsTable implements Cloneable {
 		if (columns[column]==null)
 			columns[column] = new double[maxRows];
 		if (column>lastColumn) lastColumn = column;
+		headingSet = true;
 	}
 	
 	/** Sets the headings used by the Measure command ("Area", "Mean", etc.). */
@@ -381,7 +398,7 @@ public class ResultsTable implements Cloneable {
 			s = d2s(n, 0);
 		else
 			s = d2s(n, precision);
-		return s+"\t";
+		return s;
 	}
 		
 	private static DecimalFormat[] df;
@@ -584,7 +601,8 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Opens a tab or comma delimited text file as a ResultsTable.
-	     Displays a file open dialog if 'path' is empty or null. */
+	     Displays a file open dialog if 'path' is empty or null.
+	     Displays non-numeric tables in a TextWindow and returns null. */
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";
 		final String cellSeparator =  ",\t";
@@ -610,6 +628,8 @@ public class ResultsTable implements Cloneable {
 		int firstColumn = headings[0].equals(" ")?1:0;
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
+		if (!labels && openNonNumericTable(path, lines, firstRow, cellSeparator))
+			return null;
 		ResultsTable rt = new ResultsTable();
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
@@ -624,16 +644,42 @@ public class ResultsTable implements Cloneable {
 		return rt;
 	}
 	
-	/** Saves this ResultsTable as a tab-delimited text file. Displays
-	     a file save dialog if 'path' is empty or null. */
+	static boolean openNonNumericTable(String path, String[] lines, int firstRow, String cellSeparator) {
+		if (lines.length<=2) return false;
+		String[] items=Tools.split(lines[1], cellSeparator);
+		boolean allNumeric = true;
+		for (int i=0; i<items.length; i++) {
+			if (!items[i].equals("NaN") && Double.isNaN(Tools.parseDouble(items[i]))) {
+				allNumeric = false;
+				break;
+			}
+		}
+		boolean csv = path.endsWith(".csv");
+		if (allNumeric) return false;
+		if (csv) lines[0] = lines[0].replaceAll(",", "\t");
+		StringBuffer sb = new StringBuffer();
+		for (int i=1; i<lines.length; i++) {
+			sb.append(lines[i]);
+			sb.append("\n");
+		}
+		String str = sb.toString();
+		if (csv) str = str.replaceAll(",", "\t");
+		new TextWindow(new File(path).getName(), lines[0], str, 500, 400);
+		return true;
+	}
+	
+	/** Saves this ResultsTable as a tab or comma delimited text file. The table
+	     is saved as a CSV (comma-separated values) file if 'path' ends with ".csv".
+	     Displays a file save dialog if 'path' is empty or null. */
 	public void saveAs(String path) throws IOException {
 		if (getCounter()==0) throw new IOException("Table is empty");
 		if (path==null || path.equals("")) {
-			SaveDialog sd = new SaveDialog("Save Results", "Results", ".xls");
+			SaveDialog sd = new SaveDialog("Save Results", "Results", Prefs.get("options.ext", ".xls"));
 			String file = sd.getFileName();
 			if (file==null) return;
 			path = sd.getDirectory() + file;
 		}
+		delimiter = path.endsWith(".csv")?',':'\t';
 		PrintWriter pw = null;
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -642,6 +688,7 @@ public class ResultsTable implements Cloneable {
 		for (int i=0; i<getCounter(); i++)
 			pw.println(getRowAsString(i));
 		pw.close();
+		delimiter = '\t';
 	}
 
 	/** Creates a copy of this ResultsTable. */

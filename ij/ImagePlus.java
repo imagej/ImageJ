@@ -1307,7 +1307,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		killRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
-				roi = new Roi(sx, sy, this);
+				roi = new Roi(sx, sy, this, Toolbar.getRoundRectArcSize());
 				break;
 			case Toolbar.OVAL:
 				roi = new OvalRoi(sx, sy, this);
@@ -1322,7 +1322,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 				roi = new FreehandRoi(sx, sy, this);
 				break;
 			case Toolbar.LINE:
-				roi = new Line(sx, sy, this);
+				if ("arrow".equals(Toolbar.getToolName()))
+					roi = new Arrow(sx, sy, this);
+				else
+					roi = new Line(sx, sy, this);
 				break;
 			case Toolbar.TEXT:
 				roi = new TextRoi(sx, sy, this);

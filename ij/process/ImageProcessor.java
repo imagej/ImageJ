@@ -991,16 +991,16 @@ public abstract class ImageProcessor extends Object {
 		int n = absdy>absdx?absdy:absdx;
 		double xinc = (double)dx/n;
 		double yinc = (double)dy/n;
-		double x = cx<0?cx-0.5:cx+0.5;
-		double y = cy<0?cy-0.5:cy+0.5;
+		double x = cx;
+		double y = cy;
 		n++;
 		cx = x2; cy = y2;
 		if (n>1000000) return;
 		do {
 			if (lineWidth==1)
-				drawPixel((int)x, (int)y);
+				drawPixel((int)Math.round(x), (int)Math.round(y));
 			else if (lineWidth==2)
-				drawDot2((int)x, (int)y);
+				drawDot2((int)Math.round(x), (int)Math.round(y));
 			else
 				drawDot((int)x, (int)y);
 			x += xinc;

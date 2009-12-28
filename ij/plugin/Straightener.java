@@ -16,7 +16,7 @@ public class Straightener implements PlugIn {
 			IJ.error("Straightener", "Line selection required");
 			return;
 		}
-		int width = Line.getWidth();
+		int width = (int)Math.round(roi.getStrokeWidth());
 		int originalWidth = width;
 		boolean isMacro = IJ.macroRunning();
 		int stackSize = imp.getStackSize();
@@ -157,10 +157,11 @@ public class Straightener implements PlugIn {
 	}
 	
 	public ImageProcessor rotateLine(ImagePlus imp, int width) {
-		Line.setWidth(1);
 		Roi roi = imp.getRoi();
+		float saveStrokeWidth = roi.getStrokeWidth();
+		roi.setStrokeWidth(1f);
 		Polygon p = roi.getPolygon();
-		Line.setWidth(width);
+		roi.setStrokeWidth(saveStrokeWidth);
 		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, 2, Roi.POLYLINE));
 		ImageProcessor ip2 = imp.getBitDepth()==24?straightenRGB(imp, width):straightenLine(imp, width);
 		imp.setRoi(roi);

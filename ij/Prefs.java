@@ -77,7 +77,7 @@ public class Prefs {
 	/** Open 8-bit images with inverting LUT so 0 is white and 255 is black. */
 	public static boolean useInvertingLut;
 	/** Draw tool icons using antialiasing. */
-	public static boolean antialiasedTools;
+	public static boolean antialiasedTools = true;
 	/** Export Raw using little-endian byte order. */
 	public static boolean intelByteOrder;
 	/** Double buffer display of selections and overlays. */

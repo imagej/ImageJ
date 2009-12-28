@@ -14,9 +14,10 @@ public class Line extends Roi {
 
 	public int x1, y1, x2, y2;	// the line
 	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
-	private double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
+	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private double xHandleOffset, yHandleOffset;
 	private double startxd, startyd;
+	static boolean widthChanged;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
@@ -50,6 +51,9 @@ public class Line extends Roi {
 		x1R = x2R = startxd - startX;
 		y1R = y2R = startyd - startY;
 		type = LINE;
+		int lineWidth = Line.getWidth();
+		if (!(this instanceof Arrow) && lineWidth>1)
+			updateWideLine(lineWidth);
 	}
 
 	/** Obsolete */
@@ -82,12 +86,7 @@ public class Line extends Roi {
 		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
 		if (width<1) width=1; if (height<1) height=1;
 		updateClipRect();
-		if (imp!=null) {
-			if (lineWidth==1)
-				imp.draw(clipX, clipY, clipWidth, clipHeight);
-			else
-				imp.draw();
-		}
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
 	}
@@ -100,11 +99,8 @@ public class Line extends Roi {
 		clipboard=null;
 		startxd = xNew;
 		startyd = yNew;
-		if (lineWidth==1) {
-			updateClipRect();
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
-		} else
-			imp.draw();
+		updateClipRect();
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x;
 		oldY = y;
 		oldWidth = width;
@@ -173,7 +169,7 @@ public class Line extends Roi {
 				dx = ox-(x1d+(x2d-x1d)/2);
 				dy = oy-(y1d+(y2d-y1d)/2);
 				x1d+=dx; y1d+=dy; x2d+=dx; y2d+=dy;
-				if (lineWidth>1) {
+				if (getStrokeWidth()>1) {
 					x1d+=xHandleOffset; y1d+=yHandleOffset; 
 					x2d+=xHandleOffset; y2d+=yHandleOffset;
 				}
@@ -273,10 +269,7 @@ public class Line extends Roi {
 		x2R=x2d-x; y2R=y2d-y;
 		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
 		updateClipRect();
-		if (lineWidth==1)
-			imp.draw(clipX, clipY, clipWidth, clipHeight);
-		else
-			imp.draw();
+		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x;
 		oldY = y;
 		oldWidth = width;
@@ -286,7 +279,7 @@ public class Line extends Roi {
 	protected void mouseDownInHandle(int handle, int sx, int sy) {
 		state = MOVING_HANDLE;
 		activeHandle = handle;
-		if (lineWidth<=3)
+		if (getStrokeWidth()<=3)
 			ic.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	}
 
@@ -304,32 +297,18 @@ public class Line extends Roi {
 		int sy2 = ic.screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
-		if (lineWidth>1 && !displayList) {
-			Graphics2D g2d = (Graphics2D)g;
-			GeneralPath path = new GeneralPath();
-			path.moveTo(sx1, sy1);
-			path.lineTo(sx2, sy2);
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.3f);
-			g2d.setComposite(ac);
-			g2d.setStroke(new BasicStroke((float)(lineWidth*ic.getMagnification()),BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL));
-			g2d.draw(path);
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-			ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f);
-			g2d.setStroke(new BasicStroke(1));
-			g2d.setComposite(ac);
-		}
 		Graphics2D g2d = (Graphics2D)g;
-		Stroke saveStroke = null;
-		if (stroke!=null) {
-			saveStroke = g2d.getStroke();
-			g2d.setStroke(stroke);
-		}
+		if (stroke!=null)
+			g2d.setStroke(getScaledStroke());
 		g.drawLine(sx1, sy1, sx2, sy2);
-		if (saveStroke!=null) g2d.setStroke(saveStroke);
-		if (state!=CONSTRUCTING && !displayList) {
+		if (wideLine) {
+			g2d.setStroke(onePixelWide);
+			g.setColor(getColor());
+			g.drawLine(sx1, sy1, sx2, sy2);
+		}
+		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
-			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
+			handleColor = strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 		}
@@ -358,11 +337,11 @@ public class Line extends Roi {
 	/** Returns the pixel values along this line. */
 	public double[] getPixels() {
 			double[] profile;
-			if (lineWidth==1) {
+			if (getStrokeWidth()==1) {
 				ImageProcessor ip = imp.getProcessor();
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
-				ImageProcessor ip2 = (new Straightener()).rotateLine(imp,lineWidth);
+				ImageProcessor ip2 = (new Straightener()).rotateLine(imp,(int)getStrokeWidth());
 				if (ip2==null) return null;
 				int width = ip2.getWidth();
 				int height = ip2.getHeight();
@@ -382,12 +361,12 @@ public class Line extends Roi {
 	
 	public Polygon getPolygon() {
 		Polygon p = new Polygon();
-		if (lineWidth==1) {
+		if (getStrokeWidth()==1) {
 			p.addPoint(x1, y1);
 			p.addPoint(x2, y2);
 		} else {
 			double angle = Math.atan2(y1-y2, x2-x1);
-			double width2 = lineWidth/2.0;
+			double width2 = getStrokeWidth()/2.0;
 			double p1x = x1 + Math.cos(angle+Math.PI/2d)*width2;
 			double p1y = y1 - Math.sin(angle+Math.PI/2d)*width2;
 			double p2x = x1 + Math.cos(angle-Math.PI/2d)*width2;
@@ -406,7 +385,7 @@ public class Line extends Roi {
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
-		if (lineWidth==1) {
+		if (getStrokeWidth()==1) {
 			ip.moveTo(x1, y1);
 			ip.lineTo(x2, y2);
 		} else {
@@ -416,7 +395,7 @@ public class Line extends Roi {
 	}
 
 	public boolean contains(int x, int y) {
-		if (lineWidth>1)
+		if (getStrokeWidth()>1)
 			return getPolygon().contains(x, y);
 		else
 			return false;
@@ -426,7 +405,7 @@ public class Line extends Roi {
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {
 		int size = HANDLE_SIZE+5;
-		if (lineWidth>1) size += (int)Math.log(lineWidth);
+		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
 		int halfSize = size/2;
 		int sx1 = ic.screenXD(x+x1R) - halfSize;
 		int sy1 = ic.screenYD(y+y1R) - halfSize;
@@ -456,6 +435,13 @@ public class Line extends Roi {
 			if (w>max) w = max;
 		}
 		lineWidth = w;
+		widthChanged = true;
+	}
+		
+	public void setStrokeWidth(float width) {
+		super.setStrokeWidth(width);
+		if (getStrokeColor()==Roi.getColor())
+			wideLine = true;
 	}
 	
 	/** Return the bounding rectangle of this line. */

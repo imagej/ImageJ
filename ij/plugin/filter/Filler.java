@@ -74,7 +74,7 @@ public class Filler implements PlugInFilter, Measurements {
 	public void clear(ImageProcessor ip) {
 	 	ip.setColor(Toolbar.getBackgroundColor());
 		if (isLineSelection()) {
-			if (isStraightLine() && Line.getWidth()>1)
+			if (isStraightLine() && roi.getStrokeWidth()>1)
 				ip.fillPolygon(roi.getPolygon());
 			else
 				roi.drawPixels();
@@ -87,7 +87,7 @@ public class Filler implements PlugInFilter, Measurements {
 	public void fill(ImageProcessor ip) {
 		ip.setColor(Toolbar.getForegroundColor());
 		if (isLineSelection()) {
-			if (isStraightLine() && Line.getWidth()>1)
+			if (isStraightLine() && roi.getStrokeWidth()>1)
 				ip.fillPolygon(roi.getPolygon());
 			else
 				roi.drawPixels(ip);

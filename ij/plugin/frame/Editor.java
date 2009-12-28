@@ -26,6 +26,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(Packages.ij.measure);"+
 		"importPackage(Packages.ij.util);"+
 		"importPackage(Packages.ij.plugin);"+
+		"importPackage(Packages.ij.io);"+
 		"importPackage(Packages.ij.plugin.filter);"+
 		"importPackage(Packages.ij.plugin.frame);"+
 		"importPackage(java.lang);"+
@@ -33,6 +34,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.awt.image);"+
 		"importPackage(java.awt.geom);"+
 		"importPackage(java.util);"+
+		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
 
 	public static String JS_NOT_FOUND = 

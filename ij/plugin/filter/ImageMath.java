@@ -218,6 +218,14 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		gd.showDialog();
 	}
 
+	void getGammaValue (double defaultValue) {
+		gd = new GenericDialog("Gamma");
+		gd.addSlider("Value:", 0.05, 5.0, defaultValue);
+		gd.addPreviewCheckbox(pfr);
+		gd.addDialogListener(this);
+		gd.showDialog();
+	}
+
 	/** Set non-thresholded pixels in a float image to NaN. */
 	void setBackgroundToNaN(ImageProcessor ip) {
 		if (lower==-1.0 && upper==-1.0) {
@@ -429,7 +437,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	 	else if (arg.equals("max"))
 	 		getValue("Max", "Value: ", maxValue, 0);
 	 	else if (arg.equals("gamma"))
-	 		getValue("Gamma", "Value (0.1-5.0): ", gammaValue, 2);
+	 		getGammaValue(gammaValue);
 	 	else if (arg.equals("set")) {
 	 		boolean rgb = imp.getBitDepth()==24;
 	 		String prompt = rgb?"Value (0-255): ":"Value: ";
