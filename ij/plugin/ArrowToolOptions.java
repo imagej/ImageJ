@@ -16,6 +16,8 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 	}
 				
 	void arrowToolOptions() {
+		if (!Toolbar.getToolName().equals("arrow"))
+			IJ.setTool("arrow");
 		double width = Arrow.getDefaultWidth();
 		double headSize = Arrow.getDefaultHeadSize();
 		Color color = Toolbar.getForegroundColor();

@@ -13,6 +13,7 @@ public class Arrow extends Line {
 	private static float defaultWidth = 2;
 	private int style;
 	private static double defaultHeadSize = 10;  // 0-30;
+	protected double headSize = 10;  // 0-30
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
@@ -41,7 +42,7 @@ public class Arrow extends Line {
 		int sy2 = ic.screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
-		drawArrow((Graphics2D)g, sx1, sy1, sx2, sy2);
+		drawArrow((Graphics2D)g, null, sx1, sy1, sx2, sy2);
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
@@ -54,10 +55,13 @@ public class Arrow extends Line {
 			{updateFullWindow = false; imp.draw();}
 	}
 
-	void drawArrow(Graphics2D g, double x1, double y1, double x2, double y2) {
-		double mag = ic.getMagnification();
+	void drawArrow(Graphics2D g, ImageProcessor ip, double x1, double y1, double x2, double y2) {
+		double mag = ip==null?ic.getMagnification():1.0;
 		double arrowWidth = getStrokeWidth();
-		g.setStroke(new BasicStroke((float)(arrowWidth*mag)));
+		if (ip==null) {
+			g.setStroke(new BasicStroke((float)(arrowWidth*mag)));
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		}
 		double size = 8+10*arrowWidth*mag*0.5;
 		size = size*(headSize/10.0);
 		double dx = x2-x1;
@@ -75,10 +79,13 @@ public class Arrow extends Line {
 		double y5 = Math.round(y3+dx*r);
 		double x6 = x2-dx*0.85*size;
 		double y6 = y2-dy*0.85*size;
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (ra>size) {
 			double scale = style==OPEN?0.25:0.75;
-			g.drawLine((int)x1, (int)y1, (int)(x2-scale*dx*size), (int)(y2-scale*dy*size));
+			if (style==OPEN) size /= 3.0;
+			if (ip!=null)
+				ip.drawLine((int)x1, (int)y1, (int)(x2-scale*dx*size), (int)(y2-scale*dy*size));
+			else
+				g.drawLine((int)x1, (int)y1, (int)(x2-scale*dx*size), (int)(y2-scale*dy*size));
 		}
 		GeneralPath path = new GeneralPath();
 		path.moveTo((float)x4, (float)y4);
@@ -89,37 +96,34 @@ public class Arrow extends Line {
 				path.lineTo((float)x6, (float)y6);
 			path.lineTo((float)x4, (float)y4);
 		}
-		if (style==OPEN) {
-			if (x1!=x2 || y1!=y2) g.draw(path);
-		} else
-			g.fill(path);
+		if (ip!=null) {
+			if (style==OPEN) {
+				ip.moveTo((int)x4,(int)y4);
+				ip.lineTo((int)x2, (int)y2);
+				ip.lineTo((int)x5, (int)y5);
+			} else
+				ip.fill(new ShapeRoi(path));
+		} else {
+			if (style==OPEN) {
+				if (x1!=x2 || y1!=y2) g.draw(path);
+			} else
+				g.fill(path);
+		}
 	}
 
 	public void drawPixels(ImageProcessor ip) {
 		int width = (int)Math.round(getStrokeWidth());
 		ip.setLineWidth(width);
-		double size = 8+10*width*0.5;
-		double dx = x2-x1;
-		double dy = y2-y1;
-		double ra = Math.sqrt(dx*dx + dy*dy);
-		dx = dx/ra;
-		dy = dy/ra;
-		double x3 = x2-dx*size;
-		double y3 = y2-dy*size;
-		double r = 0.35*size;
-		double x4 = Math.round(x3+dy*r);
-		double y4 = Math.round(y3-dx*r);
-		double x5 = Math.round(x3-dy*r);
-		double y5 = Math.round(y3+dx*r);
-		ip.drawLine((int)x1, (int)y1, (int)(x2-dx*size), (int)(y2-dy*size));
-		Polygon poly = new Polygon();
-		poly.addPoint((int)x4,(int)y4);
-		poly.addPoint((int)x2,(int)y2);
-		poly.addPoint((int)x5,(int)y5);
-		Roi roi = new PolygonRoi(poly, Roi.POLYGON);
-		ip.fill(roi);
+		drawArrow(null, ip, x1, y1, x2, y2);
 	}
 	
+	protected int clipRectMargin() {
+		double mag = ic!=null?ic.getMagnification():1.0;
+		double arrowWidth = getStrokeWidth();
+		double size = 8+10*arrowWidth*mag*0.5;
+		return (int)Math.max(size*2.0, headSize);
+	}
+			
 	public boolean isDrawingTool() {
 		return true;
 	}

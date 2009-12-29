@@ -453,6 +453,10 @@ public class Line extends Roi {
 		return new Rectangle(xmin, ymin, w, h);
 	}
 	
+	protected int clipRectMargin() {
+		return 4;
+	}
+
 	/** Nudge end point of line by one pixel. */
 	public void nudgeCorner(int key) {
 		if (ic==null) return;

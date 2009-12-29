@@ -1051,6 +1051,10 @@ public class PolygonRoi extends Roi {
 		return new Polygon(xx, yy, n2);
 	}
 
+	protected int clipRectMargin() {
+		return type==POINT?4:0;
+	}
+
 	/** Returns a copy of this PolygonRoi. */
 	public synchronized Object clone() {
 		PolygonRoi r = (PolygonRoi)super.clone();
