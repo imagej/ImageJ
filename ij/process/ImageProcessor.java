@@ -472,10 +472,10 @@ public abstract class ImageProcessor extends Object {
 	public void setAutoThreshold(String method, boolean darkBackground, int lutUpdate) {
 		if (method==null || (this instanceof ColorProcessor))
 			return;
-		if (method.equals("Default")) {
-			setAutoThreshold(ISODATA2, lutUpdate);
-			return;
-		}
+		//if (method.equals("Default")) {
+		//	setAutoThreshold(ISODATA2, lutUpdate);
+		//	return;
+		//}
 		double min=0.0, max=0.0;
 		boolean notByteData = !(this instanceof ByteProcessor);
 		ImageProcessor ip2 = this;

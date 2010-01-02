@@ -28,6 +28,7 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		gd.addSlider("Size:", 0, 30, headSize);
 		gd.addChoice("Color:", Colors.colors, colorName);
 		gd.addChoice("Style:", Arrow.styles, Arrow.styles[style]);
+		gd.addCheckbox("Double headed", Arrow.getDefaultDoubleHeaded());
 		gd.addDialogListener(this);
 		gd.showDialog();
 	}
@@ -37,29 +38,29 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		double headSize2 = gd.getNextNumber();
 		String colorName2 = gd.getNextChoice();
 		int style2 = gd.getNextChoiceIndex();
-		updateArrow(width2, headSize2, style2);
+		boolean doubleHeaded2 = gd.getNextBoolean();
 		if (colorName!=null && !colorName2.equals(colorName)) {
 			Color color = Colors.getColor(colorName2, Color.black);
 			Toolbar.setForegroundColor(color);
 		}
 		colorName = colorName2;
-		return true;
-	}
-
-	void updateArrow(double width2, double headSize2, int style2) {
 		Arrow.setDefaultWidth(width2);
 		Arrow.setDefaultHeadSize(headSize2);
 		Arrow.setDefaultStyle(style2);
+		Arrow.setDefaultDoubleHeaded(doubleHeaded2);
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null) return;
+		if (imp==null) return true;
 		Roi roi = imp.getRoi();
-		if (roi==null) return;
+		if (roi==null) return true;
 		if (roi instanceof Arrow) {
+			Arrow arrow = (Arrow)roi;
 			roi.setStrokeWidth((float)width2);
-			((Arrow)roi).setHeadSize(headSize2);
-			((Arrow)roi).setStyle(style2);
+			arrow.setHeadSize(headSize2);
+			arrow.setStyle(style2);
+			arrow.setDoubleHeaded(doubleHeaded2);
 			imp.draw();
 		}
+		return true;
 	}
 	
 } 

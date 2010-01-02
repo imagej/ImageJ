@@ -343,12 +343,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 				{minThreshold=0; maxThreshold=threshold;}
 		}
 		if (minThreshold>255) minThreshold = 255;
-		if (Recorder.record) {
-			if (method.equals("Default"))
-				Recorder.record("setAutoThreshold");
-			else
-				Recorder.record("setAutoThreshold", method+(darkb?" dark":""));
-		}
+		if (Recorder.record)
+			Recorder.record("setAutoThreshold", method+(darkb?" dark":""));
 	}
 	
 	/** Scales threshold levels in the range 0-255 to the actual levels. */

@@ -11,15 +11,18 @@ public class Arrow extends Line {
 	public static final String[] styles = {"Filled", "Notched", "Open"};
 	private static int defaultStyle = FILLED;
 	private static float defaultWidth = 2;
+	private static boolean defaultDoubleHeaded;
 	private int style;
 	private static double defaultHeadSize = 10;  // 0-30;
-	protected double headSize = 10;  // 0-30
+	private double headSize = 10;  // 0-30
+	private boolean doubleHeaded;
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
 		setStrokeWidth(2);
 		style = defaultStyle;
 		headSize = defaultHeadSize;
+		doubleHeaded = defaultDoubleHeaded;
 	}
 
 	public Arrow(int sx, int sy, ImagePlus imp) {
@@ -27,6 +30,7 @@ public class Arrow extends Line {
 		setStrokeWidth(defaultWidth);
 		style = defaultStyle;
 		headSize = defaultHeadSize;
+		doubleHeaded = defaultDoubleHeaded;
 	}
 
 	/** Draws this arrow on the image. */
@@ -43,9 +47,12 @@ public class Arrow extends Line {
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		drawArrow((Graphics2D)g, null, sx1, sy1, sx2, sy2);
+		if (doubleHeaded)
+			drawArrow((Graphics2D)g, null, sx2, sy2, sx1, sy1);
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
-			handleColor= strokeColor!=null? strokeColor:ROIColor; drawHandle(g, sx1-size2, sy1-size2); handleColor=Color.white;
+			handleColor=Color.white;
+			drawHandle(g, sx1-size2, sy1-size2);
 			drawHandle(g, sx2-size2, sy2-size2);
 			drawHandle(g, sx3-size2, sy3-size2);
 		}
@@ -82,10 +89,14 @@ public class Arrow extends Line {
 		if (ra>size) {
 			double scale = style==OPEN?0.25:0.75;
 			if (style==OPEN) size /= 3.0;
+			int xx1 = doubleHeaded?(int)(x1+scale*dx*size):(int)x1;
+			int yy1 = doubleHeaded?(int)(y1+scale*dy*size):(int)y1;
+			int xx2 = (int)(x2-scale*dx*size);
+			int yy2 = (int)(y2-scale*dy*size);
 			if (ip!=null)
-				ip.drawLine((int)x1, (int)y1, (int)(x2-scale*dx*size), (int)(y2-scale*dy*size));
+				ip.drawLine(xx1, yy1, xx2, yy2);
 			else
-				g.drawLine((int)x1, (int)y1, (int)(x2-scale*dx*size), (int)(y2-scale*dy*size));
+				g.drawLine(xx1, yy1, xx2, yy2);
 		}
 		GeneralPath path = new GeneralPath();
 		path.moveTo((float)x4, (float)y4);
@@ -115,6 +126,8 @@ public class Arrow extends Line {
 		int width = (int)Math.round(getStrokeWidth());
 		ip.setLineWidth(width);
 		drawArrow(null, ip, x1, y1, x2, y2);
+		if (doubleHeaded)
+			drawArrow(null, ip, x2, y2, x1, y1);
 	}
 	
 	protected int clipRectMargin() {
@@ -158,6 +171,18 @@ public class Arrow extends Line {
 
 	public static double getDefaultHeadSize() {
 		return defaultHeadSize;
+	}
+
+	public void setDoubleHeaded(boolean b) {
+		doubleHeaded = b;
+	}
+
+	public static void setDefaultDoubleHeaded(boolean b) {
+		defaultDoubleHeaded = b;
+	}
+
+	public static boolean getDefaultDoubleHeaded() {
+		return defaultDoubleHeaded;
 	}
 
 }
