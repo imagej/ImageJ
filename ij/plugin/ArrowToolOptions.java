@@ -60,6 +60,10 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 			arrow.setDoubleHeaded(doubleHeaded2);
 			imp.draw();
 		}
+		Prefs.set(Arrow.STYLE_KEY, style2);
+		Prefs.set(Arrow.WIDTH_KEY, width2);
+		Prefs.set(Arrow.SIZE_KEY, headSize2);
+		Prefs.set(Arrow.DOUBLE_HEADED_KEY, doubleHeaded2);
 		return true;
 	}
 	

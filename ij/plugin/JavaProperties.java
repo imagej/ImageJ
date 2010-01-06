@@ -102,7 +102,10 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Memory in use: "+IJ.freeMemory()+"\n");	
 		if (IJ.altKeyDown())
 			doFullDump();
-		TextWindow tw = new TextWindow("Properties", new String(sb), 400, 500);
+		if (IJ.getInstance()==null)
+			IJ.log(new String(sb));
+		else
+			new TextWindow("Properties", new String(sb), 400, 500);
 	}
 	
 	String cores() {

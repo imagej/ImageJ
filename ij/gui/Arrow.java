@@ -7,15 +7,24 @@ import java.awt.geom.*;
 
 /** This is an Roi subclass for creating and displaying arrows. */
 public class Arrow extends Line {
+	public static final String STYLE_KEY = "arrow.style";
+	public static final String WIDTH_KEY = "arrow.width";
+	public static final String SIZE_KEY = "arrow.size";
+	public static final String DOUBLE_HEADED_KEY = "arrow.double";
 	public static final int FILLED=0, NOTCHED=1, OPEN=2;
 	public static final String[] styles = {"Filled", "Notched", "Open"};
-	private static int defaultStyle = FILLED;
-	private static float defaultWidth = 2;
-	private static boolean defaultDoubleHeaded;
+	private static int defaultStyle = (int)Prefs.get(STYLE_KEY, FILLED);
+	private static float defaultWidth = (float)Prefs.get(WIDTH_KEY, 2);
+	private static double defaultHeadSize = (int)Prefs.get(SIZE_KEY, 10);  // 0-30;
+	private static boolean defaultDoubleHeaded = Prefs.get(DOUBLE_HEADED_KEY, false);
 	private int style;
-	private static double defaultHeadSize = 10;  // 0-30;
 	private double headSize = 10;  // 0-30
 	private boolean doubleHeaded;
+	
+	static {
+		if (defaultStyle<FILLED || defaultStyle>OPEN)
+			defaultStyle = FILLED;
+	}
 
 	public Arrow(double ox1, double oy1, double ox2, double oy2) {
 		super(ox1, oy1, ox2, oy2);
