@@ -630,6 +630,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		
 	private void setTool2(int tool) {
 		if (!isValidTool(tool)) return;
+		String previousName = getToolName();
 		current = tool;
 		down[current] = true;
 		if (current!=previous)
@@ -651,6 +652,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 		if (IJ.isMacOSX())
 			repaint();
+		if (!previousName.equals(getToolName()))
+			IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
 	}
 	
 	boolean isValidTool(int tool) {
@@ -1018,6 +1021,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public void itemStateChanged(ItemEvent e) {
 		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
+		String previousName = getToolName();
 		if (item==rectItem || item==roundRectItem) {
 			roundRectMode = item==roundRectItem;
 			repaintTool(RECTANGLE);
@@ -1026,15 +1030,21 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			Roi roi = imp!=null?imp.getRoi():null;
 			if (roi!=null && roi.getType()==Roi.RECTANGLE)
 				roi.setRoundRectArcSize(roundRectMode?arcSize:0);
+			if (!previousName.equals(getToolName()))
+				IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
 		} else if (item==ovalItem || item==brushItem) {
 			brushEnabled = item==brushItem;
 			repaintTool(OVAL);
 			showMessage(OVAL);
+			if (!previousName.equals(getToolName()))
+				IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
 		} else if (item==pointItem || item==multiPointItem) {
 			multiPointMode = item==multiPointItem;
 			Prefs.multiPointMode = multiPointMode;
 			repaintTool(POINT);
 			showMessage(POINT);
+			if (!previousName.equals(getToolName()))
+				IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
 		} else if (item==straightLineItem) {
 			lineType = LINE;
 			arrowMode = false;
