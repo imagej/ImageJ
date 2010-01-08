@@ -68,6 +68,8 @@ public class PolygonRoi extends Roi {
 				Prefs.noPointLabels = false;
 			userCreated = true;
 		}
+		if (lineWidth>1 && isLine())
+			updateWideLine(lineWidth);
 		finishPolygon();
 	}
 	

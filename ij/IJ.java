@@ -51,7 +51,7 @@ public class IJ {
 	private static boolean suppressPluginNotFoundError;
 	private static Dimension screenSize;
 	private static Hashtable commandTable;
-
+	private static Vector eventListeners = new Vector();
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -1652,5 +1652,22 @@ public class IJ {
 	}
 
 	static ExceptionHandler exceptionHandler;
+
+	public static void addEventListener(IJEventListener listener) {
+		eventListeners.addElement(listener);
+	}
+	
+	public static void removeEventListener(IJEventListener listener) {
+		eventListeners.removeElement(listener);
+	}
+	
+	public static void notifyEventListeners(int eventID) {
+		synchronized (eventListeners) {
+			for (int i=0; i<eventListeners.size(); i++) {
+				IJEventListener listener = (IJEventListener)eventListeners.elementAt(i);
+				listener.eventOccurred(eventID);
+			}
+		}
+	}
 
 }

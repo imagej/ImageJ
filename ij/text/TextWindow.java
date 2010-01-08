@@ -243,6 +243,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			Prefs.saveLocation(LOG_LOC_KEY, getLocation());
 			IJ.debugMode = false;
 			IJ.log("\\Closed");
+			IJ.notifyEventListeners(IJEventListener.LOG_WINDOW_CLOSED);
 		} else if (getTitle().equals("Debug")) {
 			Prefs.saveLocation(DEBUG_LOC_KEY, getLocation());
 		} else if (textPanel!=null && textPanel.rt!=null) {

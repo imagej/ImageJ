@@ -35,6 +35,8 @@ public class Line extends Roi {
 		x=(int)Math.min(x1d,x2d); y=(int)Math.min(y1d,y2d);
 		x1R=x1d-x; y1R=y1d-y; x2R=x2d-x; y2R=y2d-y;
 		width=(int)Math.abs(x2R-x1R); height=(int)Math.abs(y2R-y1R);
+		if (!(this instanceof Arrow) && lineWidth>1)
+			updateWideLine(lineWidth);
 		updateClipRect();
 		oldX=x; oldY=y; oldWidth=width; oldHeight=height;
 		state = NORMAL;
@@ -51,7 +53,6 @@ public class Line extends Roi {
 		x1R = x2R = startxd - startX;
 		y1R = y2R = startyd - startY;
 		type = LINE;
-		int lineWidth = Line.getWidth();
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
 	}

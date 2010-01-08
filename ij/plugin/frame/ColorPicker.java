@@ -48,6 +48,7 @@ public class ColorPicker extends PlugInFrame {
 	 	close();
 		instance = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
+		IJ.notifyEventListeners(IJEventListener.COLOR_PICKER_CLOSED);
 	}
 	
 }

@@ -683,6 +683,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			foregroundColor = c;
 			repaintTool(DROPPER);
 			if (!IJ.isMacro()) setRoiColor(c);
+			IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
 		}
 	}
 
@@ -694,6 +695,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (c!=null) {
 			backgroundColor = c;
 			repaintTool(DROPPER);
+			IJ.notifyEventListeners(IJEventListener.BACKGROUND_COLOR_CHANGED);
 		}
 	}
 	
