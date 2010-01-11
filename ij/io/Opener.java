@@ -291,19 +291,36 @@ public class Opener {
 		pgm, gif or jpeg. Displays a file open dialog if 'path' is null or
 		an empty string. Returns an ImagePlus object if successful. */
 	public ImagePlus openImage(String path) {
-		if (path==null || path.equals("")) {
-			OpenDialog od = new OpenDialog("Open", "");
-			String dir = od.getDirectory();
-			String name = od.getFileName();
-			if (name==null) return null;
-			path = dir+name;
-		}
+		if (path==null || path.equals(""))
+			path = getPath();
+		if (path==null) return null;
 		ImagePlus img = null;
 		if (path.indexOf("://")>0)
 			img = openURL(path);
 		else
 			img = openImage(getDir(path), getName(path));
 		return img;
+	}
+	
+	/** Open the nth image of the specified tiff stack. */
+	public ImagePlus openImage(String path, int n) {
+		if (path==null || path.equals(""))
+			path = getPath();
+		if (path==null) return null;
+		int type = getFileType(path);
+		if (type!=TIFF)
+			throw new IllegalArgumentException("TIFF file require");
+		return openTiff(path, n);
+	}
+
+	String getPath() {
+		OpenDialog od = new OpenDialog("Open", "");
+		String dir = od.getDirectory();
+		String name = od.getFileName();
+		if (name==null)
+			return null;
+		else
+			return dir+name;
 	}
 
 	/** Attempts to open the specified url as a tiff, zip compressed tiff, 
@@ -666,6 +683,39 @@ public class Opener {
 		return openTiff2(info);
 	}
 	
+	/** Opens the nth image of the specified TIFF stack. */
+	public ImagePlus openTiff(String path, int n) {
+		TiffDecoder td = new TiffDecoder(getDir(path), getName(path));
+		if (IJ.debugMode) td.enableDebugging();
+		FileInfo[] info=null;
+		try {info = td.getTiffInfo();}
+		catch (IOException e) {
+			String msg = e.getMessage();
+			if (msg==null||msg.equals("")) msg = ""+e;
+			IJ.error("TiffDecoder", msg);
+			return null;
+		}
+		if (info==null) return null;
+		FileInfo fi = info[0];
+		if (info.length==1 && fi.nImages>1) {
+			if (n<1 || n>fi.nImages)
+				throw new IllegalArgumentException("N out of 1-"+fi.nImages+" range");
+			long size = fi.width*fi.height*fi.getBytesPerPixel();
+			fi.longOffset = fi.getOffset() + (n-1)*(size+fi.gapBetweenImages);
+			fi.offset = 0;
+			fi.nImages = 1;
+		} else {
+			if (n<1 || n>info.length)
+				throw new IllegalArgumentException("N out of 1-"+info.length+" range");
+			fi.longOffset = info[n-1].getOffset();
+			fi.offset = 0;
+			fi.stripOffsets = info[n-1].stripOffsets; 
+			fi.stripLengths = info[n-1].stripLengths; 
+		}
+		FileOpener fo = new FileOpener(fi);
+		return fo.open(false);
+	}
+
 	/** Attempts to open the specified inputStream as a
 		TIFF, returning an ImagePlus object if successful. */
 	public ImagePlus openTiff(InputStream in, String name) {

@@ -612,7 +612,7 @@ public class ResultsTable implements Cloneable {
 		String[] lines = Tools.split(text, lineSeparator);
 		if (lines.length==0)
 			throw new IOException("Table is empty or invalid");
-		String[] headings=Tools.split(lines[0], cellSeparator);
+		String[] headings = Tools.split(lines[0], cellSeparator);
 		if (headings.length==1)
 			throw new IOException("This is not a tab or comma delimited text file.");
 		int numbersInHeadings = 0;
@@ -628,15 +628,25 @@ public class ResultsTable implements Cloneable {
 		int firstColumn = headings[0].equals(" ")?1:0;
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
-		if (!labels && openNonNumericTable(path, lines, firstRow, cellSeparator))
+		int rtn = 0;
+		if (!labels && (rtn=openNonNumericTable(path, lines, firstRow, cellSeparator))==2)
 			return null;
+		if (!labels && rtn==1) labels = true;
+		if (lines[0].startsWith("\t")) {
+			String[] headings2 = new String[headings.length+1];
+			headings2[0] = " ";
+			for (int i=0; i<headings.length; i++)
+				headings2[i+1] = headings[i];
+			headings = headings2;
+			firstColumn = 1;
+		}
 		ResultsTable rt = new ResultsTable();
 		for (int i=firstRow; i<lines.length; i++) {
 			rt.incrementCounter();
 			String[] items=Tools.split(lines[i], cellSeparator);
 			for (int j=firstColumn; j<items.length; j++) {
 				if (j==1&&labels)
-					rt.addLabel(items[j]);
+					rt.addLabel(headings[1], items[1]);
 				else if (j<headings.length)
 					rt.addValue(headings[j], Tools.parseDouble(items[j]));
 			}
@@ -644,18 +654,22 @@ public class ResultsTable implements Cloneable {
 		return rt;
 	}
 	
-	static boolean openNonNumericTable(String path, String[] lines, int firstRow, String cellSeparator) {
-		if (lines.length<=2) return false;
+	static int openNonNumericTable(String path, String[] lines, int firstRow, String cellSeparator) {
+		if (lines.length<2) return 0;
 		String[] items=Tools.split(lines[1], cellSeparator);
-		boolean allNumeric = true;
+		int nonNumericCount = 0;
+		int nonNumericIndex = 0;
 		for (int i=0; i<items.length; i++) {
 			if (!items[i].equals("NaN") && Double.isNaN(Tools.parseDouble(items[i]))) {
-				allNumeric = false;
-				break;
+				nonNumericCount++;
+				nonNumericIndex = i;
 			}
 		}
 		boolean csv = path.endsWith(".csv");
-		if (allNumeric) return false;
+		if (nonNumericCount==0)
+			return 0; // assume this is all-numeric table
+		if (nonNumericCount==1 && nonNumericIndex==1)
+			return 1; // assume this is ImageJ Results table with row labels
 		if (csv) lines[0] = lines[0].replaceAll(",", "\t");
 		StringBuffer sb = new StringBuffer();
 		for (int i=1; i<lines.length; i++) {
@@ -665,10 +679,10 @@ public class ResultsTable implements Cloneable {
 		String str = sb.toString();
 		if (csv) str = str.replaceAll(",", "\t");
 		new TextWindow(new File(path).getName(), lines[0], str, 500, 400);
-		return true;
+		return 2;
 	}
 	
-	/** Saves this ResultsTable as a tab or comma delimited text file. The table
+	/** Saves this ResultsTable as a tab or comma delimited text file. ThnonNumericIne table
 	     is saved as a CSV (comma-separated values) file if 'path' ends with ".csv".
 	     Displays a file save dialog if 'path' is empty or null. */
 	public void saveAs(String path) throws IOException {

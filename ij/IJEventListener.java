@@ -2,7 +2,8 @@ package ij;
 
 	/** Plugins that implement this interface are notified when the user
 	     changes the foreground color, changes the background color,
-	     closes the color picker or closes the Log window.
+	     closes the color picker, closes the Log window or switches to
+	     another tool.
 	*/
 	public interface IJEventListener {
 		public static final int FOREGROUND_COLOR_CHANGED = 0;

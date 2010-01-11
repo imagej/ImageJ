@@ -2144,9 +2144,23 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			IJ.open();
 		} else {
+			double n = Double.NaN;
 			String path = getString();
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				n = interp.getExpression();
+			}
 			interp.getRightParen();
-			IJ.open(path);
+			if (!Double.isNaN(n)) {
+				try {
+					IJ.open(path, (int)n);
+				} catch (Exception e) {
+					String msg = e.getMessage();
+					if (msg!=null&&msg.indexOf("canceled")==-1)
+						interp.error(""+msg);
+				}
+			} else
+				IJ.open(path);
 			if (path!=null&&!path.equals("")) {
 				int index = path.lastIndexOf('/');
 				if (index==-1)
