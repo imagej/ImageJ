@@ -952,6 +952,23 @@ public class Functions implements MacroConstants, Measurements {
 
 	Random ran;	
 	double random() {
+		double dseed = Double.NaN;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (isStringArg()) {
+				String arg = getString().toLowerCase(Locale.US);
+				if (arg.indexOf("seed")==-1)
+					interp.error("'seed' expected");
+				interp.getComma();
+				dseed = interp.getExpression();
+				long seed = (long)dseed;
+				if (seed!=dseed)
+					interp.error("Seed not integer");
+				ran = new Random(seed);
+			}
+			interp.getRightParen();
+			if (!Double.isNaN(dseed)) return Double.NaN;
+		}
 		interp.getParens();
  		if (ran==null)
 			ran = new Random();
