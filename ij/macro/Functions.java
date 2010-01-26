@@ -2784,8 +2784,14 @@ public class Functions implements MacroConstants, Measurements {
 		String s3 = getLastString();
 		if (s2.length()==1 && s3.length()==1)
 			return s1.replace(s2.charAt(0), s3.charAt(0));
-		else
-			return s1.replaceAll(s2, s3);
+		else {
+			try {
+				return s1.replaceAll(s2, s3);
+			} catch (Exception e) {
+				interp.error(""+e);
+				return null;
+			}
+		}
 	}
 	
 	void floodFill() {

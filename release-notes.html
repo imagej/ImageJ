@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.43o, 17 January 2010</u>
+<li> <u>1.43o, 25 January 2010</u>
 <ul>
 <li> Added a "Double headed" option to the <i>Edit&gt;Options&gt;Arrow Tool</i> dialog box.
 <li> The <i>Edit&gt;Options&gt;Arrow Tool</i> options are saved in the preferences file.
+<li> Thanks to Matt Smith, the "List" and "Save..." buttons in plot windows now list and save
+all the data that has been plotted.
 <li> Added the IJEventListener interface
 (<a href="http://rsb.info.nih.gov/ij/plugin/event-listener.html">example</a>).
 <li> Added the "-debug" command line option.
@@ -16,15 +18,19 @@
 ÊsetAutoThreshold("Default dark");
 <li> ImageJ now opens TIFF files with invalid compression tag values of 0 
 that are created by the PerkinElmer Acapella system.
+<li> The "+=" operator can now be used for string concatenation in macros.
 <li> Added the open(path,n) macro function and the IJ.open(path,n) and IJ.openImage(path,n)
 methods, which open the nth image in a tiff stack.
+<li> Added the random("seed", seed) macro function.
 <li> Fixed a bug that caused some "-batch" mode command line macros to fail.
 <li> Fixed a bug that caused the line width adjuster slider 
 to sometimes not be set correctly.
 <li> Fixed a bug that caused the run() and doCommand() macro functions, and the IJ.run() and IJ.doCommand() 
 methods, to fail to run commands in the <i>File&gt;Open Recent</i> menu.
-<li> Fixed a bug that sometimes caused<i>Analyze&gt;Calibrate</i> to sometimes not correctly
+<li> Fixed a bug that sometimes caused<i>Analyze&gt;Calibrate</i> to not correctly
 calibrate 16-bit images using a straight line function.
+<li> Matt Smith fixed a bug that caused a "nullnull" file to be created when 
+a plot window file save was canceled.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

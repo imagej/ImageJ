@@ -141,7 +141,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 				if (parameters==null)
 					return;
 			}
-			if (function!=Calibration.STRAIGHT_LINE) {
+			if (!is16Bits && function!=Calibration.STRAIGHT_LINE) {
 				zeroClip = true;
 				for (int i=0; i<y.length; i++)
 					if (y[i]<0.0) zeroClip = false;

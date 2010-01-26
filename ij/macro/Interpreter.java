@@ -809,11 +809,12 @@ public class Interpreter implements MacroConstants {
 				error("Undefined identifier");
 		}
 		getToken();
-		if (token!='=') {
-			error("'=' expected");
-			return;
-		}
-		v.setString(getString());
+		if (token=='=')
+			v.setString(getString());
+		else if (token==PLUS_EQUAL)
+			v.setString(v.getString()+getString());
+		else
+			error("'=' or '+=' expected");
 	}
 
 	final void doArrayAssignment() {

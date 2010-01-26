@@ -93,6 +93,9 @@ public class Plot {
     private boolean multiplePlots;
     private boolean drawPending;
     
+    /** keeps a reference to all of the data that is going to be plotted*/
+    ArrayList storedData;
+    
     /** Construct a new PlotWindow.
      * @param title	the window title
      * @param xLabel	the x-axis label
@@ -106,14 +109,18 @@ public class Plot {
         this.xLabel = xLabel;
         this.yLabel = yLabel;
         this.flags = flags;
+        storedData = new ArrayList();
         if (xValues==null || yValues==null) {
             xValues = new float[1];
             yValues = new float[1];
             xValues[0] = -1f;
             yValues[0] = -1f;
-        }
+        } else
+            storeData(xValues, yValues);
         this.xValues = xValues;
         this.yValues = yValues;
+        
+        
         double[] a = Tools.getMinMax(xValues);
         xMin=a[0]; xMax=a[1];
         a = Tools.getMinMax(yValues);
@@ -198,6 +205,7 @@ public class Plot {
             nPoints = x.length;
             drawPending = false;
         }
+        storeData(x, y);
     }
     
     /** Adds a set of points to the plot using double arrays.
@@ -653,6 +661,20 @@ public class Plot {
         }
         ImageWindow.centerNextImage();
         return new PlotWindow(this);
+    }
+    
+    /**
+     * 
+     * Stores plot data into an ArrayList<float[]> to be used when a plot window 
+     * wants to 'createlist'
+     * 
+     * @param xValues	the x-coodinates
+     * @param yValues	the y-coodinates
+     * 
+     * */
+    private void storeData(float[] xvalues, float[] yvalues){
+        storedData.add(xvalues);
+        storedData.add(yvalues);
     }
 
 }

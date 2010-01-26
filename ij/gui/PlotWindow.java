@@ -224,7 +224,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			coordinates.setText(plot.getCoordinates(x,y));
 	}
 	   	
-	void showList() {
+	void showListOLD() {
 		StringBuffer sb = new StringBuffer();
 		String headings;
 		initDigits();
@@ -255,14 +255,95 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (autoClose)
 			{imp.changes=false; close();}
 	}
-
+    /** shows the data of the backing plot in a Textwindow with columns */
+    void showList(){
+        initDigits();
+        String headings = createHeading();
+        String data = createData();
+        TextWindow tw = new TextWindow("Plot Values", headings, data, 230, 400);
+		if (autoClose)
+			{imp.changes=false; close();}
+    }
+    
+    /** creates the headings corresponding to the showlist funcion*/
+    private String createHeading(){
+        String head = "";
+        int sets = plot.storedData.size()/2;
+        if (saveXValues)
+            head += sets==1?"X\tY\t":"X0\tY0\t";
+        else
+            head += sets==1?"Y0\t":"Y0\t";
+        if (plot.errorBars!=null)
+            head += "ERR\t";
+        for (int j = 1; j<sets; j++){
+            if (saveXValues)
+                head += "X" + j + "\tY" + j + "\t";
+            else
+                head += "Y" + j + "\t";
+        }
+        return head;
+    }
+    
+    /** creates the data that fills the showList() function values */
+    private String createData(){
+        int max = 0;
+        
+        /** find the longest x-value data set */
+        float[] column;
+        for(int i = 0; i<plot.storedData.size(); i+=2){
+            column = (float[])plot.storedData.get(i);
+            int s = column.length;
+            max = s>max?s:max;
+        }
+        
+        /** stores the values that will be displayed*/
+        ArrayList displayed = new ArrayList(plot.storedData);
+        boolean eb_test = false;
+        
+        /** includes error bars.*/
+        if (plot.errorBars !=null)
+            displayed.add(2, plot.errorBars);
+                    
+        StringBuffer sb = new StringBuffer();
+        String v;
+        for(int i = 0; i<max; i++){
+            eb_test = plot.errorBars != null;
+            for (int j = 0; j<displayed.size();) {
+                if(saveXValues){
+                    column = (float[])displayed.get(j);
+                    v = i<column.length?IJ.d2s(column[i],xdigits):"";
+                    sb.append(v);
+                    sb.append("\t");
+                }
+                j++;
+                column = (float[])displayed.get(j);
+                v = i<column.length?IJ.d2s(column[i],ydigits):"";
+                sb.append(v);
+                sb.append("\t");
+                j++;
+                if(eb_test){
+                    column = (float[])displayed.get(j);
+                    v = i<column.length?IJ.d2s(column[i],ydigits):"";
+                    sb.append(v);
+                    sb.append("\t");
+                    j++;
+                    eb_test=false;
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+    
 	void saveAsText() {
 		FileDialog fd = new FileDialog(this, "Save as Text...", FileDialog.SAVE);
 		if (defaultDirectory!=null)
 			fd.setDirectory(defaultDirectory);
-		fd.show();
+		fd.setVisible(true);
+        
 		String name = fd.getFile();
-		String directory = fd.getDirectory();
+		if (name==null) return;
+        String directory = fd.getDirectory();
 		defaultDirectory = directory;
 		fd.dispose();
 		PrintWriter pw = null;
@@ -278,12 +359,13 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		IJ.wait(250);  // give system time to redraw ImageJ window
 		IJ.showStatus("Saving plot values...");
 		initDigits();
-		for (int i=0; i<plot.nPoints; i++) {
+		/*for (int i=0; i<plot.nPoints; i++) {
 			if (saveXValues)
 				pw.println(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits));
 			else
 				pw.println(IJ.d2s(plot.yValues[i],ydigits));
-		}
+		}*/
+        pw.print(createData());
 		pw.close();
 		if (autoClose)
 			{imp.changes=false; close();}
