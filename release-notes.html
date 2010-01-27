@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.43o, 25 January 2010</u>
+<li> <u>1.43o, 26 January 2010</u>
 <ul>
 <li> Added a "Double headed" option to the <i>Edit&gt;Options&gt;Arrow Tool</i> dialog box.
 <li> The <i>Edit&gt;Options&gt;Arrow Tool</i> options are saved in the preferences file.
@@ -15,13 +15,14 @@ all the data that has been plotted.
 (<a href="http://rsb.info.nih.gov/ij/plugin/event-listener.html">example</a>).
 <li> Added the "-debug" command line option.
 <li> The ThresholdAdjuster records the default method as setAutoThreshold("Default") or
-ÊsetAutoThreshold("Default dark");
+setAutoThreshold("Default dark");
 <li> ImageJ now opens TIFF files with invalid compression tag values of 0 
 that are created by the PerkinElmer Acapella system.
-<li> The "+=" operator can now be used for string concatenation in macros.
+<li> The "+=" operator in macros can now be used for string concatenation.
 <li> Added the open(path,n) macro function and the IJ.open(path,n) and IJ.openImage(path,n)
 methods, which open the nth image in a tiff stack.
 <li> Added the random("seed", seed) macro function.
+<li> FloatProcessor() constructors no longer call findMinAndMax().
 <li> Fixed a bug that caused some "-batch" mode command line macros to fail.
 <li> Fixed a bug that caused the line width adjuster slider 
 to sometimes not be set correctly.
@@ -31,6 +32,9 @@ methods, to fail to run commands in the <i>File&gt;Open Recent</i> menu.
 calibrate 16-bit images using a straight line function.
 <li> Matt Smith fixed a bug that caused a "nullnull" file to be created when 
 a plot window file save was canceled.
+<li> Fixed a bug that caused ImageJ64 on Mac OS  X to fail to start if the 
+memory limit was set to less that 256MB.
+<li> Fixed the FloatProcessor(int[][]) constructor.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

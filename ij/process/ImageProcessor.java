@@ -91,6 +91,7 @@ public abstract class ImageProcessor extends Object {
 	protected ColorModel cm2;
 	protected SampleModel sampleModel;
 	protected static IndexColorModel defaultColorModel;
+	protected boolean minMaxSet;
 
 		
 	protected void showProgress(double percentDone) {

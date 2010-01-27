@@ -1,7 +1,6 @@
 package ij.gui;
 
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
 import java.awt.datatransfer.*;
@@ -11,7 +10,6 @@ import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
-import ij.macro.Interpreter;
 import ij.measure.Measurements;
 
 
@@ -64,7 +62,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Automatically close window after saving values. To
 		set, use Edit/Options/Profile Plot Options. */
 	public static boolean autoClose;
- 	
+	
 	/** The width of the plot in pixels. */
 	public static int plotWidth = WIDTH;
 
@@ -82,17 +80,17 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Add grid lines to plots */
 	public static boolean noGridLines;
 
-    // static initializer
-    static {
+	// static initializer
+	static {
 		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
-    	options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
-    	saveXValues = (options&SAVE_X_VALUES)!=0;
-    	autoClose = (options&AUTO_CLOSE)!=0;
-    	listValues = (options&LIST_VALUES)!=0;
-    	plotWidth = Prefs.getInt(PLOT_WIDTH, WIDTH);
-    	plotHeight = Prefs.getInt(PLOT_HEIGHT, HEIGHT);
-    	interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
-     	noGridLines = (options&NO_GRID_LINES)!=0; 
+		options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
+		saveXValues = (options&SAVE_X_VALUES)!=0;
+		autoClose = (options&AUTO_CLOSE)!=0;
+		listValues = (options&LIST_VALUES)!=0;
+		plotWidth = Prefs.getInt(PLOT_WIDTH, WIDTH);
+		plotHeight = Prefs.getInt(PLOT_HEIGHT, HEIGHT);
+		interpolate = (options&INTERPOLATE)==0; // 0=true, 1=false
+		noGridLines = (options&NO_GRID_LINES)!=0; 
    }
 
 	/** Obsolete; replaced by the Plot class. */
@@ -163,9 +161,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 
 	/** Changes the font. */
-    public void changeFont(Font font) {
-    	plot.changeFont(font);
-    }
+	public void changeFont(Font font) {
+		plot.changeFont(font);
+	}
 
 	/** Displays the plot. */
 	public void draw() {
@@ -186,7 +184,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		add(buttons);
 		plot.draw();
 		pack();
-		coordinates.setText("                    ");
+		coordinates.setText("					 ");
 		ImageProcessor ip = plot.getProcessor();
 		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
 			imp.setProcessor(null, ip);
@@ -202,9 +200,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		else {
 			n1 = Math.abs(n1);
 			n2 = Math.abs(n2);
-		    double n = n1<n2&&n1>0.0?n1:n2;
-		    double diff = Math.abs(n2-n1);
-		    if (diff>0.0 && diff<n) n = diff;		    
+			double n = n1<n2&&n1>0.0?n1:n2;
+			double diff = Math.abs(n2-n1);
+			if (diff>0.0 && diff<n) n = diff;			
 			int digits = 1;
 			if (n<10.0) digits = 2;
 			if (n<0.01) digits = 3;
@@ -214,16 +212,16 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 	}
 
-    /** Updates the graph X and Y values when the mouse is moved.
-    	Overrides mouseMoved() in ImageWindow. 
-    	@see ij.gui.ImageWindow#mouseMoved
-    */
-    public void mouseMoved(int x, int y) {
-    	super.mouseMoved(x, y);
+	/** Updates the graph X and Y values when the mouse is moved.
+		Overrides mouseMoved() in ImageWindow. 
+		@see ij.gui.ImageWindow#mouseMoved
+	*/
+	public void mouseMoved(int x, int y) {
+		super.mouseMoved(x, y);
 		if (plot!=null && plot.frame!=null && coordinates!=null)
 			coordinates.setText(plot.getCoordinates(x,y));
 	}
-	   	
+		
 	void showListOLD() {
 		StringBuffer sb = new StringBuffer();
 		String headings;
@@ -255,95 +253,95 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (autoClose)
 			{imp.changes=false; close();}
 	}
-    /** shows the data of the backing plot in a Textwindow with columns */
-    void showList(){
-        initDigits();
-        String headings = createHeading();
-        String data = createData();
-        TextWindow tw = new TextWindow("Plot Values", headings, data, 230, 400);
+	/** shows the data of the backing plot in a Textwindow with columns */
+	void showList(){
+		initDigits();
+		String headings = createHeading();
+		String data = createData();
+		TextWindow tw = new TextWindow("Plot Values", headings, data, 230, 400);
 		if (autoClose)
 			{imp.changes=false; close();}
-    }
-    
-    /** creates the headings corresponding to the showlist funcion*/
-    private String createHeading(){
-        String head = "";
-        int sets = plot.storedData.size()/2;
-        if (saveXValues)
-            head += sets==1?"X\tY\t":"X0\tY0\t";
-        else
-            head += sets==1?"Y0\t":"Y0\t";
-        if (plot.errorBars!=null)
-            head += "ERR\t";
-        for (int j = 1; j<sets; j++){
-            if (saveXValues)
-                head += "X" + j + "\tY" + j + "\t";
-            else
-                head += "Y" + j + "\t";
-        }
-        return head;
-    }
-    
-    /** creates the data that fills the showList() function values */
-    private String createData(){
-        int max = 0;
-        
-        /** find the longest x-value data set */
-        float[] column;
-        for(int i = 0; i<plot.storedData.size(); i+=2){
-            column = (float[])plot.storedData.get(i);
-            int s = column.length;
-            max = s>max?s:max;
-        }
-        
-        /** stores the values that will be displayed*/
-        ArrayList displayed = new ArrayList(plot.storedData);
-        boolean eb_test = false;
-        
-        /** includes error bars.*/
-        if (plot.errorBars !=null)
-            displayed.add(2, plot.errorBars);
-                    
-        StringBuffer sb = new StringBuffer();
-        String v;
-        for(int i = 0; i<max; i++){
-            eb_test = plot.errorBars != null;
-            for (int j = 0; j<displayed.size();) {
-                if(saveXValues){
-                    column = (float[])displayed.get(j);
-                    v = i<column.length?IJ.d2s(column[i],xdigits):"";
-                    sb.append(v);
-                    sb.append("\t");
-                }
-                j++;
-                column = (float[])displayed.get(j);
-                v = i<column.length?IJ.d2s(column[i],ydigits):"";
-                sb.append(v);
-                sb.append("\t");
-                j++;
-                if(eb_test){
-                    column = (float[])displayed.get(j);
-                    v = i<column.length?IJ.d2s(column[i],ydigits):"";
-                    sb.append(v);
-                    sb.append("\t");
-                    j++;
-                    eb_test=false;
-                }
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-    
+	}
+	
+	/** creates the headings corresponding to the showlist funcion*/
+	private String createHeading(){
+		String head = "";
+		int sets = plot.storedData.size()/2;
+		if (saveXValues)
+			head += sets==1?"X\tY\t":"X0\tY0\t";
+		else
+			head += sets==1?"Y0\t":"Y0\t";
+		if (plot.errorBars!=null)
+			head += "ERR\t";
+		for (int j = 1; j<sets; j++){
+			if (saveXValues)
+				head += "X" + j + "\tY" + j + "\t";
+			else
+				head += "Y" + j + "\t";
+		}
+		return head;
+	}
+	
+	/** creates the data that fills the showList() function values */
+	private String createData(){
+		int max = 0;
+		
+		/** find the longest x-value data set */
+		float[] column;
+		for(int i = 0; i<plot.storedData.size(); i+=2){
+			column = (float[])plot.storedData.get(i);
+			int s = column.length;
+			max = s>max?s:max;
+		}
+		
+		/** stores the values that will be displayed*/
+		ArrayList displayed = new ArrayList(plot.storedData);
+		boolean eb_test = false;
+		
+		/** includes error bars.*/
+		if (plot.errorBars !=null)
+			displayed.add(2, plot.errorBars);
+					
+		StringBuffer sb = new StringBuffer();
+		String v;
+		for(int i = 0; i<max; i++){
+			eb_test = plot.errorBars != null;
+			for (int j = 0; j<displayed.size();) {
+				if(saveXValues){
+					column = (float[])displayed.get(j);
+					v = i<column.length?IJ.d2s(column[i],xdigits):"";
+					sb.append(v);
+					sb.append("\t");
+				}
+				j++;
+				column = (float[])displayed.get(j);
+				v = i<column.length?IJ.d2s(column[i],ydigits):"";
+				sb.append(v);
+				sb.append("\t");
+				j++;
+				if(eb_test){
+					column = (float[])displayed.get(j);
+					v = i<column.length?IJ.d2s(column[i],ydigits):"";
+					sb.append(v);
+					sb.append("\t");
+					j++;
+					eb_test=false;
+				}
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+	
 	void saveAsText() {
 		FileDialog fd = new FileDialog(this, "Save as Text...", FileDialog.SAVE);
 		if (defaultDirectory!=null)
 			fd.setDirectory(defaultDirectory);
 		fd.setVisible(true);
-        
+		
 		String name = fd.getFile();
 		if (name==null) return;
-        String directory = fd.getDirectory();
+		String directory = fd.getDirectory();
 		defaultDirectory = directory;
 		fd.dispose();
 		PrintWriter pw = null;
@@ -365,7 +363,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			else
 				pw.println(IJ.d2s(plot.yValues[i],ydigits));
 		}*/
-        pw.print(createData());
+		pw.print(createData());
 		pw.close();
 		if (autoClose)
 			{imp.changes=false; close();}

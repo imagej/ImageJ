@@ -39,8 +39,8 @@ public class Memory implements PlugIn {
 		}
 		if (unableToSet && max2!=max)
 			{showError(); return;}
-		if (max2<32 && IJ.isMacOSX()) max2 = 32;
-		if (max2<8 && IJ.isWindows()) max2 = 8;
+		if (max2<256 && IJ.isMacOSX()) max2 = 256;
+		if (max2<32 && IJ.isWindows()) max2 = 32;
 		if (max2==max) return;
 		int limit = IJ.isWindows()?1600:1700;
 		String OSXInfo = "";
