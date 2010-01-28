@@ -595,18 +595,23 @@ public class ImageReader {
 	}
 
 	short[] read12bitImage(InputStream in) throws IOException {
-		int nBytes = (int)(nPixels*1.5);
-		if ((nPixels&1)==1) nBytes++; // add 1 if odd
-		byte[] buffer = new byte[nBytes];
+		int bytesPerLine = (int)(width*1.5);
+		if ((width&1)==1) bytesPerLine++; // add 1 if odd
+		byte[] buffer = new byte[bytesPerLine*height];
 		short[] pixels = new short[nPixels];
 		DataInputStream dis = new DataInputStream(in);
 		dis.readFully(buffer);
-		int i = 0;
-		int j = 0;
-		for (int index=0; index<buffer.length/3; index++) {
-			pixels[j++] = (short)(((buffer[i]&0xff)*16) + ((buffer[i+1]>>4)&0xf));
-			pixels[j++] = (short)(((buffer[i+1]&0xf)*256) + (buffer[i+2]&0xff));
-			i += 3;
+		for (int y=0; y<height; y++) {
+			int index1 = y*bytesPerLine;
+			int index2 = y*width;
+			int count = 0;
+			while (count<width) {
+				pixels[index2+count] = (short)(((buffer[index1]&0xff)*16) + ((buffer[index1+1]>>4)&0xf));
+				count++;
+				if (count==width) break;
+				pixels[index2+count] = (short)(((buffer[index1+1]&0xf)*256) + (buffer[index1+2]&0xff));
+				count++; index1+=3;
+			}
 		}
 		return pixels;
 	}
