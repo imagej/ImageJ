@@ -436,6 +436,12 @@ public class ByteProcessor extends ImageProcessor {
 		setMinAndMax(0, 255);
 	}
 
+	public void setThreshold(double minThreshold, double maxThreshold, int lutUpdate) {
+		super.setThreshold(minThreshold, maxThreshold, lutUpdate);
+		if (this.minThreshold<0.0) this.minThreshold = 0.0;
+		if (this.maxThreshold>255.0) this.maxThreshold = 255.0;
+	}
+
 	/** Copies the image contained in 'ip' to (xloc, yloc) using one of
 		the transfer modes defined in the Blitter interface. */
 	public void copyBits(ImageProcessor ip, int xloc, int yloc, int mode) {

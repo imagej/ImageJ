@@ -73,7 +73,7 @@ public class ProgressBar extends Canvas {
 
  	/**	Updates the progress bar, where the length of the bar is set to
     *  (<code>currentValue+1)/finalValue</code> of the maximum bar length.
-    *  The bar is erased if <code>currentValue&gt;=finalValue</code>.
+    *  The bar is erased if <code>currentValue&gt;=finalValue-1</code>.
     */
     public void show(int currentIndex, int finalIndex) {
         show((currentIndex+1.0)/(double)finalIndex, true);

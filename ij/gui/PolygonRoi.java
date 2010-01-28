@@ -68,6 +68,8 @@ public class PolygonRoi extends Roi {
 				Prefs.noPointLabels = false;
 			userCreated = true;
 		}
+		if (lineWidth>1 && isLine())
+			updateWideLine(lineWidth);
 		finishPolygon();
 	}
 	
@@ -1049,6 +1051,10 @@ public class PolygonRoi extends Roi {
 			p1 = p2;
 		} while (p1!=pstart);
 		return new Polygon(xx, yy, n2);
+	}
+
+	protected int clipRectMargin() {
+		return type==POINT?4:0;
 	}
 
 	/** Returns a copy of this PolygonRoi. */

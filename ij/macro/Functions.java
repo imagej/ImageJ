@@ -952,6 +952,23 @@ public class Functions implements MacroConstants, Measurements {
 
 	Random ran;	
 	double random() {
+		double dseed = Double.NaN;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (isStringArg()) {
+				String arg = getString().toLowerCase(Locale.US);
+				if (arg.indexOf("seed")==-1)
+					interp.error("'seed' expected");
+				interp.getComma();
+				dseed = interp.getExpression();
+				long seed = (long)dseed;
+				if (seed!=dseed)
+					interp.error("Seed not integer");
+				ran = new Random(seed);
+			}
+			interp.getRightParen();
+			if (!Double.isNaN(dseed)) return Double.NaN;
+		}
 		interp.getParens();
  		if (ran==null)
 			ran = new Random();
@@ -2144,9 +2161,23 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getRightParen();
 			IJ.open();
 		} else {
+			double n = Double.NaN;
 			String path = getString();
+			if (interp.nextToken()==',') {
+				interp.getComma();
+				n = interp.getExpression();
+			}
 			interp.getRightParen();
-			IJ.open(path);
+			if (!Double.isNaN(n)) {
+				try {
+					IJ.open(path, (int)n);
+				} catch (Exception e) {
+					String msg = e.getMessage();
+					if (msg!=null&&msg.indexOf("canceled")==-1)
+						interp.error(""+msg);
+				}
+			} else
+				IJ.open(path);
 			if (path!=null&&!path.equals("")) {
 				int index = path.lastIndexOf('/');
 				if (index==-1)
@@ -2753,8 +2784,14 @@ public class Functions implements MacroConstants, Measurements {
 		String s3 = getLastString();
 		if (s2.length()==1 && s3.length()==1)
 			return s1.replace(s2.charAt(0), s3.charAt(0));
-		else
-			return s1.replaceAll(s2, s3);
+		else {
+			try {
+				return s1.replaceAll(s2, s3);
+			} catch (Exception e) {
+				interp.error(""+e);
+				return null;
+			}
+		}
 	}
 	
 	void floodFill() {

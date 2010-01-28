@@ -7,6 +7,8 @@ import ij.io.OpenDialog;
 import java.io.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
+import java.awt.Menu;
+
 
 /** Runs ImageJ menu commands in a separate thread.*/
 public class Executer implements Runnable {
@@ -131,9 +133,23 @@ public class Executer implements Runnable {
 				String dir = OpenDialog.getLastDirectory();
 				IJ.open(path);
 				OpenDialog.setLastDirectory(dir);
-			} else
+			} else if (!openRecent(cmd))
 				IJ.error("Unrecognized command: " + cmd);
 	 	}
+    }
+    
+    /** Opens a file from the File/Open Recent menu 
+ 	      and returns 'true' if successful. */
+    boolean openRecent(String cmd) {
+		Menu menu = Menus.openRecentMenu;
+		if (menu==null) return false;
+		for (int i=0; i<menu.getItemCount(); i++) {
+			if (menu.getItem(i).getLabel().equals(cmd)) {
+				IJ.open(cmd);
+				return true;
+			}
+		}
+		return false;
     }
 
 	/** Returns the last command executed. Returns null

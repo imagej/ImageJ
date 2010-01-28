@@ -51,7 +51,7 @@ public class IJ {
 	private static boolean suppressPluginNotFoundError;
 	private static Dimension screenSize;
 	private static Hashtable commandTable;
-
+	private static Vector eventListeners = new Vector();
 			
 	static {
 		osname = System.getProperty("os.name");
@@ -1285,13 +1285,25 @@ public class IJ {
 		macroRunning = false;
 	}
 		
-	/** Open the specified file as a tiff, bmp, dicom, fits, pgm, gif 
+	/** Opens and displays the nth image in the specified tiff stack. */
+	public static void open(String path, int n) {
+		if (ij==null && Menus.getCommands()==null) init();
+		ImagePlus imp = openImage(path, n);
+		if (imp!=null) imp.show();
+	}
+
+	/** Opens the specified file as a tiff, bmp, dicom, fits, pgm, gif 
 		or jpeg image and returns an ImagePlus object if successful.
 		Calls HandleExtraFileTypes plugin if the file type is not recognised.
 		Displays a file open dialog if 'path' is null or an empty string.
 		Note that 'path' can also be a URL. */
 	public static ImagePlus openImage(String path) {
 		return (new Opener()).openImage(path);
+	}
+
+	/** Opens the nth image of the specified tiff stack. */
+	public static ImagePlus openImage(String path, int n) {
+		return (new Opener()).openImage(path, n);
 	}
 
 	/** Opens an image using a file open dialog and returns it as an ImagePlus object. */
@@ -1652,5 +1664,22 @@ public class IJ {
 	}
 
 	static ExceptionHandler exceptionHandler;
+
+	public static void addEventListener(IJEventListener listener) {
+		eventListeners.addElement(listener);
+	}
+	
+	public static void removeEventListener(IJEventListener listener) {
+		eventListeners.removeElement(listener);
+	}
+	
+	public static void notifyEventListeners(int eventID) {
+		synchronized (eventListeners) {
+			for (int i=0; i<eventListeners.size(); i++) {
+				IJEventListener listener = (IJEventListener)eventListeners.elementAt(i);
+				listener.eventOccurred(eventID);
+			}
+		}
+	}
 
 }

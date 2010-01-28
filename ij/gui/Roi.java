@@ -59,7 +59,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
-	protected double headSize = 10;  // arrow head size (0-30)
 
 
 
@@ -713,16 +712,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (mag<1.0)
 				m = (int)(4.0/mag);
 		}
-		if (type==POINT) m += 4;
-		if (type==LINE) {
-			m += 4;
-			if (headSize>10.0) m = (int)(m*(headSize/5.0));
-		}
+		m += clipRectMargin();
 		m = (int)(m+getStrokeWidth()*2);
 		clipX-=m; clipY-=m;
 		clipWidth+=m*2; clipHeight+=m*2;
 		//if (IJ.debugMode) IJ.log("updateClipRect: "+m+"  "+clipX+" "+clipY+" "+clipWidth+" "+clipHeight);
 	 }
+	 
+	protected int clipRectMargin() {
+		return 0;
+	}
 		
 	protected void handleMouseDrag(int sx, int sy, int flags) {
 		if (ic==null) return;
