@@ -44,6 +44,8 @@ public class RoiEncoder {
 	void write(Roi roi, OutputStream f) throws IOException {
 		int roiType = roi.getType();
 		int type = rect;
+		int options = 0;
+
 		switch (roiType) {
 			case Roi.POLYGON: type=polygon; break;
 			case Roi.FREEROI: type=freehand; break;
@@ -84,12 +86,27 @@ public class RoiEncoder {
 		putShort(14, r.x+r.width);	//right
 		putShort(16, n);
 		
+		if (type==rect) {
+			int arcSize = roi.getRoundRectArcSize();
+			if (arcSize>0)
+				putShort(RoiDecoder.ROUNDED_RECT_ARC_SIZE, arcSize);
+		}
+		
 		if (roi instanceof Line) {
 			Line l = (Line)roi;
 			putFloat(18, l.x1);
 			putFloat(22, l.y1);
 			putFloat(26, l.x2);
 			putFloat(30, l.y2);
+			if (roi instanceof Arrow) {
+				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ARROW);
+				if (((Arrow)roi).getDoubleHeaded()) {
+					options |= RoiDecoder.DOUBLE_HEADED;
+					putShort(RoiDecoder.OPTIONS, options);
+				}
+				putByte(RoiDecoder.ARROW_STYLE, ((Arrow)roi).getStyle());
+				putByte(RoiDecoder.ARROW_HEAD_SIZE, (int)((Arrow)roi).getHeadSize());
+			}
 		}
 		
 		// save stroke width, stroke color and fill color (1.43i or later)
@@ -104,7 +121,6 @@ public class RoiEncoder {
 			if (fillColor!=null)
 				putInt(RoiDecoder.FILL_COLOR, fillColor.getRGB());
 			if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).isSplineFit()) {
-				int options = 0;
 				options |= RoiDecoder.SPLINE_FIT;
 				putShort(RoiDecoder.OPTIONS, options);
 			}
@@ -174,6 +190,10 @@ public class RoiEncoder {
 		for (int i=0; i<textLength; i++)
 			putShort(HEADER_SIZE+16+nameLength*2+i*2, text.charAt(i));
 	}
+
+    void putByte(int base, int v) {
+		data[base] = (byte)v;
+    }
 
     void putShort(int base, int v) {
 		data[base] = (byte)(v>>>8);

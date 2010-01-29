@@ -23,7 +23,10 @@ import java.awt.*;
 	44-47   fill color (v1.43i or later)
 	48-49   subtype (v1.43k or later)
 	50-51   options (v1.43k or later)
-	52-63	reserved (zero)
+	52-52   arrow style (v1.43p or later)
+	53-53   arrow head size (v1.43p or later)
+	54-55   rounded rect arc size (v1.43p or later)
+	56-63	 reserved (zero)
 	64-67   x0, y0 (polygon)
 	68-71   x1, y1 
 	etc.
@@ -50,13 +53,18 @@ public class RoiDecoder {
 	public static final int FILL_COLOR = 44;
 	public static final int SUBTYPE = 48;
 	public static final int OPTIONS = 50;
+	public static final int ARROW_STYLE = 52;
+	public static final int ARROW_HEAD_SIZE = 53;
+	public static final int ROUNDED_RECT_ARC_SIZE = 54;
 	public static final int COORDINATES = 64;
 	
 	// subtypes
 	public static final int TEXT = 1;
+	public static final int ARROW = 2;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
+	public static final int DOUBLE_HEADED = 2;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9, point=10;
@@ -99,6 +107,7 @@ public class RoiDecoder {
 			throw new IOException("This is not an ImageJ ROI");
 		int version = getShort(VERSION_OFFSET);
 		int type = getByte(TYPE);
+		int subtype = getShort(SUBTYPE);
 		int top= getShort(TOP);
 		int left = getShort(LEFT);
 		int bottom = getShort(BOTTOM);
@@ -106,6 +115,7 @@ public class RoiDecoder {
 		int width = right-left;
 		int height = bottom-top;
 		int n = getShort(N_COORDINATES);
+		int options = getShort(OPTIONS);
 		
 		if (name.endsWith(".roi"))
 			name = name.substring(0, name.length()-4);
@@ -117,6 +127,9 @@ public class RoiDecoder {
 		switch (type) {
 		case rect:
 			roi = new Roi(left, top, width, height);
+			int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
+			if (arcSize>0)
+				roi.setRoundRectArcSize(arcSize);
 			break;
 		case oval:
 			roi = new OvalRoi(left, top, width, height);
@@ -126,7 +139,17 @@ public class RoiDecoder {
 			int y1 = (int)getFloat(Y1);		
 			int x2 = (int)getFloat(X2);		
 			int y2 = (int)getFloat(Y2);
-			roi = new Line(x1, y1, x2, y2);		
+			if (subtype==ARROW) {
+				roi = new Arrow(x1, y1, x2, y2);		
+				((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
+				int style = getByte(ARROW_STYLE);
+				if (style>=Arrow.FILLED && style<=Arrow.OPEN)
+					((Arrow)roi).setStyle(style);
+				int headSize = getByte(ARROW_HEAD_SIZE);
+				if (headSize>=0 && style<=30)
+					((Arrow)roi).setHeadSize(headSize);
+			} else
+				roi = new Line(x1, y1, x2, y2);		
 			//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
 			break;
 		case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
@@ -189,13 +212,11 @@ public class RoiDecoder {
 				int alpha = (fillColor>>24)&0xff;
 				roi.setFillColor(new Color(fillColor, alpha!=255));
 			}
-			int options = getShort(OPTIONS);
 			boolean splineFit = (options&SPLINE_FIT)!=0;
 			if (splineFit && roi instanceof PolygonRoi)
 				((PolygonRoi)roi).fitSpline();
 		}
 		
-		int subtype = getShort(SUBTYPE);
 		if (version>=218 && subtype==TEXT)
 			roi = getTextRoi(roi);
 
