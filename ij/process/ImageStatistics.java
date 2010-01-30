@@ -7,6 +7,7 @@ public class ImageStatistics implements Measurements {
 
 	public int[] histogram;
 	public int pixelCount;
+	public long longPixelCount;
 	public int mode;
 	public double dmode;
 	public double area;
@@ -81,7 +82,7 @@ public class ImageStatistics implements Measurements {
 		
 		for (int i=minThreshold; i<=maxThreshold; i++) {
 			count = histogram[i];
-			pixelCount += count;
+			longPixelCount += count;
 			sum += (double)i*count;
 			value = i;
 			sum2 += (value*value)*count;
@@ -90,16 +91,17 @@ public class ImageStatistics implements Measurements {
 				mode = i;
 			}
 		}
-		area = pixelCount*pw*ph;
-		mean = sum/pixelCount;
+		pixelCount = (int)longPixelCount;
+		area = longPixelCount*pw*ph;
+		mean = sum/longPixelCount;
 		umean = mean;
 		dmode = mode;
-		calculateStdDev(pixelCount, sum, sum2);
+		calculateStdDev(longPixelCount, sum, sum2);
 		histMin = 0.0;
 		histMax = 255.0;
 	}
 	
-	void calculateStdDev(int n, double sum, double sum2) {
+	void calculateStdDev(double n, double sum, double sum2) {
 		//ij.IJ.write("calculateStdDev: "+n+" "+sum+" "+sum2);
 		if (n>0) {
 			stdDev = (n*sum2-sum*sum)/n;

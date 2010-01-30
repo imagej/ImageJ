@@ -120,7 +120,7 @@ public class StackStatistics extends ImageStatistics {
                     if (mask==null || mask[mi++]!=0) {
                         v = ip.getPixelValue(x,y);
 						if (v>=minThreshold && v<=maxThreshold && v>=histMin && v<=histMax) {
-							pixelCount++;
+							longPixelCount++;
 							sum += v;
 							sum2 += v*v;
 							index = (int)(scale*(v-histMin));
@@ -133,9 +133,10 @@ public class StackStatistics extends ImageStatistics {
                 }
             }
         }
-        area = pixelCount*pw*ph;
-        mean = sum/pixelCount;
-        calculateStdDev(pixelCount, sum, sum2);
+        pixelCount = (int)longPixelCount;
+        area = longPixelCount*pw*ph;
+        mean = sum/longPixelCount;
+        calculateStdDev(longPixelCount, sum, sum2);
         histMin = cal.getRawValue(histMin); 
         histMax =  cal.getRawValue(histMax);
         binSize = (histMax-histMin)/nBins;
@@ -192,6 +193,7 @@ public class StackStatistics extends ImageStatistics {
 		int n = stack.getSize();
 		for (int slice=1; slice<=n; slice++) {
 			IJ.showProgress(slice, n);
+			IJ.showStatus(slice+"/"+n);
 			ip = stack.getProcessor(slice);
 			if (roi!=null) ip.setRoi(roi);
 			int[] hist = ip.getHistogram();
@@ -232,7 +234,7 @@ public class StackStatistics extends ImageStatistics {
         maxCount = 0;
 		for (int i=min; i<=max; i++) {
 			count = hist[i];
-			pixelCount += count;
+			longPixelCount += count;
 			value = i;
 			sum += value*count;
 			sum2 += (value*value)*count;
@@ -241,11 +243,12 @@ public class StackStatistics extends ImageStatistics {
 				index = nBins-1;
 			histogram[index] += count;
 		}
-		area = pixelCount*pw*ph;
-		mean = sum/pixelCount;
+		pixelCount = (int)longPixelCount;
+		area = longPixelCount*pw*ph;
+		mean = sum/longPixelCount;
 		umean = mean;
 		dmode = getMode(null);
-		calculateStdDev(pixelCount, sum, sum2);
+		calculateStdDev(longPixelCount, sum, sum2);
 	}
 
    double getMode(Calibration cal) {
@@ -262,5 +265,17 @@ public class StackStatistics extends ImageStatistics {
         if (cal!=null) tmode = cal.getCValue(tmode);
        return tmode;
     }
+    
+    void calculateStdDev(double n, double sum, double sum2) {
+		if (n>0.0) {
+			stdDev = (n*sum2-sum*sum)/n;
+			if (stdDev>0.0)
+				stdDev = Math.sqrt(stdDev/(n-1.0));
+			else
+				stdDev = 0.0;
+		}
+		else
+			stdDev = 0.0;
+	}
     
 }

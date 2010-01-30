@@ -172,10 +172,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		decimalPlaces = Analyzer.getPrecision();
 		digits = cal.calibrated()||stats.binSize!=1.0?decimalPlaces:0;
 		saveModalCount = histogram[stats.mode];
-		for (int i = 0; i<histogram.length; i++)
- 		if ((histogram[i] > maxCount2) && (i != stats.mode)) {
-			maxCount2 = histogram[i];
-			mode2 = i;
+		for (int i = 0; i<histogram.length; i++) {
+ 			if ((histogram[i] > maxCount2) && (i != stats.mode)) {
+				maxCount2 = histogram[i];
+				mode2 = i;
+  			}
   		}
 		newMaxCount = stats.maxCount;
 		if ((newMaxCount>(maxCount2 * 2)) && (maxCount2 != 0)) {
@@ -194,7 +195,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		y += BAR_HEIGHT+15;
   		drawText(ip, x, y, fixedRange);
 	}
-
        
 	/** Scales a threshold level to the range 0-255. */
 	int scaleDown(ImageProcessor ip, double threshold) {
@@ -213,9 +213,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		int index, y;
 		for (int i = 0; i<HIST_WIDTH; i++) {
 			index = (int)(i*(double)histogram.length/HIST_WIDTH); 
-			y = (int)((double)HIST_HEIGHT*histogram[index])/maxCount;
-			if (y>HIST_HEIGHT)
-				y = HIST_HEIGHT;
+			y = (int)(((double)HIST_HEIGHT*(double)histogram[index])/maxCount);
+			if (y>HIST_HEIGHT) y = HIST_HEIGHT;
 			ip.drawLine(i+XMARGIN, YMARGIN+HIST_HEIGHT, i+XMARGIN, YMARGIN+HIST_HEIGHT-y);
 		}
 	}
@@ -257,7 +256,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		int row2 = row1 + 15;
 		int row3 = row2 + 15;
 		int row4 = row3 + 15;
-		ip.drawString("Count: " + stats.pixelCount, col1, row1);
+		long count = stats.longPixelCount>0?stats.longPixelCount:stats.pixelCount;
+		ip.drawString("Count: " + count, col1, row1);
 		ip.drawString("Mean: " + d2s(stats.mean), col1, row2);
 		ip.drawString("StdDev: " + d2s(stats.stdDev), col1, row3);
 		ip.drawString("Mode: " + d2s(stats.dmode) + " (" + stats.maxCount + ")", col2, row3);
