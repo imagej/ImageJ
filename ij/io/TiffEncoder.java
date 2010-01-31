@@ -192,9 +192,9 @@ public class TiffEncoder {
 
 		if (fi.overlay!=null) {
 			for (int i=0; i<fi.overlay.length; i++) {
-                if (fi.overlay[i]!=null)
-                    size += fi.overlay[i].length;
-            }
+				if (fi.overlay[i]!=null)
+					size += fi.overlay[i].length;
+			}
 			nTypes++;
 			nMetaDataEntries += fi.overlay.length;
 		}
@@ -340,8 +340,8 @@ public class TiffEncoder {
 	}
 	
 	/** Writes image metadata ("info" image propery, 
-		stack slice labels, channel display ranges, luts, roi
-		and extra metadata). */
+		stack slice labels, channel display ranges, luts, ROIs,
+		overlays and extra metadata). */
 	void writeMetaData(OutputStream out) throws IOException {
 	
 		// write byte counts (META_DATA_BYTE_COUNTS tag)
