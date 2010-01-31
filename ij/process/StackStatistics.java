@@ -266,16 +266,4 @@ public class StackStatistics extends ImageStatistics {
        return tmode;
     }
     
-    void calculateStdDev(double n, double sum, double sum2) {
-		if (n>0.0) {
-			stdDev = (n*sum2-sum*sum)/n;
-			if (stdDev>0.0)
-				stdDev = Math.sqrt(stdDev/(n-1.0));
-			else
-				stdDev = 0.0;
-		}
-		else
-			stdDev = 0.0;
-	}
-    
 }

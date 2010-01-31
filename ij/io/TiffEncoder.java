@@ -184,6 +184,21 @@ public class TiffEncoder {
 			nMetaDataEntries += fi.channelLuts.length;
 		}
 
+		if (fi.roi!=null) {
+			nMetaDataEntries++;
+			size += fi.roi.length;
+			nTypes++;
+		}
+
+		if (fi.overlay!=null) {
+			for (int i=0; i<fi.overlay.length; i++) {
+                if (fi.overlay[i]!=null)
+                    size += fi.overlay[i].length;
+            }
+			nTypes++;
+			nMetaDataEntries += fi.overlay.length;
+		}
+
 		if (fi.metaDataTypes!=null && fi.metaData!=null && fi.metaData[0]!=null
 		&& fi.metaDataTypes.length==fi.metaData.length) {
 			extraMetaDataEntries = fi.metaData.length;
@@ -325,7 +340,7 @@ public class TiffEncoder {
 	}
 	
 	/** Writes image metadata ("info" image propery, 
-		stack slice labels, channel display ranges and luts,
+		stack slice labels, channel display ranges, luts, roi
 		and extra metadata). */
 	void writeMetaData(OutputStream out) throws IOException {
 	
@@ -344,6 +359,12 @@ public class TiffEncoder {
 		if (fi.channelLuts!=null) {
 			for (int i=0; i<fi.channelLuts.length; i++)
 				writeInt(out, fi.channelLuts[i].length);
+		}
+		if (fi.roi!=null)
+			writeInt(out, fi.roi.length);
+		if (fi.overlay!=null) {
+			for (int i=0; i<fi.overlay.length; i++)
+				writeInt(out, fi.overlay[i].length);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			writeInt(out, fi.metaData[i].length);	
@@ -366,6 +387,14 @@ public class TiffEncoder {
 			writeInt(out, TiffDecoder.LUTS); // type="luts"
 			writeInt(out, fi.channelLuts.length); // count
 		}
+		if (fi.roi!=null) {
+			writeInt(out, TiffDecoder.ROI); // type="roi "
+			writeInt(out, 1); // count
+		}
+		if (fi.overlay!=null) {
+			writeInt(out, TiffDecoder.OVERLAY); // type="over"
+			writeInt(out, fi.overlay.length); // count
+		}
 		for (int i=0; i<extraMetaDataEntries; i++) {
 			writeInt(out, fi.metaDataTypes[i]);
 			writeInt(out, 1); // count
@@ -385,6 +414,12 @@ public class TiffEncoder {
 		if (fi.channelLuts!=null) {
 			for (int i=0; i<fi.channelLuts.length; i++)
 				out.write(fi.channelLuts[i]);
+		}
+		if (fi.roi!=null)
+			out.write(fi.roi);
+		if (fi.overlay!=null) {
+			for (int i=0; i<fi.overlay.length; i++)
+				out.write(fi.overlay[i]);
 		}
 		for (int i=0; i<extraMetaDataEntries; i++)
 			out.write(fi.metaData[i]); 

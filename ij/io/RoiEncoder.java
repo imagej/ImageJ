@@ -40,6 +40,22 @@ public class RoiEncoder {
 			f.close();
 		}
 	}
+	
+	/** Saves the specified ROI as a byte array. */
+	public static byte[] saveAsByteArray(Roi roi) {
+		if (roi==null) return null;
+		byte[] bytes = null;
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+			RoiEncoder encoder = new RoiEncoder(out);
+			encoder.write(roi);
+			out.close();
+			bytes = out.toByteArray(); 
+		} catch (IOException e) {
+			return null;
+		}
+		return bytes;
+	}
 
 	void write(Roi roi, OutputStream f) throws IOException {
 		int roiType = roi.getType();

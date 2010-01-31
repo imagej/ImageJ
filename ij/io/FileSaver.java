@@ -8,6 +8,8 @@ import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.plugin.JpegWriter;
+import ij.gui.Roi;
+import ij.gui.Overlay;
 import javax.imageio.*;
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
@@ -94,6 +96,8 @@ public class FileSaver {
 			fi.sliceLabels[0] = (String)label;
 		}
 		fi.description = getDescriptionString();
+		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
+		fi.overlay = getOverlay(imp);
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
@@ -107,6 +111,19 @@ public class FileSaver {
 		updateImp(fi, FileInfo.TIFF);
 		return true;
 	}
+	
+	byte[][] getOverlay(ImagePlus imp) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null) return null;
+		int n = overlay.size();
+		if (n==0) return null;
+		byte[][] array = new byte[n][];
+		for (int i=0; i<overlay.size(); i++) {
+			Roi roi = overlay.get(i);
+			array[i] = RoiEncoder.saveAsByteArray(roi);
+		}
+		return array;
+	}
 
 	/** Save the stack as a multi-image TIFF using the specified path. */
 	public boolean saveAsTiffStack(String path) {
@@ -119,6 +136,8 @@ public class FileSaver {
 			fi.info = (String)info;
 		fi.description = getDescriptionString();
 		fi.sliceLabels = imp.getStack().getSliceLabels();
+		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
+		fi.overlay = getOverlay(imp);
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
@@ -180,6 +199,8 @@ public class FileSaver {
 		Object info = imp.getProperty("Info");
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
+		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
+		fi.overlay = getOverlay(imp);
 		fi.sliceLabels = imp.getStack().getSliceLabels();
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
 		if (fi.nImages>1 && imp.getStack().isVirtual())

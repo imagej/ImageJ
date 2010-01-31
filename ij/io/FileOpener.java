@@ -136,8 +136,21 @@ public class FileOpener {
 			imp.setProperty("Info", fi.info);
 		if (fi.sliceLabels!=null&&fi.sliceLabels.length==1&&fi.sliceLabels[0]!=null)
 			imp.setProperty("Label", fi.sliceLabels[0]);
+		if (fi.roi!=null)
+			imp.setRoi(RoiDecoder.openFromByteArray(fi.roi));
+		if (fi.overlay!=null)
+			setOverlay(imp, fi.overlay);
 		if (show) imp.show();
 		return imp;
+	}
+	
+	void setOverlay(ImagePlus imp, byte[][] rois) {
+		Overlay overlay = new Overlay();
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = RoiDecoder.openFromByteArray(rois[i]);
+			overlay.add(roi);
+		}
+		imp.setOverlay(overlay);
 	}
 
 	/** Opens a stack of images. */
@@ -185,6 +198,10 @@ public class FileOpener {
 		ImagePlus imp = new ImagePlus(fi.fileName, stack);
 		if (fi.info!=null)
 			imp.setProperty("Info", fi.info);
+		if (fi.roi!=null)
+			imp.setRoi(RoiDecoder.openFromByteArray(fi.roi));
+		if (fi.overlay!=null)
+			setOverlay(imp, fi.overlay);
 		if (show) imp.show();
 		imp.setFileInfo(fi);
 		setCalibration(imp);

@@ -102,8 +102,7 @@ public class ImageStatistics implements Measurements {
 	}
 	
 	void calculateStdDev(double n, double sum, double sum2) {
-		//ij.IJ.write("calculateStdDev: "+n+" "+sum+" "+sum2);
-		if (n>0) {
+		if (n>0.0) {
 			stdDev = (n*sum2-sum*sum)/n;
 			if (stdDev>0.0)
 				stdDev = Math.sqrt(stdDev/(n-1.0));

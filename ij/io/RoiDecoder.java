@@ -117,7 +117,7 @@ public class RoiDecoder {
 		int n = getShort(N_COORDINATES);
 		int options = getShort(OPTIONS);
 		
-		if (name.endsWith(".roi"))
+		if (name!=null && name.endsWith(".roi"))
 			name = name.substring(0, name.length()-4);
 		boolean isComposite = getInt(SHAPE_ROI_SIZE)>0;		
 		if (isComposite)
@@ -195,7 +195,7 @@ public class RoiDecoder {
 		default:
 			throw new IOException("Unrecognized ROI type: "+type);
 		}
-		roi.setName(name);
+		if (name!=null) roi.setName(name);
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
@@ -243,7 +243,7 @@ public class RoiDecoder {
 			base += 4;
 		}
 		roi = new ShapeRoi(shapeArray);
-		roi.setName(name);
+		if (name!=null) roi.setName(name);
 		return roi;
 	}
 	
@@ -290,6 +290,18 @@ public class RoiDecoder {
 
 	float getFloat(int base) {
 		return Float.intBitsToFloat(getInt(base));
+	}
+	
+	/** Opens an ROI from a byte array. */
+	public static Roi openFromByteArray(byte[] bytes) {
+		Roi roi = null;
+		try {
+			RoiDecoder decoder = new RoiDecoder(bytes, null);
+			roi = decoder.getRoi();
+		} catch (IOException e) {
+			return null;
+		}
+		return roi;
 	}
 
 }
