@@ -15,7 +15,7 @@ public class TextRoi extends Roi {
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
 	private static int size = 18;
-	private Font instanceFont, cachedFont;
+	private Font instanceFont;
 	private static boolean newFont = true;
 	private static boolean antialiasedText = true;
 	private static boolean recordSetFont = true;
@@ -40,6 +40,7 @@ public class TextRoi extends Roi {
 		int count = Math.min(lines.length, MAX_LINES);
 		for (int i=0; i<count; i++)
 			theText[i] = lines[i];
+		if (font==null) font = new Font(name, style, size);
 		instanceFont = font;
 		firstChar = false;
 		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
@@ -48,6 +49,8 @@ public class TextRoi extends Roi {
 	/** Obsolete */
 	public TextRoi(int x, int y, String text, Font font, Color color) {
 		super(x, y, 1, 1);
+		if (font==null) font = new Font(name, style, size);
+		instanceFont = font;
 		IJ.error("TextRoi", "API has changed. See updated example at\nhttp://rsb.info.nih.gov/ij/macros/js/TextOverlay.js");
 	}
 
@@ -66,6 +69,7 @@ public class TextRoi extends Roi {
 			//IJ.write(""+previousRoi.getBounds());
 			previousRoi = null;
 		}
+		instanceFont = new Font(name, style, size);
 	}
 
 	/** Adds the specified character to the end of the text string. */
@@ -105,25 +109,15 @@ public class TextRoi extends Roi {
 	}
 
 	Font getScaledFont() {
-		double mag = ic.getMagnification();
-		if (instanceFont!=null) {
-			if (nonScalable)
-				return instanceFont;
-			else
-				return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
-		}
-		if (newFont || cachedFont==null || mag!=previousMag) {
-			cachedFont = new Font(name, style, (int)(size*mag));
-			previousMag = mag;
-			newFont = false;
-		}
-		return cachedFont;
+		if (nonScalable)
+			return instanceFont;
+		else
+			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
 	}
 	
 	/** Renders the text on the image. */
 	public void drawPixels(ImageProcessor ip) {
-		Font font = new Font(name, style, size);
-		ip.setFont(font);
+		ip.setFont(instanceFont);
 		ip.setAntialiasedText(antialiasedText);
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
@@ -140,6 +134,7 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
+		if (ic==null) return;
 		if (Interpreter.isBatchMode() && ic.getDisplayList()!=null) return;
 		if (newFont || width==1)
 			updateBounds(g);
@@ -201,33 +196,30 @@ public class TextRoi extends Roi {
 	}
 	*/
 
-	/** Returns the name of the current font. */
+	/** Returns the name of the global font. */
 	public static String getFont() {
 		return name;
 	}
 
-	/** Returns the current font size. */
+	/** Returns the global font size. */
 	public static int getSize() {
 		return size;
 	}
 
-	/** Returns the current font style. */
+	/** Returns the global font style. */
 	public static int getStyle() {
 		return style;
-	}
-	
-	/** Returns the current font. */
-	public Font getCurrentFont() {
-		if (instanceFont!=null)
-			return instanceFont;
-		else
-			return  new Font(name, style, size);
 	}
 	
 	/** Set the current (instance) font. */
 	public void setCurrentFont(Font font) {
 		instanceFont = font;
 		updateBounds(null);
+	}
+	
+	/** Returns the current (instance) font. */
+	public Font getCurrentFont() {
+		return instanceFont;
 	}
 	
 	public static boolean isAntialiased() {
@@ -253,11 +245,13 @@ public class TextRoi extends Roi {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
-			if (roi instanceof TextRoi)
+			if (roi instanceof TextRoi) {
+				((TextRoi)roi).setCurrentFont(new Font(name, style, size));
 				imp.draw();
+			}
 		}
 	}
-
+	
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (firstMouseUp) {

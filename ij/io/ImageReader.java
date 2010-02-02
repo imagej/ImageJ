@@ -636,6 +636,8 @@ public class ImageReader {
 	}
 
 	byte[] read1bitImage(InputStream in) throws IOException {
+		if (fi.compression==FileInfo.LZW)
+			throw new IOException("ImageJ cannot open 1-bit LZW compressed TIFFs");
  		int scan=(int)Math.ceil(width/8.0);
 		int len = scan*height;
 		byte[] buffer = new byte[len];

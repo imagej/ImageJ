@@ -963,6 +963,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
+		if (n==list.getItemCount()) {
+			GenericDialog gd = new GenericDialog("ROI Manager");
+			gd.addMessage("Apply changes to all "+n+" selections?");
+			gd.showDialog();
+			if (gd.wasCanceled()) return;
+		}
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
