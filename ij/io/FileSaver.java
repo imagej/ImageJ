@@ -10,6 +10,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.JpegWriter;
 import ij.gui.Roi;
 import ij.gui.Overlay;
+import ij.gui.ImageCanvas;
 import javax.imageio.*;
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
@@ -114,7 +115,12 @@ public class FileSaver {
 	
 	byte[][] getOverlay(ImagePlus imp) {
 		Overlay overlay = imp.getOverlay();
-		if (overlay==null) return null;
+		if (overlay==null) {
+			ImageCanvas ic = imp.getCanvas();
+			if (ic==null) return null;
+			overlay = ic.getShowAllList(); // ROI Manager "Show All" list
+			if (overlay==null) return null;
+		}
 		int n = overlay.size();
 		if (n==0) return null;
 		byte[][] array = new byte[n][];

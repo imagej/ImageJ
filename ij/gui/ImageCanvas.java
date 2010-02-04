@@ -1146,6 +1146,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public boolean getShowAllROIs() {
 		return showAllROIs;
 	}
+	
+	public Overlay getShowAllList() {
+		if (showAllROIs)
+			return showAllList;
+		else
+			return null;
+	}
 
 	/** Returns the color used for "Show All" mode. */
 	public static Color getShowAllColor() {

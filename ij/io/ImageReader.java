@@ -406,17 +406,10 @@ public class ImageReader {
 			if (pmax > nPixels) pmax = nPixels;
 			for (int j=base; j<pmax; j++) {
 				if (bytesPerPixel==4) {
-					if (fi.intelByteOrder) {
-						red = byteArray[k++]&0xff;
-						green = byteArray[k++]&0xff;
-						blue = byteArray[k++]&0xff;
-						k++; // ignore alfa byte
-					} else {
-						k++; // ignore alfa byte
-						blue = byteArray[k++]&0xff;
-						green = byteArray[k++]&0xff;
-						red = byteArray[k++]&0xff;
-					}
+					red = byteArray[k++]&0xff;
+					green = byteArray[k++]&0xff;
+					blue = byteArray[k++]&0xff;
+					k++; // ignore alfa byte
 				} else {
 					red = byteArray[k++]&0xff;
 					green = byteArray[k++]&0xff;
