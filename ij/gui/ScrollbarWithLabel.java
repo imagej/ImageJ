@@ -17,7 +17,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	public ScrollbarWithLabel() {
 	}
 
-	public ScrollbarWithLabel(int ignore, int value, int visible, int minimum, int maximum, String label) {
+	public ScrollbarWithLabel(int value, int visible, int minimum, int maximum, String label) {
 		super(new BorderLayout(2, 0));
 		bar = new Scrollbar(Scrollbar.HORIZONTAL, value, visible, minimum, maximum);
 		if (label != null) {

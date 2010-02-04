@@ -398,6 +398,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         Vector xyVector = null;
         Roi roi = null;
         boolean displayOrCount = imp!=null && (outputType==POINT_SELECTION||outputType==LIST||outputType==COUNT);
+        if (displayOrCount) {
+            xyVector=new Vector();
+            roi = imp.getRoi();
+        }
         for (int iMax=nMax-1; iMax>=0; iMax--) {    //process all maxima now, starting from the highest
             if (iMax%100 == 0 && Thread.currentThread().isInterrupted()) return;
             int offset0 = (int)maxPoints[iMax];     //type cast gets 32 lower bits, where pixel index is encoded
@@ -486,10 +490,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 int offset = pList[nearestI];
                 types[offset] |= MAX_POINT;
                 if (displayOrCount && !(this.excludeOnEdges && isEdgeMaximum)) {
-                    if (xyVector==null) {
-                        xyVector = new Vector();
-                        roi = imp.getRoi();
-                    }
                     int x = offset % width;
                     int y = offset / width;
                     if (roi==null || roi.contains(x, y))
@@ -500,7 +500,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         if (Thread.currentThread().isInterrupted()) return;
         if (displayOrCount && xyVector!=null) {
             int npoints = xyVector.size();
-            if (outputType == POINT_SELECTION) {
+            if (outputType == POINT_SELECTION && npoints>0) {
                 int[] xpoints = new int[npoints];
                 int[] ypoints = new int[npoints];
                 for (int i=0; i<npoints; i++) {

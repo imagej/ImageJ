@@ -43,7 +43,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
-			channelSelector = new ScrollbarWithLabel(Scrollbar.HORIZONTAL, 1, 1, 1, nChannels+1, "c");
+			channelSelector = new ScrollbarWithLabel(1, 1, 1, nChannels+1, "c");
 			add(channelSelector);
 			//Panel panel = new Panel(new BorderLayout(2, 0));
 			//panel.add(new Label("c"), BorderLayout.WEST);
@@ -57,7 +57,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
 		if (nSlices>1) {
 			String label = nChannels>1||nFrames>1?"z":null;
-			sliceSelector = new ScrollbarWithLabel(Scrollbar.HORIZONTAL, 1, 1, 1, nSlices+1, label);
+			sliceSelector = new ScrollbarWithLabel(1, 1, 1, nSlices+1, label);
 			add(sliceSelector);
 			if (ij!=null) sliceSelector.addKeyListener(ij);
 			sliceSelector.addAdjustmentListener(this);
@@ -68,7 +68,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			sliceSelector.setBlockIncrement(blockIncrement);
 		}
 		if (nFrames>1) {
-			frameSelector = new ScrollbarWithLabel(Scrollbar.HORIZONTAL, 1, 1, 1, nFrames+1, "t");
+			frameSelector = new ScrollbarWithLabel(1, 1, 1, nFrames+1, "t");
 			add(frameSelector);
 			if (ij!=null) frameSelector.addKeyListener(ij);
 			frameSelector.addAdjustmentListener(this);
