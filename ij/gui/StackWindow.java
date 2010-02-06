@@ -12,6 +12,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
+	private ScrollbarWithLabel animationSelector;
 	boolean hyperStack;
 	int nChannels=1, nSlices=1, nFrames=1;
 	int c=1, z=1, t=1;
@@ -43,7 +44,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
-			channelSelector = new ScrollbarWithLabel(1, 1, 1, nChannels+1, "c");
+			channelSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, "c");
 			add(channelSelector);
 			//Panel panel = new Panel(new BorderLayout(2, 0));
 			//panel.add(new Label("c"), BorderLayout.WEST);
@@ -56,8 +57,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			channelSelector.setBlockIncrement(1);
 		}
 		if (nSlices>1) {
-			String label = nChannels>1||nFrames>1?"z":null;
-			sliceSelector = new ScrollbarWithLabel(1, 1, 1, nSlices+1, label);
+			String label = nChannels>1||nFrames>1?"z":"t";
+			sliceSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
+			if (label.equals("t")) animationSelector = sliceSelector;
 			add(sliceSelector);
 			if (ij!=null) sliceSelector.addKeyListener(ij);
 			sliceSelector.addAdjustmentListener(this);
@@ -68,7 +70,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			sliceSelector.setBlockIncrement(blockIncrement);
 		}
 		if (nFrames>1) {
-			frameSelector = new ScrollbarWithLabel(1, 1, 1, nFrames+1, "t");
+			animationSelector = frameSelector = new ScrollbarWithLabel(this, 1, 1, 1, nFrames+1, "t");
 			add(frameSelector);
 			if (ij!=null) frameSelector.addKeyListener(ij);
 			frameSelector.addAdjustmentListener(this);
@@ -247,4 +249,14 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     		return true;
     }
     
+    public void setAnimate(boolean b) {
+    	if (running2!=b && animationSelector!=null)
+    		animationSelector.updatePlayPauseIcon();
+		running2 = b;
+    }
+    
+    public boolean getAnimate() {
+    	return running2;
+    }
+
 }

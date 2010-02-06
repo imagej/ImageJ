@@ -15,7 +15,6 @@ public class ShortProcessor extends ImageProcessor {
 	private short[] snapshotPixels;
 	private byte[] LUT;
 	private boolean fixedScale;
-	private boolean fgColorSet;
 
 
 	/** Creates a new ShortProcessor using the specified pixel array and ColorModel.
@@ -79,8 +78,6 @@ public class ShortProcessor extends ImageProcessor {
 			if (value>max)
 				max = value;
 		}
-		if (!fgColorSet)
-			{fgColor=max; fgColorSet=true;}
 		minMaxSet = true;
 	}
 
@@ -934,11 +931,8 @@ public class ShortProcessor extends ImageProcessor {
 				setValue(32768.0);
 			else
 				setValue(0.0);
-		} else {
+		} else
 			fgColor = (int)(getMin() + (getMax()-getMin())*(bestIndex/255.0));
-			fgColorSet = true;
-		}
-
 	}
 	
 	/** Sets the default fill/draw value, where 0<=value<=65535). */
@@ -946,7 +940,6 @@ public class ShortProcessor extends ImageProcessor {
 			fgColor = (int)value;
 			if (fgColor<0) fgColor = 0;
 			if (fgColor>65535) fgColor = 65535;
-			fgColorSet = true;
 	}
 
 	/** Does nothing. The rotate() and scale() methods always zero fill. */

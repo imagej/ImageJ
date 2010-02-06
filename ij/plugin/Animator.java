@@ -43,7 +43,7 @@ public class Animator implements PlugIn {
 			return;
 		}
 
-		if (swin.running2) // "stop", "next" and "previous" all stop animation
+		if (swin.getAnimate()) // "stop", "next" and "previous" all stop animation
 			stopAnimation();
 
 		if (arg.equals("stop")) {
@@ -67,7 +67,7 @@ public class Animator implements PlugIn {
 	}
 
 	void stopAnimation() {
-		swin.running2 = false;
+		swin.setAnimate(false);
 		IJ.wait(500+(int)(1000.0/animationRate));
 		imp.unlock(); 
 	}
@@ -76,10 +76,10 @@ public class Animator implements PlugIn {
 		int first=firstFrame, last=lastFrame;
 		if (first<1 || first>nSlices || last<1 || last>nSlices)
 			{first=1; last=nSlices;}
-		if (swin.running2)
+		if (swin.getAnimate())
 			{stopAnimation(); return;}
 		imp.unlock(); // so users can adjust brightness/contrast/threshold
-		swin.running2 = true;
+		swin.setAnimate(true);
 		long time, nextTime=System.currentTimeMillis();
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		int sliceIncrement = 1;
@@ -95,7 +95,7 @@ public class Animator implements PlugIn {
 			int frame = imp.getFrame();
 			first = 1;
 			last = frames;
-			while (swin.running2) {
+			while (swin.getAnimate()) {
 				time = System.currentTimeMillis();
 				if (time<nextTime)
 					IJ.wait((int)(nextTime-time));
@@ -125,7 +125,7 @@ public class Animator implements PlugIn {
 			slice = imp.getSlice();
 			first = 1;
 			last = slices;
-			while (swin.running2) {
+			while (swin.getAnimate()) {
 				time = System.currentTimeMillis();
 				if (time<nextTime)
 					IJ.wait((int)(nextTime-time));
@@ -154,7 +154,7 @@ public class Animator implements PlugIn {
 		long startTime=System.currentTimeMillis();
 		int count = 0;
 		double fps = 0.0;
-		while (swin.running2) {
+		while (swin.getAnimate()) {
 			time = System.currentTimeMillis();
 			count++;
 			if (time>startTime+1000L) {
@@ -199,7 +199,7 @@ public class Animator implements PlugIn {
 			else if (slices>1)
 				lastFrame=slices;
 		}
-		boolean start = !swin.running2;
+		boolean start = !swin.getAnimate();
 		Calibration cal = imp.getCalibration();
 		if (cal.fps!=0.0)
 			animationRate = cal.fps;
@@ -234,7 +234,7 @@ public class Animator implements PlugIn {
 		animationRate = speed;
 		if (animationRate!=0.0)
 			cal.fps = animationRate;
-		if (start && !swin.running2)
+		if (start && !swin.getAnimate())
 			startAnimation();
 	}
 	

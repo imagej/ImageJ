@@ -861,7 +861,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
 		if (win!=null && win.running2 && toolID!=Toolbar.MAGNIFIER) {
-			win.running2 = false;
+			if (win instanceof StackWindow)
+				((StackWindow)win).setAnimate(false);
+			else
+				win.running2 = false;
 			return;
 		}
 		
