@@ -5,8 +5,8 @@ import java.awt.event.*;
 import java.awt.geom.*;
 
 
-/** This class, taken from Joachim Walter's Image5D package,
-	 adds "c", "z" or "t" labels to the hyperstack dimension sliders.
+/** This class, based on Joachim Walter's Image5D package, adds "c", "z" labels 
+	 and play-pause icons (T) to the stack and hyperstacks dimension sliders.
  * @author Joachim Walter
  */
 public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentListener {
@@ -182,16 +182,20 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 			} else {
 				g.setColor(Color.darkGray);
 				GeneralPath path = new GeneralPath();
-				path.moveTo(4f, 2f);
+				path.moveTo(3f, 2f);
 				path.lineTo(10f, 7f);
-				path.lineTo(4f, 12f);
-				path.lineTo(4f, 2f);
+				path.lineTo(3f, 12f);
+				path.lineTo(3f, 2f);
 				g2d.fill(path);
 			}
 		}
 		
 		public void mousePressed(MouseEvent e) {
-			IJ.doCommand("Start Animation [\\]");
+			int flags = e.getModifiers();
+			if ((flags&(Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
+				IJ.doCommand("Animation Options...");
+			else
+				IJ.doCommand("Start Animation [\\]");
 		}
 		
 		public void mouseReleased(MouseEvent e) {}
