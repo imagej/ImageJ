@@ -8,10 +8,11 @@ import java.awt.event.*;
 /** This class is an extended ImageWindow used to display image stacks. */
 public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
-	protected Scrollbar channelSelector, sliceSelector, frameSelector;
+	protected ScrollbarWithLabel channelSelector, sliceSelector, frameSelector;
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
+	private ScrollbarWithLabel animationSelector;
 	boolean hyperStack;
 	int nChannels=1, nSlices=1, nFrames=1;
 	int c=1, z=1, t=1;
@@ -43,11 +44,12 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
-			channelSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, nChannels+1);
-			Panel panel = new Panel(new BorderLayout(2, 0));
+			channelSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, "c");
+			add(channelSelector);
+			//Panel panel = new Panel(new BorderLayout(2, 0));
 			//panel.add(new Label("c"), BorderLayout.WEST);
 			//panel.add(channelSelector, BorderLayout.CENTER);
-			add(channelSelector);
+			//add(panel);
 			if (ij!=null) channelSelector.addKeyListener(ij);
 			channelSelector.addAdjustmentListener(this);
 			channelSelector.setFocusable(false); // prevents scroll bar from blinking on Windows
@@ -55,7 +57,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			channelSelector.setBlockIncrement(1);
 		}
 		if (nSlices>1) {
-			sliceSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, nSlices+1);
+			String label = nChannels>1||nFrames>1?"z":"t";
+			sliceSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
+			if (label.equals("t")) animationSelector = sliceSelector;
 			add(sliceSelector);
 			if (ij!=null) sliceSelector.addKeyListener(ij);
 			sliceSelector.addAdjustmentListener(this);
@@ -66,7 +70,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			sliceSelector.setBlockIncrement(blockIncrement);
 		}
 		if (nFrames>1) {
-			frameSelector = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 1, nFrames+1);
+			animationSelector = frameSelector = new ScrollbarWithLabel(this, 1, 1, 1, nFrames+1, "t");
 			add(frameSelector);
 			if (ij!=null) frameSelector.addKeyListener(ij);
 			frameSelector.addAdjustmentListener(this);
@@ -77,7 +81,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			frameSelector.setBlockIncrement(blockIncrement);
 		}
 		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
-			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
+			sliceSelector = new ScrollbarWithLabel(); // prevents Image5D from crashing
 		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
 		pack();
 		ic = imp.getCanvas();
@@ -245,4 +249,14 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     		return true;
     }
     
+    public void setAnimate(boolean b) {
+    	if (running2!=b && animationSelector!=null)
+    		animationSelector.updatePlayPauseIcon();
+		running2 = b;
+    }
+    
+    public boolean getAnimate() {
+    	return running2;
+    }
+
 }

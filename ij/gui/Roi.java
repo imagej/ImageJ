@@ -524,10 +524,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				width=height;
 			else
 				height=width;
-			if(center){
-				x=xc-width/2;
-				y=yc-height/2;
-			}
+
 			if(x>=x2) {
 				width=1;
 				x=x2=xc;
@@ -561,6 +558,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					y=yc-height/2;
 					x=x2-width;
 					break;
+			}
+			if(center){
+				x=xc-width/2;
+				y=yc-height/2;
 			}
 		}
 
@@ -1250,8 +1251,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		arcSize = size;
 		if (arcSize<0) arcSize = 0;
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null)
+		if (imp!=null && this==imp.getRoi())
 			imp.updateAndDraw();
+	}
+
+	public int getRoundRectArcSize() {
+		return arcSize;
 	}
 
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)

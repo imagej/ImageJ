@@ -87,7 +87,7 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
-			if (m instanceof Scrollbar) {
+			if ((m instanceof ScrollbarWithLabel) || (m instanceof Scrollbar)) {
 				int scrollbarWidth = target.getComponent(0).getPreferredSize().width;
 				Dimension minSize = m.getMinimumSize();
 				if (scrollbarWidth<minSize.width) scrollbarWidth = minSize.width;

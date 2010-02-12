@@ -597,7 +597,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		getCanvas().fitToWindow();
 		pack();
 	}
-
+	
 	/** Overrides the setBounds() method in Component so
 		we can find out when the window is resized. */
 	//public void setBounds(int x, int y, int width, int height)	{

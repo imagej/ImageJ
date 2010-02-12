@@ -23,6 +23,8 @@ public class Commands implements PlugIn {
 				new Opener().open();
 		} else if (cmd.equals("close"))
 			close();
+		else if (cmd.equals("close-all"))
+			closeAll();
 		else if (cmd.equals("save"))
 			save();
 		else if (cmd.equals("ij")) {
@@ -79,6 +81,40 @@ public class Commands implements PlugIn {
 			((TextWindow)frame).close();
 		else
 			closeImage(imp);
+	}
+
+	void closeAll() {
+    	int[] list = WindowManager.getIDList();
+    	if (list!=null) {
+    		int imagesWithChanges = 0;
+			for (int i=0; i<list.length; i++) {
+				ImagePlus imp = WindowManager.getImage(list[i]);
+				if (imp!=null && imp.changes) imagesWithChanges++;
+			}
+			if (imagesWithChanges>0) {
+				GenericDialog gd = new GenericDialog("Close All");
+				String msg = null;
+				if (imagesWithChanges==1)
+					msg = "There is one image";
+				else
+					msg = "There are "+imagesWithChanges+" images";
+				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" they will be closed without being saved.");
+				gd.showDialog();
+				if (gd.wasCanceled()) return;
+			}
+			for (int i=0; i<list.length; i++) {
+				ImagePlus imp = WindowManager.getImage(list[i]);
+				if (imp!=null) {
+					imp.changes = false;
+					imp.close();
+				}
+			}
+    	}
+    	//Frame[] windows = WindowManager.getNonImageWindows();
+    	//for (int i=0; i<windows.length; i++) {
+    	//	if ((windows[i] instanceof PlugInFrame) && !(windows[i] instanceof Editor))
+    	//		((PlugInFrame)windows[i]).close();
+    	//}
 	}
 
 	void closeImage(ImagePlus imp) {

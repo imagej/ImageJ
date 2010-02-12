@@ -162,6 +162,10 @@ public class Arrow extends Line {
 		this.style = style;
 	}
 
+	public int getStyle() {
+		return style;
+	}
+
 	public static void setDefaultStyle(int style) {
 		defaultStyle = style;
 	}
@@ -174,6 +178,10 @@ public class Arrow extends Line {
 		this.headSize = headSize;
 	}
 
+	public double getHeadSize() {
+		return headSize;
+	}
+
 	public static void setDefaultHeadSize(double size) {
 		defaultHeadSize = size;
 	}
@@ -184,6 +192,10 @@ public class Arrow extends Line {
 
 	public void setDoubleHeaded(boolean b) {
 		doubleHeaded = b;
+	}
+
+	public boolean getDoubleHeaded() {
+		return doubleHeaded;
 	}
 
 	public static void setDefaultDoubleHeaded(boolean b) {

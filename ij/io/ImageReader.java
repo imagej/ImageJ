@@ -171,25 +171,22 @@ public class ImageReader {
 			int pmax = base+pixelsRead;
 			if (pmax > nPixels) pmax = nPixels;
 			if (fi.intelByteOrder) {
-				if (fi.fileType==FileInfo.GRAY16_SIGNED)
-					for (int i=base,j=0; i<pmax; i++,j+=2)
-						pixels[i] = (short)((((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff))+32768);
-				else
-					for (int i=base,j=0; i<pmax; i++,j+=2)
-						pixels[i] = (short)(((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
+				for (int i=base,j=0; i<pmax; i++,j+=2)
+					pixels[i] = (short)(((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
 			} else {
-				if (fi.fileType==FileInfo.GRAY16_SIGNED)
-					for (int i=base,j=0; i<pmax; i++,j+=2)
-						pixels[i] = (short)((((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff))+32768);
-				else
-					for (int i=base,j=0; i<pmax; i++,j+=2)
-						pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
+				for (int i=base,j=0; i<pmax; i++,j+=2)
+					pixels[i] = (short)(((byteArray[j]&0xff)<<8) | (byteArray[j+1]&0xff));
 			}
 			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING) {
 				for (int b=base; b<pmax; b++) {
 					pixels[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
 				}
+			}
+			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+				// convert to unsigned
+				for (int i=0; i<nPixels; i++)
+					pixels[i] = (short)(pixels[i]+32768);
 			}
 			base += pixelsRead;
 			showProgress(k+1, fi.stripOffsets.length);
@@ -406,17 +403,10 @@ public class ImageReader {
 			if (pmax > nPixels) pmax = nPixels;
 			for (int j=base; j<pmax; j++) {
 				if (bytesPerPixel==4) {
-					if (fi.intelByteOrder) {
-						red = byteArray[k++]&0xff;
-						green = byteArray[k++]&0xff;
-						blue = byteArray[k++]&0xff;
-						k++; // ignore alfa byte
-					} else {
-						k++; // ignore alfa byte
-						blue = byteArray[k++]&0xff;
-						green = byteArray[k++]&0xff;
-						red = byteArray[k++]&0xff;
-					}
+					red = byteArray[k++]&0xff;
+					green = byteArray[k++]&0xff;
+					blue = byteArray[k++]&0xff;
+					k++; // ignore alfa byte
 				} else {
 					red = byteArray[k++]&0xff;
 					green = byteArray[k++]&0xff;
@@ -636,6 +626,8 @@ public class ImageReader {
 	}
 
 	byte[] read1bitImage(InputStream in) throws IOException {
+		if (fi.compression==FileInfo.LZW)
+			throw new IOException("ImageJ cannot open 1-bit LZW compressed TIFFs");
  		int scan=(int)Math.ceil(width/8.0);
 		int len = scan*height;
 		byte[] buffer = new byte[len];

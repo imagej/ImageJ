@@ -133,6 +133,8 @@ public class FileInfo implements Cloneable {
 	public byte[][] metaData;
 	public double[] displayRanges;
 	public byte[][] channelLuts;
+	public byte[] roi;
+	public byte[][] overlay;
 	public int samplesPerPixel;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */

@@ -113,12 +113,13 @@ public class FloatProcessor extends ImageProcessor {
 	resetMinAndMax() to enable auto-scaling;
 	@see ij.plugin.frame.ContrastAdjuster 
 	*/
-	public void setMinAndMax(double min, double max) {
-		if (min==0.0 && max==0.0)
+	public void setMinAndMax(double minimum, double maximum) {
+		if (minimum==0.0 && maximum==0.0)
 			{resetMinAndMax(); return;}
-		this.min = (float)min;
-		this.max = (float)max;
+		min = (float)minimum;
+		max = (float)maximum;
 		fixedScale = true;
+		minMaxSet = true;
 		resetThreshold();
 	}
 
@@ -170,10 +171,10 @@ public class FloatProcessor extends ImageProcessor {
 			pixels8 = new byte[size];
 		float value;
 		int ivalue;
-		float min=(float)getMin(), max=(float)getMax();
-		float scale = 255f/(max-min);
+		float min2=(float)getMin(), max2=(float)getMax();
+		float scale = 255f/(max2-min2);
 		for (int i=0; i<size; i++) {
-			value = pixels[i]-min;
+			value = pixels[i]-min2;
 			if (value<0f) value = 0f;
 			ivalue = (int)((value*scale)+0.5f);
 			if (ivalue>255) ivalue = 255;
@@ -390,18 +391,18 @@ public class FloatProcessor extends ImageProcessor {
 
 	private void process(int op, double value) {
 		float c, v1, v2;
-		boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
+		//boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
 		c = (float)value;
-		float min=0f, max=0f;
+		float min2=0f, max2=0f;
 		if (op==INVERT)
-			{min=(float)getMin(); max=(float)getMax();}
+			{min2=(float)getMin(); max2=(float)getMax();}
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++) {
 				v1 = pixels[i];
 				switch(op) {
 					case INVERT:
-						v2 = max - (v1 - min);
+						v2 = max2 - (v1 - min2);
 						break;
 					case FILL:
 						v2 = fillColor;
@@ -457,8 +458,8 @@ public class FloatProcessor extends ImageProcessor {
 				pixels[i++] = v2;
 			}
 		}
-		if (resetMinMax)
-			findMinAndMax();
+		//if (resetMinMax)
+		//	findMinAndMax();
     }
 
 	public void invert() {process(INVERT, 0.0);}

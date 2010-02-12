@@ -51,7 +51,7 @@ import javax.swing.filechooser.*;
 						if (!directory.endsWith(File.separator))
 							directory += File.separator;
 						if (directory!=null)
-							defaultDir = (new File(directory)).getParent();
+							defaultDir = directory;
 						String fileName = file.getName();
 						if (fileName.indexOf(":\\")!=-1)
 							directory = defaultDir = fileName;
@@ -81,7 +81,7 @@ import javax.swing.filechooser.*;
 				if (!directory.endsWith(File.separator))
 					directory += File.separator;
 					if (directory!=null)
-						defaultDir = (new File(directory)).getParent();
+						defaultDir = directory;
 				String fileName = file.getName();
 				if (fileName.indexOf(":\\")!=-1)
 					directory = defaultDir = fileName;

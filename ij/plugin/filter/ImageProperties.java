@@ -184,7 +184,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		return newScale;
 	}
 	
-	int getUnitIndex(String unit) {
+	static int getUnitIndex(String unit) {
 		unit = unit.toLowerCase(Locale.US);
 		if (unit.equals("cm")||unit.startsWith("cent"))
 			return CENTIMETER;
@@ -208,7 +208,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			return OTHER_UNIT;
 	}
 	
-	double getUnitsPerCm(int unitIndex) {
+	static double getUnitsPerCm(int unitIndex) {
 		switch (unitIndex) {
 			case NANOMETER: return  10000000.0;
 			case MICROMETER: return    10000.0;

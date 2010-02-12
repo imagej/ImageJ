@@ -1202,6 +1202,7 @@ public class Functions implements MacroConstants, Measurements {
 		|| next=='-' || next==PI)
 			return initNewArray();
 		int size = (int)interp.getExpression();
+		if (size<0) interp.error("Negative array size");
 		interp.getRightParen();
     	Variable[] array = new Variable[size];
     	for (int i=0; i<size; i++)

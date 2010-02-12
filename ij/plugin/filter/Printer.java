@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.util.Properties;
 import java.awt.print.*;
@@ -15,6 +16,7 @@ public class Printer implements PlugInFilter, Printable {
 	private static boolean label;
 	private static boolean printSelection;
 	private static boolean rotate;
+	private static boolean actualSize;
 	private static int fontSize = 12;
 
 	public int setup(String arg, ImagePlus imp) {
@@ -26,18 +28,24 @@ public class Printer implements PlugInFilter, Printable {
 	}
 
 	public void run(ImageProcessor ip) {
-		//pageSetup();
 		print(imp);
 	}
 	
 	void pageSetup() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Roi roi = imp!=null?imp.getRoi():null;
+		boolean isRoi = roi!=null && roi.isArea();
 		GenericDialog gd = new GenericDialog("Page Setup");
 		gd.addNumericField("Scale:", scaling, 0, 3, "%");
-		gd.addCheckbox("Draw Border", drawBorder);
-		gd.addCheckbox("Center on Page", center);
-		gd.addCheckbox("Print Title", label);
-		gd.addCheckbox("Selection Only", printSelection);
+		gd.addCheckbox("Draw border", drawBorder);
+		gd.addCheckbox("Center on page", center);
+		gd.addCheckbox("Print title", label);
+		if (isRoi)
+			gd.addCheckbox("Selection only", printSelection);
 		gd.addCheckbox("Rotate 90"+IJ.degreeSymbol, rotate);
+		gd.addCheckbox("Print_actual size", actualSize);
+		if (imp!=null)
+			gd.enableYesNoCancel(" OK ", "Print");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -46,8 +54,16 @@ public class Printer implements PlugInFilter, Printable {
 		drawBorder = gd.getNextBoolean();
 		center = gd.getNextBoolean();
 		label = gd.getNextBoolean();
-		printSelection = gd.getNextBoolean();
+		if (isRoi)
+			printSelection = gd.getNextBoolean();
+		else
+			printSelection = false;
 		rotate = gd.getNextBoolean();
+		actualSize = gd.getNextBoolean();
+		if (!gd.wasOKed() && imp!=null) {
+			this.imp = imp;
+			print(imp);
+		}
 	}
 
 	void print(ImagePlus imp) {
@@ -89,8 +105,22 @@ public class Printer implements PlugInFilter, Printable {
 		if (label && pageWidth-dstWidth<fontSize+5) {
 			dstY += fontSize+5;
 			pageHeight -= fontSize+5;
-		}	
-		if (dstWidth>pageWidth || dstHeight>pageHeight) {
+		}
+		if (actualSize) {
+			Calibration cal = imp.getCalibration();
+			int unitIndex = ImageProperties.getUnitIndex(cal.getUnit());
+			if (unitIndex!=ImageProperties.OTHER_UNIT) {
+				double unitsPerCm = ImageProperties.getUnitsPerCm(unitIndex);
+				double widthInCm = width*cal.pixelWidth/unitsPerCm;
+				double heightInCm = height*cal.pixelHeight/unitsPerCm;
+				dstWidth = (int)((widthInCm*(72*0.3937))*scale);
+				dstHeight = (int)((heightInCm*(72*0.3937))*scale);
+			}
+			if (center && dstWidth<pageWidth && dstHeight<pageHeight) {
+				dstX += (pageWidth-dstWidth)/2;
+				dstY += (pageHeight-dstHeight)/2;
+			}
+		} else if (dstWidth>pageWidth || dstHeight>pageHeight) {
 			// scale to fit page
 			double hscale = pageWidth/dstWidth;
 			double vscale = pageHeight/dstHeight;

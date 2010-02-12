@@ -114,12 +114,7 @@ public class OvalRoi extends Roi {
 
 			if(activeHandle==1 || activeHandle==5) width=height;
 			else height=width;
-
-
-			if(center){
-				x=xc-width/2;
-				y=yc-height/2;
-			}
+			
 			if(x>=x2) {
 				width=1;
 				x=x2=xc;
@@ -154,15 +149,16 @@ public class OvalRoi extends Roi {
 					x=x2-width;
 					break;
 			}
+			if(center){
+				x=xc-width/2;
+				y=yc-height/2;
+			}
 		}
 
 		if(aspect && !constrain) {
 			if(activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
 			else height=(int)Math.rint((double)width/asp);
-			if(center){
-				x=xc-width/2;
-				y=yc-height/2;
-			}
+
 			switch(activeHandle){
 				case 0:
 					x=x2-width;
@@ -188,6 +184,10 @@ public class OvalRoi extends Roi {
 					y=yc-height/2;
 					x=x2-width;
 					break;
+			}
+			if(center){
+				x=xc-width/2;
+				y=yc-height/2;
 			}
 			// Attempt to preserve aspect ratio when roi very small:
 			if (width<8) {
