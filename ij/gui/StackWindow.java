@@ -8,7 +8,8 @@ import java.awt.event.*;
 /** This class is an extended ImageWindow used to display image stacks. */
 public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
-	protected ScrollbarWithLabel channelSelector, sliceSelector, frameSelector;
+	protected Scrollbar sliceSelector; // for backward compatibity with Image5D
+	private ScrollbarWithLabel cSelector, zSelector, tSelector;
 	protected Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
@@ -44,44 +45,44 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addMouseWheelListener(this);
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
-			channelSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, "c");
-			add(channelSelector);
+			cSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, "c");
+			add(cSelector);
 			//Panel panel = new Panel(new BorderLayout(2, 0));
 			//panel.add(new Label("c"), BorderLayout.WEST);
-			//panel.add(channelSelector, BorderLayout.CENTER);
+			//panel.add(cSelector, BorderLayout.CENTER);
 			//add(panel);
-			if (ij!=null) channelSelector.addKeyListener(ij);
-			channelSelector.addAdjustmentListener(this);
-			channelSelector.setFocusable(false); // prevents scroll bar from blinking on Windows
-			channelSelector.setUnitIncrement(1);
-			channelSelector.setBlockIncrement(1);
+			if (ij!=null) cSelector.addKeyListener(ij);
+			cSelector.addAdjustmentListener(this);
+			cSelector.setFocusable(false); // prevents scroll bar from blinking on Windows
+			cSelector.setUnitIncrement(1);
+			cSelector.setBlockIncrement(1);
 		}
 		if (nSlices>1) {
 			String label = nChannels>1||nFrames>1?"z":"t";
-			sliceSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
-			if (label.equals("t")) animationSelector = sliceSelector;
-			add(sliceSelector);
-			if (ij!=null) sliceSelector.addKeyListener(ij);
-			sliceSelector.addAdjustmentListener(this);
-			sliceSelector.setFocusable(false);
+			zSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
+			if (label.equals("t")) animationSelector = zSelector;
+			add(zSelector);
+			if (ij!=null) zSelector.addKeyListener(ij);
+			zSelector.addAdjustmentListener(this);
+			zSelector.setFocusable(false);
 			int blockIncrement = nSlices/10;
 			if (blockIncrement<1) blockIncrement = 1;
-			sliceSelector.setUnitIncrement(1);
-			sliceSelector.setBlockIncrement(blockIncrement);
+			zSelector.setUnitIncrement(1);
+			zSelector.setBlockIncrement(blockIncrement);
 		}
 		if (nFrames>1) {
-			animationSelector = frameSelector = new ScrollbarWithLabel(this, 1, 1, 1, nFrames+1, "t");
-			add(frameSelector);
-			if (ij!=null) frameSelector.addKeyListener(ij);
-			frameSelector.addAdjustmentListener(this);
-			frameSelector.setFocusable(false);
+			animationSelector = tSelector = new ScrollbarWithLabel(this, 1, 1, 1, nFrames+1, "t");
+			add(tSelector);
+			if (ij!=null) tSelector.addKeyListener(ij);
+			tSelector.addAdjustmentListener(this);
+			tSelector.setFocusable(false);
 			int blockIncrement = nFrames/10;
 			if (blockIncrement<1) blockIncrement = 1;
-			frameSelector.setUnitIncrement(1);
-			frameSelector.setBlockIncrement(blockIncrement);
+			tSelector.setUnitIncrement(1);
+			tSelector.setBlockIncrement(blockIncrement);
 		}
 		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
-			sliceSelector = new ScrollbarWithLabel(); // prevents Image5D from crashing
+			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
 		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
 		pack();
 		ic = imp.getCanvas();
@@ -92,21 +93,21 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			imp.setSlice(previousSlice);
 		else
 			imp.setSlice(1);
-		thread = new Thread(this, "SliceSelector");
+		thread = new Thread(this, "zSelector");
 		thread.start();
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		if (!running2) {
-			//slice = sliceSelector.getValue();
-			if (e.getSource()==channelSelector) {
-				c = channelSelector.getValue();
+			//slice = zSelector.getValue();
+			if (e.getSource()==cSelector) {
+				c = cSelector.getValue();
 				if (c==imp.getChannel()) return;
-			} else if (e.getSource()==sliceSelector) {
-				z = sliceSelector.getValue();
+			} else if (e.getSource()==zSelector) {
+				z = zSelector.getValue();
 				if (z==imp.getSlice()) return;
-			} else if (e.getSource()==frameSelector) {
-				t = frameSelector.getValue();
+			} else if (e.getSource()==tSelector) {
+				t = tSelector.getValue();
 				if (t==imp.getFrame()) return;
 			}
 			updatePosition();
@@ -161,10 +162,10 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	public void updateSliceSelector() {
 		if (hyperStack) return;
 		int stackSize = imp.getStackSize();
-		int max = sliceSelector.getMaximum();
+		int max = zSelector.getMaximum();
 		if (max!=(stackSize+1))
-			sliceSelector.setMaximum(stackSize+1);
-		sliceSelector.setValue(imp.getCurrentSlice());
+			zSelector.setMaximum(stackSize+1);
+		zSelector.setValue(imp.getCurrentSlice());
 	}
 	
 	public void run() {
@@ -218,17 +219,17 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     }
     
     public void setPosition(int channel, int slice, int frame) {
-    	if (channelSelector!=null && channel!=c) {
+    	if (cSelector!=null && channel!=c) {
     		c = channel;
-			channelSelector.setValue(channel);
+			cSelector.setValue(channel);
 		}
-    	if (sliceSelector!=null && slice!=z) {
+    	if (zSelector!=null && slice!=z) {
     		z = slice;
-			sliceSelector.setValue(slice);
+			zSelector.setValue(slice);
 		}
-    	if (frameSelector!=null && frame!=t) {
+    	if (tSelector!=null && frame!=t) {
     		t = frame;
-			frameSelector.setValue(frame);
+			tSelector.setValue(frame);
 		}
     	updatePosition();
 		if (this.slice>0) {
