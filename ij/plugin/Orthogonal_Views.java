@@ -125,7 +125,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		win.addFocusListener(this);
 		Component[] c = win.getComponents();
 		//IJ.log(c[1].toString());
-		((java.awt.Scrollbar) c[1]).addAdjustmentListener ((AdjustmentListener) this);
+		((ScrollbarWithLabel) c[1]).addAdjustmentListener ((AdjustmentListener) this);
 		ImagePlus.addImageListener(this);
 		Executer.addCommandListener(this);
 	}
