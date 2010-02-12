@@ -26,8 +26,13 @@ public class Animator implements PlugIn {
 		if (nSlices<2)
 			{IJ.error("Stack required."); return;}
 		ImageWindow win = imp.getWindow();
-		if (win==null || !(win instanceof StackWindow))
+		if (win==null || !(win instanceof StackWindow)) {
+			if (arg.equals("next"))
+				imp.setSlice(imp.getCurrentSlice()+1);
+			else if (arg.equals("previous"))
+				imp.setSlice(imp.getCurrentSlice()-1);
 			return;
+		}
 		swin = (StackWindow)win;
 		ImageStack stack = imp.getStack();
 		slice = imp.getCurrentSlice();

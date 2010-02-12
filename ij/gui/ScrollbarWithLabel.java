@@ -12,7 +12,7 @@ import java.awt.geom.*;
 public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentListener {
 	private Scrollbar bar;
 	private Label label;
-	private PlayPauseIcon playPauseIcon;
+	private PlayPauseButton playPauseButton;
 	private StackWindow stackWindow;
 	transient AdjustmentListener adjustmentListener;
 	
@@ -26,8 +26,8 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		if (label != null) {
 			if (label.equals("t")) {
 				label = null;
-				playPauseIcon = new PlayPauseIcon();
-				add(playPauseIcon, BorderLayout.WEST);
+				playPauseButton = new PlayPauseButton();
+				add(playPauseButton, BorderLayout.WEST);
 			} else {
 				this.label = new Label(label);
 				add(this.label, BorderLayout.WEST);
@@ -146,15 +146,15 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	}
 		
 	public void updatePlayPauseIcon() {
-		playPauseIcon.repaint();
+		playPauseButton.repaint();
 	}
 	
 	
-	class PlayPauseIcon extends Canvas implements MouseListener {
+	class PlayPauseButton extends Canvas implements MouseListener {
 		private static final int WIDTH = 12, HEIGHT=14;
 		private BasicStroke stroke = new BasicStroke(2f);
 
-		public PlayPauseIcon() {
+		public PlayPauseButton() {
 			addMouseListener(this);
 			setSize(WIDTH, HEIGHT);
 		}

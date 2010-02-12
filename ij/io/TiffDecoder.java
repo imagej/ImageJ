@@ -504,7 +504,7 @@ public class TiffDecoder {
 						if (value==SIGNED)
 							fi.fileType = FileInfo.GRAY16_SIGNED;
 						if (value==FLOATING_POINT)
-							error("ImageJ cannot open16-bit float TIFFs");
+							error("ImageJ cannot open 16-bit float TIFFs");
 					}
 					break;
 				case JPEG_TABLES:

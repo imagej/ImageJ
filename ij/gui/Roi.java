@@ -524,10 +524,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				width=height;
 			else
 				height=width;
-			if(center){
-				x=xc-width/2;
-				y=yc-height/2;
-			}
+
 			if(x>=x2) {
 				width=1;
 				x=x2=xc;
@@ -561,6 +558,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					y=yc-height/2;
 					x=x2-width;
 					break;
+			}
+			if(center){
+				x=xc-width/2;
+				y=yc-height/2;
 			}
 		}
 
