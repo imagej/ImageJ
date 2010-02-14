@@ -582,7 +582,7 @@ public class Menus {
 			for (int j=0; j<nEntries; j++) {
 				String s = entries[j];
 				//IJ.log(j+"  "+s);
-				if (nEntries2<=3) {
+				if (nEntries2<2) {
 					if (s.startsWith("Plugins>")) {
 						int firstComma = s.indexOf(',');
 						int firstQuote = s.indexOf('"');
@@ -761,7 +761,7 @@ public class Menus {
     	menu.addSeparator();
     }
 
-    /** Opens the configuration file ("plugins.txt") from a JAR file and returns it as an InputStream. */
+    /** Opens the configuration file ("plugins.config") from a JAR file and returns it as an InputStream. */
 	InputStream getConfigurationFile(String jar) {
 		try {
 			ZipFile jarFile = new ZipFile(jar);
