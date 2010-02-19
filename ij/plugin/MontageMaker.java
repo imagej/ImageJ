@@ -106,10 +106,18 @@ public class MontageMaker implements PlugIn {
 			}
 			label = gd.getNextBoolean();
 			useForegroundColor = gd.getNextBoolean();
-			makeMontage(imp, columns, rows, scale, first, last, inc, borderWidth, label);
+			ImagePlus imp2 = makeMontage2(imp, columns, rows, scale, first, last, inc, borderWidth, label);
+			imp2.show();
 	}
 	
+	/** Creates a montage and displays it. */
 	public void makeMontage(ImagePlus imp, int columns, int rows, double scale, int first, int last, int inc, int borderWidth, boolean labels) {
+		ImagePlus imp2 = makeMontage2(imp, columns, rows, scale, first, last, inc, borderWidth, labels);
+		imp2.show();
+	}
+
+	/** Creates a montage and returns it as an ImagePlus. */
+	public ImagePlus makeMontage2(ImagePlus imp, int columns, int rows, double scale, int first, int last, int inc, int borderWidth, boolean labels) {
 		int stackWidth = imp.getWidth();
 		int stackHeight = imp.getHeight();
 		int nSlices = imp.getStackSize();
@@ -181,7 +189,7 @@ public class MontageMaker implements PlugIn {
 			cal.pixelHeight /= scale;
 		}
         imp2.setProperty("Info", "xMontage="+columns+"\nyMontage="+rows+"\n");
-		imp2.show();
+		return imp2;
 	}
 		
 	void drawBorder(ImageProcessor montage, int x, int y, int width, int height, int borderWidth) {

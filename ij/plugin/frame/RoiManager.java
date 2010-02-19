@@ -421,9 +421,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (!addRoi(false))
 			return;
 		ImagePlus imp = WindowManager.getCurrentImage();
-		Undo.setup(Undo.COMPOUND_FILTER, imp);
-		IJ.run("Draw");
-		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+		if (imp!=null) {
+			Undo.setup(Undo.COMPOUND_FILTER, imp);
+			IJ.run(imp, "Draw", "slice");
+			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+		}
 		if (record()) Recorder.record("roiManager", "Add & Draw");
 	}
 	
@@ -1459,9 +1461,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		if (hexColor==null) hexColor = getHex(null);
-		Color color = Colors.decode(hexColor, Color.cyan);
-		addRoi(null, false, color, (int)Math.round(lineWidth));
+		if (hexColor==null && lineWidth==1.0 && IJ.altKeyDown())
+			addRoi(true);
+		else {
+			if (hexColor==null) hexColor = getHex(null);
+			Color color = Colors.decode(hexColor, Color.cyan);
+			addRoi(null, false, color, (int)Math.round(lineWidth));
+		}
 		return true;	
 	}
 	

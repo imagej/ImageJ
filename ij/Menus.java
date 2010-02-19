@@ -562,16 +562,14 @@ public class Menus {
             if (is==null) continue;
             int maxEntries = 100;
             String[] entries = new String[maxEntries];
-            int nEntries=0, nEntries2=0;
+            int nEntries=0;
             LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
             try {
                 while(true) {
                     String s = lnr.readLine();
                     if (s==null || nEntries==maxEntries-1) break;
-					if (s.length()>=3 && !s.startsWith("#")) {
+					if (s.length()>=3 && !s.startsWith("#"))
 						entries[nEntries++] = s;
-						if (s.startsWith("Plugins>")) nEntries2++;
-					}
 	            }
             }
             catch (IOException e) {}
@@ -579,27 +577,8 @@ public class Menus {
 				try {if (lnr!=null) lnr.close();}
 				catch (IOException e) {}
 			}
-			for (int j=0; j<nEntries; j++) {
-				String s = entries[j];
-				//IJ.log(j+"  "+s);
-				if (nEntries2<2) {
-					if (s.startsWith("Plugins>")) {
-						int firstComma = s.indexOf(',');
-						int firstQuote = s.indexOf('"');
-						boolean pluginsDir = (new File(jar)).getParent().endsWith("plugins");
-						if (firstComma>8 && firstQuote>firstComma && !pluginsDir) {
-							String submenuName = s.substring(8, firstComma);
-							String prefix = "";
-							// "Extended Depth of Field" and "Particle Detector & Tracker" plugins
-							if (submenuName.startsWith("Extend")||submenuName.startsWith("Particle D"))
-								prefix = submenuName+": ";
-							//IJ.log(nEntries+" "+nEntries2+" "+jar+" "+s+"  "+submenuName);
-							s = "Plugins, \""+prefix+s.substring(firstQuote+1, s.length());
-						}
-					}
-				}
-				installJarPlugin(jar, s);
-			}
+			for (int j=0; j<nEntries; j++)
+				installJarPlugin(jar, entries[j]);
 		}		
 	}
     

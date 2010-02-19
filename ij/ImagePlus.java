@@ -44,15 +44,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** True if any changes have been made to this image. */
 	public boolean changes;
 	
-	/** Obsolete. Use GetCalibration(). */
-	public double pixelWidth=1.0, pixelHeight=1.0;
-	/** Obsolete. Use GetCalibration(). */
-	public String unit="pixel";
-	/** Obsolete. Use GetCalibration(). */
-	public String units=unit;
-	/** Obsolete. Use GetCalibration(). */
-	public boolean sCalibrated;
-
 	protected Image img;
 	protected ImageProcessor ip;
 	protected ImageWindow win;
@@ -472,7 +463,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
-	/** Replaces the ImageProcessor, if any, with the one specified.
+	/** Replaces the ImageProcessor with the one specified and updates the display. */
+	public void setProcessor(ImageProcessor ip) {
+		setProcessor(null, ip);
+	}
+
+	/** Replaces the ImageProcessor with the one specified and updates the display.
 		Set 'title' to null to leave the image title unchanged. */
 	public void setProcessor(String title, ImageProcessor ip) {
         if (ip==null || ip.getPixels()==null)
@@ -523,8 +519,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 
-	/** Replaces the stack, if any, with the one specified.
-		Set 'title' to null to leave the title unchanged. */
+	/** Replaces the image with the specified stack and updates the display. */
+	public void setStack(ImageStack stack) {
+    	setStack(null, stack);
+    }
+
+	/** Replaces the image with the specified stack and updates 
+		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack stack) {
 		int stackSize = stack.getSize();
 		if (stackSize==0)
@@ -656,10 +657,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (IJ.debugMode) IJ.log(title + ": trimProcessor");
 			ip2.setSnapshotPixels(null);
 		}
-	}
-	
-	/** Obsolete. */
-	public void killProcessor() {
 	}
 	
 	/** For images with irregular ROIs, returns a byte mask, otherwise, returns
@@ -1245,14 +1242,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		noUpdateMode = true;
 		setSlice(n);
 		noUpdateMode = false;
-	}
-
-	/** Obsolete */
-	void undoFilter() {
-		if (ip!=null) {
-			ip.reset();
-			updateAndDraw();
-		}
 	}
 
 	/** Returns the current selection, or null if there is no selection. */
@@ -1951,7 +1940,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());	
 		ImageCanvas ic = getCanvas();
-		ic2.setDisplayList(getDisplayList());
+		ic2.setOverlay(getOverlay());
 		if (ic!=null)
 			ic2.setShowAllROIs(ic.getShowAllROIs());
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -2011,36 +2000,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return ic.getOverlay();
 		else
 			return overlay;
-	}
-
-	/** Obsolete; replaced by setOverlay. */
-	public void setDisplayList(Vector list) {
-		if (list!=null) {
-			Overlay list2 = new Overlay();
-			for (int i=0; i<list.size(); i++)
-				list2.add((Roi)list.elementAt(i));
-			setOverlay(list2);
-		} else
-			setOverlay(null);
-	}
-
-	/** Obsolete; replaced by getOverlay(). */
-	public Vector getDisplayList() {
-		ImageCanvas ic = getCanvas();
-		if (ic!=null)
-			return ic.getDisplayList();
-		else
-			return null;
-	}
-
-	/** Obsolete; replaced by setOverlay(Shape, Color, BasicStroke). */
-	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
-		setOverlay(shape, color, stroke);
-	}
-
-	/** Obsolete; replaced by setOverlay(Roi, Color, int, Color fill). */
-	public void setDisplayList(Roi roi, Color strokeColor, int strokeWidth, Color fillColor) {
-		setOverlay(roi, strokeColor, strokeWidth, fillColor);
 	}
 
 	public Object clone() {

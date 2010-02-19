@@ -331,7 +331,10 @@ public class IJ {
 			ic.setShowCursorStatus(s.length()==0?true:false);
 	}
 
-	/** Obsolete; replaced by IJ.log().*/
+	/**
+	* @deprecated
+	* replaced by IJ.log()
+	*/
 	public static void write(String s) {
 		if (textPanel==null && ij!=null)
 			showResults();

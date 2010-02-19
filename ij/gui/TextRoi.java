@@ -46,7 +46,7 @@ public class TextRoi extends Roi {
 		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
 	}
 
-	/** Obsolete */
+	/** @deprecated */
 	public TextRoi(int x, int y, String text, Font font, Color color) {
 		super(x, y, 1, 1);
 		if (font==null) font = new Font(name, style, size);

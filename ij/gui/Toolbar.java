@@ -616,7 +616,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void setTool(int tool) {
-		if ((tool==current&&!(tool==OVAL||tool==POINT)) || tool<0 || tool>=NUM_TOOLS-1)
+		if ((tool==current&&!(tool==RECTANGLE||tool==OVAL||tool==POINT)) || tool<0 || tool>=NUM_TOOLS-1)
 			return;
 		if (tool==SPARE1||(tool>=SPARE2&&tool<=SPARE8)) {
 			if (names[tool]==null)
@@ -664,12 +664,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return true;
 	}
 
-	/** Obsolete. Use getForegroundColor(). */
+	/**
+	* @deprecated
+	* replaced by getForegroundColor()
+	*/
 	public Color getColor() {
 		return foregroundColor;
 	}
 
-	/** Obsolete. Use setForegroundColor(). */
+	/**
+	* @deprecated
+	* replaced by setForegroundColor()
+	*/
 	public void setColor(Color c) {
 		if (c!=null) {
 			foregroundColor = c;

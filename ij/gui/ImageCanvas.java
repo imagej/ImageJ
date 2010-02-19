@@ -1187,7 +1187,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return overlay;
 	}
 
-	/** Obsolete; replaced by ImagePlus.setOverlay(ij.gui.Overlay). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.setOverlay(ij.gui.Overlay)
+	*/
 	public void setDisplayList(Vector list) {
 		if (list!=null) {
 			Overlay list2 = new Overlay();
@@ -1202,7 +1205,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 
-	/** Obsolete; replaced by ImagePlus.setOverlay(Shape, Color, BasicStroke). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.setOverlay(Shape, Color, BasicStroke)
+	*/
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
 			{setOverlay(null); return;}
@@ -1214,7 +1220,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setOverlay(list);
 	}
 	
-	/** Obsolete; replaced by ImagePlus.setOverlay(Roi, Color, int, Color). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.setOverlay(Roi, Color, int, Color)
+	*/
 	public void setDisplayList(Roi roi, Color color) {
 		roi.setStrokeColor(color);
 		Overlay list = new Overlay();
@@ -1222,7 +1231,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setOverlay(list);
 	}
 	
-	/** Obsolete; replaced by ImagePlus.getOverlay(). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.getOverlay()
+	*/
 	public Vector getDisplayList() {
 		if (overlay==null) return null;
 		Vector displayList = new Vector();

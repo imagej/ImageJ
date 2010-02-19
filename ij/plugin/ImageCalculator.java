@@ -98,7 +98,10 @@ public class ImageCalculator implements PlugIn {
 		return calculate(img1, img2, true);
 	}
 	
-	/** Obsolete; replaced by run(String,ImagePlus,ImagePlus). */
+	/**
+	* @deprecated
+	* replaced by run(String,ImagePlus,ImagePlus)
+	*/
 	public void calculate(String params, ImagePlus img1, ImagePlus img2) {
 		if (img1==null || img2==null || params==null) return;
 		operator = getOperator(params);

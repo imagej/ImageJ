@@ -62,12 +62,18 @@ public class JpegWriter implements PlugIn {
 		return error;
 	}
 
-	/** Obsolete, replaced by FileSaver.setJpegQuality(). */
+	/**
+	* @deprecated
+	* replaced by FileSaver.setJpegQuality()
+	*/
 	public static void setQuality(int jpegQuality) {
 		FileSaver.setJpegQuality(jpegQuality);
 	}
 
-	/** Obsolete, replaced by FileSaver.getJpegQuality(). */
+	/**
+	* @deprecated
+	* replaced by FileSaver.getJpegQuality()
+	*/
 	public static int getQuality() {
 		return FileSaver.getJpegQuality();
 	}

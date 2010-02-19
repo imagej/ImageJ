@@ -170,6 +170,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 
 	public static void record(String method, int a1, int a2, int a3) {
 		if (textArea==null) return;
+		if (scriptMode&&method.endsWith("groundColor")) method = "IJ."+method;
 		textArea.append(method+"("+a1+", "+a2+", "+a3+");\n");
 	}
 
