@@ -11,30 +11,22 @@ import java.awt.geom.*;
  */
 public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentListener {
 	private Scrollbar bar;
-	private Label label;
-	private PlayPauseButton playPauseButton;
+	private Icon icon;
 	private StackWindow stackWindow;
 	transient AdjustmentListener adjustmentListener;
 	
 	public ScrollbarWithLabel() {
 	}
 
-	public ScrollbarWithLabel(StackWindow stackWindow, int value, int visible, int minimum, int maximum, String label) {
+	public ScrollbarWithLabel(StackWindow stackWindow, int value, int visible, int minimum, int maximum, char label) {
 		super(new BorderLayout(2, 0));
 		this.stackWindow = stackWindow;
 		bar = new Scrollbar(Scrollbar.HORIZONTAL, value, visible, minimum, maximum);
-		if (label != null) {
-			if (label.equals("t")) {
-				label = null;
-				playPauseButton = new PlayPauseButton();
-				add(playPauseButton, BorderLayout.WEST);
-			} else {
-				this.label = new Label(label);
-				add(this.label, BorderLayout.WEST);
-			}
-		}
+		icon = new Icon(label);
+		add(icon, BorderLayout.WEST);
 		add(bar, BorderLayout.CENTER);
 		bar.addAdjustmentListener(this);
+		addKeyListener(IJ.getInstance()); 
 	}
 	
 	/* (non-Javadoc)
@@ -42,7 +34,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	 */
 	public Dimension getPreferredSize() {
 		Dimension dim = new Dimension(0,0);
-		int width = bar.getPreferredSize().width+(label!=null?label.getPreferredSize().width:0);
+		int width = bar.getPreferredSize().width;
 		Dimension minSize = getMinimumSize();
 		if (width<minSize.width) width = minSize.width;		
 		int height = bar.getPreferredSize().height;
@@ -59,7 +51,6 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	public synchronized void addKeyListener(KeyListener l) {
 		super.addKeyListener(l);
 		bar.addKeyListener(l);
-		if (label!=null) label.addKeyListener(l);
 	}
 
 	/* Removes KeyListener also from all sub-components.
@@ -67,7 +58,6 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	public synchronized void removeKeyListener(KeyListener l) {
 		super.removeKeyListener(l);
 		bar.removeKeyListener(l);
-		if (label!=null) label.removeKeyListener(l);
 	}
 
 	/* 
@@ -128,7 +118,6 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	public void setFocusable(boolean focusable) {
 		super.setFocusable(focusable);
 		bar.setFocusable(focusable);
-		if (label!=null) label.setFocusable(focusable);
 	}
 		
 	/*
@@ -146,17 +135,21 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 	}
 		
 	public void updatePlayPauseIcon() {
-		playPauseButton.repaint();
+		icon.repaint();
 	}
 	
 	
-	class PlayPauseButton extends Canvas implements MouseListener {
+	class Icon extends Canvas implements MouseListener {
 		private static final int WIDTH = 12, HEIGHT=14;
 		private BasicStroke stroke = new BasicStroke(2f);
+		private char type;
+		private Image image;
 
-		public PlayPauseButton() {
+		public Icon(char type) {
 			addMouseListener(this);
+			addKeyListener(IJ.getInstance()); 
 			setSize(WIDTH, HEIGHT);
+			this.type = type;
 		}
 		
 		/** Overrides Component getPreferredSize(). */
@@ -169,7 +162,15 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		}
 		
 		public void paint(Graphics g) {
-			if (g==null) return;
+			if (type=='t')
+				drawPlayPauseButton(g);
+			else {
+				if (image==null) createImage(type);
+				g.drawImage(image, 0, 0, this);
+			}
+		}
+		
+		private void drawPlayPauseButton(Graphics g) {
 			g.setColor(Color.white);
 			g.fillRect(0, 0, WIDTH, HEIGHT);
 			Graphics2D g2d = (Graphics2D)g;
@@ -190,7 +191,20 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 			}
 		}
 		
+		private void createImage(char c) {
+			image = createImage(WIDTH, HEIGHT);
+			Graphics g = image.getGraphics();
+			g.setColor(Color.white);
+			g.fillRect(0, 0, WIDTH, HEIGHT);
+			g.setFont(new Font("SansSerif", Font.PLAIN, 14));
+			g.setColor(Color.black);
+			((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.drawString(c=='c'?"c":"z", 2, 12);
+			g.dispose();
+		}
+
 		public void mousePressed(MouseEvent e) {
+			if (type!='t') return;
 			int flags = e.getModifiers();
 			if ((flags&(Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
 				IJ.doCommand("Animation Options...");
