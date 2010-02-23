@@ -12,7 +12,7 @@ import ij.plugin.frame.Recorder;
 <pre>
    // test script
    img1 = IJ.getImage();
-   img2 = new Duplicator().run(img1);
+   img2 = new Duplicator().g(img1);
    //img2 = new Duplicator().run(img1,1,10);
    img2.show();
 </pre>
@@ -76,6 +76,7 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
+		imp2.setOverlay(imp.getOverlay());
 		return imp2;
 	}
 	
@@ -96,6 +97,7 @@ public class Duplicator implements PlugIn, TextListener {
 				imp2.getProcessor().setColorModel(lut);
 			}
 		}
+		imp2.setOverlay(imp.getOverlay());
 		return imp2;
 	}
 	

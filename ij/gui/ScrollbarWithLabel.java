@@ -162,22 +162,26 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		}
 		
 		public void paint(Graphics g) {
-			if (type=='t')
-				drawPlayPauseButton(g);
-			else {
-				if (image==null) createImage(type);
-				g.drawImage(image, 0, 0, this);
-			}
-		}
-		
-		private void drawPlayPauseButton(Graphics g) {
 			g.setColor(Color.white);
 			g.fillRect(0, 0, WIDTH, HEIGHT);
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			if (type=='t')
+				drawPlayPauseButton(g2d);
+			else
+				drawLetter(g);
+		}
+		
+		private void drawLetter(Graphics g) {
+			g.setFont(new Font("SansSerif", Font.PLAIN, 14));
+			g.setColor(Color.black);
+			g.drawString(type=='c'?"c":"z", 2, 12);
+		}
+
+		private void drawPlayPauseButton(Graphics2D g) {
 			if (stackWindow.getAnimate()) {
 				g.setColor(Color.black);
-				g2d.setStroke(stroke);
+				g.setStroke(stroke);
 				g.drawLine(3, 3, 3, 11);
 				g.drawLine(8, 3, 8, 11);
 			} else {
@@ -187,22 +191,10 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 				path.lineTo(10f, 7f);
 				path.lineTo(3f, 12f);
 				path.lineTo(3f, 2f);
-				g2d.fill(path);
+				g.fill(path);
 			}
 		}
 		
-		private void createImage(char c) {
-			image = createImage(WIDTH, HEIGHT);
-			Graphics g = image.getGraphics();
-			g.setColor(Color.white);
-			g.fillRect(0, 0, WIDTH, HEIGHT);
-			g.setFont(new Font("SansSerif", Font.PLAIN, 14));
-			g.setColor(Color.black);
-			((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.drawString(c=='c'?"c":"z", 2, 12);
-			g.dispose();
-		}
-
 		public void mousePressed(MouseEvent e) {
 			if (type!='t') return;
 			int flags = e.getModifiers();

@@ -34,7 +34,7 @@ public class JpegWriter implements PlugIn {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		int biType = BufferedImage.TYPE_INT_RGB;
-		if (imp.getProcessor().isDefaultLut())
+		if (imp.getProcessor().isDefaultLut() && !imp.isComposite())
 			biType = BufferedImage.TYPE_BYTE_GRAY;
 		BufferedImage bi = new BufferedImage(width, height, biType);
 		String error = null;
