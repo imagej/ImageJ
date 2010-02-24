@@ -1356,6 +1356,12 @@ public class Functions implements MacroConstants, Measurements {
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
+			} else if (key.equals("overlay")) {
+				Overlay overlay = getImage().getOverlay();
+				if (overlay==null)
+					return "[no overlay]";
+				else
+					return overlay.toString();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}

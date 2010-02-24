@@ -114,6 +114,8 @@ public class FileSaver {
 	}
 	
 	byte[][] getOverlay(ImagePlus imp) {
+		if (imp.getHideOverlay())
+			return null;
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null) {
 			ImageCanvas ic = imp.getCanvas();

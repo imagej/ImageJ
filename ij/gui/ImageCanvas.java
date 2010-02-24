@@ -226,6 +226,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     void drawOverlay(Graphics g) {
+    	if (imp!=null && imp.getHideOverlay())
+    		return;
 		initGraphics(g);
 		Vector list = overlay.getVector();
     	int n = list.size();

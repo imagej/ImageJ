@@ -135,6 +135,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		//addPopupItem("Select All");
 		addPopupItem("Open...");
 		addPopupItem("Save...");
+		addPopupItem("Fill");
+		addPopupItem("Draw");
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
@@ -181,6 +183,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			open(null);
 		else if (command.equals("Save..."))
 			save();
+		else if (command.equals("Fill"))
+			drawOrFill(FILL);
+		else if (command.equals("Draw"))
+			drawOrFill(DRAW);
 		else if (command.equals("Deselect"))
 			select(-1);
 		else if (command.equals(moreButtonLabel)) {

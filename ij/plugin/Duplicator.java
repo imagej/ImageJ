@@ -12,7 +12,7 @@ import ij.plugin.frame.Recorder;
 <pre>
    // test script
    img1 = IJ.getImage();
-   img2 = new Duplicator().g(img1);
+   img2 = new Duplicator().run(img1);
    //img2 = new Duplicator().run(img1,1,10);
    img2.show();
 </pre>

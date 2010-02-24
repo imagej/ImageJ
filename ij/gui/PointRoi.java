@@ -154,4 +154,11 @@ public class PointRoi extends PolygonRoi {
 		return false;
 	}
 
+	public String toString() {
+		if (nPoints>1)
+			return ("Roi[Points, count="+nPoints+"]");
+		else
+			return ("Roi[Point, x="+x+", y="+y+"]");
+	}
+
 }

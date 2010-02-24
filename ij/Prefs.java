@@ -104,6 +104,8 @@ public class Prefs {
 	public static boolean runSocketListener;
 	/** Use MultiPoint tool. */
 	public static boolean multiPointMode;
+	/** Open DICOMs as 32-bit float images */
+	public static boolean openDicomsAsFloat;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

@@ -83,6 +83,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private boolean noUpdateMode;
 	private ImageCanvas flatteningCanvas;
 	private Overlay overlay;
+	private boolean hideOverlay;
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -1966,6 +1967,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			overlay = null;
 		} else
 			this.overlay = overlay;
+		setHideOverlay(false);
 	}
 	
 	/** Creates an Overlay from the specified Shape, Color 
@@ -2000,6 +2002,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return ic.getOverlay();
 		else
 			return overlay;
+	}
+	
+	public void setHideOverlay(boolean hide) {
+		ImageCanvas ic = getCanvas();
+		if (ic!=null && hide!=hideOverlay && ic.getOverlay()!=null)
+			ic.repaint();
+		hideOverlay = hide;
+	}
+
+	public boolean getHideOverlay() {
+		return hideOverlay;
 	}
 
 	public Object clone() {

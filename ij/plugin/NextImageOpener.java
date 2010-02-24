@@ -84,12 +84,18 @@ public class NextImageOpener implements PlugIn {
 			}
 			imp0.changes = false;
 		}
-		imp0.setStack(newTitle, imp2.getStack());
-		imp0.setCalibration(imp2.getCalibration());
-		imp0.setFileInfo(imp2.getOriginalFileInfo());
-		imp0.setProperty ("Info", imp2.getProperty ("Info"));
-		ImageWindow win = imp0.getWindow();
-		if (win!=null) win.repaint();
+		if (imp2.isComposite() || imp2.isHyperStack()) {
+			imp2.show();
+			imp0.close();
+			imp0 = imp2;
+		} else {
+			imp0.setStack(newTitle, imp2.getStack());
+			imp0.setCalibration(imp2.getCalibration());
+			imp0.setFileInfo(imp2.getOriginalFileInfo());
+			imp0.setProperty ("Info", imp2.getProperty ("Info"));
+			ImageWindow win = imp0.getWindow();
+			if (win!=null) win.repaint();
+		}
 		return "ok";
 	}
 
