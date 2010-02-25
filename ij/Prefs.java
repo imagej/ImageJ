@@ -331,7 +331,6 @@ public class Prefs {
 			Analyzer.savePreferences(prefs);
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
-			GelAnalyzer.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {

@@ -1359,7 +1359,7 @@ public class Functions implements MacroConstants, Measurements {
 			} else if (key.equals("overlay")) {
 				Overlay overlay = getImage().getOverlay();
 				if (overlay==null)
-					return "[no overlay]";
+					return "";
 				else
 					return overlay.toString();
 			} else {

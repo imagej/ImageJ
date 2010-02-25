@@ -14,7 +14,9 @@ import java.util.*;
 the wand tool. It is similar to the "Gel Plotting Macros" in NIH Image. */
 public class GelAnalyzer implements PlugIn {
 
-    static final String GEL = "gel.options"; 
+    static final String OPTIONS = "gel.options"; 
+    static final String VSCALE = "gel.vscale"; 
+    static final String HSCALE = "gel.hscale"; 
     static final int OD=1, PERCENT=2, OUTLINE=4, INVERT=8;
 	static int saveID;
 	static int nLanes, saveNLanes;
@@ -25,11 +27,13 @@ public class GelAnalyzer implements PlugIn {
 	static ImageProcessor ipLanes;
 	static ImagePlus  gel;
 	static int plotHeight;
-	static int options = Prefs.getInt(GEL, PERCENT+INVERT);
+	static int options = (int)Prefs.get(OPTIONS, PERCENT+INVERT);
 	static boolean uncalibratedOD = (options&OD)!=0;
 	static boolean labelWithPercentages = (options&PERCENT)!=0;;
 	static boolean outlineLanes;
 	static boolean invertPeaks = (options&INVERT)!=0;
+	static double verticalScaleFactor = Prefs.get(VSCALE, 1.0);
+	static double horizontalScaleFactor = Prefs.get(HSCALE, 1.0);
 	static Overlay overlay;
 	boolean invertedLut;
 	
@@ -138,12 +142,16 @@ public class GelAnalyzer implements PlugIn {
 
 	void showDialog() {
 		GenericDialog gd = new GenericDialog("Gel Analyzer");
+		gd.addNumericField("Vertical scale factor:", verticalScaleFactor, 1);
+		gd.addNumericField("Horizontal scale factor:", horizontalScaleFactor, 1);
 		gd.addCheckbox("Uncalibrated OD", uncalibratedOD);
-		gd.addCheckbox("Label with Percentages", labelWithPercentages);
-		gd.addCheckbox("Invert Peaks", invertPeaks);
+		gd.addCheckbox("Label with percentages", labelWithPercentages);
+		gd.addCheckbox("Invert peaks", invertPeaks);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
+		verticalScaleFactor = gd.getNextNumber();
+		horizontalScaleFactor = gd.getNextNumber();
 		uncalibratedOD = gd.getNextBoolean();
 		labelWithPercentages = gd.getNextBoolean();
 		invertPeaks = gd.getNextBoolean();
@@ -151,7 +159,9 @@ public class GelAnalyzer implements PlugIn {
 		if (uncalibratedOD) options |= OD;
 		if (labelWithPercentages) options |= PERCENT;
 		if (invertPeaks) options |= INVERT;
-		return;
+		Prefs.set(OPTIONS, options);
+		Prefs.set(VSCALE, verticalScaleFactor);
+		Prefs.set(HSCALE, horizontalScaleFactor);
 	}
 
 
@@ -249,9 +259,8 @@ public class GelAnalyzer implements PlugIn {
 		profiles = new double[MAX_LANES+1][];
 		IJ.showStatus("Plotting " + nLanes + " lanes");
 		ImageProcessor ipRotated = imp.getProcessor();
-		if(isVertical) {
+		if (isVertical)
 			ipRotated = ipRotated.rotateLeft();
-		}
 		ImagePlus imp2 = new ImagePlus("", ipRotated);
 		imp2.setCalibration(imp.getCalibration());
 		if (uncalibratedOD && (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32))
@@ -284,28 +293,30 @@ public class GelAnalyzer implements PlugIn {
 			max = odMax;
 		}
 
-		if(isVertical)
+		if (isVertical)
 			plotWidth = firstRect.height;
 		else
 			plotWidth = firstRect.width;
 		if (plotWidth<500)
 			plotWidth = 500;
-		if(isVertical) {
-			if (plotWidth>2*firstRect.height)
-				plotWidth = 2*firstRect.height;
+		if (isVertical) {
+			if (plotWidth>3*firstRect.height)
+				plotWidth = 3*firstRect.height;
 		} else {
-			if (plotWidth>2*firstRect.width)
-				plotWidth = 2*firstRect.width;
+			if (plotWidth>3*firstRect.width)
+				plotWidth = 3*firstRect.width;
 		}
 
 		Dimension screen = IJ.getScreenSize();
 		if (plotWidth>screen.width-40)
 			plotWidth = screen.width - 40;
+		plotWidth = (int)(plotWidth*horizontalScaleFactor);
 		plotHeight = plotWidth/2;
 		if (plotHeight<200)
 			plotHeight = 200;
 		if (plotHeight>400)
 			plotHeight = 400;
+		plotHeight = (int)(plotHeight*verticalScaleFactor);
 		ImageProcessor ip = new ByteProcessor(plotWidth, topMargin+nLanes*plotHeight+bottomMargin);
 		ip.setColor(Color.white);
 		ip.fill();
@@ -447,11 +458,6 @@ public class GelAnalyzer implements PlugIn {
 
 	void show(String msg) {
 		IJ.showMessage("Gel Analyzer", msg);
-	}
-
-	/** Called once when ImageJ quits. */
-	public static void savePreferences(Properties prefs) {
-		prefs.put(GEL, Integer.toString(options));
 	}
 
 }

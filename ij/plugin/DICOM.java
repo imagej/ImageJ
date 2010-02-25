@@ -112,16 +112,14 @@ public class DICOM extends ImagePlus implements PlugIn {
 				if (dd.rescaleIntercept!=0.0)
 					ip.add(dd.rescaleIntercept);
 				imp.setProcessor(ip);
-			} else {
-				if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-					if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
-						ip.add(dd.rescaleIntercept);
-				} else if (dd.rescaleIntercept!=0.0 && (dd.rescaleSlope==1.0||fi.fileType==FileInfo.GRAY8)) {
-					double[] coeff = new double[2];
-					coeff[0] = dd.rescaleIntercept;
-					coeff[1] = dd.rescaleSlope;
-					imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
-				}
+			} else if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
+					ip.add(dd.rescaleIntercept);
+			} else if (dd.rescaleIntercept!=0.0 && (dd.rescaleSlope==1.0||fi.fileType==FileInfo.GRAY8)) {
+				double[] coeff = new double[2];
+				coeff[0] = dd.rescaleIntercept;
+				coeff[1] = dd.rescaleSlope;
+				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
 			}
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
