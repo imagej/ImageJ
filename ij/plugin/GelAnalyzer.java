@@ -297,25 +297,23 @@ public class GelAnalyzer implements PlugIn {
 			plotWidth = firstRect.height;
 		else
 			plotWidth = firstRect.width;
-		if (plotWidth<500)
-			plotWidth = 500;
+		if (plotWidth<650)
+			plotWidth = 650;
 		if (isVertical) {
-			if (plotWidth>3*firstRect.height)
-				plotWidth = 3*firstRect.height;
+			if (plotWidth>4*firstRect.height)
+				plotWidth = 4*firstRect.height;
 		} else {
-			if (plotWidth>3*firstRect.width)
-				plotWidth = 3*firstRect.width;
+			if (plotWidth>4*firstRect.width)
+				plotWidth = 4*firstRect.width;
 		}
 
 		Dimension screen = IJ.getScreenSize();
-		if (plotWidth>screen.width-40)
-			plotWidth = screen.width - 40;
+		if (plotWidth>screen.width-screen.width/6)
+			plotWidth = screen.width - screen.width/6;
 		plotWidth = (int)(plotWidth*horizontalScaleFactor);
 		plotHeight = plotWidth/2;
-		if (plotHeight<200)
-			plotHeight = 200;
-		if (plotHeight>400)
-			plotHeight = 400;
+		if (plotHeight<250) plotHeight = 250;
+		// if (plotHeight>500) plotHeight = 500;
 		plotHeight = (int)(plotHeight*verticalScaleFactor);
 		ImageProcessor ip = new ByteProcessor(plotWidth, topMargin+nLanes*plotHeight+bottomMargin);
 		ip.setColor(Color.white);

@@ -25,7 +25,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     
     public StackWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp, ic);
-		// add slice selection slider
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
 		nSlices = stackSize;
@@ -47,10 +46,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		if (nChannels>1) {
 			cSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, 'c');
 			add(cSelector);
-			//Panel panel = new Panel(new BorderLayout(2, 0));
-			//panel.add(new Label("c"), BorderLayout.WEST);
-			//panel.add(cSelector, BorderLayout.CENTER);
-			//add(panel);
 			if (ij!=null) cSelector.addKeyListener(ij);
 			cSelector.addAdjustmentListener(this);
 			cSelector.setFocusable(false); // prevents scroll bar from blinking on Windows
@@ -59,6 +54,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
 		if (nSlices>1) {
 			char label = nChannels>1||nFrames>1?'z':'t';
+			if (nSlices==dim[2]) label = 'c';
 			zSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
 			if (label=='t') animationSelector = zSelector;
 			add(zSelector);
@@ -69,6 +65,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			if (blockIncrement<1) blockIncrement = 1;
 			zSelector.setUnitIncrement(1);
 			zSelector.setBlockIncrement(blockIncrement);
+			sliceSelector = zSelector.bar;
 		}
 		if (nFrames>1) {
 			animationSelector = tSelector = new ScrollbarWithLabel(this, 1, 1, 1, nFrames+1, 't');
@@ -99,16 +96,15 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		if (!running2) {
-			//slice = zSelector.getValue();
 			if (e.getSource()==cSelector) {
 				c = cSelector.getValue();
-				if (c==imp.getChannel()) return;
+				if (c==imp.getChannel()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
 			} else if (e.getSource()==zSelector) {
 				z = zSelector.getValue();
-				if (z==imp.getSlice()) return;
+				if (z==imp.getSlice()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
 			} else if (e.getSource()==tSelector) {
 				t = tSelector.getValue();
-				if (t==imp.getFrame()) return;
+				if (t==imp.getFrame()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
 			}
 			updatePosition();
 			notify();
