@@ -11,8 +11,8 @@ public class Arrow extends Line {
 	public static final String WIDTH_KEY = "arrow.width";
 	public static final String SIZE_KEY = "arrow.size";
 	public static final String DOUBLE_HEADED_KEY = "arrow.double";
-	public static final int FILLED=0, NOTCHED=1, OPEN=2;
-	public static final String[] styles = {"Filled", "Notched", "Open"};
+	public static final int FILLED=0, NOTCHED=1, OPEN=2, HEADLESS=3;
+	public static final String[] styles = {"Filled", "Notched", "Open", "Headless"};
 	private static int defaultStyle = (int)Prefs.get(STYLE_KEY, FILLED);
 	private static float defaultWidth = (float)Prefs.get(WIDTH_KEY, 2);
 	private static double defaultHeadSize = (int)Prefs.get(SIZE_KEY, 10);  // 0-30;
@@ -22,7 +22,7 @@ public class Arrow extends Line {
 	private boolean doubleHeaded;
 	
 	static {
-		if (defaultStyle<FILLED || defaultStyle>OPEN)
+		if (defaultStyle<FILLED || defaultStyle>HEADLESS)
 			defaultStyle = FILLED;
 	}
 
@@ -95,11 +95,13 @@ public class Arrow extends Line {
 		double y5 = Math.round(y3+dx*r);
 		double x6 = x2-dx*0.85*size;
 		double y6 = y2-dy*0.85*size;
-		if (ra>size) {
+		if (ra>size || style==HEADLESS) {
 			double scale = style==OPEN?0.25:0.75;
 			if (style==OPEN) size /= 3.0;
-			int xx1 = doubleHeaded?(int)(x1+scale*dx*size):(int)x1;
-			int yy1 = doubleHeaded?(int)(y1+scale*dy*size):(int)y1;
+			double yadjust = scale*dy*size;
+			if (style==HEADLESS) scale = 0.0;
+			int xx1 = doubleHeaded||style==HEADLESS?(int)(x1+scale*dx*size):(int)x1;
+			int yy1 = doubleHeaded||style==HEADLESS?(int)(y1+scale*dy*size):(int)y1;
 			int xx2 = (int)(x2-scale*dx*size);
 			int yy2 = (int)(y2-scale*dy*size);
 			if (ip!=null)
@@ -107,6 +109,8 @@ public class Arrow extends Line {
 			else
 				g.drawLine(xx1, yy1, xx2, yy2);
 		}
+		if (style==HEADLESS)
+			return;
 		GeneralPath path = new GeneralPath();
 		path.moveTo((float)x4, (float)y4);
 		path.lineTo((float)x2, (float)y2);

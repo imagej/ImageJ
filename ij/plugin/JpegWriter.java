@@ -34,13 +34,17 @@ public class JpegWriter implements PlugIn {
 		int width = imp.getWidth();
 		int height = imp.getHeight();
 		int biType = BufferedImage.TYPE_INT_RGB;
-		if (imp.getProcessor().isDefaultLut() && !imp.isComposite())
+		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
+		if (imp.getProcessor().isDefaultLut() && !imp.isComposite() && !overlay)
 			biType = BufferedImage.TYPE_BYTE_GRAY;
 		BufferedImage bi = new BufferedImage(width, height, biType);
 		String error = null;
 		try {
 			Graphics g = bi.createGraphics();
-			g.drawImage(imp.getImage(), 0, 0, null);
+			Image img = imp.getImage();
+			if (overlay)
+				img = imp.flatten().getImage();
+			g.drawImage(img, 0, 0, null);
 			g.dispose();            
 			Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
 			ImageWriter writer = (ImageWriter)iter.next();

@@ -1152,11 +1152,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return showAllROIs;
 	}
 	
+	/** Return the ROI Manager "Show All" list as an overlay. */
 	public Overlay getShowAllList() {
-		if (showAllROIs)
-			return showAllList;
-		else
-			return null;
+		if (!showAllROIs) return null;
+		if (showAllList!=null) return showAllList;
+		RoiManager rm=RoiManager.getInstance();
+		if (rm==null) return null;
+		Roi[] rois = rm.getRoisAsArray();
+		if (rois.length==0) return null;
+		Overlay overlay = new Overlay();
+		for (int i=0; i<rois.length; i++)
+			overlay.add((Roi)rois[i].clone());
+		return overlay;
 	}
 
 	/** Returns the color used for "Show All" mode. */
