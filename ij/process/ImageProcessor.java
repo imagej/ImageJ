@@ -59,6 +59,7 @@ public abstract class ImageProcessor extends Object {
 	private static int overRed, overGreen=255, overBlue;
 	private static int underRed, underGreen, underBlue=255;
 	private static boolean useBicubic;
+	private int sliceNumber;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -2184,6 +2185,19 @@ public abstract class ImageProcessor extends Object {
 	/* Calculates and returns statistics for this image. */
 	public ImageStatistics getStatistics() {
 		return ImageStatistics.getStatistics(this, 127, null);
+	}
+	
+	/* Returns the PlugInFilter slice number. */
+	public int getSliceNumber() {
+		if (sliceNumber<1)
+			return 1;
+		else
+			return sliceNumber;
+	}
+
+	/** PlugInFilterRunner uses this method to set the slice number. */
+	public void setSliceNumber(int slice) {
+		sliceNumber = slice;
 	}
 	
 }

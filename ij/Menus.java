@@ -501,6 +501,20 @@ public class Menus {
 			dir = name.substring(0, slashIndex);
 			name = name.substring(slashIndex+1, name.length());
 			menu = getPluginsSubmenu(dir);
+			slashIndex = name.indexOf('/');
+			if (slashIndex>0) {
+				String dir2 = name.substring(0, slashIndex);
+				name = name.substring(slashIndex+1, name.length());
+				String menuName = "Plugins>"+dir+">"+dir2;
+				menu = getMenu(menuName);
+				if (menu==null) {
+					Menu parentMenu = menu;
+					menu = new Menu(name);
+					parentMenu.add(menu);
+					menus.put(menuName, menu);
+				}
+				dir += File.separator+dir2;
+			}
 		}
 		String command = name.replace('_',' ');
 		if (command.endsWith(".js"))
@@ -675,18 +689,14 @@ public class Menus {
 					window = result;
 				else if (menuName.equals("Plugins"))
 					pluginsMenu = result;
-			}
-			else {
-				String parentName =
-					menuName.substring(0, offset);
-				String menuItemName =
-					menuName.substring(offset + 1);
+			} else {
+				String parentName = menuName.substring(0, offset);
+				String menuItemName = menuName.substring(offset + 1);
 				Menu parentMenu = getMenu(parentName);
 				result = new Menu(menuItemName);
 				addPluginSeparatorIfNeeded(parentMenu);
 				if (readFromProps)
-					result = addSubMenu(parentMenu,
-							menuItemName);
+					result = addSubMenu(parentMenu, menuItemName);
 				else if (parentName.startsWith("Plugins") && menuSeparators != null)
 					addItemSorted(parentMenu, result, parentName.equals("Plugins")?userPluginsIndex:0);
 				else
@@ -909,6 +919,9 @@ public class Menus {
 				if (macroFiles==null) macroFiles = new Vector();
 				macroFiles.addElement(dir + name);
 				otherCount++;
+			} else {
+				File f2 = new File(f, name);
+				if (f2.isDirectory()) installSubdirectorMacros(f2, dir+name);
 			}
 		}
 		if (Prefs.moveToMisc && classCount==1 && otherCount==0 && dir.indexOf("_")==-1)
@@ -916,6 +929,20 @@ public class Menus {
 				v.size() - 1);
 	}
 	
+	/** Installs macros and scripts located in subdirectories. */
+	private static void installSubdirectorMacros(File f2, String dir) {
+		String[] list = f2.list();
+		if (list==null) return;
+		for (int i=0; i<list.length; i++) {
+			String name = list[i];
+			boolean hasUnderscore = name.indexOf('_')>=0;
+			if ((hasUnderscore&&name.endsWith(".txt")) || name.endsWith(".ijm") || name.endsWith(".js")) {
+				if (macroFiles==null) macroFiles = new Vector();
+				macroFiles.addElement(dir+"/"+name);
+			}
+		}
+	}
+
 	/** Installs a plugin in the Plugins menu using the class name,
 		with underscores replaced by spaces, as the command. */
 	void installUserPlugin(String className) {
