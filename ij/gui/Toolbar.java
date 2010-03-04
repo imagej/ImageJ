@@ -464,7 +464,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				if (arrowMode)
 					IJ.showStatus("Arrow tool"+hint);
 				else
-					IJ.showStatus("Straight line selections (right click for other types)");
+					IJ.showStatus("Straight line selections (right click for other types and for arrow tool)");
 				return;
 			case POLYLINE:
 				IJ.showStatus("Segmented line selections"+hint);

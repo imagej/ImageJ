@@ -544,7 +544,10 @@ public class ImagePlus implements ImageObserver, Measurements {
     	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
     	this.stack = stack;
     	setProcessor2(title, ip, stack);
-		if (win==null) return;
+		if (win==null) {
+			if (resetCurrentSlice) setSlice(currentSlice);
+			return;
+		}
 		boolean invalidDimensions = isDisplayedHyperStack() && !((StackWindow)win).validDimensions();
 		if (stackSize==1 && win instanceof StackWindow)
 			win = new ImageWindow(this, getCanvas());   // replaces this window

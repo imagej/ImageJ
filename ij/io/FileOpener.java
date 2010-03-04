@@ -341,7 +341,7 @@ public class FileOpener {
 			double[] coeff = new double[2];
 			coeff[0] = -32768.0;
 			coeff[1] = 1.0;
- 			imp.getLocalCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+ 			imp.getLocalCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
 		}
 		
 		Properties props = decodeDescriptionString(fi);

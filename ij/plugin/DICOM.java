@@ -119,7 +119,7 @@ public class DICOM extends ImagePlus implements PlugIn {
 				double[] coeff = new double[2];
 				coeff[0] = dd.rescaleIntercept;
 				coeff[1] = dd.rescaleSlope;
-				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
 			}
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
@@ -197,6 +197,7 @@ class DicomDecoder {
 	private static final int MODALITY = 0x00080060;
 	private static final int SLICE_THICKNESS = 0x00180050;
 	private static final int SLICE_SPACING = 0x00180088;
+	private static final int IMAGER_PIXEL_SPACING = 0x00181164;
 	private static final int SAMPLES_PER_PIXEL = 0x00280002;
 	private static final int PHOTOMETRIC_INTERPRETATION = 0x00280004;
 	private static final int PLANAR_CONFIGURATION = 0x00280006;
@@ -551,7 +552,7 @@ class DicomDecoder {
 					fi.width = getShort();
 					addInfo(tag, fi.width);
 					break;
-				case PIXEL_SPACING:
+				case IMAGER_PIXEL_SPACING: case PIXEL_SPACING:
 					String scale = getString(elementLength);
 					getSpatialScale(fi, scale);
 					addInfo(tag, scale);

@@ -986,7 +986,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
-				((TextRoi)roi).setCurrentFont(font);
+				if (font!=null) ((TextRoi)roi).setCurrentFont(font);
 				roi.setImage(null);
 			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)

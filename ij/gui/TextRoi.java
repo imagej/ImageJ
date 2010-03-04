@@ -111,8 +111,11 @@ public class TextRoi extends Roi {
 	Font getScaledFont() {
 		if (nonScalable)
 			return instanceFont;
-		else
+		else {
+			if (instanceFont==null)
+				instanceFont = new Font(name, style, size);
 			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
+		}
 	}
 	
 	/** Renders the text on the image. */

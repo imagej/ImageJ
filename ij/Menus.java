@@ -931,6 +931,7 @@ public class Menus {
 	
 	/** Installs macros and scripts located in subdirectories. */
 	private static void installSubdirectorMacros(File f2, String dir) {
+		if (dir.endsWith("Launchers")) return;
 		String[] list = f2.list();
 		if (list==null) return;
 		for (int i=0; i<list.length; i++) {

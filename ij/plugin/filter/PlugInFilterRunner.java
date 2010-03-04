@@ -230,6 +230,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
         if (convertToFloat) {
             for (int i=0; i<ip.getNChannels(); i++) {
                 fp = ip.toFloat(i, fp);
+                fp.setSliceNumber(ip.getSliceNumber());
                 if (thread.isInterrupted()) return;         // interrupt processing for preview?
                 if ((flags&PlugInFilter.SNAPSHOT)!=0) fp.snapshot();
 				if (doStack) IJ.showProgress(pass/(double)nPasses);
