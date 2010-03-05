@@ -98,7 +98,8 @@ options10="Conversions...",ij.plugin.Options("conv")
 options11="Memory & Threads...",ij.plugin.Memory
 options12="Proxy Settings...",ij.plugin.ProxySettings
 options13="Compiler...",ij.plugin.Compiler("options")
-options14="Misc...",ij.plugin.Options("misc")
+options14="DICOM...",ij.plugin.Options("dicom")
+options15="Misc...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster

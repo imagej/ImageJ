@@ -42,7 +42,7 @@ public class PNG_Writer implements PlugIn {
 	public void writeImage(ImagePlus imp, String path, int transparentIndex) throws Exception {
 		if (transparentIndex>=0 && transparentIndex<=255 && imp.getBitDepth()==8)
 			writeImageWithTransparency(imp, path, transparentIndex);
-		else if (imp.getBitDepth() == 16)
+		else if (imp.getBitDepth()==16 && !imp.isComposite() && imp.getProcessor().isDefaultLut())
 			write16gs(imp, path);
         else
 			ImageIO.write(imp.getBufferedImage(), "png", new File(path));

@@ -846,6 +846,13 @@ public class Opener {
 		}
 	}
 	
+	public static String getFileFormat(String path) {
+		if (!((new File(path)).exists()))
+			return("not found");
+		else
+			return Opener.types[(new Opener()).getFileType(path)];
+	}
+	
 	/**
 	Attempts to determine the image file type by looking for
 	'magic numbers' and the file name extension.

@@ -8,7 +8,6 @@ import java.awt.*;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
-	private static Overlay overlay2;
 	private static boolean createImageRoi;
 
 	public void run(String arg) {
@@ -79,7 +78,6 @@ public class OverlayCommands implements PlugIn {
 		if (overlay==null || newOverlay) overlay = new Overlay();
 		overlay.add(roi);
 		imp.setOverlay(overlay);
-		overlay2 = overlay;
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
@@ -156,26 +154,20 @@ public class OverlayCommands implements PlugIn {
 			if (overlayList==null) overlayList = new Overlay();
 			overlayList.add(roi);
 			imp.setOverlay(overlayList);
-			overlay2 = overlayList;
 			Undo.setup(Undo.OVERLAY_ADDITION, imp);
 		}
 	}
 
 	void hide() {
 		ImagePlus imp = IJ.getImage();
-		Overlay overlay = imp.getOverlay();
-		if (overlay!=null) {
-			overlay2 = overlay;
-			imp.setOverlay(null);
-		}
+		imp.setHideOverlay(true);
 		RoiManager rm = RoiManager.getInstance();
 		if (rm!=null) rm.runCommand("show none");
 	}
 
 	void show() {
 		ImagePlus imp = IJ.getImage();
-		if (overlay2!=null)
-			imp.setOverlay(overlay2);
+		imp.setHideOverlay(false);
 		RoiManager rm = RoiManager.getInstance();
 		if (rm!=null) rm.runCommand("show all");
 	}
@@ -183,7 +175,6 @@ public class OverlayCommands implements PlugIn {
 	void remove() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.setOverlay(null);
-		overlay2 = null;
 		RoiManager rm = RoiManager.getInstance();
 		if (rm!=null) rm.runCommand("show none");
 	}

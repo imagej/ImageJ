@@ -75,6 +75,10 @@ public class IJ {
 		progressBar = ij.getProgressBar();
 	}
 
+	static void cleanup() {
+		ij=null; applet=null; progressBar=null; textPanel=null;
+	}
+
 	/**Returns a reference to the "ImageJ" frame.*/
 	public static ImageJ getInstance() {
 		return ij;
@@ -327,7 +331,10 @@ public class IJ {
 			ic.setShowCursorStatus(s.length()==0?true:false);
 	}
 
-	/** Obsolete; replaced by IJ.log().*/
+	/**
+	* @deprecated
+	* replaced by IJ.log()
+	*/
 	public static void write(String s) {
 		if (textPanel==null && ij!=null)
 			showResults();
@@ -420,9 +427,10 @@ public class IJ {
 	}
 
 	/** Returns a reference to the "Results" window TextPanel.
-		Opens the "Results" window if it is currently not open. */
+		Opens the "Results" window if it is currently not open.
+		Returns null if the "ImageJ" window is not open. */
 	public static TextPanel getTextPanel() {
-		if (textPanel==null)
+		if (textPanel==null && ij!=null)
 			showResults();
 		return textPanel;
 	}

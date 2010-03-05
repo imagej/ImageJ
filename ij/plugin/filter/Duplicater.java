@@ -3,7 +3,10 @@ import ij.*;
 import ij.process.*;
 import ij.plugin.Duplicator;
 
-/** Obsolete; replaced by Duplicator class. */
+/**
+* @deprecated
+* replaced by Duplicator class
+*/
 public class Duplicater implements PlugInFilter {
 	ImagePlus imp;
 

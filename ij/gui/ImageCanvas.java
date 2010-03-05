@@ -226,6 +226,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
     void drawOverlay(Graphics g) {
+    	if (imp!=null && imp.getHideOverlay())
+    		return;
 		initGraphics(g);
 		Vector list = overlay.getVector();
     	int n = list.size();
@@ -1150,11 +1152,18 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return showAllROIs;
 	}
 	
+	/** Return the ROI Manager "Show All" list as an overlay. */
 	public Overlay getShowAllList() {
-		if (showAllROIs)
-			return showAllList;
-		else
-			return null;
+		if (!showAllROIs) return null;
+		if (showAllList!=null) return showAllList;
+		RoiManager rm=RoiManager.getInstance();
+		if (rm==null) return null;
+		Roi[] rois = rm.getRoisAsArray();
+		if (rois.length==0) return null;
+		Overlay overlay = new Overlay();
+		for (int i=0; i<rois.length; i++)
+			overlay.add((Roi)rois[i].clone());
+		return overlay;
 	}
 
 	/** Returns the color used for "Show All" mode. */
@@ -1187,7 +1196,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return overlay;
 	}
 
-	/** Obsolete; replaced by ImagePlus.setOverlay(ij.gui.Overlay). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.setOverlay(ij.gui.Overlay)
+	*/
 	public void setDisplayList(Vector list) {
 		if (list!=null) {
 			Overlay list2 = new Overlay();
@@ -1202,7 +1214,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		repaint();
 	}
 
-	/** Obsolete; replaced by ImagePlus.setOverlay(Shape, Color, BasicStroke). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.setOverlay(Shape, Color, BasicStroke)
+	*/
 	public void setDisplayList(Shape shape, Color color, BasicStroke stroke) {
 		if (shape==null)
 			{setOverlay(null); return;}
@@ -1214,7 +1229,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setOverlay(list);
 	}
 	
-	/** Obsolete; replaced by ImagePlus.setOverlay(Roi, Color, int, Color). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.setOverlay(Roi, Color, int, Color)
+	*/
 	public void setDisplayList(Roi roi, Color color) {
 		roi.setStrokeColor(color);
 		Overlay list = new Overlay();
@@ -1222,7 +1240,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setOverlay(list);
 	}
 	
-	/** Obsolete; replaced by ImagePlus.getOverlay(). */
+	/**
+	* @deprecated
+	* replaced by ImagePlus.getOverlay()
+	*/
 	public Vector getDisplayList() {
 		if (overlay==null) return null;
 		Vector displayList = new Vector();

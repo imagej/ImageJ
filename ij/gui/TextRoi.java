@@ -46,7 +46,7 @@ public class TextRoi extends Roi {
 		if (IJ.debugMode) IJ.log("TextRoi: "+theText[0]+"  "+width+","+height);
 	}
 
-	/** Obsolete */
+	/** @deprecated */
 	public TextRoi(int x, int y, String text, Font font, Color color) {
 		super(x, y, 1, 1);
 		if (font==null) font = new Font(name, style, size);
@@ -111,8 +111,11 @@ public class TextRoi extends Roi {
 	Font getScaledFont() {
 		if (nonScalable)
 			return instanceFont;
-		else
+		else {
+			if (instanceFont==null)
+				instanceFont = new Font(name, style, size);
 			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
+		}
 	}
 	
 	/** Renders the text on the image. */

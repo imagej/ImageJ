@@ -104,6 +104,8 @@ public class Prefs {
 	public static boolean runSocketListener;
 	/** Use MultiPoint tool. */
 	public static boolean multiPointMode;
+	/** Open DICOMs as 32-bit float images */
+	public static boolean openDicomsAsFloat;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);
@@ -329,7 +331,6 @@ public class Prefs {
 			Analyzer.savePreferences(prefs);
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
-			GelAnalyzer.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {

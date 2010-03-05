@@ -1356,6 +1356,12 @@ public class Functions implements MacroConstants, Measurements {
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
+			} else if (key.equals("overlay")) {
+				Overlay overlay = getImage().getOverlay();
+				if (overlay==null)
+					return "";
+				else
+					return overlay.toString();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
@@ -3660,6 +3666,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (!IJ.isResultsWindow())
 			interp.error("No results");
 		TextPanel tp = IJ.getTextPanel();
+		if (tp==null) return null;
 		StringSelection ss = new StringSelection(tp.getText());
 		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(ss, null);

@@ -139,7 +139,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		fillColor = defaultFillColor;
 	}
 
-	/** Obsolete */
+	/** @deprecated */
 	public Roi(int x, int y, int width, int height, ImagePlus imp) {
 		this(x, y, width, height);
 		setImage(imp);
@@ -309,7 +309,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return new Rectangle(x, y, width, height);
 	}
 	
-	/** This obsolete method has been replaced by getBounds(). */
+	/**
+	* @deprecated
+	* replaced by getBounds()
+	*/
 	public Rectangle getBoundingRect() {
 		return getBounds();
 	}
@@ -837,7 +840,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 
-	/** Obsolete, use drawPixels(ImageProcessor) */
+	/**
+	* @deprecated
+	* replaced by drawPixels(ImageProcessor)
+	*/
 	public void drawPixels() {
 		if (imp!=null)
 			drawPixels(imp.getProcessor());	
@@ -1158,12 +1164,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.stroke = roi2.stroke;
 	}
 
-	/** Obsolete; replaced by setStrokeColor(). */
+	/**
+	* @deprecated
+	* replaced by setStrokeColor()
+	*/
 	public void setInstanceColor(Color c) {
 		 strokeColor = c;
 	}
 
-	/** Obsolete; replaced by setStrokeWidth(int). */
+	/**
+	* @deprecated
+	* replaced by setStrokeWidth(int)
+	*/
 	public void setLineWidth(int width) {
 		setStrokeWidth(width) ;
 	}

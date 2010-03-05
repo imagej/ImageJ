@@ -136,7 +136,7 @@ public class ImportDialog {
                     double[] coeff = new double[2];
                     coeff[0] = -32768.0;
                     coeff[1] = 1.0;
-                    cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+                    cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
                 }
 			imp.show();
 		}

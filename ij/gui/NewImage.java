@@ -215,7 +215,10 @@ public class NewImage {
 		return imp;
 	}
 
-	/** Obsolete. Short images are always unsigned. */
+	/**
+	* @deprecated
+	* Short images are always unsigned.
+	*/
 	public static ImagePlus createUnsignedShortImage(String title, int width, int height, int slices, int options) {
 		return createShortImage(title, width, height, slices, options);
 	}

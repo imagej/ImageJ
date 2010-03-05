@@ -79,7 +79,7 @@ public class PolygonRoi extends Roi {
 		this(p.xpoints, p.ypoints, p.npoints, type);
 	}
 
-	/** Obsolete */
+	/** @deprecated */
 	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, ImagePlus imp, int type) {
 		this(xPoints, yPoints, nPoints, type);
 		setImage(imp);

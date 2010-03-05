@@ -23,6 +23,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static boolean zeroPad;
 	private int fieldWidth;
 	private Color color;
+	private int firstSlice, lastSlice;
 
 	public int setup(String arg, ImagePlus imp) {
 		if (imp!=null && imp.isHyperStack()) {
@@ -56,6 +57,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Y location:", y, 0);
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addStringField("Text:", text, 10);
+        addRange(gd, "Slice range:", 1, imp.getStackSize());
 		gd.setInsets(10,20,0);
         gd.addCheckbox("Zero pad", zeroPad);
         gd.addPreviewCheckbox(pfr);
@@ -68,7 +70,27 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
         	return flags;
     }
 
-    public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+	void addRange(GenericDialog gd, String label, int start, int end) {
+		gd.addStringField(label, start+"-"+end);
+	}
+	
+	double[] getRange(GenericDialog gd, int start, int end) {
+		String[] range = Tools.split(gd.getNextString(), " -");
+		double d1 = Tools.parseDouble(range[0]);
+		double d2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+		double[] result = new double[2];
+		result[0] = Double.isNaN(d1)?1:(int)d1;
+		result[1] = Double.isNaN(d2)?end:(int)d2;
+		if (result[0]<start) result[0] = start;
+		if (result[1]>end) result[1] = end;
+		if (result[0]>result[1]) {
+			result[0] = start;
+			result[1] = end;
+		}
+		return result;
+	}
+
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		start = Tools.parseDouble(gd.getNextString());
  		String str = gd.getNextString();
  		interval = Tools.parseDouble(str);
@@ -76,6 +98,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		y = (int)gd.getNextNumber();
 		fontSize = (int)gd.getNextNumber();
 		text = gd.getNextString();
+		double[] range = getRange(gd, 1, imp.getStackSize());
+		firstSlice=(int)range[0]; lastSlice=(int)range[1];
 		zeroPad = gd.getNextBoolean();
 		int index = str.indexOf(".");
 		if (index!=-1)
@@ -99,6 +123,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
     }
 
 	public void run(ImageProcessor ip) {
+		int slice = ip.getSliceNumber();
+		if (slice<firstSlice||slice>lastSlice) return;
 		ip.setFont(font);
 		String s = getString(time);
 		int textWidth = ip.getStringWidth(s);

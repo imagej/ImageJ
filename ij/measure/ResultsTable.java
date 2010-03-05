@@ -251,7 +251,10 @@ public class ResultsTable implements Cloneable {
 		return columns[column][row];
 	}
 	
-	/**	Obsolete, replaced by getValueAsDouble. */
+	/**
+	* @deprecated
+	* replaced by getValueAsDouble
+	*/
 	public float getValue(int column, int row) {
 		return (float)getValueAsDouble(column, row);
 	}
@@ -370,7 +373,10 @@ public class ResultsTable implements Cloneable {
 		return new String(sb);
 	}
 	
-	/** Obsolete; replaced by addValue(String,double) and setValue(String,int,double). */
+	/**
+	* @deprecated
+	* replaced by addValue(String,double) and setValue(String,int,double)
+	*/
 	public void setHeading(int column, String heading) {
 		if ((column<0) || (column>=headings.length))
 			throw new IllegalArgumentException("Column out of range: "+column);

@@ -9,6 +9,7 @@ public class Calibration implements Cloneable {
 	public static final int STRAIGHT_LINE=0,POLY2=1,POLY3=2,POLY4=3,
 		EXPONENTIAL=4,POWER=5,LOG=6,RODBARD=7,GAMMA_VARIATE=8, LOG2=9, RODBARD2=10;
 	public static final int NONE=20, UNCALIBRATED_OD=21, CUSTOM=22;
+	public static final String DEFAULT_VALUE_UNIT = "Gray Value";
 
 	/** Pixel width in 'unit's */
 	public double pixelWidth = 1.0;
@@ -58,7 +59,7 @@ public class Calibration implements Cloneable {
 	private String units;
 
 	/* Pixel value unit (e.g. 'gray level', 'OD') */
-	private String valueUnit = "Gray Value";
+	private String valueUnit = DEFAULT_VALUE_UNIT;
 
 	/* Unit of time (e.g. 'sec', 'msec') */
 	private String timeUnit = "sec";
@@ -223,7 +224,7 @@ public class Calibration implements Cloneable {
  		int newBitDepth = imp.getBitDepth();
  		if (newBitDepth==16 && imp.getLocalCalibration().isSigned16Bit()) {
 			double[] coeff = new double[2]; coeff[0] = -32768.0; coeff[1] = 1.0;
- 			setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+ 			setFunction(Calibration.STRAIGHT_LINE, coeff, DEFAULT_VALUE_UNIT);
 		} else if (newBitDepth!=bitDepth || type==ImagePlus.GRAY32 || type==ImagePlus.COLOR_RGB) {
 			String saveUnit = valueUnit;
 			disableDensityCalibration();
@@ -236,7 +237,7 @@ public class Calibration implements Cloneable {
 		function = NONE;
 		coefficients = null;
 		cTable = null;
-		valueUnit = "Gray Value";
+		valueUnit = DEFAULT_VALUE_UNIT;
  	}
  	
 	/** Returns the value unit. */

@@ -22,6 +22,8 @@ public class Options implements PlugIn {
 			{conversions(); return;}
 		else if (arg.equals("display"))
 			{appearance(); return;}
+		else if (arg.equals("dicom"))
+			{dicom(); return;}
 	}
 				
 	// Miscellaneous Options
@@ -216,4 +218,14 @@ public class Options implements PlugIn {
 		}
 	}
 	
+	// DICOM options
+	void dicom() {
+		GenericDialog gd = new GenericDialog("DICOM Options");
+		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		Prefs.openDicomsAsFloat = gd.getNextBoolean();
+	}
+
 } // class Options

@@ -76,6 +76,7 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
+		imp2.setOverlay(imp.getOverlay());
 		return imp2;
 	}
 	
@@ -96,6 +97,7 @@ public class Duplicator implements PlugIn, TextListener {
 				imp2.getProcessor().setColorModel(lut);
 			}
 		}
+		imp2.setOverlay(imp.getOverlay());
 		return imp2;
 	}
 	

@@ -21,8 +21,8 @@ public class OvalRoi extends Roi {
 		type = OVAL;
 	}
 
-	/** Obsolete */
-	public OvalRoi(int x, int y, int width, int height, ImagePlus imp) {
+	/** @deprecated */
+		public OvalRoi(int x, int y, int width, int height, ImagePlus imp) {
 		this(x, y, width, height);
 		setImage(imp);
 	}

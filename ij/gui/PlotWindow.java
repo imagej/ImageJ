@@ -13,7 +13,7 @@ import ij.plugin.filter.Analyzer;
 import ij.measure.Measurements;
 
 
-/** Obsolete; replaced by the Plot class. */
+/** Obsolete; mostly replaced by the Plot class. */
 public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner {
 
 	/** Display points using a circle 5 pixels in diameter. */
@@ -93,13 +93,19 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		noGridLines = (options&NO_GRID_LINES)!=0; 
    }
 
-	/** Obsolete; replaced by the Plot class. */
+ 	/**
+	* @deprecated
+	* replaced by the Plot class.
+	*/
 	public PlotWindow(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		super(createImage(title, xLabel, yLabel, xValues, yValues));
 		plot = staticPlot;
 	}
 
-	/** Obsolete; replaced by the Plot class. */
+ 	/**
+	* @deprecated
+	* replaced by the Plot class.
+	*/
 	public PlotWindow(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
 		this(title, xLabel, yLabel, Tools.toFloat(xValues), Tools.toFloat(yValues));
 	}

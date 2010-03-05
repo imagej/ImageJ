@@ -105,21 +105,33 @@ public class DICOM extends ImagePlus implements PlugIn {
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
 			ImageProcessor ip = imp.getProcessor();
-			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+			if (Prefs.openDicomsAsFloat) {
+				ip = ip.convertToFloat();
+				if (dd.rescaleSlope!=1.0)
+					ip.multiply(dd.rescaleSlope);
+				if (dd.rescaleIntercept!=0.0)
+					ip.add(dd.rescaleIntercept);
+				imp.setProcessor(ip);
+			} else if (fi.fileType==FileInfo.GRAY16_SIGNED) {
 				if (dd.rescaleIntercept!=0.0 && dd.rescaleSlope==1.0)
 					ip.add(dd.rescaleIntercept);
 			} else if (dd.rescaleIntercept!=0.0 && (dd.rescaleSlope==1.0||fi.fileType==FileInfo.GRAY8)) {
 				double[] coeff = new double[2];
 				coeff[0] = dd.rescaleIntercept;
 				coeff[1] = dd.rescaleSlope;
-				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
+				imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
 			}
 			if (dd.windowWidth>0.0) {
 				double min = dd.windowCenter-dd.windowWidth/2;
 				double max = dd.windowCenter+dd.windowWidth/2;
-				Calibration cal = imp.getCalibration();
-				min = cal.getRawValue(min);
-				max = cal.getRawValue(max);
+				if (Prefs.openDicomsAsFloat) {
+					min -= dd.rescaleIntercept;
+					max -= dd.rescaleIntercept;
+				} else {
+					Calibration cal = imp.getCalibration();
+					min = cal.getRawValue(min);
+					max = cal.getRawValue(max);
+				}
 				ip.setMinAndMax(min, max);
 				if (IJ.debugMode) IJ.log("window: "+min+"-"+max);
 			}
@@ -182,8 +194,10 @@ class DicomDecoder {
 
 	private static final int PIXEL_REPRESENTATION = 0x00280103;
 	private static final int TRANSFER_SYNTAX_UID = 0x00020010;
+	private static final int MODALITY = 0x00080060;
 	private static final int SLICE_THICKNESS = 0x00180050;
 	private static final int SLICE_SPACING = 0x00180088;
+	private static final int IMAGER_PIXEL_SPACING = 0x00181164;
 	private static final int SAMPLES_PER_PIXEL = 0x00280002;
 	private static final int PHOTOMETRIC_INTERPRETATION = 0x00280004;
 	private static final int PLANAR_CONFIGURATION = 0x00280006;
@@ -231,9 +245,10 @@ class DicomDecoder {
  	private boolean oddLocations;  // one or more tags at odd locations
  	private boolean bigEndianTransferSyntax = false;
 	double windowCenter, windowWidth;
-	double rescaleIntercept, rescaleSlope;
+	double rescaleIntercept, rescaleSlope=1.0;
 	boolean inSequence;
  	BufferedInputStream inputStream;
+ 	String modality;
 
 	public DicomDecoder(String directory, String fileName) {
 		this.directory = directory;
@@ -506,6 +521,10 @@ class DicomDecoder {
 					if (s.indexOf("1.2.840.10008.1.2.2")>=0)
 						bigEndianTransferSyntax = true;
 					break;
+				case MODALITY:
+					modality = getString(elementLength);
+					addInfo(tag, modality);
+					break;
 				case NUMBER_OF_FRAMES:
 					s = getString(elementLength);
 					addInfo(tag, s);
@@ -533,7 +552,7 @@ class DicomDecoder {
 					fi.width = getShort();
 					addInfo(tag, fi.width);
 					break;
-				case PIXEL_SPACING:
+				case IMAGER_PIXEL_SPACING: case PIXEL_SPACING:
 					String scale = getString(elementLength);
 					getSpatialScale(fi, scale);
 					addInfo(tag, scale);

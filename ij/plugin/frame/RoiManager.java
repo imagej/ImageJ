@@ -135,6 +135,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		//addPopupItem("Select All");
 		addPopupItem("Open...");
 		addPopupItem("Save...");
+		addPopupItem("Fill");
+		addPopupItem("Draw");
 		addPopupItem("Combine");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
@@ -181,6 +183,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			open(null);
 		else if (command.equals("Save..."))
 			save();
+		else if (command.equals("Fill"))
+			drawOrFill(FILL);
+		else if (command.equals("Draw"))
+			drawOrFill(DRAW);
 		else if (command.equals("Deselect"))
 			select(-1);
 		else if (command.equals(moreButtonLabel)) {
@@ -404,7 +410,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (xs.length()>digits) digits = xs.length();
 		String ys = "" + yc;
 		if (ys.length()>digits) digits = ys.length();
-		if (digits==4 && imp.getStackSize()>=10000) digits = 5;
+		if (digits==4 && imp!=null && imp.getStackSize()>=10000) digits = 5;
 		xs = "000000" + xc;
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
@@ -421,9 +427,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (!addRoi(false))
 			return;
 		ImagePlus imp = WindowManager.getCurrentImage();
-		Undo.setup(Undo.COMPOUND_FILTER, imp);
-		IJ.run("Draw");
-		Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+		if (imp!=null) {
+			Undo.setup(Undo.COMPOUND_FILTER, imp);
+			IJ.run(imp, "Draw", "slice");
+			Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
+		}
 		if (record()) Recorder.record("roiManager", "Add & Draw");
 	}
 	
@@ -963,7 +971,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (n==list.getItemCount()) {
+		if (n==list.getItemCount() && !IJ.isMacro()) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
 			gd.addMessage("Apply changes to all "+n+" selections?");
 			gd.showDialog();
@@ -978,7 +986,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
-				((TextRoi)roi).setCurrentFont(font);
+				if (font!=null) ((TextRoi)roi).setCurrentFont(font);
 				roi.setImage(null);
 			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
@@ -1459,9 +1467,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		if (hexColor==null) hexColor = getHex(null);
-		Color color = Colors.decode(hexColor, Color.cyan);
-		addRoi(null, false, color, (int)Math.round(lineWidth));
+		if (hexColor==null && lineWidth==1.0 && IJ.altKeyDown())
+			addRoi(true);
+		else {
+			if (hexColor==null) hexColor = getHex(null);
+			Color color = Colors.decode(hexColor, Color.cyan);
+			addRoi(null, false, color, (int)Math.round(lineWidth));
+		}
 		return true;	
 	}
 	

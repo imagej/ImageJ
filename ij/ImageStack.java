@@ -68,7 +68,10 @@ public class ImageStack {
 		this.label[nSlices-1] = sliceLabel;
 	}
 	
-	/** Obsolete. Short images are always unsigned. */
+	/**
+	* @deprecated
+	* Short images are always unsigned.
+	*/
 	public void addUnsignedShortSlice(String sliceLabel, Object pixels) {
 		addSlice(sliceLabel, pixels);
 	}

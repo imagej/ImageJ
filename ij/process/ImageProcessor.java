@@ -59,6 +59,7 @@ public abstract class ImageProcessor extends Object {
 	private static int overRed, overGreen=255, overBlue;
 	private static int underRed, underGreen, underBlue=255;
 	private static boolean useBicubic;
+	private int sliceNumber;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -98,7 +99,7 @@ public abstract class ImageProcessor extends Object {
         	progressBar.show(percentDone);
 	}
 
-	// Obsolete
+	/** @deprecated */
 	protected void hideProgress() {
 		showProgress(1.0);
 	}
@@ -824,7 +825,7 @@ public abstract class ImageProcessor extends Object {
 		return interpolate;
 	}
 
-	/** Obsolete. */
+	/** @deprecated */
 	public boolean isKillable() {
 		return false;
 	}
@@ -1063,7 +1064,7 @@ public abstract class ImageProcessor extends Object {
 		resetRoi();
 	}
 
-	/** Obsolete */
+	/** @deprecated */
 	public void drawDot2(int x, int y) {
 		drawPixel(x, y);
 		drawPixel(x-1, y);
@@ -1512,6 +1513,27 @@ public abstract class ImageProcessor extends Object {
 		}
 	}
 	
+	/** Experimental */
+	public void getNeighborhood(int x, int y, double[][] arr) {
+		int nx=arr.length;
+		int ny=arr[0].length;
+		int nx2 = (nx-1)/2;
+		int ny2 = (ny-1)/2;
+	 	if (x>=nx2 && y>=ny2 && x<width-nx2-1 && y<height-ny2-1) { 
+			int index = (y-ny2)*width + (x-nx2);
+			for (int y2=0; y2<ny; y2++) {
+	 			for (int x2=0; x2<nx; x2++)
+					arr[x2][y2] = getf(index++);			
+				index += (width - nx);
+			}	
+		} else {
+			for (int y2=0; y2<ny; y2++) {
+	 			for (int x2=0; x2<nx; x2++)
+					arr[x2][y2] = getPixelValue(x2, y2);			
+			}	
+		}
+	}
+
     /** Returns the samples for the pixel at (x,y) in an int array.
     	RGB pixels have three samples, all others have one.
 		Returns zeros if the the coordinates are not in bounds.
@@ -1836,7 +1858,10 @@ public abstract class ImageProcessor extends Object {
 		} 
   	}
   	
-  	/** Obsolete; replaced by translate(x,y). */
+	/**
+	* @deprecated
+	* replaced by translate(x,y)
+	*/
   	public void translate(int xOffset, int yOffset, boolean eraseBackground) {
 		translate(xOffset, yOffset);
   	}
@@ -2155,6 +2180,24 @@ public abstract class ImageProcessor extends Object {
 	/* This method is experimental and may be removed. */
 	public static void setUseBicubic(boolean b) {
 		useBicubic = b;
+	}
+	
+	/* Calculates and returns statistics for this image. */
+	public ImageStatistics getStatistics() {
+		return ImageStatistics.getStatistics(this, 127, null);
+	}
+	
+	/* Returns the PlugInFilter slice number. */
+	public int getSliceNumber() {
+		if (sliceNumber<1)
+			return 1;
+		else
+			return sliceNumber;
+	}
+
+	/** PlugInFilterRunner uses this method to set the slice number. */
+	public void setSliceNumber(int slice) {
+		sliceNumber = slice;
 	}
 	
 }

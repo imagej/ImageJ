@@ -52,8 +52,11 @@ public class ShortProcessor extends ImageProcessor {
 		//if (pixels!=null) findMinAndMax();
 	}
 
-	/** Obsolete. 16 bit images are normally unsigned but signed images can be used by
-		subtracting 32768 and using a calibration function to restore the original values. */
+	/**
+	* @deprecated
+	* 16 bit images are normally unsigned but signed images can be simulated by
+	* subtracting 32768 and using a calibration function to restore the original values.
+	*/
 	public ShortProcessor(int width, int height, short[] pixels, ColorModel cm, boolean unsigned) {
 		this(width, height, pixels, cm);
 	}
