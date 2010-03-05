@@ -462,15 +462,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case LINE:
 				if (arrowMode)
-					IJ.showStatus("Stright, segmented or freehand lines, or *arrows*"+hint);
+					IJ.showStatus("Straight, segmented or freehand lines, or *arrows*"+hint);
 				else
-					IJ.showStatus("*Stright*, segmented or freehand lines, or arrows"+hint);
+					IJ.showStatus("*Straight*, segmented or freehand lines, or arrows"+hint);
 				return;
 			case POLYLINE:
-				IJ.showStatus("Stright, *segmented* or freehand lines, or arrows"+hint);
+				IJ.showStatus("Straight, *segmented* or freehand lines, or arrows"+hint);
 				return;
 			case FREELINE:
-				IJ.showStatus("Stright, segmented or *freehand* lines, or arrows"+hint);
+				IJ.showStatus("Straight, segmented or *freehand* lines, or arrows"+hint);
 				return;
 			case POINT:
 				if (multiPointMode)

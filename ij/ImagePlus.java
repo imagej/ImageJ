@@ -1023,8 +1023,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 	*/
 	public int[] getPixel(int x, int y) {
 		pvalue[0]=pvalue[1]=pvalue[2]=pvalue[3]=0;
-		if (img == null)
-			return pvalue;
 		switch (imageType) {
 			case GRAY8: case COLOR_256:
 				int index;
@@ -1032,6 +1030,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 					index = ip.getPixel(x, y);
 				else {
 					byte[] pixels8;
+					if (img==null) return pvalue;
 					PixelGrabber pg = new PixelGrabber(img,x,y,1,1,false);
 					try {pg.grabPixels();}
 					catch (InterruptedException e){return pvalue;};
@@ -1045,12 +1044,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 				pvalue[3] = index;
 				// fall through to get rgb values
 			case COLOR_RGB:
-				int[] pixels32 = new int[1];
-				if (win==null) break;
-				PixelGrabber pg = new PixelGrabber(img, x, y, 1, 1, pixels32, 0, width);
-				try {pg.grabPixels();}
-				catch (InterruptedException e){return pvalue;};
-				int c = pixels32[0];
+				int c = 0;
+				if (imageType==COLOR_RGB && ip!=null)
+					c = ip.getPixel(x, y);
+				else {
+					int[] pixels32 = new int[1];
+					if (img==null) return pvalue;
+					PixelGrabber pg = new PixelGrabber(img, x, y, 1, 1, pixels32, 0, width);
+					try {pg.grabPixels();}
+					catch (InterruptedException e) {return pvalue;};
+					c = pixels32[0];
+				}
 				int r = (c&0xff0000)>>16;
 				int g = (c&0xff00)>>8;
 				int b = c&0xff;
