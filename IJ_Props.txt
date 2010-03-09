@@ -137,14 +137,19 @@ stacks11="Orthogonal Views",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.filter.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks15=-
-stacks16="Label...",ij.plugin.filter.StackLabeler
-stacks17="Combine...",ij.plugin.StackCombiner
-stacks18="Concatenate...",ij.plugin.Concatenator
-stacks19=-
-stacks20="Start Animation [\\]",ij.plugin.Animator("start")
-stacks21="Stop Animation",ij.plugin.Animator("stop")
-stacks22="Animation Options...",ij.plugin.Animator("options")
+stacks15="Label...",ij.plugin.filter.StackLabeler
+stacks16=-
+stacks17="Start Animation [\\]",ij.plugin.Animator("start")
+stacks18="Stop Animation",ij.plugin.Animator("stop")
+stacks19="Animation Options...",ij.plugin.Animator("options")
+stacks20=-
+
+# Plugins installed in the Image/Stacks/Misc submenu
+tools_01="Combine...",ij.plugin.StackCombiner
+tools_02="Concatenate...",ij.plugin.Concatenator
+tools_03="Reduce...",ij.plugin.StackReducer
+tools_04="Reverse",ij.plugin.StackReverser
+
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")

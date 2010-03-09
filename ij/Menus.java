@@ -151,6 +151,7 @@ public class Menus {
 		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", KeyEvent.VK_P, true);
 		getMenu("Image>Color", true);
 		getMenu("Image>Stacks", true);
+		getMenu("Image>Stacks>Tools_", true);
 		Menu hyperstacksMenu = getMenu("Image>Hyperstacks", true);
 		image.addSeparator();
 		addPlugInItem(image, "Crop", "ij.plugin.Resizer(\"crop\")", KeyEvent.VK_X, true);
@@ -507,12 +508,6 @@ public class Menus {
 				name = name.substring(slashIndex+1, name.length());
 				String menuName = "Plugins>"+dir+">"+dir2;
 				menu = getMenu(menuName);
-				if (menu==null) {
-					Menu parentMenu = menu;
-					menu = new Menu(name);
-					parentMenu.add(menu);
-					menus.put(menuName, menu);
-				}
 				dir += File.separator+dir2;
 			}
 		}

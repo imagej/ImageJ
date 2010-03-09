@@ -342,16 +342,11 @@ public class ImageReader {
 						g = buffer[j++]&0xff;
 						r = buffer[j++]&0xff;
 						j++; // ignore alfa byte
-					} else if (fi.intelByteOrder) { // ARGB
-						r = buffer[j++]&0xff;
-						g = buffer[j++]&0xff;
-						b = buffer[j++]&0xff;
-						j++; // ignore alfa byte
 					} else { // ARGB
-						j++; // ignore alfa byte
 						r = buffer[j++]&0xff;
 						g = buffer[j++]&0xff;
 						b = buffer[j++]&0xff;
+						j++; // ignore alfa byte
 					}
 				} else {
 					r = buffer[j++]&0xff;
