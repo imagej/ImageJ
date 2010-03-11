@@ -235,7 +235,6 @@ public class FileOpener {
 	/** Restores original disk or network version of image. */
 	public void revertToSaved(ImagePlus imp) {
 		Image img;
-		ProgressBar pb = IJ.getInstance().getProgressBar();
 		ImageProcessor ip;
 		String path = fi.directory + fi.fileName;
 		

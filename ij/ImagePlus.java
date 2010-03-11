@@ -1400,8 +1400,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
 		if (!(isFileInfo || url!=null))
 			return;
-		if (getStackSize()>1 && (fi==null||fi.fileFormat!=FileInfo.TIFF||fi.compression!=FileInfo.COMPRESSION_NONE))
-			return;
 		if (ij!=null && changes && isFileInfo && !Interpreter.isBatchMode() && !IJ.isMacro() && !IJ.altKeyDown()) {
 			if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))
 				return;
@@ -1430,7 +1428,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (getProperty("FHT")!=null) {
 			properties.remove("FHT");
 			if (getTitle().startsWith("FFT of "))
-				setTitle(getTitle().substring(6));
+				setTitle(getTitle().substring(7));
 		}
 		ContrastAdjuster.update();
 		if (saveRoi!=null) setRoi(saveRoi);

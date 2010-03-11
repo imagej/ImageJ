@@ -149,6 +149,7 @@ public class ImageReader {
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
+		boolean useRowsPerStrip = fi.stripLengths[0]>nPixels*bytesPerPixel;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
 			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
@@ -157,7 +158,10 @@ public class ImageReader {
 				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
 				if (skip > 0) in.skip(skip);
 			}
-			byte[] byteArray = new byte[fi.stripLengths[k]];
+			int stripSize = fi.stripLengths[k];
+			if (useRowsPerStrip)
+				stripSize = fi.rowsPerStrip*fi.width*bytesPerPixel;
+			byte[] byteArray = new byte[stripSize];
 			int read = 0, left = byteArray.length;
 			while (left > 0) {
 				int r = in.read(byteArray, read, left);
@@ -183,13 +187,13 @@ public class ImageReader {
 					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
 				}
 			}
-			if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-				// convert to unsigned
-				for (int i=0; i<nPixels; i++)
-					pixels[i] = (short)(pixels[i]+32768);
-			}
 			base += pixelsRead;
 			showProgress(k+1, fi.stripOffsets.length);
+		}
+		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+			// convert to unsigned
+			for (int i=0; i<nPixels; i++)
+				pixels[i] = (short)(pixels[i]+32768);
 		}
 		return pixels;
 	}
