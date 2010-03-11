@@ -149,7 +149,6 @@ public class ImageReader {
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
-		boolean useRowsPerStrip = fi.stripLengths[0]>nPixels*bytesPerPixel;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
 			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
@@ -158,10 +157,7 @@ public class ImageReader {
 				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
 				if (skip > 0) in.skip(skip);
 			}
-			int stripSize = fi.stripLengths[k];
-			if (useRowsPerStrip)
-				stripSize = fi.rowsPerStrip*fi.width*bytesPerPixel;
-			byte[] byteArray = new byte[stripSize];
+			byte[] byteArray = new byte[fi.stripLengths[k]];
 			int read = 0, left = byteArray.length;
 			while (left > 0) {
 				int r = in.read(byteArray, read, left);

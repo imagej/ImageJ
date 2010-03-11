@@ -396,8 +396,12 @@ public class TiffDecoder {
 						long saveLoc = in.getLongFilePointer();
 						in.seek(lvalue);
 						fi.stripLengths = new int[count];
-						for (int c=0; c<count; c++)
-							fi.stripLengths[c] = getInt();
+						for (int c=0; c<count; c++) {
+							if (fieldType==SHORT)
+								fi.stripLengths[c] = getShort();
+							else
+								fi.stripLengths[c] = getInt();
+						}
 						in.seek(saveLoc);
 					}
 					break;
@@ -433,7 +437,7 @@ public class TiffDecoder {
 					fi.samplesPerPixel = value;
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = fi.fileType==FileInfo.GRAY16_UNSIGNED?FileInfo.RGB48:FileInfo.RGB;
-					else if (value==4)
+					else if (value==4 && fi.fileType==FileInfo.GRAY8)
 						fi.fileType = FileInfo.ARGB;
 					break;
 				case ROWS_PER_STRIP:
