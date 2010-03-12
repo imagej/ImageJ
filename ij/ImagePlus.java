@@ -1752,7 +1752,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return;
 		}
 		boolean batchMode = Interpreter.isBatchMode();
-		String msg = (cut)?"Cut":"Copy";
+		String msg = (cut)?"Cutt":"Copy";
 		if (!batchMode) IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = getProcessor();
 		ImageProcessor ip2;	
@@ -1787,8 +1787,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 		//Roi roi3 = clipboard.getRoi();
 		//IJ.log("copy: "+clipboard +" "+ "roi3="+(roi3!=null?""+roi3:""));
-		if (!batchMode) 
+		if (!batchMode) {
+			msg = (cut)?"Cut":"Copy";
 			IJ.showStatus(msg + ": " + (clipboard.getWidth()*clipboard.getHeight()*bytesPerPixel)/1024 + "k");
+		}
     }
                 
 
@@ -2018,11 +2020,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	public boolean getHideOverlay() {
 		return hideOverlay;
-	}
-
-	public Object clone() {
-		try {return super.clone();}
-		catch (CloneNotSupportedException e) {return null;}
 	}
 
     public String toString() {

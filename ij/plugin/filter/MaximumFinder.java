@@ -40,10 +40,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     //filter params
     /** maximum height difference between points that are not counted as separate maxima */
     private static double tolerance = 10;
-    /** what type of output to create (see constants below)*/
-    private static int outputType;
-    /** what type of output to create was chosen in the dialog (see constants below)*/
-    private static int dialogOutputType;
     /** Output type single points */
     public final static int SINGLE_POINTS=0;
     /** Output type all points around the maximum within the tolerance */
@@ -56,6 +52,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     public final static int LIST=4;
     /** Do not create an image, just count maxima and add count to Results table */
     public final static int COUNT=5;
+    /** what type of output to create (see constants above)*/
+    private static int outputType;
+    /** what type of output to create was chosen in the dialog (see constants above)*/
+    private static int dialogOutputType = POINT_SELECTION;
     /** output type names */
     final static String[] outputTypeNames = new String[]
         {"Single Points", "Maxima Within Tolerance", "Segmented Particles", "Point Selection", "List", "Count"};

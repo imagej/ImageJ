@@ -139,16 +139,16 @@ stacks13="3D Project...",ij.plugin.filter.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 stacks16=-
-stacks17="Start Animation [\\]",ij.plugin.Animator("start")
-stacks18="Stop Animation",ij.plugin.Animator("stop")
-stacks19="Animation Options...",ij.plugin.Animator("options")
-stacks20=-
 
 # Plugins installed in the Image/Stacks/Misc submenu
 tools_01="Combine...",ij.plugin.StackCombiner
 tools_02="Concatenate...",ij.plugin.Concatenator
 tools_03="Reduce...",ij.plugin.StackReducer
 tools_04="Reverse",ij.plugin.StackReverser
+tools_05=-
+tools_06="Start Animation [\\]",ij.plugin.Animator("start")
+tools_07="Stop Animation",ij.plugin.Animator("stop")
+tools_08="Animation Options...",ij.plugin.Animator("options")
 
 
 # Plugins installed in the Image/Hyperstacks submenu
@@ -226,23 +226,22 @@ shadows10="Shadows Demo",ij.plugin.filter.Shadows("demo")
 # Plugins installed in the Process/Binary submenu
 binary01="Make Binary",ij.plugin.Thresholder
 binary02="Convert to Mask",ij.plugin.Thresholder("mask")
-binary03="Find Maxima...",ij.plugin.filter.MaximumFinder
-binary04=-
-binary05="Erode",ij.plugin.filter.Binary("erode")
-binary06="Dilate",ij.plugin.filter.Binary("dilate")
-binary07="Open",ij.plugin.filter.Binary("open")
+binary03=-
+binary04="Erode",ij.plugin.filter.Binary("erode")
+binary05="Dilate",ij.plugin.filter.Binary("dilate")
+binary06="Open",ij.plugin.filter.Binary("open")
 # Can't use "Close" because it conflicts with File/Close
-binary08="Close-",ij.plugin.filter.Binary("close")
-binary09="Options...",ij.plugin.filter.Binary("options")
-binary10=-
-binary11="Outline",ij.plugin.filter.Binary("outline")
-binary12="Fill Holes",ij.plugin.filter.Binary("fill")
-binary13="Skeletonize",ij.plugin.filter.Binary("skel")
-binary14=-
-binary15="Distance Map",ij.plugin.filter.EDM("edm")
-binary16="Ultimate Points",ij.plugin.filter.EDM("points")
-binary17="Watershed",ij.plugin.filter.EDM("watershed")
-binary18="Voronoi",ij.plugin.filter.EDM("voronoi")
+binary07="Close-",ij.plugin.filter.Binary("close")
+binary08="Options...",ij.plugin.filter.Binary("options")
+binary09=-
+binary10="Outline",ij.plugin.filter.Binary("outline")
+binary11="Fill Holes",ij.plugin.filter.Binary("fill")
+binary12="Skeletonize",ij.plugin.filter.Binary("skel")
+binary13=-
+binary14="Distance Map",ij.plugin.filter.EDM("edm")
+binary15="Ultimate Points",ij.plugin.filter.EDM("points")
+binary16="Watershed",ij.plugin.filter.EDM("watershed")
+binary17="Voronoi",ij.plugin.filter.EDM("voronoi")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")

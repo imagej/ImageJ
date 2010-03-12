@@ -33,6 +33,7 @@ public class TiffDecoder {
 	public static final int HOST_COMPUTER = 316;
 	public static final int PREDICTOR = 317;
 	public static final int COLOR_MAP = 320;
+	public static final int TILE_WIDTH = 322;
 	public static final int SAMPLE_FORMAT = 339;
 	public static final int JPEG_TABLES = 347;
 	public static final int METAMORPH1 = 33628;
@@ -502,6 +503,9 @@ public class TiffDecoder {
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)
 						getColorMap(lvalue, fi);
+					break;
+				case TILE_WIDTH:
+					error("ImageJ cannot open tiled TIFFs");
 					break;
 				case SAMPLE_FORMAT:
 					if (fi.fileType==FileInfo.GRAY32_INT && value==FLOATING_POINT)
