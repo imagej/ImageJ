@@ -48,12 +48,11 @@ public class ScaleBar implements PlugIn {
      }
 
     void labelSlices(ImagePlus imp) {
-        int slice = imp.getCurrentSlice();
-        for (int i=1; i<=imp.getStackSize(); i++) {
-            imp.setSlice(i);
-            drawScaleBar(imp);
-        }
-        imp.setSlice(slice);        
+        ImageStack stack = imp.getStack();
+        String units = getUnits(imp);
+        for (int i=1; i<=stack.getSize(); i++)
+            drawScaleBar(stack.getProcessor(i), units);
+        imp.setStack(stack);
     }
 
     boolean showDialog(ImagePlus imp) {
@@ -137,15 +136,21 @@ public class ScaleBar implements PlugIn {
     void drawScaleBar(ImagePlus imp) {
           if (!updateLocation())
             return;
-        ImageProcessor ip = imp.getProcessor();
         Undo.setup(Undo.FILTER, imp);
+        drawScaleBar(imp.getProcessor(), getUnits(imp));
+        imp.updateAndDraw();
+    }
+    
+    String getUnits(ImagePlus imp) {
+        String units = imp.getCalibration().getUnits();
+        if (units.equals("microns"))
+            units = IJ.micronSymbol+"m";
+        return units;
+    }
+
+    void drawScaleBar(ImageProcessor ip, String units) {
         Color color = getColor();
         Color bcolor = getBColor();
-        //if (!(color==Color.white || color==Color.black)) {
-        //    ip = ip.convertToRGB();
-        //    imp.setProcessor(null, ip);
-        //}
-
         int x = xloc;
         int y = yloc;
         int fontType = boldText?Font.BOLD:Font.PLAIN;
@@ -153,12 +158,7 @@ public class ScaleBar implements PlugIn {
         ip.setFont(new Font(font, fontType, fontSize));
         ip.setAntialiasedText(true);
         int digits = (int)barWidth==barWidth?0:1;
-        if (barWidth<1.0)
-            digits = 1;
-        // Handle Digital Micrograph unit microns
-        String units = imp.getCalibration().getUnits();
-        if (units.equals("microns"))
-            units = IJ.micronSymbol+"m";
+        if (barWidth<1.0) digits = 1;
         String label = IJ.d2s(barWidth, digits) + " "+ units;
         int swidth = hideText?0:ip.getStringWidth(label);
         int xoffset = (barWidthInPixels - swidth)/2;
@@ -189,10 +189,9 @@ public class ScaleBar implements PlugIn {
         ip.resetRoi();
         if (!hideText)
             ip.drawString(label, x+xoffset, y+yoffset);   
-        imp.updateAndDraw();
     }
 
-     boolean updateLocation() {
+    boolean updateLocation() {
         Calibration cal = imp.getCalibration();
         barWidthInPixels = (int)(barWidth/cal.pixelWidth);
         int width = imp.getWidth();
