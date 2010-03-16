@@ -38,7 +38,7 @@ public class ImageReader {
 	}
 	
 	byte[] read8bitImage(InputStream in) throws IOException {
-		if (fi.compression!=FileInfo.COMPRESSION_NONE)
+		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressed8bitImage(in);
 		byte[] pixels = new byte[nPixels];
 		// assume contiguous strips
@@ -95,7 +95,7 @@ public class ImageReader {
 	
 	/** Reads a 16-bit image. Signed pixels are converted to unsigned by adding 32768. */
 	short[] read16bitImage(InputStream in) throws IOException {
-		if (fi.compression!=FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
+		if (fi.compression>FileInfo.COMPRESSION_NONE || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 			return readCompressed16bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
@@ -297,7 +297,7 @@ public class ImageReader {
 	int[] readChunkyRGB(InputStream in) throws IOException {
 		if (fi.compression==FileInfo.JPEG)
 			return readJPEG(in);
-		else if (fi.compression!=FileInfo.COMPRESSION_NONE)
+		else if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressedChunkyRGB(in);
 		int pixelsRead;
 		bufferSize = 24*width;
@@ -424,7 +424,7 @@ public class ImageReader {
 	}
 
 	int[] readPlanarRGB(InputStream in) throws IOException {
-		if (fi.compression!=FileInfo.COMPRESSION_NONE)
+		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressedPlanarRGBImage(in);
 		DataInputStream dis = new DataInputStream(in);
 		int planeSize = nPixels; // 1/3 image size
@@ -485,7 +485,7 @@ public class ImageReader {
 	}
 	
 	Object readRGB48(InputStream in) throws IOException {
-		if (fi.compression!=FileInfo.COMPRESSION_NONE)
+		if (fi.compression>FileInfo.COMPRESSION_NONE)
 			return readCompressedRGB48(in);
 		int channels = 3;
 		short[][] stack = new short[channels][nPixels];
