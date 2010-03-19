@@ -2205,7 +2205,8 @@ public class Functions implements MacroConstants, Measurements {
 		int index=0;
 		double countOrIndex=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
-			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width");
+			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width")
+			||cmd.equals("associate")||cmd.equals("centered");
 		boolean select = cmd.equals("select");
 		boolean add = cmd.equals("add");
 		if (twoArgCommand)

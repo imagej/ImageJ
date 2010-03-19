@@ -15,9 +15,11 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 
 /**
-This is an extended image class that supports 8-bit, 16-bit,
-32-bit (real) and RGB images. It also provides support for
-3D image stacks.
+An ImagePlus contain an ImageProcessor (2D image) or an ImageStack (3D, 4D or 5D image).
+It also includes metadata (spatial calibration and possibly the directory/file where Ê
+it was read from). The ImageProcessor contains the pixel data (8-bit, 16-bit, float or RGB) 
+of the 2D image and some basic methods to manipulate it. An ImageStack is essentually 
+a list ImageProcessors of same type and size.
 @see ij.process.ImageProcessor
 @see ij.ImageStack
 @see ij.gui.ImageWindow

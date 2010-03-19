@@ -1182,6 +1182,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		restoreCentered = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();
+		if (record()) {
+			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");
+			Recorder.record("roiManager", "Centered", restoreCentered?"true":"false");
+		}
 	}
 
 	Panel makeButtonPanel(GenericDialog gd) {
@@ -1458,6 +1462,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (cmd.equals("set line width")) {
 			int lineWidth = (int)Tools.parseDouble(name, 0);
 			if (lineWidth!=0) setProperties(null, lineWidth, null);
+			macro = false;
+			return true;
+		} else if (cmd.equals("associate")) {
+			Prefs.showAllSliceOnly = name.equals("true")?true:false;
+			macro = false;
+			return true;
+		} else if (cmd.equals("centered")) {
+			restoreCentered = name.equals("true")?true:false;
 			macro = false;
 			return true;
 		}
