@@ -34,7 +34,7 @@ public class AVI_Writer implements PlugInFilter {
     private final static int FOURCC_00dc = 0x63643030;    //'00dc' compressed frame
 
     //compression options: dialog parameters
-    private static int      compressionIndex = 0; //0=none, 1=PNG, 2=JPEG
+    private static int      compressionIndex = 2; //0=none, 1=PNG, 2=JPEG
     private static int      jpegQuality = 90;    //0 is worst, 100 best (not currently used)
     private final static String[] COMPRESSION_STRINGS = new String[] {"Uncompressed", "PNG", "JPEG"};
     private final static int[] COMPRESSION_TYPES = new int[] {NO_COMPRESSION, PNG_COMPRESSION, JPEG_COMPRESSION};

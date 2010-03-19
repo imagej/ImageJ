@@ -15,9 +15,11 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 
 /**
-This is an extended image class that supports 8-bit, 16-bit,
-32-bit (real) and RGB images. It also provides support for
-3D image stacks.
+An ImagePlus contain an ImageProcessor (2D image) or an ImageStack (3D, 4D or 5D image).
+It also includes metadata (spatial calibration and possibly the directory/file where Ê
+it was read from). The ImageProcessor contains the pixel data (8-bit, 16-bit, float or RGB) 
+of the 2D image and some basic methods to manipulate it. An ImageStack is essentually 
+a list ImageProcessors of same type and size.
 @see ij.process.ImageProcessor
 @see ij.ImageStack
 @see ij.gui.ImageWindow
@@ -1023,8 +1025,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 	*/
 	public int[] getPixel(int x, int y) {
 		pvalue[0]=pvalue[1]=pvalue[2]=pvalue[3]=0;
-		if (img == null)
-			return pvalue;
 		switch (imageType) {
 			case GRAY8: case COLOR_256:
 				int index;
@@ -1032,6 +1032,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 					index = ip.getPixel(x, y);
 				else {
 					byte[] pixels8;
+					if (img==null) return pvalue;
 					PixelGrabber pg = new PixelGrabber(img,x,y,1,1,false);
 					try {pg.grabPixels();}
 					catch (InterruptedException e){return pvalue;};
@@ -1045,12 +1046,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 				pvalue[3] = index;
 				// fall through to get rgb values
 			case COLOR_RGB:
-				int[] pixels32 = new int[1];
-				if (win==null) break;
-				PixelGrabber pg = new PixelGrabber(img, x, y, 1, 1, pixels32, 0, width);
-				try {pg.grabPixels();}
-				catch (InterruptedException e){return pvalue;};
-				int c = pixels32[0];
+				int c = 0;
+				if (imageType==COLOR_RGB && ip!=null)
+					c = ip.getPixel(x, y);
+				else {
+					int[] pixels32 = new int[1];
+					if (img==null) return pvalue;
+					PixelGrabber pg = new PixelGrabber(img, x, y, 1, 1, pixels32, 0, width);
+					try {pg.grabPixels();}
+					catch (InterruptedException e) {return pvalue;};
+					c = pixels32[0];
+				}
 				int r = (c&0xff0000)>>16;
 				int g = (c&0xff00)>>8;
 				int b = c&0xff;
@@ -1396,8 +1402,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
 		if (!(isFileInfo || url!=null))
 			return;
-		if (getStackSize()>1 && (fi==null||fi.fileFormat!=FileInfo.TIFF||fi.compression!=FileInfo.COMPRESSION_NONE))
-			return;
 		if (ij!=null && changes && isFileInfo && !Interpreter.isBatchMode() && !IJ.isMacro() && !IJ.altKeyDown()) {
 			if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))
 				return;
@@ -1426,7 +1430,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		if (getProperty("FHT")!=null) {
 			properties.remove("FHT");
 			if (getTitle().startsWith("FFT of "))
-				setTitle(getTitle().substring(6));
+				setTitle(getTitle().substring(7));
 		}
 		ContrastAdjuster.update();
 		if (saveRoi!=null) setRoi(saveRoi);
@@ -1750,7 +1754,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			return;
 		}
 		boolean batchMode = Interpreter.isBatchMode();
-		String msg = (cut)?"Cut":"Copy";
+		String msg = (cut)?"Cutt":"Copy";
 		if (!batchMode) IJ.showStatus(msg+ "ing...");
 		ImageProcessor ip = getProcessor();
 		ImageProcessor ip2;	
@@ -1785,8 +1789,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 		//Roi roi3 = clipboard.getRoi();
 		//IJ.log("copy: "+clipboard +" "+ "roi3="+(roi3!=null?""+roi3:""));
-		if (!batchMode) 
+		if (!batchMode) {
+			msg = (cut)?"Cut":"Copy";
 			IJ.showStatus(msg + ": " + (clipboard.getWidth()*clipboard.getHeight()*bytesPerPixel)/1024 + "k");
+		}
     }
                 
 
@@ -2016,11 +2022,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	public boolean getHideOverlay() {
 		return hideOverlay;
-	}
-
-	public Object clone() {
-		try {return super.clone();}
-		catch (CloneNotSupportedException e) {return null;}
 	}
 
     public String toString() {

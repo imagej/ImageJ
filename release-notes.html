@@ -5,24 +5,33 @@
 </head>
 <body>
 
-<li> <u>1.43r, 4 March 2010</u>
+<li> <u>1.43s, 19 March 2010</u>
 <ul>
-<li> Added the <i>Edit&gt;Options&gt;DICOM</i> command.
-<li> Added "Headless" style to the arrow tool. 
-<li> Overlays are preserved when saving in JPEG format.
-<li> Restored the ROI Manager "FIll" and "Draw" commands.
-<li> Added the getInfo("overlay") macro function
-(<a href="http://rsbweb.nih.gov/ij/macros/examples/DisplayOverlayList.txt">example</a>).
-<li> Fixed regressions that caused 16-bit composite images to be converted to grayscale
-when saving in JPEG and PNG format.
-<li> Fixed a bug that caused the particle analyzer to open the Results
-window when the "ImageJ" window was not open.
-<li> Fixed a bug that caused the <i>File&gt;Open Next</i> command
-to not work correctly with composite images and hyperstacks.
-<li> Fixed a bug that caused stacks created by importing Analyze format images using
-<i>File&gt;Import&gt;Image Sequence</i> to contain duplicate images.
-<li> Fixed a bug that sometimes caused the wrong channel to be selected
-when clicking on the channel slider.
+<li> Moved the <i>Combine</i>, <i>Concatenate</i>, <i>Start Animation</i>, <i>Stop Animation</i>
+and <i>Animation Options</i> commands from the <i>Image&gt;Stacks</i> submenu to the
+<i>Image&gt;Stacks&gt;Tools</i> submenu.
+<li> Moved the <i>Find Maxima</i> command from the <i>Process&gt;Binary</i> submenu to the
+<i>Process</i> menu.
+<li> Moved the <i>List Shortcuts</i> command from the <i>Plugins&gt;Utilities</i> submenu to the
+<i>Plugins&gt;Shortcuts</i> submenu.
+<li> Moved the <i>Options...</i> command to the bottom of the <i>Process&gt;Binary</i> submenu.
+<li> Changed the default <i>Find Maxima</i> output type to "Point Selection". 
+<li> Changed the default AVI Writer compression from "Uncompressed" to "JPEG".
+<li> ImageJ now displays an error message when the user attempts to open a tiled TIFF file.
+<li> Thanks to Daniel White, <i>Analyze&gt;Tools&gt;Scroll Bar</i> is no longer
+annoyingly slow for image stacks with thousangs of slices.
+<li> The ROI Manager More>>Options dialog is now recordable.
+<li> ImageJ now opens 48-bit TIFFs that are missing the required StripByteCounts tag.
+<li> Added the ResultsTable.getResultsWindow() and TextWindow.close(boolean) methods.
+<li> Fixed a bug that caused the particle analyzer to sometimes not work as 
+expected when the "Display Results" option was not enabled.
+<li> Thanks to Barry DeZonia, fixed a bug that caused big-endian, ARGB,
+uncompressed TIFFs to not open correctly.
+<li> Thanks to Barry DeZonia, fixed a bug that sometimes caused an exception 
+when IJ.getImage() was called and the "ImageJ" window was not open.
+<li> Fixed a bug that caused an exception when opening
+some BioRad Quantity One 16-bit TIFFs.
+<li> Fixed a bug that caused PackBits-compressed 16-bit TIFFs to not open correctly.
 </ul>
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

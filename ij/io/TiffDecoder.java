@@ -33,6 +33,7 @@ public class TiffDecoder {
 	public static final int HOST_COMPUTER = 316;
 	public static final int PREDICTOR = 317;
 	public static final int COLOR_MAP = 320;
+	public static final int TILE_WIDTH = 322;
 	public static final int SAMPLE_FORMAT = 339;
 	public static final int JPEG_TABLES = 347;
 	public static final int METAMORPH1 = 33628;
@@ -396,8 +397,12 @@ public class TiffDecoder {
 						long saveLoc = in.getLongFilePointer();
 						in.seek(lvalue);
 						fi.stripLengths = new int[count];
-						for (int c=0; c<count; c++)
-							fi.stripLengths[c] = getInt();
+						for (int c=0; c<count; c++) {
+							if (fieldType==SHORT)
+								fi.stripLengths[c] = getShort();
+							else
+								fi.stripLengths[c] = getInt();
+						}
 						in.seek(saveLoc);
 					}
 					break;
@@ -433,6 +438,8 @@ public class TiffDecoder {
 					fi.samplesPerPixel = value;
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = fi.fileType==FileInfo.GRAY16_UNSIGNED?FileInfo.RGB48:FileInfo.RGB;
+					else if (value==4 && fi.fileType==FileInfo.GRAY8)
+						fi.fileType = FileInfo.ARGB;
 					break;
 				case ROWS_PER_STRIP:
 					fi.rowsPerStrip = value;
@@ -496,6 +503,9 @@ public class TiffDecoder {
 				case COLOR_MAP: 
 					if (count==768 && fi.fileType==fi.GRAY8)
 						getColorMap(lvalue, fi);
+					break;
+				case TILE_WIDTH:
+					error("ImageJ cannot open tiled TIFFs");
 					break;
 				case SAMPLE_FORMAT:
 					if (fi.fileType==FileInfo.GRAY32_INT && value==FLOATING_POINT)

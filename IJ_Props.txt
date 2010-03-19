@@ -137,14 +137,19 @@ stacks11="Orthogonal Views",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.filter.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
-stacks15=-
-stacks16="Label...",ij.plugin.filter.StackLabeler
-stacks17="Combine...",ij.plugin.StackCombiner
-stacks18="Concatenate...",ij.plugin.Concatenator
-stacks19=-
-stacks20="Start Animation [\\]",ij.plugin.Animator("start")
-stacks21="Stop Animation",ij.plugin.Animator("stop")
-stacks22="Animation Options...",ij.plugin.Animator("options")
+stacks15="Label...",ij.plugin.filter.StackLabeler
+stacks16=-
+
+# Plugins installed in the Image/Stacks/Misc submenu
+tools_01="Combine...",ij.plugin.StackCombiner
+tools_02="Concatenate...",ij.plugin.Concatenator
+tools_03="Reduce...",ij.plugin.StackReducer
+tools_04="Reverse",ij.plugin.StackReverser
+tools_05=-
+tools_06="Start Animation [\\]",ij.plugin.Animator("start")
+tools_07="Stop Animation",ij.plugin.Animator("stop")
+tools_08="Animation Options...",ij.plugin.Animator("options")
+
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
@@ -221,23 +226,23 @@ shadows10="Shadows Demo",ij.plugin.filter.Shadows("demo")
 # Plugins installed in the Process/Binary submenu
 binary01="Make Binary",ij.plugin.Thresholder
 binary02="Convert to Mask",ij.plugin.Thresholder("mask")
-binary03="Find Maxima...",ij.plugin.filter.MaximumFinder
-binary04=-
-binary05="Erode",ij.plugin.filter.Binary("erode")
-binary06="Dilate",ij.plugin.filter.Binary("dilate")
-binary07="Open",ij.plugin.filter.Binary("open")
+binary03=-
+binary04="Erode",ij.plugin.filter.Binary("erode")
+binary05="Dilate",ij.plugin.filter.Binary("dilate")
+binary06="Open",ij.plugin.filter.Binary("open")
 # Can't use "Close" because it conflicts with File/Close
-binary08="Close-",ij.plugin.filter.Binary("close")
-binary09="Options...",ij.plugin.filter.Binary("options")
-binary10=-
-binary11="Outline",ij.plugin.filter.Binary("outline")
-binary12="Fill Holes",ij.plugin.filter.Binary("fill")
-binary13="Skeletonize",ij.plugin.filter.Binary("skel")
-binary14=-
-binary15="Distance Map",ij.plugin.filter.EDM("edm")
-binary16="Ultimate Points",ij.plugin.filter.EDM("points")
-binary17="Watershed",ij.plugin.filter.EDM("watershed")
-binary18="Voronoi",ij.plugin.filter.EDM("voronoi")
+binary07="Close-",ij.plugin.filter.Binary("close")
+binary08=-
+binary09="Outline",ij.plugin.filter.Binary("outline")
+binary10="Fill Holes",ij.plugin.filter.Binary("fill")
+binary11="Skeletonize",ij.plugin.filter.Binary("skel")
+binary12=-
+binary13="Distance Map",ij.plugin.filter.EDM("edm")
+binary14="Ultimate Points",ij.plugin.filter.EDM("points")
+binary15="Watershed",ij.plugin.filter.EDM("watershed")
+binary16="Voronoi",ij.plugin.filter.EDM("voronoi")
+binary17=-
+binary18="Options...",ij.plugin.filter.Binary("options")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")
@@ -333,23 +338,23 @@ macros05="Record...",ij.plugin.frame.Recorder
 macros06=-
 
 # Plugins installed in the Plugins/Shortcuts submenu
-shortcuts01="Create Shortcut... ",ij.plugin.Hotkeys("install")
-shortcuts02="Install Plugin...",ij.plugin.Installer
-shortcuts03="Remove...",ij.plugin.Hotkeys("remove")
-shortcuts04=-
+shortcuts01="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
+shortcuts02="Create Shortcut... ",ij.plugin.Hotkeys("install")
+shortcuts03="Install Plugin...",ij.plugin.Installer
+shortcuts04="Remove...",ij.plugin.Hotkeys("remove")
+shortcuts05=-
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...",ij.plugin.ControlPanel
 utilities02="ImageJ Properties...",ij.plugin.JavaProperties
-utilities03="List Shortcuts...",ij.plugin.CommandLister("shortcuts")
-utilities04="Threads...",ij.plugin.ThreadLister
-utilities05="Benchmark",ij.plugin.filter.Benchmark
-utilities06="Reset...",ij.plugin.SimpleCommands("reset")
-utilities07="Monitor Memory...",ij.plugin.MemoryMonitor
-utilities08="Search...",ij.plugin.SimpleCommands("search")
-utilities09="Capture Screen [G]",ij.plugin.ScreenGrabber
-utilities10="Capture Image",ij.plugin.ScreenGrabber("image")
-utilities11="Find Commands... [l]",ij.plugin.CommandFinder
+utilities03="Threads...",ij.plugin.ThreadLister
+utilities04="Benchmark",ij.plugin.filter.Benchmark
+utilities05="Reset...",ij.plugin.SimpleCommands("reset")
+utilities06="Monitor Memory...",ij.plugin.MemoryMonitor
+utilities07="Search...",ij.plugin.SimpleCommands("search")
+utilities08="Capture Screen [G]",ij.plugin.ScreenGrabber
+utilities09="Capture Image",ij.plugin.ScreenGrabber("image")
+utilities10="Find Commands... [l]",ij.plugin.CommandFinder
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

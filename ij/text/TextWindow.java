@@ -231,8 +231,12 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 
 	public void close() {
+		close(true);
+	}
+	
+	public void close(boolean showDialog) {
 		if (getTitle().equals("Results")) {
-			if (!Analyzer.resetCounter())
+			if (showDialog && !Analyzer.resetCounter())
 				return;
 			IJ.setTextPanel(null);
 			Prefs.saveLocation(LOC_KEY, getLocation());

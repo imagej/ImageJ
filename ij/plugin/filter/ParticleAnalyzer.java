@@ -899,6 +899,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (!hideOutputImage) outputImage.show();
 		}
 		if (showResults && !processStack) {
+			TextPanel tp = IJ.getTextPanel();
+			if (beginningCount>0 && tp!=null && tp.getLineCount()!=count)
+				rt.show("Results");
 			Analyzer.firstParticle = beginningCount;
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
