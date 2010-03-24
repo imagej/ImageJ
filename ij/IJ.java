@@ -971,6 +971,12 @@ public class IJ {
 	/** Sets the lower and upper threshold levels and displays the image using
 		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
 	public static void setThreshold(double lowerThreshold, double upperThreshold, String displayMode) {
+		setThreshold(getImage(), lowerThreshold, upperThreshold, displayMode);
+	}
+
+	/** Sets the lower and upper threshold levels of the specified image and updates the display using
+		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
+	public static void setThreshold(ImagePlus img, double lowerThreshold, double upperThreshold, String displayMode) {
 		int mode = ImageProcessor.RED_LUT;
 		if (displayMode!=null) {
 			displayMode = displayMode.toLowerCase(Locale.US);
@@ -981,7 +987,6 @@ public class IJ {
 			else if (displayMode.indexOf("no")!=-1)
 				mode = ImageProcessor.NO_LUT_UPDATE;
 		}
-		ImagePlus img = getImage();
 		Calibration cal = img.getCalibration();
 		lowerThreshold = cal.getRawValue(lowerThreshold); 
 		upperThreshold = cal.getRawValue(upperThreshold); 
@@ -992,9 +997,26 @@ public class IJ {
 		}
 	}
 
-	/** Disables thresholding. */
+	public static void setAutoThreshold(ImagePlus img, String method) {
+		ImageProcessor ip = img.getProcessor();
+		if (ip instanceof ColorProcessor)
+			throw new IllegalArgumentException("Non-RGB image required");
+		ip.setRoi(img.getRoi());
+		if (method!=null) {
+			try {ip.setAutoThreshold(method);}
+			catch (Exception e) {IJ.log(e.getMessage());}
+		} else
+			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
+		img.updateAndDraw();
+	}
+
+	/** Disables thresholding on the current image. */
 	public static void resetThreshold() {
-		ImagePlus img = getImage();
+		resetThreshold(getImage());
+	}
+	
+	/** Disables thresholding on the specified image. */
+	public static void resetThreshold(ImagePlus img) {
 		ImageProcessor ip = img.getProcessor();
 		ip.resetThreshold();
 		ip.setLutAnimation(true);

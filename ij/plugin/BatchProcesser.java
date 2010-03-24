@@ -22,6 +22,7 @@ import java.util.Vector;
 			"Gaussian Blur",
 			"Invert",
 			"Label",
+			"Time Stamp",
 			"Measure",
 			"Resize",
 			"Scale",
@@ -117,6 +118,7 @@ import java.util.Vector;
 	void processVirtualStack(String outputPath) {
 		ImageStack stack = virtualStack.getStack();
 		int n = stack.getSize();
+		int index = 0;
 		for (int i=1; i<=n; i++) {
 			if (IJ.escapePressed()) break;
 			IJ.showProgress(i, n);
@@ -125,7 +127,7 @@ import java.util.Vector;
 			ImagePlus imp = new ImagePlus("", ip);
 			if (!macro.equals("")) {
 				WindowManager.setTempCurrentImage(imp);
-				String str = IJ.runMacro(macro, "");
+				String str = IJ.runMacro("i="+(index++)+";"+macro, "");
 				if (str!=null && str.equals("[aborted]")) break;
 			}
 			if (!outputPath.equals("")) {
@@ -250,6 +252,8 @@ import java.util.Vector;
 			code = "scale=1.5;\nw=getWidth*scale; h=getHeight*scale;\nrun(\"Size...\", \"width=w height=h interpolation=Bilinear\");\n";
 		else if (item.equals("Label"))
 			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"red\");\ndrawString(\"Hello\", 20, 30);\n";
+		else if (item.equals("Time Stamp"))
+			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"white\");\nn=toString(i);\nwhile (lengthOf(n)<4) n=\"0\"+n;\ndrawString(n, 20, 30);\n";
 		else if (item.equals("Crop"))
 			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2);\nrun(\"Crop\");\n";
 		else if (item.equals("Add Border"))
@@ -327,13 +331,11 @@ import java.util.Vector;
 		ImagePlus imp = null;
 		if (virtualStack!=null)
 			imp = getVirtualStackImage();
-		else {
+		else
 			imp = getFolderImage();
-			macro = "i=0; " + macro;
-		}
 		if (imp==null) return;
 		WindowManager.setTempCurrentImage(imp);
-		String str = IJ.runMacro(macro, "");
+		String str = IJ.runMacro("i=0;"+macro, "");
 		Point loc = new Point(10, 30);
 		if (testImage!=0) {
 			ImagePlus imp2 = WindowManager.getImage(testImage);
