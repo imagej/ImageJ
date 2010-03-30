@@ -8,9 +8,11 @@ import java.awt.*;
 
 /** This plugin implements the Image/Stacks/Label command. */
 public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
+	private static final String[] formats = {"0", "0000", "00:00", "00:00:00", "Text"};
+	private static final int NUMBER=0, ZERO_PADDED_NUMBER=1, MIN_SEC=2, HOUR_MIN_SEC=3, TEXT=4;
+	private static int format = (int)Prefs.get("label.format", NUMBER);
 	private static final int flags = DOES_ALL+DOES_STACKS;
 	private ImagePlus imp;
-	private double time;
 	private static int x = 5;
 	private static int y = 20;
 	private static int fontSize = 18;
@@ -20,7 +22,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static double interval = 1;
 	private static String text = "";
 	private static int decimalPlaces = 0;
-	private static boolean zeroPad;
 	private int fieldWidth;
 	private Color color;
 	private int firstSlice, lastSlice;
@@ -49,8 +50,10 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		    interval=1;
 			text = "";
 		}
+		if (format<0||format>TEXT) format = NUMBER;
 		GenericDialog gd = new GenericDialog("StackLabeler");
 		gd.setInsets(2, 5, 0);
+		gd.addChoice("Format:", formats, formats[format]);
 		gd.addStringField("Starting value:", IJ.d2s(start,decimalPlaces));
 		gd.addStringField("Interval:", ""+IJ.d2s(interval,decimalPlaces));
 		gd.addNumericField("X location:", x, 0);
@@ -59,7 +62,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addStringField("Text:", text, 10);
         addRange(gd, "Slice range:", 1, imp.getStackSize());
 		gd.setInsets(10,20,0);
-        gd.addCheckbox("Zero pad", zeroPad);
         gd.addPreviewCheckbox(pfr);
         gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
@@ -91,6 +93,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
+		format = gd.getNextChoiceIndex();
 		start = Tools.parseDouble(gd.getNextString());
  		String str = gd.getNextString();
  		interval = Tools.parseDouble(str);
@@ -100,7 +103,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		text = gd.getNextString();
 		double[] range = getRange(gd, 1, imp.getStackSize());
 		firstSlice=(int)range[0]; lastSlice=(int)range[1];
-		zeroPad = gd.getNextBoolean();
 		int index = str.indexOf(".");
 		if (index!=-1)
 			decimalPlaces = str.length()-index-1;
@@ -108,17 +110,17 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			decimalPlaces = 0;
 		if (gd.invalidNumber()) return false;
 		font = new Font("SansSerif", Font.PLAIN, fontSize);
-		time = start;
 		if (y<fontSize) y = fontSize+5;
 		ImageProcessor ip = imp.getProcessor();
 		ip.setFont(font);
 		int stackSize = imp.getStackSize();
-		maxWidth = ip.getStringWidth(getString(start+interval*stackSize));
+		maxWidth = ip.getStringWidth(getString(stackSize, interval, format));
 		fieldWidth = 1;
 		if (stackSize>=10) fieldWidth = 2;
 		if (stackSize>=100) fieldWidth = 3;
 		if (stackSize>=1000) fieldWidth = 4;
 		if (stackSize>=10000) fieldWidth = 5;
+		 Prefs.set("label.format", format);
         return true;
     }
 
@@ -126,7 +128,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		int slice = ip.getSliceNumber();
 		if (slice<firstSlice||slice>lastSlice) return;
 		ip.setFont(font);
-		String s = getString(time);
+		String s = getString(slice-1, interval, format);
 		int textWidth = ip.getStringWidth(s);
 		if (color==null) {
 			color = Toolbar.getForegroundColor();
@@ -141,18 +143,35 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		ip.setAntialiasedText(fontSize>=18);
 		ip.moveTo(x+maxWidth-textWidth, y);
 		ip.drawString(s);
-		time += interval;
 	}
 	
-	String getString(double time) {
-		if (interval==0.0)
-			return text;
-		else if (zeroPad && decimalPlaces==0)
-			return text+zeroFill((int)time);
-		else if (zeroPad)
-			return text+IJ.d2s(time, decimalPlaces);
-		else
-			return IJ.d2s(time, decimalPlaces)+" "+text;
+	String getString(int index, double interval, int format) {
+		double time = start+index*interval;
+		int itime = (int)Math.floor(time);
+		String str = "";
+		switch (format) {
+			case NUMBER: str=IJ.d2s(time, decimalPlaces)+" "+text; break;
+			case ZERO_PADDED_NUMBER:
+				if (decimalPlaces==0)
+					str=zeroFill((int)time); 
+				else
+					str=IJ.d2s(time, decimalPlaces);
+				break;
+			case MIN_SEC:
+				str=pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60);
+				break;
+			case HOUR_MIN_SEC:
+				str=pad((int)Math.floor(itime/3600))+":"+pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60);
+				break;
+			case TEXT: str=text; break;
+		}
+		return str;
+	}
+	
+	String pad(int n) {
+		String str = ""+n;
+		if (str.length()==1) str="0"+str;
+		return str;
 	}
 	
 	String  zeroFill(int n) {

@@ -22,7 +22,7 @@ import java.util.Vector;
 			"Gaussian Blur",
 			"Invert",
 			"Label",
-			"Time Stamp",
+			"Timestamp",
 			"Measure",
 			"Resize",
 			"Scale",
@@ -103,7 +103,8 @@ import java.util.Vector;
 		gd.setInsets(0, 0, 5);
 		gd.addChoice("Add Macro Code:", code, code[0]);
 		gd.setInsets(15, 10, 0);
-		gd.addTextAreas(macro, null, 12, 55);
+		Dimension screen = IJ.getScreenSize();
+		gd.addTextAreas(macro, null, screen.width<=600?10:15, 60);
 		addButtons(gd);
 		gd.setOKLabel("Process");
 		Vector choices = gd.getChoices();
@@ -252,8 +253,8 @@ import java.util.Vector;
 			code = "scale=1.5;\nw=getWidth*scale; h=getHeight*scale;\nrun(\"Size...\", \"width=w height=h interpolation=Bilinear\");\n";
 		else if (item.equals("Label"))
 			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"red\");\ndrawString(\"Hello\", 20, 30);\n";
-		else if (item.equals("Time Stamp"))
-			code = "setFont(\"SansSerif\", 18, \"antialiased\");\nsetColor(\"white\");\nn=toString(i);\nwhile (lengthOf(n)<4) n=\"0\"+n;\ndrawString(n, 20, 30);\n";
+		else if (item.equals("Timestamp"))
+			code = openMacroFromJar("TimeStamp.ijm");
 		else if (item.equals("Crop"))
 			code = "makeRectangle(getWidth/4, getHeight/4, getWidth/2, getHeight/2);\nrun(\"Crop\");\n";
 		else if (item.equals("Add Border"))
@@ -271,6 +272,27 @@ import java.util.Vector;
 			ta.insert(code, ta.getCaretPosition());
 			if (IJ.isMacOSX()) ta.requestFocus();
 		}
+	}
+
+	String openMacroFromJar(String name) {
+		ImageJ ij = IJ.getInstance();
+		Class c = ij!=null?ij.getClass():(new ImageStack()).getClass();
+		String macro = null;
+        try {
+			InputStream is = c .getResourceAsStream("/macros/"+name);
+			if (is==null) return null;
+            InputStreamReader isr = new InputStreamReader(is);
+            StringBuffer sb = new StringBuffer();
+            char [] b = new char [8192];
+            int n;
+            while ((n = isr.read(b)) > 0)
+                sb.append(b,0, n);
+            macro = sb.toString();
+        }
+        catch (IOException e) {
+        	return null;
+        }
+        return macro;
 	}
 
 	public void actionPerformed(ActionEvent e) {

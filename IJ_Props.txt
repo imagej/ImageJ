@@ -302,8 +302,7 @@ gels03="Plot Lanes[3]",ij.plugin.GelAnalyzer("plot")
 gels04="Re-plot Lanes",ij.plugin.GelAnalyzer("replot")
 gels05="Reset",ij.plugin.GelAnalyzer("reset")
 gels06="Label Peaks",ij.plugin.GelAnalyzer("label")
-gels07="Draw Lane Outlines",ij.plugin.GelAnalyzer("draw")
-gels08="Gel Analyzer Options...",ij.plugin.GelAnalyzer("options")
+gels07="Gel Analyzer Options...",ij.plugin.GelAnalyzer("options")
 
 # Plugins installed in the Analyze/Tools submenu
 tools01="Save XY Coordinates...",ij.plugin.XYCoordinates
