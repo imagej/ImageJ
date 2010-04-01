@@ -27,8 +27,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private int firstSlice, lastSlice;
 
 	public int setup(String arg, ImagePlus imp) {
-		if (imp!=null && imp.isHyperStack()) {
-			IJ.error("StackLabeler", "This command does not currently work with hyperstacks.");
+		if (imp!=null&&imp.isHyperStack()&&imp.getNFrames()==1) {
+			IJ.error("StackLabeler", "This command does not work with\nsingle time-point hyperstacks.");
 			return DONE;
 		}
 		this.imp = imp;
@@ -46,9 +46,20 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			if (fontSize>80) fontSize = 80;
 		}
 		if (IJ.macroRunning()) {
+			format = NUMBER;
 			decimalPlaces = 0;
 		    interval=1;
 			text = "";
+			start = 0;
+			String options = Macro.getOptions();
+			if (options!=null) {
+				if (options.indexOf("interval=0")!=-1 && options.indexOf("format=")==-1)
+					format = TEXT;
+				if (options.indexOf(" slice=")!=-1) {
+					options = options.replaceAll(" slice=", " range=");
+					Macro.setOptions(options);
+				}
+			}
 		}
 		if (format<0||format>TEXT) format = NUMBER;
 		GenericDialog gd = new GenericDialog("StackLabeler");
@@ -60,13 +71,13 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Y location:", y, 0);
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addStringField("Text:", text, 10);
-        addRange(gd, "Slice range:", 1, imp.getStackSize());
+        addRange(gd, "Range:", 1, imp.isHyperStack()?imp.getNFrames():imp.getStackSize());
 		gd.setInsets(10,20,0);
         gd.addPreviewCheckbox(pfr);
         gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
 		gd.showDialog();
-        if (gd.wasCanceled())
+		if (gd.wasCanceled())
         	return DONE;
         else
         	return flags;
@@ -123,9 +134,11 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		 Prefs.set("label.format", format);
         return true;
     }
-
+	
 	public void run(ImageProcessor ip) {
 		int slice = ip.getSliceNumber();
+		if (imp.isHyperStack())
+			slice = (int)((slice-1)*((double)(imp.getNFrames())/imp.getStackSize())) + 1;
 		if (slice<firstSlice||slice>lastSlice) return;
 		ip.setFont(font);
 		String s = getString(slice-1, interval, format);
