@@ -302,6 +302,37 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	}
 
 	void createImage(FileInfo fi, boolean show) {
+		ByteProcessor bp = createImage(fi);
+    	setProcessor(fi.fileName, bp);
+     	if (show)
+    		show();
+	}
+	
+	/** Opens the specified ImageJ LUT and returns
+		it as a FileInfo object. Since 1.43t. */
+	public static FileInfo open(String path) throws IOException {
+		return open(new FileInputStream(path));
+	}
+
+	/** Opens an ImageJ LUT using an InputStream
+		and returns it as a FileInfo object. Since 1.43t. */
+	public static FileInfo open(InputStream stream) throws IOException {
+		DataInputStream f = new DataInputStream(stream);
+		FileInfo fi = new FileInfo();
+		fi.reds = new byte[256]; 
+		fi.greens = new byte[256]; 
+		fi.blues = new byte[256];
+		fi.lutSize = 256;
+		f.read(fi.reds, 0, 256);
+		f.read(fi.greens, 0, 256);
+		f.read(fi.blues, 0, 256);
+		f.close();
+		return fi;
+	}
+	
+	/** Creates a 256x32 image from the LUT contained
+		in the specified FileInfo. Since 1.43t. */
+	public static ByteProcessor createImage(FileInfo fi) {
 		int width = 256;
 		int height = 32;
 		IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
@@ -312,8 +343,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 			ramp[i] = i; 
 		for (int y=0; y<height; y++)
 			bp.putRow(0, y, ramp, width);
-    	setProcessor(fi.fileName, bp);
-     	if (show)
-    		show();
+		return bp;
 	}
+	
 }
