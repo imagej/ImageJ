@@ -302,40 +302,36 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	}
 
 	void createImage(FileInfo fi, boolean show) {
-		ByteProcessor bp = createImage(fi);
+		IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
+		ByteProcessor bp = createImage(cm);
     	setProcessor(fi.fileName, bp);
-     	if (show)
-    		show();
+     	if (show) show();
 	}
 	
 	/** Opens the specified ImageJ LUT and returns
-		it as a FileInfo object. Since 1.43t. */
-	public static FileInfo open(String path) throws IOException {
+		it as an IndexColorModel. Since 1.43t. */
+	public static IndexColorModel open(String path) throws IOException {
 		return open(new FileInputStream(path));
 	}
 
 	/** Opens an ImageJ LUT using an InputStream
-		and returns it as a FileInfo object. Since 1.43t. */
-	public static FileInfo open(InputStream stream) throws IOException {
+		and returns it as an IndexColorModel. Since 1.43t. */
+	public static IndexColorModel open(InputStream stream) throws IOException {
 		DataInputStream f = new DataInputStream(stream);
-		FileInfo fi = new FileInfo();
-		fi.reds = new byte[256]; 
-		fi.greens = new byte[256]; 
-		fi.blues = new byte[256];
-		fi.lutSize = 256;
-		f.read(fi.reds, 0, 256);
-		f.read(fi.greens, 0, 256);
-		f.read(fi.blues, 0, 256);
+		byte[] reds = new byte[256]; 
+		byte[] greens = new byte[256]; 
+		byte[] blues = new byte[256];
+		f.read(reds, 0, 256);
+		f.read(greens, 0, 256);
+		f.read(blues, 0, 256);
 		f.close();
-		return fi;
+		return new IndexColorModel(8, 256, reds, greens, blues);
 	}
 	
-	/** Creates a 256x32 image from the LUT contained
-		in the specified FileInfo. Since 1.43t. */
-	public static ByteProcessor createImage(FileInfo fi) {
+	/** Creates a 256x32 image from an IndexColorModel. Since 1.43t. */
+	public static ByteProcessor createImage(IndexColorModel cm) {
 		int width = 256;
 		int height = 32;
-		IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
 		byte[] pixels = new byte[width*height];
 		ByteProcessor bp = new ByteProcessor(width, height, pixels, cm);
 		int[] ramp = new int[width];

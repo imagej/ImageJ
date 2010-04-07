@@ -333,7 +333,9 @@ public class IJ {
 
 	/**
 	* @deprecated
-	* replaced by IJ.log()
+	* replaced by IJ.log(), ResultsTable.setResult() and TextWindow.append().
+	* There are examples at
+	*   http://rsbweb.nih.gov/ij/plugins/sine-cosine.html
 	*/
 	public static void write(String s) {
 		if (textPanel==null && ij!=null)
