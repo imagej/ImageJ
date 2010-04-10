@@ -2492,11 +2492,11 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void setAutoThreshold() {
-		String method = null;
+		String mString = null;
 		if (interp.nextToken()=='(') {
 			interp.getLeftParen();
 			if (isStringArg())
-				method = getString();
+				mString = getString();
 			interp.getRightParen();
 		}
 		ImagePlus img = getImage();
@@ -2504,8 +2504,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (ip instanceof ColorProcessor)
 			interp.error("Non-RGB image expected");
 		ip.setRoi(img.getRoi());
-		if (method!=null) {
-			try {ip.setAutoThreshold(method);}
+		if (mString!=null) {
+			try {ip.setAutoThreshold(mString);}
 			catch (Exception e) { interp.error(""+e.getMessage());}
 		} else
 			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);

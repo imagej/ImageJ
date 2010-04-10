@@ -5,46 +5,70 @@ import java.util.Arrays;
 /** Autothresholding methods from the Auto_Threshold plugin (http://pacific.mpi-cbg.de/wiki/index.php/Auto_Threshold)
     by G.Landini at bham dot ac dot uk. */
 public class AutoThresholder {
-	private static final String[] methods = {"Default", "Huang", "Intermodes", "IsoData", "Li", "MaxEntropy", "Mean", "MinError(I)", "Minimum",
-		"Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"};
-	private static final int IJ_ISODATA=0, HUANG=1, INTERMODES=2, ISODATA=3, LI=4, MAXENTROPY=5, MEAN=6, MINERROR=7, MINIMUM=8,
-		MOMENTS=9, OTSU=10, PERCENTILE=11, RENYIENTROPY=12, SHANBHAG=13, TRIANGLE=14, YEN=15;
+	private static String[] mStrings;
 			
+	public enum Method {
+		Default, 
+		Huang,
+		Intermodes,
+		IsoData, 
+		IJ_IsoData,
+		Li, 
+		MaxEntropy, 
+		Mean, 
+		MinError, 
+		Minimum,
+		Moments, 
+		Otsu, 
+		Percentile, 
+		RenyiEntropy, 
+		Shanbhag, 
+		Triangle, 
+		Yen
+	};
+
 	public static String[] getMethods() {
-		return methods;
+		if (mStrings==null) {
+			Method[] mVals = Method.values();
+			mStrings = new String[mVals.length];
+			for (int i=0; i<mVals.length; i++)
+				mStrings[i] = mVals[i].name();
+		}
+		return mStrings;
 	}
 	
-	public int getThreshold(String method, int[] histogram) {
-		int index = Arrays.binarySearch(methods, method);
-		if (index<0) throw new IllegalArgumentException("Threshold method not found: \""+method+"\"");
+	public int getThreshold(Method method, int[] histogram) {
 		int threshold = 0;
-		switch (index) {
-			case IJ_ISODATA: threshold =  IJIsoData(histogram); break;
-			case HUANG: threshold = Huang(histogram); break;
-			case INTERMODES: threshold = Intermodes(histogram); break;
-			case ISODATA: threshold = IsoData(histogram); break;
-			case LI: threshold = Li(histogram); break;
-			case MAXENTROPY: threshold = MaxEntropy(histogram); break;
-			case MEAN: threshold = Mean(histogram); break;
-			case MINERROR: threshold = MinErrorI(histogram); break;
-			case MINIMUM: threshold = Minimum(histogram); break;
-			case MOMENTS: threshold = Moments(histogram); break;
-			case OTSU: threshold = Otsu(histogram); break;
-			case PERCENTILE: threshold = Percentile(histogram); break;
-			case RENYIENTROPY: threshold = RenyiEntropy(histogram); break;
-			case SHANBHAG: threshold = Shanbhag(histogram); break;
-			case TRIANGLE: threshold = Triangle(histogram); break;
-			case YEN: threshold = Yen(histogram); break;
+		switch (method) {
+			case Default: threshold =  IJIsoData(histogram); break;
+			case IJ_IsoData: threshold =  IJIsoData(histogram); break;
+			case Huang: threshold = Huang(histogram); break;
+			case Intermodes: threshold = Intermodes(histogram); break;
+			case IsoData: threshold = IsoData(histogram); break;
+			case Li: threshold = Li(histogram); break;
+			case MaxEntropy: threshold = MaxEntropy(histogram); break;
+			case Mean: threshold = Mean(histogram); break;
+			case MinError: threshold = MinErrorI(histogram); break;
+			case Minimum: threshold = Minimum(histogram); break;
+			case Moments: threshold = Moments(histogram); break;
+			case Otsu: threshold = Otsu(histogram); break;
+			case Percentile: threshold = Percentile(histogram); break;
+			case RenyiEntropy: threshold = RenyiEntropy(histogram); break;
+			case Shanbhag: threshold = Shanbhag(histogram); break;
+			case Triangle: threshold = Triangle(histogram); break;
+			case Yen: threshold = Yen(histogram); break;
 		}
 		if (threshold==-1) threshold = 0;
 		return threshold;
 	}
-	
-	final double log10(double x) {
-		return Math.log(x)/Math.log(10);
+
+	@Deprecated
+	public int getThreshold(String mString, int[] histogram) {
+		// throws an exception if unknown argument
+		Method method = Method.valueOf(Method.class, mString); 
+		return getThreshold(method, histogram);
 	}
-
-
+	
 	int Huang(int [] data ) {
 		// Implements Huang's fuzzy thresholding method 
 		// Uses Shannon's entropy function (one can also use Yager's entropy function) 
@@ -502,7 +526,7 @@ public class AutoThresholder {
 			//The terms of the quadratic equation to be solved.
 			w0 = 1.0/sigma2-1.0/tau2;
 			w1 = mu/sigma2-nu/tau2;
-			w2 = (mu*mu)/sigma2 - (nu*nu)/tau2 + log10((sigma2*(q*q))/(tau2*(p*p)));
+			w2 = (mu*mu)/sigma2 - (nu*nu)/tau2 + Math.log10((sigma2*(q*q))/(tau2*(p*p)));
 
 			//If the next threshold would be imaginary, return with the current one.
 			sqterm = (w1*w1)-w0*w2;

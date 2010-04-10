@@ -361,10 +361,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
 		text = getJSPrefix("") + text;
-		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit())) {
+		if (IJ.isJava16() && !(IJ.isMacOSX()&&!IJ.is64Bit()))
 			IJ.runPlugIn("JavaScriptEvaluator", text);
-			return;
-		} else {
+		else {
 			Object js = IJ.runPlugIn("JavaScript", text);
 			if (js==null) IJ.error(JS_NOT_FOUND);
 		}
