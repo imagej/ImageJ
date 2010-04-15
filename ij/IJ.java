@@ -517,18 +517,18 @@ public class IJ {
 			Macro.abort();
 	}
 	
-	/**	Displays a message in a dialog box with the specified title.
+	/**Displays a message in a dialog box with the specified title.
 		If a macro is running, it is aborted. Writes to the Java  
 		console if ImageJ is not present. */
-	public static synchronized void error(String title, String msg) {
+	public static void error(String title, String msg) {
 		String title2 = title!=null?title:"ImageJ";
 		boolean abortMacro = title!=null;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
 			if (abortMacro && title.equals("Opener")) abortMacro = false;
-			redirectErrorMessages = false;
 		} else
 			showMessage(title2, msg);
+		redirectErrorMessages = false;
 		if (abortMacro) Macro.abort();
 	}
 
