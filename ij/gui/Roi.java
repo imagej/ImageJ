@@ -861,7 +861,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			int saveWidth = ip.getLineWidth();
 			if (getStrokeWidth()>1f)
 				ip.setLineWidth((int)Math.round(getStrokeWidth()));
-			if (ip.getLineWidth()==1 && !(width==ip.getWidth()&&height==ip.getHeight()))
+			if (ip.getLineWidth()==1)
 				ip.drawRect(x, y, width+1, height+1);
 			else
 				ip.drawRect(x, y, width, height);
