@@ -356,6 +356,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			return true;
 		dispose();
 		imp.flush();
+		imp = null;
 		return true;
 	}
 	

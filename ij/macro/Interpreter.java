@@ -517,7 +517,6 @@ public class Interpreter implements MacroConstants {
 
 	final void skipStatement() {
 		getToken();
-		//IJ.write("skipStatement: " +pgm.decodeToken(token, tokenAddress));
 		switch (token) {
 			case PREDEFINED_FUNCTION: case USER_FUNCTION: case VAR:
 			case WORD: case '(': case PLUS_PLUS: case RETURN:
@@ -593,7 +592,7 @@ public class Interpreter implements MacroConstants {
 		while (!finished && !done) {
 			if (token==';')
 				finished = true;
-			else if (token==ELSE||token==PREDEFINED_FUNCTION)
+			else if (token==ELSE||(token==PREDEFINED_FUNCTION&&pgm.code[pc-1]!='.'))
 				error("';' expected");
 			else
 				getToken();

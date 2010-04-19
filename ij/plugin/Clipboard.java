@@ -76,8 +76,8 @@ public class Clipboard implements PlugIn, Transferable {
 			Transferable transferable = clipboard.getContents(null);
 			boolean imageSupported = transferable.isDataFlavorSupported(DataFlavor.imageFlavor);
 			boolean textSupported = transferable.isDataFlavorSupported(DataFlavor.stringFlavor);
-			if (!imageSupported && IJ.isMacOSX() && displayMacImage(transferable))
-				return;
+			//if (!imageSupported && IJ.isMacOSX() && displayMacImage(transferable))
+			//	return;
 			if (imageSupported) {
 				Image img = (Image)transferable.getTransferData(DataFlavor.imageFlavor);
 				if (img==null) {
@@ -162,6 +162,7 @@ public class Clipboard implements PlugIn, Transferable {
 			IJ.error("The internal clipboard is empty.");
 	}
 	
+	/*
     boolean displayMacImage(Transferable t) {
     	Image img = getMacImage(t);
     	if (img!=null) {
@@ -287,6 +288,7 @@ public class Clipboard implements PlugIn, Transferable {
 		} catch (Exception e) {}
 		return isInstalled;
 	}
+	*/
 
 }
 

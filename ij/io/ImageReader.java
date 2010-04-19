@@ -194,6 +194,8 @@ public class ImageReader {
 	}
 
 	float[] read32bitImage(InputStream in) throws IOException {
+		if (fi.compression>FileInfo.COMPRESSION_NONE)
+			return readCompressed32bitImage(in);
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		float[] pixels = new float[nPixels];
@@ -249,6 +251,60 @@ public class ImageReader {
 		return pixels;
 	}
 	
+	float[] readCompressed32bitImage(InputStream in) throws IOException {
+		in = new DataInputStream(in);
+		float[] pixels = new float[nPixels];
+		int base = 0;
+		float last = 0;
+		int tmp;
+		for (int k=0; k<fi.stripOffsets.length; k++) {
+			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
+			if (in instanceof RandomAccessStream)
+				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
+			else if (k > 0) {
+				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
+				if (skip > 0) in.skip(skip);
+			}
+			byte[] byteArray = new byte[fi.stripLengths[k]];
+			int read = 0, left = byteArray.length;
+			while (left > 0) {
+				int r = in.read(byteArray, read, left);
+				if (r == -1) {eofError(); break;}
+				read += r;
+				left -= r;
+			}
+			byteArray = uncompress(byteArray);
+			int pixelsRead = byteArray.length/bytesPerPixel;
+			pixelsRead = pixelsRead - (pixelsRead%fi.width);
+			int pmax = base+pixelsRead;
+			if (pmax > nPixels) pmax = nPixels;
+			pixelsRead = bufferSize/bytesPerPixel;
+			int j = 0;
+			if (fi.intelByteOrder) {
+				for (int i=base; i < (base+pixelsRead); i++) {
+					tmp = (int)(((byteArray[j+3]&0xff)<<24) | ((byteArray[j+2]&0xff)<<16) | ((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
+					pixels[i] = Float.intBitsToFloat(tmp);
+					j += 4;
+				}
+			} else {
+				for (int i=base; i < (base+pixelsRead); i++) {
+					tmp = (int)(((byteArray[j]&0xff)<<24) | ((byteArray[j+1]&0xff)<<16) | ((byteArray[j+2]&0xff)<<8) | (byteArray[j+3]&0xff));
+					pixels[i] = Float.intBitsToFloat(tmp);
+					j += 4;
+				}
+			}
+			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING) {
+				for (int b=base; b<pmax; b++) {
+					pixels[b] += last;
+					last = b % fi.width == fi.width - 1 ? 0 : pixels[b];
+				}
+			}
+			base += pixelsRead;
+			showProgress(k+1, fi.stripOffsets.length);
+		}
+		return pixels;
+	}
+
 	float[] read64bitImage(InputStream in) throws IOException {
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];

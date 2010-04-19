@@ -54,7 +54,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
 		if (nSlices>1) {
 			char label = nChannels>1||nFrames>1?'z':'t';
-			if (nSlices==dim[2]) label = 'c';
+			if (stackSize==dim[2]) label = 'c';
 			zSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
 			if (label=='t') animationSelector = zSelector;
 			add(zSelector);

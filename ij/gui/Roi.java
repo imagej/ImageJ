@@ -861,7 +861,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			int saveWidth = ip.getLineWidth();
 			if (getStrokeWidth()>1f)
 				ip.setLineWidth((int)Math.round(getStrokeWidth()));
-			ip.drawRect(x, y, width, height);
+			if (ip.getLineWidth()==1)
+				ip.drawRect(x, y, width+1, height+1);
+			else
+				ip.drawRect(x, y, width, height);
 			ip.setLineWidth(saveWidth);
 		}
 		if (Line.getWidth()>1 || getStrokeWidth()>1)
@@ -870,7 +873,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public boolean contains(int x, int y) {
 		Rectangle r = new Rectangle(this.x, this.y, width, height);
-		return r.contains(x, y);
+		boolean contains = r.contains(x, y);
+		if (arcSize==0 || contains==false)
+			return contains;
+		RoundRectangle2D rr = new RoundRectangle2D.Float(this.x, this.y, width, height, arcSize, arcSize);
+		return rr.contains(x, y);
 	}
 		
 	/** Returns a handle number if the specified screen coordinates are  

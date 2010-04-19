@@ -938,7 +938,7 @@ public class Opener {
 			return ROI;
 			
 		// ObjectJ project
-		if (name.endsWith(".ojj")) 
+		if ((b0=='o' && b1=='j' && b2=='j' && b3==0) || name.endsWith(".ojj") )
 			return OJJ;
 
 		// Results table (tab-delimited or comma-separated tabular text)

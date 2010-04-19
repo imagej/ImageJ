@@ -160,7 +160,17 @@ public class ImportDialog {
 			new FileInfoVirtualStack(fi);
 		else {
 			FileOpener fo = new FileOpener(fi);
-			fo.open();
+			ImagePlus imp = fo.open(false);
+			if (imp!=null) {
+				imp.show();
+				int n = imp.getStackSize();
+				if (n>1) {
+					imp.setSlice(n/2);
+					ImageProcessor ip = imp.getProcessor();
+					ip.resetMinAndMax();
+					imp.setDisplayRange(ip.getMin(),ip.getMax());
+				}
+			}
 		}
 	}
 

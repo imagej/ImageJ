@@ -57,7 +57,10 @@ public class Line extends Roi {
 			updateWideLine(lineWidth);
 	}
 
-	/** @deprecated */
+	/**
+	* @deprecated
+	* replaced by Line(int, int, int, int)
+	*/
 	public Line(int ox1, int oy1, int ox2, int oy2, ImagePlus imp) {
 		this(ox1, oy1, ox2, oy2);
 		setImage(imp);
