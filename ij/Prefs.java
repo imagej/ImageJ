@@ -106,6 +106,9 @@ public class Prefs {
 	public static boolean multiPointMode;
 	/** Open DICOMs as 32-bit float images */
 	public static boolean openDicomsAsFloat;
+	/** Plot rectangular selectons vertically */
+	public static boolean verticalProfile;
+
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

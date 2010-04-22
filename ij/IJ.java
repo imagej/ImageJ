@@ -976,6 +976,11 @@ public class IJ {
 		setThreshold(getImage(), lowerThreshold, upperThreshold, displayMode);
 	}
 
+	/** Sets the lower and upper threshold levels of the specified image. */
+	public static void setThreshold(ImagePlus img, double lowerThreshold, double upperThreshold) {
+		setThreshold(img, lowerThreshold, upperThreshold, "Red");
+	}
+
 	/** Sets the lower and upper threshold levels of the specified image and updates the display using
 		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
 	public static void setThreshold(ImagePlus img, double lowerThreshold, double upperThreshold, String displayMode) {

@@ -285,7 +285,7 @@ public class Menus {
 			menu.add(item);
 		item.addActionListener(ij);
 	}
-
+	
 	void addPlugInItem(Menu menu, String label, String className, int shortcut, boolean shift) {
 		pluginsTable.put(label, className);
 		nPlugins++;

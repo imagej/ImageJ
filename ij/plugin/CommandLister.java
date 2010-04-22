@@ -40,7 +40,7 @@ public class CommandLister implements PlugIn {
 			Integer key = (Integer)en.nextElement();
 			int keyCode = key.intValue();
 			boolean upperCase = false;
-			if (keyCode>200) {
+			if (keyCode>=200+65 && keyCode<=200+90) {
 				upperCase = true;
 				keyCode -= 200;
 			}
