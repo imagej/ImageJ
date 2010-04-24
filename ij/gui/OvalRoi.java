@@ -277,17 +277,13 @@ public class OvalRoi extends Roi {
     * @author Barry DeZonia
     */
 	public boolean contains(int ox, int oy) {
-		if (!super.contains(ox, oy))
-			return false;
-		else {
-			double a = width/2.0;
-			double b = height/2.0;
-			double cx = x + a;
-			double cy = y + b;
-			double dx = ox - cx;
-			double dy = oy - cy;
-			return ((dx*dx)/(a*a) + (dy*dy)/(b*b)) <= 1.0;
-		}
+		double a = width/2.0;
+		double b = height/2.0;
+		double cx = x + a;
+		double cy = y + b;
+		double dx = ox - cx;
+		double dy = oy - cy;
+		return ((dx*dx)/(a*a) + (dy*dy)/(b*b)) <= 1.0;
 	}
 		
 	/** Returns a handle number if the specified screen coordinates are  

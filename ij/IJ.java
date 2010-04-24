@@ -58,7 +58,7 @@ public class IJ {
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
-		isVista = isWin && osname.indexOf("Vista")!=-1;
+		isVista = isWin && (osname.indexOf("Vista")!=-1||osname.indexOf(" 7")!=-1);
 		String version = System.getProperty("java.version").substring(0,3);
 		if (version.compareTo("2.9")<=0) {  // JVM on Sharp Zaurus PDA claims to be "3.1"!
 			isJava2 = version.compareTo("1.1")>0;
