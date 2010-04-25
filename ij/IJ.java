@@ -58,7 +58,7 @@ public class IJ {
 		isWin = osname.startsWith("Windows");
 		isMac = !isWin && osname.startsWith("Mac");
 		isLinux = osname.startsWith("Linux");
-		isVista = isWin && osname.indexOf("Vista")!=-1;
+		isVista = isWin && (osname.indexOf("Vista")!=-1||osname.indexOf(" 7")!=-1);
 		String version = System.getProperty("java.version").substring(0,3);
 		if (version.compareTo("2.9")<=0) {  // JVM on Sharp Zaurus PDA claims to be "3.1"!
 			isJava2 = version.compareTo("1.1")>0;
@@ -974,6 +974,11 @@ public class IJ {
 		the specified <code>displayMode</code> ("Red", "Black & White", "Over/Under" or "No Update"). */
 	public static void setThreshold(double lowerThreshold, double upperThreshold, String displayMode) {
 		setThreshold(getImage(), lowerThreshold, upperThreshold, displayMode);
+	}
+
+	/** Sets the lower and upper threshold levels of the specified image. */
+	public static void setThreshold(ImagePlus img, double lowerThreshold, double upperThreshold) {
+		setThreshold(img, lowerThreshold, upperThreshold, "Red");
 	}
 
 	/** Sets the lower and upper threshold levels of the specified image and updates the display using

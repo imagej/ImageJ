@@ -5,11 +5,10 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/** Implements the Process/Plot Profile and Edit/Options/Profile Plot Options commands. */
+/** Implements the Analyze/Plot Profile and Edit/Options/Profile Plot Options commands. */
 public class Profiler implements PlugInFilter {
 
 	ImagePlus imp;
-	static boolean verticalProfile;
 
 	public int setup(String arg, ImagePlus imp) {
 		if (arg.equals("set"))
@@ -19,7 +18,7 @@ public class Profiler implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		boolean averageHorizontally = verticalProfile || IJ.altKeyDown();
+		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
 		new ProfilePlot(imp, averageHorizontally).createWindow();
 	}
 
@@ -37,7 +36,7 @@ public class Profiler implements PlugInFilter {
 		gd.addCheckbox("Fixed y-axis scale", fixedScale);
 		gd.addCheckbox("Do not save x-values", !PlotWindow.saveXValues);
 		gd.addCheckbox("Auto-close", PlotWindow.autoClose);
-		gd.addCheckbox("Vertical profile", verticalProfile);
+		gd.addCheckbox("Vertical profile", Prefs.verticalProfile);
 		gd.addCheckbox("List values", PlotWindow.listValues);
 		gd.addCheckbox("Interpolate line profiles", PlotWindow.interpolate);
 		gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
@@ -59,7 +58,7 @@ public class Profiler implements PlugInFilter {
 		fixedScale = gd.getNextBoolean();
 		PlotWindow.saveXValues = !gd.getNextBoolean();
 		PlotWindow.autoClose = gd.getNextBoolean();
-		verticalProfile = gd.getNextBoolean();
+		Prefs.verticalProfile = gd.getNextBoolean();
 		PlotWindow.listValues = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
 		PlotWindow.noGridLines = !gd.getNextBoolean();
