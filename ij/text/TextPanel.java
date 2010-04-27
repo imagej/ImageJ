@@ -660,7 +660,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		'false' if the user cancels the save as dialog.*/
 	public boolean saveAs(String path) {
 		boolean isResults = IJ.isResultsWindow() && IJ.getTextPanel()==this;
-		if (rt!=null) {
+		boolean summarized = false;
+		if (isResults) {
+			String lastLine = iRowCount>=2?getLine(iRowCount-2):null;
+			summarized = lastLine!=null && lastLine.startsWith("Max");
+		}
+		if (rt!=null && !summarized) {
 			try {
 				rt.saveAs(path);
 			} catch (IOException e) {
@@ -671,6 +676,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				IJ.wait(10);
 				boolean hasHeadings = !getColumnHeadings().equals("");
 				String ext = isResults||hasHeadings?Prefs.get("options.ext", ".xls"):".txt";
+				if (ext.equals(".csv")) ext = ".txt";
 				SaveDialog sd = new SaveDialog("Save as Text", title, ext);
 				String file = sd.getFileName();
 				if (file == null) return false;

@@ -1,4 +1,4 @@
-package ij.plugin;
+package ij.plugin; 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
