@@ -87,7 +87,7 @@ public class Options implements PlugIn {
 		GenericDialog gd = new GenericDialog("I/O Options");
 		gd.addNumericField("JPEG Quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
 		gd.addNumericField("GIF and PNG Transparent Index:", Prefs.getTransparentIndex(), 0, 3, "");
-		gd.addStringField("File Extension for Tables:", Prefs.get("options.ext", ".xls"), 4);
+		gd.addStringField("File Extension for Tables:", Prefs.get("options.ext", ".txt"), 4);
 		gd.addCheckbox("Use JFileChooser to Open/Save", Prefs.useJFileChooser);
 		gd.addCheckbox("Save TIFF and Raw in Intel Byte Order", Prefs.intelByteOrder);
 		gd.addCheckbox("Copy Column Headers", Prefs.copyColumnHeaders);

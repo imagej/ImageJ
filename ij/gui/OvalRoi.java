@@ -273,14 +273,15 @@ public class OvalRoi extends Roi {
 		return new Polygon(wand.xpoints, wand.ypoints, wand.npoints);
 	}		
 
-    /** Tests if the specified point is inside the boundary of this OvalRoi.
-    * @author Barry DeZonia
-    */
+	/** Tests if the specified point is inside the boundary of this OvalRoi.
+	* @author Barry DeZonia
+	* @author Michael Schmid
+	*/
 	public boolean contains(int ox, int oy) {
-		double a = width/2.0;
-		double b = height/2.0;
-		double cx = x + a;
-		double cy = y + b;
+		double a = width*0.5;
+		double b = height*0.5;
+		double cx = x + a - 0.5;
+		double cy = y + b - 0.5;
 		double dx = ox - cx;
 		double dy = oy - cy;
 		return ((dx*dx)/(a*a) + (dy*dy)/(b*b)) <= 1.0;

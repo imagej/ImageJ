@@ -321,14 +321,14 @@ public class PolygonRoi extends Roi {
 		y = r.y;
 		width = r.width;
 		height = r.height;
-		if (nPoints<2 || (!(type==FREELINE||type==POLYLINE||type==ANGLE) && (nPoints<3||width==0||height==0))) {
-			if (imp!=null) imp.killRoi();
-			if (type!=POINT) return;
-		}
         for (int i=0; i<nPoints; i++) {
             xp[i] = xp[i]-x;
             yp[i] = yp[i]-y;
         }
+		if (nPoints<2 || (!(type==FREELINE||type==POLYLINE||type==ANGLE) && (nPoints<3||width==0||height==0))) {
+			if (imp!=null) imp.killRoi();
+			if (type!=POINT) return;
+		}
 		state = NORMAL;
 		if (imp!=null && !(type==TRACED_ROI))
 			imp.draw(x-5, y-5, width+10, height+10);
