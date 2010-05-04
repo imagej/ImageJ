@@ -26,7 +26,7 @@ public class TextRoi extends Roi {
 
 	/** Creates a new TextRoi.*/
 	public TextRoi(int x, int y, String text) {
-		this(x, y, text, null, null);
+		this(x, y, text, null);
 	}
 
 	/** Creates a new TextRoi with the specified location and Font.
@@ -72,8 +72,9 @@ public class TextRoi extends Roi {
 		instanceFont = new Font(name, style, size);
 	}
 
-	/** Adds the specified character to the end of the text string. */
+	/** Adds the specified character to the end of the displayed text. */
 	public void addChar(char c) {
+		if (imp==null) return;
 		if (!(c>=' ' || c=='\b' || c=='\n')) return;
 		if (firstChar) {
 			cline = 0;

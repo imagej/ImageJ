@@ -47,24 +47,22 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private ImagePlus imp;
 	private ImageCanvas canvas;
 	private static final int H_ROI=0, H_ZOOM=1;
-	private ImagePlus xz_image, yz_image;
+	private static boolean sticky=true;
 	private static int xzID, yzID;
+	private static Orthogonal_Views instance;
+	private ImagePlus xz_image, yz_image;
 	private ImageProcessor fp1, fp2;
 	private double ax, ay, az;
-	//private static boolean rotate=(boolean)Prefs.getBoolean(YROT,false);
-	//private static boolean sticky=(boolean)Prefs.getBoolean(SPANELS,false);
-	private static boolean rotate=false;
-	private static boolean sticky=true;
+	private boolean rotateYZ = Prefs.rotateYZ;
+	private boolean flipXZ = Prefs.flipXZ;
 	
 	private int xyX, xyY;
 	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
-	private static Orthogonal_Views instance;
 	private Updater updater = new Updater();
 	private double min, max;
 	private Dimension screen = IJ.getScreenSize();
-	private boolean flipXZ;
 	private boolean syncZoom = true;
 	private Point crossLoc;
 	private boolean firstTime = true;
@@ -138,7 +136,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		double o_height=cal.pixelHeight;
 		double o_width=cal.pixelWidth;
 		cal_xz.setUnit(unit);
-		if (rotate) {
+		if (rotateYZ) {
 			cal_xz.pixelHeight=o_depth/arat;
 			cal_xz.pixelWidth=o_width*ax;
 		} else {
@@ -202,21 +200,21 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	    	xz_image.setProcessor("XZ "+p.y, fp1);
 		}
 			
-		if (rotate)
-			updateYZView(p,is);
+		if (rotateYZ)
+			updateYZView(p, is);
 		else
-			updateZYView(p,is);
+			updateZYView(p, is);
 				
 		arat=az/ay;
 		width2 = (int)Math.round(fp2.getWidth()*arat);
 		height2 = (int)Math.round(fp2.getHeight()*ay);
 		String title = "YZ ";
-		if (rotate) {
-			int tmp = width2;
-			width2 = height2;
-			height2 = tmp;
+		if (rotateYZ) {
+			width2 = (int)Math.round(fp2.getWidth()*ay);
+			height2 = (int)Math.round(fp2.getHeight()*arat);
 			title = "ZY ";
 		}
+		//IJ.log("updateViews "+width2+" "+height2+" "+arat+" "+ay+" "+fp2);
 		if (width2!=fp2.getWidth()||height2!=fp2.getHeight()) {
 			fp2.setInterpolate(true);
 			ImageProcessor sfp2=fp2.resize(width2, height2);
@@ -289,7 +287,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 		if (ip instanceof FloatProcessor) {
 			fp1=new FloatProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new FloatProcessor(height,zb);
 			else
 				fp2=new FloatProcessor(zb,height);
@@ -298,7 +296,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 		if (ip instanceof ByteProcessor) {
 			fp1=new ByteProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new ByteProcessor(height,zb);
 			else
 				fp2=new ByteProcessor(zb,height);
@@ -307,21 +305,23 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 		if (ip instanceof ShortProcessor) {
 			fp1=new ShortProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new ShortProcessor(height,zb);
 			else
 				fp2=new ShortProcessor(zb,height);
+			//IJ.log("createProcessors "+rotateYZ+"  "+height+"   "+zb+"  "+fp2);
 			return true;
 		}
 		
 		if (ip instanceof ColorProcessor) {
 			fp1=new ColorProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new ColorProcessor(height,zb);
 			else
 				fp2=new ColorProcessor(zb,height);
 			return true;
 		}
+		
 		return false;
 	}
 	
@@ -432,7 +432,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			}
 			fp2.setPixels(newpix);
 		}
-	
+		if (!flipXZ) fp2.flipVertical();
+		
 	}
 	
 	void updateZYView(Point p, ImageStack is) {
@@ -496,40 +497,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		path.moveTo(x, 0f);
 		path.lineTo(x, height);	
 	}
-	 
-	/*
-	boolean showDialog(ImagePlus imp)   {
-        if (imp==null) return true;
-        GenericDialog gd=new GenericDialog("Parameters");
-        gd.addMessage("This plugin projects orthogonal views\n");
-        gd.addNumericField("aspect ratio X:", ax, 3);
-        gd.addNumericField("aspect ratio Y:", ay, 3);
-        gd.addNumericField("aspect ratio Z:", az, 3);
-        gd.addCheckbox("rotate YZ", rotate);
-        gd.addCheckbox("sticky panels", sticky);
-        gd.showDialog();
-        
-        ax=(float)gd.getNextNumber();
-        ay=(float)gd.getNextNumber();
-        az=(float)gd.getNextNumber();
-        rotate=gd.getNextBoolean();
-        sticky=gd.getNextBoolean();
-        if (sticky) rotate = false;
-        if (gd.wasCanceled())
-            return false;
-        return true;
-	 }
-	     
-    void showAbout() {
-         IJ.showMessage("About StackSlicer...",
-	         "This plugin projects dynamically orthogonal XZ and YZ views of a stack.\n" + 
-	         "The user should provide a point selection in the active image window.\n" +
-	         "The output images are calibrated, which allows measurements to be performed more easily.\n" +
-	         "Optionally the YZ image can be rotated at 90 deg."
-         );
-     }
-     */
-     
+	      
 	void dispose(){
 		updater.quit();
 		updater = null;
@@ -623,7 +591,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			xz_canvas.setDisplayList(path, color, new BasicStroke(1));
 		}
 		zcoord=(int)Math.round(brat*(z-zlice));
-		if (rotate) 
+		if (rotateYZ) 
 			p=new Point (y, zcoord);
 		else {
 			zcoord=(int)Math.round(arat*zlice);
@@ -793,6 +761,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return instance.imp;
 		else
 			return null;
+	}
+	
+	public static synchronized boolean isOrthoViewsImage(ImagePlus imp) {
+		if (imp==null || instance==null)
+			return false;
+		else
+			return imp==instance.imp || imp==instance.xz_image || imp==instance.yz_image;
 	}
 
 	/**

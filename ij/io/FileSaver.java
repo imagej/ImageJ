@@ -8,6 +8,7 @@ import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.plugin.JpegWriter;
+import ij.plugin.Orthogonal_Views;
 import ij.gui.Roi;
 import ij.gui.Overlay;
 import ij.gui.ImageCanvas;
@@ -125,6 +126,8 @@ public class FileSaver {
 		}
 		int n = overlay.size();
 		if (n==0) return null;
+		if (Orthogonal_Views.isOrthoViewsImage(imp))
+			return null;
 		byte[][] array = new byte[n][];
 		for (int i=0; i<overlay.size(); i++) {
 			Roi roi = overlay.get(i);
