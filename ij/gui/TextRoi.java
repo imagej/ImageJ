@@ -72,7 +72,8 @@ public class TextRoi extends Roi {
 		instanceFont = new Font(name, style, size);
 	}
 
-	/** Adds the specified character to the end of the displayed text. */
+	/** This method is used by the text tool to add typed
+		characters to displayed text selections. */
 	public void addChar(char c) {
 		if (imp==null) return;
 		if (!(c>=' ' || c=='\b' || c=='\n')) return;

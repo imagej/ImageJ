@@ -590,10 +590,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			drawCross(xz_image, p, path);
 			xz_canvas.setDisplayList(path, color, new BasicStroke(1));
 		}
-		zcoord=(int)Math.round(brat*(z-zlice));
-		if (rotateYZ) 
+		if (rotateYZ) {
+			if (flipXZ)
+				zcoord=(int)Math.round(brat*(z-zlice));
+			else
+				zcoord=(int)Math.round(brat*(zlice));
 			p=new Point (y, zcoord);
-		else {
+		} else {
 			zcoord=(int)Math.round(arat*zlice);
 			p=new Point (zcoord, y);
 		}

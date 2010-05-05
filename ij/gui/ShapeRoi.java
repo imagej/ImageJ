@@ -277,7 +277,6 @@ public class ShapeRoi extends Roi {
 					p.ypoints[i] -= r.y;
 				}
 				shape = new Polygon(p.xpoints, p.ypoints, p.npoints);
-				//shape = new Ellipse2D.Double(0.0, 0.0, (double)r.width, (double)r.height);
 				break;
 			case Roi.POLYGON:
 				nCoords =((PolygonRoi)roi).getNCoordinates();
@@ -657,8 +656,9 @@ public class ShapeRoi extends Roi {
 	}
 
 	/**Returns a flattened version of the path iterator for this ROi's shape*/
-	FlatteningPathIterator getFlatteningPathIterator(Shape s, double fl)
-	{ return (FlatteningPathIterator)s.getPathIterator(new AffineTransform(),fl); }
+	FlatteningPathIterator getFlatteningPathIterator(Shape s, double fl) {
+		return (FlatteningPathIterator)s.getPathIterator(new AffineTransform(),fl);
+	}
 
 	/**Length of the control polygon of the cubic B&eacute;zier curve argument, in double precision.*/
 	double cplength(CubicCurve2D.Double c) {
@@ -1081,7 +1081,7 @@ public class ShapeRoi extends Roi {
 	 * (i.e., all curve segments will be approximated by line segments).
 	 */
 	public void drawPixels(ImageProcessor ip) {
-		PathIterator pIter = getFlatteningPathIterator(shape,flatness);
+		PathIterator pIter = shape.getPathIterator(new AffineTransform(), flatness);
 		float[] coords = new float[6];
 		float sx=0f, sy=0f;
 		while (!pIter.isDone()) {
