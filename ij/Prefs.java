@@ -45,7 +45,8 @@ public class Prefs {
 		INTEL_BYTE_ORDER=1<<13, DOUBLE_BUFFER=1<<14, NO_POINT_LABELS=1<<15, NO_BORDER=1<<16,
 		SHOW_ALL_SLICE_ONLY=1<<17, COPY_HEADERS=1<<18, NO_ROW_NUMBERS=1<<19,
 		MOVE_TO_MISC=1<<20, ADD_TO_MANAGER=1<<21, RUN_SOCKET_LISTENER=1<<22,
-		MULTI_POINT_MODE=1<<23, ROTATE_YZ=1<<24, FLIP_XZ=1<<25; 
+		MULTI_POINT_MODE=1<<23, ROTATE_YZ=1<<24, FLIP_XZ=1<<25,
+		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27; 
     public static final String OPTIONS = "prefs.options";
     
 	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
@@ -112,6 +113,10 @@ public class Prefs {
 	public static boolean rotateYZ;
 	/** Rotate XZ orthogonal views 180 degrees */
 	public static boolean flipXZ;
+	/** Don't save Results table column headers */
+	public static boolean dontSaveHeaders;
+	/** Don't save Results table row numbers */
+	public static boolean dontSaveRowNumbers;
 
 
 	static Properties ijPrefs = new Properties();
@@ -391,6 +396,8 @@ public class Prefs {
 		multiPointMode = (options&MULTI_POINT_MODE)!=0;
 		rotateYZ = (options&ROTATE_YZ)!=0;
 		flipXZ = (options&FLIP_XZ)!=0;
+		dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
+		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -406,7 +413,8 @@ public class Prefs {
 			+ (noRowNumbers?NO_ROW_NUMBERS:0) + (moveToMisc?MOVE_TO_MISC:0)
 			+ (pointAddToManager?ADD_TO_MANAGER:0) + (runSocketListener?RUN_SOCKET_LISTENER:0)
 			+ (multiPointMode?MULTI_POINT_MODE:0) + (rotateYZ?ROTATE_YZ:0)
-			+ (flipXZ?FLIP_XZ:0);
+			+ (flipXZ?FLIP_XZ:0) + (dontSaveHeaders?DONT_SAVE_HEADERS:0)
+			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

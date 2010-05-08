@@ -798,6 +798,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 
 		void quit() {
+			IJ.wait(10);
 			interrupt();
 			synchronized (this) {
 				notify();

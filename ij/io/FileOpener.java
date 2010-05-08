@@ -9,6 +9,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.*;
+import ij.plugin.frame.ThresholdAdjuster;
 
 /**
  * Opens or reverts an image specified by a FileInfo object. Images can
@@ -246,12 +247,15 @@ public class FileOpener {
 				Opener.convertGrayJpegTo8Bits(imp);
 	    	return;
 		}
+		
 				
 		if (fi.fileFormat==fi.DICOM) {
 			// restore DICOM
 			ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
 			if (imp2!=null)
 				imp.setProcessor(null, imp2.getProcessor());
+			if (fi.fileType==FileInfo.GRAY16_UNSIGNED || fi.fileType==FileInfo.GRAY32_FLOAT)
+				ThresholdAdjuster.update();
 	    	return;
 		}
 

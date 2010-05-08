@@ -85,13 +85,23 @@ public class Options implements PlugIn {
 	// Input/Output options
 	void io() {
 		GenericDialog gd = new GenericDialog("I/O Options");
-		gd.addNumericField("JPEG Quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
-		gd.addNumericField("GIF and PNG Transparent Index:", Prefs.getTransparentIndex(), 0, 3, "");
-		gd.addStringField("File Extension for Tables:", Prefs.get("options.ext", ".txt"), 4);
-		gd.addCheckbox("Use JFileChooser to Open/Save", Prefs.useJFileChooser);
-		gd.addCheckbox("Save TIFF and Raw in Intel Byte Order", Prefs.intelByteOrder);
-		gd.addCheckbox("Copy Column Headers", Prefs.copyColumnHeaders);
-		gd.addCheckbox("Copy Row Numbers", !Prefs.noRowNumbers);
+		gd.addNumericField("JPEG quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
+		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
+		gd.addStringField("File extension for tables:", Prefs.get("options.ext", ".txt"), 4);
+		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
+		gd.addCheckbox("Save TIFF and raw in Intel byte order", Prefs.intelByteOrder);
+		
+		gd.setInsets(15, 20, 0);
+		gd.addMessage("Results Table Options");
+		gd.setInsets(3, 40, 0);
+		gd.addCheckbox("Copy_column headers", Prefs.copyColumnHeaders);
+		gd.setInsets(0, 40, 0);
+		gd.addCheckbox("Copy_row numbers", !Prefs.noRowNumbers);
+		gd.setInsets(0, 40, 0);
+		gd.addCheckbox("Save_column headers", !Prefs.dontSaveHeaders);
+		gd.setInsets(0, 40, 0);
+		gd.addCheckbox("Save_row numbers", !Prefs.dontSaveRowNumbers);
+		
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -109,6 +119,8 @@ public class Options implements PlugIn {
 		Prefs.intelByteOrder = gd.getNextBoolean();
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
 		Prefs.noRowNumbers = !gd.getNextBoolean();
+		Prefs.dontSaveHeaders = !gd.getNextBoolean();
+		Prefs.dontSaveRowNumbers = !gd.getNextBoolean();
 		return;
 	}
 
