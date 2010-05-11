@@ -234,7 +234,7 @@ public class Options implements PlugIn {
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");
 		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
-		gd.addMessage("Orthogonal Views:");
+		gd.addMessage("Orthogonal Views");
 		gd.setInsets(5, 40, 0);
 		gd.addCheckbox("Rotate YZ", Prefs.rotateYZ);
 		gd.setInsets(0, 40, 0);
