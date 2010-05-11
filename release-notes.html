@@ -27,6 +27,10 @@ exception when drawing composite selection (ShapeRoi).
 after using <i>File&gt;Revert</i> on a 16-bit DICOM image.
 <li> Fixed a bug that could cause the <i>Image&gt;Overlay&gt;Hide Overlay</i>
 and <i>Show Overlay</i> commands to not work as expected.
+<li> Thanks to Johannes Schindelin, fixed a bug in the PluginClassLoader that could
+cause an exception when running plugins using MIJ (Matlab to ImageJ interface).
+<li> Fixed a bug that caused DialogListeners to not be called with checkbox groups
+with fewer than five checkboxes.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

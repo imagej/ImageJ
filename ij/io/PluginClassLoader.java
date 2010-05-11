@@ -1,4 +1,5 @@
 package ij.io;
+import ij.IJ;
 import java.io.*;
 import java.net.*;
 
@@ -25,8 +26,8 @@ public class PluginClassLoader extends URLClassLoader {
      * @param path the path to the plugins directory.
      */
 	public PluginClassLoader(String path) {
-        super(new URL[0]);
-        init(path);
+		super(new URL[0], IJ.class.getClassLoader());
+		init(path);
 	}
 	
 	/** This version of the constructor is used when ImageJ is launched using Java WebStart. */

@@ -364,7 +364,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	int[] index = new int[labels.length];
     	if (checkbox==null)
     		checkbox = new Vector(12);
-    	boolean addListeners = labels.length<=4;
     	if (headings!=null) {
 			for (int i=0; i<columns; i++) {
 				if (i>headings.length-1 || headings[i]==null)
@@ -385,7 +384,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				Checkbox cb = new Checkbox(label);
 				checkbox.addElement(cb);
 				cb.setState(defaultValues[i1]);
-				if (addListeners) cb.addItemListener(this);
+				cb.addItemListener(this);
 				if (Recorder.record || macro)
 					saveLabel(cb, labels[i1]);
 				panel.add(cb);
