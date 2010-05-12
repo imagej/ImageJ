@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.44a, 11 May 2010</u>
+<li> <u>1.44a, 12 May 2010</u>
 <ul> 
 <li> Overlays are preserved when printing and when saving in PNG format.
 <li> Thanks to Tiago Ferreira, <i>Image&gt;Stacks&gt;Tools&gt;Montage to Stack</i>
@@ -28,9 +28,11 @@ after using <i>File&gt;Revert</i> on a 16-bit DICOM image.
 <li> Fixed a bug that could cause the <i>Image&gt;Overlay&gt;Hide Overlay</i>
 and <i>Show Overlay</i> commands to not work as expected.
 <li> Thanks to Johannes Schindelin, fixed a bug in the PluginClassLoader that could
-cause an exception when running plugins using MIJ (Matlab to ImageJ interface).
+cause an exception when running plugins using MIJ (Matlab to ImageJ interface).
 <li> Fixed a bug that caused DialogListeners to not be called with checkbox groups
 with fewer than five checkboxes.
+<li> Worked around a Linux bug that caused labels in GenericDialog checkbox groups to be
+centered rather than left justified.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

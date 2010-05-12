@@ -360,25 +360,34 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	int nRows = headings!=null?rows+1:rows;
     	panel.setLayout(new GridLayout(nRows, columns, 6, 0));
     	int startCBIndex = cbIndex;
-    	int i1 = 0;
-    	int[] index = new int[labels.length];
     	if (checkbox==null)
     		checkbox = new Vector(12);
     	if (headings!=null) {
+    		Font font = new Font("SansSerif", Font.BOLD, 12);
 			for (int i=0; i<columns; i++) {
 				if (i>headings.length-1 || headings[i]==null)
 					panel.add(new Label(""));
-				else
-					panel.add(new Label(headings[i]));
+				else {
+					Label label = new Label(headings[i]);
+					label.setFont(font);
+					panel.add(label);
+				}
 			}
     	}
+    	int i1 = 0;
+    	int[] index = new int[labels.length];
     	for (int row=0; row<rows; row++) {
 			for (int col=0; col<columns; col++) {
 				int i2 = col*rows+row;
 				if (i2>=labels.length) break;
 				index[i1] = i2;
 				String label = labels[i1];
-				if (label==null) continue;
+				if (label==null || label.length()==0) {
+					Label lbl = new Label("");
+					panel.add(lbl);
+					i1++;
+					continue;
+				}
 				if (label.indexOf('_')!=-1)
    					label = label.replace('_', ' ');
 				Checkbox cb = new Checkbox(label);
@@ -387,7 +396,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				cb.addItemListener(this);
 				if (Recorder.record || macro)
 					saveLabel(cb, labels[i1]);
-				panel.add(cb);
+				if (IJ.isLinux()) {
+    				Panel panel2 = new Panel();
+    				panel2.setLayout(new BorderLayout());
+    				panel2.add("West", cb);
+    				panel.add(panel2);
+				} else
+					panel.add(cb);
  				i1++;
 			}
 		}
