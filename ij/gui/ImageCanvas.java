@@ -606,7 +606,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Zooms in by making the window bigger. If it can't
 		be made bigger, then make the source rectangle 
-		(srcRect) smaller and center it at (x,y). */
+		(srcRect) smaller and center it at (x,y). Note that
+		x and y are screen coordinates. */
 	public void zoomIn(int x, int y) {
 		if (magnification>=32) return;
 		double newMag = getHigherZoomLevel(magnification);

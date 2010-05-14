@@ -73,10 +73,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
 		}
-		if (instance!=null && imp==instance.imp) {
-			//IJ.log("instance!=null: "+imp+"  "+instance.imp);
+		if (instance!=null && imp==instance.imp)
 			return;
-		}
 		yz_image = WindowManager.getImage(yzID);
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=imp.getBitDepth())
 			yz_image = new ImagePlus();
@@ -100,7 +98,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		addListeners(canvas);  
 		magnification= canvas.getMagnification();
 		imp.killRoi();
-		crossLoc = new Point(imp.getWidth()/2,imp.getHeight()/2);
+		Rectangle r = canvas.getSrcRect();
+		crossLoc = new Point(r.x+r.width/2, r.y+r.height/2);
 		ImageStack is=imp.getStack();
 		calibrate();
 		if (createProcessors(is)) {
@@ -153,33 +152,34 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private void updateMagnification(int x, int y) {
         double magnification= win.getCanvas().getMagnification();
         int z = imp.getCurrentSlice()-1;
-        ImageWindow win1 = xz_image.getWindow();
-        if (win1==null) return;
-        ImageCanvas ic1 = win1.getCanvas();
-        double mag1 = ic1.getMagnification();
+        ImageWindow xz_win = xz_image.getWindow();
+        if (xz_win==null) return;
+        ImageCanvas xz_ic = xz_win.getCanvas();
+        double xz_mag = xz_ic.getMagnification();
         double arat = az/ax;
 		int zcoord=(int)(arat*z);
 		if (flipXZ) zcoord=(int)(arat*(imp.getStackSize()-z));
-        while (mag1<magnification) {
-        	ic1.zoomIn(x, zcoord);
-        	mag1 = ic1.getMagnification();
+        while (xz_mag<magnification) {
+        	xz_ic.zoomIn(xz_ic.screenX(x), xz_ic.screenY(zcoord));
+        	xz_mag = xz_ic.getMagnification();
         }
-        while (mag1>magnification) {
-        	ic1.zoomOut(x, zcoord);
-        	mag1 = ic1.getMagnification();
+        while (xz_mag>magnification) {
+        	xz_ic.zoomOut(xz_ic.screenX(x), xz_ic.screenY(zcoord));
+        	xz_mag = xz_ic.getMagnification();
         }
-        ImageWindow win2 = yz_image.getWindow();
-        if (win2==null) return;
-        ImageCanvas ic2 = win2.getCanvas();
-        double mag2 = ic2.getMagnification();
-		zcoord=(int)(arat*z);
-        while (mag2<magnification) {
-        	ic2.zoomIn(zcoord,y);
-        	mag2 = ic2.getMagnification();
+        ImageWindow yz_win = yz_image.getWindow();
+        if (yz_win==null) return;
+        ImageCanvas yz_ic = yz_win.getCanvas();
+        double yz_mag = yz_ic.getMagnification();
+		zcoord = (int)(arat*z);
+        while (yz_mag<magnification) {
+        	//IJ.log(magnification+"  "+yz_mag+"  "+zcoord+"  "+y+"  "+x);
+        	yz_ic.zoomIn(yz_ic.screenX(zcoord), yz_ic.screenY(y));
+        	yz_mag = yz_ic.getMagnification();
         }
-        while (mag2>magnification) {
-        	ic2.zoomOut(zcoord,y);
-        	mag2 = ic2.getMagnification();
+        while (yz_mag>magnification) {
+        	yz_ic.zoomOut(yz_ic.screenX(zcoord), yz_ic.screenY(y));
+        	yz_mag = yz_ic.getMagnification();
         }
 	}
 	
@@ -672,22 +672,18 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ImagePlus cimp = WindowManager.getCurrentImage();
 			if (cimp==null) return command;
 			if (cimp==imp) {
-				/*if (syncZoom) {
-					ImageWindow xyWin = cimp.getWindow();
-					if (xyWin==null) return command;
-					ImageCanvas ic = xyWin.getCanvas();
-					Dimension screen = IJ.getScreenSize();
-					int xyWidth = xyWin.getWidth();
-					ImageWindow yzWin = yz_image.getWindow();
-					double mag = ic.getHigherZoomLevel(ic.getMagnification());
-					if (yzWin!=null&&xyX+xyWidth+(int)(yzWin.getWidth()*mag)>screen.width) {
-						xyX = screen.width-xyWidth-(int)(yzWin.getWidth()*mag);
-						if (xyX<10) xyX = 10;
-						xyWin.setLocation(xyX, xyY);
-					}
- 				}*/
-				IJ.runPlugIn("ij.plugin.Zoom", command.toLowerCase());
-				xyX=0; xyY=0;
+				ImageCanvas ic = imp.getCanvas();
+				if (ic==null) return null;
+				int x = ic.screenX(crossLoc.x);
+				int y = ic.screenY(crossLoc.y);
+				if (command.equals("In")) {
+					ic.zoomIn(x, y);
+					if (ic.getMagnification()<=1.0) imp.repaintWindow();
+				} else {
+					ic.zoomOut(x, y);
+					if (ic.getMagnification()<1.0) imp.repaintWindow();
+				}
+				xyX=crossLoc.x; xyY=crossLoc.y;
 				update();
 				return null;
 			} else if (cimp==xz_image || cimp==yz_image) {

@@ -354,6 +354,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param labels			the labels
 	* @param defaultValues	the initial states
 	* @param headings	the column headings
+	* Example: http://rsbweb.nih.gov/ij/plugins/multi-column-dialog/index.html
 	*/
     public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues, String[] headings) {
     	Panel panel = new Panel();
@@ -397,10 +398,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (Recorder.record || macro)
 					saveLabel(cb, labels[i1]);
 				if (IJ.isLinux()) {
-    				Panel panel2 = new Panel();
-    				panel2.setLayout(new BorderLayout());
-    				panel2.add("West", cb);
-    				panel.add(panel2);
+					Panel panel2 = new Panel();
+					panel2.setLayout(new BorderLayout());
+					panel2.add("West", cb);
+					panel.add(panel2);
 				} else
 					panel.add(cb);
  				i1++;
