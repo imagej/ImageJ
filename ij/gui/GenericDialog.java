@@ -345,29 +345,65 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param defaultValues	the initial states
 	*/
     public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues) {
+    	addCheckboxGroup(rows, columns, labels, defaultValues, null);
+    }
+
+    /** Adds a group of checkboxs using a grid layout.
+	* @param rows			the number of rows
+	* @param columns		the number of columns
+	* @param labels			the labels
+	* @param defaultValues	the initial states
+	* @param headings	the column headings
+	* Example: http://rsbweb.nih.gov/ij/plugins/multi-column-dialog/index.html
+	*/
+    public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues, String[] headings) {
     	Panel panel = new Panel();
-    	panel.setLayout(new GridLayout(rows,columns, 5, 0));
+    	int nRows = headings!=null?rows+1:rows;
+    	panel.setLayout(new GridLayout(nRows, columns, 6, 0));
     	int startCBIndex = cbIndex;
-    	int i1 = 0;
-    	int[] index = new int[labels.length];
     	if (checkbox==null)
     		checkbox = new Vector(12);
-    	boolean addListeners = labels.length<=4;
+    	if (headings!=null) {
+    		Font font = new Font("SansSerif", Font.BOLD, 12);
+			for (int i=0; i<columns; i++) {
+				if (i>headings.length-1 || headings[i]==null)
+					panel.add(new Label(""));
+				else {
+					Label label = new Label(headings[i]);
+					label.setFont(font);
+					panel.add(label);
+				}
+			}
+    	}
+    	int i1 = 0;
+    	int[] index = new int[labels.length];
     	for (int row=0; row<rows; row++) {
 			for (int col=0; col<columns; col++) {
 				int i2 = col*rows+row;
 				if (i2>=labels.length) break;
 				index[i1] = i2;
 				String label = labels[i1];
+				if (label==null || label.length()==0) {
+					Label lbl = new Label("");
+					panel.add(lbl);
+					i1++;
+					continue;
+				}
 				if (label.indexOf('_')!=-1)
    					label = label.replace('_', ' ');
 				Checkbox cb = new Checkbox(label);
 				checkbox.addElement(cb);
 				cb.setState(defaultValues[i1]);
-				if (addListeners) cb.addItemListener(this);
+				cb.addItemListener(this);
 				if (Recorder.record || macro)
 					saveLabel(cb, labels[i1]);
-				panel.add(cb);
+				if (IJ.isLinux()) {
+					Panel panel2 = new Panel();
+					panel2.setLayout(new BorderLayout());
+					panel2.add("West", cb);
+					panel.add(panel2);
+				} else
+					panel.add(cb);
  				i1++;
 			}
 		}

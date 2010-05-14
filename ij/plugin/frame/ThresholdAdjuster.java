@@ -680,12 +680,12 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		return ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD && ip.isColorLut();
 	}
 
-    /** Updates the ThresholdAdjuster when it is in B&W mode. */
+    /** Notifies the ThresholdAdjuster that the image has changed. */
     public static void update() {
 		if (instance!=null) {
 			ThresholdAdjuster ta = ((ThresholdAdjuster)instance);
 			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null && ta.previousImageID==imp.getID() && mode==BLACK_AND_WHITE) {
+			if (imp!=null && ta.previousImageID==imp.getID()) {
 				ta.previousImageID = 0;
 				ta.setup(imp);
 			}

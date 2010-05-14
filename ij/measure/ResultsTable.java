@@ -52,6 +52,7 @@ public class ResultsTable implements Cloneable {
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
+	private boolean skipRowNumbers;
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -366,8 +367,10 @@ public class ResultsTable implements Cloneable {
 			sb = new StringBuffer(200);
 		else
 			sb.setLength(0);
-		sb.append(Integer.toString(row+1));
-		sb.append(delimiter);
+		if (!skipRowNumbers) {
+			sb.append(Integer.toString(row+1));
+			sb.append(delimiter);
+		}
 		if (rowLabels!=null) {
 			if (rowLabels[row]!=null) {
 				String label = rowLabels[row];
@@ -715,9 +718,16 @@ public class ResultsTable implements Cloneable {
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 		pw = new PrintWriter(bos);
-		pw.println(getColumnHeadings());
+		if (!Prefs.dontSaveHeaders) {
+			String headings = getColumnHeadings();
+			if (Prefs.dontSaveRowNumbers)
+				headings = headings.substring(2);
+			pw.println(headings);
+		}
+		skipRowNumbers = Prefs.dontSaveRowNumbers;
 		for (int i=0; i<getCounter(); i++)
 			pw.println(getRowAsString(i));
+		skipRowNumbers = false;
 		pw.close();
 		delimiter = '\t';
 	}

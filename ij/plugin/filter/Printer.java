@@ -81,9 +81,15 @@ public class Printer implements PlugInFilter, Printable {
 	
 	public int print(Graphics g, PageFormat pf, int pageIndex) {
 		if (pageIndex != 0) return NO_SUCH_PAGE;
-		ImageProcessor ip = imp.getProcessor();
 		Roi roi = imp.getRoi();
+		ImagePlus imp2 = imp;
+		if (imp2.getOverlay()!=null && !imp2.getHideOverlay()) {
+			imp2.killRoi();
+			imp2 = imp2.flatten();
+		}
+		ImageProcessor ip = imp2.getProcessor();
 		if (printSelection && roi!=null && roi.isArea() )
+			ip.setRoi(roi);
 			ip = ip.crop();
 		if (rotate)
 			ip = ip.rotateLeft();

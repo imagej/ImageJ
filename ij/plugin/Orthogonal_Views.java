@@ -47,24 +47,22 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private ImagePlus imp;
 	private ImageCanvas canvas;
 	private static final int H_ROI=0, H_ZOOM=1;
-	private ImagePlus xz_image, yz_image;
+	private static boolean sticky=true;
 	private static int xzID, yzID;
+	private static Orthogonal_Views instance;
+	private ImagePlus xz_image, yz_image;
 	private ImageProcessor fp1, fp2;
 	private double ax, ay, az;
-	//private static boolean rotate=(boolean)Prefs.getBoolean(YROT,false);
-	//private static boolean sticky=(boolean)Prefs.getBoolean(SPANELS,false);
-	private static boolean rotate=false;
-	private static boolean sticky=true;
+	private boolean rotateYZ = Prefs.rotateYZ;
+	private boolean flipXZ = Prefs.flipXZ;
 	
 	private int xyX, xyY;
 	private Calibration cal=null, cal_xz=new Calibration(), cal_yz=new Calibration();
 	private double magnification=1.0;
 	private Color color = Roi.getColor();
-	private static Orthogonal_Views instance;
 	private Updater updater = new Updater();
 	private double min, max;
 	private Dimension screen = IJ.getScreenSize();
-	private boolean flipXZ;
 	private boolean syncZoom = true;
 	private Point crossLoc;
 	private boolean firstTime = true;
@@ -75,10 +73,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
 		}
-		if (instance!=null && imp==instance.imp) {
-			//IJ.log("instance!=null: "+imp+"  "+instance.imp);
+		if (instance!=null && imp==instance.imp)
 			return;
-		}
 		yz_image = WindowManager.getImage(yzID);
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=imp.getBitDepth())
 			yz_image = new ImagePlus();
@@ -102,7 +98,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		addListeners(canvas);  
 		magnification= canvas.getMagnification();
 		imp.killRoi();
-		crossLoc = new Point(imp.getWidth()/2,imp.getHeight()/2);
+		Rectangle r = canvas.getSrcRect();
+		crossLoc = new Point(r.x+r.width/2, r.y+r.height/2);
 		ImageStack is=imp.getStack();
 		calibrate();
 		if (createProcessors(is)) {
@@ -138,7 +135,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		double o_height=cal.pixelHeight;
 		double o_width=cal.pixelWidth;
 		cal_xz.setUnit(unit);
-		if (rotate) {
+		if (rotateYZ) {
 			cal_xz.pixelHeight=o_depth/arat;
 			cal_xz.pixelWidth=o_width*ax;
 		} else {
@@ -155,33 +152,34 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private void updateMagnification(int x, int y) {
         double magnification= win.getCanvas().getMagnification();
         int z = imp.getCurrentSlice()-1;
-        ImageWindow win1 = xz_image.getWindow();
-        if (win1==null) return;
-        ImageCanvas ic1 = win1.getCanvas();
-        double mag1 = ic1.getMagnification();
+        ImageWindow xz_win = xz_image.getWindow();
+        if (xz_win==null) return;
+        ImageCanvas xz_ic = xz_win.getCanvas();
+        double xz_mag = xz_ic.getMagnification();
         double arat = az/ax;
 		int zcoord=(int)(arat*z);
 		if (flipXZ) zcoord=(int)(arat*(imp.getStackSize()-z));
-        while (mag1<magnification) {
-        	ic1.zoomIn(x, zcoord);
-        	mag1 = ic1.getMagnification();
+        while (xz_mag<magnification) {
+        	xz_ic.zoomIn(xz_ic.screenX(x), xz_ic.screenY(zcoord));
+        	xz_mag = xz_ic.getMagnification();
         }
-        while (mag1>magnification) {
-        	ic1.zoomOut(x, zcoord);
-        	mag1 = ic1.getMagnification();
+        while (xz_mag>magnification) {
+        	xz_ic.zoomOut(xz_ic.screenX(x), xz_ic.screenY(zcoord));
+        	xz_mag = xz_ic.getMagnification();
         }
-        ImageWindow win2 = yz_image.getWindow();
-        if (win2==null) return;
-        ImageCanvas ic2 = win2.getCanvas();
-        double mag2 = ic2.getMagnification();
-		zcoord=(int)(arat*z);
-        while (mag2<magnification) {
-        	ic2.zoomIn(zcoord,y);
-        	mag2 = ic2.getMagnification();
+        ImageWindow yz_win = yz_image.getWindow();
+        if (yz_win==null) return;
+        ImageCanvas yz_ic = yz_win.getCanvas();
+        double yz_mag = yz_ic.getMagnification();
+		zcoord = (int)(arat*z);
+        while (yz_mag<magnification) {
+        	//IJ.log(magnification+"  "+yz_mag+"  "+zcoord+"  "+y+"  "+x);
+        	yz_ic.zoomIn(yz_ic.screenX(zcoord), yz_ic.screenY(y));
+        	yz_mag = yz_ic.getMagnification();
         }
-        while (mag2>magnification) {
-        	ic2.zoomOut(zcoord,y);
-        	mag2 = ic2.getMagnification();
+        while (yz_mag>magnification) {
+        	yz_ic.zoomOut(yz_ic.screenX(zcoord), yz_ic.screenY(y));
+        	yz_mag = yz_ic.getMagnification();
         }
 	}
 	
@@ -202,21 +200,21 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	    	xz_image.setProcessor("XZ "+p.y, fp1);
 		}
 			
-		if (rotate)
-			updateYZView(p,is);
+		if (rotateYZ)
+			updateYZView(p, is);
 		else
-			updateZYView(p,is);
+			updateZYView(p, is);
 				
 		arat=az/ay;
 		width2 = (int)Math.round(fp2.getWidth()*arat);
 		height2 = (int)Math.round(fp2.getHeight()*ay);
 		String title = "YZ ";
-		if (rotate) {
-			int tmp = width2;
-			width2 = height2;
-			height2 = tmp;
+		if (rotateYZ) {
+			width2 = (int)Math.round(fp2.getWidth()*ay);
+			height2 = (int)Math.round(fp2.getHeight()*arat);
 			title = "ZY ";
 		}
+		//IJ.log("updateViews "+width2+" "+height2+" "+arat+" "+ay+" "+fp2);
 		if (width2!=fp2.getWidth()||height2!=fp2.getHeight()) {
 			fp2.setInterpolate(true);
 			ImageProcessor sfp2=fp2.resize(width2, height2);
@@ -289,7 +287,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 		if (ip instanceof FloatProcessor) {
 			fp1=new FloatProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new FloatProcessor(height,zb);
 			else
 				fp2=new FloatProcessor(zb,height);
@@ -298,7 +296,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 		if (ip instanceof ByteProcessor) {
 			fp1=new ByteProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new ByteProcessor(height,zb);
 			else
 				fp2=new ByteProcessor(zb,height);
@@ -307,21 +305,23 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 		if (ip instanceof ShortProcessor) {
 			fp1=new ShortProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new ShortProcessor(height,zb);
 			else
 				fp2=new ShortProcessor(zb,height);
+			//IJ.log("createProcessors "+rotateYZ+"  "+height+"   "+zb+"  "+fp2);
 			return true;
 		}
 		
 		if (ip instanceof ColorProcessor) {
 			fp1=new ColorProcessor(width,za);
-			if (rotate)
+			if (rotateYZ)
 				fp2=new ColorProcessor(height,zb);
 			else
 				fp2=new ColorProcessor(zb,height);
 			return true;
 		}
+		
 		return false;
 	}
 	
@@ -432,7 +432,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			}
 			fp2.setPixels(newpix);
 		}
-	
+		if (!flipXZ) fp2.flipVertical();
+		
 	}
 	
 	void updateZYView(Point p, ImageStack is) {
@@ -496,40 +497,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		path.moveTo(x, 0f);
 		path.lineTo(x, height);	
 	}
-	 
-	/*
-	boolean showDialog(ImagePlus imp)   {
-        if (imp==null) return true;
-        GenericDialog gd=new GenericDialog("Parameters");
-        gd.addMessage("This plugin projects orthogonal views\n");
-        gd.addNumericField("aspect ratio X:", ax, 3);
-        gd.addNumericField("aspect ratio Y:", ay, 3);
-        gd.addNumericField("aspect ratio Z:", az, 3);
-        gd.addCheckbox("rotate YZ", rotate);
-        gd.addCheckbox("sticky panels", sticky);
-        gd.showDialog();
-        
-        ax=(float)gd.getNextNumber();
-        ay=(float)gd.getNextNumber();
-        az=(float)gd.getNextNumber();
-        rotate=gd.getNextBoolean();
-        sticky=gd.getNextBoolean();
-        if (sticky) rotate = false;
-        if (gd.wasCanceled())
-            return false;
-        return true;
-	 }
-	     
-    void showAbout() {
-         IJ.showMessage("About StackSlicer...",
-	         "This plugin projects dynamically orthogonal XZ and YZ views of a stack.\n" + 
-	         "The user should provide a point selection in the active image window.\n" +
-	         "The output images are calibrated, which allows measurements to be performed more easily.\n" +
-	         "Optionally the YZ image can be rotated at 90 deg."
-         );
-     }
-     */
-     
+	      
 	void dispose(){
 		updater.quit();
 		updater = null;
@@ -622,10 +590,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			drawCross(xz_image, p, path);
 			xz_canvas.setDisplayList(path, color, new BasicStroke(1));
 		}
-		zcoord=(int)Math.round(brat*(z-zlice));
-		if (rotate) 
+		if (rotateYZ) {
+			if (flipXZ)
+				zcoord=(int)Math.round(brat*(z-zlice));
+			else
+				zcoord=(int)Math.round(brat*(zlice));
 			p=new Point (y, zcoord);
-		else {
+		} else {
 			zcoord=(int)Math.round(arat*zlice);
 			p=new Point (zcoord, y);
 		}
@@ -701,22 +672,18 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ImagePlus cimp = WindowManager.getCurrentImage();
 			if (cimp==null) return command;
 			if (cimp==imp) {
-				/*if (syncZoom) {
-					ImageWindow xyWin = cimp.getWindow();
-					if (xyWin==null) return command;
-					ImageCanvas ic = xyWin.getCanvas();
-					Dimension screen = IJ.getScreenSize();
-					int xyWidth = xyWin.getWidth();
-					ImageWindow yzWin = yz_image.getWindow();
-					double mag = ic.getHigherZoomLevel(ic.getMagnification());
-					if (yzWin!=null&&xyX+xyWidth+(int)(yzWin.getWidth()*mag)>screen.width) {
-						xyX = screen.width-xyWidth-(int)(yzWin.getWidth()*mag);
-						if (xyX<10) xyX = 10;
-						xyWin.setLocation(xyX, xyY);
-					}
- 				}*/
-				IJ.runPlugIn("ij.plugin.Zoom", command.toLowerCase());
-				xyX=0; xyY=0;
+				ImageCanvas ic = imp.getCanvas();
+				if (ic==null) return null;
+				int x = ic.screenX(crossLoc.x);
+				int y = ic.screenY(crossLoc.y);
+				if (command.equals("In")) {
+					ic.zoomIn(x, y);
+					if (ic.getMagnification()<=1.0) imp.repaintWindow();
+				} else {
+					ic.zoomOut(x, y);
+					if (ic.getMagnification()<1.0) imp.repaintWindow();
+				}
+				xyX=crossLoc.x; xyY=crossLoc.y;
 				update();
 				return null;
 			} else if (cimp==xz_image || cimp==yz_image) {
@@ -794,6 +761,13 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		else
 			return null;
 	}
+	
+	public static synchronized boolean isOrthoViewsImage(ImagePlus imp) {
+		if (imp==null || instance==null)
+			return false;
+		else
+			return imp==instance.imp || imp==instance.xz_image || imp==instance.yz_image;
+	}
 
 	/**
 	 * This is a helper class for Othogonal_Views that delegates the
@@ -820,6 +794,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 
 		void quit() {
+			IJ.wait(10);
 			interrupt();
 			synchronized (this) {
 				notify();
