@@ -233,9 +233,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     	int n = list.size();
     	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
     	boolean drawLabels = overlay.getDrawLabels();
-    	for (int i=0; i<n; i++) {
-    		if (overlay==null) break;
-    		drawRoi(g, (Roi)list.get(i), drawLabels?i+LIST_OFFSET:-1);
+    	boolean stackLabels = n>1 && n==imp.getStackSize() && ((Roi)list.get(0) instanceof TextRoi);
+    	if (stackLabels) {
+    		int slice = imp.getCurrentSlice();
+    		if (slice<=n) drawRoi(g, (Roi)list.get(slice-1), -1);
+    	} else {
+			for (int i=0; i<n; i++) {
+				if (overlay==null) break;
+				drawRoi(g, (Roi)list.get(i), drawLabels?i+LIST_OFFSET:-1);
+			}
     	}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }
@@ -606,9 +612,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Zooms in by making the window bigger. If it can't
 		be made bigger, then make the source rectangle 
-		(srcRect) smaller and center it at (x,y). Note that
-		x and y are screen coordinates. */
-	public void zoomIn(int x, int y) {
+		(srcRect) smaller and center it at (sx,sy). Note that
+		sx and sy are screen coordinates. */
+	public void zoomIn(int sx, int sy) {
 		if (magnification>=32) return;
 		double newMag = getHigherZoomLevel(magnification);
 		int newWidth = (int)(imageWidth*newMag);
@@ -617,12 +623,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (newSize!=null) {
 			setDrawingSize(newSize.width, newSize.height);
 			if (newSize.width!=newWidth || newSize.height!=newHeight)
-				adjustSourceRect(newMag, x, y);
+				adjustSourceRect(newMag, sx, sy);
 			else
 				setMagnification(newMag);
 			imp.getWindow().pack();
 		} else
-			adjustSourceRect(newMag, x, y);
+			adjustSourceRect(newMag, sx, sy);
 		repaint();
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 			resetMaxBounds();

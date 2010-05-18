@@ -1617,7 +1617,8 @@ public class IJ {
 		suppressPluginNotFoundError = true;
 	}
 
-	/** Returns an instance of the class loader ImageJ uses to run plugins. */
+	/** Returns the class loader ImageJ uses to run plugins or the
+		system class loader if Menus.getPlugInsPath() returns null. */
 	public static ClassLoader getClassLoader() {
 		if (classLoader==null) {
 			String pluginsDir = Menus.getPlugInsPath();

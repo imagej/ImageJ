@@ -1153,6 +1153,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		trimProcessor();
 	}
 	
+	/** Sets the current hyperstack position and updates the display,
+		where 'channel', 'slice' and 'frame' are one-based indexes. */
 	public void setPosition(int channel, int slice, int frame) {
 		//IJ.log("setPosition: "+channel+"  "+slice+"  "+frame+"  "+noUpdateMode);
 		verifyDimensions();
@@ -1170,13 +1172,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 	}
 	
+	/** Sets the current hyperstack position without updating the display,
+		where 'channel', 'slice' and 'frame' are one-based indexes. */
 	public void setPositionWithoutUpdate(int channel, int slice, int frame) {
 		noUpdateMode = true;
 		setPosition(channel, slice, frame);
 		noUpdateMode = false;
 	}
 	
-	/** Returns that stack index (1-based) corresponding to the specified position. */
+	/** Returns that stack index (one-based) corresponding to the specified position. */
 	public int getStackIndex(int channel, int slice, int frame) {	
    		if (channel<1) channel = 1;
     	if (channel>nChannels) channel = nChannels;
