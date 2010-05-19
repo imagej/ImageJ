@@ -120,6 +120,7 @@ public class AVI_Writer implements PlugInFilter {
         //  G e t   s t a c k   p r o p e r t i e s
         boolean isComposite = imp.isComposite();
         boolean isHyperstack = imp.isHyperStack();
+        boolean isOverlay = imp.getOverlay()!=null && !imp.getHideOverlay();
         xDim = imp.getWidth();   //image width
         yDim = imp.getHeight();   //image height
         zDim = imp.getStackSize(); //number of frames in video
@@ -144,12 +145,11 @@ public class AVI_Writer implements PlugInFilter {
 				isHyperstack = false;
 		}
 
-        if (imp.getType()==ImagePlus.COLOR_RGB || isComposite || biCompression==JPEG_COMPRESSION)
+        if (imp.getType()==ImagePlus.COLOR_RGB || isComposite || biCompression==JPEG_COMPRESSION || isOverlay)
             bytesPerPixel = 3;  //color and JPEG-compressed files
         else
             bytesPerPixel = 1;  //gray 8, 16, 32 bit and indexed color: all written as 8 bit
-        //boolean isColor = imp.getType()==ImagePlus.COLOR_RGB || isComposite || imp.getProcessor().isColorLut();
-        boolean writeLUT = bytesPerPixel==1; // QuickTime reads the avi palette also for PNG
+		boolean writeLUT = bytesPerPixel==1; // QuickTime reads the avi palette also for PNG
         linePad = 0;
         int minLineLength = bytesPerPixel*xDim;
         if (biCompression==NO_COMPRESSION && minLineLength%4!=0)
@@ -270,14 +270,20 @@ public class AVI_Writer implements PlugInFilter {
             IJ.showProgress(z, zDim);
             IJ.showStatus(z+"/"+zDim);
             ImageProcessor ip = null;      // get the image to write ...
-            if (isComposite || isHyperstack) {
+            if (isComposite || isHyperstack || isOverlay) {
 				if (saveFrames)
 					imp.setPositionWithoutUpdate(channel, slice, z+1);
 				else if (saveSlices)
 					imp.setPositionWithoutUpdate(channel, z+1, frame);
 				else if (saveChannels)
 					imp.setPositionWithoutUpdate(z+1, slice, frame);
-				ip = new ColorProcessor(imp.getImage());
+				ImagePlus imp2 = imp;
+				if (isOverlay) {
+					if (!(saveFrames||saveSlices||saveChannels))
+						imp.setPositionWithoutUpdate(channel, z+1, frame);
+					imp2 = imp.flatten();
+				}
+				ip = new ColorProcessor(imp2.getImage());
             } else
                 ip = zDim==1 ? imp.getProcessor() : imp.getStack().getProcessor(z+1);
             int chunkPointer = (int)raFile.getFilePointer();

@@ -229,20 +229,22 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     	if (imp!=null && imp.getHideOverlay())
     		return;
 		initGraphics(g);
-		Vector list = overlay.getVector();
-    	int n = list.size();
+    	int n = overlay.size();
     	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
     	boolean drawLabels = overlay.getDrawLabels();
-    	boolean stackLabels = n>1 && n==imp.getStackSize() && ((Roi)list.get(0) instanceof TextRoi);
-    	if (stackLabels) {
-    		int slice = imp.getCurrentSlice();
-    		if (slice<=n) drawRoi(g, (Roi)list.get(slice-1), -1);
-    	} else {
-			for (int i=0; i<n; i++) {
-				if (overlay==null) break;
-				drawRoi(g, (Roi)list.get(i), drawLabels?i+LIST_OFFSET:-1);
-			}
+    	int stackSize = imp.getStackSize();
+    	boolean stackLabels = n>1 && n>=stackSize && (overlay.get(0) instanceof TextRoi) && (overlay.get(stackSize-1) instanceof TextRoi);
+    	if (stackLabels) { // created by Image>Stacks>Label
+    		int index = imp.getCurrentSlice()-1;
+    		if (index<n) {
+    			overlay.hide(0, index-1);
+     			overlay.hide(index+1, stackSize-1);
+   			}
     	}
+		for (int i=0; i<n; i++) {
+			if (overlay==null) break;
+			drawRoi(g, overlay.get(i), drawLabels?i+LIST_OFFSET:-1);
+		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }
     

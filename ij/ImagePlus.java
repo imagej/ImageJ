@@ -1961,7 +1961,18 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imp2.flatteningCanvas = ic2;
 		imp2.setRoi(getRoi());	
 		ImageCanvas ic = getCanvas();
-		ic2.setOverlay(getOverlay());
+		Overlay overlay2 = getOverlay();
+		int n = overlay2.size();
+    	int stackSize = getStackSize();
+    	boolean stackLabels = n>1 && n>=stackSize && (overlay2.get(0) instanceof TextRoi) && (overlay2.get(stackSize-1) instanceof TextRoi);
+    	if (stackLabels) { // created by Image>Stacks>Label
+    		int index = getCurrentSlice()-1;
+    		if (index<n) {
+    			overlay2.hide(0, index-1);
+     			overlay2.hide(index+1, stackSize-1);
+   			}
+    	}
+		ic2.setOverlay(overlay2);
 		if (ic!=null)
 			ic2.setShowAllROIs(ic.getShowAllROIs());
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

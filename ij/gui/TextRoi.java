@@ -157,6 +157,10 @@ public class TextRoi extends Roi {
 	}
 	
 	void drawText(Graphics g) {
+		if (hide) {
+			hide = false;
+			return;
+		}
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
 		Java2.setAntialiasedText(g, antialiasedText);
 		if (newFont || width==1)
