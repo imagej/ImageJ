@@ -520,7 +520,7 @@ public class PolygonRoi extends Roi {
 		for (int i=0; i<points.npoints; i++) {
 			double dx = points.xpoints[i] - x;
 			double dy = points.ypoints[i] - y;
-			double distance2 = Math.sqrt(dx*dx+dy*dy);
+			double distance2 = dx*dx+dy*dy;
 			if (distance2<distance) {
 				distance = distance2;
 				index = i;

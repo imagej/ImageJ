@@ -86,6 +86,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private ImageCanvas flatteningCanvas;
 	private Overlay overlay;
 	private boolean hideOverlay;
+	private static int max16bitValue; //0==auto-scale
+
 
     /** Constructs an uninitialized ImagePlus. */
     public ImagePlus() {
@@ -377,6 +379,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 					}
 				}
 			}
+			if (imageType==GRAY16 && max16bitValue>0)
+				resetDisplayRange();
 			notifyListeners(OPENED);
 		}
 	}
@@ -1943,7 +1947,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 
 	public void resetDisplayRange() {
-		ip.resetMinAndMax();
+		if (imageType==GRAY16 && max16bitValue>0 && !(getCalibration().isSigned16Bit()))
+			ip.setMinAndMax(0, max16bitValue);
+		else
+			ip.resetMinAndMax();
 	}
 	
 	public void updatePosition(int c, int z, int t) {
@@ -1963,15 +1970,15 @@ public class ImagePlus implements ImageObserver, Measurements {
 		ImageCanvas ic = getCanvas();
 		Overlay overlay2 = getOverlay();
 		int n = overlay2.size();
-    	int stackSize = getStackSize();
-    	boolean stackLabels = n>1 && n>=stackSize && (overlay2.get(0) instanceof TextRoi) && (overlay2.get(stackSize-1) instanceof TextRoi);
-    	if (stackLabels) { // created by Image>Stacks>Label
-    		int index = getCurrentSlice()-1;
-    		if (index<n) {
-    			overlay2.hide(0, index-1);
-     			overlay2.hide(index+1, stackSize-1);
-   			}
-    	}
+		int stackSize = getStackSize();
+		boolean stackLabels = n>1 && n>=stackSize && (overlay2.get(0) instanceof TextRoi) && (overlay2.get(stackSize-1) instanceof TextRoi);
+		if (stackLabels) { // created by Image>Stacks>Label
+			int index = getCurrentSlice()-1;
+			if (index<n) {
+				overlay2.hide(0, index-1);
+				overlay2.hide(index+1, stackSize-1);
+			}
+		}
 		ic2.setOverlay(overlay2);
 		if (ic!=null)
 			ic2.setShowAllROIs(ic.getShowAllROIs());
@@ -2048,6 +2055,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 
     public String toString() {
     	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
+    }
+    
+    public static void setMax16bitValue(int max) {
+    	if (max<0) max = 0;
+    	if (max>65535) max = 65535;
+    	max16bitValue = max;
+    }
+    
+    public static int getMax16bitValue() {
+    	return max16bitValue;
     }
 
 }

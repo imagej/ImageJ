@@ -6,7 +6,6 @@ import ij.*;
 public class Overlay {
 	private Vector list;
     private boolean label;
-    private int activeRoi = -1;
     
     public Overlay() {
     	list = new Vector();

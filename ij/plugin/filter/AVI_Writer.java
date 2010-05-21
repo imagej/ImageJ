@@ -149,7 +149,7 @@ public class AVI_Writer implements PlugInFilter {
             bytesPerPixel = 3;  //color and JPEG-compressed files
         else
             bytesPerPixel = 1;  //gray 8, 16, 32 bit and indexed color: all written as 8 bit
-		boolean writeLUT = bytesPerPixel==1; // QuickTime reads the avi palette also for PNG
+        boolean writeLUT = bytesPerPixel==1; // QuickTime reads the avi palette also for PNG
         linePad = 0;
         int minLineLength = bytesPerPixel*xDim;
         if (biCompression==NO_COMPRESSION && minLineLength%4!=0)

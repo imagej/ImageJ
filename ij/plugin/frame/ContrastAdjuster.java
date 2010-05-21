@@ -21,6 +21,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
+	static final String[] ranges = {"Automatic", "8-bit (0-255)", "10-bit (0-1023)", "12-bit (0-4095)", "15-bit (0-32767)", "16-bit (0-65535)"};
 	
 	ContrastPlot plot = new ContrastPlot();
 	Thread thread;
@@ -761,8 +762,9 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		double maxValue = cal.getCValue(max);
 		int channels = imp.getNChannels();
 		GenericDialog gd = new GenericDialog("Set Display Range");
-		gd.addNumericField("Minimum Displayed Value: ", minValue, digits);
-		gd.addNumericField("Maximum Displayed Value: ", maxValue, digits);
+		gd.addNumericField("Minimum displayed value: ", minValue, digits);
+		gd.addNumericField("Maximum displayed value: ", maxValue, digits);
+		gd.addChoice("Unsigned 16-bit range:", ranges, ranges[getRangeIndex()]);
 		gd.addCheckbox("Propagate to all open images", false);
 		if (imp.isComposite())
 			gd.addCheckbox("Propagate to all "+channels+" channels", false);
@@ -773,6 +775,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		maxValue = gd.getNextNumber();
 		minValue = cal.getRawValue(minValue);
 		maxValue = cal.getRawValue(maxValue);
+		int rangeIndex = gd.getNextChoiceIndex();
+		int max1 = ImagePlus.getMax16bitValue();
+		int max2 = setRange(rangeIndex);
+		if (max1!=max2 && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
+			reset(imp, ip);
+			minValue = imp.getDisplayRangeMin();
+			maxValue = imp.getDisplayRangeMax();
+		}
 		boolean propagate = gd.getNextBoolean();
 		boolean allChannels = imp.isComposite()&&gd.getNextBoolean();
 		if (maxValue>=minValue) {
@@ -804,8 +814,35 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 					}
 					Recorder.record("setMinAndMax", imin, imax);
 				}
+				if (Recorder.scriptMode())
+					Recorder.recordCall("ImagePlus.setMax16bitValue("+max2+");");
+				else
+					Recorder.recordString("call(\"ij.ImagePlus.setMax16bitValue\", "+max2+");\n");
+
 			}
 		}
+	}
+	
+	int getRangeIndex() {
+		int max = ImagePlus.getMax16bitValue();
+		int index = 0;
+		if (max==255) index = 1;
+		else if (max==1023) index = 2;
+		else if (max==4095) index = 3;
+		else if (max==32767) index = 4;
+		else if (max==65535) index = 5;
+		return index;
+	}
+
+	int setRange(int index) {
+		int max = 0;
+		if (index==1) max = 255;
+		else if (index==2) max = 1023;
+		else if (index==3) max = 4095;
+		else if (index==4) max = 32767;
+		else if (index==5) max = 65535;
+		ImagePlus.setMax16bitValue(max);
+		return max;
 	}
 
 	void setWindowLevel(ImagePlus imp, ImageProcessor ip) {

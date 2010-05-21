@@ -225,28 +225,28 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return slice;
 	}
 
-    void drawOverlay(Graphics g) {
-    	if (imp!=null && imp.getHideOverlay())
-    		return;
+	void drawOverlay(Graphics g) {
+		if (imp!=null && imp.getHideOverlay())
+			return;
 		initGraphics(g);
-    	int n = overlay.size();
-    	if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
-    	boolean drawLabels = overlay.getDrawLabels();
-    	int stackSize = imp.getStackSize();
-    	boolean stackLabels = n>1 && n>=stackSize && (overlay.get(0) instanceof TextRoi) && (overlay.get(stackSize-1) instanceof TextRoi);
-    	if (stackLabels) { // created by Image>Stacks>Label
-    		int index = imp.getCurrentSlice()-1;
-    		if (index<n) {
-    			overlay.hide(0, index-1);
-     			overlay.hide(index+1, stackSize-1);
-   			}
-    	}
+		int n = overlay.size();
+		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
+		boolean drawLabels = overlay.getDrawLabels();
+		int stackSize = imp.getStackSize();
+		boolean stackLabels = n>1 && n>=stackSize && (overlay.get(0) instanceof TextRoi) && (overlay.get(stackSize-1) instanceof TextRoi);
+		if (stackLabels) { // created by Image>Stacks>Label
+			int index = imp.getCurrentSlice()-1;
+			if (index<n) {
+				overlay.hide(0, index-1);
+				overlay.hide(index+1, stackSize-1);
+			}
+		}
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			drawRoi(g, overlay.get(i), drawLabels?i+LIST_OFFSET:-1);
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
-    }
+	}
     
     void initGraphics(Graphics g) {
 		if (smallFont==null) {

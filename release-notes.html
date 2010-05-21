@@ -5,10 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.44b, 19 May 2010</u>
+<li> <u>1.44b, 21 May 2010</u>
 <ul> 
+<li> Added a "Unsigned 16-bit range" drop down menu to the "Set" dialog of the 
+<i>Image&gt;Adjust&gt;Contrast/Brightness</i> tool.
 <li> Added a "Use overlay" option to <i>Image&gt;Stacks&gt;Label</i>.
-<li> The <i>File&gt;Export&gt;AVI</i> command now preserves overlays.
+<li> <i>File&gt;Export&gt;AVI</i> and <i>File&gt;Export&gt;Image Sequence</i> 
+(when saving JPEG or PNG) now preserve overlays.
+<li> Fixed a bug that caused the getResult() macro function to return NaN
+with imported results containing column headers with leading or trailing spaces.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
