@@ -61,6 +61,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
                 gd.addDialogListener(this);
                 previewing = true;
             }
+			gd.addHelp(IJ.URL+"/docs/menus/process.html#options");
             gd.showDialog();
             previewing = false;
             if (gd.wasCanceled()) return DONE;

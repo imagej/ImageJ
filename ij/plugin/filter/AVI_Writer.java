@@ -280,7 +280,7 @@ public class AVI_Writer implements PlugInFilter {
 				ImagePlus imp2 = imp;
 				if (isOverlay) {
 					if (!(saveFrames||saveSlices||saveChannels))
-						imp.setPositionWithoutUpdate(channel, z+1, frame);
+						imp.setSliceWithoutUpdate(z+1);
 					imp2 = imp.flatten();
 				}
 				ip = new ColorProcessor(imp2.getImage());
