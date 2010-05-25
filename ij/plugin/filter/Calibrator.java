@@ -91,8 +91,9 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		gd.addTextAreas(xText, yText, 20, 14);
 		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
 		gd.addPanel(makeButtonPanel(gd));
-		gd.addCheckbox("Global Calibration", global1);
+		gd.addCheckbox("Global calibration", global1);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
+		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#cal");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

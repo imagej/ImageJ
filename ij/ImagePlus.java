@@ -1953,6 +1953,16 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip.resetMinAndMax();
 	}
 	
+    public static void setDefault16bitRange(int max) {
+    	if (max<0) max = 0;
+    	if (max>65535) max = 65535;
+    	max16bitValue = max;
+    }
+    
+    public static int getDefault16bitRange() {
+    	return max16bitValue;
+    }
+
 	public void updatePosition(int c, int z, int t) {
 		//IJ.log("updatePosition: "+c+", "+z+", "+t);
 		position[0] = c;
@@ -2057,14 +2067,4 @@ public class ImagePlus implements ImageObserver, Measurements {
     	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
     }
     
-    public static void setMax16bitValue(int max) {
-    	if (max<0) max = 0;
-    	if (max>65535) max = 65535;
-    	max16bitValue = max;
-    }
-    
-    public static int getMax16bitValue() {
-    	return max16bitValue;
-    }
-
 }

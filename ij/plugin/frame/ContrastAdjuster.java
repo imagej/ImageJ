@@ -776,7 +776,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		minValue = cal.getRawValue(minValue);
 		maxValue = cal.getRawValue(maxValue);
 		int rangeIndex = gd.getNextChoiceIndex();
-		int max1 = ImagePlus.getMax16bitValue();
+		int max1 = ImagePlus.getDefault16bitRange();
 		int max2 = setRange(rangeIndex);
 		if (max1!=max2 && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
 			reset(imp, ip);
@@ -815,16 +815,16 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 					Recorder.record("setMinAndMax", imin, imax);
 				}
 				if (Recorder.scriptMode())
-					Recorder.recordCall("ImagePlus.setMax16bitValue("+max2+");");
+					Recorder.recordCall("ImagePlus.setDefault16bitRange("+max2+");");
 				else
-					Recorder.recordString("call(\"ij.ImagePlus.setMax16bitValue\", "+max2+");\n");
+					Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+max2+");\n");
 
 			}
 		}
 	}
 	
 	int getRangeIndex() {
-		int max = ImagePlus.getMax16bitValue();
+		int max = ImagePlus.getDefault16bitRange();
 		int index = 0;
 		if (max==255) index = 1;
 		else if (max==1023) index = 2;
@@ -841,7 +841,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		else if (index==3) max = 4095;
 		else if (index==4) max = 32767;
 		else if (index==5) max = 65535;
-		ImagePlus.setMax16bitValue(max);
+		ImagePlus.setDefault16bitRange(max);
 		return max;
 	}
 

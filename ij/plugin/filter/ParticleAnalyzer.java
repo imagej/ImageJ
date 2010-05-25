@@ -136,6 +136,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private boolean hideOutputImage;
 	private int roiType;
 	private int wandMode = Wand.LEGACY_MODE;
+	private Overlay overlay;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -294,7 +295,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		labels[6]="Add to Manager"; states[6]=(options&ADD_TO_MANAGER)!=0;
 		labels[7]="In_situ Show"; states[7]=(options&IN_SITU_SHOW)!=0;
 		gd.addCheckboxGroup(4, 2, labels, states);
-
+        gd.addHelp(IJ.URL+"/docs/menus/analyze.html#ap");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -861,20 +862,29 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 
 	void drawOutline(ImageProcessor ip, Roi roi, int count) {
-		Rectangle r = roi.getBounds();
-		int nPoints = ((PolygonRoi)roi).getNCoordinates();
-		int[] xp = ((PolygonRoi)roi).getXCoordinates();
-		int[] yp = ((PolygonRoi)roi).getYCoordinates();
-		int x=r.x, y=r.y;
-		ip.setValue(0.0);
-		ip.moveTo(x+xp[0], y+yp[0]);
-		for (int i=1; i<nPoints; i++)
-			ip.lineTo(x+xp[i], y+yp[i]);
-		ip.lineTo(x+xp[0], y+yp[0]);
-		String s = ResultsTable.d2s(count,0);
-		ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
-		ip.setValue(1.0);
-		ip.drawString(s);
+		if (inSituShow) {
+			if (overlay==null) {
+				overlay = new Overlay();
+				overlay.drawLabels(true);
+			}
+			roi.setStrokeColor(Color.cyan);
+			overlay.add((Roi)roi.clone());
+		} else {
+			Rectangle r = roi.getBounds();
+			int nPoints = ((PolygonRoi)roi).getNCoordinates();
+			int[] xp = ((PolygonRoi)roi).getXCoordinates();
+			int[] yp = ((PolygonRoi)roi).getYCoordinates();
+			int x=r.x, y=r.y;
+			ip.setValue(0.0);
+			ip.moveTo(x+xp[0], y+yp[0]);
+			for (int i=1; i<nPoints; i++)
+				ip.lineTo(x+xp[i], y+yp[i]);
+			ip.lineTo(x+xp[0], y+yp[0]);
+			String s = ResultsTable.d2s(count,0);
+			ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
+			ip.setValue(1.0);
+			ip.drawString(s);
+		}
 	}
 
 	void drawEllipse(ImageProcessor ip, ImageStatistics stats, int count) {
@@ -905,9 +915,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			outlines.update(drawIP);
 			outputImage = new ImagePlus(prefix+title, outlines);
 			if (inSituShow) {
-				if (imp.getStackSize()==1)
-					Undo.setup(Undo.TRANSFORM, imp);
-				imp.setStack(null, outputImage.getStack());
+				if (overlay!=null) {
+					//imp.getProcessor().resetThreshold();
+					imp.setOverlay(overlay);
+				} else {
+					if (imp.getStackSize()==1)
+						Undo.setup(Undo.TRANSFORM, imp);
+					imp.setStack(null, outputImage.getStack());
+				}
 			} else if (!hideOutputImage)
 				outputImage.show();
 		}
