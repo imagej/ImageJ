@@ -2,6 +2,7 @@ package ij.gui;
 import java.awt.*;
 import java.util.Vector;
 import ij.*;
+import ij.process.ImageProcessor;
 
 public class Overlay {
 	private Vector list;
@@ -32,11 +33,6 @@ public class Overlay {
     	list.remove(roi);
     }
 
-    //public void remove(int x, int y) {
-    //	Roi roi = get(x, y);
-    //	if (roi!=null) remove(roi);
-    //}
-
     public void clear() {
     	list.clear();
     }
@@ -45,17 +41,6 @@ public class Overlay {
     	return (Roi)list.get(i);
     }
     
-    //public synchronized Roi get(int x, int y) {
-    // 	for (int i=0; i<list.size(); i++) {
-    //		Roi roi = (Roi)list.get(i);
-    //		if (roi==null) return null;
-    //		Rectangle bounds = roi.getBounds();
-    //		if (bounds.x==x && bounds.y==y)
-    //			return roi;
-    //	}
-    //	return null;
-    //}
-
     public int size() {
     	return list.size();
     }
@@ -65,7 +50,13 @@ public class Overlay {
     	return (Roi[])list.toArray(array);
     }
     
-    public String toString() {
+    public void drawPixels(ImageProcessor ip) {
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++)
+			rois[i].drawPixels(ip);
+	}
+	
+	public String toString() {
     	return list.toString();
     }
     

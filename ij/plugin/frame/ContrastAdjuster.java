@@ -776,9 +776,9 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		minValue = cal.getRawValue(minValue);
 		maxValue = cal.getRawValue(maxValue);
 		int rangeIndex = gd.getNextChoiceIndex();
-		int max1 = ImagePlus.getDefault16bitRange();
-		int max2 = setRange(rangeIndex);
-		if (max1!=max2 && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
+		int range1 = ImagePlus.getDefault16bitRange();
+		int range2 = setRange(rangeIndex);
+		if (range1!=range2 && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
 			reset(imp, ip);
 			minValue = imp.getDisplayRangeMin();
 			maxValue = imp.getDisplayRangeMax();
@@ -815,34 +815,34 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 					Recorder.record("setMinAndMax", imin, imax);
 				}
 				if (Recorder.scriptMode())
-					Recorder.recordCall("ImagePlus.setDefault16bitRange("+max2+");");
+					Recorder.recordCall("ImagePlus.setDefault16bitRange("+range2+");");
 				else
-					Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+max2+");\n");
+					Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+range2+");\n");
 
 			}
 		}
 	}
 	
 	int getRangeIndex() {
-		int max = ImagePlus.getDefault16bitRange();
+		int range = ImagePlus.getDefault16bitRange();
 		int index = 0;
-		if (max==255) index = 1;
-		else if (max==1023) index = 2;
-		else if (max==4095) index = 3;
-		else if (max==32767) index = 4;
-		else if (max==65535) index = 5;
+		if (range==8) index = 1;
+		else if (range==10) index = 2;
+		else if (range==12) index = 3;
+		else if (range==15) index = 4;
+		else if (range==16) index = 5;
 		return index;
 	}
 
 	int setRange(int index) {
-		int max = 0;
-		if (index==1) max = 255;
-		else if (index==2) max = 1023;
-		else if (index==3) max = 4095;
-		else if (index==4) max = 32767;
-		else if (index==5) max = 65535;
-		ImagePlus.setDefault16bitRange(max);
-		return max;
+		int range = 0;
+		if (index==1) range = 8;
+		else if (index==2) range = 10;
+		else if (index==3) range = 12;
+		else if (index==4) range = 15;
+		else if (index==5) range = 16;
+		ImagePlus.setDefault16bitRange(range);
+		return range;
 	}
 
 	void setWindowLevel(ImagePlus imp, ImageProcessor ip) {

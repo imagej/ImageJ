@@ -86,7 +86,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	private ImageCanvas flatteningCanvas;
 	private Overlay overlay;
 	private boolean hideOverlay;
-	private static int max16bitValue; //0==auto-scale
+	private static int default16bitDisplayRange;
 
 
     /** Constructs an uninitialized ImagePlus. */
@@ -379,7 +379,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 					}
 				}
 			}
-			if (imageType==GRAY16 && max16bitValue>0)
+			if (imageType==GRAY16 && default16bitDisplayRange!=0)
 				resetDisplayRange();
 			notifyListeners(OPENED);
 		}
@@ -1947,20 +1947,23 @@ public class ImagePlus implements ImageObserver, Measurements {
 	}
 
 	public void resetDisplayRange() {
-		if (imageType==GRAY16 && max16bitValue>0 && !(getCalibration().isSigned16Bit()))
-			ip.setMinAndMax(0, max16bitValue);
-		else
+		if (imageType==GRAY16 && default16bitDisplayRange>=8 && default16bitDisplayRange<=16 && !(getCalibration().isSigned16Bit())) {
+			ip.setMinAndMax(0, Math.pow(2,default16bitDisplayRange)-1);
+		} else
 			ip.resetMinAndMax();
 	}
 	
-    public static void setDefault16bitRange(int max) {
-    	if (max<0) max = 0;
-    	if (max>65535) max = 65535;
-    	max16bitValue = max;
+    /** Set the default 16-bit display range, where 'bitDepth' must be 0 (auto-scaling), 
+    	8 (0-255), 10 (0-1023), 12 (0-4095, 15 (0-32767) or 16 (0-65535). */
+    public static void setDefault16bitRange(int bitDepth) {
+    	if (!(bitDepth==8 || bitDepth==10 || bitDepth==12 || bitDepth==15 || bitDepth==16))
+    		bitDepth = 0;
+    	default16bitDisplayRange = bitDepth;
     }
     
+    /** Returns the default 16-bit display range, 0 (auto-scaling), 8, 10, 12, 15 or 16. */
     public static int getDefault16bitRange() {
-    	return max16bitValue;
+    	return default16bitDisplayRange;
     }
 
 	public void updatePosition(int c, int z, int t) {
