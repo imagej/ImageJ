@@ -4,57 +4,84 @@ import java.util.Vector;
 import ij.*;
 import ij.process.ImageProcessor;
 
+/** An Overlay is a list of Rois that can be drawn non-destructively on an Image. */
 public class Overlay {
 	private Vector list;
     private boolean label;
     
+    /** Constructs an empty Overlay. */
     public Overlay() {
     	list = new Vector();
     }
     
+    /** Constructs an Overlay from the specified Roi. */
     public Overlay(Roi roi) {
     	list = new Vector();
     	list.add(roi);
     }
 
+    /** Adds an Roi to this Overlay. */
     public void add(Roi roi) {
     	list.add(roi);
     }
 
+    /** Adds an Roi to this Overlay. */
     public void addElement(Roi roi) {
     	list.add(roi);
     }
 
+    /** Removes the Roi with the specified index from this Overlay. */
     public void remove(int index) {
     	list.remove(index);
     }
     
+    /** Removes the specified Roi from this Overlay. */
     public void remove(Roi roi) {
     	list.remove(roi);
     }
 
+   /** Removes all the Rois in this Overlay. */
     public void clear() {
     	list.clear();
     }
 
-    public Roi get(int i) {
-    	return (Roi)list.get(i);
+    /** Returns the Roi with the specified index. */
+    public Roi get(int index) {
+    	return (Roi)list.get(index);
     }
     
+    /** Returns the number of Rois in this Overlay. */
     public int size() {
     	return list.size();
     }
     
+    /** Returns on array containing the Rois in this Overlay. */
     public Roi[] toArray() {
     	Roi[] array = new Roi[list.size()];
     	return (Roi[])list.toArray(array);
     }
     
-    public void drawPixels(ImageProcessor ip) {
+    /** Sets the stroke color of all the Rois in this overlay. */
+    public void setStrokeColor(Color color) {
 		Roi[] rois = toArray();
 		for (int i=0; i<rois.length; i++)
-			rois[i].drawPixels(ip);
+			rois[i].setStrokeColor(color);
 	}
+
+    /** Sets the fill color of all the Rois in this overlay. */
+    public void setFillColor(Color color) {
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++)
+			rois[i].setFillColor(color);
+	}
+
+    /** Draws outlines of the Rois in this Overlay on the specified
+    	ImageProcessor using the current color and line width of 'ip'. */
+    //public void draw(ImageProcessor ip) {
+	//	Roi[] rois = toArray();
+	//	for (int i=0; i<rois.length; i++)
+	//		rois[i].drawPixels(ip);
+	//}
 	
 	public String toString() {
     	return list.toString();
