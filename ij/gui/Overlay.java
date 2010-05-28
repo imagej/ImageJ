@@ -14,7 +14,7 @@ public class Overlay {
     	list = new Vector();
     }
     
-    /** Constructs an Overlay from the specified Roi. */
+    /** Constructs an Overlay and adds the specified Roi. */
     public Overlay(Roi roi) {
     	list = new Vector();
     	list.add(roi);

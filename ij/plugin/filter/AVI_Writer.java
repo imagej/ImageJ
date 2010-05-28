@@ -398,12 +398,21 @@ public class AVI_Writer implements PlugInFilter {
 
     /** Write a frame as jpeg- or png-compressed image */
 	private void writeCompressedFrame(ImageProcessor ip) throws IOException {
-		BufferedImage bufferedImage = ip.getBufferedImage();
 		//IJ.log("BufferdImage Type="+bufferedImage.getType()); // 1=RGB, 13=indexed
-		if (biCompression == JPEG_COMPRESSION)
-			ImageIO.write(bufferedImage, "jpeg", raOutputStream);
-		else //if (biCompression == PNG_COMPRESSION)
-			ImageIO.write(bufferedImage, "png", raOutputStream);
+		if (biCompression==JPEG_COMPRESSION) {
+			BufferedImage bi = getBufferedImage(ip);
+			ImageIO.write(bi, "jpeg", raOutputStream);
+		} else { //if (biCompression==PNG_COMPRESSION) {
+			BufferedImage bi = ip.getBufferedImage();
+			ImageIO.write(bi, "png", raOutputStream);
+		}
+	}
+
+	private BufferedImage getBufferedImage(ImageProcessor ip) {
+		BufferedImage bi = new BufferedImage(ip.getWidth(), ip.getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = (Graphics2D)bi.getGraphics();
+		g.drawImage(ip.createImage(), 0, 0, null);
+		return bi;
 	}
 
     /** Write the color table entries (for 8 bit grayscale or indexed color).
