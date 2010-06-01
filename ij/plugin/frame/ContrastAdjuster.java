@@ -568,8 +568,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				pixels = b;
 			ImageProcessor ip = new ByteProcessor(w, h, pixels, null);
 			stats = ImageStatistics.getStatistics(ip, 0, imp.getCalibration());
-		} else
-			stats = imp.getStatistics();
+		} else {
+			int range = imp.getType()==ImagePlus.GRAY16?ImagePlus.getDefault16bitRange():0;
+			if (range!=0 && imp.getProcessor().getMax()==Math.pow(2,range)-1 && !(imp.getCalibration().isSigned16Bit())) {
+				ImagePlus imp2 = new ImagePlus("Temp", imp.getProcessor());
+				stats = new StackStatistics(imp2, 256, 0, Math.pow(2,range));
+			} else
+				stats = imp.getStatistics();
+		}
 		Color color = Color.gray;
 		if (imp.isComposite() && !(balance&&channels==7))
 			color = ((CompositeImage)imp).getChannelColor();

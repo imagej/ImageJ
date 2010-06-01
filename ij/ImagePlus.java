@@ -379,8 +379,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 					}
 				}
 			}
-			if (imageType==GRAY16 && default16bitDisplayRange!=0)
+			if (imageType==GRAY16 && default16bitDisplayRange!=0) {
 				resetDisplayRange();
+				updateAndDraw();
+			}
 			notifyListeners(OPENED);
 		}
 	}

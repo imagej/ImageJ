@@ -4257,7 +4257,9 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Zero length array");
 		fitter = new CurveFitter(x, y);
 		if (fit==-1 && name!=null) {
+			Interpreter instance = Interpreter.getInstance();
 			int params = fitter.doCustomFit(name, initialValues, showFitDialog);
+			Interpreter.instance = instance;
 			if (params==0)
 				interp.error("Invalid custom function");
 		} else
