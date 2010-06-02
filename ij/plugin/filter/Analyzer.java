@@ -40,6 +40,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static ResultsTable systemRT = new ResultsTable();
 	private static int redirectTarget;
 	private static String redirectTitle = "";
+	private static ImagePlus redirectImage; // non-displayed images
 	static int firstParticle, lastParticle;
 	private static boolean summarized;
 	private static boolean switchingModes;
@@ -154,6 +155,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int index = gd.getNextChoiceIndex();
 		redirectTarget = index==0?0:wList[index-1];
 		redirectTitle = titles[index];
+		redirectImage = null;
 
 		int prec = (int)gd.getNextNumber();
 		if (prec<0) prec = 0;
@@ -239,9 +241,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (imp==null) {
 			redirectTarget = 0;
 			redirectTitle = null;
+			redirectImage = null;
 		} else {
 			redirectTarget = imp.getID();
 			redirectTitle = imp.getTitle();
+			if (imp.getWindow()==null)
+				redirectImage = imp;
 		}
 	}
 	
@@ -251,6 +256,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		image is not the same size as <code>currentImage</code>. */
 	public static ImagePlus getRedirectImage(ImagePlus currentImage) {
 		ImagePlus rImp = WindowManager.getImage(redirectTarget);
+		if (rImp==null)
+			rImp = redirectImage;
 		if (rImp==null) {
 			IJ.error("Analyzer", "Redirect image (\""+redirectTitle+"\")\n"
 				+ "not found.");
@@ -585,6 +592,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (imp!=null) {
 			if (redirectTarget!=0) {
 				ImagePlus rImp = WindowManager.getImage(redirectTarget);
+				if (rImp==null) rImp = redirectImage;
 				if (rImp!=null) s = rImp.getTitle();				
 			} else
 				s = imp.getTitle();
