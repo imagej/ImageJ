@@ -645,6 +645,8 @@ public class ResultsTable implements Cloneable {
 				headings[i] = "C"+(i+1);
 		}
 		int firstColumn = headings[0].equals(" ")?1:0;
+		for (int i=0; i<headings.length; i++)
+			headings[i] = headings[i].trim();
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
 		int rtn = 0;

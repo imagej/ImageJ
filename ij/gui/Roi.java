@@ -59,6 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
+	protected boolean hide;
 
 
 
@@ -1334,7 +1335,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ic!=null;
 	}
 
-
     /** Checks whether two rectangles are equal. */
     public boolean equals(Object obj) {
 		if (obj instanceof Roi) {
@@ -1349,6 +1349,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	public String toString() {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
+	}
+
+	public void hide() {
+		hide = true;
 	}
 
 }

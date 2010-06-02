@@ -100,6 +100,9 @@ public class StackWriter implements PlugIn {
 			return;
 		String directory = sd.getDirectory();
 		
+		boolean isOverlay = imp.getOverlay()!=null && !imp.getHideOverlay();
+		if (!(format.equals("jpeg")||format.equals("png")))
+			isOverlay = false;
 		ImageStack stack = imp.getStack();
 		ImagePlus imp2 = new ImagePlus();
 		imp2.setTitle(imp.getTitle());
@@ -111,7 +114,10 @@ public class StackWriter implements PlugIn {
 			IJ.showStatus("writing: "+i+"/"+nSlices);
 			IJ.showProgress(i, nSlices);
 			ImageProcessor ip = stack.getProcessor(i);
-			if (luts!=null && nChannels>1 && hyperstack) {
+			if (isOverlay) {
+				imp.setSliceWithoutUpdate(i);
+				ip = imp.flatten().getProcessor();
+			} else if (luts!=null && nChannels>1 && hyperstack) {
 				ip.setColorModel(luts[lutIndex++]);
 				if (lutIndex>=luts.length) lutIndex = 0;
 			}
@@ -137,6 +143,7 @@ public class StackWriter implements PlugIn {
 			IJ.saveAs(imp2, format, path);
 		}
 		imp.unlock();
+		if (isOverlay) imp.setSlice(1);
 		IJ.showStatus("");
 	}
 	

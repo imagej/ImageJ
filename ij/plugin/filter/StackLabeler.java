@@ -11,7 +11,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static final String[] formats = {"0", "0000", "00:00", "00:00:00", "Text"};
 	private static final int NUMBER=0, ZERO_PADDED_NUMBER=1, MIN_SEC=2, HOUR_MIN_SEC=3, TEXT=4;
 	private static int format = (int)Prefs.get("label.format", NUMBER);
-	private static final int flags = DOES_ALL+DOES_STACKS;
+	private int flags = DOES_ALL;
 	private ImagePlus imp;
 	private static int x = 5;
 	private static int y = 20;
@@ -22,14 +22,25 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static double interval = 1;
 	private static String text = "";
 	private static int decimalPlaces = 0;
+	private static boolean useOverlay;
 	private int fieldWidth;
 	private Color color;
 	private int firstSlice, lastSlice;
+	private Overlay overlay;
+	private boolean previewing; 
+	private boolean virtualStack; 
+	private int yoffset;
 
 	public int setup(String arg, ImagePlus imp) {
-		if (imp!=null&&imp.isHyperStack()&&imp.getNFrames()==1) {
-			IJ.error("StackLabeler", "This command does not work with\nsingle time-point hyperstacks.");
-			return DONE;
+		if (imp!=null) {
+			if (imp.isHyperStack()&&imp.getNFrames()==1) {
+				IJ.error("StackLabeler", "This command does not work with\nsingle time-point hyperstacks.");
+				return DONE;
+			}
+			virtualStack = imp.getStack().isVirtual();
+			if (virtualStack || imp.isHyperStack())
+				useOverlay = true;
+			flags += virtualStack?0:DOES_STACKS;
 		}
 		this.imp = imp;
 		return flags;
@@ -51,6 +62,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		    interval=1;
 			text = "";
 			start = 0;
+			useOverlay = false;
 			String options = Macro.getOptions();
 			if (options!=null) {
 				if (options.indexOf("interval=0")!=-1 && options.indexOf("format=")==-1)
@@ -73,10 +85,13 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addStringField("Text:", text, 10);
         addRange(gd, "Range:", 1, imp.isHyperStack()?imp.getNFrames():imp.getStackSize());
 		gd.setInsets(10,20,0);
+        gd.addCheckbox(" Use overlay", useOverlay);
         gd.addPreviewCheckbox(pfr);
         gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
+        previewing = true;
 		gd.showDialog();
+		previewing = false;
 		if (gd.wasCanceled())
         	return DONE;
         else
@@ -113,6 +128,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		fontSize = (int)gd.getNextNumber();
 		text = gd.getNextString();
 		double[] range = getRange(gd, 1, imp.getStackSize());
+		useOverlay = gd.getNextBoolean();
+		if (virtualStack) useOverlay = true;
 		firstSlice=(int)range[0]; lastSlice=(int)range[1];
 		int index = str.indexOf(".");
 		if (index!=-1)
@@ -137,11 +154,35 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	
 	public void run(ImageProcessor ip) {
 		int slice = ip.getSliceNumber();
+		int n = slice - 1;
 		if (imp.isHyperStack())
-			slice = (int)((slice-1)*((double)(imp.getNFrames())/imp.getStackSize())) + 1;
+			n = (int)(n*((double)(imp.getNFrames())/imp.getStackSize()));
+		if (useOverlay) {
+			firstSlice = 1;
+			lastSlice = imp.getStackSize();
+		}
 		if (slice<firstSlice||slice>lastSlice) return;
+		if (virtualStack) {
+			int nSlices = imp.getStackSize();
+			if (previewing) nSlices = 1;
+			for (int i=1; i<=nSlices; i++) {
+				slice=i; n=i-1;
+				if (imp.isHyperStack())
+					n = (int)(n*((double)(imp.getNFrames())/imp.getStackSize()));
+				drawLabel(ip, slice, n);
+			}
+		} else {
+			if (previewing && overlay!=null) {
+				imp.setOverlay(null);
+				overlay = null;
+			}
+			drawLabel(ip, slice, n);
+		}
+	}
+	
+	void drawLabel(ImageProcessor ip, int slice, int n) {
+		String s = getString(n, interval, format);
 		ip.setFont(font);
-		String s = getString(slice-1, interval, format);
 		int textWidth = ip.getStringWidth(s);
 		if (color==null) {
 			color = Toolbar.getForegroundColor();
@@ -152,10 +193,24 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				ip.resetRoi();
 			}
 		}
-		ip.setColor(color); 
-		ip.setAntialiasedText(fontSize>=18);
-		ip.moveTo(x+maxWidth-textWidth, y);
-		ip.drawString(s);
+		if (useOverlay) {
+			if (slice==1) {
+				overlay = new Overlay();
+				Roi roi = imp.getRoi();
+				Rectangle r = roi!=null?roi.getBounds():null;
+				yoffset = r!=null?r.height:fontSize;
+			}
+			Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
+			roi.setStrokeColor(color);
+			overlay.add(roi);
+			if (slice==imp.getStackSize() || previewing)
+				imp.setOverlay(overlay);
+		} else {
+			ip.setColor(color); 
+			ip.setAntialiasedText(fontSize>=18);
+			ip.moveTo(x+maxWidth-textWidth, y);
+			ip.drawString(s);
+		}
 	}
 	
 	String getString(int index, double interval, int format) {

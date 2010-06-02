@@ -56,15 +56,16 @@ public class ScaleDialog implements PlugInFilter {
 		digits = Tools.getDecimalPlaces(measured, measured);
 		int asDigits = aspectRatio==1.0?1:3;
 		SetScaleDialog gd = new SetScaleDialog("Set Scale", scale, length);
-		gd.addNumericField("Distance in Pixels:", measured, digits, 8, null);
-		gd.addNumericField("Known Distance:", known, 2, 8, null);
-		gd.addNumericField("Pixel Aspect Ratio:", aspectRatio, asDigits, 8, null);
-		gd.addStringField("Unit of Length:", unit);
+		gd.addNumericField("Distance in pixels:", measured, digits, 8, null);
+		gd.addNumericField("Known distance:", known, 2, 8, null);
+		gd.addNumericField("Pixel aspect ratio:", aspectRatio, asDigits, 8, null);
+		gd.addStringField("Unit of length:", unit);
 		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.EAST, new Insets(5, 0, 0, 0));
 		gd.setInsets(0, 30, 0);
 		gd.addCheckbox("Global", global1);
 		gd.setInsets(10, 0, 0);
 		gd.addMessage("Scale: "+"12345.789 pixels per centimeter");
+		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#scale");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
