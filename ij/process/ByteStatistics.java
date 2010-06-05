@@ -51,7 +51,7 @@ public class ByteStatistics extends ImageStatistics {
 		double value;
 		double sum = 0;
 		double sum2 = 0.0;
-		int isum = 0;
+		double isum = 0.0;
 		
 		for (int i=minThreshold; i<=maxThreshold; i++) {
 			count = histogram[i];
@@ -69,7 +69,7 @@ public class ByteStatistics extends ImageStatistics {
 		}
 		area = pixelCount*pw*ph;
 		mean = sum/pixelCount;
-		umean = (double)isum/pixelCount;
+		umean = isum/pixelCount;
 		dmode = cTable[mode];
 		calculateStdDev(pixelCount,sum,sum2);
 		histMin = 0.0;

@@ -61,7 +61,7 @@ public class Functions implements MacroConstants, Measurements {
 	int measurements;
 	int decimalPlaces;
 	boolean blackBackground;
-	static Dialog waitForUserDialog;
+	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
 
 	Functions(Interpreter interp, Program pgm) {
@@ -4062,6 +4062,13 @@ public class Functions implements MacroConstants, Measurements {
 		}
 		waitForUserDialog = new WaitForUserDialog(title, text);
 		waitForUserDialog.show();
+		if (waitForUserDialog.escPressed())
+			throw new RuntimeException(Macro.MACRO_CANCELED);
+	}
+	
+	void abortDialog() {
+		if (waitForUserDialog!=null && waitForUserDialog.isVisible())
+			waitForUserDialog.close();
 	}
 	
 	double getStringWidth() {

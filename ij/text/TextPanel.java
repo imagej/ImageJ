@@ -11,6 +11,7 @@ import ij.io.SaveDialog;
 import ij.measure.ResultsTable;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
+import ij.gui.GenericDialog;
 
 
 /**
@@ -85,6 +86,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			addPopupItem("Summarize");
 			addPopupItem("Distribution...");
 			addPopupItem("Set Measurements...");
+			addPopupItem("Rename...");
 			addPopupItem("Duplicate...");
 		}
 	}
@@ -408,6 +410,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			clearSelection();
 		else if (cmd.equals("Select All"))
 			selectAll();
+		else if (cmd.equals("Rename..."))
+			rename();
 		else if (cmd.equals("Duplicate..."))
 			duplicate();
 		else if (cmd.equals("Summarize"))
@@ -423,6 +427,33 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
  	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
+
+	void rename() {
+		if (rt==null) return;
+		Component comp = getParent();
+		if (comp==null || !(comp instanceof TextWindow))
+			return;
+		TextWindow tw = (TextWindow)comp;
+		GenericDialog gd = new GenericDialog("Rename", tw);
+		gd.addStringField("Title:", "Results2", 20);
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return;
+		String title2 = gd.getNextString();
+		if (title2.equals("Results"))
+			title2 = "Results2";
+		if (title!=null && title.equals("Results")) {
+			IJ.setTextPanel(null);
+			Analyzer.setUnsavedMeasurements(false);
+			Analyzer.setResultsTable(null);
+			Analyzer.resetCounter();
+		}
+		tw.setTitle(title2);
+		int mbSize = tw.mb!=null?tw.mb.getMenuCount():0;
+		if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
+			tw.mb.remove(mbSize-1);
+		title = title2;
+	}
 
 	void duplicate() {
 		if (rt==null) return;
@@ -769,6 +800,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		this.rt = rt;
 	}
 	
+	/** Returns the ResultsTable associated with this TextPanel, or null. */
+	public ResultsTable getResultsTable() {
+		return rt;
+	}
+
 	public void scrollToTop() {
 		sbVert.setValue(0);
 		iY = 0;

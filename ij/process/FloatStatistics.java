@@ -111,6 +111,7 @@ public class FloatStatistics extends ImageStatistics {
 		}
 		area = pixelCount*pw*ph;
 		mean = sum/pixelCount;
+		umean = mean;
 		calculateStdDev(pixelCount, sum, sum2);
 	}
 

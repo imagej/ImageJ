@@ -155,7 +155,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int index = gd.getNextChoiceIndex();
 		redirectTarget = index==0?0:wList[index-1];
 		redirectTitle = titles[index];
-		redirectImage = null;
+		ImagePlus imp = WindowManager.getImage(redirectTarget);
+		redirectImage = imp!=null && imp.getWindow()==null?imp:null;
 
 		int prec = (int)gd.getNextNumber();
 		if (prec<0) prec = 0;
@@ -454,8 +455,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			rt.addValue(ResultsTable.FERET_ANGLE, feretAngle);
 			rt.addValue(ResultsTable.MIN_FERET, minFeret);
 		}
-		if ((measurements&INTEGRATED_DENSITY)!=0)
+		if ((measurements&INTEGRATED_DENSITY)!=0) {
 			rt.addValue(ResultsTable.INTEGRATED_DENSITY,stats.area*stats.mean);
+			rt.addValue(ResultsTable.RAW_INTEGRATED_DENSITY,stats.pixelCount*stats.umean);
+		}
 		if ((measurements&MEDIAN)!=0) rt.addValue(ResultsTable.MEDIAN, stats.median);
 		if ((measurements&SKEWNESS)!=0) rt.addValue(ResultsTable.SKEWNESS, stats.skewness);
 		if ((measurements&KURTOSIS)!=0) rt.addValue(ResultsTable.KURTOSIS, stats.kurtosis);
@@ -889,6 +892,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	public static void setResultsTable(ResultsTable rt) {
+		if (rt==null) rt = new ResultsTable();
 		systemRT = rt;
 	}
 

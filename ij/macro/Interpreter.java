@@ -1600,6 +1600,7 @@ public class Interpreter implements MacroConstants {
 			imageTable = null;
 		}
 		done = true;
+		if (func!=null) func.abortDialog();
 		IJ.showStatus("Macro aborted");
 	}
 
