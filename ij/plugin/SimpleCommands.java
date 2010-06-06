@@ -3,6 +3,8 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.io.Opener;
+import ij.text.TextWindow;
+import java.awt.Frame;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
 	and Plugins/Utilities/Search commands. */

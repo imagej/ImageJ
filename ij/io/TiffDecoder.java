@@ -336,7 +336,7 @@ public class TiffDecoder {
 		return name;
 	}
 
-	double getRational(int loc) throws IOException {
+	double getRational(long loc) throws IOException {
 		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
 		int numerator = getInt();
@@ -445,11 +445,11 @@ public class TiffDecoder {
 					fi.rowsPerStrip = value;
 					break;
 				case X_RESOLUTION:
-					double xScale = getRational(value); 
+					double xScale = getRational(lvalue); 
 					if (xScale!=0.0) fi.pixelWidth = 1.0/xScale; 
 					break;
 				case Y_RESOLUTION:
-					double yScale = getRational(value); 
+					double yScale = getRational(lvalue); 
 					if (yScale!=0.0) fi.pixelHeight = 1.0/yScale; 
 					break;
 				case RESOLUTION_UNIT:

@@ -1188,7 +1188,7 @@ public class Menus {
 
 	/** Changes the name of an item in the Window menu. */
 	public static synchronized void updateWindowMenuItem(String oldLabel, String newLabel) {
-		if (oldLabel.equals(newLabel))
+		if (oldLabel==null || oldLabel.equals(newLabel))
 			return;
 		int first = WINDOW_MENU_ITEMS;
 		int last = window.getItemCount()-1;

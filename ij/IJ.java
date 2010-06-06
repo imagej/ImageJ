@@ -275,7 +275,7 @@ public class IJ {
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
 			commandTable.put("Arbitrarily...", "Rotate... ");
-			commandTable.put("Create Overlay...", "Add Selection..."); // temporary
+			commandTable.put("Measurements...", "Results...");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -418,6 +418,23 @@ public class IJ {
 		return textPanel!=null;
 	}
 	
+	/** Renames a results window. */
+	public static void renameResults(String title) {
+		Frame frame = WindowManager.getFrontWindow();
+		if (frame!=null && (frame instanceof TextWindow)) {
+			TextWindow tw = (TextWindow)frame;
+			if (tw.getTextPanel().getResultsTable()==null) {
+				IJ.error("Rename", "\""+tw.getTitle()+"\" is not a results table");
+				return;
+			}
+			tw.rename(title);
+		} else if (isResultsWindow()) {
+			TextPanel tp = getTextPanel();
+			TextWindow tw = (TextWindow)tp.getParent();
+			tw.rename(title);
+		}
+	}
+
 	/** Deletes 'row1' through 'row2' of the "Results" window. Arguments
 	     must be in the range 0-Analyzer.getCounter()-1. */
 	public static void deleteRows(int row1, int row2) {
@@ -1451,8 +1468,8 @@ public class IJ {
 		} else if (format.indexOf("lut")!=-1) {
 			path = updateExtension(path, ".lut");
 			format = "LUT...";
-		} else if (format.indexOf("measurements")!=-1) {
-			format = "Measurements...";
+		} else if (format.indexOf("results")!=-1 || format.indexOf("measurements")!=-1) {
+			format = "Results...";
 		} else if (format.indexOf("selection")!=-1 || format.indexOf("roi")!=-1) {
 			path = updateExtension(path, ".roi");
 			format = "Selection...";
@@ -1480,7 +1497,7 @@ public class IJ {
 			path += extension;
 		return path;
 	}
-
+	
 	/** Saves a string as a file. Displays a file save dialog if
 		'path' is null or blank. Returns an error message 
 		if there is an exception, otherwise returns null. */

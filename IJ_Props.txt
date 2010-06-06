@@ -61,7 +61,7 @@ save12="FITS...",ij.plugin.filter.Writer("fits")
 save13="LUT...",ij.plugin.filter.Writer("lut")
 save14="Selection...",ij.plugin.filter.RoiWriter
 save15="XY Coordinates...",ij.plugin.filter.XYWriter
-save16="Measurements...",ij.plugin.MeasurementsWriter
+save16="Results...",ij.plugin.MeasurementsWriter
 save17="Text...",ij.plugin.TextWriter
 #save18="QuickTime Movie... ",QT_Movie_Writer
 

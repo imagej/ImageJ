@@ -419,7 +419,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			|| commandName.equals("LUT...")
 			|| commandName.equals("Selection...")
 			|| commandName.equals("XY Coordinates...")
-			|| commandName.equals("Measurements...")
+			|| commandName.equals("Results...")
 			|| commandName.equals("Text... ");
 	}
 

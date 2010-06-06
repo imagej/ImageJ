@@ -262,6 +262,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		textPanel.flush();
 	}
 	
+	public void rename(String title) {
+		textPanel.rename(title);
+	}
+	
 	boolean saveContents() {
 		int lineCount = textPanel.getLineCount();
 		if (!textPanel.unsavedLines) lineCount = 0;
