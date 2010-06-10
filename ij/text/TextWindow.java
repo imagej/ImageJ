@@ -237,6 +237,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		close(true);
 	}
 	
+	/** Closes this TextWindow. Display a "save changes" dialog
+		if this is the "Results" window and 'showDialog' is true. */
 	public void close(boolean showDialog) {
 		if (getTitle().equals("Results")) {
 			if (showDialog && !Analyzer.resetCounter())

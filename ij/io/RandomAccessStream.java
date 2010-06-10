@@ -129,23 +129,23 @@ public final class RandomAccessStream extends InputStream {
     	if (IJ.debugMode) IJ.log("seek (long): "+loc+"  "+(ras!=null));
     	if (ras!=null)
     		{ras.seek(loc); return;}
-        if(loc < 0)
+        if (loc<0L)
 			pointer = 0L;
         else
             pointer = loc;
     }
 
     public void seek(int loc) throws IOException {
-    	if (IJ.debugMode) IJ.log("seek (int): "+loc+"  "+(ras!=null));
+    	long lloc = ((long)loc)&0xffffffffL;
+    	if (IJ.debugMode) IJ.log("seek (int): "+lloc+"  "+(ras!=null));
     	if (ras!=null) {
-			long lloc = ((long)loc)&0xffffffffL;
     		ras.seek(lloc);
     		return;
     	}
-        if(loc < 0)
+        if (lloc<0L)
 			pointer = 0L;
         else
-            pointer = loc;
+            pointer = lloc;
     }
 
     public final int readInt() throws IOException {

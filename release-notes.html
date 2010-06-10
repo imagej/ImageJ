@@ -5,15 +5,24 @@
 </head>
 <body>
 
-<li> <u>1.44c, 6 June 2010</u>
+<li> <u>1.44c, 9 June 2010</u>
 <ul> 
 <li> Raw integrated density (sum of pixel values) is displayed when "Integrated density"
 is enabled in <i>Analyze&gt;Set Measurements</i>.
 <li> Added a <i>File&gt;Rename</i> command and <i>Results</i> menu to Results windows.
+
+<li> Added "Help" buttons to the <i>Process&gt;Find Maxima</i>,
+<i>Process&gt;Image Caclulator</i> and <i>Process&gt;Subtract Background</i>
+ dialog boxes.
+
 <li> Pressing the esc aborts macros displaying a "WaitForUser" dialog.
 <li> Changed the name of the <i>File&gt;Save As&gt;Measurements</i> command to
 <i>File&gt;Save As&gt;Results</i>.
+<li> The Bio-Formats plugin (loci_tools.jar) is added to the
+compiler's classpath by <i>Plugins&gt;Compile and Run</i>.
 <li> Added the IJ.renameResults() macro function.
+<li> Worked around a bug that caused the <i>Image&gt;Stacks&gt;Reslice</i>
+command to be very slow on some 64-bit versions of Java.
 <li> Fixed a bug that sometimes caused "negative seek offset" errors when opening
 TIFF files larger than 2GB.
 </ul> 
