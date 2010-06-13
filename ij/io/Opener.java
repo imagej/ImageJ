@@ -569,7 +569,7 @@ public class Opener {
 			ColorModel cm = createColorModel(fi);
 			ImageStack stack = new ImageStack(fi.width, fi.height, cm);
 			Object pixels = null;
-			int skip = fi.offset;
+			long skip = fi.getOffset();
 			int imageSize = fi.width*fi.height*fi.getBytesPerPixel();
 			if (info[0].fileType==FileInfo.GRAY12_UNSIGNED) {
 				imageSize = (int)(fi.width*fi.height*1.5);
@@ -578,7 +578,7 @@ public class Opener {
 				int scan=(int)Math.ceil(fi.width/8.0);
 				imageSize = scan*fi.height;
 			}
-			int loc = 0;
+			long loc = 0L;
 			int nChannels = 1;
 			try {
 				InputStream is = createInputStream(fi);
@@ -602,7 +602,7 @@ public class Opener {
 						nChannels = fi.samplesPerPixel;
 						channels = new Object[nChannels];
 						for (int c=0; c<nChannels; c++) {
-							pixels = reader.readPixels(is, c==0?skip:0);
+							pixels = reader.readPixels(is, c==0?skip:0L);
 							channels[c] = pixels;
 						}
 					} else 
@@ -610,10 +610,12 @@ public class Opener {
 					if (pixels==null && channels==null) break;
 					loc += imageSize*nChannels+skip;
 					if (i<(info.length-1)) {
-						skip = info[i+1].offset-loc;
+						skip = info[i+1].getOffset()-loc;
 						if (info[i+1].compression>=FileInfo.LZW) skip = 0;
-						if (skip<0)
-							throw new IOException("Images are not in order");
+						if (skip<0L) {
+							IJ.error("Image offset out of order");
+							break;
+						}
 					}
 					if (fi.fileType==FileInfo.RGB48) {
 						Object[] pixels2 = (Object[])pixels;

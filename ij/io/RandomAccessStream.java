@@ -126,7 +126,7 @@ public final class RandomAccessStream extends InputStream {
     }
 
     public void seek(long loc) throws IOException {
-    	if (IJ.debugMode) IJ.log("seek (long): "+loc+"  "+(ras!=null));
+    	//IJ.log("seek (long): "+loc+"  "+(ras!=null));
     	if (ras!=null)
     		{ras.seek(loc); return;}
         if (loc<0L)
@@ -137,7 +137,7 @@ public final class RandomAccessStream extends InputStream {
 
     public void seek(int loc) throws IOException {
     	long lloc = ((long)loc)&0xffffffffL;
-    	if (IJ.debugMode) IJ.log("seek (int): "+lloc+"  "+(ras!=null));
+    	//IJ.log("seek (int): "+lloc+"  "+(ras!=null));
     	if (ras!=null) {
     		ras.seek(lloc);
     		return;
@@ -181,7 +181,7 @@ public final class RandomAccessStream extends InputStream {
     }
     
     public void close() throws IOException {
-		//if (ij.IJ.debugMode) ij.IJ.log("close: "+(data!=null?""+data.size():""));
+		//ij.IJ.log("close: "+(data!=null?""+data.size():""));
  		if (ras!=null)
  			ras.close();
  		else {

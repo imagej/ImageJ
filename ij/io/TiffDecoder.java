@@ -774,8 +774,33 @@ public class TiffDecoder {
 				in.close();
 			if (fi[0].info==null)
 				fi[0].info = tiffMetadata;
+			if (debugMode && ((fi.length==1&&fi[0].nImages>1)||fi.length>1)) {
+				int nImages = fi.length==1?fi[0].nImages:fi.length;
+				fi[0].debugInfo += "number of images: "+nImages + "\n";
+				fi[0].debugInfo += "offset to first image: "+fi[0].getOffset()+ "\n";
+				fi[0].debugInfo += "gap between images: "+getGapInfo(fi) + "\n";
+				fi[0].debugInfo += "little-endian byte order: "+fi[0].intelByteOrder + "\n";
+			}
 			return fi;
 		}
+	}
+	
+	String getGapInfo(FileInfo[] fi) {
+		if (fi.length<2) return "NA";
+		long minGap = Long.MAX_VALUE;
+		long maxGap = -Long.MAX_VALUE;
+		for (int i=1; i<fi.length; i++) {
+			long gap = fi[i].getOffset()-fi[i-1].getOffset();
+			if (gap<minGap) minGap = gap;
+			if (gap>maxGap) maxGap = gap;
+		}
+		long imageSize = fi[0].width*fi[0].height*fi[0].getBytesPerPixel();
+		minGap -= imageSize;
+		maxGap -= imageSize;
+		if (minGap==maxGap)
+			return ""+minGap;
+		else 
+			return "variable ("+minGap+" to "+maxGap+")";
 	}
 
 }

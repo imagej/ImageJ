@@ -275,7 +275,7 @@ public class IJ {
 			commandTable.put("Channels...", "Channels Tool...");
 			commandTable.put("New... ", "Table...");
 			commandTable.put("Arbitrarily...", "Rotate... ");
-			commandTable.put("Measurements...", "Results...");
+			commandTable.put("Measurements...", "Results... ");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.44c, 9 June 2010</u>
+<li> <u>1.44c, 13 June 2010</u>
 <ul> 
 <li> Raw integrated density (sum of pixel values) is displayed when "Integrated density"
 is enabled in <i>Analyze&gt;Set Measurements</i>.
@@ -20,11 +20,17 @@ is enabled in <i>Analyze&gt;Set Measurements</i>.
 <i>File&gt;Save As&gt;Results</i>.
 <li> The Bio-Formats plugin (loci_tools.jar) is added to the
 compiler's classpath by <i>Plugins&gt;Compile and Run</i>.
+<li> The TiffDecoder displays information needed to import the file
+(number of images, offset to first images, gap between images) when ImageJ is in debug mode.
 <li> Added the IJ.renameResults() macro function.
 <li> Worked around a bug that caused the <i>Image&gt;Stacks&gt;Reslice</i>
 command to be very slow on some 64-bit versions of Java.
-<li> Fixed a bug that sometimes caused "negative seek offset" errors when opening
-TIFF files larger than 2GB.
+<li> Fixed a bug that sometimes caused a "negative seek offset"
+error when opening TIFF files larger than 2GB.
+<li> Fixed a bug that caused <i>File&gt;Import&gt;TIFF Virtual Stack</i>
+to not display the TIFF tags when ImageJ was in the debug mode;
+<li> Fixed a bug that caused "/" to be added to the FileInfo directories when opening
+a folder of images using drag and drop on Windows.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
