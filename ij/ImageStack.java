@@ -36,7 +36,7 @@ public class ImageStack {
 		this.height = height;
 		stack = new Object[size];
 		label = new String[size];
-		nSlices = 0;
+		nSlices = size;
 	}
 
 	/** Creates a new, empty image stack using the specified color model. */

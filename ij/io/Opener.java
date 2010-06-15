@@ -550,10 +550,10 @@ public class Opener {
 		}
 		if (contiguous &&  info[0].fileType!=FileInfo.RGB48)
 			info[0].nImages = info.length;
-		if (IJ.debugMode) {
-			IJ.log("  sameSizeAndType: " + sameSizeAndType);
-			IJ.log("  contiguous: " + contiguous);
-		}
+		//if (IJ.debugMode) {
+		//	IJ.log("sameSizeAndType: " + sameSizeAndType);
+		//	IJ.log("contiguous: " + contiguous);
+		//}
 		return sameSizeAndType;
 	}
 	
@@ -613,7 +613,7 @@ public class Opener {
 						skip = info[i+1].getOffset()-loc;
 						if (info[i+1].compression>=FileInfo.LZW) skip = 0;
 						if (skip<0L) {
-							IJ.error("Image offset out of order");
+							IJ.error("Opener", "Unexpected image offset");
 							break;
 						}
 					}
@@ -629,7 +629,7 @@ public class Opener {
 								stack.addSlice(null, channels[c]);
 						}
 					} else
-						stack.addSlice(null, pixels);					
+						stack.addSlice(null, pixels);
 					IJ.showProgress(i, info.length);
 				}
 				is.close();

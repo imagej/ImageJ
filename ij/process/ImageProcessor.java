@@ -512,13 +512,14 @@ public abstract class ImageProcessor extends Object {
 			if (isInvertedLut())
 				{lower=0.0; upper=threshold;}
 			else
-				{lower=threshold; upper=255.0;}
+				{lower=threshold+1; upper=255.0;}
 		} else {
 			if (isInvertedLut())
-				{lower=threshold; upper=255.0;}
+				{lower=threshold+1; upper=255.0;}
 			else
 				{lower=0.0; upper=threshold;}
 		}
+		if (lower>255) lower = 255;
 		if (notByteData) {
 			if (max>min) {
 				lower = min + (lower/255.0)*(max-min);

@@ -143,8 +143,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			arg2 = fixPath(arg2);
 		if (scriptMode&&method.equals("roiManager"))
 			textArea.append("rm.runCommand(\""+arg1+"\", \""+arg2+"\");\n");
-		else
+		else {
+			if (scriptMode && method.equals("saveAs"))
+				method = "IJ." + method;
 			textArea.append(method+"(\""+arg1+"\", \""+arg2+"\");\n");
+		}
 	}
 	
 	public static void record(String method, String arg1, String arg2, String arg3) {
@@ -352,6 +355,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			if (commandOptions!=null) {
 				if (name.equals("Open...")) {
 					String s = scriptMode?"imp = IJ.openImage":"open";
+					if (scriptMode && isTextOrTable(commandOptions))
+						s = "IJ.open";
 					textArea.append(s+"(\""+strip(commandOptions)+"\");\n");
 				} else if (isSaveAs()) {
 							if (name.endsWith("..."))
@@ -367,6 +372,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append((scriptMode?"imp.setTitle":"rename")+"(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Wand Tool..."))
 					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
+				else if (name.equals("Results... ")&&!commandOptions.endsWith("txt"))
+					textArea.append((scriptMode?"IJ.":"")+"open(\""+strip(commandOptions)+"\");\n");
+				else if (name.equals("Results...")) // Save As>Results
+					;
 				else {
 					String prefix = "run(";
 					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
@@ -405,6 +414,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		}
 	}
 	
+	static boolean isTextOrTable(String path) {
+		return path.endsWith(".txt") || path.endsWith(".csv") || path.endsWith(".xls");
+	}
+	
 	static boolean isSaveAs() {
 		return commandName.equals("Tiff...")
 			|| commandName.equals("Gif...")
@@ -419,7 +432,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			|| commandName.equals("LUT...")
 			|| commandName.equals("Selection...")
 			|| commandName.equals("XY Coordinates...")
-			|| commandName.equals("Results...")
+			//|| commandName.equals("Results...")
 			|| commandName.equals("Text... ");
 	}
 
