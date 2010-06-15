@@ -1,11 +1,12 @@
 package ij.plugin;
 import ij.*;
-import ij.text.TextPanel;
+import ij.text.*;
 import ij.measure.ResultsTable;
 import ij.io.*;
 import java.io.*;
+import java.awt.Frame;
 
-/** Writes measurements to a tab-delimited text file. */
+/** Writes measurements to a csv or tab-delimited text file. */
 public class MeasurementsWriter implements PlugIn {
 
 	public void run(String path) {
@@ -13,7 +14,15 @@ public class MeasurementsWriter implements PlugIn {
 	}
 	
 	public boolean save(String path) {
-		if (IJ.isResultsWindow()) {
+		Frame frame = WindowManager.getFrontWindow();
+		if (frame!=null && (frame instanceof TextWindow)) {
+			TextWindow tw = (TextWindow)frame;
+			if (tw.getTextPanel().getResultsTable()==null) {
+				IJ.error("Save As>Results", "\""+tw.getTitle()+"\" is not a results table");
+				return false;
+			}
+			return tw.getTextPanel().saveAs(path);
+		} else if (IJ.isResultsWindow()) {
 			TextPanel tp = IJ.getTextPanel();
 			if (tp!=null) {
 				if (!tp.saveAs(path))

@@ -11,6 +11,7 @@ import ij.io.SaveDialog;
 import ij.measure.ResultsTable;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
+import ij.gui.GenericDialog;
 
 
 /**
@@ -85,6 +86,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			addPopupItem("Summarize");
 			addPopupItem("Distribution...");
 			addPopupItem("Set Measurements...");
+			addPopupItem("Rename...");
 			addPopupItem("Duplicate...");
 		}
 	}
@@ -408,6 +410,8 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			clearSelection();
 		else if (cmd.equals("Select All"))
 			selectAll();
+		else if (cmd.equals("Rename..."))
+			rename(null);
 		else if (cmd.equals("Duplicate..."))
 			duplicate();
 		else if (cmd.equals("Summarize"))
@@ -423,6 +427,47 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
  	
  	public void lostOwnership (Clipboard clip, Transferable cont) {}
+
+	void rename(String title2) {
+		if (rt==null) return;
+		if (title2!=null && title2.equals(""))
+			title2 = null;
+		Component comp = getParent();
+		if (comp==null || !(comp instanceof TextWindow))
+			return;
+		TextWindow tw = (TextWindow)comp;
+		if (title2==null) {
+			GenericDialog gd = new GenericDialog("Rename", tw);
+			gd.addStringField("Title:", "Results2", 20);
+			gd.showDialog();
+			if (gd.wasCanceled())
+				return;
+			title2 = gd.getNextString();
+		}
+		String title1 = title;
+		if (title!=null && title.equals("Results")) {
+			IJ.setTextPanel(null);
+			Analyzer.setUnsavedMeasurements(false);
+			Analyzer.setResultsTable(null);
+			Analyzer.resetCounter();
+		}
+		if (title2.equals("Results")) {
+			tw.setVisible(false);
+			tw.dispose();
+			WindowManager.removeWindow(tw);
+			flush();
+			rt.show("Results");
+		} else {
+			tw.setTitle(title2);
+			int mbSize = tw.mb!=null?tw.mb.getMenuCount():0;
+			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
+				tw.mb.remove(mbSize-1);
+			title = title2;
+		}
+		Menus.updateWindowMenuItem(title1, title2);
+		if (Recorder.record)
+			Recorder.recordString("IJ.renameResults(\""+title2+"\");\n");
+	}
 
 	void duplicate() {
 		if (rt==null) return;
@@ -666,6 +711,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			summarized = lastLine!=null && lastLine.startsWith("Max");
 		}
 		if (rt!=null && !summarized) {
+			if (path==null || path.equals("")) {
+				IJ.wait(10);
+				String name = isResults?"Results":title;
+				SaveDialog sd = new SaveDialog("Save Results", name, Prefs.get("options.ext", ".xls"));
+				String file = sd.getFileName();
+				if (file==null) return false;
+				path = sd.getDirectory() + file;
+			}
 			try {
 				rt.saveAs(path);
 			} catch (IOException e) {
@@ -698,7 +751,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		if (isResults) {
 			Analyzer.setUnsavedMeasurements(false);
 			if (Recorder.record && !IJ.isMacro())
-				Recorder.record("saveAs", "Measurements", path);
+				Recorder.record("saveAs", "Results", path);
+		} else if (rt!=null) {
+			if (Recorder.record && !IJ.isMacro())
+				Recorder.record("saveAs", "Results", path);
 		} else {
 			if (Recorder.record && !IJ.isMacro())
 				Recorder.record("saveAs", "Text", path);
@@ -769,6 +825,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		this.rt = rt;
 	}
 	
+	/** Returns the ResultsTable associated with this TextPanel, or null. */
+	public ResultsTable getResultsTable() {
+		return rt;
+	}
+
 	public void scrollToTop() {
 		sbVert.setValue(0);
 		iY = 0;

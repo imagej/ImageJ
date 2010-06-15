@@ -14,6 +14,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	protected Button button;
 	protected MultiLineLabel label;
 	static protected int xloc=-1, yloc=-1;
+	private boolean escPressed;
 	
 	public WaitForUserDialog(String title, String text) {
 		super(getFrame(), title, false);
@@ -32,6 +33,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         c.gridx = 0; c.gridy = 2; c.anchor = GridBagConstraints.EAST;
         add(button, c);
 		setResizable(false);
+		addKeyListener(this);
 		pack();
 		if (xloc==-1)
 			GUI.center(this);
@@ -81,9 +83,14 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		int keyCode = e.getKeyCode(); 
 		IJ.setKeyDown(keyCode); 
 		if (keyCode==KeyEvent.VK_ENTER || keyCode==KeyEvent.VK_ESCAPE) {
+			escPressed = keyCode==KeyEvent.VK_ESCAPE;
 			close();
 		}
-	} 
+	}
+	
+	public boolean escPressed() {
+		return escPressed;
+	}
 	
 	public void keyReleased(KeyEvent e) {
 		int keyCode = e.getKeyCode(); 

@@ -47,6 +47,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected Component theLabel;
 	private Button cancel, okay, no, help;
 	private String okLabel = "  OK  ";
+	private String helpLabel = "Help";
     private boolean wasCanceled, wasOKed;
     private int y;
     private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex;
@@ -454,6 +455,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     
     /** Adds a message consisting of one or more lines of text. */
     public void addMessage(String text) {
+    	addMessage(text, null);
+    }
+
+    /** Adds a message consisting of one or more lines of text,
+    	which will be displayed using the specified font. */
+    public void addMessage(String text, Font font) {
+    	theLabel = null;
     	if (text.indexOf('\n')>=0)
 			theLabel = new MultiLineLabel(text);
 		else
@@ -464,6 +472,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = getInsets(text.equals("")?0:10, 20, 0, 0);
 		grid.setConstraints(theLabel, c);
+		if (font!=null)
+			theLabel.setFont(font);
 		add(theLabel);
 		y++;
     }
@@ -627,6 +637,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     /** Sets a replacement label for the "OK" button. */
     public void setOKLabel(String label) {
     	okLabel = label;
+    }
+
+    /** Sets a replacement label for the "Help" button. */
+    public void setHelpLabel(String label) {
+    	helpLabel = label;
     }
 
     /** Make this a "Yes No Cancel" dialog. */
@@ -967,7 +982,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			okay.addKeyListener(this);
 			boolean addHelp = helpURL!=null;
 			if (addHelp) {
-				help = new Button("Help");
+				help = new Button(helpLabel);
 				help.addActionListener(this);
 				help.addKeyListener(this);
 			}
@@ -1097,9 +1112,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			wasCanceled = source==cancel;
 			wasOKed = source==okay;
 			dispose();
-		} else if (source==help)
+		} else if (source==help) {
+			if (hideCancelButton) {
+				wasOKed = true;
+				dispose();
+			}
 			showHelp();
-		else
+		} else
             notifyListeners(e);
 	}
 	
@@ -1246,7 +1265,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     public void addHelp(String url) {
     	helpURL = url;
     }
-    
+
     void showHelp() {
 		String macro = "run('URL...', 'url="+helpURL+"');";
 		new MacroRunner(macro);

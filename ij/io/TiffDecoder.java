@@ -336,7 +336,7 @@ public class TiffDecoder {
 		return name;
 	}
 
-	double getRational(int loc) throws IOException {
+	double getRational(long loc) throws IOException {
 		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
 		int numerator = getInt();
@@ -445,11 +445,11 @@ public class TiffDecoder {
 					fi.rowsPerStrip = value;
 					break;
 				case X_RESOLUTION:
-					double xScale = getRational(value); 
+					double xScale = getRational(lvalue); 
 					if (xScale!=0.0) fi.pixelWidth = 1.0/xScale; 
 					break;
 				case Y_RESOLUTION:
-					double yScale = getRational(value); 
+					double yScale = getRational(lvalue); 
 					if (yScale!=0.0) fi.pixelHeight = 1.0/yScale; 
 					break;
 				case RESOLUTION_UNIT:
@@ -774,8 +774,33 @@ public class TiffDecoder {
 				in.close();
 			if (fi[0].info==null)
 				fi[0].info = tiffMetadata;
+			if (debugMode) {
+				int n = fi.length;
+				fi[0].debugInfo += "number of images: "+ n + "\n";
+				fi[0].debugInfo += "offset to first image: "+fi[0].getOffset()+ "\n";
+				fi[0].debugInfo += "gap between images: "+getGapInfo(fi) + "\n";
+				fi[0].debugInfo += "little-endian byte order: "+fi[0].intelByteOrder + "\n";
+			}
 			return fi;
 		}
+	}
+	
+	String getGapInfo(FileInfo[] fi) {
+		if (fi.length<2) return "0";
+		long minGap = Long.MAX_VALUE;
+		long maxGap = -Long.MAX_VALUE;
+		for (int i=1; i<fi.length; i++) {
+			long gap = fi[i].getOffset()-fi[i-1].getOffset();
+			if (gap<minGap) minGap = gap;
+			if (gap>maxGap) maxGap = gap;
+		}
+		long imageSize = fi[0].width*fi[0].height*fi[0].getBytesPerPixel();
+		minGap -= imageSize;
+		maxGap -= imageSize;
+		if (minGap==maxGap)
+			return ""+minGap;
+		else 
+			return "varies ("+minGap+" to "+maxGap+")";
 	}
 
 }

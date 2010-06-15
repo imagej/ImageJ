@@ -26,6 +26,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
     CheckboxMenuItem antialiased;
 	int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
 	int fontSize = (int)Prefs.get(FONT_SIZE, 5);
+	MenuBar mb;
  
 	/**
 	Opens a new single-column text window.
@@ -114,14 +115,14 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 	
 	void addMenuBar() {
-		MenuBar mb = new MenuBar();
+		mb = new MenuBar();
 		if (Menus.getFontSize()!=0)
 			mb.setFont(Menus.getFont());
 		Menu m = new Menu("File");
 		m.add(new MenuItem("Save As...", new MenuShortcut(KeyEvent.VK_S)));
 		if (getTitle().equals("Results")) {
-			m.addSeparator();
-			m.add(new MenuItem("Options..."));
+			m.add(new MenuItem("Rename..."));
+			m.add(new MenuItem("Duplicate..."));
 		}
 		m.addActionListener(this);
 		mb.add(m);
@@ -130,14 +131,6 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C)));
 		m.add(new MenuItem("Clear"));
 		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
-		if (getTitle().equals("Results")) {
-			m.addSeparator();
-			m.add(new MenuItem("Clear Results"));
-			m.add(new MenuItem("Summarize"));
-			m.add(new MenuItem("Distribution..."));
-			m.add(new MenuItem("Set Measurements..."));
-			m.add(new MenuItem("Duplicate..."));
-		}
 		m.addActionListener(this);
 		mb.add(m);
 		m = new Menu("Font");
@@ -150,6 +143,16 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
+		if (getTitle().equals("Results")) {
+			m = new Menu("Results");
+			m.add(new MenuItem("Clear Results"));
+			m.add(new MenuItem("Summarize"));
+			m.add(new MenuItem("Distribution..."));
+			m.add(new MenuItem("Set Measurements..."));
+			m.add(new MenuItem("Options..."));
+			m.addActionListener(this);
+			mb.add(m);
+		}
 		setMenuBar(mb);
 	}
 
@@ -234,6 +237,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		close(true);
 	}
 	
+	/** Closes this TextWindow. Display a "save changes" dialog
+		if this is the "Results" window and 'showDialog' is true. */
 	public void close(boolean showDialog) {
 		if (getTitle().equals("Results")) {
 			if (showDialog && !Analyzer.resetCounter())
@@ -257,6 +262,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		dispose();
 		WindowManager.removeWindow(this);
 		textPanel.flush();
+	}
+	
+	public void rename(String title) {
+		textPanel.rename(title);
 	}
 	
 	boolean saveContents() {

@@ -77,15 +77,16 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         if  (options!=null)
             Macro.setOptions(options.replaceAll("white", "light"));
         GenericDialog gd = new GenericDialog(command);
-        gd.addNumericField("Rolling Ball Radius:", radius, 1, 6, "Pixels");
-        gd.addCheckbox("Light Background", lightBackground);
-        if (isRGB) gd.addCheckbox("Separate Colors", separateColors);
-        gd.addCheckbox("Create Background (Don't Subtract)", createBackground);
-        gd.addCheckbox("Sliding Paraboloid", useParaboloid);
-        gd.addCheckbox("Disable Smoothing", !doPresmooth);
+        gd.addNumericField("Rolling ball radius:", radius, 1, 6, "pixels");
+        gd.addCheckbox("Light background", lightBackground);
+        if (isRGB) gd.addCheckbox("Separate colors", separateColors);
+        gd.addCheckbox("Create background (don't subtract)", createBackground);
+        gd.addCheckbox("Sliding paraboloid", useParaboloid);
+        gd.addCheckbox("Disable smoothing", !doPresmooth);
         gd.addPreviewCheckbox(pfr);
         gd.addDialogListener(this);
         previewing = true;
+		gd.addHelp(IJ.URL+"/docs/menus/process.html#background");
         gd.showDialog();
         previewing = false;
         if (gd.wasCanceled()) return DONE;

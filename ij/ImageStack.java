@@ -30,7 +30,7 @@ public class ImageStack {
 		this(width, height, null);
 	}
 	
-	/** Creates a new image stack with a capacity of 'size'. */
+	/** Creates a new, empty image stack with a capacity of 'size'. */
 	public ImageStack(int width, int height, int size) {
 		this.width = width;
 		this.height = height;
@@ -39,7 +39,7 @@ public class ImageStack {
 		nSlices = size;
 	}
 
-	/** Creates a new, empty image stack. */
+	/** Creates a new, empty image stack using the specified color model. */
 	public ImageStack(int width, int height, ColorModel cm) {
 		this.width = width;
 		this.height = height;

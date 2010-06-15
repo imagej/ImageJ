@@ -1,4 +1,5 @@
 package ij.io;
+import ij.IJ;
 import java.io.*;
 import java.util.Vector;
 
@@ -125,21 +126,26 @@ public final class RandomAccessStream extends InputStream {
     }
 
     public void seek(long loc) throws IOException {
+    	//IJ.log("seek (long): "+loc+"  "+(ras!=null));
     	if (ras!=null)
     		{ras.seek(loc); return;}
-        if(loc < 0)
+        if (loc<0L)
 			pointer = 0L;
         else
             pointer = loc;
     }
 
     public void seek(int loc) throws IOException {
-    	if (ras!=null)
-    		{ras.seek(loc&0xffffffff); return;}
-        if(loc < 0)
+    	long lloc = ((long)loc)&0xffffffffL;
+    	//IJ.log("seek (int): "+lloc+"  "+(ras!=null));
+    	if (ras!=null) {
+    		ras.seek(lloc);
+    		return;
+    	}
+        if (lloc<0L)
 			pointer = 0L;
         else
-            pointer = loc;
+            pointer = lloc;
     }
 
     public final int readInt() throws IOException {
@@ -175,7 +181,7 @@ public final class RandomAccessStream extends InputStream {
     }
     
     public void close() throws IOException {
-		//if (ij.IJ.debugMode) ij.IJ.log("close: "+(data!=null?""+data.size():""));
+		//ij.IJ.log("close: "+(data!=null?""+data.size():""));
  		if (ras!=null)
  			ras.close();
  		else {

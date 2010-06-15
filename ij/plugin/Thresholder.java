@@ -141,7 +141,7 @@ public class Thresholder implements PlugIn, Measurements {
 			if (Prefs.blackBackground)
 				ip.invertLut();
 		}
-		if (fill1=true && fill2==true && ((fcolor==0&&bcolor==255)||(fcolor==255&&bcolor==0)))
+		if (fill1 && fill2 && ((fcolor==0&&bcolor==255)||(fcolor==255&&bcolor==0)))
 			imp.getProcessor().setThreshold(fcolor, fcolor, ImageProcessor.NO_LUT_UPDATE);
 		imp.updateAndRepaintWindow();
 		imp.unlock();

@@ -118,18 +118,19 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         int digits = (ip instanceof FloatProcessor)?2:0;
         String unit = (imp.getCalibration()!=null)?imp.getCalibration().getValueUnit():null;
         unit = (unit==null||unit.equals("Gray Value"))?":":" ("+unit+"):";
-        gd.addNumericField("Noise Tolerance"+unit,tolerance, digits);
+        gd.addNumericField("Noise tolerance"+unit,tolerance, digits);
         gd.addChoice("Output type:", outputTypeNames, outputTypeNames[dialogOutputType]);
-        gd.addCheckbox("Exclude Edge Maxima", excludeOnEdges);
+        gd.addCheckbox("Exclude edge maxima", excludeOnEdges);
         if (thresholded)
-            gd.addCheckbox("Above Lower Threshold", useMinThreshold);
-        gd.addCheckbox("Light Background", lightBackground);
-        gd.addPreviewCheckbox(pfr, "Preview Point Selection");
+            gd.addCheckbox("Above lower threshold", useMinThreshold);
+        gd.addCheckbox("Light background", lightBackground);
+        gd.addPreviewCheckbox(pfr, "Preview point selection");
         gd.addMessage("                        "); //space for number of maxima
         messageArea = (Label)gd.getMessage();
         gd.addDialogListener(this);
         checkboxes = gd.getCheckboxes();
         previewing = true;
+		gd.addHelp(IJ.URL+"/docs/menus/process.html#find-maxima");
         gd.showDialog();          //input by the user (or macro) happens here
         if (gd.wasCanceled())
             return DONE;

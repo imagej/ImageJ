@@ -169,7 +169,7 @@ class SetScaleDialog extends GenericDialog {
  		setScale(theScale);
 	}
 	
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(ActionEvent e) { 
 		super.actionPerformed(e);
 		if (e.getSource()==unscaleButton) {
 			((TextField)numberField.elementAt(0)).setText(length);

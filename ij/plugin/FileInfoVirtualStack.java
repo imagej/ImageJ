@@ -34,6 +34,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		String  dir = od.getDirectory();
 		TiffDecoder td = new TiffDecoder(dir, name);
 		if (IJ.debugMode) td.enableDebugging();
+		IJ.showStatus("Decoding TIFF header...");
 		try {info = td.getTiffInfo();}
 		catch (IOException e) {
 			String msg = e.getMessage();
@@ -45,6 +46,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			IJ.error("Virtual Stack", "This does not appear to be a TIFF stack");
 			return;
 		}
+		if (IJ.debugMode)
+			IJ.log(info[0].debugInfo);
 		open();
 	}
 	
