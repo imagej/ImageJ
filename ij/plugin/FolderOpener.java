@@ -234,17 +234,18 @@ public class FolderOpener implements PlugIn {
 	boolean showDialog(ImagePlus imp, String[] list) {
 		int fileCount = list.length;
 		FolderOpenerDialog gd = new FolderOpenerDialog("Sequence Options", imp, list);
-		gd.addNumericField("Number of Images:", fileCount, 0);
-		gd.addNumericField("Starting Image:", 1, 0);
+		gd.addNumericField("Number of images:", fileCount, 0);
+		gd.addNumericField("Starting image:", 1, 0);
 		gd.addNumericField("Increment:", 1, 0);
-		gd.addNumericField("Scale Images:", scale, 0, 4, "%");
-		gd.addStringField("File Name Contains:", "", 10);
-		gd.addStringField("or Enter Pattern:", "", 10);
-		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
+		gd.addNumericField("Scale images:", scale, 0, 4, "%");
+		gd.addStringField("File name contains:", "", 10);
+		gd.addStringField("or enter pattern:", "", 10);
+		gd.addCheckbox("Convert to 8-bit grayscale", convertToGrayscale);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
-		gd.addCheckbox("Sort Names Numerically", sortFileNames);
-		gd.addCheckbox("Use Virtual Stack", virtualStack);
+		gd.addCheckbox("Sort names numerically", sortFileNames);
+		gd.addCheckbox("Use virtual stack", virtualStack);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
+		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

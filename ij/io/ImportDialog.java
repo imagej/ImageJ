@@ -65,16 +65,17 @@ public class ImportDialog {
 		if (choiceSelection>=types.length)
 			choiceSelection = 0;
 		GenericDialog gd = new GenericDialog("Import...", IJ.getInstance());
-		gd.addChoice("Image Type:", types, types[choiceSelection]);
+		gd.addChoice("Image type:", types, types[choiceSelection]);
 		gd.addNumericField("Width:", width, 0, 6, "pixels");
 		gd.addNumericField("Height:", height, 0, 6, "pixels");
-		gd.addNumericField("Offset to First Image:", offset, 0, 6, "bytes");
-		gd.addNumericField("Number of Images:", nImages, 0, 6, null);
-		gd.addNumericField("Gap Between Images:", gapBetweenImages, 0, 6, "bytes");
-		gd.addCheckbox("White is Zero", whiteIsZero);
-		gd.addCheckbox("Little-Endian Byte Order", intelByteOrder);
-		gd.addCheckbox("Open All Files in Folder", openAll);
-		gd.addCheckbox("Use Virtual Stack", virtual);
+		gd.addNumericField("Offset to first image:", offset, 0, 6, "bytes");
+		gd.addNumericField("Number of images:", nImages, 0, 6, null);
+		gd.addNumericField("Gap between images:", gapBetweenImages, 0, 6, "bytes");
+		gd.addCheckbox("White is zero", whiteIsZero);
+		gd.addCheckbox("Little-endian byte order", intelByteOrder);
+		gd.addCheckbox("Open all files in folder", openAll);
+		gd.addCheckbox("Use virtual stack", virtual);
+		gd.addHelp(IJ.URL+"/docs/menus/file.html#raw");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
