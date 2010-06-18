@@ -465,7 +465,6 @@ public abstract class ImageProcessor extends Object {
 		source = null;
 	}
 	
-	@Deprecated
 	public void setAutoThreshold(String mString) {
 		if (mString==null)
 			throw new IllegalArgumentException("Null method");

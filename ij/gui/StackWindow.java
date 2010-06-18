@@ -150,7 +150,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 
 	/** Displays the specified slice and updates the stack scrollbar. */
 	public void showSlice(int index) {
-		if (index>=1 && index<=imp.getStackSize())
+		if (imp!=null && index>=1 && index<=imp.getStackSize())
 			imp.setSlice(index);
 	}
 	

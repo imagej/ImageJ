@@ -341,10 +341,7 @@ public class FileOpener {
 	void setCalibration(ImagePlus imp) {
 		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
 			if (IJ.debugMode) IJ.log("16-bit signed");
-			double[] coeff = new double[2];
-			coeff[0] = -32768.0;
-			coeff[1] = 1.0;
- 			imp.getLocalCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
+ 			imp.getLocalCalibration().setSigned16BitCalibration();
 		}
 		
 		Properties props = decodeDescriptionString(fi);

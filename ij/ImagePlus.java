@@ -1107,7 +1107,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			s.update(ip2);
 		} else {
 			s = stack;
-			s.update(ip);
+			s.update(getProcessor());
 		}
 		if (roi!=null)
 			s.setRoi(roi.getBounds());

@@ -133,12 +133,8 @@ public class ImportDialog {
 			if (imp.getBitDepth()==16 || imp.getBitDepth()==32)
 				imp.getProcessor().setMinAndMax(min, max);
                 Calibration cal = imp.getCalibration();
-                if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-                    double[] coeff = new double[2];
-                    coeff[0] = -32768.0;
-                    coeff[1] = 1.0;
-                    cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "Gray Value");
-                }
+                if (fi.fileType==FileInfo.GRAY16_SIGNED)
+                	cal.setSigned16BitCalibration();
 			imp.show();
 		}
 	}

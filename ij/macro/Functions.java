@@ -77,8 +77,7 @@ public class Functions implements MacroConstants, Measurements {
 			case BEEP: interp.getParens(); IJ.beep(); break;
 			case RESET_MIN_MAX: interp.getParens(); IJ.resetMinAndMax(); resetImage(); break;
 			case RESET_THRESHOLD: interp.getParens(); IJ.resetThreshold(); resetImage(); break;
-			case PRINT: print(); break;
-			case WRITE: IJ.write(getStringArg()); break;
+			case PRINT: case WRITE: print(); break;
 			case DO_WAND: doWand(); break;
 			case SET_MIN_MAX: setMinAndMax(); break;
 			case SET_THRESHOLD: setThreshold(); break;

@@ -237,7 +237,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			removeShortcuts();
 		// One character shortcuts go in a separate hash table to
 		// avoid conflicts with ImageJ menu shortcuts.
-		if (len==1) {
+		if (len==1 || shortcut.equals("N+") || shortcut.equals("N-") ) {
 			Hashtable macroShortcuts = Menus.getMacroShortcuts();
 			macroShortcuts.put(new Integer(code), commandPrefix+name);
 			nShortcuts++;
