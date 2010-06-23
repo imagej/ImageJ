@@ -466,20 +466,21 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if ((measurements&STACK_POSITION)!=0) {
 			boolean update = false;
 			if (imp!=null && (imp.isHyperStack()||imp.isComposite())) {
+				int[] position = imp.convertIndexToPosition(imp.getCurrentSlice());
 				if (imp.getNChannels()>1) {
 					int index = rt.getColumnIndex("Ch");
 					if (index<0 || !rt.columnExists(index)) update=true;
-					rt.addValue("Ch", imp.getChannel());
+					rt.addValue("Ch", position[0]);
 				}
 				if (imp.getNSlices()>1) {
 					int index = rt.getColumnIndex("Slice");
 					if (index<0 || !rt.columnExists(index)) update=true;
-					rt.addValue("Slice", imp.getSlice());
+					rt.addValue("Slice", position[1]);
 				}
 				if (imp.getNFrames()>1) {
 					int index = rt.getColumnIndex("Frame");
 					if (index<0 || !rt.columnExists(index)) update=true;
-					rt.addValue("Frame", imp.getFrame());
+					rt.addValue("Frame", position[2]);
 				}
 			} else {
 				int index = rt.getColumnIndex("Slice");

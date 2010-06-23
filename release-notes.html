@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.44d, 18 June 2010</u>
+<li> <u>1.44d, 22 June 2010</u>
 <ul> 
 <li> Added "Help" buttons to the <i>File&gt;Import&gt;Image Sequence</i>,
 <i>File&gt;Import&gt;Raw</i> and <i>Process&gt;Math&gt;Macro</i>
@@ -16,6 +16,13 @@
  animating stack window was closed.
  <li> Fixed a bug that sometimes caused <i>Process&gt;Image Calculator</i>
 to not work correctly with signed 16-bit stacks.
+ <li> Fixed a bug that caused an exception when using
+ <i>Image&gt;Overlay&gt;Flatten</i> on an image without an overlay.
+ <li> Fixed a bug that sometimes caused the "Ch", "Slice" and "Frame" Results table
+  columns (enabled by checking <i>Stack Position</i> in Set Measurement) to contain 
+  incorrect values.
+ <li> Fixed a bug that caused JPEGs smaller than 8x8 pixels to always open as 8-bit grayscale images.
+ <li> <i>File&gt;Save As&gt;AVI</i> no longer caps the frame rate at 60 FPS.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
