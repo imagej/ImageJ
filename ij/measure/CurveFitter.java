@@ -186,18 +186,18 @@ public class CurveFitter {
 		Program pgm = (new Tokenizer()).tokenize(equation);
 		if (!pgm.hasWord("y")) return 0;
 		if (!pgm.hasWord("x")) return 0;
-		String[] params = {"a","b","c","d","e"};
+		String[] params = {"a","b","c","d","e","f"};
 		for (int i=0; i<params.length; i++) {
-		if (pgm.hasWord(params[i]))
-			customParamCount++;
+			if (pgm.hasWord(params[i]))
+				customParamCount++;
 		}
 		if (customParamCount==0)
 			return 0;
 		customFormula = equation;
 		String code =
-			"var x, a, b, c, d, e;\n"+
+			"var x, a, b, c, d, e, f;\n"+
 			"function dummy() {}\n"+
-			equation+";\n"; // starts at program counter location 19
+			equation+";\n"; // starts at program counter location 21
 		macro = new Interpreter();
 		macro.run(code, null);
 		if (macro.wasError())
@@ -428,7 +428,8 @@ public class CurveFitter {
 			if (customParamCount>2) macro.setVariable("c", p[2]);
 			if (customParamCount>3) macro.setVariable("d", p[3]);
 			if (customParamCount>4) macro.setVariable("e", p[4]);
-			macro.run(19);
+			if (customParamCount>5) macro.setVariable("f", p[5]);
+			macro.run(21);
 			return macro.getVariable("y");
 		} else
 			return f(fit, p, x);

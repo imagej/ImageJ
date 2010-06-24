@@ -155,7 +155,7 @@ public class AVI_Writer implements PlugInFilter {
         if (biCompression==NO_COMPRESSION && minLineLength%4!=0)
             linePad = 4 - minLineLength%4; //uncompressed lines written must be a multiple of 4 bytes
         frameDataSize = (bytesPerPixel*xDim+linePad)*yDim;
-        int microSecPerFrame = (int)((1.0/getFrameRate(imp))*1.0e6);
+        int microSecPerFrame = (int)Math.round((1.0/getFrameRate(imp))*1.0e6);
 
         //  W r i t e   A V I   f i l e   h e a d e r
         writeString("RIFF");    // signature
@@ -198,7 +198,7 @@ public class AVI_Writer implements PlugInFilter {
         writeInt(0);            // wPriority, wLanguage
         writeInt(0);            // dwInitialFrames
         writeInt(1);            // dwScale
-        writeInt((int)getFrameRate(imp)); //  dwRate - frame rate for video streams
+        writeInt((int)Math.round(getFrameRate(imp))); //  dwRate - frame rate for video streams
         writeInt(0);            // dwStart - this field is usually set to zero
         writeInt(zDim);         // dwLength - playing time of AVI file as defined by scale and rate
                                 // Set equal to the number of frames
