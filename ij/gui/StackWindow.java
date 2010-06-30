@@ -54,7 +54,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		}
 		if (nSlices>1) {
 			char label = nChannels>1||nFrames>1?'z':'t';
-			if (stackSize==dim[2]) label = 'c';
+			if (stackSize==dim[2] && imp.isComposite()) label = 'c';
 			zSelector = new ScrollbarWithLabel(this, 1, 1, 1, nSlices+1, label);
 			if (label=='t') animationSelector = zSelector;
 			add(zSelector);
@@ -101,7 +101,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				if (c==imp.getChannel()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
 			} else if (e.getSource()==zSelector) {
 				z = zSelector.getValue();
-				if (z==imp.getSlice()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
+				int slice = hyperStack?imp.getSlice():imp.getCurrentSlice();
+				if (z==slice&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
 			} else if (e.getSource()==tSelector) {
 				t = tSelector.getValue();
 				if (t==imp.getFrame()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;

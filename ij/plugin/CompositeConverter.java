@@ -53,10 +53,9 @@ public class CompositeConverter implements PlugIn {
 			ImageWindow win = imp.getWindow();
 			Point loc = win!=null?win.getLocation():null;
 			ImagePlus imp2 = new CompositeImage(imp, CompositeImage.COMPOSITE);
-			imp.hide();
+			if (loc!=null) ImageWindow.setNextLocation(loc);
 			imp2.show();
-			ImageWindow win2 = imp2.getWindow();
-			if (loc!=null&&win2!=null) win2.setLocation(loc);
+			imp.hide();
 	}
 
 	void convertRGBToCompositeStack(ImagePlus imp, String arg) {
@@ -84,6 +83,7 @@ public class CompositeConverter implements PlugIn {
 		imp2.setDimensions(3, n/3, 1);
 		int mode = arg!=null && arg.equals("color")?CompositeImage.COLOR:CompositeImage.COMPOSITE;
  		imp2 = new CompositeImage(imp2, mode);
+		if (loc!=null) ImageWindow.setNextLocation(loc);
 		imp2.show();
 		imp.changes = false;
 		imp.close();
