@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.44d, 30 June 2010</u>
+<li> <u>1.44d, 1 July 2010</u>
 <ul> 
 <li> Added "Help" buttons to the <i>File&gt;Import&gt;Image Sequence</i>,
 <i>File&gt;Import&gt;Raw</i> and <i>Process&gt;Math&gt;Macro</i>
@@ -16,7 +16,8 @@
  <li> ImageJ no longer automatically installs, at startup, plugins 
  in JAR file directories that start with a lower case letter.
  <li> ImageJ runs -batch command line scripts in batch mode.
- <li> Added the ImageWindow.setNextLocation(Point) method.
+ <li> Added setImage(ImagePlus) and setNextLocation(Point) methods
+ to the ImageWindow class.
  <li> Fixed a bug that sometimes caused an exception when an
  animating stack window was closed.
  <li> Fixed a bug that sometimes caused <i>Process&gt;Image Calculator</i>
@@ -28,6 +29,8 @@ to not work correctly with signed 16-bit stacks.
   incorrect values.
  <li> Fixed a bug that caused JPEGs smaller than 8x8 pixels to always open as 8-bit grayscale images.
  <li> <i>File&gt;Save As&gt;AVI</i> no longer caps the frame rate at 60 FPS.
+ <li> Fixed a bug that caused the slice range to be ignored by <i>Image&gt;Stacks&gt;Label</i>
+ when using an overlay.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

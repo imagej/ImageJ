@@ -369,8 +369,15 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 
 
-	void setImagePlus(ImagePlus imp) {
-		this.imp = imp;
+	public void setImage(ImagePlus imp2) {
+		ImageCanvas ic = getCanvas();
+		if (ic==null || imp2==null)
+			return;
+		imp = imp2;
+		imp.setWindow(this);
+		ic.updateImage(imp);
+		ic.setImageUpdated();
+		ic.repaint();
 		repaint();
 	}
 	
@@ -383,10 +390,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         pack();
 		repaint();
 		maxBounds = getMaximumBounds();
-		//if (!IJ.isLinux()) {
-			setMaximizedBounds(maxBounds);
-			setMaxBoundsTime = System.currentTimeMillis();
-		//}
+		setMaximizedBounds(maxBounds);
+		setMaxBoundsTime = System.currentTimeMillis();
 	}
 
 	public ImageCanvas getCanvas() {

@@ -157,11 +157,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		int n = slice - 1;
 		if (imp.isHyperStack())
 			n = (int)(n*((double)(imp.getNFrames())/imp.getStackSize()));
-		if (useOverlay) {
-			firstSlice = 1;
-			lastSlice = imp.getStackSize();
-		}
-		if (slice<firstSlice||slice>lastSlice) return;
+		if ((slice<firstSlice||slice>lastSlice) && !useOverlay) return;
 		if (virtualStack) {
 			int nSlices = imp.getStackSize();
 			if (previewing) nSlices = 1;
@@ -200,8 +196,16 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				Rectangle r = roi!=null?roi.getBounds():null;
 				yoffset = r!=null?r.height:fontSize;
 			}
+			int frame = slice;
+			if (imp.isHyperStack()) {
+				int[] pos = imp.convertIndexToPosition(slice);
+				frame = pos[2];
+			}
 			Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
-			roi.setStrokeColor(color);
+			if (frame>=firstSlice&&frame<=lastSlice)
+				roi.setStrokeColor(color);
+			else
+				roi.setStrokeColor(new Color(0f,0f,0f,0f)); // transparent
 			overlay.add(roi);
 			if (slice==imp.getStackSize() || previewing)
 				imp.setOverlay(overlay);

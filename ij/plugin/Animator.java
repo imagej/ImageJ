@@ -31,6 +31,7 @@ public class Animator implements PlugIn {
 				imp.setSlice(imp.getCurrentSlice()+1);
 			else if (arg.equals("previous"))
 				imp.setSlice(imp.getCurrentSlice()-1);
+			if (win!=null) imp.updateStatusbarValue();
 			return;
 		}
 		swin = (StackWindow)win;
