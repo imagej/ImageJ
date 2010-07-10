@@ -6,6 +6,7 @@ import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.macro.Interpreter;
 import ij.plugin.filter.GaussianBlur;
+import ij.plugin.filter.ThresholdToSelection;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
@@ -49,6 +50,8 @@ public class Selection implements PlugIn, Measurements {
     		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
+    	else if (arg.equals("toarea"))
+    		lineToArea(imp); 
     	else if (arg.equals("properties"))
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
     	else
@@ -320,6 +323,26 @@ public class Selection implements PlugIn, Measurements {
 			s1 = new ShapeRoi(roi);
 		s2 = new ShapeRoi(new Roi(0,0, imp.getWidth(), imp.getHeight()));
 		imp.setRoi(s1.xor(s2));
+	}
+	
+	void lineToArea(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null || !roi.isLine())
+			{IJ.error("Line to Area", "Line selection required"); return;}
+		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()==1)
+			{IJ.error("Line to Area", "Straight line width must be > 1"); return;}
+		ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
+		ip2.setColor(255);
+		if (roi.getType()==Roi.LINE)
+			ip2.fillPolygon(roi.getPolygon());
+		else
+			roi.drawPixels(ip2);
+		//new ImagePlus("ip2", ip2.duplicate()).show();
+		ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		ThresholdToSelection tts = new ThresholdToSelection();
+		Roi roi2 = tts.convert(ip2);
+		imp.setRoi(roi2);
+		Roi.previousRoi = (Roi)roi.clone();
 	}
 	
 	void addToRoiManager(ImagePlus imp) {

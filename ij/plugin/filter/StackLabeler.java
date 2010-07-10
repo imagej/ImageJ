@@ -25,7 +25,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static boolean useOverlay;
 	private int fieldWidth;
 	private Color color;
-	private int firstSlice, lastSlice;
+	private int firstFrame, lastFrame, defaultLastFrame;
 	private Overlay overlay;
 	private boolean previewing; 
 	private boolean virtualStack; 
@@ -33,14 +33,10 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 
 	public int setup(String arg, ImagePlus imp) {
 		if (imp!=null) {
-			if (imp.isHyperStack()&&imp.getNFrames()==1) {
-				IJ.error("StackLabeler", "This command does not work with\nsingle time-point hyperstacks.");
-				return DONE;
-			}
 			virtualStack = imp.getStack().isVirtual();
-			if (virtualStack || imp.isHyperStack())
-				useOverlay = true;
+			if (virtualStack) useOverlay = true;
 			flags += virtualStack?0:DOES_STACKS;
+			firstFrame=1; lastFrame=defaultLastFrame=imp.getStackSize();
 		}
 		this.imp = imp;
 		return flags;
@@ -74,6 +70,13 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			}
 		}
 		if (format<0||format>TEXT) format = NUMBER;
+		int defaultLastFrame = imp.getStackSize();
+		if (imp.isHyperStack()) {
+			if (imp.getNFrames()>1)
+				defaultLastFrame = imp.getNFrames();
+			else if (imp.getNSlices()>1)
+				defaultLastFrame = imp.getNSlices();
+		}
 		GenericDialog gd = new GenericDialog("StackLabeler");
 		gd.setInsets(2, 5, 0);
 		gd.addChoice("Format:", formats, formats[format]);
@@ -83,7 +86,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Y location:", y, 0);
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addStringField("Text:", text, 10);
-        addRange(gd, "Range:", 1, imp.isHyperStack()?imp.getNFrames():imp.getStackSize());
+        addRange(gd, "Range:", 1, defaultLastFrame);
 		gd.setInsets(10,20,0);
         gd.addCheckbox(" Use overlay", useOverlay);
         gd.addPreviewCheckbox(pfr);
@@ -127,10 +130,10 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		y = (int)gd.getNextNumber();
 		fontSize = (int)gd.getNextNumber();
 		text = gd.getNextString();
-		double[] range = getRange(gd, 1, imp.getStackSize());
+		double[] range = getRange(gd, 1, defaultLastFrame);
 		useOverlay = gd.getNextBoolean();
 		if (virtualStack) useOverlay = true;
-		firstSlice=(int)range[0]; lastSlice=(int)range[1];
+		firstFrame=(int)range[0]; lastFrame=(int)range[1];
 		int index = str.indexOf(".");
 		if (index!=-1)
 			decimalPlaces = str.length()-index-1;
@@ -141,42 +144,48 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		if (y<fontSize) y = fontSize+5;
 		ImageProcessor ip = imp.getProcessor();
 		ip.setFont(font);
-		int stackSize = imp.getStackSize();
-		maxWidth = ip.getStringWidth(getString(stackSize, interval, format));
+		int size = defaultLastFrame;
+		maxWidth = ip.getStringWidth(getString(size, interval, format));
 		fieldWidth = 1;
-		if (stackSize>=10) fieldWidth = 2;
-		if (stackSize>=100) fieldWidth = 3;
-		if (stackSize>=1000) fieldWidth = 4;
-		if (stackSize>=10000) fieldWidth = 5;
+		if (size>=10) fieldWidth = 2;
+		if (size>=100) fieldWidth = 3;
+		if (size>=1000) fieldWidth = 4;
+		if (size>=10000) fieldWidth = 5;
 		 Prefs.set("label.format", format);
         return true;
     }
 	
 	public void run(ImageProcessor ip) {
-		int slice = ip.getSliceNumber();
-		int n = slice - 1;
-		if (imp.isHyperStack())
-			n = (int)(n*((double)(imp.getNFrames())/imp.getStackSize()));
-		if ((slice<firstSlice||slice>lastSlice) && !useOverlay) return;
+		int image = ip.getSliceNumber();
+		int n = image - 1;
+		if (imp.isHyperStack()) n = updateIndex(n);
 		if (virtualStack) {
 			int nSlices = imp.getStackSize();
 			if (previewing) nSlices = 1;
 			for (int i=1; i<=nSlices; i++) {
-				slice=i; n=i-1;
-				if (imp.isHyperStack())
-					n = (int)(n*((double)(imp.getNFrames())/imp.getStackSize()));
-				drawLabel(ip, slice, n);
+				image=i; n=i-1;
+				if (imp.isHyperStack()) n = updateIndex(n);
+				drawLabel(ip, image, n);
 			}
 		} else {
 			if (previewing && overlay!=null) {
 				imp.setOverlay(null);
 				overlay = null;
 			}
-			drawLabel(ip, slice, n);
+			drawLabel(ip, image, n);
 		}
 	}
 	
-	void drawLabel(ImageProcessor ip, int slice, int n) {
+	int updateIndex(int n) {
+		if (imp.getNFrames()>1)
+			return (int)(n*((double)(imp.getNFrames())/imp.getStackSize()));
+		else if (imp.getNSlices()>1)
+			return (int)(n*((double)(imp.getNSlices())/imp.getStackSize()));
+		else
+			return n;
+	}
+	
+	void drawLabel(ImageProcessor ip, int image, int n) {
 		String s = getString(n, interval, format);
 		ip.setFont(font);
 		int textWidth = ip.getStringWidth(s);
@@ -189,27 +198,30 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				ip.resetRoi();
 			}
 		}
+		int frame = image;
+		if (imp.isHyperStack()) {
+			int[] pos = imp.convertIndexToPosition(image);
+			if (imp.getNFrames()>1)
+				frame = pos[2];
+			else if (imp.getNSlices()>1)
+				frame = pos[1];
+		}
 		if (useOverlay) {
-			if (slice==1) {
+			if (image==1) {
 				overlay = new Overlay();
 				Roi roi = imp.getRoi();
 				Rectangle r = roi!=null?roi.getBounds():null;
 				yoffset = r!=null?r.height:fontSize;
 			}
-			int frame = slice;
-			if (imp.isHyperStack()) {
-				int[] pos = imp.convertIndexToPosition(slice);
-				frame = pos[2];
-			}
 			Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
-			if (frame>=firstSlice&&frame<=lastSlice)
+			if (frame>=firstFrame&&frame<=lastFrame)
 				roi.setStrokeColor(color);
 			else
 				roi.setStrokeColor(new Color(0f,0f,0f,0f)); // transparent
 			overlay.add(roi);
-			if (slice==imp.getStackSize() || previewing)
+			if (image==imp.getStackSize()||previewing)
 				imp.setOverlay(overlay);
-		} else {
+		} else if (frame>=firstFrame&&frame<=lastFrame) {
 			ip.setColor(color); 
 			ip.setAntialiasedText(fontSize>=18);
 			ip.moveTo(x+maxWidth-textWidth, y);
@@ -228,12 +240,13 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 					str=zeroFill((int)time); 
 				else
 					str=IJ.d2s(time, decimalPlaces);
+				str = text +" " + str;
 				break;
 			case MIN_SEC:
-				str=pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60);
+				str=pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
 				break;
 			case HOUR_MIN_SEC:
-				str=pad((int)Math.floor(itime/3600))+":"+pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60);
+				str=pad((int)Math.floor(itime/3600))+":"+pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
 				break;
 			case TEXT: str=text; break;
 		}

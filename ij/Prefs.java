@@ -79,7 +79,7 @@ public class Prefs {
 	public static boolean useInvertingLut;
 	/** Draw tool icons using antialiasing. */
 	public static boolean antialiasedTools = true;
-	/** Export Raw using little-endian byte order. */
+	/** Export TIFF and Raw using little-endian byte order. */
 	public static boolean intelByteOrder;
 	/** Double buffer display of selections and overlays. */
 	public static boolean doubleBuffer = true;
