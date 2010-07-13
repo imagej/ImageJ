@@ -19,6 +19,10 @@ public class RGBStackSplitter implements PlugInFilter {
         	splitChannels(imp);
         	return DONE;
         }
+        if (imp!=null && imp.getBitDepth()!=24) {
+        	IJ.error("Split Channels", "Multichannel image required");
+        	return DONE;
+        }
         return DOES_RGB+NO_UNDO;
     }
 

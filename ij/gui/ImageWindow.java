@@ -38,6 +38,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	private static int yloc;
 	private static int count;
 	private static boolean centerOnScreen;
+	private static Point nextLocation;
 	
     private int textGap = centerOnScreen?0:TEXT_GAP;
 	
@@ -115,6 +116,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			if (centerOnScreen) {
 				GUI.center(this);
 				centerOnScreen = false;
+			} else if (nextLocation!=null) {
+				setLocation(nextLocation);
+				nextLocation = null;
 			}
 			if (Interpreter.isBatchMode() || (IJ.getInstance()==null&&this instanceof HistogramWindow)) {
 				WindowManager.setTempCurrentImage(imp);
@@ -365,8 +369,15 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 
 
-	void setImagePlus(ImagePlus imp) {
-		this.imp = imp;
+	public void setImage(ImagePlus imp2) {
+		ImageCanvas ic = getCanvas();
+		if (ic==null || imp2==null)
+			return;
+		imp = imp2;
+		imp.setWindow(this);
+		ic.updateImage(imp);
+		ic.setImageUpdated();
+		ic.repaint();
 		repaint();
 	}
 	
@@ -379,10 +390,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         pack();
 		repaint();
 		maxBounds = getMaximumBounds();
-		//if (!IJ.isLinux()) {
-			setMaximizedBounds(maxBounds);
-			setMaxBoundsTime = System.currentTimeMillis();
-		//}
+		setMaximizedBounds(maxBounds);
+		setMaxBoundsTime = System.currentTimeMillis();
 	}
 
 	public ImageCanvas getCanvas() {
@@ -591,6 +600,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     	centerOnScreen = true;
     }
     
+    /** Causes the next image to be displayed at the specified location. */
+    public static void setNextLocation(Point loc) {
+    	nextLocation = loc;
+    }
+
     /** Moves and resizes this window. Changes the 
     	 magnification so the image fills the window. */
     public void setLocationAndSize(int x, int y, int width, int height) {

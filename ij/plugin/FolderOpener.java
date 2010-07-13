@@ -13,7 +13,7 @@ import ij.measure.Calibration;
 opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
-	private static boolean convertToGrayscale, convertToRGB;
+	private static boolean convertToRGB;
 	private static boolean sortFileNames = true;
 	private static boolean virtualStack;
 	private double scale = 100.0;
@@ -125,7 +125,6 @@ public class FolderOpener implements PlugIn {
 					bitDepth = imp.getBitDepth();
 					cal = imp.getCalibration();
 					if (convertToRGB) bitDepth = 24;
-					if (convertToGrayscale) bitDepth = 8;
 					ColorModel cm = imp.getProcessor().getColorModel();
 					if (virtualStack) {
 						stack = new VirtualStack(width, height, cm, directory);
@@ -158,9 +157,6 @@ public class FolderOpener implements PlugIn {
 						if (convertToRGB) {
 							ip = ip.convertToRGB();
 							bitDepth2 = 24;
-						} else if (convertToGrayscale) {
-							ip = ip.convertToByte(true);
-							bitDepth2 = 8;
 						}
 						if (bitDepth2!=bitDepth) {
 							if (bitDepth==8) {
@@ -234,17 +230,17 @@ public class FolderOpener implements PlugIn {
 	boolean showDialog(ImagePlus imp, String[] list) {
 		int fileCount = list.length;
 		FolderOpenerDialog gd = new FolderOpenerDialog("Sequence Options", imp, list);
-		gd.addNumericField("Number of Images:", fileCount, 0);
-		gd.addNumericField("Starting Image:", 1, 0);
+		gd.addNumericField("Number of images:", fileCount, 0);
+		gd.addNumericField("Starting image:", 1, 0);
 		gd.addNumericField("Increment:", 1, 0);
-		gd.addNumericField("Scale Images:", scale, 0, 4, "%");
-		gd.addStringField("File Name Contains:", "", 10);
-		gd.addStringField("or Enter Pattern:", "", 10);
-		gd.addCheckbox("Convert to 8-bit Grayscale", convertToGrayscale);
+		gd.addNumericField("Scale images:", scale, 0, 4, "%");
+		gd.addStringField("File name contains:", "", 10);
+		gd.addStringField("or enter pattern:", "", 10);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
-		gd.addCheckbox("Sort Names Numerically", sortFileNames);
-		gd.addCheckbox("Use Virtual Stack", virtualStack);
+		gd.addCheckbox("Sort names numerically", sortFileNames);
+		gd.addCheckbox("Use virtual stack", virtualStack);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
+		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -262,7 +258,6 @@ public class FolderOpener implements PlugIn {
 			filter = regex;
 			isRegex = true;
 		}
-		convertToGrayscale = gd.getNextBoolean();
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
 		virtualStack = gd.getNextBoolean();

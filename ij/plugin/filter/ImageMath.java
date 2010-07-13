@@ -404,13 +404,14 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	void getMacro(String macro) {
-		gd = new GenericDialog("Macro");
+		gd = new GenericDialog("Expression Evaluator");
 		gd.addStringField("Code:", macro, 42);
 		gd.setInsets(0,40,0);
 		gd.addMessage("v=pixel value, x,y&z=pixel coordinates, w=image width,\nh=image height, a=angle, d=distance from center\n");
 		gd.setInsets(5,40,0);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
+		gd.addHelp(IJ.URL+"/docs/menus/process.html#math-macro");
 		gd.showDialog();
 	}
 

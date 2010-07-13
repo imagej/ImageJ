@@ -418,6 +418,14 @@ public class Calibration implements Cloneable {
 		return (bitDepth==16 && function>=STRAIGHT_LINE && function<=RODBARD2 && coefficients!=null
 			&& coefficients[0]==-32768.0 && coefficients[1]==1.0);
  	}
+ 	
+ 	/** Sets up a calibration function that subtracts 32,768 from pixel values. */
+ 	public void setSigned16BitCalibration() {
+		double[] coeff = new double[2];
+		coeff[0] = -32768.0;
+		coeff[1] = 1.0;
+		setFunction(STRAIGHT_LINE, coeff, "Gray Value");
+ 	}
 
  	/** Returns true if zero clipping is enabled. */
  	public boolean zeroClip() {

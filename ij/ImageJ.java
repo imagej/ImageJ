@@ -72,7 +72,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.44c";
+	public static final String VERSION = "1.44d";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -414,9 +414,9 @@ public class ImageJ extends Frame implements ActionListener,
 							cmd="Next Slice [>]";
 					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
-					else if (zoomKey &&keyCode==KeyEvent.VK_DOWN)
+					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !loci(imp))
 							cmd="Out";
-					else if (zoomKey && keyCode==KeyEvent.VK_UP)
+					else if (zoomKey && keyCode==KeyEvent.VK_UP && !loci(imp))
 							cmd="In";
 					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK) != 0)
@@ -445,6 +445,12 @@ public class ImageJ extends Frame implements ActionListener,
 				lastKeyCommand = cmd;
 			}
 		}
+	}
+	
+	// LOCI Data Browser window?
+	private boolean loci(ImagePlus imp) {
+		ImageWindow win = imp.getWindow();
+		return imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci");
 	}
 	
 	public void keyTyped(KeyEvent e) {
@@ -571,6 +577,8 @@ public class ImageJ extends Frame implements ActionListener,
 				if ((arg.startsWith("-macro") || arg.startsWith("-batch")) && i+1<nArgs) {
 					String arg2 = i+2<nArgs?args[i+2]:null;
 					Prefs.commandLineMacro = true;
+					if (noGUI && args[i+1].endsWith(".js"))
+						Interpreter.batchMode = true;
 					IJ.runMacroFile(args[i+1], arg2);
 					break;
 				} else if (arg.startsWith("-eval") && i+1<nArgs) {

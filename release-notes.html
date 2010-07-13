@@ -5,36 +5,39 @@
 </head>
 <body>
 
-<li> <u>1.44c, 15 June 2010</u>
-<ul> 
-<li> Raw integrated density (sum of pixel values) is displayed when "Integrated density"
-is enabled in <i>Analyze&gt;Set Measurements</i>.
-<li> Added a <i>File&gt;Rename</i> command and <i>Results</i> menu to Results windows.
-<li> Added "Help" buttons to the <i>Process&gt;Find Maxima</i>,
-<i>Process&gt;Image Caclulator</i> and <i>Process&gt;Subtract Background</i>
+<li> <u>1.44d, 12 July 2010</u>
+<ul>
+<li> Added the <i>Edit&gt;Selection&gt;Line to Area</i> command.
+<li> Added "Help" buttons to the <i>File&gt;Import&gt;Image Sequence</i>,
+<i>File&gt;Import&gt;Raw</i> and <i>Process&gt;Math&gt;Macro</i>
  dialog boxes.
-<li> Pressing the esc aborts macros displaying a "WaitForUser" dialog.
-<li> Changed the name of the <i>File&gt;Save As&gt;Measurements</i> command to
-<i>File&gt;Save As&gt;Results</i> and changed <i>Help&gt;Update Menus</i> to
-<i>Help&gt;Refresh Menus</i>.
-<li> The Bio-Formats plugin (loci_tools.jar) is added to the
-compiler's classpath by <i>Plugins&gt;Compile and Run</i>.
-<li> The TiffDecoder displays information needed to import the file
-(number of images, offset to first images, gap between images) when ImageJ is in debug mode.
-<li> The MacClipboard plugin, which opens PICT images from the clipboard 
-using QuickTime for Java, is now included in ij.jar.
-<li> Added the IJ.renameResults() macro function.
-<li> Worked around a bug that caused the <i>Image&gt;Stacks&gt;Reslice</i>
-command to be very slow on some 64-bit versions of Java.
-<li> Fixed a bug that sometimes caused a "negative seek offset"
-error when opening TIFF files larger than 2GB.
-<li> Fixed a bug that caused <i>File&gt;Import&gt;TIFF Virtual Stack</i>
-to not display the TIFF tags when ImageJ was in the debug mode;
-<li> Fixed a bug that caused "/" to be added to the FileInfo directories when opening
-a folder of images using drag and drop on Windows.
-<li> Fixed a bug in the setAutoThreshold() macro function and ImageProcessor.setAutoThreshold()
-method that caused the threshold level to be one less than the level set by the "Threshold" widget
-when "Dark background' was enabled.
+ <li> The CurveFitter resolves 6 parameter user-defined equations.
+ <li> <i>Image&gt;Color&gt;Make Composite</i> now opens the
+ new composite color image in place.
+ <li> Removed the "Convert to 8-bit grayscale" option from 
+ <i>File&gt;Import&gt;Image Sequence</i>. As a replacement, use the
+ "Use virtual stack" option and then convert to 8-bit using <i>Image&gt;Type&gt;8-bit</i>.
+ <li> Assigned the "U" keyboard shortcut to <i>Plugins&gtUtilities&gt;Control Panel</i>.
+ <li> ImageJ no longer automatically installs, at startup, plugins 
+ in JAR file directories that start with a lower case letter.
+ <li> ImageJ runs -batch command line scripts in batch mode.
+ <li> Added setImage(ImagePlus) and setNextLocation(Point) methods
+ to the ImageWindow class.
+ <li> The up and down arrow keys no longer cause the LOCI Data Browser
+ window to zoom in and out.
+ <li> Fixed a bug that sometimes caused an exception when an
+ animating stack window was closed.
+ <li> Fixed a bug that sometimes caused <i>Process&gt;Image Calculator</i>
+to not work correctly with signed 16-bit stacks.
+ <li> Fixed a bug that caused an exception when using
+ <i>Image&gt;Overlay&gt;Flatten</i> on an image without an overlay.
+ <li> Fixed a bug that sometimes caused the "Ch", "Slice" and "Frame" Results table
+  columns (enabled by checking <i>Stack Position</i> in Set Measurement) to contain 
+  incorrect values.
+ <li> Fixed a bug that caused JPEGs smaller than 8x8 pixels to always open as 8-bit grayscale images.
+ <li> <i>File&gt;Save As&gt;AVI</i> no longer caps the frame rate at 60 FPS.
+ <li> Fixed a bug that caused the slice range to be ignored by <i>Image&gt;Stacks&gt;Label</i>
+ when using an overlay.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

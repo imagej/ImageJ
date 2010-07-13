@@ -1,5 +1,5 @@
 /*
- * This plugin implements the Edit/Selection/Create Mask command.
+ * This plugin implements the Edit/Selection/Create Selection command.
  * It is based on a proposal by Tom Larkworthy.
  * Written and public domained in June 2006 by Johannes E. Schindelin
  */
@@ -23,12 +23,16 @@ public class ThresholdToSelection implements PlugInFilter {
 	int w, h;
 
 	public void run(ImageProcessor ip) {
+		image.setRoi(convert(ip));
+	}
+	
+	public Roi convert(ImageProcessor ip) {
 		this.ip = ip;
 		min = (float)ip.getMinThreshold();
 		max = (float)ip.getMaxThreshold();
 		w = ip.getWidth();
 		h = ip.getHeight();
-		image.setRoi(getRoi());
+		return getRoi();
 	}
 
 	final boolean selected(int x, int y) {

@@ -82,7 +82,8 @@ selection13="Enlarge...",ij.plugin.Selection("enlarge")
 selection14="Make Band...",ij.plugin.Selection("band")
 selection15="Specify...",ij.plugin.SpecifyROI
 selection16="Straighten...",ij.plugin.Straightener
-selection17="Add to Manager [t]",ij.plugin.Selection("add")
+selection17="Line to Area",ij.plugin.Selection("toarea")
+selection18="Add to Manager [t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
@@ -344,7 +345,7 @@ shortcuts04="Remove...",ij.plugin.Hotkeys("remove")
 shortcuts05=-
 
 # Plugins installed in the Plugins/Utilities submenu
-utilities01="Control Panel...",ij.plugin.ControlPanel
+utilities01="Control Panel... [U]",ij.plugin.ControlPanel
 utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="Threads...",ij.plugin.ThreadLister
 utilities04="Benchmark",ij.plugin.filter.Benchmark
