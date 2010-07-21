@@ -1170,6 +1170,7 @@ public class ShapeRoi extends Roi {
 		return val;
 	}
 	
+	/**
 	public static void addCircle(String sx, String sy, String swidth) {
 		int x = Integer.parseInt(sx);
 		int y = Integer.parseInt(sy);
@@ -1200,6 +1201,7 @@ public class ShapeRoi extends Roi {
 			img.setRoi(roi);
 		}
 	}
+	*/
 
 	static ShapeRoi getCircularRoi(int x, int y, int width) {
 		return new ShapeRoi(new OvalRoi(x - width / 2, y - width / 2, width, width));

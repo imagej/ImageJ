@@ -5,39 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.44d, 12 July 2010</u>
+<li> <u>1.44e, 20 July 2010</u>
 <ul>
-<li> Added the <i>Edit&gt;Selection&gt;Line to Area</i> command.
-<li> Added "Help" buttons to the <i>File&gt;Import&gt;Image Sequence</i>,
-<i>File&gt;Import&gt;Raw</i> and <i>Process&gt;Math&gt;Macro</i>
- dialog boxes.
- <li> The CurveFitter resolves 6 parameter user-defined equations.
- <li> <i>Image&gt;Color&gt;Make Composite</i> now opens the
- new composite color image in place.
- <li> Removed the "Convert to 8-bit grayscale" option from 
- <i>File&gt;Import&gt;Image Sequence</i>. As a replacement, use the
- "Use virtual stack" option and then convert to 8-bit using <i>Image&gt;Type&gt;8-bit</i>.
- <li> Assigned the "U" keyboard shortcut to <i>Plugins&gtUtilities&gt;Control Panel</i>.
- <li> ImageJ no longer automatically installs, at startup, plugins 
- in JAR file directories that start with a lower case letter.
- <li> ImageJ runs -batch command line scripts in batch mode.
- <li> Added setImage(ImagePlus) and setNextLocation(Point) methods
- to the ImageWindow class.
- <li> The up and down arrow keys no longer cause the LOCI Data Browser
- window to zoom in and out.
- <li> Fixed a bug that sometimes caused an exception when an
- animating stack window was closed.
- <li> Fixed a bug that sometimes caused <i>Process&gt;Image Calculator</i>
-to not work correctly with signed 16-bit stacks.
- <li> Fixed a bug that caused an exception when using
- <i>Image&gt;Overlay&gt;Flatten</i> on an image without an overlay.
- <li> Fixed a bug that sometimes caused the "Ch", "Slice" and "Frame" Results table
-  columns (enabled by checking <i>Stack Position</i> in Set Measurement) to contain 
-  incorrect values.
- <li> Fixed a bug that caused JPEGs smaller than 8x8 pixels to always open as 8-bit grayscale images.
- <li> <i>File&gt;Save As&gt;AVI</i> no longer caps the frame rate at 60 FPS.
- <li> Fixed a bug that caused the slice range to be ignored by <i>Image&gt;Stacks&gt;Label</i>
- when using an overlay.
+<li> The run("Close All") macro function no longer displays a warning message if there are unsaved changes.
+<li> Added the CompositeImage setChannelsUpdated() method.
+<li> Fixed a bug that caused <i>File&gt;Import&gt;Text Image</i> to fail if the file contained values
+with a plus sign (e.g., "1.23e+02").
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
