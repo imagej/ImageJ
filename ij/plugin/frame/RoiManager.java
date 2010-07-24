@@ -137,7 +137,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Save...");
 		addPopupItem("Fill");
 		addPopupItem("Draw");
-		addPopupItem("Combine");
+		addPopupItem("AND");
+		addPopupItem("OR (Combine)");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
 		addPopupItem("Multi Measure");
@@ -193,10 +194,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Point ploc = panel.getLocation();
 			Point bloc = moreButton.getLocation();
 			pm.show(this, ploc.x, bloc.y);
-		} else if (command.equals("Combine"))
+		} else if (command.equals("OR (Combine)"))
 			combine();
 		else if (command.equals("Split"))
 			split();
+		else if (command.equals("AND"))
+			and();
 		else if (command.equals("Add Particles"))
 			addParticles();
 		else if (command.equals("Multi Measure"))
@@ -1116,6 +1119,39 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.setRoi(new PointRoi(xpoints, ypoints, xpoints.length));
 	}
 
+	void and() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==1) {
+			error("More than one item must be selected, or none");
+			return;
+		}
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+		ShapeRoi s1=null, s2=null;
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+			if (!roi.isArea()) continue;
+			if (s1==null) {
+				if (roi instanceof ShapeRoi)
+					s1 = (ShapeRoi)roi.clone();
+				else
+					s1 = new ShapeRoi(roi);
+				if (s1==null) return;
+			} else {
+				if (roi instanceof ShapeRoi)
+					s2 = (ShapeRoi)roi.clone();
+				else
+					s2 = new ShapeRoi(roi);
+				if (s2==null) continue;
+				s1.and(s2);
+			}
+		}
+		if (s1!=null) imp.setRoi(s1);
+		if (record()) Recorder.record("roiManager", "AND");
+	}
+
 	void addParticles() {
 		String err = IJ.runMacroFile("ij.jar:AddParticles", null);
 		if (err!=null && err.length()>0)
@@ -1353,7 +1389,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Show All", Show None", "Fill", "Deselect", "Select All", "Combine", "Split",
+		"Show All", Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "Split",
 		"Sort" or "Multi Measure" command.  Returns false if <code>cmd</code>
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {
@@ -1378,7 +1414,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			drawOrFill(FILL);
 		else if (cmd.equals("label"))
 			drawOrFill(LABEL);
-		else if (cmd.equals("combine"))
+		else if (cmd.equals("and"))
+			and();
+		else if (cmd.equals("or") || cmd.equals("combine"))
 			combine();
 		else if (cmd.equals("split"))
 			split();

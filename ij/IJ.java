@@ -1407,9 +1407,13 @@ public class IJ {
 		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
 	public static void save(ImagePlus imp, String path) {
 		int dotLoc = path.lastIndexOf('.');
-		if (dotLoc!=-1)
+		if (dotLoc!=-1) {
+			ImagePlus imp2 = imp;
+			if (imp2==null) imp2 = WindowManager.getCurrentImage();
+			String title = imp2!=null?imp2.getTitle():null;
 			saveAs(imp, path.substring(dotLoc+1), path);
-		else
+			if (title!=null) imp2.setTitle(title);
+		} else
 			error("The save() macro function requires a file name extension.\n \n"+path);
 	}
 
