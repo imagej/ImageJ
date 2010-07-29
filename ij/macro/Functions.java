@@ -2466,6 +2466,8 @@ public class Functions implements MacroConstants, Measurements {
 		int width = (int)getNextArg();
 		int height = (int)getNextArg();
 		int depth = (int)getLastArg();
+		if (width<1 || height<1)
+			interp.error("Width or height < 1");
 		IJ.newImage(title, type, width, height, depth);
 		resetImage();
 	}

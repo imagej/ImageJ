@@ -825,7 +825,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				// Is the value a macro variable?
 				if (theText.startsWith("&")) theText = theText.substring(1);
 				Interpreter interp = Interpreter.getInstance();
-				String s = interp!=null?interp.getStringVariable(theText):null;
+				String s = interp!=null?interp.getVariableAsString(theText):null;
 				if (s!=null) theText = s;
 			}
 		}	

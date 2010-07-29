@@ -11,11 +11,8 @@ import java.lang.reflect.*;
 /** Opens and runs a macro file. */
 public class Macro_Runner implements PlugIn {
 	
-	/** Opens and runs the specified macro file on the current thread. Displays a
-		file open dialog if <code>name</code> is an empty string. Loads the
-		macro from a JAR file in the plugins folder if <code>name</code> starts
-		with "JAR:". Otherwise, loads the specified macro from the plugins folder
-		or subfolder. */
+	/** Opens and runs the specified macro file, which is assumed to be in the plugins folder,
+		on the current thread. Displays a file open dialog if <code>name</code> is an empty string. */
 	public void run(String name) {
 		Thread thread = Thread.currentThread();
 		String threadName = thread.getName();
@@ -29,50 +26,15 @@ public class Macro_Runner implements PlugIn {
 			if (name!=null)
 				runMacroFile(directory+name, null);
 		} else if (name.startsWith("JAR:"))
-			runMacroFromJar(name);
+			runMacroFromJar(name.substring(4), null);
 		else if (name.startsWith("ij.jar:"))
 			runMacroFromIJJar(name, null);
 		else {
-			if (!name.startsWith("ij.jar:"))
-				path = Menus.getPlugInsPath() + name;
+			path = Menus.getPlugInsPath() + name;
 			runMacroFile(path, null);
 		}
 	}
         
-    void runMacroFromJar(String name) {
-    	name = name.substring(4);
-    	String macro = null;
-        try {
-            // get macro text as a stream
-			PluginClassLoader pcl = new PluginClassLoader(Menus.getPlugInsPath());
-			InputStream is = pcl.getResourceAsStream("/"+name);
-            if (is==null) {
-            	IJ.showMessage("Macro Runner", "Unable to load \""+name+"\" from jar file");
-            	return;
-            }
-            InputStreamReader isr = new InputStreamReader(is);
-            
-            StringBuffer sb = new StringBuffer();
-            char [] b = new char [8192];
-            int n;
-            //read a block and append any characters
-            while ((n = isr.read(b)) > 0)
-                sb.append(b,0, n);
-            
-            // display the text in a TextWindow
-            macro = sb.toString();
-            //new TextWindow("Macro Runner", sb.toString(), 450, 450);
-        }
-        catch (IOException e) {
-            String msg = e.getMessage();
-            if (msg==null || msg.equals(""))
-                msg = "" + e;	
-            IJ.showMessage("Macro Runner", msg);
-        }
-		if (macro!=null)
-			runMacro(macro, null);
-    }
-
     /** Opens and runs the specified macro file on the current thread.
     	The file is assumed to be in the macros folder unless 
     	<code>name</code> is a full path. ".txt"  is
@@ -144,6 +106,36 @@ public class Macro_Runner implements PlugIn {
 		return  "[aborted]";
 	}
 	
+	/** Runs the specified macro from a JAR file in the plugins folder,
+		passing it the specified argument. Returns the String value returned
+		by the macro, null if the macro does not return a value, or "[aborted]"
+		if the macro was aborted due to an error. */
+	public static String runMacroFromJar(String name, String arg) {
+		String macro = null;
+		try {
+			ClassLoader pcl = IJ.getClassLoader();
+			InputStream is = pcl.getResourceAsStream(name);
+			if (is==null) {
+				IJ.error("Macro Runner", "Unable to load \""+name+"\" from jar file");
+				return null;
+			}
+			InputStreamReader isr = new InputStreamReader(is);
+			StringBuffer sb = new StringBuffer();
+			char [] b = new char [8192];
+			int n;
+			while ((n = isr.read(b)) > 0)
+				sb.append(b,0, n);
+			macro = sb.toString();
+			is.close();
+		} catch (IOException e) {
+			IJ.error("Macro Runner", ""+e);
+		}
+		if (macro!=null)
+			return (new Macro_Runner()).runMacro(macro, arg);
+		else
+			return null;
+	}
+
 	public String runMacroFromIJJar(String name, String arg) {
 		ImageJ ij = IJ.getInstance();
 		//if (ij==null) return null;

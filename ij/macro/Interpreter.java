@@ -1785,6 +1785,16 @@ public class Interpreter implements MacroConstants {
 		}
 		return null;
 	}
+	
+	public String getVariableAsString(String name) {
+		String s = getStringVariable(name);
+		if (s==null) {
+			double value = getVariable(name);
+			if (!Double.isNaN(value)) s=""+value;
+		}
+		return s;
+	}
+
 
 } // class Interpreter
 
