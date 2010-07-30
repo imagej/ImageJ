@@ -372,7 +372,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append((scriptMode?"imp.setTitle":"rename")+"(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Wand Tool..."))
 					textArea.append("//run(\""+name+"\", \""+commandOptions+"\");\n");
-				else if (name.equals("Results... ")&&!commandOptions.endsWith("txt"))
+				else if (name.equals("Results... ")&&commandOptions.indexOf(".txt")==-1)
 					textArea.append((scriptMode?"IJ.":"")+"open(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Results...")) // Save As>Results
 					;

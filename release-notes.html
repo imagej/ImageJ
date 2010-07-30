@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.44e, 28 July 2010</u>
+<li> <u>1.44e, 30 July 2010</u>
 <ul>
+<li> Added the <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i> command, which is based on the
+Substack Maker plugin by Anthony Padua, Daniel Barboriak and Ved Sharma.
 <li> Added an "AND" option to the ROI Manager.
 <li> The run("Close All") macro function no longer displays a warning message if there are unsaved changes.
 <li> The particle analyzer now displays a blank image when the count is zero and "Show:" not equal "None".
@@ -18,6 +20,8 @@ with a plus sign (e.g., "1.23e+02").
 "min=234;run("Analyze Particles...", "size=&min");" to fail.
 <li> Fixed a bug that caused an exception if the newImage() macro function
 was called with width or height set to zero.
+<li> Fixed a bug that caused setAutoThreshold("Default") to sometimes not generate
+the expected threshold with images that have a sharp peak in its histogram.
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>

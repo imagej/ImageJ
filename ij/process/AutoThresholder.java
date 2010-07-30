@@ -40,7 +40,7 @@ public class AutoThresholder {
 	public int getThreshold(Method method, int[] histogram) {
 		int threshold = 0;
 		switch (method) {
-			case Default: threshold =  IJIsoData(histogram); break;
+			case Default: threshold =  defaultIsoData(histogram); break;
 			case IJ_IsoData: threshold =  IJIsoData(histogram); break;
 			case Huang: threshold = Huang(histogram); break;
 			case Intermodes: threshold = Intermodes(histogram); break;
@@ -279,6 +279,32 @@ public class AutoThresholder {
 		return g;
 	}
 	
+	int defaultIsoData(int[] data) {
+		// This is the modified IsoData method used by the "Threshold" widget in "Default" mode
+		int n = data.length;
+		int[] data2 = new int[n];
+		int mode=0, maxCount=0;
+		for (int i=0; i<n; i++) {
+			int count = data[i];
+			data2[i] = data[i];
+			if (data2[i]>maxCount) {
+				maxCount = data2[i];
+				mode = i;
+			}
+		}
+		int maxCount2 = 0;
+		for (int i = 0; i<n; i++) {
+			if ((data2[i]>maxCount2) && (i!=mode))
+				maxCount2 = data2[i];
+		}
+		int hmax = maxCount;
+		if ((hmax>(maxCount2*2)) && (maxCount2!=0)) {
+			hmax = (int)(maxCount2 * 1.5);
+			data2[mode] = hmax;
+		}
+		return IJIsoData(data2);
+	}
+
 	int IJIsoData(int[] data) {
 		// This is the original ImageJ IsoData implementation, here for backward compatibility.
 		int level;
@@ -360,7 +386,7 @@ public class AutoThresholder {
 		/* Initial estimate */
 		new_thresh = mean;
 
-		do{
+		do {
 			old_thresh = new_thresh;
 			threshold = (int) (old_thresh + 0.5);	/* range */
 			/* Calculate the means of background and object pixels */

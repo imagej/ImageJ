@@ -109,7 +109,10 @@ public class Macro_Runner implements PlugIn {
 	/** Runs the specified macro from a JAR file in the plugins folder,
 		passing it the specified argument. Returns the String value returned
 		by the macro, null if the macro does not return a value, or "[aborted]"
-		if the macro was aborted due to an error. */
+		if the macro was aborted due to an error. The macro can reside anywhere
+		in the plugins folder, in or out of a JAR file, so name conflicts are possible.
+		To avoid name conflicts, it is a good idea to incorporate the plugin
+		or JAR file name in the macro name (e.g., "Image_5D_Macro1.ijm"). */
 	public static String runMacroFromJar(String name, String arg) {
 		String macro = null;
 		try {
