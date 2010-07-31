@@ -17,6 +17,8 @@ import java.awt.event.KeyEvent;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.awt.datatransfer.*;
+import java.awt.geom.*;;
+
 
 /** This class implements the built-in macro functions. */
 public class Functions implements MacroConstants, Measurements {
@@ -44,7 +46,9 @@ public class Functions implements MacroConstants, Measurements {
     CurveFitter fitter;
     boolean showFitDialog;
     boolean logFitResults;
-    
+    boolean resultsPending;
+	GeneralPath overlayPath;
+
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
 	float divideByZeroValue;
@@ -1040,6 +1044,7 @@ public class Functions implements MacroConstants, Measurements {
 				rt.setLabel(label, row);
 			else
 				rt.setValue(column, row, value);
+			resultsPending = true;
 		} catch (Exception e) {
 			interp.error(""+e.getMessage());
 		}
@@ -1049,6 +1054,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getParens();
 		ResultsTable rt = Analyzer.getResultsTable();
 		rt.show("Results");
+		resultsPending = false;
 	}
 
 	double getNumber() {
@@ -4530,10 +4536,20 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION))
+		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION||interp.token==PREDEFINED_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
+		if (name.equals("lineTo"))
+			return overlayLineTo();
+		else if (name.equals("moveTo"))
+			return overlayMoveTo();
+		else if (name.equals("drawLine"))
+			return overlayDrawLine();
+		else if (name.equals("display"))
+			return displayOverlay(imp);
+		else if (name.equals("remove"))
+			return removeOverlay(imp);
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null && name.equals("size"))
 			return 0.0;
@@ -4553,5 +4569,65 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
+	double overlayMoveTo() {
+		if (overlayPath==null) overlayPath = new GeneralPath();
+		interp.getLeftParen();
+		float x = (float)interp.getExpression();
+		interp.getComma();
+		float y = (float)interp.getExpression();
+		interp.getRightParen();
+		overlayPath.moveTo(x, y);
+		return Double.NaN;
+	}
+	
+	double overlayLineTo() {
+		if (overlayPath==null) overlayPath = new GeneralPath();
+		interp.getLeftParen();
+		float x = (float)interp.getExpression();
+		interp.getComma();
+		float y = (float)interp.getExpression();
+		interp.getRightParen();
+		overlayPath.lineTo(x, y);
+		return Double.NaN;
+	}
+
+	double overlayDrawLine() {
+		if (overlayPath==null) overlayPath = new GeneralPath();
+		interp.getLeftParen();
+		float x1 = (float)interp.getExpression();
+		interp.getComma();
+		float y1 = (float)interp.getExpression();
+		interp.getComma();
+		float x2 = (float)interp.getExpression();
+		interp.getComma();
+		float y2 = (float)interp.getExpression();
+		interp.getRightParen();
+		overlayPath.moveTo(x1, y1);
+		overlayPath.lineTo(x2, y2);
+		return Double.NaN;
+	}
+	
+	double displayOverlay(ImagePlus imp) {
+		interp.getParens();
+		if (overlayPath==null) return Double.NaN;
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null) overlay = new Overlay();
+		Roi roi = new ShapeRoi(overlayPath);
+		ImageProcessor ip = getProcessor();
+		if (defaultColor!=null)
+			roi.setStrokeColor(defaultColor);
+		roi.setLineWidth(ip.getLineWidth());
+		overlay.add(roi);
+		imp.setOverlay(overlay);
+		overlayPath = null;
+		return Double.NaN;
+	}
+
+	double removeOverlay(ImagePlus imp) {
+		interp.getParens();
+		imp.setOverlay(null);
+		return Double.NaN;
+	}
+
 } // class Functions
 

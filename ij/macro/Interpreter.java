@@ -6,6 +6,7 @@ import ij.plugin.Macro_Runner;
 import ij.plugin.frame.*;
 import ij.util.Tools;
 import ij.text.*;
+import ij.measure.ResultsTable;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
@@ -1570,6 +1571,10 @@ public class Interpreter implements MacroConstants {
 			ColorProcessor.setWeightingFactors(rgbWeights[0], rgbWeights[1], rgbWeights[2]);
 		if (func.writer!=null) func.writer.close();
 		func.roiManager = null;
+		if (func.resultsPending) {
+			ResultsTable rt = ResultsTable.getResultsTable();
+			if (rt!=null && rt.getCounter()>0) rt.show("Results");
+		}
 	}
 	
 	/** Aborts currently running macro. */
