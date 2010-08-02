@@ -45,30 +45,23 @@ public class SubstackMaker implements PlugIn {
 	}
 
 	public ImagePlus makeSubstack(ImagePlus imp, String userInput) {
-		String		num, strA, strB;
-		int			currSlice, count;
-		int[]			numList;
-		int[]			name;
-		Integer		obj;
-	
 		String stackTitle = "Substack ("+userInput+")";
 		if (stackTitle.length()>25) {
 			int idxA = stackTitle.indexOf(",",18);
 			int idxB = stackTitle.lastIndexOf(",");
 			if(idxA>=1 && idxB>=1){
-				strA = stackTitle.substring(0,idxA);
-				strB = stackTitle.substring(idxB+1);
+				String strA = stackTitle.substring(0,idxA);
+				String strB = stackTitle.substring(idxB+1);
 				stackTitle = strA + ", ... " + strB;
 			}
 		}
-		
 		ImagePlus imp2 = null;
 		try {
 			int idx1 = userInput.indexOf("-");
 			if (idx1>=1) {									// input displayed in range
 				String rngStart = userInput.substring(0, idx1);
 				String rngEnd = userInput.substring(idx1+1);
-				obj = new Integer(rngStart);
+				Integer obj = new Integer(rngStart);
 				int first = obj.intValue();
 				int inc = 1;
 				int idx2 = rngEnd.indexOf("-");
@@ -83,23 +76,23 @@ public class SubstackMaker implements PlugIn {
 				int last = obj.intValue();
 				imp2 = stackRange(imp, first, last, inc, stackTitle);
 			} else {
-				count = 1; // count # of slices to extract
+				int count = 1; // count # of slices to extract
 				for (int j=0; j<userInput.length(); j++) {
 					char ch = Character.toLowerCase(userInput.charAt(j));
 					if (ch==',') {count += 1;}
 				}
-				numList = new int[count];
+				int[] numList = new int[count];
 				for(int i=0; i<count; i++) {
 					int idx2 = userInput.indexOf(",");
-					if(idx2>0){
-						num = userInput.substring(0,idx2);
-						obj = new Integer(num);
+					if(idx2>0) {
+						String num = userInput.substring(0,idx2);
+						Integer obj = new Integer(num);
 						numList[i] = obj.intValue();
 						userInput = userInput.substring(idx2+1);
 					}
 					else{
-						num = userInput;
-						obj = new Integer(num);
+						String num = userInput;
+						Integer obj = new Integer(num);
 						numList[i] = obj.intValue();
 					}
 				}

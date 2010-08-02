@@ -218,6 +218,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				roi.setStrokeColor(color);
 			else
 				roi.setStrokeColor(new Color(0f,0f,0f,0f)); // transparent
+			roi.setNonScalable(true);
 			overlay.add(roi);
 			if (image==imp.getStackSize()||previewing)
 				imp.setOverlay(overlay);

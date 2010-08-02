@@ -47,7 +47,8 @@ public class Functions implements MacroConstants, Measurements {
     boolean showFitDialog;
     boolean logFitResults;
     boolean resultsPending;
-	GeneralPath overlayPath;
+    Overlay offscreenOverlay;
+    GeneralPath overlayPath;
 
     boolean saveSettingsCalled;
 	boolean usePointerCursor, hideProcessStackDialog;
@@ -4546,8 +4547,14 @@ public class Functions implements MacroConstants, Measurements {
 			return overlayMoveTo();
 		else if (name.equals("drawLine"))
 			return overlayDrawLine();
-		else if (name.equals("display"))
-			return displayOverlay(imp);
+		else if (name.equals("drawString"))
+			return overlayDrawString(imp);
+		else if (name.equals("add"))
+			return addDrawing(imp);
+		else if (name.equals("show"))
+			return showOverlay(imp);
+		else if (name.equals("hide"))
+			return hideOverlay(imp);
 		else if (name.equals("remove"))
 			return removeOverlay(imp);
 		Overlay overlay = imp.getOverlay();
@@ -4607,25 +4614,68 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
-	double displayOverlay(ImagePlus imp) {
-		interp.getParens();
-		if (overlayPath==null) return Double.NaN;
+	double overlayDrawString(ImagePlus imp) {
+		String text = getFirstString();
+		int x = (int)getNextArg();
+		int y = (int)getLastArg();
+		Font font = this.font;
+		if (font==null) font = imp.getProcessor().getFont();
+		TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
 		Overlay overlay = imp.getOverlay();
-		if (overlay==null) overlay = new Overlay();
-		Roi roi = new ShapeRoi(overlayPath);
-		ImageProcessor ip = getProcessor();
+		if (overlay==null) {
+			if (offscreenOverlay==null)
+				offscreenOverlay = new Overlay();
+			overlay = offscreenOverlay;
+		}
 		if (defaultColor!=null)
 			roi.setStrokeColor(defaultColor);
-		roi.setLineWidth(ip.getLineWidth());
 		overlay.add(roi);
-		imp.setOverlay(overlay);
+		return Double.NaN;
+	}
+	
+	double addDrawing(ImagePlus imp) {
+		interp.getParens();
+		addDrawingToOverlay(imp);
+		return Double.NaN;
+	}
+	
+	void addDrawingToOverlay(ImagePlus imp) {
+		if (overlayPath==null) return;
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null) {
+			if (offscreenOverlay==null)
+				offscreenOverlay = new Overlay();
+			overlay = offscreenOverlay;
+		}
+		Roi roi = new ShapeRoi(overlayPath);
 		overlayPath = null;
+		if (defaultColor!=null)
+			roi.setStrokeColor(defaultColor);
+		roi.setLineWidth(getProcessor().getLineWidth());
+		overlay.add(roi);
+	}
+
+	double showOverlay(ImagePlus imp) {
+		interp.getParens();
+		addDrawingToOverlay(imp);
+		if (offscreenOverlay!=null) {
+			imp.setOverlay(offscreenOverlay);
+			offscreenOverlay = null;
+		} else
+			IJ.run(imp, "Show Overlay", "");
+		return Double.NaN;
+	}
+	
+	double hideOverlay(ImagePlus imp) {
+		interp.getParens();
+		IJ.run(imp, "Hide Overlay", "");
 		return Double.NaN;
 	}
 
 	double removeOverlay(ImagePlus imp) {
 		interp.getParens();
 		imp.setOverlay(null);
+		offscreenOverlay = null;
 		return Double.NaN;
 	}
 
