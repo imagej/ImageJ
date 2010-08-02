@@ -305,7 +305,7 @@ public class Line extends Roi {
 		if (stroke!=null)
 			g2d.setStroke(getScaledStroke());
 		g.drawLine(sx1, sy1, sx2, sy2);
-		if (wideLine) {
+		if (wideLine && !overlay) {
 			g2d.setStroke(onePixelWide);
 			g.setColor(getColor());
 			g.drawLine(sx1, sy1, sx2, sy2);

@@ -72,7 +72,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.44d";
+	public static final String VERSION = "1.44e";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -538,6 +538,7 @@ public class ImageJ extends Frame implements ActionListener,
 		boolean noGUI = false;
 		int mode = STANDALONE;
 		arguments = args;
+		//System.setProperty("file.encoding", "UTF-8");
 		int nArgs = args!=null?args.length:0;
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];

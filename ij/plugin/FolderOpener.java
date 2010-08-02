@@ -353,24 +353,6 @@ class FolderOpenerDialog extends GenericDialog {
 	}
  	
 	public void itemStateChanged(ItemEvent e) {
-		Checkbox item = (Checkbox)e.getSource();
-		Checkbox grayscaleCB = (Checkbox)checkbox.elementAt(0);
-		Checkbox rgbCB = (Checkbox)checkbox.elementAt(1);
-		if (item==grayscaleCB) {
-			eightBits = item.getState();
-			if (eightBits) {
-			 rgbCB.setState(false);
-			 rgb = false;
-			}
-		}
-		if (item==rgbCB) {
-			rgb = item.getState();
-			if (rgb) {
-				grayscaleCB.setState(false);
-				eightBits = false;
-			}
-		}
- 		setStackInfo();
 	}
 	
 	public void textValueChanged(TextEvent e) {

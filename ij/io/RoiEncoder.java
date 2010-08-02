@@ -127,15 +127,7 @@ public class RoiEncoder {
 		
 		// save stroke width, stroke color and fill color (1.43i or later)
 		if (VERSION>=218) {
-			BasicStroke stroke = roi.getStroke();
-			if (stroke!=null)
-				putShort(RoiDecoder.STROKE_WIDTH, (int)stroke.getLineWidth());
-			Color strokeColor = roi.getStrokeColor();
-			if (strokeColor!=null)
-				putInt(RoiDecoder.STROKE_COLOR, strokeColor.getRGB());
-			Color fillColor = roi.getFillColor();
-			if (fillColor!=null)
-				putInt(RoiDecoder.FILL_COLOR, fillColor.getRGB());
+			saveStrokeWidthAndColor(roi);
 			if ((roi instanceof PolygonRoi) && ((PolygonRoi)roi).isSplineFit()) {
 				options |= RoiDecoder.SPLINE_FIT;
 				putShort(RoiDecoder.OPTIONS, options);
@@ -158,6 +150,18 @@ public class RoiEncoder {
 		f.write(data);
 	}
 
+	void saveStrokeWidthAndColor(Roi roi) {
+		BasicStroke stroke = roi.getStroke();
+		if (stroke!=null)
+			putShort(RoiDecoder.STROKE_WIDTH, (int)stroke.getLineWidth());
+		Color strokeColor = roi.getStrokeColor();
+		if (strokeColor!=null)
+			putInt(RoiDecoder.STROKE_COLOR, strokeColor.getRGB());
+		Color fillColor = roi.getFillColor();
+		if (fillColor!=null)
+			putInt(RoiDecoder.FILL_COLOR, fillColor.getRGB());
+	}
+
 	void saveShapeRoi(Roi roi, int type, OutputStream f) throws IOException {
 		float[] shapeArray = ((ShapeRoi)roi).getShapeAsArray();
 		if (shapeArray==null) return;
@@ -173,6 +177,7 @@ public class RoiEncoder {
 		putShort(14, r.x+r.width);	//right
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
+		if (VERSION>=218) saveStrokeWidthAndColor(roi);
 
 		// handle the actual data: data are stored segment-wise, i.e.,
 		// the type of the segment followed by 0-6 control point coordinates.

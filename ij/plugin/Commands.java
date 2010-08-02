@@ -91,7 +91,7 @@ public class Commands implements PlugIn {
 				ImagePlus imp = WindowManager.getImage(list[i]);
 				if (imp!=null && imp.changes) imagesWithChanges++;
 			}
-			if (imagesWithChanges>0) {
+			if (imagesWithChanges>0 && !IJ.macroRunning()) {
 				GenericDialog gd = new GenericDialog("Close All");
 				String msg = null;
 				if (imagesWithChanges==1)

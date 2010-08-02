@@ -929,10 +929,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	void showResults() {
 		int count = rt.getCounter();
-		if (count==0)
-			return;
+		// if (count==0) return;
 		boolean lastSlice = !processStack||slice==imp.getStackSize();
-		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && slice==1)
+		if ((showChoice==OVERLAY_OUTLINES||showChoice==OVERLAY_MASKS) && slice==1 && count>0)
 			imp.setOverlay(overlay);
 		else if (outlines!=null && lastSlice) {
 			String title = imp!=null?imp.getTitle():"Outlines";

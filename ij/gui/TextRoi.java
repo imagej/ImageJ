@@ -116,6 +116,7 @@ public class TextRoi extends Roi {
 		else {
 			if (instanceFont==null)
 				instanceFont = new Font(name, style, size);
+			double mag = (ic!=null)?ic.getMagnification():1.0;
 			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
 		}
 	}
@@ -369,7 +370,7 @@ public class TextRoi extends Roi {
 	public boolean isDrawingTool() {
 		return true;
 	}
-
+	
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();

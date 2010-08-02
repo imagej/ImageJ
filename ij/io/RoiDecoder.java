@@ -119,11 +119,15 @@ public class RoiDecoder {
 		
 		if (name!=null && name.endsWith(".roi"))
 			name = name.substring(0, name.length()-4);
-		boolean isComposite = getInt(SHAPE_ROI_SIZE)>0;		
-		if (isComposite)
-			return getShapeRoi();
-
+		boolean isComposite = getInt(SHAPE_ROI_SIZE)>0;
+		
 		Roi roi = null;
+		if (isComposite) {
+			roi = getShapeRoi();
+			if (version>=218) getStrokeWidthAndColor(roi);
+			return roi;
+		}
+
 		switch (type) {
 		case rect:
 			roi = new Roi(left, top, width, height);
@@ -199,19 +203,7 @@ public class RoiDecoder {
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
-			int strokeWidth = getShort(STROKE_WIDTH);
-			if (strokeWidth>0)
-				roi.setStrokeWidth(strokeWidth);
-			int strokeColor = getInt(STROKE_COLOR);
-			if (strokeColor!=0) {
-				int alpha = (strokeColor>>24)&0xff;
-				roi.setStrokeColor(new Color(strokeColor, alpha!=255));
-			}
-			int fillColor = getInt(FILL_COLOR);
-			if (fillColor!=0) {
-				int alpha = (fillColor>>24)&0xff;
-				roi.setFillColor(new Color(fillColor, alpha!=255));
-			}
+			getStrokeWidthAndColor(roi);
 			boolean splineFit = (options&SPLINE_FIT)!=0;
 			if (splineFit && roi instanceof PolygonRoi)
 				((PolygonRoi)roi).fitSpline();
@@ -223,6 +215,22 @@ public class RoiDecoder {
 		return roi;
 	}
 	
+	void getStrokeWidthAndColor(Roi roi) {
+		int strokeWidth = getShort(STROKE_WIDTH);
+		if (strokeWidth>0)
+			roi.setStrokeWidth(strokeWidth);
+		int strokeColor = getInt(STROKE_COLOR);
+		if (strokeColor!=0) {
+			int alpha = (strokeColor>>24)&0xff;
+			roi.setStrokeColor(new Color(strokeColor, alpha!=255));
+		}
+		int fillColor = getInt(FILL_COLOR);
+		if (fillColor!=0) {
+			int alpha = (fillColor>>24)&0xff;
+			roi.setFillColor(new Color(fillColor, alpha!=255));
+		}
+	}
+
 	public Roi getShapeRoi() throws IOException {
 		int type = getByte(TYPE);
 		if (type!=rect)

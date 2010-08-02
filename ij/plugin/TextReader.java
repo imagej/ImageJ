@@ -82,10 +82,11 @@ public class TextReader implements PlugIn {
     void countLines(Reader r) throws IOException {
         StreamTokenizer tok = new StreamTokenizer(r);
         int wordsPerLine=0, wordsInPreviousLine=0;
-
         tok.resetSyntax();
+        tok.wordChars(43, 43);
         tok.wordChars(45, 127);
-        tok.whitespaceChars(0, 44);
+        tok.whitespaceChars(0, 42);
+        tok.whitespaceChars(44, 44);
         //tok.wordChars(33, 127);
         //tok.whitespaceChars(0, ' ');
 		tok.whitespaceChars(128, 255);
@@ -120,9 +121,10 @@ public class TextReader implements PlugIn {
     void read(Reader r, int size, float[] pixels) throws IOException {
         StreamTokenizer tok = new StreamTokenizer(r);
         tok.resetSyntax();
-        // the next two lines were changed by JU to allow for comma delimiters
+        tok.wordChars(43, 43);
         tok.wordChars(45, 127);
-        tok.whitespaceChars(0, 44);
+        tok.whitespaceChars(0, 42);
+        tok.whitespaceChars(44, 44);
         //tok.wordChars(33, 127);
         //tok.whitespaceChars(0, ' ');
         tok.whitespaceChars(128, 255);

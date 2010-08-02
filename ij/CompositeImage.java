@@ -36,6 +36,7 @@ public class CompositeImage extends ImagePlus {
 	byte[][] channelLuts;
 	boolean customLuts;
 	boolean syncChannels;
+	boolean channelsUpdated;
 
 	public CompositeImage(ImagePlus imp) {
 		this(imp, COLOR);
@@ -243,7 +244,8 @@ public class CompositeImage extends ImagePlus {
 		}
 		//IJ.log(nChannels+" "+ch+" "+currentChannel+"  "+newChannel);
 				
-		if (getSlice()!=currentSlice || getFrame()!=currentFrame) {
+		if (getSlice()!=currentSlice || getFrame()!=currentFrame || channelsUpdated) {
+			channelsUpdated = false;
 			currentSlice = getSlice();
 			currentFrame = getFrame();
 			int position = getStackIndex(1, currentSlice, currentFrame);
@@ -597,6 +599,10 @@ public class CompositeImage extends ImagePlus {
 	
 	public boolean hasCustomLuts() {
 		return customLuts && mode!=GRAYSCALE;
+	}
+	
+	public void setChannelsUpdated() {
+		channelsUpdated = true;
 	}
 
 }

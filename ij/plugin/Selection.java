@@ -10,6 +10,7 @@ import ij.plugin.filter.ThresholdToSelection;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
+//import java.awt.image.BufferedImage;
 
 
 
@@ -335,8 +336,15 @@ public class Selection implements PlugIn, Measurements {
 		ip2.setColor(255);
 		if (roi.getType()==Roi.LINE)
 			ip2.fillPolygon(roi.getPolygon());
-		else
+		else {
 			roi.drawPixels(ip2);
+			//BufferedImage bi = new BufferedImage(imp.getWidth(), imp.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+			//Graphics g = bi.getGraphics();
+			//Roi roi2 = (Roi)roi.clone();
+			//roi2.setStrokeColor(Color.white);
+			//roi2.drawOverlay(g);
+			//ip2 = new ByteProcessor(bi);
+		}
 		//new ImagePlus("ip2", ip2.duplicate()).show();
 		ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		ThresholdToSelection tts = new ThresholdToSelection();
