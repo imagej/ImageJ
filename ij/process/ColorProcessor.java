@@ -155,7 +155,6 @@ public class ColorProcessor extends ImageProcessor {
 		setMinAndMax(min, max, 7);
 	}
 
-
 	public void setMinAndMax(double min, double max, int channels) {
 		if (max<min)
 			return;

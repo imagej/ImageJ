@@ -531,7 +531,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				else
 					value = ip.getPixelValue(x, y);
 				if (value>=level1 && value<=level2)
-					analyzeParticle(x,y,imp,ip);
+					analyzeParticle(x, y, imp, ip);
 			}
 			if (showProgress && ((y%inc)==0))
 				IJ.showProgress((double)(y-r.y)/r.height);

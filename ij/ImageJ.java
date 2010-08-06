@@ -72,8 +72,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.44e";
-	public static final String BUILD = ""; 
+	public static final String VERSION = "1.44f";
+	public static final String BUILD = "3"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -178,6 +178,7 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.error(err2);
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		}
+		m.installStartupMacroSet();
 		if (IJ.isMacintosh()&&applet==null) { 
 			Object qh = null; 
 			qh = IJ.runPlugIn("MacAdapter", ""); 
@@ -186,7 +187,6 @@ public class ImageJ extends Frame implements ActionListener,
 		} 
 		if (applet==null)
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
-		m.installStartupMacroSet();
 		String str = m.getMacroCount()==1?" macro":" macros";
 		IJ.showStatus(version()+ m.getPluginCount() + " commands; " + m.getMacroCount() + str);
 		if (applet==null && !embedded && Prefs.runSocketListener)

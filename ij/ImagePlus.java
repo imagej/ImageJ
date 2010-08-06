@@ -1107,7 +1107,12 @@ public class ImagePlus implements ImageObserver, Measurements {
 			s.update(ip2);
 		} else {
 			s = stack;
-			s.update(getProcessor());
+			Calibration cal = getCalibration();
+			if (cal.calibrated())
+				ip.setCalibrationTable(cal.getCTable());
+			else
+				ip.setCalibrationTable(null);
+			s.update(ip);
 		}
 		if (roi!=null)
 			s.setRoi(roi.getBounds());
