@@ -769,6 +769,24 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return imp==instance.imp || imp==instance.xz_image || imp==instance.yz_image;
 	}
 
+	public static Orthogonal_Views getInstance() {
+		return instance;
+	}
+
+	public int[] getCrossLoc() {
+		int[] loc = new int[3];
+		loc[0] = crossLoc.x;
+		loc[1] = crossLoc.y;
+		loc[2] = imp.getCurrentSlice()-1;
+		return loc;
+	}
+	
+	public void setCrossLoc(int x, int y, int z) {
+		crossLoc.setLocation(x, y);
+		imp.setSlice(z+1);
+		update();
+	}
+
 	/**
 	 * This is a helper class for Othogonal_Views that delegates the
 	 * repainting of the destination windows to another thread.
