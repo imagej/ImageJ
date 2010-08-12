@@ -257,7 +257,7 @@ public class ZProjector implements PlugIn {
 	    	IJ.error("ZProjection - error computing projection.");
     }
 
-	void doHyperStackProjection(boolean allTimeFrames) {
+	public void doHyperStackProjection(boolean allTimeFrames) {
 		int start = startSlice;
 		int stop = stopSlice;
 		int firstFrame = 1;
