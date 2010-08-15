@@ -6,18 +6,14 @@ import ij.process.*;
 /** This plugin implements the Image>Stacks>Tools>Grouped Z Project command. */
 
 public class GroupedZProjector implements PlugIn {
-	private static int method = ZProjector.MAX_METHOD;
+	private static int method = ZProjector.AVG_METHOD;
 	private int groupSize;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		int size = imp.getStackSize();
 		if (size==1) {
-			IJ.error("ZProjector", "This command requires a stack");
-			return;
-		}
-		if (imp.getBitDepth()==24) {
-			IJ.error("ZProjector", "RGB stack currently not supported");
+			IJ.error("Z Project", "This command requires a stack");
 			return;
 		}
 		if (imp.isHyperStack()) {
@@ -51,7 +47,7 @@ public class GroupedZProjector implements PlugIn {
 		method = gd.getNextChoiceIndex();
 		groupSize = (int)gd.getNextNumber(); 
 		if (groupSize<1  ||  groupSize>size || (size%groupSize)!=0) {
-			IJ.error("ZProjector", "Group size must divide evenly into the stack size.");
+			IJ.error("ZProject", "Group size must divide evenly into the stack size.");
 			return false;
 		}
 		return true;

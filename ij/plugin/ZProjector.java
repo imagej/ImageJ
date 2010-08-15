@@ -44,7 +44,7 @@ public class ZProjector implements PlugIn {
     /** Projection ends at this slice. */
     private int stopSlice = 1;
     /** Project all time points? */
-    private static boolean allTimeFrames;
+    private static boolean allTimeFrames = true;
     
     private String color = "";
     private boolean isHyperstack;
@@ -104,7 +104,7 @@ public class ZProjector implements PlugIn {
 		}
 	
 		//  Check for inverting LUT.
-		if(imp.getProcessor().isInvertedLut()) {
+		if (imp.getProcessor().isInvertedLut()) {
 	    	if (!IJ.showMessageWithCancel("ZProjection", lutMessage))
 	    		return; 
 		}
@@ -113,8 +113,6 @@ public class ZProjector implements PlugIn {
 		int frames = imp.getNFrames();
 		int slices = imp.getNSlices();
 		isHyperstack = imp.isHyperStack()||( ij.macro.Interpreter.isBatchMode()&&((frames>1&&frames<stackSize)||(slices>1&&slices<stackSize)));
-		if (imp.getType()==ImagePlus.COLOR_RGB)
-			isHyperstack = false;
 		startSlice = 1; 
 		if (isHyperstack) {
 			int nSlices = imp.getNSlices();
@@ -125,14 +123,12 @@ public class ZProjector implements PlugIn {
 		} else
 			stopSlice  = stackSize;
 			
-
-
 		// Build control dialog
 		GenericDialog gd = buildControlDialog(startSlice,stopSlice); 
 		gd.showDialog(); 
 		if(gd.wasCanceled()) return; 
 
-		if(!imp.lock()) return;   // exit if in use
+		if (!imp.lock()) return;   // exit if in use
 		long tstart = System.currentTimeMillis();
 		setStartSlice((int)gd.getNextNumber()); 
 		setStopSlice((int)gd.getNextNumber()); 
@@ -140,17 +136,12 @@ public class ZProjector implements PlugIn {
 		if (isHyperstack) {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
-		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
-			//if (method==SUM_METHOD || method==SD_METHOD || method==MEDIAN_METHOD) {
-	    	//	IJ.error("ZProjection", "Sum, StdDev and Median methods \nnot available with RGB stacks.");
-	    	//	imp.unlock(); 
-	    	//	return; 
-			//}
+		} else if (imp.getType()==ImagePlus.COLOR_RGB)
 			doRGBProjection();
-		} else 
+		else 
 			doProjection(); 
 
-		if(arg.equals("") && projImage!=null) {
+		if (arg.equals("") && projImage!=null) {
 			long tstop = System.currentTimeMillis();
 			projImage.setCalibration(imp.getCalibration()); 
 	    	projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
@@ -162,8 +153,12 @@ public class ZProjector implements PlugIn {
     }
     
     public void doRGBProjection() {
+		doRGBProjection(imp.getStack());
+    }
+
+    private void doRGBProjection(ImageStack stack) {
         RGBStackSplitter splitter = new RGBStackSplitter();
-        splitter.split(imp.getStack(), true);
+        splitter.split(stack, true);
         ImagePlus red = new ImagePlus("Red", splitter.red);
         ImagePlus green = new ImagePlus("Green", splitter.green);
         ImagePlus blue = new ImagePlus("Blue", splitter.blue);
@@ -180,9 +175,9 @@ public class ZProjector implements PlugIn {
 		ImagePlus blue2 = projImage;
         int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
         RGBStackMerge merge = new RGBStackMerge();
-        ImageStack stack = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
+        ImageStack stack2 = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
         imp = saveImp;
-        projImage = new ImagePlus(makeTitle(), stack);
+        projImage = new ImagePlus(makeTitle(), stack2);
     }
 
     /** Builds dialog to query users for projection parameters.
@@ -273,12 +268,15 @@ public class ZProjector implements PlugIn {
 		}
 		int frames = lastFrame-firstFrame+1;
 		increment = channels;
+		boolean rgb = imp.getBitDepth()==24;
 		for (int frame=firstFrame; frame<=lastFrame; frame++) {
 			for (int channel=1; channel<=channels; channel++) {
 				startSlice = (frame-1)*channels*slices + (start-1)*channels + channel;
 				stopSlice = (frame-1)*channels*slices + (stop-1)*channels + channel;
-				//IJ.log(startSlice+" "+stopSlice+" "+increment);
-				doProjection();
+				if (rgb)
+					doHSRGBProjection(imp);
+				else
+					doProjection();
 				stack.addSlice(null, projImage.getProcessor());
 			}
 		}
@@ -292,6 +290,16 @@ public class ZProjector implements PlugIn {
         }
         if (frames>1)
         	projImage.setOpenAsHyperStack(true);
+	}
+	
+	private void doHSRGBProjection(ImagePlus rgbImp) {
+		ImageStack stack = rgbImp.getStack();
+		ImageStack stack2 = new ImageStack(stack.getWidth(), stack.getHeight());
+		for (int i=startSlice; i<=stopSlice; i++)
+			stack2.addSlice(null, stack.getProcessor(i));
+		startSlice = 1;
+		stopSlice = stack2.getSize();
+		doRGBProjection(stack2);
 	}
 
  	private RayFunction getRayFunction(int method, FloatProcessor fp) {

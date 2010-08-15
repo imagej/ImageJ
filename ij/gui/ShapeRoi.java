@@ -635,8 +635,16 @@ public class ShapeRoi extends Roi {
 		return a;
 	}
 
-	/**Returns the length of this shape (perimeter, if shape is closed). */
+	/**Returns the perimeter if this ShapeRoi can be decomposed 
+		into simple ROIs, otherwise returns zero. */
 	public double getLength() {
+		double length = 0.0;
+		Roi[] rois = getRois();
+		if (rois!=null) {
+			for (int i=0; i<rois.length; i++)
+				length += rois[i].getLength();
+		}
+		return length;
 		/*
 		if(shape==null) return 0.0;
 		Rectangle2D r2d = shape.getBounds2D();
@@ -652,7 +660,6 @@ public class ShapeRoi extends Roi {
 		flatten = false;
 		return par[0];
 		*/
-		return 0.0;
 	}
 
 	/**Returns a flattened version of the path iterator for this ROi's shape*/
