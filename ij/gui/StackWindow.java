@@ -263,7 +263,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	return running2;
     }
     
-    public int getNSliders() {
+    public int getNScrollbars() {
     	int n = 0;
     	if (cSelector!=null) n++;
     	if (zSelector!=null) n++;

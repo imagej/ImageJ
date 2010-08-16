@@ -51,6 +51,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private static int xzID, yzID;
 	private static Orthogonal_Views instance;
 	private ImagePlus xz_image, yz_image;
+	/** ImageProcessors for the xz and yz images */
 	private ImageProcessor fp1, fp2;
 	private double ax, ay, az;
 	private boolean rotateYZ = Prefs.rotateYZ;
@@ -95,7 +96,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		az=calz/calx;
 		win = imp.getWindow();
 		canvas = win.getCanvas();
-		addListeners(canvas);  
+		addListeners(canvas);
 		magnification= canvas.getMagnification();
 		imp.killRoi();
 		Rectangle r = canvas.getSrcRect();
@@ -106,7 +107,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			if (ip.isColorLut() || ip.isInvertedLut()) {
 				ColorModel cm = ip.getColorModel();
 				fp1.setColorModel(cm);
-				fp2.setColorModel(cm);
+				fp2.setColorModel(cm);				
 			}
 			update();
 		} else
@@ -228,12 +229,20 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		calibrate();
 		if (yz_image.getWindow()==null) {
 			yz_image.show();
-			yz_image.getCanvas().addKeyListener(this);
+			ImageCanvas ic = yz_image.getCanvas();
+			ic.addKeyListener(this);
+			ic.addMouseListener(this);
+			ic.addMouseMotionListener(this);
+			ic.setCustomRoi(true);
 			yzID = yz_image.getID();
 		}
 		if (xz_image.getWindow()==null) {
 			xz_image.show();
-			xz_image.getCanvas().addKeyListener(this);
+			ImageCanvas ic = xz_image.getCanvas();
+			ic.addKeyListener(this);
+			ic.addMouseListener(this);
+			ic.addMouseMotionListener(this);
+			ic.setCustomRoi(true);
 			xzID = xz_image.getID();
 		}
 		 
@@ -508,13 +517,25 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		canvas.setCustomRoi(false);
 		ImageWindow win1 = xz_image.getWindow();
 		if (win1!=null) {
-			win1.getCanvas().setDisplayList(null);
-			win1.getCanvas().removeKeyListener(this);
+			ImageCanvas ic = win1.getCanvas();
+			if (ic!=null) {
+				ic.setDisplayList(null);
+				ic.removeKeyListener(this);
+				ic.removeMouseListener(this);
+				ic.removeMouseMotionListener(this);
+				ic.setCustomRoi(false);
+			}
 		}
 		ImageWindow win2 = yz_image.getWindow();
 		if (win2!=null) {
-			win2.getCanvas().setDisplayList(null);
-			win2.getCanvas().removeKeyListener(this);
+			ImageCanvas ic = win2.getCanvas();
+			if (ic!=null) {
+				ic.setDisplayList(null);
+				ic.removeKeyListener(this);
+				ic.removeMouseListener(this);
+				ic.removeMouseMotionListener(this);
+				ic.setCustomRoi(false);
+			}
 		}
 		ImagePlus.removeImageListener(this);
 		Executer.removeCommandListener(this);
@@ -523,7 +544,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		win.setResizable(true);
 		instance = null;
 	}
- 	        
+	
     //@Override
 	public void mouseClicked(MouseEvent e) {
 	}
@@ -538,7 +559,15 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 
 	//@Override
 	public void mousePressed(MouseEvent e) {
-		crossLoc = canvas.getCursorLoc();
+		if (e.getSource().equals(canvas)){
+			crossLoc = canvas.getCursorLoc();
+		} else if (e.getSource().equals(xz_image.getCanvas())){
+			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
+			imp.setSlice(xz_image.getCanvas().getCursorLoc().y + 1);
+		} else if (e.getSource().equals(yz_image.getCanvas())){
+			crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
+			imp.setSlice(yz_image.getCanvas().getCursorLoc().x + 1);
+		}
 		update();
 	}
 
@@ -612,7 +641,15 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	//@Override
 	public void mouseDragged(MouseEvent e) {
 		//e.consume();
-		crossLoc = canvas.getCursorLoc();
+		if (e.getSource().equals(canvas)){
+			crossLoc = canvas.getCursorLoc();
+		} else if (e.getSource().equals(xz_image.getCanvas())){
+			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
+			imp.setSlice(xz_image.getCanvas().getCursorLoc().y + 1);
+		} else if (e.getSource().equals(yz_image.getCanvas())){
+			crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
+			imp.setSlice(yz_image.getCanvas().getCursorLoc().x + 1);
+		}
 		update();
 	}
 

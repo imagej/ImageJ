@@ -546,10 +546,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
     	boolean sliderChange = false;
     	if (win!=null && (win instanceof StackWindow)) {
-    		int nSliders = ((StackWindow)win).getNSliders();
-    		if (nSliders>0 && newStackSize==1)
+    		int nScrollbars = ((StackWindow)win).getNScrollbars();
+    		if (nScrollbars>0 && newStackSize==1)
     			sliderChange = true;
-    		else if (nSliders==0 && newStackSize>1)
+    		else if (nScrollbars==0 && newStackSize>1)
     			sliderChange = true;
     	}
     	if (currentSlice<1) setCurrentSlice(1);

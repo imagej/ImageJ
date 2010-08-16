@@ -389,10 +389,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         if (this instanceof StackWindow) {
         	StackWindow sw = (StackWindow)this;
         	int stackSize = imp.getStackSize();
-        	int nSliders = sw.getNSliders();
-        	if (stackSize==1 && nSliders>0)
+        	int nScrollbars = sw.getNScrollbars();
+        	if (stackSize==1 && nScrollbars>0)
         		sw.removeScrollbars();
-        	else if (stackSize>1 && nSliders==0)
+        	else if (stackSize>1 && nScrollbars==0)
         		sw.addScrollbars(imp);
         }
         pack();
