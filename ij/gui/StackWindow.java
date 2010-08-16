@@ -25,6 +25,25 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     
     public StackWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp, ic);
+		addScrollbars(imp);
+		addMouseWheelListener(this);
+		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
+			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
+		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
+		pack();
+		ic = imp.getCanvas();
+		if (ic!=null) ic.setMaxBounds();
+		show();
+		int previousSlice = imp.getCurrentSlice();
+		if (previousSlice>1 && previousSlice<=imp.getStackSize())
+			imp.setSlice(previousSlice);
+		else
+			imp.setSlice(1);
+		thread = new Thread(this, "zSelector");
+		thread.start();
+	}
+	
+	synchronized void addScrollbars(ImagePlus imp) {
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
 		nSlices = stackSize;
@@ -41,7 +60,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		//IJ.log("StackWindow: "+hyperStack+" "+nChannels+" "+nSlices+" "+nFrames);
 		if (nSlices==stackSize) hyperStack = false;
 		if (nChannels*nSlices*nFrames!=stackSize) hyperStack = false;
-		addMouseWheelListener(this);
+		if (cSelector!=null||zSelector!=null||tSelector!=null)
+			removeScrollbars();
 		ImageJ ij = IJ.getInstance();
 		if (nChannels>1) {
 			cSelector = new ScrollbarWithLabel(this, 1, 1, 1, nChannels+1, 'c');
@@ -78,20 +98,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			tSelector.setUnitIncrement(1);
 			tSelector.setBlockIncrement(blockIncrement);
 		}
-		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
-			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
-		//IJ.log(nChannels+" "+nSlices+" "+nFrames);
-		pack();
-		ic = imp.getCanvas();
-		if (ic!=null) ic.setMaxBounds();
-		show();
-		int previousSlice = imp.getCurrentSlice();
-		if (previousSlice>1 && previousSlice<=stackSize)
-			imp.setSlice(previousSlice);
-		else
-			imp.setSlice(1);
-		thread = new Thread(this, "zSelector");
-		thread.start();
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
@@ -157,7 +163,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	
 	/** Updates the stack scrollbar. */
 	public void updateSliceSelector() {
-		if (hyperStack) return;
+		if (hyperStack || zSelector==null) return;
 		int stackSize = imp.getStackSize();
 		int max = zSelector.getMaximum();
 		if (max!=(stackSize+1))
@@ -255,6 +261,32 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     
     public boolean getAnimate() {
     	return running2;
+    }
+    
+    public int getNSliders() {
+    	int n = 0;
+    	if (cSelector!=null) n++;
+    	if (zSelector!=null) n++;
+    	if (tSelector!=null) n++;
+    	return n;
+    }
+    
+    synchronized void removeScrollbars() {
+    	if (cSelector!=null) {
+    		remove(cSelector);
+			cSelector.removeAdjustmentListener(this);
+    		cSelector = null;
+    	}
+    	if (zSelector!=null) {
+    		remove(zSelector);
+			zSelector.removeAdjustmentListener(this);
+    		zSelector = null;
+    	}
+    	if (tSelector!=null) {
+    		remove(tSelector);
+			tSelector.removeAdjustmentListener(this);
+    		tSelector = null;
+    	}
     }
 
 }

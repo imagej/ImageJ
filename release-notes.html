@@ -16,10 +16,10 @@ individual selections. The composite perimeter and the sum of the
 individual perimeters may be different due to use of different calculation methods.
 <li> Thanks to Michael Doube, added getInstance(), getCrossLoc() and setCrossLoc() methods to the Orthogonal_Views class
 (<a href="http://rsbweb.nih.gov/ij/macros/js/OrthoViewsDemo.js">example</a>).
+<li> SetStack() calls no longer cause new ImageWindows or StackWindows 
+to be constructed when switching between one image and two image stacks. 
 <li> Fixed a regression than caused the particle analyzer to fail with stacks
 when "Display labels" was enabled in <i>Analyze&gt;Set Measurements</i>.
-<li> Fixed a bug that caused ImageJ to unnecessarily create a replacement
-StackWindow when a setStack() call changed both the image size and the stack size. 
 </ul> 
 
 <a href="http://rsb.info.nih.gov/ij">Home</a>
