@@ -563,10 +563,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			crossLoc = canvas.getCursorLoc();
 		} else if (e.getSource().equals(xz_image.getCanvas())){
 			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
-			imp.setSlice(xz_image.getCanvas().getCursorLoc().y + 1);
+			int pos = xz_image.getCanvas().getCursorLoc().y;
+			int z = (int)Math.round(pos * cal_xz.pixelHeight / cal.pixelDepth); 
+			imp.setSlice(z + 1);
 		} else if (e.getSource().equals(yz_image.getCanvas())){
 			crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
-			imp.setSlice(yz_image.getCanvas().getCursorLoc().x + 1);
+			int pos = yz_image.getCanvas().getCursorLoc().x;
+			int z = (int)Math.round(pos * cal_yz.pixelWidth / cal.pixelDepth);
+			imp.setSlice(z + 1);
 		}
 		update();
 	}
@@ -645,10 +649,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			crossLoc = canvas.getCursorLoc();
 		} else if (e.getSource().equals(xz_image.getCanvas())){
 			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
-			imp.setSlice(xz_image.getCanvas().getCursorLoc().y + 1);
+			int pos = xz_image.getCanvas().getCursorLoc().y;
+			int z = (int)Math.round(pos * cal_xz.pixelHeight / cal.pixelDepth); 
+			imp.setSlice(z + 1);
 		} else if (e.getSource().equals(yz_image.getCanvas())){
 			crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
-			imp.setSlice(yz_image.getCanvas().getCursorLoc().x + 1);
+			int pos = yz_image.getCanvas().getCursorLoc().x;
+			int z = (int)Math.round(pos * cal_yz.pixelWidth / cal.pixelDepth);
+			imp.setSlice(z + 1);
 		}
 		update();
 	}
@@ -822,6 +830,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		crossLoc.setLocation(x, y);
 		imp.setSlice(z+1);
 		update();
+	}
+	
+	public ImagePlus getXZImage(){
+		return xz_image;
+	}
+	
+	public ImagePlus getYZImage(){
+		return yz_image;
 	}
 
 	/**

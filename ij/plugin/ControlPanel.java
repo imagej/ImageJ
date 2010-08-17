@@ -53,7 +53,7 @@ public class ControlPanel implements PlugIn {
 	private boolean savePropsUponClose=true;
 	private boolean propertiesChanged=true;
 	private boolean closeChildPanelOnExpand = true;
-	private boolean requireDoubleClick=false;
+	private boolean requireDoubleClick;
 	private boolean quitting = true;
 
 	Vector menus = new Vector();
@@ -71,7 +71,7 @@ public class ControlPanel implements PlugIn {
 	MenuItem reloadMI = null;
 
 	public ControlPanel() {
-		requireDoubleClick = !(IJ.isWindows() || IJ.isMacintosh());
+		//requireDoubleClick = !(IJ.isWindows() || IJ.isMacintosh());
 		Java2.setSystemLookAndFeel();
 	}
 
@@ -1197,9 +1197,7 @@ class TreePanel implements
 			String aCmd=nde.toString();
 			String cmd= aCmd;
 			if(pcp.treeCommands.containsKey(aCmd))
-			{
 				cmd = (String)pcp.treeCommands.get(aCmd);
-			}
 			processEvent(new ActionEvent(this,ActionEvent.ACTION_PERFORMED,cmd));
 	}
 

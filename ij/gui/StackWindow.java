@@ -43,7 +43,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		thread.start();
 	}
 	
-	synchronized void addScrollbars(ImagePlus imp) {
+	void addScrollbars(ImagePlus imp) {
 		ImageStack s = imp.getStack();
 		int stackSize = s.getSize();
 		nSlices = stackSize;
@@ -271,7 +271,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	return n;
     }
     
-    synchronized void removeScrollbars() {
+    void removeScrollbars() {
     	if (cSelector!=null) {
     		remove(cSelector);
 			cSelector.removeAdjustmentListener(this);
