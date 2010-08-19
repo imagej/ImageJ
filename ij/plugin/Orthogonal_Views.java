@@ -129,25 +129,23 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 	 
 	private void calibrate() {
-		double arat=az/ax;
-		double brat=az/ay;
 		String unit=cal.getUnit();
 		double o_depth=cal.pixelDepth;
 		double o_height=cal.pixelHeight;
 		double o_width=cal.pixelWidth;
-		cal_xz.setUnit(unit);
-		if (rotateYZ) {
-			cal_xz.pixelHeight=o_depth/arat;
-			cal_xz.pixelWidth=o_width*ax;
-		} else {
-			cal_xz.pixelHeight=o_width*ax;//o_depth/arat;
-			cal_xz.pixelWidth=o_depth/arat;
-		}
-		xz_image.setCalibration(cal_xz);
 		cal_yz.setUnit(unit);
-		cal_yz.pixelWidth=o_height*ay;
-		cal_yz.pixelHeight=o_depth/brat;
+		if (rotateYZ) {
+			cal_yz.pixelHeight=o_depth/az;
+			cal_yz.pixelWidth=o_height;
+		} else {
+			cal_yz.pixelWidth=o_depth/az;
+			cal_yz.pixelHeight=o_height;
+		}
 		yz_image.setCalibration(cal_yz);
+		cal_xz.setUnit(unit);
+		cal_xz.pixelWidth=o_width;
+		cal_xz.pixelHeight=o_depth/az;
+		xz_image.setCalibration(cal_xz);
 	}
 
 	private void updateMagnification(int x, int y) {
@@ -189,8 +187,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		updateXZView(p,is);
 		
 		double arat=az/ax;
-		int width2 = (int)Math.round(fp1.getWidth()*ax);
-		int height2 = (int)Math.round(fp1.getHeight()*arat);
+		int width2 = fp1.getWidth();
+		int height2 = (int)Math.round(fp1.getHeight()*az);
 		if (width2!=fp1.getWidth()||height2!=fp1.getHeight()) {
 			fp1.setInterpolate(true);
 			ImageProcessor sfp1=fp1.resize(width2, height2);
@@ -206,13 +204,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		else
 			updateZYView(p, is);
 				
-		arat=az/ay;
-		width2 = (int)Math.round(fp2.getWidth()*arat);
-		height2 = (int)Math.round(fp2.getHeight()*ay);
+		width2 = (int)Math.round(fp2.getWidth()*az);
+		height2 = fp2.getHeight();
 		String title = "YZ ";
 		if (rotateYZ) {
-			width2 = (int)Math.round(fp2.getWidth()*ay);
-			height2 = (int)Math.round(fp2.getHeight()*arat);
+			width2 = fp2.getWidth();
+			height2 = (int)Math.round(fp2.getHeight()*az);
 			title = "ZY ";
 		}
 		//IJ.log("updateViews "+width2+" "+height2+" "+arat+" "+ay+" "+fp2);
@@ -559,17 +556,28 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 
 	//@Override
 	public void mousePressed(MouseEvent e) {
-		if (e.getSource().equals(canvas)){
+		mouseDragged(e);
+	}
+
+	//@Override
+	public void mouseDragged(MouseEvent e) {
+		if (e.getSource().equals(canvas)) {
 			crossLoc = canvas.getCursorLoc();
-		} else if (e.getSource().equals(xz_image.getCanvas())){
+		} else if (e.getSource().equals(xz_image.getCanvas())) {
 			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
 			int pos = xz_image.getCanvas().getCursorLoc().y;
-			int z = (int)Math.round(pos * cal_xz.pixelHeight / cal.pixelDepth); 
+			int z = (int)Math.round(pos/az); 
 			imp.setSlice(z + 1);
-		} else if (e.getSource().equals(yz_image.getCanvas())){
-			crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
-			int pos = yz_image.getCanvas().getCursorLoc().x;
-			int z = (int)Math.round(pos * cal_yz.pixelWidth / cal.pixelDepth);
+		} else if (e.getSource().equals(yz_image.getCanvas())) {
+			int pos;
+			if (rotateYZ) {
+				crossLoc.y = yz_image.getCanvas().getCursorLoc().x;
+				pos = yz_image.getCanvas().getCursorLoc().y;
+			} else {
+				crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
+				pos = yz_image.getCanvas().getCursorLoc().x;
+			}
+			int z = (int)Math.round(pos/az);
 			imp.setSlice(z + 1);
 		}
 		update();
@@ -640,25 +648,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			yz_canvas.setDisplayList(path, color, new BasicStroke(1));
 		}
 		IJ.showStatus(imp.getLocationAsString(crossLoc.x, crossLoc.y));
-	}
-
-	//@Override
-	public void mouseDragged(MouseEvent e) {
-		//e.consume();
-		if (e.getSource().equals(canvas)){
-			crossLoc = canvas.getCursorLoc();
-		} else if (e.getSource().equals(xz_image.getCanvas())){
-			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
-			int pos = xz_image.getCanvas().getCursorLoc().y;
-			int z = (int)Math.round(pos * cal_xz.pixelHeight / cal.pixelDepth); 
-			imp.setSlice(z + 1);
-		} else if (e.getSource().equals(yz_image.getCanvas())){
-			crossLoc.y = yz_image.getCanvas().getCursorLoc().y;
-			int pos = yz_image.getCanvas().getCursorLoc().x;
-			int z = (int)Math.round(pos * cal_yz.pixelWidth / cal.pixelDepth);
-			imp.setSlice(z + 1);
-		}
-		update();
 	}
 
 	//@Override
