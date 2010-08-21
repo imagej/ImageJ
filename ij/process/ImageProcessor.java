@@ -831,6 +831,11 @@ public abstract class ImageProcessor extends Object {
 		interpolate = method!=NONE?true:false;
 	}
 	
+	/** Returns the current interpolation method (NONE, BILINEAR or BICUBIC). */
+	public int getInterpolationMethod() {
+		return interpolationMethod;
+	}
+	
 	public static String[] getInterpolationMethods() {
 		if (interpolationMethods==null)
 			interpolationMethods = new String[] {"None", "Bilinear", "Bicubic"};
@@ -1636,7 +1641,7 @@ public abstract class ImageProcessor extends Object {
 	}
 	
 	static final double a = 0.5; // Catmull-Rom interpolation
-	final double cubic(double x) {
+	public static final double cubic(double x) {
 		if (x < 0.0) x = -x;
 		double z = 0.0;
 		if (x < 1.0) 
@@ -1841,6 +1846,36 @@ public abstract class ImageProcessor extends Object {
 		of this image or ROI, with the aspect ratio maintained. */
 	public ImageProcessor resize(int dstWidth) {
 		return resize(dstWidth, (int)(dstWidth*((double)roiHeight/roiWidth)));
+	}
+
+	/** Creates a new ImageProcessor containing a scaled copy of this image or ROI.
+		@param dstWidth   Image width of the resulting ImageProcessor
+		@param dstHeight  Image height of the resulting ImageProcessor
+		@param useAverging  True means that the averaging occurs to avoid
+			aliasing artifacts; the kernel shape for averaging is determined by 
+			the interpolationMethod. False if subsampling without any averaging  
+			should be used on downsizing.  Has no effect on upsizing.
+		@ImageProcessor#setInterpolationMethod for setting the interpolation method
+		@author Michael Schmid
+	*/
+	public ImageProcessor resize(int dstWidth, int dstHeight, boolean useAverging) {
+		Rectangle r = getRoi();
+		int rWidth = r.width;
+		int rHeight = r.height;
+		if ((dstWidth>=rWidth && dstHeight>=rHeight) || !useAverging)
+			return resize(dstWidth, dstHeight);  //upsizing or downsizing without averaging
+		else {  //downsizing with averaging in at least one direction: convert to float
+			ImageProcessor ip2 = createProcessor(dstWidth, dstHeight);
+			FloatProcessor fp = null;
+			for (int channelNumber=0; channelNumber<getNChannels(); channelNumber++) {
+				fp = toFloat(channelNumber, fp);
+				fp.setInterpolationMethod(interpolationMethod);
+				fp.setRoi(getRoi());
+				FloatProcessor fp2 = fp.downsize(dstWidth, dstHeight);
+				ip2.setPixels(channelNumber, fp2);
+			}
+			return ip2;
+		}
 	}
 
 	/** Rotates the image or selection 'angle' degrees clockwise.

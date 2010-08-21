@@ -94,6 +94,10 @@ public class StackProcessor {
 		To reduce memory requirements, the orginal stack is deleted
 		as the new stack is created. */
 	public ImageStack resize(int newWidth, int newHeight) {
+		return resize(newWidth, newHeight, false);
+	}
+
+	public ImageStack resize(int newWidth, int newHeight, boolean averageWhenDownsizing) {
 	    ImageStack stack2 = new ImageStack(newWidth, newHeight);
  		ImageProcessor ip2;
 		try {
@@ -102,7 +106,7 @@ public class StackProcessor {
 	    		ip.setPixels(stack.getPixels(1));
 	    		String label = stack.getSliceLabel(1);
 	    		stack.deleteSlice(1);
-				ip2 = ip.resize(newWidth, newHeight);
+				ip2 = ip.resize(newWidth, newHeight, averageWhenDownsizing);
 				if (ip2!=null)
 					stack2.addSlice(label, ip2);
 				IJ.showProgress((double)i/nSlices);

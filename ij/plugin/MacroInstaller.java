@@ -76,7 +76,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macroStarts = new int[MAX_MACROS];
 		macroNames = new String[MAX_MACROS];
 		int itemCount = macrosMenu.getItemCount();
-		int baseCount = macrosMenu==Menus.getMacrosMenu()?MACROS_MENU_COMMANDS:Editor.MACROS_MENU_ITEMS;
+		boolean isPluginsMacrosMenu = macrosMenu==Menus.getMacrosMenu();
+		int baseCount =isPluginsMacrosMenu?MACROS_MENU_COMMANDS:Editor.MACROS_MENU_ITEMS;
 		if (itemCount>baseCount) {
 			for (int i=itemCount-1; i>=baseCount; i--)
 				macrosMenu.remove(i);
@@ -89,7 +90,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				nextToken = code[i+1]&TOK_MASK;
 				if (nextToken==STRING_CONSTANT) {
 					if (count==MAX_MACROS) {
-						if (macrosMenu==Menus.getMacrosMenu())
+						if (isPluginsMacrosMenu)
 							IJ.error("Macro Installer", "Macro sets are limited to "+MAX_MACROS+" macros.");
 						break;
 					}
@@ -145,7 +146,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			nMacros = 1;
 		}
 		String word = nMacros==1?" macro":" macros";
-		IJ.showStatus(nMacros + word + " installed");
+		if (isPluginsMacrosMenu)
+			IJ.showStatus(nMacros + word + " installed");
 	}
 	
 	public int install(String text) {
@@ -165,7 +167,10 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		this.text = text;
 		macrosMenu = menu;
 		install();
-		return nShortcuts+toolCount;
+		int count = nShortcuts+toolCount;
+		if (count==0 && nMacros>1)
+			count = nMacros;
+		return count;
 	}
 
 	public void installFile(String path) {

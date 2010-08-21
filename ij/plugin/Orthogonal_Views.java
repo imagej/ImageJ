@@ -118,12 +118,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		canvas.addMouseListener(this);
 		canvas.addMouseMotionListener(this);
 		canvas.addKeyListener(this);
-		win.addWindowListener ((WindowListener) this);  
-		win.addMouseWheelListener((MouseWheelListener) this);
+		win.addWindowListener (this);  
+		win.addMouseWheelListener(this);
 		win.addFocusListener(this);
 		Component[] c = win.getComponents();
 		//IJ.log(c[1].toString());
-		((ScrollbarWithLabel) c[1]).addAdjustmentListener ((AdjustmentListener) this);
+		((ScrollbarWithLabel) c[1]).addAdjustmentListener (this);
 		ImagePlus.addImageListener(this);
 		Executer.addCommandListener(this);
 	}
@@ -231,6 +231,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ic.addMouseListener(this);
 			ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
+			yz_image.getWindow().addMouseWheelListener(this);
 			yzID = yz_image.getID();
 		}
 		if (xz_image.getWindow()==null) {
@@ -240,6 +241,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ic.addMouseListener(this);
 			ic.addMouseMotionListener(this);
 			ic.setCustomRoi(true);
+			xz_image.getWindow().addMouseWheelListener(this);
 			xzID = xz_image.getID();
 		}
 		 
@@ -514,6 +516,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		canvas.setCustomRoi(false);
 		ImageWindow win1 = xz_image.getWindow();
 		if (win1!=null) {
+			win1.removeMouseWheelListener(this);
 			ImageCanvas ic = win1.getCanvas();
 			if (ic!=null) {
 				ic.setDisplayList(null);
@@ -525,6 +528,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 		ImageWindow win2 = yz_image.getWindow();
 		if (win2!=null) {
+			win2.removeMouseWheelListener(this);
 			ImageCanvas ic = win2.getCanvas();
 			if (ic!=null) {
 				ic.setDisplayList(null);
@@ -774,7 +778,15 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 	//@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		update();
+		if (e.getSource().equals(xz_image.getWindow()) || e.getSource().equals(yz_image.getWindow())) {
+			int slice = imp.getCurrentSlice() + e.getWheelRotation();
+			if (slice<1)
+				slice = 1;
+			else if (slice>imp.getStack().getSize())
+				slice = imp.getStack().getSize();
+			imp.setSlice(slice);
+			update();
+		}
 	}
 
 	//@Override
