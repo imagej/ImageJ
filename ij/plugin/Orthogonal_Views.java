@@ -778,15 +778,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		
 	//@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		if (e.getSource().equals(xz_image.getWindow()) || e.getSource().equals(yz_image.getWindow())) {
-			int slice = imp.getCurrentSlice() + e.getWheelRotation();
-			if (slice<1)
-				slice = 1;
-			else if (slice>imp.getStack().getSize())
-				slice = imp.getStack().getSize();
-			imp.setSlice(slice);
-			update();
+		if (e.getSource().equals(xz_image.getWindow())) {
+			crossLoc.y += e.getWheelRotation();
+		} else if (e.getSource().equals(yz_image.getWindow())) {
+			crossLoc.x += e.getWheelRotation();
 		}
+		update();
 	}
 
 	//@Override
