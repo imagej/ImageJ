@@ -16,6 +16,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private String zstr = "1.0";
 	private static int newWidth, newHeight;
 	private int newDepth;
+    private static boolean averageWhenDownsizing = true;
 	private static boolean newWindow = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
@@ -83,7 +84,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					ip1 = ip1.crop();
 				}
 				ip1.setInterpolationMethod(method);
-				ip2 = ip1.resize(newWidth, newHeight);
+				ip2 = ip1.resize(newWidth, newHeight, averageWhenDownsizing);
 				if (ip2!=null)
 					stack2.addSlice(label, ip2);
 				IJ.showProgress(i, nSlices);
@@ -117,7 +118,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (newWindow) {
 			Rectangle r = ip.getRoi();
 			ImagePlus imp2 = imp.createImagePlus();
-			imp2.setProcessor(title, ip.resize(newWidth, newHeight));
+			imp2.setProcessor(title, ip.resize(newWidth, newHeight, averageWhenDownsizing));
 			Calibration cal = imp2.getCalibration();
 			if (cal.scaled()) {
 				cal.pixelWidth *= 1.0/xscale;
@@ -219,7 +220,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		fieldWithFocus = xField;
 		gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 		if (bitDepth==8 || bitDepth==24)
-			gd.addCheckbox("Fill with Background Color", fillWithBackground);
+			gd.addCheckbox("Fill with background color", fillWithBackground);
+		gd.addCheckbox("Average when downsizing", averageWhenDownsizing);
 		if (isStack)
 			gd.addCheckbox("Process entire stack", processStack);
 		gd.addCheckbox("Create new window", newWindow);
@@ -257,6 +259,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
 			fillWithBackground = gd.getNextBoolean();
+		averageWhenDownsizing = gd.getNextBoolean();
 		if (isStack)
 			processStack = gd.getNextBoolean();
 		newWindow = gd.getNextBoolean();

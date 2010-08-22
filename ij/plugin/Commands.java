@@ -10,7 +10,7 @@ import java.awt.Frame;
 import java.io.File;
 import java.applet.Applet;
 	
-/**	Runs File and Window menu commands. */
+/**	Runs miscellaneous File and Window menu commands. */
 public class Commands implements PlugIn {
 	
 	public void run(String cmd) {

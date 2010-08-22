@@ -855,6 +855,53 @@ public class FloatProcessor extends ImageProcessor {
 		showProgress(1.0);
 		return ip2;
 	}
+	
+	FloatProcessor downsize(int dstWidth, int dstHeight) {
+		Rectangle r = getRoi();
+		int rWidth = r.width;
+		int rHeight = r.height;
+		FloatProcessor ip2 = this;
+		if (dstWidth<rWidth) {   //downsizing in x
+			ip2 = ip2.downsize1D(dstWidth, getHeight());
+			ip2.setRoi(0, r.y, dstWidth, rHeight);  //prepare oi for resizing in y
+		}
+		if (dstHeight<rHeight)  //downsizing in y
+			ip2 = ip2.downsize1D(dstWidth, dstHeight);
+		if (ip2.getWidth()!=dstWidth || ip2.getHeight()!=dstHeight)
+			ip2 = (FloatProcessor)ip2.resize(dstWidth, dstHeight);  //do any upsizing if required
+		return ip2;
+	}
+	
+	// Downsizing in one direction. One of dstWidth or dstHeight must be equal to the
+	// width or height of the roi rectangle of the input ip
+	private FloatProcessor downsize1D(int dstWidth, int dstHeight) {
+		int width = getWidth();
+		Rectangle r = getRoi();
+		boolean xDirection = dstWidth < r.width;
+		int srcPointInc = xDirection ? 1 : width;   //increment of array index for next point along direction
+		int srcLineInc = xDirection ? width : 1;    //increment of array index for next line to be downscaled
+		int dstPointInc = xDirection ? 1 : dstWidth;
+		int dstLineInc = xDirection ? dstWidth : 1;
+		int srcLine0 = xDirection ? r.x : r.y;
+		int dstLines = xDirection ? dstHeight : dstWidth;
+		DownsizeTable dt = xDirection ?
+			new DownsizeTable(getWidth(), r.x, r.width, dstWidth, interpolationMethod) : 
+			new DownsizeTable(getHeight(), r.y, r.height, dstHeight, interpolationMethod);
+		FloatProcessor ip2 = (FloatProcessor)createProcessor(dstWidth, dstHeight);
+		float[] pixels = (float[])getPixels();
+		float[] pixels2 = (float[])ip2.getPixels();
+		for (int srcLine=srcLine0, dstLine=0; dstLine<dstLines; srcLine++,dstLine++) {
+			int dstLineOffset = dstLine * dstLineInc;
+			int tablePointer = 0;
+			for (int srcPoint=dt.srcStart, p=srcPoint*srcPointInc+srcLine*srcLineInc;
+			srcPoint<=dt.srcEnd; srcPoint++, p+=srcPointInc) {
+				float v = pixels[p];
+				for (int i=0; i<dt.kernelSize; i++, tablePointer++)
+				pixels2[dstLineOffset+dt.indices[tablePointer]*dstPointInc] += v * dt.weights[tablePointer];
+			}
+		}
+		return ip2;
+	}
 
 	/** This method is from Chapter 16 of "Digital Image Processing:
 		An Algorithmic Introduction Using Java" by Burger and Burge

@@ -14,6 +14,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
     private static int newWidth;
     private static int newHeight;
     private static boolean constrain = true;
+    private static boolean averageWhenDownsizing = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
     private Vector fields, checkboxes;
@@ -82,8 +83,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			if (t1>1)
 				gd.addNumericField("Time (frames):", t1, 0);
 			gd.addCheckbox("Constrain aspect ratio", constrain);
+			gd.addCheckbox("Average when downsizing", averageWhenDownsizing);
 			gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
-			gd.addMessage("NOTE: Undo is not available");
 			fields = gd.getNumericFields();
 			for (int i=0; i<2; i++)
 				((TextField)fields.elementAt(i)).addTextListener(this);
@@ -103,6 +104,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				return;
 			}
 			constrain = gd.getNextBoolean();
+			averageWhenDownsizing = gd.getNextBoolean();
 			interpolationMethod = gd.getNextChoiceIndex();
 			if (constrain && newWidth==0)
 				sizeToHeight = true;
@@ -120,12 +122,13 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			ip.setInterpolationMethod(ImageProcessor.NONE);
 		else
 			ip.setInterpolationMethod(interpolationMethod);
-			
-    	
+		if (!crop && stackSize==1)
+			Undo.setup(Undo.TYPE_CONVERSION, imp);
+			    	
 		if (roi!=null || newWidth!=origWidth || newHeight!=origHeight) {
 			try {
 				StackProcessor sp = new StackProcessor(imp.getStack(), ip);
-				ImageStack s2 = sp.resize(newWidth, newHeight);
+				ImageStack s2 = sp.resize(newWidth, newHeight, averageWhenDownsizing);
 				int newSize = s2.getSize();
 				if (s2.getWidth()>0 && newSize>0) {
 					if (restoreRoi)
@@ -245,7 +248,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 							Object pixels1 = stack1.getPixels(index);
 							System.arraycopy(pixels1, y*width, xtpixels1, (t-1)*width, width);
 						}
-						xtPlane2 = xtPlane1.resize(width, depth2);
+						xtPlane2 = xtPlane1.resize(width, depth2, averageWhenDownsizing);
 						Object xtpixels2 = xtPlane2.getPixels();
 						for (int t=1; t<=frames2; t++) {
 							int index = imp2.getStackIndex(c, z, t);
@@ -272,7 +275,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 							Object pixels1 = stack1.getPixels(index);
 							System.arraycopy(pixels1, y*width, xypixels1, (z-1)*width, width);
 						}
-						xzPlane2 = xzPlane1.resize(width, depth2);
+						xzPlane2 = xzPlane1.resize(width, depth2, averageWhenDownsizing);
 						Object xypixels2 = xzPlane2.getPixels();
 						for (int z=1; z<=slices2; z++) {
 							int index = imp2.getStackIndex(c, z, t);
@@ -356,7 +359,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				Object pixels1 = stack1.getPixels(z+1);
 				System.arraycopy(pixels1, y*width, xypixels1, z*width, width);
 			}
-			xzPlane2 = xzPlane1.resize(width, newDepth);
+			xzPlane2 = xzPlane1.resize(width, newDepth, averageWhenDownsizing);
 			Object xypixels2 = xzPlane2.getPixels();
 			for (int z=0; z<newDepth; z++) {
 				Object pixels2 = stack2.getPixels(z+1);

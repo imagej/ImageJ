@@ -4537,7 +4537,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.token!='.')
 			interp.error("'.' expected");
 		interp.getToken();
-		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION||interp.token==PREDEFINED_FUNCTION))
+		if (!(interp.token==WORD||interp.token==ARRAY_FUNCTION
+			||interp.token==PREDEFINED_FUNCTION||interp.token==USER_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
 		ImagePlus imp = getImage();
@@ -4547,6 +4548,10 @@ public class Functions implements MacroConstants, Measurements {
 			return overlayMoveTo();
 		else if (name.equals("drawLine"))
 			return overlayDrawLine();
+		else if (name.equals("drawRect"))
+			return overlayDrawRectOrEllipse(imp, false);
+		else if (name.equals("drawEllipse"))
+			return overlayDrawRectOrEllipse(imp, true);
 		else if (name.equals("drawString"))
 			return overlayDrawString(imp);
 		else if (name.equals("add"))
@@ -4614,22 +4619,31 @@ public class Functions implements MacroConstants, Measurements {
 		return Double.NaN;
 	}
 	
+	double overlayDrawRectOrEllipse(ImagePlus imp, boolean ellipse) {
+		addDrawingToOverlay(imp);
+		float x = (float)Math.round(getFirstArg());
+		float y = (float)Math.round(getNextArg());
+		float w = (float)Math.round(getNextArg());
+		float h = (float)Math.round(getLastArg());
+		Shape shape = null;
+		if (ellipse)
+			shape = new Ellipse2D.Float(x, y, w, h);
+		else
+			shape = new Rectangle2D.Float(x, y, w, h);
+		Roi roi = new ShapeRoi(shape);
+		addRoi(imp, roi);
+		return Double.NaN;
+	}
+
 	double overlayDrawString(ImagePlus imp) {
+		addDrawingToOverlay(imp);
 		String text = getFirstString();
 		int x = (int)getNextArg();
 		int y = (int)getLastArg();
 		Font font = this.font;
 		if (font==null) font = imp.getProcessor().getFont();
 		TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
-		Overlay overlay = imp.getOverlay();
-		if (overlay==null) {
-			if (offscreenOverlay==null)
-				offscreenOverlay = new Overlay();
-			overlay = offscreenOverlay;
-		}
-		if (defaultColor!=null)
-			roi.setStrokeColor(defaultColor);
-		overlay.add(roi);
+		addRoi(imp, roi);
 		return Double.NaN;
 	}
 	
@@ -4641,20 +4655,24 @@ public class Functions implements MacroConstants, Measurements {
 	
 	void addDrawingToOverlay(ImagePlus imp) {
 		if (overlayPath==null) return;
+		Roi roi = new ShapeRoi(overlayPath);
+		overlayPath = null;
+		addRoi(imp, roi);
+	}
+
+	void addRoi(ImagePlus imp, Roi roi){
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null) {
 			if (offscreenOverlay==null)
 				offscreenOverlay = new Overlay();
 			overlay = offscreenOverlay;
 		}
-		Roi roi = new ShapeRoi(overlayPath);
-		overlayPath = null;
 		if (defaultColor!=null)
 			roi.setStrokeColor(defaultColor);
 		roi.setLineWidth(getProcessor().getLineWidth());
 		overlay.add(roi);
 	}
-
+	
 	double showOverlay(ImagePlus imp) {
 		interp.getParens();
 		addDrawingToOverlay(imp);

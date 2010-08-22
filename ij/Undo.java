@@ -5,6 +5,7 @@ import ij.process.*;
 import java.awt.*;
 import java.awt.image.*;
 import ij.gui.*;
+import ij.measure.Calibration;
 
 /** This class consists of static methods and
 	fields that implement ImageJ's Undo command. */
@@ -23,6 +24,7 @@ public class Undo {
 	private static int imageID;
 	private static ImageProcessor ipCopy = null;
 	private static ImagePlus impCopy;
+	private static Calibration calCopy;
 	
 	public static void setup(int what, ImagePlus imp) {
 		if (imp==null) {
@@ -40,9 +42,10 @@ public class Undo {
 		}
 		whatToUndo = what;
 		imageID = imp.getID();
-		if (what==TYPE_CONVERSION)
+		if (what==TYPE_CONVERSION) {
 			ipCopy = imp.getProcessor();
-		else if (what==TRANSFORM) {			
+			calCopy = (Calibration)imp.getCalibration().clone();
+		} else if (what==TRANSFORM) {			
 			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
 			Object fht  = imp.getProperty("FHT");
 			if (fht!=null) {
@@ -70,6 +73,7 @@ public class Undo {
 		imageID = 0;
 		ipCopy = null;
 		impCopy = null;
+		calCopy = null;
 		//IJ.log("Undo: reset");
 	}
 	
@@ -92,8 +96,11 @@ public class Undo {
 			case TYPE_CONVERSION:
 			case COMPOUND_FILTER:
 			case COMPOUND_FILTER_DONE:
-				if (ipCopy!=null)
+				if (ipCopy!=null) {
+					if (whatToUndo==TYPE_CONVERSION && calCopy!=null)
+						imp.setCalibration(calCopy);
 					imp.setProcessor(null, ipCopy);
+				}
 	    		break;
 			case TRANSFORM:
 				if (impCopy!=null) {

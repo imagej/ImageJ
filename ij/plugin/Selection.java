@@ -7,6 +7,7 @@ import ij.plugin.frame.*;
 import ij.macro.Interpreter;
 import ij.plugin.filter.GaussianBlur;
 import ij.plugin.filter.ThresholdToSelection;
+import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
@@ -74,6 +75,8 @@ public class Selection implements PlugIn, Measurements {
 		}
 		roi = (Roi)roi.clone();
 		if (arg.equals("rotate")) {
+			double d = Tools.parseDouble(angle);
+			if (Double.isNaN(d)) angle = "15";
 			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
 			if (value!=null) angle = value;    	
 		} else if (arg.equals("enlarge")) {

@@ -535,41 +535,46 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Replaces the image with the specified stack and updates 
 		the display. Set 'title' to null to leave the title unchanged. */
-    public void setStack(String title, ImageStack stack) {
-		int stackSize = stack.getSize();
-		if (stackSize==0)
+    public void setStack(String title, ImageStack newStack) {
+		int newStackSize = newStack.getSize();
+		if (newStackSize==0)
 			throw new IllegalArgumentException("Stack is empty");
-		if (!stack.isVirtual()) {
-			Object[] arrays = stack.getImageArray();
+		if (!newStack.isVirtual()) {
+			Object[] arrays = newStack.getImageArray();
 			if (arrays==null || (arrays.length>0&&arrays[0]==null))
 				throw new IllegalArgumentException("Stack pixel array null");
 		}
-    	boolean stackSizeChanged = this.stack!=null && stackSize!=getStackSize();
+    	boolean sliderChange = false;
+    	if (win!=null && (win instanceof StackWindow)) {
+    		int nScrollbars = ((StackWindow)win).getNScrollbars();
+    		if (nScrollbars>0 && newStackSize==1)
+    			sliderChange = true;
+    		else if (nScrollbars==0 && newStackSize>1)
+    			sliderChange = true;
+    	}
     	if (currentSlice<1) setCurrentSlice(1);
-    	boolean resetCurrentSlice = currentSlice>stackSize;
-    	if (resetCurrentSlice) setCurrentSlice(stackSize);
-    	ImageProcessor ip = stack.getProcessor(currentSlice);
+    	boolean resetCurrentSlice = currentSlice>newStackSize;
+    	if (resetCurrentSlice) setCurrentSlice(newStackSize);
+    	ImageProcessor ip = newStack.getProcessor(currentSlice);
     	boolean dimensionsChanged = width>0 && height>0 && (width!=ip.getWidth()||height!=ip.getHeight());
-    	this.stack = stack;
-    	setProcessor2(title, ip, stack);
+    	this.stack = newStack;
+    	setProcessor2(title, ip, newStack);
 		if (win==null) {
 			if (resetCurrentSlice) setSlice(currentSlice);
 			return;
 		}
 		boolean invalidDimensions = isDisplayedHyperStack() && !((StackWindow)win).validDimensions();
-		if (stackSize==1 && win instanceof StackWindow)
-			win = new ImageWindow(this, getCanvas());   // replaces this window
-		else if (dimensionsChanged && !stackSizeChanged)
-			win.updateImage(this);
-		else if (stackSize>1 && !(win instanceof StackWindow)) {
+		if (newStackSize>1 && !(win instanceof StackWindow)) {
 			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this, getCanvas());   // replaces this window
 			setPosition(1, 1, 1);
-		} else if (stackSize>1 && (dimensionsChanged||invalidDimensions)) {
+		} else if (newStackSize>1 && invalidDimensions) {
 			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 			setPosition(1, 1, 1);
-		} else
+		} else if (dimensionsChanged || sliderChange)
+			win.updateImage(this);
+		else
 			repaintWindow();
 		if (resetCurrentSlice) setSlice(currentSlice);
     }
@@ -1107,7 +1112,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 			s.update(ip2);
 		} else {
 			s = stack;
-			s.update(getProcessor());
+			if (ip!=null) {
+				Calibration cal = getCalibration();
+				if (cal.calibrated())
+					ip.setCalibrationTable(cal.getCTable());
+				else
+					ip.setCalibrationTable(null);
+			}
+			s.update(ip);
 		}
 		if (roi!=null)
 			s.setRoi(roi.getBounds());

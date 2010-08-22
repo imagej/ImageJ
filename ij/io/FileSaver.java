@@ -140,13 +140,26 @@ public class FileSaver {
 	public boolean saveAsTiffStack(String path) {
 		if (fi.nImages==1)
 			{IJ.error("This is not a stack"); return false;}
-		if (imp.getStack().isVirtual())
+		boolean virtualStack = imp.getStack().isVirtual();
+		if (virtualStack)
 			fi.virtualStack = (VirtualStack)imp.getStack();
 		Object info = imp.getProperty("Info");
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
 		fi.description = getDescriptionString();
-		fi.sliceLabels = imp.getStack().getSliceLabels();
+		if (virtualStack) {
+			String[] labels = null;
+			ImageStack vs = imp.getStack();
+			for (int i=1; i<=vs.getSize(); i++) {
+				ImageProcessor ip = vs.getProcessor(i);
+				String label = vs.getSliceLabel(i);
+				if (i==1 && (label==null||label.length()<200)) break;
+				if (labels==null) labels = new String[vs.getSize()];
+				labels[i-1] = label;
+			}
+			fi.sliceLabels = labels;
+		} else
+			fi.sliceLabels = imp.getStack().getSliceLabels();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
 		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);

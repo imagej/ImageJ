@@ -1,4 +1,4 @@
-// Rotates the selection by a specified angle.
+// Rotates the current selection by a specified angle.
 
   angle = parseFloat(getArgument());
   if (isNaN(angle)) exit("Angle is invalid: "+getArgument());
@@ -9,7 +9,8 @@
   Dialog.addMessage("Enter negative angle to \nrotate counter-clockwise");
   Dialog.show();
   angle = Dialog.getNumber();
-  if (selectionType==9) {
+  type = selectionType;
+  if (type==9) {
      rotateCompositeSelection(angle);
      return toString(angle);
   }
@@ -17,7 +18,7 @@
   getBoundingRect(xbase, ybase, width, height);
   xcenter=xbase+width/2; ycenter=ybase+height/2;
   getSelectionCoordinates(x, y);
-  line = selectionType==5&&x.length==2;
+  line = type==5;
   if (line) {
       getLine(x1, y1, x2, y2, width);
       x[0]=x1; y[0]=y1; x[1]=x2; y[1]=y2;
@@ -32,7 +33,7 @@
   if (line)
       makeLine(x[0], y[0], x[1], y[1]);
   else
-      makeSelection(selectionType, x, y);
+      makeSelection(type, x, y);
   return toString(angle);
 
   function rotateCompositeSelection(angle) {
