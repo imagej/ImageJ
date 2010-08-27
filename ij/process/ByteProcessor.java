@@ -560,7 +560,7 @@ public class ByteProcessor extends ImageProcessor {
 
 				switch (type) {
 					case BLUR_MORE:
-						sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9)/9;
+						sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9+4)/9;
 						break;
 					case FIND_EDGES: // 3x3 Sobel filter
 	        			sum1 = p1 + 2*p2 + p3 - p7 - 2*p8 - p9;
@@ -671,7 +671,7 @@ public class ByteProcessor extends ImageProcessor {
 			}
             switch (type) {
                 case BLUR_MORE:
-                    sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9)/9;
+                    sum = (p1+p2+p3+p4+p5+p6+p7+p8+p9+4)/9;
                     break;
                 case FIND_EDGES: // 3x3 Sobel filter
                     sum1 = p1 + 2*p2 + p3 - p7 - 2*p8 - p9;

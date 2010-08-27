@@ -888,7 +888,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (macro) {
 			String label = (String)labels.get((Object)thisChoice);
 			item = Macro.getValue(macroOptions, label, item);
-			//IJ.write("getNextChoice: "+label+"  "+item);
+			if (item!=null && item.startsWith("&")) // value is macro variable
+				item = getChoiceVariable(item);
 		}	
 		if (recorderOn)
 			recordOption(thisChoice, item);
@@ -907,12 +908,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String oldItem = thisChoice.getSelectedItem();
 			int oldIndex = thisChoice.getSelectedIndex();
 			String item = Macro.getValue(macroOptions, label, oldItem);
-			if (item!=null && item.startsWith("&")) { // value is macro variable
-				item = item.substring(1);
-				Interpreter interp = Interpreter.getInstance();
-				String s = interp!=null?interp.getStringVariable(item):null;
-				if (s!=null) item = s;
-			}
+			if (item!=null && item.startsWith("&")) // value is macro variable
+				item = getChoiceVariable(item);
 			thisChoice.select(item);
 			index = thisChoice.getSelectedIndex();
 			if (index==oldIndex && !item.equals(oldItem)) {
@@ -930,6 +927,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		choiceIndex++;
 		return index;
     }
+    
+    private String getChoiceVariable(String item) {
+		item = item.substring(1);
+		Interpreter interp = Interpreter.getInstance();
+		String s = interp!=null?interp.getStringVariable(item):null;
+		if (s!=null) item = s;
+		return item;
+	}
     
   	/** Returns the contents of the next textarea. */
 	public String getNextText() {

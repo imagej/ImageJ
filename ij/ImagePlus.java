@@ -56,14 +56,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 	protected int width;
 	protected int height;
 	protected boolean locked = false;
+	protected int nChannels = 1;
+	protected int nSlices = 1;
+	protected int nFrames = 1;
 
 	private ImageJ ij = IJ.getInstance();
 	private String title;
 	private	String url;
 	private FileInfo fileInfo;
-	private int nSlices = 1;
-	private int nChannels = 1;
-	private int nFrames = 1;
 	private int imageType = GRAY8;
 	private ImageStack stack;
 	private static int currentID = -1;
@@ -2008,12 +2008,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		Overlay overlay2 = getOverlay();
 		int n = overlay2!=null?overlay2.size():0;
 		int stackSize = getStackSize();
-		boolean stackLabels = n>1 && n>=stackSize && (overlay2.get(0) instanceof TextRoi) && (overlay2.get(stackSize-1) instanceof TextRoi);
-		if (stackLabels) { // created by Image>Stacks>Label
+		if (n>1 && n==stackSize && ic2.stackLabels(overlay2)) { // created by Image>Stacks>Label
 			int index = getCurrentSlice()-1;
 			if (index<n) {
-				overlay2.hide(0, index-1);
-				overlay2.hide(index+1, stackSize-1);
+				overlay2.temporarilyHide(0, index-1);
+				overlay2.temporarilyHide(index+1, stackSize-1);
 			}
 		}
 		ic2.setOverlay(overlay2);
