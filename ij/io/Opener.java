@@ -928,7 +928,7 @@ public class Opener {
 			return FITS;
 			
 		// Java source file, text file or macro
-		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js"))
+		if (name.endsWith(".java") || name.endsWith(".txt") || name.endsWith(".ijm") || name.endsWith(".js") || name.endsWith(".html"))
 			return JAVA_OR_TEXT;
 
 		// ImageJ, NIH Image, Scion Image for Windows ROI

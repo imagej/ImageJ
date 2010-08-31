@@ -83,7 +83,7 @@ public class BinaryProcessor extends ByteProcessor {
 		configurations. An entry of '1' means delete pixel on first pass, '2' means
 		delete pixel on second pass, and '3' means delete on either pass. A graphical
 		representation of the 256 neighborhoods indexed by the table is available
-		at "http://rsb.info.nih.gov/ij/images/skeletonize-table.gif".
+		at "http://imagej.nih.gov/ij/images/skeletonize-table.gif".
 	*/
 	public void  skeletonize() {
 		int pass = 0;

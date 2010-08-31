@@ -6,7 +6,7 @@ import ij.gui.*;
 import ij.text.*;
 /** Implements the Plugins/Utilities/Run Benchmark command. 
 	results and additional benchmarks are available at 
-	"http://rsb.info.nih.gov/ij/plugins/benchmarks.html". */
+	"http://imagej.nih.gov/ij/plugins/benchmarks.html". */
 public class Benchmark implements PlugInFilter{
 
 	String arg;

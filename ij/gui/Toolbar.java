@@ -1153,7 +1153,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	/** Adds a tool to the toolbar. The 'toolTip' string is displayed in the status bar
 		 when the mouse is over the tool icon. The 'toolTip' string may include icon 
-		(http://rsb.info.nih.gov/ij/developer/macro/macros.html#tools).
+		(http://imagej.nih.gov/ij/developer/macro/macros.html#tools).
 		Returns the tool ID, or -1 if all tools are in use. */
 	public int addTool(String toolTip) {
 		int index = toolTip.indexOf('-');

@@ -187,6 +187,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			if (!(path.endsWith(File.separator)||path.endsWith("/")))
 				path += File.separator;
 			String[] names = f.list();
+			names = (new FolderOpener()).trimFileList(names);
 			String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
 			GenericDialog gd = new GenericDialog("Open Folder");
 			gd.setInsets(10,5,0);

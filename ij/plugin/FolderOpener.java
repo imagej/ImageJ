@@ -13,6 +13,7 @@ import ij.measure.Calibration;
 opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
+	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh"};
 	private static boolean convertToRGB;
 	private static boolean sortFileNames = true;
 	private static boolean virtualStack;
@@ -266,13 +267,12 @@ public class FolderOpener implements PlugIn {
 		return true;
 	}
 
-	/** Removes names that start with "." or end with ".db". ".txt", ".lut", "roi", ".pty" or ".hdr". */
+	/** Removes names that start with "." or end with ".db". ".txt", ".lut", "roi", ".pty" or ".hdr", etc.. */
 	public String[] trimFileList(String[] rawlist) {
 		int count = 0;
 		for (int i=0; i< rawlist.length; i++) {
 			String name = rawlist[i];
-			if (name.startsWith(".")||name.equals("Thumbs.db")||name.endsWith(".txt")||name.endsWith(".lut")
-			||name.endsWith(".roi")||name.endsWith(".pty")||name.endsWith(".hdr"))
+			if (name.startsWith(".")||name.equals("Thumbs.db")||excludedFileType(name))
 				rawlist[i] = null;
 			else
 				count++;
@@ -288,6 +288,16 @@ public class FolderOpener implements PlugIn {
 			}
 		}
 		return list;
+	}
+	
+	/* Returns true if 'name' ends with ".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js" or ".bsh. */
+	public static boolean excludedFileType(String name) {
+		if (name==null) return true;
+		for (int i=0; i<excludedTypes.length; i++) {
+			if (name.endsWith(excludedTypes[i]))
+				return true;
+		}
+		return false;
 	}
 
 	/** Sorts the file names into numeric order. */

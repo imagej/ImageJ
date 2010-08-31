@@ -355,7 +355,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	* @param labels			the labels
 	* @param defaultValues	the initial states
 	* @param headings	the column headings
-	* Example: http://rsbweb.nih.gov/ij/plugins/multi-column-dialog/index.html
+	* Example: http://imagej.nih.gov/ij/plugins/multi-column-dialog/index.html
 	*/
     public void addCheckboxGroup(int rows, int columns, String[] labels, boolean[] defaultValues, String[] headings) {
     	Panel panel = new Panel();

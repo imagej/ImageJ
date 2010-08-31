@@ -1321,9 +1321,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			if (key.length()==9 && key.charAt(4)==',')
+			int len = key.length();
+			if (len==9 && key.charAt(4)==',')
 				return getDicomTag(key);
-			else if (key.equals("micrometer.abbreviation"))
+			else if (key.equals("overlay")) {
+				Overlay overlay = getImage().getOverlay();
+				if (overlay==null)
+					return "";
+				else
+					return overlay.toString();
+			} else if (key.indexOf(".")==-1) {
+				String value = getMetadataValue(key);
+				if (value!=null) return value;
+			} else if (key.equals("micrometer.abbreviation"))
 				return "\u00B5m";
 			else if (key.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
@@ -1362,39 +1372,61 @@ public class Functions implements MacroConstants, Measurements {
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
-			} else if (key.equals("overlay")) {
-				Overlay overlay = getImage().getOverlay();
-				if (overlay==null)
-					return "";
-				else
-					return overlay.toString();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
 				catch (Exception e) {};
 				return value!=null?value:"";
 			}
+			return "";
+	}
+	
+	String getMetadataValue(String key) {
+		String metadata = getMetadataAsString();
+		if (metadata==null) return null;
+		int index1 = metadata.indexOf(key+" =");
+		if (index1!=-1)
+			index1 += key.length() + 2;
+		else {
+			index1 = metadata.indexOf(key+":");
+			if (index1!=-1)
+				index1 += key.length() + 1;
+			else
+				return null;
+		}
+		int index2 = metadata.indexOf("\n", index1);
+		if (index2==-1) return null;
+		String value = metadata.substring(index1+1, index2);
+		if (value.startsWith(" ")) value = value.substring(1, value.length());
+		return value;
 	}
 	
 	String getDicomTag(String tag) {
-		ImagePlus imp = getImage();
-		String metadata = null;
-		if (imp.getStackSize()==1) {
-			metadata = (String)imp.getProperty("Label");
-			if (metadata==null)
-				metadata = (String)imp.getProperty("Info");
-		} else 
-			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		String metadata = getMetadataAsString();
 		if (metadata==null) return "";
 		int index1 = metadata.indexOf(tag);
 		if (index1==-1) return "";
 		index1 = metadata.indexOf(":", index1);
 		if (index1==-1) return "";
 		int index2 = metadata.indexOf("\n", index1);
+		if (index2==-1) return "";
 		String value = metadata.substring(index1+1, index2);
 		return value;
 	}
 	
+	String getMetadataAsString() {
+		ImagePlus imp = getImage();
+		String metadata = null;
+		if (imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0) metadata = label;
+		}
+		if (metadata==null)
+			metadata = (String)imp.getProperty("Info");
+		return metadata;
+	}
+
 	String getWindowContents() {
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && frame instanceof TextWindow) {
