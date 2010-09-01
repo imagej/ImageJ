@@ -5,9 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.44g, 31 August 2010</u>
+<li> <u>1.44g, 1 September 2010</u>
 <ul>
-<li> The getInfo() macro function can now retrieve Bio=Formats metadata values.
+<li> The getInfo() macro function can now retrieve Bio-Formats metadata values.
 <li> Thanks to Barry DeZonia, fixed a bug that caused <i>Process&gt;Smooth</i> to not round
 results with 8-bit images.
 <li> Fixed a bug that sometimes caused passing of choices in macro run() calls to fail when
@@ -15,6 +15,8 @@ results with 8-bit images.
 <li> Fixed a bug that caused virtual stacks backed by a folder containing a script to not open correctly.
 <li> Fixed a bug that sometimes caused the image count displayed in the dialog box 
 to be incorrect when a folder is dragged and dropped.
+<li> Barry DeZonia fixed a bug that sometimes caused division of 16-bit images to fail.
+<li> Fixed a bug that caused an exception to be thrown when opening LZW compressed 32-bit float TIFFs.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

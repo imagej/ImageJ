@@ -223,9 +223,11 @@ public class ImageReader {
 			totalRead += bufferSize;
 			showProgress(totalRead, byteCount);
 			pixelsRead = bufferSize/bytesPerPixel;
+			int pmax = base+pixelsRead;
+			if (pmax>nPixels) pmax = nPixels;
 			int j = 0;
 			if (fi.intelByteOrder)
-				for (int i=base; i < (base+pixelsRead); i++) {
+				for (int i=base; i<pmax; i++) {
 					tmp = (int)(((buffer[j+3]&0xff)<<24) | ((buffer[j+2]&0xff)<<16) | ((buffer[j+1]&0xff)<<8) | (buffer[j]&0xff));
 					if (fi.fileType==FileInfo.GRAY32_FLOAT)
 						pixels[i] = Float.intBitsToFloat(tmp);
@@ -236,7 +238,7 @@ public class ImageReader {
 					j += 4;
 				}
 			else
-				for (int i=base; i < (base+pixelsRead); i++) {
+				for (int i=base; i<pmax; i++) {
 					tmp = (int)(((buffer[j]&0xff)<<24) | ((buffer[j+1]&0xff)<<16) | ((buffer[j+2]&0xff)<<8) | (buffer[j+3]&0xff));
 					if (fi.fileType==FileInfo.GRAY32_FLOAT)
 						pixels[i] = Float.intBitsToFloat(tmp);
@@ -256,7 +258,6 @@ public class ImageReader {
 		float[] pixels = new float[nPixels];
 		int base = 0;
 		float last = 0;
-		int tmp;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
 			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
@@ -278,19 +279,16 @@ public class ImageReader {
 			pixelsRead = pixelsRead - (pixelsRead%fi.width);
 			int pmax = base+pixelsRead;
 			if (pmax > nPixels) pmax = nPixels;
-			pixelsRead = bufferSize/bytesPerPixel;
-			int j = 0;
+			int tmp;
 			if (fi.intelByteOrder) {
-				for (int i=base; i < (base+pixelsRead); i++) {
+				for (int i=base,j=0; i<pmax; i++,j+=4) {
 					tmp = (int)(((byteArray[j+3]&0xff)<<24) | ((byteArray[j+2]&0xff)<<16) | ((byteArray[j+1]&0xff)<<8) | (byteArray[j]&0xff));
 					pixels[i] = Float.intBitsToFloat(tmp);
-					j += 4;
 				}
 			} else {
-				for (int i=base; i < (base+pixelsRead); i++) {
+				for (int i=base,j=0; i<pmax; i++,j+=4) {
 					tmp = (int)(((byteArray[j]&0xff)<<24) | ((byteArray[j+1]&0xff)<<16) | ((byteArray[j+2]&0xff)<<8) | (byteArray[j+3]&0xff));
 					pixels[i] = Float.intBitsToFloat(tmp);
-					j += 4;
 				}
 			}
 			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING) {
@@ -301,6 +299,11 @@ public class ImageReader {
 			}
 			base += pixelsRead;
 			showProgress(k+1, fi.stripOffsets.length);
+		}
+		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
+			// convert to unsigned
+			for (int i=0; i<nPixels; i++)
+				pixels[i] = (short)(pixels[i]+32768);
 		}
 		return pixels;
 	}
