@@ -300,11 +300,6 @@ public class ImageReader {
 			base += pixelsRead;
 			showProgress(k+1, fi.stripOffsets.length);
 		}
-		if (fi.fileType==FileInfo.GRAY16_SIGNED) {
-			// convert to unsigned
-			for (int i=0; i<nPixels; i++)
-				pixels[i] = (short)(pixels[i]+32768);
-		}
 		return pixels;
 	}
 
