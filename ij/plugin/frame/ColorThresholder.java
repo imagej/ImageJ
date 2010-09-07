@@ -45,8 +45,10 @@ import ij.plugin.*;
 public class ColorThresholder extends PlugInFrame implements PlugIn, Measurements,
  ActionListener, AdjustmentListener, FocusListener, ItemListener, Runnable{
 
+	private static final int HSB=0, RGB=1, LAB=2, YUV=3;
+	private static final String[] colorSpaces = {"HSB", "RGB", "CIE Lab", "YUV"};
 	private boolean flag = false;
-	private int colmode = 0; //0 hsb, 1 rgb, 2 lab, 3 yuv
+	private int colorSpace = HSB;
 	private Thread thread;
 	private static Frame instance;
 
@@ -54,10 +56,11 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private BandPlot splot = new BandPlot();
 	private BandPlot bplot = new BandPlot();
 	private int sliderRange = 256;
-	private Panel panelh, panels, panelb, panel, panelt, panelMode;
+	private Panel panel, panelt, panelMode;
 	private Button  originalB, filteredB, stackB, helpB, sampleB, resetallB, newB, macroB;
-	private Checkbox bandPassH, bandStopH, bandPassS, bandStopS,bandPassB, bandStopB, threshold, blackBackground, hsb, rgb, lab, yuv;
-	private CheckboxGroup filterTypeH, filterTypeS, filterTypeB, colourMode;
+	private Checkbox bandPassH, bandPassS, bandPassB, threshold, blackBackground;
+	private CheckboxGroup colourMode;
+	private Choice colorSpaceChoice;
 	private int previousImageID = -1;
 	private int previousSlice = -1;
 	private ImageJ ij;
@@ -107,7 +110,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(7, 0, 0, 0);
-		labelf = new Label("Filter type", Label.RIGHT);
+		labelf = new Label("", Label.RIGHT);
 		add(labelf, c);
 
 		// plot
@@ -120,22 +123,14 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(plot, c);
 
 		// checkboxes
-		panelh = new Panel();
-		filterTypeH = new CheckboxGroup();
 		bandPassH = new Checkbox("Pass");
-		bandPassH.setCheckboxGroup(filterTypeH);
 		bandPassH.addItemListener(this);
-		panelh.add(bandPassH);
-		bandStopH = new Checkbox("Stop");
-		bandStopH.setCheckboxGroup(filterTypeH);
-		bandStopH.addItemListener(this);
-		panelh.add(bandStopH);
 		bandPassH.setState(true);
 		c.gridx = 1;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 0, 0, 0);
-		add(panelh, c);
+		c.insets = new Insets(5, 5, 0, 5);
+		add(bandPassH, c);
 
 		// minHue slider
 		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
@@ -199,22 +194,14 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(splot, c);
 
 		// checkboxes
-		panels = new Panel();
-		filterTypeS = new CheckboxGroup();
 		bandPassS = new Checkbox("Pass");
-		bandPassS.setCheckboxGroup(filterTypeS);
 		bandPassS.addItemListener(this);
-		panels.add(bandPassS);
-		bandStopS = new Checkbox("Stop");
-		bandStopS.setCheckboxGroup(filterTypeS);
-		bandStopS.addItemListener(this);
-		panels.add(bandStopS);
 		bandPassS.setState(true);
 		c.gridx = 1;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 0, 0, 0);
-		add(panels, c);
+		c.insets = new Insets(5, 5, 0, 5);
+		add(bandPassS, c);
 
 		// minSat slider
 		minSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
@@ -275,22 +262,14 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bplot, c);
 
 		// checkboxes
-		panelb = new Panel();
-		filterTypeB = new CheckboxGroup();
 		bandPassB = new Checkbox("Pass");
-		bandPassB.setCheckboxGroup(filterTypeB);
 		bandPassB.addItemListener(this);
-		panelb.add(bandPassB);
-		bandStopB = new Checkbox("Stop");
-		bandStopB.setCheckboxGroup(filterTypeB);
-		bandStopB.addItemListener(this);
-		panelb.add(bandStopB);
 		bandPassB.setState(true);
 		c.gridx = 1;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 0, 0, 0);
-		add(panelb, c);
+		c.insets = new Insets(5, 5, 0, 5);
+		add(bandPassB, c);
 
 		// minBri slider
 		minSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
@@ -373,7 +352,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		macroB = new Button("Macro");
 		macroB.addActionListener(this);
 		macroB.addKeyListener(ij);
-		panel.add(macroB);
+		//panel.add(macroB);
 
 
 		helpB = new Button("Help");
@@ -411,27 +390,13 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		sampleB.addActionListener(this);
 		sampleB.addKeyListener(ij);
 		panelMode.add(sampleB);
-
-		colourMode = new CheckboxGroup();
-		hsb = new Checkbox("HSB");
-		hsb.setCheckboxGroup(colourMode);
-		hsb.addItemListener(this);
-		panelMode.add(hsb);
-		hsb.setState(true);
-		rgb = new Checkbox("RGB");
-		rgb.setCheckboxGroup(colourMode);
-		rgb.addItemListener(this);
-		panelMode.add(rgb);
-
-		lab = new Checkbox("CIE Lab");
-		lab.setCheckboxGroup(colourMode);
-		lab.addItemListener(this);
-		panelMode.add(lab);
-
-		yuv = new Checkbox("YUV");
-		yuv.setCheckboxGroup(colourMode);
-		yuv.addItemListener(this);
-		panelMode.add(yuv);
+		
+		colorSpaceChoice = new Choice();
+		for (int i=0; i<colorSpaces.length; i++)
+			colorSpaceChoice.addItem(colorSpaces[i]);
+		colorSpaceChoice.select(HSB);
+		colorSpaceChoice.addItemListener(this);
+		panelMode.add(colorSpaceChoice);
 		
 		c.gridx = 0;
 		c.gridy = y++;
@@ -462,10 +427,10 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			synchronized(this) {
 				try {wait();}
 				catch(InterruptedException e) {}
-				if(!done) {//RPD
-					reset(imp,ip);//GL
-					apply(imp,ip);//GL
-					imp.updateAndDraw();//GL
+				if (!done) {//RPD
+					reset(imp, ip);
+					apply(imp, ip);
+					imp.updateAndDraw();
 				}
 			}
 		}
@@ -498,18 +463,10 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		notify();
 	}
 
-	//GL
 	public synchronized void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
-		if (source==hsb || source==rgb || source==lab || source==yuv){
-			if(e.getSource()==hsb)
-				colmode = 0;
-			if(e.getSource()==rgb)
-				colmode = 1;
-			if(e.getSource()==lab)
-				colmode = 2;
-			if(e.getSource()==yuv)
-				colmode = 3;
+		if (source==colorSpaceChoice) {
+			colorSpace = ((Choice)source).getSelectedIndex();
 			flag = true;
 			originalB.setEnabled(false);
 			filteredB.setEnabled(false);
@@ -521,7 +478,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		} else if (source==blackBackground)
 			Prefs.blackBackground = blackBackground.getState();
 
-		reset(imp,ip);
+	reset(imp,ip);
 		checkImage(); //new
 		//apply(imp,ip);// not needed
 		updateNames();
@@ -664,13 +621,13 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		int iminhue=256, imaxhue=-1, iminsat=256, imaxsat=-1, iminbri=256, imaxbri=-1;
 		int iminred=256, imaxred=-1, imingre=256, imaxgre=-1, iminblu=256, imaxblu=-1;
 
-		if(colmode==1)
+		if(colorSpace==RGB)
 			cp2.getRGB(hsSource,ssSource,bsSource);
-		else if(colmode==0)
+		else if(colorSpace==HSB)
 			cp2.getHSB(hsSource,ssSource,bsSource);
-		else if(colmode==2)
+		else if(colorSpace==LAB)
 			getLab(cp2, hsSource,ssSource,bsSource);
-		else if(colmode==3)
+		else if(colorSpace==YUV)
 			getYUV(cp2, hsSource,ssSource,bsSource);
 
 
@@ -685,7 +642,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			//IJ.showMessage("h:"+iminhue+"H:"+imaxhue+"s:"+iminsat+"S:"+imaxsat+"b:"+iminbri+"B:"+imaxbri);
 		}
 
-		if(colmode==0){ // get pass or stop filter whichever has a narrower range
+		if(colorSpace==HSB){ // get pass or stop filter whichever has a narrower range
 			int gap=0, maxgap=0, maxgapst=-1, maxgapen=-1, gapst=0 ;
 
 			if (bin[0]==0){
@@ -725,20 +682,17 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			}
 			if ((rangePassH-rangePassL)<maxgap){
 				bandPassH.setState(true);
-				bandStopH.setState(false);
 				iminhue=rangePassL;
 				imaxhue=rangePassH;
 			}
 			else{
 				bandPassH.setState(false);
-				bandStopH.setState(true);
 				iminhue=maxgapst;
 				imaxhue=maxgapen;
 			}
 		}
-		else{
+		else {
 			bandPassH.setState(true);
-			bandStopH.setState(false);
 		}
 
 		adjustMinHue(iminhue);
@@ -805,13 +759,13 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			//Get hsb or rgb from image.
 			ColorProcessor cp = (ColorProcessor)ip;
 			IJ.showStatus("Converting colour space...");
-			if(colmode==1)
+			if(colorSpace==RGB)
 				cp.getRGB(hSource,sSource,bSource);
-			else if(colmode==0)
+			else if(colorSpace==HSB)
 				cp.getHSB(hSource,sSource,bSource);
-			else if(colmode==2)
+			else if(colorSpace==LAB)
 				getLab(cp, hSource,sSource,bSource);
-			else if(colmode==3)
+			else if(colorSpace==YUV)
 				getYUV(cp, hSource,sSource,bSource);
 
 			IJ.showStatus("");
@@ -823,7 +777,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			byte[] blues = new byte[256];
 			for (int i=0; i<256; i++) {
 				c = Color.getHSBColor(i/255f, 1f, 1f);
-
 				reds[i] = (byte)c.getRed();
 				greens[i] = (byte)c.getGreen();
 				blues[i] = (byte)c.getBlue();
@@ -881,22 +834,19 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 	void updateNames() {
-		if (colmode==1){
+		if (colorSpace==RGB){
 			labelh.setText("Red");
 			labels.setText("Green");
 			labelb.setText("Blue");
-		}
-		else if(colmode==0){
+		} else if(colorSpace==HSB){
 			labelh.setText("Hue");
 			labels.setText("Saturation");
 			labelb.setText("Brightness");
-		}
-		else if(colmode==2){
+		} else if(colorSpace==LAB){
 			labelh.setText("L*");
 			labels.setText("a*");
 			labelb.setText("b*");
-		}
-		else if(colmode==3){
+		} else if(colorSpace==YUV){
 			labelh.setText("Y");
 			labels.setText("U");
 			labelb.setText("V");
@@ -961,8 +911,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
-		Color col = Prefs.blackBackground?Color.black:Color.white;
-		ip.setColor(col);
 		byte fill = (byte)255;
 		byte keep = (byte)0;
 
@@ -972,9 +920,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue < minHue)||(hue > maxHue)) || ((sat < minSat)||(sat > maxSat)) || ((bri < minBri)||(bri > maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if(!bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //SSS All stop
@@ -983,9 +931,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue >= minHue)&&(hue <= maxHue)) || ((sat >= minSat)&&(sat <= maxSat)) || ((bri >= minBri)&&(bri <= maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if(bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //PPS
@@ -994,9 +942,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue < minHue)||(hue > maxHue)) || ((sat < minSat)||(sat > maxSat)) || ((bri >= minBri) && (bri <= maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if(!bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //SSP
@@ -1005,9 +953,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue >= minHue) && (hue <= maxHue)) || ((sat >= minSat) && (sat <= maxSat)) || ((bri < minBri) || (bri > maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if (bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //PSS
@@ -1016,9 +964,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue < minHue) || (hue > maxHue)) || ((sat >= minSat) && (sat <= maxSat)) || ((bri >= minBri) && (bri <= maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if(!bandPassH.getState() && bandPassS.getState() && bandPassB.getState()){ //SPP
@@ -1027,9 +975,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue >= minHue) && (hue <= maxHue))|| ((sat < minSat) || (sat > maxSat)) || ((bri < minBri) || (bri > maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if (!bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //SPS
@@ -1038,9 +986,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue >= minHue)&& (hue <= maxHue)) || ((sat < minSat)||(sat > maxSat)) || ((bri >= minBri) && (bri <= maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 		else if(bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //PSP
@@ -1049,24 +997,24 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				int sat = sSource[j]&0xff;
 				int bri = bSource[j]&0xff;
 				if (((hue < minHue) || (hue > maxHue)) || ((sat >= minSat)&&(sat <= maxSat)) || ((bri < minBri) || (bri > maxBri)))
-					fillMask[j] = fill;
-				else
 					fillMask[j] = keep;
+				else
+					fillMask[j] = fill;
 			}
 		}
 
-		ip.fill(fillMaskIP);
-
 		if (threshold.getState()) {
-			ip.invert();
-			for (int j = 0; j < numPixels; j++){
-				if(fillMask[j] == fill)
-					fillMask[j] = keep;
-				else
-					fillMask[j] = fill;
-			}
+			Color col = Prefs.blackBackground?Color.white:Color.black;
+			ip.setColor(col);
 			ip.fill(fillMaskIP);
-			ip.invert();
+			col = Prefs.blackBackground?Color.black:Color.white;
+			ip.setColor(col);
+			fillMaskIP.invert();
+			ip.fill(fillMaskIP);
+		} else {
+			Color col = Prefs.blackBackground?Color.red:Color.red;
+			ip.setColor(col);
+			ip.fill(fillMaskIP);
 		}
 	}
 
@@ -1082,7 +1030,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		//Assign the pixels of ip to the data in the restore array, while
 		//taking care to not give the address the restore array to the
 		//image processor.
-
 		int[] pixels = (int[])ip.getPixels();
 		for (int i = 0; i < numPixels; i++)
 			 pixels[i] = restore[i];
@@ -1108,7 +1055,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			notify();
 		}
 	}
-
 
 	public void getLab(ImageProcessor ip, byte[] L, byte[] a, byte[] b) {
 		// Returns Lab in 3 byte arrays.
@@ -1268,7 +1214,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			icm.getBlues(b);
 			hColors = new Color[256];
 	
-			if (colmode==1){
+			if (colorSpace==RGB){
 				if (j==0){
 					for (int i=0; i<256; i++)
 						hColors[i] = new Color(i&255, 0&255, 0&255);
@@ -1282,7 +1228,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 						hColors[i] = new Color(0&255, 0&255, i&255);
 				}
 			}
-			else if (colmode==0){
+			else if (colorSpace==HSB){
 				if (j==0){
 					for (int i=0; i<256; i++)
 						hColors[i] = new Color(r[i]&255, g[i]&255, b[i]&255);
@@ -1298,7 +1244,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 						hColors[i] = new Color(i&255, i&255, i&255);
 				}
 			}
-			else if (colmode==2){
+			else if (colorSpace==LAB){
 				if (j==0){
 					for (int i=0; i<256; i++)
 						hColors[i] = new Color(i&255, i&255, i&255);
@@ -1312,7 +1258,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 						hColors[i] = new Color(i&255, i&255, 255-i&255);
 				}
 			}
-			else if (colmode==3){
+			else if (colorSpace==YUV){
 				if (j==0){
 					for (int i=0; i<256; i++)
 						hColors[i] = new Color(i&255, i&255, i&255);
@@ -1327,6 +1273,10 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				}
 			}
 			
+		}
+		
+		int[] getHistogram() {
+			return histogram;
 		}
 	
 		public void update(Graphics g) {

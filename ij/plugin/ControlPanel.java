@@ -34,10 +34,7 @@ public class ControlPanel implements PlugIn {
 	private Vector visiblePanels = new Vector();
 	private Vector expandedNodes = new Vector();
 	private String defaultArg = "";
-	String currentArg = "";
 
-	private Properties pcpProperties=new Properties();
-	private File pcpPropsFile=new File(System.getProperty("user.home")+System.getProperty("file.separator")+"PCPanel2.ini");
 	private boolean savePropsUponClose=true;
 	private boolean propertiesChanged=true;
 	private boolean closeChildPanelOnExpand = true;
@@ -46,12 +43,11 @@ public class ControlPanel implements PlugIn {
 
 	Vector menus = new Vector();
 	Vector allMenus = new Vector();
-	String[] installableMenuLabels = {"About Plugins","Filters","Import","Plugins","Save As","Shortcuts","Tools","Utilities"};
 	Hashtable commands=new Hashtable();
 	Hashtable menuCommands=new Hashtable();
 	String[] pluginsArray;
 	Hashtable treeCommands = new Hashtable();
-	int argLength=0;
+	int argLength;
 
 	private String path=null;
 	private DefaultMutableTreeNode root;
@@ -64,28 +60,8 @@ public class ControlPanel implements PlugIn {
 	}
 
 
-	/** Creates a panel with the hierarchical tree structure of (some of the) ImageJ's commands according to the structure
-	 * of the String argument (see below).
-	 *
-	 * @param arg String (optional): a semi-colon - separated list of one or more tokens:<br>
-	 * <dl>
-	 * <dt>"imagej menus"</dt><dd>creates a tree with all of ImageJ's menu structure, that means it replicates in tree
-	 * form the ImageJ's menu bar; this includes any jar plugin and user plugins</dd>
-	 * <dt>"user plugins"</dt><dd>creates a tree with loose user plugins (not "jar plugins")</dd>
-	 * <dt>"imagej commands"</dt><dd>creates a tree with all ImageJ's commands</dd>
-	 * <dt>"about"</dt><dd>will not create a tree panel; instead, it will show a brief help message</dd>
-	 * </dl>
-	 * If there is more than one token, a subtree will be created for each token, and added to a common root tree.
-	 * If the "about" token is also present, a help message will be displayed<br>
-	 * If the argument is missing, a panel with all of ImageJ's menus will be created as if "imagej menus" was passed as argument.<br>
-	 * Please note that when no arguments are passed, ImageJ's menus will be shown as a unique tree named "Control Panel"; if "imagej menus"<br>
-	 * is part of a multi-token argument, them ImageJ menus will be created as a sub tree called "ImageJ Menus" (what else ? :-)...) and the main
-	 * tree will be called "Control Panel"
-	 *
-	 */
+	/** Creates a panel with the hierarchical tree structure of ImageJ's commands. */
 	public void run(String arg) {
-		currentArg = (arg.length()==0) ? defaultArg : arg;
-		argLength = currentArg.length();
 		load();
 	}
 
@@ -97,71 +73,13 @@ public class ControlPanel implements PlugIn {
 	synchronized void load() {
 		commands = Menus.getCommands();
 		pluginsArray = Menus.getPlugins();
-		root=buildTree(currentArg);
+		root=doRootFromMenus();
 		if (root==null || root.getChildCount()==0 ) return; // do nothing if there's no tree or a root w/o children
 		loadProperties();
 		restoreVisiblePanels();
 		if (panels.isEmpty())
 			newPanel(root);
 	}
-
-	/**Constructs the root TreeNode of the ControlPanel.
-	 * If a non-empty argument is passed, then for each token in the argument this method
-	 * delegates the construction of the TreeNode to the
-	 * <code>doRoot(String)</code> method. Else, this method delegates to the
-	 * <code>doRootFromMenus()</code> method.
-	 * @param arg See {@see run(String)} comments for what arguments are allowed.
-	 * @return a DefaultMutableTreeNode populated according to the argument.
-	 * @see doRoot(String)
-	 */
-	DefaultMutableTreeNode buildTree(String arg) {
-		DefaultMutableTreeNode rootNode = null;
-		if(arg.length()==0) return doRootFromMenus();
-		StringTokenizer argParser = new StringTokenizer(arg,";");
-		int tokens = argParser.countTokens();
-		if (tokens==1)
-			rootNode = doRoot(arg);
-		else {
-			rootNode = new DefaultMutableTreeNode("Control Panel");
-			while(argParser.hasMoreTokens()) {
-				String token = argParser.nextToken();
-				DefaultMutableTreeNode node = doRoot(token);
-				if(node!=null) rootNode.add(node);
-			}
-		}
-		return rootNode;
-	}
-
-	/**Constructs a TreeNode according to the argument.
-	 * The argument has the canonical form described in the {@link run()} method. If the argument
-	 * is <strong><code>null</code></strong> or empty, this method returns a TreeNode with an
-	 * empty string as its user object and without children.<br>
-	 * For the token "imagej menus", this method delegates to the {@link doRootFromMenus()};
-	 * for any other valid token, the method delegates to {@link populateNode(Hashtable, DefaultMutableTreeNode)}.
-	 * @param arg See {@see run(String)} comments for a full description.
-	 * @return a DefaultMutableTreeNode constructed on the String argument as its "user object"
-	 * and populated with children according to the rules stated above.
-	 */
-	private DefaultMutableTreeNode doRoot(String arg) {
-		DefaultMutableTreeNode node = null;
-		if(arg==null || arg.length()==0) node = new DefaultMutableTreeNode("");
-		if(arg.equals("user plugins")) {
-			node = new DefaultMutableTreeNode("User Plugins");
-			if(argLength==0) node.setUserObject("Control Panel");
-			populateNode(pluginsArray,null,node);
-		}
-		if (arg.equals("imagej menus"))
-			node=doRootFromMenus();
-		if (arg.equals("imagej commands")) {
-			node = new DefaultMutableTreeNode("ImageJ Commands");
-			if(argLength==0) node.setUserObject("Control Panel");
-			populateNode(commands,node);
-		}
-		if (arg.equals("about"))
-			showHelp();
-		return node;
-	}
-
 
 	/** Builds up a root tree from ImageJ's menu bar.
 	 * The root tree replicates ImageJ's menu bar with its menus and their submenus.
@@ -403,6 +321,7 @@ public class ControlPanel implements PlugIn {
 	 *
 	 */
 	TreePanel newPanel(String path) {
+		if (path.equals("Control_Panel.@Main")) path = "Control_Panel";
 		path = key2pStr(path);
 		TreePanel pnl = null;
 		for(Enumeration e = root.breadthFirstEnumeration(); e.hasMoreElements();) {
@@ -483,44 +402,43 @@ public class ControlPanel implements PlugIn {
 		visiblePanels.removeAllElements();
 		expandedNodes.removeAllElements();
 		panels.clear();
-		try {
-			if (pcpPropsFile.exists() && pcpPropsFile.canRead()) {
-				pcpProperties.load(new FileInputStream(pcpPropsFile));
-				for (Enumeration e=pcpProperties.keys(); e.hasMoreElements();) {
-					String key = (String)e.nextElement();
-					if (IJ.debugMode) IJ.log("  "+key+"  "+pcpProperties.getProperty(key));
-					if (key.startsWith("Control_Panel")) {
-						String val = pcpProperties.getProperty(key);
-						if (IJ.debugMode) IJ.log("  "+key+": "+val);
-						if (Character.isDigit(val.charAt(0))) // value starts with digit
-							visiblePanels.addElement(key);
-						if (val.equals("expand"))
-							expandedNodes.addElement(key);
-					}
-				}
+		Properties properties = Prefs.getControlPanelProperties();
+		for (Enumeration e=properties.keys(); e.hasMoreElements();) {
+			String key = (String)e.nextElement();
+			if (key.startsWith(".Control_Panel.")) {
+				key = key.substring(1, key.length());
+				String val = Prefs.get(key, null);
+				if (IJ.debugMode) IJ.log("  "+key+": "+val);
+				if (Character.isDigit(val.charAt(0))) // value starts with digit
+					visiblePanels.addElement(key);
+				else if (val.equals("expand"))
+					expandedNodes.addElement(key);
 			}
-		} catch (Exception e) {}
+		}
 	}
 
 	void saveProperties() {
 		if (IJ.debugMode) IJ.log("CP.saveProperties: "+propertiesChanged);
 		if (propertiesChanged) {
-			pcpProperties.clear();
+			clearProperties();
 			for (Enumeration e=visiblePanels.elements(); e.hasMoreElements();) {
 				String s = (String)e.nextElement();
 				TreePanel p = (TreePanel)panels.get(s);
 				if (p!=null) recordGeometry(p);
 			}
-			for(Enumeration e=expandedNodes.elements(); e.hasMoreElements();) {
-				pcpProperties.setProperty((String)e.nextElement(),"expand");
-			}
-			try {
-				if (pcpPropsFile.exists() && !pcpPropsFile.canWrite()) return;
-				pcpProperties.store(new FileOutputStream(pcpPropsFile),"Plugins Control Panel properties");
-			}
-			catch (Exception e) {}
+			for(Enumeration e=expandedNodes.elements(); e.hasMoreElements();)
+				Prefs.set((String)e.nextElement(),"expand");
 		}
 		propertiesChanged=false;
+	}
+	
+	void clearProperties() {
+		Properties properties = Prefs.getControlPanelProperties();
+		for (Enumeration e=properties.keys(); e.hasMoreElements();) {
+			String key = (String)e.nextElement();
+			if (key.startsWith(".Control_Panel."))
+				properties.remove(key);
+		}
 	}
 
 	void setExpandedStateProperty(String item) {
@@ -573,7 +491,6 @@ public class ControlPanel implements PlugIn {
 	}
 
 	void recordGeometry(TreePanel panel) {
-		if (IJ.debugMode) IJ.log("CP.recordGeometry");
 		String pTitle = panel.getRootPath().toString();
 		pTitle = pStr2Key(pTitle);
 		JFrame frame = panel.getFrame();
@@ -583,27 +500,27 @@ public class ControlPanel implements PlugIn {
 			String yCoord = (new Integer(rect.y)).toString();
 			String width = (new Integer(rect.width)).toString();
 			String height = (new Integer(rect.height)).toString();
+			if (pTitle.equals("Control_Panel")) pTitle = "Control_Panel.@Main";
 			String geometry = xCoord+" "+yCoord+" "+width+" "+height;
-			pcpProperties.setProperty(pTitle, geometry);
-				if (IJ.debugMode) IJ.log("  "+pTitle+"  "+geometry);
+			if (IJ.debugMode) IJ.log("CP.recordGeometry: "+pTitle+" "+geometry);
+			Prefs.set(pTitle, geometry);
 		}
 	}
 
 	void restoreGeometry(TreePanel panel) {
-		if (IJ.debugMode) IJ.log("CP.restoreGeometry");
-		if (!pcpProperties.isEmpty()) {
-			String pTitle = panel.getRootPath().toString();
-			pTitle = pStr2Key(pTitle);
-			if (pcpProperties.containsKey(pTitle)) {
-				String geom = pcpProperties.getProperty(pTitle);
-				int[] coords = s2ints(geom);
-				if (coords!=null && coords.length==4)
-					panel.setBounds(coords[0],coords[1],coords[2],coords[3]);
-				else {
-					Point pnt = panel.getDefaultLocation();
-					if (pnt!=null)
-						panel.getFrame().setLocation((int)pnt.getX(),(int)pnt.getY());
-				}
+		String pTitle = panel.getRootPath().toString();
+		pTitle = pStr2Key(pTitle);
+		if (pTitle.equals("Control_Panel")) pTitle = "Control_Panel.@Main";
+		if (IJ.debugMode) IJ.log("CP.restoreGeometry: "+pTitle);
+		String geom = Prefs.get(pTitle, null);
+		if (geom!=null) {
+			int[] coords = s2ints(geom);
+			if (coords!=null && coords.length==4)
+				panel.setBounds(coords[0],coords[1],coords[2],coords[3]);
+			else {
+				Point pnt = panel.getDefaultLocation();
+				if (pnt!=null)
+					panel.getFrame().setLocation((int)pnt.getX(),(int)pnt.getY());
 			}
 		}
 	}
@@ -667,8 +584,7 @@ public class ControlPanel implements PlugIn {
 			keyword = keyword.substring(0,keyword.lastIndexOf("]"));
 		StringTokenizer st = new StringTokenizer(keyword,",");
 		String result = "";
-		while(st.hasMoreTokens())
-		{
+		while(st.hasMoreTokens()) {
 			String token  = st.nextToken();
 			if(token.startsWith(" ")) token = token.substring(1,token.length()); // remove leading space
 			result+=token+".";

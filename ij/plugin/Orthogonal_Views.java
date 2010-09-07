@@ -74,6 +74,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
 		}
+		if (imp.isComposite() || imp.isHyperStack()) {
+			IJ.error("Othogonal Views", "This command does not work with hyperstacks. Try\nconverting to an RGB stack using Image>Type>RGB Color.");
+			return;
+		}
 		if (instance!=null && imp==instance.imp)
 			return;
 		yz_image = WindowManager.getImage(yzID);

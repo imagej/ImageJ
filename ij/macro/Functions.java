@@ -4349,7 +4349,7 @@ public class Functions implements MacroConstants, Measurements {
 			arg = getStringArg().toLowerCase(Locale.US);
 		else
 			interp.getParens();
-		if (interp.editor==null && !arg.equals("throw")) {
+		if (interp.editor==null && !(arg.equals("throw")||arg.equals("dump"))) {
 			Editor ed = Editor.getInstance();
 			if (ed==null)
 				interp.error("Macro editor not available");
@@ -4364,10 +4364,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.setDebugMode(Interpreter.TRACE);
 		else if (arg.indexOf("fast")!=-1)
 			interp.setDebugMode(Interpreter.FAST_TRACE);
+		else if (arg.equals("dump"))
+			interp.dump();
 		else if (arg.indexOf("throw")!=-1)
 			throw new IllegalArgumentException();
 		else
-			interp.error("Argument must be 'run', 'break', 'trace' or 'fast-trace'");
+			interp.error("Argument must be 'run', 'break', 'trace', 'fast-trace' or 'dump'");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		return null;
 	}
