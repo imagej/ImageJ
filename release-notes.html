@@ -11,6 +11,7 @@
 <li> The Control Panel no longer creates a "PCPanel2.ini" file in the user's home directory.
 <li> Thanks to Barry DeZonia, fixed a bug that caused <i>Process&gt;Smooth</i> to not round
 results with 8-bit images.
+<li> Added the debug("dump") macro function.
 <li> Fixed a bug that sometimes caused passing of choices in macro run() calls to fail when
 "item=&varname" notation was used.
 <li> Fixed a bug that caused virtual stacks backed by a folder containing a script to not open correctly.
@@ -18,10 +19,12 @@ results with 8-bit images.
 to be incorrect when a folder is dragged and dropped.
 <li> Barry DeZonia fixed a bug that sometimes caused division of 16-bit images to fail.
 <li> Fixed a bug that caused an exception to be thrown when opening LZW compressed 32-bit float TIFFs.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the macro debugger to sometimes fail to work
-with macro code pasted into the editor.
-<li> Thanks to Barry DeZonia, fixed a bug that caused the ImageProcess.convolve3x3() method to
-not correctly handle edge pixels of 8-bit and RGB images images.
+<li> Fixed a bug that caused the macro debugger to sometimes fail to work
+with macro code pasted into the editor on Mac OS X.
+<li> Thanks to Barry DeZonia, fixed a bug that caused the ImageProcess.convolve3x3() method (used by
+<i>Process&gt;Sharpen</i>) to not correctly handle edge pixels of 8-bit and RGB images images.
+<li> Yvon Grimper fixed a bug in the MaximumFinder.findMaxima() method that caused it to fail when
+called with outputType List or Count.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
