@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.44g, 7 September 2010</u>
+<li> <u>1.44g, 10 September 2010</u>
 <ul>
 <li> The getInfo() macro function can now retrieve Bio-Formats metadata values.
 <li> The Control Panel no longer creates a "PCPanel2.ini" file in the user's home directory.
+<li> ImageJ can now open zip archive containing multiple DICOM images using a URL.
 <li> Thanks to Barry DeZonia, fixed a bug that caused <i>Process&gt;Smooth</i> to not round
 results with 8-bit images.
 <li> Added the debug("dump") macro function.
@@ -25,6 +26,8 @@ with macro code pasted into the editor on Mac OS X.
 <i>Process&gt;Sharpen</i>) to not correctly handle edge pixels of 8-bit and RGB images images.
 <li> Yvon Grimper fixed a bug in the MaximumFinder.findMaxima() method that caused it to fail when
 called with outputType List or Count.
+<li> Andreas Maier fixed an edge handling bug in ImageProcessor.getInterpolatedValue(), which is
+used by <i>Analyze&gt;Plot Profile</i>.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

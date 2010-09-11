@@ -426,25 +426,65 @@ public class Opener {
 	/** Opens the ZIP compressed TIFF or DICOM at the specified URL. */
 	ImagePlus openZipUsingUrl(URL url) throws IOException {
 		URLConnection uc = url.openConnection();
-		int fileSize = uc.getContentLength(); // compressed size
-		fileSize *=2; // estimate uncompressed size
 		InputStream in = uc.getInputStream();
-		ZipInputStream zin = new ZipInputStream(in);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte[] buf = new byte[4096];
-		ZipEntry entry = zin.getNextEntry();
-		if (entry==null)
-			return null;
+		ZipInputStream zis = new ZipInputStream(in);
+		ZipEntry entry = zis.getNextEntry();
+		if (entry==null) return null;
 		String name = entry.getName();
-		//double fileSize = entry.getSize(); //returns -1
 		if (!(name.endsWith(".tif")||name.endsWith(".dcm")))
-			throw new IOException("This ZIP archive does not appear to contain a .tif or .dcm file");
-		if (name.endsWith(".dcm")) {
-			DICOM dcm = new DICOM(zin);
-			dcm.run(name);
-			return dcm;
-		} else
-			return openTiff(zin, name);
+			throw new IOException("This ZIP archive does not appear to contain a .tif or .dcm file\n"+name);
+		if (name.endsWith(".dcm"))
+			return openDicomStack(zis, entry);
+		else
+			return openTiff(zis, name);
+	}
+	
+	ImagePlus openDicomStack(ZipInputStream zis, ZipEntry entry) throws IOException {
+		ImagePlus imp = null;
+		int count = 0;
+		ImageStack stack = null;
+		while (true) {
+			if (count>0) entry = zis.getNextEntry();
+			if (entry==null) break;
+			String name = entry.getName();
+			ImagePlus imp2 = null;
+			if (name.endsWith(".dcm")) {
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				byte[] buf = new byte[4096];
+				int len, byteCount=0, progress=0;
+				while (true) {
+					len = zis.read(buf);
+					if (len<0) break;
+					out.write(buf, 0, len);
+					byteCount += len;
+					//IJ.showProgress((double)(byteCount%fileSize)/fileSize);
+				}
+				byte[] bytes = out.toByteArray();
+				out.close();
+				DICOM dcm = new DICOM(new ByteArrayInputStream(bytes));
+				dcm.run(name);
+				imp2 = dcm;
+			}
+			zis.closeEntry();
+			if (imp2==null) continue;
+			count++;
+			String label = imp2.getTitle();
+			String info = (String)imp2.getProperty("Info");
+			if (info!=null) label += "\n" + info;
+			if (count==1) {
+				imp = imp2;
+				imp.getStack().setSliceLabel(label, 1);
+			} else {
+				stack = imp.getStack();
+				stack.addSlice(label, imp2.getProcessor());
+				imp.setStack(stack);
+			}
+		}
+		zis.close();
+		IJ.showProgress(1.0);
+		if (count==0)
+			throw new IOException("This ZIP archive does not appear to contain any .dcm files");
+		return imp;
 	}
 
 	ImagePlus openJpegOrGifUsingURL(String title, URL url) {
@@ -737,24 +777,24 @@ public class Opener {
 	public ImagePlus openZip(String path) {
 		ImagePlus imp = null;
 		try {
-			ZipInputStream in = new ZipInputStream(new FileInputStream(path));
-			if (in==null) return null;
-			ZipEntry entry = in.getNextEntry();
+			ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
+			if (zis==null) return null;
+			ZipEntry entry = zis.getNextEntry();
 			if (entry==null) return null;
 			String name = entry.getName();
 			if (name.endsWith(".roi")) {
-				in.close();
+				zis.close();
 				IJ.runMacro("roiManager(\"Open\", getArgument());", path);
 				return null;
 			}
 			if (name.endsWith(".tif")) {
-				imp = openTiff(in, name);
+				imp = openTiff(zis, name);
 			} else if (name.endsWith(".dcm")) {
-				DICOM dcm = new DICOM(in);
+				DICOM dcm = new DICOM(zis);
 				dcm.run(name);
 				imp = dcm;
 			} else {
-				in.close();
+				zis.close();
 				IJ.error("This ZIP archive does not appear to contain a \nTIFF (\".tif\") or DICOM (\".dcm\") file, or ROIs (\".roi\").");
 				return null;
 			}
