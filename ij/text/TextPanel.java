@@ -256,10 +256,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	synchronized void adjustHScroll() {
-		if(iRowHeight==0) return;
+		if (iRowHeight==0) return;
 		Dimension d = tc.getSize();
 		int w=0;
-		for(int i=0;i<iColCount;i++)
+		for (int i=0; i<iColCount; i++)
 			w+=iColWidth[i];
 		iGridWidth=w;
 		sbHoriz.setValues(iX,d.width,0,iGridWidth);
@@ -371,15 +371,31 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 	}
 
+	private void scroll(int value) {
+		synchronized(this) {
+			sbVert.setValue(sbVert.getValue()+value);
+			iY=iRowHeight*sbVert.getValue();
+			tc.repaint();
+		}
+	}
+
 	/** Unused keyPressed and keyTyped events will be passed to 'listener'.*/
 	public void addKeyListener(KeyListener listener) {
 		keyListener = listener;
 	}
 	
+	public void addMouseListener(MouseListener listener) {
+		tc.addMouseListener(listener);
+	}
+
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
 		if (key==KeyEvent.VK_BACK_SPACE)
 			clearSelection();
+		else if (key==KeyEvent.VK_UP)
+			scroll(-1);
+		else if (key==KeyEvent.VK_DOWN)
+			scroll(1);
 		else if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
 		
@@ -672,7 +688,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			tc.repaint();
 	}
 	
-	/** Creates a selection. */
+	/** Creates a selection and insures that it is visible. */
 	public void setSelection (int startLine, int endLine) {
 		if (startLine>endLine) endLine = startLine;
 		if (startLine<0) startLine = 0;
@@ -682,8 +698,22 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		selOrigin = startLine;
 		selStart = startLine;
 		selEnd = endLine;
+		int vstart = sbVert.getValue();
+		int visible = sbVert.getVisibleAmount()-1;
+		if (startLine<vstart) {
+			sbVert.setValue(startLine);
+			iY=iRowHeight*startLine;
+		} else if (endLine>=vstart+visible) {
+			vstart = endLine - visible + 1;
+			if (vstart<0) vstart = 0;
+			sbVert.setValue(vstart);
+			iY=iRowHeight*vstart;
+		}
 		tc.repaint();
+		//IJ.log("setSelection: "+startLine+"  "+sbVert.getValue()+"  "+sbVert.getVisibleAmount());
 	}
+	
+	
 
 	/** Writes all the text in this TextPanel to a file. */
 	public void save(PrintWriter pw) {

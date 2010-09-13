@@ -5,14 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.44g, 10 September 2010</u>
+<li> <u>1.44g, 12 September 2010</u>
 <ul>
 <li> The getInfo() macro function can now retrieve Bio-Formats metadata values.
 <li> The Control Panel no longer creates a "PCPanel2.ini" file in the user's home directory.
-<li> ImageJ can now open zip archive containing multiple DICOM images using a URL.
+<li> ImageJ can now open zip archives, using a URL, that contain multiple DICOM images.
+<li> The arrow keys can now be used to vertically scroll the Results window.
+<li> Added the debug("dump") macro function.
+<li> The TextPanel.setSelection() method now insures that the selection is visible.
+<li> Added the TextPanel.addMouseListener() method.
 <li> Thanks to Barry DeZonia, fixed a bug that caused <i>Process&gt;Smooth</i> to not round
 results with 8-bit images.
-<li> Added the debug("dump") macro function.
 <li> Fixed a bug that sometimes caused passing of choices in macro run() calls to fail when
 "item=&varname" notation was used.
 <li> Fixed a bug that caused virtual stacks backed by a folder containing a script to not open correctly.
