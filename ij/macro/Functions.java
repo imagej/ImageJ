@@ -3609,7 +3609,10 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().changes;
 		else if (arg.indexOf("binary")!=-1)
 			state = getProcessor().isBinary();
-		else
+		else if (arg.indexOf("animated")!=-1) {
+			ImageWindow win = getImage().getWindow();
+			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();
+		} else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;
 	}

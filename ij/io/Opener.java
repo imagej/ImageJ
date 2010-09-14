@@ -231,7 +231,7 @@ public class Opener {
 	public ImagePlus openImage(String directory, String name) {
 		ImagePlus imp;
 		FileOpener.setSilentMode(silentMode);
-		if (directory.length()>0 && !directory.endsWith(Prefs.separator))
+		if (directory.length()>0 && !(directory.endsWith("/")||directory.endsWith("\\")))
 			directory += Prefs.separator;
 		String path = directory+name;
 		fileType = getFileType(path);
@@ -576,13 +576,13 @@ public class Opener {
 	boolean allSameSizeAndType(FileInfo[] info) {
 		boolean sameSizeAndType = true;
 		boolean contiguous = true;
-		int startingOffset = info[0].offset;
+		long startingOffset = info[0].getOffset();
 		int size = info[0].width*info[0].height*info[0].getBytesPerPixel();
 		for (int i=1; i<info.length; i++) {
 			sameSizeAndType &= info[i].fileType==info[0].fileType
 				&& info[i].width==info[0].width
 				&& info[i].height==info[0].height;
-			contiguous &= info[i].offset==startingOffset+i*size;
+			contiguous &= info[i].getOffset()==startingOffset+i*size;
 		}
 		if (contiguous &&  info[0].fileType!=FileInfo.RGB48)
 			info[0].nImages = info.length;

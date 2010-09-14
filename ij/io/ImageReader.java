@@ -65,8 +65,8 @@ public class ImageReader {
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[i]);
 			else if (i > 0) {
-				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
-				if (skip > 0) in.skip(skip);
+				long skip = (fi.stripOffsets[i]&0xffffffffL) - (fi.stripOffsets[i-1]&0xffffffffL) - fi.stripLengths[i-1];
+				if (skip > 0L) in.skip(skip);
 			}
 			byte[] byteArray = new byte[fi.stripLengths[i]];
 			int read = 0, left = byteArray.length;
@@ -153,8 +153,8 @@ public class ImageReader {
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
-				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
-				if (skip > 0) in.skip(skip);
+				long skip = (fi.stripOffsets[k]&0xffffffffL) - (fi.stripOffsets[k-1]&0xffffffffL) - fi.stripLengths[k-1];
+				if (skip > 0L) in.skip(skip);
 			}
 			byte[] byteArray = new byte[fi.stripLengths[k]];
 			int read = 0, left = byteArray.length;
@@ -263,8 +263,8 @@ public class ImageReader {
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
-				int skip = fi.stripOffsets[k] - fi.stripOffsets[k-1] - fi.stripLengths[k-1];
-				if (skip > 0) in.skip(skip);
+				long skip = (fi.stripOffsets[k]&0xffffffffL) - (fi.stripOffsets[k-1]&0xffffffffL) - fi.stripLengths[k-1];
+				if (skip > 0L) in.skip(skip);
 			}
 			byte[] byteArray = new byte[fi.stripLengths[k]];
 			int read = 0, left = byteArray.length;
@@ -426,8 +426,8 @@ public class ImageReader {
 		boolean differencing = fi.compression == FileInfo.LZW_WITH_DIFFERENCING;
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (i > 0) {
-				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
-				if (skip > 0) in.skip(skip);
+				long skip = (fi.stripOffsets[i]&0xffffffffL) - (fi.stripOffsets[i-1]&0xffffffffL) - fi.stripLengths[i-1];
+				if (skip > 0L) in.skip(skip);
 			}
 			byte[] byteArray = new byte[fi.stripLengths[i]];
 			int read = 0, left = byteArray.length;
@@ -552,8 +552,8 @@ public class ImageReader {
 		}
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (i>0) {
-				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
-				if (skip>0) dis.skip(skip);
+				long skip = (fi.stripOffsets[i]&0xffffffffL) - (fi.stripOffsets[i-1]&0xffffffffL) - fi.stripLengths[i-1];
+				if (skip>0L) dis.skip(skip);
 			}
 			int len = fi.stripLengths[i];
 			int bytesToGo = (nPixels-pixel)*channels*2;
@@ -593,8 +593,8 @@ public class ImageReader {
 		int min=65535, max=0;
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (i>0) {
-				int skip = fi.stripOffsets[i] - fi.stripOffsets[i-1] - fi.stripLengths[i-1];
-				if (skip>0) dis.skip(skip);
+				long skip = (fi.stripOffsets[i]&0xffffffffL) - (fi.stripOffsets[i-1]&0xffffffffL) - fi.stripLengths[i-1];
+				if (skip>0L) dis.skip(skip);
 			}
 			int len = fi.stripLengths[i];
 			byte[] buffer = new byte[len];

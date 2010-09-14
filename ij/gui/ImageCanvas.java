@@ -251,7 +251,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public boolean stackLabels(Overlay o) {
 		Roi roi0 = o.get(0);
 		boolean labels = (roi0 instanceof TextRoi) && (o.get(o.size()-1) instanceof TextRoi);
-		String text = ((TextRoi)roi0).getText();
+		String text = null;
+		try {text = ((TextRoi)roi0).getText();} catch(Exception e) {return false;}
 		return labels && text.length()>0 && (Character.isDigit(text.charAt(0))||text.charAt(0)==' ');
 	}
 	

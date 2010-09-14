@@ -130,7 +130,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public ImageProcessor getProcessor(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (IJ.debugMode) IJ.log("FileInfoVirtualStack.getProcessor: "+n);
+		if (IJ.debugMode) IJ.log("FileInfoVirtualStack: "+n+", "+info[n-1].getOffset());
+		//if (n>1) IJ.log("  "+(info[n-1].getOffset()-info[n-2].getOffset()));
 		info[n-1].nImages = 1; // why is this needed?
 		FileOpener fo = new FileOpener(info[n-1]);
 		ImagePlus imp = fo.open(false);

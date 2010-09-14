@@ -357,6 +357,8 @@ public class TiffDecoder {
 		if (nEntries<1 || nEntries>1000)
 			return null;
 		ifdCount++;
+		if ((ifdCount%100)==0 && ifdCount>0)
+			ij.IJ.showStatus(""+ifdCount);
 		FileInfo fi = new FileInfo();
 		for (int i=0; i<nEntries; i++) {
 			tag = getShort();

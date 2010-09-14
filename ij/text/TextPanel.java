@@ -371,9 +371,9 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 	}
 
-	private void scroll(int value) {
+	private void scroll(int inc) {
 		synchronized(this) {
-			sbVert.setValue(sbVert.getValue()+value);
+			sbVert.setValue(sbVert.getValue()+inc);
 			iY=iRowHeight*sbVert.getValue();
 			tc.repaint();
 		}
@@ -710,7 +710,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			iY=iRowHeight*vstart;
 		}
 		tc.repaint();
-		//IJ.log("setSelection: "+startLine+"  "+sbVert.getValue()+"  "+sbVert.getVisibleAmount());
 	}
 	
 	
