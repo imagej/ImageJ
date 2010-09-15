@@ -513,29 +513,29 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	void dispose(){
 		updater.quit();
 		updater = null;
+		imp.setOverlay(null);
 		canvas.removeMouseListener(this);
 		canvas.removeMouseMotionListener(this);
 		canvas.removeKeyListener(this);
-		canvas.setDisplayList(null);
 		canvas.setCustomRoi(false);
+		xz_image.setOverlay(null);
 		ImageWindow win1 = xz_image.getWindow();
 		if (win1!=null) {
 			win1.removeMouseWheelListener(this);
 			ImageCanvas ic = win1.getCanvas();
 			if (ic!=null) {
-				ic.setDisplayList(null);
 				ic.removeKeyListener(this);
 				ic.removeMouseListener(this);
 				ic.removeMouseMotionListener(this);
 				ic.setCustomRoi(false);
 			}
 		}
+		yz_image.setOverlay(null);
 		ImageWindow win2 = yz_image.getWindow();
 		if (win2!=null) {
 			win2.removeMouseWheelListener(this);
 			ImageCanvas ic = win2.getCanvas();
 			if (ic!=null) {
-				ic.setDisplayList(null);
 				ic.removeKeyListener(this);
 				ic.removeMouseListener(this);
 				ic.removeMouseMotionListener(this);
@@ -619,7 +619,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		updateViews(p, is);
 		GeneralPath path = new GeneralPath();
 		drawCross(imp, p, path);
-		canvas.setDisplayList(path, color, new BasicStroke(1));
+		imp.setOverlay(path, color, new BasicStroke(1));
 		canvas.setCustomRoi(true);
 		updateCrosses(p.x, p.y, arat, brat);
 		if (syncZoom) updateMagnification(p.x, p.y);
@@ -633,12 +633,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		int zcoord=(int)Math.round(arat*zlice);
 		if (flipXZ) zcoord=(int)Math.round(arat*(z-zlice));
 		p=new Point (x, zcoord);
-		ImageCanvas xz_canvas=xz_image.getCanvas();
-		if (xz_canvas!=null) {
-			GeneralPath path = new GeneralPath();
-			drawCross(xz_image, p, path);
-			xz_canvas.setDisplayList(path, color, new BasicStroke(1));
-		}
+		GeneralPath path = new GeneralPath();
+		drawCross(xz_image, p, path);
+		xz_image.setOverlay(path, color, new BasicStroke(1));
 		if (rotateYZ) {
 			if (flipXZ)
 				zcoord=(int)Math.round(brat*(z-zlice));
@@ -649,12 +646,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			zcoord=(int)Math.round(arat*zlice);
 			p=new Point (zcoord, y);
 		}
-		ImageCanvas yz_canvas=yz_image.getCanvas();
-		if (yz_canvas!=null) {
-			GeneralPath path = new GeneralPath();
-			drawCross(yz_image, p, path);
-			yz_canvas.setDisplayList(path, color, new BasicStroke(1));
-		}
+		path = new GeneralPath();
+		drawCross(yz_image, p, path);
+		yz_image.setOverlay(path, color, new BasicStroke(1));
 		IJ.showStatus(imp.getLocationAsString(crossLoc.x, crossLoc.y));
 	}
 
