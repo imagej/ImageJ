@@ -24,7 +24,22 @@ public class Overlay {
     public void add(Roi roi) {
     	list.add(roi);
     }
+    
+    /* Adds a Shape to this Overlay. */
+    //public void add(Shape shape, Color color, BasicStroke stroke) {
+	//	Roi roi = new ShapeRoi(shape);
+	//	roi.setStrokeColor(color);
+	//	roi.setStroke(stroke);
+    //	list.add(roi);
+    //}
 
+    /* Adds a String to this Overlay. */
+    //public void add(String text, int x, int y, Color color, Font font) {
+	//	TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
+	//	roi.setStrokeColor(color);
+	//	list.add(roi);
+    //}
+    
     /** Adds an Roi to this Overlay. */
     public void addElement(Roi roi) {
     	list.add(roi);
