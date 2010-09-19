@@ -1351,7 +1351,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}
 
-	public void hide() {
+	public void temporarilyHide() {
 		hide = true;
 	}
 

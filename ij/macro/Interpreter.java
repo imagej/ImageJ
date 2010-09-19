@@ -1703,6 +1703,8 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	public void setEditor(Editor ed) {
+		if (ed!=null&&editor==null)
+			ed.fixLineEndings();
 		editor = ed;
 		if (ed!=null)
 			debugMode = STEP;

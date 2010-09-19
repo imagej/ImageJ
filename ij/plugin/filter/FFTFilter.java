@@ -9,7 +9,7 @@ import java.util.*;
 
 /** 
 This class implements the Process/FFT/Bandpass Filter command. It is based on 
-Joachim Walter's FFT Filter plugin at "http://rsb.info.nih.gov/ij/plugins/fft-filter.html".
+Joachim Walter's FFT Filter plugin at "http://imagej.nih.gov/ij/plugins/fft-filter.html".
 2001/10/29: First Version (JW)
 2003/02/06: 1st bugfix (works in macros/plugins, works on stacks, overwrites image(=>filter)) (JW)
 2003/07/03: integrated into ImageJ, added "Display Filter" option (WSR)

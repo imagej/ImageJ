@@ -10,8 +10,8 @@ import ij.macro.Interpreter;
 /** This plugin implements the Process/Image Calculator command.
 <pre>
    // test script
-   imp1 = IJ.openImage("http://rsb.info.nih.gov/ij/images/boats.gif")
-   imp2 = IJ.openImage("http://rsb.info.nih.gov/ij/images/bridge.gif")
+   imp1 = IJ.openImage("http://imagej.nih.gov/ij/images/boats.gif")
+   imp2 = IJ.openImage("http://imagej.nih.gov/ij/images/bridge.gif")
    ic = new ImageCalculator()
    imp3 = ic.run("Average create", imp1, imp2)
    imp3.show()

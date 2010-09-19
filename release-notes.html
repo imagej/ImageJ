@@ -5,40 +5,35 @@
 </head>
 <body>
 
-<li> <u>1.44f, 22 August 2010</u>
+<li> <u>1.44g, 18 September 2010</u>
 <ul>
-<li> Added the <i>Image&gt;Stacks&gt;Tools&gt;Grouped Z Project</i> command.
-<li> Thanks to Michael Schmid,
-<i>Image&gt;Adjust&gt;Size</i> and <i>Image&gt;Scale</i>
-now have "Average when downsizing" options.
-<i>Image&gt;Adjust&gt;Size</i> now supports Undo.
-<li> Thanks to Michael Doube, the Ortho Viewer (<i>Image&gt;Stacks&gt;Orthogonal Views</i>)
-can be controled by clicking and dragging in the XZ and YZ views and
-the mouse wheel changes the screen plane in all three views..
-<li> <i>Image&gt;Stacks&gt;Z Project</i> now works with RGB hyperstacks.
-<li> The headers are now saved when saving a DICOM virtual stack in TIFF format.
-<li> Thanks to Mark Longair, IJ.getScreenSize() now returns the correct 
-size when the screen size is changed after ImageJ has started.
-<li> The perimeter of a composite selection is now calculated by decomposing it into
-individual selections. The composite perimeter and the sum of the
-individual perimeters may be different due to use of different calculation methods.
-<li> Thanks to Michael Doube, added getInstance(), getCrossLoc() and setCrossLoc() methods to the Orthogonal_Views class
-(<a href="http://rsbweb.nih.gov/ij/macros/js/OrthoViewsDemo.js">example</a>).
-<li> SetStack() calls no longer cause a new ImageWindow
-to be constructed when adding a slice to a single image or subtracting a slice
-from a two slice stack. 
-<li> Opened macro sets with two or more macros are installed in the
-<i>Plugins&gt;Macros</i> submenu.
-<li> Added the getInterpolationMethod() and resize(int,int,boolean) methods
-to the ImageProcessor class.
-<li> Fixed a regression than caused the particle analyzer to fail with stacks
-when "Display labels" was enabled in <i>Analyze&gt;Set Measurements</i>.
-<li> Fixed bugs in <i>Image&gt;Stacks&gt;Orthogonal Views</i> that caused it
-to not work correctly with anisotropic voxels.
-<li> Fixed a bug that caused <i>Edit&gt;Selection&gt;Rotate</i> to fail with
-wide lines.
+<li> The getInfo() macro function can now retrieve Bio-Formats metadata values.
+<li> The Control Panel no longer creates a "PCPanel2.ini" file in the user's home directory.
+<li> ImageJ can now open zip archives, using a URL, that contain multiple DICOM images.
+<li> The arrow keys can now be used to vertically scroll the Results window.
+<li> Added the selectionContains(x,y), is("animated") and debug("dump") macro functions.
+<li> The TextPanel.setSelection() method now insures that the selection is visible.
+<li> Added the TextPanel.addMouseListener() method.
+<li> Thanks to Barry DeZonia, fixed a bug that caused <i>Process&gt;Smooth</i> to not round
+results with 8-bit images.
+<li> Fixed a bug that sometimes caused passing of choices in macro run() calls to fail when
+"item=&varname" notation was used.
+<li> Fixed a bug that caused virtual stacks backed by a folder containing a script to not open correctly.
+<li> Fixed a bug that sometimes caused the image count displayed in the dialog box 
+to be incorrect when a folder is dragged and dropped.
+<li> Barry DeZonia fixed a bug that sometimes caused division of 16-bit images to fail
+and a bug that could result in Windows directory paths ending in "/\\".
+<li> Fixed a bug that caused an exception to be thrown when opening LZW compressed 32-bit float TIFFs.
+<li> Fixed a bug that caused the macro debugger to sometimes fail to work
+with macro code pasted into the editor on Mac OS X.
+<li> Thanks to Barry DeZonia, fixed a bug that caused the ImageProcess.convolve3x3() method (used by
+<i>Process&gt;Sharpen</i>) to not correctly handle edge pixels of 8-bit and RGB images images.
+<li> Tseng Qingzong fixed a bug in the MaximumFinder.findMaxima() method that caused it to fail when
+called with outputType List or Count.
+<li> Andreas Maier fixed an edge handling bug in ImageProcessor.getInterpolatedValue(), which is
+used by <i>Analyze&gt;Plot Profile</i>.
 </ul> 
 
-<a href="http://rsb.info.nih.gov/ij">Home</a>
+<a href="http://imagej.nih.gov/ij">Home</a>
 </body>
 </html>

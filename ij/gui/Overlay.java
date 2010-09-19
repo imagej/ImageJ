@@ -24,7 +24,22 @@ public class Overlay {
     public void add(Roi roi) {
     	list.add(roi);
     }
+    
+    /* Adds a Shape to this Overlay. */
+    //public void add(Shape shape, Color color, BasicStroke stroke) {
+	//	Roi roi = new ShapeRoi(shape);
+	//	roi.setStrokeColor(color);
+	//	roi.setStroke(stroke);
+    //	list.add(roi);
+    //}
 
+    /* Adds a String to this Overlay. */
+    //public void add(String text, int x, int y, Color color, Font font) {
+	//	TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
+	//	roi.setStrokeColor(color);
+	//	list.add(roi);
+    //}
+    
     /** Adds an Roi to this Overlay. */
     public void addElement(Roi roi) {
     	list.add(roi);
@@ -91,12 +106,12 @@ public class Overlay {
     	label = b;
     }
     
-    public void hide(int index1, int index2) {
+    public void  temporarilyHide(int index1, int index2) {
     	int n = list.size();
     	if (index1<0 || index2>=n || index2<index1)
     		return;
     	for (int i=index1; i<=index2; i++)
-    		get(i).hide();
+    		get(i).temporarilyHide();
     }
 
     boolean getDrawLabels() {return label;}

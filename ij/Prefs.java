@@ -555,8 +555,10 @@ public class Prefs {
 	public static int getTransparentIndex() {
 		return transparentIndex;
 	}
-
-
+	
+	public static Properties getControlPanelProperties() {
+		return ijPrefs;
+	}
 
 }
 

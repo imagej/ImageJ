@@ -214,6 +214,7 @@ public class Functions implements MacroConstants, Measurements {
 			case GET_STRING_WIDTH: value = getStringWidth(); break;
 			case FIT: value = fit(); break;
 			case OVERLAY: value = overlay(); break;
+			case SELECTION_CONTAINS: value = selectionContains(); break;
 			default:
 				interp.error("Numeric function expected");
 		}
@@ -1321,9 +1322,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	String getInfo(String key) {
-			if (key.length()==9 && key.charAt(4)==',')
+			int len = key.length();
+			if (len==9 && key.charAt(4)==',')
 				return getDicomTag(key);
-			else if (key.equals("micrometer.abbreviation"))
+			else if (key.equals("overlay")) {
+				Overlay overlay = getImage().getOverlay();
+				if (overlay==null)
+					return "";
+				else
+					return overlay.toString();
+			} else if (key.indexOf(".")==-1) {
+				String value = getMetadataValue(key);
+				if (value!=null) return value;
+			} else if (key.equals("micrometer.abbreviation"))
 				return "\u00B5m";
 			else if (key.equals("image.subtitle")) {
 				ImagePlus imp = getImage();
@@ -1362,39 +1373,61 @@ public class Functions implements MacroConstants, Measurements {
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
-			} else if (key.equals("overlay")) {
-				Overlay overlay = getImage().getOverlay();
-				if (overlay==null)
-					return "";
-				else
-					return overlay.toString();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
 				catch (Exception e) {};
 				return value!=null?value:"";
 			}
+			return "";
+	}
+	
+	String getMetadataValue(String key) {
+		String metadata = getMetadataAsString();
+		if (metadata==null) return null;
+		int index1 = metadata.indexOf(key+" =");
+		if (index1!=-1)
+			index1 += key.length() + 2;
+		else {
+			index1 = metadata.indexOf(key+":");
+			if (index1!=-1)
+				index1 += key.length() + 1;
+			else
+				return null;
+		}
+		int index2 = metadata.indexOf("\n", index1);
+		if (index2==-1) return null;
+		String value = metadata.substring(index1+1, index2);
+		if (value.startsWith(" ")) value = value.substring(1, value.length());
+		return value;
 	}
 	
 	String getDicomTag(String tag) {
-		ImagePlus imp = getImage();
-		String metadata = null;
-		if (imp.getStackSize()==1) {
-			metadata = (String)imp.getProperty("Label");
-			if (metadata==null)
-				metadata = (String)imp.getProperty("Info");
-		} else 
-			metadata = imp.getStack().getSliceLabel(imp.getCurrentSlice());
+		String metadata = getMetadataAsString();
 		if (metadata==null) return "";
 		int index1 = metadata.indexOf(tag);
 		if (index1==-1) return "";
 		index1 = metadata.indexOf(":", index1);
 		if (index1==-1) return "";
 		int index2 = metadata.indexOf("\n", index1);
+		if (index2==-1) return "";
 		String value = metadata.substring(index1+1, index2);
 		return value;
 	}
 	
+	String getMetadataAsString() {
+		ImagePlus imp = getImage();
+		String metadata = null;
+		if (imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0) metadata = label;
+		}
+		if (metadata==null)
+			metadata = (String)imp.getProperty("Info");
+		return metadata;
+	}
+
 	String getWindowContents() {
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && frame instanceof TextWindow) {
@@ -3577,7 +3610,10 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().changes;
 		else if (arg.indexOf("binary")!=-1)
 			state = getProcessor().isBinary();
-		else
+		else if (arg.indexOf("animated")!=-1) {
+			ImageWindow win = getImage().getWindow();
+			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();
+		} else
 			interp.error("Invalid argument");
 		return state?1.0:0.0;
 	}
@@ -4317,7 +4353,7 @@ public class Functions implements MacroConstants, Measurements {
 			arg = getStringArg().toLowerCase(Locale.US);
 		else
 			interp.getParens();
-		if (interp.editor==null && !arg.equals("throw")) {
+		if (interp.editor==null && !(arg.equals("throw")||arg.equals("dump"))) {
 			Editor ed = Editor.getInstance();
 			if (ed==null)
 				interp.error("Macro editor not available");
@@ -4332,10 +4368,12 @@ public class Functions implements MacroConstants, Measurements {
 			interp.setDebugMode(Interpreter.TRACE);
 		else if (arg.indexOf("fast")!=-1)
 			interp.setDebugMode(Interpreter.FAST_TRACE);
+		else if (arg.equals("dump"))
+			interp.dump();
 		else if (arg.indexOf("throw")!=-1)
 			throw new IllegalArgumentException();
 		else
-			interp.error("Argument must be 'run', 'break', 'trace' or 'fast-trace'");
+			interp.error("Argument must be 'run', 'break', 'trace', 'fast-trace' or 'dump'");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		return null;
 	}
@@ -4695,6 +4733,16 @@ public class Functions implements MacroConstants, Measurements {
 		imp.setOverlay(null);
 		offscreenOverlay = null;
 		return Double.NaN;
+	}
+	
+	final double selectionContains() {
+		int x = (int)Math.round(getFirstArg());
+		int y = (int)Math.round(getLastArg());
+		ImagePlus imp = getImage();
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			interp.error("Selection required");
+		return roi.contains(x,y)?1.0:0.0;
 	}
 
 } // class Functions

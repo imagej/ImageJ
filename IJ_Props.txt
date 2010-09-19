@@ -376,7 +376,7 @@ about02=-
 # URL of directory containing the sample images
 # Used when ImageJ is running as an application,
 # otherwise applet.getDocumentBase()+"/images" is used.
-images.location=http://rsb.info.nih.gov/ij/images/
+images.location=http://imagej.nih.gov/ij/images/
 
 # Images installed in the Open Samples submenu
 # RawReader expects a string with "name width height nImages bitsPerPixel offset [white]"

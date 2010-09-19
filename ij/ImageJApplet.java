@@ -9,8 +9,8 @@ import java.applet.Applet;
 	and passes it the URLs of two images:
 	<pre>
 	&lt;applet archive="../ij.jar" code="ij.ImageJApplet.class" width=0 height=0&gt;
-	&lt;param name=url1 value="http://rsb.info.nih.gov/ij/images/FluorescentCells.jpg"&gt;
-	&lt;param name=url2 value="http://rsb.info.nih.gov/ij/images/blobs.gif"&gt;
+	&lt;param name=url1 value="http://imagej.nih.gov/ij/images/FluorescentCells.jpg"&gt;
+	&lt;param name=url2 value="http://imagej.nih.gov/ij/images/blobs.gif"&gt;
 	&lt;/applet&gt;
 	</pre>
 	To use plugins, add them to ij.jar and add entries to IJ_Props.txt file (in ij.jar) that will  

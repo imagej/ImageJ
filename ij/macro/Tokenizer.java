@@ -10,7 +10,7 @@ public class Tokenizer implements MacroConstants {
     private String tokenString;
     private double tokenValue;
     private Program pgm;
-    private int lineNumber;//n__
+    private int lineNumber;
 
     /** Uses a StreamTokenizer to convert an ImageJ macro file into a token stream. */
     public Program tokenize(String program) {
@@ -37,7 +37,7 @@ public class Tokenizer implements MacroConstants {
     final void getToken() {
         try {
             token = st.nextToken();
-            lineNumber = st.lineno();//n__
+            lineNumber = st.lineno();
             String ret = null;
             int nextToken;
             switch (st.ttype) {
@@ -188,7 +188,7 @@ public class Tokenizer implements MacroConstants {
 			default:
 				break;
         }
-        pgm.addToken(tok, lineNumber);//n__
+        pgm.addToken(tok, lineNumber);
     }
 
     double getHexConstant() {

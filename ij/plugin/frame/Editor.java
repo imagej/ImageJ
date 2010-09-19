@@ -509,12 +509,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		catch  (Exception e)  {
 			s  = e.toString( );
 		}
-		if (!fixedLineEndings && IJ.isWindows()) {
-			String text = ta.getText();
-			int len = text.length();
-			text = text.replaceAll("\r\n", "\n");
-			if (text.length()!=len) ta.setText(text);
-		}
+		if (!fixedLineEndings && IJ.isWindows())
+			fixLineEndings();
 		fixedLineEndings = true;
 		int start = ta.getSelectionStart( );
 		int end = ta.getSelectionEnd( );
@@ -999,5 +995,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		return JavaScriptIncludes+"function getArgument() {return \""+arg+"\";};";
 	}
 	
+	/** Changes Mac OS 9 (CR) and Windows (CRLF) line separators to line feeds (LF). */
+	public void fixLineEndings() {
+		String text = ta.getText();
+		text = text.replaceAll("\r\n", "\n");
+		text = text.replaceAll("\r", "\n");
+		ta.setText(text);
+	}
+	
 }
-

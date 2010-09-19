@@ -1588,7 +1588,7 @@ public abstract class ImageProcessor extends Object {
 		if (useBicubic)
 			return getBicubicInterpolatedPixel(x, y, this);
 		if (x<0.0 || x>=width-1.0 || y<0.0 || y>=height-1.0) {
-			if (x<-1.0 || x>=width || y<=1.0 || y>=height)
+			if (x<-1.0 || x>=width || y<-1.0 || y>=height)
 				return 0.0;
 			else
 				return getInterpolatedEdgeValue(x, y);

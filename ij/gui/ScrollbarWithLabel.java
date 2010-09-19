@@ -175,7 +175,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		private void drawLetter(Graphics g) {
 			g.setFont(new Font("SansSerif", Font.PLAIN, 14));
 			g.setColor(Color.black);
-			g.drawString(type=='c'?"c":"z", 2, 12);
+			g.drawString(String.valueOf(type), 2, 12);
 		}
 
 		private void drawPlayPauseButton(Graphics2D g) {

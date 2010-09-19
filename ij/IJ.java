@@ -22,7 +22,7 @@ import java.net.*;
 
 /** This class consists of static utility methods. */
 public class IJ {
-	public static final String URL = "http://rsb.info.nih.gov/ij";
+	public static final String URL = "http://imagej.nih.gov/ij";
 	public static final int ALL_KEYS = -1;
 	
 	public static boolean debugMode;
@@ -334,7 +334,7 @@ public class IJ {
 	* @deprecated
 	* replaced by IJ.log(), ResultsTable.setResult() and TextWindow.append().
 	* There are examples at
-	*   http://rsbweb.nih.gov/ij/plugins/sine-cosine.html
+	*   http://imagej.nih.gov/ij/plugins/sine-cosine.html
 	*/
 	public static void write(String s) {
 		if (textPanel==null && ij!=null)

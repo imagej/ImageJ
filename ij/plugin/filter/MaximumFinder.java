@@ -275,7 +275,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         long[] maxPoints = getSortedMaxPoints(ip, typeP, excludeEdgesNow, isEDM, globalMin, globalMax, threshold); 
         if (Thread.currentThread().isInterrupted()) return null;
         IJ.showStatus("Analyzing  maxima...");
-        analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance);
+        analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance, outputType);
         //new ImagePlus("Pixel types",typeP.duplicate()).show();
         if (outputType==POINT_SELECTION || outputType==LIST || outputType==COUNT)
             return null;
@@ -391,18 +391,20 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     * @param isEDM          whether ip is a (float) Euclidian distance map
     * @param globalMin      minimum pixel value in ip
     * @param tolerance      minimum pixel value difference for two separate maxima
+    * @param outputType 
     */   
-   void analyzeAndMarkMaxima(ImageProcessor ip, ByteProcessor typeP, long[] maxPoints, boolean excludeEdgesNow, boolean isEDM, float globalMin, double tolerance) {
+   void analyzeAndMarkMaxima(ImageProcessor ip, ByteProcessor typeP, long[] maxPoints, boolean excludeEdgesNow, boolean isEDM, float globalMin, double tolerance, int outputType) {
         byte[] types =  (byte[])typeP.getPixels();
         int nMax = maxPoints.length;
         int [] pList = new int[width*height];       //here we enter points starting from a maximum
         Vector xyVector = null;
         Roi roi = null;
-        boolean displayOrCount = imp!=null && (outputType==POINT_SELECTION||outputType==LIST||outputType==COUNT);
-        if (displayOrCount) {
+        boolean displayOrCount = outputType==POINT_SELECTION||outputType==LIST||outputType==COUNT;
+        if (displayOrCount) 
             xyVector=new Vector();
-            roi = imp.getRoi();
-        }
+        if (imp!=null )
+            roi = imp.getRoi();	    
+        
         for (int iMax=nMax-1; iMax>=0; iMax--) {    //process all maxima now, starting from the highest
             if (iMax%100 == 0 && Thread.currentThread().isInterrupted()) return;
             int offset0 = (int)maxPoints[iMax];     //type cast gets 32 lower bits, where pixel index is encoded
@@ -501,7 +503,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         if (Thread.currentThread().isInterrupted()) return;
         if (displayOrCount && xyVector!=null) {
             int npoints = xyVector.size();
-            if (outputType == POINT_SELECTION && npoints>0) {
+            if (outputType == POINT_SELECTION && npoints>0 && imp!=null) {
                 int[] xpoints = new int[npoints];
                 int[] ypoints = new int[npoints];
                 for (int i=0; i<npoints; i++) {
