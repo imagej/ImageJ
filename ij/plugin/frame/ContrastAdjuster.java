@@ -664,6 +664,9 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 
 	void applyRGBStack(ImagePlus imp) {
+		double min = imp.getDisplayRangeMin();
+		double max = imp.getDisplayRangeMax();
+		if (IJ.debugMode) IJ.log("applyRGBStack: "+min+"-"+max);
 		int current = imp.getCurrentSlice();
 		int n = imp.getStackSize();
 		if (!IJ.showMessageWithCancel("Update Entire Stack?",

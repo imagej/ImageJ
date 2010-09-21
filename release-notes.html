@@ -5,33 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.44g, 18 September 2010</u>
+<li> <u>1.44h, 21 September 2010</u>
 <ul>
-<li> The getInfo() macro function can now retrieve Bio-Formats metadata values.
-<li> The Control Panel no longer creates a "PCPanel2.ini" file in the user's home directory.
-<li> ImageJ can now open zip archives, using a URL, that contain multiple DICOM images.
-<li> The arrow keys can now be used to vertically scroll the Results window.
-<li> Added the selectionContains(x,y), is("animated") and debug("dump") macro functions.
-<li> The TextPanel.setSelection() method now insures that the selection is visible.
-<li> Added the TextPanel.addMouseListener() method.
-<li> Thanks to Barry DeZonia, fixed a bug that caused <i>Process&gt;Smooth</i> to not round
-results with 8-bit images.
-<li> Fixed a bug that sometimes caused passing of choices in macro run() calls to fail when
-"item=&varname" notation was used.
-<li> Fixed a bug that caused virtual stacks backed by a folder containing a script to not open correctly.
-<li> Fixed a bug that sometimes caused the image count displayed in the dialog box 
-to be incorrect when a folder is dragged and dropped.
-<li> Barry DeZonia fixed a bug that sometimes caused division of 16-bit images to fail
-and a bug that could result in Windows directory paths ending in "/\\".
-<li> Fixed a bug that caused an exception to be thrown when opening LZW compressed 32-bit float TIFFs.
-<li> Fixed a bug that caused the macro debugger to sometimes fail to work
-with macro code pasted into the editor on Mac OS X.
-<li> Thanks to Barry DeZonia, fixed a bug that caused the ImageProcess.convolve3x3() method (used by
-<i>Process&gt;Sharpen</i>) to not correctly handle edge pixels of 8-bit and RGB images images.
-<li> Tseng Qingzong fixed a bug in the MaximumFinder.findMaxima() method that caused it to fail when
-called with outputType List or Count.
-<li> Andreas Maier fixed an edge handling bug in ImageProcessor.getInterpolatedValue(), which is
-used by <i>Analyze&gt;Plot Profile</i>.
+<li> Added drop down menus to the <li>Image&gt;Adjust&gt;Color Threshold</li> tool 
+for selecting any of 16 different automatic thresholding methods and for selecting the
+threshold color.
+<li> Fixed a bug that sometimes caused the <i>Image&gt;Adjust&gt;Contrast/Brightness</i>
+"Apply" option to fail with RGB stacks.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
