@@ -421,6 +421,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	public Point getCursorLoc() {
 		return new Point(xMouse, yMouse);
 	}
+	
+	/** Returns 'true' if the cursor is over this image. */
+	public boolean cursorOverImage() {
+		return !mouseExited;
+	}
 
 	/** Returns the mouse event modifiers. */
 	public int getModifiers() {
@@ -917,10 +922,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			case Toolbar.MAGNIFIER:
 				if (IJ.shiftKeyDown())
 					zoomToSelection(ox, oy);
-				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
-					IJ.run("Out");
-				else
-					IJ.run("In");
+				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0) {
+					//IJ.run("Out");
+					zoomOut(x, y);
+					if (getMagnification()<1.0)
+						imp.repaintWindow();
+				} else {
+					//IJ.run("In");
+	 				zoomIn(x, y);
+					if (getMagnification()<=1.0)
+						imp.repaintWindow();
+				}
 				break;
 			case Toolbar.HAND:
 				setupScroll(ox, oy);

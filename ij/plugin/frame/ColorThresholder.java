@@ -494,7 +494,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		} else if (source==darkBackground) {
 		}
 		reset(imp,ip);
-		autoSetThreshold();
+		if (source==methodChoice || source==colorSpaceChoice || source==darkBackground)
+			autoSetThreshold();
 		checkImage(); //new
 		updateNames();
 		notify();

@@ -976,10 +976,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			if (pfr!=null) // prepare preview (not in macro mode): tell the PlugInFilterRunner to listen
 			pfr.setDialog(this);
-			//if (stringField!=null&&numberField==null) {
-			//	TextField tf = (TextField)(stringField.elementAt(0));
-			//	tf.selectAll();
-			//}
 			Panel buttons = new Panel();
 			buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 			cancel = new Button("Cancel");
