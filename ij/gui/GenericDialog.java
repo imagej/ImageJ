@@ -1263,6 +1263,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				tf.setEditable(false);
 				tf.setEditable(true);
 			}
+			if (numberField==null && stringField==null)
+				okay.requestFocus();
 			firstPaint = false;
 		}
 	}

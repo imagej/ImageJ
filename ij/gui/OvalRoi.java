@@ -111,7 +111,6 @@ public class OvalRoi extends Roi {
 		}
 
 		if(constrain) {
-
 			if(activeHandle==1 || activeHandle==5) width=height;
 			else height=width;
 			

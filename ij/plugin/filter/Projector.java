@@ -131,6 +131,8 @@ public class Projector implements PlugInFilter {
     	}
     	
     public void doRGBProjections(ImagePlus imp) {
+    	boolean saveUseInvertingLut = Prefs.useInvertingLut;
+    	Prefs.useInvertingLut = false;
         RGBStackSplitter splitter = new RGBStackSplitter();
         splitter.split(imp.getStack(), true);
         ImagePlus red = new ImagePlus("Red", splitter.red);
@@ -157,6 +159,7 @@ public class Projector implements PlugInFilter {
         RGBStackMerge merge = new RGBStackMerge();
         ImageStack stack = merge.mergeStacks(w, h, d, red.getStack(), green.getStack(), blue.getStack(), true);
         new ImagePlus("Projection of  "+imp.getShortTitle(), stack).show();
+    	Prefs.useInvertingLut = saveUseInvertingLut;
     }
 
 	public ImagePlus doProjections(ImagePlus imp) {

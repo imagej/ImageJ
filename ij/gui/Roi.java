@@ -1077,18 +1077,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	public void endPaste() {
-		if (clipboard!=null) {
-			imp.getMask();
-			ImageProcessor ip = imp.getProcessor();
-			if (pasteMode!=Blitter.COPY) ip.reset();
-			ip.copyBits(clipboard.getProcessor(), x, y, pasteMode);
-			if (type!=RECTANGLE)
-				ip.reset(ip.getMask());
-			ip.snapshot();
-			clipboard = null;
-			imp.updateAndDraw();
-			Undo.setup(Undo.FILTER, imp);
-		}
+		clipboard = null;
 	}
 	
 	public void abortPaste() {

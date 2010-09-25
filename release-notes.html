@@ -5,17 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.44i, 22 September 2010</u>
+<li> <u>1.44i, 24 September 2010</u>
 <ul>
 <li> Added the <li>Edit&gt;Selection&gt;To Bounding Box</li> command.
-<li> Added drop down menus to the <li>Image&gt;Adjust&gt;Color Threshold</li> tool 
-for selecting any of 16 different automatic thresholding methods and for selecting the
-threshold color.
 <li> Pressing "+" (<i>Image&gt;Zoom&gt;In</i>) now zooms to
 the center of the image when the cursor is not over the image window.
-<li> Fixed a bug that sometimes caused the <i>Image&gt;Adjust&gt;Contrast/Brightness</i>
-"Apply" option to fail with RGB stacks.
 <li> Fixed a bug that sometimes caused the magnifying glass tool to zoom the wrong image on Linux.
+<li> Thanks to Matthew Smith, fixed a bug that caused non-rectangular pastes to fail
+when switching to another image.
+<li> Thanks to Norbert Vischer, fixed a bug that cuased "Cancel" to be highlighted in
+showMessageWithCancel() dialog boxes.
+<li> Fixed a bug that caused 3D projection of RGB stacks to fail if "Use inverting lookup table" was
+enabled in <i>Edit&gt;Options&gt;Appearance</i>.
+<li>
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
