@@ -46,7 +46,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
  ActionListener, AdjustmentListener, FocusListener, ItemListener, Runnable{
 
 	private static final int HSB=0, RGB=1, LAB=2, YUV=3;
-	private static final String[] colorSpaces = {"HSB", "RGB", "CIE Lab", "YUV"};
+	private static final String[] colorSpaces = {"HSB", "RGB", "Lab", "YUV"};
 	private boolean flag = false;
 	private int colorSpace = HSB;
 	private Thread thread;
@@ -56,8 +56,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private BandPlot splot = new BandPlot();
 	private BandPlot bplot = new BandPlot();
 	private int sliderRange = 256;
-	private Panel panel, panelt, panelMode;
-	private Button  originalB, filteredB, stackB, helpB, sampleB, resetallB, newB, macroB;
+	private Panel panel, panelt;
+	private Button  originalB, filteredB, stackB, helpB, sampleB, resetallB, newB, macroB, selectB;
 	private Checkbox bandPassH, bandPassS, bandPassB, darkBackground;
 	private CheckboxGroup colourMode;
 	private Choice colorSpaceChoice, methodChoice, modeChoice;
@@ -321,24 +321,70 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		label6.setFont(font);
 		add(label6, c);
 
-		// method and display mode choices
+		GridBagLayout gridbag2 = new GridBagLayout();
+		GridBagConstraints c2 = new GridBagConstraints();
+		int y2 = 0;
 		Panel panel = new Panel();
+		panel.setLayout(gridbag2);
+		
+		// threshoding method choice
+		c2.gridx = 0; c2.gridy = y2;
+		c2.anchor = GridBagConstraints.EAST;
+		c2.gridwidth = 1;
+		c2.insets = new Insets(5, 0, 0, 0);
+		Label theLabel = new Label("Thresholding method:");
+		gridbag2.setConstraints(theLabel, c2);
+		panel.add(theLabel);
 		methodChoice = new Choice();
 		for (int i=0; i<methodNames.length; i++)
 			methodChoice.addItem(methodNames[i]);
 		methodChoice.select(method);
 		methodChoice.addItemListener(this);
+		c2.gridx = 1; c2.gridy = y2;
+		c2.anchor = GridBagConstraints.WEST;
+		gridbag2.setConstraints(methodChoice, c2);
 		panel.add(methodChoice);
+		y2++;
+		
+		// display mode choice
+		c2.gridx = 0; c2.gridy = y2;
+		c2.anchor = GridBagConstraints.EAST;
+		c2.insets = new Insets(0, 0, 0, 0);
+		theLabel = new Label("Threshold color:");
+		gridbag2.setConstraints(theLabel, c2);
+		panel.add(theLabel);
 		modeChoice = new Choice();
 		for (int i=0; i<modes.length; i++)
 			modeChoice.addItem(modes[i]);
 		modeChoice.select(mode);
 		modeChoice.addItemListener(this);
+		c2.gridx = 1; c2.gridy = y2;
+		c2.anchor = GridBagConstraints.WEST;
+		gridbag2.setConstraints(modeChoice, c2);
 		panel.add(modeChoice);
+		y2++;
+
+		// color space choice
+		c2.gridx = 0; c2.gridy = y2;
+		c2.anchor = GridBagConstraints.EAST;
+		theLabel = new Label("Color space:");
+		gridbag2.setConstraints(theLabel, c2);
+		panel.add(theLabel);
+		colorSpaceChoice = new Choice();
+		for (int i=0; i<colorSpaces.length; i++)
+			colorSpaceChoice.addItem(colorSpaces[i]);
+		colorSpaceChoice.select(HSB);
+		colorSpaceChoice.addItemListener(this);
+		c2.gridx = 1; c2.gridy = y2;
+		c2.anchor = GridBagConstraints.WEST;
+		gridbag2.setConstraints(colorSpaceChoice, c2);
+		panel.add(colorSpaceChoice);
+		y2++;
+
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 5, 0, 5);
+		c.insets = new Insets(5, 0, 0, 0);
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.NONE;
 		add(panel, c);
@@ -356,75 +402,52 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(panelt, c);
 
 		// buttons
+		int trim = IJ.isMacOSX()?10:0;
 		panel = new Panel();
-		//panel.setLayout(new GridLayout(2, 2, 0, 0));
-		originalB = new Button("Original");
+		panel.setLayout(new GridLayout(0, 4, 0, 0));
+		originalB = new TrimmedButton("Original", trim);
 		//originalB.setEnabled(false);
 		originalB.addActionListener(this);
 		originalB.addKeyListener(ij);
 		panel.add(originalB);
 
-		filteredB = new Button("Filtered");
+		filteredB = new TrimmedButton("Filtered", trim);
 		filteredB.setEnabled(false);
 		filteredB.addActionListener(this);
 		filteredB.addKeyListener(ij);
 		panel.add(filteredB);
 
-		stackB = new Button("Stack");
+		selectB = new TrimmedButton("Select", trim);
+		selectB.addActionListener(this);
+		selectB.addKeyListener(ij);
+		panel.add(selectB);
+
+		sampleB = new TrimmedButton("Sample", trim);
+		sampleB.addActionListener(this);
+		sampleB.addKeyListener(ij);
+		panel.add(sampleB);
+		
+		stackB = new TrimmedButton("Stack", trim);
 		stackB.addActionListener(this);
 		stackB.addKeyListener(ij);
 		panel.add(stackB);
 
-		macroB = new Button("Macro");
+		macroB = new TrimmedButton("Macro", trim);
 		macroB.addActionListener(this);
 		macroB.addKeyListener(ij);
-		//panel.add(macroB);
+		panel.add(macroB);
 
-		helpB = new Button("Help");
+		helpB = new TrimmedButton("Help", trim);
 		helpB.addActionListener(this);
 		helpB.addKeyListener(ij);
 		panel.add(helpB);
-
-		c.gridx = 0;
-		c.gridy = y++;
-		c.gridwidth = 2;
-		c.insets = new Insets(0, 0, 0, 0);
-		add(panel, c);
-
-//============================================================
-/*
-		newB = new Button("New");
-		newB.addActionListener(this);
-		newB.addKeyListener(ij);
-		panel.add(newB);
-
-		c.gridx = 0;
-		c.gridy = y++;
-		c.gridwidth = 2;
-		c.insets = new Insets(0, 0, 0, 0);
-		add(panel, c);
-*/
-//============================================================
-
-		panelMode = new Panel();
-
-		sampleB = new Button("Sample");
-		sampleB.addActionListener(this);
-		sampleB.addKeyListener(ij);
-		panelMode.add(sampleB);
-		
-		colorSpaceChoice = new Choice();
-		for (int i=0; i<colorSpaces.length; i++)
-			colorSpaceChoice.addItem(colorSpaces[i]);
-		colorSpaceChoice.select(HSB);
-		colorSpaceChoice.addItemListener(this);
-		panelMode.add(colorSpaceChoice);
 		
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(0, 0, 0, 0);
-		add(panelMode, c);
+		c.insets = new Insets(5, 5, 10, 5);
+		gridbag.setConstraints(panel, c);
+		add(panel);
 
 		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
 		pack();
@@ -513,55 +536,27 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		if (IJ.debugMode) IJ.log("ColorThresholder.actionPerformed");
 		Button b = (Button)e.getSource();
 		if (b==null) return;
-
 		boolean imageThere = checkImage();
-
 		if (imageThere) {
-			if (b==originalB){
+			if (b==originalB) {
 				reset(imp,ip);
 				filteredB.setEnabled(true);
-			} else if (b==filteredB){
+			} else if (b==filteredB) {
 				apply(imp,ip);
-			} else if (b==sampleB){
+			} else if (b==sampleB) {
 				reset(imp,ip);
 				sample();
 				apply(imp,ip);
-			} else if (b==stackB){
+			} else if (b==selectB) {
+				createSelection();
+			} else if (b==stackB) {
 				applyStack();
-			} else if (b==macroB){
-				//send macro to recorder
-				if (Recorder.record) {
-						Recorder.recordString("// Color Thresholding (v1.43l)\n");
-						Recorder.recordString("// Autogenerated macro, single images only!\n");
-						Recorder.recordString("// <<This feature is not currently working.>>\n");
-						Recorder.recordString("\n");
-				}
-			} else if (b==helpB){
-			IJ.showMessage("Help","Threshold Colour  v1.9\n \n"+
-				"Modification of Bob Dougherty's BandPass2 plugin by G.Landini to\n"+
-				"threshold 24 bit RGB images based on Hue Saturation and Brightness,\n"+
-				"Red Green and Blue, CIE Lab or YUV components.\n \n"+
-				"[Pass]: Band-pass filter (anything within range is displayed).\n \n"+
-				"[Stop]: Band-reject filter (anything within range is NOT displayed).\n \n"+
-				"[Original]: Shows the original image and updates the buffer when\n"+
-				"switching to another image.\n \n"+
-				"[Filtered]: Shows the filtered image.\n \n"+
-				"[Stack]: Processes the rest of the slices in the stack (if any)\n"+
-				"  using the current settings.\n \n"+
-				"[Macro]: Creates a macro based on the current settings which is sent\n"+
-				"to the macro Recorder window, if open.\n"+
-				"The macro works only with Black background and White foreground,\n"+
-				"otherwise, you will have to uncomment first 2 two macro lines:\n"+
-				"    //run(\"Colors...\", \"foreground=white background=black selection=yellow\");\n"+
-				"    //run(\"Options...\", \"iterations=1 black count=1\");\n \n"+
-				"[Threshold]: Shows the object/background in the foreground and\n"+
-				"background colours selected in the ImageJ toolbar.\n \n"+
-				"[Invert]: Swaps the fore/background colours.\n \n"+
-				"[Sample]: (experimental) Sets the ranges of the filters based on the\n"+
-				"pixel value components in a user-defined ROI.\n \n"+
-				"[HSB] [RGB] [CIE Lab] [YUV]: Selects HSB, RGB, CIE Lab or YUV space and\n"+
-				"resets all the filters.\n \n"+
-				"Note that the final \'thresholded\' image type is RGB, not \'8-bit\' grey.");
+			} else if (b==macroB) {
+				generateMacro();
+				return;
+			} else if (b==helpB) {
+				showHelp();
+				return;
 			}
 			updatePlot();
 			updateLabels();
@@ -571,6 +566,124 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			IJ.showStatus("No Image");
 		}
 		//notify();
+	}
+	
+	//Select button pressed
+	void createSelection() {
+		imp.killRoi();
+		mode = BLACK_AND_WHITE;
+		apply(imp,ip);
+		IJ.run(imp, "8-bit", "");
+		//if (Prefs.blackBackground)
+		//	IJ.run(imp, "Invert", "");
+		IJ.run(imp, "Create Selection", "");
+		IJ.run(imp, "RGB Color", "");
+		ip = imp.getProcessor();
+		reset(imp,ip);
+	}
+	
+	void generateMacro() {
+		if (!Recorder.record) {
+			IJ.error("Threshold Color", "Command recorder is not running");
+			return;
+		}
+		Recorder.recordString("// Color Thresholder "+IJ.getVersion()+"\n");
+		Recorder.recordString("// Autogenerated macro, single images only!\n");
+		Recorder.recordString("min=newArray(3);\n");
+		Recorder.recordString("max=newArray(3);\n");
+		Recorder.recordString("filter=newArray(3);\n");
+		Recorder.recordString("a=getTitle();\n");
+		if (colorSpace==HSB) {
+			Recorder.recordString("run(\"HSB Stack\");\n");
+			Recorder.recordString("run(\"Convert Stack to Images\");\n");
+			Recorder.recordString("selectWindow(\"Hue\");\n");
+			Recorder.recordString("rename(\"0\");\n");
+			Recorder.recordString("selectWindow(\"Saturation\");\n");
+			Recorder.recordString("rename(\"1\");\n");
+			Recorder.recordString("selectWindow(\"Brightness\");\n");
+			Recorder.recordString("rename(\"2\");\n");
+		} else {
+			if (colorSpace==LAB)
+				Recorder.recordString("call(\"ij.plugin.frame.ColorThresholder.RGBtoLab\");\n");
+			if (colorSpace==YUV)
+				Recorder.recordString("call(\"ij.plugin.frame.ColorThresholder.RGBtoYUV\");\n");
+			Recorder.recordString("run(\"RGB Stack\");\n");
+			Recorder.recordString("run(\"Convert Stack to Images\");\n");
+			Recorder.recordString("selectWindow(\"Red\");\n");
+			Recorder.recordString("rename(\"0\");\n");
+			Recorder.recordString("selectWindow(\"Green\");\n");
+			Recorder.recordString("rename(\"1\");\n");
+			Recorder.recordString("selectWindow(\"Blue\");\n");
+			Recorder.recordString("rename(\"2\");\n");
+		}
+		Recorder.recordString("min[0]="+minSlider.getValue()+";\n");
+		Recorder.recordString("max[0]="+maxSlider.getValue()+";\n");
+
+		if (bandPassH.getState())
+			Recorder.recordString("filter[0]=\"pass\";\n");
+		else
+			Recorder.recordString("filter[0]=\"stop\";\n");
+
+		Recorder.recordString("min[1]="+minSlider2.getValue()+";\n");
+		Recorder.recordString("max[1]="+maxSlider2.getValue()+";\n");
+
+		if (bandPassS.getState())
+			Recorder.recordString("filter[1]=\"pass\";\n");
+		else
+			Recorder.recordString("filter[1]=\"stop\";\n");
+		Recorder.recordString("min[2]="+minSlider3.getValue()+";\n");
+		Recorder.recordString("max[2]="+maxSlider3.getValue()+";\n");
+
+		if (bandPassB.getState())
+			Recorder.recordString("filter[2]=\"pass\";\n");
+		else
+			Recorder.recordString("filter[2]=\"stop\";\n");
+
+		Recorder.recordString("for (i=0;i<3;i++){\n");
+		Recorder.recordString("  selectWindow(\"\"+i);\n");
+		Recorder.recordString("  setThreshold(min[i], max[i]);\n");
+		Recorder.recordString("  run(\"Convert to Mask\");\n");
+		Recorder.recordString("  if (filter[i]==\"stop\")  run(\"Invert\");\n");
+		Recorder.recordString("}\n");
+		Recorder.recordString("imageCalculator(\"AND create\", \"0\",\"1\");\n");
+		Recorder.recordString("imageCalculator(\"AND create\", \"Result of 0\",\"2\");\n");
+		Recorder.recordString("for (i=0;i<3;i++){\n");
+		Recorder.recordString("  selectWindow(\"\"+i);\n");
+		Recorder.recordString("  close();\n");
+		Recorder.recordString("}\n");
+		Recorder.recordString("selectWindow(\"Result of 0\");\n");
+		Recorder.recordString("close();\n");
+		Recorder.recordString("selectWindow(\"Result of Result of 0\");\n");
+
+		//if(invert.getState())
+		//   Recorder.recordString("run(\"Invert\");\n");
+		Recorder.recordString("rename(a);\n");
+		Recorder.recordString("// Colour Thresholding-------------\n");
+	}
+	
+	void showHelp() {
+		IJ.showMessage("Help","Color Thresholder\n \n"+
+			"Modification of Bob Dougherty's BandPass2 plugin by G.Landini\n"+
+			"to threshold 24 bit RGB images based on HSB, RGB, CIE Lab \n"+
+			"or YUV components.\n \n"+
+			"[Pass]: Everything within range is thresholded, otherwise,\n"+
+			"everything outside range is thresholded.\n \n"+
+			"[Default] [Huang] [Intermodes] [etc.]: Selects the automatic\n"+
+			"thresholding method.\n \n"+
+			"[Red] [White] [Black] [B&W]: Selects the threshold color.\n \n"+
+			"[Dark background]: Auto-thresholding methods assume\n"+
+			"light features and dark background.\n \n"+
+			"[Original]: Shows the original image and updates the buffer\n"+
+			"when switching to another image.\n \n"+
+			"[Filtered]: Shows the filtered image.\n \n"+
+			"[Stack]: Processes the rest of the slices in the stack (if any)\n"+
+			"using the current settings.\n \n"+
+			"[Macro]: Creates a macro based on the current settings which\n"+
+			"is sent to the macro Recorder window, if open.\n \n"+
+			"[Sample]: (experimental) Sets the ranges of the filters based\n"+
+			"on the pixel value components in a user-defined ROI.\n \n"+
+			"[HSB] [RGB] [CIE Lab] [YUV]: Selects the color space.\n \n"+
+			"");
 	}
 
 	void sample(){
@@ -1264,9 +1377,129 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		}
 	}
 	
+	/** Converts the current image from RGB to CIE L*a*b* and stores the results 
+	* in the same RGB image R=L*, G=a*, B=b*. Values are therfore offset and rescaled.
+	* see:
+	* http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#Specifications
+	* http://www.easyrgb.com/math.php?MATH=M7#text7
+	* @author Gabriel Landini,  G.Landini@bham.ac.uk
+	*/
+	public static void RGBtoLab() {
+		ImagePlus imp = IJ.getImage();
+		if (imp.getBitDepth()==24) {
+			RGBtoLab(imp.getProcessor());
+			imp.updateAndDraw();
+		}
+	}
+	
+	static void RGBtoLab(ImageProcessor ip) {
+		int xe = ip.getWidth();
+		int ye = ip.getHeight();
+		int c, x, y, i=0;
+		double rf, gf, bf;
+		double X, Y, Z, fX, fY, fZ;
+		double La, aa, bb;
+		double ot=1/3.0, cont = 16/116.0;
+		int Li, ai, bi;
+		ImagePlus imp = WindowManager.getCurrentImage();
+
+		for(y=0;y<ye;y++){
+			for (x=0;x<xe;x++){
+				c=ip.getPixel(x,y);
+
+				// RGB to XYZ
+				rf = ((c&0xff0000)>>16)/255.0; //R 0..1
+				gf = ((c&0x00ff00)>>8)/255.0; //G 0..1
+				bf = ( c&0x0000ff)/255.0; //B 0..1
+
+				//white reference D65 PAL/SECAM
+				X = 0.430587 * rf + 0.341545 * gf + 0.178336 * bf;
+				Y = 0.222021 * rf + 0.706645 * gf + 0.0713342* bf;
+				Z = 0.0201837* rf + 0.129551 * gf + 0.939234 * bf;
+
+				// XYZ to Lab
+				if ( X > 0.008856 )
+					fX =  Math.pow(X, ot);
+				else
+					fX = ( 7.78707 * X ) + cont;//7.7870689655172
+
+				if ( Y > 0.008856 )
+					fY = Math.pow(Y, ot);
+				else
+					fY = ( 7.78707 * Y ) + cont;
+
+				if ( Z > 0.008856 )
+					fZ =  Math.pow(Z, ot);
+				else
+					fZ = ( 7.78707 * Z ) + cont;
+
+				La = ( 116 * fY ) - 16;
+				aa = 500 * ( fX - fY );
+				bb = 200 * ( fY - fZ );
+
+				// Lab rescaled to the 0..255 range
+				// a* and b* range from -120 to 120 in the 8 bit space
+				La =  La * 2.55;
+				aa =  Math.floor((1.0625 * aa + 128) + 0.5);
+				bb =  Math.floor((1.0625 * bb + 128) + 0.5);
+
+				// bracketing
+				Li = (int)(La<0?0:(La>255?255:La));
+				ai = (int)(aa<0?0:(aa>255?255:aa));
+				bi = (int)(bb<0?0:(bb>255?255:bb));
+				ip.putPixel(x,y, ((Li&0xff)<<16)+((ai&0xff)<<8)+(bi&0xff));
+			}
+		}
+	}
+	
+	/** Converts the current image from RGB to YUV and stores 
+	* the results in the same RGB image R=Y, G=U, B=V.
+	* @author Gabriel Landini,  G.Landini@bham.ac.uk
+	*/
+	public static void RGBtoYUV() {
+		ImagePlus imp = IJ.getImage();
+		if (imp.getBitDepth()==24) {
+			RGBtoLab(imp.getProcessor());
+			imp.updateAndDraw();
+		}
+	}
+
+	static void RGBtoYUV(ImageProcessor ip) {
+		int xe = ip.getWidth();
+		int ye = ip.getHeight();
+		int c, x, y, i=0, Y, U, V, r, g, b;
+		double yf;
+
+		ImagePlus imp = WindowManager.getCurrentImage();
+
+		for(y=0;y<ye;y++){
+			for (x=0;x<xe;x++){
+				c=ip.getPixel(x,y);
+
+					r = ((c&0xff0000)>>16);//R
+					g = ((c&0x00ff00)>>8);//G
+					b = ( c&0x0000ff); //B 
+
+					// Kai's plugin
+					yf = (0.299 * r  + 0.587 * g + 0.114 * b);
+					Y = ((int)Math.floor(yf + 0.5)) ;
+					U = (128+(int)Math.floor((0.493 *(b - yf))+ 0.5)); 
+					V = (128+(int)Math.floor((0.877 *(r - yf))+ 0.5)); 
+
+					ip.putPixel(x,y, (((Y<0?0:Y>255?255:Y) & 0xff) << 16)+
+									 (((U<0?0:U>255?255:U) & 0xff) << 8) +
+								 	  ((V<0?0:V>255?255:V) & 0xff));
+				
+				ip.putPixel(x,y, ((Y & 0xff) <<16) + ((U & 0xff) << 8) + ( V & 0xff));
+			}
+		}
+	}
+
+
+	
 	class BandPlot extends Canvas implements Measurements, MouseListener {
 	
-		final int WIDTH = 256, HEIGHT=86;
+		final int WIDTH = 256, HEIGHT=64;
 		double minHue = 0, minSat=0, minBri=0;
 		double maxHue = 255, maxSat= 255, maxBri=255;
 		int[] histogram;

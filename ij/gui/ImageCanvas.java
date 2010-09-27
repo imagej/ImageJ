@@ -384,6 +384,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
 	}
+	
+	public void resetDoubleBuffer() {
+		offScreenImage = null;
+	}
 
     long firstFrame;
     int frames, fps;
