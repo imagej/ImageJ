@@ -1428,8 +1428,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Implements the File/Revert command. */
 	public void revert() {
-		if (getStackSize()>1) // can't revert stacks
-			return;
+		//if (getStackSize()>1) // can't revert stacks
+		//	return;
 		FileInfo fi = getOriginalFileInfo();
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
 		if (!(isFileInfo || url!=null))
@@ -1443,6 +1443,40 @@ public class ImagePlus implements ImageObserver, Measurements {
 			roi.endPaste();
 			saveRoi = (Roi)roi.clone();
 		}
+		
+		if (getStackSize()>1) {
+			String path = null;
+			String url2 = null;
+			if (url!=null && !url.equals("")) {
+				path = url;
+				url2 = url;
+			} else if (isFileInfo && !((fi.directory==null||fi.directory.equals("")))) {
+				path = fi.directory+fi.fileName;
+			} else if (fi.url!=null && !fi.url.equals("")) {
+				path = fi.url;
+				url2 = fi.url;
+			} else
+				return;
+			//IJ.log("revert: "+path+"  "+fi);
+			IJ.showStatus("Loading: " + path);
+			ImagePlus imp = IJ.openImage(path);
+			if (imp!=null) {
+				ImageWindow win = getWindow();
+				Point loc = null;
+				if (win!=null) loc = win.getLocation();
+				changes = false;
+				close();
+				FileInfo fi2 = imp.getOriginalFileInfo();
+				if (fi2!=null && (fi2.url==null || fi2.url.length()==0)) {
+					fi2.url = url2;
+					imp.setFileInfo(fi2);
+				}
+				ImageWindow.setNextLocation(loc);
+				imp.show();
+			}
+			return;
+		}
+
 		trimProcessor();
 		if (isFileInfo && !(url!=null&&(fi.directory==null||fi.directory.equals(""))))
 			new FileOpener(fi).revertToSaved(this);

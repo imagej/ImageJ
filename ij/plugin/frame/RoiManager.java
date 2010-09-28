@@ -274,7 +274,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void add(boolean shiftKeyDown, boolean altKeyDown) {
 		if (shiftKeyDown)
 			addAndDraw(altKeyDown);
-		else if (altKeyDown)
+		else if (altKeyDown && !Interpreter.isBatchMode())
 			addRoi(true);
 		else
 			addRoi(false);
@@ -425,7 +425,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void addAndDraw(boolean altKeyDown) {
-		if (altKeyDown) {
+		if (altKeyDown && !Interpreter.isBatchMode()) {
 			if (!addRoi(true)) return;
 		} else if (!addRoi(false))
 			return;

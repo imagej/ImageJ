@@ -27,15 +27,15 @@ public class Memory implements PlugIn {
 		String title = "Memory "+(IJ.is64Bit()?"(64-bit)":"(32-bit)");
 		GenericDialog gd = new GenericDialog(title);
 		gd.addNumericField("Maximum memory:", max, 0, 5, "MB");
-        gd.addNumericField("Parallel threads for stacks:", Prefs.getThreads(), 0, 5, "");
-        gd.setInsets(12, 0, 0);
-        gd.addCheckbox("Run garbage collector on status bar click", !Prefs.noStatusBarGC);
-        gd.addHelp(IJ.URL+"/docs/menus/edit.html#memory");
+		gd.addNumericField("Parallel threads for stacks:", Prefs.getThreads(), 0, 5, "");
+		gd.setInsets(12, 0, 0);
+		gd.addCheckbox("Run garbage collector on status bar click", !Prefs.noClickToGC);
+		gd.addHelp(IJ.URL+"/docs/menus/edit.html#memory");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		int max2 = (int)gd.getNextNumber();
-        Prefs.setThreads((int)gd.getNextNumber());
-        Prefs.noStatusBarGC = !gd.getNextBoolean();
+		Prefs.setThreads((int)gd.getNextNumber());
+		Prefs.noClickToGC = !gd.getNextBoolean();
 		if (gd.invalidNumber()) {
 			IJ.showMessage("Memory", "The number entered was invalid.");
 			return;

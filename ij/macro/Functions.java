@@ -4450,7 +4450,8 @@ public class Functions implements MacroConstants, Measurements {
 			String[] s = new String[len];
 			for (int i=0; i<len; i++)
 				s[i] = a[i].getString();
-			StringSorter.sort(s);
+			//StringSorter.sort(s);
+			Arrays.sort(s, String.CASE_INSENSITIVE_ORDER);
 			for (int i=0; i<len; i++)
 				a[i].setString(s[i]);
 		} else
