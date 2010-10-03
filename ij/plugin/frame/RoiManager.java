@@ -274,7 +274,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void add(boolean shiftKeyDown, boolean altKeyDown) {
 		if (shiftKeyDown)
 			addAndDraw(altKeyDown);
-		else if (altKeyDown && !Interpreter.isBatchMode())
+		else if (altKeyDown)
 			addRoi(true);
 		else
 			addRoi(false);
@@ -425,7 +425,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void addAndDraw(boolean altKeyDown) {
-		if (altKeyDown && !Interpreter.isBatchMode()) {
+		if (altKeyDown) {
 			if (!addRoi(true)) return;
 		} else if (!addRoi(false))
 			return;
@@ -1396,9 +1396,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		cmd = cmd.toLowerCase();
 		macro = true;
 		boolean ok = true;
-		if (cmd.equals("add"))
-			add(IJ.shiftKeyDown(), IJ.altKeyDown());
-		else if (cmd.equals("add & draw"))
+		if (cmd.equals("add")) {
+			boolean shift = IJ.shiftKeyDown();
+			boolean alt = IJ.altKeyDown();
+			if (Interpreter.isBatchMode()) {
+				shift = false;
+				alt = false;
+			}
+			add(shift, alt);
+		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
 		else if (cmd.equals("update"))
 			update(true);
@@ -1517,7 +1523,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		if (hexColor==null && lineWidth==1.0 && IJ.altKeyDown())
+		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
 			if (hexColor==null) hexColor = getHex(null);

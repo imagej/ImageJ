@@ -44,7 +44,8 @@ public class FFTMath implements PlugIn {
         gd.addChoice("Operation:", ops, ops[operation]);
         gd.addChoice("Image2: ", titles, titles[index2]);
         gd.addStringField("Result:", title);
-        gd.addCheckbox("Do Inverse Transform", doInverse);
+        gd.addCheckbox("Do inverse transform", doInverse);
+		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-math");
         gd.showDialog();
         if (gd.wasCanceled())
             return false;

@@ -585,6 +585,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
+		if (isComposite())
+			((CompositeImage)this).setChannelsUpdated();
 		setStack(null, stack);
 	}
 
@@ -1428,8 +1430,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Implements the File/Revert command. */
 	public void revert() {
-		//if (getStackSize()>1) // can't revert stacks
-		//	return;
+		if (getStackSize()>1 && getStack().isVirtual())
+			return;
 		FileInfo fi = getOriginalFileInfo();
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
 		if (!(isFileInfo || url!=null))
@@ -1445,35 +1447,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		}
 		
 		if (getStackSize()>1) {
-			String path = null;
-			String url2 = null;
-			if (url!=null && !url.equals("")) {
-				path = url;
-				url2 = url;
-			} else if (isFileInfo && !((fi.directory==null||fi.directory.equals("")))) {
-				path = fi.directory+fi.fileName;
-			} else if (fi.url!=null && !fi.url.equals("")) {
-				path = fi.url;
-				url2 = fi.url;
-			} else
-				return;
-			//IJ.log("revert: "+path+"  "+fi);
-			IJ.showStatus("Loading: " + path);
-			ImagePlus imp = IJ.openImage(path);
-			if (imp!=null) {
-				ImageWindow win = getWindow();
-				Point loc = null;
-				if (win!=null) loc = win.getLocation();
-				changes = false;
-				close();
-				FileInfo fi2 = imp.getOriginalFileInfo();
-				if (fi2!=null && (fi2.url==null || fi2.url.length()==0)) {
-					fi2.url = url2;
-					imp.setFileInfo(fi2);
-				}
-				ImageWindow.setNextLocation(loc);
-				imp.show();
-			}
+			revertStack(fi);
 			return;
 		}
 
@@ -1506,6 +1480,47 @@ public class ImagePlus implements ImageObserver, Measurements {
 		notifyListeners(UPDATED);
     }
     
+	void revertStack(FileInfo fi) {
+		String path = null;
+		String url2 = null;
+		if (url!=null && !url.equals("")) {
+			path = url;
+			url2 = url;
+		} else if (fi!=null && !((fi.directory==null||fi.directory.equals("")))) {
+			path = fi.directory+fi.fileName;
+		} else if (fi!=null && fi.url!=null && !fi.url.equals("")) {
+			path = fi.url;
+			url2 = fi.url;
+		} else
+			return;
+		//IJ.log("revert: "+path+"  "+fi);
+		IJ.showStatus("Loading: " + path);
+		ImagePlus imp = IJ.openImage(path);
+		if (imp!=null) {
+			int n = imp.getStackSize();
+			int c = imp.getNChannels();
+			int z = imp.getNSlices();
+			int t = imp.getNFrames();
+			if (z==n || t==n || (c==getNChannels()&&z==getNSlices()&&t==getNFrames())) {
+				setCalibration(imp.getCalibration());
+				setStack(imp.getStack(), c, z, t);
+			} else {
+				ImageWindow win = getWindow();
+				Point loc = null;
+				if (win!=null) loc = win.getLocation();
+				changes = false;
+				close();
+				FileInfo fi2 = imp.getOriginalFileInfo();
+				if (fi2!=null && (fi2.url==null || fi2.url.length()==0)) {
+					fi2.url = url2;
+					imp.setFileInfo(fi2);
+				}
+				ImageWindow.setNextLocation(loc);
+				imp.show();
+			}
+		}
+	}
+
     /** Returns a FileInfo object containing information, including the
 		pixel array, needed to save this image. Use getOriginalFileInfo()
 		to get a copy of the FileInfo object used to open the image.
