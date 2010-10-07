@@ -70,11 +70,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private Label label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
 	private boolean done;
 	private byte[] hSource, sSource, bSource;
-	private byte[] fillMask;
-	private ImageProcessor fillMaskIP;
-	private int[] restore;
-	private ImagePlus imp;
-	private ImageProcessor ip;
 	private boolean applyingStack;
 
 	private static final int DEFAULT = 0;
@@ -391,7 +386,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		//=====
 		panelt = new Panel();
-		darkBackground = new Checkbox("Dark background", true);
+		boolean db = Prefs.get("cthresholder.dark", true);
+		darkBackground = new Checkbox("Dark background", db);
 		darkBackground.addItemListener(this);
 		panelt.add(darkBackground);
 
@@ -459,7 +455,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		synchronized(this) {
 			notify();
 		}
-		imp.killRoi();
 	}
 
 	public void run() {
@@ -468,9 +463,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				try {wait();}
 				catch(InterruptedException e) {}
 				if (!done) {//RPD
-					reset(imp, ip);
-					apply(imp, ip);
-					imp.updateAndDraw();
+					ImagePlus imp = WindowManager.getCurrentImage();
+					if (imp!=null) {
+						reset(imp);
+						apply(imp);
+						imp.updateAndDraw();
+					}
 				}
 			}
 		}
@@ -499,6 +497,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 	public synchronized void itemStateChanged(ItemEvent e) {
 		if (IJ.debugMode) IJ.log("ColorThresolder.itemStateChanged");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) return;
 		Object source = e.getSource();
 		if (source==methodChoice) {
 			method = methodChoice.getSelectedItem();
@@ -516,7 +516,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			bandPassB.setState(true);
 		} else if (source==darkBackground) {
 		}
-		reset(imp,ip);
+		reset(imp);
 		if (source==methodChoice || source==colorSpaceChoice || source==darkBackground)
 			autoSetThreshold();
 		checkImage(); //new
@@ -538,15 +538,19 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		if (b==null) return;
 		boolean imageThere = checkImage();
 		if (imageThere) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp==null) return;
 			if (b==originalB) {
-				reset(imp,ip);
+				reset(imp);
+				imp.setProperty("OriginalImage", null);
 				filteredB.setEnabled(true);
 			} else if (b==filteredB) {
-				apply(imp,ip);
+				reset(imp);
+				apply(imp);
 			} else if (b==sampleB) {
-				reset(imp,ip);
+				reset(imp);
 				sample();
-				apply(imp,ip);
+				apply(imp);
 			} else if (b==selectB) {
 				createSelection();
 			} else if (b==stackB) {
@@ -570,16 +574,17 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	
 	//Select button pressed
 	void createSelection() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) return;
 		imp.killRoi();
 		mode = BLACK_AND_WHITE;
-		apply(imp,ip);
+		apply(imp);
 		IJ.run(imp, "8-bit", "");
 		//if (Prefs.blackBackground)
 		//	IJ.run(imp, "Invert", "");
 		IJ.run(imp, "Create Selection", "");
 		IJ.run(imp, "RGB Color", "");
-		ip = imp.getProcessor();
-		reset(imp,ip);
+		reset(imp);
 	}
 	
 	void generateMacro() {
@@ -687,6 +692,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 	void sample(){
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) return;
 		byte[] hsSource,ssSource,bsSource;
 
 		int [] bin = new int[256];
@@ -843,29 +850,29 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 
-	private boolean checkImage(){
+	private boolean checkImage() {
 		if (IJ.debugMode) IJ.log("ColorThresholder.checkImage");
-		imp = WindowManager.getCurrentImage();
+		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null || imp.getBitDepth()!=24) {
 			IJ.beep();
 			IJ.showStatus("No RGB image");
 			return false;
 		}
-		ip = setup(imp);
-		return ip!=null;
+		imp.killRoi();
+		boolean ok = setup(imp);
+		return ok;
 	}
 
-	ImageProcessor setup(ImagePlus imp) {
+	boolean setup(ImagePlus imp) {
 		if (IJ.debugMode) IJ.log("ColorThresholder.setup");
 		ImageProcessor ip;
 		int type = imp.getType();
 		if (type!=ImagePlus.COLOR_RGB)
-			return null;
+			return false;
 		ip = imp.getProcessor();
 		int id = imp.getID();
 		int slice = imp.getCurrentSlice();
 		if ((id!=previousImageID)||(slice!=previousSlice)||(flag) ) {
-			//ip.snapshot(); //override ColorProcessor bug in 1.32c
 			flag = false; //if true, flags a change of colour model
 			numSlices = imp.getStackSize();
 			stack = imp.getStack();
@@ -876,16 +883,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			hSource = new byte[numPixels];
 			sSource = new byte[numPixels];
 			bSource = new byte[numPixels];
-
-			//restore = (int[])ip.getPixelsCopy(); //This runs into trouble sometimes, so do it the long way:
-			if (IJ.debugMode) IJ.log("ColorThresholder: creating restore array");
-			int[] temp = (int[])ip.getPixels();
-			restore = new int[numPixels];
-			for (int i = 0; i < numPixels; i++)restore[i] = temp[i];
-
-			fillMask = new byte[numPixels];
-			fillMaskIP = new ByteProcessor(width, height, fillMask, null);
-			//IJ.showStatus(""+numPixels);
+			
+			ImageProcessor mask = new ByteProcessor(width, height);
+			imp.setProperty("Mask", mask);
 
 			//Get hsb or rgb from image.
 			ColorProcessor cp = (ColorProcessor)ip;
@@ -939,7 +939,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		}
 		previousImageID = id;
 		previousSlice = slice;
-		return ip;
+		return ip!=null;
 	}
 
 	void autoSetThreshold() {
@@ -1102,8 +1102,11 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		}
 	}
 
-	void apply(ImagePlus imp, ImageProcessor ip) {
+	void apply(ImagePlus imp) {
 		if (IJ.debugMode) IJ.log("ColorThresholder.apply");
+		ImageProcessor fillMaskIP = (ImageProcessor)imp.getProperty("Mask");
+		if (fillMaskIP==null) return;
+		byte[] fillMask = (byte[])fillMaskIP.getPixels();
 		byte fill = (byte)255;
 		byte keep = (byte)0;
 
@@ -1196,14 +1199,18 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			}
 		}
 
+		ImageProcessor ip = imp.getProcessor();
+		if (ip==null) return;
 		if (mode==BLACK_AND_WHITE) {
-			Color col = Prefs.blackBackground?Color.white:Color.black;
-			ip.setColor(col);
-			ip.fill(fillMaskIP);
-			col = Prefs.blackBackground?Color.black:Color.white;
-			ip.setColor(col);
-			fillMaskIP.invert();
-			ip.fill(fillMaskIP);
+			int[] pixels = (int[])ip.getPixels();
+			int fcolor = Prefs.blackBackground?0xffffffff:0xff000000;
+			int bcolor = Prefs.blackBackground?0xff000000:0xffffffff;
+			for (int i=0; i<numPixels; i++) {
+				if (fillMask[i]!=0)
+					pixels[i] = fcolor;
+				else
+					pixels[i]= bcolor;
+			}
 		} else {
 			ip.setColor(thresholdColor());
 			ip.fill(fillMaskIP);
@@ -1222,34 +1229,43 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 	void applyStack() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null) return;
 		applyingStack = true;
 		for (int i = 1; i <= numSlices; i++){
 			imp.setSlice(i);
 			if (!checkImage()) return;
-			apply(imp,ip);
+			apply(imp);
 		}
 		applyingStack = false;
 	}
 
-	//Assign the pixels of ip to the data in the restore array, while
-	//taking care to not give the address the restore array to the
-	//image processor.
-	void reset(ImagePlus imp, ImageProcessor ip) {
+	// Restores the original pixel data
+	void reset(ImagePlus imp) {
 		if (IJ.debugMode) IJ.log("ColorThresholder.reset");
+		ImageProcessor ip = imp.getProcessor();
+		ImagePlus originalImage = (ImagePlus)imp.getProperty("OriginalImage");
+		if (originalImage==null) {
+			originalImage = imp.createImagePlus();
+			originalImage.setTitle(imp.getTitle()+" (Original)");
+			originalImage.setProcessor(ip.duplicate());
+			imp.setProperty("OriginalImage", originalImage);
+		}
+		int[] restore = (int[])originalImage.getProcessor().getPixels();
 		int[] pixels = (int[])ip.getPixels();
-		for (int i = 0; i < numPixels; i++)
-			 pixels[i] = restore[i];
+		for (int i=0; i<numPixels; i++)
+			pixels[i] = restore[i];
 	}
 
     public void windowActivated(WindowEvent e) {
     	if (IJ.debugMode) IJ.log("ColorThresholder.windowActivated ");
-    	ImagePlus imp2 = WindowManager.getCurrentImage();
-		if (imp2==null || imp2.getBitDepth()!=24) {
+    	ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null || imp.getBitDepth()!=24) {
 			IJ.beep();
 			IJ.showStatus("No RGB image");
 		} else {
-			ip = setup(imp2);
-			reset(imp, ip);
+			setup(imp);
+			reset(imp);
 			filteredB.setEnabled(true);
     	}
 	}
@@ -1262,6 +1278,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		super.close();
 		instance = null;
 		done = true;
+		Prefs.set("cthresholder.dark", darkBackground.getState());
 		synchronized(this) {
 			notify();
 		}

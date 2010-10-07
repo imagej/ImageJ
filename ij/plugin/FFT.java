@@ -294,7 +294,7 @@ public class FFT implements  PlugIn, Measurements {
         gd.addCheckbox("Complex Fourier Transform", displayComplex);
         gd.setInsets(8, 20, 0);
         gd.addCheckbox("Do forward transform", false);
-		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-options");
+        gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-options");
         gd.showDialog();
         if (gd.wasCanceled())
             return;
