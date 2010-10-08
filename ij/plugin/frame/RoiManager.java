@@ -1526,8 +1526,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
-			if (hexColor==null) hexColor = getHex(null);
-			Color color = Colors.decode(hexColor, Color.cyan);
+			Color color = hexColor!=null?Colors.decode(hexColor, Color.cyan):null;
 			addRoi(null, false, color, (int)Math.round(lineWidth));
 		}
 		return true;	
