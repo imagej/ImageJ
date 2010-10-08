@@ -406,15 +406,16 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 
 	boolean showBandpassDialog(ImagePlus imp) {
 		GenericDialog gd = new GenericDialog("FFT Bandpass Filter");
-		gd.addNumericField("Filter_Large Structures Down to", filterLargeDia, 0, 4, "pixels");
-		gd.addNumericField("Filter_Small Structures Up to", filterSmallDia, 0, 4, "pixels");
-		gd.addChoice("Suppress Stripes:", choices, choiceDia);
-		gd.addNumericField("Tolerance of Direction:", toleranceDia, 0, 2, "%");
-		gd.addCheckbox("Autoscale After Filtering", doScalingDia);
-		gd.addCheckbox("Saturate Image when Autoscaling", saturateDia);
-		gd.addCheckbox("Display Filter", displayFilter);
+		gd.addNumericField("Filter_large structures down to", filterLargeDia, 0, 4, "pixels");
+		gd.addNumericField("Filter_small structures up to", filterSmallDia, 0, 4, "pixels");
+		gd.addChoice("Suppress stripes:", choices, choiceDia);
+		gd.addNumericField("Tolerance of direction:", toleranceDia, 0, 2, "%");
+		gd.addCheckbox("Autoscale after filtering", doScalingDia);
+		gd.addCheckbox("Saturate image when autoscaling", saturateDia);
+		gd.addCheckbox("Display filter", displayFilter);
 		if (stackSize>1)
-			gd.addCheckbox("Process Entire Stack", processStack);	
+			gd.addCheckbox("Process entire stack", processStack);	
+		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-bandpass");
 		gd.showDialog();
 		if(gd.wasCanceled())
 			return false;

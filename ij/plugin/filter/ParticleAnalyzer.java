@@ -202,11 +202,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		IJ.register(ParticleAnalyzer.class);
 		if (imp==null)
 			{IJ.noImage();return DONE;}
-		if (imp.getBitDepth()==24 && !isBinaryRGB(imp)) {
+		if (imp.getBitDepth()==24 && !isThresholdedRGB(imp)) {
 			IJ.error("Particle Analyzer",
-			"RGB images must be converted to binary using\n"
-			+"Process>Binary>Make Binary or thresholded\n"
-			+"using Image>Adjust>Color Threshold.");
+			"RGB images must be thresholded using\n"
+			+"Image>Adjust>Color Threshold.");
 			return DONE;
 		}
 		if (!showDialog())
@@ -229,9 +228,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (imp.getStackSize()>1 && processStack)
 			imp.setSlice(slice);
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
-			ip = ip.convertToByte(false);
-			int t = Prefs.blackBackground?255:0;
-			ip.setThreshold(t, t, ImageProcessor.NO_LUT_UPDATE);
+			ip = (ImageProcessor)imp.getProperty("Mask");
+			ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		}		
 		if (!analyze(imp, ip))
 			canceled = true;
@@ -373,15 +371,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		return true;
 	}
 	
-	private boolean isBinaryRGB(ImagePlus imp) {
-		ImageProcessor ip = imp.getProcessor();
-		int[] pixels = (int[])ip.getPixels();
-		int size = imp.getWidth()*imp.getHeight();
-		for (int i=0; i<size; i++) {
-			if ((pixels[i]&0xffffff)!=0 && (pixels[i]&0xffffff)!=0xffffff)
-				return false;
-		}
-		return true;
+	private boolean isThresholdedRGB(ImagePlus imp) {
+		Object obj = imp.getProperty("Mask");
+		if (obj==null || !(obj instanceof ImageProcessor))
+			return false;
+		ImageProcessor mask = (ImageProcessor)obj;
+		return mask.getWidth()==imp.getWidth() && mask.getHeight()==imp.getHeight();
 	}
 
 	boolean updateMacroOptions() {
@@ -431,6 +426,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				redirectIP = redirectStack.getProcessor(imp.getCurrentSlice());
 			} else
 				redirectIP = redirectImp.getProcessor();
+		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
+			ImagePlus original = (ImagePlus)imp.getProperty("OriginalImage");
+			if (original!=null && original.getWidth()==imp.getWidth() && original.getHeight()==imp.getHeight()) {
+				redirectImp = original;
+				redirectIP = original.getProcessor();
+			}
 		}
 		if (!setThresholdLevels(imp, ip))
 			return false;

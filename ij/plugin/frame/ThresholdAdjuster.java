@@ -17,6 +17,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 
 	public static final String LOC_KEY = "threshold.loc";
 	public static final String MODE_KEY = "threshold.mode";
+	public static final String DARK_BACKGROUND = "threshold.dark";
 	static final int RED=0, BLACK_AND_WHITE=1, OVER_UNDER=2;
 	static final String[] modes = {"Red","B&W", "Over/Under"};
 	static final double defaultMinThreshold = 85; 
@@ -164,8 +165,9 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		add(panel, c);
 
 		// checkbox
+		boolean db = Prefs.get(DARK_BACKGROUND, Prefs.blackBackground?true:false);
         darkBackground = new Checkbox("Dark background");
-        darkBackground.setState(false);
+        darkBackground.setState(db);
         darkBackground.addItemListener(this);
         c.gridx = 0;
         c.gridy = y++;
@@ -646,9 +648,10 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	}
 
     public void windowClosing(WindowEvent e) {
-    	close();
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		Prefs.set(MODE_KEY, mode);
+		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
+    	close();
 	}
 
     /** Overrides close() in PlugInFrame. */

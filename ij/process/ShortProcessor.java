@@ -49,7 +49,6 @@ public class ShortProcessor extends ImageProcessor {
 		this.pixels = pixels;
 		this.cm = cm;
 		resetRoi();
-		//if (pixels!=null) findMinAndMax();
 	}
 
 	/**
@@ -522,8 +521,6 @@ public class ShortProcessor extends ImageProcessor {
 				pixels[i++] = (short)v2;
 			}
 		}
-		//if (resetMinMax)
-		//	findMinAndMax();
     }
 
 	public void invert() {

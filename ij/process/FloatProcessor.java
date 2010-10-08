@@ -25,7 +25,6 @@ public class FloatProcessor extends ImageProcessor {
 		this.pixels = pixels;
 		this.cm = cm;
 		resetRoi();
-		//if (pixels!=null) findMinAndMax();
 	}
 
 	/** Creates a blank FloatProcessor using the default grayscale LUT that
@@ -39,7 +38,6 @@ public class FloatProcessor extends ImageProcessor {
 		this(width, height);
 		for (int i=0; i<pixels.length; i++)
 			this.pixels[i] = (float)(pixels[i]);
-		//findMinAndMax();
 	}
 	
 	/** Creates a FloatProcessor from a double array using the default grayscale LUT. */
@@ -47,7 +45,6 @@ public class FloatProcessor extends ImageProcessor {
 		this(width, height);
 		for (int i=0; i<pixels.length; i++)
 			this.pixels[i] = (float)pixels[i];
-		//findMinAndMax();
 	}
 	
 	/** Creates a FloatProcessor from a 2D float array using the default LUT. */
@@ -62,7 +59,6 @@ public class FloatProcessor extends ImageProcessor {
 			}
 		}
 		resetRoi();
-		//findMinAndMax();
 	}
 
 	/** Creates a FloatProcessor from a 2D int array. */
@@ -76,7 +72,6 @@ public class FloatProcessor extends ImageProcessor {
 				pixels[i++] = (float)array[x][y];
 			}
 		}
-		//findMinAndMax();
 	}
 
 	/**
@@ -458,8 +453,6 @@ public class FloatProcessor extends ImageProcessor {
 				pixels[i++] = v2;
 			}
 		}
-		//if (resetMinMax)
-		//	findMinAndMax();
     }
 
 	public void invert() {process(INVERT, 0.0);}

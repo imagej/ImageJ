@@ -196,11 +196,10 @@ public class Info implements PlugInFilter {
 
 	    FileInfo fi = imp.getOriginalFileInfo();
 		if (fi!=null) {
-			if (fi.directory!=null && fi.fileName!=null)
-				s += "Path: " + fi.directory + fi.fileName + "\n";
-			if (fi.url!=null && !fi.url.equals("")) {
+			if (fi.url!=null && !fi.url.equals(""))
 				s += "URL: " + fi.url + "\n";
-			}
+			else if (fi.directory!=null && fi.fileName!=null)
+				s += "Path: " + fi.directory + fi.fileName + "\n";
 		}
 	    
 	    Roi roi = imp.getRoi();

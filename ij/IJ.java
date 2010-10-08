@@ -884,7 +884,7 @@ public class IJ {
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
-		    	if (imp.getStack().isVirtual()) {
+		    	if (imp.getStack().isVirtual() && ((flags&PlugInFilter.NO_CHANGES)==0)) {
 		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
 		    		String msg =
 						"Custom code is required to process this virtual stack\n"+

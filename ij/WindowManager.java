@@ -259,7 +259,8 @@ public class WindowManager {
             name2 = name2.substring(0, lastDot);
         }
         int lastDash = name2.lastIndexOf("-");
-        if (lastDash!=-1 && name2.length()-lastDash<4)
+        len = name2.length();
+        if (lastDash!=-1&&len-lastDash<4&&lastDash<len-1&&Character.isDigit(name2.charAt(lastDash+1))&&name2.charAt(lastDash+1)!='0')
             name2 = name2.substring(0, lastDash);
         for (int i=1; i<=99; i++) {
             String name3 = name2+"-"+ i + extension;

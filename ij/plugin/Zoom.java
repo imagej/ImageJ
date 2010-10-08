@@ -16,6 +16,10 @@ public class Zoom implements PlugIn{
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
 		Point loc = ic.getCursorLoc();
+		if (!ic.cursorOverImage()) {
+			loc.x = imp.getWidth()/2;
+			loc.y = imp.getHeight()/2;
+		}
 		int x = ic.screenX(loc.x);
 		int y = ic.screenY(loc.y);
     	if (arg.equals("in")) {

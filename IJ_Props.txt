@@ -82,8 +82,9 @@ selection13="Enlarge...",ij.plugin.Selection("enlarge")
 selection14="Make Band...",ij.plugin.Selection("band")
 selection15="Specify...",ij.plugin.SpecifyROI
 selection16="Straighten...",ij.plugin.Straightener
-selection17="Line to Area",ij.plugin.Selection("toarea")
-selection18="Add to Manager [t]",ij.plugin.Selection("add")
+selection17="To Bounding Box",ij.plugin.Selection("tobox")
+selection18="Line to Area",ij.plugin.Selection("toarea")
+selection19="Add to Manager [t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")

@@ -52,9 +52,11 @@ public class Selection implements PlugIn, Measurements {
     		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
-    	else if (arg.equals("toarea"))
+    	else if (arg.equals("tobox"))
+    		toBoundingBox(imp); 
+     	else if (arg.equals("toarea"))
     		lineToArea(imp); 
-    	else if (arg.equals("properties"))
+	   	else if (arg.equals("properties"))
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
     	else
     		runMacro(arg);
@@ -356,6 +358,15 @@ public class Selection implements PlugIn, Measurements {
 		Roi.previousRoi = (Roi)roi.clone();
 	}
 	
+	void toBoundingBox(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null || roi.getType()==Roi.RECTANGLE)
+			{IJ.error("To Bounding Box", "Non-rectangular selection required"); return;}
+		Rectangle r = roi.getBounds();
+		imp.killRoi();
+		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));
+	}
+
 	void addToRoiManager(ImagePlus imp) {
 		if (IJ.macroRunning() &&  Interpreter.isBatchModeRoiManager())
 			IJ.error("run(\"Add to Manager\") may not work in batch mode macros");
