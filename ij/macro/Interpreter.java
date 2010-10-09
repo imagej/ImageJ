@@ -1059,14 +1059,15 @@ public class Interpreter implements MacroConstants {
 		imageTable = null;
 		WindowManager.setTempCurrentImage(null);
 		wasError = true;
-		done = true;
 		if (showMessage) {
 			String line = getErrorLine();
+			done = true;
 			if (line.length()>120)
 				line = line.substring(0,119)+"...";
 			showError("Macro Error", message+" in line "+lineNumber+".\n \n"+line, variables);
+			throw new RuntimeException(Macro.MACRO_CANCELED);
 		}
-		throw new RuntimeException(Macro.MACRO_CANCELED);
+		done = true;
 	}
 	
 	void showError(String title, String msg, String[] variables) {

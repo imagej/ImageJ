@@ -23,14 +23,21 @@ public class Duplicator implements PlugIn, TextListener {
 	private int first, last;
 	private Checkbox checkbox;
 	private TextField rangeField;
+	private TextField[] rangeFields;
+	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);
-		if (!IJ.altKeyDown()||stackSize>1)
-			newTitle = showDialog(imp, "Duplicate...", "Title: ", newTitle);
+		if (!IJ.altKeyDown()||stackSize>1) {
+			if (imp.isHyperStack()) {
+				duplicateHyperstack(imp, newTitle);
+				return;
+			} else
+				newTitle = showDialog(imp, "Duplicate...", "Title: ", newTitle);
+		}
 		if (newTitle==null)
 			return;
 		ImagePlus imp2;
@@ -131,13 +138,53 @@ public class Duplicator implements PlugIn, TextListener {
 		return imp2;
 	}
 
+	/** Returns a new hyperstack containing a possibly reduced version of the input image. */
+	public ImagePlus run(ImagePlus imp, int firstC, int lastC, int firstZ, int lastZ, int firstT, int lastT) {
+		Rectangle rect = null;
+		Roi roi = imp.getRoi();
+		if (roi!=null && roi.isArea())
+			rect = roi.getBounds();
+		int width = rect!=null?rect.width:imp.getWidth();
+		int height = rect!=null?rect.height:imp.getHeight();
+		ImageStack stack = imp.getStack();
+		ImageStack stack2 = new ImageStack(width, height);
+		for (int t=firstT; t<=lastT; t++) {
+			for (int z=firstZ; z<=lastZ; z++) {
+				for (int c=firstC; c<=lastC; c++) {
+					int n1 = imp.getStackIndex(c, z, t);
+					ImageProcessor ip = stack.getProcessor(n1);
+					String label = stack.getSliceLabel(n1);
+					ip.setRoi(rect);
+					ip = ip.crop();
+					stack2.addSlice(label, ip);
+				}
+			}
+		}
+		ImagePlus imp2 = imp.createImagePlus();
+		imp2.setStack("DUP_"+imp.getTitle(), stack2);
+		imp2.setDimensions(lastC-firstC+1, lastZ-firstZ+1, lastT-firstT+1);
+		if (imp.isComposite() && lastC>firstC) {
+			int mode = ((CompositeImage)imp).getMode();
+       		imp2 = new CompositeImage(imp2, mode);
+       		int i2 = 1;
+       		for (int i=firstC; i<=lastC; i++) {
+       			LUT lut = ((CompositeImage)imp).getChannelLut(i);
+       			((CompositeImage)imp2).setChannelLut(lut, i2++);
+       		}
+       	}
+		imp2.setOpenAsHyperStack(true);
+   		if (Recorder.record)
+   			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
+		return imp2;
+	}
+
 	String showDialog(ImagePlus imp, String title, String prompt, String defaultString) {
 		int stackSize = imp.getStackSize();
 		duplicateSubstack = stackSize>1 && (stackSize==imp.getNSlices()||stackSize==imp.getNFrames());
 		GenericDialog gd = new GenericDialog(title);
 		gd.addStringField(prompt, defaultString, duplicateSubstack?15:20);
 		if (stackSize>1) {
-			String msg = duplicateSubstack?"Duplicate Stack":"Duplicate Entire Stack";
+			String msg = duplicateSubstack?"Duplicate stack":"Duplicate entire stack";
 			gd.addCheckbox(msg, duplicateStack||imp.isComposite());
 			if (duplicateSubstack) {
 				gd.setInsets(2, 30, 3);
@@ -172,9 +219,84 @@ public class Duplicator implements PlugIn, TextListener {
 		return title;
 	}
 	
+	void duplicateHyperstack(ImagePlus imp, String newTitle) {
+		String title = showHSDialog(imp, newTitle);
+		if (title==null)
+			return;
+		ImagePlus imp2 = null;
+		Roi roi = imp.getRoi();
+		if (!duplicateStack)
+			imp2 = duplicateImage(imp);
+		else
+			imp2 = run(imp, firstC, lastC, firstZ, lastZ, firstT, lastT);
+		if (imp2==null) return;
+		imp2.setTitle(newTitle);
+		imp2.show();
+		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
+			imp2.restoreRoi();
+	}
+
+	String showHSDialog(ImagePlus imp, String newTitle) {
+		int nChannels = imp.getNChannels();
+		int nSlices = imp.getNSlices();
+		int nFrames = imp.getNFrames();
+		GenericDialog gd = new GenericDialog("Duplicate");
+		gd.addStringField("Title:", newTitle, 15);
+		gd.setInsets(12, 20, 8);
+		gd.addCheckbox("Duplicate hyperstack", duplicateStack);
+		gd.setInsets(2, 30, 3);
+		gd.addStringField("Channels (c):", "1-"+nChannels);
+		gd.setInsets(2, 30, 3);
+		gd.addStringField("Slices (z):", "1-"+nSlices);
+		gd.setInsets(2, 30, 3);
+		gd.addStringField("Frames (t):", "1-"+nFrames);
+		Vector v = gd.getStringFields();
+		rangeFields = new TextField[3];
+		for (int i=0; i<3; i++) {
+			rangeFields[i] = (TextField)v.elementAt(i+1);
+			rangeFields[i].addTextListener(this);
+		}
+		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return null;
+		String title = gd.getNextString();
+		duplicateStack = gd.getNextBoolean();
+		
+		String[] range = Tools.split(gd.getNextString(), " -");
+		double c1 = Tools.parseDouble(range[0]);
+		double c2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+		firstC = Double.isNaN(c1)?1:(int)c1;
+		lastC = Double.isNaN(c2)?firstC:(int)c2;
+		if (firstC<1) firstC = 1;
+		if (lastC>nChannels) lastC = nChannels;
+		if (firstC>lastC) {firstC=1; lastC=nChannels;}
+		
+		range = Tools.split(gd.getNextString(), " -");
+		double z1 = Tools.parseDouble(range[0]);
+		double z2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+		firstZ = Double.isNaN(z1)?1:(int)z1;
+		lastZ = Double.isNaN(z2)?firstZ:(int)z2;
+		if (firstZ<1) firstZ = 1;
+		if (lastZ>nSlices) lastZ = nSlices;
+		if (firstZ>lastZ) {firstZ=1; lastZ=nSlices;}
+
+		range = Tools.split(gd.getNextString(), " -");
+		double t1 = Tools.parseDouble(range[0]);
+		double t2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+		firstT= Double.isNaN(t1)?1:(int)t1;
+		lastT = Double.isNaN(t2)?firstT:(int)t2;
+		if (firstT<1) firstT = 1;
+		if (lastT>nFrames) lastT = nFrames;
+		if (firstT>lastT) {firstT=1; lastT=nFrames;}
+
+		return title;
+	}
+	
 	public void textValueChanged(TextEvent e) {
 		checkbox.setState(true);
 	}
-
 	
+
+
 }
