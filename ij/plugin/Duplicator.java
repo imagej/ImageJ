@@ -163,15 +163,20 @@ public class Duplicator implements PlugIn, TextListener {
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
 		imp2.setDimensions(lastC-firstC+1, lastZ-firstZ+1, lastT-firstT+1);
-		if (imp.isComposite() && lastC>firstC) {
+		if (imp.isComposite()) {
 			int mode = ((CompositeImage)imp).getMode();
-       		imp2 = new CompositeImage(imp2, mode);
-       		int i2 = 1;
-       		for (int i=firstC; i<=lastC; i++) {
-       			LUT lut = ((CompositeImage)imp).getChannelLut(i);
-       			((CompositeImage)imp2).setChannelLut(lut, i2++);
-       		}
-       	}
+			if (lastC>firstC) {
+				imp2 = new CompositeImage(imp2, mode);
+				int i2 = 1;
+				for (int i=firstC; i<=lastC; i++) {
+					LUT lut = ((CompositeImage)imp).getChannelLut(i);
+					((CompositeImage)imp2).setChannelLut(lut, i2++);
+				}
+			} else if (firstC==lastC) {
+				LUT lut = ((CompositeImage)imp).getChannelLut(firstC);
+				imp2.getProcessor().setColorModel(lut);
+			}
+        }
 		imp2.setOpenAsHyperStack(true);
    		if (Recorder.record)
    			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
@@ -225,10 +230,17 @@ public class Duplicator implements PlugIn, TextListener {
 			return;
 		ImagePlus imp2 = null;
 		Roi roi = imp.getRoi();
-		if (!duplicateStack)
-			imp2 = duplicateImage(imp);
-		else
-			imp2 = run(imp, firstC, lastC, firstZ, lastZ, firstT, lastT);
+		if (!duplicateStack) {
+			int nChannels = imp.getNChannels();
+			if (nChannels>1 && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+				firstC = 1;
+				lastC = nChannels;
+			} else
+				firstC = lastC = imp.getChannel();
+			firstZ = lastZ = imp.getSlice();
+			firstT = lastT = imp.getFrame();
+		}
+		imp2 = run(imp, firstC, lastC, firstZ, lastZ, firstT, lastT);
 		if (imp2==null) return;
 		imp2.setTitle(newTitle);
 		imp2.show();
@@ -244,15 +256,25 @@ public class Duplicator implements PlugIn, TextListener {
 		gd.addStringField("Title:", newTitle, 15);
 		gd.setInsets(12, 20, 8);
 		gd.addCheckbox("Duplicate hyperstack", duplicateStack);
-		gd.setInsets(2, 30, 3);
-		gd.addStringField("Channels (c):", "1-"+nChannels);
-		gd.setInsets(2, 30, 3);
-		gd.addStringField("Slices (z):", "1-"+nSlices);
-		gd.setInsets(2, 30, 3);
-		gd.addStringField("Frames (t):", "1-"+nFrames);
+		int nRangeFields = 0;
+		if (nChannels>1) {
+			gd.setInsets(2, 30, 3);
+			gd.addStringField("Channels (c):", "1-"+nChannels);
+			nRangeFields++;
+		}
+		if (nSlices>1) {
+			gd.setInsets(2, 30, 3);
+			gd.addStringField("Slices (z):", "1-"+nSlices);
+			nRangeFields++;
+		}
+		if (nFrames>1) {
+			gd.setInsets(2, 30, 3);
+			gd.addStringField("Frames (t):", "1-"+nFrames);
+			nRangeFields++;
+		}
 		Vector v = gd.getStringFields();
 		rangeFields = new TextField[3];
-		for (int i=0; i<3; i++) {
+		for (int i=0; i<nRangeFields; i++) {
 			rangeFields[i] = (TextField)v.elementAt(i+1);
 			rangeFields[i].addTextListener(this);
 		}
@@ -262,34 +284,39 @@ public class Duplicator implements PlugIn, TextListener {
 			return null;
 		String title = gd.getNextString();
 		duplicateStack = gd.getNextBoolean();
-		
-		String[] range = Tools.split(gd.getNextString(), " -");
-		double c1 = Tools.parseDouble(range[0]);
-		double c2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
-		firstC = Double.isNaN(c1)?1:(int)c1;
-		lastC = Double.isNaN(c2)?firstC:(int)c2;
-		if (firstC<1) firstC = 1;
-		if (lastC>nChannels) lastC = nChannels;
-		if (firstC>lastC) {firstC=1; lastC=nChannels;}
-		
-		range = Tools.split(gd.getNextString(), " -");
-		double z1 = Tools.parseDouble(range[0]);
-		double z2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
-		firstZ = Double.isNaN(z1)?1:(int)z1;
-		lastZ = Double.isNaN(z2)?firstZ:(int)z2;
-		if (firstZ<1) firstZ = 1;
-		if (lastZ>nSlices) lastZ = nSlices;
-		if (firstZ>lastZ) {firstZ=1; lastZ=nSlices;}
-
-		range = Tools.split(gd.getNextString(), " -");
-		double t1 = Tools.parseDouble(range[0]);
-		double t2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
-		firstT= Double.isNaN(t1)?1:(int)t1;
-		lastT = Double.isNaN(t2)?firstT:(int)t2;
-		if (firstT<1) firstT = 1;
-		if (lastT>nFrames) lastT = nFrames;
-		if (firstT>lastT) {firstT=1; lastT=nFrames;}
-
+		if (nChannels>1) {
+			String[] range = Tools.split(gd.getNextString(), " -");
+			double c1 = Tools.parseDouble(range[0]);
+			double c2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			firstC = Double.isNaN(c1)?1:(int)c1;
+			lastC = Double.isNaN(c2)?firstC:(int)c2;
+			if (firstC<1) firstC = 1;
+			if (lastC>nChannels) lastC = nChannels;
+			if (firstC>lastC) {firstC=1; lastC=nChannels;}
+		} else
+			firstC = lastC = 1;
+		if (nSlices>1) {
+			String[] range = Tools.split(gd.getNextString(), " -");
+			double z1 = Tools.parseDouble(range[0]);
+			double z2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			firstZ = Double.isNaN(z1)?1:(int)z1;
+			lastZ = Double.isNaN(z2)?firstZ:(int)z2;
+			if (firstZ<1) firstZ = 1;
+			if (lastZ>nSlices) lastZ = nSlices;
+			if (firstZ>lastZ) {firstZ=1; lastZ=nSlices;}
+		} else
+			firstZ = lastZ = 1;
+		if (nFrames>1) {
+			String[] range = Tools.split(gd.getNextString(), " -");
+			double t1 = Tools.parseDouble(range[0]);
+			double t2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			firstT= Double.isNaN(t1)?1:(int)t1;
+			lastT = Double.isNaN(t2)?firstT:(int)t2;
+			if (firstT<1) firstT = 1;
+			if (lastT>nFrames) lastT = nFrames;
+			if (firstT>lastT) {firstT=1; lastT=nFrames;}
+		} else
+			firstT = lastT = 1;
 		return title;
 	}
 	

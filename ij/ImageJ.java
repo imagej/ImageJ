@@ -73,13 +73,19 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.44j";
-	public static final String BUILD = "1"; 
+	public static final String BUILD = "4"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 	/** Address of socket where Image accepts commands */
 	public static final int DEFAULT_PORT = 57294;
-	public static final int STANDALONE=0, EMBEDDED=1;
+	
+	/** Run as normal application. */
+	public static final int STANDALONE=0;
+	/** Run embedded in another application. */
+	public static final int EMBEDDED=1;
+	/** Run embedded and invisible in another application. */
+	public static final int NO_SHOW=2;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static int port = DEFAULT_PORT;
@@ -106,9 +112,14 @@ public class ImageJ extends Frame implements ActionListener,
 		this(null, STANDALONE);
 	}
 	
+	/** Creates a new ImageJ frame that runs as an application in the specified mode. */
+	public ImageJ(int mode) {
+		this(null, mode);
+	}
+
 	/** Creates a new ImageJ frame that runs as an applet. */
 	public ImageJ(java.applet.Applet applet) {
-		this(applet, 0);
+		this(applet, STANDALONE);
 	}
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
@@ -116,7 +127,7 @@ public class ImageJ extends Frame implements ActionListener,
 		version of ImageJ which does not start the SocketListener. */
 	public ImageJ(java.applet.Applet applet, int mode) {
 		super("ImageJ");
-		embedded = applet==null && mode==EMBEDDED;
+		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
 		if (IJ.isLinux()) {
@@ -160,18 +171,14 @@ public class ImageJ extends Frame implements ActionListener,
 		int ijWidth = tbSize.width+10;
 		int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
-		if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
-		setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
-		setLocation(loc.x, loc.y);
-		pack();
-		setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
-		//if (IJ.isJava15()) {
-		//	try {
-		//		Method method = Frame.class.getMethod("setAlwaysOnTop", new Class[] {boolean.class});
-		//		method.invoke(this, new Object[]{Boolean.TRUE});
-		//	} catch(Exception e) {}
-		//}
-		show();
+		if (mode!=NO_SHOW) {
+			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
+			setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
+			setLocation(loc.x, loc.y);
+			pack();
+			setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
+			show();
+		}
 		if (err1!=null)
 			IJ.error(err1);
 		if (err2!=null) {
