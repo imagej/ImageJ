@@ -923,6 +923,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					} else
 						IJ.runPlugIn("ij.plugin.frame.LineWidthAdjuster", "");
 					break;
+				case ANGLE:
+					showAngleDialog();
+					break;
 				case POINT:
 					if (multiPointMode) {
 						if (imp!=null && imp.getRoi()!=null)
@@ -1235,7 +1238,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	void showBrushDialog() {
 		GenericDialog gd = new GenericDialog("Selection Brush");
-		gd.addCheckbox("Enable Selection Brush", brushEnabled);
+		gd.addCheckbox("Enable selection brush", brushEnabled);
 		gd.addNumericField("           Size:", brushSize, 0, 4, "pixels");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
@@ -1254,6 +1257,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		setRoundRectArcSize((int)gd.getNextNumber());
+	}
+
+	void showAngleDialog() {
+		GenericDialog gd = new GenericDialog("Angle Tool");
+		gd.addCheckbox("Measure reflex angle", Prefs.reflexAngle);
+		gd.showDialog();
+		if (!gd.wasCanceled())
+			Prefs.reflexAngle = gd.getNextBoolean();
 	}
 
 }

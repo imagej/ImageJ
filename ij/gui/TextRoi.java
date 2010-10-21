@@ -63,7 +63,7 @@ public class TextRoi extends Roi {
         if (size<(12/mag))
         	size = (int)(12/mag);
 		theText[0] = "Type, then";
-		theText[1] = "Ctl+D";
+		theText[1] = "ctrl+alt+b";
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;
 			//IJ.write(""+previousRoi.getBounds());

@@ -498,8 +498,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 					angle = roi.getAngle(l.x1, l.y1, l.x2, l.y2);
 					rt.addValue("Angle", angle);
 				}
-			} else if (roi.getType()==Roi.ANGLE)
-				rt.addValue("Angle", ((PolygonRoi)roi).getAngle());
+			} else if (roi.getType()==Roi.ANGLE) {
+				double angle = ((PolygonRoi)roi).getAngle();
+				if (Prefs.reflexAngle) angle = 360.0-angle;
+				rt.addValue("Angle", angle);
+			}
 			else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
 		}

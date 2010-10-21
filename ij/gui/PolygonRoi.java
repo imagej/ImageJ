@@ -282,7 +282,8 @@ public class PolygonRoi extends Roi {
 			}
 		}
 		String length = len!=-1?", length=" + IJ.d2s(len):"";
-		String angle = !Double.isNaN(degrees)?", angle=" + IJ.d2s(degrees):"";
+		double degrees2 = tool==Toolbar.ANGLE&&nPoints==3&&Prefs.reflexAngle?360.0-degrees:degrees;
+		String angle = !Double.isNaN(degrees)?", angle=" + IJ.d2s(degrees2):"";
 		IJ.showStatus(imp.getLocationAsString(ox,oy) + length + angle);
 	}
 
@@ -438,7 +439,8 @@ public class PolygonRoi extends Roi {
 		degrees = Math.abs(180-Math.abs(angle1-angle2));
 		if (degrees>180.0)
 			degrees = 360.0-degrees;
-		return ", angle=" + IJ.d2s(degrees);
+		double degrees2 = Prefs.reflexAngle&&type==ANGLE?360.0-degrees:degrees;
+		return ", angle=" + IJ.d2s(degrees2);
 	}
    
    protected void mouseDownInHandle(int handle, int sx, int sy) {

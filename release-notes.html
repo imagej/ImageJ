@@ -5,13 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.44j, 11 October 2010</u>
+<li> <u>1.44j, 21 October 2010</u>
 <ul>
 <li> <i>Image&gt;Duplicate</i> now has the ability to reduce the size of hyperstacks.
+<li> Double click on the angle tool icon to enable measurement of reflex angles.
 <li> Added the ImageJ(ImageJ.NO_SHOW) constructor, which allows other Java applications
 to open ImageJ invisibly.
 <li> Fixed a bug that caused ImageCanvases to ignore mousePressed and 
 mouseMoved events when using ImageJ as a library.
+<li> Fixed a bug that caused the <i>Image&gt;Adjust&gt;Size</i> interpolation setting
+to be changed to "None" after a <i>Crop</i>.
+<li> Thanks to Wilhelm Burger, fixed a bug in the ByteBlitter class that caused to throw an 
+exception if the copyBits() method was passed a ShortProcessor or a FloatProcessor.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

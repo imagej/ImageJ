@@ -536,7 +536,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		if (IJ.debugMode) IJ.log("ColorThresholder.actionPerformed");
 		Button b = (Button)e.getSource();
 		if (b==null) return;
-		boolean imageThere = checkImage();
+		boolean imageThere = b==sampleB || checkImage();
 		if (imageThere) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp==null) return;
@@ -548,7 +548,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				reset(imp);
 				apply(imp);
 			} else if (b==sampleB) {
-				reset(imp);
 				sample();
 				apply(imp);
 			} else if (b==selectB) {
@@ -691,9 +690,11 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			"");
 	}
 
-	void sample(){
+	void sample() {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null) return;
+		if (imp==null || imp.getBitDepth()!=24)
+			return;
+		reset(imp);
 		byte[] hsSource,ssSource,bsSource;
 
 		int [] bin = new int[256];

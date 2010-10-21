@@ -359,7 +359,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
 			return true;
 		dispose();
-		imp.flush();
+		if (imp!=null)
+			imp.flush();
 		imp = null;
 		return true;
 	}
