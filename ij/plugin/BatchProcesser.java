@@ -142,7 +142,8 @@ import java.util.Vector;
 			}
 			imp.close();
 		}
-		IJ.run("Image Sequence...", "open=[" + outputPath + "]"+" use");
+		if (outputPath!=null && !outputPath.equals(""))
+			IJ.run("Image Sequence...", "open=[" + outputPath + "]"+" use");
 	}
 	
 	String pad(int n) {
@@ -248,7 +249,7 @@ import java.util.Vector;
 		else if (item.equals("Measure"))
 			code = "run(\"Measure\");\n";
 		else if (item.equals("Resize"))
-			code = "run(\"Size...\", \"width=0 height=480 constrain interpolation=Bicubic\");\n";
+			code = "run(\"Size...\", \"width=512 height=512 interpolation=Bicubic\");\n";
 		else if (item.equals("Scale"))
 			code = "scale=1.5;\nw=getWidth*scale; h=getHeight*scale;\nrun(\"Size...\", \"width=w height=h interpolation=Bilinear\");\n";
 		else if (item.equals("Label"))
