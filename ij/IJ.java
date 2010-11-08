@@ -275,6 +275,8 @@ public class IJ {
 			commandTable.put("New... ", "Table...");
 			commandTable.put("Arbitrarily...", "Rotate... ");
 			commandTable.put("Measurements...", "Results... ");
+			commandTable.put("List Commands...", "Find Commands...");
+			commandTable.put("Capture Screen ", "Capture Screen");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -888,7 +890,7 @@ public class IJ {
 		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
 		    		String msg =
 						"Use the Process>Batch>Virtual Stack command\n"+
-						"to process a virtual stacks like this one or convert\n"+
+						"to process a virtual stack ike this one or convert\n"+
 						"it to a normal stack using Image>Duplicate, which\n"+
 						"will require "+size+"MB of additional memory.";
 		    		error(msg);

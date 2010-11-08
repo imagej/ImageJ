@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.44j";
-	public static final String BUILD = "9"; 
+	public static final String BUILD = "10"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -422,9 +422,9 @@ public class ImageJ extends Frame implements ActionListener,
 							cmd="Next Slice [>]";
 					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
-					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !loci(imp))
+					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp))
 							cmd="Out";
-					else if (zoomKey && keyCode==KeyEvent.VK_UP && !loci(imp))
+					else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp))
 							cmd="In";
 					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK) != 0)
@@ -455,10 +455,19 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 	}
 	
-	// LOCI Data Browser window?
-	private boolean loci(ImagePlus imp) {
+	private boolean ignoreArrowKeys(ImagePlus imp) {
+		Frame frame = WindowManager.getFrontWindow();
+		String title = frame.getTitle();
+		if (title!=null && title.equals("ROI Manager"))
+			return true;
+		// Control Panel?
+		if (frame!=null && frame instanceof javax.swing.JFrame)
+			return true;
 		ImageWindow win = imp.getWindow();
-		return imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci");
+		// LOCI Data Browser window?
+		if (imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci"))
+			return true;
+		return false;
 	}
 	
 	public void keyTyped(KeyEvent e) {

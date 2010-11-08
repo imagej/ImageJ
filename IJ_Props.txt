@@ -84,7 +84,7 @@ selection15="Specify...",ij.plugin.SpecifyROI
 selection16="Straighten...",ij.plugin.Straightener
 selection17="To Bounding Box",ij.plugin.Selection("tobox")
 selection18="Line to Area",ij.plugin.Selection("toarea")
-selection19="Add to Manager [t]",ij.plugin.Selection("add")
+selection19="Add to Manager[t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
@@ -348,16 +348,16 @@ shortcuts04="Remove...",ij.plugin.Hotkeys("remove")
 shortcuts05=-
 
 # Plugins installed in the Plugins/Utilities submenu
-utilities01="Control Panel... [U]",ij.plugin.ControlPanel
+utilities01="Control Panel...[U]",ij.plugin.ControlPanel
 utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="Threads...",ij.plugin.ThreadLister
 utilities04="Benchmark",ij.plugin.filter.Benchmark
 utilities05="Reset...",ij.plugin.SimpleCommands("reset")
 utilities06="Monitor Memory...",ij.plugin.MemoryMonitor
 utilities07="Search...",ij.plugin.SimpleCommands("search")
-utilities08="Capture Screen [G]",ij.plugin.ScreenGrabber
+utilities08="Capture Screen[G]",ij.plugin.ScreenGrabber
 utilities09="Capture Image",ij.plugin.ScreenGrabber("image")
-utilities10="Find Commands... [l]",ij.plugin.CommandFinder
+utilities10="Find Commands...[l]",ij.plugin.CommandFinder
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")
