@@ -85,9 +85,13 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			return;
 		}
 		dtde.dropComplete(true);
-		if (flavors==null || flavors.length==0)
-			IJ.error("First drag and drop ignored. Please try again. You can avoid this\n"
-			+"problem by dragging to the toolbar instead of the status bar.");
+		if (flavors==null || flavors.length==0) {
+			if (IJ.isMacOSX())
+				IJ.error("First drag and drop ignored. Please try again. You can avoid this\n"
+				+"problem by dragging to the toolbar instead of the status bar.");
+			else
+				IJ.error("Drag and drop failed");
+		}
 	}
 	    
 	    private String fixLinuxString(String s) {

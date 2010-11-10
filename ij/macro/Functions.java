@@ -4392,6 +4392,8 @@ public class Functions implements MacroConstants, Measurements {
 			return trimArray();
 		else if (name.equals("sort"))
 			return sortArray();
+		else if (name.equals("sortedIndexes"))
+			return getSortedIndexes();
 		else if (name.equals("getStatistics"))
 			return getArrayStatistics();
 		else if (name.equals("fill"))
@@ -4459,7 +4461,40 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
-	Variable[] getArrayStatistics() {
+	Variable[] getSortedIndexes() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getRightParen();
+		int len = a.length;
+		int nNumbers = 0;
+		int[] indexes = new int[len];
+		for (int i = 0; i < len; i++) {
+			indexes[i] = i;
+			if (a[i].getString()==null)
+				nNumbers++;
+		}
+		if (nNumbers!=len && nNumbers!=0) {
+			interp.error("Mixed strings and numbers");
+			return a;
+		}
+		Variable[] varArray = new Variable[len];
+		if (nNumbers==len) {
+			double[] doubles = new double[len];
+			for (int i = 0; i < len; i++)
+				doubles[i] = (double) (a[i].getValue());
+			Tools.quicksort(doubles, indexes);
+		} else if (nNumbers==0) {
+			String[] strings = new String[len];
+			for (int i = 0; i < len; i++)
+				strings[i] = a[i].getString();
+			Tools.quicksort(strings, indexes);
+		}
+		for (int i=0; i<len; i++)
+			varArray[indexes[i]] = new Variable((double) i);
+		return varArray;
+	}
+    
+    Variable[] getArrayStatistics() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
 		Variable minv = getNextVariable();

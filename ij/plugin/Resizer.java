@@ -54,6 +54,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		int z1 = imp.getStackSize();
 		int t1 = 0;
 		int z2=0, t2=0;
+		int saveMethod = interpolationMethod;
 		if (crop) {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
@@ -153,6 +154,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				IJ.outOfMemory("Resize");
 			}
 			imp.changes = true;
+			if (crop)
+				interpolationMethod = saveMethod;
 		}
 		
 		ImagePlus imp2 = null;

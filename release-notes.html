@@ -5,34 +5,31 @@
 </head>
 <body>
 
-<li> <u>1.44i, 7 October 2010</u>
+<li> <u>1.44j, 10 November 2010</u>
 <ul>
-<li> Added the <i>Edit&gt;Selection&gt;To Bounding Box</i> command.
-<li> Added the "Run garbage collector on status bar click" checkbox to the
-<i>Edit&gt;Options&gt;Memory&Threads</i> dialog box.
-<li> Added "Help" buttons to the FFT dialog boxes.
-<li> Pressing "+" (<i>Image&gt;Zoom&gt;In</i>) now zooms to
-the center of the image when the cursor is not over the image window.
-<li> <i>File&gt;Revert</i> now works with stacks.
-<li> The particle analyzer now works with virtual stacks and with RGB images
-thresholded using <i>Image&gt;Adjust&gt;Color Threshold</i>.
-<li> The state of the <i>Image&gt;Adjust&gt;Threshold</i> and
-<i>ColorThreshold</i> "Dark background" checkboxes are saved
-in the preference file.
-<li> The Array.sort() macro function now does case-insensitive string sorts
-<li> Fixed a bug that sometimes caused the magnifying glass tool to zoom the wrong image on Linux.
-<li> Thanks to Matthew Smith, fixed a bug that caused non-rectangular pastes to fail
-when switching to another image.
-<li> Fixed a bug that caused the wrong button to be highlighted in
-showMessageWithCancel() dialog boxes.
-<li> Fixed a bug that caused 3D projection of RGB stacks to fail if "Use inverting lookup table" was
-enabled in <i>Edit&gt;Options&gt;Appearance</i>.
-<li> Fixed a bug that caused a "Rename as" dialog to be displayed if the alt key was
-held down while a batch mode macro using the ROI Manager was running.
-<li> Fixed a bug that caused an FFT window to always be displayed when "Raw power spectrum"
-was checked in the "FFT Options" dialog box.
-<li> Fixed a bug with the roiManager("Add") macro function that
-caused it to set the ROI stroke color to cyan.
+<li> <i>Image&gt;Duplicate</i> now has the ability to reduce the size of hyperstacks.
+<li> Double click on the angle tool icon to enable measurement of reflex angles.
+<li> Thanks to Johannes Schindelen, Added the <i>More&gt;&gt;XOR</i> command to the ROI Manager.
+<li> Added the ImageJ(ImageJ.NO_SHOW) constructor, which allows other Java applications
+to open ImageJ invisibly.
+<li> Added a "y" keyboard shortcut to the <i>Edit&gt;Selection&gt;Properties</i> command.
+<li> Thanks to Norbert Vischer, added the Array.sortedIndexes() macro function
+(<a href="macros/examples/SortedIndexesDemo.txt">example</a>).
+<li> Fixed a bug that caused ImageCanvases to ignore mousePressed and 
+mouseMoved events when using ImageJ as a library.
+<li> Fixed a bug that caused the <i>Image&gt;Adjust&gt;Size</i> interpolation setting
+to be changed to "None" after a <i>Crop</i>.
+<li> Thanks to Wilhelm Burger, fixed a bug in the ByteBlitter class that caused to throw an 
+exception if the copyBits() method was passed a ShortProcessor or a FloatProcessor.
+<li> Fixed a bug that caused saving of Results windows created using IJ.write() calls to fail.
+<li> Thanks to Norbert Vischer, fixed a bug that caused TIFF files opened as virtual stacks
+to become corrupted when saved in place.
+<li> Fixed a bug that caused <i>Process&gt;Binary&gt;Skeletonize</i> to not work
+as expected for some diagonal objects.
+<li> Fixed a bug that caused the up and down arrow keys in the Control Panel to
+zoom the image in and out.
+<li> Fixed bugs that caused the "Control Panel" and "List Commands" commans in the right-click
+drop down menu to not work.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

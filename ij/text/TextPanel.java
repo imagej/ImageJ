@@ -739,7 +739,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			String lastLine = iRowCount>=2?getLine(iRowCount-2):null;
 			summarized = lastLine!=null && lastLine.startsWith("Max");
 		}
-		if (rt!=null && !summarized) {
+		if (rt!=null && rt.getCounter()!=0 && !summarized) {
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;

@@ -7,11 +7,12 @@ import ij.process.*;
 This class represents an expandable array of images.
 @see ImagePlus
 */
-
 public class ImageStack {
 
 	static final int INITIAL_SIZE = 25;
 	static final String outOfRange = "Argument out of range: ";
+	private static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3, UNKNOWN=-1;
+	private int type = UNKNOWN;
 	private int nSlices = 0;
 	private Object[] stack;
 	private String[] label;
@@ -67,6 +68,16 @@ public class ImageStack {
 		}
 		stack[nSlices-1] = pixels;
 		this.label[nSlices-1] = sliceLabel;
+		if (type==UNKNOWN) {
+			if (pixels instanceof byte[])
+				type = BYTE;
+			else if (pixels instanceof short[])
+				type = SHORT;
+			else if (pixels instanceof float[])
+				type = FLOAT;
+			else if (pixels instanceof int[])
+				type = RGB;
+		}
 	}
 	
 	/**
@@ -304,5 +315,59 @@ public class ImageStack {
 		String v = isVirtual()?"(V)":"";
 		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
 	}
+	
+	/** Returns, as a double, the specified voxel. */
+	public final double getVoxel(int x, int y, int z) {
+		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
+			switch (type) {
+				case BYTE:
+					byte[] bytes = (byte[])stack[z];
+					return bytes[y*width+x]&0xff;
+				case SHORT:
+					short[] shorts = (short[])stack[z];
+					return shorts[y*width+x]&0xffff;
+				case FLOAT:
+					float[] floats = (float[])stack[z];
+					return floats[y*width+x];
+				case RGB:
+					int[] ints = (int[])stack[z];
+					return ints[y*width+x]&0xffff;
+				default: return 0.0;
+			}
+		} else
+			return 0.0;
+	}
 		
+	/** Sets the value of the specified voxel. */
+	public final void setVoxel(int x, int y, int z, double value) {
+		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
+			switch (type) {
+				case BYTE:
+					byte[] bytes = (byte[])stack[z];
+					if (value>255.0)
+						value = 255.0;
+					else if (value<0.0)
+						value = 0.0;
+					bytes[y*width+x] = (byte)(value+0.5);
+					break;
+				case SHORT:
+					short[] shorts = (short[])stack[z];
+					if (value>65535.0)
+						value = 65535.0;
+					else if (value<0.0)
+						value = 0.0;
+					shorts[y*width+x] = (short)(value+0.5);
+					break;
+				case FLOAT:
+					float[] floats = (float[])stack[z];
+					floats[y*width+x] = (float)value;
+					break;
+				case RGB:
+					int[] ints = (int[])stack[z];
+					ints[y*width+x] = (int)value;
+					break;
+			}
+		}
+	}
+
 }

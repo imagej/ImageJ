@@ -275,6 +275,8 @@ public class IJ {
 			commandTable.put("New... ", "Table...");
 			commandTable.put("Arbitrarily...", "Rotate... ");
 			commandTable.put("Measurements...", "Results... ");
+			commandTable.put("List Commands...", "Find Commands...");
+			commandTable.put("Capture Screen ", "Capture Screen");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -887,10 +889,10 @@ public class IJ {
 		    	if (imp.getStack().isVirtual() && ((flags&PlugInFilter.NO_CHANGES)==0)) {
 		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
 		    		String msg =
-						"Custom code is required to process this virtual stack\n"+
-						"(e.g., \"Process Virtual Stack\" macro) or it must be\n"+
-						"converted to a normal stack using Image>Duplicate,\n"+
-						"which will require "+size+"MB of additional memory.";
+						"Use the Process>Batch>Virtual Stack command\n"+
+						"to process a virtual stack ike this one or convert\n"+
+						"it to a normal stack using Image>Duplicate, which\n"+
+						"will require "+size+"MB of additional memory.";
 		    		error(msg);
 					return PlugInFilter.DONE;
 		    	}

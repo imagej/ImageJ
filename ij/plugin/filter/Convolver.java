@@ -198,6 +198,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		<code>kw</code> and height <code>kh</code>. Returns false if 
 		the user cancels the operation by pressing 'Esc'. */
 	public boolean convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
+		if (!(ip instanceof FloatProcessor))
+			throw new IllegalArgumentException("FloatProcessor required");
 		if (canceled) return false;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
@@ -263,6 +265,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	/** Convolves the image <code>ip</code> with a kernel of width 
 		<code>kw</code> and height <code>kh</code>. */
 	void convolveFloat1D(ImageProcessor ip, float[] kernel, int kw, int kh) {
+		if (!(ip instanceof FloatProcessor))
+			throw new IllegalArgumentException("FloatProcessor required");
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
