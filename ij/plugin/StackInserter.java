@@ -64,7 +64,7 @@ public class StackInserter implements PlugIn {
 		insert(imp1, imp2, x, y);
 	}
 	
-	void insert(ImagePlus imp1, ImagePlus imp2, int x, int y) {
+	public void insert(ImagePlus imp1, ImagePlus imp2, int x, int y) {
 		ImageStack stack1 = imp1.getStack();
 		ImageStack stack2 = imp2.getStack();
 		int size1 = stack1.getSize();
