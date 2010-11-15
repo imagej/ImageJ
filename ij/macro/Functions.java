@@ -165,6 +165,8 @@ public class Functions implements MacroConstants, Measurements {
 			case WAIT_FOR_USER: waitForUser(); break;
 			case MAKE_POINT: makePoint(); break;
 			case MAKE_TEXT: makeText(); break;
+			case MAKE_ELLIPSE: makeEllipse(); break;
+			case GET_DISPLAYED_AREA: getDisplayedArea(); break;
 		}
 	}
 	
@@ -4227,6 +4229,15 @@ public class Functions implements MacroConstants, Measurements {
 		Roi roi = new TextRoi(x, y, text, font);
 		imp.setRoi(roi);
 	}
+	
+	void makeEllipse() {
+		double x1 = getFirstArg();
+		double y1 = getNextArg();
+		double x2 = getNextArg();
+		double y2 = getNextArg();
+		double aspectRatio = getLastArg();
+		getImage().setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
+	}
 
 	double fit() {
 		interp.getToken();
@@ -4392,8 +4403,8 @@ public class Functions implements MacroConstants, Measurements {
 			return trimArray();
 		else if (name.equals("sort"))
 			return sortArray();
-		else if (name.equals("sortedIndexes"))
-			return getSortedIndexes();
+		else if (name.equals("rankPositions"))
+			return getRankPositions();
 		else if (name.equals("getStatistics"))
 			return getArrayStatistics();
 		else if (name.equals("fill"))
@@ -4401,7 +4412,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("invert"))
 			return invertArray();
 		else
-			interp.error("Unrecognized Stack function");
+			interp.error("Unrecognized Array function");
 		return null;
 	}
 
@@ -4461,7 +4472,7 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
-	Variable[] getSortedIndexes() {
+	Variable[] getRankPositions() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
 		interp.getRightParen();
@@ -4490,7 +4501,7 @@ public class Functions implements MacroConstants, Measurements {
 			Tools.quicksort(strings, indexes);
 		}
 		for (int i=0; i<len; i++)
-			varArray[indexes[i]] = new Variable((double) i);
+			varArray[i] = new Variable((double) indexes[i]);
 		return varArray;
 	}
     
@@ -4779,6 +4790,21 @@ public class Functions implements MacroConstants, Measurements {
 		if (roi==null)
 			interp.error("Selection required");
 		return roi.contains(x,y)?1.0:0.0;
+	}
+
+	void getDisplayedArea() {
+		Variable x = getFirstVariable();
+		Variable y = getNextVariable();
+		Variable w = getNextVariable();
+		Variable h = getLastVariable();
+		ImagePlus imp = getImage();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		Rectangle r = ic.getSrcRect();
+		x.setValue(r.x);
+		y.setValue(r.y);
+		w.setValue(r.width);
+		h.setValue(r.height);
 	}
 
 } // class Functions

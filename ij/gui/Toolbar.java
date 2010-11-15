@@ -39,6 +39,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public static final int DOUBLE_CLICK_THRESHOLD = 650;
 
+	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
+
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
 	private static final int SIZE = 26;
@@ -65,14 +67,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private int startupTime;
 	private PopupMenu rectPopup, ovalPopup, pointPopup, linePopup, switchPopup;
 	private CheckboxMenuItem rectItem, roundRectItem;
-	private CheckboxMenuItem ovalItem, brushItem;
+	private CheckboxMenuItem ovalItem, ellipseItem, brushItem;
 	private CheckboxMenuItem pointItem, multiPointItem;
 	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
 	private String currentSet = "Startup Macros";
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.black);
 	private static Color backgroundColor = Prefs.getColor(Prefs.BCOLOR,Color.white);
-	private static boolean brushEnabled;
+	private static int ovalType = OVAL_ROI;
 	private static boolean multiPointMode = Prefs.multiPointMode;
 	private static boolean roundRectMode;
 	private static boolean arrowMode;
@@ -82,8 +84,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private Color gray = ImageJ.backgroundColor;
 	private Color brighter = gray.brighter();
-	//private Color darker = gray.darker();
-	//private Color evenDarker = darker.darker();
 	private Color darker = new Color(175, 175, 175);
 	private Color evenDarker = new Color(110, 110, 110);
 	private Color triangleColor = new Color(150, 0, 0);
@@ -120,10 +120,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ovalPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			ovalPopup.setFont(Menus.getFont());
-		ovalItem = new CheckboxMenuItem("Elliptical Selection Tool", !brushEnabled);
+		ovalItem = new CheckboxMenuItem("Oval selections", ovalType==OVAL_ROI);
 		ovalItem.addItemListener(this);
 		ovalPopup.add(ovalItem);
-		brushItem = new CheckboxMenuItem("Selection Brush Tool", brushEnabled);
+		ellipseItem = new CheckboxMenuItem("Elliptical selections", ovalType==ELLIPSE_ROI);
+		ellipseItem.addItemListener(this);
+		ovalPopup.add(ellipseItem);
+		brushItem = new CheckboxMenuItem("Selection Brush Tool", ovalType==BRUSH_ROI);
 		brushItem.addItemListener(this);
 		ovalPopup.add(brushItem);
 		add(ovalPopup);
@@ -238,10 +241,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			case OVAL:
 				xOffset = x; yOffset = y;
-				if (brushEnabled) {
+				if (ovalType==BRUSH_ROI) {
 					m(9,2); d(13,2); d(13,2); d(15,5); d(15,8);
 					d(13,10); d(10,10); d(8,13); d(4,13); 
 					d(2,11);  d(2,7); d(4,5); d(7,5); d(9,2);
+				} else if (ovalType==ELLIPSE_ROI) {
+					m(11,0); d(13,0); d(14,1); d(15,1); d(16,2); d(17,3); d(17,7);
+					d(12,12); d(11,12); d(10,13); d(8,13); d(7,14); d(4,14); d(3,13);
+					d(2,13); d(1,12); d(1,11); d(0,10); d(0,9); d(1,8); d(1,7);
+					d(6,2); d(7,2); d(8,1); d(10,1); d(11,0);
 				} else
 					g.drawOval(x+1, y+2, 15, 12);
 				drawTriangle(15,14);
@@ -449,10 +457,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					IJ.showStatus("*Rectangular* or rounded rectangular selections"+hint);
 				return;
 			case OVAL:
-				if (brushEnabled)
-					IJ.showStatus("Elliptical or *brush* selections"+hint);
+				if (ovalType==BRUSH_ROI)
+					IJ.showStatus("Oval, elliptical or *brush* selections"+hint);
+				else if (ovalType==ELLIPSE_ROI)
+					IJ.showStatus("Oval, *elliptical* or brush selections"+hint);
 				else
-					IJ.showStatus("*Elliptical* or brush selections"+hint);
+					IJ.showStatus("*Oval*, elliptical* or brush selections"+hint);
 				return;
 			case POLYGON:
 				IJ.showStatus("Polygon selections");
@@ -540,11 +550,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		} else if (name.indexOf("rect")!=-1) {
 			roundRectMode = false;
 			setTool(RECTANGLE);
-		} else if (name.indexOf("ellip")!=-1 || name.indexOf("oval")!=-1) {
-			brushEnabled = false;
+		} else if (name.indexOf("oval")!=-1) {
+			ovalType = OVAL_ROI;
+			setTool(OVAL);
+		} else if (name.indexOf("ellip")!=-1) {
+			ovalType = ELLIPSE_ROI;
 			setTool(OVAL);
 		} else if (name.indexOf("brush")!=-1) {
-			brushEnabled = true;
+			ovalType = BRUSH_ROI;
 			setTool(OVAL);
 		} else if (name.indexOf("polygon")!=-1)
 			setTool(POLYGON);
@@ -597,7 +610,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	String getName(int id) {
 		switch (id) {
 			case RECTANGLE: return roundRectMode?"roundrect":"rectangle";
-			case OVAL: return brushEnabled?"brush":"oval";
+			case OVAL:
+				switch (ovalType) {
+					case OVAL_ROI: return "oval";
+					case ELLIPSE_ROI: return "ellipse";
+					case BRUSH_ROI: return "brush";
+				}
 			case POLYGON: return "polygon";
 			case FREEROI: return "freehand";
 			case LINE: return arrowMode?"arrow":"line";
@@ -720,7 +738,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	/** Returns the size of the brush tool, or 0 if the brush tool is not enabled. */
 	public static int getBrushSize() {
-		if (brushEnabled)
+		if (ovalType==BRUSH_ROI)
 			return brushSize;
 		else
 			return 0;
@@ -759,6 +777,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	/** Returns 'true' if the multi-point tool is enabled. */
 	public static boolean getMultiPointMode() {
 		return multiPointMode;
+	}
+
+	/** Returns the oval tool type (OVAL_ROI, ELLIPSE_ROI or BRUSH_ROI). */
+	public static int getOvalToolType() {
+		return ovalType;
 	}
 
 	public static int getButtonSize() {
@@ -870,8 +893,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				mouseDownTime = 0L;
 			}
 			if (current==OVAL && isRightClick) {
-				ovalItem.setState(!brushEnabled);
-				brushItem.setState(brushEnabled);
+				ovalItem.setState(ovalType==OVAL_ROI);
+				ellipseItem.setState(ovalType==ELLIPSE_ROI);
+				brushItem.setState(ovalType==BRUSH_ROI);
 				if (IJ.isMacOSX()) IJ.wait(10);
 				ovalPopup.show(e.getComponent(),x,y);
 				mouseDownTime = 0L;
@@ -1041,8 +1065,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				roi.setRoundRectArcSize(roundRectMode?arcSize:0);
 			if (!previousName.equals(getToolName()))
 				IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
-		} else if (item==ovalItem || item==brushItem) {
-			brushEnabled = item==brushItem;
+		} else if (item==ovalItem || item==ellipseItem || item==brushItem) {
+			if (item==brushItem)
+				ovalType = BRUSH_ROI;
+			else if (item==ellipseItem)
+				ovalType = ELLIPSE_ROI;
+			else
+				ovalType = OVAL_ROI;
 			repaintTool(OVAL);
 			showMessage(OVAL);
 			if (!previousName.equals(getToolName()))
@@ -1238,16 +1267,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	void showBrushDialog() {
 		GenericDialog gd = new GenericDialog("Selection Brush");
-		gd.addCheckbox("Enable selection brush", brushEnabled);
+		gd.addCheckbox("Enable selection brush", ovalType==BRUSH_ROI);
 		gd.addNumericField("           Size:", brushSize, 0, 4, "pixels");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
-		brushEnabled = gd.getNextBoolean();
+		if (gd.getNextBoolean())
+			ovalType = BRUSH_ROI;
 		brushSize = (int)gd.getNextNumber();
 		repaintTool(OVAL);
 		ImagePlus img = WindowManager.getCurrentImage();
 		Roi roi = img!=null?img.getRoi():null;
-		if (roi!=null && roi.getType()==Roi.OVAL && brushEnabled) img.killRoi();
+		if (roi!=null && roi.getType()==Roi.OVAL && ovalType==BRUSH_ROI)
+			img.killRoi();
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 

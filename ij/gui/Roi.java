@@ -475,7 +475,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		else
 		   {height=1; y=y2;}
 		
-		if(center) {
+		if (center) {
 			switch(activeHandle){
 				case 0:
 					width=(xc-x)*2;
@@ -512,18 +512,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					width=(xc-x)*2;
 					break;
 			}
-			if(x>=x2) {
+			if (x>=x2) {
 				width=1;
 				x=x2=xc;
 			}
-			if(y>=y2) {
+			if (y>=y2) {
 				height=1;
 				y=y2=yc;
 			}
 
 		}
 		
-		if(constrain) {
+		if (constrain) {
 			if (activeHandle==1 || activeHandle==5)
 				width=height;
 			else
@@ -533,7 +533,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				width=1;
 				x=x2=xc;
 			}
-			if(y>=y2) {
+			if (y>=y2) {
 				height=1;
 				y=y2=yc;
 			}
@@ -563,14 +563,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x=x2-width;
 					break;
 			}
-			if(center){
+			if (center){
 				x=xc-width/2;
 				y=yc-height/2;
 			}
 		}
 
-		if(aspect && !constrain) {
-			if(activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
+		if (aspect && !constrain) {
+			if (activeHandle==1 || activeHandle==5) width=(int)Math.rint((double)height*asp);
 			else height=(int)Math.rint((double)width/asp);
 			
 			switch(activeHandle){
@@ -599,7 +599,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 					x=x2-width;
 					break;
 			}
-			if(center){
+			if (center){
 				x=xc-width/2;
 				y=yc-height/2;
 			}

@@ -277,6 +277,7 @@ public class IJ {
 			commandTable.put("Measurements...", "Results... ");
 			commandTable.put("List Commands...", "Find Commands...");
 			commandTable.put("Capture Screen ", "Capture Screen");
+			commandTable.put("Add to Manager ", "Add to Manager");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -920,7 +921,7 @@ public class IJ {
 		}
 	}
 	
-	/** Creates an elliptical selection. Removes any existing 
+	/** Creates an oval selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeOval(int x, int y, int width, int height) {
 		if (width<=0 || height<0)

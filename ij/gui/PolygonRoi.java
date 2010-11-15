@@ -46,14 +46,19 @@ public class PolygonRoi extends Roi {
 			throw new IllegalArgumentException("Invalid type");
 		maxPoints = nPoints;
 		this.nPoints = nPoints;
-		xp = xPoints;
-		yp = yPoints;
-		if (type!=TRACED_ROI) {
+		if (xPoints==null) {
 			xp = new int[nPoints];
 			yp = new int[nPoints];
-			for (int i=0; i<nPoints; i++) {
-				xp[i] = xPoints[i];
-				yp[i] = yPoints[i];
+		} else {
+			xp = xPoints;
+			yp = yPoints;
+			if (type!=TRACED_ROI) {
+				xp = new int[nPoints];
+				yp = new int[nPoints];
+				for (int i=0; i<nPoints; i++) {
+					xp[i] = xPoints[i];
+					yp[i] = yPoints[i];
+				}
 			}
 		}
 		xp2 = new int[nPoints];
