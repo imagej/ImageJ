@@ -1,0 +1,159 @@
+package ij.gui;
+import java.awt.*;
+import java.awt.image.*;
+import ij.*;
+import ij.plugin.frame.Recorder;
+
+/** Elliptical region of interest. */
+public class EllipseRoi extends PolygonRoi {
+	private static final int vertices = 72;
+	private static double defaultRatio = 0.6;
+	private double xstart, ystart;
+	private double aspectRatio = defaultRatio;
+	private int[] handle = {0, vertices/4, vertices/2, vertices/2+vertices/4};
+
+	public EllipseRoi(double x1, double y1, double x2, double y2, double aspectRatio) {
+		super(null, null, vertices, FREEROI);
+		this.aspectRatio = aspectRatio;
+		makeEllipse(x1, y1, x2, y2);
+		state = NORMAL;
+	}
+
+	public EllipseRoi(int sx, int sy, ImagePlus imp) {
+		super(sx, sy, imp);
+		type = FREEROI;
+		xstart = ic.offScreenX(sx);
+		ystart = ic.offScreenY(sy);
+	}
+
+	public void draw(Graphics g) {
+		super.draw(g);
+		int size2 = HANDLE_SIZE/2;
+		if (!overlay) {
+			for (int i=0; i<handle.length; i++)
+				drawHandle(g, xp2[handle[i]]-size2, yp2[handle[i]]-size2);
+		}
+	}
+
+	protected void grow(int sx, int sy) {
+		double x1 = xp[handle[2]]+x;
+		double y1 = yp[handle[2]]+y;
+		double x2 = ic.offScreenX(sx);
+		double y2 = ic.offScreenY(sy);
+		makeEllipse(x1, y1, x2, y2);
+		imp.draw();
+	}
+		
+	void makeEllipse(double x1, double y1, double x2, double y2) {
+		double centerX = (x1 + x2)/2.0;
+		double centerY = (y1 + y2)/2.0;
+		double dx = x2 - x1;
+		double dy = y2 - y1;
+		double major = Math.sqrt(dx*dx + dy*dy);
+		double minor = major*aspectRatio;
+		double phiB = Math.atan2(dy, dx);         
+		double alpha = phiB*180.0/Math.PI;
+		nPoints = 0;
+		for (int i=0; i<vertices; i++) {
+			double degrees = i*360.0/vertices;
+			double beta1 = degrees/180.0*Math.PI;
+			dx = Math.cos(beta1)*major/2.0;
+			dy = Math.sin(beta1)*minor/2.0;
+			double beta2 = Math.atan2(dy, dx);
+			double rad = Math.sqrt(dx*dx + dy*dy);
+			double beta3 = beta2+ alpha/180.0*Math.PI;
+			double dx2 = Math.cos(beta3)*rad;
+			double dy2 = Math.sin(beta3)*rad;
+			xp[nPoints] = (int)Math.round(centerX + dx2);
+			yp[nPoints] = (int)Math.round(centerY + dy2);
+			nPoints++;
+		}
+		makePolygonRelative();
+	}
+
+	void makePolygonRelative() {
+		Polygon poly = new Polygon(xp, yp, nPoints);
+		Rectangle r = poly.getBounds();
+		x = r.x;
+		y = r.y;
+		width = r.width;
+		height = r.height;
+        for (int i=0; i<nPoints; i++) {
+            xp[i] = xp[i]-x;
+            yp[i] = yp[i]-y;
+        }
+	}
+	
+	protected void handleMouseUp(int screenX, int screenY) {
+		if (state==CONSTRUCTING) {
+            addOffset();
+			finishPolygon();
+			if (Recorder.record) {
+				double x1 = xp[handle[2]]+x;
+				double y1 = yp[handle[2]]+y;
+				double x2 = xp[handle[0]]+x;
+				double y2 = yp[handle[0]]+y;
+ 				if (Recorder.scriptMode())
+					Recorder.recordCall("imp.setRoi(new EllipseRoi("+x1+", "+y1+", "+x2+", "+y2+", "+IJ.d2s(aspectRatio,2)+"));");
+				else
+					Recorder.record("makeEllipse", (int)x1, (int)y1, (int)x2, (int)y2, aspectRatio);
+			}
+        }
+		state = NORMAL;
+	}
+	
+	protected void moveHandle(int sx, int sy) {
+		double ox = ic.offScreenX(sx); 
+		double oy = ic.offScreenY(sy);
+		double x1 = xp[handle[2]]+x;
+		double y1 = yp[handle[2]]+y;
+		double x2 = xp[handle[0]]+x;
+		double y2 = yp[handle[0]]+y;
+		switch(activeHandle) {
+			case 0: 
+				x2 = ox;
+				y2 = oy;
+				break;
+			case 1: 
+				double dx = (xp[handle[3]]+x) - ox;
+				double dy = (yp[handle[3]]+y) - oy;
+				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
+				break;
+			case 2: 
+				x1 = ox;
+				y1 = oy;
+				break;
+			case 3: 
+				dx = (xp[handle[1]]+x) - ox;
+				dy = (yp[handle[1]]+y) - oy;
+				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
+				break;
+		}
+		makeEllipse(x1, y1, x2, y2);
+		imp.draw();
+	}
+	
+	void updateRatio(double minor, double x1, double y1, double x2, double y2) {
+		double dx = x2 - x1;
+		double dy = y2 - y1;
+		double major = Math.sqrt(dx*dx+dy*dy);
+		aspectRatio = minor/major;
+		if (aspectRatio>1.0) aspectRatio = 1.0;
+		defaultRatio = aspectRatio;
+	}
+	
+	public int isHandle(int sx, int sy) {
+		int size = HANDLE_SIZE+5;
+		int halfSize = size/2;
+		int index = -1;
+		for (int i=0; i<handle.length; i++) {
+			int sx2 = xp2[handle[i]]-halfSize, sy2=yp2[handle[i]]-halfSize;
+			if (sx>=sx2 && sx<=sx2+size && sy>=sy2 && sy<=sy2+size) {
+				index = i;
+				break;
+			}
+		}
+		return index;
+	}
+
+}

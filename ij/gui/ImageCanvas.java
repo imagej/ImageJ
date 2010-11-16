@@ -107,10 +107,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		srcRect = r;
 	}
 
-	public Rectangle getSourceRect() {
+	void setSrcRect(Rectangle srcRect) {
+		this.srcRect = srcRect;
+	}
+		
+	public Rectangle getSrcRect() {
 		return srcRect;
 	}
-
+	
 	public void setDrawingSize(int width, int height) {
 	    dstWidth = width;
 	    dstHeight = height;
@@ -534,14 +538,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imp.setTitle(imp.getTitle());
 	}
 
-	public Rectangle getSrcRect() {
-		return srcRect;
-	}
-	
-	void setSrcRect(Rectangle srcRect) {
-		this.srcRect = srcRect;
-	}
-		
 	/** Enlarge the canvas if the user enlarges the window. */
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();

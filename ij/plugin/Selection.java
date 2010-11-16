@@ -360,8 +360,6 @@ public class Selection implements PlugIn, Measurements {
 	
 	void toBoundingBox(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (roi==null || roi.getType()==Roi.RECTANGLE)
-			{IJ.error("To Bounding Box", "Non-rectangular selection required"); return;}
 		Rectangle r = roi.getBounds();
 		imp.killRoi();
 		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));

@@ -246,6 +246,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					d(13,10); d(10,10); d(8,13); d(4,13); 
 					d(2,11);  d(2,7); d(4,5); d(7,5); d(9,2);
 				} else if (ovalType==ELLIPSE_ROI) {
+					yOffset = y + 1;
 					m(11,0); d(13,0); d(14,1); d(15,1); d(16,2); d(17,3); d(17,7);
 					d(12,12); d(11,12); d(10,13); d(8,13); d(7,14); d(4,14); d(3,13);
 					d(2,13); d(1,12); d(1,11); d(0,10); d(0,9); d(1,8); d(1,7);
