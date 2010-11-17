@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
+import ij.process.FloatPolygon;
 
 /** Elliptical region of interest. */
 public class EllipseRoi extends PolygonRoi {
@@ -13,7 +14,7 @@ public class EllipseRoi extends PolygonRoi {
 	private int[] handle = {0, vertices/4, vertices/2, vertices/2+vertices/4};
 
 	public EllipseRoi(double x1, double y1, double x2, double y2, double aspectRatio) {
-		super(null, null, vertices, FREEROI);
+		super(new float[vertices], new float[vertices], vertices, FREEROI);
 		this.aspectRatio = aspectRatio;
 		makeEllipse(x1, y1, x2, y2);
 		state = NORMAL;
@@ -36,10 +37,10 @@ public class EllipseRoi extends PolygonRoi {
 	}
 
 	protected void grow(int sx, int sy) {
-		double x1 = xp[handle[2]]+x;
-		double y1 = yp[handle[2]]+y;
-		double x2 = ic.offScreenX(sx);
-		double y2 = ic.offScreenY(sy);
+		double x1 = xpf[handle[2]]+x;
+		double y1 = ypf[handle[2]]+y;
+		double x2 = ic.offScreenXD(sx);
+		double y2 = ic.offScreenYD(sy);
 		makeEllipse(x1, y1, x2, y2);
 		imp.draw();
 	}
@@ -64,23 +65,24 @@ public class EllipseRoi extends PolygonRoi {
 			double beta3 = beta2+ alpha/180.0*Math.PI;
 			double dx2 = Math.cos(beta3)*rad;
 			double dy2 = Math.sin(beta3)*rad;
-			xp[nPoints] = (int)Math.round(centerX + dx2);
-			yp[nPoints] = (int)Math.round(centerY + dy2);
+			xpf[nPoints] = (float)(centerX+dx2);
+			ypf[nPoints] = (float)(centerY+dy2);
 			nPoints++;
 		}
 		makePolygonRelative();
+		cachedMask = null;
 	}
 
 	void makePolygonRelative() {
-		Polygon poly = new Polygon(xp, yp, nPoints);
+		FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
 		Rectangle r = poly.getBounds();
 		x = r.x;
 		y = r.y;
 		width = r.width;
 		height = r.height;
         for (int i=0; i<nPoints; i++) {
-            xp[i] = xp[i]-x;
-            yp[i] = yp[i]-y;
+            xpf[i] = (float)(xpf[i]-x);
+            ypf[i] = (float)(ypf[i]-y);
         }
 	}
 	
@@ -89,10 +91,10 @@ public class EllipseRoi extends PolygonRoi {
             addOffset();
 			finishPolygon();
 			if (Recorder.record) {
-				double x1 = xp[handle[2]]+x;
-				double y1 = yp[handle[2]]+y;
-				double x2 = xp[handle[0]]+x;
-				double y2 = yp[handle[0]]+y;
+				double x1 = xpf[handle[2]]+x;
+				double y1 = ypf[handle[2]]+y;
+				double x2 = xpf[handle[0]]+x;
+				double y2 = ypf[handle[0]]+y;
  				if (Recorder.scriptMode())
 					Recorder.recordCall("imp.setRoi(new EllipseRoi("+x1+", "+y1+", "+x2+", "+y2+", "+IJ.d2s(aspectRatio,2)+"));");
 				else
@@ -103,20 +105,20 @@ public class EllipseRoi extends PolygonRoi {
 	}
 	
 	protected void moveHandle(int sx, int sy) {
-		double ox = ic.offScreenX(sx); 
-		double oy = ic.offScreenY(sy);
-		double x1 = xp[handle[2]]+x;
-		double y1 = yp[handle[2]]+y;
-		double x2 = xp[handle[0]]+x;
-		double y2 = yp[handle[0]]+y;
+		double ox = ic.offScreenXD(sx); 
+		double oy = ic.offScreenYD(sy);
+		double x1 = xpf[handle[2]]+x;
+		double y1 = ypf[handle[2]]+y;
+		double x2 = xpf[handle[0]]+x;
+		double y2 = ypf[handle[0]]+y;
 		switch(activeHandle) {
 			case 0: 
 				x2 = ox;
 				y2 = oy;
 				break;
 			case 1: 
-				double dx = (xp[handle[3]]+x) - ox;
-				double dy = (yp[handle[3]]+y) - oy;
+				double dx = (xpf[handle[3]]+x) - ox;
+				double dy = (ypf[handle[3]]+y) - oy;
 				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
 				break;
 			case 2: 
@@ -124,8 +126,8 @@ public class EllipseRoi extends PolygonRoi {
 				y1 = oy;
 				break;
 			case 3: 
-				dx = (xp[handle[1]]+x) - ox;
-				dy = (yp[handle[1]]+y) - oy;
+				dx = (xpf[handle[1]]+x) - ox;
+				dy = (ypf[handle[1]]+y) - oy;
 				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
 				break;
 		}
@@ -154,6 +156,17 @@ public class EllipseRoi extends PolygonRoi {
 			}
 		}
 		return index;
+	}
+	
+	/** Returns x1, y1, x2, y2 and aspectRatio as a 5 element array. */
+	public double[] getParams() {
+		double[] params = new double[5];
+		params[0] = xpf[handle[2]]+x;
+		params[1]  = ypf[handle[2]]+y;
+		params[2]  = xpf[handle[0]]+x;
+		params[3]  = ypf[handle[0]]+y;
+		params[4]  = aspectRatio;
+		return params;
 	}
 
 }

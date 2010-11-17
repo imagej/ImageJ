@@ -207,6 +207,14 @@ public class Info implements PlugInFilter {
 			if (cal.calibrated())
 	    		s += " \n";
 	    	s += "No Selection\n";
+	    } else if (roi instanceof EllipseRoi) {
+	    	s += "\nElliptical Selection\n";
+	    	double[] params = ((EllipseRoi)roi).getParams();
+			s += "  X1: " + IJ.d2s(params[0],2) + "\n";
+			s += "  Y1: " + IJ.d2s(params[1],2) + "\n";
+			s += "  X2: " + IJ.d2s(params[2],2) + "\n";
+			s += "  Y2: " + IJ.d2s(params[3],2) + "\n";
+			s += "  Aspect ratio:: " + IJ.d2s(params[4],2) + "\n";
 	    } else {
 	    	s += " \n";
 	    	s += roi.getTypeAsString()+" Selection";
