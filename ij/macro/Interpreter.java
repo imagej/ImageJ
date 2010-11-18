@@ -79,7 +79,9 @@ public class Interpreter implements MacroConstants {
 		calledMacro = true;
 		if (IJ.getInstance()==null)
 			setBatchMode(true);
+		Interpreter saveInstance = instance;
 		run(macro);
+		instance = saveInstance;
 		return returnValue;
 	}
 	

@@ -12,7 +12,7 @@ public class PolygonRoi extends Roi {
 
 	protected int maxPoints = 1000; // will be increased if necessary
 	protected int[] xp, yp; 	// image coordinates relative to origin of roi bounding box
-	protected float[] xpf, ypf; 	// float image coordinates
+	protected float[] xpf, ypf; 	// or alternative sub-pixel coordinates
 	protected int[] xp2, yp2;	// absolute screen coordinates
 	protected int nPoints;
 	protected float[] xSpline,ySpline; // relative image coordinates
@@ -187,7 +187,7 @@ public class PolygonRoi extends Roi {
         }
         if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
         && state!=CONSTRUCTING && clipboard==null && !overlay) {
-            if (ic!=null) mag = ic.getMagnification();
+            mag = ic!=null?ic.getMagnification():1.0;
             int size2 = HANDLE_SIZE/2;
             if (activeHandle>0)
                 drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);

@@ -4,6 +4,7 @@ import java.awt.image.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.process.FloatPolygon;
+import ij.measure.Calibration;
 
 /** Elliptical region of interest. */
 public class EllipseRoi extends PolygonRoi {
@@ -31,6 +32,7 @@ public class EllipseRoi extends PolygonRoi {
 		super.draw(g);
 		int size2 = HANDLE_SIZE/2;
 		if (!overlay) {
+            mag = ic!=null?ic.getMagnification():1.0;
 			for (int i=0; i<handle.length; i++)
 				drawHandle(g, xp2[handle[i]]-size2, yp2[handle[i]]-size2);
 		}
@@ -158,6 +160,27 @@ public class EllipseRoi extends PolygonRoi {
 		return index;
 	}
 	
+	/** Returns the perimeter of this ellipse. */
+	public double getLength() {
+		double length = 0.0;
+		double dx, dy;
+		double w2=1.0, h2=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			w2 = cal.pixelWidth*cal.pixelWidth;
+			h2 = cal.pixelHeight*cal.pixelHeight;
+		}
+		for (int i=0; i<(nPoints-1); i++) {
+			dx = xpf[i+1]-xpf[i];
+			dy = ypf[i+1]-ypf[i];
+			length += Math.sqrt(dx*dx*w2+dy*dy*h2);
+		}
+		dx = xpf[0]-xpf[nPoints-1];
+		dy = ypf[0]-ypf[nPoints-1];
+		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
+		return length;
+	}
+
 	/** Returns x1, y1, x2, y2 and aspectRatio as a 5 element array. */
 	public double[] getParams() {
 		double[] params = new double[5];
