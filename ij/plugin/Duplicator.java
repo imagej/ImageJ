@@ -83,13 +83,18 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
-		if (!imp.getHideOverlay())
-			imp2.setOverlay(imp.getOverlay());
+		if (!imp.getHideOverlay()) {
+			Overlay overlay = imp.getOverlay().duplicate();
+			if (rect!=null)
+				overlay.translate(-rect.x, -rect.y);
+			imp2.setOverlay(overlay);
+		}
 		return imp2;
 	}
 	
 	ImagePlus duplicateImage(ImagePlus imp) {
-		ImageProcessor ip2 = imp.getProcessor().crop();
+		ImageProcessor ip = imp.getProcessor();
+		ImageProcessor ip2 = ip.crop();
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setProcessor("DUP_"+imp.getTitle(), ip2);
 		String info = (String)imp.getProperty("Info");
@@ -105,8 +110,13 @@ public class Duplicator implements PlugIn, TextListener {
 				imp2.getProcessor().setColorModel(lut);
 			}
 		}
-		if (!imp.getHideOverlay())
-			imp2.setOverlay(imp.getOverlay());
+		if (!imp.getHideOverlay()) {
+			Overlay overlay = imp.getOverlay().duplicate();
+			Rectangle r = ip.getRoi();
+			if (r.x>0 || r.y>0)
+				overlay.translate(-r.x, -r.y);
+			imp2.setOverlay(overlay);
+		}
 		return imp2;
 	}
 	

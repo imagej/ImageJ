@@ -91,8 +91,7 @@ public class Macro_Runner implements PlugIn {
 	public String runMacro(String macro, String arg) {
 		Interpreter interp = new Interpreter();
 		try {
-			String rtn = interp.run(macro, arg);
-			return rtn;
+			return interp.run(macro, arg);
 		} catch(Throwable e) {
 			interp.abortMacro();
 			IJ.showStatus("");

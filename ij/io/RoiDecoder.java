@@ -92,7 +92,7 @@ public class RoiDecoder {
 		if (path!=null) {
 			File f = new File(path);
 			size = (int)f.length();
-			if (size>500000)
+			if (size>2000000)
 				throw new IOException("This is not an ImageJ ROI");
 			name = f.getName();
 			is = new FileInputStream(path);

@@ -100,6 +100,8 @@ public class Selection implements PlugIn, Measurements {
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
 			{IJ.error("Spline", "Polygon or polyline selection required"); return;}
+		if (roi instanceof EllipseRoi)
+			return;
 		PolygonRoi p = (PolygonRoi)roi;
 		if (!segmentedSelection)
 			p = trimPolygon(p, getUncalibratedLength(p));
@@ -227,6 +229,8 @@ public class Selection implements PlugIn, Measurements {
 		int type = roi!=null?roi.getType():-1;
 		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON||type==Roi.POINT))
 			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
+		if (roi instanceof EllipseRoi)
+			return;
 		Polygon p = roi.getConvexHull();
 		if (p!=null)
 			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));

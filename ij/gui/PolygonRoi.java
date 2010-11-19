@@ -241,6 +241,12 @@ public class PolygonRoi extends Roi {
 				ip.lineTo(x+(int)(Math.floor(xSpline[i])+0.5), y+(int)Math.floor(ySpline[i]+0.5));
 			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
 				ip.lineTo(x+(int)(Math.floor(xSpline[0])+0.5), y+(int)Math.floor(ySpline[0]+0.5));
+		} else if (xpf!=null) {
+			ip.moveTo(x+(int)(Math.floor(xpf[0])+0.5), y+(int)Math.floor(ypf[0]+0.5));
+			for (int i=1; i<nPoints; i++)
+				ip.lineTo(x+(int)(Math.floor(xpf[i])+0.5), y+(int)Math.floor(ypf[i]+0.5));
+			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
+				ip.lineTo(x+(int)(Math.floor(xpf[0])+0.5), y+(int)Math.floor(ypf[0]+0.5));
 		} else {
 			ip.moveTo(x+xp[0], y+yp[0]);
 			for (int i=1; i<nPoints; i++)
@@ -1010,7 +1016,7 @@ public class PolygonRoi extends Roi {
 		if (xSpline!=null)
 			return toInt(ySpline);
 		else if (xpf!=null)
-			return toInt(xpf);
+			return toInt(ypf);
 		else
 			return yp;
 	}
@@ -1061,6 +1067,11 @@ public class PolygonRoi extends Roi {
 			for (int i=0; i<n; i++) {
 				xpoints2[i] = xSpline[i] + x;
 				ypoints2[i] = ySpline[i] + y;
+			}
+		} else if (xpf!=null) {
+			for (int i=0; i<n; i++) {
+				xpoints2[i] = xpf[i] + x;
+				ypoints2[i] = ypf[i] + y;
 			}
 		} else {
 			for (int i=0; i<n; i++) {
