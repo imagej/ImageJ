@@ -1052,12 +1052,12 @@ public class ShapeRoi extends Roi {
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
-		if (stroke!=null) ((Graphics2D)g).setStroke(stroke);
+		Graphics2D g2d = (Graphics2D)g;
+		if (stroke!=null) g2d.setStroke(getScaledStroke());
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
 		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
         aTx.translate(x, y);
-		Graphics2D g2d = (Graphics2D)g;
 		if (fillColor!=null)
 			g2d.fill(aTx.createTransformedShape(shape));
 		else

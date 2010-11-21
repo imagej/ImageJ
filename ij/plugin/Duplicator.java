@@ -83,8 +83,9 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
-		if (!imp.getHideOverlay()) {
-			Overlay overlay = imp.getOverlay().duplicate();
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay()) {
+			overlay = overlay.duplicate();
 			if (rect!=null)
 				overlay.translate(-rect.x, -rect.y);
 			imp2.setOverlay(overlay);
@@ -110,8 +111,9 @@ public class Duplicator implements PlugIn, TextListener {
 				imp2.getProcessor().setColorModel(lut);
 			}
 		}
-		if (!imp.getHideOverlay()) {
-			Overlay overlay = imp.getOverlay().duplicate();
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay()) {
+			overlay = overlay.duplicate();
 			Rectangle r = ip.getRoi();
 			if (r.x>0 || r.y>0)
 				overlay.translate(-r.x, -r.y);

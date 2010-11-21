@@ -132,6 +132,7 @@ public class ImageJ_Updater implements PlugIn {
 		boolean gte133 = version().compareTo("1.33u")>=0;
 		try {
 			URL url = new URL(address);
+			IJ.showStatus("Connecting to "+IJ.URL);
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
 			String  name = address.endsWith("ij/ij.jar")?"daily build":"ij.jar";
@@ -180,6 +181,7 @@ public class ImageJ_Updater implements PlugIn {
 	}
 
 	String[] openUrlAsList(String address) {
+		IJ.showStatus("Connecting to "+IJ.URL);
 		Vector v = new Vector();
 		try {
 			URL url = new URL(address);
@@ -195,6 +197,7 @@ public class ImageJ_Updater implements PlugIn {
 		} catch(Exception e) { }
 		String[] lines = new String[v.size()];
 		v.copyInto((String[])lines);
+		IJ.showStatus("");
 		return lines;
 	}
 
