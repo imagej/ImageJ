@@ -343,7 +343,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
 			}
 		}
-		roiCopy.setStrokeWidth(lineWidth);
+		if (lineWidth>1)
+			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
 			roiCopy.setStrokeColor(color);
 		rois.put(label, roiCopy);
@@ -977,7 +978,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (n==list.getItemCount() && !IJ.isMacro()) {
+		if (n==list.getItemCount() && n>1 && !IJ.isMacro()) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
 			gd.addMessage("Apply changes to all "+n+" selections?");
 			gd.showDialog();
@@ -988,7 +989,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(label);
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
 			if (color!=null) roi.setStrokeColor(color);
-			if (lineWidth>0) roi.setStrokeWidth(lineWidth);
+			if (lineWidth>1) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
@@ -1004,7 +1005,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		if (roi!=null && (n==1||!showingAll)) {
-			if (lineWidth!=0) roi.setStrokeWidth(lineWidth);
+			if (lineWidth>1) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi))

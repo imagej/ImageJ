@@ -591,7 +591,7 @@ public class PolygonRoi extends Roi {
 		}
 		return index;
 	}
-
+	
 	public void fitSpline(int evaluationPoints) {
 		if (xSpline==null || splinePoints!=evaluationPoints) {
 			splinePoints = evaluationPoints;
@@ -670,18 +670,6 @@ public class PolygonRoi extends Roi {
 	public boolean isSplineFit() {
 		return xSpline!=null;
 	}
-
-		/*
-		xSpline = new float[nPoints];
-		ySpline = new float[nPoints];
-		for (int i=1; i<nPoints; i++) {
-			xSpline[i] = xp[i];
-			ySpline[i] = yp[i];
-		}
-		splinePoints = nPoints;
-		float[] xpoints = new float[splinePoints*10];
-		float[] ypoints = new float[splinePoints*10];
-		*/
 
 	/* Creates a spline fitted polygon with one pixel segment lengths 
 		that can be retrieved using the getFloatPolygon() method. */
@@ -1172,8 +1160,13 @@ public class PolygonRoi extends Roi {
 			r.yp2[i] = yp2[i];
 		}
 		if (xSpline!=null) {
-			r.xSpline = null;
-			r.fitSpline(splinePoints);
+			r.xSpline = new float[splinePoints];
+			r.ySpline = new float[splinePoints];
+			r.splinePoints = splinePoints;
+			for (int i=0; i<splinePoints; i++) {
+				r.xSpline[i] = xSpline[i];
+				r.ySpline[i] = ySpline[i];
+			}
 		}
 		return r;
 	}

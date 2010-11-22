@@ -1057,7 +1057,7 @@ public class ShapeRoi extends Roi {
 		mag = ic.getMagnification();
 		Rectangle r = ic.getSrcRect();
 		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
-        aTx.translate(x, y);
+		aTx.translate(x, y);
 		if (fillColor!=null)
 			g2d.fill(aTx.createTransformedShape(shape));
 		else

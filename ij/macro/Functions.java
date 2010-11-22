@@ -758,20 +758,25 @@ public class Functions implements MacroConstants, Measurements {
 
 	double getPixel() {
 		interp.getLeftParen();
-		int a1 = (int)interp.getExpression();
+		double a1 = interp.getExpression();
 		ImageProcessor ip = getProcessor();
 		double value = 0.0;
 		interp.getToken();
 		if (interp.token==',') {
-			int a2 = (int)interp.getExpression();
+			double a2 = interp.getExpression();
 			interp.getRightParen();
-			if (getType()==ImagePlus.GRAY32)
-				value = ip.getPixelValue(a1, a2);
-			else
-				value = ip.getPixel(a1, a2);
-	} else {
+			int ia1 = (int)a1;
+			int ia2 = (int)a2;
+			if (a1==ia1 && a2==ia2) {
+				if (getType()==ImagePlus.GRAY32)
+					value = ip.getPixelValue(ia1, ia2);
+				else
+					value = ip.getPixel(ia1, ia2);
+			} else
+				value = ip.getInterpolatedValue(a1, a2);
+		} else {
 			if (interp.token!=')') interp.error("')' expected");
-			value = ip.getf(a1);
+			value = ip.getf((int)a1);
 		}
 		return value;
 	}
@@ -1172,20 +1177,23 @@ public class Functions implements MacroConstants, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("Selection required");
-		Polygon p = roi.getPolygon();
+		Variable[] xa, ya;
 		FloatPolygon fp = roi.getFloatPolygon();
-		Variable[] xa = new Variable[p.npoints];
-		Variable[] ya = new Variable[p.npoints];
-		if (fp!=null) { //spline fit polygon
-			for (int i=0; i<p.npoints; i++)
-			xa[i] = new Variable(fp.xpoints[i]);
-			for (int i=0; i<p.npoints; i++)
-			ya[i] = new Variable(fp.ypoints[i]);
+		if (fp!=null) {
+			xa = new Variable[fp.npoints];
+			ya = new Variable[fp.npoints];
+			for (int i=0; i<fp.npoints; i++)
+				xa[i] = new Variable(fp.xpoints[i]);
+			for (int i=0; i<fp.npoints; i++)
+				ya[i] = new Variable(fp.ypoints[i]);
 		} else {
+			Polygon p = roi.getPolygon();
+			xa = new Variable[p.npoints];
+			ya = new Variable[p.npoints];
 			for (int i=0; i<p.npoints; i++)
-			xa[i] = new Variable(p.xpoints[i]);
+				xa[i] = new Variable(p.xpoints[i]);
 			for (int i=0; i<p.npoints; i++)
-			ya[i] = new Variable(p.ypoints[i]);
+				ya[i] = new Variable(p.ypoints[i]);
 		}
 		xCoordinates.setArray(xa);
 		yCoordinates.setArray(ya);

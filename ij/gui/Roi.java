@@ -1226,11 +1226,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	protected BasicStroke getScaledStroke() {
 		if (ic==null) return stroke;
-		float width = stroke.getLineWidth();
 		double mag = ic.getMagnification();
-		if (width>1 && mag!=1.0)
+		if (mag!=1.0) {
+			float width = stroke.getLineWidth();
 			return new BasicStroke((float)(width*mag), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
-		else
+		} else
 			return stroke;
 	}
 

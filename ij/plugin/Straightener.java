@@ -53,11 +53,11 @@ public class Straightener implements PlugIn {
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
 		imp2.show();
-		imp.setRoi(roi);
-		if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
-			((PolygonRoi)roi).fitSpline();
-			imp.draw();
-		}
+		//imp.setRoi(roi);
+		//if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
+		//	((PolygonRoi)roi).fitSpline();
+		//	imp.draw();
+		//}
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	
@@ -97,10 +97,13 @@ public class Straightener implements PlugIn {
 			roi.exitConstructingMode();
 		boolean isSpline = roi.isSplineFit();
 		int type = roi.getType();
-		roi.fitSplineForStraightening();
+		int n = roi.getNCoordinates();
+		double len = roi.getLength();
+		if (!(isSpline && Math.abs(1.0-roi.getLength()/n)<0.5))
+			roi.fitSplineForStraightening();
 		if (roi.getNCoordinates()<2) return null;
 		FloatPolygon p = roi.getFloatPolygon();
-		int n = p.npoints;
+		n = p.npoints;
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = new FloatProcessor(n, width);
 		ImageProcessor distances = null;
