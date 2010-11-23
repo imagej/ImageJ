@@ -772,8 +772,12 @@ public class Functions implements MacroConstants, Measurements {
 					value = ip.getPixelValue(ia1, ia2);
 				else
 					value = ip.getPixel(ia1, ia2);
-			} else
-				value = ip.getInterpolatedValue(a1, a2);
+			} else {
+				if (getType()==ImagePlus.COLOR_RGB)
+					value = ip.getPixelInterpolated(a1, a2);
+				else
+					value = ip.getInterpolatedValue(a1, a2);
+			}
 		} else {
 			if (interp.token!=')') interp.error("')' expected");
 			value = ip.getf((int)a1);
