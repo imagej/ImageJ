@@ -46,7 +46,8 @@ public class Prefs {
 		SHOW_ALL_SLICE_ONLY=1<<17, COPY_HEADERS=1<<18, NO_ROW_NUMBERS=1<<19,
 		MOVE_TO_MISC=1<<20, ADD_TO_MANAGER=1<<21, RUN_SOCKET_LISTENER=1<<22,
 		MULTI_POINT_MODE=1<<23, ROTATE_YZ=1<<24, FLIP_XZ=1<<25,
-		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27, NO_CLICK_TO_GC=1<<28; 
+		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27, NO_CLICK_TO_GC=1<<28,
+		USE_RESLICE_INTERPOLATION=1<<29; 
     public static final String OPTIONS = "prefs.options";
     
 	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
@@ -121,6 +122,8 @@ public class Prefs {
 	public static boolean noClickToGC;
 	/** Angle tool measures reflex angle */
 	public static boolean reflexAngle;
+	/** Use interpolation when re-slicing */
+	public static boolean useResliceInterpolation;
 
 
 	static Properties ijPrefs = new Properties();
@@ -403,6 +406,7 @@ public class Prefs {
 		dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
 		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
 		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
+		useResliceInterpolation = (options&USE_RESLICE_INTERPOLATION)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -419,7 +423,8 @@ public class Prefs {
 			+ (pointAddToManager?ADD_TO_MANAGER:0) + (runSocketListener?RUN_SOCKET_LISTENER:0)
 			+ (multiPointMode?MULTI_POINT_MODE:0) + (rotateYZ?ROTATE_YZ:0)
 			+ (flipXZ?FLIP_XZ:0) + (dontSaveHeaders?DONT_SAVE_HEADERS:0)
-			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0) + (noClickToGC?NO_CLICK_TO_GC:0);
+			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0) + (noClickToGC?NO_CLICK_TO_GC:0)
+			+ (useResliceInterpolation?USE_RESLICE_INTERPOLATION:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

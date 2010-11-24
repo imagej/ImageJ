@@ -57,7 +57,7 @@ public class Info implements PlugInFilter {
 			String units = cal.getUnits();
 	    	s += "Width:  "+IJ.d2s(imp.getWidth()*cal.pixelWidth,2)+" " + units+" ("+imp.getWidth()+")\n";
 	    	s += "Height:  "+IJ.d2s(imp.getHeight()*cal.pixelHeight,2)+" " + units+" ("+imp.getHeight()+")\n";
-	    	if (stackSize>1)
+	    	if (slices>1)
 	    		s += "Depth:  "+IJ.d2s(slices*cal.pixelDepth,2)+" " + units+" ("+slices+")\n";	    			    	
 	    	double xResolution = 1.0/cal.pixelWidth;
 	    	double yResolution = 1.0/cal.pixelHeight;
@@ -74,7 +74,11 @@ public class Info implements PlugInFilter {
 	    	if (stackSize>1)
 	    		s += "Depth:  " + slices + " pixels\n";
 	    }
-	    	
+    	if (stackSize>1) 
+	    	s += "Voxel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)+"x"+d2s(cal.pixelDepth)+" "+cal.getUnit()+"\n";
+	    else
+	    	s += "Pixel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)+" "+cal.getUnit()+"\n";
+
 	    s += "ID: "+imp.getID()+"\n";
 	    String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
 	    s += "Coordinate origin:  " + d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin+"\n";
