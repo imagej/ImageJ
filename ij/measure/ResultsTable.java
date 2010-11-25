@@ -429,8 +429,8 @@ public class ResultsTable implements Cloneable {
 	/** This is a version of IJ.d2s() that uses scientific notation for
 		small numbes that would otherwise display as zero. */
 	public static String d2s(double n, int decimalPlaces) {
-		if (Double.isNaN(n))
-			return "NaN";
+		if (Double.isNaN(n)||Double.isInfinite(n))
+			return ""+n;
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		double np = n;
@@ -467,10 +467,7 @@ public class ResultsTable implements Cloneable {
 				sf[8] = new DecimalFormat("0.00000000E0",dfs);
 				sf[9] = new DecimalFormat("0.000000000E0",dfs);
 			}
-			if (Double.isInfinite(n))
-				return ""+n;
-			else
-				return sf[decimalPlaces].format(n); // use scientific notation
+			return sf[decimalPlaces].format(n); // use scientific notation
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;

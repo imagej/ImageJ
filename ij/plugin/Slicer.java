@@ -21,7 +21,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private static String startAt = starts[0];
 	private static boolean rotate;
 	private static boolean flip;
-	private boolean nointerpolate = !Prefs.useResliceInterpolation;
+	private boolean nointerpolate = Prefs.avoidResliceInterpolation;
 	private double inputZSpacing = 1.0;
 	private double outputZSpacing = 1.0;
 	private int outputSlices = 1;
@@ -235,7 +235,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		gd.addCheckbox("Rotate 90 degrees", rotate);
 		gd.addCheckbox("Avoid interpolation", nointerpolate);
 		gd.setInsets(0, 32, 0);
-		gd.addMessage("(use 1 pixel for spacing)");
+		gd.addMessage("(use 1 pixel spacing)");
 		gd.setInsets(15, 0, 0);
 		gd.addMessage("Voxel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)
 			+"x"+d2s(cal.pixelDepth)+" "+cal.getUnit());
@@ -263,7 +263,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		rotate = gd.getNextBoolean();
 		nointerpolate = gd.getNextBoolean();
 		if (!IJ.isMacro())
-			Prefs.useResliceInterpolation = !nointerpolate;
+			Prefs.avoidResliceInterpolation = nointerpolate;
 		return true;
 	}
 	
