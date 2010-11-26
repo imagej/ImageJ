@@ -233,6 +233,9 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	String getString(int index, double interval, int format) {
 		double time = start+index*interval;
 		int itime = (int)Math.floor(time);
+		int sign = 1;
+		if (itime < 0) sign = -1;
+		itime = itime*sign;
 		String str = "";
 		switch (format) {
 			case NUMBER: str=IJ.d2s(time, decimalPlaces)+" "+text; break;
@@ -245,15 +248,17 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				break;
 			case MIN_SEC:
 				str=pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
+				if (sign == -1) str = "-"+str;
 				break;
 			case HOUR_MIN_SEC:
 				str=pad((int)Math.floor(itime/3600))+":"+pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
+				if (sign == -1) str = "-"+str;
 				break;
 			case TEXT: str=text; break;
 		}
 		return str;
 	}
-	
+
 	String pad(int n) {
 		String str = ""+n;
 		if (str.length()==1) str="0"+str;

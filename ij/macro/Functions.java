@@ -165,6 +165,8 @@ public class Functions implements MacroConstants, Measurements {
 			case WAIT_FOR_USER: waitForUser(); break;
 			case MAKE_POINT: makePoint(); break;
 			case MAKE_TEXT: makeText(); break;
+			case MAKE_ELLIPSE: makeEllipse(); break;
+			case GET_DISPLAYED_AREA: getDisplayedArea(); break;
 		}
 	}
 	
@@ -756,20 +758,29 @@ public class Functions implements MacroConstants, Measurements {
 
 	double getPixel() {
 		interp.getLeftParen();
-		int a1 = (int)interp.getExpression();
+		double a1 = interp.getExpression();
 		ImageProcessor ip = getProcessor();
 		double value = 0.0;
 		interp.getToken();
 		if (interp.token==',') {
-			int a2 = (int)interp.getExpression();
+			double a2 = interp.getExpression();
 			interp.getRightParen();
-			if (getType()==ImagePlus.GRAY32)
-				value = ip.getPixelValue(a1, a2);
-			else
-				value = ip.getPixel(a1, a2);
-	} else {
+			int ia1 = (int)a1;
+			int ia2 = (int)a2;
+			if (a1==ia1 && a2==ia2) {
+				if (getType()==ImagePlus.GRAY32)
+					value = ip.getPixelValue(ia1, ia2);
+				else
+					value = ip.getPixel(ia1, ia2);
+			} else {
+				if (getType()==ImagePlus.COLOR_RGB)
+					value = ip.getPixelInterpolated(a1, a2);
+				else
+					value = ip.getInterpolatedValue(a1, a2);
+			}
+		} else {
 			if (interp.token!=')') interp.error("')' expected");
-			value = ip.getf(a1);
+			value = ip.getf((int)a1);
 		}
 		return value;
 	}
@@ -1170,20 +1181,23 @@ public class Functions implements MacroConstants, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			interp.error("Selection required");
-		Polygon p = roi.getPolygon();
+		Variable[] xa, ya;
 		FloatPolygon fp = roi.getFloatPolygon();
-		Variable[] xa = new Variable[p.npoints];
-		Variable[] ya = new Variable[p.npoints];
-		if (fp!=null) { //spline fit polygon
-			for (int i=0; i<p.npoints; i++)
-			xa[i] = new Variable(fp.xpoints[i]);
-			for (int i=0; i<p.npoints; i++)
-			ya[i] = new Variable(fp.ypoints[i]);
+		if (fp!=null) {
+			xa = new Variable[fp.npoints];
+			ya = new Variable[fp.npoints];
+			for (int i=0; i<fp.npoints; i++)
+				xa[i] = new Variable(fp.xpoints[i]);
+			for (int i=0; i<fp.npoints; i++)
+				ya[i] = new Variable(fp.ypoints[i]);
 		} else {
+			Polygon p = roi.getPolygon();
+			xa = new Variable[p.npoints];
+			ya = new Variable[p.npoints];
 			for (int i=0; i<p.npoints; i++)
-			xa[i] = new Variable(p.xpoints[i]);
+				xa[i] = new Variable(p.xpoints[i]);
 			for (int i=0; i<p.npoints; i++)
-			ya[i] = new Variable(p.ypoints[i]);
+				ya[i] = new Variable(p.ypoints[i]);
 		}
 		xCoordinates.setArray(xa);
 		yCoordinates.setArray(ya);
@@ -4227,6 +4241,15 @@ public class Functions implements MacroConstants, Measurements {
 		Roi roi = new TextRoi(x, y, text, font);
 		imp.setRoi(roi);
 	}
+	
+	void makeEllipse() {
+		double x1 = getFirstArg();
+		double y1 = getNextArg();
+		double x2 = getNextArg();
+		double y2 = getNextArg();
+		double aspectRatio = getLastArg();
+		getImage().setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
+	}
 
 	double fit() {
 		interp.getToken();
@@ -4392,8 +4415,8 @@ public class Functions implements MacroConstants, Measurements {
 			return trimArray();
 		else if (name.equals("sort"))
 			return sortArray();
-		else if (name.equals("sortedIndexes"))
-			return getSortedIndexes();
+		else if (name.equals("rankPositions"))
+			return getRankPositions();
 		else if (name.equals("getStatistics"))
 			return getArrayStatistics();
 		else if (name.equals("fill"))
@@ -4401,7 +4424,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("invert"))
 			return invertArray();
 		else
-			interp.error("Unrecognized Stack function");
+			interp.error("Unrecognized Array function");
 		return null;
 	}
 
@@ -4461,7 +4484,7 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
-	Variable[] getSortedIndexes() {
+	Variable[] getRankPositions() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
 		interp.getRightParen();
@@ -4490,7 +4513,7 @@ public class Functions implements MacroConstants, Measurements {
 			Tools.quicksort(strings, indexes);
 		}
 		for (int i=0; i<len; i++)
-			varArray[indexes[i]] = new Variable((double) i);
+			varArray[i] = new Variable((double) indexes[i]);
 		return varArray;
 	}
     
@@ -4779,6 +4802,21 @@ public class Functions implements MacroConstants, Measurements {
 		if (roi==null)
 			interp.error("Selection required");
 		return roi.contains(x,y)?1.0:0.0;
+	}
+
+	void getDisplayedArea() {
+		Variable x = getFirstVariable();
+		Variable y = getNextVariable();
+		Variable w = getNextVariable();
+		Variable h = getLastVariable();
+		ImagePlus imp = getImage();
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null) return;
+		Rectangle r = ic.getSrcRect();
+		x.setValue(r.x);
+		y.setValue(r.y);
+		w.setValue(r.width);
+		h.setValue(r.height);
 	}
 
 } // class Functions

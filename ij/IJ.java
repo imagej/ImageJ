@@ -277,6 +277,7 @@ public class IJ {
 			commandTable.put("Measurements...", "Results... ");
 			commandTable.put("List Commands...", "Find Commands...");
 			commandTable.put("Capture Screen ", "Capture Screen");
+			commandTable.put("Add to Manager ", "Add to Manager");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -669,8 +670,8 @@ public class IJ {
 		digits to the right of the decimal point (0-9). Uses
 		scientific notation if 'decimalPlaces is negative. */
 	public static String d2s(double n, int decimalPlaces) {
-		if (Double.isNaN(n))
-			return "NaN";
+		if (Double.isNaN(n)||Double.isInfinite(n))
+			return ""+n;
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		double np = n;
@@ -704,10 +705,7 @@ public class IJ {
 				sf[8] = new DecimalFormat("0.00000000E0",dfs);
 				sf[9] = new DecimalFormat("0.000000000E0",dfs);
 			}
-			if (Double.isInfinite(n))
-				return ""+n;
-			else
-				return sf[decimalPlaces].format(n); // use scientific notation
+			return sf[decimalPlaces].format(n); // use scientific notation
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
@@ -920,7 +918,7 @@ public class IJ {
 		}
 	}
 	
-	/** Creates an elliptical selection. Removes any existing 
+	/** Creates an oval selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeOval(int x, int y, int width, int height) {
 		if (width<=0 || height<0)

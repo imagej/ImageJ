@@ -43,7 +43,7 @@ public class Selection implements PlugIn, Measurements {
     	else if (arg.equals("spline"))
     		fitSpline();
     	else if (arg.equals("ellipse"))
-    		drawEllipse(imp);
+    		createEllipse(imp);
     	else if (arg.equals("hull"))
     		convexHull(imp);
     	else if (arg.equals("mask"))
@@ -100,6 +100,8 @@ public class Selection implements PlugIn, Measurements {
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
 			{IJ.error("Spline", "Polygon or polyline selection required"); return;}
+		if (roi instanceof EllipseRoi)
+			return;
 		PolygonRoi p = (PolygonRoi)roi;
 		if (!segmentedSelection)
 			p = trimPolygon(p, getUncalibratedLength(p));
@@ -203,26 +205,23 @@ public class Selection implements PlugIn, Measurements {
 		return curvature;
 	}
 	
-	void drawEllipse(ImagePlus imp) {
+	void createEllipse(ImagePlus imp) {
 		IJ.showStatus("Fitting ellipse");
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			{IJ.error("Fit Ellipse", "Selection required"); return;}
 		if (roi.isLine())
 			{IJ.error("Fit Ellipse", "\"Fit Ellipse\" does not work with line selections"); return;}
-		ImageProcessor ip = imp.getProcessor();
-		ImageStatistics stats;
-		if (roi.getType()==Roi.COMPOSITE)
-			stats = imp.getStatistics();
-		else {
-			ip.setRoi(roi.getPolygon());
-			stats = ImageStatistics.getStatistics(ip, AREA+MEAN+MODE+MIN_MAX, null);
-		}
-		EllipseFitter ef = new EllipseFitter();
-		ef.fit(ip, stats);
-		ef.makeRoi(ip);
-		imp.setRoi(new PolygonRoi(ef.xCoordinates, ef.yCoordinates, ef.nCoordinates, roi.FREEROI));
-		IJ.showStatus("");
+		ImageStatistics stats = imp.getStatistics(Measurements.CENTROID+Measurements.ELLIPSE);
+		double dx = stats.major*Math.cos(stats.angle/180.0*Math.PI)/2.0;
+		double dy = - stats.major*Math.sin(stats.angle/180.0*Math.PI)/2.0;
+		double x1 = stats.xCentroid - dx;
+		double x2 = stats.xCentroid + dx;
+		double y1 = stats.yCentroid - dy;
+		double y2 = stats.yCentroid + dy;
+		double aspectRatio = stats.minor/stats.major;
+		imp.killRoi();
+		imp.setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
 	}
 
 	void convexHull(ImagePlus imp) {
@@ -230,6 +229,8 @@ public class Selection implements PlugIn, Measurements {
 		int type = roi!=null?roi.getType():-1;
 		if (!(type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.POLYGON||type==Roi.POINT))
 			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
+		if (roi instanceof EllipseRoi)
+			return;
 		Polygon p = roi.getConvexHull();
 		if (p!=null)
 			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
@@ -360,8 +361,6 @@ public class Selection implements PlugIn, Measurements {
 	
 	void toBoundingBox(ImagePlus imp) {
 		Roi roi = imp.getRoi();
-		if (roi==null || roi.getType()==Roi.RECTANGLE)
-			{IJ.error("To Bounding Box", "Non-rectangular selection required"); return;}
 		Rectangle r = roi.getBounds();
 		imp.killRoi();
 		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));

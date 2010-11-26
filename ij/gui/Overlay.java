@@ -90,6 +90,15 @@ public class Overlay {
 			rois[i].setFillColor(color);
 	}
 
+    /** Moves all the Rois in this overlay. */
+    public void translate(int dx, int dy) {
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++) {
+			Rectangle r = rois[i].getBounds();
+			rois[i].setLocation(r.x+dx, r.y+dy);
+		}
+	}
+
     /** Draws outlines of the Rois in this Overlay on the specified
     	ImageProcessor using the current color and line width of 'ip'. */
     //public void draw(ImageProcessor ip) {
@@ -98,6 +107,16 @@ public class Overlay {
 	//		rois[i].drawPixels(ip);
 	//}
 	
+	/** Returns a clone of this Overlay. */
+	public Overlay duplicate() {
+		Roi[] rois = toArray();
+		Overlay overlay2 = new Overlay();
+		for (int i=0; i<rois.length; i++)
+			overlay2.add((Roi)rois[i].clone());
+		overlay2.drawLabels(label);
+		return overlay2;
+	}
+
 	public String toString() {
     	return list.toString();
     }

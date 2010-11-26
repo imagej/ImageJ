@@ -8,7 +8,7 @@ public class RoiProperties {
 	private Roi roi;
 	private String title;
 	private boolean showName = true;
-	private boolean showCheckbox;
+	private boolean addToOverlay;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public RoiProperties(String title, Roi roi) {
@@ -16,7 +16,7 @@ public class RoiProperties {
     		throw new IllegalArgumentException("ROI is null");
     	this.title = title;
     	showName = title.startsWith("Prop");
-    	showCheckbox = title.equals("Add to Overlay");
+    	addToOverlay = title.equals("Add to Overlay");
     	this.roi = roi;
     }
     
@@ -60,7 +60,7 @@ public class RoiProperties {
 			gd.addMessage("");
 			gd.addStringField("Fill Color: ", fillc);
 		}
-		if (showCheckbox) {
+		if (addToOverlay) {
 			gd.addCheckbox("New Overlay", false);
 			gd.setInsets(15, 10, 0);
 			gd.addMessage("Use the alt-b shortcut\nto skip this dialog.");
@@ -76,7 +76,7 @@ public class RoiProperties {
 		strokeWidth = gd.getNextNumber();
 		if (!isLine)
 			fillc = gd.getNextString();
-		boolean newOverlay = showCheckbox?gd.getNextBoolean():false;
+		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 			
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
@@ -86,8 +86,8 @@ public class RoiProperties {
 				font = new Font(font.getName(), font.getStyle(), (int)strokeWidth);
 				((TextRoi)roi).setCurrentFont(font);
 			}
-		} else
-			roi.setStrokeWidth((float)strokeWidth);
+		} else if (addToOverlay||strokeWidth>1.0)
+				roi.setStrokeWidth((float)strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
@@ -100,7 +100,7 @@ public class RoiProperties {
 		GenericDialog gd = new GenericDialog(title);
 		gd.addStringField("Name:", name, 15);
 		gd.addNumericField("Opacity (0-100%):", ((ImageRoi)roi).getOpacity()*100.0, 0);
-		if (showCheckbox)
+		if (addToOverlay)
 			gd.addCheckbox("New Overlay", false);
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
@@ -108,7 +108,7 @@ public class RoiProperties {
 		roi.setName(name.length()>0?name:null);
 		double opacity = gd.getNextNumber()/100.0;
 		((ImageRoi)roi).setOpacity(opacity);
-		boolean newOverlay = showCheckbox?gd.getNextBoolean():false;
+		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (newOverlay) roi.setName("new-overlay");
 		return true;
     }

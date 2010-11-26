@@ -1343,7 +1343,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 				roi = new Roi(sx, sy, this, Toolbar.getRoundRectArcSize());
 				break;
 			case Toolbar.OVAL:
-				roi = new OvalRoi(sx, sy, this);
+				if (Toolbar.getOvalToolType()==Toolbar.ELLIPSE_ROI)
+					roi = new EllipseRoi(sx, sy, this);
+				else
+					roi = new OvalRoi(sx, sy, this);
 				break;
 			case Toolbar.POLYGON:
 			case Toolbar.POLYLINE:

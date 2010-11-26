@@ -1,6 +1,6 @@
 package ij.plugin;
 import java.io.*;
-import java.util.Properties;
+import java.util.Properties; 
 import ij.*;
 import ij.io.*;
 import ij.process.*;
@@ -10,6 +10,7 @@ import ij.process.*;
  *	plugin from the collection of astronomical image processing plugins by Jennifer West at
  *	http://www.umanitoba.ca/faculties/science/astronomy/jwest/plugins.html.
  *
+ * <br>Version 2010-11-23 : corrects 16-bit writing, adds BZERO & BSCALE updates (K.A. Collins, Univ. Louisville).
  * <br>Version 2008-09-07 : preserves non-minimal FITS header if already present (F.V. Hessman, Univ. Goettingen).
  * <br>Version 2008-12-15 : fixed END card recognition bug (F.V. Hessman, Univ. Goettingen).
  */
@@ -67,16 +68,22 @@ public class FITS_Writer implements PlugIn {
 	 * Creates a FITS header for an image which doesn't have one already.
 	 */	
 	void createHeader(String path, ImageProcessor ip, int numBytes) {
-		int numCards = 5;
+		int numCards = 7;
 		String bitperpix = "";
 		if      (numBytes==2) {bitperpix = "                  16";}
 		else if (numBytes==4) {bitperpix = "                 -32";}
 		else if (numBytes==1) {bitperpix = "                   8";}
- 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer 2008-09-07"), path);
- 		appendFile(writeCard("BITPIX", bitperpix, ""), path);
- 		appendFile(writeCard("NAXIS", "                   2", ""), path);
- 		appendFile(writeCard("NAXIS1", "                 "+ip.getWidth(), "image width"), path);
- 		appendFile(writeCard("NAXIS2", "                 "+ip.getHeight(), "image height"), path);
+ 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer"), path);
+ 		appendFile(writeCard("BITPIX", bitperpix, "number of bits per data pixel"), path);
+ 		appendFile(writeCard("NAXIS", "                   2", "number of data axes"), path);
+ 		appendFile(writeCard("NAXIS1", "                "+ip.getWidth(), "length of data axis 1"), path);
+ 		appendFile(writeCard("NAXIS2", "                "+ip.getHeight(), "length of data axis 2"), path);
+        if (numBytes==2)
+            appendFile(writeCard("BZERO", "               32768", "data range offset"), path);
+        else
+            appendFile(writeCard("BZERO", "                   0", "data range offset"), path);
+        appendFile(writeCard("BSCALE", "                   1", "default scaling factor"), path);
+
  		int fillerSize = 2880 - ((numCards*80+3) % 2880);
 		char[] end = new char[3];
 		end[0] = 'E'; end[1] = 'N'; end[2] = 'D';
@@ -133,33 +140,33 @@ public class FITS_Writer implements PlugIn {
 	void writeData(String path, ImageProcessor ip) {
 		int w = ip.getWidth();
 		int h = ip.getHeight();
-		ip.flipVertical();
 		if (ip instanceof ShortProcessor) {
 			short[] pixels = (short[])ip.getPixels();
 			try {   
 				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path,true)));
-				for (int i = 0; i < (pixels.length); i++)
-					dos.writeShort(pixels[i]);
+				for (int i = h - 1; i >= 0; i-- )
+                    for (int j = i*w; j < w*(i+1); j++)
+                        dos.writeShort(pixels[j]^0x8000);
 				dos.close();
 			}
 			catch (IOException e) {
-				IJ.write("Error writing file!");
+				IJ.showStatus("Error writing file!");
 				return;
 			}
 		} else if (ip instanceof FloatProcessor) {
 			float[] pixels = (float[])ip.getPixels();
 			try {   
 				DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path,true)));
-				for (int i = 0; i < (pixels.length); i++)	   
-					dos.writeFloat(pixels[i]);
+				for (int i = h - 1; i >= 0; i-- )
+                    for (int j = i*w; j < w*(i+1); j++)
+					dos.writeFloat(pixels[j]);
 				dos.close();
 			}
 			catch (IOException e) {
-				IJ.write("Error writing file!");
+				IJ.showStatus("Error writing file!");
 				return;
 			}					   
 		}
-		ip.flipVertical();	// UNFLIP
 	}
 
 	/**
@@ -233,18 +240,24 @@ public class FITS_Writer implements PlugIn {
 	 * Copies the image header contained in the image's Info property.
 	 */
 	void copyHeader(String[] hdr, String path, ImageProcessor ip, int numBytes) {
-		int numCards = 5;
+		int numCards = 7;
 		String bitperpix = "";
 
 		// THIS STUFF NEEDS TO BE MADE CONFORMAL WITH THE PRESENT IMAGE
 		if      (numBytes==2) {bitperpix = "                  16";}
 		else if (numBytes==4) {bitperpix = "                 -32";}
 		else if (numBytes==1) {bitperpix = "                   8";}
- 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer 2008-12-15"), path);
- 		appendFile(writeCard("BITPIX", bitperpix, ""), path);
- 		appendFile(writeCard("NAXIS", "                   2", ""), path);
-		appendFile(writeCard("NAXIS1", "                 "+ip.getWidth(), "image width"), path);
- 		appendFile(writeCard("NAXIS2", "                 "+ip.getHeight(), "image height"), path);
+ 		appendFile(writeCard("SIMPLE", "                   T", "Created by ImageJ FITS_Writer"), path);
+ 		appendFile(writeCard("BITPIX", bitperpix, "number of bits per data pixel"), path);
+ 		appendFile(writeCard("NAXIS", "                   2", "number of data axes"), path);
+		appendFile(writeCard("NAXIS1", "                "+ip.getWidth(), "length of data axis 1"), path);
+ 		appendFile(writeCard("NAXIS2", "                "+ip.getHeight(), "length of data axis 2"), path);
+        if (numBytes==2)
+            appendFile(writeCard("BZERO", "               32768", "data range offset"), path);
+        else
+            appendFile(writeCard("BZERO", "                   0", "data range offset"), path);
+        appendFile(writeCard("BSCALE", "                   1", "default scaling factor"), path);
+
 
 		// APPEND THE REST OF THE HEADER
 		char[] card;
@@ -254,6 +267,8 @@ public class FITS_Writer implements PlugIn {
 			if (!s.startsWith("SIMPLE") &&
 			    !s.startsWith("BITPIX") &&
 			    !s.startsWith("NAXIS")  &&
+                !s.startsWith("BZERO") &&
+                !s.startsWith("BSCALE") &&
 			    !s.startsWith("END ")   &&
 			     s.trim().length() > 1) {
 				appendFile(card, path);

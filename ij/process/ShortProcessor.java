@@ -266,7 +266,7 @@ public class ShortProcessor extends ImageProcessor {
 	}
 
 	public final void set(int x, int y, int value) {
-		pixels[y*width + x] = (short)value;
+		pixels[y*width+x] = (short)value;
 	}
 
 	public final int get(int index) {

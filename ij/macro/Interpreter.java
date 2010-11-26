@@ -79,7 +79,9 @@ public class Interpreter implements MacroConstants {
 		calledMacro = true;
 		if (IJ.getInstance()==null)
 			setBatchMode(true);
+		Interpreter saveInstance = instance;
 		run(macro);
+		instance = saveInstance;
 		return returnValue;
 	}
 	
@@ -327,13 +329,16 @@ public class Interpreter implements MacroConstants {
 					}
 					args[count] = new Variable(0, value, str, array);
 				} else if (next==WORD && nextPlus=='[' ) {
+					int savePC = pc;
 					getToken();
 					Variable v = lookupVariable();
 					v = getArrayElement(v);
 					if (v.getString()!=null)
 						args[count] = new Variable(0, 0.0, v.getString(), null);
-					else
-						args[count] = new Variable(0, v.getValue(), null);
+					else {
+						pc = savePC;
+						args[count] = new Variable(0, getExpression(), null);
+					}
 				} else
 					args[count] = new Variable(0, getExpression(), null);
 				count++;

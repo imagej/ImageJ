@@ -243,9 +243,9 @@ import java.io.*;
 		int i = left - 1;
 		int j = right;
 		while (true) {
-			while (a[++i].compareTo( a[right])<0)      // find item on left to swap
+			while (a[++i].compareToIgnoreCase( a[right])<0)      // find item on left to swap
 			;                               // a[right] acts as sentinel
-			while (a[right].compareTo( a[--j])<0)      // find item on right to swap
+			while (a[right].compareToIgnoreCase( a[--j])<0)      // find item on right to swap
 			if (j == left) break;           // don't go out-of-bounds
 			if (i >= j) break;                  // check if pointers cross
 			exch(a, index, i, j);               // swap two elements into place
