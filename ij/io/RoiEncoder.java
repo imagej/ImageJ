@@ -110,10 +110,10 @@ public class RoiEncoder {
 		
 		if (roi instanceof Line) {
 			Line l = (Line)roi;
-			putFloat(18, l.x1);
-			putFloat(22, l.y1);
-			putFloat(26, l.x2);
-			putFloat(30, l.y2);
+			putFloat(RoiDecoder.X1, l.x1);
+			putFloat(RoiDecoder.Y1, l.y1);
+			putFloat(RoiDecoder.X2, l.x2);
+			putFloat(RoiDecoder.Y2, l.y2);
 			if (roi instanceof Arrow) {
 				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ARROW);
 				if (((Arrow)roi).getDoubleHeaded()) {
@@ -125,6 +125,16 @@ public class RoiEncoder {
 			}
 		}
 		
+		if (roi instanceof EllipseRoi) {
+			putShort(RoiDecoder.SUBTYPE, RoiDecoder.ELLIPSE);
+			double[] p = ((EllipseRoi)roi).getParams();
+			putFloat(RoiDecoder.X1, (float)p[0]);
+			putFloat(RoiDecoder.Y1, (float)p[1]);
+			putFloat(RoiDecoder.X2, (float)p[2]);
+			putFloat(RoiDecoder.Y2, (float)p[3]);
+			putFloat(RoiDecoder.ELLIPSE_ASPECT_RATIO, (float)p[4]);
+		}
+
 		// save stroke width, stroke color and fill color (1.43i or later)
 		if (VERSION>=218) {
 			saveStrokeWidthAndColor(roi);

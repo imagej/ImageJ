@@ -23,7 +23,7 @@ import java.awt.*;
 	44-47   fill color (v1.43i or later)
 	48-49   subtype (v1.43k or later)
 	50-51   options (v1.43k or later)
-	52-52   arrow style (v1.43p or later)
+	52-52   arrow style or aspect ratio (v1.43p or later)
 	53-53   arrow head size (v1.43p or later)
 	54-55   rounded rect arc size (v1.43p or later)
 	56-63	 reserved (zero)
@@ -54,6 +54,7 @@ public class RoiDecoder {
 	public static final int SUBTYPE = 48;
 	public static final int OPTIONS = 50;
 	public static final int ARROW_STYLE = 52;
+	public static final int ELLIPSE_ASPECT_RATIO = 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
 	public static final int COORDINATES = 64;
@@ -61,13 +62,15 @@ public class RoiDecoder {
 	// subtypes
 	public static final int TEXT = 1;
 	public static final int ARROW = 2;
+	public static final int ELLIPSE = 3;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
 	public static final int DOUBLE_HEADED = 2;
 	
 	// types
-	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9, point=10;
+	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
+		freehand=7, traced=8, angle=9, point=10;
 	
 	private byte[] data;
 	private String path;
@@ -129,75 +132,84 @@ public class RoiDecoder {
 		}
 
 		switch (type) {
-		case rect:
-			roi = new Roi(left, top, width, height);
-			int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
-			if (arcSize>0)
-				roi.setRoundRectArcSize(arcSize);
-			break;
-		case oval:
-			roi = new OvalRoi(left, top, width, height);
-			break;
-		case line:
-			int x1 = (int)getFloat(X1);		
-			int y1 = (int)getFloat(Y1);		
-			int x2 = (int)getFloat(X2);		
-			int y2 = (int)getFloat(Y2);
-			if (subtype==ARROW) {
-				roi = new Arrow(x1, y1, x2, y2);		
-				((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
-				int style = getByte(ARROW_STYLE);
-				if (style>=Arrow.FILLED && style<=Arrow.OPEN)
-					((Arrow)roi).setStyle(style);
-				int headSize = getByte(ARROW_HEAD_SIZE);
-				if (headSize>=0 && style<=30)
-					((Arrow)roi).setHeadSize(headSize);
-			} else
-				roi = new Line(x1, y1, x2, y2);		
-			//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
-			break;
-		case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
-				//IJ.write("type: "+type);
-				//IJ.write("n: "+n);
-				//IJ.write("rect: "+left+","+top+" "+width+" "+height);
-				if (n==0) break;
-				int[] x = new int[n];
-				int[] y = new int[n];
-				int base1 = COORDINATES;
-				int base2 = base1+2*n;
-				int xtmp, ytmp;
-				for (int i=0; i<n; i++) {
-					xtmp = getShort(base1+i*2);
-					if (xtmp<0) xtmp = 0;
-					ytmp = getShort(base2+i*2);
-					if (ytmp<0) ytmp = 0;
-					x[i] = left+xtmp;
-					y[i] = top+ytmp;
-					//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
-				}
-				if (type==point) {
-					roi = new PointRoi(x, y, n);
-					break;
-				}
-				int roiType;
-				if (type==polygon)
-					roiType = Roi.POLYGON;
-				else if (type==freehand)
-					roiType = Roi.FREEROI;
-				else if (type==traced)
-					roiType = Roi.TRACED_ROI;
-				else if (type==polyline)
-					roiType = Roi.POLYLINE;
-				else if (type==freeline)
-					roiType = Roi.FREELINE;
-				else if (type==angle)
-					roiType = Roi.ANGLE;
-				else
-					roiType = Roi.FREEROI;
-				roi = new PolygonRoi(x, y, n, roiType);
+			case rect:
+				roi = new Roi(left, top, width, height);
+				int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
+				if (arcSize>0)
+					roi.setRoundRectArcSize(arcSize);
 				break;
-		default:
-			throw new IOException("Unrecognized ROI type: "+type);
+			case oval:
+				roi = new OvalRoi(left, top, width, height);
+				break;
+			case line:
+				int x1 = (int)getFloat(X1);		
+				int y1 = (int)getFloat(Y1);		
+				int x2 = (int)getFloat(X2);		
+				int y2 = (int)getFloat(Y2);
+				if (subtype==ARROW) {
+					roi = new Arrow(x1, y1, x2, y2);		
+					((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
+					int style = getByte(ARROW_STYLE);
+					if (style>=Arrow.FILLED && style<=Arrow.OPEN)
+						((Arrow)roi).setStyle(style);
+					int headSize = getByte(ARROW_HEAD_SIZE);
+					if (headSize>=0 && style<=30)
+						((Arrow)roi).setHeadSize(headSize);
+				} else
+					roi = new Line(x1, y1, x2, y2);		
+				//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
+				break;
+			case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
+					//IJ.write("type: "+type);
+					//IJ.write("n: "+n);
+					//IJ.write("rect: "+left+","+top+" "+width+" "+height);
+					if (n==0) break;
+					int[] x = new int[n];
+					int[] y = new int[n];
+					int base1 = COORDINATES;
+					int base2 = base1+2*n;
+					int xtmp, ytmp;
+					for (int i=0; i<n; i++) {
+						xtmp = getShort(base1+i*2);
+						if (xtmp<0) xtmp = 0;
+						ytmp = getShort(base2+i*2);
+						if (ytmp<0) ytmp = 0;
+						x[i] = left+xtmp;
+						y[i] = top+ytmp;
+						//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
+					}
+					if (type==point) {
+						roi = new PointRoi(x, y, n);
+						break;
+					}
+					int roiType;
+					if (type==polygon)
+						roiType = Roi.POLYGON;
+					else if (type==freehand) {
+						roiType = Roi.FREEROI;
+						if (subtype==ELLIPSE) {
+							double ex1 = getFloat(X1);		
+							double ey1 = getFloat(Y1);		
+							double ex2 = getFloat(X2);		
+							double ey2 = getFloat(Y2);
+							double aspectRatio = getFloat(ELLIPSE_ASPECT_RATIO);
+							roi = new EllipseRoi(ex1,ey1,ex2,ey2,aspectRatio);
+							break;
+						}
+					} else if (type==traced)
+						roiType = Roi.TRACED_ROI;
+					else if (type==polyline)
+						roiType = Roi.POLYLINE;
+					else if (type==freeline)
+						roiType = Roi.FREELINE;
+					else if (type==angle)
+						roiType = Roi.ANGLE;
+					else
+						roiType = Roi.FREEROI;
+					roi = new PolygonRoi(x, y, n, roiType);
+					break;
+			default:
+				throw new IOException("Unrecognized ROI type: "+type);
 		}
 		if (name!=null) roi.setName(name);
 		

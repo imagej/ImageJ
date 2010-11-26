@@ -487,9 +487,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 						 } else
 								values[index] = (float)ip.getInterpolatedValue(rx, ry);
 					}
-					//d = Math.sqrt((rx-oldx)*(rx-oldx)+(ry-oldy)*(ry-oldy));
-					//IJ.write(IJ.d2s(rx)+"	"+IJ.d2s(ry)+"	 "+IJ.d2s(d));
-					//oldx = rx; oldy = ry;
 					rx += xinc;
 					ry += yinc;
 				}
