@@ -67,9 +67,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private boolean syncZoom = true;
 	private Point crossLoc;
 	private boolean firstTime = true;
+	private static int previousID, previousX, previousY;
 	 
 	public void run(String arg) {
 		imp = IJ.getImage();
+		if (instance!=null && imp==instance.imp) {
+			instance.dispose();
+			return;
+		}
 		if (imp.getStackSize()==1) {
 			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
@@ -78,8 +83,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			IJ.error("Othogonal Views", "This command does not work with hyperstacks. Try\nconverting to an RGB stack using Image>Type>RGB Color.");
 			return;
 		}
-		if (instance!=null && imp==instance.imp)
-			return;
 		yz_image = WindowManager.getImage(yzID);
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=imp.getBitDepth())
 			yz_image = new ImagePlus();
@@ -104,7 +107,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		magnification= canvas.getMagnification();
 		imp.killRoi();
 		Rectangle r = canvas.getSrcRect();
-		crossLoc = new Point(r.x+r.width/2, r.y+r.height/2);
+		if (imp.getID()==previousID)
+			crossLoc = new Point(previousX, previousY);
+		else
+			crossLoc = new Point(r.x+r.width/2, r.y+r.height/2);
 		ImageStack is=imp.getStack();
 		calibrate();
 		if (createProcessors(is)) {
@@ -237,6 +243,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ic.setCustomRoi(true);
 			yz_image.getWindow().addMouseWheelListener(this);
 			yzID = yz_image.getID();
+		} else {
+			ImageCanvas ic = yz_image.getWindow().getCanvas();
+			ic.addMouseListener(this);
+			ic.addMouseMotionListener(this);
+			ic.setCustomRoi(true);
 		}
 		if (xz_image.getWindow()==null) {
 			xz_image.show();
@@ -247,6 +258,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			ic.setCustomRoi(true);
 			xz_image.getWindow().addMouseWheelListener(this);
 			xzID = xz_image.getID();
+		} else {
+			ImageCanvas ic = xz_image.getWindow().getCanvas();
+			ic.addMouseListener(this);
+			ic.addMouseMotionListener(this);
+			ic.setCustomRoi(true);
 		}
 		 
 	}
@@ -496,8 +512,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 		
 	}
-	
- 
+	 
 	/** draws the crosses in the images */
 	void drawCross(ImagePlus imp, Point p, GeneralPath path) {
 		int width=imp.getWidth();
@@ -510,7 +525,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		path.lineTo(x, height);	
 	}
 	      
-	void dispose(){
+	void dispose() {
 		updater.quit();
 		updater = null;
 		imp.setOverlay(null);
@@ -548,6 +563,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		win.removeFocusListener(this);
 		win.setResizable(true);
 		instance = null;
+		previousID = imp.getID();
+		previousX = crossLoc.x;
+		previousY = crossLoc.y;
 	}
 	
     //@Override

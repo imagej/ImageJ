@@ -927,7 +927,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		return d;
 	}
 
-
 	void verifyDimensions() {
 		int stackSize = getImageStackSize();
 		if (nSlices==1) {

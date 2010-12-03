@@ -1345,6 +1345,9 @@ public class Functions implements MacroConstants, Measurements {
 					return "";
 				else
 					return overlay.toString();
+			} else if (key.equals("log")||key.equals("Log")) {
+				String log = IJ.getLog();
+				return log!=null?log:"";
 			} else if (key.indexOf(".")==-1) {
 				String value = getMetadataValue(key);
 				if (value!=null) return value;

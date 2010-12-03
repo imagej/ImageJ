@@ -1290,6 +1290,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		this.customRoi = customRoi;
 	}
 
+	public boolean getCustomRoi() {
+		return customRoi;
+	}
+
 	/** Called by IJ.showStatus() to prevent status bar text from
 		being overwritten until the cursor moves at least 12 pixels. */
 	public void setShowCursorStatus(boolean status) {

@@ -5,34 +5,18 @@
 </head>
 <body>
 
-<li> <u>1.44k, 26 November 2010</u>
+<li> <u>1.44l, 2 December 2010</u>
 <ul>
-<li> Thanks to Norbert Vischer, added the ellipse tool, which shares the second slot
-on the toolbar with the oval and the selection brush tools.
-<li> Karen Collins contributed an improved FITS_Writer (<i>File&gt;Save As&gt;FITS</i>).
-<li> <i>Image&gt;Show Info</i> displays the pixel or voxel size.
-<li> <i>Edit&gt;Selection&gt;Straighten</i> checks to see if the line has 
-already been prepared for straightening by a run("Fit Spline", "straighten") call.
-<li> The getPixel(x,y) macro function now interpolates if x or y are non-integer.
-<li> Thanks to Norbert Vischer, added the Array.rankPositions()
-(<a href="macros/examples/ArraySortingDemo.txt">example</a>)
-and makeEllipse() macro functions.
-<li> Thanks to Jerome Mutterer, added the getDisplayedArea() macro function
-(<a href="macros/tools/Pixel_Sampler_Tool.txt">example</a>).
-<li> Ved Sharma fixed a bug that caused <i>Image&gt;Stacks&gt;Label</i> to not
-correctly display negative times in min:sec and hour:min:sec modes.
-<li> Fixed a bug that caused selection adjustment handles to be too
-small on zoomed images.
-<li> Fixed a bug that sometimes caused batch mode macros that used the particle 
-analyzer with the "Add to Manager" option to fail.
-<li> Thanks to Michael Schmid, fixed a bug that caused a bogus syntax error
-when calling a user-defined macro function with an expression similar to a[i]+b.
-<li> Thanks to Wilhelm Burger, fixed a bug that caused the stroke 
-width of ShapeRois to not scale with the zoom factor.
-<li> Fixed a bug that caused the pixel width of the output image to be incorrect 
-after using <i>Image&gt;Stacks&gt;Reslice</i> with a line selection on a spatially
-calibrated image.
-<li> Fixed a bug in IJ.d2s() that caused it to not correctly convert infinite values.
+<li> Thanks to Bob Dougherty, the color bar in histograms is now scaled
+to reflect the display range of the image.
+<li> Use the "H" keyboard shortcut to open or stop <i>Image&gt;Stacks&gt;Orthogonal Views</i>.
+<li> Added a "Bare Outlines" option to the particle analyzer.
+<li> Added "H" keyboard shortcut for <i>Image&gt;Stacks&gt;Orthoganal Views</i>.
+<li> Thanks to Christian Moll, add the getInfo("log") macro function and the 
+IJ.getLog() method.
+<li> Fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that caused, when working with
+a stright line selection, inconsistent line shifting if "Slice count" was greater than 1 and
+"Avoid interpolation" was enabled.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

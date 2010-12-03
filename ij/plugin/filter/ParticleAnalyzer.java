@@ -89,12 +89,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static double staticMaxSize = DEFAULT_MAX_SIZE;
 	private static boolean pixelUnits;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
-	private static String[] showStrings = {"Nothing", "Outlines", "Masks", "Ellipses", "Count Masks", "Overlay Outlines", "Overlay Masks"};
+	private static String[] showStrings = {"Nothing", "Outlines", "Masks", "Ellipses", "Count Masks", "Overlay Outlines", "Overlay Masks", "Bare Outlines"};
 	private static double staticMinCircularity=0.0, staticMaxCircularity=1.0;
 	private static String prevHdr;
 		
 	protected static final int NOTHING=0,OUTLINES=1,MASKS=2,ELLIPSES=3,ROI_MASKS=4,
-		OVERLAY_OUTLINES=5, OVERLAY_MASKS=6;
+		OVERLAY_OUTLINES=5, OVERLAY_MASKS=6, BARE_OUTLINES=7;
 	protected static int staticShowChoice;
 	protected ImagePlus imp;
 	protected ResultsTable rt;
@@ -873,7 +873,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	ImageStatistics stats, ImageProcessor mask) {
 		switch (showChoice) {
 			case MASKS: drawFilledParticle(drawIP, roi, mask); break;
-			case OUTLINES: case OVERLAY_OUTLINES: case OVERLAY_MASKS:
+			case OUTLINES: case BARE_OUTLINES: case OVERLAY_OUTLINES: case OVERLAY_MASKS:
 				drawOutline(drawIP, roi, rt.getCounter()); break;
 			case ELLIPSES: drawEllipse(drawIP, stats, rt.getCounter()); break;
 			case ROI_MASKS: drawRoiFilledParticle(drawIP, roi, mask, rt.getCounter()); break;
@@ -909,11 +909,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			for (int i=1; i<nPoints; i++)
 				ip.lineTo(x+xp[i], y+yp[i]);
 			ip.lineTo(x+xp[0], y+yp[0]);
-			String s = ResultsTable.d2s(count,0);
-			ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
-			if (!inSituShow)
-				ip.setValue(1.0);
-			ip.drawString(s);
+			if (showChoice!=BARE_OUTLINES) {
+				String s = ResultsTable.d2s(count,0);
+				ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
+				if (!inSituShow)
+					ip.setValue(1.0);
+				ip.drawString(s);
+			}
 		}
 	}
 

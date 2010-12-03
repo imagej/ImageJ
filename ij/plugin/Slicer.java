@@ -21,6 +21,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private static String startAt = starts[0];
 	private static boolean rotate;
 	private static boolean flip;
+	private static int sliceCount = 1;
 	private boolean nointerpolate = Prefs.avoidResliceInterpolation;
 	private double inputZSpacing = 1.0;
 	private double outputZSpacing = 1.0;
@@ -97,7 +98,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				tmpCal.pixelHeight = 1.0;
 				tmpCal.pixelDepth = 1.0;
 				imp.setCalibration(tmpCal);
-				inputZSpacing = outputZSpacing = 1.0;
+				inputZSpacing = 1.0;
+				if (roiType!=Roi.LINE)
+					outputZSpacing = 1.0;
 		 }
 		double zSpacing = inputZSpacing/imp.getCalibration().pixelWidth;
 		 if (roi==null || roiType==Roi.RECTANGLE || roiType==Roi.LINE) {
@@ -227,9 +230,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		}
 		GenericDialog gd = new GenericDialog("Reslice");
 		gd.addNumericField("Output spacing ("+units+"):", outputSpacing, 3);
-		if (line)
+		if (line) {
+			if (!IJ.isMacro()) outputSlices=sliceCount;
 			gd.addNumericField("Slice_count:", outputSlices, 0);
-		else
+		} else
 			gd.addChoice("Start at:", starts, startAt);
 		gd.addCheckbox("Flip vertically", flip);
 		gd.addCheckbox("Rotate 90 degrees", rotate);
@@ -256,6 +260,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
 		if (line) {
 			outputSlices = (int)gd.getNextNumber();
+			if (!IJ.isMacro()) sliceCount=outputSlices;
 			imp.setRoi(roi);
 		} else
 			startAt = gd.getNextChoice();
