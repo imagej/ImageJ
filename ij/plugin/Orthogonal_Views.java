@@ -68,10 +68,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private Point crossLoc;
 	private boolean firstTime = true;
 	private static int previousID, previousX, previousY;
+	private Rectangle startingSrcRect;
 	 
 	public void run(String arg) {
 		imp = IJ.getImage();
-		if (instance!=null && imp==instance.imp) {
+		if (instance!=null) {
 			instance.dispose();
 			return;
 		}
@@ -568,32 +569,34 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		previousY = crossLoc.y;
 	}
 	
-    //@Override
 	public void mouseClicked(MouseEvent e) {
 	}
 
-	//@Override
 	public void mouseEntered(MouseEvent e) {
 	}
 
-	//@Override
 	public void mouseExited(MouseEvent e) {
 	}
 
-	//@Override
 	public void mousePressed(MouseEvent e) {
+		ImageCanvas xyCanvas = imp.getCanvas();
+		startingSrcRect = (Rectangle)xyCanvas.getSrcRect().clone();
 		mouseDragged(e);
 	}
 
-	//@Override
 	public void mouseDragged(MouseEvent e) {
+		if (IJ.spaceBarDown())  // scrolling?
+			return;
 		if (e.getSource().equals(canvas)) {
 			crossLoc = canvas.getCursorLoc();
 		} else if (e.getSource().equals(xz_image.getCanvas())) {
 			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
 			int pos = xz_image.getCanvas().getCursorLoc().y;
-			int z = (int)Math.round(pos/az); 
-			imp.setSlice(z + 1);
+			int z = (int)Math.round(pos/az);
+			if (flipXZ)
+				imp.setSlice(imp.getStackSize()-z);
+			else
+				imp.setSlice(z + 1);
 		} else if (e.getSource().equals(yz_image.getCanvas())) {
 			int pos;
 			if (rotateYZ) {
@@ -609,8 +612,38 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		update();
 	}
 
-	//@Override
 	public void mouseReleased(MouseEvent e) {
+		ImageCanvas ic = imp.getCanvas();
+		Rectangle srcRect = ic.getSrcRect();
+		if (srcRect.x!=startingSrcRect.x || srcRect.y!=startingSrcRect.y) {
+			// user has scrolled xy image
+			int dy = srcRect.y - startingSrcRect.y;
+			ImageCanvas yzic = yz_image.getCanvas();
+			Rectangle yzSrcRect =yzic.getSrcRect();
+			if (rotateYZ) {
+				yzSrcRect.x += dy;
+				if (yzSrcRect.x<0)
+					yzSrcRect.x = 0;
+				if (yzSrcRect.x>yz_image.getWidth()-yzSrcRect.width)
+					yzSrcRect.y = yz_image.getWidth()-yzSrcRect.width;
+			} else {
+				yzSrcRect.y += dy;
+				if (yzSrcRect.y<0)
+					yzSrcRect.y = 0;
+				if (yzSrcRect.y>yz_image.getHeight()-yzSrcRect.height)
+					yzSrcRect.y = yz_image.getHeight()-yzSrcRect.height;
+			}
+			yzic.repaint();
+			int dx = srcRect.x - startingSrcRect.x;
+			ImageCanvas xzic = xz_image.getCanvas();
+			Rectangle xzSrcRect =xzic.getSrcRect();
+			xzSrcRect.x += dx;
+			if (xzSrcRect.x<0)
+				xzSrcRect.x = 0;
+			if (xzSrcRect.x>xz_image.getWidth()-xzSrcRect.width)
+				xzSrcRect.x = xz_image.getWidth()-xzSrcRect.width;
+			xzic.repaint();
+		}
 	}
 	
 	/**
@@ -649,7 +682,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		int z=imp.getNSlices();
 		int zlice=imp.getCurrentSlice()-1;
 		int zcoord=(int)Math.round(arat*zlice);
-		if (flipXZ) zcoord=(int)Math.round(arat*(z-zlice));
+		if (flipXZ) zcoord = (int)Math.round(arat*(z-zlice));
+		
+		ImageCanvas xzCanvas = xz_image.getCanvas();
 		p=new Point (x, zcoord);
 		GeneralPath path = new GeneralPath();
 		drawCross(xz_image, p, path);
@@ -670,11 +705,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		IJ.showStatus(imp.getLocationAsString(crossLoc.x, crossLoc.y));
 	}
 
-	//@Override
 	public void mouseMoved(MouseEvent e) {
 	}
 
-	//@Override
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
 		if (key==KeyEvent.VK_ESCAPE) {
@@ -693,15 +726,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		}
 	}
 
-	//@Override
 	public void keyReleased(KeyEvent e) {
 	}
 
-	//@Override
 	public void keyTyped(KeyEvent e) {
 	}
 
-	//@Override
 	public void actionPerformed(ActionEvent ev) {
 	}
 
@@ -756,43 +786,34 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			return command;
 	}
 
-	//@Override
 	public void windowActivated(WindowEvent e) {
 		 arrangeWindows(sticky);
 	}
 
-	//@Override
 	public void windowClosed(WindowEvent e) {
 	}
 
-	//@Override
 	public void windowClosing(WindowEvent e) {
 		dispose();		
 	}
 
-	//@Override
 	public void windowDeactivated(WindowEvent e) {
 	}
 
-	//@Override
 	public void windowDeiconified(WindowEvent e) {
 		 arrangeWindows(sticky);
 	}
 
-	//@Override
 	public void windowIconified(WindowEvent e) {
 	}
 
-	//@Override
 	public void windowOpened(WindowEvent e) {
 	}
 
-	//@Override
 	public void adjustmentValueChanged(AdjustmentEvent e) {
 		update();
 	}
 		
-	//@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (e.getSource().equals(xz_image.getWindow())) {
 			crossLoc.y += e.getWheelRotation();
@@ -802,14 +823,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		update();
 	}
 
-	//@Override
 	public void focusGained(FocusEvent e) {
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) canvas.requestFocus();
 		arrangeWindows(sticky);
 	}
 
-	//@Override
 	public void focusLost(FocusEvent e) {
 		arrangeWindows(sticky);
 	}
