@@ -5,11 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.44l, 5 December 2010</u>
+<li> <u>1.44l, 8 December 2010</u>
 <ul>
 <li> Thanks to Bob Dougherty, the color bar in histograms is now scaled
 to reflect the display range of the image.
 <li> Use the shift-h keyboard shortcut to start/stop <i>Image&gt;Stacks&gt;Orthogonal Views</i>.
+<li> <i>Image&gt;Stacks&gt;Z Project</i> saves the projection method in the preferences file.
 <li> Added a "Bare Outlines" option to the particle analyzer.
 <li> Added "H" keyboard shortcut for <i>Image&gt;Stacks&gt;Orthoganal Views</i>.
 <li> Thanks to Christian Moll, add the getInfo("log") macro function and the 
@@ -17,7 +18,11 @@ IJ.getLog() method.
 <li> Fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that caused, when working with
 a stright line selection, inconsistent line shifting if "Slice count" was greater than 1 and
 "Avoid interpolation" was enabled.
-<li> Fixed several bugs in <i>Image&gt;Stacks&gt;Orthogonal Views</i>
+<li> Fixed several bugs in <i>Image&gt;Stacks&gt;Orthogonal Views</i>.
+<li> Jan Funke fixed a bug that made it impossible to use the ZProjector
+class concurrently.
+<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Make Montage</i>, when used with
+signed 16-bit images, to sometimes draw borders using pixel values of -32768.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

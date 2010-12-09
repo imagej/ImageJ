@@ -1440,7 +1440,8 @@ public class IJ {
 		if (path!=null && path.length()==0) path = null;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {
-			path = updateExtension(path, ".tif");
+			if (!path.endsWith(".tiff"))
+				path = updateExtension(path, ".tif");
 			format = "Tiff...";
 		} else if (format.indexOf("jpeg")!=-1  || format.indexOf("jpg")!=-1) {
 			path = updateExtension(path, ".jpg");
