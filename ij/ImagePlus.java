@@ -672,7 +672,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		the current ImageProcessor to null. */
 	public void trimProcessor() {
 		ImageProcessor ip2 = ip;
-		if (!locked && ip2!=null) {
+		if (!locked && ip2!=null && (roi==null || roi.getType()==Roi.RECTANGLE || roi.getPasteMode()==Roi.NOT_PASTING)) {
 			if (IJ.debugMode) IJ.log(title + ": trimProcessor");
 			ip2.setSnapshotPixels(null);
 		}

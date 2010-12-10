@@ -121,8 +121,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		setSize(dstWidth, dstHeight);
 	}
 		
-	/** ImagePlus.updateAndDraw calls this method to get paint 
-		to update the image from the ImageProcessor. */
+	/** ImagePlus.updateAndDraw calls this method to force the paint()
+		method to update the image from the ImageProcessor. */
 	public void setImageUpdated() {
 		imageUpdated = true;
 	}

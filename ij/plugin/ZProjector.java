@@ -22,7 +22,7 @@ public class ZProjector implements PlugIn {
 	public static final int MEDIAN_METHOD = 5;
 	public static final String[] METHODS = 
 		{"Average Intensity", "Max Intensity", "Min Intensity", "Sum Slices", "Standard Deviation", "Median"}; 
-	private static final String METHOD_KEY = "zproject.method";
+    private static final String METHOD_KEY = "zproject.method";
     private int method = (int)Prefs.get(METHOD_KEY, AVG_METHOD);
 
     private static final int BYTE_TYPE  = 0; 
@@ -201,7 +201,7 @@ public class ZProjector implements PlugIn {
 			return;
 		sliceCount = 0;
 		if (method<AVG_METHOD || method>MEDIAN_METHOD)
-			method = MAX_METHOD;
+			method = AVG_METHOD;
     	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
     		sliceCount++;
 		if (method==MEDIAN_METHOD) {

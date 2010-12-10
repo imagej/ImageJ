@@ -346,7 +346,7 @@ public abstract class ImageProcessor extends Object {
 	/** Sets the default fill/draw value. */
 	public abstract void setValue(double value);
 
-	/** Sets the background fill value used by the rotate(), scale() and translate() methods. */
+	/** Sets the background fill value used by the rotate() and scale() methods. */
 	public abstract void setBackgroundValue(double value);
 
 	/** Returns the background fill value. */
@@ -1890,6 +1890,7 @@ public abstract class ImageProcessor extends Object {
 	*/
   	public void translate(double xOffset, double yOffset) {
   		ImageProcessor ip2 = this.duplicate();
+  		ip2.setBackgroundValue(0.0);
 		boolean integerOffsets = xOffset==(int)xOffset && yOffset==(int)yOffset;
   		if (integerOffsets || interpolationMethod==NONE) {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
