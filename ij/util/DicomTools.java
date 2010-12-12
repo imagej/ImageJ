@@ -1,9 +1,6 @@
-package ij.plugin;
+package ij.util;
 import ij.*;
 import ij.process.*;
-import ij.gui.*;
-import java.awt.*;
-import ij.util.*;
 
 /** DICOM utilities */
 public class DicomTools {
@@ -58,6 +55,8 @@ public class DicomTools {
 		return s.substring(s.length()-MAX_DIGITS);
 	}
 
+	/** Calculates the voxel depth of the specified DICOM stack based 
+		on the distance between the first and last slices. */
 	public static double getVoxelDepth(ImageStack stack) {
 		String pos0 = getTag(stack.getSliceLabel(1), "0020,0032");
 		String posn = null;
@@ -76,6 +75,20 @@ public class DicomTools {
 		return voxelDepth;
 	}
 
+	/** Returns the value (as a string) of the specified DICOM tag id (in the form "0018,0050")
+		of the specified image or stack slice. Returns null if the tag id is not found. */
+	public static String getTag(ImagePlus imp, String id) {
+		String metadata = null;
+		if (imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			String label = stack.getSliceLabel(imp.getCurrentSlice());
+			if (label!=null && label.indexOf('\n')>0) metadata = label;
+		}
+		if (metadata==null)
+			metadata = (String)imp.getProperty("Info");
+		return getTag(metadata, id);
+	}
+	
 	private static double getSeriesNumber(String tags) {
 		double series = getNumericTag(tags, "0020,0011");
 		if (Double.isNaN(series)) series = 0;

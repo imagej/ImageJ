@@ -1337,9 +1337,10 @@ public class Functions implements MacroConstants, Measurements {
 	
 	String getInfo(String key) {
 			int len = key.length();
-			if (len==9 && key.charAt(4)==',')
-				return getDicomTag(key);
-			else if (key.equals("overlay")) {
+			if (len==9 && key.charAt(4)==',') {
+				String tag = DicomTools.getTag(getImage(), key);
+				return tag!=null?tag:"";
+			} else if (key.equals("overlay")) {
 				Overlay overlay = getImage().getOverlay();
 				if (overlay==null)
 					return "";
@@ -1416,19 +1417,6 @@ public class Functions implements MacroConstants, Measurements {
 		if (index2==-1) return null;
 		String value = metadata.substring(index1+1, index2);
 		if (value.startsWith(" ")) value = value.substring(1, value.length());
-		return value;
-	}
-	
-	String getDicomTag(String tag) {
-		String metadata = getMetadataAsString();
-		if (metadata==null) return "";
-		int index1 = metadata.indexOf(tag);
-		if (index1==-1) return "";
-		index1 = metadata.indexOf(":", index1);
-		if (index1==-1) return "";
-		int index2 = metadata.indexOf("\n", index1);
-		if (index2==-1) return "";
-		String value = metadata.substring(index1+1, index2);
 		return value;
 	}
 	

@@ -8,6 +8,7 @@ import ij.io.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
+import ij.util.DicomTools;
 
 /** Implements the File/Import/Image Sequence command, which
 opens a folder of images as a stack. */
