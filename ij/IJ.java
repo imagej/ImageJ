@@ -661,7 +661,16 @@ public class IJ {
 			str2 = ", "+d2s(rate/1000000.0,1)+" million pixels/second";
 		showStatus(str+seconds+" seconds"+str2);
 	}
-
+	
+	/** Experimental */
+	public static  String time(ImagePlus imp, long startNanoTime) {
+		double planes = imp.getStackSize();
+		double seconds = (System.nanoTime()-startNanoTime)/1000000000.0;
+		double mpixels = imp.getWidth()*imp.getHeight()*planes/1000000.0;
+		String time = seconds<1.0?d2s(seconds*1000.0,0)+" ms":d2s(seconds,1)+" seconds";
+		return time+", "+d2s(mpixels/seconds,1)+" million pixels/second";
+	}
+		
 	/** Converts a number to a formatted string using
 		2 digits to the right of the decimal point. */
 	public static String d2s(double n) {

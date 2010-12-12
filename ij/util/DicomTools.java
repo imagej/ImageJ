@@ -5,28 +5,13 @@ import ij.gui.*;
 import java.awt.*;
 import ij.util.*;
 
-/* Sorts a DICOM stack by image number. */
-public class DICOM_Sorter implements PlugIn {
-	static final int MAX_DIGITS = 5;
+/** DICOM utilities */
+public class DicomTools {
+	private static final int MAX_DIGITS = 5;
 
-	public void run(String arg) {
-		ImagePlus imp = IJ.getImage();
-		if (!isDicomStack(imp)) {
-			IJ.showMessage("DICOM Sorter", "This command requires a DICOM stack");
-			return;
-		}
-		int stackSize = imp.getStackSize();
-		ImageStack stack = imp.getStack();
-		String[] strings = getSortStrings(stack, "0020,0013");
-		if (strings==null) return;
-		StringSorter.sort(strings);
-		ImageStack stack2 = sortStack(stack, strings);
-		if (stack2!=null)
-			imp.setStack(null, stack2);
-	}
-	
-	public ImageStack sort(ImageStack stack) {
-		if (IJ.debugMode) IJ.log("DICOM_Sorter: sorting by image number");
+	/** Sorts a DICOM stack by image number. */
+	public static ImageStack sort(ImageStack stack) {
+		if (IJ.debugMode) IJ.log("Sorting by DICOM image number");
 		if (stack.getSize()==1) return stack;
 		String[] strings = getSortStrings(stack, "0020,0013");
 		if (strings==null) return stack;
@@ -35,7 +20,7 @@ public class DICOM_Sorter implements PlugIn {
 		return stack2!=null?stack2:stack;
 	}
 	
-	ImageStack sortStack(ImageStack stack, String[] strings) {
+	private static ImageStack sortStack(ImageStack stack, String[] strings) {
 		ImageProcessor ip = stack.getProcessor(1);
 		ImageStack stack2 = new ImageStack(ip.getWidth(), ip.getHeight(), ip.getColorModel());
 		for (int i=0; i<stack.getSize(); i++) {
@@ -47,7 +32,7 @@ public class DICOM_Sorter implements PlugIn {
 		return stack2;
 	}
 
-	String[] getSortStrings(ImageStack stack, String tag) {
+	private static String[] getSortStrings(ImageStack stack, String tag) {
 		double series = getSeriesNumber(stack.getSliceLabel(1));
 		int n = stack.getSize();
 		String[] values = new String[n];
@@ -68,46 +53,56 @@ public class DICOM_Sorter implements PlugIn {
 		return values;
 	}
 
-	String toString(double value, int width) {
+	private static String toString(double value, int width) {
 		String s = "       " + IJ.d2s(value,0);
 		return s.substring(s.length()-MAX_DIGITS);
 	}
 
-	boolean isDicomStack(ImagePlus imp) {
-		if (imp.getStackSize()==1)
-			return false;
-		ImageStack stack = imp.getStack();
-		String label = stack.getSliceLabel(1);
-		return label!=null && label.lastIndexOf("7FE0,0010")>0;
+	public static double getVoxelDepth(ImageStack stack) {
+		String pos0 = getTag(stack.getSliceLabel(1), "0020,0032");
+		String posn = null;
+		double voxelDepth = -1.0;
+		if (pos0!=null) {
+			String[] xyz = pos0.split("\\\\");
+			if (xyz.length!=3) return voxelDepth;
+			double z0 = Double.parseDouble(xyz[2]);
+			posn = getTag(stack.getSliceLabel(stack.getSize()), "0020,0032");
+			xyz = posn.split("\\\\");
+			if (xyz.length!=3) return voxelDepth;
+			double zn = Double.parseDouble(xyz[2]);
+			voxelDepth = Math.abs((zn - z0) / (stack.getSize() - 1));
+		}
+		if (IJ.debugMode) IJ.log("DicomTools.getVoxelDepth: "+voxelDepth+"  "+pos0+"  "+posn);
+		return voxelDepth;
 	}
-	
-	double getSeriesNumber(String tags) {
+
+	private static double getSeriesNumber(String tags) {
 		double series = getNumericTag(tags, "0020,0011");
 		if (Double.isNaN(series)) series = 0;
 		return series;
 	}
 
-	double getNumericTag(String hdr, String tag) {
+	private static double getNumericTag(String hdr, String tag) {
 		String value = getTag(hdr, tag);
-		if (value.equals("")) return Double.NaN;
+		if (value==null) return Double.NaN;
 		int index3 = value.indexOf("\\");
 		if (index3>0)
 			value = value.substring(0, index3);
 		return Tools.parseDouble(value);
 	}
 
-	String getTag(String hdr, String tag) {
-		if (hdr==null) return "";
+	private static String getTag(String hdr, String tag) {
+		if (hdr==null) return null;
 		int index1 = hdr.indexOf(tag);
-		if (index1==-1) return "";
+		if (index1==-1) return null;
 		//IJ.log(hdr.charAt(index1+11)+"   "+hdr.substring(index1,index1+20));
 		if (hdr.charAt(index1+11)=='>') {
 			// ignore tags in sequences
 			index1 = hdr.indexOf(tag, index1+10);
-			if (index1==-1) return "";
+			if (index1==-1) return null;
 		}
 		index1 = hdr.indexOf(":", index1);
-		if (index1==-1) return "";
+		if (index1==-1) return null;
 		int index2 = hdr.indexOf("\n", index1);
 		String value = hdr.substring(index1+1, index2);
 		return value;

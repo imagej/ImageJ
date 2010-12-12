@@ -1073,7 +1073,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			if (type!=RECTANGLE)
 				ip.reset(ip.getMask());
 			ic.setImageUpdated();
-			imp.updateAndDraw();
 		}
 	}
 

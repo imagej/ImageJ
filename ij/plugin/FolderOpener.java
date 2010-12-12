@@ -198,8 +198,6 @@ public class FolderOpener implements PlugIn {
 			if (stack!=null) stack.trim();
 		}
 		if (stack!=null && stack.getSize()>0) {
-			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0)
-				stack = (new DICOM_Sorter()).sort(stack);
 			ImagePlus imp2 = new ImagePlus(title, stack);
 			if (imp2.getType()==ImagePlus.GRAY16 || imp2.getType()==ImagePlus.GRAY32)
 				imp2.getProcessor().setMinAndMax(min, max);
@@ -220,6 +218,15 @@ public class FolderOpener implements PlugIn {
 					cal.setUnit("um");
 				}
 				imp2.setCalibration(cal);
+			}
+			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) {
+				imp2.setStack(DicomTools.sort(stack));
+				double voxelDepth = DicomTools.getVoxelDepth(stack);
+				if (voxelDepth>0.0) {
+					if (IJ.debugMode) IJ.log("DICOM voxel depth set to "+voxelDepth+" ("+cal.pixelDepth+")");
+					cal.pixelDepth = voxelDepth;
+					imp2.setCalibration(cal);
+				}
 			}
 			if (imp2.getStackSize()==1 && info1!=null)
 				imp2.setProperty("Info", info1);
