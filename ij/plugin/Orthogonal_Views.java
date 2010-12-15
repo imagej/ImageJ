@@ -45,6 +45,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 
 	private ImageWindow win;
 	private ImagePlus imp;
+	private boolean rgb;
+	private ImageStack imageStack;
+	private boolean hyperstack;
+	private int currentChannel, currentFrame; 
 	private ImageCanvas canvas;
 	private static final int H_ROI=0, H_ZOOM=1;
 	private static boolean sticky=true;
@@ -80,19 +84,22 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
 		}
-		if (imp.isComposite() || imp.isHyperStack()) {
-			IJ.error("Othogonal Views", "This command does not work with hyperstacks. Try\nconverting to an RGB stack using Image>Type>RGB Color.");
+		if (imp.getNSlices()<=1) {
+			IJ.error("Othogonal Views", "This command requires a stack, or a hypertack with Z>1.");
 			return;
 		}
 		yz_image = WindowManager.getImage(yzID);
-		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=imp.getBitDepth())
+		hyperstack = imp.isHyperStack();
+		rgb = imp.getBitDepth()==24 || hyperstack;
+		int yzBitDepth = hyperstack?24:imp.getBitDepth();
+		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=yzBitDepth)
 			yz_image = new ImagePlus();
 		xz_image = WindowManager.getImage(xzID);
-		//if (xz_image!=null) IJ.log(imp+"  "+xz_image+"  "+xz_image.getHeight()+"  "+imp.getHeight()+"  "+xz_image.getBitDepth()+"  "+imp.getBitDepth());
-		if (xz_image==null || xz_image.getWidth()!=imp.getWidth() || xz_image.getBitDepth()!=imp.getBitDepth())
+		//if (xz_image!=null) IJ.log(imp+"  "+xz_image+"  "+xz_image.getHeight()+"  "+imp.getHeight()+"  "+xz_image.getBitDepth()+"  "+yzBitDepth);
+		if (xz_image==null || xz_image.getWidth()!=imp.getWidth() || xz_image.getBitDepth()!=yzBitDepth)
 			xz_image = new ImagePlus();
 		instance = this;
-		ImageProcessor ip = imp.getProcessor();
+		ImageProcessor ip = hyperstack?new ColorProcessor(imp.getImage()):imp.getProcessor();
 		min = ip.getMin();
 		max = ip.getMax();
 		cal=this.imp.getCalibration();
@@ -112,9 +119,9 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			crossLoc = new Point(previousX, previousY);
 		else
 			crossLoc = new Point(r.x+r.width/2, r.y+r.height/2);
-		ImageStack is=imp.getStack();
+		imageStack = getStack();
 		calibrate();
-		if (createProcessors(is)) {
+		if (createProcessors(imageStack)) {
 			if (ip.isColorLut() || ip.isInvertedLut()) {
 				ColorModel cm = ip.getColorModel();
 				fp1.setColorModel(cm);
@@ -123,6 +130,23 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			update();
 		} else
 			dispose();
+	}
+	
+	private ImageStack getStack() {
+		if (imp.isHyperStack()) {
+			int slices = imp.getNSlices();
+			ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
+			int c=imp.getChannel(), z=imp.getSlice(), t=imp.getFrame();
+			for (int i=1; i<=slices; i++) {
+				imp.setPositionWithoutUpdate(c, i, t);
+				stack.addSlice(null, new ColorProcessor(imp.getImage()));
+			}
+			imp.setPosition(c, z, t);
+			currentChannel = c;
+			currentFrame = t;
+			return stack;
+		} else
+			return imp.getStack();
 	}
  
 	private void addListeners(ImageCanvas canvass) {
@@ -161,14 +185,14 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 
 	private void updateMagnification(int x, int y) {
         double magnification= win.getCanvas().getMagnification();
-        int z = imp.getCurrentSlice()-1;
+        int z = imp.getSlice()-1;
         ImageWindow xz_win = xz_image.getWindow();
         if (xz_win==null) return;
         ImageCanvas xz_ic = xz_win.getCanvas();
         double xz_mag = xz_ic.getMagnification();
         double arat = az/ax;
 		int zcoord=(int)(arat*z);
-		if (flipXZ) zcoord=(int)(arat*(imp.getStackSize()-z));
+		if (flipXZ) zcoord=(int)(arat*(imp.getNSlices()-z));
         while (xz_mag<magnification) {
         	xz_ic.zoomIn(xz_ic.screenX(x), xz_ic.screenY(zcoord));
         	xz_mag = xz_ic.getMagnification();
@@ -203,10 +227,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		if (width2!=fp1.getWidth()||height2!=fp1.getHeight()) {
 			fp1.setInterpolate(true);
 			ImageProcessor sfp1=fp1.resize(width2, height2);
-			sfp1.setMinAndMax(min, max);
+			if (!rgb) sfp1.setMinAndMax(min, max);
 			xz_image.setProcessor("XZ "+p.y, sfp1);
 		} else {
-			fp1.setMinAndMax(min, max);
+			if (!rgb) fp1.setMinAndMax(min, max);
 	    	xz_image.setProcessor("XZ "+p.y, fp1);
 		}
 			
@@ -227,10 +251,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		if (width2!=fp2.getWidth()||height2!=fp2.getHeight()) {
 			fp2.setInterpolate(true);
 			ImageProcessor sfp2=fp2.resize(width2, height2);
-			sfp2.setMinAndMax(min, max);
+			if (!rgb) sfp2.setMinAndMax(min, max);
 			yz_image.setProcessor(title+p.x, sfp2);
 		} else {
-			fp2.setMinAndMax(min, max);
+			if (!rgb) fp2.setMinAndMax(min, max);
 			yz_image.setProcessor(title+p.x, fp2);
 		}
 		
@@ -293,7 +317,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
  				xzWin.setLocation(xyX,xyY+xyWin.getHeight());
  			if (firstTime) {
  				imp.getWindow().toFront();
- 				imp.setSlice(imp.getStackSize()/2);
+ 				if (hyperstack)
+ 					imp.setPosition(imp.getChannel(), imp.getNSlices()/2, imp.getFrame());
+ 				else
+ 					imp.setSlice(imp.getNSlices()/2);
  				firstTime = false;
  			}
 		}
@@ -567,6 +594,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		previousID = imp.getID();
 		previousX = crossLoc.x;
 		previousY = crossLoc.y;
+		imageStack = null;
 	}
 	
 	public void mouseClicked(MouseEvent e) {
@@ -593,10 +621,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			crossLoc.x = xz_image.getCanvas().getCursorLoc().x;
 			int pos = xz_image.getCanvas().getCursorLoc().y;
 			int z = (int)Math.round(pos/az);
-			if (flipXZ)
-				imp.setSlice(imp.getStackSize()-z);
+			int slice = flipXZ?imp.getNSlices()-z:z+1;
+			if (hyperstack)
+				imp.setPosition(imp.getChannel(), slice, imp.getFrame());
 			else
-				imp.setSlice(z + 1);
+				imp.setSlice(slice);
 		} else if (e.getSource().equals(yz_image.getCanvas())) {
 			int pos;
 			if (rotateYZ) {
@@ -607,7 +636,10 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 				pos = yz_image.getCanvas().getCursorLoc().x;
 			}
 			int z = (int)Math.round(pos/az);
-			imp.setSlice(z + 1);
+			if (hyperstack)
+				imp.setPosition(imp.getChannel(), z+1, imp.getFrame());
+			else
+				imp.setSlice(z+1);
 		}
 		update();
 	}
@@ -659,7 +691,15 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		if (canvas==null) return;
 		int width=imp.getWidth();
 		int height=imp.getHeight();
-		ImageStack is=imp.getStack();
+		if (hyperstack) {
+			int c = imp.getChannel();
+			int t = imp.getFrame();
+			if (c!=currentChannel || t!=currentFrame)
+				imageStack = null;
+		}
+		ImageStack is=imageStack;
+		if (is==null)
+			is = imageStack = getStack();
 		double arat=az/ax;
 		double brat=az/ay;
 		Point p=crossLoc;
@@ -680,7 +720,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private void updateCrosses(int x, int y, double arat, double brat) {
 		Point p;
 		int z=imp.getNSlices();
-		int zlice=imp.getCurrentSlice()-1;
+		int zlice=imp.getSlice()-1;
 		int zcoord=(int)Math.round(arat*zlice);
 		if (flipXZ) zcoord = (int)Math.round(arat*(z-zlice));
 		
@@ -855,13 +895,16 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		int[] loc = new int[3];
 		loc[0] = crossLoc.x;
 		loc[1] = crossLoc.y;
-		loc[2] = imp.getCurrentSlice()-1;
+		loc[2] = imp.getSlice()-1;
 		return loc;
 	}
 	
 	public void setCrossLoc(int x, int y, int z) {
 		crossLoc.setLocation(x, y);
-		imp.setSlice(z+1);
+		if (hyperstack)
+			imp.setPosition(imp.getChannel(), z+1, imp.getFrame());
+		else
+			imp.setSlice(z+1);
 		update();
 	}
 	
