@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.44l, 15 December 2010</u>
+<li> <u>1.44l, 16 December 2010</u>
 <ul>
 <li> <i>Image&gt;Stacks&gt;Orthogonal Views</i> works with hyperstacks
 <li> and can be started/stopped using the shift-h keyboard shortcut.
@@ -17,7 +17,6 @@ on the distance between the first and last slices.
 position to be lost when the cursor is not over the image.
 <li> <i>Image&gt;Stacks&gt;Z Project</i> saves the projection method in the preferences file.
 <li> Added a "Bare Outlines" option to the particle analyzer.
-<li> Added "H" keyboard shortcut for <i>Image&gt;Stacks&gt;Orthoganal Views</i>.
 <li> Thanks to Christian Moll, added the getInfo("log") macro function and the 
 IJ.getLog() method.
 <li> Added the DicomTools.getTag() method.
@@ -31,6 +30,8 @@ class concurrently.
 signed 16-bit images, to sometimes draw borders using pixel values of -32768.
 <li> Fixed a bug that caused <i>Image&gt;Transform&gt;Translate</i> to fill with
 white for non-integer bicubic translations.
+<li> Thanks to Johannes Schindelen, fixed bugs that sometimes caused <i>Image&gt;Color&gt;Merge Channels</i>
+to not work as expected when merging four images or stacks.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

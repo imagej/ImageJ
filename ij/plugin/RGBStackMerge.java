@@ -35,8 +35,7 @@ public class RGBStackMerge implements PlugIn {
 		titles[wList.length] = none;
 		boolean createComposite = staticCreateComposite;
 		boolean keep = staticKeep;
-		String macroOptions = Macro.getOptions();
-		if (macroOptions!=null)
+		if (IJ.isMacro())
 			createComposite = keep = false;
 
 		GenericDialog gd = new GenericDialog("Color Merge");
@@ -142,6 +141,7 @@ public class RGBStackMerge implements PlugIn {
 		stacks[1]  = images[1]!=null?images[1].getStack():null;
 		stacks[2]  = images[2]!=null?images[2].getStack():null;
 		stacks[3]  = images[3]!=null?images[3].getStack():null;
+		String macroOptions = Macro.getOptions();
 		if	(macroOptions!=null && macroOptions.indexOf("gray=")==-1)
 				stacks[3] = null; // ensure compatibility with old macros
 		ImagePlus imp2;
