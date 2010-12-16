@@ -269,7 +269,7 @@ public class FITS_Writer implements PlugIn {
 			    !s.startsWith("NAXIS")  &&
                 !s.startsWith("BZERO") &&
                 !s.startsWith("BSCALE") &&
-			    !s.startsWith("END ")   &&
+			    !s.startsWith("END")   &&
 			     s.trim().length() > 1) {
 				appendFile(card, path);
 				numCards++;

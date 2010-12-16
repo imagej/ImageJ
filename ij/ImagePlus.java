@@ -674,6 +674,9 @@ public class ImagePlus implements ImageObserver, Measurements {
 		ImageProcessor ip2 = ip;
 		if (!locked && ip2!=null) {
 			if (IJ.debugMode) IJ.log(title + ": trimProcessor");
+			Roi roi2 = getRoi();
+			if (roi2!=null && roi2.getPasteMode()!=Roi.NOT_PASTING)
+				roi2.endPaste();
 			ip2.setSnapshotPixels(null);
 		}
 	}
@@ -926,7 +929,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		d[4] = nFrames;
 		return d;
 	}
-
 
 	void verifyDimensions() {
 		int stackSize = getImageStackSize();

@@ -403,7 +403,15 @@ public class IJ {
 			logPanel.append(s);
 	}
 	
-	/** Clears the "Results" window and sets the column headings to
+	/** Returns the contents of the Log window or null if the Log window is not open. */
+	public static synchronized String getLog() { 
+		if (logPanel==null || ij==null)
+			return null;
+		else
+			return logPanel.getText(); 
+	} 
+
+/** Clears the "Results" window and sets the column headings to
 		those in the tab-delimited 'headings' String. Writes to
 		System.out.println if the "ImageJ" frame is not present.*/
 	public static void setColumnHeadings(String headings) {
@@ -641,20 +649,28 @@ public class IJ {
 	
 	public static void showTime(ImagePlus imp, long start, String str, int nslices) {
 		if (Interpreter.isBatchMode()) return;
-	    long elapsedTime = System.currentTimeMillis() - start;
-		double seconds = elapsedTime / 1000.0;
-		long pixels = imp.getWidth() * imp.getHeight();
-		int rate = (int)((double)pixels*nslices/seconds);
+	    double seconds = (System.currentTimeMillis()-start)/1000.0;
+		double pixels = (double)imp.getWidth() * imp.getHeight();
+		double rate = pixels*nslices/seconds;
 		String str2;
-		if (rate>1000000000)
+		if (rate>1000000000.0)
 			str2 = "";
-		else if (rate<1000000)
-			str2 = ", "+rate+" pixels/second";
+		else if (rate<1000000.0)
+			str2 = ", "+d2s(rate,0)+" pixels/second";
 		else
 			str2 = ", "+d2s(rate/1000000.0,1)+" million pixels/second";
 		showStatus(str+seconds+" seconds"+str2);
 	}
-
+	
+	/** Experimental */
+	public static  String time(ImagePlus imp, long startNanoTime) {
+		double planes = imp.getStackSize();
+		double seconds = (System.nanoTime()-startNanoTime)/1000000000.0;
+		double mpixels = imp.getWidth()*imp.getHeight()*planes/1000000.0;
+		String time = seconds<1.0?d2s(seconds*1000.0,0)+" ms":d2s(seconds,1)+" seconds";
+		return time+", "+d2s(mpixels/seconds,1)+" million pixels/second";
+	}
+		
 	/** Converts a number to a formatted string using
 		2 digits to the right of the decimal point. */
 	public static String d2s(double n) {
@@ -1433,7 +1449,8 @@ public class IJ {
 		if (path!=null && path.length()==0) path = null;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {
-			path = updateExtension(path, ".tif");
+			if (!path.endsWith(".tiff"))
+				path = updateExtension(path, ".tif");
 			format = "Tiff...";
 		} else if (format.indexOf("jpeg")!=-1  || format.indexOf("jpg")!=-1) {
 			path = updateExtension(path, ".jpg");

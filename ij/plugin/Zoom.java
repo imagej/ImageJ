@@ -17,8 +17,9 @@ public class Zoom implements PlugIn{
 		if (ic==null) return;
 		Point loc = ic.getCursorLoc();
 		if (!ic.cursorOverImage()) {
-			loc.x = imp.getWidth()/2;
-			loc.y = imp.getHeight()/2;
+			Rectangle srcRect = ic.getSrcRect();
+			loc.x = srcRect.x + srcRect.width/2;
+			loc.y = srcRect.y + srcRect.height/2;
 		}
 		int x = ic.screenX(loc.x);
 		int y = ic.screenY(loc.y);

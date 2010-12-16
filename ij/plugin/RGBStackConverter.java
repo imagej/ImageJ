@@ -6,14 +6,16 @@ import ij.gui.*;
 
 /** Converts a 2 or 3 slice stack, or a hyperstack, to RGB. */
 public class RGBStackConverter implements PlugIn, DialogListener {
-	int channels1, slices1, frames1;
-	int slices2, frames2;
-	int width, height;
-	double imageSize;
-	static boolean keep = true;
+	private int channels1, slices1, frames1;
+	private int slices2, frames2;
+	private int width, height;
+	private double imageSize;
+	private static boolean staticKeep = true;
+	private boolean keep;
 	
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
+		if (!IJ.isMacro()) keep = staticKeep;
 		CompositeImage cimg = imp.isComposite()?(CompositeImage)imp:null;
 		int size = imp.getStackSize();
 		if ((size<2||size>3) && cimg==null) {
@@ -106,49 +108,6 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		imp2.setPosition(1, 1, 1);
 	}
 
-	void compositeToRGB2(CompositeImage imp, String title) {
-		int channels = imp.getNChannels();
-		int slices = imp.getNSlices();
-		int frames = imp.getNFrames();
-		int images = channels*slices*frames;
-		if (channels==images) {
-			compositeImageToRGB(imp, title);
-			return;
-		}
-		String msg = null;
-		if (frames>1)
-			msg = "Convert all "+frames+" frames?";
-		else
-			msg = "Convert all "+slices+" slices?";
-		if (!IJ.isMacro()) {
-			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(), "Convert to RGB", msg);
-			if (d.cancelPressed())
-				return;
-			else if (!d.yesPressed()) {
-				compositeImageToRGB(imp, title);
-				return;
-			}
-		}
-		//if (!imp.isHyperStack()) return;
-		int n = frames;
-		if (n==1) n = slices;
-		ImageStack stack = new ImageStack(imp.getWidth(), imp.getHeight());
-		int c=imp.getChannel(), z=imp.getSlice(), t=imp.getFrame();
-		for (int i=1; i<=n; i++) {
-			if (frames==1)
-				imp.setPositionWithoutUpdate(imp.getChannel(), i, imp.getFrame());
-			else
-				imp.setPositionWithoutUpdate(imp.getChannel(), imp.getSlice(), i);
-			stack.addSlice(null, new ColorProcessor(imp.getImage()));
-		}
-		imp.setPosition(c, z, t);
-		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack(title, stack);
-		Object info = imp.getProperty("Info");
-		if (info!=null) imp2.setProperty("Info", info);
-		imp2.show();
-	}
-
 	void compositeImageToRGB(CompositeImage imp, String title) {
 		if (imp.getMode()==CompositeImage.COMPOSITE) {
 			ImagePlus imp2 = imp.createImagePlus();
@@ -224,6 +183,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		if (slices1!=1) slices2 = gd.getNextBoolean()?slices1:1;
 		if (frames1!=1) frames2 = gd.getNextBoolean()?frames1:1;
 		keep = gd.getNextBoolean();
+		if (!IJ.isMacro()) staticKeep = keep;
 		((Label)gd.getMessage()).setText(getNewDimensions());
 		return true;
 	}

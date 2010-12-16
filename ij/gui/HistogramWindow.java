@@ -114,7 +114,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		boolean color = !(imp.getProcessor() instanceof ColorProcessor) && !lut.isGrayscale();
 		if (color)
 			ip = ip.convertToRGB();
-		drawHistogram(ip, fixedRange);
+		drawHistogram(imp, ip, fixedRange, stats.histMin, stats.histMax);
 		if (color)
 			this.imp.setProcessor(null, ip);
 		else
@@ -162,6 +162,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
     
 	protected void drawHistogram(ImageProcessor ip, boolean fixedRange) {
+		drawHistogram(null, ip, fixedRange, 0.0, 0.0);
+	}
+
+	void drawHistogram(ImagePlus imp, ImageProcessor ip, boolean fixedRange, double xMin, double xMax) {
 		int x, y;
 		int maxCount2 = 0;
 		int mode2 = 0;
@@ -191,11 +195,44 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		histogram[stats.mode] = saveModalCount;
  		x = XMARGIN + 1;
 		y = YMARGIN + HIST_HEIGHT + 2;
-		lut.drawUnscaledColorBar(ip, x-1, y, 256, BAR_HEIGHT);
+		if (imp==null)
+			lut.drawUnscaledColorBar(ip, x-1, y, 256, BAR_HEIGHT);
+		else
+			drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y, 256, BAR_HEIGHT);
 		y += BAR_HEIGHT+15;
   		drawText(ip, x, y, fixedRange);
 	}
        
+	void drawAlignedColorBar(ImagePlus imp, double xMin, double xMax, ImageProcessor ip, int x, int y, int width, int height){
+		ImageProcessor ipSource = imp.getProcessor();
+		float[] pixels = null;
+		ImageProcessor ipRamp = null;
+		if (ipSource instanceof ColorProcessor) {
+			ipRamp = new FloatProcessor(width, height);
+			pixels = (float[])ipRamp.getPixels();
+		} else
+			pixels = new float[width*height];
+		for (int j=0; j<height; j++) {
+			for(int i=0; i<width; i++)
+				pixels[i+width*j] = (float)(xMin+i*(xMax-xMin)/(width - 1));
+		}
+		if (!(ipSource instanceof ColorProcessor)) {
+			ColorModel cm = ipSource.getColorModel();
+			ipRamp = new FloatProcessor(width, height, pixels, cm);
+		}
+		double min = ipSource.getMin();
+		double max = ipSource.getMax();
+		ipRamp.setMinAndMax(min,max);
+		ImageProcessor bar = null;
+		if (ip instanceof ColorProcessor)
+			bar = ipRamp.convertToRGB();
+		else
+			bar = ipRamp.convertToByte(true);
+		ip.insert(bar, x,y);
+		ip.setColor(Color.black);
+		ip.drawRect(x-1, y, width+2, height);
+	}
+
 	/** Scales a threshold level to the range 0-255. */
 	int scaleDown(ImageProcessor ip, double threshold) {
 		double min = ip.getMin();

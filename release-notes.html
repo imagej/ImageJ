@@ -5,34 +5,34 @@
 </head>
 <body>
 
-<li> <u>1.44k, 26 November 2010</u>
+<li> <u>1.44l, 15 December 2010</u>
 <ul>
-<li> Thanks to Norbert Vischer, added the ellipse tool, which shares the second slot
-on the toolbar with the oval and the selection brush tools.
-<li> Karen Collins contributed an improved FITS_Writer (<i>File&gt;Save As&gt;FITS</i>).
-<li> <i>Image&gt;Show Info</i> displays the pixel or voxel size.
-<li> <i>Edit&gt;Selection&gt;Straighten</i> checks to see if the line has 
-already been prepared for straightening by a run("Fit Spline", "straighten") call.
-<li> The getPixel(x,y) macro function now interpolates if x or y are non-integer.
-<li> Thanks to Norbert Vischer, added the Array.rankPositions()
-(<a href="macros/examples/ArraySortingDemo.txt">example</a>)
-and makeEllipse() macro functions.
-<li> Thanks to Jerome Mutterer, added the getDisplayedArea() macro function
-(<a href="macros/tools/Pixel_Sampler_Tool.txt">example</a>).
-<li> Ved Sharma fixed a bug that caused <i>Image&gt;Stacks&gt;Label</i> to not
-correctly display negative times in min:sec and hour:min:sec modes.
-<li> Fixed a bug that caused selection adjustment handles to be too
-small on zoomed images.
-<li> Fixed a bug that sometimes caused batch mode macros that used the particle 
-analyzer with the "Add to Manager" option to fail.
-<li> Thanks to Michael Schmid, fixed a bug that caused a bogus syntax error
-when calling a user-defined macro function with an expression similar to a[i]+b.
-<li> Thanks to Wilhelm Burger, fixed a bug that caused the stroke 
-width of ShapeRois to not scale with the zoom factor.
-<li> Fixed a bug that caused the pixel width of the output image to be incorrect 
-after using <i>Image&gt;Stacks&gt;Reslice</i> with a line selection on a spatially
-calibrated image.
-<li> Fixed a bug in IJ.d2s() that caused it to not correctly convert infinite values.
+<li> <i>Image&gt;Stacks&gt;Orthogonal Views</i> works with hyperstacks
+<li> and can be started/stopped using the shift-h keyboard shortcut.
+<li> Thanks to Bob Dougherty, the color bar in histograms is now scaled
+to reflect the display range of the image.
+<li> Thanks to Michael Doube, voxel depth of imported DICOMs is based 
+on the distance between the first and last slices.
+<li> Thanks to Michael Schmid, zooming in or out no longer causes the
+position to be lost when the cursor is not over the image.
+<li> <i>Image&gt;Stacks&gt;Z Project</i> saves the projection method in the preferences file.
+<li> Added a "Bare Outlines" option to the particle analyzer.
+<li> Added "H" keyboard shortcut for <i>Image&gt;Stacks&gt;Orthoganal Views</i>.
+<li> Thanks to Christian Moll, added the getInfo("log") macro function and the 
+IJ.getLog() method.
+<li> Added the DicomTools.getTag() method.
+<li> Fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that caused, when working with
+a stright line selection, inconsistent line shifting if "Slice count" was greater than 1 and
+"Avoid interpolation" was enabled.
+<li> Fixed several bugs in <i>Image&gt;Stacks&gt;Orthogonal Views</i>.
+<li> Jan Funke fixed a bug that made it impossible to use the ZProjector
+class concurrently.
+<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Make Montage</i>, when used with
+signed 16-bit images, to sometimes draw borders using pixel values of -32768.
+<li> Fixed a bug that caused <i>Image&gt;Transform&gt;Translate</i> to fill with
+white for non-integer bicubic translations.
+<li> Thanks to Johannes Schindelen, fixed bugs that sometimes caused <i>Image&gt;Color&gt;Merge Channels</i>
+to not work as expected when merging four images or stacks.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

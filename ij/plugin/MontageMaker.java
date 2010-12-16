@@ -127,6 +127,9 @@ public class MontageMaker implements PlugIn {
 		int montageHeight = height*rows;
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor montage = ip.createProcessor(montageWidth+borderWidth/2, montageHeight+borderWidth/2);
+		ImagePlus imp2 = new ImagePlus("Montage", montage);
+		imp2.setCalibration(imp.getCalibration());
+		montage = imp2.getProcessor();
 		Color fgColor=Color.white;
 		Color bgColor = Color.black;
 		if (useForegroundColor) {
@@ -181,8 +184,6 @@ public class MontageMaker implements PlugIn {
 			drawBorder(montage, w2, w2, montageWidth-w2, montageHeight-w2, borderWidth);
 		}
 		IJ.showProgress(1.0);
-		ImagePlus imp2 = new ImagePlus("Montage", montage);
-		imp2.setCalibration(imp.getCalibration());
 		Calibration cal = imp2.getCalibration();
 		if (cal.scaled()) {
 			cal.pixelWidth /= scale;
