@@ -48,7 +48,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private boolean rgb;
 	private ImageStack imageStack;
 	private boolean hyperstack;
-	private int currentChannel, currentFrame; 
+	private int currentChannel, currentFrame, currentMode; 
 	private ImageCanvas canvas;
 	private static final int H_ROI=0, H_ZOOM=1;
 	private static boolean sticky=true;
@@ -84,12 +84,12 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			IJ.error("Othogonal Views", "This command requires a stack.");
 			return;
 		}
-		if (imp.getNSlices()<=1) {
+		hyperstack = imp.isHyperStack();
+		if ((hyperstack||imp.isComposite()) && imp.getNSlices()<=1) {
 			IJ.error("Othogonal Views", "This command requires a stack, or a hypertack with Z>1.");
 			return;
 		}
 		yz_image = WindowManager.getImage(yzID);
-		hyperstack = imp.isHyperStack();
 		rgb = imp.getBitDepth()==24 || hyperstack;
 		int yzBitDepth = hyperstack?24:imp.getBitDepth();
 		if (yz_image==null || yz_image.getHeight()!=imp.getHeight() || yz_image.getBitDepth()!=yzBitDepth)
@@ -144,6 +144,8 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			imp.setPosition(c, z, t);
 			currentChannel = c;
 			currentFrame = t;
+			if (imp.isComposite())
+				currentMode = ((CompositeImage)imp).getMode();
 			return stack;
 		} else
 			return imp.getStack();
@@ -696,6 +698,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 			int t = imp.getFrame();
 			if (c!=currentChannel || t!=currentFrame)
 				imageStack = null;
+			if (imp.isComposite()) {
+				int mode = ((CompositeImage)imp).getMode();
+				if (mode!=currentMode)
+					imageStack = null;
+			}
 		}
 		ImageStack is=imageStack;
 		if (is==null)

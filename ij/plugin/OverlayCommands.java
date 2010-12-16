@@ -170,8 +170,13 @@ public class OverlayCommands implements PlugIn {
 	void show() {
 		ImagePlus imp = IJ.getImage();
 		imp.setHideOverlay(false);
-		RoiManager rm = RoiManager.getInstance();
-		if (rm!=null) rm.runCommand("show all");
+		if (imp.getOverlay()==null) {
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null && rm.getCount()>1) {
+				if (!IJ.isMacro()) rm.toFront();
+				rm.runCommand("show all with labels");
+			}
+		}
 	}
 
 	void remove() {
