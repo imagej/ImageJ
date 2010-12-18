@@ -93,18 +93,21 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
+	/** Obsolete; the addValue() method automatically adds columns as needed.
+	* @see #addValue(String, double)
+	*/
 	public synchronized void addColumns() {
-			String[] tmp1 = new String[maxColumns*2];
-			System.arraycopy(headings, 0, tmp1, 0, maxColumns);
-			headings = tmp1;
-			double[][] tmp2 = new double[maxColumns*2][];
-			for (int i=0; i<maxColumns; i++)
-				tmp2[i] = columns[i];
-			columns = tmp2;
-			boolean[] tmp3 = new boolean[maxColumns*2];
-			System.arraycopy(keep, 0, tmp3, 0, maxColumns);
-			keep = tmp3;
-			maxColumns *= 2;
+		String[] tmp1 = new String[maxColumns*2];
+		System.arraycopy(headings, 0, tmp1, 0, maxColumns);
+		headings = tmp1;
+		double[][] tmp2 = new double[maxColumns*2][];
+		for (int i=0; i<maxColumns; i++)
+			tmp2[i] = columns[i];
+		columns = tmp2;
+		boolean[] tmp3 = new boolean[maxColumns*2];
+		System.arraycopy(keep, 0, tmp3, 0, maxColumns);
+		keep = tmp3;
+		maxColumns *= 2;
 	}
 	
 	/** Returns the current value of the measurement counter. */
@@ -130,7 +133,10 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Adds a value to the end of the given column. If the column
-		does not exist, it is created.  Counter must be >0. */
+		does not exist, it is created.  Counter must be >0.
+		There is an example at:<br>
+		http://imagej.nih.gov/ij/plugins/sine-cosine.html
+		*/
 	public void addValue(String column, double value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");

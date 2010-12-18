@@ -6,7 +6,7 @@
 
 # Note that commands must be unique.
 
-# Version 1.43
+# Version 1.44
 
 # Popup Menu
 popup01=Undo

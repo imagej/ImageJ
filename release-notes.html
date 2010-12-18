@@ -5,33 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.44l, 16 December 2010</u>
+<li> <u>1.44lm 18 December 2010</u>
 <ul>
-<li> <i>Image&gt;Stacks&gt;Orthogonal Views</i> works with hyperstacks
-<li> and can be started/stopped using the shift-h keyboard shortcut.
-<li> Thanks to Bob Dougherty, the color bar in histograms is now scaled
-to reflect the display range of the image.
-<li> Thanks to Michael Doube, voxel depth of imported DICOMs is based 
-on the distance between the first and last slices.
-<li> Thanks to Michael Schmid, zooming in or out no longer causes the
-position to be lost when the cursor is not over the image.
-<li> <i>Image&gt;Stacks&gt;Z Project</i> saves the projection method in the preferences file.
-<li> Added a "Bare Outlines" option to the particle analyzer.
-<li> Thanks to Christian Moll, added the getInfo("log") macro function and the 
-IJ.getLog() method.
-<li> Added the DicomTools.getTag() method.
-<li> Fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that caused, when working with
-a stright line selection, inconsistent line shifting if "Slice count" was greater than 1 and
-"Avoid interpolation" was enabled.
-<li> Fixed several bugs in <i>Image&gt;Stacks&gt;Orthogonal Views</i>.
-<li> Jan Funke fixed a bug that made it impossible to use the ZProjector
-class concurrently.
-<li> Fixed a bug that caused <i>Image&gt;Stacks&gt;Make Montage</i>, when used with
-signed 16-bit images, to sometimes draw borders using pixel values of -32768.
-<li> Fixed a bug that caused <i>Image&gt;Transform&gt;Translate</i> to fill with
-white for non-integer bicubic translations.
-<li> Thanks to Johannes Schindelen, fixed bugs that sometimes caused <i>Image&gt;Color&gt;Merge Channels</i>
-to not work as expected when merging four images or stacks.
+<li> Thanks to Barry DeZonia, fixed a bug that caused Undo of finalized pastes to fail.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
