@@ -185,8 +185,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				rm = null;
 		}
 		if (rm==null) {
-			if (showAllList!=null)
-				overlay= showAllList;
+			//if (showAllList!=null)
+			//	overlay = showAllList;
 			showAllROIs = false;
 			repaint();
 			return;

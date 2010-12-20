@@ -11,8 +11,6 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
-//import java.awt.image.BufferedImage;
-
 
 
 /** This plugin implements the commands in the Edit/Section submenu. */
@@ -42,6 +40,8 @@ public class Selection implements PlugIn, Measurements {
     		imp.restoreRoi();
     	else if (arg.equals("spline"))
     		fitSpline();
+    	else if (arg.equals("circle"))
+    		fitCircle(imp);
     	else if (arg.equals("ellipse"))
     		createEllipse(imp);
     	else if (arg.equals("hull"))
@@ -92,6 +92,112 @@ public class Selection implements PlugIn, Measurements {
 		}
 	}
 	
+	/*
+	Fits a circle to the current selection.<br>
+	Reference: Pratt V., Direct least-squares fitting of algebraic surfaces", Computer Graphics, Vol. 21, pages 145-152 (1987).<br>
+	Original code: Nikolai Chernov's MATLAB script for Newton-based Pratt fit.<br>
+	(http://www.math.uab.edu/~chernov/cl/MATLABcircle.html)<br>
+	@authors Nikolai Chernov, Michael Doube, Ved Sharma
+	*/
+	void fitCircle(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null) {
+			IJ.error("Fit Circle", "Selection required");
+			return;
+		}
+		if (roi instanceof ShapeRoi) {
+			IJ.error("Fit Circle", "Composite selections not supported");
+			return;
+		}
+		Polygon poly = roi.getPolygon();
+		int n=poly.npoints;
+		int[] x = poly.xpoints;
+		int[] y = poly.ypoints;
+		if (n<3) {
+			IJ.error("Fit Circle", "At least 3 points are required to fit a circle.");
+			return;
+		}
+		double sumx = 0, sumy = 0;
+		for (int i=0; i<n; i++) {
+			sumx = sumx + poly.xpoints[i];
+			sumy = sumy + poly.ypoints[i];
+		}
+		double meanx = sumx/n;
+		double meany = sumy/n;
+		double[] X = new double[n], Y = new double[n];
+		double Mxx=0, Myy=0, Mxy=0, Mxz=0, Myz=0, Mzz=0;
+		for (int i=0; i<n; i++) {
+			X[i] = x[i] - meanx;
+			Y[i] = y[i] - meany;
+			double Zi = X[i]*X[i] + Y[i]*Y[i];
+			Mxy = Mxy + X[i]*Y[i];
+			Mxx = Mxx + X[i]*X[i];
+			Myy = Myy + Y[i]*Y[i];
+			Mxz = Mxz + X[i]*Zi;
+			Myz = Myz + Y[i]*Zi;
+			Mzz = Mzz + Zi*Zi;
+		}
+		Mxx = Mxx/n;
+		Myy = Myy/n;
+		Mxy = Mxy/n;
+		Mxz = Mxz/n;
+		Myz = Myz/n;
+		Mzz = Mzz/n;
+		double Mz = Mxx + Myy;
+		double Cov_xy = Mxx*Myy - Mxy*Mxy;
+		double Mxz2 = Mxz*Mxz;
+		double Myz2 = Myz*Myz;
+		double A2 = 4*Cov_xy - 3*Mz*Mz - Mzz;
+		double A1 = Mzz*Mz + 4*Cov_xy*Mz - Mxz2 - Myz2 - Mz*Mz*Mz;
+		double A0 = Mxz2*Myy + Myz2*Mxx - Mzz*Cov_xy - 2*Mxz*Myz*Mxy + Mz*Mz*Cov_xy;
+		double A22 = A2 + A2;
+		double epsilon = 1e-12; 
+		double ynew = 1e+20;
+		int IterMax= 100; // 20;
+		double xnew = 0;
+		// Newton's method starting at x=0
+		int iterations = 0;
+		for (int iter=1; iter<=IterMax; iter++) {
+			double yold = ynew;
+			ynew = A0 + xnew*(A1 + xnew*(A2 + 4.*xnew*xnew));
+			if (Math.abs(ynew)>Math.abs(yold)) {
+				IJ.log("Newton-Pratt goes wrong direction: |ynew| > |yold|");
+				xnew = 0;
+				break;
+			} else {
+				double Dy = A1 + xnew*(A22 + 16*xnew*xnew);
+				double xold = xnew;
+				xnew = xold - ynew/Dy;
+				if (Math.abs((xnew-xold)/xnew) < epsilon) {
+					iterations = iter;
+					break;
+				} else {
+					if (iter >= IterMax) {
+						IJ.log("Newton-Pratt will not converge");
+						xnew = 0;
+					}
+					if (xnew<0) {
+						IJ.log("Newton-Pratt negative root:  x = "+xnew);
+						xnew = 0;
+					}
+				}
+			}
+		}
+		if (IJ.debugMode) IJ.log("Fit Circle: n="+n+", iterations="+iterations);
+		double DET = xnew*xnew - xnew*Mz + Cov_xy;
+		double CenterX = (Mxz*(Myy-xnew)-Myz*Mxy)/(2*DET);
+		double CenterY = (Myz*(Mxx-xnew)-Mxz*Mxy)/(2*DET);
+		double radius = Math.sqrt(CenterX*CenterX + CenterY*CenterY + Mz + 2*xnew);
+		if (Double.isNaN(radius)) {
+			IJ.error("Fir Circle", "Points are collinear.");
+			return;
+		}
+		CenterX = CenterX + meanx;
+		CenterY = CenterY + meany;
+		imp.killRoi();
+		IJ.makeOval((int)Math.round(CenterX-radius), (int)Math.round(CenterY-radius), (int)Math.round(2*radius), (int)Math.round(2*radius));
+	}
+
 	void fitSpline() {
 		Roi roi = imp.getRoi();
 		if (roi==null)
