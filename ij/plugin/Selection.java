@@ -97,6 +97,7 @@ public class Selection implements PlugIn, Measurements {
 	Reference: Pratt V., Direct least-squares fitting of algebraic surfaces", Computer Graphics, Vol. 21, pages 145-152 (1987).<br>
 	Original code: Nikolai Chernov's MATLAB script for Newton-based Pratt fit.<br>
 	(http://www.math.uab.edu/~chernov/cl/MATLABcircle.html)<br>
+	Java version: https://github.com/mdoube/BoneJ/blob/master/src/org/doube/geometry/FitCircle.java<br>
 	@authors Nikolai Chernov, Michael Doube, Ved Sharma
 	*/
 	void fitCircle(ImagePlus imp) {
@@ -153,33 +154,31 @@ public class Selection implements PlugIn, Measurements {
 		double A22 = A2 + A2;
 		double epsilon = 1e-12; 
 		double ynew = 1e+20;
-		int IterMax= 100; // 20;
+		int IterMax= 20;
 		double xnew = 0;
-		// Newton's method starting at x=0
 		int iterations = 0;
+		// Newton's method starting at x=0
 		for (int iter=1; iter<=IterMax; iter++) {
+			iterations = iter;
 			double yold = ynew;
 			ynew = A0 + xnew*(A1 + xnew*(A2 + 4.*xnew*xnew));
 			if (Math.abs(ynew)>Math.abs(yold)) {
-				IJ.log("Newton-Pratt goes wrong direction: |ynew| > |yold|");
+				if (IJ.debugMode) IJ.log("Fit Circle: wrong direction: |ynew| > |yold|");
 				xnew = 0;
 				break;
 			} else {
 				double Dy = A1 + xnew*(A22 + 16*xnew*xnew);
 				double xold = xnew;
 				xnew = xold - ynew/Dy;
-				if (Math.abs((xnew-xold)/xnew) < epsilon) {
-					iterations = iter;
+				if (Math.abs((xnew-xold)/xnew) < epsilon)
 					break;
-				} else {
-					if (iter >= IterMax) {
-						IJ.log("Newton-Pratt will not converge");
-						xnew = 0;
-					}
-					if (xnew<0) {
-						IJ.log("Newton-Pratt negative root:  x = "+xnew);
-						xnew = 0;
-					}
+				if (iter >= IterMax) {
+					if (IJ.debugMode) IJ.log("Fit Circle: will not converge");
+					xnew = 0;
+				}
+				if (xnew<0) {
+					if (IJ.debugMode) IJ.log("Fit Circle: negative root:  x = "+xnew);
+					xnew = 0;
 				}
 			}
 		}
@@ -189,7 +188,7 @@ public class Selection implements PlugIn, Measurements {
 		double CenterY = (Myz*(Mxx-xnew)-Mxz*Mxy)/(2*DET);
 		double radius = Math.sqrt(CenterX*CenterX + CenterY*CenterY + Mz + 2*xnew);
 		if (Double.isNaN(radius)) {
-			IJ.error("Fir Circle", "Points are collinear.");
+			IJ.error("Fit Circle", "Points are collinear.");
 			return;
 		}
 		CenterX = CenterX + meanx;

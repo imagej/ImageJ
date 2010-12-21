@@ -66,6 +66,7 @@ public class DicomTools {
 			if (xyz.length!=3) return voxelDepth;
 			double z0 = Double.parseDouble(xyz[2]);
 			posn = getTag(stack.getSliceLabel(stack.getSize()), "0020,0032");
+			if (posn==null) return voxelDepth;
 			xyz = posn.split("\\\\");
 			if (xyz.length!=3) return voxelDepth;
 			double zn = Double.parseDouble(xyz[2]);

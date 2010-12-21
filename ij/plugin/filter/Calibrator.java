@@ -303,10 +303,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		StringBuffer sb = new StringBuffer(len);
 		for (int i=0; i<len; i++) {
 			char c = xData.charAt(i);
-			if ((c>='0'&&c<='9') || c=='-'  || c=='.' || c==',' || c=='\n' || c=='\r')
+			if ((c>='0'&&c<='9') || c=='-'  || c=='.' || c==',' || c=='\n' || c=='\r' || c==' ')
 				sb.append(c);
 		}
 		xData = sb.toString();
+
 		StringTokenizer st = new StringTokenizer(xData);
 		int nTokens = st.countTokens();
 		if (nTokens<1)
