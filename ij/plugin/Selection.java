@@ -93,7 +93,8 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	/*
-	Fits a circle to the current selection.<br>
+	if selection is closed shape, create a circle with the same area and centroid, otherwise use<br>
+	the Pratt method to fit a circle to the points that define the line or multi-point selection.<br>
 	Reference: Pratt V., Direct least-squares fitting of algebraic surfaces", Computer Graphics, Vol. 21, pages 145-152 (1987).<br>
 	Original code: Nikolai Chernov's MATLAB script for Newton-based Pratt fit.<br>
 	(http://www.math.uab.edu/~chernov/cl/MATLABcircle.html)<br>
@@ -106,10 +107,18 @@ public class Selection implements PlugIn, Measurements {
 			IJ.error("Fit Circle", "Selection required");
 			return;
 		}
-		if (roi instanceof ShapeRoi) {
-			IJ.error("Fit Circle", "Composite selections not supported");
+		
+		if (roi.isArea()) {   //create circle with the same area and centroid
+			ImageProcessor ip = imp.getProcessor();
+			ip.setRoi(roi);
+			ImageStatistics stats = ImageStatistics.getStatistics(ip, Measurements.AREA+Measurements.CENTROID, null);
+			double r = Math.sqrt(stats.pixelCount/Math.PI);
+			imp.killRoi();
+			int d = (int)Math.round(2.0*r);
+			IJ.makeOval((int)Math.round(stats.xCentroid-r), (int)Math.round(stats.yCentroid-r), d, d);
 			return;
 		}
+		
 		Polygon poly = roi.getPolygon();
 		int n=poly.npoints;
 		int[] x = poly.xpoints;
@@ -118,6 +127,8 @@ public class Selection implements PlugIn, Measurements {
 			IJ.error("Fit Circle", "At least 3 points are required to fit a circle.");
 			return;
 		}
+		
+		// calculate point centroid
 		double sumx = 0, sumy = 0;
 		for (int i=0; i<n; i++) {
 			sumx = sumx + poly.xpoints[i];
@@ -125,6 +136,8 @@ public class Selection implements PlugIn, Measurements {
 		}
 		double meanx = sumx/n;
 		double meany = sumy/n;
+		
+		// calculate moments
 		double[] X = new double[n], Y = new double[n];
 		double Mxx=0, Myy=0, Mxy=0, Mxz=0, Myz=0, Mzz=0;
 		for (int i=0; i<n; i++) {
@@ -144,6 +157,8 @@ public class Selection implements PlugIn, Measurements {
 		Mxz = Mxz/n;
 		Myz = Myz/n;
 		Mzz = Mzz/n;
+		
+		// calculate the coefficients of the characteristic polynomial
 		double Mz = Mxx + Myy;
 		double Cov_xy = Mxx*Myy - Mxy*Mxy;
 		double Mxz2 = Mxz*Mxz;
@@ -157,6 +172,7 @@ public class Selection implements PlugIn, Measurements {
 		int IterMax= 20;
 		double xnew = 0;
 		int iterations = 0;
+		
 		// Newton's method starting at x=0
 		for (int iter=1; iter<=IterMax; iter++) {
 			iterations = iter;
@@ -166,23 +182,24 @@ public class Selection implements PlugIn, Measurements {
 				if (IJ.debugMode) IJ.log("Fit Circle: wrong direction: |ynew| > |yold|");
 				xnew = 0;
 				break;
-			} else {
-				double Dy = A1 + xnew*(A22 + 16*xnew*xnew);
-				double xold = xnew;
-				xnew = xold - ynew/Dy;
-				if (Math.abs((xnew-xold)/xnew) < epsilon)
-					break;
-				if (iter >= IterMax) {
-					if (IJ.debugMode) IJ.log("Fit Circle: will not converge");
-					xnew = 0;
-				}
-				if (xnew<0) {
-					if (IJ.debugMode) IJ.log("Fit Circle: negative root:  x = "+xnew);
-					xnew = 0;
-				}
+			}
+			double Dy = A1 + xnew*(A22 + 16*xnew*xnew);
+			double xold = xnew;
+			xnew = xold - ynew/Dy;
+			if (Math.abs((xnew-xold)/xnew) < epsilon)
+				break;
+			if (iter >= IterMax) {
+				if (IJ.debugMode) IJ.log("Fit Circle: will not converge");
+				xnew = 0;
+			}
+			if (xnew<0) {
+				if (IJ.debugMode) IJ.log("Fit Circle: negative root:  x = "+xnew);
+				xnew = 0;
 			}
 		}
-		if (IJ.debugMode) IJ.log("Fit Circle: n="+n+", iterations="+iterations);
+		if (IJ.debugMode) IJ.log("Fit Circle: n="+n+", xnew="+IJ.d2s(xnew,2)+", iterations="+iterations);
+		
+		// calculate the circle parameters
 		double DET = xnew*xnew - xnew*Mz + Cov_xy;
 		double CenterX = (Mxz*(Myy-xnew)-Myz*Mxy)/(2*DET);
 		double CenterY = (Myz*(Mxx-xnew)-Mxz*Mxy)/(2*DET);
