@@ -136,6 +136,7 @@ public class FileInfo implements Cloneable {
 	public byte[] roi;
 	public byte[][] overlay;
 	public int samplesPerPixel;
+	public String openNextDir, openNextName;
     
 	/** Creates a FileInfo object with all of its fields set to their default value. */
      public FileInfo() {
