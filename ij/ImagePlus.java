@@ -1995,7 +1995,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	
 	/** Returns true if this is a CompositeImage. */
 	public boolean isComposite() {
-		return compositeImage && getNChannels()>1 && (this instanceof CompositeImage);
+		return compositeImage && getNChannels()>=1 && (this instanceof CompositeImage);
 	}
 
 	/** Sets the display range of the current channel. With non-composite

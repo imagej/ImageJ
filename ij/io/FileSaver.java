@@ -566,11 +566,14 @@ public class FileSaver {
 		imp.changes = false;
 		if (name!=null) {
 			fi.fileFormat = fileFormat;
-			if (fi.openNextName==null) {
-				FileInfo ofi = imp.getOriginalFileInfo();
-				if (ofi!=null) {
+			FileInfo ofi = imp.getOriginalFileInfo();
+			if (ofi!=null) {
+				if (ofi.openNextName==null) {
 					fi.openNextName = ofi.fileName;
 					fi.openNextDir = ofi.directory;
+				} else {
+					fi.openNextName = ofi.openNextName;
+					fi.openNextDir = ofi.openNextDir ;
 				}
 			}
 			fi.fileName = name;
