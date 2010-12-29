@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.*;
 
-/** The plugin implements the Image/Stacks/Montage to Stack command.
+/** The plugin implements the Image/Stacks/Tools/Montage to Stack command.
 	It creates a w*h image stack from an wxh image montage.
 	This is the opposite of what the "Make Montage" command does.
 	2010.04.20,TF: Final stack can be cropped to remove border around frames.
@@ -20,7 +20,7 @@ public class StackMaker implements PlugIn {
 			{IJ.error("This command requires a montage"); return;}
 		GenericDialog gd = new GenericDialog("Stack Maker");
 		gd.addNumericField("Images_per_row: ", w, 0);
-		gd.addNumericField("Images_rer_column: ", h, 0);
+		gd.addNumericField("Images_per_column: ", h, 0);
 		gd.addNumericField("Border width: ", b, 0);
 		gd.showDialog();
 		if (gd.wasCanceled())

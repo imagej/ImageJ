@@ -599,9 +599,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			+"    Use File>Save As to save it and\n" 
 			+"    ImageJ's Open command to open it.\n" 
 			+" \n"    
-			+"    To create a command, use File>Save As,\n"  
-			+"    add a '_' to the name, save in the \n" 
-			+"    plugins folder, and restart ImageJ.\n" 
+			+"    To create a command, save in the plugins\n"  
+			+"    folder and run Help>Refresh Menus.\n"  
 		);
     }
     

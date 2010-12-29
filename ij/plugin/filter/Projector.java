@@ -6,6 +6,8 @@ import ij.plugin.ZProjector;
 import ij.measure.Calibration;
 import ij.plugin.RGBStackMerge;
 import ij.macro.Interpreter;
+import ij.plugin.Duplicator;
+import ij.plugin.Concatenator;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -56,10 +58,6 @@ public class Projector implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		if (imp!=null && imp.isHyperStack()) {
-				IJ.error("3D Project", "Hyperstacks are currently not supported. Convert to\nRGB using Image>Type>RGB Color and try again.");
-	    		return DONE; 
-		}
 		return DOES_8G+DOES_RGB+STACK_REQUIRED+NO_CHANGES;
 	}
 	
@@ -71,6 +69,10 @@ public class Projector implements PlugInFilter {
 		if (!showDialog())
 			return;
 		imp.startTiming();
+		if (imp.isHyperStack()) {
+			doHyperstackProjections(imp);
+			return;
+		}
 		isRGB = imp.getType()==ImagePlus.COLOR_RGB;
 		if (interpolate && sliceInterval>1.0) {
 			imp = zScale(imp);
@@ -128,8 +130,58 @@ public class Projector implements PlugInFilter {
 		//debugMode =  gd.getNextBoolean();
 
 		return true;
-    	}
+    }
     	
+	void doHyperstackProjections(ImagePlus imp) {
+		double originalSliceInterval = sliceInterval;
+		ImagePlus buildImp = null;
+		ImagePlus projImpD = null;
+		int finalChannels = imp.getNChannels();
+		int finalSlices = imp.getNSlices();
+		int finalFrames = imp.getNFrames();
+		
+		for (int c = 0; c < imp.getNChannels(); c++) {
+			for (int f = 0; f < imp.getNFrames(); f++) { 
+				sliceInterval = originalSliceInterval;
+				ImagePlus impD = (new Duplicator()).run(imp, c+1, c+1, 1, imp.getNSlices(), f+1, f+1);
+				impD.setCalibration(imp.getCalibration());
+				if (interpolate && sliceInterval>1.0) {
+					impD = zScale(impD);
+					if (impD==null) return;
+					sliceInterval = 1.0;
+				}
+				if (isRGB)
+					doRGBProjections(impD);
+				else{
+					projImpD = doProjections(impD);
+					finalSlices = projImpD.getNSlices();
+					impD.close();
+					if (f==0 && c==0)  {
+						buildImp = projImpD;
+						buildImp.setTitle("BuildStack");
+						//buildImp.show();
+					} else {
+						Concatenator concat = new Concatenator();
+						buildImp =  concat.concatenate(buildImp, projImpD, false);
+					}
+				}
+			}
+		}
+		IJ.run( buildImp, 
+				"Stack to Hyperstack...", "order=xyztc channels=" + finalChannels + " slices=" + finalSlices + " frames=" + finalFrames + " display=Composite");
+		buildImp =  WindowManager.getCurrentImage();
+		if (imp.isComposite()) {
+			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
+			((CompositeImage)buildImp2).copyLuts(imp);
+			//buildImp2.show();
+			buildImp = buildImp2;
+		}
+		buildImp.setTitle("Projections of "+imp.getShortTitle());
+		buildImp.show();
+		if (WindowManager.getImage("Concatenated Stacks") != null) 
+				WindowManager.getImage("Concatenated Stacks").hide();
+	}
+
     public void doRGBProjections(ImagePlus imp) {
     	boolean saveUseInvertingLut = Prefs.useInvertingLut;
     	Prefs.useInvertingLut = false;

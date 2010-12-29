@@ -1,7 +1,9 @@
 package ij;
 import ij.process.*;
 import ij.io.*;
+import ij.gui.ImageCanvas;
 import java.io.*;
+import java.awt.Font;
 import java.awt.image.ColorModel;
 
 /** This class represents an array of disk-resident images. */
@@ -92,19 +94,31 @@ public class VirtualStack extends ImageStack {
 	public ImageProcessor getProcessor(int n) {
 		//IJ.log("getProcessor: "+n+"  "+names[n-1]+"  "+bitDepth);
 		ImagePlus imp = new Opener().openImage(path, names[n-1]);
+		ImageProcessor ip = null;
+		int depthThisImage = 0;
 		if (imp!=null) {
 			int w = imp.getWidth();
 			int h = imp.getHeight();
 			int type = imp.getType();
 			ColorModel cm = imp.getProcessor().getColorModel();
 			labels[n-1] = (String)imp.getProperty("Info");
+			depthThisImage = imp.getBitDepth();
+			ip = imp.getProcessor();
 		} else {
 			File f = new File(path, names[n-1]);
-			String msg = f.exists()?"error opening ":"file not found: ";
-			throw new RuntimeException(msg+path+names[n-1]);
+			String msg = f.exists()?"Error opening ":"File not found: ";
+			ip = new ByteProcessor(getWidth(), getHeight());
+			ip.invert();
+			int size = getHeight()/20;
+			if (size<9) size=9;
+			Font font = new Font("Helvetica", Font.PLAIN, size);
+			ip.setFont(font);
+			ip.setAntialiasedText(true);
+			ip.setColor(0);
+			ip.drawString(msg+names[n-1], size, size*2);
+			depthThisImage = 8;
 		}
-		ImageProcessor ip = imp.getProcessor();
-		if (imp.getBitDepth()!=bitDepth) {
+		if (depthThisImage!=bitDepth) {
 			switch (bitDepth) {
 				case 8: ip=ip.convertToByte(true); break;
 				case 16: ip=ip.convertToShort(true); break;
