@@ -138,7 +138,7 @@ stacks09="Make Montage...",ij.plugin.MontageMaker
 stacks10="Reslice [/]...",ij.plugin.Slicer
 stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
-stacks13="3D Project...",ij.plugin.filter.Projector
+stacks13="3D Project...",ij.plugin.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 

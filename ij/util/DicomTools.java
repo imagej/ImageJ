@@ -58,6 +58,7 @@ public class DicomTools {
 	/** Calculates the voxel depth of the specified DICOM stack based 
 		on the distance between the first and last slices. */
 	public static double getVoxelDepth(ImageStack stack) {
+		if (stack.isVirtual()) stack.getProcessor(1);
 		String pos0 = getTag(stack.getSliceLabel(1), "0020,0032");
 		String posn = null;
 		double voxelDepth = -1.0;
@@ -65,6 +66,7 @@ public class DicomTools {
 			String[] xyz = pos0.split("\\\\");
 			if (xyz.length!=3) return voxelDepth;
 			double z0 = Double.parseDouble(xyz[2]);
+			if (stack.isVirtual()) stack.getProcessor(stack.getSize());
 			posn = getTag(stack.getSliceLabel(stack.getSize()), "0020,0032");
 			if (posn==null) return voxelDepth;
 			xyz = posn.split("\\\\");
