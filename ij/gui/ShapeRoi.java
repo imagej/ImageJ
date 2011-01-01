@@ -645,21 +645,6 @@ public class ShapeRoi extends Roi {
 				length += rois[i].getLength();
 		}
 		return length;
-		/*
-		if(shape==null) return 0.0;
-		Rectangle2D r2d = shape.getBounds2D();
-		double w = r2d.getWidth();
-		double h = r2d.getHeight();
-		if(w==0 && h==0) return 0.0;
-		PathIterator pIter;
-		flatten = true;
-		if(flatten) pIter = getFlatteningPathIterator(shape, flatness);
-		else pIter = shape.getPathIterator(new AffineTransform());
-		double[] par = new double[1];
-		parsePath(pIter, par, null, null, null);
-		flatten = false;
-		return par[0];
-		*/
 	}
 
 	/**Returns a flattened version of the path iterator for this ROi's shape*/

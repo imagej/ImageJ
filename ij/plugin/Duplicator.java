@@ -237,8 +237,8 @@ public class Duplicator implements PlugIn, TextListener {
 	}
 	
 	void duplicateHyperstack(ImagePlus imp, String newTitle) {
-		String title = showHSDialog(imp, newTitle);
-		if (title==null)
+		newTitle = showHSDialog(imp, newTitle);
+		if (newTitle==null)
 			return;
 		ImagePlus imp2 = null;
 		Roi roi = imp.getRoi();
@@ -294,7 +294,7 @@ public class Duplicator implements PlugIn, TextListener {
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
-		String title = gd.getNextString();
+		newTitle = gd.getNextString();
 		duplicateStack = gd.getNextBoolean();
 		if (nChannels>1) {
 			String[] range = Tools.split(gd.getNextString(), " -");
@@ -329,7 +329,7 @@ public class Duplicator implements PlugIn, TextListener {
 			if (firstT>lastT) {firstT=1; lastT=nFrames;}
 		} else
 			firstT = lastT = 1;
-		return title;
+		return newTitle;
 	}
 	
 	public void textValueChanged(TextEvent e) {

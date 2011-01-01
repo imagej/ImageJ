@@ -566,6 +566,16 @@ public class FileSaver {
 		imp.changes = false;
 		if (name!=null) {
 			fi.fileFormat = fileFormat;
+			FileInfo ofi = imp.getOriginalFileInfo();
+			if (ofi!=null) {
+				if (ofi.openNextName==null) {
+					fi.openNextName = ofi.fileName;
+					fi.openNextDir = ofi.directory;
+				} else {
+					fi.openNextName = ofi.openNextName;
+					fi.openNextDir = ofi.openNextDir ;
+				}
+			}
 			fi.fileName = name;
 			fi.directory = directory;
 			//if (fileFormat==fi.TIFF)

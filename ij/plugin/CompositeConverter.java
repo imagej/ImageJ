@@ -35,7 +35,7 @@ public class CompositeConverter implements PlugIn {
 			else
 				convertRGBToCompositeImage(imp);
 			if (!IJ.isMacro()) IJ.run("Channels Tool...");
-		} else if (c>=2) {
+		} else if (c>=2 || (IJ.macroRunning()&&c>=1)) {
 			GenericDialog gd = new GenericDialog("Make Composite");
 			gd.addChoice("Display Mode:", modes, mode);
 			gd.showDialog();

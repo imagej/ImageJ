@@ -60,8 +60,8 @@ public class CompositeImage extends ImagePlus {
 		int stackSize = stack2.getSize();
 		if (channels==1 && isRGB) channels = 3;
 		if (channels==1 && stackSize<=MAX_CHANNELS) channels = stackSize;
-		if (channels<2 || (stackSize%channels)!=0)
-			throw new IllegalArgumentException("channels<2 or stacksize not multiple of channels");
+		if (channels<1 || (stackSize%channels)!=0)
+			throw new IllegalArgumentException("stacksize not multiple of channels");
 		if (mode==COMPOSITE && channels>MAX_CHANNELS)
 			this.mode = COLOR;
 		compositeImage = true;

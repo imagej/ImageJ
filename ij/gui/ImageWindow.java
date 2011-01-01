@@ -333,8 +333,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public boolean close() {
 		boolean isRunning = running || running2;
 		running = running2 = false;
+		boolean virtual = imp.getStackSize()>1 && imp.getStack().isVirtual();
 		if (isRunning) IJ.wait(500);
-		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning())
+		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
 			imp.changes = false;
 		if (imp.changes) {
 			String msg;

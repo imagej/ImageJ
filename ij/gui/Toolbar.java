@@ -463,7 +463,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				else if (ovalType==ELLIPSE_ROI)
 					IJ.showStatus("Oval, *elliptical* or brush selections"+hint);
 				else
-					IJ.showStatus("*Oval*, elliptical* or brush selections"+hint);
+					IJ.showStatus("*Oval*, elliptical or brush selections"+hint);
 				return;
 			case POLYGON:
 				IJ.showStatus("Polygon selections");

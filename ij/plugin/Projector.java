@@ -1,11 +1,10 @@
-package ij.plugin.filter;
+package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.plugin.ZProjector;
 import ij.measure.Calibration;
-import ij.plugin.RGBStackMerge;
 import ij.macro.Interpreter;
+import ij.plugin.filter.RGBStackSplitter;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -18,60 +17,78 @@ thresholding), or add a greater degree of visual realism by employing depth cues
 contributed by Michael Castle of the  University of Michigan Mental Health Research Institute.
 */ 
 
-public class Projector implements PlugInFilter {
+public class Projector implements PlugIn {
 
-	static final int xAxis=0, yAxis=1, zAxis=2;
-	static final int nearestPoint=0, brightestPoint=1, meanValue=2;
-	static final int BIGPOWEROF2 = 8192;
-		
-	String[] axisList = {"X-Axis", "Y-Axis", "Z-Axis"};
-	String[] methodList = {"Nearest Point", "Brightest Point", "Mean Value"};
+	private static final int xAxis=0, yAxis=1, zAxis=2;
+	private static final int nearestPoint=0, brightestPoint=1, meanValue=2;
+	private static final int BIGPOWEROF2 = 8192;
+	private static final String[] axisList = {"X-Axis", "Y-Axis", "Z-Axis"};
+	private static final String[] methodList = {"Nearest Point", "Brightest Point", "Mean Value"};
 	
-	private static int axisOfRotation = yAxis;
-	private static int projectionMethod = brightestPoint;
+	private static int axisOfRotationS = yAxis;
+	private static int projectionMethodS = brightestPoint;
+	private static int initAngleS = 0;
+	private static int totalAngleS = 360;
+	private static int angleIncS = 10;
+	private static int opacityS = 0;
+	private static int depthCueSurfS = 0;
+	private static int depthCueIntS = 50;
+	private static boolean interpolateS;
+	private static boolean allTimePointsS;
 
+	private int axisOfRotation = axisOfRotationS;
+	private int projectionMethod = projectionMethodS;
+	private int initAngle = initAngleS;
+	private int totalAngle = totalAngleS;
+	private int angleInc = angleIncS;
+	private int opacity = opacityS;
+	private int depthCueSurf = depthCueSurfS;
+	private int depthCueInt = depthCueIntS;
+	private boolean interpolate = interpolateS;
+	private boolean allTimePoints = allTimePointsS;
+	
+	private boolean debugMode;
 	private double sliceInterval = 1.0; // pixels
-	private static int initAngle = 0;
-	private static int totalAngle = 360;
-	private static int angleInc = 10;
-	private static int opacity = 0;
-	private static int depthCueSurf = 0;
-	private static int depthCueInt = 50;
-	private static boolean interpolate;
-	private static boolean debugMode;
 	private int transparencyLower = 1;
 	private int transparencyUpper = 255;	
-	ImagePlus imp;
-	ImageStack stack;
-	ImageStack stack2;
-	int width, height, imageWidth;
-	int left, right, top, bottom;
-	byte[] projArray, opaArray, brightCueArray;
-	short[] zBuffer, cueZBuffer, countBuffer;
-	int[] sumBuffer;
-	boolean isRGB;
-	String label = "";
-	boolean done;
-	boolean batchMode = Interpreter.isBatchMode();
+	private ImagePlus imp;
+	private ImageStack stack;
+	private ImageStack stack2;
+	private int width, height, imageWidth;
+	private int left, right, top, bottom;
+	private byte[] projArray, opaArray, brightCueArray;
+	private short[] zBuffer, cueZBuffer, countBuffer;
+	private int[] sumBuffer;
+	private boolean isRGB;
+	private String label = "";
+	private boolean done;
+	private boolean batchMode = Interpreter.isBatchMode();
 
-	public int setup(String arg, ImagePlus imp) {
-		this.imp = imp;
-		if (imp!=null && imp.isHyperStack()) {
-				IJ.error("3D Project", "Hyperstacks are currently not supported. Convert to\nRGB using Image>Type>RGB Color and try again.");
-	    		return DONE; 
+	public void run(String arg) {
+		imp = IJ.getImage();
+		if (imp.getBitDepth()==16 || imp.getBitDepth()==32) {
+			if (!IJ.isMacro()) {
+				if (!IJ.showMessageWithCancel("3D Project", "Convert this stack to 8-bits?"))
+	    			return;
+	    	}
+			IJ.run(imp, "8-bit", "");
 		}
-		return DOES_8G+DOES_RGB+STACK_REQUIRED+NO_CHANGES;
-	}
-	
-	public void run(ImageProcessor ip) {
-		if (ip.isInvertedLut()) {
-	    	if (!IJ.showMessageWithCancel("3D Project", ZProjector.lutMessage))
-	    		return; 
+		ImageProcessor ip = imp.getProcessor();
+		if (ip.isInvertedLut() && !IJ.isMacro()) {
+			if (!IJ.showMessageWithCancel("3D Project", ZProjector.lutMessage))
+				return;
 		}
 		if (!showDialog())
 			return;
 		imp.startTiming();
 		isRGB = imp.getType()==ImagePlus.COLOR_RGB;
+		if (imp.isHyperStack()) {
+			if (imp.getNSlices()>1)
+				doHyperstackProjections(imp);
+			else
+				IJ.error("Hyperstack Z dimension must be greater than 1");
+			return;
+		}
 		if (interpolate && sliceInterval>1.0) {
 			imp = zScale(imp);
 			if (imp==null) return;
@@ -83,7 +100,7 @@ public class Projector implements PlugInFilter {
 			doProjections(imp);
 	}
 
-	public boolean showDialog() {
+	private boolean showDialog() {
 		ImageProcessor ip = imp.getProcessor();
 		double lower = ip.getMinThreshold();
 		if (lower!=ImageProcessor.NO_THRESHOLD) {
@@ -91,6 +108,7 @@ public class Projector implements PlugInFilter {
 			transparencyUpper = (int)ip.getMaxThreshold();
 		}
 		Calibration cal = imp.getCalibration();
+		boolean hyperstack = imp.isHyperStack() && imp.getNFrames()>1;
 		GenericDialog gd = new GenericDialog("3D Projection");
 		gd.addChoice("Projection Method:", methodList, methodList[projectionMethod]);
 		gd.addChoice("Axis of Rotation:", axisList, axisList[axisOfRotation]);
@@ -106,6 +124,8 @@ public class Projector implements PlugInFilter {
 		gd.addNumericField("Surface Depth-Cueing (0-100%):", 100-depthCueSurf, 0);
 		gd.addNumericField("Interior Depth-Cueing (0-100%):", 100-depthCueInt, 0);
 		gd.addCheckbox("Interpolate", interpolate);
+		if (hyperstack)
+			gd.addCheckbox("All time points", allTimePoints);
 		//gd.addCheckbox("Debug Mode:", debugMode);
 
 		gd.showDialog();
@@ -125,12 +145,86 @@ public class Projector implements PlugInFilter {
 		depthCueSurf =  100-(int)gd.getNextNumber();
 		depthCueInt =  100-(int)gd.getNextNumber();
 		interpolate =  gd.getNextBoolean();
+		if (hyperstack)
+			allTimePoints =  gd.getNextBoolean();
 		//debugMode =  gd.getNextBoolean();
-
+		axisOfRotationS = axisOfRotation;
+		projectionMethodS = projectionMethod;
+		initAngleS = initAngle;
+		totalAngleS = totalAngle;
+		angleIncS = angleInc;
+		opacityS = opacity;
+		depthCueSurfS = depthCueSurf;
+		depthCueIntS = depthCueInt;
+		interpolateS = interpolate;
+		if (hyperstack)
+			allTimePointsS = allTimePoints;
 		return true;
-    	}
+    }
     	
-    public void doRGBProjections(ImagePlus imp) {
+	private void doHyperstackProjections(ImagePlus imp) {
+		double originalSliceInterval = sliceInterval;
+		ImagePlus buildImp = null;
+		ImagePlus projImpD = null;
+		int finalChannels = imp.getNChannels();
+		int finalSlices = imp.getNSlices();
+		int finalFrames = imp.getNFrames();
+		int f1 = 0;
+		int f2 = imp.getNFrames()-1;
+		if (imp.getBitDepth()==24)
+			allTimePoints = false;
+		if (!allTimePoints)
+			f1 = f2 = imp.getFrame();
+		
+		for (int c = 0; c < imp.getNChannels(); c++) {
+			for (int f = f1; f <=f2; f++) { 
+				sliceInterval = originalSliceInterval;
+				ImagePlus impD = (new Duplicator()).run(imp, c+1, c+1, 1, imp.getNSlices(), f+1, f+1);
+				impD.setCalibration(imp.getCalibration());
+				if (interpolate && sliceInterval>1.0) {
+					impD = zScale(impD);
+					if (impD==null) return;
+					sliceInterval = 1.0;
+				}
+				if (isRGB)
+					doRGBProjections(impD);
+				else{
+					projImpD = doProjections(impD);
+					if (projImpD==null) return;
+					finalSlices = projImpD.getNSlices();
+					impD.close();
+					if ((f==0||!allTimePoints)&& c==0)  {
+						buildImp = projImpD;
+						buildImp.setTitle("BuildStack");
+						//buildImp.show();
+					} else {
+						Concatenator concat = new Concatenator();
+						buildImp =  concat.concatenate(buildImp, projImpD, false);
+					}
+				}
+			}
+		}
+		if (imp.getNFrames()==1 || !allTimePoints) {
+			finalFrames = finalSlices;
+			finalSlices = 1;
+		}
+		if (imp.getNChannels()>1)
+			IJ.run( buildImp, 
+				"Stack to Hyperstack...", "order=xyztc channels=" + finalChannels + " slices=" + finalSlices + " frames=" + finalFrames + " display=Composite");
+		buildImp =  WindowManager.getCurrentImage();
+		if (imp.isComposite()) {
+			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
+			((CompositeImage)buildImp2).copyLuts(imp);
+			//buildImp2.show();
+			buildImp = buildImp2;
+		}
+		buildImp.setTitle("Projections of "+imp.getShortTitle());
+		buildImp.show();
+		if (WindowManager.getImage("Concatenated Stacks") != null) 
+				WindowManager.getImage("Concatenated Stacks").hide();
+	}
+
+    private  void doRGBProjections(ImagePlus imp) {
     	boolean saveUseInvertingLut = Prefs.useInvertingLut;
     	Prefs.useInvertingLut = false;
         RGBStackSplitter splitter = new RGBStackSplitter();
@@ -162,7 +256,7 @@ public class Projector implements PlugInFilter {
     	Prefs.useInvertingLut = saveUseInvertingLut;
     }
 
-	public ImagePlus doProjections(ImagePlus imp) {
+	private  ImagePlus doProjections(ImagePlus imp) {
 		int nSlices;				// number of slices in volume
 		int projwidth, projheight;	//dimensions of projection image
 		int xcenter, ycenter, zcenter;	//coordinates of center of volume of rotation
@@ -352,7 +446,7 @@ public class Projector implements PlugInFilter {
 	} // doProjection()
 	
 	
-	void allocateArrays(int nProjections, int projwidth, int projheight) {
+	private void allocateArrays(int nProjections, int projwidth, int projheight) {
 		int projsize = projwidth*projheight;
 		ColorModel cm = imp.getProcessor().getColorModel();
 		if (isRGB) cm = null;
@@ -382,7 +476,7 @@ public class Projector implements PlugInFilter {
 	This procedure returns various buffers which are actually used by DoProjections() to find the final projected image for the volume
 	of slices at the current angle.
 	*/
-	void doOneProjectionX (int nSlices, int ycenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
+	private void doOneProjectionX (int nSlices, int ycenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
 		int     thispixel;			//current pixel to be projected
 		int    offset, offsetinit;		//precomputed offsets into an image buffer
    		int z;					//z-coordinate of points in current slice before rotation
@@ -483,7 +577,7 @@ public class Projector implements PlugInFilter {
 	
 
 	/** Projects each pixel of a volume (stack of slices) onto a plane as the volume rotates about the y-axis. */
-	void  doOneProjectionY (int nSlices, int xcenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
+	private void  doOneProjectionY (int nSlices, int xcenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
 		//IJ.write("DoOneProjectionY: "+xcenter+" "+zcenter+" "+(double)costheta/BIGPOWEROF2+ " "+(double)sintheta/BIGPOWEROF2);
 		int thispixel;			//current pixel to be projected
 		int offset, offsetinit;		//precomputed offsets into an image buffer
@@ -530,7 +624,7 @@ public class Projector implements PlugInFilter {
 					thispixel =pixels[lineOffset+i]&0xff;
 					xcostheta += costheta;  //rotate about x-axis and find new y,z
 					xsintheta += sintheta;  //x-coordinates will not change
-//if (k==1 && j==top) IJ.write(k+" "thispixel);
+					//if (k==1 && j==top) IJ.write(k+" "thispixel);
 					if ((thispixel <= transparencyUpper) && (thispixel >= transparencyLower)) {
 						xnew = (xcostheta + zsintheta)/BIGPOWEROF2 + xcenter - left;
 						znew = (zcostheta - xsintheta)/BIGPOWEROF2 + zcenter;
@@ -579,7 +673,7 @@ public class Projector implements PlugInFilter {
 	
 
 	/** Projects each pixel of a volume (stack of slices) onto a plane as the volume rotates about the z-axis. */
-	void doOneProjectionZ (int nSlices, int xcenter, int ycenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
+	private void doOneProjectionZ (int nSlices, int xcenter, int ycenter, int zcenter, int projwidth, int projheight, int costheta, int sintheta) {
 		int thispixel;        //current pixel to be projected
 		int offset, offsetinit; //precomputed offsets into an image buffer
 		int z;   //z-coordinate of points in current slice before rotation
@@ -687,7 +781,7 @@ public class Projector implements PlugInFilter {
 		//new ImagePlus("f", new FloatProcessor(projwidth,projheight,f,null)).show();
 	} // end doOneProjectionZ()
 
-	ImagePlus zScale(ImagePlus imp) {
+	private ImagePlus zScale(ImagePlus imp) {
 		IJ.showStatus("Z Scaling...");
 		ImageStack stack1 = imp.getStack();
 		int depth1 = stack1.getSize();
@@ -734,28 +828,28 @@ public class Projector implements PlugInFilter {
 		return imp2;
 	}
 
-	public void getByteRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {
+	private void getByteRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {
 		byte[] pixels = (byte[])stack.getPixels(z+1);
 		int j = x + y*width1;
 		for (int i=0; i<width2; i++)
 			line[i] = pixels[j++]&255;
 	}
 
-	public void putByteRow(ImageStack stack, int y, int z, int width, int[] line) {
+	private void putByteRow(ImageStack stack, int y, int z, int width, int[] line) {
 		byte[] pixels = (byte[])stack.getPixels(z+1);
 		int j = y*width;
 		for (int i=0; i<width; i++)
 			pixels[j++] = (byte)line[i];
 	}
 
-	public void getRGBRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {
+	private void getRGBRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {
 		int[] pixels = (int[])stack.getPixels(z+1);
 		int j = x + y*width1;
 		for (int i=0; i<width2; i++)
 			line[i] = pixels[j++];
 	}
 
-	public void putRGBRow(ImageStack stack, int y, int z, int width, int[] line) {
+	private void putRGBRow(ImageStack stack, int y, int z, int width, int[] line) {
 		int[] pixels = (int[])stack.getPixels(z+1);
 		int j = y*width;
 		for (int i=0; i<width; i++)
@@ -763,3 +857,4 @@ public class Projector implements PlugInFilter {
 	}
 
 }
+

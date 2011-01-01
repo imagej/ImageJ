@@ -1496,6 +1496,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				ignoreInterrupts = true;
 			list.removeAll();
 			rois.clear();
+			updateShowAll();
 		} else if (cmd.equals("debug")) {
 			//IJ.log("Debug: "+debugCount);
 			//for (int i=0; i<debugCount; i++)
