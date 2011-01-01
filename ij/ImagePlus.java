@@ -13,6 +13,7 @@ import ij.macro.Interpreter;
 import ij.plugin.frame.ContrastAdjuster;
 import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
+import ij.plugin.Duplicator;
 
 /**
 An ImagePlus contain an ImageProcessor (2D image) or an ImageStack (3D, 4D or 5D image).
@@ -1648,6 +1649,14 @@ public class ImagePlus implements ImageObserver, Measurements {
 		this.ignoreFlush = ignoreFlush;
 	}
 	
+
+	/** Returns a copy (clone) of this ImagePlus. */
+	public ImagePlus duplicate() {
+		ImagePlus imp2 = new Duplicator().run(this);
+		//imp = new Duplicator().run(imp, 1, 3, 1, 20, 1, 10);
+		return imp2;
+	}
+
 	/** Returns a new ImagePlus with this image's attributes
 		(e.g. spatial scale), but no image. */
 	public ImagePlus createImagePlus() {
