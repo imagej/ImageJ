@@ -1652,9 +1652,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Returns a copy (clone) of this ImagePlus. */
 	public ImagePlus duplicate() {
-		ImagePlus imp2 = new Duplicator().run(this);
-		//imp = new Duplicator().run(imp, 1, 3, 1, 20, 1, 10);
-		return imp2;
+		return (new Duplicator()).run(this);
 	}
 
 	/** Returns a new ImagePlus with this image's attributes

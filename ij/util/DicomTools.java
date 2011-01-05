@@ -1,10 +1,12 @@
 package ij.util;
 import ij.*;
 import ij.process.*;
+import ij.plugin.DICOM;
 
 /** DICOM utilities */
 public class DicomTools {
 	private static final int MAX_DIGITS = 5;
+	private static String[] sliceLabels;
 
 	/** Sorts a DICOM stack by image number. */
 	public static ImageStack sort(ImageStack stack) {
@@ -13,7 +15,11 @@ public class DicomTools {
 		String[] strings = getSortStrings(stack, "0020,0013");
 		if (strings==null) return stack;
 		StringSorter.sort(strings);
-		ImageStack stack2 = sortStack(stack, strings);
+		ImageStack stack2 = null;
+		if (stack.isVirtual())
+			stack2 = ((VirtualStack)stack).sortDicom(strings, sliceLabels, MAX_DIGITS);
+		else
+			stack2 = sortStack(stack, strings);
 		return stack2!=null?stack2:stack;
 	}
 	
@@ -23,19 +29,21 @@ public class DicomTools {
 		for (int i=0; i<stack.getSize(); i++) {
 			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-MAX_DIGITS), 0.0);
 			if (slice==0) return null;
-			stack2.addSlice(stack.getSliceLabel(slice), stack.getPixels(slice));
+			stack2.addSlice(sliceLabels[slice-1], stack.getPixels(slice));
 		}
 		stack2.update(stack.getProcessor(1));
 		return stack2;
 	}
 
 	private static String[] getSortStrings(ImageStack stack, String tag) {
-		double series = getSeriesNumber(stack.getSliceLabel(1));
+		double series = getSeriesNumber(getSliceLabel(stack,1));
 		int n = stack.getSize();
 		String[] values = new String[n];
+		sliceLabels = new String[n];
 		for (int i=1; i<=n; i++) {
-			String tags = stack.getSliceLabel(i);
+			String tags = getSliceLabel(stack,i);
 			if (tags==null) return null;
+			sliceLabels[i-1] = tags;
 			double value = getNumericTag(tags, tag);
 			if (Double.isNaN(value)) {
 				if (IJ.debugMode) IJ.log("  "+tag+"  tag missing in slice "+i);
@@ -53,6 +61,19 @@ public class DicomTools {
 	private static String toString(double value, int width) {
 		String s = "       " + IJ.d2s(value,0);
 		return s.substring(s.length()-MAX_DIGITS);
+	}
+	
+	private static String getSliceLabel(ImageStack stack, int n) {
+		String info = stack.getSliceLabel(n);
+		if ((info==null || info.length()<100) && stack.isVirtual()) {
+			String dir = ((VirtualStack)stack).getDirectory();
+			String name = ((VirtualStack)stack).getFileName(n);
+			DICOM reader = new DICOM();
+			info = reader.getInfo(dir+name);
+			if (info!=null)
+				info = name + "\n" + info;
+		}
+		return info;
 	}
 
 	/** Calculates the voxel depth of the specified DICOM stack based 
