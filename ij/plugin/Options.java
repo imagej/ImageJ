@@ -234,6 +234,7 @@ public class Options implements PlugIn {
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");
 		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
+		gd.addCheckbox("Calculate voxel depth", Prefs.calculateDicomVoxelDepth);
 		gd.addMessage("Orthogonal Views");
 		gd.setInsets(5, 40, 0);
 		gd.addCheckbox("Rotate YZ", Prefs.rotateYZ);
@@ -243,6 +244,7 @@ public class Options implements PlugIn {
 		if (gd.wasCanceled())
 			return;
 		Prefs.openDicomsAsFloat = gd.getNextBoolean();
+		Prefs.calculateDicomVoxelDepth = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
 	}

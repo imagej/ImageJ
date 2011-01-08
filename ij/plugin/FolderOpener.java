@@ -222,11 +222,13 @@ public class FolderOpener implements PlugIn {
 			}
 			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) {
 				imp2.setStack(DicomTools.sort(stack));
-				double voxelDepth = DicomTools.getVoxelDepth(stack);
-				if (voxelDepth>0.0) {
-					if (IJ.debugMode) IJ.log("DICOM voxel depth set to "+voxelDepth+" ("+cal.pixelDepth+")");
-					cal.pixelDepth = voxelDepth;
-					imp2.setCalibration(cal);
+				if (Prefs.calculateDicomVoxelDepth) {
+					double voxelDepth = DicomTools.getVoxelDepth(stack);
+					if (voxelDepth>0.0) {
+						if (IJ.debugMode) IJ.log("DICOM voxel depth set to "+voxelDepth+" ("+cal.pixelDepth+")");
+						cal.pixelDepth = voxelDepth;
+						imp2.setCalibration(cal);
+					}
 				}
 			}
 			if (imp2.getStackSize()==1 && info1!=null)

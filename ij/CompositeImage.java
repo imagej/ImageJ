@@ -371,21 +371,7 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public LUT createLutFromColor(Color color) {
-		byte[] rLut = new byte[256];
-		byte[] gLut = new byte[256];
-		byte[] bLut = new byte[256];
-		int red = color.getRed();
-		int green = color.getGreen();
-		int blue = color.getBlue();
-		double rIncr = ((double)red)/255d;
-		double gIncr = ((double)green)/255d;
-		double bIncr = ((double)blue)/255d;
-		for (int i=0; i<256; ++i) {
-			rLut[i] = (byte)(i*rIncr);
-			gLut[i] = (byte)(i*gIncr);
-			bLut[i] = (byte)(i*bIncr);
-		}
-		return new LUT(rLut, gLut, bLut);
+		return LUT.createLutFromColor(color);
 	}
 	
 	LUT createLutFromBytes(byte[] bytes) {
