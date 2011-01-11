@@ -450,7 +450,7 @@ public class WindowManager {
     }
     
     public static void toFront(Frame frame) {
-    	if (frame==null) return;
+		if (frame==null) return;
 		if (frame.getState()==Frame.ICONIFIED)
 			frame.setState(Frame.NORMAL);
 		frame.toFront();

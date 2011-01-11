@@ -160,10 +160,8 @@ public class WindowOrganizer implements PlugIn {
 		}
 		Frame[] frames = WindowManager.getNonImageWindows();
 		if (frames!=null) {
-			for (int i=0; i<frames.length; i++) {
-				if (!(frames[i] instanceof ThresholdAdjuster))
+			for (int i=0; i<frames.length; i++)
 					WindowManager.toFront(frames[i]);
-			}
 		}
 		IJ.getInstance().toFront();
 	}

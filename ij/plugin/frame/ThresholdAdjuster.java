@@ -27,7 +27,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	static boolean fill2 = true;
 	static boolean useBW = true;
 	static boolean backgroundToNaN = true;
-	static Frame instance; 
+	static ThresholdAdjuster instance; 
 	static int mode = RED;	
 	static String[] methodNames = AutoThresholder.getMethods();
 	static String method = methodNames[DEFAULT];
@@ -67,6 +67,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			return;
 		}
 		if (instance!=null) {
+			instance.firstActivation = true;
 			instance.toFront();
 			return;
 		}
@@ -207,7 +208,6 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			setLocation(loc);
 		else
 			GUI.center(this);
-		firstActivation = true;
 		if (IJ.isMacOSX()) setResizable(false);
 		show();
 
@@ -668,12 +668,10 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
     	super.windowActivated(e);
     	plot.requestFocus();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			if (!firstActivation) {
-				previousImageID = 0;
-				useExistingTheshold = isThresholded(imp);
-				setup(imp);
-			}
+		if (imp!=null && firstActivation) {
+			previousImageID = 0;
+			useExistingTheshold = isThresholded(imp);
+			setup(imp);
 			firstActivation = false;
 		}
 	}
