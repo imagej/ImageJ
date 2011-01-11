@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.plugin.frame.ThresholdAdjuster;
 import java.awt.*;
 
 public class WindowOrganizer implements PlugIn {
@@ -152,14 +153,17 @@ public class WindowOrganizer implements PlugIn {
 		if (wList!=null) {
 			for (int i=0; i<wList.length; i++) {
 				ImageWindow win = getWindow(wList[i]);
-				if (win!=null) win.toFront();
+				if (win!=null)
+					WindowManager.toFront(win);
 				
 			}
 		}
 		Frame[] frames = WindowManager.getNonImageWindows();
 		if (frames!=null) {
-			for (int i=0; i<frames.length; i++)
-				frames[i].toFront();
+			for (int i=0; i<frames.length; i++) {
+				if (!(frames[i] instanceof ThresholdAdjuster))
+					WindowManager.toFront(frames[i]);
+			}
 		}
 		IJ.getInstance().toFront();
 	}

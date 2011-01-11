@@ -380,6 +380,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append((scriptMode?"IJ.":"")+"open(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Results...")) // Save As>Results
 					;
+				else if (name.equals("Run...")) // Plugins>Macros>Run
+					;
 				else {
 					String prefix = "run(";
 					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";

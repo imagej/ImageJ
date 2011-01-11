@@ -360,7 +360,7 @@ public class WindowManager {
 			if (++count==imageList.size()) return;
 		} while (win instanceof HistogramWindow || win instanceof PlotWindow);
 		setCurrentWindow(win);
-		win.toFront();
+		toFront(win);
 		Menus.updateMenus();
     }
 
@@ -396,7 +396,7 @@ public class WindowManager {
 			Frame win = (Frame)nonImageList.elementAt(i);
 			String title = win.getTitle();
 			if (menuItemLabel.equals(title)) {
-				win.toFront();
+				toFront(win);
 				((CheckboxMenuItem)item).setState(false);
 				if (Recorder.record && !IJ.isMacro())
 					Recorder.record("selectWindow", title);
@@ -411,7 +411,7 @@ public class WindowManager {
 			String title = win.getImagePlus().getTitle();
 			if (menuItemLabel.equals(title)) {
 				setCurrentWindow(win);
-				win.toFront();
+				toFront(win);
 				int index = imageList.indexOf(win);
 				int n = Menus.window.getItemCount();
 				int start = Menus.WINDOW_MENU_ITEMS+Menus.windowMenuItems2;
@@ -448,5 +448,12 @@ public class WindowManager {
 			IJ.log(" ");
 		}
     }
+    
+    public static void toFront(Frame frame) {
+    	if (frame==null) return;
+		if (frame.getState()==Frame.ICONIFIED)
+			frame.setState(Frame.NORMAL);
+		frame.toFront();
+	}
     
 }
