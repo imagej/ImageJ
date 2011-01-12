@@ -5,13 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.44n 11 January 2011</u>
+<li> <u>1.44n 12 January 2011</u>
 <ul>
 <li> <i>Image&gt;Color&gt;Merge Channels</i> preserves LUTs and
 display ranges when merging images and stacks to create composite images.
 <li> Thanks to Michael Schmid, the current image is now only auto-thresholded
 when the Threshold window is activated via the menu command or by pressing 'T',
 or the user clicks on "Auto".
+<li> Thanks to Duncan Mak, the "Loop back and forth" option in the
+<i>Image&gt;Stacks&gt;Tools&gt;Animation Options</i> dialog box
+is now persistent.
+<li> Added the setOption("loop", boolean) macro function.
 <li> Fixed a bug that sometimes caused a DICOM sequence opened as a virtual stack
 to not be sorted correctly.
 <li> Fixed a bug that caused <i>Plugins&gt;Macros&gt;Run</i> to record

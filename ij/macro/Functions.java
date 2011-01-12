@@ -3550,6 +3550,8 @@ public class Functions implements MacroConstants, Measurements {
 			ImageProcessor.setUseBicubic(state);
 		else if (arg1.startsWith("wand")||arg1.indexOf("points")!=-1)
 			Wand.setAllPoints(state);
+		else if (arg1.startsWith("loop"))
+			Calibration.setLoopBackAndForth(state);
 		else
 			interp.error("Invalid option");
 	}
