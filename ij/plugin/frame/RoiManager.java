@@ -928,7 +928,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             }
  			switch (mode) {
 				case DRAW: roi.drawPixels(ip); break;
-				case FILL: ip.fillPolygon(roi.getPolygon()); break;
+				case FILL: ip.fill(roi); break;
 				case LABEL:
 					roi.drawPixels(ip);
 					filler.drawLabel(imp, ip, i+1, roi.getBounds());
