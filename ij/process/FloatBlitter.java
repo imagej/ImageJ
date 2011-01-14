@@ -54,7 +54,7 @@ public class FloatBlitter implements Blitter {
 			srcIndex = (y-yloc)*srcWidth + (r1.x-xloc);
 			dstIndex = y * width + r1.x;
 			switch (mode) {
-				case COPY: case COPY_INVERTED:
+				case COPY: case COPY_INVERTED: case COPY_TRANSPARENT:
 					for (int i=r1.width; --i>=0;)
 						pixels[dstIndex++] = srcPixels[srcIndex++];
 					break;

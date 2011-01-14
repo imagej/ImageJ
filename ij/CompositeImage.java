@@ -249,6 +249,7 @@ public class CompositeImage extends ImagePlus {
 			currentSlice = getSlice();
 			currentFrame = getFrame();
 			int position = getStackIndex(1, currentSlice, currentFrame);
+			if (cip==null) return;
 			for (int i=0; i<nChannels; ++i)
 				cip[i].setPixels(getImageStack().getProcessor(position+i).getPixels());
 		}
@@ -269,6 +270,7 @@ public class CompositeImage extends ImagePlus {
 				case 2: cip[2].updateComposite(rgbPixels, 3); break;
 			}
 		} else {
+			if (cip==null) return;
 			if (syncChannels) {
 				ImageProcessor ip2 = getProcessor();
 				double min=ip2.getMin(), max=ip2.getMax();
@@ -283,6 +285,7 @@ public class CompositeImage extends ImagePlus {
 				cip[0].updateComposite(rgbPixels, 4);
 			else
 				{for (int i=1; i<imageSize; i++) rgbPixels[i] = 0;}
+			if (cip==null) return;
 			for (int i=1; i<nChannels; i++) {
 				if (active[i]) cip[i].updateComposite(rgbPixels, 5);
 			}
