@@ -16,7 +16,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 	public PasteController() {
 		super("Paste Control");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		WindowManager.addWindow(this);

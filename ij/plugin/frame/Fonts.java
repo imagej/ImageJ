@@ -22,7 +22,7 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 	public Fonts() {
 		super("Fonts");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		WindowManager.addWindow(this);

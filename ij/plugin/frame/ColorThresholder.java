@@ -87,7 +87,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	public ColorThresholder() {
 		super("Threshold Color (experimental)");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		thread = new Thread(this, "BandAdjuster");

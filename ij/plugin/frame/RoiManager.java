@@ -52,7 +52,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		instance = this;

@@ -28,7 +28,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	public LineWidthAdjuster() {
 		super("Line Width");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}		
 		WindowManager.addWindow(this);

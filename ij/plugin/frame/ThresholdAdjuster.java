@@ -68,7 +68,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 		if (instance!=null) {
 			instance.firstActivation = true;
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		

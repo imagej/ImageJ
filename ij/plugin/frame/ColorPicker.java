@@ -15,7 +15,7 @@ public class ColorPicker extends PlugInFrame {
     public ColorPicker() {
 		super("CP");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		instance = this;

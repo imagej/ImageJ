@@ -1182,22 +1182,32 @@ public class Functions implements MacroConstants, Measurements {
 		if (roi==null)
 			interp.error("Selection required");
 		Variable[] xa, ya;
-		FloatPolygon fp = roi.getFloatPolygon();
-		if (fp!=null) {
-			xa = new Variable[fp.npoints];
-			ya = new Variable[fp.npoints];
-			for (int i=0; i<fp.npoints; i++)
-				xa[i] = new Variable(fp.xpoints[i]);
-			for (int i=0; i<fp.npoints; i++)
-				ya[i] = new Variable(fp.ypoints[i]);
+		if (roi.getType()==Roi.LINE) {
+			xa = new Variable[2];
+			ya = new Variable[2];
+			Line line = (Line)roi;
+			xa[0] = new Variable(line.x1d);
+			ya[0] = new Variable(line.y1d);
+			xa[1] = new Variable(line.x2d);
+			ya[1] = new Variable(line.y2d);
 		} else {
-			Polygon p = roi.getPolygon();
-			xa = new Variable[p.npoints];
-			ya = new Variable[p.npoints];
-			for (int i=0; i<p.npoints; i++)
-				xa[i] = new Variable(p.xpoints[i]);
-			for (int i=0; i<p.npoints; i++)
-				ya[i] = new Variable(p.ypoints[i]);
+			FloatPolygon fp = roi.getFloatPolygon();
+			if (fp!=null) {
+				xa = new Variable[fp.npoints];
+				ya = new Variable[fp.npoints];
+				for (int i=0; i<fp.npoints; i++)
+					xa[i] = new Variable(fp.xpoints[i]);
+				for (int i=0; i<fp.npoints; i++)
+					ya[i] = new Variable(fp.ypoints[i]);
+			} else {
+				Polygon p = roi.getPolygon();
+				xa = new Variable[p.npoints];
+				ya = new Variable[p.npoints];
+				for (int i=0; i<p.npoints; i++)
+					xa[i] = new Variable(p.xpoints[i]);
+				for (int i=0; i<p.npoints; i++)
+					ya[i] = new Variable(p.ypoints[i]);
+			}
 		}
 		xCoordinates.setArray(xa);
 		yCoordinates.setArray(ya);

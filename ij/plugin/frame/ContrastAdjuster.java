@@ -76,7 +76,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				Prefs.saveLocation(LOC_KEY, ca.getLocation());
 				ca.close();
 			} else {
-				instance.toFront();
+				WindowManager.toFront(instance);
 				return;
 			}
 		}

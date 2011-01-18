@@ -41,7 +41,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public Recorder() {
 		super("Recorder");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		WindowManager.addWindow(this);
