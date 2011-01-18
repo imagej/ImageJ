@@ -155,11 +155,8 @@ public class RGBStackMerge implements PlugIn {
 			if (images[i]!=null && images[i].getBitDepth()==24)
 				createComposite = false;
 		}
-		if (mergeHyperstacks) {
+		if (createComposite || mergeHyperstacks) {
 			imp2 = mergeHyperstacks(images, keep);
-			if (imp2==null) return;
-		} else if (createComposite) {
-			imp2 = createComposite(width, height, stackSize, stacks, keep);
 			if (imp2==null) return;
 		} else {
 			ImageStack rgb = mergeStacks(width, height, stackSize, stacks[0], stacks[1], stacks[2], keep);
@@ -231,73 +228,27 @@ public class RGBStackMerge implements PlugIn {
 		if (title.startsWith("C1-"))
 			title = title.substring(3);
 		else
-			title = "Merged";
+			title = frames>1?"Merged":"Composite";
 		ImagePlus imp2 = new ImagePlus(title, stack2);
 		imp2.setDimensions(channels, slices, frames);
 		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+		Color[] colors = {Color.red, Color.green, Color.blue};
 		for (int c=0; c<channels; c++) {
 			ImageProcessor ip = images[c].getProcessor();
 			IndexColorModel cm = (IndexColorModel)ip.getColorModel();
-			LUT lut =  new LUT(cm, ip.getMin(), ip.getMax());
+			LUT lut = null;
+			if (c<3 && !ip.isColorLut()) {
+				lut = LUT.createLutFromColor(colors[c]);
+				lut.min = ip.getMin();
+				lut.max = ip.getMax();
+			} else
+				lut =  new LUT(cm, ip.getMin(), ip.getMax());
 			((CompositeImage)imp2).setChannelLut(lut, c+1);
 		}
 		imp2.setOpenAsHyperStack(true);
 		return imp2;
 	}
 
-	public ImagePlus createComposite(int w, int h, int d, ImageStack[] stacks, boolean keep) {
-		ImageStack composite = new ImageStack(w, h);
-		int n = stacks.length;
-		int[] index = new int[n];
-		int channels = 0;
-		boolean customColors = false;
-		for (int i=0; i<n; i++) {
-			index[i] = 1;
-			if (stacks[i]!=null) {
-				channels++;
-				if (i>0 && stacks[i-1]==null)
-					customColors = true;
-			}
-		}
-		if (channels<2) {
-			error("At least 2 channels required");
-			return null;
-		}
-		for (int i=0; i<d; i++) {
-			for (int j=0; j<n; j++) {
-				if (stacks[j]!=null) {
-					ImageProcessor ip = stacks[j].getProcessor(index[j]);
-					if (keep) ip = ip.duplicate();
-					composite.addSlice(null, ip);
-					if (keep)
-						index[j]++;
-					else
-						if (stacks[j]!=null) stacks[j].deleteSlice(1);
-				}
-			}
-		}
-		ImagePlus imp2 = new ImagePlus("Composite", composite);
-		imp2.setDimensions(channels, d, 1);
-		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
-		if (customColors) {
-			Color[] colors = {Color.red, Color.green, Color.blue, Color.white};
-			CompositeImage ci = (CompositeImage)imp2;
-			int color = 0;
-			int c = 1;
-			for (int i=0; i<n; i++) {
-				if (stacks[i]!=null && c<=n) {
-					ci.setPosition(c, 1, 1);
-					LUT lut = ci.createLutFromColor(colors[color]);
-					ci.setChannelLut(lut);
-					c++;
-				}
-				color++;
-			}
-			ci.setPosition(1, 1, 1);
-		}
-		if (d>1) imp2.setOpenAsHyperStack(true);
-		return imp2;
-	}
 
 	public ImageStack mergeStacks(int w, int h, int d, ImageStack red, ImageStack green, ImageStack blue, boolean keep) {
 		ImageStack rgb = new ImageStack(w, h);

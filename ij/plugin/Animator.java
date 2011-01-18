@@ -234,6 +234,7 @@ public class Animator implements PlugIn {
 		if (firstFrame==1 && lastFrame==nSlices)
 			{firstFrame=0; lastFrame=0;}
 		cal.loop = gd.getNextBoolean();
+		Calibration.setLoopBackAndForth(cal.loop);
 		start = gd.getNextBoolean();
 		if (speed>1000.0) speed = 1000.0;
 		//if (speed<0.1) speed = 0.1;

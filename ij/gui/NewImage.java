@@ -44,6 +44,7 @@ public class NewImage {
 		if (type==GRAY16) bytesPerPixel = 2;
 		else if (type==GRAY32||type==RGB) bytesPerPixel = 4;
 		long size = (long)width*height*nSlices*bytesPerPixel;
+		boolean bigStack = size/(1024*1024)>=50;
 		String size2 = size/(1024*1024)+"MB ("+width+"x"+height+"x"+nSlices+")";
 		if ((options&CHECK_AVAILABLE_MEMORY)!=0) {
 			long max = IJ.maxMemory(); // - 100*1024*1024;
@@ -74,7 +75,8 @@ public class NewImage {
 		try {
 			stack.addSlice(null, ip);
 			for (int i=2; i<=nSlices; i++) {
-				if ((i%inc)==0) IJ.showProgress(i, nSlices);
+				if ((i%inc)==0 && bigStack)
+					IJ.showProgress(i, nSlices);
 				Object pixels2 = null;
 				switch (type) {
 					case GRAY8: pixels2 = new byte[width*height]; break;
@@ -92,7 +94,8 @@ public class NewImage {
 			IJ.outOfMemory(imp.getTitle());
 			stack.trim();
 		}
-		IJ.showProgress(nSlices, nSlices);
+		if (bigStack)
+			IJ.showProgress(nSlices, nSlices);
 		if (stack.getSize()>1)
 			imp.setStack(null, stack);
 		return true;

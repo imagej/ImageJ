@@ -17,7 +17,7 @@ import ij.plugin.Duplicator;
 
 /**
 An ImagePlus contain an ImageProcessor (2D image) or an ImageStack (3D, 4D or 5D image).
-It also includes metadata (spatial calibration and possibly the directory/file where Ê
+It also includes metadata (spatial calibration and possibly the directory/file where
 it was read from). The ImageProcessor contains the pixel data (8-bit, 16-bit, float or RGB) 
 of the 2D image and some basic methods to manipulate it. An ImageStack is essentually 
 a list ImageProcessors of same type and size.
@@ -1652,9 +1652,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	/** Returns a copy (clone) of this ImagePlus. */
 	public ImagePlus duplicate() {
-		ImagePlus imp2 = new Duplicator().run(this);
-		//imp = new Duplicator().run(imp, 1, 3, 1, 20, 1, 10);
-		return imp2;
+		return (new Duplicator()).run(this);
 	}
 
 	/** Returns a new ImagePlus with this image's attributes

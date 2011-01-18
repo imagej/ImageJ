@@ -2,6 +2,7 @@ package ij;
 import ij.process.*;
 import ij.io.*;
 import ij.gui.ImageCanvas;
+import ij.util.Tools;
 import java.io.*;
 import java.awt.Font;
 import java.awt.image.ColorModel;
@@ -188,6 +189,20 @@ public class VirtualStack extends ImageStack {
 	/** Returns the bit depth (8, 16, 24 or 32), or 0 if the bit depth is not known. */
 	public int getBitDepth() {
 		return bitDepth;
+	}
+	
+	public ImageStack sortDicom(String[] strings, String[] info, int maxDigits) {
+		int n = getSize();
+		String[] names2 = new String[n];
+		for (int i=0; i<n; i++)
+			names2[i] = names[i];
+		for (int i=0; i<n; i++) {
+			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-maxDigits), 0.0);
+			if (slice==0) return null;
+			names[i] = names2[slice-1];
+			labels[i] = info[slice-1];
+		}
+		return this;
 	}
 
 } 

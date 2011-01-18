@@ -101,7 +101,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
-		if (!running2) {
+		if (!running2 || imp.isHyperStack()) {
 			if (e.getSource()==cSelector) {
 				c = cSelector.getValue();
 				if (c==imp.getChannel()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;

@@ -47,7 +47,7 @@ public class Prefs {
 		MOVE_TO_MISC=1<<20, ADD_TO_MANAGER=1<<21, RUN_SOCKET_LISTENER=1<<22,
 		MULTI_POINT_MODE=1<<23, ROTATE_YZ=1<<24, FLIP_XZ=1<<25,
 		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27, NO_CLICK_TO_GC=1<<28,
-		AVOID_RESLICE_INTERPOLATION=1<<29; 
+		AVOID_RESLICE_INTERPOLATION=1<<29, CALCULATE_DICOM_VOXEL_DEPTH=1<<30; 
     public static final String OPTIONS = "prefs.options";
     
 	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
@@ -124,6 +124,8 @@ public class Prefs {
 	public static boolean reflexAngle;
 	/** Avoid interpolation when re-slicing */
 	public static boolean avoidResliceInterpolation;
+	/** Calculate DICOM voxel depth based on distance between first and last slice. */
+	public static boolean calculateDicomVoxelDepth;
 
 
 	static Properties ijPrefs = new Properties();
@@ -407,6 +409,7 @@ public class Prefs {
 		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
 		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
 		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
+		calculateDicomVoxelDepth = (options&CALCULATE_DICOM_VOXEL_DEPTH)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -424,7 +427,8 @@ public class Prefs {
 			+ (multiPointMode?MULTI_POINT_MODE:0) + (rotateYZ?ROTATE_YZ:0)
 			+ (flipXZ?FLIP_XZ:0) + (dontSaveHeaders?DONT_SAVE_HEADERS:0)
 			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0) + (noClickToGC?NO_CLICK_TO_GC:0)
-			+ (avoidResliceInterpolation?AVOID_RESLICE_INTERPOLATION:0);
+			+ (avoidResliceInterpolation?AVOID_RESLICE_INTERPOLATION:0)
+			+ (calculateDicomVoxelDepth?CALCULATE_DICOM_VOXEL_DEPTH:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 

@@ -53,7 +53,9 @@ import ij.measure.Calibration;
 
 public class DICOM extends ImagePlus implements PlugIn {
 	private boolean showErrors = true;
+	private boolean gettingInfo;
 	private BufferedInputStream inputStream;
+	private String info;
 	
 	/** Default constructor. */
 	public DICOM() {
@@ -100,6 +102,10 @@ public class DICOM extends ImagePlus implements PlugIn {
 				IJ.error("DicomDecoder", msg);
 				return;
 			}
+		}
+		if (gettingInfo) {
+			info = dd.getDicomInfo();
+			return;
 		}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
@@ -165,6 +171,14 @@ public class DICOM extends ImagePlus implements PlugIn {
 		run(path);
 	}
 	
+	/** Returns the DICOM tags of the specified file as a string. */ 
+	public String getInfo(String path) {
+		showErrors = false;
+		gettingInfo = true;
+		run(path);
+		return info;
+	}
+
 	/** Convert 16-bit signed to unsigned if all pixels>=0. */
 	void convertToUnsigned(ImagePlus imp, FileInfo fi) {
 		ImageProcessor ip = imp.getProcessor();

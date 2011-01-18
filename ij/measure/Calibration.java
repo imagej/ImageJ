@@ -27,7 +27,8 @@ public class Calibration implements Cloneable {
 	public double fps;
 
 	/** Loop back and forth when animating stack */
-	public boolean loop;
+	private static boolean loopBackAndForth;
+	public boolean loop = loopBackAndForth;
 
 	/** X origin in pixels. */
 	public double xOrigin;
@@ -435,6 +436,11 @@ public class Calibration implements Cloneable {
  	/** Sets the 'invertY' flag. */
  	public void setInvertY(boolean invertYCoordinates) {
  		invertY = invertYCoordinates;
+ 	}
+ 	
+ 	/** Set the default state of the animation "Loop back and forth" flag */
+	public static void setLoopBackAndForth(boolean loop) {
+ 		loopBackAndForth = loop;
  	}
  	
     public String toString() {

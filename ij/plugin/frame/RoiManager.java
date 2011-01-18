@@ -52,7 +52,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		instance = this;
@@ -928,7 +928,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             }
  			switch (mode) {
 				case DRAW: roi.drawPixels(ip); break;
-				case FILL: ip.fillPolygon(roi.getPolygon()); break;
+				case FILL: ip.fill(roi); break;
 				case LABEL:
 					roi.drawPixels(ip);
 					filler.drawLabel(imp, ip, i+1, roi.getBounds());

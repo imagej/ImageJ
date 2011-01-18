@@ -14,7 +14,7 @@ import ij.util.DicomTools;
 opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
-	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh"};
+	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh", ".xml"};
 	private static boolean convertToRGB;
 	private static boolean sortFileNames = true;
 	private static boolean virtualStack;
@@ -221,7 +221,8 @@ public class FolderOpener implements PlugIn {
 				imp2.setCalibration(cal);
 			}
 			if (info1!=null && info1.lastIndexOf("7FE0,0010")>0) {
-				imp2.setStack(DicomTools.sort(stack));
+				stack = DicomTools.sort(stack);
+				imp2.setStack(stack);
 				double voxelDepth = DicomTools.getVoxelDepth(stack);
 				if (voxelDepth>0.0) {
 					if (IJ.debugMode) IJ.log("DICOM voxel depth set to "+voxelDepth+" ("+cal.pixelDepth+")");

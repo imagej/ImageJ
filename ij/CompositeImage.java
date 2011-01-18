@@ -249,6 +249,7 @@ public class CompositeImage extends ImagePlus {
 			currentSlice = getSlice();
 			currentFrame = getFrame();
 			int position = getStackIndex(1, currentSlice, currentFrame);
+			if (cip==null) return;
 			for (int i=0; i<nChannels; ++i)
 				cip[i].setPixels(getImageStack().getProcessor(position+i).getPixels());
 		}
@@ -269,6 +270,7 @@ public class CompositeImage extends ImagePlus {
 				case 2: cip[2].updateComposite(rgbPixels, 3); break;
 			}
 		} else {
+			if (cip==null) return;
 			if (syncChannels) {
 				ImageProcessor ip2 = getProcessor();
 				double min=ip2.getMin(), max=ip2.getMax();
@@ -283,6 +285,7 @@ public class CompositeImage extends ImagePlus {
 				cip[0].updateComposite(rgbPixels, 4);
 			else
 				{for (int i=1; i<imageSize; i++) rgbPixels[i] = 0;}
+			if (cip==null) return;
 			for (int i=1; i<nChannels; i++) {
 				if (active[i]) cip[i].updateComposite(rgbPixels, 5);
 			}
@@ -371,21 +374,7 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public LUT createLutFromColor(Color color) {
-		byte[] rLut = new byte[256];
-		byte[] gLut = new byte[256];
-		byte[] bLut = new byte[256];
-		int red = color.getRed();
-		int green = color.getGreen();
-		int blue = color.getBlue();
-		double rIncr = ((double)red)/255d;
-		double gIncr = ((double)green)/255d;
-		double bIncr = ((double)blue)/255d;
-		for (int i=0; i<256; ++i) {
-			rLut[i] = (byte)(i*rIncr);
-			gLut[i] = (byte)(i*gIncr);
-			bLut[i] = (byte)(i*bIncr);
-		}
-		return new LUT(rLut, gLut, bLut);
+		return LUT.createLutFromColor(color);
 	}
 	
 	LUT createLutFromBytes(byte[] bytes) {

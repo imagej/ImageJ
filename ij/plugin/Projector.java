@@ -63,6 +63,8 @@ public class Projector implements PlugIn {
 	private String label = "";
 	private boolean done;
 	private boolean batchMode = Interpreter.isBatchMode();
+	private double progressBase=0.0, progressScale=1.0;
+	private boolean showMicroProgress = true;
 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -90,14 +92,17 @@ public class Projector implements PlugIn {
 			return;
 		}
 		if (interpolate && sliceInterval>1.0) {
-			imp = zScale(imp);
+			imp = zScale(imp, true);
 			if (imp==null) return;
 			sliceInterval = 1.0;
 		}
 		if (isRGB)
 			doRGBProjections(imp);
-		else
-			doProjections(imp);
+		else {
+			ImagePlus imp2 = doProjections(imp);
+			if (imp2!=null)
+				imp2.show();
+		}
 	}
 
 	private boolean showDialog() {
@@ -157,8 +162,7 @@ public class Projector implements PlugIn {
 		depthCueSurfS = depthCueSurf;
 		depthCueIntS = depthCueInt;
 		interpolateS = interpolate;
-		if (hyperstack)
-			allTimePointsS = allTimePoints;
+		allTimePointsS = allTimePoints;
 		return true;
     }
     	
@@ -176,19 +180,27 @@ public class Projector implements PlugIn {
 		if (!allTimePoints)
 			f1 = f2 = imp.getFrame();
 		
-		for (int c = 0; c < imp.getNChannels(); c++) {
-			for (int f = f1; f <=f2; f++) { 
+		int channels =  imp.getNChannels();
+		progressScale = 1.0/channels;
+		if (allTimePoints)
+			showMicroProgress = false;
+		int count = 1;
+		for (int c = 0; c < channels; c++) {
+			for (int f = f1; f <=f2; f++) {
+				if (allTimePoints)
+					IJ.showProgress(count++, channels*imp.getNFrames());
 				sliceInterval = originalSliceInterval;
 				ImagePlus impD = (new Duplicator()).run(imp, c+1, c+1, 1, imp.getNSlices(), f+1, f+1);
 				impD.setCalibration(imp.getCalibration());
 				if (interpolate && sliceInterval>1.0) {
-					impD = zScale(impD);
+					impD = zScale(impD, false);
 					if (impD==null) return;
 					sliceInterval = 1.0;
 				}
 				if (isRGB)
 					doRGBProjections(impD);
-				else{
+				else {
+					progressBase = (double)c/channels;
 					projImpD = doProjections(impD);
 					if (projImpD==null) return;
 					finalSlices = projImpD.getNSlices();
@@ -202,6 +214,7 @@ public class Projector implements PlugIn {
 						buildImp =  concat.concatenate(buildImp, projImpD, false);
 					}
 				}
+				if (done) return;
 			}
 		}
 		if (imp.getNFrames()==1 || !allTimePoints) {
@@ -238,17 +251,18 @@ public class Projector implements PlugIn {
         	{red.setRoi(roi); green.setRoi(roi); blue.setRoi(roi);}
         red.setCalibration(cal); green.setCalibration(cal); blue.setCalibration(cal);
         label = "Red: ";
+        progressBase = 0.0;
+        progressScale = 1.0/3.0;
         red = doProjections(red);
         if (red==null || done) return;
-        red.hide();
         label = "Green: ";
+        progressBase = 1.0/3.0;
         green = doProjections(green);
         if (green==null || done) return;
-        green.hide();
         label = "Blue: ";
+        progressBase = 2.0/3.0;
         blue = doProjections(blue);
         if (blue==null || done) return;
-        blue.hide();
         int w = red.getWidth(), h = red.getHeight(), d = red.getStackSize();
         RGBStackMerge merge = new RGBStackMerge();
         ImageStack stack = merge.mergeStacks(w, h, d, red.getStack(), green.getStack(), blue.getStack(), true);
@@ -344,14 +358,14 @@ public class Projector implements PlugIn {
 		}
 		ImagePlus projections = new ImagePlus("Projections of "+imp.getShortTitle(), stack2);
 		projections.setCalibration(imp.getCalibration());
-		projections.show();
+		//projections.show();
 		
 		IJ.resetEscape();
 		theta = initAngle;
 		IJ.resetEscape();
 		for (n=0; n<nProjections; n++) {
 			IJ.showStatus(n+"/"+nProjections);
-			if (!batchMode) IJ.showProgress((double)n/nProjections);
+			showProgress((double)n/nProjections);
 			thetarad = theta * Math.PI/180.0;
 			costheta = (int)(BIGPOWEROF2*Math.cos(thetarad) + 0.5);
 			sintheta = (int)(BIGPOWEROF2*Math.sin(thetarad) + 0.5);
@@ -416,15 +430,18 @@ public class Projector implements PlugIn {
 			}
 
 			theta = (theta + angleInc)%360;
-			if (projections.getWindow()==null && IJ.getInstance()!=null && !batchMode)   // is "Projections" window still open?
-				{done=true; break;}
-			if (IJ.escapePressed())
-				{done=true; break;}
+			//if (projections.getWindow()==null && IJ.getInstance()!=null && !batchMode)   // is "Projections" window still open?
+			//	{done=true; break;}
+			if (IJ.escapePressed()) {
+				done=true;
+				IJ.beep();
+				IJ.showProgress(1.0);
+				IJ.showStatus("aborted");
+				break;
+			}
 			projections.setSlice(n+1);
-   			if (IJ.escapePressed())
-				{IJ.beep(); break;}
  		} //end for all projections
- 		if (!batchMode) IJ.showProgress(1.0);
+ 		showProgress(1.0);
  
 		if (debugMode) {
 			if (projArray!=null) new ImagePlus("projArray", new ByteProcessor(projwidth, projheight, projArray, null)).show();
@@ -781,7 +798,7 @@ public class Projector implements PlugIn {
 		//new ImagePlus("f", new FloatProcessor(projwidth,projheight,f,null)).show();
 	} // end doOneProjectionZ()
 
-	private ImagePlus zScale(ImagePlus imp) {
+	private ImagePlus zScale(ImagePlus imp, boolean showProgress) {
 		IJ.showStatus("Z Scaling...");
 		ImageStack stack1 = imp.getStack();
 		int depth1 = stack1.getSize();
@@ -811,6 +828,7 @@ public class Projector implements PlugIn {
 				xzPlane1.putRow(0, z, line, width2);
 			}
 			//if (y==r.y) new ImagePlus("xzPlane", xzPlane1).show();
+			xzPlane1.setProgressBar(null);
 			xzPlane2 = xzPlane1.resize(width2, depth2);
 			for (int z=0; z<depth2; z++) {
 				xzPlane2.getRow(0, z, line, width2);
@@ -819,13 +837,19 @@ public class Projector implements PlugIn {
 				else
 					putByteRow(stack2, y, z, width2, line);
 			}
-			if (!batchMode) IJ.showProgress(y, height2-1);
+			if (showProgress)
+				IJ.showProgress(y, height2-1);
 		}
 		//imp2.show();
 		//imp2.setCalibration(imp.getCalibration());
 		ImageProcessor ip2 = imp2.getProcessor();
 		ip2.setColorModel(cm);
 		return imp2;
+	}
+	
+	private void showProgress(double percent) {
+		if (showMicroProgress && !done)
+			IJ.showProgress(progressBase+percent*progressScale);
 	}
 
 	private void getByteRow(ImageStack stack, int x, int y, int z, int width1, int width2, int[] line) {

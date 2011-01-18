@@ -41,7 +41,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public Recorder() {
 		super("Recorder");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		WindowManager.addWindow(this);
@@ -379,6 +379,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 				else if (name.equals("Results... ")&&commandOptions.indexOf(".txt")==-1)
 					textArea.append((scriptMode?"IJ.":"")+"open(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Results...")) // Save As>Results
+					;
+				else if (name.equals("Run...")) // Plugins>Macros>Run
 					;
 				else {
 					String prefix = "run(";
