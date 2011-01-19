@@ -983,7 +983,6 @@ public class IJ {
 			img.setDisplayRange(min, max);
 		else
 			img.setDisplayRange(min, max, channels);
-		img.updateAndDraw();
 	}
 
 	/** Resets the minimum and maximum displayed pixel values
@@ -991,7 +990,6 @@ public class IJ {
 	public static void resetMinAndMax() {
 		ImagePlus img = getImage();
 		img.resetDisplayRange();
-		img.updateAndDraw();
 	}
 
 	/** Sets the lower and upper threshold levels and displays the image 

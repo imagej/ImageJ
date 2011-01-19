@@ -380,10 +380,8 @@ public class ImagePlus implements ImageObserver, Measurements {
 					}
 				}
 			}
-			if (imageType==GRAY16 && default16bitDisplayRange!=0) {
+			if (imageType==GRAY16 && default16bitDisplayRange!=0)
 				resetDisplayRange();
-				updateAndDraw();
-			}
 			notifyListeners(OPENED);
 		}
 	}
@@ -2008,8 +2006,10 @@ public class ImagePlus implements ImageObserver, Measurements {
 	/** Sets the display range of the current channel. With non-composite
 	    images it is identical to ip.setMinAndMax(min, max). */
 	public void setDisplayRange(double min, double max) {
-		if (ip!=null)
+		if (ip!=null) {
 			ip.setMinAndMax(min, max);
+			updateAndDraw();
+		}
 	}
 
 	public double getDisplayRangeMin() {
@@ -2029,6 +2029,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			((ColorProcessor)ip).setMinAndMax(min, max, channels);
 		else
 			ip.setMinAndMax(min, max);
+		updateAndDraw();
 	}
 
 	public void resetDisplayRange() {
@@ -2036,6 +2037,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			ip.setMinAndMax(0, Math.pow(2,default16bitDisplayRange)-1);
 		} else
 			ip.resetMinAndMax();
+		updateAndDraw();
 	}
 	
     /** Set the default 16-bit display range, where 'bitDepth' must be 0 (auto-scaling), 

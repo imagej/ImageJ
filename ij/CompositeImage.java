@@ -569,6 +569,7 @@ public class CompositeImage extends ImagePlus {
 		int c = getChannelIndex();
 		lut[c].min = min;
 		lut[c].max = max;
+		updateAndDraw();
 	}
 
 	public double getDisplayRangeMin() {
@@ -584,6 +585,7 @@ public class CompositeImage extends ImagePlus {
 		int c = getChannelIndex();
 		lut[c].min = ip.getMin();
 		lut[c].max = ip.getMax();
+		updateAndDraw();
 	}
 	
 	public boolean hasCustomLuts() {
