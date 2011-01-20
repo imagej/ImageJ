@@ -983,7 +983,7 @@ public class IJ {
 		setMinAndMax(getImage(), min, max, channels);
 	}
 
-	public static void setMinAndMax(ImagePlus img, double min, double max, int channels) {
+	private static void setMinAndMax(ImagePlus img, double min, double max, int channels) {
 		Calibration cal = img.getCalibration();
 		min = cal.getRawValue(min); 
 		max = cal.getRawValue(max);

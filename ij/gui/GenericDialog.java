@@ -744,7 +744,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				// Is the value a macro variable?
 				if (theText.startsWith("&")) theText = theText.substring(1);
 				Interpreter interp = Interpreter.getInstance();
-				value = interp!=null?interp.getVariable(theText):Double.NaN;
+				value = interp!=null?interp.getVariable2(theText):Double.NaN;
 				if (Double.isNaN(value)) {
 					invalidNumber = true;
 					errorMessage = "\""+theText+"\" is an invalid number";
