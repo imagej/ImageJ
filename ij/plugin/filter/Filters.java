@@ -102,6 +102,7 @@ public class Filters implements PlugInFilter {
 		}
 		imp.setStack(null, stack);
 		imp.setDisplayRange(0, range);
+		imp.updateAndDraw();
 	}
 	
 	/** Returns the default standard deviation used by Process/Noise/Add Specified Noise. */

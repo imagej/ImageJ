@@ -5,36 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.44n 17 January 2011</u>
+<li> <u>1.44o 19 January 2011</u>
 <ul>
-<li> <i>Image&gt;Color&gt;Merge Channels</i> preserves LUTs and
-display ranges when merging images and stacks to create composite images.
-<li> Thanks to Michael Schmid, the current image is now only auto-thresholded
-when the Threshold window is activated via the menu command or by pressing 'T',
-or the user clicks on "Auto".
-<li> Thanks to Duncan Mak, the "Loop back and forth" option in the
-<i>Image&gt;Stacks&gt;Tools&gt;Animation Options</i> dialog box
-is now persistent.
-<li> Added the setOption("loop", boolean) macro function.
-<li> Fixed a bug that sometimes caused a DICOM sequence opened as a virtual stack
-to not be sorted correctly.
-<li> Fixed a bug that caused <i>Plugins&gt;Macros&gt;Run</i> to record
-incorrect code.
-<li> Thanks to Michael Schmid, fixed bugs that caused commands that bring windows 
-to the front, like selecting from the Window menus and <i>Window&gt;Show All</i>, 
-do not de-iconify windows on Windows and Linux.
-<li> Fixed a bug that sometimes caused the More>>Fill command in the 
-ROI Manager to fail with composite ROIs.
-<li> Fixed a bug that could cause an out of memory error when opening a DICOM
-sequence from a folder containing a .xml file.
-<li> Thans to Barry DeZonia, fixed a bug that caused the Paste to not
-work as expected in "Transparent-white" mode.
-<li> Thanks to Nico Stuurman, fixed a bug that caused channel and slice position changes
-in animating hyperstacks to be ignored.
-<li> Fixed a bug that caused an exception when an empty folder was dragged and dropped
-on the "ImageJ" window.
-<li> Fixed a bug that caused the getSelectionCoordinates() macro function to not
-work as expected with wider than one pixel straight line selections.
+<li> Fixed bugs that caused incorrect recording of B&C window commands.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

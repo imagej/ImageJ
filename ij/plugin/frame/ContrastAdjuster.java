@@ -265,7 +265,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			setup(imp);
 			updatePlot();
 			updateLabels(imp);
-			//imp.updateAndDraw();
+			imp.updateAndDraw();
 		}
 	}
 	
@@ -924,12 +924,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		if ((int)min==min && (int)max==max) {
 			int imin=(int)min, imax = (int)max;
 			if (Recorder.scriptMode())
-				Recorder.recordCall("imp.setDisplayRange("+imin+", "+imax+");");
+				Recorder.recordCall("IJ.setMinAndMax(imp, "+imin+", "+imax+");");
 			else
 				Recorder.record("setMinAndMax", imin, imax);
 		} else {
 			if (Recorder.scriptMode())
-				Recorder.recordCall("imp.setDisplayRange("+min+", "+max+");");
+				Recorder.recordCall("IJ.setMinAndMax(imp, "+min+", "+max+");");
 			else
 				Recorder.record("setMinAndMax", min, max);
 		}
@@ -983,7 +983,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				reset(imp, ip);
 				if (Recorder.record) {
 						if (Recorder.scriptMode())
-							Recorder.recordCall("imp.resetDisplayRange();");
+							Recorder.recordCall("IJ.resetMinAndMax(imp);");
 						else
 							Recorder.record("resetMinAndMax");
 				}
@@ -1000,6 +1000,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		updateLabels(imp);
 		if ((IJ.shiftKeyDown()||(balance&&channels==7)) && imp.isComposite())
 			((CompositeImage)imp).updateAllChannelsAndDraw();
+		else
+			imp.updateChannelAndDraw();
 		if (RGBImage)
 			imp.unlock();
 	}
