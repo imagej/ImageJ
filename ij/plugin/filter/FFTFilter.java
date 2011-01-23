@@ -50,7 +50,7 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 		if (!showBandpassDialog(imp))
 			return DONE;
 		else
-			return processStack?DOES_ALL+DOES_STACKS:DOES_ALL;
+			return processStack?DOES_ALL+DOES_STACKS+PARALLELIZE_STACKS:DOES_ALL;
 	}
 
 	public void run(ImageProcessor ip) {

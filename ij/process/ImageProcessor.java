@@ -1732,6 +1732,11 @@ public abstract class ImageProcessor extends Object {
 	/** Adds 'value' to each pixel in the image or ROI. */
 	public void add(double value) {process(ADD, value);}
 	
+	/** Subtracts 'value' from each pixel in the image or ROI. */
+	public void subtract(double value) {
+		add(-value);
+	}
+	
 	/** Multiplies each pixel in the image or ROI by 'value'. */
 	public void multiply(double value) {process(MULT, value);}
 	

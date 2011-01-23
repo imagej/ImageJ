@@ -47,7 +47,7 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		}
 
 	 	if (arg.equals("sub")) {
-			ip.add(-addValue);
+			ip.subtract(addValue);
 			return;
 		}
 

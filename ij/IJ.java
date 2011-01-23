@@ -397,9 +397,13 @@ public class IJ {
 			}
 			String s2 = s.substring(cindex+1, s.length());
 			logPanel.setLine(line, s2);
-		} else if (s.equals("\\Clear"))
+		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
-		else
+		} else if (s.equals("\\Close")) {
+			Frame f = WindowManager.getFrame("Log");
+			if (f!=null && (f instanceof TextWindow))
+				((TextWindow)f).close();
+		} else
 			logPanel.append(s);
 	}
 	

@@ -5,8 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.44o 20 January 2011</u>
+<li> <u>1.44o 23 January 2011</u>
 <ul>
+<li> <i>Process&gt;FFT&gt;Bandpass Filter</i> uses multiple threads when processing stacks.
+<li> Plugins and scripts can now use IJ.log("\\Close") to close the Log window.
+<li> Added a constructor to the FileInfoVirtualStack class that
+allows opening of TIFF stack subsets
+(<a href="http://imagej.nih.gov/ij/macros/js/OpenSubstack.js">example</a>).
 <li> Fixed bugs that caused incorrect recording of B&C window commands.
 <li> Fixed a bug that caused incorrect passing of variables using the '&' operator in run()
 calls within macro functions.
