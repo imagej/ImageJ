@@ -12,10 +12,14 @@ public class RGBStackMerge implements PlugIn {
 	private ImagePlus imp;
 	private byte[] blank;
  
-	/** Merges one, two or three 8-bit or RGB stacks into a single RGB stack. */
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		mergeStacks();
+	}
+	
+	public static ImagePlus mergeChannels(ImagePlus[] images, boolean keep) {
+		RGBStackMerge rgbsm = new RGBStackMerge();
+		return rgbsm.mergeHyperstacks(images, keep);
 	}
 
 	/** Combines three grayscale stacks into one RGB stack. */
@@ -249,6 +253,14 @@ public class RGBStackMerge implements PlugIn {
 		return imp2;
 	}
 
+
+	/** Deprecated; replaced by mergeChannels(). */
+	public ImagePlus createComposite(int w, int h, int d, ImageStack[] stacks, boolean keep) {
+		ImagePlus[] images = new ImagePlus[stacks.length];
+		for (int i=0; i<stacks.length; i++)
+			images[i] = new ImagePlus(""+i, stacks[i]);
+		return mergeHyperstacks(images, keep);
+	}
 
 	public ImageStack mergeStacks(int w, int h, int d, ImageStack red, ImageStack green, ImageStack blue, boolean keep) {
 		ImageStack rgb = new ImageStack(w, h);

@@ -2059,22 +2059,26 @@ public class Functions implements MacroConstants, Measurements {
 		if (isStringArg()) {
 			String title = getString();
 			interp.getRightParen();
-			boolean open = WindowManager.getFrame(title)!=null;
-			if (open)
-				return 1.0;
-			else if (Interpreter.isBatchMode() && Interpreter.imageTable!=null) {
-				for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
-					ImagePlus imp = (ImagePlus)en.nextElement();
-					if (imp!=null && imp.getTitle().equals(title))
-						return 1.0;
-				}
-			}
-			return 0.0;
+			return isOpen(title)?1.0:0.0;
 		} else {
 			int id = (int)interp.getExpression();
 			interp.getRightParen();
 			return WindowManager.getImage(id)==null?0.0:1.0;
 		}
+	}
+	
+	boolean isOpen(String title) {
+		boolean open = WindowManager.getFrame(title)!=null;
+		if (open)
+			return true;
+		else if (Interpreter.isBatchMode() && Interpreter.imageTable!=null) {
+			for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
+				ImagePlus imp = (ImagePlus)en.nextElement();
+				if (imp!=null && imp.getTitle().equals(title))
+					return true;
+			}
+		}
+		return false;
 	}
 
 	boolean isStringArg() {
@@ -2351,12 +2355,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void selectImage() {
-        interp.getLeftParen();
+		if (WindowManager.getImageCount()==0)
+			interp.error("No images open");
+		interp.getLeftParen();
 		if (isStringArg()) {
-			selectImage(getString());
+			String title = getString();
+			if (!isOpen(title))
+				interp.error("\""+title+"\" not found");
+			selectImage(title);
 			interp.getRightParen();
 		} else {
 			int id = (int)interp.getExpression();
+			if (WindowManager.getImage(id)==null)
+				interp.error("Image "+id+" not found");
 			IJ.selectWindow(id);
 			interp.getRightParen();
 		}
