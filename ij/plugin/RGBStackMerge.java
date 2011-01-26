@@ -17,9 +17,9 @@ public class RGBStackMerge implements PlugIn {
 		mergeStacks();
 	}
 	
-	public static ImagePlus mergeChannels(ImagePlus[] images, boolean keep) {
+	public static ImagePlus mergeChannels(ImagePlus[] images, boolean keepSourceImages) {
 		RGBStackMerge rgbsm = new RGBStackMerge();
-		return rgbsm.mergeHyperstacks(images, keep);
+		return rgbsm.mergeHyperstacks(images, keepSourceImages);
 	}
 
 	/** Combines three grayscale stacks into one RGB stack. */

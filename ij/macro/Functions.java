@@ -2355,8 +2355,6 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void selectImage() {
-		if (WindowManager.getImageCount()==0)
-			interp.error("No images open");
 		interp.getLeftParen();
 		if (isStringArg()) {
 			String title = getString();
