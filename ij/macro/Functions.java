@@ -3263,23 +3263,7 @@ public class Functions implements MacroConstants, Measurements {
 			name = name.substring(0, dotIndex);
 		return name;
 	}
-	
-	/*
-	boolean isValid(File f) {
-		String path = f.getPath();
-		if (path.equals("0") || path.equals("NaN") )
-				interp.error("Invalid path");
-		path = f.getAbsolutePath();
-		if (!(path.indexOf("ImageJ")!=-1||path.indexOf("temp")!=-1
-		||path.startsWith(System.getProperty("java.io.tmpdir"))
-		||path.startsWith(System.getProperty("user.home")))) {
-			interp.error("File must be in ImageJ, home or temp directory");
-			return false;
-		} else
-			return true;
-	}
-	*/
-	
+		
 	boolean checkPath(File f) {
 		String path = f.getPath();
 		if (path.equals("0") || path.equals("NaN")) {
