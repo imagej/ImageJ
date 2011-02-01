@@ -1789,9 +1789,19 @@ public class Interpreter implements MacroConstants {
 		return Double.NaN;
 	}
 
+	public double getVariable2(String name) {
+		int index;
+		for (int i=topOfStack; i>=0; i--) {
+			index = stack[i].symTabIndex;
+			if (pgm.table[index].str.equals(name))
+				return stack[i].getValue();
+		}
+		return Double.NaN;
+	}
+
 	public String getStringVariable(String name) {
 		int index;
-		for (int i=0; i<=topOfStack; i++) {
+		for (int i=topOfStack; i>=0; i--) {
 			index = stack[i].symTabIndex;
 			if (pgm.table[index].str.equals(name))
 				return stack[i].getString();
@@ -1802,7 +1812,7 @@ public class Interpreter implements MacroConstants {
 	public String getVariableAsString(String name) {
 		String s = getStringVariable(name);
 		if (s==null) {
-			double value = getVariable(name);
+			double value = getVariable2(name);
 			if (!Double.isNaN(value)) s=""+value;
 		}
 		return s;

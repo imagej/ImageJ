@@ -397,9 +397,13 @@ public class IJ {
 			}
 			String s2 = s.substring(cindex+1, s.length());
 			logPanel.setLine(line, s2);
-		} else if (s.equals("\\Clear"))
+		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
-		else
+		} else if (s.equals("\\Close")) {
+			Frame f = WindowManager.getFrame("Log");
+			if (f!=null && (f instanceof TextWindow))
+				((TextWindow)f).close();
+		} else
 			logPanel.append(s);
 	}
 	
@@ -967,15 +971,23 @@ public class IJ {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 
-	/** Sets the minimum and maximum displayed pixel values. */
+	/** Sets the display range (minimum and maximum displayed pixel values) of the current image. */
 	public static void setMinAndMax(double min, double max) {
-		setMinAndMax(min, max, 7);
+		setMinAndMax(getImage(), min, max, 7);
+	}
+
+	/** Sets the display range (minimum and maximum displayed pixel values) of the specified image. */
+	public static void setMinAndMax(ImagePlus img, double min, double max) {
+		setMinAndMax(img, min, max, 7);
 	}
 
 	/** Sets the minimum and maximum displayed pixel values on the specified RGB
 	channels, where 4=red, 2=green and 1=blue. */
 	public static void setMinAndMax(double min, double max, int channels) {
-		ImagePlus img = getImage();
+		setMinAndMax(getImage(), min, max, channels);
+	}
+
+	private static void setMinAndMax(ImagePlus img, double min, double max, int channels) {
 		Calibration cal = img.getCalibration();
 		min = cal.getRawValue(min); 
 		max = cal.getRawValue(max);
@@ -986,10 +998,15 @@ public class IJ {
 		img.updateAndDraw();
 	}
 
-	/** Resets the minimum and maximum displayed pixel values
-		to be the same as the min and max pixel values. */
+	/** Resets the minimum and maximum displayed pixel values of the
+		current image to be the same as the min and max pixel values. */
 	public static void resetMinAndMax() {
-		ImagePlus img = getImage();
+		resetMinAndMax(getImage());
+	}
+
+	/** Resets the minimum and maximum displayed pixel values of the
+		specified image to be the same as the min and max pixel values. */
+	public static void resetMinAndMax(ImagePlus img) {
 		img.resetDisplayRange();
 		img.updateAndDraw();
 	}

@@ -20,7 +20,15 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public FileInfoVirtualStack(FileInfo fi) {
 		info = new FileInfo[1];
 		info[0] = fi;
-		open();
+		open(true);
+	}
+
+	/* Constructs a FileInfoVirtualStack from a FileInfo 
+		object and displays it if 'show' is true. */
+	public FileInfoVirtualStack(FileInfo fi, boolean show) {
+		info = new FileInfo[1];
+		info[0] = fi;
+		open(show);
 	}
 
 	public void run(String arg) {
@@ -48,10 +56,10 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		if (IJ.debugMode)
 			IJ.log(info[0].debugInfo);
-		open();
+		open(true);
 	}
 	
-	void open() {
+	void open(boolean show) {
 		FileInfo fi = info[0];
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
@@ -90,7 +98,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 				imp2 = new CompositeImage(imp2, mode);
 			}
 		}
-		imp2.show();
+		if (show) imp2.show();
 	}
 
 	int getInt(Properties props, String key) {

@@ -144,12 +144,11 @@ public class ImageReader {
 	}
 	
 	short[] readCompressed16bitImage(InputStream in) throws IOException {
-		in = new DataInputStream(in);
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
+			//IJ.log("seek: "+fi.stripOffsets[k]+" "+fi.stripLengths[k]+"  "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
@@ -254,7 +253,6 @@ public class ImageReader {
 	}
 	
 	float[] readCompressed32bitImage(InputStream in) throws IOException {
-		in = new DataInputStream(in);
 		float[] pixels = new float[nPixels];
 		int base = 0;
 		float last = 0;
@@ -858,7 +856,7 @@ public class ImageReader {
  * @author Curtis Rueden (ctrueden at wisc.edu)
  */
 	public byte[] lzwUncompress(byte[] input) {
-		if (input == null || input.length == 0)
+		if (input==null || input.length==0)
 			return input;
 		byte[][] symbolTable = new byte[4096][1];
 		int bitsToRead = 9;
@@ -872,21 +870,21 @@ public class ImageReader {
 		
 		while (true) {
 			code = bb.getBits(bitsToRead);
-			if (code == EOI_CODE || code == -1)
+			if (code==EOI_CODE || code==-1)
 				break;
-			if (code == CLEAR_CODE) {
+			if (code==CLEAR_CODE) {
 				// initialize symbol table
 				for (int i = 0; i < 256; i++)
 					symbolTable[i][0] = (byte)i;
 				nextSymbol = 258;
 				bitsToRead = 9;
 				code = bb.getBits(bitsToRead);
-				if (code == EOI_CODE || code == -1)
+				if (code==EOI_CODE || code==-1)
 					break;
 				out.add(symbolTable[code]);
 				oldCode = code;
 			} else {
-				if (code < nextSymbol) {
+				if (code<nextSymbol) {
 					// code is in table
 					out.add(symbolTable[code]);
 					// add string to table
