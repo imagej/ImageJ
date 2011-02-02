@@ -60,6 +60,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		addKeyListener(textPanel);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
+			textPanel.addKeyListener(ij);
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}
@@ -105,6 +106,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		super("");
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		textPanel = new TextPanel();
+		textPanel.addKeyListener(IJ.getInstance());
 		add("Center", textPanel);
 		if (openFile(path)) {
 			WindowManager.addWindow(this);
