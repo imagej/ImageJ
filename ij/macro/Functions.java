@@ -4105,14 +4105,17 @@ public class Functions implements MacroConstants, Measurements {
 	void waitForUser() {
 		if (waitForUserDialog!=null && waitForUserDialog.isVisible())
 			interp.error("Duplicate call");
-		String title = getFirstString();
-		String text;
-		if (interp.nextToken()==',')
-			text = getLastString();
-		else {
-			text = title;
-			title = "Action Required";
-			interp.getRightParen();
+		String title = "Action Required";
+		String text = "  Click \"OK\" to continue     ";
+		if (interp.nextToken()=='(') {
+			title = getFirstString();
+			if (interp.nextToken()==',')
+				text = getLastString();
+			else {
+				text = title;
+				title = "Action Required";
+				interp.getRightParen();
+			}
 		}
 		waitForUserDialog = new WaitForUserDialog(title, text);
 		waitForUserDialog.show();

@@ -212,7 +212,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_T)));
 				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_T,true)));
 				debugMenu.add(new MenuItem("Run"));
-				debugMenu.add(new MenuItem("Run to Insertion Point"));
+				debugMenu.add(new MenuItem("Run to Insertion Point", new MenuShortcut(KeyEvent.VK_E, true)));
 				debugMenu.add(new MenuItem("Abort"));
 				debugMenu.addActionListener(this);
 				mb.add(debugMenu);
