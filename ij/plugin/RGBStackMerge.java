@@ -198,10 +198,16 @@ public class RGBStackMerge implements PlugIn {
 		}
 		if (channels<2) return null;
 		ImagePlus[] images2 = new ImagePlus[channels];
+		Color[] defaultColors = {Color.red, Color.green, Color.blue, Color.white};
+		Color[] colors = new Color[channels];
 		int j = 0;
 		for (int i=0; i<n; i++) {
-			if (images[i]!=null)
-				images2[j++] = images[i];
+			if (images[i]!=null) {
+				images2[j] = images[i];
+				if (i<defaultColors.length)
+					colors[j] = defaultColors[i];
+				j++;
+			}
 		}
 		images = images2;
 		ImageStack[] stacks = new ImageStack[channels];
@@ -236,12 +242,11 @@ public class RGBStackMerge implements PlugIn {
 		ImagePlus imp2 = new ImagePlus(title, stack2);
 		imp2.setDimensions(channels, slices, frames);
 		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
-		Color[] colors = {Color.red, Color.green, Color.blue};
 		for (int c=0; c<channels; c++) {
 			ImageProcessor ip = images[c].getProcessor();
 			IndexColorModel cm = (IndexColorModel)ip.getColorModel();
 			LUT lut = null;
-			if (c<3 && !ip.isColorLut()) {
+			if (c<colors.length && !ip.isColorLut() && colors[c]!=null) {
 				lut = LUT.createLutFromColor(colors[c]);
 				lut.min = ip.getMin();
 				lut.max = ip.getMax();
