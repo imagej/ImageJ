@@ -198,6 +198,17 @@ public class ShortProcessor extends ImageProcessor {
 		}
 	}
 
+	/** Swaps the pixel and snapshot (undo) arrays. */
+	public void swapBuffers() {
+		if (snapshotPixels==null) return;	
+		short pixel;
+		for (int i=0; i<pixels.length; i++) {
+			pixel = pixels[i];
+			pixels[i] = snapshotPixels[i];
+			snapshotPixels[i] = pixel;
+		}
+	}
+
 	public void setSnapshotPixels(Object pixels) {
 		snapshotPixels = (short[])pixels;
 		snapshotWidth=width;

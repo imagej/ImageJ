@@ -1798,6 +1798,9 @@ public abstract class ImageProcessor extends Object {
 	/** Restores the pixel data from the snapshot (undo) buffer. */
 	public abstract void reset();
 	
+	/** Swaps the pixel and snapshot (undo) buffers. */
+	public abstract void swapBuffers();
+
 	/** Restores pixels from the snapshot buffer that are 
 		within the rectangular roi but not part of the mask. */
 	public abstract void reset(ImageProcessor mask);

@@ -164,6 +164,17 @@ public class ByteProcessor extends ImageProcessor {
         System.arraycopy(snapshotPixels,0,pixels,0,width*height);
 	}
 	
+	/** Swaps the pixel and snapshot (undo) arrays. */
+	public void swapBuffers() {
+		if (snapshotPixels==null) return;	
+		byte pixel;
+		for (int i=0; i<pixels.length; i++) {
+			pixel = pixels[i];
+			pixels[i] = snapshotPixels[i];
+			snapshotPixels[i] = pixel;
+		}
+	}
+
 	/** Restore pixels that are within roi but not part of mask. */
 	public void reset(ImageProcessor mask) {
 		if (mask==null || snapshotPixels==null)

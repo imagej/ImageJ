@@ -89,10 +89,10 @@ public class Undo {
 			case FILTER:
 				ImageProcessor ip = imp.getProcessor();
 				if (ip!=null) {
-					ip.reset();
+					ip.swapBuffers();
 					imp.updateAndDraw();
 				}
-	    		break;
+	    		return; // don't reset
 			case TYPE_CONVERSION:
 			case COMPOUND_FILTER:
 			case COMPOUND_FILTER_DONE:
