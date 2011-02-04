@@ -1,6 +1,7 @@
 package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.Editor;
 import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
@@ -320,20 +321,29 @@ public class WindowManager {
 		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
     }
 
-	/** Closes all windows. Stops and returns false if any image "save changes" dialog is canceled. */
+	/** Closes all windows. Stops and returns false if an image or Editor "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		while (imageList.size()>0) {
 			if (!((ImageWindow)imageList.elementAt(0)).close())
 				return false;
 			IJ.wait(100);
 		}
+		Frame[] nonImages = getNonImageWindows();
+		for (int i=0; i<nonImages.length; i++) {
+			Frame frame = nonImages[i];
+			if (frame!=null && (frame instanceof Editor)) {
+				((Editor)frame).close();
+				if (((Editor)frame).changes())
+					return false;
+				IJ.wait(100);
+			}
+		}
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null && ij.quitting() && IJ.getApplet()==null)
 			return true;
-		Frame[] list = getNonImageWindows();
-		for (int i=0; i<list.length; i++) {
-			Frame frame = list[i];
-			if (frame instanceof PlugInFrame)
+		for (int i=0; i<nonImages.length; i++) {
+			Frame frame = nonImages[i];
+			if ((frame instanceof PlugInFrame) && !(frame instanceof Editor))
 				((PlugInFrame)frame).close();
 			else if (frame instanceof TextWindow)
 				((TextWindow)frame).close();

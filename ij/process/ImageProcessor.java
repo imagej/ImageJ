@@ -1799,7 +1799,7 @@ public abstract class ImageProcessor extends Object {
 	public abstract void reset();
 	
 	/** Swaps the pixel and snapshot (undo) buffers. */
-	public abstract void swapBuffers();
+	public abstract void swapPixelArrays();
 
 	/** Restores pixels from the snapshot buffer that are 
 		within the rectangular roi but not part of the mask. */

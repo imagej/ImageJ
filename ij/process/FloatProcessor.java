@@ -228,7 +228,7 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 	/** Swaps the pixel and snapshot (undo) arrays. */
-	public void swapBuffers() {
+	public void swapPixelArrays() {
 		if (snapshotPixels==null) return;	
 		float pixel;
 		for (int i=0; i<pixels.length; i++) {
