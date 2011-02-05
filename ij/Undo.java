@@ -45,13 +45,8 @@ public class Undo {
 		if (what==TYPE_CONVERSION) {
 			ipCopy = imp.getProcessor();
 			calCopy = (Calibration)imp.getCalibration().clone();
-		} else if (what==TRANSFORM) {			
+		} else if (what==TRANSFORM) {	
 			impCopy = new ImagePlus(imp.getTitle(), imp.getProcessor().duplicate());
-			Object fht  = imp.getProperty("FHT");
-			if (fht!=null) {
-				fht = new FHT((ImageProcessor)fht); // duplicate
-				impCopy.setProperty("FHT", fht);
-			}
 		} else if (what==COMPOUND_FILTER) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip!=null)
@@ -99,19 +94,24 @@ public class Undo {
 				if (ipCopy!=null) {
 					if (whatToUndo==TYPE_CONVERSION && calCopy!=null)
 						imp.setCalibration(calCopy);
-					imp.setProcessor(null, ipCopy);
+					if (swapImages(new ImagePlus("",ipCopy), imp)) {
+						imp.updateAndDraw();
+						return;
+					} else {
+						imp.setProcessor(null, ipCopy);
+						break;
+					}
 				}
-	    		break;
 			case TRANSFORM:
 				if (impCopy!=null) {
-					imp.setProcessor(impCopy.getTitle(), impCopy.getProcessor());
-					Object fht  = impCopy.getProperty("FHT");
-					if (fht!=null)
-						imp.setProperty("FHT", fht);
-					else if (imp.getProperty("FHT")!=null)
-							imp.getProperties().remove("FHT");
+					if (swapImages(impCopy, imp)) {
+						imp.updateAndDraw();
+						return;
+					} else {
+						imp.setProcessor(impCopy.getTitle(), impCopy.getProcessor());
+						break;
+					}
 				}
-	    		break;
 			case PASTE:
 				Roi roi = imp.getRoi();
 				if (roi!=null)
@@ -134,4 +134,23 @@ public class Undo {
     	reset();
 	}
 	
+	static boolean swapImages(ImagePlus imp1, ImagePlus imp2) {
+		if (imp1.getWidth()!=imp2.getWidth() || imp1.getHeight()!=imp2.getHeight()
+		|| imp1.getBitDepth()!=imp2.getBitDepth())
+			return false;
+		ImageProcessor ip1 = imp1.getProcessor();
+		ImageProcessor ip2 = imp2.getProcessor();
+		double min1 = ip1.getMin();
+		double max1 = ip1.getMax();
+		double min2 = ip2.getMin();
+		double max2 = ip2.getMax();
+		ip2.setSnapshotPixels(ip1.getPixels());
+		ip2.swapPixelArrays();
+		ip1.setPixels(ip2.getSnapshotPixels());
+		ip2.setSnapshotPixels(null);
+		ip1.setMinAndMax(min2, max2);
+		ip2.setMinAndMax(min1, max1);
+		return true;
+	}
+
 }

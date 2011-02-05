@@ -333,7 +333,7 @@ public class WindowManager {
 			Frame frame = nonImages[i];
 			if (frame!=null && (frame instanceof Editor)) {
 				((Editor)frame).close();
-				if (((Editor)frame).changes())
+				if (((Editor)frame).fileChanged())
 					return false;
 				IJ.wait(100);
 			}

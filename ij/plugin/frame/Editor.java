@@ -1004,7 +1004,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.setText(text);
 	}
 	
-	public boolean changes() {
+	public boolean fileChanged() {
 		return changes;
 	}
 	

@@ -1911,11 +1911,11 @@ public class ImagePlus implements ImageObserver, Measurements {
 		Roi roi = getRoi();
 		if (roi!=null)
 			r = roi.getBounds();
-		if (w==width && h==height && (r==null||w!=r.width||h!=r.height)) {
-			setRoi(0, 0, width, height);
-			roi = getRoi();
-			r = roi.getBounds();
-		}
+		//if (w==width && h==height && (r==null||w!=r.width||h!=r.height)) {
+		//	setRoi(0, 0, width, height);
+		//	roi = getRoi();
+		//	r = roi.getBounds();
+		//}
 		if (r==null || (r!=null && (w!=r.width || h!=r.height))) {
 			// create a new roi centered on visible part of image
 			ImageCanvas ic = null;
