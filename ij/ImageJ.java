@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.45a";
-	public static final String BUILD = "7"; 
+	public static final String BUILD = "8"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -552,6 +552,7 @@ public class ImageJ extends Frame implements ActionListener,
 			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.5 or later.");
 			System.exit(0);
 		}
+		//IJ.debugMode = true;
 		boolean noGUI = false;
 		int mode = STANDALONE;
 		arguments = args;
@@ -580,8 +581,9 @@ public class ImageJ extends Frame implements ActionListener,
 		}
   		// If ImageJ is already running then isRunning()
   		// will pass the arguments to it using sockets.
-		if (nArgs>0 && !noGUI && (mode==STANDALONE) && isRunning(args))
-  				return;
+  		if (IJ.debugMode) IJ.log("Check: "+Prefs.runSocketListener+" "+!noGUI+" "+(mode==STANDALONE));
+		if (!noGUI && (mode==STANDALONE) && isRunning(args))
+  			return;
  		ImageJ ij = IJ.getInstance();    	
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
 			ij = new ImageJ(null, mode);
@@ -623,15 +625,17 @@ public class ImageJ extends Frame implements ActionListener,
 	
 	// Is there another instance of ImageJ? If so, send it the arguments and quit.
 	static boolean isRunning(String args[]) {
+		if (IJ.debugMode) IJ.log("isRunning: "+args.length);
 		int macros = 0;
 		int nArgs = args.length;
-		if (nArgs==2 && args[0].startsWith("-ijpath"))
-			return false;
+		//if (nArgs==2 && args[0].startsWith("-ijpath"))
+		//	return false;
 		int nCommands = 0;
 		try {
 			sendArgument("user.dir "+System.getProperty("user.dir"));
 			for (int i=0; i<nArgs; i++) {
 				String arg = args[i];
+				if (IJ.debugMode) IJ.log("isRunning: "+i+" "+arg);
 				if (arg==null) continue;
 				String cmd = null;
 				if (macros==0 && arg.endsWith(".ijm")) {
@@ -657,6 +661,7 @@ public class ImageJ extends Frame implements ActionListener,
 				}
 			} // for
 		} catch (IOException e) {
+			if (IJ.debugMode) IJ.log(""+e);
 			return false;
 		}
 		return true;
