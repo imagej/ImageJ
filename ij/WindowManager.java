@@ -35,7 +35,8 @@ public class WindowManager {
 			// free up pixel buffers used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
 			if (imp!=null ) {
-				imp.trimProcessor();
+				if (!Prefs.keepUndoBuffers)
+					imp.trimProcessor();
 				imp.saveRoi();
 			}
 		}

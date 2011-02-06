@@ -77,7 +77,12 @@ public class Undo {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")  "+(imageID!=imp.getID()));
 		if (imp==null || imageID!=imp.getID()) {
-			reset();
+			if (imp!=null) { // does image still have an undo buffer?
+				ImageProcessor ip2 = imp.getProcessor();
+				ip2.swapPixelArrays();
+				imp.updateAndDraw();
+			} else
+				reset();
 			return;
 		}
 		switch (whatToUndo) {

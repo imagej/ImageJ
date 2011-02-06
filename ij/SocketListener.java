@@ -17,7 +17,6 @@ import java.net.*;
 public class SocketListener implements Runnable {
 
 	public SocketListener() {
-		if (IJ.debugMode) IJ.log("SocketListener: starting");
 		Thread thread = new Thread(this, "SocketListener");
 		thread.start(); 
 	}
@@ -60,7 +59,6 @@ public class SocketListener implements Runnable {
 						OpenDialog.setDefaultDirectory(cmd.substring(9));
 				} catch (Throwable e) {}
 				clientSocket.close();
-				if (IJ. debugMode) IJ.log("SocketListener: connection closed");
 			}
  		} catch (IOException e) {}
 	}
