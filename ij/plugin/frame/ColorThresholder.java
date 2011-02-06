@@ -874,6 +874,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		int id = imp.getID();
 		int slice = imp.getCurrentSlice();
 		if ((id!=previousImageID)||(slice!=previousSlice)||(flag) ) {
+			Undo.reset();
 			flag = false; //if true, flags a change of colour model
 			numSlices = imp.getStackSize();
 			stack = imp.getStack();

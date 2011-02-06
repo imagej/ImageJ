@@ -27,13 +27,14 @@ public class SocketListener implements Runnable {
 		Socket clientSocket;
 		try {
 			serverSocket = new ServerSocket(ImageJ.getPort());
+			if (IJ.debugMode) IJ.log("SocketListener: new ServerSocket("+ImageJ.getPort()+")");
 			while (true) {
 				clientSocket = serverSocket.accept();
 				try {
-					if (IJ.debugMode) IJ.log("SocketServer: waiting on port "+ImageJ.getPort());
+					if (IJ.debugMode) IJ.log("SocketListener: waiting on port "+ImageJ.getPort());
 					is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 					String cmd = is.readLine();
-					if (IJ. debugMode) IJ.log("SocketServer: command: \""+ cmd+"\"");
+					if (IJ. debugMode) IJ.log("SocketListener: command: \""+ cmd+"\"");
 					if (cmd.startsWith("open "))
 						(new Opener()).openAndAddToRecent(cmd.substring(5));
 					else if (cmd.startsWith("macro ")) {
@@ -58,7 +59,6 @@ public class SocketListener implements Runnable {
 						OpenDialog.setDefaultDirectory(cmd.substring(9));
 				} catch (Throwable e) {}
 				clientSocket.close();
-				if (IJ. debugMode) IJ.log("SocketServer: connection closed");
 			}
  		} catch (IOException e) {}
 	}

@@ -352,8 +352,6 @@ public class IJ {
 		TextWindow resultsWindow = new TextWindow("Results", "", 400, 250);
 		textPanel = resultsWindow.getTextPanel();
 		textPanel.setResultsTable(Analyzer.getResultsTable());
-		if (ij!=null)
-			textPanel.addKeyListener(ij);
 	}
 
 	public static synchronized void log(String s) {

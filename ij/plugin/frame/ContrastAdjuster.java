@@ -314,6 +314,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	void setupNewImage(ImagePlus imp, ImageProcessor ip)  {
 		//IJ.write("setupNewImage");
+		Undo.reset();
 		previousMin = min;
 		previousMax = max;
 	 	if (RGBImage) {

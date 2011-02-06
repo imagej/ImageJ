@@ -398,7 +398,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			scroll(1);
 		else if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
-		
 	}
 	
 	public void keyReleased (KeyEvent e) {}

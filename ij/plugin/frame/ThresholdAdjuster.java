@@ -293,6 +293,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		int id = imp.getID();
 		if (minMaxChange || id!=previousImageID || type!=previousImageType) {
             //IJ.log(minMaxChange +"  "+ (id!=previousImageID)+"  "+(type!=previousImageType));
+            Undo.reset();
             if (not8Bits && minMaxChange && !useExistingTheshold) {
                 ip.resetMinAndMax();
                 imp.updateAndDraw();
