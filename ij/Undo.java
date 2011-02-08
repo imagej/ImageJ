@@ -92,7 +92,7 @@ public class Undo {
 					if (!IJ.macroRunning()) {
 						ip.swapPixelArrays();
 						imp.updateAndDraw();
-	    				return; // don't reset
+						return; // don't reset
 					} else {
 						ip.reset();
 						imp.updateAndDraw();

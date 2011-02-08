@@ -513,6 +513,8 @@ public class CompositeImage extends ImagePlus {
 			for (int i=0; i<MAX_CHANNELS; i++)
 				active[i] = active2[i];
 		}
+		if (ci.hasCustomLuts())
+			customLuts = true;
 	}
 
 	int getChannelIndex() {
