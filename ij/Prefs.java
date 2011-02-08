@@ -375,7 +375,8 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		int options = getInt(OPTIONS, ANTIALIASING);
+		int defaultOptions = ANTIALIASING+(IJ.isWindows()?RUN_SOCKET_LISTENER:0);
+		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;
 		antialiasedText = false;

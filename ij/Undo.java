@@ -77,7 +77,7 @@ public class Undo {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		//IJ.log(imp.getTitle() + ": undo (" + whatToUndo + ")  "+(imageID!=imp.getID()));
 		if (imp==null || imageID!=imp.getID()) {
-			if (imp!=null) { // does image still have an undo buffer?
+			if (imp!=null && !IJ.macroRunning()) { // does image still have an undo buffer?
 				ImageProcessor ip2 = imp.getProcessor();
 				ip2.swapPixelArrays();
 				imp.updateAndDraw();
@@ -89,10 +89,16 @@ public class Undo {
 			case FILTER:
 				ImageProcessor ip = imp.getProcessor();
 				if (ip!=null) {
-					ip.swapPixelArrays();
-					imp.updateAndDraw();
+					if (!IJ.macroRunning()) {
+						ip.swapPixelArrays();
+						imp.updateAndDraw();
+	    				return; // don't reset
+					} else {
+						ip.reset();
+						imp.updateAndDraw();
+					}
 				}
-	    		return; // don't reset
+				break;
 			case TYPE_CONVERSION:
 			case COMPOUND_FILTER:
 			case COMPOUND_FILTER_DONE:
@@ -102,21 +108,19 @@ public class Undo {
 					if (swapImages(new ImagePlus("",ipCopy), imp)) {
 						imp.updateAndDraw();
 						return;
-					} else {
+					} else
 						imp.setProcessor(null, ipCopy);
-						break;
-					}
 				}
+				break;
 			case TRANSFORM:
 				if (impCopy!=null) {
 					if (swapImages(impCopy, imp)) {
 						imp.updateAndDraw();
 						return;
-					} else {
+					} else
 						imp.setProcessor(impCopy.getTitle(), impCopy.getProcessor());
-						break;
-					}
 				}
+				break;
 			case PASTE:
 				Roi roi = imp.getRoi();
 				if (roi!=null)
@@ -141,7 +145,7 @@ public class Undo {
 	
 	static boolean swapImages(ImagePlus imp1, ImagePlus imp2) {
 		if (imp1.getWidth()!=imp2.getWidth() || imp1.getHeight()!=imp2.getHeight()
-		|| imp1.getBitDepth()!=imp2.getBitDepth())
+		|| imp1.getBitDepth()!=imp2.getBitDepth() || IJ.macroRunning())
 			return false;
 		ImageProcessor ip1 = imp1.getProcessor();
 		ImageProcessor ip2 = imp2.getProcessor();
