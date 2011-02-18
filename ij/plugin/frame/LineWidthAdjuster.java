@@ -144,8 +144,8 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	}
 
     /** Overrides close() in PlugInFrame. */
-    public void close() {
-    	super.close();
+	public void close() {
+		super.close();
 		instance = null;
 		done = true;
 		Prefs.saveLocation(LOC_KEY, getLocation());

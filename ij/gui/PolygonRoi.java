@@ -719,15 +719,10 @@ public class PolygonRoi extends Roi {
 	}
 
 	public double getUncalibratedLength() {
-		if (imp==null) return nPoints/2;
-		Calibration gcal = imp.getGlobalCalibration();
-		imp.setGlobalCalibration(null);
-		Calibration cal = imp.getCalibration();
-		double spw=cal.pixelWidth, sph=cal.pixelHeight;
-		cal.pixelWidth=1.0; cal.pixelHeight=1.0;
+		ImagePlus saveImp = imp;
+		imp = null;
 		double length = getLength();
-		cal.pixelWidth=spw; cal.pixelHeight=sph;
-		imp.setGlobalCalibration(gcal);
+		imp = saveImp;
 		return length;
 	}
 	
