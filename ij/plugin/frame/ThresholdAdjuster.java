@@ -648,18 +648,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		imp.updateAndDraw();
 	}
 
-    public void windowClosing(WindowEvent e) {
-		Prefs.saveLocation(LOC_KEY, getLocation());
-		Prefs.set(MODE_KEY, mode);
-		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
-    	close();
-	}
-
     /** Overrides close() in PlugInFrame. */
     public void close() {
     	super.close();
 		instance = null;
 		done = true;
+		Prefs.saveLocation(LOC_KEY, getLocation());
+		Prefs.set(MODE_KEY, mode);
+		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
 		synchronized(this) {
 			notify();
 		}

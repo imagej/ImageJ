@@ -606,10 +606,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		);
     }
     
-    public void windowClosing(WindowEvent e) {
-    	close();
-	}
-
 	public void close() {
 		super.close();
 		record = false;

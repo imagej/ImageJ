@@ -1272,10 +1272,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
     	}
 	}
 
-	public void windowClosing(WindowEvent e) {
-		close();
-	}
-
 	public void close() {
 		super.close();
 		instance = null;

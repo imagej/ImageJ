@@ -76,10 +76,6 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		ImagePlus imp = WindowManager.getCurrentImage();
 	}
 	
-    public void windowClosing(WindowEvent e) {
-    	close();
-	}
-
 	public void close() {
 		super.close();
 		instance = null;

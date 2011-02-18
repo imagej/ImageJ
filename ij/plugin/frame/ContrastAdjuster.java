@@ -1007,16 +1007,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			imp.unlock();
 	}
 
-	public void windowClosing(WindowEvent e) {
-	 	close();
-		Prefs.saveLocation(LOC_KEY, getLocation());
-	}
-
     /** Overrides close() in PlugInFrame. */
     public void close() {
     	super.close();
 		instance = null;
 		done = true;
+		Prefs.saveLocation(LOC_KEY, getLocation());
 		synchronized(this) {
 			notify();
 		}
