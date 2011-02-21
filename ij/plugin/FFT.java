@@ -114,8 +114,7 @@ public class FFT implements  PlugIn, Measurements {
         if (title.startsWith("FFT of "))
             title = title.substring(7, title.length());
         ImagePlus imp2 = new ImagePlus("Inverse FFT of "+title, ip2);
-        if (imp2.getWidth()==imp.getWidth())
-            imp2.setCalibration(imp.getCalibration());
+        imp2.setCalibration(imp.getCalibration());
         imp2.show();
     }
 

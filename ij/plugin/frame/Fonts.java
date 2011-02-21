@@ -107,8 +107,8 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		IJ.showStatus(fontSize+" point "+fontName + " " + styleName);
 	}
 	
-    public void windowClosing(WindowEvent e) {
-	 	close();
+    public void close() {
+	 	super.close();
 		instance = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
 	}

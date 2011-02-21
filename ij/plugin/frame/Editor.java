@@ -698,10 +698,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			instance = this;
 	}
 
-	public void windowClosing(WindowEvent e) {
-		close();
-	}
-
 	/** Overrides close() in PlugInFrame. */
 	public void close() {
 		boolean okayToClose = true;

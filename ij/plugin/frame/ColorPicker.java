@@ -44,13 +44,13 @@ public class ColorPicker extends PlugInFrame {
 		show();
     }
     
-    public void windowClosing(WindowEvent e) {
-	 	close();
+    public void close() {
+	 	super.close();
 		instance = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		IJ.notifyEventListeners(IJEventListener.COLOR_PICKER_CLOSED);
 	}
-	
+
 }
 
 class ColorGenerator extends ColorProcessor {

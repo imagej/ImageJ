@@ -299,7 +299,6 @@ batch02="Convert...",ij.plugin.BatchConverter
 batch03="Macro... ",ij.plugin.BatchProcesser
 batch04="Virtual Stack...",ij.plugin.BatchProcesser("stack")
 
-
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")
 gels02="Select Next Lane[2]",ij.plugin.GelAnalyzer("next")
@@ -354,7 +353,7 @@ utilities02="ImageJ Properties...",ij.plugin.JavaProperties
 utilities03="Threads...",ij.plugin.ThreadLister
 utilities04="Benchmark",ij.plugin.filter.Benchmark
 utilities05="Reset...",ij.plugin.SimpleCommands("reset")
-utilities06="Monitor Memory...",ij.plugin.MemoryMonitor
+utilities06="Monitor Memory...",ij.plugin.frame.MemoryMonitor
 utilities07="Search...",ij.plugin.SimpleCommands("search")
 utilities08="Capture Screen[G]",ij.plugin.ScreenGrabber
 utilities09="Capture Image",ij.plugin.ScreenGrabber("image")

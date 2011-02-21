@@ -125,7 +125,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             gd.addCheckbox("Above lower threshold", useMinThreshold);
         gd.addCheckbox("Light background", lightBackground);
         gd.addPreviewCheckbox(pfr, "Preview point selection");
-        gd.addMessage("                        "); //space for number of maxima
+        gd.addMessage("    "); //space for number of maxima
         messageArea = (Label)gd.getMessage();
         gd.addDialogListener(this);
         checkboxes = gd.getCheckboxes();

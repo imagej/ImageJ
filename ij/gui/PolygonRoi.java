@@ -675,6 +675,7 @@ public class PolygonRoi extends Roi {
 		that can be retrieved using the getFloatPolygon() method. */
 	public void fitSplineForStraightening() {
 		fitSpline((int)getUncalibratedLength()*2);
+		if (splinePoints==0) return;
 		float[] xpoints = new float[splinePoints*2];
 		float[] ypoints = new float[splinePoints*2];
 		xpoints[0] = xSpline[0];
@@ -718,12 +719,10 @@ public class PolygonRoi extends Roi {
 	}
 
 	public double getUncalibratedLength() {
-		if (imp==null) return nPoints/2;
-		Calibration cal = imp.getCalibration();
-		double spw=cal.pixelWidth, sph=cal.pixelHeight;
-		cal.pixelWidth=1.0; cal.pixelHeight=1.0;
+		ImagePlus saveImp = imp;
+		imp = null;
 		double length = getLength();
-		cal.pixelWidth=spw; cal.pixelHeight=sph;
+		imp = saveImp;
 		return length;
 	}
 	

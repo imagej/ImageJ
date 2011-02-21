@@ -471,10 +471,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.insets = getInsets(text.equals("")?0:10, 20, 0, 0);
+		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(theLabel, c);
 		if (font!=null)
 			theLabel.setFont(font);
 		add(theLabel);
+		c.fill = GridBagConstraints.NONE;
 		y++;
     }
     

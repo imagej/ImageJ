@@ -30,14 +30,16 @@ public class SocketListener implements Runnable {
 			if (IJ.debugMode) IJ.log("SocketListener: new ServerSocket("+ImageJ.getPort()+")");
 			while (true) {
 				clientSocket = serverSocket.accept();
+				InetAddress address = clientSocket.getInetAddress();
+				boolean isLocal = address!=null && address.isLoopbackAddress();
+				if (IJ.debugMode)  IJ.log("SocketListener: client="+address+"  "+ isLocal);
 				try {
-					if (IJ.debugMode) IJ.log("SocketListener: waiting on port "+ImageJ.getPort());
 					is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 					String cmd = is.readLine();
-					if (IJ. debugMode) IJ.log("SocketListener: command: \""+ cmd+"\"");
+					if (IJ. debugMode) IJ.log("SocketListener: command=\""+ cmd+"\"");
 					if (cmd.startsWith("open "))
 						(new Opener()).openAndAddToRecent(cmd.substring(5));
-					else if (cmd.startsWith("macro ")) {
+					else if (isLocal && cmd.startsWith("macro ")) {
 						String name = cmd.substring(6);
 						String name2 = name;
 						String arg = null;
@@ -49,9 +51,9 @@ public class SocketListener implements Runnable {
 							}
 						}
 						IJ.runMacroFile(name, arg);
-					} else if (cmd.startsWith("run "))
+					} else if (isLocal && cmd.startsWith("run "))
 						IJ.run(cmd.substring(4));
-					else if (cmd.startsWith("eval ")) {
+					else if (isLocal && cmd.startsWith("eval ")) {
 						String rtn = IJ.runMacro(cmd.substring(5));
 						if (rtn!=null)
 							System.out.print(rtn);

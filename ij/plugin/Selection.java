@@ -226,7 +226,7 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
 		if (!segmentedSelection)
-			p = trimPolygon(p, getUncalibratedLength(p));
+			p = trimPolygon(p, p.getUncalibratedLength());
 		String options = Macro.getOptions();
 		if (options!=null && options.indexOf("straighten")!=-1)
 			p.fitSplineForStraightening();
@@ -238,15 +238,6 @@ public class Selection implements PlugIn, Measurements {
 		LineWidthAdjuster.update();	
 	}
 	
-	double getUncalibratedLength(PolygonRoi roi) {
-		Calibration cal = imp.getCalibration();
-		double spw=cal.pixelWidth, sph=cal.pixelHeight;
-		cal.pixelWidth=1.0; cal.pixelHeight=1.0;
-		double length = roi.getLength();
-		cal.pixelWidth=spw; cal.pixelHeight=sph;
-		return length;
-	}
-
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
 		int[] x = roi.getXCoordinates();
 		int[] y = roi.getYCoordinates();

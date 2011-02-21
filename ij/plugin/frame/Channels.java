@@ -214,8 +214,4 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		location = getLocation();
 	}
 	
-	public void windowClosing(WindowEvent e) {
-		close();
-	}
-
 }

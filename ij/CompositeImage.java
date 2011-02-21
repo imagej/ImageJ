@@ -513,6 +513,8 @@ public class CompositeImage extends ImagePlus {
 			for (int i=0; i<MAX_CHANNELS; i++)
 				active[i] = active2[i];
 		}
+		if (ci.hasCustomLuts())
+			customLuts = true;
 	}
 
 	int getChannelIndex() {
@@ -557,6 +559,7 @@ public class CompositeImage extends ImagePlus {
 			throw new IllegalArgumentException("Channel out of range");
 		lut[channel-1] = (LUT)table.clone();
 		cip = null;
+		customLuts = true;
 	}
 
 	/* Sets the IndexColorModel of the current channel. */

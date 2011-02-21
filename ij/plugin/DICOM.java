@@ -828,6 +828,9 @@ class DicomDecoder {
 	}
 	
  	double s2d(String s) {
+ 		if (s==null) return 0.0;
+ 		if (s.startsWith("\\"))
+ 			s = s.substring(1);
 		Double d;
 		try {d = new Double(s);}
 		catch (NumberFormatException e) {d = null;}
