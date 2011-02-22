@@ -173,7 +173,7 @@ public class TiffDecoder {
 	
 	byte[] getString(int count, long offset) throws IOException {
 		count--; // skip null byte at end of string
-		if (count<=0)
+		if (count<=3)
 			return null;
 		byte[] bytes = new byte[count];
 		long saveLoc = in.getLongFilePointer();

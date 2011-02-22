@@ -5,30 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.45b 18 February 2011</u>
+<li> <u>1.45b 21 February 2011</u>
 <ul>
-<li> Improved Memory Monitor (<i>Plugins&gt;Utilities&gt;Monitor Memory</i>):
-it is larger, it displays the number of open images, it remembers its screen position,
-it is no longer an image window, keyboard shortcuts work when it has focus,
-and clicking on it runs the garbage collector.
-<li> The "Run single instance listener" option in <i>Edit&gt;Options&gt;Misc</i>
-is set by default with new Windows installations.
-<li> <i>Image&gt;Stacks&gt;Add Slice</i> and <i>Delete Slice</i> work
-with composite images.
-<li> Fixed a bug that sometimes caused composite images with custom LUTs
-to not be saved correctly as TIFFs.
-<li> Thanks to Michael Daube, fixed a bug that could cause the FHT.dfht3()
-method to throw an exception.
-<li> Fixed a bug that sometimes caused the DICOM reader to not correctly
-decode the pixel spacing.
-<li> Thanks to Michael Schmid, fixed a bug that sometimes caused dynamically
-updated messages in GenericDialogs to be truncated.
-<li> Thanks to Michael Schmid, fixed a bug that caused <i>Process&gt;FFT&gt;Inverse FFT</i>
-to lose the image calibration if the size of the original image was not a power of two.
-<li> Fixed a bug that made it impossible to open the Color Picker and Fonts windows after they
-had been closed using <i>File&gt;Close</i>.
-<li> Fixed a bug that caused the scale of profile plots created using wide line selections
-on globally calibrated images to be incorrect.
+<li> <i>Process&gt;Filters&gt;Gaussian Blur</i> processes single images faster
+on multi-core computers thanks to multi-threading support added by Stephan Saalfeld.
+<li> Thanks to Bill Mohler, fixed a bug that caused the
+<i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> command
+to not work as expected in batch mode macros.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

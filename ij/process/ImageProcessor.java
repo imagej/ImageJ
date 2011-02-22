@@ -506,8 +506,7 @@ public abstract class ImageProcessor extends Object {
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}
-		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
-		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
+		ImageStatistics stats = ip2.getStatistics();
 		AutoThresholder thresholder = new AutoThresholder();
 		int threshold = thresholder.getThreshold(method, stats.histogram);
 		double lower, upper;
@@ -556,8 +555,7 @@ public abstract class ImageProcessor extends Object {
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}
-		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
-		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
+		ImageStatistics stats = ip2.getStatistics();
 		int[] histogram = stats.histogram;
 		int originalModeCount = histogram[stats.mode];
 		if (method==ISODATA2) {
@@ -2243,8 +2241,10 @@ public abstract class ImageProcessor extends Object {
 		useBicubic = b;
 	}
 	
-	/* Calculates and returns statistics for this image. */
+	/* Calculates and returns statistics (area, mean, std-dev, mode, min, max,
+		centroid, center of mass, 256 bin histogram) for this image. */
 	public ImageStatistics getStatistics() {
+		// 127 = AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+CENTER_OF_MASS
 		return ImageStatistics.getStatistics(this, 127, null);
 	}
 	
