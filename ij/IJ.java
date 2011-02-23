@@ -1434,7 +1434,9 @@ public class IJ {
 	}
 
 	/** Saves the specified image, lookup table or selection to the specified file path. 
-		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
+		If the file path ends in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm",
+		".png", ".lut", ".roi" or ".txt" then the file is saved in the corresponding format,
+		otherwise it is saved in TIFF format. */
 	public static void save(ImagePlus imp, String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1) {
@@ -1444,7 +1446,8 @@ public class IJ {
 			saveAs(imp, path.substring(dotLoc+1), path);
 			if (title!=null) imp2.setTitle(title);
 		} else
-			error("The save() macro function requires a file name extension.\n \n"+path);
+			//error("The save() macro function requires a file name extension.\n \n"+path);
+			saveAs(imp, "tiff", path);
 	}
 
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 

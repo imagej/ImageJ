@@ -2242,7 +2242,7 @@ public abstract class ImageProcessor extends Object {
 	}
 	
 	/* Calculates and returns statistics (area, mean, std-dev, mode, min, max,
-		centroid, center of mass, 256 bin histogram) for this image. */
+		centroid, center of mass, 256 bin histogram) for this image or ROI. */
 	public ImageStatistics getStatistics() {
 		// 127 = AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+CENTER_OF_MASS
 		return ImageStatistics.getStatistics(this, 127, null);
