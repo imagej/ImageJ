@@ -94,11 +94,16 @@ public class Commands implements PlugIn {
 			if (imagesWithChanges>0 && !IJ.macroRunning()) {
 				GenericDialog gd = new GenericDialog("Close All");
 				String msg = null;
-				if (imagesWithChanges==1)
+				String pronoun = null;
+				if (imagesWithChanges==1) {
 					msg = "There is one image";
-				else
+					pronoun = "it";
+				} else {
 					msg = "There are "+imagesWithChanges+" images";
-				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" they will be closed without being saved.");
+					pronoun = "they";
+				}
+				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" "+pronoun
+					+" will be closed without being saved.");
 				gd.showDialog();
 				if (gd.wasCanceled()) return;
 			}

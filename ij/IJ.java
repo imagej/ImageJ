@@ -554,7 +554,8 @@ public class IJ {
 		boolean abortMacro = title!=null;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
-			if (abortMacro && title.equals("Opener")) abortMacro = false;
+			if (abortMacro && (title.equals("Opener")||title.equals("DicomDecoder")))
+				abortMacro = false;
 		} else
 			showMessage(title2, msg);
 		redirectErrorMessages = false;
@@ -1434,9 +1435,8 @@ public class IJ {
 	}
 
 	/** Saves the specified image, lookup table or selection to the specified file path. 
-		If the file path ends in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm",
-		".png", ".lut", ".roi" or ".txt" then the file is saved in the corresponding format,
-		otherwise it is saved in TIFF format. */
+		The file path must end with ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", 
+		".fits", ".pgm", ".png", ".lut", ".roi" or ".txt". */
 	public static void save(ImagePlus imp, String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1) {
@@ -1446,8 +1446,7 @@ public class IJ {
 			saveAs(imp, path.substring(dotLoc+1), path);
 			if (title!=null) imp2.setTitle(title);
 		} else
-			//error("The save() macro function requires a file name extension.\n \n"+path);
-			saveAs(imp, "tiff", path);
+			error("The file path passed to IJ.save() method or save()\nmacro function is missing the required extension.\n \n\""+path+"\"");
 	}
 
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 
@@ -1516,7 +1515,7 @@ public class IJ {
 			path = updateExtension(path, ".txt");
 			format = "XY Coordinates...";
 		} else
-			error("Unrecognized format: "+format);
+			error("Unsupported save() or saveAs() file format: \""+format+"\"\n \n\""+path+"\"");
 		if (path==null)
 			run(format);
 		else

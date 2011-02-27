@@ -255,7 +255,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             
             final Thread thread = new Thread(
                     new Runnable() {
-                        final public void run() {
+                        final public void run() { /*try{*/
                             long lastTime = System.currentTimeMillis();
                             boolean canShowProgress = Thread.currentThread() == lineThreads[0];
                             int pixel0 = (lineFrom+ti)*lineInc;
@@ -279,7 +279,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
                                 }
                                     
                             }
-                        }
+                        } /*catch(Exception ex) {IJ.handleException(ex);} }*/
                     },
                     "GaussianBlur-"+t);
             
@@ -312,23 +312,53 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
      * Input line pixel # <code>unscaled0</code> will correspond to output
      * line pixel # 0. <code>unscaled0</code> may be negative. Out-of-line
      * pixels of the input are replaced by the edge pixels.
+     * @param pixels    input array
+     * @param cache     output array
+     * @param kernel    downscale kernel, runs form -1.5 to +1.5 in downscaled coordinates
+     * @param reduceBy  downscaling factor
+     * @param pixel0    index in pixels array corresponding to start of line or column
+     * @param unscaled0 index in input line corresponding to output line index 0, May be negative.
+     * @param length    length of full input line or column
+     * @param pointInc  spacing of values in input array (1 for lines, image width for columns)
+     * @param newLength length of downscaled data
      */
-    final static private void downscaleLine( final float[] pixels, final float[] cache, final float[] kernel,
+    final static private void downscaleLine(final float[] pixels, final float[] cache, final float[] kernel,
             final int reduceBy, final int pixel0, final int unscaled0, final int length, final int pointInc, final int newLength) {
-        final float first = pixels[pixel0];
-        final float last = pixels[pixel0 + pointInc*(length-1)];
-        int xin = unscaled0 - reduceBy/2;
+        int p = pixel0 + pointInc*(unscaled0-reduceBy*3/2);  //pointer in pixels array
+        final int pLast = pixel0 + pointInc*(length-1);
+        for (int xout=-1; xout<=newLength; xout++) {
+            float sum0 = 0, sum1 = 0, sum2 = 0;
+            for (int x=0; x<reduceBy; x++, p+=pointInc) {
+                float v = pixels[p<pixel0 ? pixel0 : (p>pLast ? pLast : p)];
+                sum0 += v * kernel[x+2*reduceBy];
+                sum1 += v * kernel[x+reduceBy];
+                sum2 += v * kernel[x];
+            }
+            if (xout>0) cache[xout-1] += sum0;
+            if (xout>=0 && xout<newLength) cache[xout] += sum1;
+            if (xout+1<newLength) cache[xout+1] = sum2;
+        }
+    }
+    /** the above code is equivalent to the following one; but the above code is faster
+     *  - above: accesses each pixel in the pixels array only once
+     *  - below: accesses each pixel in the pixels array 3 times, more cache misses */
+    /*final static private void downscaleLine(final float[] pixels, final float[] cache, final float[] kernel,
+            final int reduceBy, final int pixel0, final int unscaled0, final int length, final int pointInc, final int newLength) {
+        final int xin = unscaled0 - reduceBy/2;
         int p = pixel0 + pointInc*xin;
+        final int pLast = pixel0 + pointInc*(length-1);
         for (int xout=0; xout<newLength; xout++) {
             float v = 0;
-            for (int x=0; x<reduceBy; x++, xin++, p+=pointInc) {
-                v += kernel[x] * ((xin-reduceBy < 0) ? first : ((xin-reduceBy >= length) ? last : pixels[p-pointInc*reduceBy]));
-                v += kernel[x+reduceBy] * ((xin < 0) ? first : ((xin >= length) ? last : pixels[p]));
-                v += kernel[x+2*reduceBy] * ((xin+reduceBy < 0) ? first : ((xin+reduceBy >= length) ? last : pixels[p+pointInc*reduceBy]));
+            for (int x=0; x<reduceBy; x++, p+=pointInc) {
+                int pp = p-pointInc*reduceBy;
+                v += kernel[x] * pixels[pp<pixel0 ? pixel0 : (pp>pLast ? pLast : pp)];
+                v += kernel[x+reduceBy] * pixels[p<pixel0 ? pixel0 : (p>pLast ? pLast : p)];
+                pp = p+pointInc*reduceBy;
+                v += kernel[x+2*reduceBy] * pixels[pp<pixel0 ? pixel0 : (pp>pLast ? pLast : pp)];
             }
             cache[xout] = v;
         }
-    }
+    }*/
 
     /* Create a kernel for downscaling. The kernel function preserves
      * norm and 1st moment (i.e., position) and has fixed 2nd moment,
