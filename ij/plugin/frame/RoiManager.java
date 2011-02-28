@@ -233,7 +233,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (source==labelsCheckbox) {
 			if (firstTime)
 				showAllCheckbox.setState(true);
-			showAll(labelsCheckbox.getState()?LABELS:NO_LABELS);
+			boolean editState = labelsCheckbox.getState();
+			boolean showAllState = showAllCheckbox.getState();
+			if (!showAllState && !editState)
+				showAll(SHOW_NONE);
+			else {
+				showAll(editState?LABELS:NO_LABELS);
+				if (editState) showAllCheckbox.setState(true);
+			}
 			firstTime = false;
 			return;
 		}

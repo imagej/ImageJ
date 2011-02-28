@@ -1,14 +1,14 @@
  # IJ_Props.txt - This is the ImageJ properties file. ImageJ uses
 # the information in this file to install plug-ins in menus.
 # ImageJ looks for this file in ij.jar. It can be edited by
-# opening ij.jar with a ZIP utility. With WinZip, you can open 
-# ij.jar and double click on IJ_Props.txt.
+# opening ij.jar with a ZIP utility.
 
 # Note that commands must be unique.
 
-# Version 1.44
+# Version 1.45
 
-# Popup Menu
+# Commands installed in the right-click popup Menu
+# Overridden in StartupMacros
 popup01=Undo
 popup02=-
 popup03=Cut
