@@ -168,7 +168,7 @@ public class MontageMaker implements PlugIn {
 			montage.insert(aSlice, x, y);
 			String label = stack.getShortSliceLabel(slice);
 			if (borderWidth>0) drawBorder(montage, x, y, width, height, borderWidth);
-			if (labels) drawLabel(montage, slice, label, x, y, width, height);
+			if (labels) drawLabel(montage, slice, label, x, y, width, height, borderWidth);
 			x += width;
 			if (x>=montageWidth) {
 				x = 0;
@@ -202,7 +202,7 @@ public class MontageMaker implements PlugIn {
 		montage.lineTo(x, y);
 	}
 	
-	void drawLabel(ImageProcessor montage, int slice, String label, int x, int y, int width, int height) {
+	void drawLabel(ImageProcessor montage, int slice, String label, int x, int y, int width, int height, int borderWidth) {
 		if (label!=null && !label.equals("") && montage.getStringWidth(label)>=width) {
 			do {
 				label = label.substring(0, label.length()-1);
@@ -212,6 +212,7 @@ public class MontageMaker implements PlugIn {
 			label = ""+slice;
 		int swidth = montage.getStringWidth(label);
 		x += width/2 - swidth/2;
+		y -= borderWidth/2;
 		y += height;
 		montage.drawString(label, x, y);
 	}

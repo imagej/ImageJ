@@ -210,6 +210,10 @@ public class FolderOpener implements PlugIn {
 			imp2.setFileInfo(fi); // saves FileInfo of the first image
 			if (allSameCalibration) {
 				// use calibration from first image
+				if (scale!=100.0 && cal.scaled()) {
+					cal.pixelWidth /= scale/100.0;
+					cal.pixelHeight /= scale/100.0;
+				}
 				if (cal.pixelWidth!=1.0 && cal.pixelDepth==1.0)
 					cal.pixelDepth = cal.pixelWidth;
 				if (cal.pixelWidth<=0.0001 && cal.getUnit().equals("cm")) {

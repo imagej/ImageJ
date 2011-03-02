@@ -7,7 +7,7 @@
 
 # Version 1.45
 
-# Commands installed in the right-click popup Menu
+# Commands installed in the right-click popup menu
 # Overridden in StartupMacros
 popup01=Undo
 popup02=-
