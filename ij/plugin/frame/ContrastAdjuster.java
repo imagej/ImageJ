@@ -389,10 +389,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 	
 	void setMinAndMax(ImagePlus imp, double min, double max) {
-		if (channels!=7 && imp.getType()==ImagePlus.COLOR_RGB)
+		boolean rgb = imp.getType()==ImagePlus.COLOR_RGB;
+		if (channels!=7 && rgb)
 			imp.setDisplayRange(min, max, channels);
 		else
 			imp.setDisplayRange(min, max);
+		if (!rgb)
+			imp.getProcessor().setSnapshotPixels(null); // disable undo
+
 	}
 
 	void updatePlot() {

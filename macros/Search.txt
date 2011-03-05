@@ -1,53 +1,72 @@
-//  "Search"
+// "Search"
 // This macro searches for text in files contained in a directory.
+// TF, 2011.02 Added support for scripts; Recordable.
 
   str = "";
   contents = true;
   ignore = false;
   macros = false;
+  plugins = false;
+  scripts = false;
   source = false;
   arg = getArgument;
   if (arg!="") {
       args = split(arg, "|");
-      if (args.length==5) {
+      if (args.length==7) {
           str = args[0];
           contents = parseInt(args[1]);
           ignore = parseInt(args[2]);
           macros = parseInt(args[3]);
-          source = parseInt(args[4]);
+          plugins= parseInt(args[4]);
+          scripts = parseInt(args[5]);
+          source = parseInt(args[6]);
        }
   }
-  extensions = newArray(".java", ".txt", ".ijm", ".html");
+  extensions = newArray(".java", ".txt", ".ijm", ".js", ".py", ".rb", ".clj", ".bsh", ".html");
   IJdir = getDirectory("startup");
+  scriptsExists = File.exists(IJdir+"scripts");
   sourceExists = File.exists(IJdir+"source");
   Dialog.create("Search");
-  Dialog.addString("", str, 20);
-  Dialog.addCheckbox("Search Contents", contents);
-  Dialog.addCheckbox("Ignore Case", ignore);
-  Dialog.addCheckbox("Search Macros Folder", macros);
+  Dialog.addString("_", str, 20);
+  Dialog.addCheckbox("Search_contents", contents);
+  Dialog.addCheckbox("Ignore case", ignore);
+  Dialog.addCheckbox("Search_macros folder", macros);
+  Dialog.addCheckbox("Search_plugins folder", plugins);
+  if (scriptsExists)
+      Dialog.addCheckbox("Search_scripts folder", scripts);
   if (sourceExists)
-     Dialog.addCheckbox("Search Source Folder", source);
+      Dialog.addCheckbox("Search_source folder", source);
   Dialog.show();
   str = Dialog.getString();
   contents = Dialog.getCheckbox();
   ignore = Dialog.getCheckbox();
   macros = Dialog.getCheckbox();
-  dir1=""; dir2="";
+  plugins = Dialog.getCheckbox();
+
+  dir1=""; dir2=""; dir3=""; dir4="";
+  if (scriptsExists)
+      scripts = Dialog.getCheckbox();   
   if (sourceExists)
-     source = Dialog.getCheckbox();
+      source = Dialog.getCheckbox();
   if (macros)
-      dir1 = getDirectory("macros");
-  else if (!source)
-      dir1 = getDirectory("Choose a Directory ");
+      dir1 = getDirectory("macros");   
+  else if (!plugins && !scripts && !source)
+      dir1 = getDirectory("Choose a Directory");
+  if (plugins)
+      dir2 = getDirectory("plugins");     
+  if (scripts)     
+      dir3 = IJdir+"scripts"+"/";
   if (source)
-      dir2 = IJdir+"source"+"/";
+      dir4 = IJdir+"source"+"/";
   if (ignore)
       str = toLowerCase(str);
   count = 0;
   if (dir1!="") find(dir1);
   if (dir2!="") find(dir2);
+  if (dir3!="") find(dir3);
+  if (dir4!="") find(dir4);
   if (indexOf(str, "|")==-1)
-      return ""+str+"|"+contents+"|"+ignore+"|"+macros+"|"+source;
+      return ""+str+"|"+contents+"|"+ignore+"|"+macros+"|"+plugins+"|"+scripts+"|"+source;
   exit; 
 
   function find(dir) {

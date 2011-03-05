@@ -366,6 +366,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 				minThreshold = maxThreshold = min;
 		}
 		ip.setThreshold(minThreshold, maxThreshold, lutColor);
+		ip.setSnapshotPixels(null); // disable undo
 	}
 
 	/** Scales a threshold level to the range 0-255. */
@@ -513,7 +514,8 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		if (level1<minValue) level1 = minValue;
 		if (level2>maxValue) level2 = maxValue;
 		IJ.wait(500);
-		ip.setThreshold(level1, level2, lutColor);	
+		ip.setThreshold(level1, level2, lutColor);
+		ip.setSnapshotPixels(null); // disable undo
 		setup(imp);
 		//boolean outOfRange = level1<minDisplay || level2>maxDisplay;
 		//if (outOfRange)

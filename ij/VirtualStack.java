@@ -94,7 +94,11 @@ public class VirtualStack extends ImageStack {
 	*/
 	public ImageProcessor getProcessor(int n) {
 		//IJ.log("getProcessor: "+n+"  "+names[n-1]+"  "+bitDepth);
-		ImagePlus imp = new Opener().openImage(path, names[n-1]);
+		Opener opener = new Opener();
+		opener.setSilentMode(true);
+		IJ.redirectErrorMessages(true);
+		ImagePlus imp = opener.openImage(path, names[n-1]);
+		IJ.redirectErrorMessages(false);
 		ImageProcessor ip = null;
 		int depthThisImage = 0;
 		if (imp!=null) {
@@ -119,6 +123,7 @@ public class VirtualStack extends ImageStack {
 			ip.drawString(msg+names[n-1], size, size*2);
 			depthThisImage = 8;
 		}
+		boolean wrongSize = ip.getWidth()!=getWidth() || ip.getHeight()!=getHeight();
 		if (depthThisImage!=bitDepth) {
 			switch (bitDepth) {
 				case 8: ip=ip.convertToByte(true); break;
@@ -127,8 +132,11 @@ public class VirtualStack extends ImageStack {
 				case 32: ip=ip.convertToFloat(); break;
 			}
 		}
-		if (ip.getWidth()!=getWidth() || ip.getHeight()!=getHeight())
-			ip = ip.resize(getWidth(), getHeight());
+		if (ip.getWidth()!=getWidth() || ip.getHeight()!=getHeight()) {
+			ImageProcessor ip2 = ip.createProcessor(getWidth(), getHeight());
+			ip2.insert(ip, 0, 0);
+			ip = ip2;
+		}
 		return ip;
 	 }
  

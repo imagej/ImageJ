@@ -19,8 +19,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     private static int whichOutliers = BRIGHT_OUTLIERS;
     private int filterType = MEDIAN;
     // F u r t h e r   c l a s s   v a r i a b l e s
-    int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|SNAPSHOT|KEEP_PREVIEW|
-            PARALLELIZE_STACKS;
+    int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|SNAPSHOT|KEEP_PREVIEW;
     private ImagePlus imp;
     private int nPasses = 1;            // The number of passes (color channels * stack slices)
     private int pass;                   // Current pass
@@ -37,27 +36,31 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
      */    
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
-            if (arg.equals("mean"))
-                filterType = MEAN;
-            else if (arg.equals("min"))
-                filterType = MIN;
-            else if (arg.equals("max"))
-                filterType = MAX;
-            else if (arg.equals("variance"))
-                filterType = VARIANCE;
-            else if (arg.equals("median"))
-                filterType = MEDIAN;
-            else if (arg.equals("outliers"))
-                filterType = OUTLIERS;
-            else if (arg.equals("despeckle"))
-                filterType = DESPECKLE;
-            else if (arg.equals("masks")) {
-                showMasks();
-                return DONE;
-            } else {
-                IJ.error("RankFilters","Argument missing or undefined: "+arg);
-                return DONE;
-            }
+		if (arg.equals("mean"))
+			filterType = MEAN;
+		else if (arg.equals("min"))
+			filterType = MIN;
+		else if (arg.equals("max"))
+			filterType = MAX;
+		else if (arg.equals("variance"))
+			filterType = VARIANCE;
+		else if (arg.equals("median"))
+			filterType = MEDIAN;
+		else if (arg.equals("outliers"))
+			filterType = OUTLIERS;
+		else if (arg.equals("despeckle"))
+			filterType = DESPECKLE;
+		else if (arg.equals("masks")) {
+			showMasks();
+			return DONE;
+		} else {
+			IJ.error("RankFilters","Argument missing or undefined: "+arg);
+			return DONE;
+		}
+		if (imp!=null && imp.getStackSize()==1 && filterType==MEDIAN)
+			flags |= PARALLELIZE_IMAGES;
+		else
+			flags |= PARALLELIZE_STACKS;
         return flags;
     }
 
