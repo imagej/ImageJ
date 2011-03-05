@@ -1,7 +1,7 @@
 package ij.plugin.filter;
 import ij.*;
 import ij.process.*;
-import ij.gui.*; 
+import ij.gui.*;
 import ij.plugin.filter.PlugInFilter.*;
 import ij.plugin.filter.*;
 import ij.measure.Calibration;
@@ -224,7 +224,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	 */
 	private void processOneImage(ImageProcessor ip, FloatProcessor fp, boolean snapshotDone) {
 		if ((flags&PlugInFilter.PARALLELIZE_IMAGES)!=0) {
-			processUsingParallelThreads(ip, fp, snapshotDone);
+			processImageUsingThreads(ip, fp, snapshotDone);
 			return;
 		}
 		Thread thread = Thread.currentThread();
@@ -261,7 +261,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			ip.reset(ip.getMask());	 //restore image outside irregular roi
    }
 
-	private void processUsingParallelThreads(ImageProcessor ip, FloatProcessor fp, boolean snapshotDone) {
+	private void processImageUsingThreads(ImageProcessor ip, FloatProcessor fp, boolean snapshotDone) {
 		Thread thread = Thread.currentThread();
 		boolean convertToFloat = (flags&PlugInFilter.CONVERT_TO_FLOAT)!=0 && !(ip instanceof FloatProcessor);
 		boolean doMasking = (flags&PlugInFilter.SUPPORTS_MASKING)!=0 && ip.getMask() != null;
@@ -276,7 +276,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				if (thread.isInterrupted()) return;			// interrupt processing for preview?
 				if ((flags&PlugInFilter.SNAPSHOT)!=0) fp.snapshot();
 				if (doStack) IJ.showProgress(pass/(double)nPasses);
-				processUsingParallelThreads2(fp);
+				processChannelUsingThreads(fp);
 				if (thread.isInterrupted()) return;
 				//IJ.log("slice="+getSliceNumber()+" pass="+pass+"/"+nPasses);
 				if ((flags&PlugInFilter.NO_CHANGES)==0) {
@@ -287,31 +287,31 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		} else {
 			if ((flags&PlugInFilter.NO_CHANGES)==0) ipChanged = true;
 				if (doStack) IJ.showProgress(pass/(double)nPasses); 
-			processUsingParallelThreads2(ip);
+			processChannelUsingThreads(ip);
 		}
 		if (thread.isInterrupted()) return;
 		if (doMasking)
 			ip.reset(ip.getMask());	 //restore image outside irregular roi
    }
    
-	private void processUsingParallelThreads2(ImageProcessor ip) {
+	private void processChannelUsingThreads(ImageProcessor ip) {
+		ImageProcessor mask = ip.getMask();
 		Rectangle roi = ip.getRoi();
-		int lines = roi.height;
 		int threads = Prefs.getThreads();
-		if (threads>lines) threads = lines;
+		if (threads>roi.height) threads = roi.height;
 		if (threads>1) roisForThread = new Hashtable(threads-1);
-		int startingLine = 0;
+		int y1 = roi.y;
 		for (int i=1; i<threads; i++) {
-			int endingLine = (lines*i)/threads-1;
-			Thread bgThread = new Thread(this, command+" "+startingLine+"-"+endingLine);
-			Rectangle roi2 = new Rectangle(roi.x, startingLine, roi.width, endingLine-startingLine+1);
+			int y2 = roi.y+(roi.height*i)/threads-1;
+			Thread bgThread = new Thread(this, command+" "+y1+"-"+y2);
+			Rectangle roi2 = new Rectangle(roi.x, y1, roi.width, y2-y1+1);
 			roisForThread.put(bgThread, duplicateProcessor(ip, roi2));
 			bgThread.start();
-			//IJ.log("Thread for ROI "+startingLine+"-"+endingLine+" started");
-			startingLine = endingLine+1;
+			//IJ.log("Thread for ROI "+y1+"-"+y2+" started");
+			y1 = y2+1;
 		}
-		//IJ.log("Rest "+startingLine+"-"+(lines-1)+" by main thread ("+roi.height+")");
-		ip.setRoi(new Rectangle(roi.x, startingLine, roi.width, lines-startingLine));
+		//IJ.log("Rest "+y1+"-"+(roi.height-1)+" by main thread ("+Thread.currentThread()+")");
+		ip.setRoi(new Rectangle(roi.x, y1, roi.width, roi.y+roi.height-y1));
 		((PlugInFilter)theFilter).run(ip);  // the current thread does the rest
 		pass++;
 		if (roisForThread != null) {
@@ -323,7 +323,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				roisForThread.remove(theThread);	// and remove it from the list.
 			}
 		}
-		ip.setRoi(roi);  // restore ROI
+		ip.setMask(mask);  // restore ROI
+		ip.setRoi(roi);
 	}
 	
 	ImageProcessor duplicateProcessor(ImageProcessor ip, Rectangle roi) {
@@ -425,7 +426,6 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			else if (roisForThread!=null && roisForThread.containsKey(thread)) {
 				ImageProcessor ip = (ImageProcessor)roisForThread.get(thread);
 				((PlugInFilter)theFilter).run(ip);
-				pass++;
 			} else if (slicesForThread!=null && slicesForThread.containsKey(thread)) {
 				int[] range = (int[])slicesForThread.get(thread);
 				processStack(range[0], range[1]);
@@ -590,4 +590,10 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		}
 		return true;
 	}
+	
+	/** Returns the number of passes done so far. */
+	public int getPass() {
+		return pass;
+	}
+	
 }

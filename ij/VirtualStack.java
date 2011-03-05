@@ -123,7 +123,6 @@ public class VirtualStack extends ImageStack {
 			ip.drawString(msg+names[n-1], size, size*2);
 			depthThisImage = 8;
 		}
-		boolean wrongSize = ip.getWidth()!=getWidth() || ip.getHeight()!=getHeight();
 		if (depthThisImage!=bitDepth) {
 			switch (bitDepth) {
 				case 8: ip=ip.convertToByte(true); break;

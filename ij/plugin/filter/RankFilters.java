@@ -22,10 +22,11 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|SNAPSHOT|KEEP_PREVIEW;
     private ImagePlus imp;
     private int nPasses = 1;            // The number of passes (color channels * stack slices)
-    private int pass;                   // Current pass
     protected int kRadius;              // kernel radius. Size is (2*kRadius+1)^2
     protected int kNPoints;             // number of points in the kernel
     protected int[] lineRadius;         // the length of each kernel line is 2*lineRadius+1
+    private PlugInFilterRunner pfr;
+    Thread mainThread;
 
     /** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
      * of the filter.
@@ -36,6 +37,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
      */    
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
+        mainThread = Thread.currentThread();
 		if (arg.equals("mean"))
 			filterType = MEAN;
 		else if (arg.equals("min"))
@@ -82,6 +84,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             if (gd.wasCanceled()) return DONE;
             IJ.register(this.getClass());   //protect static class variables (filter parameters) from garbage collection
         }
+        this.pfr = pfr;
         return IJ.setupDialog(imp, flags);  //ask whether to process all slices of stack (if a stack)
     }
 
@@ -98,7 +101,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     }
 
     public void run(ImageProcessor ip) {
-        //copy class variables to local ones - this is necessary for preview
+		//copy class variables to local ones - this is necessary for preview
         int[] lineRadius;
         int kRadius, kNPoints;
         synchronized(this) {                        //the two following items must be consistent
@@ -107,7 +110,6 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             kNPoints = this.kNPoints;
         }
         if (Thread.currentThread().isInterrupted()) return;
-        pass++;
         doFiltering((FloatProcessor)ip, kRadius, lineRadius, filterType, whichOutliers, (float)threshold);
         if (imp!=null  && imp.getBitDepth()!=24 && imp.getRoi()==null && filterType==VARIANCE) {
             new ContrastEnhancer().stretchHistogram(this.imp.getProcessor(), 0.5);
@@ -177,7 +179,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             if (time-lastTime > 100) {
                 lastTime = time;
                 if (thread.isInterrupted()) return;
-                showProgress(y/(double)(roi.height));
+                showProgress((y-roi.y)/(double)(roi.height));
                 if (imp!= null && IJ.escapePressed()) {
                     ip.reset();
                     ImageProcessor originalIp = imp.getProcessor();
@@ -421,12 +423,13 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
      *  corresponding to 100% of the progress bar */
     public void setNPasses (int nPasses) {
         this.nPasses = nPasses;
-        pass = 0;
     }
 
     private void showProgress(double percent) {
-        percent = (double)(pass-1)/nPasses + percent/nPasses;
-        IJ.showProgress(percent);
+    	if (Thread.currentThread()==mainThread) {
+        	percent = (double)((pfr!=null?pfr.getPass():0))/nPasses + percent/nPasses;
+        	IJ.showProgress(percent);
+        }
     }
 
 }
