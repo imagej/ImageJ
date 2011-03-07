@@ -2069,7 +2069,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 		Overlay overlay2 = getOverlay();
 		int n = overlay2!=null?overlay2.size():0;
 		int stackSize = getStackSize();
-		if (n>1 && n==stackSize && ic2.stackLabels(overlay2)) { // created by Image>Stacks>Label
+		if (n>1 && n==stackSize && ic2.stackLabels(overlay2) && !isComposite()) { // created by Image>Stacks>Label
 			int index = getCurrentSlice()-1;
 			if (index<n) {
 				overlay2.temporarilyHide(0, index-1);

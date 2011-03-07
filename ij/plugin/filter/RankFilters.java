@@ -26,7 +26,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     protected int kNPoints;             // number of points in the kernel
     protected int[] lineRadius;         // the length of each kernel line is 2*lineRadius+1
     private PlugInFilterRunner pfr;
-    Thread mainThread;
+    private Thread mainThread;
 
     /** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
      * of the filter.
@@ -427,7 +427,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 
     private void showProgress(double percent) {
     	if (Thread.currentThread()==mainThread) {
-        	percent = (double)((pfr!=null?pfr.getPass():0))/nPasses + percent/nPasses;
+        	percent = (double)((pfr!=null?pfr.passesDone():0))/nPasses + percent/nPasses;
         	IJ.showProgress(percent);
         }
     }

@@ -257,6 +257,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     
 	/** Was this overlay created by Image/Stacks/Label? */
 	public boolean stackLabels(Overlay o) {
+		if (imp!=null && imp.isComposite()) return false;
 		Roi roi0 = o.get(0);
 		boolean labels = (roi0 instanceof TextRoi) && (o.get(o.size()-1) instanceof TextRoi);
 		String text = null;

@@ -14,25 +14,28 @@ import java.io.*;
 /** This plugin convolves images using user user defined kernels. */
 public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionListener {
 
-	ImagePlus imp;
-	int kw, kh;
-	boolean canceled;
-	float[] kernel;
-	boolean isLineRoi;
-	Button open, save;
-	GenericDialog gd;
-	boolean normalize = true;
-	int nSlices;
-	int flags = DOES_ALL+CONVERT_TO_FLOAT|SUPPORTS_MASKING|PARALLELIZE_STACKS|KEEP_PREVIEW|FINAL_PROCESSING;
-	int nPasses = 1;
-	int pass;
-	boolean kernelError;
+	private ImagePlus imp;
+	private int kw, kh;
+	private boolean canceled;
+	private float[] kernel;
+	private boolean isLineRoi;
+	private Button open, save;
+	private GenericDialog gd;
+	private boolean normalize = true;
+	private int nSlices;
+	private int flags = DOES_ALL+CONVERT_TO_FLOAT|SUPPORTS_MASKING|KEEP_PREVIEW|FINAL_PROCESSING|PARALLELIZE_STACKS;
+	private int nPasses = 1;
+	private boolean kernelError;
+	private PlugInFilterRunner pfr;
+	private Thread mainThread;
+
 	
 	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
 	static boolean normalizeFlag = true;
 
 	public int setup(String arg, ImagePlus imp) {
  		this.imp = imp;
+        mainThread = Thread.currentThread();
 		if (imp==null)
 			{IJ.noImage(); return DONE;}
 		if (arg.equals("final")&&imp.getRoi()==null) {
@@ -44,6 +47,10 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		Roi roi = imp.getRoi();
 		isLineRoi= roi!=null && roi.isLine();
 		nSlices = imp.getStackSize();
+		//if (imp.getStackSize()==1)
+		//	flags |= PARALLELIZE_IMAGES;
+		//else
+		//	flags |= PARALLELIZE_STACKS;
 		imp.startTiming();
 		return flags;
 	}
@@ -65,6 +72,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
         gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) return DONE;
+        this.pfr = pfr;
 		return IJ.setupDialog(imp, flags);
 	}
 
@@ -217,9 +225,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		float[] pixels2 = (float[])ip.getPixelsCopy();
 		double scale = getScale(kernel);
 
-        pass++;
         Thread thread = Thread.currentThread();
-        if (pass>nPasses) pass =1;
 		double sum;
 		int offset, i;
 		boolean edgePixel;
@@ -406,13 +412,14 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	
 	public void setNPasses(int nPasses) {
 		this.nPasses = nPasses;
-		pass = 0;
 	}
 
-	void showProgress(double percent) {
-		percent = (double)(pass-1)/nPasses + percent/nPasses;
-		IJ.showProgress(percent);
-	}
+    private void showProgress(double percent) {
+    	if (Thread.currentThread()==mainThread) {
+        	percent = (double)((pfr!=null?pfr.passesDone():0))/nPasses + percent/nPasses;
+        	IJ.showProgress(percent);
+        }
+    }
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();

@@ -426,6 +426,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			else if (roisForThread!=null && roisForThread.containsKey(thread)) {
 				ImageProcessor ip = (ImageProcessor)roisForThread.get(thread);
 				((PlugInFilter)theFilter).run(ip);
+				ip.setPixels(null);
 			} else if (slicesForThread!=null && slicesForThread.containsKey(thread)) {
 				int[] range = (int[])slicesForThread.get(thread);
 				processStack(range[0], range[1]);
@@ -567,10 +568,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	 *			dialog will enable the OK button)
 	 */
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-		//IJ.log("PlugInFilterRunner: dialogItemChanged: "+e);
 		if (previewCheckbox == null || imp == null) return true;
 		previewCheckboxOn = previewCheckbox.getState();
-		//IJ.log("PlugInFilterRunner in DialogItemChanged:\npreviewCbxOn="+previewCheckboxOn+"; previewThread="+previewThread);
 		if (previewCheckboxOn  && previewThread == null) {
 			bgPreviewOn = true;						//need to start a background thread for preview
 			previewThread = new Thread(this, command+" Preview");
@@ -592,7 +591,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 	}
 	
 	/** Returns the number of passes done so far. */
-	public int getPass() {
+	public int passesDone() {
 		return pass;
 	}
 	
