@@ -2,6 +2,7 @@ package ij.plugin.filter;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Macro;
+import ij.Prefs;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
 import ij.process.ByteProcessor;
@@ -217,7 +218,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         pass++;
         if (pass>nPasses) pass =1;
         
-        final int numThreads = Math.min(Runtime.getRuntime().availableProcessors(), lineTo-lineFrom);
+        final int numThreads = Math.min(Prefs.getThreads(), lineTo-lineFrom);
         final Thread[] lineThreads = new Thread[numThreads];
 
         /* large radius (sigma): scale down, then convolve, then scale up */

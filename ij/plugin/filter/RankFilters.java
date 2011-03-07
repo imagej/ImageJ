@@ -59,7 +59,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			IJ.error("RankFilters","Argument missing or undefined: "+arg);
 			return DONE;
 		}
-		if (imp!=null && imp.getStackSize()==1 && filterType==MEDIAN)
+		if (imp!=null && imp.getStackSize()==1)
 			flags |= PARALLELIZE_IMAGES;
 		else
 			flags |= PARALLELIZE_STACKS;

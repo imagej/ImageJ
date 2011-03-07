@@ -5,11 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.45c 5 March 2011</u>
+<li> <u>1.45c 7 March 2011</u>
 <ul>
 <li> <i>Process&gt;Filters&gt;Gaussian Blur</i> processes single images much faster
 on multi-core computers thanks to multi-threading support added by Stephan Saalfeld.
-<li> The <i>Process&gt;Math&gt;Macro</i> and <i>Process&gt;Filters&gt;Median</i>
+<li> The <i>Process&gt;Math&gt;Macro</i>, <i>Despeckle</i>, <i>Remove Outliers</i>,
+<i>Median</i>, <i>Mean</i>, <i>Minimum</i>, <i>Maximum</i> and <i>Variance</i> 
 commands are faster when processing single images on multi-core computers.
 <li> Tiago Ferreira made the <i>Plugins&gt;Utilities&gt;Search</i> command
 recordable and added support for scripts.
@@ -27,6 +28,9 @@ unchecking "Edit Mode".
 borders to overlap labels.
 <li> Fixed a bug in <i>File&gt;Import&gt;Image Sequence</i> that could cause the pixel width
 and height to be incorrect if the value of "Scale images" in the dialog was not 100.
+<li> Thanks to Daniel Senff, fixed a bug that caused an exception when using the
+setForeGroundColor() macro function after starting ImageJ using
+"new ImageJ(ImageJ.NO_SHOW)".
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

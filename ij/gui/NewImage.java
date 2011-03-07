@@ -15,14 +15,13 @@ public class NewImage {
 	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
 	private static final int OLD_FILL_WHITE=0;
 	
-    static final String NAME = "new.name";
     static final String TYPE = "new.type";
     static final String FILL = "new.fill";
 	static final String WIDTH = "new.width";
 	static final String HEIGHT = "new.height";
 	static final String SLICES = "new.slices";
 
-    private static String name = Prefs.getString(NAME, "Untitled");
+    private static String name = "Untitled";
     private static int width = Prefs.getInt(WIDTH, 400);
     private static int height = Prefs.getInt(HEIGHT, 400);
     private static int slices = Prefs.getInt(SLICES, 1);
@@ -324,7 +323,6 @@ public class NewImage {
 	
 	/** Called when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
-		prefs.put(NAME, name);
 		prefs.put(TYPE, Integer.toString(type));
 		prefs.put(FILL, Integer.toString(fillWith));
 		prefs.put(WIDTH, Integer.toString(width));
