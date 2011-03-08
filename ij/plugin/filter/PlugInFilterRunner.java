@@ -339,6 +339,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			ip2 = new ShortProcessor(width, height, (short[])ip.getPixels(), null);
 		else  if (ip instanceof ColorProcessor)
 			ip2 = new ColorProcessor(width, height, (int[])ip.getPixels());
+		ip2.setSnapshotPixels(ip.getSnapshotPixels());
 		ip2.setRoi(roi);
 		return ip2;
 	}
@@ -427,6 +428,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				ImageProcessor ip = (ImageProcessor)roisForThread.get(thread);
 				((PlugInFilter)theFilter).run(ip);
 				ip.setPixels(null);
+				ip.setSnapshotPixels(null);
 			} else if (slicesForThread!=null && slicesForThread.containsKey(thread)) {
 				int[] range = (int[])slicesForThread.get(thread);
 				processStack(range[0], range[1]);

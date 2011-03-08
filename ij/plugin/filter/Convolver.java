@@ -23,7 +23,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private GenericDialog gd;
 	private boolean normalize = true;
 	private int nSlices;
-	private int flags = DOES_ALL+CONVERT_TO_FLOAT|SUPPORTS_MASKING|KEEP_PREVIEW|FINAL_PROCESSING|PARALLELIZE_STACKS;
+	private int flags = DOES_ALL|CONVERT_TO_FLOAT|SUPPORTS_MASKING|KEEP_PREVIEW|FINAL_PROCESSING|SNAPSHOT;
 	private int nPasses = 1;
 	private boolean kernelError;
 	private PlugInFilterRunner pfr;
@@ -47,10 +47,10 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		Roi roi = imp.getRoi();
 		isLineRoi= roi!=null && roi.isLine();
 		nSlices = imp.getStackSize();
-		//if (imp.getStackSize()==1)
-		//	flags |= PARALLELIZE_IMAGES;
-		//else
-		//	flags |= PARALLELIZE_STACKS;
+		if (imp.getStackSize()==1)
+			flags |= PARALLELIZE_IMAGES;
+		else
+			flags |= PARALLELIZE_STACKS;
 		imp.startTiming();
 		return flags;
 	}
@@ -201,7 +201,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	public void setNormalize(boolean normalizeKernel) {
 		normalize = normalizeKernel;
 	}
-
+	
 	/** Convolves the float image <code>ip</code> with a kernel of width 
 		<code>kw</code> and height <code>kh</code>. Returns false if 
 		the user cancels the operation by pressing 'Esc'. */
@@ -212,9 +212,9 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
-		boolean nonRectRoi = ip.getMask()!=null;
-		if (nonRectRoi)
-			ip.snapshot();
+		//boolean nonRectRoi = ip.getMask()!=null;
+		//if (nonRectRoi)
+		//	ip.snapshot();
 		int x1 = r.x;
 		int y1 = r.y;
 		int x2 = x1 + r.width;
@@ -222,9 +222,10 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int uc = kw/2;    
 		int vc = kh/2;
 		float[] pixels = (float[])ip.getPixels();
-		float[] pixels2 = (float[])ip.getPixelsCopy();
+		float[] pixels2 = (float[])ip.getSnapshotPixels();
+		if (pixels2==null)
+			pixels2 = (float[])ip.getPixelsCopy();
 		double scale = getScale(kernel);
-
         Thread thread = Thread.currentThread();
 		double sum;
 		int offset, i;
@@ -263,8 +264,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				pixels[x+y*width] = (float)(sum*scale);
 			}
     	}
-		if (nonRectRoi)
-			ip.reset(ip.getMask());
+		//if (nonRectRoi)
+		//	ip.reset(ip.getMask());
    		return true;
    	 }
 
@@ -283,7 +284,9 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int uc = kw/2;    
 		int vc = kh/2;
 		float[] pixels = (float[])ip.getPixels();
-		float[] pixels2 = (float[])ip.getPixelsCopy();
+		float[] pixels2 = (float[])ip.getSnapshotPixels();
+		if (pixels2==null)
+			pixels2 = (float[])ip.getPixelsCopy();
 		double scale = getScale(kernel);
 		boolean vertical = kw==1;
 
