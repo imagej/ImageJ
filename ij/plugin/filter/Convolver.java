@@ -28,6 +28,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private boolean kernelError;
 	private PlugInFilterRunner pfr;
 	private Thread mainThread;
+	private int pass;
 
 	
 	static String kernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
@@ -227,6 +228,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			pixels2 = (float[])ip.getPixelsCopy();
 		double scale = getScale(kernel);
         Thread thread = Thread.currentThread();
+        boolean isMainThread = thread==mainThread || thread.getName().indexOf("Preview")!=-1;
+        if (isMainThread) pass++;
 		double sum;
 		int offset, i;
 		boolean edgePixel;
@@ -234,17 +237,19 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int yedge = height-vc;
 		long lastTime = System.currentTimeMillis();
 		for(int y=y1; y<y2; y++) {
-			long time = System.currentTimeMillis();
-			if (time-lastTime>100) {
-				lastTime = time;
-				if (thread.isInterrupted()) return false;
-				if (IJ.escapePressed()) {
-					IJ.beep();
-					canceled = true;
-					ip.reset();
-					return false;
+			if (isMainThread) {
+				long time = System.currentTimeMillis();
+				if (time-lastTime>100) {
+					lastTime = time;
+					if (thread.isInterrupted()) return false;
+					if (IJ.escapePressed()) {
+						IJ.beep();
+						canceled = true;
+						ip.reset();
+						return false;
+					}
+					showProgress((y-y1)/(double)(y2-y1));
 				}
-				showProgress((y-y1)/(double)(y2-y1));
 			}
 			for(int x=x1; x<x2; x++) {
 				sum = 0.0;
@@ -415,13 +420,12 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	
 	public void setNPasses(int nPasses) {
 		this.nPasses = nPasses;
+		pass = 0;
 	}
 
     private void showProgress(double percent) {
-    	if (Thread.currentThread()==mainThread) {
-        	percent = (double)((pfr!=null?pfr.passesDone():0))/nPasses + percent/nPasses;
-        	IJ.showProgress(percent);
-        }
+        percent = (double)(pass-1)/nPasses + percent/nPasses;
+        IJ.showProgress(percent);
     }
 
 	public void actionPerformed(ActionEvent e) {

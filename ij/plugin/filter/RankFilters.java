@@ -27,6 +27,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     protected int[] lineRadius;         // the length of each kernel line is 2*lineRadius+1
     private PlugInFilterRunner pfr;
     private Thread mainThread;
+    private int pass;
 
     /** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
      * of the filter.
@@ -153,8 +154,10 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         float sign = filterType==MIN ? -1f : 1f;
         if (filterType == OUTLIERS)     //sign is -1 for high outliers: compare number with minimum
             sign = (ip.isInvertedLut()==(whichOutliers==DARK_OUTLIERS)) ? -1f : 1f;
-        float[] pixels = (float[])ip.getPixels();   // array of the pixel values of the input image
-        int width = ip.getWidth();
+        float[] pixels = (float[])ip.getPixels();  // output pixel array; multi-threading fails if arrays are the same
+        float[] pixels2 = (float[])ip.getSnapshotPixels();  // input pixel array
+        if (pixels2==null) pixels2 = pixels;
+       int width = ip.getWidth();
         int height = ip.getHeight();
         Rectangle roi = ip.getRoi();
         int xmin = roi.x - kRadius;
@@ -169,33 +172,37 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         float[] cache = new float[cacheWidth*kSize]; //a stripe of the image with height=2*kRadius+1
         for (int y=roi.y-kRadius, iCache=0; y<roi.y+kRadius; y++)
             for (int x=xmin; x<xmax; x++, iCache++)  // fill the cache for filtering the first line
-                cache[iCache] = pixels[(x<0 ? 0 : x>=width ? width-1 : x) + width*(y<0 ? 0 : y>=height ? height-1 : y)];
+                cache[iCache] = pixels2[(x<0 ? 0 : x>=width ? width-1 : x) + width*(y<0 ? 0 : y>=height ? height-1 : y)];
         int nextLineInCache = 2*kRadius;            // where the next line should be written to
         float median = cache[0];                    // just any value as a first guess
-        Thread thread = Thread.currentThread();     // needed to check for interrupted state
+        Thread thread = Thread.currentThread(); 
+        boolean isMainThread = thread==mainThread || thread.getName().indexOf("Preview")!=-1;
+        if (isMainThread) pass++;
         long lastTime = System.currentTimeMillis();
         for (int y=roi.y; y<roi.y+roi.height; y++) {
-            long time = System.currentTimeMillis();
-            if (time-lastTime > 100) {
-                lastTime = time;
-                if (thread.isInterrupted()) return;
-                showProgress((y-roi.y)/(double)(roi.height));
-                if (imp!= null && IJ.escapePressed()) {
-                    ip.reset();
-                    ImageProcessor originalIp = imp.getProcessor();
-                    if (originalIp.getNChannels() > 1)
-                        originalIp.reset();
-                    return;
-                }
-            }
+        	if (isMainThread) {
+				long time = System.currentTimeMillis();
+				if (time-lastTime>100) {
+					lastTime = time;
+					if (thread.isInterrupted()) return;
+					showProgress((y-roi.y)/(double)(roi.height));
+					if (imp!= null && IJ.escapePressed()) {
+						ip.reset();
+						ImageProcessor originalIp = imp.getProcessor();
+						if (originalIp.getNChannels() > 1)
+							originalIp.reset();
+						return;
+					}
+				}
+			}
             int ynext = y+kRadius;                  // C O P Y   N E W   L I N E  into cache
             if (ynext >= height) ynext = height-1;
-            float leftpxl = pixels[width*ynext];    //edge pixels of the line replace out-of-image pixels
-            float rightpxl = pixels[width-1+width*ynext];
+            float leftpxl = pixels2[width*ynext];    //edge pixels of the line replace out-of-image pixels
+            float rightpxl = pixels2[width-1+width*ynext];
             int iCache = cacheWidth*nextLineInCache;//where in the cach we have to copy to
             for (int x=xmin; x<0; x++, iCache++)
                 cache[iCache] = leftpxl;
-            System.arraycopy(pixels, xminInside+width*ynext, cache, iCache, widthInside);
+            System.arraycopy(pixels2, xminInside+width*ynext, cache, iCache, widthInside);
             iCache += widthInside;
             for (int x=width; x<xmax; x++, iCache++)
                 cache[iCache] = rightpxl;
@@ -225,9 +232,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
                         addSideSums(cache, cacheWidth, xCache0, lineRadius, kSize, sums);
                 }
                 if (medianFilter) {
-                    if (filterType==MEDIAN || pixels[p]*sign+threshold <max) {
+                    if (filterType==MEDIAN || pixels2[p]*sign+threshold <max) {
                         median = getMedian(cache, cacheWidth, xCache0, lineRadius, kSize, medianBuf1, medianBuf2, median);
-                        if (filterType==MEDIAN || pixels[p]*sign+threshold < median*sign)
+                        if (filterType==MEDIAN || pixels2[p]*sign+threshold < median*sign)
                         pixels[p] = median;
                     }
                 } else if (sumFilter) {
@@ -423,13 +430,12 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
      *  corresponding to 100% of the progress bar */
     public void setNPasses (int nPasses) {
         this.nPasses = nPasses;
+        pass = 0;
     }
 
     private void showProgress(double percent) {
-    	if (Thread.currentThread()==mainThread) {
-        	percent = (double)((pfr!=null?pfr.passesDone():0))/nPasses + percent/nPasses;
-        	IJ.showProgress(percent);
-        }
+        percent = (double)(pass-1)/nPasses + percent/nPasses;
+        IJ.showProgress(percent);
     }
 
 }

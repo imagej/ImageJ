@@ -525,7 +525,7 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		if (previewThread == null) return;
 		//IJ.log("killPreview");
 		synchronized (this) {
-			previewThread.interrupt();				//ask for premature finishing (interrupt first -> no keepPreview)
+			previewThread.interrupt();			//ask for premature finishing (interrupt first -> no keepPreview)
 			bgPreviewOn = false;					//tell a possible background thread to terminate when it has finished
 		}
 		waitForPreviewDone();
@@ -590,11 +590,6 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				previewThread.interrupt();	//all other changes: restart calculating preview (with new parameters)
 		}
 		return true;
-	}
-	
-	/** Returns the number of passes done so far. */
-	public int passesDone() {
-		return pass;
 	}
 	
 }
