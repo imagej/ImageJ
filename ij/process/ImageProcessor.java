@@ -22,7 +22,7 @@ some basic methods to manipulate it.
 @see ij.ImagePlus
 @see ij.ImageStack
 */
-public abstract class ImageProcessor extends Object {
+public abstract class ImageProcessor implements Cloneable {
 
 	/** Value of pixels included in masks. */
 	public static final int BLACK = 0xFF000000;
@@ -2261,4 +2261,13 @@ public abstract class ImageProcessor extends Object {
 		sliceNumber = slice;
 	}
 	
+	/** Returns a shallow copy of this ImageProcessor. */
+	public synchronized Object clone() {
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
+
 }

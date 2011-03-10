@@ -19,7 +19,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     private static int whichOutliers = BRIGHT_OUTLIERS;
     private int filterType = MEDIAN;
     // F u r t h e r   c l a s s   v a r i a b l e s
-    int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|SNAPSHOT|KEEP_PREVIEW;
+    int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|KEEP_PREVIEW|SNAPSHOT;
     private ImagePlus imp;
     private int nPasses = 1;            // The number of passes (color channels * stack slices)
     protected int kRadius;              // kernel radius. Size is (2*kRadius+1)^2
@@ -154,10 +154,10 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         float sign = filterType==MIN ? -1f : 1f;
         if (filterType == OUTLIERS)     //sign is -1 for high outliers: compare number with minimum
             sign = (ip.isInvertedLut()==(whichOutliers==DARK_OUTLIERS)) ? -1f : 1f;
-        float[] pixels = (float[])ip.getPixels();  // output pixel array; multi-threading fails if arrays are the same
-        float[] pixels2 = (float[])ip.getSnapshotPixels();  // input pixel array
-        if (pixels2==null) pixels2 = pixels;
-       int width = ip.getWidth();
+        float[] pixels2 = (float[])ip.getPixels();  // output pixel array; multi-threading fails if arrays are the same
+        float[] pixels1 = (float[])ip.getSnapshotPixels();  // input pixel array
+        if (pixels1==null) pixels1 = pixels2;
+        int width = ip.getWidth();
         int height = ip.getHeight();
         Rectangle roi = ip.getRoi();
         int xmin = roi.x - kRadius;
@@ -172,7 +172,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         float[] cache = new float[cacheWidth*kSize]; //a stripe of the image with height=2*kRadius+1
         for (int y=roi.y-kRadius, iCache=0; y<roi.y+kRadius; y++)
             for (int x=xmin; x<xmax; x++, iCache++)  // fill the cache for filtering the first line
-                cache[iCache] = pixels2[(x<0 ? 0 : x>=width ? width-1 : x) + width*(y<0 ? 0 : y>=height ? height-1 : y)];
+                cache[iCache] = pixels1[(x<0 ? 0 : x>=width ? width-1 : x) + width*(y<0 ? 0 : y>=height ? height-1 : y)];
         int nextLineInCache = 2*kRadius;            // where the next line should be written to
         float median = cache[0];                    // just any value as a first guess
         Thread thread = Thread.currentThread(); 
@@ -180,11 +180,11 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         if (isMainThread) pass++;
         long lastTime = System.currentTimeMillis();
         for (int y=roi.y; y<roi.y+roi.height; y++) {
-        	if (isMainThread) {
-				long time = System.currentTimeMillis();
-				if (time-lastTime>100) {
-					lastTime = time;
-					if (thread.isInterrupted()) return;
+			long time = System.currentTimeMillis();
+			if (time-lastTime>100) {
+				lastTime = time;
+				if (thread.isInterrupted()) return;
+        		if (isMainThread) {
 					showProgress((y-roi.y)/(double)(roi.height));
 					if (imp!= null && IJ.escapePressed()) {
 						ip.reset();
@@ -197,12 +197,12 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			}
             int ynext = y+kRadius;                  // C O P Y   N E W   L I N E  into cache
             if (ynext >= height) ynext = height-1;
-            float leftpxl = pixels2[width*ynext];    //edge pixels of the line replace out-of-image pixels
-            float rightpxl = pixels2[width-1+width*ynext];
+            float leftpxl = pixels1[width*ynext];    //edge pixels of the line replace out-of-image pixels
+            float rightpxl = pixels1[width-1+width*ynext];
             int iCache = cacheWidth*nextLineInCache;//where in the cach we have to copy to
             for (int x=xmin; x<0; x++, iCache++)
                 cache[iCache] = leftpxl;
-            System.arraycopy(pixels2, xminInside+width*ynext, cache, iCache, widthInside);
+            System.arraycopy(pixels1, xminInside+width*ynext, cache, iCache, widthInside);
             iCache += widthInside;
             for (int x=width; x<xmax; x++, iCache++)
                 cache[iCache] = rightpxl;
@@ -214,7 +214,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
                     fullCalculation = smallKernel;  //for small kernel, always use the full area, not incremental algorithm
                     if (minOrMaxOrOutliers)
                         max = getAreaMax(cache, cacheWidth, xCache0, lineRadius, kSize, 0, -Float.MAX_VALUE, sign);
-                    if (minOrMax) pixels[p] = max*sign;
+                    if (minOrMax) pixels2[p] = max*sign;
                     else if (sumFilter)
                         getAreaSums(cache, cacheWidth, xCache0, lineRadius, kSize, sums);
                 } else {
@@ -227,21 +227,21 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
                             if (removedPointsMax >= max)
                                 max = getAreaMax(cache, cacheWidth, xCache0, lineRadius, kSize, 1, newPointsMax, sign);
                         }
-                        if (minOrMax) pixels[p] = max*sign;
+                        if (minOrMax) pixels2[p] = max*sign;
                     } else if (sumFilter)
                         addSideSums(cache, cacheWidth, xCache0, lineRadius, kSize, sums);
                 }
                 if (medianFilter) {
-                    if (filterType==MEDIAN || pixels2[p]*sign+threshold <max) {
+                    if (filterType==MEDIAN || pixels1[p]*sign+threshold <max) {
                         median = getMedian(cache, cacheWidth, xCache0, lineRadius, kSize, medianBuf1, medianBuf2, median);
-                        if (filterType==MEDIAN || pixels2[p]*sign+threshold < median*sign)
-                        pixels[p] = median;
+                        if (filterType==MEDIAN || pixels1[p]*sign+threshold < median*sign)
+                        pixels2[p] = median;
                     }
                 } else if (sumFilter) {
                     if (filterType == MEAN)
-                        pixels[p] = (float)(sums[0]/kNPoints);
+                        pixels2[p] = (float)(sums[0]/kNPoints);
                     else    // Variance: sum of squares - square of sums
-                        pixels[p] = (float)((sums[1] - sums[0]*sums[0]/kNPoints)/kNPoints);
+                        pixels2[p] = (float)((sums[1] - sums[0]*sums[0]/kNPoints)/kNPoints);
                 }
             } // for x
             int newLineRadius0 = lineRadius[kSize-1];   //shift kernel lineRadii one line

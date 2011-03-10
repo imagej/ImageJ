@@ -237,11 +237,11 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int yedge = height-vc;
 		long lastTime = System.currentTimeMillis();
 		for(int y=y1; y<y2; y++) {
-			if (isMainThread) {
-				long time = System.currentTimeMillis();
-				if (time-lastTime>100) {
-					lastTime = time;
-					if (thread.isInterrupted()) return false;
+			long time = System.currentTimeMillis();
+			if (time-lastTime>100) {
+				lastTime = time;
+				if (thread.isInterrupted()) return false;
+				if (isMainThread) {
 					if (IJ.escapePressed()) {
 						IJ.beep();
 						canceled = true;

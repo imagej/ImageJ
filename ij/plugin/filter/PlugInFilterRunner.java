@@ -7,10 +7,10 @@ import ij.plugin.filter.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import java.awt.*;
-import java.util.Hashtable;
+import java.util.*;
 
 public class PlugInFilterRunner implements Runnable, DialogListener {
-	private String command;						// the command, can be but need not be the name of the PlugInFilter
+	private String command;					// the command, can be but need not be the name of the PlugInFilter
 	private Object theFilter;					// the instance of the PlugInFilter
 	private ImagePlus imp;
 	private int flags;							// the flags returned by the PlugInFilter
@@ -323,23 +323,13 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 				roisForThread.remove(theThread);	// and remove it from the list.
 			}
 		}
+		roisForThread = null;
 		ip.setMask(mask);  // restore ROI
 		ip.setRoi(roi);
 	}
 	
 	ImageProcessor duplicateProcessor(ImageProcessor ip, Rectangle roi) {
-		int width = ip.getWidth();
-		int height = ip.getHeight();
-		ImageProcessor ip2 = null;
-		if (ip instanceof FloatProcessor)
-			ip2 = new FloatProcessor(width, height, (float[])ip.getPixels(), null);
-		else if (ip instanceof ByteProcessor)
-			ip2 = new ByteProcessor(width, height, (byte[])ip.getPixels(), null);
-		else if (ip instanceof ShortProcessor)
-			ip2 = new ShortProcessor(width, height, (short[])ip.getPixels(), null);
-		else  if (ip instanceof ColorProcessor)
-			ip2 = new ColorProcessor(width, height, (int[])ip.getPixels());
-		ip2.setSnapshotPixels(ip.getSnapshotPixels());
+		ImageProcessor ip2 = (ImageProcessor)ip.clone();
 		ip2.setRoi(roi);
 		return ip2;
 	}
@@ -525,8 +515,14 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		if (previewThread == null) return;
 		//IJ.log("killPreview");
 		synchronized (this) {
-			previewThread.interrupt();			//ask for premature finishing (interrupt first -> no keepPreview)
-			bgPreviewOn = false;					//tell a possible background thread to terminate when it has finished
+			previewThread.interrupt();		//ask for premature finishing (interrupt first -> no keepPreview)
+			bgPreviewOn = false;				//tell a possible background thread to terminate when it has finished
+			if (roisForThread!=null) {
+				for (Enumeration en=roisForThread.keys(); en.hasMoreElements();) {
+					Thread thread = (Thread)en.nextElement();
+					thread.interrupt();
+				}
+			}
 		}
 		waitForPreviewDone();
 	}
