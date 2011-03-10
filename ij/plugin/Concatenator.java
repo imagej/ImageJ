@@ -68,10 +68,10 @@ public class Concatenator implements PlugIn {
 		imp3.setCalibration(imp1.getCalibration());
 		if (!keep) {
 			imp1.changes = false;
-			if (imp1.getWindow()!=null) imp1.getWindow().close();
+			imp1.close();
 			if (imp1!=imp2) {
 				imp2.changes = false;
-				if (imp2.getWindow()!=null) imp2.getWindow().close();
+				imp2.close();
 			}
 		}
 		return imp3;
@@ -135,10 +135,8 @@ public class Concatenator implements PlugIn {
 			imp2.setOpenAsHyperStack(true);
 		if (!keepSourceImages) {
 			for (int i=0; i<n; i++) {
-				if (images[i].getWindow()!=null) {
-					images[i].changes = false;
-					images[i].getWindow().close();
-				}
+				images[i].changes = false;
+				images[i].close();
 			}
 		}
 		return imp2;

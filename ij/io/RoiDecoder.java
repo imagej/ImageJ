@@ -27,10 +27,7 @@ import java.awt.*;
 	53-53   arrow head size (v1.43p or later)
 	54-55   rounded rect arc size (v1.43p or later)
 	56-63	 reserved (zero)
-	64-67   x0, y0 (polygon)
-	68-71   x1, y1 
-	etc.
-	.
+	64-       x-coordinates (short), followed by y-coordinates
 */
 
 /** Decodes an ImageJ, NIH Image or Scion Image ROI file. */

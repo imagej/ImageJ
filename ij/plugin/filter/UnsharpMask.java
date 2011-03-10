@@ -19,7 +19,7 @@ import java.awt.*;
 public class UnsharpMask implements ExtendedPlugInFilter, DialogListener {
     private static double sigma = 1.0; // standard deviation of the Gaussian
     private static double weight = 0.6; // weight of the mask
-    private final int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|SNAPSHOT|PARALLELIZE_STACKS|KEEP_PREVIEW;
+    private final int flags = DOES_ALL|SUPPORTS_MASKING|CONVERT_TO_FLOAT|SNAPSHOT|KEEP_PREVIEW;
     private GaussianBlur gb;
 
     /** Method to return types supported

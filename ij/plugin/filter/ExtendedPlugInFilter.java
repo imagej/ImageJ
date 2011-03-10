@@ -4,7 +4,7 @@ import ij.process.*;
 
 /** ImageJ plugins that process an image may implement this interface.
  *  In addition to the features of PlugInFilter, it is better suited
- *  for filters that have adialog asking for the options or filter
+ *  for filters that have a dialog asking for the options or filter
  *  parameters. It also offers support for preview, for a smooth
  *  progress bar when processing stacks and for calling back
  *  the PlugInFilterRunner (needed, e.g., to get the slice number

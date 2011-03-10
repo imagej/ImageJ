@@ -627,7 +627,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		int yNew = ic.offScreenY(sy);
 		x += xNew - startX;
 		y += yNew - startY;
-		if (clipboard==null && type==RECTANGLE) {
+		boolean isImageRoi = this instanceof ImageRoi;
+		if (clipboard==null && type==RECTANGLE && !isImageRoi) {
 			if (x<0) x=0; if (y<0) y=0;
 			if ((x+width)>xMax) x = xMax-width;
 			if ((y+height)>yMax) y = yMax-height;
@@ -643,6 +644,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldY = y;
 		oldWidth = width;
 		oldHeight=height;
+		if (isImageRoi) showStatus();
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */

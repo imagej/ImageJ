@@ -1,5 +1,4 @@
 package ij.process;
-//import ij.*;
 import java.awt.*;
 
 /** This class processes binary images. */
@@ -94,19 +93,19 @@ public class BinaryProcessor extends ByteProcessor {
 		moveTo(0,0); lineTo(width-1,0);
 		moveTo(width-1,0); lineTo(width-1,height-1);
 		moveTo(0,height-1); lineTo(width/*-1*/,height-1);
-		//ImageStack movie=null;
-		//boolean debug = IJ.altKeyDown();
-		//if (debug) movie = new ImageStack(width, height);
+		ij.ImageStack movie=null;
+		boolean debug = false;
+		if (debug) movie = new ij.ImageStack(width, height);
 		do {
 			snapshot();
-			//if (debug) movie.addSlice(""+pass, duplicate());
+			if (debug) movie.addSlice(""+pass, duplicate());
 			pixelsRemoved = thin(pass++, table);
 			snapshot();
-			//if (debug) movie.addSlice(""+pass, duplicate());
+			if (debug) movie.addSlice(""+pass, duplicate());
 			pixelsRemoved = thin(pass++, table);
 			//ij.IJ.write(pass+" "+pixelsRemoved);
 		} while (pixelsRemoved>0);
-		//if (debug) new ImagePlus("Skel Movie", movie).show();
+		if (debug) new ij.ImagePlus("Skel Movie", movie).show();
 	}
 
 	int thin(int pass, int[] table) {

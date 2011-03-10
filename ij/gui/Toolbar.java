@@ -793,6 +793,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (IJ.getInstance()!=null) {
 			Toolbar tb = getInstance();
 			Graphics g = tb.getGraphics();
+			if (g==null) return;
 			if (Prefs.antialiasedTools)
 				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			tb.drawButton(g, tool);

@@ -1611,7 +1611,8 @@ public class Interpreter implements MacroConstants {
 			imageTable = null;
 		}
 		done = true;
-		if (func!=null) func.abortDialog();
+		if (func!=null && !(macroName!=null&&macroName.indexOf(" Tool")!=-1))
+			func.abortDialog();
 		IJ.showStatus("Macro aborted");
 	}
 

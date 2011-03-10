@@ -9,6 +9,7 @@ import java.awt.*;
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
 	private static boolean createImageRoi;
+	private static int opacity = 100;
 
 	public void run(String arg) {
 		if (arg.equals("add"))
@@ -115,7 +116,7 @@ public class OverlayCommands implements PlugIn {
 		gd.addChoice("Image to add:", titles, titles[index]);
 		gd.addNumericField("X location:", x, 0);
 		gd.addNumericField("Y location:", y, 0);
-		gd.addNumericField("Opacity (0-100%):", 100, 0);
+		gd.addNumericField("Opacity (0-100%):", opacity, 0);
 		gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -123,7 +124,7 @@ public class OverlayCommands implements PlugIn {
 		index = gd.getNextChoiceIndex();
 		x = (int)gd.getNextNumber();
 		y = (int)gd.getNextNumber();
-		double opacity = gd.getNextNumber()/100.0;
+		opacity = (int)gd.getNextNumber();
 		createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
@@ -148,7 +149,7 @@ public class OverlayCommands implements PlugIn {
 		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
 		roi.setName(overlay.getShortTitle());
-		if (opacity!=1.0) ((ImageRoi)roi).setOpacity(opacity);
+		if (opacity!=100) ((ImageRoi)roi).setOpacity(opacity/100.0);
 		if (createImageRoi)
 			imp.setRoi(roi);
 		else {
