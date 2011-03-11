@@ -36,9 +36,6 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		channels1 = channels2 = imp.getNChannels();
 		slices1 = slices2 = imp.getNSlices();
 		frames1 = frames2 = imp.getNFrames();
-		int c1 = imp.getChannel();
-		int z1 = imp.getSlice();
-		int t2 = imp.getFrame();
 		if (!showDialog())
 			return;
 		//IJ.log("HyperStackReducer-2: "+keep+" "+channels2+" "+slices2+" "+frames2);
@@ -53,9 +50,14 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		} else
 			imp2 = imp.createHyperStack(title2, channels2, slices2, frames2, imp.getBitDepth());
 		reduce(imp2);
-		if (channels2>1 && imp.isComposite()) {
-			imp2 = new CompositeImage(imp2, 0);
+		if (channels2>1 && channels2==imp.getNChannels() && imp.isComposite()) {
+			int mode = ((CompositeImage)imp).getMode();
+			imp2 = new CompositeImage(imp2, mode);
 			((CompositeImage)imp2).copyLuts(imp);
+		} else {
+			imp2.setDisplayRange(imp.getDisplayRangeMin(), imp.getDisplayRangeMax());
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.GRAYSCALE)
+				IJ.run(imp2, "Grays", "");
 		}
 		imp2.show();
 		//IJ.log("HyperStackReducer-4");

@@ -349,15 +349,17 @@ shortcuts05=-
 
 # Plugins installed in the Plugins/Utilities submenu
 utilities01="Control Panel...[U]",ij.plugin.ControlPanel
-utilities02="ImageJ Properties...",ij.plugin.JavaProperties
-utilities03="Threads...",ij.plugin.ThreadLister
-utilities04="Benchmark",ij.plugin.filter.Benchmark
-utilities05="Reset...",ij.plugin.SimpleCommands("reset")
-utilities06="Monitor Memory...",ij.plugin.frame.MemoryMonitor
-utilities07="Search...",ij.plugin.SimpleCommands("search")
-utilities08="Capture Screen[G]",ij.plugin.ScreenGrabber
-utilities09="Capture Image",ij.plugin.ScreenGrabber("image")
-utilities10="Find Commands...[l]",ij.plugin.CommandFinder
+utilities02="Find Commands...[l]",ij.plugin.CommandFinder
+utilities03="Search...",ij.plugin.SimpleCommands("search")
+utilities04="Monitor Memory...",ij.plugin.frame.MemoryMonitor
+utilities05=-
+utilities06="Capture Screen[G]",ij.plugin.ScreenGrabber
+utilities07="Capture Image",ij.plugin.ScreenGrabber("image")
+utilities08=-
+utilities09="ImageJ Properties...",ij.plugin.JavaProperties
+utilities10="Threads...",ij.plugin.ThreadLister
+utilities11="Benchmark",ij.plugin.filter.Benchmark
+utilities12="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

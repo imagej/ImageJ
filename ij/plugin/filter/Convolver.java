@@ -61,7 +61,6 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		if (isLineRoi) ip.resetRoi();
 		if (!kernelError)
 			convolve(ip, kernel, kw, kh);
-		if (canceled) Undo.undo();
 	}
 	
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
@@ -243,15 +242,18 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				if (thread.isInterrupted()) return false;
 				if (isMainThread) {
 					if (IJ.escapePressed()) {
-						IJ.beep();
 						canceled = true;
 						ip.reset();
+						ImageProcessor originalIp = imp.getProcessor();
+						if (originalIp.getNChannels() > 1)
+							originalIp.reset();
 						return false;
 					}
 					showProgress((y-y1)/(double)(y2-y1));
 				}
 			}
 			for(int x=x1; x<x2; x++) {
+				if (canceled) return false;
 				sum = 0.0;
 				i = 0;
 				edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;

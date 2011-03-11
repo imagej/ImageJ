@@ -348,6 +348,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void show(String statusMessage) {
 		if (win!=null) return;
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
+			if (isComposite()) ((CompositeImage)this).reset();
 			ImagePlus img = WindowManager.getCurrentImage();
 			if (img!=null) img.saveRoi();
 			WindowManager.setTempCurrentImage(this);
@@ -1276,7 +1277,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			//}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
-			if (!(Interpreter.isBatchMode()||noUpdateMode))
+			if (!noUpdateMode)
 				updateAndRepaintWindow();
 			else
 				img = null;
