@@ -27,7 +27,7 @@ a list ImageProcessors of same type and size.
 @see ij.gui.ImageCanvas
 */
    
-public class ImagePlus implements ImageObserver, Measurements {
+public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** 8-bit grayscale (unsigned)*/
 	public static final int GRAY8 = 0;
@@ -384,6 +384,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (imageType==GRAY16 && default16bitDisplayRange!=0) {
 				resetDisplayRange();
 				updateAndDraw();
+			}
+			if (stackSize>1) {
+				int c = getChannel();
+				int z = getSlice();
+				int t = getFrame();
+				if (c>1 || z>1 || t>1)
+					setPosition(c, z, t);
 			}
 			notifyListeners(OPENED);
 		}
@@ -2152,6 +2159,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	public boolean getHideOverlay() {
 		return hideOverlay;
+	}
+
+	/** Returns a shallow copy of this ImagePlus. */
+	public synchronized Object clone() {
+		try {
+			ImagePlus copy = (ImagePlus)super.clone();
+			copy.win = null;
+			return copy;
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
 	}
 
     public String toString() {

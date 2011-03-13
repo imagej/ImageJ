@@ -32,7 +32,13 @@ public class Duplicator implements PlugIn, TextListener {
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);
 		if (!IJ.altKeyDown()||stackSize>1) {
-			if (imp.isHyperStack()) {
+			//boolean composite = imp.isComposite();
+			//String options = composite&&IJ.isMacro()?Macro.getOptions():null;
+        	//if  (options!=null) {
+            //	if (options.indexOf("duplicate=")==-1&&options.indexOf("channels=")==-1)
+            //		composite = false;
+            //}
+			if (imp.isHyperStack() || imp.isComposite()) {
 				duplicateHyperstack(imp, newTitle);
 				return;
 			} else
@@ -187,6 +193,7 @@ public class Duplicator implements PlugIn, TextListener {
 			} else if (firstC==lastC) {
 				LUT lut = ((CompositeImage)imp).getChannelLut(firstC);
 				imp2.getProcessor().setColorModel(lut);
+				imp2.setDisplayRange(lut.min, lut.max);
 			}
         }
 		imp2.setOpenAsHyperStack(true);
@@ -244,7 +251,8 @@ public class Duplicator implements PlugIn, TextListener {
 		Roi roi = imp.getRoi();
 		if (!duplicateStack) {
 			int nChannels = imp.getNChannels();
-			if (nChannels>1 && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+			boolean singleComposite = imp.isComposite() && nChannels==imp.getStackSize();
+			if (!singleComposite && nChannels>1 && imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
 				firstC = 1;
 				lastC = nChannels;
 			} else
@@ -258,16 +266,19 @@ public class Duplicator implements PlugIn, TextListener {
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
 			imp2.restoreRoi();
+		if (IJ.isMacro()&&imp2.getWindow()!=null)
+			IJ.wait(50);
 	}
 
 	String showHSDialog(ImagePlus imp, String newTitle) {
 		int nChannels = imp.getNChannels();
 		int nSlices = imp.getNSlices();
 		int nFrames = imp.getNFrames();
+		boolean composite = imp.isComposite() && nChannels==imp.getStackSize();
 		GenericDialog gd = new GenericDialog("Duplicate");
 		gd.addStringField("Title:", newTitle, 15);
 		gd.setInsets(12, 20, 8);
-		gd.addCheckbox("Duplicate hyperstack", duplicateStack);
+		gd.addCheckbox("Duplicate hyperstack", duplicateStack||composite);
 		int nRangeFields = 0;
 		if (nChannels>1) {
 			gd.setInsets(2, 30, 3);
