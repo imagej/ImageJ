@@ -7,6 +7,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
 import ij.plugin.frame.Recorder;
+import ij.measure.Calibration;
 
 /** This plugin implements the Image/Duplicate command.
 <pre>
@@ -32,12 +33,6 @@ public class Duplicator implements PlugIn, TextListener {
 		String title = imp.getTitle();
 		String newTitle = WindowManager.getUniqueName(title);
 		if (!IJ.altKeyDown()||stackSize>1) {
-			//boolean composite = imp.isComposite();
-			//String options = composite&&IJ.isMacro()?Macro.getOptions():null;
-        	//if  (options!=null) {
-            //	if (options.indexOf("duplicate=")==-1&&options.indexOf("channels=")==-1)
-            //		composite = false;
-            //}
 			if (imp.isHyperStack() || imp.isComposite()) {
 				duplicateHyperstack(imp, newTitle);
 				return;
@@ -54,6 +49,11 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2 = run(imp);
 		else
 			imp2 = duplicateImage(imp);
+		Calibration cal = imp2.getCalibration();
+		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
+			cal.xOrigin -= roi.getBounds().x;
+			cal.yOrigin -= roi.getBounds().y;
+		}
 		imp2.setTitle(newTitle);
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
@@ -262,6 +262,11 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2 = run(imp, firstC, lastC, firstZ, lastZ, firstT, lastT);
 		if (imp2==null) return;
+		Calibration cal = imp2.getCalibration();
+		if (roi!=null && (cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
+			cal.xOrigin -= roi.getBounds().x;
+			cal.yOrigin -= roi.getBounds().y;
+		}
 		imp2.setTitle(newTitle);
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
