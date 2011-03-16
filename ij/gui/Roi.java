@@ -59,7 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
-	protected boolean hide;
+	protected int slice;
 
 
 
@@ -757,7 +757,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	public void draw(Graphics g) {
-		if (ic==null) return;
+		if (ic==null || skip()) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		if (Interpreter.isBatchMode() && ic.getDisplayList()!=null && strokeColor==null && fillColor==null)
@@ -1274,6 +1274,25 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public int getRoundRectArcSize() {
 		return arcSize;
 	}
+	
+	/** Set the slice that this ROI is associated with. Set to zero
+		to have the ROI displayed on all slices. */
+	public void setSlice(int slice) {
+		this.slice = slice;
+	}
+	
+	/** Returns the slice that this ROI is associated with. Returns
+		zero if this ROI is not associated with a particular slice. */
+	public int getSlice() {
+		return slice;
+	}
+	
+	protected boolean skip() {
+		if (slice==0 || imp==null || imp.getStackSize()==1)
+			return false;
+		else
+			return !(slice==imp.getCurrentSlice());
+	}
 
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
 		if no paste operation is in progress.
@@ -1347,8 +1366,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}
 
+	/** Deprecated */
 	public void temporarilyHide() {
-		hide = true;
 	}
 
 }

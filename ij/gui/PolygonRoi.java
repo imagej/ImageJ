@@ -147,6 +147,7 @@ public class PolygonRoi extends Roi {
 	}
 	
 	public void draw(Graphics g) {
+		if (skip()) return;
         updatePolygon();
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean fill = false;

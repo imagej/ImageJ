@@ -5,14 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.45d 14 March 2011</u>
+<li> <u>1.45d 16 March 2011</u>
 <ul>
 <li> Thanks to Tiago Ferreira, the <i>Plugins&gt;Utilities</i> menu is now
-more logically organized. 
+more logically organized and the "Do" menu in the <i>Process&gt;Binary&gt;Options</i>
+includes "Outline", "Fill Holes" and "Skeletonize" choices.
 <li> Thanks to Tseng Qingzong, the particle analyzer respects the <i>Process&gt;Binary&gt;Options</i>
 "Black background" setting when working with non-thresholded 8-bit binary images.
 <li> The <i>Image&gt;Duplicate</i> command can duplicate a range 
-of channeles in C>1, Z=1, T=1 hyperstacks.
+of channels in C&gt;1, Z=1, T=1 hyperstacks.
 <li> Thanks to Frank Sprenger, fixed bugs that caused <i>Image&gt;Color&gt;Split Channels</i> and
 <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> to not generate grayscale images when the
 input image was in "Grayscale" mode and to sometimes not work correctly in batch mode.
@@ -20,6 +21,8 @@ input image was in "Grayscale" mode and to sometimes not work correctly in batch
 non-batch mode macros.
 <li> Thanks to Jarek Sacha, fixed bugs that caused the coordinate origin
 to be unchanged after <i>Image&gt;Crop</i> and <i>Image&gt;Duplicate</i>.
+<li> Thanks to Bill Mohler, fixed a bug that could cause an exception when
+working with single channel composite images.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

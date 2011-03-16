@@ -101,6 +101,7 @@ public class RoiEncoder {
 		putShort(12, r.y+r.height);	//bottom
 		putShort(14, r.x+r.width);	//right
 		putShort(16, n);
+		putShort(RoiDecoder.SLICE, roi.getSlice());
 		
 		if (type==rect) {
 			int arcSize = roi.getRoundRectArcSize();

@@ -68,6 +68,7 @@ public class PointRoi extends PolygonRoi {
 	/** Draws the points on the image. */
 	public void draw(Graphics g) {
 		//IJ.log("draw: " + nPoints+"  "+width+"  "+height);
+		if (skip()) return;
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
 		int size2 = HANDLE_SIZE/2;

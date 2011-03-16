@@ -213,11 +213,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
 				currentRoi = roi;
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
-				int slice = getSliceNumber(roi.getName());
+				int slice = roi.getSlice();
+				if (slice==0)
+					getSliceNumber(roi.getName());
 				if (slice==-1 || slice==imp.getCurrentSlice())
 					drawRoi(g, roi, drawLabels?i:-1);
-			} else
+			} else {
+				int slice = roi.getSlice();
+				roi.setSlice(0);
 				drawRoi(g, roi, drawLabels?i:-1);
+				roi.setSlice(1);
+			}
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }
@@ -239,32 +245,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		initGraphics(g);
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
-		boolean drawLabels = overlay.getDrawLabels();
-		int stackSize = imp.getStackSize();
-		if (n>1 && n==stackSize && stackLabels(overlay)) { // created by Image>Stacks>Label
-			int index = imp.getCurrentSlice()-1;
-			if (index<n) {
-				overlay.temporarilyHide(0, index-1);
-				overlay.temporarilyHide(index+1, stackSize-1);
-			}
-		}
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
-			drawRoi(g, overlay.get(i), drawLabels?i+LIST_OFFSET:-1);
+			drawRoi(g, overlay.get(i), -1);
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
 	}
-    
-	/** Was this overlay created by Image/Stacks/Label? */
-	public boolean stackLabels(Overlay o) {
-		if (imp!=null && imp.isComposite()) return false;
-		Roi roi0 = o.get(0);
-		boolean labels = (roi0 instanceof TextRoi) && (o.get(o.size()-1) instanceof TextRoi);
-		String text = null;
-		try {text = ((TextRoi)roi0).getText();} catch(Exception e) {return false;}
-		return labels && text.length()>0 && (Character.isDigit(text.charAt(0))||text.charAt(0)==' ');
-	}
-	
+    	
     void initGraphics(Graphics g) {
 		if (smallFont==null) {
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);

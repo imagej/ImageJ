@@ -37,6 +37,8 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
 		gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
+		//if (IJ.isWindows())
+		//	gd.addCheckbox("Disable DirecDraw", Prefs.disableDirectDraw);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -65,6 +67,8 @@ public class Options implements PlugIn {
 		Prefs.requireControlKey = gd.getNextBoolean();
 		Prefs.moveToMisc = gd.getNextBoolean();
 		Prefs.runSocketListener = gd.getNextBoolean();
+		//if (IJ.isWindows())
+		//	Prefs.disableDirectDraw = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}
 

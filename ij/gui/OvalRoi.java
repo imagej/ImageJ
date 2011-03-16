@@ -207,7 +207,7 @@ public class OvalRoi extends Roi {
 	}
 
 	public void draw(Graphics g) {
-		if (ic==null) return;
+		if (ic==null || skip()) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);

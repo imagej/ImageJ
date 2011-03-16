@@ -1032,7 +1032,7 @@ public class ShapeRoi extends Roi {
 
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
-		if (ic==null) return;
+		if (ic==null || skip()) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
