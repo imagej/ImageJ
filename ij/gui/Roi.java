@@ -1275,20 +1275,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return arcSize;
 	}
 	
-	/** Set the slice that this ROI is associated with. Set to zero
-		to have the ROI displayed on all slices. */
+	/** Experimental */
 	public void setSlice(int slice) {
 		this.slice = slice;
 	}
 	
-	/** Returns the slice that this ROI is associated with. Returns
-		zero if this ROI is not associated with a particular slice. */
+	/** Experimental */
 	public int getSlice() {
 		return slice;
 	}
 	
 	protected boolean skip() {
-		if (slice==0 || imp==null || imp.getStackSize()==1)
+		if (slice==0 || imp==null || imp.getStackSize()==1 ||
+		(!Prefs.showAllSliceOnly&&ic!=null&&ic.getShowAllROIs()))
 			return false;
 		else
 			return !(slice==imp.getCurrentSlice());

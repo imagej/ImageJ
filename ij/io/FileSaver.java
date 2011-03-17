@@ -118,12 +118,7 @@ public class FileSaver {
 		if (imp.getHideOverlay())
 			return null;
 		Overlay overlay = imp.getOverlay();
-		if (overlay==null) {
-			ImageCanvas ic = imp.getCanvas();
-			if (ic==null) return null;
-			overlay = ic.getShowAllList(); // ROI Manager "Show All" list
-			if (overlay==null) return null;
-		}
+		if (overlay==null) return null;
 		int n = overlay.size();
 		if (n==0) return null;
 		if (Orthogonal_Views.isOrthoViewsImage(imp))

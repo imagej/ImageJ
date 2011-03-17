@@ -27,7 +27,7 @@ import java.awt.*;
 	53-53   arrow head size (v1.43p or later)
 	54-55   rounded rect arc size (v1.43p or later)
 	56-57   slice number
-	58-63	 reserved (zero)
+	58-63   reserved (zeros)
 	64-       x-coordinates (short), followed by y-coordinates
 */
 
