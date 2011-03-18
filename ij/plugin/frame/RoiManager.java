@@ -432,9 +432,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			int slice = imp.getCurrentSlice();
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
-			roi.setSlice(slice);
+			if (roi.getPosition()==0)
+				roi.setPosition(slice);
 		} else
-			roi.setSlice(0);
+			roi.setPosition(0);
 		return label;
 	}
 
@@ -603,7 +604,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the slice number associated with the specified ROI or name,
 		or -1 if the ROI or name does not include a slice number. */
 	int getSliceNumber(Roi roi, String label) {
-		int slice = roi!=null?roi.getSlice():-1;
+		int slice = roi!=null?roi.getPosition():-1;
 		if (slice==0)
 			slice=-1;
 		if (slice==-1)
@@ -1250,7 +1251,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(name);
 			rois.remove(name);
 			roi.setName(name2);
-			roi.setSlice(0);
+			roi.setPosition(0);
 			rois.put(name2, roi);
 			list.replaceItem(name2, index);
 		}

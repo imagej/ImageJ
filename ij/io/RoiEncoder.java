@@ -94,14 +94,14 @@ public class RoiEncoder {
 		Rectangle r = roi.getBounds();
 		
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
-		putShort(4, VERSION);
-		data[6] = (byte)type;
-		putShort(8, r.y);			//top
-		putShort(10, r.x);			//left
-		putShort(12, r.y+r.height);	//bottom
-		putShort(14, r.x+r.width);	//right
-		putShort(16, n);
-		putShort(RoiDecoder.SLICE, roi.getSlice());
+		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
+		data[RoiDecoder.TYPE] = (byte)type;
+		putShort(RoiDecoder.TOP, r.y);
+		putShort(RoiDecoder.LEFT, r.x);
+		putShort(RoiDecoder.BOTTOM, r.y+r.height);
+		putShort(RoiDecoder.RIGHT, r.x+r.width);	
+		putShort(RoiDecoder.N_COORDINATES, n);
+		putInt(RoiDecoder.POSITION, roi.getPosition());
 		
 		if (type==rect) {
 			int arcSize = roi.getRoundRectArcSize();
@@ -180,12 +180,14 @@ public class RoiEncoder {
 		Rectangle r = roi.getBounds();
 		data  = new byte[HEADER_SIZE + shapeArray.length*4];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
-		putShort(4, VERSION);
-		data[6] = (byte)type;
-		putShort(8, r.y);			//top
-		putShort(10, r.x);			//left
-		putShort(12, r.y+r.height);	//bottom
-		putShort(14, r.x+r.width);	//right
+		
+		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
+		data[RoiDecoder.TYPE] = (byte)type;
+		putShort(RoiDecoder.TOP, r.y);
+		putShort(RoiDecoder.LEFT, r.x);
+		putShort(RoiDecoder.BOTTOM, r.y+r.height);
+		putShort(RoiDecoder.RIGHT, r.x+r.width);	
+		putInt(RoiDecoder.POSITION, roi.getPosition());
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
 		if (VERSION>=218) saveStrokeWidthAndColor(roi);

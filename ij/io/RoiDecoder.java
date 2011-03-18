@@ -26,8 +26,8 @@ import java.awt.*;
 	52-52   arrow style or aspect ratio (v1.43p or later)
 	53-53   arrow head size (v1.43p or later)
 	54-55   rounded rect arc size (v1.43p or later)
-	56-57   slice number
-	58-63   reserved (zeros)
+	56-59   image number
+	60-63   reserved (zeros)
 	64-       x-coordinates (short), followed by y-coordinates
 */
 
@@ -55,7 +55,7 @@ public class RoiDecoder {
 	public static final int ELLIPSE_ASPECT_RATIO = 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
-	public static final int SLICE = 56;
+	public static final int POSITION = 56;
 	public static final int COORDINATES = 64;
 	
 	// subtypes
@@ -118,7 +118,7 @@ public class RoiDecoder {
 		int height = bottom-top;
 		int n = getShort(N_COORDINATES);
 		int options = getShort(OPTIONS);
-		int slice = getShort(SLICE);
+		int position = getInt(POSITION);
 		
 		if (name!=null && name.endsWith(".roi"))
 			name = name.substring(0, name.length()-4);
@@ -128,7 +128,7 @@ public class RoiDecoder {
 		if (isComposite) {
 			roi = getShapeRoi();
 			if (version>=218) getStrokeWidthAndColor(roi);
-			roi.setSlice(slice);
+			roi.setPosition(position);
 			return roi;
 		}
 
@@ -225,7 +225,7 @@ public class RoiDecoder {
 		if (version>=218 && subtype==TEXT)
 			roi = getTextRoi(roi);
 
-		roi.setSlice(slice);
+		roi.setPosition(position);
 		return roi;
 	}
 	

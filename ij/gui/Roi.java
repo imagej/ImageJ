@@ -59,9 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
-	protected int slice;
-
-
+	private int imageNumber;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1275,22 +1273,28 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return arcSize;
 	}
 	
-	/** Experimental */
-	public void setSlice(int slice) {
-		this.slice = slice;
-	}
-	
-	/** Experimental */
-	public int getSlice() {
-		return slice;
+	/** Sets the stack position (image number) of this ROI. Set to
+	* zero to have the ROI displayed on all images in the stack.
+	* @see ij.ImagePlus#getStackIndex(int,int,int)
+	*/
+	public void setPosition(int imageNumber) {
+		this.imageNumber = imageNumber;
+	} 
+
+	/** Returns the position (image number) of this image within the stack,
+	* or zero if this ROI is not associated with a particular stack image.
+	* @see ij.ImagePlus#convertIndexToPosition(int)
+	*/
+	public int getPosition() {
+		return imageNumber;
 	}
 	
 	protected boolean skip() {
-		if (slice==0 || imp==null || imp.getStackSize()==1 ||
-		(!Prefs.showAllSliceOnly&&ic!=null&&ic.getShowAllROIs()))
+		if (imageNumber==0 || imp==null || imp.getStackSize()==1
+		|| (!Prefs.showAllSliceOnly&&ic!=null&&ic.getShowAllROIs()))
 			return false;
 		else
-			return !(slice==imp.getCurrentSlice());
+			return !(imageNumber==imp.getCurrentSlice());
 	}
 
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)

@@ -213,14 +213,13 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				Rectangle r = roi!=null?roi.getBounds():null;
 				yoffset = r!=null?r.height:fontSize;
 			}
-			Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
-			if (frame>=firstFrame&&frame<=lastFrame)
+			if (frame>=firstFrame&&frame<=lastFrame) {
+				Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
 				roi.setStrokeColor(color);
-			else
-				roi.setStrokeColor(new Color(0f,0f,0f,0f)); // transparent
-			roi.setNonScalable(true);
-			roi.setSlice(image);
-			overlay.add(roi);
+				roi.setNonScalable(true);
+				roi.setPosition(image);
+				overlay.add(roi);
+			}
 			if (image==imp.getStackSize()||previewing)
 				imp.setOverlay(overlay);
 		} else if (frame>=firstFrame&&frame<=lastFrame) {

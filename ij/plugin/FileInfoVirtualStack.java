@@ -79,6 +79,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		imp2.setFileInfo(fi);
 		if (imp!=null && props!=null) {
 			imp2.setCalibration(imp.getCalibration());
+			imp2.setOverlay(imp.getOverlay());
 			if (fi.info!=null)
 				imp2.setProperty("Info", fi.info);
 			int channels = getInt(props,"channels");
