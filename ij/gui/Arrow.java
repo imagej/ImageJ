@@ -44,7 +44,7 @@ public class Arrow extends Line {
 
 	/** Draws this arrow on the image. */
 	public void draw(Graphics g) {
-		if (ic==null || skip()) return;
+		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;

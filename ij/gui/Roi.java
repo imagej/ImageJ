@@ -755,7 +755,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	public void draw(Graphics g) {
-		if (ic==null || skip()) return;
+		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		if (Interpreter.isBatchMode() && ic.getDisplayList()!=null && strokeColor==null && fillColor==null)
@@ -1273,30 +1273,27 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return arcSize;
 	}
 	
-	/** Sets the stack position (image number) of this ROI. Set to
-	* zero to have the ROI displayed on all images in the stack.
+	/** Sets the stack position (image number) of this ROI. In an overlay, this
+	* ROI will only be displayed when the stack is at the specified position.
+	* Set to zero to have the ROI displayed on all images in the stack.
+	* @see ij.gui.Overlay
 	* @see ij.ImagePlus#getStackIndex(int,int,int)
 	*/
-	public void setPosition(int imageNumber) {
+	public void setPosition(int n) {
+		if (imageNumber<0)
+			imageNumber = 0;
 		this.imageNumber = imageNumber;
 	} 
 
-	/** Returns the position (image number) of this image within the stack,
-	* or zero if this ROI is not associated with a particular stack image.
+	/** Returns the stack position (image number) of this ROI, or
+	*  zero if the ROI is not associated with a particular stack image.
+	* @see ij.gui.Overlay
 	* @see ij.ImagePlus#convertIndexToPosition(int)
 	*/
 	public int getPosition() {
 		return imageNumber;
 	}
 	
-	protected boolean skip() {
-		if (imageNumber==0 || imp==null || imp.getStackSize()==1
-		|| (!Prefs.showAllSliceOnly&&ic!=null&&ic.getShowAllROIs()))
-			return false;
-		else
-			return !(imageNumber==imp.getCurrentSlice());
-	}
-
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
 		if no paste operation is in progress.
 		@see ij.process.Blitter

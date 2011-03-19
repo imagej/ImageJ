@@ -289,7 +289,7 @@ public class Line extends Roi {
 
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
-		if (ic==null || skip()) return;
+		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		//if (fillColor!=null) color = fillColor;
 		g.setColor(color);

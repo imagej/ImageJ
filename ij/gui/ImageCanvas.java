@@ -216,7 +216,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				int slice = roi.getPosition();
 				if (slice==0)
 					getSliceNumber(roi.getName());
-				if (slice==-1 || slice==imp.getCurrentSlice())
+				if (slice==0 || slice==imp.getCurrentSlice())
 					drawRoi(g, roi, drawLabels?i:-1);
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
@@ -225,7 +225,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     
 	public int getSliceNumber(String label) {
-		int slice = -1;
+		int slice = 0;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
 			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
 		else if (label.length()>=17 && label.charAt(5)=='-' && label.charAt(11)=='-')
@@ -241,9 +241,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		initGraphics(g);
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
+		int slice = imp!=null?imp.getCurrentSlice():-1;
+		if (imp.getStackSize()==1)
+			slice = -1;
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
-			drawRoi(g, overlay.get(i), -1);
+			Roi roi = overlay.get(i);
+			int position = roi.getPosition();
+			if (position==0 || slice==position)
+				drawRoi(g, roi, -1);
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
 	}

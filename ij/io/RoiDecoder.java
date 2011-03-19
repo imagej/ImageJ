@@ -26,7 +26,7 @@ import java.awt.*;
 	52-52   arrow style or aspect ratio (v1.43p or later)
 	53-53   arrow head size (v1.43p or later)
 	54-55   rounded rect arc size (v1.43p or later)
-	56-59   image number
+	56-59   position
 	60-63   reserved (zeros)
 	64-       x-coordinates (short), followed by y-coordinates
 */

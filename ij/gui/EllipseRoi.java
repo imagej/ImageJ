@@ -32,7 +32,6 @@ public class EllipseRoi extends PolygonRoi {
 
 	public void draw(Graphics g) {
 		super.draw(g);
-		if (skip()) return;
 		int size2 = HANDLE_SIZE/2;
 		if (!overlay) {
             mag = ic!=null?ic.getMagnification():1.0;
