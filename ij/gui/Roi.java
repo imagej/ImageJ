@@ -1280,9 +1280,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	* @see ij.ImagePlus#getStackIndex(int,int,int)
 	*/
 	public void setPosition(int n) {
-		if (imageNumber<0)
-			imageNumber = 0;
-		this.imageNumber = imageNumber;
+		if (n<0) n=0;
+		this.imageNumber = n;
 	} 
 
 	/** Returns the stack position (image number) of this ROI, or

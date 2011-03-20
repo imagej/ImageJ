@@ -4607,7 +4607,9 @@ public class Functions implements MacroConstants, Measurements {
 		if (!(interp.token==WORD||interp.token==NUMERIC_FUNCTION))
 			interp.error("Function name expected: ");
 		String name = interp.tokenString;
-		if (name.equals("deleteRows"))
+		if (name.equals("pad"))
+			return IJ.pad((int)getFirstArg(), (int)getLastArg());
+		else if (name.equals("deleteRows"))
 			IJ.deleteRows((int)getFirstArg(), (int)getLastArg());
 		else if (name.equals("log"))
 			IJ.log(getStringArg());
@@ -4671,6 +4673,11 @@ public class Functions implements MacroConstants, Measurements {
 			checkIndex(index, 0, size-1);
 			overlay.remove(index);
 			imp.draw();
+			return Double.NaN;
+		} else if (name.equals("setPosition")) {
+			int n = (int)getArg();
+			if (size>0)
+				overlay.get(size-1).setPosition(n);
 			return Double.NaN;
 		} else
 			interp.error("Unrecognized function name");

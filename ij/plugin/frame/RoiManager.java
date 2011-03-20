@@ -380,7 +380,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	/** Adds the specified ROI to the list. The third argument ('n') will 
-		be used to form the first part of the ROI lable if it is >= 0. */
+		be used to form the first part of the ROI label if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (roi==null) return;
 		String label = getLabel(imp, roi, n);
@@ -388,10 +388,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.add(label);
 		roi.setName(label);
 		roiCopy = (Roi)roi.clone();
-		Calibration cal = imp.getCalibration();
-		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-			Rectangle r = roiCopy.getBounds();
-			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
+				Rectangle r = roiCopy.getBounds();
+				roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+			}
 		}
 		rois.put(label, roiCopy);
 	}
@@ -428,7 +430,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		xs = "000000" + xc;
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
-		if (n<0 && imp!=null && imp.getStackSize()>1) {
+		if (imp!=null && imp.getStackSize()>1) {
 			int slice = imp.getCurrentSlice();
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;

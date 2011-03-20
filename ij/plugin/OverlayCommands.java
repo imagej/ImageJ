@@ -243,7 +243,7 @@ public class OverlayCommands implements PlugIn {
 		}
 		rm.runCommand("reset");
 		for (int i=0; i<overlay.size(); i++)
-			rm.add(imp, overlay.get(i), i);
+			rm.add((ImagePlus)null, overlay.get(i), i);
 		rm.setEditMode(imp, true);
 		if (rm.getCount()==overlay.size())
 			imp.setOverlay(null);
