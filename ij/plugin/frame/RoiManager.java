@@ -325,7 +325,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String label = list.getItem(n-1);
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
-				int slice2 = getSliceNumber(label);
+				int slice2 = getSliceNumber(roi2, label);
 				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode())
 					return false;
 			}
@@ -380,7 +380,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	/** Adds the specified ROI to the list. The third argument ('n') will 
-		be used to form the first part of the ROI lable if it is >= 0. */
+		be used to form the first part of the ROI label if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (roi==null) return;
 		String label = getLabel(imp, roi, n);
@@ -388,10 +388,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		list.add(label);
 		roi.setName(label);
 		roiCopy = (Roi)roi.clone();
-		Calibration cal = imp.getCalibration();
-		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-			Rectangle r = roiCopy.getBounds();
-			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
+				Rectangle r = roiCopy.getBounds();
+				roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
+			}
 		}
 		rois.put(label, roiCopy);
 	}
@@ -429,8 +431,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp!=null && imp.getStackSize()>1) {
-			String zs = "000000" + imp.getCurrentSlice();
+			int slice = imp.getCurrentSlice();
+			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
+			roi.setPosition(slice);
 		}
 		return label;
 	}
@@ -502,9 +506,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index>=0) {
 			String name = list.getItem(index);
 			rois.remove(name);
-			if (clone)
-				rois.put(name, (Roi)roi.clone());
-			else
+			if (clone) {
+				Roi roi2 = (Roi)roi.clone();
+				int position = roi.getPosition();
+				if (position!=0 && imp.getStackSize()>1)
+					roi2.setPosition(imp.getCurrentSlice());
+				rois.put(name, roi2);
+			} else
 				rois.put(name, roi);
 		}
 		if (record()) Recorder.record("roiManager", "Update");
@@ -547,7 +555,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null || roi==null)
 			return false;
         if (setSlice) {
-            int n = getSliceNumber(label);
+            int n = getSliceNumber(roi, label);
             if (n>=1 && n<=imp.getStackSize()) {
             	if (imp.isHyperStack()||imp.isComposite())
                 	imp.setPosition(n);
@@ -597,6 +605,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return slice;
 	}
 	
+	/** Returns the slice number associated with the specified ROI or name,
+		or -1 if the ROI or name does not include a slice number. */
+	int getSliceNumber(Roi roi, String label) {
+		int slice = roi!=null?roi.getPosition():-1;
+		if (slice==0)
+			slice=-1;
+		if (slice==-1)
+			slice = getSliceNumber(label);
+		return slice;
+	}
+
 	void open(String path) {
 		Macro.setOptions(null);
 		String name = null;
@@ -758,8 +777,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		boolean allSliceOne = true;
 		for (int i=0; i<indexes.length; i++) {
 			String label = list.getItem(indexes[i]);
-			if (getSliceNumber(label)>1) allSliceOne = false;
 			Roi roi = (Roi)rois.get(label);
+			if (getSliceNumber(roi,label)>1) allSliceOne = false;
 		}
 		int measurements = Analyzer.getMeasurements();
 		if (imp.getStackSize()>1)
@@ -926,7 +945,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (roi==null) continue;
 			if (mode==FILL&&(type==Roi.POLYLINE||type==Roi.FREELINE||type==Roi.ANGLE))
 				mode = DRAW;
-            int slice2 = getSliceNumber(name);
+            int slice2 = getSliceNumber(roi, name);
             if (slice2>=1 && slice2<=imp.getStackSize()) {
                 imp.setSlice(slice2);
 				ip = imp.getProcessor();
@@ -1236,6 +1255,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(name);
 			rois.remove(name);
 			roi.setName(name2);
+			roi.setPosition(0);
 			rois.put(name2, roi);
 			list.replaceItem(name2, index);
 		}

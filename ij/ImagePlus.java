@@ -27,7 +27,7 @@ a list ImageProcessors of same type and size.
 @see ij.gui.ImageCanvas
 */
    
-public class ImagePlus implements ImageObserver, Measurements {
+public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** 8-bit grayscale (unsigned)*/
 	public static final int GRAY8 = 0;
@@ -348,6 +348,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 	public void show(String statusMessage) {
 		if (win!=null) return;
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
+			if (isComposite()) ((CompositeImage)this).reset();
 			ImagePlus img = WindowManager.getCurrentImage();
 			if (img!=null) img.saveRoi();
 			WindowManager.setTempCurrentImage(this);
@@ -383,6 +384,13 @@ public class ImagePlus implements ImageObserver, Measurements {
 			if (imageType==GRAY16 && default16bitDisplayRange!=0) {
 				resetDisplayRange();
 				updateAndDraw();
+			}
+			if (stackSize>1) {
+				int c = getChannel();
+				int z = getSlice();
+				int t = getFrame();
+				if (c>1 || z>1 || t>1)
+					setPosition(c, z, t);
 			}
 			notifyListeners(OPENED);
 		}
@@ -1276,7 +1284,7 @@ public class ImagePlus implements ImageObserver, Measurements {
 			//}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
-			if (!(Interpreter.isBatchMode()||noUpdateMode))
+			if (!noUpdateMode)
 				updateAndRepaintWindow();
 			else
 				img = null;
@@ -2067,15 +2075,6 @@ public class ImagePlus implements ImageObserver, Measurements {
 		imp2.setRoi(getRoi());	
 		ImageCanvas ic = getCanvas();
 		Overlay overlay2 = getOverlay();
-		int n = overlay2!=null?overlay2.size():0;
-		int stackSize = getStackSize();
-		if (n>1 && n==stackSize && ic2.stackLabels(overlay2) && !isComposite()) { // created by Image>Stacks>Label
-			int index = getCurrentSlice()-1;
-			if (index<n) {
-				overlay2.temporarilyHide(0, index-1);
-				overlay2.temporarilyHide(index+1, stackSize-1);
-			}
-		}
 		ic2.setOverlay(overlay2);
 		if (ic!=null) {
 			ic2.setShowAllROIs(ic.getShowAllROIs());
@@ -2151,6 +2150,17 @@ public class ImagePlus implements ImageObserver, Measurements {
 
 	public boolean getHideOverlay() {
 		return hideOverlay;
+	}
+
+	/** Returns a shallow copy of this ImagePlus. */
+	public synchronized Object clone() {
+		try {
+			ImagePlus copy = (ImagePlus)super.clone();
+			copy.win = null;
+			return copy;
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
 	}
 
     public String toString() {

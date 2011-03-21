@@ -720,7 +720,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				canceled = true;
 				return false;
 			}
-			if (invertedLut) {
+			boolean threshold255 = invertedLut;
+			if (Prefs.blackBackground)
+				threshold255 = !threshold255;
+			if (threshold255) {
 				level1 = 255;
 				level2 = 255;
 				fillColor = 64;
@@ -861,6 +864,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				if (resetCounter)
 					roiManager.runCommand("reset");
 			}
+			if (imp.getStackSize()>1)
+				roi.setPosition(imp.getCurrentSlice());
 			roiManager.add(imp, roi, rt.getCounter());
 		}
 		if (showResults)

@@ -28,6 +28,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     private PlugInFilterRunner pfr;
     private Thread mainThread;
     private int pass;
+    private boolean aborted;
 
     /** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
      * of the filter.
@@ -187,6 +188,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         		if (isMainThread) {
 					showProgress((y-roi.y)/(double)(roi.height));
 					if (imp!= null && IJ.escapePressed()) {
+						aborted = true;
 						ip.reset();
 						ImageProcessor originalIp = imp.getProcessor();
 						if (originalIp.getNChannels() > 1)
@@ -210,6 +212,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             float max = 0f;                         // F I L T E R   the line
             boolean fullCalculation = true;
             for (int x=roi.x, p=x+y*width, xCache0=kRadius;  x<xEnd; x++, p++, xCache0++) {
+            	if (aborted) return;
                 if (fullCalculation) {
                     fullCalculation = smallKernel;  //for small kernel, always use the full area, not incremental algorithm
                     if (minOrMaxOrOutliers)

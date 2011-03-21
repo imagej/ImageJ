@@ -207,8 +207,12 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		Overlay overlay = new Overlay();
-		for (int i=0; i<rois.length; i++)
-			overlay.add((Roi)rois[i].clone());
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = (Roi)rois[i].clone();
+			if (!Prefs.showAllSliceOnly)
+				roi.setPosition(0);
+			overlay.add(roi);
+		}
 		imp.setOverlay(overlay);
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) ic.setShowAllROIs(false);
@@ -239,7 +243,7 @@ public class OverlayCommands implements PlugIn {
 		}
 		rm.runCommand("reset");
 		for (int i=0; i<overlay.size(); i++)
-			rm.add(imp, overlay.get(i), i);
+			rm.add((ImagePlus)null, overlay.get(i), i);
 		rm.setEditMode(imp, true);
 		if (rm.getCount()==overlay.size())
 			imp.setOverlay(null);

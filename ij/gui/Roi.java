@@ -59,9 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
-	protected boolean hide;
-
-
+	private int imageNumber;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1274,7 +1272,27 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public int getRoundRectArcSize() {
 		return arcSize;
 	}
+	
+	/** Sets the stack position (image number) of this ROI. In an overlay, this
+	* ROI will only be displayed when the stack is at the specified position.
+	* Set to zero to have the ROI displayed on all images in the stack.
+	* @see ij.gui.Overlay
+	* @see ij.ImagePlus#getStackIndex(int,int,int)
+	*/
+	public void setPosition(int n) {
+		if (n<0) n=0;
+		this.imageNumber = n;
+	} 
 
+	/** Returns the stack position (image number) of this ROI, or
+	*  zero if the ROI is not associated with a particular stack image.
+	* @see ij.gui.Overlay
+	* @see ij.ImagePlus#convertIndexToPosition(int)
+	*/
+	public int getPosition() {
+		return imageNumber;
+	}
+	
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
 		if no paste operation is in progress.
 		@see ij.process.Blitter
@@ -1347,8 +1365,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");
 	}
 
+	/** Deprecated */
 	public void temporarilyHide() {
-		hide = true;
 	}
 
 }

@@ -731,6 +731,14 @@ public class IJ {
 		return df[decimalPlaces].format(n);
 	}
 
+	/** Pad 'n' with leading zeros to the specified number of digits. */
+	public static String pad(int n, int digits) {
+		String str = ""+n;
+		while (str.length()<digits)
+			str = "0"+str;
+		return str;
+	}
+
 	/** Adds the specified class to a Vector to keep it from being garbage
 	collected, which would cause the classes static fields to be reset. 
 	Probably not needed with Java 1.2 or later. */

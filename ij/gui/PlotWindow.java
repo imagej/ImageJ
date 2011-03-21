@@ -82,7 +82,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 
 	// static initializer
 	static {
-		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
 		options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
 		saveXValues = (options&SAVE_X_VALUES)!=0;
 		autoClose = (options&AUTO_CLOSE)!=0;

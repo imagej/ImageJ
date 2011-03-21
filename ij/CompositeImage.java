@@ -575,11 +575,17 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public double getDisplayRangeMin() {
-		return lut[getChannelIndex()].min;
+		if (lut!=null)
+			return lut[getChannelIndex()].min;
+		else
+			return 0.0;
 	}
 
 	public double getDisplayRangeMax() {
-		return lut[getChannelIndex()].max;
+		if (lut!=null)
+			return lut[getChannelIndex()].max;
+		else
+			return 255.0;
 	}
 
 	public void resetDisplayRange() {
