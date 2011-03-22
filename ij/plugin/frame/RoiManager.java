@@ -431,7 +431,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp!=null && imp.getStackSize()>1) {
-			int slice = imp.getCurrentSlice();
+			int slice = roi.getPosition();
+			if (slice==0)
+				slice = imp.getCurrentSlice();
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
 			roi.setPosition(slice);
@@ -509,7 +511,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (clone) {
 				Roi roi2 = (Roi)roi.clone();
 				int position = roi.getPosition();
-				if (position!=0 && imp.getStackSize()>1)
+				if (imp.getStackSize()>1)
 					roi2.setPosition(imp.getCurrentSlice());
 				rois.put(name, roi2);
 			} else

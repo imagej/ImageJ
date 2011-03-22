@@ -5,34 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.45d 19 March 2011</u>
+<li> <u>1.45e 20 March 2011</u>
 <ul>
-<li> Thanks to Tiago Ferreira, the <i>Plugins&gt;Utilities</i> menu is now
-more logically organized and the "Do:" drop down menu in the <i>Process&gt;Binary&gt;Options</i>
-dialog includes "Outline", "Fill Holes" and "Skeletonize" choices.
-<li> An ROI Manager selection no longer loses its stack position when the
-label is changed.
-<li> The "Update" ROI Manager command now updates the z-position.
-<li> Thanks to Tseng Qingzong, the particle analyzer respects the <i>Process&gt;Binary&gt;Options</i>
-"Black background" setting when working with non-thresholded 8-bit binary images.
-<li> The <i>Image&gt;Duplicate</i> command can duplicate a range 
-of channels in C&gt;1, Z=1, T=1 hyperstacks.
-<li> Thanks to Frank Sprenger, fixed bugs that caused <i>Image&gt;Color&gt;Split Channels</i> and
-<i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i> to not generate grayscale images when the
-input image was in "Grayscale" mode and to sometimes not work correctly in batch mode.
-<li> Added the Overlay.setPosition() and IJ.pad() macro functions
-(<a href="macros/examples/StackOverlay.txt">example</a>).
-<li> Added roi.setPosition(), roi.getPosition() and
-IJ.pad() methods
-(<a href="macros/js/StackOverlay.js">example</a>).
-<li> Fixed a bug that could cause the <i>Image&gt;Duplicate</i> command to fail in
-non-batch mode macros.
-<li> Thanks to Jarek Sacha, fixed bugs that caused the coordinate origin
-to be unchanged after <i>Image&gt;Crop</i> and <i>Image&gt;Duplicate</i>.
-<li> Thanks to Bill Mohler, fixed a bug that could cause an exception when
-working with single channel composite images.
-<li> Fixed a bug that caused overlays to not be displayed on stacks opened
-using <i>File&gt;Import&gt;TIFF Virtual Stack</i>
+Thanks to Gabriel Landini, fixed a bug that sometimes caused the ability to
+record the selectWindow macro function to be lost after a macro error.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
