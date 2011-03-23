@@ -109,7 +109,7 @@ import javax.swing.filechooser.*;
 
  	/** Returns the directory selected by the user. */
  	public String getDirectory() {
- 		//IJ.log("getDirectory: "+directory);
+		//IJ.log("getDirectory: "+directory);
 		if (Recorder.record && !IJ.isMacOSX())
 			Recorder.recordPath(title, directory);
  		return directory;

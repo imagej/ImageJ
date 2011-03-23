@@ -26,15 +26,25 @@ public class FolderOpener implements PlugIn {
 	private String info1;
 
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("Open Image Sequence...", arg);
-		String directory = od.getDirectory();
-		String name = od.getFileName();
-		if (name==null)
+		String title = "Open Image Sequence...";
+		String macroOptions = Macro.getOptions();
+		String directory = null;
+		if (macroOptions!=null) {
+			directory = Macro.getValue(macroOptions, title, null);
+			if (directory!=null) {
+				File f = new File(directory);
+				if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
+					directory = f.getParent();
+			}
+		}
+		if (directory==null)
+			directory = IJ.getDirectory(title);
+		if (directory==null)
 			return;
 		String[] list = (new File(directory)).list();
 		if (list==null)
 			return;
-		String title = directory;
+		title = directory;
 		if (title.endsWith(File.separator) || title.endsWith("/"))
 			title = title.substring(0, title.length()-1);
 		int index = title.lastIndexOf(File.separatorChar);

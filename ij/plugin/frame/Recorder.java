@@ -300,8 +300,10 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	public static void recordPath(String key, String path) {
-		if (key==null || !recordPath)
-			{recordPath=true; return;}
+		if (key==null || !recordPath) {
+			recordPath = true;
+			return;
+		}
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
