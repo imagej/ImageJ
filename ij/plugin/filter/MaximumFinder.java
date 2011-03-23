@@ -73,7 +73,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private Vector    checkboxes;                   // a reference to the Checkboxes of the dialog
     private boolean thresholdWarningShown = false;  // whether the warning "can't find minima with thresholding" has been shown
     private Label     messageArea;                  // reference to the textmessage area for displaying the number of maxima
-    private boolean   noPointLabels;                // save this setting so it can be restored on exit
     private double    progressDone;                 // for progress bar, fraction of work done so far
     private int       nPasses = 0;                  // for progress bar, how many images to process (sequentially or parallel threads)
     //the following are class variables for having shorter argument lists
@@ -106,7 +105,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      */
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
-        noPointLabels = Prefs.noPointLabels;
         return flags;
     }
 
@@ -182,7 +180,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param ip The image where maxima (or minima) should be found
      */
     public void run(ImageProcessor ip) {
-        Prefs.noPointLabels = true;
         Roi roi = imp.getRoi();
         if (outputType == POINT_SELECTION && !roiSaved) {
             imp.saveRoi(); // save previous selection so user can restore it
@@ -210,7 +207,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         }
         ByteProcessor outIp = null;
         outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
-        if (!previewing) Prefs.noPointLabels = noPointLabels;
         if (outIp == null) return;              //cancelled by user or previewing or no output image
         if (!Prefs.blackBackground)             //normally, output has an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();
@@ -511,7 +507,9 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     xpoints[i] = xy[0];
                     ypoints[i] = xy[1];
                 }
-                imp.setRoi(new PointRoi(xpoints, ypoints, npoints));
+                Roi points = new PointRoi(xpoints, ypoints, npoints);
+                ((PointRoi)points).setHideLabels(true);
+                imp.setRoi(points);
             } else if (outputType==LIST) {
                 Analyzer.resetCounter();
                 ResultsTable rt = ResultsTable.getResultsTable();

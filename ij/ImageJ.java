@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.45e";
-	public static final String BUILD = "5"; 
+	public static final String BUILD = "8"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -612,7 +612,7 @@ public class ImageJ extends Frame implements ActionListener,
 			} else if (macros==0 && (arg.endsWith(".ijm") || arg.endsWith(".txt"))) {
 				IJ.runMacroFile(arg);
 				macros++;
-			} else if (arg.indexOf("ij.ImageJ")==-1) {
+			} else if (arg.length()>0 && arg.indexOf("ij.ImageJ")==-1) {
 				File file = new File(arg);
 				IJ.open(file.getAbsolutePath());
 			}
@@ -623,10 +623,10 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 	
 	// Is there another instance of ImageJ? If so, send it the arguments and quit.
-	static boolean isRunning(String args[]) {
+	static boolean isRunning(String[] args) {
 		if (IJ.debugMode) IJ.log("isRunning: "+args.length);
 		int macros = 0;
-		int nArgs = args.length;
+		int nArgs = args!=null?args.length:0;
 		//if (nArgs==2 && args[0].startsWith("-ijpath"))
 		//	return false;
 		int nCommands = 0;
@@ -652,7 +652,7 @@ public class ImageJ extends Frame implements ActionListener,
 				} else if (arg.startsWith("-run") && i+1<nArgs) {
 					cmd = "run " + args[i+1];
 					args[i+1] = null;
-				} else if (arg.indexOf("ij.ImageJ")==-1 && !arg.startsWith("-"))
+				} else if (arg.indexOf("ij.ImageJ")==-1 && arg.length()>0 && !arg.startsWith("-"))
 					cmd = "open " + arg;
 				if (cmd!=null) {
 					sendArgument(cmd);

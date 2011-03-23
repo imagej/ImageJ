@@ -88,7 +88,7 @@ public class Prefs {
 	/** Double buffer display of selections and overlays. */
 	public static boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */
-	public static boolean noPointLabels = true;
+	public static boolean noPointLabels;
 	/** Disable Edit/Undo command. */
 	public static boolean disableUndo;
 	/** Do not draw black border around image. */
@@ -400,7 +400,7 @@ public class Prefs {
 		antialiasedTools = (options&ANTIALIASED_TOOLS)!=0;
 		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
 		// doubleBuffer = (options&DOUBLE_BUFFER)!=0; // always double buffer
-		noPointLabels = (options&NO_POINT_LABELS)!=0;
+		//noPointLabels = (options&NO_POINT_LABELS)!=0;
 		noBorder = (options&NO_BORDER)!=0;
 		showAllSliceOnly = (options&SHOW_ALL_SLICE_ONLY)!=0;
 		copyColumnHeaders = (options&COPY_HEADERS)!=0;

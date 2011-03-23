@@ -85,8 +85,6 @@ public class PolygonRoi extends Roi {
 			Prefs.pointAutoMeasure = false;
 			Prefs.pointAutoNextSlice = false;
 			Prefs.pointAddToManager = false;
-			if (Toolbar.getToolId()==Toolbar.POINT)
-				Prefs.noPointLabels = false;
 			userCreated = true;
 		}
 		if (lineWidth>1 && isLine())
