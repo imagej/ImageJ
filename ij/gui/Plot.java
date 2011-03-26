@@ -90,7 +90,6 @@ public class Plot {
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
 	private boolean drawPending;
-	private boolean checkForNaNs;
 	
 	/** keeps a reference to all of the data that is going to be plotted*/
 	ArrayList storedData;
@@ -570,26 +569,20 @@ public class Plot {
 	
 	void drawFloatPolyline(ImageProcessor ip, float[] x, float[] y, int n) {
 		ip.setClipRect(frame);
-		if (checkForNaNs) {
-			int x1, y1, x2, y2;
-			for (int i=1; i<n; i++) {
-				x1 = LEFT_MARGIN + (int)((x[i-1]-xMin)*xScale);
-				y1 = TOP_MARGIN + frame.height - (int)((y[i-1]-yMin)*yScale);
-				x2 = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-				y2 = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
-				if (!Float.isNaN(y[i-1]) && !Float.isNaN(y[i]) ) {
-					ip.drawLine(x1, y1, x2, y2);
-				}
-			}
-		} else {
-			int xi, yi;
-			xi = LEFT_MARGIN + (int)((x[0]-xMin)*xScale);
-			yi = TOP_MARGIN + frame.height - (int)((y[0]-yMin)*yScale);
-			ip.moveTo(xi, yi);
-			for (int i=0; i<n; i++) {
-				xi = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-				yi = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
-				ip.lineTo(xi, yi);
+		int x1, y1, x2, y2;
+		boolean y1IsNaN, y2IsNaN;
+		x2 = LEFT_MARGIN + (int)((x[0]-xMin)*xScale);
+		y2 = TOP_MARGIN + frame.height - (int)((y[0]-yMin)*yScale);
+		y2IsNaN = Float.isNaN(y[0]);
+		for (int i=1; i<n; i++) {
+			x1 = x2;
+			y1 = y2;
+			y1IsNaN = y2IsNaN;
+			x2 = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+			y2 = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
+			y2IsNaN = Float.isNaN(y[i]);
+			if (!y1IsNaN && !y2IsNaN) {
+				ip.drawLine(x1, y1, x2, y2);
 			}
 		}
 		ip.setClipRect(null);
@@ -684,11 +677,6 @@ public class Plot {
 		storedData.add(yvalues);
 	}
 	
-	/* Set 'true' if data to be plotted could include NaNs. */
-	public void checkForNaNs(boolean b) {
-		checkForNaNs = b;
-	}
-
 }
 
 
