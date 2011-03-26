@@ -90,6 +90,7 @@ public class Plot {
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
 	private boolean drawPending;
+	private boolean checkForNaNs;
 	
 	/** keeps a reference to all of the data that is going to be plotted*/
 	ArrayList storedData;
@@ -187,13 +188,7 @@ public class Plot {
 			   ip.setClipRect(null);
 				break;
 			case LINE:
-				int xts[] = new int[x.length];
-				int yts[] = new int[y.length];
-				for (int i=0; i<x.length; i++) {
-					xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-				}
-				drawPolyline(ip, xts, yts, x.length, true);
+				drawFloatPolyline(ip, x, y, x.length);
 				break;
 		}
 		multiplePlots = true;
@@ -545,16 +540,10 @@ public class Plot {
 		setup();
 		
 		if (drawPending) {
-			int xpoints[] = new int[nPoints];
-			int ypoints[] = new int[nPoints];
-			for (int i=0; i<nPoints; i++) {
-				xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-				ypoints[i] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin)*yScale);
-			}
-			drawPolyline(ip, xpoints, ypoints, nPoints, true);
+			drawFloatPolyline(ip, xValues, yValues, nPoints);
 			if (this.errorBars != null) {
-				xpoints = new int[2];
-				ypoints = new int[2];
+				int[] xpoints = new int[2];
+				int[] ypoints = new int[2];
 				for (int i=0; i<nPoints; i++) {
 					xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
 					ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
@@ -579,6 +568,33 @@ public class Plot {
 		if (clip) ip.setClipRect(null);
 	}
 	
+	void drawFloatPolyline(ImageProcessor ip, float[] x, float[] y, int n) {
+		ip.setClipRect(frame);
+		if (checkForNaNs) {
+			int x1, y1, x2, y2;
+			for (int i=1; i<n; i++) {
+				x1 = LEFT_MARGIN + (int)((x[i-1]-xMin)*xScale);
+				y1 = TOP_MARGIN + frame.height - (int)((y[i-1]-yMin)*yScale);
+				x2 = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+				y2 = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
+				if (!Float.isNaN(y[i-1]) && !Float.isNaN(y[i]) ) {
+					ip.drawLine(x1, y1, x2, y2);
+				}
+			}
+		} else {
+			int xi, yi;
+			xi = LEFT_MARGIN + (int)((x[0]-xMin)*xScale);
+			yi = TOP_MARGIN + frame.height - (int)((y[0]-yMin)*yScale);
+			ip.moveTo(xi, yi);
+			for (int i=0; i<n; i++) {
+				xi = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+				yi = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
+				ip.lineTo(xi, yi);
+			}
+		}
+		ip.setClipRect(null);
+	}
+
 	void drawYLabel(String yLabel, int x, int y, int height, FontMetrics fm) {
 		if (yLabel.equals(""))
 			return;
@@ -666,6 +682,11 @@ public class Plot {
 	private void storeData(float[] xvalues, float[] yvalues){
 		storedData.add(xvalues);
 		storedData.add(yvalues);
+	}
+	
+	/* Set 'true' if data to be plotted could include NaNs. */
+	public void checkForNaNs(boolean b) {
+		checkForNaNs = b;
 	}
 
 }

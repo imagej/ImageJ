@@ -48,6 +48,7 @@ public class ZAxisProfiler implements PlugInFilter, Measurements  {
 				double xmin=a[0]; double xmax=a[1];
 				plot.setLimits(xmin, xmax, ymin, ymax);
 			}
+			plot.checkForNaNs(imp!=null&&imp.getBitDepth()==32);
 			plot.show();
 		}			
 	}

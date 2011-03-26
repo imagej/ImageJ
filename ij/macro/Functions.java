@@ -48,6 +48,7 @@ public class Functions implements MacroConstants, Measurements {
     boolean logFitResults;
     boolean resultsPending;
     Overlay offscreenOverlay;
+    Overlay overlayClipboard;
     GeneralPath overlayPath;
 
     boolean saveSettingsCalled;
@@ -4660,6 +4661,13 @@ public class Functions implements MacroConstants, Measurements {
 			return hideOverlay(imp);
 		else if (name.equals("remove"))
 			return removeOverlay(imp);
+		else if (name.equals("paste")) {
+			interp.getParens();
+			if (overlayClipboard==null)
+				interp.error("Overlay clipboard empty");
+			getImage().setOverlay(overlayClipboard);
+			return Double.NaN;
+		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null && name.equals("size"))
 			return 0.0;
@@ -4668,7 +4676,11 @@ public class Functions implements MacroConstants, Measurements {
 		int size = overlay.size();
 		if (name.equals("size")||name.equals("getSize"))
 			return size;
-		else if (name.equals("removeSelection")||name.equals("removeRoi")) {
+		else if (name.equals("copy")) {
+			interp.getParens();
+			overlayClipboard = getImage().getOverlay();
+			return Double.NaN;
+		} else if (name.equals("removeSelection")||name.equals("removeRoi")) {
 			int index = (int)getArg();
 			checkIndex(index, 0, size-1);
 			overlay.remove(index);

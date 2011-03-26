@@ -29,6 +29,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     private Thread mainThread;
     private int pass;
     private boolean aborted;
+    private boolean floatImage;
 
     /** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
      * of the filter.
@@ -61,6 +62,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			IJ.error("RankFilters","Argument missing or undefined: "+arg);
 			return DONE;
 		}
+		floatImage = imp!=null && imp.getBitDepth()==32;
 		if (imp!=null && imp.getStackSize()==1)
 			flags |= PARALLELIZE_IMAGES;
 		else
@@ -213,6 +215,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             boolean fullCalculation = true;
             for (int x=roi.x, p=x+y*width, xCache0=kRadius;  x<xEnd; x++, p++, xCache0++) {
             	if (aborted) return;
+            	if (floatImage && Float.isNaN(pixels1[x+y*width]))
+            		continue;
                 if (fullCalculation) {
                     fullCalculation = smallKernel;  //for small kernel, always use the full area, not incremental algorithm
                     if (minOrMaxOrOutliers)

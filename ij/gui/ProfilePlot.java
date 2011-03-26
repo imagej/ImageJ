@@ -118,6 +118,7 @@ public class ProfilePlot {
 			double[] a = Tools.getMinMax(xValues);
 			plot.setLimits(a[0],a[1],fixedMin,fixedMax);
 		}
+		plot.checkForNaNs(imp!=null&&imp.getBitDepth()==32);
 		plot.show();
 	}
 	
