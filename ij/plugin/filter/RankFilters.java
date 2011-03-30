@@ -8,9 +8,11 @@ import java.awt.*;
 import java.awt.event.*;
 
 /** This plugin implements the Mean, Minimum, Maximum, Variance, Median,
- *  Remove Outliers and Despeckle commands. */
+ *  Remove Outliers, Remove NaNs and Despeckle commands.
+ *  Not that the filters (except for Remove NaNs) can destroy much of the image if it contains NaNs.
+ */
 public class RankFilters implements ExtendedPlugInFilter, DialogListener {
-    public static final int  MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6;
+    public static final int  MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6, REMOVE_NAN=7;
     private static final int BRIGHT_OUTLIERS = 0, DARK_OUTLIERS = 1;
     private static final String[] outlierStrings = {"Bright","Dark"};
     // Filter parameters
@@ -29,7 +31,6 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     private Thread mainThread;
     private int pass;
     private boolean aborted;
-    private boolean floatImage;
 
     /** Setup of the PlugInFilter. Returns the flags specifying the capabilities and needs
      * of the filter.
@@ -55,6 +56,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			filterType = OUTLIERS;
 		else if (arg.equals("despeckle"))
 			filterType = DESPECKLE;
+		else if (arg.equals("nan"))
+			filterType = REMOVE_NAN;
 		else if (arg.equals("masks")) {
 			showMasks();
 			return DONE;
@@ -62,7 +65,6 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			IJ.error("RankFilters","Argument missing or undefined: "+arg);
 			return DONE;
 		}
-		floatImage = imp!=null && imp.getBitDepth()==32;
 		if (imp!=null && imp.getStackSize()==1)
 			flags |= PARALLELIZE_IMAGES;
 		else
@@ -127,7 +129,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
      * Note that the array <code>lineRadius</code> will be modified, thus call this method
      * with a clone of the original lineRadius array if the array should be used again.
      * @param filterType as defined above; DESPECKLE is not a valid type here.
-     * @param threshold Threshold for 'outliers' filter*/
+     * @param threshold Threshold for 'outliers' filter
+     */
     //
     // Data handling: The area needed for processing a line, i.e. a stripe of width (2*kRadius+1)
     // is written into the array 'cache'. This array is padded at the edges of the image so that
@@ -152,8 +155,8 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         boolean sumFilter = filterType == MEAN || filterType == VARIANCE;
         boolean medianFilter = filterType == MEDIAN || filterType == OUTLIERS;
         double[] sums = sumFilter ? new double[2] : null;
-        float[] medianBuf1 = medianFilter ? new float[kNPoints] : null;
-        float[] medianBuf2 = medianFilter ? new float[kNPoints] : null;
+        float[] medianBuf1 = (medianFilter||filterType==REMOVE_NAN) ? new float[kNPoints] : null;
+        float[] medianBuf2 = (medianFilter||filterType==REMOVE_NAN) ? new float[kNPoints] : null;
         float sign = filterType==MIN ? -1f : 1f;
         if (filterType == OUTLIERS)     //sign is -1 for high outliers: compare number with minimum
             sign = (ip.isInvertedLut()==(whichOutliers==DARK_OUTLIERS)) ? -1f : 1f;
@@ -177,7 +180,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             for (int x=xmin; x<xmax; x++, iCache++)  // fill the cache for filtering the first line
                 cache[iCache] = pixels1[(x<0 ? 0 : x>=width ? width-1 : x) + width*(y<0 ? 0 : y>=height ? height-1 : y)];
         int nextLineInCache = 2*kRadius;            // where the next line should be written to
-        float median = cache[0];                    // just any value as a first guess
+        float median = Float.isNaN(cache[0]) ? 0 : cache[0]; // just any value as a first guess
         Thread thread = Thread.currentThread(); 
         boolean isMainThread = thread==mainThread || thread.getName().indexOf("Preview")!=-1;
         if (isMainThread) pass++;
@@ -215,8 +218,6 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             boolean fullCalculation = true;
             for (int x=roi.x, p=x+y*width, xCache0=kRadius;  x<xEnd; x++, p++, xCache0++) {
             	if (aborted) return;
-            	if (floatImage && Float.isNaN(pixels1[x+y*width]))
-            		continue;
                 if (fullCalculation) {
                     fullCalculation = smallKernel;  //for small kernel, always use the full area, not incremental algorithm
                     if (minOrMaxOrOutliers)
@@ -239,16 +240,21 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
                         addSideSums(cache, cacheWidth, xCache0, lineRadius, kSize, sums);
                 }
                 if (medianFilter) {
-                    if (filterType==MEDIAN || pixels1[p]*sign+threshold <max) {
-                        median = getMedian(cache, cacheWidth, xCache0, lineRadius, kSize, medianBuf1, medianBuf2, median);
+                    if (filterType==MEDIAN || pixels1[p]*sign+threshold < max) {
+                        median = getMedian(cache, cacheWidth, xCache0, lineRadius, kSize, medianBuf1, medianBuf2, kNPoints, median);
                         if (filterType==MEDIAN || pixels1[p]*sign+threshold < median*sign)
-                        pixels2[p] = median;
+                            pixels2[p] = median;
                     }
                 } else if (sumFilter) {
                     if (filterType == MEAN)
                         pixels2[p] = (float)(sums[0]/kNPoints);
                     else    // Variance: sum of squares - square of sums
                         pixels2[p] = (float)((sums[1] - sums[0]*sums[0]/kNPoints)/kNPoints);
+                } else if (filterType == REMOVE_NAN) {
+                    if (Float.isNaN(pixels1[p]))
+                        pixels2[p] = getNaNAwareMedian(cache, cacheWidth, xCache0, lineRadius, kSize, medianBuf1, medianBuf2, kNPoints, median);
+                    else
+                        median = pixels1[p];    //initial guess for the next point
                 }
             } // for x
             int newLineRadius0 = lineRadius[kSize-1];   //shift kernel lineRadii one line
@@ -337,11 +343,12 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         return;
     }
 
-    /** Get median of values and values squared within area. Kernel size kNPoints should be odd. */
-    private float getMedian(float[] cache, int cacheWidth, int xCache0, int[] lineRadius, int kSize, float[] aboveBuf, float[]belowBuf, float guess) {
-        int half = kNPoints/2;
+    /** Get median of values within kernel-sized neighborhood. Kernel size kNPoints should be odd.
+     */
+    private float getMedian(float[] cache, int cacheWidth, int xCache0, int[] lineRadius, int kSize,
+            float[] aboveBuf, float[]belowBuf, int kNPoints, float guess) {
         int nAbove = 0, nBelow = 0;
-        for (int y=0; y<kSize; y++) {   // y within the cache stripe
+        for (int y=0; y<kSize; y++) {       // y within the cache stripe
             for (int x=xCache0-lineRadius[y], iCache=y*cacheWidth+x; x<=xCache0+lineRadius[y]; x++, iCache++) {
                 float v = cache[iCache];
                 if (v > guess) {
@@ -354,6 +361,38 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
                 }
             }
         }
+        int half = kNPoints/2;
+        if (nAbove>half)
+            return findNthLowestNumber(aboveBuf, nAbove, nAbove-half-1);
+        else if (nBelow>half)
+            return findNthLowestNumber(belowBuf, nBelow, half);
+        else
+            return guess;
+    }
+
+    /** Get median of values within kernel-sized neighborhood.
+     *  NaN data values are ignored; the output is NaN only if there are only NaN values in the
+     *  kernel-sized neighborhood */
+    private float getNaNAwareMedian(float[] cache, int cacheWidth, int xCache0, int[] lineRadius, int kSize,
+            float[] aboveBuf, float[]belowBuf, int kNPoints, float guess) {
+        int nAbove = 0, nBelow = 0;
+        for (int y=0; y<kSize; y++) {       // y within the cache stripe
+            for (int x=xCache0-lineRadius[y], iCache=y*cacheWidth+x; x<=xCache0+lineRadius[y]; x++, iCache++) {
+                float v = cache[iCache];
+                if (Float.isNaN(v)) {
+                    kNPoints--;
+                } else if (v > guess) {
+                    aboveBuf[nAbove] = v;
+                    nAbove++;
+                }
+                else if (v < guess) {
+                    belowBuf[nBelow] = v;
+                    nBelow++;
+                }
+            }
+        }
+        if (kNPoints == 0) return Float.NaN;    //only NaN data in the neighborhood?
+        int half = kNPoints/2;
         if (nAbove>half)
             return findNthLowestNumber(aboveBuf, nAbove, nAbove-half-1);
         else if (nBelow>half)
