@@ -9,7 +9,7 @@ import java.awt.event.*;
 
 /** This plugin implements the Mean, Minimum, Maximum, Variance, Median,
  *  Remove Outliers, Remove NaNs and Despeckle commands.
- *  Not that the filters (except for Remove NaNs) can destroy much of the image if it contains NaNs.
+ *  Note that the filters (except for Remove NaNs) can destroy much of the image if it contains NaNs.
  */
 public class RankFilters implements ExtendedPlugInFilter, DialogListener {
     public static final int  MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6, REMOVE_NAN=7;
@@ -80,10 +80,12 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
             GenericDialog gd = new GenericDialog(command+"...");
             gd.addNumericField("Radius", radius, 1, 6, "pixels");
             int digits = imp.getType() == ImagePlus.GRAY32 ? 2 : 0;
-            if(filterType == OUTLIERS) {
+            if (filterType==OUTLIERS) {
                 gd.addNumericField("Threshold", threshold, digits);
-                gd.addChoice("Which Outliers", outlierStrings, outlierStrings[whichOutliers]);
-            }
+                gd.addChoice("Which outliers", outlierStrings, outlierStrings[whichOutliers]);
+            	gd.addHelp(IJ.URL+"/docs/menus/process.html#outliers");
+            } else if (filterType==REMOVE_NAN)
+           		gd.addHelp(IJ.URL+"/docs/menus/process.html#nans");
             gd.addPreviewCheckbox(pfr);     //passing pfr makes the filter ready for preview
             gd.addDialogListener(this);     //the DialogItemChanged method will be called on user input
             gd.showDialog();                //display the dialog; preview runs in the  now

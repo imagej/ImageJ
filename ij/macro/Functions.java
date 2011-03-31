@@ -1937,7 +1937,8 @@ public class Functions implements MacroConstants, Measurements {
 				((PlotWindow)win).drawPlot(plot);
 			else {
 				PlotWindow plotWindow = plot.show();
-				plotID = plotWindow.getImagePlus().getID();
+				if (plotWindow!=null)
+					plotID = plotWindow.getImagePlus().getID();
 			}
 		}
 		plot = null;
