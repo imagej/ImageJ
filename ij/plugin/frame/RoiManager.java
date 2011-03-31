@@ -1469,6 +1469,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				shift = false;
 				alt = false;
 			}
+			ImagePlus imp = WindowManager.getCurrentImage();
+			Roi roi = imp!=null?imp.getRoi():null;
+			if (roi!=null) roi.setPosition(0);
 			add(shift, alt);
 		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
