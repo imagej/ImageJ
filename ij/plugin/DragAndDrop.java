@@ -212,6 +212,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				if (convertToRGB) options += " convert_to_rgb";
 				if (virtualStack) options += " use";
 				IJ.run("Image Sequence...", "open=[" + path + "]"+options);
+				DirectoryChooser.setDefaultDirectory(path);
 			} else {
 				for (int k=0; k<names.length; k++) {
 					IJ.redirectErrorMessages();
