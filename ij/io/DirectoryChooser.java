@@ -10,9 +10,9 @@ import javax.swing.filechooser.*;
 
 /** This class displays a dialog box that allows the user can select a directory. */ 
  public class DirectoryChooser {
- 	private static final String key = "default.dir";
+ 	//private static final String key = "default.dir";
  	private String directory;
- 	private static String defaultDir = Prefs.get(key, null);
+ 	//private static String defaultDir = Prefs.get(key, null);
  	private String title;
  
  	/** Display a dialog using the specified title. */
@@ -35,34 +35,29 @@ import javax.swing.filechooser.*;
  	
 	// runs JFileChooser on event dispatch thread to avoid possible thread deadlocks
  	void getDirectoryUsingJFileChooser(final String title) {
-		Java2.setSystemLookAndFeel();
+		setSystemLookAndFeel();
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
 					JFileChooser chooser = new JFileChooser();
-					if (defaultDir!=null) {
-						File f = new File(defaultDir);
-						chooser.setCurrentDirectory(new File(f.getParent()));
-						chooser.setSelectedFile(new File(f.getName()));
-					}
 					chooser.setDialogTitle(title);
 					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					String defaultDir = OpenDialog.getDefaultDirectory();
+					if (defaultDir!=null) {
+						File f = new File(defaultDir);
+						if (IJ.debugMode)
+							IJ.log("DirectoryChooser,setSelectedFile: "+f);
+						chooser.setSelectedFile(f);
+					}
 					chooser.setApproveButtonText("Select");
 					if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
-						File dir = chooser.getCurrentDirectory();
 						File file = chooser.getSelectedFile();
-						directory = dir.getPath();
+						directory = file.getAbsolutePath();
+						//defaultDir = directory;
+						//Prefs.set(key, defaultDir);
 						if (!directory.endsWith(File.separator))
 							directory += File.separator;
-						String fileName = file.getName();
-						if (fileName.indexOf(":\\")!=-1)
-							directory = defaultDir = fileName;
-						else {
-							directory += fileName+File.separator;
-							defaultDir = directory;
-						}
-						defaultDir = directory;
-						Prefs.set(key, defaultDir);
+						OpenDialog.setDefaultDirectory(directory);
 					}
 				}
 			});
@@ -71,30 +66,25 @@ import javax.swing.filechooser.*;
  
 	// Choose a directory using JFileChooser on the current thread
  	void getDirectoryUsingJFileChooserOnThisThread(final String title) {
-		Java2.setSystemLookAndFeel();
+		setSystemLookAndFeel();
 		try {
 			JFileChooser chooser = new JFileChooser();
-			if (defaultDir!=null) {
-				File f = new File(defaultDir);
-				chooser.setCurrentDirectory(new File(f.getParent()));
-				chooser.setSelectedFile(new File(f.getName()));
-			}
 			chooser.setDialogTitle(title);
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			String defaultDir = OpenDialog.getDefaultDirectory();
+			if (defaultDir!=null) {
+				File f = new File(defaultDir);
+				if (IJ.debugMode)
+					IJ.log("DirectoryChooser,setSelectedFile: "+f);
+				chooser.setSelectedFile(f);
+			}
 			chooser.setApproveButtonText("Select");
 			if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
-				File dir = chooser.getCurrentDirectory();
 				File file = chooser.getSelectedFile();
-				directory = dir.getPath();
+				directory = file.getAbsolutePath();
 				if (!directory.endsWith(File.separator))
 					directory += File.separator;
-				String fileName = file.getName();
-				if (fileName.indexOf(":\\")!=-1)
-					directory = defaultDir = fileName;
-				else
-					directory += fileName+File.separator;
-				defaultDir = directory;
-				Prefs.set(key, defaultDir);
+				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}
 	}
@@ -105,27 +95,29 @@ import javax.swing.filechooser.*;
  		Prefs.useJFileChooser = false;
 		System.setProperty("apple.awt.fileDialogForDirectories", "true");
 		String dir=null, name=null;
+		String defaultDir = OpenDialog.getDefaultDirectory();
 		if (defaultDir!=null) {
 			File f = new File(defaultDir);
 			dir = f.getParent();
 			name = f.getName();
 		}
+		if (IJ.debugMode)
+			IJ.log("DirectoryChooser: dir=\""+dir+"\",  file=\""+name+"\"");
 		OpenDialog od = new OpenDialog(title, dir, name);
 		if (od.getDirectory()==null)
 			directory = null;
 		else
 			directory = od.getDirectory() + od.getFileName() + "/";
-		if (directory!=null) {
-			defaultDir = directory;
-			Prefs.set(key, defaultDir);
-		}
+		if (directory!=null)
+			OpenDialog.setDefaultDirectory(directory);
 		System.setProperty("apple.awt.fileDialogForDirectories", "false");
  		Prefs.useJFileChooser = saveUseJFC;
 	}
 
  	/** Returns the directory selected by the user. */
  	public String getDirectory() {
-		//IJ.log("getDirectory: "+directory);
+		if (IJ.debugMode)
+			IJ.log("DirectoryChooser.getDirectory: "+directory);
 		if (Recorder.record && !IJ.isMacOSX())
 			Recorder.recordPath(title, directory);
  		return directory;
@@ -134,7 +126,13 @@ import javax.swing.filechooser.*;
     /** Sets the default directory presented in the dialog. */
     public static void setDefaultDirectory(String dir) {
     	if (dir==null || (new File(dir)).isDirectory())
-        	defaultDir = dir;
+			OpenDialog.setDefaultDirectory(dir);
     }
+
+	private void setSystemLookAndFeel() {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch(Throwable t) {}
+	}
 
 }
