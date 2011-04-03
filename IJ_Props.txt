@@ -215,6 +215,7 @@ noise03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
 noise04=-
 noise05="Despeckle",ij.plugin.filter.RankFilters("despeckle")
 noise06="Remove Outliers...",ij.plugin.filter.RankFilters("outliers")
+noise07="Remove NaNs...",ij.plugin.filter.RankFilters("nan")
 
 # Plugins installed in the Process/Shadows submenu
 shadows01="North",ij.plugin.filter.Shadows("north")

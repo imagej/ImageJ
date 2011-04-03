@@ -494,7 +494,8 @@ public class Selection implements PlugIn, Measurements {
 		RoiManager rm = (RoiManager)frame;
 		boolean altDown= IJ.altKeyDown();
 		IJ.setKeyUp(IJ.ALL_KEYS);
-		if (altDown) IJ.setKeyDown(KeyEvent.VK_SHIFT);
+		if (altDown && !IJ.macroRunning())
+			IJ.setKeyDown(KeyEvent.VK_SHIFT);
 		rm.runCommand("add");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}

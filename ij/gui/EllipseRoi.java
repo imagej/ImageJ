@@ -194,4 +194,22 @@ public class EllipseRoi extends PolygonRoi {
 		return params;
 	}
 
+	public double[] getFeretValues() {
+		double a[] = super.getFeretValues();
+		double pw=1.0, ph=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			pw = cal.pixelWidth;
+			ph = cal.pixelHeight;
+		}
+		double[] p = getParams();
+		double dx = (p[2] - p[0])*pw;
+		double dy = (p[3] - p[1])*ph;
+		double major = Math.sqrt(dx*dx+dy*dy);
+		double minor = major*p[4];
+		a[0] = major;
+		a[2] = (pw==ph)?minor:a[2];
+		return a;
+	}
+
 }

@@ -8,6 +8,7 @@ import ij.io.*;
 import ij.gui.*;
 import ij.measure.Calibration;
 import ij.process.*;
+import ij.plugin.frame.Recorder;
 
 /** This plugin, which saves the images in a stack as separate files, 
 	implements the File/Save As/Image Sequence command. */
@@ -93,12 +94,23 @@ public class StackWriter implements PlugIn {
 		else if (format.equals("text image"))
 			extension = ".txt";
 			
-		String digits = getDigits(number);
-		SaveDialog sd = new SaveDialog("Save Image Sequence", name+digits+extension, extension);
-		String name2 = sd.getFileName();
-		if (name2==null)
+		String title = "Save Image Sequence";
+		String macroOptions = Macro.getOptions();
+		String directory = null;
+		if (macroOptions!=null) {
+			directory = Macro.getValue(macroOptions, title, null);
+			if (directory!=null) {
+				File f = new File(directory);
+				if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
+					directory = f.getParent();
+				if (!directory.endsWith(File.separator))
+					directory+= File.separator;
+			}
+		}
+		if (directory==null)
+			directory = IJ.getDirectory(title);
+		if (directory==null)
 			return;
-		String directory = sd.getDirectory();
 		
 		boolean isOverlay = imp.getOverlay()!=null && !imp.getHideOverlay();
 		if (!(format.equals("jpeg")||format.equals("png")))
@@ -130,7 +142,7 @@ public class StackWriter implements PlugIn {
 				if (props!=null) props.remove("Info");
 			}
 			imp2.setCalibration(cal);
-			digits = getDigits(number++);
+			String digits = getDigits(number++);
 			if (useLabels) {
 				label = stack.getShortSliceLabel(i);
 				if (label!=null && label.equals("")) label = null;
@@ -140,6 +152,8 @@ public class StackWriter implements PlugIn {
 				path = directory+name+digits+extension;
 			else
 				path = directory+label+extension;
+			if (Recorder.record)
+				Recorder.disablePathRecording();
 			IJ.saveAs(imp2, format, path);
 		}
 		imp.unlock();

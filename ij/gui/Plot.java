@@ -187,13 +187,7 @@ public class Plot {
 			   ip.setClipRect(null);
 				break;
 			case LINE:
-				int xts[] = new int[x.length];
-				int yts[] = new int[y.length];
-				for (int i=0; i<x.length; i++) {
-					xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-				}
-				drawPolyline(ip, xts, yts, x.length, true);
+				drawFloatPolyline(ip, x, y, x.length);
 				break;
 		}
 		multiplePlots = true;
@@ -545,16 +539,10 @@ public class Plot {
 		setup();
 		
 		if (drawPending) {
-			int xpoints[] = new int[nPoints];
-			int ypoints[] = new int[nPoints];
-			for (int i=0; i<nPoints; i++) {
-				xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-				ypoints[i] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin)*yScale);
-			}
-			drawPolyline(ip, xpoints, ypoints, nPoints, true);
+			drawFloatPolyline(ip, xValues, yValues, nPoints);
 			if (this.errorBars != null) {
-				xpoints = new int[2];
-				ypoints = new int[2];
+				int[] xpoints = new int[2];
+				int[] ypoints = new int[2];
 				for (int i=0; i<nPoints; i++) {
 					xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
 					ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
@@ -579,6 +567,27 @@ public class Plot {
 		if (clip) ip.setClipRect(null);
 	}
 	
+	void drawFloatPolyline(ImageProcessor ip, float[] x, float[] y, int n) {
+		ip.setClipRect(frame);
+		int x1, y1, x2, y2;
+		boolean y1IsNaN, y2IsNaN;
+		x2 = LEFT_MARGIN + (int)((x[0]-xMin)*xScale);
+		y2 = TOP_MARGIN + frame.height - (int)((y[0]-yMin)*yScale);
+		y2IsNaN = Float.isNaN(y[0]);
+		for (int i=1; i<n; i++) {
+			x1 = x2;
+			y1 = y2;
+			y1IsNaN = y2IsNaN;
+			x2 = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+			y2 = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
+			y2IsNaN = Float.isNaN(y[i]);
+			if (!y1IsNaN && !y2IsNaN) {
+				ip.drawLine(x1, y1, x2, y2);
+			}
+		}
+		ip.setClipRect(null);
+	}
+
 	void drawYLabel(String yLabel, int x, int y, int height, FontMetrics fm) {
 		if (yLabel.equals(""))
 			return;
@@ -667,7 +676,7 @@ public class Plot {
 		storedData.add(xvalues);
 		storedData.add(yvalues);
 	}
-
+	
 }
 
 

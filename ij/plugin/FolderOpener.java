@@ -24,12 +24,34 @@ public class FolderOpener implements PlugIn {
 	private boolean isRegex;
 	private FileInfo fi;
 	private String info1;
+	private ImagePlus image;
+	
+	public static ImagePlus open(String path) {
+		FolderOpener fo = new FolderOpener();
+		fo.run(path);
+		return fo.image;
+	}
 
 	public void run(String arg) {
-		OpenDialog od = new OpenDialog("Open Image Sequence...", arg);
-		String directory = od.getDirectory();
-		String name = od.getFileName();
-		if (name==null)
+		String directory = null;
+		if (arg!=null && !arg.equals("")) {
+			directory = arg;
+		} else {
+			arg = null;
+			String title = "Open Image Sequence...";
+			String macroOptions = Macro.getOptions();
+			if (macroOptions!=null) {
+				directory = Macro.getValue(macroOptions, title, null);
+				if (directory!=null) {
+					File f = new File(directory);
+					if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
+						directory = f.getParent();
+				}
+			}
+			if (directory==null)
+				directory = IJ.getDirectory(title);
+		}
+		if (directory==null)
 			return;
 		String[] list = (new File(directory)).list();
 		if (list==null)
@@ -62,8 +84,14 @@ public class FolderOpener implements PlugIn {
 					height = imp.getHeight();
 					bitDepth = imp.getBitDepth();
 					fi = imp.getOriginalFileInfo();
-					if (!showDialog(imp, list))
-						return;
+					if (arg==null) {
+						if (!showDialog(imp, list))
+							return;
+					} else {
+						n = list.length;
+						start = 1;
+						increment = 1;
+					}
 					break;
 				}
 			}
@@ -236,7 +264,10 @@ public class FolderOpener implements PlugIn {
 			}
 			if (imp2.getStackSize()==1 && info1!=null)
 				imp2.setProperty("Info", info1);
-			imp2.show();
+			if (arg==null)
+				imp2.show();
+			else
+				image = imp2;
 		}
 		IJ.showProgress(1.0);
 	}

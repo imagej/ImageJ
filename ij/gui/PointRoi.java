@@ -15,6 +15,7 @@ public class PointRoi extends PolygonRoi {
 	private static Font font;
 	private static int fontSize = 9;
 	private double saveMag;
+	private boolean hideLabels;
 	
 	/** Creates a new PointRoi using the specified arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
@@ -71,7 +72,7 @@ public class PointRoi extends PolygonRoi {
 		updatePolygon();
 		if (ic!=null) mag = ic.getMagnification();
 		int size2 = HANDLE_SIZE/2;
-		if (!Prefs.noPointLabels && (nPoints>1||Toolbar.getMultiPointMode())) {
+		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
 			fontSize = 9;
 			if (mag>1.0)
 				fontSize = (int)(((mag-1.0)/3.0+1.0)*9.0);
@@ -96,7 +97,7 @@ public class PointRoi extends PolygonRoi {
 		g.drawLine(x+2, y-4, x+2, y+8);
 		g.setColor(strokeColor!=null?strokeColor:ROIColor);
 		g.fillRect(x+1,y+1,3,3);
-		if (!Prefs.noPointLabels && (nPoints>1||Toolbar.getMultiPointMode()))
+		if (!Prefs.noPointLabels && !hideLabels && nPoints>1)
 			g.drawString(""+n, x+6, y+fontSize+4);
 		g.setColor(Color.black);
 		g.drawRect(x, y, 4, 4);
@@ -115,6 +116,7 @@ public class PointRoi extends PolygonRoi {
 		Polygon poly = getPolygon();
 		poly.addPoint(x, y);
 		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
+		p.setHideLabels(hideLabels);
 		IJ.showStatus("count="+poly.npoints);
 		return p;
 	}
@@ -152,6 +154,10 @@ public class PointRoi extends PolygonRoi {
 			if (x==this.x+xp[i] && y==this.y+yp[i]) return true;
 		}
 		return false;
+	}
+	
+	public void setHideLabels(boolean hideLabels) {
+		this.hideLabels = hideLabels;
 	}
 
 	public String toString() {

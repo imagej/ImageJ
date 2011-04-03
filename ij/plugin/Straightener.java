@@ -141,7 +141,7 @@ public class Straightener implements PlugIn {
 			} while (--n2>0);
 		}
 		if (!processStack) IJ.showProgress(n, n);
-		imp.updateAndDraw();
+		//imp.updateAndDraw();
 		if (!isSpline) {
 			if (type==Roi.FREELINE)
 				roi.removeSplineFit();
