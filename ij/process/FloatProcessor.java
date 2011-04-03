@@ -899,9 +899,11 @@ public class FloatProcessor extends ImageProcessor {
 			int tablePointer = 0;
 			for (int srcPoint=dt.srcStart, p=srcPoint*srcPointInc+srcLine*srcLineInc;
 			srcPoint<=dt.srcEnd; srcPoint++, p+=srcPointInc) {
-				float v = pixels[p];
-				for (int i=0; i<dt.kernelSize; i++, tablePointer++)
-				pixels2[dstLineOffset+dt.indices[tablePointer]*dstPointInc] += v * dt.weights[tablePointer];
+				if (p<pixels.length) {
+					float v = pixels[p];
+					for (int i=0; i<dt.kernelSize; i++, tablePointer++)
+						pixels2[dstLineOffset+dt.indices[tablePointer]*dstPointInc] += v * dt.weights[tablePointer];
+				}
 			}
 		}
 		return ip2;

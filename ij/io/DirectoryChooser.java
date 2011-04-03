@@ -10,9 +10,7 @@ import javax.swing.filechooser.*;
 
 /** This class displays a dialog box that allows the user can select a directory. */ 
  public class DirectoryChooser {
- 	//private static final String key = "default.dir";
  	private String directory;
- 	//private static String defaultDir = Prefs.get(key, null);
  	private String title;
  
  	/** Display a dialog using the specified title. */
@@ -53,8 +51,6 @@ import javax.swing.filechooser.*;
 					if (chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION) {
 						File file = chooser.getSelectedFile();
 						directory = file.getAbsolutePath();
-						//defaultDir = directory;
-						//Prefs.set(key, defaultDir);
 						if (!directory.endsWith(File.separator))
 							directory += File.separator;
 						OpenDialog.setDefaultDirectory(directory);
