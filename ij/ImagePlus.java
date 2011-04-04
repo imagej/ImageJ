@@ -656,7 +656,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	/** Returns a reference to the current ImageProcessor. If there
 	    is no ImageProcessor, it creates one. Returns null if this
-	    ImagePlus contains no ImageProcessor and no AWT Image. */
+	    ImagePlus contains no ImageProcessor and no AWT Image.
+		Sets the line width to the current line width and sets the
+		calibration table if the image is density calibrated. */
 	public ImageProcessor getProcessor() {
 		if (ip==null && img==null)
 			return null;

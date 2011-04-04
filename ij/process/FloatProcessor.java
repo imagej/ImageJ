@@ -156,7 +156,7 @@ public class FloatProcessor extends ImageProcessor {
 		} else
 			source.newPixels();
 		lutAnimation = false;
-	    return img;
+		return img;
 	}
 	
 	protected byte[] create8BitImage() {
@@ -198,21 +198,21 @@ public class FloatProcessor extends ImageProcessor {
 		snapshotMax=(float)getMax();
 		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
 			snapshotPixels = new float[width * height];
-        System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
+		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
 	}
 	
 	public void reset() {
 		if (snapshotPixels==null)
 			return;
-	    min=snapshotMin;
+		min=snapshotMin;
 		max=snapshotMax;
 		minMaxSet = true;
-        System.arraycopy(snapshotPixels,0,pixels,0,width*height);
+		System.arraycopy(snapshotPixels,0,pixels,0,width*height);
 	}
 	
 	public void reset(ImageProcessor mask) {
 		if (mask==null || snapshotPixels==null)
-			return;	
+			return; 
 		if (mask.getWidth()!=roiWidth||mask.getHeight()!=roiHeight)
 			throw new IllegalArgumentException(maskSizeError(mask));
 		byte[] mpixels = (byte[])mask.getPixels();
@@ -290,8 +290,8 @@ public class FloatProcessor extends ImageProcessor {
 	}
 
 
-    /** Returns the value of the pixel at (x,y) in a
-    	one element int array. iArray is an optiona
+	/** Returns the value of the pixel at (x,y) in a
+		one element int array. iArray is an optiona
 		preallocated array. */
 	public int[] getPixel(int x, int y, int[] iArray) {
 		if (iArray==null) iArray = new int[1];
@@ -357,7 +357,7 @@ public class FloatProcessor extends ImageProcessor {
 			putPixel(x, y, Float.floatToIntBits(fillColor));
 	}
 
-	/**	Returns a reference to the float array containing
+	/** Returns a reference to the float array containing
 		this image's pixel data. */
 	public Object getPixels() {
 		return (Object)pixels;
@@ -374,7 +374,7 @@ public class FloatProcessor extends ImageProcessor {
 			return snapshotPixels;
 		} else {
 			float[] pixels2 = new float[width*height];
-        	System.arraycopy(pixels, 0, pixels2, 0, width*height);
+			System.arraycopy(pixels, 0, pixels2, 0, width*height);
 			return pixels2;
 		}
 	}
@@ -459,12 +459,12 @@ public class FloatProcessor extends ImageProcessor {
 							v2 = v1;
 						break;
 					 default:
-					 	v2 = v1;
+						v2 = v1;
 				}
 				pixels[i++] = v2;
 			}
 		}
-    }
+	}
 
 	public void invert() {process(INVERT, 0.0);}
 	public void add(int value) {process(ADD, value);}
@@ -517,94 +517,94 @@ public class FloatProcessor extends ImageProcessor {
 		filter3x3(type, null);
 	}
 
-    /** 3x3 filter operations, code partly based on 3x3 convolution code
-     *  contributed by Glynne Casteel. */
-    void filter3x3(int type, int[] kernel) {
-		float v1, v2, v3;           //input pixel values around the current pixel
-        float v4, v5, v6;
-        float v7, v8, v9;
-        float k1=0f, k2=0f, k3=0f;  //kernel values (used for CONVOLVE only)
-        float k4=0f, k5=0f, k6=0f;
-        float k7=0f, k8=0f, k9=0f;
-        float scale = 0f;
-        if (type==CONVOLVE) {
-            k1=kernel[0]; k2=kernel[1]; k3=kernel[2];
-            k4=kernel[3]; k5=kernel[4]; k6=kernel[5];
-		    k7=kernel[6]; k8=kernel[7]; k9=kernel[8];
-    		for (int i=0; i<kernel.length; i++)
-    			scale += kernel[i];
-    		if (scale==0) scale = 1f;
-            scale = 1f/scale; //multiplication factor (multiply is faster than divide)
-        }
+	/** 3x3 filter operations, code partly based on 3x3 convolution code
+	 *	contributed by Glynne Casteel. */
+	void filter3x3(int type, int[] kernel) {
+		float v1, v2, v3;			//input pixel values around the current pixel
+		float v4, v5, v6;
+		float v7, v8, v9;
+		float k1=0f, k2=0f, k3=0f;	//kernel values (used for CONVOLVE only)
+		float k4=0f, k5=0f, k6=0f;
+		float k7=0f, k8=0f, k9=0f;
+		float scale = 0f;
+		if (type==CONVOLVE) {
+			k1=kernel[0]; k2=kernel[1]; k3=kernel[2];
+			k4=kernel[3]; k5=kernel[4]; k6=kernel[5];
+			k7=kernel[6]; k8=kernel[7]; k9=kernel[8];
+			for (int i=0; i<kernel.length; i++)
+				scale += kernel[i];
+			if (scale==0) scale = 1f;
+			scale = 1f/scale; //multiplication factor (multiply is faster than divide)
+		}
 		int inc = roiHeight/25;
 		if (inc<1) inc = 1;
 		
 		float[] pixels2 = (float[])getPixelsCopy();
 		//float[] pixels2 = (float[])getPixelsCopy();
-        int xEnd = roiX + roiWidth;
-        int yEnd = roiY + roiHeight;
+		int xEnd = roiX + roiWidth;
+		int yEnd = roiY + roiHeight;
 		for (int y=roiY; y<yEnd; y++) {
-			int p  = roiX + y*width;            //points to current pixel
-            int p6 = p - (roiX>0 ? 1 : 0);      //will point to v6, currently lower
-            int p3 = p6 - (y>0 ? width : 0);    //will point to v3, currently lower
-            int p9 = p6 + (y<height-1 ? width : 0); // ...  to v9, currently lower
-            v2 = pixels2[p3];
-            v5 = pixels2[p6];
-            v8 = pixels2[p9];
-            if (roiX>0) { p3++; p6++; p9++; }
-            v3 = pixels2[p3];
-            v6 = pixels2[p6];
-            v9 = pixels2[p9];
+			int p  = roiX + y*width;			//points to current pixel
+			int p6 = p - (roiX>0 ? 1 : 0);		//will point to v6, currently lower
+			int p3 = p6 - (y>0 ? width : 0);	//will point to v3, currently lower
+			int p9 = p6 + (y<height-1 ? width : 0); // ...	to v9, currently lower
+			v2 = pixels2[p3];
+			v5 = pixels2[p6];
+			v8 = pixels2[p9];
+			if (roiX>0) { p3++; p6++; p9++; }
+			v3 = pixels2[p3];
+			v6 = pixels2[p6];
+			v9 = pixels2[p9];
 
-            switch (type) {
-                case BLUR_MORE:
-    			for (int x=roiX; x<xEnd; x++,p++) {
-                    if (x<width-1) { p3++; p6++; p9++; }
-    				v1 = v2; v2 = v3;
-    				v3 = pixels2[p3];
-    				v4 = v5; v5 = v6;
-    				v6 = pixels2[p6];
-    				v7 = v8; v8 = v9;
-    				v9 = pixels2[p9];
-                    pixels[p] = (v1+v2+v3+v4+v5+v6+v7+v8+v9)*0.11111111f; //0.111... = 1/9
-                }
-                break;
-                case FIND_EDGES:
-    			for (int x=roiX; x<xEnd; x++,p++) {
-                    if (x<width-1) { p3++; p6++; p9++; }
-    				v1 = v2; v2 = v3;
-    				v3 = pixels2[p3];
-    				v4 = v5; v5 = v6;
-    				v6 = pixels2[p6];
-    				v7 = v8; v8 = v9;
-    				v9 = pixels2[p9];
-                    float sum1 = v1 + 2*v2 + v3 - v7 - 2*v8 - v9;
-                    float sum2 = v1  + 2*v4 + v7 - v3 - 2*v6 - v9;
-                    pixels[p] = (float)Math.sqrt(sum1*sum1 + sum2*sum2);
-                }
-                break;
-                case CONVOLVE:
-    			for (int x=roiX; x<xEnd; x++,p++) {
-                    if (x<width-1) { p3++; p6++; p9++; }
-    				v1 = v2; v2 = v3;
-    				v3 = pixels2[p3];
-    				v4 = v5; v5 = v6;
-    				v6 = pixels2[p6];
-    				v7 = v8; v8 = v9;
-    				v9 = pixels2[p9];
-                    float sum = k1*v1 + k2*v2 + k3*v3
-                              + k4*v4 + k5*v5 + k6*v6
-                              + k7*v7 + k8*v8 + k9*v9;
-                    sum *= scale;
-                    pixels[p] = sum;
-                }
-                break;
+			switch (type) {
+				case BLUR_MORE:
+				for (int x=roiX; x<xEnd; x++,p++) {
+					if (x<width-1) { p3++; p6++; p9++; }
+					v1 = v2; v2 = v3;
+					v3 = pixels2[p3];
+					v4 = v5; v5 = v6;
+					v6 = pixels2[p6];
+					v7 = v8; v8 = v9;
+					v9 = pixels2[p9];
+					pixels[p] = (v1+v2+v3+v4+v5+v6+v7+v8+v9)*0.11111111f; //0.111... = 1/9
+				}
+				break;
+				case FIND_EDGES:
+				for (int x=roiX; x<xEnd; x++,p++) {
+					if (x<width-1) { p3++; p6++; p9++; }
+					v1 = v2; v2 = v3;
+					v3 = pixels2[p3];
+					v4 = v5; v5 = v6;
+					v6 = pixels2[p6];
+					v7 = v8; v8 = v9;
+					v9 = pixels2[p9];
+					float sum1 = v1 + 2*v2 + v3 - v7 - 2*v8 - v9;
+					float sum2 = v1	 + 2*v4 + v7 - v3 - 2*v6 - v9;
+					pixels[p] = (float)Math.sqrt(sum1*sum1 + sum2*sum2);
+				}
+				break;
+				case CONVOLVE:
+				for (int x=roiX; x<xEnd; x++,p++) {
+					if (x<width-1) { p3++; p6++; p9++; }
+					v1 = v2; v2 = v3;
+					v3 = pixels2[p3];
+					v4 = v5; v5 = v6;
+					v6 = pixels2[p6];
+					v7 = v8; v8 = v9;
+					v9 = pixels2[p9];
+					float sum = k1*v1 + k2*v2 + k3*v3
+							  + k4*v4 + k5*v5 + k6*v6
+							  + k7*v7 + k8*v8 + k9*v9;
+					sum *= scale;
+					pixels[p] = sum;
+				}
+				break;
 			}
 			if (y%inc==0)
 				showProgress((double)(y-roiY)/roiHeight);
 		}
 		showProgress(1.0);
-    }
+	}
 
 	/** Rotates the image or ROI 'angle' degrees clockwise.
 		@see ImageProcessor#setInterpolate
@@ -687,7 +687,7 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 	
-    public void noise(double range) {
+	public void noise(double range) {
 		Random rnd=new Random();
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
@@ -698,7 +698,7 @@ public class FloatProcessor extends ImageProcessor {
 			}
 		}
 		resetMinAndMax();
-    }
+	}
 
 	public ImageProcessor crop() {
 		ImageProcessor ip2 = createProcessor(roiWidth, roiHeight);
@@ -709,7 +709,7 @@ public class FloatProcessor extends ImageProcessor {
 			for (int xs=0; xs<roiWidth; xs++)
 				pixels2[offset1++] = pixels[offset2++];
 		}
-        return ip2;
+		return ip2;
 	}
 	
 	/** Returns a duplicate of this image. */ 
@@ -861,36 +861,29 @@ public class FloatProcessor extends ImageProcessor {
 	}
 	
 	FloatProcessor downsize(int dstWidth, int dstHeight) {
-		Rectangle r = getRoi();
-		int rWidth = r.width;
-		int rHeight = r.height;
 		FloatProcessor ip2 = this;
-		if (dstWidth<rWidth) {   //downsizing in x
-			ip2 = ip2.downsize1D(dstWidth, getHeight());
-			ip2.setRoi(0, r.y, dstWidth, rHeight);  //prepare oi for resizing in y
+		if (dstWidth<roiWidth) {	  //downsizing in x
+			ip2 = ip2.downsize1D(dstWidth, roiHeight, true);
+			ip2.setRoi(0, 0, dstWidth, roiHeight);	//prepare roi for resizing in y
 		}
-		if (dstHeight<rHeight)  //downsizing in y
-			ip2 = ip2.downsize1D(dstWidth, dstHeight);
+		if (dstHeight<roiHeight)	  //downsizing in y
+			ip2 = ip2.downsize1D(ip2.getRoi().width, dstHeight, false);
 		if (ip2.getWidth()!=dstWidth || ip2.getHeight()!=dstHeight)
-			ip2 = (FloatProcessor)ip2.resize(dstWidth, dstHeight);  //do any upsizing if required
+			ip2 = (FloatProcessor)ip2.resize(dstWidth, dstHeight);	//do any upsizing if required
 		return ip2;
 	}
 	
-	// Downsizing in one direction. One of dstWidth or dstHeight must be equal to the
-	// width or height of the roi rectangle of the input ip
-	private FloatProcessor downsize1D(int dstWidth, int dstHeight) {
-		int width = getWidth();
-		Rectangle r = getRoi();
-		boolean xDirection = dstWidth < r.width;
-		int srcPointInc = xDirection ? 1 : width;   //increment of array index for next point along direction
-		int srcLineInc = xDirection ? width : 1;    //increment of array index for next line to be downscaled
+	// Downsizing in one direction.
+	private FloatProcessor downsize1D(int dstWidth, int dstHeight, boolean xDirection) {
+		int srcPointInc = xDirection ? 1 : width;	//increment of array index for next point along direction
+		int srcLineInc = xDirection ? width : 1;	//increment of array index for next line to be downscaled
 		int dstPointInc = xDirection ? 1 : dstWidth;
 		int dstLineInc = xDirection ? dstWidth : 1;
-		int srcLine0 = xDirection ? r.x : r.y;
+		int srcLine0 = xDirection ? roiY : roiX;
 		int dstLines = xDirection ? dstHeight : dstWidth;
 		DownsizeTable dt = xDirection ?
-			new DownsizeTable(getWidth(), r.x, r.width, dstWidth, interpolationMethod) : 
-			new DownsizeTable(getHeight(), r.y, r.height, dstHeight, interpolationMethod);
+			new DownsizeTable(getWidth(), roiX, roiWidth, dstWidth, interpolationMethod) : 
+			new DownsizeTable(getHeight(), roiY, roiHeight, dstHeight, interpolationMethod);
 		FloatProcessor ip2 = (FloatProcessor)createProcessor(dstWidth, dstHeight);
 		float[] pixels = (float[])getPixels();
 		float[] pixels2 = (float[])ip2.getPixels();
@@ -899,11 +892,9 @@ public class FloatProcessor extends ImageProcessor {
 			int tablePointer = 0;
 			for (int srcPoint=dt.srcStart, p=srcPoint*srcPointInc+srcLine*srcLineInc;
 			srcPoint<=dt.srcEnd; srcPoint++, p+=srcPointInc) {
-				if (p<pixels.length) {
-					float v = pixels[p];
-					for (int i=0; i<dt.kernelSize; i++, tablePointer++)
-						pixels2[dstLineOffset+dt.indices[tablePointer]*dstPointInc] += v * dt.weights[tablePointer];
-				}
+				float v = pixels[p];
+				for (int i=0; i<dt.kernelSize; i++, tablePointer++)
+				pixels2[dstLineOffset+dt.indices[tablePointer]*dstPointInc] += v * dt.weights[tablePointer];
 			}
 		}
 		return ip2;
@@ -989,8 +980,8 @@ public class FloatProcessor extends ImageProcessor {
 	public void dilate() {}
 
 	/** Returns this FloatProcessor.
-	*  @param channelNumber   Ignored (needed for compatibility with ColorProcessor.toFloat)
-	*  @param fp              Ignored (needed for compatibility with the other ImageProcessor types).
+	*  @param channelNumber	  Ignored (needed for compatibility with ColorProcessor.toFloat)
+	*  @param fp			  Ignored (needed for compatibility with the other ImageProcessor types).
 	*  @return This FloatProcessor
 	*/
 	public FloatProcessor toFloat(int channelNumber, FloatProcessor fp) {
@@ -998,9 +989,9 @@ public class FloatProcessor extends ImageProcessor {
 	}
 	
 	/** Sets the pixels, and min&max values from a FloatProcessor.
-	*  Also the  values are taken from the FloatProcessor.
-	*  @param channelNumber   Ignored (needed for compatibility with ColorProcessor.toFloat)
-	*  @param fp              The FloatProcessor where the image data are read from.
+	*  Also the	 values are taken from the FloatProcessor.
+	*  @param channelNumber	  Ignored (needed for compatibility with ColorProcessor.toFloat)
+	*  @param fp			  The FloatProcessor where the image data are read from.
 	*/
 	public void setPixels(int channelNumber, FloatProcessor fp) {
 		if (fp.getPixels() != getPixels())
