@@ -204,26 +204,44 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			showAllList = new Overlay();
 		else
 			showAllList = null;
+    	if (imp==null)
+    		return;
+    	int currentImage = imp.getCurrentSlice();
+		int channel=0, slice=0, frame=0;
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack) {
+			channel = imp.getChannel();
+			slice = imp.getSlice();
+			frame = imp.getFrame();
+		}
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
 			if (showAllList!=null)
 				showAllList.add(roi);
-			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
+			if (i<200 && drawLabels && roi==imp.getRoi())
 				currentRoi = roi;
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
-				int slice = roi.getPosition();
-				if (slice==0)
-					getSliceNumber(roi.getName());
-				if (slice==0 || slice==imp.getCurrentSlice())
-					drawRoi(g, roi, drawLabels?i:-1);
-			} else
-				drawRoi(g, roi, drawLabels?i:-1);
+				if (hyperstack) {
+					int c = roi.getCPosition();
+					int z = roi.getZPosition();
+					int t = roi.getTPosition();
+					if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+						drawRoi(g, roi, drawLabels?i:-1);
+				} else {
+					int position = roi.getPosition();
+					if (position==0)
+						position = getSliceNumber(roi.getName());
+					if (position==0 || position==currentImage)
+						drawRoi(g, roi, -1);
+						drawRoi(g, roi, drawLabels?i:-1);
+				}
+			}
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }
-    
+       
 	public int getSliceNumber(String label) {
 		int slice = 0;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
@@ -241,15 +259,31 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		initGraphics(g);
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
-		int slice = imp!=null?imp.getCurrentSlice():-1;
+		int currentImage = imp!=null?imp.getCurrentSlice():-1;
 		if (imp.getStackSize()==1)
-			slice = -1;
+			currentImage = -1;
+		int channel=0, slice=0, frame=0;
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack) {
+			channel = imp.getChannel();
+			slice = imp.getSlice();
+			frame = imp.getFrame();
+		}
+		boolean drawLabels = overlay.getDrawLabels();
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
-			int position = roi.getPosition();
-			if (position==0 || slice==position)
-				drawRoi(g, roi, -1);
+			if (hyperstack) {
+				int c = roi.getCPosition();
+				int z = roi.getZPosition();
+				int t = roi.getTPosition();
+				if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
+			} else {
+				int position = roi.getPosition();
+				if (position==0 || position==currentImage)
+					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
+			}
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
 	}

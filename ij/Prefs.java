@@ -380,7 +380,7 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		int defaultOptions = ANTIALIASING+(IJ.isWindows()?RUN_SOCKET_LISTENER:0);
+		int defaultOptions = ANTIALIASING+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;

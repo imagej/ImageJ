@@ -59,7 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
-	private int imageNumber;
+	private int channel, slice, frame;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1274,25 +1274,59 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	/** Sets the stack position (image number) of this ROI. In an overlay, this
-	* ROI will only be displayed when the stack is at the specified position.
+	* ROI is only displayed when the stack is at the specified position.
 	* Set to zero to have the ROI displayed on all images in the stack.
 	* @see ij.gui.Overlay
-	* @see ij.ImagePlus#getStackIndex(int,int,int)
 	*/
 	public void setPosition(int n) {
 		if (n<0) n=0;
-		this.imageNumber = n;
+		channel = 0;
+		slice = n;
+		frame = 0;
 	} 
 
 	/** Returns the stack position (image number) of this ROI, or
 	*  zero if the ROI is not associated with a particular stack image.
 	* @see ij.gui.Overlay
-	* @see ij.ImagePlus#convertIndexToPosition(int)
 	*/
 	public int getPosition() {
-		return imageNumber;
+		return slice;
 	}
 	
+	/** Sets the hyperstack position of this ROI. In an overlay, this
+	* ROI is only displayed when the hyperstack is at the specified position.
+	* @see ij.gui.Overlay
+	*/
+	public void setPosition(int channel, int slice, int frame) {
+		if (channel<0) channel=0;
+		this.channel = channel;
+		if (slice<0) slice=0;
+		this.slice = slice;
+		if (frame<0) frame=0;
+		this.frame = frame;
+	}
+	
+	/** Returns the channel position of this ROI, or zero
+	*  if this ROI is not associated with a particular channel.
+	*/
+	public final int getCPosition() {
+		return channel;
+	}
+
+	/** Returns the slice position of this ROI, or zero
+	*  if this ROI is not associated with a particular slice.
+	*/
+	public final int getZPosition() {
+		return slice;
+	}
+	
+	/** Returns the frame position of this ROI, or zero
+	*  if this ROI is not associated with a particular frame.
+	*/
+	public final int getTPosition() {
+		return frame;
+	}
+
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
 		if no paste operation is in progress.
 		@see ij.process.Blitter

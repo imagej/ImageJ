@@ -125,7 +125,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		if (Thread.currentThread().isInterrupted()) return;
 		doFiltering((FloatProcessor)ip, kRadius, lineRadius, filterType, whichOutliers, (float)threshold);
 		if (imp!=null  && imp.getBitDepth()!=24 && imp.getRoi()==null && filterType==VARIANCE) {
-			new ContrastEnhancer().stretchHistogram(this.imp.getProcessor(), 0.5);
+			Thread thread = Thread.currentThread(); 
+			if (thread==mainThread || thread.getName().indexOf("Preview")!=-1)
+				new ContrastEnhancer().stretchHistogram(this.imp.getProcessor(), 0.5);
 		}
 	}
 
@@ -273,7 +275,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			lineRadius[0] = newLineRadius0;
 		} // for y
 	}
-
+	
 	/** Filters an image
 	 *	@param ip	   The ImageProcessor that should be filtered (all 4 types supported)
 	 *	@param radius  Determines the kernel size, see Process>Filters>Show Circular Masks.

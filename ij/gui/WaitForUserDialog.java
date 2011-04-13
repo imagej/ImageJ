@@ -1,5 +1,6 @@
 package ij.gui;
 import ij.*;
+import ij.plugin.frame.RoiManager;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
@@ -20,6 +21,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		super(getFrame(), title, false);
 		label = new MultiLineLabel(text, 175);
 		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		if (IJ.isMacOSX()) {
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null) rm.runCommand("dont ignore interrupts");
+		}
         GridBagLayout gridbag = new GridBagLayout(); //set up the layout
         GridBagConstraints c = new GridBagConstraints();
         setLayout(gridbag);
