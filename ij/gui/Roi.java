@@ -59,6 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
+	private int position;
 	private int channel, slice, frame;
 
 	/** Creates a new rectangular Roi. */
@@ -1280,9 +1281,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	*/
 	public void setPosition(int n) {
 		if (n<0) n=0;
-		channel = 0;
-		slice = n;
-		frame = 0;
+		position = n;
+		channel = slice = frame = 0;
 	} 
 
 	/** Returns the stack position (image number) of this ROI, or
@@ -1290,7 +1290,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	* @see ij.gui.Overlay
 	*/
 	public int getPosition() {
-		return slice;
+		return position;
 	}
 	
 	/** Sets the hyperstack position of this ROI. In an overlay, this
@@ -1304,6 +1304,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.slice = slice;
 		if (frame<0) frame=0;
 		this.frame = frame;
+		position = 0;
 	}
 	
 	/** Returns the channel position of this ROI, or zero
