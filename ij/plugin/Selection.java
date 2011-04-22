@@ -56,6 +56,8 @@ public class Selection implements PlugIn, Measurements {
     		toBoundingBox(imp); 
      	else if (arg.equals("toarea"))
     		lineToArea(imp); 
+     	else if (arg.equals("toline"))
+    		areaToLine(imp); 
 	   	else if (arg.equals("properties"))
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
     	else
@@ -472,6 +474,27 @@ public class Selection implements PlugIn, Measurements {
 		Roi.previousRoi = (Roi)roi.clone();
 	}
 	
+	void areaToLine(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null || !roi.isArea()) {
+			IJ.error("Area to Line", "Area selection required");
+			return;
+		}
+		Polygon p = roi.getPolygon();
+		if (p==null) return;
+		int type1 = roi.getType();
+		if (type1==Roi.COMPOSITE) {
+			IJ.error("Area to Line", "Composite selections cannot be converted to lines.");
+			return;
+		}
+		int type2 = Roi.POLYLINE;
+		if (type1==Roi.OVAL||type1==Roi.FREEROI||type1==Roi.TRACED_ROI
+		||((roi instanceof PolygonRoi)&&((PolygonRoi)roi).isSplineFit()))
+			type2 = Roi.FREELINE;
+		Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, type2);
+		imp.setRoi(roi2);
+	}
+
 	void toBoundingBox(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		Rectangle r = roi.getBounds();

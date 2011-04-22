@@ -237,7 +237,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						drawRoi(g, roi, -1);
 						drawRoi(g, roi, drawLabels?i:-1);
 				}
-			}
+			} else
+				drawRoi(g, roi, drawLabels?i:-1);
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
     }

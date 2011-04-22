@@ -520,7 +520,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		int columns = 4;
 		int digits = 0;
 		double scale = 1.0;
-		if ((maxValue-minValue)<=5.0 && (minValue!=(int)minValue||maxValue!=(int)maxValue)) {
+		if ((maxValue-minValue)<=5.0 && (minValue!=(int)minValue||maxValue!=(int)maxValue||defaultValue!=(int)defaultValue)) {
 			scale = 20.0;
 			minValue *= scale;
 			maxValue *= scale;

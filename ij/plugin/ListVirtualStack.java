@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.io.*;
+import ij.util.Tools;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -21,7 +22,9 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		String name = od.getFileName();
 		if (name==null) return;
 		String  dir = od.getDirectory();
+		//IJ.log("ListVirtualStack: "+dir+"   "+name);
 		list = open(dir+name);
+		if (list==null) return;
 		nImages = list.length;
 		labels = new String[nImages];
 		//for (int i=0; i<list.length; i++)
@@ -30,10 +33,12 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 			IJ.error("Stack From List", "The file path list is empty");
 			return;
 		}
-		File f = new File(list[0]);
-		if (!f.exists()) {
-			IJ.error("Stack From List", "The first file on the list does not exist:\n \n"+list[0]);
-			return;
+		if (!list[0].startsWith("http://")) {
+			File f = new File(list[0]);
+			if (!f.exists()) {
+				IJ.error("Stack From List", "The first file on the list does not exist:\n \n"+list[0]);
+				return;
+			}
 		}
 		ImagePlus imp = IJ.openImage(list[0]);
 		if (imp==null) return;
@@ -85,6 +90,8 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	}
 	
 	String[] open(String path) {
+		if (path.startsWith("http://"))
+			return openUrl(path);
 		Vector v = new Vector();
 		File file = new File(path);
 		try {
@@ -107,6 +114,15 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 		return null;
 	}
 
+	String[] openUrl(String url) {
+		String str = IJ.openUrlAsString(url);
+		if (str.startsWith("<Error: ")) {
+			IJ.error("Stack From List", str);
+			return null;
+		} else
+			return Tools.split(str, "\n");
+	}
+	
 	/** Deletes the specified image, were 1<=n<=nslices. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nImages)
