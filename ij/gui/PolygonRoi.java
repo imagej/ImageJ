@@ -517,7 +517,7 @@ public class PolygonRoi extends Roi {
 		xClipMin=ox-m; yClipMin=oy-m; xClipMax=ox+m; yClipMax=oy+m;
 	}
 
-	void deleteHandle(int ox, int oy) {
+	public void deleteHandle(int ox, int oy) {
 		if (imp==null) return;
 		if (nPoints<=1)
 			{imp.killRoi(); return;}

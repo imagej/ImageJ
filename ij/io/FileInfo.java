@@ -85,6 +85,7 @@ public class FileInfo implements Cloneable {
 	public static final int LZW_WITH_DIFFERENCING = 3;
 	public static final int JPEG = 4;
 	public static final int PACK_BITS = 5;
+	public static final int ZIP = 6;
 	
 	/* File format (TIFF, GIF_OR_JPG, BMP, etc.). Used by the File/Revert command */
 	public int fileFormat;

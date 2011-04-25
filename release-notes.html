@@ -5,33 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.45f 23 April 2011</u>
+<li> <u>1.45g 24 April 2011</u>
 <ul>
-<li> Added the <i>Edit&gt;Selection&gt;Area to Line</i> command.
-<li> If the Rescale Slope tag (0028,1053) exists and has a value<>1.0
-then DICOM reader converts to 32-bits and multiples by that value.
-<li> Thanks to Michael Schmid, the <i>Mean</i> and <i>Variance</i> filters
-no longer propagate NaNs to the end of the line.
-<li> Thanks to Marcel van Herk, <i>File&gt;Import&gt;Stack from List</i>
-works with URLs
-(<a href="http://imagej.nih.gov/ij/macros/OpenStackUsingURLs.txt">example</a>).
-<li> Added the Dialog.addSlider() method
-(<a href="http://imagej.nih.gov/ij/macros/examples/SliderDemo.txt">example</a>).
-<li> Fixed a bug that caused <i>Image&gt;Scale</i> and <i>Image&gt;Adjust&gt;Size</i>
-to throw an exception when there was a selection and "Average when downsizing" was
-enabled.
-<li> Thanks to Simon Roussel, fixed a bug that caused overlays to be lost
-when converting stacks to hyperstacks and vis versa.
-<li> Thanks to Kris Sheets, fixed a bug that could cause the ROI Manager to not work
-as expected on Mac OS X when using the waitForUser() macro function.
-<li> Thanks to Norbert Vischer, fixed a bug that caused incorrect centroid, major and minor
-results when using <i>Analyze&gt;Measure</i> on thresholded images with
-"Fit Ellipse" and "Limit to Threshold" enabled.
-<li> Fixed a bug that caused the size of JPEG files to not be 
-reduced when re-saving at lower resolution or quality.
-<li> Thanks to Vytas Bindokas, fixed a bug that caused an exception when
-an image was listed twice in the <i>Image&gt;Color&gt;Merge Channels</i>
-dialog box.
+<li> Thanks to Jason Newton, ImageJ can now open ZIP-compressed TIFFs.
+<li> The makePoint() macro function can now both add and delete points
+(<a href="http://imagej.nih.gov/ij/macros/examples/MakePointDemo.txt">example</a>).
+
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
