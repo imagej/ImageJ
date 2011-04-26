@@ -1533,6 +1533,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			//IJ.log("Debug: "+debugCount);
 			//for (int i=0; i<debugCount; i++)
     		//	IJ.log(debug[i]);
+		} else if (cmd.equals("enable interrupts")) {
+			ignoreInterrupts = false;
 		} else
 			ok = false;
 		macro = false;

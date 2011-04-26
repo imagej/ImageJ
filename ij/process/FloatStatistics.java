@@ -28,7 +28,7 @@ public class FloatStatistics extends ImageStatistics {
 		if ((mOptions&MODE)!=0)
 			getMode();
 		if ((mOptions&ELLIPSE)!=0 || (mOptions&SHAPE_DESCRIPTORS)!=0)
-			fitEllipse(ip);
+			fitEllipse(ip, mOptions);
 		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)

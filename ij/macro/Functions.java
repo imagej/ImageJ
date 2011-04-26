@@ -2969,6 +2969,12 @@ public class Functions implements MacroConstants, Measurements {
 				} else
 					interp.getRightParen();
 				gd.addNumericField(prompt, defaultNumber, decimalPlaces, columns, units);
+			} else if (name.equals("addSlider")) {
+				String label = getFirstString();
+				double minValue = getNextArg();
+				double maxValue = getNextArg();
+				double defaultValue = getLastArg();
+				gd.addSlider(label, minValue, maxValue, defaultValue);
 			} else if (name.equals("addCheckbox")) {
 				gd.addCheckbox(getFirstString(), getLastArg()==1?true:false);
 			} else if (name.equals("addCheckboxGroup")) {

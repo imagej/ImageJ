@@ -800,7 +800,7 @@ public abstract class ImageProcessor implements Cloneable {
 		return mask;
 	}
 
-	/** Returns the mask byte array, or null if there is no mask. */
+	/** Returns a reference to the mask pixel array, or null if there is no mask. */
 	public byte[] getMaskArray() {
 		return mask!=null?(byte[])mask.getPixels():null;
 	}

@@ -191,6 +191,8 @@ public class RGBStackMerge implements PlugIn {
 	 
 	
 	public ImagePlus mergeHyperstacks(ImagePlus[] images, boolean keep) {
+		if (duplicateImage(images))
+			keep = true;
 		int n = images.length;
 		int channels = 0;
 		for (int i=0; i<n; i++) {
@@ -257,7 +259,16 @@ public class RGBStackMerge implements PlugIn {
 		imp2.setOpenAsHyperStack(true);
 		return imp2;
 	}
-
+	
+	private boolean duplicateImage(ImagePlus[] images) {
+		for (int i=0; i<images.length; i++) {
+			for (int j=0; j<images.length; j++) {
+				if (images[i]!=null && images[j]!=null && i!=j && images[i]==images[j])
+					return true;
+			}
+		}
+		return false;
+	}
 
 	/** Deprecated; replaced by mergeChannels(). */
 	public ImagePlus createComposite(int w, int h, int d, ImageStack[] stacks, boolean keep) {

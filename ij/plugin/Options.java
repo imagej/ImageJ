@@ -33,12 +33,9 @@ public class Options implements PlugIn {
 		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);
-		//gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
 		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
 		gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
-		//if (IJ.isWindows())
-		//	gd.addCheckbox("Disable DirecDraw", Prefs.disableDirectDraw);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
 		gd.showDialog();
@@ -63,12 +60,9 @@ public class Options implements PlugIn {
 			
 		Prefs.usePointerCursor = gd.getNextBoolean();
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
-		//Prefs.antialiasedText = gd.getNextBoolean();
 		Prefs.requireControlKey = gd.getNextBoolean();
 		Prefs.moveToMisc = gd.getNextBoolean();
 		Prefs.runSocketListener = gd.getNextBoolean();
-		//if (IJ.isWindows())
-		//	Prefs.disableDirectDraw = gd.getNextBoolean();
 		IJ.debugMode = gd.getNextBoolean();
 	}
 
