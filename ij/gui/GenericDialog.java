@@ -721,7 +721,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	return wasOKed || macro;
     }
 
-	/** Returns the contents of the next numeric field. */
+	/** Returns the contents of the next numeric field,
+		or NaN if the field does not contain a number. */
    public double getNextNumber() {
 		if (numberField==null)
 			return -1.0;
@@ -750,7 +751,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				if (Double.isNaN(value)) {
 					invalidNumber = true;
 					errorMessage = "\""+theText+"\" is an invalid number";
-					value = 0.0;
+					value = Double.NaN;
 					if (macro) {
 						IJ.error("Macro Error", "Numeric value expected in run() function\n \n"
 							+"   Dialog box title: \""+getTitle()+"\"\n"
@@ -1033,7 +1034,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		resetCounters();
 	}
-
+	
     /** Reset the counters before reading the dialog parameters */
     private void resetCounters() {
         nfIndex = 0;        // prepare for readout
