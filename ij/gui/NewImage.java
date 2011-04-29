@@ -311,7 +311,12 @@ public class NewImage {
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
 		slices = (int)gd.getNextNumber();
-		return true;
+		if (slices<1) slices = 1;
+		if (width<1 || height<1) {
+			IJ.error("New Image", "Width and height must be >0");
+			return false;
+		} else
+			return true;
 	}
 
 	void openImage() {

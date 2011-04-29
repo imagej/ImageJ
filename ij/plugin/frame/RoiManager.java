@@ -143,6 +143,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
 		addPopupItem("Multi Measure");
+		addPopupItem("Multi Plot");
 		addPopupItem("Sort");
 		addPopupItem("Specify...");
 		addPopupItem("Remove Slice Info");
@@ -207,6 +208,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			addParticles();
 		else if (command.equals("Multi Measure"))
 			multiMeasure();
+		else if (command.equals("Multi Plot"))
+			multiPlot();
 		else if (command.equals("Sort"))
 			sort();
 		else if (command.equals("Specify..."))
@@ -927,6 +930,58 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		return count;
 	}
+	
+	void multiPlot() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		int[] indexes = list.getSelectedIndexes();
+		if (indexes.length==0) indexes = getAllIndexes();
+		int n = indexes.length;
+        if (n==0) return;
+		Color[] colors = {Color.blue, Color.green, Color.magenta, Color.red, Color.cyan, Color.yellow};
+		if (n>colors.length) {
+			error("Cannot plot more than "+colors.length+" ROIs");
+			return;
+		}
+		int currentSlice = imp.getCurrentSlice();
+		double[][] x = new double[n][];
+		double[][] y = new double[n][];
+		double minY = Double.MAX_VALUE;
+		double maxY = -Double.MAX_VALUE;
+		int maxX = 0;
+		Calibration cal = imp.getCalibration();
+		double xinc = cal.pixelWidth;
+		for (int i=0; i<indexes.length; i++) {
+			if (!restore(getImage(), indexes[i], true)) break;
+			if (imp.getRoi()==null) break;
+			ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
+			y[i] = pp.getProfile();
+			if (y[i]==null) break;
+			if (y[i].length>maxX) maxX = y[i].length;
+			double[] a = Tools.getMinMax(y[i]);
+			if (a[0]<minY) minY=a[0];
+			if (a[1]>maxY) maxY = a[1];
+			double[] xx = new double[y[i].length];
+			for (int j=0; j<xx.length; j++)
+				xx[j] = j*xinc;
+			x[i] = xx;
+		}
+		String xlabel = "Distance ("+cal.getUnits()+")";
+		Plot plot = new Plot("Profiles",xlabel, "Value", x[0], y[0]);
+		plot.setLimits(0, maxX*xinc, minY, maxY);
+		for (int i=1; i<indexes.length; i++) {
+			plot.setColor(colors[i]);
+			if (x[i]!=null)
+				plot.addPoints(x[i], y[i], Plot.LINE);
+		}
+		plot.setColor(colors[0]);
+		if (x[0]!=null)
+			plot.show();
+		imp.setSlice(currentSlice);
+		if (indexes.length>1)
+			IJ.run("Select None");
+		if (record()) Recorder.record("roiManager", "Multi Measure");
+	}	
 
 	boolean drawOrFill(int mode) {
 		int[] indexes = list.getSelectedIndexes();
@@ -1499,8 +1554,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (cmd.equals("sort"))
 			sort();
-		else if (cmd.startsWith("multi"))
+		else if (cmd.equals("multi measure"))
 			multiMeasure();
+		else if (cmd.equals("multi plot"))
+			multiPlot();
 		else if (cmd.startsWith("show all")) {
 			if (WindowManager.getCurrentImage()!=null) {
 				showAll(SHOW_ALL);
