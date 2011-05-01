@@ -940,8 +940,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         if (n==0) return;
 		Color[] colors = {Color.blue, Color.green, Color.magenta, Color.red, Color.cyan, Color.yellow};
 		if (n>colors.length) {
-			error("Cannot plot more than "+colors.length+" ROIs");
-			return;
+			colors = new Color[n];
+			double c = 0;
+			double inc =150.0/n;
+			for (int i=0; i<n; i++) {
+				colors[i] = new Color((int)c, (int)c, (int)c);
+				c += inc;
+			}
 		}
 		int currentSlice = imp.getCurrentSlice();
 		double[][] x = new double[n][];
@@ -953,7 +958,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double xinc = cal.pixelWidth;
 		for (int i=0; i<indexes.length; i++) {
 			if (!restore(getImage(), indexes[i], true)) break;
-			if (imp.getRoi()==null) break;
+			Roi roi = imp.getRoi();
+			if (roi==null) break;
+			if (roi.isArea() && roi.getType()!=Roi.RECTANGLE)
+				IJ.run(imp, "Area to Line", "");
 			ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
 			y[i] = pp.getProfile();
 			if (y[i]==null) break;
@@ -980,7 +988,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.setSlice(currentSlice);
 		if (indexes.length>1)
 			IJ.run("Select None");
-		if (record()) Recorder.record("roiManager", "Multi Measure");
+		if (record()) Recorder.record("roiManager", "Multi Plot");
 	}	
 
 	boolean drawOrFill(int mode) {

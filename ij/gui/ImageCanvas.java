@@ -234,7 +234,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 					if (position==0)
 						position = getSliceNumber(roi.getName());
 					if (position==0 || position==currentImage)
-						drawRoi(g, roi, -1);
 						drawRoi(g, roi, drawLabels?i:-1);
 				}
 			} else
