@@ -37,7 +37,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     
     /** Closes this window. */
     public void close() {
-		setVisible(false);
+		//setVisible(false);
 		dispose();
 		WindowManager.removeWindow(this);
     }

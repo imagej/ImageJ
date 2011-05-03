@@ -711,7 +711,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				save();
 		}
 		if (okayToClose) {
-			setVisible(false);
+			//setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
 			nWindows--;

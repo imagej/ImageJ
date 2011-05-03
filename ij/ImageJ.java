@@ -736,7 +736,7 @@ public class ImageJ extends Frame implements ActionListener,
 			Prefs.savePreferences();
 		}
 		IJ.cleanup();
-		setVisible(false);
+		//setVisible(false);
 		//IJ.log("dispose");
 		dispose();
 		if (exitWhenQuitting)

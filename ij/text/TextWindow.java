@@ -260,7 +260,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		} else if (textPanel!=null && textPanel.rt!=null) {
 			if (!saveContents()) return;
 		}
-		setVisible(false);
+		//setVisible(false);
 		dispose();
 		WindowManager.removeWindow(this);
 		textPanel.flush();
