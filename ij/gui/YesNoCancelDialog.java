@@ -72,7 +72,6 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 	}
 	
 	void closeDialog() {
-		setVisible(false);
 		dispose();
 	}
 

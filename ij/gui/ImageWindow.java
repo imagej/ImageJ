@@ -539,7 +539,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			WindowManager.setCurrentWindow(this);
 			IJ.doCommand("Close");
 		} else {
-			setVisible(false);
+			//setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
 		}

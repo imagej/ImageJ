@@ -309,6 +309,10 @@ public class ColorProcessor extends ImageProcessor {
 		return (float)(r*rWeight + g*gWeight + b*bWeight);
 	}
 
+	//public final float getf(int index) {
+	//	return pixels[index];
+	//}
+
 	public final void setf(int index, float value) {
 		pixels[index] = (int)value;
 	}

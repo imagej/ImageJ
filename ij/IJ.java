@@ -969,6 +969,10 @@ public class IJ {
 			Polygon p = roi.getPolygon();
 			p.addPoint(x, y);
 			img.setRoi(new PointRoi(p.xpoints, p.ypoints, p.npoints));
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		} else if (altKeyDown() && roi!=null && roi.getType()==Roi.POINT) {
+			((PolygonRoi)roi).deleteHandle(x, y);
+			IJ.setKeyUp(KeyEvent.VK_ALT);
 		} else
 			img.setRoi(new PointRoi(x, y));
 	}

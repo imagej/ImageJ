@@ -467,7 +467,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			Analyzer.resetCounter();
 		}
 		if (title2.equals("Results")) {
-			tw.setVisible(false);
+			//tw.setVisible(false);
 			tw.dispose();
 			WindowManager.removeWindow(tw);
 			flush();

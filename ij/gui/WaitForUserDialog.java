@@ -76,7 +76,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         synchronized(this) { notify(); }
         xloc = getLocation().x;
         yloc = getLocation().y;
-		setVisible(false);
+		//setVisible(false);
 		dispose();
     }
 
