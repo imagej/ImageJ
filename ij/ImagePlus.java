@@ -1258,7 +1258,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		Does nothing if this image is not a stack. */
 	public synchronized void setSlice(int n) {
 		if (stack==null || (n==currentSlice&&ip!=null)) {
-	    	updateAndRepaintWindow();
+			if (!noUpdateMode)
+	    		updateAndRepaintWindow();
 			return;
 		}
 		if (n>=1 && n<=stack.getSize()) {

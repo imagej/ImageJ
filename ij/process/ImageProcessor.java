@@ -933,7 +933,8 @@ public abstract class ImageProcessor implements Cloneable {
 		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
 		double xinc = dx/n;
 		double yinc = dy/n;
-		n++;
+		if (!((xinc==0&&n==height) || (yinc==0&&n==width)))
+			n++;
 		double[] data = new double[n];
 		double rx = x1;
 		double ry = y1;
