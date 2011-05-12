@@ -129,8 +129,8 @@ public class Prefs {
 	public static boolean avoidResliceInterpolation;
 	/** Preserve undo (snapshot) buffers when switching images */
 	public static boolean keepUndoBuffers;
-	/** Disable DirectDraw (Windows only) */
-	public static boolean disableDirectDraw;
+	/** Use Names as labels in the ROI Manager */
+	public static boolean useNamesAsLabels;
 
 
 	static Properties ijPrefs = new Properties();
@@ -380,7 +380,8 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		int defaultOptions = ANTIALIASING+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
+		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION
+			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
 		int options = getInt(OPTIONS, defaultOptions);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;
@@ -417,8 +418,8 @@ public class Prefs {
 		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
 		keepUndoBuffers = (options&KEEP_UNDO_BUFFERS)!=0;
 		
-		int options2 = getInt(OPTIONS2, 0);
-		disableDirectDraw = (options2&DISABLE_DIRECTDRAW)!=0;
+		//int options2 = getInt(OPTIONS2, 0);
+		//disableDirectDraw = (options2&DISABLE_DIRECTDRAW)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -440,8 +441,8 @@ public class Prefs {
 			+ (keepUndoBuffers?KEEP_UNDO_BUFFERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 
-		int options2 = (disableDirectDraw?DISABLE_DIRECTDRAW:0);
-		prefs.put(OPTIONS2, Integer.toString(options2));
+		//int options2 = (disableDirectDraw?DISABLE_DIRECTDRAW:0);
+		//prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
 	/** Saves the value of the string <code>text</code> in the preferences

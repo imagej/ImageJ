@@ -325,7 +325,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				g.setColor(Roi.getColor());
 			else
 				g.setColor(showAllColor);
-			drawRoiLabel(g, index, roi.getBounds());
+			drawRoiLabel(g, index, roi);
 		}
 		if (imp2!=null)
 			roi.setImage(imp2);
@@ -333,7 +333,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.setImage(null);
     }
     
-	void drawRoiLabel(Graphics g, int index, Rectangle r) {
+	void drawRoiLabel(Graphics g, int index, Roi roi) {
+		Rectangle r = roi.getBounds();
 		int x = screenX(r.x);
 		int y = screenY(r.y);
 		double mag = getMagnification();
@@ -347,6 +348,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean drawingList = index >= LIST_OFFSET;
 		if (drawingList) index -= LIST_OFFSET;
 		String label = "" + (index+1);
+		if (Prefs.useNamesAsLabels && roi.getName()!=null)
+			label = roi.getName();
 		FontMetrics metrics = g.getFontMetrics();
 		int w = metrics.stringWidth(label);
 		x = x + width/2 - w/2;

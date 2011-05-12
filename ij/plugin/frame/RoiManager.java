@@ -538,6 +538,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.put(name2, roi);
 		list.replaceItem(name2, index);
 		list.select(index);
+		if (Prefs.useNamesAsLabels && labelsCheckbox.getState()) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.draw();
+		}
 		if (record())
 			Recorder.record("roiManager", "Rename", name2);
 		return true;
@@ -1335,8 +1339,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Color c = ImageCanvas.getShowAllColor();
 		GenericDialog gd = new GenericDialog("Options");
 		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
-		gd.addCheckbox("Associate \"Show All\" ROIs with Slices", Prefs.showAllSliceOnly);
-		gd.addCheckbox("Restore ROIs Centered", restoreCentered);
+		gd.addCheckbox("Associate \"Show All\" ROIs with slices", Prefs.showAllSliceOnly);
+		gd.addCheckbox("Restore ROIs centered", restoreCentered);
+		gd.addCheckbox("Use ROI names as labels", Prefs.useNamesAsLabels);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			if (c!=ImageCanvas.getShowAllColor())
@@ -1345,11 +1350,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		Prefs.showAllSliceOnly = gd.getNextBoolean();
 		restoreCentered = gd.getNextBoolean();
+		Prefs.useNamesAsLabels = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();
 		if (record()) {
 			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");
 			Recorder.record("roiManager", "Centered", restoreCentered?"true":"false");
+			Recorder.record("roiManager", "UseNames", Prefs.useNamesAsLabels?"true":"false");
 		}
 	}
 
@@ -1654,6 +1661,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (cmd.equals("centered")) {
 			restoreCentered = name.equals("true")?true:false;
 			macro = false;
+			return true;
+		} else if (cmd.equals("usenames")) {
+			Prefs.useNamesAsLabels = name.equals("true")?true:false;
+			macro = false;
+			if (labelsCheckbox.getState()) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (imp!=null) imp.draw();
+			}
 			return true;
 		}
 		return false;
