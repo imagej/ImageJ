@@ -564,13 +564,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	void updateSliceSummary() {
 		int slices = imp.getStackSize();
 		float[] areas = rt.getColumn(ResultsTable.AREA);
+		if (areas==null)
+			areas = new float[0];
 		String label = imp.getTitle();
 		if (slices>1) {
 			label = imp.getStack().getShortSliceLabel(slice);
 			label = label!=null&&!label.equals("")?label:""+slice;
 		}
 		String aLine = null;
-		if (areas==null) return;
 		double sum = 0.0;
 		int start = areas.length-particleCount;
 		if (start<0)
@@ -583,7 +584,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		String average = "\t"+ResultsTable.d2s(sum/particleCount,places);
 		String fraction = "\t"+ResultsTable.d2s(sum*100.0/totalArea,1);
 		aLine = label+"\t"+particleCount+total+average+fraction;
-		aLine = addMeans(aLine, start);
+		aLine = addMeans(aLine, areas.length>0?start:-1);
 		if (slices==1) {
 			Frame frame = WindowManager.getFrame("Summary");
 			if (frame!=null && (frame instanceof TextWindow) && summaryHdr.equals(prevHdr))
@@ -630,19 +631,24 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	}
 
 	private String addMean(int column, String line, int start) {
-		float[] c = column>=0?rt.getColumn(column):null;
-		if (c!=null) {
-			ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
-			if (ip==null) return line;
-			ip.setRoi(start, 0, ip.getWidth()-start, 1);
-			ip = ip.crop();
-			ImageStatistics stats = new FloatStatistics(ip);
-			if (stats==null)
-				return line;
-			line += n(stats.mean);
-		} else
-			line += "-\t";
-		summaryHdr += "\t"+rt.getColumnHeading(column);
+		if (start==-1) {
+			line += "\tNaN";
+			summaryHdr += "\t"+ResultsTable.getDefaultHeading(column);
+		} else {
+			float[] c = column>=0?rt.getColumn(column):null;
+			if (c!=null) {
+				ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
+				if (ip==null) return line;
+				ip.setRoi(start, 0, ip.getWidth()-start, 1);
+				ip = ip.crop();
+				ImageStatistics stats = new FloatStatistics(ip);
+				if (stats==null)
+					return line;
+				line += n(stats.mean);
+			} else
+				line += "\tNaN";
+			summaryHdr += "\t"+rt.getColumnHeading(column);
+		}
 		return line;
 	}
 

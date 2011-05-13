@@ -14,6 +14,8 @@
 Swing look and feel to the system look and feel on Linux.
 <li> Added the Stack.getFrameInterval(), Stack.setFrameInterval() and
 Stack.getUnits() macro functions.
+<li> Worked around a bug in the text tool that sometimes caused 
+<li>Edit&gt;Clear</i> to clear an area narrower than the drawn text.
 <li> Thanks to Peter Haub, fixed an ROI Manager "Edit Mode" bug that
 sometimes made selection of ROIs in stacks unreliable.
 <li> Thanks to Jan Eglinger, fixed a bug that caused mouse 
@@ -26,8 +28,8 @@ commands to erroneously change the image focus.
 vertical lines and image-width horizontal lines to contain one extra value.
 <li> Thanks to Barry DeZonia, fixed a bug that sometimes caused the
 ImagePlus.setPositionWithoutUpdate() method to not work as expected.
-<li> Fixed a bug in <li>Edit&gt;Clear</i>that sometimes caused it to clear, 
-when used with text selections, an area narrower than the drawn text.
+<li> Thanks to Andrii Savchenko, fixed a bug that caused the particle
+analyzer to not corretly summarize zero particle images.
 </ul> 
 ,
 <a href="http://imagej.nih.gov/ij">Home</a>
