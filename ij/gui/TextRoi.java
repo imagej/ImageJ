@@ -292,7 +292,7 @@ public class TextRoi extends Roi {
 		width = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
-			int w = (int)(stringWidth(theText[i],metrics,g)/mag);
+			int w = (int)Math.round(stringWidth(theText[i],metrics,g)/mag);
 			if (w>width)
 				width = w;
 			i++;
@@ -318,8 +318,9 @@ public class TextRoi extends Roi {
 		}
 	}
 
-	int stringWidth(String s, FontMetrics metrics, Graphics g) {
-		return Java2.getStringWidth(s, metrics, g);
+	double stringWidth(String s, FontMetrics metrics, Graphics g) {
+		java.awt.geom.Rectangle2D r = metrics.getStringBounds(s, g);
+		return r.getWidth();
 	}
 	
 	public String getMacroCode(ImageProcessor ip) {
@@ -367,6 +368,28 @@ public class TextRoi extends Roi {
 		return true;
 	}
 	
+	public void clear(ImageProcessor ip) {
+		if (instanceFont==null)
+			ip.fill();
+		else {
+			ip.setFont(instanceFont);
+			ip.setAntialiasedText(antialiasedText);
+			int i=0, width=0;
+			while (i<MAX_LINES && theText[i]!=null) {
+				int w = ip.getStringWidth(theText[i]);
+				if (w>width)
+					width = w;
+				i++;
+			}
+			Rectangle r = ip.getRoi();
+			if (width>r.width) {
+				r.width = width;
+				ip.setRoi(r);
+			}
+			ip.fill();
+		}
+	}
+
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();

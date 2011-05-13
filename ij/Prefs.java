@@ -129,7 +129,7 @@ public class Prefs {
 	public static boolean avoidResliceInterpolation;
 	/** Preserve undo (snapshot) buffers when switching images */
 	public static boolean keepUndoBuffers;
-	/** Use Names as labels in the ROI Manager */
+	/** Use ROI names as "show all" labels in the ROI Manager */
 	public static boolean useNamesAsLabels;
 
 

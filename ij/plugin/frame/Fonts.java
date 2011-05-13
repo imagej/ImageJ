@@ -10,8 +10,8 @@ import ij.gui.*;
 public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 
 	public static final String LOC_KEY = "fonts.loc";
-	private static String[] sizes = {"8","9","10","12","14","18","24","28","36","48","60","72"};
-	private static int[] isizes = {8,9,10,12,14,18,24,28,36,48,60,72};
+	private static String[] sizes = {"8","9","10","12","14","18","24","28","36","48","60","72","100","150","225","350"};
+	private static int[] isizes = {8,9,10,12,14,18,24,28,36,48,60,72,100,150,225,350};
 	private Panel panel;
 	private Choice font;
 	private Choice size;

@@ -5,10 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.45h 9 May 2011</u>
+<li> <u>1.45h 13 May 2011</u>
 <ul>
 <li> Added a "Use ROI names as labels" checkbox to the ROI Manager's
 <i>More&gt;&gt;Options</i> dialog box.
+<li> The ij.util.Java2.setSystemLookAndFeel() method (called by
+<li>File&gt;Import&gt;Image Sequence</i>) no longer sets the
+Swing look and feel to the system look and feel on Linux.
+<li> Added the Stack.getFrameInterval(), Stack.setFrameInterval() and
+Stack.getUnits() macro functions.
 <li> Thanks to Peter Haub, fixed an ROI Manager "Edit Mode" bug that
 sometimes made selection of ROIs in stacks unreliable.
 <li> Thanks to Jan Eglinger, fixed a bug that caused mouse 
@@ -21,8 +26,10 @@ commands to erroneously change the image focus.
 vertical lines and image-width horizontal lines to contain one extra value.
 <li> Thanks to Barry DeZonia, fixed a bug that sometimes caused the
 ImagePlus.setPositionWithoutUpdate() method to not work as expected.
+<li> Fixed a bug in <li>Edit&gt;Clear</i>that sometimes caused it to clear, 
+when used with text selections, an area narrower than the drawn text.
 </ul> 
-
+,
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
 </html>
