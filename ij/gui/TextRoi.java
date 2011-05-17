@@ -17,7 +17,8 @@ public class TextRoi extends Roi {
 	private static int size = 18;
 	private Font instanceFont;
 	private static boolean newFont = true;
-	private static boolean antialiasedText = true;
+	private static boolean antialiasedText = true; // global flag used by text tool
+	private boolean antialiased = antialiasedText;
 	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
@@ -124,7 +125,7 @@ public class TextRoi extends Roi {
 	/** Renders the text on the image. */
 	public void drawPixels(ImageProcessor ip) {
 		ip.setFont(instanceFont);
-		ip.setAntialiasedText(antialiasedText);
+		ip.setAntialiasedText(antialiased);
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
@@ -159,7 +160,7 @@ public class TextRoi extends Roi {
 	
 	void drawText(Graphics g) {
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
-		Java2.setAntialiasedText(g, antialiasedText);
+		Java2.setAntialiasedText(g, antialiased);
 		if (newFont || width==1)
 			updateBounds(g);
 		double mag = ic.getMagnification();
@@ -228,8 +229,19 @@ public class TextRoi extends Roi {
 		return instanceFont;
 	}
 	
+	/** Returns the state of global 'antialiasedText' variable, which is used by the "Fonts" widget. */
 	public static boolean isAntialiased() {
 		return antialiasedText;
+	}
+
+	/** Sets the 'antialiased' instance variable. */
+	public void setAntialiased(boolean antialiased) {
+		this.antialiased = antialiased;
+	}
+	
+	/** Returns the state of the 'antialiased' instance variable. */
+	public boolean getAntialiased() {
+		return antialiased;
 	}
 
 	/** Sets the global font face, size and style that will be used by
@@ -252,6 +264,7 @@ public class TextRoi extends Roi {
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
+				((TextRoi)roi).setAntialiased(antialiased);
 				((TextRoi)roi).setCurrentFont(new Font(name, style, size));
 				imp.draw();
 			}
@@ -280,7 +293,7 @@ public class TextRoi extends Roi {
 		newFont = false;
 		boolean nullg = g==null;
 		if (nullg) g = ic.getGraphics();
-		Java2.setAntialiasedText(g, true);
+		Java2.setAntialiasedText(g, antialiased);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
@@ -292,7 +305,7 @@ public class TextRoi extends Roi {
 		width = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
-			int w = (int)(stringWidth(theText[i],metrics,g)/mag);
+			int w = (int)Math.round(stringWidth(theText[i],metrics,g)/mag);
 			if (w>width)
 				width = w;
 			i++;
@@ -318,8 +331,9 @@ public class TextRoi extends Roi {
 		}
 	}
 
-	int stringWidth(String s, FontMetrics metrics, Graphics g) {
-		return Java2.getStringWidth(s, metrics, g);
+	double stringWidth(String s, FontMetrics metrics, Graphics g) {
+		java.awt.geom.Rectangle2D r = metrics.getStringBounds(s, g);
+		return r.getWidth();
 	}
 	
 	public String getMacroCode(ImageProcessor ip) {
@@ -367,6 +381,28 @@ public class TextRoi extends Roi {
 		return true;
 	}
 	
+	public void clear(ImageProcessor ip) {
+		if (instanceFont==null)
+			ip.fill();
+		else {
+			ip.setFont(instanceFont);
+			ip.setAntialiasedText(antialiasedText);
+			int i=0, width=0;
+			while (i<MAX_LINES && theText[i]!=null) {
+				int w = ip.getStringWidth(theText[i]);
+				if (w>width)
+					width = w;
+				i++;
+			}
+			Rectangle r = ip.getRoi();
+			if (width>r.width) {
+				r.width = width;
+				ip.setRoi(r);
+			}
+			ip.fill();
+		}
+	}
+
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();

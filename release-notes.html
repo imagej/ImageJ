@@ -5,20 +5,37 @@
 </head>
 <body>
 
-<li> <u>1.45g 2 May 2011</u>
+<li> <u>1.45h 17 May 2011</u>
 <ul>
-<li> Thanks to Philippe Gendre, added the <i>More&gt;&gt;Multi Plot</i>
-command to the ROI Manager.
-<li> Thanks to Jason Newton, ImageJ can now open ZIP-compressed TIFFs.
-<li> The GenericDialog.getNextNumber() method returns NaN
-if the user has not entered a valid number
-(<a href="macros/examples/DialogTest.txt">example</a>).
-<li> The makePoint() macro function can now both add and delete points
-(<a href="macros/examples/MakePointDemo.txt">example</a>).
-<li> Fixed v1.45 regression that caused the ROI Manager "Show All" option
-to not respect slice info.
-<li> Thanks to Carne Draug, fixed a bug that sometimes caused ImageJ
-to hang when quitting when running on OpenJDK 6.
+<li> Added a "Use ROI names as labels" checkbox to the ROI Manager's
+<i>More&gt;&gt;Options</i> dialog box.
+<li> The ij.util.Java2.setSystemLookAndFeel() method (called by
+<li>File&gt;Import&gt;Image Sequence</i>) no longer sets the
+Swing look and feel to the system look and feel on Linux.
+<li> Added the Stack.getFrameInterval(), Stack.setFrameInterval() and
+Stack.getUnits() macro functions.
+<li> Added the setAntialiased() and getAntialiased() methods to
+TextRoi class.
+<li> Worked around a bug in the text tool that sometimes caused 
+<li>Edit&gt;Clear</i> to clear an area narrower than the drawn text.
+<li> Thanks to Peter Haub, fixed an ROI Manager "Edit Mode" bug that
+sometimes made selection of ROIs in stacks unreliable.
+<li> Thanks to Jan Eglinger, fixed a bug that caused mouse 
+wheel scrolling in inactive hyperstack windows to not work.
+<li> Thanks to Daniel Kalthoff and Michael Schmid, fixed a macro 
+bug that sometimes caused the <li>Image&gt;Crop</i>,
+<li>Image&gt;Duplicate</i> and <li>Image&gt;Adjust&gt;Size</i>
+commands to erroneously change the image focus.
+<li> Thanks to Mat Al-Tamimi, fixed a bug that caused profiles of image-height
+vertical lines and image-width horizontal lines to contain one extra value.
+<li> Thanks to Barry DeZonia, fixed a bug that sometimes caused the
+ImagePlus.setPositionWithoutUpdate() method to not work as expected.
+<li> Thanks to Andrii Savchenko, fixed a bug that caused the particle
+analyzer to not corretly summarize zero particle images.
+<li> Thanks to Jerome Mutterer, fixed a bug that caused IJ.redirectErrorMessages()
+to not work as expected with IJ.open(URL).
+<li> Thanks to Andrew French, fixed a bug that caused <li>Image&gt;Overlay&gt;Flatten</i>
+to always render text antialiased.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

@@ -115,7 +115,7 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
-		boolean isURL = path.startsWith("http://");
+		boolean isURL = path.indexOf("://")>0;
 		if (isURL && isText(path)) {
 			openTextURL(path);
 			return;
@@ -135,6 +135,8 @@ public class Opener {
 		if (!silentMode) IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
+		if (imp==null && isURL)
+			return;
 		if (imp!=null) {
 			WindowManager.checkForDuplicateName = true;
 			if (isRGB48)

@@ -166,9 +166,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		if (t2>0 && t2!=t1)
 			imp2 = zScale(imp2!=null?imp2:imp, t2, interpolationMethod+IN_PLACE+SCALE_T);
 		if (imp2!=null && imp2!=imp) {
-			imp2.show();
 			imp.changes = false;
 			imp.close();
+			imp2.show();
 		}
 	}
 

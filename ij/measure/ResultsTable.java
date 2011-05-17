@@ -736,6 +736,13 @@ public class ResultsTable implements Cloneable {
 		pw.close();
 		delimiter = '\t';
 	}
+	
+	public static String getDefaultHeading(int index) {
+		if (index>=0 && index<defaultHeadings.length)
+			return defaultHeadings[index];
+		else
+			return "null";
+	}
 
 	/** Creates a copy of this ResultsTable. */
 	public synchronized Object clone() {

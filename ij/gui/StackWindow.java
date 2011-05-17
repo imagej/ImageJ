@@ -131,9 +131,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			int rotation = event.getWheelRotation();
 			if (hyperStack) {
 				if (rotation>0)
-					IJ.runPlugIn("ij.plugin.Animator", "next");
+					IJ.run(imp, "Next Slice [>]", "");
 				else if (rotation<0)
-					IJ.runPlugIn("ij.plugin.Animator", "previous");
+					IJ.run(imp, "Previous Slice [<]", "");
 			} else {
 				int slice = imp.getCurrentSlice() + rotation;
 				if (slice<1)

@@ -167,10 +167,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			float lineWidth = roi.getStrokeWidth();
 			roi.setStrokeColor(null);
 			roi.setFillColor(null);
-			roi.setStrokeWidth(1);
+			boolean strokeSet = roi.getStroke()!=null;
+			if (strokeSet)
+				roi.setStrokeWidth(1);
 			roi.draw(g);
 			roi.setStrokeColor(lineColor);
-			roi.setStrokeWidth(lineWidth);
+			if (strokeSet)
+				roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 			currentRoi = null;
 		} else
@@ -322,7 +325,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				g.setColor(Roi.getColor());
 			else
 				g.setColor(showAllColor);
-			drawRoiLabel(g, index, roi.getBounds());
+			drawRoiLabel(g, index, roi);
 		}
 		if (imp2!=null)
 			roi.setImage(imp2);
@@ -330,7 +333,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.setImage(null);
     }
     
-	void drawRoiLabel(Graphics g, int index, Rectangle r) {
+	void drawRoiLabel(Graphics g, int index, Roi roi) {
+		Rectangle r = roi.getBounds();
 		int x = screenX(r.x);
 		int y = screenY(r.y);
 		double mag = getMagnification();
@@ -344,6 +348,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean drawingList = index >= LIST_OFFSET;
 		if (drawingList) index -= LIST_OFFSET;
 		String label = "" + (index+1);
+		if (Prefs.useNamesAsLabels && roi.getName()!=null)
+			label = roi.getName();
 		FontMetrics metrics = g.getFontMetrics();
 		int w = metrics.stringWidth(label);
 		x = x + width/2 - w/2;
@@ -1020,8 +1026,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		java.awt.List list = rm.getList();
 		int n = list.getItemCount();
 		if (labelRects==null || labelRects.length!=n) return false;
+		boolean stackMode = imp!=null && imp.getStackSize()>1 && Prefs.showAllSliceOnly;
 		for (int i=0; i<n; i++) {
 			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
+				if (stackMode) {
+					int slice = getSliceNumber(list.getItem(i));
+					if (slice!=imp.getCurrentSlice()) continue;
+				}
 				//rm.select(i);
 				// this needs to run on a separate thread, at least on OS X
 				// "update2" does not clone the ROI so the "Show All"

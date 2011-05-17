@@ -554,7 +554,7 @@ public class IJ {
 		boolean abortMacro = title!=null;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
-			if (abortMacro && (title.equals("Opener")||title.equals("DicomDecoder")))
+			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
 				abortMacro = false;
 		} else
 			showMessage(title2, msg);

@@ -33,7 +33,7 @@ import javax.swing.filechooser.*;
  	
 	// runs JFileChooser on event dispatch thread to avoid possible thread deadlocks
  	void getDirectoryUsingJFileChooser(final String title) {
-		setSystemLookAndFeel();
+		Java2.setSystemLookAndFeel();
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
@@ -62,7 +62,7 @@ import javax.swing.filechooser.*;
  
 	// Choose a directory using JFileChooser on the current thread
  	void getDirectoryUsingJFileChooserOnThisThread(final String title) {
-		setSystemLookAndFeel();
+		Java2.setSystemLookAndFeel();
 		try {
 			JFileChooser chooser = new JFileChooser();
 			chooser.setDialogTitle(title);
@@ -125,10 +125,10 @@ import javax.swing.filechooser.*;
 			OpenDialog.setDefaultDirectory(dir);
     }
 
-	private void setSystemLookAndFeel() {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch(Throwable t) {}
-	}
+	//private void setSystemLookAndFeel() {
+	//	try {
+	//		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	//	} catch(Throwable t) {}
+	//}
 
 }

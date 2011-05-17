@@ -2266,7 +2266,7 @@ public class Functions implements MacroConstants, Measurements {
 		double countOrIndex=Double.NaN;
 		boolean twoArgCommand = cmd.equals("open")||cmd.equals("save")||cmd.equals("rename")
 			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width")
-			||cmd.equals("associate")||cmd.equals("centered");
+			||cmd.equals("associate")||cmd.equals("centered")||cmd.equals("usenames");
 		boolean select = cmd.equals("select");
 		boolean add = cmd.equals("add");
 		if (twoArgCommand)
@@ -3900,10 +3900,16 @@ public class Functions implements MacroConstants, Measurements {
 			{interp.getParens(); return cal.fps;}
 		if (name.equals("setFrameRate"))
 			{cal.fps=getArg(); return Double.NaN;}
+		if (name.equals("getFrameInterval"))
+			{interp.getParens(); return cal.frameInterval;}
+		if (name.equals("setFrameInterval"))
+			{cal.frameInterval=getArg(); return Double.NaN;}
 		if (name.equals("setTUnit"))
 			{cal.setTimeUnit(getStringArg()); return Double.NaN;}
 		if (name.equals("setZUnit"))
 			{cal.setZUnit(getStringArg()); return Double.NaN;}
+		if (name.equals("getUnits"))
+			{getStackUnits(cal); return Double.NaN;}
 		if (imp.getStackSize()==1)
 			interp.error("Stack required");
 		if (name.equals("setDimensions"))
@@ -3929,6 +3935,19 @@ public class Functions implements MacroConstants, Measurements {
 		else
 			interp.error("Unrecognized Stack function");
 		return Double.NaN;
+	}
+	
+	void getStackUnits(Calibration cal) {
+		Variable x = getFirstVariable();
+		Variable y = getNextVariable();
+		Variable z = getNextVariable();
+		Variable t = getNextVariable();
+		Variable v = getLastVariable();
+		x.setString(cal.getXUnit());
+		y.setString(cal.getYUnit());
+		z.setString(cal.getZUnit());
+		t.setString(cal.getTimeUnit());
+		v.setString(cal.getValueUnit());
 	}
 	
 	void getStackStatistics(ImagePlus imp, boolean calibrated) {
@@ -4244,8 +4263,12 @@ public class Functions implements MacroConstants, Measurements {
 		int y = (int)getLastArg();
 		ImagePlus imp = getImage();
 		Font font = this.font;
-		if (font==null) font = imp.getProcessor().getFont();
-		Roi roi = new TextRoi(x, y, text, font);
+		boolean nullFont = font==null;
+		if (nullFont)
+			font = imp.getProcessor().getFont();
+		TextRoi roi = new TextRoi(x, y, text, font);
+		if (!nullFont)
+			roi.setAntialiased(antialiasedText);
 		imp.setRoi(roi);
 	}
 	
@@ -4763,8 +4786,12 @@ public class Functions implements MacroConstants, Measurements {
 		int x = (int)getNextArg();
 		int y = (int)getLastArg();
 		Font font = this.font;
-		if (font==null) font = imp.getProcessor().getFont();
+		boolean nullFont = font==null;
+		if (nullFont)
+			font = imp.getProcessor().getFont();
 		TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
+		if (!nullFont)
+			roi.setAntialiased(antialiasedText);
 		addRoi(imp, roi);
 		return Double.NaN;
 	}
