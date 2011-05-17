@@ -1236,11 +1236,6 @@ public abstract class ImageProcessor implements Cloneable {
 			this.antialiasedText = false;
 	}
 	
-	/** Returns the state of the 'antialiasedText' variable. */
-	public boolean getAntialiasedText() {
-		return antialiasedText;
-	}
-
 	/** Returns the width in pixels of the specified string. */
 	public int getStringWidth(String s) {
 		setupFontMetrics();
