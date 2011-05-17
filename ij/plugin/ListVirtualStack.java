@@ -140,7 +140,11 @@ public class ListVirtualStack extends VirtualStack implements PlugIn {
 	public ImageProcessor getProcessor(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		ImagePlus imp = IJ.openImage(list[n-1]);
+		IJ.redirectErrorMessages();
+		String url = list[n-1];
+		ImagePlus imp = null;
+		if (url.length()>0)
+			imp = IJ.openImage(url);
 		if (imp!=null) {
 			labels[n-1] = (new File(list[n-1])).getName()+"\n"+(String)imp.getProperty("Info");
 			ImageProcessor ip =  imp.getProcessor();

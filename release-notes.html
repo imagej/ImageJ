@@ -14,6 +14,8 @@
 Swing look and feel to the system look and feel on Linux.
 <li> Added the Stack.getFrameInterval(), Stack.setFrameInterval() and
 Stack.getUnits() macro functions.
+<li> Added the setAntialiased() and getAntialiased() methods to
+TextRoi class.
 <li> Worked around a bug in the text tool that sometimes caused 
 <li>Edit&gt;Clear</i> to clear an area narrower than the drawn text.
 <li> Thanks to Peter Haub, fixed an ROI Manager "Edit Mode" bug that
@@ -31,9 +33,11 @@ ImagePlus.setPositionWithoutUpdate() method to not work as expected.
 <li> Thanks to Andrii Savchenko, fixed a bug that caused the particle
 analyzer to not corretly summarize zero particle images.
 <li> Thanks to Jerome Mutterer, fixed a bug that caused IJ.redirectErrorMessages()
-to not work as expected with IJ.open(url).
+to not work as expected with IJ.open(URL).
+<li> Thanks to Andrew French, fixed a bug that caused <li>Image&gt;Overlay&gt;Flatten</i>
+to always render text antialiased.
 </ul> 
-,
+
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
 </html>

@@ -4264,7 +4264,8 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		Font font = this.font;
 		if (font==null) font = imp.getProcessor().getFont();
-		Roi roi = new TextRoi(x, y, text, font);
+		TextRoi roi = new TextRoi(x, y, text, font);
+		roi.setAntialiased(antialiasedText);
 		imp.setRoi(roi);
 	}
 	
@@ -4784,6 +4785,7 @@ public class Functions implements MacroConstants, Measurements {
 		Font font = this.font;
 		if (font==null) font = imp.getProcessor().getFont();
 		TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
+		roi.setAntialiased(antialiasedText);
 		addRoi(imp, roi);
 		return Double.NaN;
 	}
