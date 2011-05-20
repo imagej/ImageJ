@@ -5,37 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.45h 17 May 2011</u>
+<li> <u>1.45i 20 May 2011</u>
 <ul>
-<li> Added a "Use ROI names as labels" checkbox to the ROI Manager's
-<i>More&gt;&gt;Options</i> dialog box.
-<li> The ij.util.Java2.setSystemLookAndFeel() method (called by
-<i>File&gt;Import&gt;Image Sequence</i>) no longer sets the
-Swing look and feel to the system look and feel on Linux.
-<li> Added Stack.getFrameInterval(), Stack.setFrameInterval() and
-Stack.getUnits() macro functions.
-<li> Added setAntialiased() and getAntialiased() methods to
-TextRoi class.
-<li> Worked around a bug in the text tool that sometimes caused 
-<i>Edit&gt;Clear</i> to clear an area narrower than the drawn text.
-<li> Thanks to Peter Haub, fixed an ROI Manager "Edit Mode" bug that
-sometimes made selection of ROIs in stacks unreliable.
-<li> Thanks to Jan Eglinger, fixed a bug that caused mouse 
-wheel scrolling of inactive hyperstack windows to not work.
-<li> Thanks to Daniel Kalthoff and Michael Schmid, fixed a macro 
-bug that sometimes caused the <i>Image&gt;Crop</i>,
-<i>Image&gt;Duplicate</i> and <i>Image&gt;Adjust&gt;Size</i>
-commands to erroneously change the image focus.
-<li> Thanks to Mat Al-Tamimi, fixed a bug that caused profiles of image-height
-vertical lines and image-width horizontal lines to contain one extra value.
-<li> Thanks to Barry DeZonia, fixed a bug that sometimes caused the
-ImagePlus.setPositionWithoutUpdate() method to not work as expected.
-<li> Thanks to Andrii Savchenko, fixed a bug that caused the particle
-analyzer to not corretly summarize zero particle images.
-<li> Thanks to Jerome Mutterer, fixed a bug that caused IJ.redirectErrorMessages()
-to not work as expected with IJ.open(URL).
-<li> Thanks to Andrew French, fixed a bug that caused <i>Image&gt;Overlay&gt;Flatten</i>
-to always render text antialiased.
+<li> Added an "Ignore source LUTs" option to the
+<i>Image&gt;Color&gt;Merge Channels</i> dialog box.
+<li> Added "X center" and "Y center" fields to the <i>Image&gt;Zoom&gt;Set</i> dialog box.
+<li> The DICOM reader applies the Rescale Slope value when "Open as 32-bit float"
+is enabled in <i>Edit&gt;Options&gt;DICOM</i> and tag 0028,1053 has a value<>1.0.
+<li> Fixed a bug that caused the magnification to be dropped from the title bar when
+using <i>Image&gt;Stacks&gt;Add Slice</i> on a single image.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

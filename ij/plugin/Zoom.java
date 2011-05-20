@@ -68,12 +68,22 @@ public class Zoom implements PlugIn{
 	/** Based on Albert Cardona's ZoomExact plugin:
 		http://albert.rierol.net/software.html */
 	void setZoom(ImagePlus imp, ImageCanvas ic) {
+		int x = imp.getWidth()/2;
+		int y = imp.getHeight()/2;
 		ImageWindow win = imp.getWindow();
 		GenericDialog gd = new GenericDialog("Set Zoom");
-		gd.addNumericField("Zoom (%): ", ic.getMagnification() * 200, 0);
+		gd.addNumericField("Zoom:", ic.getMagnification() * 200, 0, 4, "%");
+		gd.addNumericField("X center:", x, 0, 5, "");
+		gd.addNumericField("Y center:", y, 0, 5, "");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
 		double mag = gd.getNextNumber()/100.0;
+		x = (int)gd.getNextNumber();
+		y = (int)gd.getNextNumber();
+		if (x<0) x=0;
+		if (y<0) y=0;
+		if (x>=imp.getWidth()) x=imp.getWidth()-1;
+		if (y>=imp.getHeight()) y=imp.getHeight()-1;
 		if (mag<=0.0) mag = 1.0;
 		win.getCanvas().setMagnification(mag);
 		double w = imp.getWidth()*mag;
@@ -81,7 +91,13 @@ public class Zoom implements PlugIn{
 		Dimension screen = IJ.getScreenSize();
 		if (w>screen.width-20) w = screen.width - 20;  // does it fit?
 		if (h>screen.height-50) h = screen.height - 50;
-		ic.setSourceRect(new Rectangle(0, 0, (int)(w/mag), (int)(h/mag)));
+		int width = (int)(w/mag);
+		int height = (int)(h/mag);
+		x -= width/2;
+		y -= height/2;
+		if (x<0) x=0;
+		if (y<0) y=0;
+		ic.setSourceRect(new Rectangle(x, y, width, height));
 		ic.setDrawingSize((int)w, (int)h);
 		win.pack();
 		ic.repaint();

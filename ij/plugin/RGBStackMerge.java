@@ -9,8 +9,10 @@ public class RGBStackMerge implements PlugIn {
 
 	private static boolean staticCreateComposite = true;
 	private static boolean staticKeep;
+	private static boolean staticIgnoreLuts;
 	private ImagePlus imp;
 	private byte[] blank;
+	private boolean ignoreLuts;
  
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -39,8 +41,9 @@ public class RGBStackMerge implements PlugIn {
 		titles[wList.length] = none;
 		boolean createComposite = staticCreateComposite;
 		boolean keep = staticKeep;
+		ignoreLuts = staticIgnoreLuts;
 		if (IJ.isMacro())
-			createComposite = keep = false;
+			createComposite = keep = ignoreLuts = false;
 
 		GenericDialog gd = new GenericDialog("Color Merge");
 		gd.addChoice("Red:", titles, titles[0]);
@@ -49,8 +52,9 @@ public class RGBStackMerge implements PlugIn {
 		gd.addChoice("Blue:", titles, title3);
 		String title4 = titles.length>3&&!IJ.macroRunning()?titles[3]:none;
 		gd.addChoice("Gray:", titles, title4);
-		gd.addCheckbox("Create Composite", createComposite);
-		gd.addCheckbox("Keep Source Images", keep);
+		gd.addCheckbox("Create composite", createComposite);
+		gd.addCheckbox("Keep source images", keep);
+		gd.addCheckbox("Ignore source LUTs", ignoreLuts);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -61,9 +65,11 @@ public class RGBStackMerge implements PlugIn {
 		index[3] = gd.getNextChoiceIndex();
 		createComposite = gd.getNextBoolean();
 		keep = gd.getNextBoolean();
+		ignoreLuts = gd.getNextBoolean();
 		if (!IJ.isMacro()) {
 			staticCreateComposite = createComposite;
 			staticKeep = keep;
+			staticIgnoreLuts = ignoreLuts;
 		}
 
 		ImagePlus[] images = new ImagePlus[4];
@@ -248,7 +254,7 @@ public class RGBStackMerge implements PlugIn {
 			ImageProcessor ip = images[c].getProcessor();
 			IndexColorModel cm = (IndexColorModel)ip.getColorModel();
 			LUT lut = null;
-			if (c<colors.length && !ip.isColorLut() && colors[c]!=null) {
+			if (c<colors.length && colors[c]!=null && (ignoreLuts||!ip.isColorLut())) {
 				lut = LUT.createLutFromColor(colors[c]);
 				lut.min = ip.getMin();
 				lut.max = ip.getMax();
@@ -302,7 +308,7 @@ public class RGBStackMerge implements PlugIn {
 			if (keep) {
 				slice++;
 			} else {
-					if (red!=null) red.deleteSlice(1);
+				if (red!=null) red.deleteSlice(1);
 				if (green!=null &&green!=red) green.deleteSlice(1);
 				if (blue!=null&&blue!=red && blue!=green) blue.deleteSlice(1);
 			}

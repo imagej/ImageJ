@@ -98,6 +98,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				pack();
 				show();
 			}
+			if (ic.getMagnification()!=0.0)
+				imp.setTitle(imp.getTitle());
 			boolean unlocked = imp.lockSilently();
 			boolean changes = imp.changes;
 			imp.changes = false;
