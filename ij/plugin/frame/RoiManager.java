@@ -159,17 +159,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		int modifiers = e.getModifiers();
-		boolean altKeyDown = (modifiers&ActionEvent.ALT_MASK)!=0 || IJ.altKeyDown();
-		boolean shiftKeyDown = (modifiers&ActionEvent.SHIFT_MASK)!=0 || IJ.shiftKeyDown();
-		IJ.setKeyUp(KeyEvent.VK_ALT);
-		IJ.setKeyUp(KeyEvent.VK_SHIFT);
 		String label = e.getActionCommand();
 		if (label==null)
 			return;
 		String command = label;
 		if (command.equals("Add [t]"))
-			add(shiftKeyDown, altKeyDown);
+			runCommand("add");
 		else if (command.equals("Update"))
 			update(true);
 		else if (command.equals("Delete"))
