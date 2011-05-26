@@ -2842,7 +2842,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (max!=null) max.setValue(stats.max);
 		if (std!=null) std.setValue(stats.stdDev);
 		if (hist!=null) {
-			boolean is16bit = !calibrated && ip instanceof ShortProcessor;
+			boolean is16bit = !calibrated && ip instanceof ShortProcessor && stats.histogram16!=null;
 			int[] histogram = is16bit?stats.histogram16:stats.histogram;
 		    int bins = is16bit?(int)(stats.max+1):histogram.length;
 			Variable[] array = new Variable[bins];

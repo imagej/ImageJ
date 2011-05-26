@@ -26,8 +26,6 @@ public class Arrow extends Line {
 	private float[] points = new float[2*5];
 	private GeneralPath path = new GeneralPath();
 	private static Stroke defaultStroke = new BasicStroke();
-	private int sx1, sy1, sx2, sy2, sx3, sy3;
-	private boolean drawing;
 	
 	static {
 		if (defaultStyle<FILLED || defaultStyle>HEADLESS)
@@ -51,40 +49,51 @@ public class Arrow extends Line {
 	/** Draws this arrow on the image. */
 	public void draw(Graphics g) {
 		if (ic==null) return;
-		drawing = true;
 		Shape shape2 = null;
 		if (doubleHeaded) {
-			double tmp = x1R;
-			x1R=x2R; x2R=tmp; tmp=y1R; y1R=y2R; y2R=tmp;
+			flipEnds();
 			shape2 = getShape();
-			tmp=x1R; x1R=x2R; x2R=tmp; tmp=y1R; y1R=y2R; y2R=tmp;
+			flipEnds();
 		}
 		Shape shape = getShape();
-		drawing = false;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
-		Graphics2D g2d = (Graphics2D)g;
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		AffineTransform at = g2.getDeviceConfiguration().getDefaultTransform();
+		double mag = ic.getMagnification();
+		Rectangle r = ic.getSrcRect();
+		at.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
 		if (outline) {
-			float lineWidth = getOutlineWidth();
-			g2d.setStroke(new BasicStroke(lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-			g2d.draw(shape);
-			g2d.setStroke(defaultStroke);
+			float lineWidth = (float)(getOutlineWidth()*ic.getMagnification());
+			g2.setStroke(new BasicStroke(lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+			g2.draw(at.createTransformedShape(shape));
+			if (doubleHeaded) g2.draw(at.createTransformedShape(shape2));
+			g2.setStroke(defaultStroke);
 		} else  {
-			g2d.fill(shape);
-			//if (doubleHeaded) g2d.fill(shape2);
+			g2.fill(at.createTransformedShape(shape));
+			if (doubleHeaded) g2.fill(at.createTransformedShape(shape2));
 		}
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			handleColor=Color.white;
-			drawHandle(g, sx1-size2, sy1-size2);
-			drawHandle(g, sx2-size2, sy2-size2);
-			drawHandle(g, sx3-size2, sy3-size2);
+			drawHandle(g, ic.screenXD(x1d-size2), ic.screenYD(y1d-size2));
+			drawHandle(g, ic.screenXD(x2d-size2), ic.screenYD(y2d-size2));
+			drawHandle(g, ic.screenXD(x1d+(x2d-x1d)/2-size2), ic.screenYD(y1d+(y2d-y1d)/2-size2));
 		}
 		if (imp!=null&&imp.getRoi()!=null) showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
+	}
+	
+	private void flipEnds() {
+		double tmp = x1R;
+		x1R=x2R;
+		x2R=tmp;
+		tmp=y1R;
+		y1R=y2R;
+		y2R=tmp;
 	}
 	
 	private Shape getPath() {
@@ -110,36 +119,26 @@ public class Arrow extends Line {
 		double tip = 0.0;
 		double base;
 		double shaftWidth = getStrokeWidth();
-		double mag = drawing?ic.getMagnification():1.0;
-		double length = 8+10*shaftWidth*mag*0.5;
+		double length = 8+10*shaftWidth*0.5;
 		length = length*(headSize/10.0);
 		length -= shaftWidth*1.42;
 		if (style==NOTCHED) length*=0.74;
-		if (style==OPEN) length*=1.3;
+		if (style==OPEN) length*=1.32;
 		if (length<0.0 || style==HEADLESS) length=0.0;
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
-		sx1 = ic.screenXD(x1d);
-		sy1 = ic.screenYD(y1d);
-		sx2 = ic.screenXD(x2d);
-		sy2 = ic.screenYD(y2d);
-		sx3 = sx1 + (sx2-sx1)/2;
-		sy3 = sy1 + (sy2-sy1)/2;
-		double dx1=sx1, dy1=sy1, dx2=sx2, dy2=sy2;
-		if (!drawing)
-			{dx1=x1d; dy1=y1d; dx2=x2d; dy2=y2d;}
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		points[0] = (float)dx1;
-		points[1] = (float)dy1;
+		points[0] = (float)x1d;
+		points[1] = (float)y1d;
         if (length>0) {
-			double dx=dx2-dx1, dy=dy2-dy1;
+			double dx=x2d-x1d, dy=y2d-y1d;
 			double arrowLength = Math.sqrt(dx*dx+dy*dy);
 			dx=dx/arrowLength; dy=dy/arrowLength;
 			double factor = style==OPEN?1.3:1.42;
-			points[2*3] = (float)(dx2-dx*shaftWidth*mag*factor);
-			points[2*3+1] = (float)(dy2-dy*shaftWidth*mag*factor);
+			points[2*3] = (float)(x2d-dx*shaftWidth*mag*factor);
+			points[2*3+1] = (float)(y2d-dy*shaftWidth*mag*factor);
 		} else {
-			points[2*3] = (float)dx2;
-			points[2*3+1] = (float)dy2;
+			points[2*3] = (float)x2d;
+			points[2*3+1] = (float)y2d;
 		}
 		final double alpha = Math.atan2(points[2*3+1]-points[1], points[2*3]-points[0]);
 		double SL = 0.0;
@@ -175,8 +174,7 @@ public class Arrow extends Line {
  	
 	private Shape getShape() {
 		Shape arrow = getPath();
-		float mag = (float)(getStrokeWidth()*(drawing?ic.getMagnification():1.0));
-		BasicStroke stroke = new BasicStroke(mag, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+		BasicStroke stroke = new BasicStroke((float)getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
 		Shape outlineShape = stroke.createStrokedShape(arrow);
 		Area a1 = new Area(arrow);
 		Area a2 = new Area(outlineShape);
@@ -193,34 +191,49 @@ public class Arrow extends Line {
 		return sroi;
 	}
 
-	//public ImageProcessor getMask() {
-	//	return getShapeRoi().getMask();
-	//}
+	public ImageProcessor getMask() {
+		return getShapeRoi().getMask();
+	}
 
-	private float getOutlineWidth() {
+	private double getOutlineWidth() {
 		double width = getStrokeWidth()/8.0;
 		if (width<1.0) width = 1.0;
 		double head = headSize/8.0;
 		if (head<1.0) head = 1.0;
-		double mag = ic.getMagnification();
-		if (mag<0.5) mag = 0.5;
-		double lineWidth = width*head*mag;
+		//double mag = ic!=null?ic.getMagnification():1.0;
+		//if (mag<0.5) mag = 0.5;
+		double lineWidth = width*head;
 		if (lineWidth<1.0) lineWidth = 1.0;
-		return (float)lineWidth;
+		return lineWidth;
 	}
 
 	public void drawPixels(ImageProcessor ip) {
+		ShapeRoi shapeRoi = getShapeRoi();
+		ShapeRoi shapeRoi2 = null;
+		if (doubleHeaded) {
+			flipEnds();
+			shapeRoi2 = getShapeRoi();
+			flipEnds();
+		}
 		if (outline) {
 			int lineWidth = ip.getLineWidth();
 			ip.setLineWidth((int)Math.round(getOutlineWidth()));
-			getShapeRoi().drawPixels(ip);
+			shapeRoi.drawPixels(ip);
+			if (doubleHeaded) shapeRoi2.drawPixels(ip);
 			ip.setLineWidth(lineWidth);
-		} else
-			ip.fill(getShapeRoi());
+		} else {
+			ip.fill(shapeRoi);
+			if (doubleHeaded) ip.fill(shapeRoi2);
+		}
 	}
 	
 	public boolean contains(int x, int y) {
 		return getShapeRoi().contains(x, y);
+	}
+
+	/** Return the bounding rectangle of this arrow. */
+	public Rectangle getBounds() {
+		return getShapeRoi().getBounds();
 	}
 
 	protected void handleMouseDown(int sx, int sy) {

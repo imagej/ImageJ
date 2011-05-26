@@ -209,12 +209,14 @@ public class ShapeRoi extends Roi {
 		at = new AffineTransform();
 		at.translate(sr.x, sr.y);
 		Area a2 = new Area(at.createTransformedShape(sr.getShape()));
-		switch (op) {
-			case OR: a1.add(a2); break;
-			case AND: a1.intersect(a2); break;
-			case XOR: a1.exclusiveOr(a2); break;
-			case NOT: a1.subtract(a2); break;
-		}
+		try {
+			switch (op) {
+				case OR: a1.add(a2); break;
+				case AND: a1.intersect(a2); break;
+				case XOR: a1.exclusiveOr(a2); break;
+				case NOT: a1.subtract(a2); break;
+			}
+		} catch(Exception e) {}
 		Rectangle r = a1.getBounds();
 		at = new AffineTransform();
 		at.translate(-r.x, -r.y);
