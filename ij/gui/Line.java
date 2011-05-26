@@ -16,7 +16,7 @@ public class Line extends Roi {
 	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
 	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private double xHandleOffset, yHandleOffset;
-	private double startxd, startyd;
+	protected double startxd, startyd;
 	static boolean widthChanged;
 
 	/** Creates a new straight line selection using the specified

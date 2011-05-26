@@ -6,23 +6,29 @@ import java.awt.Rectangle;
 public class FloatPolygon {
 	Rectangle bounds;
 
-    /** The number of points. */
-    public int npoints;
+	/** The number of points. */
+	public int npoints;
 
-    /* The array of x coordinates. */
-    public float xpoints[];
+	/* The array of x coordinates. */
+	public float xpoints[];
 
-    /* The array of y coordinates. */
-    public float ypoints[];
+	/* The array of y coordinates. */
+	public float ypoints[];
 
+	/** Constructs an empty FloatPolygon. */ 
+	public FloatPolygon() {
+		npoints = 0;
+		xpoints = new float[10];
+		ypoints = new float[10];
+	}
 
-    /** Constructs a FloatPolygon. */ 
-    public FloatPolygon(float xpoints[], float ypoints[], int npoints) {
+	/** Constructs a FloatPolygon from x and y arrays. */ 
+	public FloatPolygon(float xpoints[], float ypoints[], int npoints) {
 		this.npoints = npoints;
 		this.xpoints = xpoints;
 		this.ypoints = ypoints;
-    }
-    
+	}
+		
 	/** Returns 'true' if the point (x,y) is inside this polygon. This is a Java
 	version of the remarkably small C program by W. Randolph Franklin at
 	http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html#The%20C%20Code
@@ -61,6 +67,25 @@ public class FloatPolygon {
 		int iMinX = (int)Math.floor(minX);
 		int iMinY = (int)Math.floor(minY);
 		bounds = new Rectangle(iMinX, iMinY, (int)(maxX-iMinX+0.5), (int)(maxY-iMinY+0.5));
+	}
+
+	public void addPoint(float x, float y) {
+		if (npoints==xpoints.length) {
+			float[] tmp = new float[npoints*2];
+			System.arraycopy(xpoints, 0, tmp, 0, npoints);
+			xpoints = tmp;
+			tmp = new float[npoints*2];
+			System.arraycopy(ypoints, 0, tmp, 0, npoints);
+			ypoints = tmp;
+		}
+		xpoints[npoints] = x;
+		ypoints[npoints] = y;
+		npoints++;
+		bounds = null;
+	}
+
+	public void addPoint(double x, double y) {
+		addPoint((float)x, (float)y);
 	}
 
 }
