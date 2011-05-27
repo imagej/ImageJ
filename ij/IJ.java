@@ -1208,7 +1208,7 @@ public class IJ {
 	/** Equivalent to clicking on the current image at (x,y) with the
 		wand tool. Returns the number of points in the resulting ROI. */
 	public static int doWand(int x, int y) {
-		return doWand(x, y, 0, null);
+		return doWand(getImage(), x, y, 0, null);
 	}
 
 	/** Traces the boundary of the area with pixel values within
@@ -1219,7 +1219,11 @@ public class IJ {
 	* it is ignored if 'tolerance' > 0.
 	*/
 	public static int doWand(int x, int y, double tolerance, String mode) {
-		ImagePlus img = getImage();
+		return doWand(getImage(), x, y, tolerance, mode);
+	}
+
+	/** This version of doWand adds an ImagePlus argument. */
+	public static int doWand(ImagePlus img, int x, int y, double tolerance, String mode) {
 		ImageProcessor ip = img.getProcessor();
 		if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y)))
 			return 0;

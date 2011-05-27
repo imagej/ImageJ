@@ -20,7 +20,7 @@ public class Selection implements PlugIn, Measurements {
 	private float[] kernel3 = {1f, 1f, 1f};
 	private static String angle = "15"; // degrees
 	private static String enlarge = "15"; // pixels
-	private static String bandSize = "15"; // pixels
+	private static int bandSize = 15; // pixels
 	private static boolean nonScalable;
 	private static Color linec, fillc;
 	private static int lineWidth = 1;
@@ -60,8 +60,10 @@ public class Selection implements PlugIn, Measurements {
     		areaToLine(imp); 
 	   	else if (arg.equals("properties"))
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
-    	else
-    		runMacro(arg);
+ 		else if (arg.equals("band"))
+			makeBand(imp);
+		else
+			runMacro(arg);
 	}
 	
 	void runMacro(String arg) {
@@ -86,10 +88,6 @@ public class Selection implements PlugIn, Measurements {
 		} else if (arg.equals("enlarge")) {
 			String value = IJ.runMacroFile("ij.jar:EnlargeSelection", enlarge); 
 			if (value!=null) enlarge = value; 
-			Roi.previousRoi = roi;
-		} else if (arg.equals("band")) {
-			String value = IJ.runMacroFile("ij.jar:MakeSelectionBand", bandSize); 
-			if (value!=null) bandSize = value;    	
 			Roi.previousRoi = roi;
 		}
 	}
@@ -533,6 +531,79 @@ public class Selection implements PlugIn, Measurements {
 		}
 		RoiProperties rp = new RoiProperties(title, roi);
 		return rp.showDialog();
+	}
+	
+	private void makeBand(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null) {
+			IJ.error("Make Band", "Selection required");
+			return;
+		}
+		if (!roi.isArea()) {
+			IJ.error("Make Band", "Area selection required");
+			return;
+		}
+		Calibration cal = imp.getCalibration();
+		double pixels = bandSize;
+		double size = pixels*cal.pixelWidth;
+		int decimalPlaces = 0;
+		if ((int)size!=size)
+			decimalPlaces = 2;
+		GenericDialog gd = new GenericDialog("Make Band");
+		gd.addNumericField("Band Size:", size, decimalPlaces, 4, cal.getUnits());
+		gd.showDialog();
+        if (gd.wasCanceled())
+        	return;
+		size = gd.getNextNumber();
+		if (Double.isNaN(size)) {
+			IJ.error("Make Band", "invalid number");
+			return;
+		}
+		int n = (int)Math.round(size/cal.pixelWidth); 
+		if (n >255) {
+           IJ.error("Make Band", "Cannot make bands wider that 255 pixels");
+           return;
+		}
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		Rectangle r = roi.getBounds();
+		ImageProcessor ip = roi.getMask();
+		if (ip==null) {
+			ip = new ByteProcessor(r.width, r.height);
+			ip.invert();
+		}
+		ImageProcessor mask = new ByteProcessor(width, height);
+		mask.insert(ip, r.x, r.y);
+		ImagePlus edm = new ImagePlus("mask", mask);
+		boolean saveBlackBackground = Prefs.blackBackground;
+		Prefs.blackBackground = false;
+		IJ.run(edm, "Distance Map", "");
+		Prefs.blackBackground = saveBlackBackground;
+		ip = edm.getProcessor();
+		ip.setThreshold(0, n, ImageProcessor.NO_LUT_UPDATE);
+		int xx=-1, yy=-1;
+		for (int x=r.x; x<r.x+r.width; x++) {
+			for (int y=r.y; y<r.y+r.height; y++) {
+				if (ip.getPixel(x, y)<n) {
+					xx=x; yy=y;
+					break;
+				}
+			}
+			if (xx>=0||yy>=0)
+				break;
+		}
+		int count = IJ.doWand(edm, xx, yy, 0, null);
+		if (count<=0) {
+           IJ.error("Make Band", "Unable to make band");
+           return;
+		}
+		ShapeRoi roi2 = new ShapeRoi(edm.getRoi());
+		if (!(roi instanceof ShapeRoi))
+			roi = new ShapeRoi(roi);
+		ShapeRoi roi1 = (ShapeRoi)roi;
+		roi2 = roi2.not(roi1);
+		imp.setRoi(roi2);
+		bandSize = n;
 	}
 
 }
