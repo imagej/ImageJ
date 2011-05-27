@@ -552,7 +552,7 @@ public class Selection implements PlugIn, Measurements {
 		GenericDialog gd = new GenericDialog("Make Band");
 		gd.addNumericField("Band Size:", size, decimalPlaces, 4, cal.getUnits());
 		gd.showDialog();
-        if (gd.wasCanceled())
+		if (gd.wasCanceled())
         	return;
 		size = gd.getNextNumber();
 		if (Double.isNaN(size)) {
@@ -561,8 +561,8 @@ public class Selection implements PlugIn, Measurements {
 		}
 		int n = (int)Math.round(size/cal.pixelWidth); 
 		if (n >255) {
-           IJ.error("Make Band", "Cannot make bands wider that 255 pixels");
-           return;
+			IJ.error("Make Band", "Cannot make bands wider that 255 pixels");
+			return;
 		}
 		int width = imp.getWidth();
 		int height = imp.getHeight();
@@ -594,8 +594,8 @@ public class Selection implements PlugIn, Measurements {
 		}
 		int count = IJ.doWand(edm, xx, yy, 0, null);
 		if (count<=0) {
-           IJ.error("Make Band", "Unable to make band");
-           return;
+			IJ.error("Make Band", "Unable to make band");
+			return;
 		}
 		ShapeRoi roi2 = new ShapeRoi(edm.getRoi());
 		if (!(roi instanceof ShapeRoi))

@@ -26,9 +26,10 @@ public class Executer implements Runnable {
 		command = cmd;
 	}
 
-	/** Create an Executer that runs the specified menu command
-		in a separate thread using the active image image. */
-	public Executer(String cmd, ImagePlus ignored) {
+	/** Create an Executer that runs the specified menu 
+		command in a separate thread using the specified image,
+		or on the active image if 'imp' is null. */
+	public Executer(String cmd, ImagePlus imp) {
 		if (cmd.startsWith("Repeat")) {
 			command = previousCommand;
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);		
@@ -40,6 +41,8 @@ public class Executer implements Runnable {
 		IJ.resetEscape();
 		thread = new Thread(this, cmd);
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
+		if (imp!=null)
+			WindowManager.setTempCurrentImage(thread, imp);
 		thread.start();
 	}
 
