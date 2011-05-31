@@ -58,7 +58,7 @@ public class TextRoi extends Roi {
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
         ImageCanvas ic = imp.getCanvas();
-        double mag = (ic!=null)?ic.getMagnification():1.0;
+        double mag = getMagnification();
         if (mag>1.0)
             mag = 1.0;
         if (size<(12/mag))
@@ -117,7 +117,7 @@ public class TextRoi extends Roi {
 		else {
 			if (instanceFont==null)
 				instanceFont = new Font(name, style, size);
-			double mag = (ic!=null)?ic.getMagnification():1.0;
+			double mag = getMagnification();
 			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
 		}
 	}
@@ -141,14 +141,13 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
-		if (ic==null) return;
-		if (Interpreter.isBatchMode() && ic.getDisplayList()!=null) return;
+		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null) return;
 		if (newFont || width==1)
 			updateBounds(g);
 		super.draw(g); // draw the rectangle
-		double mag = ic.getMagnification();
-		int sx = ic.screenX(x);
-		int sy = ic.screenY(y);
+		double mag = getMagnification();
+		int sx = screenX(x);
+		int sy = screenY(y);
 		int swidth = (int)(width*mag);
 		int sheight = (int)(height*mag);
 		Rectangle r = null;
@@ -158,14 +157,20 @@ public class TextRoi extends Roi {
 		if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
 	}
 	
+	public void drawOverlay(Graphics g) {
+		overlay = true;
+		drawText(g);
+		overlay = false;
+	}
+
 	void drawText(Graphics g) {
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
 		Java2.setAntialiasedText(g, antialiased);
 		if (newFont || width==1)
 			updateBounds(g);
-		double mag = ic.getMagnification();
-		int sx = nonScalable?x:ic.screenX(x);
-		int sy = nonScalable?y:ic.screenY(y);
+		double mag = getMagnification();
+		int sx = nonScalable?x:screenX(x);
+		int sy = nonScalable?y:screenY(y);
 		Font font = getScaledFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
@@ -183,8 +188,8 @@ public class TextRoi extends Roi {
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
  			Graphics2D g2d = (Graphics2D)g;
-			int sw = nonScalable?width:(int)(ic.getMagnification()*width);
-			int sh = nonScalable?height:(int)(ic.getMagnification()*height);
+			int sw = nonScalable?width:(int)(getMagnification()*width);
+			int sh = nonScalable?height:(int)(getMagnification()*height);
 			g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}

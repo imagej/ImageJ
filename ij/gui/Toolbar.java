@@ -8,6 +8,7 @@ import ij.*;
 import ij.plugin.frame.Recorder; 
 import ij.plugin.frame.Editor; 
 import ij.plugin.MacroInstaller;
+import ij.plugin.RectToolOptions;
 import ij.macro.Program;
 
 /** The ImageJ toolbar. */
@@ -46,7 +47,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int SIZE = 26;
 	private static final int OFFSET = 5;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
-	private static final String ARC_SIZE = "toolbar.arc.size";
+	public static final String ARC_SIZE = "toolbar.arc.size";
 		
 	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS, SIZE);
 	private boolean[] down;
@@ -760,7 +761,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return arcSize;
 	}
 
-	/** Sets the rounded rectangle arc size (pixels). */
+	/** Sets the rounded rectangle corner diameter (pixels). */
 	public static void setRoundRectArcSize(int size) {
 		if (size<=0)
 			roundRectMode = false;
@@ -772,7 +773,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		if (roi!=null && roi.getType()==Roi.RECTANGLE)
-			roi.setRoundRectArcSize(roundRectMode?arcSize:0);
+			roi.setCornerDiameter(roundRectMode?arcSize:0);
 	}
 
 	/** Returns 'true' if the multi-point tool is enabled. */
@@ -932,7 +933,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			switch (current) {
 				case RECTANGLE:
 					if (roundRectMode)
-						showRoundRectDialog();
+						IJ.doCommand("Rounded Rect Tool...");
 					break;
 				case OVAL:
 					showBrushDialog();
@@ -1064,7 +1065,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			ImagePlus imp = WindowManager.getCurrentImage();
 			Roi roi = imp!=null?imp.getRoi():null;
 			if (roi!=null && roi.getType()==Roi.RECTANGLE)
-				roi.setRoundRectArcSize(roundRectMode?arcSize:0);
+				roi.setCornerDiameter(roundRectMode?arcSize:0);
 			if (!previousName.equals(getToolName()))
 				IJ.notifyEventListeners(IJEventListener.TOOL_CHANGED);
 		} else if (item==ovalItem || item==ellipseItem || item==brushItem) {
@@ -1282,14 +1283,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (roi!=null && roi.getType()==Roi.OVAL && ovalType==BRUSH_ROI)
 			img.killRoi();
 		Prefs.set(BRUSH_SIZE, brushSize);
-	}
-
-	void showRoundRectDialog() {
-		GenericDialog gd = new GenericDialog("Rounded Rectangle");
-		gd.addNumericField("Corner arc size:", arcSize, 0, 4, "pixels");
-		gd.showDialog();
-		if (gd.wasCanceled()) return;
-		setRoundRectArcSize((int)gd.getNextNumber());
 	}
 
 	void showAngleDialog() {

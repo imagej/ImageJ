@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.45i";
-	public static final String BUILD = "11"; 
+	public static final String BUILD = "14"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -286,9 +286,9 @@ public class ImageJ extends Frame implements ActionListener,
 				new RecentOpener(cmd); // open image in separate thread
 				return;
 			} else if (item.getParent()==Menus.getPopupMenu()) {
-				Object menuParent = Menus.getPopupMenu().getParent();
-				if (menuParent instanceof ImageCanvas)
-					imp = ((ImageCanvas)menuParent).getImage();
+				Object parent = Menus.getPopupMenu().getParent();
+				if (parent instanceof ImageCanvas)
+					imp = ((ImageCanvas)parent).getImage();
 			}
 			int flags = e.getModifiers();
 			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));

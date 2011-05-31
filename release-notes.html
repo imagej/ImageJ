@@ -5,13 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.45i 27 May 2011</u>
+<li> <u>1.45i 30 May 2011</u>
 <ul>
 <li> Thanks to Jean-Yves Tinevez and Johannes Schindelin (authors of the Fiji ArrowTool plugin),
 added an "outline" checkbox to the arrow tool options dialog.
-<li> Thanks to Michael Schmid, the popup menu activated by
-right clicking in an image window now works
-as expected with non-foreground images.
+<li> Added the <i>Edit&gt;Options&gt;Rounded Rect Tool</i> command.
+<li> Thanks to Michael Schmid, the popup menu activated by
+right clicking on an image window now works
+as expected with non-foreground images.
 <li> Added an "Ignore source LUTs" option to the
 <i>Image&gt;Color&gt;Merge Channels</i> dialog box.
 <li> Added "X center" and "Y center" fields to the <i>Image&gt;Zoom&gt;Set</i> dialog box.
@@ -19,6 +20,7 @@ as expected with non-foreground images.
 is enabled in <i>Edit&gt;Options&gt;DICOM</i> and tag 0028,1053 has a value<>1.0.
 <li> Added the openFolder(), openAsVirtualStack() and sortFileNames() methods to
 the FolderOpener class;
+<li> Added the ImageProcessor.drawRoi() method.
 <li> Fixed a bug that caused the magnification to be dropped from the title bar when
 using <i>Image&gt;Stacks&gt;Add Slice</i> on a single image.
 <li> Thanks to Vytas Bindokas, fixed bugs that caused the wand tool and the getStatistics() macro
@@ -33,6 +35,9 @@ float images.
 to not be displayed correctly.
 <li> Thanks to Vytas Bindokas,  fixed bugs that sometimes caused
 <i>Edit&gt;Selection&gt;Make Band</i> to fail.
+<li> Thanks to Jonathan Silver, fixed a regression that caused <i>File&gt;Save As&gt;Text Image</i>
+to not save float images using scientific notation when "Scientific notation" was checked
+in the <i>Analyze&gt;Set Measurements</i> dialog box.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

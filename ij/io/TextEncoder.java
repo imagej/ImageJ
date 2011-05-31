@@ -39,7 +39,7 @@ public class TextEncoder {
 				if (intData)
 					pw.print((int)value);
 				else
-					pw.print(IJ.d2s(value, precision));
+					pw.print(ResultsTable.d2s(value, precision));
 				if (x!=(width-1))
 					pw.print("\t");
 			}

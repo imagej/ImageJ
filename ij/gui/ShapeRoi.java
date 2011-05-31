@@ -266,7 +266,7 @@ public class ShapeRoi extends Roi {
 				shape = new Line2D.Double ((double)(line.x1-r.x), (double)(line.y1-r.y), (double)(line.x2-r.x), (double)(line.y2-r.y) );
 				break;
 			case Roi.RECTANGLE:
-				int arcSize = roi.getRoundRectArcSize();
+				int arcSize = roi.getCornerDiameter();
 				if (arcSize>0)
 					shape = new RoundRectangle2D.Float(0, 0, r.width, r.height, arcSize, arcSize);
 				else

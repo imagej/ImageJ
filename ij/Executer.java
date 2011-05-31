@@ -28,7 +28,7 @@ public class Executer implements Runnable {
 
 	/** Create an Executer that runs the specified menu 
 		command in a separate thread using the specified image,
-		or on the active image if 'imp' is null. */
+		or using the active image if 'imp' is null. */
 	public Executer(String cmd, ImagePlus imp) {
 		if (cmd.startsWith("Repeat")) {
 			command = previousCommand;

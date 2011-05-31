@@ -138,7 +138,7 @@ public class RoiDecoder {
 				roi = new Roi(left, top, width, height);
 				int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
 				if (arcSize>0)
-					roi.setRoundRectArcSize(arcSize);
+					roi.setCornerDiameter(arcSize);
 				break;
 			case oval:
 				roi = new OvalRoi(left, top, width, height);

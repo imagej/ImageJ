@@ -1399,9 +1399,19 @@ public abstract class ImageProcessor implements Cloneable {
 		setRoi(r);
 	}
 
-	/** Draws an Roi. */
+	/** Draws the specified selection on this image using the line
+		width and color defined by ip.setLineWidth() and ip.setColor(). */
 	public void draw(Roi roi) {
 		roi.drawPixels(this);
+	}
+
+	/** Draws the specified selection on this image using the stroke
+		width and stroke color defined by roi.setStrokeWidth and
+		roi.setStrokeColor(). Requires Java 1.6. */
+	public void drawRoi(Roi roi) {
+		Image img = createImage();
+		Graphics g = img.getGraphics();
+		roi.drawOverlay(g);
 	}
 
 	/** Set a lookup table used by getPixelValue(), getLine() and

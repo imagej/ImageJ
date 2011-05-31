@@ -48,7 +48,6 @@ public class Arrow extends Line {
 
 	/** Draws this arrow on the image. */
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Shape shape2 = null;
 		if (doubleHeaded) {
 			flipEnds();
@@ -62,11 +61,15 @@ public class Arrow extends Line {
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		AffineTransform at = g2.getDeviceConfiguration().getDefaultTransform();
-		double mag = ic.getMagnification();
-		Rectangle r = ic.getSrcRect();
-		at.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
+		double mag = getMagnification();
+		int xbase=0, ybase=0;
+		if (ic!=null) {
+			Rectangle r = ic.getSrcRect();
+			xbase = r.x; ybase = r.y;
+		}
+		at.setTransform(mag, 0.0, 0.0, mag, -xbase*mag, ybase*mag);
 		if (outline) {
-			float lineWidth = (float)(getOutlineWidth()*ic.getMagnification());
+			float lineWidth = (float)(getOutlineWidth()*mag);
 			g2.setStroke(new BasicStroke(lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
 			g2.draw(at.createTransformedShape(shape));
 			if (doubleHeaded) g2.draw(at.createTransformedShape(shape2));
@@ -78,14 +81,17 @@ public class Arrow extends Line {
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
 			handleColor=Color.white;
-			drawHandle(g, ic.screenXD(x1d-size2), ic.screenYD(y1d-size2));
-			drawHandle(g, ic.screenXD(x2d-size2), ic.screenYD(y2d-size2));
-			drawHandle(g, ic.screenXD(x1d+(x2d-x1d)/2-size2), ic.screenYD(y1d+(y2d-y1d)/2-size2));
+			drawHandle(g, screenXD(x1d-size2), screenYD(y1d-size2));
+			drawHandle(g, screenXD(x2d-size2), screenYD(y2d-size2));
+			drawHandle(g, screenXD(x1d+(x2d-x1d)/2-size2), screenYD(y1d+(y2d-y1d)/2-size2));
 		}
 		if (imp!=null&&imp.getRoi()!=null) showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}
+	
+	private int screenXD(double ox) {return ic!=null?ic.screenXD(ox):(int)ox;}
+	private int screenYD(double oy) {return ic!=null?ic.screenYD(oy):(int)oy;}
 	
 	private void flipEnds() {
 		double tmp = x1R;
@@ -127,15 +133,20 @@ public class Arrow extends Line {
 		if (length<0.0 || style==HEADLESS) length=0.0;
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		points[0] = (float)x1d;
-		points[1] = (float)y1d;
+		double dx=x2d-x1d, dy=y2d-y1d;
+		double arrowLength = Math.sqrt(dx*dx+dy*dy);
+		dx=dx/arrowLength; dy=dy/arrowLength;
+		if (doubleHeaded && style!=HEADLESS) {
+			points[0] = (float)(x1d+dx*shaftWidth*2.0);
+			points[1] = (float)(y1d+dy*shaftWidth*2.0);
+		} else {
+			points[0] = (float)x1d;
+			points[1] = (float)y1d;
+		}
         if (length>0) {
-			double dx=x2d-x1d, dy=y2d-y1d;
-			double arrowLength = Math.sqrt(dx*dx+dy*dy);
-			dx=dx/arrowLength; dy=dy/arrowLength;
 			double factor = style==OPEN?1.3:1.42;
-			points[2*3] = (float)(x2d-dx*shaftWidth*mag*factor);
-			points[2*3+1] = (float)(y2d-dy*shaftWidth*mag*factor);
+			points[2*3] = (float)(x2d-dx*shaftWidth*factor);
+			points[2*3+1] = (float)(y2d-dy*shaftWidth*factor);
 		} else {
 			points[2*3] = (float)x2d;
 			points[2*3+1] = (float)y2d;
@@ -200,8 +211,6 @@ public class Arrow extends Line {
 		if (width<1.0) width = 1.0;
 		double head = headSize/8.0;
 		if (head<1.0) head = 1.0;
-		//double mag = ic!=null?ic.getMagnification():1.0;
-		//if (mag<0.5) mag = 0.5;
 		double lineWidth = width*head;
 		if (lineWidth<1.0) lineWidth = 1.0;
 		return lineWidth;
@@ -238,12 +247,12 @@ public class Arrow extends Line {
 
 	protected void handleMouseDown(int sx, int sy) {
 		super.handleMouseDown(sx, sy);
-		startxd = ic.offScreenXD(sx);
-		startyd = ic.offScreenYD(sy);
+		startxd = ic!=null?ic.offScreenXD(sx):sx;
+		startyd = ic!=null?ic.offScreenYD(sy):sy;
 	}
 
 	protected int clipRectMargin() {
-		double mag = ic!=null?ic.getMagnification():1.0;
+		double mag = getMagnification();
 		double arrowWidth = getStrokeWidth();
 		double size = 8+10*arrowWidth*mag*0.5;
 		return (int)Math.max(size*2.0, headSize);

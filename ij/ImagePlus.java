@@ -14,6 +14,8 @@ import ij.plugin.frame.ContrastAdjuster;
 import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 import ij.plugin.Duplicator;
+import ij.plugin.RectToolOptions;
+
 
 /**
 An ImagePlus contain an ImageProcessor (2D image) or an ImageStack (3D, 4D or 5D image).
@@ -1354,7 +1356,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		killRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
-				roi = new Roi(sx, sy, this, Toolbar.getRoundRectArcSize());
+				int cornerDiameter = Toolbar.getRoundRectArcSize();
+				roi = new Roi(sx, sy, this, cornerDiameter);
+				if (cornerDiameter>0) {
+					roi.setStrokeColor(Toolbar.getForegroundColor());
+					roi.setStrokeWidth(RectToolOptions.getDefaultStrokeWidth());
+				}
 				break;
 			case Toolbar.OVAL:
 				if (Toolbar.getOvalToolType()==Toolbar.ELLIPSE_ROI)

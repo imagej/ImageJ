@@ -104,7 +104,7 @@ public class RoiEncoder {
 		putInt(RoiDecoder.POSITION, roi.getPosition());
 		
 		if (type==rect) {
-			int arcSize = roi.getRoundRectArcSize();
+			int arcSize = roi.getCornerDiameter();
 			if (arcSize>0)
 				putShort(RoiDecoder.ROUNDED_RECT_ARC_SIZE, arcSize);
 		}
