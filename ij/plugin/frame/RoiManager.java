@@ -48,6 +48,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private int defaultLineWidth = 1;
 	private Color defaultColor;
 	private boolean firstTime = true;
+	private int[] selectedIndexes;
 	
 	public RoiManager() {
 		super("ROI Manager");
@@ -251,7 +252,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             if (!IJ.isMacintosh()) {      //handle shift-click, ctrl-click (on Mac, OS takes care of this)
                 if (!IJ.shiftKeyDown()) lastNonShiftClick = index;
     			if (!IJ.shiftKeyDown() && !IJ.controlKeyDown()) {  //simple click, deselect everything else
-    				int[] indexes = list.getSelectedIndexes();
+    				int[] indexes = getSelectedIndexes();
     				for (int i=0; i<indexes.length; i++) {
     					if (indexes[i]!=index)
     						list.deselect(indexes[i]);
@@ -259,7 +260,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     			} else if (IJ.shiftKeyDown() && lastNonShiftClick>=0 && lastNonShiftClick<list.getItemCount()) {
                     int firstIndex = Math.min(index, lastNonShiftClick);
                     int lastIndex = Math.max(index, lastNonShiftClick);
-    				int[] indexes = list.getSelectedIndexes();
+    				int[] indexes = getSelectedIndexes();
     				for (int i=0; i<indexes.length; i++)
     					if (indexes[i]<firstIndex || indexes[i]>lastIndex)
     						list.deselect(indexes[i]);      //deselect everything else
@@ -457,7 +458,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int count = list.getItemCount();
 		if (count==0)
 			return error("The list is empty.");
-		int index[] = list.getSelectedIndexes();
+		int index[] = getSelectedIndexes();
 		if (index.length==0 || (replacing&&count>1)) {
 			String msg = "Delete all items on the list?";
 			if (replacing)
@@ -708,7 +709,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean save() {
 		if (list.getItemCount()==0)
 			return error("The selection list is empty.");
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		if (indexes.length>1)
@@ -774,7 +775,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
@@ -823,7 +824,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
  	boolean multiMeasure() {
 		ImagePlus imp = getImage();
 		if (imp==null) return false;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
@@ -933,7 +934,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void multiPlot() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0) indexes = getAllIndexes();
 		int n = indexes.length;
         if (n==0) return;
@@ -991,7 +992,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}	
 
 	boolean drawOrFill(int mode) {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -1032,7 +1033,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void setProperties(Color color, int lineWidth, Color fillColor) {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		int n = indexes.length;
@@ -1136,7 +1137,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void combine() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==1) {
 			error("More than one item must be selected, or none");
 			return;
@@ -1216,7 +1217,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void and() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==1) {
 			error("More than one item must be selected, or none");
 			return;
@@ -1249,7 +1250,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void xor() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==1) {
 			error("More than one item must be selected, or none");
 			return;
@@ -1306,7 +1307,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	void removeSliceInfo() {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		for (int i=0; i<indexes.length; i++) {
@@ -1492,7 +1493,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the selected ROIs as an array, or
 		all the ROIs if none are selected. */
 	public Roi[] getSelectedRoisAsArray() {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		int n = indexes.length;
@@ -1688,6 +1689,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	/** Assigns the ROI at the specified index to 'imp'. */
 	public void select(ImagePlus imp, int index) {
+		selectedIndexes = null;
 		int n = list.getItemCount();
 		if (index<0) {
 			for (int i=0; i<n; i++)
@@ -1790,6 +1792,19 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
 		}
+	}
+	
+	public void setSelectedIndexes(int[] indexes) {
+		selectedIndexes = indexes;
+	}
+	
+	private int[] getSelectedIndexes() {
+		if (selectedIndexes!=null) {
+			int[] indexes = selectedIndexes;
+			selectedIndexes = null;
+			return indexes;
+		} else
+			return list.getSelectedIndexes();
 	}
 
 	private boolean record() {

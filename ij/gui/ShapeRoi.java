@@ -1034,17 +1034,20 @@ public class ShapeRoi extends Roi {
 
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
 		Graphics2D g2d = (Graphics2D)g;
 		if (stroke!=null)
-			g2d.setStroke(ic.getCustomRoi()?stroke:getScaledStroke());
-		mag = ic.getMagnification();
-		Rectangle r = ic.getSrcRect();
-		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
+			g2d.setStroke(ic!=null&&ic.getCustomRoi()?stroke:getScaledStroke());
+		mag = getMagnification();
+		int basex=0, basey=0;
+		if (ic!=null) {
+			Rectangle r = ic.getSrcRect();
+			basex=r.x; basey=r.y;
+		}
+		aTx.setTransform(mag, 0.0, 0.0, mag, -basex*mag, -basey*mag);
 		aTx.translate(x, y);
 		if (fillColor!=null)
 			g2d.fill(aTx.createTransformedShape(shape));

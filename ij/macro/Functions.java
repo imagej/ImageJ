@@ -2268,6 +2268,7 @@ public class Functions implements MacroConstants, Measurements {
 			||cmd.equals("set color")||cmd.equals("set fill color")||cmd.equals("set line width")
 			||cmd.equals("associate")||cmd.equals("centered")||cmd.equals("usenames");
 		boolean select = cmd.equals("select");
+		boolean multiSelect = false;
 		boolean add = cmd.equals("add");
 		if (twoArgCommand)
 			path = getLastString();
@@ -2281,9 +2282,14 @@ public class Functions implements MacroConstants, Measurements {
 				lineWidth = interp.getExpression();
 			}
 			interp.getRightParen();
-		} else if (select)
-			index = (int)getLastArg();
-		else
+		} else if (select) {
+			interp.getComma();
+			multiSelect = isArrayArg();
+			if (!multiSelect) {
+				index = (int)interp.getExpression();
+				interp.getRightParen();
+			}
+		} else
 			interp.getRightParen();
 		if (RoiManager.getInstance()==null&&roiManager==null) {
 			if (Interpreter.isBatchMode())
@@ -2294,6 +2300,8 @@ public class Functions implements MacroConstants, Measurements {
 		RoiManager rm = roiManager!=null?roiManager:RoiManager.getInstance();
 		if (rm==null)
 			interp.error("ROI Manager not found");
+		if (multiSelect)
+			return setMultipleIndexes(rm);
 		if (twoArgCommand)
 			rm.runCommand(cmd, path);
 		else if (add)
@@ -2315,6 +2323,29 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Invalid ROI Manager command");
 		}
 		return countOrIndex;			
+	}
+	
+	boolean isArrayArg() {
+		int nextToken = pgm.code[interp.pc+1];
+		int tok = nextToken&0xff;
+		if (tok==ARRAY_FUNCTION) return true;
+		if (tok!=WORD) return false;
+		Variable v = interp.lookupVariable(nextToken>>TOK_SHIFT);
+		if (v==null) return false;
+		return v.getType()==Variable.ARRAY;
+	}
+
+	double setMultipleIndexes(RoiManager rm) {
+		double[] indexes = getLastArray();
+		int[] selectedIndexes = new int[indexes.length];
+		int count = rm.getList().getItemCount();
+		for (int i=0; i<indexes.length; i++) {
+			selectedIndexes[i] = (int)indexes[i];
+			if (selectedIndexes[i]<0 || selectedIndexes[i]>=count)
+				interp.error("Invalid index: "+selectedIndexes[i]);
+		}
+		rm.setSelectedIndexes(selectedIndexes);
+		return Double.NaN;
 	}
 	
 	void setFont() {
@@ -3329,7 +3360,8 @@ public class Functions implements MacroConstants, Measurements {
 			path = sd.getDirectory()+sd.getFileName();
 		} else {
 			File file = new File(path);
-			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")||path.endsWith(".ijm")))
+			if (file.exists() && !(path.endsWith(".txt")||path.endsWith(".java")||path.endsWith(".xls")
+			||path.endsWith(".ijm")||path.endsWith(".html")||path.endsWith(".htm")))
 				interp.error("File exists and suffix is not '.txt', '.java', etc.");
 		}
 		try {

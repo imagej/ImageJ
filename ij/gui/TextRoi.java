@@ -158,9 +158,7 @@ public class TextRoi extends Roi {
 	}
 	
 	public void drawOverlay(Graphics g) {
-		overlay = true;
 		drawText(g);
-		overlay = false;
 	}
 
 	void drawText(Graphics g) {

@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.45i 30 May 2011</u>
+<li> <u>1.45i 1 June 2011</u>
 <ul>
 <li> Thanks to Jean-Yves Tinevez and Johannes Schindelin (authors of the Fiji ArrowTool plugin),
 added an "outline" checkbox to the arrow tool options dialog.
@@ -20,7 +20,10 @@ as expected with non-foreground images.
 is enabled in <i>Edit&gt;Options&gt;DICOM</i> and tag 0028,1053 has a value<>1.0.
 <li> Added the openFolder(), openAsVirtualStack() and sortFileNames() methods to
 the FolderOpener class;
-<li> Added the ImageProcessor.drawRoi() method.
+<li> Added drawRoi() and drawOverlay() methods to the ImageProcessor class
+(<a href="macros/js/FadeArrowInStack.js">example</a>).
+<li> Added the roiManager("select",indexes) macro function and
+RoiManager.setSelectedIndexes() method.
 <li> Fixed a bug that caused the magnification to be dropped from the title bar when
 using <i>Image&gt;Stacks&gt;Add Slice</i> on a single image.
 <li> Thanks to Vytas Bindokas, fixed bugs that caused the wand tool and the getStatistics() macro

@@ -185,7 +185,7 @@ public class PolygonRoi extends Roi {
         }
         if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
         && state!=CONSTRUCTING && clipboard==null && !overlay) {
-            mag = ic!=null?ic.getMagnification():1.0;
+            mag = getMagnification();
             int size2 = HANDLE_SIZE/2;
             if (activeHandle>0)
                 drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);
@@ -262,9 +262,12 @@ public class PolygonRoi extends Roi {
 
 
 	protected void updatePolygon() {
-		if (ic==null) return;
-		Rectangle srcRect = ic.getSrcRect();
-		if (ic.getMagnification()==1.0 && srcRect.x==0 && srcRect.y==0) {
+		int basex=0, basey=0;
+		if (ic!=null) {
+			Rectangle srcRect = ic.getSrcRect();
+			basex=srcRect.x; basey=srcRect.y;
+		}
+		if (getMagnification()==1.0 && basex==0 && basey==0) {
 			if (xpf!=null) {
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = (int)(xpf[i]+x);

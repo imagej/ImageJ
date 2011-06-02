@@ -20,7 +20,7 @@ public class RectToolOptions implements PlugIn, DialogListener {
 		Color strokeColor = Toolbar.getForegroundColor();
 		Color fillColor = null;
 		double strokeWidth = defaultStrokeWidth;
-		int cornerDiameter = (int)Prefs.get(Toolbar.ARC_SIZE, 20);
+		int cornerDiameter = (int)Prefs.get(Toolbar.CORNER_DIAMETER, 20);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
 		if (roi!=null && (roi.getType()==Roi.RECTANGLE)) {
@@ -63,9 +63,6 @@ public class RectToolOptions implements PlugIn, DialogListener {
 		if (cornerDiameter2>0) {
 			if (!Toolbar.getToolName().equals("roundrect"))
 				IJ.setTool("roundrect");
-		} else {
-			if (!Toolbar.getToolName().equals("rectangle"))
-				IJ.setTool("rectangle");
 		}
 		return true;
 	}

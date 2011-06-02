@@ -168,7 +168,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 	
-	ImagePlus getImage() {
+	/** Returns the ImagePlus associated with this ROI, or null. */
+	public ImagePlus getImage() {
 		return imp;
 	}
 	
@@ -1413,6 +1414,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	protected int screenX(int ox) {return ic!=null?ic.screenX(ox):ox;}
 	protected int screenY(int oy) {return ic!=null?ic.screenY(oy):oy;}
+	protected int screenXD(double ox) {return ic!=null?ic.screenXD(ox):(int)ox;}
+	protected int screenYD(double oy) {return ic!=null?ic.screenYD(oy):(int)oy;}
 
 	public String toString() {
 		return ("Roi["+getTypeAsString()+", x="+x+", y="+y+", width="+width+", height="+height+"]");

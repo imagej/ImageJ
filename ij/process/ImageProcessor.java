@@ -8,6 +8,7 @@ import ij.plugin.filter.GaussianBlur;
 import ij.process.AutoThresholder.Method;
 import ij.gui.Roi;
 import ij.gui.ShapeRoi;
+import ij.gui.Overlay;
 import ij.Prefs;
 
 /**
@@ -1399,19 +1400,43 @@ public abstract class ImageProcessor implements Cloneable {
 		setRoi(r);
 	}
 
-	/** Draws the specified selection on this image using the line
-		width and color defined by ip.setLineWidth() and ip.setColor(). */
+	/** Draws the specified ROI on this image using the line
+		width and color defined by ip.setLineWidth() and ip.setColor().
+		@see ImageProcessor#drawRoi
+	*/
 	public void draw(Roi roi) {
 		roi.drawPixels(this);
 	}
 
-	/** Draws the specified selection on this image using the stroke
-		width and stroke color defined by roi.setStrokeWidth and
-		roi.setStrokeColor(). Requires Java 1.6. */
+	/** Draws the specified ROI on this image using the stroke
+		width stroke color and fill color defined by roi.setStrokeWidth,
+		roi.setStrokeColor() and roi.setFillColor(). Works best with RGB
+		images. Does not work with 16-bit and float images.
+		Requires Java 1.6.
+		@see ImageProcessor#draw
+		@see ImageProcessor#drawOverlay
+	*/
 	public void drawRoi(Roi roi) {
 		Image img = createImage();
 		Graphics g = img.getGraphics();
-		roi.drawOverlay(g);
+		ij.ImagePlus imp = roi.getImage();
+		if (imp!=null) {
+			roi.setImage(null);
+			roi.drawOverlay(g);
+			roi.setImage(imp);
+		} else
+			roi.drawOverlay(g);
+	}
+
+	/** Draws the specified Overlay on this image. Works best
+		with RGB images. Does not work with 16-bit and float 
+		images. Requires Java 1.6.
+		@see ImageProcessor#drawRoi
+	*/
+	public void drawOverlay(Overlay overlay) {
+		 Roi[] rois = overlay.toArray();
+		 for (int i=0; i<rois.length; i++)
+		 	drawRoi(rois[i]);
 	}
 
 	/** Set a lookup table used by getPixelValue(), getLine() and

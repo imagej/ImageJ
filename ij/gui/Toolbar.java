@@ -47,7 +47,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int SIZE = 26;
 	private static final int OFFSET = 5;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
-	public static final String ARC_SIZE = "toolbar.arc.size";
+	public static final String CORNER_DIAMETER = "toolbar.arc.size";
 		
 	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS, SIZE);
 	private boolean[] down;
@@ -80,7 +80,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static boolean roundRectMode;
 	private static boolean arrowMode;
 	private static int brushSize = (int)Prefs.get(BRUSH_SIZE, 15);
-	private static int arcSize = (int)Prefs.get(ARC_SIZE, 20);
+	private static int arcSize = (int)Prefs.get(CORNER_DIAMETER, 20);
 	private int lineType = LINE;
 	
 	private Color gray = ImageJ.backgroundColor;
@@ -767,7 +767,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			roundRectMode = false;
 		else {
 			arcSize = size;
-			Prefs.set(ARC_SIZE, arcSize);
+			Prefs.set(CORNER_DIAMETER, arcSize);
 		}
 		repaintTool(RECTANGLE);
 		ImagePlus imp = WindowManager.getCurrentImage();

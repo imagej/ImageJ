@@ -89,10 +89,7 @@ public class Arrow extends Line {
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}
-	
-	private int screenXD(double ox) {return ic!=null?ic.screenXD(ox):(int)ox;}
-	private int screenYD(double oy) {return ic!=null?ic.screenYD(oy):(int)oy;}
-	
+		
 	private void flipEnds() {
 		double tmp = x1R;
 		x1R=x2R;
