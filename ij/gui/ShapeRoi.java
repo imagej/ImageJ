@@ -209,12 +209,14 @@ public class ShapeRoi extends Roi {
 		at = new AffineTransform();
 		at.translate(sr.x, sr.y);
 		Area a2 = new Area(at.createTransformedShape(sr.getShape()));
-		switch (op) {
-			case OR: a1.add(a2); break;
-			case AND: a1.intersect(a2); break;
-			case XOR: a1.exclusiveOr(a2); break;
-			case NOT: a1.subtract(a2); break;
-		}
+		try {
+			switch (op) {
+				case OR: a1.add(a2); break;
+				case AND: a1.intersect(a2); break;
+				case XOR: a1.exclusiveOr(a2); break;
+				case NOT: a1.subtract(a2); break;
+			}
+		} catch(Exception e) {}
 		Rectangle r = a1.getBounds();
 		at = new AffineTransform();
 		at.translate(-r.x, -r.y);
@@ -264,7 +266,7 @@ public class ShapeRoi extends Roi {
 				shape = new Line2D.Double ((double)(line.x1-r.x), (double)(line.y1-r.y), (double)(line.x2-r.x), (double)(line.y2-r.y) );
 				break;
 			case Roi.RECTANGLE:
-				int arcSize = roi.getRoundRectArcSize();
+				int arcSize = roi.getCornerDiameter();
 				if (arcSize>0)
 					shape = new RoundRectangle2D.Float(0, 0, r.width, r.height, arcSize, arcSize);
 				else
@@ -1032,17 +1034,20 @@ public class ShapeRoi extends Roi {
 
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
 		Graphics2D g2d = (Graphics2D)g;
 		if (stroke!=null)
-			g2d.setStroke(ic.getCustomRoi()?stroke:getScaledStroke());
-		mag = ic.getMagnification();
-		Rectangle r = ic.getSrcRect();
-		aTx.setTransform(mag, 0.0, 0.0, mag, -r.x*mag, -r.y*mag);
+			g2d.setStroke(ic!=null&&ic.getCustomRoi()?stroke:getScaledStroke());
+		mag = getMagnification();
+		int basex=0, basey=0;
+		if (ic!=null) {
+			Rectangle r = ic.getSrcRect();
+			basex=r.x; basey=r.y;
+		}
+		aTx.setTransform(mag, 0.0, 0.0, mag, -basex*mag, -basey*mag);
 		aTx.translate(x, y);
 		if (fillColor!=null)
 			g2d.fill(aTx.createTransformedShape(shape));

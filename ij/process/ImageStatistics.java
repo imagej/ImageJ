@@ -53,14 +53,17 @@ public class ImageStatistics implements Measurements {
 
 	
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
-		if (ip instanceof ByteProcessor)
+		Object pixels = ip.getPixels();
+		if (pixels instanceof byte[])
 			return new ByteStatistics(ip, mOptions, cal);
-		else if (ip instanceof ShortProcessor)
+		else if (pixels instanceof short[])
 			return new ShortStatistics(ip, mOptions, cal);
-		else if (ip instanceof ColorProcessor)
+		else if (pixels instanceof int[])
 			return new ColorStatistics(ip, mOptions, cal);
-		else
+		else if (pixels instanceof float[])
 			return new FloatStatistics(ip, mOptions, cal);
+		else
+			throw new IllegalArgumentException("Pixels are not byte, short, int or float");
 	}
 
 	void getRawMinAndMax(int minThreshold, int maxThreshold) {

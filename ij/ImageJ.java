@@ -72,7 +72,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.45h";
+	public static final String VERSION = "1.45i";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -281,9 +281,14 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			ImagePlus imp = null;
 			if (item.getParent()==Menus.openRecentMenu) {
 				new RecentOpener(cmd); // open image in separate thread
 				return;
+			} else if (item.getParent()==Menus.getPopupMenu()) {
+				Object parent = Menus.getPopupMenu().getParent();
+				if (parent instanceof ImageCanvas)
+					imp = ((ImageCanvas)parent).getImage();
 			}
 			int flags = e.getModifiers();
 			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
@@ -295,7 +300,7 @@ public class ImageJ extends Frame implements ActionListener,
 					IJ.setKeyDown(KeyEvent.VK_ALT);
 				if ((flags & Event.SHIFT_MASK)!=0)
 					IJ.setKeyDown(KeyEvent.VK_SHIFT);
-				doCommand(cmd);
+				new Executer(cmd, imp);
 			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);

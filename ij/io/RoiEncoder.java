@@ -104,7 +104,7 @@ public class RoiEncoder {
 		putInt(RoiDecoder.POSITION, roi.getPosition());
 		
 		if (type==rect) {
-			int arcSize = roi.getRoundRectArcSize();
+			int arcSize = roi.getCornerDiameter();
 			if (arcSize>0)
 				putShort(RoiDecoder.ROUNDED_RECT_ARC_SIZE, arcSize);
 		}
@@ -117,10 +117,11 @@ public class RoiEncoder {
 			putFloat(RoiDecoder.Y2, l.y2);
 			if (roi instanceof Arrow) {
 				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ARROW);
-				if (((Arrow)roi).getDoubleHeaded()) {
+				if (((Arrow)roi).getDoubleHeaded())
 					options |= RoiDecoder.DOUBLE_HEADED;
-					putShort(RoiDecoder.OPTIONS, options);
-				}
+				if (((Arrow)roi).getOutline())
+					options |= RoiDecoder.OUTLINE;
+				putShort(RoiDecoder.OPTIONS, options);
 				putByte(RoiDecoder.ARROW_STYLE, ((Arrow)roi).getStyle());
 				putByte(RoiDecoder.ARROW_HEAD_SIZE, (int)((Arrow)roi).getHeadSize());
 			}

@@ -11,13 +11,15 @@ import ij.measure.Calibration;
 import ij.util.DicomTools;
 
 /** Implements the File/Import/Image Sequence command, which
-opens a folder of images as a stack. */
+	opens a folder of images as a stack. */
 public class FolderOpener implements PlugIn {
 
 	private static String[] excludedTypes = {".txt", ".lut", ".roi", ".pty", ".hdr", ".java", ".ijm", ".py", ".js", ".bsh", ".xml"};
-	private static boolean convertToRGB;
-	private static boolean sortFileNames = true;
-	private static boolean virtualStack;
+	private static boolean staticSortFileNames = true;
+	private static boolean staticOpenAsVirtualStack;
+	private boolean convertToRGB;
+	private boolean sortFileNames = true;
+	private boolean openAsVirtualStack;
 	private double scale = 100.0;
 	private int n, start, increment;
 	private String filter;
@@ -26,10 +28,17 @@ public class FolderOpener implements PlugIn {
 	private String info1;
 	private ImagePlus image;
 	
+	/** Opens the images in the specified directory as a stack. */
 	public static ImagePlus open(String path) {
 		FolderOpener fo = new FolderOpener();
 		fo.run(path);
 		return fo.image;
+	}
+
+	/** Opens the images in the specified directory as a stack. */
+	public ImagePlus openFolder(String path) {
+		run(path);
+		return image;
 	}
 
 	public void run(String arg) {
@@ -37,6 +46,10 @@ public class FolderOpener implements PlugIn {
 		if (arg!=null && !arg.equals("")) {
 			directory = arg;
 		} else {
+			if (!IJ.macroRunning()) {
+				sortFileNames = staticSortFileNames;
+				openAsVirtualStack = staticOpenAsVirtualStack;
+			}
 			arg = null;
 			String title = "Open Image Sequence...";
 			String macroOptions = Macro.getOptions();
@@ -146,7 +159,7 @@ public class FolderOpener implements PlugIn {
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
 				IJ.redirectErrorMessages();
-				if (!virtualStack||stack==null)
+				if (!openAsVirtualStack||stack==null)
 					imp = opener.openImage(directory, list[i]);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
@@ -156,7 +169,7 @@ public class FolderOpener implements PlugIn {
 					cal = imp.getCalibration();
 					if (convertToRGB) bitDepth = 24;
 					ColorModel cm = imp.getProcessor().getColorModel();
-					if (virtualStack) {
+					if (openAsVirtualStack) {
 						stack = new VirtualStack(width, height, cm, directory);
 						((VirtualStack)stack).setBitDepth(bitDepth);
 					} else if (scale<100.0)						
@@ -183,7 +196,7 @@ public class FolderOpener implements PlugIn {
 				for (int slice=1; slice<=inputStack.getSize(); slice++) {
 					ImageProcessor ip = inputStack.getProcessor(slice);
 					int bitDepth2 = imp.getBitDepth();
-					if (!virtualStack) {
+					if (!openAsVirtualStack) {
 						if (convertToRGB) {
 							ip = ip.convertToRGB();
 							bitDepth2 = 24;
@@ -211,7 +224,7 @@ public class FolderOpener implements PlugIn {
 					if (ip.getMax()>max) max = ip.getMax();
 					String label2 = label;
 					//if (depth>1) label2 = null;
-					if (virtualStack) {
+					if (openAsVirtualStack) {
 						if (slice==1) ((VirtualStack)stack).addSlice(list[i]);
 					} else
 						stack.addSlice(label2, ip);
@@ -283,7 +296,7 @@ public class FolderOpener implements PlugIn {
 		gd.addStringField("or enter pattern:", "", 10);
 		gd.addCheckbox("Convert_to_RGB", convertToRGB);
 		gd.addCheckbox("Sort names numerically", sortFileNames);
-		gd.addCheckbox("Use virtual stack", virtualStack);
+		gd.addCheckbox("Use virtual stack", openAsVirtualStack);
 		gd.addMessage("10000 x 10000 x 1000 (100.3MB)");
 		gd.addHelp(IJ.URL+"/docs/menus/file.html#seq1");
 		gd.showDialog();
@@ -305,9 +318,13 @@ public class FolderOpener implements PlugIn {
 		}
 		convertToRGB = gd.getNextBoolean();
 		sortFileNames = gd.getNextBoolean();
-		virtualStack = gd.getNextBoolean();
-		if (virtualStack)
+		openAsVirtualStack = gd.getNextBoolean();
+		if (openAsVirtualStack)
 			scale = 100.0;
+		if (!IJ.macroRunning()) {
+			staticSortFileNames = sortFileNames;
+			staticOpenAsVirtualStack = openAsVirtualStack;
+		}
 		return true;
 	}
 
@@ -343,7 +360,7 @@ public class FolderOpener implements PlugIn {
 		}
 		return false;
 	}
-
+	
 	/** Sorts the file names into numeric order. */
 	public String[] sortFileList(String[] list) {
 		int listLength = list.length;
@@ -383,6 +400,15 @@ public class FolderOpener implements PlugIn {
 			return list;   
 		}	
 	}
+	
+	public void openAsVirtualStack(boolean b) {
+		openAsVirtualStack = b;
+	}
+	
+	public void sortFileNames(boolean b) {
+		sortFileNames = b;
+	}
+
 
 } // FolderOpener
 

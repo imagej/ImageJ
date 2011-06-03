@@ -5,37 +5,44 @@
 </head>
 <body>
 
-<li> <u>1.45h 17 May 2011</u>
+<li> <u>1.45i 3 June 2011</u>
 <ul>
-<li> Added a "Use ROI names as labels" checkbox to the ROI Manager's
-<i>More&gt;&gt;Options</i> dialog box.
-<li> The ij.util.Java2.setSystemLookAndFeel() method (called by
-<li>File&gt;Import&gt;Image Sequence</i>) no longer sets the
-Swing look and feel to the system look and feel on Linux.
-<li> Added the Stack.getFrameInterval(), Stack.setFrameInterval() and
-Stack.getUnits() macro functions.
-<li> Added the setAntialiased() and getAntialiased() methods to
-TextRoi class.
-<li> Worked around a bug in the text tool that sometimes caused 
-<li>Edit&gt;Clear</i> to clear an area narrower than the drawn text.
-<li> Thanks to Peter Haub, fixed an ROI Manager "Edit Mode" bug that
-sometimes made selection of ROIs in stacks unreliable.
-<li> Thanks to Jan Eglinger, fixed a bug that caused mouse 
-wheel scrolling in inactive hyperstack windows to not work.
-<li> Thanks to Daniel Kalthoff and Michael Schmid, fixed a macro 
-bug that sometimes caused the <li>Image&gt;Crop</i>,
-<li>Image&gt;Duplicate</i> and <li>Image&gt;Adjust&gt;Size</i>
-commands to erroneously change the image focus.
-<li> Thanks to Mat Al-Tamimi, fixed a bug that caused profiles of image-height
-vertical lines and image-width horizontal lines to contain one extra value.
-<li> Thanks to Barry DeZonia, fixed a bug that sometimes caused the
-ImagePlus.setPositionWithoutUpdate() method to not work as expected.
-<li> Thanks to Andrii Savchenko, fixed a bug that caused the particle
-analyzer to not corretly summarize zero particle images.
-<li> Thanks to Jerome Mutterer, fixed a bug that caused IJ.redirectErrorMessages()
-to not work as expected with IJ.open(URL).
-<li> Thanks to Andrew French, fixed a bug that caused <li>Image&gt;Overlay&gt;Flatten</i>
-to always render text antialiased.
+<li> Thanks to Jean-Yves Tinevez and Johannes Schindelin (authors of the Fiji ArrowTool plugin),
+added an "outline" checkbox to the arrow tool options dialog.
+<li> Added the <i>Edit&gt;Options&gt;Rounded Rect Tool</i> command.
+<li> Thanks to Michael Schmid, the popup menu activated by
+right clicking on an image window now works
+as expected with non-foreground images.
+<li> Added an "Ignore source LUTs" option to the
+<i>Image&gt;Color&gt;Merge Channels</i> dialog box.
+<li> Added "X center" and "Y center" fields to the <i>Image&gt;Zoom&gt;Set</i> dialog box.
+<li> The DICOM reader applies the Rescale Slope value when "Open as 32-bit float"
+is enabled in <i>Edit&gt;Options&gt;DICOM</i> and tag 0028,1053 has a value<>1.0.
+<li> Added the openFolder(), openAsVirtualStack() and sortFileNames() methods to
+the FolderOpener class;
+<li> Added drawRoi() and drawOverlay() methods to the ImageProcessor class
+(<a href="macros/js/FadeArrowInStack.js">example</a>).
+<li> Added the roiManager("select",indexes) macro function and
+RoiManager.setSelectedIndexes() method.
+<li> Fixed a bug that caused the magnification to be dropped from the title bar when
+using <i>Image&gt;Stacks&gt;Add Slice</i> on a single image.
+<li> Thanks to Vytas Bindokas, fixed bugs that caused the wand tool and the getStatistics() macro
+function to not work with virtual stacks imported using the Bio-Formats plugin.
+<li> Thanks to Johannes Schindelin, fixed a bug that sometimes caused the "Add [t]" 
+command in the ROI Manager to sometimes save incorrect slice positions.
+<li> Michael Schmid fixed bugs that sometimes caused objects to disappear when using
+<i>Process&gt;Binary&gt;Ultimate Points</i> and sometimes caused
+<i>Process&gt;Find Maxima</i> to not work correctly on hight dynamic range 
+float images.
+<li> Thanks to Jan Eglinger, fixed a bug that caused transparent arrows
+to not be displayed correctly.
+<li> Thanks to Vytas Bindokas,  fixed bugs that sometimes caused
+<i>Edit&gt;Selection&gt;Make Band</i> to fail.
+<li> Thanks to Jonathan Silver, fixed a regression that caused <i>File&gt;Save As&gt;Text Image</i>
+to not save float images using scientific notation when "Scientific notation" was checked
+in the <i>Analyze&gt;Set Measurements</i> dialog box.
+<li> Thanks to Norbert Vischer, fixed a bug that caused TIFF virtual stacks
+to not gracefully handle file not found exceptions.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

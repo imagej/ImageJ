@@ -12,6 +12,7 @@ import ij.plugin.Orthogonal_Views;
 import ij.gui.Roi;
 import ij.gui.Overlay;
 import ij.gui.ImageCanvas;
+import ij.measure.Measurements;
 import javax.imageio.*;
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
@@ -498,6 +499,10 @@ public class FileSaver {
 		try {
 			Calibration cal = imp.getCalibration();
 			int precision = Analyzer.getPrecision();
+			int measurements = Analyzer.getMeasurements();
+			boolean scientificNotation = (measurements&Measurements.SCIENTIFIC_NOTATION)!=0;
+			if (scientificNotation)
+				precision = -precision;
 			TextEncoder file = new TextEncoder(imp.getProcessor(), cal, precision);
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);

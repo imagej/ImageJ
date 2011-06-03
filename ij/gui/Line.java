@@ -16,7 +16,7 @@ public class Line extends Roi {
 	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
 	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private double xHandleOffset, yHandleOffset;
-	private double startxd, startyd;
+	protected double startxd, startyd;
 	static boolean widthChanged;
 
 	/** Creates a new straight line selection using the specified
@@ -289,16 +289,14 @@ public class Line extends Roi {
 
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
-		//if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		int sx1 = ic.screenXD(x1d);
-		int sy1 = ic.screenYD(y1d);
-		int sx2 = ic.screenXD(x2d);
-		int sy2 = ic.screenYD(y2d);
+		int sx1 = screenXD(x1d);
+		int sy1 = screenYD(y1d);
+		int sx2 = screenXD(x2d);
+		int sy2 = screenYD(y2d);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;

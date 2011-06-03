@@ -207,17 +207,16 @@ public class OvalRoi extends Roi {
 	}
 
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
-		mag = ic.getMagnification();
+		mag = getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
 		int sw2 = (int)(0.14645*width*mag);
 		int sh2 = (int)(0.14645*height*mag);
-		int sx1 = ic.screenX(x);
-		int sy1 = ic.screenY(y);
+		int sx1 = screenX(x);
+		int sy1 = screenY(y);
 		int sx2 = sx1+sw/2;
 		int sy2 = sy1+sh/2;
 		int sx3 = sx1+sw;

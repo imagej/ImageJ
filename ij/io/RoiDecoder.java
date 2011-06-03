@@ -66,6 +66,7 @@ public class RoiDecoder {
 	// options
 	public static final int SPLINE_FIT = 1;
 	public static final int DOUBLE_HEADED = 2;
+	public static final int OUTLINE = 4;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -137,7 +138,7 @@ public class RoiDecoder {
 				roi = new Roi(left, top, width, height);
 				int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
 				if (arcSize>0)
-					roi.setRoundRectArcSize(arcSize);
+					roi.setCornerDiameter(arcSize);
 				break;
 			case oval:
 				roi = new OvalRoi(left, top, width, height);
@@ -150,6 +151,7 @@ public class RoiDecoder {
 				if (subtype==ARROW) {
 					roi = new Arrow(x1, y1, x2, y2);		
 					((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
+					((Arrow)roi).setOutline((options&OUTLINE)!=0);
 					int style = getByte(ARROW_STYLE);
 					if (style>=Arrow.FILLED && style<=Arrow.OPEN)
 						((Arrow)roi).setStyle(style);
