@@ -11,6 +11,7 @@ import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
 import ij.measure.Measurements;
+import ij.measure.ResultsTable;
 
 
 /** Obsolete; mostly replaced by the Plot class. */
@@ -226,38 +227,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (plot!=null && plot.frame!=null && coordinates!=null)
 			coordinates.setText(plot.getCoordinates(x,y));
 	}
-		
-	void showListOLD() {
-		StringBuffer sb = new StringBuffer();
-		String headings;
-		initDigits();
-		if (plot.errorBars !=null) {
-			if (saveXValues)
-				headings = "X\tY\tErrorBar";
-			else
-				headings = "Y\tErrorBar";
-			for (int i=0; i<plot.nPoints; i++) {
-				if (saveXValues)
-					sb.append(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\t"+IJ.d2s(plot.errorBars[i],ydigits)+"\n");
-				else
-					sb.append(IJ.d2s(plot.yValues[i],ydigits)+"\t"+IJ.d2s(plot.errorBars[i],ydigits)+"\n");
-			}
-		} else {
-			if (saveXValues)
-				headings = "X\tY";
-			else
-				headings = "Y";
-			for (int i=0; i<plot.nPoints; i++) {
-				if (saveXValues)
-					sb.append(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\n");
-				else
-					sb.append(IJ.d2s(plot.yValues[i],ydigits)+"\n");
-			}
-		}
-		TextWindow tw = new TextWindow("Plot Values", headings, sb.toString(), 200, 400);
-		if (autoClose)
-			{imp.changes=false; close();}
-	}
+			
 	/** shows the data of the backing plot in a Textwindow with columns */
 	void showList(){
 		initDigits();
@@ -457,6 +427,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 
 	public float[] getYValues() {
 		return plot.yValues;
+	}
+	
+	/** Returns the plot values as a ResultsTable. */
+	public ResultsTable getResultsTable() {
+		int sets = plot.storedData.size()/2;
+		int max = 0;
+		for(int i = 0; i<plot.storedData.size(); i+=2) {
+			float[] column = (float[])plot.storedData.get(i);
+			int s = column.length;
+			if (column.length>max) max=column.length;
+		}
+		ResultsTable rt = new ResultsTable();
+		for (int row=0; row<max; row++) {
+			rt.incrementCounter();
+			for (int i=0; i<sets; i++) {
+				float[] x = (float[])plot.storedData.get(i*2);
+				float[] y = (float[])plot.storedData.get(i*2+1);
+				if (row<x.length) rt.addValue("x"+i, x[row]);
+				if (row<y.length) rt.addValue("y"+i, y[row]);
+			}
+		}
+		return rt;
 	}
 	
 	/** Draws a new plot in this window. */

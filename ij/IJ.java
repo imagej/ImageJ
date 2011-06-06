@@ -1752,7 +1752,7 @@ public class IJ {
 		e.printStackTrace(pw);
 		String s = caw.toString();
 		if (getInstance()!=null)
-			new TextWindow("Exception", s, 350, 250);
+			new TextWindow("Exception", s, 500, 300);
 		else
 			log(s);
 	}

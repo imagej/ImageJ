@@ -50,15 +50,18 @@ public class RectToolOptions implements PlugIn, DialogListener {
 		String fillc2 = gd.getNextString();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
+		Color strokeColor = null;
 		if (roi!=null && (roi.getType()==Roi.RECTANGLE)) {
 			roi.setStrokeWidth((int)strokeWidth2);
 			roi.setCornerDiameter((int)(cornerDiameter2));
-			Color strokeColor = Colors.decode(strokec2, roi.getStrokeColor());
+			strokeColor = Colors.decode(strokec2, roi.getStrokeColor());
 			Color fillColor = Colors.decode(fillc2, roi.getFillColor());
 			roi.setStrokeColor(strokeColor);
 			roi.setFillColor(fillColor);
 		}
 		defaultStrokeWidth = strokeWidth2;
+		if (strokeColor!=null)
+			Toolbar.setForegroundColor(strokeColor);
 		Toolbar.setRoundRectArcSize(cornerDiameter2);
 		if (cornerDiameter2>0) {
 			if (!Toolbar.getToolName().equals("roundrect"))

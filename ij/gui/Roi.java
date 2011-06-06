@@ -858,18 +858,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	*/
 	public void drawPixels(ImageProcessor ip) {
 		endPaste();
+		int saveWidth = ip.getLineWidth();
+		if (getStrokeWidth()>1f)
+			ip.setLineWidth((int)Math.round(getStrokeWidth()));
 		if (cornerDiameter>0)
 			(new ShapeRoi(new RoundRectangle2D.Float(x, y, width, height, cornerDiameter, cornerDiameter))).drawPixels(ip);
 		else {
-			int saveWidth = ip.getLineWidth();
-			if (getStrokeWidth()>1f)
-				ip.setLineWidth((int)Math.round(getStrokeWidth()));
 			if (ip.getLineWidth()==1)
 				ip.drawRect(x, y, width+1, height+1);
 			else
 				ip.drawRect(x, y, width, height);
-			ip.setLineWidth(saveWidth);
 		}
+		ip.setLineWidth(saveWidth);
 		if (Line.getWidth()>1 || getStrokeWidth()>1)
 			updateFullWindow = true;
 	}

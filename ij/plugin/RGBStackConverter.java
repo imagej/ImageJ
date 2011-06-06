@@ -69,6 +69,10 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		String title2 = keep?WindowManager.getUniqueName(imp.getTitle()):imp.getTitle();
 		ImagePlus imp2 = imp.createHyperStack(title2, 1, slices2, frames2, 24);
 		convertHyperstack(imp, imp2);
+		if (imp.getWindow()==null && !keep) {
+			imp.setImage(imp2);
+			return;
+		}
 		imp2.setOpenAsHyperStack(slices2>1||frames2>1);
 		imp2.show();
 		if (!keep) {

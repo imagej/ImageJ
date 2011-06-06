@@ -78,6 +78,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setFileInfo(fi);
 		if (imp!=null && props!=null) {
+			setBitDepth(imp.getBitDepth());
 			imp2.setCalibration(imp.getCalibration());
 			imp2.setOverlay(imp.getOverlay());
 			if (fi.info!=null)
@@ -146,8 +147,17 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp = fo.open(false);
 		if (imp!=null)
 			return imp.getProcessor();
-		else
-			return null;
+		else {
+			int w=getWidth(), h=getHeight();
+			IJ.log("Read error or file not found ("+n+"): "+info[n-1].directory+info[n-1].fileName);
+			switch (getBitDepth()) {
+				case 8: return new ByteProcessor(w, h);
+				case 16: return new ShortProcessor(w, h);
+				case 24: return new ColorProcessor(w, h);
+				case 32: return new FloatProcessor(w, h);
+				default: return null;
+			}
+		}
 	 }
  
 	 /** Returns the number of images in this stack. */

@@ -458,7 +458,7 @@ public class FileOpener {
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
 		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;
-		    if (f==null || f.isDirectory() || !validateFileInfo(f, fi))
+		    if (f==null || !f.exists() || f.isDirectory() || !validateFileInfo(f, fi))
 		    	is = null;
 		    else
 				is = new FileInputStream(f);

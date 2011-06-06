@@ -1409,7 +1409,7 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 
 	/** Draws the specified ROI on this image using the stroke
-		width stroke color and fill color defined by roi.setStrokeWidth,
+		width, stroke color and fill color defined by roi.setStrokeWidth,
 		roi.setStrokeColor() and roi.setFillColor(). Works best with RGB
 		images. Does not work with 16-bit and float images.
 		Requires Java 1.6.

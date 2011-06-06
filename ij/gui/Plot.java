@@ -91,7 +91,7 @@ public class Plot {
 	private boolean multiplePlots;
 	private boolean drawPending;
 	
-	/** keeps a reference to all of the data that is going to be plotted*/
+	/** keeps a reference to all of the data that is going to be plotted. */
 	ArrayList storedData;
 	
 	/** Construct a new PlotWindow.
@@ -669,7 +669,7 @@ public class Plot {
 		ImageWindow.centerNextImage();
 		return new PlotWindow(this);
 	}
-	
+		
 	/** Stores plot data into an ArrayList  to be used 
 	     when a plot window  wants to 'createlist'. */
 	private void storeData(float[] xvalues, float[] yvalues){

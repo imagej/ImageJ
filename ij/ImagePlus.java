@@ -483,6 +483,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 	
+	/** Replaces this image with the specified ImagePlus. */
+	public void setImage(ImagePlus imp) {
+		if (imp.getWindow()!=null)
+			imp = imp.duplicate();
+		ImageStack stack2 = imp.getStack();
+		if (imp.isHyperStack() || imp.isComposite()) {
+			setOpenAsHyperStack(true);
+			setStack(stack2, imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
+		} else
+			setStack(stack2);
+	}
+	
 	/** Replaces the ImageProcessor with the one specified and updates the display. */
 	public void setProcessor(ImageProcessor ip) {
 		setProcessor(null, ip);

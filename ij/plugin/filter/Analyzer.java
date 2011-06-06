@@ -549,7 +549,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (imp==null) {
 			rt.addValue("X", 0.0);
 			rt.addValue("Y", 0.0);
-			rt.addValue("Slice", 0.0);
+			if (imp.getStackSize()>1)
+				rt.addValue("Slice", 0.0);
 			return;
 		}
 		if ((measurements&AREA)!=0)
@@ -577,7 +578,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.addValue("Slice", imp.getSlice());
 			if (imp.getNFrames()>1)
 				rt.addValue("Frame", imp.getFrame());
-		} else
+		} else if (imp.getStackSize()>1)
 			rt.addValue("Slice", cal.getZ(imp.getCurrentSlice()));
 		if (imp.getProperty("FHT")!=null) {
 			double center = imp.getWidth()/2.0;

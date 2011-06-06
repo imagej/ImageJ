@@ -2336,7 +2336,10 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	double setMultipleIndexes(RoiManager rm) {
-		double[] indexes = getLastArray();
+		if (interp.nextToken()==',')
+			interp.getComma();
+		double[] indexes = getNumericArray();
+		interp.getRightParen();
 		int[] selectedIndexes = new int[indexes.length];
 		int count = rm.getList().getItemCount();
 		for (int i=0; i<indexes.length; i++) {
