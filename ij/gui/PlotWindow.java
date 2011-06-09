@@ -429,7 +429,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		return plot.yValues;
 	}
 	
-	/** Returns the plot values as a ResultsTable. */
+	/** Returns the X and Y plot values as a ResultsTable. */
 	public ResultsTable getResultsTable() {
 		int sets = plot.storedData.size()/2;
 		int max = 0;

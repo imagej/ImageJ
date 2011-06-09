@@ -56,14 +56,30 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		style.add("Bold");
 		style.add("Italic");
 		style.add("Bold+Italic");
+		style.add("Center");
+		style.add("Right");
+		style.add("Center+Bold");
+		style.add("Right+Bold");
 		int i = TextRoi.getStyle();
+		int justificaton = TextRoi.getGlobalJustification();
 		String s = "Plain";
-		if (i==Font.BOLD)
-			s = "Bold";
-		else if (i==Font.ITALIC)
+		if (i==Font.BOLD) {
+			if (justificaton==TextRoi.CENTER)
+				s = "Center+Bold";
+			else if (justificaton==TextRoi.RIGHT)
+				s = "Right+Bold";
+			else
+				s = "Bold";
+		} else if (i==Font.ITALIC)
 			s = "Italic";
 		else if (i==(Font.BOLD+Font.ITALIC))
 			s = "Bold+Italic";
+		else if (i==Font.PLAIN) {
+			if (justificaton==TextRoi.CENTER)
+				s = "Center";
+			else if (justificaton==TextRoi.RIGHT)
+				s = "Right";
+		}
 		style.select(s);
 		style.addItemListener(this);
 		add(style);
@@ -97,13 +113,19 @@ public class Fonts extends PlugInFrame implements PlugIn, ItemListener {
 		int fontSize = Integer.parseInt(size.getSelectedItem());
 		String styleName = style.getSelectedItem();
 		int fontStyle = Font.PLAIN;
-		if (styleName.equals("Bold"))
+		int justification = TextRoi.LEFT;
+		if (styleName.endsWith("Bold"))
 			fontStyle = Font.BOLD;
 		else if (styleName.equals("Italic"))
 			fontStyle = Font.ITALIC;
 		else if (styleName.equals("Bold+Italic"))
 			fontStyle = Font.BOLD+Font.ITALIC;
+		if (styleName.startsWith("Center"))
+			justification = TextRoi.CENTER;
+		else if (styleName.startsWith("Right"))
+			justification = TextRoi.RIGHT;
 		TextRoi.setFont(fontName, fontSize, fontStyle, checkbox.getState());
+		TextRoi.setGlobalJustification(justification);
 		IJ.showStatus(fontSize+" point "+fontName + " " + styleName);
 	}
 	

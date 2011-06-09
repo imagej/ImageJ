@@ -59,6 +59,10 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.GRAYSCALE)
 				IJ.run(imp2, "Grays", "");
 		}
+		if (imp.getWindow()==null && !keep) {
+			imp.setImage(imp2);
+			return;
+		}
 		imp2.show();
 		//IJ.log("HyperStackReducer-4");
 		if (!keep) {

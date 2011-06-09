@@ -9,6 +9,7 @@ import ij.macro.Interpreter;
 /** This class is a rectangular ROI containing text. */
 public class TextRoi extends Roi {
 
+	public static final int LEFT=0, CENTER=1, RIGHT=2;
 	static final int MAX_LINES = 50;
 
 	private String[] theText = new String[MAX_LINES];
@@ -18,6 +19,8 @@ public class TextRoi extends Roi {
 	private Font instanceFont;
 	private static boolean newFont = true;
 	private static boolean antialiasedText = true; // global flag used by text tool
+	private static int globalJustification;
+	private int justification;
 	private boolean antialiased = antialiasedText;
 	private static boolean recordSetFont = true;
 	private double previousMag;
@@ -71,6 +74,7 @@ public class TextRoi extends Roi {
 			previousRoi = null;
 		}
 		instanceFont = new Font(name, style, size);
+		justification = globalJustification;
 	}
 
 	/** This method is used by the text tool to add typed
@@ -132,7 +136,19 @@ public class TextRoi extends Roi {
 		int i = 0;
 		int yy = 0;
 		while (i<MAX_LINES && theText[i]!=null) {
-			ip.drawString(theText[i], x, y+yy+fontHeight);
+			switch (justification) {
+				case LEFT:
+					ip.drawString(theText[i], x, y+yy+fontHeight);
+					break;
+				case CENTER:
+					int tw = metrics.stringWidth(theText[i]);
+					ip.drawString(theText[i], x+(width-tw)/2, y+yy+fontHeight);
+					break;
+				case RIGHT:
+					tw = metrics.stringWidth(theText[i]);
+					ip.drawString(theText[i], x+width-tw, y+yy+fontHeight);
+					break;
+			}
 			i++;
 			yy += fontHeight;
 		}
@@ -169,6 +185,8 @@ public class TextRoi extends Roi {
 		double mag = getMagnification();
 		int sx = nonScalable?x:screenX(x);
 		int sy = nonScalable?y:screenY(y);
+		int sw = nonScalable?width:(int)(getMagnification()*width);
+		int sh = nonScalable?height:(int)(getMagnification()*height);
 		Font font = getScaledFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
@@ -186,13 +204,23 @@ public class TextRoi extends Roi {
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
  			Graphics2D g2d = (Graphics2D)g;
-			int sw = nonScalable?width:(int)(getMagnification()*width);
-			int sh = nonScalable?height:(int)(getMagnification()*height);
 			g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {
-			g.drawString(theText[i], sx, sy+fontHeight-descent);
+			switch (justification) {
+				case LEFT:
+					g.drawString(theText[i], sx, sy+fontHeight-descent);
+					break;
+				case CENTER:
+					int tw = metrics.stringWidth(theText[i]);
+					g.drawString(theText[i], sx+(sw-tw)/2, sy+fontHeight-descent);
+					break;
+				case RIGHT:
+					tw = metrics.stringWidth(theText[i]);
+					g.drawString(theText[i], sx+sw-tw, sy+fontHeight-descent);
+					break;
+			}
 			i++;
 			sy += fontHeight;
 		}
@@ -247,10 +275,41 @@ public class TextRoi extends Roi {
 		return antialiased;
 	}
 
+	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
+	public static void setGlobalJustification(int justification) {
+		if (justification<0 || justification>RIGHT)
+			justification = LEFT;
+		globalJustification = justification;
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			Roi roi = imp.getRoi();
+			if (roi instanceof TextRoi) {
+				((TextRoi)roi).setJustification(justification);
+				imp.draw();
+			}
+		}
+	}
+	
+	/** Returns the value of the 'justification' instance variable (LEFT, CENTER or RIGHT). */
+	public static int getGlobalJustification() {
+		return globalJustification;
+	}
+
+	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
+	public void setJustification(int justification) {
+		if (justification<0 || justification>RIGHT)
+			justification = LEFT;
+		this.justification = justification;
+	}
+	
+	/** Returns the value of the 'justification' instance variable (LEFT, CENTER or RIGHT). */
+	public int getJustification() {
+		return justification;
+	}
+
 	/** Sets the global font face, size and style that will be used by
 		TextROIs interactively created using the text tool. */
 	public static void setFont(String fontName, int fontSize, int fontStyle) {
-		recordSetFont = true;
 		setFont(fontName, fontSize, fontStyle, true);
 	}
 	
@@ -261,6 +320,7 @@ public class TextRoi extends Roi {
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
+		globalJustification = LEFT;
 		antialiasedText = antialiased;
 		newFont = true;
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -273,7 +333,7 @@ public class TextRoi extends Roi {
 			}
 		}
 	}
-	
+
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (firstMouseUp) {
@@ -289,7 +349,8 @@ public class TextRoi extends Roi {
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if (ic==null) return;
+		if (ic==null || (theText[0]!=null && theText[0].equals("Type, then")))
+			return;
 		double mag = ic.getMagnification();
 		if (nonScalable) mag = 1.0;
 		Font font = getScaledFont();
@@ -305,18 +366,29 @@ public class TextRoi extends Roi {
 		oldY = y;
 		oldWidth = width;
 		oldHeight = height;
-		width = 10;
+		int newWidth = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
 			int w = (int)Math.round(stringWidth(theText[i],metrics,g)/mag);
-			if (w>width)
-				width = w;
+			if (w>newWidth)
+				newWidth = w;
 			i++;
 		}
 		if (nullg) g.dispose();
-		width += 2;
-		if (xMax!=0 && x+width>xMax)
-			x = xMax-width;
+		newWidth += 2;
+		width = newWidth;
+		switch (justification) {
+			case LEFT:
+				if (xMax!=0 && x+newWidth>xMax)
+					x = xMax-width;
+				break;
+			case CENTER:
+				x = oldX+oldWidth/2 - newWidth/2;
+				break;
+			case RIGHT:
+				x = oldX+oldWidth - newWidth;
+				break;
+		}
 		height = nLines*fontHeight+2;
 		if (yMax!=0) {
 			if (height>yMax)
