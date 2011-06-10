@@ -1041,6 +1041,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi rpRoi = null;
 		String rpName = null;
 		Font font = null;
+		int justification = TextRoi.LEFT;
 		double opacity = -1;
         if (color==null && lineWidth==0 && fillColor==null) {
 			String label = list.getItem(indexes[0]);
@@ -1063,8 +1064,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color =  rpRoi.getStrokeColor();
 			fillColor =  rpRoi.getFillColor();
 			defaultColor = color;
-			if (rpRoi instanceof TextRoi)
+			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
+				justification = ((TextRoi)rpRoi).getJustification();
+			}
 			if (rpRoi instanceof ImageRoi)
 				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
@@ -1084,7 +1087,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
-				if (font!=null) ((TextRoi)roi).setCurrentFont(font);
+				if (font!=null)
+					((TextRoi)roi).setCurrentFont(font);
+				((TextRoi)roi).setJustification(justification);
 				roi.setImage(null);
 			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
@@ -1099,8 +1104,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (lineWidth>1) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
-			if (roi!=null && (roi instanceof TextRoi))
+			if (roi!=null && (roi instanceof TextRoi)) {
 				((TextRoi)roi).setCurrentFont(font);
+				((TextRoi)roi).setJustification(justification);
+			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
 				((ImageRoi)roi).setOpacity(opacity);
 		}

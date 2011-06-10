@@ -12,6 +12,9 @@ public class TextRoi extends Roi {
 	public static final int LEFT=0, CENTER=1, RIGHT=2;
 	static final int MAX_LINES = 50;
 
+	private static final String line1 = "Enter text, then press";
+	private static final String line2 = "ctrl+b to add to overlay";
+	private static final String line3 = "or ctrl+d to draw.";
 	private String[] theText = new String[MAX_LINES];
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
@@ -66,8 +69,9 @@ public class TextRoi extends Roi {
             mag = 1.0;
         if (size<(12/mag))
         	size = (int)(12/mag);
-		theText[0] = "Type, then";
-		theText[1] = "ctrl+alt+b";
+		theText[0] = line1;
+		theText[1] = line2;
+		theText[2] = line3;
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;
 			//IJ.write(""+previousRoi.getBounds());
@@ -349,7 +353,7 @@ public class TextRoi extends Roi {
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if (ic==null || (theText[0]!=null && theText[0].equals("Type, then")))
+		if (ic==null || (theText[0]!=null && theText[0].equals(line1)))
 			return;
 		double mag = ic.getMagnification();
 		if (nonScalable) mag = 1.0;
