@@ -54,7 +54,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	boolean invertedLut;
 	int lutColor;	
 	Choice methodChoice, modeChoice;
-	Checkbox darkBackground;
+	Checkbox darkBackground, stackHistogram;
 	boolean firstActivation;
 	boolean useExistingTheshold;
 
@@ -165,16 +165,22 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.fill = GridBagConstraints.NONE;
 		add(panel, c);
 
-		// checkbox
+		// checkboxes
+		panel = new Panel();
 		boolean db = Prefs.get(DARK_BACKGROUND, Prefs.blackBackground?true:false);
         darkBackground = new Checkbox("Dark background");
         darkBackground.setState(db);
         darkBackground.addItemListener(this);
+        panel.add(darkBackground);
+        stackHistogram = new Checkbox("Stack histogram");
+        stackHistogram.setState(false);
+        stackHistogram.addItemListener(this);
+        panel.add(stackHistogram);
         c.gridx = 0;
         c.gridy = y++;
         c.gridwidth = 2;
-        c.insets = new Insets(5, 35, 0, 5);
-        add(darkBackground, c);
+		c.insets = new Insets(5, 5, 0, 5);
+        add(panel, c);
 
 		// buttons
 		int trim = IJ.isMacOSX()?11:0;
@@ -302,7 +308,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			invertedLut = imp.isInvertedLut();
 			minThreshold = ip.getMinThreshold();
 			maxThreshold = ip.getMaxThreshold();
-			ImageStatistics stats = plot.setHistogram(imp, false);
+			ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
 			if (minThreshold==ImageProcessor.NO_THRESHOLD)
 				autoSetLevels(ip, stats);
 			else {
@@ -321,6 +327,10 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	 	return ip;
 	}
 	
+    boolean entireStack(ImagePlus imp) {
+        return stackHistogram!=null && stackHistogram.getState() && imp.getStackSize()>1;
+    }
+
 	void autoSetLevels(ImageProcessor ip, ImageStatistics stats) {
 		if (stats==null || stats.histogram==null) {
 			minThreshold = defaultMinThreshold;
@@ -473,7 +483,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			useStackMinAndMax = imp.getStackSize()>1 && IJ.altKeyDown();
 		}
 		ip.resetThreshold();
-		plot.setHistogram(imp, useStackMinAndMax);
+		plot.setHistogram(imp, entireStack(imp));
 		updateScrollBars();
 		if (Recorder.record) {
 			if (Recorder.scriptMode())
@@ -517,11 +527,6 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		ip.setThreshold(level1, level2, lutColor);
 		ip.setSnapshotPixels(null); // disable undo
 		setup(imp);
-		//boolean outOfRange = level1<minDisplay || level2>maxDisplay;
-		//if (outOfRange)
-		//	plot.setHistogram(imp, false);
-		//else
-		//	ip.setMinAndMax(minDisplay, maxDisplay);
 		if (Recorder.record) {
 			if (imp.getBitDepth()==32) {
 				if (Recorder.scriptMode())
@@ -719,12 +724,15 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
         return new Dimension(WIDTH+1, HEIGHT+1);
     }
     
-	ImageStatistics setHistogram(ImagePlus imp, boolean useStackMinAndMax) {
+	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
 		ImageProcessor ip = imp.getProcessor();
 		ImageStatistics stats = null;
+		if (entireStack)
+			stats = new StackStatistics(imp);
 		if (!(ip instanceof ByteProcessor)) {
-			if (useStackMinAndMax) {
-				stats = new StackStatistics(imp);
+			if (entireStack) {
+				if (stats!=null)
+					stats = new StackStatistics(imp);
 				if (imp.getLocalCalibration().isSigned16Bit()) 
 					{stats.min += 32768; stats.max += 32768;}
 				stackMin = stats.min;
