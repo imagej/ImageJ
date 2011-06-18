@@ -45,6 +45,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
+	static final String DEFAULT_DIR= "editor.dir";
 	private TextArea ta;
 	private String path;
 	private boolean changes;
@@ -65,7 +66,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private String shortcutsInUse;
 	private int inUseCount;
 	private MacroInstaller installer;
-	private static String defaultDir;
+	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);;
 	private boolean dontShowWindow;
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
     private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
@@ -739,6 +740,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			save();
 			changes = false;
 			setWindowTitle(name2);
+			setDefaultDirectory(dir);
+			if (defaultDir!=null)
+				Prefs.set(DEFAULT_DIR, defaultDir);
 			if (Recorder.record)
 				Recorder.record("saveAs", "Text", path);
 		}
@@ -914,6 +918,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public static void setDefaultDirectory(String defaultDirectory) {
 		defaultDir = defaultDirectory;
+		if (defaultDir!=null && !(defaultDir.endsWith(File.separator)||defaultDir.endsWith("/")))
+			defaultDir += File.separator;
 	}
 	
 	//public void keyReleased(KeyEvent e) {}

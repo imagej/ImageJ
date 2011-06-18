@@ -531,8 +531,6 @@ public abstract class ImageProcessor implements Cloneable {
 				lower = upper = min;
 		}
 		setThreshold(lower, upper, lutUpdate);
-		//if (notByteData && lutUpdate!=NO_LUT_UPDATE)
-		//	setLutAnimation(true);
 	}
 
 	/** Automatically sets the lower and upper threshold levels, where 'method'
@@ -1212,6 +1210,36 @@ public abstract class ImageProcessor implements Cloneable {
 	public void drawString(String s, int x, int y) {
 		moveTo(x, y);
 		drawString(s);
+	}
+
+	/** Draws a string at the specified location with a filled background. */
+	public void drawString(String s, int x, int y, Color background) {
+		Color foreground = drawingColor;
+		FontMetrics metrics = getFontMetrics();
+		int w = 0;
+		int h = metrics.getHeight();
+		int y2 = y;
+		if (s.indexOf("\n")!=-1) {
+			String[] s2 = Tools.split(s, "\n");
+			for (int i=0; i<s2.length; i++) {
+				int w2 = getStringWidth(s2[i]);
+				if (w2>w) w = w2;
+			}
+			y2 += h*(s2.length-1);
+			h += h*(s2.length-1);
+		} else
+			w = getStringWidth(s);
+		int x2 = x;
+		if (justification==CENTER_JUSTIFY)
+			x2 -= w/2;
+		else if (justification==RIGHT_JUSTIFY)
+			x2 -= w;
+		setColor(background);
+		setRoi(x2, y2-h, w, h);
+		fill();
+		resetRoi();
+		setColor(foreground);
+		drawString(s, x, y);
 	}
 
 	/** Sets the justification used by drawString(), where <code>justification</code>

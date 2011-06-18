@@ -357,10 +357,12 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 		if (minThreshold>255) minThreshold = 255;
 		if (Recorder.record) {
+			boolean stack = stackHistogram!=null && stackHistogram.getState();
+			String options = method+(darkb?" dark":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
-				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+method+(darkb?" dark":"")+"\");");
+				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+options+"\");");
 			else
-				Recorder.record("setAutoThreshold", method+(darkb?" dark":""));
+				Recorder.record("setAutoThreshold", options);
 		}
 	}
 	

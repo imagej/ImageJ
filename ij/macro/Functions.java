@@ -890,6 +890,11 @@ public class Functions implements MacroConstants, Measurements {
 		int x = (int)(interp.getExpression()+0.5);
 		interp.getComma();
 		int y = (int)(interp.getExpression()+0.5);
+		Color background = null;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			background = getColor();
+		}
 		interp.getRightParen();
 		ImageProcessor ip = getProcessor();
 		if (!colorSet)
@@ -897,7 +902,10 @@ public class Functions implements MacroConstants, Measurements {
 		setFont(ip);
 		ip.setJustification(justification);
 		ip.setAntialiasedText(antialiasedText);
-		ip.drawString(str, x, y);
+		if (background!=null)
+			ip.drawString(str, x, y, background);
+		else
+			ip.drawString(str, x, y);
 		updateAndDraw(defaultImp);
 	}
 	
@@ -2606,8 +2614,14 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Non-RGB image expected");
 		ip.setRoi(img.getRoi());
 		if (mString!=null) {
-			try {ip.setAutoThreshold(mString);}
-			catch (Exception e) { interp.error(""+e.getMessage());}
+			try {
+				if (mString.indexOf("stack")!=-1)
+					IJ.setAutoThreshold(img, mString);
+				else
+					ip.setAutoThreshold(mString);
+			} catch (Exception e) {
+				interp.error(""+e.getMessage());
+			}
 		} else
 			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
 		img.updateAndDraw();

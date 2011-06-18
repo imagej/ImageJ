@@ -1064,17 +1064,56 @@ public class IJ {
 		}
 	}
 
-	public static void setAutoThreshold(ImagePlus img, String method) {
-		ImageProcessor ip = img.getProcessor();
+	public static void setAutoThreshold(ImagePlus imp, String method) {
+		ImageProcessor ip = imp.getProcessor();
 		if (ip instanceof ColorProcessor)
 			throw new IllegalArgumentException("Non-RGB image required");
-		ip.setRoi(img.getRoi());
+		ip.setRoi(imp.getRoi());
 		if (method!=null) {
-			try {ip.setAutoThreshold(method);}
-			catch (Exception e) {IJ.log(e.getMessage());}
+			try {
+				if (method.indexOf("stack")!=-1)
+					setStackThreshold(imp, ip, method);
+				else
+					ip.setAutoThreshold(method);
+			} catch (Exception e) {
+				log(e.getMessage());
+			}
 		} else
 			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
-		img.updateAndDraw();
+		imp.updateAndDraw();
+	}
+	
+	private static void setStackThreshold(ImagePlus imp, ImageProcessor ip, String method) {
+		boolean darkBackground = method.indexOf("dark")!=-1;
+		ImageStatistics stats = new StackStatistics(imp);
+		AutoThresholder thresholder = new AutoThresholder();
+		double min=0.0, max=255.0;
+		if (imp.getBitDepth()!=8) {
+			min = stats.min;
+			max = stats.max;
+		}
+		int threshold = thresholder.getThreshold(method, stats.histogram);
+		double lower, upper;
+		if (darkBackground) {
+			if (ip.isInvertedLut())
+				{lower=0.0; upper=threshold;}
+			else
+				{lower=threshold+1; upper=255.0;}
+		} else {
+			if (ip.isInvertedLut())
+				{lower=threshold+1; upper=255.0;}
+			else
+				{lower=0.0; upper=threshold;}
+		}
+		if (lower>255) lower = 255;
+		if (max>min) {
+			lower = min + (lower/255.0)*(max-min);
+			upper = min + (upper/255.0)*(max-min);
+		} else
+			lower = upper = min;
+		ip.setMinAndMax(min, max);
+		ip.setThreshold(lower, upper, ImageProcessor.RED_LUT);
+		imp.updateAndDraw();
 	}
 
 	/** Disables thresholding on the current image. */
