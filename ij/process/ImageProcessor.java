@@ -1212,12 +1212,15 @@ public abstract class ImageProcessor implements Cloneable {
 		drawString(s);
 	}
 
-	/** Draws a string at the specified location with a filled background. */
+	/** Draws a string at the specified location with a filled background.
+		A JavaScript example is available at
+			http://imagej.nih.gov/ij/macros/js/DrawTextWithBackground.js
+	*/
 	public void drawString(String s, int x, int y, Color background) {
 		Color foreground = drawingColor;
 		FontMetrics metrics = getFontMetrics();
 		int w = 0;
-		int h = metrics.getHeight();
+		int h = metrics.getAscent() + metrics.getDescent();
 		int y2 = y;
 		if (s.indexOf("\n")!=-1) {
 			String[] s2 = Tools.split(s, "\n");
@@ -1225,8 +1228,9 @@ public abstract class ImageProcessor implements Cloneable {
 				int w2 = getStringWidth(s2[i]);
 				if (w2>w) w = w2;
 			}
-			y2 += h*(s2.length-1);
-			h += h*(s2.length-1);
+			int h2 = metrics.getHeight();
+			y2 += h2*(s2.length-1);
+			h += h2*(s2.length-1);
 		} else
 			w = getStringWidth(s);
 		int x2 = x;
