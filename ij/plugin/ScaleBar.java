@@ -169,9 +169,11 @@ public class ScaleBar implements PlugIn {
 		String face = serifFont?"Serif":"SanSerif";
 		Font font = new Font(face, fontType, fontSize);
 		String label = getLength(barWidth) + " "+ getUnits(imp);
-		int swidth = hideText?0:imp.getProcessor().getStringWidth(label);
+		ImageProcessor ip = imp.getProcessor();
+		ip.setFont(font);
+		int swidth = hideText?0:ip.getStringWidth(label);
 		int xoffset = (barWidthInPixels - swidth)/2;
-		int yoffset =  barHeightInPixels + (hideText?0:fontSize+fontSize/(serifFont?8:4));
+		int yoffset =  barHeightInPixels + (hideText?0:fontSize+fontSize/4);
 		if (bcolor!=null) {
 			int w = barWidthInPixels;
 			int h = yoffset;

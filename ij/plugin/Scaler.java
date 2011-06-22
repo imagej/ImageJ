@@ -248,8 +248,6 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			IJ.error("Scaler", "Width or height is 0");
 			return false;
 		}
-		if (xscale>25.0) xscale = 25.0;
-		if (yscale>25.0) yscale = 25.0;
 		if (xscale>0.0 && yscale>0.0) {
 			newWidth = (int)(r.width*xscale);
 			newHeight = (int)(r.height*yscale);
