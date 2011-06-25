@@ -9,6 +9,7 @@ public class RoiProperties {
 	private String title;
 	private boolean showName = true;
 	private boolean addToOverlay;
+	private static final String[] justNames = {"Left", "Center", "Right"};
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public RoiProperties(String title, Roi roi) {
@@ -39,9 +40,12 @@ public class RoiProperties {
 		if (width>1.0) strokeWidth = width;
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
+		int justification = TextRoi.LEFT;
 		if (isText) {
-			Font font = ((TextRoi)roi).getCurrentFont();
+			TextRoi troi = (TextRoi)roi;
+			Font font = troi.getCurrentFont();
 			strokeWidth = font.getSize();
+			justification = troi.getJustification();
 		}
 		String linec = strokeColor!=null?"#"+Integer.toHexString(strokeColor.getRGB()):"none";
 		if (linec.length()==9 && linec.startsWith("#ff"))
@@ -54,14 +58,18 @@ public class RoiProperties {
 		GenericDialog gd = new GenericDialog(title);
 		if (showName)
 			gd.addStringField(nameLabel, name, 15);
-		gd.addStringField("Stroke Color: ", linec);
-		gd.addNumericField(isText?"Font Size":"Width:", strokeWidth, digits);
+		gd.addStringField("Stroke color: ", linec);
+		if (isText) {
+			gd.addNumericField("Font size:", strokeWidth, digits);
+			gd.addChoice("Justification:", justNames, justNames[justification]);
+		} else
+			gd.addNumericField("Width:", strokeWidth, digits);
 		if (!isLine) {
 			gd.addMessage("");
-			gd.addStringField("Fill Color: ", fillc);
+			gd.addStringField("Fill color: ", fillc);
 		}
 		if (addToOverlay) {
-			gd.addCheckbox("New Overlay", false);
+			gd.addCheckbox("New overlay", false);
 			gd.setInsets(15, 10, 0);
 			gd.addMessage("Use the alt-b shortcut\nto skip this dialog.");
 		}
@@ -74,6 +82,8 @@ public class RoiProperties {
 		}
 		linec = gd.getNextString();
 		strokeWidth = gd.getNextNumber();
+		if (isText)
+			justification = gd.getNextChoiceIndex();
 		if (!isLine)
 			fillc = gd.getNextString();
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
@@ -81,11 +91,14 @@ public class RoiProperties {
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
 		if (isText) {
-			Font font = ((TextRoi)roi).getCurrentFont();
+			TextRoi troi = (TextRoi)roi;
+			Font font = troi.getCurrentFont();
 			if ((int)strokeWidth!=font.getSize()) {
 				font = new Font(font.getName(), font.getStyle(), (int)strokeWidth);
-				((TextRoi)roi).setCurrentFont(font);
+				troi.setCurrentFont(font);
 			}
+			if (justification!=troi.getJustification())
+				troi.setJustification(justification);
 		} else if (addToOverlay||strokeWidth>1.0)
 				roi.setStrokeWidth((float)strokeWidth);
 		roi.setStrokeColor(strokeColor);

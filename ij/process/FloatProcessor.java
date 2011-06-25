@@ -923,6 +923,7 @@ public class FloatProcessor extends ImageProcessor {
 	
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {
+		drawingColor = color;
 		int bestIndex = getBestIndex(color);
 		if (bestIndex>0 && getMin()==0.0 && getMax()==0.0) {
 			fillColor = bestIndex;

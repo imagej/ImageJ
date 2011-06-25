@@ -62,9 +62,11 @@ public class AutoThresholder {
 		return threshold;
 	}
 
-	@Deprecated
 	public int getThreshold(String mString, int[] histogram) {
 		// throws an exception if unknown argument
+		int index = mString.indexOf(" ");
+		if (index!=-1)
+			mString = mString.substring(0, index);
 		Method method = Method.valueOf(Method.class, mString); 
 		return getThreshold(method, histogram);
 	}

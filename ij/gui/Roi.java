@@ -1202,8 +1202,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.nonScalable = nonScalable;
 	}
 
-	/** Sets the width of the lines used to draw this ROI when
-	 * it is part of an Overlay list or ROI Manager "Show All" list.
+	/** Sets the width of the line used to draw this ROI.
 	 * @see #setStrokeColor(Color)
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
@@ -1214,6 +1213,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		else
 			this.stroke = new BasicStroke(width);
 		if (width>1f) fillColor = null;
+	}
+
+	/** This is a version of setStrokeWidth() that accepts a double argument. */
+	public void setStrokeWidth(double width) {
+		setStrokeWidth((float)width);
 	}
 
 	/** Returns the lineWidth. */
