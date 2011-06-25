@@ -716,7 +716,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ImageProcessor mask = roi.getMask();
 		if (mask==null)
 			return null;
-		if (ip!=null) {
+		if (ip!=null && roi!=null) {
 			ip.setMask(mask);
 			ip.setRoi(roi.getBounds());
 		}

@@ -118,8 +118,10 @@ public class ScaleBar implements PlugIn {
 		checkboxStates[2] = serifFont; checkboxStates[3] = createOverlay;
 		gd.setInsets(10, 25, 0);
 		gd.addCheckboxGroup(2, 2, checkboxLabels, checkboxStates);
-		if (stackSize>1)
+		if (stackSize>1) {
+			gd.setInsets(0, 25, 0);
 			gd.addCheckbox("Label all slices", labelAll);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			imp.getProcessor().reset();
