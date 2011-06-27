@@ -5,29 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.45j 24 June 2011</u>
+<li> <u>1.45k 27 June 2011</u>
 <ul>
-<li> Added the <i>Plugins&gt;Utilities&gt;Monitor Events</i> command.
-<li> Thanks to Michael Schmid, reduced the memory requirements of the
-<i>Median</i>, <i>Mean</i>, <i>Minimum</i>, <i>Maximum</i> and <i>Variance</i>
-filters when working with non-float image.
-<li> Added a "Overlay" checkbox to the <i>Analyze&gt;Tools&gt;Scale Bar</i> dialog.
-<li> Added a "Stack histogram" checkbox to the <i>Image&gt;Adjust&gt;Threshold</i> dialog.
-<li> Added "Center" and "Right" text justification options to the <i>Edit&gt;Options&gt;Fonts</i> dialog,
-and, with text selections, to the <i>Edit&gt;Selection&gt;Properties</i>,
-<i>Image&gt;Overlay&gt;Add Selection</i> and ROI Manager "Properties" dialog boxes.
-<li> The default text editor directory for saving is saved in the preferences file.
-<li> <i>Image&gt;Scale</i> no longer limits the X and Y scale factors to 25.
-<li> Thanks to Johannes Weissmann, added the ImageProcessor.drawString(String, int, int, Color) method
-and drawString("text", x, y, background) macro function
-(<a href="macros/examples/DrawTextWithBackground.txt">example</a>).
-<li> Added the ImagePlus.setImage(ImagePlus) and PlotWindow.getResultsTable() methods.
-<li> Thanks to Bruno Vellutini, fixed a bug that caused point selection measurements
-on single images to include a "Slice" Results table column even when "Stack position" was
-not checked in <i>Analyze&gt;Set Measurements</i>.
-<li> Fixed bugs that caused JavaScript and Java code recorded by
-<i>Image&gt;Color&gt;Stack to RGB</i> and <i>Image&gt;Hyperstacks&gt;Reduce Dimensionality</i>
-to not work as expected.
+<li> Thanks to Michael Doube, fixed a bug that could cause an exception
+when the image window was closed while a stack was being saved in TIFF format.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
