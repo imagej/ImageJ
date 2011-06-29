@@ -63,7 +63,7 @@ public class Executer implements Runnable {
 			} else
 				runCommand(command);
 			int len = command.length();
-			if (command.charAt(len-1)!=']' && !(len<4&&(command.equals("In")||command.equals("Out"))))
+			if (command.charAt(len-1)!=']')
 				IJ.setKeyUp(IJ.ALL_KEYS);  // set keys up except for "<", ">", "+" and "-" shortcuts
 		} catch(Throwable e) {
 			IJ.showStatus("");

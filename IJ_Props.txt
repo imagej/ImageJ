@@ -153,10 +153,11 @@ tools_05="Insert...",ij.plugin.StackInserter
 tools_06="Montage to Stack...",ij.plugin.StackMaker
 tools_07="Make Substack...",ij.plugin.SubstackMaker
 tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
-tools_09=-
-tools_10="Start Animation [\\]",ij.plugin.Animator("start")
-tools_11="Stop Animation",ij.plugin.Animator("stop")
-tools_12="Animation Options...",ij.plugin.Animator("options")
+tools_09="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
+tools_10=-
+tools_11="Start Animation [\\]",ij.plugin.Animator("start")
+tools_12="Stop Animation",ij.plugin.Animator("stop")
+tools_13="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
@@ -175,8 +176,8 @@ transform06="Rotate... ",ij.plugin.filter.Rotator
 transform07="Translate...",ij.plugin.filter.Translator
 
 # Plugins installed in the Image/Zoom submenu
-zoom01="In[+]",ij.plugin.Zoom("in")
-zoom02="Out[-]",ij.plugin.Zoom("out")
+zoom01="In [+]",ij.plugin.Zoom("in")
+zoom02="Out [-]",ij.plugin.Zoom("out")
 zoom03="Original Scale[4]",ij.plugin.Zoom("orig")
 zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")

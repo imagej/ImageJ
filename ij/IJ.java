@@ -278,6 +278,8 @@ public class IJ {
 			commandTable.put("List Commands...", "Find Commands...");
 			commandTable.put("Capture Screen ", "Capture Screen");
 			commandTable.put("Add to Manager ", "Add to Manager");
+			commandTable.put("In", "In [+]");
+			commandTable.put("Out", "Out [-]");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

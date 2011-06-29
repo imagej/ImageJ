@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.45k";
-	public static final String BUILD = "1"; 
+	public static final String BUILD = "5"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -399,8 +399,8 @@ public class ImageJ extends Frame implements ActionListener,
 			switch (keyChar) {
 				case '<': case ',': cmd="Previous Slice [<]"; break;
 				case '>': case '.': case ';': cmd="Next Slice [>]"; break;
-				case '+': case '=': cmd="In"; break;
-				case '-': cmd="Out"; break;
+				case '+': case '=': cmd="In [+]"; break;
+				case '-': cmd="Out [-]"; break;
 				case '/': cmd="Reslice [/]..."; break;
 				default:
 			}
@@ -411,8 +411,8 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
 				case KeyEvent.VK_BACK_SPACE: cmd="Clear"; hotkey=true; break; // delete
 				//case KeyEvent.VK_BACK_SLASH: cmd=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
-				case KeyEvent.VK_EQUALS: cmd="In"; break;
-				case KeyEvent.VK_MINUS: cmd="Out"; break;
+				case KeyEvent.VK_EQUALS: cmd="In [+]"; break;
+				case KeyEvent.VK_MINUS: cmd="Out [-]"; break;
 				case KeyEvent.VK_SLASH: case 0xbf: cmd="Reslice [/]..."; break;
 				case KeyEvent.VK_COMMA: case 0xbc: cmd="Previous Slice [<]"; break;
 				case KeyEvent.VK_PERIOD: case 0xbe: cmd="Next Slice [>]"; break;
@@ -428,9 +428,9 @@ public class ImageJ extends Frame implements ActionListener,
 					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
 					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp))
-							cmd="Out";
+							cmd="Out [-]";
 					else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp))
-							cmd="In";
+							cmd="In [+]";
 					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK) != 0)
 							roi.nudgeCorner(keyCode);

@@ -31,7 +31,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static int colorIndex = 4;
 	private java.awt.List list;
 	private Hashtable rois = new Hashtable();
-	private Roi roiCopy;
 	private boolean canceled;
 	private boolean macro;
 	private boolean ignoreInterrupts;
@@ -341,14 +340,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (label==null) return false;
 		list.add(label);
 		roi.setName(label);
-		roiCopy = (Roi)roi.clone();
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-				Rectangle r = roiCopy.getBounds();
-				roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
-			}
-		}
+		Roi roiCopy = (Roi)roi.clone();
 		if (lineWidth>1)
 			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
@@ -386,15 +378,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (label==null) return;
 		list.add(label);
 		roi.setName(label);
-		roiCopy = (Roi)roi.clone();
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-				Rectangle r = roiCopy.getBounds();
-				roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
-			}
-		}
-		rois.put(label, roiCopy);
+		rois.put(label, (Roi)roi.clone());
 	}
 
 	boolean isStandardName(String name) {
@@ -571,8 +555,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         Roi roi2 = (Roi)roi.clone();
 		Calibration cal = imp.getCalibration();
 		Rectangle r = roi2.getBounds();
-		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0)
-			roi2.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
 		int width= imp.getWidth(), height=imp.getHeight();
 		if (restoreCentered) {
 			ImageCanvas ic = imp.getCanvas();
@@ -1172,12 +1154,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
 			if (roi.isLine() || roi.getType()==Roi.POINT)
 				continue;
-			Calibration cal = imp.getCalibration();
-			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-				roi = (Roi)roi.clone();
-				Rectangle r = roi.getBounds();
-				roi.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
-			}
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi;
