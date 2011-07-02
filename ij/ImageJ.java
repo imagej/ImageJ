@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.45k";
-	public static final String BUILD = "6"; 
+	public static final String BUILD = "8"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -341,17 +341,17 @@ public class ImageJ extends Frame implements ActionListener,
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
 		hotkey = false;
-		if (keyCode==e.VK_CONTROL || keyCode==e.VK_SHIFT)
+		if (keyCode==KeyEvent.VK_CONTROL || keyCode==KeyEvent.VK_SHIFT)
 			return;
 		char keyChar = e.getKeyChar();
 		int flags = e.getModifiers();
 		if (IJ.debugMode) IJ.log("keyPressed: code=" + keyCode + " (" + KeyEvent.getKeyText(keyCode)
 			+ "), char=\"" + keyChar + "\" (" + (int)keyChar + "), flags="
 			+ KeyEvent.getKeyModifiersText(flags));
-		boolean shift = (flags & e.SHIFT_MASK) != 0;
-		boolean control = (flags & e.CTRL_MASK) != 0;
-		boolean alt = (flags & e.ALT_MASK) != 0;
-		boolean meta = (flags & e.META_MASK) != 0;
+		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean alt = (flags & KeyEvent.ALT_MASK) != 0;
+		boolean meta = (flags & KeyEvent.META_MASK) != 0;
 		String cmd = null;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
@@ -359,7 +359,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if (imp!=null && !control && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
-				if ((flags & e.META_MASK)!=0 && IJ.isMacOSX()) return;
+				if ((flags & KeyEvent.META_MASK)!=0 && IJ.isMacOSX()) return;
 				if (alt)
 					switch (keyChar) {
 						case 'u': case 'm': keyChar = IJ.micronSymbol; break;

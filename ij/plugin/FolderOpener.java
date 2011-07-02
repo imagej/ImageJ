@@ -56,6 +56,7 @@ public class FolderOpener implements PlugIn {
 			if (macroOptions!=null) {
 				directory = Macro.getValue(macroOptions, title, null);
 				if (directory!=null) {
+					directory = OpenDialog.lookupMacroVariable(directory);
 					File f = new File(directory);
 					if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
 						directory = f.getParent();
