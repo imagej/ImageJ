@@ -106,8 +106,7 @@ public class FileSaver {
 			DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
 			file.write(out);
 			out.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			showErrorMessage(e);
 			return false;
 		}

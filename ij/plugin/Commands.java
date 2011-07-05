@@ -54,10 +54,12 @@ public class Commands implements PlugIn {
     void save() {
     	ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			boolean unlockedImage = imp.getStackSize()==1&&!imp.isLocked();
-			if (unlockedImage) imp.lock();
-			new FileSaver(imp).save();
-			if (unlockedImage) imp.unlock();
+			if (imp.getStackSize()>1) {
+				imp.setIgnoreFlush(true);
+				new FileSaver(imp).save();
+				imp.setIgnoreFlush(false);
+			} else
+				new FileSaver(imp).save();
 		} else
 			IJ.noImage();
 	}

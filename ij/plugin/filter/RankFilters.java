@@ -272,7 +272,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         catch (InterruptedException e) {
         	aborted[0] = true;
         }
-        showProgress(1.0);
+        showProgress(1.0, ip instanceof ColorProcessor);
         pass++;
 	}
 
@@ -341,6 +341,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		int numThreads = yForThread.length;
 		long lastTime = System.currentTimeMillis();
 		int previousY = kHeight/2-cacheHeight;
+		boolean rgb = ip instanceof ColorProcessor;
         
         while (!aborted[0]) {
         	int y = arrayMax(yForThread) + 1;		// y of the next line that needs processing
@@ -358,7 +359,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 				long time = System.currentTimeMillis();
 				if (time-lastTime>100) {
 					lastTime = time;
-					showProgress((y-roi.y)/(double)(roi.height));
+					showProgress((y-roi.y)/(double)(roi.height), rgb);
 					if (Thread.currentThread().isInterrupted() || (imp!= null && IJ.escapePressed())) {
 						aborted[0] = true;
 						synchronized(this) {notifyAll();}
@@ -415,7 +416,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 
 			int cacheLineP = cacheWidth * (y % cacheHeight) + kRadius;	//points to pixel (roi.x, y)
 			filterLine(values, width, cache, cachePointers, kNPoints, cacheLineP, roi, y,	// F I L T E R
-					sums, medianBuf1, medianBuf2, sign, maxValue, isFloat,
+					sums, medianBuf1, medianBuf2, sign, maxValue, isFloat, filterType,
 					smallKernel, sumFilter, minOrMax, minOrMaxOrOutliers);
 		    if (!isFloat)		//Float images: data are written already during 'filterLine'
                 writeLineToPixels(values, pixels, roi.x+y*width, roi.width, colorChannel);	// W R I T E
@@ -439,7 +440,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	private void filterLine(float[] values, int width, float[] cache, int[] cachePointers, int kNPoints, int cacheLineP, Rectangle roi, int y,
-			double[] sums, float[] medianBuf1, float[] medianBuf2, float sign, float maxValue, boolean isFloat,
+			double[] sums, float[] medianBuf1, float[] medianBuf2, float sign, float maxValue, boolean isFloat, int filterType,
 			boolean smallKernel, boolean sumFilter, boolean minOrMax, boolean minOrMaxOrOutliers) {
             int valuesP = isFloat ? roi.x+y*width : 0;
 			float max = 0f;
@@ -845,8 +846,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		pass = 0;
 	}
 
-	private void showProgress(double percent) {
-		percent = (double)pass/nPasses + percent/nPasses;
+	private void showProgress(double percent, boolean rgb) {
+		int nPasses2 = rgb?nPasses*3:nPasses;
+		percent = (double)pass/nPasses2 + percent/nPasses2;
 		IJ.showProgress(percent);
 	}
 
