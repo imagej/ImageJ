@@ -228,8 +228,8 @@ public class Duplicator implements PlugIn, TextListener {
 			duplicateStack = gd.getNextBoolean();
 			if (duplicateStack && duplicateSubstack) {
 				String[] range = Tools.split(gd.getNextString(), " -");
-				double d1 = Tools.parseDouble(range[0]);
-				double d2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+				double d1 = gd.parseDouble(range[0]);
+				double d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
 				first = Double.isNaN(d1)?1:(int)d1;
 				last = Double.isNaN(d2)?stackSize:(int)d2;
 				if (first<1) first = 1;
@@ -314,8 +314,8 @@ public class Duplicator implements PlugIn, TextListener {
 		duplicateStack = gd.getNextBoolean();
 		if (nChannels>1) {
 			String[] range = Tools.split(gd.getNextString(), " -");
-			double c1 = Tools.parseDouble(range[0]);
-			double c2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			double c1 = gd.parseDouble(range[0]);
+			double c2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
 			firstC = Double.isNaN(c1)?1:(int)c1;
 			lastC = Double.isNaN(c2)?firstC:(int)c2;
 			if (firstC<1) firstC = 1;
@@ -325,8 +325,8 @@ public class Duplicator implements PlugIn, TextListener {
 			firstC = lastC = 1;
 		if (nSlices>1) {
 			String[] range = Tools.split(gd.getNextString(), " -");
-			double z1 = Tools.parseDouble(range[0]);
-			double z2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			double z1 = gd.parseDouble(range[0]);
+			double z2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
 			firstZ = Double.isNaN(z1)?1:(int)z1;
 			lastZ = Double.isNaN(z2)?firstZ:(int)z2;
 			if (firstZ<1) firstZ = 1;
@@ -336,8 +336,8 @@ public class Duplicator implements PlugIn, TextListener {
 			firstZ = lastZ = 1;
 		if (nFrames>1) {
 			String[] range = Tools.split(gd.getNextString(), " -");
-			double t1 = Tools.parseDouble(range[0]);
-			double t2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
+			double t1 = gd.parseDouble(range[0]);
+			double t2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
 			firstT= Double.isNaN(t1)?1:(int)t1;
 			lastT = Double.isNaN(t2)?firstT:(int)t2;
 			if (firstT<1) firstT = 1;

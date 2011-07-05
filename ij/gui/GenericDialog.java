@@ -800,6 +800,17 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		return d;
 	}
 
+	public double parseDouble(String s) {
+		if (s==null) return Double.NaN;
+		double value = Tools.parseDouble(s);
+		if (Double.isNaN(value)) {
+			if (s.startsWith("&")) s = s.substring(1);
+			Interpreter interp = Interpreter.getInstance();
+			value = interp!=null?interp.getVariable2(s):Double.NaN;
+		}
+		return value;
+	}
+	
 	/** Returns true if one or more of the numeric fields contained an  
 		invalid number. Must be called after one or more calls to getNextNumber(). */
    public boolean invalidNumber() {

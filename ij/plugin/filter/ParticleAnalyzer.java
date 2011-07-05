@@ -321,8 +321,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		else
 			unitSquared = cal.pixelWidth*cal.pixelHeight;
 		String[] minAndMax = Tools.split(size, " -");
-		double mins = Tools.parseDouble(minAndMax[0]);
-		double maxs = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;
+		double mins = gd.parseDouble(minAndMax[0]);
+		double maxs = minAndMax.length==2?gd.parseDouble(minAndMax[1]):Double.NaN;
 		minSize = Double.isNaN(mins)?DEFAULT_MIN_SIZE:mins/unitSquared;
 		maxSize = Double.isNaN(maxs)?DEFAULT_MAX_SIZE:maxs/unitSquared;
 		if (minSize<DEFAULT_MIN_SIZE) minSize = DEFAULT_MIN_SIZE;
@@ -331,8 +331,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		staticMaxSize = maxSize;
 		
 		minAndMax = Tools.split(gd.getNextString(), " -"); // min-max circularity
-		double minc = Tools.parseDouble(minAndMax[0]);
-		double maxc = minAndMax.length==2?Tools.parseDouble(minAndMax[1]):Double.NaN;
+		double minc = gd.parseDouble(minAndMax[0]);
+		double maxc = minAndMax.length==2?gd.parseDouble(minAndMax[1]):Double.NaN;
 		minCircularity = Double.isNaN(minc)?0.0:minc;
 		maxCircularity = Double.isNaN(maxc)?1.0:maxc;
 		if (minCircularity<0.0 || minCircularity>1.0) minCircularity = 0.0;

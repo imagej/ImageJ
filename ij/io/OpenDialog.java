@@ -34,7 +34,7 @@ import javax.swing.filechooser.*;
 				path = Macro.getValue(macroOptions, "path", path);
 			if ((path==null || path.equals("")) && title!=null && title.equals("Open As String"))
 				path = Macro.getValue(macroOptions, "OpenAsString", path);
-			path = lookupMacroVariable(path);
+			path = lookupPathVariable(path);
 		}
 		if (path==null || path.equals("")) {
 			if (Prefs.useJFileChooser)
@@ -70,7 +70,7 @@ import javax.swing.filechooser.*;
 		}
 	}
 	
-	public static String lookupMacroVariable(String path) {
+	public static String lookupPathVariable(String path) {
 		if (path!=null && path.indexOf(".")==-1 && !((new File(path)).exists())) {
 			if (path.startsWith("&")) path=path.substring(1);
 			Interpreter interp = Interpreter.getInstance();
