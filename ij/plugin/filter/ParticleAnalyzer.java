@@ -146,6 +146,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int wandMode = Wand.LEGACY_MODE;
 	private Overlay overlay;
 	boolean blackBackground;
+	private static int fontSize = 9;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -455,7 +456,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 						makeCustomLut();
 					drawIP.setColorModel(customLut);
 				}
-				drawIP.setFont(new Font("SansSerif", Font.PLAIN, 9));
+				drawIP.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
+				//if (fontSize>12)
+				//	drawIP.setAntialiasedText(true);
 			}
 			outlines.addSlice(null, drawIP);
 
@@ -922,7 +925,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			ip.lineTo(x+xp[0], y+yp[0]);
 			if (showChoice!=BARE_OUTLINES) {
 				String s = ResultsTable.d2s(count,0);
-				ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+4);
+				ip.moveTo(r.x+r.width/2-ip.getStringWidth(s)/2, r.y+r.height/2+fontSize/2);
 				if (!inSituShow)
 					ip.setValue(1.0);
 				ip.drawString(s);
@@ -984,6 +987,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Set 'hideOutputImage' true to not display the "Show:" image. */
 	public void setHideOutputImage(boolean hideOutputImage) {
 		this.hideOutputImage = hideOutputImage;
+	}
+
+	/** Sets the size of the font used to label outlines. */
+	public static void setFontSize(int size) {
+		fontSize = size;
 	}
 
 	int getColumnID(String name) {
