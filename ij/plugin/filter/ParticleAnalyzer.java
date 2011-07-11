@@ -146,7 +146,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int wandMode = Wand.LEGACY_MODE;
 	private Overlay overlay;
 	boolean blackBackground;
-	private static int fontSize = 9;
+	private static int defaultFontSize = 9;
+	private static int nextFontSize = defaultFontSize;
+	private static int nextLineWidth = 1;
+	private int fontSize = nextFontSize;
+	private int lineWidth = nextLineWidth;
 
 			
 	/** Constructs a ParticleAnalyzer.
@@ -185,6 +189,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			wandMode = Wand.FOUR_CONNECTED;
 			options |= INCLUDE_HOLES;
 		}
+		nextFontSize=defaultFontSize; nextLineWidth=1;
 	}
 	
 	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
@@ -219,6 +224,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
 			polygon = saveRoi.getPolygon();
 		imp.startTiming();
+		nextFontSize=defaultFontSize; nextLineWidth=1;
 		return flags;
 	}
 
@@ -446,6 +452,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				drawIP = new ShortProcessor(width, height);
 			else
 				drawIP = new ByteProcessor(width, height);
+			drawIP.setLineWidth(lineWidth);
 			if (showChoice==ROI_MASKS)
 				{} // Place holder for now...
 			else if (showChoice==MASKS&&!blackBackground)
@@ -457,9 +464,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					drawIP.setColorModel(customLut);
 				}
 				drawIP.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
-				//if (fontSize>12)
-				//	drawIP.setAntialiasedText(true);
-			}
+				if (fontSize>12 && inSituShow)
+					drawIP.setAntialiasedText(true);
+			} 
 			outlines.addSlice(null, drawIP);
 
 			if (showChoice==ROI_MASKS || blackBackground) {
@@ -875,6 +882,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 			if (imp.getStackSize()>1)
 				roi.setPosition(imp.getCurrentSlice());
+			roi.setStrokeWidth(lineWidth);
 			roiManager.add(imp, roi, rt.getCounter());
 		}
 		if (showResults)
@@ -906,11 +914,15 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (overlay==null) {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
+				if (fontSize!=defaultFontSize)
+					overlay.setLabelsFont(new Font("SansSerif", Font.PLAIN, fontSize));
 			}
-			roi.setStrokeColor(Color.cyan);
+			Roi roi2 = (Roi)roi.clone();
+			roi2.setStrokeColor(Color.cyan);
+			roi2.setStrokeWidth(lineWidth);
 			if (showChoice==OVERLAY_MASKS)
-				roi.setFillColor(Color.cyan);
-			overlay.add((Roi)roi.clone());
+				roi2.setFillColor(Color.cyan);
+			overlay.add(roi2);
 		} else {
 			Rectangle r = roi.getBounds();
 			int nPoints = ((PolygonRoi)roi).getNCoordinates();
@@ -989,11 +1001,16 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		this.hideOutputImage = hideOutputImage;
 	}
 
-	/** Sets the size of the font used to label outlines. */
+	/** Sets the size of the font used to label outlines in the next particle analyzer instance. */
 	public static void setFontSize(int size) {
-		fontSize = size;
+		nextFontSize = size;
 	}
 
+	/** Sets the outline line width for the next particle analyzer instance. */
+	public static void setLineWidth(int width) {
+		nextLineWidth = width;
+	}
+	
 	int getColumnID(String name) {
 		int id = rt.getFreeColumn(name);
 		if (id==ResultsTable.COLUMN_IN_USE)
