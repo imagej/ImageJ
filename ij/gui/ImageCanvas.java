@@ -358,7 +358,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int w = metrics.stringWidth(label);
 		x = x + width/2 - w/2;
 		y = y + height/2 + Math.max(size/2,6);
-		//int h =  metrics.getHeight();
 		int h = metrics.getAscent() + metrics.getDescent();
 		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
 		if (!drawingList)

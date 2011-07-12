@@ -26,7 +26,6 @@ public class Functions implements MacroConstants, Measurements {
 	Program pgm;
     boolean updateNeeded;
     boolean autoUpdate = true;
-    ImagePlus defaultImp;
     ImageProcessor defaultIP;
     int imageType;
     boolean colorSet, fontSet;
@@ -145,7 +144,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SAVE: IJ.save(getStringArg()); break;
 			case SAVE_AS: saveAs(); break;
 			case SET_AUTO_THRESHOLD: setAutoThreshold(); break;
-			case RENAME: resetImage(); getImage().setTitle(getStringArg()); break;
+			case RENAME: getImage().setTitle(getStringArg()); break;
 			case GET_STATISTICS: getStatistics(true); break;
 			case GET_RAW_STATISTICS: getStatistics(false); break;
 			case FLOOD_FILL: floodFill(); break;
@@ -190,7 +189,7 @@ public class Functions implements MacroConstants, Measurements {
 			case NIMAGES: value=getImageCount(); break;
 			case NSLICES: value=getStackSize(); break;
 			case LENGTH_OF: value=lengthOf(); break;
-			case GET_ID: interp.getParens(); resetImage(); value=getImage().getID(); break;
+			case GET_ID: interp.getParens(); value=getImage().getID(); break;
 			case BIT_DEPTH: interp.getParens(); value = getImage().getBitDepth(); break;
 			case SELECTION_TYPE: value=getSelectionType(); break;
 			case IS_OPEN: value=isOpen(); break;
@@ -230,7 +229,7 @@ public class Functions implements MacroConstants, Measurements {
 			case D2S: str = d2s(); break;
 			case TO_HEX: str = toString(16); break;
 			case TO_BINARY: str = toString(2); break;
-			case GET_TITLE: interp.getParens(); resetImage(); str=getImage().getTitle(); break;
+			case GET_TITLE: interp.getParens(); str=getImage().getTitle(); break;
 			case GET_STRING: str = getStringDialog(); break;
 			case SUBSTRING: str = substring(); break;
 			case FROM_CHAR_CODE: str = fromCharCode(); break;
@@ -707,33 +706,26 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	ImagePlus getImage() {
-		if (defaultImp==null)
-			defaultImp = IJ.getImage();
-		if (defaultImp==null)
-			{interp.error("No image"); return null;}	
-		if (defaultImp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode() && WindowManager.getTempCurrentImage()==null)
+		ImagePlus imp = IJ.getImage();
+		if (imp.getWindow()==null && IJ.getInstance()!=null && !interp.isBatchMode() && WindowManager.getTempCurrentImage()==null)
 			throw new RuntimeException(Macro.MACRO_CANCELED);
-		return defaultImp;
+		defaultIP = null;
+		return imp;
 	}
 	
 	void resetImage() {
-		defaultImp = null;
 		defaultIP = null;
 		colorSet = fontSet = false;
 	}
 
 	ImageProcessor getProcessor() {
-		if (defaultIP==null) {
-			defaultImp = getImage();
-			defaultIP = defaultImp.getProcessor();
-		}
+		if (defaultIP==null)
+			defaultIP = getImage().getProcessor();
 		return defaultIP;
 	}
 
 	int getType() {
-		if (defaultImp==null)
-			defaultImp = IJ.getImage();
-		imageType = defaultImp.getType();
+		imageType = getImage().getType();
 		return imageType;
 	}
 
@@ -814,7 +806,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
 		ip.lineTo(a1, a2);
-		updateAndDraw(defaultImp);
+		updateAndDraw();
 	}
 
 	void drawLine() {
@@ -830,7 +822,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImageProcessor ip = getProcessor();
 		if (!colorSet) setForegroundColor(ip);
 		ip.drawLine(x1, y1, x2, y2);
-		updateAndDraw(defaultImp);
+		updateAndDraw();
 	}
 	
 	void setForegroundColor(ImageProcessor ip) {
@@ -863,14 +855,14 @@ public class Functions implements MacroConstants, Measurements {
 					ip.setRoi(roi);
 					ip.fill(ip.getMask());
 				}
-				updateAndDraw(imp);
+				imp.updateAndDraw();
 				break;
 		}
 	}
 
-	void updateAndDraw(ImagePlus imp) {
+	void updateAndDraw() {
 		if (autoUpdate)
-			imp.updateChannelAndDraw();
+			getImage().updateChannelAndDraw();
 		else
 			updateNeeded = true;
 	}
@@ -906,7 +898,7 @@ public class Functions implements MacroConstants, Measurements {
 			ip.drawString(str, x, y, background);
 		else
 			ip.drawString(str, x, y);
-		updateAndDraw(defaultImp);
+		updateAndDraw();
 	}
 	
 	void setFont(ImageProcessor ip) {
@@ -1185,7 +1177,6 @@ public class Functions implements MacroConstants, Measurements {
 	void getCoordinates() {
 		Variable xCoordinates = getFirstArrayVariable();
 		Variable yCoordinates = getLastArrayVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi==null)
@@ -1562,7 +1553,6 @@ public class Functions implements MacroConstants, Measurements {
 		Variable vx2 = getNextVariable();
 		Variable vy2 = getNextVariable();
 		Variable lineWidth = getLastVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		double x1=-1, y1=-1, x2=-1, y2=-1;
 		Roi roi = imp.getRoi();
@@ -1582,7 +1572,6 @@ public class Functions implements MacroConstants, Measurements {
 		Variable height = getNextVariable();
 		Variable depth = getNextVariable();
 		Variable unit = getLastVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		Calibration cal = imp.getCalibration();
 		width.setValue(cal.pixelWidth);
@@ -1655,7 +1644,6 @@ public class Functions implements MacroConstants, Measurements {
 		Variable reds = getFirstArrayVariable();
 		Variable greens = getNextArrayVariable();
 		Variable blues = getLastArrayVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		IndexColorModel cm = null;
 		if (imp.isComposite())
@@ -1685,7 +1673,6 @@ public class Functions implements MacroConstants, Measurements {
 		int length = reds.length;		
 		if (greens.length!=length || blues.length!=length)
 			interp.error("Arrays are not the same length");
-		resetImage();
 		ImagePlus imp = getImage();
 		if (imp.getBitDepth()==24)
 			interp.error("Non-RGB image expected");
@@ -1710,7 +1697,6 @@ public class Functions implements MacroConstants, Measurements {
 	void getThreshold() {
 		Variable lower = getFirstVariable();
 		Variable upper = getLastVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		ImageProcessor ip = getProcessor();
 		double t1 = ip.getMinThreshold();
@@ -1776,7 +1762,6 @@ public class Functions implements MacroConstants, Measurements {
 		int n = x.length;		
 		if (y.length!=n)
 			interp.error("Arrays are not the same length");
-		resetImage();
 		ImagePlus imp = getImage();
 		int[] xcoord = new int[n];
 		int[] ycoord = new int[n];
@@ -1999,7 +1984,6 @@ public class Functions implements MacroConstants, Measurements {
 		Variable y = getNextVariable();
 		Variable width = getNextVariable();
 		Variable height = getLastVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
@@ -2387,7 +2371,6 @@ public class Functions implements MacroConstants, Measurements {
 	void getMinAndMax() {
 		Variable min = getFirstVariable();
 		Variable max = getLastVariable();
-		resetImage();
 		ImagePlus imp = getImage();
 		double v1 = imp.getDisplayRangeMin();
 		double v2 = imp.getDisplayRangeMax();
@@ -2817,7 +2800,7 @@ public class Functions implements MacroConstants, Measurements {
 			case DRAW_OVAL: ip.drawOval(x, y, width, height); break;
 			case FILL_OVAL: ip.fillOval(x, y, width, height); break;
 		}
-		updateAndDraw(defaultImp);
+		updateAndDraw();
 	}
 
 	double getScreenDimension(int type) {
@@ -2848,7 +2831,6 @@ public class Functions implements MacroConstants, Measurements {
 			interp.getToken();
 		}
 		if (interp.token!=')') interp.error("')' expected");
-		resetImage();
 		ImagePlus imp = getImage();
 		Calibration cal = calibrated?imp.getCalibration():null;
 		ImageProcessor ip = getProcessor();
@@ -2934,7 +2916,7 @@ public class Functions implements MacroConstants, Measurements {
 			ff.fill(x, y);
 		else
 			ff.fill8(x, y);
-		updateAndDraw(defaultImp);
+		updateAndDraw();
 		if (Recorder.record && pgm.hasVars)
 			Recorder.record("floodFill", x, y);
 	}
@@ -2950,7 +2932,6 @@ public class Functions implements MacroConstants, Measurements {
 		double height = getNextArg();
 		double depth = getNextArg();
 		String unit = getLastString();
-		resetImage();
 		ImagePlus imp = getImage();
 		Calibration cal = imp.getCalibration();
 		cal.pixelWidth = width;
@@ -3644,7 +3625,6 @@ public class Functions implements MacroConstants, Measurements {
 	void setSelectionLocation() {
 		int x = (int)Math.round(getFirstArg());
 		int y = (int)Math.round(getLastArg());
-		resetImage();
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi==null)
