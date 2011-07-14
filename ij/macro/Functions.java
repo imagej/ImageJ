@@ -54,7 +54,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean usePointerCursor, hideProcessStackDialog;
 	float divideByZeroValue;
     int jpegQuality;
-    int lineWidth;
+    int saveLineWidth;
     boolean doScaling;
     boolean weightedColor;
     double[] weights;
@@ -68,6 +68,7 @@ public class Functions implements MacroConstants, Measurements {
 	boolean blackBackground;
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
+	int lineWidth = 1;
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -109,7 +110,7 @@ public class Functions implements MacroConstants, Measurements {
 			case SHOW_MESSAGE_WITH_CANCEL: showMessage(true); break;
 			case SET_PIXEL: case PUT_PIXEL: setPixel(); break;
 			case SNAPSHOT: case RESET: case FILL: doIPMethod(type); break;
-			case SET_LINE_WIDTH: getProcessor().setLineWidth((int)getArg()); break;
+			case SET_LINE_WIDTH: setLineWidth((int)getArg()); break;
 			case CHANGE_VALUES: changeValues(); break;
 			case SELECT_IMAGE: selectImage(); break;
 			case EXIT: exit(); break;
@@ -261,6 +262,11 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("String function expected");
 		}
 		return str;
+	}
+	
+	private void setLineWidth(int width) {
+		lineWidth = width;
+		getProcessor().setLineWidth(width);
 	}
 
 	Variable[] getArrayFunction(int type) {
@@ -574,7 +580,7 @@ public class Functions implements MacroConstants, Measurements {
 		IJ.setForegroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
 		resetImage();
 		if (isImage)
-			getProcessor().setLineWidth(lineWidth);
+			setLineWidth(lineWidth);
 		defaultColor = null;
 		defaultValue = Double.NaN;
 	}
@@ -716,11 +722,15 @@ public class Functions implements MacroConstants, Measurements {
 	void resetImage() {
 		defaultIP = null;
 		colorSet = fontSet = false;
+		lineWidth = 1;
 	}
 
 	ImageProcessor getProcessor() {
-		if (defaultIP==null)
+		if (defaultIP==null) {
 			defaultIP = getImage().getProcessor();
+			if (lineWidth!=1)
+				defaultIP.setLineWidth(lineWidth);
+		}
 		return defaultIP;
 	}
 
@@ -2125,7 +2135,7 @@ public class Functions implements MacroConstants, Measurements {
 		hideProcessStackDialog = IJ.hideProcessStackDialog;
 		divideByZeroValue = FloatBlitter.divideByZeroValue;
 		jpegQuality = FileSaver.getJpegQuality();
-		lineWidth = Line.getWidth();
+		saveLineWidth = Line.getWidth();
 		doScaling = ImageConverter.getDoScaling();
 		weightedColor = Prefs.weightedColor;
 		weights = ColorProcessor.getWeightingFactors();
@@ -2155,7 +2165,7 @@ public class Functions implements MacroConstants, Measurements {
 		IJ.hideProcessStackDialog = hideProcessStackDialog;
 		FloatBlitter.divideByZeroValue = divideByZeroValue;
 		FileSaver.setJpegQuality(jpegQuality);
-		Line.setWidth(lineWidth);
+		Line.setWidth(saveLineWidth);
 		ImageConverter.setDoScaling(doScaling);
 		if (weightedColor!=Prefs.weightedColor) {
 			ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);

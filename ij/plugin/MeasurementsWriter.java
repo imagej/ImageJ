@@ -38,21 +38,11 @@ public class MeasurementsWriter implements PlugIn {
                 if (file == null) return false;
                 path = sd.getDirectory() + file;
             }
-            PrintWriter pw = null;
-            try {
-                FileOutputStream fos = new FileOutputStream(path);
-                BufferedOutputStream bos = new BufferedOutputStream(fos);
-                pw = new PrintWriter(bos);
-            }
-            catch (IOException e) {
-                IJ.log("MeasurementsWriter: "+e);
-                return false;
-            }
-            int n = rt.getCounter();
-            for (int i=0; i<n; i++) {
-                pw.println(rt.getRowAsString(i));
-            }
-            pw.close();
+			try {
+				rt.saveAs(path);
+			} catch (IOException e) {
+				IJ.error(""+e);
+			}
         }
 		return true;
 	}
