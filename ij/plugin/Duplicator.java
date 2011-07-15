@@ -56,7 +56,7 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2.setTitle(newTitle);
 		imp2.show();
-		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
+		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
 			imp2.restoreRoi();
 	}
                 
@@ -69,14 +69,14 @@ public class Duplicator implements PlugIn, TextListener {
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isArea())
 			rect = roi.getBounds();
-		int width = rect!=null?rect.width:imp.getWidth();
-		int height = rect!=null?rect.height:imp.getHeight();
 		ImageStack stack = imp.getStack();
-		ImageStack stack2 = new ImageStack(width, height, imp.getProcessor().getColorModel());
+		ImageStack stack2 = null;
 		for (int i=1; i<=stack.getSize(); i++) {
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
+			if (stack2==null)
+				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight(), imp.getProcessor().getColorModel());
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
 		ImagePlus imp2 = imp.createImagePlus();
@@ -134,14 +134,14 @@ public class Duplicator implements PlugIn, TextListener {
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isArea())
 			rect = roi.getBounds();
-		int width = rect!=null?rect.width:imp.getWidth();
-		int height = rect!=null?rect.height:imp.getHeight();
 		ImageStack stack = imp.getStack();
-		ImageStack stack2 = new ImageStack(width, height, imp.getProcessor().getColorModel());
+		ImageStack stack2 = null;
 		for (int i=firstSlice; i<=lastSlice; i++) {
 			ImageProcessor ip2 = stack.getProcessor(i);
 			ip2.setRoi(rect);
 			ip2 = ip2.crop();
+			if (stack2==null)
+				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight(), imp.getProcessor().getColorModel());
 			stack2.addSlice(stack.getSliceLabel(i), ip2);
 		}
 		ImagePlus imp2 = imp.createImagePlus();
@@ -162,10 +162,8 @@ public class Duplicator implements PlugIn, TextListener {
 		Roi roi = imp.getRoi();
 		if (roi!=null && roi.isArea())
 			rect = roi.getBounds();
-		int width = rect!=null?rect.width:imp.getWidth();
-		int height = rect!=null?rect.height:imp.getHeight();
 		ImageStack stack = imp.getStack();
-		ImageStack stack2 = new ImageStack(width, height);
+		ImageStack stack2 = null;
 		for (int t=firstT; t<=lastT; t++) {
 			for (int z=firstZ; z<=lastZ; z++) {
 				for (int c=firstC; c<=lastC; c++) {
@@ -174,6 +172,8 @@ public class Duplicator implements PlugIn, TextListener {
 					String label = stack.getSliceLabel(n1);
 					ip.setRoi(rect);
 					ip = ip.crop();
+					if (stack2==null)
+						stack2 = new ImageStack(ip.getWidth(), ip.getHeight(), null);
 					stack2.addSlice(label, ip);
 				}
 			}
@@ -269,7 +269,7 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2.setTitle(newTitle);
 		imp2.show();
-		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE)
+		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
 			imp2.restoreRoi();
 		if (IJ.isMacro()&&imp2.getWindow()!=null)
 			IJ.wait(50);

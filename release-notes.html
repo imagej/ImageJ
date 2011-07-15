@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.45l 14 July 2011</u>
+<li> <u>1.45l 15 July 2011</u>
 <ul>
 <li> Thanks to Ved Sharma, added a "Delete slices from original stack"
 option to <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i>
@@ -14,6 +14,7 @@ which resizes images to specified maximum dimension,
 to <i>Process&gt;Batch&gt;Macro</i>.
 <li> Thanks to Jerome Mutterer, the saveAs("raw",path) macro function
 no longer requires a ".raw" extension.
+<li> The getFileList() macro function now filters "Thumbs.db" files.
 (<a href="macros/examples/CreateBinaryImage.txt">example</a>).
 <li> Added the ParticleAnalyzer.setFontSize() and ParticleAnalyzer.setLineWidth() methods.
 <li> Thanks to David McDonald, fixed a bug that caused horizontal or vertical straight line
@@ -22,6 +23,10 @@ selections to not work with the <i>Edit&gt;Selection&gt;Restore Selection</i> co
 Plot.getValues() macro function to fail and the run("Distribution...","...") function
 to throw an exception.
 <li> Fixed a bug that caused headings of non-displayed results tables to not be saved.
+<li> Thanks to Ingo Bartholomaeus, fixed a bug that caused drawing tools to not
+set the image 'changes' flag.
+<li> Thanks to Gilles Carpentier, fixed a bug that caused an exception when
+duplicating stacks with selections extending beyond the image boundary.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

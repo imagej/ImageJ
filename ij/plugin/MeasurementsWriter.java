@@ -29,21 +29,21 @@ public class MeasurementsWriter implements PlugIn {
 					return false;
 			}
 		} else {
-            ResultsTable rt = ResultsTable.getResultsTable();
-            if (rt==null || rt.getCounter()==0)
-                return false;
-            if (path.equals("")) {
-                SaveDialog sd = new SaveDialog("Save as Text", "Results", Prefs.get("options.ext", ".xls"));
-                String file = sd.getFileName();
-                if (file == null) return false;
-                path = sd.getDirectory() + file;
-            }
+			ResultsTable rt = ResultsTable.getResultsTable();
+			if (rt==null || rt.getCounter()==0)
+				return false;
+			if (path.equals("")) {
+				SaveDialog sd = new SaveDialog("Save as Text", "Results", Prefs.get("options.ext", ".xls"));
+				String file = sd.getFileName();
+				if (file == null) return false;
+				path = sd.getDirectory() + file;
+			}
 			try {
 				rt.saveAs(path);
 			} catch (IOException e) {
 				IJ.error(""+e);
 			}
-        }
+		}
 		return true;
 	}
 

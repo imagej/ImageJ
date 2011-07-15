@@ -871,9 +871,11 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void updateAndDraw() {
-		if (autoUpdate)
-			getImage().updateChannelAndDraw();
-		else
+		if (autoUpdate) {
+			ImagePlus imp = getImage();
+			imp.updateChannelAndDraw();
+			imp.changes = true;
+		} else
 			updateNeeded = true;
 	}
 	
@@ -1279,7 +1281,7 @@ public class Functions implements MacroConstants, Measurements {
     	File f2;
     	int hidden = 0;
     	for (int i=0; i<list.length; i++) {
-    		if (list[i].startsWith(".")) {
+    		if (list[i].startsWith(".") || list[i].equals("Thumbs.db")) {
     			list[i] = null;
     			hidden++;
     		} else {
