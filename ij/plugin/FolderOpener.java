@@ -82,7 +82,7 @@ public class FolderOpener implements PlugIn {
 		list = trimFileList(list);
 		if (list==null) return;
 		if (IJ.debugMode) IJ.log("FolderOpener: "+directory+" ("+list.length+" files)");
-		int width=0,height=0,depth=0,bitDepth=0;
+		int width=0, height=0, stackSize=1, bitDepth=0;
 		ImageStack stack = null;
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
@@ -165,7 +165,7 @@ public class FolderOpener implements PlugIn {
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
-					depth = imp.getStackSize();
+					stackSize = imp.getStackSize();
 					bitDepth = imp.getBitDepth();
 					cal = imp.getCalibration();
 					if (convertToRGB) bitDepth = 24;
@@ -186,7 +186,7 @@ public class FolderOpener implements PlugIn {
 					continue;
 				}
 				String label = imp.getTitle();
-				if (depth==1) {
+				if (stackSize==1) {
 					String info = (String)imp.getProperty("Info");
 					if (info!=null)
 						label += "\n" + info;
@@ -194,8 +194,16 @@ public class FolderOpener implements PlugIn {
 				if (imp.getCalibration().pixelWidth!=cal.pixelWidth)
 					allSameCalibration = false;
 				ImageStack inputStack = imp.getStack();
-				for (int slice=1; slice<=inputStack.getSize(); slice++) {
+				for (int slice=1; slice<=stackSize; slice++) {
 					ImageProcessor ip = inputStack.getProcessor(slice);
+					String label2 = label;
+					if (stackSize>1) {
+						String sliceLabel = inputStack.getSliceLabel(slice);
+						if (sliceLabel!=null)
+							label2=sliceLabel;
+						else if (label!=null && !label.equals(""))
+							label2 += ":"+slice;
+					}
 					int bitDepth2 = imp.getBitDepth();
 					if (!openAsVirtualStack) {
 						if (convertToRGB) {
@@ -223,7 +231,6 @@ public class FolderOpener implements PlugIn {
 						ip = ip.resize((int)(width*scale/100.0), (int)(height*scale/100.0));
 					if (ip.getMin()<min) min = ip.getMin();
 					if (ip.getMax()>max) max = ip.getMax();
-					String label2 = label;
 					//if (depth>1) label2 = null;
 					if (openAsVirtualStack) {
 						if (slice==1) ((VirtualStack)stack).addSlice(list[i]);
