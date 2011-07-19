@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.45l";
-	public static final String BUILD = "11"; 
+	public static final String BUILD = "13"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -202,18 +202,22 @@ public class ImageJ extends Frame implements ActionListener,
  	}
     	
 	void configureProxy() {
-		String server = Prefs.get("proxy.server", null);
-		if (server==null||server.equals("")) return;
-		int port = (int)Prefs.get("proxy.port", 0);
-		if (port==0) return;
-		String user = Prefs.get("proxy.user", null);	
-		Properties props = System.getProperties();
-		props.put("proxySet", "true");
-		props.put("http.proxyHost", server);
-		props.put("http.proxyPort", ""+port);
-		if (user!=null)
-			props.put("http.proxyUser", user);
-		//IJ.log(server+"  "+port+"  "+user);
+		if (Prefs.useSystemProxies) {
+			try {
+				System.setProperty("java.net.useSystemProxies", "true");
+			} catch(Exception e) {}
+		} else {
+			String server = Prefs.get("proxy.server", null);
+			if (server==null||server.equals(""))
+				return;
+			int port = (int)Prefs.get("proxy.port", 0);
+			if (port==0) return;
+			Properties props = System.getProperties();
+			props.put("proxySet", "true");
+			props.put("http.proxyHost", server);
+			props.put("http.proxyPort", ""+port);
+		}
+		//new ProxySettings().logProperties();
 	}
 	
     void setIcon() throws Exception {

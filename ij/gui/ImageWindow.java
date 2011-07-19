@@ -603,7 +603,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     }
     
     public String toString() {
-    	return imp.getTitle();
+    	return imp!=null?imp.getTitle():"";
     }
     
     /** Causes the next image to be opened to be centered on the screen

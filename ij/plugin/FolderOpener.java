@@ -201,7 +201,7 @@ public class FolderOpener implements PlugIn {
 						String sliceLabel = inputStack.getSliceLabel(slice);
 						if (sliceLabel!=null)
 							label2=sliceLabel;
-						else if (label!=null && !label.equals(""))
+						else if (label2!=null && !label2.equals(""))
 							label2 += ":"+slice;
 					}
 					int bitDepth2 = imp.getBitDepth();
