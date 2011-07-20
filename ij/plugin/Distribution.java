@@ -18,7 +18,6 @@ It reads the data from the ResultsTable and plots a frequency histogram.
 public class Distribution implements PlugIn, TextListener {
 	static String parameter = "Area";
 	static boolean autoBinning = true;
-	static boolean showStats = false;
 	static int nBins = 10;
 	static String range = "0-0";
 	Checkbox checkbox;
@@ -51,7 +50,6 @@ public class Distribution implements PlugIn, TextListener {
 		gd.addNumericField ("or specify bins:", nBins, 0);
 		gd.addStringField ("and range:", range);
 
-		//gd.addCheckbox("Log Statistics", showStats);
 		Vector v = gd.getNumericFields();
 		nBinsField = (TextField)v.elementAt(0);
 		nBinsField.addTextListener(this);
@@ -75,27 +73,18 @@ public class Distribution implements PlugIn, TextListener {
 			if (Double.isNaN(nMin) || Double.isNaN(nMax))
 				{nMin=0.0; nMax=0.0; range="0-0";}
 		}
-		//boolean showStats = gd.getNextBoolean();
 
-		//int nBins =5;
-		float[] data = rt.getColumn(rt.getColumnIndex(parameter));
+		float[] data = null;
+		int index = rt.getColumnIndex(parameter);
+		if (index>=0)
+			data = rt.getColumn(index);
+		if (data==null) {
+			IJ.error("Distribution", "No available results: \""+parameter+"\"");
+			return;
+		}
 
 		float [] pars = new float [11];
 		stats(count, data, pars);
-		if (showStats) {
-			IJ.log("Param: "+parameter);
-			IJ.log("Data: "+ pars[1]);
-			IJ.log("Sum: "+pars[2]);
-			IJ.log("Min: "+pars[3]);
-			IJ.log("Max: "+pars[4]);
-			IJ.log("Mean: "+pars[5]);
-			IJ.log("AvDev: "+pars[6]);
-			IJ.log("StDev: "+pars[7]);
-			IJ.log("Var: "+pars[8]);
-			IJ.log("Skew: "+pars[9]);
-			IJ.log("Kurt: "+pars[10]);
-			IJ.log(" ");
-		}
 		if (autoBinning) {
 			//sd = 7, min = 3, max = 4
 			// use Scott's method (1979 Biometrika, 66:605-610) for optimal binning: 3.49*sd*N^-1/3
@@ -131,7 +120,7 @@ public class Distribution implements PlugIn, TextListener {
 			checkbox.setState(false);
 	}
 
-	void stats(int nc, float [] data, float [] pars){
+	void stats(int nc, float[] data, float[] pars){
  // ("\tPoints\tEdges_n\tGraph_Length\tMin\tMax\tMean\tAvDev\tSDev\tVar\tSkew\tKurt");
 		int i;
 		float s = 0, min = Float.MAX_VALUE, max = -Float.MAX_VALUE, totl=0, ave=0, adev=0, sdev=0, var=0, skew=0, kurt=0, p;

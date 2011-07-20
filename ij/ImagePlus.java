@@ -1418,7 +1418,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	/** Deletes the current region of interest. Makes a copy
 		of the current ROI so it can be recovered by the
-		Edit/Restore Selection command. */
+		Edit/Selection/Restore Selection command. */
 	public void killRoi() {
 		if (roi!=null) {
 			saveRoi();
@@ -1433,7 +1433,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (roi!=null) {
 			roi.endPaste();
 			Rectangle r = roi.getBounds();
-			if (r.width>0 && r.height>0) {
+			if ((r.width>0 || r.height>0)) {
 				Roi.previousRoi = (Roi)roi.clone();
 				if (IJ.debugMode) IJ.log("saveRoi: "+roi);
 			}

@@ -23,6 +23,7 @@ import java.util.Vector;
 			"Invert",
 			"Label",
 			"Timestamp",
+			"Max Dimension",
 			"Measure",
 			"Resize",
 			"Scale",
@@ -268,6 +269,8 @@ import java.util.Vector;
 			code = "run(\"Unsharp Mask...\", \"radius=1 mask=0.60\");\n";
 		else if (item.equals("Show File Info"))
 			code = "path=File.directory+File.name;\ndate=File.dateLastModified(path);\nsize=File.length(path);\nprint(i+\", \"+getTitle+\", \"+date+\", \"+size);\n";
+		else if (item.equals("Max Dimension"))
+			code = "max=2048;\nw=getWidth; h=getHeight;\nsize=maxOf(w,h);\nif (size>max) {\n  scale = max/size;\n  w*=scale; h*=scale;\n  run(\"Size...\", \"width=w height=h interpolation=Bicubic average\");\n}";
 		if (code!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());

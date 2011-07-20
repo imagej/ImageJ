@@ -2,34 +2,29 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import ij.measure.*;
 
 /**
- * This plugin extracts selected images from a stack to make a new substack.
+ * This plugin implements the Image/Stacks/Tools/Make Substack command.
+ * What it does is extracts selected images from a stack to make a new substack.
  * It takes three types of inputs: a range of images (e.g. 2-14), a range of images
  * with an increment (e.g. 2-14-3), or a list of images (e.g. 7,9,25,27,34,132).
  * It then copies those images from the active stack to a new stack in the order
  * of listing or range.
  *
  * @author Anthony Padua
- * @author Neuroradiology
- * @author Duke University Medical Center
- * @author padua001@mc.duke.edu
- *
  * @author Daniel Barboriak, MD
  * @author Neuroradiology
  * @author Duke University Medical Center
- * @author barbo013@mc.duke.edu
  *
  * @author Ved P. Sharma, Ph.D.
  * @author Anatomy and Structural Biology
  * @author Albert Einstein College of Medicine
- * @author ved.sharma@einstein.yu.edu
  *
  */
 
 public class SubstackMaker implements PlugIn {
-		
+	private static boolean delete = false;
+
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
 		if (imp.isHyperStack() || imp.isComposite()) {
@@ -109,11 +104,14 @@ public class SubstackMaker implements PlugIn {
 		gd.setInsets(10,45,0);
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n(e.g. 1-100-2) or a list (e.g. 7,9,25,27)");
 		gd.addStringField("Slices:", "", 40);
+		gd.addCheckbox("Delete slices from original stack", delete);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;
-		else
+		else {
+			delete = gd.getNextBoolean();
 			return gd.getNextString();
+		}
 	}
 
 	// extract specific slices
@@ -121,14 +119,25 @@ public class SubstackMaker implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		Roi roi = imp.getRoi();
-		for (int i=0; i<count; i++) {
-			int currSlice = numList[i];
+		for (int i=0, j=0; i<count; i++) {
+			int currSlice = numList[i]-j;
 			ImageProcessor ip2 = stack.getProcessor(currSlice);
 			ip2.setRoi(roi);
 			ip2 = ip2.crop();
 			if (stack2==null)
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
 			stack2.addSlice(stack.getSliceLabel(currSlice), ip2);
+			if (delete) {
+				stack.deleteSlice(currSlice);
+				j++;
+			}
+		}
+		if (delete) {
+			imp.setStack(stack);
+			// next three lines for updating the scroll bar
+			ImageWindow win = imp.getWindow();
+			StackWindow swin = (StackWindow) win;
+			swin.updateSliceSelector();
 		}
 		ImagePlus impSubstack = imp.createImagePlus();
 		impSubstack.setStack(stackTitle, stack2);
@@ -137,23 +146,34 @@ public class SubstackMaker implements PlugIn {
 	}
 	
 	// extract range of slices
-	ImagePlus stackRange(ImagePlus imp, int first, int last, int inc, String title) throws Exception {		int width = imp.getWidth();
+	ImagePlus stackRange(ImagePlus imp, int first, int last, int inc, String title) throws Exception {
 		ImageStack stack = imp.getStack();
 		ImageStack stack2 = null;
 		Roi roi = imp.getRoi();
-		for (int i= first; i<= last; i+=inc) {
+		for (int i= first, j=0; i<= last; i+=inc) {
 			//IJ.log(first+" "+last+" "+inc+" "+i);
-			ImageProcessor ip2 = stack.getProcessor(i);
+			int currSlice = i-j;
+			ImageProcessor ip2 = stack.getProcessor(currSlice);
 			ip2.setRoi(roi);
 			ip2 = ip2.crop();
 			if (stack2==null)
 				stack2 = new ImageStack(ip2.getWidth(), ip2.getHeight());
-			stack2.addSlice(stack.getSliceLabel(i), ip2);
+			stack2.addSlice(stack.getSliceLabel(currSlice), ip2);
+			if (delete) {
+				stack.deleteSlice(currSlice);
+				j++;
+			}
+		}
+		if (delete) {
+			imp.setStack(stack);
+			// next three lines for updating the scroll bar
+			ImageWindow win = imp.getWindow();
+			StackWindow swin = (StackWindow) win;
+			swin.updateSliceSelector();
 		}
 		ImagePlus substack = imp.createImagePlus();
 		substack.setStack(title, stack2);
 		substack.setCalibration(imp.getCalibration());
 		return substack;
 	}
-		
 }
