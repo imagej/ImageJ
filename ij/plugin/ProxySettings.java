@@ -53,7 +53,7 @@ public class ProxySettings implements PlugIn {
 		GenericDialog gd=new GenericDialog("Proxy Settings");
 		gd.addStringField("Proxy server:", proxyhost, 15);
 		gd.addNumericField("Port:", proxyport , 0);
-		gd.addCheckbox("Or use system proxy settings", Prefs.useSystemProxies);
+		gd.addCheckbox("Or, use system proxy settings", Prefs.useSystemProxies);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#proxy");
 		gd.showDialog();
 		if (gd.wasCanceled())
