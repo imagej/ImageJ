@@ -706,6 +706,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	static final int WIDTH = 256, HEIGHT=48;
 	double minThreshold = 85;
 	double maxThreshold = 170;
+	ImageStatistics stats;
 	int[] histogram;
 	Color[] hColors;
 	int hmax;
@@ -714,6 +715,9 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	int mode;
 	int originalModeCount;
 	double stackMin, stackMax;
+	int imageID;
+	boolean entireStack;
+	double mean;
 	
 	public ThresholdPlot() {
 		addMouseListener(this);
@@ -727,8 +731,13 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
     }
     
 	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
+		double mean = entireStack?imp.getProcessor().getStatistics().mean:0.0;
+		if (entireStack && stats!=null && imp.getID()==this.imageID 
+		&& entireStack==this.entireStack && mean==this.mean)
+			return stats;
+		this.mean = mean;
 		ImageProcessor ip = imp.getProcessor();
-		ImageStatistics stats = null;
+		stats = null;
 		if (entireStack)
 			stats = new StackStatistics(imp);
 		if (!(ip instanceof ByteProcessor)) {
@@ -785,9 +794,11 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		hColors = new Color[256];
 		for (int i=0; i<256; i++)
 			hColors[i] = new Color(r[i]&255, g[i]&255, b[i]&255);
+		imageID = imp.getID();
+		this.entireStack = entireStack;
 		return stats;
 	}
-
+	
 	public void update(Graphics g) {
 		paint(g);
 	}
