@@ -125,7 +125,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.gridy = y++;
 		c.gridwidth = 1;
 		c.weightx = 100;
-		c.insets = new Insets(0, 10, 0, 0);
+		c.insets = new Insets(2, 10, 0, 0);
 		add(maxSlider, c);
 		maxSlider.addAdjustmentListener(this);
 		maxSlider.addKeyListener(ij);
@@ -136,7 +136,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.gridx = 1;
 		c.gridwidth = 1;
 		c.weightx = 0;
-		c.insets = new Insets(0, 0, 0, 10);
+		c.insets = new Insets(2, 0, 0, 10);
 		label2 = new Label("       ", Label.RIGHT);
     	label2.setFont(font);
 		add(label2, c);
@@ -160,7 +160,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 5, 0, 5);
+		c.insets = new Insets(8, 5, 0, 5);
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.NONE;
 		add(panel, c);
@@ -715,9 +715,9 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 	int mode;
 	int originalModeCount;
 	double stackMin, stackMax;
-	int imageID;
-	boolean entireStack;
-	double mean;
+	int imageID2;
+	boolean entireStack2;
+	double mean2;
 	
 	public ThresholdPlot() {
 		addMouseListener(this);
@@ -732,10 +732,10 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
     
 	ImageStatistics setHistogram(ImagePlus imp, boolean entireStack) {
 		double mean = entireStack?imp.getProcessor().getStatistics().mean:0.0;
-		if (entireStack && stats!=null && imp.getID()==this.imageID 
-		&& entireStack==this.entireStack && mean==this.mean)
+		if (entireStack && stats!=null && imp.getID()==imageID2 
+		&& entireStack==entireStack2 && mean==mean2)
 			return stats;
-		this.mean = mean;
+		mean2 = mean;
 		ImageProcessor ip = imp.getProcessor();
 		stats = null;
 		if (entireStack)
@@ -749,8 +749,14 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 				stackMin = stats.min;
 				stackMax = stats.max;
 				ip.setMinAndMax(stackMin, stackMax);
-			} else
+				imp.updateAndDraw();
+			} else {
 				stackMin = stackMax = 0.0;
+				if (entireStack2) {
+                	ip.resetMinAndMax();
+					imp.updateAndDraw();
+				}
+			}
 			Calibration cal = imp.getCalibration();
 			if (ip instanceof FloatProcessor) {
 				int digits = Math.max(Analyzer.getPrecision(), 2);
@@ -794,8 +800,8 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		hColors = new Color[256];
 		for (int i=0; i<256; i++)
 			hColors[i] = new Color(r[i]&255, g[i]&255, b[i]&255);
-		imageID = imp.getID();
-		this.entireStack = entireStack;
+		imageID2 = imp.getID();
+		entireStack2 = entireStack;
 		return stats;
 	}
 	
