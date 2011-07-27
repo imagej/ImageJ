@@ -25,7 +25,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static final int[] list = {AREA,MEAN,STD_DEV,MODE,MIN_MAX,
 		CENTROID,CENTER_OF_MASS,PERIMETER,RECT,ELLIPSE,SHAPE_DESCRIPTORS, FERET,
 		INTEGRATED_DENSITY,MEDIAN,SKEWNESS,KURTOSIS,AREA_FRACTION,STACK_POSITION,
-		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION};
+		LIMIT,LABELS,INVERT_Y,SCIENTIFIC_NOTATION,ADD_TO_OVERLAY};
 
 	private static final String MEASUREMENTS = "measurements";
 	private static final String MARK_WIDTH = "mark.width";
@@ -86,6 +86,21 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public void run(ImageProcessor ip) {
 		measure();
 		displayResults();
+		if ((measurements&ADD_TO_OVERLAY)!=0)
+			addToOverlay();
+	}
+	
+	void addToOverlay() {
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			return;
+		roi = (Roi)roi.clone();
+		roi.setStrokeColor(Roi.getColor());
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			overlay = new Overlay();
+		overlay.add(roi);
+		imp.setOverlay(overlay);
 	}
 
 	void doSetDialog() {
@@ -134,14 +149,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[17]="Stack position"; states[17]=(systemMeasurements&STACK_POSITION)!=0;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(10, 2, labels, states);
-		labels = new String[4];
-		states = new boolean[4];
+		labels = new String[5];
+		states = new boolean[5];
 		labels[0]="Limit to threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
 		labels[1]="Display label"; states[1]=(systemMeasurements&LABELS)!=0;
 		labels[2]="Invert Y coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
 		labels[3]="Scientific notation"; states[3]=(systemMeasurements&SCIENTIFIC_NOTATION)!=0;;
+		labels[4]="Add to overlay"; states[4]=(systemMeasurements&ADD_TO_OVERLAY)!=0;;
 		gd.setInsets(0, 0, 0);
-		gd.addCheckboxGroup(2, 2, labels, states);
+		gd.addCheckboxGroup(3, 2, labels, states);
 		gd.setInsets(15, 0, 0);
         gd.addChoice("Redirect to:", titles, target);
 		gd.setInsets(5, 0, 0);

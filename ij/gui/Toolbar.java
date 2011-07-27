@@ -656,6 +656,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (current!=previous)
 			down[previous] = false;
 		Graphics g = this.getGraphics();
+		if (g==null)
+			return;
 		if (Prefs.antialiasedTools) {
 			Graphics2D g2d = (Graphics2D)g;
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

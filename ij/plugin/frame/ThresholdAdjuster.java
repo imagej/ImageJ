@@ -479,13 +479,14 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 	}
 
 	void reset(ImagePlus imp, ImageProcessor ip) {
-		boolean useStackMinAndMax = false;
-		if (!(ip instanceof ByteProcessor)) {
-			ip.resetMinAndMax();
-			useStackMinAndMax = imp.getStackSize()>1 && IJ.altKeyDown();
-		}
 		ip.resetThreshold();
-		plot.setHistogram(imp, entireStack(imp));
+		ImageStatistics stats = plot.setHistogram(imp, entireStack(imp));
+		if (!(ip instanceof ByteProcessor)) {
+			if (entireStack(imp))
+				ip.setMinAndMax(stats.min, stats.max);
+			else
+				ip.resetMinAndMax();
+		}
 		updateScrollBars();
 		if (Recorder.record) {
 			if (Recorder.scriptMode())
@@ -742,8 +743,6 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			stats = new StackStatistics(imp);
 		if (!(ip instanceof ByteProcessor)) {
 			if (entireStack) {
-				if (stats!=null)
-					stats = new StackStatistics(imp);
 				if (imp.getLocalCalibration().isSigned16Bit()) 
 					{stats.min += 32768; stats.max += 32768;}
 				stackMin = stats.min;
@@ -753,7 +752,7 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 			} else {
 				stackMin = stackMax = 0.0;
 				if (entireStack2) {
-                	ip.resetMinAndMax();
+					ip.resetMinAndMax();
 					imp.updateAndDraw();
 				}
 			}

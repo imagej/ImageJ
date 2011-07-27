@@ -18,7 +18,7 @@ import javax.imageio.*;
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
 
-	public static final int DEFAULT_JPEG_QUALITY = 75;
+	public static final int DEFAULT_JPEG_QUALITY = 85;
 	private static int jpegQuality;
 	
     static {setJpegQuality(ij.Prefs.getInt(ij.Prefs.JPEG, DEFAULT_JPEG_QUALITY));}
