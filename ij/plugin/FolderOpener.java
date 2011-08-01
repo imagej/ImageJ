@@ -336,12 +336,12 @@ public class FolderOpener implements PlugIn {
 		return true;
 	}
 
-	/** Removes names that start with "." or end with ".db". ".txt", ".lut", "roi", ".pty" or ".hdr", ".py", etc. */
+	/** Removes names that start with "." or ends with ".db". ".txt", ".lut", "roi", ".pty" or ".hdr", ".py", etc. */
 	public String[] trimFileList(String[] rawlist) {
 		int count = 0;
 		for (int i=0; i< rawlist.length; i++) {
 			String name = rawlist[i];
-			if (name.startsWith(".")||name.equals("Thumbs.db")||excludedFileType(name))
+			if (name.startsWith(".")||name.equals("Thumbs.db")||name.equals("RoiSet.zip")||excludedFileType(name))
 				rawlist[i] = null;
 			else
 				count++;

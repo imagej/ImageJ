@@ -321,6 +321,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		else
 			roi.drawOverlay(g);
 		roi.setStrokeColor(saveColor);
+		int n = roi.getNumber();
+		if (n>0 && index<0)
+			index = n-1;
 		if (index>=0) {
 			if (roi==currentRoi)
 				g.setColor(Roi.getColor());
@@ -360,7 +363,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		y = y + height/2 + Math.max(size/2,6);
 		int h = metrics.getAscent() + metrics.getDescent();
 		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
-		if (!drawingList)
+		if (!drawingList && labelRects!=null && index<labelRects.length)
 			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h);
 		g.setColor(labelColor);
 		g.drawString(label, x, y-2);

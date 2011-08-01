@@ -95,7 +95,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (roi==null)
 			return;
 		roi = (Roi)roi.clone();
+		roi.setNumber(systemRT.getCounter());
 		roi.setStrokeColor(Roi.getColor());
+		if (imp.getStackSize()>1 && !(imp.isHyperStack()||imp.isComposite()))
+			roi.setPosition(imp.getCurrentSlice());
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
 			overlay = new Overlay();

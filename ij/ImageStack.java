@@ -57,13 +57,14 @@ public class ImageStack {
 			throw new IllegalArgumentException("'pixels' is null!");
 		if (!pixels.getClass().isArray()) 
 			throw new IllegalArgumentException("'pixels' is not an array");
+		int size = stack.length;
 		nSlices++;
-		if (nSlices==stack.length) {
-			Object[] tmp1 = new Object[nSlices*2];
-			System.arraycopy(stack, 0, tmp1, 0, nSlices);
+		if (nSlices>=size) {
+			Object[] tmp1 = new Object[size*2];
+			System.arraycopy(stack, 0, tmp1, 0, size);
 			stack = tmp1;
-			String[] tmp2 = new String[nSlices*2];
-			System.arraycopy(label, 0, tmp2, 0, nSlices);
+			String[] tmp2 = new String[size*2];
+			System.arraycopy(label, 0, tmp2, 0, size);
 			label = tmp2;
 		}
 		stack[nSlices-1] = pixels;

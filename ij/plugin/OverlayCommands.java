@@ -209,6 +209,7 @@ public class OverlayCommands implements PlugIn {
 		Overlay overlay = new Overlay();
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = (Roi)rois[i].clone();
+			roi.setNumber(0);
 			if (!Prefs.showAllSliceOnly)
 				roi.setPosition(0);
 			overlay.add(roi);

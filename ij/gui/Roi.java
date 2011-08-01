@@ -61,6 +61,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean wideLine;
 	private int position;
 	private int channel, slice, frame;
+	private int number;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1378,6 +1379,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
     
     protected double getMagnification() {
     	return ic!=null?ic.getMagnification():1.0;
+    }
+    
+    public void setNumber(int number) {
+    	if (number<0)
+    		number=0;
+    	this.number = number;
+    }
+    
+    public int getNumber() {
+    	return number;
     }
 
 	/** Convenience method that converts Roi type to a human-readable form. */
