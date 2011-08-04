@@ -501,7 +501,8 @@ public class ShortProcessor extends ImageProcessor {
 						v2 = (int)(Math.exp(v1*(Math.log(max2)/max2)));
 						break;
 					case SQR:
-							v2 = v1*v1;
+						double d1 = v1;
+						v2 = (int)(d1*d1);
 						break;
 					case SQRT:
 						v2 = (int)Math.sqrt(v1);

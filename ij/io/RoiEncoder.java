@@ -13,7 +13,8 @@ import java.awt.geom.*;
 */
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
-	static final int VERSION = 218; // changed to 218 in v1.43i
+	static final int HEADER2_SIZE = 64;
+	static final int VERSION = 219; // changed to 219 in v1.45m
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -89,7 +90,7 @@ public class RoiEncoder {
 			x = p.xpoints;
 			y = p.ypoints;
 		}
-		data = new byte[HEADER_SIZE+n*4];
+		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4];
 		
 		Rectangle r = roi.getBounds();
 		
@@ -149,6 +150,8 @@ public class RoiEncoder {
 		// save TextRoi
 		if (n==0 && roi instanceof TextRoi)
 			saveTextRoi((TextRoi)roi);
+		else
+			putHeader2(roi, HEADER_SIZE+n*4);
 			
 		if (n>0) {
 			int base1 = 64;
@@ -179,7 +182,7 @@ public class RoiEncoder {
 		if (shapeArray==null) return;
 		BufferedOutputStream bout = new BufferedOutputStream(f);
 		Rectangle r = roi.getBounds();
-		data  = new byte[HEADER_SIZE + shapeArray.length*4];
+		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
@@ -189,6 +192,8 @@ public class RoiEncoder {
 		putShort(RoiDecoder.BOTTOM, r.y+r.height);
 		putShort(RoiDecoder.RIGHT, r.x+r.width);	
 		putInt(RoiDecoder.POSITION, roi.getPosition());
+		int hdr2Offset = HEADER_SIZE+shapeArray.length*4;
+		putInt(RoiDecoder.HEADER2_OFFSET, hdr2Offset);
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
 		if (VERSION>=218) saveStrokeWidthAndColor(roi);
@@ -200,6 +205,7 @@ public class RoiEncoder {
 			putFloat(base, shapeArray[i]);
 			base += 4;
 		}
+		putHeader2(roi, hdr2Offset);
 		bout.write(data,0,data.length);
 		bout.flush();
 	}
@@ -212,7 +218,8 @@ public class RoiEncoder {
 		String text = roi.getText();
 		int nameLength = name.length();
 		int textLength = text.length();
-		byte[] data2 = new byte[HEADER_SIZE+16+nameLength*2+textLength*2];
+		int textRoiDataLength = 16+nameLength*2+textLength*2;
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
 		putShort(RoiDecoder.SUBTYPE, RoiDecoder.TEXT);
@@ -224,6 +231,17 @@ public class RoiEncoder {
 			putShort(HEADER_SIZE+16+i*2, name.charAt(i));
 		for (int i=0; i<textLength; i++)
 			putShort(HEADER_SIZE+16+nameLength*2+i*2, text.charAt(i));
+		int hdr2Offset = HEADER_SIZE+textRoiDataLength;
+		putHeader2(roi, hdr2Offset);
+	}
+
+	void putHeader2(Roi roi, int offset) {
+		putInt(RoiDecoder.HEADER2_OFFSET, offset);
+		int roiNumber = roi.getNumber();
+		putInt(offset+RoiDecoder.ROI_NUMBER, roiNumber);
+		putInt(offset+RoiDecoder.C_POSITION, roi.getCPosition());
+		putInt(offset+RoiDecoder.Z_POSITION, roi.getZPosition());
+		putInt(offset+RoiDecoder.T_POSITION, roi.getTPosition());
 	}
 
     void putByte(int base, int v) {
