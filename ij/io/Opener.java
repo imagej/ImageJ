@@ -774,8 +774,8 @@ public class Opener {
 		return openTiff2(info);
 	}
 
-		/** Opens a single TIFF or DICOM contained in a ZIP archive,
-			or a ZIPed collection of ".roi" files created by the ROI manager. */	
+	/** Opens a single TIFF or DICOM contained in a ZIP archive,
+		or a ZIPed collection of ".roi" files created by the ROI manager. */	
 	public ImagePlus openZip(String path) {
 		ImagePlus imp = null;
 		try {
@@ -811,6 +811,44 @@ public class Opener {
 		fi.directory = f.getParent()+File.separator;
 		return imp;
 	}
+	
+	/** Deserialize a byte array that was serialized using the FileSaver.serialize(). */
+	public ImagePlus deserialize(byte[] bytes) {
+		ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
+		TiffDecoder decoder = new TiffDecoder(stream, "Untitled");
+		if (IJ.debugMode)
+			decoder.enableDebugging();
+		FileInfo[] info = null;
+		try {
+			info = decoder.getTiffInfo();
+		} catch (IOException e) {
+			return null;
+		}
+		FileOpener opener = new FileOpener(info[0]);
+		ImagePlus imp = opener.open(false);
+		if (imp==null)
+			return null;
+		imp.setTitle(info[0].fileName);
+		imp = makeComposite(imp, info[0]);
+		return imp;
+   }
+   
+	private ImagePlus makeComposite(ImagePlus imp, FileInfo fi) {
+		int c = imp.getNChannels();
+		boolean composite = c>1 && fi.description!=null && fi.description.indexOf("mode=")!=-1;
+		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
+			int mode = CompositeImage.COLOR;
+			if (fi.description!=null) {
+				if (fi.description.indexOf("mode=composite")!=-1)
+					mode = CompositeImage.COMPOSITE;
+				else if (fi.description.indexOf("mode=gray")!=-1)
+					mode = CompositeImage.GRAYSCALE;
+			}
+			imp = new CompositeImage(imp, mode);
+		}
+		return imp;
+	}
+
 		
 	public String getName(String path) {
 		int i = path.lastIndexOf('/');
@@ -849,18 +887,7 @@ public class Opener {
 		int[] offsets = info[0].stripOffsets;
 		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
 			ij.IJ.run(imp, "Flip Vertically", "stack");
-		int c = imp.getNChannels();
-		boolean composite = c>1 && info[0].description!=null && info[0].description.indexOf("mode=")!=-1;
-		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
-			int mode = CompositeImage.COLOR;
-			if (info[0].description!=null) {
-				if (info[0].description.indexOf("mode=composite")!=-1)
-					mode = CompositeImage.COMPOSITE;
-				else if (info[0].description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
-			}
-			imp = new CompositeImage(imp, mode);
-		}
+		imp = makeComposite(imp, info[0]);
 		return imp;
 	}
 	

@@ -182,6 +182,31 @@ public class FileSaver {
 		return true;
 	}
 	
+	/** Converts this image to a TIFF encoded array of bytes, 
+		which can be decoded using Opener.deserialize(). */
+	public byte[] serialize() {
+		if (imp.getStack().isVirtual())
+			return null;
+		Object info = imp.getProperty("Info");
+		if (info!=null && (info instanceof String))
+			fi.info = (String)info;
+		fi.description = getDescriptionString();
+		fi.sliceLabels = imp.getStack().getSliceLabels();
+		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
+		fi.overlay = getOverlay(imp);
+		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
+		ByteArrayOutputStream out = null;
+		try {
+			TiffEncoder encoder = new TiffEncoder(fi);
+			out = new ByteArrayOutputStream();
+			encoder.write(out);
+			out.close();
+		} catch (IOException e) {
+			return null;
+		}
+		return out.toByteArray();
+	}
+
 	void  saveDisplayRangesAndLuts(ImagePlus imp, FileInfo fi) {
 		CompositeImage ci = (CompositeImage)imp;
 		int channels = imp.getNChannels();

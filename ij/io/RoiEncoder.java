@@ -192,8 +192,6 @@ public class RoiEncoder {
 		putShort(RoiDecoder.BOTTOM, r.y+r.height);
 		putShort(RoiDecoder.RIGHT, r.x+r.width);	
 		putInt(RoiDecoder.POSITION, roi.getPosition());
-		int hdr2Offset = HEADER_SIZE+shapeArray.length*4;
-		putInt(RoiDecoder.HEADER2_OFFSET, hdr2Offset);
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
 		if (VERSION>=218) saveStrokeWidthAndColor(roi);
@@ -205,6 +203,7 @@ public class RoiEncoder {
 			putFloat(base, shapeArray[i]);
 			base += 4;
 		}
+		int hdr2Offset = HEADER_SIZE+shapeArray.length*4;
 		putHeader2(roi, hdr2Offset);
 		bout.write(data,0,data.length);
 		bout.flush();
