@@ -10,6 +10,8 @@ import java.awt.*;
 public class OverlayCommands implements PlugIn {
 	private static boolean createImageRoi;
 	private static int opacity = 100;
+	private static Roi defaultRoi;
+
 
 	public void run(String arg) {
 		if (arg.equals("add"))
@@ -28,6 +30,8 @@ public class OverlayCommands implements PlugIn {
 			fromRoiManager();
 		else if (arg.equals("to"))
 			toRoiManager();
+		else if (arg.equals("properties"))
+			properties();
 	}
 			
 	void addSelection() {
@@ -54,14 +58,13 @@ public class OverlayCommands implements PlugIn {
 		}
 		roi = (Roi)roi.clone();
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && overlay.size()>0 && !roi.isDrawingTool()) {
-			Roi roi2 = overlay.get(overlay.size()-1);
+		if (defaultRoi!=null && !roi.isDrawingTool()) {
 			if (roi.getStroke()==null)
-				roi.setStrokeWidth(roi2.getStrokeWidth());
-			if (roi.getStrokeColor()==null || Line.getWidth()>1&&roi2.getStrokeColor()!=null)
-				roi.setStrokeColor(roi2.getStrokeColor());
+				roi.setStrokeWidth(defaultRoi.getStrokeWidth());
+			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
+				roi.setStrokeColor(defaultRoi.getStrokeColor());
 			if (roi.getFillColor()==null)
-				roi.setFillColor(roi2.getFillColor());
+				roi.setFillColor(defaultRoi.getFillColor());
 		}
 		int width = Line.getWidth();
 		Rectangle bounds = roi.getBounds();
@@ -72,14 +75,17 @@ public class OverlayCommands implements PlugIn {
 			roi.setStrokeColor(Toolbar.getForegroundColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
-		if (!IJ.altKeyDown() && !(roi instanceof Arrow)) {
+		if (IJ.altKeyDown() || (IJ.macroRunning() && Macro.getOptions()!=null)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
 		if (overlay==null || newOverlay) overlay = new Overlay();
+		if (defaultRoi!=null && defaultRoi.getNumber()!=0)
+			roi.setNumber(overlay.size()+1);
 		overlay.add(roi);
+		defaultRoi = (Roi)roi.clone();
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
@@ -250,6 +256,46 @@ public class OverlayCommands implements PlugIn {
 		rm.setEditMode(imp, true);
 		if (rm.getCount()==overlay.size())
 			imp.setOverlay(null);
+	}
+	
+	void properties() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Overlay overlay = null;
+		Roi roi = null;
+		if (imp!=null) {
+			overlay = imp.getOverlay();
+			roi = imp.getRoi();
+			if (roi!=null)
+				roi = (Roi)roi.clone();
+		}
+		if (roi==null)
+			roi = defaultRoi;
+		if (roi==null) {
+			int size = imp!=null?imp.getWidth():512;
+			roi = new Roi(0, 0, size/4, size/4);
+		}
+		if (defaultRoi!=null && !roi.isDrawingTool()) {
+			if (roi.getStroke()==null)
+				roi.setStrokeWidth(defaultRoi.getStrokeWidth());
+			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
+				roi.setStrokeColor(defaultRoi.getStrokeColor());
+			if (roi.getFillColor()==null)
+				roi.setFillColor(defaultRoi.getFillColor());
+		}
+		int width = Line.getWidth();
+		Rectangle bounds = roi.getBounds();
+		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
+		if (roi.getStroke()==null && width>1 && !tooWide)
+			roi.setStrokeWidth(Line.getWidth());
+		if (roi.getStrokeColor()==null)
+			roi.setStrokeColor(Toolbar.getForegroundColor());
+		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
+		if (points) roi.setStrokeColor(Color.red);
+		RoiProperties rp = new RoiProperties("Overlay Properties", roi);
+		rp.setShowLabels(defaultRoi!=null&&defaultRoi.getNumber()!=0);
+		if (!rp.showDialog()) return;
+		defaultRoi = roi;
+		defaultRoi.setNumber(rp.getShowLabels()?1:0);
 	}
 	
 }

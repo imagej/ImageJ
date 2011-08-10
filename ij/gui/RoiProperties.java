@@ -9,6 +9,9 @@ public class RoiProperties {
 	private String title;
 	private boolean showName = true;
 	private boolean addToOverlay;
+	private boolean overlayProperties;
+	private boolean existingOverlay;
+	private boolean showLabels;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 
     /** Constructs a ColorChooser using the specified title and initial color. */
@@ -18,10 +21,14 @@ public class RoiProperties {
     	this.title = title;
     	showName = title.startsWith("Prop");
     	addToOverlay = title.equals("Add to Overlay");
+    	overlayProperties = title.equals("Overlay Properties");
+    	ImagePlus imp = WindowManager.getCurrentImage();
+    	if (overlayProperties && imp!=null && imp.getOverlay()!=null)
+    		existingOverlay = true;
     	this.roi = roi;
     }
     
-    /** Displays the dialog box and returns 'false' if the user cancels the dialog. */
+    /** Displays the dialog box and returns 'false' if the user cancels it. */
     public boolean showDialog() {
     	Color strokeColor = null;
     	Color fillColor = null;
@@ -68,12 +75,13 @@ public class RoiProperties {
 			gd.addMessage("");
 			gd.addStringField("Fill color: ", fillc);
 		}
-		if (addToOverlay) {
+		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
-			gd.setInsets(15, 10, 0);
-			gd.addMessage("Use the alt-b shortcut\nto skip this dialog.");
+		if (overlayProperties) {
+			gd.addCheckbox("Show numeric labels", showLabels);
+			if (existingOverlay)
+				gd.addCheckbox("Apply to current overlay", false);
 		}
-		
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 		if (showName) {
@@ -86,8 +94,17 @@ public class RoiProperties {
 			justification = gd.getNextChoiceIndex();
 		if (!isLine)
 			fillc = gd.getNextString();
+		boolean applyToOverlay = false;
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
-			
+		boolean showLabelsChanged = false;
+		if (overlayProperties) {
+			boolean showLabels2 = showLabels;
+			showLabels = gd.getNextBoolean();
+			if (existingOverlay)
+				applyToOverlay = gd.getNextBoolean();
+			if (showLabels!=showLabels2)
+				showLabelsChanged = true;
+		}
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
 		if (isText) {
@@ -104,6 +121,25 @@ public class RoiProperties {
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);
 		if (newOverlay) roi.setName("new-overlay");
+		if (applyToOverlay) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp==null)
+				return true;
+			Overlay overlay = imp.getOverlay();
+			if (overlay==null)
+				return true;
+		 	Roi[] rois = overlay.toArray();
+			for (int i=0; i<rois.length; i++) {
+				rois[i].setStrokeColor(strokeColor);
+				rois[i].setStrokeWidth((float)strokeWidth);
+				rois[i].setFillColor(fillColor);
+				if (showLabels)
+					rois[i].setNumber(i+1);
+				else
+					rois[i].setNumber(0);
+		 	}
+		 	imp.draw();
+		}
 		//if (strokeWidth>1.0 && !roi.isDrawingTool())
 		//	Line.setWidth(1);
 		return true;
@@ -124,6 +160,14 @@ public class RoiProperties {
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (newOverlay) roi.setName("new-overlay");
 		return true;
+    }
+    
+    public boolean getShowLabels() {
+    	return showLabels;
+    }
+    
+    public void setShowLabels(boolean showLabels) {
+    	this.showLabels = showLabels;
     }
 
 }

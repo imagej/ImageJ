@@ -28,6 +28,7 @@ public class FileSaver {
 	private FileInfo fi;
 	private String name;
 	private String directory;
+	private boolean saveName;
 
 	/** Constructs a FileSaver from an ImagePlus. */
 	public FileSaver(ImagePlus imp) {
@@ -190,7 +191,9 @@ public class FileSaver {
 		Object info = imp.getProperty("Info");
 		if (info!=null && (info instanceof String))
 			fi.info = (String)info;
+		saveName = true;
 		fi.description = getDescriptionString();
+		saveName = false;
 		fi.sliceLabels = imp.getStack().getSliceLabels();
 		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
 		fi.overlay = getOverlay(imp);
@@ -695,7 +698,9 @@ public class FileSaver {
 		if (cal.zOrigin!=0.0)
 			sb.append("zorigin="+cal.zOrigin+"\n");
 		if (cal.info!=null && cal.info.length()<=64 && cal.info.indexOf('=')==-1 && cal.info.indexOf('\n')==-1)
-			sb.append("info="+cal.info+"\n");			
+			sb.append("info="+cal.info+"\n");
+		if (saveName)
+			sb.append("name="+imp.getTitle()+"\n");
 		sb.append((char)0);
 		return new String(sb);
 	}

@@ -5,15 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.45l 5 August 2011</u>
+<li> <u>1.45l 9 August 2011</u>
 <ul>
-<li> Added an "Add to overlay" option to the
+<li> Added the <i>Image&gt;Overlay&gt;Overlay Properties</i> command.
+<li> Added the "Add to overlay" option to the
 <i>Analyze&gt;Set Measurements</i> dialog box.
+<li> The <i>Image&gt;Overlay&gt;Add Selection</i> command
+only displays a dialog if the alt key is down.
 <li> Thanks to Ved Sharma, added a "Use text tool font" option
 to the <i>Image&gt;Stacks&gt;Label</i> dialog box.
 <li> Improved the appearance of the "Threshold" window on Windows.
 <li> <i>File&gt;Import&gt;Image Sequence</i>Êignores files named "RoiSet.zip".
-<li> Added the FileSaver.serialize() and Opener.deserialize() methods.
+<li> Added the FileSaver.serialize() and Opener.deserialize() methods
+(<a href="macros/js/Serialization.js">example</a>).
 <li> Thanks to Arttu Miettinen, fixed bugs that caused auto-thresholding of
 large (>1 gigapixel) stacks to fail and caused the "Threshold" tool
 to generate unneeded stack histograms.
@@ -25,6 +29,8 @@ that caused it to not work correctly for ranges not starting with 1.
 a slice after splitting channels.
 <li> Fixed a bug that caused <i>Process&gt;Math&gt;Square</i> to not work
 as expected with 16-bit pixel values greater than 46341.
+<li> Fixed a bug that caused the run("Make Binary") macro function to display
+a dialog when the current image was thresholded.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

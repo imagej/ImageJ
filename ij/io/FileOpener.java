@@ -572,6 +572,9 @@ public class FileOpener {
 				fi.pixelDepth = spacing;
 			}
 		}
+		String name = props.getProperty("name");
+		if (name!=null)
+			fi.fileName = name;
 		return props;
 	}
 
