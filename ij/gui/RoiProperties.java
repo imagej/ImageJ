@@ -9,9 +9,10 @@ public class RoiProperties {
 	private String title;
 	private boolean showName = true;
 	private boolean addToOverlay;
-	private boolean overlayProperties;
+	private boolean overlayOptions;
 	private boolean existingOverlay;
 	private boolean showLabels;
+	private boolean setPositions;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 
     /** Constructs a ColorChooser using the specified title and initial color. */
@@ -21,10 +22,14 @@ public class RoiProperties {
     	this.title = title;
     	showName = title.startsWith("Prop");
     	addToOverlay = title.equals("Add to Overlay");
-    	overlayProperties = title.equals("Overlay Properties");
+    	overlayOptions = title.equals("Overlay Options");
     	ImagePlus imp = WindowManager.getCurrentImage();
-    	if (overlayProperties && imp!=null && imp.getOverlay()!=null)
-    		existingOverlay = true;
+    	if (overlayOptions) {
+    		if (imp!=null && imp.getOverlay()!=null)
+    			existingOverlay = true;
+    		showLabels = roi.getNumber()!=0;
+    		setPositions = roi.getPosition()!=0;
+    	}
     	this.roi = roi;
     }
     
@@ -77,8 +82,9 @@ public class RoiProperties {
 		}
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
-		if (overlayProperties) {
+		if (overlayOptions) {
 			gd.addCheckbox("Show numeric labels", showLabels);
+			gd.addCheckbox("Set stack positions", setPositions);
 			if (existingOverlay)
 				gd.addCheckbox("Apply to current overlay", false);
 		}
@@ -97,13 +103,16 @@ public class RoiProperties {
 		boolean applyToOverlay = false;
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		boolean showLabelsChanged = false;
-		if (overlayProperties) {
+		if (overlayOptions) {
 			boolean showLabels2 = showLabels;
 			showLabels = gd.getNextBoolean();
+			setPositions = gd.getNextBoolean();
 			if (existingOverlay)
 				applyToOverlay = gd.getNextBoolean();
 			if (showLabels!=showLabels2)
 				showLabelsChanged = true;
+			roi.setNumber(showLabels?1:0);
+			roi.setPosition(setPositions?1:0);
 		}
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
@@ -162,12 +171,4 @@ public class RoiProperties {
 		return true;
     }
     
-    public boolean getShowLabels() {
-    	return showLabels;
-    }
-    
-    public void setShowLabels(boolean showLabels) {
-    	this.showLabels = showLabels;
-    }
-
 }
