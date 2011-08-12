@@ -94,7 +94,6 @@ public class Analyzer implements PlugInFilter, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			return;
-		roi.setNumber(systemRT.getCounter());
 		if (imp.getStackSize()>1) {
 			if (imp.isHyperStack()||imp.isComposite())
 				roi.setPosition(0, imp.getSlice(), imp.getFrame());
@@ -102,6 +101,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 				roi.setPosition(imp.getCurrentSlice());
 		}
 		IJ.run(imp, "Add Selection...", "");
+		if (rt.getCounter()==1) {
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null)
+				overlay.drawLabels(true);
+				imp.draw();
+		}
 	}
 
 	void doSetDialog() {

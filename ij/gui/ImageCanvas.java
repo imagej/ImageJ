@@ -64,6 +64,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int offScreenHeight = 0;
 	private boolean mouseExited = true;
 	private boolean customRoi;
+	private boolean drawNames;
 	
 	
 	public ImageCanvas(ImagePlus imp) {
@@ -218,6 +219,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			slice = imp.getSlice();
 			frame = imp.getFrame();
 		}
+		drawNames = Prefs.useNamesAsLabels;
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
@@ -244,6 +246,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				drawRoi(g, roi, drawLabels?i:-1);
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
+		drawNames = false;
     }
        
 	public int getSliceNumber(String label) {
@@ -273,7 +276,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			slice = imp.getSlice();
 			frame = imp.getFrame();
 		}
-		boolean drawLabels = overlay.getDrawLabels();
+		drawNames = overlay.getDrawNames();
+		boolean drawLabels = drawNames || overlay.getDrawLabels();
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
@@ -290,6 +294,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			}
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
+		drawNames = false;
 	}
     	
     void initGraphics(Graphics g) {
@@ -321,9 +326,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		else
 			roi.drawOverlay(g);
 		roi.setStrokeColor(saveColor);
-		int n = roi.getNumber();
-		if (n>0 && index<0)
-			index = n-1;
 		if (index>=0) {
 			if (roi==currentRoi)
 				g.setColor(Roi.getColor());
@@ -355,7 +357,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean drawingList = index >= LIST_OFFSET;
 		if (drawingList) index -= LIST_OFFSET;
 		String label = "" + (index+1);
-		if (Prefs.useNamesAsLabels && roi.getName()!=null)
+		if (drawNames && roi.getName()!=null)
 			label = roi.getName();
 		FontMetrics metrics = g.getFontMetrics();
 		int w = metrics.stringWidth(label);

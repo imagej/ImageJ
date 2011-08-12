@@ -11,7 +11,9 @@ public class RoiProperties {
 	private boolean addToOverlay;
 	private boolean overlayOptions;
 	private boolean existingOverlay;
-	private boolean showLabels;
+	private static boolean showLabels;
+	private static boolean showNames;
+	private boolean overlayShowLabels;
 	private boolean setPositions;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 
@@ -25,9 +27,12 @@ public class RoiProperties {
     	overlayOptions = title.equals("Overlay Options");
     	ImagePlus imp = WindowManager.getCurrentImage();
     	if (overlayOptions) {
-    		if (imp!=null && imp.getOverlay()!=null)
+    		Overlay overlay = imp!=null?imp.getOverlay():null;
+    		if (overlay!=null) {
     			existingOverlay = true;
-    		showLabels = roi.getNumber()!=0;
+    			showLabels = overlay.getDrawLabels();
+    			showNames = overlay.getDrawNames();
+    		}
     		setPositions = roi.getPosition()!=0;
     	}
     	this.roi = roi;
@@ -84,6 +89,7 @@ public class RoiProperties {
 			gd.addCheckbox("New overlay", false);
 		if (overlayOptions) {
 			gd.addCheckbox("Show numeric labels", showLabels);
+			gd.addCheckbox("Show_names", showNames);
 			gd.addCheckbox("Set stack positions", setPositions);
 			if (existingOverlay)
 				gd.addCheckbox("Apply to current overlay", false);
@@ -102,16 +108,26 @@ public class RoiProperties {
 			fillc = gd.getNextString();
 		boolean applyToOverlay = false;
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
-		boolean showLabelsChanged = false;
 		if (overlayOptions) {
 			boolean showLabels2 = showLabels;
+			boolean showNames2 = showNames;
 			showLabels = gd.getNextBoolean();
+			showNames = gd.getNextBoolean();
 			setPositions = gd.getNextBoolean();
 			if (existingOverlay)
 				applyToOverlay = gd.getNextBoolean();
-			if (showLabels!=showLabels2)
-				showLabelsChanged = true;
-			roi.setNumber(showLabels?1:0);
+			if (showLabels!=showLabels2 || showNames!=showNames2) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				Overlay overlay = imp!=null?imp.getOverlay():null;
+				if (overlay!=null) {
+					overlay.drawLabels(showLabels);
+					overlay.drawNames(showNames);
+					if (!applyToOverlay) imp.draw();
+				}
+			} else if (existingOverlay && overlayShowLabels) {
+				showLabels = false;
+				showNames = false;
+			}
 			roi.setPosition(setPositions?1:0);
 		}
 		strokeColor = Colors.decode(linec, Roi.getColor());
@@ -142,10 +158,6 @@ public class RoiProperties {
 				rois[i].setStrokeColor(strokeColor);
 				rois[i].setStrokeWidth((float)strokeWidth);
 				rois[i].setFillColor(fillColor);
-				if (showLabels)
-					rois[i].setNumber(i+1);
-				else
-					rois[i].setNumber(0);
 		 	}
 		 	imp.draw();
 		}
@@ -171,4 +183,12 @@ public class RoiProperties {
 		return true;
     }
     
+    public static boolean getShowLabels() {
+    	return showLabels;
+    }
+    
+    public static boolean getShowNames() {
+    	return showNames;
+    }
+
 }

@@ -8,6 +8,7 @@ import ij.process.ImageProcessor;
 public class Overlay {
 	private Vector list;
     private boolean label;
+    private boolean drawNames;
     private Font labelsFont;
     
     /** Constructs an empty Overlay. */
@@ -130,6 +131,14 @@ public class Overlay {
     	return label;
     }
     
+    public void drawNames(boolean b) {
+    	drawNames = b;
+    }
+    
+    boolean getDrawNames() {
+    	return drawNames;
+    }
+
     public void setLabelsFont(Font font) {
     	labelsFont = font;
     }

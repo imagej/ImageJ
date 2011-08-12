@@ -20,6 +20,7 @@ public class RoiEncoder {
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
 		traced=8, angle=9, point=10;
 	private byte[] data;
+	private int nameSize;
 	
 	/** Creates an RoiEncoder using the specified path. */
 	public RoiEncoder(String path) {
@@ -62,6 +63,9 @@ public class RoiEncoder {
 		int roiType = roi.getType();
 		int type = rect;
 		int options = 0;
+		String name = roi.getName();
+		if (name!=null)
+			nameSize = name.length()*2;
 
 		switch (roiType) {
 			case Roi.POLYGON: type=polygon; break;
@@ -90,7 +94,7 @@ public class RoiEncoder {
 			x = p.xpoints;
 			y = p.ypoints;
 		}
-		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4];
+		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+nameSize];
 		
 		Rectangle r = roi.getBounds();
 		
@@ -182,7 +186,7 @@ public class RoiEncoder {
 		if (shapeArray==null) return;
 		BufferedOutputStream bout = new BufferedOutputStream(f);
 		Rectangle r = roi.getBounds();
-		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4];
+		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4+nameSize];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
@@ -218,7 +222,7 @@ public class RoiEncoder {
 		int nameLength = name.length();
 		int textLength = text.length();
 		int textRoiDataLength = 16+nameLength*2+textLength*2;
-		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength];
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+nameSize];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
 		putShort(RoiDecoder.SUBTYPE, RoiDecoder.TEXT);
@@ -233,14 +237,24 @@ public class RoiEncoder {
 		int hdr2Offset = HEADER_SIZE+textRoiDataLength;
 		putHeader2(roi, hdr2Offset);
 	}
-
+	
 	void putHeader2(Roi roi, int offset) {
 		putInt(RoiDecoder.HEADER2_OFFSET, offset);
-		int roiNumber = roi.getNumber();
-		putInt(offset+RoiDecoder.ROI_NUMBER, roiNumber);
 		putInt(offset+RoiDecoder.C_POSITION, roi.getCPosition());
 		putInt(offset+RoiDecoder.Z_POSITION, roi.getZPosition());
 		putInt(offset+RoiDecoder.T_POSITION, roi.getTPosition());
+		if (nameSize>0)
+			putName(roi, offset);
+	}
+
+	void putName(Roi roi, int hdr2Offset) {
+		int offset = hdr2Offset+HEADER2_SIZE;
+		int nameLength = nameSize/2;
+		putInt(hdr2Offset+RoiDecoder.NAME_OFFSET, offset);
+		putInt(hdr2Offset+RoiDecoder.NAME_LENGTH, nameLength);
+		String name = roi.getName();
+		for (int i=0; i<nameLength; i++)
+			putShort(offset+i*2, name.charAt(i));
 	}
 
     void putByte(int base, int v) {

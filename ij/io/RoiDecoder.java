@@ -59,10 +59,11 @@ public class RoiDecoder {
 	public static final int HEADER2_OFFSET = 60;
 	public static final int COORDINATES = 64;
 	// header2 offsets
-	public static final int ROI_NUMBER = 0;
 	public static final int C_POSITION = 4;
 	public static final int Z_POSITION = 8;
 	public static final int T_POSITION = 12;
+	public static final int NAME_OFFSET = 16;
+	public static final int NAME_LENGTH = 20;
 		
 	// subtypes
 	public static final int TEXT = 1;
@@ -127,11 +128,9 @@ public class RoiDecoder {
 		int options = getShort(OPTIONS);
 		int position = getInt(POSITION);
 		int hdr2Offset = getInt(HEADER2_OFFSET);
-		int roiNumber = 0;
 		int channel=0, slice=0, frame=0;
 		
 		if (hdr2Offset>0 && hdr2Offset+T_POSITION+4<=size) {
-			roiNumber = getInt(hdr2Offset+ROI_NUMBER);
 			channel = getInt(hdr2Offset+C_POSITION);
 			slice = getInt(hdr2Offset+Z_POSITION);
 			frame = getInt(hdr2Offset+T_POSITION);
@@ -146,8 +145,8 @@ public class RoiDecoder {
 			roi = getShapeRoi();
 			if (version>=218) getStrokeWidthAndColor(roi);
 			roi.setPosition(position);
-			roi.setNumber(roiNumber);
-			roi.setPosition(channel, slice, frame);
+			if (channel>0 || slice>0 || frame>0)
+				roi.setPosition(channel, slice, frame);
 			return roi;
 		}
 
@@ -232,7 +231,7 @@ public class RoiDecoder {
 			default:
 				throw new IOException("Unrecognized ROI type: "+type);
 		}
-		if (name!=null) roi.setName(name);
+		roi.setName(getName());
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
@@ -246,8 +245,8 @@ public class RoiDecoder {
 			roi = getTextRoi(roi);
 
 		roi.setPosition(position);
-		roi.setNumber(roiNumber);
-		roi.setPosition(channel, slice, frame);
+		if (channel>0 || slice>0 || frame>0)
+			roi.setPosition(channel, slice, frame);
 		return roi;
 	}
 	
@@ -287,7 +286,7 @@ public class RoiDecoder {
 			base += 4;
 		}
 		roi = new ShapeRoi(shapeArray);
-		if (name!=null) roi.setName(name);
+		roi.setName(getName());
 		return roi;
 	}
 	
@@ -308,7 +307,25 @@ public class RoiDecoder {
 		Roi roi2 = new TextRoi(r.x, r.y, new String(text), font);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		roi2.setFillColor(roi.getFillColor());
+		roi.setName(getName());
 		return roi2;
+	}
+	
+	String getName() {
+		String fileName = name;
+		int hdr2Offset = getInt(HEADER2_OFFSET);
+		if (hdr2Offset==0)
+			return fileName;
+		int offset = getInt(hdr2Offset+NAME_OFFSET);
+		int length = getInt(hdr2Offset+NAME_LENGTH);
+		if (offset==0 || length==0)
+			return fileName;
+		if (offset+length*2>size)
+			return fileName;
+		char[] name = new char[length];
+		for (int i=0; i<length; i++)
+			name[i] = (char)getShort(offset+i*2);
+		return new String(name);
 	}
 
 	int getByte(int base) {

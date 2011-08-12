@@ -89,8 +89,8 @@ public class OverlayCommands implements PlugIn {
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
 		if (overlay==null || newOverlay) overlay = new Overlay();
-		if (defaultRoi!=null && defaultRoi.getNumber()!=0)
-			roi.setNumber(overlay.size()+1);
+		overlay.drawLabels(RoiProperties.getShowLabels());
+		overlay.drawNames(RoiProperties.getShowNames());
 		overlay.add(roi);
 		defaultRoi = (Roi)roi.clone();
 		defaultRoi.setPosition(setPos?1:0);
@@ -221,9 +221,10 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		Overlay overlay = new Overlay();
+		overlay.drawLabels(RoiProperties.getShowLabels());
+		overlay.drawNames(RoiProperties.getShowNames());
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = (Roi)rois[i].clone();
-			roi.setNumber(0);
 			if (!Prefs.showAllSliceOnly)
 				roi.setPosition(0);
 			if (defaultRoi!=null) {
@@ -233,21 +234,8 @@ public class OverlayCommands implements PlugIn {
 					roi.setStrokeColor(defaultRoi.getStrokeColor());
 				if (roi.getFillColor()==null)
 					roi.setFillColor(defaultRoi.getFillColor());
-				if (defaultRoi.getNumber()!=0)
-					roi.setNumber(i+1);
 			}
 			overlay.add(roi);
-			if (defaultRoi!=null) {
-				roi = overlay.get(overlay.size()-1);
-				if (roi.getStroke()==null)
-					roi.setStrokeWidth(defaultRoi.getStrokeWidth());
-				if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
-					roi.setStrokeColor(defaultRoi.getStrokeColor());
-				if (roi.getFillColor()==null)
-					roi.setFillColor(defaultRoi.getFillColor());
-				if (defaultRoi.getNumber()!=0)
-					roi.setNumber(i+1);
-			}
 		}
 		imp.setOverlay(overlay);
 		ImageCanvas ic = imp.getCanvas();
@@ -320,10 +308,8 @@ public class OverlayCommands implements PlugIn {
 			roi.setStrokeColor(Toolbar.getForegroundColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
 		if (points) roi.setStrokeColor(Color.red);
-		if (defaultRoi!=null) {
-			roi.setNumber(defaultRoi.getNumber());
+		if (defaultRoi!=null)
 			roi.setPosition(defaultRoi.getPosition());
-		}
 		RoiProperties rp = new RoiProperties("Overlay Options", roi);
 		if (!rp.showDialog()) return;
 		defaultRoi = roi;
