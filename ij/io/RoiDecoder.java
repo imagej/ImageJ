@@ -74,6 +74,9 @@ public class RoiDecoder {
 	public static final int SPLINE_FIT = 1;
 	public static final int DOUBLE_HEADED = 2;
 	public static final int OUTLINE = 4;
+	public static final int OVERLAY_LABELS = 8;
+	public static final int OVERLAY_NAMES = 16;
+
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -147,6 +150,7 @@ public class RoiDecoder {
 			roi.setPosition(position);
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
+			roi.setOverlayOptions(options);
 			return roi;
 		}
 
@@ -247,6 +251,7 @@ public class RoiDecoder {
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
 			roi.setPosition(channel, slice, frame);
+		roi.setOverlayOptions(options);
 		return roi;
 	}
 	

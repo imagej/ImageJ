@@ -61,6 +61,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean wideLine;
 	private int position;
 	private int channel, slice, frame;
+	private int overlayOptions;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1342,6 +1343,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	*/
 	public final int getTPosition() {
 		return frame;
+	}
+
+	// Used by the FileSave and RoiEncoder to save overlay settings. */
+	public void setOverlayOptions(int options) {
+		overlayOptions = options;
+	} 
+
+	// Used by the FileOpener and RoiDecoder to restore overlay settings. */
+	public int getOverlayOptions() {
+		return overlayOptions;
 	}
 
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)

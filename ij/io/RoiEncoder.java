@@ -166,6 +166,7 @@ public class RoiEncoder {
 			}
 		}
 		
+		saveOverlayOptions(roi);
 		f.write(data);
 	}
 
@@ -199,6 +200,7 @@ public class RoiEncoder {
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
 		if (VERSION>=218) saveStrokeWidthAndColor(roi);
+		saveOverlayOptions(roi);
 
 		// handle the actual data: data are stored segment-wise, i.e.,
 		// the type of the segment followed by 0-6 control point coordinates.
@@ -211,6 +213,15 @@ public class RoiEncoder {
 		putHeader2(roi, hdr2Offset);
 		bout.write(data,0,data.length);
 		bout.flush();
+	}
+	
+	void saveOverlayOptions(Roi roi) {
+		int options = roi.getOverlayOptions();
+		if ((options&RoiDecoder.OVERLAY_LABELS)!=0)
+			options |= RoiDecoder.OVERLAY_LABELS;
+		if ((options&RoiDecoder.OVERLAY_NAMES)!=0)
+			options |= RoiDecoder.OVERLAY_NAMES;
+		putShort(RoiDecoder.OPTIONS, options);
 	}
 	
 	void saveTextRoi(TextRoi roi) {

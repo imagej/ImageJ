@@ -127,7 +127,7 @@ public class Overlay {
     	label = b;
     }
     
-    boolean getDrawLabels() {
+    public boolean getDrawLabels() {
     	return label;
     }
     
@@ -135,7 +135,7 @@ public class Overlay {
     	drawNames = b;
     }
     
-    boolean getDrawNames() {
+    public boolean getDrawNames() {
     	return drawNames;
     }
 
