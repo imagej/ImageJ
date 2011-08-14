@@ -2,9 +2,12 @@ package ij.gui;
 import ij.*;
 import ij.plugin.Colors;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
 
  /** Displays a dialog that allows the user to specify ROI properties such as color and line width. */
-public class RoiProperties {
+public class RoiProperties implements ItemListener {
 	private Roi roi;
 	private String title;
 	private boolean showName = true;
@@ -16,6 +19,7 @@ public class RoiProperties {
 	private boolean overlayShowLabels;
 	private boolean setPositions;
 	private static final String[] justNames = {"Left", "Center", "Right"};
+	private Vector checkboxes;
 
     /** Constructs a ColorChooser using the specified title and initial color. */
     public RoiProperties(String title, Roi roi) {
@@ -88,11 +92,13 @@ public class RoiProperties {
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
 		if (overlayOptions) {
-			gd.addCheckbox("Show numeric labels", showLabels);
-			gd.addCheckbox("Show_names", showNames);
+			gd.addCheckbox("Show labels", showLabels);
+			gd.addCheckbox("Use names as labels", showNames);
 			gd.addCheckbox("Set stack positions", setPositions);
 			if (existingOverlay)
 				gd.addCheckbox("Apply to current overlay", false);
+			checkboxes = gd.getCheckboxes();
+			((Checkbox)checkboxes.elementAt(1)).addItemListener(this);
 		}
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
@@ -113,6 +119,7 @@ public class RoiProperties {
 			boolean showNames2 = showNames;
 			showLabels = gd.getNextBoolean();
 			showNames = gd.getNextBoolean();
+			if (showNames) showLabels = true;
 			setPositions = gd.getNextBoolean();
 			if (existingOverlay)
 				applyToOverlay = gd.getNextBoolean();
@@ -183,6 +190,12 @@ public class RoiProperties {
 		return true;
     }
     
+	public void itemStateChanged(ItemEvent e) {
+		Checkbox usNames = (Checkbox)checkboxes.elementAt(1);
+		if (usNames.getState())
+			((Checkbox)checkboxes.elementAt(0)).setState(true);
+	}
+
     public static boolean getShowLabels() {
     	return showLabels;
     }

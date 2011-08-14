@@ -374,7 +374,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		be used to form the first part of the ROI label if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (roi==null) return;
-		String label = getLabel(imp, roi, n);
+		String label = roi.getName();
+		if (label==null)
+			label = getLabel(imp, roi, n);
 		if (label==null) return;
 		list.add(label);
 		roi.setName(label);

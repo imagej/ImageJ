@@ -82,7 +82,7 @@ public class RoiEncoder {
 		}
 		
 		if (roiType==Roi.COMPOSITE) {
-			saveShapeRoi(roi, type, f);
+			saveShapeRoi(roi, type, f, options);
 			return;
 		}
 
@@ -166,7 +166,7 @@ public class RoiEncoder {
 			}
 		}
 		
-		saveOverlayOptions(roi);
+		saveOverlayOptions(roi, options);
 		f.write(data);
 	}
 
@@ -182,7 +182,7 @@ public class RoiEncoder {
 			putInt(RoiDecoder.FILL_COLOR, fillColor.getRGB());
 	}
 
-	void saveShapeRoi(Roi roi, int type, OutputStream f) throws IOException {
+	void saveShapeRoi(Roi roi, int type, OutputStream f, int options) throws IOException {
 		float[] shapeArray = ((ShapeRoi)roi).getShapeAsArray();
 		if (shapeArray==null) return;
 		BufferedOutputStream bout = new BufferedOutputStream(f);
@@ -200,7 +200,7 @@ public class RoiEncoder {
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
 		if (VERSION>=218) saveStrokeWidthAndColor(roi);
-		saveOverlayOptions(roi);
+		saveOverlayOptions(roi, options);
 
 		// handle the actual data: data are stored segment-wise, i.e.,
 		// the type of the segment followed by 0-6 control point coordinates.
@@ -215,11 +215,11 @@ public class RoiEncoder {
 		bout.flush();
 	}
 	
-	void saveOverlayOptions(Roi roi) {
-		int options = roi.getOverlayOptions();
-		if ((options&RoiDecoder.OVERLAY_LABELS)!=0)
+	void saveOverlayOptions(Roi roi, int options) {
+		int overlayOptions = roi.getOverlayOptions();
+		if ((overlayOptions&RoiDecoder.OVERLAY_LABELS)!=0)
 			options |= RoiDecoder.OVERLAY_LABELS;
-		if ((options&RoiDecoder.OVERLAY_NAMES)!=0)
+		if ((overlayOptions&RoiDecoder.OVERLAY_NAMES)!=0)
 			options |= RoiDecoder.OVERLAY_NAMES;
 		putShort(RoiDecoder.OPTIONS, options);
 	}

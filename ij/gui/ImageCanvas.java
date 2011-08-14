@@ -45,7 +45,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private Overlay overlay, showAllList;
     private static final int LIST_OFFSET = 100000;
     private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(0, 255, 255));
-    private static Color labelColor;
+    private Color defaultColor = showAllColor;
+    private static Color labelColor, bgColor;
     private int resetMaxBoundsCount;
     private Roi currentRoi;
 		
@@ -196,7 +197,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			repaint();
 			return;
 		}
-		initGraphics(g);
+		initGraphics(g, null, showAllColor);
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
 		boolean drawLabels = rm.getDrawLabels();
@@ -263,7 +264,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	void drawOverlay(Graphics g) {
 		if (imp!=null && imp.getHideOverlay())
 			return;
-		initGraphics(g);
+		initGraphics(g, Color.white, Roi.getColor());
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
 		int currentImage = imp!=null?imp.getCurrentSlice():-1;
@@ -297,21 +298,26 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		drawNames = false;
 	}
     	
-    void initGraphics(Graphics g) {
+    void initGraphics(Graphics g, Color textColor, Color defaultColor) {
 		if (smallFont==null) {
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);
 			largeFont = new Font("SansSerif", Font.PLAIN, 12);
 		}
-		if (labelColor==null) {
-			int red = showAllColor.getRed();
-			int green = showAllColor.getGreen();
-			int blue = showAllColor.getBlue();
+		if (textColor!=null) {
+			labelColor = textColor;
+			bgColor = new Color(255-labelColor.getRed(), 255-labelColor.getGreen(), 255-labelColor.getBlue());
+		} else {
+			int red = defaultColor.getRed();
+			int green = defaultColor.getGreen();
+			int blue = defaultColor.getBlue();
 			if ((red+green+blue)/3<128)
 				labelColor = Color.white;
 			else
 				labelColor = Color.black;
+			bgColor = defaultColor;
 		}
-		g.setColor(showAllColor);
+		this.defaultColor = defaultColor;
+		g.setColor(defaultColor);
     }
     
     void drawRoi(Graphics g, Roi roi, int index) {
@@ -320,7 +326,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		roi.setImage(imp);
 		Color saveColor = roi.getStrokeColor();
 		if (saveColor==null)
-			roi.setStrokeColor(showAllColor);
+			roi.setStrokeColor(defaultColor);
 		if (roi instanceof TextRoi)
 			((TextRoi)roi).drawText(g);
 		else
@@ -330,7 +336,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (roi==currentRoi)
 				g.setColor(Roi.getColor());
 			else
-				g.setColor(showAllColor);
+				g.setColor(defaultColor);
 			drawRoiLabel(g, index, roi);
 		}
 		if (imp2!=null)
@@ -364,12 +370,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		x = x + width/2 - w/2;
 		y = y + height/2 + Math.max(size/2,6);
 		int h = metrics.getAscent() + metrics.getDescent();
+		g.setColor(bgColor);
 		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
 		if (!drawingList && labelRects!=null && index<labelRects.length)
 			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h);
 		g.setColor(labelColor);
 		g.drawString(label, x, y-2);
-		g.setColor(showAllColor);
+		g.setColor(defaultColor);
 	} 
 
 	void drawZoomIndicator(Graphics g) {
@@ -1250,7 +1257,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return showAllColor;
 	}
 
-	/** Sets the color used used for "Show All" mode. */
+	/** Sets the color used used for the ROI Manager "Show All" mode. */
 	public static void setShowAllColor(Color c) {
 		if (c==null) return;
 		showAllColor = c;

@@ -274,36 +274,36 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	/** Returns the image selected in the "Redirect To:" popup
-		menu of the Analyze/Set Measurements dialog or null
+		menu of the Analyze/Set Measurements dialog, or null
 		if "None" is selected, the image was not found or the 
 		image is not the same size as <code>currentImage</code>. */
-	public static ImagePlus getRedirectImage(ImagePlus currentImage) {
-		ImagePlus rImp = WindowManager.getImage(redirectTarget);
-		if (rImp==null)
-			rImp = redirectImage;
-		if (rImp==null) {
+	public static ImagePlus getRedirectImage(ImagePlus cimp) {
+		ImagePlus rimp = WindowManager.getImage(redirectTarget);
+		if (rimp==null)
+			rimp = redirectImage;
+		if (rimp==null) {
 			IJ.error("Analyzer", "Redirect image (\""+redirectTitle+"\")\n"
 				+ "not found.");
 			redirectTarget = 0;
 			Macro.abort();
 			return null;
 		}
-		if (rImp.getWidth()!=currentImage.getWidth() || rImp.getHeight()!=currentImage.getHeight()) {
+		if (rimp.getWidth()!=cimp.getWidth() || rimp.getHeight()!=cimp.getHeight()) {
 			IJ.error("Analyzer", "Redirect image (\""+redirectTitle+"\") \n"
 				+ "is not the same size as the current image.");
 			Macro.abort();
 			return null;
 		}
-		return rImp;
+		int depth = rimp.getStackSize();
+		if (depth>1 && depth==cimp.getStackSize() && rimp.getCurrentSlice()!=cimp.getCurrentSlice())
+			rimp.setSlice(cimp.getCurrentSlice());
+		return rimp;
 	}
 
 	ImageStatistics getRedirectStats(int measurements, Roi roi) {
 		ImagePlus redirectImp = getRedirectImage(imp);
 		if (redirectImp==null)
 			return null;
-		int depth = redirectImp.getStackSize();
-		if (depth>1 && depth==imp.getStackSize())
-			redirectImp.setSlice(imp.getCurrentSlice());
 		ImageProcessor ip = redirectImp.getProcessor();
 		if (imp.getTitle().equals("mask") && imp.getBitDepth()==8) {
 			ip.setMask(imp.getProcessor());
@@ -321,10 +321,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.update(measurements, imp, roi);
 		}
 		Polygon p = roi.getPolygon();
+		ImagePlus imp2 = isRedirectImage()?getRedirectImage(imp):null;
+		if (imp2==null) imp2 = imp;
 		for (int i=0; i<p.npoints; i++) {
-			ImageProcessor ip = imp.getProcessor();
+			ImageProcessor ip = imp2.getProcessor();
 			ip.setRoi(p.xpoints[i], p.ypoints[i], 1, 1);
-			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp.getCalibration());
+			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp2.getCalibration());
 			saveResults(stats, new PointRoi(p.xpoints[i], p.ypoints[i]));
 			if (i!=p.npoints-1) displayResults();
 		}
@@ -344,6 +346,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	void measureLength(Roi roi) {
+		ImagePlus imp2 = isRedirectImage()?getRedirectImage(imp):null;
+		if (imp2!=null)
+			imp2.setRoi(roi);
+		else
+			imp2 = imp;
 		if (rt.getCounter()>0) {
 			if (!IJ.isResultsWindow()) reset();
 			boolean update = false;
@@ -353,25 +360,25 @@ public class Analyzer implements PlugInFilter, Measurements {
 				index = rt.getColumnIndex("Angle");
 				if (index<0 || !rt.columnExists(index)) update=true;
 			}
-			if (update) rt.update(measurements, imp, roi);
+			if (update) rt.update(measurements, imp2, roi);
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
 		int lineWidth = (int)Math.round(roi.getStrokeWidth());
 		ImageProcessor ip2;
 		Rectangle saveR = null;
 		if (straightLine && lineWidth>1) {
-			ip2 = imp.getProcessor();
+			ip2 = imp2.getProcessor();
 			saveR = ip2.getRoi();
 			ip2.setRoi(roi.getPolygon());
 		} else if (lineWidth>1) {
 			if ((measurements&AREA)!=0 || (measurements&MEAN)!=0)
-				ip2 = (new Straightener()).straightenLine(imp, lineWidth);
+				ip2 = (new Straightener()).straightenLine(imp2, lineWidth);
 			else {
 				saveResults(new ImageStatistics(), roi);
 				return;
 			}
 		} else {
-			ProfilePlot profile = new ProfilePlot(imp);
+			ProfilePlot profile = new ProfilePlot(imp2);
 			double[] values = profile.getProfile();
 			if (values==null) return;
 			ip2 = new FloatProcessor(values.length, 1, values);
@@ -381,7 +388,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 					ip2.setRoi(0, 0, ip2.getWidth()-1, 1);
 			}
 		}
-		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, imp.getCalibration());
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, AREA+MEAN+STD_DEV+MODE+MIN_MAX, imp2.getCalibration());
 		if (saveR!=null) ip2.setRoi(saveR);
 		saveResults(stats, roi);
 	}
