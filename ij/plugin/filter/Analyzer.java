@@ -100,13 +100,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				roi.setPosition(imp.getCurrentSlice());
 		}
+		if (rt.getCounter()==1)
+			RoiProperties.setShowLabels(true);
 		IJ.run(imp, "Add Selection...", "");
-		if (rt.getCounter()==1) {
-			Overlay overlay = imp.getOverlay();
-			if (overlay!=null)
-				overlay.drawLabels(true);
-				imp.draw();
-		}
 	}
 
 	void doSetDialog() {
@@ -273,6 +269,16 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 	}
 	
+	private ImagePlus getRedirectImageOrStack(ImagePlus cimp) {
+		ImagePlus rimp = getRedirectImage(cimp);
+		if (rimp!=null) {
+			int depth = rimp.getStackSize();
+			if (depth>1 && depth==cimp.getStackSize() && rimp.getCurrentSlice()!=cimp.getCurrentSlice())
+				rimp.setSlice(cimp.getCurrentSlice());
+		}
+		return rimp;
+	}
+
 	/** Returns the image selected in the "Redirect To:" popup
 		menu of the Analyze/Set Measurements dialog, or null
 		if "None" is selected, the image was not found or the 
@@ -294,14 +300,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			Macro.abort();
 			return null;
 		}
-		int depth = rimp.getStackSize();
-		if (depth>1 && depth==cimp.getStackSize() && rimp.getCurrentSlice()!=cimp.getCurrentSlice())
-			rimp.setSlice(cimp.getCurrentSlice());
 		return rimp;
 	}
 
 	ImageStatistics getRedirectStats(int measurements, Roi roi) {
-		ImagePlus redirectImp = getRedirectImage(imp);
+		ImagePlus redirectImp = getRedirectImageOrStack(imp);
 		if (redirectImp==null)
 			return null;
 		ImageProcessor ip = redirectImp.getProcessor();
@@ -321,7 +324,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				rt.update(measurements, imp, roi);
 		}
 		Polygon p = roi.getPolygon();
-		ImagePlus imp2 = isRedirectImage()?getRedirectImage(imp):null;
+		ImagePlus imp2 = isRedirectImage()?getRedirectImageOrStack(imp):null;
 		if (imp2==null) imp2 = imp;
 		for (int i=0; i<p.npoints; i++) {
 			ImageProcessor ip = imp2.getProcessor();
@@ -346,7 +349,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	void measureLength(Roi roi) {
-		ImagePlus imp2 = isRedirectImage()?getRedirectImage(imp):null;
+		ImagePlus imp2 = isRedirectImage()?getRedirectImageOrStack(imp):null;
 		if (imp2!=null)
 			imp2.setRoi(roi);
 		else

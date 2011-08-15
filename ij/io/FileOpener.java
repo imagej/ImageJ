@@ -153,6 +153,7 @@ public class FileOpener {
 				int options = roi.getOverlayOptions();
 				overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
 				overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
+				overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
 			}
 			overlay.add(roi);
 		}

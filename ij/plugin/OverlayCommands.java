@@ -95,6 +95,7 @@ public class OverlayCommands implements PlugIn {
 		if (overlay==null || newOverlay) overlay = new Overlay();
 		overlay.drawLabels(RoiProperties.getShowLabels());
 		overlay.drawNames(RoiProperties.getShowNames());
+		overlay.drawBackgrounds(RoiProperties.getDrawBackgrounds());
 		overlay.add(roi);
 		defaultRoi = (Roi)roi.clone();
 		defaultRoi.setPosition(setPos?1:0);
@@ -227,6 +228,7 @@ public class OverlayCommands implements PlugIn {
 		Overlay overlay = new Overlay();
 		overlay.drawLabels(RoiProperties.getShowLabels());
 		overlay.drawNames(RoiProperties.getShowNames());
+		overlay.drawBackgrounds(RoiProperties.getDrawBackgrounds());
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)

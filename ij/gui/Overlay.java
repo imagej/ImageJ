@@ -9,6 +9,7 @@ public class Overlay {
 	private Vector list;
     private boolean label;
     private boolean drawNames;
+    private boolean drawBackgrounds = true;
     private Font labelsFont;
     
     /** Constructs an empty Overlay. */
@@ -137,6 +138,14 @@ public class Overlay {
     
     public boolean getDrawNames() {
     	return drawNames;
+    }
+
+    public void drawBackgrounds(boolean b) {
+    	drawBackgrounds = b;
+    }
+    
+    public boolean getDrawBackgrounds() {
+    	return drawBackgrounds;
     }
 
     public void setLabelsFont(Font font) {

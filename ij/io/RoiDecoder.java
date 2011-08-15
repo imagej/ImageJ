@@ -76,6 +76,7 @@ public class RoiDecoder {
 	public static final int OUTLINE = 4;
 	public static final int OVERLAY_LABELS = 8;
 	public static final int OVERLAY_NAMES = 16;
+	public static final int OVERLAY_BACKGROUNDS = 32;
 
 	
 	// types

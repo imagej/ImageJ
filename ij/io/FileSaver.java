@@ -138,6 +138,8 @@ public class FileSaver {
 					options |= RoiDecoder.OVERLAY_LABELS;
 				if (overlay.getDrawNames())
 					options |= RoiDecoder.OVERLAY_NAMES;
+				if (overlay.getDrawBackgrounds())
+					options |= RoiDecoder.OVERLAY_BACKGROUNDS;
 				roi.setOverlayOptions(options);
 			}
 			array[i] = RoiEncoder.saveAsByteArray(roi);

@@ -305,7 +305,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		if (textColor!=null) {
 			labelColor = textColor;
-			bgColor = new Color(255-labelColor.getRed(), 255-labelColor.getGreen(), 255-labelColor.getBlue());
+			if (overlay!=null && overlay.getDrawBackgrounds())
+				bgColor = new Color(255-labelColor.getRed(), 255-labelColor.getGreen(), 255-labelColor.getBlue());
+			else
+				bgColor = null;
 		} else {
 			int red = defaultColor.getRed();
 			int green = defaultColor.getGreen();
@@ -370,8 +373,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		x = x + width/2 - w/2;
 		y = y + height/2 + Math.max(size/2,6);
 		int h = metrics.getAscent() + metrics.getDescent();
-		g.setColor(bgColor);
-		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
+		if (bgColor!=null) {
+			g.setColor(bgColor);
+			g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
+		}
 		if (!drawingList && labelRects!=null && index<labelRects.length)
 			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h);
 		g.setColor(labelColor);

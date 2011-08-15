@@ -16,6 +16,7 @@ public class RoiProperties implements ItemListener {
 	private boolean existingOverlay;
 	private static boolean showLabels;
 	private static boolean showNames;
+	private static boolean drawBackgrounds = true;
 	private boolean overlayShowLabels;
 	private boolean setPositions;
 	private static final String[] justNames = {"Left", "Center", "Right"};
@@ -36,6 +37,7 @@ public class RoiProperties implements ItemListener {
     			existingOverlay = true;
     			showLabels = overlay.getDrawLabels();
     			showNames = overlay.getDrawNames();
+    			drawBackgrounds = overlay.getDrawBackgrounds();
     		}
     		setPositions = roi.getPosition()!=0;
     	}
@@ -94,6 +96,7 @@ public class RoiProperties implements ItemListener {
 		if (overlayOptions) {
 			gd.addCheckbox("Show labels", showLabels);
 			gd.addCheckbox("Use names as labels", showNames);
+			gd.addCheckbox("Draw label backgrounds", drawBackgrounds);
 			gd.addCheckbox("Set stack positions", setPositions);
 			if (existingOverlay)
 				gd.addCheckbox("Apply to current overlay", false);
@@ -117,18 +120,21 @@ public class RoiProperties implements ItemListener {
 		if (overlayOptions) {
 			boolean showLabels2 = showLabels;
 			boolean showNames2 = showNames;
+			boolean drawBackgrounds2 = drawBackgrounds;
 			showLabels = gd.getNextBoolean();
 			showNames = gd.getNextBoolean();
+			drawBackgrounds = gd.getNextBoolean();
 			if (showNames) showLabels = true;
 			setPositions = gd.getNextBoolean();
 			if (existingOverlay)
 				applyToOverlay = gd.getNextBoolean();
-			if (showLabels!=showLabels2 || showNames!=showNames2) {
+			if (showLabels!=showLabels2 || showNames!=showNames2 || drawBackgrounds!=drawBackgrounds2) {
 				ImagePlus imp = WindowManager.getCurrentImage();
 				Overlay overlay = imp!=null?imp.getOverlay():null;
 				if (overlay!=null) {
 					overlay.drawLabels(showLabels);
 					overlay.drawNames(showNames);
+					overlay.drawBackgrounds(drawBackgrounds);
 					if (!applyToOverlay) imp.draw();
 				}
 			} else if (existingOverlay && overlayShowLabels) {
@@ -200,8 +206,17 @@ public class RoiProperties implements ItemListener {
     	return showLabels;
     }
     
+    public static void setShowLabels(boolean b) {
+    	showLabels = b;
+    	if (showLabels) drawBackgrounds = true;
+    }
+
     public static boolean getShowNames() {
     	return showNames;
+    }
+
+    public static boolean getDrawBackgrounds() {
+    	return drawBackgrounds;
     }
 
 }

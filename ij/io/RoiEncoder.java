@@ -221,6 +221,8 @@ public class RoiEncoder {
 			options |= RoiDecoder.OVERLAY_LABELS;
 		if ((overlayOptions&RoiDecoder.OVERLAY_NAMES)!=0)
 			options |= RoiDecoder.OVERLAY_NAMES;
+		if ((overlayOptions&RoiDecoder.OVERLAY_BACKGROUNDS)!=0)
+			options |= RoiDecoder.OVERLAY_BACKGROUNDS;
 		putShort(RoiDecoder.OPTIONS, options);
 	}
 	
