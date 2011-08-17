@@ -1554,12 +1554,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			multiMeasure();
 		else if (cmd.equals("multi plot"))
 			multiPlot();
-		else if (cmd.startsWith("show all")) {
+		else if (cmd.equals("show all")) {
 			if (WindowManager.getCurrentImage()!=null) {
 				showAll(SHOW_ALL);
 				showAllCheckbox.setState(true);
 			}
-		} else if (cmd.startsWith("show none")) {
+		} else if (cmd.equals("show none")) {
 			if (WindowManager.getCurrentImage()!=null) {
 				showAll(SHOW_NONE);
 				showAllCheckbox.setState(false);
