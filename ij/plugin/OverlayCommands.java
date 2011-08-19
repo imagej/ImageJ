@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
+import ij.io.RoiDecoder;
 import java.awt.*;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
@@ -93,11 +94,16 @@ public class OverlayCommands implements PlugIn {
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
 		if (overlay==null || newOverlay) overlay = new Overlay();
-		overlay.drawLabels(RoiProperties.getShowLabels());
-		overlay.drawNames(RoiProperties.getShowNames());
-		overlay.drawBackgrounds(RoiProperties.getDrawBackgrounds());
+		int options = defaultRoi.getOverlayOptions();
+		overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
+		overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
+		overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
+		Color labelColor = defaultRoi.getOverlayLabelColor();
+		overlay.setLabelColor(labelColor);
 		overlay.add(roi);
 		defaultRoi = (Roi)roi.clone();
+		defaultRoi.setOverlayOptions(options);
+		defaultRoi.setOverlayLabelColor(labelColor);
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
@@ -226,9 +232,10 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		Overlay overlay = new Overlay();
-		overlay.drawLabels(RoiProperties.getShowLabels());
-		overlay.drawNames(RoiProperties.getShowNames());
-		overlay.drawBackgrounds(RoiProperties.getDrawBackgrounds());
+		int options = defaultRoi.getOverlayOptions();
+		overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
+		overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
+		overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)

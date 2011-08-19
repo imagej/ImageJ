@@ -141,6 +141,7 @@ public class FileSaver {
 				if (overlay.getDrawBackgrounds())
 					options |= RoiDecoder.OVERLAY_BACKGROUNDS;
 				roi.setOverlayOptions(options);
+				roi.setOverlayLabelColor(overlay.getLabelColor());
 			}
 			array[i] = RoiEncoder.saveAsByteArray(roi);
 		}

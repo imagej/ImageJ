@@ -176,7 +176,7 @@ public class SaveDialog {
 		Frame parent = ij!=null?ij:new Frame();
 		FileDialog fd = new FileDialog(parent, title, FileDialog.SAVE);
 		if (defaultName!=null)
-			fd.setFile(defaultName);			
+			fd.setFile(defaultName);
 		if (defaultDir!=null)
 			fd.setDirectory(defaultDir);
 		fd.show();
@@ -199,9 +199,11 @@ public class SaveDialog {
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
-		if (Recorder.record)
-			Recorder.recordPath(title, dir+name);
-		OpenDialog.setLastName(name);
+		if (name!=null) {
+			if (Recorder.record)
+				Recorder.recordPath(title, dir+name);
+			OpenDialog.setLastName(name);
+		}
 		return name;
 	}
 		

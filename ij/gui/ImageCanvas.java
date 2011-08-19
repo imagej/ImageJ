@@ -264,7 +264,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	void drawOverlay(Graphics g) {
 		if (imp!=null && imp.getHideOverlay())
 			return;
-		initGraphics(g, Color.white, Roi.getColor());
+		Color labelColor = overlay.getLabelColor();
+		if (labelColor==null) labelColor = Color.white;
+		initGraphics(g, labelColor, Roi.getColor());
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
 		int currentImage = imp!=null?imp.getCurrentSlice():-1;

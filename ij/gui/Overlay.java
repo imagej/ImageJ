@@ -10,6 +10,7 @@ public class Overlay {
     private boolean label;
     private boolean drawNames;
     private boolean drawBackgrounds = true;
+    private Color labelColor;
     private Font labelsFont;
     
     /** Constructs an empty Overlay. */
@@ -146,6 +147,14 @@ public class Overlay {
     
     public boolean getDrawBackgrounds() {
     	return drawBackgrounds;
+    }
+
+    public void setLabelColor(Color c) {
+    	labelColor = c;
+    }
+    
+    public Color getLabelColor() {
+    	return labelColor;
     }
 
     public void setLabelsFont(Font font) {

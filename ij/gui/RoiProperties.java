@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.*;
 import ij.plugin.Colors;
+import ij.io.RoiDecoder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -14,9 +15,10 @@ public class RoiProperties implements ItemListener {
 	private boolean addToOverlay;
 	private boolean overlayOptions;
 	private boolean existingOverlay;
-	private static boolean showLabels;
-	private static boolean showNames;
-	private static boolean drawBackgrounds = true;
+	private boolean showLabels;
+	private boolean showNames;
+	private boolean drawBackgrounds = true;
+	private String labelColor;
 	private boolean overlayShowLabels;
 	private boolean setPositions;
 	private static final String[] justNames = {"Left", "Center", "Right"};
@@ -32,16 +34,33 @@ public class RoiProperties implements ItemListener {
     	overlayOptions = title.equals("Overlay Options");
     	ImagePlus imp = WindowManager.getCurrentImage();
     	if (overlayOptions) {
+    		int options = roi.getOverlayOptions();
+			showLabels = (options&RoiDecoder.OVERLAY_LABELS)!=0;
+			showNames = (options&RoiDecoder.OVERLAY_NAMES)!=0;
+			drawBackgrounds = (options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0;
+			labelColor = decodeColor(roi.getOverlayLabelColor(), Color.white);
     		Overlay overlay = imp!=null?imp.getOverlay():null;
-    		if (overlay!=null) {
+    		setPositions = roi.getPosition()!=0;
+     		if (overlay!=null) {
     			existingOverlay = true;
     			showLabels = overlay.getDrawLabels();
     			showNames = overlay.getDrawNames();
     			drawBackgrounds = overlay.getDrawBackgrounds();
+    			labelColor = decodeColor(overlay.getLabelColor(), Color.white);
     		}
-    		setPositions = roi.getPosition()!=0;
     	}
     	this.roi = roi;
+    }
+    
+    private String decodeColor(Color color, Color defaultColor) {
+		if (color==null)
+			color = defaultColor;
+		String str = "#"+Integer.toHexString(color.getRGB());
+		if (str.length()==9 && str.startsWith("#ff"))
+			str = "#"+str.substring(3);
+		String lc = Colors.hexToColor(str);
+		if (lc!=null) str = lc;
+		return str;
     }
     
     /** Displays the dialog box and returns 'false' if the user cancels it. */
@@ -94,14 +113,20 @@ public class RoiProperties implements ItemListener {
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
 		if (overlayOptions) {
-			gd.addCheckbox("Show labels", showLabels);
-			gd.addCheckbox("Use names as labels", showNames);
-			gd.addCheckbox("Draw label backgrounds", drawBackgrounds);
-			gd.addCheckbox("Set stack positions", setPositions);
 			if (existingOverlay)
 				gd.addCheckbox("Apply to current overlay", false);
+			gd.addCheckbox("Set stack positions", setPositions);
+			gd.addMessage("Labeling options:");
+			gd.setInsets(0, 30, 0);
+			gd.addCheckbox("Show labels", showLabels);
+			gd.setInsets(0, 30, 0);
+			gd.addCheckbox("Use names as labels", showNames);
+			gd.setInsets(0, 30, 3);
+			gd.addCheckbox("Draw backgrounds", drawBackgrounds);
+			gd.setInsets(0, 30, 0);
+			gd.addStringField("Label color:", labelColor, 6);
 			checkboxes = gd.getCheckboxes();
-			((Checkbox)checkboxes.elementAt(1)).addItemListener(this);
+			((Checkbox)checkboxes.elementAt(existingOverlay?3:2)).addItemListener(this);
 		}
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
@@ -121,27 +146,44 @@ public class RoiProperties implements ItemListener {
 			boolean showLabels2 = showLabels;
 			boolean showNames2 = showNames;
 			boolean drawBackgrounds2 = drawBackgrounds;
+			String labelColor2 = labelColor;
+			if (existingOverlay)
+				applyToOverlay = gd.getNextBoolean();
+			boolean sp = setPositions;
+			boolean sl =showLabels;
+			boolean sn = showNames;
+			boolean db = drawBackgrounds;
+			String lcolor = labelColor;
+			setPositions = gd.getNextBoolean();
 			showLabels = gd.getNextBoolean();
 			showNames = gd.getNextBoolean();
 			drawBackgrounds = gd.getNextBoolean();
+			labelColor = gd.getNextString();
+			Color color = Colors.decode(labelColor, Color.black);
 			if (showNames) showLabels = true;
-			setPositions = gd.getNextBoolean();
-			if (existingOverlay)
-				applyToOverlay = gd.getNextBoolean();
-			if (showLabels!=showLabels2 || showNames!=showNames2 || drawBackgrounds!=drawBackgrounds2) {
-				ImagePlus imp = WindowManager.getCurrentImage();
-				Overlay overlay = imp!=null?imp.getOverlay():null;
+			ImagePlus imp = WindowManager.getCurrentImage();
+			Overlay overlay = imp!=null?imp.getOverlay():null;
+			boolean changes = setPositions!=sp || showLabels!=sl || sn!=showNames
+				|| drawBackgrounds!=db || !labelColor.equals(lcolor);
+			if (changes) {
 				if (overlay!=null) {
 					overlay.drawLabels(showLabels);
 					overlay.drawNames(showNames);
 					overlay.drawBackgrounds(drawBackgrounds);
+					overlay.setLabelColor(color);
 					if (!applyToOverlay) imp.draw();
 				}
-			} else if (existingOverlay && overlayShowLabels) {
-				showLabels = false;
-				showNames = false;
+				roi.setPosition(setPositions?1:0);
+				int options = 0;
+				if (showLabels)
+					options |= RoiDecoder.OVERLAY_LABELS;
+				if (showNames)
+					options |= RoiDecoder.OVERLAY_NAMES;
+				if (drawBackgrounds)
+					options |= RoiDecoder.OVERLAY_BACKGROUNDS;
+				roi.setOverlayOptions(options);
+				roi.setOverlayLabelColor(color);
 			}
-			roi.setPosition(setPositions?1:0);
 		}
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
@@ -197,26 +239,9 @@ public class RoiProperties implements ItemListener {
     }
     
 	public void itemStateChanged(ItemEvent e) {
-		Checkbox usNames = (Checkbox)checkboxes.elementAt(1);
+		Checkbox usNames = (Checkbox)checkboxes.elementAt(existingOverlay?3:2);
 		if (usNames.getState())
-			((Checkbox)checkboxes.elementAt(0)).setState(true);
+			((Checkbox)checkboxes.elementAt(existingOverlay?2:1)).setState(true);
 	}
-
-    public static boolean getShowLabels() {
-    	return showLabels;
-    }
-    
-    public static void setShowLabels(boolean b) {
-    	showLabels = b;
-    	if (showLabels) drawBackgrounds = true;
-    }
-
-    public static boolean getShowNames() {
-    	return showNames;
-    }
-
-    public static boolean getDrawBackgrounds() {
-    	return drawBackgrounds;
-    }
 
 }

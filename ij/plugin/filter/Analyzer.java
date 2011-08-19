@@ -100,8 +100,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 			else
 				roi.setPosition(imp.getCurrentSlice());
 		}
-		if (rt.getCounter()==1)
-			RoiProperties.setShowLabels(true);
+		//if (rt.getCounter()==1)
+		//	RoiProperties.setShowLabels(true);
 		IJ.run(imp, "Add Selection...", "");
 	}
 

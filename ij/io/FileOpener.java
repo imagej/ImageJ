@@ -154,6 +154,7 @@ public class FileOpener {
 				overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
 				overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
 				overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
+				overlay.setLabelColor(roi.getOverlayLabelColor());
 			}
 			overlay.add(roi);
 		}
