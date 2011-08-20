@@ -24,35 +24,35 @@ public class RoiProperties implements ItemListener {
 	private static final String[] justNames = {"Left", "Center", "Right"};
 	private Vector checkboxes;
 
-    /** Constructs a ColorChooser using the specified title and initial color. */
-    public RoiProperties(String title, Roi roi) {
-    	if (roi==null)
-    		throw new IllegalArgumentException("ROI is null");
-    	this.title = title;
-    	showName = title.startsWith("Prop");
-    	addToOverlay = title.equals("Add to Overlay");
-    	overlayOptions = title.equals("Overlay Options");
-    	ImagePlus imp = WindowManager.getCurrentImage();
-    	if (overlayOptions) {
-    		int options = roi.getOverlayOptions();
+	/** Constructs a ColorChooser using the specified title and initial color. */
+	public RoiProperties(String title, Roi roi) {
+		if (roi==null)
+			throw new IllegalArgumentException("ROI is null");
+		this.title = title;
+		showName = title.startsWith("Prop");
+		addToOverlay = title.equals("Add to Overlay");
+		overlayOptions = title.equals("Overlay Options");
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (overlayOptions) {
+			int options = roi.getOverlayOptions();
 			showLabels = (options&RoiDecoder.OVERLAY_LABELS)!=0;
 			showNames = (options&RoiDecoder.OVERLAY_NAMES)!=0;
 			drawBackgrounds = (options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0;
 			labelColor = decodeColor(roi.getOverlayLabelColor(), Color.white);
-    		Overlay overlay = imp!=null?imp.getOverlay():null;
-    		setPositions = roi.getPosition()!=0;
-     		if (overlay!=null) {
-    			existingOverlay = true;
-    			showLabels = overlay.getDrawLabels();
-    			showNames = overlay.getDrawNames();
-    			drawBackgrounds = overlay.getDrawBackgrounds();
-    			labelColor = decodeColor(overlay.getLabelColor(), Color.white);
-    		}
-    	}
-    	this.roi = roi;
-    }
-    
-    private String decodeColor(Color color, Color defaultColor) {
+			Overlay overlay = imp!=null?imp.getOverlay():null;
+			setPositions = roi.getPosition()!=0;
+			if (overlay!=null) {
+				existingOverlay = true;
+				showLabels = overlay.getDrawLabels();
+				showNames = overlay.getDrawNames();
+				drawBackgrounds = overlay.getDrawBackgrounds();
+				labelColor = decodeColor(overlay.getLabelColor(), Color.white);
+			}
+		}
+		this.roi = roi;
+	}
+	
+	private String decodeColor(Color color, Color defaultColor) {
 		if (color==null)
 			color = defaultColor;
 		String str = "#"+Integer.toHexString(color.getRGB());
@@ -61,20 +61,20 @@ public class RoiProperties implements ItemListener {
 		String lc = Colors.hexToColor(str);
 		if (lc!=null) str = lc;
 		return str;
-    }
-    
-    /** Displays the dialog box and returns 'false' if the user cancels it. */
-    public boolean showDialog() {
-    	Color strokeColor = null;
-    	Color fillColor = null;
-    	double strokeWidth = 1.0;
-    	String name= roi.getName();
-    	boolean isRange = name!=null && name.startsWith("range: ");
-    	String nameLabel = isRange?"Range:":"Name:";
-    	if (isRange) name = name.substring(7);
-    	if (name==null) name = "";
-    	if (!isRange && (roi instanceof ImageRoi))
-    		return showImageDialog(name);
+	}
+	
+	/** Displays the dialog box and returns 'false' if the user cancels it. */
+	public boolean showDialog() {
+		Color strokeColor = null;
+		Color fillColor = null;
+		double strokeWidth = 1.0;
+		String name= roi.getName();
+		boolean isRange = name!=null && name.startsWith("range: ");
+		String nameLabel = isRange?"Range:":"Name:";
+		if (isRange) name = name.substring(7);
+		if (name==null) name = "";
+		if (!isRange && (roi instanceof ImageRoi))
+			return showImageDialog(name);
 		if (roi.getStrokeColor()!=null) strokeColor = roi.getStrokeColor();
 		if (strokeColor==null) strokeColor = Roi.getColor();
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
@@ -208,20 +208,20 @@ public class RoiProperties implements ItemListener {
 			Overlay overlay = imp.getOverlay();
 			if (overlay==null)
 				return true;
-		 	Roi[] rois = overlay.toArray();
+			Roi[] rois = overlay.toArray();
 			for (int i=0; i<rois.length; i++) {
 				rois[i].setStrokeColor(strokeColor);
 				rois[i].setStrokeWidth((float)strokeWidth);
 				rois[i].setFillColor(fillColor);
-		 	}
-		 	imp.draw();
+			}
+			imp.draw();
 		}
 		//if (strokeWidth>1.0 && !roi.isDrawingTool())
 		//	Line.setWidth(1);
 		return true;
-    }
-        
-    public boolean showImageDialog(String name) {
+	}
+		
+	public boolean showImageDialog(String name) {
 		GenericDialog gd = new GenericDialog(title);
 		gd.addStringField("Name:", name, 15);
 		gd.addNumericField("Opacity (0-100%):", ((ImageRoi)roi).getOpacity()*100.0, 0);
@@ -236,8 +236,8 @@ public class RoiProperties implements ItemListener {
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (newOverlay) roi.setName("new-overlay");
 		return true;
-    }
-    
+	}
+	
 	public void itemStateChanged(ItemEvent e) {
 		Checkbox usNames = (Checkbox)checkboxes.elementAt(existingOverlay?3:2);
 		if (usNames.getState())
