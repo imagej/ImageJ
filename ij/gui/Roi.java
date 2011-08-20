@@ -10,6 +10,7 @@ import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
 import ij.macro.Interpreter;
+import ij.io.RoiDecoder;
 
 /** A rectangular region of interest and superclass for the other ROI classes. */
 public class Roi extends Object implements Cloneable, java.io.Serializable {
@@ -61,6 +62,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean wideLine;
 	private int position;
 	private int channel, slice, frame;
+	private int overlayOptions;
+	private Color overlayLabelColor;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1344,6 +1347,26 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return frame;
 	}
 
+	// Used by the FileSave and RoiEncoder to save overlay settings. */
+	public void setOverlayOptions(int options) {
+		overlayOptions = options;
+	} 
+
+	// Used by the FileOpener and RoiDecoder to restore overlay settings. */
+	public int getOverlayOptions() {
+		return overlayOptions;
+	}
+
+	// Used by the FileSave and RoiEncoder to save the overlay label color. */
+	public void setOverlayLabelColor(Color color) {
+		overlayLabelColor = color;
+	} 
+
+	// Used by the FileOpener and RoiDecoder to restore the overlay label color. */
+	public Color getOverlayLabelColor() {
+		return overlayLabelColor;
+	}
+
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
 		if no paste operation is in progress.
 		@see ij.process.Blitter
@@ -1379,7 +1402,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
     protected double getMagnification() {
     	return ic!=null?ic.getMagnification():1.0;
     }
-
+    
 	/** Convenience method that converts Roi type to a human-readable form. */
 	public String getTypeAsString() {
 		String s="";

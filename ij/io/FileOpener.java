@@ -149,6 +149,13 @@ public class FileOpener {
 		Overlay overlay = new Overlay();
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = RoiDecoder.openFromByteArray(rois[i]);
+			if (i==0) {
+				int options = roi.getOverlayOptions();
+				overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
+				overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
+				overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
+				overlay.setLabelColor(roi.getOverlayLabelColor());
+			}
 			overlay.add(roi);
 		}
 		imp.setOverlay(overlay);
@@ -572,6 +579,9 @@ public class FileOpener {
 				fi.pixelDepth = spacing;
 			}
 		}
+		String name = props.getProperty("name");
+		if (name!=null)
+			fi.fileName = name;
 		return props;
 	}
 

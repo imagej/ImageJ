@@ -18,7 +18,7 @@ import javax.imageio.*;
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
 
-	public static final int DEFAULT_JPEG_QUALITY = 75;
+	public static final int DEFAULT_JPEG_QUALITY = 85;
 	private static int jpegQuality;
 	
     static {setJpegQuality(ij.Prefs.getInt(ij.Prefs.JPEG, DEFAULT_JPEG_QUALITY));}
@@ -28,6 +28,7 @@ public class FileSaver {
 	private FileInfo fi;
 	private String name;
 	private String directory;
+	private boolean saveName;
 
 	/** Constructs a FileSaver from an ImagePlus. */
 	public FileSaver(ImagePlus imp) {
@@ -131,6 +132,17 @@ public class FileSaver {
 		byte[][] array = new byte[n][];
 		for (int i=0; i<overlay.size(); i++) {
 			Roi roi = overlay.get(i);
+			if (i==0) {
+				int options = 0;
+				if (overlay.getDrawLabels())
+					options |= RoiDecoder.OVERLAY_LABELS;
+				if (overlay.getDrawNames())
+					options |= RoiDecoder.OVERLAY_NAMES;
+				if (overlay.getDrawBackgrounds())
+					options |= RoiDecoder.OVERLAY_BACKGROUNDS;
+				roi.setOverlayOptions(options);
+				roi.setOverlayLabelColor(overlay.getLabelColor());
+			}
 			array[i] = RoiEncoder.saveAsByteArray(roi);
 		}
 		return array;
@@ -182,6 +194,33 @@ public class FileSaver {
 		return true;
 	}
 	
+	/** Converts this image to a TIFF encoded array of bytes, 
+		which can be decoded using Opener.deserialize(). */
+	public byte[] serialize() {
+		if (imp.getStack().isVirtual())
+			return null;
+		Object info = imp.getProperty("Info");
+		if (info!=null && (info instanceof String))
+			fi.info = (String)info;
+		saveName = true;
+		fi.description = getDescriptionString();
+		saveName = false;
+		fi.sliceLabels = imp.getStack().getSliceLabels();
+		fi.roi = RoiEncoder.saveAsByteArray(imp.getRoi());
+		fi.overlay = getOverlay(imp);
+		if (imp.isComposite()) saveDisplayRangesAndLuts(imp, fi);
+		ByteArrayOutputStream out = null;
+		try {
+			TiffEncoder encoder = new TiffEncoder(fi);
+			out = new ByteArrayOutputStream();
+			encoder.write(out);
+			out.close();
+		} catch (IOException e) {
+			return null;
+		}
+		return out.toByteArray();
+	}
+
 	void  saveDisplayRangesAndLuts(ImagePlus imp, FileInfo fi) {
 		CompositeImage ci = (CompositeImage)imp;
 		int channels = imp.getNChannels();
@@ -670,7 +709,9 @@ public class FileSaver {
 		if (cal.zOrigin!=0.0)
 			sb.append("zorigin="+cal.zOrigin+"\n");
 		if (cal.info!=null && cal.info.length()<=64 && cal.info.indexOf('=')==-1 && cal.info.indexOf('\n')==-1)
-			sb.append("info="+cal.info+"\n");			
+			sb.append("info="+cal.info+"\n");
+		if (saveName)
+			sb.append("name="+imp.getTitle()+"\n");
 		sb.append((char)0);
 		return new String(sb);
 	}

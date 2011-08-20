@@ -507,5 +507,5 @@ public class TiffEncoder {
 			}
         }
     }
-
+    
 }

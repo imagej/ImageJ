@@ -160,7 +160,7 @@ public class StackStatistics extends ImageStatistics {
 		}
 		ImageStack stack = imp.getStack();
 		Roi roi = imp.getRoi();
-		histogram = new int[256];
+		long[] longHistogram = new long[256];
 		int n = stack.getSize();
 		for (int slice=1; slice<=n; slice++) {
 			IJ.showProgress(slice, n);
@@ -168,13 +168,61 @@ public class StackStatistics extends ImageStatistics {
 			if (roi!=null) ip.setRoi(roi);
 			int[] hist = ip.getHistogram();
 			for (int i=0; i<256; i++)
-				histogram[i] += hist[i];
+				longHistogram[i] += hist[i];
 		}
 		pw=1.0; ph=1.0;
-		getRawStatistics(minThreshold, maxThreshold);
-		getRawMinAndMax(minThreshold, maxThreshold);
+		getRawStatistics(longHistogram, minThreshold, maxThreshold);
+		getRawMinAndMax(longHistogram, minThreshold, maxThreshold);
+		histogram = new int[256];
+		for (int i=0; i<256; i++) {
+			long count = longHistogram[i];
+			if (count<=Integer.MAX_VALUE)
+				histogram[i] = (int)count;
+			else
+				histogram[i] = Integer.MAX_VALUE;
+		}
 		IJ.showStatus("");
 		IJ.showProgress(1.0);
+	}
+
+	void getRawStatistics(long[] histogram, int minThreshold, int maxThreshold) {
+		long count;
+		long longMaxCount = 0L;
+		double value;
+		double sum = 0.0;
+		double sum2 = 0.0;
+		
+		for (int i=minThreshold; i<=maxThreshold; i++) {
+			count = histogram[i];
+			longPixelCount += count;
+			sum += (double)i*count;
+			value = i;
+			sum2 += (value*value)*count;
+			if (count>longMaxCount) {
+				longMaxCount = count;
+				mode = i;
+			}
+		}
+		maxCount = (int)longMaxCount;
+		pixelCount = (int)longPixelCount;
+		area = longPixelCount*pw*ph;
+		mean = sum/longPixelCount;
+		umean = mean;
+		dmode = mode;
+		calculateStdDev(longPixelCount, sum, sum2);
+		histMin = 0.0;
+		histMax = 255.0;
+	}
+
+	void getRawMinAndMax(long[] histogram, int minThreshold, int maxThreshold) {
+		int min = minThreshold;
+		while ((histogram[min]==0L) && (min<255))
+			min++;
+		this.min = min;
+		int max = maxThreshold;
+		while ((histogram[max]==0L) && (max>0))
+			max--;
+		this.max = max;
 	}
 
 	void sum16BitHistograms(ImagePlus imp) {

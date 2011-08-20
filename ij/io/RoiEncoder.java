@@ -13,12 +13,14 @@ import java.awt.geom.*;
 */
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
-	static final int VERSION = 218; // changed to 218 in v1.43i
+	static final int HEADER2_SIZE = 64;
+	static final int VERSION = 220; // changed to 220 in v1.45m
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
 		traced=8, angle=9, point=10;
 	private byte[] data;
+	private int nameSize;
 	
 	/** Creates an RoiEncoder using the specified path. */
 	public RoiEncoder(String path) {
@@ -61,6 +63,9 @@ public class RoiEncoder {
 		int roiType = roi.getType();
 		int type = rect;
 		int options = 0;
+		String name = roi.getName();
+		if (name!=null)
+			nameSize = name.length()*2;
 
 		switch (roiType) {
 			case Roi.POLYGON: type=polygon; break;
@@ -77,7 +82,7 @@ public class RoiEncoder {
 		}
 		
 		if (roiType==Roi.COMPOSITE) {
-			saveShapeRoi(roi, type, f);
+			saveShapeRoi(roi, type, f, options);
 			return;
 		}
 
@@ -89,7 +94,7 @@ public class RoiEncoder {
 			x = p.xpoints;
 			y = p.ypoints;
 		}
-		data = new byte[HEADER_SIZE+n*4];
+		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+nameSize];
 		
 		Rectangle r = roi.getBounds();
 		
@@ -149,6 +154,8 @@ public class RoiEncoder {
 		// save TextRoi
 		if (n==0 && roi instanceof TextRoi)
 			saveTextRoi((TextRoi)roi);
+		else
+			putHeader2(roi, HEADER_SIZE+n*4);
 			
 		if (n>0) {
 			int base1 = 64;
@@ -159,6 +166,7 @@ public class RoiEncoder {
 			}
 		}
 		
+		saveOverlayOptions(roi, options);
 		f.write(data);
 	}
 
@@ -174,12 +182,12 @@ public class RoiEncoder {
 			putInt(RoiDecoder.FILL_COLOR, fillColor.getRGB());
 	}
 
-	void saveShapeRoi(Roi roi, int type, OutputStream f) throws IOException {
+	void saveShapeRoi(Roi roi, int type, OutputStream f, int options) throws IOException {
 		float[] shapeArray = ((ShapeRoi)roi).getShapeAsArray();
 		if (shapeArray==null) return;
 		BufferedOutputStream bout = new BufferedOutputStream(f);
 		Rectangle r = roi.getBounds();
-		data  = new byte[HEADER_SIZE + shapeArray.length*4];
+		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4+nameSize];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
@@ -192,6 +200,7 @@ public class RoiEncoder {
 		//putShort(16, n);
 		putInt(36, shapeArray.length); // non-zero segment count indicate composite type
 		if (VERSION>=218) saveStrokeWidthAndColor(roi);
+		saveOverlayOptions(roi, options);
 
 		// handle the actual data: data are stored segment-wise, i.e.,
 		// the type of the segment followed by 0-6 control point coordinates.
@@ -200,8 +209,21 @@ public class RoiEncoder {
 			putFloat(base, shapeArray[i]);
 			base += 4;
 		}
+		int hdr2Offset = HEADER_SIZE+shapeArray.length*4;
+		putHeader2(roi, hdr2Offset);
 		bout.write(data,0,data.length);
 		bout.flush();
+	}
+	
+	void saveOverlayOptions(Roi roi, int options) {
+		int overlayOptions = roi.getOverlayOptions();
+		if ((overlayOptions&RoiDecoder.OVERLAY_LABELS)!=0)
+			options |= RoiDecoder.OVERLAY_LABELS;
+		if ((overlayOptions&RoiDecoder.OVERLAY_NAMES)!=0)
+			options |= RoiDecoder.OVERLAY_NAMES;
+		if ((overlayOptions&RoiDecoder.OVERLAY_BACKGROUNDS)!=0)
+			options |= RoiDecoder.OVERLAY_BACKGROUNDS;
+		putShort(RoiDecoder.OPTIONS, options);
 	}
 	
 	void saveTextRoi(TextRoi roi) {
@@ -212,7 +234,8 @@ public class RoiEncoder {
 		String text = roi.getText();
 		int nameLength = name.length();
 		int textLength = text.length();
-		byte[] data2 = new byte[HEADER_SIZE+16+nameLength*2+textLength*2];
+		int textRoiDataLength = 16+nameLength*2+textLength*2;
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+nameSize];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
 		putShort(RoiDecoder.SUBTYPE, RoiDecoder.TEXT);
@@ -224,6 +247,30 @@ public class RoiEncoder {
 			putShort(HEADER_SIZE+16+i*2, name.charAt(i));
 		for (int i=0; i<textLength; i++)
 			putShort(HEADER_SIZE+16+nameLength*2+i*2, text.charAt(i));
+		int hdr2Offset = HEADER_SIZE+textRoiDataLength;
+		putHeader2(roi, hdr2Offset);
+	}
+	
+	void putHeader2(Roi roi, int offset) {
+		putInt(RoiDecoder.HEADER2_OFFSET, offset);
+		putInt(offset+RoiDecoder.C_POSITION, roi.getCPosition());
+		putInt(offset+RoiDecoder.Z_POSITION, roi.getZPosition());
+		putInt(offset+RoiDecoder.T_POSITION, roi.getTPosition());
+		Color overlayLabelColor = roi.getOverlayLabelColor();
+		if (overlayLabelColor!=null)
+			putInt(offset+RoiDecoder.OVERLAY_LABEL_COLOR, overlayLabelColor.getRGB());
+		if (nameSize>0)
+			putName(roi, offset);
+	}
+
+	void putName(Roi roi, int hdr2Offset) {
+		int offset = hdr2Offset+HEADER2_SIZE;
+		int nameLength = nameSize/2;
+		putInt(hdr2Offset+RoiDecoder.NAME_OFFSET, offset);
+		putInt(hdr2Offset+RoiDecoder.NAME_LENGTH, nameLength);
+		String name = roi.getName();
+		for (int i=0; i<nameLength; i++)
+			putShort(offset+i*2, name.charAt(i));
 	}
 
     void putByte(int base, int v) {
