@@ -281,6 +281,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		drawNames = overlay.getDrawNames();
 		boolean drawLabels = drawNames || overlay.getDrawLabels();
+		font = overlay.getLabelFont();
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
@@ -298,6 +299,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
 		drawNames = false;
+		font = null;
 	}
     	
     void initGraphics(Graphics g, Color textColor, Color defaultColor) {
@@ -1279,8 +1281,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	/** Use ImagePlus.setOverlay(ij.gui.Overlay). */
 	public void setOverlay(Overlay overlay) {
 		this.overlay = overlay;
-		if (overlay!=null)
-			font = overlay.getLabelsFont();
 		repaint();
 	}
 	

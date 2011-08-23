@@ -3,26 +3,19 @@ import ij.*;
 import ij.plugin.Colors;
 import ij.io.RoiDecoder;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 
 
  /** Displays a dialog that allows the user to specify ROI properties such as color and line width. */
-public class RoiProperties implements ItemListener {
+public class RoiProperties {
 	private Roi roi;
 	private String title;
 	private boolean showName = true;
 	private boolean addToOverlay;
 	private boolean overlayOptions;
 	private boolean existingOverlay;
-	private boolean showLabels;
-	private boolean showNames;
-	private boolean drawBackgrounds = true;
-	private String labelColor;
-	private boolean overlayShowLabels;
 	private boolean setPositions;
 	private static final String[] justNames = {"Left", "Center", "Right"};
-	private Vector checkboxes;
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
 	public RoiProperties(String title, Roi roi) {
@@ -34,20 +27,10 @@ public class RoiProperties implements ItemListener {
 		overlayOptions = title.equals("Overlay Options");
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (overlayOptions) {
-			int options = roi.getOverlayOptions();
-			showLabels = (options&RoiDecoder.OVERLAY_LABELS)!=0;
-			showNames = (options&RoiDecoder.OVERLAY_NAMES)!=0;
-			drawBackgrounds = (options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0;
-			labelColor = decodeColor(roi.getOverlayLabelColor(), Color.white);
 			Overlay overlay = imp!=null?imp.getOverlay():null;
 			setPositions = roi.getPosition()!=0;
-			if (overlay!=null) {
+			if (overlay!=null)
 				existingOverlay = true;
-				showLabels = overlay.getDrawLabels();
-				showNames = overlay.getDrawNames();
-				drawBackgrounds = overlay.getDrawBackgrounds();
-				labelColor = decodeColor(overlay.getLabelColor(), Color.white);
-			}
 		}
 		this.roi = roi;
 	}
@@ -113,20 +96,10 @@ public class RoiProperties implements ItemListener {
 		if (addToOverlay)
 			gd.addCheckbox("New overlay", false);
 		if (overlayOptions) {
-			if (existingOverlay)
+			if (existingOverlay) {
 				gd.addCheckbox("Apply to current overlay", false);
+			}
 			gd.addCheckbox("Set stack positions", setPositions);
-			gd.addMessage("Labeling options:");
-			gd.setInsets(0, 30, 0);
-			gd.addCheckbox("Show labels", showLabels);
-			gd.setInsets(0, 30, 0);
-			gd.addCheckbox("Use names as labels", showNames);
-			gd.setInsets(0, 30, 3);
-			gd.addCheckbox("Draw backgrounds", drawBackgrounds);
-			gd.setInsets(0, 30, 0);
-			gd.addStringField("Label color:", labelColor, 6);
-			checkboxes = gd.getCheckboxes();
-			((Checkbox)checkboxes.elementAt(existingOverlay?3:2)).addItemListener(this);
 		}
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
@@ -143,47 +116,10 @@ public class RoiProperties implements ItemListener {
 		boolean applyToOverlay = false;
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (overlayOptions) {
-			boolean showLabels2 = showLabels;
-			boolean showNames2 = showNames;
-			boolean drawBackgrounds2 = drawBackgrounds;
-			String labelColor2 = labelColor;
 			if (existingOverlay)
 				applyToOverlay = gd.getNextBoolean();
-			boolean sp = setPositions;
-			boolean sl =showLabels;
-			boolean sn = showNames;
-			boolean db = drawBackgrounds;
-			String lcolor = labelColor;
 			setPositions = gd.getNextBoolean();
-			showLabels = gd.getNextBoolean();
-			showNames = gd.getNextBoolean();
-			drawBackgrounds = gd.getNextBoolean();
-			labelColor = gd.getNextString();
-			Color color = Colors.decode(labelColor, Color.black);
-			if (showNames) showLabels = true;
-			ImagePlus imp = WindowManager.getCurrentImage();
-			Overlay overlay = imp!=null?imp.getOverlay():null;
-			boolean changes = setPositions!=sp || showLabels!=sl || sn!=showNames
-				|| drawBackgrounds!=db || !labelColor.equals(lcolor);
-			if (changes) {
-				if (overlay!=null) {
-					overlay.drawLabels(showLabels);
-					overlay.drawNames(showNames);
-					overlay.drawBackgrounds(drawBackgrounds);
-					overlay.setLabelColor(color);
-					if (!applyToOverlay) imp.draw();
-				}
-				roi.setPosition(setPositions?1:0);
-				int options = 0;
-				if (showLabels)
-					options |= RoiDecoder.OVERLAY_LABELS;
-				if (showNames)
-					options |= RoiDecoder.OVERLAY_NAMES;
-				if (drawBackgrounds)
-					options |= RoiDecoder.OVERLAY_BACKGROUNDS;
-				roi.setOverlayOptions(options);
-				roi.setOverlayLabelColor(color);
-			}
+			roi.setPosition(setPositions?1:0);
 		}
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
@@ -238,10 +174,4 @@ public class RoiProperties implements ItemListener {
 		return true;
 	}
 	
-	public void itemStateChanged(ItemEvent e) {
-		Checkbox usNames = (Checkbox)checkboxes.elementAt(existingOverlay?3:2);
-		if (usNames.getState())
-			((Checkbox)checkboxes.elementAt(existingOverlay?2:1)).setState(true);
-	}
-
 }

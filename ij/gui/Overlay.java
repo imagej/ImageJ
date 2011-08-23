@@ -9,9 +9,10 @@ public class Overlay {
 	private Vector list;
     private boolean label;
     private boolean drawNames;
-    private boolean drawBackgrounds = true;
+    private boolean drawBackgrounds;
     private Color labelColor;
-    private Font labelsFont;
+    private Font labelFont;
+    private int labelFontSize;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -118,6 +119,10 @@ public class Overlay {
 		for (int i=0; i<rois.length; i++)
 			overlay2.add((Roi)rois[i].clone());
 		overlay2.drawLabels(label);
+		overlay2.drawNames(drawNames);
+		overlay2.drawBackgrounds(drawBackgrounds);
+		overlay2.setLabelColor(labelColor);
+		overlay2.setLabelFont(labelFont);
 		return overlay2;
 	}
 
@@ -157,12 +162,14 @@ public class Overlay {
     	return labelColor;
     }
 
-    public void setLabelsFont(Font font) {
-    	labelsFont = font;
+    public void setLabelFont(Font font) {
+    	labelFont = font;
     }
     
-    public Font getLabelsFont() {
-    	return labelsFont;
+    public Font getLabelFont() {
+    	if (labelFont==null && labelFontSize!=0)
+    		labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
+    	return labelFont;
     }
 
     void setVector(Vector v) {list = v;}

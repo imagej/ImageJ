@@ -259,6 +259,7 @@ public class RoiEncoder {
 		Color overlayLabelColor = roi.getOverlayLabelColor();
 		if (overlayLabelColor!=null)
 			putInt(offset+RoiDecoder.OVERLAY_LABEL_COLOR, overlayLabelColor.getRGB());
+		putShort(offset+RoiDecoder.OVERLAY_FONT_SIZE, roi.getOverlayFontSize());
 		if (nameSize>0)
 			putName(roi, offset);
 	}

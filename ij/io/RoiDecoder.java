@@ -65,6 +65,8 @@ public class RoiDecoder {
 	public static final int NAME_OFFSET = 16;
 	public static final int NAME_LENGTH = 20;
 	public static final int OVERLAY_LABEL_COLOR = 24;
+	public static final int OVERLAY_FONT_SIZE = 28; //short
+	public static final int AVAILABLE_SHORT1 = 30;  //short
 		
 	// subtypes
 	public static final int TEXT = 1;
@@ -135,12 +137,14 @@ public class RoiDecoder {
 		int hdr2Offset = getInt(HEADER2_OFFSET);
 		int channel=0, slice=0, frame=0;
 		int overlayLabelColor=0;
+		int overlayFontSize=0;
 		
-		if (hdr2Offset>0 && hdr2Offset+OVERLAY_LABEL_COLOR+4<=size) {
+		if (hdr2Offset>0 && hdr2Offset+AVAILABLE_SHORT1+2<=size) {
 			channel = getInt(hdr2Offset+C_POSITION);
 			slice = getInt(hdr2Offset+Z_POSITION);
 			frame = getInt(hdr2Offset+T_POSITION);
 			overlayLabelColor = getInt(hdr2Offset+OVERLAY_LABEL_COLOR);
+			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
 		}
 		
 		if (name!=null && name.endsWith(".roi"))
@@ -157,6 +161,7 @@ public class RoiDecoder {
 			roi.setOverlayOptions(options);
 			if (version>=220)
 				roi.setOverlayLabelColor(new Color(overlayLabelColor));
+				roi.setOverlayFontSize(overlayFontSize);
 			return roi;
 		}
 
@@ -260,6 +265,7 @@ public class RoiDecoder {
 		roi.setOverlayOptions(options);
 		if (version>=220)
 			roi.setOverlayLabelColor(new Color(overlayLabelColor));
+		roi.setOverlayFontSize(overlayFontSize);
 		return roi;
 	}
 	

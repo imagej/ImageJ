@@ -64,6 +64,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private int channel, slice, frame;
 	private int overlayOptions;
 	private Color overlayLabelColor;
+	private int overlayFontSize;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1365,6 +1366,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	// Used by the FileOpener and RoiDecoder to restore the overlay label color. */
 	public Color getOverlayLabelColor() {
 		return overlayLabelColor;
+	}
+
+	// Used by the FileSave and RoiEncoder to save overlay label font sizes. */
+	public void setOverlayFontSize(int size) {
+		overlayFontSize = size;
+	} 
+
+	// Used by the FileOpener and RoiDecoder to restore overlay label font sizes. */
+	public int getOverlayFontSize() {
+		return overlayFontSize;
 	}
 
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)

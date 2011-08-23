@@ -155,6 +155,9 @@ public class FileOpener {
 				overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
 				overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
 				overlay.setLabelColor(roi.getOverlayLabelColor());
+				int fontSize = roi.getOverlayFontSize();
+				if (fontSize>0)
+					overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, fontSize));
 			}
 			overlay.add(roi);
 		}

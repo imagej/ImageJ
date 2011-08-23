@@ -93,17 +93,9 @@ public class OverlayCommands implements PlugIn {
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
-		if (overlay==null || newOverlay) overlay = new Overlay();
-		int options = defaultRoi.getOverlayOptions();
-		overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
-		overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
-		overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
-		Color labelColor = defaultRoi.getOverlayLabelColor();
-		overlay.setLabelColor(labelColor);
+		if (overlay==null || newOverlay) overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
 		defaultRoi = (Roi)roi.clone();
-		defaultRoi.setOverlayOptions(options);
-		defaultRoi.setOverlayLabelColor(labelColor);
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
@@ -231,11 +223,7 @@ public class OverlayCommands implements PlugIn {
 			IJ.error("ROI Manager is empty");
 			return;
 		}
-		Overlay overlay = new Overlay();
-		int options = defaultRoi.getOverlayOptions();
-		overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
-		overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
-		overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
+		Overlay overlay = OverlayLabels.createOverlay();
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)
