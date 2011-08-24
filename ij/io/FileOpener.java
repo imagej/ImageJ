@@ -150,14 +150,12 @@ public class FileOpener {
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = RoiDecoder.openFromByteArray(rois[i]);
 			if (i==0) {
-				int options = roi.getOverlayOptions();
-				overlay.drawLabels((options&RoiDecoder.OVERLAY_LABELS)!=0);
-				overlay.drawNames((options&RoiDecoder.OVERLAY_NAMES)!=0);
-				overlay.drawBackgrounds((options&RoiDecoder.OVERLAY_BACKGROUNDS)!=0);
-				overlay.setLabelColor(roi.getOverlayLabelColor());
-				int fontSize = roi.getOverlayFontSize();
-				if (fontSize>0)
-					overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, fontSize));
+				Overlay proto = roi.getPrototypeOverlay();
+				overlay.drawLabels(proto.getDrawLabels());
+				overlay.drawNames(proto.getDrawNames());
+				overlay.drawBackgrounds(proto.getDrawBackgrounds());
+				overlay.setLabelColor(proto.getLabelColor());
+				overlay.setLabelFont(proto.getLabelFont());
 			}
 			overlay.add(roi);
 		}

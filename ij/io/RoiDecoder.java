@@ -80,6 +80,7 @@ public class RoiDecoder {
 	public static final int OVERLAY_LABELS = 8;
 	public static final int OVERLAY_NAMES = 16;
 	public static final int OVERLAY_BACKGROUNDS = 32;
+	public static final int OVERLAY_BOLD = 64;
 
 	
 	// types
@@ -158,10 +159,7 @@ public class RoiDecoder {
 			roi.setPosition(position);
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
-			roi.setOverlayOptions(options);
-			if (version>=220)
-				roi.setOverlayLabelColor(new Color(overlayLabelColor));
-				roi.setOverlayFontSize(overlayFontSize);
+			decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 			return roi;
 		}
 
@@ -262,13 +260,24 @@ public class RoiDecoder {
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
 			roi.setPosition(channel, slice, frame);
-		roi.setOverlayOptions(options);
-		if (version>=220)
-			roi.setOverlayLabelColor(new Color(overlayLabelColor));
-		roi.setOverlayFontSize(overlayFontSize);
+		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 		return roi;
 	}
 	
+	void decodeOverlayOptions(Roi roi, int version, int options, int color, int fontSize) {
+		Overlay proto = new Overlay();
+		proto.drawLabels((options&OVERLAY_LABELS)!=0);
+		proto.drawNames((options&OVERLAY_NAMES)!=0);
+		proto.drawBackgrounds((options&OVERLAY_BACKGROUNDS)!=0);
+		if (version>=220)
+			proto.setLabelColor(new Color(color));
+		boolean bold = (options&OVERLAY_BOLD)!=0;
+		if (fontSize>0 || bold) {
+			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
+		}
+		roi.setPrototypeOverlay(proto);
+	}
+
 	void getStrokeWidthAndColor(Roi roi) {
 		int strokeWidth = getShort(STROKE_WIDTH);
 		if (strokeWidth>0)

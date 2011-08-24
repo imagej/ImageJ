@@ -18,6 +18,7 @@ public class OverlayLabels implements PlugIn, DialogListener {
 	private boolean drawBackgrounds;
 	private String colorName;
 	private int fontSize;
+	private boolean bold;
 	
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
@@ -30,6 +31,7 @@ public class OverlayLabels implements PlugIn, DialogListener {
 			defaultOverlay.drawNames(overlay.getDrawNames());
 			defaultOverlay.drawBackgrounds(overlay.getDrawBackgrounds());
 			defaultOverlay.setLabelColor(overlay.getLabelColor());
+			defaultOverlay.setLabelFont(overlay.getLabelFont());
 		}
 	}
 	
@@ -40,14 +42,17 @@ public class OverlayLabels implements PlugIn, DialogListener {
 		colorName = Colors.getColorName(overlay.getLabelColor(), "white");
 		fontSize = 12;
 		Font font = overlay.getLabelFont();
-		if (font!=null)
+		if (font!=null) {
 			fontSize = font.getSize();
+			bold = font.getStyle()==Font.BOLD;
+		}
 		gd = new GenericDialog("Labels");
 		gd.addChoice("Color:", Colors.colors, colorName);
 		gd.addChoice("Font size:", fontSizes, ""+fontSize);
 		gd.addCheckbox("Show labels", showLabels);
 		gd.addCheckbox("Use names as labels", showNames);
 		gd.addCheckbox("Draw backgrounds", drawBackgrounds);
+		gd.addCheckbox("Bold", bold);
 		gd.addDialogListener(this);
 		gd.showDialog();
 	}
@@ -58,16 +63,19 @@ public class OverlayLabels implements PlugIn, DialogListener {
 		boolean showLabels2 = showLabels;
 		boolean showNames2 = showNames;
 		boolean drawBackgrounds2 = drawBackgrounds;
+		boolean bold2 = bold;
 		int fontSize2 = fontSize;
 		colorName = gd.getNextChoice();
 		fontSize = (int)Tools.parseDouble(gd.getNextChoice(), 12);
 		showLabels = gd.getNextBoolean();
 		showNames = gd.getNextBoolean();
 		drawBackgrounds = gd.getNextBoolean();
+		bold = gd.getNextBoolean();
 		boolean colorChanged = !colorName.equals(colorName2);
 		boolean sizeChanged = fontSize!=fontSize2;
 		boolean changes = showLabels!=showLabels2 || showNames!=showNames2
-			|| drawBackgrounds!=drawBackgrounds2 || colorChanged || sizeChanged;
+			|| drawBackgrounds!=drawBackgrounds2 || colorChanged || sizeChanged
+			|| bold!=bold2;
 		if (changes) {
 			if (showNames || colorChanged || sizeChanged) {
 				showLabels = true;
@@ -79,8 +87,8 @@ public class OverlayLabels implements PlugIn, DialogListener {
 			overlay.drawBackgrounds(drawBackgrounds);
 			Color color = Colors.getColor(colorName, Color.white);
 			overlay.setLabelColor(color);
-			if (sizeChanged)
-				overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, fontSize));
+			if (sizeChanged || bold || bold!=bold2)
+				overlay.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
 			if (imp!=null && imp.getOverlay()!=null)
 				imp.draw();
 		}

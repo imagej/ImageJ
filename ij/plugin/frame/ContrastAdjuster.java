@@ -1024,6 +1024,13 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 	public void windowActivated(WindowEvent e) {
 		super.windowActivated(e);
+		if (IJ.isMacro()) {
+			// do nothing if macro and RGB image
+			ImagePlus imp2 = WindowManager.getCurrentImage();
+			if (imp2!=null && imp2.getBitDepth()==24) {
+				return;
+			}
+		}
 		previousImageID = 0; // user may have modified image
 		setup();
 		WindowManager.setWindow(this);

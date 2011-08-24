@@ -12,7 +12,6 @@ public class Overlay {
     private boolean drawBackgrounds;
     private Color labelColor;
     private Font labelFont;
-    private int labelFontSize;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -167,8 +166,8 @@ public class Overlay {
     }
     
     public Font getLabelFont() {
-    	if (labelFont==null && labelFontSize!=0)
-    		labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
+    	//if (labelFont==null && labelFontSize!=0)
+    	//	labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
     	return labelFont;
     }
 

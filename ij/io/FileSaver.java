@@ -132,19 +132,8 @@ public class FileSaver {
 		byte[][] array = new byte[n][];
 		for (int i=0; i<overlay.size(); i++) {
 			Roi roi = overlay.get(i);
-			if (i==0) {
-				int options = 0;
-				if (overlay.getDrawLabels())
-					options |= RoiDecoder.OVERLAY_LABELS;
-				if (overlay.getDrawNames())
-					options |= RoiDecoder.OVERLAY_NAMES;
-				if (overlay.getDrawBackgrounds())
-					options |= RoiDecoder.OVERLAY_BACKGROUNDS;
-				roi.setOverlayOptions(options);
-				roi.setOverlayLabelColor(overlay.getLabelColor());
-				Font font = overlay.getLabelFont();
-				roi.setOverlayFontSize(font!=null?font.getSize():0);
-			}
+			if (i==0)
+				roi.setPrototypeOverlay(overlay);
 			array[i] = RoiEncoder.saveAsByteArray(roi);
 		}
 		return array;

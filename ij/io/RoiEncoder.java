@@ -216,13 +216,16 @@ public class RoiEncoder {
 	}
 	
 	void saveOverlayOptions(Roi roi, int options) {
-		int overlayOptions = roi.getOverlayOptions();
-		if ((overlayOptions&RoiDecoder.OVERLAY_LABELS)!=0)
+		Overlay proto = roi.getPrototypeOverlay();
+		if (proto.getDrawLabels())
 			options |= RoiDecoder.OVERLAY_LABELS;
-		if ((overlayOptions&RoiDecoder.OVERLAY_NAMES)!=0)
+		if (proto.getDrawNames())
 			options |= RoiDecoder.OVERLAY_NAMES;
-		if ((overlayOptions&RoiDecoder.OVERLAY_BACKGROUNDS)!=0)
+		if (proto.getDrawBackgrounds())
 			options |= RoiDecoder.OVERLAY_BACKGROUNDS;
+		Font font = proto.getLabelFont();
+		if (font!=null && font.getStyle()==Font.BOLD)
+			options |= RoiDecoder.OVERLAY_BOLD;
 		putShort(RoiDecoder.OPTIONS, options);
 	}
 	
@@ -256,10 +259,13 @@ public class RoiEncoder {
 		putInt(offset+RoiDecoder.C_POSITION, roi.getCPosition());
 		putInt(offset+RoiDecoder.Z_POSITION, roi.getZPosition());
 		putInt(offset+RoiDecoder.T_POSITION, roi.getTPosition());
-		Color overlayLabelColor = roi.getOverlayLabelColor();
+		Overlay proto = roi.getPrototypeOverlay();
+		Color overlayLabelColor = proto.getLabelColor();
 		if (overlayLabelColor!=null)
 			putInt(offset+RoiDecoder.OVERLAY_LABEL_COLOR, overlayLabelColor.getRGB());
-		putShort(offset+RoiDecoder.OVERLAY_FONT_SIZE, roi.getOverlayFontSize());
+		Font font = proto.getLabelFont();
+		if (font!=null)
+			putShort(offset+RoiDecoder.OVERLAY_FONT_SIZE, font.getSize());
 		if (nameSize>0)
 			putName(roi, offset);
 	}

@@ -62,9 +62,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean wideLine;
 	private int position;
 	private int channel, slice, frame;
-	private int overlayOptions;
-	private Color overlayLabelColor;
-	private int overlayFontSize;
+	private Overlay prototypeOverlay;
 
 	/** Creates a new rectangular Roi. */
 	public Roi(int x, int y, int width, int height) {
@@ -1348,34 +1346,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return frame;
 	}
 
-	// Used by the FileSave and RoiEncoder to save overlay settings. */
-	public void setOverlayOptions(int options) {
-		overlayOptions = options;
+	// Used by the FileSaver and RoiEncoder to save overlay settings. */
+	public void setPrototypeOverlay(Overlay overlay) {
+		prototypeOverlay = new Overlay();
+		prototypeOverlay.drawLabels(overlay.getDrawLabels());
+		prototypeOverlay.drawNames(overlay.getDrawNames());
+		prototypeOverlay.drawBackgrounds(overlay.getDrawBackgrounds());
+		prototypeOverlay.setLabelColor(overlay.getLabelColor());
+		prototypeOverlay.setLabelFont(overlay.getLabelFont());
 	} 
 
 	// Used by the FileOpener and RoiDecoder to restore overlay settings. */
-	public int getOverlayOptions() {
-		return overlayOptions;
-	}
-
-	// Used by the FileSave and RoiEncoder to save the overlay label color. */
-	public void setOverlayLabelColor(Color color) {
-		overlayLabelColor = color;
-	} 
-
-	// Used by the FileOpener and RoiDecoder to restore the overlay label color. */
-	public Color getOverlayLabelColor() {
-		return overlayLabelColor;
-	}
-
-	// Used by the FileSave and RoiEncoder to save overlay label font sizes. */
-	public void setOverlayFontSize(int size) {
-		overlayFontSize = size;
-	} 
-
-	// Used by the FileOpener and RoiDecoder to restore overlay label font sizes. */
-	public int getOverlayFontSize() {
-		return overlayFontSize;
+	public Overlay getPrototypeOverlay() {
+		if (prototypeOverlay!=null)
+			return prototypeOverlay;
+		else
+			return new Overlay();
 	}
 
 	/** Returns the current paste transfer mode, or NOT_PASTING (-1)
