@@ -458,15 +458,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			index = getAllIndexes();
 		}
-		for (int i=count-1; i>=0; i--) {
-			boolean delete = false;
-			for (int j=0; j<index.length; j++) {
-				if (index[j]==i)
-					delete = true;
-			}
-			if (delete) {
-				rois.remove(list.getItem(i));
-				list.remove(i);
+		if (count==index.length && !replacing) {
+			rois.clear();
+			list.removeAll();
+		} else {
+			for (int i=count-1; i>=0; i--) {
+				boolean delete = false;
+				for (int j=0; j<index.length; j++) {
+					if (index[j]==i)
+						delete = true;
+				}
+				if (delete) {
+					rois.remove(list.getItem(i));
+					list.remove(i);
+				}
 			}
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();

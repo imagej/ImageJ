@@ -5,11 +5,11 @@ import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
+import ij.plugin.filter.PlugInFilter;
 import java.awt.*;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
-	private static boolean createImageRoi;
 	private static int opacity = 100;
 	private static Roi defaultRoi;
 	
@@ -22,7 +22,9 @@ public class OverlayCommands implements PlugIn {
 		if (arg.equals("add"))
 			addSelection();
 		else if (arg.equals("image"))
-			addImage();
+			addImage(false);
+		else if (arg.equals("image-roi"))
+			addImage(true);
 		else if (arg.equals("flatten"))
 			flatten();
 		else if (arg.equals("hide"))
@@ -102,7 +104,7 @@ public class OverlayCommands implements PlugIn {
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
 	
-	void addImage() {
+	void addImage(boolean createImageRoi) {
 		ImagePlus imp = IJ.getImage();
 		int[] wList = WindowManager.getIDList();
 		if (wList==null || wList.length<2) {
@@ -129,20 +131,27 @@ public class OverlayCommands implements PlugIn {
 		} else if (imp.getID()==wList[0])
 			index = 1;
 
-		GenericDialog gd = new GenericDialog("Add Image...");
-		gd.addChoice("Image to add:", titles, titles[index]);
-		gd.addNumericField("X location:", x, 0);
-		gd.addNumericField("Y location:", y, 0);
+		String title = createImageRoi?"Create Image ROI":"Add Image...";
+		GenericDialog gd = new GenericDialog(title);
+		if (createImageRoi)
+			gd.addChoice("Image:", titles, titles[index]);
+		else {
+			gd.addChoice("Image to add:", titles, titles[index]);
+			gd.addNumericField("X location:", x, 0);
+			gd.addNumericField("Y location:", y, 0);
+		}
 		gd.addNumericField("Opacity (0-100%):", opacity, 0);
-		gd.addCheckbox("Create image selection", createImageRoi);
+		//gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		index = gd.getNextChoiceIndex();
-		x = (int)gd.getNextNumber();
-		y = (int)gd.getNextNumber();
+		if (!createImageRoi) {
+			x = (int)gd.getNextNumber();
+			y = (int)gd.getNextNumber();
+		}
 		opacity = (int)gd.getNextNumber();
-		createImageRoi = gd.getNextBoolean();
+		//createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
@@ -206,11 +215,47 @@ public class OverlayCommands implements PlugIn {
 
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
-		ImagePlus imp2 = imp.flatten();
-		imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
-		imp2.show();
+		int flags = IJ.setupDialog(imp, 0);
+		if (flags==PlugInFilter.DONE)
+			return;
+		else if (flags==PlugInFilter.DOES_STACKS)
+			flattenStack(imp);
+		else {
+			ImagePlus imp2 = imp.flatten();
+			imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
+			imp2.show();
+		}
 	}
 	
+	void flattenStack(ImagePlus imp) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null || !IJ.isJava16() || imp.getBitDepth()!=24) {
+			IJ.error("Flatten Stack", "An overlay, Java 1.6 and an RGB image are required.");
+			return;
+		}
+		ImageStack stack = imp.getStack();
+		for (int i=1; i<=stack.getSize(); i++) {
+			ImageProcessor ip = stack.getProcessor(i);
+			Roi[] rois = overlay.toArray();
+			for (int j=0; j<rois.length; j++) {
+				Roi roi = rois[j];
+				int position = roi.getPosition();
+				//if (hyperstack && position==0) {
+				//	int c = roi.getCPosition();
+				//	int z = roi.getZPosition();
+				//	int t = roi.getTPosition();
+				//	if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+				//		ip.drawRoi(roi);
+				//} else {
+				if (position==0 || position==i)
+					ip.drawRoi(roi);
+				//}
+			}
+		}
+		imp.setStack(stack);
+		imp.setOverlay(null);
+	}
+
 	void fromRoiManager() {
 		ImagePlus imp = IJ.getImage();
 		RoiManager rm = RoiManager.getInstance();
@@ -228,8 +273,8 @@ public class OverlayCommands implements PlugIn {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)
 				roi.setPosition(0);
-			if (roi.getStroke()==null)
-				roi.setStrokeWidth(defaultRoi.getStrokeWidth());
+			//if (roi.getStroke()==null && defaultRoi.getStroke()!=null)
+			//	roi.setStrokeWidth(defaultRoi.getStrokeWidth());
 			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
 				roi.setStrokeColor(defaultRoi.getStrokeColor());
 			if (roi.getFillColor()==null)

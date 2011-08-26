@@ -1626,6 +1626,10 @@ public class Interpreter implements MacroConstants {
 		return instance;
 	}
 	
+	//public boolean  inLoop() {
+	//	return !looseSyntax;
+	//}
+
 	static void setBatchMode(boolean b) {
 		batchMode = b;
 		if (b==false) imageTable = null;
