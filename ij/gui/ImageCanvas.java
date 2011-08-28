@@ -251,6 +251,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
        
 	public int getSliceNumber(String label) {
+		if (label==null) return 0;
 		int slice = 0;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
 			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
@@ -1056,7 +1057,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
 				if (stackMode) {
 					int slice = getSliceNumber(list.getItem(i));
-					if (slice!=imp.getCurrentSlice()) continue;
+					if (slice!=imp.getCurrentSlice() && slice!=0) continue;
 				}
 				//rm.select(i);
 				// this needs to run on a separate thread, at least on OS X

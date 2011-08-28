@@ -5,13 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.45n 26 August 2011</u>
+<li> <u>1.45n 27 August 2011</u>
 <ul>
 <li> Added the <i>Image&gt;Overlay&gt;Labels</i> command.
 <li> Added the <i>Edit&gt;Selection&gt;Image to Selection</i> command,
 which replaces the "Create image selection" option that was in the
 <i>Image&gt;Overlay&gt;Add Image</i> dialog box.
-<li> The ROI Manager "Delete" command is much faster on Windows.
+<li> Thanks to Damon Poburko, the ROI Manager "Delete" and "Deselect"
+commands are much faster on Windows.
 <li> The <i>Image&gt;Adjust&gt;Brightness/Contrast</i> command
 records as a comment.
 <li> The run("Brightness/Contrast...") macro function does nothing
@@ -19,6 +20,9 @@ if the "B&C" window is open and the current image is RGB.
 <li> Thanks to Ajay Gopal, fixed a bug that sometimes caused plots 
 created in macros to be displayed twice and plots created in
 batch mode to not be displayed.
+<li> Thanks to Norbert Vischer, fixed a bug that sometimes caused selections
+added to the ROI Manager using roiManager("Add") to
+not be associated with the correct stack slice.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

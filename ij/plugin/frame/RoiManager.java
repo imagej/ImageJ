@@ -1663,6 +1663,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Roi roi = imp!=null?imp.getRoi():null;
+		if (roi!=null) roi.setPosition(0);
 		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
@@ -1683,7 +1686,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int n = list.getItemCount();
 		if (index<0) {
 			for (int i=0; i<n; i++)
-				if (list.isSelected(i)) list.deselect(i);
+				list.deselect(i);
 			if (record()) Recorder.record("roiManager", "Deselect");
 			return;
 		}

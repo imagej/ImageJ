@@ -244,7 +244,7 @@ public class RoiDecoder {
 			default:
 				throw new IOException("Unrecognized ROI type: "+type);
 		}
-		roi.setName(getName());
+		roi.setName(getRoiName());
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
@@ -314,7 +314,7 @@ public class RoiDecoder {
 			base += 4;
 		}
 		roi = new ShapeRoi(shapeArray);
-		roi.setName(getName());
+		roi.setName(getRoiName());
 		return roi;
 	}
 	
@@ -335,11 +335,11 @@ public class RoiDecoder {
 		Roi roi2 = new TextRoi(r.x, r.y, new String(text), font);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		roi2.setFillColor(roi.getFillColor());
-		roi.setName(getName());
+		roi2.setName(getRoiName());
 		return roi2;
 	}
 	
-	String getName() {
+	String getRoiName() {
 		String fileName = name;
 		int hdr2Offset = getInt(HEADER2_OFFSET);
 		if (hdr2Offset==0)

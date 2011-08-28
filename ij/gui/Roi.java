@@ -50,7 +50,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean updateFullWindow;
 	protected double mag = 1.0;
 	protected double asp_bk; //saves aspect ratio if resizing takes roi very small
-	protected String name;
 	protected ImageProcessor cachedMask;
 	protected Color handleColor = Color.white;
 	protected Color  strokeColor;
@@ -60,6 +59,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
+	private String name;
 	private int position;
 	private int channel, slice, frame;
 	private Overlay prototypeOverlay;

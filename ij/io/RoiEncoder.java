@@ -20,7 +20,8 @@ public class RoiEncoder {
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
 		traced=8, angle=9, point=10;
 	private byte[] data;
-	private int nameSize;
+	private String roiName;
+	private int roiNameSize;
 	
 	/** Creates an RoiEncoder using the specified path. */
 	public RoiEncoder(String path) {
@@ -63,9 +64,9 @@ public class RoiEncoder {
 		int roiType = roi.getType();
 		int type = rect;
 		int options = 0;
-		String name = roi.getName();
-		if (name!=null)
-			nameSize = name.length()*2;
+		roiName = roi.getName();
+		if (roiName!=null)
+			roiNameSize = roiName.length()*2;
 
 		switch (roiType) {
 			case Roi.POLYGON: type=polygon; break;
@@ -94,7 +95,7 @@ public class RoiEncoder {
 			x = p.xpoints;
 			y = p.ypoints;
 		}
-		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+nameSize];
+		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+roiNameSize];
 		
 		Rectangle r = roi.getBounds();
 		
@@ -187,7 +188,7 @@ public class RoiEncoder {
 		if (shapeArray==null) return;
 		BufferedOutputStream bout = new BufferedOutputStream(f);
 		Rectangle r = roi.getBounds();
-		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4+nameSize];
+		data  = new byte[HEADER_SIZE+HEADER2_SIZE+shapeArray.length*4+roiNameSize];
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
@@ -210,6 +211,7 @@ public class RoiEncoder {
 			base += 4;
 		}
 		int hdr2Offset = HEADER_SIZE+shapeArray.length*4;
+		//ij.IJ.log("saveShapeRoi: "+HEADER_SIZE+"  "+shapeArray.length);
 		putHeader2(roi, hdr2Offset);
 		bout.write(data,0,data.length);
 		bout.flush();
@@ -231,53 +233,54 @@ public class RoiEncoder {
 	
 	void saveTextRoi(TextRoi roi) {
 		Font font = roi.getCurrentFont();
-		String name = font.getName();
+		String fontName = font.getName();
 		int size = font.getSize();
 		int style = font.getStyle();
 		String text = roi.getText();
-		int nameLength = name.length();
+		int fontNameLength = fontName.length();
 		int textLength = text.length();
-		int textRoiDataLength = 16+nameLength*2+textLength*2;
-		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+nameSize];
+		int textRoiDataLength = 16+fontNameLength*2+textLength*2;
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+textRoiDataLength+roiNameSize];
 		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
 		data = data2;
 		putShort(RoiDecoder.SUBTYPE, RoiDecoder.TEXT);
 		putInt(HEADER_SIZE, size);
 		putInt(HEADER_SIZE+4, style);
-		putInt(HEADER_SIZE+8, nameLength);
+		putInt(HEADER_SIZE+8, fontNameLength);
 		putInt(HEADER_SIZE+12, textLength);
-		for (int i=0; i<nameLength; i++)
-			putShort(HEADER_SIZE+16+i*2, name.charAt(i));
+		for (int i=0; i<fontNameLength; i++)
+			putShort(HEADER_SIZE+16+i*2, fontName.charAt(i));
 		for (int i=0; i<textLength; i++)
-			putShort(HEADER_SIZE+16+nameLength*2+i*2, text.charAt(i));
+			putShort(HEADER_SIZE+16+fontNameLength*2+i*2, text.charAt(i));
 		int hdr2Offset = HEADER_SIZE+textRoiDataLength;
+		//ij.IJ.log("saveTextRoi: "+HEADER_SIZE+"  "+textRoiDataLength+"  "+fontNameLength+"  "+textLength);
 		putHeader2(roi, hdr2Offset);
 	}
 	
-	void putHeader2(Roi roi, int offset) {
-		putInt(RoiDecoder.HEADER2_OFFSET, offset);
-		putInt(offset+RoiDecoder.C_POSITION, roi.getCPosition());
-		putInt(offset+RoiDecoder.Z_POSITION, roi.getZPosition());
-		putInt(offset+RoiDecoder.T_POSITION, roi.getTPosition());
+	void putHeader2(Roi roi, int hdr2Offset) {
+		//ij.IJ.log("putHeader2: "+hdr2Offset+" "+roiNameSize+"  "+roiName);
+		putInt(RoiDecoder.HEADER2_OFFSET, hdr2Offset);
+		putInt(hdr2Offset+RoiDecoder.C_POSITION, roi.getCPosition());
+		putInt(hdr2Offset+RoiDecoder.Z_POSITION, roi.getZPosition());
+		putInt(hdr2Offset+RoiDecoder.T_POSITION, roi.getTPosition());
 		Overlay proto = roi.getPrototypeOverlay();
 		Color overlayLabelColor = proto.getLabelColor();
 		if (overlayLabelColor!=null)
-			putInt(offset+RoiDecoder.OVERLAY_LABEL_COLOR, overlayLabelColor.getRGB());
+			putInt(hdr2Offset+RoiDecoder.OVERLAY_LABEL_COLOR, overlayLabelColor.getRGB());
 		Font font = proto.getLabelFont();
 		if (font!=null)
-			putShort(offset+RoiDecoder.OVERLAY_FONT_SIZE, font.getSize());
-		if (nameSize>0)
-			putName(roi, offset);
+			putShort(hdr2Offset+RoiDecoder.OVERLAY_FONT_SIZE, font.getSize());
+		if (roiNameSize>0)
+			putName(roi, hdr2Offset);
 	}
 
 	void putName(Roi roi, int hdr2Offset) {
 		int offset = hdr2Offset+HEADER2_SIZE;
-		int nameLength = nameSize/2;
+		int nameLength = roiNameSize/2;
 		putInt(hdr2Offset+RoiDecoder.NAME_OFFSET, offset);
 		putInt(hdr2Offset+RoiDecoder.NAME_LENGTH, nameLength);
-		String name = roi.getName();
 		for (int i=0; i<nameLength; i++)
-			putShort(offset+i*2, name.charAt(i));
+			putShort(offset+i*2, roiName.charAt(i));
 	}
 
     void putByte(int base, int v) {
