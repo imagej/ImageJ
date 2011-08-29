@@ -168,6 +168,8 @@ public class Functions implements MacroConstants, Measurements {
 			case MAKE_TEXT: makeText(); break;
 			case MAKE_ELLIPSE: makeEllipse(); break;
 			case GET_DISPLAYED_AREA: getDisplayedArea(); break;
+			case TO_SCALED: toScaled(); break;
+			case TO_UNSCALED: toUnscaled(); break;
 		}
 	}
 	
@@ -1824,6 +1826,9 @@ public class Functions implements MacroConstants, Measurements {
 		    return;
 		} else if (name.equals("update")) {
 		    updatePlot(); 
+		    return;
+		} else if (name.equals("setFrameSize")) {
+			plot.setFrameSize((int)getFirstArg(), (int)getLastArg());
 		    return;
 		} else if (name.equals("setLimits")) {
 			plot.setLimits(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
@@ -4911,6 +4916,54 @@ public class Functions implements MacroConstants, Measurements {
 		w.setValue(r.width);
 		h.setValue(r.height);
 	}
+	
+	void toScaled() {
+		ImagePlus imp = getImage();
+		int height = imp.getHeight();
+		Calibration cal = imp.getCalibration();
+		interp.getLeftParen();
+		if (isArrayArg()) {
+			Variable[] x = getArray();
+			interp.getComma();
+			Variable[] y = getArray();
+			interp.getRightParen();
+			for (int i=0; i<x.length; i++)
+				x[i].setValue(cal.getX(x[i].getValue()));
+			for (int i=0; i<y.length; i++)
+				y[i].setValue(cal.getY(y[i].getValue(),height));
+		} else {
+			Variable xv = getVariable();
+			Variable yv = getLastVariable();
+			double x = xv.getValue();
+			double y = yv.getValue();
+			xv.setValue(cal.getX(x));
+			yv.setValue(cal.getY(y,height));
+		}
+	}
 
+	void toUnscaled() {
+		ImagePlus imp = getImage();
+		int height = imp.getHeight();
+		Calibration cal = imp.getCalibration();
+		interp.getLeftParen();
+		if (isArrayArg()) {
+			Variable[] x = getArray();
+			interp.getComma();
+			Variable[] y = getArray();
+			interp.getRightParen();
+			for (int i=0; i<x.length; i++)
+				x[i].setValue(cal.getRawX(x[i].getValue()));
+			for (int i=0; i<y.length; i++)
+				y[i].setValue(cal.getRawY(y[i].getValue(),height));
+		} else {
+			Variable xv = getVariable();
+			Variable yv = getLastVariable();
+			double x = xv.getValue();
+			double y = yv.getValue();
+			xv.setValue(cal.getRawX(x));
+			yv.setValue(cal.getRawY(y,height));
+		}
+	}
+	
 } // class Functions
 

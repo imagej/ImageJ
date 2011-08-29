@@ -173,12 +173,12 @@ public class Calibration implements Cloneable {
  		return (x-xOrigin)*pixelWidth;
  	}
  	
-  	/** Converts a y-coodinate in pixels to physical units (e.g. mm). */
+  	/** Converts a y-coordinate in pixels to physical units (e.g. mm). */
  	public double getY(double y) {
  		return (y-yOrigin)*pixelHeight;
  	}
  	
- 	/** Converts a y-coodinate in pixels to physical units (e.g. mm),
+ 	/** Converts a y-coordinate in pixels to physical units (e.g. mm),
  		taking into account the invertY and global "Invert Y Coordinates" flags. */
  	public double getY(double y, int imageHeight) {
  		if (invertY || (Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
@@ -190,12 +190,34 @@ public class Calibration implements Cloneable {
    			return (y-yOrigin)*pixelHeight;
 	}
 
-  	/** Converts a z-coodinate in pixels to physical units (e.g. mm). */
+  	/** Converts a z-coordinate in pixels to physical units (e.g. mm). */
  	public double getZ(double z) {
  		return (z-zOrigin)*pixelDepth;
  	}
  	
- 	//public double getX(int x) {return getX((double)x);}
+ 	/** Converts a x-coordinate in physical units to pixels. */
+ 	public double getRawX(double x) {
+ 		return x/pixelWidth + xOrigin;
+ 	}
+ 	
+   	/** Converts a y-coodinate in physical units to pixels. */
+ 	public double getRawY(double y) {
+  		return y/pixelHeight + yOrigin;
+	}
+ 	
+ 	/** Converts a y-coodinate in physical units to pixels,
+ 		taking into account the 'invertY' flag. */
+ 	public double getRawY(double y, int imageHeight) {
+ 		if (invertY || (Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
+			if (yOrigin!=0.0)
+				return yOrigin-y/pixelHeight;
+			else
+				return imageHeight -y/pixelHeight - 1;
+		} else
+   			return y/pixelHeight + yOrigin;
+	}
+
+	//public double getX(int x) {return getX((double)x);}
  	//public double getY(int y) {return getY((double)y);}
  	//public double getZ(int z) {return getZ((double)z);}
  	

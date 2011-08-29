@@ -161,12 +161,18 @@ public class Plot {
 
 	/** Sets the canvas size (i.e., size of the resulting ImageProcessor).
 	 * By default, the size is adjusted for the plot frame size specified
-	 * in Edit>Options>Profile Plot Options*/
+	 * in Edit>Options>Profile Plot Options. */
 	public void setSize(int width, int height) {
 		if (!initialized && width>LEFT_MARGIN+RIGHT_MARGIN+20 && height>TOP_MARGIN+BOTTOM_MARGIN+20) {
 			plotWidth = width-LEFT_MARGIN-RIGHT_MARGIN;
 			plotHeight = height-TOP_MARGIN-BOTTOM_MARGIN;
 		}
+	}
+
+	/** Sets the plot frame size in pixels. */
+	public void setFrameSize(int width, int height) {
+			plotWidth = width;
+			plotHeight = height;
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
