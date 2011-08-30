@@ -4319,14 +4319,22 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void makeEllipse() {
+		ImagePlus imp = getImage();
+		Roi previousRoi = imp.getRoi();
+		if (shiftKeyDown||altKeyDown)
+			imp.saveRoi();
 		double x1 = getFirstArg();
 		double y1 = getNextArg();
 		double x2 = getNextArg();
 		double y2 = getNextArg();
 		double aspectRatio = getLastArg();
-		getImage().setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
+		Roi roi = new EllipseRoi(x1,y1,x2,y2,aspectRatio);
+		imp.setRoi(roi);
+		if (previousRoi!=null && roi!=null)
+			updateRoi(roi);
+		resetImage();
 	}
-
+	
 	double fit() {
 		interp.getToken();
 		if (interp.token!='.')
@@ -4933,11 +4941,21 @@ public class Functions implements MacroConstants, Measurements {
 				y[i].setValue(cal.getY(y[i].getValue(),height));
 		} else {
 			Variable xv = getVariable();
-			Variable yv = getLastVariable();
+			Variable yv = null;
+			boolean twoArgs = interp.nextToken()==',';
+			if (twoArgs) {
+				interp.getComma();
+				yv = getVariable();
+			}
+			interp.getRightParen();
 			double x = xv.getValue();
-			double y = yv.getValue();
-			xv.setValue(cal.getX(x));
-			yv.setValue(cal.getY(y,height));
+			if (twoArgs) {
+				double y = yv.getValue();
+				xv.setValue(cal.getX(x));
+				yv.setValue(cal.getY(y,height));
+			} else {
+				xv.setValue(x*cal.pixelWidth);
+			}
 		}
 	}
 
@@ -4957,11 +4975,21 @@ public class Functions implements MacroConstants, Measurements {
 				y[i].setValue(cal.getRawY(y[i].getValue(),height));
 		} else {
 			Variable xv = getVariable();
-			Variable yv = getLastVariable();
+			Variable yv = null;
+			boolean twoArgs = interp.nextToken()==',';
+			if (twoArgs) {
+				interp.getComma();
+				yv = getVariable();
+			}
+			interp.getRightParen();
 			double x = xv.getValue();
-			double y = yv.getValue();
-			xv.setValue(cal.getRawX(x));
-			yv.setValue(cal.getRawY(y,height));
+			if (twoArgs) {
+				double y = yv.getValue();
+				xv.setValue(cal.getRawX(x));
+				yv.setValue(cal.getRawY(y,height));
+			} else {
+				xv.setValue(x/cal.pixelWidth);
+			}
 		}
 	}
 	

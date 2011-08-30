@@ -649,7 +649,7 @@ public class Plot {
 		draw();
 		ImagePlus img = new ImagePlus(title, ip);
 		Calibration cal = img.getCalibration();
-		cal.xOrigin = LEFT_MARGIN;
+		cal.xOrigin = LEFT_MARGIN-xMin*xScale;
 		cal.yOrigin = TOP_MARGIN+frameHeight+yMin*yScale;
 		cal.pixelWidth = 1.0/xScale;
 		cal.pixelHeight = 1.0/yScale;
