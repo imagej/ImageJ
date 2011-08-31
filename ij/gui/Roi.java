@@ -1200,7 +1200,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
     /** Set 'nonScalable' true to have TextRois in a display 
-		list drawn at a fixed location  and size. */
+		list drawn at a fixed location and size. */
 	public void setNonScalable(boolean nonScalable) {
 		this.nonScalable = nonScalable;
 	}

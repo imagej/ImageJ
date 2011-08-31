@@ -87,6 +87,8 @@ public class Options implements PlugIn {
 		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
 		gd.addStringField("File extension for tables:", Prefs.get("options.ext", ".txt"), 4);
 		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
+		if (!IJ.isMacOSX())
+			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);
 		gd.addCheckbox("Save TIFF and raw in Intel byte order", Prefs.intelByteOrder);
 		
 		gd.setInsets(15, 20, 0);
@@ -114,6 +116,8 @@ public class Options implements PlugIn {
 			extension = "." + extension;
 		Prefs.set("options.ext", extension);
 		Prefs.useJFileChooser = gd.getNextBoolean();
+		if (!IJ.isMacOSX())
+			Prefs.useFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
 		Prefs.noRowNumbers = !gd.getNextBoolean();

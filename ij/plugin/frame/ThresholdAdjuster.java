@@ -700,6 +700,16 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
     }
 
+	/** Returns the current method ("Default", "Huang", etc). */
+	public static String getMethod() {
+		return method;
+	}
+	
+	/** Returns the current mode ("Red","B&W" or"Over/Under"). */
+	public static String getMode() {
+		return modes[mode];
+	}
+
 } // ThresholdAdjuster class
 
 

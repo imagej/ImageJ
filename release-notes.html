@@ -5,12 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.45n 29 August 2011</u>
+<li> <u>1.45n 31 August 2011</u>
 <ul>
 <li> Added the <i>Image&gt;Overlay&gt;Labels</i> command.
 <li> Added the <i>Edit&gt;Selection&gt;Image to Selection</i> command,
 which replaces the "Create image selection" option that was in the
 <i>Image&gt;Overlay&gt;Add Image</i> dialog box.
+<li> Added the "Use file chooser to import [/export image] sequences" option 
+to the <i>Edit&gt;Options&gt;Input/Output</i> dialog box.
 <li> Thanks to Damon Poburko, the ROI Manager "Delete" and "Deselect"
 commands are much faster on Windows.
 <li> The <i>Image&gt;Adjust&gt;Brightness/Contrast</i> command
@@ -18,7 +20,10 @@ records as a comment.
 <li> The run("Brightness/Contrast...") macro function does nothing
 if the "B&C" window is open and the current image is RGB.
 <li> Thanks to Norbert Vischer, added the toScaled(x,y), toUnscaled(x,y) and
-Plot.setFrameSize(width,height) macro functions
+Plot.setFrameSize(width,height) macro functions.
+<li> Added the getInfo("threshold.method") and getInfo("threshold.mode")
+macro functions and the ThresholdAdjuster.getMethod() and 
+ThresholdAdjuster.getMode() methods.
 (<a href="macros/examples/AdvancedPlotting.txt">examples</a>).
 <li> Thanks to Ajay Gopal, fixed a bug that sometimes caused plots 
 created in macros to be displayed twice and plots created in
@@ -28,6 +33,8 @@ added to the ROI Manager using roiManager("Add") to
 not be associated with the correct stack slice.
 <li> Thanks to Norbert Vischer, fixed a bug that caused plot window cursor locations
 displayed in the status bar to be incorrect if the plot x-origin was not zero.
+<li> Thanks to Jean-Pierre Clamme, fixed a bug that caused the color thresholder
+to somethimes not work as expected.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

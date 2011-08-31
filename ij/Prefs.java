@@ -51,7 +51,8 @@ public class Prefs {
     public static final String OPTIONS = "prefs.options";
     
 	private static final int USE_SYSTEM_PROXIES=1<<0;
-    public static final String OPTIONS2 = "prefs.options2";
+ 	private static final int USE_FILE_CHOOSER=1<<1;
+   public static final String OPTIONS2 = "prefs.options2";
     
 	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
 
@@ -133,6 +134,8 @@ public class Prefs {
 	public static boolean useNamesAsLabels;
 	/** Set the "java.net.useSystemProxies" property */
 	public static boolean useSystemProxies;
+	/** Use file choose to import and export image sequences */
+	public static boolean useFileChooser;
 
 
 	static Properties ijPrefs = new Properties();
@@ -422,6 +425,7 @@ public class Prefs {
 		
 		int options2 = getInt(OPTIONS2, 0);
 		useSystemProxies = (options2&USE_SYSTEM_PROXIES)!=0;
+		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -443,7 +447,8 @@ public class Prefs {
 			+ (keepUndoBuffers?KEEP_UNDO_BUFFERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
 
-		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0);
+		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
+			+ (useFileChooser?USE_FILE_CHOOSER:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 

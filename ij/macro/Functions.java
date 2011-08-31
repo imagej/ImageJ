@@ -1415,6 +1415,10 @@ public class Functions implements MacroConstants, Measurements {
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
+			} else if (key.equals("threshold.method")) {
+				return ThresholdAdjuster.getMethod();
+			} else if (key.equals("threshold.mode")) {
+				return ThresholdAdjuster.getMode();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}

@@ -919,7 +919,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 			Roi roi2 = (Roi)roi.clone();
 			roi2.setStrokeColor(Color.cyan);
-			roi2.setStrokeWidth(lineWidth);
+			if (lineWidth!=1)
+				roi2.setStrokeWidth(lineWidth);
 			if (showChoice==OVERLAY_MASKS)
 				roi2.setFillColor(Color.cyan);
 			overlay.add(roi2);

@@ -62,8 +62,16 @@ public class FolderOpener implements PlugIn {
 						directory = f.getParent();
 				}
 			}
-			if (directory==null)
-				directory = IJ.getDirectory(title);
+			if (directory==null) {
+				if (Prefs.useFileChooser && !IJ.isMacOSX()) {
+					OpenDialog od = new OpenDialog(title, arg);
+					directory = od.getDirectory();
+					String name = od.getFileName();
+					if (name==null)
+						return;
+				} else
+					directory = IJ.getDirectory(title);
+			}
 		}
 		if (directory==null)
 			return;
