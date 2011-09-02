@@ -133,7 +133,7 @@ public class RoiProperties {
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
 		} else if (addToOverlay||strokeWidth!=1.0)
-				roi.setStrokeWidth((float)strokeWidth);
+			roi.setStrokeWidth((float)strokeWidth);
 		else
 			roi.setStroke(null);
 		roi.setStrokeColor(strokeColor);

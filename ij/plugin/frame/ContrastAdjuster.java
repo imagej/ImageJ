@@ -797,9 +797,15 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		gd.addNumericField("Minimum displayed value: ", minValue, digits);
 		gd.addNumericField("Maximum displayed value: ", maxValue, digits);
 		gd.addChoice("Unsigned 16-bit range:", ranges, ranges[getRangeIndex()]);
-		gd.addCheckbox("Propagate to all open images", false);
-		if (imp.isComposite())
-			gd.addCheckbox("Propagate to all "+channels+" channels", false);
+		String label = "Propagate to all other ";
+		label = imp.isComposite()?label+channels+" channel images":label+"open images";
+		gd.addCheckbox(label, false);
+		boolean allChannels = false;
+		if (imp.isComposite() && channels>1) {	
+			label = "Propagate to the other ";
+			label = channels==2?label+"channel of this image":label+(channels-1)+" channels of this image";
+			gd.addCheckbox(label, allChannels);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -816,15 +822,14 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			maxValue = imp.getDisplayRangeMax();
 		}
 		boolean propagate = gd.getNextBoolean();
-		boolean allChannels = imp.isComposite()&&gd.getNextBoolean();
+		if (imp.isComposite() && channels>1)
+			allChannels = gd.getNextBoolean();
 		if (maxValue>=minValue) {
 			min = minValue;
 			max = maxValue;
 			setMinAndMax(imp, min, max);
 			updateScrollBars(null, false);
 			if (RGBImage) doMasking(imp, ip);
-			if (propagate)
-				IJ.runMacroFile("ij.jar:PropagateMinAndMax");
 			if (allChannels) {
 				int channel = imp.getChannel();
 				for (int c=1; c<=channels; c++) {
@@ -834,6 +839,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 				((CompositeImage)imp).reset();
 				imp.setPosition(channel, imp.getSlice(), imp.getFrame());
 			}
+			if (propagate)
+				propagate(imp);
 			if (Recorder.record) {
 				if (imp.getBitDepth()==32)
 					recordSetMinAndMax(min, max);
@@ -854,6 +861,48 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			}
 		}
 	}
+	
+	private void propagate(ImagePlus img) {
+		int[] list = WindowManager.getIDList();
+		if (list==null) return;
+		int nImages = list.length;
+		if (nImages<=1) return;
+		ImageProcessor ip = img.getProcessor();
+		double min = ip.getMin();
+		double max = ip.getMax();
+		int depth = img.getBitDepth();
+		if (depth==24) return;
+		int id = img.getID();
+		if (img.isComposite()) {
+			int nChannels = img.getNChannels();
+			for (int i=0; i<nImages; i++) {
+				ImagePlus img2 = WindowManager.getImage(list[i]);
+				if (img2==null) continue;
+				int nChannels2 = img2.getNChannels();
+				if (img2.isComposite() && img2.getBitDepth()==depth && img2.getID()!=id
+				&& img2.getNChannels()==nChannels && img2.getWindow()!=null) {
+					int channel = img2.getChannel();
+					for (int c=1; c<=nChannels; c++) {
+						LUT  lut = ((CompositeImage)img).getChannelLut(c);
+						img2.setPosition(c, img2.getSlice(), img2.getFrame());
+						img2.setDisplayRange(lut.min, lut.max);
+						img2.updateAndDraw();
+					}
+					img2.setPosition(channel, img2.getSlice(), img2.getFrame());
+				}
+			}
+		} else {
+			for (int i=0; i<nImages; i++) {
+				ImagePlus img2 = WindowManager.getImage(list[i]);
+				if (img2!=null && img2.getBitDepth()==depth && img2.getID()!=id
+				&& img2.getNChannels()==1 && img2.getWindow()!=null) {
+					ImageProcessor ip2 = img2.getProcessor();
+					ip2.setMinAndMax(min, max);
+					img2.updateAndDraw();
+				}
+			}
+		}
+    }
 	
 	int getRangeIndex() {
 		int range = ImagePlus.getDefault16bitRange();

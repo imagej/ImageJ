@@ -463,7 +463,7 @@ public class CompositeImage extends ImagePlus {
 		int channels = getNChannels();
 		if (lut==null) setupLuts(channels);
 		if (channel<1 || channel>lut.length)
-			throw new IllegalArgumentException("Channel out of range");
+			throw new IllegalArgumentException("Channel out of range: "+channel);
 		return lut[channel-1];
 	}
 	
