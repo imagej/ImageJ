@@ -115,6 +115,10 @@ public class MacroRunner implements Runnable {
 			thread.start();
 		}
 	}
+	
+	public Thread getThread() {
+		return thread;
+	}
 
 	public void run() {
 		Interpreter interp = new Interpreter();

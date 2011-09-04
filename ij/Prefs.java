@@ -134,7 +134,7 @@ public class Prefs {
 	public static boolean useNamesAsLabels;
 	/** Set the "java.net.useSystemProxies" property */
 	public static boolean useSystemProxies;
-	/** Use file choose to import and export image sequences on Windows and Linux*/
+	/** Use the file chooser to import and export image sequences on Windows and Linux*/
 	public static boolean useFileChooser;
 
 

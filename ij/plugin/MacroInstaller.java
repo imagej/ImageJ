@@ -39,6 +39,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
+	private Thread macroToolThread;
 	
 	public void run(String path) {
 		if (path==null || path.equals(""))
@@ -324,7 +325,11 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public boolean runMacroTool(String name) {
 		for (int i=0; i<nMacros; i++) {
 			if (macroNames[i].startsWith(name)) {
-				new MacroRunner(pgm, macroStarts[i], name, (String)null);
+				if (macroToolThread!=null && macroToolThread.getName().indexOf(name)!=-1 && macroToolThread.isAlive())
+					return false; // do nothing if this tool is already running
+				MacroRunner mw = new MacroRunner(pgm, macroStarts[i], name, (String)null);
+				macroToolThread = mw.getThread();
+				//IJ.log("runMacroTool: "+macroToolThread);
 				return true;
 			}
 		}
