@@ -66,6 +66,10 @@ public class ImageJ_Updater implements PlugIn {
 				return;
 		}
 		byte[] jar = getJar(urls[choice]);
+		if (jar==null) {
+			error("Unable to download ij.jar from "+urls[choice]);
+			return;
+		}
 		//file.renameTo(new File(file.getParent()+File.separator+"ij.bak"));
 		if (version().compareTo("1.37v")>=0)
 			Prefs.savePreferences();
@@ -135,6 +139,8 @@ public class ImageJ_Updater implements PlugIn {
 			IJ.showStatus("Connecting to "+IJ.URL);
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
+			if (len<=0)
+				return null;
 			String  name = address.endsWith("ij/ij.jar")?"daily build":"ij.jar";
 			IJ.showStatus("Downloading ij.jar ("+IJ.d2s((double)len/1048576,1)+"MB)");
 			InputStream in = uc.getInputStream();

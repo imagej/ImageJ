@@ -1561,13 +1561,16 @@ public class Interpreter implements MacroConstants {
 	
 	void finishUp() {
 		func.updateDisplay();
-		if (func.plot!=null) func.plot.show();
 		instance = null;
 		if (!calledMacro) {
 			if (batchMode) showingProgress = true;
 			batchMode = false;
 			imageTable = null;
 			WindowManager.setTempCurrentImage(null);
+		}
+		if (func.plot!=null) {
+			func.plot.show();
+			func.plot = null;
 		}
 		if (showingProgress)
 			IJ.showProgress(0, 0);
@@ -1623,6 +1626,10 @@ public class Interpreter implements MacroConstants {
 		return instance;
 	}
 	
+	//public boolean  inLoop() {
+	//	return !looseSyntax;
+	//}
+
 	static void setBatchMode(boolean b) {
 		batchMode = b;
 		if (b==false) imageTable = null;

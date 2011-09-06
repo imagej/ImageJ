@@ -65,6 +65,8 @@ public class RoiDecoder {
 	public static final int NAME_OFFSET = 16;
 	public static final int NAME_LENGTH = 20;
 	public static final int OVERLAY_LABEL_COLOR = 24;
+	public static final int OVERLAY_FONT_SIZE = 28; //short
+	public static final int AVAILABLE_SHORT1 = 30;  //short
 		
 	// subtypes
 	public static final int TEXT = 1;
@@ -78,6 +80,7 @@ public class RoiDecoder {
 	public static final int OVERLAY_LABELS = 8;
 	public static final int OVERLAY_NAMES = 16;
 	public static final int OVERLAY_BACKGROUNDS = 32;
+	public static final int OVERLAY_BOLD = 64;
 
 	
 	// types
@@ -135,12 +138,14 @@ public class RoiDecoder {
 		int hdr2Offset = getInt(HEADER2_OFFSET);
 		int channel=0, slice=0, frame=0;
 		int overlayLabelColor=0;
+		int overlayFontSize=0;
 		
-		if (hdr2Offset>0 && hdr2Offset+OVERLAY_LABEL_COLOR+4<=size) {
+		if (hdr2Offset>0 && hdr2Offset+AVAILABLE_SHORT1+2<=size) {
 			channel = getInt(hdr2Offset+C_POSITION);
 			slice = getInt(hdr2Offset+Z_POSITION);
 			frame = getInt(hdr2Offset+T_POSITION);
 			overlayLabelColor = getInt(hdr2Offset+OVERLAY_LABEL_COLOR);
+			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
 		}
 		
 		if (name!=null && name.endsWith(".roi"))
@@ -154,9 +159,7 @@ public class RoiDecoder {
 			roi.setPosition(position);
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
-			roi.setOverlayOptions(options);
-			if (version>=220)
-				roi.setOverlayLabelColor(new Color(overlayLabelColor));
+			decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 			return roi;
 		}
 
@@ -241,7 +244,7 @@ public class RoiDecoder {
 			default:
 				throw new IOException("Unrecognized ROI type: "+type);
 		}
-		roi.setName(getName());
+		roi.setName(getRoiName());
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
@@ -257,12 +260,24 @@ public class RoiDecoder {
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
 			roi.setPosition(channel, slice, frame);
-		roi.setOverlayOptions(options);
-		if (version>=220)
-			roi.setOverlayLabelColor(new Color(overlayLabelColor));
+		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 		return roi;
 	}
 	
+	void decodeOverlayOptions(Roi roi, int version, int options, int color, int fontSize) {
+		Overlay proto = new Overlay();
+		proto.drawLabels((options&OVERLAY_LABELS)!=0);
+		proto.drawNames((options&OVERLAY_NAMES)!=0);
+		proto.drawBackgrounds((options&OVERLAY_BACKGROUNDS)!=0);
+		if (version>=220)
+			proto.setLabelColor(new Color(color));
+		boolean bold = (options&OVERLAY_BOLD)!=0;
+		if (fontSize>0 || bold) {
+			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
+		}
+		roi.setPrototypeOverlay(proto);
+	}
+
 	void getStrokeWidthAndColor(Roi roi) {
 		int strokeWidth = getShort(STROKE_WIDTH);
 		if (strokeWidth>0)
@@ -299,7 +314,7 @@ public class RoiDecoder {
 			base += 4;
 		}
 		roi = new ShapeRoi(shapeArray);
-		roi.setName(getName());
+		roi.setName(getRoiName());
 		return roi;
 	}
 	
@@ -320,11 +335,11 @@ public class RoiDecoder {
 		Roi roi2 = new TextRoi(r.x, r.y, new String(text), font);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		roi2.setFillColor(roi.getFillColor());
-		roi.setName(getName());
+		roi2.setName(getRoiName());
 		return roi2;
 	}
 	
-	String getName() {
+	String getRoiName() {
 		String fileName = name;
 		int hdr2Offset = getInt(HEADER2_OFFSET);
 		if (hdr2Offset==0)

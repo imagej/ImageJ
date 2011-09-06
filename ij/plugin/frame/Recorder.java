@@ -390,7 +390,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 				}
 			} else {
-				if (name.equals("Threshold...") || name.equals("Fonts..."))
+				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
 					textArea.append("//run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");

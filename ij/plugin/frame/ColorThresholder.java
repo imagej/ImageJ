@@ -1267,7 +1267,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			IJ.showStatus("No RGB image");
 		} else {
 			setup(imp);
-			reset(imp);
+			//reset(imp);
 			filteredB.setEnabled(true);
     	}
 	}

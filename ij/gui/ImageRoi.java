@@ -27,17 +27,16 @@ public class ImageRoi extends Roi {
 	}
 		
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Graphics2D g2d = (Graphics2D)g;						
-		double mag = ic.getMagnification();
-		int sx2 = ic.screenX(x+width);
-		int sy2 = ic.screenY(y+height);
+		double mag = getMagnification();
+		int sx2 = screenX(x+width);
+		int sy2 = screenY(y+height);
 		Composite saveComposite = null;
 		if (composite!=null) {
 			saveComposite = g2d.getComposite();
 			g2d.setComposite(composite);
 		}
-		g.drawImage(img, ic.screenX(x), ic.screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
+		g.drawImage(img, screenX(x), screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
 		if (composite!=null) g2d.setComposite(saveComposite);
  	}
  	 	

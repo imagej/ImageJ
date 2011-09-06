@@ -107,8 +107,17 @@ public class StackWriter implements PlugIn {
 					directory+= File.separator;
 			}
 		}
-		if (directory==null)
-			directory = IJ.getDirectory(title);
+		if (directory==null) {
+			if (Prefs.useFileChooser && !IJ.isMacOSX()) {
+				String digits = getDigits(number);
+				SaveDialog sd = new SaveDialog(title, name+digits+extension, extension);
+				String name2 = sd.getFileName();
+				if (name2==null)
+					return;
+				directory = sd.getDirectory();
+			} else
+				directory = IJ.getDirectory(title);
+		}
 		if (directory==null)
 			return;
 		

@@ -882,7 +882,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			}
 			if (imp.getStackSize()>1)
 				roi.setPosition(imp.getCurrentSlice());
-			roi.setStrokeWidth(lineWidth);
+			if (lineWidth!=1)
+				roi.setStrokeWidth(lineWidth);
 			roiManager.add(imp, roi, rt.getCounter());
 		}
 		if (showResults)
@@ -914,12 +915,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			if (overlay==null) {
 				overlay = new Overlay();
 				overlay.drawLabels(true);
-				if (fontSize!=defaultFontSize)
-					overlay.setLabelsFont(new Font("SansSerif", Font.PLAIN, fontSize));
+				overlay.setLabelFont(new Font("SansSerif", Font.PLAIN, fontSize));
 			}
 			Roi roi2 = (Roi)roi.clone();
 			roi2.setStrokeColor(Color.cyan);
-			roi2.setStrokeWidth(lineWidth);
+			if (lineWidth!=1)
+				roi2.setStrokeWidth(lineWidth);
 			if (showChoice==OVERLAY_MASKS)
 				roi2.setFillColor(Color.cyan);
 			overlay.add(roi2);

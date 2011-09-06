@@ -366,6 +366,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	void drawIcon(Graphics g, int tool, int x, int y) {
 		if (null==g) return;
 		icon = icons[tool];
+		if (icon==null) return;
 		this.icon = icon;
 		int length = icon.length();
 		int x1, y1, x2, y2;

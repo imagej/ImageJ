@@ -168,6 +168,8 @@ public class Functions implements MacroConstants, Measurements {
 			case MAKE_TEXT: makeText(); break;
 			case MAKE_ELLIPSE: makeEllipse(); break;
 			case GET_DISPLAYED_AREA: getDisplayedArea(); break;
+			case TO_SCALED: toScaled(); break;
+			case TO_UNSCALED: toUnscaled(); break;
 		}
 	}
 	
@@ -1413,6 +1415,10 @@ public class Functions implements MacroConstants, Measurements {
 				ImageProcessor ip = getProcessor();
 				setFont(ip);
 				return ip.getFont().getName();
+			} else if (key.equals("threshold.method")) {
+				return ThresholdAdjuster.getMethod();
+			} else if (key.equals("threshold.mode")) {
+				return ThresholdAdjuster.getMode();
 			} else {
 				String value = "";
 				try {value = System.getProperty(key);}
@@ -1770,10 +1776,18 @@ public class Functions implements MacroConstants, Measurements {
 			if (roiType==Roi.OVAL) roiType = Roi.FREEROI;		
 		}
 		double[] x = getNextArray();
-		double[] y = getLastArray();
 		int n = x.length;		
-		if (y.length!=n)
-			interp.error("Arrays are not the same length");
+		interp.getComma();
+		double[] y = getNumericArray();
+		if (interp.nextToken()==',') {
+			n = (int)getLastArg();
+			if (n>x.length || n>y.length)
+				interp.error("Array too short");
+		} else {
+			interp.getRightParen();			
+			if (y.length!=n)
+				interp.error("Arrays are not the same length");
+		}
 		ImagePlus imp = getImage();
 		int[] xcoord = new int[n];
 		int[] ycoord = new int[n];
@@ -1824,6 +1838,9 @@ public class Functions implements MacroConstants, Measurements {
 		    return;
 		} else if (name.equals("update")) {
 		    updatePlot(); 
+		    return;
+		} else if (name.equals("setFrameSize")) {
+			plot.setFrameSize((int)getFirstArg(), (int)getLastArg());
 		    return;
 		} else if (name.equals("setLimits")) {
 			plot.setLimits(getFirstArg(), getNextArg(), getNextArg(), getLastArg());
@@ -4314,14 +4331,22 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	void makeEllipse() {
+		ImagePlus imp = getImage();
+		Roi previousRoi = imp.getRoi();
+		if (shiftKeyDown||altKeyDown)
+			imp.saveRoi();
 		double x1 = getFirstArg();
 		double y1 = getNextArg();
 		double x2 = getNextArg();
 		double y2 = getNextArg();
 		double aspectRatio = getLastArg();
-		getImage().setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
+		Roi roi = new EllipseRoi(x1,y1,x2,y2,aspectRatio);
+		imp.setRoi(roi);
+		if (previousRoi!=null && roi!=null)
+			updateRoi(roi);
+		resetImage();
 	}
-
+	
 	double fit() {
 		interp.getToken();
 		if (interp.token!='.')
@@ -4911,6 +4936,74 @@ public class Functions implements MacroConstants, Measurements {
 		w.setValue(r.width);
 		h.setValue(r.height);
 	}
+	
+	void toScaled() {
+		ImagePlus imp = getImage();
+		int height = imp.getHeight();
+		Calibration cal = imp.getCalibration();
+		interp.getLeftParen();
+		if (isArrayArg()) {
+			Variable[] x = getArray();
+			interp.getComma();
+			Variable[] y = getArray();
+			interp.getRightParen();
+			for (int i=0; i<x.length; i++)
+				x[i].setValue(cal.getX(x[i].getValue()));
+			for (int i=0; i<y.length; i++)
+				y[i].setValue(cal.getY(y[i].getValue(),height));
+		} else {
+			Variable xv = getVariable();
+			Variable yv = null;
+			boolean twoArgs = interp.nextToken()==',';
+			if (twoArgs) {
+				interp.getComma();
+				yv = getVariable();
+			}
+			interp.getRightParen();
+			double x = xv.getValue();
+			if (twoArgs) {
+				double y = yv.getValue();
+				xv.setValue(cal.getX(x));
+				yv.setValue(cal.getY(y,height));
+			} else {
+				xv.setValue(x*cal.pixelWidth);
+			}
+		}
+	}
 
+	void toUnscaled() {
+		ImagePlus imp = getImage();
+		int height = imp.getHeight();
+		Calibration cal = imp.getCalibration();
+		interp.getLeftParen();
+		if (isArrayArg()) {
+			Variable[] x = getArray();
+			interp.getComma();
+			Variable[] y = getArray();
+			interp.getRightParen();
+			for (int i=0; i<x.length; i++)
+				x[i].setValue(cal.getRawX(x[i].getValue()));
+			for (int i=0; i<y.length; i++)
+				y[i].setValue(cal.getRawY(y[i].getValue(),height));
+		} else {
+			Variable xv = getVariable();
+			Variable yv = null;
+			boolean twoArgs = interp.nextToken()==',';
+			if (twoArgs) {
+				interp.getComma();
+				yv = getVariable();
+			}
+			interp.getRightParen();
+			double x = xv.getValue();
+			if (twoArgs) {
+				double y = yv.getValue();
+				xv.setValue(cal.getRawX(x));
+				yv.setValue(cal.getRawY(y,height));
+			} else {
+				xv.setValue(x/cal.pixelWidth);
+			}
+		}
+	}
+	
 } // class Functions
 
