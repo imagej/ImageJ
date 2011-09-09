@@ -52,7 +52,7 @@ public class ResultsTable implements Cloneable {
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
-	private boolean skipRowNumbers;
+	private boolean showRowNumbers = true;
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -342,7 +342,8 @@ public class ResultsTable implements Cloneable {
 			headingSet = false;
 		}
 		StringBuffer sb = new StringBuffer(200);
-		sb.append(" "+delimiter);
+		if (showRowNumbers)
+			sb.append(" "+delimiter);
 		if (rowLabels!=null)
 			sb.append(rowLabelHeading + delimiter);
 		String heading;
@@ -373,7 +374,7 @@ public class ResultsTable implements Cloneable {
 			sb = new StringBuffer(200);
 		else
 			sb.setLength(0);
-		if (!skipRowNumbers) {
+		if (showRowNumbers) {
 			sb.append(Integer.toString(row+1));
 			sb.append(delimiter);
 		}
@@ -419,6 +420,10 @@ public class ResultsTable implements Cloneable {
 		this.precision = precision;
 	}
 	
+	public void showRowNumbers(boolean showNumbers) {
+		showRowNumbers = showNumbers;
+	}
+
 	String n(double n) {
 		String s;
 		if (Math.round(n)==n && precision>=0)
@@ -723,16 +728,16 @@ public class ResultsTable implements Cloneable {
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 		pw = new PrintWriter(bos);
+		boolean saveShowRowNumbers = showRowNumbers;
+		if (Prefs.dontSaveRowNumbers)	
+			showRowNumbers = false;
 		if (!Prefs.dontSaveHeaders) {
 			String headings = getColumnHeadings();
-			if (Prefs.dontSaveRowNumbers)
-				headings = headings.substring(2);
 			pw.println(headings);
 		}
-		skipRowNumbers = Prefs.dontSaveRowNumbers;
 		for (int i=0; i<getCounter(); i++)
 			pw.println(getRowAsString(i));
-		skipRowNumbers = false;
+		showRowNumbers = saveShowRowNumbers;
 		pw.close();
 		delimiter = '\t';
 	}
