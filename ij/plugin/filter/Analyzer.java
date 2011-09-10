@@ -432,7 +432,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (roi!=null)
 				perimeter = roi.getLength();
 			else
-				perimeter = 0.0;
+				perimeter = imp!=null?imp.getWidth()*2+imp.getHeight()*2:0.0;
 			if ((measurements&PERIMETER)!=0) 
 				rt.addValue(ResultsTable.PERIMETER,perimeter);
 			if ((measurements&SHAPE_DESCRIPTORS)!=0) {
@@ -440,12 +440,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 				if (circularity>1.0) circularity = 1.0;
 				rt.addValue(ResultsTable.CIRCULARITY, circularity);
 				Polygon ch = null;
-				boolean isArea = roi!=null && roi.isArea();
-				if (isArea)
-					ch = roi.getConvexHull();
+				boolean isArea = roi==null || roi.isArea();
+				double convexArea = roi!=null?getArea(roi.getConvexHull()):stats.pixelCount;
 				rt.addValue(ResultsTable.ASPECT_RATIO, isArea?stats.major/stats.minor:0.0);
 				rt.addValue(ResultsTable.ROUNDNESS, isArea?4.0*stats.area/(Math.PI*stats.major*stats.major):0.0);
-				rt.addValue(ResultsTable.SOLIDITY, ch!=null?stats.pixelCount/getArea(ch):Double.NaN);
+				rt.addValue(ResultsTable.SOLIDITY, isArea?stats.pixelCount/convexArea:Double.NaN);
 				//rt.addValue(ResultsTable.CONVEXITY, getConvexPerimeter(roi, ch)/perimeter);
 			}
 		}
@@ -472,8 +471,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			boolean extras = true;
 			double FeretDiameter=Double.NaN, feretAngle=Double.NaN, minFeret=Double.NaN,
 				feretX=Double.NaN, feretY=Double.NaN;
-			if (roi!=null) {
-				double[] a = roi.getFeretValues();
+			Roi roi2 = roi;
+			if (roi2==null && imp!=null)
+				roi2 = new Roi(0, 0, imp.getWidth(), imp.getHeight());
+			if (roi2!=null) {
+				double[] a = roi2.getFeretValues();
 				if (a!=null) {
 					FeretDiameter = a[0];
 					feretAngle = a[1];
@@ -542,6 +544,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 		
 	final double getArea(Polygon p) {
+		if (p==null) return Double.NaN;
 		int carea = 0;
 		int iminus1;
 		for (int i=0; i<p.npoints; i++) {
@@ -767,8 +770,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 			add2(ResultsTable.CIRCULARITY);
 		if ((measurements&FERET)!=0)
 			add2(ResultsTable.FERET);
-		if ((measurements&INTEGRATED_DENSITY)!=0)
+		if ((measurements&INTEGRATED_DENSITY)!=0) {
 			add2(ResultsTable.INTEGRATED_DENSITY);
+			add2(ResultsTable.RAW_INTEGRATED_DENSITY);
+		}
 		if ((measurements&MEDIAN)!=0)
 			add2(ResultsTable.MEDIAN);
 		if ((measurements&SKEWNESS)!=0)
