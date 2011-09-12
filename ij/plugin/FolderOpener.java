@@ -97,6 +97,7 @@ public class FolderOpener implements PlugIn {
 		Calibration cal = null;
 		boolean allSameCalibration = true;
 		IJ.resetEscape();		
+		Overlay overlay = null;
 		try {
 			for (int i=0; i<list.length; i++) {
 				IJ.redirectErrorMessages();
@@ -202,6 +203,18 @@ public class FolderOpener implements PlugIn {
 				if (imp.getCalibration().pixelWidth!=cal.pixelWidth)
 					allSameCalibration = false;
 				ImageStack inputStack = imp.getStack();
+				Overlay overlay2 = imp.getOverlay();
+				if (overlay2!=null && !openAsVirtualStack) {
+					if (overlay==null)
+						overlay = new Overlay();
+					for (int j=0; j<overlay2.size(); j++) {
+						Roi roi = overlay2.get(j);
+						int position = roi.getPosition();
+						if (position==0)
+							roi.setPosition(count+1);
+						overlay.add(roi);
+					}
+				}
 				for (int slice=1; slice<=stackSize; slice++) {
 					ImageProcessor ip = inputStack.getProcessor(slice);
 					String label2 = label;
@@ -265,6 +278,7 @@ public class FolderOpener implements PlugIn {
 			fi.fileName = "";
 			fi.directory = directory;
 			imp2.setFileInfo(fi); // saves FileInfo of the first image
+			imp2.setOverlay(overlay);
 			if (allSameCalibration) {
 				// use calibration from first image
 				if (scale!=100.0 && cal.scaled()) {

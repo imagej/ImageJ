@@ -503,6 +503,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				int position = roi.getPosition();
 				if (imp.getStackSize()>1)
 					roi2.setPosition(imp.getCurrentSlice());
+				roi.setName(name);
+				roi2.setName(name);
 				rois.put(name, roi2);
 			} else
 				rois.put(name, roi);
@@ -650,7 +652,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			int len; 
 			ZipEntry entry = in.getNextEntry(); 
 			while (entry!=null) { 
-				String name = entry.getName(); 
+				String name = entry.getName();
 				if (name.endsWith(".roi")) { 
 					out = new ByteArrayOutputStream(); 
 					while ((len = in.read(buf)) > 0) 
@@ -1072,7 +1074,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(label);
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
 			if (color!=null) roi.setStrokeColor(color);
-			if (lineWidth>1) roi.setStrokeWidth(lineWidth);
+			roi.setStrokeWidth(rpRoi.getStroke()!=null?lineWidth:0);
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
@@ -1090,7 +1092,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		if (roi!=null && (n==1||!showingAll)) {
-			if (lineWidth>1) roi.setStrokeWidth(lineWidth);
+			roi.setStrokeWidth(rpRoi.getStroke()!=null?lineWidth:0);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {

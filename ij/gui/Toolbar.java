@@ -544,7 +544,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		drawButtons(g);
 	}
 
-	public boolean setTool(String name) { 
+	public boolean setTool(String name) {
+		if (name==null) return false;
+		if (name.indexOf(" Tool")!=-1) { // macro tool?
+			for (int i=SPARE1; i<=SPARE9; i++) {
+				if (name.equals(names[i])) {
+					setTool(i);
+					return true;
+				}
+			}
+		}
 		name = name.toLowerCase(Locale.US);
 		boolean ok = true;
 		if (name.indexOf("round")!=-1) {

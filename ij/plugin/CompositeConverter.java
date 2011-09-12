@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.plugin.frame.ContrastAdjuster;
 
-/** This plugin imlements the Image/Color/Make Composite command. */
+/** This plugin implements the Image/Color/Make Composite command. */
 public class CompositeConverter implements PlugIn {
 
 	public void run(String arg) {
@@ -56,6 +56,7 @@ public class CompositeConverter implements PlugIn {
 			if (loc!=null) ImageWindow.setNextLocation(loc);
 			imp2.show();
 			imp.hide();
+			WindowManager.setCurrentWindow(imp2.getWindow());
 	}
 
 	void convertRGBToCompositeStack(ImagePlus imp, String arg) {
