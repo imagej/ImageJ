@@ -67,6 +67,8 @@ public class RoiEncoder {
 		roiName = roi.getName();
 		if (roiName!=null)
 			roiNameSize = roiName.length()*2;
+		else
+			roiNameSize = 0;
 
 		switch (roiType) {
 			case Roi.POLYGON: type=polygon; break;

@@ -713,9 +713,11 @@ public class Analyzer implements PlugInFilter, Measurements {
 			sd.append("\t");
 		}
 		summarizeAreas();
-		int index = rt.getColumnIndex("Angle");
-		if (rt.columnExists(index)) add2(index);
-		index = rt.getColumnIndex("Length");
+		if ((measurements&ELLIPSE)==0) {
+			int index = rt.getColumnIndex("Angle");
+			if (rt.columnExists(index)) add2(index);
+		}
+		int index = rt.getColumnIndex("Length");
 		if (rt.columnExists(index)) add2(index);
 		TextPanel tp = IJ.getTextPanel();
 		if (tp!=null) {
@@ -723,11 +725,23 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (worksheetHeadings.equals(""))
 				IJ.setColumnHeadings(rt.getColumnHeadings());
 		}		
-		IJ.write("");		
-		IJ.write(new String(mean));		
-		IJ.write(new String(sd));		
-		IJ.write(new String(min));		
-		IJ.write(new String(max));
+		IJ.write("");	
+		String meanS = new String(mean);		
+		String sdS = new String(sd);		
+		String minS = new String(min);		
+		String maxS =new String(max);
+		if (meanS.endsWith("\t"))
+			meanS = meanS.substring(0, meanS.length()-1);
+		if (sdS.endsWith("\t"))
+			sdS = sdS.substring(0, sdS.length()-1);
+		if (minS.endsWith("\t"))
+			minS = minS.substring(0, minS.length()-1);
+		if (maxS.endsWith("\t"))
+			maxS = maxS.substring(0, maxS.length()-1);
+		IJ.write(meanS);		
+		IJ.write(sdS);		
+		IJ.write(minS);		
+		IJ.write(maxS);
 		IJ.write("");		
 		mean = null;		
 		sd = null;		

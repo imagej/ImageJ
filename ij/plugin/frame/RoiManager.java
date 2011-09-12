@@ -503,6 +503,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				int position = roi.getPosition();
 				if (imp.getStackSize()>1)
 					roi2.setPosition(imp.getCurrentSlice());
+				roi.setName(name);
+				roi2.setName(name);
 				rois.put(name, roi2);
 			} else
 				rois.put(name, roi);
@@ -650,7 +652,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			int len; 
 			ZipEntry entry = in.getNextEntry(); 
 			while (entry!=null) { 
-				String name = entry.getName(); 
+				String name = entry.getName();
 				if (name.endsWith(".roi")) { 
 					out = new ByteArrayOutputStream(); 
 					while ((len = in.read(buf)) > 0) 
