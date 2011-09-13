@@ -9,9 +9,7 @@ import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.plugin.JpegWriter;
 import ij.plugin.Orthogonal_Views;
-import ij.gui.Roi;
-import ij.gui.Overlay;
-import ij.gui.ImageCanvas;
+import ij.gui.*;
 import ij.measure.Measurements;
 import javax.imageio.*;
 
@@ -51,7 +49,11 @@ public class FileSaver {
 			if (f==null || !f.exists())
 				return saveAsTiff();
 			if (!IJ.isMacro()) {
-				if (!IJ.showMessageWithCancel("Save as TIFF", "The file "+ofi.fileName+" already exists.\nDo you want to replace it?"))
+				GenericDialog gd = new GenericDialog("Save as TIFF");
+				gd.addMessage("\""+ofi.fileName+"\" already exists.\nDo you want to replace it?");
+				gd.setOKLabel("Replace");
+				gd.showDialog();
+				if (gd.wasCanceled())
 					return false;
 			}
 			IJ.showStatus("Saving "+path);

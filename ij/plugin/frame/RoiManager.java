@@ -1316,6 +1316,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rois.put(name2, roi);
 			list.replaceItem(name2, index);
 		}
+		if (record()) Recorder.record("roiManager", "Remove Slice Info");
 	}
 
 	void help() {
@@ -1595,6 +1596,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     		//	IJ.log(debug[i]);
 		} else if (cmd.equals("enable interrupts")) {
 			ignoreInterrupts = false;
+		} else if (cmd.equals("remove slice info")) {
+			removeSliceInfo();
 		} else
 			ok = false;
 		macro = false;
