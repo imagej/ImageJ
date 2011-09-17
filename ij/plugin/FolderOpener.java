@@ -101,7 +101,9 @@ public class FolderOpener implements PlugIn {
 		try {
 			for (int i=0; i<list.length; i++) {
 				IJ.redirectErrorMessages();
-				ImagePlus imp = (new Opener()).openImage(directory, list[i]);
+				Opener opener = new Opener();
+				opener.setSilentMode(true);
+				ImagePlus imp = opener.openImage(directory, list[i]);
 				if (imp!=null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
@@ -363,7 +365,7 @@ public class FolderOpener implements PlugIn {
 		int count = 0;
 		for (int i=0; i< rawlist.length; i++) {
 			String name = rawlist[i];
-			if (name.startsWith(".")||name.equals("Thumbs.db")||name.equals("RoiSet.zip")||excludedFileType(name))
+			if (name.startsWith(".")||name.equals("Thumbs.db")||excludedFileType(name))
 				rawlist[i] = null;
 			else
 				count++;

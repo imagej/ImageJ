@@ -191,9 +191,10 @@ public class SaveDialog {
 				if (!f.exists()) dialog = false;
 			}
 			if (dialog) {
-				GenericDialog gd = new GenericDialog("Replace file?");
-				gd.addMessage("\""+name+"\" already exists.\nDo you want to replace it?"
-				+"\n \nYou may be able to avoid\nthis dialog by enabling"
+				Font font = new Font("SansSerif", Font.BOLD, 12);
+				GenericDialog gd = new GenericDialog("Replace File?");
+				gd.addMessage("\""+name+"\" already exists.\nDo you want to replace it?", font);
+				gd.addMessage("To avoid this dialog, enable"
 				+"\n\"Show all filename extensions\"\nin Finder Preferences.");
 				gd.setOKLabel("Replace");
 				gd.showDialog();

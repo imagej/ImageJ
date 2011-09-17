@@ -786,7 +786,8 @@ public class Opener {
 			String name = entry.getName();
 			if (name.endsWith(".roi")) {
 				zis.close();
-				IJ.runMacro("roiManager(\"Open\", getArgument());", path);
+				if (!silentMode)
+					IJ.runMacro("roiManager(\"Open\", getArgument());", path);
 				return null;
 			}
 			if (name.endsWith(".tif")) {

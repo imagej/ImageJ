@@ -172,7 +172,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Rename..."))
 			rename(null);
 		else if (command.equals("Properties..."))
-			setProperties(null, 0, null);
+			setProperties(null, -1, null);
 		else if (command.equals("Flatten [F]"))
 			flatten();
 		else if (command.equals("Measure"))
@@ -1024,6 +1024,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void setProperties(Color color, int lineWidth, Color fillColor) {
+		boolean showDialog = color==null && lineWidth==-1 && fillColor==null;
 		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
@@ -1034,7 +1035,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Font font = null;
 		int justification = TextRoi.LEFT;
 		double opacity = -1;
-        if (color==null && lineWidth==0 && fillColor==null) {
+        if (showDialog) {
 			String label = list.getItem(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
 			if (n==1) {
@@ -1074,7 +1075,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(label);
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
 			if (color!=null) roi.setStrokeColor(color);
-			roi.setStrokeWidth(rpRoi.getStroke()!=null?lineWidth:0);
+			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
@@ -1092,7 +1093,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		if (roi!=null && (n==1||!showingAll)) {
-			roi.setStrokeWidth(rpRoi.getStroke()!=null?lineWidth:0);
+			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
@@ -1632,17 +1633,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return true;
 		} else if (cmd.equals("set color")) {
 			Color color = Colors.decode(name, Color.cyan);
-			setProperties(color, 0, null);
+			setProperties(color, -1, null);
 			macro = false;
 			return true;
 		} else if (cmd.equals("set fill color")) {
 			Color fillColor = Colors.decode(name, Color.cyan);
-			setProperties(null, 0, fillColor);
+			setProperties(null, -1, fillColor);
 			macro = false;
 			return true;
 		} else if (cmd.equals("set line width")) {
 			int lineWidth = (int)Tools.parseDouble(name, 0);
-			if (lineWidth!=0) setProperties(null, lineWidth, null);
+			if (lineWidth>=0)
+				setProperties(null, lineWidth, null);
 			macro = false;
 			return true;
 		} else if (cmd.equals("associate")) {

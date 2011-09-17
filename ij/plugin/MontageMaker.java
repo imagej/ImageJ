@@ -3,6 +3,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.filter.RGBStackSplitter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -17,21 +18,21 @@ public class MontageMaker implements PlugIn {
 	private static int saveID;
 	private static int saveStackSize;
 	private static int fontSize = 12;
+	private boolean hyperstack;
 
 	public void run(String arg) {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp==null || imp.getStackSize()==1)
-			{IJ.error("Stack required"); return;}
-		if (imp.isHyperStack()) {
-			IJ.error("Make Montage",
-				"Make Montage does not work directly with hyperstacks. You need\n"+
-				"to first use the Image>Type>RGB Color command to create a Z or T\n"+
-				"series, or use Image>Hyperstacks>Reduce Dimensionality to create\n"+
-				"a stack that can be used to create a channel montage.");
+		if (imp==null || imp.getStackSize()==1) {
+			error("Stack required");
+			return;
+		}
+		hyperstack = imp.isHyperStack();
+		if (hyperstack && imp.getNSlices()>1 && imp.getNFrames()>1) {
+			error("5D hyperstacks are not supported");
 			return;
 		}
 		int channels = imp.getNChannels();
-		if (imp.isComposite() && channels>1) {
+		if (!hyperstack && imp.isComposite() && channels>1) {
 			int channel = imp.getChannel();
 			CompositeImage ci = (CompositeImage)imp;
 			int mode = ci.getMode();
@@ -56,6 +57,11 @@ public class MontageMaker implements PlugIn {
 	
 	public void makeMontage(ImagePlus imp) {
 			int nSlices = imp.getStackSize();
+			if (hyperstack) {
+				nSlices = imp.getNSlices();
+				if (nSlices==1)
+					nSlices = imp.getNFrames();
+			}
 			if (columns==0 || !(imp.getID()==saveID || nSlices==saveStackSize)) {
 				columns = (int)Math.sqrt(nSlices);
 				rows = columns;
@@ -76,8 +82,10 @@ public class MontageMaker implements PlugIn {
 			gd.addNumericField("Columns:", columns, 0);
 			gd.addNumericField("Rows:", rows, 0);
 			gd.addNumericField("Scale Factor:", scale, 2);
-			gd.addNumericField("First Slice:", first, 0);
-			gd.addNumericField("Last Slice:", last, 0);
+			if (!hyperstack) {
+				gd.addNumericField("First Slice:", first, 0);
+				gd.addNumericField("Last Slice:", last, 0);
+			}
 			gd.addNumericField("Increment:", inc, 0);
 			gd.addNumericField("Border Width:", borderWidth, 0);
 			gd.addNumericField("Font Size:", fontSize, 0);
@@ -89,8 +97,10 @@ public class MontageMaker implements PlugIn {
 			columns = (int)gd.getNextNumber();
 			rows = (int)gd.getNextNumber();
 			scale = gd.getNextNumber();
-			first = (int)gd.getNextNumber();
-			last = (int)gd.getNextNumber();
+			if (!hyperstack) {
+				first = (int)gd.getNextNumber();
+				last = (int)gd.getNextNumber();
+			}
 			inc = (int)gd.getNextNumber();
 			borderWidth = (int)gd.getNextNumber();
 			fontSize = (int)gd.getNextNumber();
@@ -101,13 +111,18 @@ public class MontageMaker implements PlugIn {
 				{first=1; last=nSlices;}
 			if (inc<1) inc = 1;
 			if (gd.invalidNumber()) {
-				IJ.error("Invalid number");
+				error("Invalid number");
 				return;
 			}
 			label = gd.getNextBoolean();
 			useForegroundColor = gd.getNextBoolean();
-			ImagePlus imp2 = makeMontage2(imp, columns, rows, scale, first, last, inc, borderWidth, label);
-			imp2.show();
+			ImagePlus imp2 = null;
+			if (hyperstack)
+				imp2 = makeHyperstackMontage(imp, columns, rows, scale, inc, borderWidth, label);
+			else
+				imp2 = makeMontage2(imp, columns, rows, scale, first, last, inc, borderWidth, label);
+			if (imp2!=null)
+				imp2.show();
 	}
 	
 	/** Creates a montage and displays it. */
@@ -193,6 +208,24 @@ public class MontageMaker implements PlugIn {
 		return imp2;
 	}
 		
+	/** Creates a hyperstack montage and returns it as an ImagePlus. */
+	private ImagePlus makeHyperstackMontage(ImagePlus imp, int columns, int rows, double scale, int inc, int borderWidth, boolean labels) {
+		ImagePlus[] channels = RGBStackSplitter.splitChannels(imp);
+		int n = channels.length;
+		ImagePlus[] montages = new ImagePlus[n];
+		for (int i=0; i<n; i++) {
+			int last = channels[i].getStackSize();
+			montages[i] = makeMontage2(channels[i], columns, rows, scale, 1, last, inc, borderWidth, labels);
+		}
+		ImagePlus montage = (new RGBStackMerge()).mergeHyperstacks(montages, false);
+		montage.setTitle("Montage");
+		return montage;
+	}
+	
+	private void error(String msg) {
+		IJ.error("Make Montage", msg);
+	}
+	
 	void drawBorder(ImageProcessor montage, int x, int y, int width, int height, int borderWidth) {
 		montage.setLineWidth(borderWidth);
 		montage.moveTo(x, y);
