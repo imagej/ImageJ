@@ -159,11 +159,10 @@ public class ZProjector implements PlugIn {
     }
 
     private void doRGBProjection(ImageStack stack) {
-        RGBStackSplitter splitter = new RGBStackSplitter();
-        splitter.split(stack, true);
-        ImagePlus red = new ImagePlus("Red", splitter.red);
-        ImagePlus green = new ImagePlus("Green", splitter.green);
-        ImagePlus blue = new ImagePlus("Blue", splitter.blue);
+        ImageStack[] channels = ChannelSplitter.splitRGB(stack, true);
+        ImagePlus red = new ImagePlus("Red", channels[0]);
+        ImagePlus green = new ImagePlus("Green", channels[1]);
+        ImagePlus blue = new ImagePlus("Blue", channels[2]);
         imp.unlock();
         ImagePlus saveImp = imp;
         imp = red;

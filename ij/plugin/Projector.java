@@ -4,7 +4,6 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
-import ij.plugin.filter.RGBStackSplitter;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -240,11 +239,10 @@ public class Projector implements PlugIn {
     private  void doRGBProjections(ImagePlus imp) {
     	boolean saveUseInvertingLut = Prefs.useInvertingLut;
     	Prefs.useInvertingLut = false;
-        RGBStackSplitter splitter = new RGBStackSplitter();
-        splitter.split(imp.getStack(), true);
-        ImagePlus red = new ImagePlus("Red", splitter.red);
-        ImagePlus green = new ImagePlus("Green", splitter.green);
-        ImagePlus blue = new ImagePlus("Blue", splitter.blue);
+		ImageStack[] channels = ChannelSplitter.splitRGB(imp.getStack(), true);
+        ImagePlus red = new ImagePlus("Red", channels[0]);
+        ImagePlus green = new ImagePlus("Green", channels[1]);
+        ImagePlus blue = new ImagePlus("Blue", channels[2]);
         Calibration cal = imp.getCalibration();
         Roi roi = imp.getRoi();
         if (roi!=null)

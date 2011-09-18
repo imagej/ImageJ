@@ -3,7 +3,6 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
-import ij.plugin.filter.RGBStackSplitter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -210,7 +209,7 @@ public class MontageMaker implements PlugIn {
 		
 	/** Creates a hyperstack montage and returns it as an ImagePlus. */
 	private ImagePlus makeHyperstackMontage(ImagePlus imp, int columns, int rows, double scale, int inc, int borderWidth, boolean labels) {
-		ImagePlus[] channels = RGBStackSplitter.splitChannels(imp);
+		ImagePlus[] channels = ChannelSplitter.split(imp);
 		int n = channels.length;
 		ImagePlus[] montages = new ImagePlus[n];
 		for (int i=0; i<n; i++) {
