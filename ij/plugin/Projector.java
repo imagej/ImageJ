@@ -239,7 +239,7 @@ public class Projector implements PlugIn {
     private  void doRGBProjections(ImagePlus imp) {
     	boolean saveUseInvertingLut = Prefs.useInvertingLut;
     	Prefs.useInvertingLut = false;
-		ImageStack[] channels = ChannelSplitter.splitRGB(imp.getStack(), true);
+        ImageStack[] channels = ChannelSplitter.splitRGB(imp.getStack(), true);
         ImagePlus red = new ImagePlus("Red", channels[0]);
         ImagePlus green = new ImagePlus("Green", channels[1]);
         ImagePlus blue = new ImagePlus("Blue", channels[2]);
