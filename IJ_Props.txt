@@ -118,7 +118,7 @@ adjust07="Canvas Size...",ij.plugin.CanvasResizer
 adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 
 # Plugins installed in the Image/Color submenu
-color01="Split Channels",ij.plugin.filter.RGBStackSplitter
+color01="Split Channels",ij.plugin.ChannelSplitter
 color02="Merge Channels...",ij.plugin.RGBStackMerge
 color03="Channels Tool... ",ij.plugin.frame.Channels
 color04=-

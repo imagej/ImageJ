@@ -215,7 +215,7 @@ public class OverlayCommands implements PlugIn {
 
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
-		int flags = IJ.setupDialog(imp, 0);
+		int flags = imp.isComposite()?0:IJ.setupDialog(imp, 0);
 		if (flags==PlugInFilter.DONE)
 			return;
 		else if (flags==PlugInFilter.DOES_STACKS)

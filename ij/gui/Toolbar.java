@@ -758,10 +758,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return 0;
 	}
 
-	/** Set the size of the brush tool, which must be greater than 4. */
+	/** Set the size of the brush tool, in pixels. */
 	public static void setBrushSize(int size) {
 		brushSize = size;
-		if (brushSize<5) brushSize = 5;
+		if (brushSize<1) brushSize = 1;
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 		
@@ -1289,6 +1289,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (gd.getNextBoolean())
 			ovalType = BRUSH_ROI;
 		brushSize = (int)gd.getNextNumber();
+		if (brushSize<1) brushSize=1;
 		repaintTool(OVAL);
 		ImagePlus img = WindowManager.getCurrentImage();
 		Roi roi = img!=null?img.getRoi():null;

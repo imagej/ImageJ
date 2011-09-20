@@ -3,7 +3,6 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
-import ij.plugin.filter.RGBStackSplitter;
 import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;

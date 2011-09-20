@@ -588,6 +588,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	}
 
 	void apply(ImagePlus imp, ImageProcessor ip) {
+		if (balance && imp.isComposite())
+			return;
 		String option = null;
 		if (RGBImage)
 			imp.unlock();
