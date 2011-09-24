@@ -158,7 +158,7 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 	/** Puts ImageProcessor (ROI) into a new ImageProcessor of size width x height y at position (x,y).
 	The image is mirrored around its edges to avoid wrap around effects of the FFT. */
 	public ImageProcessor tileMirror(ImageProcessor ip, int width, int height, int x, int y) {
-			
+		if (IJ.debugMode) IJ.log("FFT.tileMirror: "+width+"x"+height+" "+ip);
 		if (x < 0 || x > (width -1) || y < 0 || y > (height -1)) {
 			IJ.error("Image to be tiled is out of bounds.");
 			return null;
