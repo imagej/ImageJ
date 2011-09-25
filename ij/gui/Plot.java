@@ -90,6 +90,7 @@ public class Plot {
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
 	private boolean drawPending;
+	private int sourceImageID;
 	
 	/** keeps a reference to all of the data that is going to be plotted. */
 	ArrayList storedData;
@@ -117,7 +118,6 @@ public class Plot {
 			storeData(xValues, yValues);
 		this.xValues = xValues;
 		this.yValues = yValues;
-		
 		
 		double[] a = Tools.getMinMax(xValues);
 		xMin=a[0]; xMax=a[1];
@@ -574,6 +574,7 @@ public class Plot {
 	}
 	
 	void drawFloatPolyline(ImageProcessor ip, float[] x, float[] y, int n) {
+		if (x==null || x.length==0) return;
 		ip.setClipRect(frame);
 		int x1, y1, x2, y2;
 		boolean y1IsNaN, y2IsNaN;
@@ -681,6 +682,14 @@ public class Plot {
 	private void storeData(float[] xvalues, float[] yvalues){
 		storedData.add(xvalues);
 		storedData.add(yvalues);
+	}
+	
+	void setSourceImageID(int id) {
+		sourceImageID = id;
+	}
+	
+	int getSourceImageID() {
+		return sourceImageID;
 	}
 	
 }

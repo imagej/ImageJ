@@ -10,12 +10,13 @@ import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
-import ij.measure.Measurements;
-import ij.measure.ResultsTable;
+import ij.measure.*;
 
-
-/** Obsolete; mostly replaced by the Plot class. */
-public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner {
+/** This class implements the Analyze>Plot Profile command.
+* @authors Michael Schmid and Wayne Rasband
+*/
+public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner,
+	MouseListener, MouseMotionListener, KeyListener, ImageListener, Runnable {
 
 	/** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
@@ -45,6 +46,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static final int NO_GRID_LINES = 16;
 
 	private Button list, save, copy;
+	private Button live;
 	private Label coordinates;
 	private static String defaultDirectory = null;
 	private Font font = new Font("Helvetica", Font.PLAIN, 12);
@@ -55,6 +57,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
+	
+	private ImagePlus srcImp;		// the source image for live plotting
+	private Thread bgThread;		// thread for plotting (in the background)
+	private boolean doUpdate;	// tells the background thread to update
+
 	
 	/** Save x-values only. To set, use Edit/Options/
 		Profile Plot Options. */
@@ -184,6 +191,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		copy = new Button("Copy...");
 		copy.addActionListener(this);
 		buttons.add(copy);
+		live = new Button("Live");
+		live.addActionListener(this);
+		buttons.add(live);
 		coordinates = new Label("X=12345678, Y=12345678"); 
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		buttons.add(coordinates);
@@ -413,7 +423,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
-		if (b==list)
+		if (b==live)
+			enableLiveProfiling();
+		else if (b==list)
 			showList();
 		else if (b==save)
 			saveAsText();
@@ -478,13 +490,124 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	
-	//public void componentHidden(ComponentEvent e) {}
-	//public void componentMoved(ComponentEvent e) {}
-	//public void componentResized(ComponentEvent e) {
-	//	IJ.log("componentResized");
-	//}
-	//public void componentShown(ComponentEvent e) {}
- 
+	private void enableLiveProfiling() {
+		if (plot==null || bgThread!=null) return;
+		int id = plot.getSourceImageID();
+		srcImp = WindowManager.getImage(id);
+		if (srcImp==null) return;
+		bgThread = new Thread(this, "Live Profiler");
+		bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
+		bgThread.start();
+		createListeners();
+		live.setForeground(Color.red);
+	}
+	
+	// these listeners are activated if the selection is changed in the source ImagePlus
+	public synchronized void mousePressed(MouseEvent e) { doUpdate = true; notify(); }   
+	public synchronized void mouseDragged(MouseEvent e) { doUpdate = true; notify(); }
+	public synchronized void mouseClicked(MouseEvent e) { doUpdate = true; notify(); }
+	public synchronized void keyPressed(KeyEvent e) { doUpdate = true; notify(); }
+	
+	// unused listeners
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {}
+	public void keyTyped(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {}
+	public void imageOpened(ImagePlus imp) {}
+	
+	// This listener is called if the source image content is changed
+	public synchronized void imageUpdated(ImagePlus imp) {
+		if (imp==srcImp) { 
+			if (!isSelection())
+				IJ.run(imp, "Restore Selection", "");
+			doUpdate = true;
+			notify();
+		}
+	}
+	
+	// If either the source image or this image are closed, exit
+	public void imageClosed(ImagePlus imp) {
+		if (imp==srcImp || imp==this.imp) {
+			if (bgThread!=null)
+				bgThread.interrupt();
+			bgThread = null;
+			removeListeners();
+		}
+	}
+	
+	// the background thread for live plotting.
+	public void run() {
+		while (true) {
+			IJ.wait(50);	//delay to make sure the roi has been updated
+			Plot plot = getProfilePlot();
+			if (plot!=null) {
+				this.plot = plot;
+				ImageProcessor ip = plot.getProcessor();
+				if (ip!=null)
+					imp.setProcessor(null, ip);
+			}
+			synchronized(this) {
+				if (doUpdate) {
+					doUpdate = false;		//and loop again
+				} else {
+					try {wait();}	//notify wakes up the thread
+					catch(InterruptedException e) { //interrupted tells the thread to exit
+						return;
+					}
+				}
+			}
+		}
+	}
+		
+	private void createListeners() {
+		//IJ.log("createListeners");
+		if (srcImp==null) return;
+		ImageCanvas ic = srcImp.getCanvas();
+		if (ic==null) return;
+		ic.addMouseListener(this);
+		ic.addMouseMotionListener(this);
+		ic.addKeyListener(this);
+		srcImp.addImageListener(this);
+	}
+	
+	private void removeListeners() {
+		//IJ.log("removeListeners");
+		if (srcImp==null) return;
+		ImageCanvas ic = srcImp.getCanvas();
+		ic.removeMouseListener(this);
+		ic.removeMouseMotionListener(this);
+		ic.removeKeyListener(this);
+		srcImp.removeImageListener(this);
+		srcImp = null;
+		live.setForeground(Color.black);
+	}
+	
+	/** Returns true if there is a straight line selection or rectangular selection */
+	private boolean isSelection() {
+		if (srcImp==null)
+			return false;
+		Roi roi = srcImp.getRoi();
+		if (roi==null)
+			return false;
+		return roi.getType()==Roi.LINE || roi.getType()==Roi.RECTANGLE;
+	}
+	
+	/** Get a source image profile plot. */
+	private Plot getProfilePlot() {
+		if (srcImp==null || !isSelection())
+			return null;
+		Roi roi = srcImp.getRoi();
+		if (roi == null)
+			return null;
+		if (!(roi.isLine() || roi.getType()==Roi.RECTANGLE))
+			return null;
+		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
+		ProfilePlot pp = new ProfilePlot(srcImp, averageHorizontally);
+		return pp.getPlot();
+	}
+	
 }
 
 

@@ -99,8 +99,15 @@ public class ProfilePlot {
 	
 	/** Displays this profile plot in a window. */
 	public void createWindow() {
+		Plot plot = getPlot();
+		if (plot==null) return;
+		plot.setSourceImageID(imp.getID());
+		plot.show();
+	}
+	
+	Plot getPlot() {
 		if (profile==null)
-			return;
+			return null;
 		Dimension d = getPlotSize();
 		String xLabel = "Distance ("+units+")";
   		int n = profile.length;
@@ -118,7 +125,7 @@ public class ProfilePlot {
 			double[] a = Tools.getMinMax(xValues);
 			plot.setLimits(a[0],a[1],fixedMin,fixedMax);
 		}
-		plot.show();
+		return plot;
 	}
 	
 	String getShortTitle(ImagePlus imp) {

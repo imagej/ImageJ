@@ -539,9 +539,7 @@ public class ImageReader {
 	}
 	
 	private void showProgress(long current, long last) {
-		int icurrent = current>Integer.MAX_VALUE?Integer.MAX_VALUE:(int)current;
-		int ilast = last>Integer.MAX_VALUE?Integer.MAX_VALUE:(int)last;
-		showProgress(icurrent, ilast);
+		showProgress((int)(current/10L), (int)(last/10L));
 	}
 	
 	Object readRGB48(InputStream in) throws IOException {
