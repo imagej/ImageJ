@@ -45,11 +45,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static final int INTERPOLATE = 8;
 	private static final int NO_GRID_LINES = 16;
 
-	private Button list, save, copy;
-	private Button live;
+	private Button list, save, copy, live;
 	private Label coordinates;
 	private static String defaultDirectory = null;
-	private Font font = new Font("Helvetica", Font.PLAIN, 12);
 	private static int options;
 	private int defaultDigits = -1;
 	private boolean realXValues;
@@ -57,6 +55,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
+	private String blankLabel = "                      ";
 	
 	private ImagePlus srcImp;		// the source image for live plotting
 	private Thread bgThread;		// thread for plotting (in the background)
@@ -196,11 +195,12 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		buttons.add(live);
 		coordinates = new Label("X=12345678, Y=12345678"); 
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		coordinates.setBackground(new Color(220, 220, 220));
 		buttons.add(coordinates);
 		add(buttons);
 		plot.draw();
 		pack();
-		coordinates.setText("					 ");
+		coordinates.setText(blankLabel);
 		ImageProcessor ip = plot.getProcessor();
 		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
 			imp.setProcessor(null, ip);
@@ -234,8 +234,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	*/
 	public void mouseMoved(int x, int y) {
 		super.mouseMoved(x, y);
-		if (plot!=null && plot.frame!=null && coordinates!=null)
-			coordinates.setText(plot.getCoordinates(x,y));
+		if (plot!=null && plot.frame!=null && coordinates!=null) {
+			String coords = plot.getCoordinates(x,y) + blankLabel;
+			coordinates.setText(coords.substring(0, blankLabel.length()));
+		}
 	}
 			
 	/** shows the data of the backing plot in a Textwindow with columns */
@@ -499,6 +501,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
 		bgThread.start();
 		createListeners();
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
 		live.setForeground(Color.red);
 	}
 	
@@ -581,6 +585,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		ic.removeKeyListener(this);
 		srcImp.removeImageListener(this);
 		srcImp = null;
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
 		live.setForeground(Color.black);
 	}
 	
