@@ -180,7 +180,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Displays the plot. */
 	public void draw() {
 		Panel buttons = new Panel();
-		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,2,0));
 		list = new Button(" List ");
 		list.addActionListener(this);
 		buttons.add(list);
@@ -426,7 +426,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
 		if (b==live)
-			enableLiveProfiling();
+			toggleLiveProfiling();
 		else if (b==list)
 			showList();
 		else if (b==save)
@@ -492,18 +492,27 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	
+	private void toggleLiveProfiling() {
+		boolean liveMode = live.getForeground()==Color.red;
+		if (liveMode)
+			removeListeners();
+		else
+			enableLiveProfiling();
+	}
+
 	private void enableLiveProfiling() {
-		if (plot==null || bgThread!=null) return;
-		int id = plot.getSourceImageID();
-		srcImp = WindowManager.getImage(id);
-		if (srcImp==null) return;
-		bgThread = new Thread(this, "Live Profiler");
-		bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
-		bgThread.start();
+		if (plot!=null && bgThread==null) {
+			int id = plot.getSourceImageID();
+			srcImp = WindowManager.getImage(id);
+			if (srcImp==null) return;
+			bgThread = new Thread(this, "Live Profiler");
+			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
+			bgThread.start();
+			imageUpdated(srcImp);
+		}
 		createListeners();
-		Font font = live.getFont();
-		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
-		live.setForeground(Color.red);
+		if (srcImp!=null)
+			imageUpdated(srcImp);
 	}
 	
 	// these listeners are activated if the selection is changed in the source ImagePlus
@@ -538,6 +547,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 				bgThread.interrupt();
 			bgThread = null;
 			removeListeners();
+			srcImp = null;
 		}
 	}
 	
@@ -574,6 +584,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		ic.addMouseMotionListener(this);
 		ic.addKeyListener(this);
 		srcImp.addImageListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+		live.setForeground(Color.red);
 	}
 	
 	private void removeListeners() {
@@ -584,7 +597,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		ic.removeMouseMotionListener(this);
 		ic.removeKeyListener(this);
 		srcImp.removeImageListener(this);
-		srcImp = null;
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
 		live.setForeground(Color.black);

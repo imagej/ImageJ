@@ -12,7 +12,9 @@ import ij.plugin.filter.Analyzer;
 import ij.text.TextWindow;
 
 /** This class is an extended ImageWindow that displays histograms. */
-public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, ClipboardOwner {
+public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, ClipboardOwner,
+	MouseListener, MouseMotionListener, ImageListener, Runnable {
+	
 	static final int WIN_WIDTH = 300;
 	static final int WIN_HEIGHT = 240;
 	static final int HIST_WIDTH = 256;
@@ -20,12 +22,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int BAR_HEIGHT = 12;
 	static final int XMARGIN = 20;
 	static final int YMARGIN = 10;
+	static final String blankLabel = "         ";
 	
 	protected ImageStatistics stats;
 	protected int[] histogram;
 	protected LookUpTable lut;
 	protected Rectangle frame = null;
-	protected Button list, save, copy,log;
+	protected Button list, save, copy, log, live;
 	protected Label value, count;
 	protected static String defaultDirectory = null;
 	protected int decimalPlaces;
@@ -36,6 +39,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	protected Calibration cal;
 	protected int yMax;
 	public static int nBins = 256;
+		
+	private int srcImageID;			// ID of source image
+	private ImagePlus srcImp;		// source image for live histograms
+	private Thread bgThread;		// thread background drawing
+	private boolean doUpdate;	// tells background thread to update
     
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
@@ -90,7 +98,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
 	public void showHistogram(ImagePlus imp, ImageStatistics stats) {
-		setup();
+		if (list==null)
+			setup();
 		this.stats = stats;
 		cal = imp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
@@ -111,6 +120,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		int type = imp.getType();
 		boolean fixedRange = type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256 || type==ImagePlus.COLOR_RGB;
 		ImageProcessor ip = this.imp.getProcessor();
+		ip.setColor(Color.white);
+		ip.resetRoi();
+		ip.fill();
 		boolean color = !(imp.getProcessor() instanceof ColorProcessor) && !lut.isGrayscale();
 		if (color)
 			ip = ip.convertToRGB();
@@ -123,7 +135,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	public void setup() {
  		Panel buttons = new Panel();
-		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,2,0));
 		list = new Button("List");
 		list.addActionListener(this);
 		buttons.add(list);
@@ -133,13 +145,20 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		log = new Button("Log");
 		log.addActionListener(this);
 		buttons.add(log);
+		live = new Button("Live");
+		live.addActionListener(this);
+		buttons.add(live);
 		Panel valueAndCount = new Panel();
 		valueAndCount.setLayout(new GridLayout(2, 1));
-		value = new Label("                  "); //21
-		value.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		value = new Label(blankLabel);
+		Font font = new Font("Monospaced", Font.PLAIN, 12);
+		value.setFont(font);
+		//Color lightGray = new Color(220, 220, 220);
+		//value.setBackground(lightGray);
 		valueAndCount.add(value);
-		count = new Label("                  ");
-		count.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		count = new Label(blankLabel);
+		count.setFont(font);
+		//count.setBackground(lightGray);
 		valueAndCount.add(count);
 		buttons.add(valueAndCount);
 		add(buttons);
@@ -153,11 +172,14 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			x = x - frame.x;
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
-			value.setText("  Value: " + ResultsTable.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits));
-			count.setText("  Count: " + histogram[index]);
+			String v = ResultsTable.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits) + blankLabel;
+			String c = histogram[index] + blankLabel;
+			int len = blankLabel.length();
+			value.setText(v.substring(0,len));
+			count.setText(c.substring(0,len));
 		} else {
-			value.setText("");
-			count.setText("");
+			value.setText(blankLabel);
+			count.setText(blankLabel);
 		}
 	}
     
@@ -201,6 +223,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y, 256, BAR_HEIGHT);
 		y += BAR_HEIGHT+15;
   		drawText(ip, x, y, fixedRange);
+  		srcImageID = imp.getID();
 	}
        
 	void drawAlignedColorBar(ImagePlus imp, double xMin, double xMax, ImageProcessor ip, int x, int y, int width, int height){
@@ -393,7 +416,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
-		if (b==list)
+		if (b==live)
+			toggleLiveHistograms();
+		else if (b==list)
 			showList();
 		else if (b==copy)
 			copyToClipboard();
@@ -412,6 +437,106 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		for (int i=0; i<stats.nBins; i++)
 			values[i] = cal.getCValue(stats.histMin+i*stats.binSize);
 		return values;
+	}
+
+	private void toggleLiveHistograms() {
+		boolean liveMode = live.getForeground()==Color.red;
+		if (liveMode)
+			removeListeners();
+		else
+			enableLiveHistograms();
+	}
+
+	private void enableLiveHistograms() {
+		if (bgThread==null) {
+			srcImp = WindowManager.getImage(srcImageID);
+			if (srcImp==null) return;
+			bgThread = new Thread(this, "Live Profiler");
+			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
+			bgThread.start();
+			imageUpdated(srcImp);
+		}
+		createListeners();
+		if (srcImp!=null)
+			imageUpdated(srcImp);
+	}
+
+	// these listeners are activated if there are in the source ImagePlus
+	public synchronized void mousePressed(MouseEvent e) { doUpdate = true; notify(); }   
+	public synchronized void mouseDragged(MouseEvent e) { doUpdate = true; notify(); }
+	public synchronized void mouseClicked(MouseEvent e) { doUpdate = true; notify(); }
+	
+	// unused listeners
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {}
+	public void imageOpened(ImagePlus imp) {}
+	
+	// This listener is called if the source image content is changed
+	public synchronized void imageUpdated(ImagePlus imp) {
+		if (imp==srcImp) { 
+			doUpdate = true;
+			notify();
+		}
+	}
+	
+	// If either the source image or this image are closed, exit
+	public void imageClosed(ImagePlus imp) {
+		if (imp==srcImp || imp==this.imp) {
+			if (bgThread!=null)
+				bgThread.interrupt();
+			bgThread = null;
+			removeListeners();
+			srcImp = null;
+		}
+	}
+	
+	// the background thread for live plotting.
+	public void run() {
+		while (true) {
+			if (srcImp!=null) {
+				if (srcImp.getRoi()!=null)
+					IJ.wait(50);	//delay to make sure the roi has been updated
+				//IJ.log("run");
+				showHistogram(srcImp, 256);
+			}
+			synchronized(this) {
+				if (doUpdate) {
+					doUpdate = false;		//and loop again
+				} else {
+					try {wait();}	//notify wakes up the thread
+					catch(InterruptedException e) { //interrupted tells the thread to exit
+						return;
+					}
+				}
+			}
+		}
+	}
+		
+	private void createListeners() {
+		//IJ.log("createListeners");
+		if (srcImp==null) return;
+		ImageCanvas ic = srcImp.getCanvas();
+		if (ic==null) return;
+		ic.addMouseListener(this);
+		ic.addMouseMotionListener(this);
+		srcImp.addImageListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+		live.setForeground(Color.red);
+	}
+	
+	private void removeListeners() {
+		//IJ.log("removeListeners");
+		if (srcImp==null) return;
+		ImageCanvas ic = srcImp.getCanvas();
+		ic.removeMouseListener(this);
+		ic.removeMouseMotionListener(this);
+		srcImp.removeImageListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
+		live.setForeground(Color.black);
 	}
 
 }
