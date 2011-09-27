@@ -22,7 +22,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int BAR_HEIGHT = 12;
 	static final int XMARGIN = 20;
 	static final int YMARGIN = 10;
-	static final String blankLabel = "         ";
+	static final String blankLabel = IJ.isMacOSX()?"         ":"                ";
 	
 	protected ImageStatistics stats;
 	protected int[] histogram;
@@ -44,7 +44,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private ImagePlus srcImp;		// source image for live histograms
 	private Thread bgThread;		// thread background drawing
 	private boolean doUpdate;	// tells background thread to update
-    
+	    
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
 		super(NewImage.createByteImage("Histogram of "+imp.getShortTitle(), WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
@@ -123,19 +123,22 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.setColor(Color.white);
 		ip.resetRoi();
 		ip.fill();
-		boolean color = !(imp.getProcessor() instanceof ColorProcessor) && !lut.isGrayscale();
-		if (color)
+		ImageProcessor srcIP = imp.getProcessor();
+		boolean thresholding = srcIP.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+		boolean grayscaleLut = (srcIP instanceof ColorProcessor) || (lut.isGrayscale() && !thresholding);
+		if (!grayscaleLut)
 			ip = ip.convertToRGB();
 		drawHistogram(imp, ip, fixedRange, stats.histMin, stats.histMax);
-		if (color)
-			this.imp.setProcessor(null, ip);
-		else
+		if (grayscaleLut || this.imp.getBitDepth()==24)
 			this.imp.updateAndDraw();
+		else
+			this.imp.setProcessor(null, ip);
 	}
 
 	public void setup() {
  		Panel buttons = new Panel();
-		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,2,0));
+ 		int hgap = IJ.isMacOSX()?1:5;
+		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		list = new Button("List");
 		list.addActionListener(this);
 		buttons.add(list);
@@ -149,7 +152,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		live.addActionListener(this);
 		buttons.add(live);
 		Panel valueAndCount = new Panel();
-		valueAndCount.setLayout(new GridLayout(2, 1));
+		valueAndCount.setLayout(new GridLayout(2,1,0,0));
 		value = new Label(blankLabel);
 		Font font = new Font("Monospaced", Font.PLAIN, 12);
 		value.setFont(font);
@@ -172,9 +175,14 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			x = x - frame.x;
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
-			String v = ResultsTable.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits) + blankLabel;
-			String c = histogram[index] + blankLabel;
-			int len = blankLabel.length();
+			String vlabel=null, clabel=null;
+			if (IJ.isMacOSX())
+				{vlabel=" "; clabel=" ";}
+			else
+				{vlabel=" value="; clabel=" count=";}
+			String v = vlabel+ResultsTable.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits)+blankLabel;
+			String c = clabel+histogram[index]+blankLabel;
+			int len = vlabel.length() + blankLabel.length();
 			value.setText(v.substring(0,len));
 			count.setText(c.substring(0,len));
 		} else {
@@ -226,7 +234,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
   		srcImageID = imp.getID();
 	}
        
-	void drawAlignedColorBar(ImagePlus imp, double xMin, double xMax, ImageProcessor ip, int x, int y, int width, int height){
+	void drawAlignedColorBar(ImagePlus imp, double xMin, double xMax, ImageProcessor ip, int x, int y, int width, int height) {
 		ImageProcessor ipSource = imp.getProcessor();
 		float[] pixels = null;
 		ImageProcessor ipRamp = null;
@@ -240,7 +248,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 				pixels[i+width*j] = (float)(xMin+i*(xMax-xMin)/(width - 1));
 		}
 		if (!(ipSource instanceof ColorProcessor)) {
-			ColorModel cm = ipSource.getColorModel();
+			ColorModel cm = null;
+			if (ipSource.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+				cm = ipSource.getColorModel();
+			else
+				cm = ipSource.getCurrentColorModel();
 			ipRamp = new FloatProcessor(width, height, pixels, cm);
 		}
 		double min = ipSource.getMin();
@@ -417,7 +429,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
 		if (b==live)
-			toggleLiveHistograms();
+			toggleLiveMode();
 		else if (b==list)
 			showList();
 		else if (b==copy)
@@ -439,15 +451,15 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		return values;
 	}
 
-	private void toggleLiveHistograms() {
+	private void toggleLiveMode() {
 		boolean liveMode = live.getForeground()==Color.red;
 		if (liveMode)
 			removeListeners();
 		else
-			enableLiveHistograms();
+			enableLiveMode();
 	}
 
-	private void enableLiveHistograms() {
+	private void enableLiveMode() {
 		if (bgThread==null) {
 			srcImp = WindowManager.getImage(srcImageID);
 			if (srcImp==null) return;
@@ -462,9 +474,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	// these listeners are activated if there are in the source ImagePlus
-	public synchronized void mousePressed(MouseEvent e) { doUpdate = true; notify(); }   
-	public synchronized void mouseDragged(MouseEvent e) { doUpdate = true; notify(); }
-	public synchronized void mouseClicked(MouseEvent e) { doUpdate = true; notify(); }
+	public synchronized void mousePressed(MouseEvent e) { doUpdate=true; notify(); }   
+	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
+	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
 	
 	// unused listeners
 	public void mouseReleased(MouseEvent e) {}
@@ -495,10 +507,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	// the background thread for live plotting.
 	public void run() {
 		while (true) {
-			if (srcImp!=null) {
+			if (doUpdate && srcImp!=null) {
 				if (srcImp.getRoi()!=null)
 					IJ.wait(50);	//delay to make sure the roi has been updated
-				//IJ.log("run");
 				showHistogram(srcImp, 256);
 			}
 			synchronized(this) {
@@ -513,7 +524,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			}
 		}
 	}
-		
+	
 	private void createListeners() {
 		//IJ.log("createListeners");
 		if (srcImp==null) return;

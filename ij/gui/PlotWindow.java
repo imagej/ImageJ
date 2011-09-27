@@ -180,7 +180,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Displays the plot. */
 	public void draw() {
 		Panel buttons = new Panel();
-		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,2,0));
+		int hgap = IJ.isMacOSX()?1:5;
+		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		list = new Button(" List ");
 		list.addActionListener(this);
 		buttons.add(list);
@@ -556,7 +557,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		while (true) {
 			IJ.wait(50);	//delay to make sure the roi has been updated
 			Plot plot = getProfilePlot();
-			if (plot!=null) {
+			if (doUpdate && plot!=null) {
 				this.plot = plot;
 				ImageProcessor ip = plot.getProcessor();
 				if (ip!=null)
