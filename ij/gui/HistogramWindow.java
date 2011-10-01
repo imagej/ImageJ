@@ -217,10 +217,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			newMaxCount = (int)(maxCount2 * 1.5);
   			//histogram[stats.mode] = newMaxCount;
 		}
-		if (IJ.shiftKeyDown()) {
-			logScale = true;
+		if (logScale || IJ.shiftKeyDown() && !liveMode())
 			drawLogPlot(yMax>0?yMax:newMaxCount, ip);
-		}
 		drawPlot(yMax>0?yMax:newMaxCount, ip);
 		histogram[stats.mode] = saveModalCount;
  		x = XMARGIN + 1;
@@ -392,7 +390,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 	
 	void replot() {
-		logScale = !logScale;
 		ImageProcessor ip = this.imp.getProcessor();
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.setColor(Color.white);
@@ -434,8 +431,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			showList();
 		else if (b==copy)
 			copyToClipboard();
-		else if (b==log)
+		else if (b==log) {
+			logScale = !logScale;
 			replot();
+		}
 	}
 	
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
@@ -452,11 +451,14 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	private void toggleLiveMode() {
-		boolean liveMode = live.getForeground()==Color.red;
-		if (liveMode)
+		if (liveMode())
 			removeListeners();
 		else
 			enableLiveMode();
+	}
+	
+	private boolean liveMode() {
+		return live!=null && live.getForeground()==Color.red;
 	}
 
 	private void enableLiveMode() {

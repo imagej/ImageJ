@@ -184,7 +184,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (prec!=precision || notationChanged) {
 			precision = prec;
 			rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
-			rt.show("Results");
+			if (rt.getCounter()>0)
+				rt.show("Results");
 		}
 	}
 	

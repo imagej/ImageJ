@@ -1499,6 +1499,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return array;
 	}
 			
+	/** Returns the name of the ROI with the specified index,
+		or null the index is out of range. */
+	public String getName(int index) {
+		if (index>=0 && index<list.getItemCount())
+       	 	return  list.getItem(index);
+		else
+			return null;
+	}
+
 	/** Returns the name of the ROI with the specified index.
 		Can be called from a macro using
 		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>

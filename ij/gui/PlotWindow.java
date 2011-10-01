@@ -11,6 +11,7 @@ import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
 import ij.measure.*;
+import ij.io.SaveDialog;
 
 /** This class implements the Analyze>Plot Profile command.
 * @authors Michael Schmid and Wayne Rasband
@@ -50,8 +51,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static String defaultDirectory = null;
 	private static int options;
 	private int defaultDigits = -1;
-	private boolean realXValues;
-	private int xdigits, ydigits;
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
@@ -243,7 +242,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			
 	/** shows the data of the backing plot in a Textwindow with columns */
 	void showList(){
-		initDigits();
 		String headings = createHeading();
 		String data = createData();
 		TextWindow tw = new TextWindow("Plot Values", headings, data, 230, 400);
@@ -255,14 +253,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private String createHeading(){
 		String head = "";
 		int sets = plot.storedData.size()/2;
-		if (saveXValues)
+		if (saveXValues || sets>1)
 			head += sets==1?"X\tY\t":"X0\tY0\t";
 		else
 			head += sets==1?"Y0\t":"Y0\t";
 		if (plot.errorBars!=null)
 			head += "ERR\t";
 		for (int j = 1; j<sets; j++){
-			if (saveXValues)
+			if (saveXValues || sets>1)
 				head += "X" + j + "\tY" + j + "\t";
 			else
 				head += "Y" + j + "\t";
@@ -292,22 +290,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					
 		StringBuffer sb = new StringBuffer();
 		String v;
-		for(int i = 0; i<max; i++){
+		int n = displayed.size();
+		for (int i = 0; i<max; i++) {
 			eb_test = plot.errorBars != null;
-			for (int j = 0; j<displayed.size();) {
-				if(saveXValues){
+			for (int j = 0; j<n;) {
+				int xdigits = 0;
+				if (saveXValues || n>2) {
 					column = (float[])displayed.get(j);
+					xdigits = getPrecision(column);
 					v = i<column.length?IJ.d2s(column[i],xdigits):"";
 					sb.append(v);
 					sb.append("\t");
 				}
 				j++;
 				column = (float[])displayed.get(j);
+				int ydigits = xdigits;
+				if (ydigits==0)
+					ydigits = getPrecision(column);
 				v = i<column.length?IJ.d2s(column[i],ydigits):"";
 				sb.append(v);
 				sb.append("\t");
 				j++;
-				if(eb_test){
+				if (eb_test){
 					column = (float[])displayed.get(j);
 					v = i<column.length?IJ.d2s(column[i],ydigits):"";
 					sb.append(v);
@@ -322,16 +326,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	void saveAsText() {
-		FileDialog fd = new FileDialog(this, "Save as Text...", FileDialog.SAVE);
-		if (defaultDirectory!=null)
-			fd.setDirectory(defaultDirectory);
-		fd.setVisible(true);
-		
-		String name = fd.getFile();
+		SaveDialog sd = new SaveDialog("Save as Text", "Values", ".txt");
+		String name = sd.getFileName();
 		if (name==null) return;
-		String directory = fd.getDirectory();
-		defaultDirectory = directory;
-		fd.dispose();
+		String directory = sd.getDirectory();
 		PrintWriter pw = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(directory+name);
@@ -344,13 +342,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 		IJ.wait(250);  // give system time to redraw ImageJ window
 		IJ.showStatus("Saving plot values...");
-		initDigits();
-		/*for (int i=0; i<plot.nPoints; i++) {
-			if (saveXValues)
-				pw.println(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits));
-			else
-				pw.println(IJ.d2s(plot.yValues[i],ydigits));
-		}*/
 		pw.print(createData());
 		pw.close();
 		if (autoClose)
@@ -364,7 +355,12 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (systemClipboard==null)
 			{IJ.error("Unable to copy to Clipboard."); return;}
 		IJ.showStatus("Copying plot values...");
-		initDigits();
+		int xdigits = 0;
+		if (saveXValues)
+			xdigits = getPrecision(plot.xValues);
+		int ydigits = xdigits;
+		if (ydigits==0)
+			ydigits = getPrecision(plot.yValues);
 		CharArrayWriter aw = new CharArrayWriter(plot.nPoints*4);
 		PrintWriter pw = new PrintWriter(aw);
 		for (int i=0; i<plot.nPoints; i++) {
@@ -382,44 +378,29 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			{imp.changes=false; close();}
 	}
 	
-	void initDigits() {
-		int digits = 2;
+	int getPrecision(float[] values) {
 		int setDigits = Analyzer.getPrecision();
 		int measurements = Analyzer.getMeasurements();
 		boolean scientificNotation = (measurements&Measurements.SCIENTIFIC_NOTATION)!=0;
+		int minDecimalPlaces = 4;
 		if (scientificNotation) {
-			if (setDigits<2) setDigits = 2;
-			xdigits = ydigits = -setDigits;
-			return;
+			if (setDigits<minDecimalPlaces)
+				setDigits = minDecimalPlaces;
+			return -setDigits;
 		}
-
-		if (ydigits!=9 || setDigits>=6) {
-			ydigits = setDigits;
-			if (ydigits==0) ydigits = 2;
-			digits = ydigits;
-		}
-		if (ydigits!=defaultDigits) {
-			realXValues = false;
-			for (int i=0; i<plot.xValues.length; i++) {
-				if ((int)plot.xValues[i]!=plot.xValues[i]) {
-					realXValues = true;
-					break;
-				}
+		int digits = minDecimalPlaces;
+		if (setDigits>digits)
+			digits = setDigits;
+		boolean realValues = false;
+		for (int i=0; i<values.length; i++) {
+			if ((int)values[i]!=values[i]) {
+				realValues = true;
+				break;
 			}
-			boolean realYValues = false;
-			for (int i=0; i<plot.yValues.length; i++) {
-				if ((int)plot.yValues[i]!=plot.yValues[i]) {
-					realYValues = true;
-					break;
-				}
-			}
-			if (setDigits<6&&realYValues) ydigits = 9;
-			if (!realYValues) ydigits = 0;
-			defaultDigits = ydigits;
 		}
-		xdigits =  realXValues?ydigits:0;
-		if (xdigits==0 && plot.xValues.length>=2 && (plot.xValues[1]-plot.xValues[0])<1.0)
-			xdigits = digits;
+		if (!realValues)
+			digits = 0;
+		return digits;
 	}
 		
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
