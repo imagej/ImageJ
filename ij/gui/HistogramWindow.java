@@ -23,12 +23,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int XMARGIN = 20;
 	static final int YMARGIN = 10;
 	static final String blankLabel = IJ.isMacOSX()?"         ":"                ";
+	static final int INTENSITY=0, RED=1, GREEN=2, BLUE=3;
 	
 	protected ImageStatistics stats;
 	protected int[] histogram;
 	protected LookUpTable lut;
 	protected Rectangle frame = null;
-	protected Button list, save, copy, log, live;
+	protected Button list, save, copy, log, live, color;
 	protected Label value, count;
 	protected static String defaultDirectory = null;
 	protected int decimalPlaces;
@@ -44,17 +45,18 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private ImagePlus srcImp;		// source image for live histograms
 	private Thread bgThread;		// thread background drawing
 	private boolean doUpdate;	// tells background thread to update
+	private int channel;				// RGB channel
 	    
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
-		super(NewImage.createByteImage("Histogram of "+imp.getShortTitle(), WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		super(NewImage.createRGBImage("Histogram of "+imp.getShortTitle(), WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
 		showHistogram(imp, 256, 0.0, 0.0);
 	}
 
 	/** Displays a histogram using the specified title and number of bins. 
 		Currently, the number of bins must be 256 expect for 32 bit images. */
 	public HistogramWindow(String title, ImagePlus imp, int bins) {
-		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		super(NewImage.createRGBImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
 		showHistogram(imp, bins, 0.0, 0.0);
 	}
 
@@ -62,20 +64,20 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		Currently, the number of bins must be 256 and the histogram range range must be the 
 		same as the image range expect for 32 bit images. */
 	public HistogramWindow(String title, ImagePlus imp, int bins, double histMin, double histMax) {
-		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		super(NewImage.createRGBImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
 		showHistogram(imp, bins, histMin, histMax);
 	}
 
 	/** Displays a histogram using the specified title, number of bins, histogram range and yMax. */
 	public HistogramWindow(String title, ImagePlus imp, int bins, double histMin, double histMax, int yMax) {
-		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		super(NewImage.createRGBImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
 		this.yMax = yMax;
 		showHistogram(imp, bins, histMin, histMax);
 	}
 
 	/** Displays a histogram using the specified title and ImageStatistics. */
 	public HistogramWindow(String title, ImagePlus imp, ImageStatistics stats) {
-		super(NewImage.createByteImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		super(NewImage.createRGBImage(title, WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
 		//IJ.log("HistogramWindow: "+stats.histMin+"  "+stats.histMax+"  "+stats.nBins);
 		this.yMax = stats.histYMax;
 		showHistogram(imp, stats);
@@ -92,14 +94,21 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		the same as the image range expect for 32 bit images. */
 	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
-		stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins, histMin, histMax);
+		if (channel!=INTENSITY && imp.getType()==ImagePlus.COLOR_RGB) {
+			ColorProcessor cp = (ColorProcessor)imp.getProcessor();
+			byte[] bytes = cp.getChannel(channel);
+			ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight(), bytes, null);
+			ImagePlus imp2 = new ImagePlus("", ip);
+			stats = imp2.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins, histMin, histMax);
+		} else
+			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins, histMin, histMax);
 		showHistogram(imp, stats);
 	}
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
 	public void showHistogram(ImagePlus imp, ImageStatistics stats) {
 		if (list==null)
-			setup();
+			setup(imp);
 		this.stats = stats;
 		cal = imp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
@@ -124,18 +133,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.resetRoi();
 		ip.fill();
 		ImageProcessor srcIP = imp.getProcessor();
-		boolean thresholding = srcIP.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
-		boolean grayscaleLut = (srcIP instanceof ColorProcessor) || (lut.isGrayscale() && !thresholding);
-		if (!grayscaleLut)
-			ip = ip.convertToRGB();
 		drawHistogram(imp, ip, fixedRange, stats.histMin, stats.histMax);
-		if (grayscaleLut || this.imp.getBitDepth()==24)
-			this.imp.updateAndDraw();
-		else
-			this.imp.setProcessor(null, ip);
+		this.imp.updateAndDraw();
 	}
 
-	public void setup() {
+	private void setup(ImagePlus imp) {
  		Panel buttons = new Panel();
  		int hgap = IJ.isMacOSX()?1:5;
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
@@ -151,22 +153,27 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		live = new Button("Live");
 		live.addActionListener(this);
 		buttons.add(live);
-		Panel valueAndCount = new Panel();
-		valueAndCount.setLayout(new GridLayout(2,1,0,0));
-		value = new Label(blankLabel);
-		Font font = new Font("Monospaced", Font.PLAIN, 12);
-		value.setFont(font);
-		//Color lightGray = new Color(220, 220, 220);
-		//value.setBackground(lightGray);
-		valueAndCount.add(value);
-		count = new Label(blankLabel);
-		count.setFont(font);
-		//count.setBackground(lightGray);
-		valueAndCount.add(count);
-		buttons.add(valueAndCount);
+		if (imp!=null && imp.getType()==ImagePlus.COLOR_RGB) {
+			color = new Button("Color");
+			color.addActionListener(this);
+			buttons.add(color);
+		} else {
+			Panel valueAndCount = new Panel();
+			valueAndCount.setLayout(new GridLayout(2,1,0,0));
+			value = new Label(blankLabel);
+			Font font = new Font("Monospaced", Font.PLAIN, 12);
+			value.setFont(font);
+			valueAndCount.add(value);
+			count = new Label(blankLabel);
+			count.setFont(font);
+			valueAndCount.add(count);
+			buttons.add(valueAndCount);
+		}
 		add(buttons);
 		pack();
     }
+    
+	public void setup() {setup(null);}
 
 	public void mouseMoved(int x, int y) {
 		if (value==null || count==null)
@@ -238,6 +245,12 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ImageProcessor ipRamp = null;
 		if (ipSource instanceof ColorProcessor) {
 			ipRamp = new FloatProcessor(width, height);
+			if (channel==RED)
+				ipRamp.setColorModel(LUT.createLutFromColor(Color.red));
+			else if (channel==GREEN)
+				ipRamp.setColorModel(LUT.createLutFromColor(Color.green));
+			else if (channel==BLUE)
+				ipRamp.setColorModel(LUT.createLutFromColor(Color.blue));
 			pixels = (float[])ipRamp.getPixels();
 		} else
 			pixels = new float[width*height];
@@ -247,7 +260,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 		if (!(ipSource instanceof ColorProcessor)) {
 			ColorModel cm = null;
-			if (ipSource.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
+			if (imp.isComposite())
+				cm = ((CompositeImage)imp).getChannelLut();
+			else if (ipSource.getMinThreshold()==ImageProcessor.NO_THRESHOLD)
 				cm = ipSource.getColorModel();
 			else
 				cm = ipSource.getCurrentColorModel();
@@ -427,6 +442,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		Object b = e.getSource();
 		if (b==live)
 			toggleLiveMode();
+		else if (b==color)
+			changeChannel();
 		else if (b==list)
 			showList();
 		else if (b==copy)
@@ -457,6 +474,18 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			enableLiveMode();
 	}
 	
+	private void changeChannel() {
+		ImagePlus imp = WindowManager.getImage(srcImageID);
+		if (imp==null || imp.getType()!=ImagePlus.COLOR_RGB) {
+			channel = INTENSITY;
+			return;
+		} else {
+			channel++;
+			if (channel>BLUE) channel=INTENSITY;
+			showHistogram(imp, 256);
+		}
+	}
+
 	private boolean liveMode() {
 		return live!=null && live.getForeground()==Color.red;
 	}

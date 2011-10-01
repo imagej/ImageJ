@@ -480,6 +480,36 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
+	/** Returns the specified plane as a byte array. */
+	public byte[] getChannel(int channel) {
+		int size = width*height;
+		byte[] bytes = new byte[size];
+		int c, r, g, b;
+		switch (channel) {
+			case 1:
+				for (int i=0; i<size; i++) {
+					c = pixels[i];
+					r = (c&0xff0000)>>16;
+					bytes[i] = (byte)r;
+				}
+				break;
+			case 2:
+				for (int i=0; i<size; i++) {
+					c = pixels[i];
+					g = (c&0xff00)>>8;
+					bytes[i] = (byte)g;
+				}
+				break;
+			case 3:
+				for (int i=0; i<size; i++) {
+					c = pixels[i];
+					b = c&0xff;
+					bytes[i] = (byte)b;
+				}
+				break;
+		}
+		return bytes;
+	}
 
 	/** Sets the current pixels from 3 byte arrays (reg, green, blue). */
 	public void setRGB(byte[] R, byte[] G, byte[] B) {
