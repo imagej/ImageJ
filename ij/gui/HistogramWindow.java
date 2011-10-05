@@ -22,14 +22,13 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int BAR_HEIGHT = 12;
 	static final int XMARGIN = 20;
 	static final int YMARGIN = 10;
-	static final String blankLabel = IJ.isMacOSX()?"         ":"                ";
 	static final int INTENSITY=0, RED=1, GREEN=2, BLUE=3;
 	
 	protected ImageStatistics stats;
 	protected int[] histogram;
 	protected LookUpTable lut;
 	protected Rectangle frame = null;
-	protected Button list, save, copy, log, live, color;
+	protected Button list, save, copy, log, live, rgb;
 	protected Label value, count;
 	protected static String defaultDirectory = null;
 	protected int decimalPlaces;
@@ -46,6 +45,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	private Thread bgThread;		// thread background drawing
 	private boolean doUpdate;	// tells background thread to update
 	private int channel;				// RGB channel
+	private String blankLabel;
 	    
 	/** Displays a histogram using the title "Histogram of ImageName". */
 	public HistogramWindow(ImagePlus imp) {
@@ -99,6 +99,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			byte[] bytes = cp.getChannel(channel);
 			ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight(), bytes, null);
 			ImagePlus imp2 = new ImagePlus("", ip);
+			imp2.setRoi(imp.getRoi());
 			stats = imp2.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins, histMin, histMax);
 		} else
 			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX+(limitToThreshold?LIMIT:0), bins, histMin, histMax);
@@ -138,8 +139,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	}
 
 	private void setup(ImagePlus imp) {
+		boolean isRGB = imp.getType()==ImagePlus.COLOR_RGB;
  		Panel buttons = new Panel();
- 		int hgap = IJ.isMacOSX()?1:5;
+ 		int hgap = IJ.isMacOSX()||isRGB?1:5;
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		list = new Button("List");
 		list.addActionListener(this);
@@ -153,13 +155,15 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		live = new Button("Live");
 		live.addActionListener(this);
 		buttons.add(live);
-		if (imp!=null && imp.getType()==ImagePlus.COLOR_RGB) {
-			color = new Button("Color");
-			color.addActionListener(this);
-			buttons.add(color);
-		} else {
+		if (imp!=null && isRGB) {
+			rgb = new Button("RGB");
+			rgb.addActionListener(this);
+			buttons.add(rgb);
+		}
+		if (!(IJ.isMacOSX()&&isRGB)) {
 			Panel valueAndCount = new Panel();
 			valueAndCount.setLayout(new GridLayout(2,1,0,0));
+			blankLabel = IJ.isMacOSX()?"         ":"                ";
 			value = new Label(blankLabel);
 			Font font = new Font("Monospaced", Font.PLAIN, 12);
 			value.setFont(font);
@@ -183,7 +187,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
 			String vlabel=null, clabel=null;
-			if (IJ.isMacOSX())
+			if (blankLabel.length()==9)
 				{vlabel=" "; clabel=" ";}
 			else
 				{vlabel=" value="; clabel=" count=";}
@@ -442,7 +446,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		Object b = e.getSource();
 		if (b==live)
 			toggleLiveMode();
-		else if (b==color)
+		else if (b==rgb)
 			changeChannel();
 		else if (b==list)
 			showList();
@@ -483,6 +487,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			channel++;
 			if (channel>BLUE) channel=INTENSITY;
 			showHistogram(imp, 256);
+			String name = this.imp.getTitle();
+			if (name.startsWith("Red ")) name=name.substring(4);
+			else if (name.startsWith("Green ")) name=name.substring(6);
+			else if (name.startsWith("Blue ")) name=name.substring(5);
+			switch (channel) {
+				case INTENSITY: this.imp.setTitle(name); break;
+				case RED: this.imp.setTitle("Red "+name); break;
+				case GREEN: this.imp.setTitle("Green "+name); break;
+				case BLUE: this.imp.setTitle("Blue "+name); break;
+			}
 		}
 	}
 
