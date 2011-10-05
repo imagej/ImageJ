@@ -295,9 +295,10 @@ public class TiffDecoder {
 	}
 	
 	void dumpTag(int tag, int count, int value, FileInfo fi) {
+		long lvalue = ((long)value)&0xffffffffL;
 		String name = getName(tag);
 		String cs = (count==1)?"":", count=" + count;
-		dInfo += "    " + tag + ", \"" + name + "\", value=" + value + cs + "\n";
+		dInfo += "    " + tag + ", \"" + name + "\", value=" + lvalue + cs + "\n";
 		//ij.IJ.log(tag + ", \"" + name + "\", value=" + value + cs + "\n");
 	}
 
@@ -735,8 +736,7 @@ public class TiffDecoder {
 	public void enableDebugging() {
 		debugMode = true;
 	}
-	
-	
+		
 	public FileInfo[] getTiffInfo() throws IOException {
 		long ifdOffset;
 		Vector info;

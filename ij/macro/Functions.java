@@ -1313,14 +1313,11 @@ public class Functions implements MacroConstants, Measurements {
 	Variable[] initNewArray() {
 		Vector vector = new Vector();
 		int size = 0;
-		boolean stringArray = false;
 		do {
 		    Variable v = new Variable();
-		    int tok = interp.nextToken();
-			if (tok==STRING_CONSTANT||tok==STRING_FUNCTION||(tok==WORD&&stringArray)) {
+			if (isStringArg())
 				v.setString(getString());
-				stringArray = true;
-			} else
+			else
 				v.setValue(interp.getExpression());
 			vector.addElement(v);
 			size++;
@@ -4304,10 +4301,21 @@ public class Functions implements MacroConstants, Measurements {
 	
 	String getProperties() {
 		interp.getParens();
-		String list = props.toString();
-		list = list.substring(1, list.length()-1);
-		list = list.replaceAll(", ", "\n");
-		return list;
+		Vector v = new Vector();
+		for (Enumeration en=props.keys(); en.hasMoreElements();)
+			v.addElement(en.nextElement());
+		String[] keys = new String[v.size()];
+		for (int i=0; i<keys.length; i++)
+			keys[i] = (String)v.elementAt(i);
+		Arrays.sort(keys);
+		StringBuffer sb = new StringBuffer();
+		for (int i=0; i<keys.length; i++) {
+			sb.append(keys[i]);
+			sb.append("=");
+			sb.append(props.get(keys[i]));
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 
 	void makePoint() {

@@ -134,12 +134,12 @@ public class RGBStackMerge implements PlugIn {
 				error("The source images or stacks must have the same width and height.");
 				return;
 			}
-			if (createComposite) {
-				for (int j=0; j<4; j++) {
-					if (j!=i && images[j]!=null && img==images[j])
-						createComposite = false;
-				}
-			}
+			//if (createComposite) {
+			//	for (int j=0; j<4; j++) {
+			//		if (j!=i && images[j]!=null && img==images[j])
+			//			createComposite = false;
+			//	}
+			//}
 			if (createComposite && img.getBitDepth()!=bitDepth) {
 				error("The source images must have the same bit depth.");
 				return;
@@ -176,20 +176,19 @@ public class RGBStackMerge implements PlugIn {
 			imp2.setCalibration(images[0].getCalibration());
 		if (!keep) {
 			for (int i=0; i<4; i++) {
-				if (images[i]!=null) {
+				if (images[i]!=null && images[i].getWindow()!=null) {
 					images[i].changes = false;
 					images[i].close();
 				}
 			}
 		}
 		if (fourChannelRGB) {
-			if (stackSize==1) {
+			if (imp2.getStackSize()==1) {
 				imp2 = imp2.flatten();
 				imp2.setTitle("RGB");
 			} else {
 				imp2.setTitle("RGB");
 				IJ.run(imp2, "RGB Color", "slices");
-				return;
 			}
 		}
 		imp2.show();
@@ -197,8 +196,6 @@ public class RGBStackMerge implements PlugIn {
 	 
 	
 	public ImagePlus mergeHyperstacks(ImagePlus[] images, boolean keep) {
-		if (duplicateImage(images))
-			keep = true;
 		int n = images.length;
 		int channels = 0;
 		for (int i=0; i<n; i++) {
@@ -219,8 +216,12 @@ public class RGBStackMerge implements PlugIn {
 		}
 		images = images2;
 		ImageStack[] stacks = new ImageStack[channels];
-		for (int i=0; i<channels; i++)
-			stacks[i] = images[i].getStack();
+		for (int i=0; i<channels; i++) {
+			ImagePlus imp2 = images[i];
+			if (isDuplicate(i,images))
+				imp2 = imp2.duplicate();
+			stacks[i] = imp2.getStack();
+		}
 		ImagePlus imp = images[0];
 		int w = imp.getWidth();
 		int h = imp.getHeight();
@@ -233,7 +234,8 @@ public class RGBStackMerge implements PlugIn {
 			for (int z=0; z<slices; z++) {
 				for (int c=0; c<channels; c++) {
 					ImageProcessor ip = stacks[c].getProcessor(index[c]+1);
-					if (keep) ip = ip.duplicate();
+					if (keep)
+						ip = ip.duplicate();
 					stack2.addSlice(null, ip);
 					if (keep)
 						index[c]++;
@@ -266,12 +268,11 @@ public class RGBStackMerge implements PlugIn {
 		return imp2;
 	}
 	
-	private boolean duplicateImage(ImagePlus[] images) {
-		for (int i=0; i<images.length; i++) {
-			for (int j=0; j<images.length; j++) {
-				if (images[i]!=null && images[j]!=null && i!=j && images[i]==images[j])
-					return true;
-			}
+	private boolean isDuplicate(int index, ImagePlus[] images) {
+		int count = 0;
+		for (int i=0; i<index; i++) {
+			if (images[index]==images[i])
+				return true;
 		}
 		return false;
 	}

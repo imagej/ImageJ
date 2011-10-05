@@ -333,6 +333,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			saveAs();
 		if (path!=null) {
 			save();
+			String text = ta.getText();
+			if (text.contains("implements PlugInFilter") && text.contains("IJ.run("))
+				IJ.log("Plugins that call IJ.run() should probably implement PlugIns, not PlugInFilters.");
 			IJ.runPlugIn("ij.plugin.Compiler", path);
 		}
 	}

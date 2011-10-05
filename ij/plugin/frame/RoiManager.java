@@ -1499,6 +1499,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return array;
 	}
 			
+	/** Returns the name of the ROI with the specified index,
+		or null if the index is out of range. */
+	public String getName(int index) {
+		if (index>=0 && index<list.getItemCount())
+       	 	return  list.getItem(index);
+		else
+			return null;
+	}
+
 	/** Returns the name of the ROI with the specified index.
 		Can be called from a macro using
 		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
@@ -1794,7 +1803,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 	}
 	
+	/** Temporarily selects multiple ROIs, where 'indexes' is an array of integers, 
+		each greater than or equal to 0 and less than the value returned by getCount().
+		The selected ROIs are not highlighted in the ROI Manager list and are no 
+		longer selected after the next ROI Manager command is executed.
+	*/
 	public void setSelectedIndexes(int[] indexes) {
+		int count = getCount();
+		if (count==0) return;
+		for (int i=0; i<indexes.length; i++) {
+			if (indexes[i]<0) indexes[i]=0;
+			if (indexes[i]>=count) indexes[i]=count-1;
+		}
 		selectedIndexes = indexes;
 	}
 	

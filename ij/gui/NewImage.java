@@ -119,7 +119,9 @@ public class NewImage {
 
 	public static ImagePlus createByteImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		byte[] pixels = new byte[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		byte[] pixels = new byte[size];
 		switch (fill) {
 			case FILL_WHITE:
 				for (int i=0; i<width*height; i++)
@@ -151,7 +153,9 @@ public class NewImage {
 
 	public static ImagePlus createRGBImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		int[] pixels = new int[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		int[] pixels = new int[size];
 		switch (fill) {
 			case FILL_WHITE:
 				for (int i=0; i<width*height; i++)
@@ -184,11 +188,13 @@ public class NewImage {
 		}
 		return imp;
 	}
-
+	
 	/** Creates an unsigned short image. */
 	public static ImagePlus createShortImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		short[] pixels = new short[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		short[] pixels = new short[size];
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -227,7 +233,9 @@ public class NewImage {
 
 	public static ImagePlus createFloatImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		float[] pixels = new float[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		float[] pixels = new float[size];
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -254,6 +262,15 @@ public class NewImage {
 		}
 		imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
+	}
+
+	private static int getSize(int width, int height) {
+		long size = (long)width*height;
+		if (size>Integer.MAX_VALUE) {
+			IJ.error("Image is too large. ImageJ does not support\nsingle images larger than 2 gigapixels.");
+			return -1;
+		} else
+			return (int)size;
 	}
 
 	public static void open(String title, int width, int height, int nSlices, int type, int options) {
