@@ -5,7 +5,9 @@ import java.io.*;
 import java.net.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
-import java.util.zip.*;
+import java.util.zip.Inflater;
+import java.util.zip.DataFormatException;
+
 
 /** Reads raw 8-bit, 16-bit or 32-bit (float or RGB)
 	images from a stream or URL. */
@@ -81,7 +83,7 @@ public class ImageReader {
 			byteArray = uncompress(byteArray);
 			int length = byteArray.length;
 			length = length - (length%fi.width);
-			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING) {
+			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING) {
 				for (int b=0; b<length; b++) {
 					byteArray[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
@@ -894,7 +896,7 @@ public class ImageReader {
 		byte[] byteBuffer1 = new byte[16];
 		byte[] byteBuffer2 = new byte[16];
 		
-		while (true) {
+		while (out.size()<byteCount) {
 			code = bb.getBits(bitsToRead);
 			if (code==EOI_CODE || code==-1)
 				break;
