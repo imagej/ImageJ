@@ -32,7 +32,15 @@ public class Histogram implements PlugIn, TextListener {
  			if (!showDialog(imp))
  				return;
  		} else {
- 			int flags = imp.isComposite()?0:setupDialog(imp, 0);
+ 			int stackSize = imp.getStackSize();
+ 			boolean noDialog = stackSize==1 || imp.isComposite();
+ 			if (stackSize==3) {
+ 				ImageStack stack = imp.getStack();
+ 				String label1 = stack.getSliceLabel(1);
+ 				if ("Hue".equals(label1))
+ 					noDialog = true;
+ 			}
+ 			int flags = noDialog?0:setupDialog(imp, 0);
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
 			Calibration cal = imp.getCalibration();

@@ -987,8 +987,7 @@ public class PolygonRoi extends Roi {
 			return nPoints;
 	}
 	
-	/** Returns this ROI's X-coordinates, which are relative
-		to origin of the bounding box. */
+	/** Obsolete; replaced by either getPolygon() or getFloatPolygon(). */
 	public int[] getXCoordinates() {
 		if (xSpline!=null)
 			return toInt(xSpline);
@@ -998,8 +997,7 @@ public class PolygonRoi extends Roi {
 			return xp;
 	}
 
-	/** Returns this ROI's Y-coordinates, which are relative
-		to origin of the bounding box. */
+	/** Obsolete; replaced by either getPolygon() or getFloatPolygon(). */
 	public int[] getYCoordinates() {
 		if (xSpline!=null)
 			return toInt(ySpline);

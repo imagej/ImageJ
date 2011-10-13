@@ -13,7 +13,7 @@ import ij.text.TextWindow;
 
 /** This class is an extended ImageWindow that displays histograms. */
 public class HistogramWindow extends ImageWindow implements Measurements, ActionListener, ClipboardOwner,
-	MouseListener, MouseMotionListener, ImageListener, Runnable {
+	MouseListener, MouseMotionListener, ImageListener, KeyListener, Runnable {
 	
 	static final int WIN_WIDTH = 300;
 	static final int WIN_HEIGHT = 240;
@@ -523,12 +523,22 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public synchronized void mouseDragged(MouseEvent e) { doUpdate=true; notify(); }
 	public synchronized void mouseClicked(MouseEvent e) { doUpdate=true; notify(); }
 	
+	public synchronized void keyPressed(KeyEvent e) {
+		ImagePlus imp = WindowManager.getImage(srcImageID);
+		if (imp==null || imp.getRoi()!=null) {
+			doUpdate = true;
+			notify();
+		}
+	}
+	
 	// unused listeners
 	public void mouseReleased(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseMoved(MouseEvent e) {}
 	public void imageOpened(ImagePlus imp) {}
+	public void keyTyped(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {}
 	
 	// This listener is called if the source image content is changed
 	public synchronized void imageUpdated(ImagePlus imp) {
@@ -577,6 +587,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (ic==null) return;
 		ic.addMouseListener(this);
 		ic.addMouseMotionListener(this);
+		ic.addKeyListener(this);
 		srcImp.addImageListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
@@ -589,6 +600,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ImageCanvas ic = srcImp.getCanvas();
 		ic.removeMouseListener(this);
 		ic.removeMouseMotionListener(this);
+		ic.removeKeyListener(this);
 		srcImp.removeImageListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));

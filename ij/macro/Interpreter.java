@@ -728,8 +728,24 @@ public class Interpreter implements MacroConstants {
 		Variable[] array = v.getArray();
 		if (array==null)
 			error("Array expected");
-		if (index<0 || index>=array.length)
-			error("Index ("+index+") out of 0-"+(array.length-1)+" range");
+		if (index<0)
+			error("Negative index");
+		if (index>=array.length) {  // expand array
+			Variable[] array2 = new Variable[index+array.length/2+1];
+			//IJ.log(array.length+" "+array2.length);
+			for (int i=0; i<array2.length; i++) {
+				if (i<array.length)
+					array2[i] = array[i];
+				else
+					array2[i] = new Variable();
+			}
+			v.setArray(array2);
+			v.setArraySize(index+1);
+			array = v.getArray();
+		}
+		int size = v.getArraySize();
+		if (index+1>size)
+			v.setArraySize(index+1);
 		int next = nextToken();
 		switch (expressionType) {
 			case Variable.STRING:
@@ -1347,10 +1363,9 @@ public class Interpreter implements MacroConstants {
 		getToken();
 		if (!(token==WORD && tokenString.equals("length")))
 			error("'length' expected");
-		Variable[] array = v.getArray();
-		if (array==null)
+		if (v.getArray()==null)
 			error("Array expected");
-		return array.length;
+		return v.getArraySize();
 	}
 	
 	final double getStringExpression() {

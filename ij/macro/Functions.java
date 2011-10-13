@@ -429,7 +429,7 @@ public class Functions implements MacroConstants, Measurements {
 		Variable[] array = v.getArray();
 		if (array!=null) {
 			int index = interp.getIndex();
-			checkIndex(index, 0, array.length-1);
+			checkIndex(index, 0, v.getArraySize()-1);
 			v = array[index]; 
 		}
 		return v;
@@ -509,6 +509,14 @@ public class Functions implements MacroConstants, Measurements {
 		else {
 			Variable v = interp.lookupVariable();
 			a= v.getArray();
+			int size = v.getArraySize();
+			if (a!=null && a.length!=size) {
+				Variable[] a2 = new Variable[size];
+				for (int i=0; i<size; i++)
+					a2[i] = a[i];
+				v.setArray(a2);
+				a = v.getArray();
+			}
 		}
 		if (a==null)
 			interp.error("Array expected");
@@ -1534,7 +1542,7 @@ public class Functions implements MacroConstants, Measurements {
 				else {
 					Variable[] array = v.getArray();
 					if (array!=null)
-						length = array.length;
+						length = v.getArraySize();
 					else
 						interp.error("String or array expected");
 				}					
