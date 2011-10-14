@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
+import ij.io.FileSaver;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -57,6 +58,12 @@ public class ImageRoi extends Roi {
 			composite = null;
 	}
 	
+	/** Returns a serialized version of the current image. */
+	public byte[] getSerializedImage() {
+		ImagePlus imp = new ImagePlus("",img);
+		return new FileSaver(imp).serialize();
+	}
+
 	/** Returns the current opacity. */
 	public double getOpacity() {
 		return opacity;

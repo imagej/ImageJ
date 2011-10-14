@@ -14,7 +14,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 220; // changed to 220 in v1.45m
+	static final int VERSION = 221; // changed to 220 in v1.45r
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -157,6 +157,8 @@ public class RoiEncoder {
 		// save TextRoi
 		if (n==0 && roi instanceof TextRoi)
 			saveTextRoi((TextRoi)roi);
+		else if (n==0 && roi instanceof ImageRoi)
+			saveImageRoi((ImageRoi)roi);
 		else
 			putHeader2(roi, HEADER_SIZE+n*4);
 			
@@ -259,6 +261,22 @@ public class RoiEncoder {
 		putHeader2(roi, hdr2Offset);
 	}
 	
+	void saveImageRoi(ImageRoi roi) {
+		byte[] bytes = roi.getSerializedImage();
+		int imageSize = bytes.length;
+		byte[] data2 = new byte[HEADER_SIZE+HEADER2_SIZE+imageSize+roiNameSize];
+		System.arraycopy(data, 0, data2, 0, HEADER_SIZE);
+		data = data2;
+		putShort(RoiDecoder.SUBTYPE, RoiDecoder.IMAGE);
+		for (int i=0; i<imageSize; i++)
+			putByte(HEADER_SIZE+i, bytes[i]&255);
+		int hdr2Offset = HEADER_SIZE+imageSize;
+		double opacity = roi.getOpacity();
+		putByte(hdr2Offset+RoiDecoder.IMAGE_OPACITY, (int)(opacity*255.0));
+		putInt(hdr2Offset+RoiDecoder.IMAGE_SIZE, imageSize);
+		putHeader2(roi, hdr2Offset);
+	}
+
 	void putHeader2(Roi roi, int hdr2Offset) {
 		//ij.IJ.log("putHeader2: "+hdr2Offset+" "+roiNameSize+"  "+roiName);
 		putInt(RoiDecoder.HEADER2_OFFSET, hdr2Offset);

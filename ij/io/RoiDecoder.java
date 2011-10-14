@@ -1,5 +1,7 @@
 package ij.io;
 import ij.gui.*;
+import ij.ImagePlus;
+import ij.process.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -66,12 +68,15 @@ public class RoiDecoder {
 	public static final int NAME_LENGTH = 20;
 	public static final int OVERLAY_LABEL_COLOR = 24;
 	public static final int OVERLAY_FONT_SIZE = 28; //short
-	public static final int AVAILABLE_SHORT1 = 30;  //short
+	public static final int AVAILABLE_BYTE1 = 30;  //byte
+	public static final int IMAGE_OPACITY = 31;  //byte
+	public static final int IMAGE_SIZE = 32;  //int
 		
 	// subtypes
 	public static final int TEXT = 1;
 	public static final int ARROW = 2;
 	public static final int ELLIPSE = 3;
+	public static final int IMAGE = 4;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
@@ -139,13 +144,17 @@ public class RoiDecoder {
 		int channel=0, slice=0, frame=0;
 		int overlayLabelColor=0;
 		int overlayFontSize=0;
+		int imageOpacity=0;
+		int imageSize=0;
 		
-		if (hdr2Offset>0 && hdr2Offset+AVAILABLE_SHORT1+2<=size) {
+		if (hdr2Offset>0 && hdr2Offset+IMAGE_SIZE+4<=size) {
 			channel = getInt(hdr2Offset+C_POSITION);
 			slice = getInt(hdr2Offset+Z_POSITION);
 			frame = getInt(hdr2Offset+T_POSITION);
 			overlayLabelColor = getInt(hdr2Offset+OVERLAY_LABEL_COLOR);
 			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
+			imageOpacity = getByte(hdr2Offset+IMAGE_OPACITY);
+			imageSize = getInt(hdr2Offset+IMAGE_SIZE);
 		}
 		
 		if (name!=null && name.endsWith(".roi"))
@@ -257,6 +266,9 @@ public class RoiDecoder {
 		if (version>=218 && subtype==TEXT)
 			roi = getTextRoi(roi);
 
+		if (version>=221 && subtype==IMAGE)
+			roi = getImageRoi(roi, imageOpacity, imageSize);
+
 		roi.setPosition(position);
 		if (channel>0 || slice>0 || frame>0)
 			roi.setPosition(channel, slice, frame);
@@ -339,6 +351,19 @@ public class RoiDecoder {
 		return roi2;
 	}
 	
+	Roi getImageRoi(Roi roi, int opacity, int size) {
+		if (size<=0)
+			return roi;
+		Rectangle r = roi.getBounds();
+		byte[] bytes = new byte[size];
+		for (int i=0; i<size; i++)
+			bytes[i] = (byte)getByte(COORDINATES+i);
+		ImagePlus imp = new Opener().deserialize(bytes);
+		ImageRoi roi2 = new ImageRoi(r.x, r.y, imp.getProcessor());
+		roi2.setOpacity(opacity/255.0);
+		return roi2;
+	}
+
 	String getRoiName() {
 		String fileName = name;
 		int hdr2Offset = getInt(HEADER2_OFFSET);
