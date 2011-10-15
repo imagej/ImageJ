@@ -14,7 +14,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 221; // changed to 220 in v1.45r
+	static final int VERSION = 221; // changed to 221 in v1.45r
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 

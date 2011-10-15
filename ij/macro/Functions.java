@@ -1344,11 +1344,11 @@ public class Functions implements MacroConstants, Measurements {
 			size = (int)array[0].getValue();
 			if (size<0) interp.error("Negative array size");
 			Variable[] array2 = new Variable[size];
-    		for (int i=0; i<size; i++)
-    			array2[i] = new Variable();
+			for (int i=0; i<size; i++)
+				array2[i] = new Variable();
 			return array2;
 		} else
-    		return array;
+			return array;
 	}
 
 	String fromCharCode() {
