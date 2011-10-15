@@ -214,11 +214,11 @@ public class PolygonRoi extends Roi {
 		GeneralPath path = new GeneralPath();
 		if (mag==1f && srcx==0f && srcy==0f) {
 			path.moveTo(xpoints[0]+xf, ypoints[0]+yf);
-			for (int i=0; i<npoints; i++)
+			for (int i=1; i<npoints; i++)
 				path.lineTo(xpoints[i]+xf, ypoints[i]+yf);
 		} else {
 			path.moveTo((xpoints[0]-srcx+xf)*mag, (ypoints[0]-srcy+yf)*mag);
-			for (int i=0; i<npoints; i++)
+			for (int i=1; i<npoints; i++)
 				path.lineTo((xpoints[i]-srcx+xf)*mag, (ypoints[i]-srcy+yf)*mag);
 		}
 		if (closed)
@@ -987,8 +987,7 @@ public class PolygonRoi extends Roi {
 			return nPoints;
 	}
 	
-	/** Returns this ROI's X-coordinates, which are relative
-		to origin of the bounding box. */
+	/** Obsolete; replaced by either getPolygon() or getFloatPolygon(). */
 	public int[] getXCoordinates() {
 		if (xSpline!=null)
 			return toInt(xSpline);
@@ -998,8 +997,7 @@ public class PolygonRoi extends Roi {
 			return xp;
 	}
 
-	/** Returns this ROI's Y-coordinates, which are relative
-		to origin of the bounding box. */
+	/** Obsolete; replaced by either getPolygon() or getFloatPolygon(). */
 	public int[] getYCoordinates() {
 		if (xSpline!=null)
 			return toInt(ySpline);

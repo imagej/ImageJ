@@ -429,7 +429,7 @@ public class Functions implements MacroConstants, Measurements {
 		Variable[] array = v.getArray();
 		if (array!=null) {
 			int index = interp.getIndex();
-			checkIndex(index, 0, array.length-1);
+			checkIndex(index, 0, v.getArraySize()-1);
 			v = array[index]; 
 		}
 		return v;
@@ -509,6 +509,14 @@ public class Functions implements MacroConstants, Measurements {
 		else {
 			Variable v = interp.lookupVariable();
 			a= v.getArray();
+			int size = v.getArraySize();
+			if (a!=null && a.length!=size) {
+				Variable[] a2 = new Variable[size];
+				for (int i=0; i<size; i++)
+					a2[i] = a[i];
+				v.setArray(a2);
+				a = v.getArray();
+			}
 		}
 		if (a==null)
 			interp.error("Array expected");
@@ -1241,10 +1249,15 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	Variable[] newArray() {
+		if (interp.nextToken()!='(' || interp.nextNextToken()==')') {
+			interp.getParens();
+			return new Variable[0];
+		}
 		interp.getLeftParen();
 		int next = interp.nextToken();
-		if (next==STRING_CONSTANT || interp.nextNextToken()==','
-		|| next=='-' || next==PI)
+		int nextNext = interp.nextNextToken();
+		if (next==STRING_CONSTANT || nextNext==','
+		|| nextNext=='[' || next=='-' || next==PI)
 			return initNewArray();
 		int size = (int)interp.getExpression();
 		if (size<0) interp.error("Negative array size");
@@ -1327,7 +1340,15 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("';' expected");
     	Variable[] array = new Variable[size];
 		vector.copyInto((Variable[])array);
-    	return array;
+		if (array.length==1 && array[0].getString()==null) {
+			size = (int)array[0].getValue();
+			if (size<0) interp.error("Negative array size");
+			Variable[] array2 = new Variable[size];
+			for (int i=0; i<size; i++)
+				array2[i] = new Variable();
+			return array2;
+		} else
+			return array;
 	}
 
 	String fromCharCode() {
@@ -1534,7 +1555,7 @@ public class Functions implements MacroConstants, Measurements {
 				else {
 					Variable[] array = v.getArray();
 					if (array!=null)
-						length = array.length;
+						length = v.getArraySize();
 					else
 						interp.error("String or array expected");
 				}					

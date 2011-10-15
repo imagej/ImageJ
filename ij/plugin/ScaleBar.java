@@ -38,11 +38,13 @@ public class ScaleBar implements PlugIn {
 	boolean serifFont;
 	boolean[] checkboxStates = new boolean[4];
 	boolean showingOverlay, drawnScaleBar;
+	Overlay baseOverlay;
 
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
+			baseOverlay = imp.getOverlay();
 			if (showDialog(imp) && imp.getStackSize()>1 && labelAll)
 				labelSlices(imp);
 		} else
@@ -162,7 +164,11 @@ public class ScaleBar implements PlugIn {
 	}
 
 	void createOverlay(ImagePlus imp) {
-		Overlay overlay = new Overlay();
+		Overlay overlay = baseOverlay;
+		if (overlay!=null)
+			overlay = overlay.duplicate();
+		else
+			overlay = new Overlay();
 		Color color = getColor();
 		Color bcolor = getBColor();
 		int x = xloc;

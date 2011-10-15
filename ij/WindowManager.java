@@ -1,7 +1,7 @@
 package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
-import ij.plugin.frame.Editor;
+import ij.plugin.frame.Editor; 
 import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
@@ -359,10 +359,10 @@ public class WindowManager {
 	/** Activates the next image window on the window list. */
 	public static void putBehind() {
 		if (IJ.debugMode) IJ.log("putBehind");
-		if(imageList.size()<1 || currentWindow==null)
+		if (imageList.size()<1 || currentWindow==null)
 			return;
 		int index = imageList.indexOf(currentWindow);
-		ImageWindow win;
+		ImageWindow win = null;
 		int count = 0;
 		do {
 			index--;
@@ -370,9 +370,10 @@ public class WindowManager {
 			win = (ImageWindow)imageList.elementAt(index);
 			if (++count==imageList.size()) return;
 		} while (win instanceof HistogramWindow || win instanceof PlotWindow);
-		setCurrentWindow(win);
-		toFront(win);
-		Menus.updateMenus();
+		if (win==null) return;
+		ImagePlus imp = win.getImagePlus();
+		if (imp!=null)
+			IJ.selectWindow(imp.getID());
     }
 
 	/** Returns the temporary current image for this thread, or null. */

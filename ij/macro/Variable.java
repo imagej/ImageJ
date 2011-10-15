@@ -6,6 +6,7 @@ class Variable implements MacroConstants, Cloneable {
     private double value;
     private String str;
     private Variable[] array;
+    private int arraySize;
 
     Variable() {
     }
@@ -85,8 +86,23 @@ class Variable implements MacroConstants, Cloneable {
         this.array = array;
         value = 0.0;
         str = null;
+        arraySize = 0;
     }
     
+    void setArraySize(int size) {
+    	if (array==null)
+    		size = 0;
+    	else if (size>array.length)
+    		size = array.length;
+    	arraySize = size;
+    }
+    
+    int getArraySize() {
+    	int size = array!=null?array.length:0;
+    	if (arraySize>0) size = arraySize;
+    	return size;
+    }
+
     int getType() {
     	if (array!=null)
     		return ARRAY;
