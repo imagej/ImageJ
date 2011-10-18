@@ -258,7 +258,7 @@ public class OverlayCommands implements PlugIn {
 
 	void fromRoiManager() {
 		ImagePlus imp = IJ.getImage();
-		RoiManager rm = RoiManager.getInstance();
+		RoiManager rm = RoiManager.getInstance2();
 		if (rm==null) {
 			IJ.error("ROI Manager is not open");
 			return;

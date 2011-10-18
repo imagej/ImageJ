@@ -4886,7 +4886,9 @@ public class Functions implements MacroConstants, Measurements {
 		boolean nullFont = font==null;
 		if (nullFont)
 			font = imp.getProcessor().getFont();
-		TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
+		FontMetrics metrics = imp.getProcessor().getFontMetrics();
+		int fontHeight = metrics.getHeight();
+		TextRoi roi = new TextRoi(x, y-fontHeight, text, font);
 		if (!nullFont)
 			roi.setAntialiased(antialiasedText);
 		addRoi(imp, roi);

@@ -278,6 +278,8 @@ public class Interpreter implements MacroConstants {
 			doBlock();
 		} catch (ReturnException e) {
 			value = new Variable(0, e.value, e.str, e.array);
+			if (value.getArray()!=null && e.arraySize!=0)
+				value.setArraySize(e.arraySize);
 		}
 		inFunction = saveInFunction;
 		pc = savePC;
@@ -315,6 +317,7 @@ public class Interpreter implements MacroConstants {
 				} else if (next==WORD && (nextPlus==',' || nextPlus==')')) {
 					value = 0.0;
 					Variable[] array = null;
+					int arraySize = 0;
 					String str = null;
 					getToken();
 					Variable v = lookupVariable();
@@ -322,12 +325,14 @@ public class Interpreter implements MacroConstants {
 						int type = v.getType();
 						if (type==Variable.VALUE)
 							value = v.getValue();
-						else if (type==Variable.ARRAY)
+						else if (type==Variable.ARRAY) {
 							array = v.getArray();
-						else
+							arraySize = v.getArraySize();
+						} else
 							str = v.getString();
 					}
 					args[count] = new Variable(0, value, str, array);
+					if (array!=null) args[count].setArraySize(arraySize);
 				} else if (next==WORD && nextPlus=='[' ) {
 					int savePC = pc;
 					getToken();
@@ -381,6 +386,7 @@ public class Interpreter implements MacroConstants {
 		double value = 0.0;
 		String str = null;
 		Variable[] array = null;
+		int arraySize = 0;
 		getToken();
 		if (token!=';') {
 			boolean isString = token==STRING_CONSTANT || token==STRING_FUNCTION;
@@ -389,6 +395,7 @@ public class Interpreter implements MacroConstants {
 				Variable v = lookupLocalVariable(tokenAddress);
 				if (v!=null && nextToken()==';') {
 					array = v.getArray();
+					if (array!=null) arraySize=v.getArraySize();
 					isString = v.getString()!=null;
 					//IJ.log("token==WORD: "+isString+" "+pgm.decodeToken(token, tokenAddress));
 				}
@@ -408,6 +415,7 @@ public class Interpreter implements MacroConstants {
 			returnException.value = value;
 			returnException.str = str;
 			returnException.array = array;
+			returnException.arraySize = arraySize;
 			//throw new ReturnException(value, str, array);
 			throw returnException;
 		} else {
@@ -799,9 +807,10 @@ public class Interpreter implements MacroConstants {
 			int type = v2.getType();
 			if (type==Variable.VALUE)
 				v1.setValue(v2.getValue());
-			else if (type==Variable.ARRAY)
+			else if (type==Variable.ARRAY) {
 				v1.setArray(v2.getArray());
-			else
+				v1.setArraySize(v2.getArraySize());
+			} else
 				v1.setString(v2.getString());
 		}	
 	}

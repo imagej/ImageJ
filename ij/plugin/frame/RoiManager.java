@@ -1451,6 +1451,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public static RoiManager getInstance() {
 		return (RoiManager)instance;
 	}
+	
+	/** Returns a reference to the ROI Manager window or to the
+		macro batch mode RoiManager, or null if neither exists. */
+	public static RoiManager getInstance2() {
+		RoiManager rm = getInstance();
+		if (rm==null && IJ.isMacro())
+			rm = Interpreter.getBatchModeRoiManager();
+		return rm;
+	}
+
+
 
 	/**	Returns the ROI Hashtable.
 		@see getCount
