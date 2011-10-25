@@ -69,7 +69,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);;
 	private boolean dontShowWindow;
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
-    private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
+    private int fontSize = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
     private CheckboxMenuItem monospaced;
     private static boolean wholeWords;
     private boolean isMacroWindow;

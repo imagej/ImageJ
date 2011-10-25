@@ -250,8 +250,11 @@ public class Opener {
 				// "hybrid" files created by GE-Senographe 2000 D */
 				imp = openTiff(directory,name);
 				ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
-				if (imp!=null)				
+				if (imp!=null && imp2!=null)	 {		
 					imp.setProperty("Info",imp2.getProperty("Info"));
+					imp.setCalibration(imp2.getCalibration());
+				}
+				if (imp==null) imp=imp2;
 				return imp;
 			case FITS:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS_Reader", path);

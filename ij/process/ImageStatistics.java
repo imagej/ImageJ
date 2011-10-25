@@ -111,8 +111,7 @@ public class ImageStatistics implements Measurements {
 				stdDev = Math.sqrt(stdDev/(n-1.0));
 			else
 				stdDev = 0.0;
-		}
-		else
+		} else
 			stdDev = 0.0;
 	}
 		

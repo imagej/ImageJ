@@ -351,7 +351,6 @@ public class FileOpener {
 			if (IJ.debugMode) IJ.log("16-bit signed");
  			imp.getLocalCalibration().setSigned16BitCalibration();
 		}
-		
 		Properties props = decodeDescriptionString(fi);
 		Calibration cal = imp.getCalibration();
 		boolean calibrated = false;

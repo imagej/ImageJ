@@ -249,8 +249,6 @@ public class Plot {
 	
 	/** Adds error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
-		if (errorBars.length!=nPoints)
-			throw new IllegalArgumentException("errorBars.length != npoints");
 		this.errorBars = errorBars	;
 	}
 	
@@ -547,9 +545,12 @@ public class Plot {
 		if (drawPending) {
 			drawFloatPolyline(ip, xValues, yValues, nPoints);
 			if (this.errorBars != null) {
+				int nPoints2 = nPoints;
+				if (errorBars.length<nPoints)
+					nPoints2 = errorBars.length;
 				int[] xpoints = new int[2];
 				int[] ypoints = new int[2];
-				for (int i=0; i<nPoints; i++) {
+				for (int i=0; i<nPoints2; i++) {
 					xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
 					ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
 					ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
