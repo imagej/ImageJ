@@ -260,7 +260,8 @@ public class CurveFitter {
         else
             slope = 1.0;
         double yintercept = firsty - slope * firstx;
-        maxIter = IterFactor * numParams * numParams;  // Where does this estimate come from?
+        if (maxIter==0)
+        	maxIter = IterFactor * numParams * numParams;  // Where does this estimate come from?
         restarts = defaultRestarts;
         nRestarts = 0;
         switch (fit) {

@@ -69,6 +69,8 @@ public class Functions implements MacroConstants, Measurements {
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
 	int lineWidth = 1;
+	boolean expandableArrays;
+
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -3640,6 +3642,8 @@ public class Functions implements MacroConstants, Measurements {
 			ImageProcessor.setUseBicubic(state);
 		else if (arg1.startsWith("wand")||arg1.indexOf("points")!=-1)
 			Wand.setAllPoints(state);
+		else if (arg1.startsWith("expandablearrays"))
+			expandableArrays = state;
 		else if (arg1.startsWith("loop"))
 			Calibration.setLoopBackAndForth(state);
 		else
@@ -4886,7 +4890,9 @@ public class Functions implements MacroConstants, Measurements {
 		boolean nullFont = font==null;
 		if (nullFont)
 			font = imp.getProcessor().getFont();
-		TextRoi roi = new TextRoi(x, y-font.getSize(), text, font);
+		FontMetrics metrics = imp.getProcessor().getFontMetrics();
+		int fontHeight = metrics.getHeight();
+		TextRoi roi = new TextRoi(x, y-fontHeight, text, font);
 		if (!nullFont)
 			roi.setAntialiased(antialiasedText);
 		addRoi(imp, roi);

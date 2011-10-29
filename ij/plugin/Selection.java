@@ -325,7 +325,10 @@ public class Selection implements PlugIn, Measurements {
 			{IJ.error("Fit Ellipse", "Selection required"); return;}
 		if (roi.isLine())
 			{IJ.error("Fit Ellipse", "\"Fit Ellipse\" does not work with line selections"); return;}
-		ImageStatistics stats = imp.getStatistics(Measurements.CENTROID+Measurements.ELLIPSE);
+		ImageProcessor ip = imp.getProcessor();
+		ip.setRoi(roi);
+		int options = Measurements.CENTROID+Measurements.ELLIPSE;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip, options, null);
 		double dx = stats.major*Math.cos(stats.angle/180.0*Math.PI)/2.0;
 		double dy = - stats.major*Math.sin(stats.angle/180.0*Math.PI)/2.0;
 		double x1 = stats.xCentroid - dx;

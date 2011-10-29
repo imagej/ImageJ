@@ -364,10 +364,15 @@ public class Line extends Roi {
 	}
 	
 	public Polygon getPolygon() {
-		Polygon p = new Polygon();
+		FloatPolygon p = getFloatPolygon();
+		return new Polygon(toInt(p.xpoints), toInt(p.ypoints), p.npoints);
+	}
+
+	public FloatPolygon getFloatPolygon() {
+		FloatPolygon p = new FloatPolygon();
 		if (getStrokeWidth()==1) {
-			p.addPoint(x1, y1);
-			p.addPoint(x2, y2);
+			p.addPoint((float)x1d, (float)y1d);
+			p.addPoint((float)x2d, (float)y2d);
 		} else {
 			double angle = Math.atan2(y1-y2, x2-x1);
 			double width2 = getStrokeWidth()/2.0;
@@ -379,10 +384,10 @@ public class Line extends Roi {
 			double p3y = y2 - Math.sin(angle-Math.PI/2d)*width2;
 			double p4x = x2 + Math.cos(angle+Math.PI/2d)*width2;
 			double p4y = y2 - Math.sin(angle+Math.PI/2d)*width2;
-			p.addPoint((int)Math.round(p1x), (int)Math.round(p1y));
-			p.addPoint((int)Math.round(p2x), (int)Math.round(p2y));
-			p.addPoint((int)Math.round(p3x), (int)Math.round(p3y));
-			p.addPoint((int)Math.round(p4x), (int)Math.round(p4y));
+			p.addPoint((float)p1x, (float)p1y);
+			p.addPoint((float)p2x, (float)p2y);
+			p.addPoint((float)p3x, (float)p3y);
+			p.addPoint((float)p4x, (float)p4y);
 		}
 		return p;
 	}

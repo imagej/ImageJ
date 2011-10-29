@@ -525,8 +525,11 @@ public class IJ {
 		showMessage("Message", msg);
 	}
 
-	/**	Displays a message in a dialog box with the specified title.
-		Writes the Java console if ImageJ is not present. */
+	/** Displays a message in a dialog box with the specified title.
+		Displays HTML formatted text if 'msg' starts with "<html>".
+		There are examples at
+		"http://imagej.nih.gov/ij/macros/HtmlDialogDemo.txt".
+		Writes to the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
 		if (ij!=null) {
 			if (msg!=null && msg.startsWith("<html>"))

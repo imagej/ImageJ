@@ -88,8 +88,9 @@ public class DICOM extends ImagePlus implements PlugIn {
 		DicomDecoder dd = new DicomDecoder(directory, fileName);
 		dd.inputStream = inputStream;
 		FileInfo fi = null;
-		try {fi = dd.getFileInfo();}
-		catch (IOException e) {
+		try {
+			fi = dd.getFileInfo();
+		} catch (IOException e) {
 			String msg = e.getMessage();
 			IJ.showStatus("");
 			if (msg.indexOf("EOF")<0&&showErrors) {
