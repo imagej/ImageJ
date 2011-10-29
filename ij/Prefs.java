@@ -136,8 +136,6 @@ public class Prefs {
 	public static boolean useSystemProxies;
 	/** Use the file chooser to import and export image sequences on Windows and Linux*/
 	public static boolean useFileChooser;
-	/** Enable auto-expanding macro arrays*/
-	public static boolean expandableArrays;
 
 
 	static Properties ijPrefs = new Properties();

@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.45s 19 October 2011</u>
+<li> <u>1.45s 29 October 2011</u>
 <ul>
 <li> Added the setOption("ExpandableArrays") macro function
 (<a href="macros/examples/ExpandableArrays.txt">example</a>).
+<li> The Roi.getFloatPolygon() method works with more selection types.
 <li> Thanks to Kees Straatman, fixed a bug that caused
 <i>Edit&gt;Selection&gt;Fit Ellipse</i> to not work with
 spatially calibrated images.
@@ -22,6 +23,11 @@ CurveFitter.setMaxIterations() method to not work as expected.
 of newly opened hybrid DICOM/TIFF files to not be set.
 <li> David Gauntt fixed a bug that caused the NonBlockingGenericDialog
  to not correctly handle esc and enter key presses.
+ <li> Thanks to Bentorey Hernandez Cruz, fixed a bug that caused the
+ <a href="plugins/panel-window.html">Panel Window</a>
+example plugin to not work with hyperstacks.
+<li> Thanks to Norbert Vischer, fixed a bug that could cause the
+Plot.add("error bars", errorBars) macro function to throw an exception.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

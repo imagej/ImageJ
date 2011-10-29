@@ -1184,20 +1184,4 @@ public class PolygonRoi extends Roi {
 		maxPoints *= 2;
 	}
 	
-	private int[] toInt(float[] arr) {
-		int n = arr.length;
-		int[] temp = new int[n];
-		for (int i=0; i<n; i++)
-			temp[i] = (int)Math.floor(arr[i]+0.5);
-		return temp;
-	}
-
-	private float[] toFloat(int[] arr) {
-		int n = arr.length;
-		float[] temp = new float[n];
-		for (int i=0; i<n; i++)
-			temp[i] = arr[i];
-		return temp;
-	}
-
 }

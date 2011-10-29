@@ -69,6 +69,8 @@ public class Functions implements MacroConstants, Measurements {
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
 	int lineWidth = 1;
+	boolean expandableArrays;
+
 
 	Functions(Interpreter interp, Program pgm) {
 		this.interp = interp;
@@ -3641,7 +3643,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (arg1.startsWith("wand")||arg1.indexOf("points")!=-1)
 			Wand.setAllPoints(state);
 		else if (arg1.startsWith("expandablearrays"))
-			Prefs.expandableArrays = state;
+			expandableArrays = state;
 		else if (arg1.startsWith("loop"))
 			Calibration.setLoopBackAndForth(state);
 		else

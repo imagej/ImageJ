@@ -69,7 +69,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         	else
         		setBackground(Color.white);
         }
-        boolean hyperstack = imp.isHyperStack();
+		boolean hyperstack = imp.isHyperStack();
 		ij = IJ.getInstance();
 		this.imp = imp;
 		if (ic==null)

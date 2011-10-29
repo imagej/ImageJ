@@ -739,7 +739,7 @@ public class Interpreter implements MacroConstants {
 		if (index<0)
 			error("Negative index");
 		if (index>=array.length) {  // expand array
-			if (!Prefs.expandableArrays)
+			if (!func.expandableArrays)
 				error("Index ("+index+") out of range");
 			Variable[] array2 = new Variable[index+array.length/2+1];
 			//IJ.log(array.length+" "+array2.length);

@@ -110,10 +110,8 @@ public class Plot {
 		this.flags = flags;
 		storedData = new ArrayList();
 		if (xValues==null || yValues==null) {
-			xValues = new float[1];
-			yValues = new float[1];
-			xValues[0] = -1f;
-			yValues[0] = -1f;
+			xValues = new float[0];
+			yValues = new float[0];
 		} else
 			storeData(xValues, yValues);
 		this.xValues = xValues;
@@ -197,7 +195,7 @@ public class Plot {
 				break;
 		}
 		multiplePlots = true;
-		if (xValues.length==1) {
+		if (xValues==null || xValues.length==0) {
 			xValues = x;
 			yValues = y;
 			nPoints = x.length;
