@@ -5,29 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.45s 29 October 2011</u>
+<li> <u>1.46a 1 November 2011</u>
 <ul>
-<li> Added the setOption("ExpandableArrays") macro function
-(<a href="macros/examples/ExpandableArrays.txt">example</a>).
-<li> The Roi.getFloatPolygon() method works with more selection types.
-<li> Thanks to Kees Straatman, fixed a bug that caused
-<i>Edit&gt;Selection&gt;Fit Ellipse</i> to not work with
-spatially calibrated images.
-<li> Thanks to Gilles Carpentier, fixed a bug that caused the
-Overlay.drawString() macro function to display text at
-the wrong Y location and another bug that caused the run("From ROI Manager")
-macro function to not work in batch mode.
-<li> Thanks to Michael Schmid, fixed a bug that caused the
-CurveFitter.setMaxIterations() method to not work as expected.
-<li> Thanks to Jamie Robinson, fixed a bug that could cause the mm scale
-of newly opened hybrid DICOM/TIFF files to not be set.
-<li> David Gauntt fixed a bug that caused the NonBlockingGenericDialog
- to not correctly handle esc and enter key presses.
- <li> Thanks to Bentorey Hernandez Cruz, fixed a bug that caused the
- <a href="plugins/panel-window.html">Panel Window</a>
-example plugin to not work with hyperstacks.
-<li> Thanks to Norbert Vischer, fixed a bug that could cause the
-Plot.add("error bars", errorBars) macro function to throw an exception.
+<li> An informative message is displayed when a batch 
+mode macro attempts to open an ROI set using open(path)
+(which does not work) instead of roiManager("open",path).
+<li> Fixed a bug that caused the length of non-straight line 
+profile plots to be greater that the measured line length.
+<li> Michael Schmid fixed a bug that could cause the RankFilters
+(Mean, Minimum, Median, etc.) to hang.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

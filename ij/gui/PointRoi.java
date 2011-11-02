@@ -17,19 +17,36 @@ public class PointRoi extends PolygonRoi {
 	private double saveMag;
 	private boolean hideLabels;
 	
-	/** Creates a new PointRoi using the specified arrays of offscreen coordinates. */
+	/** Creates a new PointRoi using the specified int arrays of offscreen coordinates. */
 	public PointRoi(int[] ox, int[] oy, int points) {
+		super(itof(ox), itof(oy), points, POINT);
+		width+=1; height+=1;
+	}
+
+	/** Creates a new PointRoi using the specified float arrays of offscreen coordinates. */
+	public PointRoi(float[] ox, float[] oy, int points) {
 		super(ox, oy, points, POINT);
 		width+=1; height+=1;
 	}
 
-	/** Creates a new PointRoi from a Polygon. */
-	public PointRoi(Polygon poly) {
+	/** Creates a new PointRoi from a FloatPolygon. */
+	public PointRoi(FloatPolygon poly) {
 		this(poly.xpoints, poly.ypoints, poly.npoints);
 	}
 
-	/** Creates a new PointRoi using the specified offscreen coordinates. */
+	/** Creates a new PointRoi from a Polygon. */
+	public PointRoi(Polygon poly) {
+		this(itof(poly.xpoints), itof(poly.ypoints), poly.npoints);
+	}
+
+	/** Creates a new PointRoi using the specified offscreen int coordinates. */
 	public PointRoi(int ox, int oy) {
+		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
+		width=1; height=1;
+	}
+
+	/** Creates a new PointRoi using the specified offscreen double coordinates. */
+	public PointRoi(double ox, double oy) {
 		super(makeXArray(ox, null), makeYArray(oy, null), 1, POINT);
 		width=1; height=1;
 	}
@@ -44,16 +61,25 @@ public class PointRoi extends PolygonRoi {
 			Recorder.record("makePoint", x, y);
 
 	}
+	
+	static float[] itof(int[] arr) {
+		int n = arr.length;
+		float[] temp = new float[n];
+		for (int i=0; i<n; i++)
+			temp[i] = arr[i];
+		return temp;
+	}
 
-	static int[] makeXArray(int value, ImagePlus imp) {
-		int[] array = new int[1];
-		array[0] = imp!=null?imp.getCanvas().offScreenX(value):value;
+
+	static float[] makeXArray(double value, ImagePlus imp) {
+		float[] array = new float[1];
+		array[0] = (float)(imp!=null?imp.getCanvas().offScreenXD((int)value):value);
 		return array;
 	}
 				
-	static int[] makeYArray(int value, ImagePlus imp) {
-		int[] array = new int[1];
-		array[0] = imp!=null?imp.getCanvas().offScreenY(value):value;
+	static float[] makeYArray(double value, ImagePlus imp) {
+		float[] array = new float[1];
+		array[0] = (float)(imp!=null?imp.getCanvas().offScreenYD((int)value):value);
 		return array;
 	}
 				
@@ -70,6 +96,7 @@ public class PointRoi extends PolygonRoi {
 	public void draw(Graphics g) {
 		//IJ.log("draw: " + nPoints+"  "+width+"  "+height);
 		updatePolygon();
+		//IJ.log("draw: "+ xpf[0]+" "+ypf[0]+" "+xp2[0]+" "+xp2[0]);
 		if (ic!=null) mag = ic.getMagnification();
 		int size2 = HANDLE_SIZE/2;
 		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
@@ -106,19 +133,23 @@ public class PointRoi extends PolygonRoi {
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(Analyzer.markWidth);
 		for (int i=0; i<nPoints; i++) {
-			ip.moveTo(x+xp[i], y+yp[i]);
-			ip.lineTo(x+xp[i], y+yp[i]);
+			ip.moveTo(x+(int)xpf[i], y+(int)ypf[i]);
+			ip.lineTo(x+(int)xpf[i], y+(int)ypf[i]);
 		}
 	}
 	
 	/** Returns a copy of this PointRoi with a point at (x,y) added. */
-	public PointRoi addPoint(int x, int y) {
-		Polygon poly = getPolygon();
+	public PointRoi addPoint(double x, double y) {
+		FloatPolygon poly = getFloatPolygon();
 		poly.addPoint(x, y);
 		PointRoi p = new PointRoi(poly.xpoints, poly.ypoints, poly.npoints);
 		p.setHideLabels(hideLabels);
 		IJ.showStatus("count="+poly.npoints);
 		return p;
+	}
+	
+	public PointRoi addPoint(int x, int y) {
+		return addPoint((double)x, (double)y);
 	}
 	
 	/** Subtract the points that intersect the specified ROI and return 
@@ -142,7 +173,7 @@ public class PointRoi extends PolygonRoi {
 			return cachedMask;
 		ImageProcessor mask = new ByteProcessor(width, height);
 		for (int i=0; i<nPoints; i++) {
-			mask.putPixel(xp[i], yp[i], 255);
+			mask.putPixel((int)xpf[i], (int)ypf[i], 255);
 		}
 		cachedMask = mask;
 		return mask;
@@ -151,7 +182,7 @@ public class PointRoi extends PolygonRoi {
 	/** Returns true if (x,y) is one of the points in this collection. */
 	public boolean contains(int x, int y) {
 		for (int i=0; i<nPoints; i++) {
-			if (x==this.x+xp[i] && y==this.y+yp[i]) return true;
+			if (x==this.x+xpf[i] && y==this.y+ypf[i]) return true;
 		}
 		return false;
 	}

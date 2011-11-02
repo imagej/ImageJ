@@ -623,7 +623,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return;
 			path = directory + name;
 		}
-		if (record()) Recorder.record("roiManager", "Open", path);
+		if (Recorder.record && !Recorder.scriptMode())
+			Recorder.record("roiManager", "Open", path);
 		if (path.endsWith(".zip")) {
 			openZip(path);
 			return;

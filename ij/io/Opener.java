@@ -9,6 +9,7 @@ import ij.plugin.SimpleCommands;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -790,7 +791,10 @@ public class Opener {
 			if (name.endsWith(".roi")) {
 				zis.close();
 				if (!silentMode)
-					IJ.runMacro("roiManager(\"Open\", getArgument());", path);
+					if (IJ.isMacro() && Interpreter.isBatchMode())
+						IJ.log("Use roiManager(\"Open\", path) instead of open(path)\nto open ROI sets in batch mode macros.");
+					else
+						IJ.runMacro("roiManager(\"Open\", getArgument());", path);
 				return null;
 			}
 			if (name.endsWith(".tif")) {

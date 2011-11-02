@@ -1,6 +1,7 @@
 package ij.gui;
 
 import java.awt.*;
+import java.util.ArrayList;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
@@ -222,67 +223,49 @@ public class ProfilePlot {
 	double[] getIrregularProfile(Roi roi, ImageProcessor ip, Calibration cal) {
 		boolean interpolate = PlotWindow.interpolate;
 		boolean calcXValues = cal!=null && cal.pixelWidth!=cal.pixelHeight;
-		int n = ((PolygonRoi)roi).getNCoordinates();
-		int[] x = ((PolygonRoi)roi).getXCoordinates();
-		int[] y = ((PolygonRoi)roi).getYCoordinates();
-		Rectangle r = roi.getBounds();
-		int xbase = r.x;
-		int ybase = r.y;
-		double length = 0.0;
-		double segmentLength;
-		int xdelta, ydelta, iLength;
-		double[] segmentLengths = new double[n];
-		int[] dx = new int[n];
-		int[] dy = new int[n];
-		for (int i=0; i<(n-1); i++) {
-			xdelta = x[i+1] - x[i];
-			ydelta = y[i+1] - y[i];
-			segmentLength = Math.sqrt(xdelta*xdelta+ydelta*ydelta);
-			length += segmentLength;
-			segmentLengths[i] = segmentLength;
-			dx[i] = xdelta;
-			dy[i] = ydelta;
-		}
-		double[] values = new double[(int)length];
-		if (calcXValues) xValues = new float[(int)length];
-		double leftOver = 1.0;
-		double distance = 0.0;
-		int index;
-		double oldrx=0.0, oldry=0.0, xvalue=0.0;
-		for (int i=0; i<n; i++) {
-			double len = segmentLengths[i];
-			if (len==0.0)
-				continue;
-			double xinc = dx[i]/len;
-			double yinc = dy[i]/len;
-			double start = 1.0-leftOver;
-			double rx = xbase+x[i]+start*xinc;
-			double ry = ybase+y[i]+start*yinc;
-			double len2 = len - start;
-			int n2 = (int)len2;
-			for (int j=0; j<=n2; j++) {
-				index = (int)distance+j;
-				//IJ.log(i+" "+index+" "+distance+" "+j);
-				if (index<values.length) {
+		FloatPolygon p = roi.getFloatPolygon();
+		int n = p.npoints;
+		float[] xpoints = p.xpoints;
+		float[] ypoints = p.ypoints;
+		ArrayList values = new ArrayList();
+		int n2;
+		double inc = 0.01;
+		double distance=0.0, distance2=0.0, dx=0.0, dy=0.0, xinc, yinc;
+		double x, y, lastx=0.0, lasty=0.0, x1, y1, x2=xpoints[0], y2=ypoints[0];
+		double value;
+		for (int i=1; i<n; i++) {
+			x1=x2; y1=y2;
+			x=x1; y=y1;
+			x2=xpoints[i]; y2=ypoints[i];
+			dx = x2-x1;
+			dy = y2-y1;
+			distance = Math.sqrt(dx*dx+dy*dy);
+			xinc = dx*inc/distance;
+			yinc = dy*inc/distance;
+			//n2 = (int)(dx/xinc);
+			n2 = (int)(distance/inc);
+			if (n==2) n2++;
+			do {
+				dx = x-lastx;
+				dy = y-lasty;
+				distance2 = Math.sqrt(dx*dx+dy*dy);
+				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
+				if (distance2>=1.0-inc/2.0) {
 					if (interpolate)
-						values[index] = ip.getInterpolatedValue(rx, ry);
+						value = ip.getInterpolatedValue(x,y);
 					else
-						values[index] = ip.getPixelValue((int)(rx+0.5), (int)(ry+0.5));
-					if (calcXValues && index>0) {
-						double deltax = cal.pixelWidth*(rx-oldrx);
-						double deltay = cal.pixelHeight*(ry-oldry);
-						xvalue += Math.sqrt(deltax*deltax + deltay*deltay);
-						xValues[index]  = (float)xvalue;
-					}
-					oldrx = rx; oldry=ry;
+						value = ip.getPixelValue((int)Math.round(x), (int)Math.round(y));
+					values.add(new Double(value));
+					lastx=x; lasty=y;
 				}
-				rx += xinc;
-				ry += yinc;
-			}
-			distance += len;
-			leftOver = len2 - n2;
+				x += xinc;
+				y += yinc;
+			} while (--n2>0);
 		}
-		return values;
+		double[] values2 = new double[values.size()];
+		for (int i=0; i<values.size(); i++)
+			values2[i] = ((Double)values.get(i)).doubleValue();
+		return values2;
 	}
 
 	double[] getWideLineProfile(ImagePlus imp, int lineWidth) {

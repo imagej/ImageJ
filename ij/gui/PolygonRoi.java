@@ -414,8 +414,13 @@ public class PolygonRoi extends Roi {
 		if (clipboard!=null) return;
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
-		xp[activeHandle] = ox-x;
-		yp[activeHandle] = oy-y;
+		if (xpf!=null) {
+			xpf[activeHandle] = (float)(ic.offScreenXD(sx)-x);
+			ypf[activeHandle] = (float)(ic.offScreenYD(sy)-y);
+		} else {
+			xp[activeHandle] = ox-x;
+			yp[activeHandle] = oy-y;
+		}
 		if (xSpline!=null) {
 			fitSpline(splinePoints);
 			updateClipRect();
@@ -434,6 +439,10 @@ public class PolygonRoi extends Roi {
 
    /** After handle is moved, find clip rect and repaint. */
    void updateClipRectAndDraw() {
+   		if (xpf!=null) {
+   			xp = toInt(xpf, xp, nPoints);
+   			yp = toInt(ypf, yp, nPoints);
+   		}
 		int xmin=Integer.MAX_VALUE, ymin=Integer.MAX_VALUE, xmax=0, ymax=0;
 		int x2, y2;
 		if (activeHandle>0)
@@ -464,7 +473,7 @@ public class PolygonRoi extends Roi {
 		if (yClipMax>ymax2) ymax2 = yClipMax;
 		xClipMin=xmin; yClipMin=ymin; xClipMax=xmax; yClipMax=ymax;
 		double mag = ic.getMagnification();
-		int handleSize = type==POINT?HANDLE_SIZE+8:HANDLE_SIZE;
+		int handleSize = type==POINT?HANDLE_SIZE+12:HANDLE_SIZE;
 		if (handleSize<getStrokeWidth() && isLine()) handleSize = (int)getStrokeWidth() ;
 		int m = mag<1.0?(int)(handleSize/mag):handleSize;
 		m = (int)(m*getStrokeWidth());
@@ -472,9 +481,13 @@ public class PolygonRoi extends Roi {
 	}
 
 	void resetBoundingRect() {
+   		if (xpf!=null) {
+   			xp = toInt(xpf, xp, nPoints);
+   			yp = toInt(ypf, yp, nPoints);
+   		}
 		int xmin=Integer.MAX_VALUE, xmax=-xmin, ymin=xmin, ymax=xmax;
 		int xx, yy;
-		for(int i=0; i<nPoints; i++) {
+		for (int i=0; i<nPoints; i++) {
 			xx = xp[i];
 			if (xx<xmin) xmin=xx;
 			if (xx>xmax) xmax=xx;
@@ -482,12 +495,22 @@ public class PolygonRoi extends Roi {
 			if (yy<ymin) ymin=yy;
 			if (yy>ymax) ymax=yy;
 		}
-		if (xmin!=0)
-		   for (int i=0; i<nPoints; i++)
-			   xp[i] -= xmin;
-		if (ymin!=0)
-		   for (int i=0; i<nPoints; i++)
-			   yp[i] -= ymin;
+		if (xmin!=0) {
+			for (int i=0; i<nPoints; i++)
+				xp[i] -= xmin;
+			if (xpf!=null) {
+				for (int i=0; i<nPoints; i++)
+					xpf[i] -= xmin;
+			}
+		}
+		if (ymin!=0) {
+			for (int i=0; i<nPoints; i++)
+				yp[i] -= ymin;
+			if (ypf!=null) {
+				for (int i=0; i<nPoints; i++)
+					ypf[i] -= ymin;
+			}
+		}
 		//IJ.log("reset: "+ymin+" "+before+" "+yp[0]);
 		x+=xmin; y+=ymin;
 		width=xmax-xmin; height=ymax-ymin;
@@ -1001,7 +1024,7 @@ public class PolygonRoi extends Roi {
 	public int[] getYCoordinates() {
 		if (xSpline!=null)
 			return toInt(ySpline);
-		else if (xpf!=null)
+		else if (ypf!=null)
 			return toInt(ypf);
 		else
 			return yp;
@@ -1029,7 +1052,7 @@ public class PolygonRoi extends Roi {
 		} else if (xpf!=null) {
 			n = nPoints;
 			xpoints1 = toInt(xpf);
-			ypoints1 = toInt(xpf);
+			ypoints1 = toInt(ypf);
 		} else {
 			n = nPoints;
 			xpoints1 = xp;
@@ -1180,6 +1203,13 @@ public class PolygonRoi extends Roi {
 		System.arraycopy(yp2, 0, yp2temp, 0, maxPoints);
 		xp=xptemp; yp=yptemp;
 		xp2=xp2temp; yp2=yp2temp;
+		if (xpf!=null) {
+			float[] xpftemp = new float[maxPoints*2];
+			float[] ypftemp = new float[maxPoints*2];
+			System.arraycopy(xpf, 0, xpftemp, 0, maxPoints);
+			System.arraycopy(ypf, 0, ypftemp, 0, maxPoints);
+			xpf=xpftemp; ypf=ypftemp;
+		}
 		if (IJ.debugMode) IJ.log("PolygonRoi: "+maxPoints+" points");
 		maxPoints *= 2;
 	}
