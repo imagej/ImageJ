@@ -1432,6 +1432,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return ic!=null;
 	}
 
+	/** Returns true if this is a PolygonRoi that supports sub-pixel resolution. */
+	public boolean subPixelResolution() {
+		return false;
+	}
+
     /** Checks whether two rectangles are equal. */
     public boolean equals(Object obj) {
 		if (obj instanceof Roi) {
@@ -1460,7 +1465,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (temp==null || temp.length<n)
 			temp = new int[n];
 		for (int i=0; i<size; i++)
-			temp[i] = (int)Math.floor(arr[i]+0.5);
+			temp[i] = (int)arr[i];
+			//temp[i] = (int)Math.floor(arr[i]+0.5);
 		return temp;
 	}
 

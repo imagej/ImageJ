@@ -5,10 +5,11 @@
 </head>
 <body>
 
-<li> <u>1.46a 2 November 2011</u>
+<li> <u>1.46a 3 November 2011</u>
 <ul>
-<li> The Plot class constructors generate a Y value sequence
- if the Y array is null or empty
+<li> The point and multi-point tools support sub-pixel resolution.
+<li> The Plot class constructors generate an X value sequence
+ if the X array argument is null or empty
 (<a href="macros/ExamplePlots.js">JavaScript examples</a>).
 <li> An informative message is displayed when a batch 
 mode macro attempts to open an ROI set using open(path)
@@ -17,6 +18,9 @@ mode macro attempts to open an ROI set using open(path)
 profile plots to be greater that the measured line length.
 <li> Michael Schmid fixed a bug that could cause the RankFilters
 (Mean, Minimum, Median, etc.) to hang.
+<li> Thanks to Jan Eglinger, fixed bugs that could cause the recorder to throw
+bogus error messages or to record "null" or "nullnull" when opening or saving files.
+
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

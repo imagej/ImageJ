@@ -86,7 +86,7 @@ public class RoiDecoder {
 	public static final int OVERLAY_NAMES = 16;
 	public static final int OVERLAY_BACKGROUNDS = 32;
 	public static final int OVERLAY_BOLD = 64;
-
+	public static final int SUB_PIXEL_RESOLUTION = 128;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -146,6 +146,8 @@ public class RoiDecoder {
 		int overlayFontSize=0;
 		int imageOpacity=0;
 		int imageSize=0;
+		boolean subPixelResollution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
+
 		
 		if (hdr2Offset>0 && hdr2Offset+IMAGE_SIZE+4<=size) {
 			channel = getInt(hdr2Offset+C_POSITION);
@@ -208,6 +210,8 @@ public class RoiDecoder {
 					if (n==0) break;
 					int[] x = new int[n];
 					int[] y = new int[n];
+					float[] xf = null;
+					float[] yf = null;
 					int base1 = COORDINATES;
 					int base2 = base1+2*n;
 					int xtmp, ytmp;
@@ -220,8 +224,21 @@ public class RoiDecoder {
 						y[i] = top+ytmp;
 						//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
 					}
+					if (subPixelResollution) {
+						xf = new float[n];
+						yf = new float[n];
+						base1 = COORDINATES+4*n;
+						base2 = base1+4*n;
+						for (int i=0; i<n; i++) {
+							xf[i] = getFloat(base1+i*4);
+							yf[i] = getFloat(base2+i*4);
+						}
+					}
 					if (type==point) {
-						roi = new PointRoi(x, y, n);
+						if (subPixelResollution)
+							roi = new PointRoi(xf, yf, n);
+						else
+							roi = new PointRoi(x, y, n);
 						break;
 					}
 					int roiType;

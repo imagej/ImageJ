@@ -191,6 +191,11 @@ public class PointRoi extends PolygonRoi {
 		this.hideLabels = hideLabels;
 	}
 
+	/** Always returns true. */
+	public boolean subPixelResolution() {
+		return true;
+	}
+
 	public String toString() {
 		if (nPoints>1)
 			return ("Roi[Points, count="+nPoints+"]");

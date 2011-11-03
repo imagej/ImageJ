@@ -1,5 +1,6 @@
 package ij.io;
 import ij.gui.*;
+import ij.process.FloatPolygon;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -14,7 +15,7 @@ import java.awt.geom.*;
 public class RoiEncoder {
 	static final int HEADER_SIZE = 64;
 	static final int HEADER2_SIZE = 64;
-	static final int VERSION = 221; // changed to 221 in v1.45r
+	static final int VERSION = 222; // changed to 222 in v1.46a
 	private String path;
 	private OutputStream f;
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, 
@@ -90,17 +91,27 @@ public class RoiEncoder {
 		}
 
 		int n=0;
-		int[] x=null,y=null;
+		int[] x=null, y=null;
+		float[] xf=null, yf=null;
+		int floatSize = 0;
 		if (roi instanceof PolygonRoi) {
 			Polygon p = ((PolygonRoi)roi).getNonSplineCoordinates();
 			n = p.npoints;
 			x = p.xpoints;
 			y = p.ypoints;
+			if (roi.subPixelResolution()) {
+				FloatPolygon fp = roi.getFloatPolygon();
+				if (n==fp.npoints) {
+					options |= RoiDecoder.SUB_PIXEL_RESOLUTION;
+					xf = fp.xpoints;
+					yf = fp.ypoints;
+					floatSize = n*8;
+				}
+			}
 		}
-		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+roiNameSize];
 		
+		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+floatSize+roiNameSize];
 		Rectangle r = roi.getBounds();
-		
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
 		data[RoiDecoder.TYPE] = (byte)type;
@@ -160,7 +171,7 @@ public class RoiEncoder {
 		else if (n==0 && roi instanceof ImageRoi)
 			saveImageRoi((ImageRoi)roi);
 		else
-			putHeader2(roi, HEADER_SIZE+n*4);
+			putHeader2(roi, HEADER_SIZE+n*4+floatSize);
 			
 		if (n>0) {
 			int base1 = 64;
@@ -168,6 +179,14 @@ public class RoiEncoder {
 			for (int i=0; i<n; i++) {
 				putShort(base1+i*2, x[i]);
 				putShort(base2+i*2, y[i]);
+			}
+			if (xf!=null) {
+				base1 = 64+4*n;
+				base2 = base1+4*n;
+				for (int i=0; i<n; i++) {
+					putFloat(base1+i*4, xf[i]);
+					putFloat(base2+i*4, yf[i]);
+				}
 			}
 		}
 		
