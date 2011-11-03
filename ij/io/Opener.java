@@ -791,7 +791,7 @@ public class Opener {
 			if (name.endsWith(".roi")) {
 				zis.close();
 				if (!silentMode)
-					if (IJ.isMacro() && Interpreter.isBatchMode())
+					if (IJ.isMacro() && Interpreter.isBatchMode() && RoiManager.getInstance()==null)
 						IJ.log("Use roiManager(\"Open\", path) instead of open(path)\nto open ROI sets in batch mode macros.");
 					else
 						IJ.runMacro("roiManager(\"Open\", getArgument());", path);
