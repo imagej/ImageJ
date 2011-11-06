@@ -1403,7 +1403,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
 		&& roi.getState()==roi.CONSTRUCTING) {
 			PolygonRoi pRoi = (PolygonRoi)roi;
-			pRoi.handleMouseMove(ox, oy);
+			pRoi.handleMouseMove(sx, sy);
 		} else {
 			if (ox<imageWidth && oy<imageHeight) {
 				ImageWindow win = imp.getWindow();

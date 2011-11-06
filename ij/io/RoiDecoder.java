@@ -146,7 +146,7 @@ public class RoiDecoder {
 		int overlayFontSize=0;
 		int imageOpacity=0;
 		int imageSize=0;
-		boolean subPixelResollution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
+		boolean subPixelResolution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
 
 		
 		if (hdr2Offset>0 && hdr2Offset+IMAGE_SIZE+4<=size) {
@@ -224,7 +224,7 @@ public class RoiDecoder {
 						y[i] = top+ytmp;
 						//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
 					}
-					if (subPixelResollution) {
+					if (subPixelResolution) {
 						xf = new float[n];
 						yf = new float[n];
 						base1 = COORDINATES+4*n;
@@ -235,7 +235,7 @@ public class RoiDecoder {
 						}
 					}
 					if (type==point) {
-						if (subPixelResollution)
+						if (subPixelResolution)
 							roi = new PointRoi(xf, yf, n);
 						else
 							roi = new PointRoi(x, y, n);
@@ -265,7 +265,10 @@ public class RoiDecoder {
 						roiType = Roi.ANGLE;
 					else
 						roiType = Roi.FREEROI;
-					roi = new PolygonRoi(x, y, n, roiType);
+					if (subPixelResolution)
+						roi = new PolygonRoi(xf, yf, n, roiType);
+					else
+						roi = new PolygonRoi(x, y, n, roiType);
 					break;
 			default:
 				throw new IOException("Unrecognized ROI type: "+type);

@@ -23,6 +23,15 @@ public class FloatPolygon {
 	}
 
 	/** Constructs a FloatPolygon from x and y arrays. */ 
+	public FloatPolygon(float xpoints[], float ypoints[]) {
+		if (xpoints.length!=ypoints.length)
+			throw new IllegalArgumentException("xpoints.length!=ypoints.length");
+		this.npoints = xpoints.length;
+		this.xpoints = xpoints;
+		this.ypoints = ypoints;
+	}
+
+	/** Constructs a FloatPolygon from x and y arrays. */ 
 	public FloatPolygon(float xpoints[], float ypoints[], int npoints) {
 		this.npoints = npoints;
 		this.xpoints = xpoints;

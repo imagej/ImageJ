@@ -86,8 +86,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (!(this instanceof StackWindow))
 			addMouseWheelListener(this);
 		setResizable(true);
-		WindowManager.addWindow(this);
-		imp.setWindow(this);
+		if (!(this instanceof HistogramWindow&&IJ.isMacro()&&Interpreter.isBatchMode())) {
+			WindowManager.addWindow(this);
+			imp.setWindow(this);
+		}
 		if (previousWindow!=null) {
 			if (newCanvas)
 				setLocationAndSize(false);

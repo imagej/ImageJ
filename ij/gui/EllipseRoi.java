@@ -26,8 +26,8 @@ public class EllipseRoi extends PolygonRoi {
 	public EllipseRoi(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
 		type = FREEROI;
-		xstart = ic.offScreenX(sx);
-		ystart = ic.offScreenY(sy);
+		xstart = ic.offScreenXD(sx);
+		ystart = ic.offScreenYD(sy);
 	}
 
 	public void draw(Graphics g) {
@@ -41,8 +41,8 @@ public class EllipseRoi extends PolygonRoi {
 	}
 
 	protected void grow(int sx, int sy) {
-		double x1 = xpf[handle[2]]+x;
-		double y1 = ypf[handle[2]]+y;
+		double x1 = xstart;
+		double y1 = ystart;
 		double x2 = ic.offScreenXD(sx);
 		double y2 = ic.offScreenYD(sy);
 		makeEllipse(x1, y1, x2, y2);
