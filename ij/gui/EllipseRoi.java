@@ -34,7 +34,6 @@ public class EllipseRoi extends PolygonRoi {
 		super.draw(g);
 		int size2 = HANDLE_SIZE/2;
 		if (!overlay) {
-            mag = ic!=null?ic.getMagnification():1.0;
 			for (int i=0; i<handle.length; i++)
 				drawHandle(g, xp2[handle[i]]-size2, yp2[handle[i]]-size2);
 		}

@@ -32,6 +32,7 @@ public class Plot {
 	//public static final int X_INTERVALS_M = 0x1;
 	///** flag multiplier for maximum number of ticks&grid lines along y */
 	//public static final int Y_INTERVALS_M = 0x100;
+	
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -103,8 +104,25 @@ public class Plot {
 	 * @param yLabel	the y-axis label
 	 * @param xValues	the x-coodinates, or null
 	 * @param yValues	the y-coodinates, or null
-	 * @param flags		sum of flag values controlling appearance of ticks, grid, etc.
 	 */
+	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
+		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
+	}
+
+	/** This version of the constructor accepts double arrays. */
+	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
+		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
+	}
+
+	/** This is a version of the constructor with no intial arrays. */
+	public Plot(String title, String xLabel, String yLabel) {
+		this(title, xLabel, yLabel, (float[])null, (float[])null, DEFAULT_FLAGS);
+	}
+
+	/** This version of the constructor has a 'flags' argument for
+		controlling the appearance of ticks, grid, etc. The default is
+		Plot.X_NUMBERS+Plot.Y_NUMBERS+Plot.X_GRID+Plot.Y_GRID.
+	*/
 	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues, int flags) {
 		this.title = title;
 		this.xLabel = xLabel;
@@ -133,24 +151,9 @@ public class Plot {
 		drawPending = true;
 	}
 	
-	/** This version of the constructor uses the default flags. */
-	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
-		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
-	}
-
-	/** This version of the constructor accepts double arrays. */
+	/** This version of the constructor accepts double arrays and has a 'flags' argument. */
 	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues, int flags) {
 		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, flags);
-	}
-
-	/** This version of the constructor accepts double arrays and uses the default flags */
-	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
-		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
-	}
-
-	/** This is a version of the constructor with no intial arrays. */
-	public Plot(String title, String xLabel, String yLabel) {
-		this(title, xLabel, yLabel, (float[])null, (float[])null, DEFAULT_FLAGS);
 	}
 
 	/** Sets the x-axis and y-axis range. */

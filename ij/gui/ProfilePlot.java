@@ -252,7 +252,7 @@ public class ProfilePlot {
 				//IJ.log(i+"   "+IJ.d2s(xinc,5)+"   "+IJ.d2s(yinc,5)+"   "+IJ.d2s(distance,2)+"   "+IJ.d2s(distance2,2)+"   "+IJ.d2s(x,2)+"   "+IJ.d2s(y,2)+"   "+IJ.d2s(lastx,2)+"   "+IJ.d2s(lasty,2)+"   "+n+"   "+n2);
 				if (distance2>=1.0-inc/2.0) {
 					if (interpolate)
-						value = ip.getInterpolatedValue(x,y);
+						value = ip.getInterpolatedValue(x, y);
 					else
 						value = ip.getPixelValue((int)Math.round(x), (int)Math.round(y));
 					values.add(new Double(value));

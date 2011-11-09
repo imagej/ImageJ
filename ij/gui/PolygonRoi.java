@@ -169,14 +169,17 @@ public class PolygonRoi extends Roi {
 	}
 
 	private void drawStartBox(Graphics g) {
-		if (type!=ANGLE)
-			g.drawRect(ic.screenXD(startXD)-4, ic.screenYD(startYD)-4, 8, 8);
+		if (type!=ANGLE) {
+			double offset = subPixelResolution?0.5:0.0;
+			g.drawRect(ic.screenXD(startXD+offset)-4, ic.screenYD(startYD+offset)-4, 8, 8);
+		}
 	}
 	
 	public void draw(Graphics g) {
         updatePolygon();
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		boolean fill = false;
+        mag = getMagnification();
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {
 			color = fillColor;
 			fill = true;
@@ -214,7 +217,6 @@ public class PolygonRoi extends Roi {
         }
         if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
         && state!=CONSTRUCTING && clipboard==null && !overlay) {
-            mag = getMagnification();
             int size2 = HANDLE_SIZE/2;
             if (activeHandle>0)
                 drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);
@@ -232,26 +234,27 @@ public class PolygonRoi extends Roi {
 	}
 	
  	private void drawSpline(Graphics g, float[] xpoints, float[] ypoints, int npoints, boolean closed, boolean fill) {
- 		float srcx=0f, srcy=0f, mag=1f;
+ 		double srcx=0.0, srcy=0.9, mag=1.0;
  		if (ic!=null) {
 			Rectangle srcRect = ic.getSrcRect();
 			srcx=srcRect.x; srcy=srcRect.y;
-			mag = (float)ic.getMagnification();
+			mag = ic.getMagnification();
  		}
- 		float xf=x, yf=y;
+ 		double xd=x, yd=y;
 		Graphics2D g2d = (Graphics2D)g;
 		GeneralPath path = new GeneralPath();
-		if (mag==1f && srcx==0f && srcy==0f) {
-			path.moveTo(xpoints[0]+xf, ypoints[0]+yf);
+		double offset = subPixelResolution&&mag>1.0?0.5:0.0;
+		if (mag==1.0 && srcx==0.0 && srcy==0.0) {
+			path.moveTo(xpoints[0]+xd, ypoints[0]+yd);
 			for (int i=1; i<npoints; i++)
-				path.lineTo(xpoints[i]+xf, ypoints[i]+yf);
+				path.lineTo(xpoints[i]+xd, ypoints[i]+yd);
 		} else {
-			path.moveTo((xpoints[0]-srcx+xf)*mag, (ypoints[0]-srcy+yf)*mag);
+			path.moveTo((xpoints[0]-srcx+xd)*mag+offset, (ypoints[0]-srcy+yd+offset)*mag);
 			for (int i=1; i<npoints; i++)
-				path.lineTo((xpoints[i]-srcx+xf)*mag, (ypoints[i]-srcy+yf)*mag);
+				path.lineTo((xpoints[i]-srcx+xd+offset)*mag, (ypoints[i]-srcy+yd+offset)*mag);
 		}
 		if (closed)
-			path.lineTo((xpoints[0]-srcx+xf)*mag, (ypoints[0]-srcy+yf)*mag);
+			path.lineTo((xpoints[0]-srcx+xd+offset)*mag, (ypoints[0]-srcy+yd+offset)*mag);
 		if (fill)
 			g2d.fill(path);
 		else
@@ -296,7 +299,8 @@ public class PolygonRoi extends Roi {
 			Rectangle srcRect = ic.getSrcRect();
 			basex=srcRect.x; basey=srcRect.y;
 		}
-		if (getMagnification()==1.0 && basex==0 && basey==0) {
+		double mag = getMagnification();
+		if (mag==1.0 && basex==0 && basey==0) {
 			if (xpf!=null) {
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = (int)(xpf[i]+x);
@@ -310,9 +314,10 @@ public class PolygonRoi extends Roi {
 			}
 		} else {
 			if (xpf!=null) {
+				double offset = subPixelResolution&&mag>1.0 && type!=POINT?0.5:0.0;
 				for (int i=0; i<nPoints; i++) {
-					xp2[i] = ic.screenXD(xpf[i]+x);
-					yp2[i] = ic.screenYD(ypf[i]+y);
+					xp2[i] = ic.screenXD(xpf[i]+x+offset);
+					yp2[i] = ic.screenYD(ypf[i]+y+offset);
 				}
 			} else {
 				for (int i=0; i<nPoints; i++) {
@@ -819,7 +824,7 @@ public class PolygonRoi extends Roi {
 	}
 	
 	/** With segmented selections, ignore first mouse up and finalize
-		iwhen user double-clicks, control-clicks or clicks in start box. */
+	    when user double-clicks, control-clicks or clicks in start box. */
 	protected void handleMouseUp(int sx, int sy) {
 		if (state==MOVING)
 			{state = NORMAL; return;}				

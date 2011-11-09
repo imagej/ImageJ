@@ -105,7 +105,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		resetCounter,showProgress, recordStarts, displaySummary, floodFill,
 		addToManager, inSituShow;
 		
-	private String summaryHdr = "Slice\tCount\tTotal Area\tAverage Size\tArea Fraction";
+	private String summaryHdr = "Slice\tCount\tTotal Area\tAverage Size\t%Area";
 	private double level1, level2;
 	private double minSize, maxSize;
 	private double minCircularity, maxCircularity;
@@ -592,7 +592,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		Calibration cal = imp.getCalibration();
 		String total = "\t"+ResultsTable.d2s(sum,places);
 		String average = "\t"+ResultsTable.d2s(sum/particleCount,places);
-		String fraction = "\t"+ResultsTable.d2s(sum*100.0/totalArea,1);
+		String fraction = "\t"+ResultsTable.d2s(sum*100.0/totalArea,places);
 		aLine = label+"\t"+particleCount+total+average+fraction;
 		aLine = addMeans(aLine, areas.length>0?start:-1);
 		if (slices==1) {
