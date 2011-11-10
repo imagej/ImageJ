@@ -147,7 +147,6 @@ public class RoiDecoder {
 		int imageOpacity=0;
 		int imageSize=0;
 		boolean subPixelResolution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
-
 		
 		if (hdr2Offset>0 && hdr2Offset+IMAGE_SIZE+4<=size) {
 			channel = getInt(hdr2Offset+C_POSITION);

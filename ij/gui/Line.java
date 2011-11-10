@@ -112,8 +112,9 @@ public class Line extends Roi {
 	}
 
 	protected void moveHandle(int sx, int sy) {
-		double ox = ic.offScreenXD(sx);
-		double oy = ic.offScreenYD(sy);
+		double offset = getMagnification()>1.0?-0.5:0.0;
+		double ox = ic.offScreenXD(sx)+offset;
+		double oy = ic.offScreenYD(sy)+offset;
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double length = Math.sqrt((x2d-x1d)*(x2d-x1d) + (y2d-y1d)*(y2d-y1d));
 		switch (activeHandle) {
@@ -397,8 +398,9 @@ public class Line extends Roi {
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
 		if (getStrokeWidth()==1) {
-			ip.moveTo(x1, y1);
-			ip.lineTo(x2, y2);
+			double offset = getMagnification()>1.0?0.5:0.0;
+			ip.moveTo((int)(x1d+offset), (int)(y1d+offset));
+			ip.lineTo((int)(x2d+offset), (int)(y2d+offset));
 		} else {
 			ip.drawPolygon(getPolygon());
 			updateFullWindow = true;

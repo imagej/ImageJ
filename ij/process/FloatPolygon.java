@@ -96,5 +96,14 @@ public class FloatPolygon {
 	public void addPoint(double x, double y) {
 		addPoint((float)x, (float)y);
 	}
+	
+	public FloatPolygon duplicate() {
+		int n = this.npoints;
+		float[] xpoints = new float[n];
+		float[] ypoints = new float[n];
+		System.arraycopy(this.xpoints, 0, xpoints, 0, n);
+		System.arraycopy(this.ypoints, 0, ypoints, 0, n);	
+		return new FloatPolygon(xpoints, ypoints, n);
+	}
 
 }

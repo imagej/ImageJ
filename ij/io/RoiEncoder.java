@@ -94,13 +94,23 @@ public class RoiEncoder {
 		int[] x=null, y=null;
 		float[] xf=null, yf=null;
 		int floatSize = 0;
+		Rectangle r = roi.getBounds();
 		if (roi instanceof PolygonRoi) {
-			Polygon p = ((PolygonRoi)roi).getNonSplineCoordinates();
+			PolygonRoi proi = (PolygonRoi)roi;
+			Polygon p = proi.getNonSplineCoordinates();
 			n = p.npoints;
 			x = p.xpoints;
 			y = p.ypoints;
 			if (roi.subPixelResolution()) {
-				FloatPolygon fp = roi.getFloatPolygon();
+				FloatPolygon fp = null;
+				if (proi.isSplineFit()) {
+					fp = proi.getNonSplineFloatCoordinates();
+					for (int i=0; i<fp.npoints; i++) {
+						fp.xpoints[i] += r.x;
+						fp.ypoints[i] += r.y;
+					}
+				} else
+					fp = roi.getFloatPolygon();
 				if (n==fp.npoints) {
 					options |= RoiDecoder.SUB_PIXEL_RESOLUTION;
 					xf = fp.xpoints;
@@ -111,7 +121,6 @@ public class RoiEncoder {
 		}
 		
 		data = new byte[HEADER_SIZE+HEADER2_SIZE+n*4+floatSize+roiNameSize];
-		Rectangle r = roi.getBounds();
 		data[0]=73; data[1]=111; data[2]=117; data[3]=116; // "Iout"
 		putShort(RoiDecoder.VERSION_OFFSET, VERSION);
 		data[RoiDecoder.TYPE] = (byte)type;

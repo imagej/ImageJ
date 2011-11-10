@@ -243,7 +243,7 @@ public class PolygonRoi extends Roi {
  		double xd=x, yd=y;
 		Graphics2D g2d = (Graphics2D)g;
 		GeneralPath path = new GeneralPath();
-		double offset = subPixelResolution&&mag>1.0?0.5:0.0;
+		double offset = subPixelResolution&&mag>1.0&&type==POLYLINE?0.5:0.0;
 		if (mag==1.0 && srcx==0.0 && srcy==0.0) {
 			path.moveTo(xpoints[0]+xd, ypoints[0]+yd);
 			for (int i=1; i<npoints; i++)
@@ -265,18 +265,19 @@ public class PolygonRoi extends Roi {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
+		double offset = subPixelResolution&&getMagnification()>1.0?0.5:0.0;
 		if (xSpline!=null) {
-			ip.moveTo(x+(int)(Math.floor(xSpline[0])+0.5), y+(int)Math.floor(ySpline[0]+0.5));
+			ip.moveTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
 			for (int i=1; i<splinePoints; i++)
-				ip.lineTo(x+(int)(Math.floor(xSpline[i])+0.5), y+(int)Math.floor(ySpline[i]+0.5));
+				ip.lineTo(x+(int)(Math.floor(xSpline[i])+offset), y+(int)Math.floor(ySpline[i]+offset));
 			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
-				ip.lineTo(x+(int)(Math.floor(xSpline[0])+0.5), y+(int)Math.floor(ySpline[0]+0.5));
+				ip.lineTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
 		} else if (xpf!=null) {
-			ip.moveTo(x+(int)(Math.floor(xpf[0])+0.5), y+(int)Math.floor(ypf[0]+0.5));
+			ip.moveTo(x+(int)(Math.floor(xpf[0])+offset), y+(int)Math.floor(ypf[0]+offset));
 			for (int i=1; i<nPoints; i++)
-				ip.lineTo(x+(int)(Math.floor(xpf[i])+0.5), y+(int)Math.floor(ypf[i]+0.5));
+				ip.lineTo(x+(int)(Math.floor(xpf[i])+offset), y+(int)Math.floor(ypf[i]+offset));
 			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
-				ip.lineTo(x+(int)(Math.floor(xpf[0])+0.5), y+(int)Math.floor(ypf[0]+0.5));
+				ip.lineTo(x+(int)(Math.floor(xpf[0])+offset), y+(int)Math.floor(ypf[0]+offset));
 		} else {
 			ip.moveTo(x+xp[0], y+yp[0]);
 			for (int i=1; i<nPoints; i++)
@@ -314,7 +315,7 @@ public class PolygonRoi extends Roi {
 			}
 		} else {
 			if (xpf!=null) {
-				double offset = subPixelResolution&&mag>1.0 && type!=POINT?0.5:0.0;
+				double offset = subPixelResolution&&mag>1.0&&type!=POINT&&type!=POLYGON?0.5:0.0;
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = ic.screenXD(xpf[i]+x+offset);
 					yp2[i] = ic.screenYD(ypf[i]+y+offset);
@@ -476,8 +477,9 @@ public class PolygonRoi extends Roi {
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
 		if (xpf!=null) {
-			xpf[activeHandle] = (float)(ic.offScreenXD(sx)-x);
-			ypf[activeHandle] = (float)(ic.offScreenYD(sy)-y);
+			double offset = subPixelResolution&&getMagnification()>1.0&&type==POLYLINE?-0.5:0.0;
+			xpf[activeHandle] = (float)(ic.offScreenXD(sx)-x+offset);
+			ypf[activeHandle] = (float)(ic.offScreenYD(sy)-y+offset);
 		} else {
 			xp[activeHandle] = ox-x;
 			yp[activeHandle] = oy-y;
@@ -1140,6 +1142,13 @@ public class PolygonRoi extends Roi {
 			return new Polygon(xp, yp, nPoints);
 	}
 		
+	public FloatPolygon getNonSplineFloatCoordinates() {
+		if (xpf!=null)
+			return (new FloatPolygon(xpf, ypf, nPoints)).duplicate();
+		else
+			return new FloatPolygon(toFloat(xp), toFloat(yp), nPoints);
+	}
+
 	/** Returns this PolygonRoi as a Polygon. 
 		@see ij.process.ImageProcessor#setRoi
 		@see ij.process.ImageProcessor#drawPolygon
