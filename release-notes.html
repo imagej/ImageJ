@@ -5,16 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.46a 8 November 2011</u>
+<li> <u>1.46a 10 November 2011</u>
 <ul>
 <li> The segmented line, freehand line, point and multi-point tools
 now support sub-pixel resolution.
+<li> Added the <i>Edit&gt;Selection&gt;List Coordinates</i> command.
 <li> The Plot class constructors generate an X value sequence
  if the X array argument is null or empty
 (<a href="macros/ExamplePlots.js">JavaScript examples</a>).
 <li> An informative message is displayed when a batch 
 mode macro attempts to open an ROI set using open(path)
 (which does not work) instead of roiManager("open",path).
+<li> Thanks to Tiago Ferreira, the ROI Manager "Multi Plot" command
+no longer ignores "Fixed y-axis scale" in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
 <li> Thanks to Bob Hamilton, "Area Fraction" (renamed "%Area") in the Analyze Particles
 Summary window now uses the Set Measurements decimal places. 
 <li> Fixed a bug that caused the length of non-straight line 

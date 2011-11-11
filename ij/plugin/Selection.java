@@ -5,8 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.macro.Interpreter;
-import ij.plugin.filter.GaussianBlur;
-import ij.plugin.filter.ThresholdToSelection;
+import ij.plugin.filter.*;
 import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -52,8 +51,6 @@ public class Selection implements PlugIn, Measurements {
     		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
-    	else if (arg.equals("tobox"))
-    		toBoundingBox(imp); 
      	else if (arg.equals("toarea"))
     		lineToArea(imp); 
      	else if (arg.equals("toline"))
@@ -62,6 +59,10 @@ public class Selection implements PlugIn, Measurements {
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
  		else if (arg.equals("band"))
 			makeBand(imp);
+    	else if (arg.equals("tobox"))
+    		toBoundingBox(imp); 
+ 		else if (arg.equals("list"))
+			listCoordinates(imp);
 		else
 			runMacro(arg);
 	}
@@ -76,7 +77,7 @@ public class Selection implements PlugIn, Measurements {
 			}
 		}
 		if (roi==null) {
-			IJ.error("Rotate>Selection", "This command requires a selection");
+			noRoi("Rotate>Selection");
 			return;
 		}
 		roi = (Roi)roi.clone();
@@ -104,7 +105,7 @@ public class Selection implements PlugIn, Measurements {
 	void fitCircle(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi==null) {
-			IJ.error("Fit Circle", "Selection required");
+			noRoi("Fit Circle");
 			return;
 		}
 		
@@ -217,7 +218,7 @@ public class Selection implements PlugIn, Measurements {
 	void fitSpline() {
 		Roi roi = imp.getRoi();
 		if (roi==null)
-			{IJ.error("Spline", "Selection required"); return;}
+			{noRoi("Spline"); return;}
 		int type = roi.getType();
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
@@ -321,7 +322,7 @@ public class Selection implements PlugIn, Measurements {
 		IJ.showStatus("Fitting ellipse");
 		Roi roi = imp.getRoi();
 		if (roi==null)
-			{IJ.error("Fit Ellipse", "Selection required"); return;}
+			{noRoi("Fit Ellipse"); return;}
 		if (roi.isLine())
 			{IJ.error("Fit Ellipse", "\"Fit Ellipse\" does not work with line selections"); return;}
 		ImageProcessor ip = imp.getProcessor();
@@ -497,6 +498,10 @@ public class Selection implements PlugIn, Measurements {
 
 	void toBoundingBox(ImagePlus imp) {
 		Roi roi = imp.getRoi();
+		if (roi==null) {
+			noRoi("To Bounding Box");
+			return;
+		}
 		Rectangle r = roi.getBounds();
 		imp.killRoi();
 		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));
@@ -538,7 +543,7 @@ public class Selection implements PlugIn, Measurements {
 	private void makeBand(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi==null) {
-			IJ.error("Make Band", "Selection required");
+			noRoi("Make Band");
 			return;
 		}
 		if (!roi.isArea()) {
@@ -606,6 +611,43 @@ public class Selection implements PlugIn, Measurements {
 		roi2 = roi2.not(roi1);
 		imp.setRoi(roi2);
 		bandSize = n;
+	}
+
+	void listCoordinates(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			{noRoi("List Coordinates"); return;}
+		boolean allIntegers = true;
+		FloatPolygon fp = roi.getFloatPolygon();
+		Calibration cal = imp.getCalibration();
+		if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0) {
+			for (int i=0; i<fp.npoints; i++) {
+				fp.xpoints[i] *= cal.pixelWidth;
+				fp.ypoints[i] *= cal.pixelHeight;
+			}
+			allIntegers = false;
+		}
+		if (allIntegers) {
+			for (int i=0; i<fp.npoints; i++) {
+				if ((int)fp.xpoints[i]!=fp.xpoints[i] || (int)fp.ypoints[i]!=fp.ypoints[i]) {
+					allIntegers = false;
+					break;
+				}
+			}
+		}
+		ResultsTable rt = new ResultsTable();
+		rt.setPrecision(allIntegers?0:Analyzer.getPrecision());
+		for (int i=0; i<fp.npoints; i++) {
+			rt.incrementCounter();
+			rt.addValue("X", fp.xpoints[i]);
+			rt.addValue("Y", fp.ypoints[i]);
+		}
+		rt.showRowNumbers(false);
+		rt.show("XY_"+imp.getTitle());
+	}
+	
+	void noRoi(String command) {
+		IJ.error(command, "This command requires a selection");
 	}
 
 }

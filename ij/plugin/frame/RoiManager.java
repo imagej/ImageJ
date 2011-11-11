@@ -945,6 +945,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		double[][] y = new double[n][];
 		double minY = Double.MAX_VALUE;
 		double maxY = -Double.MAX_VALUE;
+		double fixedMin = ProfilePlot.getFixedMin();
+		double fixedMax = ProfilePlot.getFixedMax();	
+		boolean freeYScale = fixedMin==0.0 && fixedMax==0.0;
+		if (!freeYScale) {
+			minY = fixedMin;
+			maxY = fixedMax;
+		}
 		int maxX = 0;
 		Calibration cal = imp.getCalibration();
 		double xinc = cal.pixelWidth;
@@ -958,9 +965,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			y[i] = pp.getProfile();
 			if (y[i]==null) break;
 			if (y[i].length>maxX) maxX = y[i].length;
-			double[] a = Tools.getMinMax(y[i]);
-			if (a[0]<minY) minY=a[0];
-			if (a[1]>maxY) maxY = a[1];
+			if (freeYScale) {
+				double[] a = Tools.getMinMax(y[i]);
+				if (a[0]<minY) minY=a[0];
+				if (a[1]>maxY) maxY = a[1];
+			}
 			double[] xx = new double[y[i].length];
 			for (int j=0; j<xx.length; j++)
 				xx[j] = j*xinc;
