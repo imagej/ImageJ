@@ -265,7 +265,7 @@ public class PolygonRoi extends Roi {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
-		double offset = subPixelResolution&&getMagnification()>1.0?0.5:0.0;
+		double offset = subPixelResolution&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?0.5:0.0;
 		if (xSpline!=null) {
 			ip.moveTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
 			for (int i=1; i<splinePoints; i++)
@@ -304,8 +304,8 @@ public class PolygonRoi extends Roi {
 		if (mag==1.0 && basex==0 && basey==0) {
 			if (xpf!=null) {
 				for (int i=0; i<nPoints; i++) {
-					xp2[i] = (int)(xpf[i]+x);
-					yp2[i] = (int)(ypf[i]+y);
+					xp2[i] = (int)(xpf[i]+x+0.5);
+					yp2[i] = (int)(ypf[i]+y+0.5);
 				}
 			} else {
 				for (int i=0; i<nPoints; i++) {
@@ -315,7 +315,7 @@ public class PolygonRoi extends Roi {
 			}
 		} else {
 			if (xpf!=null) {
-				double offset = subPixelResolution&&mag>1.0&&type!=POINT&&type!=POLYGON?0.5:0.0;
+				double offset = subPixelResolution&&mag>1.0&&(type==POLYLINE||type==FREELINE)?0.5:0.0;
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = ic.screenXD(xpf[i]+x+offset);
 					yp2[i] = ic.screenYD(ypf[i]+y+offset);

@@ -59,9 +59,9 @@ public class Selection implements PlugIn, Measurements {
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
  		else if (arg.equals("band"))
 			makeBand(imp);
-    	else if (arg.equals("tobox"))
-    		toBoundingBox(imp); 
- 		else if (arg.equals("list"))
+		else if (arg.equals("tobox"))
+			toBoundingBox(imp); 
+		else if (arg.equals("list"))
 			listCoordinates(imp);
 		else
 			runMacro(arg);

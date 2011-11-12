@@ -74,6 +74,10 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		nImages = info.length;
 		FileOpener fo = new FileOpener(info[0] );
 		ImagePlus imp = fo.open(false);
+		if (nImages==1 && fi.fileType==FileInfo.RGB48) {
+			if (show) imp.show();
+			return;
+		}
 		Properties props = fo.decodeDescriptionString(fi);
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setFileInfo(fi);
