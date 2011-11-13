@@ -5,29 +5,36 @@
 </head>
 <body>
 
-<li> <u>1.45s 26 October 2011</u>
+<li> <u>1.46a 11 November 2011</u>
 <ul>
-<li> Added the setOption("ExpandableArrays") macro function
-(<a href="macros/examples/ExpandableArrays.txt">example</a>).
-<li> The Roi.getFloatPolygon() method works with more selection types.
-<li> Thanks to Kees Straatman, fixed a bug that caused
-<i>Edit&gt;Selection&gt;Fit Ellipse</i> to not work with
-spatially calibrated images.
-<li> Thanks to Gilles Carpentier, fixed a bug that caused the
-Overlay.drawString() macro function to display text at
-the wrong Y location and another bug that caused the run("From ROI Manager")
-macro function to not work in batch mode.
-<li> Thanks to Michael Schmid, fixed a bug that caused the
-CurveFitter.setMaxIterations() method to not work as expected.
-<li> Thanks to Jamie Robinson, fixed a bug that could cause the mm scale
-of newly opened hybrid DICOM/TIFF files to not be set.
-<li> David Gauntt fixed a bug that caused the NonBlockingGenericDialog
- to not correctly handle esc and enter key presses.
- <li> Thanks to Bentorey Hernandez Cruz, fixed a bug that caused the
- <a href="plugins/panel-window.html">Panel Window</a>
-example plugin to not work with hyperstacks.
-<li> Thanks to Norbert Vischer, fixed a bug that could cause the
-Plot.add("error bars", errorBars) macro function to throw an exception.
+<li> The segmented line, freehand line, point and multi-point tools
+now support sub-pixel resolution.
+<li> Added the <i>Edit&gt;Selection&gt;List Coordinates</i> command.
+<li> The Plot class constructors generate an X value sequence
+ if the X array argument is null or empty
+(<a href="macros/ExamplePlots.js">JavaScript examples</a>).
+<li> An informative message is displayed when a batch 
+mode macro attempts to open an ROI set using open(path)
+(which does not work) instead of roiManager("open",path).
+<li> Thanks to Tiago Ferreira, the ROI Manager "Multi Plot" command
+no longer ignores "Fixed y-axis scale" in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
+<li> Thanks to Bob Hamilton, "Area Fraction" (renamed "%Area") in the Analyze Particles
+Summary window now uses the Set Measurements decimal places. 
+<li> Added the MaximumFinder.getMaxima() method
+(<a href="macros/js/FindMaxima.js">example</a>).
+<li> Fixed a bug that caused the length of non-straight line 
+profile plots to be greater that the measured line length.
+<li> Michael Schmid fixed a bug that could cause the RankFilters
+(Mean, Minimum, Median, etc.) to hang.
+<li> Thanks to Jan Eglinger, fixed bugs that could cause the recorder to throw
+bogus error messages or to record "null" or "nullnull" when opening or saving files.
+<li> Fixed a bug that caused the elliptical selection tool to always have
+integer starting coordinates.
+<li> Thanks to Oliver Bannach, fixed a bug that caused Histograms in
+batch mode macros to not be properly closed.
+<li> Thanks to Norbert Vischer, fixed a bug that caused
+<i>File&gt;Import&gt;TIFF as Virtual Stack</i> to not correctly
+open C=3, Z=1, T=1, 16-bit hyperstacks.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

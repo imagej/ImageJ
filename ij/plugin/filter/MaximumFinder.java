@@ -83,6 +83,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private int       intEncodeShift;               // needed for encoding x & y in a single int (watershed): shift of y
     /** directions to 8 neighboring pixels, clockwise: 0=North (-y), 1=NE, 2=East (+x), ... 7=NW */
     private int[]     dirOffset;                    // pixel offsets of neighbor pixels for direct addressing
+    private Polygon points;                    // maxima found by findMaxima() when outputType is POINT_SELECTION
     final static int[] DIR_X_OFFSET = new int[] {  0,  1,  1,  1,  0, -1, -1, -1 };
     final static int[] DIR_Y_OFFSET = new int[] { -1, -1,  0,  1,  1,  1,  0, -1 };
     /** the following constants are used to set bits corresponding to pixel types */
@@ -229,6 +230,23 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         maxImp.show();
      } //public void run
 
+    /** Finds the image maxima and returns them as a Polygon. There
+     * is an example at http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
+     * @param ip             The input image
+     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
+     *                       from the ridge to a higher maximum
+     * @param excludeOnEdges Whether to exclude edge maxima
+     * @return               A Polygon containing the coordinates of the maxima
+     */
+    public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean excludeOnEdges) {
+		findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD,
+			MaximumFinder.POINT_SELECTION, excludeOnEdges, false);
+		if (points==null)
+			return new Polygon();
+		else
+			return points;
+    }
+
     /** Here the processing is done: Find the maxima of an image (does not find minima).
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
@@ -313,7 +331,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
         return outIp;
     } // public ByteProcessor findMaxima
-
+        
     /** Find all local maxima (irrespective whether they finally qualify as maxima or not)
      * @param ip    The image to be analyzed
      * @param typeP A byte image, same size as ip, where the maximum points are marked as MAXIMUM
@@ -527,7 +545,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         if (Thread.currentThread().isInterrupted()) return;
         if (displayOrCount && xyVector!=null) {
             int npoints = xyVector.size();
-            if (outputType == POINT_SELECTION && npoints>0 && imp!=null) {
+            if (outputType == POINT_SELECTION && npoints>0) {
                 int[] xpoints = new int[npoints];
                 int[] ypoints = new int[npoints];
                 for (int i=0; i<npoints; i++) {
@@ -535,9 +553,12 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     xpoints[i] = xy[0];
                     ypoints[i] = xy[1];
                 }
-                Roi points = new PointRoi(xpoints, ypoints, npoints);
-                ((PointRoi)points).setHideLabels(true);
-                imp.setRoi(points);
+                if (imp!=null) {
+                	Roi points = new PointRoi(xpoints, ypoints, npoints);
+                	((PointRoi)points).setHideLabels(true);
+                	imp.setRoi(points);
+                }
+                points = new Polygon(xpoints, ypoints, npoints);
             } else if (outputType==LIST) {
                 Analyzer.resetCounter();
                 ResultsTable rt = ResultsTable.getResultsTable();

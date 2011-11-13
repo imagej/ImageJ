@@ -591,7 +591,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		Roi roi = srcImp.getRoi();
 		if (roi==null)
 			return false;
-		return roi.getType()==Roi.LINE || roi.getType()==Roi.RECTANGLE;
+		int type = roi.getType();
+		return type==Roi.LINE || type==Roi.POLYLINE || type==Roi.RECTANGLE;
 	}
 	
 	/** Get a source image profile plot. */

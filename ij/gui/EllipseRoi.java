@@ -26,23 +26,22 @@ public class EllipseRoi extends PolygonRoi {
 	public EllipseRoi(int sx, int sy, ImagePlus imp) {
 		super(sx, sy, imp);
 		type = FREEROI;
-		xstart = ic.offScreenX(sx);
-		ystart = ic.offScreenY(sy);
+		xstart = ic.offScreenXD(sx);
+		ystart = ic.offScreenYD(sy);
 	}
 
 	public void draw(Graphics g) {
 		super.draw(g);
 		int size2 = HANDLE_SIZE/2;
 		if (!overlay) {
-            mag = ic!=null?ic.getMagnification():1.0;
 			for (int i=0; i<handle.length; i++)
 				drawHandle(g, xp2[handle[i]]-size2, yp2[handle[i]]-size2);
 		}
 	}
 
 	protected void grow(int sx, int sy) {
-		double x1 = xpf[handle[2]]+x;
-		double y1 = ypf[handle[2]]+y;
+		double x1 = xstart;
+		double y1 = ystart;
 		double x2 = ic.offScreenXD(sx);
 		double y2 = ic.offScreenYD(sy);
 		makeEllipse(x1, y1, x2, y2);
@@ -210,6 +209,11 @@ public class EllipseRoi extends PolygonRoi {
 		a[0] = major;
 		a[2] = (pw==ph)?minor:a[2];
 		return a;
+	}
+	
+	/** Always returns true. */
+	public boolean subPixelResolution() {
+		return true;
 	}
 
 }

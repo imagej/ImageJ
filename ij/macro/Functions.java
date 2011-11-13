@@ -4802,6 +4802,8 @@ public class Functions implements MacroConstants, Measurements {
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null && name.equals("size"))
 			return 0.0;
+		else if (name.equals("hidden"))
+			return overlay!=null && imp.getHideOverlay()?1.0:0.0;
 		if (overlay==null)
 			interp.error("No overlay");
 		int size = overlay.size();

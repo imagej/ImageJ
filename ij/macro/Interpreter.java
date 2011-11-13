@@ -1680,7 +1680,6 @@ public class Interpreter implements MacroConstants {
 	public static void removeBatchModeImage(ImagePlus imp) {
 		if (imageTable!=null && imp!=null) {
 			int index = imageTable.indexOf(imp);
-			//IJ.log("remove: "+imp+"  "+imageTable.size());
 			if (index!=-1)
 				imageTable.removeElementAt(index);
 		}

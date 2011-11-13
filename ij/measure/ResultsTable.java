@@ -53,6 +53,7 @@ public class ResultsTable implements Cloneable {
 	private char delimiter = '\t';
 	private boolean headingSet; 
 	private boolean showRowNumbers = true;
+	private boolean autoFormat = true;
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -426,7 +427,7 @@ public class ResultsTable implements Cloneable {
 
 	String n(double n) {
 		String s;
-		if (Math.round(n)==n && precision>=0)
+		if (autoFormat && Math.round(n)==n && precision>=0)
 			s = d2s(n, 0);
 		else
 			s = d2s(n, precision);
@@ -569,6 +570,7 @@ public class ResultsTable implements Cloneable {
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
+			autoFormat = false;
 		}
 		tp.setResultsTable(this);
 		int n = getCounter();

@@ -325,12 +325,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (index<0 || !rt.columnExists(index))
 				rt.update(measurements, imp, roi);
 		}
-		Polygon p = roi.getPolygon();
+		FloatPolygon p = roi.getFloatPolygon();
 		ImagePlus imp2 = isRedirectImage()?getRedirectImageOrStack(imp):null;
 		if (imp2==null) imp2 = imp;
 		for (int i=0; i<p.npoints; i++) {
 			ImageProcessor ip = imp2.getProcessor();
-			ip.setRoi(p.xpoints[i], p.ypoints[i], 1, 1);
+			ip.setRoi((int)p.xpoints[i], (int)p.ypoints[i], 1, 1);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp2.getCalibration());
 			saveResults(stats, new PointRoi(p.xpoints[i], p.ypoints[i]));
 			if (i!=p.npoints-1) displayResults();
@@ -538,8 +538,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				double angle = ((PolygonRoi)roi).getAngle();
 				if (Prefs.reflexAngle) angle = 360.0-angle;
 				rt.addValue("Angle", angle);
-			}
-			else if (roi.getType()==Roi.POINT)
+			} else if (roi.getType()==Roi.POINT)
 				savePoints(roi);
 		}
 	}
@@ -592,17 +591,18 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((measurements&AREA)!=0)
 			rt.addValue(ResultsTable.AREA,0);
-		Polygon p = roi.getPolygon();
+		FloatPolygon p = roi.getFloatPolygon();
 		ImageProcessor ip = imp.getProcessor();
 		Calibration cal = imp.getCalibration();
-		int x = p.xpoints[0];
-		int y = p.ypoints[0];
-		double value = ip.getPixelValue(x,y);
+		double x = p.xpoints[0];
+		double y = p.ypoints[0];
+		int ix=(int)x, iy=(int)y;
+		double value = ip.getPixelValue(ix,iy);
 		if (markWidth>0 && !Toolbar.getMultiPointMode()) {
 			ip.setColor(Toolbar.getForegroundColor());
 			ip.setLineWidth(markWidth);
-			ip.moveTo(x,y);
-			ip.lineTo(x,y);
+			ip.moveTo(ix,iy);
+			ip.lineTo(ix,iy);
 			imp.updateAndDraw();
 			ip.setLineWidth(Line.getWidth());
 		}

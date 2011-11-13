@@ -182,9 +182,11 @@ import javax.swing.filechooser.*;
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
-		if (Recorder.record && recordPath)
-			Recorder.recordPath(title, dir+name);
-		lastName = name;
+		if (name!=null) {
+			if (Recorder.record && recordPath && dir!=null)
+				Recorder.recordPath(title, dir+name);
+			lastName = name;
+		}
 		return name;
 	}
 		

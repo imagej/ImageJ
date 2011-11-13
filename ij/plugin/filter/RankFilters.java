@@ -12,6 +12,7 @@ import java.util.Arrays;
 /** This plugin implements the Mean, Minimum, Maximum, Variance, Median, Open Maxima, Close Maxima,
  *	Remove Outliers, Remove NaNs and Despeckle commands.
  */
+ //Version 2011-11-01 M. Schmid:   Fixes a bug that could cause the filters to hang
 
 public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	public static final int	 MEAN=0, MIN=1, MAX=2, VARIANCE=3, MEDIAN=4, OUTLIERS=5, DESPECKLE=6, REMOVE_NAN=7,
@@ -244,7 +245,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         final int[] yForThread = new int[numThreads];		//threads announce here which line they currently process
         Arrays.fill(yForThread, -1);
         yForThread[numThreads-1] = roi.y-1;					//first thread started should begin at roi.y
-
+        //IJ.log("going to filter lines "+roi.y+"-"+(roi.y+roi.height-1)+"; cacheHeight="+cacheHeight);
 		final Thread[] threads = new Thread[numThreads];
 		for (int t=numThreads-1; t>0; t--) {
 			final int ti=t;
@@ -346,14 +347,15 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
         while (!aborted[0]) {
         	int y = arrayMax(yForThread) + 1;		// y of the next line that needs processing
         	yForThread[threadNumber] = y;
-			//IJ.log("thread "+threadNumber+" @y="+y+" needs"+(y-kHeight/2)+"-"+(y+kHeight/2)+" highestYinC="+highestYinCache);
+            //IJ.log("thread "+threadNumber+" @y="+y+" needs"+(y-kHeight/2)+"-"+(y+kHeight/2)+" highestYinC="+highestYinCache);
 			boolean threadFinished = y >= roi.y+roi.height;
         	if (numThreads>1 && (threadWaiting || threadFinished))		// 'if' is not synchronized to avoid overhead
         		synchronized(this) {
         			notifyAll();					// we may have blocked another thread
-					//IJ.log("thread "+threadNumber+" @y="+y+" notifying");
+                    //IJ.log("thread "+threadNumber+" @y="+y+" notifying");
         		}
-        	if (threadFinished) return;				// all done, break the loop
+        	if (threadFinished)
+                return;				                // all done, break the loop
 
 			if (threadNumber==0) {					// main thread checks for abort and ProgressBar
 				long time = System.currentTimeMillis();
@@ -368,28 +370,31 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 				}
 			}
 			
-			for (int i=0; i<cachePointers.length; i++)   //shift kernel pointers to new line
+			for (int i=0; i<cachePointers.length; i++)  //shift kernel pointers to new line
                 cachePointers[i] = (cachePointers[i] + cacheWidth*(y-previousY))%cache.length;
             previousY = y;
 
-			if (numThreads>1) {						// thread synchronization
-				int slowestThreadY = arrayMinNonNegative(yForThread);
+			if (numThreads>1) {						    // thread synchronization
+				int slowestThreadY = arrayMinNonNegative(yForThread); // non-synchronized check to avoid overhead
 				if (y - slowestThreadY + kHeight > cacheHeight) {	// we would overwrite data needed by another thread
 					synchronized(this) {
-						do {
-							notifyAll();			// avoid deadlock: wake up others waiting
-							threadWaiting = true;
-							//IJ.log("Thread "+threadNumber+" waiting @y="+y+" slowest@y="+slowestThreadY);
-							try {
-								wait();
-								if (aborted[0]) return;
-							} catch (InterruptedException e) {
-								aborted[0] = true;
-								notifyAll();
-								return;
-							}
-							slowestThreadY = arrayMinNonNegative(yForThread);
-						} while (y - slowestThreadY + kHeight > cacheHeight);
+					    slowestThreadY = arrayMinNonNegative(yForThread); //recheck whether we have to wait
+						if (y - slowestThreadY + kHeight > cacheHeight) {
+						    do {
+                                notifyAll();			// avoid deadlock: wake up others waiting
+                                threadWaiting = true;
+                                //IJ.log("Thread "+threadNumber+" waiting @y="+y+" slowest@y="+slowestThreadY);
+                                try {
+                                    wait();
+                                    if (aborted[0]) return;
+                                } catch (InterruptedException e) {
+                                    aborted[0] = true;
+                                    notifyAll();
+                                    return;
+                                }
+                                slowestThreadY = arrayMinNonNegative(yForThread);
+                            } while (y - slowestThreadY + kHeight > cacheHeight);
+						} //if
 						threadWaiting = false;
 					}
 				}
@@ -420,7 +425,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 					smallKernel, sumFilter, minOrMax, minOrMaxOrOutliers);
 		    if (!isFloat)		//Float images: data are written already during 'filterLine'
                 writeLineToPixels(values, pixels, roi.x+y*width, roi.width, colorChannel);	// W R I T E
-			//IJ.log("thread "+threadNumber+" @y="+y+" line done");
+            //IJ.log("thread "+threadNumber+" @y="+y+" line done");
         } // while (!aborted[0]); loop over y (lines)
 	}
 

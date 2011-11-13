@@ -12,7 +12,9 @@ import ij.measure.Calibration;
 /** This class is an image that line graphs can be drawn on. */
 public class Plot {
 
-	/** Display points using a circle 5 pixels in diameter. */
+	/** Text justification. */
+	public static final int LEFT=0, CENTER=1, RIGHT=2;
+    /** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
 	/** Display points using an X-shaped mark. */
 	public static final int X = 1;
@@ -30,6 +32,7 @@ public class Plot {
 	//public static final int X_INTERVALS_M = 0x1;
 	///** flag multiplier for maximum number of ticks&grid lines along y */
 	//public static final int Y_INTERVALS_M = 0x100;
+	
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -101,15 +104,37 @@ public class Plot {
 	 * @param yLabel	the y-axis label
 	 * @param xValues	the x-coodinates, or null
 	 * @param yValues	the y-coodinates, or null
-	 * @param flags		sum of flag values controlling appearance of ticks, grid, etc.
 	 */
+	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
+		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
+	}
+
+	/** This version of the constructor accepts double arrays. */
+	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
+		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
+	}
+
+	/** This is a version of the constructor with no intial arrays. */
+	public Plot(String title, String xLabel, String yLabel) {
+		this(title, xLabel, yLabel, (float[])null, (float[])null, DEFAULT_FLAGS);
+	}
+
+	/** This version of the constructor has a 'flags' argument for
+		controlling the appearance of ticks, grid, etc. The default is
+		Plot.X_NUMBERS+Plot.Y_NUMBERS+Plot.X_GRID+Plot.Y_GRID.
+	*/
 	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues, int flags) {
 		this.title = title;
 		this.xLabel = xLabel;
 		this.yLabel = yLabel;
 		this.flags = flags;
 		storedData = new ArrayList();
-		if (xValues==null || yValues==null) {
+		if ((xValues==null || xValues.length==0) && yValues!=null) {
+			xValues = new float[yValues.length];
+			for (int i=0; i<yValues.length; i++)
+				xValues[i] = i;
+		}
+		if (xValues==null) {
 			xValues = new float[0];
 			yValues = new float[0];
 		} else
@@ -126,19 +151,9 @@ public class Plot {
 		drawPending = true;
 	}
 	
-	/** This version of the constructor uses the default flags. */
-	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
-		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
-	}
-
-	/** This version of the constructor accepts double arrays. */
+	/** This version of the constructor accepts double arrays and has a 'flags' argument. */
 	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues, int flags) {
 		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, flags);
-	}
-
-	/** This version of the constructor accepts double arrays and uses the default flags */
-	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
-		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
 	}
 
 	/** Sets the x-axis and y-axis range. */
@@ -279,7 +294,7 @@ public class Plot {
 	//	}
 	
 	/** Sets the justification used by addLabel(), where <code>justification</code>
-	 * is ImageProcessor.LEFT, ImageProcessor.CENTER or ImageProcessor.RIGHT. */
+	 * is Plot.LEFT, Plot.CENTER or Plot.RIGHT. */
 	public void setJustification(int justification) {
 		setup();
 		ip.setJustification(justification);
@@ -318,13 +333,18 @@ public class Plot {
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
-	/** Changes the font. */
-	public void changeFont(Font font) {
+	/** Sets the font. */
+	public void setFont(Font font) {
 		setup();
 		ip.setFont(font);
 		this.font = font;
 	}
 	
+	/** Obsolete; replaced by setFont(). */
+	public void changeFont(Font font) {
+		setFont(font);
+	}
+
 	void setup() {
 		if (initialized)
 			return;

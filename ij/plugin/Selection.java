@@ -5,8 +5,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.macro.Interpreter;
-import ij.plugin.filter.GaussianBlur;
-import ij.plugin.filter.ThresholdToSelection;
+import ij.plugin.filter.*;
 import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -52,8 +51,6 @@ public class Selection implements PlugIn, Measurements {
     		createSelectionFromMask(imp);    	
     	else if (arg.equals("inverse"))
     		invert(imp); 
-    	else if (arg.equals("tobox"))
-    		toBoundingBox(imp); 
      	else if (arg.equals("toarea"))
     		lineToArea(imp); 
      	else if (arg.equals("toline"))
@@ -62,6 +59,10 @@ public class Selection implements PlugIn, Measurements {
     		{setProperties("Properties", imp.getRoi()); imp.draw();}
  		else if (arg.equals("band"))
 			makeBand(imp);
+		else if (arg.equals("tobox"))
+			toBoundingBox(imp); 
+		else if (arg.equals("list"))
+			listCoordinates(imp);
 		else
 			runMacro(arg);
 	}
@@ -76,7 +77,7 @@ public class Selection implements PlugIn, Measurements {
 			}
 		}
 		if (roi==null) {
-			IJ.error("Rotate>Selection", "This command requires a selection");
+			noRoi("Rotate>Selection");
 			return;
 		}
 		roi = (Roi)roi.clone();
@@ -104,7 +105,7 @@ public class Selection implements PlugIn, Measurements {
 	void fitCircle(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi==null) {
-			IJ.error("Fit Circle", "Selection required");
+			noRoi("Fit Circle");
 			return;
 		}
 		
@@ -217,7 +218,7 @@ public class Selection implements PlugIn, Measurements {
 	void fitSpline() {
 		Roi roi = imp.getRoi();
 		if (roi==null)
-			{IJ.error("Spline", "Selection required"); return;}
+			{noRoi("Spline"); return;}
 		int type = roi.getType();
 		boolean segmentedSelection = type==Roi.POLYGON||type==Roi.POLYLINE;
 		if (!(segmentedSelection||type==Roi.FREEROI||type==Roi.TRACED_ROI||type==Roi.FREELINE))
@@ -239,34 +240,33 @@ public class Selection implements PlugIn, Measurements {
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
-		int[] x = roi.getXCoordinates();
-		int[] y = roi.getYCoordinates();
-		int n = roi.getNCoordinates();
+		FloatPolygon poly = roi.getFloatPolygon();
+		float[] x = poly.xpoints;
+		float[] y = poly.ypoints;
+		int n = poly.npoints;
 		x = smooth(x, n);
 		y = smooth(y, n);
 		float[] curvature = getCurvature(x, y, n);
-		Rectangle r = roi.getBounds();
 		double threshold = rodbard(length);
 		//IJ.log("trim: "+length+" "+threshold);
 		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
-		x[0] += r.x; y[0]+=r.y;
 		int i2 = 1;
-		int x1,y1,x2=0,y2=0;
+		double x1,y1,x2=0,y2=0;
 		for (int i=1; i<n-1; i++) {
 			x1=x[i]; y1=y[i]; x2=x[i+1]; y2=y[i+1];
 			distance += Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)) + 1;
 			distance += curvature[i]*2;
 			if (distance>=threshold) {
-				x[i2] = x2 + r.x;
-				y[i2] = y2 + r.y;
+				x[i2] = (float)x2;
+				y[i2] = (float)y2;
 				i2++;
 				distance = 0.0;
 			}
 		}
 		int type = roi.getType()==Roi.FREELINE?Roi.POLYLINE:Roi.POLYGON;
 		if (type==Roi.POLYLINE && distance>0.0) {
-			x[i2] = x2 + r.x;
-			y[i2] = y2 + r.y;
+			x[i2] = (float)x2;
+			y[i2] = (float)y2;
 			i2++;
 		}		
 		PolygonRoi p = new PolygonRoi(x, y, i2, type);
@@ -287,26 +287,26 @@ public class Selection implements PlugIn, Measurements {
 		return y+44.0;
     }
 
-	int[] smooth(int[] a, int n) {
+	float[] smooth(float[] a, int n) {
 		FloatProcessor fp = new FloatProcessor(n, 1);
 		for (int i=0; i<n; i++)
-			fp.putPixelValue(i, 0, a[i]);
+			fp.setf(i, 0, a[i]);
 		GaussianBlur gb = new GaussianBlur();
 		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
 		for (int i=0; i<n; i++)
-			a[i] = (int)Math.round(fp.getPixelValue(i, 0));
+			a[i] = fp.getf(i, 0);
 		return a;
 	}
 	
-	float[] getCurvature(int[] x, int[] y, int n) {
+	float[] getCurvature(float[] x, float[] y, int n) {
 		float[] x2 = new float[n];
 		float[] y2 = new float[n];
 		for (int i=0; i<n; i++) {
 			x2[i] = x[i];
 			y2[i] = y[i];
 		}
-		ImageProcessor ipx = new FloatProcessor(n, 1, x2, null);
-		ImageProcessor ipy = new FloatProcessor(n, 1, y2, null);
+		ImageProcessor ipx = new FloatProcessor(n, 1, x, null);
+		ImageProcessor ipy = new FloatProcessor(n, 1, y, null);
 		ipx.convolve(kernel, kernel.length, 1);
 		ipy.convolve(kernel, kernel.length, 1);
 		float[] indexes = new float[n];
@@ -322,7 +322,7 @@ public class Selection implements PlugIn, Measurements {
 		IJ.showStatus("Fitting ellipse");
 		Roi roi = imp.getRoi();
 		if (roi==null)
-			{IJ.error("Fit Ellipse", "Selection required"); return;}
+			{noRoi("Fit Ellipse"); return;}
 		if (roi.isLine())
 			{IJ.error("Fit Ellipse", "\"Fit Ellipse\" does not work with line selections"); return;}
 		ImageProcessor ip = imp.getProcessor();
@@ -498,6 +498,10 @@ public class Selection implements PlugIn, Measurements {
 
 	void toBoundingBox(ImagePlus imp) {
 		Roi roi = imp.getRoi();
+		if (roi==null) {
+			noRoi("To Bounding Box");
+			return;
+		}
 		Rectangle r = roi.getBounds();
 		imp.killRoi();
 		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));
@@ -539,7 +543,7 @@ public class Selection implements PlugIn, Measurements {
 	private void makeBand(ImagePlus imp) {
 		Roi roi = imp.getRoi();
 		if (roi==null) {
-			IJ.error("Make Band", "Selection required");
+			noRoi("Make Band");
 			return;
 		}
 		if (!roi.isArea()) {
@@ -607,6 +611,43 @@ public class Selection implements PlugIn, Measurements {
 		roi2 = roi2.not(roi1);
 		imp.setRoi(roi2);
 		bandSize = n;
+	}
+
+	void listCoordinates(ImagePlus imp) {
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			{noRoi("List Coordinates"); return;}
+		boolean allIntegers = true;
+		FloatPolygon fp = roi.getFloatPolygon();
+		Calibration cal = imp.getCalibration();
+		if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0) {
+			for (int i=0; i<fp.npoints; i++) {
+				fp.xpoints[i] *= cal.pixelWidth;
+				fp.ypoints[i] *= cal.pixelHeight;
+			}
+			allIntegers = false;
+		}
+		if (allIntegers) {
+			for (int i=0; i<fp.npoints; i++) {
+				if ((int)fp.xpoints[i]!=fp.xpoints[i] || (int)fp.ypoints[i]!=fp.ypoints[i]) {
+					allIntegers = false;
+					break;
+				}
+			}
+		}
+		ResultsTable rt = new ResultsTable();
+		rt.setPrecision(allIntegers?0:Analyzer.getPrecision());
+		for (int i=0; i<fp.npoints; i++) {
+			rt.incrementCounter();
+			rt.addValue("X", fp.xpoints[i]);
+			rt.addValue("Y", fp.ypoints[i]);
+		}
+		rt.showRowNumbers(false);
+		rt.show("XY_"+imp.getTitle());
+	}
+	
+	void noRoi(String command) {
+		IJ.error(command, "This command requires a selection");
 	}
 
 }

@@ -112,8 +112,9 @@ public class Line extends Roi {
 	}
 
 	protected void moveHandle(int sx, int sy) {
-		double ox = ic.offScreenXD(sx);
-		double oy = ic.offScreenYD(sy);
+		double offset = getMagnification()>1.0&&!(this instanceof Arrow)?-0.5:0.0;
+		double ox = ic.offScreenXD(sx)+offset;
+		double oy = ic.offScreenYD(sy)+offset;
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double length = Math.sqrt((x2d-x1d)*(x2d-x1d) + (y2d-y1d)*(y2d-y1d));
 		switch (activeHandle) {
@@ -293,10 +294,11 @@ public class Line extends Roi {
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		int sx1 = screenXD(x1d);
-		int sy1 = screenYD(y1d);
-		int sx2 = screenXD(x2d);
-		int sy2 = screenYD(y2d);
+		double offset = getMagnification()>1.0?0.5:0.0;
+		int sx1 = screenXD(x1d+offset);
+		int sy1 = screenYD(y1d+offset);
+		int sx2 = screenXD(x2d+offset);
+		int sy2 = screenYD(y2d+offset);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
@@ -310,6 +312,7 @@ public class Line extends Roi {
 		}
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
+			mag = getMagnification();
 			handleColor = strokeColor!=null?strokeColor:ROIColor;
 			drawHandle(g, sx1-size2, sy1-size2);
 			handleColor=Color.white;
@@ -365,7 +368,7 @@ public class Line extends Roi {
 	
 	public Polygon getPolygon() {
 		FloatPolygon p = getFloatPolygon();
-		return new Polygon(toInt(p.xpoints), toInt(p.ypoints), p.npoints);
+		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
 	}
 
 	public FloatPolygon getFloatPolygon() {
@@ -394,11 +397,22 @@ public class Line extends Roi {
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
+		double offset = getMagnification()>1.0?0.5:0.0;
 		if (getStrokeWidth()==1) {
-			ip.moveTo(x1, y1);
-			ip.lineTo(x2, y2);
+			ip.moveTo((int)(x1d+offset), (int)(y1d+offset));
+			ip.lineTo((int)(x2d+offset), (int)(y2d+offset));
 		} else {
-			ip.drawPolygon(getPolygon());
+			Polygon p = null;
+			if (offset>0.0) {
+				FloatPolygon fp = getFloatPolygon();
+				for (int i=0; i<fp.npoints; i++) {
+					fp.xpoints[i] += offset;
+					fp.ypoints[i] += offset;
+				}
+				p = new Polygon(toIntR(fp.xpoints), toIntR(fp.ypoints), fp.npoints);
+			} else
+				p = getPolygon();
+			ip.drawPolygon(p);
 			updateFullWindow = true;
 		}
 	}
@@ -419,10 +433,11 @@ public boolean contains(int x, int y) {
 		int size = HANDLE_SIZE+5;
 		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
 		int halfSize = size/2;
-		int sx1 = ic.screenXD(x+x1R) - halfSize;
-		int sy1 = ic.screenYD(y+y1R) - halfSize;
-		int sx2 = ic.screenXD(x+x2R) - halfSize;
-		int sy2 = ic.screenYD(y+y2R) - halfSize;
+		double offset = getMagnification()>1.0&&!(this instanceof Arrow)?0.5:0.0;
+		int sx1 = ic.screenXD(x+x1R+offset) - halfSize;
+		int sy1 = ic.screenYD(y+y1R+offset) - halfSize;
+		int sx2 = ic.screenXD(x+x2R+offset) - halfSize;
+		int sy2 = ic.screenYD(y+y2R+offset) - halfSize;
 		int sx3 = sx1 + (sx2-sx1)/2-1;
 		int sy3 = sy1 + (sy2-sy1)/2-1;
 		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
