@@ -230,6 +230,23 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         maxImp.show();
      } //public void run
 
+    /** Finds the image maxima and returns them as a Polygon. There
+     * is an example at http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
+     * @param ip             The input image
+     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
+     *                       from the ridge to a higher maximum
+     * @param excludeOnEdges Whether to exclude edge maxima
+     * @return               A Polygon containing the coordinates of the maxima
+     */
+    public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean excludeOnEdges) {
+		findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD,
+			MaximumFinder.POINT_SELECTION, excludeOnEdges, false);
+		if (points==null)
+			return new Polygon();
+		else
+			return points;
+    }
+
     /** Here the processing is done: Find the maxima of an image (does not find minima).
      * @param ip             The input image
      * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
@@ -314,23 +331,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
         return outIp;
     } // public ByteProcessor findMaxima
-    
-    /** Finds the image maxima and returns them as a Polygon.
-     * @param ip             The input image
-     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
-     *                       from the ridge to a higher maximum
-     * @param excludeOnEdges Whether to exclude edge maxima
-     * @return               A Polygon containing the coordinates of the maxima
-     */
-    public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean excludeOnEdges) {
-		findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD,
-			MaximumFinder.POINT_SELECTION, excludeOnEdges, false);
-		if (points==null)
-			return new Polygon();
-		else
-			return points;
-    }
-
+        
     /** Find all local maxima (irrespective whether they finally qualify as maxima or not)
      * @param ip    The image to be analyzed
      * @param typeP A byte image, same size as ip, where the maximum points are marked as MAXIMUM

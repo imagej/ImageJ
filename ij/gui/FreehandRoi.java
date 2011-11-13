@@ -17,30 +17,40 @@ public class FreehandRoi extends PolygonRoi {
 	}
 
 	protected void grow(int sx, int sy) {
+		if (subPixelResolution() && xpf!=null) {
+			growFloat(sx, sy);
+			return;
+		}
+		int ox = ic.offScreenX(sx);
+		int oy = ic.offScreenY(sy);
+		if (ox<0) ox = 0;
+		if (oy<0) oy = 0;
+		if (ox>xMax) ox = xMax;
+		if (oy>yMax) oy = yMax;
+		if (ox!=xp[nPoints-1]+x || oy!=yp[nPoints-1]+y) {
+			xp[nPoints] = ox-x;
+			yp[nPoints] = oy-y;
+			nPoints++;
+			if (nPoints==xp.length)
+				enlargeArrays();
+			drawLine();
+		}
+	}
+
+	private void growFloat(int sx, int sy) {
 		double ox = ic.offScreenXD(sx);
 		double oy = ic.offScreenYD(sy);
 		if (ox<0.0) ox = 0.0;
 		if (oy<0.0) oy = 0.0;
 		if (ox>xMax) ox = xMax;
 		if (oy>yMax) oy = yMax;
-		if (xpf!=null) {
-			if (ox!=xpf[nPoints-1]+x || oy!=ypf[nPoints-1]+y) {
-				xpf[nPoints] = (float)(ox-x);
-				ypf[nPoints] = (float)(oy-y);
-				nPoints++;
-				if (nPoints==xpf.length)
-					enlargeArrays();
-				drawLine();
-			}
-		} else {
-			if (ox!=xp[nPoints-1]+x || oy!=yp[nPoints-1]+y) {
-				xp[nPoints] = (int)ox-x;
-				yp[nPoints] = (int)oy-y;
-				nPoints++;
-				if (nPoints==xp.length)
-					enlargeArrays();
-				drawLine();
-			}
+		if (ox!=xpf[nPoints-1]+x || oy!=ypf[nPoints-1]+y) {
+			xpf[nPoints] = (float)(ox-x);
+			ypf[nPoints] = (float)(oy-y);
+			nPoints++;
+			if (nPoints==xpf.length)
+				enlargeArrays();
+			drawLine();
 		}
 	}
 	

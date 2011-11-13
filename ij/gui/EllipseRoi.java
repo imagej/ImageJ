@@ -210,5 +210,10 @@ public class EllipseRoi extends PolygonRoi {
 		a[2] = (pw==ph)?minor:a[2];
 		return a;
 	}
+	
+	/** Always returns true. */
+	public boolean subPixelResolution() {
+		return true;
+	}
 
 }
