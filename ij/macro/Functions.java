@@ -4227,7 +4227,9 @@ public class Functions implements MacroConstants, Measurements {
 			}
 		}
 		waitForUserDialog = new WaitForUserDialog(title, text);
+		Interpreter instance = Interpreter.getInstance();
 		waitForUserDialog.show();
+		Interpreter.setInstance(instance); // works around bug caused by use of drawing tools
 		if (waitForUserDialog.escPressed())
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}

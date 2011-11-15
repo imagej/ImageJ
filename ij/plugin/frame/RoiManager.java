@@ -1172,8 +1172,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ShapeRoi s1=null, s2=null;
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
-			if (roi.isLine() || roi.getType()==Roi.POINT)
-				continue;
+			if (!roi.isArea())
+				roi = convertToArea(roi);
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi;
@@ -1186,12 +1186,34 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				else
 					s2 = new ShapeRoi(roi);
 				if (s2==null) continue;
-				if (roi.isArea())
-					s1.or(s2);
+				s1.or(s2);
 			}
 		}
 		if (s1!=null)
 			imp.setRoi(s1);
+	}
+	
+	Roi convertToArea(Roi roi) {
+		if (roi==null) return null;
+		roi = (Roi)roi.clone();
+		int width = (int)roi.getStrokeWidth();
+		Rectangle r = roi.getBounds();
+		if (width>1)
+			roi.setLocation(width, width);
+		else
+			roi.setLocation(0, 0);
+		ImageProcessor ip = new ByteProcessor(r.width+width*2, r.height+width*2);
+		ip.setColor(255);
+		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
+			ip.fillPolygon(roi.getPolygon());
+		else
+			roi.drawPixels(ip);
+		//new ImagePlus("ip", ip.duplicate()).show();
+		ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		ThresholdToSelection tts = new ThresholdToSelection();
+		Roi roi2 = tts.convert(ip);
+		roi2.setLocation(r.x-width/2, r.y-width/2);
+		return roi2;
 	}
 
 	void combinePoints(ImagePlus imp, int[] indexes) {

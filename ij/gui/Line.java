@@ -368,25 +368,26 @@ public class Line extends Roi {
 	
 	public Polygon getPolygon() {
 		FloatPolygon p = getFloatPolygon();
-		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
+		return new Polygon(toInt(p.xpoints), toInt(p.ypoints), p.npoints);
 	}
 
 	public FloatPolygon getFloatPolygon() {
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		FloatPolygon p = new FloatPolygon();
 		if (getStrokeWidth()==1) {
 			p.addPoint((float)x1d, (float)y1d);
 			p.addPoint((float)x2d, (float)y2d);
 		} else {
-			double angle = Math.atan2(y1-y2, x2-x1);
+			double angle = Math.atan2(y1d-y2d, x2d-x1d);
 			double width2 = getStrokeWidth()/2.0;
-			double p1x = x1 + Math.cos(angle+Math.PI/2d)*width2;
-			double p1y = y1 - Math.sin(angle+Math.PI/2d)*width2;
-			double p2x = x1 + Math.cos(angle-Math.PI/2d)*width2;
-			double p2y = y1 - Math.sin(angle-Math.PI/2d)*width2;
-			double p3x = x2 + Math.cos(angle-Math.PI/2d)*width2;
-			double p3y = y2 - Math.sin(angle-Math.PI/2d)*width2;
-			double p4x = x2 + Math.cos(angle+Math.PI/2d)*width2;
-			double p4y = y2 - Math.sin(angle+Math.PI/2d)*width2;
+			double p1x = x1d + Math.cos(angle+Math.PI/2d)*width2;
+			double p1y = y1d - Math.sin(angle+Math.PI/2d)*width2;
+			double p2x = x1d + Math.cos(angle-Math.PI/2d)*width2;
+			double p2y = y1d - Math.sin(angle-Math.PI/2d)*width2;
+			double p3x = x2d + Math.cos(angle-Math.PI/2d)*width2;
+			double p3y = y2d - Math.sin(angle-Math.PI/2d)*width2;
+			double p4x = x2d + Math.cos(angle+Math.PI/2d)*width2;
+			double p4y = y2d - Math.sin(angle+Math.PI/2d)*width2;
 			p.addPoint((float)p1x, (float)p1y);
 			p.addPoint((float)p2x, (float)p2y);
 			p.addPoint((float)p3x, (float)p3y);
@@ -397,6 +398,7 @@ public class Line extends Roi {
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double offset = getMagnification()>1.0?0.5:0.0;
 		if (getStrokeWidth()==1) {
 			ip.moveTo((int)(x1d+offset), (int)(y1d+offset));
@@ -496,6 +498,5 @@ public boolean contains(int x, int y) {
 		}
 		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
 	}
-
-
+	
 }

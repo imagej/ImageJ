@@ -1656,6 +1656,10 @@ public class Interpreter implements MacroConstants {
 		return instance;
 	}
 	
+	static void setInstance(Interpreter i) {
+		instance = i;
+	}
+
 	//public boolean  inLoop() {
 	//	return !looseSyntax;
 	//}

@@ -1159,7 +1159,7 @@ public class PolygonRoi extends Roi {
 	
 	public Polygon getNonSplineCoordinates() {
 		if (xpf!=null)
-			return new Polygon(toInt(xpf), toInt(ypf), nPoints);
+			return new Polygon(toIntR(xpf), toIntR(ypf), nPoints);
 		else
 			return new Polygon(xp, yp, nPoints);
 	}

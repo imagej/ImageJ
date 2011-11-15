@@ -5,36 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.46a 11 November 2011</u>
+<li> <u>1.46b 15 November 2011</u>
 <ul>
-<li> The segmented line, freehand line, point and multi-point tools
-now support sub-pixel resolution.
-<li> Added the <i>Edit&gt;Selection&gt;List Coordinates</i> command.
-<li> The Plot class constructors generate an X value sequence
- if the X array argument is null or empty
-(<a href="macros/ExamplePlots.js">JavaScript examples</a>).
-<li> An informative message is displayed when a batch 
-mode macro attempts to open an ROI set using open(path)
-(which does not work) instead of roiManager("open",path).
-<li> Thanks to Tiago Ferreira, the ROI Manager "Multi Plot" command
-no longer ignores "Fixed y-axis scale" in <i>Edit&gt;Options&gt;Profile Plot Options</i>.
-<li> Thanks to Bob Hamilton, "Area Fraction" (renamed "%Area") in the Analyze Particles
-Summary window now uses the Set Measurements decimal places. 
-<li> Added the MaximumFinder.getMaxima() method
-(<a href="macros/js/FindMaxima.js">example</a>).
-<li> Fixed a bug that caused the length of non-straight line 
-profile plots to be greater that the measured line length.
-<li> Michael Schmid fixed a bug that could cause the RankFilters
-(Mean, Minimum, Median, etc.) to hang.
-<li> Thanks to Jan Eglinger, fixed bugs that could cause the recorder to throw
-bogus error messages or to record "null" or "nullnull" when opening or saving files.
-<li> Fixed a bug that caused the elliptical selection tool to always have
-integer starting coordinates.
-<li> Thanks to Oliver Bannach, fixed a bug that caused Histograms in
-batch mode macros to not be properly closed.
-<li> Thanks to Norbert Vischer, fixed a bug that caused
-<i>File&gt;Import&gt;TIFF as Virtual Stack</i> to not correctly
-open C=3, Z=1, T=1, 16-bit hyperstacks.
+<li> Thanks to Aryeh Weiss, the ROI Manager's "OR (Combine)" 
+command now works with line selections.
+<li> Thanks to José Wojnacki, fixed a bug that could cause a macro to fail if 
+a drawing tool was used during a waitForUser() break.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 
