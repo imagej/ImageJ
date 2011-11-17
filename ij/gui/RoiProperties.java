@@ -2,6 +2,9 @@ package ij.gui;
 import ij.*;
 import ij.plugin.Colors;
 import ij.io.RoiDecoder;
+import ij.process.FloatPolygon;
+import ij.measure.*;
+import ij.plugin.filter.Analyzer;
 import java.awt.*;
 import java.util.*;
 
@@ -11,10 +14,12 @@ public class RoiProperties {
 	private Roi roi;
 	private String title;
 	private boolean showName = true;
+	private boolean showListCoordinates;
 	private boolean addToOverlay;
 	private boolean overlayOptions;
 	private boolean existingOverlay;
 	private boolean setPositions;
+	private boolean listCoordinates;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
@@ -23,6 +28,7 @@ public class RoiProperties {
 			throw new IllegalArgumentException("ROI is null");
 		this.title = title;
 		showName = title.startsWith("Prop");
+		showListCoordinates = showName && title.endsWith(" ");
 		addToOverlay = title.equals("Add to Overlay");
 		overlayOptions = title.equals("Overlay Options");
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -101,6 +107,10 @@ public class RoiProperties {
 			}
 			gd.addCheckbox("Set stack positions", setPositions);
 		}
+		if (showListCoordinates) {
+			int n = roi.getFloatPolygon().npoints;
+			gd.addCheckbox("List coordinates ("+n+")", listCoordinates);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 		if (showName) {
@@ -121,6 +131,8 @@ public class RoiProperties {
 			setPositions = gd.getNextBoolean();
 			roi.setPosition(setPositions?1:0);
 		}
+		if (showListCoordinates)
+			listCoordinates = gd.getNextBoolean();
 		strokeColor = Colors.decode(linec, Roi.getColor());
 		fillColor = Colors.decode(fillc, null);
 		if (isText) {
@@ -152,6 +164,8 @@ public class RoiProperties {
 			}
 			imp.draw();
 		}
+		if (listCoordinates)
+			listCoordinates(roi);
 		//if (strokeWidth>1.0 && !roi.isDrawingTool())
 		//	Line.setWidth(1);
 		return true;
@@ -172,6 +186,42 @@ public class RoiProperties {
 		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
 		if (newOverlay) roi.setName("new-overlay");
 		return true;
+	}
+	
+	void listCoordinates(Roi roi) {
+		if (roi==null) return;
+		boolean allIntegers = true;
+		FloatPolygon fp = roi.getFloatPolygon();
+		ImagePlus imp = roi.getImage();
+		String title = "Coordinates";
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0) {
+				for (int i=0; i<fp.npoints; i++) {
+					fp.xpoints[i] *= cal.pixelWidth;
+					fp.ypoints[i] *= cal.pixelHeight;
+				}
+				allIntegers = false;
+			}
+			title = imp.getTitle();
+		}
+		if (allIntegers) {
+			for (int i=0; i<fp.npoints; i++) {
+				if ((int)fp.xpoints[i]!=fp.xpoints[i] || (int)fp.ypoints[i]!=fp.ypoints[i]) {
+					allIntegers = false;
+					break;
+				}
+			}
+		}
+		ResultsTable rt = new ResultsTable();
+		rt.setPrecision(allIntegers?0:Analyzer.getPrecision());
+		for (int i=0; i<fp.npoints; i++) {
+			rt.incrementCounter();
+			rt.addValue("X", fp.xpoints[i]);
+			rt.addValue("Y", fp.ypoints[i]);
+		}
+		rt.showRowNumbers(false);
+		rt.show("XY_"+title);
 	}
 	
 }

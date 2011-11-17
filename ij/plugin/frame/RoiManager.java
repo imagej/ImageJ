@@ -1170,10 +1170,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	void combineRois(ImagePlus imp, int[] indexes) {
 		ShapeRoi s1=null, s2=null;
+		ImageProcessor ip = null;
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
-			if (!roi.isArea())
-				roi = convertToArea(roi);
+			if (!roi.isArea()) {
+				if (ip==null)
+					ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
+				roi = convertLineToPolygon(roi, ip);
+			}
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
 					s1 = (ShapeRoi)roi;
@@ -1193,16 +1197,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			imp.setRoi(s1);
 	}
 	
-	Roi convertToArea(Roi roi) {
+	Roi convertLineToPolygon(Roi roi, ImageProcessor ip) {
 		if (roi==null) return null;
-		roi = (Roi)roi.clone();
-		int width = (int)roi.getStrokeWidth();
-		Rectangle r = roi.getBounds();
-		if (width>1)
-			roi.setLocation(width, width);
-		else
-			roi.setLocation(0, 0);
-		ImageProcessor ip = new ByteProcessor(r.width+width*2, r.height+width*2);
+		ip.resetRoi();
+		ip.setColor(0);
+		ip.fill();
 		ip.setColor(255);
 		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
 			ip.fillPolygon(roi.getPolygon());
@@ -1211,9 +1210,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		//new ImagePlus("ip", ip.duplicate()).show();
 		ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		ThresholdToSelection tts = new ThresholdToSelection();
-		Roi roi2 = tts.convert(ip);
-		roi2.setLocation(r.x-width/2, r.y-width/2);
-		return roi2;
+		return tts.convert(ip);
 	}
 
 	void combinePoints(ImagePlus imp, int[] indexes) {

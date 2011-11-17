@@ -368,7 +368,7 @@ public class Line extends Roi {
 	
 	public Polygon getPolygon() {
 		FloatPolygon p = getFloatPolygon();
-		return new Polygon(toInt(p.xpoints), toInt(p.ypoints), p.npoints);
+		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
 	}
 
 	public FloatPolygon getFloatPolygon() {

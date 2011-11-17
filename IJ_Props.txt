@@ -78,17 +78,16 @@ selection09="Create Selection",ij.plugin.Selection("from")
 selection10="Create Mask",ij.plugin.Selection("mask")
 selection11=-
 selection12="Properties... [y]",ij.plugin.Selection("properties")
-selection13="List Coordinates",ij.plugin.Selection("list")
-selection14="Rotate...",ij.plugin.Selection("rotate")
-selection15="Enlarge...",ij.plugin.Selection("enlarge")
-selection16="Make Band...",ij.plugin.Selection("band")
-selection17="Specify...",ij.plugin.SpecifyROI
-selection18="Straighten...",ij.plugin.Straightener
-selection19="To Bounding Box",ij.plugin.Selection("tobox")
-selection20="Line to Area",ij.plugin.Selection("toarea")
-selection21="Area to Line",ij.plugin.Selection("toline")
-selection22="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
-selection23="Add to Manager[t]",ij.plugin.Selection("add")
+selection13="Rotate...",ij.plugin.Selection("rotate")
+selection14="Enlarge...",ij.plugin.Selection("enlarge")
+selection15="Make Band...",ij.plugin.Selection("band")
+selection16="Specify...",ij.plugin.SpecifyROI
+selection17="Straighten...",ij.plugin.Straightener
+selection18="To Bounding Box",ij.plugin.Selection("tobox")
+selection19="Line to Area",ij.plugin.Selection("toarea")
+selection20="Area to Line",ij.plugin.Selection("toline")
+selection21="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
+selection22="Add to Manager[t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
