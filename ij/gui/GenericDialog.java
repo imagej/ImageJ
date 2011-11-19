@@ -1288,13 +1288,22 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		dispose(); 
     }
     
+    /** Adds a "Help" button that opens the specified URL in the default browser.
+    	With v1.46b or later, displays an HTML formatted message if
+    	'url' starts with "<html>". There is an example at
+    	http://imagej.nih.gov/ij/macros/js/DialogWithHelp.js
+    */
     public void addHelp(String url) {
     	helpURL = url;
     }
 
     void showHelp() {
-		String macro = "run('URL...', 'url="+helpURL+"');";
-		new MacroRunner(macro);
+    	if (helpURL.startsWith("<html>"))
+    		new HTMLDialog("", helpURL);
+    	else {
+			String macro = "run('URL...', 'url="+helpURL+"');";
+			new MacroRunner(macro);
+		}
 	}
     
     public void windowActivated(WindowEvent e) {}
