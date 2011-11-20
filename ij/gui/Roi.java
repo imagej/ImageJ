@@ -1454,11 +1454,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected int screenXD(double ox) {return ic!=null?ic.screenXD(ox):(int)ox;}
 	protected int screenYD(double oy) {return ic!=null?ic.screenYD(oy):(int)oy;}
 
-	protected int[] toInt(float[] arr) {
+	/** Converts a float array to an int array using truncation. */
+	public static int[] toInt(float[] arr) {
 		return toInt(arr, null, arr.length);
 	}
 
-	protected int[] toInt(float[] arr, int[] arr2, int size) {
+	public static int[] toInt(float[] arr, int[] arr2, int size) {
 		int n = arr.length;
 		if (size>n) size=n;
 		int[] temp = arr2;
@@ -1470,7 +1471,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return temp;
 	}
 
-	protected int[] toIntR(float[] arr) {
+	/** Converts a float array to an int array using rounding. */
+	public static int[] toIntR(float[] arr) {
 		int n = arr.length;
 		int[] temp = new int[n];
 		for (int i=0; i<n; i++)
@@ -1478,7 +1480,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return temp;
 	}
 
-	protected float[] toFloat(int[] arr) {
+	/** Converts an int array to a float array. */
+	public static float[] toFloat(int[] arr) {
 		int n = arr.length;
 		float[] temp = new float[n];
 		for (int i=0; i<n; i++)

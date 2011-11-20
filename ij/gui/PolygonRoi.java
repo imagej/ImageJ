@@ -425,6 +425,8 @@ public class PolygonRoi extends Roi {
 		}
 		imp.draw(xmin-margin, ymin-margin, (xmax-xmin)+margin*2, (ymax-ymin)+margin*2);
 	}
+	
+	static int counter = 0;
 
     void finishPolygon() {
     	Rectangle r;
@@ -955,7 +957,7 @@ public class PolygonRoi extends Roi {
 	/** Returns the length of this line selection after
 		smoothing using a 3-point running average.*/
 	double getSmoothedLineLength() {
-		if (subPixelResolution())
+		if (subPixelResolution() && xpf!=null)
 			return getFloatSmoothedLineLength();
 		double length = 0.0;
 		double w2 = 1.0;
@@ -1007,6 +1009,8 @@ public class PolygonRoi extends Roi {
 	/** Returns the perimeter of this ROI after
 		smoothing using a 3-point running average.*/
 	double getSmoothedPerimeter() {
+		if (subPixelResolution() && xpf!=null)
+			return getFloatSmoothedPerimeter();
 		double length = getSmoothedLineLength();
 		double w2=1.0, h2=1.0;
 		if (imp!=null) {
@@ -1016,6 +1020,20 @@ public class PolygonRoi extends Roi {
 		}
 		double dx = xp[nPoints-1]-xp[0];
 		double dy = yp[nPoints-1]-yp[0];
+		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
+		return length;
+	}
+
+	double getFloatSmoothedPerimeter() {
+		double length = getSmoothedLineLength();
+		double w2=1.0, h2=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			w2 = cal.pixelWidth*cal.pixelWidth;
+			h2 = cal.pixelHeight*cal.pixelHeight;
+		}
+		double dx = xpf[nPoints-1]-xpf[0];
+		double dy = ypf[nPoints-1]-ypf[0];
 		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
 		return length;
 	}

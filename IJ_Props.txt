@@ -40,6 +40,7 @@ import07="URL...",ij.plugin.URLOpener
 import08="Stack From List...",ij.plugin.ListVirtualStack
 import09="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
 import10="AVI...",ij.plugin.AVI_Reader
+import11="XY Coodinates... ",ij.plugin.XY_Reader
 #import08="TWAIN...",ij.plugin.twain.Twain
 #import09="Capture Video...",QT_Capture
 #import10="QuickTime Movie...",Movie_Opener
