@@ -24,6 +24,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 		
 	int startX, startY, x, y, width, height;
+	double xd, yd, widthd, heightd;
 	int activeHandle;
 	int state;
 	int modState = NO_MODS;
@@ -63,13 +64,19 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private int position;
 	private int channel, slice, frame;
 	private Overlay prototypeOverlay;
+	private boolean subPixel;
 
-	/** Creates a new rectangular Roi. */
+	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
 		this(x, y, width, height, 0);
 	}
 
-	/** Creates a new rounded rectangular Roi. */
+	/** Creates a rectangular ROI using double arguments. */
+	public Roi(double x, double y, double width, double height) {
+		this(x, y, width, height, 0);
+	}
+
+	/** Creates a new rounded rectangular ROI. */
 	public Roi(int x, int y, int width, int height, int cornerDiameter) {
 		setImage(null);
 		if (width<1) width = 1;
@@ -100,6 +107,13 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		fillColor = defaultFillColor;
 	}
 	
+	/** Creates a rounded rectangular ROI using double arguments. */
+	public Roi(double x, double y, double width, double height, int cornerDiameter) {
+		this((int)x, (int)y, (int)Math.ceil(width), (int)Math.ceil(height), cornerDiameter);
+		xd=x; yd=y; widthd=width; heightd=height;
+		subPixel = true;
+	}
+
 	/** Creates a new rectangular Roi. */
 	public Roi(Rectangle r) {
 		this(r.x, r.y, r.width, r.height);
@@ -153,6 +167,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.y = y;
 		startX = x; startY = y;
 		oldX = x; oldY = y; oldWidth=0; oldHeight=0;
+		xd=x; yd=y;
 	}
 	
 	public void setImage(ImagePlus imp) {
@@ -405,6 +420,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldY = y;
 		oldWidth = width;
 		oldHeight = height;
+		xd=x; yd=y; widthd=width; heightd=height;
 	}
 
 	private void growConstrained(int xNew, int yNew) {
@@ -526,6 +542,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				height=1;
 				y=y2=yc;
 			}
+			xd=x; yd=y;
 
 		}
 		
@@ -651,6 +668,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldWidth = width;
 		oldHeight=height;
 		if (isImageRoi) showStatus();
+		xd=x; yd=y;
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */
@@ -680,6 +698,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		updateClipRect();
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
+		xd=x; yd=y;
 		showStatus();
 	}
 	
@@ -773,6 +792,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		int sh = (int)(height*mag);
 		int sx1 = screenX(x);
 		int sy1 = screenY(y);
+		if (subPixelResolution()) {
+			sw = (int)(widthd*mag);
+			sh = (int)(heightd*mag);
+			sx1 = screenXD(xd);
+			sy1 = screenYD(yd);
+		}
 		int sx2 = sx1+sw/2;
 		int sy2 = sy1+sh/2;
 		int sx3 = sx1+sw;
@@ -1434,7 +1459,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Returns true if this is a PolygonRoi that supports sub-pixel resolution. */
 	public boolean subPixelResolution() {
-		return false;
+		return subPixel;
 	}
 
     /** Checks whether two rectangles are equal. */

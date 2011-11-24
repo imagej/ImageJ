@@ -31,18 +31,35 @@ public class TextRoi extends Roi {
 	private boolean firstMouseUp = true;
 	private int cline = 0;
 
-	/** Creates a new TextRoi.*/
+	/** Creates a TextRoi.*/
 	public TextRoi(int x, int y, String text) {
-		this(x, y, text, null);
+		super(x, y, 1, 1);
+		init(text, null);
+	}
+	
+	/** Creates a TextRoi using sub-pixel coordinates.*/
+	public TextRoi(double x, double y, String text) {
+		super(x, y, 1.0, 1.0);
+		init(text, null);
 	}
 
-	/** Creates a new TextRoi with the specified location and Font.
+	/** Creates a TextRoi with the specified location and Font.
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setNonScalable
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public TextRoi(int x, int y, String text, Font font) {
 		super(x, y, 1, 1);
+		init(text, font);
+	}
+
+	/** Creates a TextRoi with the specified sub-pixel location and Font. */
+	public TextRoi(double x, double y, String text, Font font) {
+		super(x, y, 1.0, 1.0);
+		init(text, font);
+	}
+
+	private void init(String text, Font font) {
 		String[] lines = Tools.split(text, "\n");
 		int count = Math.min(lines.length, MAX_LINES);
 		for (int i=0; i<count; i++)
@@ -139,18 +156,20 @@ public class TextRoi extends Roi {
 		int descent = metrics.getDescent();
 		int i = 0;
 		int yy = 0;
+		int xi = (int)Math.round(xd);
+		int yi = (int)Math.round(yd);
 		while (i<MAX_LINES && theText[i]!=null) {
 			switch (justification) {
 				case LEFT:
-					ip.drawString(theText[i], x, y+yy+fontHeight);
+					ip.drawString(theText[i], xi, yi+yy+fontHeight);
 					break;
 				case CENTER:
 					int tw = metrics.stringWidth(theText[i]);
-					ip.drawString(theText[i], x+(width-tw)/2, y+yy+fontHeight);
+					ip.drawString(theText[i], xi+(width-tw)/2, yi+yy+fontHeight);
 					break;
 				case RIGHT:
 					tw = metrics.stringWidth(theText[i]);
-					ip.drawString(theText[i], x+width-tw, y+yy+fontHeight);
+					ip.drawString(theText[i], xi+width-tw, yi+yy+fontHeight);
 					break;
 			}
 			i++;
@@ -166,10 +185,10 @@ public class TextRoi extends Roi {
 			updateBounds(g);
 		super.draw(g); // draw the rectangle
 		double mag = getMagnification();
-		int sx = screenX(x);
-		int sy = screenY(y);
-		int swidth = (int)(width*mag);
-		int sheight = (int)(height*mag);
+		int sx = screenXD(xd);
+		int sy = screenYD(yd);
+		int swidth = (int)(widthd*mag);
+		int sheight = (int)(heightd*mag);
 		Rectangle r = null;
 		r = g.getClipBounds();
 		g.setClip(sx, sy, swidth, sheight);
@@ -187,10 +206,14 @@ public class TextRoi extends Roi {
 		if (newFont || width==1)
 			updateBounds(g);
 		double mag = getMagnification();
-		int sx = nonScalable?x:screenX(x);
-		int sy = nonScalable?y:screenY(y);
-		int sw = nonScalable?width:(int)(getMagnification()*width);
-		int sh = nonScalable?height:(int)(getMagnification()*height);
+		int xi = (int)Math.round(xd);
+		int yi = (int)Math.round(yd);
+		int widthi = (int)Math.round(widthd);
+		int heighti = (int)Math.round(heightd);
+		int sx = nonScalable?xi:screenXD(xd);
+		int sy = nonScalable?yi:screenYD(yd);
+		int sw = nonScalable?widthi:(int)(getMagnification()*widthd);
+		int sh = nonScalable?heighti:(int)(getMagnification()*heightd);
 		Font font = getScaledFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
@@ -366,40 +389,41 @@ public class TextRoi extends Roi {
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
 		int i=0, nLines=0;
-		oldX = x;
-		oldY = y;
-		oldWidth = width;
-		oldHeight = height;
-		int newWidth = 10;
+		double oldXD = xd;
+		double oldYD = yd;
+		double oldWidthD = widthd;
+		double oldHeightD = heightd;
+		double newWidth = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
-			int w = (int)Math.round(stringWidth(theText[i],metrics,g)/mag);
+			double w = stringWidth(theText[i],metrics,g)/mag;
 			if (w>newWidth)
 				newWidth = w;
 			i++;
 		}
 		if (nullg) g.dispose();
-		newWidth += 2;
-		width = newWidth;
+		newWidth += 2.0;
+		widthd = newWidth;
 		switch (justification) {
 			case LEFT:
 				if (xMax!=0 && x+newWidth>xMax)
-					x = xMax-width;
+					xd = xMax-width;
 				break;
 			case CENTER:
-				x = oldX+oldWidth/2 - newWidth/2;
+				xd = oldX+oldWidth/2.0 - newWidth/2.0;
 				break;
 			case RIGHT:
-				x = oldX+oldWidth - newWidth;
+				xd = oldX+oldWidth - newWidth;
 				break;
 		}
-		height = nLines*fontHeight+2;
+		heightd = nLines*fontHeight+2;
 		if (yMax!=0) {
-			if (height>yMax)
-				height = yMax;
-			if (y+height>yMax)
-				y = yMax-height;
+			if (heightd>yMax)
+				heightd = yMax;
+			if (yd+heightd>yMax)
+				yd = yMax-height;
 		}
+		x=(int)xd; y=(int)yd; width=(int)Math.ceil(widthd); height=(int)Math.ceil(heightd);
 		//IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 	

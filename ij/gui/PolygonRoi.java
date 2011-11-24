@@ -24,6 +24,7 @@ public class PolygonRoi extends Roi {
 	private boolean userCreated;
 	private boolean subPixel;
 	private double startXD, startYD;
+	private boolean interactive;
 
 	long mouseUpTime = 0;
 
@@ -166,11 +167,12 @@ public class PolygonRoi extends Roi {
 		userCreated = true;
 		if (lineWidth>1 && isLine())
 			updateWideLine(lineWidth);
+		interactive = true;
 	}
 
 	private void drawStartBox(Graphics g) {
 		if (type!=ANGLE) {
-			double offset = subPixelResolution()?0.5:0.0;
+			double offset = getOffset(0.5);
 			g.drawRect(ic.screenXD(startXD+offset)-4, ic.screenYD(startYD+offset)-4, 8, 8);
 		}
 	}
@@ -243,7 +245,7 @@ public class PolygonRoi extends Roi {
  		double xd=x, yd=y;
 		Graphics2D g2d = (Graphics2D)g;
 		GeneralPath path = new GeneralPath();
-		double offset = subPixelResolution()&&mag>1.0&&type==POLYLINE?0.5:0.0;
+		double offset = getOffset(0.5);
 		if (mag==1.0 && srcx==0.0 && srcy==0.0) {
 			path.moveTo(xpoints[0]+xd, ypoints[0]+yd);
 			for (int i=1; i<npoints; i++)
@@ -265,7 +267,7 @@ public class PolygonRoi extends Roi {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
-		double offset = subPixelResolution()&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?0.5:0.0;
+		double offset = getOffset(0.5);
 		if (xSpline!=null) {
 			ip.moveTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
 			for (int i=1; i<splinePoints; i++)
@@ -315,7 +317,7 @@ public class PolygonRoi extends Roi {
 			}
 		} else {
 			if (xpf!=null) {
-				double offset = subPixelResolution()&&mag>1.0&&(type==POLYLINE||type==FREELINE)?0.5:0.0;
+				double offset = getOffset(0.5);
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = ic.screenXD(xpf[i]+x+offset);
 					yp2[i] = ic.screenYD(ypf[i]+y+offset);
@@ -479,7 +481,7 @@ public class PolygonRoi extends Roi {
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
 		if (xpf!=null) {
-			double offset = subPixelResolution()&&getMagnification()>1.0&&type==POLYLINE?-0.5:0.0;
+			double offset = getOffset(-0.5);
 			xpf[activeHandle] = (float)(ic.offScreenXD(sx)-x+offset);
 			ypf[activeHandle] = (float)(ic.offScreenYD(sy)-y+offset);
 		} else {
@@ -1370,6 +1372,10 @@ public class PolygonRoi extends Roi {
 		xp2=xp2temp; yp2=yp2temp;
 		if (IJ.debugMode) IJ.log("PolygonRoi: "+maxPoints+" points");
 		maxPoints *= 2;
+	}
+	
+	private double getOffset(double value) {
+		return interactive&&subPixelResolution()&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?value:0.0;
 	}
 	
 }

@@ -18,6 +18,7 @@ public class Line extends Roi {
 	private double xHandleOffset, yHandleOffset;
 	protected double startxd, startyd;
 	static boolean widthChanged;
+	private boolean interactive;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
@@ -55,6 +56,7 @@ public class Line extends Roi {
 		type = LINE;
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
+		interactive = true;
 	}
 
 	/**
@@ -112,7 +114,7 @@ public class Line extends Roi {
 	}
 
 	protected void moveHandle(int sx, int sy) {
-		double offset = getMagnification()>1.0&&!(this instanceof Arrow)?-0.5:0.0;
+		double offset = getOffset(-0.5);
 		double ox = ic.offScreenXD(sx)+offset;
 		double oy = ic.offScreenYD(sy)+offset;
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
@@ -294,7 +296,7 @@ public class Line extends Roi {
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		double offset = getMagnification()>1.0?0.5:0.0;
+		double offset = getOffset(0.5);
 		int sx1 = screenXD(x1d+offset);
 		int sy1 = screenYD(y1d+offset);
 		int sx2 = screenXD(x2d+offset);
@@ -399,7 +401,7 @@ public class Line extends Roi {
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
-		double offset = getMagnification()>1.0?0.5:0.0;
+		double offset = getOffset(0.5);
 		if (getStrokeWidth()==1) {
 			ip.moveTo((int)(x1d+offset), (int)(y1d+offset));
 			ip.lineTo((int)(x2d+offset), (int)(y2d+offset));
@@ -435,7 +437,7 @@ public boolean contains(int x, int y) {
 		int size = HANDLE_SIZE+5;
 		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
 		int halfSize = size/2;
-		double offset = getMagnification()>1.0&&!(this instanceof Arrow)?0.5:0.0;
+		double offset = getOffset(0.5);
 		int sx1 = ic.screenXD(x+x1R+offset) - halfSize;
 		int sy1 = ic.screenYD(y+y1R+offset) - halfSize;
 		int sx2 = ic.screenXD(x+x2R+offset) - halfSize;
@@ -446,6 +448,10 @@ public boolean contains(int x, int y) {
 		if (sx>=sx2&&sx<=sx2+size&&sy>=sy2&&sy<=sy2+size) return 1;
 		if (sx>=sx3&&sx<=sx3+size+2&&sy>=sy3&&sy<=sy3+size+2) return 2;
 		return -1;
+	}
+	
+	private double getOffset(double value) {
+		return interactive&&getMagnification()>1.0&&!(this instanceof Arrow)?value:0.0;
 	}
 
 	public static int getWidth() {
