@@ -140,6 +140,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private FloodFiller ff;
 	private Polygon polygon;
 	private RoiManager roiManager;
+	private static RoiManager staticRoiManager;
 	private ImagePlus outputImage;
 	private boolean hideOutputImage;
 	private int roiType;
@@ -419,6 +420,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		floodFill = (options&INCLUDE_HOLES)==0;
 		recordStarts = (options&RECORD_STARTS)!=0;
 		addToManager = (options&ADD_TO_MANAGER)!=0;
+		if (staticRoiManager!=null) {
+			addToManager = true;
+			roiManager = staticRoiManager;
+			staticRoiManager = null;
+		}
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
 		inSituShow = (options&IN_SITU_SHOW)!=0;
 		outputImage = null;
@@ -1010,6 +1016,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Sets the outline line width for the next particle analyzer instance. */
 	public static void setLineWidth(int width) {
 		nextLineWidth = width;
+	}
+	
+	/** Sets the RoiManager to be used by the next particle 
+		analyzer instance. There is a JavaScript example at
+		http://imagej.nih.gov/ij/macros/js/HiddenRoiManager.js
+	*/
+	public static void setRoiManager(RoiManager manager) {
+		staticRoiManager = manager;
 	}
 	
 	int getColumnID(String name) {

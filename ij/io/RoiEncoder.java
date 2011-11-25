@@ -138,11 +138,11 @@ public class RoiEncoder {
 		}
 		
 		if (roi instanceof Line) {
-			Line l = (Line)roi;
-			putFloat(RoiDecoder.X1, l.x1);
-			putFloat(RoiDecoder.Y1, l.y1);
-			putFloat(RoiDecoder.X2, l.x2);
-			putFloat(RoiDecoder.Y2, l.y2);
+			Line line = (Line)roi;
+			putFloat(RoiDecoder.X1, (float)line.x1d);
+			putFloat(RoiDecoder.Y1, (float)line.y1d);
+			putFloat(RoiDecoder.X2, (float)line.x2d);
+			putFloat(RoiDecoder.Y2, (float)line.y2d);
 			if (roi instanceof Arrow) {
 				putShort(RoiDecoder.SUBTYPE, RoiDecoder.ARROW);
 				if (((Arrow)roi).getDoubleHeaded())

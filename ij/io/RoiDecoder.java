@@ -184,10 +184,10 @@ public class RoiDecoder {
 				roi = new OvalRoi(left, top, width, height);
 				break;
 			case line:
-				int x1 = (int)getFloat(X1);		
-				int y1 = (int)getFloat(Y1);		
-				int x2 = (int)getFloat(X2);		
-				int y2 = (int)getFloat(Y2);
+				double x1 = getFloat(X1);		
+				double y1 = getFloat(Y1);		
+				double x2 = getFloat(X2);		
+				double y2 = getFloat(Y2);
 				if (subtype==ARROW) {
 					roi = new Arrow(x1, y1, x2, y2);		
 					((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
