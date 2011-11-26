@@ -1013,13 +1013,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		nextFontSize = size;
 	}
 
-	/** Sets the outline line width for the next particle analyzer instance. */
+	/** Sets the outline line width for the next ParticleAnalyzer instance. */
 	public static void setLineWidth(int width) {
 		nextLineWidth = width;
 	}
 	
-	/** Sets the RoiManager to be used by the next particle 
-		analyzer instance. There is a JavaScript example at
+	/** Sets the RoiManager to be used by the next ParticleAnalyzer 
+		instance. There is a JavaScript example at
 		http://imagej.nih.gov/ij/macros/js/HiddenRoiManager.js
 	*/
 	public static void setRoiManager(RoiManager manager) {

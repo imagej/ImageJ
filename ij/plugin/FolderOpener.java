@@ -8,7 +8,7 @@ import ij.io.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
-import ij.util.DicomTools;
+import ij.util.*;
 
 /** Implements the File/Import/Image Sequence command, which
 	opens a folder of images as a stack. */
@@ -154,7 +154,7 @@ public class FolderOpener implements PlugIn {
   				list = list2;
   			}
 			if (sortFileNames)
-				list = sortFileList(list);
+				list = StringSorter.sortNumerically(list);
 
 			if (n<1)
 				n = list.length;
@@ -392,47 +392,7 @@ public class FolderOpener implements PlugIn {
 		}
 		return false;
 	}
-	
-	/** Sorts the file names into numeric order. */
-	public String[] sortFileList(String[] list) {
-		int listLength = list.length;
-		boolean allSameLength = true;
-		int len0 = list[0].length();
-		for (int i=0; i<listLength; i++) {
-			if (list[i].length()!=len0) {
-				allSameLength = false;
-				break;
-			}
-		}
-		if (allSameLength)
-			{ij.util.StringSorter.sort(list); return list;}
-		int maxDigits = 15;		
-		String[] list2 = null;	
-		char ch;	
-		for (int i=0; i<listLength; i++) {
-			int len = list[i].length();
-			String num = "";
-			for (int j=0; j<len; j++) {
-				ch = list[i].charAt(j);
-				if (ch>=48&&ch<=57) num += ch;
-			}
-			if (list2==null) list2 = new String[listLength];
-			if (num.length()==0) num = "aaaaaa";
-			num = "000000000000000" + num; // prepend maxDigits leading zeroes
-			num = num.substring(num.length()-maxDigits);
-			list2[i] = num + list[i];
-		}
-		if (list2!=null) {
-			ij.util.StringSorter.sort(list2);
-			for (int i=0; i<listLength; i++)
-				list2[i] = list2[i].substring(maxDigits);
-			return list2;	
-		} else {
-			ij.util.StringSorter.sort(list);
-			return list;   
-		}	
-	}
-	
+			
 	public void openAsVirtualStack(boolean b) {
 		openAsVirtualStack = b;
 	}
@@ -440,7 +400,13 @@ public class FolderOpener implements PlugIn {
 	public void sortFileNames(boolean b) {
 		sortFileNames = b;
 	}
-
+	
+	/** Sorts file names containing numerical components.
+	* @author Norbert Vischer
+	*/
+	public String[] sortFileList(String[] list) {
+		return StringSorter.sortNumerically(list);
+	}
 
 } // FolderOpener
 

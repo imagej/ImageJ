@@ -29,4 +29,96 @@ public class StringSorter {
 		}
 		return true;
 	}
+	
+	/** Sorts file names containing numerical components.
+	* @author Norbert Vischer
+	*/
+	public static String[] sortNumerically(String[] list) {
+		int n = list.length;
+		boolean allSameLength = true;
+		int len0 = list[0].length();
+		for (int i=0; i<n; i++) {
+			if (list[i].length()!=len0) {
+				allSameLength = false;
+				break;
+			}
+		}
+		String[] paddedList = list;
+		if (!allSameLength)
+			paddedList = getPaddedNames(list);
+		String[] sortedList = new String[n];
+		int[] indexes = new int[n];
+		for (int i = 0; i < n; i++) {
+			indexes[i] = i;
+		}
+		Tools.quicksort(paddedList, indexes);
+		for (int i = 0; i < n; i++)
+			sortedList[i] = list[indexes[i]];
+		return sortedList;
+	}
+
+	// Pads individual numeric string components with zeroes for correct sorting
+	private static String[] getPaddedNames(String[] names) {
+		int nNames = names.length;
+		String[] paddedNames = new String[nNames];
+		int maxLen = 0;
+		for (int jj = 0; jj < nNames; jj++) {
+			if (names[jj].length() > maxLen) {
+				maxLen = names[jj].length();
+			}
+		}
+		int maxNums = maxLen / 2 + 1;//calc array sizes
+		int[][] numberStarts = new int[names.length][maxNums];
+		int[][] numberLengths = new int[names.length][maxNums];
+		int[] maxDigits = new int[maxNums];
+
+		//a) record position and digit count of 1st, 2nd, .. n-th number in string
+		for (int jj = 0; jj < names.length; jj++) {
+			String name = names[jj];
+			boolean inNumber = false;
+			int nNumbers = 0;
+			int nDigits = 0;
+			for (int pos = 0; pos < name.length(); pos++) {
+				boolean isDigit = name.charAt(pos) >= '0' && name.charAt(pos) <= '9';
+				if (isDigit) {
+					nDigits++;
+					if (!inNumber) {
+						numberStarts[jj][nNumbers] = pos;
+						inNumber = true;
+					}
+				}
+				if (inNumber && (!isDigit || (pos == name.length() - 1))) {
+					inNumber = false;
+					if (maxDigits[nNumbers] < nDigits) {
+						maxDigits[nNumbers] = nDigits;
+					}
+					numberLengths[jj][nNumbers] = nDigits;
+					nNumbers++;
+					nDigits = 0;
+				}
+			}
+		}
+		
+		//b) perform padding
+		for (int jj = 0; jj < names.length; jj++) {
+			String name = names[jj];
+			int numIndex = 0;
+			StringBuilder destName = new StringBuilder();
+			for (int srcPtr = 0; srcPtr < name.length(); srcPtr++) {
+				if (srcPtr == numberStarts[jj][numIndex]) {
+					int numLen = numberLengths[jj][numIndex];
+					if (numLen > 0) {
+						for (int pad = 0; pad < (maxDigits[numIndex] - numLen); pad++) {
+							destName.append('0');
+						}
+					}
+					numIndex++;
+				}
+				destName.append(name.charAt(srcPtr));
+			}
+			paddedNames[jj] = destName.toString();
+		}
+		return paddedNames;
+	}
+
 }

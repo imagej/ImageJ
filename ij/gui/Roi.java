@@ -105,6 +105,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			g.dispose();
 		}
 		fillColor = defaultFillColor;
+		xd=x; yd=y; widthd=width; heightd=height;
 	}
 	
 	/** Creates a rounded rectangular ROI using double arguments. */
@@ -356,11 +357,22 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 
 	public FloatPolygon getFloatPolygon() {
-		Polygon p = getPolygon();
-		if (p!=null)
+		if (subPixelResolution()) {
+			float[] xpoints = new float[4];
+			float[] ypoints = new float[4];
+			xpoints[0] = (float)xd;
+			ypoints[0] = (float)yd;
+			xpoints[1] = (float)(xd+widthd);
+			ypoints[1] = (float)yd;
+			xpoints[2] = (float)(xd+widthd);
+			ypoints[2] = (float)(yd+heightd);
+			xpoints[3] = (float)xd;
+			ypoints[3] = (float)(yd+heightd);
+			return new FloatPolygon(xpoints, ypoints);
+		} else {
+			Polygon p = getPolygon();
 			return new FloatPolygon(toFloat(p.xpoints), toFloat(p.ypoints), p.npoints);
-		else
-			return null;
+		}
 	}
 	
 	/** Returns a copy of this roi. See Thinking is Java by Bruce Eckel
