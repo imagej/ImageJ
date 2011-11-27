@@ -141,6 +141,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		height = 0;
 		state = CONSTRUCTING;
 		type = RECTANGLE;
+		/*
 		if (isDrawingTool()) {
 			setStrokeColor(Toolbar.getForegroundColor());
 			if (!(this instanceof TextRoi)) {
@@ -153,6 +154,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 				setStrokeWidth(Line.getWidth());
 			}
 		}
+		*/
 		fillColor = defaultFillColor;
 	}
 
@@ -1436,9 +1438,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
     }
     
 	/** Returns 'true' if this is an ROI primarily used from drawing
-		(e.g., Rounded Rectangle, TextRoi or Arrow). */
+		(e.g., TextRoi or Arrow). */
     public boolean isDrawingTool() {
-        return cornerDiameter>0;
+        //return cornerDiameter>0;
+        return false;
     }
     
     protected double getMagnification() {

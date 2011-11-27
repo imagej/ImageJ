@@ -75,6 +75,7 @@ public class RoiDecoder {
 	public static final int AVAILABLE_BYTE1 = 30;  //byte
 	public static final int IMAGE_OPACITY = 31;  //byte
 	public static final int IMAGE_SIZE = 32;  //int
+	public static final int FLOAT_STROKE_WIDTH = 34;  //float
 		
 	// subtypes
 	public static final int TEXT = 1;
@@ -178,7 +179,8 @@ public class RoiDecoder {
 		Roi roi = null;
 		if (isComposite) {
 			roi = getShapeRoi();
-			if (version>=218) getStrokeWidthAndColor(roi);
+			if (version>=218)
+				getStrokeWidthAndColor(roi, hdr2Offset);
 			roi.setPosition(position);
 			if (channel>0 || slice>0 || frame>0)
 				roi.setPosition(channel, slice, frame);
@@ -295,7 +297,7 @@ public class RoiDecoder {
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
-			getStrokeWidthAndColor(roi);
+			getStrokeWidthAndColor(roi, hdr2Offset);
 			boolean splineFit = (options&SPLINE_FIT)!=0;
 			if (splineFit && roi instanceof PolygonRoi)
 				((PolygonRoi)roi).fitSpline();
@@ -328,9 +330,14 @@ public class RoiDecoder {
 		roi.setPrototypeOverlay(proto);
 	}
 
-	void getStrokeWidthAndColor(Roi roi) {
-		int strokeWidth = getShort(STROKE_WIDTH);
-		if (strokeWidth>0)
+	void getStrokeWidthAndColor(Roi roi, int hdr2Offset) {
+		double strokeWidth = getShort(STROKE_WIDTH);
+		if (hdr2Offset>0) {
+			double strokeWidthD = getFloat(hdr2Offset+FLOAT_STROKE_WIDTH);
+			if (strokeWidthD>0.0)
+				strokeWidth = strokeWidthD;
+		}
+		if (strokeWidth>0.0)
 			roi.setStrokeWidth(strokeWidth);
 		int strokeColor = getInt(STROKE_COLOR);
 		if (strokeColor!=0) {

@@ -96,6 +96,7 @@ public class TextRoi extends Roi {
 		}
 		instanceFont = new Font(name, style, size);
 		justification = globalJustification;
+		setStrokeColor(Toolbar.getForegroundColor());
 	}
 
 	/** This method is used by the text tool to add typed

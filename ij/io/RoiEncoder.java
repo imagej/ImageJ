@@ -331,6 +331,10 @@ public class RoiEncoder {
 			putShort(hdr2Offset+RoiDecoder.OVERLAY_FONT_SIZE, font.getSize());
 		if (roiNameSize>0)
 			putName(roi, hdr2Offset);
+		double strokeWidth = roi.getStrokeWidth();
+		if (roi.getStroke()==null)
+			strokeWidth = 0.0;
+		putFloat(hdr2Offset+RoiDecoder.FLOAT_STROKE_WIDTH, (float)strokeWidth);
 	}
 
 	void putName(Roi roi, int hdr2Offset) {
