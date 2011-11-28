@@ -75,7 +75,7 @@ public class RoiDecoder {
 	public static final int AVAILABLE_BYTE1 = 30;  //byte
 	public static final int IMAGE_OPACITY = 31;  //byte
 	public static final int IMAGE_SIZE = 32;  //int
-	public static final int FLOAT_STROKE_WIDTH = 34;  //float
+	public static final int FLOAT_STROKE_WIDTH = 36;  //float
 		
 	// subtypes
 	public static final int TEXT = 1;

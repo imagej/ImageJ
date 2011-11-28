@@ -693,7 +693,13 @@ public class Plot {
 			return null;
 		}
 		ImageWindow.centerNextImage();
-		return new PlotWindow(this);
+		PlotWindow pw = new PlotWindow(this);
+		ImagePlus imp = pw.getImagePlus();
+		if (IJ.isMacro() && imp!=null) { // wait for plot to be displayed
+			int id = imp.getID();
+			IJ.selectWindow(id);
+		}
+		return pw;
 	}
 		
 	/** Stores plot data into an ArrayList  to be used 
