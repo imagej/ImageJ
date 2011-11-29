@@ -695,10 +695,8 @@ public class Plot {
 		ImageWindow.centerNextImage();
 		PlotWindow pw = new PlotWindow(this);
 		ImagePlus imp = pw.getImagePlus();
-		if (IJ.isMacro() && imp!=null) { // wait for plot to be displayed
-			int id = imp.getID();
-			IJ.selectWindow(id);
-		}
+		if (IJ.isMacro() && imp!=null) // wait for plot to be displayed
+			IJ.selectWindow(imp.getID());
 		return pw;
 	}
 		

@@ -3941,9 +3941,9 @@ public class Functions implements MacroConstants, Measurements {
 	double getValue() {
 		String key = getStringArg();
 		if (key.indexOf("foreground")!=-1)
-			return Toolbar.getForegroundColor().getRGB()&0xffffff;
+			return getColorValue(Toolbar.getForegroundColor());
 		else if (key.indexOf("background")!=-1)
-			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
+			return getColorValue(Toolbar.getBackgroundColor());
 		else if (key.equals("font.size")) {
 			resetImage();
 			ImageProcessor ip = getProcessor();
@@ -3958,6 +3958,18 @@ public class Functions implements MacroConstants, Measurements {
 			interp.error("Invalid key");
 			return 0.0;
 		}
+	}
+	
+	double getColorValue(Color color) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null || imp.getBitDepth()==24)
+			return color.getRGB()&0xffffff;
+		ImageProcessor ip = imp.getProcessor();
+		ip.setRoi(0,0,1,1);
+		ip = ip.crop();
+		ip.setColor(color);
+		ip.drawDot(0,0);
+		return ip.getf(0,0);
 	}
 
 	double doStack() {

@@ -335,6 +335,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		Color saveColor = roi.getStrokeColor();
 		if (saveColor==null)
 			roi.setStrokeColor(defaultColor);
+		if (roi.getStroke()==null)
+			((Graphics2D)g).setStroke(Roi.onePixelWide);
 		if (roi instanceof TextRoi)
 			((TextRoi)roi).drawText(g);
 		else
