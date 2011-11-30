@@ -9,6 +9,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.RectToolOptions;
 import ij.macro.Interpreter;
 import ij.io.RoiDecoder;
 
@@ -141,20 +142,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		height = 0;
 		state = CONSTRUCTING;
 		type = RECTANGLE;
-		/*
-		if (isDrawingTool()) {
-			setStrokeColor(Toolbar.getForegroundColor());
-			if (!(this instanceof TextRoi)) {
-				double mag = imp!=null&&imp.getCanvas()!=null?imp.getCanvas().getMagnification():1.0; 
-				if (mag>1.0) mag = 1.0;
-				if (Line.getWidth()==1 && !Line.widthChanged)
-					Line.setWidth((int)(2.0/mag));
-				if (mag<1.0 && Line.getWidth()*mag<1.0)
-						Line.setWidth((int)(1.0/mag));
-				setStrokeWidth(Line.getWidth());
-			}
+		if (cornerDiameter>0) {
+			double swidth = RectToolOptions.getDefaultStrokeWidth();
+			if (swidth>0.0)
+				setStrokeWidth(swidth);
+			Color scolor = RectToolOptions.getDefaultStrokeColor();
+			if (scolor!=null)
+				setStrokeColor(scolor);
 		}
-		*/
 		fillColor = defaultFillColor;
 	}
 

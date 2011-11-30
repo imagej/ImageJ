@@ -7,7 +7,8 @@ import java.awt.*;
 public class RectToolOptions implements PlugIn, DialogListener {
 	private String strokeColorName, fillColorName;
 	private static GenericDialog gd;
-	private static double defaultStrokeWidth = 2.0;
+	private static double defaultStrokeWidth = 0.0;
+	private static Color defaultStrokeColor;
 
  	public void run(String arg) {
  		if (gd!=null && gd.isVisible())
@@ -17,8 +18,12 @@ public class RectToolOptions implements PlugIn, DialogListener {
 	}
 				
 	void rectToolOptions() {
-		Color strokeColor = Toolbar.getForegroundColor();
+		if (defaultStrokeColor==null)
+			defaultStrokeColor = Roi.getColor();
+		Color strokeColor = defaultStrokeColor;
 		Color fillColor = null;
+		if (defaultStrokeWidth==0.0)
+			defaultStrokeWidth = 1.0;
 		double strokeWidth = defaultStrokeWidth;
 		int cornerDiameter = (int)Prefs.get(Toolbar.CORNER_DIAMETER, 20);
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -50,24 +55,27 @@ public class RectToolOptions implements PlugIn, DialogListener {
 		String fillc2 = gd.getNextString();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		Roi roi = imp!=null?imp.getRoi():null;
-		Color strokeColor = null;
+		Color strokeColor2 = Colors.decode(strokec2, defaultStrokeColor);
 		if (roi!=null && (roi.getType()==Roi.RECTANGLE)) {
 			roi.setStrokeWidth((int)strokeWidth2);
 			roi.setCornerDiameter((int)(cornerDiameter2));
-			strokeColor = Colors.decode(strokec2, roi.getStrokeColor());
+			strokeColor2 = Colors.decode(strokec2, roi.getStrokeColor());
 			Color fillColor = Colors.decode(fillc2, roi.getFillColor());
-			roi.setStrokeColor(strokeColor);
+			roi.setStrokeColor(strokeColor2);
 			roi.setFillColor(fillColor);
 		}
 		defaultStrokeWidth = strokeWidth2;
-		if (strokeColor!=null)
-			Toolbar.setForegroundColor(strokeColor);
+		defaultStrokeColor = strokeColor2;
 		Toolbar.setRoundRectArcSize(cornerDiameter2);
 		if (cornerDiameter2>0) {
 			if (!Toolbar.getToolName().equals("roundrect"))
 				IJ.setTool("roundrect");
 		}
 		return true;
+	}
+	
+	public static Color getDefaultStrokeColor() {
+		return defaultStrokeColor;
 	}
 	
 	public static float getDefaultStrokeWidth() {

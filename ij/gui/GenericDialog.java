@@ -1299,7 +1299,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
 	void showHelp() {
 		if (helpURL.startsWith("<html>"))
-			new HTMLDialog("", helpURL);
+			new HTMLDialog(this, "", helpURL);
 		else {
 			String macro = "run('URL...', 'url="+helpURL+"');";
 			new MacroRunner(macro);

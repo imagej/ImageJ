@@ -9,6 +9,15 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener {
 	
 	public HTMLDialog(String title, String message) {
 		super(ij.IJ.getInstance(), title, true);
+		init(message);
+	}
+
+	public HTMLDialog(Dialog parent, String title, String message) {
+		super(parent, title, true);
+		init(message);
+	}
+	
+	private void init(String message) {
 		ij.util.Java2.setSystemLookAndFeel();
 		Container container = getContentPane();
 		container.setLayout(new BorderLayout());
@@ -29,7 +38,7 @@ public class HTMLDialog extends JDialog implements ActionListener, KeyListener {
 		GUI.center(this);
 		show();
 	}
-	
+
 	public void actionPerformed(ActionEvent e) {
 		//setVisible(false);
 		dispose();
