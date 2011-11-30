@@ -532,10 +532,15 @@ public class IJ {
 		Writes to the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
 		if (ij!=null) {
-			if (msg!=null && msg.startsWith("<html>"))
-				new HTMLDialog(title, msg);
-			else
-				new MessageDialog(ij, title, msg);
+			if (msg!=null && msg.startsWith("<html>")) {
+				HTMLDialog hd = new HTMLDialog(title, msg);
+				if (isMacro() && hd.escapePressed())
+					throw new RuntimeException(Macro.MACRO_CANCELED);
+			} else {
+				MessageDialog md = new MessageDialog(ij, title, msg);
+				if (isMacro() && md.escapePressed())
+					throw new RuntimeException(Macro.MACRO_CANCELED);
+			}
 		} else
 			System.out.println(msg);
 	}
@@ -1143,8 +1148,10 @@ public class IJ {
 		if (imp==null)
 			error("Macro Error", "Image "+id+" not found or no images are open.");
 		if (Interpreter.isBatchMode()) {
-			ImagePlus imp2 = WindowManager.getCurrentImage();
-			if (imp2!=null && imp2!=imp) imp2.saveRoi();
+			ImagePlus impT = WindowManager.getTempCurrentImage();
+			ImagePlus impC = WindowManager.getCurrentImage();
+			if (impC!=null && impC!=imp && impT!=null)
+				impC.saveRoi();
             WindowManager.setTempCurrentImage(imp);
             WindowManager.setWindow(null);
 		} else {

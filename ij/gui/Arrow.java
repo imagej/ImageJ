@@ -44,6 +44,7 @@ public class Arrow extends Line {
 		headSize = defaultHeadSize;
 		doubleHeaded = defaultDoubleHeaded;
 		outline = defaultOutline;
+		setStrokeColor(Toolbar.getForegroundColor());
 	}
 
 	/** Draws this arrow on the image. */

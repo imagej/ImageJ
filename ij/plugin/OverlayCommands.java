@@ -97,7 +97,8 @@ public class OverlayCommands implements PlugIn {
 		boolean newOverlay = name!=null && name.equals("new-overlay");
 		if (overlay==null || newOverlay) overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
-		defaultRoi = (Roi)roi.clone();
+		if (!roi.isDrawingTool())
+			defaultRoi = (Roi)roi.clone();
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();

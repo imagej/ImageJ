@@ -56,13 +56,11 @@ public class Selection implements PlugIn, Measurements {
      	else if (arg.equals("toline"))
     		areaToLine(imp); 
 	   	else if (arg.equals("properties"))
-    		{setProperties("Properties", imp.getRoi()); imp.draw();}
+    		{setProperties("Properties ", imp.getRoi()); imp.draw();}
  		else if (arg.equals("band"))
 			makeBand(imp);
 		else if (arg.equals("tobox"))
 			toBoundingBox(imp); 
-		else if (arg.equals("list"))
-			listCoordinates(imp);
 		else
 			runMacro(arg);
 	}
@@ -452,21 +450,12 @@ public class Selection implements PlugIn, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null || !roi.isLine())
 			{IJ.error("Line to Area", "Line selection required"); return;}
-		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()==1)
-			{IJ.error("Line to Area", "Straight line width must be > 1"); return;}
 		ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
 		ip2.setColor(255);
-		if (roi.getType()==Roi.LINE)
+		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
 			ip2.fillPolygon(roi.getPolygon());
-		else {
+		else
 			roi.drawPixels(ip2);
-			//BufferedImage bi = new BufferedImage(imp.getWidth(), imp.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-			//Graphics g = bi.getGraphics();
-			//Roi roi2 = (Roi)roi.clone();
-			//roi2.setStrokeColor(Color.white);
-			//roi2.drawOverlay(g);
-			//ip2 = new ByteProcessor(bi);
-		}
 		//new ImagePlus("ip2", ip2.duplicate()).show();
 		ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		ThresholdToSelection tts = new ThresholdToSelection();
@@ -611,39 +600,6 @@ public class Selection implements PlugIn, Measurements {
 		roi2 = roi2.not(roi1);
 		imp.setRoi(roi2);
 		bandSize = n;
-	}
-
-	void listCoordinates(ImagePlus imp) {
-		Roi roi = imp.getRoi();
-		if (roi==null)
-			{noRoi("List Coordinates"); return;}
-		boolean allIntegers = true;
-		FloatPolygon fp = roi.getFloatPolygon();
-		Calibration cal = imp.getCalibration();
-		if (cal.pixelWidth!=1.0 || cal.pixelHeight!=1.0) {
-			for (int i=0; i<fp.npoints; i++) {
-				fp.xpoints[i] *= cal.pixelWidth;
-				fp.ypoints[i] *= cal.pixelHeight;
-			}
-			allIntegers = false;
-		}
-		if (allIntegers) {
-			for (int i=0; i<fp.npoints; i++) {
-				if ((int)fp.xpoints[i]!=fp.xpoints[i] || (int)fp.ypoints[i]!=fp.ypoints[i]) {
-					allIntegers = false;
-					break;
-				}
-			}
-		}
-		ResultsTable rt = new ResultsTable();
-		rt.setPrecision(allIntegers?0:Analyzer.getPrecision());
-		for (int i=0; i<fp.npoints; i++) {
-			rt.incrementCounter();
-			rt.addValue("X", fp.xpoints[i]);
-			rt.addValue("Y", fp.ypoints[i]);
-		}
-		rt.showRowNumbers(false);
-		rt.show("XY_"+imp.getTitle());
 	}
 	
 	void noRoi(String command) {

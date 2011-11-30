@@ -24,6 +24,7 @@ public class PolygonRoi extends Roi {
 	private boolean userCreated;
 	private boolean subPixel;
 	private double startXD, startYD;
+	private boolean interactive;
 
 	long mouseUpTime = 0;
 
@@ -166,11 +167,12 @@ public class PolygonRoi extends Roi {
 		userCreated = true;
 		if (lineWidth>1 && isLine())
 			updateWideLine(lineWidth);
+		interactive = true;
 	}
 
 	private void drawStartBox(Graphics g) {
 		if (type!=ANGLE) {
-			double offset = subPixelResolution()?0.5:0.0;
+			double offset = getOffset(0.5);
 			g.drawRect(ic.screenXD(startXD+offset)-4, ic.screenYD(startYD+offset)-4, 8, 8);
 		}
 	}
@@ -243,7 +245,7 @@ public class PolygonRoi extends Roi {
  		double xd=x, yd=y;
 		Graphics2D g2d = (Graphics2D)g;
 		GeneralPath path = new GeneralPath();
-		double offset = subPixelResolution()&&mag>1.0&&type==POLYLINE?0.5:0.0;
+		double offset = getOffset(0.5);
 		if (mag==1.0 && srcx==0.0 && srcy==0.0) {
 			path.moveTo(xpoints[0]+xd, ypoints[0]+yd);
 			for (int i=1; i<npoints; i++)
@@ -265,7 +267,7 @@ public class PolygonRoi extends Roi {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
-		double offset = subPixelResolution()&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?0.5:0.0;
+		double offset = getOffset(0.5);
 		if (xSpline!=null) {
 			ip.moveTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
 			for (int i=1; i<splinePoints; i++)
@@ -315,7 +317,7 @@ public class PolygonRoi extends Roi {
 			}
 		} else {
 			if (xpf!=null) {
-				double offset = subPixelResolution()&&mag>1.0&&(type==POLYLINE||type==FREELINE)?0.5:0.0;
+				double offset = getOffset(0.5);
 				for (int i=0; i<nPoints; i++) {
 					xp2[i] = ic.screenXD(xpf[i]+x+offset);
 					yp2[i] = ic.screenYD(ypf[i]+y+offset);
@@ -425,6 +427,8 @@ public class PolygonRoi extends Roi {
 		}
 		imp.draw(xmin-margin, ymin-margin, (xmax-xmin)+margin*2, (ymax-ymin)+margin*2);
 	}
+	
+	static int counter = 0;
 
     void finishPolygon() {
     	Rectangle r;
@@ -477,7 +481,7 @@ public class PolygonRoi extends Roi {
 		int ox = ic.offScreenX(sx);
 		int oy = ic.offScreenY(sy);
 		if (xpf!=null) {
-			double offset = subPixelResolution()&&getMagnification()>1.0&&type==POLYLINE?-0.5:0.0;
+			double offset = getOffset(-0.5);
 			xpf[activeHandle] = (float)(ic.offScreenXD(sx)-x+offset);
 			ypf[activeHandle] = (float)(ic.offScreenYD(sy)-y+offset);
 		} else {
@@ -955,7 +959,7 @@ public class PolygonRoi extends Roi {
 	/** Returns the length of this line selection after
 		smoothing using a 3-point running average.*/
 	double getSmoothedLineLength() {
-		if (subPixelResolution())
+		if (subPixelResolution() && xpf!=null)
 			return getFloatSmoothedLineLength();
 		double length = 0.0;
 		double w2 = 1.0;
@@ -1007,6 +1011,8 @@ public class PolygonRoi extends Roi {
 	/** Returns the perimeter of this ROI after
 		smoothing using a 3-point running average.*/
 	double getSmoothedPerimeter() {
+		if (subPixelResolution() && xpf!=null)
+			return getFloatSmoothedPerimeter();
 		double length = getSmoothedLineLength();
 		double w2=1.0, h2=1.0;
 		if (imp!=null) {
@@ -1016,6 +1022,20 @@ public class PolygonRoi extends Roi {
 		}
 		double dx = xp[nPoints-1]-xp[0];
 		double dy = yp[nPoints-1]-yp[0];
+		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
+		return length;
+	}
+
+	double getFloatSmoothedPerimeter() {
+		double length = getSmoothedLineLength();
+		double w2=1.0, h2=1.0;
+		if (imp!=null) {
+			Calibration cal = imp.getCalibration();
+			w2 = cal.pixelWidth*cal.pixelWidth;
+			h2 = cal.pixelHeight*cal.pixelHeight;
+		}
+		double dx = xpf[nPoints-1]-xpf[0];
+		double dy = ypf[nPoints-1]-ypf[0];
 		length += Math.sqrt(dx*dx*w2+dy*dy*h2);
 		return length;
 	}
@@ -1159,7 +1179,7 @@ public class PolygonRoi extends Roi {
 	
 	public Polygon getNonSplineCoordinates() {
 		if (xpf!=null)
-			return new Polygon(toInt(xpf), toInt(ypf), nPoints);
+			return new Polygon(toIntR(xpf), toIntR(ypf), nPoints);
 		else
 			return new Polygon(xp, yp, nPoints);
 	}
@@ -1352,6 +1372,10 @@ public class PolygonRoi extends Roi {
 		xp2=xp2temp; yp2=yp2temp;
 		if (IJ.debugMode) IJ.log("PolygonRoi: "+maxPoints+" points");
 		maxPoints *= 2;
+	}
+	
+	private double getOffset(double value) {
+		return interactive&&subPixelResolution()&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?value:0.0;
 	}
 	
 }
