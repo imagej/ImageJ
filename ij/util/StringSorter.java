@@ -35,17 +35,7 @@ public class StringSorter {
 	*/
 	public static String[] sortNumerically(String[] list) {
 		int n = list.length;
-		boolean allSameLength = true;
-		int len0 = list[0].length();
-		for (int i=0; i<n; i++) {
-			if (list[i].length()!=len0) {
-				allSameLength = false;
-				break;
-			}
-		}
-		String[] paddedList = list;
-		if (!allSameLength)
-			paddedList = getPaddedNames(list);
+		String[] paddedList = getPaddedNames(list);
 		String[] sortedList = new String[n];
 		int[] indexes = new int[n];
 		for (int i = 0; i < n; i++) {
