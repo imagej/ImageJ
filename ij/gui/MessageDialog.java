@@ -8,7 +8,6 @@ import java.awt.event.*;
 public class MessageDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
 	protected Button button;
 	protected MultiLineLabel label;
-	private boolean escapePressed;
 	
 	public MessageDialog(Frame parent, String title, String message) {
 		super(parent, title, true);
@@ -41,9 +40,8 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 	
 	public void keyPressed(KeyEvent e) { 
 		int keyCode = e.getKeyCode(); 
-		IJ.setKeyDown(keyCode);
-		escapePressed = keyCode==KeyEvent.VK_ESCAPE;
-		if (keyCode==KeyEvent.VK_ENTER || escapePressed)
+		IJ.setKeyDown(keyCode); 
+		if (keyCode==KeyEvent.VK_ENTER || keyCode==KeyEvent.VK_ESCAPE)
 			dispose();
 	} 
 	
@@ -58,10 +56,6 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 		dispose();
 	}
 	
-	public boolean escapePressed() {
-		return escapePressed;
-	}
-
 	public void windowActivated(WindowEvent e) {}
 	public void windowOpened(WindowEvent e) {}
 	public void windowClosed(WindowEvent e) {}

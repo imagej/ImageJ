@@ -57,7 +57,7 @@ public class Info implements PlugInFilter {
 			String units = cal.getUnits();
 	    	s += "Width:  "+IJ.d2s(imp.getWidth()*cal.pixelWidth,2)+" " + units+" ("+imp.getWidth()+")\n";
 	    	s += "Height:  "+IJ.d2s(imp.getHeight()*cal.pixelHeight,2)+" " + units+" ("+imp.getHeight()+")\n";
-	    	if (slices>1)
+	    	if (stackSize>1)
 	    		s += "Depth:  "+IJ.d2s(slices*cal.pixelDepth,2)+" " + units+" ("+slices+")\n";	    			    	
 	    	double xResolution = 1.0/cal.pixelWidth;
 	    	double yResolution = 1.0/cal.pixelHeight;
@@ -74,11 +74,7 @@ public class Info implements PlugInFilter {
 	    	if (stackSize>1)
 	    		s += "Depth:  " + slices + " pixels\n";
 	    }
-    	if (stackSize>1) 
-	    	s += "Voxel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)+"x"+d2s(cal.pixelDepth)+" "+cal.getUnit()+"\n";
-	    else
-	    	s += "Pixel size: "+d2s(cal.pixelWidth)+"x"+d2s(cal.pixelHeight)+" "+cal.getUnit()+"\n";
-
+	    	
 	    s += "ID: "+imp.getID()+"\n";
 	    String zOrigin = stackSize>1||cal.zOrigin!=0.0?","+d2s(cal.zOrigin):"";
 	    s += "Coordinate origin:  " + d2s(cal.xOrigin)+","+d2s(cal.yOrigin)+zOrigin+"\n";
@@ -200,10 +196,11 @@ public class Info implements PlugInFilter {
 
 	    FileInfo fi = imp.getOriginalFileInfo();
 		if (fi!=null) {
-			if (fi.url!=null && !fi.url.equals(""))
-				s += "URL: " + fi.url + "\n";
-			else if (fi.directory!=null && fi.fileName!=null)
+			if (fi.directory!=null && fi.fileName!=null)
 				s += "Path: " + fi.directory + fi.fileName + "\n";
+			if (fi.url!=null && !fi.url.equals("")) {
+				s += "URL: " + fi.url + "\n";
+			}
 		}
 	    
 	    Roi roi = imp.getRoi();
@@ -211,19 +208,6 @@ public class Info implements PlugInFilter {
 			if (cal.calibrated())
 	    		s += " \n";
 	    	s += "No Selection\n";
-	    } else if (roi instanceof EllipseRoi) {
-	    	s += "\nElliptical Selection\n";
-	    	double[] p = ((EllipseRoi)roi).getParams();
-			double dx = p[2] - p[0];
-			double dy = p[3] - p[1];
-			double major = Math.sqrt(dx*dx+dy*dy);
-			s += "  Major: " + IJ.d2s(major,2) + "\n";
-			s += "  Minor: " + IJ.d2s(major*p[4],2) + "\n";
-			s += "  X1: " + IJ.d2s(p[0],2) + "\n";
-			s += "  Y1: " + IJ.d2s(p[1],2) + "\n";
-			s += "  X2: " + IJ.d2s(p[2],2) + "\n";
-			s += "  Y2: " + IJ.d2s(p[3],2) + "\n";
-			s += "  Aspect ratio: " + IJ.d2s(p[4],2) + "\n";
 	    } else {
 	    	s += " \n";
 	    	s += roi.getTypeAsString()+" Selection";

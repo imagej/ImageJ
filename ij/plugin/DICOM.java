@@ -53,9 +53,7 @@ import ij.measure.Calibration;
 
 public class DICOM extends ImagePlus implements PlugIn {
 	private boolean showErrors = true;
-	private boolean gettingInfo;
 	private BufferedInputStream inputStream;
-	private String info;
 	
 	/** Default constructor. */
 	public DICOM() {
@@ -88,9 +86,8 @@ public class DICOM extends ImagePlus implements PlugIn {
 		DicomDecoder dd = new DicomDecoder(directory, fileName);
 		dd.inputStream = inputStream;
 		FileInfo fi = null;
-		try {
-			fi = dd.getFileInfo();
-		} catch (IOException e) {
+		try {fi = dd.getFileInfo();}
+		catch (IOException e) {
 			String msg = e.getMessage();
 			IJ.showStatus("");
 			if (msg.indexOf("EOF")<0&&showErrors) {
@@ -103,10 +100,6 @@ public class DICOM extends ImagePlus implements PlugIn {
 				IJ.error("DicomDecoder", msg);
 				return;
 			}
-		}
-		if (gettingInfo) {
-			info = dd.getDicomInfo();
-			return;
 		}
 		if (fi!=null && fi.width>0 && fi.height>0 && fi.offset>0) {
 			FileOpener fo = new FileOpener(fi);
@@ -172,14 +165,6 @@ public class DICOM extends ImagePlus implements PlugIn {
 		run(path);
 	}
 	
-	/** Returns the DICOM tags of the specified file as a string. */ 
-	public String getInfo(String path) {
-		showErrors = false;
-		gettingInfo = true;
-		run(path);
-		return info;
-	}
-
 	/** Convert 16-bit signed to unsigned if all pixels>=0. */
 	void convertToUnsigned(ImagePlus imp, FileInfo fi) {
 		ImageProcessor ip = imp.getProcessor();
@@ -829,9 +814,6 @@ class DicomDecoder {
 	}
 	
  	double s2d(String s) {
- 		if (s==null) return 0.0;
- 		if (s.startsWith("\\"))
- 			s = s.substring(1);
 		Double d;
 		try {d = new Double(s);}
 		catch (NumberFormatException e) {d = null;}

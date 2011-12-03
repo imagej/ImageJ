@@ -33,6 +33,7 @@ public class Options implements PlugIn {
 		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);
+		//gd.addCheckbox("Antialiased_Text", Prefs.antialiasedText);
 		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
 		gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
@@ -60,6 +61,7 @@ public class Options implements PlugIn {
 			
 		Prefs.usePointerCursor = gd.getNextBoolean();
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
+		//Prefs.antialiasedText = gd.getNextBoolean();
 		Prefs.requireControlKey = gd.getNextBoolean();
 		Prefs.moveToMisc = gd.getNextBoolean();
 		Prefs.runSocketListener = gd.getNextBoolean();
@@ -87,8 +89,6 @@ public class Options implements PlugIn {
 		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
 		gd.addStringField("File extension for tables:", Prefs.get("options.ext", ".txt"), 4);
 		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
-		if (!IJ.isMacOSX())
-			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);
 		gd.addCheckbox("Save TIFF and raw in Intel byte order", Prefs.intelByteOrder);
 		
 		gd.setInsets(15, 20, 0);
@@ -116,8 +116,6 @@ public class Options implements PlugIn {
 			extension = "." + extension;
 		Prefs.set("options.ext", extension);
 		Prefs.useJFileChooser = gd.getNextBoolean();
-		if (!IJ.isMacOSX())
-			Prefs.useFileChooser = gd.getNextBoolean();
 		Prefs.intelByteOrder = gd.getNextBoolean();
 		Prefs.copyColumnHeaders = gd.getNextBoolean();
 		Prefs.noRowNumbers = !gd.getNextBoolean();
@@ -236,7 +234,6 @@ public class Options implements PlugIn {
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");
 		gd.addCheckbox("Open as 32-bit float", Prefs.openDicomsAsFloat);
-		//gd.addCheckbox("Calculate voxel depth", Prefs.calculateDicomVoxelDepth);
 		gd.addMessage("Orthogonal Views");
 		gd.setInsets(5, 40, 0);
 		gd.addCheckbox("Rotate YZ", Prefs.rotateYZ);
@@ -246,7 +243,6 @@ public class Options implements PlugIn {
 		if (gd.wasCanceled())
 			return;
 		Prefs.openDicomsAsFloat = gd.getNextBoolean();
-		//Prefs.calculateDicomVoxelDepth = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
 	}

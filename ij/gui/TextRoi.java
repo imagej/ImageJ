@@ -9,57 +9,33 @@ import ij.macro.Interpreter;
 /** This class is a rectangular ROI containing text. */
 public class TextRoi extends Roi {
 
-	public static final int LEFT=0, CENTER=1, RIGHT=2;
 	static final int MAX_LINES = 50;
 
-	private static final String line1 = "Enter text, then press";
-	private static final String line2 = "ctrl+b to add to overlay";
-	private static final String line3 = "or ctrl+d to draw.";
 	private String[] theText = new String[MAX_LINES];
 	private static String name = "SansSerif";
 	private static int style = Font.PLAIN;
 	private static int size = 18;
 	private Font instanceFont;
 	private static boolean newFont = true;
-	private static boolean antialiasedText = true; // global flag used by text tool
-	private static int globalJustification;
-	private int justification;
-	private boolean antialiased = antialiasedText;
+	private static boolean antialiasedText = true;
 	private static boolean recordSetFont = true;
 	private double previousMag;
 	private boolean firstChar = true;
 	private boolean firstMouseUp = true;
 	private int cline = 0;
 
-	/** Creates a TextRoi.*/
+	/** Creates a new TextRoi.*/
 	public TextRoi(int x, int y, String text) {
-		super(x, y, 1, 1);
-		init(text, null);
-	}
-	
-	/** Creates a TextRoi using sub-pixel coordinates.*/
-	public TextRoi(double x, double y, String text) {
-		super(x, y, 1.0, 1.0);
-		init(text, null);
+		this(x, y, text, null);
 	}
 
-	/** Creates a TextRoi with the specified location and Font.
+	/** Creates a new TextRoi with the specified location and Font.
 	 * @see ij.gui.Roi#setStrokeColor
 	 * @see ij.gui.Roi#setNonScalable
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public TextRoi(int x, int y, String text, Font font) {
 		super(x, y, 1, 1);
-		init(text, font);
-	}
-
-	/** Creates a TextRoi with the specified sub-pixel location and Font. */
-	public TextRoi(double x, double y, String text, Font font) {
-		super(x, y, 1.0, 1.0);
-		init(text, font);
-	}
-
-	private void init(String text, Font font) {
 		String[] lines = Tools.split(text, "\n");
 		int count = Math.min(lines.length, MAX_LINES);
 		for (int i=0; i<count; i++)
@@ -81,22 +57,19 @@ public class TextRoi extends Roi {
 	public TextRoi(int x, int y, ImagePlus imp) {
 		super(x, y, imp);
         ImageCanvas ic = imp.getCanvas();
-        double mag = getMagnification();
+        double mag = (ic!=null)?ic.getMagnification():1.0;
         if (mag>1.0)
             mag = 1.0;
         if (size<(12/mag))
         	size = (int)(12/mag);
-		theText[0] = line1;
-		theText[1] = line2;
-		theText[2] = line3;
+		theText[0] = "Type, then";
+		theText[1] = "Ctl+D";
 		if (previousRoi!=null && (previousRoi instanceof TextRoi)) {
 			firstMouseUp = false;
 			//IJ.write(""+previousRoi.getBounds());
 			previousRoi = null;
 		}
 		instanceFont = new Font(name, style, size);
-		justification = globalJustification;
-		setStrokeColor(Toolbar.getForegroundColor());
 	}
 
 	/** This method is used by the text tool to add typed
@@ -143,7 +116,7 @@ public class TextRoi extends Roi {
 		else {
 			if (instanceFont==null)
 				instanceFont = new Font(name, style, size);
-			double mag = getMagnification();
+			double mag = (ic!=null)?ic.getMagnification():1.0;
 			return instanceFont.deriveFont((float)(instanceFont.getSize()*mag));
 		}
 	}
@@ -151,28 +124,14 @@ public class TextRoi extends Roi {
 	/** Renders the text on the image. */
 	public void drawPixels(ImageProcessor ip) {
 		ip.setFont(instanceFont);
-		ip.setAntialiasedText(antialiased);
+		ip.setAntialiasedText(antialiasedText);
 		FontMetrics metrics = ip.getFontMetrics();
 		int fontHeight = metrics.getHeight();
 		int descent = metrics.getDescent();
 		int i = 0;
 		int yy = 0;
-		int xi = (int)Math.round(xd);
-		int yi = (int)Math.round(yd);
 		while (i<MAX_LINES && theText[i]!=null) {
-			switch (justification) {
-				case LEFT:
-					ip.drawString(theText[i], xi, yi+yy+fontHeight);
-					break;
-				case CENTER:
-					int tw = metrics.stringWidth(theText[i]);
-					ip.drawString(theText[i], xi+(width-tw)/2, yi+yy+fontHeight);
-					break;
-				case RIGHT:
-					tw = metrics.stringWidth(theText[i]);
-					ip.drawString(theText[i], xi+width-tw, yi+yy+fontHeight);
-					break;
-			}
+			ip.drawString(theText[i], x, y+yy+fontHeight);
 			i++;
 			yy += fontHeight;
 		}
@@ -181,15 +140,16 @@ public class TextRoi extends Roi {
 	/** Draws the text on the screen, clipped to the ROI. */
 	public void draw(Graphics g) {
 		if (IJ.debugMode) IJ.log("draw: "+theText[0]+"  "+width+","+height);
-		if (Interpreter.isBatchMode() && ic!=null && ic.getDisplayList()!=null) return;
+		if (ic==null) return;
+		if (Interpreter.isBatchMode() && ic.getDisplayList()!=null) return;
 		if (newFont || width==1)
 			updateBounds(g);
 		super.draw(g); // draw the rectangle
-		double mag = getMagnification();
-		int sx = screenXD(xd);
-		int sy = screenYD(yd);
-		int swidth = (int)(widthd*mag);
-		int sheight = (int)(heightd*mag);
+		double mag = ic.getMagnification();
+		int sx = ic.screenX(x);
+		int sy = ic.screenY(y);
+		int swidth = (int)(width*mag);
+		int sheight = (int)(height*mag);
 		Rectangle r = null;
 		r = g.getClipBounds();
 		g.setClip(sx, sy, swidth, sheight);
@@ -197,24 +157,18 @@ public class TextRoi extends Roi {
 		if (r!=null) g.setClip(r.x, r.y, r.width, r.height);
 	}
 	
-	public void drawOverlay(Graphics g) {
-		drawText(g);
-	}
-
 	void drawText(Graphics g) {
+		if (hide) {
+			hide = false;
+			return;
+		}
 		g.setColor( strokeColor!=null? strokeColor:ROIColor);
-		Java2.setAntialiasedText(g, antialiased);
+		Java2.setAntialiasedText(g, antialiasedText);
 		if (newFont || width==1)
 			updateBounds(g);
-		double mag = getMagnification();
-		int xi = (int)Math.round(xd);
-		int yi = (int)Math.round(yd);
-		int widthi = (int)Math.round(widthd);
-		int heighti = (int)Math.round(heightd);
-		int sx = nonScalable?xi:screenXD(xd);
-		int sy = nonScalable?yi:screenYD(yd);
-		int sw = nonScalable?widthi:(int)(getMagnification()*widthd);
-		int sh = nonScalable?heighti:(int)(getMagnification()*heightd);
+		double mag = ic.getMagnification();
+		int sx = nonScalable?x:ic.screenX(x);
+		int sy = nonScalable?y:ic.screenY(y);
 		Font font = getScaledFont();
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = metrics.getHeight();
@@ -232,23 +186,13 @@ public class TextRoi extends Roi {
 			int alpha = fillColor.getAlpha();
  			g.setColor(fillColor);
  			Graphics2D g2d = (Graphics2D)g;
+			int sw = nonScalable?width:(int)(ic.getMagnification()*width);
+			int sh = nonScalable?height:(int)(ic.getMagnification()*height);
 			g.fillRect(sx-5, sy-5, sw+10, sh+10);
 			g.setColor(c);
 		}
 		while (i<MAX_LINES && theText[i]!=null) {
-			switch (justification) {
-				case LEFT:
-					g.drawString(theText[i], sx, sy+fontHeight-descent);
-					break;
-				case CENTER:
-					int tw = metrics.stringWidth(theText[i]);
-					g.drawString(theText[i], sx+(sw-tw)/2, sy+fontHeight-descent);
-					break;
-				case RIGHT:
-					tw = metrics.stringWidth(theText[i]);
-					g.drawString(theText[i], sx+sw-tw, sy+fontHeight-descent);
-					break;
-			}
+			g.drawString(theText[i], sx, sy+fontHeight-descent);
 			i++;
 			sy += fontHeight;
 		}
@@ -288,56 +232,14 @@ public class TextRoi extends Roi {
 		return instanceFont;
 	}
 	
-	/** Returns the state of global 'antialiasedText' variable, which is used by the "Fonts" widget. */
 	public static boolean isAntialiased() {
 		return antialiasedText;
-	}
-
-	/** Sets the 'antialiased' instance variable. */
-	public void setAntialiased(boolean antialiased) {
-		this.antialiased = antialiased;
-	}
-	
-	/** Returns the state of the 'antialiased' instance variable. */
-	public boolean getAntialiased() {
-		return antialiased;
-	}
-
-	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
-	public static void setGlobalJustification(int justification) {
-		if (justification<0 || justification>RIGHT)
-			justification = LEFT;
-		globalJustification = justification;
-		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) {
-			Roi roi = imp.getRoi();
-			if (roi instanceof TextRoi) {
-				((TextRoi)roi).setJustification(justification);
-				imp.draw();
-			}
-		}
-	}
-	
-	/** Returns the value of the 'justification' instance variable (LEFT, CENTER or RIGHT). */
-	public static int getGlobalJustification() {
-		return globalJustification;
-	}
-
-	/** Sets the 'justification' instance variable (must be LEFT, CENTER or RIGHT) */
-	public void setJustification(int justification) {
-		if (justification<0 || justification>RIGHT)
-			justification = LEFT;
-		this.justification = justification;
-	}
-	
-	/** Returns the value of the 'justification' instance variable (LEFT, CENTER or RIGHT). */
-	public int getJustification() {
-		return justification;
 	}
 
 	/** Sets the global font face, size and style that will be used by
 		TextROIs interactively created using the text tool. */
 	public static void setFont(String fontName, int fontSize, int fontStyle) {
+		recordSetFont = true;
 		setFont(fontName, fontSize, fontStyle, true);
 	}
 	
@@ -348,20 +250,18 @@ public class TextRoi extends Roi {
 		name = fontName;
 		size = fontSize;
 		style = fontStyle;
-		globalJustification = LEFT;
 		antialiasedText = antialiased;
 		newFont = true;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
-				((TextRoi)roi).setAntialiased(antialiased);
 				((TextRoi)roi).setCurrentFont(new Font(name, style, size));
 				imp.draw();
 			}
 		}
 	}
-
+	
 	protected void handleMouseUp(int screenX, int screenY) {
 		super.handleMouseUp(screenX, screenY);
 		if (firstMouseUp) {
@@ -377,54 +277,41 @@ public class TextRoi extends Roi {
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
 	void updateBounds(Graphics g) {
 		//IJ.log("adjustSize1: "+theText[0]+"  "+width+","+height);
-		if (ic==null || (theText[0]!=null && theText[0].equals(line1)))
-			return;
+		if (ic==null) return;
 		double mag = ic.getMagnification();
 		if (nonScalable) mag = 1.0;
 		Font font = getScaledFont();
 		newFont = false;
 		boolean nullg = g==null;
 		if (nullg) g = ic.getGraphics();
-		Java2.setAntialiasedText(g, antialiased);
+		Java2.setAntialiasedText(g, true);
 		FontMetrics metrics = g.getFontMetrics(font);
 		int fontHeight = (int)(metrics.getHeight()/mag);
 		int descent = metrics.getDescent();
 		int i=0, nLines=0;
-		double oldXD = xd;
-		double oldYD = yd;
-		double oldWidthD = widthd;
-		double oldHeightD = heightd;
-		double newWidth = 10;
+		oldX = x;
+		oldY = y;
+		oldWidth = width;
+		oldHeight = height;
+		width = 10;
 		while (i<MAX_LINES && theText[i]!=null) {
 			nLines++;
-			double w = stringWidth(theText[i],metrics,g)/mag;
-			if (w>newWidth)
-				newWidth = w;
+			int w = (int)(stringWidth(theText[i],metrics,g)/mag);
+			if (w>width)
+				width = w;
 			i++;
 		}
 		if (nullg) g.dispose();
-		newWidth += 2.0;
-		widthd = newWidth;
-		switch (justification) {
-			case LEFT:
-				if (xMax!=0 && x+newWidth>xMax)
-					xd = xMax-width;
-				break;
-			case CENTER:
-				xd = oldX+oldWidth/2.0 - newWidth/2.0;
-				break;
-			case RIGHT:
-				xd = oldX+oldWidth - newWidth;
-				break;
-		}
-		heightd = nLines*fontHeight+2;
+		width += 2;
+		if (xMax!=0 && x+width>xMax)
+			x = xMax-width;
+		height = nLines*fontHeight+2;
 		if (yMax!=0) {
-			if (heightd>yMax)
-				heightd = yMax;
-			if (yd+heightd>yMax)
-				yd = yMax-height;
+			if (height>yMax)
+				height = yMax;
+			if (y+height>yMax)
+				y = yMax-height;
 		}
-		x=(int)xd; y=(int)yd; width=(int)Math.ceil(widthd); height=(int)Math.ceil(heightd);
 		//IJ.log("adjustSize2: "+theText[0]+"  "+width+","+height);
 	}
 	
@@ -435,9 +322,8 @@ public class TextRoi extends Roi {
 		}
 	}
 
-	double stringWidth(String s, FontMetrics metrics, Graphics g) {
-		java.awt.geom.Rectangle2D r = metrics.getStringBounds(s, g);
-		return r.getWidth();
+	int stringWidth(String s, FontMetrics metrics, Graphics g) {
+		return Java2.getStringWidth(s, metrics, g);
 	}
 	
 	public String getMacroCode(ImageProcessor ip) {
@@ -485,28 +371,6 @@ public class TextRoi extends Roi {
 		return true;
 	}
 	
-	public void clear(ImageProcessor ip) {
-		if (instanceFont==null)
-			ip.fill();
-		else {
-			ip.setFont(instanceFont);
-			ip.setAntialiasedText(antialiasedText);
-			int i=0, width=0;
-			while (i<MAX_LINES && theText[i]!=null) {
-				int w = ip.getStringWidth(theText[i]);
-				if (w>width)
-					width = w;
-				i++;
-			}
-			Rectangle r = ip.getRoi();
-			if (width>r.width) {
-				r.width = width;
-				ip.setRoi(r);
-			}
-			ip.fill();
-		}
-	}
-
 	/** Returns a copy of this TextRoi. */
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();

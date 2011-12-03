@@ -54,12 +54,10 @@ public class Commands implements PlugIn {
     void save() {
     	ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
-			if (imp.getStackSize()>1) {
-				imp.setIgnoreFlush(true);
-				new FileSaver(imp).save();
-				imp.setIgnoreFlush(false);
-			} else
-				new FileSaver(imp).save();
+			boolean unlockedImage = imp.getStackSize()==1&&!imp.isLocked();
+			if (unlockedImage) imp.lock();
+			new FileSaver(imp).save();
+			if (unlockedImage) imp.unlock();
 		} else
 			IJ.noImage();
 	}
@@ -96,16 +94,11 @@ public class Commands implements PlugIn {
 			if (imagesWithChanges>0 && !IJ.macroRunning()) {
 				GenericDialog gd = new GenericDialog("Close All");
 				String msg = null;
-				String pronoun = null;
-				if (imagesWithChanges==1) {
+				if (imagesWithChanges==1)
 					msg = "There is one image";
-					pronoun = "it";
-				} else {
+				else
 					msg = "There are "+imagesWithChanges+" images";
-					pronoun = "they";
-				}
-				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" "+pronoun
-					+" will be closed without being saved.");
+				gd.addMessage(msg+" with unsaved changes. If you\nclick \"OK\" they will be closed without being saved.");
 				gd.showDialog();
 				if (gd.wasCanceled()) return;
 			}

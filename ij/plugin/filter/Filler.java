@@ -78,9 +78,7 @@ public class Filler implements PlugInFilter, Measurements {
 				ip.fillPolygon(roi.getPolygon());
 			else
 				roi.drawPixels();
-		} else if (roi!=null && roi instanceof TextRoi)
-			((TextRoi)roi).clear(ip);
-		else
+		} else
 	 		ip.fill(); // fill with background color
 		ip.setColor(Toolbar.getForegroundColor());
 	}

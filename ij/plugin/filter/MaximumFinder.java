@@ -34,7 +34,6 @@ import java.util.*;
  * version 01-Nov-2009 Bugfix: extra lines in segmented output eliminated; watershed is also faster now
  *                     Maximum points encoded in long array for sorting instead of separete objects that need gc
  *                     New output type 'List'
- * version 22-May-2011 Bugfix: Maximum search in EDM and float images with large dynamic range could omit maxima
  */
 
 public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
@@ -74,6 +73,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private Vector    checkboxes;                   // a reference to the Checkboxes of the dialog
     private boolean thresholdWarningShown = false;  // whether the warning "can't find minima with thresholding" has been shown
     private Label     messageArea;                  // reference to the textmessage area for displaying the number of maxima
+    private boolean   noPointLabels;                // save this setting so it can be restored on exit
     private double    progressDone;                 // for progress bar, fraction of work done so far
     private int       nPasses = 0;                  // for progress bar, how many images to process (sequentially or parallel threads)
     //the following are class variables for having shorter argument lists
@@ -83,7 +83,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private int       intEncodeShift;               // needed for encoding x & y in a single int (watershed): shift of y
     /** directions to 8 neighboring pixels, clockwise: 0=North (-y), 1=NE, 2=East (+x), ... 7=NW */
     private int[]     dirOffset;                    // pixel offsets of neighbor pixels for direct addressing
-    private Polygon points;                    // maxima found by findMaxima() when outputType is POINT_SELECTION
     final static int[] DIR_X_OFFSET = new int[] {  0,  1,  1,  1,  0, -1, -1, -1 };
     final static int[] DIR_Y_OFFSET = new int[] { -1, -1,  0,  1,  1,  1,  0, -1 };
     /** the following constants are used to set bits corresponding to pixel types */
@@ -107,6 +106,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      */
     public int setup(String arg, ImagePlus imp) {
         this.imp = imp;
+        noPointLabels = Prefs.noPointLabels;
         return flags;
     }
 
@@ -125,7 +125,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             gd.addCheckbox("Above lower threshold", useMinThreshold);
         gd.addCheckbox("Light background", lightBackground);
         gd.addPreviewCheckbox(pfr, "Preview point selection");
-        gd.addMessage("    "); //space for number of maxima
+        gd.addMessage("                        "); //space for number of maxima
         messageArea = (Label)gd.getMessage();
         gd.addDialogListener(this);
         checkboxes = gd.getCheckboxes();
@@ -182,6 +182,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
      * @param ip The image where maxima (or minima) should be found
      */
     public void run(ImageProcessor ip) {
+        Prefs.noPointLabels = true;
         Roi roi = imp.getRoi();
         if (outputType == POINT_SELECTION && !roiSaved) {
             imp.saveRoi(); // save previous selection so user can restore it
@@ -209,6 +210,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         }
         ByteProcessor outIp = null;
         outIp = findMaxima(ip, tolerance, threshold, outputType, excludeOnEdges, false); //process the image
+        if (!previewing) Prefs.noPointLabels = noPointLabels;
         if (outIp == null) return;              //cancelled by user or previewing or no output image
         if (!Prefs.blackBackground)             //normally, output has an inverted LUT, "active" pixels black (255) - like a mask
             outIp.invertLut();
@@ -229,23 +231,6 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         maxImp.setCalibration(cal);             //keep the spatial calibration
         maxImp.show();
      } //public void run
-
-    /** Finds the image maxima and returns them as a Polygon. There
-     * is an example at http://imagej.nih.gov/ij/macros/js/FindMaxima.js.
-     * @param ip             The input image
-     * @param tolerance      Height tolerance: maxima are accepted only if protruding more than this value
-     *                       from the ridge to a higher maximum
-     * @param excludeOnEdges Whether to exclude edge maxima
-     * @return               A Polygon containing the coordinates of the maxima
-     */
-    public Polygon getMaxima(ImageProcessor ip, double tolerance, boolean excludeOnEdges) {
-		findMaxima(ip, tolerance, ImageProcessor.NO_THRESHOLD,
-			MaximumFinder.POINT_SELECTION, excludeOnEdges, false);
-		if (points==null)
-			return new Polygon();
-		else
-			return points;
-    }
 
     /** Here the processing is done: Find the maxima of an image (does not find minima).
      * @param ip             The input image
@@ -290,10 +275,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         long[] maxPoints = getSortedMaxPoints(ip, typeP, excludeEdgesNow, isEDM, globalMin, globalMax, threshold); 
         if (Thread.currentThread().isInterrupted()) return null;
         IJ.showStatus("Analyzing  maxima...");
-        float maxSortingError = 0;
-        if (ip instanceof FloatProcessor)   //sorted sequence may be inaccurate by this value
-            maxSortingError = 1.1f * (isEDM ? SQRT2/2f : (globalMax-globalMin)/2e9f);
-        analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance, outputType, maxSortingError);
+        analyzeAndMarkMaxima(ip, typeP, maxPoints, excludeEdgesNow, isEDM, globalMin, tolerance, outputType);
         //new ImagePlus("Pixel types",typeP.duplicate()).show();
         if (outputType==POINT_SELECTION || outputType==LIST || outputType==COUNT)
             return null;
@@ -331,7 +313,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 
         return outIp;
     } // public ByteProcessor findMaxima
-        
+
     /** Find all local maxima (irrespective whether they finally qualify as maxima or not)
      * @param ip    The image to be analyzed
      * @param typeP A byte image, same size as ip, where the maximum points are marked as MAXIMUM
@@ -409,14 +391,9 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     * @param isEDM          whether ip is a (float) Euclidian distance map
     * @param globalMin      minimum pixel value in ip
     * @param tolerance      minimum pixel value difference for two separate maxima
-    * @param maxSortingError sorting may be inaccurate, sequence may be reversed for maxima having values
-    *                       not deviating from each other by more than this (this could be a result of
-    *                       precision loss when sorting ints instead of floats, or because sorting does not
-    *                       take the height correction in 'trueEdmHeight' into account
     * @param outputType 
     */   
-   void analyzeAndMarkMaxima(ImageProcessor ip, ByteProcessor typeP, long[] maxPoints, boolean excludeEdgesNow,
-        boolean isEDM, float globalMin, double tolerance, int outputType, float maxSortingError) {
+   void analyzeAndMarkMaxima(ImageProcessor ip, ByteProcessor typeP, long[] maxPoints, boolean excludeEdgesNow, boolean isEDM, float globalMin, double tolerance, int outputType) {
         byte[] types =  (byte[])typeP.getPixels();
         int nMax = maxPoints.length;
         int [] pList = new int[width*height];       //here we enter points starting from a maximum
@@ -425,9 +402,9 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         boolean displayOrCount = outputType==POINT_SELECTION||outputType==LIST||outputType==COUNT;
         if (displayOrCount) 
             xyVector=new Vector();
-        if (imp!=null)
+        if (imp!=null )
             roi = imp.getRoi();	    
-      
+        
         for (int iMax=nMax-1; iMax>=0; iMax--) {    //process all maxima now, starting from the highest
             if (iMax%100 == 0 && Thread.currentThread().isInterrupted()) return;
             int offset0 = (int)maxPoints[iMax];     //type cast gets 32 lower bits, where pixel index is encoded
@@ -435,117 +412,98 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             if ((types[offset0]&PROCESSED)!=0)      //this maximum has been reached from another one, skip it
                 continue;
             //we create a list of connected points and start the list at the current maximum
+            pList[0] = offset0;
+            types[offset0] |= (EQUAL|LISTED);       //mark first point as equal height (to itself) and listed
+            int listLen = 1;                        //number of elements in the list
+            int listI = 0;                          //index of current element in the list
             int x0 = offset0 % width;               
             int y0 = offset0 / width;
-            float v0 = isEDM?trueEdmHeight(x0,y0,ip):ip.getPixelValue(x0,y0);
-            boolean sortingError;
-            do {                                    //repeat if we have encountered a sortingError
-                pList[0] = offset0;
-                types[offset0] |= (EQUAL|LISTED);   //mark first point as equal height (to itself) and listed
-                int listLen = 1;                    //number of elements in the list
-                int listI = 0;                      //index of current element in the list
-                boolean isEdgeMaximum = (x0==0 || x0==width-1 || y0==0 || y0==height-1);
-                sortingError = false;       //if sorting was inaccurate: a higher maximum was not handled so far
-                boolean maxPossible = true;         //it may be a true maximum
-                double xEqual = x0;                 //for creating a single point: determine average over the
-                double yEqual = y0;                 //  coordinates of contiguous equal-height points
-                int nEqual = 1;                     //counts xEqual/yEqual points that we use for averaging
-                do {                                //while neigbor list is not fully processed (to listLen)
-                    int offset = pList[listI];
+            float v = isEDM?trueEdmHeight(x0,y0,ip):ip.getPixelValue(x0,y0);
+            boolean isEdgeMaximum = (x0==0 || x0==width-1 || y0==0 || y0==height-1);
+            boolean maxPossible = true;             //it may be a true maximum
+            double xEqual = x0;                     //for creating a single point: determine average over the
+            double yEqual = y0;                     //  coordinates of contiguous equal-height points
+            int nEqual = 1;                         //counts xEqual/yEqual points that we use for averaging
+            do {
+                int offset = pList[listI];
+                int x = offset % width;
+                int y = offset / width;
+                boolean isInner = (y!=0 && y!=height-1) && (x!=0 && x!=width-1); //not necessary, but faster than isWithin
+                for (int d=0; d<8; d++) {           //analyze all neighbors (in 8 directions) at the same level
+                    int offset2 = offset+dirOffset[d];
+                    if ((isInner || isWithin(x, y, d)) && (types[offset2]&LISTED)==0) {
+                        if ((types[offset2]&PROCESSED)!=0) {
+                            maxPossible = false;    //we have reached a point processed previously, thus it is no maximum now
+                            //if(xList[0]>510&&xList[0]<77)IJ.write("stop at processed neighbor from x,y="+xList[listI]+","+yList[listI]+", dir="+d);
+                            break;
+                        }
+                        int x2 = x+DIR_X_OFFSET[d];
+                        int y2 = y+DIR_Y_OFFSET[d];
+                        float v2 = ip.getPixelValue(x2, y2);
+                        if (isEDM && (v2 <=v-(float)tolerance)) v2 = trueEdmHeight(x2, y2, ip); //correcting for EDM peaks may move the point up
+                        if (v2 > v) {
+                            maxPossible = false;    //we have reached a higher point, thus it is no maximum
+                            //if(xList[0]>510&&xList[0]<77)IJ.write("stop at higher neighbor from x,y="+xList[listI]+","+yList[listI]+", dir,value,value2,v2-v="+d+","+v+","+v2+","+(v2-v));
+                            break;
+                        } else if (v2 >= v-(float)tolerance) {
+                            pList[listLen] = offset2;
+                            listLen++;              //we have found a new point within the tolerance
+                            types[offset2] |= LISTED;
+                            if (x2==0 || x2==width-1 || y2==0 || y2==height-1) {
+                                isEdgeMaximum = true;
+                                if (excludeEdgesNow) {
+                                    maxPossible = false;
+                                    break;          //we have an edge maximum;
+                                }
+                            }
+                            if (v2==v) {            //prepare finding center of equal points (in case single point needed)
+                                types[offset2] |= EQUAL;
+                                xEqual += x2;
+                                yEqual += y2;
+                                nEqual ++;
+                            }
+                        }
+                    } // if isWithin & not LISTED
+                } // for directions d
+                listI++;
+            } while (listI < listLen);
+            byte resetMask = (byte)~(maxPossible?LISTED:(LISTED|EQUAL));
+            xEqual /= nEqual;
+            yEqual /= nEqual;
+            double minDist2 = 1e20;
+            int nearestI = 0;
+            for (listI=0; listI<listLen; listI++) {
+                int offset = pList[listI];
+                int x = offset % width;
+                int y = offset / width;
+                types[offset] &= resetMask;     //reset attributes no longer needed
+                types[offset] |= PROCESSED;     //mark as processed
+                if (maxPossible) {
+                    types[offset] |= MAX_AREA;
+                    if ((types[offset]&EQUAL)!=0) {
+                        double dist2 = (xEqual-x)*(double)(xEqual-x) + (yEqual-y)*(double)(yEqual-y);
+                        if (dist2 < minDist2) {
+                            minDist2 = dist2;   //this could be the best "single maximum" point
+                            nearestI = listI;
+                        }
+                    }
+                }
+            } // for listI
+            if (maxPossible) {
+                int offset = pList[nearestI];
+                types[offset] |= MAX_POINT;
+                if (displayOrCount && !(this.excludeOnEdges && isEdgeMaximum)) {
                     int x = offset % width;
                     int y = offset / width;
-                    //if(x==18&&y==20)IJ.write("x0,y0="+x0+","+y0+"@18,20;v0="+v0+" sortingError="+sortingError);
-                    boolean isInner = (y!=0 && y!=height-1) && (x!=0 && x!=width-1); //not necessary, but faster than isWithin
-                    for (int d=0; d<8; d++) {       //analyze all neighbors (in 8 directions) at the same level
-                        int offset2 = offset+dirOffset[d];
-                        if ((isInner || isWithin(x, y, d)) && (types[offset2]&LISTED)==0) {
-                            if ((types[offset2]&PROCESSED)!=0) {
-                                maxPossible = false; //we have reached a point processed previously, thus it is no maximum now
-                                //if(x0<25&&y0<20)IJ.write("x0,y0="+x0+","+y0+":stop at processed neighbor from x,y="+x+","+y+", dir="+d);
-                                break;
-                            }
-                            int x2 = x+DIR_X_OFFSET[d];
-                            int y2 = y+DIR_Y_OFFSET[d];
-                            float v2 = isEDM ? trueEdmHeight(x2, y2, ip) : ip.getPixelValue(x2, y2);
-                            if (v2 > v0 + maxSortingError) {
-                                maxPossible = false;    //we have reached a higher point, thus it is no maximum
-                                //if(x0<25&&y0<20)IJ.write("x0,y0="+x0+","+y0+":stop at higher neighbor from x,y="+x+","+y+", dir="+d+",value,value2,v2-v="+v0+","+v2+","+(v2-v0));
-                                break;
-                            } else if (v2 >= v0-(float)tolerance) {
-                                if (v2 > v0) {          //maybe this point should have been treated earlier
-                                    sortingError = true;
-                                    offset0 = offset2;
-                                    v0 = v2;
-                                    x0 = x2;
-                                    y0 = y2;
-
-                                }
-                                pList[listLen] = offset2;
-                                listLen++;              //we have found a new point within the tolerance
-                                types[offset2] |= LISTED;
-                                if (x2==0 || x2==width-1 || y2==0 || y2==height-1) {
-                                    isEdgeMaximum = true;
-                                    if (excludeEdgesNow) {
-                                        maxPossible = false;
-                                        break;          //we have an edge maximum;
-                                    }
-                                }
-                                if (v2==v0) {           //prepare finding center of equal points (in case single point needed)
-                                    types[offset2] |= EQUAL;
-                                    xEqual += x2;
-                                    yEqual += y2;
-                                    nEqual ++;
-                                }
-                            }
-                        } // if isWithin & not LISTED
-                    } // for directions d
-                    listI++;
-                } while (listI < listLen);
-
-				if (sortingError)  {				  //if x0,y0 was not the true maximum but we have reached a higher one
-					for (listI=0; listI<listLen; listI++)
-						types[pList[listI]] = 0;	//reset all points encountered, then retry
-				} else {
-					int resetMask = ~(maxPossible?LISTED:(LISTED|EQUAL));
-					xEqual /= nEqual;
-					yEqual /= nEqual;
-					double minDist2 = 1e20;
-					int nearestI = 0;
-					for (listI=0; listI<listLen; listI++) {
-						int offset = pList[listI];
-						int x = offset % width;
-						int y = offset / width;
-						types[offset] &= resetMask;		//reset attributes no longer needed
-						types[offset] |= PROCESSED;		//mark as processed
-						if (maxPossible) {
-							types[offset] |= MAX_AREA;
-							if ((types[offset]&EQUAL)!=0) {
-								double dist2 = (xEqual-x)*(double)(xEqual-x) + (yEqual-y)*(double)(yEqual-y);
-								if (dist2 < minDist2) {
-									minDist2 = dist2;	//this could be the best "single maximum" point
-									nearestI = listI;
-								}
-							}
-						}
-					} // for listI
-					if (maxPossible) {
-						int offset = pList[nearestI];
-						types[offset] |= MAX_POINT;
-						if (displayOrCount && !(this.excludeOnEdges && isEdgeMaximum)) {
-							int x = offset % width;
-							int y = offset / width;
-							if (roi==null || roi.contains(x, y))
-								xyVector.addElement(new int[] {x, y});
-						}
-					}
-				} //if !sortingError
-			} while (sortingError);				//redo if we have encountered a higher maximum: handle it now.
+                    if (roi==null || roi.contains(x, y))
+                        xyVector.addElement(new int[] {x, y});
+                }
+            }
         } // for all maxima iMax
-
         if (Thread.currentThread().isInterrupted()) return;
         if (displayOrCount && xyVector!=null) {
             int npoints = xyVector.size();
-            if (outputType == POINT_SELECTION && npoints>0) {
+            if (outputType == POINT_SELECTION && npoints>0 && imp!=null) {
                 int[] xpoints = new int[npoints];
                 int[] ypoints = new int[npoints];
                 for (int i=0; i<npoints; i++) {
@@ -553,12 +511,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                     xpoints[i] = xy[0];
                     ypoints[i] = xy[1];
                 }
-                if (imp!=null) {
-                	Roi points = new PointRoi(xpoints, ypoints, npoints);
-                	((PointRoi)points).setHideLabels(true);
-                	imp.setRoi(points);
-                }
-                points = new Polygon(xpoints, ypoints, npoints);
+                imp.setRoi(new PointRoi(xpoints, ypoints, npoints));
             } else if (outputType==LIST) {
                 Analyzer.resetCounter();
                 ResultsTable rt = ResultsTable.getResultsTable();

@@ -45,7 +45,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
-	static final String DEFAULT_DIR= "editor.dir";
 	private TextArea ta;
 	private String path;
 	private boolean changes;
@@ -66,10 +65,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private String shortcutsInUse;
 	private int inUseCount;
 	private MacroInstaller installer;
-	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);;
+	private static String defaultDir;
 	private boolean dontShowWindow;
     private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
-    private int fontSize = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
+    private int fontSize = (int)Prefs.get(FONT_SIZE, 5);
     private CheckboxMenuItem monospaced;
     private static boolean wholeWords;
     private boolean isMacroWindow;
@@ -213,7 +212,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_T)));
 				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_T,true)));
 				debugMenu.add(new MenuItem("Run"));
-				debugMenu.add(new MenuItem("Run to Insertion Point", new MenuShortcut(KeyEvent.VK_E, true)));
+				debugMenu.add(new MenuItem("Run to Insertion Point"));
 				debugMenu.add(new MenuItem("Abort"));
 				debugMenu.addActionListener(this);
 				mb.add(debugMenu);
@@ -333,9 +332,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			saveAs();
 		if (path!=null) {
 			save();
-			String text = ta.getText();
-			if (text.contains("implements PlugInFilter") && text.contains("IJ.run("))
-				IJ.log("Plugins that call IJ.run() should probably implement PlugIns, not PlugInFilters.");
 			IJ.runPlugIn("ij.plugin.Compiler", path);
 		}
 	}
@@ -702,11 +698,15 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			instance = this;
 	}
 
+	public void windowClosing(WindowEvent e) {
+		close();
+	}
+
 	/** Overrides close() in PlugInFrame. */
 	public void close() {
 		boolean okayToClose = true;
 		ImageJ ij = IJ.getInstance();
-		if (!getTitle().equals("Errors") && changes && !IJ.isMacro() && ij!=null) {
+		if (!getTitle().equals("Errors") && changes && !IJ.isMacro() && ij!=null && !ij.quitting()) {
 			String msg = "Save changes to \"" + getTitle() + "\"?";
 			YesNoCancelDialog d = new YesNoCancelDialog(this, "Editor", msg);
 			if (d.cancelPressed())
@@ -715,12 +715,11 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				save();
 		}
 		if (okayToClose) {
-			//setVisible(false);
+			setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
 			nWindows--;
 			instance = null;
-			changes = false;
 		}
 	}
 
@@ -743,9 +742,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			save();
 			changes = false;
 			setWindowTitle(name2);
-			setDefaultDirectory(dir);
-			if (defaultDir!=null)
-				Prefs.set(DEFAULT_DIR, defaultDir);
 			if (Recorder.record)
 				Recorder.record("saveAs", "Text", path);
 		}
@@ -921,8 +917,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public static void setDefaultDirectory(String defaultDirectory) {
 		defaultDir = defaultDirectory;
-		if (defaultDir!=null && !(defaultDir.endsWith(File.separator)||defaultDir.endsWith("/")))
-			defaultDir += File.separator;
 	}
 	
 	//public void keyReleased(KeyEvent e) {}
@@ -1007,10 +1001,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		text = text.replaceAll("\r\n", "\n");
 		text = text.replaceAll("\r", "\n");
 		ta.setText(text);
-	}
-	
-	public boolean fileChanged() {
-		return changes;
 	}
 	
 }

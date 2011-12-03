@@ -41,9 +41,9 @@ public class Java2 {
 				g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 	}
 	
-	/** Sets the Swing look and feel to the system look and feel (Windows only). */
+	/** Sets the Swing look and feel to the system look and feel. */
 	public static void setSystemLookAndFeel() {
-		if (lookAndFeelSet || !IJ.isWindows()) return;
+		if (lookAndFeelSet) return;
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch(Throwable t) {}

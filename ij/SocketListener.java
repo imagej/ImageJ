@@ -27,19 +27,16 @@ public class SocketListener implements Runnable {
 		Socket clientSocket;
 		try {
 			serverSocket = new ServerSocket(ImageJ.getPort());
-			if (IJ.debugMode) IJ.log("SocketListener: new ServerSocket("+ImageJ.getPort()+")");
 			while (true) {
 				clientSocket = serverSocket.accept();
-				InetAddress address = clientSocket.getInetAddress();
-				boolean isLocal = address!=null && address.isLoopbackAddress();
-				if (IJ.debugMode)  IJ.log("SocketListener: client="+address+"  "+ isLocal);
 				try {
+					if (IJ.debugMode) IJ.log("SocketServer: waiting on port "+ImageJ.getPort());
 					is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 					String cmd = is.readLine();
-					if (IJ. debugMode) IJ.log("SocketListener: command=\""+ cmd+"\"");
+					if (IJ. debugMode) IJ.log("SocketServer: command: \""+ cmd+"\"");
 					if (cmd.startsWith("open "))
 						(new Opener()).openAndAddToRecent(cmd.substring(5));
-					else if (isLocal && cmd.startsWith("macro ")) {
+					else if (cmd.startsWith("macro ")) {
 						String name = cmd.substring(6);
 						String name2 = name;
 						String arg = null;
@@ -51,9 +48,9 @@ public class SocketListener implements Runnable {
 							}
 						}
 						IJ.runMacroFile(name, arg);
-					} else if (isLocal && cmd.startsWith("run "))
+					} else if (cmd.startsWith("run "))
 						IJ.run(cmd.substring(4));
-					else if (isLocal && cmd.startsWith("eval ")) {
+					else if (cmd.startsWith("eval ")) {
 						String rtn = IJ.runMacro(cmd.substring(5));
 						if (rtn!=null)
 							System.out.print(rtn);
@@ -61,6 +58,7 @@ public class SocketListener implements Runnable {
 						OpenDialog.setDefaultDirectory(cmd.substring(9));
 				} catch (Throwable e) {}
 				clientSocket.close();
+				if (IJ. debugMode) IJ.log("SocketServer: connection closed");
 			}
  		} catch (IOException e) {}
 	}

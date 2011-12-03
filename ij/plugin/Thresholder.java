@@ -68,10 +68,9 @@ public class Thresholder implements PlugIn, Measurements {
 		autoThreshold = saveMinThreshold==ImageProcessor.NO_THRESHOLD;
 					
 		boolean useBlackAndWhite = true;
-		boolean noArgMacro =IJ.macroRunning() && Macro.getOptions()==null;
 		if (skipDialog)
 			fill1 = fill2 = useBlackAndWhite = true;
-		else if (!(autoThreshold||noArgMacro)) {
+		else if (!autoThreshold) {
 			GenericDialog gd = new GenericDialog("Make Binary");
 			gd.addCheckbox("Thresholded pixels to foreground color", fill1);
 			gd.addCheckbox("Remaining pixels to background color", fill2);

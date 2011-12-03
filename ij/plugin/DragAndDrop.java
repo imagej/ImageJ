@@ -85,13 +85,9 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			return;
 		}
 		dtde.dropComplete(true);
-		if (flavors==null || flavors.length==0) {
-			if (IJ.isMacOSX())
-				IJ.error("First drag and drop ignored. Please try again. You can avoid this\n"
-				+"problem by dragging to the toolbar instead of the status bar.");
-			else
-				IJ.error("Drag and drop failed");
-		}
+		if (flavors==null || flavors.length==0)
+			IJ.error("First drag and drop ignored. Please try again. You can avoid this\n"
+			+"problem by dragging to the toolbar instead of the status bar.");
 	}
 	    
 	    private String fixLinuxString(String s) {
@@ -192,8 +188,6 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				path += File.separator;
 			String[] names = f.list();
 			names = (new FolderOpener()).trimFileList(names);
-			if (names==null)
-				return;
 			String msg = "Open all "+names.length+" images in \"" + f.getName() + "\" as a stack?";
 			GenericDialog gd = new GenericDialog("Open Folder");
 			gd.setInsets(10,5,0);
@@ -212,7 +206,6 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 				if (convertToRGB) options += " convert_to_rgb";
 				if (virtualStack) options += " use";
 				IJ.run("Image Sequence...", "open=[" + path + "]"+options);
-				DirectoryChooser.setDefaultDirectory(path);
 			} else {
 				for (int k=0; k<names.length; k++) {
 					IJ.redirectErrorMessages();

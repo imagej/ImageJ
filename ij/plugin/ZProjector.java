@@ -22,8 +22,7 @@ public class ZProjector implements PlugIn {
 	public static final int MEDIAN_METHOD = 5;
 	public static final String[] METHODS = 
 		{"Average Intensity", "Max Intensity", "Min Intensity", "Sum Slices", "Standard Deviation", "Median"}; 
-    private static final String METHOD_KEY = "zproject.method";
-    private int method = (int)Prefs.get(METHOD_KEY, AVG_METHOD);
+    private static int method = AVG_METHOD;
 
     private static final int BYTE_TYPE  = 0; 
     private static final int SHORT_TYPE = 1; 
@@ -45,7 +44,7 @@ public class ZProjector implements PlugIn {
     /** Projection ends at this slice. */
     private int stopSlice = 1;
     /** Project all time points? */
-    private boolean allTimeFrames = true;
+    private static boolean allTimeFrames = true;
     
     private String color = "";
     private boolean isHyperstack;
@@ -93,7 +92,7 @@ public class ZProjector implements PlugIn {
     public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
 		int stackSize = imp.getStackSize();
-		if (imp==null) {
+		if(imp==null) {
 	    	IJ.noImage(); 
 	    	return; 
 		}
@@ -134,7 +133,6 @@ public class ZProjector implements PlugIn {
 		setStartSlice((int)gd.getNextNumber()); 
 		setStopSlice((int)gd.getNextNumber()); 
 		method = gd.getNextChoiceIndex();
-		Prefs.set(METHOD_KEY, method);
 		if (isHyperstack) {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
@@ -159,10 +157,11 @@ public class ZProjector implements PlugIn {
     }
 
     private void doRGBProjection(ImageStack stack) {
-        ImageStack[] channels = ChannelSplitter.splitRGB(stack, true);
-        ImagePlus red = new ImagePlus("Red", channels[0]);
-        ImagePlus green = new ImagePlus("Green", channels[1]);
-        ImagePlus blue = new ImagePlus("Blue", channels[2]);
+        RGBStackSplitter splitter = new RGBStackSplitter();
+        splitter.split(stack, true);
+        ImagePlus red = new ImagePlus("Red", splitter.red);
+        ImagePlus green = new ImagePlus("Green", splitter.green);
+        ImagePlus blue = new ImagePlus("Blue", splitter.blue);
         imp.unlock();
         ImagePlus saveImp = imp;
         imp = red;
@@ -196,11 +195,9 @@ public class ZProjector implements PlugIn {
 
     /** Performs actual projection using specified method. */
     public void doProjection() {
-		if (imp==null)
+		if(imp==null)
 			return;
 		sliceCount = 0;
-		if (method<AVG_METHOD || method>MEDIAN_METHOD)
-			method = AVG_METHOD;
     	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
     		sliceCount++;
 		if (method==MEDIAN_METHOD) {
@@ -293,7 +290,6 @@ public class ZProjector implements PlugIn {
         }
         if (frames>1)
         	projImage.setOpenAsHyperStack(true);
-        IJ.showProgress(1, 1);
 	}
 	
 	private void doHSRGBProjection(ImagePlus rgbImp) {

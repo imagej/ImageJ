@@ -20,15 +20,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 	public FileInfoVirtualStack(FileInfo fi) {
 		info = new FileInfo[1];
 		info[0] = fi;
-		open(true);
-	}
-
-	/* Constructs a FileInfoVirtualStack from a FileInfo 
-		object and displays it if 'show' is true. */
-	public FileInfoVirtualStack(FileInfo fi, boolean show) {
-		info = new FileInfo[1];
-		info[0] = fi;
-		open(show);
+		open();
 	}
 
 	public void run(String arg) {
@@ -56,10 +48,10 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		}
 		if (IJ.debugMode)
 			IJ.log(info[0].debugInfo);
-		open(true);
+		open();
 	}
 	
-	void open(boolean show) {
+	void open() {
 		FileInfo fi = info[0];
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
@@ -74,17 +66,11 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		nImages = info.length;
 		FileOpener fo = new FileOpener(info[0] );
 		ImagePlus imp = fo.open(false);
-		if (nImages==1 && fi.fileType==FileInfo.RGB48) {
-			if (show) imp.show();
-			return;
-		}
 		Properties props = fo.decodeDescriptionString(fi);
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setFileInfo(fi);
 		if (imp!=null && props!=null) {
-			setBitDepth(imp.getBitDepth());
 			imp2.setCalibration(imp.getCalibration());
-			imp2.setOverlay(imp.getOverlay());
 			if (fi.info!=null)
 				imp2.setProperty("Info", fi.info);
 			int channels = getInt(props,"channels");
@@ -104,7 +90,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 				imp2 = new CompositeImage(imp2, mode);
 			}
 		}
-		if (show) imp2.show();
+		imp2.show();
 	}
 
 	int getInt(Properties props, String key) {
@@ -151,17 +137,8 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp = fo.open(false);
 		if (imp!=null)
 			return imp.getProcessor();
-		else {
-			int w=getWidth(), h=getHeight();
-			IJ.log("Read error or file not found ("+n+"): "+info[n-1].directory+info[n-1].fileName);
-			switch (getBitDepth()) {
-				case 8: return new ByteProcessor(w, h);
-				case 16: return new ShortProcessor(w, h);
-				case 24: return new ColorProcessor(w, h);
-				case 32: return new FloatProcessor(w, h);
-				default: return null;
-			}
-		}
+		else
+			return null;
 	 }
  
 	 /** Returns the number of images in this stack. */

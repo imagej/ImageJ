@@ -48,15 +48,7 @@ public class JpegWriter implements PlugIn {
 			g.dispose();            
 			Iterator iter = ImageIO.getImageWritersByFormatName("jpeg");
 			ImageWriter writer = (ImageWriter)iter.next();
-			File f = new File(path);
-			String originalPath = null;
-			boolean replacing = f.exists();
-			if (replacing) {
-				originalPath = path;
-				path += ".temp";
-				f = new File(path);
-			}
-			ImageOutputStream ios = ImageIO.createImageOutputStream(f);
+			ImageOutputStream ios = ImageIO.createImageOutputStream(new File(path));
 			writer.setOutput(ios);
 			ImageWriteParam param = writer.getDefaultWriteParam();
 			param.setCompressionMode(param.MODE_EXPLICIT);
@@ -67,11 +59,6 @@ public class JpegWriter implements PlugIn {
 			writer.write(null, iioImage, param);
 			ios.close();
 			writer.dispose();
-			if (replacing) {
-				File f2 = new File(originalPath);
-				boolean ok = f2.delete();
-				if (ok) f.renameTo(f2);
-			}
 		} catch (Exception e) {
 			error = ""+e;
 			IJ.error("Jpeg Writer", ""+error);

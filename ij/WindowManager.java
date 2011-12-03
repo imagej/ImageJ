@@ -1,7 +1,6 @@
 package ij;
 import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
-import ij.plugin.frame.Editor; 
 import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
@@ -35,8 +34,7 @@ public class WindowManager {
 			// free up pixel buffers used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
 			if (imp!=null ) {
-				if (!Prefs.keepUndoBuffers)
-					imp.trimProcessor();
+				imp.trimProcessor();
 				imp.saveRoi();
 			}
 		}
@@ -261,8 +259,7 @@ public class WindowManager {
             name2 = name2.substring(0, lastDot);
         }
         int lastDash = name2.lastIndexOf("-");
-        len = name2.length();
-        if (lastDash!=-1&&len-lastDash<4&&lastDash<len-1&&Character.isDigit(name2.charAt(lastDash+1))&&name2.charAt(lastDash+1)!='0')
+        if (lastDash!=-1 && name2.length()-lastDash<4)
             name2 = name2.substring(0, lastDash);
         for (int i=1; i<=99; i++) {
             String name3 = name2+"-"+ i + extension;
@@ -322,34 +319,25 @@ public class WindowManager {
 		//IJ.log("Set window: "+(win!=null?win.getTitle():"null"));
     }
 
-	/** Closes all windows. Stops and returns false if an image or Editor "save changes" dialog is canceled. */
+	/** Closes all windows. Stops and returns false if any image "save changes" dialog is canceled. */
 	public synchronized static boolean closeAllWindows() {
 		while (imageList.size()>0) {
 			if (!((ImageWindow)imageList.elementAt(0)).close())
 				return false;
 			IJ.wait(100);
 		}
-		Frame[] nonImages = getNonImageWindows();
-		for (int i=0; i<nonImages.length; i++) {
-			Frame frame = nonImages[i];
-			if (frame!=null && (frame instanceof Editor)) {
-				((Editor)frame).close();
-				if (((Editor)frame).fileChanged())
-					return false;
-				IJ.wait(100);
-			}
-		}
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null && ij.quitting() && IJ.getApplet()==null)
 			return true;
-		for (int i=0; i<nonImages.length; i++) {
-			Frame frame = nonImages[i];
-			if ((frame instanceof PlugInFrame) && !(frame instanceof Editor))
+		Frame[] list = getNonImageWindows();
+		for (int i=0; i<list.length; i++) {
+			Frame frame = list[i];
+			if (frame instanceof PlugInFrame)
 				((PlugInFrame)frame).close();
 			else if (frame instanceof TextWindow)
 				((TextWindow)frame).close();
 			else {
-				//frame.setVisible(false);
+				frame.setVisible(false);
 				frame.dispose();
 			}
 		}
@@ -359,10 +347,10 @@ public class WindowManager {
 	/** Activates the next image window on the window list. */
 	public static void putBehind() {
 		if (IJ.debugMode) IJ.log("putBehind");
-		if (imageList.size()<1 || currentWindow==null)
+		if(imageList.size()<1 || currentWindow==null)
 			return;
 		int index = imageList.indexOf(currentWindow);
-		ImageWindow win = null;
+		ImageWindow win;
 		int count = 0;
 		do {
 			index--;
@@ -370,10 +358,9 @@ public class WindowManager {
 			win = (ImageWindow)imageList.elementAt(index);
 			if (++count==imageList.size()) return;
 		} while (win instanceof HistogramWindow || win instanceof PlotWindow);
-		if (win==null) return;
-		ImagePlus imp = win.getImagePlus();
-		if (imp!=null)
-			IJ.selectWindow(imp.getID());
+		setCurrentWindow(win);
+		win.toFront();
+		Menus.updateMenus();
     }
 
 	/** Returns the temporary current image for this thread, or null. */
@@ -408,7 +395,7 @@ public class WindowManager {
 			Frame win = (Frame)nonImageList.elementAt(i);
 			String title = win.getTitle();
 			if (menuItemLabel.equals(title)) {
-				toFront(win);
+				win.toFront();
 				((CheckboxMenuItem)item).setState(false);
 				if (Recorder.record && !IJ.isMacro())
 					Recorder.record("selectWindow", title);
@@ -423,7 +410,7 @@ public class WindowManager {
 			String title = win.getImagePlus().getTitle();
 			if (menuItemLabel.equals(title)) {
 				setCurrentWindow(win);
-				toFront(win);
+				win.toFront();
 				int index = imageList.indexOf(win);
 				int n = Menus.window.getItemCount();
 				int start = Menus.WINDOW_MENU_ITEMS+Menus.windowMenuItems2;
@@ -460,12 +447,5 @@ public class WindowManager {
 			IJ.log(" ");
 		}
     }
-    
-    public static void toFront(Frame frame) {
-		if (frame==null) return;
-		if (frame.getState()==Frame.ICONIFIED)
-			frame.setState(Frame.NORMAL);
-		frame.toFront();
-	}
     
 }

@@ -26,10 +26,9 @@ public class Executer implements Runnable {
 		command = cmd;
 	}
 
-	/** Create an Executer that runs the specified menu 
-		command in a separate thread using the specified image,
-		or using the active image if 'imp' is null. */
-	public Executer(String cmd, ImagePlus imp) {
+	/** Create an Executer that runs the specified menu command
+		in a separate thread using the active image image. */
+	public Executer(String cmd, ImagePlus ignored) {
 		if (cmd.startsWith("Repeat")) {
 			command = previousCommand;
 			IJ.setKeyUp(KeyEvent.VK_SHIFT);		
@@ -41,8 +40,6 @@ public class Executer implements Runnable {
 		IJ.resetEscape();
 		thread = new Thread(this, cmd);
 		thread.setPriority(Math.max(thread.getPriority()-2, Thread.MIN_PRIORITY));
-		if (imp!=null)
-			WindowManager.setTempCurrentImage(thread, imp);
 		thread.start();
 	}
 
@@ -63,7 +60,7 @@ public class Executer implements Runnable {
 			} else
 				runCommand(command);
 			int len = command.length();
-			if (command.charAt(len-1)!=']')
+			if (command.charAt(len-1)!=']' && !(len<4&&(command.equals("In")||command.equals("Out"))))
 				IJ.setKeyUp(IJ.ALL_KEYS);  // set keys up except for "<", ">", "+" and "-" shortcuts
 		} catch(Throwable e) {
 			IJ.showStatus("");
@@ -85,7 +82,7 @@ public class Executer implements Runnable {
 						return;
 					s = Tools.fixNewLines(s);
 				}
-				int w=500, h=300;
+				int w=350, h=250;
 				if (s.indexOf("UnsupportedClassVersionError")!=-1) {
 					if (s.indexOf("version 49.0")!=-1) {
 						s = e + "\n \nThis plugin requires Java 1.5 or later.";

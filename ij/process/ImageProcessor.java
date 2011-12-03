@@ -8,13 +8,12 @@ import ij.plugin.filter.GaussianBlur;
 import ij.process.AutoThresholder.Method;
 import ij.gui.Roi;
 import ij.gui.ShapeRoi;
-import ij.gui.Overlay;
 import ij.Prefs;
 
 /**
 This abstract class is the superclass for classes that process
 the four data types (byte, short, float and RGB) supported by ImageJ.
-An ImageProcessor contains the pixel data of a 2D image and
+An ImageProcessor contains the pixel data of a 2D image and Ê
 some basic methods to manipulate it.
 @see ByteProcessor
 @see ShortProcessor
@@ -23,7 +22,7 @@ some basic methods to manipulate it.
 @see ij.ImagePlus
 @see ij.ImageStack
 */
-public abstract class ImageProcessor implements Cloneable {
+public abstract class ImageProcessor extends Object {
 
 	/** Value of pixels included in masks. */
 	public static final int BLACK = 0xFF000000;
@@ -347,7 +346,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Sets the default fill/draw value. */
 	public abstract void setValue(double value);
 
-	/** Sets the background fill value used by the rotate() and scale() methods. */
+	/** Sets the background fill value used by the rotate(), scale() and translate() methods. */
 	public abstract void setBackgroundValue(double value);
 
 	/** Returns the background fill value. */
@@ -507,7 +506,8 @@ public abstract class ImageProcessor implements Cloneable {
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}
-		ImageStatistics stats = ip2.getStatistics();
+		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
 		AutoThresholder thresholder = new AutoThresholder();
 		int threshold = thresholder.getThreshold(method, stats.histogram);
 		double lower, upper;
@@ -531,6 +531,8 @@ public abstract class ImageProcessor implements Cloneable {
 				lower = upper = min;
 		}
 		setThreshold(lower, upper, lutUpdate);
+		//if (notByteData && lutUpdate!=NO_LUT_UPDATE)
+		//	setLutAnimation(true);
 	}
 
 	/** Automatically sets the lower and upper threshold levels, where 'method'
@@ -554,7 +556,8 @@ public abstract class ImageProcessor implements Cloneable {
 			ip2.setMask(mask);
 			ip2.setRoi(rect);	
 		}
-		ImageStatistics stats = ip2.getStatistics();
+		int options = ij.measure.Measurements.AREA+ ij.measure.Measurements.MIN_MAX+ ij.measure.Measurements.MODE;
+		ImageStatistics stats = ImageStatistics.getStatistics(ip2, options, null);
 		int[] histogram = stats.histogram;
 		int originalModeCount = histogram[stats.mode];
 		if (method==ISODATA2) {
@@ -799,7 +802,7 @@ public abstract class ImageProcessor implements Cloneable {
 		return mask;
 	}
 
-	/** Returns a reference to the mask pixel array, or null if there is no mask. */
+	/** Returns the mask byte array, or null if there is no mask. */
 	public byte[] getMaskArray() {
 		return mask!=null?(byte[])mask.getPixels():null;
 	}
@@ -932,8 +935,7 @@ public abstract class ImageProcessor implements Cloneable {
 		int n = (int)Math.round(Math.sqrt(dx*dx + dy*dy));
 		double xinc = dx/n;
 		double yinc = dy/n;
-		if (!((xinc==0&&n==height) || (yinc==0&&n==width)))
-			n++;
+		n++;
 		double[] data = new double[n];
 		double rx = x1;
 		double ry = y1;
@@ -1212,40 +1214,6 @@ public abstract class ImageProcessor implements Cloneable {
 		drawString(s);
 	}
 
-	/** Draws a string at the specified location with a filled background.
-		A JavaScript example is available at
-			http://imagej.nih.gov/ij/macros/js/DrawTextWithBackground.js
-	*/
-	public void drawString(String s, int x, int y, Color background) {
-		Color foreground = drawingColor;
-		FontMetrics metrics = getFontMetrics();
-		int w = 0;
-		int h = metrics.getAscent() + metrics.getDescent();
-		int y2 = y;
-		if (s.indexOf("\n")!=-1) {
-			String[] s2 = Tools.split(s, "\n");
-			for (int i=0; i<s2.length; i++) {
-				int w2 = getStringWidth(s2[i]);
-				if (w2>w) w = w2;
-			}
-			int h2 = metrics.getHeight();
-			y2 += h2*(s2.length-1);
-			h += h2*(s2.length-1);
-		} else
-			w = getStringWidth(s);
-		int x2 = x;
-		if (justification==CENTER_JUSTIFY)
-			x2 -= w/2;
-		else if (justification==RIGHT_JUSTIFY)
-			x2 -= w;
-		setColor(background);
-		setRoi(x2, y2-h, w, h);
-		fill();
-		resetRoi();
-		setColor(foreground);
-		drawString(s, x, y);
-	}
-
 	/** Sets the justification used by drawString(), where <code>justification</code>
 		is CENTER_JUSTIFY, RIGHT_JUSTIFY or LEFT_JUSTIFY. The default is LEFT_JUSTIFY. */
 	public void setJustification(int justification) {
@@ -1260,7 +1228,7 @@ public abstract class ImageProcessor implements Cloneable {
 	}
 	
 	/** Specifies whether or not text is drawn using antialiasing. Antialiased
-		test requires an 8 bit or RGB image. Antialiasing does not
+		test requires Java 2 and an 8 bit or RGB image. Antialiasing does not
 		work with 8-bit images that are not using 0-255 display range. */
 	public void setAntialiasedText(boolean antialiasedText) {
 		if (antialiasedText && (((this instanceof ByteProcessor)&&getMin()==0.0&&getMax()==255.0) || (this instanceof ColorProcessor)))
@@ -1268,7 +1236,7 @@ public abstract class ImageProcessor implements Cloneable {
 		else
 			this.antialiasedText = false;
 	}
-	
+
 	/** Returns the width in pixels of the specified string. */
 	public int getStringWidth(String s) {
 		setupFontMetrics();
@@ -1432,43 +1400,9 @@ public abstract class ImageProcessor implements Cloneable {
 		setRoi(r);
 	}
 
-	/** Draws the specified ROI on this image using the line
-		width and color defined by ip.setLineWidth() and ip.setColor().
-		@see ImageProcessor#drawRoi
-	*/
+	/** Draws an Roi. */
 	public void draw(Roi roi) {
 		roi.drawPixels(this);
-	}
-
-	/** Draws the specified ROI on this image using the stroke
-		width, stroke color and fill color defined by roi.setStrokeWidth,
-		roi.setStrokeColor() and roi.setFillColor(). Works best with RGB
-		images. Does not work with 16-bit and float images.
-		Requires Java 1.6.
-		@see ImageProcessor#draw
-		@see ImageProcessor#drawOverlay
-	*/
-	public void drawRoi(Roi roi) {
-		Image img = createImage();
-		Graphics g = img.getGraphics();
-		ij.ImagePlus imp = roi.getImage();
-		if (imp!=null) {
-			roi.setImage(null);
-			roi.drawOverlay(g);
-			roi.setImage(imp);
-		} else
-			roi.drawOverlay(g);
-	}
-
-	/** Draws the specified Overlay on this image. Works best
-		with RGB images. Does not work with 16-bit and float 
-		images. Requires Java 1.6.
-		@see ImageProcessor#drawRoi
-	*/
-	public void drawOverlay(Overlay overlay) {
-		 Roi[] rois = overlay.toArray();
-		 for (int i=0; i<rois.length; i++)
-		 	drawRoi(rois[i]);
 	}
 
 	/** Set a lookup table used by getPixelValue(), getLine() and
@@ -1798,11 +1732,6 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Adds 'value' to each pixel in the image or ROI. */
 	public void add(double value) {process(ADD, value);}
 	
-	/** Subtracts 'value' from each pixel in the image or ROI. */
-	public void subtract(double value) {
-		add(-value);
-	}
-	
 	/** Multiplies each pixel in the image or ROI by 'value'. */
 	public void multiply(double value) {process(MULT, value);}
 	
@@ -1864,9 +1793,6 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Restores the pixel data from the snapshot (undo) buffer. */
 	public abstract void reset();
 	
-	/** Swaps the pixel and snapshot (undo) buffers. */
-	public abstract void swapPixelArrays();
-
 	/** Restores pixels from the snapshot buffer that are 
 		within the rectangular roi but not part of the mask. */
 	public abstract void reset(ImageProcessor mask);
@@ -1964,7 +1890,6 @@ public abstract class ImageProcessor implements Cloneable {
 	*/
   	public void translate(double xOffset, double yOffset) {
   		ImageProcessor ip2 = this.duplicate();
-  		ip2.setBackgroundValue(0.0);
 		boolean integerOffsets = xOffset==(int)xOffset && yOffset==(int)yOffset;
   		if (integerOffsets || interpolationMethod==NONE) {
 			for (int y=roiY; y<(roiY + roiHeight); y++) {
@@ -2309,10 +2234,8 @@ public abstract class ImageProcessor implements Cloneable {
 		useBicubic = b;
 	}
 	
-	/* Calculates and returns statistics (area, mean, std-dev, mode, min, max,
-		centroid, center of mass, 256 bin histogram) for this image or ROI. */
+	/* Calculates and returns statistics for this image. */
 	public ImageStatistics getStatistics() {
-		// 127 = AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+CENTER_OF_MASS
 		return ImageStatistics.getStatistics(this, 127, null);
 	}
 	
@@ -2329,13 +2252,4 @@ public abstract class ImageProcessor implements Cloneable {
 		sliceNumber = slice;
 	}
 	
-	/** Returns a shallow copy of this ImageProcessor. */
-	public synchronized Object clone() {
-		try {
-			return super.clone();
-		} catch (CloneNotSupportedException e) {
-			return null;
-		}
-	}
-
 }

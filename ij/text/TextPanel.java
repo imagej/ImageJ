@@ -398,6 +398,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			scroll(1);
 		else if (keyListener!=null&&key!=KeyEvent.VK_S&& key!=KeyEvent.VK_C && key!=KeyEvent.VK_X&& key!=KeyEvent.VK_A)
 			keyListener.keyPressed(e);
+		
 	}
 	
 	public void keyReleased (KeyEvent e) {}
@@ -467,7 +468,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			Analyzer.resetCounter();
 		}
 		if (title2.equals("Results")) {
-			//tw.setVisible(false);
+			tw.setVisible(false);
 			tw.dispose();
 			WindowManager.removeWindow(tw);
 			flush();
@@ -738,7 +739,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			String lastLine = iRowCount>=2?getLine(iRowCount-2):null;
 			summarized = lastLine!=null && lastLine.startsWith("Max");
 		}
-		if (rt!=null && rt.getCounter()!=0 && !summarized) {
+		if (rt!=null && !summarized) {
 			if (path==null || path.equals("")) {
 				IJ.wait(10);
 				String name = isResults?"Results":title;

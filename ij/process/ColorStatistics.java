@@ -22,7 +22,7 @@ public class ColorStatistics extends ImageStatistics {
 		if ((mOptions&MIN_MAX)!=0)
 			getRawMinAndMax(0,255);
 		if ((mOptions&ELLIPSE)!=0 || (mOptions&SHAPE_DESCRIPTORS)!=0)
-			fitEllipse(ip, mOptions);
+			fitEllipse(ip);
 		else if ((mOptions&CENTROID)!=0)
 			getCentroid(ip);
 		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)

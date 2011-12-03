@@ -16,7 +16,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 	public PasteController() {
 		super("Paste Control");
 		if (instance!=null) {
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}
 		WindowManager.addWindow(this);
@@ -76,6 +76,10 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		ImagePlus imp = WindowManager.getCurrentImage();
 	}
 	
+    public void windowClosing(WindowEvent e) {
+    	close();
+	}
+
 	public void close() {
 		super.close();
 		instance = null;

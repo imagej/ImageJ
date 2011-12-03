@@ -61,8 +61,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 	
 	public Image createImage() {
-		if (ij.IJ.isJava16())
-			return createBufferedImage();
+		if (ij.IJ.isJava16()) return createBufferedImage();
 		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels, 0, width);
 			source.setAnimated(true);
@@ -213,17 +212,6 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Swaps the pixel and snapshot (undo) arrays. */
-	public void swapPixelArrays() {
-		if (snapshotPixels==null) return;	
-		int pixel;
-		for (int i=0; i<pixels.length; i++) {
-			pixel = pixels[i];
-			pixels[i] = snapshotPixels[i];
-			snapshotPixels[i] = pixel;
-		}
-	}
-
 	public void setSnapshotPixels(Object pixels) {
 		snapshotPixels = (int[])pixels;
 		snapshotWidth=width;
@@ -295,7 +283,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	public final float getf(int x, int y) {
-		return getf(y*width+x);
+		return pixels[y*width+x];
 	}
 
 	public final void setf(int x, int y, float value) {
@@ -303,16 +291,8 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	public final float getf(int index) {
-		int c = pixels[index];
-		int r = (c&0xff0000)>>16;
-		int g = (c&0xff00)>>8;
-		int b = c&0xff;
-		return (float)(r*rWeight + g*gWeight + b*bWeight);
+		return pixels[index];
 	}
-
-	//public final float getf(int index) {
-	//	return pixels[index];
-	//}
 
 	public final void setf(int index, float value) {
 		pixels[index] = (int)value;
@@ -480,36 +460,6 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Returns the specified plane as a byte array. */
-	public byte[] getChannel(int channel) {
-		int size = width*height;
-		byte[] bytes = new byte[size];
-		int c, r, g, b;
-		switch (channel) {
-			case 1:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					r = (c&0xff0000)>>16;
-					bytes[i] = (byte)r;
-				}
-				break;
-			case 2:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					g = (c&0xff00)>>8;
-					bytes[i] = (byte)g;
-				}
-				break;
-			case 3:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					b = c&0xff;
-					bytes[i] = (byte)b;
-				}
-				break;
-		}
-		return bytes;
-	}
 
 	/** Sets the current pixels from 3 byte arrays (reg, green, blue). */
 	public void setRGB(byte[] R, byte[] G, byte[] B) {
@@ -625,7 +575,8 @@ public class ColorProcessor extends ImageProcessor {
 		}
 		showProgress(1.0);
 	}
-	
+
+
 	public static final int RGB_NOISE=0, RGB_MEDIAN=1, RGB_FIND_EDGES=2,
 		RGB_ERODE=3, RGB_DILATE=4, RGB_THRESHOLD=5, RGB_ROTATE=6,
 		RGB_SCALE=7, RGB_RESIZE=8, RGB_TRANSLATE=9;

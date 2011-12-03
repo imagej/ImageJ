@@ -1,5 +1,4 @@
 package ij.io;
-import ij.gui.GenericDialog;
 import java.awt.*;
 import java.io.*;
 import javax.swing.*;
@@ -127,7 +126,7 @@ public class SaveDialog {
 		else {
 			dir = fc.getCurrentDirectory().getPath()+File.separator;
 			name = fc.getName(f);
-			if (noExtension(name))
+			if (name!=null && name.indexOf(".")==-1)
 				name = setExtension(name, ext);
 		}
 	}
@@ -163,7 +162,7 @@ public class SaveDialog {
 					else {
 						dir = fc.getCurrentDirectory().getPath()+File.separator;
 						name = fc.getName(f);
-						if (noExtension(name))
+						if (name!=null && name.indexOf(".")==-1)
 							name = setExtension(name, ext);
 					}
 				}
@@ -177,44 +176,19 @@ public class SaveDialog {
 		Frame parent = ij!=null?ij:new Frame();
 		FileDialog fd = new FileDialog(parent, title, FileDialog.SAVE);
 		if (defaultName!=null)
-			fd.setFile(defaultName);
+			fd.setFile(defaultName);			
 		if (defaultDir!=null)
 			fd.setDirectory(defaultDir);
 		fd.show();
 		name = fd.getFile();
-		String origName = name;
-		if (noExtension(name)) {
+		if (name!=null && name.indexOf(".")==-1)
 			name = setExtension(name, ext);
-			boolean dialog = name!=null && !name.equals(origName) && IJ.isMacOSX() && !IJ.isMacro();
-			if (dialog) {
-				File f = new File( fd.getDirectory()+getFileName());
-				if (!f.exists()) dialog = false;
-			}
-			if (dialog) {
-				Font font = new Font("SansSerif", Font.BOLD, 12);
-				GenericDialog gd = new GenericDialog("Replace File?");
-				gd.addMessage("\""+name+"\" already exists.\nDo you want to replace it?", font);
-				gd.addMessage("To avoid this dialog, enable"
-				+"\n\"Show all filename extensions\"\nin Finder Preferences.");
-				gd.setOKLabel("Replace");
-				gd.showDialog();
-				if (gd.wasCanceled())
-					name = null;
-			}
-		}
-		if (IJ.debugMode) IJ.log(origName+"->"+name);
 		dir = fd.getDirectory();
 		if (name==null)
 			Macro.abort();
 		fd.dispose();
 		if (ij==null)
 			parent.dispose();
-	}
-	
-	private boolean noExtension(String name) {
-		if (name==null) return false;
-		int dotIndex = name.indexOf(".");
-		return dotIndex==-1 || (name.length()-dotIndex)>5;
 	}
 	
 	/** Returns the selected directory. */
@@ -225,11 +199,9 @@ public class SaveDialog {
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
-		if (name!=null) {
-			if (Recorder.record && dir!=null)
-				Recorder.recordPath(title, dir+name);
-			OpenDialog.setLastName(name);
-		}
+		if (Recorder.record)
+			Recorder.recordPath(title, dir+name);
+		OpenDialog.setLastName(name);
 		return name;
 	}
 		

@@ -26,12 +26,6 @@ public class ThresholdToSelection implements PlugInFilter {
 		image.setRoi(convert(ip));
 	}
 	
-	public static Roi run(ImagePlus imp) {
-		ThresholdToSelection tts = new ThresholdToSelection();
-		tts.image = imp;
-		return tts.convert(imp.getProcessor());
-	}
-	
 	public Roi convert(ImageProcessor ip) {
 		this.ip = ip;
 		min = (float)ip.getMinThreshold();

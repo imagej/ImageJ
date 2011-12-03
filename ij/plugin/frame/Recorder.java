@@ -41,7 +41,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	public Recorder() {
 		super("Recorder");
 		if (instance!=null) {
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}
 		WindowManager.addWindow(this);
@@ -204,10 +204,6 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+", "+a5+");\n");
 	}
 	
-	public static void record(String method, int a1, int a2, int a3, int a4, double a5) {
-		textArea.append(method+"("+a1+", "+a2+", "+a3+", "+a4+", "+IJ.d2s(a5,2)+");\n");
-	}
-
 	public static void record(String method, String path, String args, int a1, int a2, int a3, int a4, int a5) {
 		if (textArea==null) return;
 		path = fixPath(path);
@@ -300,10 +296,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	}
 
 	public static void recordPath(String key, String path) {
-		if (key==null || !recordPath) {
-			recordPath = true;
-			return;
-		}
+		if (key==null || !recordPath)
+			{recordPath=true; return;}
 		key = trimKey(key);
 		path = fixPath(path);
 		path = addQuotes(path);
@@ -382,15 +376,13 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					textArea.append((scriptMode?"IJ.":"")+"open(\""+strip(commandOptions)+"\");\n");
 				else if (name.equals("Results...")) // Save As>Results
 					;
-				else if (name.equals("Run...")) // Plugins>Macros>Run
-					;
 				else {
 					String prefix = "run(";
 					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
 				}
 			} else {
-				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
+				if (name.equals("Threshold...") || name.equals("Fonts..."))
 					textArea.append("//run(\""+name+"\");\n");
 				else if (name.equals("Start Animation [\\]"))
 					textArea.append("doCommand(\"Start Animation [\\\\]\");\n");
@@ -603,11 +595,16 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			+"    Use File>Save As to save it and\n" 
 			+"    ImageJ's Open command to open it.\n" 
 			+" \n"    
-			+"    To create a command, save in the plugins\n"  
-			+"    folder and run Help>Refresh Menus.\n"  
+			+"    To create a command, use File>Save As,\n"  
+			+"    add a '_' to the name, save in the \n" 
+			+"    plugins folder, and restart ImageJ.\n" 
 		);
     }
     
+    public void windowClosing(WindowEvent e) {
+    	close();
+	}
+
 	public void close() {
 		super.close();
 		record = false;

@@ -53,17 +53,14 @@ public class ImageStatistics implements Measurements {
 
 	
 	public static ImageStatistics getStatistics(ImageProcessor ip, int mOptions, Calibration cal) {
-		Object pixels = ip.getPixels();
-		if (pixels instanceof byte[])
+		if (ip instanceof ByteProcessor)
 			return new ByteStatistics(ip, mOptions, cal);
-		else if (pixels instanceof short[])
+		else if (ip instanceof ShortProcessor)
 			return new ShortStatistics(ip, mOptions, cal);
-		else if (pixels instanceof int[])
+		else if (ip instanceof ColorProcessor)
 			return new ColorStatistics(ip, mOptions, cal);
-		else if (pixels instanceof float[])
-			return new FloatStatistics(ip, mOptions, cal);
 		else
-			throw new IllegalArgumentException("Pixels are not byte, short, int or float");
+			return new FloatStatistics(ip, mOptions, cal);
 	}
 
 	void getRawMinAndMax(int minThreshold, int maxThreshold) {
@@ -111,7 +108,8 @@ public class ImageStatistics implements Measurements {
 				stdDev = Math.sqrt(stdDev/(n-1.0));
 			else
 				stdDev = 0.0;
-		} else
+		}
+		else
 			stdDev = 0.0;
 	}
 		
@@ -169,41 +167,10 @@ public class ImageStatistics implements Measurements {
 		}
 	}
 	
-	void fitEllipse(ImageProcessor ip, int mOptions) {
-		ImageProcessor originalMask = null;
-		boolean limitToThreshold = (mOptions&LIMIT)!=0 && ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
-		if (limitToThreshold) {
-			ImageProcessor mask = ip.getMask();
-			Rectangle r = ip.getRoi();
-			if (mask==null) {
-				mask = new ByteProcessor(r.width, r.height);
-				mask.invert();
-			} else {
-				originalMask = mask;
-				mask = mask.duplicate();
-			}
-			int n = r.width*r.height;
-			double t1 = ip.getMinThreshold();
-			double t2 = ip.getMaxThreshold();
-			double value;
-			for (int y=0; y<r.height; y++) {
-				for (int x=0; x<r.width; x++) {
-					value = ip.getf(r.x+x, r.y+y);
-					if (value<t1 || value>t2)
-						mask.setf(x, y, 0f);
-				}
-			}
-			ip.setMask(mask);
-		}
+	void fitEllipse(ImageProcessor ip) {
 		if (ef==null)
 			ef = new EllipseFitter();
 		ef.fit(ip, this);
-		if (limitToThreshold) {
-			if (originalMask==null)
-				ip.setMask(null);
-			else
-				ip.setMask(originalMask);
-		}
 		double psize = (Math.abs(pw-ph)/pw)<.01?pw:0.0;
 		major = ef.major*psize;
 		minor = ef.minor*psize;
@@ -214,6 +181,8 @@ public class ImageStatistics implements Measurements {
 			xCentroid = cal.getX(xCentroid);
 			yCentroid = cal.getY(yCentroid, height);
 		}
+		//if (ij.IJ.altKeyDown())
+		//	ef.drawEllipse(ip);
 	}
 	
 	public void drawEllipse(ImageProcessor ip) {

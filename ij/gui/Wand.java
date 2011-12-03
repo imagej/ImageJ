@@ -50,15 +50,14 @@ public class Wand {
     /** Constructs a Wand object from an ImageProcessor. */
     public Wand(ImageProcessor ip) {
         this.ip = ip;
-        Object pixels = ip.getPixels();
-        if (pixels instanceof byte[])
-            bpixels = (byte[])pixels;
-        else if (pixels instanceof int[])
-            cpixels = (int[])pixels;
-        else if (pixels instanceof short[])
-            spixels = (short[])pixels;
-        else if (pixels instanceof float[])
-            fpixels = (float[])pixels;
+        if (ip instanceof ByteProcessor)
+            bpixels = (byte[])ip.getPixels();
+        else if (ip instanceof ColorProcessor)
+            cpixels = (int[])ip.getPixels();
+        else if (ip instanceof ShortProcessor)
+            spixels = (short[])ip.getPixels();
+        else if (ip instanceof FloatProcessor)
+            fpixels = (float[])ip.getPixels();
         width = ip.getWidth();
         height = ip.getHeight();
     }

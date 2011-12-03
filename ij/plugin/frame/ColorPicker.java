@@ -15,7 +15,7 @@ public class ColorPicker extends PlugInFrame {
     public ColorPicker() {
 		super("CP");
 		if (instance!=null) {
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}
 		instance = this;
@@ -44,13 +44,13 @@ public class ColorPicker extends PlugInFrame {
 		show();
     }
     
-    public void close() {
-	 	super.close();
+    public void windowClosing(WindowEvent e) {
+	 	close();
 		instance = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		IJ.notifyEventListeners(IJEventListener.COLOR_PICKER_CLOSED);
 	}
-
+	
 }
 
 class ColorGenerator extends ColorProcessor {

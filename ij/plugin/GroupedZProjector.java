@@ -17,7 +17,7 @@ public class GroupedZProjector implements PlugIn {
 			return;
 		}
 		if (imp.isHyperStack()) {
-			new ZProjector().run("");
+			IJ.run(imp, "Z Project...", "");
 			return;
 		}
 		if (!showDialog(imp)) return;

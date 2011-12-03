@@ -27,8 +27,7 @@ public class Calibration implements Cloneable {
 	public double fps;
 
 	/** Loop back and forth when animating stack */
-	private static boolean loopBackAndForth;
-	public boolean loop = loopBackAndForth;
+	public boolean loop;
 
 	/** X origin in pixels. */
 	public double xOrigin;
@@ -173,12 +172,12 @@ public class Calibration implements Cloneable {
  		return (x-xOrigin)*pixelWidth;
  	}
  	
-  	/** Converts a y-coordinate in pixels to physical units (e.g. mm). */
+  	/** Converts a y-coodinate in pixels to physical units (e.g. mm). */
  	public double getY(double y) {
  		return (y-yOrigin)*pixelHeight;
  	}
  	
- 	/** Converts a y-coordinate in pixels to physical units (e.g. mm),
+ 	/** Converts a y-coodinate in pixels to physical units (e.g. mm),
  		taking into account the invertY and global "Invert Y Coordinates" flags. */
  	public double getY(double y, int imageHeight) {
  		if (invertY || (Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
@@ -190,34 +189,12 @@ public class Calibration implements Cloneable {
    			return (y-yOrigin)*pixelHeight;
 	}
 
-  	/** Converts a z-coordinate in pixels to physical units (e.g. mm). */
+  	/** Converts a z-coodinate in pixels to physical units (e.g. mm). */
  	public double getZ(double z) {
  		return (z-zOrigin)*pixelDepth;
  	}
  	
- 	/** Converts a x-coordinate in physical units to pixels. */
- 	public double getRawX(double x) {
- 		return x/pixelWidth + xOrigin;
- 	}
- 	
-   	/** Converts a y-coodinate in physical units to pixels. */
- 	public double getRawY(double y) {
-  		return y/pixelHeight + yOrigin;
-	}
- 	
- 	/** Converts a y-coodinate in physical units to pixels,
- 		taking into account the 'invertY' flag. */
- 	public double getRawY(double y, int imageHeight) {
- 		if (invertY || (Analyzer.getMeasurements()&Measurements.INVERT_Y)!=0) {
-			if (yOrigin!=0.0)
-				return yOrigin-y/pixelHeight;
-			else
-				return imageHeight -y/pixelHeight - 1;
-		} else
-   			return y/pixelHeight + yOrigin;
-	}
-
-	//public double getX(int x) {return getX((double)x);}
+ 	//public double getX(int x) {return getX((double)x);}
  	//public double getY(int y) {return getY((double)y);}
  	//public double getZ(int z) {return getZ((double)z);}
  	
@@ -458,11 +435,6 @@ public class Calibration implements Cloneable {
  	/** Sets the 'invertY' flag. */
  	public void setInvertY(boolean invertYCoordinates) {
  		invertY = invertYCoordinates;
- 	}
- 	
- 	/** Set the default state of the animation "Loop back and forth" flag */
-	public static void setLoopBackAndForth(boolean loop) {
- 		loopBackAndForth = loop;
  	}
  	
     public String toString() {

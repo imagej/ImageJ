@@ -101,7 +101,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
-		if (!running2 || imp.isHyperStack()) {
+		if (!running2) {
 			if (e.getSource()==cSelector) {
 				c = cSelector.getValue();
 				if (c==imp.getChannel()&&e.getAdjustmentType()==AdjustmentEvent.TRACK) return;
@@ -131,9 +131,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			int rotation = event.getWheelRotation();
 			if (hyperStack) {
 				if (rotation>0)
-					IJ.run(imp, "Next Slice [>]", "");
+					IJ.runPlugIn("ij.plugin.Animator", "next");
 				else if (rotation<0)
-					IJ.run(imp, "Previous Slice [<]", "");
+					IJ.runPlugIn("ij.plugin.Animator", "previous");
 			} else {
 				int slice = imp.getCurrentSlice() + rotation;
 				if (slice<1)
@@ -141,7 +141,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				else if (slice>imp.getStack().getSize())
 					slice = imp.getStack().getSize();
 				imp.setSlice(slice);
-				imp.updateStatusbarValue();
 			}
 		}
 	}

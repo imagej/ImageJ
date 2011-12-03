@@ -54,7 +54,6 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		int z1 = imp.getStackSize();
 		int t1 = 0;
 		int z2=0, t2=0;
-		int saveMethod = interpolationMethod;
 		if (crop) {
 			Rectangle bounds = roi.getBounds();
 			newWidth = bounds.width;
@@ -134,14 +133,12 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				if (s2.getWidth()>0 && newSize>0) {
 					if (restoreRoi)
 						imp.killRoi();
+					//imp.hide();
 					Calibration cal = imp.getCalibration();
 					if (cal.scaled()) {
 						cal.pixelWidth *= origWidth/newWidth;
 						cal.pixelHeight *= origHeight/newHeight;
-					}
-					if (crop&&roi!=null&&(cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
-						cal.xOrigin -= roi.getBounds().x;
-						cal.yOrigin -= roi.getBounds().y;
+						imp.setCalibration(cal);
 					}
 					imp.setStack(null, s2);
 					if (restoreRoi && roi!=null) {
@@ -156,8 +153,6 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				IJ.outOfMemory("Resize");
 			}
 			imp.changes = true;
-			if (crop)
-				interpolationMethod = saveMethod;
 		}
 		
 		ImagePlus imp2 = null;
@@ -166,9 +161,9 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		if (t2>0 && t2!=t1)
 			imp2 = zScale(imp2!=null?imp2:imp, t2, interpolationMethod+IN_PLACE+SCALE_T);
 		if (imp2!=null && imp2!=imp) {
+			imp2.show();
 			imp.changes = false;
 			imp.close();
-			imp2.show();
 		}
 	}
 

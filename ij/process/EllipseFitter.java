@@ -111,6 +111,8 @@ public class EllipseFitter {
 		this.ip = ip;
 		mask = ip.getMaskArray();
 		Rectangle r = ip.getRoi();
+		//this.pw = stats.pw;
+		//this.ph = stats.ph;
 		left = r.x;
 		top = r.y;
 		width = r.width;

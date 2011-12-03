@@ -28,8 +28,7 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		gd.addSlider("Size:", 0, 30, headSize);
 		gd.addChoice("Color:", Colors.colors, colorName);
 		gd.addChoice("Style:", Arrow.styles, Arrow.styles[style]);
-		gd.addCheckbox("Outline", Arrow.getDefaultOutline());
-		gd.addCheckbox("Double head", Arrow.getDefaultDoubleHeaded());
+		gd.addCheckbox("Double headed", Arrow.getDefaultDoubleHeaded());
 		gd.addDialogListener(this);
 		gd.showDialog();
 	}
@@ -39,7 +38,6 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		double headSize2 = gd.getNextNumber();
 		String colorName2 = gd.getNextChoice();
 		int style2 = gd.getNextChoiceIndex();
-		boolean outline2 = gd.getNextBoolean();
 		boolean doubleHeaded2 = gd.getNextBoolean();
 		if (colorName!=null && !colorName2.equals(colorName)) {
 			Color color = Colors.getColor(colorName2, Color.black);
@@ -49,7 +47,6 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		Arrow.setDefaultWidth(width2);
 		Arrow.setDefaultHeadSize(headSize2);
 		Arrow.setDefaultStyle(style2);
-		Arrow.setDefaultOutline(outline2);
 		Arrow.setDefaultDoubleHeaded(doubleHeaded2);
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return true;
@@ -60,14 +57,12 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 			roi.setStrokeWidth((float)width2);
 			arrow.setHeadSize(headSize2);
 			arrow.setStyle(style2);
-			arrow.setOutline(outline2);
 			arrow.setDoubleHeaded(doubleHeaded2);
 			imp.draw();
 		}
 		Prefs.set(Arrow.STYLE_KEY, style2);
 		Prefs.set(Arrow.WIDTH_KEY, width2);
 		Prefs.set(Arrow.SIZE_KEY, headSize2);
-		Prefs.set(Arrow.OUTLINE_KEY, outline2);
 		Prefs.set(Arrow.DOUBLE_HEADED_KEY, doubleHeaded2);
 		return true;
 	}

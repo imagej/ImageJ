@@ -46,13 +46,8 @@ public class Prefs {
 		SHOW_ALL_SLICE_ONLY=1<<17, COPY_HEADERS=1<<18, NO_ROW_NUMBERS=1<<19,
 		MOVE_TO_MISC=1<<20, ADD_TO_MANAGER=1<<21, RUN_SOCKET_LISTENER=1<<22,
 		MULTI_POINT_MODE=1<<23, ROTATE_YZ=1<<24, FLIP_XZ=1<<25,
-		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27, NO_CLICK_TO_GC=1<<28,
-		AVOID_RESLICE_INTERPOLATION=1<<29, KEEP_UNDO_BUFFERS=1<<30; 
+		DONT_SAVE_HEADERS=1<<26, DONT_SAVE_ROW_NUMBERS=1<<27; 
     public static final String OPTIONS = "prefs.options";
-    
-	private static final int USE_SYSTEM_PROXIES=1<<0;
-	private static final int USE_FILE_CHOOSER=1<<1;
-	public static final String OPTIONS2 = "prefs.options2";
     
 	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
 
@@ -89,7 +84,7 @@ public class Prefs {
 	/** Double buffer display of selections and overlays. */
 	public static boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */
-	public static boolean noPointLabels;
+	public static boolean noPointLabels = true;
 	/** Disable Edit/Undo command. */
 	public static boolean disableUndo;
 	/** Do not draw black border around image. */
@@ -122,20 +117,6 @@ public class Prefs {
 	public static boolean dontSaveHeaders;
 	/** Don't save Results table row numbers */
 	public static boolean dontSaveRowNumbers;
-	/** Don't run garbage collector when user clicks in status bar */
-	public static boolean noClickToGC;
-	/** Angle tool measures reflex angle */
-	public static boolean reflexAngle;
-	/** Avoid interpolation when re-slicing */
-	public static boolean avoidResliceInterpolation;
-	/** Preserve undo (snapshot) buffers when switching images */
-	public static boolean keepUndoBuffers;
-	/** Use ROI names as "show all" labels in the ROI Manager */
-	public static boolean useNamesAsLabels;
-	/** Set the "java.net.useSystemProxies" property */
-	public static boolean useSystemProxies;
-	/** Use the file chooser to import and export image sequences on Windows and Linux*/
-	public static boolean useFileChooser;
 
 
 	static Properties ijPrefs = new Properties();
@@ -385,9 +366,7 @@ public class Prefs {
 	}
 
 	static void loadOptions() {
-		int defaultOptions = ANTIALIASING+AVOID_RESLICE_INTERPOLATION
-			+(!IJ.isMacOSX()?RUN_SOCKET_LISTENER:0);
-		int options = getInt(OPTIONS, defaultOptions);
+		int options = getInt(OPTIONS, ANTIALIASING);
 		usePointerCursor = (options&USE_POINTER)!=0;
 		//antialiasedText = (options&ANTIALIASING)!=0;
 		antialiasedText = false;
@@ -406,7 +385,7 @@ public class Prefs {
 		antialiasedTools = (options&ANTIALIASED_TOOLS)!=0;
 		intelByteOrder = (options&INTEL_BYTE_ORDER)!=0;
 		// doubleBuffer = (options&DOUBLE_BUFFER)!=0; // always double buffer
-		//noPointLabels = (options&NO_POINT_LABELS)!=0;
+		noPointLabels = (options&NO_POINT_LABELS)!=0;
 		noBorder = (options&NO_BORDER)!=0;
 		showAllSliceOnly = (options&SHOW_ALL_SLICE_ONLY)!=0;
 		copyColumnHeaders = (options&COPY_HEADERS)!=0;
@@ -419,14 +398,6 @@ public class Prefs {
 		flipXZ = (options&FLIP_XZ)!=0;
 		dontSaveHeaders = (options&DONT_SAVE_HEADERS)!=0;
 		dontSaveRowNumbers = (options&DONT_SAVE_ROW_NUMBERS)!=0;
-		noClickToGC = (options&NO_CLICK_TO_GC)!=0;
-		avoidResliceInterpolation = (options&AVOID_RESLICE_INTERPOLATION)!=0;
-		keepUndoBuffers = (options&KEEP_UNDO_BUFFERS)!=0;
-		
-		defaultOptions = (!IJ.isMacOSX()?USE_FILE_CHOOSER:0);
-		int options2 = getInt(OPTIONS2, defaultOptions);
-		useSystemProxies = (options2&USE_SYSTEM_PROXIES)!=0;
-		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -443,14 +414,8 @@ public class Prefs {
 			+ (pointAddToManager?ADD_TO_MANAGER:0) + (runSocketListener?RUN_SOCKET_LISTENER:0)
 			+ (multiPointMode?MULTI_POINT_MODE:0) + (rotateYZ?ROTATE_YZ:0)
 			+ (flipXZ?FLIP_XZ:0) + (dontSaveHeaders?DONT_SAVE_HEADERS:0)
-			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0) + (noClickToGC?NO_CLICK_TO_GC:0)
-			+ (avoidResliceInterpolation?AVOID_RESLICE_INTERPOLATION:0)
-			+ (keepUndoBuffers?KEEP_UNDO_BUFFERS:0);
+			+ (dontSaveRowNumbers?DONT_SAVE_ROW_NUMBERS:0);
 		prefs.put(OPTIONS, Integer.toString(options));
-
-		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
-			+ (useFileChooser?USE_FILE_CHOOSER:0);
-		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
 	/** Saves the value of the string <code>text</code> in the preferences
@@ -594,6 +559,6 @@ public class Prefs {
 	public static Properties getControlPanelProperties() {
 		return ijPrefs;
 	}
-	
+
 }
 

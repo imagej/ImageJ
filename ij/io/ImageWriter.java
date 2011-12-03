@@ -55,15 +55,15 @@ public class ImageWriter {
 	}
 
 	void write16BitImage(OutputStream out, short[] pixels)  throws IOException {
-		long bytesWritten = 0L;
-		long size = 2L*fi.width*fi.height;
+		int bytesWritten = 0;
+		int size = fi.width*fi.height*2;
 		int count = 8192;
 		byte[] buffer = new byte[count];
 
 		while (bytesWritten<size) {
 			if ((bytesWritten + count)>size)
-				count = (int)(size-bytesWritten);
-			int j = (int)(bytesWritten/2L);
+				count = size - bytesWritten;
+			int j = bytesWritten/2;
 			int value;
 			if (fi.intelByteOrder)
 				for (int i=0; i < count; i+=2) {
@@ -150,16 +150,16 @@ public class ImageWriter {
 	}
 
 	void writeFloatImage(OutputStream out, float[] pixels)  throws IOException {
-		long bytesWritten = 0L;
-		long size = 4L*fi.width*fi.height;
+		int bytesWritten = 0;
+		int size = fi.width*fi.height*4;
 		int count = 8192;
 		byte[] buffer = new byte[count];
 		int tmp;
 
 		while (bytesWritten<size) {
 			if ((bytesWritten + count)>size)
-				count = (int)(size-bytesWritten);
-			int j = (int)(bytesWritten/4L);
+				count = size - bytesWritten;
+			int j = bytesWritten/4;
 			if (fi.intelByteOrder)
 				for (int i=0; i < count; i+=4) {
 					tmp = Float.floatToRawIntBits(pixels[j]);
@@ -207,15 +207,15 @@ public class ImageWriter {
 	}
 
 	void writeRGBImage(OutputStream out, int[] pixels)  throws IOException {
-		long bytesWritten = 0L;
-		long size = 3L*fi.width*fi.height;
+		int bytesWritten = 0;
+		int size = fi.width*fi.height*3;
 		int count = fi.width*24;
 		byte[] buffer = new byte[count];
 		while (bytesWritten<size) {
-			if ((bytesWritten+count)>size)
-				count = (int)(size-bytesWritten);
-			int j = (int)(bytesWritten/3L);
-			for (int i=0; i<count; i+=3) {
+			if ((bytesWritten + count)>size)
+				count = size - bytesWritten;
+			int j = bytesWritten/3;
+			for (int i=0; i < count; i+=3) {
 				buffer[i]   = (byte)(pixels[j]>>16);	//red
 				buffer[i+1] = (byte)(pixels[j]>>8);	//green
 				buffer[i+2] = (byte)pixels[j];		//blue

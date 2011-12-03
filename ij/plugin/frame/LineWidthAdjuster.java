@@ -28,7 +28,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	public LineWidthAdjuster() {
 		super("Line Width");
 		if (instance!=null) {
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}		
 		WindowManager.addWindow(this);
@@ -143,12 +143,16 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		return ((PolygonRoi)roi).isSplineFit();
 	}
 
+    public void windowClosing(WindowEvent e) {
+	 	close();
+		Prefs.saveLocation(LOC_KEY, getLocation());
+	}
+
     /** Overrides close() in PlugInFrame. */
-	public void close() {
-		super.close();
+    public void close() {
+    	super.close();
 		instance = null;
 		done = true;
-		Prefs.saveLocation(LOC_KEY, getLocation());
 		synchronized(this) {notify();}
 	}
 

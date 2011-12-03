@@ -18,7 +18,7 @@ public class Straightener implements PlugIn {
 		}
 		int width = (int)Math.round(roi.getStrokeWidth());
 		int originalWidth = width;
-		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
+		boolean isMacro = IJ.macroRunning();
 		int stackSize = imp.getStackSize();
 		if (stackSize==1) processStack = false;
 		if (width==1 || isMacro || stackSize>1) {
@@ -53,11 +53,11 @@ public class Straightener implements PlugIn {
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
 		imp2.show();
-		//imp.setRoi(roi);
-		//if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
-		//	((PolygonRoi)roi).fitSpline();
-		//	imp.draw();
-		//}
+		imp.setRoi(roi);
+		if (type==Roi.POLYLINE&& !((PolygonRoi)roi).isSplineFit()) {
+			((PolygonRoi)roi).fitSpline();
+			imp.draw();
+		}
 		if (isMacro) Line.setWidth(originalWidth);
 	}
 	
@@ -97,13 +97,10 @@ public class Straightener implements PlugIn {
 			roi.exitConstructingMode();
 		boolean isSpline = roi.isSplineFit();
 		int type = roi.getType();
-		int n = roi.getNCoordinates();
-		double len = roi.getLength();
-		if (!(isSpline && Math.abs(1.0-roi.getLength()/n)<0.5))
-			roi.fitSplineForStraightening();
+		roi.fitSplineForStraightening();
 		if (roi.getNCoordinates()<2) return null;
 		FloatPolygon p = roi.getFloatPolygon();
-		n = p.npoints;
+		int n = p.npoints;
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = new FloatProcessor(n, width);
 		ImageProcessor distances = null;
@@ -141,7 +138,7 @@ public class Straightener implements PlugIn {
 			} while (--n2>0);
 		}
 		if (!processStack) IJ.showProgress(n, n);
-		//imp.updateAndDraw();
+		imp.updateAndDraw();
 		if (!isSpline) {
 			if (type==Roi.FREELINE)
 				roi.removeSplineFit();

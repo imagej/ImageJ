@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.image.*;
 import ij.plugin.frame.ContrastAdjuster;
 
-/** This plugin implements the Image/Color/Make Composite command. */
+/** This plugin imlements the Image/Color/Make Composite command. */
 public class CompositeConverter implements PlugIn {
 
 	public void run(String arg) {
@@ -35,7 +35,7 @@ public class CompositeConverter implements PlugIn {
 			else
 				convertRGBToCompositeImage(imp);
 			if (!IJ.isMacro()) IJ.run("Channels Tool...");
-		} else if (c>=2 || (IJ.macroRunning()&&c>=1)) {
+		} else if (c>=2) {
 			GenericDialog gd = new GenericDialog("Make Composite");
 			gd.addChoice("Display Mode:", modes, mode);
 			gd.showDialog();
@@ -56,7 +56,6 @@ public class CompositeConverter implements PlugIn {
 			if (loc!=null) ImageWindow.setNextLocation(loc);
 			imp2.show();
 			imp.hide();
-			WindowManager.setCurrentWindow(imp2.getWindow());
 	}
 
 	void convertRGBToCompositeStack(ImagePlus imp, String arg) {

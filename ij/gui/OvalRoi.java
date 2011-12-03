@@ -9,14 +9,8 @@ import ij.measure.Calibration;
 /** Oval region of interest */
 public class OvalRoi extends Roi {
 
-	/** Creates an OvalRoi.*/
+	/** Creates a new OvalRoi.*/
 	public OvalRoi(int x, int y, int width, int height) {
-		super(x, y, width, height);
-		type = OVAL;
-	}
-
-	/** Creates an OvalRoi using double arguments.*/
-	public OvalRoi(double x, double y, double width, double height) {
 		super(x, y, width, height);
 		type = OVAL;
 	}
@@ -117,6 +111,7 @@ public class OvalRoi extends Roi {
 		}
 
 		if(constrain) {
+
 			if(activeHandle==1 || activeHandle==5) width=height;
 			else height=width;
 			
@@ -213,22 +208,17 @@ public class OvalRoi extends Roi {
 	}
 
 	public void draw(Graphics g) {
+		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
-		mag = getMagnification();
+		mag = ic.getMagnification();
 		int sw = (int)(width*mag);
 		int sh = (int)(height*mag);
-		int sx1 = screenX(x);
-		int sy1 = screenY(y);
-		if (subPixelResolution()) {
-			sw = (int)(widthd*mag);
-			sh = (int)(heightd*mag);
-			sx1 = screenXD(xd);
-			sy1 = screenYD(yd);
-		}
 		int sw2 = (int)(0.14645*width*mag);
 		int sh2 = (int)(0.14645*height*mag);
+		int sx1 = ic.screenX(x);
+		int sy1 = ic.screenY(y);
 		int sx2 = sx1+sw/2;
 		int sy2 = sy1+sh/2;
 		int sx3 = sx1+sw;

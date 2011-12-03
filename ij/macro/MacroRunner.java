@@ -2,9 +2,7 @@ package ij.macro;
 import ij.*;
 import ij.text.*;
 import ij.util.*;
-import ij.gui.ImageCanvas;
 import java.io.*;
-import java.awt.*;
 import ij.plugin.frame.Editor;
 																																																																																																																																																					   
 
@@ -115,10 +113,6 @@ public class MacroRunner implements Runnable {
 			thread.start();
 		}
 	}
-	
-	public Thread getThread() {
-		return thread;
-	}
 
 	public void run() {
 		Interpreter interp = new Interpreter();
@@ -128,20 +122,8 @@ public class MacroRunner implements Runnable {
 		try {
 			if (pgm==null)
 				interp.run(macro);
-			else {
-				if ("Popup Menu".equals(name)) {
-					PopupMenu popup = Menus.getPopupMenu();
-					if (popup!=null) {
-						ImagePlus imp = null;
-						Object parent = popup.getParent();
-						if (parent instanceof ImageCanvas)
-							imp = ((ImageCanvas)parent).getImage();
-						if (imp!=null)
-							WindowManager.setTempCurrentImage(Thread.currentThread(), imp);
-					}
-				}
+			else
 				interp.runMacro(pgm, address, name);
-			}
 		} catch(Throwable e) {
 			interp.abortMacro();
 			IJ.showStatus("");

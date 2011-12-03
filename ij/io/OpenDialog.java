@@ -34,7 +34,13 @@ import javax.swing.filechooser.*;
 				path = Macro.getValue(macroOptions, "path", path);
 			if ((path==null || path.equals("")) && title!=null && title.equals("Open As String"))
 				path = Macro.getValue(macroOptions, "OpenAsString", path);
-			path = lookupPathVariable(path);
+			if (path!=null && path.indexOf(".")==-1 && !((new File(path)).exists())) {
+				// Is 'path' a macro variable?
+				if (path.startsWith("&")) path=path.substring(1);
+				Interpreter interp = Interpreter.getInstance();
+				String path2 = interp!=null?interp.getStringVariable(path):null;
+				if (path2!=null) path = path2;
+			}
 		}
 		if (path==null || path.equals("")) {
 			if (Prefs.useJFileChooser)
@@ -70,16 +76,6 @@ import javax.swing.filechooser.*;
 		}
 	}
 	
-	public static String lookupPathVariable(String path) {
-		if (path!=null && path.indexOf(".")==-1 && !((new File(path)).exists())) {
-			if (path.startsWith("&")) path=path.substring(1);
-			Interpreter interp = Interpreter.getInstance();
-			String path2 = interp!=null?interp.getStringVariable(path):null;
-			if (path2!=null) path = path2;
-		}
-		return path;
-	}
-
 	// Uses JFileChooser to display file open dialog box.
 	void jOpen(String title, String path, String fileName) {
 		Java2.setSystemLookAndFeel();
@@ -182,11 +178,9 @@ import javax.swing.filechooser.*;
 	
 	/** Returns the selected file name. */
 	public String getFileName() {
-		if (name!=null) {
-			if (Recorder.record && recordPath && dir!=null)
-				Recorder.recordPath(title, dir+name);
-			lastName = name;
-		}
+		if (Recorder.record && recordPath)
+			Recorder.recordPath(title, dir+name);
+		lastName = name;
 		return name;
 	}
 		

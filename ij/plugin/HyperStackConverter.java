@@ -93,7 +93,6 @@ public class HyperStackConverter implements PlugIn {
 			imp2.setOpenAsHyperStack(true);
 			new StackWindow(imp2);
 			if (imp!=imp2) {
-				imp2.setOverlay(imp.getOverlay());
 				imp.hide();
 				WindowManager.setCurrentWindow(imp2.getWindow());
 			}
@@ -162,10 +161,7 @@ public class HyperStackConverter implements PlugIn {
 		}
 		imp2.setOpenAsHyperStack(false);
 		new StackWindow(imp2);
-		if (imp!=imp2) {
-			imp2.setOverlay(imp.getOverlay());
-			imp.hide();
-		}
+		if (imp!=imp2) imp.hide();
 	}
 	
 	void newHyperStack() {

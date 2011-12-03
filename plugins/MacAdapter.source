@@ -1,6 +1,7 @@
 import ij.plugin.*;
 import ij.*;
 import ij.io.*;
+import com.apple.mrj.*;
 import com.apple.eawt.*;
 import java.util.Vector;
 

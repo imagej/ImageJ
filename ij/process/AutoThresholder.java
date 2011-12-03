@@ -62,11 +62,9 @@ public class AutoThresholder {
 		return threshold;
 	}
 
+	@Deprecated
 	public int getThreshold(String mString, int[] histogram) {
 		// throws an exception if unknown argument
-		int index = mString.indexOf(" ");
-		if (index!=-1)
-			mString = mString.substring(0, index);
 		Method method = Method.valueOf(Method.class, mString); 
 		return getThreshold(method, histogram);
 	}
@@ -82,8 +80,8 @@ public class AutoThresholder {
 		int ih, it;
 		int first_bin;
 		int last_bin;
-		double sum_pix;
-		double num_pix;
+		int sum_pix;
+		int num_pix;
 		double term;
 		double ent;  // entropy 
 		double min_ent; // min entropy 
@@ -110,16 +108,16 @@ public class AutoThresholder {
 		double [] mu_0 = new double[256];
 		sum_pix = num_pix = 0;
 		for ( ih = first_bin; ih < 256; ih++ ){
-			sum_pix += (double)ih * data[ih];
+			sum_pix += ih * data[ih];
 			num_pix += data[ih];
 			/* NUM_PIX cannot be zero ! */
-			mu_0[ih] = sum_pix / num_pix;
+			mu_0[ih] = sum_pix / ( double ) num_pix;
 		}
 
 		double [] mu_1 = new double[256];
 		sum_pix = num_pix = 0;
 		for ( ih = last_bin; ih > 0; ih-- ){
-			sum_pix += (double)ih * data[ih];
+			sum_pix += ih * data[ih];
 			num_pix += data[ih];
 			/* NUM_PIX cannot be zero ! */
 			mu_1[ih - 1] = sum_pix / ( double ) num_pix;
@@ -248,9 +246,8 @@ public class AutoThresholder {
 		// yes => exit
 		// no => increment G and repeat
 		//
-		int i, l, totl, g=0;
-		double toth, h;
-		for (i = 1; i < 256; i++) {
+		int i, l, toth, totl, h, g=0;
+		for (i = 1; i < 256; i++){
 			if (data[i] > 0){
 				g = i + 1;
 				break;
@@ -267,7 +264,7 @@ public class AutoThresholder {
 			toth = 0;
 			for (i = g + 1; i < 256; i++){
 				toth += data[i];
-				h += ((double)data[i]*i);
+				h += (data[i]*i);
 			}
 			if (totl > 0 && toth > 0){
 				l /= totl;
@@ -333,11 +330,11 @@ public class AutoThresholder {
 		do {
 			sum1=sum2=sum3=sum4=0.0;
 			for (int i=min; i<=movingIndex; i++) {
-				sum1 += (double)i*data[i];
+				sum1 += i*data[i];
 				sum2 += data[i];
 			}
 			for (int i=(movingIndex+1); i<=max; i++) {
-				sum3 += (double)i*data[i];
+				sum3 += i*data[i];
 				sum4 += data[i];
 			}			
 			result = (sum1/sum2 + sum3/sum4)/2.0;
@@ -362,11 +359,12 @@ public class AutoThresholder {
 		//    http://citeseer.ist.psu.edu/sezgin04survey.html
 		// Ported to ImageJ plugin by G.Landini from E Celebi's fourier_0.8 routines
 		int threshold;
-		double num_pixels;
-		double sum_back; /* sum of the background pixels at a given threshold */
-		double sum_obj;  /* sum of the object pixels at a given threshold */
-		double num_back; /* number of background pixels at a given threshold */
-		double num_obj;  /* number of object pixels at a given threshold */
+		int ih;
+		int num_pixels;
+		int sum_back; /* sum of the background pixels at a given threshold */
+		int sum_obj;  /* sum of the object pixels at a given threshold */
+		int num_back; /* number of background pixels at a given threshold */
+		int num_obj;  /* number of object pixels at a given threshold */
 		double old_thresh;
 		double new_thresh;
 		double mean_back; /* mean of the background pixels at a given threshold */
@@ -377,13 +375,13 @@ public class AutoThresholder {
 
 		tolerance=0.5;
 		num_pixels = 0;
-		for (int ih = 0; ih < 256; ih++ ) 
+		for (ih = 0; ih < 256; ih++ ) 
 			num_pixels += data[ih];
 
 		/* Calculate the mean gray-level */
 		mean = 0.0;
-		for (int ih = 0 + 1; ih < 256; ih++ ) //0 + 1?
-			mean += (double)ih * data[ih];
+		for ( ih = 0 + 1; ih < 256; ih++ ) //0 + 1?
+			mean += ih * data[ih];
 		mean /= num_pixels;
 		/* Initial estimate */
 		new_thresh = mean;
@@ -395,16 +393,16 @@ public class AutoThresholder {
 			/* Background */
 			sum_back = 0;
 			num_back = 0;
-			for (int ih = 0; ih <= threshold; ih++ ) {
-				sum_back += (double)ih * data[ih];
+			for ( ih = 0; ih <= threshold; ih++ ) {
+				sum_back += ih * data[ih];
 				num_back += data[ih];
 			}
 			mean_back = ( num_back == 0 ? 0.0 : ( sum_back / ( double ) num_back ) );
 			/* Object */
 			sum_obj = 0;
 			num_obj = 0;
-			for (int ih = threshold + 1; ih < 256; ih++ ) {
-				sum_obj += (double)ih * data[ih];
+			for ( ih = threshold + 1; ih < 256; ih++ ) {
+				sum_obj += ih * data[ih];
 				num_obj += data[ih];
 			}
 			mean_obj = ( num_obj == 0 ? 0.0 : ( sum_obj / ( double ) num_obj ) );
@@ -450,12 +448,12 @@ public class AutoThresholder {
 		double [] P1 = new double[256]; /* cumulative normalized histogram */
 		double [] P2 = new double[256]; 
 
-		double total =0;
+		int total =0;
 		for (ih = 0; ih < 256; ih++ ) 
 			total+=data[ih];
 
 		for (ih = 0; ih < 256; ih++ )
-			norm_histo[ih] = data[ih]/total;
+			norm_histo[ih] = (double)data[ih]/total;
 
 		P1[0]=norm_histo[0];
 		P2[0]=1.0-P1[0];
@@ -524,7 +522,7 @@ public class AutoThresholder {
 		double tot=0, sum=0;
 		for (int i=0; i<256; i++){
 			tot+= data[i];
-			sum+=((double)i*data[i]);
+			sum+=(i*data[i]);
 		}
 		threshold =(int) Math.floor(sum/tot);
 		return threshold;
@@ -666,11 +664,10 @@ public class AutoThresholder {
 			histo[i]=(double)(data[i]/total); //normalised histogram
 
 		/* Calculate the first, second, and third order moments */
-		for ( int i = 0; i < 256; i++ ) {
-			double di = i;
-			m1 += di * histo[i];
-			m2 += di * di * histo[i];
-			m3 += di * di * di * histo[i];
+		for ( int i = 0; i < 256; i++ ){
+			m1 += i * histo[i];
+			m2 += i * i * histo[i];
+			m3 += i * i * i * histo[i];
 		}
 		/* 
 		First 4 moments of the gray-level image should match the first 4 moments
@@ -702,16 +699,16 @@ public class AutoThresholder {
 		// C++ code by Jordan Bevik <Jordan.Bevic@qtiworld.com>
 		// ported to ImageJ plugin by G.Landini
 		int k,kStar;  // k = the current threshold; kStar = optimal threshold
-		double N1, N;    // N1 = # points with intensity <=k; N = total number of points
+		int N1, N;    // N1 = # points with intensity <=k; N = total number of points
 		double BCV, BCVmax; // The current Between Class Variance and maximum BCV
 		double num, denom;  // temporary bookeeping
-		double Sk;  // The total intensity for all histogram points <=k
-		double S, L=256; // The total intensity of the image
+		int Sk;  // The total intensity for all histogram points <=k
+		int S, L=256; // The total intensity of the image
 
 		// Initialize values:
 		S = N = 0;
 		for (k=0; k<L; k++){
-			S += (double)k * data[k];	// Total histogram intensity
+			S += k * data[k];	// Total histogram intensity
 			N += data[k];		// Total number of data points
 		}
 
@@ -724,7 +721,7 @@ public class AutoThresholder {
 		// Look at each possible threshold value,
 		// calculate the between-class variance, and decide if it's a max
 		for (k=1; k<L-1; k++) { // No need to check endpoints k = 0 or k = L-1
-			Sk += (double)k * data[k];
+			Sk += k * data[k];
 			N1 += data[k];
 
 			// The float casting here is to avoid compiler warning about loss of precision and
@@ -816,12 +813,12 @@ public class AutoThresholder {
 		double [] P1 = new double[256]; /* cumulative normalized histogram */
 		double [] P2 = new double[256]; 
 
-		double total =0;
+		int total =0;
 		for (ih = 0; ih < 256; ih++ ) 
 			total+=data[ih];
 
 		for (ih = 0; ih < 256; ih++ )
-			norm_histo[ih] = data[ih]/total;
+			norm_histo[ih] = (double)data[ih]/total;
 
 		P1[0]=norm_histo[0];
 		P2[0]=1.0-P1[0];
@@ -1006,12 +1003,12 @@ public class AutoThresholder {
 		double [] P1 = new double[256]; /* cumulative normalized histogram */
 		double [] P2 = new double[256]; 
 
-		double total =0;
+		int total =0;
 		for (ih = 0; ih < 256; ih++ ) 
 			total+=data[ih];
 
 		for (ih = 0; ih < 256; ih++ )
-			norm_histo[ih] = data[ih]/total;
+			norm_histo[ih] = (double)data[ih]/total;
 
 		P1[0]=norm_histo[0];
 		P2[0]=1.0-P1[0];
@@ -1197,12 +1194,12 @@ public class AutoThresholder {
 		double [] P1_sq = new double[256]; 
 		double [] P2_sq = new double[256]; 
 
-		double total =0;
+		int total =0;
 		for (ih = 0; ih < 256; ih++ ) 
 			total+=data[ih];
 
 		for (ih = 0; ih < 256; ih++ )
-			norm_histo[ih] = data[ih]/total;
+			norm_histo[ih] = (double)data[ih]/total;
 
 		P1[0]=norm_histo[0];
 		for (ih = 1; ih < 256; ih++ )

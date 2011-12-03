@@ -1,6 +1,6 @@
 package ij.gui;
 import ij.IJ;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 
 /** This is an xtension of GenericDialog that is non-model.
  *	@author Johannes Schindelin
@@ -23,11 +23,4 @@ public class NonBlockingGenericDialog extends GenericDialog {
 		if (wasOKed() || wasCanceled())
 			notify();
 	}
-	
-	public synchronized void keyPressed(KeyEvent e) {
-		super.keyPressed(e);
-		if (wasOKed() || wasCanceled())
-			notify();
-	}
-
 }

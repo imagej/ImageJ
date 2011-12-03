@@ -5,44 +5,15 @@
 </head>
 <body>
 
-<li> <u>1.46b 29 November 2011</u>
+<li> <u>1.44h, 21 September 2010</u>
 <ul>
-<li> Added the <i>File&gt;Import&gt;XY Coordinates</i> command.
-<li> Added a "List coordinates" checkbox to the
-<i>Edit&gt;Selection&gt;Properties</i> dialog box.
-<li>"Help" buttons in dialog boxes can display HTML formatted messages
-(<a href="macros/examples/DialogWithHelp.txt">example</a>).
-<li> The <i>Edit&gt;Selection&gt;Line to Area</i>
-command now works with one pixel wide straight lines.
-<li> The color of the rounded rectangle tool no longer defaults
-to the foreground color.
-<li> Thanks to Aryeh Weiss, the ROI Manager's "OR (Combine)" 
-command now works with line selections.
-<li> Added the ParticleAnalyzer.setRoiManager() method
-(<a href="macros/js/HiddenRoiManager.js">example</a>).
-<li> To support sub-pixel positioning, added constructors that accept 
-double arguments to the Roi, OvalRoi and TextRoi classes
-(<a href="macros/js/SubPixelSelections.js">example</a>).
-<li> Thanks to Norbert Vischer, added the ij.util.StringSorter.sortNumerically() method.
-<li> Thanks to José Wojnacki, fixed a bug that could cause a macro to fail if 
-a drawing tool was used during a waitForUser() break.
-<li> Thanks to Norbert Vischer, fixed a bug that caused the
-"Sort names numerically" option in the <i>File&gt;Import&gt;Image Sequence</i>
-dialog to sometimes not work as expected.
-<li> Fixed a bug that caused the default stroke width and color to 
-change when an arrow was added to an overlay.
-<li> Fixed a bug that caused lines to be displayed incorrectly in the
-ROI Manager "Show All" mode after adding a rounded rectangle.
-<li> Thanks to Norbert Vischer, fixed a bug that sometimes caused the Plot.show()
-macro function to return before the plot window was fully displayed.
-<li> Thanks to Norbert Vischer, fixed a bug that caused macros displaying 
-showMessage() dialogs to not be aborted when the user pressed the esc key.
-<li> Thanks to Jerome Mutterer, fixed a bug that sometimes caused selections in
-ROI Manager "Show All" mode in and overlays to be displayed with the wrong stroke width.
-<li> Thanks to Winfried Wurm, fixed a bug that could cause the run("Restore Selection") and
-run("Enlarge...") macro functions to fail in batch mode macros.
+<li> Added drop down menus to the <li>Image&gt;Adjust&gt;Color Threshold</li> tool 
+for selecting any of 16 different automatic thresholding methods and for selecting the
+threshold color.
+<li> Fixed a bug that sometimes caused the <i>Image&gt;Adjust&gt;Contrast/Brightness</i>
+"Apply" option to fail with RGB stacks.
 </ul> 
 
-<a href="http://imagej.nih.gov/ij">Home</a> 
+<a href="http://imagej.nih.gov/ij">Home</a>
 </body>
 </html>

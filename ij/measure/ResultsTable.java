@@ -52,8 +52,7 @@ public class ResultsTable implements Cloneable {
 	private String rowLabelHeading = "";
 	private char delimiter = '\t';
 	private boolean headingSet; 
-	private boolean showRowNumbers = true;
-	private boolean autoFormat = true;
+	private boolean skipRowNumbers;
 
 	/** Constructs an empty ResultsTable with the counter=0 and no columns. */
 	public ResultsTable() {
@@ -94,21 +93,18 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
-	/** Obsolete; the addValue() method automatically adds columns as needed.
-	* @see #addValue(String, double)
-	*/
 	public synchronized void addColumns() {
-		String[] tmp1 = new String[maxColumns*2];
-		System.arraycopy(headings, 0, tmp1, 0, maxColumns);
-		headings = tmp1;
-		double[][] tmp2 = new double[maxColumns*2][];
-		for (int i=0; i<maxColumns; i++)
-			tmp2[i] = columns[i];
-		columns = tmp2;
-		boolean[] tmp3 = new boolean[maxColumns*2];
-		System.arraycopy(keep, 0, tmp3, 0, maxColumns);
-		keep = tmp3;
-		maxColumns *= 2;
+			String[] tmp1 = new String[maxColumns*2];
+			System.arraycopy(headings, 0, tmp1, 0, maxColumns);
+			headings = tmp1;
+			double[][] tmp2 = new double[maxColumns*2][];
+			for (int i=0; i<maxColumns; i++)
+				tmp2[i] = columns[i];
+			columns = tmp2;
+			boolean[] tmp3 = new boolean[maxColumns*2];
+			System.arraycopy(keep, 0, tmp3, 0, maxColumns);
+			keep = tmp3;
+			maxColumns *= 2;
 	}
 	
 	/** Returns the current value of the measurement counter. */
@@ -134,10 +130,7 @@ public class ResultsTable implements Cloneable {
 	}
 	
 	/** Adds a value to the end of the given column. If the column
-		does not exist, it is created.  Counter must be >0.
-		There is an example at:<br>
-		http://imagej.nih.gov/ij/plugins/sine-cosine.html
-		*/
+		does not exist, it is created.  Counter must be >0. */
 	public void addValue(String column, double value) {
 		if (column==null)
 			throw new IllegalArgumentException("Column is null");
@@ -343,8 +336,7 @@ public class ResultsTable implements Cloneable {
 			headingSet = false;
 		}
 		StringBuffer sb = new StringBuffer(200);
-		if (showRowNumbers)
-			sb.append(" "+delimiter);
+		sb.append(" "+delimiter);
 		if (rowLabels!=null)
 			sb.append(rowLabelHeading + delimiter);
 		String heading;
@@ -375,7 +367,7 @@ public class ResultsTable implements Cloneable {
 			sb = new StringBuffer(200);
 		else
 			sb.setLength(0);
-		if (showRowNumbers) {
+		if (!skipRowNumbers) {
 			sb.append(Integer.toString(row+1));
 			sb.append(delimiter);
 		}
@@ -421,13 +413,9 @@ public class ResultsTable implements Cloneable {
 		this.precision = precision;
 	}
 	
-	public void showRowNumbers(boolean showNumbers) {
-		showRowNumbers = showNumbers;
-	}
-
 	String n(double n) {
 		String s;
-		if (autoFormat && Math.round(n)==n && precision>=0)
+		if (Math.round(n)==n && precision>=0)
 			s = d2s(n, 0);
 		else
 			s = d2s(n, precision);
@@ -441,8 +429,8 @@ public class ResultsTable implements Cloneable {
 	/** This is a version of IJ.d2s() that uses scientific notation for
 		small numbes that would otherwise display as zero. */
 	public static String d2s(double n, int decimalPlaces) {
-		if (Double.isNaN(n)||Double.isInfinite(n))
-			return ""+n;
+		if (Double.isNaN(n))
+			return "NaN";
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		double np = n;
@@ -479,7 +467,10 @@ public class ResultsTable implements Cloneable {
 				sf[8] = new DecimalFormat("0.00000000E0",dfs);
 				sf[9] = new DecimalFormat("0.000000000E0",dfs);
 			}
-			return sf[decimalPlaces].format(n); // use scientific notation
+			if (Double.isInfinite(n))
+				return ""+n;
+			else
+				return sf[decimalPlaces].format(n); // use scientific notation
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
@@ -570,7 +561,6 @@ public class ResultsTable implements Cloneable {
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
-			autoFormat = false;
 		}
 		tp.setResultsTable(this);
 		int n = getCounter();
@@ -730,25 +720,18 @@ public class ResultsTable implements Cloneable {
 		FileOutputStream fos = new FileOutputStream(path);
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 		pw = new PrintWriter(bos);
-		boolean saveShowRowNumbers = showRowNumbers;
-		if (Prefs.dontSaveRowNumbers)	
-			showRowNumbers = false;
 		if (!Prefs.dontSaveHeaders) {
 			String headings = getColumnHeadings();
+			if (Prefs.dontSaveRowNumbers)
+				headings = headings.substring(2);
 			pw.println(headings);
 		}
+		skipRowNumbers = Prefs.dontSaveRowNumbers;
 		for (int i=0; i<getCounter(); i++)
 			pw.println(getRowAsString(i));
-		showRowNumbers = saveShowRowNumbers;
+		skipRowNumbers = false;
 		pw.close();
 		delimiter = '\t';
-	}
-	
-	public static String getDefaultHeading(int index) {
-		if (index>=0 && index<defaultHeadings.length)
-			return defaultHeadings[index];
-		else
-			return "null";
 	}
 
 	/** Creates a copy of this ResultsTable. */

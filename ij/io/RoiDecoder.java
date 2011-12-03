@@ -1,7 +1,5 @@
 package ij.io;
 import ij.gui.*;
-import ij.ImagePlus;
-import ij.process.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -25,12 +23,14 @@ import java.awt.*;
 	44-47   fill color (v1.43i or later)
 	48-49   subtype (v1.43k or later)
 	50-51   options (v1.43k or later)
-	52-52   arrow style or aspect ratio (v1.43p or later)
+	52-52   arrow style (v1.43p or later)
 	53-53   arrow head size (v1.43p or later)
 	54-55   rounded rect arc size (v1.43p or later)
-	56-59   position
-	60-63   header2 offset
-	64-       x-coordinates (short), followed by y-coordinates
+	56-63	 reserved (zero)
+	64-67   x0, y0 (polygon)
+	68-71   x1, y1 
+	etc.
+	.
 */
 
 /** Decodes an ImageJ, NIH Image or Scion Image ROI file. */
@@ -47,10 +47,6 @@ public class RoiDecoder {
 	public static final int Y1 = 22;
 	public static final int X2 = 26;
 	public static final int Y2 = 30;
-	public static final int XD = 18;
-	public static final int YD = 22;
-	public static final int WIDTHD = 26;
-	public static final int HEIGHTD = 30;
 	public static final int STROKE_WIDTH = 34;
 	public static final int SHAPE_ROI_SIZE = 36;
 	public static final int STROKE_COLOR = 40;
@@ -58,44 +54,20 @@ public class RoiDecoder {
 	public static final int SUBTYPE = 48;
 	public static final int OPTIONS = 50;
 	public static final int ARROW_STYLE = 52;
-	public static final int ELLIPSE_ASPECT_RATIO = 52;
 	public static final int ARROW_HEAD_SIZE = 53;
 	public static final int ROUNDED_RECT_ARC_SIZE = 54;
-	public static final int POSITION = 56;
-	public static final int HEADER2_OFFSET = 60;
 	public static final int COORDINATES = 64;
-	// header2 offsets
-	public static final int C_POSITION = 4;
-	public static final int Z_POSITION = 8;
-	public static final int T_POSITION = 12;
-	public static final int NAME_OFFSET = 16;
-	public static final int NAME_LENGTH = 20;
-	public static final int OVERLAY_LABEL_COLOR = 24;
-	public static final int OVERLAY_FONT_SIZE = 28; //short
-	public static final int AVAILABLE_BYTE1 = 30;  //byte
-	public static final int IMAGE_OPACITY = 31;  //byte
-	public static final int IMAGE_SIZE = 32;  //int
-	public static final int FLOAT_STROKE_WIDTH = 36;  //float
-		
+	
 	// subtypes
 	public static final int TEXT = 1;
 	public static final int ARROW = 2;
-	public static final int ELLIPSE = 3;
-	public static final int IMAGE = 4;
 	
 	// options
 	public static final int SPLINE_FIT = 1;
 	public static final int DOUBLE_HEADED = 2;
-	public static final int OUTLINE = 4;
-	public static final int OVERLAY_LABELS = 8;
-	public static final int OVERLAY_NAMES = 16;
-	public static final int OVERLAY_BACKGROUNDS = 32;
-	public static final int OVERLAY_BOLD = 64;
-	public static final int SUB_PIXEL_RESOLUTION = 128;
 	
 	// types
-	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
-		freehand=7, traced=8, angle=9, point=10;
+	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6, freehand=7, traced=8, angle=9, point=10;
 	
 	private byte[] data;
 	private String path;
@@ -120,8 +92,8 @@ public class RoiDecoder {
 		if (path!=null) {
 			File f = new File(path);
 			size = (int)f.length();
-			if (!path.endsWith(".roi") && size>5242880)
-				throw new IOException("This is not an ROI or file size>5MB)");
+			if (size>500000)
+				throw new IOException("This is not an ImageJ ROI");
 			name = f.getName();
 			is = new FileInputStream(path);
 		}
@@ -144,33 +116,6 @@ public class RoiDecoder {
 		int height = bottom-top;
 		int n = getShort(N_COORDINATES);
 		int options = getShort(OPTIONS);
-		int position = getInt(POSITION);
-		int hdr2Offset = getInt(HEADER2_OFFSET);
-		int channel=0, slice=0, frame=0;
-		int overlayLabelColor=0;
-		int overlayFontSize=0;
-		int imageOpacity=0;
-		int imageSize=0;
-		boolean subPixelResolution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
-		
-		boolean subPixelRect = version>=223 && subPixelResolution && (type==rect||type==oval);
-		double xd=0.0, yd=0.0, widthd=0.0, heightd=0.0;
-		if (subPixelRect) {
-			xd = getFloat(XD);
-			yd = getFloat(YD);
-			widthd = getFloat(WIDTHD);
-			heightd = getFloat(HEIGHTD);
-		}
-		
-		if (hdr2Offset>0 && hdr2Offset+IMAGE_SIZE+4<=size) {
-			channel = getInt(hdr2Offset+C_POSITION);
-			slice = getInt(hdr2Offset+Z_POSITION);
-			frame = getInt(hdr2Offset+T_POSITION);
-			overlayLabelColor = getInt(hdr2Offset+OVERLAY_LABEL_COLOR);
-			overlayFontSize = getShort(hdr2Offset+OVERLAY_FONT_SIZE);
-			imageOpacity = getByte(hdr2Offset+IMAGE_OPACITY);
-			imageSize = getInt(hdr2Offset+IMAGE_SIZE);
-		}
 		
 		if (name!=null && name.endsWith(".roi"))
 			name = name.substring(0, name.length()-4);
@@ -179,125 +124,86 @@ public class RoiDecoder {
 		Roi roi = null;
 		if (isComposite) {
 			roi = getShapeRoi();
-			if (version>=218)
-				getStrokeWidthAndColor(roi, hdr2Offset);
-			roi.setPosition(position);
-			if (channel>0 || slice>0 || frame>0)
-				roi.setPosition(channel, slice, frame);
-			decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
+			if (version>=218) getStrokeWidthAndColor(roi);
 			return roi;
 		}
 
 		switch (type) {
-			case rect:
-				if (subPixelRect)
-					roi = new Roi(xd, yd, widthd, heightd);
-				else
-					roi = new Roi(left, top, width, height);
-				int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
-				if (arcSize>0)
-					roi.setCornerDiameter(arcSize);
-				break;
-			case oval:
-				if (subPixelRect)
-					roi = new OvalRoi(xd, yd, widthd, heightd);
-				else
-					roi = new OvalRoi(left, top, width, height);
-				break;
-			case line:
-				double x1 = getFloat(X1);		
-				double y1 = getFloat(Y1);		
-				double x2 = getFloat(X2);		
-				double y2 = getFloat(Y2);
-				if (subtype==ARROW) {
-					roi = new Arrow(x1, y1, x2, y2);		
-					((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
-					((Arrow)roi).setOutline((options&OUTLINE)!=0);
-					int style = getByte(ARROW_STYLE);
-					if (style>=Arrow.FILLED && style<=Arrow.HEADLESS)
-						((Arrow)roi).setStyle(style);
-					int headSize = getByte(ARROW_HEAD_SIZE);
-					if (headSize>=0 && style<=30)
-						((Arrow)roi).setHeadSize(headSize);
-				} else
-					roi = new Line(x1, y1, x2, y2);		
-				//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
-				break;
-			case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
-					//IJ.log("type: "+type);
-					//IJ.log("n: "+n);
-					//IJ.log("rect: "+left+","+top+" "+width+" "+height);
-					if (n==0) break;
-					int[] x = new int[n];
-					int[] y = new int[n];
-					float[] xf = null;
-					float[] yf = null;
-					int base1 = COORDINATES;
-					int base2 = base1+2*n;
-					int xtmp, ytmp;
-					for (int i=0; i<n; i++) {
-						xtmp = getShort(base1+i*2);
-						if (xtmp<0) xtmp = 0;
-						ytmp = getShort(base2+i*2);
-						if (ytmp<0) ytmp = 0;
-						x[i] = left+xtmp;
-						y[i] = top+ytmp;
-						//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
-					}
-					if (subPixelResolution) {
-						xf = new float[n];
-						yf = new float[n];
-						base1 = COORDINATES+4*n;
-						base2 = base1+4*n;
-						for (int i=0; i<n; i++) {
-							xf[i] = getFloat(base1+i*4);
-							yf[i] = getFloat(base2+i*4);
-						}
-					}
-					if (type==point) {
-						if (subPixelResolution)
-							roi = new PointRoi(xf, yf, n);
-						else
-							roi = new PointRoi(x, y, n);
-						break;
-					}
-					int roiType;
-					if (type==polygon)
-						roiType = Roi.POLYGON;
-					else if (type==freehand) {
-						roiType = Roi.FREEROI;
-						if (subtype==ELLIPSE) {
-							double ex1 = getFloat(X1);		
-							double ey1 = getFloat(Y1);		
-							double ex2 = getFloat(X2);		
-							double ey2 = getFloat(Y2);
-							double aspectRatio = getFloat(ELLIPSE_ASPECT_RATIO);
-							roi = new EllipseRoi(ex1,ey1,ex2,ey2,aspectRatio);
-							break;
-						}
-					} else if (type==traced)
-						roiType = Roi.TRACED_ROI;
-					else if (type==polyline)
-						roiType = Roi.POLYLINE;
-					else if (type==freeline)
-						roiType = Roi.FREELINE;
-					else if (type==angle)
-						roiType = Roi.ANGLE;
-					else
-						roiType = Roi.FREEROI;
-					if (subPixelResolution)
-						roi = new PolygonRoi(xf, yf, n, roiType);
-					else
-						roi = new PolygonRoi(x, y, n, roiType);
+		case rect:
+			roi = new Roi(left, top, width, height);
+			int arcSize = getShort(ROUNDED_RECT_ARC_SIZE);
+			if (arcSize>0)
+				roi.setRoundRectArcSize(arcSize);
+			break;
+		case oval:
+			roi = new OvalRoi(left, top, width, height);
+			break;
+		case line:
+			int x1 = (int)getFloat(X1);		
+			int y1 = (int)getFloat(Y1);		
+			int x2 = (int)getFloat(X2);		
+			int y2 = (int)getFloat(Y2);
+			if (subtype==ARROW) {
+				roi = new Arrow(x1, y1, x2, y2);		
+				((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
+				int style = getByte(ARROW_STYLE);
+				if (style>=Arrow.FILLED && style<=Arrow.OPEN)
+					((Arrow)roi).setStyle(style);
+				int headSize = getByte(ARROW_HEAD_SIZE);
+				if (headSize>=0 && style<=30)
+					((Arrow)roi).setHeadSize(headSize);
+			} else
+				roi = new Line(x1, y1, x2, y2);		
+			//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
+			break;
+		case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
+				//IJ.write("type: "+type);
+				//IJ.write("n: "+n);
+				//IJ.write("rect: "+left+","+top+" "+width+" "+height);
+				if (n==0) break;
+				int[] x = new int[n];
+				int[] y = new int[n];
+				int base1 = COORDINATES;
+				int base2 = base1+2*n;
+				int xtmp, ytmp;
+				for (int i=0; i<n; i++) {
+					xtmp = getShort(base1+i*2);
+					if (xtmp<0) xtmp = 0;
+					ytmp = getShort(base2+i*2);
+					if (ytmp<0) ytmp = 0;
+					x[i] = left+xtmp;
+					y[i] = top+ytmp;
+					//IJ.write(i+" "+getShort(base1+i*2)+" "+getShort(base2+i*2));
+				}
+				if (type==point) {
+					roi = new PointRoi(x, y, n);
 					break;
-			default:
-				throw new IOException("Unrecognized ROI type: "+type);
+				}
+				int roiType;
+				if (type==polygon)
+					roiType = Roi.POLYGON;
+				else if (type==freehand)
+					roiType = Roi.FREEROI;
+				else if (type==traced)
+					roiType = Roi.TRACED_ROI;
+				else if (type==polyline)
+					roiType = Roi.POLYLINE;
+				else if (type==freeline)
+					roiType = Roi.FREELINE;
+				else if (type==angle)
+					roiType = Roi.ANGLE;
+				else
+					roiType = Roi.FREEROI;
+				roi = new PolygonRoi(x, y, n, roiType);
+				break;
+		default:
+			throw new IOException("Unrecognized ROI type: "+type);
 		}
-		roi.setName(getRoiName());
+		if (name!=null) roi.setName(name);
 		
 		// read stroke width, stroke color and fill color (1.43i or later)
 		if (version>=218) {
-			getStrokeWidthAndColor(roi, hdr2Offset);
+			getStrokeWidthAndColor(roi);
 			boolean splineFit = (options&SPLINE_FIT)!=0;
 			if (splineFit && roi instanceof PolygonRoi)
 				((PolygonRoi)roi).fitSpline();
@@ -306,38 +212,12 @@ public class RoiDecoder {
 		if (version>=218 && subtype==TEXT)
 			roi = getTextRoi(roi);
 
-		if (version>=221 && subtype==IMAGE)
-			roi = getImageRoi(roi, imageOpacity, imageSize);
-
-		roi.setPosition(position);
-		if (channel>0 || slice>0 || frame>0)
-			roi.setPosition(channel, slice, frame);
-		decodeOverlayOptions(roi, version, options, overlayLabelColor, overlayFontSize);
 		return roi;
 	}
 	
-	void decodeOverlayOptions(Roi roi, int version, int options, int color, int fontSize) {
-		Overlay proto = new Overlay();
-		proto.drawLabels((options&OVERLAY_LABELS)!=0);
-		proto.drawNames((options&OVERLAY_NAMES)!=0);
-		proto.drawBackgrounds((options&OVERLAY_BACKGROUNDS)!=0);
-		if (version>=220)
-			proto.setLabelColor(new Color(color));
-		boolean bold = (options&OVERLAY_BOLD)!=0;
-		if (fontSize>0 || bold) {
-			proto.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
-		}
-		roi.setPrototypeOverlay(proto);
-	}
-
-	void getStrokeWidthAndColor(Roi roi, int hdr2Offset) {
-		double strokeWidth = getShort(STROKE_WIDTH);
-		if (hdr2Offset>0) {
-			double strokeWidthD = getFloat(hdr2Offset+FLOAT_STROKE_WIDTH);
-			if (strokeWidthD>0.0)
-				strokeWidth = strokeWidthD;
-		}
-		if (strokeWidth>0.0)
+	void getStrokeWidthAndColor(Roi roi) {
+		int strokeWidth = getShort(STROKE_WIDTH);
+		if (strokeWidth>0)
 			roi.setStrokeWidth(strokeWidth);
 		int strokeColor = getInt(STROKE_COLOR);
 		if (strokeColor!=0) {
@@ -371,7 +251,7 @@ public class RoiDecoder {
 			base += 4;
 		}
 		roi = new ShapeRoi(shapeArray);
-		roi.setName(getRoiName());
+		if (name!=null) roi.setName(name);
 		return roi;
 	}
 	
@@ -389,46 +269,10 @@ public class RoiDecoder {
 		for (int i=0; i<textLength; i++)
 			text[i] = (char)getShort(hdrSize+16+nameLength*2+i*2);
 		Font font = new Font(new String(name), style, size);
-		Roi roi2 = null;
-		if (roi.subPixelResolution()) {
-			FloatPolygon fp = roi.getFloatPolygon();
-			roi2 = new TextRoi(fp.xpoints[0], fp.ypoints[0], new String(text), font);
-		} else
-			roi2 = new TextRoi(r.x, r.y, new String(text), font);
+		Roi roi2 = new TextRoi(r.x, r.y, new String(text), font);
 		roi2.setStrokeColor(roi.getStrokeColor());
 		roi2.setFillColor(roi.getFillColor());
-		roi2.setName(getRoiName());
 		return roi2;
-	}
-	
-	Roi getImageRoi(Roi roi, int opacity, int size) {
-		if (size<=0)
-			return roi;
-		Rectangle r = roi.getBounds();
-		byte[] bytes = new byte[size];
-		for (int i=0; i<size; i++)
-			bytes[i] = (byte)getByte(COORDINATES+i);
-		ImagePlus imp = new Opener().deserialize(bytes);
-		ImageRoi roi2 = new ImageRoi(r.x, r.y, imp.getProcessor());
-		roi2.setOpacity(opacity/255.0);
-		return roi2;
-	}
-
-	String getRoiName() {
-		String fileName = name;
-		int hdr2Offset = getInt(HEADER2_OFFSET);
-		if (hdr2Offset==0)
-			return fileName;
-		int offset = getInt(hdr2Offset+NAME_OFFSET);
-		int length = getInt(hdr2Offset+NAME_LENGTH);
-		if (offset==0 || length==0)
-			return fileName;
-		if (offset+length*2>size)
-			return fileName;
-		char[] name = new char[length];
-		for (int i=0; i<length; i++)
-			name[i] = (char)getShort(offset+i*2);
-		return new String(name);
 	}
 
 	int getByte(int base) {

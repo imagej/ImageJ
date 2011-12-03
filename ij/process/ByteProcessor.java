@@ -164,17 +164,6 @@ public class ByteProcessor extends ImageProcessor {
         System.arraycopy(snapshotPixels,0,pixels,0,width*height);
 	}
 	
-	/** Swaps the pixel and snapshot (undo) arrays. */
-	public void swapPixelArrays() {
-		if (snapshotPixels==null) return;	
-		byte pixel;
-		for (int i=0; i<pixels.length; i++) {
-			pixel = pixels[i];
-			pixels[i] = snapshotPixels[i];
-			snapshotPixels[i] = pixel;
-		}
-	}
-
 	/** Restore pixels that are within roi but not part of mask. */
 	public void reset(ImageProcessor mask) {
 		if (mask==null || snapshotPixels==null)
@@ -404,6 +393,7 @@ public class ByteProcessor extends ImageProcessor {
 			return;
 		this.min = (int)min;
 		this.max = (int)max;
+		
 		if (rLUT1==null) {
 			if (cm==null)
 				makeDefaultColorModel();
@@ -413,8 +403,6 @@ public class ByteProcessor extends ImageProcessor {
 			m.getReds(rLUT1); m.getGreens(gLUT1); m.getBlues(bLUT1); 
 			rLUT2 = new byte[256]; gLUT2 = new byte[256]; bLUT2 = new byte[256];
 		}
-		if (rLUT2==null)
-			return;
 		int index;
 		for (int i=0; i<256; i++) {
 			if (i<min) {

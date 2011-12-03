@@ -958,10 +958,7 @@ class TreePanel implements
 		pcp.unsetPanelShowingProperty(getRootPath().toString());
 	}
 
-	public void windowActivated(WindowEvent e) {
-		WindowManager.setWindow(getFrame());
-	}
-	
+	public void windowActivated(WindowEvent e) {}
 	public void windowClosed(WindowEvent e) {}
 	public void windowDeactivated(WindowEvent e) {}
 	public void windowDeiconified(WindowEvent e) {}

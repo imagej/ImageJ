@@ -114,7 +114,8 @@ public class FFT implements  PlugIn, Measurements {
         if (title.startsWith("FFT of "))
             title = title.substring(7, title.length());
         ImagePlus imp2 = new ImagePlus("Inverse FFT of "+title, ip2);
-        imp2.setCalibration(imp.getCalibration());
+        if (imp2.getWidth()==imp.getWidth())
+            imp2.setCalibration(imp.getCalibration());
         imp2.show();
     }
 
@@ -123,8 +124,7 @@ public class FFT implements  PlugIn, Measurements {
         fht.transform();
         showStatus("Calculating power spectrum");
         ImageProcessor ps = fht.getPowerSpectrum();
-        if (!(displayFHT||displayComplex||displayRawPS))
-        	displayFFT = true;
+        if (!(displayFHT||displayComplex)) displayFFT = true;
         if (displayFFT) {
             ImagePlus imp2 = new ImagePlus("FFT of "+imp.getTitle(), ps);
             imp2.show();
@@ -284,16 +284,15 @@ public class FFT implements  PlugIn, Measurements {
         gd.setInsets(0, 20, 0);
         gd.addMessage("Display:");
         gd.setInsets(5, 35, 0);
-        gd.addCheckbox("FFT window", displayFFT);
+        gd.addCheckbox("FFT Window", displayFFT);
         gd.setInsets(0, 35, 0);
-        gd.addCheckbox("Raw power spectrum", displayRawPS);
+        gd.addCheckbox("Raw Power Spectrum", displayRawPS);
         gd.setInsets(0, 35, 0);
         gd.addCheckbox("Fast Hartley Transform", displayFHT);
         gd.setInsets(0, 35, 0);
         gd.addCheckbox("Complex Fourier Transform", displayComplex);
         gd.setInsets(8, 20, 0);
-        gd.addCheckbox("Do forward transform", false);
-        gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-options");
+        gd.addCheckbox("Do Forward Transform", false);
         gd.showDialog();
         if (gd.wasCanceled())
             return;

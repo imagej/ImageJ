@@ -23,7 +23,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	private static String text = "";
 	private static int decimalPlaces = 0;
 	private static boolean useOverlay;
-	private static boolean useTextToolFont;
 	private int fieldWidth;
 	private Color color;
 	private int firstFrame, lastFrame, defaultLastFrame;
@@ -60,7 +59,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			text = "";
 			start = 0;
 			useOverlay = false;
-			useTextToolFont = false;
 			String options = Macro.getOptions();
 			if (options!=null) {
 				if (options.indexOf("interval=0")!=-1 && options.indexOf("format=")==-1)
@@ -91,7 +89,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
         addRange(gd, "Range:", 1, defaultLastFrame);
 		gd.setInsets(10,20,0);
         gd.addCheckbox(" Use overlay", useOverlay);
-        gd.addCheckbox(" Use text tool font", useTextToolFont);
         gd.addPreviewCheckbox(pfr);
         gd.addHelp(IJ.URL+"/docs/menus/image.html#label");
         gd.addDialogListener(this);
@@ -135,7 +132,6 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		text = gd.getNextString();
 		double[] range = getRange(gd, 1, defaultLastFrame);
 		useOverlay = gd.getNextBoolean();
-		useTextToolFont = gd.getNextBoolean();
 		if (virtualStack) useOverlay = true;
 		firstFrame=(int)range[0]; lastFrame=(int)range[1];
 		int index = str.indexOf(".");
@@ -144,10 +140,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		else
 			decimalPlaces = 0;
 		if (gd.invalidNumber()) return false;
-		if (useTextToolFont)
-			font = new Font(TextRoi.getFont(), TextRoi.getStyle(), fontSize);
-		else
-			font = new Font("SansSerif", Font.PLAIN, fontSize);
+		font = new Font("SansSerif", Font.PLAIN, fontSize);
 		if (y<fontSize) y = fontSize+5;
 		ImageProcessor ip = imp.getProcessor();
 		ip.setFont(font);
@@ -158,7 +151,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		if (size>=100) fieldWidth = 3;
 		if (size>=1000) fieldWidth = 4;
 		if (size>=10000) fieldWidth = 5;
-		Prefs.set("label.format", format);
+		 Prefs.set("label.format", format);
         return true;
     }
 	
@@ -220,13 +213,13 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				Rectangle r = roi!=null?roi.getBounds():null;
 				yoffset = r!=null?r.height:fontSize;
 			}
-			if (frame>=firstFrame&&frame<=lastFrame) {
-				Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
+			Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
+			if (frame>=firstFrame&&frame<=lastFrame)
 				roi.setStrokeColor(color);
-				roi.setNonScalable(true);
-				roi.setPosition(image);
-				overlay.add(roi);
-			}
+			else
+				roi.setStrokeColor(new Color(0f,0f,0f,0f)); // transparent
+			roi.setNonScalable(true);
+			overlay.add(roi);
 			if (image==imp.getStackSize()||previewing)
 				imp.setOverlay(overlay);
 		} else if (frame>=firstFrame&&frame<=lastFrame) {
@@ -238,11 +231,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	}
 	
 	String getString(int index, double interval, int format) {
-		double time = start + (index+1-firstFrame)*interval;
+		double time = start+index*interval;
 		int itime = (int)Math.floor(time);
-		int sign = 1;
-		if (itime < 0) sign = -1;
-		itime = itime*sign;
 		String str = "";
 		switch (format) {
 			case NUMBER: str=IJ.d2s(time, decimalPlaces)+" "+text; break;
@@ -255,17 +245,15 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				break;
 			case MIN_SEC:
 				str=pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
-				if (sign == -1) str = "-"+str;
 				break;
 			case HOUR_MIN_SEC:
 				str=pad((int)Math.floor(itime/3600))+":"+pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
-				if (sign == -1) str = "-"+str;
 				break;
 			case TEXT: str=text; break;
 		}
 		return str;
 	}
-
+	
 	String pad(int n) {
 		String str = ""+n;
 		if (str.length()==1) str="0"+str;

@@ -43,10 +43,6 @@ public class URLOpener implements PlugIn {
 						mode = CompositeImage.GRAYSCALE;
 					imp = new CompositeImage(imp, mode);
 				}
-				if (fi!=null && (fi.url==null || fi.url.length()==0)) {
-					fi.url = url;
-					imp.setFileInfo(fi);
-				}
 				imp.show();
 			}
 			return;
