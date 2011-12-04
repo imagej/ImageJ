@@ -58,14 +58,18 @@ import javax.imageio.ImageIO;
  *      - In the code, bitmapinfo items have their canonical names
  *   2009-03-06
  *      - Jesper Soendergaard Pedersen added support for extended (large) AVI files,
- *        also known as AVIX, AVI 2.0 or OpenDML AVI file format extension
- *        reading the index: indx and ix00 tags. This also results in a dramatic speed
- *        increase in loading of virtual stacks. It does not read the idx1 tags.
- *        If indx and ix00 are not found it reverts to finding the frames the old way.
+ *        also known as AVIX, 'AVI 2.0' or 'OpenDML 1.02 AVI file format extension'
+ *        For Virtual stacks, it reads the index (indx and ix00 tags).
+ *        This results in a dramatic speed increase in loading of virtual stacks.
+ *        It does not read the idx1 tags and does not support 'indx' types (bIndexType)
+ *        other than 0 (AVI_INDEX_OF_INDEXES).
+ *        If indx and ix00 are not found or bIndexType is unsupported, as well as for
+ *        non-virtual stacks it finds the frames 'the old way', by scanning the whole file.
  *      - Fixes a bug where it read too many frames.
  *        This version was published as external plugin.
- *   2011-12-02
+ *   2011-12-03
  *      - Minor updates & cleanup for integration into ImageJ again.
+ *      - Multithread-compliant
  *
  * The simple (index-free) AVI format looks like this:
  * RIFF                     RIFF HEADER
@@ -147,12 +151,12 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private static boolean     staticConvertToGray;
     private static boolean     staticFlipVertical;
     private static boolean     staticIsVirtual;
-    // dialog parameters
-    private int firstFrameNumber = 1; //the first frame to read
-    private int lastFrameNumber = 0;  //the last frame to read; 0 means 'read all'
-    private boolean     convertToGray;    //whether to convert color video to grayscale
-    private boolean     flipVertical;         //whether to flip image vertical
-    private boolean     isVirtual;            //whether to open as virtual stack
+    //dialog parameters
+    private int                firstFrame = 1;      //the first frame to read
+    private int                lastFrame = 0;       //the last frame to read; 0 means 'read all'
+    private boolean            convertToGray;       //whether to convert color video to grayscale
+    private boolean            flipVertical;        //whether to flip image vertical
+    private boolean            isVirtual;           //whether to open as virtual stack
    //the input file
     private  RandomAccessFile  raFile;
     private  String            raFilePath;
@@ -165,6 +169,8 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private  int               paddingGranularity = 2;  //tags start at even address
     private  int               frameNumber = 1;     //frame currently read; global because distributed over 1st AVi and further RIFF AVIX chunks
     private  int               lastFrameToRead = Integer.MAX_VALUE;
+    private  int               totalFramesFromIndex;//number of frames from 'AVI 2.0' indices
+    private  boolean           indexForCountingOnly;//don't read the index, only count int totalFramesFromIndex how many entries
     //derived from BitMapInfo
     private  int               dataCompression;     //data compression type used
     private  int               scanLineSize;
@@ -186,7 +192,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private  int               dwMaxBytesPerSec;
     private  int               dwReserved1;
     private  int               dwFlags;
-    private  int               dwTotalFrames;
+    private  int               dwTotalFrames;       //AVI 2.0: will be replaced by number of frames from index
     private  int               dwInitialFrames;
     private  int               dwStreams;
     private  int               dwSuggestedBufferSize;
@@ -238,7 +244,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         }
         if (!showDialog(fileName)) return;                          //ask for parameters
         try {
-            ImageStack stack = makeStack (path, firstFrameNumber, lastFrameNumber,
+            ImageStack stack = makeStack (path, firstFrame, lastFrame,
                     isVirtual, convertToGray, flipVertical);        //read data
         } catch (Exception e) {
             error(exceptionMessage(e));
@@ -248,9 +254,9 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         	return;
         if (stack.getSize() == 0) {
             String rangeText = "";
-            if (firstFrameNumber>1 || lastFrameNumber!=0)
-                rangeText = "\nin Range "+firstFrameNumber+
-                    (lastFrameNumber>0 ? " - "+lastFrameNumber : " - end");
+            if (firstFrame>1 || lastFrame!=0)
+                rangeText = "\nin Range "+firstFrame+
+                    (lastFrame>0 ? " - "+lastFrame : " - end");
             error("Error: No Frames Found"+rangeText);
             return;
         }
@@ -274,17 +280,17 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 
     /** Create an ImageStack from an avi file with given path.
      * @param path              Directoy+filename of the avi file
-     * @param firstFrameNumber  Number of first frame to read (first frame of the file is 1)
-     * @param lastFrameNumber   Number of last frame to read or 0 for reading all, -1 for all but last...
+     * @param firstFrame  Number of first frame to read (first frame of the file is 1)
+     * @param lastFrame   Number of last frame to read or 0 for reading all, -1 for all but last...
      * @param isVirtual         Whether to return a virtual stack
      * @param convertToGray     Whether to convert color images to grayscale
      * @return  Returns the stack; null on failure.
      *  The stack returned may be non-null, but have a length of zero if no suitable frames were found
      */
-    public ImageStack makeStack (String path, int firstFrameNumber, int lastFrameNumber,
+    public ImageStack makeStack (String path, int firstFrame, int lastFrame,
             boolean isVirtual, boolean convertToGray, boolean flipVertical) {
-        this.firstFrameNumber = firstFrameNumber;
-        this.lastFrameNumber = lastFrameNumber;
+        this.firstFrame = firstFrame;
+        this.lastFrame = lastFrame;
         this.isVirtual = isVirtual;
         this.convertToGray = convertToGray;
         this.flipVertical = flipVertical;
@@ -385,23 +391,23 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
 
     /** Parameters dialog, returns false on cancel */
     private boolean showDialog (String fileName) {
-        if (lastFrameNumber!=-1)
-            lastFrameNumber = dwTotalFrames;
+        if (lastFrame!=-1)
+            lastFrame = dwTotalFrames;
         if (!IJ.isMacro()) {
             convertToGray = staticConvertToGray;
             flipVertical = staticFlipVertical;
             isVirtual = staticIsVirtual;
         }
         GenericDialog gd = new GenericDialog("AVI Reader");
-        gd.addNumericField("First Frame: ", firstFrameNumber, 0);
-        gd.addNumericField("Last Frame: ", lastFrameNumber, 0, 6, "");
+        gd.addNumericField("First Frame: ", firstFrame, 0);
+        gd.addNumericField("Last Frame: ", lastFrame, 0, 6, "");
         gd.addCheckbox("Use Virtual Stack", isVirtual);
         gd.addCheckbox("Convert to Grayscale", convertToGray);
         gd.addCheckbox("Flip Vertical", flipVertical);
         gd.showDialog();
         if (gd.wasCanceled()) return false;
-        firstFrameNumber = (int)gd.getNextNumber();
-        lastFrameNumber = (int)gd.getNextNumber();
+        firstFrame = (int)gd.getNextNumber();
+        lastFrame = (int)gd.getNextNumber();
         isVirtual = gd.getNextBoolean();
         convertToGray = gd.getNextBoolean();
         flipVertical = gd.getNextBoolean();
@@ -421,10 +427,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         startTime += System.currentTimeMillis();//taking previously elapsed time into account
 
         /** MOVED UP HERE BY JSP*/
-        if (lastFrameNumber > 0)            //last frame number to read: from Dialog
-            lastFrameToRead = lastFrameNumber;
-        if (lastFrameNumber < 0 && dwTotalFrames > 0) //negative means "end frame minus ..."
-            lastFrameToRead = dwTotalFrames+lastFrameNumber;
+        if (lastFrame > 0)            //last frame number to read: from Dialog
+            lastFrameToRead = lastFrame;
+        if (lastFrame < 0 && dwTotalFrames > 0) //negative means "end frame minus ..."
+            lastFrameToRead = dwTotalFrames+lastFrame;
         long nextPosition = 0;
         if (isVirtual) {                    //attempt to take indexes instead of scanning for all frames
             frameInfos = new Vector(100);   //holds frame positions in file (for non-constant frame sizes, should hold long[] with pos and size)
@@ -533,6 +539,11 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 if (nextPosition<0) return false;
                 indexPosition = findFourccAndRead(FOURCC_strf, false, endPosition, true);
                 indexPositionEnd= endPosition;
+                indexForCountingOnly = true;            //try reading indx for counting number of entries
+                nextPosition = findFourccAndRead(FOURCC_indx, false, endPosition, false);
+                if (nextPosition > 0 && totalFramesFromIndex > dwTotalFrames)
+                    dwTotalFrames = totalFramesFromIndex;
+                indexForCountingOnly = false;
                 return true;
             case FOURCC_strh:
                 int streamType = readInt();
@@ -622,7 +633,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             throw new Exception("Video stream with "+dwStreamSampleSize+" (more than 1) frames/chunk not supported");
     }
 
-    /**JSP Read main index to frame indexes or index to frames*/
+    /** Read main index 'indx' to frame indexes or index to frames*/
     void readMainIndex(long endPosition) throws Exception, IOException {
         short wLongsPerEntry = readShort();
         byte bIndexSubType = raFile.readByte();
@@ -640,6 +651,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             IJ.log("   nEntriesInUse=" + nEntriesInUse);
             IJ.log("   dwChunkId='" + fourccString(dwChunkId)+"'");
         }
+        if (bIndexType != 0) return;        //unsupported bIndex type (does not point to ix00), no entry in frameInfos
 
         for (int i=0;i<nEntriesInUse;i++) {
             long qwOffset = readLong();
@@ -657,7 +669,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         }
                 
     }
-    /** Read index to all frames */
+    /** Read index 'ix00' to all frames */
     void readFrameIndexes(long endPosition) throws Exception, IOException{
         short wLongsPerEntry = readShort();
         byte bIndexSubType = raFile.readByte();
@@ -675,19 +687,31 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             IJ.log("   dwChunkId='" + fourccString(dwChunkId)+"'");
             IJ.log("   qwBaseOffset=" + "0x"+Long.toHexString(qwBaseOffset));
         }
+        if (wLongsPerEntry != 2 || bIndexType != 1)     //not what we can interpret, ignore it
+            return;
+        int type0xdb = FOURCC_00db + (streamNumber<<8); //'01db' for stream 1, etc. (inverse byte order!)
+        int type0xdc = FOURCC_00dc + (streamNumber<<8); //'01dc' for stream 1, etc.
+        if (dwChunkId != type0xdb && dwChunkId != type0xdb) {   //not the stream we search for?
+            if (verbose) IJ.log("SKIPPED ix00, wrong stream number or type");
+            return;
+        }
+        if (indexForCountingOnly) {                 //only count number of entries, don't put into table
+            totalFramesFromIndex += nEntriesInUse;
+            return;
+        }
         for (int i=0;i<nEntriesInUse;i++) {
-            int dwOffset = readInt();
+            long dwOffset = readInt() & 0xffffffffL;
             long pos=qwBaseOffset+dwOffset;
             int dwSize = readInt();
             if (isVirtual) IJ.showProgress(frameNumber/lastFrameToRead);
-            if (dwOffset>0) {
-                if (frameNumber >= firstFrameNumber) {
-                    frameInfos.add(new long[] {pos, dwSize, (long) frameNumber*dwMicroSecPerFrame});
-                    if (verbose)
-                        IJ.log("movie data '"+fourccString(dwChunkId)+"' "+posSizeString(pos,dwSize)+timeString());
-                }
-                frameNumber++;
+            //if (dwOffset>0) { // makes no sense to me - first frame is often omitted like this -m.s.
+            if (frameNumber >= firstFrame) {
+                frameInfos.add(new long[] {pos, dwSize, (long) frameNumber*dwMicroSecPerFrame});
+                if (verbose)
+                    IJ.log("movie data "+frameNumber+" '"+fourccString(dwChunkId)+"' "+posSizeString(pos,dwSize)+timeString());
             }
+            frameNumber++;
+            //}
             if (frameNumber>lastFrameToRead) break;
         }
     }
@@ -850,10 +874,10 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             long pos = raFile.getFilePointer();
             long nextPos = pos + size;
             if ((type==type0xdb || type==type0xdc) && size>0) {
-                IJ.showProgress((double) frameNumber / (lastFrameToRead-firstFrameNumber));
+                IJ.showProgress((double) frameNumber / (lastFrameToRead-firstFrame));
                 if (verbose)
                     IJ.log("movie data '"+fourccString(type)+"' "+posSizeString(size)+timeString());
-                if (frameNumber >= firstFrameNumber) {
+                if (frameNumber >= firstFrame) {
                     if (isVirtual)
                         frameInfos.add(new long[]{pos, size, frameNumber*dwMicroSecPerFrame});
                     else {                       //read the frame
