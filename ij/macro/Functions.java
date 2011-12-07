@@ -4091,6 +4091,8 @@ public class Functions implements MacroConstants, Measurements {
 			active[i] = b;
 		}
 		imp.updateAndDraw();
+		Channels c = (Channels)Channels.getInstance();
+		if (c!=null) c.update();
 	}
 
 	void getActiveChannels(ImagePlus imp) {
@@ -4566,13 +4568,98 @@ public class Functions implements MacroConstants, Measurements {
 			return getArrayStatistics();
 		else if (name.equals("fill"))
 			return fillArray();
-		else if (name.equals("invert"))
-			return invertArray();
+		else if (name.equals("reverse")||name.equals("invert"))
+			return reverseArray();
+		else if (name.equals("concat"))
+			return concatArray();
+		else if (name.equals("slice"))
+			return sliceArray();
+		else if (name.equals("print"))
+			return printArray();
 		else
 			interp.error("Unrecognized Array function");
 		return null;
 	}
+	
+	Variable[] printArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		interp.getRightParen();
+		int len = a.length;
+		StringBuffer sb = new StringBuffer(len);
+		for (int i=0; i<len; i++) {
+			String s = a[i].getString();
+			if (s==null) {
+				double v = a[i].getValue();
+				if ((int)v==v)
+					s = IJ.d2s(v,0);
+				else
+					s = ""+v;
+			}
+			sb.append(s);
+			if (i!=len-1)
+				sb.append(",");
+		}
+		IJ.log(sb.toString());
+		return null;
+	}
 
+	Variable[] concatArray() {
+		interp.getLeftParen();
+		ArrayList list = new ArrayList();
+		int len = 0;
+		do {
+			if (isArrayArg()) {
+				Variable[] a = getArray();
+				for (int i=0; i<a.length; i++) {
+					list.add((Variable)a[i].clone());
+					len++;
+				}
+			} else if (isStringArg()) {
+				Variable v = new Variable();
+				v.setString(getString());
+				list.add(v);
+				len++;
+			} else {
+				Variable v = new Variable();
+				v.setValue(interp.getExpression());
+				list.add(v);
+				len++;
+			}
+			interp.getToken();				
+		} while (interp.token==',');
+		Variable[] a2 = new Variable[len];
+		int index = 0;
+		for (int i=0; i<list.size(); i++) {
+			Variable v = (Variable)list.get(i);
+			a2[index++] = v;
+		}
+		return a2;
+	}
+
+	Variable[] sliceArray() {
+		interp.getLeftParen();
+		Variable[] a = getArray();
+		int len = a.length;
+		int i1 = (int)getNextArg();
+		int i2 = len;
+		if (interp.nextToken()==',') {
+			interp.getComma();
+			i2 = (int)interp.getExpression();
+		}
+		if (i1<0)
+			interp.error("Invalid argument");
+		if (i2>len) i2 = len;
+		int len2 = i2-i1;
+		if (len2<0) len2=0;
+		if (len2>len) len2=len;
+		interp.getRightParen();
+		Variable[] a2 = new Variable[len2];
+		for (int i=0; i<len2; i++)
+			a2[i] = (Variable)a[i1++].clone();
+		return a2;
+	}
+	
 	Variable[] copyArray() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
@@ -4711,7 +4798,7 @@ public class Functions implements MacroConstants, Measurements {
 		return a;
 	}
 	
-	Variable[] invertArray() {
+	Variable[] reverseArray() {
 		interp.getLeftParen();
 		Variable[] a = getArray();
 		interp.getRightParen();
