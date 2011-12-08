@@ -223,7 +223,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     }
     
     public void setPosition(int channel, int slice, int frame) {
-    	if (cSelector!=null && channel!=c) {
+		if (cSelector!=null && channel!=c) {
     		c = channel;
 			cSelector.setValue(channel);
 		}

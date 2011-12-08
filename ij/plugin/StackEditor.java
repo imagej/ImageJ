@@ -7,7 +7,6 @@ import ij.macro.Interpreter;
 import ij.io.FileInfo;
 import java.awt.*;
 
-
 /** Implements the AddSlice, DeleteSlice and "Stack to Images" commands. */
 public class StackEditor implements PlugIn {
 	ImagePlus imp;
@@ -111,23 +110,28 @@ public class StackEditor implements PlugIn {
 		int c = imp.getChannel();
 		ImageStack stack = imp.getStack();
 		CompositeImage ci = (CompositeImage)imp;
+ 		int mode = ci.getMode();
 		LUT[] luts = ci.getLuts();
  		stack.deleteSlice(c);
- 		ImagePlus imp2 = imp.createImagePlus();
- 		imp2.setStack(stack);
-		int n = imp2.getStackSize();
- 		int mode = ci.getMode();
- 		if (mode==CompositeImage.COMPOSITE && n==1)
+ 		int channels = stack.getSize();
+ 		imp.setStack(stack, channels, 1, 1);
+ 		if (mode==CompositeImage.COMPOSITE && channels==1)
  			mode = CompositeImage.COLOR;
- 		imp2 = new CompositeImage(imp, mode);
 		int index = 0;
-		for (int i=1; i<=n; i++) {
+		for (int i=1; i<=channels; i++) {
 			if (c==index+1) index++;
-			((CompositeImage)imp2).setChannelLut(luts[index++], i);
+			((CompositeImage)imp).setChannelLut(luts[index++], i);
 		}
-		imp.changes = false;
-		imp.hide();
-		imp2.show();
+		//luts = imp.getLuts();
+		//for (int i=0; i<luts.length; i++)
+		//	IJ.log(i+" "+luts[i]);
+		if (mode!=CompositeImage.COMPOSITE)
+			imp.getProcessor().setLut(ci.getChannelLut());
+		else {  //?????
+			ci.setMode(CompositeImage.COLOR);
+			ci.setMode(CompositeImage.COMPOSITE);
+		}
+		imp.updateAndDraw();
 	}
 
 	void deleteHyperstackSliceOrFrame() {

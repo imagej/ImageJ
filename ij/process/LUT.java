@@ -1,11 +1,12 @@
 package ij.process;
+import ij.plugin.Colors;
 import java.awt.image.*;
 import java.awt.Color;
 
 	/* This is an indexed color model that allows an
 		lower and upper bound to be specified. */
     public class LUT extends IndexColorModel implements Cloneable {
-	public double min, max;
+		public double min, max;
 	
     public LUT(byte r[], byte g[], byte b[]) {
     	this(8, 256, r, g, b);
@@ -86,4 +87,9 @@ import java.awt.Color;
 		catch (CloneNotSupportedException e) {return null;}
 	}
 	
+	public  String toString() {
+		return "rgb[0]="+Colors.colorToString(new Color(getRGB(0)))+", rgb[255]="
+			+Colors.colorToString(new Color(getRGB(255)))+", min="+(int)min+", max="+(int)max;
+	}
+
 }

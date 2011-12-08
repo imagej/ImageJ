@@ -268,7 +268,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public ImageProcessor getChannelProcessor() {
 		return getProcessor();
 	}
-	
+		
 	/* The CompositeImage class overrides this method  to
 		return, as an array, copies of this image's channel LUTs. */
 	public LUT[] getLuts() {
@@ -611,6 +611,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (isComposite())
 			((CompositeImage)this).setChannelsUpdated();
 		setStack(null, stack);
+		if (win!=null && win instanceof StackWindow)
+			((StackWindow)win).updateSliceSelector();
 	}
 
 	/**	Saves this image's FileInfo so it can be later

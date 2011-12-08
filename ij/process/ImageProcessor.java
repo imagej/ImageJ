@@ -131,7 +131,7 @@ public abstract class ImageProcessor implements Cloneable {
 		else
 			return cm;
 	}
-
+	
 	/** Returns the current color model, which may have
 		been modified by setMinAndMax() or setThreshold(). */
 	public ColorModel getCurrentColorModel() {
@@ -152,6 +152,20 @@ public abstract class ImageProcessor implements Cloneable {
 		minThreshold = NO_THRESHOLD;
 		source = null;
 	}
+
+	public LUT getLut() {
+		ColorModel cm2 = getColorModel();
+		if (cm2!=null && (cm2 instanceof IndexColorModel))
+			return new LUT((IndexColorModel)cm2, getMin(), getMax());
+		else
+			return null;
+	}
+	
+	public void setLut(LUT lut) {
+		setColorModel(lut);
+		setMinAndMax(lut.min, lut.max);
+	}
+
 
 	protected void makeDefaultColorModel() {
 		cm = getDefaultColorModel();
