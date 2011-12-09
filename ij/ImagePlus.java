@@ -597,8 +597,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setPosition(1, 1, 1);
 		} else if (dimensionsChanged || sliderChange)
 			win.updateImage(this);
-		else
+		else {
+			if (win!=null && win instanceof StackWindow)
+				((StackWindow)win).updateSliceSelector();
 			repaintWindow();
+		}
 		if (resetCurrentSlice) setSlice(currentSlice);
     }
     
@@ -608,11 +611,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
+		setStack(null, stack);
 		if (isComposite())
 			((CompositeImage)this).setChannelsUpdated();
-		setStack(null, stack);
-		if (win!=null && win instanceof StackWindow)
-			((StackWindow)win).updateSliceSelector();
 	}
 
 	/**	Saves this image's FileInfo so it can be later

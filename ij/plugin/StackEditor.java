@@ -127,10 +127,6 @@ public class StackEditor implements PlugIn {
 		//	IJ.log(i+" "+luts[i]);
 		if (mode!=CompositeImage.COMPOSITE)
 			imp.getProcessor().setLut(ci.getChannelLut());
-		else {  //?????
-			ci.setMode(CompositeImage.COLOR);
-			ci.setMode(CompositeImage.COMPOSITE);
-		}
 		imp.updateAndDraw();
 	}
 

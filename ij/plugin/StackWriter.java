@@ -9,6 +9,7 @@ import ij.gui.*;
 import ij.measure.Calibration;
 import ij.process.*;
 import ij.plugin.frame.Recorder;
+import ij.macro.Interpreter;
 
 /** This plugin, which saves the images in a stack as separate files, 
 	implements the File/Save As/Image Sequence command. */
@@ -101,10 +102,18 @@ public class StackWriter implements PlugIn {
 			directory = Macro.getValue(macroOptions, title, null);
 			if (directory!=null) {
 				File f = new File(directory);
-				if (!f.isDirectory() && (f.exists()||directory.lastIndexOf(".")>directory.length()-5))
+				boolean exists = f.exists();
+				if (directory.indexOf(".")==-1 && !exists) {
+					// Is 'directory' a macro variable?
+					if (directory.startsWith("&")) directory=directory.substring(1);
+					Interpreter interp = Interpreter.getInstance();
+					String directory2 = interp!=null?interp.getStringVariable(directory):null;
+					if (directory2!=null) directory = directory2;
+				}
+				if (!f.isDirectory() && (exists||directory.lastIndexOf(".")>directory.length()-5))
 					directory = f.getParent();
 				if (!directory.endsWith(File.separator))
-					directory+= File.separator;
+					directory += File.separator;
 			}
 		}
 		if (directory==null) {

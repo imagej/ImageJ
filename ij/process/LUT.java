@@ -6,7 +6,7 @@ import java.awt.Color;
 	/* This is an indexed color model that allows an
 		lower and upper bound to be specified. */
     public class LUT extends IndexColorModel implements Cloneable {
-		public double min, max;
+        public double min, max;
 	
     public LUT(byte r[], byte g[], byte b[]) {
     	this(8, 256, r, g, b);
