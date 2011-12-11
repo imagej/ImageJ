@@ -127,14 +127,16 @@ public class PolygonRoi extends Roi {
 				break;
 			case Toolbar.FREELINE:
 				type = FREELINE;
-				subPixel = true;
+				if (Prefs.subPixelResolution)
+					subPixel = true;
 				break;
 			case Toolbar.ANGLE:
 				type = ANGLE;
 				break;
 			default:
 				type = POLYLINE;
-				subPixel = true;
+				if (Prefs.subPixelResolution)
+					subPixel = true;
 				break;
 		}
 		if (this instanceof EllipseRoi)
@@ -1160,9 +1162,9 @@ public class PolygonRoi extends Roi {
 	/** Obsolete; replaced by either getPolygon() or getFloatPolygon(). */
 	public int[] getXCoordinates() {
 		if (xSpline!=null)
-			return toInt(xSpline);
+			return toIntR(xSpline);
 		else if (xpf!=null)
-			return toInt(xpf);
+			return toIntR(xpf);
 		else
 			return xp;
 	}
@@ -1170,9 +1172,9 @@ public class PolygonRoi extends Roi {
 	/** Obsolete; replaced by either getPolygon() or getFloatPolygon(). */
 	public int[] getYCoordinates() {
 		if (xSpline!=null)
-			return toInt(ySpline);
+			return toIntR(ySpline);
 		else if (ypf!=null)
-			return toInt(ypf);
+			return toIntR(ypf);
 		else
 			return yp;
 	}

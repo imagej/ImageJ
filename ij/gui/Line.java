@@ -451,7 +451,7 @@ public boolean contains(int x, int y) {
 	}
 	
 	private double getOffset(double value) {
-		return interactive&&getMagnification()>1.0&&!(this instanceof Arrow)?value:0.0;
+		return Prefs.subPixelResolution&&interactive&&getMagnification()>1.0&&!(this instanceof Arrow)?value:0.0;
 	}
 
 	public static int getWidth() {

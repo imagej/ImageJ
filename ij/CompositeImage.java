@@ -280,7 +280,8 @@ public class CompositeImage extends ImagePlus {
 				cip[0].updateComposite(rgbPixels, 4);
 			else
 				{for (int i=1; i<imageSize; i++) rgbPixels[i] = 0;}
-			if (cip==null) return;
+			if (cip==null || nChannels>cip.length)
+				return;
 			for (int i=1; i<nChannels; i++)
 				if (active[i]) cip[i].updateComposite(rgbPixels, 5);
 		}
@@ -596,6 +597,7 @@ public class CompositeImage extends ImagePlus {
 		return customLuts && mode!=GRAYSCALE;
 	}
 	
+	/** Deprecated */
 	public synchronized void setChannelsUpdated() {
 		cip = null;
 		lut = null;
@@ -606,6 +608,7 @@ public class CompositeImage extends ImagePlus {
 		singleChannel = false;
 		rgbPixels = null;
 		awtImage = null;
+		channelLuts = null;
 		boolean[] active = new boolean[MAX_CHANNELS];
 	}
 

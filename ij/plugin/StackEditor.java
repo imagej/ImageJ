@@ -84,26 +84,26 @@ public class StackEditor implements PlugIn {
 		int c = imp.getChannel();
 		ImageStack stack = imp.getStack();
 		CompositeImage ci = (CompositeImage)imp;
+		if (stack.getSize()>=7 && ci.getMode()==CompositeImage.COMPOSITE) {
+			IJ.error("Add Channel", "Composite mode images limited to 7 channels");
+			return;
+		}
 		LUT[] luts = ci.getLuts();
 		ImageProcessor ip = stack.getProcessor(1);
 		ImageProcessor ip2 = ip.createProcessor(ip.getWidth(), ip.getHeight());
  		stack.addSlice(null, ip2, c);
- 		ImagePlus imp2 = imp.createImagePlus();
- 		imp2.setStack(stack);
-		int n = imp2.getStackSize();
- 		imp2 = new CompositeImage(imp, ci.getMode());
+ 		int channels = stack.getSize();
 		LUT lut = LUT.createLutFromColor(Color.white);
-		int index = 0;
-		for (int i=1; i<=n; i++) {
+		imp.setStack(stack, channels, 1, 1);
+ 		int index = 0;
+		for (int i=1; i<=channels; i++) {
 			if (c+1==index+1) {
-				((CompositeImage)imp2).setChannelLut(lut, i);
+				((CompositeImage)imp).setChannelLut(lut, i);
 				c = -1;
 			} else
-				((CompositeImage)imp2).setChannelLut(luts[index++], i);
+				((CompositeImage)imp).setChannelLut(luts[index++], i);
 		}
-		imp.changes = false;
-		imp.hide();
-		imp2.show();
+		imp.updateAndDraw();
 	}
 
 	void deleteChannel() {

@@ -50,8 +50,8 @@ public class Prefs {
 		AVOID_RESLICE_INTERPOLATION=1<<29, KEEP_UNDO_BUFFERS=1<<30; 
     public static final String OPTIONS = "prefs.options";
     
-	private static final int USE_SYSTEM_PROXIES=1<<0;
-	private static final int USE_FILE_CHOOSER=1<<1;
+	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
+		SUBPIXEL_RESOLUTION=1<<2;
 	public static final String OPTIONS2 = "prefs.options2";
     
 	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
@@ -136,6 +136,8 @@ public class Prefs {
 	public static boolean useSystemProxies;
 	/** Use the file chooser to import and export image sequences on Windows and Linux*/
 	public static boolean useFileChooser;
+	/** Use sub-pixel resolution with line selections */
+	public static boolean subPixelResolution;
 
 
 	static Properties ijPrefs = new Properties();
@@ -427,6 +429,7 @@ public class Prefs {
 		int options2 = getInt(OPTIONS2, defaultOptions);
 		useSystemProxies = (options2&USE_SYSTEM_PROXIES)!=0;
 		useFileChooser = (options2&USE_FILE_CHOOSER)!=0;
+		subPixelResolution = (options2&SUBPIXEL_RESOLUTION)!=0;
 	}
 
 	static void saveOptions(Properties prefs) {
@@ -449,7 +452,7 @@ public class Prefs {
 		prefs.put(OPTIONS, Integer.toString(options));
 
 		int options2 = (useSystemProxies?USE_SYSTEM_PROXIES:0)
-			+ (useFileChooser?USE_FILE_CHOOSER:0);
+			+ (useFileChooser?USE_FILE_CHOOSER:0) + (subPixelResolution?SUBPIXEL_RESOLUTION:0);
 		prefs.put(OPTIONS2, Integer.toString(options2));
 	}
 
