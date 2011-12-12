@@ -1472,6 +1472,16 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return subPixel;
 	}
 
+	/** Returns true if this is a PolygonRoi that supports sub-pixel 
+		resolution and polygons are drawn on zoomed images offset
+		down and to the right by 0.5 pixels.. */
+	public boolean getDrawOffset() {
+		return false;
+	}
+	
+	public void setDrawOffset(boolean drawOffset) {
+	}
+
     /** Checks whether two rectangles are equal. */
     public boolean equals(Object obj) {
 		if (obj instanceof Roi) {

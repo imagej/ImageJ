@@ -18,7 +18,7 @@ public class Line extends Roi {
 	private double xHandleOffset, yHandleOffset;
 	protected double startxd, startyd;
 	static boolean widthChanged;
-	private boolean interactive;
+	private boolean drawOffset;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
@@ -56,7 +56,8 @@ public class Line extends Roi {
 		type = LINE;
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
-		interactive = true;
+		if (Prefs.subPixelResolution)
+			drawOffset = true;
 	}
 
 	/**
@@ -451,7 +452,7 @@ public boolean contains(int x, int y) {
 	}
 	
 	private double getOffset(double value) {
-		return Prefs.subPixelResolution&&interactive&&getMagnification()>1.0&&!(this instanceof Arrow)?value:0.0;
+		return getDrawOffset()&&getMagnification()>1.0&&!(this instanceof Arrow)?value:0.0;
 	}
 
 	public static int getWidth() {
@@ -505,4 +506,12 @@ public boolean contains(int x, int y) {
 		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
 	}
 	
+	public boolean getDrawOffset() {
+		return drawOffset;
+	}
+	
+	public void setDrawOffset(boolean drawOffset) {
+		this.drawOffset = drawOffset;
+	}
+
 }

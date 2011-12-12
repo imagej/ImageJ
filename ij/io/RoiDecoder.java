@@ -92,6 +92,7 @@ public class RoiDecoder {
 	public static final int OVERLAY_BACKGROUNDS = 32;
 	public static final int OVERLAY_BOLD = 64;
 	public static final int SUB_PIXEL_RESOLUTION = 128;
+	public static final int DRAW_OFFSET = 256;
 	
 	// types
 	private final int polygon=0, rect=1, oval=2, line=3, freeline=4, polyline=5, noRoi=6,
@@ -152,6 +153,7 @@ public class RoiDecoder {
 		int imageOpacity=0;
 		int imageSize=0;
 		boolean subPixelResolution = (options&SUB_PIXEL_RESOLUTION)!=0 &&  version>=222;
+		boolean drawOffset = subPixelResolution && (options&DRAW_OFFSET)!=0;
 		
 		boolean subPixelRect = version>=223 && subPixelResolution && (type==rect||type==oval);
 		double xd=0.0, yd=0.0, widthd=0.0, heightd=0.0;
@@ -219,8 +221,10 @@ public class RoiDecoder {
 					int headSize = getByte(ARROW_HEAD_SIZE);
 					if (headSize>=0 && style<=30)
 						((Arrow)roi).setHeadSize(headSize);
-				} else
-					roi = new Line(x1, y1, x2, y2);		
+				} else {
+					roi = new Line(x1, y1, x2, y2);
+					roi.setDrawOffset(drawOffset);
+				}
 				//IJ.write("line roi: "+x1+" "+y1+" "+x2+" "+y2);
 				break;
 			case polygon: case freehand: case traced: case polyline: case freeline: case angle: case point:
@@ -285,9 +289,10 @@ public class RoiDecoder {
 						roiType = Roi.ANGLE;
 					else
 						roiType = Roi.FREEROI;
-					if (subPixelResolution)
+					if (subPixelResolution) {
 						roi = new PolygonRoi(xf, yf, n, roiType);
-					else
+						roi.setDrawOffset(drawOffset);
+					} else
 						roi = new PolygonRoi(x, y, n, roiType);
 					break;
 			default:

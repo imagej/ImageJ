@@ -24,7 +24,7 @@ public class PolygonRoi extends Roi {
 	private boolean userCreated;
 	private boolean subPixel;
 	private double startXD, startYD;
-	private boolean interactive;
+	private boolean drawOffset;
 
 	long mouseUpTime = 0;
 
@@ -169,7 +169,7 @@ public class PolygonRoi extends Roi {
 		userCreated = true;
 		if (lineWidth>1 && isLine())
 			updateWideLine(lineWidth);
-		interactive = true;
+		drawOffset = subPixelResolution();
 	}
 
 	private void drawStartBox(Graphics g) {
@@ -271,17 +271,17 @@ public class PolygonRoi extends Roi {
 			ip.setLineWidth((int)Math.round(getStrokeWidth()));
 		double offset = getOffset(0.5);
 		if (xSpline!=null) {
-			ip.moveTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
+			ip.moveTo(x+(int)(Math.round(xSpline[0])+offset), y+(int)Math.round(ySpline[0]+offset));
 			for (int i=1; i<splinePoints; i++)
-				ip.lineTo(x+(int)(Math.floor(xSpline[i])+offset), y+(int)Math.floor(ySpline[i]+offset));
+				ip.lineTo(x+(int)(Math.round(xSpline[i])+offset), y+(int)Math.round(ySpline[i]+offset));
 			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
-				ip.lineTo(x+(int)(Math.floor(xSpline[0])+offset), y+(int)Math.floor(ySpline[0]+offset));
+				ip.lineTo(x+(int)(Math.round(xSpline[0])+offset), y+(int)Math.round(ySpline[0]+offset));
 		} else if (xpf!=null) {
-			ip.moveTo(x+(int)(Math.floor(xpf[0])+offset), y+(int)Math.floor(ypf[0]+offset));
+			ip.moveTo(x+(int)(Math.round(xpf[0])+offset), y+(int)Math.round(ypf[0]+offset));
 			for (int i=1; i<nPoints; i++)
-				ip.lineTo(x+(int)(Math.floor(xpf[i])+offset), y+(int)Math.floor(ypf[i]+offset));
+				ip.lineTo(x+(int)(Math.round(xpf[i])+offset), y+(int)Math.round(ypf[i]+offset));
 			if (type==POLYGON || type==FREEROI || type==TRACED_ROI)
-				ip.lineTo(x+(int)(Math.floor(xpf[0])+offset), y+(int)Math.floor(ypf[0]+offset));
+				ip.lineTo(x+(int)(Math.round(xpf[0])+offset), y+(int)Math.round(ypf[0]+offset));
 		} else {
 			ip.moveTo(x+xp[0], y+yp[0]);
 			for (int i=1; i<nPoints; i++)
@@ -631,9 +631,11 @@ public class PolygonRoi extends Roi {
 		if (type==POINT)
 			imp.setRoi(new PointRoi(points2.xpoints, points2.ypoints, points2.npoints));
 		else {
-			if (subPixelResolution())
-				imp.setRoi(new PolygonRoi(points2, type));
-			else
+			if (subPixelResolution()) {
+				Roi roi2 = new PolygonRoi(points2, type);
+				((PolygonRoi)roi2).setDrawOffset(getDrawOffset());
+				imp.setRoi(roi2);
+			} else
 				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));
 			if (splineFit) 
 				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
@@ -668,9 +670,11 @@ public class PolygonRoi extends Roi {
 		if (type==POINT)
 			imp.setRoi(new PointRoi(points2));
 		else {
-			if (subPixelResolution())
-				imp.setRoi(new PolygonRoi(points2, type));
-			else
+			if (subPixelResolution()) {
+				Roi roi2 = new PolygonRoi(points2, type);
+				((PolygonRoi)roi2).setDrawOffset(getDrawOffset());
+				imp.setRoi(roi2);
+			} else
 				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));
 			if (splineFit) 
 				((PolygonRoi)imp.getRoi()).fitSpline(splinePoints);
@@ -1377,7 +1381,15 @@ public class PolygonRoi extends Roi {
 	}
 	
 	private double getOffset(double value) {
-		return interactive&&subPixelResolution()&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?value:0.0;
+		return getDrawOffset()&&getMagnification()>1.0&&(type==POLYLINE||type==FREELINE)?value:0.0;
+	}
+	
+	public boolean getDrawOffset() {
+		return drawOffset;
+	}
+	
+	public void setDrawOffset(boolean drawOffset) {
+		this.drawOffset = drawOffset && subPixelResolution();
 	}
 	
 }
