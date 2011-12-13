@@ -15,14 +15,13 @@ public class NewImage {
 	public static final int FILL_BLACK=1, FILL_RAMP=2, FILL_WHITE=4, CHECK_AVAILABLE_MEMORY=8;
 	private static final int OLD_FILL_WHITE=0;
 	
-    static final String NAME = "new.name";
     static final String TYPE = "new.type";
     static final String FILL = "new.fill";
 	static final String WIDTH = "new.width";
 	static final String HEIGHT = "new.height";
 	static final String SLICES = "new.slices";
 
-    private static String name = Prefs.getString(NAME, "Untitled");
+    private static String name = "Untitled";
     private static int width = Prefs.getInt(WIDTH, 400);
     private static int height = Prefs.getInt(HEIGHT, 400);
     private static int slices = Prefs.getInt(SLICES, 1);
@@ -44,6 +43,7 @@ public class NewImage {
 		if (type==GRAY16) bytesPerPixel = 2;
 		else if (type==GRAY32||type==RGB) bytesPerPixel = 4;
 		long size = (long)width*height*nSlices*bytesPerPixel;
+		boolean bigStack = size/(1024*1024)>=50;
 		String size2 = size/(1024*1024)+"MB ("+width+"x"+height+"x"+nSlices+")";
 		if ((options&CHECK_AVAILABLE_MEMORY)!=0) {
 			long max = IJ.maxMemory(); // - 100*1024*1024;
@@ -74,7 +74,8 @@ public class NewImage {
 		try {
 			stack.addSlice(null, ip);
 			for (int i=2; i<=nSlices; i++) {
-				if ((i%inc)==0) IJ.showProgress(i, nSlices);
+				if ((i%inc)==0 && bigStack)
+					IJ.showProgress(i, nSlices);
 				Object pixels2 = null;
 				switch (type) {
 					case GRAY8: pixels2 = new byte[width*height]; break;
@@ -92,7 +93,8 @@ public class NewImage {
 			IJ.outOfMemory(imp.getTitle());
 			stack.trim();
 		}
-		IJ.showProgress(nSlices, nSlices);
+		if (bigStack)
+			IJ.showProgress(nSlices, nSlices);
 		if (stack.getSize()>1)
 			imp.setStack(null, stack);
 		return true;
@@ -117,7 +119,9 @@ public class NewImage {
 
 	public static ImagePlus createByteImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		byte[] pixels = new byte[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		byte[] pixels = new byte[size];
 		switch (fill) {
 			case FILL_WHITE:
 				for (int i=0; i<width*height; i++)
@@ -149,7 +153,9 @@ public class NewImage {
 
 	public static ImagePlus createRGBImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		int[] pixels = new int[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		int[] pixels = new int[size];
 		switch (fill) {
 			case FILL_WHITE:
 				for (int i=0; i<width*height; i++)
@@ -182,11 +188,13 @@ public class NewImage {
 		}
 		return imp;
 	}
-
+	
 	/** Creates an unsigned short image. */
 	public static ImagePlus createShortImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		short[] pixels = new short[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		short[] pixels = new short[size];
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -225,7 +233,9 @@ public class NewImage {
 
 	public static ImagePlus createFloatImage(String title, int width, int height, int slices, int options) {
 		int fill = getFill(options);
-		float[] pixels = new float[width*height];
+		int size = getSize(width, height);
+		if (size<0) return null;
+		float[] pixels = new float[size];
 		switch (fill) {
 			case FILL_WHITE: case FILL_BLACK:
 				break;
@@ -252,6 +262,15 @@ public class NewImage {
 		}
 		imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
+	}
+
+	private static int getSize(int width, int height) {
+		long size = (long)width*height;
+		if (size>Integer.MAX_VALUE) {
+			IJ.error("Image is too large. ImageJ does not support\nsingle images larger than 2 gigapixels.");
+			return -1;
+		} else
+			return (int)size;
 	}
 
 	public static void open(String title, int width, int height, int nSlices, int type, int options) {
@@ -309,7 +328,12 @@ public class NewImage {
 		width = (int)gd.getNextNumber();
 		height = (int)gd.getNextNumber();
 		slices = (int)gd.getNextNumber();
-		return true;
+		if (slices<1) slices = 1;
+		if (width<1 || height<1) {
+			IJ.error("New Image", "Width and height must be >0");
+			return false;
+		} else
+			return true;
 	}
 
 	void openImage() {
@@ -321,7 +345,6 @@ public class NewImage {
 	
 	/** Called when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
-		prefs.put(NAME, name);
 		prefs.put(TYPE, Integer.toString(type));
 		prefs.put(FILL, Integer.toString(fillWith));
 		prefs.put(WIDTH, Integer.toString(width));

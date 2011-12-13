@@ -31,7 +31,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private static int colorIndex = 4;
 	private java.awt.List list;
 	private Hashtable rois = new Hashtable();
-	private Roi roiCopy;
 	private boolean canceled;
 	private boolean macro;
 	private boolean ignoreInterrupts;
@@ -48,11 +47,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private int defaultLineWidth = 1;
 	private Color defaultColor;
 	private boolean firstTime = true;
+	private int[] selectedIndexes;
 	
 	public RoiManager() {
 		super("ROI Manager");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		instance = this;
@@ -139,9 +139,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Draw");
 		addPopupItem("AND");
 		addPopupItem("OR (Combine)");
+		addPopupItem("XOR");
 		addPopupItem("Split");
 		addPopupItem("Add Particles");
 		addPopupItem("Multi Measure");
+		addPopupItem("Multi Plot");
 		addPopupItem("Sort");
 		addPopupItem("Specify...");
 		addPopupItem("Remove Slice Info");
@@ -157,17 +159,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		int modifiers = e.getModifiers();
-		boolean altKeyDown = (modifiers&ActionEvent.ALT_MASK)!=0 || IJ.altKeyDown();
-		boolean shiftKeyDown = (modifiers&ActionEvent.SHIFT_MASK)!=0 || IJ.shiftKeyDown();
-		IJ.setKeyUp(KeyEvent.VK_ALT);
-		IJ.setKeyUp(KeyEvent.VK_SHIFT);
 		String label = e.getActionCommand();
 		if (label==null)
 			return;
 		String command = label;
 		if (command.equals("Add [t]"))
-			add(shiftKeyDown, altKeyDown);
+			runCommand("add");
 		else if (command.equals("Update"))
 			update(true);
 		else if (command.equals("Delete"))
@@ -175,7 +172,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Rename..."))
 			rename(null);
 		else if (command.equals("Properties..."))
-			setProperties(null, 0, null);
+			setProperties(null, -1, null);
 		else if (command.equals("Flatten [F]"))
 			flatten();
 		else if (command.equals("Measure"))
@@ -200,10 +197,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (command.equals("AND"))
 			and();
+		else if (command.equals("XOR"))
+			xor();
 		else if (command.equals("Add Particles"))
 			addParticles();
 		else if (command.equals("Multi Measure"))
 			multiMeasure();
+		else if (command.equals("Multi Plot"))
+			multiPlot();
 		else if (command.equals("Sort"))
 			sort();
 		else if (command.equals("Specify..."))
@@ -230,7 +231,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (source==labelsCheckbox) {
 			if (firstTime)
 				showAllCheckbox.setState(true);
-			showAll(labelsCheckbox.getState()?LABELS:NO_LABELS);
+			boolean editState = labelsCheckbox.getState();
+			boolean showAllState = showAllCheckbox.getState();
+			if (!showAllState && !editState)
+				showAll(SHOW_NONE);
+			else {
+				showAll(editState?LABELS:NO_LABELS);
+				if (editState) showAllCheckbox.setState(true);
+			}
 			firstTime = false;
 			return;
 		}
@@ -243,7 +251,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             if (!IJ.isMacintosh()) {      //handle shift-click, ctrl-click (on Mac, OS takes care of this)
                 if (!IJ.shiftKeyDown()) lastNonShiftClick = index;
     			if (!IJ.shiftKeyDown() && !IJ.controlKeyDown()) {  //simple click, deselect everything else
-    				int[] indexes = list.getSelectedIndexes();
+    				int[] indexes = getSelectedIndexes();
     				for (int i=0; i<indexes.length; i++) {
     					if (indexes[i]!=index)
     						list.deselect(indexes[i]);
@@ -251,7 +259,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     			} else if (IJ.shiftKeyDown() && lastNonShiftClick>=0 && lastNonShiftClick<list.getItemCount()) {
                     int firstIndex = Math.min(index, lastNonShiftClick);
                     int lastIndex = Math.max(index, lastNonShiftClick);
-    				int[] indexes = list.getSelectedIndexes();
+    				int[] indexes = getSelectedIndexes();
     				for (int i=0; i<indexes.length; i++)
     					if (indexes[i]<firstIndex || indexes[i]>lastIndex)
     						list.deselect(indexes[i]);      //deselect everything else
@@ -315,7 +323,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			String label = list.getItem(n-1);
 			Roi roi2 = (Roi)rois.get(label);
 			if (roi2!=null) {
-				int slice2 = getSliceNumber(label);
+				int slice2 = getSliceNumber(roi2, label);
 				if (roi.equals(roi2) && (slice2==-1||slice2==imp.getCurrentSlice()) && imp.getID()==prevID && !Interpreter.isBatchMode())
 					return false;
 			}
@@ -332,15 +340,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (label==null) return false;
 		list.add(label);
 		roi.setName(label);
-		roiCopy = (Roi)roi.clone();
-		if (imp!=null) {
-			Calibration cal = imp.getCalibration();
-			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-				Rectangle r = roiCopy.getBounds();
-				roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
-			}
-		}
-		roiCopy.setStrokeWidth(lineWidth);
+		Roi roiCopy = (Roi)roi.clone();
+		if (lineWidth>1)
+			roiCopy.setStrokeWidth(lineWidth);
 		if (color!=null)
 			roiCopy.setStrokeColor(color);
 		rois.put(label, roiCopy);
@@ -369,20 +371,16 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	/** Adds the specified ROI to the list. The third argument ('n') will 
-		be used to form the first part of the ROI lable if it is >= 0. */
+		be used to form the first part of the ROI label if it is >= 0. */
 	public void add(ImagePlus imp, Roi roi, int n) {
 		if (roi==null) return;
-		String label = getLabel(imp, roi, n);
+		String label = roi.getName();
+		if (label==null)
+			label = getLabel(imp, roi, n);
 		if (label==null) return;
 		list.add(label);
 		roi.setName(label);
-		roiCopy = (Roi)roi.clone();
-		Calibration cal = imp.getCalibration();
-		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-			Rectangle r = roiCopy.getBounds();
-			roiCopy.setLocation(r.x-(int)cal.xOrigin, r.y-(int)cal.yOrigin);
-		}
-		rois.put(label, roiCopy);
+		rois.put(label, (Roi)roi.clone());
 	}
 
 	boolean isStandardName(String name) {
@@ -418,8 +416,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp!=null && imp.getStackSize()>1) {
-			String zs = "000000" + imp.getCurrentSlice();
+			int slice = roi.getPosition();
+			if (slice==0)
+				slice = imp.getCurrentSlice();
+			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
+			roi.setPosition(slice);
 		}
 		return label;
 	}
@@ -442,7 +444,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int count = list.getItemCount();
 		if (count==0)
 			return error("The list is empty.");
-		int index[] = list.getSelectedIndexes();
+		int index[] = getSelectedIndexes();
 		if (index.length==0 || (replacing&&count>1)) {
 			String msg = "Delete all items on the list?";
 			if (replacing)
@@ -456,15 +458,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			}
 			index = getAllIndexes();
 		}
-		for (int i=count-1; i>=0; i--) {
-			boolean delete = false;
-			for (int j=0; j<index.length; j++) {
-				if (index[j]==i)
-					delete = true;
-			}
-			if (delete) {
-				rois.remove(list.getItem(i));
-				list.remove(i);
+		if (count==index.length && !replacing) {
+			rois.clear();
+			list.removeAll();
+		} else {
+			for (int i=count-1; i>=0; i--) {
+				boolean delete = false;
+				for (int j=0; j<index.length; j++) {
+					if (index[j]==i)
+						delete = true;
+				}
+				if (delete) {
+					rois.remove(list.getItem(i));
+					list.remove(i);
+				}
 			}
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -491,9 +498,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (index>=0) {
 			String name = list.getItem(index);
 			rois.remove(name);
-			if (clone)
-				rois.put(name, (Roi)roi.clone());
-			else
+			if (clone) {
+				Roi roi2 = (Roi)roi.clone();
+				int position = roi.getPosition();
+				if (imp.getStackSize()>1)
+					roi2.setPosition(imp.getCurrentSlice());
+				roi.setName(name);
+				roi2.setName(name);
+				rois.put(name, roi2);
+			} else
 				rois.put(name, roi);
 		}
 		if (record()) Recorder.record("roiManager", "Update");
@@ -514,6 +527,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		rois.put(name2, roi);
 		list.replaceItem(name2, index);
 		list.select(index);
+		if (Prefs.useNamesAsLabels && labelsCheckbox.getState()) {
+			ImagePlus imp = WindowManager.getCurrentImage();
+			if (imp!=null) imp.draw();
+		}
 		if (record())
 			Recorder.record("roiManager", "Rename", name2);
 		return true;
@@ -536,7 +553,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null || roi==null)
 			return false;
         if (setSlice) {
-            int n = getSliceNumber(label);
+            int n = getSliceNumber(roi, label);
             if (n>=1 && n<=imp.getStackSize()) {
             	if (imp.isHyperStack()||imp.isComposite())
                 	imp.setPosition(n);
@@ -547,8 +564,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
         Roi roi2 = (Roi)roi.clone();
 		Calibration cal = imp.getCalibration();
 		Rectangle r = roi2.getBounds();
-		if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0)
-			roi2.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
 		int width= imp.getWidth(), height=imp.getHeight();
 		if (restoreCentered) {
 			ImageCanvas ic = imp.getCanvas();
@@ -586,6 +601,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return slice;
 	}
 	
+	/** Returns the slice number associated with the specified ROI or name,
+		or -1 if the ROI or name does not include a slice number. */
+	int getSliceNumber(Roi roi, String label) {
+		int slice = roi!=null?roi.getPosition():-1;
+		if (slice==0)
+			slice=-1;
+		if (slice==-1)
+			slice = getSliceNumber(label);
+		return slice;
+	}
+
 	void open(String path) {
 		Macro.setOptions(null);
 		String name = null;
@@ -597,7 +623,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				return;
 			path = directory + name;
 		}
-		if (record()) Recorder.record("roiManager", "Open", path);
+		if (Recorder.record && !Recorder.scriptMode())
+			Recorder.record("roiManager", "Open", path);
 		if (path.endsWith(".zip")) {
 			openZip(path);
 			return;
@@ -626,7 +653,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			int len; 
 			ZipEntry entry = in.getNextEntry(); 
 			while (entry!=null) { 
-				String name = entry.getName(); 
+				String name = entry.getName();
 				if (name.endsWith(".roi")) { 
 					out = new ByteArrayOutputStream(); 
 					while ((len = in.read(buf)) > 0) 
@@ -674,7 +701,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	boolean save() {
 		if (list.getItemCount()==0)
 			return error("The selection list is empty.");
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		if (indexes.length>1)
@@ -740,15 +767,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = getImage();
 		if (imp==null)
 			return false;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
 		boolean allSliceOne = true;
 		for (int i=0; i<indexes.length; i++) {
 			String label = list.getItem(indexes[i]);
-			if (getSliceNumber(label)>1) allSliceOne = false;
 			Roi roi = (Roi)rois.get(label);
+			if (getSliceNumber(roi,label)>1) allSliceOne = false;
 		}
 		int measurements = Analyzer.getMeasurements();
 		if (imp.getStackSize()>1)
@@ -789,7 +816,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
  	boolean multiMeasure() {
 		ImagePlus imp = getImage();
 		if (imp==null) return false;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
         if (indexes.length==0) return false;
@@ -895,9 +922,78 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		return count;
 	}
+	
+	void multiPlot() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		int[] indexes = getSelectedIndexes();
+		if (indexes.length==0) indexes = getAllIndexes();
+		int n = indexes.length;
+        if (n==0) return;
+		Color[] colors = {Color.blue, Color.green, Color.magenta, Color.red, Color.cyan, Color.yellow};
+		if (n>colors.length) {
+			colors = new Color[n];
+			double c = 0;
+			double inc =150.0/n;
+			for (int i=0; i<n; i++) {
+				colors[i] = new Color((int)c, (int)c, (int)c);
+				c += inc;
+			}
+		}
+		int currentSlice = imp.getCurrentSlice();
+		double[][] x = new double[n][];
+		double[][] y = new double[n][];
+		double minY = Double.MAX_VALUE;
+		double maxY = -Double.MAX_VALUE;
+		double fixedMin = ProfilePlot.getFixedMin();
+		double fixedMax = ProfilePlot.getFixedMax();	
+		boolean freeYScale = fixedMin==0.0 && fixedMax==0.0;
+		if (!freeYScale) {
+			minY = fixedMin;
+			maxY = fixedMax;
+		}
+		int maxX = 0;
+		Calibration cal = imp.getCalibration();
+		double xinc = cal.pixelWidth;
+		for (int i=0; i<indexes.length; i++) {
+			if (!restore(getImage(), indexes[i], true)) break;
+			Roi roi = imp.getRoi();
+			if (roi==null) break;
+			if (roi.isArea() && roi.getType()!=Roi.RECTANGLE)
+				IJ.run(imp, "Area to Line", "");
+			ProfilePlot pp = new ProfilePlot(imp, IJ.altKeyDown());
+			y[i] = pp.getProfile();
+			if (y[i]==null) break;
+			if (y[i].length>maxX) maxX = y[i].length;
+			if (freeYScale) {
+				double[] a = Tools.getMinMax(y[i]);
+				if (a[0]<minY) minY=a[0];
+				if (a[1]>maxY) maxY = a[1];
+			}
+			double[] xx = new double[y[i].length];
+			for (int j=0; j<xx.length; j++)
+				xx[j] = j*xinc;
+			x[i] = xx;
+		}
+		String xlabel = "Distance ("+cal.getUnits()+")";
+		Plot plot = new Plot("Profiles",xlabel, "Value", x[0], y[0]);
+		plot.setLimits(0, maxX*xinc, minY, maxY);
+		for (int i=1; i<indexes.length; i++) {
+			plot.setColor(colors[i]);
+			if (x[i]!=null)
+				plot.addPoints(x[i], y[i], Plot.LINE);
+		}
+		plot.setColor(colors[0]);
+		if (x[0]!=null)
+			plot.show();
+		imp.setSlice(currentSlice);
+		if (indexes.length>1)
+			IJ.run("Select None");
+		if (record()) Recorder.record("roiManager", "Multi Plot");
+	}	
 
 	boolean drawOrFill(int mode) {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -915,7 +1011,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (roi==null) continue;
 			if (mode==FILL&&(type==Roi.POLYLINE||type==Roi.FREELINE||type==Roi.ANGLE))
 				mode = DRAW;
-            int slice2 = getSliceNumber(name);
+            int slice2 = getSliceNumber(roi, name);
             if (slice2>=1 && slice2<=imp.getStackSize()) {
                 imp.setSlice(slice2);
 				ip = imp.getProcessor();
@@ -924,7 +1020,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
             }
  			switch (mode) {
 				case DRAW: roi.drawPixels(ip); break;
-				case FILL: ip.fillPolygon(roi.getPolygon()); break;
+				case FILL: ip.fill(roi); break;
 				case LABEL:
 					roi.drawPixels(ip);
 					filler.drawLabel(imp, ip, i+1, roi.getBounds());
@@ -938,7 +1034,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void setProperties(Color color, int lineWidth, Color fillColor) {
-		int[] indexes = list.getSelectedIndexes();
+		boolean showDialog = color==null && lineWidth==-1 && fillColor==null;
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		int n = indexes.length;
@@ -946,8 +1043,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi rpRoi = null;
 		String rpName = null;
 		Font font = null;
+		int justification = TextRoi.LEFT;
 		double opacity = -1;
-        if (color==null && lineWidth==0 && fillColor==null) {
+        if (showDialog) {
 			String label = list.getItem(indexes[0]);
 			rpRoi = (Roi)rois.get(label);
 			if (n==1) {
@@ -968,13 +1066,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			color =  rpRoi.getStrokeColor();
 			fillColor =  rpRoi.getFillColor();
 			defaultColor = color;
-			if (rpRoi instanceof TextRoi)
+			if (rpRoi instanceof TextRoi) {
 				font = ((TextRoi)rpRoi).getCurrentFont();
+				justification = ((TextRoi)rpRoi).getJustification();
+			}
 			if (rpRoi instanceof ImageRoi)
 				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (n==list.getItemCount() && !IJ.isMacro()) {
+		if (n==list.getItemCount() && n>1 && !IJ.isMacro()) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
 			gd.addMessage("Apply changes to all "+n+" selections?");
 			gd.showDialog();
@@ -985,11 +1085,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(label);
 			//IJ.log("set "+color+"  "+lineWidth+"  "+fillColor);
 			if (color!=null) roi.setStrokeColor(color);
-			if (lineWidth>0) roi.setStrokeWidth(lineWidth);
+			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 			if (roi!=null && (roi instanceof TextRoi)) {
 				roi.setImage(imp);
-				if (font!=null) ((TextRoi)roi).setCurrentFont(font);
+				if (font!=null)
+					((TextRoi)roi).setCurrentFont(font);
+				((TextRoi)roi).setJustification(justification);
 				roi.setImage(null);
 			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
@@ -1001,11 +1103,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi roi = imp!=null?imp.getRoi():null;
 		boolean showingAll = ic!=null &&  ic.getShowAllROIs();
 		if (roi!=null && (n==1||!showingAll)) {
-			if (lineWidth!=0) roi.setStrokeWidth(lineWidth);
+			if (lineWidth>=0) roi.setStrokeWidth(lineWidth);
 			if (color!=null) roi.setStrokeColor(color);
 			if (fillColor!=null) roi.setFillColor(fillColor);
-			if (roi!=null && (roi instanceof TextRoi))
+			if (roi!=null && (roi instanceof TextRoi)) {
 				((TextRoi)roi).setCurrentFont(font);
+				((TextRoi)roi).setJustification(justification);
+			}
 			if (roi!=null && (roi instanceof ImageRoi) && opacity!=-1)
 				((ImageRoi)roi).setOpacity(opacity);
 		}
@@ -1042,7 +1146,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void combine() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==1) {
 			error("More than one item must be selected, or none");
 			return;
@@ -1066,15 +1170,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	void combineRois(ImagePlus imp, int[] indexes) {
 		ShapeRoi s1=null, s2=null;
+		ImageProcessor ip = null;
 		for (int i=0; i<indexes.length; i++) {
 			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
-			if (roi.isLine() || roi.getType()==Roi.POINT)
-				continue;
-			Calibration cal = imp.getCalibration();
-			if (cal.xOrigin!=0.0 || cal.yOrigin!=0.0) {
-				roi = (Roi)roi.clone();
-				Rectangle r = roi.getBounds();
-				roi.setLocation(r.x+(int)cal.xOrigin, r.y+(int)cal.yOrigin);
+			if (!roi.isArea()) {
+				if (ip==null)
+					ip = new ByteProcessor(imp.getWidth(), imp.getHeight());
+				roi = convertLineToPolygon(roi, ip);
 			}
 			if (s1==null) {
 				if (roi instanceof ShapeRoi)
@@ -1088,12 +1190,27 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				else
 					s2 = new ShapeRoi(roi);
 				if (s2==null) continue;
-				if (roi.isArea())
-					s1.or(s2);
+				s1.or(s2);
 			}
 		}
 		if (s1!=null)
 			imp.setRoi(s1);
+	}
+	
+	Roi convertLineToPolygon(Roi roi, ImageProcessor ip) {
+		if (roi==null) return null;
+		ip.resetRoi();
+		ip.setColor(0);
+		ip.fill();
+		ip.setColor(255);
+		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
+			ip.fillPolygon(roi.getPolygon());
+		else
+			roi.drawPixels(ip);
+		//new ImagePlus("ip", ip.duplicate()).show();
+		ip.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
+		ThresholdToSelection tts = new ThresholdToSelection();
+		return tts.convert(ip);
 	}
 
 	void combinePoints(ImagePlus imp, int[] indexes) {
@@ -1122,7 +1239,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void and() {
 		ImagePlus imp = getImage();
 		if (imp==null) return;
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==1) {
 			error("More than one item must be selected, or none");
 			return;
@@ -1152,6 +1269,39 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (record()) Recorder.record("roiManager", "AND");
 	}
 
+	void xor() {
+		ImagePlus imp = getImage();
+		if (imp==null) return;
+		int[] indexes = getSelectedIndexes();
+		if (indexes.length==1) {
+			error("More than one item must be selected, or none");
+			return;
+		}
+		if (indexes.length==0)
+			indexes = getAllIndexes();
+		ShapeRoi s1=null, s2=null;
+		for (int i=0; i<indexes.length; i++) {
+			Roi roi = (Roi)rois.get(list.getItem(indexes[i]));
+			if (!roi.isArea()) continue;
+			if (s1==null) {
+				if (roi instanceof ShapeRoi)
+					s1 = (ShapeRoi)roi.clone();
+				else
+					s1 = new ShapeRoi(roi);
+				if (s1==null) return;
+			} else {
+				if (roi instanceof ShapeRoi)
+					s2 = (ShapeRoi)roi.clone();
+				else
+					s2 = new ShapeRoi(roi);
+				if (s2==null) continue;
+				s1.xor(s2);
+			}
+		}
+		if (s1!=null) imp.setRoi(s1);
+		if (record()) Recorder.record("roiManager", "XOR");
+	}
+
 	void addParticles() {
 		String err = IJ.runMacroFile("ij.jar:AddParticles", null);
 		if (err!=null && err.length()>0)
@@ -1179,7 +1329,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	void removeSliceInfo() {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		for (int i=0; i<indexes.length; i++) {
@@ -1192,9 +1342,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			Roi roi = (Roi)rois.get(name);
 			rois.remove(name);
 			roi.setName(name2);
+			roi.setPosition(0);
 			rois.put(name2, roi);
 			list.replaceItem(name2, index);
 		}
+		if (record()) Recorder.record("roiManager", "Remove Slice Info");
 	}
 
 	void help() {
@@ -1206,8 +1358,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Color c = ImageCanvas.getShowAllColor();
 		GenericDialog gd = new GenericDialog("Options");
 		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
-		gd.addCheckbox("Associate \"Show All\" ROIs with Slices", Prefs.showAllSliceOnly);
-		gd.addCheckbox("Restore ROIs Centered", restoreCentered);
+		gd.addCheckbox("Associate \"Show All\" ROIs with slices", Prefs.showAllSliceOnly);
+		gd.addCheckbox("Restore ROIs centered", restoreCentered);
+		gd.addCheckbox("Use ROI names as labels", Prefs.useNamesAsLabels);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			if (c!=ImageCanvas.getShowAllColor())
@@ -1216,11 +1369,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		Prefs.showAllSliceOnly = gd.getNextBoolean();
 		restoreCentered = gd.getNextBoolean();
+		Prefs.useNamesAsLabels = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) imp.draw();
 		if (record()) {
 			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");
 			Recorder.record("roiManager", "Centered", restoreCentered?"true":"false");
+			Recorder.record("roiManager", "UseNames", Prefs.useNamesAsLabels?"true":"false");
 		}
 	}
 
@@ -1325,6 +1480,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public static RoiManager getInstance() {
 		return (RoiManager)instance;
 	}
+	
+	/** Returns a reference to the ROI Manager window or to the
+		macro batch mode RoiManager, or null if neither exists. */
+	public static RoiManager getInstance2() {
+		RoiManager rm = getInstance();
+		if (rm==null && IJ.isMacro())
+			rm = Interpreter.getBatchModeRoiManager();
+		return rm;
+	}
+
+
 
 	/**	Returns the ROI Hashtable.
 		@see getCount
@@ -1361,7 +1527,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the selected ROIs as an array, or
 		all the ROIs if none are selected. */
 	public Roi[] getSelectedRoisAsArray() {
-		int[] indexes = list.getSelectedIndexes();
+		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
 			indexes = getAllIndexes();
 		int n = indexes.length;
@@ -1373,6 +1539,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		return array;
 	}
 			
+	/** Returns the name of the ROI with the specified index,
+		or null if the index is out of range. */
+	public String getName(int index) {
+		if (index>=0 && index<list.getItemCount())
+       	 	return  list.getItem(index);
+		else
+			return null;
+	}
+
 	/** Returns the name of the ROI with the specified index.
 		Can be called from a macro using
 		<pre>call("ij.plugin.frame.RoiManager.getName", index)</pre>
@@ -1389,16 +1564,25 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Show All", Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "Split",
+		"Show All", Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "XOR", "Split",
 		"Sort" or "Multi Measure" command.  Returns false if <code>cmd</code>
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {
 		cmd = cmd.toLowerCase();
 		macro = true;
 		boolean ok = true;
-		if (cmd.equals("add"))
-			add(IJ.shiftKeyDown(), IJ.altKeyDown());
-		else if (cmd.equals("add & draw"))
+		if (cmd.equals("add")) {
+			boolean shift = IJ.shiftKeyDown();
+			boolean alt = IJ.altKeyDown();
+			if (Interpreter.isBatchMode()) {
+				shift = false;
+				alt = false;
+			}
+			ImagePlus imp = WindowManager.getCurrentImage();
+			Roi roi = imp!=null?imp.getRoi():null;
+			if (roi!=null) roi.setPosition(0);
+			add(shift, alt);
+		} else if (cmd.equals("add & draw"))
 			addAndDraw(false);
 		else if (cmd.equals("update"))
 			update(true);
@@ -1418,18 +1602,22 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			and();
 		else if (cmd.equals("or") || cmd.equals("combine"))
 			combine();
+		else if (cmd.equals("xor"))
+			xor();
 		else if (cmd.equals("split"))
 			split();
 		else if (cmd.equals("sort"))
 			sort();
-		else if (cmd.startsWith("multi"))
+		else if (cmd.equals("multi measure"))
 			multiMeasure();
-		else if (cmd.startsWith("show all")) {
+		else if (cmd.equals("multi plot"))
+			multiPlot();
+		else if (cmd.equals("show all")) {
 			if (WindowManager.getCurrentImage()!=null) {
 				showAll(SHOW_ALL);
 				showAllCheckbox.setState(true);
 			}
-		} else if (cmd.startsWith("show none")) {
+		} else if (cmd.equals("show none")) {
 			if (WindowManager.getCurrentImage()!=null) {
 				showAll(SHOW_NONE);
 				showAllCheckbox.setState(false);
@@ -1451,10 +1639,15 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				ignoreInterrupts = true;
 			list.removeAll();
 			rois.clear();
+			updateShowAll();
 		} else if (cmd.equals("debug")) {
 			//IJ.log("Debug: "+debugCount);
 			//for (int i=0; i<debugCount; i++)
     		//	IJ.log(debug[i]);
+		} else if (cmd.equals("enable interrupts")) {
+			ignoreInterrupts = false;
+		} else if (cmd.equals("remove slice info")) {
+			removeSliceInfo();
 		} else
 			ok = false;
 		macro = false;
@@ -1489,17 +1682,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return true;
 		} else if (cmd.equals("set color")) {
 			Color color = Colors.decode(name, Color.cyan);
-			setProperties(color, 0, null);
+			setProperties(color, -1, null);
 			macro = false;
 			return true;
 		} else if (cmd.equals("set fill color")) {
 			Color fillColor = Colors.decode(name, Color.cyan);
-			setProperties(null, 0, fillColor);
+			setProperties(null, -1, fillColor);
 			macro = false;
 			return true;
 		} else if (cmd.equals("set line width")) {
 			int lineWidth = (int)Tools.parseDouble(name, 0);
-			if (lineWidth!=0) setProperties(null, lineWidth, null);
+			if (lineWidth>=0)
+				setProperties(null, lineWidth, null);
 			macro = false;
 			return true;
 		} else if (cmd.equals("associate")) {
@@ -1510,6 +1704,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			restoreCentered = name.equals("true")?true:false;
 			macro = false;
 			return true;
+		} else if (cmd.equals("usenames")) {
+			Prefs.useNamesAsLabels = name.equals("true")?true:false;
+			macro = false;
+			if (labelsCheckbox.getState()) {
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (imp!=null) imp.draw();
+			}
+			return true;
 		}
 		return false;
 	}
@@ -1517,11 +1719,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Adds the current selection to the ROI Manager, using the
 		specified color (a 6 digit hex string) and line width. */
 	public boolean runCommand(String cmd, String hexColor, double lineWidth) {
-		if (hexColor==null && lineWidth==1.0 && IJ.altKeyDown())
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Roi roi = imp!=null?imp.getRoi():null;
+		if (roi!=null) roi.setPosition(0);
+		if (hexColor==null && lineWidth==1.0 && (IJ.altKeyDown()&&!Interpreter.isBatchMode()))
 			addRoi(true);
 		else {
-			if (hexColor==null) hexColor = getHex(null);
-			Color color = Colors.decode(hexColor, Color.cyan);
+			Color color = hexColor!=null?Colors.decode(hexColor, Color.cyan):null;
 			addRoi(null, false, color, (int)Math.round(lineWidth));
 		}
 		return true;	
@@ -1534,10 +1738,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	/** Assigns the ROI at the specified index to 'imp'. */
 	public void select(ImagePlus imp, int index) {
+		selectedIndexes = null;
 		int n = list.getItemCount();
 		if (index<0) {
 			for (int i=0; i<n; i++)
-				if (list.isSelected(i)) list.deselect(i);
+				list.deselect(i);
 			if (record()) Recorder.record("roiManager", "Deselect");
 			return;
 		}
@@ -1636,6 +1841,30 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (IJ.isWindows())
 				list.requestFocusInWindow();
 		}
+	}
+	
+	/** Temporarily selects multiple ROIs, where 'indexes' is an array of integers, 
+		each greater than or equal to 0 and less than the value returned by getCount().
+		The selected ROIs are not highlighted in the ROI Manager list and are no 
+		longer selected after the next ROI Manager command is executed.
+	*/
+	public void setSelectedIndexes(int[] indexes) {
+		int count = getCount();
+		if (count==0) return;
+		for (int i=0; i<indexes.length; i++) {
+			if (indexes[i]<0) indexes[i]=0;
+			if (indexes[i]>=count) indexes[i]=count-1;
+		}
+		selectedIndexes = indexes;
+	}
+	
+	private int[] getSelectedIndexes() {
+		if (selectedIndexes!=null) {
+			int[] indexes = selectedIndexes;
+			selectedIndexes = null;
+			return indexes;
+		} else
+			return list.getSelectedIndexes();
 	}
 
 	private boolean record() {

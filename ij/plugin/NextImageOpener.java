@@ -36,7 +36,7 @@ public class NextImageOpener implements PlugIn {
 		// get current image; displays error and aborts if no image is open
  		imp0 = IJ.getImage();
  		// get current image directory
- 		String currentPath = IJ.getDirectory("image");
+ 		String currentPath = getDirectory(imp0);
 		if (IJ.debugMode) IJ.log("OpenNext.currentPath:" + currentPath);
 		if (currentPath==null) {
 			IJ.error("Next Image", "Directory information for \""+imp0.getTitle()+"\" not found.");
@@ -55,11 +55,23 @@ public class NextImageOpener implements PlugIn {
 		}
 	}
 	
+	String getDirectory(ImagePlus imp) {
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi==null) return null;
+		String dir = fi.openNextDir;
+		if (dir==null) dir = fi.directory;
+		return dir;
+	}
+
 	String getName(ImagePlus imp) {
 		String name = imp.getTitle();
 		FileInfo fi = imp.getOriginalFileInfo();
-		if (fi!=null && fi.fileName!=null)
-			name = fi.fileName;
+		if (fi!=null) {
+			if (fi.openNextName!=null)
+				name = fi.openNextName;
+			else if (fi.fileName!=null)
+				name = fi.fileName;
+		}
 		return name;
 	}
 	

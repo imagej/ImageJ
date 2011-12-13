@@ -1,7 +1,10 @@
 package ij;
 import ij.process.*;
 import ij.io.*;
+import ij.gui.ImageCanvas;
+import ij.util.Tools;
 import java.io.*;
+import java.awt.Font;
 import java.awt.image.ColorModel;
 
 /** This class represents an array of disk-resident images. */
@@ -91,20 +94,36 @@ public class VirtualStack extends ImageStack {
 	*/
 	public ImageProcessor getProcessor(int n) {
 		//IJ.log("getProcessor: "+n+"  "+names[n-1]+"  "+bitDepth);
-		ImagePlus imp = new Opener().openImage(path, names[n-1]);
+		Opener opener = new Opener();
+		opener.setSilentMode(true);
+		IJ.redirectErrorMessages(true);
+		ImagePlus imp = opener.openImage(path, names[n-1]);
+		IJ.redirectErrorMessages(false);
+		ImageProcessor ip = null;
+		int depthThisImage = 0;
 		if (imp!=null) {
 			int w = imp.getWidth();
 			int h = imp.getHeight();
 			int type = imp.getType();
 			ColorModel cm = imp.getProcessor().getColorModel();
 			labels[n-1] = (String)imp.getProperty("Info");
+			depthThisImage = imp.getBitDepth();
+			ip = imp.getProcessor();
 		} else {
 			File f = new File(path, names[n-1]);
-			String msg = f.exists()?"error opening ":"file not found: ";
-			throw new RuntimeException(msg+path+names[n-1]);
+			String msg = f.exists()?"Error opening ":"File not found: ";
+			ip = new ByteProcessor(getWidth(), getHeight());
+			ip.invert();
+			int size = getHeight()/20;
+			if (size<9) size=9;
+			Font font = new Font("Helvetica", Font.PLAIN, size);
+			ip.setFont(font);
+			ip.setAntialiasedText(true);
+			ip.setColor(0);
+			ip.drawString(msg+names[n-1], size, size*2);
+			depthThisImage = 8;
 		}
-		ImageProcessor ip = imp.getProcessor();
-		if (imp.getBitDepth()!=bitDepth) {
+		if (depthThisImage!=bitDepth) {
 			switch (bitDepth) {
 				case 8: ip=ip.convertToByte(true); break;
 				case 16: ip=ip.convertToShort(true); break;
@@ -112,8 +131,11 @@ public class VirtualStack extends ImageStack {
 				case 32: ip=ip.convertToFloat(); break;
 			}
 		}
-		if (ip.getWidth()!=getWidth() || ip.getHeight()!=getHeight())
-			ip = ip.resize(getWidth(), getHeight());
+		if (ip.getWidth()!=getWidth() || ip.getHeight()!=getHeight()) {
+			ImageProcessor ip2 = ip.createProcessor(getWidth(), getHeight());
+			ip2.insert(ip, 0, 0);
+			ip = ip2;
+		}
 		return ip;
 	 }
  
@@ -174,6 +196,20 @@ public class VirtualStack extends ImageStack {
 	/** Returns the bit depth (8, 16, 24 or 32), or 0 if the bit depth is not known. */
 	public int getBitDepth() {
 		return bitDepth;
+	}
+	
+	public ImageStack sortDicom(String[] strings, String[] info, int maxDigits) {
+		int n = getSize();
+		String[] names2 = new String[n];
+		for (int i=0; i<n; i++)
+			names2[i] = names[i];
+		for (int i=0; i<n; i++) {
+			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-maxDigits), 0.0);
+			if (slice==0) return null;
+			names[i] = names2[slice-1];
+			labels[i] = info[slice-1];
+		}
+		return this;
 	}
 
 } 

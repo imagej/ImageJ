@@ -81,7 +81,8 @@ public class TiffEncoder {
 		makeDescriptionString();
 		if (description!=null)
 			nEntries++;  // ImageDescription tag
-		imageSize = fi.width*fi.height*bytesPerPixel;
+		long size = (long)fi.width*fi.height*bytesPerPixel;
+		imageSize = size<=0xffffffffL?(int)size:0;
 		stackSize = (long)imageSize*fi.nImages;
 		metaDataSize = getMetaDataSize();
 		if (metaDataSize>0)
@@ -507,5 +508,5 @@ public class TiffEncoder {
 			}
         }
     }
-
+    
 }

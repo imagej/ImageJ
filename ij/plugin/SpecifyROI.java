@@ -135,8 +135,8 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		int iHeight = (int)height;
 		Calibration cal = imp.getCalibration();
 		if (scaledUnits && cal.scaled()) {
-			iX = (int)Math.round(xRoi/cal.pixelWidth);
-			iY = (int)Math.round(yRoi/cal.pixelHeight);
+			iX = (int)Math.round(iX/cal.pixelWidth);
+			iY = (int)Math.round(iY/cal.pixelHeight);
 			iWidth = (int)Math.round(width/cal.pixelWidth);
 			iHeight = (int)Math.round(height/cal.pixelHeight);
 			prevPixelWidth = cal.pixelWidth;

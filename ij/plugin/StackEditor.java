@@ -5,8 +5,7 @@ import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
-import java.awt.Dimension;
-
+import java.awt.*;
 
 /** Implements the AddSlice, DeleteSlice and "Stack to Images" commands. */
 public class StackEditor implements PlugIn {
@@ -29,6 +28,10 @@ public class StackEditor implements PlugIn {
 	}
 
 	void addSlice() {
+		if (imp.isComposite() && nSlices==imp.getNChannels()) {
+			addChannel();
+			return;
+		}
 		if (imp.isDisplayedHyperStack()) return;
  		if (!imp.lock()) return;
 		int id = 0;
@@ -55,6 +58,10 @@ public class StackEditor implements PlugIn {
 	void deleteSlice() {
 		if (nSlices<2)
 			{IJ.error("\"Delete Slice\" requires a stack"); return;}
+		if (imp.isComposite() && nSlices==imp.getNChannels()) {
+			deleteChannel();
+			return;
+		}
 		if (imp.isDisplayedHyperStack()) {
 			deleteHyperstackSliceOrFrame();
 			return;
@@ -71,6 +78,56 @@ public class StackEditor implements PlugIn {
  		if (n--<1) n = 1;
 		imp.setSlice(n);
 		imp.unlock();
+	}
+
+	void addChannel() {
+		int c = imp.getChannel();
+		ImageStack stack = imp.getStack();
+		CompositeImage ci = (CompositeImage)imp;
+		if (stack.getSize()>=7 && ci.getMode()==CompositeImage.COMPOSITE) {
+			IJ.error("Add Channel", "Composite mode images limited to 7 channels");
+			return;
+		}
+		LUT[] luts = ci.getLuts();
+		ImageProcessor ip = stack.getProcessor(1);
+		ImageProcessor ip2 = ip.createProcessor(ip.getWidth(), ip.getHeight());
+ 		stack.addSlice(null, ip2, c);
+ 		int channels = stack.getSize();
+		LUT lut = LUT.createLutFromColor(Color.white);
+		imp.setStack(stack, channels, 1, 1);
+ 		int index = 0;
+		for (int i=1; i<=channels; i++) {
+			if (c+1==index+1) {
+				((CompositeImage)imp).setChannelLut(lut, i);
+				c = -1;
+			} else
+				((CompositeImage)imp).setChannelLut(luts[index++], i);
+		}
+		imp.updateAndDraw();
+	}
+
+	void deleteChannel() {
+		int c = imp.getChannel();
+		ImageStack stack = imp.getStack();
+		CompositeImage ci = (CompositeImage)imp;
+ 		int mode = ci.getMode();
+		LUT[] luts = ci.getLuts();
+ 		stack.deleteSlice(c);
+ 		int channels = stack.getSize();
+ 		imp.setStack(stack, channels, 1, 1);
+ 		if (mode==CompositeImage.COMPOSITE && channels==1)
+ 			mode = CompositeImage.COLOR;
+		int index = 0;
+		for (int i=1; i<=channels; i++) {
+			if (c==index+1) index++;
+			((CompositeImage)imp).setChannelLut(luts[index++], i);
+		}
+		//luts = imp.getLuts();
+		//for (int i=0; i<luts.length; i++)
+		//	IJ.log(i+" "+luts[i]);
+		if (mode!=CompositeImage.COMPOSITE)
+			imp.getProcessor().setLut(ci.getChannelLut());
+		imp.updateAndDraw();
 	}
 
 	void deleteHyperstackSliceOrFrame() {

@@ -39,12 +39,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean showAllROIs;
 	private static Color zoomIndicatorColor;
 	private static Font smallFont, largeFont;
+	private Font font;
 	private Rectangle[] labelRects;
     private boolean maxBoundsReset;
     private Overlay overlay, showAllList;
     private static final int LIST_OFFSET = 100000;
     private static Color showAllColor = Prefs.getColor(Prefs.SHOW_ALL_COLOR, new Color(0, 255, 255));
-    private static Color labelColor;
+    private Color defaultColor = showAllColor;
+    private static Color labelColor, bgColor;
     private int resetMaxBoundsCount;
     private Roi currentRoi;
 		
@@ -63,6 +65,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private int offScreenHeight = 0;
 	private boolean mouseExited = true;
 	private boolean customRoi;
+	private boolean drawNames;
 	
 	
 	public ImageCanvas(ImagePlus imp) {
@@ -107,14 +110,22 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		srcRect = r;
 	}
 
+	void setSrcRect(Rectangle srcRect) {
+		this.srcRect = srcRect;
+	}
+		
+	public Rectangle getSrcRect() {
+		return srcRect;
+	}
+	
 	public void setDrawingSize(int width, int height) {
 	    dstWidth = width;
 	    dstHeight = height;
 		setSize(dstWidth, dstHeight);
 	}
 		
-	/** ImagePlus.updateAndDraw calls this method to get paint 
-		to update the image from the ImageProcessor. */
+	/** ImagePlus.updateAndDraw calls this method to force the paint()
+		method to update the image from the ImageProcessor. */
 	public void setImageUpdated() {
 		imageUpdated = true;
 	}
@@ -159,10 +170,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			float lineWidth = roi.getStrokeWidth();
 			roi.setStrokeColor(null);
 			roi.setFillColor(null);
-			roi.setStrokeWidth(1);
+			boolean strokeSet = roi.getStroke()!=null;
+			if (strokeSet)
+				roi.setStrokeWidth(1);
 			roi.draw(g);
 			roi.setStrokeColor(lineColor);
-			roi.setStrokeWidth(lineWidth);
+			if (strokeSet)
+				roi.setStrokeWidth(lineWidth);
 			roi.setFillColor(fillColor);
 			currentRoi = null;
 		} else
@@ -177,13 +191,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				rm = null;
 		}
 		if (rm==null) {
-			if (showAllList!=null)
-				overlay= showAllList;
+			//if (showAllList!=null)
+			//	overlay = showAllList;
 			showAllROIs = false;
 			repaint();
 			return;
 		}
-		initGraphics(g);
+		initGraphics(g, null, showAllColor);
 		Hashtable rois = rm.getROIs();
 		java.awt.List list = rm.getList();
 		boolean drawLabels = rm.getDrawLabels();
@@ -196,26 +210,49 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			showAllList = new Overlay();
 		else
 			showAllList = null;
+    	if (imp==null)
+    		return;
+    	int currentImage = imp.getCurrentSlice();
+		int channel=0, slice=0, frame=0;
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack) {
+			channel = imp.getChannel();
+			slice = imp.getSlice();
+			frame = imp.getFrame();
+		}
+		drawNames = Prefs.useNamesAsLabels;
 		for (int i=0; i<n; i++) {
 			String label = list.getItem(i);
 			Roi roi = (Roi)rois.get(label);
 			if (roi==null) continue;
 			if (showAllList!=null)
 				showAllList.add(roi);
-			if (i<200 && drawLabels && imp!=null && roi==imp.getRoi())
+			if (i<200 && drawLabels && roi==imp.getRoi())
 				currentRoi = roi;
 			if (Prefs.showAllSliceOnly && imp.getStackSize()>1) {
-				int slice = getSliceNumber(roi.getName());
-				if (slice==-1 || slice==imp.getCurrentSlice())
-					drawRoi(g, roi, drawLabels?i:-1);
+				if (hyperstack && roi.getPosition()==0) {
+					int c = roi.getCPosition();
+					int z = roi.getZPosition();
+					int t = roi.getTPosition();
+					if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+						drawRoi(g, roi, drawLabels?i:-1);
+				} else {
+					int position = roi.getPosition();
+					if (position==0)
+						position = getSliceNumber(roi.getName());
+					if (position==0 || position==currentImage)
+						drawRoi(g, roi, drawLabels?i:-1);
+				}
 			} else
 				drawRoi(g, roi, drawLabels?i:-1);
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
+		drawNames = false;
     }
-    
+       
 	public int getSliceNumber(String label) {
-		int slice = -1;
+		if (label==null) return 0;
+		int slice = 0;
 		if (label.length()>=14 && label.charAt(4)=='-' && label.charAt(9)=='-')
 			slice = (int)Tools.parseDouble(label.substring(0,4),-1);
 		else if (label.length()>=17 && label.charAt(5)=='-' && label.charAt(11)=='-')
@@ -228,49 +265,67 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	void drawOverlay(Graphics g) {
 		if (imp!=null && imp.getHideOverlay())
 			return;
-		initGraphics(g);
+		Color labelColor = overlay.getLabelColor();
+		if (labelColor==null) labelColor = Color.white;
+		initGraphics(g, labelColor, Roi.getColor());
 		int n = overlay.size();
 		if (IJ.debugMode) IJ.log("paint: drawing "+n+" ROI display list");
-		boolean drawLabels = overlay.getDrawLabels();
-		int stackSize = imp.getStackSize();
-		if (n>1 && n==stackSize && stackLabels(overlay)) { // created by Image>Stacks>Label
-			int index = imp.getCurrentSlice()-1;
-			if (index<n) {
-				overlay.temporarilyHide(0, index-1);
-				overlay.temporarilyHide(index+1, stackSize-1);
-			}
+		int currentImage = imp!=null?imp.getCurrentSlice():-1;
+		if (imp.getStackSize()==1)
+			currentImage = -1;
+		int channel=0, slice=0, frame=0;
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack) {
+			channel = imp.getChannel();
+			slice = imp.getSlice();
+			frame = imp.getFrame();
 		}
+		drawNames = overlay.getDrawNames();
+		boolean drawLabels = drawNames || overlay.getDrawLabels();
+		font = overlay.getLabelFont();
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
-			drawRoi(g, overlay.get(i), drawLabels?i+LIST_OFFSET:-1);
+			Roi roi = overlay.get(i);
+			if (hyperstack && roi.getPosition()==0) {
+				int c = roi.getCPosition();
+				int z = roi.getZPosition();
+				int t = roi.getTPosition();
+				if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
+			} else {
+				int position = roi.getPosition();
+				if (position==0 || position==currentImage)
+					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
+			}
 		}
 		((Graphics2D)g).setStroke(Roi.onePixelWide);
+		drawNames = false;
+		font = null;
 	}
-    
-	/** Was this overlay created by Image/Stacks/Label? */
-	public boolean stackLabels(Overlay o) {
-		Roi roi0 = o.get(0);
-		boolean labels = (roi0 instanceof TextRoi) && (o.get(o.size()-1) instanceof TextRoi);
-		String text = null;
-		try {text = ((TextRoi)roi0).getText();} catch(Exception e) {return false;}
-		return labels && text.length()>0 && (Character.isDigit(text.charAt(0))||text.charAt(0)==' ');
-	}
-	
-    void initGraphics(Graphics g) {
+    	
+    void initGraphics(Graphics g, Color textColor, Color defaultColor) {
 		if (smallFont==null) {
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);
 			largeFont = new Font("SansSerif", Font.PLAIN, 12);
 		}
-		if (labelColor==null) {
-			int red = showAllColor.getRed();
-			int green = showAllColor.getGreen();
-			int blue = showAllColor.getBlue();
+		if (textColor!=null) {
+			labelColor = textColor;
+			if (overlay!=null && overlay.getDrawBackgrounds())
+				bgColor = new Color(255-labelColor.getRed(), 255-labelColor.getGreen(), 255-labelColor.getBlue());
+			else
+				bgColor = null;
+		} else {
+			int red = defaultColor.getRed();
+			int green = defaultColor.getGreen();
+			int blue = defaultColor.getBlue();
 			if ((red+green+blue)/3<128)
 				labelColor = Color.white;
 			else
 				labelColor = Color.black;
+			bgColor = defaultColor;
 		}
-		g.setColor(showAllColor);
+		this.defaultColor = defaultColor;
+		g.setColor(defaultColor);
     }
     
     void drawRoi(Graphics g, Roi roi, int index) {
@@ -279,7 +334,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		roi.setImage(imp);
 		Color saveColor = roi.getStrokeColor();
 		if (saveColor==null)
-			roi.setStrokeColor(showAllColor);
+			roi.setStrokeColor(defaultColor);
+		if (roi.getStroke()==null)
+			((Graphics2D)g).setStroke(Roi.onePixelWide);
 		if (roi instanceof TextRoi)
 			((TextRoi)roi).drawText(g);
 		else
@@ -289,8 +346,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			if (roi==currentRoi)
 				g.setColor(Roi.getColor());
 			else
-				g.setColor(showAllColor);
-			drawRoiLabel(g, index, roi.getBounds());
+				g.setColor(defaultColor);
+			drawRoiLabel(g, index, roi);
 		}
 		if (imp2!=null)
 			roi.setImage(imp2);
@@ -298,31 +355,40 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.setImage(null);
     }
     
-	void drawRoiLabel(Graphics g, int index, Rectangle r) {
+	void drawRoiLabel(Graphics g, int index, Roi roi) {
+		Rectangle r = roi.getBounds();
 		int x = screenX(r.x);
 		int y = screenY(r.y);
 		double mag = getMagnification();
 		int width = (int)(r.width*mag);
 		int height = (int)(r.height*mag);
 		int size = width>40 && height>40?12:9;
-		if (size==12)
+		if (font!=null) {
+			g.setFont(font);
+			size = font.getSize();
+		} else if (size==12)
 			g.setFont(largeFont);
 		else
 			g.setFont(smallFont);
 		boolean drawingList = index >= LIST_OFFSET;
 		if (drawingList) index -= LIST_OFFSET;
 		String label = "" + (index+1);
+		if (drawNames && roi.getName()!=null)
+			label = roi.getName();
 		FontMetrics metrics = g.getFontMetrics();
 		int w = metrics.stringWidth(label);
 		x = x + width/2 - w/2;
 		y = y + height/2 + Math.max(size/2,6);
-		int h =  metrics.getHeight();
-		g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
-		if (!drawingList)
-			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h-3);
+		int h = metrics.getAscent() + metrics.getDescent();
+		if (bgColor!=null) {
+			g.setColor(bgColor);
+			g.fillRoundRect(x-1, y-h+2, w+1, h-3, 5, 5);
+		}
+		if (!drawingList && labelRects!=null && index<labelRects.length)
+			labelRects[index] = new Rectangle(x-1, y-h+2, w+1, h);
 		g.setColor(labelColor);
 		g.drawString(label, x, y-2);
-		g.setColor(showAllColor);
+		g.setColor(defaultColor);
 	} 
 
 	void drawZoomIndicator(Graphics g) {
@@ -384,6 +450,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
 	}
+	
+	public void resetDoubleBuffer() {
+		offScreenImage = null;
+	}
 
     long firstFrame;
     int frames, fps;
@@ -420,6 +490,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	/** Returns the current cursor location in image coordinates. */
 	public Point getCursorLoc() {
 		return new Point(xMouse, yMouse);
+	}
+	
+	/** Returns 'true' if the cursor is over this image. */
+	public boolean cursorOverImage() {
+		return !mouseExited;
 	}
 
 	/** Returns the mouse event modifiers. */
@@ -521,14 +596,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		imp.setTitle(imp.getTitle());
 	}
 
-	public Rectangle getSrcRect() {
-		return srcRect;
-	}
-	
-	void setSrcRect(Rectangle srcRect) {
-		this.srcRect = srcRect;
-	}
-		
 	/** Enlarge the canvas if the user enlarges the window. */
 	void resizeCanvas(int width, int height) {
 		ImageWindow win = imp.getWindow();
@@ -875,7 +942,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mousePressed(MouseEvent e) {
-		if (ij==null) return;
+		//if (ij==null) return;
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
@@ -917,10 +984,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			case Toolbar.MAGNIFIER:
 				if (IJ.shiftKeyDown())
 					zoomToSelection(ox, oy);
-				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0)
-					IJ.run("Out");
-				else
-					IJ.run("In");
+				else if ((flags & (Event.ALT_MASK|Event.META_MASK|Event.CTRL_MASK))!=0) {
+					//IJ.run("Out");
+					zoomOut(x, y);
+					if (getMagnification()<1.0)
+						imp.repaintWindow();
+				} else {
+					//IJ.run("In");
+	 				zoomIn(x, y);
+					if (getMagnification()<=1.0)
+						imp.repaintWindow();
+				}
 				break;
 			case Toolbar.HAND:
 				setupScroll(ox, oy);
@@ -980,8 +1054,13 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		java.awt.List list = rm.getList();
 		int n = list.getItemCount();
 		if (labelRects==null || labelRects.length!=n) return false;
+		boolean stackMode = imp!=null && imp.getStackSize()>1 && Prefs.showAllSliceOnly;
 		for (int i=0; i<n; i++) {
 			if (labelRects[i]!=null && labelRects[i].contains(x,y)) {
+				if (stackMode) {
+					int slice = getSliceNumber(list.getItem(i));
+					if (slice!=imp.getCurrentSlice() && slice!=0) continue;
+				}
 				//rm.select(i);
 				// this needs to run on a separate thread, at least on OS X
 				// "update2" does not clone the ROI so the "Show All"
@@ -1100,7 +1179,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		boolean multiPointMode = roi!=null && (roi instanceof PointRoi) && handle==-1
 			&& Toolbar.getToolId()==Toolbar.POINT && Toolbar.getMultiPointMode();
 		if (multiPointMode) {
-			imp.setRoi(((PointRoi)roi).addPoint(ox, oy));
+			imp.setRoi(((PointRoi)roi).addPoint(offScreenXD(sx), offScreenYD(sy)));
 			return;
 		}
 		setRoiModState(e, roi, handle);
@@ -1190,7 +1269,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return showAllColor;
 	}
 
-	/** Sets the color used used for "Show All" mode. */
+	/** Sets the color used used for the ROI Manager "Show All" mode. */
 	public static void setShowAllColor(Color c) {
 		if (c==null) return;
 		showAllColor = c;
@@ -1274,6 +1353,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		this.customRoi = customRoi;
 	}
 
+	public boolean getCustomRoi() {
+		return customRoi;
+	}
+	
 	/** Called by IJ.showStatus() to prevent status bar text from
 		being overwritten until the cursor moves at least 12 pixels. */
 	public void setShowCursorStatus(boolean status) {
@@ -1310,7 +1393,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	public void mouseMoved(MouseEvent e) {
-		if (ij==null) return;
+		//if (ij==null) return;
 		int sx = e.getX();
 		int sy = e.getY();
 		int ox = offScreenX(sx);
@@ -1322,7 +1405,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
 		&& roi.getState()==roi.CONSTRUCTING) {
 			PolygonRoi pRoi = (PolygonRoi)roi;
-			pRoi.handleMouseMove(ox, oy);
+			pRoi.handleMouseMove(sx, sy);
 		} else {
 			if (ox<imageWidth && oy<imageHeight) {
 				ImageWindow win = imp.getWindow();

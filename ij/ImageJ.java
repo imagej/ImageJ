@@ -72,14 +72,20 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.44h";
+	public static final String VERSION = "1.46c";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 	/** Address of socket where Image accepts commands */
 	public static final int DEFAULT_PORT = 57294;
-	public static final int STANDALONE=0, EMBEDDED=1;
+	
+	/** Run as normal application. */
+	public static final int STANDALONE=0;
+	/** Run embedded in another application. */
+	public static final int EMBEDDED=1;
+	/** Run embedded and invisible in another application. */
+	public static final int NO_SHOW=2;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
 	private static int port = DEFAULT_PORT;
@@ -106,9 +112,14 @@ public class ImageJ extends Frame implements ActionListener,
 		this(null, STANDALONE);
 	}
 	
+	/** Creates a new ImageJ frame that runs as an application in the specified mode. */
+	public ImageJ(int mode) {
+		this(null, mode);
+	}
+
 	/** Creates a new ImageJ frame that runs as an applet. */
 	public ImageJ(java.applet.Applet applet) {
-		this(applet, 0);
+		this(applet, STANDALONE);
 	}
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
@@ -116,7 +127,7 @@ public class ImageJ extends Frame implements ActionListener,
 		version of ImageJ which does not start the SocketListener. */
 	public ImageJ(java.applet.Applet applet, int mode) {
 		super("ImageJ");
-		embedded = applet==null && mode==EMBEDDED;
+		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
 		if (IJ.isLinux()) {
@@ -160,18 +171,14 @@ public class ImageJ extends Frame implements ActionListener,
 		int ijWidth = tbSize.width+10;
 		int ijHeight = 100;
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
-		if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
-		setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
-		setLocation(loc.x, loc.y);
-		pack();
-		setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
-		//if (IJ.isJava15()) {
-		//	try {
-		//		Method method = Frame.class.getMethod("setAlwaysOnTop", new Class[] {boolean.class});
-		//		method.invoke(this, new Object[]{Boolean.TRUE});
-		//	} catch(Exception e) {}
-		//}
-		show();
+		if (mode!=NO_SHOW) {
+			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
+			setBounds(loc.x, loc.y, ijWidth, ijHeight); // needed for pack to work
+			setLocation(loc.x, loc.y);
+			pack();
+			setResizable(!(IJ.isMacintosh() || IJ.isWindows())); // make resizable on Linux
+			show();
+		}
 		if (err1!=null)
 			IJ.error(err1);
 		if (err2!=null) {
@@ -195,18 +202,22 @@ public class ImageJ extends Frame implements ActionListener,
  	}
     	
 	void configureProxy() {
-		String server = Prefs.get("proxy.server", null);
-		if (server==null||server.equals("")) return;
-		int port = (int)Prefs.get("proxy.port", 0);
-		if (port==0) return;
-		String user = Prefs.get("proxy.user", null);	
-		Properties props = System.getProperties();
-		props.put("proxySet", "true");
-		props.put("http.proxyHost", server);
-		props.put("http.proxyPort", ""+port);
-		if (user!=null)
-			props.put("http.proxyUser", user);
-		//IJ.log(server+"  "+port+"  "+user);
+		if (Prefs.useSystemProxies) {
+			try {
+				System.setProperty("java.net.useSystemProxies", "true");
+			} catch(Exception e) {}
+		} else {
+			String server = Prefs.get("proxy.server", null);
+			if (server==null||server.equals(""))
+				return;
+			int port = (int)Prefs.get("proxy.port", 0);
+			if (port==0) return;
+			Properties props = System.getProperties();
+			props.put("proxySet", "true");
+			props.put("http.proxyHost", server);
+			props.put("http.proxyPort", ""+port);
+		}
+		//new ProxySettings().logProperties();
 	}
 	
     void setIcon() throws Exception {
@@ -274,9 +285,14 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			ImagePlus imp = null;
 			if (item.getParent()==Menus.openRecentMenu) {
 				new RecentOpener(cmd); // open image in separate thread
 				return;
+			} else if (item.getParent()==Menus.getPopupMenu()) {
+				Object parent = Menus.getPopupMenu().getParent();
+				if (parent instanceof ImageCanvas)
+					imp = ((ImageCanvas)parent).getImage();
 			}
 			int flags = e.getModifiers();
 			//IJ.log(""+KeyEvent.getKeyModifiersText(flags));
@@ -288,7 +304,7 @@ public class ImageJ extends Frame implements ActionListener,
 					IJ.setKeyDown(KeyEvent.VK_ALT);
 				if ((flags & Event.SHIFT_MASK)!=0)
 					IJ.setKeyDown(KeyEvent.VK_SHIFT);
-				doCommand(cmd);
+				new Executer(cmd, imp);
 			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
@@ -308,7 +324,8 @@ public class ImageJ extends Frame implements ActionListener,
 
 	public void mousePressed(MouseEvent e) {
 		Undo.reset();
-		System.gc();
+		if (!Prefs.noClickToGC)
+			System.gc();
 		IJ.showStatus(version()+IJ.freeMemory());
 		if (IJ.debugMode)
 			IJ.log("Windows: "+WindowManager.getWindowCount());
@@ -328,25 +345,25 @@ public class ImageJ extends Frame implements ActionListener,
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
 		hotkey = false;
-		if (keyCode==e.VK_CONTROL || keyCode==e.VK_SHIFT)
+		if (keyCode==KeyEvent.VK_CONTROL || keyCode==KeyEvent.VK_SHIFT)
 			return;
 		char keyChar = e.getKeyChar();
 		int flags = e.getModifiers();
 		if (IJ.debugMode) IJ.log("keyPressed: code=" + keyCode + " (" + KeyEvent.getKeyText(keyCode)
 			+ "), char=\"" + keyChar + "\" (" + (int)keyChar + "), flags="
 			+ KeyEvent.getKeyModifiersText(flags));
-		boolean shift = (flags & e.SHIFT_MASK) != 0;
-		boolean control = (flags & e.CTRL_MASK) != 0;
-		boolean alt = (flags & e.ALT_MASK) != 0;
-		boolean meta = (flags & e.META_MASK) != 0;
-		String cmd = "";
+		boolean shift = (flags & KeyEvent.SHIFT_MASK) != 0;
+		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
+		boolean alt = (flags & KeyEvent.ALT_MASK) != 0;
+		boolean meta = (flags & KeyEvent.META_MASK) != 0;
+		String cmd = null;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		boolean isStack = (imp!=null) && (imp.getStackSize()>1);
 		
 		if (imp!=null && !control && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
-				if ((flags & e.META_MASK)!=0 && IJ.isMacOSX()) return;
+				if ((flags & KeyEvent.META_MASK)!=0 && IJ.isMacOSX()) return;
 				if (alt)
 					switch (keyChar) {
 						case 'u': case 'm': keyChar = IJ.micronSymbol; break;
@@ -386,8 +403,8 @@ public class ImageJ extends Frame implements ActionListener,
 			switch (keyChar) {
 				case '<': case ',': cmd="Previous Slice [<]"; break;
 				case '>': case '.': case ';': cmd="Next Slice [>]"; break;
-				case '+': case '=': cmd="In"; break;
-				case '-': cmd="Out"; break;
+				case '+': case '=': cmd="In [+]"; break;
+				case '-': cmd="Out [-]"; break;
 				case '/': cmd="Reslice [/]..."; break;
 				default:
 			}
@@ -398,8 +415,8 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
 				case KeyEvent.VK_BACK_SPACE: cmd="Clear"; hotkey=true; break; // delete
 				//case KeyEvent.VK_BACK_SLASH: cmd=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
-				case KeyEvent.VK_EQUALS: cmd="In"; break;
-				case KeyEvent.VK_MINUS: cmd="Out"; break;
+				case KeyEvent.VK_EQUALS: cmd="In [+]"; break;
+				case KeyEvent.VK_MINUS: cmd="Out [-]"; break;
 				case KeyEvent.VK_SLASH: case 0xbf: cmd="Reslice [/]..."; break;
 				case KeyEvent.VK_COMMA: case 0xbc: cmd="Previous Slice [<]"; break;
 				case KeyEvent.VK_PERIOD: case 0xbe: cmd="Next Slice [>]"; break;
@@ -414,10 +431,10 @@ public class ImageJ extends Frame implements ActionListener,
 							cmd="Next Slice [>]";
 					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
-					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !loci(imp))
-							cmd="Out";
-					else if (zoomKey && keyCode==KeyEvent.VK_UP && !loci(imp))
-							cmd="In";
+					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp))
+							cmd="Out [-]";
+					else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp))
+							cmd="In [+]";
 					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK) != 0)
 							roi.nudgeCorner(keyCode);
@@ -429,7 +446,7 @@ public class ImageJ extends Frame implements ActionListener,
 				case KeyEvent.VK_ESCAPE:
 					abortPluginOrMacro(imp);
 					return;
-				case KeyEvent.VK_ENTER: this.toFront(); return;
+				case KeyEvent.VK_ENTER: WindowManager.toFront(this); return;
 				default: break;
 			}
 		}
@@ -447,10 +464,19 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 	}
 	
-	// LOCI Data Browser window?
-	private boolean loci(ImagePlus imp) {
+	private boolean ignoreArrowKeys(ImagePlus imp) {
+		Frame frame = WindowManager.getFrontWindow();
+		String title = frame.getTitle();
+		if (title!=null && title.equals("ROI Manager"))
+			return true;
+		// Control Panel?
+		if (frame!=null && frame instanceof javax.swing.JFrame)
+			return true;
 		ImageWindow win = imp.getWindow();
-		return imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci");
+		// LOCI Data Browser window?
+		if (imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci"))
+			return true;
+		return false;
 	}
 	
 	public void keyTyped(KeyEvent e) {
@@ -535,6 +561,7 @@ public class ImageJ extends Frame implements ActionListener,
 			javax.swing.JOptionPane.showMessageDialog(null,"ImageJ "+VERSION+" requires Java 1.5 or later.");
 			System.exit(0);
 		}
+		//IJ.debugMode = true;
 		boolean noGUI = false;
 		int mode = STANDALONE;
 		arguments = args;
@@ -563,8 +590,8 @@ public class ImageJ extends Frame implements ActionListener,
 		}
   		// If ImageJ is already running then isRunning()
   		// will pass the arguments to it using sockets.
-		if (nArgs>0 && !noGUI && (mode==STANDALONE) && isRunning(args))
-  				return;
+		if (!noGUI && (mode==STANDALONE) && isRunning(args))
+  			return;
  		ImageJ ij = IJ.getInstance();    	
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
 			ij = new ImageJ(null, mode);
@@ -594,7 +621,7 @@ public class ImageJ extends Frame implements ActionListener,
 			} else if (macros==0 && (arg.endsWith(".ijm") || arg.endsWith(".txt"))) {
 				IJ.runMacroFile(arg);
 				macros++;
-			} else if (arg.indexOf("ij.ImageJ")==-1) {
+			} else if (arg.length()>0 && arg.indexOf("ij.ImageJ")==-1) {
 				File file = new File(arg);
 				IJ.open(file.getAbsolutePath());
 			}
@@ -605,16 +632,18 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 	
 	// Is there another instance of ImageJ? If so, send it the arguments and quit.
-	static boolean isRunning(String args[]) {
+	static boolean isRunning(String[] args) {
+		if (IJ.debugMode) IJ.log("isRunning: "+args.length);
 		int macros = 0;
-		int nArgs = args.length;
-		if (nArgs==2 && args[0].startsWith("-ijpath"))
-			return false;
+		int nArgs = args!=null?args.length:0;
+		//if (nArgs==2 && args[0].startsWith("-ijpath"))
+		//	return false;
 		int nCommands = 0;
 		try {
 			sendArgument("user.dir "+System.getProperty("user.dir"));
 			for (int i=0; i<nArgs; i++) {
 				String arg = args[i];
+				if (IJ.debugMode) IJ.log("isRunning: "+i+" "+arg);
 				if (arg==null) continue;
 				String cmd = null;
 				if (macros==0 && arg.endsWith(".ijm")) {
@@ -632,7 +661,7 @@ public class ImageJ extends Frame implements ActionListener,
 				} else if (arg.startsWith("-run") && i+1<nArgs) {
 					cmd = "run " + args[i+1];
 					args[i+1] = null;
-				} else if (arg.indexOf("ij.ImageJ")==-1 && !arg.startsWith("-"))
+				} else if (arg.indexOf("ij.ImageJ")==-1 && arg.length()>0 && !arg.startsWith("-"))
 					cmd = "open " + arg;
 				if (cmd!=null) {
 					sendArgument(cmd);
@@ -640,6 +669,7 @@ public class ImageJ extends Frame implements ActionListener,
 				}
 			} // for
 		} catch (IOException e) {
+			if (IJ.debugMode) IJ.log(""+e);
 			return false;
 		}
 		return true;
@@ -685,6 +715,17 @@ public class ImageJ extends Frame implements ActionListener,
 				}
 			}
 		}
+		Frame[] frames = WindowManager.getNonImageWindows();
+		if (frames!=null) {
+			for (int i=0; i<frames.length; i++) {
+				if (frames[i]!=null && (frames[i] instanceof Editor)) {
+					if (((Editor)frames[i]).fileChanged()) {
+						changes = true;
+						break;
+					}
+				}
+			}
+		}
 		if (windowClosed && !changes && Menus.window.getItemCount()>Menus.WINDOW_MENU_ITEMS && !(IJ.macroRunning()&&WindowManager.getImageCount()==0)) {
 			GenericDialog gd = new GenericDialog("ImageJ", this);
 			gd.addMessage("Are you sure you want to quit ImageJ?");
@@ -704,7 +745,7 @@ public class ImageJ extends Frame implements ActionListener,
 			Prefs.savePreferences();
 		}
 		IJ.cleanup();
-		setVisible(false);
+		//setVisible(false);
 		//IJ.log("dispose");
 		dispose();
 		if (exitWhenQuitting)

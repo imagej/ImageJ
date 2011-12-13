@@ -76,7 +76,7 @@ public class SaveChangesDialog extends Dialog implements ActionListener, KeyList
 	}
 	
 	void closeDialog() {
-		setVisible(false);
+		//setVisible(false);
 		dispose();
 	}
 

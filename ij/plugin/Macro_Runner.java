@@ -4,7 +4,7 @@ import ij.io.*;
 import ij.macro.*;
 import ij.text.*;
 import ij.util.*;
-import ij.plugin.frame.Editor;
+import ij.plugin.frame.*;
 import java.io.*;
 import java.lang.reflect.*;
 
@@ -23,8 +23,16 @@ public class Macro_Runner implements PlugIn {
 			OpenDialog od = new OpenDialog("Run Macro...", path);
 			String directory = od.getDirectory();
 			name = od.getFileName();
-			if (name!=null)
-				runMacroFile(directory+name, null);
+			if (name!=null) {
+				path = directory+name;
+				runMacroFile(path, null);
+				if (Recorder.record) {
+					if (Recorder.scriptMode())
+						Recorder.recordCall("IJ.runMacroFile(\""+path+"\");");
+					else
+						Recorder.record("runMacro", path);
+				}
+			}
 		} else if (name.startsWith("JAR:"))
 			runMacroFromJar(name.substring(4), null);
 		else if (name.startsWith("ij.jar:"))

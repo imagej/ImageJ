@@ -23,6 +23,7 @@ import java.util.Vector;
 			"Invert",
 			"Label",
 			"Timestamp",
+			"Max Dimension",
 			"Measure",
 			"Resize",
 			"Scale",
@@ -142,7 +143,8 @@ import java.util.Vector;
 			}
 			imp.close();
 		}
-		IJ.run("Image Sequence...", "open=[" + outputPath + "]"+" use");
+		if (outputPath!=null && !outputPath.equals(""))
+			IJ.run("Image Sequence...", "open=[" + outputPath + "]"+" use");
 	}
 	
 	String pad(int n) {
@@ -248,7 +250,7 @@ import java.util.Vector;
 		else if (item.equals("Measure"))
 			code = "run(\"Measure\");\n";
 		else if (item.equals("Resize"))
-			code = "run(\"Size...\", \"width=0 height=480 constrain interpolation=Bicubic\");\n";
+			code = "run(\"Size...\", \"width=512 height=512 interpolation=Bicubic\");\n";
 		else if (item.equals("Scale"))
 			code = "scale=1.5;\nw=getWidth*scale; h=getHeight*scale;\nrun(\"Size...\", \"width=w height=h interpolation=Bilinear\");\n";
 		else if (item.equals("Label"))
@@ -267,6 +269,8 @@ import java.util.Vector;
 			code = "run(\"Unsharp Mask...\", \"radius=1 mask=0.60\");\n";
 		else if (item.equals("Show File Info"))
 			code = "path=File.directory+File.name;\ndate=File.dateLastModified(path);\nsize=File.length(path);\nprint(i+\", \"+getTitle+\", \"+date+\", \"+size);\n";
+		else if (item.equals("Max Dimension"))
+			code = "max=2048;\nw=getWidth; h=getHeight;\nsize=maxOf(w,h);\nif (size>max) {\n  scale = max/size;\n  w*=scale; h*=scale;\n  run(\"Size...\", \"width=w height=h interpolation=Bicubic average\");\n}";
 		if (code!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());

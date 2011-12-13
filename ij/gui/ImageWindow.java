@@ -69,6 +69,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
         	else
         		setBackground(Color.white);
         }
+		boolean hyperstack = imp.isHyperStack();
 		ij = IJ.getInstance();
 		this.imp = imp;
 		if (ic==null)
@@ -85,8 +86,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (!(this instanceof StackWindow))
 			addMouseWheelListener(this);
 		setResizable(true);
-		WindowManager.addWindow(this);
-		imp.setWindow(this);
+		if (!(this instanceof HistogramWindow&&IJ.isMacro()&&Interpreter.isBatchMode())) {
+			WindowManager.addWindow(this);
+			imp.setWindow(this);
+		}
 		if (previousWindow!=null) {
 			if (newCanvas)
 				setLocationAndSize(false);
@@ -98,6 +101,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 				pack();
 				show();
 			}
+			if (ic.getMagnification()!=0.0)
+				imp.setTitle(imp.getTitle());
 			boolean unlocked = imp.lockSilently();
 			boolean changes = imp.changes;
 			imp.changes = false;
@@ -105,6 +110,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			imp.changes = changes;
 			if (unlocked)
 				imp.unlock();
+			if (hyperstack && this.imp!=null)
+				this.imp.setOpenAsHyperStack(true);
 			WindowManager.setCurrentWindow(this);
 		} else {
 			setLocationAndSize(false);
@@ -333,8 +340,9 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public boolean close() {
 		boolean isRunning = running || running2;
 		running = running2 = false;
+		boolean virtual = imp.getStackSize()>1 && imp.getStack().isVirtual();
 		if (isRunning) IJ.wait(500);
-		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning())
+		if (ij==null || IJ.getApplet()!=null || Interpreter.isBatchMode() || IJ.macroRunning() || virtual)
 			imp.changes = false;
 		if (imp.changes) {
 			String msg;
@@ -355,11 +363,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (WindowManager.getWindowCount()==0)
 			{xloc = 0; yloc = 0;}
 		WindowManager.removeWindow(this);
-		setVisible(false);
+		//setVisible(false);
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
 			return true;
 		dispose();
-		imp.flush();
+		if (imp!=null)
+			imp.flush();
 		imp = null;
 		return true;
 	}
@@ -521,6 +530,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			setMenuBar(Menus.getMenuBar());
 		}
+		if (imp==null) return;
 		imp.setActivated(); // notify ImagePlus that image has been activated
 		if (!closed && !quitting && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
@@ -537,7 +547,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			WindowManager.setCurrentWindow(this);
 			IJ.doCommand("Close");
 		} else {
-			setVisible(false);
+			//setVisible(false);
 			dispose();
 			WindowManager.removeWindow(this);
 		}
@@ -599,7 +609,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     }
     
     public String toString() {
-    	return imp.getTitle();
+    	return imp!=null?imp.getTitle():"";
     }
     
     /** Causes the next image to be opened to be centered on the screen

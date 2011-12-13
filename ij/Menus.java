@@ -214,8 +214,7 @@ public class Menus {
 		addPlugInItem(help, "ImageJ News...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/notes.html\")", 0, false);
 		addPlugInItem(help, "Documentation...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/docs\")", 0, false);
 		addPlugInItem(help, "Installation...", "ij.plugin.SimpleCommands(\"install\")", 0, false);
-		addPlugInItem(help, "Search Website...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/search.html\")", 0, false);
-		addPlugInItem(help, "List Archives...", "ij.plugin.BrowserLauncher(\"https://list.nih.gov/archives/imagej.html\")", 0, false);
+		addPlugInItem(help, "Mailing List...", "ij.plugin.BrowserLauncher(\"https://list.nih.gov/archives/imagej.html\")", 0, false);
 		help.addSeparator();
 		addPlugInItem(help, "Dev. Resources...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/index.html\")", 0, false);
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
@@ -1368,14 +1367,14 @@ public class Menus {
 			code = KeyEvent.VK_A+c-97;
 		else if (c>=48&&c<=57) //0-9
 			code = KeyEvent.VK_0+c-48;
-		else {
-			switch (c) {
-				case 43: code = KeyEvent.VK_PLUS; break;
-				case 45: code = KeyEvent.VK_MINUS; break;
-				//case 92: code = KeyEvent.VK_BACK_SLASH; break;
-				default: return 0;
-			}
-		}
+		//else {
+		//	switch (c) {
+		//		case 43: code = KeyEvent.VK_PLUS; break;
+		//		case 45: code = KeyEvent.VK_MINUS; break;
+		//		//case 92: code = KeyEvent.VK_BACK_SLASH; break;
+		//		default: return 0;
+		//	}
+		//}
 		return code;
 	}
 	

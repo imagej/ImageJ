@@ -16,8 +16,9 @@ public class Line extends Roi {
 	public double x1d, y1d, x2d, y2d;	// the line using sub-pixel coordinates
 	protected double x1R, y1R, x2R, y2R;  // the line, relative to base of bounding rect
 	private double xHandleOffset, yHandleOffset;
-	private double startxd, startyd;
+	protected double startxd, startyd;
 	static boolean widthChanged;
+	private boolean drawOffset;
 
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
@@ -55,6 +56,8 @@ public class Line extends Roi {
 		type = LINE;
 		if (!(this instanceof Arrow) && lineWidth>1)
 			updateWideLine(lineWidth);
+		if (Prefs.subPixelResolution)
+			drawOffset = true;
 	}
 
 	/**
@@ -112,8 +115,9 @@ public class Line extends Roi {
 	}
 
 	protected void moveHandle(int sx, int sy) {
-		double ox = ic.offScreenXD(sx);
-		double oy = ic.offScreenYD(sy);
+		double offset = getOffset(-0.5);
+		double ox = ic.offScreenXD(sx)+offset;
+		double oy = ic.offScreenYD(sy)+offset;
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double length = Math.sqrt((x2d-x1d)*(x2d-x1d) + (y2d-y1d)*(y2d-y1d));
 		switch (activeHandle) {
@@ -289,16 +293,15 @@ public class Line extends Roi {
 
 	/** Draws this line on the image. */
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
-		//if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		x1=(int)x1d; y1=(int)y1d; x2=(int)x2d; y2=(int)y2d;
-		int sx1 = ic.screenXD(x1d);
-		int sy1 = ic.screenYD(y1d);
-		int sx2 = ic.screenXD(x2d);
-		int sy2 = ic.screenYD(y2d);
+		double offset = getOffset(0.5);
+		int sx1 = screenXD(x1d+offset);
+		int sy1 = screenYD(y1d+offset);
+		int sx2 = screenXD(x2d+offset);
+		int sy2 = screenYD(y2d+offset);
 		int sx3 = sx1 + (sx2-sx1)/2;
 		int sy3 = sy1 + (sy2-sy1)/2;
 		Graphics2D g2d = (Graphics2D)g;
@@ -312,6 +315,7 @@ public class Line extends Roi {
 		}
 		if (state!=CONSTRUCTING && !overlay) {
 			int size2 = HANDLE_SIZE/2;
+			mag = getMagnification();
 			handleColor = strokeColor!=null?strokeColor:ROIColor;
 			drawHandle(g, sx1-size2, sy1-size2);
 			handleColor=Color.white;
@@ -366,36 +370,54 @@ public class Line extends Roi {
 	}
 	
 	public Polygon getPolygon() {
-		Polygon p = new Polygon();
+		FloatPolygon p = getFloatPolygon();
+		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
+	}
+
+	public FloatPolygon getFloatPolygon() {
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		FloatPolygon p = new FloatPolygon();
 		if (getStrokeWidth()==1) {
-			p.addPoint(x1, y1);
-			p.addPoint(x2, y2);
+			p.addPoint((float)x1d, (float)y1d);
+			p.addPoint((float)x2d, (float)y2d);
 		} else {
-			double angle = Math.atan2(y1-y2, x2-x1);
+			double angle = Math.atan2(y1d-y2d, x2d-x1d);
 			double width2 = getStrokeWidth()/2.0;
-			double p1x = x1 + Math.cos(angle+Math.PI/2d)*width2;
-			double p1y = y1 - Math.sin(angle+Math.PI/2d)*width2;
-			double p2x = x1 + Math.cos(angle-Math.PI/2d)*width2;
-			double p2y = y1 - Math.sin(angle-Math.PI/2d)*width2;
-			double p3x = x2 + Math.cos(angle-Math.PI/2d)*width2;
-			double p3y = y2 - Math.sin(angle-Math.PI/2d)*width2;
-			double p4x = x2 + Math.cos(angle+Math.PI/2d)*width2;
-			double p4y = y2 - Math.sin(angle+Math.PI/2d)*width2;
-			p.addPoint((int)Math.round(p1x), (int)Math.round(p1y));
-			p.addPoint((int)Math.round(p2x), (int)Math.round(p2y));
-			p.addPoint((int)Math.round(p3x), (int)Math.round(p3y));
-			p.addPoint((int)Math.round(p4x), (int)Math.round(p4y));
+			double p1x = x1d + Math.cos(angle+Math.PI/2d)*width2;
+			double p1y = y1d - Math.sin(angle+Math.PI/2d)*width2;
+			double p2x = x1d + Math.cos(angle-Math.PI/2d)*width2;
+			double p2y = y1d - Math.sin(angle-Math.PI/2d)*width2;
+			double p3x = x2d + Math.cos(angle-Math.PI/2d)*width2;
+			double p3y = y2d - Math.sin(angle-Math.PI/2d)*width2;
+			double p4x = x2d + Math.cos(angle+Math.PI/2d)*width2;
+			double p4y = y2d - Math.sin(angle+Math.PI/2d)*width2;
+			p.addPoint((float)p1x, (float)p1y);
+			p.addPoint((float)p2x, (float)p2y);
+			p.addPoint((float)p3x, (float)p3y);
+			p.addPoint((float)p4x, (float)p4y);
 		}
 		return p;
 	}
 
 	public void drawPixels(ImageProcessor ip) {
 		ip.setLineWidth(1);
+		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
+		double offset = getOffset(0.5);
 		if (getStrokeWidth()==1) {
-			ip.moveTo(x1, y1);
-			ip.lineTo(x2, y2);
+			ip.moveTo((int)(x1d+offset), (int)(y1d+offset));
+			ip.lineTo((int)(x2d+offset), (int)(y2d+offset));
 		} else {
-			ip.drawPolygon(getPolygon());
+			Polygon p = null;
+			if (offset>0.0) {
+				FloatPolygon fp = getFloatPolygon();
+				for (int i=0; i<fp.npoints; i++) {
+					fp.xpoints[i] += offset;
+					fp.ypoints[i] += offset;
+				}
+				p = new Polygon(toIntR(fp.xpoints), toIntR(fp.ypoints), fp.npoints);
+			} else
+				p = getPolygon();
+			ip.drawPolygon(p);
 			updateFullWindow = true;
 		}
 	}
@@ -416,16 +438,21 @@ public boolean contains(int x, int y) {
 		int size = HANDLE_SIZE+5;
 		if (getStrokeWidth()>1) size += (int)Math.log(getStrokeWidth());
 		int halfSize = size/2;
-		int sx1 = ic.screenXD(x+x1R) - halfSize;
-		int sy1 = ic.screenYD(y+y1R) - halfSize;
-		int sx2 = ic.screenXD(x+x2R) - halfSize;
-		int sy2 = ic.screenYD(y+y2R) - halfSize;
+		double offset = getOffset(0.5);
+		int sx1 = ic.screenXD(x+x1R+offset) - halfSize;
+		int sy1 = ic.screenYD(y+y1R+offset) - halfSize;
+		int sx2 = ic.screenXD(x+x2R+offset) - halfSize;
+		int sy2 = ic.screenYD(y+y2R+offset) - halfSize;
 		int sx3 = sx1 + (sx2-sx1)/2-1;
 		int sy3 = sy1 + (sy2-sy1)/2-1;
 		if (sx>=sx1&&sx<=sx1+size&&sy>=sy1&&sy<=sy1+size) return 0;
 		if (sx>=sx2&&sx<=sx2+size&&sy>=sy2&&sy<=sy2+size) return 1;
 		if (sx>=sx3&&sx<=sx3+size+2&&sy>=sy3&&sy<=sy3+size+2) return 2;
 		return -1;
+	}
+	
+	private double getOffset(double value) {
+		return getDrawOffset()&&getMagnification()>1.0&&!(this instanceof Arrow)?value:0.0;
 	}
 
 	public static int getWidth() {
@@ -478,6 +505,13 @@ public boolean contains(int x, int y) {
 		}
 		grow(ic.screenXD(x+x2R), ic.screenYD(y+y2R));
 	}
-
+	
+	public boolean getDrawOffset() {
+		return drawOffset;
+	}
+	
+	public void setDrawOffset(boolean drawOffset) {
+		this.drawOffset = drawOffset;
+	}
 
 }

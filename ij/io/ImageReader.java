@@ -5,6 +5,9 @@ import java.io.*;
 import java.net.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import java.util.zip.Inflater;
+import java.util.zip.DataFormatException;
+
 
 /** Reads raw 8-bit, 16-bit or 32-bit (float or RGB)
 	images from a stream or URL. */
@@ -16,7 +19,8 @@ public class ImageReader {
     private FileInfo fi;
     private int width, height;
     private long skipCount;
-    private int bytesPerPixel, bufferSize, byteCount, nPixels;
+    private int bytesPerPixel, bufferSize, nPixels;
+    private long byteCount;
 	private boolean showProgressBar=true;
 	private int eofErrorCount;
 	private long startTime;
@@ -46,7 +50,7 @@ public class ImageReader {
 		int totalRead = 0;
 	  	while (totalRead<byteCount) {
 	  		if (totalRead+bufferSize>byteCount)
-	  			count = byteCount-totalRead;
+	  			count = (int)(byteCount-totalRead);
   			else
   				count = bufferSize;
   			actuallyRead = in.read(pixels, totalRead, count);
@@ -79,7 +83,7 @@ public class ImageReader {
 			byteArray = uncompress(byteArray);
 			int length = byteArray.length;
 			length = length - (length%fi.width);
-			if (fi.compression == FileInfo.LZW_WITH_DIFFERENCING) {
+			if (fi.compression==FileInfo.LZW_WITH_DIFFERENCING) {
 				for (int b=0; b<length; b++) {
 					byteArray[b] += last;
 					last = b % fi.width == fi.width - 1 ? 0 : byteArray[b];
@@ -100,14 +104,14 @@ public class ImageReader {
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		short[] pixels = new short[nPixels];
-		int totalRead = 0;
+		long totalRead = 0L;
 		int base = 0;
 		int count, value;
 		int bufferCount;
 		
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
-				bufferSize = byteCount-totalRead;
+				bufferSize = (int)(byteCount-totalRead);
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
@@ -144,12 +148,11 @@ public class ImageReader {
 	}
 	
 	short[] readCompressed16bitImage(InputStream in) throws IOException {
-		in = new DataInputStream(in);
 		short[] pixels = new short[nPixels];
 		int base = 0;
 		short last = 0;
 		for (int k=0; k<fi.stripOffsets.length; k++) {
-			//IJ.log("seek: "+fi.stripOffsets[k]+" "+(in instanceof RandomAccessStream));
+			//IJ.log("seek: "+fi.stripOffsets[k]+" "+fi.stripLengths[k]+"  "+(in instanceof RandomAccessStream));
 			if (in instanceof RandomAccessStream)
 				((RandomAccessStream)in).seek(fi.stripOffsets[k]);
 			else if (k > 0) {
@@ -199,7 +202,7 @@ public class ImageReader {
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		float[] pixels = new float[nPixels];
-		int totalRead = 0;
+		long totalRead = 0L;
 		int base = 0;
 		int count, value;
 		int bufferCount;
@@ -207,7 +210,7 @@ public class ImageReader {
 		
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
-				bufferSize = byteCount-totalRead;
+				bufferSize = (int)(byteCount-totalRead);
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
@@ -254,7 +257,6 @@ public class ImageReader {
 	}
 	
 	float[] readCompressed32bitImage(InputStream in) throws IOException {
-		in = new DataInputStream(in);
 		float[] pixels = new float[nPixels];
 		int base = 0;
 		float last = 0;
@@ -307,7 +309,7 @@ public class ImageReader {
 		int pixelsRead;
 		byte[] buffer = new byte[bufferSize];
 		float[] pixels = new float[nPixels];
-		int totalRead = 0;
+		long totalRead = 0L;
 		int base = 0;
 		int count, value;
 		int bufferCount;
@@ -316,7 +318,7 @@ public class ImageReader {
 		
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
-				bufferSize = byteCount-totalRead;
+				bufferSize = (int)(byteCount-totalRead);
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
@@ -357,7 +359,7 @@ public class ImageReader {
 		bufferSize = 24*width;
 		byte[] buffer = new byte[bufferSize];
 		int[] pixels = new int[nPixels];
-		int totalRead = 0;
+		long totalRead = 0L;
 		int base = 0;
 		int count, value;
 		int bufferCount;
@@ -365,7 +367,7 @@ public class ImageReader {
 		
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
-				bufferSize = byteCount-totalRead;
+				bufferSize = (int)(byteCount-totalRead);
 			bufferCount = 0;
 			while (bufferCount<bufferSize) { // fill the buffer
 				count = in.read(buffer, bufferCount, bufferSize-bufferCount);
@@ -536,6 +538,10 @@ public class ImageReader {
 	private void showProgress(int current, int last) {
 		if (showProgressBar && (System.currentTimeMillis()-startTime)>500L)
 			IJ.showProgress(current, last);
+	}
+	
+	private void showProgress(long current, long last) {
+		showProgress((int)(current/10L), (int)(last/10L));
 	}
 	
 	Object readRGB48(InputStream in) throws IOException {
@@ -715,14 +721,14 @@ public class ImageReader {
 				//IJ.log("skip: "+skipCount+" "+count+" "+bytesRead+" "+skipAttempts);
 			}
 		}
-		byteCount = width*height*bytesPerPixel;
+		byteCount = ((long)width)*height*bytesPerPixel;
 		if (fi.fileType==FileInfo.BITMAP) {
  			int scan=width/8, pad = width%8;
 			if (pad>0) scan++;
 			byteCount = scan*height;
 		}
 		nPixels = width*height;
-		bufferSize = byteCount/25;
+		bufferSize = (int)(byteCount/25L);
 		if (bufferSize<8192)
 			bufferSize = 8192;
 		else
@@ -847,8 +853,28 @@ public class ImageReader {
 			return packBitsUncompress(input, fi.rowsPerStrip*fi.width*fi.getBytesPerPixel());
 		else if (fi.compression==FileInfo.LZW || fi.compression==FileInfo.LZW_WITH_DIFFERENCING)
 			return lzwUncompress(input);
+		else if (fi.compression==FileInfo.ZIP)
+			return zipUncompress(input);
 		else
 			return input;
+	}
+
+	/** TIFF Adobe ZIP support contributed by Jason Newton. */
+	public byte[] zipUncompress(byte[] input) {
+		ByteArrayOutputStream imageBuffer = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		Inflater decompressor = new Inflater();
+		decompressor.setInput(input);
+		try {
+			while(!decompressor.finished()) {
+				int rlen = decompressor.inflate(buffer);
+				imageBuffer.write(buffer, 0, rlen);
+			}
+		} catch(DataFormatException e){
+			IJ.log(e.toString());
+		}
+		decompressor.end();
+		return imageBuffer.toByteArray();
 	}
 
   /**
@@ -858,7 +884,7 @@ public class ImageReader {
  * @author Curtis Rueden (ctrueden at wisc.edu)
  */
 	public byte[] lzwUncompress(byte[] input) {
-		if (input == null || input.length == 0)
+		if (input==null || input.length==0)
 			return input;
 		byte[][] symbolTable = new byte[4096][1];
 		int bitsToRead = 9;
@@ -870,23 +896,23 @@ public class ImageReader {
 		byte[] byteBuffer1 = new byte[16];
 		byte[] byteBuffer2 = new byte[16];
 		
-		while (true) {
+		while (out.size()<byteCount) {
 			code = bb.getBits(bitsToRead);
-			if (code == EOI_CODE || code == -1)
+			if (code==EOI_CODE || code==-1)
 				break;
-			if (code == CLEAR_CODE) {
+			if (code==CLEAR_CODE) {
 				// initialize symbol table
 				for (int i = 0; i < 256; i++)
 					symbolTable[i][0] = (byte)i;
 				nextSymbol = 258;
 				bitsToRead = 9;
 				code = bb.getBits(bitsToRead);
-				if (code == EOI_CODE || code == -1)
+				if (code==EOI_CODE || code==-1)
 					break;
 				out.add(symbolTable[code]);
 				oldCode = code;
 			} else {
-				if (code < nextSymbol) {
+				if (code<nextSymbol) {
 					// code is in table
 					out.add(symbolTable[code]);
 					// add string to table

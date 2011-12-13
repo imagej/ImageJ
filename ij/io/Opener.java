@@ -9,6 +9,7 @@ import ij.plugin.SimpleCommands;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
@@ -115,7 +116,7 @@ public class Opener {
 		roi, or text file. Displays an error message if the specified file
 		is not in one of the supported formats. */
 	public void open(String path) {
-		boolean isURL = path.startsWith("http://");
+		boolean isURL = path.indexOf("://")>0;
 		if (isURL && isText(path)) {
 			openTextURL(path);
 			return;
@@ -135,6 +136,8 @@ public class Opener {
 		if (!silentMode) IJ.showStatus("Opening: " + path);
 		long start = System.currentTimeMillis();
 		ImagePlus imp = openImage(path);
+		if (imp==null && isURL)
+			return;
 		if (imp!=null) {
 			WindowManager.checkForDuplicateName = true;
 			if (isRGB48)
@@ -248,8 +251,11 @@ public class Opener {
 				// "hybrid" files created by GE-Senographe 2000 D */
 				imp = openTiff(directory,name);
 				ImagePlus imp2 = (ImagePlus)IJ.runPlugIn("ij.plugin.DICOM", path);
-				if (imp!=null)				
+				if (imp!=null && imp2!=null)	 {		
 					imp.setProperty("Info",imp2.getProperty("Info"));
+					imp.setCalibration(imp2.getCalibration());
+				}
+				if (imp==null) imp=imp2;
 				return imp;
 			case FITS:
 				imp = (ImagePlus)IJ.runPlugIn("ij.plugin.FITS_Reader", path);
@@ -772,8 +778,8 @@ public class Opener {
 		return openTiff2(info);
 	}
 
-		/** Opens a single TIFF or DICOM contained in a ZIP archive,
-			or a ZIPed collection of ".roi" files created by the ROI manager. */	
+	/** Opens a single TIFF or DICOM contained in a ZIP archive,
+		or a ZIPed collection of ".roi" files created by the ROI manager. */	
 	public ImagePlus openZip(String path) {
 		ImagePlus imp = null;
 		try {
@@ -784,7 +790,11 @@ public class Opener {
 			String name = entry.getName();
 			if (name.endsWith(".roi")) {
 				zis.close();
-				IJ.runMacro("roiManager(\"Open\", getArgument());", path);
+				if (!silentMode)
+					if (IJ.isMacro() && Interpreter.isBatchMode() && RoiManager.getInstance()==null)
+						IJ.log("Use roiManager(\"Open\", path) instead of open(path)\nto open ROI sets in batch mode macros.");
+					else
+						IJ.runMacro("roiManager(\"Open\", getArgument());", path);
 				return null;
 			}
 			if (name.endsWith(".tif")) {
@@ -809,6 +819,44 @@ public class Opener {
 		fi.directory = f.getParent()+File.separator;
 		return imp;
 	}
+	
+	/** Deserialize a byte array that was serialized using the FileSaver.serialize(). */
+	public ImagePlus deserialize(byte[] bytes) {
+		ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
+		TiffDecoder decoder = new TiffDecoder(stream, "Untitled");
+		if (IJ.debugMode)
+			decoder.enableDebugging();
+		FileInfo[] info = null;
+		try {
+			info = decoder.getTiffInfo();
+		} catch (IOException e) {
+			return null;
+		}
+		FileOpener opener = new FileOpener(info[0]);
+		ImagePlus imp = opener.open(false);
+		if (imp==null)
+			return null;
+		imp.setTitle(info[0].fileName);
+		imp = makeComposite(imp, info[0]);
+		return imp;
+   }
+   
+	private ImagePlus makeComposite(ImagePlus imp, FileInfo fi) {
+		int c = imp.getNChannels();
+		boolean composite = c>1 && fi.description!=null && fi.description.indexOf("mode=")!=-1;
+		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
+			int mode = CompositeImage.COLOR;
+			if (fi.description!=null) {
+				if (fi.description.indexOf("mode=composite")!=-1)
+					mode = CompositeImage.COMPOSITE;
+				else if (fi.description.indexOf("mode=gray")!=-1)
+					mode = CompositeImage.GRAYSCALE;
+			}
+			imp = new CompositeImage(imp, mode);
+		}
+		return imp;
+	}
+
 		
 	public String getName(String path) {
 		int i = path.lastIndexOf('/');
@@ -847,18 +895,7 @@ public class Opener {
 		int[] offsets = info[0].stripOffsets;
 		if (offsets!=null&&offsets.length>1 && offsets[offsets.length-1]<offsets[0])
 			ij.IJ.run(imp, "Flip Vertically", "stack");
-		int c = imp.getNChannels();
-		boolean composite = c>1 && info[0].description!=null && info[0].description.indexOf("mode=")!=-1;
-		if (c>1 && (imp.getOpenAsHyperStack()||composite) && !imp.isComposite() && imp.getType()!=ImagePlus.COLOR_RGB) {
-			int mode = CompositeImage.COLOR;
-			if (info[0].description!=null) {
-				if (info[0].description.indexOf("mode=composite")!=-1)
-					mode = CompositeImage.COMPOSITE;
-				else if (info[0].description.indexOf("mode=gray")!=-1)
-					mode = CompositeImage.GRAYSCALE;
-			}
-			imp = new CompositeImage(imp, mode);
-		}
+		imp = makeComposite(imp, info[0]);
 		return imp;
 	}
 	

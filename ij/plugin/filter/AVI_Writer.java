@@ -11,15 +11,16 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 /**
-This plugin saves stacks in AVI format.
+This plugin implements the File/Save As/AVI command.
 Supported formats:
-Uncompressed 8-bit (gray or indexed color), 24-bit (RGB).
-JPEG and PNG compression.
-16-bit and 32-bit (float) images are converted to 8-bit.
-The plugin is based on the FileAvi class written by William Gandler.
-The FileAvi class is part of Matthew J. McAuliffe's MIPAV program,
-available from http://mipav.cit.nih.gov/.
-2008-06-05 Support for jpeg and png-compressed output and composite images by Michael Schmid.
+  Uncompressed 8-bit (gray or indexed color), 24-bit (RGB)
+  JPEG and PNG compression
+  16-bit and 32-bit (float) images are converted to 8-bit
+The plugin is based on the FileAvi class written by William Gandler,
+part of Matthew J. McAuliffe's MIPAV program, available from
+http://mipav.cit.nih.gov/.
+2008-06-05: Support for jpeg and png-compressed output and
+composite images by Michael Schmid.
 */
 public class AVI_Writer implements PlugInFilter {
     //four-character codes for compression
@@ -342,6 +343,7 @@ public class AVI_Writer implements PlugInFilter {
         writeInt(0);    //for now, write 0 to reserve space for "size" item
         stackPointer++;
     }
+    
     /** At the end of a chunk, calculate its size and write it to the
      *  position remembered previously. Also pads to 2-byte boundaries.
      */
@@ -354,8 +356,8 @@ public class AVI_Writer implements PlugInFilter {
         //IJ.log("chunk at 0x"+Long.toHexString(sizePointers[stackPointer]-4)+"-0x"+Long.toHexString(position));
     }
 
-    /** Write Grayscale (or indexed color) data. Lines are padded to a length
-     *  that is a multiple of 4 bytes. */
+    /** Write Grayscale (or indexed color) data. Lines are  
+     *  padded to a length that is a multiple of 4 bytes. */
     private void writeByteFrame(ImageProcessor ip) throws IOException {
         ip = ip.convertToByte(true);
         byte[] pixels = (byte[])ip.getPixels();

@@ -15,12 +15,12 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     static final int MAX_ITERATIONS = 100;
     static final String NO_OPERATION = "Nothing";
     static final String[] outputTypes = {"Overwrite", "8-bit", "16-bit", "32-bit"};
-    static final String[] operationTypes = {NO_OPERATION, "Erode", "Dilate", "Open", "Close"};
+    static final String[] operations = {NO_OPERATION, "Erode", "Dilate", "Open", "Close", "Outline", "Fill Holes", "Skeletonize"};
 
     //parameters / options
     static int iterations = 1;      //iterations for erode, dilate, open, close
     static int count = 1;           //nearest neighbor count for erode, dilate, open, close
-    String operationType = NO_OPERATION;  //for dialog; will be copied to 'arg' for actual previewing
+    String operation = NO_OPERATION;  //for dialog; will be copied to 'arg' for actual previewing
 
     String arg;
     ImagePlus imp;                  //null if only setting options with no preview possibility
@@ -56,7 +56,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             gd.addCheckbox("Pad edges when eroding", Prefs.padEdges);
             gd.addChoice("EDM output:", outputTypes, outputTypes[EDM.getOutputType()]);
             if (imp != null) {
-                gd.addChoice("Do:", operationTypes, operationType);
+                gd.addChoice("Do:", operations, operation);
                 gd.addPreviewCheckbox(pfr);
                 gd.addDialogListener(this);
                 previewing = true;
@@ -69,7 +69,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
                 dialogItemChanged(gd, null); //read dialog result
                 return DONE;
             }
-            return operationType.equals(NO_OPERATION) ? DONE : IJ.setupDialog(imp, flags);
+            return operation.equals(NO_OPERATION) ? DONE : IJ.setupDialog(imp, flags);
         } else {   //no dialog, 'arg' is operation type
             if (!((ByteProcessor)imp.getProcessor()).isBinary()) {
                 IJ.error("8-bit binary (black and white only) image required.");
@@ -95,8 +95,8 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         if (count > 8)    {count = 8; isInvalid = true;}
         if (isInvalid) return false;
         if (imp != null) {
-            operationType = gd.getNextChoice();
-            arg = operationType.toLowerCase();
+            operation = gd.getNextChoice();
+            arg = operation.toLowerCase();
         }
         return true;
     }
@@ -113,9 +113,9 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
         ip.setSnapshotCopyMode(true);
         if (arg.equals("outline"))
             outline(ip);
-        else if (arg.equals("fill"))
+        else if (arg.startsWith("fill"))
             fill(ip, foreground, background);
-        else if (arg.equals("skel")) {
+        else if (arg.startsWith("skel")) {
             ip.resetRoi(); skeletonize(ip);
         } else if (arg.equals("erode") || arg.equals("dilate"))
             doIterations((ByteProcessor)ip, arg);

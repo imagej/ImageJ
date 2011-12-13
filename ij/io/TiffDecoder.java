@@ -173,7 +173,7 @@ public class TiffDecoder {
 	
 	byte[] getString(int count, long offset) throws IOException {
 		count--; // skip null byte at end of string
-		if (count<=0)
+		if (count<=3)
 			return null;
 		byte[] bytes = new byte[count];
 		long saveLoc = in.getLongFilePointer();
@@ -295,9 +295,10 @@ public class TiffDecoder {
 	}
 	
 	void dumpTag(int tag, int count, int value, FileInfo fi) {
+		long lvalue = ((long)value)&0xffffffffL;
 		String name = getName(tag);
 		String cs = (count==1)?"":", count=" + count;
-		dInfo += "    " + tag + ", \"" + name + "\", value=" + value + cs + "\n";
+		dInfo += "    " + tag + ", \"" + name + "\", value=" + lvalue + cs + "\n";
 		//ij.IJ.log(tag + ", \"" + name + "\", value=" + value + cs + "\n");
 	}
 
@@ -483,6 +484,8 @@ public class TiffDecoder {
 						fi.compression = FileInfo.LZW;
 					else if (value==32773)  // PackBits compression
 						fi.compression = FileInfo.PACK_BITS;
+					else if (value==32946 || value==8)
+						fi.compression = FileInfo.ZIP;
 					else if (value!=1 && value!=0 && !(value==7&&fi.width<500)) {
 						// don't abort with Spot camera compressed (7) thumbnails
 						// otherwise, this is an unknown compression type
@@ -733,8 +736,7 @@ public class TiffDecoder {
 	public void enableDebugging() {
 		debugMode = true;
 	}
-	
-	
+		
 	public FileInfo[] getTiffInfo() throws IOException {
 		long ifdOffset;
 		Vector info;

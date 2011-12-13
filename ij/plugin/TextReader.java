@@ -35,7 +35,7 @@ public class TextReader implements PlugIn {
     }
     
     /** Displays a file open dialog and opens the specified text file as a float image. */
-    public ImageProcessor open(){
+    public ImageProcessor open() {
         if (showDialog())
             return open(path);
         else
@@ -43,7 +43,7 @@ public class TextReader implements PlugIn {
     }
     
     /** Opens the specified text file as a float image. */
-    public ImageProcessor open(String path){
+    public ImageProcessor open(String path) {
         ImageProcessor ip = null;
         try {
             words = chars = lines = 0;
@@ -56,6 +56,15 @@ public class TextReader implements PlugIn {
             ip = new FloatProcessor(width, lines, pixels, null);
             read(r, width*lines, pixels);
             r.close();
+            int firstRowNaNCount = 0;
+            for (int i=0; i<width; i++) {
+            	if (i<pixels.length && Float.isNaN(pixels[i]))
+            		firstRowNaNCount++;
+            }
+            if (firstRowNaNCount==width) { // assume first row is header
+            	ip.setRoi(0, 1, width, lines-1);
+            	ip = ip.crop();
+            }
             ip.resetMinAndMax();
         }
         catch (IOException e) {
@@ -136,11 +145,11 @@ public class TextReader implements PlugIn {
             inc = 1;
         while (tok.nextToken() != StreamTokenizer.TT_EOF) {
             if (tok.ttype==StreamTokenizer.TT_WORD) {
-                pixels[i++] = (float)Tools.parseDouble(tok.sval, 0.0);
-                 if (i==size)
-                     break;
-                 if (i%inc==0)
-                     IJ.showProgress(0.5+((double)i/size)/2.0);
+                pixels[i++] = (float)Tools.parseDouble(tok.sval, Double.NaN);
+                if (i==size)
+                    break;
+                if (i%inc==0)
+                    IJ.showProgress(0.5+((double)i/size)/2.0);
             }
         }
         IJ.showProgress(1.0);

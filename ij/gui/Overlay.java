@@ -8,6 +8,10 @@ import ij.process.ImageProcessor;
 public class Overlay {
 	private Vector list;
     private boolean label;
+    private boolean drawNames;
+    private boolean drawBackgrounds;
+    private Color labelColor;
+    private Font labelFont;
     
     /** Constructs an empty Overlay. */
     public Overlay() {
@@ -90,6 +94,15 @@ public class Overlay {
 			rois[i].setFillColor(color);
 	}
 
+    /** Moves all the Rois in this overlay. */
+    public void translate(int dx, int dy) {
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++) {
+			Rectangle r = rois[i].getBounds();
+			rois[i].setLocation(r.x+dx, r.y+dy);
+		}
+	}
+
     /** Draws outlines of the Rois in this Overlay on the specified
     	ImageProcessor using the current color and line width of 'ip'. */
     //public void draw(ImageProcessor ip) {
@@ -98,6 +111,20 @@ public class Overlay {
 	//		rois[i].drawPixels(ip);
 	//}
 	
+	/** Returns a clone of this Overlay. */
+	public Overlay duplicate() {
+		Roi[] rois = toArray();
+		Overlay overlay2 = new Overlay();
+		for (int i=0; i<rois.length; i++)
+			overlay2.add((Roi)rois[i].clone());
+		overlay2.drawLabels(label);
+		overlay2.drawNames(drawNames);
+		overlay2.drawBackgrounds(drawBackgrounds);
+		overlay2.setLabelColor(labelColor);
+		overlay2.setLabelFont(labelFont);
+		return overlay2;
+	}
+
 	public String toString() {
     	return list.toString();
     }
@@ -106,16 +133,44 @@ public class Overlay {
     	label = b;
     }
     
-    public void  temporarilyHide(int index1, int index2) {
-    	int n = list.size();
-    	if (index1<0 || index2>=n || index2<index1)
-    		return;
-    	for (int i=index1; i<=index2; i++)
-    		get(i).temporarilyHide();
+    public boolean getDrawLabels() {
+    	return label;
+    }
+    
+    public void drawNames(boolean b) {
+    	drawNames = b;
+    }
+    
+    public boolean getDrawNames() {
+    	return drawNames;
     }
 
-    boolean getDrawLabels() {return label;}
+    public void drawBackgrounds(boolean b) {
+    	drawBackgrounds = b;
+    }
     
+    public boolean getDrawBackgrounds() {
+    	return drawBackgrounds;
+    }
+
+    public void setLabelColor(Color c) {
+    	labelColor = c;
+    }
+    
+    public Color getLabelColor() {
+    	return labelColor;
+    }
+
+    public void setLabelFont(Font font) {
+    	labelFont = font;
+    }
+    
+    public Font getLabelFont() {
+    	//if (labelFont==null && labelFontSize!=0)
+    	//	labelFont = new Font("SansSerif", Font.PLAIN, labelFontSize);
+    	return labelFont;
+    }
+
     void setVector(Vector v) {list = v;}
         
     Vector getVector() {return list;}

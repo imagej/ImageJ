@@ -49,7 +49,6 @@ public class ShortProcessor extends ImageProcessor {
 		this.pixels = pixels;
 		this.cm = cm;
 		resetRoi();
-		//if (pixels!=null) findMinAndMax();
 	}
 
 	/**
@@ -199,6 +198,17 @@ public class ShortProcessor extends ImageProcessor {
 		}
 	}
 
+	/** Swaps the pixel and snapshot (undo) arrays. */
+	public void swapPixelArrays() {
+		if (snapshotPixels==null) return;	
+		short pixel;
+		for (int i=0; i<pixels.length; i++) {
+			pixel = pixels[i];
+			pixels[i] = snapshotPixels[i];
+			snapshotPixels[i] = pixel;
+		}
+	}
+
 	public void setSnapshotPixels(Object pixels) {
 		snapshotPixels = (short[])pixels;
 		snapshotWidth=width;
@@ -267,7 +277,7 @@ public class ShortProcessor extends ImageProcessor {
 	}
 
 	public final void set(int x, int y, int value) {
-		pixels[y*width + x] = (short)value;
+		pixels[y*width+x] = (short)value;
 	}
 
 	public final int get(int index) {
@@ -491,7 +501,8 @@ public class ShortProcessor extends ImageProcessor {
 						v2 = (int)(Math.exp(v1*(Math.log(max2)/max2)));
 						break;
 					case SQR:
-							v2 = v1*v1;
+						double d1 = v1;
+						v2 = (int)(d1*d1);
 						break;
 					case SQRT:
 						v2 = (int)Math.sqrt(v1);
@@ -522,8 +533,6 @@ public class ShortProcessor extends ImageProcessor {
 				pixels[i++] = (short)v2;
 			}
 		}
-		//if (resetMinMax)
-		//	findMinAndMax();
     }
 
 	public void invert() {
@@ -925,6 +934,7 @@ public class ShortProcessor extends ImageProcessor {
 
 	/** Sets the foreground fill/draw color. */
 	public void setColor(Color color) {
+		drawingColor = color;
 		int bestIndex = getBestIndex(color);
 		if (bestIndex>0 && getMin()==0.0 && getMax()==0.0) {
 			setValue(bestIndex);

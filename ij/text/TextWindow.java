@@ -60,6 +60,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		addKeyListener(textPanel);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
+			textPanel.addKeyListener(ij);
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}
@@ -105,6 +106,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		super("");
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		textPanel = new TextPanel();
+		textPanel.addKeyListener(IJ.getInstance());
 		add("Center", textPanel);
 		if (openFile(path)) {
 			WindowManager.addWindow(this);
@@ -258,7 +260,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		} else if (textPanel!=null && textPanel.rt!=null) {
 			if (!saveContents()) return;
 		}
-		setVisible(false);
+		//setVisible(false);
 		dispose();
 		WindowManager.removeWindow(this);
 		textPanel.flush();
@@ -273,7 +275,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		if (!textPanel.unsavedLines) lineCount = 0;
 		ImageJ ij = IJ.getInstance();
 		boolean macro = IJ.macroRunning() || Interpreter.isBatchMode();
-		if (lineCount>0 && !macro && ij!=null && !ij.quitting()) {
+		boolean isResults = getTitle().contains("Results");
+		if (lineCount>0 && !macro && ij!=null && !ij.quitting() && isResults) {
 			YesNoCancelDialog d = new YesNoCancelDialog(this, getTitle(), "Save "+lineCount+" measurements?");
 			if (d.cancelPressed())
 				return false;

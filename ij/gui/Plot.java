@@ -12,7 +12,9 @@ import ij.measure.Calibration;
 /** This class is an image that line graphs can be drawn on. */
 public class Plot {
 
-	/** Display points using a circle 5 pixels in diameter. */
+	/** Text justification. */
+	public static final int LEFT=0, CENTER=1, RIGHT=2;
+    /** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
 	/** Display points using an X-shaped mark. */
 	public static final int X = 1;
@@ -30,6 +32,7 @@ public class Plot {
 	//public static final int X_INTERVALS_M = 0x1;
 	///** flag multiplier for maximum number of ticks&grid lines along y */
 	//public static final int Y_INTERVALS_M = 0x100;
+	
 	/** flag for numeric labels of x-axis ticks */
 	public static final int X_NUMBERS = 0x1;
 	/** flag for numeric labels of x-axis ticks */
@@ -90,8 +93,9 @@ public class Plot {
 	private int plotHeight = PlotWindow.plotHeight;
 	private boolean multiplePlots;
 	private boolean drawPending;
+	private int sourceImageID;
 	
-	/** keeps a reference to all of the data that is going to be plotted*/
+	/** keeps a reference to all of the data that is going to be plotted. */
 	ArrayList storedData;
 	
 	/** Construct a new PlotWindow.
@@ -100,24 +104,43 @@ public class Plot {
 	 * @param yLabel	the y-axis label
 	 * @param xValues	the x-coodinates, or null
 	 * @param yValues	the y-coodinates, or null
-	 * @param flags		sum of flag values controlling appearance of ticks, grid, etc.
 	 */
+	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
+		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
+	}
+
+	/** This version of the constructor accepts double arrays. */
+	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
+		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
+	}
+
+	/** This is a version of the constructor with no intial arrays. */
+	public Plot(String title, String xLabel, String yLabel) {
+		this(title, xLabel, yLabel, (float[])null, (float[])null, DEFAULT_FLAGS);
+	}
+
+	/** This version of the constructor has a 'flags' argument for
+		controlling the appearance of ticks, grid, etc. The default is
+		Plot.X_NUMBERS+Plot.Y_NUMBERS+Plot.X_GRID+Plot.Y_GRID.
+	*/
 	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues, int flags) {
 		this.title = title;
 		this.xLabel = xLabel;
 		this.yLabel = yLabel;
 		this.flags = flags;
 		storedData = new ArrayList();
-		if (xValues==null || yValues==null) {
-			xValues = new float[1];
-			yValues = new float[1];
-			xValues[0] = -1f;
-			yValues[0] = -1f;
+		if ((xValues==null || xValues.length==0) && yValues!=null) {
+			xValues = new float[yValues.length];
+			for (int i=0; i<yValues.length; i++)
+				xValues[i] = i;
+		}
+		if (xValues==null) {
+			xValues = new float[0];
+			yValues = new float[0];
 		} else
 			storeData(xValues, yValues);
 		this.xValues = xValues;
 		this.yValues = yValues;
-		
 		
 		double[] a = Tools.getMinMax(xValues);
 		xMin=a[0]; xMax=a[1];
@@ -128,19 +151,9 @@ public class Plot {
 		drawPending = true;
 	}
 	
-	/** This version of the constructor uses the default flags. */
-	public Plot(String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
-		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
-	}
-
-	/** This version of the constructor accepts double arrays. */
+	/** This version of the constructor accepts double arrays and has a 'flags' argument. */
 	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues, int flags) {
 		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, flags);
-	}
-
-	/** This version of the constructor accepts double arrays and uses the default flags */
-	public Plot(String title, String xLabel, String yLabel, double[] xValues, double[] yValues) {
-		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
 	}
 
 	/** Sets the x-axis and y-axis range. */
@@ -161,12 +174,18 @@ public class Plot {
 
 	/** Sets the canvas size (i.e., size of the resulting ImageProcessor).
 	 * By default, the size is adjusted for the plot frame size specified
-	 * in Edit>Options>Profile Plot Options*/
+	 * in Edit>Options>Profile Plot Options. */
 	public void setSize(int width, int height) {
 		if (!initialized && width>LEFT_MARGIN+RIGHT_MARGIN+20 && height>TOP_MARGIN+BOTTOM_MARGIN+20) {
 			plotWidth = width-LEFT_MARGIN-RIGHT_MARGIN;
 			plotHeight = height-TOP_MARGIN-BOTTOM_MARGIN;
 		}
+	}
+
+	/** Sets the plot frame size in pixels. */
+	public void setFrameSize(int width, int height) {
+			plotWidth = width;
+			plotHeight = height;
 	}
 
 	/** Adds a set of points to the plot or adds a curve if shape is set to LINE.
@@ -187,17 +206,11 @@ public class Plot {
 			   ip.setClipRect(null);
 				break;
 			case LINE:
-				int xts[] = new int[x.length];
-				int yts[] = new int[y.length];
-				for (int i=0; i<x.length; i++) {
-					xts[i] = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
-					yts[i] = TOP_MARGIN + frameHeight - (int)((y[i]-yMin)*yScale);
-				}
-				drawPolyline(ip, xts, yts, x.length, true);
+				drawFloatPolyline(ip, x, y, x.length);
 				break;
 		}
 		multiplePlots = true;
-		if (xValues.length==1) {
+		if (xValues==null || xValues.length==0) {
 			xValues = x;
 			yValues = y;
 			nPoints = x.length;
@@ -249,8 +262,6 @@ public class Plot {
 	
 	/** Adds error bars to the plot. */
 	public void addErrorBars(float[] errorBars) {
-		if (errorBars.length!=nPoints)
-			throw new IllegalArgumentException("errorBars.length != npoints");
 		this.errorBars = errorBars	;
 	}
 	
@@ -283,7 +294,7 @@ public class Plot {
 	//	}
 	
 	/** Sets the justification used by addLabel(), where <code>justification</code>
-	 * is ImageProcessor.LEFT, ImageProcessor.CENTER or ImageProcessor.RIGHT. */
+	 * is Plot.LEFT, Plot.CENTER or Plot.RIGHT. */
 	public void setJustification(int justification) {
 		setup();
 		ip.setJustification(justification);
@@ -322,13 +333,18 @@ public class Plot {
 		ip.drawLine(ix1, iy1, ix2, iy2);
 	}
 
-	/** Changes the font. */
-	public void changeFont(Font font) {
+	/** Sets the font. */
+	public void setFont(Font font) {
 		setup();
 		ip.setFont(font);
 		this.font = font;
 	}
 	
+	/** Obsolete; replaced by setFont(). */
+	public void changeFont(Font font) {
+		setFont(font);
+	}
+
 	void setup() {
 		if (initialized)
 			return;
@@ -545,17 +561,14 @@ public class Plot {
 		setup();
 		
 		if (drawPending) {
-			int xpoints[] = new int[nPoints];
-			int ypoints[] = new int[nPoints];
-			for (int i=0; i<nPoints; i++) {
-				xpoints[i] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
-				ypoints[i] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin)*yScale);
-			}
-			drawPolyline(ip, xpoints, ypoints, nPoints, true);
+			drawFloatPolyline(ip, xValues, yValues, nPoints);
 			if (this.errorBars != null) {
-				xpoints = new int[2];
-				ypoints = new int[2];
-				for (int i=0; i<nPoints; i++) {
+				int nPoints2 = nPoints;
+				if (errorBars.length<nPoints)
+					nPoints2 = errorBars.length;
+				int[] xpoints = new int[2];
+				int[] ypoints = new int[2];
+				for (int i=0; i<nPoints2; i++) {
 					xpoints[0] = xpoints[1] = LEFT_MARGIN + (int)((xValues[i]-xMin)*xScale);
 					ypoints[0] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin-errorBars[i])*yScale);
 					ypoints[1] = TOP_MARGIN + frame.height - (int)((yValues[i]-yMin+errorBars[i])*yScale);
@@ -579,6 +592,28 @@ public class Plot {
 		if (clip) ip.setClipRect(null);
 	}
 	
+	void drawFloatPolyline(ImageProcessor ip, float[] x, float[] y, int n) {
+		if (x==null || x.length==0) return;
+		ip.setClipRect(frame);
+		int x1, y1, x2, y2;
+		boolean y1IsNaN, y2IsNaN;
+		x2 = LEFT_MARGIN + (int)((x[0]-xMin)*xScale);
+		y2 = TOP_MARGIN + frame.height - (int)((y[0]-yMin)*yScale);
+		y2IsNaN = Float.isNaN(y[0]);
+		for (int i=1; i<n; i++) {
+			x1 = x2;
+			y1 = y2;
+			y1IsNaN = y2IsNaN;
+			x2 = LEFT_MARGIN + (int)((x[i]-xMin)*xScale);
+			y2 = TOP_MARGIN + frame.height - (int)((y[i]-yMin)*yScale);
+			y2IsNaN = Float.isNaN(y[i]);
+			if (!y1IsNaN && !y2IsNaN) {
+				ip.drawLine(x1, y1, x2, y2);
+			}
+		}
+		ip.setClipRect(null);
+	}
+
 	void drawYLabel(String yLabel, int x, int y, int height, FontMetrics fm) {
 		if (yLabel.equals(""))
 			return;
@@ -634,7 +669,7 @@ public class Plot {
 		draw();
 		ImagePlus img = new ImagePlus(title, ip);
 		Calibration cal = img.getCalibration();
-		cal.xOrigin = LEFT_MARGIN;
+		cal.xOrigin = LEFT_MARGIN-xMin*xScale;
 		cal.yOrigin = TOP_MARGIN+frameHeight+yMin*yScale;
 		cal.pixelWidth = 1.0/xScale;
 		cal.pixelHeight = 1.0/yScale;
@@ -658,16 +693,28 @@ public class Plot {
 			return null;
 		}
 		ImageWindow.centerNextImage();
-		return new PlotWindow(this);
+		PlotWindow pw = new PlotWindow(this);
+		ImagePlus imp = pw.getImagePlus();
+		if (IJ.isMacro() && imp!=null) // wait for plot to be displayed
+			IJ.selectWindow(imp.getID());
+		return pw;
 	}
-	
+		
 	/** Stores plot data into an ArrayList  to be used 
 	     when a plot window  wants to 'createlist'. */
 	private void storeData(float[] xvalues, float[] yvalues){
 		storedData.add(xvalues);
 		storedData.add(yvalues);
 	}
-
+	
+	void setSourceImageID(int id) {
+		sourceImageID = id;
+	}
+	
+	int getSourceImageID() {
+		return sourceImageID;
+	}
+	
 }
 
 

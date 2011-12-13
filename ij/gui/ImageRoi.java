@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
+import ij.io.FileSaver;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -27,17 +28,16 @@ public class ImageRoi extends Roi {
 	}
 		
 	public void draw(Graphics g) {
-		if (ic==null) return;
 		Graphics2D g2d = (Graphics2D)g;						
-		double mag = ic.getMagnification();
-		int sx2 = ic.screenX(x+width);
-		int sy2 = ic.screenY(y+height);
+		double mag = getMagnification();
+		int sx2 = screenX(x+width);
+		int sy2 = screenY(y+height);
 		Composite saveComposite = null;
 		if (composite!=null) {
 			saveComposite = g2d.getComposite();
 			g2d.setComposite(composite);
 		}
-		g.drawImage(img, ic.screenX(x), ic.screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
+		g.drawImage(img, screenX(x), screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
 		if (composite!=null) g2d.setComposite(saveComposite);
  	}
  	 	
@@ -58,9 +58,22 @@ public class ImageRoi extends Roi {
 			composite = null;
 	}
 	
+	/** Returns a serialized version of the image. */
+	public byte[] getSerializedImage() {
+		ImagePlus imp = new ImagePlus("",img);
+		return new FileSaver(imp).serialize();
+	}
+
 	/** Returns the current opacity. */
 	public double getOpacity() {
 		return opacity;
+	}
+
+	public synchronized Object clone() {
+		ImagePlus imp = new ImagePlus("", img);
+		ImageRoi roi2 = new ImageRoi(x, y, imp.getProcessor());
+		roi2.setOpacity(getOpacity());
+		return roi2;
 	}
 
 	//public void setImage(ImagePlus imp) {

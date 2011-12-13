@@ -1,14 +1,14 @@
  # IJ_Props.txt - This is the ImageJ properties file. ImageJ uses
 # the information in this file to install plug-ins in menus.
 # ImageJ looks for this file in ij.jar. It can be edited by
-# opening ij.jar with a ZIP utility. With WinZip, you can open 
-# ij.jar and double click on IJ_Props.txt.
+# opening ij.jar with a ZIP utility.
 
 # Note that commands must be unique.
 
-# Version 1.43
+# Version 1.46
 
-# Popup Menu
+# Commands installed in the right-click popup menu
+# Overridden in StartupMacros
 popup01=Undo
 popup02=-
 popup03=Cut
@@ -40,6 +40,7 @@ import07="URL...",ij.plugin.URLOpener
 import08="Stack From List...",ij.plugin.ListVirtualStack
 import09="TIFF Virtual Stack...",ij.plugin.FileInfoVirtualStack
 import10="AVI...",ij.plugin.AVI_Reader
+import11="XY Coodinates... ",ij.plugin.XY_Reader
 #import08="TWAIN...",ij.plugin.twain.Twain
 #import09="Capture Video...",QT_Capture
 #import10="QuickTime Movie...",Movie_Opener
@@ -70,37 +71,42 @@ selection01="Select All[a]",ij.plugin.Selection("all")
 selection02="Select None[A]",ij.plugin.Selection("none")
 selection03="Restore Selection[E]",ij.plugin.Selection("restore")
 selection04="Fit Spline",ij.plugin.Selection("spline")
-selection05="Fit Ellipse",ij.plugin.Selection("ellipse")
-selection06="Convex Hull",ij.plugin.Selection("hull")
-selection07="Make Inverse",ij.plugin.Selection("inverse")
-selection08="Create Selection",ij.plugin.Selection("from")
-selection09="Create Mask",ij.plugin.Selection("mask")
-selection10=-
-selection11="Properties... ",ij.plugin.Selection("properties")
-selection12="Rotate...",ij.plugin.Selection("rotate")
-selection13="Enlarge...",ij.plugin.Selection("enlarge")
-selection14="Make Band...",ij.plugin.Selection("band")
-selection15="Specify...",ij.plugin.SpecifyROI
-selection16="Straighten...",ij.plugin.Straightener
-selection17="Line to Area",ij.plugin.Selection("toarea")
-selection18="Add to Manager [t]",ij.plugin.Selection("add")
+selection05="Fit Circle",ij.plugin.Selection("circle")
+selection06="Fit Ellipse",ij.plugin.Selection("ellipse")
+selection07="Convex Hull",ij.plugin.Selection("hull")
+selection08="Make Inverse",ij.plugin.Selection("inverse")
+selection09="Create Selection",ij.plugin.Selection("from")
+selection10="Create Mask",ij.plugin.Selection("mask")
+selection11=-
+selection12="Properties... [y]",ij.plugin.Selection("properties")
+selection13="Rotate...",ij.plugin.Selection("rotate")
+selection14="Enlarge...",ij.plugin.Selection("enlarge")
+selection15="Make Band...",ij.plugin.Selection("band")
+selection16="Specify...",ij.plugin.SpecifyROI
+selection17="Straighten...",ij.plugin.Straightener
+selection18="To Bounding Box",ij.plugin.Selection("tobox")
+selection19="Line to Area",ij.plugin.Selection("toarea")
+selection20="Area to Line",ij.plugin.Selection("toline")
+selection21="Image to Selection...",ij.plugin.OverlayCommands("image-roi")
+selection22="Add to Manager[t]",ij.plugin.Selection("add")
 
 # Plugins installed in the Edit/Options submenu
 options01="Line Width...",ij.plugin.Options("line")
 options02="Input/Output...",ij.plugin.Options("io")
 options03="Fonts...",ij.plugin.frame.Fonts
 options04="Profile Plot Options...",ij.plugin.filter.Profiler("set")
-options05="Arrow Tool...",ij.plugin.ArrowToolOptions
-options06="Point Tool...",ij.plugin.Colors("point")
-options07="Wand Tool...",ij.plugin.WandToolOptions
-options08="Colors...",ij.plugin.Colors
-options09="Appearance...",ij.plugin.Options("display")
-options10="Conversions...",ij.plugin.Options("conv")
-options11="Memory & Threads...",ij.plugin.Memory
-options12="Proxy Settings...",ij.plugin.ProxySettings
-options13="Compiler...",ij.plugin.Compiler("options")
-options14="DICOM...",ij.plugin.Options("dicom")
-options15="Misc...",ij.plugin.Options("misc")
+options05="Rounded Rect Tool...",ij.plugin.RectToolOptions
+options06="Arrow Tool...",ij.plugin.ArrowToolOptions
+options07="Point Tool...",ij.plugin.Colors("point")
+options08="Wand Tool...",ij.plugin.WandToolOptions
+options09="Colors...",ij.plugin.Colors
+options10="Appearance...",ij.plugin.Options("display")
+options11="Conversions...",ij.plugin.Options("conv")
+options12="Memory & Threads...",ij.plugin.Memory
+options13="Proxy Settings...",ij.plugin.ProxySettings
+options14="Compiler...",ij.plugin.Compiler("options")
+options15="DICOM...",ij.plugin.Options("dicom")
+options16="Misc...",ij.plugin.Options("misc")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster
@@ -113,7 +119,7 @@ adjust07="Canvas Size...",ij.plugin.CanvasResizer
 adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 
 # Plugins installed in the Image/Color submenu
-color01="Split Channels",ij.plugin.filter.RGBStackSplitter
+color01="Split Channels",ij.plugin.ChannelSplitter
 color02="Merge Channels...",ij.plugin.RGBStackMerge
 color03="Channels Tool... ",ij.plugin.frame.Channels
 color04=-
@@ -134,9 +140,9 @@ stacks07="Images to Stack",ij.plugin.ImagesToStack
 stacks08="Stack to Images",ij.plugin.StackEditor("toimages")
 stacks09="Make Montage...",ij.plugin.MontageMaker
 stacks10="Reslice [/]...",ij.plugin.Slicer
-stacks11="Orthogonal Views",ij.plugin.Orthogonal_Views
+stacks11="Orthogonal Views[H]",ij.plugin.Orthogonal_Views
 stacks12="Z Project...",ij.plugin.ZProjector
-stacks13="3D Project...",ij.plugin.filter.Projector
+stacks13="3D Project...",ij.plugin.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
 
@@ -149,10 +155,11 @@ tools_05="Insert...",ij.plugin.StackInserter
 tools_06="Montage to Stack...",ij.plugin.StackMaker
 tools_07="Make Substack...",ij.plugin.SubstackMaker
 tools_08="Grouped Z Project...",ij.plugin.GroupedZProjector
-tools_09=-
-tools_10="Start Animation [\\]",ij.plugin.Animator("start")
-tools_11="Stop Animation",ij.plugin.Animator("stop")
-tools_12="Animation Options...",ij.plugin.Animator("options")
+tools_09="Remove Slice Labels",ij.plugin.SimpleCommands("remove")
+tools_10=-
+tools_11="Start Animation [\\]",ij.plugin.Animator("start")
+tools_12="Stop Animation",ij.plugin.Animator("stop")
+tools_13="Animation Options...",ij.plugin.Animator("options")
 
 # Plugins installed in the Image/Hyperstacks submenu
 hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
@@ -171,8 +178,8 @@ transform06="Rotate... ",ij.plugin.filter.Rotator
 transform07="Translate...",ij.plugin.filter.Translator
 
 # Plugins installed in the Image/Zoom submenu
-zoom01="In[+]",ij.plugin.Zoom("in")
-zoom02="Out[-]",ij.plugin.Zoom("out")
+zoom01="In [+]",ij.plugin.Zoom("in")
+zoom02="Out [-]",ij.plugin.Zoom("out")
 zoom03="Original Scale[4]",ij.plugin.Zoom("orig")
 zoom04="View 100%[5]",ij.plugin.Zoom("100%")
 zoom05="To Selection",ij.plugin.Zoom("to")
@@ -188,6 +195,8 @@ overlay05="From ROI Manager",ij.plugin.OverlayCommands("from")
 overlay06="To ROI Manager",ij.plugin.OverlayCommands("to")
 overlay07="Remove Overlay",ij.plugin.OverlayCommands("remove")
 overlay08="Flatten[F]",ij.plugin.OverlayCommands("flatten")
+overlay09="Labels...",ij.plugin.OverlayLabels
+overlay10="Overlay Options...",ij.plugin.OverlayCommands("options")
 
 # Plugins installed in the Image/Lookup Tables submenu
 lookup01="Invert LUT",ij.plugin.LutLoader("invert")
@@ -213,6 +222,7 @@ noise03="Salt and Pepper",ij.plugin.filter.SaltAndPepper
 noise04=-
 noise05="Despeckle",ij.plugin.filter.RankFilters("despeckle")
 noise06="Remove Outliers...",ij.plugin.filter.RankFilters("outliers")
+noise07="Remove NaNs...",ij.plugin.filter.RankFilters("nan")
 
 # Plugins installed in the Process/Shadows submenu
 shadows01="North",ij.plugin.filter.Shadows("north")
@@ -297,7 +307,6 @@ batch02="Convert...",ij.plugin.BatchConverter
 batch03="Macro... ",ij.plugin.BatchProcesser
 batch04="Virtual Stack...",ij.plugin.BatchProcesser("stack")
 
-
 # Plugins installed in the Analyze/Gels submenu
 gels01="Select First Lane[1]",ij.plugin.GelAnalyzer("first")
 gels02="Select Next Lane[2]",ij.plugin.GelAnalyzer("next")
@@ -347,16 +356,19 @@ shortcuts04="Remove...",ij.plugin.Hotkeys("remove")
 shortcuts05=-
 
 # Plugins installed in the Plugins/Utilities submenu
-utilities01="Control Panel... [U]",ij.plugin.ControlPanel
-utilities02="ImageJ Properties...",ij.plugin.JavaProperties
-utilities03="Threads...",ij.plugin.ThreadLister
-utilities04="Benchmark",ij.plugin.filter.Benchmark
-utilities05="Reset...",ij.plugin.SimpleCommands("reset")
-utilities06="Monitor Memory...",ij.plugin.MemoryMonitor
-utilities07="Search...",ij.plugin.SimpleCommands("search")
-utilities08="Capture Screen [G]",ij.plugin.ScreenGrabber
-utilities09="Capture Image",ij.plugin.ScreenGrabber("image")
-utilities10="Find Commands... [l]",ij.plugin.CommandFinder
+utilities01="Control Panel...[U]",ij.plugin.ControlPanel
+utilities02="Find Commands...[l]",ij.plugin.CommandFinder
+utilities03="Search...",ij.plugin.SimpleCommands("search")
+utilities04="Monitor Events...",ij.plugin.EventListener
+utilities05="Monitor Memory...",ij.plugin.frame.MemoryMonitor
+utilities06=-
+utilities07="Capture Screen[G]",ij.plugin.ScreenGrabber
+utilities08="Capture Image",ij.plugin.ScreenGrabber("image")
+utilities09=-
+utilities10="ImageJ Properties...",ij.plugin.JavaProperties
+utilities11="Threads...",ij.plugin.ThreadLister
+utilities12="Benchmark",ij.plugin.filter.Benchmark
+utilities13="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")

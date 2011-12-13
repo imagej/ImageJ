@@ -149,6 +149,14 @@ public class FileOpener {
 		Overlay overlay = new Overlay();
 		for (int i=0; i<rois.length; i++) {
 			Roi roi = RoiDecoder.openFromByteArray(rois[i]);
+			if (i==0) {
+				Overlay proto = roi.getPrototypeOverlay();
+				overlay.drawLabels(proto.getDrawLabels());
+				overlay.drawNames(proto.getDrawNames());
+				overlay.drawBackgrounds(proto.getDrawBackgrounds());
+				overlay.setLabelColor(proto.getLabelColor());
+				overlay.setLabelFont(proto.getLabelFont());
+			}
 			overlay.add(roi);
 		}
 		imp.setOverlay(overlay);
@@ -343,7 +351,6 @@ public class FileOpener {
 			if (IJ.debugMode) IJ.log("16-bit signed");
  			imp.getLocalCalibration().setSigned16BitCalibration();
 		}
-		
 		Properties props = decodeDescriptionString(fi);
 		Calibration cal = imp.getCalibration();
 		boolean calibrated = false;
@@ -458,7 +465,7 @@ public class FileOpener {
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.directory + fi.fileName);
 		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;
-		    if (f==null || f.isDirectory() || !validateFileInfo(f, fi))
+		    if (f==null || !f.exists() || f.isDirectory() || !validateFileInfo(f, fi))
 		    	is = null;
 		    else
 				is = new FileInputStream(f);
@@ -572,6 +579,9 @@ public class FileOpener {
 				fi.pixelDepth = spacing;
 			}
 		}
+		String name = props.getProperty("name");
+		if (name!=null)
+			fi.fileName = name;
 		return props;
 	}
 

@@ -40,6 +40,7 @@ public class Profiler implements PlugInFilter {
 		gd.addCheckbox("List values", PlotWindow.listValues);
 		gd.addCheckbox("Interpolate line profiles", PlotWindow.interpolate);
 		gd.addCheckbox("Draw grid lines", !PlotWindow.noGridLines);
+		gd.addCheckbox("Sub-pixel resolution", Prefs.subPixelResolution);
 		gd.addHelp(IJ.URL+"/docs/menus/edit.html#plot-options");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -62,6 +63,7 @@ public class Profiler implements PlugInFilter {
 		PlotWindow.listValues = gd.getNextBoolean();
 		PlotWindow.interpolate = gd.getNextBoolean();
 		PlotWindow.noGridLines = !gd.getNextBoolean();
+		Prefs.subPixelResolution = gd.getNextBoolean();
 		if (!fixedScale && !wasFixedScale && (ymin!=0.0 || ymax!=0.0))
 			fixedScale = true;
 		if (!fixedScale) {

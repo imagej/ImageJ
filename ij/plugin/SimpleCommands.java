@@ -26,6 +26,8 @@ public class SimpleCommands implements PlugIn {
 			aboutPluginsHelp();
 		else if (arg.equals("install"))
 			installation();
+		else if (arg.equals("remove"))
+			removeStackLabels();
 	}
 
 	void reset() {
@@ -96,4 +98,17 @@ public class SimpleCommands implements PlugIn {
 			IJ.URL+"/plugins/jar-demo.html");
 	}
 	
+	void removeStackLabels() {
+		ImagePlus imp = IJ.getImage();
+		int size = imp.getStackSize();
+		if (size==1)
+			IJ.error("Stack required");
+		else {
+			ImageStack stack = imp.getStack();
+			for (int i=1; i<=size; i++)
+				stack.setSliceLabel(null, i);
+			imp.repaintWindow();
+		}
+	}
+
 }

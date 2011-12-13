@@ -4,17 +4,27 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.macro.Interpreter;
+import ij.io.RoiDecoder;
+import ij.plugin.filter.PlugInFilter;
 import java.awt.*;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
-	private static boolean createImageRoi;
+	private static int opacity = 100;
+	private static Roi defaultRoi;
+	
+	static {
+		defaultRoi = new Roi(0, 0, 1, 1);
+		defaultRoi.setStrokeColor(Roi.getColor());
+	}
 
 	public void run(String arg) {
 		if (arg.equals("add"))
 			addSelection();
 		else if (arg.equals("image"))
-			addImage();
+			addImage(false);
+		else if (arg.equals("image-roi"))
+			addImage(true);
 		else if (arg.equals("flatten"))
 			flatten();
 		else if (arg.equals("hide"))
@@ -27,6 +37,8 @@ public class OverlayCommands implements PlugIn {
 			fromRoiManager();
 		else if (arg.equals("to"))
 			toRoiManager();
+		else if (arg.equals("options"))
+			options();
 	}
 			
 	void addSelection() {
@@ -53,38 +65,47 @@ public class OverlayCommands implements PlugIn {
 		}
 		roi = (Roi)roi.clone();
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && overlay.size()>0 && !roi.isDrawingTool()) {
-			Roi roi2 = overlay.get(overlay.size()-1);
+		if (!roi.isDrawingTool()) {
 			if (roi.getStroke()==null)
-				roi.setStrokeWidth(roi2.getStrokeWidth());
-			if (roi.getStrokeColor()==null || Line.getWidth()>1&&roi2.getStrokeColor()!=null)
-				roi.setStrokeColor(roi2.getStrokeColor());
+				roi.setStrokeWidth(defaultRoi.getStrokeWidth());
+			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
+				roi.setStrokeColor(defaultRoi.getStrokeColor());
 			if (roi.getFillColor()==null)
-				roi.setFillColor(roi2.getFillColor());
+				roi.setFillColor(defaultRoi.getFillColor());
+		}
+		boolean setPos = defaultRoi.getPosition()!=0;
+		if (setPos && imp.getStackSize()>1) {
+			if (imp.isHyperStack()||imp.isComposite())
+				roi.setPosition(0, imp.getSlice(), imp.getFrame());
+			else
+				roi.setPosition(imp.getCurrentSlice());
 		}
 		int width = Line.getWidth();
 		Rectangle bounds = roi.getBounds();
 		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
 		if (roi.getStroke()==null && width>1 && !tooWide)
 			roi.setStrokeWidth(Line.getWidth());
-		if (roi.getStrokeColor()==null)
-			roi.setStrokeColor(Toolbar.getForegroundColor());
+		//if (roi.getStrokeColor()==null)
+		//	roi.setStrokeColor(Toolbar.getForegroundColor());
 		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
-		if (points) roi.setStrokeColor(Color.red);
-		if (!IJ.altKeyDown() && !(roi instanceof Arrow)) {
+		//if (points) roi.setStrokeColor(Color.red);
+		if (IJ.altKeyDown() || (IJ.macroRunning() && Macro.getOptions()!=null)) {
 			RoiProperties rp = new RoiProperties("Add to Overlay", roi);
 			if (!rp.showDialog()) return;
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
-		if (overlay==null || newOverlay) overlay = new Overlay();
+		if (overlay==null || newOverlay) overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
+		if (!roi.isDrawingTool())
+			defaultRoi = (Roi)roi.clone();
+		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
 		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
 	
-	void addImage() {
+	void addImage(boolean createImageRoi) {
 		ImagePlus imp = IJ.getImage();
 		int[] wList = WindowManager.getIDList();
 		if (wList==null || wList.length<2) {
@@ -111,20 +132,27 @@ public class OverlayCommands implements PlugIn {
 		} else if (imp.getID()==wList[0])
 			index = 1;
 
-		GenericDialog gd = new GenericDialog("Add Image...");
-		gd.addChoice("Image to add:", titles, titles[index]);
-		gd.addNumericField("X location:", x, 0);
-		gd.addNumericField("Y location:", y, 0);
-		gd.addNumericField("Opacity (0-100%):", 100, 0);
-		gd.addCheckbox("Create image selection", createImageRoi);
+		String title = createImageRoi?"Create Image ROI":"Add Image...";
+		GenericDialog gd = new GenericDialog(title);
+		if (createImageRoi)
+			gd.addChoice("Image:", titles, titles[index]);
+		else {
+			gd.addChoice("Image to add:", titles, titles[index]);
+			gd.addNumericField("X location:", x, 0);
+			gd.addNumericField("Y location:", y, 0);
+		}
+		gd.addNumericField("Opacity (0-100%):", opacity, 0);
+		//gd.addCheckbox("Create image selection", createImageRoi);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
 		index = gd.getNextChoiceIndex();
-		x = (int)gd.getNextNumber();
-		y = (int)gd.getNextNumber();
-		double opacity = gd.getNextNumber()/100.0;
-		createImageRoi = gd.getNextBoolean();
+		if (!createImageRoi) {
+			x = (int)gd.getNextNumber();
+			y = (int)gd.getNextNumber();
+		}
+		opacity = (int)gd.getNextNumber();
+		//createImageRoi = gd.getNextBoolean();
 		ImagePlus overlay = WindowManager.getImage(wList[index]);
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
@@ -148,7 +176,7 @@ public class OverlayCommands implements PlugIn {
 		}	
 		roi = new ImageRoi(x, y, overlay.getProcessor());
 		roi.setName(overlay.getShortTitle());
-		if (opacity!=1.0) ((ImageRoi)roi).setOpacity(opacity);
+		if (opacity!=100) ((ImageRoi)roi).setOpacity(opacity/100.0);
 		if (createImageRoi)
 			imp.setRoi(roi);
 		else {
@@ -170,8 +198,13 @@ public class OverlayCommands implements PlugIn {
 	void show() {
 		ImagePlus imp = IJ.getImage();
 		imp.setHideOverlay(false);
-		RoiManager rm = RoiManager.getInstance();
-		if (rm!=null) rm.runCommand("show all");
+		if (imp.getOverlay()==null) {
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null && rm.getCount()>1) {
+				if (!IJ.isMacro()) rm.toFront();
+				rm.runCommand("show all with labels");
+			}
+		}
 	}
 
 	void remove() {
@@ -183,14 +216,50 @@ public class OverlayCommands implements PlugIn {
 
 	void flatten() {
 		ImagePlus imp = IJ.getImage();
-		ImagePlus imp2 = imp.flatten();
-		imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
-		imp2.show();
+		int flags = imp.isComposite()?0:IJ.setupDialog(imp, 0);
+		if (flags==PlugInFilter.DONE)
+			return;
+		else if (flags==PlugInFilter.DOES_STACKS)
+			flattenStack(imp);
+		else {
+			ImagePlus imp2 = imp.flatten();
+			imp2.setTitle(WindowManager.getUniqueName(imp.getTitle()));
+			imp2.show();
+		}
 	}
 	
+	void flattenStack(ImagePlus imp) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null || !IJ.isJava16() || imp.getBitDepth()!=24) {
+			IJ.error("Flatten Stack", "An overlay, Java 1.6 and an RGB image are required.");
+			return;
+		}
+		ImageStack stack = imp.getStack();
+		for (int i=1; i<=stack.getSize(); i++) {
+			ImageProcessor ip = stack.getProcessor(i);
+			Roi[] rois = overlay.toArray();
+			for (int j=0; j<rois.length; j++) {
+				Roi roi = rois[j];
+				int position = roi.getPosition();
+				//if (hyperstack && position==0) {
+				//	int c = roi.getCPosition();
+				//	int z = roi.getZPosition();
+				//	int t = roi.getTPosition();
+				//	if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+				//		ip.drawRoi(roi);
+				//} else {
+				if (position==0 || position==i)
+					ip.drawRoi(roi);
+				//}
+			}
+		}
+		imp.setStack(stack);
+		imp.setOverlay(null);
+	}
+
 	void fromRoiManager() {
 		ImagePlus imp = IJ.getImage();
-		RoiManager rm = RoiManager.getInstance();
+		RoiManager rm = RoiManager.getInstance2();
 		if (rm==null) {
 			IJ.error("ROI Manager is not open");
 			return;
@@ -200,9 +269,19 @@ public class OverlayCommands implements PlugIn {
 			IJ.error("ROI Manager is empty");
 			return;
 		}
-		Overlay overlay = new Overlay();
-		for (int i=0; i<rois.length; i++)
-			overlay.add((Roi)rois[i].clone());
+		Overlay overlay = OverlayLabels.createOverlay();
+		for (int i=0; i<rois.length; i++) {
+			Roi roi = (Roi)rois[i].clone();
+			if (!Prefs.showAllSliceOnly)
+				roi.setPosition(0);
+			//if (roi.getStroke()==null && defaultRoi.getStroke()!=null)
+			//	roi.setStrokeWidth(defaultRoi.getStrokeWidth());
+			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
+				roi.setStrokeColor(defaultRoi.getStrokeColor());
+			if (roi.getFillColor()==null)
+				roi.setFillColor(defaultRoi.getFillColor());
+			overlay.add(roi);
+		}
 		imp.setOverlay(overlay);
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) ic.setShowAllROIs(false);
@@ -231,12 +310,53 @@ public class OverlayCommands implements PlugIn {
 				rm = (RoiManager)frame;
 			}
 		}
+		if (overlay.size()>=4 && overlay.get(3).getPosition()!=0)
+			Prefs.showAllSliceOnly = true;
 		rm.runCommand("reset");
 		for (int i=0; i<overlay.size(); i++)
 			rm.add(imp, overlay.get(i), i);
 		rm.setEditMode(imp, true);
 		if (rm.getCount()==overlay.size())
 			imp.setOverlay(null);
+	}
+	
+	void options() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Overlay overlay = null;
+		Roi roi = null;
+		if (imp!=null) {
+			overlay = imp.getOverlay();
+			roi = imp.getRoi();
+			if (roi!=null)
+				roi = (Roi)roi.clone();
+		}
+		if (roi==null)
+			roi = defaultRoi;
+		if (roi==null) {
+			int size = imp!=null?imp.getWidth():512;
+			roi = new Roi(0, 0, size/4, size/4);
+		}
+		if (!roi.isDrawingTool()) {
+			if (roi.getStroke()==null)
+				roi.setStrokeWidth(defaultRoi.getStrokeWidth());
+			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
+				roi.setStrokeColor(defaultRoi.getStrokeColor());
+			if (roi.getFillColor()==null)
+				roi.setFillColor(defaultRoi.getFillColor());
+		}
+		int width = Line.getWidth();
+		Rectangle bounds = roi.getBounds();
+		boolean tooWide = width>Math.max(bounds.width, bounds.height)/3.0;
+		if (roi.getStroke()==null && width>1 && !tooWide)
+			roi.setStrokeWidth(Line.getWidth());
+		if (roi.getStrokeColor()==null)
+			roi.setStrokeColor(Roi.getColor());
+		boolean points = roi instanceof PointRoi && ((PolygonRoi)roi).getNCoordinates()>1;
+		if (points) roi.setStrokeColor(Color.red);
+		roi.setPosition(defaultRoi.getPosition());
+		RoiProperties rp = new RoiProperties("Overlay Options", roi);
+		if (!rp.showDialog()) return;
+		defaultRoi = roi;
 	}
 	
 }

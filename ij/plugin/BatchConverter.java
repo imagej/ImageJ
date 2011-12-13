@@ -69,7 +69,7 @@ import java.io.*;
 				int height = (int)(scale*imp.getHeight());
 				ImageProcessor ip = imp.getProcessor();
 				ip.setInterpolationMethod(interpolationMethod);
-				imp.setProcessor(null, ip.resize(width,height));
+				imp.setProcessor(null, ip.resize(width,height,true));
 			}
 			if (format.equals("8-bit TIFF") || format.equals("GIF")) {
 				if (imp.getBitDepth()==24)

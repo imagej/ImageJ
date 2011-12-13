@@ -10,11 +10,14 @@ import ij.process.*;
 import ij.util.*;
 import ij.text.TextWindow;
 import ij.plugin.filter.Analyzer;
-import ij.measure.Measurements;
+import ij.measure.*;
+import ij.io.SaveDialog;
 
-
-/** Obsolete; mostly replaced by the Plot class. */
-public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner {
+/** This class implements the Analyze>Plot Profile command.
+* @authors Michael Schmid and Wayne Rasband
+*/
+public class PlotWindow extends ImageWindow implements ActionListener, ClipboardOwner,
+	MouseListener, MouseMotionListener, KeyListener, ImageListener, Runnable {
 
 	/** Display points using a circle 5 pixels in diameter. */
 	public static final int CIRCLE = 0;
@@ -43,17 +46,20 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private static final int INTERPOLATE = 8;
 	private static final int NO_GRID_LINES = 16;
 
-	private Button list, save, copy;
+	private Button list, save, copy, live;
 	private Label coordinates;
 	private static String defaultDirectory = null;
-	private Font font = new Font("Helvetica", Font.PLAIN, 12);
 	private static int options;
 	private int defaultDigits = -1;
-	private boolean realXValues;
-	private int xdigits, ydigits;
 	private int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
+	private String blankLabel = "                      ";
+	
+	private ImagePlus srcImp;		// the source image for live plotting
+	private Thread bgThread;		// thread for plotting (in the background)
+	private boolean doUpdate;	// tells the background thread to update
+
 	
 	/** Save x-values only. To set, use Edit/Options/
 		Profile Plot Options. */
@@ -82,7 +88,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 
 	// static initializer
 	static {
-		IJ.register(PlotWindow.class); //keeps options from being reset on some JVMs
 		options = Prefs.getInt(OPTIONS, SAVE_X_VALUES);
 		saveXValues = (options&SAVE_X_VALUES)!=0;
 		autoClose = (options&AUTO_CLOSE)!=0;
@@ -174,7 +179,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	/** Displays the plot. */
 	public void draw() {
 		Panel buttons = new Panel();
-		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		int hgap = IJ.isMacOSX()?1:5;
+		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		list = new Button(" List ");
 		list.addActionListener(this);
 		buttons.add(list);
@@ -184,13 +190,17 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		copy = new Button("Copy...");
 		copy.addActionListener(this);
 		buttons.add(copy);
+		live = new Button("Live");
+		live.addActionListener(this);
+		buttons.add(live);
 		coordinates = new Label("X=12345678, Y=12345678"); 
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		coordinates.setBackground(new Color(220, 220, 220));
 		buttons.add(coordinates);
 		add(buttons);
 		plot.draw();
 		pack();
-		coordinates.setText("					 ");
+		coordinates.setText(blankLabel);
 		ImageProcessor ip = plot.getProcessor();
 		if ((ip instanceof ColorProcessor) && (imp.getProcessor() instanceof ByteProcessor))
 			imp.setProcessor(null, ip);
@@ -224,44 +234,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	*/
 	public void mouseMoved(int x, int y) {
 		super.mouseMoved(x, y);
-		if (plot!=null && plot.frame!=null && coordinates!=null)
-			coordinates.setText(plot.getCoordinates(x,y));
-	}
-		
-	void showListOLD() {
-		StringBuffer sb = new StringBuffer();
-		String headings;
-		initDigits();
-		if (plot.errorBars !=null) {
-			if (saveXValues)
-				headings = "X\tY\tErrorBar";
-			else
-				headings = "Y\tErrorBar";
-			for (int i=0; i<plot.nPoints; i++) {
-				if (saveXValues)
-					sb.append(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\t"+IJ.d2s(plot.errorBars[i],ydigits)+"\n");
-				else
-					sb.append(IJ.d2s(plot.yValues[i],ydigits)+"\t"+IJ.d2s(plot.errorBars[i],ydigits)+"\n");
-			}
-		} else {
-			if (saveXValues)
-				headings = "X\tY";
-			else
-				headings = "Y";
-			for (int i=0; i<plot.nPoints; i++) {
-				if (saveXValues)
-					sb.append(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits)+"\n");
-				else
-					sb.append(IJ.d2s(plot.yValues[i],ydigits)+"\n");
-			}
+		if (plot!=null && plot.frame!=null && coordinates!=null) {
+			String coords = plot.getCoordinates(x,y) + blankLabel;
+			coordinates.setText(coords.substring(0, blankLabel.length()));
 		}
-		TextWindow tw = new TextWindow("Plot Values", headings, sb.toString(), 200, 400);
-		if (autoClose)
-			{imp.changes=false; close();}
 	}
+			
 	/** shows the data of the backing plot in a Textwindow with columns */
 	void showList(){
-		initDigits();
 		String headings = createHeading();
 		String data = createData();
 		TextWindow tw = new TextWindow("Plot Values", headings, data, 230, 400);
@@ -273,14 +253,14 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	private String createHeading(){
 		String head = "";
 		int sets = plot.storedData.size()/2;
-		if (saveXValues)
+		if (saveXValues || sets>1)
 			head += sets==1?"X\tY\t":"X0\tY0\t";
 		else
 			head += sets==1?"Y0\t":"Y0\t";
 		if (plot.errorBars!=null)
 			head += "ERR\t";
 		for (int j = 1; j<sets; j++){
-			if (saveXValues)
+			if (saveXValues || sets>1)
 				head += "X" + j + "\tY" + j + "\t";
 			else
 				head += "Y" + j + "\t";
@@ -310,22 +290,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 					
 		StringBuffer sb = new StringBuffer();
 		String v;
-		for(int i = 0; i<max; i++){
+		int n = displayed.size();
+		for (int i = 0; i<max; i++) {
 			eb_test = plot.errorBars != null;
-			for (int j = 0; j<displayed.size();) {
-				if(saveXValues){
+			for (int j = 0; j<n;) {
+				int xdigits = 0;
+				if (saveXValues || n>2) {
 					column = (float[])displayed.get(j);
+					xdigits = getPrecision(column);
 					v = i<column.length?IJ.d2s(column[i],xdigits):"";
 					sb.append(v);
 					sb.append("\t");
 				}
 				j++;
 				column = (float[])displayed.get(j);
+				int ydigits = xdigits;
+				if (ydigits==0)
+					ydigits = getPrecision(column);
 				v = i<column.length?IJ.d2s(column[i],ydigits):"";
 				sb.append(v);
 				sb.append("\t");
 				j++;
-				if(eb_test){
+				if (eb_test){
 					column = (float[])displayed.get(j);
 					v = i<column.length?IJ.d2s(column[i],ydigits):"";
 					sb.append(v);
@@ -340,16 +326,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 	
 	void saveAsText() {
-		FileDialog fd = new FileDialog(this, "Save as Text...", FileDialog.SAVE);
-		if (defaultDirectory!=null)
-			fd.setDirectory(defaultDirectory);
-		fd.setVisible(true);
-		
-		String name = fd.getFile();
+		SaveDialog sd = new SaveDialog("Save as Text", "Values", ".txt");
+		String name = sd.getFileName();
 		if (name==null) return;
-		String directory = fd.getDirectory();
-		defaultDirectory = directory;
-		fd.dispose();
+		String directory = sd.getDirectory();
 		PrintWriter pw = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(directory+name);
@@ -362,13 +342,6 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		}
 		IJ.wait(250);  // give system time to redraw ImageJ window
 		IJ.showStatus("Saving plot values...");
-		initDigits();
-		/*for (int i=0; i<plot.nPoints; i++) {
-			if (saveXValues)
-				pw.println(IJ.d2s(plot.xValues[i],xdigits)+"\t"+IJ.d2s(plot.yValues[i],ydigits));
-			else
-				pw.println(IJ.d2s(plot.yValues[i],ydigits));
-		}*/
 		pw.print(createData());
 		pw.close();
 		if (autoClose)
@@ -382,7 +355,12 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		if (systemClipboard==null)
 			{IJ.error("Unable to copy to Clipboard."); return;}
 		IJ.showStatus("Copying plot values...");
-		initDigits();
+		int xdigits = 0;
+		if (saveXValues)
+			xdigits = getPrecision(plot.xValues);
+		int ydigits = xdigits;
+		if (ydigits==0)
+			ydigits = getPrecision(plot.yValues);
 		CharArrayWriter aw = new CharArrayWriter(plot.nPoints*4);
 		PrintWriter pw = new PrintWriter(aw);
 		for (int i=0; i<plot.nPoints; i++) {
@@ -400,51 +378,38 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			{imp.changes=false; close();}
 	}
 	
-	void initDigits() {
-		int digits = 2;
+	int getPrecision(float[] values) {
 		int setDigits = Analyzer.getPrecision();
 		int measurements = Analyzer.getMeasurements();
 		boolean scientificNotation = (measurements&Measurements.SCIENTIFIC_NOTATION)!=0;
+		int minDecimalPlaces = 4;
 		if (scientificNotation) {
-			if (setDigits<2) setDigits = 2;
-			xdigits = ydigits = -setDigits;
-			return;
+			if (setDigits<minDecimalPlaces)
+				setDigits = minDecimalPlaces;
+			return -setDigits;
 		}
-
-		if (ydigits!=9 || setDigits>=6) {
-			ydigits = setDigits;
-			if (ydigits==0) ydigits = 2;
-			digits = ydigits;
-		}
-		if (ydigits!=defaultDigits) {
-			realXValues = false;
-			for (int i=0; i<plot.xValues.length; i++) {
-				if ((int)plot.xValues[i]!=plot.xValues[i]) {
-					realXValues = true;
-					break;
-				}
+		int digits = minDecimalPlaces;
+		if (setDigits>digits)
+			digits = setDigits;
+		boolean realValues = false;
+		for (int i=0; i<values.length; i++) {
+			if ((int)values[i]!=values[i]) {
+				realValues = true;
+				break;
 			}
-			boolean realYValues = false;
-			for (int i=0; i<plot.yValues.length; i++) {
-				if ((int)plot.yValues[i]!=plot.yValues[i]) {
-					realYValues = true;
-					break;
-				}
-			}
-			if (setDigits<6&&realYValues) ydigits = 9;
-			if (!realYValues) ydigits = 0;
-			defaultDigits = ydigits;
 		}
-		xdigits =  realXValues?ydigits:0;
-		if (xdigits==0 && plot.xValues.length>=2 && (plot.xValues[1]-plot.xValues[0])<1.0)
-			xdigits = digits;
+		if (!realValues)
+			digits = 0;
+		return digits;
 	}
 		
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
 	
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
-		if (b==list)
+		if (b==live)
+			toggleLiveProfiling();
+		else if (b==list)
 			showList();
 		else if (b==save)
 			saveAsText();
@@ -458,6 +423,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 
 	public float[] getYValues() {
 		return plot.yValues;
+	}
+	
+	/** Returns the X and Y plot values as a ResultsTable. */
+	public ResultsTable getResultsTable() {
+		int sets = plot.storedData.size()/2;
+		int max = 0;
+		for(int i = 0; i<plot.storedData.size(); i+=2) {
+			float[] column = (float[])plot.storedData.get(i);
+			int s = column.length;
+			if (column.length>max) max=column.length;
+		}
+		ResultsTable rt = new ResultsTable();
+		for (int row=0; row<max; row++) {
+			rt.incrementCounter();
+			for (int i=0; i<sets; i++) {
+				float[] x = (float[])plot.storedData.get(i*2);
+				float[] y = (float[])plot.storedData.get(i*2+1);
+				if (row<x.length) rt.addValue("x"+i, x[row]);
+				if (row<y.length) rt.addValue("y"+i, y[row]);
+			}
+		}
+		return rt;
 	}
 	
 	/** Draws a new plot in this window. */
@@ -487,13 +474,141 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		prefs.put(OPTIONS, Integer.toString(options));
 	}
 	
-	//public void componentHidden(ComponentEvent e) {}
-	//public void componentMoved(ComponentEvent e) {}
-	//public void componentResized(ComponentEvent e) {
-	//	IJ.log("componentResized");
-	//}
-	//public void componentShown(ComponentEvent e) {}
- 
+	private void toggleLiveProfiling() {
+		boolean liveMode = live.getForeground()==Color.red;
+		if (liveMode)
+			removeListeners();
+		else
+			enableLiveProfiling();
+	}
+
+	private void enableLiveProfiling() {
+		if (plot!=null && bgThread==null) {
+			int id = plot.getSourceImageID();
+			srcImp = WindowManager.getImage(id);
+			if (srcImp==null) return;
+			bgThread = new Thread(this, "Live Profiler");
+			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
+			bgThread.start();
+			imageUpdated(srcImp);
+		}
+		createListeners();
+		if (srcImp!=null)
+			imageUpdated(srcImp);
+	}
+	
+	// these listeners are activated if the selection is changed in the source ImagePlus
+	public synchronized void mousePressed(MouseEvent e) { doUpdate = true; notify(); }   
+	public synchronized void mouseDragged(MouseEvent e) { doUpdate = true; notify(); }
+	public synchronized void mouseClicked(MouseEvent e) { doUpdate = true; notify(); }
+	public synchronized void keyPressed(KeyEvent e) { doUpdate = true; notify(); }
+	
+	// unused listeners
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {}
+	public void keyTyped(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {}
+	public void imageOpened(ImagePlus imp) {}
+	
+	// This listener is called if the source image content is changed
+	public synchronized void imageUpdated(ImagePlus imp) {
+		if (imp==srcImp) { 
+			if (!isSelection())
+				IJ.run(imp, "Restore Selection", "");
+			doUpdate = true;
+			notify();
+		}
+	}
+	
+	// If either the source image or this image are closed, exit
+	public void imageClosed(ImagePlus imp) {
+		if (imp==srcImp || imp==this.imp) {
+			if (bgThread!=null)
+				bgThread.interrupt();
+			bgThread = null;
+			removeListeners();
+			srcImp = null;
+		}
+	}
+	
+	// the background thread for live plotting.
+	public void run() {
+		while (true) {
+			IJ.wait(50);	//delay to make sure the roi has been updated
+			Plot plot = getProfilePlot();
+			if (doUpdate && plot!=null) {
+				this.plot = plot;
+				ImageProcessor ip = plot.getProcessor();
+				if (ip!=null)
+					imp.setProcessor(null, ip);
+			}
+			synchronized(this) {
+				if (doUpdate) {
+					doUpdate = false;		//and loop again
+				} else {
+					try {wait();}	//notify wakes up the thread
+					catch(InterruptedException e) { //interrupted tells the thread to exit
+						return;
+					}
+				}
+			}
+		}
+	}
+		
+	private void createListeners() {
+		//IJ.log("createListeners");
+		if (srcImp==null) return;
+		ImageCanvas ic = srcImp.getCanvas();
+		if (ic==null) return;
+		ic.addMouseListener(this);
+		ic.addMouseMotionListener(this);
+		ic.addKeyListener(this);
+		srcImp.addImageListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+		live.setForeground(Color.red);
+	}
+	
+	private void removeListeners() {
+		//IJ.log("removeListeners");
+		if (srcImp==null) return;
+		ImageCanvas ic = srcImp.getCanvas();
+		ic.removeMouseListener(this);
+		ic.removeMouseMotionListener(this);
+		ic.removeKeyListener(this);
+		srcImp.removeImageListener(this);
+		Font font = live.getFont();
+		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
+		live.setForeground(Color.black);
+	}
+	
+	/** Returns true if there is a straight line selection or rectangular selection */
+	private boolean isSelection() {
+		if (srcImp==null)
+			return false;
+		Roi roi = srcImp.getRoi();
+		if (roi==null)
+			return false;
+		int type = roi.getType();
+		return type==Roi.LINE || type==Roi.POLYLINE || type==Roi.RECTANGLE;
+	}
+	
+	/** Get a source image profile plot. */
+	private Plot getProfilePlot() {
+		if (srcImp==null || !isSelection())
+			return null;
+		Roi roi = srcImp.getRoi();
+		if (roi == null)
+			return null;
+		if (!(roi.isLine() || roi.getType()==Roi.RECTANGLE))
+			return null;
+		boolean averageHorizontally = Prefs.verticalProfile || IJ.altKeyDown();
+		ProfilePlot pp = new ProfilePlot(srcImp, averageHorizontally);
+		return pp.getPlot();
+	}
+	
 }
 
 

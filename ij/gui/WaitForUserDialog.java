@@ -1,5 +1,6 @@
 package ij.gui;
 import ij.*;
+import ij.plugin.frame.RoiManager;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.reflect.*;
@@ -20,6 +21,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		super(getFrame(), title, false);
 		label = new MultiLineLabel(text, 175);
 		if (!IJ.isLinux()) label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		if (IJ.isMacOSX()) {
+			RoiManager rm = RoiManager.getInstance();
+			if (rm!=null) rm.runCommand("enable interrupts");
+		}
         GridBagLayout gridbag = new GridBagLayout(); //set up the layout
         GridBagConstraints c = new GridBagConstraints();
         setLayout(gridbag);
@@ -54,7 +59,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 
 	public void show() {
 		super.show();
-		IJ.beep();
+		//IJ.beep();
 		synchronized(this) {  //wait for OK
 			try {wait();}
 			catch(InterruptedException e) {return;}
@@ -71,7 +76,7 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
         synchronized(this) { notify(); }
         xloc = getLocation().x;
         yloc = getLocation().y;
-		setVisible(false);
+		//setVisible(false);
 		dispose();
     }
 

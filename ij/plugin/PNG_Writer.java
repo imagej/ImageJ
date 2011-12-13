@@ -10,7 +10,8 @@ import javax.imageio.ImageIO;
 
 /** Saves in PNG format using the ImageIO classes.  RGB images are saved
 	as RGB PNGs. All other image types are saved as 8-bit PNGs. With 8-bit images,
-	the value of the transparent index can be set in Edit/Options/Input-Output. */
+	the value of the transparent index can be set in the Edit/Options/Input-Output dialog,
+	or by calling Prefs.setTransparentIndex(index), where 0<=index<=255. */
 public class PNG_Writer implements PlugIn {
     ImagePlus imp;
 

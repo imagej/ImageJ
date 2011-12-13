@@ -143,7 +143,8 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 		GenericDialog gd = new GenericDialog("FFT Filter");
 		gd.addChoice("Filter:", titles, titles[filterIndex]);
 		if (stackSize>1)
-			gd.addCheckbox("Process Entire Stack", processStack);
+			gd.addCheckbox("Process entire stack", processStack);
+		gd.addHelp(IJ.URL+"/docs/menus/process.html#fft-filter");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return null;

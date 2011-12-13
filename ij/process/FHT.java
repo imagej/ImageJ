@@ -44,6 +44,10 @@ public class FHT extends FloatProcessor {
 		//IJ.log("FHT: "+maxN);
 	}
 
+	public FHT() {
+		super(8,8); //create dummy FloatProcessor
+	}
+
 	/** Returns true of this FHT contains a square image with a width that is a power of two. */
 	public boolean powerOf2Size() {
 		int i=2;
@@ -80,14 +84,17 @@ public class FHT extends FloatProcessor {
 		if (!powerOf2Size())
 			throw new  IllegalArgumentException("Image not power of 2 size or not square: "+width+"x"+height);
 		maxN = width;
-		if (S==null) {
-			makeSinCosTables(maxN);
-			makeBitReverseTable(maxN);
-			tempArr = new float[maxN];
-		}
+		if (S==null)
+			initializeTables(maxN);
 		float[] fht = (float[])getPixels();
 	 	rc2DFHT(fht, inverse, maxN);
 		isFrequencyDomain = !inverse;
+	}
+	
+	void initializeTables(int maxN) {
+		makeSinCosTables(maxN);
+		makeBitReverseTable(maxN);
+		tempArr = new float[maxN];
 	}
 
 	void makeSinCosTables(int maxN) {
@@ -113,6 +120,7 @@ public class FHT extends FloatProcessor {
 	/** Performs a 2D FHT (Fast Hartley Transform). */
 	public void rc2DFHT(float[] x, boolean inverse, int maxN) {
 		//IJ.write("FFT: rc2DFHT (row-column Fast Hartley Transform)");
+		if (S==null) initializeTables(maxN);
 		for (int row=0; row<maxN; row++)
 			dfht3(x, row*maxN, inverse, maxN);		
 		progress(0.4);
@@ -150,12 +158,13 @@ public class FHT extends FloatProcessor {
 	}
 	
 	/** Performs an optimized 1D FHT. */
-	public void dfht3 (float[] x, int base, boolean inverse, int maxN) {
+	public void dfht3(float[] x, int base, boolean inverse, int maxN) {
 		int i, stage, gpNum, gpIndex, gpSize, numGps, Nlog2;
 		int bfNum, numBfs;
 		int Ad0, Ad1, Ad2, Ad3, Ad4, CSAd;
 		float rt1, rt2, rt3, rt4;
 
+		if (S==null) initializeTables(maxN);
 		Nlog2 = log2(maxN);
 		BitRevRArr(x, base, Nlog2, maxN);	//bitReverse the input array
 		gpSize = 2;     //first & second stages - do radix 4 butterflies once thru

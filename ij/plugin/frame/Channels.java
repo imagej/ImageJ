@@ -25,7 +25,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 	public Channels() {
 		super("Channels");
 		if (instance!=null) {
-			instance.toFront();
+			WindowManager.toFront(instance);
 			return;
 		}
 		WindowManager.addWindow(this);
@@ -214,8 +214,4 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		location = getLocation();
 	}
 	
-	public void windowClosing(WindowEvent e) {
-		close();
-	}
-
 }

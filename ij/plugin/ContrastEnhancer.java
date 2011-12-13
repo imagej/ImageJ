@@ -121,6 +121,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (hmax>hmin) {
 			double min = stats.histMin+hmin*stats.binSize;
 			double max = stats.histMin+hmax*stats.binSize;
+			if (stats.histogram16!=null && ip instanceof ShortProcessor) {
+				min = hmin;
+				max = hmax;
+			}
 			if (!updateSelectionOnly)
 				ip.resetRoi();
 			if (normalize)
@@ -144,6 +148,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (hmax>hmin) {
 			double min = stats.histMin+hmin*stats.binSize;
 			double max = stats.histMin+hmax*stats.binSize;
+			if (stats.histogram16!=null && imp.getBitDepth()==16) {
+				min = hmin;
+				max = hmax;
+			}
 			imp.setDisplayRange(min, max);
 		}
 		/*
@@ -169,7 +177,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 	int[] getMinAndMax(ImageProcessor ip, double saturated, ImageStatistics stats) {
 		int hmin, hmax;
 		int threshold;
-		int[] histogram = stats.histogram;		
+		int[] histogram = stats.histogram;
+		if (stats.histogram16!=null && ip instanceof ShortProcessor)
+			histogram = stats.histogram16;
+		int hsize = histogram.length;
 		if (saturated>0.0)
 			threshold = (int)(stats.pixelCount*saturated/200.0);
 		else
@@ -177,20 +188,20 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		int i = -1;
 		boolean found = false;
 		int count = 0;
+		int maxindex = hsize-1;
 		do {
 			i++;
 			count += histogram[i];
 			found = count>threshold;
-		} while (!found && i<255);
+		} while (!found && i<maxindex);
 		hmin = i;
 				
-		i = 256;
+		i = hsize;
 		count = 0;
 		do {
 			i--;
 			count += histogram[i];
 			found = count>threshold;
-			//IJ.log(i+" "+count+" "+found);
 		} while (!found && i>0);
 		hmax = i;
 		int[] a = new int[2];

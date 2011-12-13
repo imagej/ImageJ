@@ -275,6 +275,11 @@ public class IJ {
 			commandTable.put("New... ", "Table...");
 			commandTable.put("Arbitrarily...", "Rotate... ");
 			commandTable.put("Measurements...", "Results... ");
+			commandTable.put("List Commands...", "Find Commands...");
+			commandTable.put("Capture Screen ", "Capture Screen");
+			commandTable.put("Add to Manager ", "Add to Manager");
+			commandTable.put("In", "In [+]");
+			commandTable.put("Out", "Out [-]");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)
@@ -349,8 +354,6 @@ public class IJ {
 		TextWindow resultsWindow = new TextWindow("Results", "", 400, 250);
 		textPanel = resultsWindow.getTextPanel();
 		textPanel.setResultsTable(Analyzer.getResultsTable());
-		if (ij!=null)
-			textPanel.addKeyListener(ij);
 	}
 
 	public static synchronized void log(String s) {
@@ -394,13 +397,25 @@ public class IJ {
 			}
 			String s2 = s.substring(cindex+1, s.length());
 			logPanel.setLine(line, s2);
-		} else if (s.equals("\\Clear"))
+		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
-		else
+		} else if (s.equals("\\Close")) {
+			Frame f = WindowManager.getFrame("Log");
+			if (f!=null && (f instanceof TextWindow))
+				((TextWindow)f).close();
+		} else
 			logPanel.append(s);
 	}
 	
-	/** Clears the "Results" window and sets the column headings to
+	/** Returns the contents of the Log window or null if the Log window is not open. */
+	public static synchronized String getLog() { 
+		if (logPanel==null || ij==null)
+			return null;
+		else
+			return logPanel.getText(); 
+	} 
+
+/** Clears the "Results" window and sets the column headings to
 		those in the tab-delimited 'headings' String. Writes to
 		System.out.println if the "ImageJ" frame is not present.*/
 	public static void setColumnHeadings(String headings) {
@@ -510,14 +525,22 @@ public class IJ {
 		showMessage("Message", msg);
 	}
 
-	/**	Displays a message in a dialog box with the specified title.
-		Writes the Java console if ImageJ is not present. */
+	/** Displays a message in a dialog box with the specified title.
+		Displays HTML formatted text if 'msg' starts with "<html>".
+		There are examples at
+		"http://imagej.nih.gov/ij/macros/HtmlDialogDemo.txt".
+		Writes to the Java console if ImageJ is not present. */
 	public static void showMessage(String title, String msg) {
 		if (ij!=null) {
-			if (msg!=null && msg.startsWith("<html>"))
-				new HTMLDialog(title, msg);
-			else
-				new MessageDialog(ij, title, msg);
+			if (msg!=null && msg.startsWith("<html>")) {
+				HTMLDialog hd = new HTMLDialog(title, msg);
+				if (isMacro() && hd.escapePressed())
+					throw new RuntimeException(Macro.MACRO_CANCELED);
+			} else {
+				MessageDialog md = new MessageDialog(ij, title, msg);
+				if (isMacro() && md.escapePressed())
+					throw new RuntimeException(Macro.MACRO_CANCELED);
+			}
 		} else
 			System.out.println(msg);
 	}
@@ -541,7 +564,8 @@ public class IJ {
 		boolean abortMacro = title!=null;
 		if (redirectErrorMessages || redirectErrorMessages2) {
 			IJ.log(title2 + ": " + msg);
-			if (abortMacro && title.equals("Opener")) abortMacro = false;
+			if (abortMacro && (title.equals("Opener")||title.equals("Open URL")||title.equals("DicomDecoder")))
+				abortMacro = false;
 		} else
 			showMessage(title2, msg);
 		redirectErrorMessages = false;
@@ -638,20 +662,28 @@ public class IJ {
 	
 	public static void showTime(ImagePlus imp, long start, String str, int nslices) {
 		if (Interpreter.isBatchMode()) return;
-	    long elapsedTime = System.currentTimeMillis() - start;
-		double seconds = elapsedTime / 1000.0;
-		long pixels = imp.getWidth() * imp.getHeight();
-		int rate = (int)((double)pixels*nslices/seconds);
+	    double seconds = (System.currentTimeMillis()-start)/1000.0;
+		double pixels = (double)imp.getWidth() * imp.getHeight();
+		double rate = pixels*nslices/seconds;
 		String str2;
-		if (rate>1000000000)
+		if (rate>1000000000.0)
 			str2 = "";
-		else if (rate<1000000)
-			str2 = ", "+rate+" pixels/second";
+		else if (rate<1000000.0)
+			str2 = ", "+d2s(rate,0)+" pixels/second";
 		else
 			str2 = ", "+d2s(rate/1000000.0,1)+" million pixels/second";
 		showStatus(str+seconds+" seconds"+str2);
 	}
-
+	
+	/** Experimental */
+	public static  String time(ImagePlus imp, long startNanoTime) {
+		double planes = imp.getStackSize();
+		double seconds = (System.nanoTime()-startNanoTime)/1000000000.0;
+		double mpixels = imp.getWidth()*imp.getHeight()*planes/1000000.0;
+		String time = seconds<1.0?d2s(seconds*1000.0,0)+" ms":d2s(seconds,1)+" seconds";
+		return time+", "+d2s(mpixels/seconds,1)+" million pixels/second";
+	}
+		
 	/** Converts a number to a formatted string using
 		2 digits to the right of the decimal point. */
 	public static String d2s(double n) {
@@ -667,8 +699,8 @@ public class IJ {
 		digits to the right of the decimal point (0-9). Uses
 		scientific notation if 'decimalPlaces is negative. */
 	public static String d2s(double n, int decimalPlaces) {
-		if (Double.isNaN(n))
-			return "NaN";
+		if (Double.isNaN(n)||Double.isInfinite(n))
+			return ""+n;
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
 		double np = n;
@@ -702,14 +734,19 @@ public class IJ {
 				sf[8] = new DecimalFormat("0.00000000E0",dfs);
 				sf[9] = new DecimalFormat("0.000000000E0",dfs);
 			}
-			if (Double.isInfinite(n))
-				return ""+n;
-			else
-				return sf[decimalPlaces].format(n); // use scientific notation
+			return sf[decimalPlaces].format(n); // use scientific notation
 		}
 		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
 		return df[decimalPlaces].format(n);
+	}
+
+	/** Pad 'n' with leading zeros to the specified number of digits. */
+	public static String pad(int n, int digits) {
+		String str = ""+n;
+		while (str.length()<digits)
+			str = "0"+str;
+		return str;
 	}
 
 	/** Adds the specified class to a Vector to keep it from being garbage
@@ -884,13 +921,13 @@ public class IJ {
 			if (d.cancelPressed())
 				return PlugInFilter.DONE;
 			else if (d.yesPressed()) {
-		    	if (imp.getStack().isVirtual()) {
+		    	if (imp.getStack().isVirtual() && ((flags&PlugInFilter.NO_CHANGES)==0)) {
 		    		int size = (stackSize*imp.getWidth()*imp.getHeight()*imp.getBytesPerPixel()+524288)/1048576;
 		    		String msg =
-						"Custom code is required to process this virtual stack\n"+
-						"(e.g., \"Process Virtual Stack\" macro) or it must be\n"+
-						"converted to a normal stack using Image>Duplicate,\n"+
-						"which will require "+size+"MB of additional memory.";
+						"Use the Process>Batch>Virtual Stack command\n"+
+						"to process a virtual stack ike this one or convert\n"+
+						"it to a normal stack using Image>Duplicate, which\n"+
+						"will require "+size+"MB of additional memory.";
 		    		error(msg);
 					return PlugInFilter.DONE;
 		    	}
@@ -918,7 +955,7 @@ public class IJ {
 		}
 	}
 	
-	/** Creates an elliptical selection. Removes any existing 
+	/** Creates an oval selection. Removes any existing 
 		selection if width or height are less than 1. */
 	public static void makeOval(int x, int y, int width, int height) {
 		if (width<=0 || height<0)
@@ -942,6 +979,10 @@ public class IJ {
 			Polygon p = roi.getPolygon();
 			p.addPoint(x, y);
 			img.setRoi(new PointRoi(p.xpoints, p.ypoints, p.npoints));
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		} else if (altKeyDown() && roi!=null && roi.getType()==Roi.POINT) {
+			((PolygonRoi)roi).deleteHandle(x, y);
+			IJ.setKeyUp(KeyEvent.VK_ALT);
 		} else
 			img.setRoi(new PointRoi(x, y));
 	}
@@ -951,15 +992,23 @@ public class IJ {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 
-	/** Sets the minimum and maximum displayed pixel values. */
+	/** Sets the display range (minimum and maximum displayed pixel values) of the current image. */
 	public static void setMinAndMax(double min, double max) {
-		setMinAndMax(min, max, 7);
+		setMinAndMax(getImage(), min, max, 7);
+	}
+
+	/** Sets the display range (minimum and maximum displayed pixel values) of the specified image. */
+	public static void setMinAndMax(ImagePlus img, double min, double max) {
+		setMinAndMax(img, min, max, 7);
 	}
 
 	/** Sets the minimum and maximum displayed pixel values on the specified RGB
 	channels, where 4=red, 2=green and 1=blue. */
 	public static void setMinAndMax(double min, double max, int channels) {
-		ImagePlus img = getImage();
+		setMinAndMax(getImage(), min, max, channels);
+	}
+
+	private static void setMinAndMax(ImagePlus img, double min, double max, int channels) {
 		Calibration cal = img.getCalibration();
 		min = cal.getRawValue(min); 
 		max = cal.getRawValue(max);
@@ -970,10 +1019,15 @@ public class IJ {
 		img.updateAndDraw();
 	}
 
-	/** Resets the minimum and maximum displayed pixel values
-		to be the same as the min and max pixel values. */
+	/** Resets the minimum and maximum displayed pixel values of the
+		current image to be the same as the min and max pixel values. */
 	public static void resetMinAndMax() {
-		ImagePlus img = getImage();
+		resetMinAndMax(getImage());
+	}
+
+	/** Resets the minimum and maximum displayed pixel values of the
+		specified image to be the same as the min and max pixel values. */
+	public static void resetMinAndMax(ImagePlus img) {
 		img.resetDisplayRange();
 		img.updateAndDraw();
 	}
@@ -1020,17 +1074,56 @@ public class IJ {
 		}
 	}
 
-	public static void setAutoThreshold(ImagePlus img, String method) {
-		ImageProcessor ip = img.getProcessor();
+	public static void setAutoThreshold(ImagePlus imp, String method) {
+		ImageProcessor ip = imp.getProcessor();
 		if (ip instanceof ColorProcessor)
 			throw new IllegalArgumentException("Non-RGB image required");
-		ip.setRoi(img.getRoi());
+		ip.setRoi(imp.getRoi());
 		if (method!=null) {
-			try {ip.setAutoThreshold(method);}
-			catch (Exception e) {IJ.log(e.getMessage());}
+			try {
+				if (method.indexOf("stack")!=-1)
+					setStackThreshold(imp, ip, method);
+				else
+					ip.setAutoThreshold(method);
+			} catch (Exception e) {
+				log(e.getMessage());
+			}
 		} else
 			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
-		img.updateAndDraw();
+		imp.updateAndDraw();
+	}
+	
+	private static void setStackThreshold(ImagePlus imp, ImageProcessor ip, String method) {
+		boolean darkBackground = method.indexOf("dark")!=-1;
+		ImageStatistics stats = new StackStatistics(imp);
+		AutoThresholder thresholder = new AutoThresholder();
+		double min=0.0, max=255.0;
+		if (imp.getBitDepth()!=8) {
+			min = stats.min;
+			max = stats.max;
+		}
+		int threshold = thresholder.getThreshold(method, stats.histogram);
+		double lower, upper;
+		if (darkBackground) {
+			if (ip.isInvertedLut())
+				{lower=0.0; upper=threshold;}
+			else
+				{lower=threshold+1; upper=255.0;}
+		} else {
+			if (ip.isInvertedLut())
+				{lower=threshold+1; upper=255.0;}
+			else
+				{lower=0.0; upper=threshold;}
+		}
+		if (lower>255) lower = 255;
+		if (max>min) {
+			lower = min + (lower/255.0)*(max-min);
+			upper = min + (upper/255.0)*(max-min);
+		} else
+			lower = upper = min;
+		ip.setMinAndMax(min, max);
+		ip.setThreshold(lower, upper, ImageProcessor.RED_LUT);
+		imp.updateAndDraw();
 	}
 
 	/** Disables thresholding on the current image. */
@@ -1055,8 +1148,10 @@ public class IJ {
 		if (imp==null)
 			error("Macro Error", "Image "+id+" not found or no images are open.");
 		if (Interpreter.isBatchMode()) {
-			ImagePlus imp2 = WindowManager.getCurrentImage();
-			if (imp2!=null && imp2!=imp) imp2.saveRoi();
+			ImagePlus impT = WindowManager.getTempCurrentImage();
+			ImagePlus impC = WindowManager.getCurrentImage();
+			if (impC!=null && impC!=imp && impT!=null)
+				impC.saveRoi();
             WindowManager.setTempCurrentImage(imp);
             WindowManager.setWindow(null);
 		} else {
@@ -1164,7 +1259,7 @@ public class IJ {
 	/** Equivalent to clicking on the current image at (x,y) with the
 		wand tool. Returns the number of points in the resulting ROI. */
 	public static int doWand(int x, int y) {
-		return doWand(x, y, 0, null);
+		return doWand(getImage(), x, y, 0, null);
 	}
 
 	/** Traces the boundary of the area with pixel values within
@@ -1175,7 +1270,11 @@ public class IJ {
 	* it is ignored if 'tolerance' > 0.
 	*/
 	public static int doWand(int x, int y, double tolerance, String mode) {
-		ImagePlus img = getImage();
+		return doWand(getImage(), x, y, tolerance, mode);
+	}
+
+	/** This version of doWand adds an ImagePlus argument. */
+	public static int doWand(ImagePlus img, int x, int y, double tolerance, String mode) {
 		ImageProcessor ip = img.getProcessor();
 		if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y)))
 			return 0;
@@ -1403,7 +1502,8 @@ public class IJ {
 	}
 
 	/** Saves the specified image, lookup table or selection to the specified file path. 
-		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
+		The file path must end with ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", 
+		".fits", ".pgm", ".png", ".lut", ".roi" or ".txt". */
 	public static void save(ImagePlus imp, String path) {
 		int dotLoc = path.lastIndexOf('.');
 		if (dotLoc!=-1) {
@@ -1413,7 +1513,7 @@ public class IJ {
 			saveAs(imp, path.substring(dotLoc+1), path);
 			if (title!=null) imp2.setTitle(title);
 		} else
-			error("The save() macro function requires a file name extension.\n \n"+path);
+			error("The file path passed to IJ.save() method or save()\nmacro function is missing the required extension.\n \n\""+path+"\"");
 	}
 
 	/* Saves the active image, lookup table, selection, measurement results, selection XY 
@@ -1433,7 +1533,8 @@ public class IJ {
 		if (path!=null && path.length()==0) path = null;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {
-			path = updateExtension(path, ".tif");
+			if (path!=null&&!path.endsWith(".tiff"))
+				path = updateExtension(path, ".tif");
 			format = "Tiff...";
 		} else if (format.indexOf("jpeg")!=-1  || format.indexOf("jpg")!=-1) {
 			path = updateExtension(path, ".jpg");
@@ -1452,7 +1553,7 @@ public class IJ {
 			path = updateExtension(path, ".zip");
 			format = "ZIP...";
 		} else if (format.indexOf("raw")!=-1) {
-			path = updateExtension(path, ".raw");
+			//path = updateExtension(path, ".raw");
 			format = "Raw Data...";
 		} else if (format.indexOf("avi")!=-1) {
 			path = updateExtension(path, ".avi");
@@ -1481,7 +1582,7 @@ public class IJ {
 			path = updateExtension(path, ".txt");
 			format = "XY Coordinates...";
 		} else
-			error("Unrecognized format: "+format);
+			error("Unsupported save() or saveAs() file format: \""+format+"\"\n \n\""+path+"\"");
 		if (path==null)
 			run(format);
 		else
@@ -1702,7 +1803,7 @@ public class IJ {
 		e.printStackTrace(pw);
 		String s = caw.toString();
 		if (getInstance()!=null)
-			new TextWindow("Exception", s, 350, 250);
+			new TextWindow("Exception", s, 500, 300);
 		else
 			log(s);
 	}
