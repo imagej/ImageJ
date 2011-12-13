@@ -633,7 +633,7 @@ public class PolygonRoi extends Roi {
 		else {
 			if (subPixelResolution()) {
 				Roi roi2 = new PolygonRoi(points2, type);
-				((PolygonRoi)roi2).setDrawOffset(getDrawOffset());
+				roi2.setDrawOffset(getDrawOffset());
 				imp.setRoi(roi2);
 			} else
 				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));
@@ -672,7 +672,7 @@ public class PolygonRoi extends Roi {
 		else {
 			if (subPixelResolution()) {
 				Roi roi2 = new PolygonRoi(points2, type);
-				((PolygonRoi)roi2).setDrawOffset(getDrawOffset());
+				roi2.setDrawOffset(getDrawOffset());
 				imp.setRoi(roi2);
 			} else
 				imp.setRoi(new PolygonRoi(toInt(points2.xpoints), toInt(points2.ypoints), points2.npoints, type));

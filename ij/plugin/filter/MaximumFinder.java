@@ -573,6 +573,24 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 ResultsTable rt = ResultsTable.getResultsTable();
                 rt.incrementCounter();
                 rt.setValue("Count", rt.getCounter()-1, npoints);
+                int measurements = Analyzer.getMeasurements();
+                if ((measurements&Measurements.LABELS)!=0) {
+                    String s = imp.getTitle();
+                    String roiName = roi!=null?roi.getName():null;
+                    if (roiName!=null)
+                        s += ":"+roiName;
+                    if (imp.getStackSize()>1) {
+                        ImageStack stack = imp.getStack();
+                        int currentSlice = imp.getCurrentSlice();
+                        String label = stack.getShortSliceLabel(currentSlice);
+                        String colon = s.equals("")?"":":";
+                        if (label!=null && !label.equals(""))
+                            s += colon+label;
+                        else
+                            s += colon+currentSlice;
+                    }
+                    rt.setLabel(s, rt.getCounter()-1);
+                }
                 rt.show("Results");
             } 
         }
