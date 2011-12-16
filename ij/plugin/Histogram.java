@@ -14,12 +14,16 @@ import java.util.Vector;
 /** This plugin implements the Analyze/Histogram command. */
 public class Histogram implements PlugIn, TextListener {
 
-	private static int nBins = 256;
-	private static boolean useImageMinAndMax = true;
-	private static double xMin, xMax;
-	private static String yMax = "Auto";
-	private static boolean stackHistogram;
+	private static boolean staticUseImageMinAndMax = true;
+	private static double staticXMin, staticXMax;
+	private static String staticYMax = "Auto";
+	private static boolean staticStackHistogram;
 	private static int imageID;	
+	private int nBins = 256;
+	private boolean useImageMinAndMax = true;
+	private double xMin, xMax;
+	private String yMax = "Auto";
+	private boolean stackHistogram;
 	private Checkbox checkbox;
 	private TextField minField, maxField;
 	private String defaultMin, defaultMax;
@@ -27,7 +31,7 @@ public class Histogram implements PlugIn, TextListener {
  	public void run(String arg) {
  		ImagePlus imp = IJ.getImage();
  		int bitDepth = imp.getBitDepth();
- 		if (bitDepth==32 || IJ.altKeyDown()) {
+ 		if (bitDepth==32 || IJ.altKeyDown() || (IJ.isMacro()&&Macro.getOptions()!=null)) {
 			IJ.setKeyUp(KeyEvent.VK_ALT);
  			if (!showDialog(imp))
  				return;
@@ -44,7 +48,6 @@ public class Histogram implements PlugIn, TextListener {
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
 			Calibration cal = imp.getCalibration();
- 			nBins = 256;
 			if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||bitDepth==24)) {
 				xMin = 0.0;
 				xMax = 256.0;
@@ -71,6 +74,13 @@ public class Histogram implements PlugIn, TextListener {
 	}
 	
 	boolean showDialog(ImagePlus imp) {
+		if (!IJ.isMacro()) {
+			nBins = HistogramWindow.nBins;
+			useImageMinAndMax = staticUseImageMinAndMax;
+			xMin=staticXMin; xMax=staticXMax;
+			yMax = staticYMax;
+			stackHistogram = staticStackHistogram;
+		}
 		ImageProcessor ip = imp.getProcessor();
 		double min = ip.getMin();
 		double max = ip.getMax();
@@ -88,7 +98,7 @@ public class Histogram implements PlugIn, TextListener {
 		imageID = imp.getID();
 		int stackSize = imp.getStackSize();
 		GenericDialog gd = new GenericDialog("Histogram");
-		gd.addNumericField("Bins:", HistogramWindow.nBins, 0);
+		gd.addNumericField("Bins:", nBins, 0);
 		gd.addCheckbox("Use min/max or:", useImageMinAndMax);
 		//gd.addMessage("          or");
 		gd.addMessage("");
@@ -111,13 +121,19 @@ public class Histogram implements PlugIn, TextListener {
 		if (gd.wasCanceled())
 			return false;			
 		nBins = (int)gd.getNextNumber();
-		if (nBins>=2 && nBins<=1000)
-			HistogramWindow.nBins = nBins;
 		useImageMinAndMax = gd.getNextBoolean();
 		xMin = gd.getNextNumber();
 		xMax = gd.getNextNumber();
 		yMax = gd.getNextString();
 		stackHistogram = (stackSize>1)?gd.getNextBoolean():false;
+		if (!IJ.isMacro()) {
+			if (nBins>=2 && nBins<=1000)
+				HistogramWindow.nBins = nBins;
+			staticUseImageMinAndMax = useImageMinAndMax;
+			staticXMin=xMin; staticXMax=xMax;
+			staticYMax = yMax;
+			staticStackHistogram = stackHistogram;
+		}
 		IJ.register(Histogram.class);
 		return true;
 	}

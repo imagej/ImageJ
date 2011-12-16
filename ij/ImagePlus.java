@@ -1230,6 +1230,30 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		noUpdateMode = false;
 	}
 	
+	public void setC(int channel) {
+		setPosition(channel, getZ(), getT());
+	}
+	
+	public void setZ(int slice) {
+		setPosition(getC(), slice, getT());
+	}
+
+	public void setT(int frame) {
+		setPosition(getC(), getZ(), frame);
+	}
+
+	public int getC() {
+		return position[0];
+	}
+	
+	public int getZ() {
+		return position[1];
+	}
+
+	public int getT() {
+		return position[2];
+	}
+	
 	/** Returns that stack index (one-based) corresponding to the specified position. */
 	public int getStackIndex(int channel, int slice, int frame) {	
    		if (channel<1) channel = 1;

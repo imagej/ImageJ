@@ -48,6 +48,7 @@ public class Interpreter implements MacroConstants {
 	String argument;
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
+	boolean batchMacro; // macros envoded by Process/Batch
 	double[] rgbWeights;
 	boolean inPrint;
 	static String additionalFunctions;
@@ -132,6 +133,16 @@ public class Interpreter implements MacroConstants {
 		Recorder.recordInMacros = false;
 	}
 	
+	/** Runs Process/Batch/ macros. */
+	public void runBatchMacro(String macro, ImagePlus imp) {
+		calledMacro = true;
+		batchMacro = true;
+		setBatchMode(true);
+		addBatchModeImage(imp);
+		run(macro);
+		IJ.showStatus("");
+	}
+
 	/** Saves global variables. */
 	public void saveGlobals(Program pgm) {
 		saveGlobals2(pgm);
@@ -1592,7 +1603,7 @@ public class Interpreter implements MacroConstants {
 	void finishUp() {
 		func.updateDisplay();
 		instance = null;
-		if (!calledMacro) {
+		if (!calledMacro || batchMacro) {
 			if (batchMode) showingProgress = true;
 			batchMode = false;
 			imageTable = null;
@@ -1642,7 +1653,7 @@ public class Interpreter implements MacroConstants {
 	
 	/** Aborts this macro. */
 	public void abortMacro() {
-		if (!calledMacro) {
+		if (!calledMacro || batchMacro) {
 			batchMode = false;
 			imageTable = null;
 		}

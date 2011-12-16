@@ -757,16 +757,20 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getComma();
 		double a2 = interp.getExpression();
 		interp.getToken();
+		ImageProcessor ip = getProcessor();
 		if (interp.token==',') {
 			double a3 = interp.getExpression();
 			interp.getRightParen();
-			if (getType()==ImagePlus.GRAY32)
-				getProcessor().putPixelValue(a1, (int)a2, a3);
+			if (ip instanceof FloatProcessor)
+				ip.putPixelValue(a1, (int)a2, a3);
 			else
-				getProcessor().putPixel(a1, (int)a2, (int)a3);
+				ip.putPixel(a1, (int)a2, (int)a3);
 		} else {
 			if (interp.token!=')') interp.error("')' expected");
-			getProcessor().setf(a1, (float)a2);
+			if (ip instanceof ColorProcessor)
+				ip.set(a1, (int)a2);
+			else
+				ip.setf(a1, (float)a2);
 		}
 		updateNeeded = true;
 	}
@@ -783,31 +787,48 @@ public class Functions implements MacroConstants, Measurements {
 			int ia1 = (int)a1;
 			int ia2 = (int)a2;
 			if (a1==ia1 && a2==ia2) {
-				if (getType()==ImagePlus.GRAY32)
+				if (ip instanceof FloatProcessor)
 					value = ip.getPixelValue(ia1, ia2);
 				else
 					value = ip.getPixel(ia1, ia2);
 			} else {
-				if (getType()==ImagePlus.COLOR_RGB)
+				if (ip instanceof ColorProcessor)
 					value = ip.getPixelInterpolated(a1, a2);
 				else
 					value = ip.getInterpolatedValue(a1, a2);
 			}
 		} else {
 			if (interp.token!=')') interp.error("')' expected");
-			value = ip.getf((int)a1);
+			if (ip instanceof ColorProcessor)
+				value = ip.get((int)a1);
+			else
+				value = ip.getf((int)a1);
 		}
 		return value;
 	}
 	
 	void setZCoordinate() {
 		int z = (int)getArg();
+		int n = z + 1;
 		ImagePlus imp = getImage();
 		ImageStack stack = imp.getStack();
 		int size = stack.getSize();
+		if (imp.isHyperStack()) {
+			int slices = imp.getNSlices();
+			int frames = imp.getNFrames();
+			if (frames>1 && slices==1) { // time-lapse
+				size = frames;
+				if (z<size)
+					n = imp.getStackIndex(imp.getC(), imp.getZ(), z+1);
+			} else {
+				size = slices;
+				if (z<size)
+					n = imp.getStackIndex(imp.getC(), z+1, imp.getT());
+			}
+		}
 		if (z<0 || z>=size)
 			interp.error("Z coordinate ("+z+") is out of 0-"+(size-1)+ " range");
-		this.defaultIP = stack.getProcessor(z+1);		
+		this.defaultIP = stack.getProcessor(n);		
 	}
 	
 	void moveTo() {
