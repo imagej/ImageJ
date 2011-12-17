@@ -48,7 +48,7 @@ public class Interpreter implements MacroConstants {
 	String argument;
 	String returnValue;
 	boolean calledMacro; // macros envoked by eval() or runMacro()
-	boolean batchMacro; // macros envoded by Process/Batch
+	boolean batchMacro; // macros envoked by Process/Batch commands
 	double[] rgbWeights;
 	boolean inPrint;
 	static String additionalFunctions;
