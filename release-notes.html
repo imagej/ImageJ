@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46d 16 December 2011</u>
+<li> <u>1.46d 19 December 2011</u>
 <ul>
 <li> Added the getC(), getZ(), getT(), setC(), setZ() and setT()
 methods to the ImagePlus class.
@@ -18,6 +18,10 @@ macro function to sometimes not work as expected.
 <i>Process&gt;Batch&gt;Virtual Stack</i> that caused them to fail with macro code
 that duplicated or opened images.
 <li> Thanks to Paul Jurczak, fixed a bug that cause some RGB BMP files to fail to open.
+<li> Fixed a bug that caused the makeText() macro function
+to not work if the text was too long.
+<li> Fixed a regression, introduced in v1.46a, that caused measurements of spline fit
+freehand and traced selections to be inconsistent with earlier versions of ImageJ.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

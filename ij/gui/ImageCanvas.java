@@ -191,8 +191,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				rm = null;
 		}
 		if (rm==null) {
-			//if (showAllList!=null)
-			//	overlay = showAllList;
 			showAllROIs = false;
 			repaint();
 			return;
@@ -222,8 +220,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		drawNames = Prefs.useNamesAsLabels;
 		for (int i=0; i<n; i++) {
-			String label = list.getItem(i);
-			Roi roi = (Roi)rois.get(label);
+			String label = null;
+			Roi roi = null;
+			try {
+				label = list.getItem(i);
+				roi = (Roi)rois.get(label);
+			} catch(Exception e) {
+				roi=null;
+			}
 			if (roi==null) continue;
 			if (showAllList!=null)
 				showAllList.add(roi);
