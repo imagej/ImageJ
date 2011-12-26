@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.46d 19 December 2011</u>
+<li> <u>1.46d 25 December 2011</u>
 <ul>
+<li> Single macro tools are now installed in the first available toolbar slot. If
+now slots are free, they are installed in the last slot.
 <li> Added the getC(), getZ(), getT(), setC(), setZ() and setT()
 methods to the ImagePlus class.
 <li> Thanks to Norbert Vischer, fixed a bug the caused the setZCoordinate()
@@ -19,9 +21,11 @@ macro function to sometimes not work as expected.
 that duplicated or opened images.
 <li> Thanks to Paul Jurczak, fixed a bug that cause some RGB BMP files to fail to open.
 <li> Fixed a bug that caused the makeText() macro function
-to not work if the text was too long.
+to not work if the text was too wide.
 <li> Fixed a regression, introduced in v1.46a, that caused measurements of spline fit
 freehand and traced selections to be inconsistent with earlier versions of ImageJ.
+<li> Wilhelm Burger fixed a bug that caused the <i>Edit&gt;Crop</i> command to not
+correctly handle overlays.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

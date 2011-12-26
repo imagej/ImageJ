@@ -8,6 +8,7 @@ import ij.measure.*;
 import ij.plugin.WandToolOptions;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
+import ij.plugin.tool.PlugInTool;
 import ij.macro.*;
 import ij.*;
 import ij.util.*;
@@ -226,7 +227,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				label = list.getItem(i);
 				roi = (Roi)rois.get(label);
 			} catch(Exception e) {
-				roi=null;
+				roi = null;
 			}
 			if (roi==null) continue;
 			if (showAllList!=null)
@@ -947,6 +948,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public void mousePressed(MouseEvent e) {
 		//if (ij==null) return;
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mousePressed(imp, e);
+			return;
+		}
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
@@ -1155,6 +1161,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	*/
 
 	public void mouseDragged(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseDragged(imp, e);
+			return;
+		}
 		int x = e.getX();
 		int y = e.getY();
 		xMouse = offScreenX(x);
@@ -1374,6 +1385,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mouseReleased(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseReleased(imp, e);
+			return;
+		}
 		flags = e.getModifiers();
 		flags &= ~InputEvent.BUTTON1_MASK; // make sure button 1 bit is not set
 		flags &= ~InputEvent.BUTTON2_MASK; // make sure button 2 bit is not set
@@ -1398,6 +1414,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	public void mouseMoved(MouseEvent e) {
 		//if (ij==null) return;
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseMoved(imp, e);
+			return;
+		}
 		int sx = e.getX();
 		int sy = e.getY();
 		int ox = offScreenX(sx);

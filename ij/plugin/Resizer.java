@@ -149,6 +149,13 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 						imp.setRoi(roi);
 						imp.draw();
 					}
+					if (crop && roi!=null) {
+						Overlay overlay = imp.getOverlay();
+						if (overlay!=null && !imp.getHideOverlay()) {
+							Overlay overlay2 = Duplicator.cropOverlay(overlay, roi.getBounds());
+							imp.setOverlay(overlay2);
+						}
+					}
 				}
 				if (stackSize>1 && newSize<stackSize)
 					IJ.error("ImageJ ran out of memory causing \nthe last "+(stackSize-newSize)+" slices to be lost.");

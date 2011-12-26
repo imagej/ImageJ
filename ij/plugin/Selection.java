@@ -224,8 +224,12 @@ public class Selection implements PlugIn, Measurements {
 		if (roi instanceof EllipseRoi)
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
-		if (!segmentedSelection)
-			p = trimPolygon(p, p.getUncalibratedLength());
+		if (!segmentedSelection) {
+			if (p.subPixelResolution())
+				p = trimFloatPolygon(p, p.getUncalibratedLength());
+			else
+				p = trimPolygon(p, p.getUncalibratedLength());
+		}
 		String options = Macro.getOptions();
 		if (options!=null && options.indexOf("straighten")!=-1)
 			p.fitSplineForStraightening();
@@ -317,6 +321,72 @@ public class Selection implements PlugIn, Measurements {
 		return curvature;
 	}
 	
+	PolygonRoi trimFloatPolygon(PolygonRoi roi, double length) {
+		FloatPolygon poly = roi.getFloatPolygon();
+		float[] x = poly.xpoints;
+		float[] y = poly.ypoints;
+		int n = poly.npoints;
+		x = smooth(x, n);
+		y = smooth(y, n);
+		float[] curvature = getCurvature(x, y, n);
+		double threshold = rodbard(length);
+		//IJ.log("trim: "+length+" "+threshold);
+		double distance = Math.sqrt((x[1]-x[0])*(x[1]-x[0])+(y[1]-y[0])*(y[1]-y[0]));
+		int i2 = 1;
+		double x1,y1,x2=0,y2=0;
+		for (int i=1; i<n-1; i++) {
+			x1=x[i]; y1=y[i]; x2=x[i+1]; y2=y[i+1];
+			distance += Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)) + 1;
+			distance += curvature[i]*2;
+			if (distance>=threshold) {
+				x[i2] = (float)x2;
+				y[i2] = (float)y2;
+				i2++;
+				distance = 0.0;
+			}
+		}
+		int type = roi.getType()==Roi.FREELINE?Roi.POLYLINE:Roi.POLYGON;
+		if (type==Roi.POLYLINE && distance>0.0) {
+			x[i2] = (float)x2;
+			y[i2] = (float)y2;
+			i2++;
+		}		
+		PolygonRoi p = new PolygonRoi(x, y, i2, type);
+		imp.setRoi(p);
+		return p;
+	}
+	
+	float[] smooth(float[] a, int n) {
+		FloatProcessor fp = new FloatProcessor(n, 1);
+		for (int i=0; i<n; i++)
+			fp.setf(i, 0, a[i]);
+		GaussianBlur gb = new GaussianBlur();
+		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
+		for (int i=0; i<n; i++)
+			a[i] = fp.getf(i, 0);
+		return a;
+	}
+	
+	float[] getCurvature(float[] x, float[] y, int n) {
+		float[] x2 = new float[n];
+		float[] y2 = new float[n];
+		for (int i=0; i<n; i++) {
+			x2[i] = x[i];
+			y2[i] = y[i];
+		}
+		ImageProcessor ipx = new FloatProcessor(n, 1, x, null);
+		ImageProcessor ipy = new FloatProcessor(n, 1, y, null);
+		ipx.convolve(kernel, kernel.length, 1);
+		ipy.convolve(kernel, kernel.length, 1);
+		float[] indexes = new float[n];
+		float[] curvature = new float[n];
+		for (int i=0; i<n; i++) {
+			indexes[i] = i;
+			curvature[i] = (float)Math.sqrt((x2[i]-x[i])*(x2[i]-x[i])+(y2[i]-y[i])*(y2[i]-y[i]));
+		}
+		return curvature;
+	}
+
 	void createEllipse(ImagePlus imp) {
 		IJ.showStatus("Fitting ellipse");
 		Roi roi = imp.getRoi();

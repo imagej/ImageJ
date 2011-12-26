@@ -91,10 +91,8 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setOpenAsHyperStack(true);
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
-			overlay = overlay.duplicate();
-			if (rect!=null)
-				overlay.translate(-rect.x, -rect.y);
-			imp2.setOverlay(overlay);
+			Overlay overlay2 = cropOverlay(overlay, rect);
+			imp2.setOverlay(overlay2);
 		}
 		return imp2;
 	}
@@ -119,11 +117,9 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
-			overlay = overlay.duplicate();
-			Rectangle r = ip.getRoi();
-			if (r.x>0 || r.y>0)
-				overlay.translate(-r.x, -r.y);
-			imp2.setOverlay(overlay);
+            Rectangle r =  ip.getRoi();
+			Overlay overlay2 = cropOverlay(overlay, r);
+			imp2.setOverlay(overlay2);
 		}
 		return imp2;
 	}
@@ -268,6 +264,11 @@ public class Duplicator implements PlugIn, TextListener {
 			cal.yOrigin -= roi.getBounds().y;
 		}
 		imp2.setTitle(newTitle);
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null && !imp.getHideOverlay()) {
+			Overlay overlay2 = cropOverlay(overlay, roi.getBounds());
+			imp2.setOverlay(overlay2);
+		}
 		imp2.show();
 		if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE && roi.getBounds().width==imp2.getWidth())
 			imp2.restoreRoi();
@@ -348,6 +349,23 @@ public class Duplicator implements PlugIn, TextListener {
 		return newTitle;
 	}
 	
+	/*
+	* Duplicate the elements of overlay 'overlay1' which  
+	* intersect with the rectangle 'imgBounds'.
+	* @author Wilhelm Burger
+	*/
+	public static Overlay cropOverlay(Overlay overlay1, Rectangle imgBounds) {
+		Overlay overlay2 = new Overlay();
+		Roi[] allRois = overlay1.toArray();
+		for (Roi roi: allRois) {
+			Rectangle roiBounds = roi.getBounds();
+			if (imgBounds.intersects(roiBounds))
+				overlay2.add((Roi)roi.clone());
+		}
+		overlay2.translate(-imgBounds.x, -imgBounds.y);
+		return overlay2;
+	}
+
 	public void textValueChanged(TextEvent e) {
 		checkbox.setState(true);
 	}

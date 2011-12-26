@@ -85,6 +85,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		}
 		if (pgm.hasVars() && pgm.macroCount()>0 && pgm.getGlobals()==null)
 			new Interpreter().saveGlobals(pgm);
+		ArrayList tools = new ArrayList();
 		for (int i=0; i<code.length; i++) {
 			token = code[i]&TOK_MASK;
 			if (token==MACRO) {
@@ -101,7 +102,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					macroStarts[count] = i + 2;
 					macroNames[count] = name;
 					if (name.indexOf('-')!=-1 && (name.indexOf("Tool")!=-1||name.indexOf("tool")!=-1)) {
-						Toolbar.getInstance().addMacroTool(name, this, toolCount);
+						tools.add(name);
 						toolCount++;
 					} else if (name.startsWith("AutoRun")) {
 						if (autoRunCount==0 && !openingStartupMacrosInEditor) {
@@ -124,8 +125,14 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				break;
 		}
 		nMacros = count;
-		if (toolCount>0) {
+		if (toolCount>0 && isPluginsMacrosMenu) {
 			Toolbar tb = Toolbar.getInstance();
+            if (toolCount==1) 
+                tb.addMacroTool((String)tools.get(0), this);
+            else {
+                for (int i=0; i<tools.size(); i++)
+                   tb.addMacroTool((String)tools.get(i), this, i);
+            }
 			if(Toolbar.getToolId()>=Toolbar.SPARE2)
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();

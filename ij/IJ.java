@@ -179,8 +179,8 @@ public class IJ {
 		Object thePlugIn = null;
 		try { 
 			thePlugIn = (loader.loadClass(className)).newInstance(); 
- 			if (thePlugIn instanceof PlugIn)
-				((PlugIn)thePlugIn).run(arg);
+			if (thePlugIn instanceof PlugIn)
+ 				((PlugIn)thePlugIn).run(arg);
  			else if (thePlugIn instanceof PlugInFilter)
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		}
