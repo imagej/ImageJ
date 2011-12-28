@@ -5,11 +5,13 @@ import ij.gui.*;
 import ij.plugin.frame.Editor;
 import ij.text.TextWindow;
 import ij.io.SaveDialog;
+import ij.util.Tools;
 
 /** This class creates a new macro or the Java source for a new plugin. */
 public class NewPlugin implements PlugIn {
 
-	public static final int MACRO=0, JAVASCRIPT=1, PLUGIN=2, PLUGIN_FILTER=3, PLUGIN_FRAME=4, TEXT_FILE=5, TABLE=6;
+	public static final int MACRO=0, JAVASCRIPT=1, PLUGIN=2, PLUGIN_FILTER=3, PLUGIN_FRAME=4,
+		TEXT_FILE=5, TABLE=6, MACRO_TOOL=7, PLUGIN_TOOL=8;
     private static int rows = 16;
     private static int columns = 60;
     private static int tableWidth = 350;
@@ -28,6 +30,9 @@ public class NewPlugin implements PlugIn {
     	} else if (arg.equals("macro")) {
     		type = MACRO;
     		name = "Macro.txt";
+    	} else if (arg.equals("macro-tool")) {
+    		type = MACRO_TOOL;
+    		name = "Macro_Tool.txt";
     	} else if (arg.equals("javascript")) {
     		type = JAVASCRIPT;
     		name = "Script.js";
@@ -37,6 +42,9 @@ public class NewPlugin implements PlugIn {
     	} else if (arg.equals("frame")) {
     		type = PLUGIN_FRAME;
     		name = "Plugin_Frame.java";
+    	} else if (arg.equals("plugin-tool")) {
+    		type = PLUGIN_TOOL;
+    		name = "Plugin_Tool.java";
     	} else if (arg.equals("filter")) {
     		type = PLUGIN_FILTER;
     		name = "Filter_Plugin.java";
@@ -57,7 +65,7 @@ public class NewPlugin implements PlugIn {
 		}
 		if (type==-1)
     		createPlugin("Converted_Macro.java", PLUGIN, arg);
-		else if (type==MACRO || type==TEXT_FILE || type==JAVASCRIPT) {
+		else if (type==MACRO || type==MACRO_TOOL || type==TEXT_FILE || type==JAVASCRIPT) {
 			if (type==TEXT_FILE && name.equals("Macro"))
 				name = "Untitled.txt";
 			createMacro(name);
@@ -69,14 +77,18 @@ public class NewPlugin implements PlugIn {
     
 	public void createMacro(String name) {
 		int options = (monospaced?Editor.MONOSPACED:0)+(menuBar?Editor.MENU_BAR:0);
+		String text = "";
 		ed = new Editor(rows, columns, 0, options);
-		if (type==MACRO && !name.endsWith(".txt"))
+		if (type==MACRO_TOOL)
+			text = Tools.openFromIJJarAsString("/macros/"+name);
+		if ((type==MACRO||type==MACRO_TOOL) && !name.endsWith(".txt"))
 			name = SaveDialog.setExtension(name, ".txt");
 		else if (type==JAVASCRIPT && !name.endsWith(".js")) {
 			if (name.equals("Macro")) name = "script";
 			name = SaveDialog.setExtension(name, ".js");
 		}
-		ed.create(name, "");
+		if (text!=null)
+			ed.create(name, text);
 	}
 	
 	void createTable() {
@@ -91,6 +103,8 @@ public class NewPlugin implements PlugIn {
 			name = SaveDialog.setExtension(name, ".java");
 		String className = pluginName.substring(0, pluginName.length()-5);
 		String text = "";
+		if (type==PLUGIN_TOOL)
+			text += "// http://imagej.nih.gov/ij/plugins/tool-demo.html\n";
 		text += "import ij.*;\n";
 		text += "import ij.process.*;\n";
 		text += "import ij.gui.*;\n";
@@ -140,6 +154,20 @@ public class NewPlugin implements PlugIn {
 				text += "\t\tpack();\n";
 				text += "\t\tGUI.center(this);\n";
 				text += "\t\tshow();\n";
+				text += "\t}\n";
+				break;
+			case PLUGIN_TOOL:
+				text += "import ij.plugin.tool.PlugInTool;\n";
+				text += "import java.awt.event.*;\n";
+				text += "\n";
+				text += "public class "+className+" extends PlugInTool {\n";
+				text += "\n";
+				text += "\tpublic void mousePressed(ImagePlus imp, MouseEvent e) {\n";
+				text += "\t\tIJ.log(\"mouse pressed: \"+e);\n";
+				text += "\t}\n";
+				text += "\n";
+				text += "\tpublic void mouseDragged(ImagePlus imp, MouseEvent e) {\n";
+				text += "\t\tIJ.log(\"mouse dragged: \"+e);\n";
 				text += "\t}\n";
 				break;
 		}

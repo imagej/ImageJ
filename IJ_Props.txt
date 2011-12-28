@@ -372,14 +372,16 @@ utilities13="Reset...",ij.plugin.SimpleCommands("reset")
 
 # Plugins installed in the Plugins/New submenu
 new_01="Macro",ij.plugin.NewPlugin("macro")
-new_02="JavaScript",ij.plugin.NewPlugin("javascript")
-new_03=-
-new_04="Plugin",ij.plugin.NewPlugin("plugin")
-new_05="Plugin Filter",ij.plugin.NewPlugin("filter")
-new_06="Plugin Frame",ij.plugin.NewPlugin("frame")
-new_07=-
-new_08="Text Window...",ij.plugin.NewPlugin("text+dialog")
-new_09="Table...",ij.plugin.NewPlugin("table")
+new_02="Macro Tool",ij.plugin.NewPlugin("macro-tool")
+new_03="JavaScript",ij.plugin.NewPlugin("javascript")
+new_04=-
+new_05="Plugin",ij.plugin.NewPlugin("plugin")
+new_06="Plugin Filter",ij.plugin.NewPlugin("filter")
+new_07="Plugin Frame",ij.plugin.NewPlugin("frame")
+new_08="Plugin Tool",ij.plugin.NewPlugin("plugin-tool")
+new_09=-
+new_10="Text Window...",ij.plugin.NewPlugin("text+dialog")
+new_11="Table...",ij.plugin.NewPlugin("table")
 
 # Plugins installed in the Help/About submenu
 about01="About This Submenu...",ij.plugin.SimpleCommands("about")

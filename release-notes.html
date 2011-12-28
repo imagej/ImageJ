@@ -5,10 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.46d 25 December 2011</u>
+<li> <u>1.46d 28 December 2011</u>
 <ul>
-<li> Single macro tools are now installed in the first available toolbar slot. If
-now slots are free, they are installed in the last slot.
+<li> Added the <i>Plugins&gt;New&gt;Macro Tool</i> and
+<i>Plugins&gt;New&gt;Plugin Tool</i> commands.
+<li> Single macro tools are now installed in the first available toolbar slot, or
+if no slots are free, they are installed in the last slot.
+<li> Added the ij.plugin.tool.PlugInTool class, which was inspired by
+Johannes Schindelin's AbstractTool class in Fiji.
 <li> Added the getC(), getZ(), getT(), setC(), setZ() and setT()
 methods to the ImagePlus class.
 <li> Thanks to Norbert Vischer, fixed a bug the caused the setZCoordinate()

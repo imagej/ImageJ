@@ -133,7 +133,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
                 for (int i=0; i<tools.size(); i++)
                    tb.addMacroTool((String)tools.get(i), this, i);
             }
-			if(Toolbar.getToolId()>=Toolbar.SPARE2)
+			if (toolCount>1 && Toolbar.getToolId()>=Toolbar.SPARE2)
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();
 		}
@@ -306,8 +306,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	 
 	 /** Returns a text file contained in ij.jar. */
 	 public String openFromIJJar(String path) {
-		//ImageJ ij = IJ.getInstance();
-		//if (ij==null) return null;
 		String text = null;
 		  try {
 			InputStream is = this.getClass().getResourceAsStream(path);
