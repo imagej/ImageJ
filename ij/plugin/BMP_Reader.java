@@ -142,6 +142,8 @@ class BMPDecoder {
                 vertResolution = readInt();
                 colorsUsed = readInt();
                 colorsImportant = readInt();
+                if (bitsPerPixel==24)
+                    colorsUsed = colorsImportant = 0;
 
                 topDown = (height < 0);
                 if (topDown) height = -height;
@@ -160,6 +162,22 @@ class BMPDecoder {
                                 actualColorsUsed = 1 << bitsPerPixel;
                         else
                                 actualColorsUsed = 0;   // no palette
+                /*
+                if (IJ.debugMode) {
+                    IJ.log("BMP_Reader");
+                    IJ.log("  width: "+width);
+                    IJ.log("  height: "+height);
+                    IJ.log("  compression: "+compression);
+                    IJ.log("  scanLineSize: "+scanLineSize);
+                    IJ.log("  planes: "+planes);
+                    IJ.log("  bitsPerPixel: "+bitsPerPixel);
+                    IJ.log("  sizeOfBitmap: "+sizeOfBitmap);
+                    IJ.log("  horzResolution: "+horzResolution);
+                    IJ.log("  vertResolution: "+vertResolution);
+                    IJ.log("  colorsUsed: "+colorsUsed);
+                    IJ.log("  colorsImportant: "+colorsImportant);
+                }
+                */
         }
 
         void getPalette() throws IOException {

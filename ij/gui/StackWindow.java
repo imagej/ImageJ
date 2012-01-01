@@ -51,7 +51,8 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		imp.setOpenAsHyperStack(false);
 		int[] dim = imp.getDimensions();
 		int nDimensions = 2+(dim[2]>1?1:0)+(dim[3]>1?1:0)+(dim[4]>1?1:0);
-		if (nDimensions<=3 && dim[2]!=nSlices) hyperStack = false;
+		if (nDimensions<=3 && dim[2]!=nSlices)
+			hyperStack = false;
 		if (hyperStack) {
 			nChannels = dim[2];
 			nSlices = dim[3];

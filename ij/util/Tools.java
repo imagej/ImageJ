@@ -263,5 +263,12 @@ import java.io.*;
 		index[i] = index[j];
 		index[j] = b;
 	}
+	
+	/** Opens a text file in ij.jar as a String (example path: "/macros/Macro_Tool.txt"). */
+	public static String openFromIJJarAsString(String path) {
+		return (new ij.plugin.MacroInstaller()).openFromIJJar(path);
+	}
+
+
 
 }

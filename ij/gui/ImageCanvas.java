@@ -8,6 +8,7 @@ import ij.measure.*;
 import ij.plugin.WandToolOptions;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
+import ij.plugin.tool.PlugInTool;
 import ij.macro.*;
 import ij.*;
 import ij.util.*;
@@ -191,8 +192,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				rm = null;
 		}
 		if (rm==null) {
-			//if (showAllList!=null)
-			//	overlay = showAllList;
 			showAllROIs = false;
 			repaint();
 			return;
@@ -222,8 +221,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		drawNames = Prefs.useNamesAsLabels;
 		for (int i=0; i<n; i++) {
-			String label = list.getItem(i);
-			Roi roi = (Roi)rois.get(label);
+			String label = null;
+			Roi roi = null;
+			try {
+				label = list.getItem(i);
+				roi = (Roi)rois.get(label);
+			} catch(Exception e) {
+				roi = null;
+			}
 			if (roi==null) continue;
 			if (showAllList!=null)
 				showAllList.add(roi);
@@ -943,6 +948,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public void mousePressed(MouseEvent e) {
 		//if (ij==null) return;
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mousePressed(imp, e);
+			return;
+		}
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
@@ -1116,6 +1126,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	public void mouseExited(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseExited(imp, e);
+			return;
+		}
 		//autoScroll(e);
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
@@ -1151,6 +1166,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	*/
 
 	public void mouseDragged(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseDragged(imp, e);
+			return;
+		}
 		int x = e.getX();
 		int y = e.getY();
 		xMouse = offScreenX(x);
@@ -1370,6 +1390,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mouseReleased(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseReleased(imp, e);
+			return;
+		}
 		flags = e.getModifiers();
 		flags &= ~InputEvent.BUTTON1_MASK; // make sure button 1 bit is not set
 		flags &= ~InputEvent.BUTTON2_MASK; // make sure button 2 bit is not set
@@ -1394,6 +1419,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	public void mouseMoved(MouseEvent e) {
 		//if (ij==null) return;
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseMoved(imp, e);
+			return;
+		}
 		int sx = e.getX();
 		int sy = e.getY();
 		int ox = offScreenX(sx);
@@ -1420,7 +1450,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
+	public void mouseEntered(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseEntered(imp, e);
+			return;
+		}
+	}
+
 	public void mouseClicked(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
 
 }

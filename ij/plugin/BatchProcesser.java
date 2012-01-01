@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
 import ij.io.OpenDialog;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -128,9 +129,8 @@ import java.util.Vector;
 			if (ip==null) return;
 			ImagePlus imp = new ImagePlus("", ip);
 			if (!macro.equals("")) {
-				WindowManager.setTempCurrentImage(imp);
-				String str = IJ.runMacro("i="+(index++)+";"+macro, "");
-				if (str!=null && str.equals("[aborted]")) break;
+				if (!runMacro("i="+(index++)+";"+macro, imp))
+					break;
 			}
 			if (!outputPath.equals("")) {
 				if (format.equals("8-bit TIFF") || format.equals("GIF")) {
@@ -170,9 +170,8 @@ import java.util.Vector;
 			ImagePlus imp = IJ.openImage(path);
 			if (imp==null) continue;
 			if (!macro.equals("")) {
-				WindowManager.setTempCurrentImage(imp);
-				String str = IJ.runMacro("i="+(index++)+";"+macro, "");
-				if (str!=null && str.equals("[aborted]")) break;
+				if (!runMacro("i="+(index++)+";"+macro, imp))
+					break;
 			}
 			if (!outputPath.equals("")) {
 				if (format.equals("8-bit TIFF") || format.equals("GIF")) {
@@ -187,6 +186,21 @@ import java.util.Vector;
 		}
 	}
 	
+	private boolean runMacro(String macro, ImagePlus imp) {
+		WindowManager.setTempCurrentImage(imp);
+		Interpreter interp = new Interpreter();
+		try {
+			interp.runBatchMacro(macro, imp);
+		} catch(Throwable e) {
+			interp.abortMacro();
+			String msg = e.getMessage();
+			if (!(e instanceof RuntimeException && msg!=null && e.getMessage().equals(Macro.MACRO_CANCELED)))
+				IJ.handleException(e);
+			return false;
+		}
+		return true;
+	}
+		
 	String addSeparator(String path) {
 		if (path.equals("")) return path;
 		if (!(path.endsWith("/")||path.endsWith("\\")))
@@ -360,8 +374,7 @@ import java.util.Vector;
 		else
 			imp = getFolderImage();
 		if (imp==null) return;
-		WindowManager.setTempCurrentImage(imp);
-		String str = IJ.runMacro("i=0;"+macro, "");
+		runMacro("i=0;"+macro, imp);
 		Point loc = new Point(10, 30);
 		if (testImage!=0) {
 			ImagePlus imp2 = WindowManager.getImage(testImage);

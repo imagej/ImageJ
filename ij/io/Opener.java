@@ -1020,6 +1020,10 @@ public class Opener {
 		if (name.endsWith(".xls") || name.endsWith(".csv")) 
 			return TABLE;
 
+		// AVI
+		if (name.endsWith(".avi"))
+			return AVI;
+
 		// Text file
 		boolean isText = true;
 		for (int i=0; i<10; i++) {
@@ -1036,10 +1040,6 @@ public class Opener {
 		if ((b0==66 && b1==77)||name.endsWith(".dib"))
 			return BMP;
 				
-		// AVI
-		if (name.endsWith(".avi"))
-			return AVI;
-
 		return UNKNOWN;
 	}
 

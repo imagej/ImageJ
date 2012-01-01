@@ -271,8 +271,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         }
         if (!showDialog(fileName)) return;                          //ask for parameters
         try {
-            ImageStack stack = makeStack (path, firstFrame, lastFrame,
-                    isVirtual, convertToGray, flipVertical);        //read data
+            ImageStack stack = makeStack(path, firstFrame, lastFrame, isVirtual, convertToGray, flipVertical);  //read data
         } catch (Exception e) {
             error(exceptionMessage(e));
             return;
