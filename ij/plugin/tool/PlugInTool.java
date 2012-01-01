@@ -18,6 +18,10 @@ public abstract class PlugInTool implements PlugIn {
 	public void mouseDragged(ImagePlus imp, MouseEvent e) { }
 	
 	public void mouseMoved(ImagePlus imp, MouseEvent e) { }
+	
+	public void mouseEntered(ImagePlus imp, MouseEvent e) { }
+
+	public void mouseExited(ImagePlus imp, MouseEvent e) { }
 
 	/** Return the tool name. */
 	public String getToolName() {

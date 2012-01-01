@@ -2,7 +2,9 @@
 // Press ctrl-i (Macros>Install Macros) to reinstall after
 // making changes. Double click on the tool icon (a circle)
 // to set the radius of the circle.
-// There are many more example macro tools at
+// There is more information about macro tools at
+//   http://imagej.nih.gov/ij/developer/macro/macros.html#tools
+// and many more examples at
 //   http://imagej.nih.gov/ij/macros/tools/
 
 var radius = 20;

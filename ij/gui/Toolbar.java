@@ -1281,20 +1281,24 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     
 	/** Used by the MacroInstaller class to install a set of macro tools. */
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
-		if (id==0) {
-			for (int i=SPARE1; i<NUM_TOOLS-1; i++) {
-				names[i] = null;
-				tools[i] = null;
-				icons[i] = null;
-				if (menus[i]!=null) menus[i].removeAll();
-			}
-		}
+		if (id==0)
+			resetTools();
 		this.macroInstaller = macroInstaller;
 		int tool = addTool(name);
 		this.macroInstaller = null;
 		if (tool!=-1)
 			tools[tool] = new MacroToolRunner(macroInstaller);
 	}
+	
+	private void resetTools() {
+		for (int i=SPARE1; i<NUM_TOOLS-1; i++) {
+			names[i] = null;
+			tools[i] = null;
+			icons[i] = null;
+			if (menus[i]!=null) menus[i].removeAll();
+		}
+	}
+
 	
 	/** Used by the MacroInstaller class to add a macro tool to the first
 		available toolbar slot, or to the last slot if the toolbar is full. */
@@ -1306,6 +1310,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		this.macroInstaller = null;
 		if (tool!=-1)
 			tools[tool] = new MacroToolRunner(macroInstaller);
+	}
+
+	public static void removeMacroTools() {
+		if (instance!=null) {
+			instance.resetTools();
+			instance.repaint();
+		}
 	}
 
 	/** Adds a plugin tool to the first available toolbar slot,

@@ -1126,6 +1126,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	public void mouseExited(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseExited(imp, e);
+			return;
+		}
 		//autoScroll(e);
 		ImageWindow win = imp.getWindow();
 		if (win!=null)
@@ -1445,7 +1450,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
+	public void mouseEntered(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseEntered(imp, e);
+			return;
+		}
+	}
+
 	public void mouseClicked(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
 
 }
