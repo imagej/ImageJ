@@ -96,6 +96,9 @@ public class SubstackMaker implements PlugIn {
 		} catch (Exception e) {
 			IJ.error("Substack Maker", "Invalid input string:        \n \n  \""+userInput+"\"");
 		}
+		String info = (String)imp.getProperty("Info");
+		if (info!=null)
+			imp2.setProperty("Info", info);
 		return imp2;
 	}
 

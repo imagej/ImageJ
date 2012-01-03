@@ -81,6 +81,9 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
+		String info = (String)imp.getProperty("Info");
+		if (info!=null)
+			imp2.setProperty("Info", info);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		if (imp.isComposite()) {
@@ -142,6 +145,9 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		ImagePlus imp2 = imp.createImagePlus();
 		imp2.setStack("DUP_"+imp.getTitle(), stack2);
+		String info = (String)imp.getProperty("Info");
+		if (info!=null)
+			imp2.setProperty("Info", info);
 		int size = stack2.getSize();
 		boolean tseries = imp.getNFrames()==imp.getStackSize();
 		if (tseries)

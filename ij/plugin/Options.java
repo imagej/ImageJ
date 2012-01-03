@@ -20,8 +20,6 @@ public class Options implements PlugIn {
 			{io(); return;}
 		else if (arg.equals("conv"))
 			{conversions(); return;}
-		else if (arg.equals("display"))
-			{appearance(); return;}
 		else if (arg.equals("dicom"))
 			{dicom(); return;}
 	}
@@ -148,90 +146,7 @@ public class Options implements PlugIn {
 			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
 		return;
 	}
-		
-	void appearance() {
-		GenericDialog gd = new GenericDialog("Appearance", IJ.getInstance());
-		gd.addCheckbox("Interpolate zoomed images", Prefs.interpolateScaledImages);
-		gd.addCheckbox("Open images at 100%", Prefs.open100Percent);
-		gd.addCheckbox("Black canvas", Prefs.blackCanvas);
-		gd.addCheckbox("No image border", Prefs.noBorder);
-		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
-		gd.addCheckbox("Antialiased tool icons", Prefs.antialiasedTools);
-		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
-        gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
-		gd.showDialog();
-		if (gd.wasCanceled())
-			return;			
-		boolean interpolate = gd.getNextBoolean();
-		Prefs.open100Percent = gd.getNextBoolean();
-		boolean blackCanvas = gd.getNextBoolean();
-		boolean noBorder = gd.getNextBoolean();
-		boolean useInvertingLut = gd.getNextBoolean();
-		boolean antialiasedTools = gd.getNextBoolean();
-		boolean change = antialiasedTools!=Prefs.antialiasedTools;
-		Prefs.antialiasedTools = antialiasedTools;
-		if (change) Toolbar.getInstance().repaint();
-		int menuSize = (int)gd.getNextNumber();
-		if (interpolate!=Prefs.interpolateScaledImages) {
-			Prefs.interpolateScaledImages = interpolate;
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null)
-				imp.draw();
-		}
-		if (blackCanvas!=Prefs.blackCanvas) {
-			Prefs.blackCanvas = blackCanvas;
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) {
-				ImageWindow win = imp.getWindow();
-				if (win!=null) {
-					if (Prefs.blackCanvas) {
-						win.setForeground(Color.white);
-						win.setBackground(Color.black);
-					} else {
-						win.setForeground(Color.black);
-						win.setBackground(Color.white);
-					}
-					imp.repaintWindow();
-				}
-			}
-		}
-		if (noBorder!=Prefs.noBorder) {
-			Prefs.noBorder = noBorder;
-			ImagePlus imp = WindowManager.getCurrentImage();
-			if (imp!=null) imp.repaintWindow();
-		}
-		if (useInvertingLut!=Prefs.useInvertingLut) {
-			invertLuts(useInvertingLut);
-			Prefs.useInvertingLut = useInvertingLut;
-		}
-		if (menuSize!=Menus.getFontSize() && !IJ.isMacintosh()) {
-			Menus.setFontSize(menuSize);
-			IJ.showMessage("Appearance", "Restart ImageJ to use the new font size");
-		}
-	}
-	
-	void invertLuts(boolean useInvertingLut) {
-		int[] list = WindowManager.getIDList();
-		if (list==null) return;
-		for (int i=0; i<list.length; i++) {
-			ImagePlus imp = WindowManager.getImage(list[i]);
-			if (imp==null) return;
-			ImageProcessor ip = imp.getProcessor();
-			if (useInvertingLut != ip.isInvertedLut() && !ip.isColorLut()) {
-				ip.invertLut();
-				int nImages = imp.getStackSize();
-				if (nImages==1)
-					ip.invert();
-				else {
-					ImageStack stack2 = imp.getStack();
-					for (int slice=1; slice<=nImages; slice++)
-						stack2.getProcessor(slice).invert();
-					stack2.setColorModel(ip.getColorModel());
-				}
-			}
-		}
-	}
-	
+			
 	// DICOM options
 	void dicom() {
 		GenericDialog gd = new GenericDialog("DICOM Options");

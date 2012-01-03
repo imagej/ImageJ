@@ -5,32 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.46d 1 January 2012</u>
-<ul>
-<li> Added the <i>Plugins&gt;New&gt;Macro Tool</i> and
-<i>Plugins&gt;New&gt;Plugin Tool</i> commands.
-<li> Single macro tools are now installed in the first available toolbar slot, or
-if no slots are free, they are installed in the last slot.
-<li> Added the ij.plugin.tool.PlugInTool class, which was inspired by
-Johannes Schindelin's AbstractTool class in Fiji
-(<a href="plugins/index.html#tools>examples</a>).
-<li> Added the getC(), getZ(), getT(), setC(), setZ() and setT()
-methods to the ImagePlus class.
-<li> Thanks to Norbert Vischer, fixed a bug the caused the setZCoordinate()
-macro function to not work as expected.
-<li> Thanks to Ian Lim, fixed a bug that prevented some AVI files from opening.
-<li> Thanks to Cheryl McCreary, fixed a bug that caused the run("Histogram","...")
-macro function to sometimes not work as expected.
-<li> Thanks to Jerome Mutterer, fixed bugs in <i>Process&gt;Batch&gt;Macro</i> and
-<i>Process&gt;Batch&gt;Virtual Stack</i> that caused them to fail with macro code
-that duplicated or opened images.
-<li> Thanks to Paul Jurczak, fixed a bug that cause some RGB BMP files to fail to open.
-<li> Fixed a bug that caused the makeText() macro function
-to not work if the text was too wide.
-<li> Fixed a regression, introduced in v1.46a, that caused measurements of spline fit
-freehand and traced selections to be inconsistent with earlier versions of ImageJ.
-<li> Wilhelm Burger fixed a bug that caused the <i>Edit&gt;Crop</i> command to not
-correctly handle overlays.
+<li> <u>1.46e 2 January 2012</u>
+<ul> Thanks to Martin Dressler, fixed bugs in 
+<i>Image&gt;Duplicate</i> and <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i>
+that caused image "Info" metadata to be discarded. 
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 
