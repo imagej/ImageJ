@@ -139,12 +139,15 @@ public class FloatProcessor extends ImageProcessor {
 		return max;
 	}
 
+	/** Create an 8-bit AWT image by scaling pixels in the range min-max to 0-255. */
 	public Image createImage() {
 		boolean firstTime = pixels8==null;
 		if (firstTime || !lutAnimation)
 			create8BitImage();
 		if (cm==null)
 			makeDefaultColorModel();
+		if (ij.IJ.isJava16())
+			return createBufferedImage();
 		if (source==null) {
 			source = new MemoryImageSource(width, height, cm, pixels8, 0, width);
 			source.setAnimated(true);
@@ -159,8 +162,8 @@ public class FloatProcessor extends ImageProcessor {
 		return img;
 	}
 	
+	// scale from float to 8-bits
 	protected byte[] create8BitImage() {
-		// scale from float to 8-bits
 		int size = width*height;
 		if (pixels8==null)
 			pixels8 = new byte[size];
@@ -177,7 +180,22 @@ public class FloatProcessor extends ImageProcessor {
 		}
 		return pixels8;
 	}
-	
+		
+	Image createBufferedImage() {
+		if (raster==null) {
+			SampleModel sm = getIndexSampleModel();
+			DataBuffer db = new DataBufferByte(pixels8, width*height, 0);
+			raster = Raster.createWritableRaster(sm, db, null);
+		}
+		if (image==null || cm!=cm2) {
+			if (cm==null) cm = getDefaultColorModel();
+			image = new BufferedImage(cm, raster, false, null);
+			cm2 = cm;
+		}
+		lutAnimation = false;
+		return image;
+	}
+		
 	/** Returns this image as an 8-bit BufferedImage. */
 	public BufferedImage getBufferedImage() {
 		return convertToByte(true).getBufferedImage();

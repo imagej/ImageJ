@@ -165,15 +165,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     }
     
 	private void setInterpolation(Graphics g, boolean interpolate) {
-			if (magnification==1)
-				return;
-			else if (magnification<1.0 || interpolate) {
-				Object value = RenderingHints.VALUE_RENDER_QUALITY;
-				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_RENDERING, value);
-			} else if (magnification>1.0) {
-				Object value = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
-				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, value);
-			}
+		if (magnification==1)
+			return;
+		else if (magnification<1.0 || interpolate) {
+			Object value = RenderingHints.VALUE_RENDER_QUALITY;
+			((Graphics2D)g).setRenderingHint(RenderingHints.KEY_RENDERING, value);
+		} else if (magnification>1.0) {
+			Object value = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+			((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, value);
+		}
 	}
 
     private void drawRoi(Roi roi, Graphics g) {

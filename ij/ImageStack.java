@@ -90,6 +90,12 @@ public class ImageStack {
 	}
 	
 	/** Adds the image in 'ip' to the end of the stack. */
+	public void addSlice(ImageProcessor ip) {
+		addSlice(null, ip);
+	}
+
+	/** Adds the image in 'ip' to the end of the stack, using
+		the string 'sliceLabel' as the slice metadata. */
 	public void addSlice(String sliceLabel, ImageProcessor ip) {
 		if (ip.getWidth()!=width || ip.getHeight()!=height)
 			throw new IllegalArgumentException("Dimensions do not match");

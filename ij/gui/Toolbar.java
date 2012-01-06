@@ -1333,6 +1333,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		instance.addingSingleTool = false;
 		if (id!=-1) {
 			instance.tools[id] = tool;
+			if (instance.menus[id]!=null)
+				instance.menus[id].removeAll();
 			instance.repaint();	
 		}
 	}

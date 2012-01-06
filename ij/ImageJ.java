@@ -42,7 +42,7 @@ The following command line options are recognized by ImageJ:
      Specifies the port ImageJ uses to determine if another instance is running
      Example 1: -port1 (use default port address + 1)
      Example 2: -port2 (use default port address + 2)
-     Example 3: -port0 (do not check for another instance)
+     Example 3: -port0 (don't check for another instance or start the SocketListener)
 
   -macro path [arg]
      Runs a macro or script, passing it an optional argument,
@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.46e";
-	public static final String BUILD = "3"; 
+	public static final String BUILD = "5"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -82,9 +82,13 @@ public class ImageJ extends Frame implements ActionListener,
 	
 	/** Run as normal application. */
 	public static final int STANDALONE=0;
-	/** Run embedded in another application. */
+	
+	/** Run embedded in another application. In this mode, new
+		instances of ImageJ do not start the SocketListener. */
 	public static final int EMBEDDED=1;
-	/** Run embedded and invisible in another application. */
+	
+	/** Run embedded and invisible in another application. New 
+		instances do not not start the SocketListener. */
 	public static final int NO_SHOW=2;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
