@@ -755,6 +755,9 @@ public class PolygonRoi extends Roi {
 		x+=ixmin; y+=iymin;
 		width=ixmax-ixmin; height=iymax-iymin;
 		cachedMask = null;
+		// update protected xp and yp arrays for backward compatibility
+		xp = toInt(xpf, xp, nPoints);
+		yp = toInt(ypf, yp, nPoints);
 	}
 
 	public void fitSpline() {

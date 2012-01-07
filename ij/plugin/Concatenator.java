@@ -41,7 +41,7 @@ public class Concatenator implements PlugIn, ItemListener{
      */
     public void run(String arg) {
         macro = ! arg.equals("");
-        if (!setupDialog()) return;
+        if (!showDialog()) return;
         newImp = createHypervol();
         if (newImp!=null)
             newImp.show();
@@ -50,7 +50,7 @@ public class Concatenator implements PlugIn, ItemListener{
     // Launch a dialog requiring user to choose images
     // returns ImagePlus of concatenated images
     public ImagePlus run() {
-        if (! setupDialog()) return null;
+        if (!showDialog()) return null;
         newImp = createHypervol();
         return newImp;
     }
@@ -164,12 +164,17 @@ public class Concatenator implements PlugIn, ItemListener{
         }
     }
     
-    boolean setupDialog() {
+    boolean showDialog() {
         boolean all_windows = false;
         batch = Interpreter.isBatchMode();
-        macro = macro | Macro.getOptions() != null;
+        macro = macro || (IJ.isMacro()&&Macro.getOptions()!=null);
         im4D = Menus.commandInUse("Stack to Image5D") && ! batch;
-        if (macro) maxEntries = Integer.MAX_VALUE; // screen size is not limitation in macro mode
+        if (macro) {
+        	maxEntries = Integer.MAX_VALUE; // screen size is not limitation in macro mode
+        	String options = Macro.getOptions();
+			if (options.contains("stack1")&&options.contains("stack2"))
+				Macro.setOptions(options.replaceAll("stack", "image"));
+        }
         
         // Checks
         int[] wList = WindowManager.getIDList();
@@ -198,26 +203,17 @@ public class Concatenator implements PlugIn, ItemListener{
         
         GenericDialog gd = new GenericDialog(pluginName);
         gd.addCheckbox("All_open windows", all_option);
-        if (macro) {
-            for (int i = 0; i < ((nImages+1)<maxEntries?(nImages+1):maxEntries); i++) {
-                // the none string is used in macro mode so that images will not be selected by default
-                gd.addChoice("Stack_" + (i+1)+":", titles_none, none);
-            }
-        } else {
-            gd.addChoice("Image_1:", titles, titles[0]);
-            gd.addChoice("Image_2:", titles, titles[1]);
-            for (int i = 2; i < ((nImages+1)<maxEntries?(nImages+1):maxEntries); i++) {
-                gd.addChoice("Image_" + (i+1)+":", titles_none, titles_none[i]);
-            }
-        }
+        gd.addChoice("Image1:", titles, titles[0]);
+        gd.addChoice("Image2:", titles, titles[1]);
+        for (int i = 2; i < ((nImages+1)<maxEntries?(nImages+1):maxEntries); i++)
+            gd.addChoice("Image" + (i+1)+":", titles_none, titles_none[i]);
         gd.addStringField("Title:", newtitle, 16);
         gd.addCheckbox("Keep original images", keep_option);
         gd.addCheckbox("Open as 4D_image", im4D_option);
-        if (! macro) { // Monitor user selections
+        if (!macro) { // Monitor user selections
             choices = gd.getChoices();
-            for (Enumeration e = choices.elements() ; e.hasMoreElements() ;) {
+            for (Enumeration e = choices.elements() ; e.hasMoreElements() ;)
                 ((Choice)e.nextElement()).addItemListener(this);
-            }
             Vector v = gd.getCheckboxes();
             allWindows = (Checkbox)v.firstElement();
             allWindows.addItemListener(this);
@@ -234,11 +230,10 @@ public class Concatenator implements PlugIn, ItemListener{
         keep_option = keep;
         im4D = gd.getNextBoolean();
         im4D_option = im4D;
-        
         ImagePlus[] tmpImpArr = new ImagePlus[nImages+1];
         String[] tmpStrArr = new String[nImages+1];
         int index, count = 0;
-        for (int i = 0; i < (nImages+1); i++) { // compile a list of images to concatenate from user selection
+        for (int i=0; i<(nImages+1); i++) { // compile a list of images to concatenate from user selection
             if (all_windows) { // Useful to not have to specify images in batch mode
                 index = i;
             } else {
@@ -252,7 +247,7 @@ public class Concatenator implements PlugIn, ItemListener{
                 count++;
             }
         }
-        if (count < 2) {
+        if (count<2) {
             IJ.error(pluginName, "Please select at least 2 images");
             return false;
         }

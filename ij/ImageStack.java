@@ -94,7 +94,7 @@ public class ImageStack {
 		addSlice(null, ip);
 	}
 
-	/** Adds the image in 'ip' to the end of the stack, using
+	/** Adds the image in 'ip' to the end of the stack, setting
 		the string 'sliceLabel' as the slice metadata. */
 	public void addSlice(String sliceLabel, ImageProcessor ip) {
 		if (ip.getWidth()!=width || ip.getHeight()!=height)
