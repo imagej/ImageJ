@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.io.FileInfo;
 
 /**
  * This plugin implements the Image/Stacks/Tools/Make Substack command.
@@ -96,12 +97,9 @@ public class SubstackMaker implements PlugIn {
 		} catch (Exception e) {
 			IJ.error("Substack Maker", "Invalid input string:        \n \n  \""+userInput+"\"");
 		}
-		String info = (String)imp.getProperty("Info");
-		if (info!=null)
-			imp2.setProperty("Info", info);
 		return imp2;
 	}
-
+	
 	String showDialog() {
 		GenericDialog gd = new GenericDialog("Substack Maker");
 		gd.setInsets(10,45,0);
@@ -144,7 +142,6 @@ public class SubstackMaker implements PlugIn {
 		}
 		ImagePlus impSubstack = imp.createImagePlus();
 		impSubstack.setStack(stackTitle, stack2);
-		impSubstack.setCalibration(imp.getCalibration());
 		return impSubstack;
 	}
 	

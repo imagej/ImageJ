@@ -971,6 +971,11 @@ public class IJ {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 	
+	/** Creates a straight line selection using floating point coordinates. */
+	public static void makeLine(double x1, double y1, double x2, double y2) {
+		getImage().setRoi(new Line(x1, y1, x2, y2));
+	}
+
 	/** Creates a point selection. */
 	public static void makePoint(int x, int y) {
 		ImagePlus img = getImage();
@@ -985,11 +990,6 @@ public class IJ {
 			IJ.setKeyUp(KeyEvent.VK_ALT);
 		} else
 			img.setRoi(new PointRoi(x, y));
-	}
-
-	/** Creates a straight line selection using double coordinates. */
-	public static void makeLine(double x1, double y1, double x2, double y2) {
-		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 
 	/** Sets the display range (minimum and maximum displayed pixel values) of the current image. */

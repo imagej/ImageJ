@@ -170,10 +170,10 @@ public class Concatenator implements PlugIn, ItemListener{
         macro = macro || (IJ.isMacro()&&Macro.getOptions()!=null);
         im4D = Menus.commandInUse("Stack to Image5D") && ! batch;
         if (macro) {
-        	maxEntries = Integer.MAX_VALUE; // screen size is not limitation in macro mode
-        	String options = Macro.getOptions();
-			if (options.contains("stack1")&&options.contains("stack2"))
-				Macro.setOptions(options.replaceAll("stack", "image"));
+            maxEntries = Integer.MAX_VALUE; // screen size is not limitation in macro mode
+            String options = Macro.getOptions();
+            if (options.contains("stack1")&&options.contains("stack2"))
+                Macro.setOptions(options.replaceAll("stack", "image"));
         }
         
         // Checks
@@ -301,4 +301,8 @@ public class Concatenator implements PlugIn, ItemListener{
         }
     }
     
+    public void setIm5D(boolean bool) {
+        im4D_option = bool;
+    }
+
 }

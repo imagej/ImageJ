@@ -670,7 +670,7 @@ public class Functions implements MacroConstants, Measurements {
 				x[n] = (int)Math.round(interp.getExpression());
 				if (n==2 && interp.nextToken()==')') {
 					interp.getRightParen();
-					Roi line = new Line(x1, y1, x2, y2);
+					Roi line = new Line(x1d, y1d, x2d, y2d);
 					line.updateWideLine((float)x[n]);
 					getImage().setRoi(line);
 					return;
@@ -813,19 +813,6 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		ImageStack stack = imp.getStack();
 		int size = stack.getSize();
-		if (imp.isHyperStack()) {
-			int slices = imp.getNSlices();
-			int frames = imp.getNFrames();
-			if (frames>1 && slices==1) { // time-lapse
-				size = frames;
-				if (z<size)
-					n = imp.getStackIndex(imp.getC(), imp.getZ(), z+1);
-			} else {
-				size = slices;
-				if (z<size)
-					n = imp.getStackIndex(imp.getC(), z+1, imp.getT());
-			}
-		}
 		if (z<0 || z>=size)
 			interp.error("Z coordinate ("+z+") is out of 0-"+(size-1)+ " range");
 		this.defaultIP = stack.getProcessor(n);		
@@ -2394,7 +2381,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (tok!=WORD) return false;
 		Variable v = interp.lookupVariable(nextToken>>TOK_SHIFT);
 		if (v==null) return false;
-		return v.getType()==Variable.ARRAY;
+		int nextNextToken = pgm.code[interp.pc+2];
+		return v.getType()==Variable.ARRAY && nextNextToken!='[';
 	}
 
 	double setMultipleIndexes(RoiManager rm) {

@@ -560,6 +560,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
 		int newStackSize = newStack.getSize();
+		//IJ.log("setStack: "+newStackSize+" "+this);
 		if (newStackSize==0)
 			throw new IllegalArgumentException("Stack is empty");
 		if (!newStack.isVirtual()) {
@@ -1718,6 +1719,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		ImagePlus imp2 = new ImagePlus();
 		imp2.setType(getType());
 		imp2.setCalibration(getCalibration());
+		String info = (String)getProperty("Info");
+		if (info!=null)
+			imp2.setProperty("Info", info);
+		FileInfo fi = getOriginalFileInfo();
+		if (fi!=null) {
+			fi = (FileInfo)fi.clone();
+			fi.directory = null;
+			fi.url = null;
+			imp2.setFileInfo(fi);
+		}
 		return imp2;
 	}
 	
@@ -2213,7 +2224,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
     public String toString() {
-    	return "imp["+getTitle()+" "+width+"x"+height+"x"+getStackSize()+"]";
+    	return "imp["+getTitle()+" ("+width+"x"+height+"x"+getNChannels()+"x"+getNSlices()+"x"+getNFrames()+")]";
     }
     
 }
