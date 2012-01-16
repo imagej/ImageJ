@@ -904,9 +904,11 @@ public class IJ {
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
-				return flags+PlugInFilter.DOES_STACKS;
 			String macroOptions = Macro.getOptions();
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+				if (macroOptions==null || !macroOptions.contains("slice"))
+				return flags+PlugInFilter.DOES_STACKS;
+			}
 			if (macroOptions!=null) {
 				if (macroOptions.indexOf("stack ")>=0)
 					return flags+PlugInFilter.DOES_STACKS;

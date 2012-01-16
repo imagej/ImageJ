@@ -1,10 +1,12 @@
 package ij.process;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 
 /** Used by the Roi classes to return float coordinate arrays and to
 	determine if a point is inside or outside of spline fitted selections. */
 public class FloatPolygon {
-	Rectangle bounds;
+	private Rectangle bounds;
+	private float minX, minY, maxX, maxY;
 
 	/** The number of points. */
 	public int npoints;
@@ -60,11 +62,19 @@ public class FloatPolygon {
 		return bounds.getBounds();
 	}
 
+	public Rectangle2D.Double getFloatBounds() {
+		if (npoints==0)
+			return new Rectangle2D.Double();
+		if (bounds==null)
+			calculateBounds(xpoints, ypoints, npoints);
+		return new Rectangle2D.Double(minX, minY, maxX-minX, maxY-minY);
+	}
+
 	void calculateBounds(float[] xpoints, float[] ypoints, int npoints) {
-		float minX = Float.MAX_VALUE;
-		float minY = Float.MAX_VALUE;
-		float maxX = Float.MIN_VALUE;
-		float maxY = Float.MIN_VALUE;
+		minX = Float.MAX_VALUE;
+		minY = Float.MAX_VALUE;
+		maxX = Float.MIN_VALUE;
+		maxY = Float.MIN_VALUE;
 		for (int i=0; i<npoints; i++) {
 			float x = xpoints[i];
 			minX = Math.min(minX, x);

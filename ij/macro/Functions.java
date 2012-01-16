@@ -1817,22 +1817,51 @@ public class Functions implements MacroConstants, Measurements {
 				interp.error("Arrays are not the same length");
 		}
 		ImagePlus imp = getImage();
-		int[] xcoord = new int[n];
-		int[] ycoord = new int[n];
-		int height = imp.getHeight();
+		boolean floatCoordinates = false;
 		for (int i=0; i<n; i++) {
-			xcoord[i] = (int)Math.round(x[i]);
-			ycoord[i] = (int)Math.round(y[i]);
+			if (x[i]!=(int)x[i] || y[i]!=(int)y[i]) {
+				floatCoordinates = true;
+				break;
+			}
+		}
+		int[] xcoord = null;
+		int[] ycoord = null;
+		float[] xfcoord = null;
+		float[] yfcoord = null;
+		if (floatCoordinates) {
+			xfcoord = new float[n];
+			yfcoord = new float[n];
+			for (int i=0; i<n; i++) {
+				xfcoord[i] = (float)x[i];
+				yfcoord[i] = (float)y[i];
+			}
+		} else {
+			xcoord = new int[n];
+			ycoord = new int[n];
+			for (int i=0; i<n; i++) {
+				xcoord[i] = (int)Math.round(x[i]);
+				ycoord[i] = (int)Math.round(y[i]);
+			}
 		}
 		Roi roi = null;
 		if (roiType==Roi.LINE) {
 			if (xcoord.length!=2)
 				interp.error("2 element arrays expected");
-			roi = new Line(xcoord[0], ycoord[0], xcoord[1], ycoord[1]);
-		} else if (roiType==Roi.POINT)
-			roi = new PointRoi(xcoord, ycoord, n);
-		else
-			roi = new PolygonRoi(xcoord, ycoord, n, roiType);
+			if (floatCoordinates)
+				roi = new Line(xfcoord[0], yfcoord[0], xfcoord[1], yfcoord[1]);
+			else
+				roi = new Line(xcoord[0], ycoord[0], xcoord[1], ycoord[1]);
+		} else if (roiType==Roi.POINT) {
+			if (floatCoordinates)
+				roi = new PointRoi(xfcoord, yfcoord, n);
+			else
+				roi = new PointRoi(xcoord, ycoord, n);
+		} else {
+			if (floatCoordinates)
+				roi = new PolygonRoi(xfcoord, yfcoord, n, roiType);
+			else
+				roi = new PolygonRoi(xcoord, ycoord, n, roiType);
+		}
 		Roi previousRoi = imp.getRoi();
 		if (shiftKeyDown||altKeyDown) imp.saveRoi();
 		imp.setRoi(roi);
@@ -2044,7 +2073,7 @@ public class Functions implements MacroConstants, Measurements {
 		ImagePlus imp = getImage();
 		Roi roi = imp.getRoi();
 		if (roi!=null) {
-			Rectangle r = roi.getBounds();
+			Rectangle2D.Double r = roi.getFloatBounds();
 			x.setValue(r.x);
 			y.setValue(r.y);
 			width.setValue(r.width);

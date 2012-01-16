@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46e 11 January 2012</u>
+<li> <u>1.46e 15 January 2012</u>
 <ul>
 <li> Changes made to options in the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box cause the current image to be immediately updated.
@@ -15,7 +15,9 @@ by Jon Jackson.
 <li> Less memory is required to display float images.
 <li> Thanks to Michel Julier, images zoomed less than 100%
 are displayed with higher quality.
+<li> <i>Edit&gt;Selection&gt;Rotate</i> uses floating-point coordinates
 <li> Added the call("ij.gui.ImageWindow.setNextLocation",x,y) macro call.
+<li> Added the Roi.getFloatBounds() and FloatPolygon.getFloatBounds() methods.
 <li> Thanks to Martin Dressler, fixed bugs in 
 <i>Image&gt;Duplicate</i> and <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i>
 that caused image "Info" metadata to be discarded.
@@ -27,6 +29,8 @@ protected xp and yp arrays to fail.
 with straight line selections.
 <li> Fixed a bug that caused the makeLine(x1,y1,x2,y2,width) macro function
 to round non-integer arguments.
+<li> Fixed a bug that caused thresholds to not be reset when
+converting from 16-bit to 8-bit.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

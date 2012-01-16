@@ -25,6 +25,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	static final int NO_MODS=0, ADD_TO_ROI=1, SUBTRACT_FROM_ROI=2; // modification states
 		
 	int startX, startY, x, y, width, height;
+	Rectangle2D.Double bounds;
 	double xd, yd, widthd, heightd;
 	int activeHandle;
 	int state;
@@ -325,6 +326,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return new Rectangle(x, y, width, height);
 	}
 	
+	/** Return this selection's bounding rectangle. */
+	public Rectangle2D.Double getFloatBounds() {
+		if (bounds!=null)
+			return new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height);
+		else
+			return new Rectangle2D.Double(x, y, width, height);
+	}
+
 	/**
 	* @deprecated
 	* replaced by getBounds()
@@ -678,6 +687,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		oldHeight=height;
 		if (isImageRoi) showStatus();
 		xd=x; yd=y;
+		bounds = null;
 	}
 
 	/** Nudge ROI one pixel on arrow key press. */

@@ -48,7 +48,7 @@ public class PolygonRoi extends Roi {
 		init2(type);
 	}
 	
-	/** Creates a new polygon or polyline ROI from x and y float arrays.
+	/** Creates a new polygon or polyline ROI from float x and y arrays.
 		Type must be Roi.POLYGON, Roi.FREEROI, Roi.POLYLINE, Roi.FREELINE or Roi.ANGLE.*/
 	public PolygonRoi(float[] xPoints, float[] yPoints, int nPoints, int type) {
 		super(0, 0, null);
@@ -307,9 +307,14 @@ public class PolygonRoi extends Roi {
 		double mag = getMagnification();
 		if (mag==1.0 && basex==0 && basey==0) {
 			if (xpf!=null) {
+				float xbase=x, ybase=y;
+				if (bounds!=null) {
+					xbase = (float)bounds.x;
+					ybase = (float)bounds.y;
+				}
 				for (int i=0; i<nPoints; i++) {
-					xp2[i] = (int)(xpf[i]+x);
-					yp2[i] = (int)(ypf[i]+y);
+					xp2[i] = (int)(xpf[i]+xbase);
+					yp2[i] = (int)(ypf[i]+ybase);
 				}
 			} else {
 				for (int i=0; i<nPoints; i++) {
@@ -319,10 +324,15 @@ public class PolygonRoi extends Roi {
 			}
 		} else {
 			if (xpf!=null) {
+				double xbase=x, ybase=y;
+				if (bounds!=null) {
+					xbase = bounds.x;
+					ybase = bounds.y;
+				}
 				double offset = getOffset(0.5);
 				for (int i=0; i<nPoints; i++) {
-					xp2[i] = ic.screenXD(xpf[i]+x+offset);
-					yp2[i] = ic.screenYD(ypf[i]+y+offset);
+					xp2[i] = ic.screenXD(xpf[i]+xbase+offset);
+					yp2[i] = ic.screenYD(ypf[i]+ybase+offset);
 				}
 			} else {
 				for (int i=0; i<nPoints; i++) {
@@ -433,29 +443,33 @@ public class PolygonRoi extends Roi {
 	static int counter = 0;
 
     void finishPolygon() {
-    	Rectangle r;
     	if (xpf!=null) {
 			FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
-			r = poly.getBounds();
+			Rectangle r = poly.getBounds();
+			x = r.x;
+			y = r.y;
+			width = r.width;
+			height = r.height;
+			bounds = poly.getFloatBounds();
+			float xbase = (float)bounds.getX();
+			float ybase = (float)bounds.getY();
+			for (int i=0; i<nPoints; i++) {
+				xpf[i] -= xbase;
+				ypf[i] -= ybase;
+			}	
 		} else {
 			Polygon poly = new Polygon(xp, yp, nPoints);
-			r = poly.getBounds();
-		}
-		x = r.x;
-		y = r.y;
-		width = r.width;
-		height = r.height;
-		if (xpf!=null) {
-			for (int i=0; i<nPoints; i++) {
-				xpf[i] = (float)(xpf[i]-x);
-				ypf[i] = (float)(ypf[i]-y);
-			}
-        } else {
+			Rectangle r = poly.getBounds();
+			x = r.x;
+			y = r.y;
+			width = r.width;
+			height = r.height;
 			for (int i=0; i<nPoints; i++) {
 				xp[i] = xp[i]-x;
 				yp[i] = yp[i]-y;
 			}
-        }
+			bounds = null;
+		}
 		if (nPoints<2 || (!(type==FREELINE||type==POLYLINE||type==ANGLE) && (nPoints<3||width==0||height==0))) {
 			if (imp!=null) imp.killRoi();
 			if (type!=POINT) return;
@@ -551,8 +565,10 @@ public class PolygonRoi extends Roi {
 
 	void resetBoundingRect() {
    		if (xpf!=null) {
-   			xp = toInt(xpf, xp, nPoints);
-   			yp = toInt(ypf, yp, nPoints);
+    		resetSubPixelBoundingRect();
+    		xp = toInt(xpf, xp, nPoints);
+			yp = toInt(ypf, yp, nPoints);
+    		return;
    		}
 		int xmin=Integer.MAX_VALUE, xmax=-xmin, ymin=xmin, ymax=xmax;
 		int xx, yy;
@@ -567,22 +583,40 @@ public class PolygonRoi extends Roi {
 		if (xmin!=0) {
 			for (int i=0; i<nPoints; i++)
 				xp[i] -= xmin;
-			if (xpf!=null) {
-				for (int i=0; i<nPoints; i++)
-					xpf[i] -= xmin;
-			}
 		}
 		if (ymin!=0) {
 			for (int i=0; i<nPoints; i++)
 				yp[i] -= ymin;
-			if (ypf!=null) {
-				for (int i=0; i<nPoints; i++)
-					ypf[i] -= ymin;
-			}
 		}
 		//IJ.log("reset: "+ymin+" "+before+" "+yp[0]);
 		x+=xmin; y+=ymin;
 		width=xmax-xmin; height=ymax-ymin;
+		bounds = null;
+	}
+	
+	void resetSubPixelBoundingRect() {
+		float xbase=x, ybase=y;
+		if (bounds!=null) {
+			xbase = (float)bounds.x;
+			ybase = (float)bounds.y;
+		}
+		for (int i=0; i<nPoints; i++) {
+			xpf[i] = xpf[i]+xbase;
+			ypf[i] = ypf[i]+ybase;
+		}
+		FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);
+		Rectangle r = poly.getBounds();
+		x = r.x;
+		y = r.y;
+		width = r.width;
+		height = r.height;
+		bounds = poly.getFloatBounds();
+		xbase = (float)bounds.getX();
+		ybase = (float)bounds.getY();
+		for (int i=0; i<nPoints; i++) {
+			xpf[i] -= xbase;
+			ypf[i] -= ybase;
+		}	
 	}
 
 	String getAngleAsString() {
@@ -1242,8 +1276,13 @@ public class PolygonRoi extends Roi {
 			}
 		} else if (xpf!=null) {
 			for (int i=0; i<n; i++) {
-				xpoints2[i] = xpf[i] + x;
-				ypoints2[i] = ypf[i] + y;
+				float xbase=x, ybase=y;
+				if (bounds!=null) {
+					xbase = (float)bounds.x;
+					ybase = (float)bounds.y;
+				}
+				xpoints2[i] = xpf[i] + xbase;
+				ypoints2[i] = ypf[i] + ybase;
 			}
 		} else {
 			for (int i=0; i<n; i++) {
