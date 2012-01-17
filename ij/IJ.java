@@ -907,7 +907,7 @@ public class IJ {
 			String macroOptions = Macro.getOptions();
 			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
 				if (macroOptions==null || !macroOptions.contains("slice"))
-				return flags+PlugInFilter.DOES_STACKS;
+					return flags+PlugInFilter.DOES_STACKS;
 			}
 			if (macroOptions!=null) {
 				if (macroOptions.indexOf("stack ")>=0)

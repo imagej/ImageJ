@@ -564,12 +564,12 @@ public class PolygonRoi extends Roi {
 	}
 
 	void resetBoundingRect() {
-   		if (xpf!=null) {
-    		resetSubPixelBoundingRect();
-    		xp = toInt(xpf, xp, nPoints);
+		if (xpf!=null) {
+			resetSubPixelBoundingRect();
+			xp = toInt(xpf, xp, nPoints);
 			yp = toInt(ypf, yp, nPoints);
-    		return;
-   		}
+			return;
+		}
 		int xmin=Integer.MAX_VALUE, xmax=-xmin, ymin=xmin, ymax=xmax;
 		int xx, yy;
 		for (int i=0; i<nPoints; i++) {

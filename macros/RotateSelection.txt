@@ -20,8 +20,10 @@
   getSelectionCoordinates(x, y);
   line = type==5;
   if (line) {
-      getLine(x1, y1, x2, y2, width);
+      getLine(x1, y1, x2, y2, lineWidth);
       x[0]=x1; y[0]=y1; x[1]=x2; y[1]=y2;
+      xcenter = x1 + (x2-x1)/2;
+      ycenter = y1 + (y2-y1)/2;
   }
   for (i=0; i<x.length; i++) {
       dx=x[i]-xcenter; dy=ycenter-y[i];
@@ -31,7 +33,7 @@
       y[i] = ycenter - r*sin(a+theta);
   }
   if (line)
-      makeLine(x[0], y[0], x[1], y[1]);
+      makeLine(x[0], y[0], x[1], y[1], lineWidth);
   else
       makeSelection(type, x, y);
   return toString(angle);

@@ -190,9 +190,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		copy = new Button("Copy...");
 		copy.addActionListener(this);
 		buttons.add(copy);
-		live = new Button("Live");
-		live.addActionListener(this);
-		buttons.add(live);
+		if (plot!=null && plot.getSourceImageID()!=0) {
+			live = new Button("Live");
+			live.addActionListener(this);
+			buttons.add(live);
+		}		
 		coordinates = new Label("X=12345678, Y=12345678"); 
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		coordinates.setBackground(new Color(220, 220, 220));
@@ -483,7 +485,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 	}
 
 	private void enableLiveProfiling() {
-		if (plot!=null && bgThread==null) {
+		if (plot!=null && bgThread==null && plot.getSourceImageID()!=0) {
 			int id = plot.getSourceImageID();
 			srcImp = WindowManager.getImage(id);
 			if (srcImp==null) return;

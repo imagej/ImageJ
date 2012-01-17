@@ -105,6 +105,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		resetCounter,showProgress, recordStarts, displaySummary, floodFill,
 		addToManager, inSituShow;
 		
+	private boolean showResultsWindow = true;
 	private String summaryHdr = "Slice\tCount\tTotal Area\tAverage Size\t%Area";
 	private double level1, level2;
 	private double minSize, maxSize;
@@ -141,6 +142,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private Polygon polygon;
 	private RoiManager roiManager;
 	private static RoiManager staticRoiManager;
+	private static ResultsTable staticResultsTable;
 	private ImagePlus outputImage;
 	private boolean hideOutputImage;
 	private int roiType;
@@ -425,6 +427,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			roiManager = staticRoiManager;
 			staticRoiManager = null;
 		}
+		if (staticResultsTable!=null) {
+			rt = staticResultsTable;
+			staticResultsTable = null;
+			showResultsWindow = false;
+		}
 		displaySummary = (options&DISPLAY_SUMMARY)!=0;
 		inSituShow = (options&IN_SITU_SHOW)!=0;
 		outputImage = null;
@@ -490,8 +497,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (rt==null) {
 			rt = Analyzer.getResultsTable();
 			analyzer = new Analyzer(imp);
-		} else
+		} else {
+			if (measurements==0)
+				measurements = Analyzer.getMeasurements();
 			analyzer = new Analyzer(imp, measurements, rt);
+		}
 		if (resetCounter && slice==1) {
 			if (!Analyzer.resetCounter())
 				return false;
@@ -561,7 +571,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		}
 		if (showProgress)
 			IJ.showProgress(1.0);
-		if (showResults)
+		if (showResults && showResultsWindow)
 			rt.updateResults();
 		imp.killRoi();
 		ip.resetRoi();
@@ -892,7 +902,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				roi.setStrokeWidth(lineWidth);
 			roiManager.add(imp, roi, rt.getCounter());
 		}
-		if (showResults)
+		if (showResultsWindow && showResults)
 			rt.addResults();
 	}
 	
@@ -988,9 +998,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				outputImage.show();
 		}
 		if (showResults && !processStack) {
-			TextPanel tp = IJ.getTextPanel();
-			if (beginningCount>0 && tp!=null && tp.getLineCount()!=count)
-				rt.show("Results");
+			if (showResultsWindow) {
+				TextPanel tp = IJ.getTextPanel();
+				if (beginningCount>0 && tp!=null && tp.getLineCount()!=count)
+					rt.show("Results");
+			}
 			Analyzer.firstParticle = beginningCount;
 			Analyzer.lastParticle = Analyzer.getCounter()-1;
 		} else
@@ -1026,6 +1038,12 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		staticRoiManager = manager;
 	}
 	
+	/** Sets the ResultsTable to be used by the next  
+		ParticleAnalyzer instance.	*/
+	public static void setResultsTable(ResultsTable rt) {
+		staticResultsTable = rt;
+	}
+
 	int getColumnID(String name) {
 		int id = rt.getFreeColumn(name);
 		if (id==ResultsTable.COLUMN_IN_USE)

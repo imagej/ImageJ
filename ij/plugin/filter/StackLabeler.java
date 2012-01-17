@@ -6,10 +6,11 @@ import ij.util.Tools;
 import ij.measure.Measurements;
 import java.awt.*;
 
+
 /** This plugin implements the Image/Stacks/Label command. */
 public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
-	private static final String[] formats = {"0", "0000", "00:00", "00:00:00", "Text"};
-	private static final int NUMBER=0, ZERO_PADDED_NUMBER=1, MIN_SEC=2, HOUR_MIN_SEC=3, TEXT=4;
+	private static final String[] formats = {"0", "0000", "00:00", "00:00:00", "Text","Label"};
+	private static final int NUMBER=0, ZERO_PADDED_NUMBER=1, MIN_SEC=2, HOUR_MIN_SEC=3, TEXT=4, LABEL=5;
 	private static int format = (int)Prefs.get("label.format", NUMBER);
 	private int flags = DOES_ALL;
 	private ImagePlus imp;
@@ -71,7 +72,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				}
 			}
 		}
-		if (format<0||format>TEXT) format = NUMBER;
+		if (format<0||format>LABEL) format = NUMBER;
 		int defaultLastFrame = imp.getStackSize();
 		if (imp.isHyperStack()) {
 			if (imp.getNFrames()>1)
@@ -221,7 +222,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				yoffset = r!=null?r.height:fontSize;
 			}
 			if (frame>=firstFrame&&frame<=lastFrame) {
-				Roi roi = new TextRoi(x+maxWidth-textWidth, y-yoffset, s, font);
+				int xloc = format==LABEL?x:x+maxWidth-textWidth;
+				Roi roi = new TextRoi(xloc, y-yoffset, s, font);
 				roi.setStrokeColor(color);
 				roi.setNonScalable(true);
 				roi.setPosition(image);
@@ -232,7 +234,8 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		} else if (frame>=firstFrame&&frame<=lastFrame) {
 			ip.setColor(color); 
 			ip.setAntialiasedText(fontSize>=18);
-			ip.moveTo(x+maxWidth-textWidth, y);
+			int xloc = format==LABEL?x:x+maxWidth-textWidth;
+			ip.moveTo(xloc, y);
 			ip.drawString(s);
 		}
 	}
@@ -261,7 +264,16 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 				str=pad((int)Math.floor(itime/3600))+":"+pad((int)Math.floor((itime/60)%60))+":"+pad(itime%60)+" "+text;
 				if (sign == -1) str = "-"+str;
 				break;
-			case TEXT: str=text; break;
+			case TEXT: 
+				str=text; 
+				break;
+			case LABEL:
+				if (0<=index && index<imp.getStackSize()) {
+					str = imp.getStack().getShortSliceLabel(index+1);
+					str = str==null?"null slice label ("+(index+1)+")":str;
+				} else
+					str="void";
+				break;
 		}
 		return str;
 	}

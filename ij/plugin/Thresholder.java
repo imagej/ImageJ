@@ -36,6 +36,10 @@ public class Thresholder implements PlugIn, Measurements {
 	}
 	
 	void convertStack(ImagePlus imp) {
+		if (imp.getStack().isVirtual()) {
+			IJ.error("Thresholder", "This command does not work with virtual stacks.\nUse Image>Duplicate to convert to a normal stack.");
+			return;
+		}
 		if (!(imp.getProcessor().getMinThreshold()==ImageProcessor.NO_THRESHOLD))
 			useLocal = false;		
 		GenericDialog gd = new GenericDialog("Convert to Mask");
