@@ -31,7 +31,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	/** Display results in the ImageJ console. */
 	public static final int SHOW_RESULTS = 1;
 	
-	/** Obsolete */
+	/** Obsolete, replaced by  DISPLAY_SUMMARY */
 	public static final int SHOW_SUMMARY = 2;
 	
 	/** Display image containing outlines of measured particles. */
@@ -432,7 +432,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			staticResultsTable = null;
 			showResultsWindow = false;
 		}
-		displaySummary = (options&DISPLAY_SUMMARY)!=0;
+		displaySummary = (options&DISPLAY_SUMMARY)!=0 ||  (options&SHOW_SUMMARY)!=0;
 		inSituShow = (options&IN_SITU_SHOW)!=0;
 		outputImage = null;
 		ip.snapshot();
