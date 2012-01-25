@@ -5,39 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.46e 18 January 2012</u>
+<li> <u>1.46f 24 January 2012</u>
 <ul>
-<li> Thorsten Wagner added a "Label" (display slice labels) option to the
-<i>Image&gt;Stacks&gt;Label</i> dialog box.
-<li> Changes made to options in the <i>Edit&gt;Options&gt;Appearance</i>
-dialog box cause the current image to be immediately updated.
-<li> Upgraded the <i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> plugin
-to the version from the MacBiophotonics distribution and Fiji written
-by Jon Jackson.
-<li> Less memory is required to display float images.
-<li> Thanks to Michel Julier, images zoomed less than 100%
-are displayed with higher quality.
-<li> <i>Edit&gt;Selection&gt;Rotate</i> uses floating-point coordinates
-<li> Added the call("ij.gui.ImageWindow.setNextLocation",x,y) macro call.
-<li> Added the Roi.getFloatBounds() and FloatPolygon.getFloatBounds() methods.
-<li> Added the ParticleAnalyzer.setResultsTable() method.
-<li> Thanks to Jan Eglinger, ImageJ displays an error message when you attempt to
-apply a threshold or brightness/contrast change to a virtual stack.
-<li> Thanks to Martin Dressler, fixed bugs in 
-<i>Image&gt;Duplicate</i> and <i>Image&gt;Stacks&gt;Tools&gt;Make Substack</i>
-that caused image "Info" metadata to be discarded.
-<li> Thanks to Johannes Schindelin, fixed a 1.46a regression that could cause 
-plugins that extended the PolygonRoi class, did spline fitting and accessed the  
-protected xp and yp arrays to fail.
-<li> Thanks to Vytas Bindokas, fixed bugs that could cause
-<i>Edit&gt;Selection&gt;Rotate</i> to not work as expected
-with straight line selections.
-<li> Fixed a bug that caused the makeLine(x1,y1,x2,y2,width) macro function
-to round non-integer arguments.
-<li> Fixed a bug that caused thresholds to not be reset when
-converting from 16-bit to 8-bit.
-<li> Fixed a v1.45c regression that caused <i>Process&gt;Math&gt;Macro</i> to fail
-on multiprocessor machines if the expression contained "getPixel".
+<li> Thanks to Norbert Vischer, fixed a bug that made it impossible to
+select select images with duplicate names from the <i>Window</i> menu.
+<li> Thanks to Michael Schmid, added the IJ.d2s(n,significantDigits,maxDigits) method,
+which is used by the macro language to convert numbers to strings,
+by the <i>Analyze&gt;Histogram</i> command to display values in histogram windows,
+and by ImageJ to display values in the status bar as the curser is moved over float images.
+<li> Thanks to David M. Gauntt, added the FHT(ImageProcessor,boolean)
+constructor to the FHT class.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

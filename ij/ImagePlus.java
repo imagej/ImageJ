@@ -1904,7 +1904,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			else
     				return(", value=" + IJ.d2s(cValue) + " ("+v[0]+")");
     		case GRAY32:
-    			return(", value=" + Float.intBitsToFloat(v[0]));
+    			double value = Float.intBitsToFloat(v[0]);
+    			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,5,9);
+    			return(", value=" + s);
 			case COLOR_RGB:
     			return(", value=" + v[0] + "," + v[1] + "," + v[2]);
     		default: return("");

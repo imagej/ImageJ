@@ -438,7 +438,7 @@ public class ShapeRoi extends Roi {
 	 * @return an array of ij.gui.Roi objects.
 	 */
 	public Roi[] getRois () {
-		if(shape==null) return new Roi[0];
+		if (shape==null) return new Roi[0];
 		if (savedRois!=null)
 			return getSavedRois();
 		Vector rois = new Vector();
@@ -456,8 +456,10 @@ public class ShapeRoi extends Roi {
 			rois.addElement(r);
 		} else if (shape instanceof GeneralPath) {
 			PathIterator pIter;
-			if (flatten) pIter = getFlatteningPathIterator(shape,flatness);
-			else pIter = shape.getPathIterator(new AffineTransform());
+			if (flatten)
+				pIter = getFlatteningPathIterator(shape,flatness);
+			else
+				pIter = shape.getPathIterator(new AffineTransform());
 			parsePath(pIter, null, null, rois, null);
 		}
 		Roi[] array = new Roi[rois.size()];
@@ -475,7 +477,7 @@ public class ShapeRoi extends Roi {
 	 * @return an ij.gui.Roi object or null
 	 */
 	public Roi shapeToRoi() {
-		if(shape==null || !(shape instanceof GeneralPath))
+		if (shape==null || !(shape instanceof GeneralPath))
 			return null;
 		PathIterator pIter = shape.getPathIterator(new AffineTransform());
 		Vector rois = new Vector();
@@ -767,7 +769,7 @@ public class ShapeRoi extends Roi {
 
 	Vector parseSegments(PathIterator pI) {
 		Vector v = new Vector();
-		if(parsePath(pI, null, v, null, null)) return v;
+		if (parsePath(pI, null, v, null, null)) return v;
 		return null;
 	}
 
@@ -883,21 +885,20 @@ public class ShapeRoi extends Roi {
 	 * control points of the curves segments in the iteration order;
 	 * @return <strong><code>true</code></strong> if successful.*/
 	boolean parsePath(PathIterator pIter, double[] params, Vector segments, Vector rois, Vector handles) {
-		//long start = System.currentTimeMillis();
 		boolean result = true;
-		if(pIter==null) return false;
+		if (pIter==null) return false;
 		double pw = 1.0, ph = 1.0;
-		if(imp!=null) {
+		if (imp!=null) {
 			Calibration cal = imp.getCalibration();
 			pw = cal.pixelWidth;
 			ph = cal.pixelHeight;
 		}
 		Vector xCoords = new Vector();
 		Vector yCoords = new Vector();
-		if(segments==null) segments = new Vector();
-		if(handles==null) handles = new Vector();
+		if (segments==null) segments = new Vector();
+		if (handles==null) handles = new Vector();
 		//if(rois==null) rois = new Vector();
-		if(params == null) params = new double[1];
+		if (params == null) params = new double[1];
 		boolean shapeToRoi = params[0]==SHAPE_TO_ROI;
 		int subPaths = 0; // the number of subpaths
 		int count = 0;// the number of segments in each subpath w/o SEG_CLOSE; resets to one after each SEG_MOVETO
@@ -930,9 +931,9 @@ public class ShapeRoi extends Roi {
 			scaleCoords(coords,pw,ph);
 			switch(segType) {
 				case PathIterator.SEG_MOVETO:
-					if(subPaths>0) {
+					if (subPaths>0) {
 						closed = ((int)ux0==(int)usX && (int)uy0==(int)usY);
-						if(closed && (int)ux0!=(int)usX && (int)uy0!=(int)usY) { // this may only happen after a SEG_CLOSE
+						if (closed && (int)ux0!=(int)usX && (int)uy0!=(int)usY) { // this may only happen after a SEG_CLOSE
 							xCoords.add(new Integer(((Integer)xCoords.elementAt(0)).intValue()));
 							yCoords.add(new Integer(((Integer)yCoords.elementAt(0)).intValue()));
 						}
@@ -1027,7 +1028,6 @@ public class ShapeRoi extends Roi {
 			}
 		}
 		params[0] = pathLength;
-		//IJ.log("parsePath:"+ (System.currentTimeMillis()-start));
 		return result;
 	}
 

@@ -741,6 +741,27 @@ public class IJ {
 		return df[decimalPlaces].format(n);
 	}
 
+    /** Converts a number to a rounded formatted string.
+    * The 'significantDigits' argument specifies the minimum number
+    * of significant digits, which is also the preferred number of
+    * digits behind the decimal. Fewer decimals are shown if the 
+    * number would have more than 'maxDigits'.
+    * Exponential notation is used if more than 'maxDigits' would be needed.
+    */
+    public static String d2s(double x, int significantDigits, int maxDigits) {
+        double log10 = Math.log10(Math.abs(x));
+        double roundErrorAtMax = 0.223*Math.pow(10, -maxDigits);
+        int magnitude = (int)Math.ceil(log10+roundErrorAtMax);
+        int decimals = x==0 ? 0 : maxDigits - magnitude;
+        if (decimals<0 || magnitude<significantDigits+1-maxDigits)
+            return IJ.d2s(x, -significantDigits); // exp notation for large and small numbers
+        else {
+            if (decimals>significantDigits)
+                decimals = Math.max(significantDigits, decimals-maxDigits+significantDigits);
+            return IJ.d2s(x, decimals);
+        }
+    }
+
 	/** Pad 'n' with leading zeros to the specified number of digits. */
 	public static String pad(int n, int digits) {
 		String str = ""+n;

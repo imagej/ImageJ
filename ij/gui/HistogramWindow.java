@@ -191,7 +191,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 				{vlabel=" "; clabel=" ";}
 			else
 				{vlabel=" value="; clabel=" count=";}
-			String v = vlabel+ResultsTable.d2s(cal.getCValue(stats.histMin+index*stats.binSize), digits)+blankLabel;
+			String v = vlabel+d2s(cal.getCValue(stats.histMin+index*stats.binSize))+blankLabel;
 			String c = clabel+histogram[index]+blankLabel;
 			int len = vlabel.length() + blankLabel.length();
 			value.setText(v.substring(0,len));
@@ -201,7 +201,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			count.setText(blankLabel);
 		}
 	}
-    
+	
 	protected void drawHistogram(ImageProcessor ip, boolean fixedRange) {
 		drawHistogram(null, ip, fixedRange, 0.0, 0.0);
 	}
@@ -359,6 +359,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 	}
 
+	/*
 	String d2s(double d) {
 		if (d==Double.MAX_VALUE||d==-Double.MAX_VALUE)
 			return "0";
@@ -371,6 +372,14 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		else
 			return ResultsTable.d2s(d,decimalPlaces);
 	}
+	*/
+	
+	private String d2s(double d) {
+		if ((int)d==d)
+			return IJ.d2s(d, 0);
+		else
+    		return IJ.d2s(d, 3, 8);
+    }
 	
 	int getWidth(double d, ImageProcessor ip) {
 		return ip.getStringWidth(d2s(d));
