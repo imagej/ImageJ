@@ -37,6 +37,8 @@ public class Converter implements PlugIn {
 	 	long start = System.currentTimeMillis();
 	 	Roi roi = imp.getRoi();
 	 	imp.killRoi();
+	 	if (imp.getProcessor().getMinThreshold()!=ImageProcessor.NO_THRESHOLD)
+			imp.getProcessor().resetThreshold();
 	 	boolean saveChanges = imp.changes;
 		imp.changes = IJ.getApplet()==null; //if not applet, set 'changes' flag
 	 	ImageWindow win = imp.getWindow();

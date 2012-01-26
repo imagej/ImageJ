@@ -642,6 +642,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
 			if (d.yesPressed()) {
+				if (imp.getStack().isVirtual()) {
+					imp.unlock();
+					IJ.error("\"Apply\" does not work with virtual stacks. Use\nImage>Duplicate to convert to a normal stack.");
+					return;
+				}
 				int current = imp.getCurrentSlice();
 				ImageProcessor mask = imp.getMask();
 				for (int i=1; i<=imp.getStackSize(); i++) {

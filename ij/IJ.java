@@ -904,9 +904,11 @@ public class IJ {
 			return flags;
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
-			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE)
-				return flags+PlugInFilter.DOES_STACKS;
 			String macroOptions = Macro.getOptions();
+			if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.COMPOSITE) {
+				if (macroOptions==null || !macroOptions.contains("slice"))
+					return flags+PlugInFilter.DOES_STACKS;
+			}
 			if (macroOptions!=null) {
 				if (macroOptions.indexOf("stack ")>=0)
 					return flags+PlugInFilter.DOES_STACKS;
@@ -971,6 +973,11 @@ public class IJ {
 		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 	
+	/** Creates a straight line selection using floating point coordinates. */
+	public static void makeLine(double x1, double y1, double x2, double y2) {
+		getImage().setRoi(new Line(x1, y1, x2, y2));
+	}
+
 	/** Creates a point selection. */
 	public static void makePoint(int x, int y) {
 		ImagePlus img = getImage();
@@ -985,11 +992,6 @@ public class IJ {
 			IJ.setKeyUp(KeyEvent.VK_ALT);
 		} else
 			img.setRoi(new PointRoi(x, y));
-	}
-
-	/** Creates a straight line selection using double coordinates. */
-	public static void makeLine(double x1, double y1, double x2, double y2) {
-		getImage().setRoi(new Line(x1, y1, x2, y2));
 	}
 
 	/** Sets the display range (minimum and maximum displayed pixel values) of the current image. */

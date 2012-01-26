@@ -1295,7 +1295,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			names[i] = null;
 			tools[i] = null;
 			icons[i] = null;
-			if (menus[i]!=null) menus[i].removeAll();
+			if (menus[i]!=null)
+				menus[i].removeAll();
 		}
 	}
 
@@ -1308,8 +1309,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		int tool = addTool(name);
 		addingSingleTool = false;
 		this.macroInstaller = null;
-		if (tool!=-1)
+		if (tool!=-1) {
 			tools[tool] = new MacroToolRunner(macroInstaller);
+			if (menus[tool]!=null && !name.endsWith(" Menu Tool"))
+				menus[tool].removeAll();
+		}
 	}
 
 	public static void removeMacroTools() {
@@ -1329,11 +1333,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		instance.addingSingleTool = false;
 		if (id!=-1) {
 			instance.tools[id] = tool;
+			if (instance.menus[id]!=null)
+				instance.menus[id].removeAll();
 			instance.repaint();	
 		}
 	}
 
 	public static PlugInTool getPlugInTool() {
+		if (instance==null) return null;
 		PlugInTool tool = instance.tools[current];
 		if (tool!=null && tool instanceof MacroToolRunner)
 			tool = null;

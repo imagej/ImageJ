@@ -623,6 +623,11 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
     	nextLocation = loc;
     }
 
+    /** Causes the next image to be displayed at the specified location. */
+    public static void setNextLocation(int x, int y) {
+    	nextLocation = new Point(x, y);
+    }
+
     /** Moves and resizes this window. Changes the 
     	 magnification so the image fills the window. */
     public void setLocationAndSize(int x, int y, int width, int height) {

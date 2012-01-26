@@ -83,10 +83,13 @@ public class EllipseRoi extends PolygonRoi {
 		y = r.y;
 		width = r.width;
 		height = r.height;
-        for (int i=0; i<nPoints; i++) {
-            xpf[i] = (float)(xpf[i]-x);
-            ypf[i] = (float)(ypf[i]-y);
-        }
+		bounds = poly.getFloatBounds();
+		float xbase = (float)bounds.getX();
+		float ybase = (float)bounds.getY();
+		for (int i=0; i<nPoints; i++) {
+			xpf[i] = xpf[i]-xbase;
+			ypf[i] = ypf[i]-ybase;
+		}
 	}
 	
 	protected void handleMouseUp(int screenX, int screenY) {
