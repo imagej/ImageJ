@@ -1232,14 +1232,14 @@ public class Interpreter implements MacroConstants {
 		if ((int)x==x)
 			return IJ.d2s(x,0);
 		else {
-    		String str = IJ.d2s(x, 4, 9);
-    		while(str.endsWith("0") && str.contains(".") && !str.contains("E"))
-    			str = str.substring(0, str.length()-1);
-    		if (str.endsWith("."))
-    			str = str.substring(0, str.length()-1);
-    		return str;
-    	}
-    }
+			String str = IJ.d2s(x, 4, 9);
+			while(str.endsWith("0") && str.contains(".") && !str.contains("E"))
+				str = str.substring(0, str.length()-1);
+			if (str.endsWith("."))
+				str = str.substring(0, str.length()-1);
+			return str;
+		}
+	}
 
 	final boolean isStringFunction() {
 		Symbol symbol = pgm.table[tokenAddress];

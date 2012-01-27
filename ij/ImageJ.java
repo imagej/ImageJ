@@ -21,7 +21,7 @@ import ij.util.*;
 This frame is the main ImageJ class.
 <p>
 ImageJ is a work of the United States Government. It is in the public domain 
-and open source. There is no copyright. You are free to do anything you want 
+and open source. There is no copyright. You are free to do anything you want
 with this source but I like to get credit for my work and I would like you to 
 offer your changes to me so I can possibly add them to the "official" version.
 
@@ -42,7 +42,7 @@ The following command line options are recognized by ImageJ:
      Specifies the port ImageJ uses to determine if another instance is running
      Example 1: -port1 (use default port address + 1)
      Example 2: -port2 (use default port address + 2)
-     Example 3: -port0 (don't check for another instance or start the SocketListener)
+     Example 3: -port0 (don't check for another instance)
 
   -macro path [arg]
      Runs a macro or script, passing it an optional argument,
@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.46f";
-	public static final String BUILD = "2"; 
+	public static final String BUILD = "6"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -83,12 +83,10 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Run as normal application. */
 	public static final int STANDALONE=0;
 	
-	/** Run embedded in another application. In this mode, new
-		instances of ImageJ do not start the SocketListener. */
+	/** Run embedded in another application. */
 	public static final int EMBEDDED=1;
 	
-	/** Run embedded and invisible in another application. New 
-		instances do not not start the SocketListener. */
+	/** Run embedded and invisible in another application. */
 	public static final int NO_SHOW=2;
 
 	private static final String IJ_X="ij.x",IJ_Y="ij.y";
@@ -128,7 +126,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** If 'applet' is not null, creates a new ImageJ frame that runs as an applet.
 		If  'mode' is ImageJ.EMBEDDED and 'applet is null, creates an embedded 
-		version of ImageJ which does not start the SocketListener. */
+		(non-standalone) version of ImageJ. */
 	public ImageJ(java.applet.Applet applet, int mode) {
 		super("ImageJ");
 		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
@@ -200,8 +198,8 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.runPlugIn("ij.plugin.DragAndDrop", "");
 		String str = m.getMacroCount()==1?" macro":" macros";
 		IJ.showStatus(version()+ m.getPluginCount() + " commands; " + m.getMacroCount() + str);
-		if (applet==null && !embedded && Prefs.runSocketListener)
-			new SocketListener();
+		//if (applet==null && !embedded && Prefs.runSocketListener)
+		//	new SocketListener();
 		configureProxy();
  	}
     	
@@ -592,9 +590,8 @@ public class ImageJ extends Frame implements ActionListener,
 				}
 			} 
 		}
-  		// If ImageJ is already running then isRunning()
-  		// will pass the arguments to it using sockets.
-		if (!noGUI && (mode==STANDALONE) && isRunning(args))
+  		// If existing ImageJ instance, pass arguments to it and quit.
+		if (mode==STANDALONE && !noGUI && OtherInstance.sendArguments(args)) 
   			return;
  		ImageJ ij = IJ.getInstance();    	
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
@@ -634,62 +631,12 @@ public class ImageJ extends Frame implements ActionListener,
 			new JavaProperties().run("");
 		if (noGUI) System.exit(0);
 	}
-	
-	// Is there another instance of ImageJ? If so, send it the arguments and quit.
-	static boolean isRunning(String[] args) {
-		if (IJ.debugMode) IJ.log("isRunning: "+args.length);
-		int macros = 0;
-		int nArgs = args!=null?args.length:0;
-		//if (nArgs==2 && args[0].startsWith("-ijpath"))
-		//	return false;
-		int nCommands = 0;
-		try {
-			sendArgument("user.dir "+System.getProperty("user.dir"));
-			for (int i=0; i<nArgs; i++) {
-				String arg = args[i];
-				if (IJ.debugMode) IJ.log("isRunning: "+i+" "+arg);
-				if (arg==null) continue;
-				String cmd = null;
-				if (macros==0 && arg.endsWith(".ijm")) {
-					cmd = "macro " + arg;
-					macros++;
-				} else if (arg.startsWith("-macro") && i+1<nArgs) {
-					String macroArg = i+2<nArgs?"("+args[i+2]+")":"";
-					cmd = "macro " + args[i+1] + macroArg;
-					sendArgument(cmd);
-					nCommands++;
-					break;
-				} else if (arg.startsWith("-eval") && i+1<nArgs) {
-					cmd = "eval " + args[i+1];
-					args[i+1] = null;
-				} else if (arg.startsWith("-run") && i+1<nArgs) {
-					cmd = "run " + args[i+1];
-					args[i+1] = null;
-				} else if (arg.indexOf("ij.ImageJ")==-1 && arg.length()>0 && !arg.startsWith("-"))
-					cmd = "open " + arg;
-				if (cmd!=null) {
-					sendArgument(cmd);
-					nCommands++;
-				}
-			} // for
-		} catch (IOException e) {
-			if (IJ.debugMode) IJ.log(""+e);
-			return false;
-		}
-		return true;
-	}
-	
-	static void sendArgument(String arg) throws IOException {
-		Socket socket = new Socket("localhost", port);
-		PrintWriter out = new PrintWriter (new OutputStreamWriter(socket.getOutputStream()));
-		out.println(arg);
-		out.close();
-		socket.close();
-	}
-	
-	/**
-	Returns the port that ImageJ checks on startup to see if another instance is running.
-	@see ij.SocketListener
+		
+	/** Replaced by OtherInstance.sendArguments(). */
+	static boolean isRunning(String args[]) {return false;}
+
+	/** Returns the port that ImageJ checks on startup to see if another instance is running.
+	* @see ij.OtherInstance
 	*/
 	public static int getPort() {
 		return port;
