@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.46f";
-	public static final String BUILD = "6"; 
+	public static final String BUILD = "8"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -512,7 +512,8 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 
 	public void windowClosing(WindowEvent e) {
-		doCommand("Quit");
+		//doCommand("Quit");
+		quit();
 		windowClosed = true;
 	}
 
@@ -569,6 +570,7 @@ public class ImageJ extends Frame implements ActionListener,
 		arguments = args;
 		//System.setProperty("file.encoding", "UTF-8");
 		int nArgs = args!=null?args.length:0;
+		boolean commandLine = false;
 		for (int i=0; i<nArgs; i++) {
 			String arg = args[i];
 			if (arg==null) continue;
@@ -580,9 +582,11 @@ public class ImageJ extends Frame implements ActionListener,
 					IJ.debugMode = true;
 				else if (args[i].startsWith("-ijpath") && i+1<nArgs) {
 					Prefs.setHomeDir(args[i+1]);
+					commandLine = true;
 					args[i+1] = null;
 				} else if (args[i].startsWith("-port")) {
 					int delta = (int)Tools.parseDouble(args[i].substring(5, args[i].length()), 0.0);
+					commandLine = true;
 					if (delta==0)
 						mode = EMBEDDED;
 					else if (delta>0 && DEFAULT_PORT+delta<65536)
@@ -591,7 +595,9 @@ public class ImageJ extends Frame implements ActionListener,
 			} 
 		}
   		// If existing ImageJ instance, pass arguments to it and quit.
-		if (mode==STANDALONE && !noGUI && OtherInstance.sendArguments(args)) 
+  		boolean passArgs = mode==STANDALONE && !noGUI;
+		if (IJ.isMacOSX() && !commandLine) passArgs = false;
+		if (passArgs && isRunning(args)) 
   			return;
  		ImageJ ij = IJ.getInstance();    	
 		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
@@ -632,8 +638,10 @@ public class ImageJ extends Frame implements ActionListener,
 		if (noGUI) System.exit(0);
 	}
 		
-	/** Replaced by OtherInstance.sendArguments(). */
-	static boolean isRunning(String args[]) {return false;}
+	// Is there another instance of ImageJ? If so, send it the arguments and quit.
+	static boolean isRunning(String args[]) {
+		return OtherInstance.sendArguments(args);
+	}
 
 	/** Returns the port that ImageJ checks on startup to see if another instance is running.
 	* @see ij.OtherInstance

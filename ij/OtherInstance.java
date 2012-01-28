@@ -109,20 +109,22 @@ public class OtherInstance {
 				System.err.println("Java < 6 detected,"
 					+ " trying chmod 0600 " + path);
 		}
-		try {
-			String[] command = {
-				"chmod", "0600", path
-			};
-			Runtime.getRuntime().exec(command);
-		} catch (Exception e) {
-			if (IJ.debugMode)
-				System.err.println("Even chmod failed.");
+		if (!IJ.isWindows()) {
+			try {
+				String[] command = {
+					"chmod", "0600", path
+				};
+				Runtime.getRuntime().exec(command);
+			} catch (Exception e) {
+				if (IJ.debugMode)
+					System.err.println("Even chmod failed.");
+			}
 		}
 	}
 
 	public static boolean sendArguments(String[] args) {
-		if (!isRMIEnabled())
-			return false;
+		//if (!isRMIEnabled()) // Is this needed?
+		//	return false;
 		String file = getStubPath();
 		//IJ.log("sendArguments1: "+(args!=null&&args.length>0?args[0]:"null")+"  "+file);
 		if (args.length > 0) try {
@@ -169,7 +171,7 @@ public class OtherInstance {
 		}
 		if (!new File(file).exists())
 			startServer();
-		//IJ.log("sendArguments: return false");
+		//IJ.log("sendArguments: return false ");
 		return false;
 	}
 
