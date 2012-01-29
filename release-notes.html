@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46f 28 January 2012</u>
+<li> <u>1.46f 29 January 2012</u>
 <ul>
 <li> Thanks to Norbert Vischer, fixed a bug that made it impossible to
 select select images with duplicate names from the <i>Window</i> menu.
@@ -13,8 +13,8 @@ select select images with duplicate names from the <i>Window</i> menu.
 which is used by the macro language to convert numbers to strings,
 by the <i>Analyze&gt;Histogram</i> command to display values in histogram windows,
 and by ImageJ to display values in the status bar as the curser is moved over float images.
-<li> Replaced the SocketListener class with Johannes Schindelin's OtherListener
-class from Fiji.
+<li> Replaced the SocketListener class with Johannes Schindelin's RMI-based OtherListener
+class from Fiji, which works on multi-user macines and is more secure.
 <li> Thanks to David M. Gauntt, added the FHT(ImageProcessor,boolean)
 constructor to the FHT class.
 </ul> 

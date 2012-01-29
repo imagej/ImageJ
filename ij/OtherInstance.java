@@ -123,8 +123,8 @@ public class OtherInstance {
 	}
 
 	public static boolean sendArguments(String[] args) {
-		//if (!isRMIEnabled()) // Is this needed?
-		//	return false;
+		if (!isRMIEnabled())
+			return false;
 		String file = getStubPath();
 		//IJ.log("sendArguments1: "+(args!=null&&args.length>0?args[0]:"null")+"  "+file);
 		if (args.length > 0) try {
@@ -202,17 +202,27 @@ public class OtherInstance {
 		}
 	}
 
-	public static final String ENABLE_RMI = "enable.rmi.listener";
+    private static final String OPTIONS = "prefs.options";
+    private static final int RUN_SOCKET_LISTENER=1<<22;
 
 	public static boolean isRMIEnabled() {
+		if (System.getProperty("os.name").startsWith("Mac"))
+			return true;
 		Properties ijProps = loadPrefs();
 		if (ijProps == null)
 			return true;
-		Object result = ijProps.get("." + ENABLE_RMI);
-		if (result == null)
-			return true;
-		String string = result.toString();
-		return !string.equalsIgnoreCase("true") && !string.equals("1");
+		int options = getInt(ijProps, OPTIONS);
+		return (options&RUN_SOCKET_LISTENER)!=0;
+	}
+	
+	protected static int getInt(Properties props, String key) {
+		String s = props.getProperty(key);
+		if (s!=null) {
+			try {
+				return Integer.decode(s).intValue();
+			} catch (NumberFormatException e) {IJ.write(""+e);}
+		}
+		return 0;
 	}
 
 	protected static Properties loadPrefs() {
