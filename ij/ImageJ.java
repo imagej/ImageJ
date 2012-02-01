@@ -16,6 +16,7 @@ import ij.text.*;
 import ij.macro.Interpreter;
 import ij.io.Opener;
 import ij.util.*;
+import javax.swing.ImageIcon;
 
 /**
 This frame is the main ImageJ class.
@@ -73,7 +74,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.46f";
-	public static final String BUILD = "9"; 
+	public static final String BUILD = "11"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -201,7 +202,27 @@ public class ImageJ extends Frame implements ActionListener,
 		//if (applet==null && !embedded && Prefs.runSocketListener)
 		//	new SocketListener();
 		configureProxy();
+		loadCursors();
  	}
+ 	
+ 	private void loadCursors() {
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		String path = Prefs.getHomeDir()+File.separator+"images/crosshair-cursor.gif";
+		File f = new File(path);
+		if (!f.exists())
+			return;
+		//Image image = toolkit.getImage(path);
+		ImageIcon icon = new ImageIcon(path);
+		Image image = icon.getImage();
+		if (image==null)
+			return;
+		int width = icon.getIconWidth();
+		int height = icon.getIconHeight();
+		Point hotSpot = new Point(width/2, height/2);
+		Cursor crosshairCursor = toolkit.createCustomCursor(image, hotSpot, "crosshair-cursor.gif");
+		ImageCanvas.setCursor(crosshairCursor, 0);
+		//IJ.log(width+" "+height+" "+toolkit.getBestCursorSize(width,height));
+	}
     	
 	void configureProxy() {
 		if (Prefs.useSystemProxies) {

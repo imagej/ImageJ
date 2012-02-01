@@ -6,6 +6,7 @@ import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
 import java.awt.*;
+import java.util.ArrayList;
 
 /** Implements the AddSlice, DeleteSlice and "Stack to Images" commands. */
 public class StackEditor implements PlugIn {
@@ -63,7 +64,7 @@ public class StackEditor implements PlugIn {
 			return;
 		}
 		if (imp.isDisplayedHyperStack()) {
-			deleteHyperstackSliceOrFrame();
+			deleteHyperstackChannelSliceOrFrame();
 			return;
 		}
 		if (!imp.lock()) return;
@@ -130,41 +131,52 @@ public class StackEditor implements PlugIn {
 		imp.updateAndDraw();
 	}
 
-	void deleteHyperstackSliceOrFrame() {
+	void deleteHyperstackChannelSliceOrFrame() {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
 		int c1 = imp.getChannel();
 		int z1 = imp.getSlice();
 		int t1 = imp.getFrame();
+		ArrayList list = new ArrayList();
+		if (channels>1) list.add("channel");
+		if (slices>1) list.add("slice");
+		if (frames>1) list.add("frame");
+		String[] choices = new String[list.size()];
+		list.toArray(choices);
+		String choice = choices[0];
 		if (frames>1 && slices==1)
 			deleteFrames = true;
 		else if (frames==1 && slices>1)
 			deleteFrames = false;
-		else if (slices>1 && frames>1) {
-			GenericDialog gd = new GenericDialog("Delete Slice");
-			gd.addCheckbox("Delete time point "+t1, deleteFrames);
-			gd.showDialog();
-			if (gd.wasCanceled()) return;
-			deleteFrames = gd.getNextBoolean();
-		} else
-			return;
+		GenericDialog gd = new GenericDialog("Delete");
+		gd.addChoice("Delete current", choices, choice);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		choice = gd.getNextChoice();
 		if (!imp.lock()) return;
 		ImageStack stack = imp.getStack();
-		if (deleteFrames) { // delete time point
+		if (choice.equals("frame")) { // delete time point
 			for (int z=slices; z>=1; z--) {
 				int index = imp.getStackIndex(channels, z, t1);
 				for (int i=0; i<channels; i++)
 					stack.deleteSlice(index-i);
 			}
 			frames--;
-		} else { // delete slice z1 from all volumes
+		} else if (choice.equals("slice")) { // delete slice z1 from all volumes
 			for (int t=frames; t>=1; t--) {
 				int index = imp.getStackIndex(channels, z1, t);
 				for (int i=0; i<channels; i++)
 					stack.deleteSlice(index-i);
 			}
 			slices--;
+		} else if (choice.equals("channel")) { // delete channe c1
+			int index = imp.getStackIndex(c1, slices, frames);
+			while (index>0) {
+				stack.deleteSlice(index);
+				index -= channels;
+			}
+			channels--;
 		}
 		imp.setDimensions(channels, slices, frames);
 		//for (int i=1; i<=stack.getSize(); i++)

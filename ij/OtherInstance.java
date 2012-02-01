@@ -202,16 +202,18 @@ public class OtherInstance {
 		}
 	}
 
-    private static final String OPTIONS = "prefs.options";
-    private static final int RUN_SOCKET_LISTENER=1<<22;
+	private static final String OPTIONS = "prefs.options";
+	private static final int RUN_SOCKET_LISTENER=1<<22;
 
 	public static boolean isRMIEnabled() {
 		if (System.getProperty("os.name").startsWith("Mac"))
 			return true;
 		Properties ijProps = loadPrefs();
-		if (ijProps == null)
+		if (ijProps==null)
 			return true;
 		int options = getInt(ijProps, OPTIONS);
+		if (options==-1)
+			return true;
 		return (options&RUN_SOCKET_LISTENER)!=0;
 	}
 	
@@ -222,7 +224,7 @@ public class OtherInstance {
 				return Integer.decode(s).intValue();
 			} catch (NumberFormatException e) {IJ.write(""+e);}
 		}
-		return 0;
+		return -1;
 	}
 
 	protected static Properties loadPrefs() {
