@@ -5,13 +5,16 @@
 </head>
 <body>
 
-<li> <u>1.46f 1 February 2012</u>
+<li> <u>1.46f 2 February 2012</u>
 <ul>
 <li> Thanks to Denny Hugg, ImageJ will replace the standard crosshair cursor
 with a custom cursor if there is a GIF image named "crosshair-cursor.gif" in the ImageJ/images
 folder. There is an example custom cursor at
 <a href="http://imagej.nih.gov/ij/images/crosshair-cursor.gif">
 imagej.nih.gov/ij/images/crosshair-cursor.gif</a>.
+<li> Michael Schmid <schmid@iap.tuwien.ac.at> added support for I420, YV12 (a.k.a. IYUV),
+NV12 and NV21 formats to the AVI Reader.
+<li> The GifWriter now uses ImageIO to save single images.
 <li> Thanks to Norbert Vischer, fixed a bug that made it impossible to
 select select images with duplicate names from the <i>Window</i> menu.
 <li> Thanks to Michael Schmid, added the IJ.d2s(n,significantDigits,maxDigits) method,
@@ -22,6 +25,8 @@ and by ImageJ to display values in the status bar as the curser is moved over fl
 class from Fiji, which works on multi-user machines and is more secure.
 <li> Thanks to David M. Gauntt, added the FHT(ImageProcessor,boolean)
 constructor to the FHT class.
+<li> Thanks to Denny Hugg, fixed a bug that caused <i>File&gt;Save As&gt;Gif</i>
+to create GIF images that would not work as custom cursors.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

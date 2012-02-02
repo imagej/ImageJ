@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.io.OutputStream;
 import java.io.IOException;
+import javax.imageio.ImageIO;
 
 
 /**
@@ -57,6 +58,19 @@ public class GifWriter implements PlugIn {
 		ImageStack stack = imp.getStack();
 		ImagePlus tmp = new ImagePlus();
 		int nSlices = stack.getSize();
+		
+		if (nSlices==1) { // save using ImageIO
+			try {
+				writeImage(imp, path, transparentIndex);
+			} catch (Exception e) {
+				String msg = e.getMessage();
+				if (msg==null || msg.equals(""))
+					msg = ""+e;
+				IJ.error("GifWriter", "An error occured writing the file.\n \n" + msg);
+			}
+			return;
+		}
+
 	    GifEncoder ge = new GifEncoder();
 		double fps = imp.getCalibration().fps;
 		if (fps==0.0) fps = Animator.getFrameRate();
@@ -87,6 +101,35 @@ public class GifWriter implements PlugIn {
 		IJ.showProgress(1.0);
 	}
 	
+	private void writeImage(ImagePlus imp, String path, int transparentIndex) throws Exception {
+		if (transparentIndex>=0 && transparentIndex<=255)
+			writeImageWithTransparency(imp, path, transparentIndex);
+		else
+			ImageIO.write(imp.getBufferedImage(), "gif", new File(path));
+	}
+    
+	private void writeImageWithTransparency(ImagePlus imp, String path, int transparentIndex) throws Exception {
+		int width = imp.getWidth();
+		int  height = imp.getHeight();
+		ImageProcessor ip = imp.getProcessor();
+		IndexColorModel cm = (IndexColorModel)ip.getColorModel();
+		int size = cm.getMapSize();
+		//IJ.log("write: "+size+" "+transparentIndex);
+		byte[] reds = new byte[256];
+		byte[] greens = new byte[256];
+		byte[] blues = new byte[256];	
+		cm.getReds(reds); 
+		cm.getGreens(greens); 
+		cm.getBlues(blues);
+		cm = new IndexColorModel(8, size, reds, greens, blues, transparentIndex);
+		WritableRaster wr = cm.createCompatibleWritableRaster(width, height);
+		DataBufferByte db = (DataBufferByte)wr.getDataBuffer();
+		byte[] biPixels = db.getData();
+		System.arraycopy(ip.getPixels(), 0, biPixels, 0, biPixels.length);
+		BufferedImage bi = new BufferedImage(cm, wr, false, null);
+		ImageIO.write(bi, "gif", new File(path));
+	}
+
 }
 
 

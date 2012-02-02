@@ -35,7 +35,7 @@ public class PNG_Writer implements PlugIn {
             String msg = e.getMessage();
             if (msg==null || msg.equals(""))
                 msg = ""+e;
-            IJ.showMessage("PNG Writer", "An error occured writing the file.\n \n" + msg);
+            IJ.error("PNG Writer", "An error occured writing the file.\n \n" + msg);
         }
         IJ.showStatus("");
     }
