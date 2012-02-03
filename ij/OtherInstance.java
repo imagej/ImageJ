@@ -242,8 +242,10 @@ public class OtherInstance {
 		String env = System.getenv("IJ_PREFS_DIR");
 		if (env != null)
 			return env;
+		if (IJ.isWindows())
+			return System.getProperty("user.dir");
 		String prefsDir = System.getProperty("user.home");
-		if (System.getProperty("os.name").startsWith("Mac"))
+		if (IJ.isMacOSX())
 			prefsDir += "/Library/Preferences";
 		else
 			prefsDir += "/.imagej";

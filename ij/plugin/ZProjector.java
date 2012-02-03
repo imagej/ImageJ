@@ -91,7 +91,7 @@ public class ZProjector implements PlugIn {
     }
 
     public void run(String arg) {
-		imp = WindowManager.getCurrentImage();
+		imp = IJ.getImage();
 		int stackSize = imp.getStackSize();
 		if (imp==null) {
 	    	IJ.noImage(); 
