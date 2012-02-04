@@ -190,16 +190,20 @@ public class ProfilePlot {
 
 	double[] getRowAverageProfile(Rectangle rect, Calibration cal, ImageProcessor ip) {
 		double[] profile = new double[rect.height];
+		int[] counts = new int[rect.height];
 		double[] aLine;
-		
 		ip.setInterpolate(false);
 		for (int x=rect.x; x<rect.x+rect.width; x++) {
 			aLine = ip.getLine(x, rect.y, x, rect.y+rect.height-1);
-			for (int i=0; i<rect.height; i++)
-				profile[i] += aLine[i];
+			for (int i=0; i<rect.height; i++) {
+				if (!Double.isNaN(aLine[i])) {
+					profile[i] += aLine[i];
+					counts[i]++;
+				}
+			}
 		}
 		for (int i=0; i<rect.height; i++)
-			profile[i] /= rect.width;
+			profile[i] /= counts[i];
 		if (cal!=null)
 			xInc = cal.pixelHeight;
 		return profile;
@@ -207,19 +211,23 @@ public class ProfilePlot {
 	
 	double[] getColumnAverageProfile(Rectangle rect, ImageProcessor ip) {
 		double[] profile = new double[rect.width];
+		int[] counts = new int[rect.width];
 		double[] aLine;
-		
 		ip.setInterpolate(false);
 		for (int y=rect.y; y<rect.y+rect.height; y++) {
 			aLine = ip.getLine(rect.x, y, rect.x+rect.width-1, y);
-			for (int i=0; i<rect.width; i++)
-				profile[i] += aLine[i];
+			for (int i=0; i<rect.width; i++) {
+				if (!Double.isNaN(aLine[i])) {
+					profile[i] += aLine[i];
+					counts[i]++;
+				}
+			}
 		}
 		for (int i=0; i<rect.width; i++)
-			profile[i] /= rect.height;
+			profile[i] /= counts[i];
 		return profile;
 	}	
-	
+
 	double[] getIrregularProfile(Roi roi, ImageProcessor ip, Calibration cal) {
 		boolean interpolate = PlotWindow.interpolate;
 		boolean calcXValues = cal!=null && cal.pixelWidth!=cal.pixelHeight;

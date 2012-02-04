@@ -12,7 +12,6 @@ import java.util.ArrayList;
 public class StackEditor implements PlugIn {
 	ImagePlus imp;
 	int nSlices, width, height;
-	static boolean deleteFrames;
 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -146,9 +145,16 @@ public class StackEditor implements PlugIn {
 		list.toArray(choices);
 		String choice = choices[0];
 		if (frames>1 && slices==1)
-			deleteFrames = true;
-		else if (frames==1 && slices>1)
-			deleteFrames = false;
+			choice = "frame";
+		else if (slices>1)
+			choice = "slice";
+    	String options = Macro.getOptions();
+		if (IJ.isMacro() && options!=null && !options.contains("delete=")) {
+			if (options.contains("delete"))
+    			Macro.setOptions("delete=frame");
+    		else
+    			Macro.setOptions("delete=slice");
+    	}
 		GenericDialog gd = new GenericDialog("Delete");
 		gd.addChoice("Delete current", choices, choice);
 		gd.showDialog();
@@ -156,6 +162,7 @@ public class StackEditor implements PlugIn {
 		choice = gd.getNextChoice();
 		if (!imp.lock()) return;
 		ImageStack stack = imp.getStack();
+		LUT[] luts = null;
 		if (choice.equals("frame")) { // delete time point
 			for (int z=slices; z>=1; z--) {
 				int index = imp.getStackIndex(channels, z, t1);
@@ -171,6 +178,8 @@ public class StackEditor implements PlugIn {
 			}
 			slices--;
 		} else if (choice.equals("channel")) { // delete channe c1
+			if (imp.isComposite())
+				luts = ((CompositeImage)imp).getLuts();
 			int index = imp.getStackIndex(c1, slices, frames);
 			while (index>0) {
 				stack.deleteSlice(index);
@@ -179,8 +188,15 @@ public class StackEditor implements PlugIn {
 			channels--;
 		}
 		imp.setDimensions(channels, slices, frames);
-		//for (int i=1; i<=stack.getSize(); i++)
-		//	IJ.log(i+"  "+stack.getSliceLabel(i)+"  "+stack.getProcessor(i).getPixel(0,0));
+		if (luts!=null) {
+			for (int i=c1-1; i<luts.length-1; i++)
+				luts[i] = luts[i+1];
+			for (int c=1; c<=channels; c++)
+				((CompositeImage)imp).setChannelLut(luts[c-1], c);
+			if (c1>1) c1--;
+			imp.getProcessor().setLut(luts[c1-1]);
+			imp.updateAndDraw();
+		}
 		imp.unlock();
 	}
 

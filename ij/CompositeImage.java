@@ -210,7 +210,8 @@ public class CompositeImage extends ImagePlus {
 					active[i] = i==currentChannel?true:false;
 				if (channels!=null) ((Channels)channels).update();
 			}
-			img = ip.createImage();
+			if (ip!=null)
+				img = ip.createImage();
 			return;
 		}
 
