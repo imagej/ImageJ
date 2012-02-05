@@ -122,11 +122,6 @@ public class StackEditor implements PlugIn {
 			if (c==index+1) index++;
 			((CompositeImage)imp).setChannelLut(luts[index++], i);
 		}
-		//luts = imp.getLuts();
-		//for (int i=0; i<luts.length; i++)
-		//	IJ.log(i+" "+luts[i]);
-		if (mode!=CompositeImage.COMPOSITE)
-			imp.getProcessor().setLut(ci.getChannelLut());
 		imp.updateAndDraw();
 	}
 
@@ -193,8 +188,6 @@ public class StackEditor implements PlugIn {
 				luts[i] = luts[i+1];
 			for (int c=1; c<=channels; c++)
 				((CompositeImage)imp).setChannelLut(luts[c-1], c);
-			if (c1>1) c1--;
-			imp.getProcessor().setLut(luts[c1-1]);
 			imp.updateAndDraw();
 		}
 		imp.unlock();

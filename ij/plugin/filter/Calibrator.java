@@ -24,7 +24,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
     private ImagePlus imp;
 	private int choiceIndex;
 	private String[] functions;
-	private	int nFits = CurveFitter.fitList.length;
+	private	int nFits = Calibration.RODBARD2;   //don't set to CurveFitter.fitList.length; Calibration can't cope with it
+	private String curveFitError;
 	private int spacerIndex = nFits+1;
 	private int inverterIndex = nFits+2;
 	private int odIndex = nFits+3;
@@ -41,7 +42,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
-		IJ.register(Calibrator.class);
+		//IJ.register(Calibrator.class);
 		return DOES_ALL-DOES_RGB+NO_CHANGES;
 	}
 
@@ -120,7 +121,9 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		buttons.add(save);
 		return buttons;
 	}
-	
+
+    /** Calibrate an image with the function type defined previously.
+     *  Sets the function to Calibration.NONE on error */
 	public void calibrate(ImagePlus imp) {
 		Calibration cal = imp.getCalibration();
 		Calibration calOrig = cal.copy();
@@ -130,8 +133,10 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		double[] x=null, y=null;
 		boolean zeroClip=false;
 		if (choiceIndex<=0) {
-			if (oldFunction==Calibration.NONE&&!yText.equals("")&&!xText.equals(""))
+			if (oldFunction==Calibration.NONE&&!yText.equals("")&&!xText.equals("")) {
 				IJ.error("Calibrate", "Please select a function");
+			    return;
+			}
 			function = Calibration.NONE;
 		} else if (choiceIndex<=nFits) {
 			function = choiceIndex - 1;
@@ -139,8 +144,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			y = getData(yText);
 			if (!cal.calibrated() || y.length!=0 || function!=oldFunction) {
 				parameters = doCurveFitting(x, y, function);
-				if (parameters==null)
+				if (parameters==null) { //minimization failed
+				    IJ.error(curveFitError);
+				    function = Calibration.NONE;
 					return;
+				}
 			}
 			if (!is16Bits && function!=Calibration.STRAIGHT_LINE) {
 				zeroClip = true;
@@ -202,6 +210,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		double ymin=a[0], ymax=a[1]; 
 		CurveFitter cf = new CurveFitter(x, y);
 		cf.doFit(fitType, showSettings);
+		if (cf.getStatus() == Minimizer.INITIALIZATION_FAILURE) {
+		    curveFitError = cf.getStatusString();
+		    return null;
+		}
+        if (IJ.debugMode) IJ.log(cf.getResultString());
 		int np = cf.getNumParams();
 		double[] p = cf.getParams();
 		fitGoodness = IJ.d2s(cf.getRSquared(),6);

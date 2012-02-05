@@ -554,6 +554,8 @@ public class CompositeImage extends ImagePlus {
 		if (channel<1 || channel>lut.length)
 			throw new IllegalArgumentException("Channel out of range");
 		lut[channel-1] = (LUT)table.clone();
+		if (getWindow()!=null && channel==getChannel())
+			getProcessor().setLut(lut[channel-1]);
 		if (cip!=null && cip.length>=channel && cip[channel-1]!=null)
 			cip[channel-1].setLut(lut[channel-1]);
 		else
