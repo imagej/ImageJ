@@ -555,7 +555,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setStack(ImageStack stack) {
     	setStack(null, stack);
     }
-
+    
 	/** Replaces the image with the specified stack and updates 
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
@@ -949,7 +949,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the dimensions of this image (width, height, nChannels, 
 		nSlices, nFrames) as a 5 element int array. */
 	public int[] getDimensions() {
-		verifyDimensions();
+		return getDimensions(true);
+	}
+
+	public int[] getDimensions(boolean varify) {
+		if (varify)
+			verifyDimensions();
 		int[] d = new int[5];
 		d[0] = width;
 		d[1] = height;
