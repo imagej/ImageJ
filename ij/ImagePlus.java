@@ -915,7 +915,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the number of dimensions (2, 3, 4 or 5). */
 	public int getNDimensions() {
 		int dimensions = 2;
-		int[] dim = getDimensions();
+		int[] dim = getDimensions(false);
 		if (dim[2]>1) dimensions++;
 		if (dim[3]>1) dimensions++;
 		if (dim[4]>1) dimensions++;
