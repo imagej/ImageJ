@@ -573,7 +573,6 @@ public class ColorProcessor extends ImageProcessor {
 				i++;
 			}
 		}
-		showProgress(1.0);
 	}
 	
 	public void applyTable(int[] lut, int channels) {
@@ -611,7 +610,6 @@ public class ColorProcessor extends ImageProcessor {
 				i++;
 			}
 		}
-		showProgress(1.0);
 	}
 
 	/** Fills the current rectangular ROI. */
@@ -620,10 +618,7 @@ public class ColorProcessor extends ImageProcessor {
 			int i = y * width + roiX;
 			for (int x=roiX; x<(roiX+roiWidth); x++)
 				pixels[i++] = fgColor;
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
 	}
 	
 	public static final int RGB_NOISE=0, RGB_MEDIAN=1, RGB_FIND_EDGES=2,
@@ -1166,10 +1161,7 @@ public class ColorProcessor extends ImageProcessor {
 				v = (int)(r*rWeight + g*gWeight + b*bWeight + 0.5);
 				histogram[v]++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
 		return histogram;
 	}
 
@@ -1194,10 +1186,7 @@ public class ColorProcessor extends ImageProcessor {
 				}
 				i++;
 			}
-			if (y%20==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		showProgress(1.0);
 		return histogram;
 	}
 

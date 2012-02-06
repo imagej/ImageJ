@@ -109,6 +109,39 @@ public class SyncWindows extends PlugInFrame implements
 		ImagePlus.addImageListener(this);
 		show();
 	}
+	
+	public static void setC(ImageWindow source, int channel) {
+		SyncWindows syncWindows = instance;
+		if (syncWindows==null || !syncWindows.synced(source))
+			return;
+		DisplayChangeEvent event=new DisplayChangeEvent(source, DisplayChangeEvent.CHANNEL, channel);
+		syncWindows.displayChanged(event);
+	}
+
+	public static void setZ(ImageWindow source, int slice) {
+		SyncWindows syncWindows = instance;
+		if (syncWindows==null || !syncWindows.synced(source))
+			return;
+		DisplayChangeEvent event=new DisplayChangeEvent(source, DisplayChangeEvent.Z, slice);
+		syncWindows.displayChanged(event);
+	}
+
+	public static void setT(ImageWindow source, int frame) {
+		SyncWindows syncWindows = instance;
+		if (syncWindows==null || !syncWindows.synced(source))
+			return;
+		DisplayChangeEvent event=new DisplayChangeEvent(source, DisplayChangeEvent.T, frame);
+		syncWindows.displayChanged(event);
+	}
+	
+	private boolean synced(ImageWindow source) {
+		if (source==null || vwins==null)
+			return false;
+		ImagePlus imp = source.getImagePlus();
+		if (imp==null)
+			return false;
+		return vwins.contains(new Integer(imp.getID()));
+	}
 
 	// --------------------------------------------------
 	/**
@@ -132,7 +165,7 @@ public class SyncWindows extends PlugInFrame implements
 
 		// Change channel in other synchronized hyperstacks.
 		if (cChannel.getState() && type==DisplayChangeEvent.CHANNEL) {
-			for(int n=0; n<vwins.size();++n) {
+			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
 				if (imp != null) {
 					iw = imp.getWindow();
@@ -650,15 +683,6 @@ public class SyncWindows extends PlugInFrame implements
 		// get IDList from WindowManager
 		int[] imageIDs = WindowManager.getIDList();		  
 		
-		// replace all StackWindows by OpenStackWindows
-		if (imageIDs != null) {
-			for (int n=0; n<imageIDs.length; ++n) {
-				img = WindowManager.getImage(imageIDs[n]);	 
-				iw = img.getWindow();
-				iw = makeOpenWindow(iw);				
-			}
-		}  
-
 		if(imageIDs != null) {
 			int size;
 			if (imageIDs.length < 10) {
@@ -828,7 +852,6 @@ public class SyncWindows extends PlugInFrame implements
 					iw = imp.getWindow();
 					iw.getCanvas().addMouseMotionListener(this);
 					iw.getCanvas().addMouseListener(this);
-					addDisplayChangeListener(iw, this);			   
 					vwins.addElement(I);
 				}
 			}
@@ -868,7 +891,6 @@ public class SyncWindows extends PlugInFrame implements
 		if (imp != null) {
 			iw = imp.getWindow();
 			if (iw != null) {	
-				removeDisplayChangeListener(iw, this);
 				ic = iw.getCanvas();
 				if (ic != null) {
 						ic.removeMouseListener(this);
@@ -996,37 +1018,7 @@ public class SyncWindows extends PlugInFrame implements
 		   p.x, p.y, e.getClickCount(), e.isPopupTrigger());
 
 	}
-	
-    public static ImageWindow makeOpenWindow(ImageWindow iw) {
-        ImageWindow iwOut = iw;
-        if (iw instanceof StackWindow && !(iw instanceof OpenStackWindow)) {
-            ImageCanvas ic = iw.getCanvas();
-            ImagePlus img = iw.getImagePlus();
-            double magn = ic.getMagnification();
-            if (img.isHyperStack())
-            	img.setOpenAsHyperStack(true);
-            iwOut = new OpenStackWindow(img, ic);
-            // set zoom to previous zoom
-            ic.setMagnification(magn);
-            img.repaintWindow();                
-        }
-        return iwOut;
-    }
-    
-	private boolean isOpenWindow(ImageWindow iw) {
-		return (iw instanceof OpenStackWindow);
-	}
-	
-	private void addDisplayChangeListener(ImageWindow iw, DisplayChangeListener dcl) {
-		if (iw instanceof OpenStackWindow)
-			((OpenStackWindow)iw).addDisplayChangeListener(dcl);
-	}
-	
-	private void removeDisplayChangeListener(ImageWindow iw, DisplayChangeListener dcl) {
-		if (iw instanceof OpenStackWindow)
-			((OpenStackWindow)iw).removeDisplayChangeListener(dcl);
-	}
-	
+	    
 	public Insets getInsets() {
 		Insets i = super.getInsets();
 		return new Insets(i.top+10, i.left+10, i.bottom+10, i.right+10);
@@ -1036,6 +1028,10 @@ public class SyncWindows extends PlugInFrame implements
 		super.close();
 		instance = null;
 		location = getLocation();
+	}
+	
+	public static SyncWindows getInstance() {
+		return instance;
 	}
 
 }	// SyncWindows_
@@ -1094,80 +1090,6 @@ class DisplayChangeEvent extends EventObject {
 
 	public void setValue(int value) {
 		this.value = value;
-	}
-
-}
-
-/* -------------------------------------------------------------------------
-/*
-/* CLASS OpenStackWindow
-/*
-/* ------------------------------------------------------------------------- */
-
-/** StackWindow, which issues DispChanged Events
- *	to registered Listeners, when the displayed slice has been changed.
- */
-class OpenStackWindow extends StackWindow {
-	DisplayChangeListener displayChangeListener = null;
-
-	public OpenStackWindow(ImagePlus imp) {
-		super(imp);
-		if (ij!=null) {
-			Image img = ij.getIconImage();
-			if (img!=null) setIconImage(img);
-		}
-	}
-
-	public OpenStackWindow(ImagePlus imp, ImageCanvas ic) {
-		super(imp, ic);
-		if (ij!=null) {
-			Image img = ij.getIconImage();
-			if (img!=null) setIconImage(img);
-		}
-	}
-
-/** Calls super.updateSliceSelector() and issues a DisplayChangeEvent to registered listeners.
- */
-//	  public void updateSliceSelector() {
-//		  super.updateSliceSelector();
-//// notify DisplayChangeListeners
-//		  if (displayChangeListener != null) {
-//			  DisplayChangeEvent dcEvent = new DisplayChangeEvent(this, DisplayChangeEvent.Z, imp.getCurrentSlice());
-//			  displayChangeListener.displayChanged(dcEvent);
-//		  }
-//	  }
-	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
-		super.adjustmentValueChanged(e);
-		if (!running2)
-			sendDisplayChangeEvent(e.getSource());
-	}
-
-	/** Handles changing slice by MouseWheel */	  
-	public void mouseWheelMoved(MouseWheelEvent event) {
-		super.mouseWheelMoved(event);
-		sendDisplayChangeEvent(event.getSource());
-	}
-
-	protected void sendDisplayChangeEvent(Object source) {
-		if (displayChangeListener==null)
-			return;
-		final DisplayChangeEvent event;
-		if (source==cSelector)
-			event=new DisplayChangeEvent(this,DisplayChangeEvent.CHANNEL,cSelector.getValue());
-		else if (source==zSelector)
-			event=new DisplayChangeEvent(this,DisplayChangeEvent.Z,zSelector.getValue());
-		else if (source==tSelector)
-			event=new DisplayChangeEvent(this,DisplayChangeEvent.T,tSelector.getValue());
-		else
-			throw new RuntimeException("Unknownsource:"+source);
-		displayChangeListener.displayChanged(event);
-	}
-
-	public synchronized void addDisplayChangeListener(DisplayChangeListener l) {
-		displayChangeListener = IJEventMulticaster.add(displayChangeListener, l);
-	}
-	public synchronized void removeDisplayChangeListener(DisplayChangeListener l) {
-		displayChangeListener = IJEventMulticaster.remove(displayChangeListener, l);
 	}
 
 }
