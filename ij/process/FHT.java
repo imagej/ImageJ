@@ -38,10 +38,14 @@ public class FHT extends FloatProcessor {
 	/** Constructs a FHT object from an ImageProcessor. Byte, short and RGB images 
 		are converted to float. Float images are duplicated. */
 	public FHT(ImageProcessor ip) {
+		this(ip, false);
+	}
+
+	public FHT(ImageProcessor ip, boolean isFrequencyDomain) {
 		super(ip.getWidth(), ip.getHeight(), (float[])((ip instanceof FloatProcessor)?ip.duplicate().getPixels():ip.convertToFloat().getPixels()), null);
+		this.isFrequencyDomain = isFrequencyDomain;
 		maxN = getWidth();
 		resetRoi();
-		//IJ.log("FHT: "+maxN);
 	}
 
 	public FHT() {

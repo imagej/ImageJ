@@ -32,9 +32,9 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	double[] x,y;
 
 	static CurveFitter cf;
-	static int fitType;
+	static int fitType = -1;
 	static String equation = "y = a + b*x + c*x*x";
-	static final int USER_DEFINED = 100;
+	static final int USER_DEFINED = -1;
 
 	public Fitter() {
 		super("Curve Fitter");
@@ -42,7 +42,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		Panel panel = new Panel();
 		fit = new Choice();
 		for (int i=0; i<CurveFitter.fitList.length; i++)
-			fit.addItem(CurveFitter.fitList[i]);
+			fit.addItem(CurveFitter.fitList[CurveFitter.sortedTypes[i]]);
 		fit.addItem("*User-defined*");
 		fit.addItemListener(this);
 		panel.add(fit);
@@ -73,22 +73,45 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		IJ.register(Fitter.class);
 	}
 
-	public void doFit(int fitType) {
-		if (fitType>=CurveFitter.fitList.length)
-			fitType = USER_DEFINED;
-		this.fitType = fitType;
-		if (!getData())
-			return;
+    /** Fit data in the textArea, show result in log and create plot.
+     *  @param fitType as defined in CurveFitter constants
+     *  @return false on error.
+     */
+	public boolean doFit(int fitType) {
+		if (!getData()) {
+            IJ.beep();
+            IJ.showStatus("Data error: min. two (x,y) pairs needed");
+			return false;
+		}
 		cf = new CurveFitter(x, y);
-		if (fitType==USER_DEFINED) {
-			String eqn = getEquation();
-			if (eqn==null) return;
-			int params = cf.doCustomFit(eqn, null, settings.getState());
-			if (params==0) return;
-		} else
-			cf.doFit(fitType, settings.getState());
-		IJ.log(cf.getResultString());
+		try {
+            if (fitType==USER_DEFINED) {
+                String eqn = getEquation();
+                if (eqn==null) return false;
+                int params = cf.doCustomFit(eqn, null, settings.getState());
+                if (params==0) return false;
+            } else
+                cf.doFit(fitType, settings.getState());
+            if (cf.getStatus() == Minimizer.INITIALIZATION_FAILURE) {
+                IJ.beep();
+                IJ.showStatus(cf.getStatusString());
+                IJ.log("Curve Fitting Error:\n"+cf.getStatusString());
+                return false;
+            }
+            if (Double.isNaN(cf.getSumResidualsSqr())) {
+                IJ.beep();
+                IJ.showStatus("Error: fit yields Not-a-Number");
+                return false;
+            }
+            
+		} catch (Exception e) {
+            IJ.handleException(e);
+            return false;
+		}
+        IJ.log(cf.getResultString());
 		plot(cf);
+		this.fitType = fitType; 
+		return true;
 	}
 	
 	String getEquation() {
@@ -104,6 +127,14 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	public static void plot(CurveFitter cf) {
 		double[] x = cf.getXPoints();
 		double[] y = cf.getYPoints();
+		if (cf.getParams().length<cf.getNumParams()) {
+			Plot plot = new Plot(cf.getFormula(),"X","Y",x,y);
+			plot.setColor(Color.BLUE);
+			plot.addLabel(0.02, 0.1, cf.getName());
+			plot.addLabel(0.02, 0.2, cf.getStatusString());
+			plot.show();
+			return;
+		}
 		double[] a = Tools.getMinMax(x);
 		double xmin=a[0], xmax=a[1]; 
 		a = Tools.getMinMax(y);
@@ -124,7 +155,9 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		ymax = Math.max(ymax, a[1]);
 		Plot plot = new Plot(cf.getFormula(),"X","Y",px,py);
 		plot.setLimits(xmin, xmax, ymin, ymax);
+		plot.setColor(Color.RED);
 		plot.addPoints(x, y, PlotWindow.CIRCLE);
+		plot.setColor(Color.BLUE);
 		double yloc = 0.1;
 		double yinc = 0.085;
 		plot.addLabel(0.02, yloc, cf.getName()); yloc+=yinc;
@@ -133,11 +166,12 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
         int n = cf.getNumParams();
         char pChar = 'a';
         for (int i = 0; i < n; i++) {
-			plot.addLabel(0.02, yloc, pChar+"="+IJ.d2s(p[i],4));
+			plot.addLabel(0.02, yloc, pChar+" = "+IJ.d2s(p[i],5,9));
 			yloc+=yinc;
 			pChar++;
         }
-		plot.addLabel(0.02, yloc, "R^2="+IJ.d2s(cf.getRSquared(),3));  yloc+=yinc;
+		plot.addLabel(0.02, yloc, "R^2 = "+IJ.d2s(cf.getRSquared(),4));  yloc+=yinc;
+		plot.setColor(Color.BLUE);
 		plot.show();									
 	}
 	
@@ -163,7 +197,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	void applyFunction() {
-		if (cf==null) {
+		if (cf==null || fitType <= 0) {
 			IJ.error("No function available");
 			return;
 		}
@@ -233,16 +267,14 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource()==doIt)
-			doFit(fit.getSelectedIndex());
-		else if (e.getSource()==apply)
-			applyFunction();
-		else
-			open();
-		//if(e.getSource()==doIt) {
-		//	try {doFit(fit.getSelectedIndex());}
-		//	catch (Exception ex) {IJ.write(ex.getMessage());}
-		//}
+		try {
+            if (e.getSource()==doIt)
+                doFit(CurveFitter.getFitCode(fit.getSelectedItem()));
+            else if (e.getSource()==apply)
+                applyFunction();
+            else
+                open();
+		} catch (Exception ex) {}
 	}
 	
 	String zapGremlins(String text) {

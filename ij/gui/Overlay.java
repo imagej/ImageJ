@@ -103,6 +103,27 @@ public class Overlay {
 		}
 	}
 
+    /** Returns the bounds of this overlay. */
+    /*
+    public Rectangle getBounds() {
+    	if (size()==0)
+    		return new Rectangle(0,0,0,0);
+    	int xmin = Integer.MAX_VALUE;
+    	int xmax = -Integer.MAX_VALUE;
+    	int ymin = Integer.MAX_VALUE;
+    	int ymax = -Integer.MAX_VALUE;
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++) {
+			Rectangle r = rois[i].getBounds();
+			if (r.x<xmin) xmin = r.x;
+			if (r.y<ymin) ymin = r.y;
+			if (r.x+r.width>xmax) xmax = r.x+r.width;
+			if (r.y+r.height>ymax) ymax = r.y+r.height;
+		}
+		return new Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
+	}
+	*/
+
     /** Draws outlines of the Rois in this Overlay on the specified
     	ImageProcessor using the current color and line width of 'ip'. */
     //public void draw(ImageProcessor ip) {

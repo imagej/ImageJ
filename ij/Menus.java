@@ -1150,7 +1150,6 @@ public class Menus {
 
 	/** Adds one image to the end of the Window menu. */
 	static synchronized void addWindowMenuItem(ImagePlus imp) {
-		//IJ.log("addWindowMenuItem: "+imp);
 		if (ij==null) return;
 		String name = imp.getTitle();
 		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
@@ -1165,6 +1164,7 @@ public class Menus {
 				;
 		}
 		CheckboxMenuItem item = new CheckboxMenuItem(name + " " + size + "K");
+		item.setActionCommand("" + imp.getID());
 		window.add(item);
 		item.addItemListener(ij);
 	}

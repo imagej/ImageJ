@@ -15,6 +15,8 @@ public abstract class PlugInTool implements PlugIn {
 
 	public void mouseReleased(ImagePlus imp, MouseEvent e) { }
 
+	public void mouseClicked(ImagePlus imp, MouseEvent e) { }
+
 	public void mouseDragged(ImagePlus imp, MouseEvent e) { }
 	
 	public void mouseMoved(ImagePlus imp, MouseEvent e) { }

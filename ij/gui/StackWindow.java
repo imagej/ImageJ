@@ -1,6 +1,7 @@
 package ij.gui;
 import ij.*;
 import ij.measure.Calibration;
+import ij.plugin.frame.SyncWindows;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -117,7 +118,23 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 			updatePosition();
 			notify();
 		}
+		if (!running)
+			syncWindows(e.getSource());
 	}
+	
+	private void syncWindows(Object source) {
+		if (SyncWindows.getInstance()==null)
+			return;
+		if (source==cSelector)
+			SyncWindows.setC(this, cSelector.getValue());
+		else if (source==zSelector)
+			SyncWindows.setZ(this, zSelector.getValue());
+		else if (source==tSelector)
+			SyncWindows.setT(this, tSelector.getValue());
+		else
+			throw new RuntimeException("Unknownsource:"+source);
+	}
+
 	
 	void updatePosition() {
 		slice = (t-1)*nChannels*nSlices + (z-1)*nChannels + c;
@@ -145,6 +162,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 				imp.updateStatusbarValue();
 			}
 		}
+		syncWindows(event.getSource());
 	}
 
 	public boolean close() {
@@ -159,8 +177,10 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 
 	/** Displays the specified slice and updates the stack scrollbar. */
 	public void showSlice(int index) {
-		if (imp!=null && index>=1 && index<=imp.getStackSize())
+		if (imp!=null && index>=1 && index<=imp.getStackSize()) {
 			imp.setSlice(index);
+			SyncWindows.setZ(this, index);
+		}
 	}
 	
 	/** Updates the stack scrollbar. */
@@ -227,14 +247,17 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
     	if (cSelector!=null && channel!=c) {
     		c = channel;
 			cSelector.setValue(channel);
+			SyncWindows.setC(this, channel);
 		}
     	if (zSelector!=null && slice!=z) {
     		z = slice;
 			zSelector.setValue(slice);
+			SyncWindows.setZ(this, slice);
 		}
     	if (tSelector!=null && frame!=t) {
     		t = frame;
 			tSelector.setValue(frame);
+			SyncWindows.setT(this, frame);
 		}
     	updatePosition();
 		if (this.slice>0) {

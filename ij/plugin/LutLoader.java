@@ -74,8 +74,19 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp!=null) {
 			if (imp.getType()==ImagePlus.COLOR_RGB)
-				IJ.error("Color tables cannot be assiged to RGB Images.");
-			else {
+				IJ.error("LUTs cannot be assiged to RGB Images.");
+			else if (imp.isComposite() && ((CompositeImage)imp).getMode()==CompositeImage.GRAYSCALE) {
+				CompositeImage cimp = (CompositeImage)imp;
+				cimp.setMode(CompositeImage.COLOR);
+				int saveC = cimp.getChannel();
+				IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
+				for (int c=1; c<=cimp.getNChannels(); c++) {
+					cimp.setC(c);
+					cimp.setChannelColorModel(cm);
+				}
+				imp.setC(saveC);
+				imp.updateAndRepaintWindow();
+			} else {
 				ImageProcessor ip = imp.getChannelProcessor();
 				IndexColorModel cm = new IndexColorModel(8, 256, fi.reds, fi.greens, fi.blues);
 				if (imp.isComposite())

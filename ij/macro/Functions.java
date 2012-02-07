@@ -4475,7 +4475,7 @@ public class Functions implements MacroConstants, Measurements {
 			int index = (int)getArg();
 			checkIndex(index, 0, fitter.getNumParams()-1);
 			double[] p = fitter.getParams();
-			return p[index];
+			return index<p.length?p[index]:Double.NaN;
 		} else if (name.equals("rSquared")) {
 			interp.getParens();
 			return fitter.getRSquared();

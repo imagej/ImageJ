@@ -92,7 +92,6 @@ public class JavaProperties implements PlugIn {
 		sb.append("  Prefs.doubleBuffer: "+Prefs.doubleBuffer+"\n");		
 		sb.append("  Prefs.noPointLabels: "+Prefs.noPointLabels+"\n");		
 		sb.append("  Prefs.disableUndo: "+Prefs.disableUndo+"\n");		
-		sb.append("  Prefs.runSocketListener: "+Prefs.runSocketListener+"\n");		
 		sb.append("  Prefs dir: "+Prefs.getPrefsDir()+"\n");
 		sb.append("  Current dir: "+OpenDialog.getDefaultDirectory()+"\n");
 		sb.append("  Sample images dir: "+Prefs.getImagesURL()+"\n");

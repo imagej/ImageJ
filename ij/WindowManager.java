@@ -5,6 +5,7 @@ import ij.plugin.frame.Editor;
 import ij.macro.Interpreter;
 import ij.text.TextWindow;
 import ij.plugin.frame.PlugInFrame;
+import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
 import ij.gui.*;
@@ -403,7 +404,6 @@ public class WindowManager {
 
 	/** Activates a window selected from the Window menu. */
 	synchronized static void activateWindow(String menuItemLabel, MenuItem item) {
-		//IJ.write("activateWindow: "+menuItemLabel+" "+item);
 		for (int i=0; i<nonImageList.size(); i++) {
 			Frame win = (Frame)nonImageList.elementAt(i);
 			String title = win.getTitle();
@@ -417,24 +417,23 @@ public class WindowManager {
 		}
 		int lastSpace = menuItemLabel.lastIndexOf(' ');
 		if (lastSpace>0) // remove image size (e.g., " 90K")
-			menuItemLabel = menuItemLabel.substring(0, lastSpace);
-		for (int i=0; i<imageList.size(); i++) {
-			ImageWindow win = (ImageWindow)imageList.elementAt(i);
-			String title = win.getImagePlus().getTitle();
-			if (menuItemLabel.equals(title)) {
-				setCurrentWindow(win);
-				toFront(win);
-				int index = imageList.indexOf(win);
-				int n = Menus.window.getItemCount();
-				int start = Menus.WINDOW_MENU_ITEMS+Menus.windowMenuItems2;
-				for (int j=start; j<n; j++) {
-					MenuItem mi = Menus.window.getItem(j);
-					((CheckboxMenuItem)mi).setState((j-start)==index);						
-				}
-				break;
-			}
+		menuItemLabel = menuItemLabel.substring(0, lastSpace);
+		String idString = item.getActionCommand();
+		int id = (int)Tools.parseDouble(idString, 0);
+		ImagePlus imp = WindowManager.getImage(id);
+		if (imp==null) return;
+		ImageWindow win1 = imp.getWindow();
+		if (win1==null) return;
+		setCurrentWindow(win1);
+		toFront(win1);
+		int index = imageList.indexOf(win1);
+		int n = Menus.window.getItemCount();
+		int start = Menus.WINDOW_MENU_ITEMS+Menus.windowMenuItems2;
+		for (int j=start; j<n; j++) {
+			MenuItem mi = Menus.window.getItem(j);
+			((CheckboxMenuItem)mi).setState((j-start)==index);						
 		}
-    }
+	}
     
     /** Repaints all open image windows. */
     public synchronized static void repaintImageWindows() {

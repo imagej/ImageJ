@@ -6,12 +6,12 @@ import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import ij.io.FileInfo;
 import java.awt.*;
+import java.util.ArrayList;
 
 /** Implements the AddSlice, DeleteSlice and "Stack to Images" commands. */
 public class StackEditor implements PlugIn {
 	ImagePlus imp;
 	int nSlices, width, height;
-	static boolean deleteFrames;
 
 	public void run(String arg) {
 		imp = IJ.getImage();
@@ -63,7 +63,7 @@ public class StackEditor implements PlugIn {
 			return;
 		}
 		if (imp.isDisplayedHyperStack()) {
-			deleteHyperstackSliceOrFrame();
+			deleteHyperstackChannelSliceOrFrame();
 			return;
 		}
 		if (!imp.lock()) return;
@@ -122,53 +122,74 @@ public class StackEditor implements PlugIn {
 			if (c==index+1) index++;
 			((CompositeImage)imp).setChannelLut(luts[index++], i);
 		}
-		//luts = imp.getLuts();
-		//for (int i=0; i<luts.length; i++)
-		//	IJ.log(i+" "+luts[i]);
-		if (mode!=CompositeImage.COMPOSITE)
-			imp.getProcessor().setLut(ci.getChannelLut());
 		imp.updateAndDraw();
 	}
 
-	void deleteHyperstackSliceOrFrame() {
+	void deleteHyperstackChannelSliceOrFrame() {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int frames = imp.getNFrames();
 		int c1 = imp.getChannel();
 		int z1 = imp.getSlice();
 		int t1 = imp.getFrame();
+		ArrayList list = new ArrayList();
+		if (channels>1) list.add("channel");
+		if (slices>1) list.add("slice");
+		if (frames>1) list.add("frame");
+		String[] choices = new String[list.size()];
+		list.toArray(choices);
+		String choice = choices[0];
 		if (frames>1 && slices==1)
-			deleteFrames = true;
-		else if (frames==1 && slices>1)
-			deleteFrames = false;
-		else if (slices>1 && frames>1) {
-			GenericDialog gd = new GenericDialog("Delete Slice");
-			gd.addCheckbox("Delete time point "+t1, deleteFrames);
-			gd.showDialog();
-			if (gd.wasCanceled()) return;
-			deleteFrames = gd.getNextBoolean();
-		} else
-			return;
+			choice = "frame";
+		else if (slices>1)
+			choice = "slice";
+    	String options = Macro.getOptions();
+		if (IJ.isMacro() && options!=null && !options.contains("delete=")) {
+			if (options.contains("delete"))
+    			Macro.setOptions("delete=frame");
+    		else
+    			Macro.setOptions("delete=slice");
+    	}
+		GenericDialog gd = new GenericDialog("Delete");
+		gd.addChoice("Delete current", choices, choice);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		choice = gd.getNextChoice();
 		if (!imp.lock()) return;
 		ImageStack stack = imp.getStack();
-		if (deleteFrames) { // delete time point
+		LUT[] luts = null;
+		if (choice.equals("frame")) { // delete time point
 			for (int z=slices; z>=1; z--) {
 				int index = imp.getStackIndex(channels, z, t1);
 				for (int i=0; i<channels; i++)
 					stack.deleteSlice(index-i);
 			}
 			frames--;
-		} else { // delete slice z1 from all volumes
+		} else if (choice.equals("slice")) { // delete slice z1 from all volumes
 			for (int t=frames; t>=1; t--) {
 				int index = imp.getStackIndex(channels, z1, t);
 				for (int i=0; i<channels; i++)
 					stack.deleteSlice(index-i);
 			}
 			slices--;
+		} else if (choice.equals("channel")) { // delete channe c1
+			if (imp.isComposite())
+				luts = ((CompositeImage)imp).getLuts();
+			int index = imp.getStackIndex(c1, slices, frames);
+			while (index>0) {
+				stack.deleteSlice(index);
+				index -= channels;
+			}
+			channels--;
 		}
 		imp.setDimensions(channels, slices, frames);
-		//for (int i=1; i<=stack.getSize(); i++)
-		//	IJ.log(i+"  "+stack.getSliceLabel(i)+"  "+stack.getProcessor(i).getPixel(0,0));
+		if (luts!=null) {
+			for (int i=c1-1; i<luts.length-1; i++)
+				luts[i] = luts[i+1];
+			for (int c=1; c<=channels; c++)
+				((CompositeImage)imp).setChannelLut(luts[c-1], c);
+			imp.updateAndDraw();
+		}
 		imp.unlock();
 	}
 

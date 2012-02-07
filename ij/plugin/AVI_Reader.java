@@ -21,7 +21,8 @@ import javax.imageio.ImageIO;
  *          - uncompressed 8 & 16 bit grayscale
  *          - uncompressed 24 & 32 bit RGB (alpha channel ignored)
  *          - uncompressed 32 bit AYUV (alpha channel ignored)
- *          - various YUV 4:2:2 compressed formats
+ *          - various YUV 4:2:2 and 4:2:0 compressed formats (i.e., formats with
+ *                        full luminance resolution, but reduced chroma resolution
  *          - png or jpeg-encoded individual frames.
  *            Note that most MJPG (motion-JPEG) formats are not read correctly.
  *      - Does not read avi formats with more than one frame per chunk
@@ -78,6 +79,8 @@ import javax.imageio.ImageIO;
  *      - When the first frame to read is > 1, uses the index to quickly skip the initial frames.
  *      - Creates a unique window name.
  *      - Opens MJPG files also if they do not contain Huffman tables
+ *   2012-02-01
+ *      - added support for YV12, I420, NV12, NV21 (planar formats with 2x2 U and V subsampling)
  *
  * The AVI format looks like this:
  * RIFF AVI                 RIFF HEADER, AVI CHUNK                  
@@ -136,9 +139,9 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private final static int   NO_COMPRESSION    = 0;          //uncompressed, also 'RGB ', 'RAW '
     private final static int   NO_COMPRESSION_RGB= 0x20424752; //'RGB ' -a name for uncompressed
     private final static int   NO_COMPRESSION_RAW= 0x20574152; //'RAW ' -a name for uncompressed
-    private final static int   NO_COMPRESSION_Y800=0x30303859;//'Y800' -a name for 8-bit grayscale
+    private final static int   NO_COMPRESSION_Y800=0x30303859; //'Y800' -a name for 8-bit grayscale
     private final static int   NO_COMPRESSION_Y8 = 0x20203859; //'Y8  ' -another name for Y800
-    private final static int   NO_COMPRESSION_GREY=0x59455247;//'GREY' -another name for Y800
+    private final static int   NO_COMPRESSION_GREY=0x59455247; //'GREY' -another name for Y800
     private final static int   NO_COMPRESSION_Y16= 0x20363159; //'Y16 ' -a name for 16-bit uncompressed grayscale
     private final static int   NO_COMPRESSION_MIL= 0x204c494d; //'MIL ' - Matrox Imaging Library
     private final static int   AYUV_COMPRESSION  = 0x56555941; //'AYUV' -uncompressed, but alpha, Y, U, V bytes
@@ -151,6 +154,13 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private final static int   YUNV_COMPRESSION  = 0x564E5559; //'YUNV' -another name for YUY2
     private final static int   YUYV_COMPRESSION  = 0x56595559; //'YUYV' -another name for YUY2
     private final static int   YVYU_COMPRESSION  = 0x55595659; //'YVYU' - 4:2:2 with byte order y0 u y1 v
+
+    private final static int   I420_COMPRESSION  = 0x30323449; //'I420' - y plane followed by 2x2 subsampled U and V
+    private final static int   IYUV_COMPRESSION  = 0x56555949; //'IYUV' - another name for I420
+    private final static int   YV12_COMPRESSION  = 0x32315659; //'YV12' - y plane followed by 2x2 subsampled V and U
+    private final static int   NV12_COMPRESSION  = 0x3231564E; //'NV12' - y plane followed by 2x2 subsampled interleaved U, V
+    private final static int   NV21_COMPRESSION  = 0x3132564E; //'NV21' - y plane followed by 2x2 subsampled interleaved V, U
+    
     private final static int   JPEG_COMPRESSION  = 0x6765706a; //'jpeg' JPEG compression of individual frames
     private final static int   JPEG_COMPRESSION2 = 0x4745504a; //'JPEG' JPEG compression of individual frames
     private final static int   JPEG_COMPRESSION3 = 0x04;       //BI_JPEG: JPEG compression of individual frames
@@ -201,12 +211,13 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     private  boolean           indexForCountingOnly;//don't read the index, only count int totalFramesFromIndex how many entries
     //derived from BitMapInfo
     private  int               dataCompression;     //data compression type used
+    private  boolean           isPlanarFormat;      //I420 & YV12 formats: y frame, then u,v frames
     private  int               scanLineSize;
     private  boolean           dataTopDown;         //whether data start at top of image
     private  ColorModel        cm;
     private  boolean           variableLength;      //compressed (PNG, JPEG) frames have variable length
     //for conversion to ImageJ stack
-    private  Vector            frameInfos;  //for virtual stack: long[] with frame pos&size in file, time(usec)
+    private  Vector<long[]>    frameInfos;  //for virtual stack: long[] with frame pos&size in file, time(usec)
     private  ImageStack        stack;
     private  ImagePlus         imp;
     //for debug messages and error handling
@@ -286,7 +297,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             error("Error: No Frames Found"+rangeText);
             return;
         }
-        imp = new ImagePlus(WindowManager.getUniqueName(fileName), stack);
+        imp = new ImagePlus(WindowManager.makeUniqueName(fileName), stack);
         if (imp.getBitDepth()==16)
             imp.getProcessor().resetMinAndMax();
         setFramesPerSecond(imp);
@@ -460,7 +471,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             return;
         boolean hasIndex = (dwFlags & AVIF_HASINDEX) != 0;
         if (isVirtual || firstFrame>1) {        // avoid scanning frame-by-frame where we only need the positions
-            frameInfos = new Vector(100);       // holds frame positions, sizes and time since start
+            frameInfos = new Vector<long[]>(100); // holds frame positions, sizes and time since start
             long nextPosition = -1;
             if (indexPosition > 0) {            // attempt to get AVI2.0 index instead of scanning for all frames
                 raFile.seek(indexPosition);
@@ -897,6 +908,17 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 dataCompression = YVYU_COMPRESSION;
                 allowedBitCount = 16;
                 break;
+            case IYUV_COMPRESSION:
+            case I420_COMPRESSION:
+            case YV12_COMPRESSION:
+            case NV12_COMPRESSION:
+            case NV21_COMPRESSION:
+                dataCompression = (dataCompression==IYUV_COMPRESSION) ?
+                        I420_COMPRESSION : biCompression;
+                dataTopDown = biHeight>0;
+                isPlanarFormat = true;
+                allowedBitCount = 12;
+                break;
             case JPEG_COMPRESSION:
             case JPEG_COMPRESSION2:
             case JPEG_COMPRESSION3:
@@ -915,7 +937,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                         (biCompression>=0x20202020 ? " '" + fourccString(biCompression)+"'" : ""));
         }
 
-        int bitCountTest = biBitCount==24 ? BITMASK24 : biBitCount;  //convert "24" to a flag
+        int bitCountTest = (biBitCount==24) ? BITMASK24 : biBitCount;  //convert "24" to a flag
         if (allowedBitCount!=0 && (bitCountTest & allowedBitCount)==0)
             throw new Exception("Unsupported: "+biBitCount+" bits/pixel for compression '"+
                     fourccString(biCompression)+"'");
@@ -923,8 +945,11 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
         if (biHeight < 0)       //negative height was for top-down data in RGB mode
             biHeight = -biHeight;
 
-        // Scan line is padded with zeroes to be a multiple of four bytes
-        scanLineSize = ((biWidth * biBitCount + 31) / 32) * 4;
+        if (isPlanarFormat && ((biWidth&1)!=0 || (biHeight&1)!=0))
+            throw new Exception("Odd size ("+biWidth+"x"+biHeight+") unsupported with "+fourccString(biCompression)+" compression");
+        // raw & interleaved YUV: scan line is padded with zeroes to be a multiple of four bytes
+        scanLineSize = isPlanarFormat ? 
+                (biWidth * biBitCount) / 8 : ((biWidth * biBitCount + 31) / 32) * 4;
 
         // a value of biClrUsed=0 means we determine this based on the bits per pixel
         if (readPalette && biClrUsed==0)
@@ -966,7 +991,7 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                     fourccString(type0xdb)+"' or '"+fourccString(type0xdc)+"' chunks");
         if (isVirtual) {
             if (frameInfos==null)                       // we might have it already from reading the first chunk
-                frameInfos = new Vector(100);           // holds frame positions in file (for non-constant frame sizes, should hold long[] with pos and size)
+                frameInfos = new Vector<long[]>(100);   // holds frame positions in file (for non-constant frame sizes, should hold long[] with pos and size)
         } else if (stack==null)
                 stack = new ImageStack(dwWidth, biHeight);
         while (true) {                                  //loop over all chunks
@@ -1060,19 +1085,23 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
             cPixels = new int[dwWidth * biHeight];
             pixels = cPixels;
         }
-        int  offset     = topDown ? 0 : (biHeight-1)*dwWidth;
-        int  rawOffset  = 0;
-        for (int i = biHeight - 1; i >= 0; i--) {  //for all lines
-            if (biBitCount <=8)
-                unpack8bit(rawData, rawOffset, bPixels, offset, dwWidth);
-            else if (convertToGray)
-                unpackGray(rawData, rawOffset, bPixels, offset, dwWidth);
-            else if (biBitCount==16 && dataCompression == NO_COMPRESSION)
-                unpackShort(rawData, rawOffset, sPixels, offset, dwWidth);
-            else
-                unpack(rawData, rawOffset, cPixels, offset, dwWidth);
-            rawOffset += scanLineSize;
-            offset += topDown ? dwWidth : -dwWidth;
+        if (isPlanarFormat && !convertToGray)
+            unpackPlanarImage(rawData, cPixels, topDown);
+        else {
+            int  offset     = topDown ? 0 : (biHeight-1)*dwWidth;
+            int  rawOffset  = 0;
+            for (int i = biHeight - 1; i >= 0; i--) {  //for all lines
+                if (biBitCount <=8 || isPlanarFormat)
+                    unpack8bit(rawData, rawOffset, bPixels, offset, dwWidth);
+                else if (convertToGray)
+                    unpackGray(rawData, rawOffset, bPixels, offset, dwWidth);
+                else if (biBitCount==16 && dataCompression == NO_COMPRESSION)
+                    unpackShort(rawData, rawOffset, sPixels, offset, dwWidth);
+                else
+                    unpack(rawData, rawOffset, cPixels, offset, dwWidth);
+                rawOffset += isPlanarFormat ? dwWidth : scanLineSize;
+                offset += topDown ? dwWidth : -dwWidth;
+            }
         }
         return pixels;
     }
@@ -1169,6 +1198,39 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
                 }
                 break;
 
+        }
+    }
+
+    /** Unpack planar YV12 or I420 format (full frame). */
+    void unpackPlanarImage(byte[] rawData, int[] cPixels, boolean topDown) {
+        int w = dwWidth, h = dwHeight;
+        int uP =  w*h, vP = w*h;                    // pointers in U, V array
+        int uvInc = (dataCompression==NV12_COMPRESSION || dataCompression==NV21_COMPRESSION) ?
+                2 : 1;  // NV12, NV21 have interleaved u,v
+        if (dataCompression == YV12_COMPRESSION)    // separate planes for U and V, 2-fold subsampling in x&y
+            uP += w*h/4; // first V, then U
+        else if (dataCompression == I420_COMPRESSION)
+            vP += w*h/4; // first U, then V
+        else if (dataCompression == NV12_COMPRESSION)
+            vP++;  //interleaved U, then V
+        else //NV21_COMPRESSION
+            uP++;
+        int lineOutInc = topDown ? w : -w;
+        for (int line=0; line<h; line+=2) {
+            int pRaw0 = line*w;
+            int pRawEnd = pRaw0 + w;
+            int pOut = topDown ? line*w : (h-line-1)*w;
+            for (int pRaw = pRaw0; pRaw < pRawEnd; ) {
+                int u = rawData[uP] ^ 0xffffff80;   // u and v for 2x2-pixel block
+                int v = rawData[vP] ^ 0xffffff80;
+                writeRGBfromYUV(rawData[pRaw] & 0xff, u, v, cPixels, pOut);
+                writeRGBfromYUV(rawData[pRaw+w] & 0xff, u, v, cPixels, pOut+lineOutInc);
+                pRaw++; pOut++;
+                writeRGBfromYUV(rawData[pRaw] & 0xff, u, v, cPixels, pOut);
+                writeRGBfromYUV(rawData[pRaw+w] & 0xff, u, v, cPixels, pOut+lineOutInc);
+                pRaw++; pOut++;
+                uP+=uvInc; vP+=uvInc;
+            }
         }
     }
 

@@ -87,6 +87,9 @@ public class CanvasResizer implements PlugIn {
 			if (!IJ.macroRunning())
 				Undo.setup(Undo.COMPOUND_FILTER_DONE, imp);
 		}
+		Overlay overlay = imp.getOverlay();
+		if (overlay!=null)
+			overlay.translate(xOff, yOff);
 	}
 	
 	public ImageStack expandStack(ImageStack stackOld, int wNew, int hNew, int xOff, int yOff) {

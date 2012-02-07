@@ -1313,6 +1313,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
+	/** Experimental */
+	public static void setCursor(Cursor cursor, int type) {
+		crosshairCursor = cursor;
+	}
+
 	/** Use ImagePlus.setOverlay(ij.gui.Overlay). */
 	public void setOverlay(Overlay overlay) {
 		this.overlay = overlay;
@@ -1470,6 +1475,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 
-	public void mouseClicked(MouseEvent e) {}
+	public void mouseClicked(MouseEvent e) {
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseClicked(imp, e);
+			return;
+		}
+	}
 
 }
