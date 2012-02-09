@@ -251,6 +251,7 @@ public class StackStatistics extends ImageStatistics {
 		pw=1.0; ph=1.0;
 		getRaw16BitMinAndMax(hist16, minThreshold, maxThreshold);
 		get16BitStatistics(hist16, (int)min, (int)max);
+		histogram16 = hist16;
 		IJ.showStatus("");
 		IJ.showProgress(1.0);
 	}

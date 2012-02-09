@@ -32,12 +32,15 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			equalize(imp);
 		else
 			stretchHistogram(imp, saturated);
-		if (equalize || normalize)
+		if (normalize)
 			imp.getProcessor().resetMinAndMax();
 		imp.updateAndDraw();
 	}
 
 	boolean showDialog(ImagePlus imp) {
+		String options = IJ.isMacro()?Macro.getOptions():null;
+		if (options!=null && options.contains("normalize_all"))
+			Macro.setOptions(options.replaceAll("normalize_all", "process_all"));
 		equalize=gEqualize; normalize=gNormalize;
 		int bitDepth = imp.getBitDepth();
 		boolean composite = imp.isComposite();
@@ -45,19 +48,20 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		Roi roi = imp.getRoi();
 		boolean areaRoi = roi!=null && roi.isArea() && !composite;
 		GenericDialog gd = new GenericDialog("Enhance Contrast");
-		gd.addNumericField("Saturated Pixels:", saturated, 1, 4, "%");
+		gd.addNumericField("Saturated pixels:", saturated, 1, 4, "%");
 		if (bitDepth!=24 && !composite)
 			gd.addCheckbox("Normalize", normalize);
 		if (areaRoi) {
-			String label = bitDepth==24?"Update Entire Image":"Update All When Normalizing";
+			String label = bitDepth==24?"Update entire image":"Update all when normalizing";
 			gd.addCheckbox(label, entireImage);
 		}
-		gd.addCheckbox("Equalize Histogram", equalize);
+		gd.addCheckbox("Equalize histogram", equalize);
 		if (stackSize>1) {
 			if (!composite)
-				gd.addCheckbox("Normalize_All "+stackSize+" Slices", processStack);
-			gd.addCheckbox("Use Stack Histogram", useStackHistogram);
+				gd.addCheckbox("Process_all "+stackSize+" slices", processStack);
+			gd.addCheckbox("Use stack histogram", useStackHistogram);
 		}
+        gd.addHelp(IJ.URL+"/docs/menus/process.html#enhance");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;
@@ -77,8 +81,10 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		useStackHistogram = stackSize>1?gd.getNextBoolean():false;
 		if (saturated<0.0) saturated = 0.0;
 		if (saturated>100.0) saturated = 100;
-		if (processStack)
+		if (processStack && !equalize)
 			normalize = true;
+		if (normalize)
+			useStackHistogram = false;
 		gEqualize=equalize; gNormalize=normalize;
 		return true;
 	}
@@ -261,6 +267,13 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			return;
 		}
 		classicEqualization = IJ.altKeyDown();
+		int[] histogram = null;
+		if (useStackHistogram) {
+			ImageStatistics stats = new StackStatistics(imp);
+			histogram = stats.histogram;
+			if (stats.histogram16!=null && imp.getBitDepth()==16)
+				histogram = stats.histogram16;
+		}
 		if (processStack) {
 			//int[] mask = imp.getMask();
 			//Rectangle rect = imp.get
@@ -268,10 +281,23 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			for (int i=1; i<=stackSize; i++) {
 				IJ.showProgress(i, stackSize);
 				ImageProcessor ip = stack.getProcessor(i);
-				equalize(ip);
+				if (histogram==null)
+					histogram = ip.getHistogram();
+				equalize(ip, histogram);
 			}
+		} else {
+			ImageProcessor ip = imp.getProcessor();
+			if (histogram==null)
+				histogram = ip.getHistogram();
+			equalize(ip, histogram);
+		}
+		if (imp.getBitDepth()==16 && processStack && imp.getStackSize()>1) {
+			ImageStack stack = imp.getStack();
+			ImageProcessor ip = stack.getProcessor(stack.getSize()/2);
+			ImageStatistics stats = ip.getStatistics();
+			imp.getProcessor().setMinAndMax(stats.min, stats.max);
 		} else
-			equalize(imp.getProcessor());
+			imp.getProcessor().resetMinAndMax();
 	}
 
 	/**	
@@ -283,10 +309,12 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		values, so its effects are less extreme. Hold the alt key down 
 		to use the standard histogram equalization algorithm.
 		This code was contributed by Richard Kirk (rak@cre.canon.co.uk).
-	*/ 	
+	*/ 
 	public void equalize(ImageProcessor ip) {
-	
-		int[] histogram = ip.getHistogram();
+		equalize(ip, ip.getHistogram());
+	}
+
+	private void equalize(ImageProcessor ip, int[] histogram) {
 		ip.resetRoi();
 		if (ip instanceof ShortProcessor) {	// Short
 			max = 65535;
@@ -295,17 +323,13 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			max = 255;
 			range = 255;
 		}
-		
 		double sum;
-		
 		sum = getWeightedValue(histogram, 0);
 		for (int i=1; i<max; i++)
 			sum += 2 * getWeightedValue(histogram, i);
 		sum += getWeightedValue(histogram, max);
-		
 		double scale = range/sum;
 		int[] lut = new int[range+1];
-		
 		lut[0] = 0;
 		sum = getWeightedValue(histogram, 0);
 		for (int i=1; i<max; i++) {
@@ -315,7 +339,6 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			sum += delta;
 		}
 		lut[max] = max;
-		
 		applyTable(ip, lut);
 	}
 

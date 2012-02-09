@@ -892,6 +892,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 		}
 		boolean updateWin = isDisplayedHyperStack() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
+		boolean newSingleImage = win!=null && (win instanceof StackWindow) && nChannels==1&&nSlices==1&&nFrames==1;
+		if (newSingleImage) updateWin = true;
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
@@ -902,7 +904,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setPositionWithoutUpdate(getChannel(), getSlice(), getFrame());
 			if (isComposite()) ((CompositeImage)this).reset();
 			new StackWindow(this);
-			setPosition(getChannel(), getSlice(), getFrame());
 		}
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
