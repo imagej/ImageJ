@@ -100,7 +100,7 @@ public class ZProjector implements PlugIn {
 
 		//  Make sure input image is a stack.
 		if(stackSize==1) {
-	    	IJ.error("ZProjection", "Stack required"); 
+	    	IJ.error("Z Project", "Stack required"); 
 	    	return; 
 		}
 	
@@ -138,9 +138,10 @@ public class ZProjector implements PlugIn {
 		if (isHyperstack) {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
-		} else if (imp.getType()==ImagePlus.COLOR_RGB)
+		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
+			if (method==SUM_METHOD) method=AVG_METHOD;
 			doRGBProjection();
-		else 
+		} else 
 			doProjection(); 
 
 		if (arg.equals("") && projImage!=null) {
@@ -175,6 +176,24 @@ public class ZProjector implements PlugIn {
 		color = "(blue)"; doProjection();
 		ImagePlus blue2 = projImage;
         int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
+        if (method==MEDIAN_METHOD) {
+        	red2.setProcessor(red2.getProcessor().convertToByte(false));
+        	green2.setProcessor(green2.getProcessor().convertToByte(false));
+        	blue2.setProcessor(blue2.getProcessor().convertToByte(false));
+        } else if (method==SD_METHOD) {
+        	ImageProcessor r = red2.getProcessor();
+        	ImageProcessor g = green2.getProcessor();
+        	ImageProcessor b = blue2.getProcessor();
+        	double max = 0;
+        	double rmax = r.getStatistics().max; if (rmax>max) max=rmax;
+        	double gmax = g.getStatistics().max; if (gmax>max) max=gmax;
+        	double bmax = b.getStatistics().max; if (bmax>max) max=bmax;
+        	double scale = 255/max;
+        	r.multiply(scale); g.multiply(scale); b.multiply(scale);
+        	red2.setProcessor(r.convertToByte(false));
+        	green2.setProcessor(g.convertToByte(false));
+        	blue2.setProcessor(b.convertToByte(false));
+        }
         RGBStackMerge merge = new RGBStackMerge();
         ImageStack stack2 = merge.mergeStacks(w, h, d, red2.getStack(), green2.getStack(), blue2.getStack(), true);
         imp = saveImp;
@@ -188,9 +207,9 @@ public class ZProjector implements PlugIn {
 		GenericDialog gd = new GenericDialog("ZProjection",IJ.getInstance()); 
 		gd.addNumericField("Start slice:",startSlice,0/*digits*/); 
 		gd.addNumericField("Stop slice:",stopSlice,0/*digits*/);
-		gd.addChoice("Projection Type", METHODS, METHODS[method]); 
+		gd.addChoice("Projection type", METHODS, METHODS[method]); 
 		if (isHyperstack && imp.getNFrames()>1&& imp.getNSlices()>1)
-			gd.addCheckbox("All Time Frames", allTimeFrames); 
+			gd.addCheckbox("All time frames", allTimeFrames); 
 		return gd; 
     }
 
@@ -227,7 +246,7 @@ public class ZProjector implements PlugIn {
 		else if(stack.getProcessor(1) instanceof ShortProcessor) ptype = SHORT_TYPE; 
 		else if(stack.getProcessor(1) instanceof FloatProcessor) ptype = FLOAT_TYPE; 
 		else {
-	    	IJ.error("ZProjector: Non-RGB stack required"); 
+	    	IJ.error("Z Project", "Non-RGB stack required"); 
 	    	return; 
 		}
 
@@ -252,7 +271,7 @@ public class ZProjector implements PlugIn {
 		}
 
 		if(projImage==null)
-	    	IJ.error("ZProjection - error computing projection.");
+	    	IJ.error("Z Project", "Error computing projection.");
     }
 
 	public void doHyperStackProjection(boolean allTimeFrames) {
@@ -317,7 +336,7 @@ public class ZProjector implements PlugIn {
 			case SD_METHOD:
 	    		return new StandardDeviation(fp, sliceCount); 
 			default:
-	    		IJ.error("ZProjection - unknown method.");
+	    		IJ.error("Z Project", "Unknown method.");
 	    		return null;
 	    }
 	}
@@ -412,6 +431,7 @@ public class ZProjector implements PlugIn {
 				ip2.putPixelValue(x, y, median(values));
 			}
 		}
+		IJ.showProgress(1, 1);
 		return new ImagePlus(makeTitle(), ip2);
 	}
 
