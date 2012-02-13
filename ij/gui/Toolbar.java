@@ -104,7 +104,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
-		names[NUM_TOOLS-1] = "Switch to alternate macro tool sets";
+		names[NUM_TOOLS-1] = "Switch to alternate tool sets or add a plugin tool";
 		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
 		addPopupMenus();
 		if (IJ.isMacOSX() || IJ.isVista()) Prefs.antialiasedTools = true;
@@ -1033,13 +1033,52 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 addItem(name);
 			}
 		}
+		addPluginTools();
 		addItem("Help...");
 		add(ovalPopup);
 		if (IJ.isMacOSX()) IJ.wait(10);
 		switchPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
-    
-    void addItem(String name) {
+
+	private void addPluginTools() {
+		MenuBar menuBar = Menus.getMenuBar();
+		if (menuBar==null)
+			return;
+		int n = menuBar.getMenuCount();
+		Menu pluginsMenu = null;
+		if (menuBar.getMenuCount()>=5)
+			pluginsMenu = menuBar.getMenu(5);
+		if (pluginsMenu==null || !"Plugins".equals(pluginsMenu.getLabel()))
+			return;
+		n = pluginsMenu.getItemCount();
+		Menu toolsMenu = null;
+		for (int i=0; i<n; ++i) {
+			MenuItem m = pluginsMenu.getItem(i);
+			if ("Tools".equals(m.getLabel()) && (m instanceof Menu)) {
+				toolsMenu = (Menu)m;
+				break;
+			}
+		}
+		if (toolsMenu==null)
+			return;
+		boolean separatorAdded = false;
+		n = toolsMenu.getItemCount();
+		for (int i=0; i<n; ++i) {
+			MenuItem m = toolsMenu.getItem(i);
+			String label = m.getLabel();
+			if (label!=null && label.endsWith(" Tool")) {
+				if (!separatorAdded) {
+					switchPopup.addSeparator();
+					separatorAdded = true;
+				}
+				addItem(label);
+			}
+		}
+		if (separatorAdded)
+			switchPopup.addSeparator();
+	}
+
+    private void addItem(String name) {
 		CheckboxMenuItem item = new CheckboxMenuItem(name, name.equals(currentSet));
 		item.addItemListener(this);
 		switchPopup.add(item);
@@ -1130,21 +1169,32 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			showMessage(LINE);
 		} else {
 			String label = item.getActionCommand();
-			if (!label.equals("Help...")) currentSet = label;
+			boolean pluginTool = label.endsWith(" Tool");
+			if (!label.equals("Help...") && !pluginTool)
+				currentSet = label;
+			if (pluginTool) {
+				IJ.run(label);
+				return;
+			}
 			String path;
 			if (label.equals("Help...")) {
-				IJ.showMessage("Tool Switcher",
-					"Use this drop down menu to switch to macro tool\n"+
-					"sets located in the ImageJ/macros/toolsets folder,\n"+
-					"or to revert to the ImageJ/macros/StartupMacros\n"+
-					"set. The default tool sets, which have names\n"+
-					"ending in '*', are loaded from ij.jar.\n"+
+				IJ.showMessage("Tool Switcher and Loader",
+					"Use this drop down menu to switch to alternative\n"+
+					"macro toolsets or to load additional plugin tools.\n"+
+					"The toolsets listed in the menu are located\n"+
+					"in the ImageJ/macros/toolsets folder and the\n"+
+					"plugin tools are the ones installed in the\n"+
+					"Plugins>Tools submenu.\n"+
 					" \n"+
-					"Hold the shift key down while selecting a tool\n"+
-					"set to view its source code.\n"+
+					"Hold the shift key down while selecting a\n"+
+					"toolset to view its source code.\n"+
 					" \n"+
-					"Several example tool sets are available at\n"+
-					"<"+IJ.URL+"/macros/toolsets/>."
+					"More macro toolsets are available at\n"+
+					"  <"+IJ.URL+"/macros/toolsets/>\n"+
+					" \n"+
+					"Plugin tools can be downloaded from\n"+
+					"the Tools section of the Plugins page at\n"+
+					"  <"+IJ.URL+"/plugins/>\n"
 					);
 				return;
 			} else if (label.endsWith("*")) {

@@ -176,11 +176,7 @@ public class ZProjector implements PlugIn {
 		color = "(blue)"; doProjection();
 		ImagePlus blue2 = projImage;
         int w = red2.getWidth(), h = red2.getHeight(), d = red2.getStackSize();
-        if (method==MEDIAN_METHOD) {
-        	red2.setProcessor(red2.getProcessor().convertToByte(false));
-        	green2.setProcessor(green2.getProcessor().convertToByte(false));
-        	blue2.setProcessor(blue2.getProcessor().convertToByte(false));
-        } else if (method==SD_METHOD) {
+        if (method==SD_METHOD) {
         	ImageProcessor r = red2.getProcessor();
         	ImageProcessor g = green2.getProcessor();
         	ImageProcessor b = blue2.getProcessor();
@@ -431,6 +427,8 @@ public class ZProjector implements PlugIn {
 				ip2.putPixelValue(x, y, median(values));
 			}
 		}
+		if (imp.getBitDepth()==8)
+			ip2 = ip2.convertToByte(false);
 		IJ.showProgress(1, 1);
 		return new ImagePlus(makeTitle(), ip2);
 	}

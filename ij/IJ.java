@@ -449,6 +449,23 @@ public class IJ {
 		}
 	}
 
+	/** Changes the name of a results window from 'oldTitle' to 'newTitle'. */
+	public static void renameResults(String oldTitle, String newTitle) {
+		Frame frame = WindowManager.getFrame(oldTitle);
+		if (frame==null) {
+			error("Rename", "\""+oldTitle+"\" not found");
+			return;
+		} else if (frame instanceof TextWindow) {
+			TextWindow tw = (TextWindow)frame;
+			if (tw.getTextPanel().getResultsTable()==null) {
+				error("Rename", "\""+oldTitle+"\" is not a results table");
+				return;
+			}
+			tw.rename(newTitle);
+		} else
+			error("Rename", "\""+oldTitle+"\" is not a results table");
+	}
+
 	/** Deletes 'row1' through 'row2' of the "Results" window. Arguments
 	     must be in the range 0-Analyzer.getCounter()-1. */
 	public static void deleteRows(int row1, int row2) {
