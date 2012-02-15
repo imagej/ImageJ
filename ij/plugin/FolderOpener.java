@@ -121,8 +121,9 @@ public class FolderOpener implements PlugIn {
 				}
 			}
 			if (width==0) {
-				IJ.error("Import Sequence", "This folder does not appear to contain any TIFF,\n"
-				+ "JPEG, BMP, DICOM, GIF, FITS or PGM files.");
+				IJ.error("Import Sequence", "This folder does not appear to contain\n"
+				+ "any TIFF, JPEG, BMP, DICOM, GIF, FITS or PGM files.\n \n"
+				+ "   \""+directory+"\"");
 				return;
 			}
 

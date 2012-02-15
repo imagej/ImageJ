@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46g 13 February 2012</u>
+<li> <u>1.46g 15 February 2012</u>
 <ul>
 <li> The ">>" toolbar menu now also lists
 <a href="http://imagej.nih.gov/ij/plugins/index.html#tools">plugin tools</a>.
@@ -21,6 +21,11 @@ to not work as expected when the "Equalize histogram", "Process all n slices" an
 "Stack histogram" options were enabled.
 <li> Thanks to Rainer Engel, fixed bug that caused <i>Image&gt;Stacks&gt;Z Project</i> 
 to not correctly perform "Median" and "Standard Deviation" projections of RGB stacks.
+<li> Thanks to Eik Schumann, fixed a bug that caused run("Merge Channels...", "...")
+to not close source images in batch mode macros.
+<li> Thanks to Zeljka Maglica, fixed a bug that caused position-dependent overlays to not
+be saved when using the <i>Image&gt;Overlay&gt;Flatten</i>, <i>File&gt;Save As&gt;AVI</i>
+and <i>Image&gt;Stacks&gt;QuickTime Movie</i> commands.
 
 </ul> 
 

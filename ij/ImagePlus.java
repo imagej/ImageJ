@@ -2140,7 +2140,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		String title = "Flat_"+getTitle();
 		ImageCanvas ic2 = new ImageCanvas(imp2);
 		imp2.flatteningCanvas = ic2;
-		imp2.setRoi(getRoi());	
+		imp2.setRoi(getRoi());
+		if (getStackSize()>1) {
+			imp2.setStack(getStack());
+			imp2.setSlice(getCurrentSlice());
+			if (isHyperStack()) {
+				imp2.setDimensions(getNChannels(),getNSlices(),getNFrames());
+				imp2.setPosition(getChannel(),getSlice(),getFrame());
+				imp2.setOpenAsHyperStack(true);
+			}
+		}
 		ImageCanvas ic = getCanvas();
 		Overlay overlay2 = getOverlay();
 		ic2.setOverlay(overlay2);
