@@ -1144,7 +1144,7 @@ public class ShapeRoi extends Roi {
 	boolean setShape(Shape rhs) {
 		boolean result = true;
 		if (rhs==null) return false;
-		if(shape.equals(rhs)) return false;
+		if (shape.equals(rhs)) return false;
 		shape = rhs;
 		type = Roi.COMPOSITE;
 		Rectangle rect = shape.getBounds();

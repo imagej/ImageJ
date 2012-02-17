@@ -59,7 +59,7 @@ public class FHT extends FloatProcessor {
 		return i==width && width==height;
 	}
 
-	/** Performs a foreward transform, converting this image into the frequency domain. 
+	/** Performs a forward transform, converting this image into the frequency domain. 
 		The image contained in this FHT must be square and its width must be a power of 2. */
 	public void transform() {
 		transform(false);

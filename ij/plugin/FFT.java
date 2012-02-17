@@ -73,7 +73,7 @@ public class FFT implements  PlugIn, Measurements {
             doInverseTransform(fht);
         else {
             fileName = imp.getTitle();
-            doForewardTransform(fht);   
+            doForwardTransform(fht);   
         }    
         IJ.showProgress(1.0);
     }
@@ -118,8 +118,8 @@ public class FFT implements  PlugIn, Measurements {
         imp2.show();
     }
 
-    void doForewardTransform(FHT fht) {
-        showStatus("Foreward transform");
+    void doForwardTransform(FHT fht) {
+        showStatus("Forward transform");
         fht.transform();
         showStatus("Calculating power spectrum");
         ImageProcessor ps = fht.getPowerSpectrum();

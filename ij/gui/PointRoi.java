@@ -96,7 +96,7 @@ public class PointRoi extends PolygonRoi {
 	public void draw(Graphics g) {
 		//IJ.log("draw: " + nPoints+"  "+width+"  "+height);
 		updatePolygon();
-		//IJ.log("draw: "+ xpf[0]+" "+ypf[0]+" "+xp2[0]+" "+xp2[0]);
+		//IJ.log("draw: "+ xpf[0]+" "+ypf[0]+" "+xp2[0]+" "+yp2[0]);
 		if (ic!=null) mag = ic.getMagnification();
 		int size2 = HANDLE_SIZE/2;
 		if (!Prefs.noPointLabels && !hideLabels && nPoints>1) {
