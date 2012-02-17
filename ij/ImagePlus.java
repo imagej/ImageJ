@@ -555,7 +555,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setStack(ImageStack stack) {
     	setStack(null, stack);
     }
-
+    
 	/** Replaces the image with the specified stack and updates 
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
@@ -892,6 +892,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 		}
 		boolean updateWin = isDisplayedHyperStack() && (this.nChannels!=nChannels||this.nSlices!=nSlices||this.nFrames!=nFrames);
+		boolean newSingleImage = win!=null && (win instanceof StackWindow) && nChannels==1&&nSlices==1&&nFrames==1;
+		if (newSingleImage) updateWin = true;
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
@@ -902,7 +904,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setPositionWithoutUpdate(getChannel(), getSlice(), getFrame());
 			if (isComposite()) ((CompositeImage)this).reset();
 			new StackWindow(this);
-			setPosition(getChannel(), getSlice(), getFrame());
 		}
 		//IJ.log("setDimensions: "+ nChannels+"  "+nSlices+"  "+nFrames);
 	}
@@ -915,7 +916,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the number of dimensions (2, 3, 4 or 5). */
 	public int getNDimensions() {
 		int dimensions = 2;
-		int[] dim = getDimensions();
+		int[] dim = getDimensions(false);
 		if (dim[2]>1) dimensions++;
 		if (dim[3]>1) dimensions++;
 		if (dim[4]>1) dimensions++;
@@ -949,7 +950,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the dimensions of this image (width, height, nChannels, 
 		nSlices, nFrames) as a 5 element int array. */
 	public int[] getDimensions() {
-		verifyDimensions();
+		return getDimensions(true);
+	}
+
+	public int[] getDimensions(boolean varify) {
+		if (varify)
+			verifyDimensions();
 		int[] d = new int[5];
 		d[0] = width;
 		d[1] = height;
@@ -2134,7 +2140,16 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		String title = "Flat_"+getTitle();
 		ImageCanvas ic2 = new ImageCanvas(imp2);
 		imp2.flatteningCanvas = ic2;
-		imp2.setRoi(getRoi());	
+		imp2.setRoi(getRoi());
+		if (getStackSize()>1) {
+			imp2.setStack(getStack());
+			imp2.setSlice(getCurrentSlice());
+			if (isHyperStack()) {
+				imp2.setDimensions(getNChannels(),getNSlices(),getNFrames());
+				imp2.setPosition(getChannel(),getSlice(),getFrame());
+				imp2.setOpenAsHyperStack(true);
+			}
+		}
 		ImageCanvas ic = getCanvas();
 		Overlay overlay2 = getOverlay();
 		ic2.setOverlay(overlay2);

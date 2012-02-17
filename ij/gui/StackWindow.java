@@ -160,9 +160,9 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 					slice = imp.getStack().getSize();
 				imp.setSlice(slice);
 				imp.updateStatusbarValue();
+				SyncWindows.setZ(this, slice);
 			}
 		}
-		syncWindows(event.getSource());
 	}
 
 	public boolean close() {
@@ -213,7 +213,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		String subtitle = super.createSubtitle();
 		if (!hyperStack) return subtitle;
     	String s="";
-    	int[] dim = imp.getDimensions();
+    	int[] dim = imp.getDimensions(false);
     	int channels=dim[2], slices=dim[3], frames=dim[4];
 		if (channels>1) {
 			s += "c:"+imp.getChannel()+"/"+channels;

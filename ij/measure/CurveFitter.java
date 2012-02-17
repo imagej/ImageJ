@@ -221,7 +221,12 @@ public class CurveFitter implements UserFunction {
 			equation+";\n"; // starts at program counter location 21
 		macroStartProgramCounter = 21;
 		macro = new Interpreter();
-		macro.run(code, null);
+		try {
+			macro.run(code, null);
+		} catch (Exception e) {
+			if (!Macro.MACRO_CANCELED.equals(e.getMessage()))
+				IJ.handleException(e);
+		}
 		if (macro.wasError())
 			return 0;
 		this.initialParams = initialParams;
@@ -1120,6 +1125,24 @@ public class CurveFitter implements UserFunction {
             minimizer.setMaxRestarts((int)n);
         n = gd.getNextNumber();
         setMaxError(Math.pow(10.0, -n));
+    }
+    
+     /**
+     * Gets index of highest value in an array.
+     * 
+     * @param              Double array.
+     * @return             Index of highest value.
+     */
+    public static int getMax(double[] array) {
+        double max = array[0];
+        int index = 0;
+        for(int i = 1; i < array.length; i++) {
+            if(max < array[i]) {
+            	max = array[i];
+            	index = i;
+            }
+        }
+        return index;
     }
 
 }

@@ -4870,7 +4870,7 @@ public class Functions implements MacroConstants, Measurements {
 		resetImage();
 	}
 	
-	String ijCall() {
+	private String ijCall() {
 		interp.getToken();
 		if (interp.token!='.')
 			interp.error("'.' expected");
@@ -4895,10 +4895,23 @@ public class Functions implements MacroConstants, Measurements {
 		else if (name.equals("redirectErrorMessages"))
 			{interp.getParens(); IJ.redirectErrorMessages(); return null;}
 		else if (name.equals("renameResults"))
-			IJ.renameResults(getStringArg());
+			renameResults();
 		else
 			interp.error("Unrecognized IJ function name");
 		return null;
+	}
+	
+	private void renameResults() {
+		String arg1 = getFirstString();
+		String arg2 = null;
+		if (interp.nextToken()==')')
+			interp.getRightParen();
+		else
+			arg2 = getLastString();
+		if (arg2!=null)
+			IJ.renameResults(arg1, arg2);
+		else
+			IJ.renameResults(arg1);
 	}
 	
 	double overlay() {

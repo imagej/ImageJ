@@ -584,6 +584,19 @@ public class Selection implements PlugIn, Measurements {
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		if (altDown && !IJ.macroRunning())
 			IJ.setKeyDown(KeyEvent.VK_SHIFT);
+		if (roi.getState()==Roi.CONSTRUCTING) {	//wait (up to 2 sec.) until ROI finished
+			long start = System.currentTimeMillis();
+			while (true) {
+				IJ.wait(10);
+				if (roi.getState()!=Roi.CONSTRUCTING)
+					break;
+				if ((System.currentTimeMillis()-start)>2000) {
+					IJ.beep();
+					IJ.error("Add to Manager", "Selection is not complete");
+					return;
+				}
+			}
+		}
 		rm.runCommand("add");
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}

@@ -113,18 +113,23 @@ public class EllipseRoi extends PolygonRoi {
 	protected void moveHandle(int sx, int sy) {
 		double ox = ic.offScreenXD(sx); 
 		double oy = ic.offScreenYD(sy);
-		double x1 = xpf[handle[2]]+x;
-		double y1 = ypf[handle[2]]+y;
-		double x2 = xpf[handle[0]]+x;
-		double y2 = ypf[handle[0]]+y;
+		double xbase=x, ybase=y;
+		if (bounds!=null) {
+			xbase = bounds.x;
+			ybase = bounds.y;
+		}
+		double x1 = xpf[handle[2]]+xbase;
+		double y1 = ypf[handle[2]]+ybase;
+		double x2 = xpf[handle[0]]+xbase;
+		double y2 = ypf[handle[0]]+ybase;
 		switch(activeHandle) {
 			case 0: 
 				x2 = ox;
 				y2 = oy;
 				break;
 			case 1: 
-				double dx = (xpf[handle[3]]+x) - ox;
-				double dy = (ypf[handle[3]]+y) - oy;
+				double dx = (xpf[handle[3]]+xbase) - ox;
+				double dy = (ypf[handle[3]]+ybase) - oy;
 				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
 				break;
 			case 2: 
@@ -132,8 +137,8 @@ public class EllipseRoi extends PolygonRoi {
 				y1 = oy;
 				break;
 			case 3: 
-				dx = (xpf[handle[1]]+x) - ox;
-				dy = (ypf[handle[1]]+y) - oy;
+				dx = (xpf[handle[1]]+xbase) - ox;
+				dy = (ypf[handle[1]]+ybase) - oy;
 				updateRatio(Math.sqrt(dx*dx+dy*dy), x1, y1, x2, y2);
 				break;
 		}
@@ -187,11 +192,16 @@ public class EllipseRoi extends PolygonRoi {
 
 	/** Returns x1, y1, x2, y2 and aspectRatio as a 5 element array. */
 	public double[] getParams() {
+		double xbase=x, ybase=y;
+		if (bounds!=null) {
+			xbase = bounds.x;
+			ybase = bounds.y;
+		}
 		double[] params = new double[5];
-		params[0] = xpf[handle[2]]+x;
-		params[1]  = ypf[handle[2]]+y;
-		params[2]  = xpf[handle[0]]+x;
-		params[3]  = ypf[handle[0]]+y;
+		params[0] = xpf[handle[2]]+xbase;
+		params[1]  = ypf[handle[2]]+ybase;
+		params[2]  = xpf[handle[0]]+xbase;
+		params[3]  = ypf[handle[0]]+ybase;
 		params[4]  = aspectRatio;
 		return params;
 	}

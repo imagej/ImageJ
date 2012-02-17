@@ -620,8 +620,15 @@ public class PolygonRoi extends Roi {
 	}
 
 	String getAngleAsString() {
-		double angle1 = getAngle(xp[0], yp[0], xp[1], yp[1]);
-		double angle2 = getAngle(xp[1], yp[1], xp[2], yp[2]);
+		double angle1 = 0.0;
+		double angle2 = 0.0;
+		if (xpf!=null) {
+			angle1 = getFloatAngle(xpf[0], ypf[0], xpf[1], ypf[1]);
+			angle2 = getFloatAngle(xpf[1], ypf[1], xpf[2], ypf[2]);
+		} else {
+			angle1 = getFloatAngle(xp[0], yp[0], xp[1], yp[1]);
+			angle2 = getFloatAngle(xp[1], yp[1], xp[2], yp[2]);
+		}
 		degrees = Math.abs(180-Math.abs(angle1-angle2));
 		if (degrees>180.0)
 			degrees = 360.0-degrees;

@@ -3,7 +3,7 @@ package ij.measure;
 
 /**
  * A plugin should implement this interface for minimizing a single-valued function
- * or fitting a curve with a custom fit function
+ * or fitting a curve with a custom fit function.
  */
 public interface UserFunction {
     /**

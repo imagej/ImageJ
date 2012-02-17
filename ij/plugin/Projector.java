@@ -114,24 +114,25 @@ public class Projector implements PlugIn {
 		Calibration cal = imp.getCalibration();
 		boolean hyperstack = imp.isHyperStack() && imp.getNFrames()>1;
 		GenericDialog gd = new GenericDialog("3D Projection");
-		gd.addChoice("Projection Method:", methodList, methodList[projectionMethod]);
-		gd.addChoice("Axis of Rotation:", axisList, axisList[axisOfRotation]);
+		gd.addChoice("Projection method:", methodList, methodList[projectionMethod]);
+		gd.addChoice("Axis of rotation:", axisList, axisList[axisOfRotation]);
 		//gd.addMessage("");
-		gd.addNumericField("Slice Spacing ("+cal.getUnits()+"):",cal.pixelDepth,2); 
+		gd.addNumericField("Slice spacing ("+cal.getUnits()+"):",cal.pixelDepth,2); 
 
-		gd.addNumericField("Initial Angle (0-359 degrees):", initAngle, 0);
-		gd.addNumericField("Total Rotation (0-359 degrees):", totalAngle, 0);
-		gd.addNumericField("Rotation Angle Increment:", angleInc, 0);
-		gd.addNumericField("Lower Transparency Bound:", transparencyLower, 0);
-		gd.addNumericField("Upper Transparency Bound:", transparencyUpper, 0);
+		gd.addNumericField("Initial angle (0-359 degrees):", initAngle, 0);
+		gd.addNumericField("Total rotation (0-359 degrees):", totalAngle, 0);
+		gd.addNumericField("Rotation angle increment:", angleInc, 0);
+		gd.addNumericField("Lower transparency bound:", transparencyLower, 0);
+		gd.addNumericField("Upper transparency bound:", transparencyUpper, 0);
 		gd.addNumericField("Opacity (0-100%):", opacity, 0);
-		gd.addNumericField("Surface Depth-Cueing (0-100%):", 100-depthCueSurf, 0);
-		gd.addNumericField("Interior Depth-Cueing (0-100%):", 100-depthCueInt, 0);
+		gd.addNumericField("Surface depth-cueing (0-100%):", 100-depthCueSurf, 0);
+		gd.addNumericField("Interior depth-cueing (0-100%):", 100-depthCueInt, 0);
 		gd.addCheckbox("Interpolate", interpolate);
 		if (hyperstack)
 			gd.addCheckbox("All time points", allTimePoints);
 		//gd.addCheckbox("Debug Mode:", debugMode);
 
+		gd.addHelp(IJ.URL+"/docs/menus/image.html#project");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;;

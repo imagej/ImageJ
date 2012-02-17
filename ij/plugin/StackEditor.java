@@ -58,11 +58,7 @@ public class StackEditor implements PlugIn {
 	void deleteSlice() {
 		if (nSlices<2)
 			{IJ.error("\"Delete Slice\" requires a stack"); return;}
-		if (imp.isComposite() && nSlices==imp.getNChannels()) {
-			deleteChannel();
-			return;
-		}
-		if (imp.isDisplayedHyperStack()) {
+		if (imp.isDisplayedHyperStack() || (imp.isComposite() && nSlices==imp.getNChannels())) {
 			deleteHyperstackChannelSliceOrFrame();
 			return;
 		}
@@ -106,25 +102,6 @@ public class StackEditor implements PlugIn {
 		imp.updateAndDraw();
 	}
 
-	void deleteChannel() {
-		int c = imp.getChannel();
-		ImageStack stack = imp.getStack();
-		CompositeImage ci = (CompositeImage)imp;
- 		int mode = ci.getMode();
-		LUT[] luts = ci.getLuts();
- 		stack.deleteSlice(c);
- 		int channels = stack.getSize();
- 		imp.setStack(stack, channels, 1, 1);
- 		if (mode==CompositeImage.COMPOSITE && channels==1)
- 			mode = CompositeImage.COLOR;
-		int index = 0;
-		for (int i=1; i<=channels; i++) {
-			if (c==index+1) index++;
-			((CompositeImage)imp).setChannelLut(luts[index++], i);
-		}
-		imp.updateAndDraw();
-	}
-
 	void deleteHyperstackChannelSliceOrFrame() {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
@@ -150,6 +127,8 @@ public class StackEditor implements PlugIn {
     		else
     			Macro.setOptions("delete=slice");
     	}
+		if (IJ.isMacro() && options==null && (imp.isComposite() && imp.getStackSize()==imp.getNChannels()))
+			Macro.setOptions("delete=channel");
 		GenericDialog gd = new GenericDialog("Delete");
 		gd.addChoice("Delete current", choices, choice);
 		gd.showDialog();
@@ -182,15 +161,18 @@ public class StackEditor implements PlugIn {
 			}
 			channels--;
 		}
-		imp.setDimensions(channels, slices, frames);
+		//imp.setDimensions(channels, slices, frames);
+		imp.setStack(stack, channels, slices, frames);
 		if (luts!=null) {
 			for (int i=c1-1; i<luts.length-1; i++)
 				luts[i] = luts[i+1];
+			CompositeImage cimp = (CompositeImage)imp;
 			for (int c=1; c<=channels; c++)
-				((CompositeImage)imp).setChannelLut(luts[c-1], c);
+				cimp.setChannelLut(luts[c-1], c);
 			imp.updateAndDraw();
 		}
 		imp.unlock();
+		imp.repaintWindow();
 	}
 
 	public void convertImagesToStack() {

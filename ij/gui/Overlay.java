@@ -69,6 +69,17 @@ public class Overlay {
     	return (Roi)list.get(index);
     }
     
+    /** Returns the index of the Roi with the specified name, or -1 if not found. */
+    public int getIndex(String name) {
+    	if (name==null) return -1;
+    	Roi[] rois = toArray();
+		for (int i=rois.length-1; i>=0; i--) {
+			if (name.equals(rois[i].getName()))
+				return i;
+		}
+		return -1;
+    }
+    
     /** Returns the number of Rois in this Overlay. */
     public int size() {
     	return list.size();

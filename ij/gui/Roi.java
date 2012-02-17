@@ -718,6 +718,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x; oldY = y;
 		xd=x; yd=y;
+		bounds = null;
 		showStatus();
 	}
 	
@@ -1147,6 +1148,11 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Returns the angle in degrees between the specified line and a horizontal line. */
 	public double getAngle(int x1, int y1, int x2, int y2) {
+		return getFloatAngle(x1, y1, x2, y2);
+	}
+	
+	/** Returns the angle in degrees between the specified line and a horizontal line. */
+	public double getFloatAngle(double x1, double y1, double x2, double y2) {
 		double dx = x2-x1;
 		double dy = y1-y2;
 		if (imp!=null && !IJ.altKeyDown()) {
@@ -1156,7 +1162,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 		return (180.0/Math.PI)*Math.atan2(dy, dx);
 	}
-	
+
 	/** Sets the default (global) color used for ROI outlines.
 	 * @see #getColor()
 	 * @see #setStrokeColor(Color)
