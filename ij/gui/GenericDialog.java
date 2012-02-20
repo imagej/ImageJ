@@ -936,8 +936,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 					item = s;
 			}
 		}	
-		if (recorderOn)
-			recordOption(thisChoice, thisChoice.getSelectedItem());
+		if (recorderOn) {
+			String item = thisChoice.getSelectedItem();
+			if (!(item.equals("*None*")&&getTitle().equals("Merge Channels")))
+				recordOption(thisChoice, thisChoice.getSelectedItem());
+		}
 		choiceIndex++;
 		return index;
     }

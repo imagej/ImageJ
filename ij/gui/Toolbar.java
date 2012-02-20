@@ -1041,6 +1041,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	private void addPluginTools() {
+		switchPopup.addSeparator();
+		addItem("Overlay Brush Tool*");
+		addItem("Pixel Inspection Tool*");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
@@ -1059,23 +1062,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				break;
 			}
 		}
-		if (toolsMenu==null)
+		if (toolsMenu==null) {
+			switchPopup.addSeparator();
 			return;
-		boolean separatorAdded = false;
+		}
 		n = toolsMenu.getItemCount();
 		for (int i=0; i<n; ++i) {
 			MenuItem m = toolsMenu.getItem(i);
 			String label = m.getLabel();
-			if (label!=null && label.endsWith(" Tool")) {
-				if (!separatorAdded) {
-					switchPopup.addSeparator();
-					separatorAdded = true;
-				}
+			if (label!=null && label.endsWith(" Tool"))
 				addItem(label);
-			}
 		}
-		if (separatorAdded)
-			switchPopup.addSeparator();
+		switchPopup.addSeparator();
 	}
 
     private void addItem(String name) {
@@ -1169,11 +1167,20 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			showMessage(LINE);
 		} else {
 			String label = item.getActionCommand();
-			boolean pluginTool = label.endsWith(" Tool");
+			boolean pluginTool = label.endsWith(" Tool") || label.endsWith(" Tool*");
 			if (!label.equals("Help...") && !pluginTool)
 				currentSet = label;
 			if (pluginTool) {
-				IJ.run(label);
+				if (label.endsWith("*")) {
+					PlugInTool tool = null;
+					if (label.equals("Overlay Brush Tool*"))
+						tool = new ij.plugin.tool.OverlayBrushTool();
+					else if (label.equals("Pixel Inspection Tool*"))
+						tool = new ij.plugin.tool.PixelInspectionTool();
+					if (tool!=null)
+						tool.run("");
+				} else
+					IJ.run(label);
 				return;
 			}
 			String path;
