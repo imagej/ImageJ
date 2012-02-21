@@ -1,0 +1,41 @@
+// Spray Can Tool
+
+  var width=100, dotSize=1, rate=6;
+
+  macro 'Spray Can Tool - Cf00D20D22D24D41D43D62D82Da2C037L93b3D84Dc4L75d5L757f Ld5dfLa7d7LabdbLa9d9LacdcLa7ac' {
+       setLineWidth(dotSize);
+       radius=width/2; radius2=radius*radius;
+       start = getTime();
+       autoUpdate(false);
+       n = 25*exp(0.9*(10-rate));
+       if (n<=5) n = 0;
+       while (true) {
+          getCursorLoc(x, y, z, flags);
+          if (flags&16==0) exit();
+          x2 = (random()-0.5)*width;
+          y2 = (random()-0.5)*width;
+          if (x2*x2+y2*y2<radius2) {
+              x += x2;
+              y += y2;
+              drawLine(x, y, x, y);
+              if (getTime()>start+50) {
+                  updateDisplay();
+                  start = getTime();
+               }
+          }
+          for (i=0; i<n; i++);
+      }
+  }
+
+  macro 'Spray Can Tool Options' {
+     Dialog.create("Spray Can Options");
+     Dialog.addNumber("Spray Width (pixels):", width);
+     Dialog.addNumber("Dot Size (pixels):", dotSize);
+     Dialog.addNumber("Flow Rate (1-10):", rate);
+     Dialog.show();
+     width = Dialog.getNumber();
+     dotSize = Dialog.getNumber();
+     rate = Dialog.getNumber();
+     if (rate<1) rate = 1;
+     if (rate>10) rate = 10;
+ }

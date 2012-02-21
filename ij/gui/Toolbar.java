@@ -1024,7 +1024,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!stackTools) addItem("Stack Tools*");
  		for (int i=0; i<list.length; i++) {
 			String name = list[i];
-			if (name.startsWith("."))
+			if (name.startsWith(".") || name.endsWith(" Tool"))
 				continue;
 			if (name.endsWith(".txt")) {
 				name = name.substring(0, name.length()-4);
@@ -1045,6 +1045,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		switchPopup.addSeparator();
 		addItem("Overlay Brush Tool*");
 		addItem("Pixel Inspection Tool*");
+		addItem("Spray Can Tool*");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
@@ -1174,12 +1175,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (pluginTool) {
 				if (label.endsWith("*")) {
 					PlugInTool tool = null;
-					if (label.equals("Overlay Brush Tool*"))
+					if (label.equals("Overlay Brush Tool*")) {
 						tool = new ij.plugin.tool.OverlayBrushTool();
-					else if (label.equals("Pixel Inspection Tool*"))
+						if (tool!=null) tool.run("");
+					} else if (label.equals("Pixel Inspection Tool*")) {
 						tool = new ij.plugin.tool.PixelInspectionTool();
-					if (tool!=null)
-						tool.run("");
+						if (tool!=null) tool.run("");
+					} else if (label.equals("Spray Can Tool*")) {
+						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
+					}
 				} else
 					IJ.run(label);
 				return;
@@ -1370,6 +1374,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			tools[tool] = new MacroToolRunner(macroInstaller);
 			if (menus[tool]!=null && !name.endsWith(" Menu Tool"))
 				menus[tool].removeAll();
+			setTool(tool);
 		}
 	}
 
