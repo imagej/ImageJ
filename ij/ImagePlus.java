@@ -609,11 +609,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setStack(ImageStack stack, int nChannels, int nSlices, int nFrames) {
 		if (nChannels*nSlices*nFrames!=stack.getSize())
 			throw new IllegalArgumentException("channels*slices*frames!=stackSize");
+		int channelsBefore = this.nChannels;
 		this.nChannels = nChannels;
 		this.nSlices = nSlices;
 		this.nFrames = nFrames;
 		setStack(null, stack);
-		if (isComposite())
+		if (channelsBefore!=nChannels && isComposite())
 			((CompositeImage)this).setChannelsUpdated();
 	}
 

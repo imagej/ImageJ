@@ -147,8 +147,9 @@ public class StackEditor implements PlugIn {
 		} else if (choice.equals("slice")) { // delete slice z1 from all volumes
 			for (int t=frames; t>=1; t--) {
 				int index = imp.getStackIndex(channels, z1, t);
-				for (int i=0; i<channels; i++)
+				for (int i=0; i<channels; i++) {
 					stack.deleteSlice(index-i);
+				}
 			}
 			slices--;
 		} else if (choice.equals("channel")) { // delete channe c1

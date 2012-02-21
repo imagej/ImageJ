@@ -997,9 +997,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	void showSwitchPopupMenu(MouseEvent e) {
 		String path = IJ.getDirectory("macros")+"toolsets/";
-		if (path==null) {
+		if (path==null)
 			return;
-		}
 		boolean applet = IJ.getApplet()!=null;
 		File f = new File(path);
 		String[] list;
@@ -1025,6 +1024,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		if (!stackTools) addItem("Stack Tools*");
  		for (int i=0; i<list.length; i++) {
 			String name = list[i];
+			if (name.startsWith("."))
+				continue;
 			if (name.endsWith(".txt")) {
 				name = name.substring(0, name.length()-4);
                 addItem(name);
@@ -1356,7 +1357,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				menus[i].removeAll();
 		}
 	}
-
 	
 	/** Used by the MacroInstaller class to add a macro tool to the first
 		available toolbar slot, or to the last slot if the toolbar is full. */
