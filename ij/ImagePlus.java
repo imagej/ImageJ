@@ -53,7 +53,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	protected ImageProcessor ip;
 	protected ImageWindow win;
 	protected Roi roi;
-	protected int currentSlice;
+	protected int currentSlice; // current stack index (one-based)
 	protected static final int OPENED=0, CLOSED=1, UPDATED=2;
 	protected boolean compositeImage;
 	protected int width;
@@ -1178,7 +1178,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Returns the current stack slice number or 1 if
+	/** Returns the current stack index (one-based) or 1 if
 		this is a single image. */
 	public int getCurrentSlice() {
 		if (currentSlice<1) setCurrentSlice(1);

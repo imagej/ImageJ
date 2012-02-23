@@ -1046,6 +1046,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addItem("Overlay Brush Tool*");
 		addItem("Pixel Inspection Tool*");
 		addItem("Spray Can Tool*");
+		addItem("LUT Menu*");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
@@ -1169,7 +1170,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			showMessage(LINE);
 		} else {
 			String label = item.getActionCommand();
-			boolean pluginTool = label.endsWith(" Tool") || label.endsWith(" Tool*");
+			boolean pluginTool = label.endsWith(" Tool")||label.endsWith(" Tool*")||label.endsWith(" Menu*");
 			if (!label.equals("Help...") && !pluginTool)
 				currentSet = label;
 			if (pluginTool) {
@@ -1183,6 +1184,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 						if (tool!=null) tool.run("");
 					} else if (label.equals("Spray Can Tool*")) {
 						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
+					} else if (label.equals("LUT Menu*")) {
+						(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
 					}
 				} else
 					IJ.run(label);
@@ -1372,9 +1375,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		this.macroInstaller = null;
 		if (tool!=-1) {
 			tools[tool] = new MacroToolRunner(macroInstaller);
-			if (menus[tool]!=null && !name.endsWith(" Menu Tool"))
+			if (menus[tool]!=null && !name.contains(" Menu Tool")) {
 				menus[tool].removeAll();
-			setTool(tool);
+				setTool(tool);
+			}
 		}
 	}
 
