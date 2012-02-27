@@ -541,10 +541,11 @@ public class ResultsTable implements Cloneable {
 		}
 	}
 	
-	/** Displays the contents of this ResultsTable in a window with the specified title. 
-		Opens a new window if there is no open text window with this title. The title must
-		be "Results" if this table was obtained using ResultsTable.getResultsTable
-		or Analyzer.getResultsTable . */
+	/** Displays the contents of this ResultsTable in a window with 
+		the specified title, or updates an existing results window. Opens
+		a new window if there is no open text window with this title. 
+		The title must be "Results" if this table was obtained using 
+		ResultsTable.getResultsTable() or Analyzer.getResultsTable . */
 	public void show(String windowTitle) {
 		if (!windowTitle.equals("Results") && this==Analyzer.getResultsTable())
 			IJ.log("ResultsTable.show(): the system ResultTable should only be displayed in the \"Results\" window.");
@@ -555,6 +556,12 @@ public class ResultsTable implements Cloneable {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
 			newWindow = tp.getLineCount()==0;
+			if (!newWindow && tp.getLineCount()==getCounter()-1 && ResultsTable.getResultsTable()==this
+			&& tp.getColumnHeadings().equals(tableHeadings)) {
+				String s = getRowAsString(getCounter()-1);
+				tp.append(s);
+				return;
+			}
 			IJ.setColumnHeadings(tableHeadings);
 			if (this!=Analyzer.getResultsTable())
 				Analyzer.setResultsTable(this);

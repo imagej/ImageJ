@@ -546,7 +546,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				setCursor(handCursor);
 				break;
 			default:  //selection tool
-				if (id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) {
+				PlugInTool tool = Toolbar.getPlugInTool();
+				if ((id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) && !(tool!=null&&"Arrow Tool".equals(tool.getToolName())) ) {
 					if (Prefs.usePointerCursor) setCursor(defaultCursor); else setCursor(crosshairCursor);
 				} else if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
 					setCursor(handCursor);
@@ -963,7 +964,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mousePressed(imp, e);
-			return;
+			if (e.isConsumed()) return;
 		}
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
@@ -1062,7 +1063,10 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			case Toolbar.SPARE1: case Toolbar.SPARE2: case Toolbar.SPARE3: 
 			case Toolbar.SPARE4: case Toolbar.SPARE5: case Toolbar.SPARE6:
 			case Toolbar.SPARE7: case Toolbar.SPARE8: case Toolbar.SPARE9:
-				Toolbar.getInstance().runMacroTool(toolID);
+				if (tool!=null && "Arrow Tool".equals(tool.getToolName()))
+					handleRoiMouseDown(e);
+				else
+					Toolbar.getInstance().runMacroTool(toolID);
 				break;
 			default:  //selection tool
 				handleRoiMouseDown(e);
@@ -1141,7 +1145,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mouseExited(imp, e);
-			return;
+			if (e.isConsumed()) return;
 		}
 		//autoScroll(e);
 		ImageWindow win = imp.getWindow();
@@ -1181,6 +1185,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mouseDragged(imp, e);
+			if (e.isConsumed()) return;
 			return;
 		}
 		int x = e.getX();
@@ -1410,7 +1415,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mouseReleased(imp, e);
-			return;
+			if (e.isConsumed()) return;
 		}
 		flags = e.getModifiers();
 		flags &= ~InputEvent.BUTTON1_MASK; // make sure button 1 bit is not set
@@ -1439,7 +1444,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mouseMoved(imp, e);
-			return;
+			if (e.isConsumed()) return;
 		}
 		int sx = e.getX();
 		int sy = e.getY();
@@ -1469,18 +1474,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	public void mouseEntered(MouseEvent e) {
 		PlugInTool tool = Toolbar.getPlugInTool();
-		if (tool!=null) {
+		if (tool!=null)
 			tool.mouseEntered(imp, e);
-			return;
-		}
 	}
 
 	public void mouseClicked(MouseEvent e) {
 		PlugInTool tool = Toolbar.getPlugInTool();
-		if (tool!=null) {
+		if (tool!=null)
 			tool.mouseClicked(imp, e);
-			return;
-		}
 	}
 
 }

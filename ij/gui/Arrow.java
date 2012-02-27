@@ -201,7 +201,10 @@ public class Arrow extends Line {
 	}
 
 	public ImageProcessor getMask() {
-		return getShapeRoi().getMask();
+		if (width==0 && height==0)
+			return null;
+		else
+			return getShapeRoi().getMask();
 	}
 
 	private double getOutlineWidth() {

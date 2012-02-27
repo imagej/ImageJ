@@ -1366,12 +1366,17 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
 			{killRoi(); return;}
+		Rectangle bounds = newRoi.getBounds();
 		if (newRoi.isVisible()) {
+			if ((newRoi instanceof Arrow) && newRoi.getState()==Roi.CONSTRUCTING && bounds.width==0 && bounds.height==0) {
+				killRoi();
+				roi = newRoi;
+				return;
+			}
 			newRoi = (Roi)newRoi.clone();
 			if (newRoi==null)
 				{killRoi(); return;}
 		}
-		Rectangle bounds = newRoi.getBounds();
 		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE))
 			{killRoi(); return;}
 		roi = newRoi;

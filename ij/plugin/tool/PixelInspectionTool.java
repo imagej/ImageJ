@@ -101,7 +101,7 @@ public class  PixelInspectionTool extends PlugInTool {
 	}
 
 	public String getToolIcon() {
-		return "Ca00T3b09PT8b09xC000L2e0cL0c02L0220L20d0Pd0f2fcde2e0BccP125665210";
+		return "Cf64T3b09PT8b09xC037L2e0cL0c02L0220L20d0Pd0f2fcde2e0BccP125665210";
 	}
 
 }
@@ -142,7 +142,8 @@ class PixelInspector extends PlugInFrame
 
 	ImageJ ij;
 	ImagePlus imp;					//the ImagePlus that we listen to
-	int impType;					//the type of the ImagePlus
+	int id;					        //the image ID
+	int bitDepth;                 //the image bit depth
 	int digits;						//decimal fraction digits to display
 	boolean expMode;				//whether to display the data in exp format
 	ImageCanvas canvas;				//the canvas of imp
@@ -163,7 +164,8 @@ class PixelInspector extends PlugInFrame
 		if (imp==null) {
 			IJ.noImage(); return;
 		}
-		impType = imp.getType();
+		id = imp.getID();
+		bitDepth = imp.getBitDepth();
 		//setTitle("Pixels of "+imp.getTitle());
 		WindowManager.addWindow(this);
 		//readPreferences();
@@ -341,12 +343,13 @@ class PixelInspector extends PlugInFrame
 
 	/** get the surrounding pixels and display them */
 	void writeNumbers() {
-		if (imp.getType() != impType || imp.getWindow().getCanvas() != canvas) {	//image type or canvas changed?
+		if (imp.getID()!=id || imp.getBitDepth()!=bitDepth) {	//has the image changed?
 			removeImageListeners();
 			addImageListeners();
 			initializeLabels();
 			this.pack();
-			impType = imp.getType();
+			id = imp.getID();
+			bitDepth = imp.getBitDepth();
 			nextUpdate = FULL_UPDATE;
 			return;
 		}
@@ -391,7 +394,9 @@ class PixelInspector extends PlugInFrame
 		Color bgColor = new Color(0xcccccc);	//background for row/column header
 		String placeHolder = "000000.00";		//how much space to reserve (enough for float, calibrated, rgb)
 		ImageProcessor ip = imp.getProcessor();
-		if (ip instanceof ByteProcessor || ip instanceof ShortProcessor) {
+		if (ip instanceof ByteProcessor && grayDisplayType==GRAY_RAW) {
+			placeHolder = "000";
+		} else if (ip instanceof ByteProcessor || ip instanceof ShortProcessor) {
 			if (grayDisplayType == GRAY_RAW || grayDisplayType == GRAY_HEX)
 				placeHolder = "00000";			//minimum space, needed for header (max 99k pixels)
 		} else if (ip instanceof ColorProcessor) {
@@ -401,12 +406,16 @@ class PixelInspector extends PlugInFrame
 				placeHolder = "000.00";
 			else if (rgbDisplayType == RGB_HEX)
 				placeHolder = "CCCCCC";
-		} 
+		}
+		if (placeHolder.length()<5 && (ip.getWidth()>9999 || ip.getHeight()>9999))
+			placeHolder = "00000";
+		if (placeHolder.length()<4 && (ip.getWidth()>999 || ip.getHeight()>999))
+			placeHolder = "0000";
 		int p = 0;								//pointer in labels array
 		int size = 2*radius+1;
 		for (int y = 0; y<size+1; y++) {		//header line and data lines
 			if (y > 0)							//no label in top-left corner
-				labels[p].setText("00000");
+				labels[p].setText(placeHolder);
 			p++;
 			for (int x = 0; x<size; x++,p++)
 				labels[p].setText(placeHolder);

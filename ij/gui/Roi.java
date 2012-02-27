@@ -2,7 +2,7 @@ package ij.gui;
 
 import java.awt.*;
 import java.awt.image.*;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.geom.*;
 import ij.*;
 import ij.process.*;
@@ -1556,6 +1556,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Deprecated */
 	public void temporarilyHide() {
+	}
+	
+	public void mouseDragged(MouseEvent e) {
+		handleMouseDrag(e.getX(), e.getY(), e.getModifiers());
+	}
+	
+	public void mouseReleased(MouseEvent e) {
+		handleMouseUp(e.getX(), e.getY());
 	}
 
 }

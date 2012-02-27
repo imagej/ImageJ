@@ -1043,6 +1043,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private void addPluginTools() {
 		switchPopup.addSeparator();
+		addItem("Arrow Tool*");
 		addItem("Overlay Brush Tool*");
 		addItem("Pixel Inspection Tool*");
 		addItem("Spray Can Tool*");
@@ -1176,7 +1177,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (pluginTool) {
 				if (label.endsWith("*")) {
 					PlugInTool tool = null;
-					if (label.equals("Overlay Brush Tool*")) {
+					if (label.equals("Arrow Tool*")) {
+						tool = new ij.plugin.tool.ArrowTool();
+						if (tool!=null) tool.run("");
+					} else if (label.equals("Overlay Brush Tool*")) {
 						tool = new ij.plugin.tool.OverlayBrushTool();
 						if (tool!=null) tool.run("");
 					} else if (label.equals("Pixel Inspection Tool*")) {
