@@ -86,7 +86,8 @@ public class Arrow extends Line {
 			drawHandle(g, screenXD(x2d)-size2, screenYD(y2d)-size2);
 			drawHandle(g, screenXD(x1d+(x2d-x1d)/2.0)-size2, screenYD(y1d+(y2d-y1d)/2.0)-size2);
 		}
-		if (imp!=null&&imp.getRoi()!=null) showStatus();
+		if (state!=NORMAL && imp!=null && imp.getRoi()!=null)
+			showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}

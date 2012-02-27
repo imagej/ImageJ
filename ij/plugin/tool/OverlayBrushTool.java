@@ -64,7 +64,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 	}
 
 	public String getToolIcon() {
-		return "C037La077Ld098L6859L4a2fL2f4fL3f99L5e9bL9b98L6888L5e8dL888cCf64P2f7f9ebdcaf70P2e7e9dbcc9f60";
+		return "C037La077Ld098L6859L4a2fL2f4fL3f99L5e9bL9b98L6888L5e8dL888cCb00P2f7f9ebdcaf70P2e7e9dbcc9f60";
 	}
 
 	public void run() {

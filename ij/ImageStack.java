@@ -323,7 +323,8 @@ public class ImageStack {
 		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
 	}
 	
-	/** Returns, as a double, the specified voxel (experimental). */
+	/*
+	//Returns, as a double, the specified voxel (experimental).
 	public final double getVoxel(int x, int y, int z) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -345,7 +346,7 @@ public class ImageStack {
 			return 0.0;
 	}
 		
-	/** Sets the value of the specified voxel (experimental). */
+	// Sets the value of the specified voxel (experimental). 
 	public final void setVoxel(int x, int y, int z, double value) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -376,5 +377,6 @@ public class ImageStack {
 			}
 		}
 	}
+	*/
 
 }

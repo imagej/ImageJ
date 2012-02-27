@@ -547,8 +547,12 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				break;
 			default:  //selection tool
 				PlugInTool tool = Toolbar.getPlugInTool();
-				if ((id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) && !(tool!=null&&"Arrow Tool".equals(tool.getToolName())) ) {
-					if (Prefs.usePointerCursor) setCursor(defaultCursor); else setCursor(crosshairCursor);
+				boolean arrowTool = roi!=null && (roi instanceof Arrow) && tool!=null && "Arrow Tool".equals(tool.getToolName());
+				if ((id==Toolbar.SPARE1 || id>=Toolbar.SPARE2) && !arrowTool) {
+					if (Prefs.usePointerCursor)
+						setCursor(defaultCursor);
+					else
+						setCursor(crosshairCursor);
 				} else if (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.isHandle(sx, sy)>=0)
 					setCursor(handCursor);
 				else if (Prefs.usePointerCursor || (roi!=null && roi.getState()!=roi.CONSTRUCTING && roi.contains(ox, oy)))
@@ -1186,7 +1190,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (tool!=null) {
 			tool.mouseDragged(imp, e);
 			if (e.isConsumed()) return;
-			return;
 		}
 		int x = e.getX();
 		int y = e.getY();
@@ -1441,11 +1444,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	
 	public void mouseMoved(MouseEvent e) {
 		//if (ij==null) return;
-		PlugInTool tool = Toolbar.getPlugInTool();
-		if (tool!=null) {
-			tool.mouseMoved(imp, e);
-			if (e.isConsumed()) return;
-		}
 		int sx = e.getX();
 		int sy = e.getY();
 		int ox = offScreenX(sx);
@@ -1453,6 +1451,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		flags = e.getModifiers();
 		setCursor(sx, sy, ox, oy);
 		IJ.setInputEvent(e);
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mouseMoved(imp, e);
+			if (e.isConsumed()) return;
+		}
 		Roi roi = imp.getRoi();
 		if (roi!=null && (roi.getType()==Roi.POLYGON || roi.getType()==Roi.POLYLINE || roi.getType()==Roi.ANGLE) 
 		&& roi.getState()==roi.CONSTRUCTING) {

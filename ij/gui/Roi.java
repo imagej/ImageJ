@@ -850,7 +850,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			drawHandle(g, sx1-size2, sy2-size2);
 		}
 		drawPreviousRoi(g);
-		if (state!=NORMAL) showStatus();
+		if (state!=NORMAL)
+			showStatus();
 		if (updateFullWindow)
 			{updateFullWindow = false; imp.draw();}
 	}
@@ -968,7 +969,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			state = MOVING;
 			startX = ic.offScreenX(sx);
 			startY = ic.offScreenY(sy);
-			showStatus();
+			//showStatus();
 		}
 	}
 		
@@ -1099,7 +1100,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			size = ", w="+IJ.d2s(width*cal.pixelWidth)+", h="+IJ.d2s(height*cal.pixelHeight);
 		else
 			size = ", w="+width+", h="+height;
-		size += ", ar="+IJ.d2s((double)width/height,2);
+		//size += ", ar="+IJ.d2s((double)width/height,2);
+		//IJ.log("showStatus: "+state+" "+type);
 		IJ.showStatus(imp.getLocationAsString(x,y)+size+value);
 	}
 		

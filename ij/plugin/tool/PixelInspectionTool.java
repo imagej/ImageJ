@@ -101,7 +101,7 @@ public class  PixelInspectionTool extends PlugInTool {
 	}
 
 	public String getToolIcon() {
-		return "Cf64T3b09PT8b09xC037L2e0cL0c02L0220L20d0Pd0f2fcde2e0BccP125665210";
+		return "Cb00T3b09PT8b09xC037L2e0cL0c02L0220L20d0Pd0f2fcde2e0BccP125665210";
 	}
 
 }

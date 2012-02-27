@@ -11,19 +11,19 @@ public abstract class PlugInTool implements PlugIn {
 		Toolbar.addPlugInTool(this);
 	}
 	
-	public void mousePressed(ImagePlus imp, MouseEvent e) { }
+	public void mousePressed(ImagePlus imp, MouseEvent e) {e.consume();}
 
-	public void mouseReleased(ImagePlus imp, MouseEvent e) { }
+	public void mouseReleased(ImagePlus imp, MouseEvent e) {e.consume();}
 
-	public void mouseClicked(ImagePlus imp, MouseEvent e) { }
+	public void mouseClicked(ImagePlus imp, MouseEvent e) {e.consume();}
 
-	public void mouseDragged(ImagePlus imp, MouseEvent e) { }
+	public void mouseDragged(ImagePlus imp, MouseEvent e) {e.consume();}
 	
-	public void mouseMoved(ImagePlus imp, MouseEvent e) { }
+	public void mouseMoved(ImagePlus imp, MouseEvent e) {e.consume();}
 	
-	public void mouseEntered(ImagePlus imp, MouseEvent e) { }
+	public void mouseEntered(ImagePlus imp, MouseEvent e) {e.consume();}
 
-	public void mouseExited(ImagePlus imp, MouseEvent e) { }
+	public void mouseExited(ImagePlus imp, MouseEvent e) {e.consume();}
 
 	/** Return the tool name. */
 	public String getToolName() {
