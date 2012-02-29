@@ -103,8 +103,10 @@ public class NewPlugin implements PlugIn {
 			name = SaveDialog.setExtension(name, ".java");
 		String className = pluginName.substring(0, pluginName.length()-5);
 		String text = "";
-		if (type==PLUGIN_TOOL)
-			text += "// http://imagej.nih.gov/ij/plugins/tool-demo.html\n";
+		if (type==PLUGIN_TOOL) {
+			text += "// Prototype plugin tool. There are more plugin tools at\n";
+			text += "// http://imagej.nih.gov/ij/plugins/index.html#tools\n";
+		}
 		text += "import ij.*;\n";
 		text += "import ij.process.*;\n";
 		text += "import ij.gui.*;\n";

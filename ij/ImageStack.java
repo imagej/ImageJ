@@ -323,8 +323,7 @@ public class ImageStack {
 		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
 	}
 	
-	/*
-	//Returns, as a double, the specified voxel (experimental).
+	/** Returns, as a double, the specified voxel. */
 	public final double getVoxel(int x, int y, int z) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -339,14 +338,14 @@ public class ImageStack {
 					return floats[y*width+x];
 				case RGB:
 					int[] ints = (int[])stack[z];
-					return ints[y*width+x]&0xffff;
+					return ints[y*width+x]&0xffffffff;
 				default: return 0.0;
 			}
 		} else
 			return 0.0;
 	}
 		
-	// Sets the value of the specified voxel (experimental). 
+	/* Sets the value of the specified voxel). */
 	public final void setVoxel(int x, int y, int z, double value) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -377,6 +376,5 @@ public class ImageStack {
 			}
 		}
 	}
-	*/
 
 }

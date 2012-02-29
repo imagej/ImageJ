@@ -52,6 +52,8 @@ public class TextReader implements PlugIn {
             r.close();
             r = new BufferedReader(new FileReader(path));
             //int width = words/lines;
+            if (width*lines==0)
+            	return null;
             float[] pixels = new float[width*lines];
             ip = new FloatProcessor(width, lines, pixels, null);
             read(r, width*lines, pixels);
@@ -107,9 +109,9 @@ public class TextReader implements PlugIn {
                     lines++;
                     if (wordsPerLine==0)
                         lines--;  // ignore empty lines
-                    if (lines==1)
+                    if (lines==1 && wordsPerLine>0)
                         width = wordsPerLine;
-                    else if (wordsPerLine!=0 && wordsPerLine!=wordsInPreviousLine)
+                    if (lines>1 && wordsPerLine!=0 && wordsPerLine!=wordsInPreviousLine)
                         throw new IOException("Line "+lines+ " is not the same length as the first line.");
                     if (wordsPerLine!=0)
                         wordsInPreviousLine = wordsPerLine;
