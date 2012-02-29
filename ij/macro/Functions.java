@@ -3809,6 +3809,8 @@ public class Functions implements MacroConstants, Measurements {
 			return copyStringToClipboard();
 		else if (name.equals("copyResults"))
 			return copyResults();
+		else if (name.equals("getResultsHeadings"))
+			return getResultsHeadings();
 		else if (name.equals("paste"))
 			return getClipboardContents();
 		else if (name.equals("resetBuffer"))
@@ -3820,7 +3822,13 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 	
-	String appendToBuffer() {
+	private String getResultsHeadings() {
+		interp.getParens();
+		ResultsTable rt = ResultsTable.getResultsTable();
+		return rt.getColumnHeadings();
+	}
+
+	private String appendToBuffer() {
 		String text = getStringArg();
 		if (buffer==null)
 			buffer = new StringBuffer(256);
@@ -3828,7 +3836,7 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 
-	String copyStringToClipboard() {
+	private String copyStringToClipboard() {
 		String text = getStringArg();
 		StringSelection ss = new StringSelection(text);
 		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -3836,7 +3844,7 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 		  
-	String getClipboardContents() {
+	private String getClipboardContents() {
 		interp.getParens();
 		java.awt.datatransfer.Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		Transferable data = clipboard.getContents(null);
@@ -3846,7 +3854,7 @@ public class Functions implements MacroConstants, Measurements {
 		return s;
 	}
     	
-	String copyResults() {
+	private String copyResults() {
 		interp.getParens();
 		if (!IJ.isResultsWindow())
 			interp.error("No results");
@@ -3858,27 +3866,27 @@ public class Functions implements MacroConstants, Measurements {
 		return null;
 	}
 
-	String resetBuffer() {
+	private String resetBuffer() {
 		interp.getParens();
 		buffer = new StringBuffer(256);
 		return null;
 	}
 
-	String getBuffer() {
+	private String getBuffer() {
 		interp.getParens();
 		if (buffer==null)
 			buffer = new StringBuffer(256);
 		return buffer.toString();
 	}
 	
-	void doCommand() {
+	private void doCommand() {
 		String arg = getStringArg();
 		if (arg.equals("Start Animation"))
 			arg = "Start Animation [\\]";
 		IJ.doCommand(arg);
 	}
 	
-	void getDimensions() {
+	private void getDimensions() {
 		Variable width = getFirstVariable();
 		Variable height = getNextVariable();
 		Variable channels = getNextVariable();

@@ -1556,7 +1556,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	*/
 	public static String getName(String index) {
 		int i = (int)Tools.parseDouble(index, -1);
-		RoiManager instance = getInstance();
+		RoiManager instance = getInstance2();
 		if (instance!=null && i>=0 && i<instance.list.getItemCount())
        	 	return  instance.list.getItem(i);
 		else

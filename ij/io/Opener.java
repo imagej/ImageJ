@@ -548,6 +548,16 @@ public class Opener {
 			IJ.error("Open Using ImageIO", ""+e);
 		} 
 		if (img==null) return null;
+		if (img.getColorModel().hasAlpha()) {
+			int width = img.getWidth();
+			int height = img.getHeight();
+			BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			Graphics g = bi.getGraphics();
+			g.setColor(Color.white);
+			g.fillRect(0,0,width,height);
+			g.drawImage(img, 0, 0, null);
+			img = bi;
+		}
 		imp = new ImagePlus(f.getName(), img);
 		FileInfo fi = new FileInfo();
 		fi.fileFormat = fi.IMAGEIO;

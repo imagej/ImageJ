@@ -1059,7 +1059,8 @@ public class ShapeRoi extends Roi {
 		if (stroke!=null) g2d.setStroke(defaultStroke);
 		if (Toolbar.getToolId()==Toolbar.OVAL)
 			drawRoiBrush(g);
-		if (imp!=null&&imp.getRoi()!=null) showStatus();
+		if (state!=NORMAL && imp!=null && imp.getRoi()!=null)
+			showStatus();
 		if (updateFullWindow) 
 			{updateFullWindow = false; imp.draw();}
 	}

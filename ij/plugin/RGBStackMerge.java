@@ -5,6 +5,7 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.image.*;
 
+/** This plugin implements the Image/Color/Merge Channels command. */
 public class RGBStackMerge implements PlugIn {
 
 	private static boolean staticCreateComposite = true;
@@ -24,7 +25,7 @@ public class RGBStackMerge implements PlugIn {
 		return rgbsm.mergeHyperstacks(images, keepSourceImages);
 	}
 
-	/** Combines three grayscale stacks into one RGB stack. */
+	/** Combines up to seven grayscale stacks into one RGB or composite stack. */
 	public void mergeStacks() {
 		int[] wList = WindowManager.getIDList();
 		if (wList==null) {
@@ -44,25 +45,41 @@ public class RGBStackMerge implements PlugIn {
 		ignoreLuts = staticIgnoreLuts;
 		if (IJ.isMacro())
 			createComposite = keep = ignoreLuts = false;
+		boolean macro = IJ.macroRunning();
 
-		GenericDialog gd = new GenericDialog("Color Merge");
-		gd.addChoice("Red:", titles, titles[0]);
-		gd.addChoice("Green:", titles, titles[1]);
-		String title3 = titles.length>2&&!IJ.macroRunning()?titles[2]:none;
-		gd.addChoice("Blue:", titles, title3);
-		String title4 = titles.length>3&&!IJ.macroRunning()?titles[3]:none;
-		gd.addChoice("Gray:", titles, title4);
+		String options = IJ.isMacro()?Macro.getOptions():null;
+		if (options!=null && options.contains("red=")) {
+			options = options.replaceAll("red=", "c1=");
+			options = options.replaceAll("green=", "c2=");
+			options = options.replaceAll("blue=", "c3=");
+			options = options.replaceAll("gray=", "c4=");
+			Macro.setOptions(options);
+		}
+
+		GenericDialog gd = new GenericDialog("Merge Channels");
+		gd.addChoice("C1 (red):", titles, titles[0]);
+		gd.addChoice("C2 (green):", titles, titles[1]);
+		String title = titles.length>2&&!macro?titles[2]:none;
+		gd.addChoice("C3 (blue):", titles, title);
+		title = titles.length>3&&!macro?titles[3]:none;
+		gd.addChoice("C4 (gray):", titles, title);
+		title = titles.length>4&&!macro?titles[4]:none;
+		gd.addChoice("C5 (cyan):", titles, title);
+		title = titles.length>5&&!macro?titles[5]:none;
+		gd.addChoice("C6 (magenta):", titles, title);
+		title = titles.length>6&&!macro?titles[6]:none;
+		gd.addChoice("C7 (yellow):", titles, title);
+
 		gd.addCheckbox("Create composite", createComposite);
 		gd.addCheckbox("Keep source images", keep);
 		gd.addCheckbox("Ignore source LUTs", ignoreLuts);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		int[] index = new int[4];
-		index[0] = gd.getNextChoiceIndex();
-		index[1] = gd.getNextChoiceIndex();
-		index[2] = gd.getNextChoiceIndex();
-		index[3] = gd.getNextChoiceIndex();
+		int maxChannels = 7;
+		int[] index = new int[maxChannels];
+		for (int i=0; i<maxChannels; i++)
+			index[i] = gd.getNextChoiceIndex();
 		createComposite = gd.getNextBoolean();
 		keep = gd.getNextBoolean();
 		ignoreLuts = gd.getNextBoolean();
@@ -72,14 +89,14 @@ public class RGBStackMerge implements PlugIn {
 			staticIgnoreLuts = ignoreLuts;
 		}
 
-		ImagePlus[] images = new ImagePlus[4];
+		ImagePlus[] images = new ImagePlus[maxChannels];
 		int stackSize = 0;
 		int width = 0;
 		int height = 0;
 		int bitDepth = 0;
 		int slices = 0;
 		int frames = 0;
-		for (int i=0; i<4; i++) {
+		for (int i=0; i<maxChannels; i++) {
 			//IJ.log(i+"  "+index[i]+"	"+titles[index[i]]+"  "+wList.length);
 			if (index[i]<wList.length) {
 				images[i] = WindowManager.getImage(wList[index[i]]);
@@ -99,7 +116,7 @@ public class RGBStackMerge implements PlugIn {
 		}
 		
 		boolean mergeHyperstacks = false;
-		for (int i=0; i<4; i++) {
+		for (int i=0; i<maxChannels; i++) {
 			ImagePlus img = images[i];
 			if (img==null) continue;
 			if (img.getStackSize()!=stackSize) {
@@ -146,22 +163,25 @@ public class RGBStackMerge implements PlugIn {
 			}
 		}
 
-		ImageStack[] stacks = new ImageStack[4];
-		stacks[0] = images[0]!=null?images[0].getStack():null;
-		stacks[1]  = images[1]!=null?images[1].getStack():null;
-		stacks[2]  = images[2]!=null?images[2].getStack():null;
-		stacks[3]  = images[3]!=null?images[3].getStack():null;
+		ImageStack[] stacks = new ImageStack[maxChannels];
+		for (int i=0; i<maxChannels; i++)
+			stacks[i] = images[i]!=null?images[i].getStack():null;
 		String macroOptions = Macro.getOptions();
-		if	(macroOptions!=null && macroOptions.indexOf("gray=")==-1)
+		if	(macroOptions!=null && !macroOptions.contains("gray="))
 				stacks[3] = null; // ensure compatibility with old macros
 		ImagePlus imp2;
-		boolean fourChannelRGB = !createComposite && stacks[3]!=null;
+		boolean fourChannelRGB = false;
+		for (int i=3; i<maxChannels; i++) {
+			if (!createComposite && stacks[i]!=null)
+				fourChannelRGB = true;
+		}
 		if (fourChannelRGB)
 			createComposite = true;
-		
-		if (stacks[3]!=null)
-			createComposite = true;
-		for (int i=0; i<4; i++) {
+		for (int i=3; i<maxChannels; i++) {
+			if (stacks[i]!=null)
+				createComposite = true;
+		}
+		for (int i=0; i<maxChannels; i++) {
 			if (images[i]!=null && images[i].getBitDepth()==24)
 				createComposite = false;
 		}
@@ -175,7 +195,7 @@ public class RGBStackMerge implements PlugIn {
 		if (images[0]!=null)
 			imp2.setCalibration(images[0].getCalibration());
 		if (!keep) {
-			for (int i=0; i<4; i++) {
+			for (int i=0; i<maxChannels; i++) {
 				if (images[i]!=null) {
 					images[i].changes = false;
 					images[i].close();
@@ -203,7 +223,7 @@ public class RGBStackMerge implements PlugIn {
 		}
 		if (channels<2) return null;
 		ImagePlus[] images2 = new ImagePlus[channels];
-		Color[] defaultColors = {Color.red, Color.green, Color.blue, Color.white};
+		Color[] defaultColors = {Color.red,Color.green,Color.blue,Color.white,Color.cyan,Color.magenta,Color.yellow};
 		Color[] colors = new Color[channels];
 		int j = 0;
 		for (int i=0; i<n; i++) {
@@ -252,11 +272,18 @@ public class RGBStackMerge implements PlugIn {
 		ImagePlus imp2 = new ImagePlus(title, stack2);
 		imp2.setDimensions(channels, slices, frames);
 		imp2 = new CompositeImage(imp2, CompositeImage.COMPOSITE);
+		boolean allGrayLuts = true;
+		for (int c=0; c<channels; c++) {
+			if (images[c].getProcessor().isColorLut()) {
+				allGrayLuts = false;
+				break;
+			}
+		}
 		for (int c=0; c<channels; c++) {
 			ImageProcessor ip = images[c].getProcessor();
 			IndexColorModel cm = (IndexColorModel)ip.getColorModel();
 			LUT lut = null;
-			if (c<colors.length && colors[c]!=null && (ignoreLuts||!ip.isColorLut())) {
+			if (c<colors.length && colors[c]!=null && (ignoreLuts||allGrayLuts)) {
 				lut = LUT.createLutFromColor(colors[c]);
 				lut.min = ip.getMin();
 				lut.max = ip.getMax();

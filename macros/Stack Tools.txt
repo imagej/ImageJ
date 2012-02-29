@@ -1,7 +1,5 @@
 // "Stack Tools"
 
-    macro "Unused Tool - C037" { }
-
     macro "Start/Stop Animation (alt click for dialog) Action Tool - C037B33L2131L2252L2373L2494L2595L2676L2757L2838" {
         if (nImages==0) {
             showMessage("Stack Tools", "The \"Stack Tools\" macros require a stack");
@@ -36,11 +34,6 @@
 
     macro "Delete Slice Action Tool - C037T4c14-T7c14-" {
         run("Delete Slice");
-    }
-
-    macro "Install StartupMacros Action Tool - C900T1d12<T8d12<" {
-        path = getDirectory("macros")+"StartupMacros.txt";
-        run("Install...", "install="+path);
     }
 
 

@@ -30,4 +30,10 @@ public class NonBlockingGenericDialog extends GenericDialog {
 			notify();
 	}
 
+    public synchronized void windowClosing(WindowEvent e) {
+		super.windowClosing(e);
+		if (wasOKed() || wasCanceled())
+			notify();
+    }
+
 }

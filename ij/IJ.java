@@ -1378,8 +1378,8 @@ public class IJ {
 		Roi.setPasteMode(m);
 	}
 
-	/** Returns a reference to the active image. Displays an error
-		message and aborts the macro if no images are open. */
+	/** Returns a reference to the active image, or displays an error
+		message and aborts the plugin or macro if no images are open. */
 	public static ImagePlus getImage() {  //ts
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {

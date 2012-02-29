@@ -8,7 +8,6 @@
    //macro "AutoRun" {print('AutoRun');}
 
    macro "Unused Tool -" {}
-   macro "Unused Tool -" {}
 
    macro "Pencil Tool - C037L494fL4990L90b0Lc1c3L82a4Lb58bL7c4fDb4L5a5dL6b6cD7b" {
         getCursorLoc(x, y, z, flags);
