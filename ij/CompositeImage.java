@@ -599,6 +599,12 @@ public class CompositeImage extends ImagePlus {
 	
 	/** Deprecated */
 	public synchronized void setChannelsUpdated() {
+		if (cip!=null) {
+			for (int i=0; i<cip.length; i++) {
+				if (cip[i]!=null) cip[i].setPixels(null);
+				cip[i] =null;
+			}
+		}
 		cip = null;
 		lut = null;
 		img = null;

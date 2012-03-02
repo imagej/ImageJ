@@ -111,9 +111,13 @@ public class ZProjector implements PlugIn {
 		}
 
 		// Set default bounds.
+		int channels = imp.getNChannels();
 		int frames = imp.getNFrames();
 		int slices = imp.getNSlices();
 		isHyperstack = imp.isHyperStack()||( ij.macro.Interpreter.isBatchMode()&&((frames>1&&frames<stackSize)||(slices>1&&slices<stackSize)));
+		boolean simpleComposite = channels==stackSize;
+		if (simpleComposite)
+			isHyperstack = false;
 		startSlice = 1; 
 		if (isHyperstack) {
 			int nSlices = imp.getNSlices();
@@ -146,11 +150,12 @@ public class ZProjector implements PlugIn {
 
 		if (arg.equals("") && projImage!=null) {
 			long tstop = System.currentTimeMillis();
-			projImage.setCalibration(imp.getCalibration()); 
+			projImage.setCalibration(imp.getCalibration());
+			if (simpleComposite) IJ.run(projImage, "Grays", "");
 	    	projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
 		}
 
-		imp.unlock(); 
+		imp.unlock();
 		IJ.register(ZProjector.class);
 		return; 
     }

@@ -1707,6 +1707,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				for (int i=0; i<arrays.length; i++)
 					arrays[i] = null;
 			}
+			if (isComposite())
+				((CompositeImage)this).setChannelsUpdated(); //flush
 		}
 		stack = null;
 		img = null;
