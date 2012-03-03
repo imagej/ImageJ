@@ -94,6 +94,8 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setOpenAsHyperStack(true);
 		Overlay overlay = imp.getOverlay();
 		if (overlay!=null && !imp.getHideOverlay()) {
+			if (rect==null)
+				rect = new Rectangle(0,0,imp.getWidth(),imp.getHeight());
 			Overlay overlay2 = cropOverlay(overlay, rect);
 			imp2.setOverlay(overlay2);
 		}

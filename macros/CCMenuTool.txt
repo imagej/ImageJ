@@ -1,0 +1,26 @@
+  var labels = newArray("New Hyperstack...", "Import Image Sequence...", "Fly Brain", "HeLa Cells", "Close All",
+     "-", "Split Channels", "Merge Channels...",
+     "Add Slice", "Delete Slice", "Z Project...", "Make Montage...", "Label Stacks...",
+     "Animation Options...", "Remove Overlay",
+      "-", "Enhance Contrast...", "Find Maxima...", "Make Binary", "Binary Options...", "Gaussian Blur...",
+      "-", "Analyze Particles...", "Set Measurements...", "Set Scale...", "Scale Bar...", "Calibration Bar...");
+  var cmds = newArray("Hyperstack...", "Image Sequence...", "Fly Brain (1MB)", "HeLa Cells (1.3M, 48-bit RGB)", "", "-",
+     "", "",
+     "", "", "", "", "Label...",
+     "", "",
+     "-", "", "", "Convert to Mask", "Options...", "",
+     "-", "", "", "", "", "");
+  var menu = newMenu("Common Commands Menu Tool", labels);
+    
+  macro "Common Commands Menu Tool - C037T1b12CT9b12C" {
+     label = getArgument();
+     for (i=0; i<labels.length; i++) {
+         if (label==labels[i]) {
+             if (cmds[i]=="")
+                 run(labels[i]);
+             else
+                run(cmds[i]);
+             exit;
+         }
+     }
+  }

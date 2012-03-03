@@ -80,7 +80,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 			else if (imp.getNSlices()>1)
 				defaultLastFrame = imp.getNSlices();
 		}
-		GenericDialog gd = new GenericDialog("StackLabeler");
+		GenericDialog gd = new GenericDialog("Label Stacks");
 		gd.setInsets(2, 5, 0);
 		gd.addChoice("Format:", formats, formats[format]);
 		gd.addStringField("Starting value:", IJ.d2s(start,decimalPlaces));

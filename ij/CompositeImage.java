@@ -602,7 +602,7 @@ public class CompositeImage extends ImagePlus {
 		if (cip!=null) {
 			for (int i=0; i<cip.length; i++) {
 				if (cip[i]!=null) cip[i].setPixels(null);
-				cip[i] =null;
+				cip[i] = null;
 			}
 		}
 		cip = null;

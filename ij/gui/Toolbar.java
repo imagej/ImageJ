@@ -308,6 +308,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				xOffset = x+2; yOffset = y+2;
 				dot(4,0);  m(2,0); d(3,1); d(4,2);  m(0,0); d(1,1);
 				m(0,2); d(1,3); d(2,4);  dot(0,4); m(3,3); d(12,12);
+				g.setColor(Roi.getColor());
+				m(1,2); d(3,2); m(2,1); d(2,3);
 				return;
 			case TEXT:
 				xOffset = x+2; yOffset = y+1;
@@ -1035,6 +1037,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 		}
 		addPluginTools();
+		addItem("Remove Tools");
 		addItem("Help...");
 		add(ovalPopup);
 		if (IJ.isMacOSX()) IJ.wait(10);
@@ -1047,6 +1050,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addBuiltInTool("Overlay Brush");
 		addBuiltInTool("Pixel Inspector");
 		addBuiltInTool("Spray Can");
+		addBuiltInTool("Commands Menu");
 		addBuiltInTool("LUT Menu");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
@@ -1071,11 +1075,17 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return;
 		}
 		n = toolsMenu.getItemCount();
+		boolean separatorAdded = false;
 		for (int i=0; i<n; ++i) {
 			MenuItem m = toolsMenu.getItem(i);
 			String label = m.getLabel();
-			if (label!=null && label.endsWith(" Tool"))
+			if (label!=null && label.endsWith(" Tool")) {
+				if (!separatorAdded) {
+					switchPopup.addSeparator();
+					separatorAdded = true;
+				}
 				addPluginTool(label);
+			}
 		}
 		switchPopup.addSeparator();
 	}
@@ -1187,7 +1197,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			String label = item.getLabel();
 			String cmd = item.getActionCommand();
 			boolean isTool = cmd.equals("Tool") || cmd.equals("Plugin Tool");
-			if (!label.equals("Help...") && !isTool)
+			if (!(label.equals("Help...")||label.equals("Remove Tools")) && !isTool)
 				currentSet = label;
 			if (isTool) {
 				if (cmd.equals("Tool")) { // built in tool
@@ -1203,6 +1213,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 						if (tool!=null) tool.run("");
 					} else if (label.equals("Spray Can")) {
 						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
+					} else if (label.equals("Commands Menu")) {
+						(new MacroInstaller()).installFromIJJar("/macros/CCMenuTool.txt");
 					} else if (label.equals("LUT Menu")) {
 						(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
 					}
@@ -1211,7 +1223,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				return;
 			}
 			String path;
-			if (label.equals("Help...")) {
+			if (label.equals("Remove Tools")) {
+				removeMacroTools();
+				setTool(RECTANGLE);
+				currentSet = "Startup Macros";
+			} else if (label.equals("Help...")) {
 				IJ.showMessage("Tool Switcher and Loader",
 					"Use this drop down menu to switch to alternative\n"+
 					"macro toolsets or to load additional plugin tools.\n"+

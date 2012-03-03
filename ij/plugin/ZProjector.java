@@ -152,7 +152,7 @@ public class ZProjector implements PlugIn {
 			long tstop = System.currentTimeMillis();
 			projImage.setCalibration(imp.getCalibration());
 			if (simpleComposite) IJ.run(projImage, "Grays", "");
-	    	projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
+			projImage.show("ZProjector: " +IJ.d2s((tstop-tstart)/1000.0,2)+" seconds");
 		}
 
 		imp.unlock();
