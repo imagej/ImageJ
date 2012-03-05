@@ -176,6 +176,7 @@ transform04="Rotate 90 Degrees Right",ij.plugin.filter.Transformer("right")
 transform05="Rotate 90 Degrees Left",ij.plugin.filter.Transformer("left")
 transform06="Rotate... ",ij.plugin.filter.Rotator
 transform07="Translate...",ij.plugin.filter.Translator
+transform08="Bin...",ij.plugin.Binner
 
 # Plugins installed in the Image/Zoom submenu
 zoom01="In [+]",ij.plugin.Zoom("in")

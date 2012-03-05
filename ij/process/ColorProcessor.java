@@ -482,8 +482,15 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Returns the specified plane as a byte array. */
 	public byte[] getChannel(int channel) {
+		ByteProcessor bp = getChannel(channel, null);
+		return (byte[])bp.getPixels();
+	}
+	/** Returns the specified plane as a ByteProcessor. */
+	public ByteProcessor getChannel(int channel, ByteProcessor bp) {
 		int size = width*height;
-		byte[] bytes = new byte[size];
+		if (bp == null || bp.getWidth()!=width || bp.getHeight()!=height)
+			bp = new ByteProcessor(width, height);
+		byte[] bytes = (byte[])bp.getPixels();
 		int c, r, g, b;
 		switch (channel) {
 			case 1:
@@ -508,7 +515,21 @@ public class ColorProcessor extends ImageProcessor {
 				}
 				break;
 		}
-		return bytes;
+		return bp;
+	}
+	
+	/** Sets the pixels of one color channel from a ByteProcessor.
+	*  @param channelNumber   Determines the color channel, 0=red, 1=green, 2=blue
+	*  @param bp              The ByteProcessor where the image data are read from.
+	*/
+	public void setChannel(int channel, ByteProcessor bp) {
+		byte[] bPixels = (byte[])bp.getPixels();
+		int value;
+		int size = width*height;
+		int shift = 16 - 8*(channel-1);
+		int resetMask = 0xffffffff^(255<<shift);
+		for (int i=0; i<size; i++)
+			pixels[i] = (pixels[i]&resetMask) | ((bPixels[i]&255)<<shift);
 	}
 
 	/** Sets the current pixels from 3 byte arrays (reg, green, blue). */
@@ -1301,6 +1322,6 @@ public class ColorProcessor extends ImageProcessor {
 			pixels[i] = (pixels[i]&resetMask) | ((int)value<<shift);
 		}
 	}
-
+	
 }
 

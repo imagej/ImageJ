@@ -1050,7 +1050,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addBuiltInTool("Overlay Brush");
 		addBuiltInTool("Pixel Inspector");
 		addBuiltInTool("Spray Can");
-		addBuiltInTool("Commands Menu");
 		addBuiltInTool("LUT Menu");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
@@ -1079,7 +1078,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		for (int i=0; i<n; ++i) {
 			MenuItem m = toolsMenu.getItem(i);
 			String label = m.getLabel();
-			if (label!=null && label.endsWith(" Tool")) {
+			if (label!=null && (label.endsWith(" Tool")||label.endsWith(" Menu"))) {
 				if (!separatorAdded) {
 					switchPopup.addSeparator();
 					separatorAdded = true;
@@ -1213,8 +1212,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 						if (tool!=null) tool.run("");
 					} else if (label.equals("Spray Can")) {
 						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
-					} else if (label.equals("Commands Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/CCMenuTool.txt");
 					} else if (label.equals("LUT Menu")) {
 						(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
 					}
