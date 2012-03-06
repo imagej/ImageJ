@@ -96,8 +96,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		if (channel!=INTENSITY && imp.getType()==ImagePlus.COLOR_RGB) {
 			ColorProcessor cp = (ColorProcessor)imp.getProcessor();
-			byte[] bytes = cp.getChannel(channel);
-			ImageProcessor ip = new ByteProcessor(imp.getWidth(), imp.getHeight(), bytes, null);
+			ImageProcessor ip = cp.getChannel(channel, null);
 			ImagePlus imp2 = new ImagePlus("", ip);
 			imp2.setRoi(imp.getRoi());
 			stats = imp2.getStatistics(AREA+MEAN+MODE+MIN_MAX, bins, histMin, histMax);

@@ -480,46 +480,27 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Returns the specified plane as a byte array. */
+	/** Returns the specified plane (1=red, 2=green, 3=blue) as a byte array. */
 	public byte[] getChannel(int channel) {
 		ByteProcessor bp = getChannel(channel, null);
 		return (byte[])bp.getPixels();
 	}
-	/** Returns the specified plane as a ByteProcessor. */
+	
+	/** Returns the specified plane (1=red, 2=green, 3=blue)  as a ByteProcessor. */
 	public ByteProcessor getChannel(int channel, ByteProcessor bp) {
 		int size = width*height;
 		if (bp == null || bp.getWidth()!=width || bp.getHeight()!=height)
 			bp = new ByteProcessor(width, height);
-		byte[] bytes = (byte[])bp.getPixels();
-		int c, r, g, b;
-		switch (channel) {
-			case 1:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					r = (c&0xff0000)>>16;
-					bytes[i] = (byte)r;
-				}
-				break;
-			case 2:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					g = (c&0xff00)>>8;
-					bytes[i] = (byte)g;
-				}
-				break;
-			case 3:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					b = c&0xff;
-					bytes[i] = (byte)b;
-				}
-				break;
-		}
+		byte[] bPixels = (byte[])bp.getPixels();
+		int shift = 16 - 8*(channel-1);
+		int byteMask = 255<<shift;
+		for (int i=0; i<size; i++)
+			bPixels[i] = (byte)((pixels[i]&byteMask)>>shift);
 		return bp;
 	}
 	
 	/** Sets the pixels of one color channel from a ByteProcessor.
-	*  @param channelNumber   Determines the color channel, 0=red, 1=green, 2=blue
+	*  @param channelNumber   Determines the color channel, 1=red, 2=green, 3=blue
 	*  @param bp              The ByteProcessor where the image data are read from.
 	*/
 	public void setChannel(int channel, ByteProcessor bp) {

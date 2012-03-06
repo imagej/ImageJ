@@ -2,6 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import ij.measure.Calibration;
 import java.awt.*;
 import java.awt.image.*;
 
@@ -29,8 +30,9 @@ public class Binner implements PlugIn {
 			Undo.setup(Undo.TYPE_CONVERSION, imp);
 		imp.startTiming();
 		ImagePlus imp2 = shrink(imp, xshrink, yshrink, method);
-		imp.setStack(imp2.getStack());
 		IJ.showTime(imp, imp.getStartTime(), "", imp.getStackSize());
+		imp.setStack(imp2.getStack());
+		imp.setCalibration(imp2.getCalibration());
 	}
 
 	private ImagePlus shrink(ImagePlus imp, int xshrink, int yshrink, int method) {
@@ -51,7 +53,16 @@ public class Binner implements PlugIn {
 			if (ip.isInvertedLut()) ip2.invert();
 			stack2.addSlice(stack.getSliceLabel(z), ip2);
 		}
-		return new ImagePlus("Reduced "+imp.getShortTitle(), stack2);
+		ImagePlus imp2 = (ImagePlus)imp.clone();
+		imp2.setStack("Reduced "+imp.getShortTitle(), stack2);
+		//imp2.setCalibration(imp.getCalibration());
+		Calibration cal2 = imp2.getCalibration();
+		if (cal2.scaled()) {
+			cal2.pixelWidth *= xshrink;
+			cal2.pixelHeight *= yshrink;
+		}
+		imp2.setOpenAsHyperStack(imp.isHyperStack());
+		return imp2;
 	}
 
 	private ImageProcessor shrink(ImageProcessor ip, int method) {
@@ -76,7 +87,6 @@ public class Binner implements PlugIn {
 	}
 
 	private ImageProcessor shrinkRGB(ColorProcessor cp, ColorProcessor cp2, int method) {
-		int w=cp.getWidth(), h=cp.getHeight();
 		ByteProcessor bp = cp.getChannel(1, null);
 		cp2.setChannel(1, (ByteProcessor)shrink(bp, method));
 		cp2.setChannel(2, (ByteProcessor)shrink(cp.getChannel(2,bp), method));
@@ -90,7 +100,7 @@ public class Binner implements PlugIn {
 			for (int x2=0;  x2<xshrink; x2++)
 				sum += ip.getf(x*xshrink+x2, y*yshrink+y2); 
 		}
-		return (float)((sum/(xshrink*yshrink))+0.5);
+		return (float)(sum/(xshrink*yshrink));
 	}
 
 	private float getMedian(ImageProcessor ip, int x, int y) {

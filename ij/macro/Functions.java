@@ -3201,7 +3201,10 @@ public class Functions implements MacroConstants, Measurements {
 				if (oneArg)
 					imp.setProperty("Info", metadata);
 				else {
-					imp.setProperty("Label", metadata);
+					if ("".equals(metadata))
+						imp.setProperty("Label", null);
+					else
+						imp.setProperty("Label", metadata);
 					if (!Interpreter.isBatchMode()) imp.repaintWindow();
 				}
 			} else {
