@@ -636,8 +636,8 @@ public class ResultsTable implements Cloneable {
 		return rowLabels;
 	}
 	
-	/** Opens a tab or comma delimited text file as a ResultsTable.
-	     Displays a file open dialog if 'path' is empty or null.
+	/** Opens a tab or comma delimited text file and returns it as a 
+	     ResultsTable. Displays a file open dialog if 'path' is empty or null.
 	     Displays non-numeric tables in a TextWindow and returns null. */
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";

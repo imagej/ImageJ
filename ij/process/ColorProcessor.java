@@ -486,7 +486,7 @@ public class ColorProcessor extends ImageProcessor {
 		return (byte[])bp.getPixels();
 	}
 	
-	/** Returns the specified plane (1=red, 2=green, 3=blue)  as a ByteProcessor. */
+	/** Returns the specified plane (1=red, 2=green, 3=blue) as a ByteProcessor. */
 	public ByteProcessor getChannel(int channel, ByteProcessor bp) {
 		int size = width*height;
 		if (bp == null || bp.getWidth()!=width || bp.getHeight()!=height)

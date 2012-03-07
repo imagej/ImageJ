@@ -142,10 +142,9 @@ public class ZProjector implements PlugIn {
 		if (isHyperstack) {
 			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
 			doHyperStackProjection(allTimeFrames);
-		} else if (imp.getType()==ImagePlus.COLOR_RGB) {
-			if (method==SUM_METHOD) method=AVG_METHOD;
+		} else if (imp.getType()==ImagePlus.COLOR_RGB)
 			doRGBProjection();
-		} else 
+		else 
 			doProjection(); 
 
 		if (arg.equals("") && projImage!=null) {

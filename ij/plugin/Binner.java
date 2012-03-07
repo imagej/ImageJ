@@ -35,13 +35,11 @@ public class Binner implements PlugIn {
 		imp.setCalibration(imp2.getCalibration());
 	}
 
-	private ImagePlus shrink(ImagePlus imp, int xshrink, int yshrink, int method) {
+	public ImagePlus shrink(ImagePlus imp, int xshrink, int yshrink, int method) {
 		this.xshrink = xshrink;
 		this.yshrink = yshrink;
 		int w = imp.getWidth()/xshrink;
 		int h = imp.getHeight()/yshrink;
-		if (method<0 || method>methods.length)
-			method = AVERAGE;
 		ColorModel cm=imp.createLut().getColorModel();
 		ImageStack stack=imp.getStack();
 		ImageStack stack2 = new ImageStack (w, h, cm);
@@ -55,7 +53,6 @@ public class Binner implements PlugIn {
 		}
 		ImagePlus imp2 = (ImagePlus)imp.clone();
 		imp2.setStack("Reduced "+imp.getShortTitle(), stack2);
-		//imp2.setCalibration(imp.getCalibration());
 		Calibration cal2 = imp2.getCalibration();
 		if (cal2.scaled()) {
 			cal2.pixelWidth *= xshrink;
@@ -65,7 +62,15 @@ public class Binner implements PlugIn {
 		return imp2;
 	}
 
+	public ImageProcessor shrink(ImageProcessor ip, int xshrink, int yshrink, int method) {
+		this.xshrink = xshrink;
+		this.yshrink = yshrink;
+		return shrink(ip, method);
+	}
+
 	private ImageProcessor shrink(ImageProcessor ip, int method) {
+		if (method<0 || method>methods.length)
+			method = AVERAGE;
 		int w = ip.getWidth()/xshrink;
 		int h = ip.getHeight()/yshrink;
 		ImageProcessor ip2 = ip.createProcessor(w, h);
