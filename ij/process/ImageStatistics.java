@@ -6,6 +6,7 @@ import java.awt.*;
 public class ImageStatistics implements Measurements {
 
 	public int[] histogram;
+	public long[] longHistogram;
 	public int pixelCount;
 	public long longPixelCount;
 	public int mode;

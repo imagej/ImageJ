@@ -295,7 +295,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	public final float getf(int x, int y) {
-		return getf(y*width+x);
+		return pixels[y*width+x];
 	}
 
 	public final void setf(int x, int y, float value) {
@@ -303,16 +303,8 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	public final float getf(int index) {
-		int c = pixels[index];
-		int r = (c&0xff0000)>>16;
-		int g = (c&0xff00)>>8;
-		int b = c&0xff;
-		return (float)(r*rWeight + g*gWeight + b*bWeight);
+		return pixels[index];
 	}
-
-	//public final float getf(int index) {
-	//	return pixels[index];
-	//}
 
 	public final void setf(int index, float value) {
 		pixels[index] = (int)value;

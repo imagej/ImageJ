@@ -636,15 +636,34 @@ public class ResultsTable implements Cloneable {
 		return rowLabels;
 	}
 	
+	/** Opens a tab or comma delimited text file and returns it 
+	* as a ResultsTable, without requiring a try/catch statement.
+	* Displays a file open dialog if 'path' is empty or null.
+	*/
+	public static ResultsTable open2(String path) {
+		ResultsTable rt = null;
+		try {
+			rt = open(path);
+		} catch (IOException e) {
+			IJ.error("Open Results", e.getMessage());
+			rt = null;
+		}
+		return rt;
+	}
+	
 	/** Opens a tab or comma delimited text file and returns it as a 
-	     ResultsTable. Displays a file open dialog if 'path' is empty or null.
-	     Displays non-numeric tables in a TextWindow and returns null. */
+	* ResultsTable. Displays a file open dialog if 'path' is empty or null.
+	* Displays non-numeric tables in a TextWindow and returns null.
+	* @see #open2(String)
+	*/
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";
 		final String cellSeparator =  ",\t";
 		String text =IJ.openAsString(path);
+		if (text==null)
+			return null;
 		if (text.startsWith("Error:"))
-			throw new IOException("text.substring(7)");
+			throw new IOException("Error opening "+path);
 		String[] lines = Tools.split(text, lineSeparator);
 		if (lines.length==0)
 			throw new IOException("Table is empty or invalid");

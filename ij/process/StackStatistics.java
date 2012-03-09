@@ -160,7 +160,7 @@ public class StackStatistics extends ImageStatistics {
 		}
 		ImageStack stack = imp.getStack();
 		Roi roi = imp.getRoi();
-		long[] longHistogram = new long[256];
+		longHistogram = new long[256];
 		int n = stack.getSize();
 		for (int slice=1; slice<=n; slice++) {
 			IJ.showProgress(slice, n);

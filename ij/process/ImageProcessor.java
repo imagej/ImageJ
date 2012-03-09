@@ -1568,16 +1568,18 @@ public abstract class ImageProcessor implements Cloneable {
 
 	public abstract void set(int index, int value);
 
-	/** Returns the value of the pixel at (x,y) as a float. This 
-		method is faster than getPixel() because it does not
-		check to see if x and y are within the image bounds. */
+	/** Returns the value of the pixel at (x,y) as a float. Faster than
+	    getPixel() because no bounds checking is done. */
 	public abstract float getf(int x, int y);
 	
 	public abstract float getf(int index);
 
-	/** Sets the value of the pixel at (x,y) to 'value'. Unlike putPixel(),
-		the method works with 32-bit (float) images, and it is faster
-		because it does not do bounds checking or clamping. */
+	/** Sets the value of the pixel at (x,y) to 'value'. Does no bounds
+	    checking or clamping, making it faster than putPixel(). Due to the lack
+	    of bounds checking, (x,y) coordinates outside the image may cause
+	    an exception. Due to the lack of clamping, values outside the 0-255
+	    range (for byte) or 0-65535 range (for short) are not handled correctly.
+	*/
 	public abstract void setf(int x, int y, float value);
 
 	public abstract void setf(int index, float value);
