@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46i 8 March 2012</u>
+<li> <u>1.46i 9 March 2012</u>
 <ul>
 <li> Added the <i>Image&gt;Transform&gt;Bin</i> command, based on Nico Stuurman's
 <a href="http://valelab.ucsf.edu/~nico/IJplugins/Binner.html">Binner</a> plugin.
@@ -15,7 +15,7 @@
 <li> Added the getChannel(int, ByteProcessor) and setChannel(int, ByteProcessor) methods
 to the ColorProcessor class
 (<a href="source/ij/plugin/Binner.java">example</a>).
-<li> Added the ImageProcessor.bin() method.
+<li> Added the ImageProcessor.bin() and ResultsTable.open2() methods.
 <li> Thanks to Jan Eglinger, fixed a bug that caused <i>Image&gt;Transform&gt;Rotate Right</i>
 and <i>Image&gt;Transform&gt;Rotate Left</i> to not work with square composite color images.
 <li> Thanks to Gilles Carpentier, fixed a bug that sometimes caused
@@ -25,6 +25,11 @@ and <i>Image&gt;Transform&gt;Rotate Left</i> to not work with square composite c
 <i>File&gt;Import&gt;Results</i> dialog box.
 <li> Fixed a bug in <i>Process&gt;Binary&gt;Skeletonize</i> that caused it to
 sometimes create skeletons that were more than one pixel wide.
+<li> Fixed a bug that caused the setf() functions to not round
+when storing values in ByteProcessors and ShortProcessors.
+<li> Fixed a bug that caused the Sync_Windows plugin to not work with hyperstacks.
+<li> Fixed bugs that caused an error message, or caused the command to be ignored,
+when saving results created by some MBF plugin using <i>File&gt;Save As&gt;Results</i>.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 
