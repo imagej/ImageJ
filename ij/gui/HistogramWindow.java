@@ -163,7 +163,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (!(IJ.isMacOSX()&&isRGB)) {
 			Panel valueAndCount = new Panel();
 			valueAndCount.setLayout(new GridLayout(2,1,0,0));
-			blankLabel = IJ.isMacOSX()?"          ":"                ";
+			blankLabel = IJ.isMacOSX()?"           ":"                ";
 			value = new Label(blankLabel);
 			Font font = new Font("Monospaced", Font.PLAIN, 12);
 			value.setFont(font);
@@ -187,7 +187,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			if (x>255) x = 255;
 			int index = (int)(x*((double)histogram.length)/HIST_WIDTH);
 			String vlabel=null, clabel=null;
-			if (blankLabel.length()==10) // OS X
+			if (blankLabel.length()==11) // OS X
 				{vlabel=" "; clabel=" ";}
 			else
 				{vlabel=" value="; clabel=" count=";}
@@ -223,7 +223,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 				mode2 = i;
   			}
   		}
-		newMaxCount = stats.maxCount;
+		newMaxCount = histogram[stats.mode];
 		if ((newMaxCount>(maxCount2 * 2)) && (maxCount2 != 0)) {
 			newMaxCount = (int)(maxCount2 * 1.5);
   			//histogram[stats.mode] = newMaxCount;
@@ -346,10 +346,12 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		int row3 = row2 + 15;
 		int row4 = row3 + 15;
 		long count = stats.longPixelCount>0?stats.longPixelCount:stats.pixelCount;
+		String modeCount = " (" + stats.maxCount + ")";
+		if (modeCount.length()>12) modeCount = "";
 		ip.drawString("Count: " + count, col1, row1);
 		ip.drawString("Mean: " + d2s(stats.mean), col1, row2);
 		ip.drawString("StdDev: " + d2s(stats.stdDev), col1, row3);
-		ip.drawString("Mode: " + d2s(stats.dmode) + " (" + stats.maxCount + ")", col2, row3);
+		ip.drawString("Mode: " + d2s(stats.dmode) + modeCount, col2, row3);
 		ip.drawString("Min: " + d2s(stats.min), col2, row1);
 		ip.drawString("Max: " + d2s(stats.max), col2, row2);
 		

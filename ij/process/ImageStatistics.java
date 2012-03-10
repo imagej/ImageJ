@@ -6,7 +6,6 @@ import java.awt.*;
 public class ImageStatistics implements Measurements {
 
 	public int[] histogram;
-	public long[] longHistogram;
 	public int pixelCount;
 	public long longPixelCount;
 	public int mode;
@@ -34,6 +33,8 @@ public class ImageStatistics implements Measurements {
 	public double angle;
 	/** 65536 element histogram (16-bit images only) */
 	public int[] histogram16;
+	/** Long histogram; use getHIstogram() to retrieve. */
+	public long[] longHistogram;
 	public double areaFraction;
 	/** Used internally by AnalyzeParticles */
 	public int xstart, ystart;
@@ -250,6 +251,18 @@ public class ImageStatistics implements Measurements {
 			}
 		}
 		areaFraction = sum*100.0/total;
+	}
+	
+	/** Returns the histogram as a long array. */
+	public long[] getHistogram() {
+		long[] hist = new long[histogram.length];
+		for (int i=0; i<hist.length; i++) {
+			if (longHistogram!=null)
+				hist[i] = longHistogram[i];
+			else
+				hist[i] = histogram[i];
+		}
+		return hist;
 	}
 	
 	public String toString() {
