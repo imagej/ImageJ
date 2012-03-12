@@ -1,5 +1,6 @@
 package ij.process;
 import java.awt.Rectangle;
+import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 
 /** Used by the Roi classes to return float coordinate arrays and to
@@ -40,6 +41,17 @@ public class FloatPolygon {
 		this.ypoints = ypoints;
 	}
 		
+	/** Constructs a FloatPolygon from a Polygon. */ 
+	public FloatPolygon(Polygon polygon) {
+		npoints = polygon.npoints;
+		xpoints = new float[npoints];
+		ypoints = new float[npoints];
+		for (int i=0; i<npoints; i++) {
+			xpoints[i] = polygon.xpoints[i];
+			ypoints[i] = polygon.ypoints[i];
+		}
+	}
+
 	/** Returns 'true' if the point (x,y) is inside this polygon. This is a Java
 	version of the remarkably small C program by W. Randolph Franklin at
 	http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html#The%20C%20Code
@@ -115,5 +127,22 @@ public class FloatPolygon {
 		System.arraycopy(this.ypoints, 0, ypoints, 0, n);	
 		return new FloatPolygon(xpoints, ypoints, n);
 	}
-
+	
+	/* Returns the length of this polygon or line. */
+	public double getLength(boolean isLine) {
+		double dx, dy;
+		double length = 0.0;
+		for (int i=0; i<(npoints-1); i++) {
+			dx = xpoints[i+1]-xpoints[i];
+			dy = ypoints[i+1]-ypoints[i];
+			length += Math.sqrt(dx*dx+dy*dy);
+		}
+		if (!isLine) {
+			dx = xpoints[0]-xpoints[npoints-1];
+			dy = ypoints[0]-ypoints[npoints-1];
+			length += Math.sqrt(dx*dx+dy*dy);
+		}
+		return length;
+	}
+	
 }

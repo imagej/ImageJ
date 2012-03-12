@@ -440,8 +440,6 @@ public class PolygonRoi extends Roi {
 		imp.draw(xmin-margin, ymin-margin, (xmax-xmin)+margin*2, (ymax-ymin)+margin*2);
 	}
 	
-	static int counter = 0;
-
     void finishPolygon() {
     	if (xpf!=null) {
 			FloatPolygon poly = new FloatPolygon(xpf, ypf, nPoints);

@@ -12,6 +12,7 @@ import java.awt.image.*;
  * calculated as average, median, maximum or minimum.
  *
  * @author Nico Stuurman
+ * @author Wayne Rasband
  */
 public class Binner implements PlugIn {
 	public static int AVERAGE=0, MEDIAN=1, MIN=2, MAX=3;
@@ -25,8 +26,6 @@ public class Binner implements PlugIn {
 			return;
 		if (imp.getStackSize()==1)
 			Undo.setup(Undo.TYPE_CONVERSION, imp);
-		if (imp.isHyperStack() || imp.isComposite())
-			zshrink = 1;
 		imp.startTiming();
 		ImagePlus imp2 = shrink(imp, xshrink, yshrink, zshrink, method);
 		IJ.showTime(imp, imp.getStartTime(), "", imp.getStackSize());
@@ -74,7 +73,7 @@ public class Binner implements PlugIn {
 		ImageStack stack2 = new ImageStack (w, h, stack.getColorModel());
 		for (int z=1; z<=d2; z++)
 			stack2.addSlice(stack.getProcessor(z).duplicate());
-		boolean rgb = stack.getType()==ImageStack.RGB;
+		boolean rgb = stack.getBitDepth()==24;
 		ImageProcessor ip = rgb?new ColorProcessor(d, h):new FloatProcessor(d, h);
 		for (int x=0; x<w; x++) {
 			IJ.showProgress(x+1, w);
@@ -199,6 +198,8 @@ public class Binner implements PlugIn {
 
 	private boolean showDialog(ImagePlus imp) {
 		boolean stack = imp.getStackSize()>1;
+		if (imp.isHyperStack() || imp.isComposite())
+			stack = false;
 		GenericDialog gd = new GenericDialog("Image Shrink");
 		gd.addNumericField("X shrink factor:", xshrink, 0);
 		gd.addNumericField("Y shrink factor:", yshrink, 0);
@@ -207,6 +208,10 @@ public class Binner implements PlugIn {
 		if (method>methods.length)
 			method = 0;
 		gd.addChoice ("Bin Method: ", methods, methods[method]);
+		if (imp.getStackSize()==1) {
+			gd.setInsets(5, 0, 0);
+			gd.addMessage("This command supports Undo");
+		}
 		gd.showDialog();
 		if (gd.wasCanceled()) 
 			return false;

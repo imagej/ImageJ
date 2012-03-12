@@ -39,6 +39,8 @@ public class Selection implements PlugIn, Measurements {
     		imp.restoreRoi();
     	else if (arg.equals("spline"))
     		fitSpline();
+    	else if (arg.equals("interpolate"))
+    		interpolate();
     	else if (arg.equals("circle"))
     		fitCircle(imp);
     	else if (arg.equals("ellipse"))
@@ -239,6 +241,20 @@ public class Selection implements PlugIn, Measurements {
 			p.fitSpline();
 		imp.draw();
 		LineWidthAdjuster.update();	
+	}
+	
+	void interpolate() {
+		Roi roi = imp.getRoi();
+		if (roi==null)
+			{noRoi("Interpolate"); return;}
+		if (roi.getType()==Roi.POINT)
+			return;
+		FloatPolygon poly = roi.getInterpolatedPolygon(1.0);
+		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
+		ImageCanvas ic = imp.getCanvas();
+		if (poly.npoints<=100 && ic!=null && ic.getMagnification()>=12.0)
+			type = roi.isLine()?Roi.POLYLINE:Roi.POLYGON;
+		imp.setRoi(new PolygonRoi(poly,type));
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {

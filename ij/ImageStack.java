@@ -8,7 +8,7 @@ This class represents an expandable array of images.
 @see ImagePlus
 */
 public class ImageStack {
-	public static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3, UNKNOWN=-1;
+	private static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3, UNKNOWN=-1;
 	static final int INITIAL_SIZE = 25;
 	static final String outOfRange = "Argument out of range: ";
 	private int type = UNKNOWN;
@@ -376,8 +376,15 @@ public class ImageStack {
 		}
 	}
 	
-	public int getType() {
-		return type;
+	/** Returns the bit depth (8=byte, 16=short, 24=RGB, 32=float). */
+	public int getBitDepth() {
+		switch (type) {
+			case BYTE: return 8;
+			case SHORT: return 16;
+			case FLOAT: return 32;
+			case RGB: return 24;
+		}
+		return 0;
 	}
 
 }
