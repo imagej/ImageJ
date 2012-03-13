@@ -381,9 +381,12 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 	
-	/** Returns an interpolated FloatPolygon with the spacing between points set to 'interval'. */
-	public FloatPolygon getInterpolatedPolygon(double interval) {
-		FloatPolygon p = getFloatPolygon();
+	/** Returns an interpolated FloatPolygon with point spacing of 'interval'. */
+	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {
+		return getInterpolatedPolygon(getFloatPolygon(), interval, smooth);
+	}
+
+	protected FloatPolygon getInterpolatedPolygon(FloatPolygon p, double interval, boolean smooth) {
 		double length = p.getLength(isLine());
 		int npoints2 = (int)((length*1.2)/interval);
 		float[] xpoints2 = new float[npoints2];

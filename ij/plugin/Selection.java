@@ -23,6 +23,7 @@ public class Selection implements PlugIn, Measurements {
 	private static boolean nonScalable;
 	private static Color linec, fillc;
 	private static int lineWidth = 1;
+	private static boolean smooth;
 	
 
 	public void run(String arg) {
@@ -39,7 +40,7 @@ public class Selection implements PlugIn, Measurements {
     		imp.restoreRoi();
     	else if (arg.equals("spline"))
     		fitSpline();
-    	else if (arg.equals("interpolate"))
+		else if (arg.equals("interpolate"))
     		interpolate();
     	else if (arg.equals("circle"))
     		fitCircle(imp);
@@ -249,10 +250,18 @@ public class Selection implements PlugIn, Measurements {
 			{noRoi("Interpolate"); return;}
 		if (roi.getType()==Roi.POINT)
 			return;
-		FloatPolygon poly = roi.getInterpolatedPolygon(1.0);
+		GenericDialog gd = new GenericDialog("Interpolate");
+		gd.addNumericField("Interval:", 1.0, 1, 4, "pixel");
+		gd.addCheckbox("Smooth", smooth);
+		gd.showDialog();
+		if (gd.wasCanceled())
+        	return;
+		double interval = gd.getNextNumber();
+		smooth = gd.getNextBoolean();
+		FloatPolygon poly = roi.getInterpolatedPolygon(interval, smooth);
 		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
 		ImageCanvas ic = imp.getCanvas();
-		if (poly.npoints<=100 && ic!=null && ic.getMagnification()>=12.0)
+		if (poly.npoints<=150 && ic!=null && ic.getMagnification()>=12.0)
 			type = roi.isLine()?Roi.POLYLINE:Roi.POLYGON;
 		imp.setRoi(new PolygonRoi(poly,type));
 	}
@@ -432,9 +441,15 @@ public class Selection implements PlugIn, Measurements {
 			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
 		if (roi instanceof EllipseRoi)
 			return;
-		Polygon p = roi.getConvexHull();
-		if (p!=null)
-			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
+		if (roi instanceof PolygonRoi) {
+			FloatPolygon p = ((PolygonRoi)roi).getFloatConvexHull();
+			if (p!=null)
+				imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
+		} else {
+			Polygon p = roi.getConvexHull();
+			if (p!=null)
+				imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
+		}
 	}
 	
 	// Finds the index of the upper right point that is guaranteed to be on convex hull

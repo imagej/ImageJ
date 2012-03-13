@@ -1305,46 +1305,50 @@ public class PolygonRoi extends Roi {
 	/** Uses the gift wrap algorithm to find the 
 		convex hull and returns it as a Polygon. */
 	public Polygon getConvexHull() {
-		int n = getNCoordinates();
-		int[] xCoordinates = getXCoordinates();
-		int[] yCoordinates = getYCoordinates();
-		Rectangle r = getBounds();
-		int xbase = r.x;
-		int ybase = r.y;
-		int[] xx = new int[n];
-		int[] yy = new int[n];
+		FloatPolygon p = getFloatConvexHull();
+		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
+	}
+	
+	/** Uses the gift wrap algorithm to find the 
+		convex hull and returns it as a FloatPolygon. */
+	public FloatPolygon getFloatConvexHull() {
+		FloatPolygon p = getFloatPolygon();
+		int n = p.npoints;
+		float[] xx = new float[n];
+		float[] yy = new float[n];
 		int n2 = 0;
-		int smallestY = Integer.MAX_VALUE;
-		int x, y;
+		float smallestY = Float.MAX_VALUE;
+		float x, y;
 		for (int i=0; i<n; i++) {
-			y = yCoordinates[i];
+			y = p.ypoints[i];
 			if (y<smallestY)
 			smallestY = y;
 		}
-		int smallestX = Integer.MAX_VALUE;
+		float smallestX = Float.MAX_VALUE;
 		int p1 = 0;
 		for (int i=0; i<n; i++) {
-			x = xCoordinates[i];
-			y = yCoordinates[i];
+			x = p.xpoints[i];
+			y = p.ypoints[i];
 			if (y==smallestY && x<smallestX) {
 				smallestX = x;
 				p1 = i;
 			}
 		}
 		int pstart = p1;
-		int x1, y1, x2, y2, x3, y3, p2, p3;
-		int determinate;
+		float x1, y1, x2, y2, x3, y3;
+		int p2, p3;
+		float determinate;
 		int count = 0;
 		do {
-			x1 = xCoordinates[p1];
-			y1 = yCoordinates[p1];
+			x1 = p.xpoints[p1];
+			y1 = p.ypoints[p1];
 			p2 = p1+1; if (p2==n) p2=0;
-			x2 = xCoordinates[p2];
-			y2 = yCoordinates[p2];
+			x2 = p.xpoints[p2];
+			y2 = p.ypoints[p2];
 			p3 = p2+1; if (p3==n) p3=0;
 			do {
-				x3 = xCoordinates[p3];
-				y3 = yCoordinates[p3];
+				x3 = p.xpoints[p3];
+				y3 = p.ypoints[p3];
 				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
 				if (determinate>0)
 					{x2=x3; y2=y3; p2=p3;}
@@ -1352,8 +1356,8 @@ public class PolygonRoi extends Roi {
 				if (p3==n) p3 = 0;
 			} while (p3!=p1);
 			if (n2<n) { 
-				xx[n2] = xbase + x1;
-				yy[n2] = ybase + y1;
+				xx[n2] = x1;
+				yy[n2] = y1;
 				n2++;
 			} else {
 				count++;
@@ -1361,7 +1365,24 @@ public class PolygonRoi extends Roi {
 			}
 			p1 = p2;
 		} while (p1!=pstart);
-		return new Polygon(xx, yy, n2);
+		return new FloatPolygon(xx, yy, n2);
+	}
+	
+	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {
+		FloatPolygon p = getFloatPolygon();
+		if (smooth && (type==TRACED_ROI || type==FREEROI || type==FREELINE)) {
+			for (int i=1; i<p.npoints-2; i++) {
+				p.xpoints[i] = (p.xpoints[i-1]+p.xpoints[i]+p.xpoints[i+1])/3f;
+				p.ypoints[i] = (p.ypoints[i-1]+p.ypoints[i]+p.ypoints[i+1])/3f;
+			}
+			if (type!=FREELINE) {
+				p.xpoints[0] = (p.xpoints[p.npoints-1]+p.xpoints[0]+p.xpoints[1])/3f;
+				p.ypoints[0] = (p.ypoints[p.npoints-1]+p.ypoints[0]+p.ypoints[1])/3f;
+				p.xpoints[p.npoints-1] = (p.xpoints[p.npoints-2]+p.xpoints[p.npoints-1]+p.xpoints[0])/3f;
+				p.ypoints[p.npoints-1] = (p.ypoints[p.npoints-2]+p.ypoints[p.npoints-1]+p.ypoints[0])/3f;
+			}
+		}
+		return super.getInterpolatedPolygon(p, interval, smooth);
 	}
 
 	protected int clipRectMargin() {

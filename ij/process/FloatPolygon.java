@@ -41,7 +41,7 @@ public class FloatPolygon {
 		this.ypoints = ypoints;
 	}
 		
-	/** Constructs a FloatPolygon from a Polygon. */ 
+	/* Constructs a FloatPolygon from a Polygon. 
 	public FloatPolygon(Polygon polygon) {
 		npoints = polygon.npoints;
 		xpoints = new float[npoints];
@@ -51,6 +51,7 @@ public class FloatPolygon {
 			ypoints[i] = polygon.ypoints[i];
 		}
 	}
+	*/
 
 	/** Returns 'true' if the point (x,y) is inside this polygon. This is a Java
 	version of the remarkably small C program by W. Randolph Franklin at
