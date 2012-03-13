@@ -114,6 +114,11 @@ public class Plot {
 		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
 	}
 
+	/** This version of the constructor that works with JavaScript". */
+	public Plot(String dummy, String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
+		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
+	}
+
 	/** This is a version of the constructor with no intial arrays. */
 	public Plot(String title, String xLabel, String yLabel) {
 		this(title, xLabel, yLabel, (float[])null, (float[])null, DEFAULT_FLAGS);
@@ -225,6 +230,11 @@ public class Plot {
 		addPoints(Tools.toFloat(x), Tools.toFloat(y), shape);
 	}
 	
+	/** This a version of addPoints that works with JavaScript. */
+	public void addPoints(String dummy, float[] x, float[] y, int shape) {
+		addPoints(x, y, shape);
+	}
+
 	void drawShape(int shape, int x, int y, int size) {
 		int xbase = x-size/2;
 		int ybase = y-size/2;
@@ -270,6 +280,11 @@ public class Plot {
 		addErrorBars(Tools.toFloat(errorBars));
 	}
 	
+	/** This is a version of addErrorBars that works with JavaScript. */
+	public void addErrorBars(String dummy, float[] errorBars) {
+		addErrorBars(errorBars);
+	}
+
 	/** Draws text at the specified location, where (0,0)
 	 * is the upper left corner of the the plot frame and (1,1) is
 	 * the lower right corner. */

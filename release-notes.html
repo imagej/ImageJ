@@ -5,13 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.46i 12 March 2012</u>
+<li> <u>1.46i 13 March 2012</u>
 <ul>
 <li> Added the <i>Image&gt;Transform&gt;Bin</i> command, based on Nico Stuurman's
 <a href="http://valelab.ucsf.edu/~nico/IJplugins/Binner.html">Binner</a> plugin.
-<li> Added the <i>Edit&gt;Selection&gt;Interpolate</i> command.  To see the 
-interpolated points, use this command on small selections created on images
-zoomed 1200% or greater.
+<li> Added the <i>Edit&gt;Selection&gt;Interpolate</i> command.  To have the 
+interpolated points displayed, use this command on small selections created 
+on images zoomed 1200% or greater.
 <li> Added the "Remove Tool" command to the toolbar's <i>&gt;&gt;</i> menu;
 <li> The <i>Image&gt;Stacks&gt;Add Slice</i> command works with hyperstacks.
 <li> The Fly Brain and T1 Head sample stacks open displaying the middle slice instead of the first.
@@ -19,6 +19,7 @@ zoomed 1200% or greater.
 to the ColorProcessor class
 (<a href="source/ij/plugin/Binner.java">example</a>).
 <li> Added the ImageProcessor.bin(), ResultsTable.open2() and Roi.getInterpolatedPolygon() methods.
+<li> Added JavaScript-compatible constructor and methods to the Plot class.
 <li> Thanks to Jan Eglinger, fixed a bug that caused <i>Image&gt;Transform&gt;Rotate Right</i>
 and <i>Image&gt;Transform&gt;Rotate Left</i> to not work with square composite color images.
 <li> Thanks to Gilles Carpentier, fixed a bug that sometimes caused

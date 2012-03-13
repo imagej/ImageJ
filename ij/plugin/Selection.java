@@ -28,39 +28,39 @@ public class Selection implements PlugIn, Measurements {
 
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
-    	if (arg.equals("add"))
-    		{addToRoiManager(imp); return;}
+		if (arg.equals("add"))
+			{addToRoiManager(imp); return;}
 		if (imp==null)
 			{IJ.noImage(); return;}
-    	if (arg.equals("all"))
-    		imp.setRoi(0,0,imp.getWidth(),imp.getHeight());
-    	else if (arg.equals("none"))
-    		imp.killRoi();
-    	else if (arg.equals("restore"))
-    		imp.restoreRoi();
-    	else if (arg.equals("spline"))
-    		fitSpline();
+		if (arg.equals("all"))
+			imp.setRoi(0,0,imp.getWidth(),imp.getHeight());
+		else if (arg.equals("none"))
+			imp.killRoi();
+		else if (arg.equals("restore"))
+			imp.restoreRoi();
+		else if (arg.equals("spline"))
+			fitSpline();
 		else if (arg.equals("interpolate"))
-    		interpolate();
-    	else if (arg.equals("circle"))
-    		fitCircle(imp);
-    	else if (arg.equals("ellipse"))
-    		createEllipse(imp);
-    	else if (arg.equals("hull"))
-    		convexHull(imp);
-    	else if (arg.equals("mask"))
-    		createMask(imp);    	
-     	else if (arg.equals("from"))
-    		createSelectionFromMask(imp);    	
-    	else if (arg.equals("inverse"))
-    		invert(imp); 
-     	else if (arg.equals("toarea"))
-    		lineToArea(imp); 
-     	else if (arg.equals("toline"))
-    		areaToLine(imp); 
-	   	else if (arg.equals("properties"))
-    		{setProperties("Properties ", imp.getRoi()); imp.draw();}
- 		else if (arg.equals("band"))
+			interpolate();
+		else if (arg.equals("circle"))
+			fitCircle(imp);
+		else if (arg.equals("ellipse"))
+			createEllipse(imp);
+		else if (arg.equals("hull"))
+			convexHull(imp);
+		else if (arg.equals("mask"))
+			createMask(imp);		
+		else if (arg.equals("from"))
+			createSelectionFromMask(imp);		
+		else if (arg.equals("inverse"))
+			invert(imp); 
+		else if (arg.equals("toarea"))
+			lineToArea(imp); 
+		else if (arg.equals("toline"))
+			areaToLine(imp); 
+		else if (arg.equals("properties"))
+			{setProperties("Properties ", imp.getRoi()); imp.draw();}
+		else if (arg.equals("band"))
 			makeBand(imp);
 		else if (arg.equals("tobox"))
 			toBoundingBox(imp); 
@@ -86,7 +86,7 @@ public class Selection implements PlugIn, Measurements {
 			double d = Tools.parseDouble(angle);
 			if (Double.isNaN(d)) angle = "15";
 			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
-			if (value!=null) angle = value;    	
+			if (value!=null) angle = value;		
 		} else if (arg.equals("enlarge")) {
 			String value = IJ.runMacroFile("ij.jar:EnlargeSelection", enlarge); 
 			if (value!=null) enlarge = value; 
@@ -110,7 +110,7 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		}
 		
-		if (roi.isArea()) {   //create circle with the same area and centroid
+		if (roi.isArea()) {	  //create circle with the same area and centroid
 			ImageProcessor ip = imp.getProcessor();
 			ip.setRoi(roi);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, Measurements.AREA+Measurements.CENTROID, null);
@@ -241,7 +241,7 @@ public class Selection implements PlugIn, Measurements {
 		else
 			p.fitSpline();
 		imp.draw();
-		LineWidthAdjuster.update();	
+		LineWidthAdjuster.update(); 
 	}
 	
 	void interpolate() {
@@ -250,12 +250,14 @@ public class Selection implements PlugIn, Measurements {
 			{noRoi("Interpolate"); return;}
 		if (roi.getType()==Roi.POINT)
 			return;
+		if (IJ.isMacro()&&Macro.getOptions()==null)
+			Macro.setOptions("interval=1");
 		GenericDialog gd = new GenericDialog("Interpolate");
 		gd.addNumericField("Interval:", 1.0, 1, 4, "pixel");
-		gd.addCheckbox("Smooth", smooth);
+		gd.addCheckbox("Smooth", IJ.isMacro()?false:smooth);
 		gd.showDialog();
 		if (gd.wasCanceled())
-        	return;
+			return;
 		double interval = gd.getNextNumber();
 		smooth = gd.getNextBoolean();
 		FloatPolygon poly = roi.getInterpolatedPolygon(interval, smooth);
@@ -302,9 +304,9 @@ public class Selection implements PlugIn, Measurements {
 		return p;
 	}
 	
-    double rodbard(double x) {
-    	// y = c*((a-x/(x-d))^(1/b)
-    	// a=3.9, b=.88, c=712, d=44
+	double rodbard(double x) {
+		// y = c*((a-x/(x-d))^(1/b)
+		// a=3.9, b=.88, c=712, d=44
 		double ex;
 		if (x == 0.0)
 			ex = 5.0;
@@ -313,7 +315,7 @@ public class Selection implements PlugIn, Measurements {
 		double y = 3.9-44.0;
 		y = y/(1.0+ex);
 		return y+44.0;
-    }
+	}
 
 	int[] smooth(int[] a, int n) {
 		FloatProcessor fp = new FloatProcessor(n, 1);
@@ -441,7 +443,7 @@ public class Selection implements PlugIn, Measurements {
 			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
 		if (roi instanceof EllipseRoi)
 			return;
-		if (roi instanceof PolygonRoi) {
+		if (roi.subPixelResolution() && roi instanceof PolygonRoi) {
 			FloatPolygon p = ((PolygonRoi)roi).getFloatConvexHull();
 			if (p!=null)
 				imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
@@ -615,7 +617,7 @@ public class Selection implements PlugIn, Measurements {
 		IJ.setKeyUp(IJ.ALL_KEYS);
 		if (altDown && !IJ.macroRunning())
 			IJ.setKeyDown(KeyEvent.VK_SHIFT);
-		if (roi.getState()==Roi.CONSTRUCTING) {	//wait (up to 2 sec.) until ROI finished
+		if (roi.getState()==Roi.CONSTRUCTING) { //wait (up to 2 sec.) until ROI finished
 			long start = System.currentTimeMillis();
 			while (true) {
 				IJ.wait(10);
@@ -664,7 +666,7 @@ public class Selection implements PlugIn, Measurements {
 		gd.addNumericField("Band Size:", size, decimalPlaces, 4, cal.getUnits());
 		gd.showDialog();
 		if (gd.wasCanceled())
-        	return;
+			return;
 		size = gd.getNextNumber();
 		if (Double.isNaN(size)) {
 			IJ.error("Make Band", "invalid number");

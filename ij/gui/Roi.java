@@ -381,7 +381,18 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		}
 	}
 	
-	/** Returns an interpolated FloatPolygon with point spacing of 'interval'. */
+	/** Returns, as a FloatPolygon, an interpolated version 
+	 * of this selection that has points spaced 1.0 pixel apart.
+	 */
+	public FloatPolygon getInterpolatedPolygon() {
+		return getInterpolatedPolygon(getFloatPolygon(), 1.0, false);
+	}
+
+	/** Returns, as a FloatPolygon, an interpolated version of
+	 * this selection with points spaced 'interval' pixels apart. 
+	 * If 'smooth' is true, traced and freehand selections are
+	 * first smoothed using a 3 point running average.
+	 */
 	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {
 		return getInterpolatedPolygon(getFloatPolygon(), interval, smooth);
 	}
