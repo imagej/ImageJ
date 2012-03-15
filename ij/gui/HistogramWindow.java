@@ -25,7 +25,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	static final int INTENSITY=0, RED=1, GREEN=2, BLUE=3;
 	
 	protected ImageStatistics stats;
-	protected int[] histogram;
+	protected long[] histogram;
 	protected LookUpTable lut;
 	protected Rectangle frame = null;
 	protected Button list, save, copy, log, live, rgb;
@@ -33,7 +33,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	protected static String defaultDirectory = null;
 	protected int decimalPlaces;
 	protected int digits;
-	protected int newMaxCount;
+	protected long newMaxCount;
 	protected int plotScale = 1;
 	protected boolean logScale;
 	protected Calibration cal;
@@ -113,16 +113,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		cal = imp.getCalibration();
 		boolean limitToThreshold = (Analyzer.getMeasurements()&LIMIT)!=0;
 		imp.getMask();
-		histogram = stats.histogram;
+		histogram = stats.getHistogram();
 		if (limitToThreshold && histogram.length==256) {
 			ImageProcessor ip = imp.getProcessor();
 			if (ip.getMinThreshold()!=ImageProcessor.NO_THRESHOLD) {
 				int lower = scaleDown(ip, ip.getMinThreshold());
 				int upper = scaleDown(ip, ip.getMaxThreshold());
 				for (int i=0; i<lower; i++)
-					histogram[i] = 0;
+					histogram[i] = 0L;
 				for (int i=upper+1; i<256; i++)
-					histogram[i] = 0;
+					histogram[i] = 0L;
 			}
 		}
 		lut = imp.createLut();
@@ -192,7 +192,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			else
 				{vlabel=" value="; clabel=" count=";}
 			String v = vlabel+d2s(cal.getCValue(stats.histMin+index*stats.binSize))+blankLabel;
-			String c = clabel+hist(index)+blankLabel;
+			String c = clabel+histogram[index]+blankLabel;
 			int len = vlabel.length() + blankLabel.length();
 			value.setText(v.substring(0,len));
 			count.setText(c.substring(0,len));
@@ -208,9 +208,9 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	void drawHistogram(ImagePlus imp, ImageProcessor ip, boolean fixedRange, double xMin, double xMax) {
 		int x, y;
-		int maxCount2 = 0;
+		long maxCount2 = 0;
 		int mode2 = 0;
-		int saveModalCount;
+		long saveModalCount;
 		    	
 		ip.setColor(Color.black);
 		ip.setLineWidth(1);
@@ -295,7 +295,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			return 0;
 	}
 
-	void drawPlot(int maxCount, ImageProcessor ip) {
+	void drawPlot(long maxCount, ImageProcessor ip) {
 		if (maxCount==0) maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
@@ -308,7 +308,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		}
 	}
 		
-	void drawLogPlot (int maxCount, ImageProcessor ip) {
+	void drawLogPlot (long maxCount, ImageProcessor ip) {
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x-1, frame.y, frame.width+2, frame.height+1);
 		double max = Math.log(maxCount);
@@ -387,23 +387,16 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		return ip.getStringWidth(d2s(d));
 	}
 	
-	private long hist(int index) {
-		if (stats!=null && stats.longHistogram!=null)
-			return stats.longHistogram[index];
-		else
-			return histogram[index];
-	}
-
 	protected void showList() {
 		StringBuffer sb = new StringBuffer();
         String vheading = stats.binSize==1.0?"value":"bin start";
 		if (cal.calibrated() && !cal.isSigned16Bit()) {
 			for (int i=0; i<stats.nBins; i++)
-				sb.append(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+hist(i)+"\n");
+				sb.append(i+"\t"+ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
 			TextWindow tw = new TextWindow(getTitle(), "level\t"+vheading+"\tcount", sb.toString(), 200, 400);
 		} else {
 			for (int i=0; i<stats.nBins; i++)
-				sb.append(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+hist(i)+"\n");
+				sb.append(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
 			TextWindow tw = new TextWindow(getTitle(), vheading+"\tcount", sb.toString(), 200, 400);
 		}
 	}
@@ -418,7 +411,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		CharArrayWriter aw = new CharArrayWriter(stats.nBins*4);
 		PrintWriter pw = new PrintWriter(aw);
 		for (int i=0; i<stats.nBins; i++)
-			pw.print(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+hist(i)+"\n");
+			pw.print(ResultsTable.d2s(cal.getCValue(stats.histMin+i*stats.binSize), digits)+"\t"+histogram[i]+"\n");
 		String text = aw.toString();
 		pw.close();
 		StringSelection contents = new StringSelection(text);
@@ -479,7 +472,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {}
 	
 	public int[] getHistogram() {
-		return histogram;
+		int[] hist = new int[histogram.length];
+		for (int i=0; i<histogram.length; i++)
+			hist[i] = (int)histogram[i];
+		return hist;
 	}
 
 	public double[] getXValues() {

@@ -91,7 +91,10 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 Roi roi = imp.getRoi();
 		 int roiType = roi!=null?roi.getType():0;
 		 Calibration origCal = imp.getCalibration();
+		 boolean globalCalibration = false;
 		 if (nointerpolate) {// temporarily clear spatial calibration
+				globalCalibration = imp.getGlobalCalibration()!=null;
+				imp.setGlobalCalibration(null);
 				Calibration tmpCal = origCal.copy();
 				tmpCal.pixelWidth = 1.0;
 				tmpCal.pixelHeight = 1.0;
@@ -110,8 +113,11 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 				ImageProcessor ip2 = getSlice(imp, 0.0, 0.0, 0.0, 0.0, status);
 				imp2 = new ImagePlus("Reslice of "+imp.getShortTitle(), ip2);
 		 }
-		 if (nointerpolate) // restore calibration
+		 if (nointerpolate) { // restore calibration
+		 		if (globalCalibration)
+					imp.setGlobalCalibration(origCal);
 				imp.setCalibration(origCal);
+		 }
 		 // create Calibration for new stack
 		 // start from previous cal and swap appropriate fields
 		 boolean horizontal = false;

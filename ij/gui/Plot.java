@@ -114,7 +114,7 @@ public class Plot {
 		this(title, xLabel, yLabel, xValues!=null?Tools.toFloat(xValues):null, yValues!=null?Tools.toFloat(yValues):null, DEFAULT_FLAGS);
 	}
 
-	/** This version of the constructor that works with JavaScript". */
+	/** This is a constructor that works with JavaScript. */
 	public Plot(String dummy, String title, String xLabel, String yLabel, float[] xValues, float[] yValues) {
 		this(title, xLabel, yLabel, xValues, yValues, DEFAULT_FLAGS);
 	}

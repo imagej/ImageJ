@@ -34,7 +34,7 @@ public class ImageStatistics implements Measurements {
 	/** 65536 element histogram (16-bit images only) */
 	public int[] histogram16;
 	/** Long histogram; use getHIstogram() to retrieve. */
-	public long[] longHistogram;
+	protected long[] longHistogram;
 	public double areaFraction;
 	/** Used internally by AnalyzeParticles */
 	public int xstart, ystart;
@@ -253,7 +253,7 @@ public class ImageStatistics implements Measurements {
 		areaFraction = sum*100.0/total;
 	}
 	
-	/** Returns the histogram as a long array. */
+	/** Returns the histogram as an array of longs. */
 	public long[] getHistogram() {
 		long[] hist = new long[histogram.length];
 		for (int i=0; i<hist.length; i++) {

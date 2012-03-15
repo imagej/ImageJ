@@ -4,6 +4,7 @@ import ij.process.*;
 import ij.gui.*;
 import ij.io.Opener;
 import ij.text.TextWindow;
+import ij.measure.ResultsTable;
 import java.awt.Frame;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
@@ -28,9 +29,13 @@ public class SimpleCommands implements PlugIn {
 			installation();
 		else if (arg.equals("remove"))
 			removeStackLabels();
+		else if (arg.equals("itor"))
+			imageToResults();
+		else if (arg.equals("rtoi"))
+			resultsToImage();
 	}
 
-	void reset() {
+	private void reset() {
 		GenericDialog gd = new GenericDialog("");
 		gd.addChoice("Reset:", choices, choices[choiceIndex]);
 		gd.showDialog();
@@ -43,7 +48,7 @@ public class SimpleCommands implements PlugIn {
 		}
 	}
 	
-	void unlock() {
+	private void unlock() {
 		ImagePlus imp = IJ.getImage();
 		boolean wasUnlocked = imp.lockSilently();
 		if (wasUnlocked)
@@ -55,17 +60,17 @@ public class SimpleCommands implements PlugIn {
 		imp.unlock();
 	}
 
-	void resetClipboard() {
+	private void resetClipboard() {
 		ImagePlus.resetClipboard();
 		IJ.showStatus("Clipboard reset");
 	}
 	
-	void resetUndo() {
+	private void resetUndo() {
 		Undo.setup(Undo.NOTHING, null);
 		IJ.showStatus("Undo reset");
 	}
 	
-	void rename() {
+	private void rename() {
 		ImagePlus imp = IJ.getImage();
 		GenericDialog gd = new GenericDialog("Rename");
 		gd.addStringField("Title:", imp.getTitle(), 30);
@@ -76,11 +81,11 @@ public class SimpleCommands implements PlugIn {
 			imp.setTitle(gd.getNextString());
 	}
 		
-	void search() {
+	private void search() {
 		searchArg = IJ.runMacroFile("ij.jar:Search", searchArg);
 	}
 		
-	void installation() {
+	private void installation() {
 		String url = IJ.URL+"/docs/install/";
 		if (IJ.isMacintosh())
 			url += "osx.html";
@@ -91,14 +96,14 @@ public class SimpleCommands implements PlugIn {
 		IJ.runPlugIn("ij.plugin.BrowserLauncher", url);
 	}
 	
-	void aboutPluginsHelp() {
+	private void aboutPluginsHelp() {
 		IJ.showMessage("\"About Plugins\" Submenu", 
 			"Plugins packaged as JAR files can add entries\n"+
 			"to this submenu. There is an example at\n \n"+
 			IJ.URL+"/plugins/jar-demo.html");
 	}
 	
-	void removeStackLabels() {
+	private void removeStackLabels() {
 		ImagePlus imp = IJ.getImage();
 		int size = imp.getStackSize();
 		if (size==1)
@@ -109,6 +114,25 @@ public class SimpleCommands implements PlugIn {
 				stack.setSliceLabel(null, i);
 			imp.repaintWindow();
 		}
+	}
+	
+	private void imageToResults() {
+		ImagePlus imp = IJ.getImage();
+		ImageProcessor ip = imp.getProcessor();
+		ResultsTable rt = ResultsTable.createTableFromImage(ip);
+		rt.showRowNumbers(false);
+		rt.show("Results");
+	}
+	
+	private void resultsToImage() {
+		ResultsTable rt = ResultsTable.getResultsTable();
+		if (rt==null || rt.getCounter()==0) {
+			IJ.error("Results to Image", "The Results table is empty");
+			return;
+		}
+		ImageProcessor ip = rt.getTableAsImage();
+		if (ip==null) return;
+		new ImagePlus("Results Table", ip).show();
 	}
 
 }

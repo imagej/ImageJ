@@ -40,7 +40,7 @@ public class StackStatistics extends ImageStatistics {
         ip.setRoi(imp.getRoi());
         byte[] mask = ip.getMaskArray();
         float[] cTable = imp.getCalibration().getCTable();
-        histogram = new int[nBins];
+        longHistogram = new long[nBins];
         double v;
         double sum = 0;
         double sum2 = 0;
@@ -126,7 +126,7 @@ public class StackStatistics extends ImageStatistics {
 							index = (int)(scale*(v-histMin));
 							if (index>=nBins)
 								index = nBins-1;
-							histogram[index]++;
+							longHistogram[index]++;
 						}
                     }
                     i++;
@@ -144,6 +144,7 @@ public class StackStatistics extends ImageStatistics {
         if (histMin==0.0 && histMax==256.0 && (bits==8||bits==24))
         	histMax = 255.0;
         dmode = getMode(cal);
+		copyHistogram(nBins);
         IJ.showStatus("");
         IJ.showProgress(1.0);
     }
@@ -173,16 +174,20 @@ public class StackStatistics extends ImageStatistics {
 		pw=1.0; ph=1.0;
 		getRawStatistics(longHistogram, minThreshold, maxThreshold);
 		getRawMinAndMax(longHistogram, minThreshold, maxThreshold);
-		histogram = new int[256];
-		for (int i=0; i<256; i++) {
+		copyHistogram(256);
+		IJ.showStatus("");
+		IJ.showProgress(1.0);
+	}
+	
+	private void copyHistogram(int nbins) {
+		histogram = new int[nbins];
+		for (int i=0; i<nbins; i++) {
 			long count = longHistogram[i];
 			if (count<=Integer.MAX_VALUE)
 				histogram[i] = (int)count;
 			else
 				histogram[i] = Integer.MAX_VALUE;
 		}
-		IJ.showStatus("");
-		IJ.showProgress(1.0);
 	}
 
 	void getRawStatistics(long[] histogram, int minThreshold, int maxThreshold) {
@@ -237,7 +242,7 @@ public class StackStatistics extends ImageStatistics {
 		}
 		ImageStack stack = imp.getStack();
 		Roi roi = imp.getRoi();
-		int[] hist16 = new int[65536];
+		long[] hist16 = new long[65536];
 		int n = stack.getSize();
 		for (int slice=1; slice<=n; slice++) {
 			IJ.showProgress(slice, n);
@@ -251,12 +256,19 @@ public class StackStatistics extends ImageStatistics {
 		pw=1.0; ph=1.0;
 		getRaw16BitMinAndMax(hist16, minThreshold, maxThreshold);
 		get16BitStatistics(hist16, (int)min, (int)max);
-		histogram16 = hist16;
+		histogram16 = new int[65536];
+		for (int i=0; i<65536; i++) {
+			long count = hist16[i];
+			if (count<=Integer.MAX_VALUE)
+				histogram16[i] = (int)count;
+			else
+				histogram16[i] = Integer.MAX_VALUE;
+		}
 		IJ.showStatus("");
 		IJ.showProgress(1.0);
 	}
 	
-	void getRaw16BitMinAndMax(int[] hist, int minThreshold, int maxThreshold) {
+	void getRaw16BitMinAndMax(long[] hist, int minThreshold, int maxThreshold) {
 		int min = minThreshold;
 		while ((hist[min]==0) && (min<65535))
 			min++;
@@ -267,8 +279,8 @@ public class StackStatistics extends ImageStatistics {
 		this.max = max;
 	}
 
-	void get16BitStatistics(int[] hist, int min, int max) {
-		int count;
+	void get16BitStatistics(long[] hist, int min, int max) {
+		long count;
 		double value;
 		double sum = 0.0;
 		double sum2 = 0.0;
@@ -278,7 +290,7 @@ public class StackStatistics extends ImageStatistics {
 		binSize = (histMax-histMin)/nBins;
 		double scale = 1.0/binSize;
 		int hMin = (int)histMin;
-		histogram = new int[nBins]; // 256 bin histogram
+		longHistogram = new long[nBins]; // 256 bin histogram
 		int index;
         maxCount = 0;
 		for (int i=min; i<=max; i++) {
@@ -290,8 +302,9 @@ public class StackStatistics extends ImageStatistics {
 			index = (int)(scale*(i-hMin));
 			if (index>=nBins)
 				index = nBins-1;
-			histogram[index] += count;
+			longHistogram[index] += count;
 		}
+		copyHistogram(nBins);
 		pixelCount = (int)longPixelCount;
 		area = longPixelCount*pw*ph;
 		mean = sum/longPixelCount;
@@ -301,18 +314,22 @@ public class StackStatistics extends ImageStatistics {
 	}
 
    double getMode(Calibration cal) {
-        int count;
-        maxCount = 0;
+        long count;
+        long longMaxCount = 0L;
         for (int i=0; i<nBins; i++) {
-            count = histogram[i];
-            if (count > maxCount) {
-                maxCount = count;
+            count = longHistogram[i];
+            if (count>longMaxCount) {
+                longMaxCount = count;
                 mode = i;
             }
         }
+		if (longMaxCount<=Integer.MAX_VALUE)
+			maxCount = (int)longMaxCount;
+		else
+			maxCount = Integer.MAX_VALUE;
         double tmode = histMin+mode*binSize;
         if (cal!=null) tmode = cal.getCValue(tmode);
-       return tmode;
+        return tmode;
     }
     
 }

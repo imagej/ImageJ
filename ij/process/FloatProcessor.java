@@ -15,8 +15,12 @@ public class FloatProcessor extends ImageProcessor {
 	private float fillColor =  Float.MAX_VALUE;
 	private boolean fixedScale = false;
 
-	/** Creates a new FloatProcessor using the specified pixel array and ColorModel.
-		Set 'cm' to null to use the default grayscale LUT. */
+	/** Creates a new FloatProcessor using the specified pixel array. */
+	public FloatProcessor(int width, int height, float[] pixels) {
+		this(width, height, pixels, null);
+	}
+
+	/** Creates a new FloatProcessor using the specified pixel array and ColorModel. */
 	public FloatProcessor(int width, int height, float[] pixels, ColorModel cm) {
 		if (pixels!=null && width*height!=pixels.length)
 			throw new IllegalArgumentException(WRONG_LENGTH);
