@@ -17,10 +17,6 @@ public class MeasurementsWriter implements PlugIn {
 		Frame frame = WindowManager.getFrontWindow();
 		if (frame!=null && (frame instanceof TextWindow)) {
 			TextWindow tw = (TextWindow)frame;
-			if (tw.getTextPanel().getResultsTable()==null) {
-				IJ.error("Save As>Results", "\""+tw.getTitle()+"\" is not a results table");
-				return false;
-			}
 			return tw.getTextPanel().saveAs(path);
 		} else if (IJ.isResultsWindow()) {
 			TextPanel tp = IJ.getTextPanel();
@@ -30,8 +26,15 @@ public class MeasurementsWriter implements PlugIn {
 			}
 		} else {
 			ResultsTable rt = ResultsTable.getResultsTable();
-			if (rt==null || rt.getCounter()==0)
-				return false;
+			if (rt==null || rt.getCounter()==0) {
+				frame = WindowManager.getFrame("Results");
+				if (frame==null || !(frame instanceof TextWindow))
+					return false;
+				else {
+					TextWindow tw = (TextWindow)frame;
+					return tw.getTextPanel().saveAs(path);
+				}
+			}
 			if (path.equals("")) {
 				SaveDialog sd = new SaveDialog("Save as Text", "Results", Prefs.get("options.ext", ".xls"));
 				String file = sd.getFileName();

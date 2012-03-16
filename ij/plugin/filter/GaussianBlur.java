@@ -131,8 +131,14 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     }
 
     /** Gaussian Filtering of an ImageProcessor. This method is for compatibility with the
-     *  previous code (before 1.38r) and uses a low-accuracy kernel, only slightly better
-     *  than the previous ImageJ code */
+    * previous code (before 1.38r) and uses a low-accuracy kernel, only slightly better
+    * than the previous ImageJ code.
+    * The 'radius' in this call is different from the one used in ImageJ 1.38r and later.
+    * Therefore, use blurGaussian(ip, sigma, sigma, accuracy), where 'sigma' is equivalent
+    * to the 'sigma (radius)' of the Menu, and accuracy should be 0.02 unless better
+    * accuracy is desired.
+    */
+    @Deprecated
     public boolean blur(ImageProcessor ip, double radius) {
         Rectangle roi = ip.getRoi();
         if (roi.height!=ip.getHeight() && ip.getMask()==null)

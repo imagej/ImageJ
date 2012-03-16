@@ -280,6 +280,7 @@ public class IJ {
 			commandTable.put("Add to Manager ", "Add to Manager");
 			commandTable.put("In", "In [+]");
 			commandTable.put("Out", "Out [-]");
+			commandTable.put("Enhance Contrast", "Enhance Contrast...");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

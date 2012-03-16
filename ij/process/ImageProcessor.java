@@ -5,6 +5,7 @@ import java.awt.image.*;
 import ij.gui.*;
 import ij.util.*;
 import ij.plugin.filter.GaussianBlur;
+import ij.plugin.Binner;
 import ij.process.AutoThresholder.Method;
 import ij.gui.Roi;
 import ij.gui.ShapeRoi;
@@ -263,6 +264,13 @@ public abstract class ImageProcessor implements Cloneable {
 		return invertedLut;
 	}
 	
+	/** Returns 'true' if this is an image with a grayscale LUT or an
+	 * RGB image with identical red, green and blue channels.
+	*/
+	public boolean isGrayscale() {
+		return !isColorLut();
+	}
+
 	/** Returns true if this image uses a color LUT. */
 	public boolean isColorLut() {
 		if (cm==null || !(cm instanceof IndexColorModel))
@@ -1507,7 +1515,7 @@ public abstract class ImageProcessor implements Cloneable {
 		if (histogramSize<1) histogramSize = 1;
 	}
 
-	/**	Returns the number of float image histogram bins. The bin
+	/** Returns the number of float image histogram bins. The bin
 		count is fixed at 256 for the other three data types. */
 	public int getHistogramSize() {
 		return histogramSize;
@@ -1567,10 +1575,18 @@ public abstract class ImageProcessor implements Cloneable {
 
 	public abstract void set(int index, int value);
 
+	/** Returns the value of the pixel at (x,y) as a float. Faster than
+	    getPixel() because no bounds checking is done. */
 	public abstract float getf(int x, int y);
 	
 	public abstract float getf(int index);
 
+	/** Sets the value of the pixel at (x,y) to 'value'. Does no bounds
+	    checking or clamping, making it faster than putPixel(). Due to the lack
+	    of bounds checking, (x,y) coordinates outside the image may cause
+	    an exception. Due to the lack of clamping, values outside the 0-255
+	    range (for byte) or 0-65535 range (for short) are not handled correctly.
+	*/
 	public abstract void setf(int x, int y, float value);
 
 	public abstract void setf(int index, float value);
@@ -1772,7 +1788,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Stores the specified value at (x,y). Does
 		nothing if (x,y) is outside the image boundary.
 		For 8-bit and 16-bit images, out of range values
-		are clipped. For RGB images, the
+		are clamped. For RGB images, the
 		argb values are packed in 'value'. For float images,
 		'value' is expected to be a float converted to an int
 		using Float.floatToIntBits(). */
@@ -1965,6 +1981,11 @@ public abstract class ImageProcessor implements Cloneable {
 			}
 			return ip2;
 		}
+	}
+	
+	/** Returns a copy of this image that has been reduced in size using binning. */
+	public ImageProcessor bin(int shrinkFactor) {
+		return new Binner().shrink(this, shrinkFactor, shrinkFactor, 0);
 	}
 
 	/** Rotates the image or selection 'angle' degrees clockwise.

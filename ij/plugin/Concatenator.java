@@ -42,7 +42,11 @@ public class Concatenator implements PlugIn, ItemListener{
     public void run(String arg) {
         macro = ! arg.equals("");
         if (!showDialog()) return;
-        newImp = createHypervol();
+        ImagePlus imp0 = images!=null&&images.length>0?images[0]:null;
+        if (imp0.isComposite() || imp0.isHyperStack())
+        	newImp =concatenateHyperstacks(images, newtitle, keep);
+        else
+        	newImp = createHypervol();
         if (newImp!=null)
             newImp.show();
     }
@@ -162,7 +166,74 @@ public class Concatenator implements PlugIn, ItemListener{
                 stack1.deleteSlice(slice);
             stack3.addSlice(label, ip);
         }
-    }
+    } 
+    
+    public ImagePlus concatenateHyperstacks(ImagePlus[] images, String newTitle, boolean keep) {
+        int n = images.length;
+        int width = images[0].getWidth();
+        int height = images[0].getHeight();
+        int bitDepth = images[0].getBitDepth();
+        int channels = images[0].getNChannels();
+        int slices =  images[0].getNSlices();
+        int frames = images[0].getNFrames();
+        boolean concatSlices = slices>1 && frames==1;
+        for (int i=1; i<n; i++) {
+            if (images[i].getNFrames()>1) concatSlices = false;
+            if (images[i].getWidth()!=width
+            || images[i].getHeight()!=height
+            || images[i].getBitDepth()!=bitDepth
+            || images[i].getNChannels()!=channels
+            || (!concatSlices && images[i].getNSlices()!=slices)) {
+            	IJ.error(pluginName, "Images do not all have the same dimensions or type");
+                return null;
+            }
+        }
+        ImageStack stack2 = new ImageStack(width, height);
+        int slices2=0, frames2=0;
+        for (int i=0;i<n;i++) {
+            ImageStack stack = images[i].getStack();
+            slices = images[i].getNSlices();
+            if (concatSlices) {
+                slices = images[i].getNSlices();
+                slices2 += slices;
+                frames2 = frames;
+            } else {
+                frames = images[i].getNFrames();
+                frames2 += frames;
+                slices2 = slices;
+            }
+            for (int f=1; f<=frames; f++) {
+                for (int s=1; s<=slices; s++) {
+                    for (int c=1; c<=channels; c++) {
+                        int index = (f-1)*channels*s + (s-1)*channels + c;
+                        ImageProcessor ip = stack.getProcessor(index);
+                        if (keep)
+                            ip = ip.duplicate();
+                        String label = stack.getSliceLabel(index);
+                        stack2.addSlice(label, ip);
+                    }
+                }
+            }
+        }
+        ImagePlus imp2 = new ImagePlus(newTitle, stack2);
+        imp2.setDimensions(channels, slices2, frames2);
+        if (channels>1) {
+            int mode = 0;
+            if (images[0].isComposite())
+                mode = ((CompositeImage)images[0]).getMode();
+            imp2 = new CompositeImage(imp2, mode);
+            ((CompositeImage)imp2).copyLuts(images[0]);
+        }
+        if (channels>1 && frames2>1)
+            imp2.setOpenAsHyperStack(true);
+        if (!keep) {
+            for (int i=0; i<n; i++) {
+                images[i].changes = false;
+                images[i].close();
+            }
+        }
+        return imp2;
+    }   
     
     boolean showDialog() {
         boolean all_windows = false;

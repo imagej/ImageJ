@@ -215,6 +215,41 @@ public class ResultsTable implements Cloneable {
 			return data;
 		}
 	}
+	
+	/** Returns the contents of this ResultsTable as a FloatProcessor. */
+	public ImageProcessor getTableAsImage() {
+		FloatProcessor fp = null;
+		int columns = 0;
+		int[] col = new int[lastColumn+1];
+		for (int i=0; i<=lastColumn; i++) {
+			if (columnExists(i)) {
+				col[columns] = i;
+				columns++;
+			}
+		}
+		if (columns==0) return null;
+		int rows = getCounter();
+		if (rows==0) return null;
+		fp = new FloatProcessor(columns, rows);
+		for (int x=0; x<columns; x++) {
+			for (int y=0; y<rows; y++)
+				fp.setf(x,y,(float)getValueAsDouble(col[x],y));
+		}
+		return fp;
+	}
+	
+	/** Creates a ResultsTable from an image or image selection. */
+	public static ResultsTable createTableFromImage(ImageProcessor ip) {
+		ResultsTable rt = new ResultsTable();
+		Rectangle r = ip.getRoi();
+		for (int y=r.y; y<r.y+r.height; y++) {
+			rt.incrementCounter();
+			rt.addLabel(" ", "Y"+y);
+			for (int x=r.x; x<r.x+r.width; x++)
+				rt.addValue("X"+x, ip.getPixelValue(x,y));
+		}
+		return rt;
+	}
 
 	/** Returns true if the specified column exists and is not empty. */
 	public boolean columnExists(int column) {
@@ -636,15 +671,34 @@ public class ResultsTable implements Cloneable {
 		return rowLabels;
 	}
 	
-	/** Opens a tab or comma delimited text file as a ResultsTable.
-	     Displays a file open dialog if 'path' is empty or null.
-	     Displays non-numeric tables in a TextWindow and returns null. */
+	/** Opens a tab or comma delimited text file and returns it 
+	* as a ResultsTable, without requiring a try/catch statement.
+	* Displays a file open dialog if 'path' is empty or null.
+	*/
+	public static ResultsTable open2(String path) {
+		ResultsTable rt = null;
+		try {
+			rt = open(path);
+		} catch (IOException e) {
+			IJ.error("Open Results", e.getMessage());
+			rt = null;
+		}
+		return rt;
+	}
+	
+	/** Opens a tab or comma delimited text file and returns it as a 
+	* ResultsTable. Displays a file open dialog if 'path' is empty or null.
+	* Displays non-numeric tables in a TextWindow and returns null.
+	* @see #open2(String)
+	*/
 	public static ResultsTable open(String path) throws IOException {
 		final String lineSeparator =  "\n";
 		final String cellSeparator =  ",\t";
 		String text =IJ.openAsString(path);
+		if (text==null)
+			return null;
 		if (text.startsWith("Error:"))
-			throw new IOException("text.substring(7)");
+			throw new IOException("Error opening "+path);
 		String[] lines = Tools.split(text, lineSeparator);
 		if (lines.length==0)
 			throw new IOException("Table is empty or invalid");

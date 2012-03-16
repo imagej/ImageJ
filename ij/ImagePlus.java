@@ -134,6 +134,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
      		properties = imp.getProperties();
      		setFileInfo(imp.getOriginalFileInfo());
      		setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
+     		setOverlay(imp.getOverlay());
    			if (isURL)
    				this.url = pathOrURL;
    			ID = --currentID;
@@ -601,6 +602,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		else {
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
+			if (isComposite()) {
+				((CompositeImage)this).reset();
+				updateAndDraw();
+			}
 			repaintWindow();
 		}
 		if (resetCurrentSlice) setSlice(currentSlice);
@@ -1703,6 +1708,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				for (int i=0; i<arrays.length; i++)
 					arrays[i] = null;
 			}
+			if (isComposite())
+				((CompositeImage)this).setChannelsUpdated(); //flush
 		}
 		stack = null;
 		img = null;

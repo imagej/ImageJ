@@ -3201,7 +3201,10 @@ public class Functions implements MacroConstants, Measurements {
 				if (oneArg)
 					imp.setProperty("Info", metadata);
 				else {
-					imp.setProperty("Label", metadata);
+					if ("".equals(metadata))
+						imp.setProperty("Label", null);
+					else
+						imp.setProperty("Label", metadata);
 					if (!Interpreter.isBatchMode()) imp.repaintWindow();
 				}
 			} else {
@@ -3748,6 +3751,8 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().changes;
 		else if (arg.indexOf("binary")!=-1)
 			state = getProcessor().isBinary();
+		else if (arg.indexOf("grayscale")!=-1)
+			state = getProcessor().isGrayscale();
 		else if (arg.indexOf("animated")!=-1) {
 			ImageWindow win = getImage().getWindow();
 			state = win!=null && (win instanceof StackWindow) && ((StackWindow)win).getAnimate();

@@ -295,7 +295,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	public final float getf(int x, int y) {
-		return getf(y*width+x);
+		return pixels[y*width+x];
 	}
 
 	public final void setf(int x, int y, float value) {
@@ -303,16 +303,8 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	public final float getf(int index) {
-		int c = pixels[index];
-		int r = (c&0xff0000)>>16;
-		int g = (c&0xff00)>>8;
-		int b = c&0xff;
-		return (float)(r*rWeight + g*gWeight + b*bWeight);
+		return pixels[index];
 	}
-
-	//public final float getf(int index) {
-	//	return pixels[index];
-	//}
 
 	public final void setf(int index, float value) {
 		pixels[index] = (int)value;
@@ -480,35 +472,37 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Returns the specified plane as a byte array. */
+	/** Returns the specified plane (1=red, 2=green, 3=blue) as a byte array. */
 	public byte[] getChannel(int channel) {
+		ByteProcessor bp = getChannel(channel, null);
+		return (byte[])bp.getPixels();
+	}
+	
+	/** Returns the specified plane (1=red, 2=green, 3=blue) as a ByteProcessor. */
+	public ByteProcessor getChannel(int channel, ByteProcessor bp) {
 		int size = width*height;
-		byte[] bytes = new byte[size];
-		int c, r, g, b;
-		switch (channel) {
-			case 1:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					r = (c&0xff0000)>>16;
-					bytes[i] = (byte)r;
-				}
-				break;
-			case 2:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					g = (c&0xff00)>>8;
-					bytes[i] = (byte)g;
-				}
-				break;
-			case 3:
-				for (int i=0; i<size; i++) {
-					c = pixels[i];
-					b = c&0xff;
-					bytes[i] = (byte)b;
-				}
-				break;
-		}
-		return bytes;
+		if (bp == null || bp.getWidth()!=width || bp.getHeight()!=height)
+			bp = new ByteProcessor(width, height);
+		byte[] bPixels = (byte[])bp.getPixels();
+		int shift = 16 - 8*(channel-1);
+		int byteMask = 255<<shift;
+		for (int i=0; i<size; i++)
+			bPixels[i] = (byte)((pixels[i]&byteMask)>>shift);
+		return bp;
+	}
+	
+	/** Sets the pixels of one color channel from a ByteProcessor.
+	*  @param channelNumber   Determines the color channel, 1=red, 2=green, 3=blue
+	*  @param bp              The ByteProcessor where the image data are read from.
+	*/
+	public void setChannel(int channel, ByteProcessor bp) {
+		byte[] bPixels = (byte[])bp.getPixels();
+		int value;
+		int size = width*height;
+		int shift = 16 - 8*(channel-1);
+		int resetMask = 0xffffffff^(255<<shift);
+		for (int i=0; i<size; i++)
+			pixels[i] = (pixels[i]&resetMask) | ((bPixels[i]&255)<<shift);
 	}
 
 	/** Sets the current pixels from 3 byte arrays (reg, green, blue). */
@@ -1241,6 +1235,19 @@ public class ColorProcessor extends ImageProcessor {
 		return false;
 	}
 	
+	/** Returns 'true' if this is a grayscale image. */
+	public final boolean isGrayscale() {
+		int c, r, g, b;
+		for (int i=0; i<pixels.length; i++) {
+			c = pixels[i];
+			r = (c&0xff0000)>>16;
+			g = (c&0xff00)>>8;
+			b = c&0xff;
+			if (r!=g || r!=b) return false;
+		}
+		return true;
+	}
+
 	/** Always returns 0 since RGB images do not use LUTs. */
 	public int getBestIndex(Color c) {
 		return 0;
@@ -1301,6 +1308,6 @@ public class ColorProcessor extends ImageProcessor {
 			pixels[i] = (pixels[i]&resetMask) | ((int)value<<shift);
 		}
 	}
-
+	
 }
 

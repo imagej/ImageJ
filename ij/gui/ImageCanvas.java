@@ -965,11 +965,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	public void mousePressed(MouseEvent e) {
 		//if (ij==null) return;
-		PlugInTool tool = Toolbar.getPlugInTool();
-		if (tool!=null) {
-			tool.mousePressed(imp, e);
-			if (e.isConsumed()) return;
-		}
 		showCursorStatus = true;
 		int toolID = Toolbar.getToolId();
 		ImageWindow win = imp.getWindow();
@@ -998,6 +993,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			// temporarily switch to "hand" tool of space bar down
 			setupScroll(ox, oy);
 			return;
+		}
+		PlugInTool tool = Toolbar.getPlugInTool();
+		if (tool!=null) {
+			tool.mousePressed(imp, e);
+			if (e.isConsumed()) return;
 		}
 		if (showAllROIs) {
 			Roi roi = imp.getRoi();
@@ -1186,11 +1186,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	*/
 
 	public void mouseDragged(MouseEvent e) {
-		PlugInTool tool = Toolbar.getPlugInTool();
-		if (tool!=null) {
-			tool.mouseDragged(imp, e);
-			if (e.isConsumed()) return;
-		}
 		int x = e.getX();
 		int y = e.getY();
 		xMouse = offScreenX(x);
@@ -1202,6 +1197,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (Toolbar.getToolId()==Toolbar.HAND || IJ.spaceBarDown())
 			scroll(x, y);
 		else {
+			PlugInTool tool = Toolbar.getPlugInTool();
+			if (tool!=null) {
+				tool.mouseDragged(imp, e);
+				if (e.isConsumed()) return;
+			}
 			IJ.setInputEvent(e);
 			Roi roi = imp.getRoi();
 			if (roi != null)

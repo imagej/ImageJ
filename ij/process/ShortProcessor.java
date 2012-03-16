@@ -293,7 +293,7 @@ public class ShortProcessor extends ImageProcessor {
 	}
 
 	public final void setf(int x, int y, float value) {
-		pixels[y*width + x] = (short)value;
+		pixels[y*width + x] = (short)(value+0.5f);
 	}
 
 	public final float getf(int index) {

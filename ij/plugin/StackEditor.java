@@ -28,11 +28,10 @@ public class StackEditor implements PlugIn {
 	}
 
 	void addSlice() {
-		if (imp.isComposite() && nSlices==imp.getNChannels()) {
-			addChannel();
+		if (imp.isDisplayedHyperStack() || (imp.isComposite() && nSlices==imp.getNChannels())) {
+			addHyperstackChannelSliceOrFrame();
 			return;
 		}
-		if (imp.isDisplayedHyperStack()) return;
  		if (!imp.lock()) return;
 		int id = 0;
 		ImageStack stack = imp.getStack();
@@ -76,32 +75,81 @@ public class StackEditor implements PlugIn {
 		imp.unlock();
 	}
 
-	void addChannel() {
-		int c = imp.getChannel();
+	void addHyperstackChannelSliceOrFrame() {
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = imp.getNFrames();
+		int c1 = imp.getChannel();
+		int z1 = imp.getSlice();
+		int t1 = imp.getFrame();
+		ArrayList list = new ArrayList();
+		if (channels>1) list.add("channel");
+		if (slices>1) list.add("slice");
+		if (frames>1) list.add("frame");
+		String[] choices = new String[list.size()];
+		list.toArray(choices);
+		String choice = choices[0];
+		if (frames>1 && slices==1)
+			choice = "frame";
+		else if (slices>1)
+			choice = "slice";
+		GenericDialog gd = new GenericDialog("Add");
+		gd.addChoice("Add", choices, choice);
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		choice = gd.getNextChoice();
+		if (!imp.lock()) return;
 		ImageStack stack = imp.getStack();
-		CompositeImage ci = (CompositeImage)imp;
-		if (stack.getSize()>=7 && ci.getMode()==CompositeImage.COMPOSITE) {
-			IJ.error("Add Channel", "Composite mode images limited to 7 channels");
-			return;
+		LUT[] luts = null;
+		if (choice.equals("frame")) { // add time point
+			int index = imp.getStackIndex(channels, slices, t1);
+			for (int i=0; i<channels*slices; i++) {
+				ImageProcessor ip = stack.getProcessor(1).duplicate();
+				ip.setColor(0); ip.fill();
+				stack.addSlice(null, ip, index);
+			}
+			frames++;
+		} else if (choice.equals("slice")) { // add slice to all volumes
+			for (int t=frames; t>=1; t--) {
+				int index = imp.getStackIndex(channels, z1, t);
+				for (int i=0; i<channels; i++) {
+					ImageProcessor ip = stack.getProcessor(1).duplicate();
+					ip.setColor(0); ip.fill();
+					stack.addSlice(null, ip, index);
+				}
+			}
+			slices++;
+		} else if (choice.equals("channel")) { // add channel
+			if (imp.isComposite())
+				luts = ((CompositeImage)imp).getLuts();
+			int index = imp.getStackIndex(c1, slices, frames);
+			while (index>0) {
+				ImageProcessor ip = stack.getProcessor(1).duplicate();
+				ip.setColor(0); ip.fill();
+				stack.addSlice(null, ip, index);
+				index -= channels;
+			}
+			channels++;
 		}
-		LUT[] luts = ci.getLuts();
-		ImageProcessor ip = stack.getProcessor(1);
-		ImageProcessor ip2 = ip.createProcessor(ip.getWidth(), ip.getHeight());
- 		stack.addSlice(null, ip2, c);
- 		int channels = stack.getSize();
-		LUT lut = LUT.createLutFromColor(Color.white);
-		imp.setStack(stack, channels, 1, 1);
- 		int index = 0;
-		for (int i=1; i<=channels; i++) {
-			if (c+1==index+1) {
-				((CompositeImage)imp).setChannelLut(lut, i);
-				c = -1;
-			} else
-				((CompositeImage)imp).setChannelLut(luts[index++], i);
+		imp.setStack(stack, channels, slices, frames);
+		if (luts!=null) {
+			LUT[] luts2 = new LUT[luts.length+1];
+			int index = 0;
+			for (int i=0; i<luts2.length; i++) {
+				if (i==c1)
+					luts2[i] = LUT.createLutFromColor(Color.white);
+				else 
+					luts2[i] = luts[index++];
+			}
+			CompositeImage cimp = (CompositeImage)imp;
+			for (int c=1; c<=channels; c++)
+				cimp.setChannelLut(luts2[c-1], c);
+			imp.updateAndDraw();
 		}
-		imp.updateAndDraw();
+		imp.unlock();
+		imp.repaintWindow();
 	}
-
+	
 	void deleteHyperstackChannelSliceOrFrame() {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();

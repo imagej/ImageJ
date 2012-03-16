@@ -37,7 +37,8 @@ public class Macro_Runner implements PlugIn {
 			runMacroFromJar(name.substring(4), null);
 		else if (name.startsWith("ij.jar:"))
 			runMacroFromIJJar(name, null);
-		else if (name.endsWith("Tool.ijm") || name.endsWith("Tool.txt"))
+		else if (name.endsWith("Tool.ijm") || name.endsWith("Tool.txt")
+		|| name.endsWith("Menu.ijm") || name.endsWith("Menu.txt"))
 			(new MacroInstaller()).installFile(Menus.getPlugInsPath()+name);
 		else {
 			path = Menus.getPlugInsPath() + name;
