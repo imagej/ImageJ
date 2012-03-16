@@ -570,22 +570,10 @@ public class Opener {
 	/** If the specified image is grayscale, convert it to 8-bits. */
 	public static void convertGrayJpegTo8Bits(ImagePlus imp) {
 		ImageProcessor ip = imp.getProcessor();
-		int width = ip.getWidth();
-		int height = ip.getHeight();
-		int[] pixels = (int[])ip.getPixels();
-		int c,r,g,b,offset;
-		for (int y=0; y<height; y++) {
-			offset = y*width;
-			for (int x=0; x<width; x++) {
-				c = pixels[offset+x];
-				r = (c&0xff0000)>>16;
-				g = (c&0xff00)>>8;
-				b = c&0xff;
-				if (!((r==g)&&(g==b))) return;
-			}
+		if (ip.isGrayscale()) {
+			IJ.showStatus("Converting to 8-bit grayscale");
+			new ImageConverter(imp).convertToGray8();
 		}
-		IJ.showStatus("Converting to 8-bit grayscale");
-		new ImageConverter(imp).convertToGray8();
 	}
 
 	/** Are all the images in this file the same size and type? */

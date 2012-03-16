@@ -1235,6 +1235,19 @@ public class ColorProcessor extends ImageProcessor {
 		return false;
 	}
 	
+	/** Returns 'true' if this is a grayscale image. */
+	public final boolean isGrayscale() {
+		int c, r, g, b;
+		for (int i=0; i<pixels.length; i++) {
+			c = pixels[i];
+			r = (c&0xff0000)>>16;
+			g = (c&0xff00)>>8;
+			b = c&0xff;
+			if (r!=g || r!=b) return false;
+		}
+		return true;
+	}
+
 	/** Always returns 0 since RGB images do not use LUTs. */
 	public int getBestIndex(Color c) {
 		return 0;

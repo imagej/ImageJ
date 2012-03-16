@@ -264,6 +264,13 @@ public abstract class ImageProcessor implements Cloneable {
 		return invertedLut;
 	}
 	
+	/** Returns 'true' if this is an image with a grayscale LUT or an
+	 * RGB image with identical red, green and blue channels.
+	*/
+	public boolean isGrayscale() {
+		return !isColorLut();
+	}
+
 	/** Returns true if this image uses a color LUT. */
 	public boolean isColorLut() {
 		if (cm==null || !(cm instanceof IndexColorModel))

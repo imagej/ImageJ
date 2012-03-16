@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46i 14 March 2012</u>
+<li> <u>1.46i 15 March 2012</u>
 <ul>
 <li> Added the <i>Image&gt;Transform&gt;Bin</i> command, based on Nico Stuurman's
 <a href="http://valelab.ucsf.edu/~nico/IJplugins/Binner.html">Binner</a> plugin.
@@ -13,24 +13,27 @@
 interpolated points, use this command on small selections created 
 on images zoomed 1200% or greater.
 <li> Added the <i>Image&gt;Transform&gt;Image to Results</i> and
-<i>Image&gt;Transform&gt;Results to Image</i> commands.
-<li> Added the "Remove Tool" command to the toolbar's <i>&gt;&gt;</i> menu;
+<i>Results to Image</i> commands.
+<li> Added a "Remove Tool" command to the toolbar's <i>&gt;&gt;</i> menu;
 <li> The <i>Image&gt;Stacks&gt;Add Slice</i> command works with hyperstacks.
-<li> The Fly Brain and T1 Head sample stacks open displaying the middle slice instead of the first.
+<li> The <i>Fly Brain</i> and <i>T1 Head</i> sample stacks open displaying the middle slice instead of the first.
 <li> Added the getChannel(int, ByteProcessor) and setChannel(int, ByteProcessor) methods
 to the ColorProcessor class
 (<a href="source/ij/plugin/Binner.java">example</a>).
-<i> Added the getTableAsImage()
+<li> Added the getTableAsImage()
 (<a href="macros/js/ResultsToImage.js">example</a>),
 createTableFromImage() (<a href="macros/js/ImageToResults.js">example</a>)
 and open2() methods to the the ResultsTable class.
 <li> Added the ImageProcessor.bin() and Roi.getInterpolatedPolygon() methods.
-<li> Added JavaScript-compatible constructor and methods to the Plot class.
+<li> Thanks to Michael Schmid, added the ImageProcessor.isGrayscale() method and
+the is("grayscale") macro function.
+<li> Added JavaScript-compatible constructor and methods to the Plot class
+(<a href="macros/js/ExamplePlots.js">examples</a>).
 <li> Thanks to Jan Eglinger, fixed a bug that caused <i>Image&gt;Transform&gt;Rotate Right</i>
 and <i>Image&gt;Transform&gt;Rotate Left</i> to not work with square composite color images.
 <li> Thanks to Gilles Carpentier, fixed a bug that sometimes caused
 <i>Image&gt;Stacks&gt;Z Project</i> to not work with 3D composite color images.
-<li> Fixed a bug that caused overlays to not lost when opening TIFF files using a URL.
+<li> Fixed a bug that caused overlays to be lost when opening TIFF files using a URL.
 <li> Fixed a bug that caused an exception when the user canceled the
 <i>File&gt;Import&gt;Results</i> dialog box.
 <li> Fixed a bug in <i>Process&gt;Binary&gt;Skeletonize</i> that caused it to
@@ -42,6 +45,9 @@ when storing values in ByteProcessors and ShortProcessors.
 when saving results created by some MBF plugin using <i>File&gt;Save As&gt;Results</i>.
 <li> Thanks to Arttu Miettinen, fixed bugs that sometimes caused histogram bin counts
 of stacks larger than 2 gigapixels to be incorrect.
+<li> Thanks to Michael Cammer, fixed a bug in <i>Image&gt;Stacks&gt;Reslice</i> that
+caused it to not work as expected if there was global calibration and "Avoid interpolation"
+was not checked in the dialog box.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

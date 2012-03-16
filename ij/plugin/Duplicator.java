@@ -273,7 +273,7 @@ public class Duplicator implements PlugIn, TextListener {
 		}
 		imp2.setTitle(newTitle);
 		Overlay overlay = imp.getOverlay();
-		if (overlay!=null && !imp.getHideOverlay()) {
+		if (overlay!=null && !imp.getHideOverlay() && roi!=null) {
 			Overlay overlay2 = cropOverlay(overlay, roi.getBounds());
 			imp2.setOverlay(overlay2);
 		}
