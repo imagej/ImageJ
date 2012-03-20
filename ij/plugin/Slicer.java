@@ -262,8 +262,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			return false;
 		//inputZSpacing = gd.getNextNumber();
 		//if (cal.pixelDepth==0.0) cal.pixelDepth = 1.0;
-		double outSpacing = gd.getNextNumber();
-		outputZSpacing = outSpacing/cal.pixelWidth;
+		outputZSpacing = gd.getNextNumber()/cal.pixelWidth;
 		if (line) {
 			outputSlices = (int)gd.getNextNumber();
 			if (!IJ.isMacro()) sliceCount=outputSlices;

@@ -259,21 +259,21 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		}
 		if (p!=null) {
 			int np = p.length;
-			drawLabel(plot, "a="+IJ.d2s(p[0],6));
-			drawLabel(plot, "b="+IJ.d2s(p[1],6));
+			drawLabel(plot, "a="+IJ.d2s(p[0],6,10));
+			drawLabel(plot, "b="+IJ.d2s(p[1],6,10));
 			if (np>=3)
-				drawLabel(plot, "c="+IJ.d2s(p[2],6));
+				drawLabel(plot, "c="+IJ.d2s(p[2],6,10));
 			if (np>=4)
-				drawLabel(plot, "d="+IJ.d2s(p[3],6));
+				drawLabel(plot, "d="+IJ.d2s(p[3],6,10));
 			if (np>=5)
-				drawLabel(plot, "e="+IJ.d2s(p[4],6));
+				drawLabel(plot, "e="+IJ.d2s(p[4],6,10));
 			ly += 0.04;
 		}
 		if (rSquared!=null)
 			{drawLabel(plot, "R^2="+rSquared); rSquared=null;}
 		plot.show();
 	}
-
+	
 	void drawLabel(Plot plot, String label) {
 		plot.addLabel(lx, ly, label);
 		ly += 0.08;

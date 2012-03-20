@@ -344,7 +344,7 @@ public class ImageStack {
 			return 0.0;
 	}
 		
-	/* Sets the value of the specified voxel). */
+	/* Sets the value of the specified voxel. */
 	public final void setVoxel(int x, int y, int z, double value) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -375,6 +375,28 @@ public class ImageStack {
 			}
 		}
 	}
+	
+	/** Experimental */
+	public void drawSphere(int xc, int yc, int zc) {
+		int lineWidth = 200;
+	    double r = lineWidth/2.0;
+		int xmin=(int)(xc-r+0.5), ymin=(int)(yc-r+0.5), zmin=(int)(zc-r+0.5);
+		int xmax=xmin+lineWidth, ymax=ymin+lineWidth, zmax=zmin+lineWidth;
+		double r2 = r*r;
+		r -= 0.5;
+		double xoffset=xmin+r, yoffset=ymin+r, zoffset=zmin+r;
+		double xx, yy, zz;
+		for (int x=xmin; x<xmax; x++) {
+			for (int y=ymin; y<ymax; y++) {
+				for (int z=zmin; z<zmax; z++) {
+					xx = x-xoffset; yy = y-yoffset;  zz = z-zoffset;
+					if (xx*xx+yy*yy+zz*zz<=r2)
+						setVoxel(x, y, z, 255);
+				}
+			}
+		}
+	}
+
 	
 	/** Returns the bit depth (8=byte, 16=short, 24=RGB, 32=float). */
 	public int getBitDepth() {
