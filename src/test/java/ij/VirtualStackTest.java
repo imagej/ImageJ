@@ -122,7 +122,7 @@ public class VirtualStackTest {
 		// null string
 		try {
 			vs = new VirtualStack();
-			vs.addSlice(null);
+			vs.addSlice((String) null);
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertTrue(true);
