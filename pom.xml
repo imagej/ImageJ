@@ -13,6 +13,7 @@
 
 	<groupId>net.imagej</groupId>
 	<artifactId>ij1-tests</artifactId>
+	<version>1.0-SNAPSHOT</version>
 
 	<name>ImageJ1 unit tests</name>
 	<description>Unit tests for ImageJ 1.x.</description>
