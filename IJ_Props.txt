@@ -254,13 +254,14 @@ binary08=-
 binary09="Outline",ij.plugin.filter.Binary("outline")
 binary10="Fill Holes",ij.plugin.filter.Binary("fill")
 binary11="Skeletonize",ij.plugin.filter.Binary("skel")
-binary12=-
-binary13="Distance Map",ij.plugin.filter.EDM("edm")
-binary14="Ultimate Points",ij.plugin.filter.EDM("points")
-binary15="Watershed",ij.plugin.filter.EDM("watershed")
-binary16="Voronoi",ij.plugin.filter.EDM("voronoi")
-binary17=-
-binary18="Options...",ij.plugin.filter.Binary("options")
+binary12="Skeletonize 3D",ij.plugin.filter.Skeletonize3D
+binary13=-
+binary14="Distance Map",ij.plugin.filter.EDM("edm")
+binary15="Ultimate Points",ij.plugin.filter.EDM("points")
+binary16="Watershed",ij.plugin.filter.EDM("watershed")
+binary17="Voronoi",ij.plugin.filter.EDM("voronoi")
+binary18=-
+binary19="Options...",ij.plugin.filter.Binary("options")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")
