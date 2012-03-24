@@ -55,6 +55,11 @@ public class ByteProcessor extends ImageProcessor {
 		this(width, height, new byte[width*height], null);
 	}
 
+	/**Creates a ByteProcessor from a byte array. */
+	public ByteProcessor(int width, int height, byte[] pixels) {
+		this(width, height, pixels, null);
+	}
+
 	/**Creates a ByteProcessor from a pixel array and IndexColorModel. */
 	public ByteProcessor(int width, int height, byte[] pixels, ColorModel cm) {
 		if (pixels!=null && width*height!=pixels.length)
@@ -75,6 +80,21 @@ public class ByteProcessor extends ImageProcessor {
 		pixels = ((DataBufferByte) buffer).getData();
 		width = raster.getWidth();
 		height = raster.getHeight();
+	}
+
+	/** Creates a ByteProcessor from an ImageProcessor. 16-bit and 32-bit
+	     pixel data are scaled from min-max to 0-255 if 'scale' is true. */
+	public ByteProcessor(ImageProcessor ip, boolean scale) {
+		ImageProcessor bp;
+		if (ip instanceof ByteProcessor)
+			bp = ip.duplicate();
+		else
+			bp = ip.convertToByte(scale);
+		this.width = bp.getWidth();
+		this.height = bp.getHeight();
+		resetRoi();
+		this.pixels = (byte[])bp.getPixels();
+		this.cm = bp.getCurrentColorModel();
 	}
 
 	public Image createImage() {

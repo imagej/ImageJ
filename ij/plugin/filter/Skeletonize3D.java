@@ -41,33 +41,43 @@ public class Skeletonize3D implements PlugInFilter
 	public int setup(String arg, ImagePlus imp) 
 	{
 		this.imRef = imp;
-		return DOES_8G;
+		return DOES_8G + (imp!=null&imp.getStackSize()>1?NO_CHANGES:0);
 	} 
 	
 	public void run(ImageProcessor ip) 
 	{		
+		this.width = this.imRef.getWidth();
+		this.height = this.imRef.getHeight();
+		this.depth = this.imRef.getStackSize();
 		this.inputImage = this.imRef.getStack();
-		boolean is2d = inputImage.getSize()==1;
-		if (is2d)
-			this.inputImage.addSlice(this.inputImage.getProcessor(1).duplicate());
-		this.width = this.inputImage.getWidth();
-		this.height = this.inputImage.getHeight();
-		this.depth = this.inputImage.getSize();
+		
+		//boolean is2d = inputImage.getSize()==1;
+		//if (is2d) {
+		//	this.inputImage.addSlice(this.inputImage.getProcessor(1).duplicate());
+		//	this.inputImage.addSlice(this.inputImage.getProcessor(1).duplicate());
+		//}
+		//this.depth = this.inputImage.getSize();
 		
 		// Prepare data
 		prepareData(this.inputImage);
-		
-		// Compute Thinning	
+
+		// Compute Thinning
 		computeThinImage(this.inputImage);
-		if (is2d)
-			this.inputImage.deleteSlice(2);
+
+
+		//if (is2d) {
+		//	this.inputImage.deleteSlice(1);
+		//	this.inputImage.deleteSlice(2);
+		//}
 
 		// Convert image to binary 0-255
 		for(int i = 1; i <= this.inputImage.getSize(); i++)
 			this.inputImage.getProcessor(i).multiply(255);
 		
-		this.inputImage.update(ip);
-
+		//if (is2d)
+		//	this.imRef.setStack(this.inputImage);
+		//else
+			this.imRef.updateAndDraw();
 	} 
 
 	/* -----------------------------------------------------------------------*/
@@ -308,6 +318,8 @@ public class Skeletonize3D implements PlugInFilter
 	 */
 	private byte getPixel(ImageStack image, int x, int y, int z)
 	{
+		//if (z<0) z = 0;
+		//if (z>=this.depth) z = this.depth-1;
 		if(x >= 0 && x < this.width && y >= 0 && y < this.height && z >= 0 && z < this.depth)
 			return ((byte[]) image.getPixels(z + 1))[x + y * this.width];
 		else return 0;

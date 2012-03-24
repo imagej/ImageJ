@@ -377,6 +377,35 @@ public class ImageStack {
 	}
 	
 	/** Experimental */
+	public float[] getBlock(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
+		if (voxels==null || voxels.length!=w*h*d)
+			voxels = new float[w*h*d];
+		int i = 0;
+		for (int z=zbase; z<zbase+d; z++) {
+			for (int y=ybase; y<ybase+h; y++) {
+				for (int x=xbase; x<xbase+w; x++) {
+					voxels[i++] = (float)getVoxel(x, y, z);
+				}
+			}
+		}
+		return voxels;
+	}
+
+	/** Experimental */
+	public void setBlock(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
+		if (voxels==null || voxels.length!=w*h*d)
+			;
+		int i = 0;
+		for (int z=zbase; z<zbase+d; z++) {
+			for (int y=ybase; y<ybase+h; y++) {
+				for (int x=xbase; x<xbase+w; x++) {
+					setVoxel(x, y, z, voxels[i++]);
+				}
+			}
+		}
+	}
+
+	/** Experimental */
 	public void drawSphere(int xc, int yc, int zc) {
 		int lineWidth = 200;
 	    double r = lineWidth/2.0;

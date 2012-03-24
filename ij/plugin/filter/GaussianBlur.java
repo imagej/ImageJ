@@ -1,14 +1,8 @@
 package ij.plugin.filter;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.Macro;
-import ij.Prefs;
+import ij.*;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
+import ij.process.*;
 
 import java.awt.AWTEvent;
 import java.awt.Rectangle;
@@ -49,7 +43,8 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     private boolean hasScale = false;   // whether the image has an x&y scale
     private int nPasses = 1;            // The number of passes (filter directions * color channels * stack slices)
     private int nChannels = 1;        // The number of color channels
-    private int pass;                   // Current pass
+    private int pass;                        // Current pass
+    private boolean noProgress;      // Do not show progress bar
     
     /** Method to return types supported
      * @param arg unused
@@ -170,6 +165,36 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             resetOutOfRoi(ip, (int)Math.ceil(5*sigmaY)); // reset out-of-Rectangle pixels above and below roi
         return;
     }
+    
+	public static void blur3D(ImagePlus img, double sigmaX, double sigmaY, double sigmaZ) {
+		img.killRoi();
+		ImageStack stack = img.getStack();
+		GaussianBlur gb = new GaussianBlur();
+		double accuracy = (img.getBitDepth()==8||img.getBitDepth()==8)?0.002:0.0002;
+		if (sigmaX==sigmaY)
+			IJ.run(img, "Gaussian Blur...", "sigma="+sigmaX+" stack");
+		else {
+			for (int i=1; i<=img.getStackSize(); i++) {
+				ImageProcessor ip = stack.getProcessor(i);
+				gb.blurGaussian(ip, sigmaX, sigmaY, accuracy);
+			}
+		}
+		int w=img.getWidth(), h=img.getHeight(), d=img.getStackSize();
+		float[] zpixels = null;
+		FloatProcessor fp =null;
+		IJ.showStatus("Z blurring");
+		gb.noProgress = true;
+		for (int y=0; y<h; y++) {
+			IJ.showProgress(y, h-1);
+			zpixels = stack.getBlock(0, y, 0, w, 1, d, zpixels);
+			if (fp==null)
+				fp = new FloatProcessor(d, h, zpixels);
+            gb.blur1Direction(fp, sigmaZ, accuracy, false, 0);
+			//if (y==h/2) new ImagePlus("after-"+h/2, fp.duplicate()).show();
+            stack.setBlock(0, y, 0, w, 1, d, zpixels);
+		}
+		IJ.showStatus("");
+	}
 
     /** Gaussian Filtering of a FloatProcessor. This method does NOT include
      *  resetOutOfRoi(ip), i.e., pixels above and below the roi rectangle will
@@ -592,6 +617,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     }
     
     void showProgress(double percent) {
+    	if (noProgress) return;
         percent = (double)(pass-1)/nPasses + percent/nPasses;
         IJ.showProgress(percent);
     }
