@@ -179,20 +179,26 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
 				gb.blurGaussian(ip, sigmaX, sigmaY, accuracy);
 			}
 		}
+		if (sigmaZ==0.0)
+			return;
 		int w=img.getWidth(), h=img.getHeight(), d=img.getStackSize();
 		float[] zpixels = null;
 		FloatProcessor fp =null;
 		IJ.showStatus("Z blurring");
 		gb.noProgress = true;
+		int channels = img.getProcessor().getNChannels();
 		for (int y=0; y<h; y++) {
 			IJ.showProgress(y, h-1);
-			zpixels = stack.getBlock(0, y, 0, w, 1, d, zpixels);
-			if (fp==null)
-				fp = new FloatProcessor(d, h, zpixels);
-            gb.blur1Direction(fp, sigmaZ, accuracy, false, 0);
-			//if (y==h/2) new ImagePlus("after-"+h/2, fp.duplicate()).show();
-            stack.setBlock(0, y, 0, w, 1, d, zpixels);
+			for (int channel=0; channel<channels; channel++) {
+				zpixels = stack.getVoxels(0, y, 0, w, 1, d, zpixels, channel);
+				if (fp==null)
+					fp = new FloatProcessor(w, d, zpixels);
+				//if (y==h/2) new ImagePlus("before-"+h/2, fp.duplicate()).show();
+				gb.blur1Direction(fp, sigmaZ, accuracy, false, 0);
+				stack.setVoxels(0, y, 0, w, 1, d, zpixels, channel);
+			}
 		}
+		img.updateAndDraw();
 		IJ.showStatus("");
 	}
 

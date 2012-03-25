@@ -377,7 +377,7 @@ public class ImageStack {
 	}
 	
 	/** Experimental */
-	public float[] getBlock(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
+	public float[] getVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
 		if (voxels==null || voxels.length!=w*h*d)
 			voxels = new float[w*h*d];
 		int i = 0;
@@ -391,8 +391,30 @@ public class ImageStack {
 		return voxels;
 	}
 
+	public float[] getVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels, int channel) {
+		if (getBitDepth()!=24)
+			return getVoxels(xbase, ybase, zbase, w, h, d, voxels);
+		if (voxels==null || voxels.length!=w*h*d)
+			voxels = new float[w*h*d];
+		int i = 0;
+		for (int z=zbase; z<zbase+d; z++) {
+			for (int y=ybase; y<ybase+h; y++) {
+				for (int x=xbase; x<xbase+w; x++) {
+					int value = (int)getVoxel(x, y, z);
+					switch (channel) {
+						case 0: value=(value&0xff0000)>>16; break;
+						case 1: value=(value&0xff00)>>8; break;
+						case 2: value=value&0xff;; break;
+					}
+					voxels[i++] = (float)value;
+				}
+			}
+		}
+		return voxels;
+	}
+
 	/** Experimental */
-	public void setBlock(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
+	public void setVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
 		if (voxels==null || voxels.length!=w*h*d)
 			;
 		int i = 0;
@@ -400,6 +422,30 @@ public class ImageStack {
 			for (int y=ybase; y<ybase+h; y++) {
 				for (int x=xbase; x<xbase+w; x++) {
 					setVoxel(x, y, z, voxels[i++]);
+				}
+			}
+		}
+	}
+	
+	public void setVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels, int channel) {
+		if (getBitDepth()!=24) {
+			setVoxels(xbase, ybase, zbase, w, h, d, voxels);
+			return;
+		}
+		if (voxels==null || voxels.length!=w*h*d)
+			;
+		int i = 0;
+		for (int z=zbase; z<zbase+d; z++) {
+			for (int y=ybase; y<ybase+h; y++) {
+				for (int x=xbase; x<xbase+w; x++) {
+					int color = (int)voxels[i++];
+					int value = (int)getVoxel(x, y, z);
+					switch (channel) {
+						case 0: value=(value&0xff00ffff) | ((color&0xff)<<16); break;
+						case 1: value=(value&0xffff00ff) | ((color&0xff)<<8); break;
+						case 2: value=(value&0xffffff00) | (color&0xff); break;
+					}
+					setVoxel(x, y, z, value);
 				}
 			}
 		}
