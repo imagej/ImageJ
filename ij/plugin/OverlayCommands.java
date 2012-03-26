@@ -269,20 +269,7 @@ public class OverlayCommands implements PlugIn {
 			IJ.error("ROI Manager is empty");
 			return;
 		}
-		Overlay overlay = OverlayLabels.createOverlay();
-		for (int i=0; i<rois.length; i++) {
-			Roi roi = (Roi)rois[i].clone();
-			if (!Prefs.showAllSliceOnly)
-				roi.setPosition(0);
-			//if (roi.getStroke()==null && defaultRoi.getStroke()!=null)
-			//	roi.setStrokeWidth(defaultRoi.getStrokeWidth());
-			if (roi.getStrokeColor()==null || Line.getWidth()>1&&defaultRoi.getStrokeColor()!=null)
-				roi.setStrokeColor(defaultRoi.getStrokeColor());
-			if (roi.getFillColor()==null)
-				roi.setFillColor(defaultRoi.getFillColor());
-			overlay.add(roi);
-		}
-		imp.setOverlay(overlay);
+		rm.moveRoisToOverlay(imp);
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) ic.setShowAllROIs(false);
 		rm.setEditMode(imp, false);

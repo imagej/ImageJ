@@ -1819,6 +1819,45 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     	super.close();
     	instance = null;
 		Prefs.saveLocation(LOC_KEY, getLocation());
+		if (!showAllCheckbox.getState() || IJ.macroRunning())
+			return;
+		int n = list.getItemCount();
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null)
+			return;
+		GenericDialog gd = new GenericDialog("ROI Manager");
+		gd.addMessage("Move the "+n+" displayed ROIs to an overlay?");
+		gd.showDialog();
+		if (gd.wasCanceled()) {
+			imp.draw();
+			return;
+		}
+		moveRoisToOverlay(imp);
+    }
+    
+    /** Moves the ROIs to the specified image's overlay. */
+    public void moveRoisToOverlay(ImagePlus imp) {
+		Roi[] rois = getRoisAsArray();
+		int n = rois.length;
+		Overlay overlay = new Overlay();
+		ImageCanvas ic = imp.getCanvas();
+		Color color = ic!=null?ic.getShowAllColor():null;
+		for (int i=0; i<n; i++) {
+			Roi roi = (Roi)rois[i].clone();
+			if (!Prefs.showAllSliceOnly)
+				roi.setPosition(0);
+			if (color!=null && roi.getStrokeColor()==null)
+				roi.setStrokeColor(color);
+			if (roi.getStrokeWidth()==1)
+				roi.setStrokeWidth(0);
+			overlay.add(roi);
+		}
+		if (labelsCheckbox.getState()) {
+			overlay.drawLabels(true);
+			overlay.drawBackgrounds(true);
+			overlay.setLabelColor(Color.white);
+		}
+		imp.setOverlay(overlay);
     }
     
     public void mousePressed (MouseEvent e) {
