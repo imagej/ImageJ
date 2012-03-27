@@ -171,9 +171,10 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
 		ImageStack stack = img.getStack();
 		GaussianBlur gb = new GaussianBlur();
 		double accuracy = (img.getBitDepth()==8||img.getBitDepth()==8)?0.002:0.0002;
-		if (sigmaX==sigmaY)
-			IJ.run(img, "Gaussian Blur...", "sigma="+sigmaX+" stack");
-		else {
+		if (sigmaX==sigmaY) {
+			if (sigmaX!=0.0)
+				IJ.run(img, "Gaussian Blur...", "sigma="+sigmaX+" stack");
+		} else {
 			for (int i=1; i<=img.getStackSize(); i++) {
 				ImageProcessor ip = stack.getProcessor(i);
 				gb.blurGaussian(ip, sigmaX, sigmaY, accuracy);

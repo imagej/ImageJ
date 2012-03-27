@@ -1835,7 +1835,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		moveRoisToOverlay(imp);
     }
     
-    /** Moves the ROIs to the specified image's overlay. */
+    /** Moves all the ROIs to the specified image's overlay. */
     public void moveRoisToOverlay(ImagePlus imp) {
 		Roi[] rois = getRoisAsArray();
 		int n = rois.length;

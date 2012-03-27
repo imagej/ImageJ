@@ -377,30 +377,62 @@ public class ImageStack {
 	}
 	
 	/** Experimental */
-	public float[] getVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
+	public float[] getVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels) {
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
 		if (voxels==null || voxels.length!=w*h*d)
 			voxels = new float[w*h*d];
 		int i = 0;
-		for (int z=zbase; z<zbase+d; z++) {
-			for (int y=ybase; y<ybase+h; y++) {
-				for (int x=xbase; x<xbase+w; x++) {
-					voxels[i++] = (float)getVoxel(x, y, z);
+		int offset;
+		for (int z=z0; z<z0+d; z++) {
+			for (int y=y0; y<y0+h; y++) {
+				if (inBounds) {
+					switch (type) {
+						case BYTE:
+							byte[] bytes = (byte[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = bytes[y*width+x]&0xff;
+							break;
+						case SHORT:
+							short[] shorts = (short[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = shorts[y*width+x]&0xffff;
+							break;
+						case FLOAT:
+							float[] floats = (float[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = floats[y*width+x];
+							break;
+						case RGB:
+							int[] ints = (int[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = ints[y*width+x]&0xffffffff;
+							break;
+						default:
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = 0f;
+					}
+				} else {
+					for (int x=x0; x<x0+w; x++)
+						voxels[i++] = (float)getVoxel(x, y, z);
 				}
 			}
 		}
 		return voxels;
 	}
 
-	public float[] getVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels, int channel) {
+	/** Experimental */
+	public float[] getVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels, int channel) {
 		if (getBitDepth()!=24)
-			return getVoxels(xbase, ybase, zbase, w, h, d, voxels);
+			return getVoxels(x0, y0, z0, w, h, d, voxels);
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
 		if (voxels==null || voxels.length!=w*h*d)
 			voxels = new float[w*h*d];
 		int i = 0;
-		for (int z=zbase; z<zbase+d; z++) {
-			for (int y=ybase; y<ybase+h; y++) {
-				for (int x=xbase; x<xbase+w; x++) {
-					int value = (int)getVoxel(x, y, z);
+		for (int z=z0; z<z0+d; z++) {
+			int[] ints = (int[])stack[z];
+			for (int y=y0; y<y0+h; y++) {
+				for (int x=x0; x<x0+w; x++) {
+					int value = inBounds?ints[y*width+x]&0xffffffff:(int)getVoxel(x, y, z);
 					switch (channel) {
 						case 0: value=(value&0xff0000)>>16; break;
 						case 1: value=(value&0xff00)>>8; break;
@@ -414,38 +446,86 @@ public class ImageStack {
 	}
 
 	/** Experimental */
-	public void setVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels) {
+	public void setVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels) {
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
 		if (voxels==null || voxels.length!=w*h*d)
 			;
 		int i = 0;
-		for (int z=zbase; z<zbase+d; z++) {
-			for (int y=ybase; y<ybase+h; y++) {
-				for (int x=xbase; x<xbase+w; x++) {
-					setVoxel(x, y, z, voxels[i++]);
+		float value;
+		for (int z=z0; z<z0+d; z++) {
+			for (int y=y0; y<y0+h; y++) {
+				if (inBounds) {
+					switch (type) {
+						case BYTE:
+							byte[] bytes = (byte[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								if (value>255f)
+									value = 255f;
+								else if (value<0f)
+									value = 0f;
+								bytes[y*width+x] = (byte)(value+0.5f);
+							}
+							break;
+						case SHORT:
+							short[] shorts = (short[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								if (value>65535f)
+									value = 65535f;
+								else if (value<0f)
+									value = 0f;
+								shorts[y*width+x] = (short)(value+0.5f);
+							}
+							break;
+						case FLOAT:
+							float[] floats = (float[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								floats[y*width+x] = value;
+							}
+							break;
+						case RGB:
+							int[] ints = (int[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								ints[y*width+x] = (int)value;
+							}
+							break;
+					}
+				} else {
+					for (int x=x0; x<x0+w; x++)
+						setVoxel(x, y, z, voxels[i++]);
 				}
 			}
 		}
 	}
 	
-	public void setVoxels(int xbase, int ybase, int zbase, int w, int h, int d, float[] voxels, int channel) {
+	/** Experimental */
+	public void setVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels, int channel) {
 		if (getBitDepth()!=24) {
-			setVoxels(xbase, ybase, zbase, w, h, d, voxels);
+			setVoxels(x0, y0, z0, w, h, d, voxels);
 			return;
 		}
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
 		if (voxels==null || voxels.length!=w*h*d)
 			;
 		int i = 0;
-		for (int z=zbase; z<zbase+d; z++) {
-			for (int y=ybase; y<ybase+h; y++) {
-				for (int x=xbase; x<xbase+w; x++) {
+		for (int z=z0; z<z0+d; z++) {
+			int[] ints = (int[])stack[z];
+			for (int y=y0; y<y0+h; y++) {
+				for (int x=x0; x<x0+w; x++) {
+					int value = inBounds?ints[y*width+x]&0xffffffff:(int)getVoxel(x, y, z);
 					int color = (int)voxels[i++];
-					int value = (int)getVoxel(x, y, z);
 					switch (channel) {
 						case 0: value=(value&0xff00ffff) | ((color&0xff)<<16); break;
 						case 1: value=(value&0xffff00ff) | ((color&0xff)<<8); break;
 						case 2: value=(value&0xffffff00) | (color&0xff); break;
 					}
-					setVoxel(x, y, z, value);
+					if (inBounds)
+						ints[y*width+x] = value;
+					else
+						setVoxel(x, y, z, value);
 				}
 			}
 		}
