@@ -42,6 +42,10 @@ public class CompositeConverter implements PlugIn {
 			if (gd.wasCanceled()) return;
 			int index = gd.getNextChoiceIndex();
 			CompositeImage ci = new CompositeImage(imp, index+1);
+			if (imp.getBitDepth()!=8) {
+				ci.reset();
+				ci.resetDisplayRanges();
+			}
 			ci.show();
 			imp.hide();
 			if (!IJ.isMacro()) IJ.run("Channels Tool...");

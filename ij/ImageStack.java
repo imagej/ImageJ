@@ -344,7 +344,7 @@ public class ImageStack {
 			return 0.0;
 	}
 		
-	/* Sets the value of the specified voxel). */
+	/* Sets the value of the specified voxel. */
 	public final void setVoxel(int x, int y, int z, double value) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -375,6 +375,183 @@ public class ImageStack {
 			}
 		}
 	}
+	
+	/** Experimental */
+	public float[] getVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels) {
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
+		if (voxels==null || voxels.length!=w*h*d)
+			voxels = new float[w*h*d];
+		int i = 0;
+		int offset;
+		for (int z=z0; z<z0+d; z++) {
+			for (int y=y0; y<y0+h; y++) {
+				if (inBounds) {
+					switch (type) {
+						case BYTE:
+							byte[] bytes = (byte[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = bytes[y*width+x]&0xff;
+							break;
+						case SHORT:
+							short[] shorts = (short[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = shorts[y*width+x]&0xffff;
+							break;
+						case FLOAT:
+							float[] floats = (float[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = floats[y*width+x];
+							break;
+						case RGB:
+							int[] ints = (int[])stack[z];
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = ints[y*width+x]&0xffffffff;
+							break;
+						default:
+							for (int x=x0; x<x0+w; x++)
+								voxels[i++] = 0f;
+					}
+				} else {
+					for (int x=x0; x<x0+w; x++)
+						voxels[i++] = (float)getVoxel(x, y, z);
+				}
+			}
+		}
+		return voxels;
+	}
+
+	/** Experimental */
+	public float[] getVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels, int channel) {
+		if (getBitDepth()!=24)
+			return getVoxels(x0, y0, z0, w, h, d, voxels);
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
+		if (voxels==null || voxels.length!=w*h*d)
+			voxels = new float[w*h*d];
+		int i = 0;
+		for (int z=z0; z<z0+d; z++) {
+			int[] ints = (int[])stack[z];
+			for (int y=y0; y<y0+h; y++) {
+				for (int x=x0; x<x0+w; x++) {
+					int value = inBounds?ints[y*width+x]&0xffffffff:(int)getVoxel(x, y, z);
+					switch (channel) {
+						case 0: value=(value&0xff0000)>>16; break;
+						case 1: value=(value&0xff00)>>8; break;
+						case 2: value=value&0xff;; break;
+					}
+					voxels[i++] = (float)value;
+				}
+			}
+		}
+		return voxels;
+	}
+
+	/** Experimental */
+	public void setVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels) {
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
+		if (voxels==null || voxels.length!=w*h*d)
+			;
+		int i = 0;
+		float value;
+		for (int z=z0; z<z0+d; z++) {
+			for (int y=y0; y<y0+h; y++) {
+				if (inBounds) {
+					switch (type) {
+						case BYTE:
+							byte[] bytes = (byte[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								if (value>255f)
+									value = 255f;
+								else if (value<0f)
+									value = 0f;
+								bytes[y*width+x] = (byte)(value+0.5f);
+							}
+							break;
+						case SHORT:
+							short[] shorts = (short[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								if (value>65535f)
+									value = 65535f;
+								else if (value<0f)
+									value = 0f;
+								shorts[y*width+x] = (short)(value+0.5f);
+							}
+							break;
+						case FLOAT:
+							float[] floats = (float[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								floats[y*width+x] = value;
+							}
+							break;
+						case RGB:
+							int[] ints = (int[])stack[z];
+							for (int x=x0; x<x0+w; x++) {
+								value = voxels[i++];
+								ints[y*width+x] = (int)value;
+							}
+							break;
+					}
+				} else {
+					for (int x=x0; x<x0+w; x++)
+						setVoxel(x, y, z, voxels[i++]);
+				}
+			}
+		}
+	}
+	
+	/** Experimental */
+	public void setVoxels(int x0, int y0, int z0, int w, int h, int d, float[] voxels, int channel) {
+		if (getBitDepth()!=24) {
+			setVoxels(x0, y0, z0, w, h, d, voxels);
+			return;
+		}
+		boolean inBounds = x0>=0 && x0+w<=width && y0>=0 && y0+h<=height && z0>=0 && z0+d<=nSlices;
+		if (voxels==null || voxels.length!=w*h*d)
+			;
+		int i = 0;
+		for (int z=z0; z<z0+d; z++) {
+			int[] ints = (int[])stack[z];
+			for (int y=y0; y<y0+h; y++) {
+				for (int x=x0; x<x0+w; x++) {
+					int value = inBounds?ints[y*width+x]&0xffffffff:(int)getVoxel(x, y, z);
+					int color = (int)voxels[i++];
+					switch (channel) {
+						case 0: value=(value&0xff00ffff) | ((color&0xff)<<16); break;
+						case 1: value=(value&0xffff00ff) | ((color&0xff)<<8); break;
+						case 2: value=(value&0xffffff00) | (color&0xff); break;
+					}
+					if (inBounds)
+						ints[y*width+x] = value;
+					else
+						setVoxel(x, y, z, value);
+				}
+			}
+		}
+	}
+
+	/** Experimental */
+	public void drawSphere(int xc, int yc, int zc) {
+		int lineWidth = 200;
+	    double r = lineWidth/2.0;
+		int xmin=(int)(xc-r+0.5), ymin=(int)(yc-r+0.5), zmin=(int)(zc-r+0.5);
+		int xmax=xmin+lineWidth, ymax=ymin+lineWidth, zmax=zmin+lineWidth;
+		double r2 = r*r;
+		r -= 0.5;
+		double xoffset=xmin+r, yoffset=ymin+r, zoffset=zmin+r;
+		double xx, yy, zz;
+		for (int x=xmin; x<xmax; x++) {
+			for (int y=ymin; y<ymax; y++) {
+				for (int z=zmin; z<zmax; z++) {
+					xx = x-xoffset; yy = y-yoffset;  zz = z-zoffset;
+					if (xx*xx+yy*yy+zz*zz<=r2)
+						setVoxel(x, y, z, 255);
+				}
+			}
+		}
+	}
+
 	
 	/** Returns the bit depth (8=byte, 16=short, 24=RGB, 32=float). */
 	public int getBitDepth() {

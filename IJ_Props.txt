@@ -254,13 +254,14 @@ binary08=-
 binary09="Outline",ij.plugin.filter.Binary("outline")
 binary10="Fill Holes",ij.plugin.filter.Binary("fill")
 binary11="Skeletonize",ij.plugin.filter.Binary("skel")
-binary12=-
-binary13="Distance Map",ij.plugin.filter.EDM("edm")
-binary14="Ultimate Points",ij.plugin.filter.EDM("points")
-binary15="Watershed",ij.plugin.filter.EDM("watershed")
-binary16="Voronoi",ij.plugin.filter.EDM("voronoi")
-binary17=-
-binary18="Options...",ij.plugin.filter.Binary("options")
+binary12="Skeletonize 3D",ij.plugin.filter.Skeletonize3D
+binary13=-
+binary14="Distance Map",ij.plugin.filter.EDM("edm")
+binary15="Ultimate Points",ij.plugin.filter.EDM("points")
+binary16="Watershed",ij.plugin.filter.EDM("watershed")
+binary17="Voronoi",ij.plugin.filter.EDM("voronoi")
+binary18=-
+binary19="Options...",ij.plugin.filter.Binary("options")
 
 # Plugins installed in the Process/Math submenu
 math01="Add...",ij.plugin.filter.ImageMath("add")
@@ -297,14 +298,15 @@ fft09="Swap Quadrants",ij.plugin.FFT("swap")
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver
 filters02="Gaussian Blur...",ij.plugin.filter.GaussianBlur
-filters03="Median...",ij.plugin.filter.RankFilters("median")
-filters04="Mean...",ij.plugin.filter.RankFilters("mean")
-filters05="Minimum...",ij.plugin.filter.RankFilters("min")
-filters06="Maximum...",ij.plugin.filter.RankFilters("max")
-filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
-filters08="Variance...",ij.plugin.filter.RankFilters("variance")
-filters09=-
-filters10="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
+filters03="Gaussian Blur 3D...",ij.plugin.GaussianBlur3D
+filters04="Median...",ij.plugin.filter.RankFilters("median")
+filters05="Mean...",ij.plugin.filter.RankFilters("mean")
+filters06="Minimum...",ij.plugin.filter.RankFilters("min")
+filters07="Maximum...",ij.plugin.filter.RankFilters("max")
+filters08="Unsharp Mask...",ij.plugin.filter.UnsharpMask
+filters09="Variance...",ij.plugin.filter.RankFilters("variance")
+filters10=-
+filters11="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
 
 # Plugins installed in the File/Batch submenu
 batch01="Measure...",ij.plugin.BatchMeasure

@@ -1,14 +1,8 @@
 package ij.plugin.filter;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.Macro;
-import ij.Prefs;
+import ij.*;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
+import ij.process.*;
 
 import java.awt.AWTEvent;
 import java.awt.Rectangle;
@@ -49,7 +43,8 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     private boolean hasScale = false;   // whether the image has an x&y scale
     private int nPasses = 1;            // The number of passes (filter directions * color channels * stack slices)
     private int nChannels = 1;        // The number of color channels
-    private int pass;                   // Current pass
+    private int pass;                        // Current pass
+    private boolean noProgress;      // Do not show progress bar
     
     /** Method to return types supported
      * @param arg unused
@@ -170,7 +165,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             resetOutOfRoi(ip, (int)Math.ceil(5*sigmaY)); // reset out-of-Rectangle pixels above and below roi
         return;
     }
-
+    
     /** Gaussian Filtering of a FloatProcessor. This method does NOT include
      *  resetOutOfRoi(ip), i.e., pixels above and below the roi rectangle will
      *  be also subject to filtering in x direction and must be restored
@@ -591,8 +586,14 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             System.arraycopy(snapshot, p, pixels, p, roi.width);
     }
     
-    void showProgress(double percent) {
+    private void showProgress(double percent) {
+    	if (noProgress) return;
         percent = (double)(pass-1)/nPasses + percent/nPasses;
         IJ.showProgress(percent);
     }
+    
+    public void showProgress(boolean showProgressBar) {
+    	noProgress = !showProgressBar;
+    }
+    
 }

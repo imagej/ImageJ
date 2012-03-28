@@ -83,8 +83,8 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 		if (saturated>100.0) saturated = 100;
 		if (processStack && !equalize)
 			normalize = true;
-		if (normalize)
-			useStackHistogram = false;
+		//if (normalize)
+		//	useStackHistogram = false;
 		gEqualize=equalize; gNormalize=normalize;
 		return true;
 	}

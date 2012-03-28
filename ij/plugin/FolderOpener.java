@@ -257,7 +257,10 @@ public class FolderOpener implements PlugIn {
 					if (ip.getMax()>max) max = ip.getMax();
 					//if (depth>1) label2 = null;
 					if (openAsVirtualStack) {
-						if (slice==1) ((VirtualStack)stack).addSlice(list[i]);
+						if (slice==1)
+							((VirtualStack)stack).addSlice(list[i]);
+						else if (slice==2)
+							IJ.log(list[i] + " ["+stackSize+"]: only the first slice will be used in virtual stack");
 					} else
 						stack.addSlice(label2, ip);
 				}

@@ -125,7 +125,7 @@ public class Concatenator implements PlugIn, ItemListener{
                     continue;
                 }
                 
-                // concatenate
+               // concatenate
                 duplicated = isDuplicated(currentImp, i);
                 concat(concat_Stack, currentImp.getStack(), (keep || duplicated));
                 propertyArr[count] = currentImp.getProperties();
@@ -241,10 +241,18 @@ public class Concatenator implements PlugIn, ItemListener{
         macro = macro || (IJ.isMacro()&&Macro.getOptions()!=null);
         im4D = Menus.commandInUse("Stack to Image5D") && ! batch;
         if (macro) {
-            maxEntries = Integer.MAX_VALUE; // screen size is not limitation in macro mode
             String options = Macro.getOptions();
             if (options.contains("stack1")&&options.contains("stack2"))
                 Macro.setOptions(options.replaceAll("stack", "image"));
+            int macroImageCount = 0;
+            options = Macro.getOptions();
+            while (true) {
+            	if (options.contains("image"+(macroImageCount+1)))
+            		macroImageCount++;
+            	else
+            		break;
+            }
+            maxEntries = macroImageCount;
         }
         
         // Checks

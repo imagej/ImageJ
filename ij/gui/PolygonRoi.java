@@ -1302,15 +1302,79 @@ public class PolygonRoi extends Roi {
 		return subPixel;
 	}
 
+	//public Polygon getConvexHull() {
+	//	FloatPolygon p = getFloatConvexHull();
+	//	if (p==null)
+	//		return null;
+	//	else
+	//		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
+	//}
+
 	/** Uses the gift wrap algorithm to find the 
 		convex hull and returns it as a Polygon. */
 	public Polygon getConvexHull() {
-		FloatPolygon p = getFloatConvexHull();
-		return new Polygon(toIntR(p.xpoints), toIntR(p.ypoints), p.npoints);
+		int n = getNCoordinates();
+		int[] xCoordinates = getXCoordinates();
+		int[] yCoordinates = getYCoordinates();
+		Rectangle r = getBounds();
+		int xbase = r.x;
+		int ybase = r.y;
+		int[] xx = new int[n];
+		int[] yy = new int[n];
+		int n2 = 0;
+		int smallestY = Integer.MAX_VALUE;
+		int x, y;
+		for (int i=0; i<n; i++) {
+			y = yCoordinates[i];
+			if (y<smallestY)
+			smallestY = y;
+		}
+		int smallestX = Integer.MAX_VALUE;
+		int p1 = 0;
+		for (int i=0; i<n; i++) {
+			x = xCoordinates[i];
+			y = yCoordinates[i];
+			if (y==smallestY && x<smallestX) {
+				smallestX = x;
+				p1 = i;
+			}
+		}
+		int pstart = p1;
+		int x1, y1, x2, y2, x3, y3, p2, p3;
+		int determinate;
+		int count = 0;
+		do {
+			x1 = xCoordinates[p1];
+			y1 = yCoordinates[p1];
+			p2 = p1+1; if (p2==n) p2=0;
+			x2 = xCoordinates[p2];
+			y2 = yCoordinates[p2];
+			p3 = p2+1; if (p3==n) p3=0;
+			do {
+				x3 = xCoordinates[p3];
+				y3 = yCoordinates[p3];
+				determinate = x1*(y2-y3)-y1*(x2-x3)+(y3*x2-y2*x3);
+				if (determinate>0)
+					{x2=x3; y2=y3; p2=p3;}
+				p3 += 1;
+				if (p3==n) p3 = 0;
+			} while (p3!=p1);
+			if (n2<n) { 
+				xx[n2] = xbase + x1;
+				yy[n2] = ybase + y1;
+				n2++;
+			} else {
+				count++;
+				if (count>10) return null;
+			}
+			p1 = p2;
+		} while (p1!=pstart);
+		return new Polygon(xx, yy, n2);
 	}
 	
 	/** Uses the gift wrap algorithm to find the 
 		convex hull and returns it as a FloatPolygon. */
+	/*
 	public FloatPolygon getFloatConvexHull() {
 		FloatPolygon p = getFloatPolygon();
 		int n = p.npoints;
@@ -1367,6 +1431,7 @@ public class PolygonRoi extends Roi {
 		} while (p1!=pstart);
 		return new FloatPolygon(xx, yy, n2);
 	}
+	*/
 	
 	public FloatPolygon getInterpolatedPolygon(double interval, boolean smooth) {
 		FloatPolygon p = getFloatPolygon();
