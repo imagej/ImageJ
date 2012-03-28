@@ -443,15 +443,14 @@ public class Selection implements PlugIn, Measurements {
 			{IJ.error("Convex Hull", "Polygonal or point selection required"); return;}
 		if (roi instanceof EllipseRoi)
 			return;
-		if (roi.subPixelResolution() && roi instanceof PolygonRoi) {
-			FloatPolygon p = ((PolygonRoi)roi).getFloatConvexHull();
-			if (p!=null)
-				imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
-		} else {
-			Polygon p = roi.getConvexHull();
-			if (p!=null)
-				imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
-		}
+		//if (roi.subPixelResolution() && roi instanceof PolygonRoi) {
+		//	FloatPolygon p = ((PolygonRoi)roi).getFloatConvexHull();
+		//	if (p!=null)
+		//		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
+		//} else {
+		Polygon p = roi.getConvexHull();
+		if (p!=null)
+			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
 	}
 	
 	// Finds the index of the upper right point that is guaranteed to be on convex hull

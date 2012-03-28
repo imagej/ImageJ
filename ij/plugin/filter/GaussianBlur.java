@@ -166,43 +166,6 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         return;
     }
     
-	public static void blur3D(ImagePlus img, double sigmaX, double sigmaY, double sigmaZ) {
-		img.killRoi();
-		ImageStack stack = img.getStack();
-		GaussianBlur gb = new GaussianBlur();
-		double accuracy = (img.getBitDepth()==8||img.getBitDepth()==8)?0.002:0.0002;
-		if (sigmaX==sigmaY) {
-			if (sigmaX!=0.0)
-				IJ.run(img, "Gaussian Blur...", "sigma="+sigmaX+" stack");
-		} else {
-			for (int i=1; i<=img.getStackSize(); i++) {
-				ImageProcessor ip = stack.getProcessor(i);
-				gb.blurGaussian(ip, sigmaX, sigmaY, accuracy);
-			}
-		}
-		if (sigmaZ==0.0)
-			return;
-		int w=img.getWidth(), h=img.getHeight(), d=img.getStackSize();
-		float[] zpixels = null;
-		FloatProcessor fp =null;
-		IJ.showStatus("Z blurring");
-		gb.noProgress = true;
-		int channels = img.getProcessor().getNChannels();
-		for (int y=0; y<h; y++) {
-			IJ.showProgress(y, h-1);
-			for (int channel=0; channel<channels; channel++) {
-				zpixels = stack.getVoxels(0, y, 0, w, 1, d, zpixels, channel);
-				if (fp==null)
-					fp = new FloatProcessor(w, d, zpixels);
-				//if (y==h/2) new ImagePlus("before-"+h/2, fp.duplicate()).show();
-				gb.blur1Direction(fp, sigmaZ, accuracy, false, 0);
-				stack.setVoxels(0, y, 0, w, 1, d, zpixels, channel);
-			}
-		}
-		img.updateAndDraw();
-		IJ.showStatus("");
-	}
-
     /** Gaussian Filtering of a FloatProcessor. This method does NOT include
      *  resetOutOfRoi(ip), i.e., pixels above and below the roi rectangle will
      *  be also subject to filtering in x direction and must be restored
@@ -623,9 +586,14 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             System.arraycopy(snapshot, p, pixels, p, roi.width);
     }
     
-    void showProgress(double percent) {
+    private void showProgress(double percent) {
     	if (noProgress) return;
         percent = (double)(pass-1)/nPasses + percent/nPasses;
         IJ.showProgress(percent);
     }
+    
+    public void showProgress(boolean showProgressBar) {
+    	noProgress = !showProgressBar;
+    }
+    
 }
