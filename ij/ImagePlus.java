@@ -1243,26 +1243,32 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		noUpdateMode = false;
 	}
 	
+	/** Sets the hyperstack channel position (one based). */
 	public void setC(int channel) {
 		setPosition(channel, getZ(), getT());
 	}
 	
+	/** Sets the hyperstack slice position (one based). */
 	public void setZ(int slice) {
 		setPosition(getC(), slice, getT());
 	}
 
+	/** Sets the hyperstack frame position (one based). */
 	public void setT(int frame) {
 		setPosition(getC(), getZ(), frame);
 	}
 
+	/** Returns the current hyperstack channel position. */
 	public int getC() {
 		return position[0];
 	}
 	
+	/** Returns the current hyperstack slice position. */
 	public int getZ() {
 		return position[1];
 	}
 
+	/** Returns the current hyperstack frame position. */
 	public int getT() {
 		return position[2];
 	}
@@ -1309,7 +1315,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	/** Displays the specified stack image, where 1<=n<=stackSize.
-		Does nothing if this image is not a stack. */
+	 * Does nothing if this image is not a stack.
+	 * @see #setPosition
+	 * @see #setC
+	 * @see #setZ
+	 * @see #setT
+	 */
 	public synchronized void setSlice(int n) {
 		if (stack==null || (n==currentSlice&&ip!=null)) {
 			if (!noUpdateMode)

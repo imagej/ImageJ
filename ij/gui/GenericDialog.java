@@ -47,6 +47,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected Component theLabel;
 	private Button cancel, okay, no, help;
 	private String okLabel = "  OK  ";
+	private String cancelLabel = "Cancel";
 	private String helpLabel = "Help";
     private boolean wasCanceled, wasOKed;
     private int y;
@@ -650,6 +651,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
     	okLabel = label;
     }
 
+    /** Sets a replacement label for the "Cancel" button. */
+    public void setCancelLabel(String label) {
+    	cancelLabel = label;
+    }
+
     /** Sets a replacement label for the "Help" button. */
     public void setHelpLabel(String label) {
     	helpLabel = label;
@@ -995,7 +1001,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			pfr.setDialog(this);
 			Panel buttons = new Panel();
 			buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-			cancel = new Button("Cancel");
+			cancel = new Button(cancelLabel);
 			cancel.addActionListener(this);
 			cancel.addKeyListener(this);
 			if (yesNoCancel) {

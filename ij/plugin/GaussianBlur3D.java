@@ -38,11 +38,10 @@ public class GaussianBlur3D implements PlugIn {
 	private void blur3D(ImagePlus imp, double sigmaX, double sigmaY, double sigmaZ) {
 		imp.killRoi();
 		ImageStack stack = imp.getStack();
-		if (sigmaX==sigmaY) {
-			if (sigmaX!=0.0)
-				IJ.run(imp, "Gaussian Blur...", "sigma="+sigmaX+" stack");
-		} else {
+		if (sigmaX>0.0 || sigmaY>0.0) {
 			GaussianBlur gb = new GaussianBlur();
+			int channels = stack.getProcessor(1).getNChannels();
+			gb.setNPasses(channels*imp.getStackSize());
 			for (int i=1; i<=imp.getStackSize(); i++) {
 				ImageProcessor ip = stack.getProcessor(i);
 				double accuracy = (imp.getBitDepth()==8||imp.getBitDepth()==24)?0.002:0.0002;
@@ -51,7 +50,7 @@ public class GaussianBlur3D implements PlugIn {
 		}
 		if (sigmaZ>0.0) {
 			if (imp.isHyperStack())
-				blurHyperStackZ(imp, zsigma);
+				blurHyperStackZ(imp, sigmaZ);
 			else
 				blurZ(stack, sigmaZ);
 			imp.updateAndDraw();
@@ -82,10 +81,39 @@ public class GaussianBlur3D implements PlugIn {
 	}
 
 	private void blurHyperStackZ(ImagePlus imp, double zsigma) {
-		ImagePlus[] images = ChannelSplitter.split(imp);
-		for (int i=0; i<images.length; i++) {
-			blurZ(images[i].getStack(), zsigma);
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int timePoints = imp.getNFrames();
+		int nVolumes = channels*timePoints;
+		for (int c=1; c<=channels; c++) {
+			if (slices==1) {
+				ImageStack stack = getVolume(imp, c, 1);
+				blurZ(stack, zsigma);
+			} else {
+				for (int t=1; t<=timePoints; t++) {
+					ImageStack stack = getVolume(imp, c, t);
+					blurZ(stack, zsigma);
+					//new ImagePlus("stack-"+c+"-"+t, stack).show();
+				}
+			}
 		}
+	}
+
+	private ImageStack getVolume(ImagePlus imp, int c, int t) {
+		ImageStack stack1 = imp.getStack();
+		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
+		if (imp.getNSlices()==1) {
+			for (t=1; t<=imp.getNFrames(); t++) {
+				int n = imp.getStackIndex(c, 1, t);
+				stack2.addSlice(stack1.getProcessor(n));
+			}
+		} else {
+			for (int z=1; z<=imp.getNSlices(); z++) {
+				int n = imp.getStackIndex(c, z, t);
+				stack2.addSlice(stack1.getProcessor(n));
+			}
+		}
+		return stack2;
 	}
 
 }

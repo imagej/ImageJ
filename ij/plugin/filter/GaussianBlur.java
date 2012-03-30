@@ -215,7 +215,6 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         else lineTo = lineToA;
         final int writeFrom = xDirection? roi.x : roi.y;    //first point of a line that needs to be written
         final int writeTo = xDirection ? roi.x+roi.width : roi.y+roi.height;
-/**/        final int inc = Math.max((lineTo-lineFrom)/(100/(nPasses>0?nPasses:1)+1),20);
         pass++;
         if (pass>nPasses) pass =1;
         
