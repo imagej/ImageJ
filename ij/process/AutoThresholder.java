@@ -186,7 +186,7 @@ public class AutoThresholder {
 		// j and k
 		// Threshold t is (j+k)/2.
 		// Images with histograms having extremely unequal peaks or a broad and
-		// flat valley are unsuitable for this method.
+		// flat valleys are unsuitable for this method.
 		double [] iHisto = new double [256];
 		int iter =0;
 		int threshold=-1;
@@ -611,7 +611,7 @@ public class AutoThresholder {
 		// running average of size 3, iteratively) until there are only two local maxima.
 		// Threshold t is such that yt−1 > yt <= yt+1.
 		// Images with histograms having extremely unequal peaks or a broad and
-		// flat valley are unsuitable for this method.
+		// flat valleys are unsuitable for this method.
 		int iter =0;
 		int threshold = -1;
 		double [] iHisto = new double [256];

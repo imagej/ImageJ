@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * This work is an implementation by Ignacio Arganda-Carreras of the
  * 3D thinning algorithm from Lee et al. "Building skeleton models via 3-D 
  * medial surface/axis thinning algorithms. Computer Vision, Graphics, and 
- * Image Processing, 56(6):462478, 1994." Based on the ITK version from
+ * Image Processing, 56(6):462-478, 1994." Based on the ITK version from
  * Hanno Homann <a href="http://hdl.handle.net/1926/1292"> http://hdl.handle.net/1926/1292</a>
  * <p>
  *  More information at Skeletonize3D homepage:

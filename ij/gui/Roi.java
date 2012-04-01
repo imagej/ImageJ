@@ -1514,7 +1514,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Returns 'true' if this is a line selection. */
     public boolean isLine() {
-        return (type>=LINE && type<=FREELINE) || type==ANGLE;
+        return type>=LINE && type<=FREELINE;
     }
     
 	/** Returns 'true' if this is an ROI primarily used from drawing
