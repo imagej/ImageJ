@@ -286,6 +286,8 @@ public class Opener {
 				// Call HandleExtraFileTypes plugin to see if it can handle unknown format
 				int[] wrap = new int[] {fileType};
 				imp = openWithHandleExtraFileTypes(path, wrap);
+				if (imp!=null && imp.getNChannels()>1)
+					imp = new CompositeImage(imp, CompositeImage.COLOR);
 				fileType = wrap[0];
 				return imp;
 			default:

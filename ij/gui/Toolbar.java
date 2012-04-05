@@ -67,6 +67,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     private PopupMenu[] menus = new PopupMenu[NUM_TOOLS];
     private MacroInstaller macroInstaller;
     private boolean addingSingleTool;
+    private boolean installingStartupTool;
+    private boolean toolsetInstalled;
 	private int pc;
 	private String icon;
 	private int startupTime;
@@ -374,12 +376,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		icon = icons[tool];
 		if (icon==null) return;
 		this.icon = icon;
-		int length = icon.length();
 		int x1, y1, x2, y2;
 		pc = 0;
 		while (true) {
 			char command = icon.charAt(pc++);
-			if (pc>=length) break;
+			if (pc>=icon.length()) break;
 			switch (command) {
 				case 'B': x+=v(); y+=v(); break;  // reset base
 				case 'R': g.drawRect(x+v(), y+v(), v(), v()); break;  // rectangle
@@ -410,7 +411,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					break;
 				default: break;
 			}
-			if (pc>=length) break;
+			if (pc>=icon.length()) break;
 		}
 		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;
@@ -886,7 +887,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			mpPrevious = current;
 			if (isMacroTool(newTool)) {
 				String name = names[newTool];
-				if (name.indexOf("Unused Tool")!=-1)
+				if (name.contains("Unused Tool"))
 					return;
 				if (name.indexOf("Action Tool")!=-1) {
 					if (e.isPopupTrigger()||e.isMetaDown()) {
@@ -1049,7 +1050,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addBuiltInTool("Arrow");
 		addBuiltInTool("Overlay Brush");
 		addBuiltInTool("Pixel Inspector");
+		addBuiltInTool("Pencil");
+		addBuiltInTool("Brush");
+		addBuiltInTool("Flood Fill Tool");
 		addBuiltInTool("Spray Can");
+		addBuiltInTool("Developer Menu");
+		addBuiltInTool("Stacks Menu");
 		addBuiltInTool("LUT Menu");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
@@ -1130,7 +1136,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	boolean isMacroTool(int tool) {
-		return tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null && tools[tool] instanceof MacroToolRunner;
+		return tool>=SPARE1 && tool<=SPARE9 && names[tool]!=null
+			&& (tools[tool] instanceof MacroToolRunner||names[tool].equals("Unused Tool"));
 	}
 	
 	boolean isPlugInTool(int tool) {
@@ -1210,8 +1217,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					} else if (label.equals("Pixel Inspector")) {
 						tool = new ij.plugin.tool.PixelInspectionTool();
 						if (tool!=null) tool.run("");
+					} else if (label.equals("Pencil")) {
+						(new MacroInstaller()).installFromIJJar("/macros/PencilTool.txt");
+					} else if (label.equals("Brush")) {
+						(new MacroInstaller()).installFromIJJar("/macros/BrushTool.txt");
+					} else if (label.equals("Flood Fill Tool")) {
+						(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
 					} else if (label.equals("Spray Can")) {
 						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
+					} else if (label.equals("Developer Menu")) {
+						(new MacroInstaller()).installFromIJJar("/macros/DeveloperMenuTool.txt");
+					} else if (label.equals("Stacks Menu")) {
+						(new MacroInstaller()).installFromIJJar("/macros/StacksMenuTool.txt");
 					} else if (label.equals("LUT Menu")) {
 						(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
 					}
@@ -1259,9 +1276,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 					mi.installFromIJJar(path);
             } else {
                 // load from ImageJ/macros/toolsets
-                if (label.equals("Startup Macros"))
-                    path = IJ.getDirectory("macros")+"StartupMacros.txt";
-                else if (label.endsWith(" "))
+                if (label.equals("Startup Macros")) {
+                	installStartupMacros();
+                	return;
+                } else if (label.endsWith(" "))
                     path = IJ.getDirectory("macros")+"toolsets/"+label.substring(0, label.length()-1)+".ijm";
                 else
                     path = IJ.getDirectory("macros")+"toolsets/"+label+".txt";
@@ -1269,12 +1287,29 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                     if (IJ.shiftKeyDown()) {
                         IJ.open(path);
                 		IJ.setKeyUp(KeyEvent.VK_SHIFT);
-                    } else
+                    } else {
                         new MacroInstaller().run(path);
-                }
-                catch(Exception ex) {}
+                        toolsetInstalled = true;
+                    }
+                } catch(Exception ex) {}
             }
 		}
+	}
+	
+	private 	void installStartupMacros() {
+		String firstStartupTool = Prefs.getString("tool00");
+		if (firstStartupTool==null || !firstStartupTool.startsWith("0")) {
+			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
+			try {
+				new MacroInstaller().run(path);
+			} catch
+				(Exception ex) {}
+		} else {
+			removeMacroTools();
+			setTool(RECTANGLE);
+		}
+		installStartupTools();
+		toolsetInstalled = false;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -1315,8 +1350,12 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		int index = toolTip.indexOf('-');
 		boolean hasIcon = index>=0 && (toolTip.length()-index)>4;
 		int tool =-1;
-		if (names[SPARE1]==null)
-			tool = SPARE1;
+		if (names[SPARE1]==null) {
+			if (addingSingleTool) {
+				names[SPARE1] = "Unused Tool";
+			} else
+				tool = SPARE1;
+		}
 		if (tool==-1) {
 			for (int i=SPARE2; i<=SPARE8; i++) {
 				if (names[i]==null || toolTip.startsWith(names[i])) {
@@ -1410,7 +1449,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (!name.contains(" Menu Tool")) {
 				if (menus[tool]!=null)
 					menus[tool].removeAll();
-				setTool(tool);
+				if (!installingStartupTool)
+					setTool(tool);
+				else
+					installingStartupTool = false;
 			}
 		}
 	}
@@ -1434,8 +1476,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			instance.tools[id] = tool;
 			if (instance.menus[id]!=null)
 				instance.menus[id].removeAll();
-			instance.repaint();	
-			instance.setTool(id);
+			instance.repaintTool(id);	
+			if (!instance.installingStartupTool)
+				instance.setTool(id);
+			else
+				instance.installingStartupTool = false;
 		}
 	}
 
@@ -1476,6 +1521,87 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		gd.showDialog();
 		if (!gd.wasCanceled())
 			Prefs.reflexAngle = gd.getNextBoolean();
+	}
+	
+	public void installStartupTools() {
+		for (int i=0; i<7; i++) {
+			String name = Prefs.getString("tool" + (i/10)%10 + i%10);
+			if (name==null) break;
+			name = name.substring(1);
+			installingStartupTool = true;
+			boolean ok = installBuiltinTool(name);
+			//System.out.println("installTool: "+name);
+			if (!ok) {
+				if (name.endsWith("Menu Tool"))
+					name = name.substring(0, name.length()-5);
+				Hashtable commands = Menus.getCommands();
+				if (commands!=null && commands.get(name)!=null)
+					IJ.run(name);
+			}
+			installingStartupTool = false;
+		}
+	}
+	
+	private boolean installBuiltinTool(String label) {
+		boolean ok = true;
+		PlugInTool tool = null;
+		if (label.startsWith("Arrow")) {
+			tool = new ij.plugin.tool.ArrowTool();
+			if (tool!=null) tool.run("");
+		} else if (label.startsWith("Overlay Brush")) {
+			tool = new ij.plugin.tool.OverlayBrushTool();
+			if (tool!=null) tool.run("");
+		} else if (label.startsWith("Pixel Inspect")) {
+			tool = new ij.plugin.tool.PixelInspectionTool();
+			if (tool!=null) tool.run("");
+		} else if (label.startsWith("Pencil")) {
+			(new MacroInstaller()).installFromIJJar("/macros/PencilTool.txt");
+		} else if (label.startsWith("Brush")) {
+			(new MacroInstaller()).installFromIJJar("/macros/BrushTool.txt");
+		} else if (label.equals("Flood Fill Tool")) {
+			(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
+		} else if (label.startsWith("Spray Can")) {
+			(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
+		} else if (label.startsWith("Developer Menu")) {
+			(new MacroInstaller()).installFromIJJar("/macros/DeveloperMenuTool.txt");
+		} else if (label.startsWith("Stacks Menu")) {
+			(new MacroInstaller()).installFromIJJar("/macros/StacksMenuTool.txt");
+		} else if (label.startsWith("LUT Menu")) {
+			(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
+		} else
+			ok = false;
+		return ok;
+	}
+
+	/** Called once when ImageJ quits. */
+	public void savePreferences(Properties prefs) {
+		if (toolsetInstalled) {
+			for (int i=0; i<7; i++) {
+				String key = "tool" + (i/10)%10 + i%10;
+				String name = Prefs.getString(key);
+				if (name==null) break;
+				prefs.put(key, name);
+			}
+			return;
+		}
+		int index = 0;
+		for (int i=SPARE2; i<=SPARE8; i++) {
+			if (names[i]!=null && !isMacroSet(i)) {
+				String key = "tool" + (index/10)%10 + index%10;
+				int id = i - SPARE2;
+				prefs.put(key, id+names[i]);
+				//System.out.println("savePrefs: "+id+names[i]);
+				index++;
+			}			
+		}
+	}
+	
+	private boolean isMacroSet(int id) {
+		if (tools[id]==null)
+			return false;
+		if (!(tools[id] instanceof MacroToolRunner))
+			return false;
+		return ((MacroToolRunner)tools[id]).getMacroCount()>2;
 	}
 
 }

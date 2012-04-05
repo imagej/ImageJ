@@ -365,6 +365,8 @@ public class Prefs {
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
+			Toolbar tb = Toolbar.getInstance();
+			if (tb!=null) tb.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {
 				File f = new File(prefsDir);

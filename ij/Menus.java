@@ -3,6 +3,7 @@ import ij.process.*;
 import ij.util.*;
 import ij.gui.ImageWindow;
 import ij.plugin.MacroInstaller;
+import ij.gui.Toolbar;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -1389,6 +1390,9 @@ public class Menus {
 			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
 			return;
 		}
+		String firstStartupTool = Prefs.getString("tool00");
+		boolean installStartupMacrosTools = firstStartupTool==null || !firstStartupTool.startsWith("0");
+
 		if (macrosPath==null) {
 			(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
 			return;
@@ -1409,9 +1413,13 @@ public class Menus {
 		try {
 			MacroInstaller mi = new MacroInstaller();
 			if (isLibrary) mi.installLibrary(libraryPath);
+			mi.installTools(installStartupMacrosTools);
 			mi.installFile(path);
 			nMacros += mi.getMacroCount();
 		} catch (Exception e) {}
+		Toolbar tb = Toolbar.getInstance();
+		if (tb!=null)
+			tb.installStartupTools();
 	}
 	
 	static boolean validShortcut(String shortcut) {

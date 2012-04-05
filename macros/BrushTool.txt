@@ -1,0 +1,30 @@
+   var leftClick=16, alt=8;
+   var brushWidth = 10;;
+
+   macro "Brush Tool - C037La077Ld098L6859L4a2fL2f4fL3f99L5e9bL9b98L6888L5e8dL888c" {
+        getCursorLoc(x, y, z, flags);
+        if (flags&alt!=0)
+           setColor(getValue("color.background"));
+        draw(brushWidth);
+   }
+
+   macro 'Paintbrush Tool Options...' {
+      brushWidth = getNumber("Brush Width (pixels):", brushWidth);
+      call("ij.Prefs.set", "startup.brush", brushWidth);
+  }
+
+  function draw(width) {
+        setupUndo();
+        getCursorLoc(x, y, z, flags);
+        setLineWidth(width);
+        moveTo(x,y);
+        x2=-1; y2=-1;
+        while (true) {
+            getCursorLoc(x, y, z, flags);
+            if (flags&leftClick==0) exit();
+            if (x!=x2 || y!=y2)
+                lineTo(x,y);
+            x2=x; y2 =y;
+            wait(10);
+        }
+   }

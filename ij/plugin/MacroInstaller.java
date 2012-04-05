@@ -36,6 +36,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private Menu macrosMenu;
 	private int autoRunCount, autoRunAndHideCount;
 	private boolean openingStartupMacrosInEditor;
+	private boolean installTools = true;
 	
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
@@ -125,7 +126,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				break;
 		}
 		nMacros = count;
-		if (toolCount>0 && isPluginsMacrosMenu) {
+		if (toolCount>0 && isPluginsMacrosMenu && installTools) {
 			Toolbar tb = Toolbar.getInstance();
             if (toolCount==1) 
                 tb.addMacroTool((String)tools.get(0), this);
@@ -415,6 +416,10 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	public static String getFileName() {
 		return fileName;
+	}
+	
+	public void installTools(boolean b) {
+		installTools = b;
 	}
 
 	public void actionPerformed(ActionEvent evt) {
