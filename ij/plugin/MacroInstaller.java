@@ -65,7 +65,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 			Tokenizer tok = new Tokenizer();
 			pgm = tok.tokenize(text);
 		}
-		IJ.showStatus("");
+		if (macrosMenu!=null)
+			IJ.showStatus("");
 		int[] code = pgm.getCode();
 		Symbol[] symbolTable = pgm.getSymbolTable();
 		int count=0, token, nextToken, address;
@@ -77,12 +78,15 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		toolCount = 0;
 		macroStarts = new int[MAX_MACROS];
 		macroNames = new String[MAX_MACROS];
-		int itemCount = macrosMenu.getItemCount();
-		boolean isPluginsMacrosMenu = macrosMenu==Menus.getMacrosMenu();
-		int baseCount =isPluginsMacrosMenu?MACROS_MENU_COMMANDS:Editor.MACROS_MENU_ITEMS;
-		if (itemCount>baseCount) {
-			for (int i=itemCount-1; i>=baseCount; i--)
-				macrosMenu.remove(i);
+		boolean isPluginsMacrosMenu = false;
+		if (macrosMenu!=null) {
+			int itemCount = macrosMenu.getItemCount();
+			isPluginsMacrosMenu = macrosMenu==Menus.getMacrosMenu();
+			int baseCount =isPluginsMacrosMenu?MACROS_MENU_COMMANDS:Editor.MACROS_MENU_ITEMS;
+			if (itemCount>baseCount) {
+				for (int i=itemCount-1; i>=baseCount; i--)
+					macrosMenu.remove(i);
+			}
 		}
 		if (pgm.hasVars() && pgm.macroCount()>0 && pgm.getGlobals()==null)
 			new Interpreter().saveGlobals(pgm);
@@ -116,8 +120,10 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 					} else if  (name.equals("Popup Menu"))
 						installPopupMenu(name, pgm);
 					else if (!name.endsWith("Tool Selected")){ 
-						addShortcut(name);
-						macrosMenu.add(new MenuItem(name));
+						if (macrosMenu!=null) {
+							addShortcut(name);
+							macrosMenu.add(new MenuItem(name));
+						}
 					}
 					//IJ.log(count+" "+name+" "+macroStarts[count]);
 					count++;
@@ -126,7 +132,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				break;
 		}
 		nMacros = count;
-		if (toolCount>0 && isPluginsMacrosMenu && installTools) {
+		if (toolCount>0 && (isPluginsMacrosMenu||macrosMenu==null) && installTools) {
 			Toolbar tb = Toolbar.getInstance();
             if (toolCount==1) 
                 tb.addMacroTool((String)tools.get(0), this);
@@ -138,7 +144,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				tb.setTool(Toolbar.RECTANGLE);
 			tb.repaint();
 		}
-		this.instance = this;
+		if (macrosMenu!=null)
+			this.instance = this;
 		if (shortcutsInUse!=null && text!=null)
 			IJ.showMessage("Install Macros", (inUseCount==1?"This keyboard shortcut is":"These keyboard shortcuts are")
 			+ " already in use:"+shortcutsInUse);
@@ -150,7 +157,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				anonymousName = fileName.substring(0, dotIndex);
 			else
 				anonymousName =fileName;
-			macrosMenu.add(new MenuItem(anonymousName));
+			if (macrosMenu!=null)
+				macrosMenu.add(new MenuItem(anonymousName));
 			macroNames[0] = anonymousName;
 			nMacros = 1;
 		}
@@ -183,10 +191,15 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	public void installFile(String path) {
-		if (path!=null) {
-			String text = open(path);
-			if (text!=null) install(text);
-		}
+		String text = open(path);
+		if (text!=null)
+			install(text);
+	}
+
+	public void installTool(String path) {
+		String text = open(path);
+		if (text!=null)
+			installSingleTool(text);
 	}
 
 	public void installLibrary(String path) {
@@ -197,8 +210,18 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	 /** Installs a macro set contained in ij.jar. */
 	public void installFromIJJar(String path) {
-		  String text = openFromIJJar(path);
-		  if (text!=null) install(text);
+		String text = openFromIJJar(path);
+		if (text==null) return;
+		if (path.endsWith("StartupMacros.txt"))
+			install(text);
+		else
+			installSingleTool(text);
+	}
+
+	public void installSingleTool(String text) {
+		this.text = text;
+		macrosMenu = null;
+		install();
 	}
 
 	void installPopupMenu(String name, Program pgm) {
@@ -286,6 +309,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	String open(String path) {
+		if (path==null) return null;
 		try {
 			StringBuffer sb = new StringBuffer(5000);
 			BufferedReader r = new BufferedReader(new FileReader(path));

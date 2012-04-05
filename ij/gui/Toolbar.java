@@ -942,7 +942,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
 				tools[current].runMacroTool(name+"Options");
 			}
-		} else {
+		} else { //double click
 			if (isMacroTool(current)) {
 				String name = names[current].endsWith(" ")?names[current]:names[current]+" ";
 				tools[current].runMacroTool(name+"Options");
@@ -1298,7 +1298,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private 	void installStartupMacros() {
 		String firstStartupTool = Prefs.getString("tool00");
-		if (firstStartupTool==null || !firstStartupTool.startsWith("0")) {
+		if (!toolsetInstalled || firstStartupTool==null || !firstStartupTool.startsWith("0")) {
 			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			try {
 				new MacroInstaller().run(path);
@@ -1308,7 +1308,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			removeMacroTools();
 			setTool(RECTANGLE);
 		}
-		installStartupTools();
+		if (toolsetInstalled)
+			installStartupTools();
 		toolsetInstalled = false;
 	}
 
