@@ -357,6 +357,7 @@ public class Prefs {
 			if (threads>1) prefs.put(THREADS, Integer.toString(threads));
 			if (IJ.isMacOSX()) useJFileChooser = false;
 			saveOptions(prefs);
+			Toolbar.savePreferences();
 			savePluginPrefs(prefs);
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);
@@ -365,8 +366,6 @@ public class Prefs {
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
-			Toolbar tb = Toolbar.getInstance();
-			if (tb!=null) tb.savePreferences(prefs);
 			String path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {
 				File f = new File(prefsDir);
