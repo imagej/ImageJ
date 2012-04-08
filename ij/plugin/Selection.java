@@ -265,7 +265,12 @@ public class Selection implements PlugIn, Measurements {
 		ImageCanvas ic = imp.getCanvas();
 		if (poly.npoints<=150 && ic!=null && ic.getMagnification()>=12.0)
 			type = roi.isLine()?Roi.POLYLINE:Roi.POLYGON;
-		imp.setRoi(new PolygonRoi(poly,type));
+		Roi p = new PolygonRoi(poly,type);
+		if (roi.getStroke()!=null)
+			p.setStrokeWidth(roi.getStrokeWidth());
+		p.setStrokeColor(roi.getStrokeColor());
+		p.setName(roi.getName());
+		imp.setRoi(p);
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
@@ -300,6 +305,10 @@ public class Selection implements PlugIn, Measurements {
 			i2++;
 		}		
 		PolygonRoi p = new PolygonRoi(x, y, i2, type);
+		if (roi.getStroke()!=null)
+			p.setStrokeWidth(roi.getStrokeWidth());
+		p.setStrokeColor(roi.getStrokeColor());
+		p.setName(roi.getName());
 		imp.setRoi(p);
 		return p;
 	}
@@ -379,6 +388,10 @@ public class Selection implements PlugIn, Measurements {
 			i2++;
 		}		
 		PolygonRoi p = new PolygonRoi(x, y, i2, type);
+		if (roi.getStroke()!=null)
+			p.setStrokeWidth(roi.getStrokeWidth());
+		p.setStrokeColor(roi.getStrokeColor());
+		p.setName(roi.getName());
 		imp.setRoi(p);
 		return p;
 	}

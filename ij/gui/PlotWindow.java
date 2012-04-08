@@ -577,9 +577,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 		//IJ.log("removeListeners");
 		if (srcImp==null) return;
 		ImageCanvas ic = srcImp.getCanvas();
-		ic.removeMouseListener(this);
-		ic.removeMouseMotionListener(this);
-		ic.removeKeyListener(this);
+		if (ic!=null) {
+			ic.removeMouseListener(this);
+			ic.removeMouseMotionListener(this);
+			ic.removeKeyListener(this);
+		}
 		srcImp.removeImageListener(this);
 		Font font = live.getFont();
 		live.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));

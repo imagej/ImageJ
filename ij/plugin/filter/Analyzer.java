@@ -406,7 +406,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			reset();
 		incrementCounter();
 		int counter = rt.getCounter();
-		if (counter<=MAX_STANDARDS && !(stats.umean==0.0&&counter==1&&umeans[0]!=0f)) {
+		if (counter<=MAX_STANDARDS && !(stats.umean==0.0&&counter==1&&umeans!=null && umeans[0]!=0f)) {
 			if (umeans==null) umeans = new float[MAX_STANDARDS];
 			umeans[counter-1] = (float)stats.umean;
 		}

@@ -1661,9 +1661,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				fi.blues = lut.getBlues();
 				break;
 	    	case GRAY16:
-	    		if (compositeImage && fi.nImages==3)
-					fi.fileType = fi.RGB48;
-				else
+	    		if (compositeImage && fi.nImages==3) {
+	    			if ("Red".equals(getStack().getSliceLabel(1)))
+						fi.fileType = fi.RGB48;
+					else
+						fi.fileType = fi.GRAY16_UNSIGNED;
+				} else
 					fi.fileType = fi.GRAY16_UNSIGNED;
 				break;
 	    	case GRAY32:

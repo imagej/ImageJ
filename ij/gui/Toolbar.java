@@ -50,7 +50,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private static final int OFFSET = 5;
 	private static final String BRUSH_SIZE = "toolbar.brush.size";
 	public static final String CORNER_DIAMETER = "toolbar.arc.size";
-	public static String KEY = "toolbar.tool";
+	public static String TOOL_KEY = "toolbar.tool";
 		
 	private Dimension ps = new Dimension(SIZE*NUM_BUTTONS, SIZE);
 	private boolean[] down;
@@ -1298,7 +1298,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private 	void installStartupMacros() {
-		String firstStartupTool = Prefs.get(KEY+"00", "");
+		String firstStartupTool = Prefs.get(TOOL_KEY+"00", "");
 		if (!toolsetInstalled || firstStartupTool==null || !firstStartupTool.startsWith("0")) {
 			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			try {
@@ -1527,7 +1527,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	public void installStartupTools() {
 		for (int i=0; i<6; i++) {
-			String name = Prefs.get(KEY + (i/10)%10 + i%10, "");
+			String name = Prefs.get(TOOL_KEY + (i/10)%10 + i%10, "");
 			if (name.equals("")) break;
 			name = name.substring(1);
 			installingStartupTool = true;
@@ -1581,13 +1581,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		int index = 0;
 		for (int id=SPARE2; id<SPARE9; id++) {
 			if (instance.names[id]!=null && !instance.isMacroSet(id)) {
-				String key = KEY + (index/10)%10 + index%10;
+				String key = TOOL_KEY + (index/10)%10 + index%10;
 				index++;
 				Prefs.set(key, (id-SPARE2)+instance.names[id]);
 			}
 		}
 		for (int i=index; i<7; i++)
-			Prefs.set(KEY+(i/10)%10+i%10, "");
+			Prefs.set(TOOL_KEY+(i/10)%10+i%10, "");
 	}
 	
 	private boolean isMacroSet(int id) {

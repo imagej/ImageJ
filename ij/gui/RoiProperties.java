@@ -68,7 +68,7 @@ public class RoiProperties {
 		if (strokeColor==null) strokeColor = Roi.getColor();
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
 		double width = roi.getStrokeWidth();
-		if (width>1.0) strokeWidth = width;
+		if (width>0) strokeWidth = width;
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		int justification = TextRoi.LEFT;
