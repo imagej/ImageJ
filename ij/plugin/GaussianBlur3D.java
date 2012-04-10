@@ -23,9 +23,9 @@ public class GaussianBlur3D implements PlugIn {
 	
 	private boolean showDialog() {
 		GenericDialog gd = new GenericDialog("3D Gaussian Blur");
-		gd.addNumericField("X sigma", xsigma, 1);
-		gd.addNumericField("Y sigma", ysigma, 1);
-		gd.addNumericField("Z sigma", zsigma, 1);
+		gd.addNumericField("X sigma:", xsigma, 1);
+		gd.addNumericField("Y sigma:", ysigma, 1);
+		gd.addNumericField("Z sigma:", zsigma, 1);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;

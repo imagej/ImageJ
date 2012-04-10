@@ -91,7 +91,10 @@ public class Straightener implements PlugIn {
 	}
 
 	public ImageProcessor straightenLine(ImagePlus imp, int width) {
-		PolygonRoi roi = (PolygonRoi)imp.getRoi();
+		Roi tempRoi = imp.getRoi();
+		if (!(tempRoi instanceof PolygonRoi))
+			return null;
+		PolygonRoi roi = (PolygonRoi)tempRoi;
 		if (roi==null) return null;
 		if (roi.getState()==Roi.CONSTRUCTING)
 			roi.exitConstructingMode();
@@ -106,8 +109,8 @@ public class Straightener implements PlugIn {
 		n = p.npoints;
 		ImageProcessor ip = imp.getProcessor();
 		ImageProcessor ip2 = new FloatProcessor(n, width);
-		ImageProcessor distances = null;
-		if (IJ.debugMode)  distances = new FloatProcessor(n, 1);
+		//ImageProcessor distances = null;
+		//if (IJ.debugMode)  distances = new FloatProcessor(n, 1);
 		float[] pixels = (float[])ip2.getPixels();
 		double x1, y1;
 		double x2=p.xpoints[0]-(p.xpoints[1]-p.xpoints[0]);
@@ -118,7 +121,7 @@ public class Straightener implements PlugIn {
 			if (!processStack&&(i%10)==0) IJ.showProgress(i, n);
 			x1=x2; y1=y2;
 			x2=p.xpoints[i]; y2=p.ypoints[i];
-			if (distances!=null) distances.putPixelValue(i, 0, (float)Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)));
+			//if (distances!=null) distances.putPixelValue(i, 0, (float)Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)));
 			if (width==1) {
 				ip2.putPixelValue(i, 0, ip.getInterpolatedValue(x2, y2));
 				continue;
@@ -152,10 +155,10 @@ public class Straightener implements PlugIn {
 			ip2.setColorModel(ip.getColorModel());
 			ip2.resetMinAndMax();
 		}
-		if (distances!=null) {
-			distances.resetMinAndMax();
-			(new ImagePlus("Distances", distances)).show();
-		}
+		//if (distances!=null) {
+		//	distances.resetMinAndMax();
+		//	(new ImagePlus("Distances", distances)).show();
+		//}
 		return ip2;
 	}
 	

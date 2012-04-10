@@ -522,7 +522,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		if (bgThread==null) {
 			srcImp = WindowManager.getImage(srcImageID);
 			if (srcImp==null) return;
-			bgThread = new Thread(this, "Live Profiler");
+			bgThread = new Thread(this, "Live Histogram");
 			bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY));
 			bgThread.start();
 			imageUpdated(srcImp);
@@ -579,7 +579,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			if (doUpdate && srcImp!=null) {
 				if (srcImp.getRoi()!=null)
 					IJ.wait(50);	//delay to make sure the roi has been updated
-				showHistogram(srcImp, 256);
+				if (srcImp!=null)
+					showHistogram(srcImp, 256);
 			}
 			synchronized(this) {
 				if (doUpdate) {

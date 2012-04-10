@@ -76,7 +76,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         }
         GenericDialog gd = new GenericDialog(command);
         sigma = Math.abs(sigma);
-        gd.addNumericField("Sigma (Radius)", sigma, 2);
+        gd.addNumericField("Sigma (Radius):", sigma, 2);
         if (imp.getCalibration()!=null && !imp.getCalibration().getUnits().equals("pixels")) {
             hasScale = true;
             gd.addCheckbox("Scaled Units ("+imp.getCalibration().getUnits()+")", sigmaScaled);

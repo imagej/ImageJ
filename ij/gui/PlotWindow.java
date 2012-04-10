@@ -543,7 +543,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, Clipboard
 			if (doUpdate && plot!=null) {
 				this.plot = plot;
 				ImageProcessor ip = plot.getProcessor();
-				if (ip!=null)
+				if (ip!=null && imp!=null)
 					imp.setProcessor(null, ip);
 			}
 			synchronized(this) {
