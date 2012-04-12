@@ -1,0 +1,13 @@
+  var sCmds = newMenu("Stacks Menu Tool", 
+       newArray("Add Slice", "Delete Slice", "Next Slice [>]", "Previous Slice [<]", "Set Slice...", "-",
+       "Images to Stack", "Stack to Images", "Make Montage...", "Reslice [/]...", "Z Project...",
+       "3D Project...", "Plot Z-axis Profile", "-", "Label...", "Combine...", "Concatenate...", "-",
+       "Start Animation", "Stop Animation", "Animation Options...", "-", "T1 Head (2.4M, 16-bits)"));
+
+  macro "Stacks Menu Tool - C037T0b11ST8b09tTcb09k" {
+      cmd = getArgument();
+      if (cmd=="Images to Stack")
+          run(cmd, " ");
+      else if (cmd!="-")
+          run(cmd);
+  }

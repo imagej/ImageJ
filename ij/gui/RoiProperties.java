@@ -62,13 +62,13 @@ public class RoiProperties {
 		String nameLabel = isRange?"Range:":"Name:";
 		if (isRange) name = name.substring(7);
 		if (name==null) name = "";
-		if (!isRange && (roi instanceof ImageRoi))
+		if (!isRange && (roi instanceof ImageRoi) && !overlayOptions)
 			return showImageDialog(name);
 		if (roi.getStrokeColor()!=null) strokeColor = roi.getStrokeColor();
 		if (strokeColor==null) strokeColor = Roi.getColor();
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
 		double width = roi.getStrokeWidth();
-		if (width>1.0) strokeWidth = width;
+		if (width>0) strokeWidth = width;
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		int justification = TextRoi.LEFT;

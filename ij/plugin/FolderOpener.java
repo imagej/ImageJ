@@ -166,6 +166,7 @@ public class FolderOpener implements PlugIn {
 			int count = 0;
 			int counter = 0;
 			ImagePlus imp = null;
+			boolean firstMessage = true;
 			for (int i=start-1; i<list.length; i++) {
 				if ((counter++%increment)!=0)
 					continue;
@@ -177,7 +178,6 @@ public class FolderOpener implements PlugIn {
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();
 					height = imp.getHeight();
-					stackSize = imp.getStackSize();
 					bitDepth = imp.getBitDepth();
 					cal = imp.getCalibration();
 					if (convertToRGB) bitDepth = 24;
@@ -193,6 +193,7 @@ public class FolderOpener implements PlugIn {
 				}
 				if (imp==null)
 					continue;
+				stackSize = imp.getStackSize();
 				if (imp.getWidth()!=width || imp.getHeight()!=height) {
 					IJ.log(list[i] + ": wrong size; "+width+"x"+height+" expected, "+imp.getWidth()+"x"+imp.getHeight()+" found");
 					continue;
@@ -259,8 +260,10 @@ public class FolderOpener implements PlugIn {
 					if (openAsVirtualStack) {
 						if (slice==1)
 							((VirtualStack)stack).addSlice(list[i]);
-						else if (slice==2)
+						else if (slice==2 && firstMessage) {
 							IJ.log(list[i] + " ["+stackSize+"]: only the first slice will be used in virtual stack");
+							firstMessage = false;
+						}
 					} else
 						stack.addSlice(label2, ip);
 				}

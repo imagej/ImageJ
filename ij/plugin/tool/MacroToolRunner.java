@@ -26,6 +26,13 @@ public class MacroToolRunner extends PlugInTool {
 			return null;
 	}
 	
+	public int getMacroCount() {
+		if (installer!=null)
+			return installer.getMacroCount();
+		else
+			return 0;
+	}
+
 }
 
 

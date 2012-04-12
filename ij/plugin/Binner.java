@@ -51,7 +51,7 @@ public class Binner implements PlugIn {
 			if (ip.isInvertedLut()) ip2.invert();
 			stack2.addSlice(stack.getSliceLabel(z), ip2);
 		}
-		if (zshrink>1)
+		if (zshrink>1 && !imp.isHyperStack())
 			stack2 = shrinkZ(stack2, zshrink);
 		ImagePlus imp2 = (ImagePlus)imp.clone();
 		imp2.setStack("Reduced "+imp.getShortTitle(), stack2);
@@ -61,6 +61,8 @@ public class Binner implements PlugIn {
 			cal2.pixelHeight *= yshrink;
 			cal2.pixelDepth *= zshrink;
 		}
+		//if (zshrink>1 && imp.isHyperStack())
+		//	imp2 = shrinkHyperstackZ(imp2, zshrink);
 		imp2.setOpenAsHyperStack(imp.isHyperStack());
 		return imp2;
 	}
@@ -92,6 +94,35 @@ public class Binner implements PlugIn {
 			}
 		}
 		return stack2;
+	}
+	
+	public ImagePlus shrinkHyperstackZ(ImagePlus imp, int zshrink) {
+		int width = imp.getWidth();
+		int height = imp.getHeight();
+		int channels = imp.getNChannels();
+		int slices = imp.getNSlices();
+		int frames = imp.getNFrames();
+		ImageStack stack = imp.getStack();
+		int slices2 = slices/zshrink;
+		ImageStack stack2 = new ImageStack(width, height);
+		for (int c=1; c<=channels; c++) {
+			for (int t=1; t<=frames; t++) {
+				ImageStack tstack = new ImageStack(width, height);
+				for (int z=1; z<=slices; z++) {
+					int i = imp.getStackIndex(c, z, t);
+					ImageProcessor ip = stack.getProcessor(imp.getStackIndex(c, z, t));
+						tstack.addSlice(stack.getSliceLabel(i), ip);
+				}
+				//IJ.log("1: "+c+"  "+t+" "+tstack.getSize()+"  "+slices);
+				tstack = shrinkZ(tstack, zshrink);
+				for (int i=1; i<=tstack.getSize(); i++)
+					stack2.addSlice(tstack.getSliceLabel(i), tstack.getProcessor(i));
+			}
+		}
+		imp.setStack(stack2, channels, slices2, frames);
+		new HyperStackConverter().shuffle(imp, HyperStackConverter.ZTC);
+		IJ.showProgress(1.0);
+		return imp;
 	}
 	
 	public ImageProcessor shrink(ImageProcessor ip, int xshrink, int yshrink, int method) {
@@ -198,7 +229,7 @@ public class Binner implements PlugIn {
 
 	private boolean showDialog(ImagePlus imp) {
 		boolean stack = imp.getStackSize()>1;
-		if (imp.isHyperStack() || imp.isComposite())
+		if (imp.isComposite() && imp.getNChannels()==imp.getStackSize())
 			stack = false;
 		GenericDialog gd = new GenericDialog("Image Shrink");
 		gd.addNumericField("X shrink factor:", xshrink, 0);

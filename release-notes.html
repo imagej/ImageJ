@@ -5,30 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.46j 27 March 2012</u>
+<li> <u>1.46k 11 April 2012</u>
 <ul>
-<li> Thanks to Ignacio Arganda-Carreras, the
-<a href="http://imagejdocu.tudor.lu/doku.php?id=plugin:morphology:skeletonize3d:start">Skeletonize 3D</a>
-plugin is now built in as the <i>Process&gt;Binary&gt;Tools&gt;Skeletonize 3D</i> command.
-<li> Added the <i>Process&gt;Filters&gt;Gaussian Blur 3D</i> command.
-<li> When the ROI Manager window is closed, a dialog box is displayed that provides the
-option of moving displayed ROIs to an overlay.
-<li> <i>File&gt;Import&gt;Image Sequence</i> displays warnings if the folder
-contains tiff stacks and the "Use virtual stack" option is enabled.
-<li> <i>Image&gt;Calibrate</i> now uses scientific notation to draw
-fit parameters if needed.
-<li> Thanks to Wilhelm Burger, added a ByteProcessor(ip, scale) constructor.
-<li> Thanks to Gabriel Landini, fixed a bug that caused an invalid 0.0 to be 
-entered into the <i>Analyze&gt;Calibrate</i> dialog box if "Stack position" was enabled in
-<i>Analyze&gt;Set Measurements</i>.
-<li> Thanks to Mark Krebs, fixed a 1.46e regression that could cause
-<i>Image&gt;Stacks&gt;Tools&gt;Concatenate</i> to fail when
-called from a macro.
-<li> Thanks to Michael Cammer, fixed a v1.46g regression that caused the "Use stack histogram" 
-option in <i>Process&gt;Ehance Contrast</i> to not work as expected.
-<li> Thanks to Norbert Vischer, fixed a v1.46i regression that could cause an exception when using
-using <i>Analyze&gt;Measure</i> to measure Feret's Diameter.
-
+<li> Custom tool configurations created using the toolbar's ">>" menu are saved in the preferences file.
+<li> <i>Process&gt;Filters&gt;Gaussian Blur 3D</i> works with hyperstacks.
+<li> Thanks to Tiago Ferreira, fixed a bug that caused <i>FIle&gt;Import&gt;Image Sequence</i>
+to throw an exception of the first file in the folder was a stack and other files were not stacks.
+<li> Thanks to Norbert Vischer, fixed a bug that caused metadata to be lost when saving
+and reopening 3-channel composite 16-bit images.
+<li> Fixed a bug that caused <i>Edit&gt;Selection&gt;Properties</i> to change selection stroke
+widths less than 1.0 to 1.0.
+<li> Fixed a bug that caused <i>Edit&gt;Selection&gt;Fit Spline</i> and
+<i>Edit&gt;Selection&gt;Interpolate</i> to reset stroke colors and widths.
+widths less than 1.0 to 1.0.
+<li> Fixed regressions that caused <i>Analyze&gt;Measure</i> to not work
+with angle selections and to sometimes throw an exception.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

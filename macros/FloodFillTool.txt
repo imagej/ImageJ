@@ -1,0 +1,18 @@
+   var floodType = call("ij.Prefs.get", "tool.flood", "8-connected");
+   var alt = 8;
+
+    macro "Flood Fill Tool -C037B21P085373b75d0L4d1aL3135L4050L6166D57D77D68La5adLb6bcD09D94" {
+        setupUndo();
+        getCursorLoc(x, y, z, flags);
+       if (flags&alt!=0)
+          setColor(getValue("color.background"));
+        floodFill(x, y, floodType);
+     }
+
+  macro 'Flood Fill Tool Options...' {
+      Dialog.create("Flood Fill Tool");
+      Dialog.addChoice("Flood Type:", newArray("4-connected", "8-connected"), floodType);
+      Dialog.show();
+      floodType = Dialog.getChoice();
+      call("ij.Prefs.set", "tool.flood", floodType);
+  }

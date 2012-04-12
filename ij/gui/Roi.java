@@ -1329,7 +1329,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		this.nonScalable = nonScalable;
 	}
 
-	/** Sets the width of the line used to draw this ROI.
+	/** Sets the width of the line used to draw this ROI. Set
+	 * the width to 0.0 and the ROI will be drawn using a
+	 * a 1 pixel stroke width regardless of the magnification.
 	 * @see #setStrokeColor(Color)
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
@@ -1514,7 +1516,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Returns 'true' if this is a line selection. */
     public boolean isLine() {
-        return (type>=LINE && type<=FREELINE) || type==ANGLE;
+        return type>=LINE && type<=FREELINE;
     }
     
 	/** Returns 'true' if this is an ROI primarily used from drawing

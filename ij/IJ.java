@@ -281,6 +281,7 @@ public class IJ {
 			commandTable.put("In", "In [+]");
 			commandTable.put("Out", "Out [-]");
 			commandTable.put("Enhance Contrast", "Enhance Contrast...");
+			commandTable.put("XY Coodinates... ", "XY Coordinates... ");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

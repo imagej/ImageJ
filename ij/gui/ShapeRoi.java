@@ -490,7 +490,7 @@ public class ShapeRoi extends Roi {
 			return null;
 	}
 	
-		/**Implements the rules of conversion from <code>java.awt.geom.GeneralPath</code> to <code>ij.gui.Roi</code>.
+	/**Implements the rules of conversion from <code>java.awt.geom.GeneralPath</code> to <code>ij.gui.Roi</code>.
 	 * @param segments The number of segments that compose the path
 	 * @param linesOnly Indicates wether the GeneralPath object is composed only of SEG_LINETO segments
 	 * @param curvesOnly Indicates wether the GeneralPath object is composed only of SEG_CUBICTO and SEG_QUADTO segments

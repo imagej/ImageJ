@@ -1,0 +1,34 @@
+   var dCmds = newMenu("Developer Menu Tool",
+      newArray("ImageJ Website","News", "Documentation", "ImageJ Wiki", "Resources", "Macro Language", "Macros", 
+      "Macro Functions", "Startup Macros...", "Plugins", "Source Code", "Mailing List Archives", "-", "Record...", 
+      "Capture Screen ", "Monitor Memory...", "List Commands...", "Control Panel...", "Search...", "Debug Mode"));
+      
+   macro "Developer Menu Tool - C037T0b11DT7b09eTcb09v" {
+       cmd = getArgument();
+       if (cmd=="ImageJ Website")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/");
+       else if (cmd=="News")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/notes.html");
+       else if (cmd=="Documentation")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/docs/");
+       else if (cmd=="ImageJ Wiki")
+           run("URL...", "url=http://imagejdocu.tudor.lu/imagej-documentation-wiki/");
+       else if (cmd=="Resources")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/developer/");
+       else if (cmd=="Macro Language")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/developer/macro/macros.html");
+       else if (cmd=="Macros")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/macros/");
+        else if (cmd=="Macro Functions")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/developer/macro/functions.html");
+        else if (cmd=="Plugins")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/plugins/");
+        else if (cmd=="Source Code")
+           run("URL...", "url=http://rsbweb.nih.gov/ij/developer/source/");
+        else if (cmd=="Mailing List Archives")
+           run("URL...", "url=https://list.nih.gov/archives/imagej.html");
+        else if (cmd=="Debug Mode")
+           setOption("DebugMode", true);
+	 else if (cmd!="-")
+            run(cmd);
+   }

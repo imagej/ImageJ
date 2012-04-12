@@ -1827,12 +1827,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		GenericDialog gd = new GenericDialog("ROI Manager");
 		gd.addMessage("Move the "+n+" displayed ROIs to an overlay?");
+		gd.setOKLabel("Discard");
+		gd.setCancelLabel("Move to Overlay");
 		gd.showDialog();
-		if (gd.wasCanceled()) {
+		if (gd.wasCanceled())
+			moveRoisToOverlay(imp);
+		else
 			imp.draw();
-			return;
-		}
-		moveRoisToOverlay(imp);
     }
     
     /** Moves all the ROIs to the specified image's overlay. */

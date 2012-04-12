@@ -55,7 +55,6 @@ public class ColorProcessor extends ImageProcessor {
 		this.pixels = pixels;
 	}
 
-
 	void createColorModel() {
 		cm = new DirectColorModel(24, 0xff0000, 0xff00, 0xff);
 	}
@@ -94,6 +93,16 @@ public class ColorProcessor extends ImageProcessor {
 		SampleModel sampleModel = wr.getSampleModel();
 		sampleModel = sampleModel.createCompatibleSampleModel(width, height);
 		return sampleModel;
+	}
+
+	public void setColorModel(ColorModel cm) {
+		if (cm!=null && (cm instanceof IndexColorModel))
+			throw new IllegalArgumentException("DirectColorModel required");
+		this.cm = cm;
+		newPixels = true;
+		source = null;
+		rgbSampleModel = null;
+		rgbRaster = null;
 	}
 
 	/** Returns a new, blank ColorProcessor with the specified width and height. */

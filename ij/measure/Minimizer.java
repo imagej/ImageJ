@@ -16,7 +16,7 @@ import java.util.Hashtable;
  *  including the 'outside contraction' as described in:
  *      J.C. Lagarias, J.A. Reeds, M.H. Wright, P. Wright:
  *      Convergence properties of the Nelder-Mead simplex algorithm in low dimensions.
- *      SIAM J. Optim. 9, 112–147 (1998).
+ *      SIAM J. Optim. 9, 112-147 (1998).
  * Differences w.r.t. this publication:
  * - If outside contraction is rejected, instead of shrinking the whole simplex, an inside
  *   contraction is tried first. Own experiments show that this results in slightly better

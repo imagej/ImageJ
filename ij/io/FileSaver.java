@@ -214,7 +214,7 @@ public class FileSaver {
 		return out.toByteArray();
 	}
 
-	void  saveDisplayRangesAndLuts(ImagePlus imp, FileInfo fi) {
+	public void saveDisplayRangesAndLuts(ImagePlus imp, FileInfo fi) {
 		CompositeImage ci = (CompositeImage)imp;
 		int channels = imp.getNChannels();
 		fi.displayRanges = new double[channels*2];
