@@ -532,11 +532,11 @@ public class ImageStack {
 	}
 
 	/** Experimental */
-	public void drawSphere(int xc, int yc, int zc) {
-		int lineWidth = 200;
-	    double r = lineWidth/2.0;
+	public void drawSphere(double radius, int xc, int yc, int zc) {
+		int diameter = (int)Math.round(radius*2);
+	    double r = radius;
 		int xmin=(int)(xc-r+0.5), ymin=(int)(yc-r+0.5), zmin=(int)(zc-r+0.5);
-		int xmax=xmin+lineWidth, ymax=ymin+lineWidth, zmax=zmin+lineWidth;
+		int xmax=xmin+diameter, ymax=ymin+diameter, zmax=zmin+diameter;
 		double r2 = r*r;
 		r -= 0.5;
 		double xoffset=xmin+r, yoffset=ymin+r, zoffset=zmin+r;
