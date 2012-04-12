@@ -1390,8 +1390,8 @@ public class Menus {
 			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
 			return;
 		}
-		String firstStartupTool = Prefs.get(Toolbar.TOOL_KEY+"00", "");
-		boolean installStartupMacrosTools = !firstStartupTool.startsWith("0");
+		String customTool0 = Prefs.get(Toolbar.TOOL_KEY+"00", "");
+		boolean installStartupMacrosTools = customTool0.equals("") || Character.isDigit(customTool0.charAt(0));
 
 		if (macrosPath==null) {
 			(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");

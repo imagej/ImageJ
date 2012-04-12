@@ -1242,6 +1242,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				removeMacroTools();
 				setTool(RECTANGLE);
 				currentSet = "Startup Macros";
+				resetPrefs();
 			} else if (label.equals("Help...")) {
 				IJ.showMessage("Tool Switcher and Loader",
 					"Use this drop down menu to switch to alternative\n"+
@@ -1297,14 +1298,22 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
+	private void resetPrefs() {
+		for (int i=0; i<7; i++) {
+			String key = TOOL_KEY+(i/10)%10+i%10;
+			if (!Prefs.get(key, "").equals(""))
+				Prefs.set(key, "");
+		}
+	}
+	
 	private 	void installStartupMacros() {
-		String firstStartupTool = Prefs.get(TOOL_KEY+"00", "");
-		if (!toolsetInstalled || firstStartupTool==null || !firstStartupTool.startsWith("0")) {
+		if (!toolsetInstalled || !Prefs.get(TOOL_KEY+"00", "").equals("")) {
 			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
 			try {
 				new MacroInstaller().run(path);
 			} catch
 				(Exception ex) {}
+			resetPrefs();
 		} else {
 			removeMacroTools();
 			setTool(RECTANGLE);
@@ -1456,7 +1465,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				else
 					installingStartupTool = false;
 			}
+			setPrefs(tool);
 		}
+	}
+	
+	private void setPrefs(int id) {
+		int index = id - SPARE2;
+		String key = TOOL_KEY + (index/10)%10 + index%10;
+		Prefs.set(key, instance.names[id]);
 	}
 
 	public static void removeMacroTools() {
@@ -1483,6 +1499,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				instance.setTool(id);
 			else
 				instance.installingStartupTool = false;
+			instance.setPrefs(id);
 		}
 	}
 
@@ -1526,10 +1543,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void installStartupTools() {
-		for (int i=0; i<6; i++) {
+		for (int i=0; i<=6; i++) {
 			String name = Prefs.get(TOOL_KEY + (i/10)%10 + i%10, "");
-			if (name.equals("")) break;
-			name = name.substring(1);
+			if (name.equals("")) continue;
 			installingStartupTool = true;
 			boolean ok = installBuiltinTool(name);
 			if (!ok) {
@@ -1572,22 +1588,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		} else
 			ok = false;
 		return ok;
-	}
-
-	/** Called once when ImageJ quits. */
-	public static void savePreferences() {
-		if (instance==null || instance.toolsetInstalled)
-			return;
-		int index = 0;
-		for (int id=SPARE2; id<SPARE9; id++) {
-			if (instance.names[id]!=null && !instance.isMacroSet(id)) {
-				String key = TOOL_KEY + (index/10)%10 + index%10;
-				index++;
-				Prefs.set(key, (id-SPARE2)+instance.names[id]);
-			}
-		}
-		for (int i=index; i<7; i++)
-			Prefs.set(TOOL_KEY+(i/10)%10+i%10, "");
 	}
 	
 	private boolean isMacroSet(int id) {
