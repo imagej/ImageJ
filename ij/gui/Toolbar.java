@@ -1049,15 +1049,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private void addPluginTools() {
 		switchPopup.addSeparator();
 		addBuiltInTool("Arrow");
-		addBuiltInTool("Overlay Brush");
-		addBuiltInTool("Pixel Inspector");
-		addBuiltInTool("Pencil");
 		addBuiltInTool("Brush");
-		addBuiltInTool("Flood Fill Tool");
-		addBuiltInTool("Spray Can");
 		addBuiltInTool("Developer Menu");
-		addBuiltInTool("Stacks Menu");
+		addBuiltInTool("Flood Filler");
 		addBuiltInTool("LUT Menu");
+		addBuiltInTool("Overlay Brush");
+		addBuiltInTool("Pencil");
+		addBuiltInTool("Pixel Inspector");
+		addBuiltInTool("Spray Can");
+		addBuiltInTool("Stacks Menu");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
@@ -1207,33 +1207,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (!(label.equals("Help...")||label.equals("Remove Tools")) && !isTool)
 				currentSet = label;
 			if (isTool) {
-				if (cmd.equals("Tool")) { // built in tool
-					PlugInTool tool = null;
-					if (label.equals("Arrow")) {
-						tool = new ij.plugin.tool.ArrowTool();
-						if (tool!=null) tool.run("");
-					} else if (label.equals("Overlay Brush")) {
-						tool = new ij.plugin.tool.OverlayBrushTool();
-						if (tool!=null) tool.run("");
-					} else if (label.equals("Pixel Inspector")) {
-						tool = new ij.plugin.tool.PixelInspectionTool();
-						if (tool!=null) tool.run("");
-					} else if (label.equals("Pencil")) {
-						(new MacroInstaller()).installFromIJJar("/macros/PencilTool.txt");
-					} else if (label.equals("Brush")) {
-						(new MacroInstaller()).installFromIJJar("/macros/BrushTool.txt");
-					} else if (label.equals("Flood Fill Tool")) {
-						(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
-					} else if (label.equals("Spray Can")) {
-						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
-					} else if (label.equals("Developer Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/DeveloperMenuTool.txt");
-					} else if (label.equals("Stacks Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/StacksMenuTool.txt");
-					} else if (label.equals("LUT Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
-					}
-				} else  // plugin or macro tool in ImageJ/plugins/Tools
+				if (cmd.equals("Tool")) // built in tool
+					installBuiltinTool(label);
+				else  // plugin or macro tool in ImageJ/plugins/Tools
 					IJ.run(label);
 				return;
 			}
@@ -1571,11 +1547,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		} else if (label.startsWith("Pixel Inspect")) {
 			tool = new ij.plugin.tool.PixelInspectionTool();
 			if (tool!=null) tool.run("");
+		} else if (label.startsWith("Brush")||label.startsWith("Paintbrush")) {
+			tool = new ij.plugin.tool.BrushTool();
+			if (tool!=null) tool.run("");
 		} else if (label.startsWith("Pencil")) {
-			(new MacroInstaller()).installFromIJJar("/macros/PencilTool.txt");
-		} else if (label.startsWith("Brush")) {
-			(new MacroInstaller()).installFromIJJar("/macros/BrushTool.txt");
-		} else if (label.equals("Flood Fill Tool")) {
+			tool = new ij.plugin.tool.BrushTool();
+			if (tool!=null) tool.run("pencil");
+		} else if (label.startsWith("Flood Fill")) {
 			(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
 		} else if (label.startsWith("Spray Can")) {
 			(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");

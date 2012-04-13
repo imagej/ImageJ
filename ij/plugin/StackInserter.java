@@ -5,8 +5,8 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 
-/** This plugin, which implements the Image>Stacks>Insert 
-	command, inserts an image or stack into a stack. */
+/** This plugin, which implements the Image/Stacks/Tools/Insert 
+	command, inserts an image or stack into another image or stack. */
 public class StackInserter implements PlugIn {
 
 	private static int index1;
@@ -20,7 +20,7 @@ public class StackInserter implements PlugIn {
 			return;
 		}
 		if (wList.length==1) {
-			IJ.showMessage("Stack Inserter", "At least two windows must be open, \nincluding at least one stack.");
+			IJ.showMessage("Stack Inserter", "At least two windows must be open.");
 			return;
 		}
 		String[] titles = new String[wList.length];
@@ -34,8 +34,8 @@ public class StackInserter implements PlugIn {
 		if (index1>=titles.length)index1 = 0;
 		if (index2>=titles.length)index2 = 0;
 		GenericDialog gd = new GenericDialog("Stack Inserter");
-		gd.addChoice("Source Image or Stack: ", titles, titles[index1]);
-		gd.addChoice("Destination Stack: ", titles, titles[index2]);
+		gd.addChoice("Source: ", titles, titles[index1]);
+		gd.addChoice("Destination: ", titles, titles[index2]);
 		gd.addNumericField("X Location: ", 0, 0);
 		gd.addNumericField("Y Location: ", 0, 0);
 		gd.showDialog();
@@ -51,10 +51,6 @@ public class StackInserter implements PlugIn {
 		ImagePlus imp2 = WindowManager.getImage(wList[index2]);
 		if (imp1.getType()!= imp2.getType()) {
 			IJ.showMessage("Stack Inserter", "The source and destination must be the same type.");
-			return;
-		}
-		if (imp2.getStackSize()==1) {
-			IJ.showMessage("Stack Inserter", "The destination must be a stack.");
 			return;
 		}
 		if (imp1== imp2) {
