@@ -388,7 +388,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case 'F': g.fillRect(x+v(), y+v(), v(), v()); break;  // filled rectangle
 				case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
 				case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
-				case 'C': g.setColor(new Color(v()*16,v()*16,v()*16)); break; // set color
+				case 'C': // set color
+					int v1=v(), v2=v(), v3=v();
+					Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(v1*16,v2*16,v3*16);
+					g.setColor(color);
+					break; 
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
 				case 'D': g.fillRect(x+v(), y+v(), 1, 1); break; // dot
 				case 'P': // polyline
@@ -728,12 +732,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public static void setForegroundColor(Color c) {
-		if (c!=null) {
-			foregroundColor = c;
-			repaintTool(DROPPER);
-			if (!IJ.isMacro()) setRoiColor(c);
-			IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
+		if (c==null) return;
+		foregroundColor = c;
+		repaintTool(DROPPER);
+		for (int i=SPARE2; i<=SPARE8; i++) {
+			if (instance!=null && instance.names[i]!=null
+			&& (instance.names[i].startsWith("Paint")||instance.names[i].startsWith("Pencil")||instance.names[i].startsWith("Flood")))
+				repaintTool(i);
 		}
+		if (!IJ.isMacro()) setRoiColor(c);
+		IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
 	}
 
 	public static Color getBackgroundColor() {
@@ -1575,6 +1583,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return false;
 		boolean rtn = ((MacroToolRunner)tools[id]).getMacroCount()>2;
 		return rtn;
+	}
+	
+	public void repaint() {
+		super.repaint();
+		//IJ.log("repaint");
 	}
 
 }

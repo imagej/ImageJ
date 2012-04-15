@@ -5,6 +5,7 @@ import ij.gui.*;
 import ij.plugin.Colors;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Vector;
 
 	public class BrushTool extends PlugInTool implements Runnable {
 	private static String BRUSH_WIDTH_KEY = "brush.width";
@@ -17,6 +18,7 @@ import java.awt.event.*;
 	private int x2, x3;
 	private boolean isPencil;
 	private Overlay overlay;
+	private Options options;
 
 	public void run(String arg) {
 		isPencil = "pencil".equals(arg);
@@ -38,14 +40,12 @@ import java.awt.event.*;
 		else
 			ip.setColor(Toolbar.getForegroundColor());
 		ip.moveTo(x, y);
+		if (!e.isShiftDown()) {
+			ip.lineTo(x, y);
+			imp.updateAndDraw();
+		}
 		x2 = -1;
 		x3 = x;
-		if (overlay!=null && overlay.size()>0 && CIRCLE_NAME.equals(overlay.get(overlay.size()-1).getName())) {
-			overlay.remove(overlay.size()-1);
-			imp.setOverlay(overlay);
-		} else if (overlay!=null)
-			imp.setOverlay(null);
-		overlay = null;
 	}
 
 	public void mouseDragged(ImagePlus imp, MouseEvent e) {
@@ -76,7 +76,15 @@ import java.awt.event.*;
 	}
 
 	public void mouseReleased(ImagePlus imp, MouseEvent e) {
+		if (overlay!=null && overlay.size()>0 && CIRCLE_NAME.equals(overlay.get(overlay.size()-1).getName())) {
+			overlay.remove(overlay.size()-1);
+			imp.setOverlay(overlay);
+		} else if (overlay!=null)
+			imp.setOverlay(null);
+		overlay = null;
 		if (e.isShiftDown()) {
+			if (options!=null)
+				options.setWidth(width);
 			if (isPencil)
 				Prefs.set(PENCIL_WIDTH_KEY, width);
 			else
@@ -99,9 +107,9 @@ import java.awt.event.*;
 
 	public String getToolIcon() {
 		if (isPencil)
-			return "C037L494fL4990L90b0Lc1c3L82a4Lb58bL7c4fDb4L5a5dL6b6cD7b";
+			return "C037L4990L90b0Lc1c3L82a4Lb58bL7c4fDb4L494fC123L5a5dL6b6cD7b";
 		else
-			return "C037La077Ld098L6859L4a2fL2f4fL3f99L5e9bL9b98L6888L5e8dL888c";
+			return "C037La077Ld098L6859L9b98L6888L888cL998aL2f4fL4a2fL5e8dL5e9bC123L8a8bL797cL696dL5a5dL4c4eD3e";
 	}
 
 	public void run() {
@@ -109,25 +117,36 @@ import java.awt.event.*;
 	}
 
 	class Options implements DialogListener {
+		GenericDialog gd;
 
 		Options() {
 			if (dialogShowing)
 				return;
 			dialogShowing = true;
+			options = this;
 			showDialog();
+		}
+		
+		void setWidth(int width) {
+			Vector numericFields = gd.getNumericFields();
+			TextField widthField  = (TextField)numericFields.elementAt(0);
+			widthField.setText(""+width);
+			Vector sliders = gd.getSliders();
+			Scrollbar sb = (Scrollbar)sliders.elementAt(0);
+			sb.setValue(width);
 		}
 
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.getColorName(color, "red");
 			String name = isPencil?"Pencil":"Brush";
-			GenericDialog gd = new NonBlockingGenericDialog(name+" Options");
-			gd.addSlider(name+" width (pixels):", 1, 50, width);
+			gd = new NonBlockingGenericDialog(name+" Options");
+			gd.addSlider(name+" width:", 1, 50, width);
 			gd.addChoice("Color:", Colors.colors, colorName);
-			gd.setInsets(10, 0, 0);
-			gd.addMessage("You can also set the width by shift-dragging and\n"
-									+"the color using the Color Picker (shift-k). Press\n"
-									+"the alt key to draw in the background color.");
+			gd.setInsets(10, 10, 0);
+			gd.addMessage("Shift-drag to change width\n"
+									+"Alt-drag to draw in background color\n"
+									+"Color Picker (shift-k) changes color");
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");
