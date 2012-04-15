@@ -736,9 +736,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		foregroundColor = c;
 		repaintTool(DROPPER);
 		for (int i=SPARE2; i<=SPARE8; i++) {
-			if (instance!=null && instance.names[i]!=null
-			&& (instance.names[i].startsWith("Paint")||instance.names[i].startsWith("Pencil")||instance.names[i].startsWith("Flood")))
-				repaintTool(i);
+			if (instance!=null && instance.icons[i]!=null && instance.icons[i].contains("C123"))
+				repaintTool(i);  // some of this tool's icon is drawn in the foreground color
 		}
 		if (!IJ.isMacro()) setRoiColor(c);
 		IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
@@ -1585,9 +1584,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		return rtn;
 	}
 	
-	public void repaint() {
-		super.repaint();
-		//IJ.log("repaint");
-	}
+	//public void repaint() {
+	//	super.repaint();
+	//}
 
 }
