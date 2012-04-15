@@ -69,7 +69,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     private MacroInstaller macroInstaller;
     private boolean addingSingleTool;
     private boolean installingStartupTool;
-    private boolean toolsetInstalled;
 	private int pc;
 	private String icon;
 	private int startupTime;
@@ -1272,10 +1271,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                     if (IJ.shiftKeyDown()) {
                         IJ.open(path);
                 		IJ.setKeyUp(KeyEvent.VK_SHIFT);
-                    } else {
+                    } else
                         new MacroInstaller().run(path);
-                        toolsetInstalled = true;
-                    }
                 } catch(Exception ex) {}
             }
 		}
@@ -1290,20 +1287,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private 	void installStartupMacros() {
-		if (!toolsetInstalled || !Prefs.get(TOOL_KEY+"00", "").equals("")) {
-			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
-			try {
-				new MacroInstaller().run(path);
-			} catch
-				(Exception ex) {}
-			resetPrefs();
-		} else {
-			removeMacroTools();
-			setTool(RECTANGLE);
-		}
-		if (toolsetInstalled)
-			installStartupTools();
-		toolsetInstalled = false;
+		resetTools();
+		String path = IJ.getDirectory("macros")+"StartupMacros.txt";
+		try {
+			MacroInstaller mi = new MacroInstaller();
+			mi.installFile(path);
+		} catch
+			(Exception ex) {}
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -1582,6 +1572,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			return false;
 		boolean rtn = ((MacroToolRunner)tools[id]).getMacroCount()>2;
 		return rtn;
+	}
+	
+	public static boolean installStartupMacrosTools() {
+		String customTool0 = Prefs.get(Toolbar.TOOL_KEY+"00", "");
+		return customTool0.equals("") || Character.isDigit(customTool0.charAt(0));
 	}
 	
 	//public void repaint() {
