@@ -133,7 +133,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				int newSize = s2.getSize();
 				if (s2.getWidth()>0 && newSize>0) {
 					if (restoreRoi)
-						imp.killRoi();
+						imp.deleteRoi();
 					Calibration cal = imp.getCalibration();
 					if (cal.scaled()) {
 						cal.pixelWidth *= origWidth/newWidth;

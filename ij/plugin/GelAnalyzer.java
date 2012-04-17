@@ -415,7 +415,7 @@ public class GelAnalyzer implements PlugIn {
 		ImagePlus lanes = new ImagePlus("Lanes of "+gel.getShortTitle(), ipLanes);
 		lanes.changes = true;
 		lanes.setRoi(gel.getRoi());
-		gel.killRoi();
+		gel.deleteRoi();
 		for (int i=0; i<overlay.size(); i++) {
 			Roi roi = overlay.get(i);
 			Rectangle r = roi.getBounds();
@@ -431,7 +431,7 @@ public class GelAnalyzer implements PlugIn {
 				ipLanes.drawString(s, xloc, r.y+r.height/2+6);
 			}
 		}
-		lanes.killRoi();
+		lanes.deleteRoi();
 		lanes.show();
 	}
 	
@@ -517,7 +517,7 @@ class PlotsCanvas extends ImageCanvas {
 			return;
 		if (IJ.shiftKeyDown()) {
 			IJ.showMessage("Gel Analyzer", "Unable to measure area because shift key is down.");
-			imp.killRoi();
+			imp.deleteRoi();
 			counter = 0;
 			return;
 		}
@@ -558,7 +558,7 @@ class PlotsCanvas extends ImageCanvas {
 			imp.getProcessor().snapshot();
 			roi.drawPixels();
 			imp.updateAndDraw();
-			imp.killRoi();
+			imp.deleteRoi();
 		}
 	}
 
@@ -567,7 +567,7 @@ class PlotsCanvas extends ImageCanvas {
 	}
 
 	void labelPeaks() {
-		imp.killRoi();
+		imp.deleteRoi();
 		double total = 0.0;
 		for (int i=0; i<counter; i++)
 			total += measured[i];

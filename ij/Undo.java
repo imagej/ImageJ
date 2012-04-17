@@ -2,10 +2,10 @@
 
 package ij;
 import ij.process.*;
-import java.awt.*;
-import java.awt.image.*;
 import ij.gui.*;
 import ij.measure.Calibration;
+import java.awt.*;
+import java.awt.image.*;
 
 /** This class consists of static methods and
 	fields that implement ImageJ's Undo command. */
@@ -19,12 +19,14 @@ public class Undo {
 	public static final int COMPOUND_FILTER_DONE = 5;
 	public static final int TRANSFORM = 6;
 	public static final int OVERLAY_ADDITION = 7;
+	public static final int ROI = 8;
 	
 	private static int whatToUndo = NOTHING;
 	private static int imageID;
 	private static ImageProcessor ipCopy = null;
 	private static ImagePlus impCopy;
 	private static Calibration calCopy;
+	private static Roi roiCopy;
 	
 	public static void setup(int what, ImagePlus imp) {
 		if (imp==null) {
@@ -56,11 +58,19 @@ public class Undo {
 		} else if (what==OVERLAY_ADDITION) {
 			impCopy = null;
 			ipCopy = null;
+		} else if (what==ROI) {
+			impCopy = null;
+			ipCopy = null;
+			Roi roi = imp.getRoi();
+			if (roi!=null) {
+				roiCopy = (Roi)roi.clone();
+				roiCopy.setImage(null);
+			} else
+				whatToUndo = NOTHING;
 		} else
 			ipCopy = null;
 	}
-	
-	
+		
 	public static void reset() {
 		if (whatToUndo==COMPOUND_FILTER || whatToUndo==OVERLAY_ADDITION)
 			return;
@@ -69,6 +79,7 @@ public class Undo {
 		ipCopy = null;
 		impCopy = null;
 		calCopy = null;
+		roiCopy = null;
 		//IJ.log("Undo: reset");
 	}
 	
@@ -126,6 +137,11 @@ public class Undo {
 				if (roi!=null)
 					roi.abortPaste();
 	    		break;
+			case ROI:
+				Roi roiCopy2 = roiCopy;
+				setup(ROI, imp); // setup redo
+				imp.setRoi(roiCopy2);
+	    		return; //don't reset
 			case OVERLAY_ADDITION:
 				Overlay overlay = imp.getOverlay();
 				if (overlay==null) 

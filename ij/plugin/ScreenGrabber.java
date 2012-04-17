@@ -26,7 +26,7 @@ public class ScreenGrabber implements PlugIn {
 			else {
 				Undo.setup(Undo.TYPE_CONVERSION, imp);
 				imp.setProcessor(null, imp2.getProcessor());
-				imp.killRoi();
+				imp.deleteRoi();
 			}
 		} else
 			imp2.show();

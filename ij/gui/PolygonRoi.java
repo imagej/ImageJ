@@ -347,7 +347,7 @@ public class PolygonRoi extends Roi {
 		// Do rubber banding
 		int tool = Toolbar.getToolId();
 		if (!(tool==Toolbar.POLYGON || tool==Toolbar.POLYLINE || tool==Toolbar.ANGLE)) {
-			imp.killRoi();
+			imp.deleteRoi();
 			imp.draw();
 			return;
 		}
@@ -469,7 +469,7 @@ public class PolygonRoi extends Roi {
 			bounds = null;
 		}
 		if (nPoints<2 || (!(type==FREELINE||type==POLYLINE||type==ANGLE) && (nPoints<3||width==0||height==0))) {
-			if (imp!=null) imp.killRoi();
+			if (imp!=null) imp.deleteRoi();
 			if (type!=POINT) return;
 		}
 		state = NORMAL;
@@ -655,7 +655,7 @@ public class PolygonRoi extends Roi {
 	public void deleteHandle(double ox, double oy) {
 		if (imp==null) return;
 		if (nPoints<=1)
-			{imp.killRoi(); return;}
+			{imp.deleteRoi(); return;}
 		boolean splineFit = xSpline != null;
 		xSpline = null;
 		FloatPolygon points = getFloatPolygon();

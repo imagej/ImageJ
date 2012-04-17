@@ -152,13 +152,13 @@ public class Clipboard implements PlugIn, Transferable {
 			ImageProcessor ip = clipboard.getProcessor();
 			ImagePlus imp2 = new ImagePlus("Clipboard", ip.duplicate());
 			Roi roi = clipboard.getRoi();
-			imp2.killRoi();
+			imp2.deleteRoi();
 			if (roi!=null && roi.isArea() && roi.getType()!=Roi.RECTANGLE) {
 				roi = (Roi)roi.clone();
 				roi.setLocation(0, 0);
 				imp2.setRoi(roi);
 				IJ.run(imp2, "Clear Outside", null);
-				imp2.killRoi();
+				imp2.deleteRoi();
 			}
 			WindowManager.checkForDuplicateName = true;          
 			imp2.show();

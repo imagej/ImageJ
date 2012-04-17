@@ -101,7 +101,7 @@ public class OverlayCommands implements PlugIn {
 			defaultRoi = (Roi)roi.clone();
 		defaultRoi.setPosition(setPos?1:0);
 		imp.setOverlay(overlay);
-		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.killRoi();
+		if (points || (roi instanceof ImageRoi) || (roi instanceof Arrow)) imp.deleteRoi();
 		Undo.setup(Undo.OVERLAY_ADDITION, imp);
 	}
 	
@@ -273,7 +273,7 @@ public class OverlayCommands implements PlugIn {
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) ic.setShowAllROIs(false);
 		rm.setEditMode(imp, false);
-		imp.killRoi();
+		imp.deleteRoi();
 	}
 	
 	void toRoiManager() {

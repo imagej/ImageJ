@@ -767,7 +767,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		int hmax = i;
 		Roi roi = imp.getRoi();
 		if (hmax>=hmin) {
-			if (RGBImage) imp.killRoi();
+			if (RGBImage) imp.deleteRoi();
 			min = stats.histMin+hmin*stats.binSize;
 			max = stats.histMin+hmax*stats.binSize;
 			if (min==max)

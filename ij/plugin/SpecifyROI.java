@@ -118,7 +118,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
         gd.showDialog();
         if (gd.wasCanceled()) {
         	 if (roi==null)
-        		imp.killRoi();
+        		imp.deleteRoi();
         	 else // *ALWAYS* restore initial ROI when cancelled
         		imp.setRoi(roi);
         }

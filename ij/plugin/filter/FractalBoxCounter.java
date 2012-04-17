@@ -69,7 +69,7 @@ public class FractalBoxCounter implements PlugInFilter {
 		for (int i=0; i<boxSizes.length; i++)
 			maxBoxSize = Math.max(maxBoxSize, boxSizes[i]);
 		counts = new int[maxBoxSize*maxBoxSize+1];
-		imp.killRoi();
+		imp.deleteRoi();
 		if (!ip.isBinary()) {
 			IJ.error("8-bit binary image (0 and 255) required.");
 			return;
@@ -235,7 +235,7 @@ public class FractalBoxCounter implements PlugInFilter {
 		double D = plot();
 		rt.addValue("D", D);
 		rt.show("Results");
-		imp.killRoi();
+		imp.deleteRoi();
 	}
 }
 

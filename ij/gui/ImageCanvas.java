@@ -1034,7 +1034,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (roi!=null && roi.contains(ox, oy)) {
 					Rectangle r = roi.getBounds();
 					if (r.width==imageWidth && r.height==imageHeight)
-						imp.killRoi();
+						imp.deleteRoi();
 					else if (!e.isAltDown()) {
 						handleRoiMouseDown(e);
 						return;
@@ -1232,14 +1232,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			int type = roi.getType();
 			if (type==Roi.RECTANGLE && r.width==imp.getWidth() && r.height==imp.getHeight()
 			&& roi.getPasteMode()==Roi.NOT_PASTING && !(roi instanceof ImageRoi)) {
-				imp.killRoi();
+				imp.deleteRoi();
 				return;
 			}
 			if (roi.contains(ox, oy)) {
 				if (roi.modState==Roi.NO_MODS)
 					roi.handleMouseDown(sx, sy);
 				else {
-					imp.killRoi();
+					imp.deleteRoi();
 					imp.createNewRoi(sx,sy);
 				}
 				return;
@@ -1249,7 +1249,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				return;
 			int tool = Toolbar.getToolId();
 			if ((tool==Toolbar.POLYGON||tool==Toolbar.POLYLINE||tool==Toolbar.ANGLE)&& !(IJ.shiftKeyDown()||IJ.altKeyDown())) {
-				imp.killRoi();
+				imp.deleteRoi();
 				return;
 			}
 		}
@@ -1433,11 +1433,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			&& !(roi instanceof TextRoi)
 			&& roi.getState()==roi.CONSTRUCTING
 			&& type!=roi.POINT)
-				imp.killRoi();
+				imp.deleteRoi();
 			else {
 				roi.handleMouseUp(e.getX(), e.getY());
 				if (roi.getType()==Roi.LINE && roi.getLength()==0.0)
-					imp.killRoi();
+					imp.deleteRoi();
 			}
 		}
 	}

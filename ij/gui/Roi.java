@@ -1133,7 +1133,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		if (p2!=null)
 			imp.setRoi(p1.subtractPoints(this));
 		else
-			imp.killRoi();
+			imp.deleteRoi();
     }
 
     /** If 'add' is true, adds this selection to the previous one. If 'subtract' is true, subtracts 

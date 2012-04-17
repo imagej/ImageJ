@@ -1256,8 +1256,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                     ed.setSize(350, 300);
                     ed.create(label, macros);
                 	IJ.setKeyUp(KeyEvent.VK_SHIFT);
-				} else
+				} else {
+					resetTools();
 					mi.installFromIJJar(path);
+				}
             } else {
                 // load from ImageJ/macros/toolsets
                 if (label.equals("Startup Macros")) {
@@ -1503,7 +1505,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ImagePlus img = WindowManager.getCurrentImage();
 		Roi roi = img!=null?img.getRoi():null;
 		if (roi!=null && roi.getType()==Roi.OVAL && ovalType==BRUSH_ROI)
-			img.killRoi();
+			img.deleteRoi();
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 

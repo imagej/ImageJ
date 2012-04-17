@@ -113,7 +113,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		canvas = win.getCanvas();
 		addListeners(canvas);
 		magnification= canvas.getMagnification();
-		imp.killRoi();
+		imp.deleteRoi();
 		Rectangle r = canvas.getSrcRect();
 		if (imp.getID()==previousID)
 			crossLoc = new Point(previousX, previousY);

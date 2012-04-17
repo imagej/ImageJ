@@ -35,7 +35,7 @@ public class XYCoordinates implements PlugIn {
 			bg = r+","+g+","+b;
 		    bg = " \n    Background value: " + bg + "\n";
 		}
-		imp.killRoi();
+		imp.deleteRoi();
 		
 		int slices = imp.getStackSize();
 		String msg =

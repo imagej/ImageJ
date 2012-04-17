@@ -573,7 +573,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			IJ.showProgress(1.0);
 		if (showResults && showResultsWindow)
 			rt.updateResults();
-		imp.killRoi();
+		imp.deleteRoi();
 		ip.resetRoi();
 		ip.reset();
 		if (displaySummary && IJ.getInstance()!=null)

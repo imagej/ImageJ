@@ -62,7 +62,7 @@ public class FFT implements  PlugIn, Measurements {
         }
         if (fht!=null) {
             inverse = true;
-            imp.killRoi();
+            imp.deleteRoi();
         } else {
             if (imp.getRoi()!=null)
                 ip = ip.crop();

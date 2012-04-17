@@ -336,7 +336,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		} else {
             if (WindowManager.getCurrentImage()==this)
                 WindowManager.setTempCurrentImage(null);
-			killRoi(); //save any ROI so it can be restored later
+			deleteRoi(); //save any ROI so it can be restored later
 			Interpreter.removeBatchModeImage(this);
 		}
     }
@@ -1381,20 +1381,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Assigns 'newRoi'  to this image and displays it if 'updateDisplay' is true. */
 	public void setRoi(Roi newRoi, boolean updateDisplay) {
 		if (newRoi==null)
-			{killRoi(); return;}
+			{deleteRoi(); return;}
 		Rectangle bounds = newRoi.getBounds();
 		if (newRoi.isVisible()) {
 			if ((newRoi instanceof Arrow) && newRoi.getState()==Roi.CONSTRUCTING && bounds.width==0 && bounds.height==0) {
-				killRoi();
+				deleteRoi();
 				roi = newRoi;
 				return;
 			}
 			newRoi = (Roi)newRoi.clone();
 			if (newRoi==null)
-				{killRoi(); return;}
+				{deleteRoi(); return;}
 		}
 		if (bounds.width==0 && bounds.height==0 && !(newRoi.getType()==Roi.POINT||newRoi.getType()==Roi.LINE))
-			{killRoi(); return;}
+			{deleteRoi(); return;}
 		roi = newRoi;
 		if (ip!=null) {
 			ip.setMask(null);
@@ -1421,7 +1421,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		starting screen coordinates. The selection type is determined by which tool in
 		the tool bar is active. The user interactively sets the selection size and shape. */
 	public void createNewRoi(int sx, int sy) {
-		killRoi();
+		deleteRoi();
 		switch (Toolbar.getToolId()) {
 			case Toolbar.RECTANGLE:
 				int cornerDiameter = Toolbar.getRoundRectArcSize();
@@ -1466,7 +1466,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				}
 				if (Prefs.pointAutoNextSlice && getStackSize()>1) {
 					IJ.run("Next Slice [>]");
-					killRoi();
+					deleteRoi();
 				}
 				break;
 		}
@@ -1475,7 +1475,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Deletes the current region of interest. Makes a copy
 		of the current ROI so it can be recovered by the
 		Edit/Selection/Restore Selection command. */
-	public void killRoi() {
+	public void deleteRoi() {
 		if (roi!=null) {
 			saveRoi();
 			roi = null;
@@ -1485,6 +1485,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 	
+	/** Deletes the current region of interest. */
+	public void killRoi() {
+		deleteRoi();
+	}
+
 	public void saveRoi() {
 		if (roi!=null) {
 			roi.endPaste();
@@ -2045,7 +2050,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			ip.copyBits(clipboard.getProcessor(), r.x, r.y, pasteMode);
 			if (nonRect) ip.reset(getMask());
 			updateAndDraw();
-			//killRoi();
+			//deleteRoi();
 		} else if (roi!=null) {
 			roi.startPaste(clipboard);
 			Undo.setup(Undo.PASTE, this);

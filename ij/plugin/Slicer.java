@@ -80,7 +80,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		if (!rgb) imp2.getProcessor().setMinAndMax(min, max);
 		imp2.show();
 		if (noRoi)
-			imp.killRoi();
+			imp.deleteRoi();
 		else
 			imp.draw();
 		IJ.showStatus(IJ.d2s(((System.currentTimeMillis()-startTime)/1000.0),2)+" seconds");

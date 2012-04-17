@@ -23,7 +23,7 @@ class RoiBrush implements Runnable {
 		if (ic==null) return;
 		Roi roi = img.getRoi();
 		if (roi!=null && !roi.isArea())
-			img.killRoi();
+			img.deleteRoi();
 		Point p = ic.getCursorLoc();
 		if (roi!=null && !roi.contains(p.x, p.y))
 			mode = SUBTRACT;

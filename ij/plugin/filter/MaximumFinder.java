@@ -188,7 +188,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             roiSaved = true;
         }
         if (roi!=null && (!roi.isArea() || outputType==SEGMENTED)) {
-            imp.killRoi();
+            imp.deleteRoi();
             roi = null;
         }
         boolean invertedLut = imp.isInvertedLut();

@@ -58,7 +58,7 @@ public class Thresholder implements PlugIn, Measurements {
 	}
 
 	void applyThreshold(ImagePlus imp) {
-		imp.killRoi();
+		imp.deleteRoi();
 		ImageProcessor ip = imp.getProcessor();
 		ip.resetBinaryThreshold();
 		int type = imp.getType();

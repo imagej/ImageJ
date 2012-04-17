@@ -222,9 +222,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public void installFromIJJar(String path) {
 		String text = openFromIJJar(path);
 		if (text==null) return;
-		if (path.endsWith("StartupMacros.txt"))
-			install(text);
-		else
+		if (path.endsWith("StartupMacros.txt")) {
+			if (Toolbar.installStartupMacrosTools())
+				install(text);
+			Toolbar tb = Toolbar.getInstance();
+			if (tb!=null)
+				tb.installStartupTools();
+		} else
 			installSingleTool(text);
 	}
 
