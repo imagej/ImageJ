@@ -141,7 +141,7 @@ public class Undo {
 				Roi roiCopy2 = roiCopy;
 				setup(ROI, imp); // setup redo
 				imp.setRoi(roiCopy2);
-	    		return; //don't reset
+				return; //don't reset
 			case OVERLAY_ADDITION:
 				Overlay overlay = imp.getOverlay();
 				if (overlay==null) 

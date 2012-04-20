@@ -22,6 +22,7 @@ import java.net.*;
 
 /** This class consists of static utility methods. */
 public class IJ {
+
 	public static final String URL = "http://imagej.nih.gov/ij";
 	public static final int ALL_KEYS = -1;
 	

@@ -19,7 +19,7 @@ public abstract class PlugInTool implements PlugIn {
 
 	public void mouseDragged(ImagePlus imp, MouseEvent e) {e.consume();}
 	
-	public void mouseMoved(ImagePlus imp, MouseEvent e) {e.consume();}
+	public void mouseMoved(ImagePlus imp, MouseEvent e) { }
 	
 	public void mouseEntered(ImagePlus imp, MouseEvent e) {e.consume();}
 

@@ -50,6 +50,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private static Color labelColor, bgColor;
     private int resetMaxBoundsCount;
     private Roi currentRoi;
+    private int mousePressedX, mousePressedY;
+    private long mousePressedTime;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -994,6 +996,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setupScroll(ox, oy);
 			return;
 		}
+		
+		if (overlay!=null && (e.isAltDown()||e.isControlDown())) {
+			if (activateOverlayRoi(ox,oy)) {
+				mousePressedX = mousePressedY = 0;
+				return;
+			}
+		}
+		mousePressedX = ox;
+		mousePressedY = oy;
+		mousePressedTime = System.currentTimeMillis();
+		
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mousePressed(imp, e);
@@ -1191,6 +1204,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		xMouse = offScreenX(x);
 		yMouse = offScreenY(y);
 		flags = e.getModifiers();
+		mousePressedX = mousePressedY = -1;
+		mousePressedTime = 0L;
 		//IJ.log("mouseDragged: "+flags);
 		if (flags==0)  // workaround for Mac OS 9 bug
 			flags = InputEvent.BUTTON1_MASK;
@@ -1415,6 +1430,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mouseReleased(MouseEvent e) {
+		int ox = offScreenX(e.getX());
+		int oy = offScreenY(e.getY());
+		if (overlay!=null && ox==mousePressedX && oy==mousePressedY
+		&& (System.currentTimeMillis()-mousePressedTime)>250L) {
+			if (activateOverlayRoi(ox,oy))
+				return;
+		}
+
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mouseReleased(imp, e);
@@ -1442,6 +1465,21 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 	}
 	
+	private boolean activateOverlayRoi(int ox, int oy) {
+		Overlay o = overlay;
+		for (int i=0; i<o.size(); i++) {
+			Roi roi = o.get(i);
+			//IJ.log(".isAltDown: "+roi.contains(ox, oy));
+			if (roi.contains(ox, oy)) {
+				roi.setImage(null);
+				imp.setRoi(roi);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
 	public void mouseMoved(MouseEvent e) {
 		//if (ij==null) return;
 		int sx = e.getX();
@@ -1450,6 +1488,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int oy = offScreenY(sy);
 		flags = e.getModifiers();
 		setCursor(sx, sy, ox, oy);
+		mousePressedX = mousePressedY = -1;
+		mousePressedTime = 0L;
 		IJ.setInputEvent(e);
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
@@ -1471,7 +1511,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (win!=null&&showCursorStatus) win.mouseMoved(ox, oy);
 			} else
 				IJ.showStatus("");
-
 		}
 	}
 	

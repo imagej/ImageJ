@@ -74,7 +74,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
 	public static final String VERSION = "1.46m";
-	public static final String BUILD = "11"; 
+	public static final String BUILD = "15"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -387,12 +387,15 @@ public class ImageJ extends Frame implements ActionListener,
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
 				if ((flags & KeyEvent.META_MASK)!=0 && IJ.isMacOSX()) return;
-				if (alt)
+				if (deleteOverlayRoi(imp,roi))
+					return;
+				if (alt) {
 					switch (keyChar) {
 						case 'u': case 'm': keyChar = IJ.micronSymbol; break;
 						case 'A': keyChar = IJ.angstromSymbol; break;
 						default:
 					}
+				}
 				((TextRoi)roi).addChar(keyChar);
 				return;
 			}
@@ -436,7 +439,13 @@ public class ImageJ extends Frame implements ActionListener,
 		if (cmd==null) {
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
-				case KeyEvent.VK_BACK_SPACE: cmd="Clear"; hotkey=true; break; // delete
+				case KeyEvent.VK_BACK_SPACE: // delete
+					Roi oroi = imp!=null?imp.getRoi():null;
+					if (deleteOverlayRoi(imp,oroi))
+						return;
+					cmd="Clear";
+					hotkey=true;
+					break; 
 				//case KeyEvent.VK_BACK_SLASH: cmd=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
 				case KeyEvent.VK_EQUALS: cmd="In [+]"; break;
 				case KeyEvent.VK_MINUS: cmd="Out [-]"; break;
@@ -485,6 +494,21 @@ public class ImageJ extends Frame implements ActionListener,
 				lastKeyCommand = cmd;
 			}
 		}
+	}
+	
+	private boolean deleteOverlayRoi(ImagePlus imp, Roi roi) {
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			return false;
+		for (int i=0; i<overlay.size(); i++) {
+			Roi roi2 = overlay.get(i);
+			if (roi2==roi) {
+				overlay.remove(i);
+				imp.deleteRoi();
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean ignoreArrowKeys(ImagePlus imp) {

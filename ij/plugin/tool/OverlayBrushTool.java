@@ -57,6 +57,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		thread = new Thread(this, "Brush Options");
 		thread.setPriority(Thread.NORM_PRIORITY);
 		thread.start();
+		if (IJ.debugMode) IJ.log("Options.show: "+dialogShowing);
 	}
 
 	public String getToolName() {
@@ -77,6 +78,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			if (dialogShowing)
 				return;
 			dialogShowing = true;
+			if (IJ.debugMode) IJ.log("Options: true");
 			showDialog();
 		}
 
@@ -95,6 +97,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			gd.setOKLabel("Close");
 			gd.addDialogListener(this);
 			gd.showDialog();
+			if (IJ.debugMode) IJ.log("Options: false");
 			dialogShowing = false;
 		}
 

@@ -1825,14 +1825,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			return;
-		GenericDialog gd = new GenericDialog("ROI Manager");
-		gd.addMessage("Move the "+n+" displayed ROIs to an overlay?");
-		gd.setOKLabel("Discard");
-		gd.setCancelLabel("Move to Overlay");
-		gd.showDialog();
-		if (gd.wasCanceled())
-			moveRoisToOverlay(imp);
-		else
+		if (n>0) {
+			GenericDialog gd = new GenericDialog("ROI Manager");
+			gd.addMessage("Move the "+n+" displayed ROIs to an overlay?");
+			gd.setOKLabel("Discard");
+			gd.setCancelLabel("Move to Overlay");
+			gd.showDialog();
+			if (gd.wasCanceled())
+				moveRoisToOverlay(imp);
+			else
+				imp.draw();
+		} else
 			imp.draw();
     }
     
