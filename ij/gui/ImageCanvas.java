@@ -305,6 +305,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
+			if (roi.activeOverlayRoi)
+				continue;
 			if (hyperstack && roi.getPosition()==0) {
 				int c = roi.getCPosition();
 				int z = roi.getZPosition();
@@ -1205,7 +1207,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		yMouse = offScreenY(y);
 		flags = e.getModifiers();
 		mousePressedX = mousePressedY = -1;
-		mousePressedTime = 0L;
 		//IJ.log("mouseDragged: "+flags);
 		if (flags==0)  // workaround for Mac OS 9 bug
 			flags = InputEvent.BUTTON1_MASK;
@@ -1466,12 +1467,34 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 	
 	private boolean activateOverlayRoi(int ox, int oy) {
+		int currentImage = -1;
+		if (imp.getStackSize()>1)
+			currentImage = imp.getCurrentSlice();
+		int channel=0, slice=0, frame=0;
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack) {
+			channel = imp.getChannel();
+			slice = imp.getSlice();
+			frame = imp.getFrame();
+		}
 		Overlay o = overlay;
-		for (int i=0; i<o.size(); i++) {
+		for (int i=o.size()-1; i>=0; i--) {
 			Roi roi = o.get(i);
 			//IJ.log(".isAltDown: "+roi.contains(ox, oy));
 			if (roi.contains(ox, oy)) {
+				if (hyperstack && roi.getPosition()==0) {
+					int c = roi.getCPosition();
+					int z = roi.getZPosition();
+					int t = roi.getTPosition();
+					if (!((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)))
+						continue;
+				} else {
+					int position = roi.getPosition();
+					if (!(position==0||position==currentImage))
+						continue;
+				}
 				roi.setImage(null);
+				roi.activeOverlayRoi = true;
 				imp.setRoi(roi);
 				return true;
 			}
@@ -1489,7 +1512,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		flags = e.getModifiers();
 		setCursor(sx, sy, ox, oy);
 		mousePressedX = mousePressedY = -1;
-		mousePressedTime = 0L;
 		IJ.setInputEvent(e);
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {

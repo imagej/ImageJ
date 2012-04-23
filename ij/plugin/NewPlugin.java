@@ -44,7 +44,7 @@ public class NewPlugin implements PlugIn {
     		name = "Plugin_Frame.java";
     	} else if (arg.equals("plugin-tool")) {
     		type = PLUGIN_TOOL;
-    		name = "Plugin_Tool.java";
+    		name = "Prototype_Tool.java";
     	} else if (arg.equals("filter")) {
     		type = PLUGIN_FILTER;
     		name = "Filter_Plugin.java";
@@ -170,6 +170,10 @@ public class NewPlugin implements PlugIn {
 				text += "\n";
 				text += "\tpublic void mouseDragged(ImagePlus imp, MouseEvent e) {\n";
 				text += "\t\tIJ.log(\"mouse dragged: \"+e);\n";
+				text += "\t}\n";
+				text += "\n";
+				text += "\tpublic void showOptionsDialog() {\n";
+				text += "\t\tIJ.log(\"icon double-clicked\");\n";
 				text += "\t}\n";
 				break;
 		}

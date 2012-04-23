@@ -1,8 +1,10 @@
   var sCmds = newMenu("Stacks Menu Tool", 
-       newArray("Add Slice", "Delete Slice", "Next Slice [>]", "Previous Slice [<]", "Set Slice...", "-",
-       "Images to Stack", "Stack to Images", "Make Montage...", "Reslice [/]...", "Z Project...",
-       "3D Project...", "Plot Z-axis Profile", "-", "Label...", "Combine...", "Concatenate...", "-",
-       "Start Animation", "Stop Animation", "Animation Options...", "-", "T1 Head (2.4M, 16-bits)"));
+    newArray("Add Slice", "Delete Slice", "Set Slice...",
+    "-", "3D Project...", "Grouped Z Project...", "Z Project...", "Orthogonal Views", "Plot Z-axis Profile", "Reslice [/]...",
+    "-", "Images to Stack", "Stack to Images", "Make Montage...",
+    "-", "Make Substack...", "Stack to Hyperstack...",
+    "-", "Combine...", "Concatenate...", "Flip Z", "Label...", "Animation Options...",
+    "-", "T1 Head (2.4M, 16-bits)"));
 
   macro "Stacks Menu Tool - C037T0b11ST8b09tTcb09k" {
       cmd = getArgument();

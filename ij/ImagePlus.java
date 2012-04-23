@@ -1472,9 +1472,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Deletes the current region of interest. Makes a copy
-		of the current ROI so it can be recovered by the
-		Edit/Selection/Restore Selection command. */
+	/** Deletes the current region of interest. Makes a copy of the ROI
+		so it can be recovered by Edit/Selection/Restore Selection. */
 	public void deleteRoi() {
 		if (roi!=null) {
 			saveRoi();

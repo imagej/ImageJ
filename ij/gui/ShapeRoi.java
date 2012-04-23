@@ -1038,11 +1038,14 @@ public class ShapeRoi extends Roi {
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi;
+		if (isActiveOverlayRoi)
+			color = Color.orange;
 		if (fillColor!=null) color = fillColor;
 		g.setColor(color);
 		AffineTransform aTx = (((Graphics2D)g).getDeviceConfiguration()).getDefaultTransform();
 		Graphics2D g2d = (Graphics2D)g;
-		if (stroke!=null)
+		if (stroke!=null && !isActiveOverlayRoi)
 			g2d.setStroke(ic!=null&&ic.getCustomRoi()?stroke:getScaledStroke());
 		mag = getMagnification();
 		int basex=0, basey=0;

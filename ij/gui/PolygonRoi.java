@@ -182,6 +182,10 @@ public class PolygonRoi extends Roi {
 	public void draw(Graphics g) {
         updatePolygon();
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		boolean hasHandles = xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE;
+		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi && !hasHandles;
+		if (isActiveOverlayRoi)
+			color = Color.orange;
 		boolean fill = false;
         mag = getMagnification();
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {
@@ -190,7 +194,7 @@ public class PolygonRoi extends Roi {
 		}
 		g.setColor(color);
 		Graphics2D g2d = (Graphics2D)g;
-		if (stroke!=null)
+		if (stroke!=null && !isActiveOverlayRoi)
 			g2d.setStroke(getScaledStroke());
         if (xSpline!=null) {
             if (type==POLYLINE || type==FREELINE) {
@@ -219,8 +223,7 @@ public class PolygonRoi extends Roi {
             if (state==CONSTRUCTING && type!=FREEROI && type!=FREELINE)
                 drawStartBox(g);
         }
-        if ((xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE)
-        && state!=CONSTRUCTING && clipboard==null && !overlay) {
+        if (hasHandles && state!=CONSTRUCTING && clipboard==null && !overlay) {
             int size2 = HANDLE_SIZE/2;
             if (activeHandle>0)
                 drawHandle(g, xp2[activeHandle-1]-size2, yp2[activeHandle-1]-size2);

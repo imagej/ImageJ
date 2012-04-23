@@ -119,7 +119,9 @@ public class Selection implements PlugIn, Measurements {
 			double r = Math.sqrt(stats.pixelCount/Math.PI);
 			imp.deleteRoi();
 			int d = (int)Math.round(2.0*r);
-			IJ.makeOval((int)Math.round(stats.xCentroid-r), (int)Math.round(stats.yCentroid-r), d, d);
+			Roi roi2 = new OvalRoi((int)Math.round(stats.xCentroid-r), (int)Math.round(stats.yCentroid-r), d, d);
+			transferProperties(roi, roi2);
+			imp.setRoi(roi2);
 			return;
 		}
 		
@@ -275,7 +277,16 @@ public class Selection implements PlugIn, Measurements {
 			p.setStrokeWidth(roi.getStrokeWidth());
 		p.setStrokeColor(roi.getStrokeColor());
 		p.setName(roi.getName());
+		transferProperties(roi, p);
 		imp.setRoi(p);
+	}
+	
+	private void transferProperties(Roi roi1, Roi roi2) {
+		if (roi1==null || roi2==null)
+			return;
+		roi2.setStrokeColor(roi1.getStrokeColor());
+		if (roi1.getStroke()!=null)
+			roi2.setStroke(roi1.getStroke());
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
@@ -452,7 +463,9 @@ public class Selection implements PlugIn, Measurements {
 		double aspectRatio = stats.minor/stats.major;
 		Undo.setup(Undo.ROI, imp);
 		imp.deleteRoi();
-		imp.setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
+		Roi roi2 = new EllipseRoi(x1,y1,x2,y2,aspectRatio);
+		transferProperties(roi, roi2);
+		imp.setRoi(roi2);
 	}
 
 	void convexHull(ImagePlus imp) {
@@ -470,7 +483,9 @@ public class Selection implements PlugIn, Measurements {
 		Polygon p = roi.getConvexHull();
 		if (p!=null) {
 			Undo.setup(Undo.ROI, imp);
-			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
+			Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON);
+			transferProperties(roi, roi2);
+			imp.setRoi(roi2);
 		}
 	}
 	
@@ -586,6 +601,7 @@ public class Selection implements PlugIn, Measurements {
 		ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		ThresholdToSelection tts = new ThresholdToSelection();
 		Roi roi2 = tts.convert(ip2);
+		transferProperties(roi, roi2);
 		imp.setRoi(roi2);
 		Roi.previousRoi = (Roi)roi.clone();
 	}
@@ -609,6 +625,7 @@ public class Selection implements PlugIn, Measurements {
 		||((roi instanceof PolygonRoi)&&((PolygonRoi)roi).isSplineFit()))
 			type2 = Roi.FREELINE;
 		Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, type2);
+		transferProperties(roi, roi2);
 		imp.setRoi(roi2);
 	}
 
@@ -621,7 +638,9 @@ public class Selection implements PlugIn, Measurements {
 		Undo.setup(Undo.ROI, imp);
 		Rectangle r = roi.getBounds();
 		imp.deleteRoi();
-		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));
+		Roi roi2 = new Roi(r.x, r.y, r.width, r.height);
+		transferProperties(roi, roi2);
+		imp.setRoi(roi2);
 	}
 
 	void addToRoiManager(ImagePlus imp) {
@@ -676,6 +695,7 @@ public class Selection implements PlugIn, Measurements {
 			noRoi("Make Band");
 			return;
 		}
+		Roi roiOrig = roi;
 		if (!roi.isArea()) {
 			IJ.error("Make Band", "Area selection required");
 			return;
@@ -740,6 +760,7 @@ public class Selection implements PlugIn, Measurements {
 		ShapeRoi roi1 = (ShapeRoi)roi;
 		roi2 = roi2.not(roi1);
 		Undo.setup(Undo.ROI, imp);
+		transferProperties(roiOrig, roi2);
 		imp.setRoi(roi2);
 		bandSize = n;
 	}

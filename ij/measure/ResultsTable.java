@@ -537,7 +537,6 @@ public class ResultsTable implements Cloneable {
 		counter--;
 	}
 	
-	/** Clears all the columns and sets the counter to zero. */
 	public synchronized void reset() {
 		counter = 0;
 		maxRows = 100;
@@ -587,6 +586,7 @@ public class ResultsTable implements Cloneable {
 		String tableHeadings = getColumnHeadings();		
 		TextPanel tp;
 		boolean newWindow = false;
+		boolean cloneNeeded = false;
 		if (windowTitle.equals("Results")) {
 			tp = IJ.getTextPanel();
 			if (tp==null) return;
@@ -607,14 +607,16 @@ public class ResultsTable implements Cloneable {
 			TextWindow win;
 			if (frame!=null && frame instanceof TextWindow)
 				win = (TextWindow)frame;
-			else
+			else {
 				win = new TextWindow(windowTitle, "", 400, 300);
+				cloneNeeded = true;
+			}
 			tp = win.getTextPanel();
 			tp.setColumnHeadings(tableHeadings);
 			newWindow = tp.getLineCount()==0;
 			autoFormat = false;
 		}
-		tp.setResultsTable(this);
+		tp.setResultsTable(cloneNeeded?(ResultsTable)this.clone():this);
 		int n = getCounter();
 		if (n>0) {
 			if (tp.getLineCount()>0) tp.clear();

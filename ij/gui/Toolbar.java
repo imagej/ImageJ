@@ -1291,11 +1291,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private 	void installStartupMacros() {
 		resetTools();
 		String path = IJ.getDirectory("macros")+"StartupMacros.txt";
-		try {
-			MacroInstaller mi = new MacroInstaller();
-			mi.installFile(path);
-		} catch
-			(Exception ex) {}
+		if (IJ.shiftKeyDown()) {
+			IJ.open(path);
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		} else {
+			try {
+				MacroInstaller mi = new MacroInstaller();
+				mi.installFile(path);
+			} catch
+				(Exception ex) {}
+		}
 	}
 
 	public void actionPerformed(ActionEvent e) {

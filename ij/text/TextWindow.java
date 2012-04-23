@@ -7,7 +7,6 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.plugin.filter.Analyzer;
-import ij.measure.ResultsTable;
 import ij.macro.Interpreter;
 
 /** Uses a TextPanel to displays text in a window.

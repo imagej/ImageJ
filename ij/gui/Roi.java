@@ -31,6 +31,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	int state;
 	int modState = NO_MODS;
 	int cornerDiameter;
+	boolean activeOverlayRoi;
 	
 	public static Roi previousRoi;
 	public static final BasicStroke onePixelWide = new BasicStroke(1);
@@ -1207,6 +1208,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			clipboard = null;
 			Undo.setup(Undo.FILTER, imp);
 		}
+		activeOverlayRoi = false;
 	}
 	
 	public void abortPaste() {
