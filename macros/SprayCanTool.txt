@@ -2,7 +2,7 @@
 
   var width=100, dotSize=1, rate=6;
 
-  macro 'Spray Can Tool - Cb00D20D22D24D41D43D62D82Da2C037L93b3D84Dc4L75d5L757f Ld5dfLa7d7LabdbLa9d9LacdcLa7ac' {
+  macro 'Spray Can Tool - C123D20D22D24D41D43D62D82Da2C037L93b3D84Dc4L75d5L757f Ld5dfLa7d7LabdbLa9d9LacdcLa7ac' {
        setLineWidth(dotSize);
        radius=width/2; radius2=radius*radius;
        start = getTime();

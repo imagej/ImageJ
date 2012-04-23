@@ -35,7 +35,7 @@ public class Selection implements PlugIn, Measurements {
 		if (arg.equals("all"))
 			imp.setRoi(0,0,imp.getWidth(),imp.getHeight());
 		else if (arg.equals("none"))
-			imp.killRoi();
+			imp.deleteRoi();
 		else if (arg.equals("restore"))
 			imp.restoreRoi();
 		else if (arg.equals("spline"))
@@ -82,6 +82,7 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		}
 		roi = (Roi)roi.clone();
+		Undo.setup(Undo.ROI, imp);
 		if (arg.equals("rotate")) {
 			double d = Tools.parseDouble(angle);
 			if (Double.isNaN(d)) angle = "15";
@@ -111,13 +112,16 @@ public class Selection implements PlugIn, Measurements {
 		}
 		
 		if (roi.isArea()) {	  //create circle with the same area and centroid
+			Undo.setup(Undo.ROI, imp);
 			ImageProcessor ip = imp.getProcessor();
 			ip.setRoi(roi);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, Measurements.AREA+Measurements.CENTROID, null);
 			double r = Math.sqrt(stats.pixelCount/Math.PI);
-			imp.killRoi();
+			imp.deleteRoi();
 			int d = (int)Math.round(2.0*r);
-			IJ.makeOval((int)Math.round(stats.xCentroid-r), (int)Math.round(stats.yCentroid-r), d, d);
+			Roi roi2 = new OvalRoi((int)Math.round(stats.xCentroid-r), (int)Math.round(stats.yCentroid-r), d, d);
+			transferProperties(roi, roi2);
+			imp.setRoi(roi2);
 			return;
 		}
 		
@@ -212,7 +216,8 @@ public class Selection implements PlugIn, Measurements {
 		}
 		CenterX = CenterX + meanx;
 		CenterY = CenterY + meany;
-		imp.killRoi();
+		Undo.setup(Undo.ROI, imp);
+		imp.deleteRoi();
 		IJ.makeOval((int)Math.round(CenterX-radius), (int)Math.round(CenterY-radius), (int)Math.round(2*radius), (int)Math.round(2*radius));
 	}
 
@@ -227,6 +232,7 @@ public class Selection implements PlugIn, Measurements {
 		if (roi instanceof EllipseRoi)
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
+		Undo.setup(Undo.ROI, imp);
 		if (!segmentedSelection) {
 			if (p.subPixelResolution())
 				p = trimFloatPolygon(p, p.getUncalibratedLength());
@@ -260,6 +266,7 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		double interval = gd.getNextNumber();
 		smooth = gd.getNextBoolean();
+		Undo.setup(Undo.ROI, imp);
 		FloatPolygon poly = roi.getInterpolatedPolygon(interval, smooth);
 		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
 		ImageCanvas ic = imp.getCanvas();
@@ -270,7 +277,16 @@ public class Selection implements PlugIn, Measurements {
 			p.setStrokeWidth(roi.getStrokeWidth());
 		p.setStrokeColor(roi.getStrokeColor());
 		p.setName(roi.getName());
+		transferProperties(roi, p);
 		imp.setRoi(p);
+	}
+	
+	private void transferProperties(Roi roi1, Roi roi2) {
+		if (roi1==null || roi2==null)
+			return;
+		roi2.setStrokeColor(roi1.getStrokeColor());
+		if (roi1.getStroke()!=null)
+			roi2.setStroke(roi1.getStroke());
 	}
 	
 	PolygonRoi trimPolygon(PolygonRoi roi, double length) {
@@ -445,8 +461,11 @@ public class Selection implements PlugIn, Measurements {
 		double y1 = stats.yCentroid - dy;
 		double y2 = stats.yCentroid + dy;
 		double aspectRatio = stats.minor/stats.major;
-		imp.killRoi();
-		imp.setRoi(new EllipseRoi(x1,y1,x2,y2,aspectRatio));
+		Undo.setup(Undo.ROI, imp);
+		imp.deleteRoi();
+		Roi roi2 = new EllipseRoi(x1,y1,x2,y2,aspectRatio);
+		transferProperties(roi, roi2);
+		imp.setRoi(roi2);
 	}
 
 	void convexHull(ImagePlus imp) {
@@ -462,8 +481,12 @@ public class Selection implements PlugIn, Measurements {
 		//		imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
 		//} else {
 		Polygon p = roi.getConvexHull();
-		if (p!=null)
-			imp.setRoi(new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON));
+		if (p!=null) {
+			Undo.setup(Undo.ROI, imp);
+			Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, roi.POLYGON);
+			transferProperties(roi, roi2);
+			imp.setRoi(roi2);
+		}
 	}
 	
 	// Finds the index of the upper right point that is guaranteed to be on convex hull
@@ -559,6 +582,7 @@ public class Selection implements PlugIn, Measurements {
 		else
 			s1 = new ShapeRoi(roi);
 		s2 = new ShapeRoi(new Roi(0,0, imp.getWidth(), imp.getHeight()));
+		Undo.setup(Undo.ROI, imp);
 		imp.setRoi(s1.xor(s2));
 	}
 	
@@ -566,6 +590,7 @@ public class Selection implements PlugIn, Measurements {
 		Roi roi = imp.getRoi();
 		if (roi==null || !roi.isLine())
 			{IJ.error("Line to Area", "Line selection required"); return;}
+		Undo.setup(Undo.ROI, imp);
 		ImageProcessor ip2 = new ByteProcessor(imp.getWidth(), imp.getHeight());
 		ip2.setColor(255);
 		if (roi.getType()==Roi.LINE && roi.getStrokeWidth()>1)
@@ -576,6 +601,7 @@ public class Selection implements PlugIn, Measurements {
 		ip2.setThreshold(255, 255, ImageProcessor.NO_LUT_UPDATE);
 		ThresholdToSelection tts = new ThresholdToSelection();
 		Roi roi2 = tts.convert(ip2);
+		transferProperties(roi, roi2);
 		imp.setRoi(roi2);
 		Roi.previousRoi = (Roi)roi.clone();
 	}
@@ -586,6 +612,7 @@ public class Selection implements PlugIn, Measurements {
 			IJ.error("Area to Line", "Area selection required");
 			return;
 		}
+		Undo.setup(Undo.ROI, imp);
 		Polygon p = roi.getPolygon();
 		if (p==null) return;
 		int type1 = roi.getType();
@@ -598,6 +625,7 @@ public class Selection implements PlugIn, Measurements {
 		||((roi instanceof PolygonRoi)&&((PolygonRoi)roi).isSplineFit()))
 			type2 = Roi.FREELINE;
 		Roi roi2 = new PolygonRoi(p.xpoints, p.ypoints, p.npoints, type2);
+		transferProperties(roi, roi2);
 		imp.setRoi(roi2);
 	}
 
@@ -607,9 +635,12 @@ public class Selection implements PlugIn, Measurements {
 			noRoi("To Bounding Box");
 			return;
 		}
+		Undo.setup(Undo.ROI, imp);
 		Rectangle r = roi.getBounds();
-		imp.killRoi();
-		imp.setRoi(new Roi(r.x, r.y, r.width, r.height));
+		imp.deleteRoi();
+		Roi roi2 = new Roi(r.x, r.y, r.width, r.height);
+		transferProperties(roi, roi2);
+		imp.setRoi(roi2);
 	}
 
 	void addToRoiManager(ImagePlus imp) {
@@ -664,6 +695,7 @@ public class Selection implements PlugIn, Measurements {
 			noRoi("Make Band");
 			return;
 		}
+		Roi roiOrig = roi;
 		if (!roi.isArea()) {
 			IJ.error("Make Band", "Area selection required");
 			return;
@@ -727,6 +759,8 @@ public class Selection implements PlugIn, Measurements {
 			roi = new ShapeRoi(roi);
 		ShapeRoi roi1 = (ShapeRoi)roi;
 		roi2 = roi2.not(roi1);
+		Undo.setup(Undo.ROI, imp);
+		transferProperties(roiOrig, roi2);
 		imp.setRoi(roi2);
 		bandSize = n;
 	}

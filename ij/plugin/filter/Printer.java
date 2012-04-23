@@ -84,7 +84,7 @@ public class Printer implements PlugInFilter, Printable {
 		Roi roi = imp.getRoi();
 		ImagePlus imp2 = imp;
 		if (imp2.getOverlay()!=null && !imp2.getHideOverlay()) {
-			imp2.killRoi();
+			imp2.deleteRoi();
 			imp2 = imp2.flatten();
 		}
 		ImageProcessor ip = imp2.getProcessor();

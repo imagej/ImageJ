@@ -357,7 +357,6 @@ public class Prefs {
 			if (threads>1) prefs.put(THREADS, Integer.toString(threads));
 			if (IJ.isMacOSX()) useJFileChooser = false;
 			saveOptions(prefs);
-			Toolbar.savePreferences();
 			savePluginPrefs(prefs);
 			IJ.getInstance().savePreferences(prefs);
 			Menus.savePreferences(prefs);

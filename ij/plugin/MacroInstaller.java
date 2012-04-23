@@ -192,8 +192,18 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 
 	public void installFile(String path) {
 		String text = open(path);
-		if (text!=null)
-			install(text);
+		if (text==null) return;
+		boolean isStartupMacros = path.contains("StartupMacros");
+		if (isStartupMacros && !Toolbar.installStartupMacrosTools())
+			installTools = false;
+		//IJ.log("installFile: "+path+" "+isStartupMacros+" "+installTools);
+		install(text);
+		installTools = true;
+		if (isStartupMacros) {
+			Toolbar tb = Toolbar.getInstance();
+			if (tb!=null)
+				tb.installStartupTools();
+		}
 	}
 
 	public void installTool(String path) {
@@ -212,9 +222,13 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	public void installFromIJJar(String path) {
 		String text = openFromIJJar(path);
 		if (text==null) return;
-		if (path.endsWith("StartupMacros.txt"))
-			install(text);
-		else
+		if (path.endsWith("StartupMacros.txt")) {
+			if (Toolbar.installStartupMacrosTools())
+				install(text);
+			Toolbar tb = Toolbar.getInstance();
+			if (tb!=null)
+				tb.installStartupTools();
+		} else
 			installSingleTool(text);
 	}
 
@@ -442,10 +456,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		return fileName;
 	}
 	
-	public void installTools(boolean b) {
-		installTools = b;
-	}
-
 	public void actionPerformed(ActionEvent evt) {
 		String cmd = evt.getActionCommand();
 		MenuItem item = (MenuItem)evt.getSource();

@@ -36,7 +36,7 @@ public class GaussianBlur3D implements PlugIn {
 	}
 	
 	private void blur3D(ImagePlus imp, double sigmaX, double sigmaY, double sigmaZ) {
-		imp.killRoi();
+		imp.deleteRoi();
 		ImageStack stack = imp.getStack();
 		if (sigmaX>0.0 || sigmaY>0.0) {
 			GaussianBlur gb = new GaussianBlur();

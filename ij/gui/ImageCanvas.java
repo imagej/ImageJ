@@ -50,6 +50,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private static Color labelColor, bgColor;
     private int resetMaxBoundsCount;
     private Roi currentRoi;
+    private int mousePressedX, mousePressedY;
+    private long mousePressedTime;
 		
 	protected ImageJ ij;
 	protected double magnification;
@@ -303,6 +305,8 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
+			if (roi.activeOverlayRoi)
+				continue;
 			if (hyperstack && roi.getPosition()==0) {
 				int c = roi.getCPosition();
 				int z = roi.getZPosition();
@@ -994,6 +998,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			setupScroll(ox, oy);
 			return;
 		}
+		
+		if (overlay!=null && (e.isAltDown()||e.isControlDown())) {
+			if (activateOverlayRoi(ox,oy)) {
+				mousePressedX = mousePressedY = 0;
+				return;
+			}
+		}
+		mousePressedX = ox;
+		mousePressedY = oy;
+		mousePressedTime = System.currentTimeMillis();
+		
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mousePressed(imp, e);
@@ -1034,7 +1049,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (roi!=null && roi.contains(ox, oy)) {
 					Rectangle r = roi.getBounds();
 					if (r.width==imageWidth && r.height==imageHeight)
-						imp.killRoi();
+						imp.deleteRoi();
 					else if (!e.isAltDown()) {
 						handleRoiMouseDown(e);
 						return;
@@ -1191,6 +1206,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		xMouse = offScreenX(x);
 		yMouse = offScreenY(y);
 		flags = e.getModifiers();
+		mousePressedX = mousePressedY = -1;
 		//IJ.log("mouseDragged: "+flags);
 		if (flags==0)  // workaround for Mac OS 9 bug
 			flags = InputEvent.BUTTON1_MASK;
@@ -1232,14 +1248,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			int type = roi.getType();
 			if (type==Roi.RECTANGLE && r.width==imp.getWidth() && r.height==imp.getHeight()
 			&& roi.getPasteMode()==Roi.NOT_PASTING && !(roi instanceof ImageRoi)) {
-				imp.killRoi();
+				imp.deleteRoi();
 				return;
 			}
 			if (roi.contains(ox, oy)) {
 				if (roi.modState==Roi.NO_MODS)
 					roi.handleMouseDown(sx, sy);
 				else {
-					imp.killRoi();
+					imp.deleteRoi();
 					imp.createNewRoi(sx,sy);
 				}
 				return;
@@ -1249,7 +1265,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				return;
 			int tool = Toolbar.getToolId();
 			if ((tool==Toolbar.POLYGON||tool==Toolbar.POLYLINE||tool==Toolbar.ANGLE)&& !(IJ.shiftKeyDown()||IJ.altKeyDown())) {
-				imp.killRoi();
+				imp.deleteRoi();
 				return;
 			}
 		}
@@ -1415,6 +1431,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 
 	public void mouseReleased(MouseEvent e) {
+		int ox = offScreenX(e.getX());
+		int oy = offScreenY(e.getY());
+		if (overlay!=null && ox==mousePressedX && oy==mousePressedY
+		&& (System.currentTimeMillis()-mousePressedTime)>250L) {
+			if (activateOverlayRoi(ox,oy))
+				return;
+		}
+
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
 			tool.mouseReleased(imp, e);
@@ -1433,14 +1457,51 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			&& !(roi instanceof TextRoi)
 			&& roi.getState()==roi.CONSTRUCTING
 			&& type!=roi.POINT)
-				imp.killRoi();
+				imp.deleteRoi();
 			else {
 				roi.handleMouseUp(e.getX(), e.getY());
 				if (roi.getType()==Roi.LINE && roi.getLength()==0.0)
-					imp.killRoi();
+					imp.deleteRoi();
 			}
 		}
 	}
+	
+	private boolean activateOverlayRoi(int ox, int oy) {
+		int currentImage = -1;
+		if (imp.getStackSize()>1)
+			currentImage = imp.getCurrentSlice();
+		int channel=0, slice=0, frame=0;
+		boolean hyperstack = imp.isHyperStack();
+		if (hyperstack) {
+			channel = imp.getChannel();
+			slice = imp.getSlice();
+			frame = imp.getFrame();
+		}
+		Overlay o = overlay;
+		for (int i=o.size()-1; i>=0; i--) {
+			Roi roi = o.get(i);
+			//IJ.log(".isAltDown: "+roi.contains(ox, oy));
+			if (roi.contains(ox, oy)) {
+				if (hyperstack && roi.getPosition()==0) {
+					int c = roi.getCPosition();
+					int z = roi.getZPosition();
+					int t = roi.getTPosition();
+					if (!((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)))
+						continue;
+				} else {
+					int position = roi.getPosition();
+					if (!(position==0||position==currentImage))
+						continue;
+				}
+				roi.setImage(null);
+				roi.activeOverlayRoi = true;
+				imp.setRoi(roi);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	
 	public void mouseMoved(MouseEvent e) {
 		//if (ij==null) return;
@@ -1450,6 +1511,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		int oy = offScreenY(sy);
 		flags = e.getModifiers();
 		setCursor(sx, sy, ox, oy);
+		mousePressedX = mousePressedY = -1;
 		IJ.setInputEvent(e);
 		PlugInTool tool = Toolbar.getPlugInTool();
 		if (tool!=null) {
@@ -1471,7 +1533,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				if (win!=null&&showCursorStatus) win.mouseMoved(ox, oy);
 			} else
 				IJ.showStatus("");
-
 		}
 	}
 	

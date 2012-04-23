@@ -348,7 +348,7 @@ public class CalibrationBar implements PlugInFilter {
     public void drawColorBar(ImagePlus imp, int x, int y) {
     	Roi roi = impOriginal.getRoi();
     	if (roi!=null)
-    		impOriginal.killRoi();
+    		impOriginal.deleteRoi();
         stats = impOriginal.getStatistics(Measurements.MIN_MAX, nBins);
         if (roi!=null)
         	impOriginal.setRoi(roi);

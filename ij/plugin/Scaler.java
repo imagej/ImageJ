@@ -36,7 +36,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		imp = IJ.getImage();
 		Roi roi = imp.getRoi();
 		if (roi!=null && !roi.isArea())
-			imp.killRoi(); // ignore any line selection
+			imp.deleteRoi(); // ignore any line selection
 		ImageProcessor ip = imp.getProcessor();
 		if (!showDialog(ip))
 			return;
@@ -140,7 +140,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				ip.scale(xscale, yscale);
 				ip.setSnapshotCopyMode(false);
 			}
-			imp.killRoi();
+			imp.deleteRoi();
 			imp.updateAndDraw();
 			imp.changes = true;
 		}

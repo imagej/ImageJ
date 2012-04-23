@@ -223,7 +223,7 @@ public class Filler implements PlugInFilter, Measurements {
  		if (sliceCount==stackSize) {
 			ip.setColor(Toolbar.getForegroundColor());
 			Roi roi = imp.getRoi();
-			imp.killRoi();
+			imp.deleteRoi();
 			imp.updateAndDraw();
 			imp.setRoi(roi);
 		}

@@ -575,7 +575,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	void createSelection() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return;
-		imp.killRoi();
+		imp.deleteRoi();
 		mode = BLACK_AND_WHITE;
 		apply(imp);
 		IJ.run(imp, "8-bit", "");
@@ -751,7 +751,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				}
 			}
 		}
-		imp.killRoi();
+		imp.deleteRoi();
 
 		//Get hsb or rgb from roi.
 		//1pixel wide to fit all pixels of a non-square ROI in a ColorProcessor:
@@ -859,7 +859,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			IJ.showStatus("No RGB image");
 			return false;
 		}
-		imp.killRoi();
+		imp.deleteRoi();
 		boolean ok = setup(imp);
 		return ok;
 	}

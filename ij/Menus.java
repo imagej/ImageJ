@@ -1390,8 +1390,6 @@ public class Menus {
 			IJ.runPlugIn("ij.plugin.URLOpener", docBase+"StartupMacros.txt");
 			return;
 		}
-		String firstStartupTool = Prefs.get(Toolbar.TOOL_KEY+"00", "");
-		boolean installStartupMacrosTools = !firstStartupTool.startsWith("0");
 
 		if (macrosPath==null) {
 			(new MacroInstaller()).installFromIJJar("/macros/StartupMacros.txt");
@@ -1413,13 +1411,9 @@ public class Menus {
 		try {
 			MacroInstaller mi = new MacroInstaller();
 			if (isLibrary) mi.installLibrary(libraryPath);
-			mi.installTools(installStartupMacrosTools);
 			mi.installFile(path);
 			nMacros += mi.getMacroCount();
 		} catch (Exception e) {}
-		Toolbar tb = Toolbar.getInstance();
-		if (tb!=null)
-			tb.installStartupTools();
 	}
 	
 	static boolean validShortcut(String shortcut) {

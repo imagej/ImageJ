@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() to get the version string. */
-	public static final String VERSION = "1.46k";
+	public static final String VERSION = "1.46m";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -387,12 +387,13 @@ public class ImageJ extends Frame implements ActionListener,
 			Roi roi = imp.getRoi();
 			if (roi instanceof TextRoi) {
 				if ((flags & KeyEvent.META_MASK)!=0 && IJ.isMacOSX()) return;
-				if (alt)
+				if (alt) {
 					switch (keyChar) {
 						case 'u': case 'm': keyChar = IJ.micronSymbol; break;
 						case 'A': keyChar = IJ.angstromSymbol; break;
 						default:
 					}
+				}
 				((TextRoi)roi).addChar(keyChar);
 				return;
 			}
@@ -436,7 +437,12 @@ public class ImageJ extends Frame implements ActionListener,
 		if (cmd==null) {
 			switch(keyCode) {
 				case KeyEvent.VK_TAB: WindowManager.putBehind(); return;
-				case KeyEvent.VK_BACK_SPACE: cmd="Clear"; hotkey=true; break; // delete
+				case KeyEvent.VK_BACK_SPACE: // delete
+					if (deleteOverlayRoi(imp))
+						return;
+					cmd="Clear";
+					hotkey=true;
+					break; 
 				//case KeyEvent.VK_BACK_SLASH: cmd=IJ.altKeyDown()?"Animation Options...":"Start Animation"; break;
 				case KeyEvent.VK_EQUALS: cmd="In [+]"; break;
 				case KeyEvent.VK_MINUS: cmd="Out [-]"; break;
@@ -485,6 +491,22 @@ public class ImageJ extends Frame implements ActionListener,
 				lastKeyCommand = cmd;
 			}
 		}
+	}
+	
+	private boolean deleteOverlayRoi(ImagePlus imp) {
+		Overlay overlay = imp!=null?imp.getOverlay():null;
+		if (overlay==null)
+			return false;
+		Roi roi = imp.getRoi();
+		for (int i=0; i<overlay.size(); i++) {
+			Roi roi2 = overlay.get(i);
+			if (roi2==roi) {
+				overlay.remove(i);
+				imp.deleteRoi();
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean ignoreArrowKeys(ImagePlus imp) {

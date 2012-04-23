@@ -69,7 +69,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     private MacroInstaller macroInstaller;
     private boolean addingSingleTool;
     private boolean installingStartupTool;
-    private boolean toolsetInstalled;
 	private int pc;
 	private String icon;
 	private int startupTime;
@@ -388,7 +387,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				case 'F': g.fillRect(x+v(), y+v(), v(), v()); break;  // filled rectangle
 				case 'O': g.drawOval(x+v(), y+v(), v(), v()); break;  // oval
 				case 'o': g.fillOval(x+v(), y+v(), v(), v()); break;  // filled oval
-				case 'C': g.setColor(new Color(v()*16,v()*16,v()*16)); break; // set color
+				case 'C': // set color
+					int v1=v(), v2=v(), v3=v();
+					Color color = v1==1&&v2==2&&v3==3?foregroundColor:new Color(v1*16,v2*16,v3*16);
+					g.setColor(color);
+					break; 
 				case 'L': g.drawLine(x+v(), y+v(), x+v(), y+v()); break; // line
 				case 'D': g.fillRect(x+v(), y+v(), 1, 1); break; // dot
 				case 'P': // polyline
@@ -728,12 +731,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public static void setForegroundColor(Color c) {
-		if (c!=null) {
-			foregroundColor = c;
-			repaintTool(DROPPER);
-			if (!IJ.isMacro()) setRoiColor(c);
-			IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
+		if (c==null) return;
+		foregroundColor = c;
+		repaintTool(DROPPER);
+		for (int i=SPARE2; i<=SPARE8; i++) {
+			if (instance!=null && instance.icons[i]!=null && instance.icons[i].contains("C123"))
+				repaintTool(i);  // some of this tool's icon is drawn in the foreground color
 		}
+		if (!IJ.isMacro()) setRoiColor(c);
+		IJ.notifyEventListeners(IJEventListener.FOREGROUND_COLOR_CHANGED);
 	}
 
 	public static Color getBackgroundColor() {
@@ -1049,15 +1055,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private void addPluginTools() {
 		switchPopup.addSeparator();
 		addBuiltInTool("Arrow");
-		addBuiltInTool("Overlay Brush");
-		addBuiltInTool("Pixel Inspector");
-		addBuiltInTool("Pencil");
 		addBuiltInTool("Brush");
-		addBuiltInTool("Flood Fill Tool");
-		addBuiltInTool("Spray Can");
 		addBuiltInTool("Developer Menu");
-		addBuiltInTool("Stacks Menu");
+		addBuiltInTool("Flood Filler");
 		addBuiltInTool("LUT Menu");
+		addBuiltInTool("Overlay Brush");
+		addBuiltInTool("Pencil");
+		addBuiltInTool("Pixel Inspector");
+		addBuiltInTool("Spray Can");
+		addBuiltInTool("Stacks Menu");
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
@@ -1207,33 +1213,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			if (!(label.equals("Help...")||label.equals("Remove Tools")) && !isTool)
 				currentSet = label;
 			if (isTool) {
-				if (cmd.equals("Tool")) { // built in tool
-					PlugInTool tool = null;
-					if (label.equals("Arrow")) {
-						tool = new ij.plugin.tool.ArrowTool();
-						if (tool!=null) tool.run("");
-					} else if (label.equals("Overlay Brush")) {
-						tool = new ij.plugin.tool.OverlayBrushTool();
-						if (tool!=null) tool.run("");
-					} else if (label.equals("Pixel Inspector")) {
-						tool = new ij.plugin.tool.PixelInspectionTool();
-						if (tool!=null) tool.run("");
-					} else if (label.equals("Pencil")) {
-						(new MacroInstaller()).installFromIJJar("/macros/PencilTool.txt");
-					} else if (label.equals("Brush")) {
-						(new MacroInstaller()).installFromIJJar("/macros/BrushTool.txt");
-					} else if (label.equals("Flood Fill Tool")) {
-						(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
-					} else if (label.equals("Spray Can")) {
-						(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
-					} else if (label.equals("Developer Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/DeveloperMenuTool.txt");
-					} else if (label.equals("Stacks Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/StacksMenuTool.txt");
-					} else if (label.equals("LUT Menu")) {
-						(new MacroInstaller()).installFromIJJar("/macros/LUTMenuTool.txt");
-					}
-				} else  // plugin or macro tool in ImageJ/plugins/Tools
+				if (cmd.equals("Tool")) // built in tool
+					installBuiltinTool(label);
+				else  // plugin or macro tool in ImageJ/plugins/Tools
 					IJ.run(label);
 				return;
 			}
@@ -1242,6 +1224,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				removeMacroTools();
 				setTool(RECTANGLE);
 				currentSet = "Startup Macros";
+				resetPrefs();
 			} else if (label.equals("Help...")) {
 				IJ.showMessage("Tool Switcher and Loader",
 					"Use this drop down menu to switch to alternative\n"+
@@ -1273,8 +1256,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                     ed.setSize(350, 300);
                     ed.create(label, macros);
                 	IJ.setKeyUp(KeyEvent.VK_SHIFT);
-				} else
+				} else {
+					resetTools();
 					mi.installFromIJJar(path);
+				}
             } else {
                 // load from ImageJ/macros/toolsets
                 if (label.equals("Startup Macros")) {
@@ -1288,30 +1273,34 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                     if (IJ.shiftKeyDown()) {
                         IJ.open(path);
                 		IJ.setKeyUp(KeyEvent.VK_SHIFT);
-                    } else {
+                    } else
                         new MacroInstaller().run(path);
-                        toolsetInstalled = true;
-                    }
                 } catch(Exception ex) {}
             }
 		}
 	}
 	
+	private void resetPrefs() {
+		for (int i=0; i<7; i++) {
+			String key = TOOL_KEY+(i/10)%10+i%10;
+			if (!Prefs.get(key, "").equals(""))
+				Prefs.set(key, "");
+		}
+	}
+	
 	private 	void installStartupMacros() {
-		String firstStartupTool = Prefs.get(TOOL_KEY+"00", "");
-		if (!toolsetInstalled || firstStartupTool==null || !firstStartupTool.startsWith("0")) {
-			String path = IJ.getDirectory("macros")+"StartupMacros.txt";
+		resetTools();
+		String path = IJ.getDirectory("macros")+"StartupMacros.txt";
+		if (IJ.shiftKeyDown()) {
+			IJ.open(path);
+			IJ.setKeyUp(KeyEvent.VK_SHIFT);
+		} else {
 			try {
-				new MacroInstaller().run(path);
+				MacroInstaller mi = new MacroInstaller();
+				mi.installFile(path);
 			} catch
 				(Exception ex) {}
-		} else {
-			removeMacroTools();
-			setTool(RECTANGLE);
 		}
-		if (toolsetInstalled)
-			installStartupTools();
-		toolsetInstalled = false;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -1456,7 +1445,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				else
 					installingStartupTool = false;
 			}
+			setPrefs(tool);
 		}
+	}
+	
+	private void setPrefs(int id) {
+		int index = id - SPARE2;
+		String key = TOOL_KEY + (index/10)%10 + index%10;
+		Prefs.set(key, instance.names[id]);
 	}
 
 	public static void removeMacroTools() {
@@ -1483,6 +1479,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				instance.setTool(id);
 			else
 				instance.installingStartupTool = false;
+			instance.setPrefs(id);
 		}
 	}
 
@@ -1513,7 +1510,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		ImagePlus img = WindowManager.getCurrentImage();
 		Roi roi = img!=null?img.getRoi():null;
 		if (roi!=null && roi.getType()==Roi.OVAL && ovalType==BRUSH_ROI)
-			img.killRoi();
+			img.deleteRoi();
 		Prefs.set(BRUSH_SIZE, brushSize);
 	}
 
@@ -1526,10 +1523,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	public void installStartupTools() {
-		for (int i=0; i<6; i++) {
+		for (int i=0; i<=6; i++) {
 			String name = Prefs.get(TOOL_KEY + (i/10)%10 + i%10, "");
-			if (name.equals("")) break;
-			name = name.substring(1);
+			if (name.equals("")) continue;
 			installingStartupTool = true;
 			boolean ok = installBuiltinTool(name);
 			if (!ok) {
@@ -1555,11 +1551,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		} else if (label.startsWith("Pixel Inspect")) {
 			tool = new ij.plugin.tool.PixelInspectionTool();
 			if (tool!=null) tool.run("");
+		} else if (label.startsWith("Brush")||label.startsWith("Paintbrush")) {
+			tool = new ij.plugin.tool.BrushTool();
+			if (tool!=null) tool.run("");
 		} else if (label.startsWith("Pencil")) {
-			(new MacroInstaller()).installFromIJJar("/macros/PencilTool.txt");
-		} else if (label.startsWith("Brush")) {
-			(new MacroInstaller()).installFromIJJar("/macros/BrushTool.txt");
-		} else if (label.equals("Flood Fill Tool")) {
+			tool = new ij.plugin.tool.BrushTool();
+			if (tool!=null) tool.run("pencil");
+		} else if (label.startsWith("Flood Fill")) {
 			(new MacroInstaller()).installFromIJJar("/macros/FloodFillTool.txt");
 		} else if (label.startsWith("Spray Can")) {
 			(new MacroInstaller()).installFromIJJar("/macros/SprayCanTool.txt");
@@ -1573,22 +1571,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			ok = false;
 		return ok;
 	}
-
-	/** Called once when ImageJ quits. */
-	public static void savePreferences() {
-		if (instance==null || instance.toolsetInstalled)
-			return;
-		int index = 0;
-		for (int id=SPARE2; id<SPARE9; id++) {
-			if (instance.names[id]!=null && !instance.isMacroSet(id)) {
-				String key = TOOL_KEY + (index/10)%10 + index%10;
-				index++;
-				Prefs.set(key, (id-SPARE2)+instance.names[id]);
-			}
-		}
-		for (int i=index; i<7; i++)
-			Prefs.set(TOOL_KEY+(i/10)%10+i%10, "");
-	}
 	
 	private boolean isMacroSet(int id) {
 		if (tools[id]==null)
@@ -1598,5 +1580,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		boolean rtn = ((MacroToolRunner)tools[id]).getMacroCount()>2;
 		return rtn;
 	}
+	
+	public static boolean installStartupMacrosTools() {
+		String customTool0 = Prefs.get(Toolbar.TOOL_KEY+"00", "");
+		return customTool0.equals("") || Character.isDigit(customTool0.charAt(0));
+	}
+	
+	//public void repaint() {
+	//	super.repaint();
+	//}
 
 }

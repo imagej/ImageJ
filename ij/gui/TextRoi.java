@@ -370,7 +370,7 @@ public class TextRoi extends Roi {
 			firstMouseUp = false;
 		} else {
 			if (width<5 || height<5)
-				imp.killRoi();
+				imp.deleteRoi();
 		}
 	}
 	

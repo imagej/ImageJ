@@ -20,7 +20,7 @@ public class Filters implements PlugInFilter {
 		if (imp!=null) {
 			Roi roi = imp.getRoi();
 			if (roi!=null && !roi.isArea())
-				imp.killRoi(); // ignore any line selection
+				imp.deleteRoi(); // ignore any line selection
 		}
 		int flags = IJ.setupDialog(imp, DOES_ALL-DOES_8C+SUPPORTS_MASKING);
 		if ((flags&PlugInFilter.DOES_STACKS)!=0 && imp.getType()==ImagePlus.GRAY16 && imp.getStackSize()>1 && arg.equals("invert")) {
@@ -85,7 +85,7 @@ public class Filters implements PlugInFilter {
 	}
 	
 	void invert16BitStack(ImagePlus imp) {
-		imp.killRoi();
+		imp.deleteRoi();
 		imp.getCalibration().disableDensityCalibration();
 		ImageStatistics stats = new StackStatistics(imp);
 		ImageStack stack = imp.getStack();
