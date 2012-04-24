@@ -9,6 +9,7 @@ import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.*;
+import ij.plugin.ChannelSplitter;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
@@ -749,8 +750,13 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		mean2 = mean;
 		ImageProcessor ip = imp.getProcessor();
 		stats = null;
-		if (entireStack)
-			stats = new StackStatistics(imp);
+		if (entireStack) {
+			if (imp.isHyperStack()) {
+				ImageStack stack = ChannelSplitter.getChannel(imp, imp.getChannel());
+				stats = new StackStatistics(new ImagePlus("", stack));
+			} else
+				stats = new StackStatistics(imp);
+		}
 		if (!(ip instanceof ByteProcessor)) {
 			if (entireStack) {
 				if (imp.getLocalCalibration().isSigned16Bit()) 

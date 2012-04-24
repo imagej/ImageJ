@@ -305,8 +305,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
-			if (roi.activeOverlayRoi)
-				continue;
+			if (roi.activeOverlayRoi) {
+				int t = roi.getType();
+				if (t!=Roi.FREEROI&&t!=Roi.TRACED_ROI&&t!=Roi.FREELINE&&t!=Roi.COMPOSITE)
+					continue;
+			}
 			if (hyperstack && roi.getPosition()==0) {
 				int c = roi.getCPosition();
 				int z = roi.getZPosition();

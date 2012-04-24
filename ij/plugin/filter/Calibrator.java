@@ -39,6 +39,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	private String sumResiduals, fitGoodness;
 	private Button open, save;
 	private GenericDialog gd;
+	private boolean showPlotFlag = true;
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -93,6 +94,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
 		gd.addPanel(makeButtonPanel(gd));
 		gd.addCheckbox("Global calibration", global1);
+		gd.addCheckbox("Show plot", showPlotFlag);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#cal");
 		gd.showDialog();
@@ -104,6 +106,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			xText = gd.getNextText();
 			yText = gd.getNextText();
 			global2 = gd.getNextBoolean();
+			showPlotFlag = gd.getNextBoolean();
 			//showSettings = gd.getNextBoolean();
 			return true;
 		}
@@ -225,7 +228,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 	
 	void showPlot(double[] x, double[] y, Calibration cal, String rSquared) {
-		if (!cal.calibrated() || (IJ.macroRunning()&&Macro.getOptions()!=null))
+		if (!showPlotFlag || !cal.calibrated())
 			return;
 		int xmin,xmax,range;
 		float[] ctable = cal.getCTable();
