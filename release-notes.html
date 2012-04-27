@@ -5,17 +5,21 @@
 </head>
 <body>
 
-<li> <u>1.46n 24 April 2012</u>
+<li> <u>1.46n 27 April 2012</u>
 <ul>
 <li> Add a "Show plot" checkbox to the <i>Analyze&gt;Calibrate</i> dialog box.
 <li> Tiago Ferreira added a list of valid factors to the
 <i>Image&gt;Stacks&gt;Tools&gt;GroupedZProjector</i> dialog.
+<li> Made the IJ.runPlugIn(String,String,String) method public.
 <li> Thanks to Burri Olivier, fixed a bug that caused <i>Image&gt;Adjust&gt;Threshold</i>,
 when the "Stack histogram" option was enabled, to use the
 histogram of all channels instead of only the current channel.
 <li> Tiago Ferreira fixed a bug that caused stacks binned with
 <i>Image&gt;Stacks&gt;Tools&gt;GroupedZProjector</i>
 to loose spatial calibration.
+<li> Thanks to Burri Olivier, fixed a bug that caused incorrect auto stack thresholds
+when "Limit to threshold was enabled <i>Analyze&gt;Set Measurements</i>.
+
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

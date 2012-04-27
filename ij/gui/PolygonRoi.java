@@ -1257,8 +1257,8 @@ public class PolygonRoi extends Roi {
 			ypoints1 = toInt(ySpline);
 		} else if (xpf!=null) {
 			n = nPoints;
-			xpoints1 = toInt(xpf);
-			ypoints1 = toInt(ypf);
+			xpoints1 = toIntR(xpf);
+			ypoints1 = toIntR(ypf);
 		} else {
 			n = nPoints;
 			xpoints1 = xp;

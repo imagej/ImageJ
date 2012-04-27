@@ -10,6 +10,7 @@ import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
+import ij.measure.Measurements;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
@@ -141,7 +142,7 @@ public class IJ {
 	}
 	
 	/** Runs the specified plugin and returns a reference to it. */
-	static Object runPlugIn(String commandName, String className, String arg) {
+	public static Object runPlugIn(String commandName, String className, String arg) {
 		if (IJ.debugMode)
 			IJ.log("runPlugin: "+className+" "+arg);
 		if (arg==null) arg = "";
@@ -1138,7 +1139,10 @@ public class IJ {
 	
 	private static void setStackThreshold(ImagePlus imp, ImageProcessor ip, String method) {
 		boolean darkBackground = method.indexOf("dark")!=-1;
+		int measurements = Analyzer.getMeasurements();
+		Analyzer.setMeasurements(Measurements.AREA+Measurements.MIN_MAX);
 		ImageStatistics stats = new StackStatistics(imp);
+		Analyzer.setMeasurements(measurements);
 		AutoThresholder thresholder = new AutoThresholder();
 		double min=0.0, max=255.0;
 		if (imp.getBitDepth()!=8) {

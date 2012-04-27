@@ -1267,7 +1267,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		return  strokeColor;
 	}
 
-	/** Sets the color used to fill ROIs when they are in an overlay.
+	/** Sets the color used to fill ROIs.
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setFillColor(Color color) {

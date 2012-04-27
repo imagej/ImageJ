@@ -81,8 +81,8 @@ public class Selection implements PlugIn, Measurements {
 			noRoi("Rotate>Selection");
 			return;
 		}
-		roi = (Roi)roi.clone();
 		Undo.setup(Undo.ROI, imp);
+		roi = (Roi)roi.clone();
 		if (arg.equals("rotate")) {
 			double d = Tools.parseDouble(angle);
 			if (Double.isNaN(d)) angle = "15";

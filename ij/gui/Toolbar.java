@@ -106,7 +106,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		instance = this;
-		names[NUM_TOOLS-1] = "Switch to other macro toolsets or add a plugin tool";
+		names[NUM_TOOLS-1] = "\"More Tools\" menu (switch toolsets or add tools)";
 		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
 		addPopupMenus();
 		if (IJ.isMacOSX() || IJ.isVista()) Prefs.antialiasedTools = true;
@@ -1397,8 +1397,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
         for (int i=0; i<commands.length; i++) {
 			if (commands[i].equals("-"))
 				menus[tool].addSeparator();
+			else if (commands[i].startsWith("-"))
+				menus[tool].addSeparator();
 			else {
-				MenuItem mi = new MenuItem(commands[i]);
+				boolean disable = commands[i].startsWith("*");
+				String command = commands[i];
+				if (disable)
+					command = command.substring(1);
+				MenuItem mi = new MenuItem(command);
+				if (disable)
+					mi.setEnabled(false);
 				mi.addActionListener(this);
 				menus[tool].add(mi);
 			}

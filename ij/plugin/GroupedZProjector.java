@@ -63,7 +63,7 @@ public class GroupedZProjector implements PlugIn {
 			return false;
 		method = gd.getNextChoiceIndex();
 		groupSize = (int)gd.getNextNumber();
-		if (groupSize<1	 ||	 groupSize>size || (size%groupSize)!=0) {
+		if (groupSize<1 || groupSize>size || (size%groupSize)!=0) {
 			IJ.error("ZProject", "Group size must divide evenly into the stack size.");
 			return false;
 		}
