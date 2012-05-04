@@ -185,7 +185,7 @@ public class PolygonRoi extends Roi {
 		boolean hasHandles = xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE;
 		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi && !hasHandles;
 		if (isActiveOverlayRoi)
-			color = Color.orange;
+			color = Color.cyan;
 		boolean fill = false;
         mag = getMagnification();
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {

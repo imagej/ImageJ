@@ -693,150 +693,40 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	public void summarize() {
-		rt = systemRT;
-		if (rt.getCounter()==0)
-			return;
-		if (summarized)
-			rt.show("Results");
-		measurements = systemMeasurements;
-		min = new StringBuffer(100);
-		max = new StringBuffer(100);
-		mean = new StringBuffer(100);
-		sd = new StringBuffer(100);
-		min.append("Min\t");
-		max.append("Max\t");
-		mean.append("Mean\t");
-		sd.append("SD\t");
-		if ((measurements&LABELS)!=0) {
-			min.append("\t");
-			max.append("\t");
-			mean.append("\t");
-			sd.append("\t");
+		int n = rt.getCounter();
+		if (n<2) return;
+		String[] headings = Tools.split(rt.getColumnHeadings());
+		int columns = headings!=null?headings.length:0;
+		if (columns==0) return;
+		int first = "Label".equals(headings[0])?1:0;
+		double[] min = new double[columns];
+		double[] max = new double[columns];
+		double[] sum = new double[columns];
+		double[] sum2 = new double[columns];
+		for (int i=0; i<columns; i++) {
+			min[i] = Double.MAX_VALUE;
+			max[i] = -Double.MAX_VALUE;
 		}
-		summarizeAreas();
-		if ((measurements&ELLIPSE)==0) {
-			int index = rt.getColumnIndex("Angle");
-			if (rt.columnExists(index)) add2(index);
+		for (int row=0; row<n; row++) {
+			for (int col=first; col<columns; col++) {
+				double v = rt.getValue(headings[col], row);
+				if (v<min[col]) min[col]=v;
+				if (v>max[col]) max[col]=v;
+				sum[col]+=v;
+				sum2[col]+=v*v;
+			}
 		}
-		int index = rt.getColumnIndex("Length");
-		if (rt.columnExists(index)) add2(index);
-		TextPanel tp = IJ.getTextPanel();
-		if (tp!=null) {
-			String worksheetHeadings = tp.getColumnHeadings();		
-			if (worksheetHeadings.equals(""))
-				IJ.setColumnHeadings(rt.getColumnHeadings());
-		}		
-		IJ.write("");	
-		String meanS = new String(mean);		
-		String sdS = new String(sd);		
-		String minS = new String(min);		
-		String maxS =new String(max);
-		if (meanS.endsWith("\t"))
-			meanS = meanS.substring(0, meanS.length()-1);
-		if (sdS.endsWith("\t"))
-			sdS = sdS.substring(0, sdS.length()-1);
-		if (minS.endsWith("\t"))
-			minS = minS.substring(0, minS.length()-1);
-		if (maxS.endsWith("\t"))
-			maxS = maxS.substring(0, maxS.length()-1);
-		IJ.write(meanS);		
-		IJ.write(sdS);		
-		IJ.write(minS);		
-		IJ.write(maxS);
-		IJ.write("");		
-		mean = null;		
-		sd = null;		
-		min = null;		
-		max = null;
-		summarized = true;		
-	}
-	
-	void summarizeAreas() {
-		if ((measurements&AREA)!=0) add2(ResultsTable.AREA);
-		if ((measurements&MEAN)!=0) add2(ResultsTable.MEAN);
-		if ((measurements&STD_DEV)!=0) add2(ResultsTable.STD_DEV);
-		if ((measurements&MODE)!=0) add2(ResultsTable.MODE);
-		if ((measurements&MIN_MAX)!=0) {
-			if (showMin) add2(ResultsTable.MIN);
-			add2(ResultsTable.MAX);
+		rt.incrementCounter(); rt.setLabel("Mean", n+0);
+		rt.incrementCounter(); rt.setLabel("SD", n+1);
+		rt.incrementCounter(); rt.setLabel("Min", n+2);
+		rt.incrementCounter(); rt.setLabel("Max", n+3);
+		for (int col=first; col<columns; col++) {
+			rt.setValue(headings[col], n+0, sum[col]/n);
+			rt.setValue(headings[col], n+1, Math.sqrt((sum2[col]-sum[col]*sum[col]/n)/(n-1)));
+			rt.setValue(headings[col], n+2, min[col]);
+			rt.setValue(headings[col], n+3, max[col]);
 		}
-		if ((measurements&CENTROID)!=0) {
-			add2(ResultsTable.X_CENTROID);
-			add2(ResultsTable.Y_CENTROID);
-		}
-		if ((measurements&CENTER_OF_MASS)!=0) {
-			add2(ResultsTable.X_CENTER_OF_MASS);
-			add2(ResultsTable.Y_CENTER_OF_MASS);
-		}
-		if ((measurements&PERIMETER)!=0)
-			add2(ResultsTable.PERIMETER);
-		if ((measurements&RECT)!=0) {
-			add2(ResultsTable.ROI_X);
-			add2(ResultsTable.ROI_Y);
-			add2(ResultsTable.ROI_WIDTH);
-			add2(ResultsTable.ROI_HEIGHT);
-		}
-		if ((measurements&ELLIPSE)!=0) {
-			add2(ResultsTable.MAJOR);
-			add2(ResultsTable.MINOR);
-			add2(ResultsTable.ANGLE);
-		}
-		if ((measurements&SHAPE_DESCRIPTORS)!=0)
-			add2(ResultsTable.CIRCULARITY);
-		if ((measurements&FERET)!=0)
-			add2(ResultsTable.FERET);
-		if ((measurements&INTEGRATED_DENSITY)!=0) {
-			add2(ResultsTable.INTEGRATED_DENSITY);
-			add2(ResultsTable.RAW_INTEGRATED_DENSITY);
-		}
-		if ((measurements&MEDIAN)!=0)
-			add2(ResultsTable.MEDIAN);
-		if ((measurements&SKEWNESS)!=0)
-			add2(ResultsTable.SKEWNESS);
-		if ((measurements&KURTOSIS)!=0)
-			add2(ResultsTable.KURTOSIS);
-		if ((measurements&AREA_FRACTION)!=0)
-			add2(ResultsTable.AREA_FRACTION);
-		if ((measurements&STACK_POSITION)!=0) {
-			int index = rt.getColumnIndex("Ch");
-			if (rt.columnExists(index)) add2(index);
-			index = rt.getColumnIndex("Slice");
-			if (rt.columnExists(index)) add2(index);
-			index = rt.getColumnIndex("Frame");
-			if (rt.columnExists(index)) add2(index);
-		}
-		if ((measurements&FERET)!=0) {
-			add2(ResultsTable.FERET_X);
-			add2(ResultsTable.FERET_Y);
-			add2(ResultsTable.FERET_ANGLE);
-			add2(ResultsTable.MIN_FERET);
-		}
-		if ((measurements&SHAPE_DESCRIPTORS)!=0) {
-			add2(ResultsTable.ASPECT_RATIO);
-			add2(ResultsTable.ROUNDNESS);
-			add2(ResultsTable.SOLIDITY);
-		}
-	}
-
-	private void add2(int column) {
-		float[] c = column>=0?rt.getColumn(column):null;
-		if (c!=null) {
-			ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
-			if (ip==null)
-				return;
-			ImageStatistics stats = new FloatStatistics(ip);
-			if (stats==null)
-				return;
-			mean.append(n(stats.mean));
-			min.append(n(stats.min));
-			max.append(n(stats.max));
-			sd.append(n(stats.stdDev));
-		} else {
-			mean.append("-\t");
-			min.append("-\t");
-			max.append("-\t");
-			sd.append("-\t");
-		}
+		rt.show("Results");
 	}
 
 	/** Returns the current measurement count. */

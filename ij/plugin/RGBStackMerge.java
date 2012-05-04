@@ -57,9 +57,11 @@ public class RGBStackMerge implements PlugIn {
 		}
 
 		GenericDialog gd = new GenericDialog("Merge Channels");
-		gd.addChoice("C1 (red):", titles, titles[0]);
-		gd.addChoice("C2 (green):", titles, titles[1]);
-		String title = titles.length>2&&!macro?titles[2]:none;
+		String title = titles.length>0&&!macro?titles[0]:none;
+		gd.addChoice("C1 (red):", titles, title);
+		title = titles.length>1&&!macro?titles[1]:none;
+		gd.addChoice("C2 (green):", titles, title);
+		title = titles.length>2&&!macro?titles[2]:none;
 		gd.addChoice("C3 (blue):", titles, title);
 		title = titles.length>3&&!macro?titles[3]:none;
 		gd.addChoice("C4 (gray):", titles, title);
@@ -78,8 +80,9 @@ public class RGBStackMerge implements PlugIn {
 			return;
 		int maxChannels = 7;
 		int[] index = new int[maxChannels];
-		for (int i=0; i<maxChannels; i++)
+		for (int i=0; i<maxChannels; i++) {
 			index[i] = gd.getNextChoiceIndex();
+		}
 		createComposite = gd.getNextBoolean();
 		keep = gd.getNextBoolean();
 		ignoreLuts = gd.getNextBoolean();

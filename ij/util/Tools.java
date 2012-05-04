@@ -225,21 +225,25 @@ import java.io.*;
 		index[j] = b;
 	}
 
+	static int counter;
+
 	// quicksort a[left] to a[right]
 	public static void quicksort(String[] a, int[] index) {
+		counter = 0;
 		quicksort(a, index, 0, a.length-1);
+		if (ij.IJ.debugMode) ij.IJ.log("quicksort recursions: "+counter);
 	}
 
 	public static void quicksort(String[] a, int[] index, int left, int right) {
 		if (right <= left) return;
+		counter++;
 		int i = partition(a, index, left, right);
 		quicksort(a, index, left, i-1);
 		quicksort(a, index, i+1, right);
 	}
 
 	// partition a[left] to a[right], assumes left < right
-	private static int partition(String[] a, int[] index,
-		int left, int right) {
+	private static int partition(String[] a, int[] index, int left, int right) {
 		int i = left - 1;
 		int j = right;
 		while (true) {

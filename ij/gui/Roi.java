@@ -68,6 +68,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private int channel, slice, frame;
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
+	private boolean scaleStrokeWidth = true;
 
 	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
@@ -1369,7 +1370,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	protected BasicStroke getScaledStroke() {
-		if (ic==null) return stroke;
+		if (ic==null || !scaleStrokeWidth)
+			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {
 			float width = stroke.getLineWidth();
@@ -1569,6 +1571,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	public void setDrawOffset(boolean drawOffset) {
+	}
+	
+	public boolean getScaleStrokeWidth() {
+		return scaleStrokeWidth;
+	}
+	
+	public void setScaleStrokeWidth(boolean scaleStrokeWidth) {
+		this.scaleStrokeWidth = scaleStrokeWidth;
 	}
 
     /** Checks whether two rectangles are equal. */

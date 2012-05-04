@@ -1409,6 +1409,16 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
+	/** Returns the ImageJ version and build as a String (e.g., "1.46n00", "1.46n05", "1.46n16"). */
+	public static String getFullVersion() {
+		String build = ImageJ.BUILD;
+		if (build.length()==0)
+			build = "00";
+		else if (build.length()==1)
+			build = "0" + build;
+		return ImageJ.VERSION+build;
+	}
+
 	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
 		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
 		"imagej", "plugins", "macros", "luts", "temp", "current" or "image", otherwise, 

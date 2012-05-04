@@ -5,11 +5,16 @@ public class StringSorter {
 	
 	/** Sorts the array. */
 	public static void sort(String[] a) {
+		counter = 0;
 		if (!alreadySorted(a))
 			sort(a, 0, a.length - 1);
+		if (ij.IJ.debugMode) ij.IJ.log("quicksort recursions: "+counter);
 	}
 	
+	static int counter;
+
 	static void sort(String[] a, int from, int to) {
+		counter++;
 		int i = from, j = to;
 		String center = a[ (from + to) / 2 ];
 		do {

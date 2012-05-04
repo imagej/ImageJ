@@ -9,6 +9,8 @@ import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.measure.*;
+import java.awt.geom.*;
+
 
 /** Saves the XY coordinates of the current ROI boundary. */
 public class XYWriter implements PlugInFilter {
@@ -31,9 +33,6 @@ public class XYWriter implements PlugInFilter {
 		Roi roi = imp.getRoi();
 		if (roi==null)
 			throw new IllegalArgumentException("ROI required");
-		if (!(roi instanceof PolygonRoi))
-			throw new IllegalArgumentException("Irregular area or line selection required");
-		
 		SaveDialog sd = new SaveDialog("Save Coordinates as Text...", imp.getTitle(), ".txt");
 		String name = sd.getFileName();
 		if (name == null)
@@ -50,20 +49,21 @@ public class XYWriter implements PlugInFilter {
 			return;
 		}
 		
-		Rectangle r = roi.getBounds();
-		PolygonRoi p = (PolygonRoi)roi;
-		int n = p.getNCoordinates();
-		int[] x = p.getXCoordinates();
-		int[] y = p.getYCoordinates();
-		
 		Calibration cal = imp.getCalibration();
 		String ls = System.getProperty("line.separator");
-		boolean scaled = cal.scaled();
-		for (int i=0; i<n; i++) {
-			if (scaled)
-				pw.print(IJ.d2s((r.x+x[i])*cal.pixelWidth) + "\t" + IJ.d2s((r.y+y[i])*cal.pixelHeight) + ls);
-			else
-				pw.print((r.x+x[i]) + "\t" + (r.y+y[i]) + ls);
+		if (roi.subPixelResolution()) {
+			FloatPolygon p = roi.getFloatPolygon();
+			for (int i=0; i<p.npoints; i++)
+				pw.print(IJ.d2s((p.xpoints[i])*cal.pixelWidth,4) + "\t" + IJ.d2s((p.ypoints[i])*cal.pixelHeight,4) + ls);
+		} else {
+			Polygon p = roi.getPolygon();
+			boolean scaled = cal.scaled();
+			for (int i=0; i<p.npoints; i++) {
+				if (scaled)
+					pw.print(IJ.d2s((p.xpoints[i])*cal.pixelWidth,4) + "\t" + IJ.d2s((p.ypoints[i])*cal.pixelHeight,4) + ls);
+				else
+					pw.print((p.xpoints[i]) + "\t" + (p.ypoints[i]) + ls);
+			}
 		}
 		pw.close();
 	}

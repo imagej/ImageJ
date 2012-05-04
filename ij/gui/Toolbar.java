@@ -1492,8 +1492,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 
 	public static PlugInTool getPlugInTool() {
-		if (instance==null) return null;
-		PlugInTool tool = instance.tools[current];
+		PlugInTool tool = null;
+		if (instance==null)
+			return null;
+		if (current<instance.tools.length)
+			tool = instance.tools[current];
 		if (tool!=null && tool instanceof MacroToolRunner)
 			tool = null;
 		return tool;

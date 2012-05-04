@@ -135,6 +135,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
      		setFileInfo(imp.getOriginalFileInfo());
      		setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
      		setOverlay(imp.getOverlay());
+     		setRoi(imp.getRoi());
    			if (isURL)
    				this.url = pathOrURL;
    			ID = --currentID;
