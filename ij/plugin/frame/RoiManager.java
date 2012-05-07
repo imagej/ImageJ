@@ -37,7 +37,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private PopupMenu pm;
 	private Button moreButton, colorButton;
 	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	private Checkbox labelsCheckbox = new Checkbox("Edit Mode", false);
+	private Checkbox labelsCheckbox = new Checkbox("Label", false);
 
 	private static boolean measureAll = true;
 	private static boolean onePerSlice = true;
@@ -1416,8 +1416,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{error("There are no images open."); return;}
-		ImageCanvas ic = imp.getCanvas();
-		if (ic==null) return;
 		boolean showAll = mode==SHOW_ALL;
 		if (mode==LABELS) {
 			showAll = true;
@@ -1429,18 +1427,41 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				Recorder.record("roiManager", "Show All without labels");
 		}
 		if (showAll) imp.deleteRoi();
-		ic.setShowAllROIs(showAll);
+		Roi[] rois = getRoisAsArray();
+		if (mode==SHOW_NONE)
+			imp.setOverlay(null);
+		else if (rois.length>0) {
+			Overlay overlay = new Overlay();
+			for (int i=0; i<rois.length; i++)
+				overlay.add(rois[i]);
+			if (labelsCheckbox.getState()) {
+				overlay.drawLabels(true);
+				overlay.drawBackgrounds(true);
+			}
+			imp.setOverlay(overlay);
+		}
 		if (record())
 			Recorder.record("roiManager", showAll?"Show All":"Show None");
-		imp.draw();
 	}
 
 	void updateShowAll() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return;
-		ImageCanvas ic = imp.getCanvas();
-		if (ic!=null && ic.getShowAllROIs())
-			imp.draw();
+		if (showAllCheckbox.getState()) {
+			Roi[] rois = getRoisAsArray();
+			if (rois.length>0) {
+				Overlay overlay = new Overlay();
+				for (int i=0; i<rois.length; i++)
+					overlay.add(rois[i]);
+				if (labelsCheckbox.getState()) {
+					overlay.drawLabels(true);
+					overlay.drawBackgrounds(true);
+				}
+				imp.setOverlay(overlay);
+			} else
+				imp.setOverlay(null);
+		} else
+			imp.setOverlay(null);
 	}
 
 	int[] getAllIndexes() {
@@ -1786,14 +1807,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	public void setEditMode(ImagePlus imp, boolean editMode) {
-		ImageCanvas ic = imp.getCanvas();
-		boolean showAll = false;
-		if (ic!=null) {
-			showAll = ic.getShowAllROIs() | editMode;
-			ic.setShowAllROIs(showAll);
-			imp.draw();
-		}
-		showAllCheckbox.setState(showAll);
+		showAllCheckbox.setState(editMode);
 		labelsCheckbox.setState(editMode);
 	}
 	
@@ -1827,14 +1841,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		if (n>0) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
-			gd.addMessage("Move the "+n+" displayed ROIs to an overlay?");
+			gd.addMessage("Save the "+n+" displayed ROIs as an overlay?");
 			gd.setOKLabel("Discard");
-			gd.setCancelLabel("Move to Overlay");
+			gd.setCancelLabel("Save as Overlay");
 			gd.showDialog();
 			if (gd.wasCanceled())
 				moveRoisToOverlay(imp);
 			else
-				imp.draw();
+				imp.setOverlay(null);
 		} else
 			imp.draw();
     }
@@ -1844,14 +1858,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Roi[] rois = getRoisAsArray();
 		int n = rois.length;
 		Overlay overlay = new Overlay();
-		ImageCanvas ic = imp.getCanvas();
-		Color color = ic!=null?ic.getShowAllColor():null;
+		//ImageCanvas ic = imp.getCanvas();
+		//Color color = ic!=null?ic.getShowAllColor():null;
 		for (int i=0; i<n; i++) {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)
 				roi.setPosition(0);
-			if (color!=null && roi.getStrokeColor()==null)
-				roi.setStrokeColor(color);
+			//if (color!=null && roi.getStrokeColor()==null)
+			//	roi.setStrokeColor(color);
 			if (roi.getStrokeWidth()==1)
 				roi.setStrokeWidth(0);
 			overlay.add(roi);

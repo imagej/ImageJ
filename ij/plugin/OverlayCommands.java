@@ -300,11 +300,11 @@ public class OverlayCommands implements PlugIn {
 		if (overlay.size()>=4 && overlay.get(3).getPosition()!=0)
 			Prefs.showAllSliceOnly = true;
 		rm.runCommand("reset");
+		rm.setEditMode(imp, false);
 		for (int i=0; i<overlay.size(); i++)
 			rm.add(imp, overlay.get(i), i);
 		rm.setEditMode(imp, true);
-		if (rm.getCount()==overlay.size())
-			imp.setOverlay(null);
+		rm.runCommand("show all");
 	}
 	
 	void options() {

@@ -525,6 +525,7 @@ public class ResultsTable implements Cloneable {
 	public synchronized void deleteRow(int row) {
 		if (counter==0 || row<0 || row>counter-1) return;
 		if (rowLabels!=null) {
+			rowLabels[row] = null;
 			for (int i=row; i<counter-1; i++)
 				rowLabels[i] = rowLabels[i+1];
 		}

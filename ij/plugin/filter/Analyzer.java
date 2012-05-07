@@ -204,6 +204,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		}
 		if ((oldMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~LIMIT)&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
 				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
+				clearSummary();
 				rt.update(systemMeasurements, imp, null);
 		}
 		if ((systemMeasurements&LABELS)==0)
@@ -322,8 +323,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (rt.getCounter()>0) {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("X");
-			if (index<0 || !rt.columnExists(index))
+			if (index<0 || !rt.columnExists(index)) {
+				clearSummary();
 				rt.update(measurements, imp, roi);
+			}
 		}
 		FloatPolygon p = roi.getFloatPolygon();
 		ImagePlus imp2 = isRedirectImage()?getRedirectImageOrStack(imp):null;
@@ -341,8 +344,10 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (rt.getCounter()>0) {
 			if (!IJ.isResultsWindow()) reset();
 			int index = rt.getColumnIndex("Angle");
-			if (index<0 || !rt.columnExists(index))
+			if (index<0 || !rt.columnExists(index)) {
+				clearSummary();
 				rt.update(measurements, imp, roi);
+			}
 		}
 		ImageProcessor ip = imp.getProcessor();
 		ip.setRoi(roi.getPolygon());
@@ -360,12 +365,16 @@ public class Analyzer implements PlugInFilter, Measurements {
 			if (!IJ.isResultsWindow()) reset();
 			boolean update = false;
 			int index = rt.getColumnIndex("Length");
-			if (index<0 || !rt.columnExists(index)) update=true;
+			if (index<0 || !rt.columnExists(index))
+				update=true;
 			if (roi.getType()==Roi.LINE) {
 				index = rt.getColumnIndex("Angle");
 				if (index<0 || !rt.columnExists(index)) update=true;
 			}
-			if (update) rt.update(measurements, imp2, roi);
+			if (update) {
+				clearSummary();
+				rt.update(measurements, imp2, roi);
+			}
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
 		int lineWidth = (int)Math.round(roi.getStrokeWidth());
@@ -404,6 +413,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public void saveResults(ImageStatistics stats, Roi roi) {
 		if (rt.getColumnHeading(ResultsTable.LAST_HEADING)==null)
 			reset();
+		clearSummary();
 		incrementCounter();
 		int counter = rt.getCounter();
 		if (counter<=MAX_STANDARDS && !(stats.umean==0.0&&counter==1&&umeans!=null && umeans[0]!=0f)) {
@@ -542,6 +552,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 				savePoints(roi);
 		}
 	}
+	
+	private void clearSummary() {
+		if (summarized && rt.getCounter()>=4 && "Max".equals(rt.getLabel(rt.getCounter()-1))) {
+			for (int i=0; i<4; i++)
+				rt.deleteRow(rt.getCounter()-1);
+			rt.show("Results");
+			summarized = false;
+		}
+	}
 		
 	final double getArea(Polygon p) {
 		if (p==null) return Double.NaN;
@@ -666,7 +685,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	public void displayResults() {
 		int counter = rt.getCounter();
 		if (counter==1)
-			IJ.setColumnHeadings(rt.getColumnHeadings());		
+			IJ.setColumnHeadings(rt.getColumnHeadings());
 		IJ.write(rt.getRowAsString(counter-1));
 	}
 
@@ -693,11 +712,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	public void summarize() {
+		if (summarized)
+			return;
 		int n = rt.getCounter();
-		if (n<2) return;
+		if (n<2)
+			return;
 		String[] headings = Tools.split(rt.getColumnHeadings());
 		int columns = headings!=null?headings.length:0;
-		if (columns==0) return;
+		if (columns==0)
+			return;
 		int first = "Label".equals(headings[0])?1:0;
 		double[] min = new double[columns];
 		double[] max = new double[columns];
@@ -722,11 +745,13 @@ public class Analyzer implements PlugInFilter, Measurements {
 		rt.incrementCounter(); rt.setLabel("Max", n+3);
 		for (int col=first; col<columns; col++) {
 			rt.setValue(headings[col], n+0, sum[col]/n);
+			//IJ.log(col+"  "+sum2[col]+"  "+sum[col]+"  "+n);
 			rt.setValue(headings[col], n+1, Math.sqrt((sum2[col]-sum[col]*sum[col]/n)/(n-1)));
 			rt.setValue(headings[col], n+2, min[col]);
 			rt.setValue(headings[col], n+3, max[col]);
 		}
 		rt.show("Results");
+		summarized = true;
 	}
 
 	/** Returns the current measurement count. */
