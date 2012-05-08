@@ -37,7 +37,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private PopupMenu pm;
 	private Button moreButton, colorButton;
 	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	private Checkbox labelsCheckbox = new Checkbox("Label", false);
+	private Checkbox labelsCheckbox = new Checkbox("Labels", false);
 
 	private static boolean measureAll = true;
 	private static boolean onePerSlice = true;
@@ -421,6 +421,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				slice = imp.getCurrentSlice();
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
+			if (!Prefs.showAllSliceOnly)
+				slice = 0;
 			roi.setPosition(slice);
 		}
 		return label;
@@ -1371,7 +1373,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		restoreCentered = gd.getNextBoolean();
 		Prefs.useNamesAsLabels = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) imp.draw();
+		if (imp!=null) {
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null)
+				overlay.drawNames(Prefs.useNamesAsLabels);
+			imp.draw();
+		}
 		if (record()) {
 			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");
 			Recorder.record("roiManager", "Centered", restoreCentered?"true":"false");
@@ -1438,6 +1445,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				overlay.drawLabels(true);
 				overlay.drawBackgrounds(true);
 			}
+			overlay.drawNames(Prefs.useNamesAsLabels);
 			imp.setOverlay(overlay);
 		}
 		if (record())
@@ -1457,6 +1465,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					overlay.drawLabels(true);
 					overlay.drawBackgrounds(true);
 				}
+				overlay.drawNames(Prefs.useNamesAsLabels);
 				imp.setOverlay(overlay);
 			} else
 				imp.setOverlay(null);
@@ -1809,6 +1818,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public void setEditMode(ImagePlus imp, boolean editMode) {
 		showAllCheckbox.setState(editMode);
 		labelsCheckbox.setState(editMode);
+		showAll(editMode?LABELS:SHOW_NONE);
 	}
 	
 	/*
@@ -1875,6 +1885,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			overlay.drawBackgrounds(true);
 			overlay.setLabelColor(Color.white);
 		}
+		overlay.drawNames(Prefs.useNamesAsLabels);
 		imp.setOverlay(overlay);
     }
     

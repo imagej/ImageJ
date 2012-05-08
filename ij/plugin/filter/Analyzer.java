@@ -865,8 +865,15 @@ public class Analyzer implements PlugInFilter, Measurements {
 	}
 	
 	public static void setResultsTable(ResultsTable rt) {
-		if (rt==null) rt = new ResultsTable();
+		TextPanel tp = IJ.isResultsWindow()?IJ.getTextPanel():null;
+		if (tp!=null)
+			tp.clear();
+		if (rt==null)
+			rt = new ResultsTable();
 		systemRT = rt;
+		summarized = false;
+		umeans = null;
+		unsavedMeasurements = false;
 	}
 
 }

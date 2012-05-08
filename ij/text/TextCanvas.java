@@ -124,7 +124,8 @@ class TextCanvas extends Canvas {
 	}
 	
 	char[] getChars(int column, int row) {
-		if (tp==null) return null;
+		if (tp==null || tp.vData==null)
+			return null;
 		if (row>=tp.vData.size())
 			return null;
 		char[] chars = (char[])(tp.vData.elementAt(row));

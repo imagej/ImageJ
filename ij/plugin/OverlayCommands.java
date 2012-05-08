@@ -270,9 +270,6 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		rm.moveRoisToOverlay(imp);
-		ImageCanvas ic = imp.getCanvas();
-		if (ic!=null) ic.setShowAllROIs(false);
-		rm.setEditMode(imp, false);
 		imp.deleteRoi();
 	}
 	
