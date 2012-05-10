@@ -95,7 +95,8 @@ public class OverlayCommands implements PlugIn {
 		}
 		String name = roi.getName();
 		boolean newOverlay = name!=null && name.equals("new-overlay");
-		if (overlay==null || newOverlay) overlay = OverlayLabels.createOverlay();
+		if (overlay==null || newOverlay)
+			overlay = OverlayLabels.createOverlay();
 		overlay.add(roi);
 		if (!roi.isDrawingTool())
 			defaultRoi = (Roi)roi.clone();

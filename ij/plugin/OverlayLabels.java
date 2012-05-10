@@ -6,7 +6,7 @@ import ij.util.Tools;
 import java.awt.*;
 import java.util.Vector;
 
-/** This plugin implements theImage/Overlay/Labels command. */
+/** This plugin implements the Image/Overlay/Labels command. */
 public class OverlayLabels implements PlugIn, DialogListener {
 	private static final String[] fontSizes = {"7", "8", "9", "10", "12", "14", "18", "24", "28", "36", "48", "72"};
 	private static Overlay defaultOverlay = new Overlay();
@@ -95,7 +95,8 @@ public class OverlayLabels implements PlugIn, DialogListener {
 		return true;
 	}
 
-	static Overlay createOverlay() {
+	/** Creates an empty Overlay with the current label settings preset. */
+	public static Overlay createOverlay() {
 		return defaultOverlay.duplicate();
 	}
 
