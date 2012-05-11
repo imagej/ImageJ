@@ -95,7 +95,7 @@ public class OverlayLabels implements PlugIn, DialogListener {
 		return true;
 	}
 
-	/** Creates an empty Overlay with the current label settings preset. */
+	/** Creates an empty Overlay that with the current label settings. */
 	public static Overlay createOverlay() {
 		return defaultOverlay.duplicate();
 	}

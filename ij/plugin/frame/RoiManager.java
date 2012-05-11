@@ -420,16 +420,29 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp!=null && imp.getStackSize()>1) {
+			boolean hasPosition = false;
+			boolean hyperstack = imp!=null &&  imp.isHyperStack();
 			int slice = roi.getPosition();
 			if (slice==0) {
 				if (Prefs.showAllSliceOnly)
 					slice = imp.getCurrentSlice();
 				else
 					slice = 0;
-			}
+			} else
+				hasPosition = true;
+			if (!hasPosition)
+				hasPosition = hyperstack && (roi.getZPosition()>0 || roi.getTPosition()>0);
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
-			roi.setPosition(slice);
+			if (!hasPosition) {
+				if (hyperstack) {
+					if (imp.getNSlices()>1)
+						roi.setPosition(0, imp.getSlice(), 0);
+					else if (imp.getNFrames()>1)
+						roi.setPosition(0, 0, imp.getFrame());
+				} else
+					roi.setPosition(slice);
+			}
 		}
 		return label;
 	}
@@ -508,8 +521,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rois.remove(name);
 			if (clone) {
 				Roi roi2 = (Roi)roi.clone();
-				int position = roi.getPosition();
-				if (imp.getStackSize()>1)
+				if (imp.getStackSize()>1 && Prefs.showAllSliceOnly)
 					roi2.setPosition(imp.getCurrentSlice());
 				roi.setName(name);
 				roi2.setName(name);
@@ -518,7 +530,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				rois.put(name, roi);
 		}
 		if (record()) Recorder.record("roiManager", "Update");
-		if (showingAll) imp.draw();
+		updateShowAll();
 		return true;
 	}
 
@@ -1375,8 +1387,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private void options() {
 		Color c = ImageCanvas.getShowAllColor();
 		GenericDialog gd = new GenericDialog("Options");
-		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
-		gd.addCheckbox("Associate \"Show All\" ROIs with slices", Prefs.showAllSliceOnly);
+		//gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
+		gd.addCheckbox("Associate ROIs with stack positions", Prefs.showAllSliceOnly);
 		gd.addCheckbox("Restore ROIs centered", restoreCentered);
 		gd.addCheckbox("Use ROI names as labels", Prefs.useNamesAsLabels);
 		gd.showDialog();

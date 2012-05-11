@@ -75,9 +75,12 @@ public class OverlayCommands implements PlugIn {
 		}
 		boolean setPos = defaultRoi.getPosition()!=0;
 		if (setPos && imp.getStackSize()>1) {
-			if (imp.isHyperStack()||imp.isComposite())
-				roi.setPosition(0, imp.getSlice(), imp.getFrame());
-			else
+			if (imp.isHyperStack()||imp.isComposite()) {
+				if (imp.getNSlices()>1)
+					roi.setPosition(0, imp.getSlice(), 0);
+				else if (imp.getNFrames()>1)
+					roi.setPosition(0, 0, imp.getFrame());
+			} else
 				roi.setPosition(imp.getCurrentSlice());
 		}
 		int width = Line.getWidth();
