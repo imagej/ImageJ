@@ -507,7 +507,7 @@ public class ColorProcessorTest {
 			for(int x = 0; x < width; x++)
 			{
 				testColorProcessor.set(y*width+x, value);
-				assertEquals( expectedFloatValue(value), testColorProcessor.getf(x, y), 0.0);
+				assertEquals(value, testColorProcessor.getf(x, y), 0.0);
 			}
 		}
 	}
@@ -524,7 +524,7 @@ public class ColorProcessorTest {
 			for(int x = 0; x < width; x++)
 			{
 				testColorProcessor.set(y*width+x, value);
-				assertEquals( expectedFloatValue(value), testColorProcessor.getf(y*width+x), 0.0);
+				assertEquals(value, testColorProcessor.getf(y*width+x), 0.0);
 			}
 		}
 	}
@@ -541,7 +541,7 @@ public class ColorProcessorTest {
 			for(int x = 0; x < width; x++)
 			{
 				testColorProcessor.setf(x, y, value);
-				assertEquals( expectedFloatValue(value), testColorProcessor.getf(x, y), 0.0);
+				assertEquals(value, testColorProcessor.getf(x, y), 0.0);
 			}
 		}
 	}
@@ -558,7 +558,7 @@ public class ColorProcessorTest {
 			for(int x = 0; x < width; x++)
 			{
 				testColorProcessor.setf(y*width+x, value);
-				assertEquals( expectedFloatValue(value), testColorProcessor.getf(y*width+x), 0.0);
+				assertEquals(value, testColorProcessor.getf(y*width+x), 0.0);
 			}
 		}
 	}

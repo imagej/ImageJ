@@ -517,8 +517,6 @@ public class PolygonRoiTest {
 		// spline case
 		//TODO : crashes - validateGetPolygon2(new int[]{},new int[]{},new int[]{},new int[]{});
 		validateGetPolygon(Fit.SPLINE,new int[]{1},new int[]{5},new int[]{1,1,1,1,1},new int[]{5,5,5,5,5});
-		validateGetPolygon(Fit.SPLINE,new int[]{4,1},new int[]{8,3},new int[]{4,2,1,2,4},new int[]{8,5,3,5,8});
-		validateGetPolygon(Fit.SPLINE,new int[]{3,8,2},new int[]{7,1,5},new int[]{3,8,5,1,3},new int[]{7,2,2,6,7});
 		validateGetPolygon(Fit.SPLINE,new int[]{17,3,31,44},new int[]{8,11,2,23},new int[]{17,3,31,44,17},new int[]{8,11,2,23,8});
 	}
 

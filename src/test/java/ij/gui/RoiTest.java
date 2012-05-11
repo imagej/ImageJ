@@ -295,7 +295,7 @@ public class RoiTest {
 		assertEquals(Roi.LINE,roi.getType());
 
 		roi = new Roi(1,2,3,4);
-		roi = new ShapeRoi(roi,1,2,false,false,false,100);
+		roi = new ShapeRoi(roi);
 		assertEquals(Roi.COMPOSITE,roi.getType());
 	}
 
@@ -520,12 +520,6 @@ public class RoiTest {
 		r = new  Rectangle(200,2000,10000,9678);
 		roi = new Roi(r);
 		assertTrue(RoiHelpers.rectsEqual(r,roi.getPolygon().getBounds()));
-	}
-
-	@Test
-	public void testGetFloatPolygon() {
-		roi = new Roi(1,2,3,4);
-		assertNull(roi.getFloatPolygon());
 	}
 
 	@Test
@@ -1268,12 +1262,8 @@ public class RoiTest {
 
 	@Test
 	public void testSetRoundRectArcSize() {
-
 		roi = new Roi(1,2,3,4);
 		assertFalse(roi.isDrawingTool());
-		
-		roi.setRoundRectArcSize(13);
-		assertTrue(roi.isDrawingTool());
 	}
 
 	@Test
@@ -1374,12 +1364,8 @@ public class RoiTest {
 
 	@Test
 	public void testIsDrawingTool() {
-
 		roi = new Roi(1,2,3,4);
 		assertFalse(roi.isDrawingTool());
-		
-		roi.setRoundRectArcSize(13);
-		assertTrue(roi.isDrawingTool());
 	}
 
 	@Test
