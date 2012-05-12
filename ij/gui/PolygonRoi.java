@@ -185,7 +185,7 @@ public class PolygonRoi extends Roi {
 		boolean hasHandles = xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE;
 		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi && !hasHandles;
 		if (isActiveOverlayRoi)
-			color = Color.orange;
+			color = Color.cyan;
 		boolean fill = false;
         mag = getMagnification();
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {
@@ -1257,8 +1257,8 @@ public class PolygonRoi extends Roi {
 			ypoints1 = toInt(ySpline);
 		} else if (xpf!=null) {
 			n = nPoints;
-			xpoints1 = toInt(xpf);
-			ypoints1 = toInt(ypf);
+			xpoints1 = toIntR(xpf);
+			ypoints1 = toIntR(ypf);
 		} else {
 			n = nPoints;
 			xpoints1 = xp;

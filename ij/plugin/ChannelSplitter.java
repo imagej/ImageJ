@@ -77,6 +77,18 @@ public class ChannelSplitter implements PlugIn {
 		return (ImagePlus[])images.toArray(array);
 	}
 	
+	public static ImageStack getChannel(ImagePlus imp, int c) {
+		ImageStack stack1 = imp.getStack();
+		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
+		for (int t=1; t<=imp.getNFrames(); t++) {
+			for (int z=1; z<=imp.getNSlices(); z++) {
+				int n = imp.getStackIndex(c, z, t);
+				stack2.addSlice(stack1.getProcessor(n));
+			}
+		}
+		return stack2;
+	}
+	
 	/** Splits the specified RGB stack into three 8-bit grayscale stacks. 
 		Deletes the source stack if keepSource is false. */
 	public static ImageStack[] splitRGB(ImageStack rgb, boolean keepSource) {

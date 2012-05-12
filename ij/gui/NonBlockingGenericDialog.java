@@ -20,7 +20,7 @@ public class NonBlockingGenericDialog extends GenericDialog {
 
 	public synchronized void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
-		if (wasOKed() || wasCanceled())
+		if (!isVisible())
 			notify();
 	}
 	

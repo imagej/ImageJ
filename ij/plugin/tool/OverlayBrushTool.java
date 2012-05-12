@@ -93,7 +93,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			gd.addMessage("Also set the color using Color Picker (shift-k)");
 			gd.hideCancelButton();
 			gd.addHelp("");
-			gd.setHelpLabel("Remove Last Object");
+			gd.setHelpLabel("Undo");
 			gd.setOKLabel("Close");
 			gd.addDialogListener(this);
 			gd.showDialog();
@@ -102,7 +102,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		}
 
 		public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-			if (e!=null && e.toString().contains("Remove Last Object")) {
+			if (e!=null && e.toString().contains("Undo")) {
 				ImagePlus imp = WindowManager.getCurrentImage();
 				if (imp==null) return true;
 				Overlay overlay = imp.getOverlay();

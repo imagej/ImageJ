@@ -238,8 +238,7 @@ import java.io.*;
 	}
 
 	// partition a[left] to a[right], assumes left < right
-	private static int partition(String[] a, int[] index,
-		int left, int right) {
+	private static int partition(String[] a, int[] index, int left, int right) {
 		int i = left - 1;
 		int j = right;
 		while (true) {

@@ -422,16 +422,22 @@ public class Line extends Roi {
 		}
 	}
 
-public boolean contains(int x, int y) {
-	if (getStrokeWidth()>1) {
-		if ((x==x1&&y==y1) || (x==x2&&y==y2))
-			return true;
-		else
-			return getPolygon().contains(x,y);
-	} else
-		return false;
-}
+	public boolean contains(int x, int y) {
+		if (getStrokeWidth()>1) {
+			if ((x==x1&&y==y1) || (x==x2&&y==y2))
+				return true;
+			else
+				return getPolygon().contains(x,y);
+		} else
+			return false;
+	}
 		
+	protected void handleMouseDown(int sx, int sy) {
+		super.handleMouseDown(sx, sy);
+		startxd = ic.offScreenXD(sx);
+		startyd = ic.offScreenYD(sy);
+	}
+
 	/** Returns a handle number if the specified screen coordinates are  
 		inside or near a handle, otherwise returns -1. */
 	public int isHandle(int sx, int sy) {

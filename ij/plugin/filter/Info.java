@@ -248,8 +248,8 @@ public class Info implements PlugInFilter {
 	    		s += "  X2: " + IJ.d2s(line.x2d*cal.pixelWidth) + "\n";
 	    		s += "  Y2: " + IJ.d2s(yy(line.y2d,imp)*cal.pixelHeight) + "\n";
 			} else if (cal.scaled()) {
-				s += "  X: " + IJ.d2s(r.x*cal.pixelWidth) + " (" + r.x + ")\n";
-				s += "  Y: " + IJ.d2s(yy(r.y,imp)*cal.pixelHeight) + " (" +  r.y + ")\n";
+				s += "  X: " + IJ.d2s(cal.getX(r.x)) + " (" + r.x + ")\n";
+				s += "  Y: " + IJ.d2s(cal.getY(r.y,imp.getHeight())) + " (" +  r.y + ")\n";
 				s += "  Width: " + IJ.d2s(r.width*cal.pixelWidth) + " (" +  r.width + ")\n";
 				s += "  Height: " + IJ.d2s(r.height*cal.pixelHeight) + " (" +  r.height + ")\n";
 			} else {

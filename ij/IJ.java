@@ -10,6 +10,7 @@ import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
+import ij.measure.Measurements;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
@@ -141,7 +142,7 @@ public class IJ {
 	}
 	
 	/** Runs the specified plugin and returns a reference to it. */
-	static Object runPlugIn(String commandName, String className, String arg) {
+	public static Object runPlugIn(String commandName, String className, String arg) {
 		if (IJ.debugMode)
 			IJ.log("runPlugin: "+className+" "+arg);
 		if (arg==null) arg = "";
@@ -1138,7 +1139,10 @@ public class IJ {
 	
 	private static void setStackThreshold(ImagePlus imp, ImageProcessor ip, String method) {
 		boolean darkBackground = method.indexOf("dark")!=-1;
+		int measurements = Analyzer.getMeasurements();
+		Analyzer.setMeasurements(Measurements.AREA+Measurements.MIN_MAX);
 		ImageStatistics stats = new StackStatistics(imp);
+		Analyzer.setMeasurements(measurements);
 		AutoThresholder thresholder = new AutoThresholder();
 		double min=0.0, max=255.0;
 		if (imp.getBitDepth()!=8) {
@@ -1405,6 +1409,17 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
+	/** Returns the ImageJ version and build number as a String,
+		for example "1.46n00", "1.46n05" and "1.46n16". */
+	public static String getFullVersion() {
+		String build = ImageJ.BUILD;
+		if (build.length()==0)
+			build = "00";
+		else if (build.length()==1)
+			build = "0" + build;
+		return ImageJ.VERSION+build;
+	}
+
 	/** Returns the path to the home ("user.home"), startup, ImageJ, plugins, macros, 
 		luts, temp, current or image directory if <code>title</code> is "home", "startup", 
 		"imagej", "plugins", "macros", "luts", "temp", "current" or "image", otherwise, 

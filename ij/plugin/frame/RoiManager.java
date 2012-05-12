@@ -11,6 +11,7 @@ import ij.gui.*;
 import ij.io.*;
 import ij.plugin.filter.*;
 import ij.plugin.Colors;
+import ij.plugin.OverlayLabels;
 import ij.util.*;
 import ij.macro.*;
 import ij.measure.*;
@@ -37,7 +38,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private PopupMenu pm;
 	private Button moreButton, colorButton;
 	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
-	private Checkbox labelsCheckbox = new Checkbox("Edit Mode", false);
+	private Checkbox labelsCheckbox = new Checkbox("Labels", false);
 
 	private static boolean measureAll = true;
 	private static boolean onePerSlice = true;
@@ -148,6 +149,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		addPopupItem("Specify...");
 		addPopupItem("Remove Slice Info");
 		addPopupItem("Help");
+		addPopupItem("Labels...");
 		addPopupItem("Options...");
 		add(pm);
 	}
@@ -213,6 +215,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			removeSliceInfo();
 		else if (command.equals("Help"))
 			help();
+		else if (command.equals("Labels..."))
+			labels();
 		else if (command.equals("Options..."))
 			options();
 		else if (command.equals("\"Show All\" Color..."))
@@ -416,12 +420,29 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ys = "000000" + yc;
 		String label = ys.substring(ys.length()-digits) + "-" + xs.substring(xs.length()-digits);
 		if (imp!=null && imp.getStackSize()>1) {
+			boolean hasPosition = false;
+			boolean hyperstack = imp!=null &&  imp.isHyperStack();
 			int slice = roi.getPosition();
-			if (slice==0)
-				slice = imp.getCurrentSlice();
+			if (slice==0) {
+				if (Prefs.showAllSliceOnly)
+					slice = imp.getCurrentSlice();
+				else
+					slice = 0;
+			} else
+				hasPosition = true;
+			if (!hasPosition)
+				hasPosition = hyperstack && (roi.getZPosition()>0 || roi.getTPosition()>0);
 			String zs = "000000" + slice;
 			label = zs.substring(zs.length()-digits) + "-" + label;
-			roi.setPosition(slice);
+			if (!hasPosition) {
+				if (hyperstack) {
+					if (imp.getNSlices()>1)
+						roi.setPosition(0, imp.getSlice(), 0);
+					else if (imp.getNFrames()>1)
+						roi.setPosition(0, 0, imp.getFrame());
+				} else
+					roi.setPosition(slice);
+			}
 		}
 		return label;
 	}
@@ -500,8 +521,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			rois.remove(name);
 			if (clone) {
 				Roi roi2 = (Roi)roi.clone();
-				int position = roi.getPosition();
-				if (imp.getStackSize()>1)
+				if (imp.getStackSize()>1 && Prefs.showAllSliceOnly)
 					roi2.setPosition(imp.getCurrentSlice());
 				roi.setName(name);
 				roi2.setName(name);
@@ -510,7 +530,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				rois.put(name, roi);
 		}
 		if (record()) Recorder.record("roiManager", "Update");
-		if (showingAll) imp.draw();
+		updateShowAll();
 		return true;
 	}
 
@@ -1349,16 +1369,26 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (record()) Recorder.record("roiManager", "Remove Slice Info");
 	}
 
-	void help() {
+	private void help() {
 		String macro = "run('URL...', 'url="+IJ.URL+"/docs/menus/analyze.html#manager');";
 		new MacroRunner(macro);
 	}
 
-	void options() {
+	private void labels() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp!=null) {
+			showAllCheckbox.setState(true);
+			labelsCheckbox.setState(true);
+			showAll(LABELS);
+		}
+		IJ.doCommand("Labels...");
+	}
+
+	private void options() {
 		Color c = ImageCanvas.getShowAllColor();
 		GenericDialog gd = new GenericDialog("Options");
-		gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
-		gd.addCheckbox("Associate \"Show All\" ROIs with slices", Prefs.showAllSliceOnly);
+		//gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
+		gd.addCheckbox("Associate ROIs with stack positions", Prefs.showAllSliceOnly);
 		gd.addCheckbox("Restore ROIs centered", restoreCentered);
 		gd.addCheckbox("Use ROI names as labels", Prefs.useNamesAsLabels);
 		gd.showDialog();
@@ -1371,7 +1401,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		restoreCentered = gd.getNextBoolean();
 		Prefs.useNamesAsLabels = gd.getNextBoolean();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) imp.draw();
+		if (imp!=null) {
+			Overlay overlay = imp.getOverlay();
+			if (overlay!=null)
+				overlay.drawNames(Prefs.useNamesAsLabels);
+			imp.draw();
+		}
 		if (record()) {
 			Recorder.record("roiManager", "Associate", Prefs.showAllSliceOnly?"true":"false");
 			Recorder.record("roiManager", "Centered", restoreCentered?"true":"false");
@@ -1416,8 +1451,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			{error("There are no images open."); return;}
-		ImageCanvas ic = imp.getCanvas();
-		if (ic==null) return;
 		boolean showAll = mode==SHOW_ALL;
 		if (mode==LABELS) {
 			showAll = true;
@@ -1429,18 +1462,33 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				Recorder.record("roiManager", "Show All without labels");
 		}
 		if (showAll) imp.deleteRoi();
-		ic.setShowAllROIs(showAll);
+		Roi[] rois = getRoisAsArray();
+		if (mode==SHOW_NONE)
+			imp.setOverlay(null);
+		else if (rois.length>0) {
+			Overlay overlay = newOverlay();
+			for (int i=0; i<rois.length; i++)
+				overlay.add(rois[i]);
+			imp.setOverlay(overlay);
+		}
 		if (record())
 			Recorder.record("roiManager", showAll?"Show All":"Show None");
-		imp.draw();
 	}
 
 	void updateShowAll() {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null) return;
-		ImageCanvas ic = imp.getCanvas();
-		if (ic!=null && ic.getShowAllROIs())
-			imp.draw();
+		if (showAllCheckbox.getState()) {
+			Roi[] rois = getRoisAsArray();
+			if (rois.length>0) {
+				Overlay overlay = newOverlay();
+				for (int i=0; i<rois.length; i++)
+					overlay.add(rois[i]);
+				imp.setOverlay(overlay);
+			} else
+				imp.setOverlay(null);
+		} else
+			imp.setOverlay(null);
 	}
 
 	int[] getAllIndexes() {
@@ -1786,15 +1834,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	public void setEditMode(ImagePlus imp, boolean editMode) {
-		ImageCanvas ic = imp.getCanvas();
-		boolean showAll = false;
-		if (ic!=null) {
-			showAll = ic.getShowAllROIs() | editMode;
-			ic.setShowAllROIs(showAll);
-			imp.draw();
-		}
-		showAllCheckbox.setState(showAll);
+		showAllCheckbox.setState(editMode);
 		labelsCheckbox.setState(editMode);
+		showAll(editMode?LABELS:SHOW_NONE);
 	}
 	
 	/*
@@ -1827,14 +1869,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return;
 		if (n>0) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
-			gd.addMessage("Move the "+n+" displayed ROIs to an overlay?");
+			gd.addMessage("Save the "+n+" displayed ROIs as an overlay?");
 			gd.setOKLabel("Discard");
-			gd.setCancelLabel("Move to Overlay");
+			gd.setCancelLabel("Save as Overlay");
 			gd.showDialog();
 			if (gd.wasCanceled())
 				moveRoisToOverlay(imp);
 			else
-				imp.draw();
+				imp.setOverlay(null);
 		} else
 			imp.draw();
     }
@@ -1843,23 +1885,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
     public void moveRoisToOverlay(ImagePlus imp) {
 		Roi[] rois = getRoisAsArray();
 		int n = rois.length;
-		Overlay overlay = new Overlay();
-		ImageCanvas ic = imp.getCanvas();
-		Color color = ic!=null?ic.getShowAllColor():null;
+		Overlay overlay = newOverlay();
+		//ImageCanvas ic = imp.getCanvas();
+		//Color color = ic!=null?ic.getShowAllColor():null;
 		for (int i=0; i<n; i++) {
 			Roi roi = (Roi)rois[i].clone();
 			if (!Prefs.showAllSliceOnly)
 				roi.setPosition(0);
-			if (color!=null && roi.getStrokeColor()==null)
-				roi.setStrokeColor(color);
+			//if (color!=null && roi.getStrokeColor()==null)
+			//	roi.setStrokeColor(color);
 			if (roi.getStrokeWidth()==1)
 				roi.setStrokeWidth(0);
 			overlay.add(roi);
-		}
-		if (labelsCheckbox.getState()) {
-			overlay.drawLabels(true);
-			overlay.drawBackgrounds(true);
-			overlay.setLabelColor(Color.white);
 		}
 		imp.setOverlay(overlay);
     }
@@ -1908,6 +1945,18 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return indexes;
 		} else
 			return list.getSelectedIndexes();
+	}
+	
+	private Overlay newOverlay() {
+		Overlay overlay = OverlayLabels.createOverlay();
+		if (labelsCheckbox.getState())
+			overlay.drawLabels(true);
+		if (overlay.getLabelFont()==null && overlay.getLabelColor()==null) {
+			overlay.setLabelColor(Color.white);
+			overlay.drawBackgrounds(true);
+		}
+		overlay.drawNames(Prefs.useNamesAsLabels);
+		return overlay;
 	}
 
 	private boolean record() {
