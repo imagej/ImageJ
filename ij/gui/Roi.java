@@ -68,7 +68,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private int channel, slice, frame;
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
-	private boolean scaleStrokeWidth = true;
 
 	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
@@ -1339,7 +1338,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeWidth(float width) {
-		//this.stroke = new BasicStroke(width);
+		if (width<0f)
+			width = 0f;
 		if (width==0)
 			stroke = null;
 		else if (wideLine)
@@ -1356,7 +1356,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Returns the lineWidth. */
 	public float getStrokeWidth() {
-		return stroke!=null?stroke.getLineWidth():1;
+		return stroke!=null?stroke.getLineWidth():0f;
 	}
 
 	/** Sets the Stroke used to draw this ROI. */
@@ -1370,7 +1370,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	}
 	
 	protected BasicStroke getScaledStroke() {
-		if (ic==null || !scaleStrokeWidth)
+		if (ic==null)
 			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {
@@ -1573,14 +1573,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void setDrawOffset(boolean drawOffset) {
 	}
 	
-	public boolean getScaleStrokeWidth() {
-		return scaleStrokeWidth;
-	}
-	
-	public void setScaleStrokeWidth(boolean scaleStrokeWidth) {
-		this.scaleStrokeWidth = scaleStrokeWidth;
-	}
-
     /** Checks whether two rectangles are equal. */
     public boolean equals(Object obj) {
 		if (obj instanceof Roi) {

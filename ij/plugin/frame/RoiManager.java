@@ -1073,7 +1073,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				rpName = rpRoi.getName();
 			}
 			if (rpRoi.getStrokeColor()==null)
-				rpRoi.setStrokeColor(ImageCanvas.getShowAllColor());
+				rpRoi.setStrokeColor(Roi.getColor());
 			rpRoi = (Roi) rpRoi.clone();
 			if (n>1)
 				rpRoi.setName("range: "+(indexes[0]+1)+"-"+(indexes[n-1]+1));

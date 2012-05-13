@@ -181,11 +181,15 @@ public class PolygonRoi extends Roi {
 	
 	public void draw(Graphics g) {
         updatePolygon();
-		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		Color color =  strokeColor!=null?strokeColor:ROIColor;
 		boolean hasHandles = xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE;
 		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi && !hasHandles;
-		if (isActiveOverlayRoi)
-			color = Color.cyan;
+		if (isActiveOverlayRoi) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
 		boolean fill = false;
         mag = getMagnification();
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {
