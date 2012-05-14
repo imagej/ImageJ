@@ -1464,12 +1464,12 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (showAll) imp.deleteRoi();
 		Roi[] rois = getRoisAsArray();
 		if (mode==SHOW_NONE)
-			imp.setOverlay(null);
+			removeOverlay(imp);
 		else if (rois.length>0) {
 			Overlay overlay = newOverlay();
 			for (int i=0; i<rois.length; i++)
 				overlay.add(rois[i]);
-			imp.setOverlay(overlay);
+			setOverlay(imp, overlay);
 		}
 		if (record())
 			Recorder.record("roiManager", showAll?"Show All":"Show None");
@@ -1484,11 +1484,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				Overlay overlay = newOverlay();
 				for (int i=0; i<rois.length; i++)
 					overlay.add(rois[i]);
-				imp.setOverlay(overlay);
+				setOverlay(imp, overlay);
 			} else
-				imp.setOverlay(null);
+				removeOverlay(imp);
 		} else
-			imp.setOverlay(null);
+			removeOverlay(imp);
 	}
 
 	int[] getAllIndexes() {
@@ -1876,16 +1876,20 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (gd.wasCanceled())
 				moveRoisToOverlay(imp);
 			else
-				imp.setOverlay(null);
+				removeOverlay(imp);
 		} else
 			imp.draw();
     }
     
     /** Moves all the ROIs to the specified image's overlay. */
     public void moveRoisToOverlay(ImagePlus imp) {
+    	if (imp==null)
+    		return;
 		Roi[] rois = getRoisAsArray();
 		int n = rois.length;
-		Overlay overlay = newOverlay();
+		Overlay overlay = imp.getOverlay();
+		if (overlay==null)
+			overlay = newOverlay();
 		//ImageCanvas ic = imp.getCanvas();
 		//Color color = ic!=null?ic.getShowAllColor():null;
 		for (int i=0; i<n; i++) {
@@ -1899,7 +1903,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			overlay.add(roi);
 		}
 		imp.setOverlay(overlay);
-    }
+		setOverlay(imp, null);
+	}
     
     public void mousePressed (MouseEvent e) {
 		int x=e.getX(), y=e.getY();
@@ -1957,6 +1962,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		overlay.drawNames(Prefs.useNamesAsLabels);
 		return overlay;
+	}
+
+	private void removeOverlay(ImagePlus imp) {
+		if (imp!=null)
+			setOverlay(imp, null);
+	}
+	
+	private void setOverlay(ImagePlus imp, Overlay overlay) {
+		if (imp==null)
+			return;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic==null)
+			return;
+		ic.setShowAllOverlay(overlay);
+		imp.draw();
 	}
 
 	private boolean record() {

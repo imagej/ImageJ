@@ -63,6 +63,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	protected boolean nonScalable;
 	protected boolean overlay;
 	protected boolean wideLine;
+	protected boolean ignoreClipRect;
 	private String name;
 	private int position;
 	private int channel, slice, frame;
@@ -745,7 +746,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 		startX = xNew;
 		startY = yNew;
 		updateClipRect();
-		if (lineWidth>1 && isLine())
+		if ((lineWidth>1 && isLine()) || ignoreClipRect)
 			imp.draw();
 		else
 			imp.draw(clipX, clipY, clipWidth, clipHeight);
@@ -1573,6 +1574,10 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	public void setDrawOffset(boolean drawOffset) {
 	}
 	
+	public void setIgnoreClipRect(boolean ignoreClipRect) {
+		this.ignoreClipRect = ignoreClipRect;
+	}
+
     /** Checks whether two rectangles are equal. */
     public boolean equals(Object obj) {
 		if (obj instanceof Roi) {

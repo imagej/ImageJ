@@ -306,6 +306,7 @@ public class OverlayCommands implements PlugIn {
 			rm.add(imp, overlay.get(i), i);
 		rm.setEditMode(imp, true);
 		rm.runCommand("show all");
+		imp.setOverlay(null);
 	}
 	
 	void options() {

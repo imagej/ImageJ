@@ -107,7 +107,10 @@ public class Line extends Roi {
 		startxd = xNew;
 		startyd = yNew;
 		updateClipRect();
-		imp.draw(clipX, clipY, clipWidth, clipHeight);
+		if (ignoreClipRect)
+			imp.draw();
+		else
+			imp.draw(clipX, clipY, clipWidth, clipHeight);
 		oldX = x;
 		oldY = y;
 		oldWidth = width;

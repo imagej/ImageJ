@@ -171,6 +171,9 @@ public class Overlay {
     
     public void drawNames(boolean b) {
     	drawNames = b;
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++)
+			rois[i].setIgnoreClipRect(drawNames);
     }
     
     public boolean getDrawNames() {
