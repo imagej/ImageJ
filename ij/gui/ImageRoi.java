@@ -39,7 +39,7 @@ public class ImageRoi extends Roi {
 		}
 		g.drawImage(img, screenX(x), screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
 		if (composite!=null) g2d.setComposite(saveComposite);
-		if (activeOverlayRoi)
+		if (isActiveOverlayRoi())
 			super.draw(g);
  	}
  	 	

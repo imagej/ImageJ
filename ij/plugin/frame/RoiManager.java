@@ -581,8 +581,14 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
                 	imp.setSlice(n);
             }
         }
+        if (showAllCheckbox.getState() && !restoreCentered && !noUpdateMode) {
+			roi.setImage(null);
+			roi.setActiveOverlayRoi(true);
+			imp.setRoi(roi);
+        	return true;
+        }
         Roi roi2 = (Roi)roi.clone();
-		Calibration cal = imp.getCalibration();
+        roi2.setActiveOverlayRoi(false);
 		Rectangle r = roi2.getBounds();
 		int width= imp.getWidth(), height=imp.getHeight();
 		if (restoreCentered) {
@@ -1975,7 +1981,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null)
 			return;
-		ic.setShowAllOverlay(overlay);
+		ic.setShowAllList(overlay);
 		imp.draw();
 	}
 

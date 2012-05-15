@@ -31,7 +31,6 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	int state;
 	int modState = NO_MODS;
 	int cornerDiameter;
-	boolean activeOverlayRoi;
 	
 	public static Roi previousRoi;
 	public static final BasicStroke onePixelWide = new BasicStroke(1);
@@ -69,6 +68,7 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	private int channel, slice, frame;
 	private Overlay prototypeOverlay;
 	private boolean subPixel;
+	private boolean activeOverlayRoi;
 
 	/** Creates a rectangular ROI. */
 	public Roi(int x, int y, int width, int height) {
@@ -1576,6 +1576,14 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 	
 	public void setIgnoreClipRect(boolean ignoreClipRect) {
 		this.ignoreClipRect = ignoreClipRect;
+	}
+
+	public final boolean isActiveOverlayRoi() {
+		return activeOverlayRoi;
+	}
+
+	public final void setActiveOverlayRoi(boolean activeOverlayRoi) {
+		this.activeOverlayRoi = activeOverlayRoi;
 	}
 
     /** Checks whether two rectangles are equal. */

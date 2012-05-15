@@ -242,7 +242,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
-			if (roi.activeOverlayRoi) {
+			if (roi.isActiveOverlayRoi()) {
 				Color fillColor = roi.getFillColor();
 				if ((fillColor!=null&&fillColor.getAlpha()!=255) || (roi instanceof ImageRoi))
 					continue;
@@ -1232,11 +1232,15 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		disablePopupMenu = status;
 	}
 	
-	public void setShowAllOverlay(Overlay showAllOverlay) {
-		this.showAllOverlay = showAllOverlay;
+	public void setShowAllList(Overlay showAllList) {
+		this.showAllOverlay = showAllList;
 		labelRects = null;
 	}
 	
+	public Overlay getShowAllList() {
+		return showAllOverlay;
+	}
+
 	/** Obsolete */
 	public void setShowAllROIs(boolean showAllROIs) {
 	}
@@ -1246,18 +1250,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return false;
 	}
 	
-	public Overlay getShowAllList() {
-		return showAllOverlay;
-	}
-
-	/** Returns the color used for "Show All" mode. */
+	/** Obsolete */
 	public static Color getShowAllColor() {
 		if (showAllColor!=null && showAllColor.getRGB()==0xff80ffff)
 			showAllColor = Color.cyan;
 		return showAllColor;
 	}
 
-	/** Sets the color used used for the ROI Manager "Show All" mode. */
+	/** Obsolete */
 	public static void setShowAllColor(Color c) {
 		if (c==null) return;
 		showAllColor = c;
@@ -1429,7 +1429,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 						continue;
 				}
 				roi.setImage(null);
-				roi.activeOverlayRoi = true;
+				roi.setActiveOverlayRoi(true);
 				imp.setRoi(roi);
 				roi.handleMouseDown(sx, sy);
 				roiManagerSelect(roi, false);
