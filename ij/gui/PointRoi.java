@@ -26,6 +26,8 @@ public class PointRoi extends PolygonRoi {
 	/** Creates a new PointRoi using the specified float arrays of offscreen coordinates. */
 	public PointRoi(float[] ox, float[] oy, int points) {
 		super(ox, oy, points, POINT);
+		if (points<1)
+			throw new IllegalArgumentException("points<=0");
 		width+=1; height+=1;
 	}
 
@@ -63,6 +65,8 @@ public class PointRoi extends PolygonRoi {
 	}
 	
 	static float[] itof(int[] arr) {
+		if (arr==null)
+			return null;
 		int n = arr.length;
 		float[] temp = new float[n];
 		for (int i=0; i<n; i++)
