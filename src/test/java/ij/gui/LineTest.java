@@ -235,8 +235,8 @@ public class LineTest {
 		p = line.getPolygon();
 		line.setStrokeWidth(savedLineWidth);
 		assertEquals(2,p.npoints);
-		assertEquals(1,p.xpoints[0]);
-		assertEquals(2,p.ypoints[0]);
+		assertEquals(2,p.xpoints[0]);
+		assertEquals(3,p.ypoints[0]);
 		assertEquals(22,p.xpoints[1]);
 		assertEquals(4,p.ypoints[1]);
 		
@@ -246,13 +246,13 @@ public class LineTest {
 		p = line.getPolygon();
 		line.setStrokeWidth(savedLineWidth);
 		assertEquals(4,p.npoints);
-		assertEquals(1,p.xpoints[0]);
+		assertEquals(2,p.xpoints[0]);
 		assertEquals(1,p.ypoints[0]);
 		assertEquals(1,p.xpoints[1]);
-		assertEquals(3,p.ypoints[1]);
+		assertEquals(4,p.ypoints[1]);
 		assertEquals(22,p.xpoints[2]);
-		assertEquals(5,p.ypoints[2]);
-		assertEquals(22,p.xpoints[3]);
+		assertEquals(6,p.ypoints[2]);
+		assertEquals(23,p.xpoints[3]);
 		assertEquals(3,p.ypoints[3]);
 	}
 
