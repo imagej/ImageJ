@@ -213,9 +213,12 @@ public class OverlayCommands implements PlugIn {
 
 	void remove() {
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null) imp.setOverlay(null);
-		RoiManager rm = RoiManager.getInstance();
-		if (rm!=null) rm.runCommand("show none");
+		if (imp!=null) {
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null)
+				ic.setShowAllList(null);
+			imp.setOverlay(null);
+		}
 	}
 
 	void flatten() {
@@ -306,6 +309,7 @@ public class OverlayCommands implements PlugIn {
 			rm.add(imp, overlay.get(i), i);
 		rm.setEditMode(imp, true);
 		rm.runCommand("show all");
+		imp.setOverlay(null);
 	}
 	
 	void options() {

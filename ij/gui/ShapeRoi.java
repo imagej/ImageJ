@@ -1038,7 +1038,7 @@ public class ShapeRoi extends Roi {
 	/** Non-destructively draws the shape of this object on the associated ImagePlus. */
 	public void draw(Graphics g) {
 		Color color =  strokeColor!=null? strokeColor:ROIColor;
-		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi;
+		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi();
 		if (isActiveOverlayRoi)
 			color = Color.orange;
 		if (fillColor!=null) color = fillColor;

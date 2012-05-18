@@ -73,7 +73,7 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.46n";
+	public static final String VERSION = "1.46o";
 	public static final String BUILD = ""; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
@@ -494,7 +494,14 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 	
 	private boolean deleteOverlayRoi(ImagePlus imp) {
-		Overlay overlay = imp!=null?imp.getOverlay():null;
+		if (imp==null)
+			return false;
+		Overlay overlay = null;
+		ImageCanvas ic = imp.getCanvas();
+		if (ic!=null)
+			overlay = ic.getShowAllList();
+		if (overlay==null)
+			overlay = imp.getOverlay();
 		if (overlay==null)
 			return false;
 		Roi roi = imp.getRoi();
@@ -503,7 +510,7 @@ public class ImageJ extends Frame implements ActionListener,
 			if (roi2==roi) {
 				overlay.remove(i);
 				imp.deleteRoi();
-				ImageCanvas ic = imp.getCanvas();
+				ic = imp.getCanvas();
 				if (ic!=null)
 					ic.roiManagerSelect(roi, true);
 				return true;

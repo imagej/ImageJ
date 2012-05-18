@@ -105,12 +105,6 @@ public class Overlay {
 			rois[i].setFillColor(color);
 	}
 
-    public void setScaleStrokeWidth(boolean scaleStrokeWidth) {
-		Roi[] rois = toArray();
-		for (int i=0; i<rois.length; i++)
-			rois[i].setScaleStrokeWidth(scaleStrokeWidth);
-	}
-
     /** Moves all the Rois in this overlay. */
     public void translate(int dx, int dy) {
 		Roi[] rois = toArray();
@@ -177,6 +171,9 @@ public class Overlay {
     
     public void drawNames(boolean b) {
     	drawNames = b;
+		Roi[] rois = toArray();
+		for (int i=0; i<rois.length; i++)
+			rois[i].setIgnoreClipRect(drawNames);
     }
     
     public boolean getDrawNames() {

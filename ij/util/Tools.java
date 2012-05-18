@@ -2,6 +2,7 @@ package ij.util;
 import java.awt.Color;
 import java.util.*;
 import java.io.*;
+import java.util.Comparator;
 
 /** This class contains static utility methods. */
  public class Tools {
@@ -225,42 +226,18 @@ import java.io.*;
 		index[j] = b;
 	}
 
-	// quicksort a[left] to a[right]
-	public static void quicksort(String[] a, int[] index) {
-		quicksort(a, index, 0, a.length-1);
-	}
-
-	public static void quicksort(String[] a, int[] index, int left, int right) {
-		if (right <= left) return;
-		int i = partition(a, index, left, right);
-		quicksort(a, index, left, i-1);
-		quicksort(a, index, i+1, right);
-	}
-
-	// partition a[left] to a[right], assumes left < right
-	private static int partition(String[] a, int[] index, int left, int right) {
-		int i = left - 1;
-		int j = right;
-		while (true) {
-			while (a[++i].compareToIgnoreCase( a[right])<0)      // find item on left to swap
-			;                               // a[right] acts as sentinel
-			while (a[right].compareToIgnoreCase( a[--j])<0)      // find item on right to swap
-			if (j == left) break;           // don't go out-of-bounds
-			if (i >= j) break;                  // check if pointers cross
-			exch(a, index, i, j);               // swap two elements into place
-		}
-		exch(a, index, i, right);               // swap with partition element
-		return i;
-	}
-	
-	// exchange a[i] and a[j]
-	private static void exch(String[] a, int[] index, int i, int j) {
-		String swap = a[i];
-		a[i] = a[j];
-		a[j] = swap;
-		int b = index[i];
-		index[i] = index[j];
-		index[j] = b;
+	public static void quicksort(final String[] data, int[] indexes) {
+		int n = indexes.length;
+		final Integer[] indexes2 = new Integer[n];
+		for (int i=0; i<n; i++)
+			indexes2[i] = new Integer(indexes[i]);
+		Arrays.sort(indexes2, new Comparator<Integer>() {
+			public int compare(final Integer o1, final Integer o2) {
+				return data[o1].compareToIgnoreCase(data[o2]);
+			}
+		});
+		for (int i=0; i<n; i++)
+			indexes[i] = indexes2[i].intValue();
 	}
 	
 	/** Opens a text file in ij.jar as a String (example path: "/macros/Macro_Tool.txt"). */

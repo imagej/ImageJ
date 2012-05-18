@@ -19,7 +19,6 @@ public class RoiProperties {
 	private boolean overlayOptions;
 	private boolean existingOverlay;
 	private boolean setPositions;
-	private boolean scaleStrokeWidth;
 	private boolean listCoordinates;
 	private static final String[] justNames = {"Left", "Center", "Right"};
 
@@ -36,7 +35,6 @@ public class RoiProperties {
 		if (overlayOptions) {
 			Overlay overlay = imp!=null?imp.getOverlay():null;
 			setPositions = roi.getPosition()!=0;
-			scaleStrokeWidth = roi.getScaleStrokeWidth();
 			if (overlay!=null)
 				existingOverlay = true;
 		}
@@ -69,8 +67,7 @@ public class RoiProperties {
 		if (roi.getStrokeColor()!=null) strokeColor = roi.getStrokeColor();
 		if (strokeColor==null) strokeColor = Roi.getColor();
 		if (roi.getFillColor()!=null) fillColor = roi.getFillColor();
-		double width = roi.getStrokeWidth();
-		if (width>0) strokeWidth = width;
+		strokeWidth = roi.getStrokeWidth();
 		boolean isText = roi instanceof TextRoi;
 		boolean isLine = roi.isLine();
 		int justification = TextRoi.LEFT;
@@ -108,7 +105,6 @@ public class RoiProperties {
 				gd.addCheckbox("Apply to current overlay", false);
 			}
 			gd.addCheckbox("Set stack positions", setPositions);
-			//gd.addCheckbox("Scale line width", scaleStrokeWidth);
 		}
 		if (showListCoordinates) {
 			int n = roi.getFloatPolygon().npoints;
@@ -133,8 +129,6 @@ public class RoiProperties {
 				applyToOverlay = gd.getNextBoolean();
 			setPositions = gd.getNextBoolean();
 			roi.setPosition(setPositions?1:0);
-			//scaleStrokeWidth = gd.getNextBoolean();
-			//roi.setScaleStrokeWidth(scaleStrokeWidth);
 		}
 		if (showListCoordinates)
 			listCoordinates = gd.getNextBoolean();
@@ -149,7 +143,7 @@ public class RoiProperties {
 			}
 			if (justification!=troi.getJustification())
 				troi.setJustification(justification);
-		} else if (strokeWidth!=1.0 || roi.getStroke()!=null)
+		} else
 			roi.setStrokeWidth((float)strokeWidth);
 		roi.setStrokeColor(strokeColor);
 		roi.setFillColor(fillColor);

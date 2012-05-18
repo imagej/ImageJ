@@ -32,6 +32,10 @@ public class PolygonRoi extends Roi {
 		Type must be Roi.POLYGON, Roi.FREEROI, Roi.TRACED_ROI, Roi.POLYLINE, Roi.FREELINE or Roi.ANGLE.*/
 	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, int type) {
 		super(0, 0, null);
+		if (xPoints==null || yPoints==null)
+			throw new IllegalArgumentException("null argument");
+		if (nPoints<1)
+			throw new IllegalArgumentException("npoints<1");
 		init1(nPoints, type);
 		xp = xPoints;
 		yp = yPoints;
@@ -52,6 +56,8 @@ public class PolygonRoi extends Roi {
 		Type must be Roi.POLYGON, Roi.FREEROI, Roi.POLYLINE, Roi.FREELINE or Roi.ANGLE.*/
 	public PolygonRoi(float[] xPoints, float[] yPoints, int nPoints, int type) {
 		super(0, 0, null);
+		if (xPoints==null || yPoints==null)
+			throw new IllegalArgumentException("Null argument");
 		init1(nPoints, type);
 		xpf = xPoints;
 		ypf = yPoints;
@@ -181,11 +187,15 @@ public class PolygonRoi extends Roi {
 	
 	public void draw(Graphics g) {
         updatePolygon();
-		Color color =  strokeColor!=null? strokeColor:ROIColor;
+		Color color =  strokeColor!=null?strokeColor:ROIColor;
 		boolean hasHandles = xSpline!=null||type==POLYGON||type==POLYLINE||type==ANGLE;
-		boolean isActiveOverlayRoi = !overlay && activeOverlayRoi && !hasHandles;
-		if (isActiveOverlayRoi)
-			color = Color.cyan;
+		boolean isActiveOverlayRoi = !overlay && isActiveOverlayRoi() && !hasHandles;
+		if (isActiveOverlayRoi) {
+			if (color==Color.cyan)
+				color = Color.magenta;
+			else
+				color = Color.cyan;
+		}
 		boolean fill = false;
         mag = getMagnification();
 		if (fillColor!=null && !isLine() && state!=CONSTRUCTING) {

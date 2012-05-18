@@ -1409,12 +1409,12 @@ public class IJ {
 		return ImageJ.VERSION;
 	}
 	
-	/** Returns the ImageJ version and build number as a String,
-		for example "1.46n00", "1.46n05" and "1.46n16". */
+	/** Returns the ImageJ version and build number as a String, for 
+		example "1.46n05", or 1.46n99 if there is no build number. */
 	public static String getFullVersion() {
 		String build = ImageJ.BUILD;
 		if (build.length()==0)
-			build = "00";
+			build = "99";
 		else if (build.length()==1)
 			build = "0" + build;
 		return ImageJ.VERSION+build;

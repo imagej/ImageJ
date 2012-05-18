@@ -21,8 +21,8 @@ public class Straightener implements PlugIn {
 		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
 		int stackSize = imp.getStackSize();
 		if (stackSize==1) processStack = false;
-		if (width==1 || isMacro || stackSize>1) {
-			if (width==1) width = 20;
+		if (width<=1 || isMacro || stackSize>1) {
+			if (width<=1) width = 20;
 			GenericDialog gd = new GenericDialog("Straightener");
 			gd.addNumericField("Line Width:", width, 0, 3, "pixels");
 			if (stackSize>1)

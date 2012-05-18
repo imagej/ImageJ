@@ -56,7 +56,7 @@ public class ProfilePlot {
 			profile = getStraightLineProfile(roi, cal, ip);
 		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
 			int lineWidth = (int)Math.round(roi.getStrokeWidth());
-			if (lineWidth==1)
+			if (lineWidth<=1)
 				profile = getIrregularProfile(roi, ip, cal);
 			else
 				profile = getWideLineProfile(imp, lineWidth);

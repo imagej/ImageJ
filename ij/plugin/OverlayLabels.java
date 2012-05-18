@@ -22,7 +22,14 @@ public class OverlayLabels implements PlugIn, DialogListener {
 	
 	public void run(String arg) {
 		imp = WindowManager.getCurrentImage();
-		overlay = imp!=null?imp.getOverlay():null;
+		overlay = null;
+		if (imp!=null) {
+			ImageCanvas ic = imp.getCanvas();
+			if (ic!=null)
+				overlay = ic.getShowAllList();
+			if (overlay==null)
+				overlay = imp.getOverlay();
+		}
 		if (overlay==null)
 			overlay = defaultOverlay;
 		showDialog();
@@ -89,8 +96,16 @@ public class OverlayLabels implements PlugIn, DialogListener {
 			overlay.setLabelColor(color);
 			if (sizeChanged || bold || bold!=bold2)
 				overlay.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
-			if (imp!=null && imp.getOverlay()!=null)
-				imp.draw();
+			if (imp!=null) {
+				Overlay o = imp.getOverlay();
+				if (o==null) {
+					ImageCanvas ic = imp.getCanvas();
+					if (ic!=null)
+						o = ic.getShowAllList();
+				}
+				if (o!=null)
+					imp.draw();
+			}
 		}
 		return true;
 	}
