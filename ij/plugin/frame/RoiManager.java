@@ -1087,7 +1087,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			RoiProperties rp = new RoiProperties("Properties", rpRoi);
 			if (!rp.showDialog())
 				return;
-			lineWidth =	 (int)rpRoi.getStrokeWidth();
+			lineWidth = (int)rpRoi.getStrokeWidth();
 			defaultLineWidth = lineWidth;
 			color =	 rpRoi.getStrokeColor();
 			fillColor =	 rpRoi.getFillColor();

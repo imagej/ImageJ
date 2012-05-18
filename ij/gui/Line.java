@@ -350,7 +350,7 @@ public class Line extends Roi {
 	/** Returns the pixel values along this line. */
 	public double[] getPixels() {
 			double[] profile;
-			if (getStrokeWidth()==1) {
+			if (getStrokeWidth()<=1) {
 				ImageProcessor ip = imp.getProcessor();
 				profile = ip.getLine(x1d, y1d, x2d, y2d);
 			} else {
@@ -380,7 +380,7 @@ public class Line extends Roi {
 	public FloatPolygon getFloatPolygon() {
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		FloatPolygon p = new FloatPolygon();
-		if (getStrokeWidth()==1) {
+		if (getStrokeWidth()<=1) {
 			p.addPoint((float)x1d, (float)y1d);
 			p.addPoint((float)x2d, (float)y2d);
 		} else {
@@ -406,7 +406,7 @@ public class Line extends Roi {
 		ip.setLineWidth(1);
 		x1d=x+x1R; y1d=y+y1R; x2d=x+x2R; y2d=y+y2R;
 		double offset = getOffset(0.5);
-		if (getStrokeWidth()==1) {
+		if (getStrokeWidth()<=1) {
 			ip.moveTo((int)(x1d+offset), (int)(y1d+offset));
 			ip.lineTo((int)(x2d+offset), (int)(y2d+offset));
 		} else {
