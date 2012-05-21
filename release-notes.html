@@ -5,21 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.46o 18 May 2012</u>
+<li> <u>1.46p 21 May 2012</u>
 <ul>
-<li> Set the stroke width to 0 in the <i>Edit&gt;Selection&gt;Properties</i>,
-<i>Image&gt;Overlay&gt;Overlay Options</i>
-and ROI Manager<i>Properties</i> dialogs to have selections
-drawn using a width of 1 pixel regardless of the image magnification.
-<li> Fixed a bug that could cause selections being moved to not be
-displayed correctly when the "Use ROI names as labels" option in 
-the ROI Manager was enabled.
-<li> Fixed a bug that caused <i>Analyze&gt;Plot Profile</i> to fail
-with line selections with widths less than 1.0.
-<li> Thanks to Franklin Shaffer, fixed a bug that sometimes a caused a stack overflow
-error when importing large image sequences.
-<li> Thanks to Tiago Ferreira, fixed a 1.46n regression that caused overlay
-items to be removed when toggling the ROI Manager "Show All" checkbox.
+<li> Fixed a bug that caused an exception when <i>Image&gt;Stacks&gt;Add Slice</i> was
+used to add a channel to a 7 channel composite color image.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

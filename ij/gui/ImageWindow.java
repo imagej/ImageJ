@@ -517,9 +517,10 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	}
 	
 	public void focusGained(FocusEvent e) {
-		//IJ.log("focusGained: "+imp.getTitle());
-		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting())
+		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting()) {
+			if (IJ.debugMode) IJ.log("focusGained: "+imp.getTitle());
 			WindowManager.setCurrentWindow(this);
+		}
 	}
 
 	public void windowActivated(WindowEvent e) {

@@ -4773,9 +4773,7 @@ public class Functions implements MacroConstants, Measurements {
 		interp.getRightParen();
 		int len = a.length;
 		int nNumbers = 0;
-		int[] indexes = new int[len];
 		for (int i = 0; i < len; i++) {
-			indexes[i] = i;
 			if (a[i].getString()==null)
 				nNumbers++;
 		}
@@ -4784,16 +4782,17 @@ public class Functions implements MacroConstants, Measurements {
 			return a;
 		}
 		Variable[] varArray = new Variable[len];
+		int[] indexes;
 		if (nNumbers==len) {
 			double[] doubles = new double[len];
 			for (int i = 0; i < len; i++)
 				doubles[i] = (double) (a[i].getValue());
-			Tools.quicksort(doubles, indexes);
-		} else if (nNumbers==0) {
+			indexes = Tools.rank(doubles);
+		} else {
 			String[] strings = new String[len];
 			for (int i = 0; i < len; i++)
 				strings[i] = a[i].getString();
-			Tools.quicksort(strings, indexes);
+			indexes = Tools.rank(strings);
 		}
 		for (int i=0; i<len; i++)
 			varArray[i] = new Variable((double) indexes[i]);
