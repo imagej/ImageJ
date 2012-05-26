@@ -1428,30 +1428,31 @@ public class IJ {
 		cancels the dialog box. Also aborts the macro if the user cancels
 		the dialog box.*/
 	public static String getDirectory(String title) {
-		if (title.equals("plugins"))
+		String title2 = title.toLowerCase(Locale.US);
+		if (title2.equals("plugins"))
 			return Menus.getPlugInsPath();
-		else if (title.equals("macros"))
+		else if (title2.equals("macros"))
 			return Menus.getMacrosPath();
-		else if (title.equals("luts")) {
+		else if (title2.equals("luts")) {
 			String ijdir = getIJDir();
 			if (ijdir!=null)
 				return ijdir + "luts" + File.separator;
 			else
 				return null;
-		} else if (title.equals("home"))
+		} else if (title2.equals("home"))
 			return System.getProperty("user.home") + File.separator;
-		else if (title.equals("startup"))
+		else if (title2.equals("startup"))
 			return Prefs.getHomeDir() + File.separator;
-		else if (title.equals("imagej"))
+		else if (title2.equals("imagej"))
 			return getIJDir();
-		else if (title.equals("current"))
+		else if (title2.equals("current"))
 			return OpenDialog.getDefaultDirectory();
-		else if (title.equals("temp")) {
+		else if (title2.equals("temp")) {
 			String dir = System.getProperty("java.io.tmpdir");
 			if (isMacintosh()) dir = "/tmp/";
 			if (dir!=null && !dir.endsWith(File.separator)) dir += File.separator;
 			return dir;
-		} else if (title.equals("image")) {
+		} else if (title2.equals("image")) {
 			ImagePlus imp = WindowManager.getCurrentImage();
 	    	FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
 			if (fi!=null && fi.directory!=null)

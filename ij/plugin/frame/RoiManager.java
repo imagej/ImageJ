@@ -1159,7 +1159,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			{IJ.noImage(); return;}
 		ImageCanvas ic = imp.getCanvas();
-		if (!ic.getShowAllROIs() && ic.getDisplayList()==null && imp.getRoi()==null)
+		if ((ic!=null && ic.getShowAllList()==null) && imp.getOverlay()==null && imp.getRoi()==null)
 			error("Image does not have an overlay or ROI");
 		else
 			IJ.doCommand("Flatten"); // run Image>Flatten in separate thread
