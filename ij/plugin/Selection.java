@@ -65,12 +65,13 @@ public class Selection implements PlugIn, Measurements {
 		else if (arg.equals("tobox"))
 			toBoundingBox(imp); 
 		else
-			runMacro(arg);
+			runMacro(arg, imp);
 	}
 	
-	void runMacro(String arg) {
+	void runMacro(String arg, ImagePlus imp) {
+		boolean rotate = arg.equals("rotate");
 		Roi roi = imp.getRoi();
-		if (IJ.macroRunning()) {
+		if (rotate && IJ.macroRunning()) {
 			String options = Macro.getOptions();
 			if (options!=null && (options.indexOf("grid=")!=-1||options.indexOf("interpolat")!=-1)) {
 				IJ.run("Rotate... ", options); // run Image>Transform>Rotate
@@ -78,14 +79,24 @@ public class Selection implements PlugIn, Measurements {
 			}
 		}
 		if (roi==null) {
-			noRoi("Rotate>Selection");
+			noRoi(rotate?"Rotate":"Enlarge");
+			return;
+		}
+		double dangle = Tools.parseDouble(angle);
+		if (Double.isNaN(dangle)) {
+			dangle = 15;
+			angle = ""+dangle;
+		}
+		if (rotate && (roi instanceof ImageRoi)) {
+			dangle = IJ.getNumber("Angle (degrees):", dangle);
+			((ImageRoi)roi).rotate(dangle);
+			imp.draw();
+			angle = ""+dangle;
 			return;
 		}
 		Undo.setup(Undo.ROI, imp);
 		roi = (Roi)roi.clone();
-		if (arg.equals("rotate")) {
-			double d = Tools.parseDouble(angle);
-			if (Double.isNaN(d)) angle = "15";
+		if (rotate) {
 			String value = IJ.runMacroFile("ij.jar:RotateSelection", angle);
 			if (value!=null) angle = value;		
 		} else if (arg.equals("enlarge")) {

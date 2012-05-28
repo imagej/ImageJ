@@ -1,17 +1,19 @@
 package ij.gui;
 import ij.ImagePlus;
-import ij.process.ImageProcessor;
+import ij.process.*;
 import ij.io.FileSaver;
 import java.awt.*;
 import java.awt.image.*;
 
-	/** An ImageRoi is an Roi that displays an image as an overlay. 
-	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
-	 */
+/** An ImageRoi is an Roi that displays an image as an overlay. 
+* @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
+*/
 public class ImageRoi extends Roi {
 	private Image img;
 	private Composite composite;
 	private double opacity = 1.0;
+	private double angle = 0.0;
+	private boolean zeroTransparent;
 
 	/** Creates a new ImageRoi from a BufferedImage.*/
 	public ImageRoi(int x, int y, BufferedImage bi) {
@@ -37,7 +39,17 @@ public class ImageRoi extends Roi {
 			saveComposite = g2d.getComposite();
 			g2d.setComposite(composite);
 		}
-		g.drawImage(img, screenX(x), screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
+		Image img2 = img;
+		if (angle!=0.0) {
+			ImageProcessor ip = new ColorProcessor(img);
+			ip.setInterpolate(true);
+			ip.setBackgroundValue(0.0);
+			ip.rotate(angle);
+			if (zeroTransparent)
+				ip = makeZeroTransparent(ip, true);
+			img2 = ip.createImage();
+		}
+		g.drawImage(img2, screenX(x), screenY(y), sx2, sy2, 0, 0, img.getWidth(null), img.getHeight(null), null);
 		if (composite!=null) g2d.setComposite(saveComposite);
 		if (isActiveOverlayRoi())
 			super.draw(g);
@@ -69,6 +81,38 @@ public class ImageRoi extends Roi {
 	/** Returns the current opacity. */
 	public double getOpacity() {
 		return opacity;
+	}
+
+	public void rotate(double angle) {
+		this.angle += angle;
+	}
+
+	public void setAngle(double angle) {
+		this.angle = angle;
+	}
+
+	public void setZeroTransparent(boolean zeroTransparent) {
+		if (this.zeroTransparent!=zeroTransparent) {
+			ImageProcessor ip = makeZeroTransparent(new ColorProcessor(img), zeroTransparent);
+			img = ip.createImage();
+		}
+		this.zeroTransparent = zeroTransparent;
+	}
+	
+	private ImageProcessor makeZeroTransparent(ImageProcessor ip, boolean transparent) {
+		if (transparent) {
+			ip.setColorModel(new DirectColorModel(32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000));
+			for (int x=0; x<width; x++) {
+				for (int y=0; y<height; y++) {
+					double v = ip.getPixelValue(x, y);
+					if (v>1)
+						ip.set(x, y, ip.get(x,y)|0xff000000); // set alpha bits
+					else
+						ip.set(x, y, ip.get(x,y)&0xffffff); // clear alpha bits
+				}
+			}
+		}
+		return ip;
 	}
 
 	public synchronized Object clone() {
