@@ -127,7 +127,7 @@ public class Macro {
 			else
 				return options.substring(1, index);
 		} else if (options.charAt(0)=='[') {
-			index = options.lastIndexOf("]");
+			index = options.indexOf("]",1);
 			if (index<=1)
 				return defaultValue;
 			else

@@ -10,6 +10,7 @@ import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.macro.Interpreter;
+import ij.util.Java2;
 
 /** A frame for displaying images. */
 public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
@@ -246,9 +247,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			Insets insets = super.getInsets();
 			if (imp.isComposite()) {
 				CompositeImage ci = (CompositeImage)imp;
-				if (ci.getMode()==CompositeImage.COMPOSITE)
-					g.setColor(ci.getChannelColor());
+				if (ci.getMode()==CompositeImage.COMPOSITE) {
+					Color c = ci.getChannelColor();
+					if (Color.green.equals(c))
+						c = new Color(0,180,0);
+					g.setColor(c);
+				}
 			}
+			Java2.setAntialiasedText(g, true);
 			g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
 		}
     }

@@ -1644,8 +1644,12 @@ public class IJ {
 			error("Unsupported save() or saveAs() file format: \""+format+"\"\n \n\""+path+"\"");
 		if (path==null)
 			run(format);
-		else
-			run(imp, format, "save=["+path+"]");
+		else {
+			if (path.contains(" "))
+				run(imp, format, "save=["+path+"]");
+			else
+				run(imp, format, "save="+path);
+		}
 	}
 
 	static String updateExtension(String path, String extension) {

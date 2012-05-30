@@ -774,6 +774,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			for (int i=0; i<indexes.length; i++) {
 				String label = list.getItem(indexes[i]);
 				Roi roi = (Roi)rois.get(label);
+				if (IJ.debugMode) IJ.log("saveMultiple: "+i+"  "+label+"  "+roi);
+				if (roi==null) continue;
 				if (!label.endsWith(".roi")) label += ".roi";
 				zos.putNextEntry(new ZipEntry(label));
 				re.write(roi);
