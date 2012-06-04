@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.46p 3 June 2012</u>
+<li> <u>1.46p 4 June 2012</u>
 <ul>
 <li> Added the <i>Edit&gt;Options&gt;Reset</i> command.
 <li> The line of information at the top of image windows is displayed antialiased.
@@ -20,6 +20,9 @@ to fail if the file path contained a "]" character.
 and <i>Image&gt;Stacks&gt;Delete Slice</i> to not set the 'changes' flag.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the macro interpreter to not
 correctly parse hex constants larger than 0x7fffffff.
+<li> Fixed bugs in the <i>Image&gt;Hyperstacks&gt;Stack to Hyperstack</i> and
+<i>Hyperstack to Stack</i> commands that caused them to not work as expected
+in batch mode macros.
 <li> Thanks to Dorai Iyer, fixed a 1.46o regression that caused the ROI Manager "Flatten"
 command to stop working.
 </ul> 

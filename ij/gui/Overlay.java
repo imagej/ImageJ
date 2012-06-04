@@ -80,7 +80,7 @@ public class Overlay {
 		return -1;
     }
     
-    /** Returns 'true' if this Overlay contains the specified ROI. */
+    /** Returns 'true' if this Overlay contains the specified Roi. */
     public boolean contains(Roi roi) {
     	return list.contains(roi);
     }
