@@ -244,7 +244,7 @@ public class Selection implements PlugIn, Measurements {
 			return;
 		PolygonRoi p = (PolygonRoi)roi;
 		Undo.setup(Undo.ROI, imp);
-		if (!segmentedSelection) {
+		if (!segmentedSelection && p.getNCoordinates()>3) {
 			if (p.subPixelResolution())
 				p = trimFloatPolygon(p, p.getUncalibratedLength());
 			else

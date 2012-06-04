@@ -80,6 +80,11 @@ public class Overlay {
 		return -1;
     }
     
+    /** Returns 'true' if this Overlay contains the specified ROI. */
+    public boolean contains(Roi roi) {
+    	return list.contains(roi);
+    }
+
     /** Returns the number of Rois in this Overlay. */
     public int size() {
     	return list.size();

@@ -5,9 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.46p 30 May 2012</u>
+<li> <u>1.46p 3 June 2012</u>
 <ul>
-<li> The information at the top of image windows is displayed antialiased.
+<li> Added the <i>Edit&gt;Options&gt;Reset</i> command.
+<li> The line of information at the top of image windows is displayed antialiased.
 <li> Added the rotate(), setAngle() and setZeroTransparent() methods to the ImageRoi class
 (<a href="plugins/image-overlay/">example</a>).
 <li> Fixed a bug that caused an exception when <i>Image&gt;Stacks&gt;Add Slice</i> was
@@ -15,6 +16,10 @@ used to add a channel to a 7 channel composite color image.
 <li> Fixed a bug that caused <i>Edit&gt;Selection&gt;Rotate</i> to not work with ImageRois.
 <li> Thanks to Hiroki Hakoshima, fixed a bug that caused the saveAs() macro function
 to fail if the file path contained a "]" character.
+<li> Thanks to Norbert Vischer, fixed a bug that caused <i>Image&gt;Stacks&gt;Add Slice</i>
+and <i>Image&gt;Stacks&gt;Delete Slice</i> to not set the 'changes' flag.
+<li> Thanks to Norbert Vischer, fixed a bug that caused the macro interpreter to not
+correctly parse hex constants larger than 0x7fffffff.
 <li> Thanks to Dorai Iyer, fixed a 1.46o regression that caused the ROI Manager "Flatten"
 command to stop working.
 </ul> 

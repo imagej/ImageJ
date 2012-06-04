@@ -51,6 +51,7 @@ public class StackEditor implements PlugIn {
 		imp.setStack(null, stack);
 		imp.setSlice(n+1);
 		imp.unlock();
+		imp.changes = true;
 		if (id!=0) IJ.selectWindow(id); // prevents macros from failing
 	}
 	
@@ -73,6 +74,7 @@ public class StackEditor implements PlugIn {
  		if (n--<1) n = 1;
 		imp.setSlice(n);
 		imp.unlock();
+		imp.changes = true;
 	}
 
 	void addHyperstackChannelSliceOrFrame() {
@@ -148,6 +150,7 @@ public class StackEditor implements PlugIn {
 		}
 		imp.unlock();
 		imp.repaintWindow();
+		imp.changes = true;
 	}
 	
 	void deleteHyperstackChannelSliceOrFrame() {
@@ -221,6 +224,7 @@ public class StackEditor implements PlugIn {
 		}
 		imp.unlock();
 		imp.repaintWindow();
+		imp.changes = true;
 	}
 
 	public void convertImagesToStack() {

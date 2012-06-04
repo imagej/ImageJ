@@ -3747,7 +3747,7 @@ public class Functions implements MacroConstants, Measurements {
 			state = getImage().isComposite();
 		else if (arg.indexOf("caps")!=-1)
 			state = getCapsLockState();
-		else if (arg.indexOf("changes")!=-1)
+		else if (arg.indexOf("change")!=-1)
 			state = getImage().changes;
 		else if (arg.indexOf("binary")!=-1)
 			state = getProcessor().isBinary();
