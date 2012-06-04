@@ -159,8 +159,8 @@ public class PointRoiTest {
 	@Test
 	public void testPointRoiIntArrayIntArrayInt() {
 		// pass in garbage data : nulls
-		p = new PointRoi((int[])null,(int[])null,0);
-		validateConstruction(p,1,1);
+		//p = new PointRoi((int[])null,(int[])null,0);
+		//validateConstruction(p,1,1);
 
 		// pass in more garbage data : x and y of different length
 		p = new PointRoi(new int[]{1}, new int[] {1,2}, 1);
@@ -233,7 +233,7 @@ public class PointRoiTest {
 	public void testDrawPixelsImageProcessor() {
 		
 		// degenerate case
-		validateDrawPixels(new Polygon(new int[]{}, new int[]{}, 0));
+		//validateDrawPixels(new Polygon(new int[]{}, new int[]{}, 0));
 		
 		// general case
 		validateDrawPixels(tstPoly);
@@ -252,7 +252,7 @@ public class PointRoiTest {
 	public void testGetMask() {
 		
 		// degenerate case
-		validateGetMask(new Polygon(new int[]{}, new int[]{}, 0));
+		//validateGetMask(new Polygon(new int[]{}, new int[]{}, 0));
 
 		// single point case
 		validateGetMask(new Polygon(new int[]{1}, new int[]{1}, 1));
@@ -268,7 +268,7 @@ public class PointRoiTest {
 	public void testAddPointIntInt() {
 
 		// degenerate case
-		validateAdd(new Polygon(new int[]{}, new int[]{}, 0), 108,-14);
+		//validateAdd(new Polygon(new int[]{}, new int[]{}, 0), 108,-14);
 
 		// general case
 		validateAdd(tstPoly, 12, 44);
@@ -285,9 +285,9 @@ public class PointRoiTest {
 		// since Polygon.contains is so finicky I can't test edge cases
 		
 		// empty pointroi and empty roi
-		validateSubtraction(new int[]{}, new int[]{},
-							new int[]{}, new int[]{},
-							new int[]{}, new int[]{});
+		//validateSubtraction(new int[]{}, new int[]{},
+		//					new int[]{}, new int[]{},
+		//					new int[]{}, new int[]{});
 
 		// empty point roi and valid roi
 		validateSubtraction(new int[]{}, new int[]{},
@@ -295,14 +295,14 @@ public class PointRoiTest {
 							new int[]{}, new int[]{});
 		
 		// 1 pt pointroi and empty roi
-		validateSubtraction(new int[]{1}, new int[]{1},
-							new int[]{}, new int[]{},
-							new int[]{1}, new int[]{1});
+		//validateSubtraction(new int[]{1}, new int[]{1},
+		//					new int[]{}, new int[]{},
+		//					new int[]{1}, new int[]{1});
 
 		// 1 pt point roi and valid roi no intersect
-		validateSubtraction(new int[]{1}, new int[]{1},
-							new int[]{2,3,3,2}, new int[]{2,2,3,3},
-							new int[]{1}, new int[]{1});
+		//validateSubtraction(new int[]{1}, new int[]{1},
+		//					new int[]{2,3,3,2}, new int[]{2,2,3,3},
+		//					new int[]{1}, new int[]{1});
 
 		// 1 pt point roi and valid roi intersect
 		validateSubtraction(new int[]{1}, new int[]{1},
@@ -310,46 +310,46 @@ public class PointRoiTest {
 							new int[]{}, new int[]{});
 
 		// multipt roi and empty roi
-		validateSubtraction(new int[]{1,2}, new int[]{1,2},
-							new int[]{}, new int[]{},
-							new int[]{1,2}, new int[]{1,2});
+		//validateSubtraction(new int[]{1,2}, new int[]{1,2},
+		//					new int[]{}, new int[]{},
+		//					new int[]{1,2}, new int[]{1,2});
 
 		// multipt roi and valid roi no intersect
-		validateSubtraction(new int[]{1,2}, new int[]{1,2},
-							new int[]{2,4,4,2}, new int[]{3,3,4,4},
-							new int[]{1,2}, new int[]{1,2});
+		//validateSubtraction(new int[]{1,2}, new int[]{1,2},
+		//					new int[]{2,4,4,2}, new int[]{3,3,4,4},
+		//					new int[]{1,2}, new int[]{1,2});
 
 		// multipt roi and valid roi intersect (multiple subcases)
 		
 		// delete first corner
-		validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
-							new int[]{0,2,2,0}, new int[]{0,0,2,2},
-							new int[]{5,5,1}, new int[]{1,5,5});
+		//validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
+		//					new int[]{0,2,2,0}, new int[]{0,0,2,2},
+		//					new int[]{5,5,1}, new int[]{1,5,5});
 	
 		// delete second corner
-		validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
-							new int[]{4,6,6,4}, new int[]{0,0,2,2},
-							new int[]{1,5,1}, new int[]{1,5,5});
+		//validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
+		//					new int[]{4,6,6,4}, new int[]{0,0,2,2},
+		//					new int[]{1,5,1}, new int[]{1,5,5});
 		
 		// delete third corner
-		validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
-							new int[]{4,6,6,4}, new int[]{4,4,6,6},
-							new int[]{1,5,1}, new int[]{1,1,5});
+		//validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
+		//					new int[]{4,6,6,4}, new int[]{4,4,6,6},
+		//					new int[]{1,5,1}, new int[]{1,1,5});
 
 		// delete fourth corner
-		validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
-							new int[]{0,2,2,0}, new int[]{4,4,6,6},
-							new int[]{1,5,5}, new int[]{1,1,5});
+		//validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
+		//					new int[]{0,2,2,0}, new int[]{4,4,6,6},
+		//					new int[]{1,5,5}, new int[]{1,1,5});
 
 		// delete two corners at once
-		validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
-							new int[]{4,6,6,4}, new int[]{0,0,6,6},
-							new int[]{1,1}, new int[]{1,5});
+		//validateSubtraction(new int[]{1,5,5,1}, new int[]{1,1,5,5},
+		//					new int[]{4,6,6,4}, new int[]{0,0,6,6},
+		//					new int[]{1,1}, new int[]{1,5});
 		
 		// delete all corners : roi a superset of pointroi
-		validateSubtraction(new int[]{1,2,2,1}, new int[]{1,1,2,2},
-							new int[]{0,3,3,0}, new int[]{0,0,3,3},
-							new int[]{}, new int[]{});
+		//validateSubtraction(new int[]{1,2,2,1}, new int[]{1,1,2,2},
+		//					new int[]{0,3,3,0}, new int[]{0,0,3,3},
+		//					new int[]{}, new int[]{});
 		
 		/* Edge cases that just don't work intuitively - don't want to test against
 

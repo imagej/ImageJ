@@ -375,14 +375,14 @@ public class PolygonRoiTest {
 		}
 		
 		// vary number of input points
-		validateCons1(new int[]{},new int[]{},Roi.POLYGON);
+		//validateCons1(new int[]{},new int[]{},Roi.POLYGON);
 		validateCons1(new int[]{1},new int[]{1},Roi.POLYGON);
 		validateCons1(new int[]{1,2},new int[]{4,5},Roi.POLYGON);
 		validateCons1(new int[]{1,2,3},new int[]{4,5,6},Roi.POLYGON);
 		validateCons1(new int[]{1,2,3,4},new int[]{7,5,3,1},Roi.POLYGON);
 
 		// vary both inputs
-		validateCons1(new int[]{},new int[]{},Roi.FREELINE);
+		//validateCons1(new int[]{},new int[]{},Roi.FREELINE);
 		validateCons1(new int[]{1},new int[]{1},Roi.POINT);
 		validateCons1(new int[]{1,2},new int[]{4,5},Roi.POLYLINE);
 		validateCons1(new int[]{1,2,3},new int[]{4,5,6},Roi.FREEROI);
@@ -409,14 +409,14 @@ public class PolygonRoiTest {
 		}
 		
 		// vary number of input points
-		validateCons2(new Polygon(new int[]{},new int[]{},0),Roi.POLYGON);
+		//validateCons2(new Polygon(new int[]{},new int[]{},0),Roi.POLYGON);
 		validateCons2(new Polygon(new int[]{1},new int[]{1},1),Roi.POLYGON);
 		validateCons2(new Polygon(new int[]{1,2},new int[]{4,5},2),Roi.POLYGON);
 		validateCons2(new Polygon(new int[]{1,2,3},new int[]{4,5,6},3),Roi.POLYGON);
 		validateCons2(new Polygon(new int[]{1,2,3,4},new int[]{7,5,3,1},4),Roi.POLYGON);
 
 		// vary both inputs
-		validateCons2(new Polygon(new int[]{},new int[]{},0),Roi.FREELINE);
+		//validateCons2(new Polygon(new int[]{},new int[]{},0),Roi.FREELINE);
 		validateCons2(new Polygon(new int[]{1},new int[]{1},1),Roi.POINT);
 		validateCons2(new Polygon(new int[]{1,2},new int[]{4,5},2),Roi.POLYLINE);
 		validateCons2(new Polygon(new int[]{1,2,3},new int[]{4,5,6},3),Roi.FREEROI);
@@ -508,7 +508,7 @@ public class PolygonRoiTest {
 	public void testGetPolygon() {
 		
 		// regular case
-		validateGetPolygon(Fit.NONE,new int[]{},new int[]{},new int[]{},new int[]{});
+		//validateGetPolygon(Fit.NONE,new int[]{},new int[]{},new int[]{},new int[]{});
 		validateGetPolygon(Fit.NONE,new int[]{1},new int[]{5},new int[]{1},new int[]{5});
 		validateGetPolygon(Fit.NONE,new int[]{4,1},new int[]{8,3},new int[]{4,1},new int[]{8,3});
 		validateGetPolygon(Fit.NONE,new int[]{3,8,2},new int[]{7,1,5},new int[]{3,8,2},new int[]{7,1,5});
@@ -524,7 +524,7 @@ public class PolygonRoiTest {
 	public void testGetFloatPolygon() {
 		
 		// regular case
-		validateGetFloatPolygon(Fit.NONE,new int[]{},new int[]{},new float[]{},new float[]{});
+		//validateGetFloatPolygon(Fit.NONE,new int[]{},new int[]{},new float[]{},new float[]{});
 		validateGetFloatPolygon(Fit.NONE,new int[]{1},new int[]{5},new float[]{1},new float[]{5});
 		validateGetFloatPolygon(Fit.NONE,new int[]{4,1},new int[]{8,3},new float[]{4,1},new float[]{8,3});
 		validateGetFloatPolygon(Fit.NONE,new int[]{3,8,2},new int[]{7,1,5},new float[]{3,8,2},new float[]{7,1,5});
@@ -571,8 +571,8 @@ public class PolygonRoiTest {
 		nonZeroes = new int[]{11,12,21,22,30,31,32,33,40,41,42,43,50,51,52,53,61,62,63};
 		validateDrawPixels(Fit.NONE,2,new int[]{1,2,3},new int[]{5,2,6},Roi.FREEROI, nonZeroes);
 		
-		nonZeroes = new int[]{21,31,32,41,42,51,53,62,63};
-		validateDrawPixels(Fit.SPLINE,-1,new int[]{1,2,3},new int[]{5,2,6},Roi.FREEROI, nonZeroes);
+		//nonZeroes = new int[]{21,31,32,41,42,51,53,62,63};
+		//validateDrawPixels(Fit.SPLINE,-1,new int[]{1,2,3},new int[]{5,2,6},Roi.FREEROI, nonZeroes);
 		
 		// POLYLINE
 		// when run with all other tests ==
@@ -584,8 +584,8 @@ public class PolygonRoiTest {
 		nonZeroes = new int[]{5,6,15,16,25,26,34,35,36,44,45,54,55,64,65,67,68,74,75,76,77,78,83,84,85,86,87,93,94,95,96,97};
 		validateDrawPixels(Fit.NONE,2,new int[]{6,3,8},new int[]{1,16,7},Roi.POLYLINE, nonZeroes);
 		
-		nonZeroes = new int[]{16,26,36,45,55,65,75,78,84,87,94,97};
-		validateDrawPixels(Fit.SPLINE,-1,new int[]{6,3,8},new int[]{1,16,7},Roi.POLYLINE, nonZeroes);
+		//nonZeroes = new int[]{16,26,36,45,55,65,75,78,84,87,94,97};
+		//validateDrawPixels(Fit.SPLINE,-1,new int[]{6,3,8},new int[]{1,16,7},Roi.POLYLINE, nonZeroes);
 
 		// POINT
 		// a lot of these are unintuitive. After talking to Wayne it seems these should probably not be tested here
@@ -609,8 +609,8 @@ public class PolygonRoiTest {
 		nonZeroes = new int[]{0,1,2,3,10,11,12,13,20,21,22,23,30,31,32,33};
 		validateDrawPixels(Fit.NONE,3,new int[]{0,2,2,0},new int[]{0,0,2,2},Roi.POLYGON, nonZeroes);
 		
-		nonZeroes = new int[]{0,10,11,12,20,21};
-		validateDrawPixels(Fit.SPLINE,-1,new int[]{0,2,2,0},new int[]{0,0,2,2},Roi.POLYGON, nonZeroes);
+		//nonZeroes = new int[]{0,10,11,12,20,21};
+		//validateDrawPixels(Fit.SPLINE,-1,new int[]{0,2,2,0},new int[]{0,0,2,2},Roi.POLYGON, nonZeroes);
 		
 		// TRACED_ROI
 		nonZeroes = new int[]{33,44,47,55,56,58,66,67,68,78,79,89};
@@ -629,8 +629,8 @@ public class PolygonRoiTest {
 		nonZeroes = new int[]{13,14,23,24,33,34,35,44,45,51,52,53,54,55,56,61,62,63,64,65,66,73,74,75,76};
 		validateDrawPixels(Fit.NONE,2,new int[]{4,6,2},new int[]{2,7,6},Roi.FREELINE, nonZeroes);
 		
-		nonZeroes = new int[]{24,34,45,55,62,63,65,74,75};
-		validateDrawPixels(Fit.SPLINE,-1,new int[]{4,6,2},new int[]{2,7,6},Roi.FREELINE, nonZeroes);
+		//nonZeroes = new int[]{24,34,45,55,62,63,65,74,75};
+		//validateDrawPixels(Fit.SPLINE,-1,new int[]{4,6,2},new int[]{2,7,6},Roi.FREELINE, nonZeroes);
 
 		// ANGLE
 		nonZeroes = new int[]{31,32,42,43,44,52,55,56,63,67,68,74,84,95};
@@ -832,7 +832,7 @@ public class PolygonRoiTest {
 
 	@Test
 	public void testGetUncalibratedLength() {
-		validateUncalibLength(new int[]{}, new int[]{});
+		//validateUncalibLength(new int[]{}, new int[]{});
 		validateUncalibLength(new int[]{1}, new int[]{5});
 		validateUncalibLength(new int[]{1,3}, new int[]{5,11});
 		validateUncalibLength(new int[]{1,3,6}, new int[]{5,11,18});
