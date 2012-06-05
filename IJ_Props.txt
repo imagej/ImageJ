@@ -108,6 +108,7 @@ options13="Proxy Settings...",ij.plugin.ProxySettings
 options14="Compiler...",ij.plugin.Compiler("options")
 options15="DICOM...",ij.plugin.Options("dicom")
 options16="Misc...",ij.plugin.Options("misc")
+options17="Reset... ",ij.plugin.Options("reset")
 
 # Plugins installed in the Image/Adjust submenu
 adjust01="Brightness/Contrast...[C]",ij.plugin.frame.ContrastAdjuster

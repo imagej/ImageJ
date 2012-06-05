@@ -283,6 +283,7 @@ public class Thresholder implements PlugIn, Measurements {
 		ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.NO_LUT_UPDATE);
 		minThreshold = ip.getMinThreshold();
 		maxThreshold = ip.getMaxThreshold();
+		if (IJ.debugMode) IJ.log("Thresholder: "+minThreshold+"-"+maxThreshold);
  	}
 
 }

@@ -186,58 +186,43 @@ import java.util.Comparator;
 		return lines;
 	}
 	
-	//Modified from: http://stackoverflow.com/questions/951848  N.Vischer
-	// quicksort a[left] to a[right]
-	public static void quicksort(double[] a, int[] index) {
-		quicksort(a, index, 0, a.length-1);
-	}
-
-	public static void quicksort(double[] a, int[] index, int left, int right) {
-		if (right <= left) return;
-		int i = partition(a, index, left, right);
-		quicksort(a, index, left, i-1);
-		quicksort(a, index, i+1, right);
-	}
-
-	// partition a[left] to a[right], assumes left < right
-	private static int partition(double[] a, int[] index,
-		int left, int right) {
-		int i = left - 1;
-		int j = right;
-		while (true) {
-			while (a[++i] < a[right])      // find item on left to swap
-				;                               // a[right] acts as sentinel
-			while (!(a[right] >= a[--j]))   // find item on right to swap (NAN TRICK)
-				if (j == left) break;           // don't go out-of-bounds
-			if (i >= j) break;                  // check if pointers cross
-			exch(a, index, i, j);               // swap two elements into place
+	/** Returns a sorted list of indices of the specified double array.
+		Modified from: http://stackoverflow.com/questions/951848 by N.Vischer.
+	*/
+	public static int[] rank(double[] values) {
+		int n = values.length;
+		final Integer[] indexes = new Integer[n];
+		final Double[] data = new Double[n];
+		for (int i=0; i<n; i++) {
+			indexes[i] = new Integer(i);
+			data[i] = new Double(values[i]);
 		}
-		exch(a, index, i, right);               // swap with partition element
-		return i;
-	}
-
-	// exchange a[i] and a[j]
-	private static void exch(double[] a, int[] index, int i, int j) {
-		double swap = a[i];
-		a[i] = a[j];
-		a[j] = swap;
-		int b = index[i];
-		index[i] = index[j];
-		index[j] = b;
-	}
-
-	public static void quicksort(final String[] data, int[] indexes) {
-		int n = indexes.length;
-		final Integer[] indexes2 = new Integer[n];
+		Arrays.sort(indexes, new Comparator<Integer>() {
+			public int compare(final Integer o1, final Integer o2) {
+				return data[o1].compareTo(data[o2]);
+			}
+		});
+		int[] indexes2 = new int[n];
 		for (int i=0; i<n; i++)
-			indexes2[i] = new Integer(indexes[i]);
-		Arrays.sort(indexes2, new Comparator<Integer>() {
+			indexes2[i] = indexes[i].intValue();
+		return indexes2;
+	}
+
+	/** Returns a sorted list of indices of the specified String array. */
+	public static int[] rank(final String[] data) {
+		int n = data.length;
+		final Integer[] indexes = new Integer[n];
+		for (int i=0; i<n; i++)
+			indexes[i] = new Integer(i);
+		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
 				return data[o1].compareToIgnoreCase(data[o2]);
 			}
 		});
+		int[] indexes2 = new int[n];
 		for (int i=0; i<n; i++)
-			indexes[i] = indexes2[i].intValue();
+			indexes2[i] = indexes[i].intValue();
+		return indexes2;
 	}
 	
 	/** Opens a text file in ij.jar as a String (example path: "/macros/Macro_Tool.txt"). */

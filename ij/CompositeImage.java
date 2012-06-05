@@ -521,7 +521,10 @@ public class CompositeImage extends ImagePlus {
 	}
 	
 	public void reset() {
-		setup(getNChannels(), getImageStack());
+		int nChannels = getNChannels();
+		if (nChannels>MAX_CHANNELS && getMode()==COMPOSITE)
+			setMode(COLOR);
+		setup(nChannels, getImageStack());
 	}
 	
 	/* Sets the LUT of the current channel. */

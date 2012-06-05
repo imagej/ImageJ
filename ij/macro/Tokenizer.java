@@ -208,7 +208,7 @@ public class Tokenizer implements MacroConstants {
         String s = st.sval.substring(1, st.sval.length());
         double n = 0.0;
         try {
-            n = Integer.parseInt(s, 16);
+            n = Long.parseLong(s, 16);
         } catch (NumberFormatException e) {
             st.pushBack();
             n = 0.0;

@@ -37,11 +37,7 @@ public class StringSorter {
 		int n = list.length;
 		String[] paddedList = getPaddedNames(list);
 		String[] sortedList = new String[n];
-		int[] indexes = new int[n];
-		for (int i = 0; i < n; i++) {
-			indexes[i] = i;
-		}
-		Tools.quicksort(paddedList, indexes);
+		int[] indexes = Tools.rank(paddedList);
 		for (int i = 0; i < n; i++)
 			sortedList[i] = list[indexes[i]];
 		return sortedList;

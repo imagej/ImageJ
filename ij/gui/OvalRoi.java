@@ -236,9 +236,13 @@ public class OvalRoi extends Roi {
 		Graphics2D g2d = (Graphics2D)g;
 		if (stroke!=null) 
 			g2d.setStroke(getScaledStroke());
-		if (fillColor!=null)
-			g.fillOval(sx1, sy1, sw, sh);
-		else
+		if (fillColor!=null) {
+			if (!overlay && isActiveOverlayRoi()) {
+				g.setColor(Color.cyan);
+				g.drawOval(sx1, sy1, sw, sh);
+			} else
+				g.fillOval(sx1, sy1, sw, sh);
+		} else
 			g.drawOval(sx1, sy1, sw, sh);
 		if (state!=CONSTRUCTING && clipboard==null && !overlay) {
 			int size2 = HANDLE_SIZE/2;

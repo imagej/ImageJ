@@ -159,6 +159,8 @@ public class GelAnalyzer implements PlugIn {
 		if (uncalibratedOD) options |= OD;
 		if (labelWithPercentages) options |= PERCENT;
 		if (invertPeaks) options |= INVERT;
+		if (verticalScaleFactor==0.0) verticalScaleFactor=1.0;
+		if (horizontalScaleFactor==0.0) horizontalScaleFactor=1.0;
 		Prefs.set(OPTIONS, options);
 		Prefs.set(VSCALE, verticalScaleFactor);
 		Prefs.set(HSCALE, horizontalScaleFactor);
@@ -273,7 +275,7 @@ public class GelAnalyzer implements PlugIn {
 		//imp2.show();
 
 		for (int i=1; i<=nLanes; i++) {
-			if(isVertical)
+			if (isVertical)
 				imp2.setRoi(firstRect.y,
 							ipRotated.getHeight() - x[i] - firstRect.width,
 							firstRect.height, firstRect.width);
@@ -307,6 +309,8 @@ public class GelAnalyzer implements PlugIn {
 				plotWidth = 4*firstRect.width;
 		}
 
+		if (verticalScaleFactor==0.0) verticalScaleFactor=1.0;
+		if (horizontalScaleFactor==0.0) horizontalScaleFactor=1.0;
 		Dimension screen = IJ.getScreenSize();
 		if (plotWidth>screen.width-screen.width/6)
 			plotWidth = screen.width - screen.width/6;

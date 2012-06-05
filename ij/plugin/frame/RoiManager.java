@@ -583,12 +583,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		if (showAllCheckbox.getState() && !restoreCentered && !noUpdateMode) {
 			roi.setImage(null);
-			roi.setActiveOverlayRoi(true);
 			imp.setRoi(roi);
 			return true;
 		}
 		Roi roi2 = (Roi)roi.clone();
-		roi2.setActiveOverlayRoi(false);
 		Rectangle r = roi2.getBounds();
 		int width= imp.getWidth(), height=imp.getHeight();
 		if (restoreCentered) {
@@ -774,6 +772,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			for (int i=0; i<indexes.length; i++) {
 				String label = list.getItem(indexes[i]);
 				Roi roi = (Roi)rois.get(label);
+				if (IJ.debugMode) IJ.log("saveMultiple: "+i+"  "+label+"  "+roi);
+				if (roi==null) continue;
 				if (!label.endsWith(".roi")) label += ".roi";
 				zos.putNextEntry(new ZipEntry(label));
 				re.write(roi);
@@ -1159,7 +1159,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (imp==null)
 			{IJ.noImage(); return;}
 		ImageCanvas ic = imp.getCanvas();
-		if (!ic.getShowAllROIs() && ic.getDisplayList()==null && imp.getRoi()==null)
+		if ((ic!=null && ic.getShowAllList()==null) && imp.getOverlay()==null && imp.getRoi()==null)
 			error("Image does not have an overlay or ROI");
 		else
 			IJ.doCommand("Flatten"); // run Image>Flatten in separate thread
@@ -1960,8 +1960,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	private Overlay newOverlay() {
 		Overlay overlay = OverlayLabels.createOverlay();
-		if (labelsCheckbox.getState())
-			overlay.drawLabels(true);
+		overlay.drawLabels(labelsCheckbox.getState());
 		if (overlay.getLabelFont()==null && overlay.getLabelColor()==null) {
 			overlay.setLabelColor(Color.white);
 			overlay.drawBackgrounds(true);

@@ -22,6 +22,8 @@ public class Options implements PlugIn {
 			{conversions(); return;}
 		else if (arg.equals("dicom"))
 			{dicom(); return;}
+		else if (arg.equals("reset"))
+			{reset(); return;}
 	}
 				
 	// Miscellaneous Options
@@ -170,6 +172,12 @@ public class Options implements PlugIn {
 		//Prefs.calculateDicomVoxelDepth = gd.getNextBoolean();
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
+	}
+	
+	// Delete preferences file when ImageJ quits
+	private void reset() {
+		if (IJ.showMessageWithCancel("Reset Preferences", "Preferences will be reset when ImageJ restarts."))
+			Prefs.resetPreferences();
 	}
 
 } // class Options

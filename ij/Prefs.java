@@ -148,6 +148,7 @@ public class Prefs {
 	static int threads;
 	static int transparentIndex = -1;
 	static boolean commandLineMacro;
+	private static boolean resetPreferences;
 
 	/** Finds and loads the ImageJ configuration file, "IJ_Props.txt".
 		@return	an error message if "IJ_Props.txt" not found.
@@ -370,7 +371,11 @@ public class Prefs {
 				File f = new File(prefsDir);
 				if (!f.exists()) f.mkdir(); // create .imagej directory
 			}
-			savePrefs(prefs, path);
+			if (resetPreferences) {
+				new File(path).delete();
+				resetPreferences = false;
+			} else
+				savePrefs(prefs, path);
 		} catch (Throwable t) {
 			String msg = t.getMessage();
 			if (msg==null) msg = ""+t;
@@ -384,6 +389,11 @@ public class Prefs {
 				IJ.wait(delay);
 			} catch (Throwable t2) {}
 		}
+	}
+
+	/** Delete the preferences file when ImageJ quits. */
+	public static void resetPreferences() {
+		resetPreferences = true;
 	}
 
 	static void loadOptions() {
