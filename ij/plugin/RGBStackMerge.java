@@ -48,7 +48,7 @@ public class RGBStackMerge implements PlugIn {
 		boolean macro = IJ.macroRunning();
 
 		String options = IJ.isMacro()?Macro.getOptions():null;
-		if (options!=null && options.contains("red=")) {
+		if (options!=null) {
 			options = options.replaceAll("red=", "c1=");
 			options = options.replaceAll("green=", "c2=");
 			options = options.replaceAll("blue=", "c3=");
@@ -170,8 +170,6 @@ public class RGBStackMerge implements PlugIn {
 		for (int i=0; i<maxChannels; i++)
 			stacks[i] = images[i]!=null?images[i].getStack():null;
 		String macroOptions = Macro.getOptions();
-		if	(macroOptions!=null && !macroOptions.contains("gray="))
-				stacks[3] = null; // ensure compatibility with old macros
 		ImagePlus imp2;
 		boolean fourChannelRGB = false;
 		for (int i=3; i<maxChannels; i++) {
@@ -195,8 +193,11 @@ public class RGBStackMerge implements PlugIn {
 			ImageStack rgb = mergeStacks(width, height, stackSize, stacks[0], stacks[1], stacks[2], keep);
 			imp2 = new ImagePlus("RGB", rgb);
 		}
-		if (images[0]!=null)
-			imp2.setCalibration(images[0].getCalibration());
+		for (int i=0; i<images.length; i++) {
+			if (images[i]!=null) {
+				imp2.setCalibration(images[i].getCalibration());
+			}
+		}
 		if (!keep) {
 			for (int i=0; i<maxChannels; i++) {
 				if (images[i]!=null) {

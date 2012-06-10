@@ -353,14 +353,18 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;counter. */
+		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=counter. */
 	public void setValue(int column, int row, double value) {
 		if (column>=maxColumns)
 			addColumns();
 		if (column<0 || column>=maxColumns)
 			throw new IllegalArgumentException("Column out of range");
-		if (row>=counter)
-			throw new IllegalArgumentException("row>=counter");
+		if (row>=counter) {
+			if (row==counter)
+				incrementCounter();
+			else
+				throw new IllegalArgumentException("row>counter");
+		}
 		if (columns[column]==null) {
 			columns[column] = new double[maxRows];
 			if (column>lastColumn) lastColumn = column;

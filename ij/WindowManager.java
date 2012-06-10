@@ -300,7 +300,7 @@ public class WindowManager {
 		int index = imageList.indexOf(win);
 		if (index==-1)
 			return;  // not on the window list
-		if (imageList.size()>1) {
+		if (imageList.size()>1 && IJ.isMacro()) {
 			int newIndex = index-1;
 			if (newIndex<0)
 				newIndex = imageList.size()-1;

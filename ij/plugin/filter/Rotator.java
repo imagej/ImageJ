@@ -123,7 +123,8 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		else
 			enlarge = false;
 		gd.addPreviewCheckbox(pfr);
-		gd.addDialogListener(this);
+		if (!IJ.macroRunning())
+			gd.addDialogListener(this);
 		gd.showDialog();
 		drawGridLines(0);
 		if (gd.wasCanceled()) {
