@@ -358,8 +358,8 @@ public class TiffDecoder {
 		if (nEntries<1 || nEntries>1000)
 			return null;
 		ifdCount++;
-		if ((ifdCount%100)==0 && ifdCount>0)
-			ij.IJ.showStatus(""+ifdCount);
+		if ((ifdCount%50)==0 && ifdCount>0)
+			ij.IJ.showStatus("Opening IFDs: "+ifdCount);
 		FileInfo fi = new FileInfo();
 		for (int i=0; i<nEntries; i++) {
 			tag = getShort();
@@ -390,7 +390,7 @@ public class TiffDecoder {
 						in.seek(saveLoc);
 					}
 					fi.offset = count>0?fi.stripOffsets[0]:value;
-					if (count>1 && fi.stripOffsets[count-1]<fi.stripOffsets[0])
+					if (count>1 && (((long)fi.stripOffsets[count-1])&0xffffffffL)<(((long)fi.stripOffsets[0])&0xffffffffL))
 						fi.offset = fi.stripOffsets[count-1];
 					break;
 				case STRIP_BYTE_COUNT:

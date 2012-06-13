@@ -199,6 +199,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_Y)));
 			macrosMenu.add(new MenuItem("Abort Macro"));
 			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
+			macrosMenu.add(new MenuItem("Macro Functions...", new MenuShortcut(KeyEvent.VK_M, true)));
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
@@ -575,6 +576,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				evaluateLine();
 		else if ("Install Macros".equals(what))
 				installMacros(ta.getText(), true);
+		else if ("Macro Functions...".equals(what))
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/developer/macro/functions.html");
 		else if ("Function Finder...".equals(what))
 			new FunctionFinder();
 		else if ("Evaluate JavaScript".equals(what))

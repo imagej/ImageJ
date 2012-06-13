@@ -5,13 +5,23 @@
 </head>
 <body>
 
-<li> <u>1.46q 9 June 2012</u>
+<li> <u>1.46q 13 June 2012</u>
 <ul>
+<li> Thanks to Tiago Ferreira, added the <i>Macros&gt;Macro Functions</i>
+command to the macro editor.
 <li> Thanks to Norbert Vischer, fixed a bug that caused the 
 wrong image window to have focus after another window was closed.
 <li> Thanks to Kees Straatman, fixed bugs that caused
 <i>Image&gt;Color&gt;Merge Channels</i> to sometimes lose the scale
 and to sometimes not work as expected when used in a macro.
+<li> Thanks to Michael Schmid, worked around a race condition in the
+run("Make Composite") macro function that could cause non-batch mode
+macro using it to fail.
+<li> Thanks to Carlos Becker, fixed a bug that caused <i>File&gt;Open</i>
+and <i>File&gt;Import&gt;TIFF Virtual Stack</i> to fail when importing
+TIFF stacks larger than 2GB.
+<li> Thanks to Michael Schmid, fixed a bug that could cause a 'for' loop 
+containing a single 'if' statement at the end of a macro to terminate prematurely.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

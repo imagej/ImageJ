@@ -5,6 +5,7 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.image.*;
 import ij.plugin.frame.ContrastAdjuster;
+import ij.macro.Interpreter;
 
 /** This plugin implements the Image/Color/Make Composite command. */
 public class CompositeConverter implements PlugIn {
@@ -92,6 +93,8 @@ public class CompositeConverter implements PlugIn {
 		imp2.show();
 		imp.changes = false;
 		imp.close();
+		if (IJ.isMacro() && !Interpreter.isBatchMode())
+			IJ.wait(500);
 	}
 
 }

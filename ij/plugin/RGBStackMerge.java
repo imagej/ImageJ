@@ -196,6 +196,7 @@ public class RGBStackMerge implements PlugIn {
 		for (int i=0; i<images.length; i++) {
 			if (images[i]!=null) {
 				imp2.setCalibration(images[i].getCalibration());
+				break;
 			}
 		}
 		if (!keep) {

@@ -538,12 +538,12 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setMenuBar(Menus.getMenuBar());
 		}
 		if (imp==null) return;
-		imp.setActivated(); // notify ImagePlus that image has been activated
 		if (!closed && !quitting && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
 		Frame channels = Channels.getInstance();
 		if (channels!=null && imp.isComposite())
 			((Channels)channels).update();
+		imp.setActivated(); // notify ImagePlus that image has been activated
 	}
 	
 	public void windowClosing(WindowEvent e) {

@@ -195,6 +195,8 @@ public class Interpreter implements MacroConstants {
 		pc--;
 		if (pc<0)
 			pc = -1;
+		if (token==EOF)
+			done = false;
 	}
 
 	void doStatements() {
@@ -531,7 +533,7 @@ public class Interpreter implements MacroConstants {
 			error("'{' expected");
 		while (!done) {
 			getToken();
-			if(token=='}')
+			if (token=='}')
 				break;
 			putTokenBack();
 			doStatement();
