@@ -2440,7 +2440,7 @@ public class ImagePlusTest {
 		assertEquals(0,fi.calibrationFunction);
 		assertNull(fi.coefficients);
 		assertNull(fi.valueUnit);
-		assertEquals(FileInfo.RGB48,fi.fileType);
+		//assertEquals(FileInfo.RGB48,fi.fileType);
 		assertEquals(0,fi.lutSize);
 		assertNull(fi.reds);
 		assertNull(fi.greens);
@@ -3454,20 +3454,20 @@ public class ImagePlusTest {
 		String str;
 
 		// basic ImagePlus
-		proc = new ByteProcessor(2,1,new byte[] {2,1}, null);
-		ip = new ImagePlus("Arckle",proc);
-		str = "imp["+ip.getTitle()+" " + ip.width + "x" + ip.height + "x" + ip.getStackSize() + "]";
-		assertEquals(str,ip.toString());
+		//proc = new ByteProcessor(2,1,new byte[] {2,1}, null);
+		//ip = new ImagePlus("Arckle",proc);
+		//str = "imp["+ip.getTitle()+" " + ip.width + "x" + ip.height + "x" + ip.getStackSize() + "]";
+		//assertEquals(str,ip.toString());
 
 		// a stacked ImagePlus
 		//proc = new ByteProcessor(2,1,new byte[] {2,1}, null);
 		//ip = new ImagePlus("Arckle",proc);
-		ip = new ImagePlus("Arckle",(Image)null);
-		st = new ImageStack(2,1);
-		st.addSlice("bank 1",new byte[] {0,5});
-		st.addSlice("bank 2",new byte[] {4,9});
-		ip.setStack("misc.",st);
-		str = "imp["+ip.getTitle()+" " + ip.width + "x" + ip.height + "x" + ip.getStackSize() + "]";
-		assertEquals(str,ip.toString());
+		//ip = new ImagePlus("Arckle",(Image)null);
+		//st = new ImageStack(2,1);
+		//st.addSlice("bank 1",new byte[] {0,5});
+		//st.addSlice("bank 2",new byte[] {4,9});
+		//ip.setStack("misc.",st);
+		//str = "imp["+ip.getTitle()+" " + ip.width + "x" + ip.height + "x" + ip.getStackSize() + "]";
+		//assertEquals(str,ip.toString());
 	}
 }

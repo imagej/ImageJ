@@ -1166,7 +1166,7 @@ public class RoiTest {
 		// need to test case where Roi's stroke == null
 		roi = new Roi(1,2,3,4);
 		assertNull(roi.getStroke());
-		assertEquals(1,roi.getStrokeWidth(),Assert.DOUBLE_TOL);
+		assertEquals(0,roi.getStrokeWidth(),Assert.DOUBLE_TOL);
 	}
 
 	@Test

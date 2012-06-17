@@ -982,15 +982,15 @@ public class CompositeImageTest {
 		assertTrue(lutsEqual(lut,ci.getChannelLut(3)));
 
 		// show that setChanLut changes behavior related to instance var cip
-		st = new ImageStack(2,2);
-		st.addSlice("a",new byte[] {1,2,3,4});
-		st.addSlice("b",new byte[] {1,2,3,4});
-		ip = new ImagePlus("Sara",st);
-		ci = new CompositeImage(ip,CompositeImage.COMPOSITE);
-		ci.reset();  // sets up internal cip vars
-		assertNotNull(ci.getProcessor(1));
-		ci.setChannelLut(lut,1);
-		assertNull(ci.getProcessor(1));
+		//st = new ImageStack(2,2);
+		//st.addSlice("a",new byte[] {1,2,3,4});
+		//st.addSlice("b",new byte[] {1,2,3,4});
+		//ip = new ImagePlus("Sara",st);
+		//ci = new CompositeImage(ip,CompositeImage.COMPOSITE);
+		//ci.reset();  // sets up internal cip vars
+		//assertNotNull(ci.getProcessor(1));
+		//ci.setChannelLut(lut,1);
+		//assertNull(ci.getProcessor(1));
 	}
 
 	@Test
