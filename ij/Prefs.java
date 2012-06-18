@@ -54,8 +54,6 @@ public class Prefs {
 		SUBPIXEL_RESOLUTION=1<<2;
 	public static final String OPTIONS2 = "prefs.options2";
     
-	public static final String vistaHint = "\n \nOn Windows Vista, ImageJ must be installed in a directory that\nthe user can write to, such as \"Desktop\" or \"Documents\"";
-
 	/** file.separator system property */
 	public static String separator = System.getProperty("file.separator");
 	/** Use pointer cursor instead of cross */
@@ -160,17 +158,11 @@ public class Prefs {
 		if (homeDir==null)
 			homeDir = System.getProperty("user.dir");
 		String userHome = System.getProperty("user.home");
-		if (IJ.isWindows()) {
-			prefsDir = homeDir; //ImageJ folder on Windows
-			if (prefsDir.endsWith("Desktop"))
-				prefsDir = userHome;
-		} else {
-			prefsDir = userHome; // Mac Preferences folder or Unix home dir
-			if (IJ.isMacOSX())
-				prefsDir += "/Library/Preferences";
-			else
-				prefsDir += "/.imagej";
-		} 
+		prefsDir = userHome; // User's home directory
+		if (IJ.isMacOSX())
+			prefsDir += "/Library/Preferences";
+		else
+			prefsDir += "/.imagej";
 		if (f==null) {
 			try {f = new FileInputStream(homeDir+"/"+PROPS_NAME);}
 			catch (FileNotFoundException e) {f=null;}
@@ -321,10 +313,14 @@ public class Prefs {
 	static void loadPreferences() {
 		String path = prefsDir+separator+PREFS_NAME;
 		boolean ok =  loadPrefs(path);
-		if (!ok && !IJ.isWindows()) {
-			path = System.getProperty("user.home")+separator+PREFS_NAME;
-			ok = loadPrefs(path); // look in home dir
-			if (ok) new File(path).delete();
+		if (!ok) { // not found
+			if (IJ.isWindows())
+				path = homeDir +separator+PREFS_NAME; // ImageJ folder
+			else
+				path = System.getProperty("user.home")+separator+PREFS_NAME; //User's home dir
+			ok = loadPrefs(path);
+			if (ok)
+				new File(path).delete();
 		}
 
 	}
@@ -380,10 +376,6 @@ public class Prefs {
 			String msg = t.getMessage();
 			if (msg==null) msg = ""+t;
 			int delay = 4000;
-			if (IJ.isVista()) {
-				msg += vistaHint;
-				delay = 8000;
-			}
 			try {
 				new TextWindow("Error Saving Preferences", msg, 500, 200);
 				IJ.wait(delay);

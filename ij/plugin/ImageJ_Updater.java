@@ -34,7 +34,6 @@ public class ImageJ_Updater implements PlugIn {
 		}
 		if (!file.canWrite()) {
 			String msg = "No write access: "+file.getPath();
-			if (IJ.isVista()) msg += Prefs.vistaHint;
 			error(msg);
 			return;
 		}

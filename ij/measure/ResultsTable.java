@@ -771,9 +771,9 @@ public class ResultsTable implements Cloneable {
 		if (nonNumericCount==0)
 			return 0; // assume this is all-numeric table
 		if (nonNumericCount==1 && nonNumericIndex==1)
-			return 1; // assume this is ImageJ Results table with row numbers and row labels
+			return 1; // assume this is an ImageJ Results table with row numbers and row labels
 		if (nonNumericCount==1 && nonNumericIndex==0)
-			return 2; // assume this is ImageJ Results table with without row numbers and with row labels
+			return 2; // assume this is an ImageJ Results table without row numbers and with row labels
 		if (csv) lines[0] = lines[0].replaceAll(",", "\t");
 		StringBuffer sb = new StringBuffer();
 		for (int i=1; i<lines.length; i++) {

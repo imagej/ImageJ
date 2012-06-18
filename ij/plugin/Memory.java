@@ -83,8 +83,6 @@ public class Memory implements PlugIn {
 				   "Unable to update the file \"" + name + "\".\n"
 				+ " \n"
 				+ "\"" + error + "\"";
-			if (IJ.isVista())
-				msg += Prefs.vistaHint;
 			IJ.showMessage("Memory", msg);
 			return;
 		}
@@ -124,8 +122,6 @@ public class Memory implements PlugIn {
 		}
 		if (max>0)
 			msg += "Current limit: " + max + "MB";
-		if (IJ.isVista())
-			msg += Prefs.vistaHint;
 		IJ.showMessage("Memory", msg);
 	}
 
