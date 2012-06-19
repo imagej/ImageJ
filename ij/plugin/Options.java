@@ -87,7 +87,7 @@ public class Options implements PlugIn {
 		GenericDialog gd = new GenericDialog("I/O Options");
 		gd.addNumericField("JPEG quality (0-100):", FileSaver.getJpegQuality(), 0, 3, "");
 		gd.addNumericField("GIF and PNG transparent index:", Prefs.getTransparentIndex(), 0, 3, "");
-		gd.addStringField("File extension for tables:", Prefs.get("options.ext", ".txt"), 4);
+		gd.addStringField("File extension for tables (.txt, .xls or .csv):", Prefs.get("options.ext", ".txt"), 4);
 		gd.addCheckbox("Use JFileChooser to open/save", Prefs.useJFileChooser);
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);

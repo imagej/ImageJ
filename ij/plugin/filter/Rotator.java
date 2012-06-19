@@ -81,7 +81,6 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		IJ.showStatus("Rotating...");
 	}
 
-
 	void drawGridLines(int lines) {
 		ImageCanvas ic = imp.getCanvas();
 		if (ic==null) return;
@@ -126,9 +125,8 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 		gd.addDialogListener(this);
 		gd.showDialog();
 		drawGridLines(0);
-		if (gd.wasCanceled()) {
+		if (gd.wasCanceled())
 			return DONE;
-		}
 		if (!enlarge)
 			flags |= KEEP_PREVIEW;		// standard filter without enlarge
 		else if (imp.getStackSize()==1)

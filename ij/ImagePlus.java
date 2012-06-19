@@ -2110,7 +2110,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	
 	/** Returns true if this is a CompositeImage. */
 	public boolean isComposite() {
-		return compositeImage && nChannels>=1 && (this instanceof CompositeImage);
+		return compositeImage && nChannels>=1 && imageType!=COLOR_RGB && (this instanceof CompositeImage);
 	}
 
 	/** Sets the display range of the current channel. With non-composite

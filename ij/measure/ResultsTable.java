@@ -353,14 +353,18 @@ public class ResultsTable implements Cloneable {
 	}
 
 	/** Sets the value of the given column and row, where
-		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;counter. */
+		where 0&lt;=column&lt;=(lastRow+1 and 0&lt;=row&lt;=counter. */
 	public void setValue(int column, int row, double value) {
 		if (column>=maxColumns)
 			addColumns();
 		if (column<0 || column>=maxColumns)
 			throw new IllegalArgumentException("Column out of range");
-		if (row>=counter)
-			throw new IllegalArgumentException("row>=counter");
+		if (row>=counter) {
+			if (row==counter)
+				incrementCounter();
+			else
+				throw new IllegalArgumentException("row>counter");
+		}
 		if (columns[column]==null) {
 			columns[column] = new double[maxRows];
 			if (column>lastColumn) lastColumn = column;
@@ -724,9 +728,12 @@ public class ResultsTable implements Cloneable {
 		int firstRow = allNumericHeadings?0:1;
 		boolean labels = firstColumn==1 && headings[1].equals("Label");
 		int rtn = 0;
-		if (!labels && (rtn=openNonNumericTable(path, lines, firstRow, cellSeparator))==2)
+		if (!labels && (rtn=openNonNumericTable(path, lines, firstRow, cellSeparator))==3)
 			return null;
-		if (!labels && rtn==1) labels = true;
+		if (!labels && (rtn==1||rtn==2))
+			labels = true;
+		int labelsIndex = (rtn==2)?0:1;
+			
 		if (lines[0].startsWith("\t")) {
 			String[] headings2 = new String[headings.length+1];
 			headings2[0] = " ";
@@ -740,8 +747,8 @@ public class ResultsTable implements Cloneable {
 			rt.incrementCounter();
 			String[] items=Tools.split(lines[i], cellSeparator);
 			for (int j=firstColumn; j<items.length; j++) {
-				if (j==1&&labels)
-					rt.addLabel(headings[1], items[1]);
+				if (j==labelsIndex&&labels)
+					rt.addLabel(headings[labelsIndex], items[labelsIndex]);
 				else if (j<headings.length)
 					rt.addValue(headings[j], Tools.parseDouble(items[j]));
 			}
@@ -764,7 +771,9 @@ public class ResultsTable implements Cloneable {
 		if (nonNumericCount==0)
 			return 0; // assume this is all-numeric table
 		if (nonNumericCount==1 && nonNumericIndex==1)
-			return 1; // assume this is ImageJ Results table with row labels
+			return 1; // assume this is an ImageJ Results table with row numbers and row labels
+		if (nonNumericCount==1 && nonNumericIndex==0)
+			return 2; // assume this is an ImageJ Results table without row numbers and with row labels
 		if (csv) lines[0] = lines[0].replaceAll(",", "\t");
 		StringBuffer sb = new StringBuffer();
 		for (int i=1; i<lines.length; i++) {
@@ -774,7 +783,7 @@ public class ResultsTable implements Cloneable {
 		String str = sb.toString();
 		if (csv) str = str.replaceAll(",", "\t");
 		new TextWindow(new File(path).getName(), lines[0], str, 500, 400);
-		return 2;
+		return 3;
 	}
 	
 	/** Saves this ResultsTable as a tab or comma delimited text file. The table

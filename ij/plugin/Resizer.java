@@ -87,10 +87,13 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			gd.addCheckbox("Average when downsizing", averageWhenDownsizing);
 			gd.addChoice("Interpolation:", methods, methods[interpolationMethod]);
 			fields = gd.getNumericFields();
-			for (int i=0; i<2; i++)
-				((TextField)fields.elementAt(i)).addTextListener(this);
+			if (!IJ.macroRunning()) {
+				for (int i=0; i<2; i++)
+					((TextField)fields.elementAt(i)).addTextListener(this);
+			}
 			checkboxes = gd.getCheckboxes();
-			((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
+			if (!IJ.macroRunning())
+				((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
 			gd.showDialog();
 			if (gd.wasCanceled())
 				return;

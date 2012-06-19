@@ -251,10 +251,13 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		gd.setInsets(5, 0, 0);
 		gd.addMessage("Output size: "+getSize(cal.pixelDepth,outputSpacing,outputSlices)+"				");
 		fields = gd.getNumericFields();
-		for (int i=0; i<fields.size(); i++)
-			((TextField)fields.elementAt(i)).addTextListener(this);
+		if (!IJ.macroRunning()) {
+			for (int i=0; i<fields.size(); i++)
+				((TextField)fields.elementAt(i)).addTextListener(this);
+		}
 		checkboxes = gd.getCheckboxes();
-		((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
+		if (!IJ.macroRunning())
+			((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
 		message = (Label)gd.getMessage();
         gd.addHelp(IJ.URL+"/docs/menus/image.html#reslice");
 		gd.showDialog();
