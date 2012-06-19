@@ -50,6 +50,8 @@ public class Prefs {
 		AVOID_RESLICE_INTERPOLATION=1<<29, KEEP_UNDO_BUFFERS=1<<30; 
     public static final String OPTIONS = "prefs.options";
     
+	public static final String vistaHint = "";  // no longer used
+
 	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
 		SUBPIXEL_RESOLUTION=1<<2;
 	public static final String OPTIONS2 = "prefs.options2";
@@ -162,7 +164,7 @@ public class Prefs {
 		if (IJ.isMacOSX())
 			prefsDir += "/Library/Preferences";
 		else
-			prefsDir += "/.imagej";
+			prefsDir += File.separator+".imagej";
 		if (f==null) {
 			try {f = new FileInputStream(homeDir+"/"+PROPS_NAME);}
 			catch (FileNotFoundException e) {f=null;}
