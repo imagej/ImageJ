@@ -1379,8 +1379,9 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 			return stroke;
 		double mag = ic.getMagnification();
 		if (mag!=1.0) {
-			float width = stroke.getLineWidth();
-			return new BasicStroke((float)(width*mag), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+			float width = (float)(stroke.getLineWidth()*mag);
+			//return new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+			return new BasicStroke(width, stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), stroke.getDashArray(), stroke.getDashPhase());
 		} else
 			return stroke;
 	}

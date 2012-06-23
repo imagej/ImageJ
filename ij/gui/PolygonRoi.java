@@ -32,10 +32,6 @@ public class PolygonRoi extends Roi {
 		Type must be Roi.POLYGON, Roi.FREEROI, Roi.TRACED_ROI, Roi.POLYLINE, Roi.FREELINE or Roi.ANGLE.*/
 	public PolygonRoi(int[] xPoints, int[] yPoints, int nPoints, int type) {
 		super(0, 0, null);
-		if (xPoints==null || yPoints==null)
-			throw new IllegalArgumentException("null argument");
-		if (nPoints<1)
-			throw new IllegalArgumentException("npoints<1");
 		init1(nPoints, type);
 		xp = xPoints;
 		yp = yPoints;
@@ -56,8 +52,6 @@ public class PolygonRoi extends Roi {
 		Type must be Roi.POLYGON, Roi.FREEROI, Roi.POLYLINE, Roi.FREELINE or Roi.ANGLE.*/
 	public PolygonRoi(float[] xPoints, float[] yPoints, int nPoints, int type) {
 		super(0, 0, null);
-		if (xPoints==null || yPoints==null)
-			throw new IllegalArgumentException("Null argument");
 		init1(nPoints, type);
 		xpf = xPoints;
 		ypf = yPoints;

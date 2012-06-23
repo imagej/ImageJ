@@ -1387,7 +1387,7 @@ public class IJ {
 
 	/** Returns a reference to the active image, or displays an error
 		message and aborts the plugin or macro if no images are open. */
-	public static ImagePlus getImage() {  //ts
+	public static ImagePlus getImage() {
 		ImagePlus img = WindowManager.getCurrentImage();
 		if (img==null) {
 			IJ.noImage();
@@ -1399,6 +1399,13 @@ public class IJ {
 		return img;
 	}
 	
+	/** Returns the active image or stack slice as an ImageProcessor, or displayes
+		an error message and aborts the plugin or macro if no images are open. */
+	public static ImageProcessor getProcessor() {
+		ImagePlus imp = IJ.getImage();
+		return imp.getProcessor();
+	}
+
 	/** Switches to the specified stack slice, where 1<='slice'<=stack-size. */
 	public static void setSlice(int slice) {
 		getImage().setSlice(slice);
