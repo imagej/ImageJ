@@ -3673,6 +3673,8 @@ public class Functions implements MacroConstants, Measurements {
 			Analyzer.setMeasurement(AREA, state);
 		else if (arg1.equals("mean"))
 			Analyzer.setMeasurement(MEAN, state);
+		else if (arg1.equals("stack position"))
+			Analyzer.setMeasurement(STACK_POSITION, state);
 		else if (arg1.startsWith("std"))
 			Analyzer.setMeasurement(STD_DEV, state);
 		else if (arg1.equals("showrownumbers"))

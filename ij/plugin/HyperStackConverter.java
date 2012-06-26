@@ -77,25 +77,27 @@ public class HyperStackConverter implements PlugIn {
 			IJ.error("HyperStack Converter", "Virtual stacks must by in XYCZT order.");
 		else {
 			shuffle(imp, order);
-			ImagePlus imp2 = null;
+			ImagePlus imp2 = imp;
 			if (nChannels>1 && imp.getBitDepth()!=24) {
 				LUT[] luts = imp.getLuts();
 				if (luts!=null && luts.length<nChannels) luts = null;
 				imp2 = new CompositeImage(imp, mode+1);
 				if (luts!=null)
 					((CompositeImage)imp2).setLuts(luts);
-			} else {
+			} else if (imp.getClass().getName().indexOf("Image5D")!=-1) {
 				imp2 = imp.createImagePlus();
 				imp2.setStack(imp.getTitle(), imp.getImageStack());
 				imp2.setDimensions(imp.getNChannels(), imp.getNSlices(), imp.getNFrames());
 				imp2.getProcessor().resetMinAndMax();
 			}
 			imp2.setOpenAsHyperStack(true);
-			imp2.show();
-			imp2.setOverlay(imp.getOverlay());
-			imp.hide();
-			if (imp2.getWindow()!=null)
+			if (imp.getWindow()!=null || imp!=imp2)
+				new StackWindow(imp2);
+			if (imp!=imp2) {
+				imp2.setOverlay(imp.getOverlay());
+				imp.hide();
 				WindowManager.setCurrentWindow(imp2.getWindow());
+			}
 		}
 	}
 
@@ -149,19 +151,23 @@ public class HyperStackConverter implements PlugIn {
 
 	void convertHSToStack(ImagePlus imp) {
 		if (!imp.isHyperStack()) return;
-		ImageStack stack = imp.getStack();
-		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack(imp.getTitle(), stack);
-		int[] dim = imp.getDimensions();
-		imp2.setDimensions(dim[2], dim[3], dim[4]);
+		ImagePlus imp2 = imp;
 		if (imp.isComposite()) {
+			ImageStack stack = imp.getStack();
+			imp2 = imp.createImagePlus();
+			imp2.setStack(imp.getTitle(), stack);
+			int[] dim = imp.getDimensions();
+			imp2.setDimensions(dim[2], dim[3], dim[4]);
 			ImageProcessor ip2 = imp2.getProcessor();
 			ip2.setColorModel(ip2.getDefaultColorModel());
 		}
 		imp2.setOpenAsHyperStack(false);
-		imp2.show();
-		imp2.setOverlay(imp.getOverlay());
-		imp.hide();
+		if (imp.getWindow()!=null || imp!=imp2)
+			new StackWindow(imp2);
+		if (imp!=imp2) {
+			imp2.setOverlay(imp.getOverlay());
+			imp.hide();
+		}
 	}
 	
 	void newHyperStack() {

@@ -1399,7 +1399,7 @@ public class IJ {
 		return img;
 	}
 	
-	/** Returns the active image or stack slice as an ImageProcessor, or displayes
+	/** Returns the active image or stack slice as an ImageProcessor, or displays
 		an error message and aborts the plugin or macro if no images are open. */
 	public static ImageProcessor getProcessor() {
 		ImagePlus imp = IJ.getImage();
