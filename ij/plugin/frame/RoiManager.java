@@ -1398,7 +1398,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Color c = ImageCanvas.getShowAllColor();
 		GenericDialog gd = new GenericDialog("Options");
 		//gd.addPanel(makeButtonPanel(gd), GridBagConstraints.CENTER, new Insets(5, 0, 0, 0));
-		gd.addCheckbox("Associate ROIs with stack positions", Prefs.showAllSliceOnly);
+		gd.addCheckbox("Associate \"Show All\" ROIs with Slices", Prefs.showAllSliceOnly);
 		gd.addCheckbox("Restore ROIs centered", restoreCentered);
 		gd.addCheckbox("Use ROI names as labels", Prefs.useNamesAsLabels);
 		gd.showDialog();

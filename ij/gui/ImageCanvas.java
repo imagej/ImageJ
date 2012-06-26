@@ -240,6 +240,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			labelRects = null;
 		font = overlay.getLabelFont();
 		Roi activeRoi = imp.getRoi();
+		boolean roiManagerShowAllMode = overlay==showAllOverlay && !Prefs.showAllSliceOnly;
 		for (int i=0; i<n; i++) {
 			if (overlay==null) break;
 			Roi roi = overlay.get(i);
@@ -247,11 +248,11 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 				int c = roi.getCPosition();
 				int z = roi.getZPosition();
 				int t = roi.getTPosition();
-				if ((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame))
+				if (((c==0||c==channel) && (z==0||z==slice) && (t==0||t==frame)) || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			} else {
 				int position = roi.getPosition();
-				if (position==0 || position==currentImage)
+				if (position==0 || position==currentImage || roiManagerShowAllMode)
 					drawRoi(g, roi, drawLabels?i+LIST_OFFSET:-1);
 			}
 		}
