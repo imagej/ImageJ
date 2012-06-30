@@ -3644,13 +3644,9 @@ public class Functions implements MacroConstants, Measurements {
 			ImageCanvas ic = getImage().getCanvas();
 			if (ic!=null) ic.disablePopupMenu(state);
 		} else if (arg1.startsWith("show all")) {
-			ImagePlus img = getImage();
-			ImageCanvas ic = img.getCanvas();
-			if (ic!=null) {
-				boolean previousState = ic.getShowAllROIs();
-				ic.setShowAllROIs(state);
-				if (state!=previousState) img.draw();
-			}
+			RoiManager rm = roiManager!=null?roiManager:RoiManager.getInstance();
+			if (rm!=null)
+				rm.runCommand(state?"show all":"show none");
 		} else if (arg1.equals("changes"))
 			getImage().changes = state;
 		else if (arg1.equals("debugmode"))

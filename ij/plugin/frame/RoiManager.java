@@ -1057,8 +1057,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					break;
 			}
 		}
-		ImageCanvas ic = imp.getCanvas();
-		if (ic!=null) ic.setShowAllROIs(false);
+		runCommand("show none");
 		imp.updateAndDraw();
 		return true;
 	}

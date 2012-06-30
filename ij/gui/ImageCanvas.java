@@ -1240,11 +1240,14 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 
 	/** Obsolete */
 	public void setShowAllROIs(boolean showAllROIs) {
+		RoiManager rm = RoiManager.getInstance();
+		if (rm!=null)
+			rm.runCommand(showAllROIs?"show all":"show none");
 	}
 
 	/** Obsolete */
 	public boolean getShowAllROIs() {
-		return false;
+		return getShowAllList()!=null;
 	}
 	
 	/** Obsolete */

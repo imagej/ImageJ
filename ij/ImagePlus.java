@@ -1462,7 +1462,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				if (Prefs.pointAddToManager) {
 					IJ.run("Add to Manager ");
 					ImageCanvas ic = getCanvas();
-					if (ic!=null && !ic.getShowAllROIs())
+					if (ic!=null && ic.getShowAllList()==null)
 						ic.setShowAllROIs(true);
 				}
 				if (Prefs.pointAutoNextSlice && getStackSize()>1) {
