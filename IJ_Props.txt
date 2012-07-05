@@ -298,15 +298,22 @@ fft09="Swap Quadrants",ij.plugin.FFT("swap")
 # Plugins installed in the Process/Filters submenu
 filters01="Convolve...",ij.plugin.filter.Convolver
 filters02="Gaussian Blur...",ij.plugin.filter.GaussianBlur
-filters03="Gaussian Blur 3D...",ij.plugin.GaussianBlur3D
-filters04="Median...",ij.plugin.filter.RankFilters("median")
-filters05="Mean...",ij.plugin.filter.RankFilters("mean")
-filters06="Minimum...",ij.plugin.filter.RankFilters("min")
-filters07="Maximum...",ij.plugin.filter.RankFilters("max")
-filters08="Unsharp Mask...",ij.plugin.filter.UnsharpMask
-filters09="Variance...",ij.plugin.filter.RankFilters("variance")
-filters10=-
-filters11="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
+filters03="Median...",ij.plugin.filter.RankFilters("median")
+filters04="Mean...",ij.plugin.filter.RankFilters("mean")
+filters05="Minimum...",ij.plugin.filter.RankFilters("min")
+filters06="Maximum...",ij.plugin.filter.RankFilters("max")
+filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
+filters08="Variance...",ij.plugin.filter.RankFilters("variance")
+filters09=-
+filters10="Gaussian Blur 3D...",ij.plugin.GaussianBlur3D
+filters11="Median 3D...",ij.plugin.Filter3DMedian
+filters12="Mean 3D...",ij.plugin.Filter3DMean
+filters13="Minimum 3D...",ij.plugin.Filter3DMinimum
+filters14="Maximum 3D...",ij.plugin.Filter3DMaximum
+filters15="Variance 3D...",ij.plugin.Filter3DVariance
+filters16=-
+filters17="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
+
 
 # Plugins installed in the File/Batch submenu
 batch01="Measure...",ij.plugin.BatchMeasure

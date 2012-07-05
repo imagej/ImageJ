@@ -564,4 +564,28 @@ public class ImageStack {
 		return 0;
 	}
 
+    public void createEmptyStackByte(int nb) {
+        int s = this.width * this.height;
+        for (int i = 0; i < nb; i++) {
+            byte[] tmp = new byte[s];
+            this.addSlice("", tmp);
+        }
+    }
+
+    public void createEmptyStackShort(int nb) {
+        int s = this.width * this.height;
+        for (int i = 0; i < nb; i++) {
+            short[] tmp = new short[s];
+            this.addSlice("", tmp);
+        }
+    }
+    
+    public void createEmptyStackFloat(int nb) {
+        int s = this.width * this.height;
+        for (int i = 0; i < nb; i++) {
+            float[] tmp = new float[s];
+            this.addSlice("", tmp);
+        }
+    }
+
 }

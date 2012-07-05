@@ -314,6 +314,21 @@ public class AVI_Reader extends VirtualStack implements PlugIn {
     public ImagePlus getImagePlus() {
         return imp;
     }
+    
+    /** Opens an AVI file as a virtual stack. */
+    public static ImagePlus openVirtual(String path) {
+    	return open(path, true);
+    }
+
+    /** Opens an AVI file. */
+    public static ImagePlus open(String path, boolean virtual) {
+		AVI_Reader reader = new AVI_Reader();
+		ImageStack stack = reader.makeStack (path, 1, 0, virtual, false, false);
+		if (stack!=null)
+			return new ImagePlus((new File(path)).getName(), stack);
+		else
+			return null;
+    }
 
     /** Create an ImageStack from an avi file with given path.
      * @param path              Directoy+filename of the avi file

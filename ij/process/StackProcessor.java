@@ -3,9 +3,19 @@ import java.awt.*;
 import ij.*;
 import ij.process.*;
 import ij.macro.Interpreter;
+import ij.util.ArrayUtil;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /** This class processes stacks. */
 public class StackProcessor {
+    public final static int FILTER_MEAN = 1;
+    public final static int FILTER_MEDIAN = 2;
+    public final static int FILTER_MIN = 3;
+    public final static int FILTER_MAX = 4;
+    public final static int FILTER_VAR = 5;
+    public final static int FILTER_MAXLOCAL = 6;
+
     private ImageStack stack;
     private ImageProcessor ip;
 	int nSlices;
@@ -194,4 +204,159 @@ public class StackProcessor {
  		IJ.showStatus(s+n+"/"+total);
  	}	
  	
-}
+    /**
+     * Thomas Boudier Create a kernel neighorhood as an ellipsoid
+     *
+     * @param radx Radius x of the ellipsoid
+     * @param rady Radius x of the ellipsoid
+     * @param radz Radius x of the ellipsoid
+     * @return The kernel as an array
+     */
+    private int[] createKernelEllipsoid(float radx, float rady, float radz) {
+        int vx = (int) Math.ceil(radx);
+        int vy = (int) Math.ceil(rady);
+        int vz = (int) Math.ceil(radz);
+        int[] ker = new int[(2 * vx + 1) * (2 * vy + 1) * (2 * vz + 1)];
+        double dist;
+
+        double rx2 = radx * radx;
+        double ry2 = rady * rady;
+        double rz2 = radz * radz;
+
+
+        if (rx2 != 0) {
+            rx2 = 1.0 / rx2;
+        } else {
+            rx2 = 0;
+        }
+        if (ry2 != 0) {
+            ry2 = 1.0 / ry2;
+        } else {
+            ry2 = 0;
+        }
+        if (rz2 != 0) {
+            rz2 = 1.0 / rz2;
+        } else {
+            rz2 = 0;
+        }
+
+        int idx = 0;
+        for (int k = -vz; k <= vz; k++) {
+            for (int j = -vy; j <= vy; j++) {
+                for (int i = -vx; i <= vx; i++) {
+                    dist = ((double) (i * i)) * rx2 + ((double) (j * j)) * ry2 + ((double) (k * k)) * rz2;
+                    if (dist <= 1.0) {
+                        ker[idx] = 1;
+                    } else {
+                        ker[idx] = 0;
+                    }
+                    idx++;
+                }
+            }
+        }
+
+        return ker;
+    }
+
+    /**
+     * 3D filter using threads
+     *
+     * @param out
+     * @param radx Radius of mean filter in x
+     * @param rady Radius of mean filter in y
+     * @param radz Radius of mean filter in z
+     * @param zmin
+     * @param zmax
+     * @param filter
+     */
+    public void filterGeneric(ImageStack out, float radx, float rady, float radz, int zmin, int zmax, int filter) {
+        int[] ker = this.createKernelEllipsoid(radx, rady, radz);
+        int nb = 0;
+        for (int i = 0; i < ker.length; i++) {
+            nb += ker[i];
+        }
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > stack.getSize()) {
+            zmax = stack.getSize();
+        }
+        int sizex = stack.getWidth();
+        int sizey = stack.getHeight();
+        double value;
+        for (int k = zmin; k < zmax; k++) {
+            if (zmin==0)
+            	IJ.showProgress(k+1, zmax);
+            for (int j = 0; j < sizey; j++) {
+                for (int i = 0; i < sizex; i++) {
+                    ArrayUtil tab = this.getNeighborhoodKernel(ker, nb, i, j, k, radx, rady, radz);
+                    if (filter == StackProcessor.FILTER_MEAN) {
+                        out.setVoxel(i, j, k, tab.getMean());
+                    } else if (filter == StackProcessor.FILTER_MEDIAN) {
+                        out.setVoxel(i, j, k, tab.medianSort());
+                    }
+                    if (filter == StackProcessor.FILTER_MIN) {
+                        out.setVoxel(i, j, k, tab.getMinimum());
+                    }
+                    if (filter == StackProcessor.FILTER_MAX) {
+                        out.setVoxel(i, j, k, tab.getMaximum());
+                    }
+                    if (filter == StackProcessor.FILTER_VAR) {
+                        out.setVoxel(i, j, k, tab.getVariance());
+                    }
+                    if (filter == StackProcessor.FILTER_MAXLOCAL) {
+                        value = stack.getVoxel(i, j, k);
+                        if (tab.isMaximum(value)) {
+                            out.setVoxel(i, j, k, value);
+                        } else {
+                            out.setVoxel(i, j, k, 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the neighboring attribute of the Image3D with a kernel as a array
+     *
+     * @param ker The kernel array (>0 ok)
+     * @param nbval The number of non-zero values
+     * @param x Coordinate x of the pixel
+     * @param y Coordinate y of the pixel
+     * @param z Coordinate z of the pixel
+     * @param radx Radius x of the neighboring
+     * @param radz Radius y of the neighboring
+     * @param rady Radius z of the neighboring
+     * @return The values of the nieghbor pixels inside an array
+     */
+    private ArrayUtil getNeighborhoodKernel(int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
+        ArrayUtil pix = new ArrayUtil(nbval);
+        int vx = (int) Math.ceil(radx);
+        int vy = (int) Math.ceil(rady);
+        int vz = (int) Math.ceil(radz);
+        int index = 0;
+        int c = 0;
+        int sizex = stack.getWidth();
+        int sizey = stack.getHeight();
+        int sizez = stack.getSize();
+        for (int k = z - vz; k <= z + vz; k++) {
+            for (int j = y - vy; j <= y + vy; j++) {
+                for (int i = x - vx; i <= x + vx; i++) {
+                    if (ker[c] > 0) {
+                        if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizex) && (j < sizey) && (k < sizez)) {
+                            pix.putValue(index, stack.getVoxel(i, j, k));
+                            index++;
+                        }
+                    }
+                    c++;
+                }
+            }
+        }
+
+        pix.setSize(index);
+
+        return pix;
+    }
+    
+ }

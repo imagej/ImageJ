@@ -1,0 +1,211 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ij.util;
+
+import java.util.Arrays;
+
+/**
+ *
+ **
+ * /**
+ * Copyright (C) 2008- 2012 Thomas Boudier and others
+ *
+ *
+ *
+ * This file is part of mcib3d
+ *
+ * mcib3d is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author thomas
+ */
+public class ArrayUtil {
+
+	private int size = 0;
+	double[] values;
+	boolean sorted;
+
+	public void setSize(int si) {
+		size = si;
+	}
+
+	/**
+	 * constructeur
+	 *
+	 * @param size number of elements
+	 */
+	public ArrayUtil(int size) {
+		this.size = size;
+		values = new double[size];
+		for (int i = 0; i < size; i++) {
+			values[i] = 0;
+		}
+		sorted = false;
+	}
+	
+	
+
+	/**
+	 * constructeur
+	 *
+	 * @param data double array
+	 */
+	public ArrayUtil(double[] data) {
+		this.size = data.length;
+		sorted = false;
+		values = data;
+	}
+
+	/**
+	 * put a value to a index
+	 *
+	 * @param pos position in the array
+	 * @param value value to put
+	 * @return false if position does not exist
+	 */
+	public boolean putValue(int pos, double value) {
+		if (pos < size) {
+			values[pos] = value;
+			sorted = false;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Average value
+	 *
+	 * @return average value
+	 */
+	public double getMean() {
+		double total = 0;
+		for (int i = 0; i < size; i++) {
+			total += values[i];
+		}
+
+		return total / (double) size;
+	}
+
+	/**
+	 * The median (sorted array)
+	 *
+	 * @return mediane
+	 */
+	public double medianSort() {
+		if (!sorted) {
+			sortJava();
+		}
+		if (size % 2 == 1) {
+			return values[size / 2];
+		} else {
+			return (0.5f * (values[size / 2 - 1] + values[size / 2]));
+		}
+	}
+
+	/**
+	 *
+	 */
+	public void sortJava() {
+		Arrays.sort(values);
+		sorted = true;
+	}
+
+	/**
+	 *
+	 * @param val
+	 * @return
+	 */
+	public boolean isMaximum(double val) {
+		int i = 0;
+		boolean maxok = true;
+		while ((i < size) && (values[i] <= val)) {
+			i++;
+		}
+		if (i < size) {
+			maxok = false;
+		}
+
+		return maxok;
+	}
+
+	/**
+	 * The minimum value
+	 *
+	 * @return min value
+	 */
+	public double getMinimum() {
+		double min = values[0];
+		for (int i = 1; i < size; i++) {
+			if (values[i] < min) {
+				min = values[i];
+			}
+		}
+
+		return min;
+	}
+
+	/**
+	 * The maximum value
+	 *
+	 * @return max value
+	 */
+	public double getMaximum() {
+		double max = values[0];
+		for (int i = 1; i < size; i++) {
+			if (values[i] > max) {
+				max = values[i];
+			}
+		}
+
+		return max;
+	}
+
+	/**
+	 * Variance value 
+	 *
+	 * @return variance
+	 */
+	public double getVariance() {
+	   if (size == 1) {
+			return 0;
+		}
+
+		double total = 0;
+		double total2 = 0;
+
+		for (int i = 0; i < size; i++) {
+			total += values[i];
+			total2 += values[i] * values[i];
+		}
+
+		double var = (double) ((total2 - (total * total / size)) / (size - 1));
+		return var;
+	}
+	
+	
+	/**
+	 * information to be displayed
+	 *
+	 * @return text
+	 */
+	public String toString() {
+		String str = "{" + values[0];
+		for (int i = 1; i < size; i++) {
+			str = str + ", " + values[i];
+		}
+		return str + "}";
+	}
+}
