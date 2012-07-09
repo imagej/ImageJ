@@ -41,9 +41,7 @@ public class Filter3DMean implements PlugIn {
 	}
 
 	private void mean3D(ImagePlus imp, float radX, float radY, float radZ) {
-		// multithread support
-		int nbcpus = ThreadUtil.getNbCpus();
-		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MEAN, radX, radY, radZ, nbcpus);
+		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MEAN, radX, radY, radZ);
 		imp.setStack(res);
 		imp.updateAndDraw();
 	}

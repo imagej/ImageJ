@@ -1266,6 +1266,11 @@ public class ByteProcessor extends ImageProcessor {
 		return true;
 	}
 	
+	public int getBitDepth() {
+		return 8;
+	}
+
+	
 	byte[] create8BitImage() {
 		return pixels;
 	}

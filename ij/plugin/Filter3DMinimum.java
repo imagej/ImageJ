@@ -41,9 +41,7 @@ public class Filter3DMinimum implements PlugIn {
     }
 
     private void minimum3D(ImagePlus imp, float radX, float radY, float radZ) {
-        // multithread support
-        int nbcpus = ThreadUtil.getNbCpus();
-        ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MIN, radX, radY, radZ, nbcpus);
+        ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MIN, radX, radY, radZ);
         imp.setStack(res);
         imp.updateAndDraw();
     }

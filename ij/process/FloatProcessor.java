@@ -1032,6 +1032,9 @@ public class FloatProcessor extends ImageProcessor {
 		return Float.MAX_VALUE;
 	}
 	
+	public int getBitDepth() {
+		return 32;
+	}
 
 }
 

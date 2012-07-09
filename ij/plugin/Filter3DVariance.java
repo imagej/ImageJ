@@ -42,9 +42,7 @@ public class Filter3DVariance implements PlugIn {
 	}
 
 	private void variance3D(ImagePlus imp, float radX, float radY, float radZ) {
-		// multithread support
-		int nbcpus = ThreadUtil.getNbCpus();
-		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_VAR, radX, radY, radZ, nbcpus);
+		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_VAR, radX, radY, radZ);
 		// new ImageStack since it's float
 		ImagePlus impres=new ImagePlus("Variance3D_"+imp.getTitle(),res);
 		impres.show();

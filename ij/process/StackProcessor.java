@@ -23,11 +23,11 @@ public class StackProcessor {
 	int[] table;
 	double fillValue;
 	    
-    /* Constructs a StackProcessor from a stack. */
-    //public StackProcessor(ImageStack stack) {
-    //	this.StackProcessor(stack, stack.getProcessor());
-   //}
-	
+    /** Constructs a StackProcessor from a stack. */
+    public StackProcessor(ImageStack stack) {
+    	this(stack, null);
+    }
+
     /** Constructs a StackProcessor from a stack. 'ip' is the
     	processor that will be used to process the slices. 
     	'ip' can be null when using crop(). */
@@ -51,6 +51,8 @@ public class StackProcessor {
     		case INVERT: s="Invert: "; break;
     		case APPLY_TABLE: s="Apply: "; break;
     	}
+    	if (ip==null)
+    		ip = ip2;
  	   	ip2.setRoi(this.ip.getRoi());
 	    ip2.setInterpolate(this.ip.getInterpolate());
 	    for (int i=1; i<=nSlices; i++) {
@@ -110,6 +112,8 @@ public class StackProcessor {
 	public ImageStack resize(int newWidth, int newHeight, boolean averageWhenDownsizing) {
 	    ImageStack stack2 = new ImageStack(newWidth, newHeight);
  		ImageProcessor ip2;
+    	if (ip==null)
+    		ip = stack.getProcessor(1).duplicate();
 		try {
 	    	for (int i=1; i<=nSlices; i++) {
     			showStatus("Resize: ",i,nSlices);
@@ -151,6 +155,8 @@ public class StackProcessor {
 	ImageStack rotate90Degrees(boolean clockwise) {
  	    ImageStack stack2 = new ImageStack(stack.getHeight(), stack.getWidth());
  		ImageProcessor ip2;
+    	if (ip==null)
+    		ip = stack.getProcessor(1).duplicate();
     	for (int i=1; i<=nSlices; i++) {
     		showStatus("Rotate: ",i,nSlices);
     		ip.setPixels(stack.getPixels(1));

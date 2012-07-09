@@ -41,10 +41,7 @@ public class Filter3DMedian implements PlugIn {
 	}
 
 	private void median3D(ImagePlus imp, float radX, float radY, float radZ) {
-		// 
-		// multithread support
-		int nbcpus = ThreadUtil.getNbCpus();
-		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MEDIAN, radX, radY, radZ, nbcpus);
+		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MEDIAN, radX, radY, radZ);
 		imp.setStack(res);
 		imp.updateAndDraw();
 	}

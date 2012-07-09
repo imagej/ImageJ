@@ -41,9 +41,7 @@ public class Filter3DMaximum implements PlugIn {
 	}
 
 	private void maximum3D(ImagePlus imp, float radX, float radY, float radZ) {
-		// multithread support
-		int nbcpus = ThreadUtil.getNbCpus();
-		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MAX, radX, radY, radZ, nbcpus);
+		ImageStack res=FastFilters3D.filterIntImage(imp.getStack(), StackProcessor.FILTER_MAX, radX, radY, radZ);
 		imp.setStack(res);
 		imp.updateAndDraw();
 	}

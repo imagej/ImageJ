@@ -1351,6 +1351,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			//	}
 			//	ContrastAdjuster.update();
 			//}
+			if (stack.isVirtual()) {
+				Overlay overlay2 = stack.getProcessor(n).getOverlay();
+				if (overlay2!=null)
+					setOverlay(overlay2);
+			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
 			if (!noUpdateMode)
