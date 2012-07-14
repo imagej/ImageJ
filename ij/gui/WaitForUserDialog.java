@@ -103,5 +103,10 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 	}
 	
 	public void keyTyped(KeyEvent e) {}
+	
+	/** Returns a reference to the 'OK' button */
+	public Button getButton() {
+		return button;
+	}
 
 }

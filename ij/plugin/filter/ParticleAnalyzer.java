@@ -272,12 +272,6 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		options = staticOptions;
 		String unit = cal.getUnit();
 		boolean scaled = cal.scaled();
-		if (unit.equals("inch")) {
-			unit = "pixel";
-			unitSquared = 1.0;
-			scaled = false;
-			pixelUnits = true;
-		}
 		String units = unit+"^2";
 		int places = 0;
 		double cmin = minSize*unitSquared;

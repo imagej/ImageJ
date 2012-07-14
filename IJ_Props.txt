@@ -306,11 +306,11 @@ filters07="Unsharp Mask...",ij.plugin.filter.UnsharpMask
 filters08="Variance...",ij.plugin.filter.RankFilters("variance")
 filters09=-
 filters10="Gaussian Blur 3D...",ij.plugin.GaussianBlur3D
-filters11="Median 3D...",ij.plugin.Filter3DMedian
-filters12="Mean 3D...",ij.plugin.Filter3DMean
-filters13="Minimum 3D...",ij.plugin.Filter3DMinimum
-filters14="Maximum 3D...",ij.plugin.Filter3DMaximum
-filters15="Variance 3D...",ij.plugin.Filter3DVariance
+filters11="Median 3D...",ij.plugin.Filters3D("median")
+filters12="Mean 3D...",ij.plugin.Filters3D("mean")
+filters13="Minimum 3D...",ij.plugin.Filters3D("min")
+filters14="Maximum 3D...",ij.plugin.Filters3D("max")
+filters15="Variance 3D...",ij.plugin.Filters3D("var")
 filters16=-
 filters17="Show Circular Masks...",ij.plugin.filter.RankFilters("masks")
 

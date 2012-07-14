@@ -1418,6 +1418,16 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
 		if (id==0)
 			resetTools();
+		if (name.endsWith(" Built-in Tool")) {
+			name = name.substring(0,name.length()-14);
+			boolean ok = installBuiltinTool(name);
+			if (!ok) {
+				Hashtable commands = Menus.getCommands();
+				if (commands!=null && commands.get(name)!=null)
+					IJ.run(name);
+			}
+			return;
+		}
 		this.macroInstaller = macroInstaller;
 		int tool = addTool(name);
 		this.macroInstaller = null;

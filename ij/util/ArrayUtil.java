@@ -2,9 +2,8 @@ package ij.util;
 import java.util.Arrays;
 
 public class ArrayUtil {
-
-	private int size = 0;
-	double[] values;
+	private int size;
+	float[] values;
 	boolean sorted;
 
 	public void setSize(int si) {
@@ -18,21 +17,16 @@ public class ArrayUtil {
 	 */
 	public ArrayUtil(int size) {
 		this.size = size;
-		values = new double[size];
-		for (int i = 0; i < size; i++) {
-			values[i] = 0;
-		}
+		values = new float[size];
 		sorted = false;
 	}
 	
-	
-
 	/**
 	 * constructeur
 	 *
-	 * @param data double array
+	 * @param data float array
 	 */
-	public ArrayUtil(double[] data) {
+	public ArrayUtil(float[] data) {
 		this.size = data.length;
 		sorted = false;
 		values = data;
@@ -45,8 +39,8 @@ public class ArrayUtil {
 	 * @param value value to put
 	 * @return false if position does not exist
 	 */
-	public boolean putValue(int pos, double value) {
-		if (pos < size) {
+	public boolean putValue(int pos, float value) {
+		if (pos<size) {
 			values[pos] = value;
 			sorted = false;
 			return true;
@@ -57,39 +51,36 @@ public class ArrayUtil {
 
 	/**
 	 * Average value
-	 *
 	 * @return average value
 	 */
 	public double getMean() {
 		double total = 0;
-		for (int i = 0; i < size; i++) {
+		for (int i=0; i<size; i++)
 			total += values[i];
-		}
-
-		return total / (double) size;
+		return total/size;
 	}
 
 	/**
 	 * The median (sorted array)
-	 *
 	 * @return mediane
 	 */
 	public double medianSort() {
-		if (!sorted) {
-			sortJava();
-		}
-		if (size % 2 == 1) {
-			return values[size / 2];
-		} else {
-			return (0.5f * (values[size / 2 - 1] + values[size / 2]));
-		}
+		if (!sorted)
+			sort();
+		if (size % 2==1)
+			return values[size/2];
+		else
+			return (0.5f * (values[size/2 - 1] + values[size/2]));
 	}
 
-	/**
-	 *
-	 */
-	public void sortJava() {
-		Arrays.sort(values);
+	public void sort() {
+		if (size<values.length) {
+			float[] tosort = new float[size];
+			System.arraycopy(values, 0, tosort, 0, size);
+			Arrays.sort(tosort);
+			System.arraycopy(tosort, 0, values, 0, size);
+		} else
+			Arrays.sort(values);
 		sorted = true;
 	}
 
@@ -101,13 +92,12 @@ public class ArrayUtil {
 	public boolean isMaximum(double val) {
 		int i = 0;
 		boolean maxok = true;
-		while ((i < size) && (values[i] <= val)) {
+		while ((i<size) && (values[i]<=val)) {
 			i++;
 		}
 		if (i < size) {
 			maxok = false;
 		}
-
 		return maxok;
 	}
 
@@ -123,7 +113,6 @@ public class ArrayUtil {
 				min = values[i];
 			}
 		}
-
 		return min;
 	}
 
@@ -139,7 +128,6 @@ public class ArrayUtil {
 				max = values[i];
 			}
 		}
-
 		return max;
 	}
 

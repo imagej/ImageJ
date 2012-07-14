@@ -160,7 +160,6 @@ public class AutoThresholder {
 		int len=y.length;
 		boolean b = false;
 		int modes = 0;
- 
 		for (int k=1;k<len-1;k++){
 			if (y[k-1] < y[k] && y[k+1] < y[k]) {
 				modes++;
@@ -186,26 +185,27 @@ public class AutoThresholder {
 		// j and k
 		// Threshold t is (j+k)/2.
 		// Images with histograms having extremely unequal peaks or a broad and
-		// flat valleys are unsuitable for this method.
-		double [] iHisto = new double [256];
+		// ﬂat valley are unsuitable for this method.
+		double [] iHisto = new double [data.length];
 		int iter =0;
 		int threshold=-1;
-		for (int i=0; i<256; i++)
+		for (int i=0; i<data.length; i++)
 			iHisto[i]=(double) data[i];
-
-		double [] tHisto = iHisto;
 
 		while (!bimodalTest(iHisto) ) {
 			 //smooth with a 3 point running mean filter
-			for (int i=1; i<255; i++)
-				tHisto[i]= (iHisto[i-1] + iHisto[i] + iHisto[i+1])/3;
-			tHisto[0] = (iHisto[0]+iHisto[1])/3; //0 outside
-			tHisto[255] = (iHisto[254]+iHisto[255])/3; //0 outside
-			iHisto = tHisto;
+			double previous = 0, current = 0, next = iHisto[0];
+			for (int i = 0; i < data.length - 1; i++) {
+				previous = current;
+				current = next;
+				next = iHisto[i + 1];
+				iHisto[i] = (previous + current + next) / 3;
+			}
+			iHisto[data.length - 1] = (current + next) / 3;
 			iter++;
 			if (iter>10000) {
 				threshold = -1;
-				IJ.log("Intermodes: threshold not found after 10000 iterations.");
+				IJ.log("Intermodes Threshold not found after 10000 iterations.");
 				return threshold;
 			}
 		}
