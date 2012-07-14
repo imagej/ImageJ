@@ -1045,6 +1045,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 		}
 		addPluginTools();
+		addItem("Restore Startup Tools");
 		addItem("Remove Tools");
 		addItem("Help...");
 		add(ovalPopup);
@@ -1221,10 +1222,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 			String path;
 			if (label.equals("Remove Tools")) {
-				removeMacroTools();
-				setTool(RECTANGLE);
-				currentSet = "Startup Macros";
-				resetPrefs();
+				removeTools();
+			} else if (label.equals("Restore Startup Tools")) {
+				removeTools();
+				installStartupMacros();
 			} else if (label.equals("Help...")) {
 				IJ.showMessage("Tool Switcher and Loader",
 					"Use this drop down menu to switch to alternative\n"+
@@ -1278,6 +1279,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 } catch(Exception ex) {}
             }
 		}
+	}
+	
+	private void removeTools() {
+		removeMacroTools();
+		setTool(RECTANGLE);
+		currentSet = "Startup Macros";
+		resetPrefs();
 	}
 	
 	private void resetPrefs() {

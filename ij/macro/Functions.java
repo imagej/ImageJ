@@ -1438,6 +1438,13 @@ public class Functions implements MacroConstants, Measurements {
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
 				return name!=null?name:"";
+			} else if (key.equals("selection.color")||key.equals("roi.color")) {
+				ImagePlus imp = getImage();
+				Roi roi = imp.getRoi();
+				if (roi==null)
+					interp.error("No selection");
+				Color color = roi.getStrokeColor();
+				return Colors.colorToString(color);
 			} else if (key.equals("font.name")) {
 				resetImage();
 				ImageProcessor ip = getProcessor();
@@ -4003,6 +4010,12 @@ public class Functions implements MacroConstants, Measurements {
 			ImageProcessor ip = getProcessor();
 			setFont(ip);
 			return ip.getFontMetrics().getHeight();
+		} else if (key.equals("selection.width")) {
+			ImagePlus imp = getImage();
+			Roi roi = imp.getRoi();
+			if (roi==null)
+				interp.error("No selection");
+			return roi.getStrokeWidth();
 		} else {
 			interp.error("Invalid key");
 			return 0.0;
