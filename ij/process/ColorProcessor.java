@@ -1318,5 +1318,9 @@ public class ColorProcessor extends ImageProcessor {
 		}
 	}
 	
+	public int getBitDepth() {
+		return 24;
+	}
+
 }
 

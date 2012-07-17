@@ -317,6 +317,11 @@ public class RGBStackMerge implements PlugIn {
 		return mergeHyperstacks(images, keep);
 	}
 
+	public static ImageStack mergeStacks(ImageStack red, ImageStack green, ImageStack blue, boolean keepSource) {
+        RGBStackMerge merge = new RGBStackMerge();
+		return merge.mergeStacks(red.getWidth(), red.getHeight(), red.getSize(), red, green, blue, keepSource);
+	}
+
 	public ImageStack mergeStacks(int w, int h, int d, ImageStack red, ImageStack green, ImageStack blue, boolean keep) {
 		ImageStack rgb = new ImageStack(w, h);
 		int inc = d/10;

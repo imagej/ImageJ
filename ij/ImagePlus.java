@@ -923,7 +923,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Returns the number of dimensions (2, 3, 4 or 5). */
 	public int getNDimensions() {
 		int dimensions = 2;
-		int[] dim = getDimensions(false);
+		int[] dim = getDimensions(true);
 		if (dim[2]>1) dimensions++;
 		if (dim[3]>1) dimensions++;
 		if (dim[4]>1) dimensions++;
@@ -1351,6 +1351,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			//	}
 			//	ContrastAdjuster.update();
 			//}
+			if (stack.isVirtual()) {
+				Overlay overlay2 = stack.getProcessor(n).getOverlay();
+				if (overlay2!=null)
+					setOverlay(overlay2);
+			}
 			if (imageType==COLOR_RGB)
 				ContrastAdjuster.update();
 			if (!noUpdateMode)
@@ -1462,7 +1467,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				if (Prefs.pointAddToManager) {
 					IJ.run("Add to Manager ");
 					ImageCanvas ic = getCanvas();
-					if (ic!=null && !ic.getShowAllROIs())
+					if (ic!=null && ic.getShowAllList()==null)
 						ic.setShowAllROIs(true);
 				}
 				if (Prefs.pointAutoNextSlice && getStackSize()>1) {

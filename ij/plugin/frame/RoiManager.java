@@ -427,12 +427,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			boolean hasPosition = false;
 			boolean hyperstack = imp!=null &&  imp.isHyperStack();
 			int slice = roi.getPosition();
-			if (slice==0) {
-				if (Prefs.showAllSliceOnly)
-					slice = imp.getCurrentSlice();
-				else
-					slice = 0;
-			} else
+			if (slice==0)
+				slice = imp.getCurrentSlice();
+			else
 				hasPosition = true;
 			if (!hasPosition)
 				hasPosition = hyperstack && (roi.getZPosition()>0 || roi.getTPosition()>0);
@@ -1057,8 +1054,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 					break;
 			}
 		}
-		ImageCanvas ic = imp.getCanvas();
-		if (ic!=null) ic.setShowAllROIs(false);
+		runCommand("show none");
 		imp.updateAndDraw();
 		return true;
 	}

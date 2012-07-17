@@ -1107,6 +1107,10 @@ public class ShortProcessor extends ImageProcessor {
 		return 65535.0;
 	}
 
+	public int getBitDepth() {
+		return 16;
+	}
+
 	/** Not implemented. */
 	public void medianFilter() {}
 	/** Not implemented. */

@@ -67,6 +67,7 @@ public abstract class ImageProcessor implements Cloneable {
 	private static int underRed, underGreen, underBlue=255;
 	private static boolean useBicubic;
 	private int sliceNumber;
+	private Overlay overlay;
 		
     ProgressBar progressBar;
 	protected int width, snapshotWidth;
@@ -121,7 +122,12 @@ public abstract class ImageProcessor implements Cloneable {
 		return height;
 	}
 	
-	/** Returns this processor's color model. For non-RGB processors,
+    /** Returns the bit depth, 8, 16, 24 (RGB) or 32. RGB images actually use 32 bits per pixel. */
+    public int getBitDepth() {
+    	return 0;
+    }
+    
+    /** Returns this processor's color model. For non-RGB processors,
  		this is the base lookup table (LUT), not the one that may have
 		been modified by setMinAndMax() or setThreshold(). */
 	public ColorModel getColorModel() {
@@ -1399,7 +1405,7 @@ public abstract class ImageProcessor implements Cloneable {
 		
 	/** Returns a string containing information about this ImageProcessor. */
 	public String toString() {
-		return ("ip[width="+width+", height="+height+", min="+getMin()+", max="+getMax()+"]");
+		return ("ip[width="+width+", height="+height+", bits="+getBitDepth()+", min="+getMin()+", max="+getMax()+"]");
 	}
 
 	/** Fills the image or ROI bounding rectangle with the current fill/draw value. Use
@@ -2372,6 +2378,15 @@ public abstract class ImageProcessor implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			return null;
 		}
+	}
+	
+	/** This method is used to display virtual stack overlays. */
+	public void setOverlay(Overlay overlay) {
+		this.overlay = overlay;
+	}
+	
+	public Overlay getOverlay() {
+		return overlay;
 	}
 
 }

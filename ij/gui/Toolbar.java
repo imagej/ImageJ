@@ -69,6 +69,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     private MacroInstaller macroInstaller;
     private boolean addingSingleTool;
     private boolean installingStartupTool;
+    private boolean doNotSavePrefs;
 	private int pc;
 	private String icon;
 	private int startupTime;
@@ -1045,6 +1046,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 		}
 		addPluginTools();
+		addItem("Restore Startup Tools");
 		addItem("Remove Tools");
 		addItem("Help...");
 		add(ovalPopup);
@@ -1221,10 +1223,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			}
 			String path;
 			if (label.equals("Remove Tools")) {
-				removeMacroTools();
-				setTool(RECTANGLE);
-				currentSet = "Startup Macros";
-				resetPrefs();
+				removeTools();
+			} else if (label.equals("Restore Startup Tools")) {
+				removeTools();
+				installStartupMacros();
 			} else if (label.equals("Help...")) {
 				IJ.showMessage("Tool Switcher and Loader",
 					"Use this drop down menu to switch to alternative\n"+
@@ -1278,6 +1280,13 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
                 } catch(Exception ex) {}
             }
 		}
+	}
+	
+	private void removeTools() {
+		removeMacroTools();
+		setTool(RECTANGLE);
+		currentSet = "Startup Macros";
+		resetPrefs();
 	}
 	
 	private void resetPrefs() {
@@ -1418,6 +1427,18 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public void addMacroTool(String name, MacroInstaller macroInstaller, int id) {
 		if (id==0)
 			resetTools();
+		if (name.endsWith(" Built-in Tool")) {
+			name = name.substring(0,name.length()-14);
+			doNotSavePrefs = true;
+			boolean ok = installBuiltinTool(name);
+			if (!ok) {
+				Hashtable commands = Menus.getCommands();
+				if (commands!=null && commands.get(name)!=null)
+					IJ.run(name);
+			}
+			doNotSavePrefs = false;
+			return;
+		}
 		this.macroInstaller = macroInstaller;
 		int tool = addTool(name);
 		this.macroInstaller = null;
@@ -1458,9 +1479,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void setPrefs(int id) {
-		int index = id - SPARE2;
-		String key = TOOL_KEY + (index/10)%10 + index%10;
-		Prefs.set(key, instance.names[id]);
+		if (!doNotSavePrefs) {
+			int index = id - SPARE2;
+			String key = TOOL_KEY + (index/10)%10 + index%10;
+			Prefs.set(key, instance.names[id]);
+		}
 	}
 
 	public static void removeMacroTools() {

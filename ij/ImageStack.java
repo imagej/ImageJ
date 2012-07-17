@@ -541,9 +541,9 @@ public class ImageStack {
 		r -= 0.5;
 		double xoffset=xmin+r, yoffset=ymin+r, zoffset=zmin+r;
 		double xx, yy, zz;
-		for (int x=xmin; x<xmax; x++) {
-			for (int y=ymin; y<ymax; y++) {
-				for (int z=zmin; z<zmax; z++) {
+		for (int x=xmin; x<=xmax; x++) {
+			for (int y=ymin; y<=ymax; y++) {
+				for (int z=zmin; z<=zmax; z++) {
 					xx = x-xoffset; yy = y-yoffset;  zz = z-zoffset;
 					if (xx*xx+yy*yy+zz*zz<=r2)
 						setVoxel(x, y, z, 255);
@@ -563,5 +563,20 @@ public class ImageStack {
 		}
 		return 0;
 	}
+
+	/** Creates a new ImageStack.
+	*  @param width  width in pixels
+	*  @param height height in pixels
+	*  @param depth number of images
+	*  @param bitdepth  8, 16, 32 (float) or 24 (RGB)
+	*/
+	 public static ImageStack create(int width, int height, int depth, int bitdepth) {
+		ImageStack stack =  IJ.createImage("", width, height, depth, bitdepth).getStack();
+		if (bitdepth==16 || bitdepth==32) {
+			stack.min = Double.MAX_VALUE;
+			stack.max = 0.0;
+		}
+		return stack;
+	 }
 
 }

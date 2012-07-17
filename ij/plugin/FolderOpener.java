@@ -321,8 +321,14 @@ public class FolderOpener implements PlugIn {
 			}
 			if (imp2.getStackSize()==1 && info1!=null)
 				imp2.setProperty("Info", info1);
-			if (arg==null && !saveImage)
+			if (arg==null && !saveImage) {
 				imp2.show();
+				if (stack.isVirtual()) {
+					overlay = stack.getProcessor(1).getOverlay();
+					if (overlay!=null)
+						imp2.setOverlay(overlay);
+				}
+			}
 			if (saveImage)
 				image = imp2;
 		}

@@ -109,6 +109,7 @@ public class VirtualStack extends ImageStack {
 			labels[n-1] = (String)imp.getProperty("Info");
 			depthThisImage = imp.getBitDepth();
 			ip = imp.getProcessor();
+			ip.setOverlay(imp.getOverlay());
 		} else {
 			File f = new File(path, names[n-1]);
 			String msg = f.exists()?"Error opening ":"File not found: ";

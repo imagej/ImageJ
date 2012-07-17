@@ -1438,6 +1438,13 @@ public class Functions implements MacroConstants, Measurements {
 				Roi roi = imp.getRoi();
 				String name = roi!=null?roi.getName():null;
 				return name!=null?name:"";
+			} else if (key.equals("selection.color")||key.equals("roi.color")) {
+				ImagePlus imp = getImage();
+				Roi roi = imp.getRoi();
+				if (roi==null)
+					interp.error("No selection");
+				Color color = roi.getStrokeColor();
+				return Colors.colorToString(color);
 			} else if (key.equals("font.name")) {
 				resetImage();
 				ImageProcessor ip = getProcessor();
@@ -3644,13 +3651,9 @@ public class Functions implements MacroConstants, Measurements {
 			ImageCanvas ic = getImage().getCanvas();
 			if (ic!=null) ic.disablePopupMenu(state);
 		} else if (arg1.startsWith("show all")) {
-			ImagePlus img = getImage();
-			ImageCanvas ic = img.getCanvas();
-			if (ic!=null) {
-				boolean previousState = ic.getShowAllROIs();
-				ic.setShowAllROIs(state);
-				if (state!=previousState) img.draw();
-			}
+			RoiManager rm = roiManager!=null?roiManager:RoiManager.getInstance();
+			if (rm!=null)
+				rm.runCommand(state?"show all":"show none");
 		} else if (arg1.equals("changes"))
 			getImage().changes = state;
 		else if (arg1.equals("debugmode"))
@@ -4007,6 +4010,12 @@ public class Functions implements MacroConstants, Measurements {
 			ImageProcessor ip = getProcessor();
 			setFont(ip);
 			return ip.getFontMetrics().getHeight();
+		} else if (key.equals("selection.width")) {
+			ImagePlus imp = getImage();
+			Roi roi = imp.getRoi();
+			if (roi==null)
+				interp.error("No selection");
+			return roi.getStrokeWidth();
 		} else {
 			interp.error("Invalid key");
 			return 0.0;

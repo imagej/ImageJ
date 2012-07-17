@@ -1740,6 +1740,17 @@ public class IJ {
 		return str;
 	}
 
+	/** Creates a new image.
+	*  @param title   image name
+	*  @param width  image width in pixels
+	*  @param height image height in pixels
+	*  @param depth number of stack images
+	*  @param bitdepth  8, 16, 32 (float) or 24 (RGB)
+	*/
+	 public static ImagePlus createImage(String title, int width, int height, int depth, int bitdepth) {
+		return NewImage.createImage(title, width, height, depth, bitdepth, NewImage.FILL_BLACK);
+	 }
+
 	 /** Creates a new imagePlus. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
 		 In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
 	 	and <code>height</code> specify the width and height of the image in pixels.  
