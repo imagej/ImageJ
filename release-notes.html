@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.47a 14 July 2012</u>
+<li> <u>1.47a 16 July 2012</u>
 <ul>
 <li> Thanks to Thomas Boudier, added five new 3D filters
 (Median, Mean, Minimum, Maximum and Variance) 
@@ -13,13 +13,19 @@ to the <i>Process&gt;Filters</i> submenu.
 <li> Added the "Restore Startup Tools" command to the toolbar's
 <i>&gt;&gt;</i> menu.
 <li> Thanks to Tiago Ferreira, built-in and plugin tools can be added to
-toolsets and the startup macros.
+toolsets and the startup macros
+(<a href="macros/toolsets/Drawing%20Tools.txt">example</a>).
+<li> Michael Schmid modified the Overlay Brush tool for constrained motion 
+(vertical or horizontal) with shift and resizing with ctrl-shift (cmd-shift of Macs).
+<li> Thomas Tongue added support for the CDELT and CTYPE headers
+to the FITS Reader.
 <li> Added the getinfo("selection.color") and getValue("selection.width")
 macro functions.
-(<a href="macros/toolsets/Drawing%20Tools.txt">example</a>).
 <li> Thanks to Simon Roussel, fixed a bug that could cause overlays to not be
 displayed on virtual stacks.
 <li> Fixed a bug that caused the brush and pencil tools to activate overlay selections.
+<li> Michael Schmid fixed a bug that sometimes caused Preview to not work 
+correctly with commands in the <i>Process&gt;Filters</i> submenu.
 <li> Fixed a 1.46 regression that caused the ROI Manager to generate incorrect
 ROI labels when the Associate 'Show All" ROIs with Slices" option was not enabled.
 <li> Thanks to Stephan Semmler, fixed a regression that caused the

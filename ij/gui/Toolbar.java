@@ -69,6 +69,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
     private MacroInstaller macroInstaller;
     private boolean addingSingleTool;
     private boolean installingStartupTool;
+    private boolean doNotSavePrefs;
 	private int pc;
 	private String icon;
 	private int startupTime;
@@ -1428,12 +1429,14 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 			resetTools();
 		if (name.endsWith(" Built-in Tool")) {
 			name = name.substring(0,name.length()-14);
+			doNotSavePrefs = true;
 			boolean ok = installBuiltinTool(name);
 			if (!ok) {
 				Hashtable commands = Menus.getCommands();
 				if (commands!=null && commands.get(name)!=null)
 					IJ.run(name);
 			}
+			doNotSavePrefs = false;
 			return;
 		}
 		this.macroInstaller = macroInstaller;
@@ -1476,9 +1479,11 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void setPrefs(int id) {
-		int index = id - SPARE2;
-		String key = TOOL_KEY + (index/10)%10 + index%10;
-		Prefs.set(key, instance.names[id]);
+		if (!doNotSavePrefs) {
+			int index = id - SPARE2;
+			String key = TOOL_KEY + (index/10)%10 + index%10;
+			Prefs.set(key, instance.names[id]);
+		}
 	}
 
 	public static void removeMacroTools() {

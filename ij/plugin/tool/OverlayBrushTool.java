@@ -9,10 +9,14 @@ import java.awt.BasicStroke;
 import java.awt.geom.*;
 
 public class OverlayBrushTool extends PlugInTool implements Runnable {
+	private final static int UNKNOWN=0, HORIZONTAL=1, VERTICAL=2, DO_RESIZE=3, RESIZED=4; //mode flags
 	private static String WIDTH_KEY = "obrush.width";
 	private float width = (float)Prefs.get(WIDTH_KEY, 5);
 	private BasicStroke stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND);
 	private GeneralPath path;
+	private int mode;  //resizing brush or motion constrained horizontally or vertically
+	private double xStart, yStart;
+	private float oldWidth = width;
 	private boolean newPath;
 	private int transparency;
 	private Thread thread;
@@ -24,6 +28,13 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		float y = (float)ic.offScreenYD(e.getY());
 		path = new GeneralPath();
 		path.moveTo(x, y);
+		xStart = x;
+		yStart = y;
+		oldWidth = width;
+		mode = UNKNOWN;
+		int resizeMask = InputEvent.SHIFT_MASK | (IJ.isMacintosh() ? InputEvent.META_MASK : InputEvent.CTRL_MASK);
+		if ((e.getModifiers() & resizeMask) == resizeMask)
+			mode = DO_RESIZE;
 		newPath = true;
 	}
 
@@ -31,10 +42,31 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		ImageCanvas ic = imp.getCanvas();
 		double x = ic.offScreenXD(e.getX());
 		double y = ic.offScreenYD(e.getY());
-		path.lineTo(x, y);
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
 			overlay = new Overlay();
+		if (mode == DO_RESIZE || mode == RESIZED) {
+			changeBrushSize((float)(x-xStart), imp);
+			return;
+		}
+		if ((e.getModifiers() & InputEvent.SHIFT_MASK) != 0) { //still shift down?
+			if (mode == UNKNOWN) {
+				if (Math.abs(x-xStart) > Math.abs(y-yStart))
+					mode = HORIZONTAL;
+				else if (Math.abs(x-xStart) < Math.abs(y-yStart))
+					mode = VERTICAL;
+				else return; //constraint direction still unclear
+			}
+			if (mode == HORIZONTAL)
+				y = yStart;
+			else if (mode == VERTICAL)
+				x = xStart;
+		} else {
+			xStart = x;
+			yStart = y;
+			mode = UNKNOWN;
+		}
+		path.lineTo(x, y);
 		ShapeRoi roi = new ShapeRoi(path);
 		Color color = Toolbar.getForegroundColor();
 		float red = (float)(color.getRed()/255.0);
@@ -51,6 +83,32 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			overlay.add(roi);
 		}
 		imp.setOverlay(overlay);
+	}
+
+	public void mouseReleased(ImagePlus imp, MouseEvent e) {
+		if (mode != RESIZED) return;
+		Overlay overlay = imp.getOverlay();
+		overlay.remove(overlay.size()-1); //delete brush resizing circle
+		imp.setOverlay(overlay);
+		Prefs.set(WIDTH_KEY, width);
+		stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND);
+	}
+
+	private void changeBrushSize(float deltaWidth, ImagePlus imp) {
+		if (deltaWidth==0) return;
+		Overlay overlay = imp.getOverlay();
+		width = oldWidth + deltaWidth;
+		if (width < 0) width = 0;
+		Roi circle = new OvalRoi(xStart-width/2, yStart-width/2, width, width);
+		overlay = imp.getOverlay();
+		if (overlay==null)
+			overlay = new Overlay();
+		if (mode == RESIZED)
+			overlay.remove(overlay.size()-1);
+		overlay.add(circle);
+		imp.setOverlay(overlay);
+		IJ.showStatus("Overlay Brush width: "+IJ.d2s(width));
+		mode = RESIZED;
 	}
 
 	public void showOptionsDialog() {
@@ -90,7 +148,9 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			gd.addSlider("Transparency (%):", 0, 100, transparency);
 			gd.addChoice("Color:", Colors.colors, colorName);
 			gd.setInsets(10, 0, 0);
-			gd.addMessage("Also set the color using Color Picker (shift-k)");
+			gd.addMessage("Also set the color using Color Picker (shift-k)\n"+
+					"Shift-drag for horizontal or vertical lines\n"+
+					(IJ.isMacintosh()? "Cmd":"Ctrl")+"-shift-drag to change brush width");
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");
