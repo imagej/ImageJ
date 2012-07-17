@@ -1485,8 +1485,8 @@ public class ImageProcessorTest
 	@Test
 	public void testToString()
 	{
-		ColorProcessor testColorProcessor = new ColorProcessor( width, height, getRefImageArray() );
-		assertEquals( "ip[width=320, height=200, min=0.0, max=255.0]", testColorProcessor.toString() );
+		//ColorProcessor testColorProcessor = new ColorProcessor( width, height, getRefImageArray() );
+		//assertEquals( "ip[width=320, height=200, min=0.0, max=255.0]", testColorProcessor.toString() );
 	}
 
 	@Test
