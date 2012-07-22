@@ -988,8 +988,10 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				if (imp.getStackSize()==1)
 					Undo.setup(Undo.TRANSFORM, imp);
 				imp.setStack(null, outputImage.getStack());
-			} else if (!hideOutputImage)
+			} else if (!hideOutputImage) {
+				outputImage.setCalibration(imp.getCalibration());
 				outputImage.show();
+			}
 		}
 		if (showResults && !processStack) {
 			if (showResultsWindow) {

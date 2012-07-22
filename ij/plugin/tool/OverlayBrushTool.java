@@ -1,4 +1,5 @@
 package ij.plugin.tool;
+import ij.plugin.tool.PlugInTool;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -15,7 +16,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 	private BasicStroke stroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND);
 	private GeneralPath path;
 	private int mode;  //resizing brush or motion constrained horizontally or vertically
-	private double xStart, yStart;
+	private float xStart, yStart;
 	private float oldWidth = width;
 	private boolean newPath;
 	private int transparency;
@@ -40,8 +41,8 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 
 	public void mouseDragged(ImagePlus imp, MouseEvent e) {
 		ImageCanvas ic = imp.getCanvas();
-		double x = ic.offScreenXD(e.getX());
-		double y = ic.offScreenYD(e.getY());
+		float x = (float)ic.offScreenXD(e.getX());
+		float y = (float)ic.offScreenYD(e.getY());
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null)
 			overlay = new Overlay();
