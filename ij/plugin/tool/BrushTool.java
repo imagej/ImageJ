@@ -7,23 +7,30 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
+// Versions
+// 2012-07-22 shift to confine horizontally or vertically, ctrl-shift to resize, ctrl to pick
+
 	public class BrushTool extends PlugInTool implements Runnable {
+	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, RESIZING=3, RESIZED=4, IDLE=5; //mode flags
 	private static String BRUSH_WIDTH_KEY = "brush.width";
 	private static String PENCIL_WIDTH_KEY = "pencil.width";
 	private static String CIRCLE_NAME = "brush-tool-overlay";
-	private int width = (int)Prefs.get(BRUSH_WIDTH_KEY, 5);
-	private Thread thread;
-	private boolean dialogShowing;
+	private String widthKey;
+	private int width;
 	private ImageProcessor ip;
-	private int x2, x3;
+	private int mode;  //resizing brush or motion constrained horizontally or vertically
+	private int xStart, yStart;
+	private int oldWidth;
 	private boolean isPencil;
 	private Overlay overlay;
 	private Options options;
+	private GenericDialog gd;
+
 
 	public void run(String arg) {
 		isPencil = "pencil".equals(arg);
-		if (isPencil)
-			width = (int)Prefs.get(PENCIL_WIDTH_KEY, 1);
+		widthKey = isPencil ? PENCIL_WIDTH_KEY : BRUSH_WIDTH_KEY;
+		width = (int)Prefs.get(PENCIL_WIDTH_KEY, isPencil ? 1 : 5);
 		Toolbar.addPlugInTool(this);
 	}
 
@@ -31,7 +38,24 @@ import java.util.Vector;
 		ImageCanvas ic = imp.getCanvas();
 		int x = ic.offScreenX(e.getX());
 		int y = ic.offScreenY(e.getY());
+		xStart = x;
+		yStart = y;
 		ip = imp.getProcessor();
+		int ctrlMask = IJ.isMacintosh() ? InputEvent.META_MASK : InputEvent.CTRL_MASK;
+		int resizeMask = InputEvent.SHIFT_MASK | ctrlMask;
+		if ((e.getModifiers() & resizeMask) == resizeMask) {
+			mode = RESIZING;
+			oldWidth = width;
+			return;
+		} else if ((e.getModifiers() & ctrlMask) != 0) {
+			boolean altKeyDown = (e.getModifiers() & InputEvent.ALT_MASK) != 0;
+			ic.setDrawingColor(x, y, altKeyDown); //pick color from image (ignore overlay)
+			if (!altKeyDown && gd != null)
+				options.setColor(Toolbar.getForegroundColor());
+			mode = IDLE;
+			return;
+		}
+		mode = UNCONSTRAINED;
 		ip.snapshot();
 		Undo.setup(Undo.FILTER, imp);
 		ip.setLineWidth(width);
@@ -44,56 +68,74 @@ import java.util.Vector;
 			ip.lineTo(x, y);
 			imp.updateAndDraw();
 		}
-		x2 = -1;
-		x3 = x;
 	}
 
 	public void mouseDragged(ImagePlus imp, MouseEvent e) {
+		if (mode == IDLE) return;
 		ImageCanvas ic = imp.getCanvas();
 		int x = ic.offScreenX(e.getX());
 		int y = ic.offScreenY(e.getY());
-		if (e.isShiftDown()) {
-			if (x!=x2) {
-				x2 = x;
-				width = x-x3;
-				if (width<1) width=1;
-				Roi circle = new OvalRoi(x-width/2, y-width/2, width, width);
-				circle.setName(CIRCLE_NAME);
-				circle.setStrokeColor(Color.red);
-				overlay = imp.getOverlay();
-				if (overlay==null)
-					overlay = new Overlay();
-				else if (overlay.size()>0 && CIRCLE_NAME.equals(overlay.get(overlay.size()-1).getName()))
-					overlay.remove(overlay.size()-1);
-				overlay.add(circle);
-				imp.setOverlay(overlay);
-			}
-			IJ.showStatus((isPencil?"Pencil":"Brush")+" size: "+ width);
-		} else {
-			ip.lineTo(x, y);
-			imp.updateAndDraw();
+		if (mode == RESIZING) {
+			showToolSize(x-xStart, imp);
+			return;
 		}
+		if ((e.getModifiers() & InputEvent.SHIFT_MASK) != 0) { //shift constrains
+			if (mode == UNCONSTRAINED) {	//first movement with shift down determines direction
+				if (Math.abs(x-xStart) > Math.abs(y-yStart))
+					mode = HORIZONTAL;
+				else if (Math.abs(x-xStart) < Math.abs(y-yStart))
+					mode = VERTICAL;
+				else return; //constraint direction still unclear
+			}
+			if (mode == HORIZONTAL)
+				y = yStart;
+			else if (mode == VERTICAL)
+				x = xStart;
+		} else {
+			xStart = x;
+			yStart = y;
+			mode = UNCONSTRAINED;
+		}
+		ip.lineTo(x, y);
+		imp.updateAndDraw();
 	}
 
 	public void mouseReleased(ImagePlus imp, MouseEvent e) {
-		if (overlay!=null && overlay.size()>0 && CIRCLE_NAME.equals(overlay.get(overlay.size()-1).getName())) {
-			overlay.remove(overlay.size()-1);
-			imp.setOverlay(overlay);
-		} else if (overlay!=null)
-			imp.setOverlay(null);
-		overlay = null;
-		if (e.isShiftDown()) {
-			if (options!=null)
-				options.setWidth(width);
-			if (isPencil)
-				Prefs.set(PENCIL_WIDTH_KEY, width);
-			else
-				Prefs.set(BRUSH_WIDTH_KEY, width);
+		if (mode==RESIZING) {
+			if (overlay!=null && overlay.size()>0 && CIRCLE_NAME.equals(overlay.get(overlay.size()-1).getName())) {
+				overlay.remove(overlay.size()-1);
+				imp.setOverlay(overlay);
+			}
+			overlay = null;
+			if (e.isShiftDown()) {
+				if (options!=null)
+					options.setWidth(width);
+				Prefs.set(widthKey, width);
+			}
 		}
 	}
 
+	private void showToolSize(int deltaWidth, ImagePlus imp) {
+		if (deltaWidth !=0) {
+			width = oldWidth + deltaWidth;
+			if (width<1) width=1;
+			Roi circle = new OvalRoi(xStart-width/2, yStart-width/2, width, width);
+			circle.setName(CIRCLE_NAME);
+			circle.setStrokeColor(Color.red);
+			overlay = imp.getOverlay();
+			if (overlay==null)
+				overlay = new Overlay();
+			else if (overlay.size()>0 && CIRCLE_NAME.equals(overlay.get(overlay.size()-1).getName()))
+				overlay.remove(overlay.size()-1);
+			overlay.add(circle);
+			imp.setOverlay(overlay);
+		}
+		IJ.showStatus((isPencil?"Pencil":"Brush")+" width: "+ width);
+
+	}
+	
 	public void showOptionsDialog() {
-		thread = new Thread(this, "Brush Options");
+		Thread thread = new Thread(this, "Brush Options");
 		thread.setPriority(Thread.NORM_PRIORITY);
 		thread.start();
 	}
@@ -117,12 +159,12 @@ import java.util.Vector;
 	}
 
 	class Options implements DialogListener {
-		GenericDialog gd;
 
 		Options() {
-			if (dialogShowing)
+			if (gd != null) {
+				gd.toFront();
 				return;
-			dialogShowing = true;
+			}
 			options = this;
 			showDialog();
 		}
@@ -136,6 +178,15 @@ import java.util.Vector;
 			sb.setValue(width);
 		}
 
+		void setColor(Color c) {
+			String name = Colors.getColorName(c, "");
+			if (name.length() > 0) {
+				Vector choices = gd.getChoices();
+				Choice ch = (Choice)choices.elementAt(0);
+				ch.select(name);
+			}
+		}
+
 		public void showDialog() {
 			Color color = Toolbar.getForegroundColor();
 			String colorName = Colors.getColorName(color, "red");
@@ -144,16 +195,19 @@ import java.util.Vector;
 			gd.addSlider(name+" width:", 1, 50, width);
 			gd.addChoice("Color:", Colors.colors, colorName);
 			gd.setInsets(10, 10, 0);
-			gd.addMessage("Shift-drag to change width\n"
-									+"Alt-drag to draw in background color\n"
-									+"Color Picker (shift-k) changes color");
+			String ctrlString = IJ.isMacintosh()? "CMD":"CTRL";
+			gd.addMessage("SHIFT for horizontal or vertical lines\n"+
+					"ALT to draw in background color\n"+
+					ctrlString+"-SHIFT-drag to change "+(isPencil ? "pencil" : "brush")+" width\n"+
+					ctrlString+"-(ALT) click to change foreground (background) color\n"+
+					"or use this dialog or the Color Picker (shift-k).");
 			gd.hideCancelButton();
 			gd.addHelp("");
 			gd.setHelpLabel("Undo");
 			gd.setOKLabel("Close");
 			gd.addDialogListener(this);
 			gd.showDialog();
-			dialogShowing = false;
+			gd = null;
 		}
 
 		public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
@@ -163,6 +217,8 @@ import java.util.Vector;
 				return true;
 			}
 			width = (int)gd.getNextNumber();
+			if (gd.invalidNumber() || width<0)
+				width = (int)Prefs.get(widthKey, 1);
 			String colorName = gd.getNextChoice();
 			Color color = Colors.getColor(colorName, Color.white);
 			Toolbar.setForegroundColor(color);

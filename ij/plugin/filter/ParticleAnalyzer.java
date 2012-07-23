@@ -984,14 +984,13 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 				prefix = "Drawing of ";
 			outlines.update(drawIP);
 			outputImage = new ImagePlus(prefix+title, outlines);
+			outputImage.setCalibration(imp.getCalibration());
 			if (inSituShow) {
 				if (imp.getStackSize()==1)
 					Undo.setup(Undo.TRANSFORM, imp);
 				imp.setStack(null, outputImage.getStack());
-			} else if (!hideOutputImage) {
-				outputImage.setCalibration(imp.getCalibration());
+			} else if (!hideOutputImage)
 				outputImage.show();
-			}
 		}
 		if (showResults && !processStack) {
 			if (showResultsWindow) {

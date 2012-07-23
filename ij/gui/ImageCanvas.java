@@ -876,7 +876,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return new Color(cm.getRGB(index));
 	}
 	
-	protected void setDrawingColor(int ox, int oy, boolean setBackground) {
+	/** Sets the foreground drawing color (or background color if 
+		'setBackground' is true) to the color of the pixel at (ox,oy). */
+	public void setDrawingColor(int ox, int oy, boolean setBackground) {
 		//IJ.log("setDrawingColor: "+setBackground+this);
 		int type = imp.getType();
 		int[] v = imp.getPixel(ox, oy);
