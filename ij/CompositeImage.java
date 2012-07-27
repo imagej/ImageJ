@@ -590,10 +590,21 @@ public class CompositeImage extends ImagePlus {
 	}
 
 	public void resetDisplayRange() {
-		ip.resetMinAndMax();
-		int c = getChannelIndex();
-		lut[c].min = ip.getMin();
-		lut[c].max = ip.getMax();
+		if (getType()==GRAY16 && getDefault16bitRange()!=0) {
+			int defaultRange = getDefault16bitRange();
+			for (int i=1; i<=getNChannels(); i++) {
+				LUT lut = getChannelLut(i);
+				lut.min = 0;
+				lut.max = Math.pow(2,defaultRange)-1;
+				if (getWindow()!=null)
+					setChannelLut(lut, i);
+			}
+		} else {
+			ip.resetMinAndMax();
+			int c = getChannelIndex();
+			lut[c].min = ip.getMin();
+			lut[c].max = ip.getMax();
+		}
 	}
 	
 	public boolean hasCustomLuts() {

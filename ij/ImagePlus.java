@@ -1776,8 +1776,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 			
- 	/** Returns a new hyperstack with this image's attributes
-		(e.g., width, height, spatial scale), but no image data. */
+ 	/** This method has been replaced by IJ.createHyperStack(). */
 	public ImagePlus createHyperStack(String title, int channels, int slices, int frames, int bitDepth) {
 		int size = channels*slices*frames;
 		ImageStack stack2 = new ImageStack(width, height, size); // create empty stack
@@ -2145,9 +2144,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	public void resetDisplayRange() {
-		if (imageType==GRAY16 && default16bitDisplayRange>=8 && default16bitDisplayRange<=16 && !(getCalibration().isSigned16Bit())) {
+		if (imageType==GRAY16 && default16bitDisplayRange>=8 && default16bitDisplayRange<=16 && !(getCalibration().isSigned16Bit()))
 			ip.setMinAndMax(0, Math.pow(2,default16bitDisplayRange)-1);
-		} else
+		else
 			ip.resetMinAndMax();
 	}
 	

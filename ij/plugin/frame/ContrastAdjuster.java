@@ -17,11 +17,11 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	ActionListener, AdjustmentListener, ItemListener {
 
 	public static final String LOC_KEY = "b&c.loc";
+	public static final String[] sixteenBitRanges = {"Automatic", "8-bit (0-255)", "10-bit (0-1023)", "12-bit (0-4095)", "15-bit (0-32767)", "16-bit (0-65535)"};
 	static final int AUTO_THRESHOLD = 5000;
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
-	static final String[] ranges = {"Automatic", "8-bit (0-255)", "10-bit (0-1023)", "12-bit (0-4095)", "15-bit (0-32767)", "16-bit (0-65535)"};
 	
 	ContrastPlot plot = new ContrastPlot();
 	Thread thread;
@@ -803,7 +803,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		GenericDialog gd = new GenericDialog("Set Display Range");
 		gd.addNumericField("Minimum displayed value: ", minValue, digits);
 		gd.addNumericField("Maximum displayed value: ", maxValue, digits);
-		gd.addChoice("Unsigned 16-bit range:", ranges, ranges[getRangeIndex()]);
+		gd.addChoice("Unsigned 16-bit range:", sixteenBitRanges, sixteenBitRanges[get16bitRangeIndex()]);
 		String label = "Propagate to all other ";
 		label = imp.isComposite()?label+channels+" channel images":label+"open images";
 		gd.addCheckbox(label, false);
@@ -822,7 +822,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		maxValue = cal.getRawValue(maxValue);
 		int rangeIndex = gd.getNextChoiceIndex();
 		int range1 = ImagePlus.getDefault16bitRange();
-		int range2 = setRange(rangeIndex);
+		int range2 = set16bitRange(rangeIndex);
 		if (range1!=range2 && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
 			reset(imp, ip);
 			minValue = imp.getDisplayRangeMin();
@@ -911,7 +911,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
     }
 	
-	int getRangeIndex() {
+	public static int get16bitRangeIndex() {
 		int range = ImagePlus.getDefault16bitRange();
 		int index = 0;
 		if (range==8) index = 1;
@@ -922,7 +922,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		return index;
 	}
 
-	int setRange(int index) {
+	public static int set16bitRange(int index) {
 		int range = 0;
 		if (index==1) range = 8;
 		else if (index==2) range = 10;

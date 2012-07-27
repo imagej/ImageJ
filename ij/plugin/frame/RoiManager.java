@@ -1456,7 +1456,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	void showAll(int mode) {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
-			{error("There are no images open."); return;}
+			return;
 		boolean showAll = mode==SHOW_ALL;
 		if (mode==LABELS) {
 			showAll = true;

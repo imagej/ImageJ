@@ -1774,6 +1774,24 @@ public class IJ {
 		return NewImage.createImage(title, width, height, depth, bitDepth, options);
 	}
 
+	/** Creates a new hyperstack.
+	*  @param title   image name
+	*  @param width  image width in pixels
+	*  @param height image height in pixels
+	*  @param channels number of channels
+	*  @param slices number of slices
+	*  @param frames number of frames
+	*  @param bitdepth  8, 16, 32 (float) or 24 (RGB)
+	*/
+	 public static ImagePlus createHyperStack(String title, int width, int height, int channels, int slices, int frames, int bitdepth) {
+		ImagePlus imp = createImage(title, width, height, channels*slices*frames, bitdepth);
+		imp.setDimensions(channels, slices, frames);
+		if (channels>1 && bitdepth!=24)
+			imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
+		imp.setOpenAsHyperStack(true);
+		return imp;
+	 }
+	 
 	 /** Opens a new image. <code>Type</code> should contain "8-bit", "16-bit", "32-bit" or "RGB". 
 		In addition, it can contain "white", "black" or "ramp" (the default is "white"). <code>Width</code> 
 		and <code>height</code> specify the width and height of the image in pixels.  
