@@ -117,7 +117,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			overlay.remove(overlay.size()-1); //delete brush resizing circle
 			imp.setOverlay(overlay);
 			Prefs.set(WIDTH_KEY, width);
-			if (options!=null)
+			if (gd!=null)
 				options.setWidth(width);
 		} else if (newPath)		// allow drawing a single dot
 			mouseDragged(imp, e);

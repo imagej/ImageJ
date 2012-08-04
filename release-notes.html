@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<li> <u>1.47b 26 July 2012</u>
+<li> <u>1.47b 4 August 2012</u>
 <ul>
 <li> Thanks to Michael Schmid, the built in brush, pencil and overlay brush tools
 draw using background color when alt key is down, are constrained to draw horizontally
@@ -14,6 +14,8 @@ and "pick up" the foreground color when control is down (cmd on Macs).
 <li> Added a "16 bit range" choice to the <i>Edit&gt;Options&gt;Appearance</i>
 dialog box. This is the same as the "Unsigned 16 bit range" choice in the Brightness/Contast
 Adjuster's "Set" dialog.
+<li> Thanks to Olivio Donati, <i>File&gt;Import&gt;Image Sequence</i> opens
+associated ROIs in a file named RoiSet.zip.
 <li> Thanks to David Knecht, added a "sum" option to <i>Image&gt;Transform&gt;Bin</i>.
 <li> Added the IJ.createHyperStack(title,width,height,channels,slices,frames,bitdepth)
 method, where bitdepth is 8, 16, 24 (rgb), or 32 (float).
@@ -24,6 +26,9 @@ analyzer's "Show:" option to not use the calibration of the original image.
 <li> Thanks to Guenter Giese, fixed bugs that caused the "Unsigned 16 bit range" 
 choice in the Brightness/Contast Adjuster's "Set" dialog to not work as expected
 with multi-channel images.
+<li> Thanks to Barry DeZonia, fixed a bug that caused the command recorder
+to not work with <i>Image&gt;Stacks&gt;3D Project</i> when
+processing 16 and 32 bit images.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 

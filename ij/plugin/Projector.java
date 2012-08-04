@@ -67,13 +67,6 @@ public class Projector implements PlugIn {
 
 	public void run(String arg) {
 		imp = IJ.getImage();
-		if (imp.getBitDepth()==16 || imp.getBitDepth()==32) {
-			if (!IJ.isMacro()) {
-				if (!IJ.showMessageWithCancel("3D Project", "Convert this stack to 8-bits?"))
-	    			return;
-	    	}
-			IJ.run(imp, "8-bit", "");
-		}
 		ImageProcessor ip = imp.getProcessor();
 		if (ip.isInvertedLut() && !IJ.isMacro()) {
 			if (!IJ.showMessageWithCancel("3D Project", ZProjector.lutMessage))
@@ -228,7 +221,7 @@ public class Projector implements PlugIn {
 		if (imp.isComposite()) {
 			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
 			((CompositeImage)buildImp2).copyLuts(imp);
-			//buildImp2.show();
+			((CompositeImage)buildImp2).resetDisplayRanges();
 			buildImp = buildImp2;
 		}
 		buildImp.setTitle("Projections of "+imp.getShortTitle());
@@ -282,6 +275,12 @@ public class Projector implements PlugIn {
 		boolean minProjSize = true;
 		
 		stack = imp.getStack();
+		if (imp.getBitDepth()==16 || imp.getBitDepth()==32) {
+			ImageStack stack2 = new ImageStack(imp.getWidth(),imp.getHeight());
+			for (int i=1; i<=stack.getSize(); i++)
+				stack2.addSlice(stack.getProcessor(i).convertToByte(true));
+			stack = stack2;
+		}
 		if ((angleInc==0) && (totalAngle!=0))
 			angleInc = 5;
 		boolean negInc = angleInc<0;

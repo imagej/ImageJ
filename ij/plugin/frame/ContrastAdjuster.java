@@ -860,10 +860,12 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 					}
 					recordSetMinAndMax(imin, imax);
 				}
-				if (Recorder.scriptMode())
-					Recorder.recordCall("ImagePlus.setDefault16bitRange("+range2+");");
-				else
-					Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+range2+");\n");
+				if (range2>0) {
+					if (Recorder.scriptMode())
+						Recorder.recordCall("ImagePlus.setDefault16bitRange("+range2+");");
+					else
+						Recorder.recordString("call(\"ij.ImagePlus.setDefault16bitRange\", "+range2+");\n");
+				}
 
 			}
 		}

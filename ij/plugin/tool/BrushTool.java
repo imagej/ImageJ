@@ -30,7 +30,7 @@ import java.util.Vector;
 	public void run(String arg) {
 		isPencil = "pencil".equals(arg);
 		widthKey = isPencil ? PENCIL_WIDTH_KEY : BRUSH_WIDTH_KEY;
-		width = (int)Prefs.get(PENCIL_WIDTH_KEY, isPencil ? 1 : 5);
+		width = (int)Prefs.get(widthKey, isPencil ? 1 : 5);
 		Toolbar.addPlugInTool(this);
 	}
 
@@ -108,7 +108,7 @@ import java.util.Vector;
 			}
 			overlay = null;
 			if (e.isShiftDown()) {
-				if (options!=null)
+				if (gd!=null)
 					options.setWidth(width);
 				Prefs.set(widthKey, width);
 			}
@@ -222,10 +222,7 @@ import java.util.Vector;
 			String colorName = gd.getNextChoice();
 			Color color = Colors.getColor(colorName, Color.white);
 			Toolbar.setForegroundColor(color);
-			if (isPencil)
-				Prefs.set(PENCIL_WIDTH_KEY, width);
-			else
-				Prefs.set(BRUSH_WIDTH_KEY, width);
+			Prefs.set(widthKey, width);
 			return true;
 		}
 	}

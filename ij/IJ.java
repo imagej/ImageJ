@@ -927,7 +927,7 @@ public class IJ {
 		return osarch!=null && osarch.indexOf("64")!=-1;
 	}
 
-	/** Displays an error message and returns false if the
+	/** Displays an error message and returns true if the
 		ImageJ version is less than the one specified. */
 	public static boolean versionLessThan(String version) {
 		boolean lessThan = ImageJ.VERSION.compareTo(version)<0;
