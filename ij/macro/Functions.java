@@ -1655,8 +1655,6 @@ public class Functions implements MacroConstants, Measurements {
 			setMinMax = true;
 		} else 
 			interp.getRightParen();
-		if ((bitDepth==8||bitDepth==24) && nBins!=256)
-			interp.error("Bin count ("+nBins+") must be 256 for 8-bit and RGB images");
 		if (nBins==65536 && bitDepth==16) {
 			Variable[] array = counts.getArray();
 			int[] hist = getProcessor().getHistogram();
@@ -1668,7 +1666,14 @@ public class Functions implements MacroConstants, Measurements {
 			return;
 		}
 		ImageStatistics stats;
-		if (setMinMax)
+		boolean custom8Bit = false;
+		if ((bitDepth==8||bitDepth==24) && nBins!=256) {
+			ImageProcessor ip = imp.getProcessor().convertToShort(false);
+			imp = imp.createImagePlus();
+			imp.setProcessor(ip);
+			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, nBins, 0, 256);
+			custom8Bit = true;
+		} else if (setMinMax)
 			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, nBins, histMin, histMax);
 		else
 			stats = imp.getStatistics(AREA+MEAN+MODE+MIN_MAX, nBins);
@@ -1677,7 +1682,7 @@ public class Functions implements MacroConstants, Measurements {
 			double[] array = new double[nBins];
 			double value = cal.getCValue(stats.histMin);
 			double inc = 1.0;
-			if (bitDepth==16 || bitDepth==32 || cal.calibrated())
+			if (bitDepth==16 || bitDepth==32 || cal.calibrated() || custom8Bit)
 				inc = (cal.getCValue(stats.histMax) - cal.getCValue(stats.histMin))/stats.nBins;
 			for (int i=0; i<nBins; i++) {
 				array[i] = value;

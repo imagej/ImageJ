@@ -7,6 +7,7 @@ import ij.measure.Measurements;
 import java.lang.*; 
 import java.awt.*; 
 import java.awt.event.*; 
+import java.util.Arrays;
 
 /** This plugin performs a z-projection of the input stack. Type of
     output image is same as type of input image.
@@ -438,84 +439,13 @@ public class ZProjector implements PlugIn {
 	}
 
 	float median(float[] a) {
-		sort(a);
-		int length = a.length;
-		if ((length&1)==0)
-			return (a[length/2-1]+a[length/2])/2f; // even
+		Arrays.sort(a);
+		int middle = a.length/2;
+		if ((a.length&1)==0) //even
+			return (a[middle-1] + a[middle])/2f;
 		else
-			return a[length/2]; // odd
+			return a[middle];
 	}
-	
-	void sort(float[] a) {
-		if (!alreadySorted(a))
-			sort(a, 0, a.length - 1);
-	}
-	
-	void sort(float[] a, int from, int to) {
-		int i = from, j = to;
-		float center = a[ (from + to) / 2 ];
-		do {
-			while ( i < to && center>a[i] ) i++;
-			while ( j > from && center<a[j] ) j--;
-			if (i < j) {float temp = a[i]; a[i] = a[j]; a[j] = temp; }
-			if (i <= j) { i++; j--; }
-		} while(i <= j);
-		if (from < j) sort(a, from, j);
-		if (i < to) sort(a,  i, to);
-	}
-		
-	boolean alreadySorted(float[] a) {
-		for ( int i=1; i<a.length; i++ ) {
-			if (a[i]<a[i-1] )
-			return false;
-		}
-		return true;
-	}
-
-/*
-    ImagePlus doModeProjection() {
-    	IJ.showStatus("Calculating mode...");
-    	ImageStack stack = imp.getStack();
-    	ImageProcessor[] slices = new ImageProcessor[sliceCount];
-    	int index = 0;
-    	for (int slice=startSlice; slice<=stopSlice; slice+=increment)
-    		slices[index++] = stack.getProcessor(slice);
-    	ImageProcessor ip2 = slices[0].duplicate();
-    	ip2 = ip2.convertToShort(false);
-    	short[] values = new short[sliceCount];
-    	int width = ip2.getWidth();
-    	int height = ip2.getHeight();
-    	int inc = Math.max(height/30, 1);
-    	for (int y=0; y<height; y++) {
-    		if (y%inc==0) IJ.showProgress(y, height-1);
-    		for (int x=0; x<width; x++) {
-    			for (int i=0; i<sliceCount; i++)
-    				values[i] = (short)slices[i].getPixel(x, y);
-    			ip2.putPixel(x, y, mode(values));
-    		}
-    	}
-  		return new ImagePlus(makeTitle(), ip2);
-    }
-    
-    ImageProcessor modeProcessor=null;
-
-	int mode(short[] a) {
-		if (modeProcessor==null)
-			modeProcessor = new ShortProcessor(a.length, 1, a, null);
-		else
-			modeProcessor.setPixels(a);
-		int[] histogram = modeProcessor.getHistogram();
-		int count, mode=0, maxCount=0;
-		for (int i=0; i<histogram.length; i++) {
-			count = histogram[i];
-			if (count>maxCount) {
-				maxCount = count;
-				mode = i;
-			}
-		}
-		return mode;
-	}
-*/
 
      /** Abstract class that specifies structure of ray
 	function. Preprocessing should be done in derived class
