@@ -178,7 +178,10 @@ public class FolderOpener implements PlugIn {
 				Opener opener = new Opener();
 				opener.setSilentMode(true);
 				IJ.redirectErrorMessages();
-				if (!openAsVirtualStack||stack==null)
+				if ("RoiSet.zip".equals(list[i])) {
+					IJ.open(directory+list[i]);
+					imp = null;
+				} else if (!openAsVirtualStack||stack==null)
 					imp = opener.openImage(directory, list[i]);
 				if (imp!=null && stack==null) {
 					width = imp.getWidth();

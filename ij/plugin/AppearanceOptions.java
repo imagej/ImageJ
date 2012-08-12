@@ -5,6 +5,8 @@ import ij.process.*;
 import ij.io.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.LineWidthAdjuster;
+import ij.plugin.frame.ContrastAdjuster;
+import ij.measure.Calibration;
 import java.awt.*;
 
 /** This plugin implements the Edit/Options/Appearance command. */
@@ -15,6 +17,8 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 	private boolean noBorder = Prefs.noBorder;
 	private boolean inverting = Prefs.useInvertingLut;
 	private boolean antialiased = Prefs.antialiasedTools;
+	private int rangeIndex = ContrastAdjuster.get16bitRangeIndex();
+	private LUT[] luts = getLuts();
 	private int setMenuSize = Menus.getFontSize();
 	private boolean redrawn, repainted;
 
@@ -23,6 +27,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
  	}
 		
 	void showDialog() {
+		String[] ranges = ContrastAdjuster.sixteenBitRanges;
 		GenericDialog gd = new GenericDialog("Appearance", IJ.getInstance());
 		gd.addCheckbox("Interpolate zoomed images", Prefs.interpolateScaledImages);
 		gd.addCheckbox("Open images at 100%", Prefs.open100Percent);
@@ -30,6 +35,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("No image border", Prefs.noBorder);
 		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
 		gd.addCheckbox("Antialiased tool icons", Prefs.antialiasedTools);
+		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
         gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
         gd.addDialogListener(this);
@@ -46,6 +52,17 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 			if (redrawn) draw();
 			if (repainted) repaintWindow();
 			Prefs.open100Percent = open100;
+			if (rangeIndex!=ContrastAdjuster.get16bitRangeIndex()) {
+				ContrastAdjuster.set16bitRange(rangeIndex);
+				ImagePlus imp = WindowManager.getCurrentImage();
+				Calibration cal = imp!=null?imp.getCalibration():null;
+				if (imp!=null && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
+					imp.resetDisplayRange();
+					if (rangeIndex==0 && imp.isComposite() && luts!=null)
+						((CompositeImage)imp).setLuts(luts);
+					imp.updateAndDraw();
+				}
+			}
 			return;
 		}
 		if (setMenuSize!=Menus.getFontSize() && !IJ.isMacintosh()) {
@@ -83,7 +100,25 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 			Prefs.noBorder = noBorder;
 			repaintWindow();
 		}
+		int rangeIndex2 = gd.getNextChoiceIndex();
+		int range1 = ImagePlus.getDefault16bitRange();
+		int range2 = ContrastAdjuster.set16bitRange(rangeIndex2);
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Calibration cal = imp!=null?imp.getCalibration():null;
+		if (range1!=range2 && imp!=null && imp.getType()==ImagePlus.GRAY16 && !cal.isSigned16Bit()) {
+			imp.resetDisplayRange();
+			if (rangeIndex2==0 && imp.isComposite() && luts!=null)
+				((CompositeImage)imp).setLuts(luts);
+			imp.updateAndDraw();
+		}
 		return true;
+    }
+    
+    private LUT[] getLuts() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp==null || imp.getBitDepth()!=16 || !imp.isComposite())
+			return null;
+		return ((CompositeImage)imp).getLuts();
     }
     
     void draw() {

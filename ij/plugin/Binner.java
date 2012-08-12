@@ -15,10 +15,11 @@ import java.awt.image.*;
  * @author Wayne Rasband
  */
 public class Binner implements PlugIn {
-	public static int AVERAGE=0, MEDIAN=1, MIN=2, MAX=3;
-	private static String[] methods = {"Average", "Median", "Min", "Max"};
+	public static int AVERAGE=0, MEDIAN=1, MIN=2, MAX=3, SUM=4;
+	private static String[] methods = {"Average", "Median", "Min", "Max", "Sum"};
 	private int xshrink=2, yshrink=2, zshrink=1;
 	private int method = AVERAGE;
+	private float maxValue;
 
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
@@ -31,6 +32,8 @@ public class Binner implements PlugIn {
 		IJ.showTime(imp, imp.getStartTime(), "", imp.getStackSize());
 		imp.setStack(imp2.getStack());
 		imp.setCalibration(imp2.getCalibration());
+		if (zshrink>1)
+			imp.setSlice(1);
 	}
 
 	public ImagePlus shrink(ImagePlus imp, int xshrink, int yshrink, int zshrink, int method) {
@@ -42,6 +45,15 @@ public class Binner implements PlugIn {
 		ImageStack stack=imp.getStack();
 		ImageStack stack2 = new ImageStack (w, h, cm);
 		int d = stack.getSize();
+		if (method==SUM) {
+			int bitDepth = imp.getBitDepth();
+			if (bitDepth==8)
+				maxValue = 255;
+			else if (bitDepth==16)
+				maxValue = 65535;
+			else
+				maxValue = 0;
+		}
 		for (int z=1; z<=d; z++) {
 			IJ.showProgress(z, d);
 			ImageProcessor ip = stack.getProcessor(z);
@@ -64,6 +76,10 @@ public class Binner implements PlugIn {
 		//if (zshrink>1 && imp.isHyperStack())
 		//	imp2 = shrinkHyperstackZ(imp2, zshrink);
 		imp2.setOpenAsHyperStack(imp.isHyperStack());
+		if (method==SUM  && imp2.getBitDepth()>8) {
+			ImageProcessor ip = imp2.getProcessor();
+			ip.setMinAndMax(ip.getMin(), ip.getMax()*xshrink*yshrink*zshrink);
+		}
 		return imp2;
 	}
 	
@@ -149,6 +165,8 @@ public class Binner implements PlugIn {
 					ip2.setf(x, y, getMin(ip, x, y));
 				else if (method==MAX)
 					ip2.setf(x, y, getMax(ip, x, y));
+				else if (method==SUM)
+					ip2.setf(x, y, getSum(ip, x, y));
 			}
 		}
 		return ip2;
@@ -225,6 +243,17 @@ public class Binner implements PlugIn {
 			}
 		}
 		return max;
+	}
+
+	private float getSum(ImageProcessor ip, int x, int y) {
+		float sum = 0;
+		for (int y2=0; y2<yshrink; y2++) {
+			for (int x2=0;  x2<xshrink; x2++)
+				sum += ip.getf(x*xshrink+x2, y*yshrink+y2); 
+		}
+		if (maxValue>0f && sum>maxValue)
+			sum = maxValue;
+		return sum;
 	}
 
 	private boolean showDialog(ImagePlus imp) {

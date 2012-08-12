@@ -1,5 +1,6 @@
 package ij.process;
 import ij.measure.Calibration;
+import java.util.Arrays;
 
 /** 32-bit (float) image statistics, including histogram. */
 public class FloatStatistics extends ImageStatistics {
@@ -33,15 +34,8 @@ public class FloatStatistics extends ImageStatistics {
 			getCentroid(ip, minThreshold, maxThreshold);
 		if ((mOptions&(CENTER_OF_MASS|SKEWNESS|KURTOSIS))!=0)
 			calculateMoments(ip, minThreshold, maxThreshold);
-		if ((mOptions&MEDIAN)!=0) {
-			if (Double.isInfinite(binSize)||Double.isNaN(binSize))
-				median = 0.0;
-			else {
-				calculateMedian(histogram, 0, histogram.length-1, null);
-				median = histMin + median*binSize;
-				if (binSize!=1.0) median += binSize/2.0; 
-			}       	
-		}
+		if ((mOptions&MEDIAN)!=0)
+			getMedian(ip, minThreshold, maxThreshold);
 		if ((mOptions&AREA_FRACTION)!=0)
 			calculateAreaFraction(ip);
 	}
@@ -221,6 +215,33 @@ public class FloatStatistics extends ImageStatistics {
 			}
 		}
 		areaFraction = sum*100.0/total;
+	}
+	
+	void getMedian(ImageProcessor ip, double minThreshold, double maxThreshold) {
+		float[] pixels = (float[])ip.getPixels();
+		float[] pixels2 = new float[pixelCount];
+		byte[] mask = ip.getMaskArray();
+		int i, mi;
+		float v;
+		int count = 0;
+		for (int y=ry,my=0; y<(ry+rh); y++,my++) {
+			i = y*width + rx;
+			mi = my*rw;
+			for (int x=rx; x<(rx+rw); x++) {
+				if (mask==null||mask[mi++]!=0) {
+					v = pixels[i];
+					if (v>=minThreshold && v<=maxThreshold)
+						pixels2[count++] = v;
+				}
+				i++;
+			}
+		}
+		Arrays.sort(pixels2);
+		int middle = pixels2.length/2;
+		if ((pixels2.length&1)==0) //even
+			median = (pixels2[middle-1] + pixels2[middle])/2f;
+		else
+			median = pixels2[middle];
 	}
 
 }

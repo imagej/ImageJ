@@ -147,6 +147,7 @@ stacks12="Z Project...",ij.plugin.ZProjector
 stacks13="3D Project...",ij.plugin.Projector
 stacks14="Plot Z-axis Profile",ij.plugin.filter.ZAxisProfiler
 stacks15="Label...",ij.plugin.filter.StackLabeler
+stacks16="Statistics...",ij.plugin.Stack_Statistics
 
 # Plugins installed in the Image/Stacks/Tools submenu
 tools_01="Combine...",ij.plugin.StackCombiner
