@@ -98,13 +98,12 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	JList completions;
 	JScrollPane scrollPane;
 	DefaultListModel completionsModel;
-	JButton runButton, closeButton, exportButton;
+	JButton runButton, sourceButton, closeButton, exportButton;
 	JCheckBox fullInfoCheckBox, closeCheckBox;
 	Hashtable commandsHash;
 	String [] commands;
 	Hashtable listLabelToCommand;
 	static boolean closeWhenRunning = Prefs.get("command-finder.close", true);
-;
 
 	protected String makeListLabel(String command, CommandAction ca, boolean fullInfo) {
 		if (fullInfo) {
@@ -156,11 +155,18 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		Object source = ae.getSource();
 		if (source==runButton) {
 			String selected = (String)completions.getSelectedValue();
-			if(selected==null) {
+			if (selected==null) {
 				IJ.error("Please select a command to run");
 				return;
 			}
 			runFromLabel(selected);
+		} else if (source==sourceButton) {
+			String selected = (String)completions.getSelectedValue();
+			if (selected==null) {
+				IJ.error("Please select a command");
+				return;
+			}
+			showSource(selected);
 		} else if (source == exportButton) {
 			export();
 		} else if (source == closeButton) {
@@ -193,6 +199,39 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
 	
+	void showSource(String cmd) {
+		cmd = (String)listLabelToCommand.get(cmd);
+		Hashtable table = Menus.getCommands();
+		String className = (String)table.get(cmd);
+		if (IJ.debugMode)
+			IJ.log("showSource: "+cmd+"   "+className);
+		if (className==null) {
+			IJ.error("No source associated with this command:\n  "+cmd);
+			return;
+		}
+		int mstart = className.indexOf("ij.plugin.Macro_Runner(\"");
+		if (mstart>=0) { // macro or script
+			int mend = className.indexOf("\")");
+			if (mend==-1)
+				return;
+			String macro = className.substring(mstart+24,mend);
+			IJ.open(IJ.getDirectory("plugins")+macro);
+			return;
+		}
+		if (className.endsWith("\")")) {
+			int openParen = className.lastIndexOf("(\"");
+			if (openParen>0)
+				className = className.substring(0, openParen);
+		}
+		if (className.startsWith("ij.")) {
+			className = className.replaceAll("\\.", "/");
+			String url = IJ.URL+"/source/"+className;
+			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/source/"+className+".java");
+			return;
+		}
+		IJ.error("Unable to display source for this plugin:\n  "+cmd);
+	}
+
 	void export() {
 		StringBuffer sb = new StringBuffer(5000);
 		for (int i=0; i<completionsModel.size(); i++) {
@@ -454,13 +493,16 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		completions.addMouseListener(this);
 
 		runButton = new JButton("Run");
+		sourceButton = new JButton("Source");
 		exportButton = new JButton("Export");
 		closeButton = new JButton("Close");
 
 		runButton.addActionListener(this);
+		sourceButton.addActionListener(this);
 		exportButton.addActionListener(this);
 		closeButton.addActionListener(this);
 		runButton.addKeyListener(this);
+		sourceButton.addKeyListener(this);
 		closeButton.addKeyListener(this);
 
 		JPanel southPanel = new JPanel();
@@ -472,6 +514,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.add(runButton);
+		buttonsPanel.add(sourceButton);
 		buttonsPanel.add(exportButton);
 		buttonsPanel.add(closeButton);
 

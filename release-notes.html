@@ -5,38 +5,9 @@
 </head>
 <body>
 
-<li> <u>1.47b 10 August 2012</u>
+<li> <u>1.47c 16 August 2012</u>
 <ul>
-<li> Added the <i>Image&gt;Stacks&gt;Statistics</i> command.
-<li> Thanks to Michael Schmid, the built in brush, pencil and overlay brush tools
-draw using background color when alt key is down, are constrained to draw horizontally
-when shift is down, are resized when shift&controland are down (shift&cmd on Macs),
-and "pick up" the foreground color when control is down (cmd on Macs).
-<li> Added a "16 bit range" choice to the <i>Edit&gt;Options&gt;Appearance</i>
-dialog box. This is the same as the "Unsigned 16 bit range" choice in the Brightness/Contast
-Adjuster's "Set" dialog.
-<li> Thanks to Olivio Donati, <i>File&gt;Import&gt;Image Sequence</i> opens
-associated ROIs in a file named RoiSet.zip.
-<li> Thanks to David Knecht, added a "sum" option to <i>Image&gt;Transform&gt;Bin</i>.
-<li> The getHistogram() macro function no longer limits the number of bins to 256 
-with 8-bit and RGB images.
-<li> Added the IJ.createHyperStack(title,width,height,channels,slices,frames,bitdepth)
-method, where bitdepth is 8, 16, 24 (rgb), or 32 (float).
-<li> Thanks to Qingzong Tseng, fixed a bug that caused overlays to be
-lost when converting composite stacks to RGB.
-<li> Thanks to Jan Eglinger, fixed a bug that caused images created by the particle 
-analyzer's "Show:" option to not use the calibration of the original image.
-<li> Thanks to Guenter Giese, fixed bugs that caused the "Unsigned 16 bit range" 
-choice in the Brightness/Contast Adjuster's "Set" dialog to not work as expected
-with multi-channel images.
-<li> Thanks to Barry DeZonia, fixed a bug that caused the command recorder
-to not work with <i>Image&gt;Stacks&gt;3D Project</i> when
-processing 16 and 32 bit images.
-<li> Thanks to William Edwards, fixed a bug that sometimes caused the median of
-32-bit float images to be calculated incorrectly.
-<li> Thanks to Michael Cammer, worked around a bug that could cause commands
-in the <i>Image&gt;Type</i> submenu to not work as expected in non-batch mode macros.
-
+<li> Added a "Source" (display source code) button to <i>Plugins&gt;Utilities&gt;Find Commands</i>.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a> 
