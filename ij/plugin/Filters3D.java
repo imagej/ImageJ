@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * This plugin implements most of the 3D filters in the Process/Filters submenu.
+ * @author Thomas Boudier
  */
 package ij.plugin;
 

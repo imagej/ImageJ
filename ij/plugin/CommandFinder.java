@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.Hashtable;
+import java.io.File;
 
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -225,11 +226,17 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		}
 		if (className.startsWith("ij.")) {
 			className = className.replaceAll("\\.", "/");
-			String url = IJ.URL+"/source/"+className;
 			IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/source/"+className+".java");
 			return;
 		}
-		IJ.error("Unable to display source for this plugin:\n  "+cmd);
+		className = IJ.getDirectory("plugins")+className.replaceAll("\\.","/");
+		String path = className+".java";
+		File f = new File(path);
+		if (f.exists()) {
+			IJ.open(path);
+			return;
+		}
+		IJ.error("Unable to display source for this plugin:\n  "+className);
 	}
 
 	void export() {

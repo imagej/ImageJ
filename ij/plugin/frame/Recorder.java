@@ -222,7 +222,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 
 	public static void recordCall(String call) {
 		if (IJ.debugMode) IJ.log("recordCall: "+call+"  "+commandName);
-		if (textArea!=null && scriptMode && !IJ.macroRunning()) {
+		boolean isMacro = Thread.currentThread().getName().endsWith("Macro$") && !recordInMacros;
+		if (textArea!=null && scriptMode && !IJ.macroRunning() && !isMacro) {
 			textArea.append(call+"\n");
 			commandName = null;
  		}
