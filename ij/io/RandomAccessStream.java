@@ -4,22 +4,22 @@ import java.io.*;
 import java.util.Vector;
 
 
-/** This is a class that uses a memory cache to allow seeking within
+/** This class uses a memory cache to allow seeking within
 	an InputStream. Based on the JAI MemoryCacheSeekableStream class.
 	Can also be constructed from a RandomAccessFile, which uses less
 	memory since the memory cache is not required.
 */ 
 public final class RandomAccessStream extends InputStream {
 
-    private static final int BLOCK_SIZE = 512;
-    private static final int BLOCK_MASK = 511;
-    private static final int BLOCK_SHIFT = 9;
+    private static final int BLOCK_SIZE = 1024;
+    private static final int BLOCK_MASK = 1023;
+    private static final int BLOCK_SHIFT = 10;
 
     private InputStream src;
     private RandomAccessFile ras;
     private long pointer;
     private Vector data;
-    private int length;
+    private long length;
     private boolean foundEOS;
     
     /** Constructs a RandomAccessStream from an InputStream. Seeking
@@ -27,7 +27,7 @@ public final class RandomAccessStream extends InputStream {
 	public RandomAccessStream(InputStream inputstream) {
         pointer = 0L;
         data = new Vector();
-        length = 0;
+        length = 0L;
         foundEOS = false;
         src = inputstream;
     }
@@ -56,7 +56,7 @@ public final class RandomAccessStream extends InputStream {
     		return ras.read();
         long l = pointer + 1L;
         long l1 = readUntil(l);
-        if(l1 >= l) {
+        if (l1>=l) {
             byte abyte0[] = (byte[])data.elementAt((int)(pointer>>BLOCK_SHIFT));
             return abyte0[(int)(pointer++ & BLOCK_MASK)] & 0xff;
         } else
@@ -68,9 +68,9 @@ public final class RandomAccessStream extends InputStream {
             throw new NullPointerException();
      	if (ras!=null)
     		return ras.read(bytes, off, len);
-        if(off<0 || len<0 || off+len>bytes.length)
+        if (off<0 || len<0 || off+len>bytes.length)
             throw new IndexOutOfBoundsException();
-        if(len == 0)
+        if (len == 0)
             return 0;
         long l = readUntil(pointer+len);
         if (l<=pointer)
@@ -98,20 +98,20 @@ public final class RandomAccessStream extends InputStream {
     }
 
     private long readUntil(long l) throws IOException {
-        if(l<length)
+        if (l<length)
             return l;
-        if(foundEOS)
+        if (foundEOS)
             return length;
-        int i = (int)(l >> BLOCK_SHIFT);
-        int j = length >> BLOCK_SHIFT;
-        for(int k = j; k <= i; k++) {
+        int i = (int)(l>>BLOCK_SHIFT);
+        int j = (int)(length>>BLOCK_SHIFT);
+        for (int k=j; k<=i; k++) {
             byte abyte0[] = new byte[BLOCK_SIZE];
             data.addElement(abyte0);
             int i1 = BLOCK_SIZE;
             int j1 = 0;
-            while(i1 > 0) {
+            while (i1>0) {
                 int k1 = src.read(abyte0, j1, i1);
-                if(k1 == -1) {
+                if (k1==-1) {
                     foundEOS = true;
                     return length;
                 }
@@ -119,9 +119,7 @@ public final class RandomAccessStream extends InputStream {
                 i1 -= k1;
                 length += k1;
             }
-
         }
-
         return length;
     }
 
@@ -153,14 +151,14 @@ public final class RandomAccessStream extends InputStream {
         int j = read();
         int k = read();
         int l = read();
-        if((i | j | k | l) < 0)
+        if ((i | j | k | l) < 0)
             throw new EOFException();
         else
             return (i << 24) + (j << 16) + (k << 8) + l;
     }
 
     public final long readLong() throws IOException {
-        return ((long)readInt() << 32) + ((long)readInt() & 0xffffffffL);
+        return ((long)readInt()<<32) + ((long)readInt()&0xffffffffL);
     }
 
     public final double readDouble() throws IOException {
@@ -170,10 +168,10 @@ public final class RandomAccessStream extends InputStream {
     public final short readShort() throws IOException {
         int i = read();
         int j = read();
-        if((i | j) < 0)
+        if ((i | j) < 0)
             throw new EOFException();
         else
-            return (short)((i << 8) + j);
+            return (short)((i<<8) + j);
     }
 
     public final float readFloat() throws IOException {

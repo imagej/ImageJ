@@ -48,7 +48,11 @@ public class Histogram implements PlugIn, TextListener {
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
 			Calibration cal = imp.getCalibration();
-			if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||bitDepth==24)) {
+			if (bitDepth==16 && ImagePlus.getDefault16bitRange()!=0) {
+				xMin = 0.0;
+				xMax = Math.pow(2,ImagePlus.getDefault16bitRange())-1;
+				useImageMinAndMax = false;
+			} else if (stackHistogram && ((bitDepth==8&&!cal.calibrated())||bitDepth==24)) {
 				xMin = 0.0;
 				xMax = 256.0;
 				useImageMinAndMax = false;

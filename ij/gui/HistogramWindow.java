@@ -579,8 +579,12 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			if (doUpdate && srcImp!=null) {
 				if (srcImp.getRoi()!=null)
 					IJ.wait(50);	//delay to make sure the roi has been updated
-				if (srcImp!=null)
-					showHistogram(srcImp, 256);
+				if (srcImp!=null) {
+					if (srcImp.getBitDepth()==16 && ImagePlus.getDefault16bitRange()!=0)
+						showHistogram(srcImp, 256, 0, Math.pow(2,ImagePlus.getDefault16bitRange())-1);
+					else
+						showHistogram(srcImp, 256);
+				}
 			}
 			synchronized(this) {
 				if (doUpdate) {
