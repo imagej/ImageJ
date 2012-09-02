@@ -2397,7 +2397,7 @@ public class Functions implements MacroConstants, Measurements {
 		else if (add)
 			rm.runCommand("Add", color, lineWidth);
 		else if (select) {
-			int n = rm.getList().getItemCount();
+			int n = rm.getCount();
 			checkIndex(index, 0, n-1);
 			if (shiftKeyDown || altKeyDown) {
 				rm.select(index, shiftKeyDown, altKeyDown);
@@ -2405,9 +2405,9 @@ public class Functions implements MacroConstants, Measurements {
 			} else
 				rm.select(index);
 		} else if (cmd.equals("count"))
-			countOrIndex = rm.getList().getItemCount();
+			countOrIndex = rm.getCount();
 		else if (cmd.equals("index"))
-			countOrIndex = rm.getList().getSelectedIndex();
+			countOrIndex = rm.getSelectedIndex();
 		else {
 			if (!rm.runCommand(cmd))
 				interp.error("Invalid ROI Manager command");
@@ -2432,7 +2432,7 @@ public class Functions implements MacroConstants, Measurements {
 		double[] indexes = getNumericArray();
 		interp.getRightParen();
 		int[] selectedIndexes = new int[indexes.length];
-		int count = rm.getList().getItemCount();
+		int count = rm.getCount();
 		for (int i=0; i<indexes.length; i++) {
 			selectedIndexes[i] = (int)indexes[i];
 			if (selectedIndexes[i]<0 || selectedIndexes[i]>=count)
