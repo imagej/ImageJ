@@ -42,6 +42,7 @@ public class Opener {
 	private File[] omFiles;
 	private static boolean openUsingPlugins;
 	private static boolean bioformats;
+	private String url;
 
 	static {
 		Hashtable commands = Menus.getCommands();
@@ -143,7 +144,7 @@ public class Opener {
 			if (isRGB48)
 				openRGB48(imp);
 			else
-				imp.show(IJ.d2s((System.currentTimeMillis()-start)/1000.0,3)+" seconds");
+				imp.show(getLoadRate(start,imp));
 		} else {
 			switch (fileType) {
 				case LUT:
@@ -202,6 +203,20 @@ public class Opener {
 					break;
 			}
 		}
+	}
+	
+	public static String getLoadRate(double time, ImagePlus imp) {
+		time = (System.currentTimeMillis()-time)/1000.0;
+		double mb = imp.getWidth()*imp.getHeight()*imp.getStackSize();
+		int bits = imp.getBitDepth();
+		if (bits==16)
+			mb *= 2;
+		else if (bits==24 || bits==32)
+			mb *=4;
+		mb /= 1024*1024;
+		double rate = mb/time;
+		int digits = rate<100.0?1:0;
+		return ""+IJ.d2s(time,2)+" seconds ("+IJ.d2s(mb/time,digits)+" MB/sec)";
 	}
 	
 	private boolean isText(String path) {
@@ -351,9 +366,10 @@ public class Opener {
 			IJ.showStatus(""+url);
 			String lurl = url.toLowerCase(Locale.US);
 			ImagePlus imp = null;
-			if (lurl.endsWith(".tif"))
+			if (lurl.endsWith(".tif")) {
+				this.url = url;
 				imp = openTiff(u.openStream(), name);
-			else if (lurl.endsWith(".zip"))
+			} else if (lurl.endsWith(".zip"))
 				imp = openZipUsingUrl(u);
 			else if (lurl.endsWith(".jpg") || lurl.endsWith(".gif"))
 				imp = openJpegOrGifUsingURL(name, u);
@@ -377,8 +393,8 @@ public class Opener {
 		} catch (Exception e) {
 			String msg = e.getMessage();
 			if (msg==null || msg.equals(""))
-				msg = "" + e;	
-			IJ.error("Open URL",msg + "\n \n" + url);
+				msg = "" + e;
+			IJ.error("Open URL", msg);
 			return null;
 		} 
 	}
@@ -775,6 +791,17 @@ public class Opener {
 		} catch (Exception e) {
 			IJ.error("TiffDecoder", ""+e);
 			return null;
+		}
+		if (url!=null && info!=null && info.length==1 && info[0].inputStream!=null) {
+			try {
+				info[0].inputStream.close();
+			} catch (IOException e) {}
+			try {
+				info[0].inputStream = new URL(url).openStream();
+			} catch (Exception e) {
+				IJ.error("TiffDecoder", ""+e);
+				return null;
+			}
 		}
 		return openTiff2(info);
 	}

@@ -296,7 +296,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			lineWidth = sw>1?sw:defaultLineWidth;
 		}
 		if (lineWidth>100) lineWidth = 1;
-		int n = listModel.getSize();
+		int n = getCount();
 		if (n>0 && !IJ.isMacro() && imp!=null) {
 			// check for duplicate
 			String label = (String) listModel.getElementAt(n-1);
@@ -434,7 +434,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	boolean delete(boolean replacing) {
-		int count = listModel.getSize();
+		int count = getCount();
 		if (count==0)
 			return error("The list is empty.");
 		int index[] = getSelectedIndexes();
@@ -695,7 +695,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 	
 	boolean save() {
-		if (listModel.getSize()==0)
+		if (getCount()==0)
 			return error("The selection list is empty.");
 		int[] indexes = getSelectedIndexes();
 		if (indexes.length==0)
@@ -1071,7 +1071,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 				opacity = ((ImageRoi)rpRoi).getOpacity();
 		}
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (n==listModel.getSize() && n>1 && !IJ.isMacro()) {
+		if (n==getCount() && n>1 && !IJ.isMacro()) {
 			GenericDialog gd = new GenericDialog("ROI Manager");
 			gd.addMessage("Apply changes to all "+n+" selections?");
 			gd.showDialog();
@@ -1469,7 +1469,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	int[] getAllIndexes() {
-		int count = listModel.getSize();
+		int count = getCount();
 		int[] indexes = new int[count];
 		for (int i=0; i<count; i++)
 			indexes[i] = i;
@@ -1531,10 +1531,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	* @see getRoisAsArray
 	*/
 	public List getList() {
-		List list = new List();
+		List awtList = new List();
 		for (int i=0; i<getCount(); i++)
-			list.add((String)listModel.getElementAt(i));
-		return list;
+			awtList.add((String)listModel.getElementAt(i));
+		return awtList;
 	}
 	
 	/** Returns the ROI count. */
@@ -1588,7 +1588,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Returns the name of the ROI with the specified index,
 		or null if the index is out of range. */
 	public String getName(int index) {
-		if (index>=0 && index<listModel.getSize())
+		if (index>=0 && index<getCount())
 			return	(String) listModel.getElementAt(index);
 		else
 			return null;
@@ -1603,7 +1603,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	public static String getName(String index) {
 		int i = (int)Tools.parseDouble(index, -1);
 		RoiManager instance = getInstance2();
-		if (instance!=null && i>=0 && i<instance.listModel.getSize())
+		if (instance!=null && i>=0 && i<instance.getCount())
 			return	(String) instance.listModel.getElementAt(i);
 		else
 			return "null";
@@ -1712,7 +1712,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (cmd.equals("save")) {
 			if (!name.endsWith(".zip") && !name.equals(""))
 				return error("Name must end with '.zip'");
-			if (listModel.getSize()==0)
+			if (getCount()==0)
 				return error("The selection list is empty.");
 			int[] indexes = getAllIndexes();
 			boolean ok = false;
@@ -1785,7 +1785,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/** Assigns the ROI at the specified index to 'imp'. */
 	public void select(ImagePlus imp, int index) {
 		selectedIndexes = null;
-		int n = listModel.getSize();
+		int n = getCount();
 		if (index<0) {
 			for (int i=0; i<n; i++)
 				list.clearSelection();
@@ -1834,7 +1834,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	/*
 	void selectAll() {
 		boolean allSelected = true;
-		int count = listModel.getSize();
+		int count = getCount();
 		for (int i=0; i<count; i++) {
 			if (!list.isIndexSelected(i))
 				allSelected = false;
@@ -1855,7 +1855,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		if (!showAllCheckbox.getState() || IJ.macroRunning())
 			return;
-		int n = listModel.getSize();
+		int n = getCount();
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
 			return;
@@ -1912,7 +1912,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (rot>1) rot = 1;
 			index += rot;
 			if (index<0) index = 0;
-			if (index>=listModel.getSize()) index = listModel.getSize();
+			if (index>=getCount()) index = getCount();
 			//IJ.log(index+"  "+rot);
 			select(index);
 			if (IJ.isWindows())
@@ -1993,7 +1993,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	
 	public void valueChanged(ListSelectionEvent e) {
 		int index = 0;
-		if (listModel.getSize()==0)
+		if (getCount()==0)
 			return;
 		if (list.getSelectedIndices().length==0)
 			return;
@@ -2013,11 +2013,6 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		}
 		
 	}
-
-	public DefaultListModel getListModel() {
-		return listModel;
-	}
-
 
 }
 

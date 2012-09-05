@@ -340,6 +340,7 @@ public class Prefs {
 
 	/** Saves user preferences in the IJ_Prefs.txt properties file. */
 	public static void savePreferences() {
+		String path = null;
 		try {
 			Properties prefs = new Properties();
 			String dir = OpenDialog.getDefaultDirectory();
@@ -364,7 +365,7 @@ public class Prefs {
 			ImportDialog.savePreferences(prefs);
 			PlotWindow.savePreferences(prefs);
 			NewImage.savePreferences(prefs);
-			String path = prefsDir+separator+PREFS_NAME;
+			path = prefsDir+separator+PREFS_NAME;
 			if (prefsDir.endsWith(".imagej")) {
 				File f = new File(prefsDir);
 				if (!f.exists()) f.mkdir(); // create .imagej directory
@@ -379,7 +380,7 @@ public class Prefs {
 			if (msg==null) msg = ""+t;
 			int delay = 4000;
 			try {
-				new TextWindow("Error Saving Preferences", msg, 500, 200);
+				new TextWindow("Error Saving Preferences:\n"+path, msg, 500, 200);
 				IJ.wait(delay);
 			} catch (Throwable t2) {}
 		}

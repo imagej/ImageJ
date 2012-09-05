@@ -25,6 +25,7 @@ public class URLOpener implements PlugIn {
 			if (urlOrName.endsWith("StartupMacros.txt"))
 				openTextFile(urlOrName, true);
 			else {
+				double startTime = System.currentTimeMillis();
 				String url = urlOrName.indexOf("://")>0?urlOrName:Prefs.getImagesURL()+urlOrName;
 				ImagePlus imp = new ImagePlus(url);
 				if (Recorder.record)
@@ -47,7 +48,7 @@ public class URLOpener implements PlugIn {
 					fi.url = url;
 					imp.setFileInfo(fi);
 				}
-				imp.show();
+				imp.show(Opener.getLoadRate(startTime,imp));
 				if ("flybrain.tif".equals(imp.getTitle()) || "t1-head.tif".equals(imp.getTitle()) )
 					imp.setSlice(imp.getStackSize()/2);
 			}
@@ -74,13 +75,13 @@ public class URLOpener implements PlugIn {
 			IJ.open(url);
 		else {
 			IJ.showStatus("Opening: " + url);
+			double startTime = System.currentTimeMillis();
 			ImagePlus imp = new ImagePlus(url);
 			WindowManager.checkForDuplicateName = true;
 			FileInfo fi = imp.getOriginalFileInfo();
 			if (fi!=null && fi.fileType==FileInfo.RGB48)
 				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
-			imp.show();
-			IJ.showStatus("");
+			imp.show(Opener.getLoadRate(startTime,imp));
 		}
 		IJ.register(URLOpener.class);  // keeps this class from being GC'd
 	}

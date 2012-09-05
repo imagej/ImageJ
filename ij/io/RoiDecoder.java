@@ -216,7 +216,7 @@ public class RoiDecoder {
 					((Arrow)roi).setDoubleHeaded((options&DOUBLE_HEADED)!=0);
 					((Arrow)roi).setOutline((options&OUTLINE)!=0);
 					int style = getByte(ARROW_STYLE);
-					if (style>=Arrow.FILLED && style<=Arrow.HEADLESS)
+					if (style>=Arrow.FILLED && style<=Arrow.BAR)
 						((Arrow)roi).setStyle(style);
 					int headSize = getByte(ARROW_HEAD_SIZE);
 					if (headSize>=0 && style<=30)

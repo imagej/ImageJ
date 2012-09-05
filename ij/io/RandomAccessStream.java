@@ -124,7 +124,7 @@ public final class RandomAccessStream extends InputStream {
     }
 
     public void seek(long loc) throws IOException {
-    	//IJ.log("seek (long): "+loc+"  "+(ras!=null));
+		//IJ.log("seek (long): "+loc+"  "+(ras!=null));
     	if (ras!=null)
     		{ras.seek(loc); return;}
         if (loc<0L)
