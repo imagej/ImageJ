@@ -60,6 +60,9 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private Color defaultColor;
 	private boolean firstTime = true;
 	private int[] selectedIndexes;
+	private boolean appendResults;
+	private ResultsTable mmResults;
+	
 	
 	public RoiManager() {
 		super("ROI Manager");
@@ -773,7 +776,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		for (int i=0; i<indexes.length; i++) {
 			String label = (String) listModel.getElementAt(indexes[i]);
 			Roi roi = (Roi)rois.get(label);
-			if (getSliceNumber(roi,label)>1) allSliceOne = false;
+			if (getSliceNumber(roi,label)>1) allSliceOne=false;
 		}
 		int measurements = Analyzer.getMeasurements();
 		if (imp.getStackSize()>1)
@@ -824,11 +827,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		if (IJ.isMacro()) {
 			if (nSlices>1) measureAll = true;
 			onePerSlice = true;
+			appendResults = true;
 		} else {
 			GenericDialog gd = new GenericDialog("Multi Measure");
 			if (nSlices>1)
-				gd.addCheckbox("Measure All "+nSlices+" Slices", measureAll);
+				gd.addCheckbox("Measure all "+nSlices+" slices", measureAll);
 			gd.addCheckbox("One Row Per Slice", onePerSlice);
+			gd.addCheckbox("Append results", appendResults);
 			int columns = getColumnCount(imp, measurements)*indexes.length;
 			String str = nSlices==1?"this option":"both options";
 			gd.setInsets(10, 25, 0);
@@ -841,6 +846,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (nSlices>1)
 				measureAll = gd.getNextBoolean();
 			onePerSlice = gd.getNextBoolean();
+			appendResults = gd.getNextBoolean();
 		}
 		if (!measureAll) nSlices = 1;
 		int currentSlice = imp.getCurrentSlice();
@@ -863,16 +869,21 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			return true;
 		}
 
-		Analyzer aSys = new Analyzer(imp); //System Analyzer
+		Analyzer aSys = new Analyzer(imp); // System Analyzer
 		ResultsTable rtSys = Analyzer.getResultsTable();
 		ResultsTable rtMulti = new ResultsTable();
-		Analyzer aMulti = new Analyzer(imp, measurements, rtMulti); //Private Analyzer
+		if (appendResults && mmResults!=null)
+			rtMulti = mmResults;
+		rtSys.reset();
+		//Analyzer aMulti = new Analyzer(imp, measurements, rtMulti); //Private Analyzer
 
 		for (int slice=1; slice<=nSlices; slice++) {
 			int sliceUse = slice;
-			if(nSlices == 1)sliceUse = currentSlice;
+			if (nSlices==1) sliceUse = currentSlice;
 			imp.setSliceWithoutUpdate(sliceUse);
 			rtMulti.incrementCounter();
+			if ((Analyzer.getMeasurements()&LABELS)!=0)
+				rtMulti.addLabel("Label", imp.getTitle());
 			int roiIndex = 0;
 			for (int i=0; i<indexes.length; i++) {
 				if (restoreWithoutUpdate(indexes[i])) {
@@ -889,14 +900,13 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 								suffix = "("+name+")";
 						}
 						if (head!=null && col!=null && !head.equals("Slice"))
-							rtMulti.addValue(head+suffix,rtSys.getValue(j,rtSys.getCounter()-1));
+							rtMulti.addValue(head+suffix, rtSys.getValue(j,rtSys.getCounter()-1));
 					}
 				} else
 					break;
 			}
-			//aMulti.displayResults();
-			//aMulti.updateHeadings();
 		}
+		mmResults = (ResultsTable)rtMulti.clone();
 		rtMulti.show("Results");
 
 		imp.setSlice(currentSlice);
@@ -1312,7 +1322,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int index = 0;
 		for (Enumeration en=rois.keys(); en.hasMoreElements();)
 			labels[index++] = (String)en.nextElement();
-		list.removeAll();
+		listModel.clear();
 		StringSorter.sort(labels);
 		for (int i=0; i<labels.length; i++)
 			listModel.addElement(labels[i]);
@@ -1683,7 +1693,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		} else if (cmd.equals("reset")) {
 			if (IJ.isMacOSX() && IJ.isMacro())
 				ignoreInterrupts = true;
-			list.removeAll();
+			listModel.clear();
 			rois.clear();
 			updateShowAll();
 		} else if (cmd.equals("debug")) {

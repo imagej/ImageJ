@@ -133,18 +133,18 @@ public final class RandomAccessStream extends InputStream {
             pointer = loc;
     }
 
-    public void seek(int loc) throws IOException {
-    	long lloc = ((long)loc)&0xffffffffL;
-    	//IJ.log("seek (int): "+lloc+"  "+(ras!=null));
-    	if (ras!=null) {
-    		ras.seek(lloc);
-    		return;
-    	}
-        if (lloc<0L)
+	public void seek(int loc) throws IOException {
+		long lloc = ((long)loc)&0xffffffffL;
+		//IJ.log("seek (int): "+lloc+"  "+(ras!=null));
+		if (ras!=null) {
+			ras.seek(lloc);
+			return;
+		}
+		if (lloc<0L)
 			pointer = 0L;
-        else
-            pointer = lloc;
-    }
+		else
+			pointer = lloc;
+	}
 
     public final int readInt() throws IOException {
         int i = read();

@@ -5,12 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.47d 4 September 2012</u>
+<li> <u>1.47d 6 September 2012</u>
 <ul>
 <li> Added a "Source" (display source code) button to <i>Plugins&gt;Utilities&gt;Find Commands</i>.
 <li> Dorai Iyer added a "Bar" option to the arrow tool.
 <li> Bill Mohler modified the ROI Manager to use a JList instead of a List, which
 makes loading and sorting the large (>10,000) ROI sets faster.
+<li> Added an "Append results" checkbox to the ROI Manager's "Multi Measure" command.
 <li> When opening images, the transfer rate in MB/sec is displayed in the status bar. 
 <li> Thanks to S&#233;bastien Tosi, opening TIFF files using
 <i>File&gt;Import&gt;URL</i> is faster and requires less memory.
@@ -20,6 +21,15 @@ implemented in JavaScript when the recorder was in "JavaScript" mode.
 <i>File&gt;Import&gt;URL</i> to not correctly read TIFF files larger than 2GB.
 <li> Fixed a bug in the <i>Analyze&gtTools&gt;Synchronize Windows</i> command
 that caused it to not work as expected when changing the channel of composite color images.
+<li> Thanks to Christoph Deil, fixed a bug in <i>Plugins&gt;Utilities&gt;Find Commands</i>
+that caused esc and ctrl-w key presses to not close the window after "Show full information"
+had been checked.
+<li> Thanks to Christoph Deil, fixed a bug in <i>Plugins&gt;Utilities&gt;Find Commands</i>
+that caused esc and ctrl-w key presses to not close the window after "Show full information"
+had been checked.
+<li> Thanks Christoph Deil, fixed bugs in the "Save changes?" dialog that caused it to not
+work as expected after the focus was changed to the "Don't Save" or "Cancel" buttons by
+tabbing.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>

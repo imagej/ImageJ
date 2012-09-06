@@ -262,7 +262,7 @@ public class ResultsTable implements Cloneable {
 	/** Returns the index of the first column with the given heading.
 		heading. If not found, returns COLUMN_NOT_FOUND. */
 	public int getColumnIndex(String heading) {
-		for(int i=0; i<headings.length; i++) {
+		for (int i=0; i<headings.length; i++) {
 			if (headings[i]==null)
 				return COLUMN_NOT_FOUND;
 			else if (headings[i].equals(heading))

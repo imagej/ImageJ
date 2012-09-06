@@ -137,6 +137,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 				completionsModel.addElement(listLabel);
 			}
 		}
+		prompt.requestFocus();
 	}
 
 	private static class LevenshteinPair implements Comparable {
@@ -273,9 +274,11 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 	public void keyPressed(KeyEvent ke) {
 		int key = ke.getKeyCode();
+		int flags = ke.getModifiers();
 		int items = completionsModel.getSize();
 		Object source = ke.getSource();
-		if (key==KeyEvent.VK_ESCAPE) {
+		boolean meta = ((flags&KeyEvent.META_MASK) != 0) || ((flags&KeyEvent.CTRL_MASK) != 0);
+		if (key==KeyEvent.VK_ESCAPE || (key==KeyEvent.VK_W&&meta)) {
 			d.dispose();
 		} else if (source==prompt) {
 			/* If you hit enter in the text field, and
