@@ -5,7 +5,7 @@ import java.awt.event.*;
 
 /** A modal dialog box with a one line message and
 	"Yes", "No" and "Cancel" buttons. */
-public class YesNoCancelDialog extends Dialog implements ActionListener, KeyListener {
+public class YesNoCancelDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
     private Button yesB, noB, cancelB;
     private boolean cancelPressed, yesPressed;
 	private boolean firstPaint = true;
@@ -48,6 +48,7 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 			panel.add(cancelB);
 		}
 		add("South", panel);
+		addWindowListener(this);
 		pack();
 		GUI.center(this);
 		show();
@@ -78,7 +79,17 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
 	public void keyPressed(KeyEvent e) { 
 		int keyCode = e.getKeyCode(); 
 		IJ.setKeyDown(keyCode); 
-		if (keyCode==KeyEvent.VK_ENTER||keyCode==KeyEvent.VK_Y||keyCode==KeyEvent.VK_S) {
+		if (keyCode==KeyEvent.VK_ENTER) {
+			if (cancelB.isFocusOwner()) {
+				cancelPressed = true; 
+				closeDialog(); 
+			} else if (noB.isFocusOwner()) {
+				closeDialog(); 
+			} else {
+				yesPressed = true;
+				closeDialog(); 
+			}
+		} else if (keyCode==KeyEvent.VK_Y||keyCode==KeyEvent.VK_S) {
 			yesPressed = true;
 			closeDialog(); 
 		} else if (keyCode==KeyEvent.VK_N || keyCode==KeyEvent.VK_D) {
@@ -105,4 +116,16 @@ public class YesNoCancelDialog extends Dialog implements ActionListener, KeyList
     	}
     }
 
+	public void windowClosing(WindowEvent e) {
+		cancelPressed = true; 
+		closeDialog(); 
+	}
+    
+	public void windowActivated(WindowEvent e) {}
+	public void windowOpened(WindowEvent e) {}
+	public void windowClosed(WindowEvent e) {}
+	public void windowIconified(WindowEvent e) {}
+	public void windowDeiconified(WindowEvent e) {}
+	public void windowDeactivated(WindowEvent e) {}
+	
 }

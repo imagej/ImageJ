@@ -25,7 +25,7 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		int style = Arrow.getDefaultStyle();
 		gd = new NonBlockingGenericDialog("Arrow Tool");
 		gd.addSlider("Width:", 1, 50, (int)width);
-		gd.addSlider("Size:", 0, 30, headSize);
+		gd.addSlider("Size:", 0, 50, headSize);
 		gd.addChoice("Color:", Colors.colors, colorName);
 		gd.addChoice("Style:", Arrow.styles, Arrow.styles[style]);
 		gd.addCheckbox("Outline", Arrow.getDefaultOutline());

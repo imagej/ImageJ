@@ -11,10 +11,10 @@ public class Stack_Statistics implements PlugIn {
 	
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
-       	int measurements = Analyzer.getMeasurements();
-       	Analyzer.setMeasurements(measurements | Measurements.LIMIT);
+		int measurements = Analyzer.getMeasurements();
+		Analyzer.setMeasurements(measurements | Measurements.LIMIT);
 		ImageStatistics stats = new StackStatistics(imp);
-       	Analyzer.setMeasurements(measurements);
+		Analyzer.setMeasurements(measurements);
 		ResultsTable rt = Analyzer.getResultsTable();
 		rt.incrementCounter();
 		Roi roi = imp.getRoi();
@@ -22,24 +22,24 @@ public class Stack_Statistics implements PlugIn {
 			imp.deleteRoi();
 			roi = null;
 		}
-       	double stackVoxels = 0.0;
-       	double images = imp.getStackSize();
+		double stackVoxels = 0.0;
+		double images = imp.getStackSize();
 		if (roi==null)
 			stackVoxels = imp.getWidth()*imp.getHeight()*images;
 		else if (roi.getType()==Roi.RECTANGLE) {
 			Rectangle r = roi.getBounds();
 			stackVoxels = r.width*r.height*images;
 		} else {
-       		Analyzer.setMeasurements(measurements & ~Measurements.LIMIT);
+			Analyzer.setMeasurements(measurements & ~Measurements.LIMIT);
 			ImageStatistics stats2 = new StackStatistics(imp);
-       		Analyzer.setMeasurements(measurements);
-       		stackVoxels = stats2.longPixelCount;
+			Analyzer.setMeasurements(measurements);
+			stackVoxels = stats2.longPixelCount;
 		}
 		Calibration cal = imp.getCalibration();
 		String units = cal.getUnits();	
-       	double scale = cal.pixelWidth*cal.pixelHeight*cal.pixelDepth;
+		double scale = cal.pixelWidth*cal.pixelHeight*cal.pixelDepth;
 		rt.addValue("Voxels", stats.longPixelCount);
-       	if (scale!=1.0)
+		if (scale!=1.0)
 		rt.addValue("Volume("+units+"^3)", stats.longPixelCount*scale);
 		rt.addValue("%Volume", stats.longPixelCount*100.0/stackVoxels);
 		rt.addValue("Mean", stats.mean);

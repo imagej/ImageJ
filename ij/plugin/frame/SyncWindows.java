@@ -163,7 +163,7 @@ public class SyncWindows extends PlugInFrame implements
 		// pass on only if event comes from current window
 		if (!iwc.equals(source)) return;
 
-		// Change channel in other synchronized hyperstacks.
+		// Change channel in other synchronized windows.
 		if (cChannel.getState() && type==DisplayChangeEvent.CHANNEL) {
 			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
@@ -177,22 +177,24 @@ public class SyncWindows extends PlugInFrame implements
 			}	
 		}		 
 		
-		// Change slices in other synchronized windows.
+		// Change slice in other synchronized windows.
 		if (cSlice.getState() && type==DisplayChangeEvent.Z) {
-			for(int n=0; n<vwins.size();++n) {
+			for (int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);
 				if (imp != null) {
 					iw = imp.getWindow();
-	
 					int stacksize = imp.getStackSize();
-					if( !iw.equals(source) && (iw instanceof StackWindow) ) {
-						((StackWindow)iw).setPosition(imp.getChannel(), value, imp.getFrame());
+					if (!iw.equals(source) && (iw instanceof StackWindow)) {
+						if (imp.getNChannels()==imp.getStackSize())
+							imp.setC(value);
+						else
+							((StackWindow)iw).setPosition(imp.getChannel(), value, imp.getFrame());
 					}
 				}
 			}
 		}
 
-		// Change frame in other synchronized Image5Ds.
+		// Change frame in other synchronized windows.
 		if (cFrame.getState() && type==DisplayChangeEvent.T) {
 			for(int n=0; n<vwins.size();++n) {
 				imp = getImageFromVector(n);

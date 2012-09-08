@@ -12,8 +12,8 @@ public class Arrow extends Line {
 	public static final String SIZE_KEY = "arrow.size";
 	public static final String DOUBLE_HEADED_KEY = "arrow.double";
 	public static final String OUTLINE_KEY = "arrow.outline";
-	public static final int FILLED=0, NOTCHED=1, OPEN=2, HEADLESS=3;
-	public static final String[] styles = {"Filled", "Notched", "Open", "Headless"};
+	public static final int FILLED=0, NOTCHED=1, OPEN=2, HEADLESS=3, BAR=4;
+	public static final String[] styles = {"Filled", "Notched", "Open", "Headless", "Bar"};
 	private static int defaultStyle = (int)Prefs.get(STYLE_KEY, FILLED);
 	private static float defaultWidth = (float)Prefs.get(WIDTH_KEY, 2);
 	private static double defaultHeadSize = (int)Prefs.get(SIZE_KEY, 10);  // 0-30;
@@ -146,6 +146,10 @@ public class Arrow extends Line {
 			double factor = style==OPEN?1.3:1.42;
 			points[2*3] = (float)(x2d-dx*shaftWidth*factor);
 			points[2*3+1] = (float)(y2d-dy*shaftWidth*factor);
+			if (style==BAR) {
+				points[2*3] = (float)(x2d-dx*shaftWidth*0.5);
+				points[2*3+1] = (float)(y2d-dy*shaftWidth*0.5);
+			}
 		} else {
 			points[2*3] = (float)x2d;
 			points[2*3+1] = (float)y2d;
@@ -173,6 +177,13 @@ public class Arrow extends Line {
 				points[1*2+1] = points[2*3+1];
 				SL = length;
 				break;
+			case BAR:
+				tip = Math.toRadians(90); //30
+				points[1*2] = points[2*3];
+				points[1*2+1] = points[2*3+1];
+				SL = length;
+				updateFullWindow = true;
+				break;       
 		}
 		// P2 = P3 - SL*alpha+tip
 		points[2*2] = (float) (points[2*3]	- SL*Math.cos(alpha+tip));

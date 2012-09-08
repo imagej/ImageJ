@@ -1446,26 +1446,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		
     public boolean roiManagerSelect(Roi roi, boolean delete) {
 		RoiManager rm=RoiManager.getInstance();
-		if (rm==null) return false;
-		Hashtable rois = rm.getROIs();
-		java.awt.List list = rm.getList();
-		int n = list.getItemCount();
-		for (int i=0; i<n; i++) {
-			String label = list.getItem(i);
-			Roi roi2 = (Roi)rois.get(label);
-			if (roi==roi2) {
-				list.setMultipleMode(false);
-				list.select(i);
-				if (delete) {
-					rois.remove(list.getItem(i));
-					list.remove(i);
-				}
-				return true;
-			}
-		}
-		return false;
+		if (rm==null)
+			return false;
+		int index = rm.getRoiIndex(roi);
+		if (index<0)
+			return false;
+		rm.select(imp, index);
+		if (delete)
+			rm.runCommand("delete");
+		return true;
     }
-
+    
 	public void mouseMoved(MouseEvent e) {
 		//if (ij==null) return;
 		int sx = e.getX();
