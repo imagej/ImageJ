@@ -215,7 +215,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		else if (command.equals("Add Particles"))
 			addParticles();
 		else if (command.equals("Multi Measure"))
-			multiMeasure();
+			multiMeasure(null);
 		else if (command.equals("Multi Plot"))
 			multiPlot();
 		else if (command.equals("Sort"))
@@ -814,7 +814,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		method in Bob Dougherty's Multi_Measure plugin
 		(http://www.optinav.com/Multi-Measure.htm).
 	*/
-	boolean multiMeasure() {
+	boolean multiMeasure(String cmd) {
 		ImagePlus imp = getImage();
 		if (imp==null) return false;
 		int[] indexes = getSelectedIndexes();
@@ -824,10 +824,11 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		int measurements = Analyzer.getMeasurements();
 
 		int nSlices = imp.getStackSize();
+		if (cmd!=null)
+			appendResults = cmd.contains("append")?true:false;
 		if (IJ.isMacro()) {
 			if (nSlices>1) measureAll = true;
 			onePerSlice = true;
-			appendResults = true;
 		} else {
 			GenericDialog gd = new GenericDialog("Multi Measure");
 			if (nSlices>1)
@@ -912,7 +913,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 		imp.setSlice(currentSlice);
 		if (indexes.length>1)
 			IJ.run("Select None");
-		if (record()) Recorder.record("roiManager", "Multi Measure");
+		if (record()) {
+			String arg = appendResults?" append":"";
+			Recorder.record("roiManager", "Multi Measure"+arg);
+		}
 		return true;
 	}
 	
@@ -1664,8 +1668,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			split();
 		else if (cmd.equals("sort"))
 			sort();
-		else if (cmd.equals("multi measure"))
-			multiMeasure();
+		else if (cmd.startsWith("multi measure"))
+			multiMeasure(cmd);
 		else if (cmd.equals("multi plot"))
 			multiPlot();
 		else if (cmd.equals("show all")) {
