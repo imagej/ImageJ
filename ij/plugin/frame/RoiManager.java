@@ -1817,8 +1817,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			list.clearSelection();
 			list.setSelectedIndex(index);
 		}
-		if (imp==null) imp=getImage();
-		restore(imp, index, true);	
+		if (imp==null)
+			imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			restore(imp, index, true);	
 		if (mm) list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 	

@@ -71,6 +71,7 @@ public class TiffDecoder {
 	private int ifdCount;
 	private int[] metaDataCounts;
 	private String tiffMetadata;
+	private int photoInterp;
 		
 	public TiffDecoder(String directory, String name) {
 		this.directory = directory;
@@ -410,6 +411,7 @@ public class TiffDecoder {
 					}
 					break;
  				case PHOTO_INTERP:
+ 					photoInterp = value;
  					fi.whiteIsZero = value==0;
 					break;
 				case BITS_PER_SAMPLE:
@@ -441,8 +443,9 @@ public class TiffDecoder {
 					fi.samplesPerPixel = value;
 					if (value==3 && fi.fileType!=FileInfo.RGB48)
 						fi.fileType = fi.fileType==FileInfo.GRAY16_UNSIGNED?FileInfo.RGB48:FileInfo.RGB;
-					else if (value==4 && fi.fileType==FileInfo.GRAY8)
-						fi.fileType = FileInfo.ARGB;
+					else if (value==4 && fi.fileType==FileInfo.GRAY8) {
+						fi.fileType = photoInterp==5?FileInfo.CMYK:FileInfo.ARGB;
+					}
 					break;
 				case ROWS_PER_STRIP:
 					fi.rowsPerStrip = value;
@@ -472,9 +475,9 @@ public class TiffDecoder {
 							 fi.fileType = FileInfo.GRAY16_UNSIGNED;
 					else if (value==2 && fi.fileType==FileInfo.RGB)
 						fi.fileType = FileInfo.RGB_PLANAR;
-					else if (value==1 && fi.samplesPerPixel==4)
-						fi.fileType = FileInfo.ARGB;
-					else if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
+					else if (value==1 && fi.samplesPerPixel==4) {
+						fi.fileType = photoInterp==5?FileInfo.CMYK:FileInfo.ARGB;
+					} else if (value!=2 && !((fi.samplesPerPixel==1)||(fi.samplesPerPixel==3))) {
 						String msg = "Unsupported SamplesPerPixel: " + fi.samplesPerPixel;
 						error(msg);
 					}

@@ -54,6 +54,7 @@ public class FileOpener {
 	/** Opens the image. Displays it if 'show' is
 	true. Returns an ImagePlus object if successful. */
 	public ImagePlus open(boolean show) {
+
 		ImagePlus imp=null;
 		Object pixels;
 		ProgressBar pb=null;
@@ -95,9 +96,12 @@ public class FileOpener {
 			case FileInfo.ABGR:
 			case FileInfo.BARG:
 			case FileInfo.RGB_PLANAR:
+			case FileInfo.CMYK:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
 	    		ip = new ColorProcessor(width, height, (int[])pixels);
+	    		if (fi.fileType==FileInfo.CMYK)
+	    			ip.invert();
         		imp = new ImagePlus(fi.fileName, ip);
 				break;
 			case FileInfo.RGB48:
@@ -342,6 +346,11 @@ public class FileOpener {
 			case FileInfo.RGB_PLANAR:
 	    		img = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(width, height, (int[])pixels, 0, width));
 		        imp.setImage(img);
+				break;
+			case FileInfo.CMYK:
+	    		ip = new ColorProcessor(width, height, (int[])pixels);
+	    		ip.invert();
+        		imp.setProcessor(null, ip);
 				break;
 		}
 	}
