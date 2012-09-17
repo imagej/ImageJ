@@ -4,18 +4,6 @@ import java.awt.*;
 /** This class processes binary images. */
 public class BinaryProcessor extends ByteProcessor {
 
-	// 2012/03/08: 17,5,0->2
-	// 2012/03/09: 17,5,2->0
-	static int[] table  =
-		//0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1
-		 {0,0,0,1,0,0,1,3,0,0,3,1,1,0,1,3,0,0,0,0,0,0,0,0,2,0,2,0,3,0,3,3,
-		  0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,3,0,2,2,
-		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		  2,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,3,0,2,0,
-		  0,0,3,1,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-		  3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		  2,3,1,3,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		  2,3,0,1,0,0,0,1,0,0,0,0,0,0,0,0,3,3,0,1,0,0,0,0,2,2,0,0,2,0,0,0};
 	private ByteProcessor parent;
 	
 	/** Creates a BinaryProcessor from a ByteProcessor. The ByteProcessor
@@ -76,15 +64,42 @@ public class BinaryProcessor extends ByteProcessor {
 		parent.hideProgress();
 	}
 
+	// 2012/09/16: 3,0 1->0
+	// 2012/09/16: 24,0 2->0
+	private static int[] table  =
+		//0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1
+		 {0,0,0,0,0,0,1,3,0,0,3,1,1,0,1,3,0,0,0,0,0,0,0,0,0,0,2,0,3,0,3,3,
+		  0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,3,0,2,2,
+		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		  2,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,3,0,2,0,
+		  0,0,3,1,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+		  3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		  2,3,1,3,0,0,1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		  2,3,0,1,0,0,0,1,0,0,0,0,0,0,0,0,3,3,0,1,0,0,0,0,2,2,0,0,2,0,0,0};
+		  
+	private static int[] table2  =
+		 //0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1
+		 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,
+		  0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,
+		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
+		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,
+		  0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,
+		  0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+
 	/** Uses a lookup table to repeatably removes pixels from the
 		edges of objects in a binary image, reducing them to single
-		pixel wide skeletons. Based on an a thinning algorithm by
-		by Zhang and Suen (CACM, March 1984, 236-239). There is
-		an entry in the table for each of the 256 possible 3x3 neighborhood
-		configurations. An entry of '1' means delete pixel on first pass, '2' means
-		delete pixel on second pass, and '3' means delete on either pass. A graphical
-		representation of the 256 neighborhoods indexed by the table is available
-		at "http://imagej.nih.gov/ij/images/skeletonize-table.gif".
+		pixel wide skeletons. There is an entry in the table for each
+		of the 256 possible 3x3 neighborhood configurations. An entry
+		of '1' means delete pixel on first pass, '2' means delete pixel on
+		second pass, and '3' means delete on either pass. Pixels are
+		removed from the right and bottom edges of objects on the first
+		pass and from the left and top edges on the second pass. A
+		graphical representation of the 256 neighborhoods indexed by
+		the table is available at
+		"http://imagej.nih.gov/ij/images/skeletonize-table.gif".
 	*/
 	public void  skeletonize() {
 		int pass = 0;
@@ -98,14 +113,22 @@ public class BinaryProcessor extends ByteProcessor {
 		ij.ImageStack movie=null;
 		boolean debug = ij.IJ.debugMode;
 		if (debug) movie = new ij.ImageStack(width, height);
+		if (debug) movie.addSlice("-", duplicate());
 		do {
 			snapshot();
-			if (debug) movie.addSlice(""+pass, duplicate());
 			pixelsRemoved = thin(pass++, table);
+			if (debug) movie.addSlice(""+(pass-1), duplicate());
 			snapshot();
-			if (debug) movie.addSlice(""+pass, duplicate());
-			pixelsRemoved = thin(pass++, table);
-			//ij.IJ.write(pass+" "+pixelsRemoved);
+			pixelsRemoved += thin(pass++, table);
+			if (debug) movie.addSlice(""+(pass-1), duplicate());
+		} while (pixelsRemoved>0);
+		do { // use a second table to remove "stuck" pixels
+			snapshot();
+			pixelsRemoved = thin(pass++, table2);
+			if (debug) movie.addSlice("2-"+(pass-1), duplicate());
+			snapshot();
+			pixelsRemoved += thin(pass++, table2);
+			if (debug) movie.addSlice("2-"+(pass-1), duplicate());
 		} while (pixelsRemoved>0);
 		if (debug) new ij.ImagePlus("Skel Movie", movie).show();
 	}

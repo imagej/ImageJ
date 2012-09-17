@@ -1624,7 +1624,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Show All", Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "XOR", "Split",
+		"Show All", "Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "XOR", "Split",
 		"Sort" or "Multi Measure" command.	Returns false if <code>cmd</code>
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {

@@ -259,7 +259,7 @@ public class IJ {
 		macros using the old names continue to work. */
 	private static String convert(String command) {
 		if (commandTable==null) {
-			commandTable = new Hashtable(23); // initial capacity should be increased as needed
+			commandTable = new Hashtable(30);
 			commandTable.put("New...", "Image...");
 			commandTable.put("Threshold", "Make Binary");
 			commandTable.put("Display...", "Appearance...");
@@ -284,6 +284,7 @@ public class IJ {
 			commandTable.put("Out", "Out [-]");
 			commandTable.put("Enhance Contrast", "Enhance Contrast...");
 			commandTable.put("XY Coodinates... ", "XY Coordinates... ");
+			commandTable.put("Statistics...", "Statistics");
 		}
 		String command2 = (String)commandTable.get(command);
 		if (command2!=null)

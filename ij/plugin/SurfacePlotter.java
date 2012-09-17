@@ -60,18 +60,18 @@ public class SurfacePlotter implements PlugIn {
 		Date start = new Date();
 		lut = img.createLut();
 		
-		if(stackFlags == PlugInFilter.DOES_STACKS && img.getStack().getSize()>1){			
+		if (stackFlags==PlugInFilter.DOES_STACKS && img.getStack().getSize()>1){			
 			ImageStack stackSource = img.getStack();
 			ImageProcessor ip = stackSource.getProcessor(1);
 			ImageProcessor plot = makeSurfacePlot(ip);
 			ImageStack stack = new ImageStack(plot.getWidth(), plot.getHeight());
 			stack.setColorModel(plot.getColorModel());			
-			for(int i=1;i<=stackSource.getSize();i++)
-				stack.addSlice(null, new byte[plot.getWidth()* plot.getHeight()]);
+			for (int i=1;i<=stackSource.getSize();i++)
+				stack.addSlice(null, plot.duplicate().getPixels());
 			stack.setPixels(plot.getPixels(), 1);
 			ImagePlus plots = new ImagePlus("Surface Plot", stack);
 			plots.show();
-			for(int i=2;i<=stackSource.getSize();i++) {
+			for (int i=2;i<=stackSource.getSize();i++) {
 				IJ.showStatus("Drawing slice " + i + "..." + " (" + (100*(i-1)/stackSource.getSize()) + "% done)");
 				ip = stackSource.getProcessor(i);
 				plot = makeSurfacePlot(ip);

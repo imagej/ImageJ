@@ -622,6 +622,10 @@ public class Selection implements PlugIn, Measurements {
 		ThresholdToSelection tts = new ThresholdToSelection();
 		Roi roi2 = tts.convert(ip2);
 		transferProperties(roi, roi2);
+		roi2.setStroke(null);
+		Color c = roi2.getStrokeColor();
+		if (c!=null)  // remove any transparency
+			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
 		imp.setRoi(roi2);
 		Roi.previousRoi = (Roi)roi.clone();
 	}

@@ -99,10 +99,10 @@ public class FileOpener {
 			case FileInfo.CMYK:
 				pixels = readPixels(fi);
 				if (pixels==null) return null;
-	    		ip = new ColorProcessor(width, height, (int[])pixels);
-	    		if (fi.fileType==FileInfo.CMYK)
-	    			ip.invert();
-        		imp = new ImagePlus(fi.fileName, ip);
+				ip = new ColorProcessor(width, height, (int[])pixels);
+				if (fi.fileType==FileInfo.CMYK)
+					ip.invert();
+				imp = new ImagePlus(fi.fileName, ip);
 				break;
 			case FileInfo.RGB48:
 			case FileInfo.RGB48_PLANAR:
@@ -348,9 +348,9 @@ public class FileOpener {
 		        imp.setImage(img);
 				break;
 			case FileInfo.CMYK:
-	    		ip = new ColorProcessor(width, height, (int[])pixels);
-	    		ip.invert();
-        		imp.setProcessor(null, ip);
+				ip = new ColorProcessor(width, height, (int[])pixels);
+				ip.invert();
+				imp.setProcessor(null, ip);
 				break;
 		}
 	}
