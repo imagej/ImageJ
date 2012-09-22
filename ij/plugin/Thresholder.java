@@ -6,11 +6,15 @@ import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.PlugInFilter;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.Vector;
 
 /** This plugin implements the Process/Binary/Make Binary 
 	and Convert to Mask commands. */
-public class Thresholder implements PlugIn, Measurements {
+public class Thresholder implements PlugIn, Measurements, ItemListener {
 	
+	public static final String[] methods = AutoThresholder.getMethods();
+	public static final String[] backgrounds = {"Default", "Dark", "Light"};
 	private double minThreshold;
 	private double maxThreshold;
 	boolean autoThreshold;
@@ -20,6 +24,12 @@ public class Thresholder implements PlugIn, Measurements {
 	static boolean useBW = true;
 	static boolean useLocal = true;
 	boolean convertToMask;
+	private String method = methods[0];
+	private String background = backgrounds[0];
+	private static String staticMethod = methods[0];
+	private static String staticBackground = backgrounds[0];
+	private ImagePlus imp;
+	private Vector choices;
 
 	public void run(String arg) {
 		convertToMask = arg.equals("mask");
@@ -40,16 +50,36 @@ public class Thresholder implements PlugIn, Measurements {
 			IJ.error("Thresholder", "This command does not work with virtual stacks.\nUse Image>Duplicate to convert to a normal stack.");
 			return;
 		}
-		if (!(imp.getProcessor().getMinThreshold()==ImageProcessor.NO_THRESHOLD))
-			useLocal = false;		
-		GenericDialog gd = new GenericDialog("Convert to Mask");
-		gd.addMessage("Convert all images in stack to binary?");
-		gd.addCheckbox("Calculate Threshold for Each Image", useLocal);
-		gd.addCheckbox("Black Background", Prefs.blackBackground);
+		boolean thresholdSet = imp.getProcessor().getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
+		if (thresholdSet)
+			useLocal = false;
+		this.imp = imp;
+		if (!IJ.isMacro()) {
+			method = staticMethod;
+			background = staticBackground;
+			if (!thresholdSet)
+				updateThreshold(imp);
+		}
+		GenericDialog gd = new GenericDialog("Convert Stack to Binary");
+		gd.addChoice("Method:", methods, method);
+		gd.addChoice("Background:", backgrounds, background);
+		gd.addCheckbox("Calculate threshold for each image", useLocal);
+		gd.addCheckbox("Black background (mask)", Prefs.blackBackground);
+		choices = gd.getChoices();
+		((Choice)choices.elementAt(0)).addItemListener(this);
+		((Choice)choices.elementAt(1)).addItemListener(this);
 		gd.showDialog();
-		if (gd.wasCanceled()) return;
+		if (gd.wasCanceled())
+			return;
+		this.imp = null;
+		method = gd.getNextChoice();
+		background = gd.getNextChoice();
 		useLocal = gd.getNextBoolean();
 		Prefs.blackBackground = gd.getNextBoolean();
+		if (!IJ.isMacro()) {
+			staticMethod = method;
+			staticBackground = background;
+		}
 		Undo.reset();
 		if (useLocal)
 			convertStackToBinary(imp);
@@ -211,7 +241,7 @@ public class Thresholder implements PlugIn, Measurements {
 			IJ.showStatus("Converting to byte");
 			ImageStack stack1 = imp.getStack();
 			ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
-			for(int i=1; i<=nSlices; i++) {
+			for (int i=1; i<=nSlices; i++) {
 				IJ.showProgress(i, nSlices);
 				String label = stack1.getSliceLabel(i);
 				ImageProcessor ip = stack1.getProcessor(i);
@@ -222,10 +252,15 @@ public class Thresholder implements PlugIn, Measurements {
 		}
 		ImageStack stack = imp.getStack();
 		IJ.showStatus("Auto-thresholding");
-		for(int i=1; i<=nSlices; i++) {
+		for (int i=1; i<=nSlices; i++) {
 			IJ.showProgress(i, nSlices);
 			ImageProcessor ip = stack.getProcessor(i);
-			autoThreshold(ip);
+			if (method.equals("Default") && background.equals("Default"))
+				ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.NO_LUT_UPDATE);
+			else
+				ip.setAutoThreshold(method, !background.equals("Light"), ImageProcessor.NO_LUT_UPDATE);
+			minThreshold = ip.getMinThreshold();
+			maxThreshold = ip.getMaxThreshold();
 			int[] lut = new int[256];
 			for (int j=0; j<256; j++) {
 				if (j>=minThreshold && j<=maxThreshold)
@@ -285,5 +320,33 @@ public class Thresholder implements PlugIn, Measurements {
 		maxThreshold = ip.getMaxThreshold();
 		if (IJ.debugMode) IJ.log("Thresholder: "+minThreshold+"-"+maxThreshold);
  	}
+ 	
+ 	public static void setMethod(String method) {
+ 		staticMethod = method;
+ 	}
+
+ 	public static void setBackground(String background) {
+ 		staticBackground = background;
+ 	}
+
+	public void itemStateChanged(ItemEvent e) {
+		if (imp==null)
+			return;
+		Choice choice = (Choice)e.getSource();
+		if (choice==choices.elementAt(0))
+			method = choice.getSelectedItem();
+		else
+			background = choice.getSelectedItem();
+		updateThreshold(imp);
+	}
+	
+	private void updateThreshold(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		if (method.equals("Default") && background.equals("Default"))
+			ip.setAutoThreshold(ImageProcessor.ISODATA2, ImageProcessor.RED_LUT);
+		else
+			ip.setAutoThreshold(method, !background.equals("Light"), ImageProcessor.RED_LUT);
+		imp.updateAndDraw();
+	}
 
 }

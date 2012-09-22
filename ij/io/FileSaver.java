@@ -320,8 +320,8 @@ public class FileSaver {
 
 	/** Save the image in JPEG format using a save file
 		dialog. Returns false if the user selects cancel.
-		@see setJpegQuality
-		@see getJpegQuality
+		@see #setJpegQuality
+		@see #getJpegQuality
 	*/
 	public boolean saveAsJpeg() {
 		String type = "JPEG ("+getJpegQuality()+")";
@@ -333,8 +333,8 @@ public class FileSaver {
 	}
 
 	/** Save the image in JPEG format using the specified path.
-		@see setJpegQuality
-		@see getJpegQuality
+		@see #setJpegQuality
+		@see #getJpegQuality
 	*/
 	public boolean saveAsJpeg(String path) {
 		String err = JpegWriter.save(imp, path, jpegQuality);

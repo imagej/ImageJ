@@ -135,9 +135,7 @@ public class BinaryProcessor extends ByteProcessor {
 
 	int thin(int pass, int[] table) {
 		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		int inc = roiHeight/25;
-		if (inc<1) inc = 1;
-		int bgColor = 255;
+		int bgColor = -1; //255
 		if (parent.isInvertedLut())
 			bgColor = 0;
 			
@@ -149,17 +147,17 @@ public class BinaryProcessor extends ByteProcessor {
 		for (int y=yMin; y<=yMax; y++) {
 			offset = xMin + y * width;
 			for (int x=xMin; x<=xMax; x++) {
-				p5 = pixels2[offset]&0xff;
+				p5 = pixels2[offset];
 				v = p5;
 				if (v!=bgColor) {
-					p1 = pixels2[offset-rowOffset-1]&0xff;
-					p2 = pixels2[offset-rowOffset]&0xff;
-					p3 = pixels2[offset-rowOffset+1]&0xff;
-					p4 = pixels2[offset-1]&0xff;
-					p6 = pixels2[offset+1]&0xff;
-					p7 = pixels2[offset+rowOffset-1]&0xff;
-					p8 = pixels2[offset+rowOffset]&0xff;
-					p9 = pixels2[offset+rowOffset+1]&0xff;
+					p1 = pixels2[offset-rowOffset-1];
+					p2 = pixels2[offset-rowOffset];
+					p3 = pixels2[offset-rowOffset+1];
+					p4 = pixels2[offset-1];
+					p6 = pixels2[offset+1];
+					p7 = pixels2[offset+rowOffset-1];
+					p8 = pixels2[offset+rowOffset];
+					p9 = pixels2[offset+rowOffset+1];
 					index = 0;
 					if (p1!=bgColor) index |= 1;
 					if (p2!=bgColor) index |= 2;
@@ -171,12 +169,12 @@ public class BinaryProcessor extends ByteProcessor {
 					if (p4!=bgColor) index |= 128;
 					code = table[index];
 					if ((pass&1)==1) { //odd pass
-						if (code==2 || code==3) {
+						if (code==2||code==3) {
 							v = bgColor;
 							pixelsRemoved++;
 						}
 					} else { //even pass
-						if (code==1 || code==3) {
+						if (code==1||code==3) {
 							v = bgColor;
 							pixelsRemoved++;
 						}
@@ -184,10 +182,7 @@ public class BinaryProcessor extends ByteProcessor {
 				}
 				pixels[offset++] = (byte)v;
 			}
-			if (y%inc==0)
-				showProgress((double)(y-roiY)/roiHeight);
 		}
-		hideProgress();
 		return pixelsRemoved;
 	}
 	

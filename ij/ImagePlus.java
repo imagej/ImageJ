@@ -15,6 +15,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 import ij.plugin.Duplicator;
 import ij.plugin.RectToolOptions;
+import ij.plugin.Colors;
 
 
 /**
@@ -1952,7 +1953,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,4,7);
     			return(", value=" + s);
 			case COLOR_RGB:
-    			return(", value=" + v[0] + "," + v[1] + "," + v[2]);
+				//String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
+    			return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3));
     		default: return("");
 		}
     }

@@ -1532,8 +1532,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 
 	/** Returns the ROI Hashtable.
-		@see getCount
-		@see getRoisAsArray
+		@see #getCount
+		@see #getRoisAsArray
 	*/
 	public Hashtable getROIs() {
 		return rois;
@@ -1541,13 +1541,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Obsolete
 	* @deprecated
-	* @see getCount
-	* @see getRoisAsArray
+	* @see #getCount
+	* @see #getRoisAsArray
+	* @see #getSelectedIndex
 	*/
 	public List getList() {
 		List awtList = new List();
 		for (int i=0; i<getCount(); i++)
 			awtList.add((String)listModel.getElementAt(i));
+		int index = getSelectedIndex();
+		if (index>=0)
+			awtList.select(index);
 		return awtList;
 	}
 	
