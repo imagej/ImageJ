@@ -123,13 +123,14 @@ adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 # Plugins installed in the Image/Color submenu
 color01="Split Channels",ij.plugin.ChannelSplitter
 color02="Merge Channels...",ij.plugin.RGBStackMerge
-color03="Channels Tool... ",ij.plugin.frame.Channels
-color04=-
-color05="Stack to RGB",ij.plugin.RGBStackConverter
-color06="Make Composite",ij.plugin.CompositeConverter
-color07="Show LUT",ij.plugin.filter.LutViewer
-color08="Edit LUT...",ij.plugin.LUT_Editor
-color09="Color Picker...[K]",ij.plugin.frame.ColorPicker
+color03="Arrange Channels...",ij.plugin.ChannelArranger
+color04="Channels Tool... ",ij.plugin.frame.Channels
+color05=-
+color06="Stack to RGB",ij.plugin.RGBStackConverter
+color07="Make Composite",ij.plugin.CompositeConverter
+color08="Show LUT",ij.plugin.filter.LutViewer
+color09="Edit LUT...",ij.plugin.LUT_Editor
+color10="Color Picker...[K]",ij.plugin.frame.ColorPicker
 
 # Plugins installed in the Image/Stacks submenu
 stacks01="Add Slice",ij.plugin.StackEditor("add")

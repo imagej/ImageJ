@@ -589,12 +589,15 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
  	}
  	
  	void runThresholdCommand() {
-		Recorder.recordInMacros = true;
 		Thresholder.setMethod(method);
 		Thresholder.setBackground(darkBackground.getState()?"Dark":"Light");
-		(new Thresholder()).run("mask");
-		Recorder.recordInMacros = false;
- 	}
+		if (Recorder.record) {
+			Recorder.setCommand("Convert to Mask");
+			(new Thresholder()).run("mask");
+			Recorder.saveCommand();
+		} else
+			(new Thresholder()).run("mask");
+	}
 	
 	static final int RESET=0, AUTO=1, HIST=2, APPLY=3, STATE_CHANGE=4, MIN_THRESHOLD=5, MAX_THRESHOLD=6, SET=7;
 

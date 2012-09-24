@@ -22,10 +22,11 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	static boolean fill1 = true;
 	static boolean fill2 = true;
 	static boolean useBW = true;
-	static boolean useLocal = true;
+	private boolean useLocal = true;
 	boolean convertToMask;
 	private String method = methods[0];
 	private String background = backgrounds[0];
+	private static boolean staticUseLocal = true;
 	private static String staticMethod = methods[0];
 	private static String staticBackground = backgrounds[0];
 	private ImagePlus imp;
@@ -51,15 +52,16 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			return;
 		}
 		boolean thresholdSet = imp.getProcessor().getMinThreshold()!=ImageProcessor.NO_THRESHOLD;
-		if (thresholdSet)
-			useLocal = false;
 		this.imp = imp;
 		if (!IJ.isMacro()) {
 			method = staticMethod;
 			background = staticBackground;
+			useLocal = staticUseLocal;
 			if (!thresholdSet)
 				updateThreshold(imp);
 		}
+		if (thresholdSet)
+			useLocal = false;
 		GenericDialog gd = new GenericDialog("Convert Stack to Binary");
 		gd.addChoice("Method:", methods, method);
 		gd.addChoice("Background:", backgrounds, background);
@@ -79,6 +81,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		if (!IJ.isMacro()) {
 			staticMethod = method;
 			staticBackground = background;
+			staticUseLocal = useLocal;
 		}
 		Undo.reset();
 		if (useLocal)
