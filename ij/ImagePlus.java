@@ -1744,7 +1744,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (roi!=null) roi.setImage(null);
 		roi = null;
 		properties = null;
-		calibration = null;
+		//calibration = null;
 		overlay = null;
 		flatteningCanvas = null;
 	}
@@ -1804,6 +1804,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void copyScale(ImagePlus imp) {
 		if (imp!=null && globalCalibration==null)
 			setCalibration(imp.getCalibration());
+	}
+
+	/** Copies attributes (name, ID, calibration, metadata, path) of the specified image to this image. */
+	public void copyAttributes(ImagePlus imp) {
+		if (imp==null || imp.getWindow()!=null)
+			throw new IllegalArgumentException("Souce image is null or displayed");
+		ID = imp.getID();
+		setTitle(imp.getTitle());
+		setCalibration(imp.getCalibration());
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi!=null)
+			setFileInfo(fi);
+		Object info = imp.getProperty("Info");
+		if (info!=null)
+			setProperty("Info", imp.getProperty("Info"));
 	}
 
     /** Calls System.currentTimeMillis() to save the current

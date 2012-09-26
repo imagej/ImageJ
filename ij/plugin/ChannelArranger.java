@@ -40,6 +40,7 @@ public class ChannelArranger implements PlugIn, TextListener {
 		Vector v = gd.getStringFields();
 		orderField = (TextField)v.elementAt(0);
 		orderField.addTextListener(this);
+		gd.addHelp(IJ.URL+"/docs/menus/image.html#arrange");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -67,7 +68,6 @@ public class ChannelArranger implements PlugIn, TextListener {
 			imp2 = channels2[0];
 		else
 			imp2 = RGBStackMerge.mergeChannels(channels2, false);
-		imp2.setTitle(imp.getTitle());
 		int mode2 = CompositeImage.COLOR;
 		if (imp.isComposite())
 			mode2 = ((CompositeImage)imp).getMode();
@@ -84,10 +84,11 @@ public class ChannelArranger implements PlugIn, TextListener {
 		Point location = imp.getWindow()!=null?imp.getWindow().getLocation():null;
 		imp.changes = false;
 		imp.close();
+		imp2.copyAttributes(imp);
 		if (location!=null)
 			ImageWindow.setNextLocation(location);
+		imp2.changes = true;
 		imp2.show();
-		//imp.setImage(imp2);
 	}
 
 	public void textValueChanged(TextEvent e) {
@@ -178,7 +179,8 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 			return;
 		}
 		int savedMode = cImp.getMode();
-		cImp.setMode(CompositeImage.COLOR);
+		if (savedMode==CompositeImage.COMPOSITE)
+			cImp.setMode(CompositeImage.COLOR);
 		BufferedImage bImg;
 		ImageProcessor ipSmall;
 
@@ -220,7 +222,8 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 			return;
 		}
 		g.drawImage(os, 0, 0, this);
-		cImp.setMode(savedMode);
+		if (savedMode==CompositeImage.COMPOSITE)
+			cImp.setMode(savedMode);
   
 		cImp.setPosition(currentChannel, currentSlice, currentFrame);
 		cImp.updateImage();
