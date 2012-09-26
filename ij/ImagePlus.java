@@ -1725,7 +1725,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		arrays to null. Does nothing if the image is locked. */
 	public synchronized void flush() {
 		notifyListeners(CLOSED);
-		win = null;
 		if (locked || ignoreFlush) return;
 		ip = null;
 		if (roi!=null) roi.setImage(null);
@@ -1741,6 +1740,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 		stack = null;
 		img = null;
+		win = null;
 		if (roi!=null) roi.setImage(null);
 		roi = null;
 		properties = null;

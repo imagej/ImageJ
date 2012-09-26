@@ -48,10 +48,10 @@ public class Converter implements PlugIn {
 				// do stack conversions
 		    	if (stack.isRGB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertRGBStackToRGB();
-		    		if (win!=null) new ImageWindow(imp, imp.getCanvas()); // replace StackWindow with ImageWindow
+					if (win!=null) new ImageWindow(imp, imp.getCanvas()); // replace StackWindow with ImageWindow
 		    	} else if (stack.isHSB() && item.equals("RGB Color")) {
 					new ImageConverter(imp).convertHSBToRGB();
-		    		if (win!=null) new ImageWindow(imp, imp.getCanvas());
+					if (win!=null) new ImageWindow(imp, imp.getCanvas());
 				} else if (item.equals("8-bit"))
 					new StackConverter(imp).convertToGray8();
 				else if (item.equals("16-bit"))

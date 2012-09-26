@@ -124,7 +124,7 @@ adjust08="Line Width... ",ij.plugin.frame.LineWidthAdjuster
 color01="Split Channels",ij.plugin.ChannelSplitter
 color02="Merge Channels...",ij.plugin.RGBStackMerge
 color03="Arrange Channels...",ij.plugin.ChannelArranger
-color04="Channels Tool... ",ij.plugin.frame.Channels
+color04="Channels Tool...[Z]",ij.plugin.frame.Channels
 color05=-
 color06="Stack to RGB",ij.plugin.RGBStackConverter
 color07="Make Composite",ij.plugin.CompositeConverter
@@ -170,7 +170,6 @@ hyperstacks01="New Hyperstack...",ij.plugin.HyperStackConverter("new")
 hyperstacks02="Stack to Hyperstack...",ij.plugin.HyperStackConverter("stacktohs")
 hyperstacks03="Hyperstack to Stack",ij.plugin.HyperStackConverter("hstostack")
 hyperstacks04="Reduce Dimensionality...",ij.plugin.HyperStackReducer
-hyperstacks05="Channels Tool...[Z]",ij.plugin.frame.Channels
 
 # Plugins installed in the Image/Transform submenu
 transform01="Flip Horizontally",ij.plugin.filter.Transformer("fliph")
