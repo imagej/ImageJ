@@ -27,10 +27,12 @@ public class Histogram implements PlugIn, TextListener {
 	private Checkbox checkbox;
 	private TextField minField, maxField;
 	private String defaultMin, defaultMax;
+	private double imageMin, imageMax;
 
  	public void run(String arg) {
  		ImagePlus imp = IJ.getImage();
  		int bitDepth = imp.getBitDepth();
+ 		imageMin = imageMax = 0.0;
  		if (bitDepth==32 || IJ.altKeyDown() || (IJ.isMacro()&&Macro.getOptions()!=null)) {
 			IJ.setKeyUp(KeyEvent.VK_ALT);
  			if (!showDialog(imp))
@@ -61,8 +63,10 @@ public class Histogram implements PlugIn, TextListener {
  			yMax = "Auto";
  		}
  		ImageStatistics stats = null;
- 		if (useImageMinAndMax)
- 			{xMin=0.0; xMax=0.0;}
+ 		if (useImageMinAndMax) {
+ 			xMin = imageMin;
+ 			xMax = imageMax;
+ 		}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
  		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
  		ImageWindow.centerNextImage();
@@ -101,16 +105,31 @@ public class Histogram implements PlugIn, TextListener {
 		defaultMax = IJ.d2s(xMax,2);
 		imageID = imp.getID();
 		int stackSize = imp.getStackSize();
+		String minMax = "";
+		if (useImageMinAndMax && !IJ.isMacro() && imp.getStackSize()==1) {
+			ImageStatistics stats = imp.getProcessor().getStatistics();
+			if (stats.min!=xMin || stats.max!=xMax) {
+				imageMin = stats.min;
+				imageMax = stats.max;
+				int digits = 2;
+				if (imageMin==(int)imageMin && imageMax==(int)imageMax)
+					digits = 0;
+				minMax = " ("+IJ.d2s(imageMin,digits)+"/"+IJ.d2s(imageMax,digits)+")";
+			}
+		}
 		GenericDialog gd = new GenericDialog("Histogram");
 		gd.addNumericField("Bins:", nBins, 0);
-		gd.addCheckbox("Use min/max or:", useImageMinAndMax);
-		//gd.addMessage("          or");
-		gd.addMessage("");
+		gd.addCheckbox("Use min/max"+minMax, useImageMinAndMax);
+		gd.setInsets(5, 45, 10);
+		gd.addMessage("or");
 		int fwidth = 6;
 		int nwidth = Math.max(IJ.d2s(xMin,2).length(), IJ.d2s(xMax,2).length());
 		if (nwidth>fwidth) fwidth = nwidth;
-		gd.addNumericField("X_Min:", xMin, 2, fwidth, null);
-		gd.addNumericField("X_Max:", xMax, 2, fwidth, null);
+		int digits = 2;
+		if (xMin==(int)xMin && xMax==(int)xMax)
+			digits = 0;
+		gd.addNumericField("X_Min:", xMin, digits, fwidth, null);
+		gd.addNumericField("X_Max:", xMax, digits, fwidth, null);
 		gd.addMessage(" ");
 		gd.addStringField("Y_Max:", yMax, 6);
 		if (stackSize>1)

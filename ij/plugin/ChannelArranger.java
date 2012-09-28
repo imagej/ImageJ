@@ -213,7 +213,7 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 				y1 += (iconSize + separatorY);
 			}
 		}
-		y1 = iconSize - 4;
+		y1 = marginY + iconSize - 7;
 		osg.drawString("Old:", 6, y1);
 		y1 += (iconSize + separatorY);
 		osg.drawString("New:", 6, y1);
@@ -224,17 +224,13 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 		g.drawImage(os, 0, 0, this);
 		if (savedMode==CompositeImage.COMPOSITE)
 			cImp.setMode(savedMode);
-  
 		cImp.setPosition(currentChannel, currentSlice, currentFrame);
 		cImp.updateImage();
-		IJ.showStatus("restoring ch=" + currentChannel + "	slc=" + currentSlice + "  frame=" + currentFrame);
-
 	}
 
 	protected void handlePopupMenu(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		cImp.setPosition(channelUnderCursor, y, y);
 		PopupMenu popup = new PopupMenu();
 		String[] colors = "Grays,-,Red,Green,Blue,Yellow,Magenta,Cyan,-,Fire,Ice,Spectrum,3-3-2 RGB,Red/Green".split(",");
 		for (int jj = 0; jj < colors.length; jj++) {

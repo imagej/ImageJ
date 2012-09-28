@@ -351,7 +351,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Opens a window to display this image and displays
 		'statusMessage' in the status bar. */
 	public void show(String statusMessage) {
-		if (win!=null) return;
+		if (isVisible())
+			return;
+		win = null;
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
 			if (isComposite()) ((CompositeImage)this).reset();
 			ImagePlus img = WindowManager.getCurrentImage();
@@ -1806,7 +1808,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setCalibration(imp.getCalibration());
 	}
 
-	/** Copies attributes (name, ID, calibration, metadata, path) of the specified image to this image. */
+	/** Copies attributes (name, ID, calibration, path) of the specified image to this image. */
 	public void copyAttributes(ImagePlus imp) {
 		if (imp==null || imp.getWindow()!=null)
 			throw new IllegalArgumentException("Souce image is null or displayed");
