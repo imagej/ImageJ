@@ -15,6 +15,8 @@ public class Tokenizer implements MacroConstants {
     /** Uses a StreamTokenizer to convert an ImageJ macro file into a token stream. */
     public Program tokenize(String program) {
         //IJ.showStatus("tokenizing");
+		if (program.contains("/*") && program.contains("*/"))
+			program = addSpacesToEmptyLines(program);
         st = new StreamTokenizer(new StringReader(program));
         //st.eolIsSignificant(true);
         st.ordinaryChar('-');
@@ -277,6 +279,19 @@ public class Tokenizer implements MacroConstants {
 			} else if (token==EOF)
 				break;
 		}
+	}
+	
+	private String addSpacesToEmptyLines(String pgm) {
+		StringBuilder sb = new StringBuilder();
+		int len = pgm.length();
+		for (int jj=0; jj<len-1; jj++) {//insert a space if line is empty
+			char c = pgm.charAt(jj);
+			sb.append(c);
+			if (jj<len-1 && c=='\n' && pgm.charAt(jj+1)=='\n')
+				sb.append(" ");
+		}
+		sb.append(pgm.charAt(len-1)); //add last char
+		return sb.toString(); //program no longer contain empty lines
 	}
 
 }

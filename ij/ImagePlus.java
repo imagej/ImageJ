@@ -603,9 +603,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 			setPosition(1, 1, 1);
-		} else if (dimensionsChanged || sliderChange)
+		} else if (dimensionsChanged || sliderChange) {
 			win.updateImage(this);
-		else {
+		} else {
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
 			if (isComposite()) {

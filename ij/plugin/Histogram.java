@@ -27,12 +27,10 @@ public class Histogram implements PlugIn, TextListener {
 	private Checkbox checkbox;
 	private TextField minField, maxField;
 	private String defaultMin, defaultMax;
-	private double imageMin, imageMax;
 
  	public void run(String arg) {
  		ImagePlus imp = IJ.getImage();
  		int bitDepth = imp.getBitDepth();
- 		imageMin = imageMax = 0.0;
  		if (bitDepth==32 || IJ.altKeyDown() || (IJ.isMacro()&&Macro.getOptions()!=null)) {
 			IJ.setKeyUp(KeyEvent.VK_ALT);
  			if (!showDialog(imp))
@@ -64,8 +62,8 @@ public class Histogram implements PlugIn, TextListener {
  		}
  		ImageStatistics stats = null;
  		if (useImageMinAndMax) {
- 			xMin = imageMin;
- 			xMax = imageMax;
+ 			xMin = 0.0;
+ 			xMax = 0.0;
  		}
  		int iyMax = (int)Tools.parseDouble(yMax, 0.0);
  		boolean customHistogram = (bitDepth==8||bitDepth==24) && (!(xMin==0.0&&xMax==0.0)||nBins!=256||iyMax>0);
@@ -105,23 +103,11 @@ public class Histogram implements PlugIn, TextListener {
 		defaultMax = IJ.d2s(xMax,2);
 		imageID = imp.getID();
 		int stackSize = imp.getStackSize();
-		String minMax = "";
-		if (useImageMinAndMax && !IJ.isMacro() && imp.getStackSize()==1) {
-			ImageStatistics stats = imp.getProcessor().getStatistics();
-			if (stats.min!=xMin || stats.max!=xMax) {
-				imageMin = stats.min;
-				imageMax = stats.max;
-				int digits = 2;
-				if (imageMin==(int)imageMin && imageMax==(int)imageMax)
-					digits = 0;
-				minMax = " ("+IJ.d2s(imageMin,digits)+"/"+IJ.d2s(imageMax,digits)+")";
-			}
-		}
 		GenericDialog gd = new GenericDialog("Histogram");
 		gd.addNumericField("Bins:", nBins, 0);
-		gd.addCheckbox("Use min/max"+minMax, useImageMinAndMax);
-		gd.setInsets(5, 45, 10);
-		gd.addMessage("or");
+		gd.addCheckbox("Use pixel value range", useImageMinAndMax);
+		gd.setInsets(5, 40, 10);
+		gd.addMessage("or use:");
 		int fwidth = 6;
 		int nwidth = Math.max(IJ.d2s(xMin,2).length(), IJ.d2s(xMax,2).length());
 		if (nwidth>fwidth) fwidth = nwidth;
@@ -130,10 +116,11 @@ public class Histogram implements PlugIn, TextListener {
 			digits = 0;
 		gd.addNumericField("X_Min:", xMin, digits, fwidth, null);
 		gd.addNumericField("X_Max:", xMax, digits, fwidth, null);
-		gd.addMessage(" ");
+		gd.setInsets(15, 0, 10);
 		gd.addStringField("Y_Max:", yMax, 6);
 		if (stackSize>1)
-			gd.addCheckbox("Stack Histogram", stackHistogram);
+			gd.addCheckbox("Stack histogram", stackHistogram);
+		
 		Vector numbers = gd.getNumericFields();
 		minField = (TextField)numbers.elementAt(1);
 		minField.addTextListener(this);
