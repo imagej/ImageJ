@@ -148,6 +148,8 @@ public class ImageConverter {
 			cp.invert();
 		imp.setImage(cp.createImage());
 		imp.killStack();
+		if (IJ.isLinux())
+			imp.setTitle(imp.getTitle());
 	}
 
 	/** Converts a 3-slice (hue, saturation, brightness) 8-bit stack to RGB. */
@@ -165,6 +167,8 @@ public class ImageConverter {
 		cp.setHSB(H, S, B);
 		imp.setImage(cp.createImage());
 		imp.killStack();
+		if (IJ.isLinux())
+			imp.setTitle(imp.getTitle());
 	}
 	
 	/** Converts an RGB image to 8-bits indexed color. 'nColors' must

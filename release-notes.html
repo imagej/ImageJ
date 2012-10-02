@@ -5,13 +5,14 @@
 </head>
 <body>
 
-<li> <u>1.47d 29 September 2012</u>
+<li> <u>1.47d 1 October 2012</u>
 <ul>
 <li> Thanks to Norbert Vischer, added the
 <i>Image&gt;Color&gt;Arrange Channels</i> command.
 <li> Thanks to Michael Cammer, added "Method" and "Background" choices
 to the <i>Process&gt;Binary&gt;Convert to Mask</i> dialog that is displayed
 when processing stacks.
+<li> Thanks to Ved Sharma, the arrow tool draws bolder outlined arrows.
 <li> Deleted the redundent <i>Image&gt;Hyperstacks&gt;Channels Tool</i> menu command.
 <li> Fixed a bug that caused the roiManager("select",n) macro function, and RoiManager.select() 
 method, to display an error message if no images were displayed.
@@ -28,7 +29,9 @@ tool to always use the default thresholding method.
 <li> Thanks to Jan Eglinger, fixed a bug that caused incorrect recording of plugins that used the run(imp,..)
 methods of the Duplicator class when the recoder was in "JavaScript" or "Plugin" mode.
 <li> Norbert Vischer fixed a bug that caused error message line numbers to be
-incorrect with macro with SlashStar comments containing emptly lines.
+incorrect with macros containing emptly lines inside SlashStar comments.
+<li> Thanks to Jiri Janacek, fixed a bug the caused the perimeter of composite ROIs in
+spatially calibrated images to be incorrect.
 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>

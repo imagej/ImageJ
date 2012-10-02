@@ -26,6 +26,7 @@ public class Arrow extends Line {
 	private float[] points = new float[2*5];
 	private GeneralPath path = new GeneralPath();
 	private static Stroke defaultStroke = new BasicStroke();
+	double headShaftRatio;
 	
 	static {
 		if (defaultStyle<FILLED || defaultStyle>HEADLESS)
@@ -105,16 +106,34 @@ public class Arrow extends Line {
 		path.reset();
 		path = new GeneralPath();
 		calculatePoints();
-		path.moveTo(points[0], points[1]); // tail
-		path.lineTo(points[2 * 1], points[2 * 1 + 1]); // head back
-		path.moveTo(points[2 * 1], points[2 * 1 + 1]); // head back
+		float tailx = points[0];
+		float taily = points[1];
+		float headbackx = points[2*1];
+		float headbacky = points[2*1+1];
+		float headtipx = points[2*3];
+		float headtipy = points[2*3+1];
+		if (outline) {
+			double dx = headtipx - tailx;
+			double dy = headtipy - taily;
+			double shaftLength = Math.sqrt(dx*dx+dy*dy);
+			dx = headtipx - headbackx;
+			dy = headtipy- headbacky;
+			double headLength = Math.sqrt(dx*dx+dy*dy);
+			headShaftRatio = headLength/shaftLength;
+			if (headShaftRatio>1.0)
+				headShaftRatio = 1.0;
+			//IJ.log(headShaftRatio+" "+(int)shaftLength+" "+(int)headLength+" "+(int)tailx+" "+(int)taily+" "+(int)headtipx+" "+(int)headtipy);
+		}
+		path.moveTo(tailx, taily); // tail
+		path.lineTo(headbackx, headbacky); // head back
+		path.moveTo(headbackx, headbacky); // head back
 		if (style==OPEN)
 			path.moveTo(points[2 * 2], points[2 * 2 + 1]);
 		else
 			path.lineTo(points[2 * 2], points[2 * 2 + 1]); // left point
-		path.lineTo(points[2 * 3], points[2 * 3 + 1]); // head tip
+		path.lineTo(headtipx, headtipy); // head tip
 		path.lineTo(points[2 * 4], points[2 * 4 + 1]); // right point
-		path.lineTo(points[2 * 1], points[2 * 1 + 1]); // back to the head back
+		path.lineTo(headbackx, headbacky); // back to the head back
 		return path;
 	}
 
@@ -221,14 +240,15 @@ public class Arrow extends Line {
 
 	private double getOutlineWidth() {
 		double width = getStrokeWidth()/8.0;
-		if (width<1.0) width = 1.0;
-		double head = headSize/8.0;
-		if (head<1.0) head = 1.0;
-		double lineWidth = width*head;
+		double head = headSize/7.0;
+		double lineWidth = width + head + headShaftRatio;
 		if (lineWidth<1.0) lineWidth = 1.0;
+		//if (width<1) width=1;
+		//if (head<1) head=1;
+		//IJ.log(getStrokeWidth()+"  "+IJ.d2s(width,2)+"  "+IJ.d2s(head,2)+"  "+IJ.d2s(headShaftRatio,2)+"  "+IJ.d2s(lineWidth,2)+"  "+IJ.d2s(width*head,2));
 		return lineWidth;
 	}
-
+	
 	public void drawPixels(ImageProcessor ip) {
 		ShapeRoi shapeRoi = getShapeRoi();
 		ShapeRoi shapeRoi2 = null;
