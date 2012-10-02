@@ -34,6 +34,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			IJ.error("The Crop and Adjust>Size commands\ndo not work with line selections.");
 			return;
 		}
+		if (!imp.lock())
+			return;
 		Rectangle r = ip.getRoi();
 		origWidth = r.width;;
 		origHeight = r.height;
@@ -95,8 +97,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			if (!IJ.macroRunning())
 				((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
 			gd.showDialog();
-			if (gd.wasCanceled())
+			if (gd.wasCanceled()) {
+				imp.unlock();
 				return;
+			}
 			newWidth = (int)gd.getNextNumber();
 			newHeight = (int)gd.getNextNumber();
 			if (z1>1)
@@ -105,6 +109,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				t2 = (int)gd.getNextNumber();
 			if (gd.invalidNumber()) {
 				IJ.error("Width or height are invalid.");
+				imp.unlock();
 				return;
 			}
 			constrain = gd.getNextBoolean();
@@ -175,6 +180,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			imp2 = zScale(imp, z2, interpolationMethod+IN_PLACE);
 		if (t2>0 && t2!=t1)
 			imp2 = zScale(imp2!=null?imp2:imp, t2, interpolationMethod+IN_PLACE+SCALE_T);
+		imp.unlock();
 		if (imp2!=null && imp2!=imp) {
 			imp.changes = false;
 			imp.close();
@@ -195,14 +201,16 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				imp2 = shrinkZ(imp, newDepth, inPlace);
 			else
 				imp2 = resizeZ(imp, newDepth, interpolationMethod);
-			if (imp2==null) return null;
+			if (imp2==null)
+				imp.unlock();
 			ImageProcessor ip = imp.getProcessor();
 			double min = ip.getMin();
 			double max = ip.getMax();
 			if (bitDepth==16||bitDepth==32)
 				imp2.getProcessor().setMinAndMax(min, max);
 		}
-		if (imp2==null) return null;
+		if (imp2==null)
+			imp.unlock();
 		if (imp2!=imp && imp.isComposite()) {
 			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
 			((CompositeImage)imp2).copyLuts(imp);
