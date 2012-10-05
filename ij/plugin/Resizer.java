@@ -202,7 +202,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			else
 				imp2 = resizeZ(imp, newDepth, interpolationMethod);
 			if (imp2==null)
-				imp.unlock();
+				return null;
 			ImageProcessor ip = imp.getProcessor();
 			double min = ip.getMin();
 			double max = ip.getMax();
@@ -210,7 +210,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 				imp2.getProcessor().setMinAndMax(min, max);
 		}
 		if (imp2==null)
-			imp.unlock();
+			return null;
 		if (imp2!=imp && imp.isComposite()) {
 			imp2 = new CompositeImage(imp2, ((CompositeImage)imp).getMode());
 			((CompositeImage)imp2).copyLuts(imp);

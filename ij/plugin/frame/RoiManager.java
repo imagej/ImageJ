@@ -883,7 +883,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (nSlices==1) sliceUse = currentSlice;
 			imp.setSliceWithoutUpdate(sliceUse);
 			rtMulti.incrementCounter();
-			if ((Analyzer.getMeasurements()&LABELS)!=0)
+			if ((Analyzer.getMeasurements()&Measurements.LABELS)!=0)
 				rtMulti.addLabel("Label", imp.getTitle());
 			int roiIndex = 0;
 			for (int i=0; i<indexes.length; i++) {

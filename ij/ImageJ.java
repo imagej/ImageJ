@@ -74,7 +74,7 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.47d";
-	public static final String BUILD = "28"; 
+	public static final String BUILD = "39"; 
 	public static Color backgroundColor = new Color(220,220,220); //224,226,235
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -107,6 +107,7 @@ public class ImageJ extends Frame implements ActionListener,
 	private String lastKeyCommand;
 	private boolean embedded;
 	private boolean windowClosed;
+	private static String commandName;
 	
 	boolean hotkey;
 	
@@ -308,6 +309,7 @@ public class ImageJ extends Frame implements ActionListener,
 		if ((e.getSource() instanceof MenuItem)) {
 			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
+			commandName = cmd;
 			ImagePlus imp = null;
 			if (item.getParent()==Menus.openRecentMenu) {
 				new RecentOpener(cmd); // open image in separate thread
@@ -409,6 +411,7 @@ public class ImageJ extends Frame implements ActionListener,
 					cmd = (String)macroShortcuts.get(new Integer(keyCode));
 				if (cmd!=null) {
 					//MacroInstaller.runMacroCommand(cmd);
+					commandName = cmd;
 					MacroInstaller.runMacroShortcut(cmd);
 					return;
 				}
@@ -481,6 +484,7 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 		
 		if (cmd!=null && !cmd.equals("")) {
+			commandName = cmd;
 			if (cmd.equals("Fill")||cmd.equals("Draw"))
 				hotkey = true;
 			if (cmd.charAt(0)==MacroInstaller.commandPrefix)
@@ -780,4 +784,12 @@ public class ImageJ extends Frame implements ActionListener,
 		}
 	}
 	
+	public static String getCommandName() {
+		return commandName!=null?commandName:"null";
+	}
+	
+	public static void setCommandName(String name) {
+		commandName = name;
+	}
+
 }

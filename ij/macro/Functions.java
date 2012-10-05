@@ -1392,6 +1392,8 @@ public class Functions implements MacroConstants, Measurements {
 			if (len==9 && key.charAt(4)==',') {
 				String tag = DicomTools.getTag(getImage(), key);
 				return tag!=null?tag:"";
+			} else if (key.equals("command.name")) {
+				return ImageJ.getCommandName();
 			} else if (key.equals("overlay")) {
 				Overlay overlay = getImage().getOverlay();
 				if (overlay==null)
@@ -3697,6 +3699,8 @@ public class Functions implements MacroConstants, Measurements {
 			expandableArrays = state;
 		else if (arg1.startsWith("loop"))
 			Calibration.setLoopBackAndForth(state);
+		else if (arg1.startsWith("jfilechooser"))
+			Prefs.useJFileChooser = state;
 		else
 			interp.error("Invalid option");
 	}

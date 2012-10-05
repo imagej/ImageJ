@@ -127,8 +127,11 @@ public class SaveDialog {
 		else {
 			dir = fc.getCurrentDirectory().getPath()+File.separator;
 			name = fc.getName(f);
-			if (noExtension(name))
+			if (noExtension(name)) {
+				if (".raw".equals(ext))
+					ext = null;
 				name = setExtension(name, ext);
+			}
 		}
 	}
 
@@ -163,8 +166,11 @@ public class SaveDialog {
 					else {
 						dir = fc.getCurrentDirectory().getPath()+File.separator;
 						name = fc.getName(f);
-						if (noExtension(name))
+						if (noExtension(name)) {
+							if (".raw".equals(ext))
+								ext = null;
 							name = setExtension(name, ext);
+						}
 					}
 				}
 			});
@@ -184,6 +190,8 @@ public class SaveDialog {
 		name = fd.getFile();
 		String origName = name;
 		if (noExtension(name)) {
+			if (".raw".equals(ext))
+				ext = null;
 			name = setExtension(name, ext);
 			boolean dialog = name!=null && !name.equals(origName) && IJ.isMacOSX() && !IJ.isMacro();
 			if (dialog) {

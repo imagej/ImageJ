@@ -57,6 +57,7 @@ public class Interpreter implements MacroConstants {
 	boolean showDebugFunctions;
 	static boolean showVariables;
 	boolean wasError;
+	ImagePlus batchMacroImage;
 
 	/** Interprets the specified string. */
 	public void run(String macro) {
@@ -134,13 +135,15 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	/** Runs Process/Batch/ macros. */
-	public void runBatchMacro(String macro, ImagePlus imp) {
+	public ImagePlus runBatchMacro(String macro, ImagePlus imp) {
 		calledMacro = true;
 		batchMacro = true;
 		setBatchMode(true);
 		addBatchModeImage(imp);
+		batchMacroImage = null;
 		run(macro);
 		IJ.showStatus("");
+		return batchMacroImage;
 	}
 
 	/** Saves global variables. */
@@ -1608,6 +1611,8 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	void finishUp() {
+		if (batchMacro)
+			batchMacroImage = WindowManager.getCurrentImage();
 		func.updateDisplay();
 		instance = null;
 		if (!calledMacro || batchMacro) {
@@ -1738,7 +1743,8 @@ public class Interpreter implements MacroConstants {
 	}
 	
 	public static ImagePlus getLastBatchModeImage() { 
-		if (!batchMode || imageTable==null) return null; 
+		if (!batchMode || imageTable==null)
+			return null; 
 		int size = imageTable.size(); 
 		if (size==0) return null; 
 		return (ImagePlus)imageTable.elementAt(size-1); 
@@ -1879,7 +1885,6 @@ public class Interpreter implements MacroConstants {
 		}
 		return s;
 	}
-
 
 } // class Interpreter
 

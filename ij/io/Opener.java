@@ -6,6 +6,7 @@ import ij.plugin.frame.*;
 import ij.plugin.DICOM;
 import ij.plugin.AVI_Reader;
 import ij.plugin.SimpleCommands;
+import ij.plugin.HyperStackConverter;
 import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
@@ -715,12 +716,15 @@ public class Opener {
 			ImagePlus imp = new ImagePlus(fi.fileName, stack);
 			new FileOpener(fi).setCalibration(imp);
 			imp.setFileInfo(fi);
+			if (fi.description!=null && fi.description.contains("order=zct"))
+				new HyperStackConverter().shuffle(imp, HyperStackConverter.ZCT);
 			int stackSize = stack.getSize();
 			if (nChannels>1 && (stackSize%nChannels)==0) {
 				imp.setDimensions(nChannels, stackSize/nChannels, 1);
 				imp = new CompositeImage(imp, CompositeImage.COMPOSITE);
 				imp.setOpenAsHyperStack(true);
-			}
+			} else if (imp.getNChannels()>1)
+				imp = makeComposite(imp, fi);
 			IJ.showProgress(1.0);
 			return imp;
 		}
