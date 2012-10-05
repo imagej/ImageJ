@@ -774,6 +774,7 @@ public class ImageReader {
 				case FileInfo.ARGB:
 				case FileInfo.ABGR:
 				case FileInfo.BARG:
+				case FileInfo.CMYK:
 					bytesPerPixel = fi.getBytesPerPixel();
 					skip(in);
 					pixels = (Object)readChunkyRGB(in);

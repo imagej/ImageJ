@@ -34,7 +34,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private static boolean unsavedMeasurements;
 	public static Color darkBlue = new Color(0,0,160);
 	private static int systemMeasurements = Prefs.getInt(MEASUREMENTS,AREA+MEAN+MIN_MAX);
-	public static int markWidth = Prefs.getInt(MARK_WIDTH,0);
+	public static int markWidth;
 	public static int precision = Prefs.getInt(PRECISION,3);
 	private static float[] umeans = new float[MAX_STANDARDS];
 	private static ResultsTable systemRT = new ResultsTable();
@@ -812,7 +812,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		prefs.put(MEASUREMENTS, Integer.toString(systemMeasurements));
-		prefs.put(MARK_WIDTH, Integer.toString(markWidth));
+		//prefs.put(MARK_WIDTH, Integer.toString(markWidth));
 		prefs.put(PRECISION, Integer.toString(precision));	}
 
 	/** Returns an array containing the first 20 uncalibrated means. */

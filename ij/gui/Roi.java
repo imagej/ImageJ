@@ -1257,8 +1257,8 @@ public class Roi extends Object implements Cloneable, java.io.Serializable {
 
 	/** Sets the color used by this ROI to draw its outline. This color, if not null, 
 	 * overrides the global color set by the static setColor() method.
-	 * @see #getStrokeColor()
-	 * @see #setStrokeWidth(int)
+	 * @see #getStrokeColor
+	 * @see #setStrokeWidth
 	 * @see ij.ImagePlus#setOverlay(ij.gui.Overlay)
 	 */
 	public void setStrokeColor(Color c) {

@@ -647,9 +647,14 @@ public class ShapeRoi extends Roi {
 	public double getLength() {
 		double length = 0.0;
 		Roi[] rois = getRois();
+		ImagePlus imp2 = getImage();
 		if (rois!=null) {
-			for (int i=0; i<rois.length; i++)
+			for (int i=0; i<rois.length; i++) {
+				Roi roi = rois[i];
+				roi.setImage(imp2);
 				length += rois[i].getLength();
+				roi.setImage(null);
+			}
 		}
 		return length;
 	}

@@ -15,6 +15,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.Converter;
 import ij.plugin.Duplicator;
 import ij.plugin.RectToolOptions;
+import ij.plugin.Colors;
 
 
 /**
@@ -350,7 +351,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Opens a window to display this image and displays
 		'statusMessage' in the status bar. */
 	public void show(String statusMessage) {
-		if (win!=null) return;
+		if (isVisible())
+			return;
+		win = null;
 		if ((IJ.isMacro() && ij==null) || Interpreter.isBatchMode()) {
 			if (isComposite()) ((CompositeImage)this).reset();
 			ImagePlus img = WindowManager.getCurrentImage();
@@ -600,9 +603,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			if (isDisplayedHyperStack()) setOpenAsHyperStack(true);
 			win = new StackWindow(this);   // replaces this window
 			setPosition(1, 1, 1);
-		} else if (dimensionsChanged || sliderChange)
+		} else if (dimensionsChanged || sliderChange) {
 			win.updateImage(this);
-		else {
+		} else {
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
 			if (isComposite()) {
@@ -840,7 +843,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				Menus.updateWindowMenuItem(this.title, title);
 			String virtual = stack!=null && stack.isVirtual()?" (V)":"";
 			String global = getGlobalCalibration()!=null?" (G)":"";
-				
 			String scale = "";
 			double magnification = win.getCanvas().getMagnification();
 			if (magnification!=1.0) {
@@ -1743,7 +1745,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (roi!=null) roi.setImage(null);
 		roi = null;
 		properties = null;
-		calibration = null;
+		//calibration = null;
 		overlay = null;
 		flatteningCanvas = null;
 	}
@@ -1803,6 +1805,21 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	public void copyScale(ImagePlus imp) {
 		if (imp!=null && globalCalibration==null)
 			setCalibration(imp.getCalibration());
+	}
+
+	/** Copies attributes (name, ID, calibration, path) of the specified image to this image. */
+	public void copyAttributes(ImagePlus imp) {
+		if (imp==null || imp.getWindow()!=null)
+			throw new IllegalArgumentException("Souce image is null or displayed");
+		ID = imp.getID();
+		setTitle(imp.getTitle());
+		setCalibration(imp.getCalibration());
+		FileInfo fi = imp.getOriginalFileInfo();
+		if (fi!=null)
+			setFileInfo(fi);
+		Object info = imp.getProperty("Info");
+		if (info!=null)
+			setProperty("Info", imp.getProperty("Info"));
 	}
 
     /** Calls System.currentTimeMillis() to save the current
@@ -1952,7 +1969,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,4,7);
     			return(", value=" + s);
 			case COLOR_RGB:
-    			return(", value=" + v[0] + "," + v[1] + "," + v[2]);
+				//String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
+    			return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3));
     		default: return("");
 		}
     }

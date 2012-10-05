@@ -26,8 +26,10 @@ public class Duplicator implements PlugIn, TextListener {
 	private TextField rangeField;
 	private TextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
+	private boolean isCommand;
 
 	public void run(String arg) {
+		isCommand = true;
 		ImagePlus imp = IJ.getImage();
 		int stackSize = imp.getStackSize();
 		String title = imp.getTitle();
@@ -62,7 +64,7 @@ public class Duplicator implements PlugIn, TextListener {
                 
 	/** Returns a copy of the image, stack or hyperstack contained in the specified ImagePlus. */
 	public ImagePlus run(ImagePlus imp) {
-   		if (Recorder.record)
+   		if (Recorder.record&&isCommand)
    			Recorder.recordCall("imp = new Duplicator().run(imp);");
 		if (imp.getStackSize()==1)
 			return duplicateImage(imp);
@@ -157,7 +159,7 @@ public class Duplicator implements PlugIn, TextListener {
 			imp2.setDimensions(1, 1, size);
 		else
 			imp2.setDimensions(1, size, 1);
-   		if (Recorder.record)
+   		if (Recorder.record&&isCommand)
    			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstSlice+", "+lastSlice+");");
 		return imp2;
 	}
@@ -203,7 +205,7 @@ public class Duplicator implements PlugIn, TextListener {
 			}
         }
 		imp2.setOpenAsHyperStack(true);
-   		if (Recorder.record)
+   		if (Recorder.record&&isCommand)
    			Recorder.recordCall("imp = new Duplicator().run(imp, "+firstC+", "+lastC+", "+firstZ+", "+lastZ+", "+firstT+", "+lastT+");");
 		return imp2;
 	}

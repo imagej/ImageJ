@@ -279,7 +279,16 @@ public class Selection implements PlugIn, Measurements {
 		smooth = gd.getNextBoolean();
 		Undo.setup(Undo.ROI, imp);
 		FloatPolygon poly = roi.getInterpolatedPolygon(interval, smooth);
+		int t = roi.getType();
 		int type = roi.isLine()?Roi.FREELINE:Roi.FREEROI;
+		if (t==Roi.POLYGON && interval>1.0)
+			type = Roi.POLYGON;
+		if ((t==Roi.RECTANGLE||t==Roi.OVAL||t==Roi.FREEROI) && interval>=5.0)
+			type = Roi.POLYGON;
+		if ((t==Roi.LINE||t==Roi.FREELINE) && interval>=5.0)
+			type = Roi.POLYLINE;
+		if (t==Roi.POLYLINE && interval>=1.0)
+			type = Roi.POLYLINE;
 		ImageCanvas ic = imp.getCanvas();
 		if (poly.npoints<=150 && ic!=null && ic.getMagnification()>=12.0)
 			type = roi.isLine()?Roi.POLYLINE:Roi.POLYGON;
@@ -613,6 +622,10 @@ public class Selection implements PlugIn, Measurements {
 		ThresholdToSelection tts = new ThresholdToSelection();
 		Roi roi2 = tts.convert(ip2);
 		transferProperties(roi, roi2);
+		roi2.setStroke(null);
+		Color c = roi2.getStrokeColor();
+		if (c!=null)  // remove any transparency
+			roi2.setStrokeColor(new Color(c.getRed(),c.getGreen(),c.getBlue()));
 		imp.setRoi(roi2);
 		Roi.previousRoi = (Roi)roi.clone();
 	}

@@ -883,7 +883,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			if (nSlices==1) sliceUse = currentSlice;
 			imp.setSliceWithoutUpdate(sliceUse);
 			rtMulti.incrementCounter();
-			if ((Analyzer.getMeasurements()&LABELS)!=0)
+			if ((Analyzer.getMeasurements()&Measurements.LABELS)!=0)
 				rtMulti.addLabel("Label", imp.getTitle());
 			int roiIndex = 0;
 			for (int i=0; i<indexes.length; i++) {
@@ -1532,8 +1532,8 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 
 	/** Returns the ROI Hashtable.
-		@see getCount
-		@see getRoisAsArray
+		@see #getCount
+		@see #getRoisAsArray
 	*/
 	public Hashtable getROIs() {
 		return rois;
@@ -1541,13 +1541,17 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 
 	/** Obsolete
 	* @deprecated
-	* @see getCount
-	* @see getRoisAsArray
+	* @see #getCount
+	* @see #getRoisAsArray
+	* @see #getSelectedIndex
 	*/
 	public List getList() {
 		List awtList = new List();
 		for (int i=0; i<getCount(); i++)
 			awtList.add((String)listModel.getElementAt(i));
+		int index = getSelectedIndex();
+		if (index>=0)
+			awtList.select(index);
 		return awtList;
 	}
 	
@@ -1624,7 +1628,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	/** Executes the ROI Manager "Add", "Add & Draw", "Update", "Delete", "Measure", "Draw",
-		"Show All", Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "XOR", "Split",
+		"Show All", "Show None", "Fill", "Deselect", "Select All", "Combine", "AND", "XOR", "Split",
 		"Sort" or "Multi Measure" command.	Returns false if <code>cmd</code>
 		is not one of these strings. */
 	public boolean runCommand(String cmd) {
@@ -1817,8 +1821,10 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 			list.clearSelection();
 			list.setSelectedIndex(index);
 		}
-		if (imp==null) imp=getImage();
-		restore(imp, index, true);	
+		if (imp==null)
+			imp = WindowManager.getCurrentImage();
+		if (imp!=null)
+			restore(imp, index, true);	
 		if (mm) list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	}
 	

@@ -421,13 +421,14 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	public void runMacro(String name, Editor editor) {
-		//IJ.log("runMacro: "+name+"  "+editor);
 		if (anonymousName!=null && name.equals(anonymousName)) {
+			ImageJ.setCommandName(name);
 			new MacroRunner(pgm, 0, anonymousName, editor);
 			return;
 		}
 		for (int i=0; i<nMacros; i++)
 			if (name.equals(macroNames[i])) {
+				ImageJ.setCommandName(name);
 				new MacroRunner(pgm, macroStarts[i], name, editor);
 				return;
 			}
@@ -458,6 +459,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	
 	public void actionPerformed(ActionEvent evt) {
 		String cmd = evt.getActionCommand();
+		ImageJ.setCommandName(cmd);
 		MenuItem item = (MenuItem)evt.getSource();
 		MenuContainer parent = item.getParent();
 		if (parent instanceof PopupMenu) {

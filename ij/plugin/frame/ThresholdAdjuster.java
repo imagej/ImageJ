@@ -10,6 +10,7 @@ import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.filter.*;
 import ij.plugin.ChannelSplitter;
+import ij.plugin.Thresholder;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
@@ -588,10 +589,15 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
  	}
  	
  	void runThresholdCommand() {
-		Recorder.recordInMacros = true;
- 		IJ.run("Convert to Mask");
-		Recorder.recordInMacros = false;
- 	}
+		Thresholder.setMethod(method);
+		Thresholder.setBackground(darkBackground.getState()?"Dark":"Light");
+		if (Recorder.record) {
+			Recorder.setCommand("Convert to Mask");
+			(new Thresholder()).run("mask");
+			Recorder.saveCommand();
+		} else
+			(new Thresholder()).run("mask");
+	}
 	
 	static final int RESET=0, AUTO=1, HIST=2, APPLY=3, STATE_CHANGE=4, MIN_THRESHOLD=5, MAX_THRESHOLD=6, SET=7;
 

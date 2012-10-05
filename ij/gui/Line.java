@@ -76,12 +76,26 @@ public class Line extends Roi {
 		if (xend>xMax) xend=xMax; if (yend>yMax) yend=yMax;
 		double xstart=x+x1R, ystart=y+y1R;
 		if (constrain) {
-			double dx = Math.abs(xend-xstart);
-			double dy = Math.abs(yend-ystart);
-			if (dx>=dy)
-				yend = ystart;
-			else
-				xend = xstart;
+		    int i=0;
+	        double dy = Math.abs(yend-ystart);
+	        double dx = Math.abs(xend-xstart);
+	        double comp = dy / dx;
+	        
+	        for(;i<PI_SEARCH.length; i++) {
+	            if(comp < PI_SEARCH[i]) {
+	                break;
+	            }
+	        }
+	        
+	        if(i < PI_SEARCH.length) {
+	            if(yend > ystart) {
+	                yend = ystart + dx*PI_MULT[i];
+	            } else {
+	                yend = ystart - dx*PI_MULT[i];
+	            }
+	        } else {
+	            xend = xstart;
+	        }
 		}
 		x=(int)Math.min(x+x1R,xend); y=(int)Math.min(y+y1R,yend);
 		x1R=xstart-x; y1R=ystart-y;
@@ -97,6 +111,10 @@ public class Line extends Roi {
 		oldX=x; oldY=y;
 		oldWidth=width; oldHeight=height;
 	}
+	
+	/** Used for angle searches in line ROI creation */
+	private static final double[] PI_SEARCH = {Math.tan(Math.PI/8), Math.tan((3*Math.PI)/8)};
+	private static final double[] PI_MULT = {0, Math.tan((2*Math.PI)/8)};
 
 	void move(int sx, int sy) {
 		int xNew = ic.offScreenX(sx);

@@ -11,9 +11,10 @@ public class Stack_Statistics implements PlugIn {
 	
 	public void run(String arg) {
 		ImagePlus imp = IJ.getImage();
+    	double histMax = imp.getBitDepth()==8||imp.getBitDepth()==24?256.0:0.0;
 		int measurements = Analyzer.getMeasurements();
 		Analyzer.setMeasurements(measurements | Measurements.LIMIT);
-		ImageStatistics stats = new StackStatistics(imp);
+		ImageStatistics stats = new StackStatistics(imp, 256, 0.0, histMax);
 		Analyzer.setMeasurements(measurements);
 		ResultsTable rt = Analyzer.getResultsTable();
 		rt.incrementCounter();
@@ -31,7 +32,7 @@ public class Stack_Statistics implements PlugIn {
 			stackVoxels = r.width*r.height*images;
 		} else {
 			Analyzer.setMeasurements(measurements & ~Measurements.LIMIT);
-			ImageStatistics stats2 = new StackStatistics(imp);
+			ImageStatistics stats2 = new StackStatistics(imp, 256, 0.0, histMax);
 			Analyzer.setMeasurements(measurements);
 			stackVoxels = stats2.longPixelCount;
 		}

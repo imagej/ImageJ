@@ -38,6 +38,7 @@ import java.util.Vector;
 		private GenericDialog gd;
 		private Thread thread;
 		private ImagePlus virtualStack;
+		private ImagePlus outputImage;
 
 	public void run(String arg) {
 		if (arg.equals("stack")) {
@@ -170,6 +171,7 @@ import java.util.Vector;
 			ImagePlus imp = IJ.openImage(path);
 			if (imp==null) continue;
 			if (!macro.equals("")) {
+				outputImage = null;
 				if (!runMacro("i="+(index++)+";"+macro, imp))
 					break;
 			}
@@ -180,7 +182,10 @@ import java.util.Vector;
 					else
 						IJ.run(imp, "8-bit", "");
 				}
-				IJ.saveAs(imp, format, outputPath+list[i]);
+				if (outputImage!=null && outputImage!=imp)
+					IJ.saveAs(outputImage, format, outputPath+list[i]);
+				else
+					IJ.saveAs(imp, format, outputPath+list[i]);
 			}
 			imp.close();
 		}
@@ -190,7 +195,7 @@ import java.util.Vector;
 		WindowManager.setTempCurrentImage(imp);
 		Interpreter interp = new Interpreter();
 		try {
-			interp.runBatchMacro(macro, imp);
+			outputImage = interp.runBatchMacro(macro, imp);
 		} catch(Throwable e) {
 			interp.abortMacro();
 			String msg = e.getMessage();
