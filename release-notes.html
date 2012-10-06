@@ -5,18 +5,17 @@
 </head>
 <body>
 
-<li> <u>1.47d 4 October 2012</u>
+<li> <u>1.47d 5 October 2012</u>
 <ul>
 <li> Thanks to Norbert Vischer, added the
 <i>Image&gt;Color&gt;Arrange Channels</i> command.
-<li> Thanks to Michael Cammer, added "Method" and "Background" choices
-to the <i>Process&gt;Binary&gt;Convert to Mask</i> dialog that is displayed
-when processing stacks.
+<li> Thanks to Michael Cammer, when processing stacks, added "Method" and "Background" choices
+to the <i>Process&gt;Binary&gt;Convert to Mask</i> dialog.
 <li> Thanks to Ved Sharma, the arrow tool draws bolder outlined arrows.
 <li> Deleted the redundent <i>Image&gt;Hyperstacks&gt;Channels Tool</i> menu command.
 <li> Thanks to Norbert Vischer, added the getInfo("command.name") macro function
 (<a href="macros/examples/GetCommandNameDemo.txt">example</a>).
-<li> Added the getInfo() and setOption("jfilechooser") macro function.
+<li> Added the setOption("jfilechooser") macro function.
 <li> Fixed a bug that caused the roiManager("select",n) macro function, and RoiManager.select() 
 method, to display an error message if no images were displayed.
 <li> Thanks to John Page, fixed a bug that caused CMYK TIFFs to open inverted.
@@ -26,12 +25,12 @@ to not work as expected on closed images.
 <i>Edit&gt;Selection&gt;Line to Area</i> command to not work as expected.
 <li> Thanks to Gilles Carpentier, fixed bugs in <i>Process&gt;Binary&gt;Skeletonize</i> that
 caused it to sometimes not remove all skeleton pixels.
-</ul> 
 <li> Thanks to Leon Espinosa, fixed a bug that caused "Apply" in the "Threshold"
 tool to always use the default thresholding method.
-<li> Thanks to Jan Eglinger, fixed a bug that caused incorrect recording of plugins that used the run(imp,..)
-methods of the Duplicator class when the recoder was in "JavaScript" or "Plugin" mode.
-<li> Norbert Vischer fixed a bug that caused error message line numbers to be
+<li> Thanks to Jan Eglinger, fixed a bug that caused incorrect recording,
+ when the recoder was in "JavaScript" or "Plugin" mode,
+ of plugins that used the run(imp,..) methods of the Duplicator class.
+<li> Norbert Vischer fixed a bug that caused line numbers in macro error messages to be
 incorrect with macros containing emptly lines inside SlashStar comments.
 <li> Thanks to Jiri Janacek, fixed a bug the caused the perimeter of composite ROIs in
 spatially calibrated images to be incorrect.
@@ -39,6 +38,7 @@ spatially calibrated images to be incorrect.
 <i>Crop</i> command was used while a stack was being saved.
 <li> Thanks to Eric Denarier, fixed a bug in <i>Process&gt;Batch&gt;Macro</i> that caused
 it to somestimes not output the correct images.
+</ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
 </body>
