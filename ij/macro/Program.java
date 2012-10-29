@@ -268,4 +268,8 @@ public class Program implements MacroConstants {
 		return false;
 	}
 	
+	public int getSize() {
+		return pc;
+	}
+	
 } // Program

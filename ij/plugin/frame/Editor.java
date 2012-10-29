@@ -95,8 +95,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
-		if (fontSize<0) fontSize = 0;
-		if (fontSize>=sizes.length) fontSize = sizes.length-1;
+		if (fontSize<0)
+			fontSize = 0;
+		if (fontSize>=sizes.length)
+			fontSize = sizes.length-1;
         setFont();
 		positionWindow();
 	}

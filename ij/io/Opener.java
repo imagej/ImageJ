@@ -716,6 +716,8 @@ public class Opener {
 			ImagePlus imp = new ImagePlus(fi.fileName, stack);
 			new FileOpener(fi).setCalibration(imp);
 			imp.setFileInfo(fi);
+			if (fi.info!=null)
+				imp.setProperty("Info", fi.info);
 			if (fi.description!=null && fi.description.contains("order=zct"))
 				new HyperStackConverter().shuffle(imp, HyperStackConverter.ZCT);
 			int stackSize = stack.getSize();

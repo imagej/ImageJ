@@ -443,9 +443,7 @@ public class Minimizer {
         int worst = worstNextBestArray[WORST];
         int nextWorst = worstNextBestArray[NEXT_WORST];
         int best = worstNextBestArray[BEST];
-String a="ini";
-double lastBest=value(simp[best]);
-int itOfLastImprovement=numIter;
+        //String operation="ini";
         while (true) {
             numIter++;
             // THE MINIMIZAION ALGORITHM IS HERE
@@ -458,20 +456,20 @@ int itOfLastImprovement=numIter;
                     getVertexAndEvaluate(center, simp[worst], -C_EXPANSION, secondTry);
                     if (value(secondTry) <= value(reflected)) {
                         copyVertex(secondTry, simp[worst]);  // if expanded is better than reflected, keep it
-a="expa";
+                        //operation="expa";
                         break iteration;
                     }
                 }
                 if (value(reflected) < value(simp[nextWorst])) {
                     copyVertex(reflected, simp[worst]);     // keep reflected if better than 2nd worst
-a="refl";
+                    //operation="refl";
                     break iteration;
                 } else if (value(reflected) < value(simp[worst])) {
                     // try outer contraction
                     getVertexAndEvaluate(center, simp[worst], -C_CONTRACTION, secondTry);
                     if (value(secondTry) <= value(reflected)) {
                         copyVertex(secondTry, simp[worst]); // keep outer contraction
-a="outC";
+                        //operation="outC";
                         break iteration;
                     }
                 } else if (value(reflected) > value(simp[worst]) || Double.isNaN(value(reflected))) {
@@ -479,13 +477,13 @@ a="outC";
                     getVertexAndEvaluate(center, simp[worst], C_CONTRACTION, secondTry);
                     if (value(secondTry) < value(simp[worst])) {
                         copyVertex(secondTry, simp[worst]);     // keep contracted if better than 2nd worst
-a="innC";
+                        //operation="innC";
                         break iteration;
                     }
                 }
                 // if everything else has failed, contract simplex in on best
                 shrinkSimplexAndEvaluate(simp, best);
-a="shri";
+                //operation="shri";
                 break iteration;
             } // iteration:
             boolean checkParamResolution =    // if new 'worst' is not close to 'best', don't check any further
@@ -494,11 +492,6 @@ a="shri";
             worst = worstNextBestArray[WORST];
             nextWorst = worstNextBestArray[NEXT_WORST];
             best = worstNextBestArray[BEST];
-//if(value(simp[best]) < lastBest) {
-//lastBest = value(simp[best]);
-//itOfLastImprovement=numIter;
-//} else if (numIter>itOfLastImprovement+40) {showVertex(simp[best],"BEST:");
-//showVertex(simp[worst],(numIter-itOfLastImprovement)+" "+a); }
 
             if (checkParamResolution)
                 if (belowResolutionLimit(simp, best))       // check whether all parameters are within the resolution limit
@@ -516,7 +509,7 @@ a="shri";
             if (status != SUCCESS)
                 break;
         }
-        //showSimplex(simp, numCompletedMinimizations+1000);
+        //showSimplex(simp, "after "+numIter+" iterations: value="+value(simp[best]));
         return best;
     }
 
@@ -567,17 +560,20 @@ a="shri";
     private double[][] makeSimplex(double[] initialParams, double[] initialParamVariations, Random random) {
         double[][] simp = new double[numVertices][numParams+1+numExtraArrayElements];
         /* simpTable.put(Thread.currentThread(), simp); */
+        
         if (initialParams!=null) {
             for (int i=0; i<numParams; i++)
-                if (Double.isNaN(initialParams[i])) {
-                    if (IJ.debugMode) IJ.log("Error: Initial Parameter["+i+"] is NaN");
-                    return null;
-                }
+                if (Double.isNaN(initialParams[i]))
+                    if (IJ.debugMode) IJ.log("Warning: Initial Parameter["+i+"] is NaN");
             System.arraycopy(initialParams, 0, simp[0], 0, Math.min(initialParams.length, numParams));
         }
         evaluate(simp[0]);
         if (Double.isNaN(value(simp[0]))) {
-            if (IJ.debugMode) showVertex(simp[0], "Error: Initial Parameters yield NaN:");
+            if (IJ.debugMode) showVertex(simp[0], "Warning: Initial Parameters yield NaN:");
+            findValidInitalParams(simp[0], initialParamVariations, random);
+        }
+        if (Double.isNaN(value(simp[0]))) {
+            if (IJ.debugMode) IJ.log("Error: Could not find initial parameters not yielding NaN:");
             return null;
         }
         if (initializeSimplex(simp, initialParamVariations, random))
@@ -604,6 +600,33 @@ a="shri";
                 return false;
         return true;
     }
+
+    /** Find initial parameters not yielding a result of NaN in case those given yield NaN
+     *  Called with params containing the initial parameters that have been tried previously */
+    private void findValidInitalParams(double[] params, double[] initialParamVariations, Random random) {
+        final int maxAttempts = 50*numParams*numParams;  //max number of attempts to find params that do not lead to NaN
+        double rangeFactor = 1;             // will gradually become larger to handle different orders of magnitude
+        final double rangeMultiplyLog = Math.log(1e20)/(maxAttempts-1); //will try up to 1e-20 to 1e20*initialParamVariations
+        double[] firstParams = new double[numParams]; // remember starting params (which may be modified)
+        double[] variations = new double[numParams];    // new values of parameter variations
+        for (int i=0; i<numParams; i++) {
+            firstParams[i] = Double.isNaN(params[i]) ? 0 : params[i];
+            variations[i] = initialParamVariations!=null ? initialParamVariations[i] : 0.1*firstParams[i];
+            if (Double.isNaN(variations[i]) || Math.abs(variations[i])<1e-10 || Math.abs(variations[i])>1e10)
+                variations[i] = 0.1;
+        }
+        for (int attempt=0; attempt<maxAttempts; attempt++) {
+            for (int i=0; i<numParams; i++) {
+                double multiplier = attempt<maxAttempts/10 ? 1 :  //after a while try different orders of magnitude
+                        Math.exp(rangeMultiplyLog*attempt*2*(random.nextDouble()-0.5));
+                params[i] = multiplier*(firstParams[i]+2*(random.nextDouble()-0.5)*variations[i]);
+            }
+            evaluate(params);
+            //showVertex(params,"findValidInitalParams attempt "+attempt);
+            if (!Double.isNaN(value(params))) return;    //found a valid parameter set
+        }
+    }
+
 
     /** Reinitialize an existing simplex: Create new vertices around the best one, keeping the rough size of
      *  the simplex. This helps to avoid premature termination or cases where the simplex has become degenerate.

@@ -813,7 +813,7 @@ public class FloatProcessor extends ImageProcessor {
 		showProgress(1.0);
 	}
 
-	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
 	private final double getInterpolatedPixel(double x, double y, float[] pixels) {
 		int xbase = (int)x;
 		int ybase = (int)y;
@@ -826,7 +826,8 @@ public class FloatProcessor extends ImageProcessor {
 		double upperLeft = pixels[offset + width];
 		double upperAverage = upperLeft + xFraction * (upperRight - upperLeft);
 		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
-		return lowerAverage + yFraction * (upperAverage - lowerAverage);
+		double value = lowerAverage + yFraction * (upperAverage - lowerAverage);
+		return value;
 	}
 
 	/** Creates a new FloatProcessor containing a scaled copy of this image or selection. */
