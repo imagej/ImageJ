@@ -17,7 +17,7 @@ public class GaussianBlur3D implements PlugIn {
 		if (!showDialog())
 			return;
 		imp.startTiming();
-		blur3D(imp, xsigma, ysigma, zsigma);
+		blur(imp, xsigma, ysigma, zsigma);
 		IJ.showTime(imp, imp.getStartTime(), "", imp.getStackSize());
 	}
 	
@@ -35,7 +35,7 @@ public class GaussianBlur3D implements PlugIn {
 		return true;
 	}
 	
-	private void blur3D(ImagePlus imp, double sigmaX, double sigmaY, double sigmaZ) {
+	public static void blur(ImagePlus imp, double sigmaX, double sigmaY, double sigmaZ) {
 		imp.deleteRoi();
 		ImageStack stack = imp.getStack();
 		if (sigmaX>0.0 || sigmaY>0.0) {
@@ -57,7 +57,7 @@ public class GaussianBlur3D implements PlugIn {
 		}
 	}
 
-	private void blurZ(ImageStack stack, double sigmaZ) {
+	private static void blurZ(ImageStack stack, double sigmaZ) {
 		GaussianBlur gb = new GaussianBlur();
 		double accuracy = (stack.getBitDepth()==8||stack.getBitDepth()==24)?0.002:0.0002;
 		int w=stack.getWidth(), h=stack.getHeight(), d=stack.getSize();
@@ -80,7 +80,7 @@ public class GaussianBlur3D implements PlugIn {
 		IJ.showStatus("");
 	}
 
-	private void blurHyperStackZ(ImagePlus imp, double zsigma) {
+	private static void blurHyperStackZ(ImagePlus imp, double zsigma) {
 		int channels = imp.getNChannels();
 		int slices = imp.getNSlices();
 		int timePoints = imp.getNFrames();
@@ -99,7 +99,7 @@ public class GaussianBlur3D implements PlugIn {
 		}
 	}
 
-	private ImageStack getVolume(ImagePlus imp, int c, int t) {
+	private static ImageStack getVolume(ImagePlus imp, int c, int t) {
 		ImageStack stack1 = imp.getStack();
 		ImageStack stack2 = new ImageStack(imp.getWidth(), imp.getHeight());
 		if (imp.getNSlices()==1) {

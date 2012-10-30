@@ -813,7 +813,40 @@ public class FloatProcessor extends ImageProcessor {
 		showProgress(1.0);
 	}
 
-/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	/** Uses bilinear interpolation to find the pixel value at real coordinates (x,y). */
+	private final double getInterpolatedPixel(double x, double y, float[] pixels) {
+		int xbase = (int)x;
+		int ybase = (int)y;
+		double xFraction = x - xbase;
+		double yFraction = y - ybase;
+		int offset = ybase * width + xbase;
+		double lowerLeft = pixels[offset];
+		double lowerRight = pixels[offset + 1];
+		double upperRight = pixels[offset + width + 1];
+		double upperLeft = pixels[offset + width];
+		double upperAverage;
+		if (Double.isNaN(upperLeft ) && xFraction>=0.5)
+			upperAverage = upperRight;
+		else if (Double.isNaN(upperRight) && xFraction<0.5 )
+			upperAverage = upperLeft;
+		else
+			upperAverage = upperLeft + xFraction * (upperRight-upperLeft);
+		double lowerAverage;
+		if (Double.isNaN(lowerLeft) && xFraction>=0.5)
+			lowerAverage = lowerRight;
+		else if (Double.isNaN(lowerRight) && xFraction<0.5 )
+			lowerAverage = lowerLeft;
+		else
+			lowerAverage = lowerLeft + xFraction * (lowerRight-lowerLeft);
+		if (Double.isNaN(lowerAverage) && yFraction>=0.5)
+			return upperAverage;
+		else if (Double.isNaN(upperAverage) && yFraction<0.5 )
+			return lowerAverage;
+		else
+			return lowerAverage + yFraction * (upperAverage-lowerAverage);
+	}
+
+	/*
 	private final double getInterpolatedPixel(double x, double y, float[] pixels) {
 		int xbase = (int)x;
 		int ybase = (int)y;
@@ -826,9 +859,9 @@ public class FloatProcessor extends ImageProcessor {
 		double upperLeft = pixels[offset + width];
 		double upperAverage = upperLeft + xFraction * (upperRight - upperLeft);
 		double lowerAverage = lowerLeft + xFraction * (lowerRight - lowerLeft);
-		double value = lowerAverage + yFraction * (upperAverage - lowerAverage);
-		return value;
+		return lowerAverage + yFraction * (upperAverage - lowerAverage);
 	}
+	*/
 
 	/** Creates a new FloatProcessor containing a scaled copy of this image or selection. */
 	public ImageProcessor resize(int dstWidth, int dstHeight) {

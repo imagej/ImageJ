@@ -97,7 +97,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	private Color triangleColor = new Color(150, 0, 0);
 	private Color toolColor = new Color(0, 25, 45);
 
-
 	public Toolbar() {
 		down = new boolean[NUM_TOOLS];
 		resetButtons();
@@ -427,7 +426,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	int v() {
 		if (pc>=icon.length()) return 0;
 		char c = icon.charAt(pc++);
-		//IJ.log("v: "+pc+" "+c+" "+toInt(c));
 		switch (c) {
 			case '0': return 0;
 			case '1': return 1;
@@ -1297,6 +1295,19 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
+	/** 
+	 * Removes tools added with addTempPlugInTool().
+	 * @see #addTempPlugInTool
+	 */
+	public static void restoreTools() {
+		Toolbar tb = Toolbar.getInstance();
+		if (tb!=null) {
+			if (tb.getToolId()>=SPARE1)
+				tb.setTool(RECTANGLE);
+			tb.installStartupMacros();
+		}
+	}
+
 	private 	void installStartupMacros() {
 		resetTools();
 		String path = IJ.getDirectory("macros")+"StartupMacros.txt";
@@ -1488,6 +1499,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	public static void removeMacroTools() {
 		if (instance!=null) {
+			if (instance.getToolId()>=SPARE1)
+				instance.setTool(RECTANGLE);
 			instance.resetTools();
 			instance.repaint();
 		}
@@ -1512,6 +1525,20 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				instance.installingStartupTool = false;
 			instance.setPrefs(id);
 		}
+	}
+
+	/**
+	 * Adds a temporary plugin tool to the tool bar. There is an example at
+	 * http://imagej.nih.gov/ij/plugins/eight-tools/
+	 * @see #restoreTools
+	 * @see #removeMacroTools
+	 */
+	public static void addTempPlugInTool(PlugInTool tool) {
+		if (instance==null)
+			return;
+		instance.doNotSavePrefs = true;
+		addPlugInTool(tool);
+		instance.doNotSavePrefs = false;
 	}
 
 	public static PlugInTool getPlugInTool() {
