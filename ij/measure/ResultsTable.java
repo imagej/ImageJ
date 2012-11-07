@@ -398,6 +398,28 @@ public class ResultsTable implements Cloneable {
 		return new String(sb);
 	}
 
+	/** Returns the column headings as an array of Strings. */
+	public String[] getHeadings() {
+		int n = 0;
+		if (rowLabels!=null)
+			n++;
+		for (int i=0; i<=lastColumn; i++)
+			if (columns[i]!=null) n++;
+		String[] temp = new String[n];
+		int index = 0;
+		if (rowLabels!=null)
+			temp[index++] = rowLabelHeading;
+		String heading;
+		for (int i=0; i<=lastColumn; i++) {
+			if (columns[i]!=null) {
+				heading = headings[i];
+				if (heading==null) heading ="---"; 
+				temp[index++] = heading;
+			}
+		}
+		return temp;
+	}
+
 	/** Returns the heading of the specified column or null if the column is empty. */
 	public String getColumnHeading(int column) {
 		if ((column<0) || (column>=maxColumns))

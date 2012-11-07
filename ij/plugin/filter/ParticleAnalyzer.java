@@ -10,6 +10,7 @@ import ij.text.*;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
+import ij.plugin.Colors;
 import ij.macro.Interpreter;
 import ij.util.Tools;
 
@@ -151,8 +152,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	boolean blackBackground;
 	private static int defaultFontSize = 9;
 	private static int nextFontSize = defaultFontSize;
+	private static Color defaultFontColor = Color.red;
+	private static Color nextFontColor = defaultFontColor;
 	private static int nextLineWidth = 1;
 	private int fontSize = nextFontSize;
+	private Color fontColor = nextFontColor;
 	private int lineWidth = nextLineWidth;
 
 			
@@ -192,7 +196,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			wandMode = Wand.FOUR_CONNECTED;
 			options |= INCLUDE_HOLES;
 		}
-		nextFontSize=defaultFontSize; nextLineWidth=1;
+		nextFontSize = defaultFontSize;
+		nextFontColor = defaultFontColor;
+		nextLineWidth = 1;
 	}
 	
 	/** Constructs a ParticleAnalyzer using the default min and max circularity values (0 and 1). */
@@ -227,7 +233,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		if (saveRoi!=null && saveRoi.getType()!=Roi.RECTANGLE && saveRoi.isArea())
 			polygon = saveRoi.getPolygon();
 		imp.startTiming();
-		nextFontSize=defaultFontSize; nextLineWidth=1;
+		nextFontSize = defaultFontSize;
+		nextFontColor = defaultFontColor;
+		nextLineWidth = 1;
 		return flags;
 	}
 
@@ -1020,6 +1028,11 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		nextFontSize = size;
 	}
 
+	/** Sets the color ("blue", "black", etc.) of the font used to label outlines in the next particle analyzer instance. */
+	public static void setFontColor(String color) {
+		nextFontColor = Colors.decode(color, defaultFontColor);
+	}
+
 	/** Sets the outline line width for the next ParticleAnalyzer instance. */
 	public static void setLineWidth(int width) {
 		nextLineWidth = width;
@@ -1054,9 +1067,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		cm.getReds(reds);
 		cm.getGreens(greens);
 		cm.getBlues(blues);
-		reds[1] =(byte) 255;
-		greens[1] = (byte)0;
-		blues[1] = (byte)0;
+		reds[1] =(byte)fontColor.getRed();
+		greens[1] = (byte)fontColor.getGreen();;
+		blues[1] = (byte)fontColor.getBlue();;
 		customLut = new IndexColorModel(8, 256, reds, greens, blues);
 	}
 
