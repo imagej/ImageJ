@@ -5,8 +5,10 @@
 </head>
 <body>
 
-<li> <u>1.47e 7 November 2012</u>
+<li> <u>1.47e 8 November 2012</u>
 <ul>
+<li> Added the <i>Macros&gt;Evaluate BeanShell</i> command to the macro editor,
+which requires <a href="plugins/bsh/">BeanShell.jar</a>.
 <li> Thanks to Michael Kaul, bilinear interpolation works better with float images containg NaNs.
 <li> Thanks to Michael Schmid, added a "Gaussian (no offset)" curve fitting option.
 <li> The recorder displays a warning when the options argument of run(command, options)
@@ -24,6 +26,10 @@ in <i>Image&gt;Scale</i>.
 <li> Thanks to Thorsten Wagner and Michael Schmid, fixed a bug that caused the
 <i>Analyze&gt;Summarize</i> command to fail if the Results table contained
 headings with spaces.
+<li> Thanks to David Gauntt, fixed a bug in the FHT class that caused it
+to fail when calculating the power spectrum of 1D arrays larger than 32K.
+<li> Thanks to Jarek Sacha, fixed a bug that cuased <i>File&gt;Import&gt;Image Sequence</i>
+to sometimes not set the correct slice labels when opening a virtual stack.
 
 </ul> 
 

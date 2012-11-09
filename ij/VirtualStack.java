@@ -106,7 +106,9 @@ public class VirtualStack extends ImageStack {
 			int h = imp.getHeight();
 			int type = imp.getType();
 			ColorModel cm = imp.getProcessor().getColorModel();
-			labels[n-1] = (String)imp.getProperty("Info");
+			String info = (String)imp.getProperty("Info");
+			if (info!=null && !(info.startsWith("Software")||info.startsWith("ImageDescription")))
+				labels[n-1] = info;
 			depthThisImage = imp.getBitDepth();
 			ip = imp.getProcessor();
 			ip.setOverlay(imp.getOverlay());

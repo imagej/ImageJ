@@ -254,6 +254,8 @@ public class FHT extends FloatProcessor {
 	
 	int log2 (int x) {
 		int count = 15;
+		if (x>32768)
+			count = 31;
 		while (!btst(x, count))
 			count--;
 		return count;

@@ -561,7 +561,12 @@ public class FileOpener {
 		InputStream is = new ByteArrayInputStream(fi.description.getBytes());
 		try {props.load(is); is.close();}
 		catch (IOException e) {return null;}
-		fi.unit = props.getProperty("unit","");
+		String dsUnit = props.getProperty("unit","");
+		if ("cm".equals(fi.unit) && "um".equals(dsUnit)) {
+			fi.pixelWidth *= 10000;
+			fi.pixelHeight *= 10000;
+		}
+		fi.unit = dsUnit;
 		Double n = getNumber(props,"cf");
 		if (n!=null) fi.calibrationFunction = n.intValue();
 		double c[] = new double[5];
@@ -580,13 +585,11 @@ public class FileOpener {
 		fi.valueUnit = props.getProperty("vunit");
 		n = getNumber(props,"images");
 		if (n!=null && n.doubleValue()>1.0)
-			fi.nImages = (int)n.doubleValue();
-		if (fi.nImages>1) {
-			double spacing = getDouble(props,"spacing");
-			if (spacing!=0.0) {
-				if (spacing<0) spacing = -spacing;
-				fi.pixelDepth = spacing;
-			}
+		fi.nImages = (int)n.doubleValue();
+		double spacing = getDouble(props,"spacing");
+		if (spacing!=0.0) {
+			if (spacing<0) spacing = -spacing;
+			fi.pixelDepth = spacing;
 		}
 		String name = props.getProperty("name");
 		if (name!=null)
