@@ -66,38 +66,35 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		int nSlices = imp.getStackSize();
 		int w=imp.getWidth(), h=imp.getHeight();
 		ImagePlus imp2 = imp.createImagePlus();
-		if (newWidth!=w || newHeight!=h) {
-			Rectangle r = ip.getRoi();
-			boolean crop = r.width!=imp.getWidth() || r.height!=imp.getHeight();
-			ImageStack stack1 = imp.getStack();
-			ImageStack stack2 = new ImageStack(newWidth, newHeight);
-			ImageProcessor ip1, ip2;
-			int method = interpolationMethod;
-			if (w==1 || h==1)
-				method = ImageProcessor.NONE;
-			for (int i=1; i<=nSlices; i++) {
-				IJ.showStatus("Scale: " + i + "/" + nSlices);
-				ip1 = stack1.getProcessor(i);
-				String label = stack1.getSliceLabel(i);
-				if (crop) {
-					ip1.setRoi(r);
-					ip1 = ip1.crop();
-				}
-				ip1.setInterpolationMethod(method);
-				ip2 = ip1.resize(newWidth, newHeight, averageWhenDownsizing);
-				if (ip2!=null)
-					stack2.addSlice(label, ip2);
-				IJ.showProgress(i, nSlices);
+		Rectangle r = ip.getRoi();
+		boolean crop = r.width!=imp.getWidth() || r.height!=imp.getHeight();
+		ImageStack stack1 = imp.getStack();
+		ImageStack stack2 = new ImageStack(newWidth, newHeight);
+		ImageProcessor ip1, ip2;
+		int method = interpolationMethod;
+		if (w==1 || h==1)
+			method = ImageProcessor.NONE;
+		for (int i=1; i<=nSlices; i++) {
+			IJ.showStatus("Scale: " + i + "/" + nSlices);
+			ip1 = stack1.getProcessor(i);
+			String label = stack1.getSliceLabel(i);
+			if (crop) {
+				ip1.setRoi(r);
+				ip1 = ip1.crop();
 			}
-			imp2.setStack(title, stack2);
-			Calibration cal = imp2.getCalibration();
-			if (cal.scaled()) {
-				cal.pixelWidth *= 1.0/xscale;
-				cal.pixelHeight *= 1.0/yscale;
-			}
-			IJ.showProgress(1.0);
-		} else
-			imp2.setStack(title, imp.getStack());
+			ip1.setInterpolationMethod(method);
+			ip2 = ip1.resize(newWidth, newHeight, averageWhenDownsizing);
+			if (ip2!=null)
+				stack2.addSlice(label, ip2);
+			IJ.showProgress(i, nSlices);
+		}
+		imp2.setStack(title, stack2);
+		Calibration cal = imp2.getCalibration();
+		if (cal.scaled()) {
+			cal.pixelWidth *= 1.0/xscale;
+			cal.pixelHeight *= 1.0/yscale;
+		}
+		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
 		if (imp.isComposite()) {

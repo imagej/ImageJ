@@ -363,7 +363,7 @@ public class ImageReader {
 		int base = 0;
 		int count, value;
 		int bufferCount;
-		int r, g, b;
+		int r, g, b, a;
 		
 		while (totalRead<byteCount) {
 			if ((totalRead+bufferSize)>byteCount)
@@ -397,6 +397,16 @@ public class ImageReader {
 						g = buffer[j++]&0xff;
 						r = buffer[j++]&0xff;
 						j++; // ignore alfa byte
+					} else if (fi.fileType==FileInfo.CMYK) {
+						r = buffer[j++] & 0xff; // c
+						g = buffer[j++] & 0xff; // m
+						b = buffer[j++] & 0xff; // y
+						a = buffer[j++] & 0xff; // k
+						if (a>0) { // if k>0 then  c=c*(1-k)+k
+							r = ((r*(256 - a))>>8) + a;
+							g = ((g*(256 - a))>>8) + a;
+							b = ((b*(256 - a))>>8) + a;
+						} // else  r=1-c, g=1-m and b=1-y, which IJ does by inverting image
 					} else { // ARGB
 						r = buffer[j++]&0xff;
 						g = buffer[j++]&0xff;
@@ -423,8 +433,9 @@ public class ImageReader {
 		int base = 0;
 		int lastRed=0, lastGreen=0, lastBlue=0;
 		int nextByte;
-		int red=0, green=0, blue=0;
+		int red=0, green=0, blue=0, alpha = 0;
 		boolean bgr = fi.fileType==FileInfo.BGR;
+		boolean cmyk = fi.fileType==FileInfo.CMYK;
 		boolean differencing = fi.compression == FileInfo.LZW_WITH_DIFFERENCING;
 		for (int i=0; i<fi.stripOffsets.length; i++) {
 			if (i > 0) {
@@ -456,7 +467,12 @@ public class ImageReader {
 					red = byteArray[k++]&0xff;
 					green = byteArray[k++]&0xff;
 					blue = byteArray[k++]&0xff;
-					k++; // ignore alfa byte
+					alpha = byteArray[k++]&0xff;
+					if (cmyk && alpha>0) {
+						red = ((red*(256-alpha))>>8) + alpha;
+						green = ((green*(256-alpha))>>8) + alpha;
+						blue = ((blue*(256-alpha))>>8) + alpha;
+					}
 				} else {
 					red = byteArray[k++]&0xff;
 					green = byteArray[k++]&0xff;

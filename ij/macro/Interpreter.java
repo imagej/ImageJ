@@ -1589,8 +1589,18 @@ public class Interpreter implements MacroConstants {
 	void undefined() {
 		if (nextToken()=='(')
 			error("Undefined identifier");
-		else
-			error("Undefined variable");
+		else {
+			if (pgm.getSize()==1) {
+				String cmd = pgm.decodeToken(pgm.code[0]);
+				cmd = cmd.replaceAll("_", " ");
+				Hashtable commands = Menus.getCommands();
+				if (commands!=null && commands.get(cmd)!=null)
+					IJ.run(cmd);
+				else
+					error("Undefined variable");
+			} else
+				error("Undefined variable");
+		}
 	}
 	
 	void dump() {

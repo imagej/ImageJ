@@ -36,12 +36,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.util);"+
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
-
+		
 	public static String JS_NOT_FOUND = 
 		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
 	public static final int MONOSPACED=1, MENU_BAR=2;
-	public static final int MACROS_MENU_ITEMS = 8;
+	public static final int MACROS_MENU_ITEMS = 10;
 	static final String FONT_SIZE = "editor.font.size";
 	static final String FONT_MONO= "editor.font.mono";
 	static final String CASE_SENSITIVE= "editor.case-sensitive";
@@ -95,8 +95,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
 		add(ta);
 		pack();
-		if (fontSize<0) fontSize = 0;
-		if (fontSize>=sizes.length) fontSize = sizes.length-1;
+		if (fontSize<0)
+			fontSize = 0;
+		if (fontSize>=sizes.length)
+			fontSize = sizes.length-1;
         setFont();
 		positionWindow();
 	}
@@ -193,7 +195,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		ta.setCaretPosition(0);
 		setWindowTitle(name);
 		boolean macroExtension = name.endsWith(".txt") || name.endsWith(".ijm");
-		if (macroExtension || name.endsWith(".js") || name.indexOf(".")==-1) {
+		if (macroExtension || name.endsWith(".js") || name.endsWith(".bsh") || name.indexOf(".")==-1) {
 			macrosMenu = new Menu("Macros");			
 			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
 			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_Y)));
@@ -203,6 +205,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
 			macrosMenu.addSeparator();
 			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
+			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, false)));
 			macrosMenu.addSeparator();
 			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
@@ -344,6 +347,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	final void runMacro(boolean debug) {
 		if (getTitle().endsWith(".js"))
 			{evaluateJavaScript(); return;}
+		else if (getTitle().endsWith(".bsh"))
+			{evaluateBeanShell(); return;}
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
 		String text;
@@ -370,10 +375,33 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			IJ.runPlugIn("JavaScriptEvaluator", text);
 		else {
 			Object js = IJ.runPlugIn("JavaScript", text);
-			if (js==null) IJ.error(JS_NOT_FOUND);
+			if (js==null)
+				IJ.error(JS_NOT_FOUND);
 		}
 	}
 
+	void evaluateBeanShell() {
+		if (!getTitle().endsWith(".bsh"))
+			setTitle(SaveDialog.setExtension(getTitle(), ".bsh"));
+		int start = ta.getSelectionStart();
+		int end = ta.getSelectionEnd();
+		String text;
+		if (start==end)
+			text = ta.getText();
+		else
+			text = ta.getSelectedText();
+		if (text.equals("")) return;
+		Object bsh = IJ.runPlugIn("bsh", text);
+		if (bsh==null) {
+			String msg = "BeanShell.jar was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
+			GenericDialog gd = new GenericDialog("BeanShell");
+			gd.addMessage(msg);
+			gd.showDialog();
+			if (!gd.wasCanceled())
+				IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/plugins/bsh");
+		}
+	}
+	
 	void evaluateLine() {
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
@@ -582,6 +610,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			new FunctionFinder();
 		else if ("Evaluate JavaScript".equals(what))
 			evaluateJavaScript();
+		else if ("Evaluate BeanShell".equals(what))
+			evaluateBeanShell();
 		else if ("Print...".equals(what))
 			print();
 		else if (what.equals("Paste"))

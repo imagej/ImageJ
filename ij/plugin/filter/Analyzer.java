@@ -717,8 +717,8 @@ public class Analyzer implements PlugInFilter, Measurements {
 		int n = rt.getCounter();
 		if (n<2)
 			return;
-		String[] headings = Tools.split(rt.getColumnHeadings());
-		int columns = headings!=null?headings.length:0;
+		String[] headings = rt.getHeadings();
+		int columns = headings.length;
 		if (columns==0)
 			return;
 		int first = "Label".equals(headings[0])?1:0;

@@ -389,6 +389,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 					String prefix = "run(";
 					if (scriptMode) prefix = imageUpdated?"IJ.run(imp, ":"IJ.run(";
 					textArea.append(prefix+"\""+name+"\", \""+commandOptions+"\");\n");
+					if (nonAscii(commandOptions))
+						textArea.append("  <<warning: the options string contains one or more non-ascii characters>>\n");
 				}
 			} else {
 				if (name.equals("Threshold...") || name.equals("Fonts...") || name.equals("Brightness/Contrast..."))
@@ -421,6 +423,15 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			ImagePlus.removeImageListener(instance);
 			imageID = 0;
 		}
+	}
+	
+	private static boolean nonAscii(String s) {
+		int len = s!=null?s.length():0;
+		for (int i=0; i<len; i++) {
+			if (s.charAt(i)>127)
+				return true;
+		}
+		return false;
 	}
 	
 	static boolean isTextOrTable(String path) {
