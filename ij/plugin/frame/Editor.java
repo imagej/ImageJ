@@ -37,24 +37,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
 		
-	public static String beanShellIncludes =
-		"import ij.*;"+
-		"import ij.gui.*;"+
-		"import ij.process.*;"+
-		"import ij.measure.*;"+
-		"import ij.util.*;"+
-		"import ij.plugin.*;"+
-		"import ij.io.*;"+
-		"import ij.plugin.filter.*;"+
-		"import ij.plugin.frame.*;"+
-		"import java.lang.*;"+
-		"import java.awt.*;"+
-		"import java.awt.image.*;"+
-		"import java.awt.geom.*;"+
-		"import java.util.*;"+
-		"import java.io.*;"+
-		"print(arg) {IJ.log(arg);}";
-
 	public static String JS_NOT_FOUND = 
 		"JavaScript.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/download/tools/JavaScript.jar";
 	public static final int MAX_SIZE=28000, XINC=10, YINC=18;
@@ -409,11 +391,17 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		else
 			text = ta.getSelectedText();
 		if (text.equals("")) return;
-		Object bsh = IJ.runPlugIn("bsh", beanShellIncludes+text);
-		if (bsh==null)
-			IJ.error(	"BeanShell.jar was not found in the plugins\nfolder. It can be downloaded from:\n \n"+IJ.URL+"/plugins/bsh");
+		Object bsh = IJ.runPlugIn("bsh", text);
+		if (bsh==null) {
+			String msg = "BeanShell.jar was not found in the plugins\nfolder. Click \"OK\" to download it from\nthe ImageJ website.";
+			GenericDialog gd = new GenericDialog("BeanShell");
+			gd.addMessage(msg);
+			gd.showDialog();
+			if (!gd.wasCanceled())
+				IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+"/plugins/bsh");
+		}
 	}
-
+	
 	void evaluateLine() {
 		int start = ta.getSelectionStart();
 		int end = ta.getSelectionEnd();
