@@ -5,33 +5,12 @@
 </head>
 <body>
 
-<li> <u>1.47e 9 November 2012</u>
+<li> <u>1.47f 13 November 2012</u>
 <ul>
-<li> Added the <i>Macros&gt;Evaluate BeanShell</i> command to the macro editor.
-This command requires that a copy of <a href="plugins/bsh/">BeanShell.jar</a>
-be in the plugins folder.
-<li> Thanks to Michael Kaul, bilinear interpolation works better with float images containg NaNs.
-<li> Thanks to Michael Schmid, added a "Gaussian (no offset)" curve fitting option.
-<li> The recorder displays a warning when the options argument of run(command, options)
-calls contain one or more non-ascii characters.
-<li> Added the Toolbar.addTempPluginTool() and Toolbar.restoreTools() methods
-(<a href="plugins/eight-tools/">example</a>).
-<li> Added the ParticleAnalyzer.setFontColor(String) method
-and the call("ij.plugin.filter.ParticleAnalyzer.setFontColor","blue")
-macro function.
-.<li> Thanks to Thomas Boudier, added a public GaussianBlur3D.blur() method.
-<li> Thanks to Michael Schmid, fixed a v1.46 regression that could cause curve fitting errors.
-<li> Simon Bear fixed a bug that caused black pixel data to be ignored when loading CMYK TIFFs.
-<li> Fixed a bug that caused the source stack to become corrupted when scaling by x=1.0 and y=1.0 
-in <i>Image&gt;Scale</i>.
-<li> Thanks to Thorsten Wagner and Michael Schmid, fixed a bug that caused the
-<i>Analyze&gt;Summarize</i> command to fail if the Results table contained
-headings with spaces.
-<li> Thanks to David Gauntt, fixed a bug in the FHT class that caused it
-to fail when calculating the power spectrum of 1D arrays larger than 32K.
-<li> Thanks to Jarek Sacha, fixed a bug that cuased <i>File&gt;Import&gt;Image Sequence</i>
-to sometimes not set the correct slice labels when opening a virtual stack.
-
+<li> Fixed a v1.46f regression that caused the applet version of ImageJ
+to not opens images specified using HTML parameters.
+<li> Thanks to Erik Belanger, fixed a bug that caused the setMinAndMax() macro function
+to not work with batch mode composite color images.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
