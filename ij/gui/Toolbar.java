@@ -43,6 +43,9 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	public static final int DOUBLE_CLICK_THRESHOLD = 650;
 
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
+	
+	private static final String[] builtInTools = {"Arrow","Brush","Developer Menu","Flood Filler",
+		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Spray Can","Stacks Menu"};
 
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
@@ -1054,16 +1057,8 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private void addPluginTools() {
 		switchPopup.addSeparator();
-		addBuiltInTool("Arrow");
-		addBuiltInTool("Brush");
-		addBuiltInTool("Developer Menu");
-		addBuiltInTool("Flood Filler");
-		addBuiltInTool("LUT Menu");
-		addBuiltInTool("Overlay Brush");
-		addBuiltInTool("Pencil");
-		addBuiltInTool("Pixel Inspector");
-		addBuiltInTool("Spray Can");
-		addBuiltInTool("Stacks Menu");
+		for (int i=0; i<builtInTools.length; i++)
+			addBuiltInTool(builtInTools[i]);
 		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
@@ -1295,10 +1290,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		}
 	}
 	
-	/** 
-	 * Removes tools added with addTempPlugInTool().
-	 * @see #addTempPlugInTool
-	 */
 	public static void restoreTools() {
 		Toolbar tb = Toolbar.getInstance();
 		if (tb!=null) {
@@ -1490,11 +1481,29 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private void setPrefs(int id) {
-		if (!doNotSavePrefs) {
-			int index = id - SPARE2;
-			String key = TOOL_KEY + (index/10)%10 + index%10;
-			Prefs.set(key, instance.names[id]);
+		if (doNotSavePrefs)
+			return;
+		boolean ok = isBuiltInTool(names[id]);
+		if (!ok) {
+			Hashtable commands = Menus.getCommands();
+			String name = names[id];
+			if (name.endsWith("Menu Tool"))
+				name = name.substring(0, name.length()-5);
+			ok = commands!=null && commands.get(name)!=null;
 		}
+		if (!ok)
+			return;
+		int index = id - SPARE2;
+		String key = TOOL_KEY + (index/10)%10 + index%10;
+		Prefs.set(key, instance.names[id]);
+	}
+	
+	private boolean isBuiltInTool(String name) {
+		for (int i=0; i<builtInTools.length; i++) {
+			if (name.startsWith(builtInTools[i]))
+				return true;
+		}
+		return false;
 	}
 
 	public static void removeMacroTools() {
@@ -1525,20 +1534,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 				instance.installingStartupTool = false;
 			instance.setPrefs(id);
 		}
-	}
-
-	/**
-	 * Adds a temporary plugin tool to the tool bar. There is an example at
-	 * http://imagej.nih.gov/ij/plugins/eight-tools/
-	 * @see #restoreTools
-	 * @see #removeMacroTools
-	 */
-	public static void addTempPlugInTool(PlugInTool tool) {
-		if (instance==null)
-			return;
-		instance.doNotSavePrefs = true;
-		addPlugInTool(tool);
-		instance.doNotSavePrefs = false;
 	}
 
 	public static PlugInTool getPlugInTool() {
