@@ -1601,9 +1601,8 @@ public class IJ {
 		if (path!=null && path.length()==0) path = null;
 		format = format.toLowerCase(Locale.US);
 		if (format.indexOf("tif")!=-1) {
-			if (path!=null&&!path.endsWith(".tiff"))
-				path = updateExtension(path, ".tif");
-			format = "Tiff...";
+			saveAsTiff(imp, path);
+			return;
 		} else if (format.indexOf("jpeg")!=-1  || format.indexOf("jpg")!=-1) {
 			path = updateExtension(path, ".jpg");
 			format = "Jpeg...";
@@ -1661,6 +1660,21 @@ public class IJ {
 			} else
 				run(imp, format, "save="+path);
 		}
+	}
+	
+	/** Saves the specified image in TIFF format. Displays a file save dialog
+		if 'path' is null or an empty string. Returns 'false' if there is an
+		error or if the user selects "Cancel" in the file save dialog. */
+	public static boolean saveAsTiff(ImagePlus imp, String path) {
+		if (path==null || path.equals(""))
+			return (new FileSaver(imp)).saveAsTiff();
+		path = updateExtension(path, ".tif");
+		if (imp==null)
+			imp = getImage();
+		if (imp.getStackSize()>1)
+			return (new FileSaver(imp)).saveAsTiffStack(path);
+		else
+			return (new FileSaver(imp)).saveAsTiff(path);
 	}
 
 	static String updateExtension(String path, String extension) {
