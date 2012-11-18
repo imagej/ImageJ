@@ -46,6 +46,7 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	
 	private static final String[] builtInTools = {"Arrow","Brush","Developer Menu","Flood Filler",
 		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Spray Can","Stacks Menu"};
+	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
 	private static final int NUM_BUTTONS = 21;
@@ -112,7 +113,6 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 		names[NUM_TOOLS-1] = "\"More Tools\" menu (switch toolsets or add tools)";
 		icons[NUM_TOOLS-1] = "C900T1c12>T7c12>"; // ">>"
 		addPopupMenus();
-		if (IJ.isMacOSX() || IJ.isVista()) Prefs.antialiasedTools = true;
 	}
 
 	void addPopupMenus() {
@@ -1499,6 +1499,10 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 	}
 	
 	private boolean isBuiltInTool(String name) {
+		for (int i=0; i<builtInTools2.length; i++) {
+			if (name.equals(builtInTools2[i]))
+				return true;
+		}
 		for (int i=0; i<builtInTools.length; i++) {
 			if (name.startsWith(builtInTools[i]))
 				return true;

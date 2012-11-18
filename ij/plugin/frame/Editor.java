@@ -668,7 +668,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int pos = ta.getCaretPosition();
 		int currentLine = 0;
 		String text = ta.getText();
-		if (IJ.isWindows() && !IJ.isVista())
+		if (IJ.isWindows())
 			text = text.replaceAll("\r\n", "\n");
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();
@@ -986,7 +986,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				return 0;
 		}
 		String text = ta.getText();
-		if (IJ.isWindows() && !IJ.isVista())
+		if (IJ.isWindows())
 			text = text.replaceAll("\r\n", "\n");
 		char[] chars = new char[text.length()];
 		chars = text.toCharArray();

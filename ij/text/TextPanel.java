@@ -573,7 +573,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			String s = new String(chars);
 			if (s.endsWith("\t"))
 				s = s.substring(0, s.length()-1);
-			if (Prefs.noRowNumbers) {
+			if (Prefs.noRowNumbers && labels!=null && !labels.equals("")) {
 				int index = s.indexOf("\t");
 				if (index!=-1)
 					s = s.substring(index+1, s.length());
