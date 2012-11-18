@@ -40,8 +40,8 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		c.fill = GridBagConstraints.BOTH;
 		c.anchor = GridBagConstraints.CENTER;
 		int margin = 32;
-		if (IJ.isVista())
-			margin = 40;
+		if (IJ.isWindows())
+			margin = 45;
 		else if (IJ.isMacOSX())
 			margin = 18;
 		c.insets = new Insets(10, margin, 10, margin);

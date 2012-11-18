@@ -71,7 +71,6 @@ public class JavaProperties implements PlugIn {
 		sb.append("  IJ.isMacintosh: "+IJ.isMacintosh()+"\n");
 		sb.append("  IJ.isMacOSX: "+IJ.isMacOSX()+"\n");
 		sb.append("  IJ.isWindows: "+IJ.isWindows()+"\n");
-		sb.append("  IJ.isVista: "+IJ.isVista()+"\n");
 		sb.append("  IJ.is64Bit: "+IJ.is64Bit()+"\n");
 		sb.append("  Menus.getPlugInsPath: "+Menus.getPlugInsPath()+"\n");
 		sb.append("  Menus.getMacrosPath: "+Menus.getMacrosPath()+"\n");

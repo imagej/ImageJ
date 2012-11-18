@@ -40,7 +40,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		ImageProcessor ip = imp.getProcessor();
 		if (!showDialog(ip))
 			return;
-		if (newDepth>0 && newDepth!=imp.getStackSize()) {
+		if (newDepth>0 && newDepth!=oldDepth) {
 			newWindow = true;
 			processStack = true;
 		}
@@ -219,7 +219,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (bitDepth==8 || bitDepth==24)
 			gd.addCheckbox("Fill with background color", fillWithBackground);
 		gd.addCheckbox("Average when downsizing", averageWhenDownsizing);
-		if (isStack)
+		boolean hyperstack = imp.isHyperStack() || imp.isComposite();
+		if (isStack && !hyperstack)
 			gd.addCheckbox("Process entire stack", processStack);
 		gd.addCheckbox("Create new window", newWindow);
 		title = WindowManager.getUniqueName(imp.getTitle());
@@ -255,8 +256,10 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		if (bitDepth==8 || bitDepth==24)
 			fillWithBackground = gd.getNextBoolean();
 		averageWhenDownsizing = gd.getNextBoolean();
-		if (isStack)
+		if (isStack && !hyperstack)
 			processStack = gd.getNextBoolean();
+		if (hyperstack)
+			processStack = true;
 		newWindow = gd.getNextBoolean();
 		if (xscale==0.0) {
 			xscale = (double)newWidth/r.width;
@@ -306,7 +309,16 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newZScale = Tools.parseDouble(newZText,0);
 			if (newZScale==0) return;
 			if (newZScale!=zscale) {
-				int newDepth= (int)(newZScale*imp.getStackSize());
+				int nSlices = imp.getStackSize();
+				if (imp.isHyperStack()) {
+					int slices = imp.getNSlices();
+					int frames = imp.getNFrames();
+					if (slices==1&&frames>1)
+						nSlices = frames;
+					else
+						nSlices = slices;
+				}
+				int newDepth= (int)(newZScale*nSlices);
 				depthField.setText(""+newDepth);
 			}
 		} else if (source==widthField && fieldWithFocus==widthField) {
