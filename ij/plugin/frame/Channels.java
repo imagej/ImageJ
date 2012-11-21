@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 /** Displays the ImageJ Channels window. */
-public class Channels extends PlugInFrame implements PlugIn, ItemListener, ActionListener {
+public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
 
 	private static String[] modes = {"Composite", "Color", "Grayscale"};
 	private static String[] menuItems = {"Make Composite", "Convert to RGB", "Split Channels", "Merge Channels...",
@@ -17,7 +17,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 	private Choice choice;
 	private Checkbox[] checkbox;
 	private Button moreButton;
-	private static Frame instance;
+	private static Channels instance;
 	private int id;
 	private static Point location;
 	private PopupMenu pm;
@@ -25,10 +25,10 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 	public Channels() {
 		super("Channels");
 		if (instance!=null) {
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}
-		WindowManager.addWindow(this);
+		//WindowManager.addWindow(this);
 		instance = this;
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
@@ -40,10 +40,8 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		c.fill = GridBagConstraints.BOTH;
 		c.anchor = GridBagConstraints.CENTER;
 		int margin = 32;
-		if (IJ.isWindows())
-			margin = 45;
-		else if (IJ.isMacOSX())
-			margin = 18;
+		if (IJ.isMacOSX())
+			margin = 20;
 		c.insets = new Insets(10, margin, 10, margin);
 		choice = new Choice();
 		for (int i=0; i<modes.length; i++)
@@ -113,6 +111,11 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 		choice.select(index);
 	}
 	
+	public static void updateChannels() {
+		if (instance!=null)
+			instance.update();
+	}
+	
 	void addPopupItem(String s) {
 		MenuItem mi=new MenuItem(s);
 		mi.addActionListener(this);
@@ -135,7 +138,7 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 			if (channels==1 && imp.getStackSize()<=4)
 				channels = imp.getStackSize();
 			if (imp.getBitDepth()==24 || (channels>1&&channels<CompositeImage.MAX_CHANNELS)) {
-				GenericDialog gd = new GenericDialog(imp.getTitle(), this);
+				GenericDialog gd = new GenericDialog(imp.getTitle());
 				gd.addMessage("Convert to multi-channel composite image?");
 				gd.showDialog();
 				if (gd.wasCanceled())
@@ -204,8 +207,9 @@ public class Channels extends PlugInFrame implements PlugIn, ItemListener, Actio
 			IJ.doCommand(command);
 	}
 	
+	/** Obsolete; always returns null. */
 	public static Frame getInstance() {
-		return instance;
+		return null;
 	}
 		
 	public void close() {

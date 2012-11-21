@@ -8,18 +8,18 @@ import ij.process.*;
 import ij.gui.*;
 
 /** Implements the Image/Color/Color Picker command. */
-public class ColorPicker extends PlugInFrame {
+public class ColorPicker extends PlugInDialog {
 	static final String LOC_KEY = "cp.loc";
 	static ColorPicker instance;
 
     public ColorPicker() {
 		super("CP");
 		if (instance!=null) {
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}
 		instance = this;
-		WindowManager.addWindow(this);
+		//WindowManager.addWindow(this);
         int colorWidth = 22;
         int colorHeight = 16;
         int columns = 5;
@@ -30,7 +30,7 @@ public class ColorPicker extends PlugInFrame {
 		setLayout(new BorderLayout());
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
-        Canvas colorCanvas = new ColorCanvas(width, height, this, cg);
+        Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
         Panel panel = new Panel();
         panel.add(colorCanvas);
         add(panel);
@@ -205,7 +205,6 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 			
 	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip) {
 		this.width=width; this.height=height;
-		this.frame = frame;
 		this.ip = ip;
 		addMouseListener(this);
  		addMouseMotionListener(this);
@@ -312,7 +311,7 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener{
 
 	void editColor() {
 		Color c  = background?Toolbar.getBackgroundColor():Toolbar.getForegroundColor();
-		ColorChooser cc = new ColorChooser((background?"Background":"Foreground")+" Color", c, false, frame);
+		ColorChooser cc = new ColorChooser((background?"Background":"Foreground")+" Color", c, false);
 		c = cc.getColor();
 		if (background)
 			Toolbar.setBackgroundColor(c);

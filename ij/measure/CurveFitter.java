@@ -33,6 +33,7 @@ import java.util.Hashtable;
  *				by the simplex Minimizer and improves convergence.	These parameters can be an offset and
  *				either a linear slope or a factor that the full function is multiplied with.
  *	2012-10-07: added GAUSSIAN_NOOFFSET fit type
+ *	2012-11-20: Bugfix: exception on Gaussian&Rodbard with initial params, bad initial params for Gaussian 
  */
 
 public class CurveFitter implements UserFunction {
@@ -168,13 +169,13 @@ public class CurveFitter implements UserFunction {
 			if (!makeInitialParamsAndVariations(fitType))		// also includes some data checking
 				return;							// initialization failure
 			if (showSettings) settingsDialog();
-			startTime = System.currentTimeMillis();
 			if (numRegressionParams >0)
 				modifyInitialParamsAndVariations();
 			else {
 				minimizerInitialParams = initialParams;
 				minimizerInitialParamVariations = initialParamVariations;
 			}
+			startTime = System.currentTimeMillis();
 			// The maximum absolute error of the fit must be specified in case the
 			// fit function fits perfectly, i.e. the sume of residuals approaches 0.
 			// In such a case, the maximum relative error is meaningless and the
@@ -607,8 +608,11 @@ public class CurveFitter implements UserFunction {
 	public String getName() {
 		if (fitType==CUSTOM)
 			return "User-defined";
-		else
-			return fitList[fitType];
+		if (fitType==GAUSSIAN_INTERNAL)
+			fitType = GAUSSIAN;
+		else if (fitType==RODBARD_INTERNAL)
+			fitType = RODBARD;
+		return fitList[fitType];
 	}
 
 	/** returns a String with the formula of the fit function used */
@@ -800,7 +804,6 @@ public class CurveFitter implements UserFunction {
 				}
 	}
 
-
 	/** Estimate values for initial parameters and their typical range for the built-in
 	 *	function types.	 For fits with modifications for regression, 'fitType' is still
 	 *	the type of the original (unmodified) fit.
@@ -912,11 +915,12 @@ public class CurveFitter implements UserFunction {
 					initialParams[0] = yMin;	//actually don't care, we will do this via regression
 					initialParams[1] = yMax;	//actually don't care, we will do this via regression
 					initialParams[2] = xOfMax;
-					initialParams[3] = (xMax-xMin) * (yMean-yMin)/(yMax-yMin+1e-100);
+					initialParams[3] = 0.39894 * (xMax-xMin) * (yMean-yMin)/(yMax-yMin+1e-100);
+					break;
 				case GAUSSIAN_NOOFFSET:			// a*exp(-(x-b)^2/(2c^2))
 					initialParams[0] = yMax;	//actually don't care, we will do this via regression
 					initialParams[1] = xOfMax;	  //actually don't care, we will do this via regression
-					initialParams[2] = (xMax-xMin) * yMean/(yMax+1e-100);
+					initialParams[2] = 0.39894 * (xMax-xMin) * yMean/(yMax+1e-100);
 					break;			  
 				//case CUSTOM:				// initial params should be specified anyhow, otherwise use minimizer default
 			}

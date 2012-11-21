@@ -1038,7 +1038,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			grid.setConstraints(buttons, c);
 			add(buttons);
 			if (IJ.isMacintosh())
-			setResizable(false);
+				setResizable(false);
 			pack();
 			setup();
 			if (centerDialog) GUI.center(this);

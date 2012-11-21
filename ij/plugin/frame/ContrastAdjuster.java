@@ -13,7 +13,7 @@ import ij.measure.*;
 	allows the user to interactively adjust the brightness  and
 	contrast of the active image. It is multi-threaded to 
 	provide a more  responsive user interface. */
-public class ContrastAdjuster extends PlugInFrame implements Runnable,
+public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	ActionListener, AdjustmentListener, ItemListener {
 
 	public static final String LOC_KEY = "b&c.loc";
@@ -25,7 +25,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 	
 	ContrastPlot plot = new ContrastPlot();
 	Thread thread;
-	private static Frame instance;
+	private static ContrastAdjuster instance;
 		
 	int minSliderValue=-1, maxSliderValue=-1, brightnessValue=-1, contrastValue=-1;
 	int sliderRange = 256;
@@ -72,17 +72,17 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 		if (instance!=null) {
 			if (!instance.getTitle().equals(getTitle())) {
-				ContrastAdjuster ca = (ContrastAdjuster)instance;
+				ContrastAdjuster ca = instance;
 				Prefs.saveLocation(LOC_KEY, ca.getLocation());
 				ca.close();
 			} else {
-				WindowManager.toFront(instance);
+				instance.toFront();
 				return;
 			}
 		}
 		instance = this;
 		IJ.register(ContrastAdjuster.class);
-		WindowManager.addWindow(this);
+		//WindowManager.addWindow(this);
 
 		ij = IJ.getInstance();
 		gridbag = new GridBagLayout();
@@ -637,7 +637,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		ip.setRoi(imp.getRoi());
 		if (imp.getStackSize()>1) {
 			ImageStack stack = imp.getStack();
-			YesNoCancelDialog d = new YesNoCancelDialog(this,
+			YesNoCancelDialog d = new YesNoCancelDialog(new Frame(),
 				"Entire Stack?", "Apply LUT to all "+stack.getSize()+" slices in the stack?");
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
@@ -1069,7 +1069,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 			imp.unlock();
 	}
 
-    /** Overrides close() in PlugInFrame. */
+    /** Overrides close() in PlugInDialog. */
     public void close() {
     	super.close();
 		instance = null;
@@ -1091,7 +1091,7 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 		}
 		previousImageID = 0; // user may have modified image
 		setup();
-		WindowManager.setWindow(this);
+		//WindowManager.setWindow(this);
 	}
 
 	public synchronized  void itemStateChanged(ItemEvent e) {
@@ -1119,9 +1119,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
     /** Updates the ContrastAdjuster. */
     public static void update() {
 		if (instance!=null) {
-			ContrastAdjuster ca = ((ContrastAdjuster)instance);
-			ca.previousImageID = 0;
-			ca.setup();
+			instance.previousImageID = 0;
+			instance.setup();
 		}
     }
     
@@ -1130,7 +1129,8 @@ public class ContrastAdjuster extends PlugInFrame implements Runnable,
 
 class ContrastPlot extends Canvas implements MouseListener {
 	
-	static final int WIDTH = 128, HEIGHT=64;
+	//static final int WIDTH=128, HEIGHT=64;
+	static final int WIDTH=140, HEIGHT=70;
 	double defaultMin = 0;
 	double defaultMax = 255;
 	double min = 0;
@@ -1157,18 +1157,21 @@ class ContrastPlot extends Canvas implements MouseListener {
 		histogram = stats.histogram;
 		if (histogram.length!=256)
 			{histogram=null; return;}
-		for (int i=0; i<128; i++)
-			histogram[i] = (histogram[2*i]+histogram[2*i+1])/2;
+		double scale =WIDTH/256.0;
+		for (int i=0; i<WIDTH; i++) {
+			int index = (int)(i/scale);
+			histogram[i] = (histogram[index]+histogram[index+1])/2;
+		}
 		int maxCount = 0;
 		int mode = 0;
-		for (int i=0; i<128; i++) {
+		for (int i=0; i<WIDTH; i++) {
 			if (histogram[i]>maxCount) {
 				maxCount = histogram[i];
 				mode = i;
 			}
 		}
 		int maxCount2 = 0;
-		for (int i=0; i<128; i++) {
+		for (int i=0; i<WIDTH; i++) {
 			if ((histogram[i]>maxCount2) && (i!=mode))
 				maxCount2 = histogram[i];
 		}
@@ -1239,7 +1242,6 @@ class ContrastPlot extends Canvas implements MouseListener {
 	public void mouseEntered(MouseEvent e) {}
 
 } // ContrastPlot class
-
 
 class TrimmedLabel extends Label {
 	int trim = IJ.isMacOSX()?0:6;

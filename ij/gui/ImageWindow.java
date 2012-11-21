@@ -540,9 +540,8 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (imp==null) return;
 		if (!closed && !quitting && !Interpreter.isBatchMode())
 			WindowManager.setCurrentWindow(this);
-		Frame channels = Channels.getInstance();
-		if (channels!=null && imp.isComposite())
-			((Channels)channels).update();
+		if (imp.isComposite())
+			Channels.updateChannels();
 		imp.setActivated(); // notify ImagePlus that image has been activated
 	}
 	

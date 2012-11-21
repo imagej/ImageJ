@@ -4162,8 +4162,7 @@ public class Functions implements MacroConstants, Measurements {
 			active[i] = b;
 		}
 		imp.updateAndDraw();
-		Channels c = (Channels)Channels.getInstance();
-		if (c!=null) c.update();
+		Channels.updateChannels();
 	}
 
 	void getActiveChannels(ImagePlus imp) {

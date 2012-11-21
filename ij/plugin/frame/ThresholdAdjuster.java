@@ -216,7 +216,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			setLocation(loc);
 		else
 			GUI.center(this);
-		if (IJ.isMacOSX()) setResizable(false);
+		setResizable(false);
 		show();
 
 		thread = new Thread(this, "ThresholdAdjuster");
