@@ -119,6 +119,11 @@ public class WindowManager {
 	}
 
 	/** Returns the front most Frame or null. */
+	public static Window getActiveWindow() {
+		return frontWindow;
+	}
+
+	/** Returns the front most Frame or null. */
 	public static Frame getFrontWindow() {
 		return frontFrame;
 	}

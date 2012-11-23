@@ -6,7 +6,7 @@ import ij.io.*;
 import ij.plugin.frame.*;
 import ij.text.TextWindow;
 import ij.macro.Interpreter;
-import java.awt.Frame;
+import java.awt.Window;
 import java.io.File;
 import java.applet.Applet;
 	
@@ -74,13 +74,15 @@ public class Commands implements PlugIn {
 
 	void close() {
     	ImagePlus imp = WindowManager.getCurrentImage();
-		Frame frame = WindowManager.getFrontWindow();
-		if (frame==null || (Interpreter.isBatchMode() && frame instanceof ImageWindow))
+		Window win = WindowManager.getActiveWindow();
+		if (win==null || (Interpreter.isBatchMode() && win instanceof ImageWindow))
 			closeImage(imp);
-		else if (frame instanceof PlugInFrame)
-			((PlugInFrame)frame).close();
-		else if (frame instanceof TextWindow)
-			((TextWindow)frame).close();
+		else if (win instanceof PlugInFrame)
+			((PlugInFrame)win).close();
+		else if (win instanceof PlugInDialog)
+			((PlugInDialog)win).close();
+		else if (win instanceof TextWindow)
+			((TextWindow)win).close();
 		else
 			closeImage(imp);
 	}
