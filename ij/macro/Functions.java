@@ -2162,7 +2162,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	boolean isOpen(String title) {
-		boolean open = WindowManager.getFrame(title)!=null;
+		boolean open = WindowManager.getWindow(title)!=null;
 		if (open)
 			return true;
 		else if (Interpreter.isBatchMode() && Interpreter.imageTable!=null) {
@@ -4005,9 +4005,13 @@ public class Functions implements MacroConstants, Measurements {
 
 	double getValue() {
 		String key = getStringArg();
-		if (key.indexOf("foreground")!=-1)
+		if (key.equals("rgb.foreground"))
+			return Toolbar.getForegroundColor().getRGB()&0xffffff;
+		else if (key.equals("rgb.background"))
+			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
+		else if (key.contains("foreground"))
 			return getColorValue(Toolbar.getForegroundColor());
-		else if (key.indexOf("background")!=-1)
+		else if (key.contains("background"))
 			return getColorValue(Toolbar.getBackgroundColor());
 		else if (key.equals("font.size")) {
 			resetImage();

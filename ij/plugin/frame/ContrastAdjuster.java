@@ -82,7 +82,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		}
 		instance = this;
 		IJ.register(ContrastAdjuster.class);
-		//WindowManager.addWindow(this);
+		WindowManager.addWindow(this);
 
 		ij = IJ.getInstance();
 		gridbag = new GridBagLayout();
@@ -119,6 +119,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// min slider
 		if (!windowLevel) {
 			minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+			GUI.fix(minSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(minSlider, c);
@@ -133,6 +134,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// max slider
 		if (!windowLevel) {
 			maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+			GUI.fix(maxSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(maxSlider, c);
@@ -146,6 +148,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		
 		// brightness slider
 		brightnessSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+		GUI.fix(brightnessSlider);
 		c.gridy = y++;
 		c.insets = new Insets(windowLevel?12:2, 10, 0, 10);
 		gridbag.setConstraints(brightnessSlider, c);
@@ -162,6 +165,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// contrast slider
 		if (!balance) {
 			contrastSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+			GUI.fix(contrastSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
 			gridbag.setConstraints(contrastSlider, c);
@@ -1091,7 +1095,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		}
 		previousImageID = 0; // user may have modified image
 		setup();
-		//WindowManager.setWindow(this);
+		WindowManager.setWindow(this);
 	}
 
 	public synchronized  void itemStateChanged(ItemEvent e) {
@@ -1129,8 +1133,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 class ContrastPlot extends Canvas implements MouseListener {
 	
-	//static final int WIDTH=128, HEIGHT=64;
-	static final int WIDTH=140, HEIGHT=70;
+	static final int WIDTH=128, HEIGHT=64;
 	double defaultMin = 0;
 	double defaultMax = 255;
 	double min = 0;

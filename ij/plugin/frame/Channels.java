@@ -28,7 +28,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			instance.toFront();
 			return;
 		}
-		//WindowManager.addWindow(this);
+		WindowManager.addWindow(this);
 		instance = this;
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();

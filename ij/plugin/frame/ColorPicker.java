@@ -19,7 +19,7 @@ public class ColorPicker extends PlugInDialog {
 			return;
 		}
 		instance = this;
-		//WindowManager.addWindow(this);
+		WindowManager.addWindow(this);
         int colorWidth = 22;
         int colorHeight = 16;
         int columns = 5;
@@ -60,7 +60,8 @@ class ColorGenerator extends ColorProcessor {
     public ColorGenerator(int width, int height, int[] pixels) {
         super(width, height, pixels);
     }
-        void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
+    
+    void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
         w = colorWidth;
         h = colorHeight;
         setColor(0xffffff);

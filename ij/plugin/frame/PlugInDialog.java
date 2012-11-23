@@ -10,14 +10,14 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
 	String title;
 	
 	public PlugInDialog(String title) {
-		super(new Frame(), title);
+		super(IJ.isJava16()?null:new Frame(), title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
 		ImageJ ij = IJ.getInstance();
 		addWindowListener(this);
  		addFocusListener(this);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		if (ij!=null) {
+		if (ij!=null && !IJ.isMacOSX() && IJ.isJava16()) {
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}
@@ -39,20 +39,20 @@ public class PlugInDialog extends Dialog implements PlugIn, WindowListener, Focu
     public void close() {
 		//setVisible(false);
 		dispose();
-		//WindowManager.removeWindow(this);
+		WindowManager.removeWindow(this);
     }
 
     public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			//setMenuBar(Menus.getMenuBar());
-		}
-		//WindowManager.setWindow(this);
+		//if (IJ.isMacintosh() && IJ.getInstance()!=null) {
+		//	IJ.wait(10); // may be needed for Java 1.4 on OS X
+		//	setMenuBar(Menus.getMenuBar());
+		//}
+		WindowManager.setWindow(this);
 	}
 
 	public void focusGained(FocusEvent e) {
 		//IJ.log("PlugInFrame: focusGained");
-		//WindowManager.setWindow(this);
+		WindowManager.setWindow(this);
 	}
 
     public void windowOpened(WindowEvent e) {}

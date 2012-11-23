@@ -4,6 +4,7 @@ import ij.*;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
+	private static Color lightGray = new Color(230,230,230);
 
 	/** Positions the specified window in the center of the screen. */
 	public static void center(Window w) {
@@ -30,6 +31,12 @@ public class GUI {
 		}
         Image img = frame.createImage(width, height);
         return img;
+    }
+    
+    /** Lightens overly dark scrollbar background on Windows 8. */
+    public static void fix(Scrollbar sb) {
+    	if (IJ.isWindows())
+			sb.setBackground(lightGray);
     }
     
 }

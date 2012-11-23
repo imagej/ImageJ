@@ -17,7 +17,7 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
 		addWindowListener(this);
  		addFocusListener(this);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		if (ij!=null) {
+		if (ij!=null && !IJ.isMacOSX()) {
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}

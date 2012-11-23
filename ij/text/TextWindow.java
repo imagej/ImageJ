@@ -58,7 +58,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			textPanel.append(data);
 		addKeyListener(textPanel);
 		ImageJ ij = IJ.getInstance();
-		if (ij!=null) {
+		if (ij!=null && !IJ.isMacOSX()) {
 			textPanel.addKeyListener(ij);
 			Image img = ij.getIconImage();
 			if (img!=null)
