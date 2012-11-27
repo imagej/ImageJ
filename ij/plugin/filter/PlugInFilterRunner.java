@@ -262,6 +262,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
    }
 
 	private void processImageUsingThreads(ImageProcessor ip, FloatProcessor fp, boolean snapshotDone) {
+		if (IJ.debugMode)
+			IJ.log("using threads: "+ip.getNChannels());
 		Thread thread = Thread.currentThread();
 		boolean convertToFloat = (flags&PlugInFilter.CONVERT_TO_FLOAT)!=0 && !(ip instanceof FloatProcessor);
 		boolean doMasking = (flags&PlugInFilter.SUPPORTS_MASKING)!=0 && ip.getMask() != null;
@@ -298,6 +300,8 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 		ImageProcessor mask = ip.getMask();
 		Rectangle roi = ip.getRoi();
 		int threads = Prefs.getThreads();
+		if (IJ.debugMode)
+			IJ.log("processing channel: "+threads);
 		if (threads>roi.height) threads = roi.height;
 		if (threads>1) roisForThread = new Hashtable(threads-1);
 		int y1 = roi.y;
@@ -307,10 +311,12 @@ public class PlugInFilterRunner implements Runnable, DialogListener {
 			Rectangle roi2 = new Rectangle(roi.x, y1, roi.width, y2-y1+1);
 			roisForThread.put(bgThread, duplicateProcessor(ip, roi2));
 			bgThread.start();
-			//IJ.log("Thread for ROI "+y1+"-"+y2+" started");
+			if (IJ.debugMode)
+				IJ.log("  starting thread: "+y1+"-"+y2);
 			y1 = y2+1;
 		}
-		//IJ.log("Rest "+y1+"-"+(roi.height-1)+" by main thread ("+Thread.currentThread()+")");
+		if (IJ.debugMode)
+			IJ.log("  main thread "+y1+"-"+(roi.y+roi.height));
 		ip.setRoi(new Rectangle(roi.x, y1, roi.width, roi.y+roi.height-y1));
 		((PlugInFilter)theFilter).run(ip);  // the current thread does the rest
 		pass++;

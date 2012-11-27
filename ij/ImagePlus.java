@@ -1540,7 +1540,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return;
 		FileInfo fi = getOriginalFileInfo();
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
-		if (!(isFileInfo || url!=null))
+		if (!isFileInfo && url==null)
+			return;
+		if (fi.directory==null && url==null)
 			return;
 		if (ij!=null && changes && isFileInfo && !Interpreter.isBatchMode() && !IJ.isMacro() && !IJ.altKeyDown()) {
 			if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))

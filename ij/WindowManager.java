@@ -118,12 +118,12 @@ public class WindowManager {
 		return count;
 	}
 
-	/** Returns the front most Frame or null. */
+	/** Returns the front most window or null. */
 	public static Window getActiveWindow() {
 		return frontWindow;
 	}
 
-	/** Returns the front most Frame or null. */
+	/** Obsolete; replaced by getActiveWindow. */
 	public static Frame getFrontWindow() {
 		return frontFrame;
 	}
@@ -412,8 +412,8 @@ public class WindowManager {
 		return (ImagePlus)tempImageTable.get(Thread.currentThread()); 
 	}
 
-    /** Returns the window with the specified title or null if
-    	 a window with that title is not found. */
+    /** Returns the window (a Frame or a Dialog) with the specified
+    	  title,  or null if a window with that title is not found. */
     public static Window getWindow(String title) {
 		for (int i=0; i<nonImageList.size(); i++) {
 			Object win = nonImageList.elementAt(i);
@@ -424,8 +424,7 @@ public class WindowManager {
 		return getImageWindow(title);
     }
 
-    /** Returns the frame with the specified title or null if
-    	 a frame with that title is not found. */
+    /** Obsolete; replaced by getWindow(). */
     public static Frame getFrame(String title) {
 		for (int i=0; i<nonImageList.size(); i++) {
 			Object win = nonImageList.elementAt(i);

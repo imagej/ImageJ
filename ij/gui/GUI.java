@@ -4,7 +4,15 @@ import ij.*;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
-	private static Color lightGray = new Color(230,230,230);
+	private static Color lightGray = new Color(240,240,240);
+	private static boolean isWindows8;
+
+	static {
+		if (IJ.isWindows()) {
+			String osname = System.getProperty("os.name");
+			isWindows8 = osname.contains("unknown") || osname.contains("8");
+		}
+	}
 
 	/** Positions the specified window in the center of the screen. */
 	public static void center(Window w) {
@@ -35,8 +43,9 @@ public class GUI {
     
     /** Lightens overly dark scrollbar background on Windows 8. */
     public static void fix(Scrollbar sb) {
-    	if (IJ.isWindows())
+    	if (isWindows8) {
 			sb.setBackground(lightGray);
+		}
     }
     
 }

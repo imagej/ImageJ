@@ -2544,21 +2544,57 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void close() {
-		interp.getParens();
-		ImagePlus imp = getImage();
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			imp.changes = false;
-			win.close();
-		} else {
-			imp.saveRoi();
-			WindowManager.setTempCurrentImage(null);
-			interp.removeBatchModeImage(imp);
+		String pattern = null;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (interp.nextToken() != ')')
+				pattern = getString();
+			interp.getRightParen();
 		}
-		resetImage();
+		if (pattern != null) {//Norbert
+			WildcardMatch wm = new WildcardMatch();
+			wm.setCaseSensitive(false);
+			ImagePlus currentImp = WindowManager.getCurrentImage();
+			for (int img=WindowManager.getWindowCount(); img>0; img--) {
+				int id = WindowManager.getNthImageID(img);
+				ImagePlus imp = WindowManager.getImage(id);
+				if (imp!=null) {
+					String title = imp.getTitle();
+					boolean flagOthers = (pattern.equals("\\Others") && currentImp != imp);
+					if (wm.match(title, pattern) || flagOthers) {
+						ImageWindow win = imp.getWindow();
+						if (win!=null) {
+							imp.changes = false;
+							win.close();
+						} else {
+							imp.saveRoi();
+							WindowManager.setTempCurrentImage(null);
+							interp.removeBatchModeImage(imp);
+						}
+						imp.changes = false;
+						imp.close();
+					}
+				}
+			}
+			if (currentImp!=null)
+				WindowManager.setCurrentWindow(currentImp.getWindow());
+			resetImage();
+		} else {//Wayne
+			ImagePlus imp = getImage();
+			ImageWindow win = imp.getWindow();
+			if (win!=null) {
+				imp.changes = false;
+				win.close();
+			} else {
+				imp.saveRoi();
+				WindowManager.setTempCurrentImage(null);
+				interp.removeBatchModeImage(imp);
+			}
+			resetImage();
+		}
 	}
-	
-	void setBatchMode() {
+
+ 	void setBatchMode() {
 		boolean enterBatchMode = false;
 		String sarg = null;
 		interp.getLeftParen();

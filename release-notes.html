@@ -5,14 +5,19 @@
 </head>
 <body>
 
-<li> <u>1.47g 23 November 2012</u>
+<li> <u>1.47g 26 November 2012</u>
 <ul> Changed the "Brightness/Contrast", "Channels", "Threshold" and "Color Picker" windows
-to modeless dialogs without the title bar iconize and maximize buttons
-that were problelmatic on Windows.
+to modeless dialogs that do not have the title bar iconize and maximize buttons
+that were problematic on Windows.
+<li> Thanks to Norbert Vischer, added the close(pattern) macro function
+(<a href="macros/WildcardCloseDemo.txt">example</a>)
+and the ij.util.WildcardMatch class.
 <li> Thanks to Jerome Mutterer, added the getValue("rgb.foreground") and 
 getValue("rgb.background") macro functions.
 <li> Worked around a bug on Windows 8 that made scrollbar thumbs nearly
 invisible.
+<li> Fixed a bug that caused an exception when <i>File&gt;Revert</i>
+was used on a duplicated image.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
