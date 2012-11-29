@@ -17,11 +17,12 @@ public class Compiler implements PlugIn, FilenameFilter {
 	private static final String[] targets = {"1.4", "1.5", "1.6", "1.7"};
 	private static final String TARGET_KEY = "javac.target";
 	private static com.sun.tools.javac.Main javac;
+	private static Object javac2;
 	private static ByteArrayOutputStream output;
 	private static String dir, name;
 	private static Editor errors;
 	private static boolean generateDebuggingInfo;
-	private static int target = (int)Prefs.get(TARGET_KEY, TARGET15);
+	private static int target = (int)Prefs.get(TARGET_KEY, TARGET15);	
 
 	public void run(String arg) {
 		if (arg.equals("edit"))
@@ -53,9 +54,16 @@ public class Compiler implements PlugIn, FilenameFilter {
 	 
 	boolean isJavac() {
 		try {
-			if (javac==null) {
-				output = new ByteArrayOutputStream(4096);
-				javac=new com.sun.tools.javac.Main();
+			if (javac==null && javac2==null) {
+				try {
+					javac2 = javax.tools.ToolProvider.getSystemJavaCompiler();
+				} catch(Exception e) {
+					// only available with JDK >= 1.6
+				}
+				if ( javac2==null) {
+					output = new ByteArrayOutputStream(4096);
+					javac = new com.sun.tools.javac.Main();
+				}
 			}
 		} catch (NoClassDefFoundError e) {
 			IJ.error("Unable to find the javac compiler, which comes with the Windows and \n"
@@ -69,8 +77,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 	}
 
 	boolean compile(String path) {
-		IJ.showStatus("compiling: "+path);
-		output.reset();
+		IJ.showStatus("compiling "+path);
 		String classpath = getClassPath(path);
 		Vector v = new Vector();
 		if (generateDebuggingInfo)
@@ -86,23 +93,43 @@ public class Compiler implements PlugIn, FilenameFilter {
 		v.addElement("-deprecation");
 		v.addElement("-classpath");
 		v.addElement(classpath);
-		v.addElement(path);
-		String[] arguments = new String[v.size()];
+		String[] arguments = new String[v.size()+1];
 		v.copyInto((String[])arguments);
+		arguments[arguments.length-1] = path; // don't include path in v (javac2) 
 		if (IJ.debugMode) {
 			String str = "javac";
 			for (int i=0; i<arguments.length; i++)
 				str += " "+arguments[i];
 			IJ.log(str);
 		}
-		boolean compiled = javac.compile(arguments, new PrintWriter(output))==0;
-		String s = output.toString();
-		boolean errors = (!compiled || areErrors(s));
+		boolean errors;
+		String s = "not compiled";
+		if (javac2!=null) {
+			final StringWriter outputWriter = new StringWriter();
+			try{
+				javax.tools.StandardJavaFileManager fileManager =
+					((javax.tools.JavaCompiler)javac2).getStandardFileManager(null, null, null);
+				Iterable compilationUnits = fileManager.getJavaFileObjects(path);
+				javax.tools.JavaCompiler.CompilationTask task =
+					((javax.tools.JavaCompiler)javac2).getTask(outputWriter, fileManager, null, v, null, compilationUnits);
+				Boolean result = task.call();
+				errors = !Boolean.TRUE.equals(result);
+			} catch(Exception e){
+				errors = true;
+				e.printStackTrace(new PrintWriter(outputWriter));
+			}
+			s = outputWriter.toString();
+		} else {
+			output.reset();
+			boolean compiled = javac.compile(arguments, new PrintWriter(output))==0;
+			s = output.toString();
+			errors = !compiled || areErrors(s);
+		}
 		if (errors)
 			showErrors(s);
 		else
 			IJ.showStatus("done");
-		return compiled;
+		return !errors;
 	 }
 	 
 	 // Returns a string containing the Java classpath, 
@@ -273,5 +300,5 @@ class PlugInExecuter implements Runnable {
 			IJ.handleException(e);
 		}
 	}
-
+	
 }

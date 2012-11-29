@@ -346,7 +346,7 @@ plug-in01=>"Macros"
 plug-in02=>"Shortcuts"
 plug-in03=>"Utilities"
 plug-in04=>"New_"
-plug-in05="Compile and Run...",ij.plugin.Compiler
+plug-in05="Compile and Run...",ij.plugin.Commands("compile")
 #plug-in06=-
 #plug-in07=>"User_Plugins"
 

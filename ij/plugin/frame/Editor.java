@@ -11,6 +11,7 @@ import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
 import ij.plugin.NewPlugin;
+import ij.plugin.Commands;
 import ij.io.SaveDialog;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
@@ -333,6 +334,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	void compileAndRun() {
+		if (!IJ.isJava16()) {
+			Commands.compilerError();
+			return;
+		}
 		if (path==null)
 			saveAs();
 		if (path!=null) {

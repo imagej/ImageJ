@@ -6,6 +6,7 @@ import ij.io.*;
 import ij.plugin.frame.*;
 import ij.text.TextWindow;
 import ij.macro.Interpreter;
+import ij.plugin.Compiler;
 import java.awt.Window;
 import java.io.File;
 import java.applet.Applet;
@@ -27,6 +28,12 @@ public class Commands implements PlugIn {
 			closeAll();
 		else if (cmd.equals("save"))
 			save();
+		else if (cmd.equals("revert"))
+			revert();
+		else if (cmd.equals("undo"))
+			undo();
+		else if (cmd.equals("compile"))
+			compileAndRun();
 		else if (cmd.equals("ij")) {
 			ImageJ ij = IJ.getInstance();
 			if (ij!=null) ij.toFront();
@@ -35,11 +42,7 @@ public class Commands implements PlugIn {
 		else if (cmd.equals("quit")) {
 			ImageJ ij = IJ.getInstance();
 			if (ij!=null) ij.quit();
-		} else if (cmd.equals("revert"))
-			revert();
-		else if (cmd.equals("undo"))
-			undo();
-		else if (cmd.equals("startup"))
+		} else if (cmd.equals("startup"))
 			openStartupMacros();
     }
     
@@ -154,6 +157,17 @@ public class Commands implements PlugIn {
 			else
 				IJ.open(path);
 		}
+	}
+	
+	private void compileAndRun() {
+		if (IJ.isJava16())
+			IJ.runPlugIn("ij.plugin.Compiler", "");
+		else
+			compilerError();
+	}
+	
+	public static void compilerError() {
+		IJ.error("Compile and Run", "Starting with ImageJ 1.47g, \"Compile and Run\"\nrequires Java 1.6 or later.");
 	}
 	
 }

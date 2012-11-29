@@ -26,6 +26,7 @@ import java.util.Vector;
 			"Timestamp",
 			"Max Dimension",
 			"Measure",
+			"Print Index and Title",
 			"Resize",
 			"Scale",
 			"Show File Info",
@@ -290,6 +291,8 @@ import java.util.Vector;
 			code = "path=File.directory+File.name;\ndate=File.dateLastModified(path);\nsize=File.length(path);\nprint(i+\", \"+getTitle+\", \"+date+\", \"+size);\n";
 		else if (item.equals("Max Dimension"))
 			code = "max=2048;\nw=getWidth; h=getHeight;\nsize=maxOf(w,h);\nif (size>max) {\n  scale = max/size;\n  w*=scale; h*=scale;\n  run(\"Size...\", \"width=w height=h interpolation=Bicubic average\");\n}";
+		else if (item.equals("Print Index and Title"))
+			code =  "if (i==0) print(\"\\\\Clear\"); print(IJ.pad(i,4)+\": \"+getTitle());\n";
 		if (code!=null) {
 			TextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());

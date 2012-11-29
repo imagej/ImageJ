@@ -5,10 +5,13 @@
 </head>
 <body>
 
-<li> <u>1.47g 26 November 2012</u>
-<ul> Changed the "Brightness/Contrast", "Channels", "Threshold" and "Color Picker" windows
-to modeless dialogs that do not have the title bar iconize and maximize buttons
-that were problematic on Windows.
+<li> <u>1.47g 28 November 2012</u>
+<ul>
+<li> Changed the "Brightness/Contrast", "Channels", "Threshold" and "Color Picker" windows
+to modeless dialogs without the title bar iconize and maximize buttons
+that are problematic on Windows.
+<li> Thanks to Thomas Kuhne, Emil Kesler and Yili Zhao, Plugins&gt;Compile and Run</i> uses
+javax.tools.JavaCompiler instead of com.sun.tools.javac.Main (requires Java 1.6).
 <li> Thanks to Norbert Vischer, added the close(pattern) macro function
 (<a href="macros/WildcardCloseDemo.txt">example</a>)
 and the ij.util.WildcardMatch class.
@@ -18,6 +21,8 @@ getValue("rgb.background") macro functions.
 invisible.
 <li> Fixed a bug that caused an exception when <i>File&gt;Revert</i>
 was used on a duplicated image.
+<li> Thanks to Olivier Cardoso, fixed a bug that could cause an exception 
+when calling a Macro Extension function.
 </ul> 
 
 <a href="http://imagej.nih.gov/ij">Home</a>
