@@ -1229,9 +1229,9 @@ public class IJ {
 			{ij.toFront(); return;}
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis()-start<3000) { // 3 sec timeout
-			Frame frame = WindowManager.getFrame(title);
-			if (frame!=null && !(frame instanceof ImageWindow)) {
-				selectWindow(frame);
+			Window win = WindowManager.getWindow(title);
+			if (win!=null && !(win instanceof ImageWindow)) {
+				selectWindow(win);
 				return;
 			}
 			int[] wList = WindowManager.getIDList();
@@ -1250,15 +1250,18 @@ public class IJ {
 		error("Macro Error", "No window with the title \""+title+"\" found.");
 	}
 	
-	static void selectWindow(Frame frame) {
-		frame.toFront();
+	static void selectWindow(Window win) {
+		if (win instanceof Frame)
+			((Frame)win).toFront();
+		else
+			((Dialog)win).toFront();
 		long start = System.currentTimeMillis();
 		while (true) {
 			wait(10);
-			if (WindowManager.getFrontWindow()==frame)
+			if (WindowManager.getActiveWindow()==win)
 				return; // specified window is now in front
 			if ((System.currentTimeMillis()-start)>1000) {
-				WindowManager.setWindow(frame);
+				WindowManager.setWindow(win);
 				return;   // 1 second timeout
 			}
 		}

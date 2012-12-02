@@ -82,11 +82,7 @@ public class LutApplier implements PlugInFilter {
 	}
 	
 	void resetContrastAdjuster() {
-        Frame frame = WindowManager.getFrame("B&C");
-        if (frame==null)
-            frame = WindowManager.getFrame("W&L");
-        if (frame!=null && (frame instanceof ContrastAdjuster))
-            ((ContrastAdjuster)frame).updateAndDraw();
+		ContrastAdjuster.update();
 	}
 
 	void applyRGBStack(ImagePlus imp) {

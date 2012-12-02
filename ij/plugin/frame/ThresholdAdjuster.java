@@ -14,7 +14,7 @@ import ij.plugin.Thresholder;
 
 /** Adjusts the lower and upper threshold levels of the active image. This
 	class is multi-threaded to provide a more responsive user interface. */
-public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measurements,
+public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measurements,
 	Runnable, ActionListener, AdjustmentListener, ItemListener {
 
 	public static final String LOC_KEY = "threshold.loc";
@@ -70,7 +70,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		}
 		if (instance!=null) {
 			instance.firstActivation = true;
-			WindowManager.toFront(instance);
+			instance.toFront();
 			return;
 		}
 		
@@ -100,6 +100,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		
 		// minThreshold slider
 		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/3, 1, 0, sliderRange);
+		GUI.fix(minSlider);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -123,6 +124,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 		
 		// maxThreshold slider
 		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange*2/3, 1, 0, sliderRange);
+		GUI.fix(maxSlider);
 		c.gridx = 0;
 		c.gridy = y++;
 		c.gridwidth = 1;
@@ -216,7 +218,7 @@ public class ThresholdAdjuster extends PlugInFrame implements PlugIn, Measuremen
 			setLocation(loc);
 		else
 			GUI.center(this);
-		if (IJ.isMacOSX()) setResizable(false);
+		setResizable(false);
 		show();
 
 		thread = new Thread(this, "ThresholdAdjuster");

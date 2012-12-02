@@ -16,6 +16,7 @@ import ij.plugin.Converter;
 import ij.plugin.Duplicator;
 import ij.plugin.RectToolOptions;
 import ij.plugin.Colors;
+import ij.plugin.ContrastEnhancer;
 
 
 /**
@@ -1348,13 +1349,13 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			//if (IJ.altKeyDown() && !IJ.isMacro()) {
-			//	if (imageType==GRAY16 || imageType==GRAY32) {
-			//		ip.resetMinAndMax();
-			//		IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
-			//	}
-			//	ContrastAdjuster.update();
-			//}
+			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1) {
+				if (imageType!=COLOR_RGB) {
+					(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStatistics());
+					//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
+				}
+				ContrastAdjuster.update();
+			}
 			if (stack.isVirtual()) {
 				Overlay overlay2 = stack.getProcessor(n).getOverlay();
 				if (overlay2!=null)
@@ -1540,7 +1541,9 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return;
 		FileInfo fi = getOriginalFileInfo();
 		boolean isFileInfo = fi!=null && fi.fileFormat!=FileInfo.UNKNOWN;
-		if (!(isFileInfo || url!=null))
+		if (!isFileInfo && url==null)
+			return;
+		if (fi.directory==null && url==null)
 			return;
 		if (ij!=null && changes && isFileInfo && !Interpreter.isBatchMode() && !IJ.isMacro() && !IJ.altKeyDown()) {
 			if (!IJ.showMessageWithCancel("Revert?", "Revert to saved version of\n\""+getTitle()+"\"?"))

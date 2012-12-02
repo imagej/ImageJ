@@ -4,20 +4,20 @@ import java.awt.event.*;
 import ij.*;
 import ij.plugin.*;
 
-/**  This is a closeable window that plugins can extend. */
-public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusListener {
+/**  This is a non-modal dialog that plugins can extend. */
+public class PlugInDialog extends Dialog implements PlugIn, WindowListener, FocusListener {
 
 	String title;
 	
-	public PlugInFrame(String title) {
-		super(title);
+	public PlugInDialog(String title) {
+		super(IJ.isJava16()?null:new Frame(), title);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
 		ImageJ ij = IJ.getInstance();
 		addWindowListener(this);
  		addFocusListener(this);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		if (ij!=null && !IJ.isMacOSX()) {
+		if (ij!=null && !IJ.isMacOSX() && IJ.isJava16()) {
 			Image img = ij.getIconImage();
 			if (img!=null)
 				try {setIconImage(img);} catch (Exception e) {}
@@ -43,10 +43,10 @@ public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusL
     }
 
     public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh() && IJ.getInstance()!=null) {
-			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			setMenuBar(Menus.getMenuBar());
-		}
+		//if (IJ.isMacintosh() && IJ.getInstance()!=null) {
+		//	IJ.wait(10); // may be needed for Java 1.4 on OS X
+		//	setMenuBar(Menus.getMenuBar());
+		//}
 		WindowManager.setWindow(this);
 	}
 

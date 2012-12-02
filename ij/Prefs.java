@@ -138,7 +138,8 @@ public class Prefs {
 	public static boolean useFileChooser;
 	/** Use sub-pixel resolution with line selections */
 	public static boolean subPixelResolution;
-
+	/** Adjust contrast when scrolling stacks (or hold shift key down) */
+	public static boolean autoContrast;
 
 	static Properties ijPrefs = new Properties();
 	static Properties props = new Properties(ijPrefs);

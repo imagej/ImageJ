@@ -1132,10 +1132,11 @@ public class Menus {
 	}
         
 	/** Inserts one item (a non-image window) into the Window menu. */
-	static synchronized void insertWindowMenuItem(Frame win) {
+	static synchronized void insertWindowMenuItem(Window win) {
 		if (ij==null || win==null)
 			return;
-		CheckboxMenuItem item = new CheckboxMenuItem(win.getTitle());
+		String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
+		CheckboxMenuItem item = new CheckboxMenuItem(title);
 		item.addItemListener(ij);
 		int index = WINDOW_MENU_ITEMS+windowMenuItems2;
 		if (windowMenuItems2>=2)

@@ -66,6 +66,7 @@ public class Functions implements MacroConstants, Measurements {
 	int measurements;
 	int decimalPlaces;
 	boolean blackBackground;
+	boolean autoContrast;
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
 	int lineWidth = 1;
@@ -589,7 +590,19 @@ public class Functions implements MacroConstants, Measurements {
 		int lineWidth = 0;
 		if (isImage)
 			lineWidth = getProcessor().getLineWidth();
-		IJ.setForegroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
+		int red=0, green=0, blue=0;
+		int arg1 = (int)getFirstArg();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			red = (arg1&0xff0000)>>16;
+			green = (arg1&0xff00)>>8;
+			blue = arg1&0xff;
+		} else {
+			red = arg1;
+			green = (int)getNextArg();
+			blue = (int)getLastArg();
+		}
+		IJ.setForegroundColor(red, green, blue);
 		resetImage();
 		if (isImage)
 			setLineWidth(lineWidth);
@@ -598,7 +611,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setBackgroundColor() {
-		IJ.setBackgroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
+		int red=0, green=0, blue=0;
+		int arg1 = (int)getFirstArg();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			red = (arg1&0xff0000)>>16;
+			green = (arg1&0xff00)>>8;
+			blue = arg1&0xff;
+		} else {
+			red = arg1;
+			green = (int)getNextArg();
+			blue = (int)getLastArg();
+		}
+		IJ.setBackgroundColor(red, green, blue);
 		resetImage(); 
 	}
 
@@ -2162,7 +2187,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 	
 	boolean isOpen(String title) {
-		boolean open = WindowManager.getFrame(title)!=null;
+		boolean open = WindowManager.getWindow(title)!=null;
 		if (open)
 			return true;
 		else if (Interpreter.isBatchMode() && Interpreter.imageTable!=null) {
@@ -2244,6 +2269,7 @@ public class Functions implements MacroConstants, Measurements {
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
 		blackBackground = Prefs.blackBackground;
+		autoContrast = Prefs.autoContrast;
 		pasteMode = Roi.getCurrentPasteMode();
 	}
 	
@@ -2274,6 +2300,7 @@ public class Functions implements MacroConstants, Measurements {
 		Analyzer.setPrecision(decimalPlaces);
 		ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);
 		Prefs.blackBackground = blackBackground;
+		Prefs.autoContrast = autoContrast;
 		Roi.setPasteMode(pasteMode);
 	}
 	
@@ -2544,21 +2571,57 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void close() {
-		interp.getParens();
-		ImagePlus imp = getImage();
-		ImageWindow win = imp.getWindow();
-		if (win!=null) {
-			imp.changes = false;
-			win.close();
-		} else {
-			imp.saveRoi();
-			WindowManager.setTempCurrentImage(null);
-			interp.removeBatchModeImage(imp);
+		String pattern = null;
+		if (interp.nextToken()=='(') {
+			interp.getLeftParen();
+			if (interp.nextToken() != ')')
+				pattern = getString();
+			interp.getRightParen();
 		}
-		resetImage();
+		if (pattern != null) {//Norbert
+			WildcardMatch wm = new WildcardMatch();
+			wm.setCaseSensitive(false);
+			ImagePlus currentImp = WindowManager.getCurrentImage();
+			for (int img=WindowManager.getWindowCount(); img>0; img--) {
+				int id = WindowManager.getNthImageID(img);
+				ImagePlus imp = WindowManager.getImage(id);
+				if (imp!=null) {
+					String title = imp.getTitle();
+					boolean flagOthers = (pattern.equals("\\Others") && currentImp != imp);
+					if (wm.match(title, pattern) || flagOthers) {
+						ImageWindow win = imp.getWindow();
+						if (win!=null) {
+							imp.changes = false;
+							win.close();
+						} else {
+							imp.saveRoi();
+							WindowManager.setTempCurrentImage(null);
+							interp.removeBatchModeImage(imp);
+						}
+						imp.changes = false;
+						imp.close();
+					}
+				}
+			}
+			if (currentImp!=null)
+				WindowManager.setCurrentWindow(currentImp.getWindow());
+			resetImage();
+		} else {//Wayne
+			ImagePlus imp = getImage();
+			ImageWindow win = imp.getWindow();
+			if (win!=null) {
+				imp.changes = false;
+				win.close();
+			} else {
+				imp.saveRoi();
+				WindowManager.setTempCurrentImage(null);
+				interp.removeBatchModeImage(imp);
+			}
+			resetImage();
+		}
 	}
-	
-	void setBatchMode() {
+
+ 	void setBatchMode() {
 		boolean enterBatchMode = false;
 		String sarg = null;
 		interp.getLeftParen();
@@ -3701,6 +3764,8 @@ public class Functions implements MacroConstants, Measurements {
 			Calibration.setLoopBackAndForth(state);
 		else if (arg1.startsWith("jfilechooser"))
 			Prefs.useJFileChooser = state;
+		else if (arg1.startsWith("auto"))
+			Prefs.autoContrast = state;
 		else
 			interp.error("Invalid option");
 	}
@@ -4005,9 +4070,13 @@ public class Functions implements MacroConstants, Measurements {
 
 	double getValue() {
 		String key = getStringArg();
-		if (key.indexOf("foreground")!=-1)
+		if (key.equals("rgb.foreground"))
+			return Toolbar.getForegroundColor().getRGB()&0xffffff;
+		else if (key.equals("rgb.background"))
+			return Toolbar.getBackgroundColor().getRGB()&0xffffff;
+		else if (key.contains("foreground"))
 			return getColorValue(Toolbar.getForegroundColor());
-		else if (key.indexOf("background")!=-1)
+		else if (key.contains("background"))
 			return getColorValue(Toolbar.getBackgroundColor());
 		else if (key.equals("font.size")) {
 			resetImage();
@@ -4162,8 +4231,7 @@ public class Functions implements MacroConstants, Measurements {
 			active[i] = b;
 		}
 		imp.updateAndDraw();
-		Channels c = (Channels)Channels.getInstance();
-		if (c!=null) c.update();
+		Channels.updateChannels();
 	}
 
 	void getActiveChannels(ImagePlus imp) {

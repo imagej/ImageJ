@@ -268,11 +268,15 @@ public class ExtensionDescriptor {
     //}
     
     Object[] args = new Object[ argTypes.length ];
+    if (vArgs==null && argTypes.length>0) {
+		interp.error("Argument expected");
+		return null;
+    }
     // check variable types...
     for (int i=0; i < argTypes.length; ++i) {
       if (i >= vArgs.length) {
         if (!ExtensionDescriptor.isOptionalArg(argTypes[i])) {
-          interp.error("expected argument "+(i+1)+" of type "+ExtensionDescriptor.getTypeName(argTypes[i]));
+          interp.error("Expected argument "+(i+1)+" of type "+ExtensionDescriptor.getTypeName(argTypes[i]));
           return null;
         } else {
           break;

@@ -185,7 +185,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			ip2 = ip2.convertToFloat();
 		}
 		if (kw==1 || kh==1)
-			convolveFloat1D(ip2, kernel, kw, kh);
+			convolveFloat1D((FloatProcessor)ip2, kernel, kw, kh);
 		else
 			convolveFloat(ip2, kernel, kw, kh);
 		if (notFloat) {
@@ -212,9 +212,6 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
-		//boolean nonRectRoi = ip.getMask()!=null;
-		//if (nonRectRoi)
-		//	ip.snapshot();
 		int x1 = r.x;
 		int y1 = r.y;
 		int x2 = x1 + r.width;
@@ -271,16 +268,12 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				pixels[x+y*width] = (float)(sum*scale);
 			}
     	}
-		//if (nonRectRoi)
-		//	ip.reset(ip.getMask());
    		return true;
    	 }
 
 	/** Convolves the image <code>ip</code> with a kernel of width 
 		<code>kw</code> and height <code>kh</code>. */
-	void convolveFloat1D(ImageProcessor ip, float[] kernel, int kw, int kh) {
-		if (!(ip instanceof FloatProcessor))
-			throw new IllegalArgumentException("FloatProcessor required");
+	public void convolveFloat1D(FloatProcessor ip, float[] kernel, int kw, int kh) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
@@ -331,7 +324,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
     	}
     }
    	 
-	double getScale(float[] kernel) {
+	private double getScale(float[] kernel) {
 		double scale = 1.0;
 		if (normalize) {
 			double sum = 0.0;
