@@ -35,6 +35,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("No image border", Prefs.noBorder);
 		gd.addCheckbox("Use inverting lookup table", Prefs.useInvertingLut);
 		gd.addCheckbox("Antialiased tool icons", Prefs.antialiasedTools);
+		gd.addCheckbox("Auto contrast stacks (or use shift key)", Prefs.autoContrast);
 		gd.addChoice("16-bit range:", ranges, ranges[rangeIndex]);
 		gd.addNumericField("Menu font size:", Menus.getFontSize(), 0, 3, "points");
         gd.addHelp(IJ.URL+"/docs/menus/edit.html#appearance");
@@ -86,6 +87,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		boolean antialiasedTools = gd.getNextBoolean();
 		boolean toolbarChange = antialiasedTools!=Prefs.antialiasedTools;
 		Prefs.antialiasedTools = antialiasedTools;
+		Prefs.autoContrast = gd.getNextBoolean();
 		if (toolbarChange) Toolbar.getInstance().repaint();
 		setMenuSize = (int)gd.getNextNumber();
 		if (interpolate!=Prefs.interpolateScaledImages) {

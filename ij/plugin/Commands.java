@@ -32,8 +32,6 @@ public class Commands implements PlugIn {
 			revert();
 		else if (cmd.equals("undo"))
 			undo();
-		else if (cmd.equals("compile"))
-			compileAndRun();
 		else if (cmd.equals("ij")) {
 			ImageJ ij = IJ.getInstance();
 			if (ij!=null) ij.toFront();
@@ -158,18 +156,7 @@ public class Commands implements PlugIn {
 				IJ.open(path);
 		}
 	}
-	
-	private void compileAndRun() {
-		if (IJ.isJava16())
-			IJ.runPlugIn("ij.plugin.Compiler", "");
-		else
-			compilerError();
-	}
-	
-	public static void compilerError() {
-		IJ.error("Compile and Run", "Starting with ImageJ 1.47g, \"Compile and Run\"\nrequires Java 1.6 or later.");
-	}
-	
+		
 }
 
 

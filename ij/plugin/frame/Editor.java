@@ -334,10 +334,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	void compileAndRun() {
-		if (!IJ.isJava16()) {
-			Commands.compilerError();
-			return;
-		}
 		if (path==null)
 			saveAs();
 		if (path!=null) {

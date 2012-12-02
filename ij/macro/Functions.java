@@ -66,6 +66,7 @@ public class Functions implements MacroConstants, Measurements {
 	int measurements;
 	int decimalPlaces;
 	boolean blackBackground;
+	boolean autoContrast;
 	static WaitForUserDialog waitForUserDialog;
 	int pasteMode;
 	int lineWidth = 1;
@@ -589,7 +590,19 @@ public class Functions implements MacroConstants, Measurements {
 		int lineWidth = 0;
 		if (isImage)
 			lineWidth = getProcessor().getLineWidth();
-		IJ.setForegroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
+		int red=0, green=0, blue=0;
+		int arg1 = (int)getFirstArg();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			red = (arg1&0xff0000)>>16;
+			green = (arg1&0xff00)>>8;
+			blue = arg1&0xff;
+		} else {
+			red = arg1;
+			green = (int)getNextArg();
+			blue = (int)getLastArg();
+		}
+		IJ.setForegroundColor(red, green, blue);
 		resetImage();
 		if (isImage)
 			setLineWidth(lineWidth);
@@ -598,7 +611,19 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	void setBackgroundColor() {
-		IJ.setBackgroundColor((int)getFirstArg(), (int)getNextArg(), (int)getLastArg());
+		int red=0, green=0, blue=0;
+		int arg1 = (int)getFirstArg();
+		if (interp.nextToken()==')') {
+			interp.getRightParen();
+			red = (arg1&0xff0000)>>16;
+			green = (arg1&0xff00)>>8;
+			blue = arg1&0xff;
+		} else {
+			red = arg1;
+			green = (int)getNextArg();
+			blue = (int)getLastArg();
+		}
+		IJ.setBackgroundColor(red, green, blue);
 		resetImage(); 
 	}
 
@@ -2244,6 +2269,7 @@ public class Functions implements MacroConstants, Measurements {
 		measurements = Analyzer.getMeasurements();
 		decimalPlaces = Analyzer.getPrecision();
 		blackBackground = Prefs.blackBackground;
+		autoContrast = Prefs.autoContrast;
 		pasteMode = Roi.getCurrentPasteMode();
 	}
 	
@@ -2274,6 +2300,7 @@ public class Functions implements MacroConstants, Measurements {
 		Analyzer.setPrecision(decimalPlaces);
 		ColorProcessor.setWeightingFactors(weights[0], weights[1], weights[2]);
 		Prefs.blackBackground = blackBackground;
+		Prefs.autoContrast = autoContrast;
 		Roi.setPasteMode(pasteMode);
 	}
 	
@@ -3737,6 +3764,8 @@ public class Functions implements MacroConstants, Measurements {
 			Calibration.setLoopBackAndForth(state);
 		else if (arg1.startsWith("jfilechooser"))
 			Prefs.useJFileChooser = state;
+		else if (arg1.startsWith("auto"))
+			Prefs.autoContrast = state;
 		else
 			interp.error("Invalid option");
 	}
