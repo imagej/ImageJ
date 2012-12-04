@@ -117,6 +117,7 @@ class PixelInspector extends PlugInFrame
 	/* Preferences and related */
 	static final String PREFS_KEY="pixelinspector."; //key in IJ_Prefs.txt
 	static int radius = (int)Prefs.get(PREFS_KEY+"radius", 3);
+	private static final String LOC_KEY = "inspector.loc";
 	final static int MAX_RADIUS = 10;//the largest radius possible (ImageJ can hang if too large)
 	int grayDisplayType = 0;		//how to display 8-bit&16-bit grayscale pixels
 	final static String[] GRAY_DISPLAY_TYPES = {"Raw","Calibrated","Hex"};
@@ -510,6 +511,11 @@ class PixelInspector extends PlugInFrame
 		gd.addChoice("RGB readout:",RGB_DISPLAY_TYPES,RGB_DISPLAY_TYPES[rgbDisplayType]);
 		gd.addChoice("Copy to clipboard:", COPY_TYPES, COPY_TYPES[copyType]);
 		gd.addMessage("Use arrow keys to move red outline.\nPress 'c' to copy data to clipboard.");
+		Point loc = Prefs.getLocation(LOC_KEY);
+		if (loc!=null) {
+			gd.centerDialog(false);
+			gd.setLocation (loc);
+		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -523,6 +529,7 @@ class PixelInspector extends PlugInFrame
 		init();
 		update(POSITION_UPDATE);
 		Prefs.set(PREFS_KEY+"radius", radius);
+		Prefs.saveLocation(LOC_KEY, gd.getLocation());
 	}
 
 	static String int2hex(int i, int digits) {

@@ -1349,12 +1349,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip = stack.getProcessor(n);
 			if (win!=null && win instanceof StackWindow)
 				((StackWindow)win).updateSliceSelector();
-			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1) {
-				if (imageType!=COLOR_RGB) {
-					(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStatistics());
-					//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
-				}
+			if ((Prefs.autoContrast||IJ.shiftKeyDown()) && nChannels==1 && imageType!=COLOR_RGB) {
+				(new ContrastEnhancer()).stretchHistogram(ip,0.35,ip.getStatistics());
 				ContrastAdjuster.update();
+				//IJ.showStatus(n+": min="+ip.getMin()+", max="+ip.getMax());
 			}
 			if (stack.isVirtual()) {
 				Overlay overlay2 = stack.getProcessor(n).getOverlay();

@@ -15,6 +15,8 @@ import java.util.Vector;
 	private static String BRUSH_WIDTH_KEY = "brush.width";
 	private static String PENCIL_WIDTH_KEY = "pencil.width";
 	private static String CIRCLE_NAME = "brush-tool-overlay";
+	private static final String LOC_KEY = "brush.loc";
+
 	private String widthKey;
 	private int width;
 	private ImageProcessor ip;
@@ -206,7 +208,13 @@ import java.util.Vector;
 			gd.setHelpLabel("Undo");
 			gd.setOKLabel("Close");
 			gd.addDialogListener(this);
+			Point loc = Prefs.getLocation(LOC_KEY);
+			if (loc!=null) {
+				gd.centerDialog(false);
+				gd.setLocation (loc);
+			}
 			gd.showDialog();
+			Prefs.saveLocation(LOC_KEY, gd.getLocation());
 			gd = null;
 		}
 

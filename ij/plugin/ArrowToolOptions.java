@@ -7,6 +7,7 @@ import java.awt.*;
 public class ArrowToolOptions implements PlugIn, DialogListener {
 	private String colorName;
 	private static GenericDialog gd;
+	private static final String LOC_KEY = "arrows.loc";
 
  	public void run(String arg) {
  		if (gd!=null && gd.isVisible())
@@ -31,7 +32,13 @@ public class ArrowToolOptions implements PlugIn, DialogListener {
 		gd.addCheckbox("Outline", Arrow.getDefaultOutline());
 		gd.addCheckbox("Double head", Arrow.getDefaultDoubleHeaded());
 		gd.addDialogListener(this);
+		Point loc = Prefs.getLocation(LOC_KEY);
+		if (loc!=null) {
+			gd.centerDialog(false);
+			gd.setLocation (loc);
+		}
 		gd.showDialog();
+		Prefs.saveLocation(LOC_KEY, gd.getLocation());
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {

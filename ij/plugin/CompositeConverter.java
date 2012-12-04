@@ -47,9 +47,18 @@ public class CompositeConverter implements PlugIn {
 				ci.reset();
 				ci.resetDisplayRanges();
 			}
-			ci.show();
+			ImageWindow win = imp.getWindow();
+			Point location = win!=null?win.getLocation():null;
 			imp.hide();
-			if (!IJ.isMacro()) IJ.run("Channels Tool...");
+			if (location!=null)
+				ImageWindow.setNextLocation(location);
+			if (IJ.isMacro()) {
+				IJ.wait(250);
+				ci.show();
+			} else {
+				ci.show();
+				IJ.run("Channels Tool...");
+			}
 		} else
 			IJ.error("To create a composite, the current image must be\n a stack with at least 2 channels or be in RGB format.");
 	}

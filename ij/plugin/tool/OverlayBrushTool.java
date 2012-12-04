@@ -16,6 +16,7 @@ import java.util.Vector;
 public class OverlayBrushTool extends PlugInTool implements Runnable {
 	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, DO_RESIZE=3, RESIZED=4, IDLE=5; //mode flags
 	private static String WIDTH_KEY = "obrush.width";
+	private static final String LOC_KEY = "obrush.loc";
 	private float width = (float)Prefs.get(WIDTH_KEY, 5);
 	private int transparency;
 	private BasicStroke stroke;
@@ -210,7 +211,13 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 			gd.setHelpLabel("Undo");
 			gd.setOKLabel("Close");
 			gd.addDialogListener(this);
+			Point loc = Prefs.getLocation(LOC_KEY);
+			if (loc!=null) {
+				gd.centerDialog(false);
+				gd.setLocation (loc);
+			}
 			gd.showDialog();
+			Prefs.saveLocation(LOC_KEY, gd.getLocation());
 			if (IJ.debugMode) IJ.log("Options: false");
 			gd = null;
 		}
