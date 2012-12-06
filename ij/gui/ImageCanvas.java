@@ -268,7 +268,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
     private void initGraphics(Overlay overlay, Graphics g, Color textColor, Color defaultColor) {
 		if (smallFont==null) {
 			smallFont = new Font("SansSerif", Font.PLAIN, 9);
-			largeFont = new Font("SansSerif", Font.PLAIN, 12);
+			largeFont = ImageJ.SansSerif12;
 		}
 		if (textColor!=null) {
 			labelColor = textColor;

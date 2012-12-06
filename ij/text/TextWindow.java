@@ -18,6 +18,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public static final String WIDTH_KEY = "results.width";
 	public static final String HEIGHT_KEY = "results.height";
 	public static final String LOG_LOC_KEY = "log.loc";
+	public static final String LOG_WIDTH_KEY = "log.width";
+	public static final String LOG_HEIGHT_KEY = "log.height";
 	public static final String DEBUG_LOC_KEY = "debug.loc";
 	static final String FONT_SIZE = "tw.font.size";
 	static final String FONT_ANTI= "tw.font.anti";
@@ -79,8 +81,8 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			h = (int)Prefs.get(HEIGHT_KEY, 0.0);
 		} else if (title.equals("Log")) {
 			loc = Prefs.getLocation(LOG_LOC_KEY);
-			w = width;
-			h = height;
+			w = (int)Prefs.get(LOG_WIDTH_KEY, 0.0);
+			h = (int)Prefs.get(LOG_HEIGHT_KEY, 0.0);
 		} else if (title.equals("Debug")) {
 			loc = Prefs.getLocation(DEBUG_LOC_KEY);
 			w = width;
@@ -253,6 +255,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 			Prefs.set(HEIGHT_KEY, d.height);
 		} else if (getTitle().equals("Log")) {
 			Prefs.saveLocation(LOG_LOC_KEY, getLocation());
+			Dimension d = getSize();
+			Prefs.set(LOG_WIDTH_KEY, d.width);
+			Prefs.set(LOG_HEIGHT_KEY, d.height);
 			IJ.debugMode = false;
 			IJ.log("\\Closed");
 			IJ.notifyEventListeners(IJEventListener.LOG_WINDOW_CLOSED);
